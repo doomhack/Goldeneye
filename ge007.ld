@@ -235,6 +235,10 @@ SECTIONS
       build/OUTCODE/src/stacks.o (.bss);
    }
    _stacksSegmentEnd = ADDR(.stacks) + SIZEOF(.stacks);
+#ifdef COMPILER_GCC
+   /* .stacks sits at a fixed address, so a non-matching build must not grow .bss into it */
+   __bssStacksCheck = ASSERT(_bssSegmentEnd <= _stacksSegmentStart, "bss overlaps the fixed stacks address");
+#endif
 
    _cfbSegmentStart = ADDR(.cfb);
    .cfb (NOLOAD) :

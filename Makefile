@@ -362,7 +362,7 @@ $(APPELF): $(RSPOBJECTS) $(ULTRAOBJECTS) $(HEADEROBJECTS) $(OBSEG_RZ) $(BUILD_DI
 	cpp $(LDFILEOPTS) -P ge007.ld -o $(BUILD_DIR)/ge007.$(OUTCODE).ld
 ifeq ($(COMPILER), gcc)
 	@# GCC emits extra sections (.rodata.*, .text.*) that the matching script names exactly
-	sed -i -E -e 's/\((\.text|\.data|\.rodata)\)/(\1 \1.*)/g' -e 's/\(\.bss\)/(.bss .bss.* COMMON)/g' \
+	sed -i -E -e '/\.o *\(/s/\((\.text|\.data|\.rodata)\)/(\1 \1.*)/' -e '/\.o *\(/s/\(\.bss\)/(.bss .bss.* COMMON)/' \
 		-e 's|^( */DISCARD/ : \{)|\1\n      * (.comment);\n      * (.note*);|' $(BUILD_DIR)/ge007.$(OUTCODE).ld
 endif
 	@echo "Linking Files into ELF"

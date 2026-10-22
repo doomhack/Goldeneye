@@ -1,6 +1,7 @@
 /**
  * Runtime helpers that GCC expects from libgcc, built only when COMPILER=gcc.
- * The 64-bit ones forward to the equivalents libultra already provides for IDO.
+ * They forward to the equivalents libultra already provides for IDO
+ * (memset and memcpy already exist in libultra).
  */
 #include <ultra64.h>
 
@@ -34,15 +35,3 @@ float __floatdisf(s64_t s) { return __ll_to_f(s); }
 double __floatundidf(u64_t u) { return __ull_to_d(u); }
 float __floatundisf(u64_t u) { return __ull_to_f(u); }
 
-/* GCC may emit memset calls for zero-initialised locals; libultra has no memset */
-void *memset(void *dst, int c, unsigned int n)
-{
-    u8 *p = dst;
-
-    while (n--)
-    {
-        *p++ = c;
-    }
-
-    return dst;
-}
