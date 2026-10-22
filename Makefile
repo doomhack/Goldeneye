@@ -18,6 +18,8 @@ COMPARE := 1
 COMPILER := ido
 # Optimisation level for game code when COMPILER=gcc
 GCC_OPT := -O2
+# Source files that stay on IDO when COMPILER=gcc (space separated, eg src/init.c)
+GCC_EXCLUDE :=
 
 # Include Terminal Codes for colourising text.
 include include/make/VT100Codes.make
@@ -225,7 +227,7 @@ GCC := $(TOOLCHAIN)gcc
 # -nostdinc keeps the host's C library headers out; GCC's own freestanding headers are added back
 GCC_CFLAGS := -nostdinc -isystem $(shell $(GCC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 0 \
   -ffreestanding -fno-builtin -fno-common -fms-extensions -fno-strict-aliasing -fwrapv -funsigned-char \
-  -fno-merge-constants -fno-reorder-functions -fno-zero-initialized-in-bss \
+  -fno-merge-constants -fno-reorder-functions -fno-toplevel-reorder -fno-zero-initialized-in-bss \
   -w $(INCLUDE) $(LCDEFS) -DTARGET_N64 $(GCC_OPT)
 
 LD := $(TOOLCHAIN)ld
@@ -320,7 +322,7 @@ $(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
 $(BUILD_DIR)/src/%.o: src/%.c
 	@if [ "$$(basename $<)" = "chraidata.c" ]; then \
 		$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) tools/include-stdin.c -o $@ $(OPTIMIZATION); \
-	elif [ "$(COMPILER)" = "gcc" ] && [ "$<" != "src/inflate/inflate.c" ]; then \
+	elif [ "$(COMPILER)" = "gcc" ] && [ "$<" != "src/inflate/inflate.c" ] && [ -z "$(filter $<,$(GCC_EXCLUDE))" ]; then \
 		$(GCC) -c $(GCC_CFLAGS) -o $@ $<; \
 	else \
 		$(CC) -c $(CFLAGS) -o $@ $(OPTIMIZATION) $<; \
