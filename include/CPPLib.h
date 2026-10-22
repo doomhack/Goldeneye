@@ -253,9 +253,15 @@
 /**
  * Detects if arg or macro is defined as nothing.
  */
+#if defined(__GNUC__) && !defined(__sgi)
+/* GCC rejects pasting arbitrary tokens (e.g. "_" ## "0.1"), so use __VA_OPT__ */
+#    define IS_EMPTY(...)            _IS_EMPTY_FIRST(__VA_OPT__(0, ) 1, ~)
+#    define _IS_EMPTY_FIRST(a, ...)  a
+#else
 #define IS_EMPTY(x)  _IS_EMPTY(x)
 #define _IS_EMPTY(x) IS_PROBE(CAT(_IS_EMPTY, _##x##_))
 #define _IS_EMPTY__  PROBE(~) /*NULL*/
+#endif
 
 /**
  * Detects if arg or macro is a Bool (1 or 0).

@@ -27,9 +27,6 @@
 #include <ultra64.h>
 #include <bondconstants.h>
 #include "snd.h"
-#ifndef AIPARSE
-    #include "game/chrobjdata.h"
-#endif
 
         /**
  * Syntax Sugar for clarification of intent
@@ -245,7 +242,14 @@ typedef union
             f32 f[3];
         };
     } coord3d;
-#define New_Coord3d(x, y, z)            \
+#ifdef __sgi
+#    define New_Coord3d _New_Coord3d3
+#else
+/* GCC needs every parameter supplied, so pad the list with empty arguments */
+#    define New_Coord3d(...) _New_Coord3d_PAD(__VA_ARGS__, , , )
+#    define _New_Coord3d_PAD(x, y, z, ...) _New_Coord3d3(x, y, z)
+#endif
+#define _New_Coord3d3(x, y, z)            \
     {                                   \
         IF_ELSE(IS_EMPTY(x))            \
         (0)(x),                         \
@@ -253,7 +257,14 @@ typedef union
             IF_ELSE(IS_EMPTY(z))(0)(z)  \
     }
     typedef coord3d vec3d; //canononical name
-#define New_Vector(x, y, z)        \
+#ifdef __sgi
+#    define New_Vector _New_Vector3
+#else
+/* GCC needs every parameter supplied, so pad the list with empty arguments */
+#    define New_Vector(...) _New_Vector_PAD(__VA_ARGS__, , , )
+#    define _New_Vector_PAD(x, y, z, ...) _New_Vector3(x, y, z)
+#endif
+#define _New_Vector3(x, y, z)        \
     {                              \
         IF_ELSE(IS_EMPTY(x))(0)(x),\
         IF_ELSE(IS_EMPTY(y))(0)(y),\
@@ -3098,7 +3109,7 @@ typedef union
     typedef struct CCTVRecord
     {
         inherits ObjectRecord;
-        s32      pad; // lookpad
+        s32      lookpad;
         Mtxf     unk84;
         f32 unkC4;
         f32 unkC8;
@@ -4216,5 +4227,10 @@ struct font {
 	s32 kerning[13 * 13];
 	struct fontchar chars[94]; // can be 135 in PAL
 };
+
+/* included last: its arrays need the model record types above to be complete */
+#ifndef AIPARSE
+    #include "game/chrobjdata.h"
+#endif
 
 #endif

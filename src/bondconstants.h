@@ -77,14 +77,21 @@ typedef enum prefix                                                             
 #define CREATE_STRINGS1(prefix, name) IF_VA(DEFINED(DEBUG))(IF_ELSE(prefix)              \
 (#prefix "_" #name)(#name)COMMA())
 
-#ifdef __sgi
+#if defined(__sgi) || defined(__GNUC__)
 /**
  * Auto Generate Bitflag enums. (up to 32bit) - Unfortunatly we loose intellisense comments
  * @param NAME: Name of bitflag
  * @param a-af: bitfield names (will be appended to bitflag name for every field)
  * @return Enum of bitflags
  */
-#define BITFLAG(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af)\
+#ifdef __sgi
+#    define BITFLAG _BITFLAG32
+#else
+/* GCC needs every parameter supplied, so pad the list with empty arguments */
+#    define BITFLAG(NAME, ...) _BITFLAG_PAD(NAME, __VA_ARGS__,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,)
+#    define _BITFLAG_PAD(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af,...) _BITFLAG32(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af)
+#endif
+#define _BITFLAG32(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af)\
 typedef enum NAME \
 { /*\
   */NAME ## _NONE,/*\
@@ -4729,7 +4736,11 @@ typedef enum PROJECTILES
     )                                                      \
     };
 
+#ifdef __sgi
 #define MODELSKELETON(NAME, NUMJOINTS, SKELSIZE) ModelSkeleton SKELETON( ## NAME ## ) = {NUMJOINTS, 0, JOINTLIST( ## NAME ## ), SKELSIZE, 0};
+#else
+#define MODELSKELETON(NAME, NUMJOINTS, SKELSIZE) ModelSkeleton SKELETON(NAME) = {NUMJOINTS, 0, JOINTLIST(NAME), SKELSIZE, 0};
+#endif
 
 
 /**
@@ -4809,13 +4820,13 @@ typedef enum PROJECTILES
 #endif
 
 #define CHRFILERECORD(NAME, SCALE, OFFSET, HASHEAD, ISMALE) \
-    {&##NAME##_header, STR(C##NAME##Z), SCALE, OFFSET, HASHEAD, ISMALE},
+    {&NAME##_header, STR(C##NAME##Z), SCALE, OFFSET, HASHEAD, ISMALE},
 
-#define GUNSTATS(NAME) & ## NAME ## _stats
+#define GUNSTATS(NAME) &NAME ## _stats
 #define GUNFILERECORD(NAME, NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ) \
-    { & ## NAME ## _header,STR(G## NAME ##Z), NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ},
+    { &NAME ## _header,STR(G## NAME ##Z), NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ},
 #define SUIT_LFRECORD(NAME, NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ) \
-    { & ## NAME ## _header,STR(C## NAME ##Z), NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ},
+    { &NAME ## _header,STR(C## NAME ##Z), NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ},
 /**
  * Define a New Item Record
  * @param NAME:  Name of Model

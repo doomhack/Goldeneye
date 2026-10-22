@@ -728,8 +728,14 @@ u32 * crashIndyGetReadBufferResourceId(void)
  */
 void * crashGetStackEnd(u32 sp, u32 tid)
 {
+#ifdef __sgi
     void *localStackPointers1[STACK_POINTER_COUNT] = g_StackPtrs1;
     void *localStackPointers2[STACK_POINTER_COUNT] = g_StackPtrs2;
+#else
+    /* IDO allows initialising an array from another array, GCC does not */
+    void **localStackPointers1 = g_StackPtrs1;
+    void **localStackPointers2 = g_StackPtrs2;
+#endif
     void *p2;
     void *p1;
 
@@ -766,7 +772,11 @@ void * crashGetStackEnd(u32 sp, u32 tid)
  */
 void * crashGetStackStart(u32 sp, u32 tid)
 {
+#ifdef __sgi
     void *localStackPointers3[STACK_POINTER_COUNT] = g_StackPtrs3;
+#else
+    void **localStackPointers3 = g_StackPtrs3;
+#endif
     void *p;
 
     if ((s32)tid <= (s32)0 || (u32)tid > (u32)STACK_POINTER_COUNT)

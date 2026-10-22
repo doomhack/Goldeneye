@@ -10102,14 +10102,14 @@ void prepare_ammo_type_collection_text(u8 *finaltext, AMMOTYPE ammotype, u32 qua
         apped_text_ammotype(finaltext,ammotype,quantity);
         if (getPlayerCount() < 3)
         {
-            append_text_picked_up(finaltext, ammotype, quantity);
+            append_text_picked_up(finaltext, (u8 *)ammotype, (u8 *)quantity);
         }
         strcat(finaltext, "\n");
         return;
     }
     if (getPlayerCount() < 3)
     {
-        append_text_picked_up(finaltext, ammotype, quantity);
+        append_text_picked_up(finaltext, (u8 *)ammotype, (u8 *)quantity);
         append_text_ammo_amount_word(finaltext, ammotype, quantity);
     }
     apped_text_ammotype(finaltext, ammotype, quantity);

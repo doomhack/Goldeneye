@@ -58,6 +58,9 @@ SECTIONS
    BEGIN_SEG(code, _startSegmentRomEnd, (_startSegmentEnd - 0x10000000)) SUBALIGN(16)
    {
 #include "ld/lib.text.ld.inc"
+#ifdef COMPILER_GCC
+      build/OUTCODE/src/gcc/libgcc_compat.o (.text);
+#endif
    }
    END_SEG(code)
 
