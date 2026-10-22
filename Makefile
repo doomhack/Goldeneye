@@ -228,6 +228,7 @@ GCC := $(TOOLCHAIN)gcc
 GCC_CFLAGS := -nostdinc -isystem $(shell $(GCC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 0 \
   -ffreestanding -fno-builtin -fno-common -fms-extensions -fno-strict-aliasing -fwrapv -funsigned-char \
   -fno-merge-constants -fno-reorder-functions -fno-toplevel-reorder -fno-zero-initialized-in-bss \
+  -fno-delete-null-pointer-checks -fno-isolate-erroneous-paths-dereference -fno-aggressive-loop-optimizations \
   -w $(INCLUDE) $(LCDEFS) -DTARGET_N64 $(GCC_OPT)
 
 LD := $(TOOLCHAIN)ld
