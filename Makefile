@@ -315,16 +315,18 @@ $(BUILD_DIR)/$(OBSEGMENT): $(OBSEG_RZ) $(IMAGE_OBJS)
 #Build GCC-only support files
 $(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
 	@mkdir -p $(dir $@)
-	$(GCC) -c $(GCC_CFLAGS) -o $@ $<
+	$(GCC) -c $(GCC_CFLAGS) -fno-tree-loop-distribute-patterns -o $@ $<
 
 #Build C files in src/
 # convert AI_PRINT commands from readable to byte-array
-# chraidata.c (AI script data, IDO-only macros) and inflate.c (own ROM segment) always use IDO
+# chraidata.c (AI script data, IDO-only macros) and inflate.c (own ROM segment) always use IDO.
+# libultra's "memset" is an alias of bzero(ptr, len), so GCC's memset calls are redirected
+# to the real memset in src/gcc/libgcc_compat.c.
 $(BUILD_DIR)/src/%.o: src/%.c
 	@if [ "$$(basename $<)" = "chraidata.c" ]; then \
 		$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) tools/include-stdin.c -o $@ $(OPTIMIZATION); \
 	elif [ "$(COMPILER)" = "gcc" ] && [ "$<" != "src/inflate/inflate.c" ] && [ -z "$(filter $<,$(GCC_EXCLUDE))" ]; then \
-		$(GCC) -c $(GCC_CFLAGS) -o $@ $<; \
+		$(GCC) -c $(GCC_CFLAGS) -o $@ $< && $(OBJCOPY) --redefine-sym memset=gcc_memset $@; \
 	else \
 		$(CC) -c $(CFLAGS) -o $@ $(OPTIMIZATION) $<; \
 	fi

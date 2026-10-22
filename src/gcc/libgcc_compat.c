@@ -1,7 +1,6 @@
 /**
  * Runtime helpers that GCC expects from libgcc, built only when COMPILER=gcc.
- * They forward to the equivalents libultra already provides for IDO
- * (memset and memcpy already exist in libultra).
+ * The 64-bit helpers forward to the equivalents libultra already provides for IDO.
  */
 #include <ultra64.h>
 
@@ -35,3 +34,21 @@ float __floatdisf(s64_t s) { return __ll_to_f(s); }
 double __floatundidf(u64_t u) { return __ull_to_d(u); }
 float __floatundisf(u64_t u) { return __ull_to_f(u); }
 
+
+/**
+ * libultra's memset symbol is an alias of bzero(ptr, len), not the standard memset.
+ * The Makefile renames memset to gcc_memset in GCC objects so they land here.
+ * This file is built with -fno-tree-loop-distribute-patterns so the loop is not
+ * turned back into a memset call.
+ */
+void *gcc_memset(void *dst, int c, unsigned int n)
+{
+    u8 *p = dst;
+
+    while (n--)
+    {
+        *p++ = c;
+    }
+
+    return dst;
+}
