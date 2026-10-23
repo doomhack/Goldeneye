@@ -487,6 +487,12 @@ void bondviewLoadSetupIntroSection(void)
     g_CurrentPlayer->stanHeight = stan_height;
     g_CurrentPlayer->field_6C = stan_height / FIELD_6C_FACTOR;
     change_player_pos_to_target(&g_CurrentPlayer->field_488, &start_pos, start_stan);
+
+    // Players' collision bounds are otherwise only set when they first move.
+    // A co-op partner's body is created right next to player 1 and tests
+    // against them, which read uninitialised floats (an FPU exception on
+    // hardware and accurate emulators).
+    bondviewUpdatePlayerCollisionBounds();
     g_CurrentPlayer->field_488.theta_transform.f[0] = -sinf(start_look_angle);
     g_CurrentPlayer->field_488.theta_transform.f[1] = FLOAT_INIT;
     g_CurrentPlayer->field_488.theta_transform.f[2] = cosf(start_look_angle);
