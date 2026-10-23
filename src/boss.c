@@ -29,7 +29,7 @@
 #include "fr.h"
 #include "game/image.h"
 #include "vi.h"
-#include "crash.h"
+#include "exppak_msg.h"
 #include "game/bg.h"
 #include "game/debugmenu_handler.h"
 #include "game/lv.h"
@@ -167,6 +167,9 @@ static void bossCheckExpansionPak(void)
     OSViMode *mode;
     u16 *fb;
     s32 i;
+    s32 x;
+    s32 y;
+    s32 grey;
 
     if (osMemSize >= 0x800000)
     {
@@ -180,8 +183,19 @@ static void bossCheckExpansionPak(void)
         fb[i] = GPACK_RGBA5551(0, 0, 0, 1);
     }
 
-    crashDrawString(fb, SCREEN_WIDTH, (SCREEN_WIDTH - 22 * 10) / 2, SCREEN_HEIGHT / 2 - 24, 2, "EXPANSION PAK REQUIRED");
-    crashDrawString(fb, SCREEN_WIDTH, (SCREEN_WIDTH - 35 * 5) / 2, SCREEN_HEIGHT / 2 + 8, 1, "Switch off, insert it and try again");
+    // Pre-rendered anti-aliased text (tools/mkexppakmsg.py), 4 bits per pixel
+    fb += ((SCREEN_HEIGHT - EXPPAK_MSG_HEIGHT) / 2) * SCREEN_WIDTH + (SCREEN_WIDTH - EXPPAK_MSG_WIDTH) / 2;
+
+    for (y = 0; y < EXPPAK_MSG_HEIGHT; y++)
+    {
+        for (x = 0; x < EXPPAK_MSG_WIDTH; x++)
+        {
+            grey = g_ExpPakMsgBitmap[(y * EXPPAK_MSG_WIDTH + x) >> 1];
+            grey = (x & 1) ? (grey & 0xF) : (grey >> 4);
+            grey = grey * 17;
+            fb[y * SCREEN_WIDTH + x] = GPACK_RGBA5551(grey, grey, grey, 1);
+        }
+    }
 
     // Program the VI by hand with interrupts off, so the VI manager and the
     // scheduler can't blank the screen again on the next retrace.

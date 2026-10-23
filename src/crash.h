@@ -25,7 +25,6 @@ void crashAppendChar(unsigned char c);
 void crashScroll(s32 numlines);
 void crashInitBuffers(void);
 void crashRenderFrame(u16 *buffer);
-void crashDrawString(u16 *fb, s32 fbwidth, s32 x, s32 y, s32 scale, const char *str);
 
 
 

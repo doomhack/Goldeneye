@@ -27,9 +27,14 @@ echo "size=${RZSIZE}"
 CDATA_POS=$(printf "%d\n" 0x$(grep  ${MAPFILE} -e 'c_data_array' | cut -d "x" -f 2 | cut -d " " -f 1 ))
 #CDATA_MAX_SIZE=$(printf "%d\n" 0x$(grep  '${MAPFILE}' -e '.c_data         0x0000000000021990' | cut -d "x" -f 2 ))
 #CDATA_POS=137616
-CDATA_MAX_SIZE=72704
+CDATA_MAX_SIZE=81920  # sizeof(c_data_array) in src/c_data_filler.c
 
 echo "maxsize=${CDATA_MAX_SIZE}"
+if [ ${RZSIZE} -gt ${CDATA_MAX_SIZE} ]; then
+  echo "compressed data segment is too big for c_data_array, grow it in src/c_data_filler.c"
+  rm -f $1.tmp
+  exit 1
+fi
 
 [ -x tools/aaa_rip/aaa_rip ] && tools/aaa_rip/aaa_rip build/$2/data_seg.rz $1.tmp 0 0 ${CDATA_POS} || dd if=build/$2/data_seg.rz of=$1.tmp obs=1 seek=${CDATA_POS} conv=notrunc
 
