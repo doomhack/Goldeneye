@@ -16,6 +16,7 @@
       build/OUTCODE/src/getra.o (.data);
       build/OUTCODE/src/ramrom.o (.data);
       build/OUTCODE/src/boss.o (.data);
+      build/OUTCODE/src/dbgscreen.o (.data);
       build/OUTCODE/src/music.o (.data);
       build/OUTCODE/src/snd.o (.data);
       build/OUTCODE/src/memp.o (.data);

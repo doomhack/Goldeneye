@@ -28,6 +28,7 @@
 #include "token.h"
 #include "fr.h"
 #include "game/image.h"
+#include "dbgscreen.h"
 #include "vi.h"
 #include "exppak_msg.h"
 #include "game/bg.h"
@@ -543,6 +544,8 @@ void bossMainloop(void)
                     {
                         if (g_MainStageNum < 0 && pendingGfx < 2U)
                         {
+                            g_DbgFrameCounter++;
+
                             if (get_is_ramrom_flag())
                             {
                                 iterate_ramrom_entries_handle_camera_out();
