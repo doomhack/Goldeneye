@@ -416,7 +416,7 @@ void lvlStageLoad(s32 stage)
             s32 s3;
             player_data = (struct player_data *)&g_playerPlayerData[i];
 
-            if (getPlayerCount() == 1)
+            if (!isMpGame())
             {
                 // s4 variable
                 player_data->autoaim = 0;
@@ -998,7 +998,7 @@ void lvlManageMpGame(void)
         }
     }
 
-    if ((getPlayerCount() >= 2) && (g_CurrentStageToLoad != LEVELID_TITLE))
+    if ((isMpGame()) && (g_CurrentStageToLoad != LEVELID_TITLE))
     {
         if (get_mission_state() == MISSION_STATE_6)
         {
@@ -1259,6 +1259,13 @@ void lvlManageMpGame(void)
         update_bullet_casings();
         update_broken_windows();
         explosionUpdateFlyingParticles();
+
+        // Co-op (first step): guards and level scripts only deal with player 1.
+        if (g_CoopMode)
+        {
+            set_cur_player(0);
+        }
+
         chrpropTick();
         reset_all_music_slots();
         langTick();

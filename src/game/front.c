@@ -2796,6 +2796,7 @@ void interface_menu06_modesel(void)
         if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
         {
             gamemode = GAMEMODE_MULTI;
+            g_CoopMode = FALSE;
             sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE_SFX, 0);
         }
     }
@@ -3060,6 +3061,7 @@ void init_menu07_missionselect(void)
     briefingpage = BRIEFING_INVALID;
     tab_next_selected = FALSE;
     tab_prev_selected = FALSE;
+    g_CoopMode = FALSE;
     if (maybe_is_in_menu)
     {
         musicTrack1Play(M_FOLDERS);
@@ -3418,6 +3420,13 @@ void interface_menu08_difficulty(void)
         mission_difficulty_highlighted = DIFFICULTY_AGENT;
     }
 
+    // Co-op: player 2 presses Start on this page to join (press again to leave).
+    if ((joyGetControllerCount() >= 2) && joyGetButtonsPressedThisFrame(PLAYER_2, START_BUTTON))
+    {
+        g_CoopMode = !g_CoopMode;
+        sndPlaySfx(g_musicSfxBufferPtr, g_CoopMode ? PAPER_TURN_SFX : DOOR_METAL_CLOSE2_SFX, NULL);
+    }
+
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
     {
         if (tab_prev_highlight)
@@ -3657,6 +3666,15 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
             y = (i * 0x1E) + 0xB4;
             DL = frontPrintText(DL, &x, &y, text_sp160, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
         }
+    }
+
+    if (joyGetControllerCount() >= 2)
+    {
+        x = 0x37;
+        y = 0x12C;
+        DL = frontPrintText(DL, &x, &y,
+            (u8 *)(g_CoopMode ? "2 PLAYER CO-OP\n" : "PLAYER 2: PRESS START FOR CO-OP\n"),
+            ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
     DL = frontAddPreviousTabText(DL);
@@ -4115,6 +4133,10 @@ s32 get_selected_num_players(void)
     if (gamemode == GAMEMODE_MULTI)
     {
         return selected_num_players;
+    }
+    if (g_CoopMode)
+    {
+        return 2;
     }
     return 1;
 }

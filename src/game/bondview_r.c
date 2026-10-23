@@ -72,6 +72,69 @@ u32 weaponLoadProjectileModels(ITEM_IDS modelid)
     return 0;
 }
 
+/**
+ * Co-op: spots tried for player 2 around player 1's start pad, as
+ * (right, forward) offsets relative to the pad's facing: beside first, so
+ * player 2 isn't staring at player 1's back, then behind and in front.
+ */
+static const f32 coopSpawnOffsets[][2] = {
+    { 100.0f,    0.0f }, {-100.0f,   0.0f }, {   0.0f, -100.0f }, {   0.0f, 100.0f },
+    { 160.0f,    0.0f }, {-160.0f,   0.0f }, {   0.0f, -160.0f }, {   0.0f, 160.0f },
+};
+
+#define COOP_SPAWN_CDTYPES (CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER)
+#define COOP_SPAWN_RADIUS  30.0f
+#define COOP_SPAWN_MAXSTEP 30.0f
+
+/**
+ * Move a co-op partner's start position off player 1's pad to a free spot
+ * that can be walked to from the pad. If none fits (e.g. Facility's vent),
+ * keep the pad position and let the players overlap until they move apart.
+ */
+static void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle)
+{
+    f32 fwd_x = -sinf(look_angle);
+    f32 fwd_z = cosf(look_angle);
+    f32 floor_y = bondviewYPositionRelated(*stan, pos->f[0], pos->f[2]);
+    s32 i;
+
+    for (i = 0; i < (s32)(sizeof(coopSpawnOffsets) / sizeof(coopSpawnOffsets[0])); i++)
+    {
+        f32 right = coopSpawnOffsets[i][0];
+        f32 forward = coopSpawnOffsets[i][1];
+        f32 x = pos->f[0] + (fwd_x * forward) + (fwd_z * right);
+        f32 z = pos->f[2] + (fwd_z * forward) - (fwd_x * right);
+        StandTile *tile = *stan;
+        f32 y;
+
+        stanResetHits();
+
+        if (!stanTestLineUnobstructed(&tile, pos->f[0], pos->f[2], x, z, COOP_SPAWN_CDTYPES, 0.0f, 1.0f, 0.0f, 1.0f))
+        {
+            continue;
+        }
+
+        if (stanTestVolume(&tile, x, z, COOP_SPAWN_RADIUS, COOP_SPAWN_CDTYPES, 0.0f, 1.0f) >= 0)
+        {
+            continue;
+        }
+
+        y = bondviewYPositionRelated(tile, x, z);
+
+        if ((y - floor_y > COOP_SPAWN_MAXSTEP) || (floor_y - y > COOP_SPAWN_MAXSTEP))
+        {
+            continue;
+        }
+
+        pos->f[0] = x;
+        pos->f[2] = z;
+        *stan = tile;
+        return;
+    }
+
+    g_CoopPlayersOverlap = TRUE;
+}
+
 void bondviewLoadSetupIntroSection(void)
 {
 
@@ -107,6 +170,11 @@ void bondviewLoadSetupIntroSection(void)
     // done with declarations
 
     start_pos = default_start_position;
+
+    if (get_cur_playernum() == 0)
+    {
+        g_CoopPlayersOverlap = FALSE;
+    }
 
     intro_record = (struct SetupIntroEmpty *)g_CurrentSetup.intro;
     g_isBondKIA = 0;
@@ -375,7 +443,7 @@ void bondviewLoadSetupIntroSection(void)
 
     if (startpadcount > 0)
     {
-        if ((getPlayerCount() >= 2) && (startpadcount > 0))
+        if ((isMpGame()) && (startpadcount > 0))
         {
             rand_pad_index = bondviewGetRandomSpawnPadIndex();
         }
@@ -398,6 +466,14 @@ void bondviewLoadSetupIntroSection(void)
         start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
         g_CurrentPlayer->field_70 = stan_height;
         start_look_angle = M_TAU_F - atan2f(g_Startpad[rand_pad_index]->look.f[0], g_Startpad[rand_pad_index]->look.f[2]);
+
+        if (g_CoopMode && (get_cur_playernum() > 0))
+        {
+            coopFindPartnerSpawn(&start_pos, &start_stan, start_look_angle);
+            stan_height = bondviewYPositionRelated(start_stan, start_pos.f[0], start_pos.f[2]);
+            start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
+            g_CurrentPlayer->field_70 = stan_height;
+        }
     }
     else
     {
@@ -411,6 +487,12 @@ void bondviewLoadSetupIntroSection(void)
     g_CurrentPlayer->stanHeight = stan_height;
     g_CurrentPlayer->field_6C = stan_height / FIELD_6C_FACTOR;
     change_player_pos_to_target(&g_CurrentPlayer->field_488, &start_pos, start_stan);
+
+    // Players' collision bounds are otherwise only set when they first move.
+    // A co-op partner's body is created right next to player 1 and tests
+    // against them, which read uninitialised floats (an FPU exception on
+    // hardware and accurate emulators).
+    bondviewUpdatePlayerCollisionBounds();
     g_CurrentPlayer->field_488.theta_transform.f[0] = -sinf(start_look_angle);
     g_CurrentPlayer->field_488.theta_transform.f[1] = FLOAT_INIT;
     g_CurrentPlayer->field_488.theta_transform.f[2] = cosf(start_look_angle);

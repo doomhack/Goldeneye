@@ -2547,7 +2547,7 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
 
         damageToCause = gunItemGetDestructionAmount(weaponid);
 
-        if (isPlayer && (getPlayerCount() == 1))
+        if (isPlayer && (!isMpGame()))
         {
             damageToCause *= g_AiHealthModifier;
         }

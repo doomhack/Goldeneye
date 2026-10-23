@@ -25,6 +25,11 @@ u32 dword_CODE_bss_80079ED8;
 /*
 * Address: 0x7F093880
 */
+/**
+ * offset_x/offset_y are relative to the current player's view. (Stock GE
+ * passed some absolute positions here too, which put the sky's horizon
+ * edges in the wrong place in every split-screen view but the top-left one.)
+ */
 void skyGetWorldPosFromScreenPos(f32 offset_x, f32 offset_y, coord3d* out) {
     Mtxf* player_mtxf;
     coord2d coords;
@@ -370,7 +375,7 @@ Gfx *skyRender(Gfx *gdl)
     {
         sp54c = getPlayer_c_screentop() + getPlayer_c_screenheight() * (sp6a4.f[1] / (sp6a4.f[1] - sp68c.f[1]));
 
-        skyGetWorldPosFromScreenPos(0.0f, sp54c, &sp65c);
+        skyGetWorldPosFromScreenPos(0.0f, sp54c - getPlayer_c_screentop(), &sp65c);
         skyCalculateEdgeVertex(&sp6a4, &sp68c, &sp65c);
         skyIsScreenCornerInSky(&sp65c, &sp5fc, &sp574);
         skyIsCornerInWater(&sp65c, &sp59c, &sp554);
@@ -384,7 +389,7 @@ Gfx *skyRender(Gfx *gdl)
     {
         sp548 = getPlayer_c_screentop() + getPlayer_c_screenheight() * (sp698.f[1] / (sp698.f[1] - sp680.f[1]));
 
-        skyGetWorldPosFromScreenPos(getPlayer_c_screenwidth() - 0.1f, sp548, &sp650);
+        skyGetWorldPosFromScreenPos(getPlayer_c_screenwidth() - 0.1f, sp548 - getPlayer_c_screentop(), &sp650);
         skyCalculateEdgeVertex(&sp698, &sp680, &sp650);
         skyIsScreenCornerInSky(&sp650, &sp5f0, &sp570);
         skyIsCornerInWater(&sp650, &sp590, &sp550);
@@ -396,7 +401,7 @@ Gfx *skyRender(Gfx *gdl)
 
     if (sp538 != sp534)
     {
-        skyGetWorldPosFromScreenPos(getPlayer_c_screenleft() + getPlayer_c_screenwidth() * (sp6a4.f[1] / (sp6a4.f[1] - sp698.f[1])), 0.0f, &sp674);
+        skyGetWorldPosFromScreenPos(getPlayer_c_screenwidth() * (sp6a4.f[1] / (sp6a4.f[1] - sp698.f[1])), 0.0f, &sp674);
         skyCalculateEdgeVertex(&sp6a4, &sp698, &sp674);
         skyIsScreenCornerInSky(&sp674, &sp614, &sp57c);
         skyIsCornerInWater(&sp674, &sp5b4, &sp55c);
@@ -406,7 +411,7 @@ Gfx *skyRender(Gfx *gdl)
     {
         tmp = getPlayer_c_screenleft() + getPlayer_c_screenwidth() * (sp68c.f[1] / (sp68c.f[1] - sp680.f[1]));
 
-        skyGetWorldPosFromScreenPos(tmp, getPlayer_c_screenheight() - 0.1f, &sp668);
+        skyGetWorldPosFromScreenPos(tmp - getPlayer_c_screenleft(), getPlayer_c_screenheight() - 0.1f, &sp668);
         skyCalculateEdgeVertex(&sp68c, &sp680, &sp668);
         skyIsScreenCornerInSky(&sp668, &sp608, &sp578);
         skyIsCornerInWater(&sp668, &sp5a8, &sp558);

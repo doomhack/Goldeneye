@@ -2,6 +2,7 @@
 #include <memp.h>
 #include "initexplosioncasing.h"
 #include "explosion.h"
+#include "player.h"
 
 #ifndef DEBUG
     #ifdef __sgi
@@ -49,7 +50,7 @@ void alloc_explosion_smoke_casing_scorch_impact_buffers(void)
         }
     }
 
-    if (getPlayerCount() == 1)
+    if (!isMpGame())
     {
         osSyncPrintf("Allocating %d bytes for scorch data\n", SCORCH_BUFFER_LEN * sizeof(struct Scorch));
         // scorches are the circle burn marks left on the ground from explosions

@@ -634,7 +634,7 @@ void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range)
                             sp90 = get_cur_playernum();
                             set_cur_player(getPlayerPointerIndex(temp_s0));
 
-                            if (getPlayerCount() == 1)
+                            if (!isMpGame())
                             {
                                 minfrac *= g_SpExplosionDamageMult;
                             }
@@ -1773,7 +1773,7 @@ void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room)
 
     temp_s0 = getRoomPositionByIndex((s32) room);
 
-    if (getPlayerCount() < 2)
+    if (!isMpGame())
     {
         if (explosion_size > 200.0f)
         {
@@ -1866,7 +1866,7 @@ Gfx *explosionRenderScorchBuffer(Gfx *arg0)
     s32 i;
     s32 phi_s3 = -1;
 
-    if (getPlayerCount() >= 2)
+    if (isMpGame())
     {
         return arg0;
     }

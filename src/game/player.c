@@ -102,6 +102,23 @@ void init_player_data_ptrs_construct_viewports(s32 playercount)
     set_cur_player_viewport_size(viGetViewLeft(), viGetViewTop());
 }
 
+/**
+ * Co-op: two players share a solo mission. getPlayerCount() then returns 2,
+ * so code that means "is this a deathmatch" must use isMpGame() instead.
+ */
+s32 g_CoopMode = FALSE;
+
+/**
+ * Co-op: set when player 2 had to spawn inside player 1. The two players
+ * then don't collide with each other until they have moved apart.
+ */
+s32 g_CoopPlayersOverlap = FALSE;
+
+s32 isMpGame(void)
+{
+    return !g_CoopMode && getPlayerCount() >= 2;
+}
+
 s32 getPlayerCount(void)
 {
     s32 count = 0;
