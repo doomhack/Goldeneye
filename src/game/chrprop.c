@@ -2463,6 +2463,12 @@ void chrpropUpdateAutoaimTarget(void)
                 continue;
             }
 
+            // In co-op the other player is a friend, so auto-aim must not lock onto them.
+            if (g_CoopMode && (candidate_prop->type == PROP_TYPE_VIEWER))
+            {
+                continue;
+            }
+
             candidate_chr = candidate_prop->chr;
 
             // Characters not holding a weapon are exempt from being a target.
