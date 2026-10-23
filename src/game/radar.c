@@ -85,14 +85,14 @@ Gfx *display_red_blue_on_radar(Gfx *DL)
 
     gSPTextureRectangle(
         DL++,
-        (start_left - 0x10) << 2,
+        VI_SX((start_left - 0x10) << 2),
         (start_top - RADAR_RECT1_OFFSET) << 2,
-        (start_left + 0x10) << 2,
+        VI_SX((start_left + 0x10) << 2),
         (start_top + RADAR_RECT1_OFFSET) << 2,
         G_TX_RENDERTILE,
         0x10,
         0x10,
-        0x400,
+        0x400 / g_ViBackData->scalex,
         RADAR_RECT1_D);
     
     DL = microcode_constructor_related_to_menus(DL, start_left - 2, start_top - 2, start_left + 2, start_top + 2, 0x40);

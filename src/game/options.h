@@ -98,7 +98,9 @@ typedef enum WATCH_GAME_OPTIONS_INDEX {
     GAME_OPTIONS_INDEX_LOOK_AHEAD,
     GAME_OPTIONS_INDEX_AMMO_ONSCREEN,
     GAME_OPTIONS_INDEX_SCREEN_SIZE,
-    GAME_OPTIONS_INDEX_RATIO
+    GAME_OPTIONS_INDEX_RATIO,
+    GAME_OPTIONS_INDEX_HIRES,
+    GAME_OPTIONS_INDEX_COUNT
 } WATCH_GAME_OPTIONS_INDEX;
 
 typedef enum WATCH_BRIEF_INDEX {
@@ -130,6 +132,8 @@ f32 sub_GAME_7F0A95C4(f32 param_1, f32 param_2, f32 param_3);
 SCREEN_RATIO_OPTION get_screen_ratio(void);
 
 void set_screen_ratio(SCREEN_RATIO_OPTION ratio_option);
+u32 get_hires_setting(void);
+void set_hires_setting(u32 enabled);
 
 s32 cur_player_get_autoaim(void);
 u32 cur_player_get_lookahead(void);

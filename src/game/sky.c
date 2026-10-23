@@ -325,8 +325,8 @@ Gfx *skyRender(Gfx *gdl)
 
             gdl = viSetFillColor(gdl, env->Red, env->Green, env->Blue);
 
-            gDPFillRectangle(gdl++, viGetViewLeft(), viGetViewTop(),
-                    viGetViewLeft() + viGetViewWidth() - 1,
+            gDPFillRectangle(gdl++, VI_SX(viGetViewLeft()), viGetViewTop(),
+                    VI_SX_INCL(viGetViewLeft() + viGetViewWidth() - 1),
                     viGetViewTop() + viGetViewHeight() - 1);
 
             gDPPipeSync(gdl++);
@@ -339,8 +339,8 @@ Gfx *skyRender(Gfx *gdl)
         gDPSetRenderMode(gdl++, G_RM_NOOP, G_RM_NOOP2);
 
         gDPFillRectangle(gdl++,
-                g_CurrentPlayer->viewleft, g_CurrentPlayer->viewtop,
-                (g_CurrentPlayer->viewleft + g_CurrentPlayer->viewx) - 1,
+                VI_SX(g_CurrentPlayer->viewleft), g_CurrentPlayer->viewtop,
+                VI_SX_INCL((g_CurrentPlayer->viewleft + g_CurrentPlayer->viewx) - 1),
                 (g_CurrentPlayer->viewtop + g_CurrentPlayer->viewy) - 1);
 
         gDPPipeSync(gdl++);
@@ -816,7 +816,7 @@ Gfx *skyRender(Gfx *gdl)
         {
             sub_GAME_7F097388(&sp43c[i], &sp38c, 130, 65535.0f, 65535.0f, &sp274[i]);
 
-            sp274[i].unk28 = skyClamp(sp274[i].unk28, getPlayer_c_screenleft() * 4.0f, (getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f);
+            sp274[i].unk28 = skyClamp(sp274[i].unk28, VI_SX(getPlayer_c_screenleft()) * 4.0f, VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f);
             sp274[i].unk2c = skyClamp(sp274[i].unk2c, getPlayer_c_screentop() * 4.0f, (getPlayer_c_screentop() + getPlayer_c_screenheight()) * 4.0f - 1.0f);
 
             if (sp274[i].unk2c > getPlayer_c_screentop() * 4.0f + 4.0f
@@ -1297,7 +1297,7 @@ Gfx *skyRender(Gfx *gdl)
         {
             sub_GAME_7F097388(&sp4b4[i], &sp1ac, 130, 65535.0f, 65535.0f, &sp94[i]);
 
-            sp94[i].unk28 = skyClamp(sp94[i].unk28, getPlayer_c_screenleft() * 4.0f, (getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f);
+            sp94[i].unk28 = skyClamp(sp94[i].unk28, VI_SX(getPlayer_c_screenleft()) * 4.0f, VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f);
             sp94[i].unk2c = skyClamp(sp94[i].unk2c, getPlayer_c_screentop() * 4.0f, (getPlayer_c_screentop() + getPlayer_c_screenheight()) * 4.0f - 1.0f);
         }
 
@@ -1309,12 +1309,12 @@ Gfx *skyRender(Gfx *gdl)
                 {
                     if (sp94[3].unk2c >= sp94[1].unk2c + 4.0f)
                     {
-                        sp94[0].unk28 = getPlayer_c_screenleft() * 4.0f;
+                        sp94[0].unk28 = VI_SX(getPlayer_c_screenleft()) * 4.0f;
                         sp94[0].unk2c = getPlayer_c_screentop() * 4.0f;
-                        sp94[1].unk28 = (getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
+                        sp94[1].unk28 = VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
                         sp94[1].unk2c = getPlayer_c_screentop() * 4.0f;
-                        sp94[2].unk28 = getPlayer_c_screenleft() * 4.0f;
-                        sp94[3].unk28 = (getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
+                        sp94[2].unk28 = VI_SX(getPlayer_c_screenleft()) * 4.0f;
+                        sp94[3].unk28 = VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
 
                         gdl = skyRenderFull(gdl, &sp94[0], &sp94[1], &sp94[2], &sp94[3], 130.0f);
                     }
@@ -1325,12 +1325,12 @@ Gfx *skyRender(Gfx *gdl)
                 }
                 else if (sp94[2].unk2c >= sp94[0].unk2c + 4.0f)
                 {
-                    sp94[0].unk28 = getPlayer_c_screenleft() * 4.0f;
+                    sp94[0].unk28 = VI_SX(getPlayer_c_screenleft()) * 4.0f;
                     sp94[0].unk2c = getPlayer_c_screentop() * 4.0f;
-                    sp94[1].unk28 = (getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
+                    sp94[1].unk28 = VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
                     sp94[1].unk2c = getPlayer_c_screentop() * 4.0f;
-                    sp94[2].unk28 = getPlayer_c_screenleft() * 4.0f;
-                    sp94[3].unk28 = (getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
+                    sp94[2].unk28 = VI_SX(getPlayer_c_screenleft()) * 4.0f;
+                    sp94[3].unk28 = VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
 
                     gdl = skyRenderFull(gdl, &sp94[1], &sp94[0], &sp94[3], &sp94[2], 130.0f);
                 }
@@ -1399,7 +1399,8 @@ void sub_GAME_7F097388(SkyRelated18 *arg0, Mtxf *arg1, u16 arg2, f32 arg3, f32 a
     sp48[2] = sp68[2] * f0 * mult;
     sp48[3] = sp68[3] * f0 * mult;
 
-    sp38[0] = sp48[0] * (getPlayer_c_screenwidth() * 2) + (getPlayer_c_screenwidth() * 2 + getPlayer_c_screenleft() * 4);
+    // Screen x in physical (hi-res) quarter pixels: the RDP triangles are built from it
+    sp38[0] = sp48[0] * (VI_SX(getPlayer_c_screenwidth()) * 2) + (VI_SX(getPlayer_c_screenwidth()) * 2 + VI_SX(getPlayer_c_screenleft()) * 4);
     sp38[1] = -sp48[1] * (getPlayer_c_screenheight() * 2) + (getPlayer_c_screenheight() * 2 + getPlayer_c_screentop() * 4);
 
     sp38[2] = sp48[2] * 511.0f + 511.0f;
@@ -2197,19 +2198,19 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         }
         else
         {
-            sp1bc = -(getPlayer_c_screenwidth() - 0.25f) / ((arg3->unk2c - arg4->unk2c) / 4.0f);
+            sp1bc = -(VI_SX(getPlayer_c_screenwidth()) - 0.25f) / ((arg3->unk2c - arg4->unk2c) / 4.0f);
         }
 
         gImmp1(gdl++, G_RDPHALF_1, (G_TRI_SHADE_TXTR << 24) | 0x00800000 | (s32) arg3->unk2c);
         gImmp1(gdl++, G_RDPHALF_CONT, (s32) arg4->unk2c << 16 | (s32) arg1->unk2c);
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(getPlayer_c_screenleft() + getPlayer_c_screenwidth() - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft()) + VI_SX(getPlayer_c_screenwidth()) - 0.25f));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp1bc));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(getPlayer_c_screenleft()));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft())));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(getPlayer_c_screenleft() + getPlayer_c_screenwidth() - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft()) + VI_SX(getPlayer_c_screenwidth()) - 0.25f));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
     }
     else
@@ -2222,19 +2223,19 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         }
         else
         {
-            sp198 = (getPlayer_c_screenwidth() - 0.25f) / ((arg3->unk2c - arg4->unk2c) / 4.0f);
+            sp198 = (VI_SX(getPlayer_c_screenwidth()) - 0.25f) / ((arg3->unk2c - arg4->unk2c) / 4.0f);
         }
 
         gImmp1(gdl++, G_RDPHALF_1, 0xce000000 | (s32) arg3->unk2c);
         gImmp1(gdl++, G_RDPHALF_CONT, (s32) arg4->unk2c << 16 | (s32) arg1->unk2c);
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(getPlayer_c_screenleft()));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft())));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp198));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(getPlayer_c_screenleft() + getPlayer_c_screenwidth() - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft()) + VI_SX(getPlayer_c_screenwidth()) - 0.25f));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(getPlayer_c_screenleft()));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft())));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
     }
 

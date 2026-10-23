@@ -613,7 +613,7 @@ void bossMainloop(void)
                                 gDPSetPrimDepth(gdl++, 0xffff, 0xffff); // 0xee000000, 0xffffffff
                                 gDPSetDepthSource(gdl++, G_ZS_PRIM); // 0xb9000201, 0x00000004
                                 gDPSetRenderMode(gdl++, G_RM_VISCVG, G_RM_VISCVG2); // 0xb900031d, 0x0fa54040
-                                gDPFillRectangle(gdl++, 0, 0, viGetX() - 1, viGetY() - 1);
+                                gDPFillRectangle(gdl++, 0, 0, VI_SX(viGetX()) - 1, viGetY() - 1);
                             }
 
                             gdl = debmenuDraw(gdl);

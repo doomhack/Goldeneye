@@ -109,7 +109,8 @@ struct game_options game_options_entries[] = {
     { {getStringID(LOPTIONS, OPTION_STR_13_LOOKAHEAD_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 1}, //look ahead, off, on
     { {getStringID(LOPTIONS, OPTION_STR_16_AMMOONSCREEN_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 1}, //ammo on screen, off, on
     { {getStringID(LOPTIONS, OPTION_STR_17_SCREEN_LF), getStringID(LOPTIONS, OPTION_STR_1F_FULL_LF), getStringID(LOPTIONS, OPTION_STR_20_WIDE_LF), getStringID(LOPTIONS, OPTION_STR_21_CINEMA_LF)}, 0}, //screen, full, wide, cinema
-    { {getStringID(LOPTIONS, OPTION_STR_18_RATIO_LF), getStringID(LOPTIONS, OPTION_STR_22_NORMAL_LF), getStringID(LOPTIONS, OPTION_STR_23_169_LF), 0}, 0} //ratio, normal, 16:9
+    { {getStringID(LOPTIONS, OPTION_STR_18_RATIO_LF), getStringID(LOPTIONS, OPTION_STR_22_NORMAL_LF), getStringID(LOPTIONS, OPTION_STR_23_169_LF), 0}, 0}, //ratio, normal, 16:9
+    { {getStringID(LOPTIONS, OPTION_STR_3D_HIRES_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0} //hi-res, off, on
 };
 
 //D:80040ADC
@@ -408,7 +409,7 @@ Gfx * sub_GAME_7F0A4B40(Gfx *DL)
     gDPSetRenderMode(DL++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
     gDPSetCombineMode(DL++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
     gDPSetPrimColor(DL++, 0, 0, 0xFF, 0x00, 0x00, 0xFF);
-    gDPFillRectangle(DL++, D_80040B48, D_80040B4C, D_80040B48+1, D_80040B4C+1);
+    gDPFillRectangle(DL++, VI_SX(D_80040B48), D_80040B4C, VI_SX(D_80040B48+1), D_80040B4C+1);
 
     {
         u8 buffer [0x12];
@@ -541,6 +542,16 @@ SCREEN_RATIO_OPTION get_screen_ratio(void)
 void set_screen_ratio(SCREEN_RATIO_OPTION ratio_option)
 {
     game_options_entries[PLAYER_OPTION_RATIO].current_value = ratio_option;
+}
+
+u32 get_hires_setting(void)
+{
+    return game_options_entries[PLAYER_OPTION_HIRES].current_value;
+}
+
+void set_hires_setting(u32 enabled)
+{
+    game_options_entries[PLAYER_OPTION_HIRES].current_value = enabled;
 }
 
 
@@ -963,7 +974,7 @@ void sub_GAME_7F0A5998(void)
 
     aux = game_options_index;
 
-    if (aux >= 10)
+    if (aux >= GAME_OPTIONS_INDEX_COUNT)
     {
         game_options_index = GAME_OPTIONS_INDEX_MUSIC;
         return;
@@ -971,7 +982,7 @@ void sub_GAME_7F0A5998(void)
 
     if (aux < 0)
     {
-        game_options_index = GAME_OPTIONS_INDEX_RATIO;
+        game_options_index = GAME_OPTIONS_INDEX_HIRES;
     }
 }
 
@@ -980,7 +991,7 @@ void game_options_music_volume_navigation(void)
 {
     if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
-        game_options_index = GAME_OPTIONS_INDEX_RATIO;
+        game_options_index = GAME_OPTIONS_INDEX_HIRES;
         disable_watch_stick_y_nav_ready();
         reset_watch_item_is_actively_selected();
         return;
@@ -1574,6 +1585,7 @@ void sub_GAME_7F0A6A80(void)
                 case GAME_OPTIONS_INDEX_AMMO_ONSCREEN:
                 case GAME_OPTIONS_INDEX_SCREEN_SIZE:
                 case GAME_OPTIONS_INDEX_RATIO:
+                case GAME_OPTIONS_INDEX_HIRES:
                     sub_GAME_7F0A5998();
             }
             watch_screen3_navigation();
@@ -1595,7 +1607,7 @@ Gfx *sub_GAME_7F0A6EE8(Gfx *DL)
     gSPSetGeometryMode(DL++, G_CULL_BACK);
     gDPSetCycleType(DL++, G_CYC_1CYCLE);
     gDPPipelineMode(DL++, G_PM_1PRIMITIVE);
-    gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0,viGetX(), viGetY() );
+    gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
     gDPSetTextureLOD(DL++, G_TL_TILE);
     gDPSetTextureLUT(DL++, G_TT_NONE);
     gDPSetTextureDetail(DL++, G_TD_CLAMP);
@@ -3714,7 +3726,7 @@ Gfx *draw_toggle_options(Gfx *gdl)
 
     gdl = microcode_constructor(gdl);
 
-    for (i = 0, y_offset = YOFFSET_1; i < 8; i = i + 1, y_offset = y_offset + YINC) {
+    for (i = 0, y_offset = YOFFSET_1; i < PLAYER_OPTION_COUNT; i = i + 1, y_offset = y_offset + YINC) {
 
         if ( i == game_options_index - 2)
         {

@@ -61,7 +61,7 @@ enum LOPTIONE_STRINGS
     OPTION_STR_3A_4QBRANCH_LF,           //"4. Q branch\n",
     OPTION_STR_3B_5MONEYPENNY_LF,        //"5. moneypenny\n",
     OPTION_STR_3C_1MISSIONOBJECTIVES_LF, //"1. mission objectives\n",
-    OPTION_STR_3D,                       // 0,
+    OPTION_STR_3D_HIRES_LF,              //"hi-res\n",
     OPTION_STR_3E,                       // 0,
     OPTION_STR_3F                        // 0
 };

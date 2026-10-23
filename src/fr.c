@@ -51,14 +51,14 @@ u32 g_unused80023240 = 0;
 #if defined(VERSION_EU)
 struct VideoSettings_s g_ViDataArray[NUM_VIDEO_SETTINGS] =
 {
-    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL},
-    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL}
+    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1},
+    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1}
 };
 #else
 struct VideoSettings_s g_ViDataArray[NUM_VIDEO_SETTINGS] =
 {
-    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL},
-    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL}};
+    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1},
+    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1}};
 #endif
 
 /**
@@ -214,7 +214,7 @@ void viInitBuffers(void)
 
     zbufDeallocate();
 
-    for (i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT * 2; i++)
+    for (i = 0; i < (s32) sizeof(cfb_16[0]); i++)
     {
         p1[i] = 0;
         p2[i] = 0;
@@ -409,8 +409,8 @@ void video_related_8(void)
             }
         }
 
-        g_ViModes[nextMode].comRegs.width = g_ViBackData->bufx;
-        g_ViModes[nextMode].comRegs.xScale = (g_ViBackData->bufx * XSCALE_MAX) / SCREEN_WIDTH_MAX;
+        g_ViModes[nextMode].comRegs.width = VI_SX(g_ViBackData->bufx);
+        g_ViModes[nextMode].comRegs.xScale = (VI_SX(g_ViBackData->bufx) * XSCALE_MAX) / SCREEN_WIDTH_MAX;
 
         if (1)
         {
@@ -420,8 +420,8 @@ void video_related_8(void)
         packedStart = g_ViModes[nextMode].comRegs.hStart;
 
         g_ViModes[nextMode].fldRegs[1].yScale = (g_ViBackData->bufy * yScaleMax) / SCREEN_HEIGHT_MAX;
-        g_ViModes[nextMode].fldRegs[0].origin = g_ViBackData->bufx * 2;
-        g_ViModes[nextMode].fldRegs[1].origin = g_ViBackData->bufx * 2;
+        g_ViModes[nextMode].fldRegs[0].origin = VI_SX(g_ViBackData->bufx) * 2;
+        g_ViModes[nextMode].fldRegs[1].origin = VI_SX(g_ViBackData->bufx) * 2;
 
         registerValue = packedStart;
         registerValue = ADD_LOW_AND_HI_16_MOD(registerValue, g_viHorizontalOffset);
@@ -555,15 +555,15 @@ void video_related_8(void)
             g_ViModes[modeIndex] = osViModeTable[20];
         }
 
-        g_ViModes[modeIndex].comRegs.width = g_ViBackData->bufx;
-        g_ViModes[modeIndex].comRegs.xScale = (g_ViBackData->bufx * 0x400) / 640;
+        g_ViModes[modeIndex].comRegs.width = VI_SX(g_ViBackData->bufx);
+        g_ViModes[modeIndex].comRegs.xScale = (VI_SX(g_ViBackData->bufx) * 0x400) / 640;
         registerValue = (g_ViBackData->bufy == 330) ? (28) : (0);
         upperAdjust = 0;
         g_ViModes[modeIndex].fldRegs[0].yScale = (g_ViBackData->bufy * 0x800) / (registerValue + 0x220);
         registerValue = (g_ViBackData->bufy == 330) ? (28) : (0);
         g_ViModes[modeIndex].fldRegs[1].yScale = (g_ViBackData->bufy * 0x800) / (registerValue + 0x220);
-        g_ViModes[modeIndex].fldRegs[0].origin = g_ViBackData->bufx * 2;
-        g_ViModes[modeIndex].fldRegs[1].origin = g_ViBackData->bufx * 2;
+        g_ViModes[modeIndex].fldRegs[0].origin = VI_SX(g_ViBackData->bufx) * 2;
+        g_ViModes[modeIndex].fldRegs[1].origin = VI_SX(g_ViBackData->bufx) * 2;
 
         new_var2 = g_ViModes[modeIndex].comRegs.hStart;
         registerValue = (((((new_var2 >> 16) & 0xffff) + g_viHorizontalOffset) % 0xffff) << 16) |
@@ -658,6 +658,7 @@ void viSetVideoMode(s32 m)
     g_ViBackData->mode = m;
     g_ViBackData->x = g_ViBackData->bufx = g_viRuntimeScreenWidths[m];
     g_ViBackData->y = g_ViBackData->bufy = g_viRuntimeScreenHeights[m];
+    g_ViBackData->scalex = 1;
 }
 
 void viSetColorMode16Bit(void)
@@ -695,8 +696,8 @@ Gfx *viSetupCurrentPlayerView(Gfx *gdl)
 {
     if (g_CurrentPlayer != NULL)
     {
-        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[0] = (g_ViBackData->viewx * 2);
-        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vtrans[0] = (g_ViBackData->viewx * 2) + (g_ViBackData->viewleft * 4);
+        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[0] = (VI_SX(g_ViBackData->viewx) * 2);
+        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vtrans[0] = (VI_SX(g_ViBackData->viewx) * 2) + (VI_SX(g_ViBackData->viewleft) * 4);
         g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[1] = (g_ViBackData->viewy * 2);
         g_CurrentPlayer->viewports[g_ViBackIndex].vp.vtrans[1] = (g_ViBackData->viewy * 2) + (g_ViBackData->viewtop * 4);
     }
@@ -723,12 +724,12 @@ Gfx *viSetupCurrentPlayerView(Gfx *gdl)
     // Normal rendering mode is a 16-bit RGBA image.
     if (g_viColorOutputMode != COLORMODE_32BIT)
     {
-        gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, g_ViBackData->bufx, OS_K0_TO_PHYSICAL(g_ViBackData->framebuf));
+        gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, VI_SX(g_ViBackData->bufx), OS_K0_TO_PHYSICAL(g_ViBackData->framebuf));
     }
     // 32-bit mode is only used for the 32-bit screenshot routines.
     else
     {
-        gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_32b, g_ViBackData->bufx, OS_K0_TO_PHYSICAL(cfb_16[0]));
+        gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_32b, VI_SX(g_ViBackData->bufx), OS_K0_TO_PHYSICAL(cfb_16[0]));
     }
 
     return gdl;
@@ -748,7 +749,7 @@ Gfx *viClearZBufCurrentPlayer(Gfx *gdl)
 Gfx *viFillScreen(Gfx *gdl)
 {
 	gDPSetCycleType(gdl++, G_CYC_FILL);
-	gDPFillRectangle(gdl++, 0, 0, (g_ViBackData->bufx - 1), (g_ViBackData->bufy - 1));
+	gDPFillRectangle(gdl++, 0, 0, (VI_SX(g_ViBackData->bufx) - 1), (g_ViBackData->bufy - 1));
 	gDPPipeSync(gdl++);
 
     return gdl;
@@ -757,14 +758,14 @@ Gfx *viFillScreen(Gfx *gdl)
 Gfx *viSetupScreensForNumPlayers(Gfx *gdl)
 {
     gDPSetCycleType(gdl++, G_CYC_FILL);
-    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, viGetX(), viGetY());
+    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
     gDPSetFillColor(gdl++, ((GPACK_RGBA5551(0,0,0,1) << 16) | GPACK_RGBA5551(0,0,0,1)));
 
     if (viGetViewTop() > 0)
     {
         if (get_player_position_in_shuffled(get_cur_playernum()) == 0)
         {
-            gDPFillRectangle(gdl++, 0, 0, (viGetX() - 1), (viGetViewTop() - 1));
+            gDPFillRectangle(gdl++, 0, 0, VI_SX_INCL(viGetX() - 1), (viGetViewTop() - 1));
             gDPPipeSync(gdl++);
         }
     }
@@ -773,7 +774,7 @@ Gfx *viSetupScreensForNumPlayers(Gfx *gdl)
     {
         if ((viGetViewTop() + viGetViewHeight()) < viGetY())
         {
-            gDPFillRectangle(gdl++, 0, (viGetViewTop() + viGetViewHeight()), (viGetX() - 1), (viGetY() - 1));
+            gDPFillRectangle(gdl++, 0, (viGetViewTop() + viGetViewHeight()), VI_SX_INCL(viGetX() - 1), (viGetY() - 1));
             gDPPipeSync(gdl++);
         }
     }
@@ -783,22 +784,22 @@ Gfx *viSetupScreensForNumPlayers(Gfx *gdl)
         {
             if ((viGetViewTop() + viGetViewHeight() + viGetViewHeight()) < viGetY())
             {
-                gDPFillRectangle(gdl++, 0, (viGetViewTop() + viGetViewHeight() + viGetViewHeight()), (viGetX() - 1), (viGetY() - 1));
+                gDPFillRectangle(gdl++, 0, (viGetViewTop() + viGetViewHeight() + viGetViewHeight()), VI_SX_INCL(viGetX() - 1), (viGetY() - 1));
                 gDPPipeSync(gdl++);
             }
 
-            gDPFillRectangle(gdl++, 0, ((SCREEN_HEIGHT / 2) - 1), (viGetX() - 1), (SCREEN_HEIGHT / 2));
+            gDPFillRectangle(gdl++, 0, ((SCREEN_HEIGHT / 2) - 1), VI_SX_INCL(viGetX() - 1), (SCREEN_HEIGHT / 2));
             gDPPipeSync(gdl++);
 
             if (getPlayerCount() >= 3)
             {
-                gDPFillRectangle(gdl++, ((SCREEN_WIDTH / 2) - 1), 0, (SCREEN_WIDTH / 2), (viGetY() - 1));
+                gDPFillRectangle(gdl++, VI_SX((SCREEN_WIDTH / 2) - 1), 0, VI_SX_INCL(SCREEN_WIDTH / 2), (viGetY() - 1));
                 gDPPipeSync(gdl++);
             }
 
             if (getPlayerCount() == 3)
             {
-                gDPFillRectangle(gdl++, ((SCREEN_WIDTH / 2) + 1), ((SCREEN_HEIGHT / 2) + 1), (viGetX() - 1), (viGetY() - 1));
+                gDPFillRectangle(gdl++, VI_SX((SCREEN_WIDTH / 2) + 1), ((SCREEN_HEIGHT / 2) + 1), VI_SX_INCL(viGetX() - 1), (viGetY() - 1));
                 gDPPipeSync(gdl++);
             }
         }
@@ -831,6 +832,19 @@ void viSetBuf(s16 x, s16 y)
 {
     g_ViBackData->bufx = x;
     g_ViBackData->bufy = y;
+
+    // Hi-res is opted into per frame by the gameplay renderer (viSetScaleX)
+    g_ViBackData->scalex = 1;
+}
+
+void viSetScaleX(s32 scalex)
+{
+    g_ViBackData->scalex = scalex;
+}
+
+s32 viGetScaleX(void)
+{
+    return g_ViBackData->scalex;
 }
 
 s16 viGetBufX(void)

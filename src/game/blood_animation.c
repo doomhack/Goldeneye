@@ -198,9 +198,9 @@ u8 die_blood_image_end = 0;
 Gfx *clear_framebuffer_black(Gfx *gdl) 
 {
    gDPSetCycleType(gdl++, G_CYC_FILL);
-   gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, viGetX(), osVirtualToPhysical(viGetFrameBuf2()));
+   gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, VI_SX(viGetX()), osVirtualToPhysical(viGetFrameBuf2()));
    gDPSetFillColor(gdl++, ((GPACK_RGBA5551(0, 0, 0, 1) << 16) | GPACK_RGBA5551(0, 0, 0, 1)));
-   gDPFillRectangle(gdl++, 0, 0, (viGetX() - 1), (viGetY() - 1));
+   gDPFillRectangle(gdl++, 0, 0, (VI_SX(viGetX()) - 1), (viGetY() - 1));
 
    return gdl;
 }
@@ -253,7 +253,7 @@ Gfx *gunbarrelBloodOverlayDL(Gfx *gdl) {
    gDPSetPrimColor(gdl++, 0, 0, 0x96, 0x00, 0x00, 0xB4);
    gDPSetTexturePersp(gdl++, G_TP_NONE);
    gDPLoadTextureBlock_4b(gdl++, OS_K0_TO_PHYSICAL(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]), G_IM_FMT_I, 96, 80, 0, (G_TX_NOMIRROR | G_TX_CLAMP), (G_TX_NOMIRROR | G_TX_CLAMP), G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-   gSPTextureRectangle(gdl++, 0, 0, ((viGetX() * 4) - 1), ((viGetY() * 4) - 1), G_TX_RENDERTILE, 0, 0, 0x18000 / viGetX(), 0x14000 / viGetY());
+   gSPTextureRectangle(gdl++, 0, 0, ((VI_SX(viGetX()) * 4) - 1), ((viGetY() * 4) - 1), G_TX_RENDERTILE, 0, 0, 0x18000 / VI_SX(viGetX()), 0x14000 / viGetY());
    
    return gdl;
 }
@@ -270,7 +270,7 @@ Gfx *gameplayBloodOverlayDL(Gfx *gdl) {
    gDPSetPrimColor(gdl++, 0, 0, 0x96, 0x00, 0x00, 0xB4);
    gDPSetTexturePersp(gdl++, G_TP_NONE);
    gDPLoadTextureBlock_4b(gdl++, OS_K0_TO_PHYSICAL(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]), G_IM_FMT_I, 96, 80, 0, (G_TX_NOMIRROR | G_TX_CLAMP), (G_TX_NOMIRROR | G_TX_CLAMP), G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD); 
-   gSPTextureRectangle(gdl++, (viGetViewLeft() * 4), (viGetViewTop() * 4), (((viGetViewLeft() + viGetViewWidth()) * 4) - 1), (((viGetViewTop() + viGetViewHeight()) * 4) - 1), G_TX_RENDERTILE, 0, 0, (0x18000 / viGetViewWidth()), (0x14000 / viGetViewHeight()));
+   gSPTextureRectangle(gdl++, (VI_SX(viGetViewLeft()) * 4), (viGetViewTop() * 4), ((VI_SX(viGetViewLeft() + viGetViewWidth()) * 4) - 1), (((viGetViewTop() + viGetViewHeight()) * 4) - 1), G_TX_RENDERTILE, 0, 0, (0x18000 / VI_SX(viGetViewWidth())), (0x14000 / viGetViewHeight()));
    gDPPipeSync(gdl++);
    gDPSetColorDither(gdl++, G_CD_BAYER);
    gDPSetTexturePersp(gdl++, G_TP_PERSP);
@@ -285,7 +285,7 @@ Gfx *sub_GAME_7F01CA18(Gfx *gdl) {
 	gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
 	gDPSetPrimColor(gdl++, 0, 0, 150, 0, 0, 180);
 	gDPSetColorDither(gdl++, G_CD_MAGICSQ);
-	gDPFillRectangle(gdl++, 0, 0, viGetX(), viGetY());
+	gDPFillRectangle(gdl++, 0, 0, VI_SX(viGetX()), viGetY());
 
    return gdl;
 }

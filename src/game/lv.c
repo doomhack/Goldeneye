@@ -682,7 +682,7 @@ Gfx* lvlRender(Gfx* DL)
     {
         DL = viClearZBufCurrentPlayer(DL);
         DL = viSetupCurrentPlayerView(DL);
-        gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, (s16)viGetX(), (s16)viGetY());
+        gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, (s16)VI_SX(viGetX()), (s16)viGetY());
         DL = menu_jump_constructor_handler(DL);
     }
     else
@@ -830,7 +830,7 @@ Gfx* lvlRender(Gfx* DL)
         }
     }
 
-    gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, viGetX(), viGetY());
+    gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
 
     return DL;
 }
