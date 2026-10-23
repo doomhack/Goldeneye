@@ -4,6 +4,7 @@
 #include <str.h>
 #include <memp.h>
 #include <macro.h>
+#include "player.h"
 
 /**
  * This file handles memory usage for graphics related tasks.
@@ -46,11 +47,14 @@ void dynInit(void) {
 }
 
 void dynInitMemory(void) {
+    // Solo levels size these for one view. Co-op draws the level twice.
+    s32 views = g_CoopMode ? 2 : 1;
+
     if (tokenFind(1, "-mgfx")) {
-        g_GfxSizesByPlayerCount[getPlayerCount() - 1] = strtol(tokenFind(1, "-mgfx"), NULL, 0) * 1024;
+        g_GfxSizesByPlayerCount[getPlayerCount() - 1] = strtol(tokenFind(1, "-mgfx"), NULL, 0) * 1024 * views;
     }
     if (tokenFind(1, "-mvtx")) {
-        g_VtxSizesByPlayerCount[getPlayerCount() - 1] = strtol(tokenFind(1, "-mvtx"), NULL, 0) * 1024;
+        g_VtxSizesByPlayerCount[getPlayerCount() - 1] = strtol(tokenFind(1, "-mvtx"), NULL, 0) * 1024 * views;
     }
 
     g_GfxBuffers[0] = mempAllocBytesInBank(g_GfxSizesByPlayerCount[getPlayerCount() - 1] * 2, MEMPOOL_STAGE);
