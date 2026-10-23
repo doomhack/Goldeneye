@@ -362,6 +362,7 @@ extern float	ldexpf(float, int);
 
     enum version
     {
+        version_SIGNED_ENUM = -1,
         c_issue_4,
         ansi_1,
         strict_ansi

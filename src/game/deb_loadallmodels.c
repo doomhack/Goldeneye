@@ -11,7 +11,11 @@
 #include <macro.h>
 
 #ifndef DEBUG
+    #ifdef __sgi
     #define osSyncPrintf()
+    #else
+    #define osSyncPrintf(...)
+    #endif
 #endif
 
 //i belong in a header, probably to another file

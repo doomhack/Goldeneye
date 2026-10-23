@@ -77,14 +77,21 @@ typedef enum prefix                                                             
 #define CREATE_STRINGS1(prefix, name) IF_VA(DEFINED(DEBUG))(IF_ELSE(prefix)              \
 (#prefix "_" #name)(#name)COMMA())
 
-#ifdef __sgi
+#if defined(__sgi) || defined(__GNUC__)
 /**
  * Auto Generate Bitflag enums. (up to 32bit) - Unfortunatly we loose intellisense comments
  * @param NAME: Name of bitflag
  * @param a-af: bitfield names (will be appended to bitflag name for every field)
  * @return Enum of bitflags
  */
-#define BITFLAG(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af)\
+#ifdef __sgi
+#    define BITFLAG _BITFLAG32
+#else
+/* GCC needs every parameter supplied, so pad the list with empty arguments */
+#    define BITFLAG(NAME, ...) _BITFLAG_PAD(NAME, __VA_ARGS__,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,)
+#    define _BITFLAG_PAD(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af,...) _BITFLAG32(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af)
+#endif
+#define _BITFLAG32(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af)\
 typedef enum NAME \
 { /*\
   */NAME ## _NONE,/*\
@@ -137,6 +144,7 @@ typedef enum NAME \
 
 typedef enum ATTACKTYPE
 {
+    ATTACKTYPE_SIGNED_ENUM = -1,
     ATTACKTYPE_NONE,
     ATTACKTYPE_BOND      = 1 << 0, // aim/shoot at Bond
     ATTACKTYPE_FORWARD   = 1 << 1, // aim/shoot in front of self
@@ -163,6 +171,7 @@ BITFLAG(ATTACKTYPE,
 // character flags
 typedef enum CHRHIDDEN
 {
+    CHRHIDDEN_SIGNED_ENUM = -1,
     CHRHIDDEN_NONE,
     CHRHIDDEN_DROP_HELD_ITEMS       = 0x0001, // drop held items/weapons
     CHRHIDDEN_ALERT_GUARD_RELATED   = 0x0002, // Alert Guard
@@ -230,6 +239,7 @@ typedef enum CHRFLAG
 }CHRFLAG;
 
 enum CHR_RENDER_PART {
+    CHR_RENDER_PART_SIGNED_ENUM = -1,
     CHR_RENDERPART_HEAD,
     CHR_RENDERPART_TORSO,
     CHR_RENDERPART_LEFT_ARM,
@@ -239,6 +249,7 @@ enum CHR_RENDER_PART {
 // collision detection types
 typedef enum CDTYPE
 {
+    CDTYPE_SIGNED_ENUM = -1,
     CDTYPE_OBJS                   = 0x0001,
     CDTYPE_DOORS                  = 0x0002,
     CDTYPE_PLAYERS                = 0x0004,
@@ -379,6 +390,7 @@ typedef enum PROPFLAG2
 // Flags on DoorRecord.doorFlags (u16, offset 0x98)
 typedef enum DOORFLAG
 {
+    DOORFLAG_SIGNED_ENUM = -1,
     DOORFLAG_EXTENDEDY       = 0x00000001,
     DOORFLAG_WINDOWED        = 0x00000002,
     DOORFLAG_CLIP_TO_BBOX    = 0x00000004, // Clip the mesh to the shrinking/expanding bbox while sliding
@@ -387,6 +399,7 @@ typedef enum DOORFLAG
 
 typedef enum DOORSTATE
 {
+    DOORSTATE_SIGNED_ENUM = -1,
     DOORSTATE_STATIONARY,
     DOORSTATE_OPENING, // also OPEN but NOT AIlist compatible (02)
     DOORSTATE_CLOSING, // also CLOSE but NOT AIlist compatible (01)
@@ -395,6 +408,7 @@ typedef enum DOORSTATE
 
 typedef enum DOORTYPE
 {
+    DOORTYPE_SIGNED_ENUM = -1,
     DOORTYPE_SLIDING,
     DOORTYPE_FLEXI1,   // Bunker flexi door
     DOORTYPE_FLEXI2,
@@ -409,6 +423,7 @@ typedef enum DOORTYPE
 
 typedef enum DOOR_OPEN_SOUND
 {
+    DOOR_OPEN_SOUND_SIGNED_ENUM = -1,
     DOOR_OPEN_SOUND_NONE,
     DOOR_OPEN_SOUND_01,
     DOOR_OPEN_SOUND_02,
@@ -432,6 +447,7 @@ typedef enum DOOR_OPEN_SOUND
 
 typedef enum DROPTYPE
 {
+    DROPTYPE_SIGNED_ENUM = -1,
     DROPTYPE_DEFAULT      = 1,
     DROPTYPE_SURRENDER    = 2,
     DROPTYPE_THROWGRENADE = 3,
@@ -478,6 +494,7 @@ BITFLAG(DOOR_LOCK,
 
 /** PropDefHeaderRecord->state only u8 */
 typedef enum PROPSTATE {
+    PROPSTATE_SIGNED_ENUM = -1,
     PROPSTATE_NONE = 0x00,
     PROPSTATE_DAMAGED = 0x01,
     PROPSTATE_2 = 0x02, // maybe "double damaged"
@@ -493,6 +510,7 @@ typedef enum PROPSTATE {
 
 typedef enum STANTILEFLAG
 {
+    STANTILEFLAG_SIGNED_ENUM = -1,
     STANTILEFLAG_NORMAL      = 0x01,
     STANTILEFLAG_FORCECROUCH = 0x02,
     STANTILEFLAG_04          = 0x04,
@@ -712,6 +730,7 @@ COUNT does not cause allocation of storage or change resulting
 
 typedef enum AI_CMD
 {
+AI_CMD_SIGNED_ENUM = -1,
 #ifndef _SYNHILITE
 
 // makes enum list
@@ -747,6 +766,7 @@ typedef enum AI_CMD
  */
 typedef enum ANIMATIONS
 {
+    ANIMATIONS_SIGNED_ENUM = -1,
     ANIM_idle,
     ANIM_fire_standing,
     ANIM_fire_standing_fast,
@@ -1121,6 +1141,7 @@ char *ANIMATIONS_ToString[] = {
 #endif
 typedef enum AIRCRAFT_ANIMATION
 {
+    AIRCRAFT_ANIMATION_SIGNED_ENUM = -1,
     AIRCRAFT_ANIMATION_helicopter_cradle,
     AIRCRAFT_ANIMATION_plane_runway,
     AIRCRAFT_ANIMATION_helicopter_takeoff,
@@ -1139,6 +1160,7 @@ values need to be verified against cheat.c : void cheatButtonHandleCheatsTurnedO
 */
 typedef enum CHEAT_IDS
 {
+    CHEAT_IDS_SIGNED_ENUM = -1,
 
     CHEAT_UNUSED,
     CHEAT_EXTRA_MP_CHARS,
@@ -1227,6 +1249,7 @@ typedef enum CHEAT_IDS
 
 typedef enum CONTROLLER_CONFIG
 {
+    CONTROLLER_CONFIG_SIGNED_ENUM = -1,
     /* 1.1 */
     CONTROLLER_CONFIG_HONEY,
 
@@ -1256,6 +1279,7 @@ typedef enum CONTROLLER_CONFIG
 
 enum WALLETBOND_SWITCHNAMES
 {
+    WALLETBOND_SWITCHNAMES_SIGNED_ENUM = -1,
     SW_TABS,
     SW_PAPER,
     SW_EYESONLY,
@@ -1303,6 +1327,7 @@ enum WALLETBOND_SWITCHNAMES
 
 typedef enum GAMELENGTH
 {
+    GAMELENGTH_SIGNED_ENUM = -1,
     LEN_UNLIMITED,
     LEN_5MIN,
     LEN_10MIN,
@@ -1315,6 +1340,7 @@ typedef enum GAMELENGTH
 
 typedef enum CUFF_TYPES
 {
+    CUFF_TYPES_SIGNED_ENUM = -1,
     CUFF_BLUE,
     CUFF_BROSNAN,
     CUFF_JUNGLE,
@@ -1348,6 +1374,7 @@ typedef enum CREDITS_ALIGNMENT
 
 typedef enum CROUCH
 {
+    CROUCH_SIGNED_ENUM = -1,
     CROUCH_SQUAT,
     CROUCH_HALF,
     CROUCH_STAND
@@ -1355,6 +1382,7 @@ typedef enum CROUCH
 
 typedef enum DEBUG_OPTIONS
 {
+    DEBUG_OPTIONS_SIGNED_ENUM = -1,
     DEB_MOVE_VIEW,
     DEB_STAN_VIEW,
     DEB_BOND_VIEW,
@@ -1457,6 +1485,7 @@ char *DIFFICULTY_ToString[] = {
 
 typedef enum ENVIRONMENTDATA_IDS
 {
+    ENVIRONMENTDATA_IDS_SIGNED_ENUM = -1,
     ENVIRONMENTDATA_PLAYERS_1,
     ENVIRONMENTDATA_ALT       = 100,
     ENVIRONMENTDATA_PLAYERS_2 = 200,
@@ -1470,6 +1499,7 @@ typedef enum ENVIRONMENTDATA_IDS
 
 typedef enum E_EXPLOSIONTYPE
 {
+    E_EXPLOSIONTYPE_SIGNED_ENUM = -1,
     EXPLOSION_BREAK_OBJECT,
     EXPLOSION_BREAK_OBJECT2,
     EXPLOSION_MEDIUM,
@@ -1495,6 +1525,7 @@ typedef enum E_EXPLOSIONTYPE
 */
 typedef enum EXPLOSION_DEF
 {
+    EXPLOSION_DEF_SIGNED_ENUM = -1,
     EXPLOSION_DEF_00,
     EXPLOSION_DEF_01,
     EXPLOSION_DEF_02,
@@ -1530,6 +1561,7 @@ typedef enum GAMEMODE
 
 typedef enum GUN_ANIMATION_STATE_IDS
 {
+    GUN_ANIMATION_STATE_IDS_SIGNED_ENUM = -1,
     GUN_ANIM_STATE_IDLE,
     GUN_ANIM_STATE_TRIGGER_PRESS,
     GUN_ANIM_STATE_FIRE,
@@ -1580,6 +1612,7 @@ typedef enum GUNHAND //Canonical name
 /*Hit Type for triangle (Canonical name)*/
 typedef enum HIT_TYPE
 {
+    HIT_TYPE_SIGNED_ENUM = -1,
     HIT_DEFAULT,
     HIT_STONE,
     HIT_WOOD,
@@ -1616,6 +1649,7 @@ typedef enum HIT_TYPE
 #define IMAGE(NAME, SZ, HS, HT, F3, F4, F5, F6) IMAGE_##NAME,
     typedef enum IMAGEIDS
 {
+IMAGEIDS_SIGNED_ENUM = -1,
 #include <assets/images.def>
     IMAGEIDS_COUNT
 } IMAGEIDS;
@@ -1624,6 +1658,7 @@ typedef enum HIT_TYPE
 #define IMAGE(NAME, SZ, HS, HT, F3, F4, F5, F6) IMAGE_ ## NAME ## _SIZE = SZ,
 typedef enum IMGAGESIZES
 {
+IMGAGESIZES_SIGNED_ENUM = -1,
 #include <assets/images.def>
     IMGAGESIZES_COUNT
 } IMGAGESIZES;
@@ -1749,6 +1784,7 @@ char *LEVELID_ToString[] = {
 
 typedef enum LEVEL_SOLO_SEQUENCE
 {
+    LEVEL_SOLO_SEQUENCE_SIGNED_ENUM = -1,
     SP_LEVEL_DAM,
     SP_LEVEL_FACILITY,
     SP_LEVEL_RUNWAY,
@@ -1774,6 +1810,7 @@ typedef enum LEVEL_SOLO_SEQUENCE
 
 typedef enum LEVEL_INDEX
 {
+    LEVEL_INDEX_SIGNED_ENUM = -1,
     LEVEL_INDEX_SEVBUNKER,
     LEVEL_INDEX_SILO,
     LEVEL_INDEX_STATUE,
@@ -1817,6 +1854,7 @@ typedef enum LEVEL_INDEX
 
 typedef enum TEXT_ALIGNMENT
 {
+    TEXT_ALIGNMENT_SIGNED_ENUM = -1,
     LEFT_ALIGN,
     CENTER_ALIGN,
     RIGHT_ALIGN,
@@ -1860,12 +1898,14 @@ typedef enum MENU
 
 typedef enum mission_setup_type
 {
+    mission_setup_type_SIGNED_ENUM = -1,
     MISSION_PART,
     MISSION_HEADER
 } mission_setup_type;
 
 typedef enum MISSION_BRIEFING
 {
+    MISSION_BRIEFING_SIGNED_ENUM = -1,
     BRIEF_OVERVIEW,
     BRIEF_M,
     BRIEF_Q,
@@ -1874,6 +1914,7 @@ typedef enum MISSION_BRIEFING
 
 typedef enum MODELNODE_OPCODE
 {
+    MODELNODE_OPCODE_SIGNED_ENUM = -1,
     MODELNODE_OPCODE_NULL,
     MODELNODE_OPCODE_HEADER,
     MODELNODE_OPCODE_GROUP,
@@ -1904,6 +1945,7 @@ typedef enum MODELNODE_OPCODE
 
 typedef enum MODELNODE_CHILD
 {
+    MODELNODE_CHILD_SIGNED_ENUM = -1,
     MODELNODE_CHILD_NULL,
     MODELNODE_CHILD_VTX,
     MODELNODE_CHILD_IMAGE,
@@ -1913,12 +1955,14 @@ typedef enum MODELNODE_CHILD
 
 typedef enum MODEL_GROUP_MTX_BUILD_FLAGS
 {
+    MODEL_GROUP_MTX_BUILD_FLAGS_SIGNED_ENUM = -1,
     MODELGROUP_MTX_HAS_MATRIX1 = 0x0100,
     MODELGROUP_MTX_HAS_MATRIX2 = 0x0200
 } MODEL_GROUP_MTX_BUILD_FLAGS;
 
 typedef enum BOND
 {
+    BOND_SIGNED_ENUM = -1,
     BOND_BROSNAN,
     BOND_CONNERY,
     BOND_DALTON,
@@ -1927,6 +1971,7 @@ typedef enum BOND
 
 typedef enum MP_STAGE_SELECTED
 {
+    MP_STAGE_SELECTED_SIGNED_ENUM = -1,
     MP_STAGE_RANDOM,
     MP_STAGE_TEMPLE,
     MP_STAGE_COMPLEX,
@@ -1944,6 +1989,7 @@ typedef enum MP_STAGE_SELECTED
 
 typedef enum MPMENU
 {
+    MPMENU_SIGNED_ENUM = -1,
     MENU_GOWOC,
     MENU_LOSSES,
     MENU_KILLS,
@@ -1956,6 +2002,7 @@ typedef enum MPMENU
 
 typedef enum MPSCENARIOS
 {
+    MPSCENARIOS_SIGNED_ENUM = -1,
     SCENARIO_NORMAL,
     SCENARIO_YOLT,     // you only live twice
     SCENARIO_TLD,      // The Living Daylights [Flag Tag]
@@ -1969,6 +2016,7 @@ typedef enum MPSCENARIOS
 
 typedef enum MUSIC_TRACKS
 {
+    MUSIC_TRACKS_SIGNED_ENUM = -1,
     M_NONE,
     M_SHORT_SOLO_DEATH,
     M_INTRO,
@@ -2097,6 +2145,7 @@ typedef enum MUSIC_TRACKS
 
 typedef enum OPTIONS
 {
+    OPTIONS_SIGNED_ENUM = -1,
     PLAYER_OPTION_LOOK,
     PLAYER_OPTION_AUTOAIM,
     PLAYER_OPTION_AIM,
@@ -2109,6 +2158,7 @@ typedef enum OPTIONS
 
 typedef enum PLAYER_ID
 {
+    PLAYER_ID_SIGNED_ENUM = -1,
     PLAYER_1,
     PLAYER_2,
     PLAYER_3,
@@ -2117,6 +2167,7 @@ typedef enum PLAYER_ID
 
 typedef enum PORTALFLAGS
 {
+    PORTALFLAGS_SIGNED_ENUM = -1,
     PORTALFLAG_DISABLED    = 0x01,
     PORTALFLAG_SPECIAL     = 0x02
 } PORTALFLAGS;
@@ -2149,6 +2200,7 @@ typedef enum PORTALFLAGS
 
 typedef enum RGBA_ENUM
 {
+    RGBA_ENUM_SIGNED_ENUM = -1,
     RED,
     GREEN,
     BLUE,
@@ -2158,6 +2210,7 @@ typedef enum RGBA_ENUM
 
 typedef enum SFX_ID
 {
+    SFX_ID_SIGNED_ENUM = -1,
     NOTHING_SFX,
     ROCKET_LAUNCH_SFX,
     GLASS_SHATTERING_SFX,
@@ -2691,6 +2744,7 @@ typedef enum SFX_ID
 
 typedef enum SHOT_REGISTER
 {
+    SHOT_REGISTER_SIGNED_ENUM = -1,
     SHOT_REGISTER_TOTAL,
     SHOT_REGISTER_HEAD,
     SHOT_REGISTER_BODY,
@@ -2702,6 +2756,7 @@ typedef enum SHOT_REGISTER
 
 typedef enum SPEED
 {
+    SPEED_SIGNED_ENUM = -1,
     SPEED_WALK,
     SPEED_RUN,
     SPEED_SPRINT
@@ -2709,6 +2764,7 @@ typedef enum SPEED
 
 typedef enum STAGESTATUS
 {
+    STAGESTATUS_SIGNED_ENUM = -1,
     STAGESTATUS_LOCKED,
     STAGESTATUS_UNLOCKED,
     STAGESTATUS_NOTCOMPLETED,
@@ -2717,6 +2773,7 @@ typedef enum STAGESTATUS
 
 typedef enum TEXTBANK_LEVEL_INDEX
 {
+    TEXTBANK_LEVEL_INDEX_SIGNED_ENUM = -1,
     LNULL,       /* Null (unused) */
     LAME,        /* Library (multi) */
     LARCH,       /* Archives */
@@ -2826,6 +2883,7 @@ char *TEXTBANK_LEVEL_INDEX_ToString[] =
 #define GUNAMMOREASON_DAMAGE     0x08
 
 typedef enum WATCH_ANIMATION_STATE_IDS {
+    WATCH_ANIMATION_STATE_IDS_SIGNED_ENUM = -1,
     WATCH_ANIMATION_0x0,      /* Watch closed, normal play. */
     WATCH_ANIMATION_0x1,      /* Pause initiated, lower any weapon in left hand. */
     WATCH_ANIMATION_0x2,      /* Tilt player camera to watch angle. */
@@ -2853,6 +2911,7 @@ typedef enum WATCH_BRIEFING_PAGE
 } WATCH_BRIEFING_PAGE;
 
 typedef enum AWARD {
+    AWARD_SIGNED_ENUM = -1,
 
     AWARD_MOSTSUICIDAL     = 0x00001,
     AWARD_WHONEEDSAMMO     = 0x00002,
@@ -2875,6 +2934,7 @@ typedef enum AWARD {
 
 typedef enum WAYMODE
 {
+    WAYMODE_SIGNED_ENUM = -1,
     WAYMODE_0,
     WAYMODE_1,
     WAYMODE_2,
@@ -2886,6 +2946,7 @@ typedef enum WAYMODE
 
 typedef enum SPSEGMENT
 {
+    SPSEGMENT_SIGNED_ENUM = -1,
     SPSEGMENT_PHYSICAL   = 0,
     SPSEGMENT_UNKNOWN    = 1,
     SPSEGMENT_GETITLE    = 2,
@@ -2900,6 +2961,7 @@ typedef enum SPSEGMENT
 
 typedef enum TVCMD
 {
+    TVCMD_SIGNED_ENUM = -1,
     TVCMD_STOPSCROLL,
     TVCMD_SCROLLRELX,
     TVCMD_SCROLLRELY,
@@ -2920,6 +2982,7 @@ typedef enum TVCMD
 
 enum CCRMLUT
 {
+    CCRMLUT_SIGNED_ENUM = -1,
     CCRMLUT_UNKNOWN,
     CCRMLUT_PRIMARY_ADDFOG,
     CCRMLUT_BILLBOARD,
@@ -2935,6 +2998,7 @@ enum CCRMLUT
 #pragma region Object Instance Stuff
     typedef enum BODIES
     {
+        BODIES_SIGNED_ENUM = -1,
         BODY_Jungle_Commando,
         BODY_St_Petersburg_Guard,
         BODY_Russian_Soldier,
@@ -3026,6 +3090,7 @@ enum CCRMLUT
     
     typedef enum GENDER
     {
+        GENDER_SIGNED_ENUM = -1,
         FEMALE,
         MALE
     } GENDER;
@@ -3089,6 +3154,7 @@ enum CCRMLUT
     //Canonical name and style "ai_destroyobj 2 : (def->obj == PROP_ELVIS_SAUCER)\n"
     typedef enum PROP
     {
+        PROP_SIGNED_ENUM = -1,
         PROP_ALARM1,              /* Beta Alarm / Default Multi Weapon                                  */
         PROP_ALARM2,              /* Alarm                                                              */
         PROP_EXPLOSIONBIT,        /* White Pyramid (Explosion Bit)                                      */
@@ -3782,6 +3848,7 @@ enum CCRMLUT
 
 typedef enum PROJECTILES
     {
+        PROJECTILES_SIGNED_ENUM = -1,
         PROJECTILES_MAX                = 0x2E,
         PROJECTILES_TYPE_KNIFE         = PROP_CHRKNIFE,
         PROJECTILES_TYPE_GRENADE       = PROP_CHRGRENADE,
@@ -3801,6 +3868,7 @@ typedef enum PROJECTILES
     /** For use in Prop Records (Not to be confused with Object (canonical - Prop Definition) Records  which use PROPDEF (canonical Name)) */
     typedef enum PROP_TYPE
     {
+        PROP_TYPE_SIGNED_ENUM = -1,
         PROP_TYPE_NUL,
         PROP_TYPE_OBJ,
         PROP_TYPE_DOOR,
@@ -3834,6 +3902,7 @@ typedef enum PROJECTILES
     /*Action Type to be performed by chr (canonical names)*/
     typedef enum ACT_STATUS
     {
+        ACT_STATUS_SIGNED_ENUM = -1,
         ACT_STATUS_NONE,
         ACT_STATUS_NORMAL,
         ACT_STATUS_COVERWAIT,
@@ -3910,6 +3979,7 @@ typedef enum PROJECTILES
     /*Action Type to be performed by chr (canonical names)*/
     typedef enum ACT_TYPE
     {
+        ACT_TYPE_SIGNED_ENUM = -1,
         ACT_INIT,
         ACT_STAND,
         ACT_KNEEL,
@@ -3985,6 +4055,7 @@ typedef enum PROJECTILES
 
     typedef enum AMMOTYPE
     {
+        AMMOTYPE_SIGNED_ENUM = -1,
         AMMO_NONE,
         AMMO_9MM,
         AMMO_9MM_2,
@@ -4066,6 +4137,7 @@ typedef enum PROJECTILES
     
     typedef enum INV_ITEM_TYPE
     {
+        INV_ITEM_TYPE_SIGNED_ENUM = -1,
         INV_ITEM_NONE,
         INV_ITEM_WEAPON,
         INV_ITEM_PROP,
@@ -4082,6 +4154,7 @@ typedef enum PROJECTILES
      */
      typedef enum TICKOP
      {
+         TICKOP_SIGNED_ENUM = -1,
          TICKOP_NONE,         // Default, do nothing.
          TICKOP_FREE,         // Deregister, delist, disable and free the prop except for weapons flagged PROPSTATE_RESPAWN which begin their respawn timer instead.
          TICKOP_DISABLE,      // Deregister, delist and disable the prop, but keep the record.
@@ -4282,6 +4355,7 @@ typedef enum PROJECTILES
 
     typedef enum PROPDEF_TYPE
     {
+        PROPDEF_TYPE_SIGNED_ENUM = -1,
         PROPDEF_NOTHING,
         PROPDEF_DOOR,
         PROPDEF_DOOR_SCALE,
@@ -4399,6 +4473,7 @@ typedef enum PROJECTILES
     */
    typedef enum CAMERAMODE
     {
+        CAMERAMODE_SIGNED_ENUM = -1,
         CAMERAMODE_NONE,
         CAMERAMODE_INTRO,
         CAMERAMODE_FADESWIRL,
@@ -4431,6 +4506,7 @@ typedef enum PROJECTILES
 
     typedef enum INTRO_TYPE
     {
+        INTRO_TYPE_SIGNED_ENUM = -1,
         INTROTYPE_SPAWN,
         INTROTYPE_ITEM,
         INTROTYPE_AMMO,
@@ -4460,6 +4536,7 @@ typedef enum PROJECTILES
 
     typedef enum INTRO_WEAPON_TYPE 
     {
+        INTRO_WEAPON_TYPE_SIGNED_ENUM = -1,
         INTRO_WEAPON_TYPE_NONE,
         INTRO_WEAPON_TYPE_PISTOL,
         INTRO_WEAPON_TYPE_RIFLE
@@ -4467,6 +4544,7 @@ typedef enum PROJECTILES
     
     typedef enum MISSION_STATE_IDS
     {
+        MISSION_STATE_IDS_SIGNED_ENUM = -1,
         MISSION_STATE_0,
         MISSION_STATE_1,
         MISSION_STATE_2,
@@ -4490,6 +4568,7 @@ typedef enum PROJECTILES
 
     typedef enum OBJECTIVESTATUS
     {
+        OBJECTIVESTATUS_SIGNED_ENUM = -1,
         OBJECTIVESTATUS_INCOMPLETE,
         OBJECTIVESTATUS_COMPLETE,
         OBJECTIVESTATUS_FAILED
@@ -4504,6 +4583,7 @@ typedef enum PROJECTILES
 
     typedef enum TANK_RUN_STATE
     {
+        TANK_RUN_STATE_SIGNED_ENUM = -1,
         TANK_RUN_STATE_NOT_RUNNING,
         TANK_RUN_STATE_STARTING,
         TANK_RUN_STATE_RUNNING
@@ -4514,18 +4594,21 @@ typedef enum PROJECTILES
 #pragma region VI
     typedef enum COLORMODE
     {
+        COLORMODE_SIGNED_ENUM = -1,
         COLORMODE_32BIT,
         COLORMODE_16BIT
     } COLORMODE;
 
     typedef enum SCREEN_SIZE
     {
+        SCREEN_SIZE_SIGNED_ENUM = -1,
         SCREEN_SIZE_320x240,
         SCREEN_SIZE_440x330
     } SCREEN_SIZE;
 
     typedef enum SCREEN_SIZE_OPTION
     {
+        SCREEN_SIZE_OPTION_SIGNED_ENUM = -1,
         SCREEN_SIZE_FULLSCREEN,
         SCREEN_SIZE_WIDESCREEN,
         SCREEN_SIZE_CINEMA
@@ -4533,6 +4616,7 @@ typedef enum PROJECTILES
 
     typedef enum SCREEN_RATIO_OPTION
     {
+        SCREEN_RATIO_OPTION_SIGNED_ENUM = -1,
         SCREEN_RATIO_NORMAL,
         SCREEN_RATIO_16_9
     } SCREEN_RATIO_OPTION;
@@ -4540,6 +4624,7 @@ typedef enum PROJECTILES
     //canonically MD
     typedef enum VIDEOMODE
     {
+        VIDEOMODE_SIGNED_ENUM = -1,
         MD_BLACK,
         MD_NORMAL,
         MD_MAXIMUM,
@@ -4552,6 +4637,7 @@ typedef enum PROJECTILES
 
     typedef enum ZBUFMODE
     {
+        ZBUFMODE_SIGNED_ENUM = -1,
         ZBUF_OFF,     /* G_RM_AA_*_SURF      (no z-buffer) */
         ZBUF_SURFACE, /* G_RM_AA_ZB_*_SURF                 */
         ZBUF_DECAL    /* G_RM_AA_ZB_*_DECAL                */
@@ -4729,7 +4815,11 @@ typedef enum PROJECTILES
     )                                                      \
     };
 
+#ifdef __sgi
 #define MODELSKELETON(NAME, NUMJOINTS, SKELSIZE) ModelSkeleton SKELETON( ## NAME ## ) = {NUMJOINTS, 0, JOINTLIST( ## NAME ## ), SKELSIZE, 0};
+#else
+#define MODELSKELETON(NAME, NUMJOINTS, SKELSIZE) ModelSkeleton SKELETON(NAME) = {NUMJOINTS, 0, JOINTLIST(NAME), SKELSIZE, 0};
+#endif
 
 
 /**
@@ -4809,13 +4899,13 @@ typedef enum PROJECTILES
 #endif
 
 #define CHRFILERECORD(NAME, SCALE, OFFSET, HASHEAD, ISMALE) \
-    {&##NAME##_header, STR(C##NAME##Z), SCALE, OFFSET, HASHEAD, ISMALE},
+    {&NAME##_header, STR(C##NAME##Z), SCALE, OFFSET, HASHEAD, ISMALE},
 
-#define GUNSTATS(NAME) & ## NAME ## _stats
+#define GUNSTATS(NAME) &NAME ## _stats
 #define GUNFILERECORD(NAME, NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ) \
-    { & ## NAME ## _header,STR(G## NAME ##Z), NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ},
+    { &NAME ## _header,STR(G## NAME ##Z), NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ},
 #define SUIT_LFRECORD(NAME, NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ) \
-    { & ## NAME ## _header,STR(C## NAME ##Z), NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ},
+    { &NAME ## _header,STR(C## NAME ##Z), NOMODEL, STATS, UPPERTEXTID, LOWERTEXTID, POSX, POSY, POSZ, XROT, YROT, WOCTEXT, EQUIPTEXT, EQUIPX, EQUIPY, EQUIPZ},
 /**
  * Define a New Item Record
  * @param NAME:  Name of Model

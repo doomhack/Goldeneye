@@ -10,6 +10,7 @@
 #define SFX_SLOT_COUNT   7
 
 enum SoundFlags {
+    SoundFlags_SIGNED_ENUM = -1,
     SOUND_FLAG_FINAL_IN_SEQUENCE = 1 << 0,
     SOUND_FLAG_LOOPED            = 1 << 1,
     SOUND_FLAG_PLAYING           = 1 << 2,
@@ -22,6 +23,7 @@ enum SoundFlags {
 #define AL_SNDP_GROUP_VOLUME_MAX 32767
 
 enum SoundState {
+    SoundState_SIGNED_ENUM = -1,
     SOUND_STATE_NONE,
     SOUND_STATE_PLAYING,
     SOUND_STATE_STOPPING,
@@ -36,6 +38,7 @@ enum SoundState {
  * except this version is bitwise.
  */
 typedef enum ALSndpMsgType_e {
+    ALSndpMsgType_e_SIGNED_ENUM = -1,
     AL_SNDP_PLAY_EVT       = (1 << 0),
     AL_SNDP_STOP_EVT       = (1 << 1),
     AL_SNDP_PAN_EVT        = (1 << 2),

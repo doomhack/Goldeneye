@@ -58,6 +58,9 @@ SECTIONS
    BEGIN_SEG(code, _startSegmentRomEnd, (_startSegmentEnd - 0x10000000)) SUBALIGN(16)
    {
 #include "ld/lib.text.ld.inc"
+#ifdef COMPILER_GCC
+      build/OUTCODE/src/gcc/libgcc_compat.o (.text);
+#endif
    }
    END_SEG(code)
 
@@ -232,6 +235,10 @@ SECTIONS
       build/OUTCODE/src/stacks.o (.bss);
    }
    _stacksSegmentEnd = ADDR(.stacks) + SIZEOF(.stacks);
+#ifdef COMPILER_GCC
+   /* .stacks sits at a fixed address, so a non-matching build must not grow .bss into it */
+   __bssStacksCheck = ASSERT(_bssSegmentEnd <= _stacksSegmentStart, "bss overlaps the fixed stacks address");
+#endif
 
    _cfbSegmentStart = ADDR(.cfb);
    .cfb (NOLOAD) :

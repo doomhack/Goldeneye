@@ -12,6 +12,14 @@ VERBOSE := 2
 # If COMPARE is 1, check the output sha1sum when building 'all', and if fail to match
 # then compare ELF sections to known md5 checksums.
 COMPARE := 1
+# COMPILER selects the compiler for the game code (src/*.c, src/game/*.c).
+#   ido: original IDO 5.3, builds a byte-matching ROM (default)
+#   gcc: modern GCC, non-matching. libultra, inflate, chraidata.c and asset data still use IDO.
+COMPILER := ido
+# Optimisation level for game code when COMPILER=gcc
+GCC_OPT := -O2
+# Source files that stay on IDO when COMPILER=gcc (space separated, eg src/init.c)
+GCC_EXCLUDE :=
 
 # Include Terminal Codes for colourising text.
 include include/make/VT100Codes.make
@@ -176,7 +184,20 @@ IMAGE_OBJS := $(foreach file,$(IMAGE_BINS),$(BUILD_DIR)/$(file:.bin=.o))
 RZFILES := inflate/inflate.c
 RZOBJECTS := $(foreach file,$(RZFILES),$(BUILD_DIR)/src/$(file:.c=.o))
 
+# libgcc helper functions, only needed (and linked) when building with GCC
+ifeq ($(COMPILER), gcc)
+  CODEOBJECTS += $(BUILD_DIR)/src/gcc/libgcc_compat.o
+  LDFILEOPTS += -DCOMPILER_GCC
+endif
+
 OBJECTS := $(RSPOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(OBSEGMENT) $(ROMOBJECTS) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(IMAGE_OBJS)
+
+ifeq ($(COMPILER), gcc)
+  # A GCC build can never match, so skip the sha1 comparison
+  COMPARE := 0
+else ifneq ($(COMPILER), ido)
+  $(error COMPILER must be "ido" or "gcc")
+endif
 
 ## Command Line args for builders ##
 
@@ -201,6 +222,14 @@ else
 endif
 
 CFLAGS := -Wab,-r4300_mul -non_shared -Olimit 2000 -G 0 -Xcpluscomm $(CFLAGWARNING) $(WOFF) $(INCLUDE) $(MIPSISET) $(LCDEFS) -DTARGET_N64
+
+GCC := $(TOOLCHAIN)gcc
+# -nostdinc keeps the host's C library headers out; GCC's own freestanding headers are added back
+GCC_CFLAGS := -nostdinc -isystem $(shell $(GCC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 0 \
+  -ffreestanding -fno-builtin -fno-common -fms-extensions -fno-strict-aliasing -fwrapv -funsigned-char \
+  -fno-merge-constants -fno-reorder-functions -fno-toplevel-reorder -fno-zero-initialized-in-bss \
+  -fno-delete-null-pointer-checks -fno-isolate-erroneous-paths-dereference -fno-aggressive-loop-optimizations \
+  -w $(INCLUDE) $(LCDEFS) -DTARGET_N64 $(GCC_OPT)
 
 LD := $(TOOLCHAIN)ld
 LD_SCRIPT := $(BUILD_DIR)/ge007.$(OUTCODE).ld
@@ -283,11 +312,21 @@ $(BUILD_DIR)/assets/images/combined/%.o: assets/images/combined/combined.bin
 $(BUILD_DIR)/$(OBSEGMENT): $(OBSEG_RZ) $(IMAGE_OBJS)
 
 
+#Build GCC-only support files
+$(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
+	@mkdir -p $(dir $@)
+	$(GCC) -c $(GCC_CFLAGS) -fno-tree-loop-distribute-patterns -o $@ $<
+
 #Build C files in src/
 # convert AI_PRINT commands from readable to byte-array
+# chraidata.c (AI script data, IDO-only macros) and inflate.c (own ROM segment) always use IDO.
+# libultra's "memset" is an alias of bzero(ptr, len), so GCC's memset calls are redirected
+# to the real memset in src/gcc/libgcc_compat.c.
 $(BUILD_DIR)/src/%.o: src/%.c
 	@if [ "$$(basename $<)" = "chraidata.c" ]; then \
 		$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) tools/include-stdin.c -o $@ $(OPTIMIZATION); \
+	elif [ "$(COMPILER)" = "gcc" ] && [ "$<" != "src/inflate/inflate.c" ] && [ -z "$(filter $<,$(GCC_EXCLUDE))" ]; then \
+		$(GCC) -c $(GCC_CFLAGS) -o $@ $< && $(OBJCOPY) --redefine-sym memset=gcc_memset $@; \
 	else \
 		$(CC) -c $(CFLAGS) -o $@ $(OPTIMIZATION) $<; \
 	fi
@@ -326,6 +365,11 @@ endif
 #Link Files
 $(APPELF): $(RSPOBJECTS) $(ULTRAOBJECTS) $(HEADEROBJECTS) $(OBSEG_RZ) $(BUILD_DIR)/$(OBSEGMENT) $(MUSIC_RZ_FILES) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(ROMOBJECTS) $(ASSET_DATAOBJECTS) $(ROMOBJECTS2) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(OBSEG_OBJECTS) ge007.ld
 	cpp $(LDFILEOPTS) -P ge007.ld -o $(BUILD_DIR)/ge007.$(OUTCODE).ld
+ifeq ($(COMPILER), gcc)
+	@# GCC emits extra sections (.rodata.*, .text.*) that the matching script names exactly
+	sed -i -E -e '/\.o *\(/s/\((\.text|\.data|\.rodata)\)/(\1 \1.*)/' -e '/\.o *\(/s/\(\.bss\)/(.bss .bss.* COMMON)/' \
+		-e 's|^( */DISCARD/ : \{)|\1\n      * (.comment);\n      * (.note*);|' $(BUILD_DIR)/ge007.$(OUTCODE).ld
+endif
 	@echo "Linking Files into ELF"
 	$(LD) $(LDFLAGS) -o $@
 

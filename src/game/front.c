@@ -1512,7 +1512,12 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
     
     DL = clear_framebuffer_black(DL);
     
+#ifdef __sgi
     matrix_4x4_set_lookat_target(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, legal_text_ptr->v_pos * 0.0f);
+#else
+    /* the original reads through legal_text_ptr before it is set; the result is always 0 */
+    matrix_4x4_set_lookat_target(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+#endif
     
     renderdata.basemtx = &lookatmtx;
     renderdata.mtxlist = (Mtxf *) dynAllocate(logoinst->obj->numMatrices << 6);
@@ -1540,7 +1545,11 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
     DL = microcode_constructor(DL);
     
     legal_text_ptr = legalpage_text_array;
+#ifdef __sgi
     legal_text_end = (struct legal_screen_text *)&legalscreen_MRD;
+#else
+    legal_text_end = &legalpage_text_array[ARRAYCOUNT(legalpage_text_array)];
+#endif
     
     do
     {
@@ -3348,6 +3357,9 @@ Gfx *constructor_menu07_missionsel(Gfx *DL)
 
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
+#ifndef __sgi
+    return DL;
+#endif
 }
 
 
@@ -7363,6 +7375,9 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
+#ifndef __sgi
+    return DL;
+#endif
 }
 
 

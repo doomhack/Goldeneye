@@ -27,6 +27,7 @@
 
 typedef enum
 {
+    TextureTypes_SIGNED_ENUM = -1,
     TEXTURETYPE_LOD,
     TEXTURETYPE_DETAIL,
     TEXTURETYPE_MIPMAP,

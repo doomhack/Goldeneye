@@ -4,6 +4,7 @@
 #include "bondtypes.h"
 
 enum TEXT_ORIENTATION {
+    TEXT_ORIENTATION_SIGNED_ENUM = -1,
     ROT_NORMAL = 0,
     ROT_90CW
 };

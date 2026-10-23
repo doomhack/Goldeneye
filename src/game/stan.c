@@ -2115,7 +2115,12 @@ void getTileEdgePoints(StandTile *tile, s32 pointI, coord3d *currPntRtn, coord3d
 StanCollisionResult sub_GAME_7F0B1DDC(StandTile **startTile, f32 x, f32 z, f32 radius, standTileLocusCallback_A_t callbackA, standTileLocusCallback_B_t callbackB, standTileLocusCallback_C_t callbackC, struct StandTileLocusCallbackRecord *record)
 {
     s32 i;
+#ifdef __sgi
     StandTile *tileStack[39];
+#else
+    // cat is only checked against 41 after a whole tile is walked, and each tile can push up to 15 more
+    StandTile *tileStack[41 + 15];
+#endif
     StandTile *tile;
     StandTile *linkedTile;
     s32 visitedCount;

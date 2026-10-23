@@ -265,6 +265,13 @@
 // global ai lists - gailists
 //===========================================================================*/
 
+#ifdef __sgi
+#    define _SETUPSUBROUTINES_DEFINED(ID) NOT(DEFINED(SETUPSUBROUTINES(ID)))
+#else
+/* GCC cannot paste ")" so detect the macro by whether it expands to a parenthesised expression */
+#    define _SETUPSUBROUTINES_DEFINED(ID) IS_PAREN(SETUPSUBROUTINES(ID))
+#endif
+
 /**
  * Is the called AI List a subroutine (will it return)
  * Per Setup Subroutines should be added to SETUPSUBROUTINES at the top of the
@@ -278,7 +285,7 @@
                             (ID == GAILIST_RUN_TO_BOND) | \
                             (ID == GAILIST_STARTLE_AND_RUN_TO_BOND) | \
                             (ID == GAILIST_WAIT_ONE_SECOND) \
-                            IF(NOT(DEFINED(SETUPSUBROUTINES(ID))))\
+                            IF(_SETUPSUBROUTINES_DEFINED(ID))\
                             (\
                                 | SETUPSUBROUTINES(ID)\
                             ))\
@@ -286,6 +293,7 @@
 
 typedef enum GAILISTID
 {
+    GAILISTID_SIGNED_ENUM = -1,
     /**
       Try aiming at bond, otherwise do nothing
       @return No Return - AI List can only be changed by a 3rd party via SetChrAiList
@@ -470,6 +478,7 @@ char *GAILIST_ToString[] = {
 // command 18/19 - target body part values
 typedef enum HITTARGET
 {
+    HITTARGET_SIGNED_ENUM = -1,
     HIT_NULL_PART,          /* Null part, no reaction - 1x damage*/
     HIT_LEFT_FOOT,          /* Left foot              - 1x damage*/
     HIT_LEFT_LEG,           /* Left leg               - 1x damage*/
@@ -773,7 +782,15 @@ char *DOORSTATE_ToString[] = {
                   TEST_COMMAND, TEST_VALUE,
                       CASE_CONTENT,...)
  */
-#define SWITCH(VAR, \
+#ifdef __sgi
+#    define SWITCH _SWITCH16
+#else
+/* GCC needs every parameter supplied, so pad the list with empty arguments */
+#    define SWITCH(VAR, ...) _SWITCH16_PAD(VAR, __VA_ARGS__, , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , , )
+#    define _SWITCH16_PAD(VAR, CASE0, CASE_VAL0, CASE_CONTENT0, CASE1, CASE_VAL1, CASE_CONTENT1, CASE2, CASE_VAL2, CASE_CONTENT2, CASE3, CASE_VAL3, CASE_CONTENT3, CASE4, CASE_VAL4, CASE_CONTENT4, CASE5, CASE_VAL5, CASE_CONTENT5, CASE6, CASE_VAL6, CASE_CONTENT6, CASE7, CASE_VAL7, CASE_CONTENT7, CASE8, CASE_VAL8, CASE_CONTENT8, CASE9, CASE_VAL9, CASE_CONTENT9, CASEA, CASE_VALA, CASE_CONTENTA, CASEB, CASE_VALB, CASE_CONTENTB, CASEC, CASE_VALC, CASE_CONTENTC, CASED, CASE_VALD, CASE_CONTENTD, CASEE, CASE_VALE, CASE_CONTENTE, CASEF, CASE_VALF, CASE_CONTENTF, ...) \
+        _SWITCH16(VAR, CASE0, CASE_VAL0, CASE_CONTENT0, CASE1, CASE_VAL1, CASE_CONTENT1, CASE2, CASE_VAL2, CASE_CONTENT2, CASE3, CASE_VAL3, CASE_CONTENT3, CASE4, CASE_VAL4, CASE_CONTENT4, CASE5, CASE_VAL5, CASE_CONTENT5, CASE6, CASE_VAL6, CASE_CONTENT6, CASE7, CASE_VAL7, CASE_CONTENT7, CASE8, CASE_VAL8, CASE_CONTENT8, CASE9, CASE_VAL9, CASE_CONTENT9, CASEA, CASE_VALA, CASE_CONTENTA, CASEB, CASE_VALB, CASE_CONTENTB, CASEC, CASE_VALC, CASE_CONTENTC, CASED, CASE_VALD, CASE_CONTENTD, CASEE, CASE_VALE, CASE_CONTENTE, CASEF, CASE_VALF, CASE_CONTENTF)
+#endif
+#define _SWITCH16(VAR, \
                CASE0, CASE_VAL0, CASE_CONTENT0,\
                CASE1, CASE_VAL1, CASE_CONTENT1,\
                CASE2, CASE_VAL2, CASE_CONTENT2,\

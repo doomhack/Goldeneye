@@ -5,7 +5,11 @@
 #include <fr.h>
 
 #ifndef DEBUG
+    #ifdef __sgi
     #define osSyncPrintf()
+    #else
+    #define osSyncPrintf(...)
+    #endif
 #endif
 #if defined(LEFTOVERDEBUG)
 
