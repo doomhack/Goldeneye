@@ -2504,6 +2504,10 @@ typedef union
 
         /* Co-op: index of the player this chr is fighting. See coopChrSelectTarget. */
         s8             targetplayer;
+
+        /* Co-op: frames left before this chr may switch to another player
+           after a level-script check picked targetplayer. */
+        s16            targetlock60;
     } ChrRecord;
     // ChrRecord *pChrData; //not Global, local to Object or function
 

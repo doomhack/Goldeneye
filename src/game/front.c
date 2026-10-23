@@ -7173,6 +7173,81 @@ void interface_menu0D_missioncomplete()
     return;
 }
 
+/**
+ * Co-op mission complete: each player's accuracy, shots, head hits and kills
+ * side by side, in place of the single player's detailed stats.
+ */
+static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
+{
+    static const s32 columns[2] = { 0xAA, 0x118 };
+    struct player_data *savedperm = g_playerPerm;
+    char text[64];
+    s32 row;
+    s32 i;
+    s32 x;
+    s32 y;
+
+    for (i = 0; i < 2; i++)
+    {
+        x = columns[i];
+        y = 0xCC;
+        sprintf(text, "PLAYER %d\n", i + 1);
+        DL = frontPrintText(DL, &x, &y, (s8 *)text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    }
+
+    for (row = 0; row < 4; row++)
+    {
+        static const s32 labels[4] = {
+            TITLE_STR_106_ACCURACY,  // Accuracy:
+            TITLE_STR_108_SHOTTOTAL, // Shot total:
+            TITLE_STR_109_HEADHITS,  // Head hits:
+            TITLE_STR_113_KILLTOTAL, // Kill total:
+        };
+        s32 rowy = 0xDC + (row * (lineheight + 4));
+
+        x = 0x37;
+        y = rowy;
+        DL = frontPrintText(DL, &x, &y, langGet(getStringID(LTITLE, labels[row])), ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+
+        for (i = 0; i < 2; i++)
+        {
+            s32 shotsfired;
+            s32 allhits;
+            s32 headshots;
+
+            g_playerPerm = &g_playerPlayerData[i];
+            shotsfired = get_curplayer_shot_register(0);
+            headshots = get_curplayer_shot_register(1);
+            allhits = headshots + get_curplayer_shot_register(2) + get_curplayer_shot_register(3)
+                + get_curplayer_shot_register(4) + get_curplayer_shot_register(5);
+
+            switch (row)
+            {
+                case 0:
+                    sprintf(text, "%.1f%%", (shotsfired > 0) ? (((allhits + get_curplayer_shot_register(6)) * 100.0f) / shotsfired) : 0.0f);
+                    break;
+                case 1:
+                    sprintf(text, "%d", shotsfired);
+                    break;
+                case 2:
+                    sprintf(text, "%d (%d%%)", headshots, (s32)floorFloat(((headshots * 100.0f) / ((allhits > 0) ? allhits : 1)) + 0.5f));
+                    break;
+                default:
+                    sprintf(text, "%d", get_curplay_killcount());
+                    break;
+            }
+
+            x = columns[i];
+            y = rowy;
+            DL = frontPrintText(DL, &x, &y, (s8 *)text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        }
+    }
+
+    g_playerPerm = savedperm;
+
+    return DL;
+}
+
 Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
 {
     s32 x;
@@ -7302,6 +7377,12 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     }
 
 
+    if (g_CoopMode)
+    {
+        DL = frontDrawCoopMissionStats(DL, y2);
+        goto tabs;
+    }
+
     text = langGet(getStringID(LTITLE, TITLE_STR_106_ACCURACY)); //Accuracy:*
     x = 0x37;
     y = 0xCC;
@@ -7393,7 +7474,7 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     y = y2 + 0xF4;
     DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-
+tabs:
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);

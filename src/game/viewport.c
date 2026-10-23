@@ -42,7 +42,8 @@ void zbufAllocate(void)
         // zbufInit sets the width actually used each frame.
         z_buffer_width = SCREEN_WIDTH * VI_MAX_SCALEX;
 
-        if (getPlayerCount() == 1)
+        // Co-op also shows one view full-screen at times (watch, cutscenes).
+        if ((getPlayerCount() == 1) || g_CoopMode)
         {
             z_buffer_height = SCREEN_HEIGHT;
         }
@@ -81,7 +82,7 @@ Gfx *zbufInit(Gfx *gdl) {
     if (z_buffer_is_gameplay) {
         z_buffer_width = VI_SX(SCREEN_WIDTH);
     }
-    if (!(get_cur_playernum() < 2) || ((getPlayerCount() == 2) && (get_cur_playernum() == 1))) {
+    if (!(get_cur_playernum() < 2) || ((getViewCount() == 2) && (get_cur_playernum() == 1))) {
         phi_a3 = z_buffer_width * SCREEN_HEIGHT;
     } else {
         phi_a3 = 0;
@@ -100,6 +101,13 @@ Gfx *zbufInit(Gfx *gdl) {
 Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
     s32 start_x;
     s32 end_x;
+    s32 height = z_buffer_height;
+
+    // Co-op split views only need half the rows cleared.
+    if (g_CoopMode && (getViewCount() == 2) && (height > Z_BUFFER_HEIGHT)) {
+        height = Z_BUFFER_HEIGHT;
+    }
+
     gDPPipeSync(gdl++);
     gDPSetRenderMode(gdl++, G_RM_NOOP, G_RM_NOOP2);
     gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, z_buffer_width, OS_K0_TO_PHYSICAL(z_buffer));
@@ -116,7 +124,7 @@ Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
         start_x = VI_SX(viGetX() / 2);
         end_x = VI_SX(viGetX()) - 1;
     }
-    gDPFillRectangle(gdl++, start_x, 0, end_x, (z_buffer_height - 1));
+    gDPFillRectangle(gdl++, start_x, 0, end_x, (height - 1));
     gDPPipeSync(gdl++);
     return gdl;
 }

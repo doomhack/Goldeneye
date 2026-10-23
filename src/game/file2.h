@@ -32,6 +32,8 @@ STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE l
 void fileUnlockStageInFolderAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty, s32 newtime);
 void fileSaveFolderUnlockCheat(s32 foldernum, s32 cheat);
 void fileLoadSettingsForFolder(u32 folder);
+void fileCoopStorePartnerOptions(void);
+void fileCoopRestorePartnerOptions(void);
 void fileDeleteSaveForFolder(s32 foldernum);
 
 void fileGetHighestStageDifficultyCompletedForFolder(s32 foldernum, LEVEL_SOLO_SEQUENCE *levelid, DIFFICULTY *difficulty);

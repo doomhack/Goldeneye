@@ -852,6 +852,8 @@ enum CoopAiMode
     COOP_AI_EACH      // action applied to every player
 };
 
+#define COOP_AI_TARGET_LOCK60 (20 * 60)
+
 struct CoopAiState
 {
     s32 start;      // offset of the command being repeated, -1 if none
@@ -988,6 +990,15 @@ static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
         // Fight the player that was seen. They stay current for the rest
         // of this chr's tick.
         chr->targetplayer = get_cur_playernum();
+    }
+    else if ((st->mode == COOP_AI_ANY) && taken && (chr != NULL))
+    {
+        // A level condition (in a room, near a pad, ...) was met by this
+        // player. The rest of the script acts on them: fades, the camera,
+        // Bond's cutscene animations. Keep them for a while so later ticks
+        // of the same script don't switch to the other player.
+        chr->targetplayer = get_cur_playernum();
+        chr->targetlock60 = COOP_AI_TARGET_LOCK60;
     }
     else
     {

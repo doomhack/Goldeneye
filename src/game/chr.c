@@ -1713,6 +1713,8 @@ PropRecord *init_GUARDdata_with_set_values(PropRecord *arg0, Model *arg1, struct
     var_s0->weapons_held[0] = NULL;
     var_s0->weapons_held[1] = NULL;
     var_s0->handle_positiondata_hat = NULL;
+    var_s0->targetplayer = 0;
+    var_s0->targetlock60 = 0;
     var_s0->chrwidth = 20.0f;
     var_s0->chrheight = 185.0f;
 

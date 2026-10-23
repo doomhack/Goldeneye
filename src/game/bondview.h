@@ -2776,6 +2776,8 @@ extern s32 g_CoopTankPlayer;
 s32 coopTankUsedByPartner(void);
 void coopTankBeginPlayer(void);
 void coopTankEndPlayer(s32 moved);
+extern s32 g_CoopCinemaPlayer;
+void bondviewCoopUpdateSoloView(void);
 f32 bondviewGetPlayerDuckingHeightRelated(struct player *player);
 void bondviewGetCollisionRadius(PropRecord* arg0, f32 *collision_radius, f32 *height, f32 *always_30);
 void bondviewUpdatePlayerY(s32 use_stanHeight, f32 stanHeight_offset);

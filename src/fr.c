@@ -770,7 +770,7 @@ Gfx *viSetupScreensForNumPlayers(Gfx *gdl)
         }
     }
 
-    if (getPlayerCount() == 1)
+    if (getViewCount() == 1)
     {
         if ((viGetViewTop() + viGetViewHeight()) < viGetY())
         {

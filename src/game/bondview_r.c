@@ -167,6 +167,18 @@ void bondviewLoadSetupIntroSection(void)
     struct SetupIntroCredits *intro_credits;
     s32 padding[5];
 
+    // Co-op: this runs once per player and resets the intro camera state,
+    // which player 1's run has already set up for the intro.
+    s32 coopPartner = g_CoopMode && (get_cur_playernum() > 0);
+    __typeof__(g_CameraMode) saved_cameramode = g_CameraMode;
+    __typeof__(g_CameraAfterCinema) saved_aftercinema = g_CameraAfterCinema;
+    __typeof__(camera_transition_timer) saved_transition_timer = camera_transition_timer;
+    __typeof__(intro_camera_index) saved_intro_camera_index = intro_camera_index;
+    __typeof__(camera_fade_active) saved_camera_fade_active = camera_fade_active;
+    __typeof__(ptr_random06cam_entry) saved_random06cam_entry = ptr_random06cam_entry;
+    __typeof__(g_CurrentSetupIntroCamera) saved_setup_intro_camera = g_CurrentSetupIntroCamera;
+    __typeof__(g_SetupIntroCameraCount) saved_setup_intro_camera_count = g_SetupIntroCameraCount;
+
     // done with declarations
 
     start_pos = default_start_position;
@@ -205,6 +217,9 @@ void bondviewLoadSetupIntroSection(void)
     g_WorldTankProp = 0;
     g_PlayerTankProp = NULL;
     g_CoopTankPlayer = -1;
+    g_CoopSoloView = -1;
+    g_CoopSoloViewIsCinema = FALSE;
+    g_CoopCinemaPlayer = 0;
     g_PlayerTankYOffset = FLOAT_INIT;
     g_TankSfxState[0] = NULL;
     g_TankSfxState[1] = NULL;
@@ -315,11 +330,15 @@ void bondviewLoadSetupIntroSection(void)
                         g_IntroSwirl = intro_swirl;
                     }
 
-                    intro_swirl->unk08.fval = intro_swirl->unk08.ival / M_U16_MAX_VALUE_F;
-                    intro_swirl->unk0C.fval = intro_swirl->unk0C.ival / M_U16_MAX_VALUE_F;
-                    intro_swirl->unk10.fval = intro_swirl->unk10.ival / M_U16_MAX_VALUE_F;
-                    intro_swirl->unk14.fval = intro_swirl->unk14.ival / M_U16_MAX_VALUE_F;
-                    intro_swirl->unk18.fval = intro_swirl->unk18.ival / M_U16_MAX_VALUE_F;
+                    // Converted in place, so only on the first player's run.
+                    if (get_cur_playernum() == 0)
+                    {
+                        intro_swirl->unk08.fval = intro_swirl->unk08.ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->unk0C.fval = intro_swirl->unk0C.ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->unk10.fval = intro_swirl->unk10.ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->unk14.fval = intro_swirl->unk14.ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->unk18.fval = intro_swirl->unk18.ival / M_U16_MAX_VALUE_F;
+                    }
 
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroSwirl));
                 }
@@ -530,9 +549,24 @@ void bondviewLoadSetupIntroSection(void)
     g_CurrentPlayer->field_3B8.f[1] = (g_CurrentPlayer->field_488.pos.f[1] / FIELD_3B8_FACTOR);
     g_CurrentPlayer->field_3B8.f[2] = (g_CurrentPlayer->field_488.pos.f[2] / FIELD_3B8_FACTOR);
 
-    if (getPlayerCount() == 1)
+    if (!isMpGame())
     {
-        bondviewSetCameraMode(CAMERAMODE_INTRO);
+        // Co-op: the intro plays once, full-screen from player 1's view.
+        if (!coopPartner)
+        {
+            bondviewSetCameraMode(CAMERAMODE_INTRO);
+        }
+        else
+        {
+            g_CameraMode = saved_cameramode;
+            g_CameraAfterCinema = saved_aftercinema;
+            camera_transition_timer = saved_transition_timer;
+            intro_camera_index = saved_intro_camera_index;
+            camera_fade_active = saved_camera_fade_active;
+            ptr_random06cam_entry = saved_random06cam_entry;
+            g_CurrentSetupIntroCamera = saved_setup_intro_camera;
+            g_SetupIntroCameraCount = saved_setup_intro_camera_count;
+        }
     }
     else
     {
