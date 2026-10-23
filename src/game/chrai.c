@@ -4346,6 +4346,15 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         if (g_ChrSlots[num].model != NULL)
                         {
+                            // Co-op: the players' bodies stay, since the
+                            // cutscene that follows animates one of them
+                            // (solo creates Bond's body after this). A
+                            // hidden chr doesn't run its AI list.
+                            if (g_CoopMode && (g_ChrSlots[num].prop != NULL) && (g_ChrSlots[num].prop->type == PROP_TYPE_VIEWER))
+                            {
+                                continue;
+                            }
+
                             g_ChrSlots[num].chrflags |= CHRFLAG_HIDDEN;
                         }
                     }

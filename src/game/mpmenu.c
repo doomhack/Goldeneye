@@ -1676,7 +1676,8 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
         }
         gdl = combiner_bayer_lod_perspective(gdl);
     }
-    else if (((((g_CurrentPlayer->bonddead) && (g_CurrentPlayer->deathanimfinished)) && (g_CurrentPlayer->redbloodfinished)) && (!g_stopPlayFlag)) && (!g_gameOverFlag))
+    else if (((((g_CurrentPlayer->bonddead) && (g_CurrentPlayer->deathanimfinished)) && (g_CurrentPlayer->redbloodfinished)) && (!g_stopPlayFlag)) && (!g_gameOverFlag)
+        && (!g_CoopMode || coopPartnerAlive())) // co-op: no respawn once both are dead
     {
         total_kills_against_current = 0;
  
