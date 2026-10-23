@@ -722,10 +722,13 @@ void bondinvCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
     *nextleft  = weapon2;
 }
 
-bool bondinvCheckHasKeyFlags(u32 wantkeyflags)
+/**
+ * The key flags of every key in a player's inventory.
+ */
+static u32 bondinvGetHeldKeyFlags(struct player *player)
 {
     u32      heldkeyflags = 0;
-    InvItem *item         = g_CurrentPlayer->ptr_inventory_first_in_cycle;
+    InvItem *item         = player->ptr_inventory_first_in_cycle;
 
     while (item)
     {
@@ -742,24 +745,37 @@ bool bondinvCheckHasKeyFlags(u32 wantkeyflags)
                     KeyRecord *key = (KeyRecord *)prop->obj;
 
                     heldkeyflags |= key->keyflags;
-
-                    if ((wantkeyflags & heldkeyflags) == wantkeyflags)
-                    {
-                        return TRUE;
-                    }
                 }
             }
         }
 
         item = item->next;
 
-        if (item == g_CurrentPlayer->ptr_inventory_first_in_cycle)
+        if (item == player->ptr_inventory_first_in_cycle)
         {
             break;
         }
     }
 
-    return FALSE;
+    return heldkeyflags;
+}
+
+bool bondinvCheckHasKeyFlags(u32 wantkeyflags)
+{
+    u32 heldkeyflags = bondinvGetHeldKeyFlags(g_CurrentPlayer);
+    s32 i;
+
+    // Co-op: keys are shared, so either player opens a door the other has
+    // the key for.
+    if (g_CoopMode)
+    {
+        for (i = 0; i < getPlayerCount(); i++)
+        {
+            heldkeyflags |= bondinvGetHeldKeyFlags(g_playerPointers[i]);
+        }
+    }
+
+    return (wantkeyflags & heldkeyflags) == wantkeyflags;
 }
 
 bool bondinvHasGEKey(void)

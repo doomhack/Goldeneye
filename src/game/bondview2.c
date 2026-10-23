@@ -2011,8 +2011,90 @@ s32 sub_GAME_7F07CDD4(struct coord3d *arg0, f32 arg1, StandTile **arg2)
 
 
 
+/**
+ * Co-op: the player using the tank (climbing on or driving it), or -1.
+ * Streets and Runway have one tank and its state is all globals, so only
+ * one player can use it; the other walks.
+ */
+s32 g_CoopTankPlayer = -1;
+
+static struct
+{
+    s32 hidden;
+    s32 inTank;
+    s32 canEnter;
+    f32 yOffset;
+    struct PropRecord *worldTank;
+    struct PropRecord *playerTank;
+} s_CoopTankStash;
+
+/**
+ * Co-op: TRUE if the other player is using the tank.
+ */
+s32 coopTankUsedByPartner(void)
+{
+    return g_CoopMode && (g_CoopTankPlayer >= 0) && (g_CoopTankPlayer != get_cur_playernum());
+}
+
+/**
+ * Co-op: while the current player is moved or drawn, hide the tank state
+ * if the other player is using the tank, so this player isn't treated as
+ * being in it. Undone by coopTankEndPlayer.
+ */
+void coopTankBeginPlayer(void)
+{
+    s_CoopTankStash.hidden = coopTankUsedByPartner();
+
+    if (s_CoopTankStash.hidden)
+    {
+        s_CoopTankStash.inTank = g_PlayerIsInTank;
+        s_CoopTankStash.canEnter = g_BondCanEnterTank;
+        s_CoopTankStash.yOffset = g_PlayerTankYOffset;
+        s_CoopTankStash.worldTank = g_WorldTankProp;
+        s_CoopTankStash.playerTank = g_PlayerTankProp;
+
+        g_PlayerIsInTank = FALSE;
+        g_BondCanEnterTank = FALSE;
+        g_PlayerTankYOffset = 0.0f;
+        g_WorldTankProp = NULL;
+        g_PlayerTankProp = NULL;
+    }
+}
+
+/**
+ * Co-op: undo coopTankBeginPlayer. After a player's move, also note whether
+ * they have started or stopped using the tank.
+ */
+void coopTankEndPlayer(s32 moved)
+{
+    if (s_CoopTankStash.hidden)
+    {
+        g_PlayerIsInTank = s_CoopTankStash.inTank;
+        g_BondCanEnterTank = s_CoopTankStash.canEnter;
+        g_PlayerTankYOffset = s_CoopTankStash.yOffset;
+        g_WorldTankProp = s_CoopTankStash.worldTank;
+        g_PlayerTankProp = s_CoopTankStash.playerTank;
+        s_CoopTankStash.hidden = FALSE;
+    }
+    else if (g_CoopMode && moved)
+    {
+        g_CoopTankPlayer = ((g_PlayerTankProp != NULL) || g_PlayerIsInTank) ? get_cur_playernum() : -1;
+    }
+}
+
 bool isBondInTank(void)
 {
+    if (coopTankUsedByPartner())
+    {
+        return FALSE;
+    }
+
+    // The owner, asked while the tank is hidden for the other player's view.
+    if (s_CoopTankStash.hidden)
+    {
+        return s_CoopTankStash.inTank;
+    }
+
     return g_PlayerIsInTank;
 }
 
@@ -2203,7 +2285,9 @@ s32 bondviewTryMoveToStan(struct coord3d *arg0, StandTile **stan)
         {
 block_20:
             /* I'm sorry, this is the only way I could make it match. */
+            // Co-op: the tank is solid for a player while the other uses it.
             if (g_PlayerTankProp == NULL
+                && !s_CoopTankStash.hidden
                 && (stanSavedColl_posData != NULL)
                 && (stanSavedColl_posData->type == PROP_TYPE_OBJ))
             {
@@ -8803,6 +8887,106 @@ void mp_respawn_handler(void)
 
 
 /**
+ * Co-op: when a dead player can respawn (A, Z or Start once this has passed).
+ */
+#define COOP_RESPAWN_DELAY60 (10 * 60)
+
+s32 g_CoopDeathTime[4];
+s32 g_CoopDeathWeapons[4][2];
+
+/**
+ * Co-op: bring the current (dead) player back beside a living partner.
+ * Like mp_respawn_handler, but the player keeps their inventory and ammo,
+ * since mission items are needed to finish the level.
+ */
+void coopRespawnNearPartner(void)
+{
+    struct player *partner = NULL;
+    coord3d pos;
+    StandTile *stan;
+    f32 look_angle;
+    f32 stan_height;
+    s32 count = getPlayerCount();
+    s32 cur = get_cur_playernum();
+    s32 i;
+
+    for (i = 0; i < count; i++)
+    {
+        if ((i != cur) && !g_playerPointers[i]->bonddead)
+        {
+            partner = g_playerPointers[i];
+            break;
+        }
+    }
+
+    if (partner == NULL)
+    {
+        return;
+    }
+
+    init_player_BONDdata();
+    bondviewPlayerBeginLife();
+
+    g_CurrentPlayer->bonddead = 0;
+    g_CurrentPlayer->deathanimfinished = 0;
+    g_CurrentPlayer->redbloodfinished = 0;
+    g_CurrentPlayer->startnewbonddie = 1;
+    g_CurrentPlayer->healthdamagetype = 7;
+    g_CurrentPlayer->damagetype = 7;
+    g_CurrentPlayer->gunammooff = 0;
+    g_CurrentPlayer->gunsightmode = 2;
+
+    hudmsgsSetOn(-1);
+    bondviewClearUpperTextDisplayFlag(-1);
+
+    pos = partner->prop->pos;
+    stan = partner->prop->stan;
+    look_angle = (partner->vv_theta * M_TAU_F) / 360.0f;
+    coopFindPartnerSpawn(&pos, &stan, look_angle);
+
+    stan_height = bondviewYPositionRelated(stan, pos.x, pos.z);
+    pos.y = g_CurrentPlayer->eyeheight + stan_height;
+    g_CurrentPlayer->field_70 = stan_height;
+    g_CurrentPlayer->vv_theta = partner->vv_theta;
+    g_CurrentPlayer->stanHeight = stan_height;
+#if defined(VERSION_EU)
+    g_CurrentPlayer->field_6C = (f32) (stan_height / 0.2004f);
+#else
+    g_CurrentPlayer->field_6C = (f32) (stan_height / 0.17000002f);
+#endif
+
+    change_player_pos_to_target(&g_CurrentPlayer->field_488, &pos, stan);
+
+    g_CurrentPlayer->field_488.theta_transform.x = -sinf(look_angle);
+    g_CurrentPlayer->field_488.theta_transform.y = 0.0f;
+    g_CurrentPlayer->field_488.theta_transform.z = cosf(look_angle);
+    g_CurrentPlayer->prop->pos.x = g_CurrentPlayer->bondprevpos.x = pos.f[0];
+    g_CurrentPlayer->prop->pos.y = g_CurrentPlayer->bondprevpos.y = pos.f[1];
+    g_CurrentPlayer->prop->pos.z = g_CurrentPlayer->bondprevpos.z = pos.f[2];
+    g_CurrentPlayer->prop->stan = stan;
+#if defined(VERSION_EU)
+    g_CurrentPlayer->field_3B8.x = (f32) (g_CurrentPlayer->field_488.pos.x / 0.118799984f);
+    g_CurrentPlayer->field_3B8.y = (f32) (g_CurrentPlayer->field_488.pos.y / 0.118799984f);
+    g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.118799984f);
+#else
+    g_CurrentPlayer->field_3B8.x = (f32) (g_CurrentPlayer->field_488.pos.x / 0.100000024f);
+    g_CurrentPlayer->field_3B8.y = (f32) (g_CurrentPlayer->field_488.pos.y / 0.100000024f);
+    g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.100000024f);
+#endif
+    bondviewUpdatePlayerCollisionBounds();
+
+    // Back to the guns the player died holding.
+    currentPlayerEquipWeaponWrapper(GUNRIGHT, g_CoopDeathWeapons[cur][GUNRIGHT]);
+    currentPlayerEquipWeaponWrapper(GUNLEFT, g_CoopDeathWeapons[cur][GUNLEFT]);
+
+    g_CurrentPlayer->field_78 = 0.0f;
+    g_CurrentPlayer->field_7C = -0.0001f;
+    g_CurrentPlayer->field_80 = 0.0f;
+    currentPlayerStartChrFade(120.0f, 1.0f);
+}
+
+
+/**
  * Address: 7F088CD8
  */
 Gfx *bondviewRenderCredits(Gfx *gdl)
@@ -9052,7 +9236,12 @@ Gfx *maybe_mp_interface(Gfx *gdl)
             if (doblood)
             {
                 die_blood_image_routine(0);
-                if (!isMpGame())
+                if (coopPartnerAlive())
+                {
+                    // Co-op: the partner plays on, so keep the music and
+                    // mission going.
+                }
+                else if (!isMpGame())
                 {
                     // This unusual comma-expression syntax is required for a byte match.
                     set_missionstate((musicStopSlot(-1), 0));
@@ -9104,7 +9293,15 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                 }
                 if (currentPlayerIsFadeComplete())
                 {
-                    if (!isMpGame())
+                    if (coopPartnerAlive())
+                    {
+                        if (((g_GlobalTimer - g_CoopDeathTime[get_cur_playernum()]) >= COOP_RESPAWN_DELAY60)
+                            && joyGetButtons(get_cur_playernum(), 0xB000))
+                        {
+                            coopRespawnNearPartner();
+                        }
+                    }
+                    else if (!isMpGame())
                     {
                         bondviewSetCameraMode(CAMERAMODE_DEATH_CAM_SP);
                     }
@@ -9222,7 +9419,19 @@ void bondviewKillCurrentPlayer(void)
             trigger_solo_watch_menu(1);
         }
 
-        g_isBondKIA = 1;
+        if (g_CoopMode)
+        {
+            g_CoopDeathTime[get_cur_playernum()] = g_GlobalTimer;
+            g_CoopDeathWeapons[get_cur_playernum()][GUNRIGHT] = getCurrentPlayerWeaponId(GUNRIGHT);
+            g_CoopDeathWeapons[get_cur_playernum()][GUNLEFT] = getCurrentPlayerWeaponId(GUNLEFT);
+        }
+
+        // In co-op the mission carries on while the partner is alive.
+        if (!coopPartnerAlive())
+        {
+            g_isBondKIA = 1;
+        }
+
         g_CurrentPlayer->bonddead = 1;
 
         g_CurrentPlayer->previous_collision_info = g_CurrentPlayer->field_488;
@@ -9230,7 +9439,7 @@ void bondviewKillCurrentPlayer(void)
         g_CurrentPlayer->thetadie = g_CurrentPlayer->vv_theta;
         g_CurrentPlayer->vertadie = g_CurrentPlayer->vv_verta;
 
-        if (g_PlayerTankProp != NULL)
+        if ((g_PlayerTankProp != NULL) && !coopTankUsedByPartner())
         {
             g_ExplodeTankOnDeathFlag = 1;
         }

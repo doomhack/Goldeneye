@@ -91,7 +91,7 @@ static const f32 coopSpawnOffsets[][2] = {
  * that can be walked to from the pad. If none fits (e.g. Facility's vent),
  * keep the pad position and let the players overlap until they move apart.
  */
-static void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle)
+void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle)
 {
     f32 fwd_x = -sinf(look_angle);
     f32 fwd_z = cosf(look_angle);
@@ -204,6 +204,7 @@ void bondviewLoadSetupIntroSection(void)
     g_PlayerIsInTank = 0;
     g_WorldTankProp = 0;
     g_PlayerTankProp = NULL;
+    g_CoopTankPlayer = -1;
     g_PlayerTankYOffset = FLOAT_INIT;
     g_TankSfxState[0] = NULL;
     g_TankSfxState[1] = NULL;

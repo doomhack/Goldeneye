@@ -2342,12 +2342,24 @@ s32 chrTick(PropRecord *prop)
     s32 headSwitchVisible;
     s32 headVisible;
     s32 tickamount;
+    s32 coopRepeat;
 
     renderdata = D_8002CC6C;
     chr = prop->chr;
     model = chr->model;
     headVisible = 1;
     tickamount = g_ClockTimer;
+
+    // Co-op: props are ticked once for each player's view. A chr's AI,
+    // actions and animation must only advance on the first pass, or guards
+    // run, aim and shoot twice as fast.
+    coopRepeat = g_CoopMode && (prop->type == PROP_TYPE_CHR)
+        && (get_player_position_in_shuffled(get_cur_playernum()) != 0);
+
+    if (coopRepeat)
+    {
+        tickamount = 0;
+    }
 
     if ((!(chr->chrflags & CHRFLAG_HIDDEN)) || (chr->chrflags & CHRFLAG_00040000))
     {
@@ -2361,7 +2373,7 @@ s32 chrTick(PropRecord *prop)
                 }
             }
         }
-        else
+        else if (!coopRepeat)
         {
             chrlvActionTick(chr);
 
@@ -2513,7 +2525,10 @@ after_position_update:
         chr->hidden |= CHRHIDDEN_BACKGROUND_AI;
     }
 
-    chrUpdateAimProperties(chr);
+    if (!coopRepeat)
+    {
+        chrUpdateAimProperties(chr);
+    }
 
     if (chr->field_20 != NULL)
     {

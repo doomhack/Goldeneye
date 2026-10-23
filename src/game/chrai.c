@@ -837,6 +837,169 @@ extern bool            g_isBondKIA;
 // end forward
 
 /**
+ * Co-op: how an AI command that looks at "Bond" treats the two players.
+ *
+ * Solo AI lists only know one player. In co-op each chr runs its list with
+ * its target player current (see coopChrSelectTarget), and the commands
+ * below are re-run for the other player where one player isn't enough.
+ */
+enum CoopAiMode
+{
+    COOP_AI_ONE,      // current player only
+    COOP_AI_ANY_SEEN, // true if true for any living player; the chr then targets that player
+    COOP_AI_ANY,      // true if true for any player (level conditions)
+    COOP_AI_ALL,      // true only if true for every player
+    COOP_AI_EACH      // action applied to every player
+};
+
+struct CoopAiState
+{
+    s32 start;      // offset of the command being repeated, -1 if none
+    s32 size;
+    s32 mode;
+    s32 base;       // player current before the command
+    s32 next;       // index into players[] to run next
+    s32 count;
+    s32 players[4];
+};
+
+static s32 coopAiCommandMode(u8 cmd)
+{
+    switch (cmd)
+    {
+        case AI_IFISeeBond:
+        case AI_IFIHeardBond:
+        case AI_IFICouldSeeBond:
+        case AI_IFICouldSeeBondsStan:
+        case AI_IFImTargetedByBond:
+        case AI_IFMyDistanceToBondLessThanDecimeter:
+            return COOP_AI_ANY_SEEN;
+
+        case AI_IFBondDistanceToPadLessThanDecimeter:
+        case AI_IFBondInRoomWithPad:
+        case AI_IFBondCollectedObject:
+        case AI_IFBondHasItemEquipped:
+        case AI_IFBondYPosLessThan:
+        case AI_IFBondInTank:
+        case AI_IFBondHealthLessThan:
+            return COOP_AI_ANY;
+
+        case AI_IFBondDistanceToPadGreaterThanDecimeter:
+        case AI_IFMyDistanceToBondGreaterThanDecimeter:
+        case AI_IFBondHealthGreaterThan:
+        case AI_IFBondIsDead:
+            return COOP_AI_ALL;
+
+        case AI_BondDisableControl:
+        case AI_BondEnableControl:
+        case AI_BondEquipItem:
+        case AI_BondEquipItemCinema:
+        case AI_BondHideWeapons:
+            return COOP_AI_EACH;
+    }
+
+    return COOP_AI_ONE;
+}
+
+/**
+ * Called before each command. Starts repeating it over the players if it
+ * needs that, with the current player first.
+ */
+static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset)
+{
+    s32 mode;
+    s32 count;
+    s32 i;
+
+    if (st->start >= 0)
+    {
+        return;
+    }
+
+    mode = coopAiCommandMode((list + offset)->cmd);
+
+    if (mode == COOP_AI_ONE)
+    {
+        return;
+    }
+
+    count = getPlayerCount();
+    st->base = get_cur_playernum();
+    st->count = 0;
+
+    for (i = 0; i < count; i++)
+    {
+        s32 player = (st->base + i) % count;
+
+        // A dead player can't be seen, heard or chased.
+        if ((mode == COOP_AI_ANY_SEEN) && (i > 0) && g_playerPointers[player]->bonddead)
+        {
+            continue;
+        }
+
+        st->players[st->count++] = player;
+    }
+
+    st->start = offset;
+    st->size = chraiitemsize(list, offset);
+    st->mode = mode;
+    st->next = 1;
+}
+
+/**
+ * Called after each command. Returns TRUE if the command must run again for
+ * the next player, with *offset rewound to it.
+ */
+static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
+{
+    s32 taken;
+    s32 again;
+
+    if (st->start < 0)
+    {
+        return FALSE;
+    }
+
+    taken = (*offset != st->start + st->size);
+
+    switch (st->mode)
+    {
+        case COOP_AI_ANY_SEEN:
+        case COOP_AI_ANY:
+            again = !taken;
+            break;
+        case COOP_AI_ALL:
+            again = taken;
+            break;
+        default:
+            again = TRUE;
+            break;
+    }
+
+    if (again && (st->next < st->count))
+    {
+        set_cur_player(st->players[st->next++]);
+        *offset = st->start;
+        return TRUE;
+    }
+
+    if ((st->mode == COOP_AI_ANY_SEEN) && taken && (chr != NULL))
+    {
+        // Fight the player that was seen. They stay current for the rest
+        // of this chr's tick.
+        chr->targetplayer = get_cur_playernum();
+    }
+    else
+    {
+        set_cur_player(st->base);
+    }
+
+    st->start = -1;
+    return FALSE;
+}
+
+
+/**
  Execute AI List from Character, Stage, Vehichle(truck) or Aircraft(heli)
  Note: GE has little error checking (eg, using a chr action on aircraft) - this was fixed in PD
  @param *Entityp: Pointer to Entity (non-typed)
@@ -864,6 +1027,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     AircraftRecord *AircraftEntityp = NULL;
     AIRecord       *AiListp         = NULL;
     s32             Offset;
+    struct CoopAiState coop;
+
+    coop.start = -1;
 
     if (EntityType == PROP_TYPE_CHR)
     {
@@ -903,6 +1069,11 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
         // loop forever (or until broken)
         for (;;)
         {
+            if (g_CoopMode)
+            {
+                coopAiBegin(&coop, AiListp, Offset);
+            }
+
             /*
              * GE uses long Switch/case while PD uses Bool functions and tests
              * for TRUE/FALSE if(funcpointer[ai]) break;
@@ -4534,6 +4705,11 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         Offset += chraiitemsize(AiListp, Offset);
                     }
             } // switch
+
+            if (g_CoopMode)
+            {
+                coopAiEnd(&coop, &Offset, ChrEntityp);
+            }
         } // for
     } // Has ailist
 #ifdef ENABLE_LOG

@@ -2613,7 +2613,11 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
             damageToCause = 0.0f;
         }
 
-        if (self->prop->type == PROP_TYPE_VIEWER)
+        if ((self->prop->type == PROP_TYPE_VIEWER) && g_CoopMode && isPlayer)
+        {
+            // Co-op: no friendly fire.
+        }
+        else if (self->prop->type == PROP_TYPE_VIEWER)
         {
             playerNum = get_cur_playernum();
             set_cur_player(getPlayerPointerIndex(self->prop));
@@ -9330,9 +9334,99 @@ void chrlvTickPatrol(ChrRecord *self)
 
 
 /**
+ * Co-op: how often (in 60ths of a second) a chr that hasn't seen anyone
+ * lately looks for the nearest player to fight.
+ */
+#define COOP_RETARGET_INTERVAL60 30
+
+/**
+ * Co-op: pick the player this chr fights and make them the current player
+ * for its AI list and action tick, so all of the "Bond" logic (sight,
+ * shooting, damage, chasing) applies to that player.
+ *
+ * A chr keeps a living target. Without one, or when it hasn't seen anyone
+ * for a while, it switches to the nearest living player every half second.
+ * Seeing or hearing the other player retargets it straight away (see the
+ * any-player AI commands in ai()).
+ */
+static void coopChrSelectTarget(ChrRecord *self)
+{
+    s32 count = getPlayerCount();
+    s32 target = self->targetplayer;
+    s32 i;
+
+    if ((target < 0) || (target >= count))
+    {
+        target = 0;
+    }
+
+    if ((self->prop != NULL)
+        && (g_playerPointers[target]->bonddead
+            || (!chrSawTargetRecently(self) && ((((u32)g_GlobalTimer + self->chrnum) % COOP_RETARGET_INTERVAL60) == 0))))
+    {
+        f32 bestdist = 0.0f;
+        s32 best = -1;
+
+        for (i = 0; i < count; i++)
+        {
+            PropRecord *prop = g_playerPointers[i]->prop;
+            f32 dx;
+            f32 dz;
+            f32 dist;
+
+            if (g_playerPointers[i]->bonddead)
+            {
+                continue;
+            }
+
+            dx = prop->pos.x - self->prop->pos.x;
+            dz = prop->pos.z - self->prop->pos.z;
+            dist = (dx * dx) + (dz * dz);
+
+            if ((best < 0) || (dist < bestdist))
+            {
+                best = i;
+                bestdist = dist;
+            }
+        }
+
+        if (best >= 0)
+        {
+            target = best;
+        }
+    }
+
+    self->targetplayer = target;
+    set_cur_player(target);
+}
+
+static void chrlvActionTickBody(ChrRecord *self);
+
+/**
+ * Runs a chr's AI list and current action.
+ *
+ * This is also called from chrTick while each player's view is being drawn,
+ * so in co-op the current player is put back afterwards.
+ *
  * Address 0x7F0326BC.
-*/
+ */
 void chrlvActionTick(ChrRecord *self)
+{
+    s32 prevplayer;
+
+    if (!g_CoopMode)
+    {
+        chrlvActionTickBody(self);
+        return;
+    }
+
+    prevplayer = get_cur_playernum();
+    coopChrSelectTarget(self);
+    chrlvActionTickBody(self);
+    set_cur_player(prevplayer);
+}
+
+static void chrlvActionTickBody(ChrRecord *self)
 {
     if (g_ClockTimer > 0)
     {

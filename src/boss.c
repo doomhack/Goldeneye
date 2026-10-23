@@ -600,7 +600,9 @@ void bossMainloop(void)
                                     localPlayer = g_CurrentPlayer;
                                     viSetViewPosition(localPlayer->viewleft, localPlayer->viewtop);
 
+                                    coopTankBeginPlayer();
                                     lvlViewMoveTick();
+                                    coopTankEndPlayer(TRUE);
                                 }
                             }
 

@@ -2770,6 +2770,12 @@ void bondviewUpdateXAutoAimTime(struct PropRecord *autoaim_target, f32 auto_aim_
 void bondviewSet3dCoord7F07CEB0(coord3d *arg0);
 f32 bondviewYPositionRelated(struct StandTile *arg0, f32 arg1, f32 arg2);
 void bondviewUpdatePlayerCollisionBounds(void);
+void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle);
+void coopRespawnNearPartner(void);
+extern s32 g_CoopTankPlayer;
+s32 coopTankUsedByPartner(void);
+void coopTankBeginPlayer(void);
+void coopTankEndPlayer(s32 moved);
 f32 bondviewGetPlayerDuckingHeightRelated(struct player *player);
 void bondviewGetCollisionRadius(PropRecord* arg0, f32 *collision_radius, f32 *height, f32 *always_30);
 void bondviewUpdatePlayerY(s32 use_stanHeight, f32 stanHeight_offset);

@@ -697,6 +697,7 @@ Gfx* lvlRender(Gfx* DL)
         for(i = 0; i < pcount; i++)
         {
             set_cur_player(get_nth_player_from_shuffled(i));
+            coopTankBeginPlayer();
 
             viSetViewSize(g_CurrentPlayer->viewx, g_CurrentPlayer->viewy);
             viSetViewPosition(g_CurrentPlayer->viewleft, g_CurrentPlayer->viewtop);
@@ -827,6 +828,7 @@ Gfx* lvlRender(Gfx* DL)
             }
 
             DL = mp_watch_menu_display(DL);
+            coopTankEndPlayer(FALSE);
         }
     }
 
