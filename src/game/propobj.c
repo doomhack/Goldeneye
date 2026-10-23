@@ -4447,10 +4447,10 @@ s32 objTick(struct PropRecord *prop)
 		{
 			projectile = obj->projectile;
 
+			// JP/EU added the player check. Without it a guard's dropped gun
+			// (owner = the guard) is never simulated, so in co-op it floats.
 			if (projectile->ownerprop != NULL
-#if defined(VERSION_JP) || defined(VERSION_EU)
 				&& getPlayerPointerIndex(projectile->ownerprop) >= 0
-#endif
 			)
 			
             isSimOwner = projectile->ownerprop == g_CurrentPlayer->prop;
