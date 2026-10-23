@@ -93,6 +93,9 @@ void bossMainloop(void);
 
 /* data */
 u32 g_BossDebugNoticeEntry = 0;
+
+/* OS counts the CPU spent building frames, summed. See lvlRenderFpsCounter. */
+u32 g_PerfCpuSum = 0;
 s32 g_DebugAndUpdateStageFlag = FALSE;
 s32 g_StageNum = LEVELID_TITLE;
 u32 g_CurentMMallocValue = 0x234800;
@@ -386,6 +389,7 @@ void bossMainloop(void)
     struct player *localPlayer;
     s32 localSelectedNumPlayers;
     u32 pendingGfx = 0;
+    u32 cpuFrameStart = 0;
     s32 freeGfx;
     s32 mainTickElapsed;
     s32 rspReplyMsg;
@@ -558,6 +562,7 @@ void bossMainloop(void)
                             speedgraphRenderGraph();
                             speedgraphMarkerCommit();
                             speedgraphMarkerHandler(0x20000);
+                            cpuFrameStart = osGetCount();
                             joyConsumeSamplesWrapper();
                             permit_stderr(0);
 
@@ -691,6 +696,7 @@ void bossMainloop(void)
                             toggleFlag ^= 1;
 
                             speedgraphMarkerHandler(0x10000);
+                            g_PerfCpuSum += osGetCount() - cpuFrameStart;
                             if(1);
                         }
                     }

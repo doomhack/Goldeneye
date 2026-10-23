@@ -30,6 +30,7 @@
 #include "image_bank.h"
 #include "textrelated.h"
 #include "options.h"
+#include "sched.h"
 #include "initmenus.h"
 #include "cheat.h"
 #include "bg.h"
@@ -667,14 +668,23 @@ Gfx *lvlPortalDebug7F0BDF10(Gfx *gdl)
 static u32 s_FpsLastCount;
 static s32 s_FpsFrames;
 static s32 s_FpsTenths;
+static u32 s_FpsLastCpu;
+static u32 s_FpsLastRsp;
+static u32 s_FpsLastRdp;
+static u32 s_FpsLastTasks;
+static s32 s_FpsCpuMs;
+static s32 s_FpsRspMs;
+static s32 s_FpsRdpMs;
 
 /**
  * Draws the frame rate (the watch's fps counter option) in the top right
- * corner of the screen. It is averaged over about a second.
+ * corner of the screen, averaged over about a second. The second line is
+ * the average milliseconds per frame the CPU spent building it, and the
+ * graphics task took on the RSP and until the RDP finished drawing.
  */
 static Gfx *lvlRenderFpsCounter(Gfx *DL)
 {
-    char text[16];
+    char text[40];
     s32 x;
     s32 y;
     s32 width;
@@ -686,12 +696,26 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
 
     if (ms >= 1000)
     {
+        u32 cpu = g_PerfCpuSum;
+        u32 rsp = g_PerfRspSum;
+        u32 rdp = g_PerfRdpSum;
+        u32 tasks = g_PerfGfxTasks;
+        u32 ntasks = tasks - s_FpsLastTasks;
+
         s_FpsTenths = (ms < 10000) ? ((s_FpsFrames * 10000) / ms) : 0;
+        s_FpsCpuMs = ((cpu - s_FpsLastCpu) / (OS_CPU_COUNTER / 1000)) / s_FpsFrames;
+        s_FpsRspMs = (ntasks != 0) ? (((rsp - s_FpsLastRsp) / (OS_CPU_COUNTER / 1000)) / ntasks) : 0;
+        s_FpsRdpMs = (ntasks != 0) ? (((rdp - s_FpsLastRdp) / (OS_CPU_COUNTER / 1000)) / ntasks) : 0;
+
         s_FpsFrames = 0;
         s_FpsLastCount = now;
+        s_FpsLastCpu = cpu;
+        s_FpsLastRsp = rsp;
+        s_FpsLastRdp = rdp;
+        s_FpsLastTasks = tasks;
     }
 
-    sprintf(text, "%d.%d FPS\n", s_FpsTenths / 10, s_FpsTenths % 10);
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs);
 
     width = 0;
     height = 0;
@@ -878,6 +902,18 @@ Gfx* lvlRender(Gfx* DL)
     }
 
     gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
+
+    if ((g_CurrentStageToLoad != LEVELID_TITLE) && coopSplitSideBySide())
+    {
+        // The divider between side by side views, drawn last so neither
+        // view's sky can paint over it.
+        gDPPipeSync(DL++);
+        gDPSetCycleType(DL++, G_CYC_FILL);
+        gDPSetRenderMode(DL++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(DL++, ((GPACK_RGBA5551(0,0,0,1) << 16) | GPACK_RGBA5551(0,0,0,1)));
+        gDPFillRectangle(DL++, VI_SX(VIEWPORT_WIDTH_4P), 0, VI_SX_INCL(VIEWPORT_WIDTH_4P + 1), (viGetY() - 1));
+        gDPPipeSync(DL++);
+    }
 
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && get_fps_setting())
     {
