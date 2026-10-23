@@ -586,11 +586,12 @@ void bossMainloop(void)
 			                }
 
                             lvlManageMpGame();
+                            bondviewCoopUpdateSoloView();
                             shuffle_player_ids();
 
                             if (g_StageNum != LEVELID_TITLE)
                             {
-                                for (i = 0; i < getPlayerCount(); i++)
+                                for (i = 0; i < getViewCount(); i++)
                                 {
                                     set_cur_player(get_nth_player_from_shuffled(i));
 

@@ -11,6 +11,7 @@ extern coord3d g_CamFrustumRightNormal;
 extern f32 g_CamFrustumRightOffset;
 extern f32 g_CamFrustumNearOffset;
 extern vec3d g_ForceBondMoveOffset;
+extern s32 g_CoopForceMovePlayer;
 extern s32 g_SurroundBondWithExplosionsTicks;
 extern s32 g_PlayerTickExplodeCreatePosition;
 extern struct coord3d g_TankModelPositionOffset;

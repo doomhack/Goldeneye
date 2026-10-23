@@ -114,6 +114,15 @@ s32 g_CoopMode = FALSE;
  */
 s32 g_CoopPlayersOverlap = FALSE;
 
+/**
+ * Co-op: the player whose view fills the screen on its own this frame, or
+ * -1 while every player's view is shown (see bondviewCoopUpdateSoloView).
+ * g_CoopSoloViewIsCinema is set when that is a cutscene, intro or final
+ * death replay rather than a player's watch.
+ */
+s32 g_CoopSoloView = -1;
+s32 g_CoopSoloViewIsCinema = FALSE;
+
 s32 isMpGame(void)
 {
     return !g_CoopMode && getPlayerCount() >= 2;
@@ -143,6 +152,20 @@ s32 coopPartnerAlive(void)
     }
 
     return FALSE;
+}
+
+/**
+ * Number of views drawn this frame. This is the player count, except in
+ * co-op while one player's view is shown full-screen.
+ */
+s32 getViewCount(void)
+{
+    if (g_CoopSoloView >= 0)
+    {
+        return 1;
+    }
+
+    return getPlayerCount();
 }
 
 s32 getPlayerCount(void)
@@ -680,6 +703,21 @@ void shuffle_player_ids(void) {
         temp = array_PLAYER_IDs[i];
         array_PLAYER_IDs[i] = array_PLAYER_IDs[i + random % (4 - i)];
         array_PLAYER_IDs[i + random % (4 - i)] = temp;
+    }
+
+    // Co-op: the full-screen player goes first, so the per-view loops (which
+    // run getViewCount() views) only move and draw that player.
+    if (g_CoopSoloView >= 0)
+    {
+        for (i = 0; i < 4; i++)
+        {
+            if (array_PLAYER_IDs[i] == g_CoopSoloView)
+            {
+                array_PLAYER_IDs[i] = array_PLAYER_IDs[0];
+                array_PLAYER_IDs[0] = g_CoopSoloView;
+                break;
+            }
+        }
     }
 }
 

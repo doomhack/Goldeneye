@@ -690,7 +690,7 @@ Gfx* lvlRender(Gfx* DL)
         s32 i;
         s32 pcount;
 
-        pcount = getPlayerCount();
+        pcount = getViewCount();
 
         gSPClipRatio(DL++, FRUSTRATIO_2);
 

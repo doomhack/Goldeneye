@@ -1178,18 +1178,15 @@ void fileCopyFolderToFirstFree(s32 foldernum)
 }
 
 /**
- *
- *
- * @param save
+ * Packs the current player's options (and the global screen options) into
+ * the save file's option bits.
  */
-void fileSaveSettingsForFolder(save_data *save)
+static u16 fileGetCurrentPlayerOptions(void)
 {
     u32 temp;
     u16 bits;
 
     bits = 0;
-    save->music_vol = get_mTrack2Vol() >> 7;
-    save->sfx_vol = (call_sndGetSfxSlotFirstNaturalVolume() >> 7);
 
     if (get_cur_player_look_vertical_inverted())
     {
@@ -1241,7 +1238,46 @@ void fileSaveSettingsForFolder(save_data *save)
     }
 
     temp = ((u16) (cur_player_get_control_type() << 8)) & OPTION_CONTROLTYPE;
-    save->options = bits | temp;
+    return bits | temp;
+}
+
+/**
+ * Applies the per-player part of packed option bits (not the control style,
+ * screen ratio or hi-res) to the current player.
+ */
+static void fileSetCurrentPlayerOptions(u16 options)
+{
+    set_cur_player_look_vertical_inverted((options & OPTION_INVERTLOOK) != FALSE);
+    cur_player_set_autoaim((options & OPTION_AUTOAIM) != FALSE);
+    cur_player_set_aim_control((options & OPTION_AIMCONTROL) != FALSE);
+    cur_player_set_sight_onscreen_control((options & OPTION_SIGHTONSCREEN) != FALSE);
+    cur_player_set_lookahead((options & OPTION_LOOKAHEAD) != FALSE);
+    cur_player_set_ammo_onscreen_setting((options & OPTION_DISPLAYAMMO) != FALSE);
+
+    if (options & OPTION_SCREENCINEMA)
+    {
+        cur_player_set_screen_setting(SCREEN_SIZE_CINEMA);
+    }
+    else if (options & OPTION_SCREENWIDE)
+    {
+        cur_player_set_screen_setting(SCREEN_SIZE_WIDESCREEN);
+    }
+    else
+    {
+        cur_player_set_screen_setting(SCREEN_SIZE_FULLSCREEN);
+    }
+}
+
+/**
+ *
+ *
+ * @param save
+ */
+void fileSaveSettingsForFolder(save_data *save)
+{
+    save->music_vol = get_mTrack2Vol() >> 7;
+    save->sfx_vol = (call_sndGetSfxSlotFirstNaturalVolume() >> 7);
+    save->options = fileGetCurrentPlayerOptions();
 }
 
 /**
@@ -1263,7 +1299,7 @@ void fileLoadSettingsForFolder(u32 folder)
 
         options = save->options;
 
-        if (getPlayerCount() == 1)
+        if (!isMpGame())
         {
             cur_player_set_control_type(((s32) (options & OPTION_CONTROLTYPE) >> 8) & 0xFFFF);
         }
@@ -1272,28 +1308,32 @@ void fileLoadSettingsForFolder(u32 folder)
             cur_player_set_control_type(CONTROLLER_CONFIG_HONEY);
         }
 
-        set_cur_player_look_vertical_inverted((options & OPTION_INVERTLOOK) != FALSE);
-        cur_player_set_autoaim((options & OPTION_AUTOAIM) != FALSE);
-        cur_player_set_aim_control((options & OPTION_AIMCONTROL) != FALSE);
-        cur_player_set_sight_onscreen_control((options & OPTION_SIGHTONSCREEN) != FALSE);
-        cur_player_set_lookahead((options & OPTION_LOOKAHEAD) != FALSE);
-        cur_player_set_ammo_onscreen_setting((options & OPTION_DISPLAYAMMO) != FALSE);
-
-        if (options & OPTION_SCREENCINEMA)
-        {
-            cur_player_set_screen_setting(SCREEN_SIZE_CINEMA);
-        }
-        else if (options & OPTION_SCREENWIDE)
-        {
-            cur_player_set_screen_setting(SCREEN_SIZE_WIDESCREEN);
-        }
-        else
-        {
-            cur_player_set_screen_setting(SCREEN_SIZE_FULLSCREEN);
-        }
-
+        fileSetCurrentPlayerOptions(options);
         set_screen_ratio((options & OPTION_SCREENRATIO) != FALSE);
         set_hires_setting((options & OPTION_HIRES) != FALSE);
+    }
+}
+
+/**
+ * Co-op: player 2's options from their watch. They aren't saved to the
+ * folder (that holds player 1's), but they last until the console is
+ * switched off.
+ */
+static u16 s_CoopPartnerOptions;
+static s32 s_CoopPartnerOptionsSet = FALSE;
+
+void fileCoopStorePartnerOptions(void)
+{
+    s_CoopPartnerOptions = fileGetCurrentPlayerOptions();
+    s_CoopPartnerOptionsSet = TRUE;
+}
+
+void fileCoopRestorePartnerOptions(void)
+{
+    if (s_CoopPartnerOptionsSet)
+    {
+        cur_player_set_control_type(((s32) (s_CoopPartnerOptions & OPTION_CONTROLTYPE) >> 8) & 0xFFFF);
+        fileSetCurrentPlayerOptions(s_CoopPartnerOptions);
     }
 }
 

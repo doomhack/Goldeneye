@@ -9360,7 +9360,24 @@ static void coopChrSelectTarget(ChrRecord *self)
         target = 0;
     }
 
-    if ((self->prop != NULL)
+    // A player's own body (cutscene AI lists, death and intro animations)
+    // acts for that player.
+    if ((self->prop != NULL) && (self->prop->type == PROP_TYPE_VIEWER))
+    {
+        target = getPlayerPointerIndex(self->prop);
+
+        if (target < 0)
+        {
+            target = 0;
+        }
+    }
+    else if ((self->targetlock60 > 0) && !g_playerPointers[target]->bonddead)
+    {
+        // A level-script check picked this player; stay with them while
+        // the script carries on (e.g. Dam's bungee jump).
+        self->targetlock60 -= g_ClockTimer;
+    }
+    else if ((self->prop != NULL)
         && (g_playerPointers[target]->bonddead
             || (!chrSawTargetRecently(self) && ((((u32)g_GlobalTimer + self->chrnum) % COOP_RETARGET_INTERVAL60) == 0))))
     {

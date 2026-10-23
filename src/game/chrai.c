@@ -821,6 +821,7 @@ extern CutsceneRecord *gBondViewCutscene;
 extern enum CAMERAMODE dword_CODE_bss_80079A18;
 extern s32             dword_CODE_bss_80079A1C;
 extern vec3d           g_ForceBondMoveOffset;
+extern s32             g_CoopForceMovePlayer;
 // CODE.bss:80079A00
 extern f32             flt_CODE_bss_80079A00;
 // CODE.bss:80079A04
@@ -851,6 +852,8 @@ enum CoopAiMode
     COOP_AI_ALL,      // true only if true for every player
     COOP_AI_EACH      // action applied to every player
 };
+
+#define COOP_AI_TARGET_LOCK60 (20 * 60)
 
 struct CoopAiState
 {
@@ -988,6 +991,15 @@ static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
         // Fight the player that was seen. They stay current for the rest
         // of this chr's tick.
         chr->targetplayer = get_cur_playernum();
+    }
+    else if ((st->mode == COOP_AI_ANY) && taken && (chr != NULL))
+    {
+        // A level condition (in a room, near a pad, ...) was met by this
+        // player. The rest of the script acts on them: fades, the camera,
+        // Bond's cutscene animations. Keep them for a while so later ticks
+        // of the same script don't switch to the other player.
+        chr->targetplayer = get_cur_playernum();
+        chr->targetlock60 = COOP_AI_TARGET_LOCK60;
     }
     else
     {
@@ -4335,6 +4347,15 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         if (g_ChrSlots[num].model != NULL)
                         {
+                            // Co-op: the players' bodies stay, since the
+                            // cutscene that follows animates one of them
+                            // (solo creates Bond's body after this). A
+                            // hidden chr doesn't run its AI list.
+                            if (g_CoopMode && (g_ChrSlots[num].prop != NULL) && (g_ChrSlots[num].prop->type == PROP_TYPE_VIEWER))
+                            {
+                                continue;
+                            }
+
                             g_ChrSlots[num].chrflags |= CHRFLAG_HIDDEN;
                         }
                     }
@@ -4434,6 +4455,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     g_ForceBondMoveOffset.x           = ai->X_SPEED60;
                     g_ForceBondMoveOffset.y           = 0;
                     g_ForceBondMoveOffset.z           = ai->Z_SPEED60;
+                    // Only the player this script is acting on is pushed.
+                    g_CoopForceMovePlayer             = get_cur_playernum();
                     Offset += sizeof(AiBondSetLockedVelocityRecord);
                     break;
                 }

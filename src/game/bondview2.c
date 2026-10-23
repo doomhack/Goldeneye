@@ -21,6 +21,7 @@
 #include "debugmenu_handler.h"
 #include "explosion.h"
 #include "file.h"
+#include "file2.h"
 #include "frametiming.h"
 #include "front.h"
 #include "glass.h"
@@ -166,6 +167,7 @@
 
 
 vec3d g_ForceBondMoveOffset;
+s32 g_CoopForceMovePlayer = 0;
 
 //CODE.bss:8007999C
 s32 g_SurroundBondWithExplosionsTicks;
@@ -761,11 +763,100 @@ s32 pickDeathCameraAngles(PropRecord *prop1, coord3d *pos, PropRecord *prop2, co
 }
 
 
+/**
+ * Co-op: the player a cutscene, the intro or the final death replay plays
+ * from. Set by bondviewSetCameraMode from the current player.
+ */
+s32 g_CoopCinemaPlayer = 0;
+
+static s32 coopIsCinemaCameraMode(s32 mode)
+{
+    switch (mode)
+    {
+        case CAMERAMODE_INTRO:
+        case CAMERAMODE_FADESWIRL:
+        case CAMERAMODE_SWIRL:
+        case CAMERAMODE_DEATH_CAM_SP:
+        case CAMERAMODE_DEATH_CAM_MP:
+        case CAMERAMODE_POSEND:
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+/**
+ * Co-op: once per frame, before the players move, decide whether one view
+ * fills the screen on its own (g_CoopSoloView). That is the case while a
+ * player has their watch out, which pauses the game for both, and while the
+ * camera plays a cutscene, the intro or the final death replay. The other
+ * player is then neither moved nor drawn, and during a cutscene their body
+ * is hidden as well.
+ */
+void bondviewCoopUpdateSoloView(void)
+{
+    s32 count = getPlayerCount();
+    s32 i;
+
+    g_CoopSoloView = -1;
+    g_CoopSoloViewIsCinema = FALSE;
+
+    if (!g_CoopMode || (count < 2))
+    {
+        return;
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        if (g_playerPointers[i]->watch_animation_state != WATCH_ANIMATION_0x0)
+        {
+            g_CoopSoloView = i;
+            return;
+        }
+    }
+
+    if (coopIsCinemaCameraMode(g_CameraMode) && (g_CoopCinemaPlayer >= 0) && (g_CoopCinemaPlayer < count))
+    {
+        g_CoopSoloView = g_CoopCinemaPlayer;
+        g_CoopSoloViewIsCinema = TRUE;
+    }
+}
+
+/**
+ * Co-op: TRUE if another player has their watch out. Only one player can
+ * pause at a time.
+ */
+static s32 coopPartnerHasWatchOut(void)
+{
+    s32 count = getPlayerCount();
+    s32 i;
+
+    if (!g_CoopMode)
+    {
+        return FALSE;
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        if ((i != get_cur_playernum()) && (g_playerPointers[i]->watch_animation_state != WATCH_ANIMATION_0x0))
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 // Address 0x7F07A9B8 NTSC.
 void bondviewSetCameraMode(s32 arg0)
 {
     s32 padding;
     s32 padding2;
+
+    if (g_CoopMode && coopIsCinemaCameraMode(arg0))
+    {
+        g_CoopCinemaPlayer = get_cur_playernum();
+    }
 
     g_CameraMode = arg0;
     g_CameraAfterCinema = 0;
@@ -3962,7 +4053,17 @@ void trigger_solo_watch_menu(s32 arg0)
     }
     else if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5)
     {
-        deleteCurrentSelectedFolder();
+        // Co-op: the save folder holds player 1's options; player 2's are
+        // kept separately.
+        if (!g_CoopMode || (get_cur_playernum() == 0))
+        {
+            deleteCurrentSelectedFolder();
+        }
+        else
+        {
+            fileCoopStorePartnerOptions();
+        }
+
         sub_GAME_7F0C1340();
         g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0xc;
         g_CurrentPlayer->watch_pause_time = 0;
@@ -4955,8 +5056,11 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5
                 && g_CurrentPlayer->open_close_solo_watch_menu)
         )
-        && (getPlayerCount() == 1)) // co-op: no watch yet, it draws over both views
+        && !isMpGame()
+        && !coopPartnerHasWatchOut())
     {
+        // Co-op: either player's watch pauses the game for both and fills
+        // the screen while it is out (see bondviewCoopUpdateSoloView).
         trigger_solo_watch_menu(0);
     }
 
@@ -7786,7 +7890,8 @@ void bondviewFrozenMoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     bondviewApplyVertaTheta();
     bondviewMoveAnimationTick(0, 0, 0);
 
-    if ((g_ForceBondMoveOffset.f[0] != 0.0f) || (g_ForceBondMoveOffset.f[2] != 0.0f))
+    if (((g_ForceBondMoveOffset.f[0] != 0.0f) || (g_ForceBondMoveOffset.f[2] != 0.0f))
+        && (!g_CoopMode || (get_cur_playernum() == g_CoopForceMovePlayer)))
     {
         offset.f[0] += g_ForceBondMoveOffset.f[0] * g_GlobalTimerDelta;
         offset.f[2] += g_ForceBondMoveOffset.f[2] * g_GlobalTimerDelta;
@@ -7834,7 +7939,7 @@ s16 getHeight330or240(void)
 
 s16 bondviewGetCurrentPlayerViewportWidth(void)
 {
-    if (getPlayerCount() >= 3)
+    if (getViewCount() >= 3)
     {
         return VIEWPORT_WIDTH_4P;
     }
@@ -7859,7 +7964,7 @@ s16 bondviewGetCurrentPlayerViewportWidth(void)
 
 s16 get_curplayer_viewport_ulx(void)
 {
-    if (2 < getPlayerCount())
+    if (2 < getViewCount())
     {
         if ((get_cur_playernum() == 1) || (get_cur_playernum() == 3))
         {
@@ -7880,7 +7985,7 @@ s16 bondviewGetCurrentPlayerViewportHeight(void)
 {
     f32 t;
 
-    if (getPlayerCount() >= 2)
+    if (getViewCount() >= 2)
     {
         return VIEWPORT_HEIGHT_4P;
     }
@@ -7926,7 +8031,7 @@ s16 bondviewGetCurrentPlayerViewportUly(void)
 {
     f32 t;
 
-    if (getPlayerCount() == 2)
+    if (getViewCount() == 2)
     {
         if (get_cur_playernum() == 0)
         {
@@ -7940,7 +8045,7 @@ s16 bondviewGetCurrentPlayerViewportUly(void)
         return VIEWPORT_ULY_2P_PLAYER_2;
     }
 
-    if (getPlayerCount() >= 3)
+    if (getViewCount() >= 3)
     {
         if (get_cur_playernum() < 2)
         {
@@ -10425,6 +10530,12 @@ s32 playerTick(PropRecord *prop)
         {
             chr->hidden &= ~CHRHIDDEN_FREEZE;
         }
+    }
+
+    // Co-op: the partner sits out cutscenes and isn't shown in them.
+    if (g_CoopSoloViewIsCinema && (index != g_CoopSoloView))
+    {
+        goto clear_and_return;
     }
  
     if (chr != NULL)
