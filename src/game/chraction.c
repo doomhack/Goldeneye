@@ -10560,7 +10560,8 @@ bool sub_GAME_7F033B38(ChrRecord *self, f32 distance)
     {
         chr = &g_ChrSlots[i];
 
-        if ((chr != self) && chr->model && !chrIsDead(chr))
+        /* In co-op the player bodies are chrs too: an ally like Natalya must not pick them as a target. */
+        if ((chr != self) && chr->model && !chrIsDead(chr) && chr->prop && (chr->prop->type != PROP_TYPE_VIEWER))
         {
             coord3d *pos = &chr->prop->pos;
 
