@@ -4157,7 +4157,7 @@ Gfx *currentPlayerDrawFade(Gfx *gdl)
         gDPSetRenderMode(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
         gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
         gDPSetPrimColor(gdl++, 0, 0, r, g, b, (s32)(frac * 255.0f));
-        gDPFillRectangle(gdl++, viGetViewLeft(), viGetViewTop(), (viGetViewLeft() + viGetViewWidth()), (viGetViewTop() + viGetViewHeight()));
+        gDPFillRectangle(gdl++, VI_SX(viGetViewLeft()), viGetViewTop(), VI_SX(viGetViewLeft() + viGetViewWidth()), (viGetViewTop() + viGetViewHeight()));
         gDPPipeSync(gdl++);
         gDPSetColorDither(gdl++, G_CD_BAYER);
         gDPSetTexturePersp(gdl++, G_TP_PERSP);
@@ -7956,6 +7956,9 @@ void bondviewMovePlayerUpdateViewport(s8 stick_x, s8 stick_y, u16 buttons)
     set_cur_player_viewport_size( get_curplayer_viewport_ulx(), bondviewGetCurrentPlayerViewportUly());
     viSetXY(getWidth320or440(), getHeight330or240());
     viSetBuf(getWidth320or440(), getHeight330or240());
+    // Hi-res doubles the physical width only; game logic stays 320 wide.
+    // Solo only for now: multiplayer has no watch menu to change it.
+    viSetScaleX((get_hires_setting() && (cameraBufferToggle == 0) && (getPlayerCount() == 1)) ? VI_MAX_SCALEX : 1);
     viSetViewSize(bondviewGetCurrentPlayerViewportWidth(), bondviewGetCurrentPlayerViewportHeight());
     viSetViewPosition(get_curplayer_viewport_ulx(), bondviewGetCurrentPlayerViewportUly());
     currentPlayerUpdateColourScreenProperties();

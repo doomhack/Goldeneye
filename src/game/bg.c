@@ -1364,7 +1364,7 @@ Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 left, s32 top, s32 width, s32 hei
         height = temp_v0->viewtop + temp_v0->viewy;
     }
 
-    gDPSetScissor(arg0++, G_SC_NON_INTERLACE, left, top, width, height);
+    gDPSetScissor(arg0++, G_SC_NON_INTERLACE, VI_SX(left), top, VI_SX(width), height);
 
     return arg0;
 }
@@ -1728,7 +1728,7 @@ s32 sub_GAME_7F0B5864(s32 portalnum, bbox2d *bbox)
  */
 Gfx *bgFillRectangle(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry)
 {
-    gDPFillRectangle(gdl++, ulx, uly, lrx + 1, lry + 1);
+    gDPFillRectangle(gdl++, VI_SX(ulx), uly, VI_SX(lrx + 1), lry + 1);
     return gdl;
 }
 

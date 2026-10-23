@@ -6,6 +6,7 @@
 #include "ramrom.h"
 #include <PR/R4300.h>
 #include "thread_config.h"
+#include "dbgscreen.h"
 
 /**
  * @file deb_video.c
@@ -24,6 +25,7 @@
  * Copied from n64devkit\ultra\usr\src\pr\demos\fault\crash.c
  */
 #define MSG_FAULT    0x10
+#define MSG_WATCHDOG 0x11
 
 #define TLB_MESSAGE_QUEUE_SIZE      1
 
@@ -143,6 +145,11 @@ u8 g_CrashMessage[0x500]; // unused/unreferenced (waste of space)
 char g_tlbStack[0x2300];
 OSMesgQueue g_faultMesgQ;
 OSMesg *g_faultMesgBuf;
+OSTimer g_crashTimer;
+#ifdef DEBUG_HANG_WATCHDOG
+static u32 s_lastFrame;
+static u32 s_stuckTicks;
+#endif
 
 /**
  * EU .data, offset from start of data_seg : 0x2540
@@ -347,28 +354,32 @@ void crashMain(void* arg0)
     osSetEventMesg(OS_EVENT_FAULT, &g_faultMesgQ, (OSMesg)MSG_FAULT);
     last = 0;
 
+    // Wake twice a second: a fault message also wakes us straight away
+    osSetTimer(&g_crashTimer, OS_USEC_TO_CYCLES(500000), OS_USEC_TO_CYCLES(500000), &g_faultMesgQ, (OSMesg)MSG_WATCHDOG);
+
     while (1)
     {
         osRecvMesg(&g_faultMesgQ, &msg, OS_MESG_BLOCK);
-        mask = osSetIntMask(OS_IM_NONE);
         curr = __osGetCurrFaultedThread();
-        //*ppfaultedThread = curr;
 
-        if (curr == NULL)
+        if (curr != NULL)
         {
-            continue;
+            dbgShowFault(curr);
         }
 
-        else
+#ifdef DEBUG_HANG_WATCHDOG
+        if (g_DbgFrameCounter != s_lastFrame)
         {
-            break;
+            s_lastFrame = g_DbgFrameCounter;
+            s_stuckTicks = 0;
         }
+        else if (++s_stuckTicks >= 12)
+        {
+            dbgShowHang(s_stuckTicks / 2);
+        }
+#endif
     }
 
-    osSetIntMask(mask);
-
-    // infinite loop
-    while (1) {}
 
 }
 

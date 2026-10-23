@@ -1235,6 +1235,11 @@ void fileSaveSettingsForFolder(save_data *save)
         bits |= OPTION_SCREENRATIO;
     }
 
+    if (get_hires_setting())
+    {
+        bits |= OPTION_HIRES;
+    }
+
     temp = ((u16) (cur_player_get_control_type() << 8)) & OPTION_CONTROLTYPE;
     save->options = bits | temp;
 }
@@ -1288,6 +1293,7 @@ void fileLoadSettingsForFolder(u32 folder)
         }
 
         set_screen_ratio((options & OPTION_SCREENRATIO) != FALSE);
+        set_hires_setting((options & OPTION_HIRES) != FALSE);
     }
 }
 

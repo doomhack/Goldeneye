@@ -166,7 +166,22 @@ typedef struct VideoSettings_s {
     s16 viewtop;
     s32 usezbuf;
     u8* framebuf;
+
+    /**
+     * Horizontal hi-res factor: physical framebuffer pixels per logical pixel.
+     * Everything above the RDP works in logical (320-wide) coordinates; only the
+     * framebuffer, Z-buffer, viewport and 2D draw calls are multiplied by this.
+     */
+    s32 scalex;
 } VideoSettings;
+
+extern VideoSettings *g_ViBackData;
+
+/* Logical x (or width) to physical framebuffer pixels for the frame being built */
+#define VI_SX(x) ((x) * g_ViBackData->scalex)
+
+/* Same for an inclusive right edge, as used by fill-mode rectangles */
+#define VI_SX_INCL(x) ((((x) + 1) * g_ViBackData->scalex) - 1)
 
 extern OSViMode *viMode;
 extern u32 g_viOriginalHstart;
@@ -174,8 +189,11 @@ extern u32 g_viOriginalVstart0;
 extern u32 g_viOriginalVstart1;
 extern Mtx *g_viProjectionMatrix;
 
+/* Hi-res doubles the width. The framebuffers are always sized for it. */
+#define VI_MAX_SCALEX 2
+
 /* SCREEN_HEIGHT #define changes based on version (PAL or NTSC) */
-extern u8 cfb_16[NUM_VIDEO_FRAME_BUFFERS][SCREEN_WIDTH * SCREEN_HEIGHT * 2];
+extern u8 cfb_16[NUM_VIDEO_FRAME_BUFFERS][SCREEN_WIDTH * VI_MAX_SCALEX * SCREEN_HEIGHT * 2];
 
 void viShake(f32 param_1);
 
@@ -202,6 +220,8 @@ s32 viGetHorizontalOffset(void);
 void video_related_8(void);
 void viSetBuf(s16 x, s16 y);
 void viSetXY(s16 x, s16 y);
+void viSetScaleX(s32 scalex);
+s32 viGetScaleX(void);
 Gfx *viSetFillColor(Gfx *gdl, s32 r, s32 g, s32 b);
 Gfx *viFillScreen(Gfx *gdl);
 Gfx *viSetupScreensForNumPlayers(Gfx *gdl);

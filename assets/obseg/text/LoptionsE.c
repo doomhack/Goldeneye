@@ -61,7 +61,7 @@ char *LoptionsE[] = {
  "4. Q branch\n", //OPTION_STR_3A
  "5. moneypenny\n", //OPTION_STR_3B
  "1. mission objectives\n", //OPTION_STR_3C
- 0, //OPTION_STR_3D
+ "hi-res\n", //OPTION_STR_3D
  0, //OPTION_STR_3E
  0 //OPTION_STR_3F
 };

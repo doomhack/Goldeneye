@@ -17,6 +17,7 @@
       build/OUTCODE/src/getra.o (.rodata);
       build/OUTCODE/src/ramrom.o (.rodata);
       build/OUTCODE/src/boss.o (.rodata);
+      build/OUTCODE/src/dbgscreen.o (.rodata);
       build/OUTCODE/src/music.o (.rodata);
       build/OUTCODE/src/snd.o (.rodata);
       build/OUTCODE/src/memp.o (.rodata);

@@ -1,4 +1,5 @@
 #include <ultra64.h>
+#include <fr.h>
 
 /**
  * Draws a textured rectangle on the screen.
@@ -27,13 +28,17 @@ void draw_textured_rectangle(Gfx **gdlptr, f32 *position, f32 *size, s32 width, 
         s32 dsdx;
         s32 dtdy;
 
+        // Position and half width in physical (hi-res) pixels
+        f32 posx = position[0] * g_ViBackData->scalex;
+        f32 halfx = size[0] * g_ViBackData->scalex;
+
         // Disable texture perspective correction
         gDPSetTexturePersp(gdl++, G_TP_NONE);
 
         // Compute rectangle coordinates
-        xl = (position[0] - size[0]) * 4.0f;
+        xl = (posx - halfx) * 4.0f;
         yl = (position[1] - size[1]) * 4.0f;
-        xh = (position[0] + size[0]) * 4.0f;
+        xh = (posx + halfx) * 4.0f;
         yh = (position[1] + size[1]) * 4.0f;
 
         // Proceed if the rectangle is within screen bounds
@@ -73,11 +78,11 @@ void draw_textured_rectangle(Gfx **gdlptr, f32 *position, f32 *size, s32 width, 
             if (flipXY)
             {
                 dsdx = width / (2.0f * size[1]) * 1024.0f;
-                dtdy = height / (2.0f * size[0]) * 1024.0f;
+                dtdy = height / (2.0f * halfx) * 1024.0f;
             }
             else
             {
-                dsdx = width / (2.0f * size[0]) * 1024.0f;
+                dsdx = width / (2.0f * halfx) * 1024.0f;
                 dtdy = height / (2.0f * size[1]) * 1024.0f;
             }
             
