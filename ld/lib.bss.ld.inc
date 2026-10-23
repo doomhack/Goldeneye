@@ -6,9 +6,6 @@
       build/OUTCODE/src/libultrare/io/vimgr.o (.bss);
       build/OUTCODE/src/libultrare/io/pimgr.o (.bss);
 #endif
-      build/OUTCODE/src/tlb_manage.o (.bss);
-      build/OUTCODE/src/tlb_random.o (.bss);
-      build/OUTCODE/src/tlb_resolve.o (.bss);
       build/OUTCODE/src/audi.o (.bss);
       build/OUTCODE/src/speed_graph.o (.bss);
       build/OUTCODE/src/fr.o (.bss);

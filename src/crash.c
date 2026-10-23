@@ -2,7 +2,6 @@
 #include <PR/os.h>
 #include <bondgame.h>
 #include "fr.h"
-#include "tlb_manage.h"
 #include "crash.h"
 #include "ramrom.h"
 #include <PR/R4300.h>
@@ -360,16 +359,6 @@ void crashMain(void* arg0)
             continue;
         }
 
-        else if (((curr->context.cause & 0x7c) == 8) && ((curr->context.badvaddr & 0xFFC00000) == (u32)0x7F000000))
-        {
-            tlbmanageTranslateLoadRomFromTlbAddress(curr->context.badvaddr);
-            curr->state = OS_STATE_RUNNABLE | OS_STATE_WAITING;;
-            curr->flags = OS_READ;
-
-            __osEnqueueThread(&__osRunQueue, curr);
-            osSetIntMask(mask);
-            osYieldThread();
-        }
         else
         {
             break;
@@ -522,7 +511,9 @@ bool crashIsReturnAddress(u32 *instruction)
 {
     u32 prevop;
 
-    if ((((s32) instruction & 3) == 0) && ((u32) instruction >= (u32) &_codeSegmentStart) && ((u32) &_codeSegmentEnd >= (u32) instruction))
+    if ((((s32) instruction & 3) == 0)
+        && ((((u32) instruction >= (u32) &_codeSegmentStart) && ((u32) &_codeSegmentEnd >= (u32) instruction))
+            || (((u32) instruction >= (u32) &_gameSegmentStart) && ((u32) &_gameSegmentEnd >= (u32) instruction))))
     {
         prevop = instruction[-2];
         if ((prevop & 0xFC00003C) == 9)
@@ -1040,6 +1031,52 @@ void crashRenderFrame(u16 *buffer)
         for (x = 0; ((x < output_w) && (x < 71)); x++)
         {
             crashRenderChar(((x + 5) * 4), ((y + 1) * 7), g_DebugOutputTextBuffer[y][x]);
+        }
+    }
+}
+
+
+/**
+ * Draws a string straight into a 16-bit framebuffer with the crash screen font,
+ * each font pixel drawn as a scale x scale block. Used before the game is up,
+ * for example for the Expansion Pak check.
+ */
+void crashDrawString(u16 *fb, s32 fbwidth, s32 x, s32 y, s32 scale, const char *str)
+{
+    s32 row;
+    s32 col;
+    s32 i;
+    s32 j;
+    u32 bitmap;
+    u16 colour;
+    unsigned char c;
+
+    for (; *str != '\0'; str++, x += 5 * scale)
+    {
+        c = *str;
+
+        if ((c < ' ') || (c > '~'))
+        {
+            c = '?';
+        }
+
+        bitmap = g_DebugOutputBitmaps[c - ' '];
+
+        for (row = 0; row < 7; row++)
+        {
+            for (col = 0; col < 4; col++)
+            {
+                colour = (bitmap & (1 << 31)) ? GPACK_RGBA5551(255, 255, 255, 1) : GPACK_RGBA5551(0, 0, 0, 1);
+                bitmap <<= 1;
+
+                for (i = 0; i < scale; i++)
+                {
+                    for (j = 0; j < scale; j++)
+                    {
+                        fb[(y + row * scale + i) * fbwidth + x + col * scale + j] = colour;
+                    }
+                }
+            }
         }
     }
 }

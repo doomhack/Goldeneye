@@ -50,12 +50,8 @@ SECTIONS
    END_SEG(start)
 
 
-   _alt_startSegmentRomStart = _startSegmentRomStart + 0x100000;
-   _alt_startSegmentStart = _startSegmentStart - 0x10000000 + 0x100000;
-   
-
-   /* 0x70000450, 0x70020D90 001050-021990 */
-   BEGIN_SEG(code, _startSegmentRomEnd, (_startSegmentEnd - 0x10000000)) SUBALIGN(16)
+   /* All code runs from KSEG0 RAM; nothing is mapped through the TLB. */
+   BEGIN_SEG(code, _startSegmentRomEnd, _startSegmentEnd) SUBALIGN(16)
    {
 #include "ld/lib.text.ld.inc"
 #ifdef COMPILER_GCC
@@ -73,8 +69,8 @@ SECTIONS
 
 
 
-   /* (0x70200000, 0x702029BC, 0x701CCA70), // 033590-035F4D [29BD] */
-   BEGIN_SEG(inflate, _cdataSegmentRomEnd, 0x70200000)
+   /* Boot-time scratch: init() copies the compressed data and inflate here (see init.c) */
+   BEGIN_SEG(inflate, _cdataSegmentRomEnd, 0x80300000)
    {
       build/OUTCODE/src/inflate/inflate.o (.text);
       build/OUTCODE/src/inflate/inflate.o (.data);
@@ -83,10 +79,29 @@ SECTIONS
 
 
 
+   __csegtempPos = 0xC00000;
+   __dataSegmentVaddrStart = _codeSegmentEnd;
+
+   BEGIN_SEG(csegment, __csegtempPos, __dataSegmentVaddrStart)
+   {
+      build/OUTCODE/src/rspboot.o (.text);
+      build/OUTCODE/src/gspboot.o (.text);
+      build/OUTCODE/src/aspboot.o (.text);
+#include "ld/lib.data.ld.inc"
+#include "ld/lib.rodata.ld.inc"
+#include "ld/game.data.ld.inc"
+#include "ld/game.rodata.ld.inc"
+      build/OUTCODE/src/gspboot.o (.data);
+      build/OUTCODE/src/aspboot.o (.data);
+   }
+   END_SEG(csegment)
+
+   _dataSegmentVaddrEnd = _csegmentSegmentRomEnd;
 
 
-   /* (0x7F000000, 0x7F0E2D50, 0x7EFCB4D0), // 034B30-117881 [E2D51] */
-   BEGIN_SEG(game, _inflateSegmentRomEnd, 0x7F000000)
+
+   /* Game code sits in RAM right after the data. init() loads it from ROM in one DMA. */
+   BEGIN_SEG(game, ALIGN(_inflateSegmentRomEnd, 16), ALIGN(_csegmentSegmentEnd, 16))
    {
 #include "ld/game.text.ld.inc"
    }
@@ -195,29 +210,8 @@ SECTIONS
 
 
 
-   __csegtempPos = 0xC00000;
-   __dataSegmentVaddrStart = _codeSegmentEnd + 0x10000000;
-
-   BEGIN_SEG(csegment, __csegtempPos, __dataSegmentVaddrStart)
-   {
-      build/OUTCODE/src/rspboot.o (.text);
-      build/OUTCODE/src/gspboot.o (.text);
-      build/OUTCODE/src/aspboot.o (.text);
-#include "ld/lib.data.ld.inc"
-#include "ld/lib.rodata.ld.inc"
-#include "ld/game.data.ld.inc"
-#include "ld/game.rodata.ld.inc"
-      build/OUTCODE/src/gspboot.o (.data);
-      build/OUTCODE/src/aspboot.o (.data);
-   }
-   END_SEG(csegment)
-
-   _dataSegmentVaddrEnd = _csegmentSegmentRomEnd;
-
-
-
    _bssSegmentStart = ADDR(.bss);
-   .bss (NOLOAD) :
+   .bss ALIGN(_gameSegmentEnd, 16) (NOLOAD) :
    {
 #include "ld/lib.bss.ld.inc"
 #include "ld/game.bss.ld.inc"
@@ -226,26 +220,25 @@ SECTIONS
    _bssSegmentSize = SIZEOF(.bss);
 
    _stacksSegmentStart = ADDR(.stacks);
-#if defined(VERSION_EU)
-   .stacks 0x803A1AB0 : 
-#else
-   .stacks 0x803AB400 :
-#endif
+   .stacks ALIGN(_bssSegmentEnd, 16) (NOLOAD) :
    {
       build/OUTCODE/src/stacks.o (.bss);
    }
    _stacksSegmentEnd = ADDR(.stacks) + SIZEOF(.stacks);
-#ifdef COMPILER_GCC
-   /* .stacks sits at a fixed address, so a non-matching build must not grow .bss into it */
-   __bssStacksCheck = ASSERT(_bssSegmentEnd <= _stacksSegmentStart, "bss overlaps the fixed stacks address");
-#endif
 
    _cfbSegmentStart = ADDR(.cfb);
-   .cfb (NOLOAD) :
+   .cfb ALIGN(_stacksSegmentEnd, 64) (NOLOAD) :
    {
       build/OUTCODE/src/cfb.o (.bss);
    }
    _cfbSegmentEnd = ADDR(.cfb) + SIZEOF(.cfb);
+
+   /* The heap runs from here to the end of the 8MB */
+   _heapSegmentStart = ALIGN(_cfbSegmentEnd, 16);
+
+   /* init() runs on sp_rmon and copies the compressed data to just below 0x80300000,
+      so the boot image (bss and stacks) must stay clear of that area. 0x14000 covers c_data. */
+   __bootScratchCheck = ASSERT(_stacksSegmentEnd <= 0x80300000 - 0x14000, "bss/stacks overlap the boot decompression area");
 
    /*move em to end, out of the way*/
    /DISCARD/ : {

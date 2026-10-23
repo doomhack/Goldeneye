@@ -6,7 +6,6 @@
 #include <deb.h>
 #include <memp.h>
 #include <music.h>
-#include <tlb_manage.h>
 #include <fr.h>
 #include <snd.h>
 #include <ramrom.h>
@@ -959,8 +958,6 @@ void lvlSetMultipliersForDifficulty(void)
  */
 void lvlManageMpGame(void)
 {
-    tlbmanageResetCurrentEntriesCount();
-
     if (g_ControlsLockedFlag != 0)
     {
         g_ClockTimer = 0;

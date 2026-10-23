@@ -22,17 +22,15 @@ extern u32 *_inflateSegmentVaddrEnd;
 extern u32 *_inflateSegmentRomStart;
 extern u32 *_inflateSegmentRomEnd;
 
-extern u32 *_gameSegmentVaddrStart;
-extern u32 *_gameSegmentVaddrEnd;
+extern u32 *_gameSegmentStart;
+extern u32 *_gameSegmentEnd;
+extern u32 *_heapSegmentStart;
 extern u32 *_gameSegmentRomStart;
 extern u32 *_gameSegmentRomEnd;
 
 extern u32* _animation_dataSegmentRomStart;
 extern u32* _animation_dataSegmentStart;
 extern u32* _animation_dataSegmentEnd;
-
-extern u32* _alt_startSegmentRomStart;
-extern u32* _alt_startSegmentStart;
 
 extern u8 sp_boot[SP_BOOT_SZ];
 extern u8 sp_rmon[SP_RMON_SZ];

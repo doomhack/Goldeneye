@@ -7,7 +7,6 @@
 #include "crash.h"
 #include <PR/os.h>
 #include "fr.h"
-#include "tlb_manage.h"
 #include <PR/R4300.h>
 #include "thread_config.h"
 struct deblistentry

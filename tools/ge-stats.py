@@ -706,10 +706,7 @@ def main():
         'osMapTLB.s',
         'random.s',
         'rom_header.s',
-        'rspboot.s',
-        'tlb_random.s',
-        'tlb_hardwire.s',
-        'tlb_resolve.s']
+        'rspboot.s']
 
      # files to count as complete, in src/libultrare directory
     src_libultrare_completed_list = [

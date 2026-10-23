@@ -25,10 +25,10 @@
 #include "sched.h"
 #include "speed_graph.h"
 #include "token.h"
-#include "tlb_manage.h"
 #include "fr.h"
 #include "game/image.h"
 #include "vi.h"
+#include "crash.h"
 #include "game/bg.h"
 #include "game/debugmenu_handler.h"
 #include "game/lv.h"
@@ -156,6 +156,39 @@ extern struct player *g_CurrentPlayer;
  */
 
 
+/**
+ * The mod needs the Expansion Pak: the game code is resident in RAM and the heap
+ * runs to the top of 8MB. Without it, say so on screen instead of crashing.
+ * Everything used here sits in the first 4MB.
+ */
+static void bossCheckExpansionPak(void)
+{
+    u16 *fb;
+    s32 i;
+
+    if (osMemSize >= 0x800000)
+    {
+        return;
+    }
+
+    fb = (u16 *) K0_TO_K1(cfb_16[0]);
+
+    for (i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++)
+    {
+        fb[i] = GPACK_RGBA5551(0, 0, 0, 1);
+    }
+
+    crashDrawString(fb, SCREEN_WIDTH, (SCREEN_WIDTH - 22 * 10) / 2, SCREEN_HEIGHT / 2 - 24, 2, "EXPANSION PAK REQUIRED");
+    crashDrawString(fb, SCREEN_WIDTH, (SCREEN_WIDTH - 35 * 5) / 2, SCREEN_HEIGHT / 2 + 8, 1, "Switch off, insert it and try again");
+
+    osViSwapBuffer(cfb_16[0]);
+    osViBlack(FALSE);
+
+    while (1)
+    {
+    }
+}
+
 void bossInitMainthreadData(void)
 {
     OSMesg bossmsg;
@@ -165,9 +198,9 @@ void bossInitMainthreadData(void)
     u32 unused;
     s32 i;
 
+    bossCheckExpansionPak();
     debInit();
     romCreateMesgQueue();
-    tlbmanageEstablishManagementTable();
     image_entries_load();
     mempInit();
     memaInit();
@@ -214,8 +247,8 @@ void bossInitMainthreadData(void)
         g_CurentMMallocValue = (s32) (strtol(tokenFind(1, "-m"), 0, 0) << 0xa);
     }
 
-    start = (PHYS_TO_K0(osVirtualToPhysical(&_bssSegmentEnd)));
-    mempCheckMemflagTokens(start, ((u32)tlbmanageGetTlbAllocatedBlock() - (u32)start));
+    start = (u32) &_heapSegmentStart;
+    mempCheckMemflagTokens(start, PHYS_TO_K0(osMemSize) - start);
     mempResetBank(MEMPOOL_PERMANENT);
     langInit();
     lvInit();
