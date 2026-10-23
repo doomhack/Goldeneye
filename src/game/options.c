@@ -18,6 +18,9 @@
 #include "frametiming.h"
 #include "assets/obseg/text/LoptionE.h"
 
+// The controller that drives the watch: in co-op, the player who has it out.
+#define WATCH_PAD (g_CoopMode ? get_cur_playernum() : PLAYER_1)
+
 #define WATCH_BACKGROUND_VERTEX_COUNT 30
 
 #define WATCH_VOL_ADJUST_STEP 1024
@@ -365,19 +368,19 @@ void init_watch_at_start_of_stage(int stage)
 
 void controller_deadzone_related(void)
 {
-    if (10 < joyGetStickX(PLAYER_1))
+    if (10 < joyGetStickX(WATCH_PAD))
     {
         D_80040B50 = D_80040B50 + 1;
     }
-    if (joyGetStickX(PLAYER_1) < -10)
+    if (joyGetStickX(WATCH_PAD) < -10)
     {
         D_80040B50 = D_80040B50 + -1;
     }
-    if (10 < joyGetStickY(PLAYER_1))
+    if (10 < joyGetStickY(WATCH_PAD))
     {
         D_80040B54 = D_80040B54 + -1;
     }
-    if (joyGetStickY(PLAYER_1) < -10)
+    if (joyGetStickY(WATCH_PAD) < -10)
     {
         D_80040B54 = D_80040B54 + 1;
     }
@@ -386,22 +389,22 @@ void controller_deadzone_related(void)
 
 Gfx * sub_GAME_7F0A4B40(Gfx *DL)
 {
-    if (10 < joyGetStickX(PLAYER_1))
+    if (10 < joyGetStickX(WATCH_PAD))
     {
         D_80040B48 += 1;
     }
 
-    if (joyGetStickX(PLAYER_1) < -10)
+    if (joyGetStickX(WATCH_PAD) < -10)
     {
         D_80040B48 -= 1;
     }
 
-    if (10 < joyGetStickY(PLAYER_1))
+    if (10 < joyGetStickY(WATCH_PAD))
     {
         D_80040B4C -= 1;
     }
 
-    if (joyGetStickY(PLAYER_1) < -10)
+    if (joyGetStickY(WATCH_PAD) < -10)
     {
         D_80040B4C += 1;
     }
@@ -574,13 +577,13 @@ void reset_watch_item_is_actively_selected(void){
 
 u32 is_holding_greater_than_2E_left_on_stick(void)
 {
-    return (joyGetStickX(PLAYER_1) < -0x2d);
+    return (joyGetStickX(WATCH_PAD) < -0x2d);
 }
 
 
 u32 is_holding_greater_than_2E_right_on_stick(void)
 {
-    return ((joyGetStickX(PLAYER_1) < 0x2e) ^ 1);
+    return ((joyGetStickX(WATCH_PAD) < 0x2e) ^ 1);
 }
 
 
@@ -608,13 +611,13 @@ s32 sub_GAME_7F0A4FEC(void)
 
 u32 is_holding_greater_than_2E_up_on_stick(void)
 {
-    return (joyGetStickY(PLAYER_1) < 0x2e) ^ 1;
+    return (joyGetStickY(WATCH_PAD) < 0x2e) ^ 1;
 }
 
 
 u32 is_holding_greater_than_2E_down_on_stick(void)
 {
-    return (joyGetStickY(PLAYER_1) < -0x2d);
+    return (joyGetStickY(WATCH_PAD) < -0x2d);
 }
 
 
@@ -644,13 +647,13 @@ s32 sub_GAME_7F0A50C4(void)
 
 u32 is_holding_less_than_10_up_on_stick(void)
 {
-    return (joyGetStickY(PLAYER_1) < 0x10) ^ 1;
+    return (joyGetStickY(WATCH_PAD) < 0x10) ^ 1;
 }
 
 
 u32 is_holding_less_than_10_down_on_stick(void)
 {
-    return (joyGetStickY(PLAYER_1) < -0xf);
+    return (joyGetStickY(WATCH_PAD) < -0xf);
 }
 
 
@@ -710,23 +713,23 @@ void watch_screen0_navigation(void)
 
         if (get_debug_gunwatchpos_flag() == 0)
         {
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, L_TRIG|L_CBUTTONS))
+            if (joyGetButtonsPressedThisFrame(WATCH_PAD, L_TRIG|L_CBUTTONS))
             {
                 goto_watch_screen_index_4 = TRUE;
             }
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, R_TRIG|R_CBUTTONS))
+            if (joyGetButtonsPressedThisFrame(WATCH_PAD, R_TRIG|R_CBUTTONS))
             {
                 goto_watch_screen_index_1 = TRUE;
             }
         }
 
 
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD)) || (sub_GAME_7F0A4FB0()))
+        if ((joyGetButtonsPressedThisFrame(WATCH_PAD, L_JPAD)) || (sub_GAME_7F0A4FB0()))
         {
             goto_watch_screen_index_4 = TRUE;
         }
 
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD)) || (sub_GAME_7F0A4FEC()))
+        if ((joyGetButtonsPressedThisFrame(WATCH_PAD, R_JPAD)) || (sub_GAME_7F0A4FEC()))
         {
             goto_watch_screen_index_1 = TRUE;
         }
@@ -746,7 +749,7 @@ void watch_screen0_navigation(void)
             return;
         }
     }
-    else if ((D_800409A4) && (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON)))
+    else if ((D_800409A4) && (joyGetButtonsPressedThisFrame(WATCH_PAD, Z_TRIG|A_BUTTON)))
     {
         D_800409A4 = 0;
         set_missionstate(MISSION_STATE_0);
@@ -770,22 +773,22 @@ void watch_screen1_navigation(void)
 
         if (get_debug_gunwatchpos_flag() == FALSE)
         {
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, L_TRIG|L_CBUTTONS))
+            if (joyGetButtonsPressedThisFrame(WATCH_PAD, L_TRIG|L_CBUTTONS))
             {
                 goto_watch_screen_index_0 = TRUE;
             }
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, R_TRIG|R_CBUTTONS))
+            if (joyGetButtonsPressedThisFrame(WATCH_PAD, R_TRIG|R_CBUTTONS))
             {
                 goto_watch_screen_index_2 = TRUE;
             }
         }
 
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD)) || (sub_GAME_7F0A4FB0()))
+        if ((joyGetButtonsPressedThisFrame(WATCH_PAD, L_JPAD)) || (sub_GAME_7F0A4FB0()))
         {
             goto_watch_screen_index_0 = TRUE;
         }
 
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD)) || (sub_GAME_7F0A4FEC()))
+        if ((joyGetButtonsPressedThisFrame(WATCH_PAD, R_JPAD)) || (sub_GAME_7F0A4FEC()))
         {
             goto_watch_screen_index_2 = TRUE;
         }
@@ -812,7 +815,7 @@ void watch_screen1_navigation(void)
 
 void unused_watch_screen_navigation(void) {
 
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS|L_TRIG|L_JPAD)) || (sub_GAME_7F0A4FB0()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, L_CBUTTONS|L_TRIG|L_JPAD)) || (sub_GAME_7F0A4FB0()))
     {
         if (watch_item_is_actively_selected == 0)
         {
@@ -821,7 +824,7 @@ void unused_watch_screen_navigation(void) {
             return;
         }
     }
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS|R_TRIG|R_JPAD)) || (sub_GAME_7F0A4FEC()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, R_CBUTTONS|R_TRIG|R_JPAD)) || (sub_GAME_7F0A4FEC()))
     {
         if (watch_item_is_actively_selected == 0)
         {
@@ -837,9 +840,9 @@ void unused_watch_screen_navigation(void) {
 // WATCH_INDEX_CONTROL_OPTIONS
 void watch_screen2_navigation(void) {
 
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS|L_TRIG|L_JPAD)) || (sub_GAME_7F0A4FB0()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, L_CBUTTONS|L_TRIG|L_JPAD)) || (sub_GAME_7F0A4FB0()))
     {
-        if ((joyGetButtons(PLAYER_1, Z_TRIG) == 0) && (watch_item_is_actively_selected == 0))
+        if ((joyGetButtons(WATCH_PAD, Z_TRIG) == 0) && (watch_item_is_actively_selected == 0))
         {
             watch_screen_index = WATCH_INDEX_INVENTORY;
             sub_GAME_7F0A5210();
@@ -847,9 +850,9 @@ void watch_screen2_navigation(void) {
             return;
         }
     }
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS|R_TRIG|R_JPAD)) || (sub_GAME_7F0A4FEC()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, R_CBUTTONS|R_TRIG|R_JPAD)) || (sub_GAME_7F0A4FEC()))
     {
-        if ((joyGetButtons(PLAYER_1, Z_TRIG) == 0) && (watch_item_is_actively_selected == 0))
+        if ((joyGetButtons(WATCH_PAD, Z_TRIG) == 0) && (watch_item_is_actively_selected == 0))
         {
             watch_screen_index = WATCH_INDEX_GAME_OPTIONS;
             reset_game_options_index();
@@ -862,9 +865,9 @@ void watch_screen2_navigation(void) {
 // WATCH_INDEX_GAME_OPTIONS
 void watch_screen3_navigation(void) {
 
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS|L_TRIG|L_JPAD)) || (sub_GAME_7F0A4FB0()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, L_CBUTTONS|L_TRIG|L_JPAD)) || (sub_GAME_7F0A4FB0()))
     {
-        if ((joyGetButtons(PLAYER_1, Z_TRIG) == 0) && (watch_item_is_actively_selected == 0))
+        if ((joyGetButtons(WATCH_PAD, Z_TRIG) == 0) && (watch_item_is_actively_selected == 0))
         {
             watch_screen_index = WATCH_INDEX_CONTROL_OPTIONS;
             reset_controller_options_index();
@@ -872,9 +875,9 @@ void watch_screen3_navigation(void) {
             return;
         }
     }
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS|R_TRIG|R_JPAD)) || (sub_GAME_7F0A4FEC()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, R_CBUTTONS|R_TRIG|R_JPAD)) || (sub_GAME_7F0A4FEC()))
     {
-        if ((joyGetButtons(PLAYER_1, Z_TRIG) == 0) && (watch_item_is_actively_selected == 0))
+        if ((joyGetButtons(WATCH_PAD, Z_TRIG) == 0) && (watch_item_is_actively_selected == 0))
         {
             watch_screen_index = WATCH_INDEX_MISSION_BRIEFING;
             sub_GAME_7F0A5210();
@@ -887,7 +890,7 @@ void watch_screen3_navigation(void) {
 // WATCH_INDEX_MISSION_BRIEFING
 void watch_screen4_navigation(void) {
 
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS|L_TRIG|L_JPAD)) || (sub_GAME_7F0A4FB0()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, L_CBUTTONS|L_TRIG|L_JPAD)) || (sub_GAME_7F0A4FB0()))
     {
         if (watch_item_is_actively_selected == 0)
         {
@@ -898,7 +901,7 @@ void watch_screen4_navigation(void) {
             return;
         }
     }
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS|R_TRIG|R_JPAD)) || (sub_GAME_7F0A4FEC()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, R_CBUTTONS|R_TRIG|R_JPAD)) || (sub_GAME_7F0A4FEC()))
     {
         if (watch_item_is_actively_selected == 0)
         {
@@ -913,7 +916,7 @@ void watch_screen4_navigation(void) {
 
 void controller_options_controlstyle_navigation(void)
 {
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
     {
         if (watch_item_is_actively_selected == 0)
         {
@@ -922,7 +925,7 @@ void controller_options_controlstyle_navigation(void)
             return;
         }
     }
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
     {
         if (watch_item_is_actively_selected == 0)
         {
@@ -935,7 +938,7 @@ void controller_options_controlstyle_navigation(void)
 
 void controller_options_inputs_navigation(void)
 {
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
     {
         if (watch_item_is_actively_selected == 0)
         {
@@ -944,7 +947,7 @@ void controller_options_inputs_navigation(void)
             return;
         }
     }
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
     {
         if (watch_item_is_actively_selected == 0)
         {
@@ -959,13 +962,13 @@ void sub_GAME_7F0A5998(void)
 {
     s32 aux;
 
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
     {
         game_options_index = game_options_index - 1;
         disable_watch_stick_y_nav_ready();
         reset_watch_item_is_actively_selected();
     }
-    else if ((joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
+    else if ((joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
     {
         game_options_index = game_options_index + 1;
         disable_watch_stick_y_nav_ready();
@@ -989,7 +992,7 @@ void sub_GAME_7F0A5998(void)
 
 void game_options_music_volume_navigation(void)
 {
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
         game_options_index = GAME_OPTIONS_INDEX_HIRES;
         disable_watch_stick_y_nav_ready();
@@ -997,7 +1000,7 @@ void game_options_music_volume_navigation(void)
         return;
     }
 
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
     {
         game_options_index = GAME_OPTIONS_INDEX_FX;
         disable_watch_stick_y_nav_ready();
@@ -1008,7 +1011,7 @@ void game_options_music_volume_navigation(void)
 
 void game_options_fx_volume_navigation(void)
 {
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
         game_options_index = GAME_OPTIONS_INDEX_MUSIC;
         disable_watch_stick_y_nav_ready();
@@ -1016,7 +1019,7 @@ void game_options_fx_volume_navigation(void)
         return;
     }
 
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
     {
         game_options_index = GAME_OPTIONS_INDEX_LOOK_UPDOWN;
         disable_watch_stick_y_nav_ready();
@@ -1035,7 +1038,7 @@ void game_options_inventory_navigation(void)
 
     if (!get_debug_gunwatchpos_flag())
     {
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD | U_CBUTTONS) || joyGetStickY(PLAYER_1) >= 0x47)
+        if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_JPAD | U_CBUTTONS) || joyGetStickY(WATCH_PAD) >= 0x47)
         {
             if (((s32) watch_inventory_cursor_pos > 0) && !watch_item_is_actively_selected)
             {
@@ -1044,7 +1047,7 @@ void game_options_inventory_navigation(void)
         }
         else
         {
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD | D_CBUTTONS) || joyGetStickY(PLAYER_1) < -0x46)
+            if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_JPAD | D_CBUTTONS) || joyGetStickY(WATCH_PAD) < -0x46)
             {
                 goto down_body;
             }
@@ -1061,14 +1064,14 @@ after_updown:
             ;
         }
 
-        if (joyGetButtons(PLAYER_1, U_JPAD | U_CBUTTONS))
+        if (joyGetButtons(WATCH_PAD, U_JPAD | U_CBUTTONS))
         {
             if (((s32) watch_inventory_cursor_pos > 0) && !watch_item_is_actively_selected)
             {
                 watch_inventory_cursor_pos -= 0.1f;
             }
         }
-        else if (joyGetButtons(PLAYER_1, D_JPAD | D_CBUTTONS))
+        else if (joyGetButtons(WATCH_PAD, D_JPAD | D_CBUTTONS))
         {
             if (((s32) watch_inventory_cursor_pos < count - 1) && !watch_item_is_actively_selected)
             {
@@ -1077,19 +1080,19 @@ after_updown:
         }
     }
 
-    if (joyGetStickY(PLAYER_1) >= 0x1f
-        && joyGetStickY(PLAYER_1) < 0x46
+    if (joyGetStickY(WATCH_PAD) >= 0x1f
+        && joyGetStickY(WATCH_PAD) < 0x46
         && g_curWatchItemIndex > 0
         && !watch_item_is_actively_selected)
     {
-        watch_inventory_cursor_pos -= (f32) joyGetStickY(PLAYER_1) / 300.0f;
+        watch_inventory_cursor_pos -= (f32) joyGetStickY(WATCH_PAD) / 300.0f;
     }
-    else if (joyGetStickY(PLAYER_1) < -0x1e
-        && joyGetStickY(PLAYER_1) >= -0x45
+    else if (joyGetStickY(WATCH_PAD) < -0x1e
+        && joyGetStickY(WATCH_PAD) >= -0x45
         && (s32) watch_inventory_cursor_pos < count - 1
         && !watch_item_is_actively_selected)
     {
-        watch_inventory_cursor_pos -= (f32) joyGetStickY(PLAYER_1) / 300.0f;
+        watch_inventory_cursor_pos -= (f32) joyGetStickY(WATCH_PAD) / 300.0f;
     }
 
     if (watch_stick_y_pressed_up() && g_curWatchItemIndex > 0 && !watch_item_is_actively_selected)
@@ -1151,12 +1154,12 @@ after_updown:
     }
 
     if (((f32) g_curWatchItemIndex + 0.55f < watch_inventory_cursor_pos)
-        && !joyGetButtons(PLAYER_1, 0xffff)) // Any button
+        && !joyGetButtons(WATCH_PAD, 0xffff)) // Any button
     {
         watch_inventory_cursor_pos -= 0.1f;
     }
     else if (watch_inventory_cursor_pos <= (f32) g_curWatchItemIndex + 0.45f
-        && !joyGetButtons(PLAYER_1, 0xffff)) // Any button
+        && !joyGetButtons(WATCH_PAD, 0xffff)) // Any button
     {
         watch_inventory_cursor_pos += 0.1f;
     }
@@ -1167,14 +1170,14 @@ void sub_GAME_7F0A611C(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s32
 {
     if (!get_debug_gunwatchpos_flag())
     {
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD | U_CBUTTONS) || joyGetStickY(PLAYER_1) >= 0x47)
+        if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_JPAD | U_CBUTTONS) || joyGetStickY(WATCH_PAD) >= 0x47)
         {
             if ((s32)*arg0 > 0 && arg7)
             {
                 *arg0 -= 1.0f;
             }
         }
-        else if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD | D_CBUTTONS) || joyGetStickY(PLAYER_1) < -0x46)
+        else if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_JPAD | D_CBUTTONS) || joyGetStickY(WATCH_PAD) < -0x46)
         {
             if ((s32)*arg0 < arg2 - 1 && arg7)
             {
@@ -1182,14 +1185,14 @@ void sub_GAME_7F0A611C(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s32
             }
         }
 
-        if (joyGetButtons(PLAYER_1, U_JPAD | U_CBUTTONS))
+        if (joyGetButtons(WATCH_PAD, U_JPAD | U_CBUTTONS))
         {
             if ((s32)*arg0 > 0 && arg7)
             {
                 *arg0 -= 0.1f;
             }
         }
-        else if (joyGetButtons(PLAYER_1, D_JPAD | D_CBUTTONS))
+        else if (joyGetButtons(WATCH_PAD, D_JPAD | D_CBUTTONS))
         {
             if ((s32)*arg0 < arg2 - 1 && arg7)
             {
@@ -1198,13 +1201,13 @@ void sub_GAME_7F0A611C(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s32
         }
     }
 
-    if (joyGetStickY(PLAYER_1) >= 0x1f && joyGetStickY(PLAYER_1) < 0x46 && *arg1 > 0 && arg7)
+    if (joyGetStickY(WATCH_PAD) >= 0x1f && joyGetStickY(WATCH_PAD) < 0x46 && *arg1 > 0 && arg7)
     {
-        *arg0 -= (f32)joyGetStickY(PLAYER_1) / 300.0f;
+        *arg0 -= (f32)joyGetStickY(WATCH_PAD) / 300.0f;
     }
-    else if (joyGetStickY(PLAYER_1) < -0x1e && joyGetStickY(PLAYER_1) >= -0x45 && (s32)*arg0 < arg2 - 1 && arg7)
+    else if (joyGetStickY(WATCH_PAD) < -0x1e && joyGetStickY(WATCH_PAD) >= -0x45 && (s32)*arg0 < arg2 - 1 && arg7)
     {
-        *arg0 -= (f32)joyGetStickY(PLAYER_1) / 300.0f;
+        *arg0 -= (f32)joyGetStickY(WATCH_PAD) / 300.0f;
     }
 
     if (watch_stick_y_pressed_up() && *arg1 > 0 && arg7)
@@ -1255,7 +1258,7 @@ void sub_GAME_7F0A611C(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s32
 
     if ((f32)*arg1 + 0.55f < *arg0)
     {
-        if (!joyGetButtons(PLAYER_1, ANY_BUTTON))
+        if (!joyGetButtons(WATCH_PAD, ANY_BUTTON))
         {
             *arg0 -= 0.1f;
             return;
@@ -1264,7 +1267,7 @@ void sub_GAME_7F0A611C(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s32
 
     if (*arg0 <= (f32)*arg1 + 0.45f)
     {
-        if (!joyGetButtons(PLAYER_1, ANY_BUTTON))
+        if (!joyGetButtons(WATCH_PAD, ANY_BUTTON))
         {
             *arg0 += 0.1f;
         }
@@ -1274,14 +1277,14 @@ void sub_GAME_7F0A611C(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s32
 
 void mission_brief_background_navigation(void)
 {
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
     {
         mission_brief_index = BRIEF_INDEX_OBJECTIVES;
         disable_watch_stick_y_nav_ready();
         reset_watch_item_is_actively_selected();
     }
 
-    if ((joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
+    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
     {
         mission_brief_index = BRIEF_INDEX_M;
         disable_watch_stick_y_nav_ready();
@@ -1292,7 +1295,7 @@ void mission_brief_background_navigation(void)
 
 void mission_brief_m_briefing_navigation(void)
 {
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
         mission_brief_index = BRIEF_INDEX_BACKGROUND;
         disable_watch_stick_y_nav_ready();
@@ -1300,7 +1303,7 @@ void mission_brief_m_briefing_navigation(void)
         return;
     }
 
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
     {
         mission_brief_index = BRIEF_INDEX_Q;
         disable_watch_stick_y_nav_ready();
@@ -1311,7 +1314,7 @@ void mission_brief_m_briefing_navigation(void)
 
 void mission_brief_q_branch_navigation(void)
 {
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
         mission_brief_index = BRIEF_INDEX_M;
         disable_watch_stick_y_nav_ready();
@@ -1319,7 +1322,7 @@ void mission_brief_q_branch_navigation(void)
         return;
     }
 
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
     {
         mission_brief_index = BRIEF_INDEX_MONEYPENNY;
         disable_watch_stick_y_nav_ready();
@@ -1329,7 +1332,7 @@ void mission_brief_q_branch_navigation(void)
 
 void mission_brief_moneypenny_navigation(void)
 {
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
         mission_brief_index = BRIEF_INDEX_Q;
         disable_watch_stick_y_nav_ready();
@@ -1337,7 +1340,7 @@ void mission_brief_moneypenny_navigation(void)
         return;
     }
 
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
     {
         mission_brief_index = BRIEF_INDEX_OBJECTIVES;
         disable_watch_stick_y_nav_ready();
@@ -1347,7 +1350,7 @@ void mission_brief_moneypenny_navigation(void)
 
 void mission_brief_objectives_navigation(void)
 {
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
         mission_brief_index = BRIEF_INDEX_MONEYPENNY;
         disable_watch_stick_y_nav_ready();
@@ -1355,7 +1358,7 @@ void mission_brief_objectives_navigation(void)
         return;
     }
 
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD) || sub_GAME_7F0A50C4())
     {
         mission_brief_index = BRIEF_INDEX_BACKGROUND;
         disable_watch_stick_y_nav_ready();
@@ -1447,22 +1450,22 @@ void sub_GAME_7F0A6A80(void)
     s32 temp_3;
     u32 random_value;
 
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON))
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, START_BUTTON))
     {
         set_open_close_solo_watch_menu_to1();
     }
 
     if (controlstick_lr_enabled == 0)
     {
-        if ((joyGetStickX(PLAYER_1) >= -0xA) && (joyGetStickX(PLAYER_1) < 0xB))
+        if ((joyGetStickX(WATCH_PAD) >= -0xA) && (joyGetStickX(WATCH_PAD) < 0xB))
         {
             controlstick_lr_enabled = 1;
         }
-        else if ((joyGetStickX(PLAYER_1) < 0xB) && (joy7000C174(PLAYER_1) >= 0xB))
+        else if ((joyGetStickX(WATCH_PAD) < 0xB) && (joy7000C174(WATCH_PAD) >= 0xB))
         {
             controlstick_lr_enabled = 1;
         }
-        else if ((joyGetStickX(PLAYER_1) >= -0xA) && (joy7000C174(PLAYER_1) < -0xA))
+        else if ((joyGetStickX(WATCH_PAD) >= -0xA) && (joy7000C174(WATCH_PAD) < -0xA))
         {
             controlstick_lr_enabled = 1;
         }
@@ -1470,15 +1473,15 @@ void sub_GAME_7F0A6A80(void)
 
     if (watch_stick_y_nav_ready == 0)
     {
-        if ((joyGetStickY(PLAYER_1) >= -0xA) && (joyGetStickY(PLAYER_1) < 0xB))
+        if ((joyGetStickY(WATCH_PAD) >= -0xA) && (joyGetStickY(WATCH_PAD) < 0xB))
         {
             watch_stick_y_nav_ready = 1;
         }
-        else if ((joyGetStickY(PLAYER_1) < 0xB) && (joy7000C284(PLAYER_1) >= 0xB))
+        else if ((joyGetStickY(WATCH_PAD) < 0xB) && (joy7000C284(WATCH_PAD) >= 0xB))
         {
             watch_stick_y_nav_ready = 1;
         }
-        else if ((joyGetStickY(PLAYER_1) >= -0xA) && (joy7000C284(PLAYER_1) < -0xA))
+        else if ((joyGetStickY(WATCH_PAD) >= -0xA) && (joy7000C284(WATCH_PAD) < -0xA))
         {
             watch_stick_y_nav_ready = 1;
         }
@@ -1862,7 +1865,7 @@ Gfx *draw_abort_cancel_confirm(Gfx *gdl)
     {
         if (D_800409A4 == 0)
         {
-            if ((joyGetStickX(PLAYER_1) >= 0x2E) || (joyGetButtons(PLAYER_1, 0x111) != 0))
+            if ((joyGetStickX(WATCH_PAD) >= 0x2E) || (joyGetButtons(WATCH_PAD, 0x111) != 0))
             {
                 D_800409A4 = 1;
             }
@@ -1871,7 +1874,7 @@ Gfx *draw_abort_cancel_confirm(Gfx *gdl)
         {
             if (D_800409A4 != 0)
             {
-                if ((joyGetStickX(PLAYER_1) < -0x2D) || (joyGetButtons(PLAYER_1, 0x222) != 0))
+                if ((joyGetStickX(WATCH_PAD) < -0x2D) || (joyGetButtons(WATCH_PAD, 0x222) != 0))
                 {
                     D_800409A4 = 0;
                 }
@@ -2169,8 +2172,8 @@ Gfx *draw_watch_mission_status_page(Gfx *gdl, Mtx *param_2)
 
 void sub_GAME_7F0A8378(void)
 {
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON) == 0) {
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON) == 0)
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, Z_TRIG|A_BUTTON) == 0) {
+        if (joyGetButtonsPressedThisFrame(WATCH_PAD, START_BUTTON) == 0)
         {
             return;
         }
@@ -2587,12 +2590,12 @@ void watch_adjust_volume_slider(u16* outVolume) {
     s32 joy_x;
     s32 adjusted_volume;
 
-    joy_x = joyGetStickX(PLAYER_1);
+    joy_x = joyGetStickX(WATCH_PAD);
     adjusted_volume = *outVolume;
 
-    if (joyGetButtons(PLAYER_1, R_CBUTTONS|R_TRIG|R_JPAD)) {
+    if (joyGetButtons(WATCH_PAD, R_CBUTTONS|R_TRIG|R_JPAD)) {
         adjusted_volume = adjusted_volume + WATCH_VOL_ADJUST_STEP;
-    } else if (joyGetButtons(PLAYER_1, L_CBUTTONS|L_TRIG|L_JPAD)) {
+    } else if (joyGetButtons(WATCH_PAD, L_CBUTTONS|L_TRIG|L_JPAD)) {
         adjusted_volume = adjusted_volume - WATCH_VOL_ADJUST_STEP;
     }
 
@@ -2991,7 +2994,7 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
         showmovesight = 0;
         gdl = microcode_constructor(gdl);
  
-        if (joyGetButtons(PLAYER_1, L_TRIG))
+        if (joyGetButtons(WATCH_PAD, L_TRIG))
         {
             gdl = draw_options_labels(gdl, 0x32, OPTLABELS_ROW1_Y, langGet(*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 8)), -1, 1, 0x7000A0, 0, 0, 0x3000B0, 0);
  
@@ -3007,13 +3010,13 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
  
         y = OPTLABELS_ROW2_Y;
  
-        if (controller_options_index != 1 || !watch_item_is_actively_selected || !joyGetButtons(PLAYER_1, U_JPAD | D_JPAD | L_JPAD | R_JPAD))
+        if (controller_options_index != 1 || !watch_item_is_actively_selected || !joyGetButtons(WATCH_PAD, U_JPAD | D_JPAD | L_JPAD | R_JPAD))
         {
             gdl = draw_options_labels(gdl, 0x32, y, langGet(*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 14)), 0xAA00B0, 0, -1, 0, 0, 0x3000B0, 0);
         }
         else
         {
-            if (joyGetButtons(PLAYER_1, U_JPAD))
+            if (joyGetButtons(WATCH_PAD, U_JPAD))
             {
                 if (*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 14) == getStringID(LOPTIONS, OPTION_STR_05_MOVE_LF))
                 {
@@ -3024,7 +3027,7 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
                     dpadtext = dirtext1;
                 }
             }
-            else if (joyGetButtons(PLAYER_1, D_JPAD))
+            else if (joyGetButtons(WATCH_PAD, D_JPAD))
             {
                 if (*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 14) == getStringID(LOPTIONS, OPTION_STR_05_MOVE_LF))
                 {
@@ -3035,11 +3038,11 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
                     dpadtext = dirtext2;
                 }
             }
-            else if (joyGetButtons(PLAYER_1, L_JPAD))
+            else if (joyGetButtons(WATCH_PAD, L_JPAD))
             {
                 dpadtext = langGet(getStringID(LOPTIONS, OPTION_STR_2F_SIDESTEP_LF));
             }
-            else if (joyGetButtons(PLAYER_1, R_JPAD))
+            else if (joyGetButtons(WATCH_PAD, R_JPAD))
             {
                 dpadtext = langGet(getStringID(LOPTIONS, OPTION_STR_2E_SIDESTEP_LF));
             }
@@ -3051,7 +3054,7 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
         gdl = draw_options_labels(gdl, 0x32, y, langGet(*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 16)), 0xAA00B0, 0, -1, 0, 0, 0x3000B0, 0);
         y += OPTLABELS_ROW_PITCH;
  
-        if (joyGetButtons(PLAYER_1, Z_TRIG))
+        if (joyGetButtons(WATCH_PAD, Z_TRIG))
         {
             gdl = draw_options_labels(gdl, 0x32, y, langGet(*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 6)), -1, 1, 0x7000A0, 0, 0, 0x3000B0, 0);
  
@@ -3067,7 +3070,7 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
  
         y -= OPTLABELS_COL_RET;
  
-        if (joyGetButtons(PLAYER_1, R_TRIG))
+        if (joyGetButtons(WATCH_PAD, R_TRIG))
         {
             gdl = draw_options_labels(gdl, 0x10e, y, langGet(*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 10)), -1, 1, 0x7000A0, 0, 0, 0x3000B0, 1);
  
@@ -3083,18 +3086,18 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
  
         y += OPTLABELS_ROW_PITCH;
  
-        if (controller_options_index != 1 || !watch_item_is_actively_selected || !joyGetButtons(PLAYER_1, U_CBUTTONS | D_CBUTTONS | L_CBUTTONS | R_CBUTTONS))
+        if (controller_options_index != 1 || !watch_item_is_actively_selected || !joyGetButtons(WATCH_PAD, U_CBUTTONS | D_CBUTTONS | L_CBUTTONS | R_CBUTTONS))
         {
             gdl = draw_options_labels(gdl, 0x10e, y, langGet(*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 12)), 0xAA00B0, 0, -1, 0, 0, 0x3000B0, 1);
         }
         else
         {
-            buttons = joyGetButtons(PLAYER_1, U_CBUTTONS | D_CBUTTONS | L_CBUTTONS | R_CBUTTONS);
+            buttons = joyGetButtons(WATCH_PAD, U_CBUTTONS | D_CBUTTONS | L_CBUTTONS | R_CBUTTONS);
  
             /* power-of-two test: exactly one C button held */
             if ((buttons & (buttons - 1U)) == 0)
             {
-                if (joyGetButtons(PLAYER_1, U_CBUTTONS))
+                if (joyGetButtons(WATCH_PAD, U_CBUTTONS))
                 {
                     if (*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 12) == getStringID(LOPTIONS, OPTION_STR_05_MOVE_LF))
                     {
@@ -3105,7 +3108,7 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
                         ctext = dirtext1;
                     }
                 }
-                else if (joyGetButtons(PLAYER_1, D_CBUTTONS))
+                else if (joyGetButtons(WATCH_PAD, D_CBUTTONS))
                 {
                     if (*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 12) == getStringID(LOPTIONS, OPTION_STR_05_MOVE_LF))
                     {
@@ -3116,11 +3119,11 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
                         ctext = dirtext2;
                     }
                 }
-                else if (joyGetButtons(PLAYER_1, L_CBUTTONS))
+                else if (joyGetButtons(WATCH_PAD, L_CBUTTONS))
                 {
                     ctext = langGet(getStringID(LOPTIONS, OPTION_STR_2F_SIDESTEP_LF));
                 }
-                else if (joyGetButtons(PLAYER_1, R_CBUTTONS))
+                else if (joyGetButtons(WATCH_PAD, R_CBUTTONS))
                 {
                     ctext = langGet(getStringID(LOPTIONS, OPTION_STR_2E_SIDESTEP_LF));
                 }
@@ -3135,7 +3138,7 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
  
         y += OPTLABELS_ROW_PITCH;
  
-        if (joyGetButtons(PLAYER_1, B_BUTTON))
+        if (joyGetButtons(WATCH_PAD, B_BUTTON))
         {
             gdl = draw_options_labels(gdl, 0x10e, y, langGet(*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 4)), -1, 1, 0x7000A0, 0, 0, 0x3000B0, 1);
         }
@@ -3146,7 +3149,7 @@ Gfx *sub_GAME_7F0A9AB8(Gfx *gdl)
  
         y += OPTLABELS_ROW_PITCH;
  
-        if (joyGetButtons(PLAYER_1, A_BUTTON))
+        if (joyGetButtons(WATCH_PAD, A_BUTTON))
         {
             gdl = draw_options_labels(gdl, 0x10e, y, langGet(*(u16 *)((u8 *)game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20) + 2)), -1, 1, 0x7000A0, 0, 0, 0x3000B0, 1);
         }
@@ -3175,7 +3178,7 @@ Gfx *display_text_buttons_dual_control(Gfx *gdl)
 
     gdl = microcode_constructor(gdl);
 
-    if (joyGetButtons(PLAYER_1, A_BUTTON))
+    if (joyGetButtons(WATCH_PAD, A_BUTTON))
     {
         gdl = draw_options_labels(gdl, 0x5A, YOFFSET_WEAPTEXT, langGet(getStringID(LOPTIONS, OPTION_STR_03_WEAPON_LF)), -1, 1, 0x7000A0, 0, 0, 0x3000B0, 0); //weapon
     }
@@ -3184,7 +3187,7 @@ Gfx *display_text_buttons_dual_control(Gfx *gdl)
         gdl = draw_options_labels(gdl, 0x5A, YOFFSET_WEAPTEXT, langGet(getStringID(LOPTIONS, OPTION_STR_03_WEAPON_LF)), 0xAA00B0, 0, -1, 0, 0, 0x3000B0, 0); //weapon
     }
 
-    if (joyGetButtons(PLAYER_1, B_BUTTON))
+    if (joyGetButtons(WATCH_PAD, B_BUTTON))
     {
         gdl = draw_options_labels(gdl, 0x5A, YOFFSET_ACTIONTEXT, langGet(getStringID(LOPTIONS, OPTION_STR_02_ACTION_LF)), -1, 1, 0x7000A0, 0, 0, 0x3000B0, 0); //action
     }
@@ -3202,7 +3205,7 @@ Gfx *display_text_buttons_dual_control(Gfx *gdl)
         textptr_aux = langGet(getStringID(LOPTIONS, OPTION_STR_01_AIM_LF)); //aim
     }
 
-    if (joyGetButtons(PLAYER_1, Z_TRIG))
+    if (joyGetButtons(WATCH_PAD, Z_TRIG))
     {
         gdl = draw_options_labels(gdl, 0x5A, YOFFSET_5, textptr_aux, -1, 1, 0x7000A0, 0, 0, 0x3000B0, 0);
     }
@@ -3319,7 +3322,7 @@ Gfx *draw_watch_controller(Gfx *gdl)
 
     if (watch_item_is_actively_selected && (controller_options_index == CONTROLLER_OPTIONS_INDEX_INPUTS))
     {
-        g_WatchControllerPitch = sub_GAME_7F0A95C4(g_WatchControllerPitch, (((f32) joyGetStickY(PLAYER_1)) * M_TAU_F) / 360.0f, 4.0f);
+        g_WatchControllerPitch = sub_GAME_7F0A95C4(g_WatchControllerPitch, (((f32) joyGetStickY(WATCH_PAD)) * M_TAU_F) / 360.0f, 4.0f);
     }
     else
     {
@@ -3541,7 +3544,7 @@ void game_option_select_value(u32 *param_1, u32 param_2)
 
 void game_option_toggle_input(s32 option_index)
 {
-    if ( (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS|L_TRIG|L_JPAD) || sub_GAME_7F0A4FB0()) && watch_item_is_actively_selected )
+    if ( (joyGetButtonsPressedThisFrame(WATCH_PAD, L_CBUTTONS|L_TRIG|L_JPAD) || sub_GAME_7F0A4FB0()) && watch_item_is_actively_selected )
     {
         if (game_options_entries[option_index].current_value == 1)
         {
@@ -3554,7 +3557,7 @@ void game_option_toggle_input(s32 option_index)
     }
     else
     {
-        if ( (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS|R_TRIG|R_JPAD) || sub_GAME_7F0A4FEC()) && watch_item_is_actively_selected )
+        if ( (joyGetButtonsPressedThisFrame(WATCH_PAD, R_CBUTTONS|R_TRIG|R_JPAD) || sub_GAME_7F0A4FEC()) && watch_item_is_actively_selected )
         {
             if (game_options_entries[option_index].current_value == 0)
             {
@@ -4142,7 +4145,7 @@ Gfx *draw_watch_current_page(Gfx *gdl, Mtx *arg1, s32 watch_transitioning)
         sub_GAME_7F0BD8FC(0);
 
         // Handle A or Z button click when in any page but inventory page
-        if ((watch_screen_index != WATCH_INDEX_INVENTORY) && (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON)))
+        if ((watch_screen_index != WATCH_INDEX_INVENTORY) && (joyGetButtonsPressedThisFrame(WATCH_PAD, Z_TRIG|A_BUTTON)))
         {
             watch_play_beep_sound();
         }
