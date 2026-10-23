@@ -282,14 +282,13 @@ f32 fogGetScaledFarFogIntensitySquared(void)
  * Address 0x7F0BA758.
 */
 /**
- * Co-op's "near" draw distance: the far plane (and so the fog, which is
- * placed relative to it) comes in to this fraction of the level's. Rooms and
- * props past it aren't drawn, which saves time in both views. The fog starts
- * at least this far through the range, so distant rooms fade out rather
- * than pop.
+ * Co-op's "near" draw distance: the far plane comes in to this fraction of
+ * the level's. Rooms and props past it aren't drawn, which saves time in both
+ * views. The fog positions are fractions of the depth buffer range, which is
+ * 1/z-like: the level's fog keeps starting at about the same distance and
+ * still reaches full strength at the (nearer) far plane, so nothing pops.
  */
 #define COOP_NEAR_DRAW_SCALE 0.5f
-#define COOP_NEAR_FOG_START  900
 
 static EnvironmentRecord *s_FogLastEnvironment;
 
@@ -307,7 +306,6 @@ void fogReloadCurrentEnvironment(void)
 void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
 {
     f32 farfog;
-    s32 fogstart;
     f32 zrange[2]; // 48
     f32 pk0;
     f32 pk4;
@@ -327,16 +325,10 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
 
     s_FogLastEnvironment = arg0;
     farfog = arg0->Visibility.FarFog;
-    fogstart = arg0->Fog.DifferenceFromFarIntensity;
 
     if (g_CoopMode && get_draw_near_setting())
     {
         farfog *= COOP_NEAR_DRAW_SCALE;
-
-        if (fogstart > COOP_NEAR_FOG_START)
-        {
-            fogstart = COOP_NEAR_FOG_START;
-        }
     }
 
     viSetZRange(arg0->Visibility.BlendMultiplier, farfog);
@@ -346,7 +338,7 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
     zrange[0] /= temp_f0;
     zrange[1] /= temp_f0;
 
-    g_DifferenceFromFarFogIntensity = ((f32) fogstart / 1000.0f);
+    g_DifferenceFromFarFogIntensity = ((f32) arg0->Fog.DifferenceFromFarIntensity / 1000.0f);
     g_FarFogIntensity = ((f32) arg0->Fog.FarIntensity / 1000.0f);
 
     g_ScaledFarFogIntensity = ((zrange[1] - zrange[0]) *  g_FarFogIntensity) + zrange[0];
@@ -364,7 +356,7 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
     g_CurFogDetails.far_fog_dist_scaled = ((pk4 * -sp20 * (pk0 + 1.0f)) / (pk4 - pk0)) / 255.0f;
     g_CurFogDetails.near_fog_dist_scaled = ((sp20 * (pk4 + 1.0f) / (pk4 - pk0)) + sp1C) / 255.0f;
 
-    g_CurrentEnvironment.DifferenceFromFarIntensity = fogstart;
+    g_CurrentEnvironment.DifferenceFromFarIntensity = (s32) arg0->Fog.DifferenceFromFarIntensity;
     g_CurrentEnvironment.FarIntensity = arg0->Fog.FarIntensity;
     g_CurrentEnvironment.Red = arg0->Sky.Red;
     g_CurrentEnvironment.Green = arg0->Sky.Green;
