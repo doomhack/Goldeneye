@@ -8803,6 +8803,106 @@ void mp_respawn_handler(void)
 
 
 /**
+ * Co-op: when a dead player can respawn (A, Z or Start once this has passed).
+ */
+#define COOP_RESPAWN_DELAY60 (10 * 60)
+
+s32 g_CoopDeathTime[4];
+s32 g_CoopDeathWeapons[4][2];
+
+/**
+ * Co-op: bring the current (dead) player back beside a living partner.
+ * Like mp_respawn_handler, but the player keeps their inventory and ammo,
+ * since mission items are needed to finish the level.
+ */
+void coopRespawnNearPartner(void)
+{
+    struct player *partner = NULL;
+    coord3d pos;
+    StandTile *stan;
+    f32 look_angle;
+    f32 stan_height;
+    s32 count = getPlayerCount();
+    s32 cur = get_cur_playernum();
+    s32 i;
+
+    for (i = 0; i < count; i++)
+    {
+        if ((i != cur) && !g_playerPointers[i]->bonddead)
+        {
+            partner = g_playerPointers[i];
+            break;
+        }
+    }
+
+    if (partner == NULL)
+    {
+        return;
+    }
+
+    init_player_BONDdata();
+    bondviewPlayerBeginLife();
+
+    g_CurrentPlayer->bonddead = 0;
+    g_CurrentPlayer->deathanimfinished = 0;
+    g_CurrentPlayer->redbloodfinished = 0;
+    g_CurrentPlayer->startnewbonddie = 1;
+    g_CurrentPlayer->healthdamagetype = 7;
+    g_CurrentPlayer->damagetype = 7;
+    g_CurrentPlayer->gunammooff = 0;
+    g_CurrentPlayer->gunsightmode = 2;
+
+    hudmsgsSetOn(-1);
+    bondviewClearUpperTextDisplayFlag(-1);
+
+    pos = partner->prop->pos;
+    stan = partner->prop->stan;
+    look_angle = (partner->vv_theta * M_TAU_F) / 360.0f;
+    coopFindPartnerSpawn(&pos, &stan, look_angle);
+
+    stan_height = bondviewYPositionRelated(stan, pos.x, pos.z);
+    pos.y = g_CurrentPlayer->eyeheight + stan_height;
+    g_CurrentPlayer->field_70 = stan_height;
+    g_CurrentPlayer->vv_theta = partner->vv_theta;
+    g_CurrentPlayer->stanHeight = stan_height;
+#if defined(VERSION_EU)
+    g_CurrentPlayer->field_6C = (f32) (stan_height / 0.2004f);
+#else
+    g_CurrentPlayer->field_6C = (f32) (stan_height / 0.17000002f);
+#endif
+
+    change_player_pos_to_target(&g_CurrentPlayer->field_488, &pos, stan);
+
+    g_CurrentPlayer->field_488.theta_transform.x = -sinf(look_angle);
+    g_CurrentPlayer->field_488.theta_transform.y = 0.0f;
+    g_CurrentPlayer->field_488.theta_transform.z = cosf(look_angle);
+    g_CurrentPlayer->prop->pos.x = g_CurrentPlayer->bondprevpos.x = pos.f[0];
+    g_CurrentPlayer->prop->pos.y = g_CurrentPlayer->bondprevpos.y = pos.f[1];
+    g_CurrentPlayer->prop->pos.z = g_CurrentPlayer->bondprevpos.z = pos.f[2];
+    g_CurrentPlayer->prop->stan = stan;
+#if defined(VERSION_EU)
+    g_CurrentPlayer->field_3B8.x = (f32) (g_CurrentPlayer->field_488.pos.x / 0.118799984f);
+    g_CurrentPlayer->field_3B8.y = (f32) (g_CurrentPlayer->field_488.pos.y / 0.118799984f);
+    g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.118799984f);
+#else
+    g_CurrentPlayer->field_3B8.x = (f32) (g_CurrentPlayer->field_488.pos.x / 0.100000024f);
+    g_CurrentPlayer->field_3B8.y = (f32) (g_CurrentPlayer->field_488.pos.y / 0.100000024f);
+    g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.100000024f);
+#endif
+    bondviewUpdatePlayerCollisionBounds();
+
+    // Back to the guns the player died holding.
+    currentPlayerEquipWeaponWrapper(GUNRIGHT, g_CoopDeathWeapons[cur][GUNRIGHT]);
+    currentPlayerEquipWeaponWrapper(GUNLEFT, g_CoopDeathWeapons[cur][GUNLEFT]);
+
+    g_CurrentPlayer->field_78 = 0.0f;
+    g_CurrentPlayer->field_7C = -0.0001f;
+    g_CurrentPlayer->field_80 = 0.0f;
+    currentPlayerStartChrFade(120.0f, 1.0f);
+}
+
+
+/**
  * Address: 7F088CD8
  */
 Gfx *bondviewRenderCredits(Gfx *gdl)
@@ -9052,7 +9152,12 @@ Gfx *maybe_mp_interface(Gfx *gdl)
             if (doblood)
             {
                 die_blood_image_routine(0);
-                if (!isMpGame())
+                if (coopPartnerAlive())
+                {
+                    // Co-op: the partner plays on, so keep the music and
+                    // mission going.
+                }
+                else if (!isMpGame())
                 {
                     // This unusual comma-expression syntax is required for a byte match.
                     set_missionstate((musicStopSlot(-1), 0));
@@ -9104,7 +9209,15 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                 }
                 if (currentPlayerIsFadeComplete())
                 {
-                    if (!isMpGame())
+                    if (coopPartnerAlive())
+                    {
+                        if (((g_GlobalTimer - g_CoopDeathTime[get_cur_playernum()]) >= COOP_RESPAWN_DELAY60)
+                            && joyGetButtons(get_cur_playernum(), 0xB000))
+                        {
+                            coopRespawnNearPartner();
+                        }
+                    }
+                    else if (!isMpGame())
                     {
                         bondviewSetCameraMode(CAMERAMODE_DEATH_CAM_SP);
                     }
@@ -9222,7 +9335,19 @@ void bondviewKillCurrentPlayer(void)
             trigger_solo_watch_menu(1);
         }
 
-        g_isBondKIA = 1;
+        if (g_CoopMode)
+        {
+            g_CoopDeathTime[get_cur_playernum()] = g_GlobalTimer;
+            g_CoopDeathWeapons[get_cur_playernum()][GUNRIGHT] = getCurrentPlayerWeaponId(GUNRIGHT);
+            g_CoopDeathWeapons[get_cur_playernum()][GUNLEFT] = getCurrentPlayerWeaponId(GUNLEFT);
+        }
+
+        // In co-op the mission carries on while the partner is alive.
+        if (!coopPartnerAlive())
+        {
+            g_isBondKIA = 1;
+        }
+
         g_CurrentPlayer->bonddead = 1;
 
         g_CurrentPlayer->previous_collision_info = g_CurrentPlayer->field_488;

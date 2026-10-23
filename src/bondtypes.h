@@ -2501,6 +2501,9 @@ typedef union
         BeamRecord beams[2];
 
         PropRecord    *handle_positiondata_hat;
+
+        /* Co-op: index of the player this chr is fighting. See coopChrSelectTarget. */
+        s8             targetplayer;
     } ChrRecord;
     // ChrRecord *pChrData; //not Global, local to Object or function
 

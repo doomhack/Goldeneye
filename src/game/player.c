@@ -119,6 +119,32 @@ s32 isMpGame(void)
     return !g_CoopMode && getPlayerCount() >= 2;
 }
 
+/**
+ * Co-op: TRUE if a player other than the current one is alive. While one
+ * is, a player's death doesn't end the mission.
+ */
+s32 coopPartnerAlive(void)
+{
+    s32 count = getPlayerCount();
+    s32 cur = get_cur_playernum();
+    s32 i;
+
+    if (!g_CoopMode)
+    {
+        return FALSE;
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        if ((i != cur) && !g_playerPointers[i]->bonddead)
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 s32 getPlayerCount(void)
 {
     s32 count = 0;
