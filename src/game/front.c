@@ -3357,6 +3357,9 @@ Gfx *constructor_menu07_missionsel(Gfx *DL)
 
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
+#ifndef __sgi
+    return DL;
+#endif
 }
 
 
@@ -7372,6 +7375,9 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
+#ifndef __sgi
+    return DL;
+#endif
 }
 
 
