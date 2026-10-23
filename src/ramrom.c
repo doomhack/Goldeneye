@@ -50,10 +50,55 @@ void romReceiveMesg(void)
  * romCopy
  * copy from rom to ram
  */
+/**
+ * A DMA target that shares a data cache line with other data is not safe on
+ * real hardware: if the CPU touches that line while the DMA is in flight, the
+ * line is refilled from RAM before the DMA lands and the stale copy wins.
+ * Emulators complete DMAs instantly, so this only ever shows up on a console.
+ * Unaligned copies (typically buffers on the stack) go through this buffer.
+ */
+#define ROM_BOUNCE_SIZE 0x400
+static u8 romBounceBuffer[ROM_BOUNCE_SIZE] __attribute__((aligned(16)));
+
+static void romCopyBounced(u8 *target, u8 *source, u32 size)
+{
+    u32 chunk;
+
+    while (size != 0)
+    {
+        chunk = (size < ROM_BOUNCE_SIZE) ? size : ROM_BOUNCE_SIZE;
+        doRomCopy(romBounceBuffer, source, ALIGN16_a(chunk));
+        romReceiveMesg();
+        bcopy(romBounceBuffer, target, chunk);
+        target += chunk;
+        source += chunk;
+        size -= chunk;
+    }
+}
+
 void romCopy(void *target, void *source, u32 size)
 {
-    doRomCopy(target, source, size);
-    romReceiveMesg();
+    u32 direct;
+
+    if ((u32) target & 0xF)
+    {
+        romCopyBounced(target, source, size);
+        return;
+    }
+
+    // Whole cache lines go straight to the target, a partial last line is bounced
+    direct = size & ~0xF;
+
+    if (direct != 0)
+    {
+        doRomCopy(target, source, direct);
+        romReceiveMesg();
+    }
+
+    if (direct != size)
+    {
+        romCopyBounced((u8 *) target + direct, (u8 *) source + direct, size - direct);
+    }
 }
 
 /**
