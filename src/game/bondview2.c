@@ -9,6 +9,7 @@
 #include <str.h>
 #include <options.h>
 #include "bg.h"
+#include "bgfog.h"
 #include "bgroomtrans.h"
 #include "blood_animation.h"
 #include "bondhead.h"
@@ -4062,6 +4063,12 @@ void trigger_solo_watch_menu(s32 arg0)
         else
         {
             fileCoopStorePartnerOptions();
+        }
+
+        // The draw distance option may have changed.
+        if (g_CoopMode)
+        {
+            fogReloadCurrentEnvironment();
         }
 
         sub_GAME_7F0C1340();

@@ -115,7 +115,8 @@ struct game_options game_options_entries[] = {
     { {getStringID(LOPTIONS, OPTION_STR_18_RATIO_LF), getStringID(LOPTIONS, OPTION_STR_22_NORMAL_LF), getStringID(LOPTIONS, OPTION_STR_23_169_LF), 0}, 0}, //ratio, normal, 16:9
     { {getStringID(LOPTIONS, OPTION_STR_3D_HIRES_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0}, //hi-res, off, on
     { {getStringID(LOPTIONS, OPTION_STR_3E_SPLITSCREEN_LF), getStringID(LOPTIONS, OPTION_STR_40_SIDE_LF), getStringID(LOPTIONS, OPTION_STR_41_STACKED_LF), 0}, 0}, //split screen, side, stacked
-    { {getStringID(LOPTIONS, OPTION_STR_3F_FPSCOUNTER_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0} //fps counter, off, on
+    { {getStringID(LOPTIONS, OPTION_STR_3F_FPSCOUNTER_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0}, //fps counter, off, on
+    { {getStringID(LOPTIONS, OPTION_STR_42_DRAWDISTANCE_LF), getStringID(LOPTIONS, OPTION_STR_1F_FULL_LF), getStringID(LOPTIONS, OPTION_STR_43_NEAR_LF), 0}, 0} //draw distance (co-op), full, near
 };
 
 //D:80040ADC
@@ -577,6 +578,16 @@ u32 get_fps_setting(void)
 void set_fps_setting(u32 enabled)
 {
     game_options_entries[PLAYER_OPTION_FPS].current_value = enabled;
+}
+
+u32 get_draw_near_setting(void)
+{
+    return game_options_entries[PLAYER_OPTION_DRAWDIST].current_value;
+}
+
+void set_draw_near_setting(u32 near)
+{
+    game_options_entries[PLAYER_OPTION_DRAWDIST].current_value = near;
 }
 
 /**
@@ -1055,7 +1066,7 @@ void sub_GAME_7F0A5998(void)
 
     if (aux < 0)
     {
-        game_options_index = GAME_OPTIONS_INDEX_FPS;
+        game_options_index = GAME_OPTIONS_INDEX_DRAWDIST;
     }
 }
 
@@ -1064,7 +1075,7 @@ void game_options_music_volume_navigation(void)
 {
     if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
-        game_options_index = GAME_OPTIONS_INDEX_FPS;
+        game_options_index = GAME_OPTIONS_INDEX_DRAWDIST;
         disable_watch_stick_y_nav_ready();
         reset_watch_item_is_actively_selected();
         return;
@@ -1661,6 +1672,7 @@ void sub_GAME_7F0A6A80(void)
                 case GAME_OPTIONS_INDEX_HIRES:
                 case GAME_OPTIONS_INDEX_SPLIT:
                 case GAME_OPTIONS_INDEX_FPS:
+                case GAME_OPTIONS_INDEX_DRAWDIST:
                     sub_GAME_7F0A5998();
             }
             watch_screen3_navigation();

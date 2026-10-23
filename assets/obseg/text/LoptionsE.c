@@ -65,5 +65,7 @@ char *LoptionsE[] = {
  "split screen\n", //OPTION_STR_3E
  "fps counter\n", //OPTION_STR_3F
  "side\n", //OPTION_STR_40
- "stacked\n" //OPTION_STR_41
+ "stacked\n", //OPTION_STR_41
+ "draw distance\n", //OPTION_STR_42
+ "near\n" //OPTION_STR_43
 };
