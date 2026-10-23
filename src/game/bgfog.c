@@ -6,6 +6,7 @@
 #include "bg.h"
 #include "bondview.h"
 #include "bgfog.h"
+#include "player.h"
 #include <limits.h>
 
 /**
@@ -416,7 +417,8 @@ void fogLoadLevelEnvironment(s32 level_id, s32 arg1)
 
     num_players = getPlayerCount();
 
-    if (num_players == 1)
+    // Co-op plays solo levels, which only have solo fog tables.
+    if ((num_players == 1) || !isMpGame())
     {
         num_players = 0;
     }

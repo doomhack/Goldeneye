@@ -2038,7 +2038,7 @@ void generate_player_thrown_object(s32 hand)
         switch (current_weapon)
         {
             case ITEM_REMOTEMINE:
-            if (getPlayerCount() == 1)
+            if (!isMpGame())
             {
                 wor->timer = THROWN_ITEM_TIMER_SOLO;
             }
@@ -2049,7 +2049,7 @@ void generate_player_thrown_object(s32 hand)
             break;
 
             case ITEM_PROXIMITYMINE:
-            if (getPlayerCount() == 1)
+            if (!isMpGame())
             {
                 wor->timer = THROWN_ITEM_TIMER_SOLO;
             }
@@ -2060,7 +2060,7 @@ void generate_player_thrown_object(s32 hand)
             break;
 
             case ITEM_TIMEDMINE:
-            if (getPlayerCount() == 1)
+            if (!isMpGame())
             {
                 wor->timer = THROWN_ITEM_TIMER_SOLO;
             }
@@ -2071,7 +2071,7 @@ void generate_player_thrown_object(s32 hand)
             break;
 
             case ITEM_BOMBCASE:
-            if (getPlayerCount() == 1)
+            if (!isMpGame())
             {
                 wor->timer = THROWN_ITEM_TIMER_SOLO;
             }

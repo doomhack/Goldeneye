@@ -95,6 +95,9 @@ void shuffle_player_ids(void);
 s32 get_nth_player_from_shuffled(PLAYER_ID id);
 void set_cur_player(s32 playernum);
 s32 getPlayerCount(void);
+s32 isMpGame(void);
+extern s32 g_CoopMode;
+extern s32 g_CoopPlayersOverlap;
 void set_cur_player_screen_size(u32 width, u32 height);
 void set_cur_player_viewport_size(u32 ulx, u32 uly);
 

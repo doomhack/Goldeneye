@@ -53,7 +53,7 @@ Gfx *display_red_blue_on_radar(Gfx *DL)
     cur_playernum = get_cur_playernum();
     player_count = getPlayerCount();
     
-    if (player_count == 1)
+    if (!isMpGame())
     {
         return DL;
     }

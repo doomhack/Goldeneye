@@ -10221,7 +10221,7 @@ s32 get_ammo_in_magazine(AmmoCrateRecord *crate)
         case AMMO_DARTS:   qty =  4; break;
     }
 
-    if (qty > 1 && getPlayerCount() == 1)
+    if (qty > 1 && !isMpGame())
     {
         qty *= g_SoloAmmoMultiplier;
     }
@@ -10254,7 +10254,7 @@ s32 ammo_collected_from_weapon(WeaponObjRecord *weapon)
         case AMMO_GRENADEROUND: qty =  3; break;
     }
 
-    if (qty > 1 && getPlayerCount() == 1)
+    if (qty > 1 && !isMpGame())
     {
         qty *= g_SoloAmmoMultiplier;
     }
@@ -10520,7 +10520,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
                 ammoquantity = multicrate->slots[i].quantity;
 
-                if (getPlayerCount() == 1)
+                if (!isMpGame())
                 {
                     ammoquantity *= g_SoloAmmoMultiplier;
                 }
@@ -10965,7 +10965,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
         {
             ignore = 1;
         } 
-        else if (getPlayerCount() >= 2) 
+        else if (isMpGame()) 
         {
             sp58 = get_scenario();
 

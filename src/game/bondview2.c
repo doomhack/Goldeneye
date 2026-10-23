@@ -358,7 +358,7 @@ void solo_char_load(void)
 
         bondviewDeregisterPlayerRoom(g_CurrentPlayer);
 
-        if (getPlayerCount() == 1)
+        if (!isMpGame() && (get_cur_playernum() == 0))
         {
             helddst = fileGetBondForCurrentFolder();
             switch (g_CurrentPlayer->bondtype)
@@ -860,7 +860,7 @@ void bondviewSetCameraMode(s32 arg0)
             currentPlayerSetFadeFrac(60.0f, 0.0f);
         }
 
-        if (getPlayerCount() >= 2)
+        if (isMpGame())
         {
             fogLoadLevelEnvironment(bossGetStageNum(), 0);
         }
@@ -1629,7 +1629,7 @@ void currentPlayerSetYAutoAimEnabled(bool enabled)
  */
 bool currentPlayerGetYAutoAimEnabled(void)
 {
-    if (getPlayerCount() == 1)
+    if (!isMpGame())
     {
         return g_CurrentPlayer->autoyaimenabled;
     }
@@ -1693,7 +1693,7 @@ void currentPlayerSetXAutoAimEnabled(bool enabled)
  */
 bool currentPlayerGetXAutoAimEnabled(void)
 {
-    if (getPlayerCount() == 1)
+    if (!isMpGame())
     {
         return g_CurrentPlayer->autoxaimenabled;
     }
@@ -2080,6 +2080,37 @@ f32 bondviewGet8003646CRad(void)
 
 
 
+#define COOP_OVERLAP_CLEAR_DIST 70.0f
+
+/**
+ * Co-op: while the two players overlap after spawning (see
+ * g_CoopPlayersOverlap), returns the partner's prop so movement can ignore
+ * it. Clears the overlap once they are far enough apart.
+ */
+static PropRecord *coopGetOverlappingPartner(void)
+{
+    PropRecord *other;
+    f32 dx;
+    f32 dz;
+
+    if (!g_CoopPlayersOverlap || (getPlayerCount() < 2))
+    {
+        return NULL;
+    }
+
+    other = g_playerPointers[get_cur_playernum() == 0 ? 1 : 0]->prop;
+    dx = other->pos.f[0] - g_CurrentPlayer->prop->pos.f[0];
+    dz = other->pos.f[2] - g_CurrentPlayer->prop->pos.f[2];
+
+    if ((dx * dx) + (dz * dz) > COOP_OVERLAP_CLEAR_DIST * COOP_OVERLAP_CLEAR_DIST)
+    {
+        g_CoopPlayersOverlap = FALSE;
+        return NULL;
+    }
+
+    return other;
+}
+
 /**
  * Address 0x7F07CF8C.
 */
@@ -2087,6 +2118,7 @@ s32 bondviewTryMoveToStan(struct coord3d *arg0, StandTile **stan)
 {
     s32 sp94;
     StandTile *sp90;
+    PropRecord *overlap_partner;
     s32 cdtypes;
     f32 height;
     f32 always_30;
@@ -2120,6 +2152,13 @@ s32 bondviewTryMoveToStan(struct coord3d *arg0, StandTile **stan)
         if (g_WorldTankProp != NULL)
         {
             sub_GAME_7F03D058(g_WorldTankProp, 0);
+        }
+
+        overlap_partner = coopGetOverlappingPartner();
+
+        if (overlap_partner != NULL)
+        {
+            sub_GAME_7F03D058(overlap_partner, 0);
         }
 
         sub_GAME_7F03D058(g_CurrentPlayer->prop, 0);
@@ -2177,6 +2216,11 @@ block_20:
         }
 
         sub_GAME_7F03D058(g_CurrentPlayer->prop, 1);
+
+        if (overlap_partner != NULL)
+        {
+            sub_GAME_7F03D058(overlap_partner, 1);
+        }
 
         if (g_WorldTankProp != NULL)
         {
@@ -4827,7 +4871,7 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5
                 && g_CurrentPlayer->open_close_solo_watch_menu)
         )
-        && (getPlayerCount() == 1))
+        && (getPlayerCount() == 1)) // co-op: no watch yet, it draws over both views
     {
         trigger_solo_watch_menu(0);
     }
@@ -4835,7 +4879,7 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x0
         && g_CurrentPlayer->bonddead == FALSE
         && (
-            getPlayerCount() == 1
+            !isMpGame()
             || (
                 g_stopPlayFlag == 0
                 && g_gameOverFlag == 0)))
@@ -5447,7 +5491,7 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         moveData.speedVertaUp = ftemp_nostack_spE8;
     }
 
-    if (bondviewGetIfCurrentPlayerDamageShowTime() && getPlayerCount() == 1)
+    if (bondviewGetIfCurrentPlayerDamageShowTime() && !isMpGame())
     {
         moveData.triggerOn = 0;
     }
@@ -6019,7 +6063,7 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
     canCycleWeapons = 1;
 
-    if ((getPlayerCount() >= 2) && (get_scenario() == 2) && (bondinvIsAliveWithFlag()))
+    if ((isMpGame()) && (get_scenario() == 2) && (bondinvIsAliveWithFlag()))
     {
         canCycleWeapons = 0;
     }
@@ -7970,8 +8014,8 @@ void bondviewMovePlayerUpdateViewport(s8 stick_x, s8 stick_y, u16 buttons)
 
     gunSetSightVisible(
         GUNSIGHTREASON_1,
-        (getPlayerCount() == 1 && cur_player_get_sight_onscreen_control())
-            || (getPlayerCount() >= 2 && g_playerPerm->sight)
+        (!isMpGame() && cur_player_get_sight_onscreen_control())
+            || (isMpGame() && g_playerPerm->sight)
     );
 
 #if defined(VERSION_EU)
@@ -8990,7 +9034,7 @@ Gfx *maybe_mp_interface(Gfx *gdl)
         }
     }
 
-    if (getPlayerCount() == 1)
+    if (!isMpGame())
     {
         display_objective_status_text_on_status_change();
     }
@@ -9008,7 +9052,7 @@ Gfx *maybe_mp_interface(Gfx *gdl)
             if (doblood)
             {
                 die_blood_image_routine(0);
-                if (getPlayerCount() == 1)
+                if (!isMpGame())
                 {
                     // This unusual comma-expression syntax is required for a byte match.
                     set_missionstate((musicStopSlot(-1), 0));
@@ -9060,7 +9104,7 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                 }
                 if (currentPlayerIsFadeComplete())
                 {
-                    if (getPlayerCount() == 1)
+                    if (!isMpGame())
                     {
                         bondviewSetCameraMode(CAMERAMODE_DEATH_CAM_SP);
                     }
@@ -9240,7 +9284,7 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
         hudMakeDamageSegments(g_CurrentPlayer->health_display_values, 0x2E, -1, currentPlayerGetHealth());
     }
 
-    if (getPlayerCount() < 2 || (g_stopPlayFlag == 0 && g_gameOverFlag == 0))
+    if (!isMpGame() || (g_stopPlayFlag == 0 && g_gameOverFlag == 0))
     {
         if (g_PlayerIsInTank == 1)
         {
@@ -9257,7 +9301,7 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
             }
         }
 
-        if (getPlayerCount() >= 2 && get_scenario() == SCENARIO_LTK)
+        if (isMpGame() && get_scenario() == SCENARIO_LTK)
         {
             // the damage dealt is always equivalent to how much health and armor the player has
             // the result of this is to always kill the player regardless of how much damage he can sustain
@@ -9265,14 +9309,14 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
         }
 
         if (g_CurrentPlayer->cheatBondInvincible == FALSE && g_CurrentPlayer->bonddead == FALSE && g_PlayerInvincible == FALSE &&
-            (g_CurrentPlayer->damageshowtime < 0 || (getPlayerCount() >= 2 && g_CurrentPlayer->damageshowtime == 0)))
+            (g_CurrentPlayer->damageshowtime < 0 || (isMpGame() && g_CurrentPlayer->damageshowtime == 0)))
         {
             if (g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0x5 && g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0xc)
             {
                 g_CurrentPlayer->oldhealth = g_CurrentPlayer->bondhealth;
                 g_CurrentPlayer->oldarmour = g_CurrentPlayer->bondarmour;
 
-                if (getPlayerCount() >= 2)
+                if (isMpGame())
                 {
                     cur_player_num = get_cur_playernum();
                     angle = g_playerPointers[cur_player_num]->vv_theta - (360.0f - ((atan2f(vectorx, vectorz) * 180.0f) / 3.1415927f));
@@ -9307,7 +9351,7 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
 
                     if (g_CurrentPlayer->bondhealth <= 0.0f)
                     {
-                        if (getPlayerCount() >= 2)
+                        if (isMpGame())
                         {
                             sp2C = get_cur_playernum();
                             sp28 = 0;

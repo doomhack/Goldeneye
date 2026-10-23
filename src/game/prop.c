@@ -157,7 +157,7 @@ void domakedefaultobj(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
 
     arg1->damage = *(s32*)&arg1->damage / 65536.0f;
 
-    if (getPlayerCount() >= 2)
+    if (isMpGame())
     {
         sp74 = 1;
 
@@ -552,7 +552,7 @@ void weaponAssignToHome(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
         hastoken = 1;
         giveweapon = 1;
 
-        if (getPlayerCount() >= 2)
+        if (isMpGame())
         {
             lastmpweaponnum = -1;
 
@@ -790,7 +790,7 @@ void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
         scale = monitor->extrascale * (1.0f / 256.0f);
         monitor->damage = *(s32*)&monitor->damage / M_U16_MAX_VALUE_F;
 
-        if (getPlayerCount() >= 2)
+        if (isMpGame())
         {
             monitor->state |= PROPSTATE_RESPAWN;
         }
@@ -1257,7 +1257,7 @@ void proplvreset2(enum LEVELID stageId)
          * There are no slots for the mp stages in setup_text_pointers. The name is created
          * by adding "mp_" after the "U" e.g. "Ump_setuparchZ"
          */
-        if (getPlayerCount() >= 2)
+        if (isMpGame())
         {
             strcat(strResource, "mp_"); // -> "Ump_"
         }
@@ -1507,7 +1507,7 @@ void proplvreset2(enum LEVELID stageId)
              * - don't load on 4 players
              * - don't load in multiplayer
              */
-            if (getPlayerCount() >= 2)
+            if (isMpGame())
             {
                 flags |= 1 << (getPlayerCount() + 20);
             }
@@ -1664,7 +1664,7 @@ void proplvreset2(enum LEVELID stageId)
                         s32 ammoqty = 1;
                         s32 i9;
 
-                        if (getPlayerCount() >= 2)
+                        if (isMpGame())
                         {
                             struct s_mp_weapon_set *mpweapon = &getPtrMPWeaponSetData()[lastmpweaponnum];
                             

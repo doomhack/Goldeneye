@@ -307,7 +307,7 @@ void pauseAndLockControls(void)
 
 bool disablePlayerActionsWhenPausedOrInMpMenu(void)
 {
-    if (getPlayerCount() == 1)
+    if (!isMpGame())
     {
         return TRUE;
     }
@@ -594,7 +594,7 @@ void mpwatchMenuTick(void)
         }
     }
 
-    if (player_count != 1)
+    if (isMpGame())
     {
         // If a player has their pause menu up when they die and the game isn't over, turn their menu off. 
         if ((g_CurrentPlayer->bonddead) && (!g_gameOverFlag))
