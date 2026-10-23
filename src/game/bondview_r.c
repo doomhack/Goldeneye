@@ -204,6 +204,7 @@ void bondviewLoadSetupIntroSection(void)
     g_PlayerIsInTank = 0;
     g_WorldTankProp = 0;
     g_PlayerTankProp = NULL;
+    g_CoopTankPlayer = -1;
     g_PlayerTankYOffset = FLOAT_INIT;
     g_TankSfxState[0] = NULL;
     g_TankSfxState[1] = NULL;

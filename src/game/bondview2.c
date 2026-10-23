@@ -2011,8 +2011,90 @@ s32 sub_GAME_7F07CDD4(struct coord3d *arg0, f32 arg1, StandTile **arg2)
 
 
 
+/**
+ * Co-op: the player using the tank (climbing on or driving it), or -1.
+ * Streets and Runway have one tank and its state is all globals, so only
+ * one player can use it; the other walks.
+ */
+s32 g_CoopTankPlayer = -1;
+
+static struct
+{
+    s32 hidden;
+    s32 inTank;
+    s32 canEnter;
+    f32 yOffset;
+    struct PropRecord *worldTank;
+    struct PropRecord *playerTank;
+} s_CoopTankStash;
+
+/**
+ * Co-op: TRUE if the other player is using the tank.
+ */
+s32 coopTankUsedByPartner(void)
+{
+    return g_CoopMode && (g_CoopTankPlayer >= 0) && (g_CoopTankPlayer != get_cur_playernum());
+}
+
+/**
+ * Co-op: while the current player is moved or drawn, hide the tank state
+ * if the other player is using the tank, so this player isn't treated as
+ * being in it. Undone by coopTankEndPlayer.
+ */
+void coopTankBeginPlayer(void)
+{
+    s_CoopTankStash.hidden = coopTankUsedByPartner();
+
+    if (s_CoopTankStash.hidden)
+    {
+        s_CoopTankStash.inTank = g_PlayerIsInTank;
+        s_CoopTankStash.canEnter = g_BondCanEnterTank;
+        s_CoopTankStash.yOffset = g_PlayerTankYOffset;
+        s_CoopTankStash.worldTank = g_WorldTankProp;
+        s_CoopTankStash.playerTank = g_PlayerTankProp;
+
+        g_PlayerIsInTank = FALSE;
+        g_BondCanEnterTank = FALSE;
+        g_PlayerTankYOffset = 0.0f;
+        g_WorldTankProp = NULL;
+        g_PlayerTankProp = NULL;
+    }
+}
+
+/**
+ * Co-op: undo coopTankBeginPlayer. After a player's move, also note whether
+ * they have started or stopped using the tank.
+ */
+void coopTankEndPlayer(s32 moved)
+{
+    if (s_CoopTankStash.hidden)
+    {
+        g_PlayerIsInTank = s_CoopTankStash.inTank;
+        g_BondCanEnterTank = s_CoopTankStash.canEnter;
+        g_PlayerTankYOffset = s_CoopTankStash.yOffset;
+        g_WorldTankProp = s_CoopTankStash.worldTank;
+        g_PlayerTankProp = s_CoopTankStash.playerTank;
+        s_CoopTankStash.hidden = FALSE;
+    }
+    else if (g_CoopMode && moved)
+    {
+        g_CoopTankPlayer = ((g_PlayerTankProp != NULL) || g_PlayerIsInTank) ? get_cur_playernum() : -1;
+    }
+}
+
 bool isBondInTank(void)
 {
+    if (coopTankUsedByPartner())
+    {
+        return FALSE;
+    }
+
+    // The owner, asked while the tank is hidden for the other player's view.
+    if (s_CoopTankStash.hidden)
+    {
+        return s_CoopTankStash.inTank;
+    }
+
     return g_PlayerIsInTank;
 }
 
@@ -2203,7 +2285,9 @@ s32 bondviewTryMoveToStan(struct coord3d *arg0, StandTile **stan)
         {
 block_20:
             /* I'm sorry, this is the only way I could make it match. */
+            // Co-op: the tank is solid for a player while the other uses it.
             if (g_PlayerTankProp == NULL
+                && !s_CoopTankStash.hidden
                 && (stanSavedColl_posData != NULL)
                 && (stanSavedColl_posData->type == PROP_TYPE_OBJ))
             {
@@ -9355,7 +9439,7 @@ void bondviewKillCurrentPlayer(void)
         g_CurrentPlayer->thetadie = g_CurrentPlayer->vv_theta;
         g_CurrentPlayer->vertadie = g_CurrentPlayer->vv_verta;
 
-        if (g_PlayerTankProp != NULL)
+        if ((g_PlayerTankProp != NULL) && !coopTankUsedByPartner())
         {
             g_ExplodeTankOnDeathFlag = 1;
         }
