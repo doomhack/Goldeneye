@@ -1,5 +1,6 @@
 #include <os_extension.h>
 #include <PR/os.h>
+#include <PR/rcp.h>
 #include "bondview.h"
 #include <bondconstants.h>
 #include <bondgame.h>
@@ -163,6 +164,7 @@ extern struct player *g_CurrentPlayer;
  */
 static void bossCheckExpansionPak(void)
 {
+    OSViMode *mode;
     u16 *fb;
     s32 i;
 
@@ -181,8 +183,25 @@ static void bossCheckExpansionPak(void)
     crashDrawString(fb, SCREEN_WIDTH, (SCREEN_WIDTH - 22 * 10) / 2, SCREEN_HEIGHT / 2 - 24, 2, "EXPANSION PAK REQUIRED");
     crashDrawString(fb, SCREEN_WIDTH, (SCREEN_WIDTH - 35 * 5) / 2, SCREEN_HEIGHT / 2 + 8, 1, "Switch off, insert it and try again");
 
-    osViSwapBuffer(cfb_16[0]);
-    osViBlack(FALSE);
+    // Program the VI by hand with interrupts off, so the VI manager and the
+    // scheduler can't blank the screen again on the next retrace.
+    osSetIntMask(OS_IM_NONE);
+
+    mode = &osViModeTable[(osTvType == TV_TYPE_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
+
+    IO_WRITE(VI_CONTROL_REG, mode->comRegs.ctrl);
+    IO_WRITE(VI_WIDTH_REG, mode->comRegs.width);
+    IO_WRITE(VI_BURST_REG, mode->comRegs.burst);
+    IO_WRITE(VI_V_SYNC_REG, mode->comRegs.vSync);
+    IO_WRITE(VI_H_SYNC_REG, mode->comRegs.hSync);
+    IO_WRITE(VI_LEAP_REG, mode->comRegs.leap);
+    IO_WRITE(VI_H_START_REG, mode->comRegs.hStart);
+    IO_WRITE(VI_X_SCALE_REG, mode->comRegs.xScale);
+    IO_WRITE(VI_V_START_REG, mode->fldRegs[0].vStart);
+    IO_WRITE(VI_V_BURST_REG, mode->fldRegs[0].vBurst);
+    IO_WRITE(VI_INTR_REG, mode->fldRegs[0].vIntr);
+    IO_WRITE(VI_Y_SCALE_REG, mode->fldRegs[0].yScale);
+    IO_WRITE(VI_ORIGIN_REG, osVirtualToPhysical(cfb_16[0]) + mode->fldRegs[0].origin);
 
     while (1)
     {
