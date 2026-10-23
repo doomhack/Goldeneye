@@ -515,6 +515,10 @@ typedef union
         s32 count;          /* 0x04 */
         s32 bufMax;         /* 0x08 */
         s32 nearEdgeCount;  /* 0x0c */
+#ifndef __sgi
+        /* stanTileDistanceRelated() clears 0x40 bytes; IDO's stack layout hides the overrun, GCC's does not */
+        s32 unk10[12];      /* 0x10 */
+#endif
     };
 
     typedef struct StandFileFooter

@@ -1064,7 +1064,12 @@ void bondviewCalcIntroSwirlCamera(s32 index, f32 time, coord3d *pos, coord3d *lo
 {
     struct SetupIntroSwirl *base;
     struct SetupIntroSwirl *loopbase;
+#ifdef __sgi
     f32 pointbuf[10];
+#else
+    // four coord3d control points are written and read (pointbuf[9..11] is the last)
+    f32 pointbuf[12];
+#endif
     struct SetupIntroSwirl *swirl;
     f32 frac;
     f32 *dst;

@@ -3,6 +3,7 @@
 #include <ultra64.h>
 
 typedef enum TEXTCOLORS {
+    TEXTCOLORS_SIGNED_ENUM = -1,
     GREEN_NORMAL=0,
     GREEN_HIGHLIGHT,
     RED_NORMAL,

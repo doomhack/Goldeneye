@@ -39,6 +39,7 @@ typedef struct Unk80081600 {
 } Unk80081600;
 
 enum GlobalVisOpcode {
+    GlobalVisOpcode_SIGNED_ENUM = -1,
     VISOP_END = 0x00,
     VISOP_PUSH = 0x01,
     VISOP_POP = 0x02,

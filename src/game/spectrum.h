@@ -3,6 +3,7 @@
 #include <ultra64.h>
 
 typedef enum SPECTRUMROMS {
+    SPECTRUMROMS_SIGNED_ENUM = -1,
     ROM_SABRE,
     ROM_ATIC,
     ROM_JETPAC,

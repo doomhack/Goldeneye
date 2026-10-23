@@ -293,6 +293,7 @@
 
 typedef enum GAILISTID
 {
+    GAILISTID_SIGNED_ENUM = -1,
     /**
       Try aiming at bond, otherwise do nothing
       @return No Return - AI List can only be changed by a 3rd party via SetChrAiList
@@ -477,6 +478,7 @@ char *GAILIST_ToString[] = {
 // command 18/19 - target body part values
 typedef enum HITTARGET
 {
+    HITTARGET_SIGNED_ENUM = -1,
     HIT_NULL_PART,          /* Null part, no reaction - 1x damage*/
     HIT_LEFT_FOOT,          /* Left foot              - 1x damage*/
     HIT_LEFT_LEG,           /* Left leg               - 1x damage*/

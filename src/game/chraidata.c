@@ -21,6 +21,7 @@
 /*private enum, only accessible from within this file */
 static enum lbl
 {
+    lbl_SIGNED_ENUM = -1,
     lblZero,
     lblLoop,
     lblDone,

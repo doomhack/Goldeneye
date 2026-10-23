@@ -6,6 +6,7 @@
 #define CHEAT_INPUT_BUFFER_SIZE    20
 
 enum CHEAT_MASK {
+    CHEAT_MASK_SIGNED_ENUM = -1,
     CHEAT_MASK_0 = 0,
 
     /**

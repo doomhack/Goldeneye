@@ -29,6 +29,7 @@ typedef struct s_mempMVALS { //mempSizes
 // Pool Names
 enum MEMPOOL
 {
+    MEMPOOL_SIGNED_ENUM = -1,
     MEMPOOL_TOTAL, // the mempool starts at _bssSegmentEnd and ends at _stacksSegmentStart
     MEMPOOL_MF,
     MEMPOOL_2,
@@ -41,6 +42,7 @@ enum MEMPOOL
 
 typedef enum MEMP_ADD_ENTRY_RESULT
 {
+    MEMP_ADD_ENTRY_RESULT_SIGNED_ENUM = -1,
     MEMP_ADD_ENTRY_SUCCESS = 1,
     MEMP_ADD_ENTRY_NOT_LAST_ALLOCATION = 2
 } MEMP_ADD_ENTRY_RESULT;
