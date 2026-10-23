@@ -14,6 +14,10 @@ s32 z_buffer_height; // 0x8008e8f4
 // data
 s32 z_buffer = 0; // 0x8004f010
 
+// TRUE when z_buffer is the gameplay buffer from zbufAllocate (sized for hi-res).
+// Buffers handed in through zbufSetBuffer (front-end menus) keep their own width.
+static s32 z_buffer_is_gameplay = FALSE;
+
 /*
  * Address: 0x7f0d2870
 */
@@ -50,6 +54,7 @@ void zbufAllocate(void)
 
     z_buffer = mempAllocBytesInBank((z_buffer_width * z_buffer_height * 2) + 64, MEMPOOL_STAGE);
     z_buffer = ALIGN64_V1(z_buffer);
+    z_buffer_is_gameplay = (resolution == 0);
 }
 
 
@@ -60,6 +65,7 @@ void zbufSetBuffer(s32 buffer, s32 width, s32 height) {
     z_buffer = buffer;
     z_buffer_width = width;
     z_buffer_height = height;
+    z_buffer_is_gameplay = FALSE;
 }
 
 
@@ -72,7 +78,7 @@ Gfx *zbufInit(Gfx *gdl) {
     if (z_buffer == 0) {
         zbufAllocate();
     }
-    if (resolution == 0) {
+    if (z_buffer_is_gameplay) {
         z_buffer_width = VI_SX(SCREEN_WIDTH);
     }
     if (!(get_cur_playernum() < 2) || ((getPlayerCount() == 2) && (get_cur_playernum() == 1))) {
