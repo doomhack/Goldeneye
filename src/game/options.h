@@ -15,6 +15,7 @@
 #define YOFFSET_8 0x26
 #define YOFFSET_9 0x41
 #define YINC 17
+#define YINC_OPTIONS 15
 #define WATCHZOOM1 4.80000019073f
 #define WATCHZOOM2 6.09999990463f
 #define WATCHZOOM3 4.15000009537f
@@ -22,6 +23,7 @@
 #define XOFFSET_1 64
 #define YOFFSET_1 80
 #define YINC 15
+#define YINC_OPTIONS 13
 #define YOFFSET_WEAPTEXT 167
 #define YOFFSET_ACTIONTEXT 149
 #define YOFFSET_4 203
@@ -100,6 +102,8 @@ typedef enum WATCH_GAME_OPTIONS_INDEX {
     GAME_OPTIONS_INDEX_SCREEN_SIZE,
     GAME_OPTIONS_INDEX_RATIO,
     GAME_OPTIONS_INDEX_HIRES,
+    GAME_OPTIONS_INDEX_SPLIT,
+    GAME_OPTIONS_INDEX_FPS,
     GAME_OPTIONS_INDEX_COUNT
 } WATCH_GAME_OPTIONS_INDEX;
 
@@ -134,6 +138,12 @@ SCREEN_RATIO_OPTION get_screen_ratio(void);
 void set_screen_ratio(SCREEN_RATIO_OPTION ratio_option);
 u32 get_hires_setting(void);
 void set_hires_setting(u32 enabled);
+u32 get_split_stacked_setting(void);
+void set_split_stacked_setting(u32 stacked);
+u32 get_fps_setting(void);
+void set_fps_setting(u32 enabled);
+void optionsCoopUsePlayer(s32 player);
+void optionsCoopCopyFromPlayer1(void);
 
 s32 cur_player_get_autoaim(void);
 u32 cur_player_get_lookahead(void);

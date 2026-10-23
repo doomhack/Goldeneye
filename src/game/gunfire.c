@@ -5948,7 +5948,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
             weapon_left = getCurrentPlayerWeaponId(GUNLEFT);
             weapon_right = getCurrentPlayerWeaponId(GUNRIGHT);
 
-            if (getPlayerCount() < 3)
+            if (!viewIsHalfWidth())
             {
                 leftx = 59;
                 rightx = 59;

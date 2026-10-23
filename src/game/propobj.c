@@ -10100,14 +10100,14 @@ void prepare_ammo_type_collection_text(u8 *finaltext, AMMOTYPE ammotype, u32 qua
     if (j_text_trigger != 0)
     {
         apped_text_ammotype(finaltext,ammotype,quantity);
-        if (getPlayerCount() < 3)
+        if (!viewIsHalfWidth())
         {
             append_text_picked_up(finaltext, (u8 *)ammotype, (u8 *)quantity);
         }
         strcat(finaltext, "\n");
         return;
     }
-    if (getPlayerCount() < 3)
+    if (!viewIsHalfWidth())
     {
         append_text_picked_up(finaltext, (u8 *)ammotype, (u8 *)quantity);
         append_text_ammo_amount_word(finaltext, ammotype, quantity);
@@ -10272,14 +10272,14 @@ void generate_language_specific_text_for_weapon(u8 *finalstring, ITEM_IDS itemty
     if (j_text_trigger != 0)
     {
           strcpy(finalstring,"");
-          if (2 < getPlayerCount())
+          if (viewIsHalfWidth())
           {
               morethan2players = TRUE;
           }
     }
     else
     {
-          if (getPlayerCount() < 3)
+          if (!viewIsHalfWidth())
           {
              //Picked up
             strcpy(finalstring, langGet(getStringID(LPROPOBJ,PROPOBJ_STR_00_PICKEDUP)));
@@ -10650,7 +10650,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
                 if (text == NULL)
                 {
-                    if (getPlayerCount() < 3)
+                    if (!viewIsHalfWidth())
                     {
                         text = langGet(getStringID(LPROPOBJ, PROPOBJ_STR_3D_PICKEDUPSOMEBODEYARMOUR)); // "Picked up some body armor.\n",
                     }

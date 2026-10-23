@@ -82,7 +82,7 @@ Gfx *zbufInit(Gfx *gdl) {
     if (z_buffer_is_gameplay) {
         z_buffer_width = VI_SX(SCREEN_WIDTH);
     }
-    if (!(get_cur_playernum() < 2) || ((getViewCount() == 2) && (get_cur_playernum() == 1))) {
+    if (!(get_cur_playernum() < 2) || ((getViewCount() == 2) && !coopSplitSideBySide() && (get_cur_playernum() == 1))) {
         phi_a3 = z_buffer_width * SCREEN_HEIGHT;
     } else {
         phi_a3 = 0;
@@ -103,8 +103,8 @@ Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
     s32 end_x;
     s32 height = z_buffer_height;
 
-    // Co-op split views only need half the rows cleared.
-    if (g_CoopMode && (getViewCount() == 2) && (height > Z_BUFFER_HEIGHT)) {
+    // Co-op stacked views only need half the rows cleared.
+    if (g_CoopMode && (getViewCount() == 2) && !coopSplitSideBySide() && (height > Z_BUFFER_HEIGHT)) {
         height = Z_BUFFER_HEIGHT;
     }
 
@@ -114,7 +114,7 @@ Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
     gDPSetCycleType(gdl++, G_CYC_FILL);
     gDPSetFillColor(gdl++, (GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0)));
     gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
-    if (getPlayerCount() < 3) {
+    if (!viewIsHalfWidth()) {
         start_x = 0;
         end_x = VI_SX(viGetX()) - 1;
     } else if ((get_cur_playernum() == 0) || (get_cur_playernum() == 2)) {

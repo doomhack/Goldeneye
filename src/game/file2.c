@@ -1237,6 +1237,16 @@ static u16 fileGetCurrentPlayerOptions(void)
         bits |= OPTION_HIRES;
     }
 
+    if (get_split_stacked_setting())
+    {
+        bits |= OPTION_SPLITSTACKED;
+    }
+
+    if (get_fps_setting())
+    {
+        bits |= OPTION_FPS;
+    }
+
     temp = ((u16) (cur_player_get_control_type() << 8)) & OPTION_CONTROLTYPE;
     return bits | temp;
 }
@@ -1311,6 +1321,8 @@ void fileLoadSettingsForFolder(u32 folder)
         fileSetCurrentPlayerOptions(options);
         set_screen_ratio((options & OPTION_SCREENRATIO) != FALSE);
         set_hires_setting((options & OPTION_HIRES) != FALSE);
+        set_split_stacked_setting((options & OPTION_SPLITSTACKED) != FALSE);
+        set_fps_setting((options & OPTION_FPS) != FALSE);
     }
 }
 

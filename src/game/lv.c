@@ -29,6 +29,7 @@
 #include "glass.h"
 #include "image_bank.h"
 #include "textrelated.h"
+#include "options.h"
 #include "initmenus.h"
 #include "cheat.h"
 #include "bg.h"
@@ -663,6 +664,50 @@ Gfx *lvlPortalDebug7F0BDF10(Gfx *gdl)
 }
 
 
+static u32 s_FpsLastCount;
+static s32 s_FpsFrames;
+static s32 s_FpsTenths;
+
+/**
+ * Draws the frame rate (the watch's fps counter option) in the top right
+ * corner of the screen. It is averaged over about a second.
+ */
+static Gfx *lvlRenderFpsCounter(Gfx *DL)
+{
+    char text[16];
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
+    u32 now = osGetCount();
+    u32 ms = (now - s_FpsLastCount) / (OS_CPU_COUNTER / 1000);
+
+    s_FpsFrames++;
+
+    if (ms >= 1000)
+    {
+        s_FpsTenths = (ms < 10000) ? ((s_FpsFrames * 10000) / ms) : 0;
+        s_FpsFrames = 0;
+        s_FpsLastCount = now;
+    }
+
+    sprintf(text, "%d.%d FPS\n", s_FpsTenths / 10, s_FpsTenths % 10);
+
+    width = 0;
+    height = 0;
+    textMeasure(&height, &width, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+
+    x = viGetX() - width - 0x14;
+    y = 0x10;
+
+    DL = microcode_constructor(DL);
+    DL = microcode_constructor_related_to_menus(DL, x - 2, y - 1, x + width + 2, y + height + 1, 0x64);
+    DL = textRender(DL, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, -1, viGetX(), viGetY(), 0, 0);
+    DL = combiner_bayer_lod_perspective(DL);
+
+    return DL;
+}
+
 /**
  * Graphics render method.
  * Also sets player max ammo if infinite ammo cheat is enabled.
@@ -833,6 +878,11 @@ Gfx* lvlRender(Gfx* DL)
     }
 
     gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
+
+    if ((g_CurrentStageToLoad != LEVELID_TITLE) && get_fps_setting())
+    {
+        DL = lvlRenderFpsCounter(DL);
+    }
 
     return DL;
 }

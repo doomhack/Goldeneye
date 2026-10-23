@@ -96,6 +96,8 @@ s32 get_nth_player_from_shuffled(PLAYER_ID id);
 void set_cur_player(s32 playernum);
 s32 getPlayerCount(void);
 s32 getViewCount(void);
+s32 coopSplitSideBySide(void);
+s32 viewIsHalfWidth(void);
 s32 isMpGame(void);
 s32 coopPartnerAlive(void);
 extern s32 g_CoopMode;
