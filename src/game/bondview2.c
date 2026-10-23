@@ -167,6 +167,7 @@
 
 
 vec3d g_ForceBondMoveOffset;
+s32 g_CoopForceMovePlayer = 0;
 
 //CODE.bss:8007999C
 s32 g_SurroundBondWithExplosionsTicks;
@@ -7889,7 +7890,8 @@ void bondviewFrozenMoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     bondviewApplyVertaTheta();
     bondviewMoveAnimationTick(0, 0, 0);
 
-    if ((g_ForceBondMoveOffset.f[0] != 0.0f) || (g_ForceBondMoveOffset.f[2] != 0.0f))
+    if (((g_ForceBondMoveOffset.f[0] != 0.0f) || (g_ForceBondMoveOffset.f[2] != 0.0f))
+        && (!g_CoopMode || (get_cur_playernum() == g_CoopForceMovePlayer)))
     {
         offset.f[0] += g_ForceBondMoveOffset.f[0] * g_GlobalTimerDelta;
         offset.f[2] += g_ForceBondMoveOffset.f[2] * g_GlobalTimerDelta;

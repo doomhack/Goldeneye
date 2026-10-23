@@ -211,6 +211,7 @@ void bondviewLoadSetupIntroSection(void)
     g_ForceBondMoveOffset.f[0] = FLOAT_INIT;
     g_ForceBondMoveOffset.f[1] = FLOAT_INIT;
     g_ForceBondMoveOffset.f[2] = FLOAT_INIT;
+    g_CoopForceMovePlayer = 0;
     g_SurroundBondWithExplosionsFlag = 0;
     startpadcount = 0;
     g_PlayerIsInTank = 0;

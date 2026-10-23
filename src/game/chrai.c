@@ -821,6 +821,7 @@ extern CutsceneRecord *gBondViewCutscene;
 extern enum CAMERAMODE dword_CODE_bss_80079A18;
 extern s32             dword_CODE_bss_80079A1C;
 extern vec3d           g_ForceBondMoveOffset;
+extern s32             g_CoopForceMovePlayer;
 // CODE.bss:80079A00
 extern f32             flt_CODE_bss_80079A00;
 // CODE.bss:80079A04
@@ -4454,6 +4455,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     g_ForceBondMoveOffset.x           = ai->X_SPEED60;
                     g_ForceBondMoveOffset.y           = 0;
                     g_ForceBondMoveOffset.z           = ai->Z_SPEED60;
+                    // Only the player this script is acting on is pushed.
+                    g_CoopForceMovePlayer             = get_cur_playernum();
                     Offset += sizeof(AiBondSetLockedVelocityRecord);
                     break;
                 }

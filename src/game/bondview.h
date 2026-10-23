@@ -2682,6 +2682,7 @@ extern f32 D_80036AC4;
 
 extern s32 startpadcount;
 extern vec3d g_ForceBondMoveOffset;
+extern s32 g_CoopForceMovePlayer;
 extern s32 mission_timer;
 
 #if defined(VERSION_JP) || defined(VERSION_EU)
