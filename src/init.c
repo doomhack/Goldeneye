@@ -7,8 +7,6 @@
 #include "boot.h"
 #include "sched.h"
 #include "rmon.h" /*<PR/rmon.h>*/
-#include "tlb_resolve.h"
-#include "tlb_hardwire.h"
 #include "init.h"
 #include "thread_config.h"
 
@@ -33,10 +31,9 @@
 
 #define MAXSP 7
 
-#define RZIPLOADADDR 0x70200000
-#define RZIPBUFADDR 0x80300000
-
-#define MAXCODESIZE (0x101000 - 0x1050) 
+/* Boot-time scratch inside the first 4MB, reused by the heap afterwards (see ge007.ld) */
+#define RZIPLOADADDR 0x80300000
+#define RZIPBUFADDR 0x80340000
 
 
 /**
@@ -86,7 +83,7 @@ void mainproc(void *args);
  * 1110	70000510
  * init - The real main entry point, called from boot.s
  * Deflates the compressed data segment
- * Installs the TLB miss handler
+ * Loads the game code into RAM
  * Then starts the main thread
  */
 void init(void)
@@ -101,10 +98,8 @@ void init(void)
     s32 j;
 
     u8 *datazipram;
-    s32 inflate_code_size;
+    u32 gameSegmentSize;
     u32 decompress_result;
-    s32 *dest;
-    s32 *src;
     u32 copylen;
     s32 *stack_pointer;
     u8 *dataziprom;
@@ -126,34 +121,24 @@ void init(void)
     decompress_result = jump_decompressfile(datazipram, csegmentSegmentVaddrStart, RZIPBUFADDR);
     if (decompress_result);
 
-    inflate_code_size = (s32) ((u32) &_inflateSegmentRomStart - (u32) &_codeSegmentRomStart);
-    if (inflate_code_size > MAXCODESIZE)
+    // Load all game code into RAM at its link address. It used to be paged in
+    // 8KB at a time through the TLB; with the Expansion Pak it simply stays resident.
+    gameSegmentSize = (u32) &_gameSegmentEnd - (u32) &_gameSegmentStart;
+    osWritebackDCacheAll();
+    osPiRawStartDma(OS_READ, (u32) &_gameSegmentRomStart, &_gameSegmentStart, gameSegmentSize);
+    while ((osPiGetStatus() & PI_STATUS_DMA_BUSY))
     {
-        osPiRawStartDma(OS_READ, &_alt_startSegmentRomStart, &_alt_startSegmentStart, inflate_code_size - MAXCODESIZE);
-        while ((osPiGetStatus() & PI_STATUS_DMA_BUSY))
-        {
-        }
     }
+    osInvalDCache(&_gameSegmentStart, gameSegmentSize);
 
     osInitialize();
-
-    // This sets up TLB CONTEXT to allow the TLB miss handler to work
-    initTLBPrepareContext();
-
-    // Copy the TLB miss handler to proper place
-    src = &resolve_TLBaddress_for_InvalidHit;
-    dest = (s32 *) K0BASE;
-    while (dest < (s32 *) XUT_VEC)
-    {
-        *dest++ = *src++;
-    }
 
     // Refresh Cache
     osWritebackDCacheAll();
     osInvalICache((void *) K0BASE, ICACHE_SIZE);
 
-    // Cleanup TLB
-    for (i = 2; i < NTLBENTRIES + 1; i++)
+    // Cleanup TLB, keeping only entry 0 (rdb, set up by osInitialize)
+    for (i = 1; i < NTLBENTRIES + 1; i++)
     {
         osUnmapTLB(i);
     }

@@ -13,9 +13,9 @@ VERBOSE := 2
 # then compare ELF sections to known md5 checksums.
 COMPARE := 1
 # COMPILER selects the compiler for the game code (src/*.c, src/game/*.c).
-#   ido: original IDO 5.3, builds a byte-matching ROM (default)
-#   gcc: modern GCC, non-matching. libultra, inflate, chraidata.c and asset data still use IDO.
-COMPILER := ido
+#   ido: original IDO 5.3 (no longer kept matching; the TLB-paging removal changed the layout)
+#   gcc: modern GCC (default). libultra, inflate, chraidata.c and asset data still use IDO.
+COMPILER := gcc
 # Optimisation level for game code when COMPILER=gcc
 GCC_OPT := -O2
 # Source files that stay on IDO when COMPILER=gcc (space separated, eg src/init.c)

@@ -1,5 +1,6 @@
 #include <os_extension.h>
 #include <PR/os.h>
+#include <PR/rcp.h>
 #include "bondview.h"
 #include <bondconstants.h>
 #include <bondgame.h>
@@ -25,10 +26,10 @@
 #include "sched.h"
 #include "speed_graph.h"
 #include "token.h"
-#include "tlb_manage.h"
 #include "fr.h"
 #include "game/image.h"
 #include "vi.h"
+#include "exppak_msg.h"
 #include "game/bg.h"
 #include "game/debugmenu_handler.h"
 #include "game/lv.h"
@@ -156,6 +157,71 @@ extern struct player *g_CurrentPlayer;
  */
 
 
+/**
+ * The mod needs the Expansion Pak: the game code is resident in RAM and the heap
+ * runs to the top of 8MB. Without it, say so on screen instead of crashing.
+ * Everything used here sits in the first 4MB.
+ */
+static void bossCheckExpansionPak(void)
+{
+    OSViMode *mode;
+    u16 *fb;
+    s32 i;
+    s32 x;
+    s32 y;
+    s32 grey;
+
+    if (osMemSize >= 0x800000)
+    {
+        return;
+    }
+
+    fb = (u16 *) K0_TO_K1(cfb_16[0]);
+
+    for (i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++)
+    {
+        fb[i] = GPACK_RGBA5551(0, 0, 0, 1);
+    }
+
+    // Pre-rendered anti-aliased text (tools/mkexppakmsg.py), 4 bits per pixel
+    fb += ((SCREEN_HEIGHT - EXPPAK_MSG_HEIGHT) / 2) * SCREEN_WIDTH + (SCREEN_WIDTH - EXPPAK_MSG_WIDTH) / 2;
+
+    for (y = 0; y < EXPPAK_MSG_HEIGHT; y++)
+    {
+        for (x = 0; x < EXPPAK_MSG_WIDTH; x++)
+        {
+            grey = g_ExpPakMsgBitmap[(y * EXPPAK_MSG_WIDTH + x) >> 1];
+            grey = (x & 1) ? (grey & 0xF) : (grey >> 4);
+            grey = grey * 17;
+            fb[y * SCREEN_WIDTH + x] = GPACK_RGBA5551(grey, grey, grey, 1);
+        }
+    }
+
+    // Program the VI by hand with interrupts off, so the VI manager and the
+    // scheduler can't blank the screen again on the next retrace.
+    osSetIntMask(OS_IM_NONE);
+
+    mode = &osViModeTable[(osTvType == TV_TYPE_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
+
+    IO_WRITE(VI_CONTROL_REG, mode->comRegs.ctrl);
+    IO_WRITE(VI_WIDTH_REG, mode->comRegs.width);
+    IO_WRITE(VI_BURST_REG, mode->comRegs.burst);
+    IO_WRITE(VI_V_SYNC_REG, mode->comRegs.vSync);
+    IO_WRITE(VI_H_SYNC_REG, mode->comRegs.hSync);
+    IO_WRITE(VI_LEAP_REG, mode->comRegs.leap);
+    IO_WRITE(VI_H_START_REG, mode->comRegs.hStart);
+    IO_WRITE(VI_X_SCALE_REG, mode->comRegs.xScale);
+    IO_WRITE(VI_V_START_REG, mode->fldRegs[0].vStart);
+    IO_WRITE(VI_V_BURST_REG, mode->fldRegs[0].vBurst);
+    IO_WRITE(VI_INTR_REG, mode->fldRegs[0].vIntr);
+    IO_WRITE(VI_Y_SCALE_REG, mode->fldRegs[0].yScale);
+    IO_WRITE(VI_ORIGIN_REG, osVirtualToPhysical(cfb_16[0]) + mode->fldRegs[0].origin);
+
+    while (1)
+    {
+    }
+}
+
 void bossInitMainthreadData(void)
 {
     OSMesg bossmsg;
@@ -165,9 +231,9 @@ void bossInitMainthreadData(void)
     u32 unused;
     s32 i;
 
+    bossCheckExpansionPak();
     debInit();
     romCreateMesgQueue();
-    tlbmanageEstablishManagementTable();
     image_entries_load();
     mempInit();
     memaInit();
@@ -214,8 +280,8 @@ void bossInitMainthreadData(void)
         g_CurentMMallocValue = (s32) (strtol(tokenFind(1, "-m"), 0, 0) << 0xa);
     }
 
-    start = (PHYS_TO_K0(osVirtualToPhysical(&_bssSegmentEnd)));
-    mempCheckMemflagTokens(start, ((u32)tlbmanageGetTlbAllocatedBlock() - (u32)start));
+    start = (u32) &_heapSegmentStart;
+    mempCheckMemflagTokens(start, PHYS_TO_K0(osMemSize) - start);
     mempResetBank(MEMPOOL_PERMANENT);
     langInit();
     lvInit();

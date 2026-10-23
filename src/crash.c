@@ -2,7 +2,6 @@
 #include <PR/os.h>
 #include <bondgame.h>
 #include "fr.h"
-#include "tlb_manage.h"
 #include "crash.h"
 #include "ramrom.h"
 #include <PR/R4300.h>
@@ -360,16 +359,6 @@ void crashMain(void* arg0)
             continue;
         }
 
-        else if (((curr->context.cause & 0x7c) == 8) && ((curr->context.badvaddr & 0xFFC00000) == (u32)0x7F000000))
-        {
-            tlbmanageTranslateLoadRomFromTlbAddress(curr->context.badvaddr);
-            curr->state = OS_STATE_RUNNABLE | OS_STATE_WAITING;;
-            curr->flags = OS_READ;
-
-            __osEnqueueThread(&__osRunQueue, curr);
-            osSetIntMask(mask);
-            osYieldThread();
-        }
         else
         {
             break;
@@ -522,7 +511,9 @@ bool crashIsReturnAddress(u32 *instruction)
 {
     u32 prevop;
 
-    if ((((s32) instruction & 3) == 0) && ((u32) instruction >= (u32) &_codeSegmentStart) && ((u32) &_codeSegmentEnd >= (u32) instruction))
+    if ((((s32) instruction & 3) == 0)
+        && ((((u32) instruction >= (u32) &_codeSegmentStart) && ((u32) &_codeSegmentEnd >= (u32) instruction))
+            || (((u32) instruction >= (u32) &_gameSegmentStart) && ((u32) &_gameSegmentEnd >= (u32) instruction))))
     {
         prevop = instruction[-2];
         if ((prevop & 0xFC00003C) == 9)
@@ -1043,3 +1034,4 @@ void crashRenderFrame(u16 *buffer)
         }
     }
 }
+

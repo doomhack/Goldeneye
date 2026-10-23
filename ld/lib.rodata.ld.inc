@@ -7,10 +7,6 @@
       build/OUTCODE/src/libultrare/io/vimgr.o (.rodata);
       build/OUTCODE/src/libultrare/io/pimgr.o (.rodata);
 #endif
-      build/OUTCODE/src/tlb_manage.o (.rodata);
-      build/OUTCODE/src/tlb_random.o (.rodata);
-      build/OUTCODE/src/tlb_resolve.o (.rodata);
-      build/OUTCODE/src/tlb_hardwire.o (.rodata);
       build/OUTCODE/src/audi.o (.rodata);
       build/OUTCODE/src/speed_graph.o (.rodata);
       build/OUTCODE/src/fr.o (.rodata);

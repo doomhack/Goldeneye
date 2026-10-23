@@ -6,10 +6,6 @@
       build/OUTCODE/src/libultrare/io/vimgr.o (.data);
       build/OUTCODE/src/libultrare/io/pimgr.o (.data);
 #endif
-      build/OUTCODE/src/tlb_manage.o (.data);
-      build/OUTCODE/src/tlb_random.o (.data);
-      build/OUTCODE/src/tlb_resolve.o (.data);
-      build/OUTCODE/src/tlb_hardwire.o (.data);
       build/OUTCODE/src/audi.o (.data);
       build/OUTCODE/src/speed_graph.o (.data);
       build/OUTCODE/src/fr.o (.data);

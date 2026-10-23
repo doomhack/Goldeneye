@@ -30,7 +30,7 @@ typedef struct s_mempMVALS { //mempSizes
 enum MEMPOOL
 {
     MEMPOOL_SIGNED_ENUM = -1,
-    MEMPOOL_TOTAL, // the mempool starts at _bssSegmentEnd and ends at _stacksSegmentStart
+    MEMPOOL_TOTAL, // the mempool starts at _heapSegmentStart and ends at the top of the 8MB
     MEMPOOL_MF,
     MEMPOOL_2,
     MEMPOOL_ML,
