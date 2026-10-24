@@ -3066,6 +3066,7 @@ Gfx* constructor_menu06_modesel(Gfx* DL)
 
 #define COOP_SETUP_ROW_Y(row) (0x79 + (row) * 0x14)
 #define COOP_SETUP_VALUE_X 0xC8
+#define COOP_SETUP_CURSOR_X 0x28
 
 static char *coop_setup_row_labels[COOP_SETUP_ROW_COUNT] = {
     "Player 2:\n",
@@ -3088,7 +3089,7 @@ void init_menu1A_coopsetup(void)
     tab_next_highlight = FALSE;
     tab_prev_highlight = FALSE;
     coop_setup_highlighted_row = -1;
-    cursor_h_pos = 0x60;
+    cursor_h_pos = COOP_SETUP_CURSOR_X;
     cursor_v_pos = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_CHAR) + 6;
 
     // Co-op gives each player one controller, so only the 1.x styles.
@@ -3234,7 +3235,7 @@ void interface_menu1A_coopsetup(void)
 
         row += joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? 1 : -1;
         row = (row < 0) ? 0 : ((row >= COOP_SETUP_ROW_COUNT) ? (COOP_SETUP_ROW_COUNT - 1) : row);
-        cursor_h_pos = 0x60;
+        cursor_h_pos = COOP_SETUP_CURSOR_X;
         cursor_v_pos = COOP_SETUP_ROW_Y(row) + 6;
     }
 
@@ -3316,7 +3317,7 @@ Gfx *constructor_menu1A_coopsetup(Gfx *DL)
                 text = (u8 *)(get_split_stacked_setting() ? "Stacked\n" : "Side by Side\n");
                 break;
             case COOP_SETUP_ROW_HIRES:
-                text = (u8 *)langGet(get_hires_setting() ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF));
+                text = (u8 *)(get_hires_setting() ? "On\n" : "Off\n");
                 break;
             case COOP_SETUP_ROW_DRAWDIST:
                 text = (u8 *)(get_draw_near_setting() ? "Near\n" : "Full\n");
