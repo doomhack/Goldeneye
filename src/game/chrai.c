@@ -958,7 +958,7 @@ static void coopAiActOnActivator(ChrRecord *chr)
  * Called before each command. Starts repeating it over the players if it
  * needs that, with the current player first.
  */
-static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset)
+static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset, ChrRecord *chr)
 {
     s32 mode;
     s32 count;
@@ -972,6 +972,15 @@ static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset)
     mode = coopAiCommandMode((list + offset)->cmd);
 
     if (mode == COOP_AI_ONE)
+    {
+        return;
+    }
+
+    // While a script is locked onto the player who set it off (an ending
+    // or a cutscene), its level conditions are about that player only.
+    // Otherwise a check like Depot's "is Bond holding a gun" for the
+    // cinema could pass for the other player and hand them the cutscene.
+    if ((mode == COOP_AI_ANY) && (chr != NULL) && (chr->targetlock60 > 0))
     {
         return;
     }
@@ -1139,7 +1148,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
         {
             if (g_CoopMode)
             {
-                coopAiBegin(&coop, AiListp, Offset);
+                coopAiBegin(&coop, AiListp, Offset, ChrEntityp);
             }
 
             /*
