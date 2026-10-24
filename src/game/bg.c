@@ -283,7 +283,6 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *arg0);
 void bgCullBuildRoom(s32 roomID);
 void bgCullResetAll(void);
 void bgCullFreeRoom(s32 roomID);
-s32 memaGetLongestFree(void);
 extern s32 g_PerfSkip; /* lv.c performance probe: 0x2 rooms, 0x4 props, 0x10 1-cycle rooms, 0x20 letterbox */
 s32 bgCheckIfRoomModelNeedsLoad(s32 roomID);
 void bgLoadRoomModelData(s32 room);
@@ -2796,8 +2795,135 @@ s32 g_BgCullBatches = TRUE;
 s32 g_BgCullGroupsDrawn;
 s32 g_BgCullGroupsTotal;
 
-/* Keep this much of the room heap free for room loads */
-#define BG_CULL_HEAP_HEADROOM 0x10000
+/*
+ * The copies live in their own arena, taken from the stage memory bank the
+ * first time a room loads (after the stage's own allocations), so they never
+ * compete with GE's room heap. First fit, address-ordered free list.
+ */
+#define BG_CULL_ARENA_MAX     0x80000
+#define BG_CULL_STAGE_RESERVE 0x40000
+
+typedef struct BgCullBlock {
+    u32 size;                   /* bytes including this header */
+    struct BgCullBlock *next;   /* free list only */
+    u32 pad[2];
+} BgCullBlock;
+
+static BgCullBlock *s_BgCullFree;
+static u8 *s_BgCullArenaStart;
+static u8 *s_BgCullArenaEnd;
+static s32 s_BgCullArenaState;  /* 0: not yet, 1: ready, -1: none */
+
+static void bgCullArenaInit(void)
+{
+    s32 size = mempGetBankSizeLeft(MEMPOOL_STAGE) - BG_CULL_STAGE_RESERVE;
+
+    s_BgCullArenaState = -1;
+    s_BgCullFree = NULL;
+
+    if (size > BG_CULL_ARENA_MAX)
+    {
+        size = BG_CULL_ARENA_MAX;
+    }
+
+    size &= ~0xf;
+
+    if (size < 0x10000)
+    {
+        return;
+    }
+
+    s_BgCullFree = mempAllocBytesInBank(size, MEMPOOL_STAGE);
+
+    if (s_BgCullFree == NULL)
+    {
+        return;
+    }
+
+    s_BgCullFree->size = size;
+    s_BgCullFree->next = NULL;
+    s_BgCullArenaStart = (u8 *)s_BgCullFree;
+    s_BgCullArenaEnd = s_BgCullArenaStart + size;
+    s_BgCullArenaState = 1;
+}
+
+static void *bgCullAlloc(u32 bytes)
+{
+    BgCullBlock **link;
+    BgCullBlock *blk;
+    BgCullBlock *rest;
+
+    if (s_BgCullArenaState == 0)
+    {
+        bgCullArenaInit();
+    }
+
+    if (s_BgCullArenaState != 1)
+    {
+        return NULL;
+    }
+
+    bytes = (bytes + sizeof(BgCullBlock) + 0xf) & ~0xf;
+
+    for (link = &s_BgCullFree; *link != NULL; link = &(*link)->next)
+    {
+        blk = *link;
+
+        if (blk->size >= bytes)
+        {
+            if (blk->size - bytes >= 0x40)
+            {
+                rest = (BgCullBlock *)((u8 *)blk + bytes);
+                rest->size = blk->size - bytes;
+                rest->next = blk->next;
+                *link = rest;
+                blk->size = bytes;
+            }
+            else
+            {
+                *link = blk->next;
+            }
+
+            return blk + 1;
+        }
+    }
+
+    return NULL;
+}
+
+static void bgCullRelease(void *ptr)
+{
+    BgCullBlock *blk = (BgCullBlock *)ptr - 1;
+    BgCullBlock **link = &s_BgCullFree;
+    BgCullBlock *prev = NULL;
+
+    /* Ignore copies from an arena that a stage change has already dropped */
+    if ((s_BgCullArenaState != 1) || ((u8 *)blk < s_BgCullArenaStart) || ((u8 *)blk >= s_BgCullArenaEnd))
+    {
+        return;
+    }
+
+    while ((*link != NULL) && (*link < blk))
+    {
+        prev = *link;
+        link = &(*link)->next;
+    }
+
+    blk->next = *link;
+    *link = blk;
+
+    if ((blk->next != NULL) && ((u8 *)blk + blk->size == (u8 *)blk->next))
+    {
+        blk->size += blk->next->size;
+        blk->next = blk->next->next;
+    }
+
+    if ((prev != NULL) && ((u8 *)prev + prev->size == (u8 *)blk))
+    {
+        prev->size += blk->size;
+        prev->next = blk->next;
+    }
+}
 
 /* Gfx.dma.cmd is signed, like the F3D G_ opcodes (G_ENDDL is negative) */
 static s32 bgCullIsGeometryOp(s32 op)
@@ -2809,6 +2935,10 @@ static s32 bgCullIsGeometryOp(s32 op)
 void bgCullResetAll(void)
 {
     bzero(s_BgRoomCull, sizeof(s_BgRoomCull));
+    s_BgCullFree = NULL;
+    s_BgCullArenaStart = NULL;
+    s_BgCullArenaEnd = NULL;
+    s_BgCullArenaState = 0;
 }
 
 void bgCullFreeRoom(s32 roomID)
@@ -2817,7 +2947,7 @@ void bgCullFreeRoom(s32 roomID)
 
     if (cull->mem != NULL)
     {
-        memaFree(cull->mem, cull->memsize);
+        bgCullRelease(cull->mem);
     }
 
     cull->mem = NULL;
@@ -2894,12 +3024,7 @@ void bgCullBuildRoom(s32 roomID)
     size = ((numcmds + numruns) * sizeof(Gfx)) + (numruns * sizeof(BgCullRun)) + (numgroups * sizeof(BgCullGroup));
     size = (size + 0xf) & ~0xf;
 
-    if (memaGetLongestFree() < size + BG_CULL_HEAP_HEADROOM)
-    {
-        return;
-    }
-
-    cull->mem = memaAlloc(size);
+    cull->mem = bgCullAlloc(size);
 
     if (cull->mem == NULL)
     {
@@ -3066,7 +3191,7 @@ static s32 bgCullSphereVisible(BgCullGroup *g, Mtxf *mtx, f32 farz)
 static Gfx *bgCullRenderRoomPrimary(Gfx *gdl, s32 roomID)
 {
     BgRoomCull *cull = &s_BgRoomCull[roomID];
-    u8 visible[256];
+    static u8 visible[256]; /* static: keep it off the main thread stack */
     Mtxf *mtx;
     f32 zrange[2];
     s32 numvisible;

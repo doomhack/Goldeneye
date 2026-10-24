@@ -491,9 +491,6 @@ void bossMainloop(void)
             g_CurentMaMallocValue = (s32) (strtol(tokenFind(1, "-ma"), NULL, 0) * 1024);
         }
 
-        // Room culling (bg.c) keeps a split copy of each loaded room's display list
-        g_CurentMaMallocValue += g_CurentMaMallocValue / 2;
-
         memaReset(mempAllocBytesInBank(g_CurentMaMallocValue, MEMPOOL_STAGE), g_CurentMaMallocValue);
         reset_play_data_ptrs();
 
