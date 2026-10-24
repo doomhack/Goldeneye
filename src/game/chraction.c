@@ -9434,7 +9434,9 @@ void coopChrShotByCurrentPlayer(ChrRecord *self)
  *
  * A chr keeps a living target. Without one, or when it hasn't seen anyone
  * for a while, it switches to the nearest living player every half second,
- * forgetting when it last saw or heard its old target.
+ * forgetting when it last saw or heard its old target. Unarmed chrs (allies
+ * such as Natalya, civilians) stay with the player they met, so an ally
+ * follows whoever rescued her, until that player dies.
  * Seeing or hearing the other player retargets it straight away (see the
  * any-player AI commands in ai()), and so does being shot by them. While it
  * fights one player it also switches to the other if it can see them
@@ -9444,6 +9446,7 @@ static void coopChrSelectTarget(ChrRecord *self)
 {
     s32 count = getPlayerCount();
     s32 target = self->targetplayer;
+    s32 unarmed = (self->weapons_held[GUNRIGHT] == NULL) && (self->weapons_held[GUNLEFT] == NULL);
     s32 i;
 
     if ((target < 0) || (target >= count))
@@ -9470,7 +9473,7 @@ static void coopChrSelectTarget(ChrRecord *self)
     }
     else if ((self->prop != NULL)
         && (g_playerPointers[target]->bonddead
-            || (!chrSawTargetRecently(self) && ((((u32)g_GlobalTimer + self->chrnum) % COOP_RETARGET_INTERVAL60) < (u32)g_ClockTimer))))
+            || (!unarmed && !chrSawTargetRecently(self) && ((((u32)g_GlobalTimer + self->chrnum) % COOP_RETARGET_INTERVAL60) < (u32)g_ClockTimer))))
     {
         f32 bestdist = 0.0f;
         s32 best = -1;
@@ -9505,6 +9508,7 @@ static void coopChrSelectTarget(ChrRecord *self)
     }
     else if ((self->prop != NULL)
         && (self->prop->type == PROP_TYPE_CHR)
+        && !unarmed
         && chrSawTargetRecently(self)
         && ((((u32)g_GlobalTimer + self->chrnum) % COOP_SWITCH_INTERVAL60) < (u32)g_ClockTimer))
     {
