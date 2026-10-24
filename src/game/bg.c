@@ -86,6 +86,7 @@ extern s32 dword_CODE_bss_800815f8;
 
 /* PAL halved this to fit 4MB; with the Expansion Pak all versions use the NTSC size. */
 #define BG_PORTAL_QUEUE_LEN 500
+#define BG_ROOMS_DRAWN_LEN 204
 
 // bss
 //CODE.bss:8007BF90
@@ -482,6 +483,12 @@ s32 sub_GAME_7F0B39BC(int curroom,int unk1, bbox2d * screensize, s32 next)
     return 0;
 #else
     i = g_BgNumberOfRoomsDrawn;
+#if defined(BACKPORT_R1)
+    /* PAL clamps this list so it can't overrun the table; same idea at the US size. */
+    if (i >= BG_ROOMS_DRAWN_LEN) {
+        i = BG_ROOMS_DRAWN_LEN - 1;
+    }
+#endif
     dword_CODE_bss_8007FFA0[i].roomid = curroom;
     dword_CODE_bss_8007FFA0[i].unk1 = unk1;
     dword_CODE_bss_8007FFA0[i].bbox.min.x = screensize->min.x;
@@ -489,7 +496,13 @@ s32 sub_GAME_7F0B39BC(int curroom,int unk1, bbox2d * screensize, s32 next)
     dword_CODE_bss_8007FFA0[i].bbox.max.x = screensize->max.x;
     dword_CODE_bss_8007FFA0[i].bbox.max.y = screensize->max.y;
     dword_CODE_bss_8007FFA0[i].next = next;
+#if defined(BACKPORT_R1)
+    if (i + 1 < BG_ROOMS_DRAWN_LEN) {
+        g_BgNumberOfRoomsDrawn = i + 1;
+    }
+#else
     g_BgNumberOfRoomsDrawn = i + 1;
+#endif
 
     if (g_BgNumberOfRoomsDrawn) {}
 
@@ -1860,7 +1873,7 @@ s32 eu_bss_8007BFA4;
 #else
 s32 dword_CODE_bss_8007FF98;
 s32 dword_CODE_bss_8007FF9C;
-s_bound_info dword_CODE_bss_8007FFA0[204];
+s_bound_info dword_CODE_bss_8007FFA0[BG_ROOMS_DRAWN_LEN];
 s32 dword_CODE_bss_800815f0;
 s32 dword_CODE_bss_800815f4;
 s32 dword_CODE_bss_800815f8;

@@ -6129,7 +6129,7 @@ void interface_menu11_mpcontrols(void)
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
 
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     #define MAYBE_OR_JOYCOUNT_NOT_4 || joyGetControllerCount() != 4
     #define MAYBE_AND_JOYCOUNT_4 && joyGetControllerCount() == 4
 #else
@@ -6200,7 +6200,7 @@ void interface_menu11_mpcontrols(void)
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
             if (joyGetControllerCount() != 4)
             {
                 if (controlstyle_player[PLAYER_1] >= CONTROLLER_CONFIG_PLENTY)

@@ -1706,7 +1706,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
             x3 = (x2 + (viGetViewWidth() >> 1)) - (textwidth3 >> 1);
             x2 = viGetViewTop();
             y3 = (x2 + (viGetViewHeight() >> 1)) - (textheight3 >> 1);
-#ifndef VERSION_US
+#if !defined(VERSION_US) || defined(BACKPORT_R1)
             gdl = microcode_constructor_related_to_menus(gdl, x3 - 1, y3 - 1, x3 + textwidth3 + 1, y3 + textheight3 + 1, 0);
 #endif
             viewleft = viGetX(); 

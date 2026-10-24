@@ -1275,7 +1275,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
         case CHEAT_2X_ROCKET_LAUNCHER:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 bondinvAddInvItem(ITEM_ROCKETLAUNCH);
 #endif
                 bondinvAddDoublesInvItem(ITEM_ROCKETLAUNCH, ITEM_ROCKETLAUNCH);
@@ -1287,7 +1287,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
         case CHEAT_2X_GRENADE_LAUNCHER:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 bondinvAddInvItem(ITEM_GRENADELAUNCH);
 #endif
                 bondinvAddDoublesInvItem(ITEM_GRENADELAUNCH, ITEM_GRENADELAUNCH);
@@ -1299,7 +1299,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
         case CHEAT_2X_RCP90:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 bondinvAddInvItem(ITEM_FNP90);
 #endif
                 bondinvAddDoublesInvItem(ITEM_FNP90, ITEM_FNP90);
@@ -1311,7 +1311,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
         case CHEAT_2X_THROWING_KNIFE:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 bondinvAddInvItem(ITEM_THROWKNIFE);
 #endif
                 bondinvAddDoublesInvItem(ITEM_THROWKNIFE, ITEM_THROWKNIFE);
@@ -1323,7 +1323,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
         case CHEAT_2X_HUNTING_KNIFE:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 if (j_text_trigger)
                 {
                     bondinvAddInvItem(ITEM_ROCKETLAUNCH);
@@ -1343,7 +1343,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
         case CHEAT_2X_LASER:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 bondinvAddInvItem(ITEM_LASER);
 #endif
                 bondinvAddDoublesInvItem(ITEM_LASER, ITEM_LASER);
