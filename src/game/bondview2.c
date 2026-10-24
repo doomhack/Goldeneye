@@ -4946,6 +4946,12 @@ void bondviewApplyVertaTheta(void)
  * EU address 7F081A18.
  * Perfect Dark method bmoveProcessInput.
 */
+/**
+ * Co-op: set when a player respawns, until they let go of the buttons they
+ * respawned with, so that pressing Start to respawn doesn't also open the watch.
+ */
+s32 g_CoopRespawnButtonsHeld[4];
+
 void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 {
     struct MoveData moveData; // sp120
@@ -5052,6 +5058,18 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     moveData.analogPitch = moveData.controlStickYSafe;
     moveData.analogStrafe = moveData.controlStickXSafe;
     moveData.analogWalk = moveData.controlStickYSafe;
+
+    if (g_CoopMode && g_CoopRespawnButtonsHeld[get_cur_playernum()])
+    {
+        if (buttons & START_BUTTON)
+        {
+            oldbuttons |= START_BUTTON;
+        }
+        else
+        {
+            g_CoopRespawnButtonsHeld[get_cur_playernum()] = FALSE;
+        }
+    }
 
     if (g_CurrentPlayer->bonddead == FALSE
         && g_bondviewForceDisarm <= 0
@@ -9439,6 +9457,7 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                             && joyGetButtons(get_cur_playernum(), 0xB000))
                         {
                             coopRespawnPlayer();
+                            g_CoopRespawnButtonsHeld[get_cur_playernum()] = TRUE;
                         }
                     }
                     else if (!isMpGame())
