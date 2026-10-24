@@ -891,6 +891,7 @@ static s32 coopAiCommandMode(u8 cmd)
         case AI_IFMyDistanceToBondGreaterThanDecimeter:
         case AI_IFBondHealthGreaterThan:
         case AI_IFBondIsDead:
+        case AI_IFBondItemTotalAmmoLessThan:
             return COOP_AI_ALL;
 
         case AI_BondDisableControl:
@@ -902,6 +903,36 @@ static s32 coopAiCommandMode(u8 cmd)
     }
 
     return COOP_AI_ONE;
+}
+
+extern s32 get_ammo_type_for_weapon(ITEM_IDS weapon);
+extern int bondinvHasInvItem(ITEM_IDS item);
+
+/**
+ * Co-op: TRUE if any player can still use an item, i.e. carries it with
+ * ammo for it if it takes ammo. Each player starts with their own copy of a
+ * level's single-use mission item (Dam's covert modem, Frigate's tracker
+ * bug, Surface 2's timed mine).
+ */
+static s32 coopAnyPlayerStillHasItem(ITEM_IDS item)
+{
+    s32 prevplayer = get_cur_playernum();
+    s32 ammotype = get_ammo_type_for_weapon(item);
+    s32 found = FALSE;
+    s32 i;
+
+    for (i = 0; (i < getPlayerCount()) && !found; i++)
+    {
+        set_cur_player(i);
+
+        if (bondinvHasInvItem(item) && ((ammotype == AMMO_NONE) || (currentPlayerGetAmmoCount(ammotype) > 0)))
+        {
+            found = TRUE;
+        }
+    }
+
+    set_cur_player(prevplayer);
+    return found;
 }
 
 /**
@@ -2311,7 +2342,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFKeyDropped:
                 {
                     AiIFKeyDroppedRecord *ai = AiListp + Offset;
-                    if (weaponFindThrown(ai->KEY_ID))
+                    // Co-op: a misplaced item only counts while no player
+                    // still has a copy they could place correctly.
+                    if (weaponFindThrown(ai->KEY_ID) && !(g_CoopMode && coopAnyPlayerStillHasItem(ai->KEY_ID)))
                     {
                         Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
