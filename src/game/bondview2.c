@@ -9120,10 +9120,12 @@ void coopRespawnPlayer(void)
     s32 cur = get_cur_playernum();
     s32 i;
     s32 copiedgoldeneye;
+    f32 shared;
 
     for (i = 0; i < count; i++)
     {
-        if ((i != cur) && !g_playerPointers[i]->bonddead)
+        if ((i != cur) && !g_playerPointers[i]->bonddead
+            && ((g_playerPointers[i]->bondhealth + g_playerPointers[i]->bondarmour) >= 0.2f))
         {
             partner = g_playerPointers[i];
             break;
@@ -9211,6 +9213,14 @@ void coopRespawnPlayer(void)
     bondviewUpdatePlayerCollisionBounds();
 
     coopGiveStartingLoadout();
+
+    // Like Perfect Dark: the partner's health and armour, counted together,
+    // are split evenly between the two players. Both lose their armour.
+    shared = (partner->bondhealth + partner->bondarmour) * 0.5f;
+    partner->bondhealth = shared;
+    partner->bondarmour = 0.0f;
+    g_CurrentPlayer->bondhealth = shared;
+    g_CurrentPlayer->bondarmour = 0.0f;
 
     g_CurrentPlayer->field_78 = 0.0f;
     g_CurrentPlayer->field_7C = -0.0001f;
@@ -9529,6 +9539,7 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                     if (coopPartnerAlive())
                     {
                         if (((g_GlobalTimer - g_CoopDeathTime[get_cur_playernum()]) >= COOP_RESPAWN_DELAY60)
+                            && coopPartnerCanRevive()
                             && joyGetButtons(get_cur_playernum(), 0xB000))
                         {
                             coopRespawnPlayer();

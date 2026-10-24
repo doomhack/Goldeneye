@@ -100,6 +100,7 @@ s32 coopSplitSideBySide(void);
 s32 viewIsHalfWidth(void);
 s32 isMpGame(void);
 s32 coopPartnerAlive(void);
+s32 coopPartnerCanRevive(void);
 extern s32 g_CoopMode;
 extern s32 g_CoopPlayersOverlap;
 extern s32 g_CoopSoloView;

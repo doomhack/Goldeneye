@@ -133,6 +133,39 @@ s32 isMpGame(void)
  * Co-op: TRUE if a player other than the current one is alive. While one
  * is, a player's death doesn't end the mission.
  */
+/**
+ * Co-op: a dead player respawns with health taken from their partner, so the
+ * partner needs at least this much health and armour together.
+ */
+#define COOP_REVIVE_MIN_HEALTH 0.2f
+
+/**
+ * Co-op: TRUE if a living partner has enough health (armour counts as
+ * health) to share with the current, dead player.
+ */
+s32 coopPartnerCanRevive(void)
+{
+    s32 count = getPlayerCount();
+    s32 cur = get_cur_playernum();
+    s32 i;
+
+    if (!g_CoopMode)
+    {
+        return FALSE;
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        if ((i != cur) && !g_playerPointers[i]->bonddead
+            && ((g_playerPointers[i]->bondhealth + g_playerPointers[i]->bondarmour) >= COOP_REVIVE_MIN_HEALTH))
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 s32 coopPartnerAlive(void)
 {
     s32 count = getPlayerCount();
