@@ -1455,9 +1455,9 @@ void fileSaveDisplaySettingsForFolder(s32 folder)
             bits |= OPTION_HIRES;
         }
 
-        if (get_split_stacked_setting())
+        if (!get_split_stacked_setting())
         {
-            bits |= OPTION_SPLITSTACKED;
+            bits |= OPTION_SPLITSIDE;
         }
 
         if (get_draw_near_setting())
@@ -1466,7 +1466,7 @@ void fileSaveDisplaySettingsForFolder(s32 folder)
         }
 
         new_save = *save;
-        new_save.options = (new_save.options & ~(OPTION_HIRES | OPTION_SPLITSTACKED | OPTION_DRAWNEAR)) | bits;
+        new_save.options = (new_save.options & ~(OPTION_HIRES | OPTION_SPLITSIDE | OPTION_DRAWNEAR)) | bits;
 
         if (new_save.options != save->options)
         {
