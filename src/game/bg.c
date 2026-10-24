@@ -588,6 +588,8 @@ s32 bgGet2dBboxByRoomId(s32 room_id, struct bbox2d *result)
 /**
  * Address: 7F0B3C8C
  */
+extern s32 g_PerfSkip; /* lv.c performance probe: 0x2 rooms, 0x4 props */
+
 Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
 {
 #ifdef VERSION_EU
@@ -641,7 +643,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 0);
+                        gdl = (g_PerfSkip & 0x4) ? gdl : chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 0);
                     }
                 }
  
@@ -659,7 +661,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = bgRenderRoomPrimary(gdl, dword_CODE_bss_8007FFA0[j].roomid);
+                        gdl = (g_PerfSkip & 0x2) ? gdl : bgRenderRoomPrimary(gdl, dword_CODE_bss_8007FFA0[j].roomid);
                     }
                 }
  
@@ -670,7 +672,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 2);
+                        gdl = (g_PerfSkip & 0x4) ? gdl : chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 2);
                     }
                 }
  
@@ -721,7 +723,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = bgRenderRoomSecondary(gdl, dword_CODE_bss_8007FFA0[j].roomid);
+                        gdl = (g_PerfSkip & 0x2) ? gdl : bgRenderRoomSecondary(gdl, dword_CODE_bss_8007FFA0[j].roomid);
                     }
                 }
  
@@ -732,7 +734,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 1);
+                        gdl = (g_PerfSkip & 0x4) ? gdl : chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 1);
                     }
                 }
  

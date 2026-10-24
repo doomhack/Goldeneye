@@ -666,6 +666,18 @@ Gfx *lvlPortalDebug7F0BDF10(Gfx *gdl)
 
 
 static u32 s_FpsLastCount;
+
+/*
+ * Performance probe (with the fps counter on): player 1 holds L and presses
+ * the D-pad to stop drawing parts of the frame, to see what the RDP time is
+ * made of. Up = sky, Down = room geometry, Left = props and characters,
+ * Right = the second view's world (sky, rooms and props).
+ */
+#define PERFSKIP_SKY    0x1
+#define PERFSKIP_ROOMS  0x2
+#define PERFSKIP_PROPS  0x4
+#define PERFSKIP_VIEW2  0x8
+s32 g_PerfSkip = 0;
 static s32 s_FpsFrames;
 static s32 s_FpsTenths;
 static u32 s_FpsLastCpu;
@@ -694,7 +706,7 @@ static s32 s_FpsTmemMs;
  */
 static Gfx *lvlRenderFpsCounter(Gfx *DL)
 {
-    char text[64];
+    char text[96];
     s32 x;
     s32 y;
     s32 width;
@@ -731,7 +743,9 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         s_FpsLastTasks = tasks;
     }
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs);
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n%s%s%s%s", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
+        (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_ROOMS) ? "NOROOM " : "",
+        (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2" : "");
 
     width = 0;
     height = 0;
@@ -808,7 +822,10 @@ Gfx* lvlRender(Gfx* DL)
             }
 
             DL = viSetupScreensForNumPlayers(DL);
-            DL = skyRender(DL);
+            if (!(g_PerfSkip & PERFSKIP_SKY) && !((g_PerfSkip & PERFSKIP_VIEW2) && (i > 0)))
+            {
+                DL = skyRender(DL);
+            }
             bgRoomVisibilityRelated();
             propsTick();
             chraiUpdateOnscreenPropCount();
@@ -822,7 +839,10 @@ Gfx* lvlRender(Gfx* DL)
             }
 
             propsTickPlayer();
-            DL = bgLevelRender(DL);
+            if (!((g_PerfSkip & PERFSKIP_VIEW2) && (i > 0)))
+            {
+                DL = bgLevelRender(DL);
+            }
 
             if (get_debug_portal_flag())
             {
@@ -933,6 +953,14 @@ Gfx* lvlRender(Gfx* DL)
 
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && get_fps_setting())
     {
+        if (joyGetButtons(PLAYER_1, L_TRIG))
+        {
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD)) g_PerfSkip ^= PERFSKIP_SKY;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD)) g_PerfSkip ^= PERFSKIP_ROOMS;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD)) g_PerfSkip ^= PERFSKIP_PROPS;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD)) g_PerfSkip ^= PERFSKIP_VIEW2;
+        }
+
         DL = lvlRenderFpsCounter(DL);
     }
 
