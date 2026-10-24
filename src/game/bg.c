@@ -281,6 +281,7 @@ void unload_rooms(void);
 Gfx *sub_GAME_7F0B8D78(Gfx *arg0);
 Gfx *sub_GAME_7F0B3C8C(Gfx *arg0);
 void bgCullBuildRoom(s32 roomID);
+void bgCullResetAll(void);
 void bgCullFreeRoom(s32 roomID);
 s32 memaGetLongestFree(void);
 extern s32 g_PerfSkip; /* lv.c performance probe: 0x2 rooms, 0x4 props, 0x10 1-cycle rooms, 0x20 letterbox */
@@ -923,6 +924,7 @@ void load_bg_file(LEVEL_INDEX levelid)
     chrRemoved7F022E1C(levelinfotable[levelentry_index].levelscale);
  
     mCurrentLevelVisibilityScale = levelinfotable[levelentry_index].visibility;
+    bgCullResetAll();
  
     sub_GAME_7F08976C(mCurrentLevelVisibilityScale);
     matrix_4x4_7F058C4C(mCurrentLevelVisibilityScale);
@@ -2800,6 +2802,12 @@ s32 g_BgCullGroupsTotal;
 static s32 bgCullIsGeometryOp(u8 op)
 {
     return (op == (u8)G_VTX) || (op == (u8)G_TRI1) || (op == (u8)G_TRI4);
+}
+
+/* The room heap is reset with each stage, so forget any copies from the last one */
+void bgCullResetAll(void)
+{
+    bzero(s_BgRoomCull, sizeof(s_BgRoomCull));
 }
 
 void bgCullFreeRoom(s32 roomID)
