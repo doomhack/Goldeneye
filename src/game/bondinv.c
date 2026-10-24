@@ -837,9 +837,9 @@ bool bondinvHasGoldenGun(void)
     return bondinvHasInvItem(ITEM_GOLDENGUN);
 }
 
-bool bondinvHasPropInInv(PropRecord *prop)
+static bool bondinvPlayerHasPropInInv(struct player *player, PropRecord *prop)
 {
-    InvItem *item = g_CurrentPlayer->ptr_inventory_first_in_cycle;
+    InvItem *item = player->ptr_inventory_first_in_cycle;
 
     while (item)
     {
@@ -850,9 +850,37 @@ bool bondinvHasPropInInv(PropRecord *prop)
 
         item = item->next;
 
-        if (item == g_CurrentPlayer->ptr_inventory_first_in_cycle)
+        if (item == player->ptr_inventory_first_in_cycle)
         {
             break;
+        }
+    }
+
+    return FALSE;
+}
+
+bool bondinvHasPropInInv(PropRecord *prop)
+{
+    return bondinvPlayerHasPropInInv(g_CurrentPlayer, prop);
+}
+
+/**
+ * Co-op: TRUE if any player carries the prop (objectives are shared).
+ */
+bool bondinvAnyPlayerHasPropInInv(PropRecord *prop)
+{
+    s32 i;
+
+    if (!g_CoopMode)
+    {
+        return bondinvHasPropInInv(prop);
+    }
+
+    for (i = 0; i < getPlayerCount(); i++)
+    {
+        if (bondinvPlayerHasPropInInv(g_playerPointers[i], prop))
+        {
+            return TRUE;
         }
     }
 
@@ -1369,6 +1397,43 @@ int bondinvGetXrotWatchForIndex(int index)
 int bondinvGetYrotWatchForIndex(int index)
 {
     return get_yrotation_solo_watch_menu_for_item(bondinvGetTextbyInvIndex(index));
+}
+
+/**
+ * Co-op respawn: empty the current player's inventory but keep the objects
+ * they picked up (keys, mission items like Silo's DAT tape), so a death
+ * can't make the mission impossible. The level's item names stay as well.
+ */
+void bondinvReinitInvKeepProps(void)
+{
+    PropRecord   *props[32];
+    s32           count     = 0;
+    textoverride *overrides = g_CurrentPlayer->textoverrides;
+    InvItem      *item      = g_CurrentPlayer->ptr_inventory_first_in_cycle;
+    s32           i;
+
+    while (item && (count < (s32)(sizeof(props) / sizeof(props[0]))))
+    {
+        if (item->type == INV_ITEM_PROP)
+        {
+            props[count++] = item->type_inv_item.type_prop.prop;
+        }
+
+        item = item->next;
+
+        if (item == g_CurrentPlayer->ptr_inventory_first_in_cycle)
+        {
+            break;
+        }
+    }
+
+    bondinvReinitInv();
+    g_CurrentPlayer->textoverrides = overrides;
+
+    for (i = 0; i < count; i++)
+    {
+        bondinvAddPropToInv(props[i]);
+    }
 }
 
 void bondinvAddTextOverride(textoverride *override)

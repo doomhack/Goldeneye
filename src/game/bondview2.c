@@ -9036,17 +9036,14 @@ s32 g_CoopDeathTime[4];
 /**
  * Co-op: give the current player the level's starting loadout again, the
  * guns and ammo the setup's intro hands out, holding the starting weapon.
+ * Objects they picked up (keys, mission items) are kept.
  */
 static void coopGiveStartingLoadout(void)
 {
     struct SetupIntroEmpty *intro_record = g_CurrentSetup.intro;
-    textoverride *overrides = g_CurrentPlayer->textoverrides;
     s32 i;
 
-    bondinvReinitInv();
-
-    // The level's item names are shared, not part of the loadout.
-    g_CurrentPlayer->textoverrides = overrides;
+    bondinvReinitInvKeepProps();
 
     for (i = 0; i < 30; i++)
     {

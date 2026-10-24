@@ -8,6 +8,7 @@
 #include "str.h"
 #include "bondview.h"
 #include "player.h"
+#include "bondinv.h"
 
 //Public variables - move to header
 // bss
@@ -215,7 +216,7 @@ OBJECTIVESTATUS get_status_of_objective(s32 objectiveNum) //#MATCH
                             {
                                 currentstatus = OBJECTIVESTATUS_FAILED;
                             }
-                            else if (!bondinvHasPropInInv(obj->prop))
+                            else if (!bondinvAnyPlayerHasPropInInv(obj->prop))
                             {
                                 currentstatus = OBJECTIVESTATUS_INCOMPLETE;
                             }
@@ -224,7 +225,7 @@ OBJECTIVESTATUS get_status_of_objective(s32 objectiveNum) //#MATCH
                         case PROPDEF_OBJECTIVE_DEPOSIT_OBJECT:
                         {
                             ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
-                            if (obj && obj->prop && bondinvHasPropInInv(obj->prop))
+                            if (obj && obj->prop && bondinvAnyPlayerHasPropInInv(obj->prop))
                             {
                                 currentstatus = OBJECTIVESTATUS_INCOMPLETE;
                             }
