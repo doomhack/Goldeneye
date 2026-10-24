@@ -2846,6 +2846,23 @@ void interface_menu06_modesel(void)
         }
     }
 
+    // Up and down on the D-pad step the cursor between rows.
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD|D_JPAD))
+    {
+        s32 row = MODESEL_ROW_MISSION;
+        s32 lastrow = is_cheat_menu_available ? MODESEL_ROW_CHEATS : MODESEL_ROW_MULTI;
+
+        while ((row < lastrow) && (cursor_v_pos >= modesel_row_y[row + 1] - 6))
+        {
+            row++;
+        }
+
+        row += joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? 1 : -1;
+        row = (row < MODESEL_ROW_MISSION) ? MODESEL_ROW_MISSION : ((row > lastrow) ? lastrow : row);
+        cursor_h_pos = 126.0f;
+        cursor_v_pos = modesel_row_y[row] + 6;
+    }
+
     if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
         tab_prev_selected = TRUE;
@@ -3013,7 +3030,7 @@ Gfx* constructor_menu06_modesel(Gfx* DL)
     textstring = langGet((g_AppendCheatSinglePlayer != 0) ? getStringID(LTITLE, TITLE_STR_117_CHEATSELECTMISSION) : getStringID(LTITLE, TITLE_STR_29_SELECTMISSION));
     DL = frontDrawModeSelRow(DL, MODESEL_ROW_MISSION, "1.\n", (u8 *)textstring, 0xFF);
 
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COOP, "2.\n", (u8 *)"2 Player Co-op\n", text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COOP, "2.\n", (u8 *)"2 PLAYER CO-OP\n", text_color);
 
     textstring = langGet((g_AppendCheatMultiPlayer != 0) ? getStringID(LTITLE, TITLE_STR_276_CHEATMULTIPLAYER) : getStringID(LTITLE, TITLE_STR_30_MULTIPLAYER));
     DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "3.\n", (u8 *)textstring, text_color);
@@ -3071,6 +3088,8 @@ void init_menu1A_coopsetup(void)
     tab_next_highlight = FALSE;
     tab_prev_highlight = FALSE;
     coop_setup_highlighted_row = -1;
+    cursor_h_pos = 0x60;
+    cursor_v_pos = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_CHAR) + 6;
 
     // Co-op gives each player one controller, so only the 1.x styles.
     if (controlstyle_player[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY)
@@ -3203,6 +3222,22 @@ void interface_menu1A_coopsetup(void)
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
+    // Up and down on the D-pad step the cursor between rows.
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD|D_JPAD))
+    {
+        row = coop_setup_highlighted_row;
+
+        if (row < 0)
+        {
+            row = joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? -1 : COOP_SETUP_ROW_COUNT;
+        }
+
+        row += joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? 1 : -1;
+        row = (row < 0) ? 0 : ((row >= COOP_SETUP_ROW_COUNT) ? (COOP_SETUP_ROW_COUNT - 1) : row);
+        cursor_h_pos = 0x60;
+        cursor_v_pos = COOP_SETUP_ROW_Y(row) + 6;
+    }
+
     disable_all_switches(walletinst[0]);
     set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
     set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
@@ -3295,7 +3330,7 @@ Gfx *constructor_menu1A_coopsetup(Gfx *DL)
 
     x = 0x39;
     y = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_COUNT) + 0x14;
-    DL = frontPrintText(DL, &x, &y, (u8 *)"A or C-left/right: change\n", ptrFontZurichBoldChars, ptrFontZurichBold, 0x70, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, (u8 *)"A or Left/Right: change\n", ptrFontZurichBoldChars, ptrFontZurichBold, 0x70, viGetX(), viGetY(), 0, 0);
 
     DL = frontAddPreviousTabText(DL);
     DL = frontAddNextTabText(DL);
