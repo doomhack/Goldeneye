@@ -11,7 +11,6 @@
 #include <ramrom.h>
 #include <random.h>
 #include <joy.h>
-#include "bgfog.h"
 #include <token.h>
 #include "debugmenu_handler.h"
 #include "lv.h"
@@ -667,31 +666,6 @@ Gfx *lvlPortalDebug7F0BDF10(Gfx *gdl)
 
 
 static u32 s_FpsLastCount;
-
-/*
- * Performance probe (with the fps counter on): player 1 holds L and presses
- * the D-pad to stop drawing parts of the frame, to see what the RDP time is
- * made of. Up = sky, Down = room geometry, Left = props and characters,
- * Right = the second view's world (sky, rooms and props).
- * L + C-up draws rooms in 1-cycle mode (wrong looking: no fog blend, no
- * mip blend) and L + C-down letterboxes each view (scissor 1/8 off top and
- * bottom), to see what 2-cycle mode and pixel count cost.
- * L + C-left steps co-op's "near" draw distance through 50/35/25/15% of
- * the level's (the draw distance option must be on near).
- */
-#define PERFSKIP_SKY    0x1
-#define PERFSKIP_ROOMS  0x2
-#define PERFSKIP_PROPS  0x4
-#define PERFSKIP_VIEW2  0x8
-#define PERFSKIP_1CYCLE 0x10
-#define PERFSKIP_LETTERBOX 0x20
-#define PERFSKIP_NULLVIEW 0x40
-s32 g_PerfSkip = 0;
-extern s32 g_PerfRoomTris; /* bg.c: room triangles/vertices drawn this frame */
-extern s32 g_PerfRoomVtx;
-extern s32 g_PerfRoomUniq;
-s32 bgPerfProbePatchAllRooms(s32 onecycle);
-static s32 s_PerfPatched;
 static s32 s_FpsFrames;
 static s32 s_FpsTenths;
 static u32 s_FpsLastCpu;
@@ -701,29 +675,16 @@ static u32 s_FpsLastTasks;
 static s32 s_FpsCpuMs;
 static s32 s_FpsRspMs;
 static s32 s_FpsRdpMs;
-static u32 s_FpsLastPipe;
-static u32 s_FpsLastTmem;
-static s32 s_FpsPipeMs;
-static s32 s_FpsTmemMs;
-
-/* The RDP's performance counters tick at its 62.5 MHz clock */
-#define RDP_CLOCKS_PER_MS 62500
 
 /**
  * Draws the frame rate (the watch's fps counter option) in the top right
  * corner of the screen, averaged over about a second. The second line is
  * the average milliseconds per frame the CPU spent building it, and the
  * graphics task took on the RSP and until the RDP finished drawing.
- * The third line is how many of those RDP milliseconds its pipeline and
- * TMEM were actually busy: a pipe figure close to RDP means fill rate is
- * the limit, a much lower one means the RDP is waiting on the RSP.
  */
 static Gfx *lvlRenderFpsCounter(Gfx *DL)
 {
-    char text[160];
-    s32 tris = g_PerfRoomTris;
-    s32 vtx = g_PerfRoomVtx;
-    s32 uniq = g_PerfRoomUniq;
+    char text[40];
     s32 x;
     s32 y;
     s32 width;
@@ -738,8 +699,6 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         u32 cpu = g_PerfCpuSum;
         u32 rsp = g_PerfRspSum;
         u32 rdp = g_PerfRdpSum;
-        u32 pipe = g_PerfRdpPipeSum;
-        u32 tmem = g_PerfRdpTmemSum;
         u32 tasks = g_PerfGfxTasks;
         u32 ntasks = tasks - s_FpsLastTasks;
 
@@ -752,24 +711,11 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         s_FpsLastCount = now;
         s_FpsLastCpu = cpu;
         s_FpsLastRsp = rsp;
-        s_FpsPipeMs = (ntasks != 0) ? (((pipe - s_FpsLastPipe) / RDP_CLOCKS_PER_MS) / ntasks) : 0;
-        s_FpsTmemMs = (ntasks != 0) ? (((tmem - s_FpsLastTmem) / RDP_CLOCKS_PER_MS) / ntasks) : 0;
         s_FpsLastRdp = rdp;
-        s_FpsLastPipe = pipe;
-        s_FpsLastTmem = tmem;
         s_FpsLastTasks = tasks;
     }
 
-    g_PerfRoomTris = 0;
-    g_PerfRoomVtx = 0;
-    g_PerfRoomUniq = 0;
-
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\nTRI %d VTX %d/%d\n%s%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
-        tris, vtx, uniq,
-        (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_ROOMS) ? "NOROOM " : "",
-        (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2 " : "",
-        (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX " : "",
-        (g_PerfSkip & PERFSKIP_NULLVIEW) ? "NULLVIEW" : "", s_PerfPatched, (s32)(g_CoopNearDrawScale * 100.0f + 0.5f));
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs);
 
     width = 0;
     height = 0;
@@ -846,10 +792,7 @@ Gfx* lvlRender(Gfx* DL)
             }
 
             DL = viSetupScreensForNumPlayers(DL);
-            if (!(g_PerfSkip & PERFSKIP_SKY) && !((g_PerfSkip & PERFSKIP_VIEW2) && (i > 0)))
-            {
-                DL = skyRender(DL);
-            }
+            DL = skyRender(DL);
             bgRoomVisibilityRelated();
             propsTick();
             chraiUpdateOnscreenPropCount();
@@ -863,10 +806,7 @@ Gfx* lvlRender(Gfx* DL)
             }
 
             propsTickPlayer();
-            if (!((g_PerfSkip & PERFSKIP_VIEW2) && (i > 0)))
-            {
-                DL = bgLevelRender(DL);
-            }
+            DL = bgLevelRender(DL);
 
             if (get_debug_portal_flag())
             {
@@ -977,40 +917,6 @@ Gfx* lvlRender(Gfx* DL)
 
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && get_fps_setting())
     {
-        if (joyGetButtons(PLAYER_1, L_TRIG))
-        {
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD)) g_PerfSkip ^= PERFSKIP_SKY;
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD)) g_PerfSkip ^= PERFSKIP_ROOMS;
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD)) g_PerfSkip ^= PERFSKIP_PROPS;
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD)) g_PerfSkip ^= PERFSKIP_VIEW2;
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS))
-            {
-                g_PerfSkip ^= PERFSKIP_1CYCLE;
-                s_PerfPatched = bgPerfProbePatchAllRooms((g_PerfSkip & PERFSKIP_1CYCLE) != 0);
-            }
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS))
-            {
-                /* off -> letterbox -> one-line view -> off */
-                if (g_PerfSkip & PERFSKIP_LETTERBOX)
-                {
-                    g_PerfSkip ^= PERFSKIP_LETTERBOX | PERFSKIP_NULLVIEW;
-                }
-                else if (g_PerfSkip & PERFSKIP_NULLVIEW)
-                {
-                    g_PerfSkip &= ~PERFSKIP_NULLVIEW;
-                }
-                else
-                {
-                    g_PerfSkip |= PERFSKIP_LETTERBOX;
-                }
-            }
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
-            {
-                g_CoopNearDrawScale = (g_CoopNearDrawScale > 0.4f) ? 0.35f : (g_CoopNearDrawScale > 0.3f) ? 0.25f : (g_CoopNearDrawScale > 0.2f) ? 0.15f : 0.5f;
-                fogReloadCurrentEnvironment();
-            }
-        }
-
         DL = lvlRenderFpsCounter(DL);
     }
 

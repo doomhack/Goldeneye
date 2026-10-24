@@ -280,7 +280,6 @@ s32 D_8004485C = 1;
 void unload_rooms(void);
 Gfx *sub_GAME_7F0B8D78(Gfx *arg0);
 Gfx *sub_GAME_7F0B3C8C(Gfx *arg0);
-extern s32 g_PerfSkip; /* lv.c performance probe: 0x2 rooms, 0x4 props, 0x10 1-cycle rooms, 0x20 letterbox, 0x40 one-line view */
 s32 bgCheckIfRoomModelNeedsLoad(s32 roomID);
 void bgLoadRoomModelData(s32 room);
 void bgBuildRoomVtxBounds(s32 roomID);
@@ -589,154 +588,6 @@ s32 bgGet2dBboxByRoomId(s32 room_id, struct bbox2d *result)
 /**
  * Address: 7F0B3C8C
  */
-/*
- * Perf probe: switch a loaded room's 2-cycle commands to 1-cycle and back.
- * Patched commands keep bit 0 (BLENDMASK, unused by the RDP) set as a
- * marker so they can be restored.
- */
-static s32 bgPerfProbePatchDL(Gfx *start, Gfx *end, s32 onecycle)
-{
-    Gfx *g;
-    s32 count = 0;
-    u32 w0 = (G_SETOTHERMODE_H << 24) | (G_MDSFT_CYCLETYPE << 8) | 2;
-
-    if (start == NULL)
-    {
-        return 0;
-    }
-
-    for (g = start; g < end; g++)
-    {
-        if (g->words.w0 == w0)
-        {
-            if (onecycle && (g->words.w1 == G_CYC_2CYCLE))
-            {
-                g->words.w1 = G_CYC_1CYCLE | 1;
-                count++;
-            }
-            else if (!onecycle && (g->words.w1 == (G_CYC_1CYCLE | 1)))
-            {
-                g->words.w1 = G_CYC_2CYCLE;
-                count++;
-            }
-        }
-    }
-
-    osWritebackDCache(start, (u8 *)end - (u8 *)start);
-    return count;
-}
-
-/* Perf probe: triangles and vertices in each room's display lists, summed per frame for the rooms drawn */
-static u16 s_RoomPerfTris[MAXROOMCOUNT];
-static u16 s_RoomPerfVtx[MAXROOMCOUNT];
-static u16 s_RoomPerfUniq[MAXROOMCOUNT];
-s32 g_PerfRoomTris;
-s32 g_PerfRoomVtx;
-s32 g_PerfRoomUniq;
-static u8 s_PerfVtxSeen[0x800]; /* one bit per room vertex */
-
-static void bgPerfCountDL(Gfx *g, Gfx *end, s32 *tris, s32 *vtx, s32 *uniq)
-{
-    s32 i;
-    u32 first;
-    u32 n;
-
-    if (g == NULL)
-    {
-        return;
-    }
-
-    for (; g < end; g++)
-    {
-        s8 cmd = g->dma.cmd; /* signed: F3D's immediate opcodes are negative */
-
-        if (cmd == (s8)G_ENDDL)
-        {
-            break;
-        }
-        else if (cmd == (s8)G_VTX)
-        {
-            n = ((g->words.w0 >> 20) & 0xf) + 1;
-            *vtx += n;
-            first = (g->words.w1 & 0xffffff) / sizeof(Vtx);
-
-            for (i = 0; i < n; i++)
-            {
-                u32 v = first + i;
-
-                if ((v < sizeof(s_PerfVtxSeen) * 8) && !(s_PerfVtxSeen[v >> 3] & (1 << (v & 7))))
-                {
-                    s_PerfVtxSeen[v >> 3] |= 1 << (v & 7);
-                    *uniq += 1;
-                }
-            }
-        }
-        else if (cmd == (s8)G_TRI1)
-        {
-            *tris += 1;
-        }
-        else if (cmd == (s8)G_TRI4)
-        {
-            /* Four triangles; unused ones have all three indices zero */
-            for (i = 0; i < 4; i++)
-            {
-                if (((g->words.w1 >> (i * 8)) & 0xff) || ((g->words.w0 >> (i * 4)) & 0xf))
-                {
-                    *tris += 1;
-                }
-            }
-        }
-    }
-}
-
-static void bgPerfCountRoom(s32 roomID)
-{
-    s_room_info *room = &g_BgRoomInfo[roomID];
-    s32 tris = 0;
-    s32 vtx = 0;
-    s32 uniq = 0;
-
-    bzero(s_PerfVtxSeen, sizeof(s_PerfVtxSeen));
-    bgPerfCountDL(room->ptr_expanded_mapping_info,
-        (Gfx *)((u8 *)room->ptr_expanded_mapping_info + room->usize_primary_DL_binary), &tris, &vtx, &uniq);
-
-    if (room->ptr_secondary_expanded_mapping_info)
-    {
-        bgPerfCountDL(room->ptr_secondary_expanded_mapping_info,
-            (Gfx *)((u8 *)room->ptr_secondary_expanded_mapping_info + room->usize_secondary_DL_binary), &tris, &vtx, &uniq);
-    }
-
-    s_RoomPerfTris[roomID] = tris;
-    s_RoomPerfVtx[roomID] = vtx;
-    s_RoomPerfUniq[roomID] = uniq;
-}
-
-s32 bgPerfProbePatchRoom(s32 roomID, s32 onecycle)
-{
-    s_room_info *room = &g_BgRoomInfo[roomID];
-
-    return bgPerfProbePatchDL(room->ptr_expanded_mapping_info,
-        (Gfx *)((u8 *)room->ptr_expanded_mapping_info + room->usize_primary_DL_binary), onecycle)
-        + bgPerfProbePatchDL(room->ptr_secondary_expanded_mapping_info,
-        (Gfx *)((u8 *)room->ptr_secondary_expanded_mapping_info + room->usize_secondary_DL_binary), onecycle);
-}
-
-s32 bgPerfProbePatchAllRooms(s32 onecycle)
-{
-    s32 i;
-    s32 count = 0;
-
-    for (i = 1; i < g_MaxNumRooms; i++)
-    {
-        if (g_BgRoomInfo[i].model_bin_loaded != 0)
-        {
-            count += bgPerfProbePatchRoom(i, onecycle);
-        }
-    }
-
-    return count;
-}
-
 Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
 {
 #ifdef VERSION_EU
@@ -790,7 +641,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = (g_PerfSkip & 0x4) ? gdl : chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 0);
+                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 0);
                     }
                 }
  
@@ -808,7 +659,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = (g_PerfSkip & 0x2) ? gdl : bgRenderRoomPrimary(gdl, dword_CODE_bss_8007FFA0[j].roomid);
+                        gdl = bgRenderRoomPrimary(gdl, dword_CODE_bss_8007FFA0[j].roomid);
                     }
                 }
  
@@ -819,7 +670,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = (g_PerfSkip & 0x4) ? gdl : chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 2);
+                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 2);
                     }
                 }
  
@@ -870,7 +721,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = (g_PerfSkip & 0x2) ? gdl : bgRenderRoomSecondary(gdl, dword_CODE_bss_8007FFA0[j].roomid);
+                        gdl = bgRenderRoomSecondary(gdl, dword_CODE_bss_8007FFA0[j].roomid);
                     }
                 }
  
@@ -881,7 +732,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = (g_PerfSkip & 0x4) ? gdl : chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 1);
+                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 1);
                     }
                 }
  
@@ -1511,18 +1362,6 @@ Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 left, s32 top, s32 width, s32 hei
     if (temp_v0->viewtop + temp_v0->viewy < height)
     {
         height = temp_v0->viewtop + temp_v0->viewy;
-    }
-
-    if (g_PerfSkip & 0x40)
-    {
-        /* perf probe: scissor the view down to one line, so the RDP has (almost) nothing to draw */
-        height = top + 1;
-    }
-    else if (g_PerfSkip & 0x20)
-    {
-        /* perf probe: letterbox the view */
-        if (top < temp_v0->viewtop + (temp_v0->viewy / 8)) top = temp_v0->viewtop + (temp_v0->viewy / 8);
-        if (height > temp_v0->viewtop + temp_v0->viewy - (temp_v0->viewy / 8)) height = temp_v0->viewtop + temp_v0->viewy - (temp_v0->viewy / 8);
     }
 
     gDPSetScissor(arg0++, G_SC_NON_INTERLACE, VI_SX(left), top, VI_SX(width), height);
@@ -2733,9 +2572,6 @@ void bgLoadRoomModelData(s32 roomID)
         }
     }
 
-    bgPerfProbePatchRoom(roomID, (g_PerfSkip & 0x10) != 0);
-    bgPerfCountRoom(roomID);
-
     bgBuildRoomVtxBounds(roomID);
     roomsHandleStateDebugging();
 
@@ -2867,9 +2703,6 @@ Gfx *bgRenderRoomPrimary(Gfx *gdl, s32 room_index)
 
             gSPSegment(gdl++, SPSEGMENT_BG_VTX, OS_K0_TO_PHYSICAL(g_BgRoomInfo[room_index].vertices));
             gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(g_BgRoomInfo[room_index].ptr_expanded_mapping_info));
-            g_PerfRoomTris += s_RoomPerfTris[room_index];
-            g_PerfRoomVtx += s_RoomPerfVtx[room_index];
-            g_PerfRoomUniq += s_RoomPerfUniq[room_index];
 
             // Set the room's state to "loaded"
             g_BgRoomInfo[room_index].model_bin_loaded = 1;
