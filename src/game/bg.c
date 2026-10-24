@@ -280,6 +280,7 @@ s32 D_8004485C = 1;
 void unload_rooms(void);
 Gfx *sub_GAME_7F0B8D78(Gfx *arg0);
 Gfx *sub_GAME_7F0B3C8C(Gfx *arg0);
+extern s32 g_PerfSkip; /* lv.c performance probe: 0x2 rooms, 0x4 props, 0x10 1-cycle rooms, 0x20 letterbox */
 s32 bgCheckIfRoomModelNeedsLoad(s32 roomID);
 void bgLoadRoomModelData(s32 room);
 void bgBuildRoomVtxBounds(s32 roomID);
@@ -588,7 +589,68 @@ s32 bgGet2dBboxByRoomId(s32 room_id, struct bbox2d *result)
 /**
  * Address: 7F0B3C8C
  */
-extern s32 g_PerfSkip; /* lv.c performance probe: 0x2 rooms, 0x4 props */
+/*
+ * Perf probe: switch a loaded room's 2-cycle commands to 1-cycle and back.
+ * Patched commands keep bit 0 (BLENDMASK, unused by the RDP) set as a
+ * marker so they can be restored.
+ */
+static s32 bgPerfProbePatchDL(Gfx *start, Gfx *end, s32 onecycle)
+{
+    Gfx *g;
+    s32 count = 0;
+    u32 w0 = (G_SETOTHERMODE_H << 24) | (G_MDSFT_CYCLETYPE << 8) | 2;
+
+    if (start == NULL)
+    {
+        return 0;
+    }
+
+    for (g = start; g < end; g++)
+    {
+        if (g->words.w0 == w0)
+        {
+            if (onecycle && (g->words.w1 == G_CYC_2CYCLE))
+            {
+                g->words.w1 = G_CYC_1CYCLE | 1;
+                count++;
+            }
+            else if (!onecycle && (g->words.w1 == (G_CYC_1CYCLE | 1)))
+            {
+                g->words.w1 = G_CYC_2CYCLE;
+                count++;
+            }
+        }
+    }
+
+    osWritebackDCache(start, (u8 *)end - (u8 *)start);
+    return count;
+}
+
+s32 bgPerfProbePatchRoom(s32 roomID, s32 onecycle)
+{
+    s_room_info *room = &g_BgRoomInfo[roomID];
+
+    return bgPerfProbePatchDL(room->ptr_expanded_mapping_info,
+        (Gfx *)((u8 *)room->ptr_expanded_mapping_info + room->usize_primary_DL_binary), onecycle)
+        + bgPerfProbePatchDL(room->ptr_secondary_expanded_mapping_info,
+        (Gfx *)((u8 *)room->ptr_secondary_expanded_mapping_info + room->usize_secondary_DL_binary), onecycle);
+}
+
+s32 bgPerfProbePatchAllRooms(s32 onecycle)
+{
+    s32 i;
+    s32 count = 0;
+
+    for (i = 1; i < g_MaxNumRooms; i++)
+    {
+        if (g_BgRoomInfo[i].model_bin_loaded != 0)
+        {
+            count += bgPerfProbePatchRoom(i, onecycle);
+        }
+    }
+
+    return count;
+}
 
 Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
 {
@@ -1364,6 +1426,13 @@ Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 left, s32 top, s32 width, s32 hei
     if (temp_v0->viewtop + temp_v0->viewy < height)
     {
         height = temp_v0->viewtop + temp_v0->viewy;
+    }
+
+    if (g_PerfSkip & 0x20)
+    {
+        /* perf probe: letterbox the view */
+        if (top < temp_v0->viewtop + (temp_v0->viewy / 8)) top = temp_v0->viewtop + (temp_v0->viewy / 8);
+        if (height > temp_v0->viewtop + temp_v0->viewy - (temp_v0->viewy / 8)) height = temp_v0->viewtop + temp_v0->viewy - (temp_v0->viewy / 8);
     }
 
     gDPSetScissor(arg0++, G_SC_NON_INTERLACE, VI_SX(left), top, VI_SX(width), height);
@@ -2573,6 +2642,8 @@ void bgLoadRoomModelData(s32 roomID)
                 7);
         }
     }
+
+    bgPerfProbePatchRoom(roomID, (g_PerfSkip & 0x10) != 0);
 
     bgBuildRoomVtxBounds(roomID);
     roomsHandleStateDebugging();

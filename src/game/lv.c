@@ -672,12 +672,19 @@ static u32 s_FpsLastCount;
  * the D-pad to stop drawing parts of the frame, to see what the RDP time is
  * made of. Up = sky, Down = room geometry, Left = props and characters,
  * Right = the second view's world (sky, rooms and props).
+ * L + C-up draws rooms in 1-cycle mode (wrong looking: no fog blend, no
+ * mip blend) and L + C-down letterboxes each view (scissor 1/8 off top and
+ * bottom), to see what 2-cycle mode and pixel count cost.
  */
 #define PERFSKIP_SKY    0x1
 #define PERFSKIP_ROOMS  0x2
 #define PERFSKIP_PROPS  0x4
 #define PERFSKIP_VIEW2  0x8
+#define PERFSKIP_1CYCLE 0x10
+#define PERFSKIP_LETTERBOX 0x20
 s32 g_PerfSkip = 0;
+s32 bgPerfProbePatchAllRooms(s32 onecycle);
+static s32 s_PerfPatched;
 static s32 s_FpsFrames;
 static s32 s_FpsTenths;
 static u32 s_FpsLastCpu;
@@ -706,7 +713,7 @@ static s32 s_FpsTmemMs;
  */
 static Gfx *lvlRenderFpsCounter(Gfx *DL)
 {
-    char text[96];
+    char text[128];
     s32 x;
     s32 y;
     s32 width;
@@ -743,9 +750,10 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         s_FpsLastTasks = tasks;
     }
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n%s%s%s%s", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n%s%s%s%s%s%s %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
         (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_ROOMS) ? "NOROOM " : "",
-        (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2" : "");
+        (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2 " : "",
+        (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX" : "", s_PerfPatched);
 
     width = 0;
     height = 0;
@@ -959,6 +967,12 @@ Gfx* lvlRender(Gfx* DL)
             if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD)) g_PerfSkip ^= PERFSKIP_ROOMS;
             if (joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD)) g_PerfSkip ^= PERFSKIP_PROPS;
             if (joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD)) g_PerfSkip ^= PERFSKIP_VIEW2;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS))
+            {
+                g_PerfSkip ^= PERFSKIP_1CYCLE;
+                s_PerfPatched = bgPerfProbePatchAllRooms((g_PerfSkip & PERFSKIP_1CYCLE) != 0);
+            }
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS)) g_PerfSkip ^= PERFSKIP_LETTERBOX;
         }
 
         DL = lvlRenderFpsCounter(DL);
