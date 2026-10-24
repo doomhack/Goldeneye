@@ -1375,6 +1375,18 @@ void bondinvAddTextOverride(textoverride *override)
 {
     override->next                 = g_CurrentPlayer->textoverrides;
     g_CurrentPlayer->textoverrides = override;
+
+    // Co-op: the setup's renames (e.g. Dam's "covert modem") are loaded
+    // with the last player current, but every player's inventory uses them.
+    if (g_CoopMode)
+    {
+        s32 i;
+
+        for (i = 0; i < getPlayerCount(); i++)
+        {
+            g_playerPointers[i]->textoverrides = override;
+        }
+    }
 }
 
 int bondinvGetCurEquippedItem(void)
