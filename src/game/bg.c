@@ -1342,29 +1342,16 @@ Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 left, s32 top, s32 width, s32 hei
 {
     struct player *temp_v0;
 
-    s32 mintop;
-
     temp_v0 = g_CurrentPlayer;
-    mintop = temp_v0->viewtop;
-
-    // Stacked views: the lower view may draw one row into the divider
-    // above it, which is filled black again after all views are drawn.
-    // Polygons cut by the scissor leave part-covered pixels along its edge,
-    // and the VI's antialiasing filter darkened those next to the divider
-    // (dark speckles along the top of the bottom view).
-    if ((getViewCount() >= 2) && !coopSplitSideBySide() && (mintop >= (SCREEN_HEIGHT / 2)))
-    {
-        mintop--;
-    }
 
     if (left < (s32) temp_v0->viewleft)
     {
         left = (s32) temp_v0->viewleft;
     }
 
-    if (top <= (s32) temp_v0->viewtop)
+    if (top < (s32) temp_v0->viewtop)
     {
-        top = mintop;
+        top = (s32) temp_v0->viewtop;
     }
 
     if (temp_v0->viewleft + temp_v0->viewx < width)
