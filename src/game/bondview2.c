@@ -9119,6 +9119,7 @@ void coopRespawnPlayer(void)
     s32 count = getPlayerCount();
     s32 cur = get_cur_playernum();
     s32 i;
+    s32 copiedgoldeneye;
 
     for (i = 0; i < count; i++)
     {
@@ -9134,8 +9135,11 @@ void coopRespawnPlayer(void)
         return;
     }
 
+    // Mission progress survives the respawn.
+    copiedgoldeneye = g_CurrentPlayer->copiedgoldeneye;
     init_player_BONDdata();
     bondviewPlayerBeginLife();
+    g_CurrentPlayer->copiedgoldeneye = copiedgoldeneye;
 
     g_CurrentPlayer->bonddead = 0;
     g_CurrentPlayer->deathanimfinished = 0;

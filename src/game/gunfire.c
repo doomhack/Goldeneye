@@ -4234,6 +4234,20 @@ void analyzeGEKey(void)
 
 s32 get_keyanalyzer_flag(void)
 {
+  s32 i;
+
+  // Co-op: objectives are shared, so a copy made by either player counts.
+  if (g_CoopMode)
+  {
+    for (i = 0; i < getPlayerCount(); i++)
+    {
+      if (g_playerPointers[i]->copiedgoldeneye)
+      {
+        return TRUE;
+      }
+    }
+  }
+
   return g_CurrentPlayer->copiedgoldeneye;
 }
 
