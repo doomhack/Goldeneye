@@ -685,7 +685,10 @@ static u32 s_FpsLastCount;
 #define PERFSKIP_VIEW2  0x8
 #define PERFSKIP_1CYCLE 0x10
 #define PERFSKIP_LETTERBOX 0x20
+#define PERFSKIP_NULLVIEW 0x40
 s32 g_PerfSkip = 0;
+extern s32 g_PerfRoomTris; /* bg.c: room triangles/vertices drawn this frame */
+extern s32 g_PerfRoomVtx;
 s32 bgPerfProbePatchAllRooms(s32 onecycle);
 static s32 s_PerfPatched;
 static s32 s_FpsFrames;
@@ -716,7 +719,9 @@ static s32 s_FpsTmemMs;
  */
 static Gfx *lvlRenderFpsCounter(Gfx *DL)
 {
-    char text[128];
+    char text[160];
+    s32 tris = g_PerfRoomTris;
+    s32 vtx = g_PerfRoomVtx;
     s32 x;
     s32 y;
     s32 width;
@@ -753,10 +758,15 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         s_FpsLastTasks = tasks;
     }
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
+    g_PerfRoomTris = 0;
+    g_PerfRoomVtx = 0;
+
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\nTRI %d VTX %d\n%s%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
+        tris, vtx,
         (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_ROOMS) ? "NOROOM " : "",
         (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2 " : "",
-        (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX" : "", s_PerfPatched, (s32)(g_CoopNearDrawScale * 100.0f + 0.5f));
+        (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX " : "",
+        (g_PerfSkip & PERFSKIP_NULLVIEW) ? "NULLVIEW" : "", s_PerfPatched, (s32)(g_CoopNearDrawScale * 100.0f + 0.5f));
 
     width = 0;
     height = 0;
@@ -975,7 +985,22 @@ Gfx* lvlRender(Gfx* DL)
                 g_PerfSkip ^= PERFSKIP_1CYCLE;
                 s_PerfPatched = bgPerfProbePatchAllRooms((g_PerfSkip & PERFSKIP_1CYCLE) != 0);
             }
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS)) g_PerfSkip ^= PERFSKIP_LETTERBOX;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS))
+            {
+                /* off -> letterbox -> one-line view -> off */
+                if (g_PerfSkip & PERFSKIP_LETTERBOX)
+                {
+                    g_PerfSkip ^= PERFSKIP_LETTERBOX | PERFSKIP_NULLVIEW;
+                }
+                else if (g_PerfSkip & PERFSKIP_NULLVIEW)
+                {
+                    g_PerfSkip &= ~PERFSKIP_NULLVIEW;
+                }
+                else
+                {
+                    g_PerfSkip |= PERFSKIP_LETTERBOX;
+                }
+            }
             if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
             {
                 g_CoopNearDrawScale = (g_CoopNearDrawScale > 0.4f) ? 0.35f : (g_CoopNearDrawScale > 0.3f) ? 0.25f : (g_CoopNearDrawScale > 0.2f) ? 0.15f : 0.5f;
