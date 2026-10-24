@@ -9416,7 +9416,8 @@ void coopChrShotByCurrentPlayer(ChrRecord *self)
 {
     s32 player = get_cur_playernum();
 
-    if (!g_CoopMode || (self->prop == NULL) || (self->prop->type != PROP_TYPE_CHR) || (self->targetplayer == player))
+    if (!g_CoopMode || (self->prop == NULL) || (self->prop->type != PROP_TYPE_CHR) || (self->targetplayer == player)
+        || g_CurrentPlayer->bonddead)
     {
         return;
     }

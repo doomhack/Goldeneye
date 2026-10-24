@@ -763,6 +763,11 @@ Gfx* lvlRender(Gfx* DL)
 
         gSPClipRatio(DL++, FRUSTRATIO_2);
 
+        if (g_CoopMode)
+        {
+            coopViewsBegin();
+        }
+
         for(i = 0; i < pcount; i++)
         {
             set_cur_player(get_nth_player_from_shuffled(i));
@@ -898,6 +903,11 @@ Gfx* lvlRender(Gfx* DL)
 
             DL = mp_watch_menu_display(DL);
             coopTankEndPlayer(FALSE);
+        }
+
+        if (g_CoopMode && (pcount > 0))
+        {
+            coopViewsEnd(get_nth_player_from_shuffled(pcount - 1));
         }
     }
 

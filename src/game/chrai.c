@@ -965,8 +965,9 @@ static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset)
     {
         s32 player = (st->base + i) % count;
 
-        // A dead player can't be seen, heard or chased.
-        if ((mode == COOP_AI_ANY_SEEN) && (i > 0) && g_playerPointers[player]->bonddead)
+        // A dead player can't be seen, heard or chased, and their body
+        // doesn't meet level conditions (in a room, near a pad, ...).
+        if (((mode == COOP_AI_ANY_SEEN) || (mode == COOP_AI_ANY)) && (i > 0) && g_playerPointers[player]->bonddead)
         {
             continue;
         }
@@ -1017,7 +1018,12 @@ static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
         return TRUE;
     }
 
-    if ((st->mode == COOP_AI_ANY_SEEN) && taken && (chr != NULL))
+    if (taken && (chr != NULL) && g_CurrentPlayer->bonddead)
+    {
+        // Never fight a dead player.
+        set_cur_player(st->base);
+    }
+    else if ((st->mode == COOP_AI_ANY_SEEN) && taken && (chr != NULL))
     {
         // Fight the player that was seen. They stay current for the rest
         // of this chr's tick.
