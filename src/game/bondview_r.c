@@ -75,11 +75,15 @@ u32 weaponLoadProjectileModels(ITEM_IDS modelid)
 /**
  * Co-op: spots tried for player 2 around player 1's start pad, as
  * (right, forward) offsets relative to the pad's facing: beside first, so
- * player 2 isn't staring at player 1's back, then behind and in front.
+ * player 2 isn't staring at player 1's back, then behind. Never in front:
+ * that can put player 2 in view of the first guards (Aztec), so with no
+ * room beside or behind the players start overlapping instead.
  */
 static const f32 coopSpawnOffsets[][2] = {
-    { 100.0f,    0.0f }, {-100.0f,   0.0f }, {   0.0f, -100.0f }, {   0.0f, 100.0f },
-    { 160.0f,    0.0f }, {-160.0f,   0.0f }, {   0.0f, -160.0f }, {   0.0f, 160.0f },
+    { 100.0f,    0.0f }, {-100.0f,    0.0f }, {   0.0f, -100.0f },
+    {  70.0f,  -70.0f }, { -70.0f,  -70.0f },
+    {  60.0f,    0.0f }, { -60.0f,    0.0f }, {   0.0f,  -60.0f },
+    { 160.0f,    0.0f }, {-160.0f,    0.0f }, {   0.0f, -160.0f },
 };
 
 #define COOP_SPAWN_CDTYPES (CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER)
