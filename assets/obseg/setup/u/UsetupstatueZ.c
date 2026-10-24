@@ -1,7 +1,7 @@
 /*
 * This file was automatically generated
 * 
-* Monday, January 17, 2022 9:36:16 AM
+* Monday, January 17, 2022 9:36:19 AM
 * Getools.Lib: 21.9.18.1
 */
 
@@ -2544,17 +2544,17 @@ u8 ai_44[] = {
     debug_log 'C', 'L', '\n', '\0',
     jump_to_ai_list(0xfd, 0x0100)
     ai_list_end
-    label(0x00)
+};
+u8 ai_45[] = {
+    chr_flags_set_on(0x01, 0x00001000)
     ai_sleep
-    if_objective_bitfield_is_set_on(0x00001000, 0x01)
-    if_chr_dying_or_dead(0x01, 0x23)
-    if_chr_does_not_exist(0x01, 0x23)
-    goto_first(0x00)
+    label(0x33)
+    ai_sleep
+    if_killed_civilians_greater_than(0x00, 0x23)
+    goto_first(0x33)
     label(0x23)
     objective_bitfield_set_on(0x00002000)
-    label(0x01)
-    ai_sleep
-    goto_first(0x01)
+    jump_to_ai_list(0xfd, 0x0100)
     ai_list_end
 };
 
@@ -2650,6 +2650,8 @@ AIListRecord ailists[] = {
     /* index = 44 */
     { &ai_44, 0x00001008 },
     /* index = 45 */
+    { &ai_45, 0x00001009 },
+    /* index = 46 */
     { NULL, 0x00000000 }
 };
 
