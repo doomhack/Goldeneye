@@ -513,6 +513,8 @@ void fileValidateSaves(void)
             fileWriteSmallSave(&joyChecksum);
         }
 
+        fileCoopLoadPartnerSettings(&joyChecksum);
+
         // Block read 5 saves starting at address 4th byte (? bug: address must be multiple of 8 - return is -1)
         joyGamePakLongRead(4, &saves, sizeof(save_data) * 5);
 
@@ -1333,25 +1335,143 @@ void fileLoadSettingsForFolder(u32 folder)
 }
 
 /**
- * Co-op: player 2's options from their watch. They aren't saved to the
- * folder (that holds player 1's), but they last until the console is
- * switched off.
+ * Player 2's settings: their options from the co-op watch, their control
+ * style (shared with multiplayer, see controlstyle_player) and their co-op
+ * character. Player 2 isn't tied to a save folder, so these live in the
+ * spare bytes of the EEPROM header block:
+ * unk[1] = PARTNER_SAVE_MAGIC, unk[2..3] = options, unk[4] = character.
  */
+#define PARTNER_SAVE_MAGIC 0xC0
+
+static smallSave s_SaveHeader;
+static s32 s_SaveHeaderValid = FALSE;
 static u16 s_CoopPartnerOptions;
 static s32 s_CoopPartnerOptionsSet = FALSE;
+static s32 s_CoopPartnerChar = 0;
 
+void fileCoopLoadPartnerSettings(smallSave *header)
+{
+    s_SaveHeader = *header;
+    s_SaveHeaderValid = TRUE;
+
+    if (header->unk[1] == PARTNER_SAVE_MAGIC)
+    {
+        s_CoopPartnerOptions = (header->unk[2] << 8) | header->unk[3];
+        s_CoopPartnerOptionsSet = TRUE;
+        s_CoopPartnerChar = header->unk[4];
+        controlstyle_player[PLAYER_2] = (s_CoopPartnerOptions & OPTION_CONTROLTYPE) >> 8;
+    }
+}
+
+/**
+ * Writes player 2's settings to the EEPROM header if they changed.
+ */
+void fileCoopSavePartnerSettings(void)
+{
+    u16 options = s_CoopPartnerOptions;
+
+    if (!s_SaveHeaderValid)
+    {
+        return;
+    }
+
+    if (!s_CoopPartnerOptionsSet)
+    {
+        options = DEFAULT_OPTIONS;
+    }
+
+    options = (options & ~OPTION_CONTROLTYPE) | ((controlstyle_player[PLAYER_2] << 8) & OPTION_CONTROLTYPE);
+
+    if ((s_SaveHeader.unk[1] == PARTNER_SAVE_MAGIC)
+        && (s_SaveHeader.unk[2] == (options >> 8))
+        && (s_SaveHeader.unk[3] == (options & 0xFF))
+        && (s_SaveHeader.unk[4] == s_CoopPartnerChar))
+    {
+        return;
+    }
+
+    s_SaveHeader.unk[1] = PARTNER_SAVE_MAGIC;
+    s_SaveHeader.unk[2] = options >> 8;
+    s_SaveHeader.unk[3] = options & 0xFF;
+    s_SaveHeader.unk[4] = s_CoopPartnerChar;
+    fileWriteSmallSave(&s_SaveHeader);
+}
+
+s32 fileCoopGetPartnerChar(void)
+{
+    return s_CoopPartnerChar;
+}
+
+void fileCoopSetPartnerChar(s32 character)
+{
+    s_CoopPartnerChar = character;
+}
+
+/**
+ * Called when player 2 closes their watch. Their control style goes to
+ * controlstyle_player so that multiplayer uses it too.
+ */
 void fileCoopStorePartnerOptions(void)
 {
     s_CoopPartnerOptions = fileGetCurrentPlayerOptions();
     s_CoopPartnerOptionsSet = TRUE;
+    controlstyle_player[PLAYER_2] = cur_player_get_control_type();
+    fileCoopSavePartnerSettings();
 }
 
+/**
+ * Gives the current player (player 2 in co-op or multiplayer) player 2's
+ * options. The control style is set from controlstyle_player.
+ */
 void fileCoopRestorePartnerOptions(void)
 {
     if (s_CoopPartnerOptionsSet)
     {
-        cur_player_set_control_type(((s32) (s_CoopPartnerOptions & OPTION_CONTROLTYPE) >> 8) & 0xFFFF);
         fileSetCurrentPlayerOptions(s_CoopPartnerOptions);
+    }
+}
+
+/**
+ * Saves only the shared display options (hi-res, split screen, draw
+ * distance) to a folder. Used by the menus, where there is no current
+ * player to take the other options from.
+ */
+void fileSaveDisplaySettingsForFolder(s32 folder)
+{
+    u16 bits = 0;
+
+    if (folder >= FOLDER1 && folder < MAX_FOLDER_COUNT)
+    {
+        save_data *save = fileGetSaveForFoldernum(folder);
+        save_data new_save;
+
+        if (save == NULL)
+        {
+            return;
+        }
+
+        if (get_hires_setting())
+        {
+            bits |= OPTION_HIRES;
+        }
+
+        if (get_split_stacked_setting())
+        {
+            bits |= OPTION_SPLITSTACKED;
+        }
+
+        if (get_draw_near_setting())
+        {
+            bits |= OPTION_DRAWNEAR;
+        }
+
+        new_save = *save;
+        new_save.options = (new_save.options & ~(OPTION_HIRES | OPTION_SPLITSTACKED | OPTION_DRAWNEAR)) | bits;
+
+        if (new_save.options != save->options)
+        {
+            fileOverwriteSaveSlotWithNewSave(save, &new_save);
+        }
     }
 }
 

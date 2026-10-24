@@ -170,12 +170,12 @@ s32 getViewCount(void)
 }
 
 /**
- * Co-op with two views shown left and right (the default) rather than
- * stacked.
+ * Two views (co-op or 2 player multiplayer) shown left and right rather
+ * than stacked.
  */
 s32 coopSplitSideBySide(void)
 {
-    return g_CoopMode && (getViewCount() == 2) && !get_split_stacked_setting();
+    return (getViewCount() == 2) && !get_split_stacked_setting();
 }
 
 /**
@@ -580,7 +580,8 @@ void set_cur_player(s32 playernum)
 
     player_num = playernum;
     g_CurrentPlayer = g_playerPointers[playernum];
-    optionsCoopUsePlayer((g_CoopMode && (playernum < 2)) ? playernum : 0);
+    // Player 2 has their own options in co-op and in multiplayer.
+    optionsCoopUsePlayer(((playernum == 1) && (g_CoopMode || isMpGame())) ? 1 : 0);
     g_playerPerm = &g_playerPlayerData[playernum];
 }
 

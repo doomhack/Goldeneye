@@ -361,7 +361,7 @@ void solo_char_load(void)
 
         bondviewDeregisterPlayerRoom(g_CurrentPlayer);
 
-        if (!isMpGame() && (get_cur_playernum() == 0))
+        if (!isMpGame() && ((get_cur_playernum() == 0) || frontCoopPartnerIsBond()))
         {
             helddst = fileGetBondForCurrentFolder();
             switch (g_CurrentPlayer->bondtype)
@@ -471,6 +471,11 @@ void solo_char_load(void)
                     head = HEAD_Male_Brosnan_Tuxedo;
                     break;
             }
+        }
+        else if (g_CoopMode)
+        {
+            head = frontCoopGetPartnerHead();
+            body = frontCoopGetPartnerBody();
         }
         else
         {
@@ -8198,8 +8203,7 @@ void bondviewMovePlayerUpdateViewport(s8 stick_x, s8 stick_y, u16 buttons)
     viSetXY(getWidth320or440(), getHeight330or240());
     viSetBuf(getWidth320or440(), getHeight330or240());
     // Hi-res doubles the physical width only; game logic stays 320 wide.
-    // Solo and co-op: multiplayer has no watch menu to change it.
-    viSetScaleX((get_hires_setting() && (cameraBufferToggle == 0) && ((getPlayerCount() == 1) || g_CoopMode)) ? VI_MAX_SCALEX : 1);
+    viSetScaleX((get_hires_setting() && (cameraBufferToggle == 0)) ? VI_MAX_SCALEX : 1);
     viSetViewSize(bondviewGetCurrentPlayerViewportWidth(), bondviewGetCurrentPlayerViewportHeight());
     viSetViewPosition(get_curplayer_viewport_ulx(), bondviewGetCurrentPlayerViewportUly());
     currentPlayerUpdateColourScreenProperties();

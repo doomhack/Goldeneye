@@ -103,8 +103,9 @@ Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
     s32 end_x;
     s32 height = z_buffer_height;
 
-    // Co-op stacked views only need half the rows cleared.
-    if (g_CoopMode && (getViewCount() == 2) && !coopSplitSideBySide() && (height > Z_BUFFER_HEIGHT)) {
+    // Stacked views (co-op or 2 player multiplayer) only need half the rows
+    // cleared.
+    if ((getViewCount() == 2) && !coopSplitSideBySide() && (height > Z_BUFFER_HEIGHT)) {
         height = Z_BUFFER_HEIGHT;
     }
 

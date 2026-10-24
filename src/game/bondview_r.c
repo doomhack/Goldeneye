@@ -440,6 +440,12 @@ void bondviewLoadSetupIntroSection(void)
         }
     }
 
+    // Co-op: player 2's outfit. The cuffs on their hands follow it.
+    if (coopPartner)
+    {
+        g_CurrentPlayer->bondtype = frontCoopGetPartnerCuff(g_playerPointers[PLAYER_1]->bondtype);
+    }
+
     if (g_CurrentSetupIntroCamera != NULL)
     {
         ptr_random06cam_entry = g_CurrentSetupIntroCamera;

@@ -1362,14 +1362,14 @@ s32 bondviewGetRandomSpawnPadIndex(void)
  */
 void init_player_BONDdata(void)
 {
-    // Co-op: player 1 keeps the save folder's options; player 2 starts with
-    // their multiplayer control style, or what they last picked on the watch.
+    // Co-op: player 1 keeps the save folder's options. Player 2 (in co-op
+    // and in multiplayer) gets their own control style and watch options.
     if (isMpGame() || (g_CoopMode && (get_cur_playernum() > 0)))
     {
         g_CurrentPlayer->controldef = get_player_control_style(get_cur_playernum());
         cur_player_set_control_type(get_player_control_style(get_cur_playernum()));
 
-        if (g_CoopMode)
+        if (get_cur_playernum() == PLAYER_2)
         {
             optionsCoopCopyFromPlayer1();
             fileCoopRestorePartnerOptions();
