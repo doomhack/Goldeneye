@@ -5,7 +5,6 @@
 #include "bondtypes.h"
 #include "othermodemicrocode.h"
 #include "gbi_extension.h"
-#include <fr.h>
 
 s32 is_less_than_certain_power_of_2(int number)
 {
@@ -186,16 +185,16 @@ void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
                 {
                     if (zbufferMode >= 2)
                     {
-                        gDPSetRenderModeFast(gdl++, G_RM_AA_ZB_OPA_DECAL, G_RM_AA_ZB_OPA_DECAL2);
+                        gDPSetRenderMode(gdl++, G_RM_AA_ZB_OPA_DECAL, G_RM_AA_ZB_OPA_DECAL2);
                     }
                     else
                     {
-                        gDPSetRenderModeFast(gdl++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
+                        gDPSetRenderMode(gdl++, G_RM_AA_ZB_OPA_SURF, G_RM_AA_ZB_OPA_SURF2);
                     }
                 }
                 else
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);
+                    gDPSetRenderMode(gdl++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);
                 }
                 break;
 
@@ -204,38 +203,38 @@ void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
                 {
                     if (zbufferMode >= 2)
                     {
-                        gDPSetRenderModeFast(gdl++, G_RM_AA_ZB_XLU_DECAL, G_RM_AA_ZB_XLU_DECAL2);
+                        gDPSetRenderMode(gdl++, G_RM_AA_ZB_XLU_DECAL, G_RM_AA_ZB_XLU_DECAL2);
                     }
                     else
                     {
-                        gDPSetRenderModeFast(gdl++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
+                        gDPSetRenderMode(gdl++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
                     }
                 }
                 else
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
+                    gDPSetRenderMode(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
                 }
                 break;
 
             case 3:
                 if (zbufferMode)
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_AA_ZB_TEX_EDGE, G_RM_AA_ZB_TEX_EDGE2);
+                    gDPSetRenderMode(gdl++, G_RM_AA_ZB_TEX_EDGE, G_RM_AA_ZB_TEX_EDGE2);
                 }
                 else
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_AA_TEX_EDGE, G_RM_AA_TEX_EDGE2);
+                    gDPSetRenderMode(gdl++, G_RM_AA_TEX_EDGE, G_RM_AA_TEX_EDGE2);
                 }
                 break;
 
             case 4:
                 if (zbufferMode)
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_ZB_CLD_SURF, G_RM_ZB_CLD_SURF2);
+                    gDPSetRenderMode(gdl++, G_RM_ZB_CLD_SURF, G_RM_ZB_CLD_SURF2);
                 }
                 else
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
+                    gDPSetRenderMode(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
                 }
                 break;
         }
@@ -253,16 +252,16 @@ void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
                 {
                     if (zbufferMode >= 2)
                     {
-                        gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_AA_ZB_OPA_DECAL2);
+                        gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_AA_ZB_OPA_DECAL2);
                     }
                     else
                     {
-                        gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_AA_ZB_OPA_SURF2);
+                        gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_AA_ZB_OPA_SURF2);
                     }
                 }
                 else
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_AA_OPA_SURF2);
+                    gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_AA_OPA_SURF2);
                 }
                 break;
 
@@ -271,38 +270,38 @@ void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
                 {
                     if (zbufferMode >= 2)
                     {
-                        gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_AA_ZB_XLU_DECAL2);
+                        gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_AA_ZB_XLU_DECAL2);
                     }
                     else
                     {
-                        gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_AA_ZB_XLU_SURF2);
+                        gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_AA_ZB_XLU_SURF2);
                     }
                 }
                 else
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_AA_XLU_SURF2);
+                    gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_AA_XLU_SURF2);
                 }
                 break;
 
             case 3:
                 if (zbufferMode)
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_AA_ZB_TEX_EDGE2);
+                    gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_AA_ZB_TEX_EDGE2);
                 }
                 else
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_AA_TEX_EDGE2);
+                    gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_AA_TEX_EDGE2);
                 }
                 break;
 
             case 4:
                 if (zbufferMode)
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_ZB_CLD_SURF2);
+                    gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_ZB_CLD_SURF2);
                 }
                 else
                 {
-                    gDPSetRenderModeFast(gdl++, G_RM_PASS, G_RM_CLD_SURF2);
+                    gDPSetRenderMode(gdl++, G_RM_PASS, G_RM_CLD_SURF2);
                 }
                 break;
         }
