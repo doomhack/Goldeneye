@@ -9345,7 +9345,8 @@ void chrlvTickPatrol(ChrRecord *self)
  * shooting, damage, chasing) applies to that player.
  *
  * A chr keeps a living target. Without one, or when it hasn't seen anyone
- * for a while, it switches to the nearest living player every half second.
+ * for a while, it switches to the nearest living player every half second,
+ * forgetting when it last saw or heard its old target.
  * Seeing or hearing the other player retargets it straight away (see the
  * any-player AI commands in ai()).
  */
@@ -9411,6 +9412,15 @@ static void coopChrSelectTarget(ChrRecord *self)
         {
             target = best;
         }
+    }
+
+    if (target != self->targetplayer)
+    {
+        // What a chr saw or heard was the old target. Without this the new
+        // target counts as seen for up to 10 seconds, so guards would know
+        // where a respawned player is without looking.
+        self->lastseetarget60 = 0;
+        self->lastheartarget60 = 0;
     }
 
     self->targetplayer = target;
