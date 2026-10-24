@@ -6,6 +6,7 @@
 #include "unk_092E50.h"
 #include "bondview.h"
 #include "lv.h"
+#include "options.h"
 
 struct player *g_playerPointers[4];
 struct player_data g_playerPlayerData[4];
@@ -166,6 +167,24 @@ s32 getViewCount(void)
     }
 
     return getPlayerCount();
+}
+
+/**
+ * Co-op with two views shown left and right (the default) rather than
+ * stacked.
+ */
+s32 coopSplitSideBySide(void)
+{
+    return g_CoopMode && (getViewCount() == 2) && !get_split_stacked_setting();
+}
+
+/**
+ * The current view is half the screen wide: 3 or 4 player split, or co-op
+ * side by side. The HUD then uses its narrow layout.
+ */
+s32 viewIsHalfWidth(void)
+{
+    return (getViewCount() >= 3) || coopSplitSideBySide();
 }
 
 s32 getPlayerCount(void)
@@ -561,6 +580,7 @@ void set_cur_player(s32 playernum)
 
     player_num = playernum;
     g_CurrentPlayer = g_playerPointers[playernum];
+    optionsCoopUsePlayer((g_CoopMode && (playernum < 2)) ? playernum : 0);
     g_playerPerm = &g_playerPlayerData[playernum];
 }
 

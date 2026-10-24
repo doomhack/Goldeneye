@@ -324,7 +324,8 @@ Gfx *skyRender(Gfx *gdl)
 
     if (!fogGetCurrentEnvironmentp()->Clouds)
     {
-        if (getPlayerCount() == 1)
+        // Co-op plays solo levels, so clear each view to the fog colour too.
+        if ((getPlayerCount() == 1) || g_CoopMode)
         {
             gDPSetCycleType(gdl++, G_CYC_FILL);
 

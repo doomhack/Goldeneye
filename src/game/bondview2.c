@@ -9,6 +9,7 @@
 #include <str.h>
 #include <options.h>
 #include "bg.h"
+#include "bgfog.h"
 #include "bgroomtrans.h"
 #include "blood_animation.h"
 #include "bondhead.h"
@@ -4064,6 +4065,12 @@ void trigger_solo_watch_menu(s32 arg0)
             fileCoopStorePartnerOptions();
         }
 
+        // The draw distance option may have changed.
+        if (g_CoopMode)
+        {
+            fogReloadCurrentEnvironment();
+        }
+
         sub_GAME_7F0C1340();
         g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0xc;
         g_CurrentPlayer->watch_pause_time = 0;
@@ -7939,7 +7946,7 @@ s16 getHeight330or240(void)
 
 s16 bondviewGetCurrentPlayerViewportWidth(void)
 {
-    if (getViewCount() >= 3)
+    if (viewIsHalfWidth())
     {
         return VIEWPORT_WIDTH_4P;
     }
@@ -7964,7 +7971,7 @@ s16 bondviewGetCurrentPlayerViewportWidth(void)
 
 s16 get_curplayer_viewport_ulx(void)
 {
-    if (2 < getViewCount())
+    if (viewIsHalfWidth())
     {
         if ((get_cur_playernum() == 1) || (get_cur_playernum() == 3))
         {
@@ -7985,7 +7992,8 @@ s16 bondviewGetCurrentPlayerViewportHeight(void)
 {
     f32 t;
 
-    if (getViewCount() >= 2)
+    // Co-op side by side views are full height: see the single view sizes.
+    if ((getViewCount() >= 2) && !coopSplitSideBySide())
     {
         return VIEWPORT_HEIGHT_4P;
     }
@@ -8031,7 +8039,7 @@ s16 bondviewGetCurrentPlayerViewportUly(void)
 {
     f32 t;
 
-    if (getViewCount() == 2)
+    if ((getViewCount() == 2) && !coopSplitSideBySide())
     {
         if (get_cur_playernum() == 0)
         {
@@ -8190,8 +8198,8 @@ void bondviewMovePlayerUpdateViewport(s8 stick_x, s8 stick_y, u16 buttons)
     viSetXY(getWidth320or440(), getHeight330or240());
     viSetBuf(getWidth320or440(), getHeight330or240());
     // Hi-res doubles the physical width only; game logic stays 320 wide.
-    // Solo only for now: multiplayer has no watch menu to change it.
-    viSetScaleX((get_hires_setting() && (cameraBufferToggle == 0) && (getPlayerCount() == 1)) ? VI_MAX_SCALEX : 1);
+    // Solo and co-op: multiplayer has no watch menu to change it.
+    viSetScaleX((get_hires_setting() && (cameraBufferToggle == 0) && ((getPlayerCount() == 1) || g_CoopMode)) ? VI_MAX_SCALEX : 1);
     viSetViewSize(bondviewGetCurrentPlayerViewportWidth(), bondviewGetCurrentPlayerViewportHeight());
     viSetViewPosition(get_curplayer_viewport_ulx(), bondviewGetCurrentPlayerViewportUly());
     currentPlayerUpdateColourScreenProperties();
@@ -10226,7 +10234,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
             view_top_offset = 0;
             textMeasure(&view_top_offset, &view_left_offset ,(u8* ) stringbuffer_lowerleft[status_bar_text_buffer_index], BONDVIEW_2ND_FONTTABLE(status_bar_text_buffer_index), BONDVIEW_1ST_FONTTABLE(status_bar_text_buffer_index), 0);
 
-            if (getPlayerCount() < 3)
+            if (!viewIsHalfWidth())
             {
                 view_left = viGetViewLeft() + 0x1E;
             }

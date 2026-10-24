@@ -62,6 +62,10 @@ char *LoptionsE[] = {
  "5. moneypenny\n", //OPTION_STR_3B
  "1. mission objectives\n", //OPTION_STR_3C
  "hi-res\n", //OPTION_STR_3D
- 0, //OPTION_STR_3E
- 0 //OPTION_STR_3F
+ "split screen\n", //OPTION_STR_3E
+ "fps counter\n", //OPTION_STR_3F
+ "side\n", //OPTION_STR_40
+ "stacked\n", //OPTION_STR_41
+ "draw distance\n", //OPTION_STR_42
+ "near\n" //OPTION_STR_43
 };

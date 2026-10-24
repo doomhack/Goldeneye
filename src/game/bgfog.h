@@ -186,6 +186,7 @@ extern s32 g_FogSkyIsEnabled;
 struct CurrentEnvironmentRecord *fogGetCurrentEnvironmentp(void);
 f32 fogGetScaledFarFogIntensitySquared(void);
 void fogLoadLevelEnvironment(s32 level_id, s32 arg1);
+void fogReloadCurrentEnvironment(void);
 s32 fogPositionIsVisibleThroughFog(coord3d *pos, f32 range);
 Gfx *fogSetRenderFogColor(Gfx *arg0, s32 arg1);
 Gfx *fogRenderClearFogMode(Gfx *gdl);

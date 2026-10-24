@@ -62,6 +62,10 @@ enum LOPTIONE_STRINGS
     OPTION_STR_3B_5MONEYPENNY_LF,        //"5. moneypenny\n",
     OPTION_STR_3C_1MISSIONOBJECTIVES_LF, //"1. mission objectives\n",
     OPTION_STR_3D_HIRES_LF,              //"hi-res\n",
-    OPTION_STR_3E,                       // 0,
-    OPTION_STR_3F                        // 0
+    OPTION_STR_3E_SPLITSCREEN_LF,        //"split screen\n",
+    OPTION_STR_3F_FPSCOUNTER_LF,         //"fps counter\n",
+    OPTION_STR_40_SIDE_LF,               //"side\n",
+    OPTION_STR_41_STACKED_LF,            //"stacked\n",
+    OPTION_STR_42_DRAWDISTANCE_LF,       //"draw distance\n",
+    OPTION_STR_43_NEAR_LF                //"near\n",
 };

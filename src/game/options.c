@@ -113,7 +113,10 @@ struct game_options game_options_entries[] = {
     { {getStringID(LOPTIONS, OPTION_STR_16_AMMOONSCREEN_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 1}, //ammo on screen, off, on
     { {getStringID(LOPTIONS, OPTION_STR_17_SCREEN_LF), getStringID(LOPTIONS, OPTION_STR_1F_FULL_LF), getStringID(LOPTIONS, OPTION_STR_20_WIDE_LF), getStringID(LOPTIONS, OPTION_STR_21_CINEMA_LF)}, 0}, //screen, full, wide, cinema
     { {getStringID(LOPTIONS, OPTION_STR_18_RATIO_LF), getStringID(LOPTIONS, OPTION_STR_22_NORMAL_LF), getStringID(LOPTIONS, OPTION_STR_23_169_LF), 0}, 0}, //ratio, normal, 16:9
-    { {getStringID(LOPTIONS, OPTION_STR_3D_HIRES_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0} //hi-res, off, on
+    { {getStringID(LOPTIONS, OPTION_STR_3D_HIRES_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0}, //hi-res, off, on
+    { {getStringID(LOPTIONS, OPTION_STR_3E_SPLITSCREEN_LF), getStringID(LOPTIONS, OPTION_STR_40_SIDE_LF), getStringID(LOPTIONS, OPTION_STR_41_STACKED_LF), 0}, 0}, //split screen, side, stacked
+    { {getStringID(LOPTIONS, OPTION_STR_3F_FPSCOUNTER_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0}, //fps counter, off, on
+    { {getStringID(LOPTIONS, OPTION_STR_42_DRAWDISTANCE_LF), getStringID(LOPTIONS, OPTION_STR_1F_FULL_LF), getStringID(LOPTIONS, OPTION_STR_43_NEAR_LF), 0}, 0} //draw distance (co-op), full, near
 };
 
 //D:80040ADC
@@ -557,6 +560,84 @@ void set_hires_setting(u32 enabled)
     game_options_entries[PLAYER_OPTION_HIRES].current_value = enabled;
 }
 
+u32 get_split_stacked_setting(void)
+{
+    return game_options_entries[PLAYER_OPTION_SPLIT].current_value;
+}
+
+void set_split_stacked_setting(u32 stacked)
+{
+    game_options_entries[PLAYER_OPTION_SPLIT].current_value = stacked;
+}
+
+u32 get_fps_setting(void)
+{
+    return game_options_entries[PLAYER_OPTION_FPS].current_value;
+}
+
+void set_fps_setting(u32 enabled)
+{
+    game_options_entries[PLAYER_OPTION_FPS].current_value = enabled;
+}
+
+u32 get_draw_near_setting(void)
+{
+    return game_options_entries[PLAYER_OPTION_DRAWDIST].current_value;
+}
+
+void set_draw_near_setting(u32 near)
+{
+    game_options_entries[PLAYER_OPTION_DRAWDIST].current_value = near;
+}
+
+/**
+ * Co-op: game_options_entries holds the current player's own options (look,
+ * aim, sight, ammo, screen size). set_cur_player swaps them in, so the watch
+ * and the cur_player_* getters see that player's values. Ratio, hi-res,
+ * split screen and the fps counter are shared.
+ */
+#define COOP_PLAYER_OPTION_COUNT (PLAYER_OPTION_SCREEN + 1)
+
+static u32 s_CoopOptions[2][COOP_PLAYER_OPTION_COUNT];
+static s32 s_CoopOptionsPlayer = 0;
+
+void optionsCoopUsePlayer(s32 player)
+{
+    s32 i;
+
+    if (player == s_CoopOptionsPlayer)
+    {
+        return;
+    }
+
+    for (i = 0; i < COOP_PLAYER_OPTION_COUNT; i++)
+    {
+        s_CoopOptions[s_CoopOptionsPlayer][i] = game_options_entries[i].current_value;
+        game_options_entries[i].current_value = s_CoopOptions[player][i];
+    }
+
+    s_CoopOptionsPlayer = player;
+}
+
+/**
+ * Gives player 2 a copy of player 1's options. Called when player 2's
+ * options are swapped in.
+ */
+void optionsCoopCopyFromPlayer1(void)
+{
+    s32 i;
+
+    if (s_CoopOptionsPlayer == 0)
+    {
+        return;
+    }
+
+    for (i = 0; i < COOP_PLAYER_OPTION_COUNT; i++)
+    {
+        game_options_entries[i].current_value = s_CoopOptions[0][i];
+    }
+}
+
 
 void watch_play_beep_sound(void) {
 
@@ -985,7 +1066,7 @@ void sub_GAME_7F0A5998(void)
 
     if (aux < 0)
     {
-        game_options_index = GAME_OPTIONS_INDEX_HIRES;
+        game_options_index = GAME_OPTIONS_INDEX_DRAWDIST;
     }
 }
 
@@ -994,7 +1075,7 @@ void game_options_music_volume_navigation(void)
 {
     if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
-        game_options_index = GAME_OPTIONS_INDEX_HIRES;
+        game_options_index = GAME_OPTIONS_INDEX_DRAWDIST;
         disable_watch_stick_y_nav_ready();
         reset_watch_item_is_actively_selected();
         return;
@@ -1589,6 +1670,9 @@ void sub_GAME_7F0A6A80(void)
                 case GAME_OPTIONS_INDEX_SCREEN_SIZE:
                 case GAME_OPTIONS_INDEX_RATIO:
                 case GAME_OPTIONS_INDEX_HIRES:
+                case GAME_OPTIONS_INDEX_SPLIT:
+                case GAME_OPTIONS_INDEX_FPS:
+                case GAME_OPTIONS_INDEX_DRAWDIST:
                     sub_GAME_7F0A5998();
             }
             watch_screen3_navigation();
@@ -3729,7 +3813,7 @@ Gfx *draw_toggle_options(Gfx *gdl)
 
     gdl = microcode_constructor(gdl);
 
-    for (i = 0, y_offset = YOFFSET_1; i < PLAYER_OPTION_COUNT; i = i + 1, y_offset = y_offset + YINC) {
+    for (i = 0, y_offset = YOFFSET_1; i < PLAYER_OPTION_COUNT; i = i + 1, y_offset = y_offset + YINC_OPTIONS) {
 
         if ( i == game_options_index - 2)
         {

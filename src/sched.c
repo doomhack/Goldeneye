@@ -338,6 +338,16 @@ void __scHandleRetrace(OSSched *sc) {
     CheckDisplayErrorBufferEvery16Frames(sc->frameCount);
 }
 
+/*
+ * Frame timing shown by the fps counter: when the current graphics task
+ * started, and the OS counts its RSP and RDP work took, summed over tasks.
+ * The counter samples the sums once a second.
+ */
+volatile u32 g_PerfGfxStart;
+volatile u32 g_PerfRspSum;
+volatile u32 g_PerfRdpSum;
+volatile u32 g_PerfGfxTasks;
+
 void __scHandleRSP(OSSched *sc) {
     OSScTask *t, *sp = 0, *dp = 0;
     s32 state;
@@ -355,6 +365,11 @@ void __scHandleRSP(OSSched *sc) {
             }
         }
     } else {
+        if (t->list.t.type != M_AUDTASK)
+        {
+            g_PerfRspSum += osGetCount() - g_PerfGfxStart;
+        }
+
         t->state &= ~OS_SC_NEEDS_RSP;
         __scTaskComplete(sc, t);
     }
@@ -376,6 +391,8 @@ void __scHandleRDP(OSSched *sc)
     if (sc->curRDPTask != NULL) {
         speedgraphMarkerHandler(0x10002);
         osDpGetCounters(g_DisplayPerformanceCounters);
+        g_PerfRdpSum += osGetCount() - g_PerfGfxStart;
+        g_PerfGfxTasks++;
         t = sc->curRDPTask;
         sc->curRDPTask = NULL;
         t->state &= ~OS_SC_NEEDS_RDP;
@@ -480,6 +497,12 @@ void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp)
         {
             speedgraphMarkerHandler(0x40001);
             speedgraphMarkerHandler(0x20002);
+
+            // A yielded task resuming keeps its first start time.
+            if ((sp->state & OS_SC_YIELDED) == 0)
+            {
+                g_PerfGfxStart = osGetCount();
+            }
         }
         sp->state &= ~(OS_SC_YIELD | OS_SC_YIELDED); 
         osSpTaskLoad(&sp->list);

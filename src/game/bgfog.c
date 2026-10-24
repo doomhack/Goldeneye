@@ -7,6 +7,7 @@
 #include "bondview.h"
 #include "bgfog.h"
 #include "player.h"
+#include "options.h"
 #include <limits.h>
 
 /**
@@ -280,8 +281,31 @@ f32 fogGetScaledFarFogIntensitySquared(void)
 /**
  * Address 0x7F0BA758.
 */
+/**
+ * Co-op's "near" draw distance: the far plane comes in to this fraction of
+ * the level's. Rooms and props past it aren't drawn, which saves time in both
+ * views. The fog positions are fractions of the depth buffer range, which is
+ * 1/z-like: the level's fog keeps starting at about the same distance and
+ * still reaches full strength at the (nearer) far plane, so nothing pops.
+ */
+#define COOP_NEAR_DRAW_SCALE 0.5f
+
+static EnvironmentRecord *s_FogLastEnvironment;
+
+/**
+ * Loads the last environment again, after the draw distance option changed.
+ */
+void fogReloadCurrentEnvironment(void)
+{
+    if (g_FogSkyIsEnabled && (s_FogLastEnvironment != NULL))
+    {
+        fogLoadCurrentEnvironment(s_FogLastEnvironment);
+    }
+}
+
 void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
 {
+    f32 farfog;
     f32 zrange[2]; // 48
     f32 pk0;
     f32 pk4;
@@ -299,7 +323,15 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
     assert(fmax <= 1.0F);
 #endif
 
-    viSetZRange(arg0->Visibility.BlendMultiplier, arg0->Visibility.FarFog);
+    s_FogLastEnvironment = arg0;
+    farfog = arg0->Visibility.FarFog;
+
+    if (g_CoopMode && get_draw_near_setting())
+    {
+        farfog *= COOP_NEAR_DRAW_SCALE;
+    }
+
+    viSetZRange(arg0->Visibility.BlendMultiplier, farfog);
     viGetZRange(&zrange);
 
     temp_f0 = bgGetLevelVisibilityScale();
@@ -314,7 +346,7 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
 
     g_CurFogDetails.g_CurFogDetails = (arg0->Visibility.BlendMultiplier / temp_f0);
     pk0 = g_CurFogDetails.g_CurFogDetails;
-    g_CurFogDetails.scaled_far_fog_dist = (arg0->Visibility.FarFog / temp_f0);
+    g_CurFogDetails.scaled_far_fog_dist = (farfog / temp_f0);
     pk4 = g_CurFogDetails.scaled_far_fog_dist;
 
     // numerator is constant 128.0f

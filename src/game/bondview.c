@@ -1371,6 +1371,7 @@ void init_player_BONDdata(void)
 
         if (g_CoopMode)
         {
+            optionsCoopCopyFromPlayer1();
             fileCoopRestorePartnerOptions();
         }
     }

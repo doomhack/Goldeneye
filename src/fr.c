@@ -761,6 +761,42 @@ Gfx *viSetupScreensForNumPlayers(Gfx *gdl)
     gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
     gDPSetFillColor(gdl++, ((GPACK_RGBA5551(0,0,0,1) << 16) | GPACK_RGBA5551(0,0,0,1)));
 
+    if (coopSplitSideBySide())
+    {
+        // Each view blacks out the bands above and below it in its own half
+        // (the players' screen sizes may differ). The left view also draws
+        // the divider.
+        s32 x1;
+        s32 x2;
+
+        if (viGetViewLeft() == 0)
+        {
+            x1 = 0;
+            x2 = viGetViewWidth() + 1;
+            gDPFillRectangle(gdl++, VI_SX(viGetViewWidth()), 0, VI_SX_INCL(x2), (viGetY() - 1));
+            gDPPipeSync(gdl++);
+        }
+        else
+        {
+            x1 = viGetViewLeft();
+            x2 = viGetX() - 1;
+        }
+
+        if (viGetViewTop() > 0)
+        {
+            gDPFillRectangle(gdl++, VI_SX(x1), 0, VI_SX_INCL(x2), (viGetViewTop() - 1));
+            gDPPipeSync(gdl++);
+        }
+
+        if ((viGetViewTop() + viGetViewHeight()) < viGetY())
+        {
+            gDPFillRectangle(gdl++, VI_SX(x1), (viGetViewTop() + viGetViewHeight()), VI_SX_INCL(x2), (viGetY() - 1));
+            gDPPipeSync(gdl++);
+        }
+
+        return gdl;
+    }
+
     if (viGetViewTop() > 0)
     {
         if (get_player_position_in_shuffled(get_cur_playernum()) == 0)

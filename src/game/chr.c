@@ -2354,7 +2354,9 @@ s32 chrTick(PropRecord *prop)
 
     // Co-op: props are ticked once for each player's view. A chr's AI,
     // actions and animation must only advance on the first pass, or guards
-    // run, aim and shoot twice as fast.
+    // run, aim and shoot twice as fast. The later pass doesn't update the
+    // animation at all: with no time passing it would only redo the same
+    // position, room and shading work.
     coopRepeat = g_CoopMode && (prop->type == PROP_TYPE_CHR)
         && (get_player_position_in_shuffled(get_cur_playernum()) != 0);
 
@@ -2433,11 +2435,17 @@ s32 chrTick(PropRecord *prop)
 
             if (((chr->actiontype == ACT_ANIM) && (chr->act_anim.unk02c == 0)) && (chr->act_anim.noTranslate != 0))
             {
-                modelTickAnim(model, tickamount, 0);
+                if (!coopRepeat)
+                {
+                    modelTickAnim(model, tickamount, 0);
+                }
             }
             else
             {
-                chrUpdateAnim(chr, tickamount);
+                if (!coopRepeat)
+                {
+                    chrUpdateAnim(chr, tickamount);
+                }
             }
 
             goto after_position_update;
@@ -2464,7 +2472,10 @@ s32 chrTick(PropRecord *prop)
             }
             else
             {
-                chrUpdateAnim(chr, tickamount);
+                if (!coopRepeat)
+                {
+                    chrUpdateAnim(chr, tickamount);
+                }
                 headSwitchVisible = posIsOnScreen(prop, &prop->pos, getinstsize(model), 1);
 
                 if (headSwitchVisible)
@@ -2486,11 +2497,17 @@ s32 chrTick(PropRecord *prop)
 
             if (headSwitchVisible && (chr->act_anim.noTranslate == 0))
             {
-                chrUpdateAnim(chr, tickamount);
+                if (!coopRepeat)
+                {
+                    chrUpdateAnim(chr, tickamount);
+                }
             }
             else
             {
-                modelTickAnim(model, tickamount, 0);
+                if (!coopRepeat)
+                {
+                    modelTickAnim(model, tickamount, 0);
+                }
             }
         }
         else if (chr->actiontype == ACT_STAND)
@@ -2499,22 +2516,34 @@ s32 chrTick(PropRecord *prop)
 
             if (headSwitchVisible || (chr->chrflags & CHRFLAG_INIT))
             {
-                chrUpdateAnim(chr, tickamount);
+                if (!coopRepeat)
+                {
+                    chrUpdateAnim(chr, tickamount);
+                }
             }
             else if (model->anim2 != NULL)
             {
-                modelTickAnim(model, tickamount, 0);
+                if (!coopRepeat)
+                {
+                    modelTickAnim(model, tickamount, 0);
+                }
             }
         }
         else
         {
             if (chr->chrflags & CHRFLAG_IGNORE_ANIM_TRANSLATION)
             {
-                modelTickAnim(model, tickamount, 0);
+                if (!coopRepeat)
+                {
+                    modelTickAnim(model, tickamount, 0);
+                }
             }
             else
             {
-                chrUpdateAnim(chr, tickamount);
+                if (!coopRepeat)
+                {
+                    chrUpdateAnim(chr, tickamount);
+                }
             }
 
             headSwitchVisible = posIsOnScreen(prop, &prop->pos, getinstsize(model), 1);
