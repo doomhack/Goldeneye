@@ -2799,9 +2799,10 @@ s32 g_BgCullGroupsTotal;
 /* Keep this much of the room heap free for room loads */
 #define BG_CULL_HEAP_HEADROOM 0x10000
 
-static s32 bgCullIsGeometryOp(u8 op)
+/* Gfx.dma.cmd is signed, like the F3D G_ opcodes (G_ENDDL is negative) */
+static s32 bgCullIsGeometryOp(s32 op)
 {
-    return (op == (u8)G_VTX) || (op == (u8)G_TRI1) || (op == (u8)G_TRI4);
+    return (op == G_VTX) || (op == G_TRI1) || (op == G_TRI4);
 }
 
 /* The room heap is reset with each stage, so forget any copies from the last one */
@@ -2839,7 +2840,7 @@ void bgCullBuildRoom(s32 roomID)
     s32 kind;
     s32 size;
     s32 i;
-    u8 op;
+    s32 op;
     f32 mins[3];
     f32 maxs[3];
 
@@ -2860,11 +2861,11 @@ void bgCullBuildRoom(s32 roomID)
     group = -1;
     runkind = -2;
 
-    for (i = 0; src[i].dma.cmd != (u8)G_ENDDL; i++)
+    for (i = 0; src[i].dma.cmd != G_ENDDL; i++)
     {
         op = src[i].dma.cmd;
 
-        if (op == (u8)G_VTX)
+        if (op == G_VTX)
         {
             /* A load into the middle of the vertex buffer may share vertices
              * with the previous batch, so it joins that batch's group */
@@ -2918,11 +2919,11 @@ void bgCullBuildRoom(s32 roomID)
     runkind = -2;
     batch = 0;
 
-    for (i = 0; src[i].dma.cmd != (u8)G_ENDDL; i++)
+    for (i = 0; src[i].dma.cmd != G_ENDDL; i++)
     {
         op = src[i].dma.cmd;
 
-        if (op == (u8)G_VTX)
+        if (op == G_VTX)
         {
             if ((group < 0) || ((src[i].dma.par & 0xf) == 0))
             {
