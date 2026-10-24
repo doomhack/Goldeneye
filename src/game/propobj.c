@@ -10268,6 +10268,9 @@ void generate_language_specific_text_for_weapon(u8 *finalstring, ITEM_IDS itemty
     u32 morethan2players;
 
     morethan2players = FALSE;
+    /* Half-width views skip "Picked up" and strcat onto this, so it must start empty
+       (the original left the caller's stack buffer uninitialised) */
+    finalstring[0] = '\0';
 
     if (j_text_trigger != 0)
     {

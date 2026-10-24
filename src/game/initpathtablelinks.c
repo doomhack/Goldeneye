@@ -134,14 +134,16 @@ void init_path_table_links(void)
             s32 groupNeighbourIndex;
             s32 reverseIndex;
             s32 waypointNum;
-            waygroup *validationGroupCursors[1];
+            /* was validationGroupCursors[-3] (an IDO stack-matching trick): out of
+             * bounds, which GCC -Os turned into a trap instruction */
+            waygroup *validationGroupCursor;
 
             validationGroupIndex = 0;
             validationGroup = groups;
 
             if (validationGroup->neighbours != NULL)
             {
-                validationGroupCursors[-3] = groups;
+                validationGroupCursor = groups;
 
                 do
                 {
@@ -231,10 +233,10 @@ void init_path_table_links(void)
                     }
  
                     validationGroupIndex++;
-                    validationGroupCursors[-3]++;
-                    validationGroup = validationGroupCursors[-3];
+                    validationGroupCursor++;
+                    validationGroup = validationGroupCursor;
                 }
-                while (validationGroupCursors[-3]->neighbours != NULL);
+                while (validationGroupCursor->neighbours != NULL);
             }
         }
         if ((waypoints != NULL) && (groups != NULL))

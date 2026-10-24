@@ -204,6 +204,16 @@ s16 viGetViewLeft(void);
 s16 viGetViewTop(void);
 s16 viGetViewWidth(void);
 s16 viGetViewHeight(void);
+
+#ifdef __GNUC__
+/* Inlined at call sites; fr.c still provides the real functions */
+extern inline __attribute__((gnu_inline)) s16 viGetX(void) { return g_ViBackData->x; }
+extern inline __attribute__((gnu_inline)) s16 viGetY(void) { return g_ViBackData->y; }
+extern inline __attribute__((gnu_inline)) s16 viGetViewLeft(void) { return g_ViBackData->viewleft; }
+extern inline __attribute__((gnu_inline)) s16 viGetViewTop(void) { return g_ViBackData->viewtop; }
+extern inline __attribute__((gnu_inline)) s16 viGetViewWidth(void) { return g_ViBackData->viewx; }
+extern inline __attribute__((gnu_inline)) s16 viGetViewHeight(void) { return g_ViBackData->viewy; }
+#endif
 u8 *viGetFrameBuf2(void);
 void viSetFrameBuf2(u8 *buf);
 void viSetFovY(f32 fovy);

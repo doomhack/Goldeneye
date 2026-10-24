@@ -109,6 +109,10 @@ void set_cur_player_viewport_size(u32 ulx, u32 uly);
 
 
 s32 get_cur_playernum(void);
+#ifdef __GNUC__
+/* Inlined at call sites; player.c still provides the real function */
+extern inline __attribute__((gnu_inline)) s32 get_cur_playernum(void) { return player_num; }
+#endif
 void set_cur_player_fovy(f32 fovy);
 s32 getPlayerPointerIndex( PropRecord* prop);
 void set_cur_player_aspect(f32 aspect);

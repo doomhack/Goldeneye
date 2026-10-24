@@ -196,6 +196,10 @@ extern float cosf(float angle);
 extern signed short sins (unsigned short angle);
 extern signed short coss (unsigned short angle);
 extern float sqrtf(float value);
+#if defined(__GNUC__) && !defined(sqrtf)
+/* One sqrt.s instruction instead of a call (-fno-builtin stops GCC doing this itself) */
+#define sqrtf(x) __builtin_sqrtf(x)
+#endif
 
 /*
  *  Dump routines for low-level display lists
