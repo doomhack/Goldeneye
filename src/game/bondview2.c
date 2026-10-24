@@ -9032,13 +9032,85 @@ void mp_respawn_handler(void)
 #define COOP_RESPAWN_CLEAR 80.0f
 
 s32 g_CoopDeathTime[4];
-s32 g_CoopDeathWeapons[4][2];
 
 /**
- * Co-op: bring the current (dead) player back at the level's start point,
- * which is the penalty for dying. Like mp_respawn_handler, but the player
- * keeps their inventory and ammo, since mission items are needed to finish
- * the level. Only happens while a partner is still alive.
+ * Co-op: give the current player the level's starting loadout again, the
+ * guns and ammo the setup's intro hands out, holding the starting weapon.
+ */
+static void coopGiveStartingLoadout(void)
+{
+    struct SetupIntroEmpty *intro_record = g_CurrentSetup.intro;
+    textoverride *overrides = g_CurrentPlayer->textoverrides;
+    s32 i;
+
+    bondinvReinitInv();
+
+    // The level's item names are shared, not part of the loadout.
+    g_CurrentPlayer->textoverrides = overrides;
+
+    for (i = 0; i < 30; i++)
+    {
+        g_CurrentPlayer->ammoheldarr[i] = 0;
+    }
+
+    if (intro_record != NULL)
+    {
+        while (intro_record->type != 9) // INTROTYPE_END
+        {
+            switch (intro_record->type)
+            {
+                case 0: // INTROTYPE_SPAWN
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroSpawn));
+                    break;
+                case 1: // INTROTYPE_ITEM
+                    if (check_ramrom_flags() == ((struct SetupIntroItem*)intro_record)->is_demo_playback)
+                    {
+                        if (((struct SetupIntroItem*)intro_record)->item_left >= 0)
+                        {
+                            bondinvAddDoublesInvItem(((struct SetupIntroItem*)intro_record)->item_right, ((struct SetupIntroItem*)intro_record)->item_left);
+                        }
+                        else
+                        {
+                            bondinvAddInvItem(((struct SetupIntroItem*)intro_record)->item_right);
+                        }
+                    }
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroItem));
+                    break;
+                case 2: // INTROTYPE_AMMO
+                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback)
+                    {
+                        give_cur_player_ammo(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
+                    }
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroAmmo));
+                    break;
+                case 3: // INTROTYPE_SWIRL
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroSwirl));
+                    break;
+                case 4: // INTROTYPE_ANIM
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroAnim));
+                    break;
+                case 5: // INTROTYPE_CUFF
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroCuff));
+                    break;
+                case 6: // INTROTYPE_CAMERA
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroCamera));
+                    break;
+                default: // INTROTYPE_WATCH, INTROTYPE_CREDITS
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroEmpty));
+                    break;
+            }
+        }
+    }
+
+    bondinvAddInvItem(ITEM_FIST);
+    currentPlayerEquipWeaponWrapper(GUNLEFT, starting_weapon[GUNLEFT]);
+    currentPlayerEquipWeaponWrapper(GUNRIGHT, starting_weapon[GUNRIGHT]);
+}
+
+/**
+ * Co-op: bring the current (dead) player back at the level's start point
+ * with the level's starting loadout, which is the penalty for dying. Only
+ * happens while a partner is still alive.
  */
 void coopRespawnPlayer(void)
 {
@@ -9137,9 +9209,7 @@ void coopRespawnPlayer(void)
 #endif
     bondviewUpdatePlayerCollisionBounds();
 
-    // Back to the guns the player died holding.
-    currentPlayerEquipWeaponWrapper(GUNRIGHT, g_CoopDeathWeapons[cur][GUNRIGHT]);
-    currentPlayerEquipWeaponWrapper(GUNLEFT, g_CoopDeathWeapons[cur][GUNLEFT]);
+    coopGiveStartingLoadout();
 
     g_CurrentPlayer->field_78 = 0.0f;
     g_CurrentPlayer->field_7C = -0.0001f;
@@ -9585,8 +9655,6 @@ void bondviewKillCurrentPlayer(void)
         if (g_CoopMode)
         {
             g_CoopDeathTime[get_cur_playernum()] = g_GlobalTimer;
-            g_CoopDeathWeapons[get_cur_playernum()][GUNRIGHT] = getCurrentPlayerWeaponId(GUNRIGHT);
-            g_CoopDeathWeapons[get_cur_playernum()][GUNLEFT] = getCurrentPlayerWeaponId(GUNLEFT);
         }
 
         // In co-op the mission carries on while the partner is alive.

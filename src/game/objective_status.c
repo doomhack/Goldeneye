@@ -7,6 +7,7 @@
 #include "PR/os.h"
 #include "str.h"
 #include "bondview.h"
+#include "player.h"
 
 //Public variables - move to header
 // bss
@@ -374,11 +375,32 @@ void display_objective_status_text_on_status_change(void)
                 {
                     strcat(&buffer, langGet(getStringID(LMISC, MISC_STR_2F_FAILED_LF)));
                 }
+                if (g_CoopMode)
+                {
+                    // Co-op: show it on every player's screen.
+                    s32 prevplayer = get_cur_playernum();
+                    s32 p;
+
+                    for (p = 0; p < getPlayerCount(); p++)
+                    {
+                        set_cur_player(p);
 #ifdef VERSION_US
-                hudmsgBottomShow(&buffer);
+                        hudmsgBottomShow(&buffer);
 #else
-                jp_hudmsgBottomShow(&buffer);
+                        jp_hudmsgBottomShow(&buffer);
 #endif
+                    }
+
+                    set_cur_player(prevplayer);
+                }
+                else
+                {
+#ifdef VERSION_US
+                    hudmsgBottomShow(&buffer);
+#else
+                    jp_hudmsgBottomShow(&buffer);
+#endif
+                }
             }
         }
         if (get_difficulty_for_objective(i) <= lvlGetSelectedDifficulty()) {
