@@ -20,7 +20,7 @@
 #define OPTION_CONTROLTYPE   0x0700
 #define OPTION_SCREENCINEMA  0x0800
 #define OPTION_HIRES         0x1000
-#define OPTION_SPLITSTACKED  0x2000
+#define OPTION_SPLITSIDE     0x2000 // set = side by side; stacked is the default
 #define OPTION_FPS           0x4000
 #define OPTION_DRAWNEAR      0x8000
 

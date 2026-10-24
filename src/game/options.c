@@ -114,7 +114,7 @@ struct game_options game_options_entries[] = {
     { {getStringID(LOPTIONS, OPTION_STR_17_SCREEN_LF), getStringID(LOPTIONS, OPTION_STR_1F_FULL_LF), getStringID(LOPTIONS, OPTION_STR_20_WIDE_LF), getStringID(LOPTIONS, OPTION_STR_21_CINEMA_LF)}, 0}, //screen, full, wide, cinema
     { {getStringID(LOPTIONS, OPTION_STR_18_RATIO_LF), getStringID(LOPTIONS, OPTION_STR_22_NORMAL_LF), getStringID(LOPTIONS, OPTION_STR_23_169_LF), 0}, 0}, //ratio, normal, 16:9
     { {getStringID(LOPTIONS, OPTION_STR_3D_HIRES_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0}, //hi-res, off, on
-    { {getStringID(LOPTIONS, OPTION_STR_3E_SPLITSCREEN_LF), getStringID(LOPTIONS, OPTION_STR_40_SIDE_LF), getStringID(LOPTIONS, OPTION_STR_41_STACKED_LF), 0}, 0}, //split screen, side, stacked
+    { {getStringID(LOPTIONS, OPTION_STR_3E_SPLITSCREEN_LF), getStringID(LOPTIONS, OPTION_STR_40_SIDE_LF), getStringID(LOPTIONS, OPTION_STR_41_STACKED_LF), 0}, 1}, //split screen, side, stacked (default)
     { {getStringID(LOPTIONS, OPTION_STR_3F_FPSCOUNTER_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0}, //fps counter, off, on
     { {getStringID(LOPTIONS, OPTION_STR_42_DRAWDISTANCE_LF), getStringID(LOPTIONS, OPTION_STR_1F_FULL_LF), getStringID(LOPTIONS, OPTION_STR_43_NEAR_LF), 0}, 0} //draw distance (co-op), full, near
 };
