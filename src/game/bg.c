@@ -84,11 +84,8 @@ extern s32 dword_CODE_bss_800815f0;
 extern s32 dword_CODE_bss_800815f4;
 extern s32 dword_CODE_bss_800815f8;
 
-#ifdef VERSION_EU
-#define BG_PORTAL_QUEUE_LEN 250
-#else
+/* PAL halved this to fit 4MB; with the Expansion Pak all versions use the NTSC size. */
 #define BG_PORTAL_QUEUE_LEN 500
-#endif
 
 // bss
 //CODE.bss:8007BF90
