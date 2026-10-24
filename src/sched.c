@@ -347,6 +347,9 @@ volatile u32 g_PerfGfxStart;
 volatile u32 g_PerfRspSum;
 volatile u32 g_PerfRdpSum;
 volatile u32 g_PerfGfxTasks;
+/* RDP clocks the pipeline and TMEM were busy (osDpGetCounters), summed over tasks */
+volatile u32 g_PerfRdpPipeSum;
+volatile u32 g_PerfRdpTmemSum;
 
 void __scHandleRSP(OSSched *sc) {
     OSScTask *t, *sp = 0, *dp = 0;
@@ -392,6 +395,8 @@ void __scHandleRDP(OSSched *sc)
         speedgraphMarkerHandler(0x10002);
         osDpGetCounters(g_DisplayPerformanceCounters);
         g_PerfRdpSum += osGetCount() - g_PerfGfxStart;
+        g_PerfRdpPipeSum += g_DisplayPerformanceCounters[2];
+        g_PerfRdpTmemSum += g_DisplayPerformanceCounters[3];
         g_PerfGfxTasks++;
         t = sc->curRDPTask;
         sc->curRDPTask = NULL;

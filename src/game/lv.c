@@ -675,16 +675,26 @@ static u32 s_FpsLastTasks;
 static s32 s_FpsCpuMs;
 static s32 s_FpsRspMs;
 static s32 s_FpsRdpMs;
+static u32 s_FpsLastPipe;
+static u32 s_FpsLastTmem;
+static s32 s_FpsPipeMs;
+static s32 s_FpsTmemMs;
+
+/* The RDP's performance counters tick at its 62.5 MHz clock */
+#define RDP_CLOCKS_PER_MS 62500
 
 /**
  * Draws the frame rate (the watch's fps counter option) in the top right
  * corner of the screen, averaged over about a second. The second line is
  * the average milliseconds per frame the CPU spent building it, and the
  * graphics task took on the RSP and until the RDP finished drawing.
+ * The third line is how many of those RDP milliseconds its pipeline and
+ * TMEM were actually busy: a pipe figure close to RDP means fill rate is
+ * the limit, a much lower one means the RDP is waiting on the RSP.
  */
 static Gfx *lvlRenderFpsCounter(Gfx *DL)
 {
-    char text[40];
+    char text[64];
     s32 x;
     s32 y;
     s32 width;
@@ -699,6 +709,8 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         u32 cpu = g_PerfCpuSum;
         u32 rsp = g_PerfRspSum;
         u32 rdp = g_PerfRdpSum;
+        u32 pipe = g_PerfRdpPipeSum;
+        u32 tmem = g_PerfRdpTmemSum;
         u32 tasks = g_PerfGfxTasks;
         u32 ntasks = tasks - s_FpsLastTasks;
 
@@ -711,11 +723,15 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         s_FpsLastCount = now;
         s_FpsLastCpu = cpu;
         s_FpsLastRsp = rsp;
+        s_FpsPipeMs = (ntasks != 0) ? (((pipe - s_FpsLastPipe) / RDP_CLOCKS_PER_MS) / ntasks) : 0;
+        s_FpsTmemMs = (ntasks != 0) ? (((tmem - s_FpsLastTmem) / RDP_CLOCKS_PER_MS) / ntasks) : 0;
         s_FpsLastRdp = rdp;
+        s_FpsLastPipe = pipe;
+        s_FpsLastTmem = tmem;
         s_FpsLastTasks = tasks;
     }
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs);
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs);
 
     width = 0;
     height = 0;

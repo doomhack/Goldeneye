@@ -99,6 +99,10 @@ float  cosf(float);
 double cos(double);
 
 float  sqrtf(float);
+#if defined(__GNUC__) && !defined(sqrtf)
+/* One sqrt.s instruction instead of a call (-fno-builtin stops GCC doing this itself) */
+#define sqrtf(x) __builtin_sqrtf(x)
+#endif
 
 #endif
 

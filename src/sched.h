@@ -86,6 +86,8 @@ extern volatile u32 g_PerfGfxStart;
 extern volatile u32 g_PerfRspSum;
 extern volatile u32 g_PerfRdpSum;
 extern volatile u32 g_PerfGfxTasks;
+extern volatile u32 g_PerfRdpPipeSum;
+extern volatile u32 g_PerfRdpTmemSum;
 extern u32 g_PerfCpuSum;
 void __scYield(OSSched *sc) ;
 void __scAppendList(OSSched *sc, OSScTask *t);
