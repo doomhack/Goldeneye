@@ -2342,9 +2342,19 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFKeyDropped:
                 {
                     AiIFKeyDroppedRecord *ai = AiListp + Offset;
-                    // Co-op: a misplaced item only counts while no player
-                    // still has a copy they could place correctly.
-                    if (weaponFindThrown(ai->KEY_ID) && !(g_CoopMode && coopAnyPlayerStillHasItem(ai->KEY_ID)))
+                    // Co-op: where a script checks "placed on the right
+                    // object, else placed anywhere = failed" (the attached
+                    // check comes just before this one), a misplaced item
+                    // only counts while no player still has a copy they
+                    // could place correctly. Other uses, like Silo's
+                    // plastique starting a countdown, are unchanged.
+                    s32 coopsecondcopy = g_CoopMode
+                        && (Offset >= (s32)sizeof(AiIFItemIsAttachedToObjectRecord))
+                        && (((u8 *)AiListp)[Offset - sizeof(AiIFItemIsAttachedToObjectRecord)] == AI_IFItemIsAttachedToObject)
+                        && (((u8 *)AiListp)[Offset - sizeof(AiIFItemIsAttachedToObjectRecord) + 1] == ai->KEY_ID)
+                        && coopAnyPlayerStillHasItem(ai->KEY_ID);
+
+                    if (weaponFindThrown(ai->KEY_ID) && !coopsecondcopy)
                     {
                         Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
