@@ -2725,8 +2725,22 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 //********************************************************************************************************
 //MODE SELECT
 //********************************************************************************************************
+/**
+ * Mode select rows: select mission, co-op, multiplayer, cheat options.
+ */
+#define MODESEL_ROW_MISSION 0
+#define MODESEL_ROW_COOP    1
+#define MODESEL_ROW_MULTI   2
+#define MODESEL_ROW_CHEATS  3
+
+static s32 modesel_row_y[4] = {0xCC, 0xE8, 0x104, 0x120};
+static s32 modesel_highlighted_row = -1;
+
 void init_menu06_modeselect(void)
 {
+    // Co-op is picked again here (setCursorPOSforMode has already used it
+    // to put the cursor back on the co-op row).
+    g_CoopMode = FALSE;
     gamemode = GAMEMODE_INTRO;
     tab_next_selected = FALSE;
     tab_prev_selected = FALSE;
@@ -2772,6 +2786,7 @@ void interface_menu06_modesel(void)
     set_item_visibility_in_objinstance(walletinst[0], SW_EYESONLY, 1);
     tab_prev_highlight = FALSE;
     mission_difficulty_highlighted = DIFFICULTY_MULTI;
+    modesel_highlighted_row = -1;
     if (frontCheckCursorOnPreviousTab())
     {
         tab_prev_highlight = TRUE;
@@ -2781,33 +2796,71 @@ void interface_menu06_modesel(void)
             sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, 0);
         }
     }
-    else if ((is_cheat_menu_available) && (275.0f <= cursor_v_pos))
-    {
-        mission_difficulty_highlighted = DIFFICULTY_00;
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
-        {
-            gamemode = GAMEMODE_CHEATS;
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE_SFX, 0);
-        }
-    }
-    else if ((243.0f <= cursor_v_pos) && (joyGetControllerCount() >= 2))
-    {
-        mission_difficulty_highlighted = DIFFICULTY_SECRET;
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
-        {
-            gamemode = GAMEMODE_MULTI;
-            g_CoopMode = FALSE;
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE_SFX, 0);
-        }
-    }
     else
     {
-        mission_difficulty_highlighted = DIFFICULTY_AGENT;
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
+        s32 row;
+
+        for (row = MODESEL_ROW_MISSION; row < MODESEL_ROW_CHEATS; row++)
         {
-            gamemode = GAMEMODE_SOLO;
+            if (cursor_v_pos < modesel_row_y[row + 1] - 6)
+            {
+                break;
+            }
+        }
+
+        if ((row == MODESEL_ROW_CHEATS) && !is_cheat_menu_available)
+        {
+            row = MODESEL_ROW_MULTI;
+        }
+
+        // Co-op and multiplayer need a second controller.
+        if (((row == MODESEL_ROW_COOP) || (row == MODESEL_ROW_MULTI)) && (joyGetControllerCount() < 2))
+        {
+            row = -1;
+        }
+
+        modesel_highlighted_row = row;
+
+        if ((row >= 0) && joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
+        {
+            switch (row)
+            {
+                case MODESEL_ROW_MISSION:
+                    gamemode = GAMEMODE_SOLO;
+                    g_CoopMode = FALSE;
+                    break;
+                case MODESEL_ROW_COOP:
+                    gamemode = GAMEMODE_SOLO;
+                    g_CoopMode = TRUE;
+                    break;
+                case MODESEL_ROW_MULTI:
+                    gamemode = GAMEMODE_MULTI;
+                    g_CoopMode = FALSE;
+                    break;
+                case MODESEL_ROW_CHEATS:
+                    gamemode = GAMEMODE_CHEATS;
+                    break;
+            }
+
             sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE_SFX, 0);
         }
+    }
+
+    // Up and down on the D-pad step the cursor between rows.
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD|D_JPAD))
+    {
+        s32 row = MODESEL_ROW_MISSION;
+        s32 lastrow = is_cheat_menu_available ? MODESEL_ROW_CHEATS : MODESEL_ROW_MULTI;
+
+        while ((row < lastrow) && (cursor_v_pos >= modesel_row_y[row + 1] - 6))
+        {
+            row++;
+        }
+
+        row += joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? 1 : -1;
+        row = (row < MODESEL_ROW_MISSION) ? MODESEL_ROW_MISSION : ((row > lastrow) ? lastrow : row);
+        cursor_h_pos = 126.0f;
+        cursor_v_pos = modesel_row_y[row] + 6;
     }
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
@@ -2816,6 +2869,11 @@ void interface_menu06_modesel(void)
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, 0);
     }
     frontUpdateControlStickPosition();
+    if ((gamemode == GAMEMODE_SOLO) && g_CoopMode)
+    {
+        frontChangeMenu(MENU_COOP_SETUP, FALSE);
+        return;
+    }
     if (gamemode == GAMEMODE_SOLO)
     {
         frontChangeMenu(MENU_MISSION_SELECT, FALSE);
@@ -2893,10 +2951,61 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
 
 
 
+/**
+ * Puts the cursor on the mode select row for a game mode (GAMEMODE_SOLO
+ * with g_CoopMode set is the co-op row).
+ */
 void setCursorPOSforMode(int mode)
 {
+    s32 row;
+
+    if (mode == GAMEMODE_MULTI)
+    {
+        row = MODESEL_ROW_MULTI;
+    }
+    else if (mode == GAMEMODE_CHEATS)
+    {
+        row = MODESEL_ROW_CHEATS;
+    }
+    else if (g_CoopMode)
+    {
+        row = MODESEL_ROW_COOP;
+    }
+    else
+    {
+        row = MODESEL_ROW_MISSION;
+    }
+
     cursor_h_pos = 126.0f;
-    cursor_v_pos = mode * 0x20 + 0xe2;
+    cursor_v_pos = modesel_row_y[row] + 6;
+}
+
+/**
+ * Draws one numbered row of the mode select page.
+ */
+static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, char *number, u8 *textstring, s32 text_color)
+{
+    s32 x;
+    s32 y;
+    s32 x2;
+    s32 y2;
+
+    x = 0x96;
+    y = modesel_row_y[row];
+    DL = frontPrintText(DL, &x, &y, number, ptrFontZurichBoldChars, ptrFontZurichBold, text_color, viGetX(), viGetY(), 0, 0);
+
+    textMeasure(&x2, &y2, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+
+    x = 0xAA;
+    y = modesel_row_y[row];
+    if (modesel_highlighted_row == row)
+    {
+        DL = microcode_constructor_related_to_menus(DL, 0x94, modesel_row_y[row] - 2, y2 + 0xAF, modesel_row_y[row] + 0xE, 0x32);
+    }
+
+    DL = frontPrintText(DL, &x, &y, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, text_color, viGetX(), viGetY(), 0, 0);
+
+    return DL;
 }
 
 
@@ -2905,10 +3014,6 @@ void setCursorPOSforMode(int mode)
 Gfx* constructor_menu06_modesel(Gfx* DL)
 {
     char *textstring;
-    s32 x;
-    s32 y;
-    s32 y2;
-    s32 x2;
     s32 text_color;
 
     DL = viSetFillColor(DL,0,0,0);
@@ -2920,66 +3025,316 @@ Gfx* constructor_menu06_modesel(Gfx* DL)
     DL = frontSetupMenuBackground(DL);
     DL = microcode_constructor(DL);
 
-    x = 0x96;
-    y = 0xdc;
-    DL = frontPrintText(DL, &x, &y, "1.\n", ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    text_color = (joyGetControllerCount() >= 2) ? 0xFF : 0x70;
 
     textstring = langGet((g_AppendCheatSinglePlayer != 0) ? getStringID(LTITLE, TITLE_STR_117_CHEATSELECTMISSION) : getStringID(LTITLE, TITLE_STR_29_SELECTMISSION));
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MISSION, "1.\n", (u8 *)textstring, 0xFF);
 
-    textMeasure(&x2, &y2, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
-
-    x = 0xAA;
-    y = 0xdc;
-    if (mission_difficulty_highlighted == 0)
-    {
-        DL = microcode_constructor_related_to_menus(DL, 0x94, 0xDA, y2 + 0xAF, 0xEA, 0x32);
-    }
-
-    DL = frontPrintText(DL, &x, &y, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
-
-    x = 0x96;
-    y = 0xFC;
-    if (joyGetControllerCount() >= 2)
-    {
-        text_color = 0xFF;
-    }
-    else
-    {
-        text_color = 0x70;
-    }
-    DL = frontPrintText(DL, &x, &y, "2.\n", ptrFontZurichBoldChars, ptrFontZurichBold, text_color, viGetX(), viGetY(), 0, 0);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COOP, "2.\n", (u8 *)"2 PLAYER CO-OP\n", text_color);
 
     textstring = langGet((g_AppendCheatMultiPlayer != 0) ? getStringID(LTITLE, TITLE_STR_276_CHEATMULTIPLAYER) : getStringID(LTITLE, TITLE_STR_30_MULTIPLAYER));
-
-    textMeasure(&x2, &y2, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
-
-    x = 0xAA;
-    y = 0xFC;
-    if (mission_difficulty_highlighted == 1)
-    {
-        DL = microcode_constructor_related_to_menus(DL, 0x94, 0xFA, y2 + 0xAF, 0x10A, 0x32);
-    }
-    DL = frontPrintText(DL, &x, &y, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, text_color, viGetX(), viGetY(), 0, 0);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "3.\n", (u8 *)textstring, text_color);
 
     if (is_cheat_menu_available != 0)
     {
-        x = 0x96;
-        y = 0x11C;
-        DL = frontPrintText(DL, &x, &y, "3.\n", ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
         textstring = langGet(getStringID(LTITLE, TITLE_STR_31_CHEATOPTIONS));
-
-        textMeasure(&x2, &y2, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
-
-        x = 0xAA;
-        y = 0x11C;
-        if (mission_difficulty_highlighted == 2)
-        {
-            DL = microcode_constructor_related_to_menus(DL, 0x94, 0x11A, y2 + 0xAF, 0x12A, 0x32);
-        }
-        DL = frontPrintText(DL, &x, &y, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHEATS, "4.\n", (u8 *)textstring, 0xFF);
     }
 
     DL = frontAddPreviousTabText(DL);
+    DL = frontDrawCursor(DL);
+    return DL;
+}
+
+
+//********************************************************************************************************
+//CO-OP SETUP
+//********************************************************************************************************
+
+/**
+ * Co-op setup, between mode select and mission select: player 2's
+ * character and control style, and the split screen display options.
+ * Point at a row and press A (or C-right / right on the D-pad) to step its
+ * value forward, C-left / left on the D-pad to step it back.
+ */
+#define COOP_SETUP_ROW_CHAR     0
+#define COOP_SETUP_ROW_CONTROLS 1
+#define COOP_SETUP_ROW_SPLIT    2
+#define COOP_SETUP_ROW_HIRES    3
+#define COOP_SETUP_ROW_DRAWDIST 4
+#define COOP_SETUP_ROW_COUNT    5
+
+#define COOP_SETUP_ROW_Y(row) (0x79 + (row) * 0x14)
+#define COOP_SETUP_VALUE_X 0xC8
+#define COOP_SETUP_CURSOR_X 0x28
+
+static char *coop_setup_row_labels[COOP_SETUP_ROW_COUNT] = {
+    "Player 2:\n",
+    "Player 2 Controls:\n",
+    "Split Screen:\n",
+    "Hi-Res:\n",
+    "Draw Distance:\n",
+};
+
+static s32 coop_setup_highlighted_row = -1;
+
+static s32 frontCoopCharCount(void);
+static s32 frontCoopGetPartnerChar(void);
+static u8 *frontCoopGetPartnerCharName(void);
+
+void init_menu1A_coopsetup(void)
+{
+    tab_next_selected = FALSE;
+    tab_prev_selected = FALSE;
+    tab_next_highlight = FALSE;
+    tab_prev_highlight = FALSE;
+    coop_setup_highlighted_row = -1;
+    cursor_h_pos = COOP_SETUP_CURSOR_X;
+    cursor_v_pos = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_CHAR) + 6;
+
+    // Co-op gives each player one controller, so only the 1.x styles.
+    if (controlstyle_player[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY)
+    {
+        controlstyle_player[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
+    }
+
+    load_walletbond();
+}
+
+
+void update_menu1A_coopsetup(void)
+{
+    return;
+}
+
+
+static void frontCoopSetupStep(s32 row, s32 step)
+{
+    s32 value;
+    s32 count;
+
+    switch (row)
+    {
+        case COOP_SETUP_ROW_CHAR:
+            count = frontCoopCharCount();
+            value = (frontCoopGetPartnerChar() + step + count) % count;
+            fileCoopSetPartnerChar(value);
+            break;
+
+        case COOP_SETUP_ROW_CONTROLS:
+            controlstyle_player[PLAYER_2] = (controlstyle_player[PLAYER_2] + step + CONTROLLER_CONFIG_PLENTY) % CONTROLLER_CONFIG_PLENTY;
+            break;
+
+        case COOP_SETUP_ROW_SPLIT:
+            set_split_stacked_setting(!get_split_stacked_setting());
+            break;
+
+        case COOP_SETUP_ROW_HIRES:
+            set_hires_setting(!get_hires_setting());
+            break;
+
+        case COOP_SETUP_ROW_DRAWDIST:
+            set_draw_near_setting(!get_draw_near_setting());
+            break;
+    }
+}
+
+
+void interface_menu1A_coopsetup(void)
+{
+    s32 step = 0;
+    s32 row;
+
+    viSetFovY(FOV_Y_F);
+    viSetAspect(ASPECT_RATIO_SD);
+    viSetZRange(100.0f, 10000.0f);
+    viSetUseZBuf(FALSE);
+
+    if (joyGetControllerCount() < 2)
+    {
+        g_CoopMode = FALSE;
+        frontChangeMenu(MENU_MODE_SELECT, FALSE);
+        setCursorPOSforMode(GAMEMODE_SOLO);
+        return;
+    }
+
+    tab_prev_highlight = FALSE;
+    tab_next_highlight = FALSE;
+    coop_setup_highlighted_row = -1;
+
+    if (frontCheckCursorOnPreviousTab())
+    {
+        tab_prev_highlight = TRUE;
+    }
+    else if (frontCheckCursorOnNextTab())
+    {
+        tab_next_highlight = TRUE;
+    }
+    else
+    {
+        for (row = 0; row < COOP_SETUP_ROW_COUNT; row++)
+        {
+            if ((cursor_v_pos >= COOP_SETUP_ROW_Y(row) - 1) && (cursor_v_pos < COOP_SETUP_ROW_Y(row) + 0x13))
+            {
+                coop_setup_highlighted_row = row;
+            }
+        }
+    }
+
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON))
+    {
+        tab_next_selected = TRUE;
+        sndPlaySfx(g_musicSfxBufferPtr, PAPER_TURN_SFX, NULL);
+    }
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON))
+    {
+        if (tab_prev_highlight)
+        {
+            tab_prev_selected = TRUE;
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        }
+        else if (tab_next_highlight)
+        {
+            tab_next_selected = TRUE;
+            sndPlaySfx(g_musicSfxBufferPtr, PAPER_TURN_SFX, NULL);
+        }
+        else
+        {
+            step = 1;
+        }
+    }
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS|R_JPAD))
+    {
+        step = 1;
+    }
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS|L_JPAD))
+    {
+        step = -1;
+    }
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
+    {
+        tab_prev_selected = TRUE;
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+    }
+
+    if ((step != 0) && (coop_setup_highlighted_row >= 0))
+    {
+        frontCoopSetupStep(coop_setup_highlighted_row, step);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+    }
+
+    // Up and down on the D-pad step the cursor between rows.
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD|D_JPAD))
+    {
+        row = coop_setup_highlighted_row;
+
+        if (row < 0)
+        {
+            row = joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? -1 : COOP_SETUP_ROW_COUNT;
+        }
+
+        row += joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? 1 : -1;
+        row = (row < 0) ? 0 : ((row >= COOP_SETUP_ROW_COUNT) ? (COOP_SETUP_ROW_COUNT - 1) : row);
+        cursor_h_pos = COOP_SETUP_CURSOR_X;
+        cursor_v_pos = COOP_SETUP_ROW_Y(row) + 6;
+    }
+
+    disable_all_switches(walletinst[0]);
+    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
+    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
+    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
+    set_item_visibility_in_objinstance(walletinst[0], SW_CONFIDENTIAL2, 1);
+    frontUpdateControlStickPosition();
+
+    if (tab_prev_selected || tab_next_selected)
+    {
+        fileCoopSavePartnerSettings();
+        fileSaveDisplaySettingsForFolder(selected_folder_num);
+    }
+
+    if (tab_prev_selected)
+    {
+        // Mode select clears co-op once it opens; the cursor goes back to
+        // the co-op row.
+        frontChangeMenu(MENU_MODE_SELECT, FALSE);
+        setCursorPOSforMode(GAMEMODE_SOLO);
+        return;
+    }
+
+    if (tab_next_selected)
+    {
+        frontChangeMenu(MENU_MISSION_SELECT, FALSE);
+        set_cursor_to_stage_solo(0);
+    }
+}
+
+
+Gfx *constructor_menu1A_coopsetup(Gfx *DL)
+{
+    u8 *text;
+    s32 x;
+    s32 y;
+    s32 textwidth;
+    s32 textheight;
+    s32 row;
+
+    DL = viSetFillColor(DL, 0, 0, 0);
+    DL = viFillScreen(DL);
+    #if defined(BUGFIX_R2)
+    DL = viFillScreen(DL);
+    DL = viFillScreen(DL);
+    #endif
+    DL = frontSetupMenuBackground(DL);
+    DL = microcode_constructor(DL);
+
+    x = 0x37;
+    y = 0x5F;
+    DL = frontPrintText(DL, &x, &y, (u8 *)"2 Player Co-op\n", ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+
+    for (row = 0; row < COOP_SETUP_ROW_COUNT; row++)
+    {
+        text = (u8 *)coop_setup_row_labels[row];
+        textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+
+        if (coop_setup_highlighted_row == row)
+        {
+            DL = microcode_constructor_related_to_menus(DL, 0x37, COOP_SETUP_ROW_Y(row) - 1, textwidth + 0x3C, COOP_SETUP_ROW_Y(row) + 0xE, 0x32);
+        }
+
+        x = 0x39;
+        y = COOP_SETUP_ROW_Y(row);
+        DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+
+        switch (row)
+        {
+            case COOP_SETUP_ROW_CHAR:
+                text = frontCoopGetPartnerCharName();
+                break;
+            case COOP_SETUP_ROW_CONTROLS:
+                text = (u8 *)langGet(MP_controller_configuration_table[controlstyle_player[PLAYER_2]].text_preset);
+                break;
+            case COOP_SETUP_ROW_SPLIT:
+                text = (u8 *)(get_split_stacked_setting() ? "Stacked\n" : "Side by Side\n");
+                break;
+            case COOP_SETUP_ROW_HIRES:
+                text = (u8 *)(get_hires_setting() ? "On\n" : "Off\n");
+                break;
+            case COOP_SETUP_ROW_DRAWDIST:
+                text = (u8 *)(get_draw_near_setting() ? "Near\n" : "Full\n");
+                break;
+        }
+
+        x = COOP_SETUP_VALUE_X;
+        y = COOP_SETUP_ROW_Y(row);
+        DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    }
+
+    x = 0x39;
+    y = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_COUNT) + 0x14;
+    DL = frontPrintText(DL, &x, &y, (u8 *)"A or Left/Right: change\n", ptrFontZurichBoldChars, ptrFontZurichBold, 0x70, viGetX(), viGetY(), 0, 0);
+
+    DL = frontAddPreviousTabText(DL);
+    DL = frontAddNextTabText(DL);
     DL = frontDrawCursor(DL);
     return DL;
 }
@@ -3061,7 +3416,12 @@ void init_menu07_missionselect(void)
     briefingpage = BRIEFING_INVALID;
     tab_next_selected = FALSE;
     tab_prev_selected = FALSE;
-    g_CoopMode = FALSE;
+    // Co-op is chosen on the mode select page and lasts until the player
+    // goes back there.
+    if (joyGetControllerCount() < 2)
+    {
+        g_CoopMode = FALSE;
+    }
     if (maybe_is_in_menu)
     {
         musicTrack1Play(M_FOLDERS);
@@ -3420,13 +3780,6 @@ void interface_menu08_difficulty(void)
         mission_difficulty_highlighted = DIFFICULTY_AGENT;
     }
 
-    // Co-op: player 2 presses Start on this page to join (press again to leave).
-    if ((joyGetControllerCount() >= 2) && joyGetButtonsPressedThisFrame(PLAYER_2, START_BUTTON))
-    {
-        g_CoopMode = !g_CoopMode;
-        sndPlaySfx(g_musicSfxBufferPtr, g_CoopMode ? PAPER_TURN_SFX : DOOR_METAL_CLOSE2_SFX, NULL);
-    }
-
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
     {
         if (tab_prev_highlight)
@@ -3668,12 +4021,11 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
         }
     }
 
-    if (joyGetControllerCount() >= 2)
+    if (g_CoopMode)
     {
         x = 0x37;
         y = 0x12C;
-        DL = frontPrintText(DL, &x, &y,
-            (u8 *)(g_CoopMode ? "2 PLAYER CO-OP\n" : "PLAYER 2: PRESS START FOR CO-OP\n"),
+        DL = frontPrintText(DL, &x, &y, (u8 *)"2 PLAYER CO-OP\n",
             ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
@@ -4168,6 +4520,163 @@ u16 get_player_mp_char_body(s32 player)
     return mp_chr_setup[player_char[player]].body;
 }
 
+/**
+ * Co-op player 2's character, saved with player 2's settings
+ * (fileCoopGetPartnerChar):
+ *   COOP_CHAR_BOND_AUTO        Bond, in an outfit that goes with player 1's
+ *   1..COOP_BOND_OUTFIT_COUNT  Bond in that outfit (coop_bond_outfits)
+ *   above that                 multiplayer character
+ *                              mp_chr_setup[char - COOP_BOND_OUTFIT_COUNT]
+ * (mp_chr_setup[0] is Bond in his tuxedo, which the outfits cover.)
+ */
+#define COOP_CHAR_BOND_AUTO 0
+#define COOP_BOND_OUTFIT_COUNT 5
+
+struct coop_bond_outfit {
+    char *name;
+    s32 cuff;
+};
+
+static struct coop_bond_outfit coop_bond_outfits[COOP_BOND_OUTFIT_COUNT] = {
+    {"Bond: Suit\n",       CUFF_BLUE},
+    {"Bond: Tuxedo\n",     CUFF_BROSNAN},
+    {"Bond: Boiler Suit\n", CUFF_BOILER},
+    {"Bond: Jungle\n",     CUFF_JUNGLE},
+    {"Bond: Parka\n",      CUFF_SNOW},
+};
+
+/**
+ * The outfits player 2's Bond can wear next to player 1's, one picked at
+ * random per mission. Bond has only one cold weather outfit.
+ */
+static s32 coop_outfits_blue[]    = {CUFF_BROSNAN, CUFF_BOILER, -1};
+static s32 coop_outfits_tuxedo[]  = {CUFF_BLUE, -1};
+static s32 coop_outfits_boiler[]  = {CUFF_BLUE, CUFF_JUNGLE, -1};
+static s32 coop_outfits_jungle[]  = {CUFF_BOILER, -1};
+static s32 coop_outfits_snow[]    = {CUFF_BOILER, -1};
+
+static s32 s_CoopPartnerCuff = -1;
+
+/**
+ * Number of multiplayer characters unlocked, as on the character select page.
+ */
+static s32 frontCoopMpCharCount(void)
+{
+    if (num_chars_selectable_mp == 0x40)
+    {
+        return num_chars_selectable_mp;
+    }
+
+    if (fileIsStageUnlockedAtDifficulty(selected_folder_num, SP_LEVEL_CRADLE, DIFFICULTY_AGENT) == STAGESTATUS_COMPLETED)
+    {
+        return 0x21;
+    }
+
+    return 8;
+}
+
+static s32 frontCoopCharCount(void)
+{
+    return 1 + COOP_BOND_OUTFIT_COUNT + (frontCoopMpCharCount() - 1);
+}
+
+static s32 frontCoopGetPartnerChar(void)
+{
+    s32 character = fileCoopGetPartnerChar();
+
+    if ((character < 0) || (character >= frontCoopCharCount()))
+    {
+        return COOP_CHAR_BOND_AUTO;
+    }
+
+    return character;
+}
+
+/**
+ * The name shown on the co-op setup page.
+ */
+static u8 *frontCoopGetPartnerCharName(void)
+{
+    s32 character = frontCoopGetPartnerChar();
+
+    if (character == COOP_CHAR_BOND_AUTO)
+    {
+        return (u8 *)"Bond\n";
+    }
+
+    if (character <= COOP_BOND_OUTFIT_COUNT)
+    {
+        return (u8 *)coop_bond_outfits[character - 1].name;
+    }
+
+    return (u8 *)langGet(mp_chr_setup[character - COOP_BOND_OUTFIT_COUNT].text_preset);
+}
+
+/**
+ * Forget player 2's random outfit, so the next mission picks a new one.
+ */
+void frontCoopResetPartnerOutfit(void)
+{
+    s_CoopPartnerCuff = -1;
+}
+
+s32 frontCoopPartnerIsBond(void)
+{
+    return g_CoopMode && (frontCoopGetPartnerChar() <= COOP_BOND_OUTFIT_COUNT);
+}
+
+/**
+ * Player 2's cuff type (their Bond outfit and the cuffs on their hands),
+ * given player 1's. A multiplayer character keeps player 1's hands.
+ */
+s32 frontCoopGetPartnerCuff(s32 player1cuff)
+{
+    s32 character = frontCoopGetPartnerChar();
+    s32 *outfits;
+    s32 count;
+
+    if (character > COOP_BOND_OUTFIT_COUNT)
+    {
+        return player1cuff;
+    }
+
+    if (character != COOP_CHAR_BOND_AUTO)
+    {
+        return coop_bond_outfits[character - 1].cuff;
+    }
+
+    if (s_CoopPartnerCuff >= 0)
+    {
+        return s_CoopPartnerCuff;
+    }
+
+    switch (player1cuff)
+    {
+        case CUFF_BLUE:    outfits = coop_outfits_blue;   break;
+        case CUFF_JUNGLE:  outfits = coop_outfits_jungle; break;
+        case CUFF_BOILER:  outfits = coop_outfits_boiler; break;
+        case CUFF_SNOW:    outfits = coop_outfits_snow;   break;
+        default:           outfits = coop_outfits_tuxedo; break;
+    }
+
+    for (count = 0; outfits[count] >= 0; count++)
+    {
+    }
+
+    s_CoopPartnerCuff = outfits[randomGetNext() % (u32)count];
+    return s_CoopPartnerCuff;
+}
+
+u16 frontCoopGetPartnerHead(void)
+{
+    return mp_chr_setup[frontCoopGetPartnerChar() - COOP_BOND_OUTFIT_COUNT].head;
+}
+
+u16 frontCoopGetPartnerBody(void)
+{
+    return mp_chr_setup[frontCoopGetPartnerChar() - COOP_BOND_OUTFIT_COUNT].body;
+}
+
 f32 get_player_mp_handicap(s32 player)
 {
     return MP_handicap_table[player_handicap[player]].damage_modifier;
@@ -4352,6 +4861,31 @@ void update_menu0E_mpoptions(void)
 
 
 
+static s32 highlight_display = FALSE;
+
+/**
+ * Steps the multiplayer display setting: with 2 players side by side,
+ * stacked, side by side hi-res, stacked hi-res; with 3 or 4, normal or
+ * hi-res.
+ */
+static void frontMpStepDisplaySetting(void)
+{
+    if (selected_num_players != 2)
+    {
+        set_hires_setting(!get_hires_setting());
+        return;
+    }
+
+    if (!get_split_stacked_setting())
+    {
+        set_split_stacked_setting(TRUE);
+        return;
+    }
+
+    set_split_stacked_setting(FALSE);
+    set_hires_setting(!get_hires_setting());
+}
+
 // Address 0x7F010848 NTSC
 void interface_menu0E_mpoptions(void)
 {
@@ -4395,6 +4929,7 @@ void interface_menu0E_mpoptions(void)
         highlight_health = 0;
         highlight_controlstyle = 0;
         highlight_aimadjustment = 0;
+        highlight_display = 0;
 
         if (frontCheckCursorOnPreviousTab())
         {
@@ -4407,7 +4942,11 @@ void interface_menu0E_mpoptions(void)
         else
         {
             s32 temp_f6 = cursor_v_pos;
-            if ((temp_f6 >= 0x119) && (unlock_aim_sight))
+            if (temp_f6 >= 0x12D)
+            {
+                highlight_display = 1;
+            }
+            else if ((temp_f6 >= 0x119) && (unlock_aim_sight))
             {
                 highlight_aimadjustment = 1;
             }
@@ -4498,6 +5037,10 @@ void interface_menu0E_mpoptions(void)
         {
             aimadjust_selected = 1;
         }
+        else if (highlight_display)
+        {
+            frontMpStepDisplaySetting();
+        }
 
         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
@@ -4523,6 +5066,10 @@ void interface_menu0E_mpoptions(void)
 
     if (tab_start_selected)
     {
+        // Player 2's control style is shared with co-op.
+        fileCoopSavePartnerSettings();
+        fileSaveDisplaySettingsForFolder(selected_folder_num);
+
         if (multi_stage_setups[MP_stage_selected].stage_id < 0)
         {
             s32 temp_hi;
@@ -4806,6 +5353,32 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
     entry = 0x70;
   }
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+
+  // Display: split screen layout (2 players) and hi-res, shared with co-op.
+  text = (u8 *)"Display:\n";
+  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  x = 0x39;
+  y = 0x12d;
+  if (highlight_display) {
+    DL = microcode_constructor_related_to_menus(DL,0x37,0x12c,iStack28 + 0x3c,0x13b,0x32);
+  }
+  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
+
+  if (selected_num_players == 2) {
+    if (get_split_stacked_setting()) {
+      text = (u8 *)(get_hires_setting() ? "Stacked, Hi-Res\n" : "Stacked\n");
+    }
+    else {
+      text = (u8 *)(get_hires_setting() ? "Side by Side, Hi-Res\n" : "Side by Side\n");
+    }
+  }
+  else {
+    text = (u8 *)(get_hires_setting() ? "Hi-Res\n" : "Normal\n");
+  }
+  x = 0xa0;
+  y = 0x12d;
+  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
+
   DL = frontAddPreviousTabText(DL);
   DL = frontAddStartTabText(DL);
   DL = frontDrawCursor(DL);
@@ -6853,6 +7426,7 @@ Gfx *constructor_menu0A_briefing(Gfx *DL)
 //********************************************************************************************************
 void init_menu0B_runstage(void)
 {
+    frontCoopResetPartnerOutfit();
     bossSetLoadedStage(selected_stage);
     lvlSetSelectedDifficulty(selected_difficulty);
 }
@@ -8609,6 +9183,7 @@ void menu_init(void)
             case MENU_NO_CONTROLLERS:         update_menu16_nocontrollers();        break;
             case MENU_DISPLAY_CAST:           update_menu18_displaycast();          break;
             case MENU_SPECTRUM_EMU:           update_menu19_spectrum();             break;
+            case MENU_COOP_SETUP:             update_menu1A_coopsetup();            break;
         }
 
         if (menu_update > MENU_INVALID)
@@ -8649,6 +9224,7 @@ void menu_init(void)
             case MENU_NO_CONTROLLERS:         init_menu16_nocontroller();           break;
             case MENU_DISPLAY_CAST:           init_menu18_displaycast();            break;
             case MENU_SPECTRUM_EMU:           init_menu19_spectrum();               break;
+            case MENU_COOP_SETUP:             init_menu1A_coopsetup();              break;
         }
     }
 
@@ -8678,6 +9254,7 @@ void menu_init(void)
         case MENU_NO_CONTROLLERS:         interface_menu16_nocontrollers();         break;
         case MENU_DISPLAY_CAST:           interface_menu18_displaycast();           break;
         case MENU_SPECTRUM_EMU:           interface_menu19_spectrum();              break;
+        case MENU_COOP_SETUP:             interface_menu1A_coopsetup();             break;
         case MENU_RUN_STAGE:
             if (interface_menu0B_runstage())
             {
@@ -8781,6 +9358,9 @@ Gfx * menu_jump_constructor_handler(Gfx *DL)
             break;
         case MENU_SPECTRUM_EMU:
             DL = constructor_menu19_spectrum(DL);
+            break;
+        case MENU_COOP_SETUP:
+            DL = constructor_menu1A_coopsetup(DL);
     }
 
     return DL;

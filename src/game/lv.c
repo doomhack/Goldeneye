@@ -915,6 +915,30 @@ Gfx* lvlRender(Gfx* DL)
         gDPPipeSync(DL++);
     }
 
+    if ((g_CurrentStageToLoad != LEVELID_TITLE) && !coopSplitSideBySide() && (getViewCount() >= 2))
+    {
+        // The dividers between stacked or 4 way views, drawn again last: in
+        // hi-res the views' sky and fills can reach over the ones each view
+        // draws first.
+        gDPPipeSync(DL++);
+        gDPSetCycleType(DL++, G_CYC_FILL);
+        gDPSetRenderMode(DL++, G_RM_NOOP, G_RM_NOOP2);
+        gDPSetFillColor(DL++, ((GPACK_RGBA5551(0,0,0,1) << 16) | GPACK_RGBA5551(0,0,0,1)));
+        gDPFillRectangle(DL++, 0, ((SCREEN_HEIGHT / 2) - 1), VI_SX_INCL(viGetX() - 1), (SCREEN_HEIGHT / 2));
+
+        if (getViewCount() >= 3)
+        {
+            gDPFillRectangle(DL++, VI_SX((SCREEN_WIDTH / 2) - 1), 0, VI_SX_INCL(SCREEN_WIDTH / 2), (viGetY() - 1));
+        }
+
+        if (getViewCount() == 3)
+        {
+            gDPFillRectangle(DL++, VI_SX((SCREEN_WIDTH / 2) + 1), ((SCREEN_HEIGHT / 2) + 1), VI_SX_INCL(viGetX() - 1), (viGetY() - 1));
+        }
+
+        gDPPipeSync(DL++);
+    }
+
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && get_fps_setting())
     {
         DL = lvlRenderFpsCounter(DL);

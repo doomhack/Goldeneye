@@ -2392,7 +2392,8 @@ void play_sound_for_shot_actor(ChrRecord *self)
 
     if (self->prop->type == PROP_TYPE_VIEWER)
     {
-        if (getPlayerCount() == 1)
+        // Co-op player bodies are the chosen character's, as in solo.
+        if ((getPlayerCount() == 1) || g_CoopMode)
         {
             if (c_item_entries[self->bodynum].isMale != FALSE)
             {

@@ -332,6 +332,11 @@ extern u32 full_actor_intro;
 
 void frontChangeMenu(MENU menu, s32 reload);
 s32 get_selected_num_players(void);
+void frontCoopResetPartnerOutfit(void);
+s32 frontCoopPartnerIsBond(void);
+s32 frontCoopGetPartnerCuff(s32 player1cuff);
+u16 frontCoopGetPartnerHead(void);
+u16 frontCoopGetPartnerBody(void);
 void do_extended_cast_display(bool doExtended);
 MPSCENARIOS get_scenario(void);
 f32 get_player_mp_handicap(int player);

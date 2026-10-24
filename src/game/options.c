@@ -1039,21 +1039,58 @@ void controller_options_inputs_navigation(void)
 }
 
 
+/**
+ * Split screen and draw distance only matter in co-op, so the watch hides
+ * them in solo. i is a PLAYER_OPTION index (game_options_index - 2).
+ */
+static bool game_option_row_visible(s32 i)
+{
+    if (!g_CoopMode && (i == PLAYER_OPTION_SPLIT || i == PLAYER_OPTION_DRAWDIST))
+    {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static s32 game_options_last_index(void)
+{
+    s32 index = GAME_OPTIONS_INDEX_COUNT - 1;
+
+    while (!game_option_row_visible(index - 2))
+    {
+        index--;
+    }
+
+    return index;
+}
+
 void sub_GAME_7F0A5998(void)
 {
     s32 aux;
+    s32 step = 0;
 
     if ((joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD)) || (sub_GAME_7F0A5088()))
     {
-        game_options_index = game_options_index - 1;
+        step = -1;
         disable_watch_stick_y_nav_ready();
         reset_watch_item_is_actively_selected();
     }
     else if ((joyGetButtonsPressedThisFrame(WATCH_PAD, D_CBUTTONS|D_JPAD)) || (sub_GAME_7F0A50C4()))
     {
-        game_options_index = game_options_index + 1;
+        step = 1;
         disable_watch_stick_y_nav_ready();
         reset_watch_item_is_actively_selected();
+    }
+
+    if (step != 0)
+    {
+        do
+        {
+            game_options_index = game_options_index + step;
+        } while (game_options_index >= GAME_OPTIONS_INDEX_LOOK_UPDOWN
+            && game_options_index < GAME_OPTIONS_INDEX_COUNT
+            && !game_option_row_visible(game_options_index - 2));
     }
 
     aux = game_options_index;
@@ -1066,7 +1103,7 @@ void sub_GAME_7F0A5998(void)
 
     if (aux < 0)
     {
-        game_options_index = GAME_OPTIONS_INDEX_DRAWDIST;
+        game_options_index = game_options_last_index();
     }
 }
 
@@ -1075,7 +1112,7 @@ void game_options_music_volume_navigation(void)
 {
     if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || sub_GAME_7F0A5088())
     {
-        game_options_index = GAME_OPTIONS_INDEX_DRAWDIST;
+        game_options_index = game_options_last_index();
         disable_watch_stick_y_nav_ready();
         reset_watch_item_is_actively_selected();
         return;
@@ -3813,7 +3850,12 @@ Gfx *draw_toggle_options(Gfx *gdl)
 
     gdl = microcode_constructor(gdl);
 
-    for (i = 0, y_offset = YOFFSET_1; i < PLAYER_OPTION_COUNT; i = i + 1, y_offset = y_offset + YINC_OPTIONS) {
+    for (i = 0, y_offset = YOFFSET_1; i < PLAYER_OPTION_COUNT; i = i + 1) {
+
+        if (!game_option_row_visible(i))
+        {
+            continue;
+        }
 
         if ( i == game_options_index - 2)
         {
@@ -3834,6 +3876,7 @@ Gfx *draw_toggle_options(Gfx *gdl)
             gdl = draw_toggle_option_values(draw_options_labels(gdl, XOFFSET_1, y_offset, langGet(game_options_entries[i].text[0]), 0xFF00B0, 0, -1, 0, 0, 0x3000B0, 0), y_offset, i, 0);
         }
 
+        y_offset = y_offset + YINC_OPTIONS;
     }
 
     return gdl;
