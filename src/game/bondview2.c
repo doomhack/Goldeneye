@@ -9032,13 +9032,107 @@ void mp_respawn_handler(void)
 #define COOP_RESPAWN_CLEAR 80.0f
 
 s32 g_CoopDeathTime[4];
-s32 g_CoopDeathWeapons[4][2];
 
 /**
- * Co-op: bring the current (dead) player back at the level's start point,
- * which is the penalty for dying. Like mp_respawn_handler, but the player
- * keeps their inventory and ammo, since mission items are needed to finish
- * the level. Only happens while a partner is still alive.
+ * Co-op: TRUE if no other player died after the current player.
+ */
+static s32 coopDiedLast(void)
+{
+    s32 cur = get_cur_playernum();
+    s32 i;
+
+    for (i = 0; i < getPlayerCount(); i++)
+    {
+        if ((i != cur) && ((s32)(g_CoopDeathTime[i] - g_CoopDeathTime[cur]) > 0))
+        {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+/**
+ * Co-op: give the current player the level's starting loadout again, the
+ * guns and ammo the setup's intro hands out, holding the starting weapon.
+ * Objects they picked up (keys, mission items) are kept.
+ */
+static void coopGiveStartingLoadout(void)
+{
+    struct SetupIntroEmpty *intro_record = g_CurrentSetup.intro;
+    s32 i;
+
+    bondinvReinitInvKeepProps();
+
+    for (i = 0; i < 30; i++)
+    {
+        g_CurrentPlayer->ammoheldarr[i] = 0;
+    }
+
+    if (intro_record != NULL)
+    {
+        while (intro_record->type != 9) // INTROTYPE_END
+        {
+            switch (intro_record->type)
+            {
+                case 0: // INTROTYPE_SPAWN
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroSpawn));
+                    break;
+                case 1: // INTROTYPE_ITEM
+                    if (check_ramrom_flags() == ((struct SetupIntroItem*)intro_record)->is_demo_playback)
+                    {
+                        if (((struct SetupIntroItem*)intro_record)->item_left >= 0)
+                        {
+                            bondinvAddDoublesInvItem(((struct SetupIntroItem*)intro_record)->item_right, ((struct SetupIntroItem*)intro_record)->item_left);
+                        }
+                        else
+                        {
+                            bondinvAddInvItem(((struct SetupIntroItem*)intro_record)->item_right);
+                        }
+                    }
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroItem));
+                    break;
+                case 2: // INTROTYPE_AMMO
+                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback)
+                    {
+                        give_cur_player_ammo(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
+                    }
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroAmmo));
+                    break;
+                case 3: // INTROTYPE_SWIRL
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroSwirl));
+                    break;
+                case 4: // INTROTYPE_ANIM
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroAnim));
+                    break;
+                case 5: // INTROTYPE_CUFF
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroCuff));
+                    break;
+                case 6: // INTROTYPE_CAMERA
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroCamera));
+                    break;
+                case 7: // INTROTYPE_WATCH
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroWatch));
+                    break;
+                case 8: // INTROTYPE_CREDITS
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroCredits));
+                    break;
+                default:
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroEmpty));
+                    break;
+            }
+        }
+    }
+
+    bondinvAddInvItem(ITEM_FIST);
+    currentPlayerEquipWeaponWrapper(GUNLEFT, starting_weapon[GUNLEFT]);
+    currentPlayerEquipWeaponWrapper(GUNRIGHT, starting_weapon[GUNRIGHT]);
+}
+
+/**
+ * Co-op: bring the current (dead) player back at the level's start point
+ * with the level's starting loadout, which is the penalty for dying. Only
+ * happens while a partner is still alive.
  */
 void coopRespawnPlayer(void)
 {
@@ -9050,10 +9144,13 @@ void coopRespawnPlayer(void)
     s32 count = getPlayerCount();
     s32 cur = get_cur_playernum();
     s32 i;
+    s32 copiedgoldeneye;
+    f32 shared;
 
     for (i = 0; i < count; i++)
     {
-        if ((i != cur) && !g_playerPointers[i]->bonddead)
+        if ((i != cur) && !g_playerPointers[i]->bonddead
+            && ((g_playerPointers[i]->bondhealth + g_playerPointers[i]->bondarmour) >= 0.2f))
         {
             partner = g_playerPointers[i];
             break;
@@ -9065,8 +9162,11 @@ void coopRespawnPlayer(void)
         return;
     }
 
+    // Mission progress survives the respawn.
+    copiedgoldeneye = g_CurrentPlayer->copiedgoldeneye;
     init_player_BONDdata();
     bondviewPlayerBeginLife();
+    g_CurrentPlayer->copiedgoldeneye = copiedgoldeneye;
 
     g_CurrentPlayer->bonddead = 0;
     g_CurrentPlayer->deathanimfinished = 0;
@@ -9137,9 +9237,15 @@ void coopRespawnPlayer(void)
 #endif
     bondviewUpdatePlayerCollisionBounds();
 
-    // Back to the guns the player died holding.
-    currentPlayerEquipWeaponWrapper(GUNRIGHT, g_CoopDeathWeapons[cur][GUNRIGHT]);
-    currentPlayerEquipWeaponWrapper(GUNLEFT, g_CoopDeathWeapons[cur][GUNLEFT]);
+    coopGiveStartingLoadout();
+
+    // Like Perfect Dark: the partner's health and armour, counted together,
+    // are split evenly between the two players. Both lose their armour.
+    shared = (partner->bondhealth + partner->bondarmour) * 0.5f;
+    partner->bondhealth = shared;
+    partner->bondarmour = 0.0f;
+    g_CurrentPlayer->bondhealth = shared;
+    g_CurrentPlayer->bondarmour = 0.0f;
 
     g_CurrentPlayer->field_78 = 0.0f;
     g_CurrentPlayer->field_7C = -0.0001f;
@@ -9458,6 +9564,7 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                     if (coopPartnerAlive())
                     {
                         if (((g_GlobalTimer - g_CoopDeathTime[get_cur_playernum()]) >= COOP_RESPAWN_DELAY60)
+                            && coopPartnerCanRevive()
                             && joyGetButtons(get_cur_playernum(), 0xB000))
                         {
                             coopRespawnPlayer();
@@ -9466,7 +9573,12 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                     }
                     else if (!isMpGame())
                     {
-                        bondviewSetCameraMode(CAMERAMODE_DEATH_CAM_SP);
+                        // Co-op: the replay shows the player who died last,
+                        // so wait for their death to play out.
+                        if (!g_CoopMode || coopDiedLast())
+                        {
+                            bondviewSetCameraMode(CAMERAMODE_DEATH_CAM_SP);
+                        }
                     }
                     else
                     {
@@ -9585,8 +9697,6 @@ void bondviewKillCurrentPlayer(void)
         if (g_CoopMode)
         {
             g_CoopDeathTime[get_cur_playernum()] = g_GlobalTimer;
-            g_CoopDeathWeapons[get_cur_playernum()][GUNRIGHT] = getCurrentPlayerWeaponId(GUNRIGHT);
-            g_CoopDeathWeapons[get_cur_playernum()][GUNLEFT] = getCurrentPlayerWeaponId(GUNLEFT);
         }
 
         // In co-op the mission carries on while the partner is alive.
@@ -10358,6 +10468,12 @@ void bondviewSetUpperTextDisplayFlag(PLAYERFLAG flag)
 }
 
 
+/**
+ * Co-op: the player each top message (a character speaking to them) shows
+ * for. The top text is shared, so the other player's view skips it.
+ */
+static s8 s_CoopTopTextPlayer[2];
+
 void hudmsgTopShow(char* mess)
 {
     s32 index;
@@ -10367,6 +10483,7 @@ void hudmsgTopShow(char* mess)
     if (display_upper_text_window >= 2) { return; }
 
     index = (upper_text_buffer_index + display_upper_text_window) % 2;
+    s_CoopTopTextPlayer[index] = get_cur_playernum();
 #if defined(LEFTOVERDEBUG)
     strncpy(stringbuffer_top[index], mess, (BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1));
     display_upper_text_window += 1;
@@ -10446,7 +10563,8 @@ Gfx *sub_GAME_7F08AAE8(Gfx *gdl)
             if (dword_CODE_bss_80079DC8[upper_text_buffer_index][0] != '\0')
 #endif
             {
-                if (g_CurrentPlayer->mpmenuon == 0)
+                if ((g_CurrentPlayer->mpmenuon == 0)
+                    && (!g_CoopMode || (s_CoopTopTextPlayer[upper_text_buffer_index] == get_cur_playernum())))
                 {
                     gdl = microcode_constructor(gdl);
                     msg.textwidth = 0;

@@ -891,6 +891,7 @@ static s32 coopAiCommandMode(u8 cmd)
         case AI_IFMyDistanceToBondGreaterThanDecimeter:
         case AI_IFBondHealthGreaterThan:
         case AI_IFBondIsDead:
+        case AI_IFBondItemTotalAmmoLessThan:
             return COOP_AI_ALL;
 
         case AI_BondDisableControl:
@@ -904,11 +905,60 @@ static s32 coopAiCommandMode(u8 cmd)
     return COOP_AI_ONE;
 }
 
+extern s32 get_ammo_type_for_weapon(ITEM_IDS weapon);
+extern int bondinvHasInvItem(ITEM_IDS item);
+
+/**
+ * Co-op: TRUE if any player can still use an item, i.e. carries it with
+ * ammo for it if it takes ammo. Each player starts with their own copy of a
+ * level's single-use mission item (Dam's covert modem, Frigate's tracker
+ * bug, Surface 2's timed mine).
+ */
+static s32 coopAnyPlayerStillHasItem(ITEM_IDS item)
+{
+    s32 prevplayer = get_cur_playernum();
+    s32 ammotype = get_ammo_type_for_weapon(item);
+    s32 found = FALSE;
+    s32 i;
+
+    for (i = 0; (i < getPlayerCount()) && !found; i++)
+    {
+        set_cur_player(i);
+
+        if (bondinvHasInvItem(item) && ((ammotype == AMMO_NONE) || (currentPlayerGetAmmoCount(ammotype) > 0)))
+        {
+            found = TRUE;
+        }
+    }
+
+    set_cur_player(prevplayer);
+    return found;
+}
+
+/**
+ * Co-op: an object a level script checks was used. The rest of the script
+ * (messages such as "Door unlocked", objectives, fades) acts on the player
+ * who used it, as for the level conditions in coopAiEnd.
+ */
+static void coopAiActOnActivator(ChrRecord *chr)
+{
+    s32 player = g_CoopLastActivator;
+
+    if (!g_CoopMode || (chr == NULL) || (player < 0) || (player >= getPlayerCount()) || g_playerPointers[player]->bonddead)
+    {
+        return;
+    }
+
+    chr->targetplayer = player;
+    chr->targetlock60 = COOP_AI_TARGET_LOCK60;
+    set_cur_player(player);
+}
+
 /**
  * Called before each command. Starts repeating it over the players if it
  * needs that, with the current player first.
  */
-static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset)
+static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset, ChrRecord *chr)
 {
     s32 mode;
     s32 count;
@@ -926,6 +976,15 @@ static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset)
         return;
     }
 
+    // While a script is locked onto the player who set it off (an ending
+    // or a cutscene), its level conditions are about that player only.
+    // Otherwise a check like Depot's "is Bond holding a gun" for the
+    // cinema could pass for the other player and hand them the cutscene.
+    if ((mode == COOP_AI_ANY) && (chr != NULL) && (chr->targetlock60 > 0))
+    {
+        return;
+    }
+
     count = getPlayerCount();
     st->base = get_cur_playernum();
     st->count = 0;
@@ -934,8 +993,9 @@ static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset)
     {
         s32 player = (st->base + i) % count;
 
-        // A dead player can't be seen, heard or chased.
-        if ((mode == COOP_AI_ANY_SEEN) && (i > 0) && g_playerPointers[player]->bonddead)
+        // A dead player can't be seen, heard or chased, and their body
+        // doesn't meet level conditions (in a room, near a pad, ...).
+        if (((mode == COOP_AI_ANY_SEEN) || (mode == COOP_AI_ANY)) && (i > 0) && g_playerPointers[player]->bonddead)
         {
             continue;
         }
@@ -986,7 +1046,12 @@ static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
         return TRUE;
     }
 
-    if ((st->mode == COOP_AI_ANY_SEEN) && taken && (chr != NULL))
+    if (taken && (chr != NULL) && g_CurrentPlayer->bonddead)
+    {
+        // Never fight a dead player.
+        set_cur_player(st->base);
+    }
+    else if ((st->mode == COOP_AI_ANY_SEEN) && taken && (chr != NULL))
     {
         // Fight the player that was seen. They stay current for the rest
         // of this chr's tick.
@@ -1083,7 +1148,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
         {
             if (g_CoopMode)
             {
-                coopAiBegin(&coop, AiListp, Offset);
+                coopAiBegin(&coop, AiListp, Offset, ChrEntityp);
             }
 
             /*
@@ -2311,7 +2376,19 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFKeyDropped:
                 {
                     AiIFKeyDroppedRecord *ai = AiListp + Offset;
-                    if (weaponFindThrown(ai->KEY_ID))
+                    // Co-op: where a script checks "placed on the right
+                    // object, else placed anywhere = failed" (the attached
+                    // check comes just before this one), a misplaced item
+                    // only counts while no player still has a copy they
+                    // could place correctly. Other uses, like Silo's
+                    // plastique starting a countdown, are unchanged.
+                    s32 coopsecondcopy = g_CoopMode
+                        && (Offset >= (s32)sizeof(AiIFItemIsAttachedToObjectRecord))
+                        && (((u8 *)AiListp)[Offset - sizeof(AiIFItemIsAttachedToObjectRecord)] == AI_IFItemIsAttachedToObject)
+                        && (((u8 *)AiListp)[Offset - sizeof(AiIFItemIsAttachedToObjectRecord) + 1] == ai->KEY_ID)
+                        && coopAnyPlayerStillHasItem(ai->KEY_ID);
+
+                    if (weaponFindThrown(ai->KEY_ID) && !coopsecondcopy)
                     {
                         Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2401,6 +2478,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (obj && obj->prop && (obj->runtime_bitflags & RUNTIMEBITFLAG_ACTIVATED))
                     {
                         obj->runtime_bitflags &= ~RUNTIMEBITFLAG_ACTIVATED;
+                        coopAiActOnActivator(ChrEntityp);
                         Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
@@ -2416,6 +2494,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (obj && obj->prop && (obj->state & PROPSTATE_ACTIVATED))
                     {
                         obj->state &= ~PROPSTATE_ACTIVATED;
+                        coopAiActOnActivator(ChrEntityp);
                         Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else

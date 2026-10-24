@@ -4158,6 +4158,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 if (temp_v0_8 != NULL)
                 {
                     temp_v0_8->obj->state |= 0x40;
+                    coopNoteActivator();
                 }
             }
         }
@@ -4234,6 +4235,20 @@ void analyzeGEKey(void)
 
 s32 get_keyanalyzer_flag(void)
 {
+  s32 i;
+
+  // Co-op: objectives are shared, so a copy made by either player counts.
+  if (g_CoopMode)
+  {
+    for (i = 0; i < getPlayerCount(); i++)
+    {
+      if (g_playerPointers[i]->copiedgoldeneye)
+      {
+        return TRUE;
+      }
+    }
+  }
+
   return g_CurrentPlayer->copiedgoldeneye;
 }
 

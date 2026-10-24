@@ -855,7 +855,57 @@ Mtxf *currentPlayerGetViewToWorldMtxf(void) {
     return g_CurrentPlayer->viewtoworldmtxf;
 }
 
+/* Co-op: the view-to-world matrix of the last view drawn in the previous frame. */
+static Mtxf s_CoopPrevViewToWorld;
+static s32 s_CoopLastViewPlayer = -1;
+
+/**
+ * Co-op: called before the views of a frame are drawn. Copies the matrix of
+ * the view drawn last in the previous frame, which hasn't been replaced yet.
+ */
+void coopViewsBegin(void)
+{
+    struct player *player;
+
+    if ((s_CoopLastViewPlayer < 0) || (s_CoopLastViewPlayer >= 4))
+    {
+        return;
+    }
+
+    player = g_playerPointers[s_CoopLastViewPlayer];
+
+    if ((player != NULL) && (player->viewtoworldmtxf != NULL))
+    {
+        matrix_4x4_copy(player->viewtoworldmtxf, &s_CoopPrevViewToWorld);
+    }
+}
+
+/**
+ * Co-op: called after the views of a frame are drawn, with the player whose
+ * view was drawn last.
+ */
+void coopViewsEnd(s32 lastplayer)
+{
+    s_CoopLastViewPlayer = lastplayer;
+}
+
+/**
+ * The previous frame's view-to-world matrix. Chrs use it to turn their gun's
+ * model matrices, which were worked out while last frame was drawn, into
+ * world space.
+ *
+ * Co-op: chrs think during the first view of a frame, when the other
+ * players' cameras haven't moved yet, so their field_10EC is two frames old
+ * and points into display memory that is being reused (a crash on hardware
+ * once it holds bad floats). A gun's matrices are only kept as on screen when
+ * the last view drawn showed it, so that view's matrix is the right one.
+ */
 Mtxf *currentPlayerGetMatrix10EC(void) {
+    if (g_CoopMode)
+    {
+        return &s_CoopPrevViewToWorld;
+    }
+
     return g_CurrentPlayer->field_10EC;
 }
 

@@ -491,6 +491,15 @@ void bossMainloop(void)
             g_CurentMaMallocValue = (s32) (strtol(tokenFind(1, "-ma"), NULL, 0) * 1024);
         }
 
+        if (g_CoopMode && (g_StageNum != LEVELID_TITLE))
+        {
+            // Co-op: the "-ma" heap holds the loaded rooms, sized for what
+            // one player sees. Two players in different parts of a level
+            // see more rooms at once; when it filled up, rooms stopped
+            // loading (Silo's first computer room).
+            g_CurentMaMallocValue *= 2;
+        }
+
         memaReset(mempAllocBytesInBank(g_CurentMaMallocValue, MEMPOOL_STAGE), g_CurentMaMallocValue);
         reset_play_data_ptrs();
 
