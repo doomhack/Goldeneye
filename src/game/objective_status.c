@@ -331,7 +331,7 @@ bool objectiveIsAllComplete(void)
 }
 
 
-#ifdef BUGFIX_R1
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
 void objectivestatusDisableStatusDisplay(void)
 {
   objective_status_display_disabled = TRUE;
@@ -347,7 +347,7 @@ void display_objective_status_text_on_status_change(void)
     char buffer[50] = "";
     enum OBJECTIVESTATUS status;
 
-#ifdef BUGFIX_R1
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (objective_status_display_disabled) { return; }
 #endif
 

@@ -2238,7 +2238,7 @@ void recall_joy2_hits_edit_detail_edit_flag(enum ITEM_IDS item, PropRecord* prop
         return;
     }
 
-#ifdef BUGFIX_R1
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
 #endif
 
@@ -2316,7 +2316,7 @@ void sub_GAME_7F064720(coord3d* pos)
     ALSoundState* sound;
     ALLink* link;
 
-#ifdef BUGFIX_R1
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
 #endif
 
@@ -2351,7 +2351,7 @@ void recall_joy2_hits_edit_flag(enum ITEM_IDS item, coord3d* arg1, s32 texture_i
     D_800483C4 = texture_index;
     get_debug_joy2hitsedit_flag();
 
-#ifdef BUGFIX_R1
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
 #endif
 
@@ -2403,7 +2403,7 @@ void sub_GAME_7F064934(ITEM_IDS item)
 {
     struct EarWhistleSounds copied;
 
-#ifdef BUGFIX_R1
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
 #endif
     if ((item != ITEM_LASER) && (item != ITEM_WATCHLASER))
@@ -3160,7 +3160,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             handptr->field_88C = 0;
 
             if ((!isMpGame())
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
                 || ((checkGamePaused() == 0) && (g_CurrentPlayer->mpmenuon == 0))
 #else
                 || (checkGamePaused() == 0)
@@ -3499,7 +3499,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
                 && (Gun_hand_without_item(hand) != 0)
                 && (g_PlayerInvincible == FALSE)
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
                 && (g_CurrentPlayer->bonddead == 0)
 #endif
                )
@@ -3616,13 +3616,13 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     if (handptr->weapon_action_state == GUN_ANIM_STATE_RELOAD_SWAP)
     {
         if ((handptr->field_88C == 0)
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
             && (g_ClockTimer > 0)
 #endif
             && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
             && (Gun_hand_without_item(hand) != 0)
             && (g_PlayerInvincible == FALSE)
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
             && (g_CurrentPlayer->bonddead == 0)
 #endif
            )
@@ -5506,7 +5506,7 @@ void update_bullet_casing(CasingRecord* casing)
 
     if (casing->pos.y < casing->floor_y_pos)
     {
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
         if (g_CasingSfxState == 0 && (g_ClockTimer > 0))
 #else
         if (g_CasingSfxState == 0)

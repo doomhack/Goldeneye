@@ -878,7 +878,7 @@ Gfx* lvlRender(Gfx* DL)
 
             if (
 
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 cheatIsActive(CHEAT_INFINITE_AMMO) != 0
                 && (
                     (getCurrentPlayerWeaponId(GUNRIGHT) != ITEM_WATCHLASER)
@@ -1733,7 +1733,7 @@ void lvlUnloadStageTextData(void)
 
 void lvlSetControlsLockedFlag(s32 arg0)
 {
-    #if defined(BUGFIX_R1)
+    #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if ((arg0 != 0) && (g_ControlsLockedFlag == 0))
     {
         joyRumblePakStop();
