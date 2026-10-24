@@ -1690,6 +1690,16 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
         {
             gdl = bgScissorCurrentPlayerViewDefault(gdl);
             gdl = microcode_constructor(gdl);
+
+            if (g_CoopMode)
+            {
+                // Co-op: a dead player's view can be empty apart from the
+                // fog-colour clear (Jungle), whose pixels don't hold full
+                // coverage. Antialiased text over it was smeared by the VI
+                // filter, so draw it without coverage blending.
+                gDPSetRenderMode(gdl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
+            }
+
             text3 = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_22_PRESSSTART_LF)); /* press start */
             textMeasure(&textheight3, &textwidth3, text3, ptrFontBankGothicChars, ptrFontBankGothic, 0);
             x2 = viGetViewLeft();
