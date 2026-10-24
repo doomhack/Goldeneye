@@ -687,7 +687,6 @@ static u32 s_FpsLastCount;
 #define PERFSKIP_LETTERBOX 0x20
 #define PERFSKIP_NULLVIEW 0x40
 s32 g_PerfSkip = 0;
-s32 g_PerfClipRatio = 2;
 extern s32 g_PerfRoomTris; /* bg.c: room triangles/vertices drawn this frame */
 extern s32 g_PerfRoomVtx;
 extern s32 g_PerfRoomUniq;
@@ -765,8 +764,8 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
     g_PerfRoomVtx = 0;
     g_PerfRoomUniq = 0;
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\nTRI %d VTX %d/%d CLIP %d\n%s%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
-        tris, vtx, uniq, g_PerfClipRatio,
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\nTRI %d VTX %d/%d\n%s%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
+        tris, vtx, uniq,
         (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_ROOMS) ? "NOROOM " : "",
         (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2 " : "",
         (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX " : "",
@@ -816,12 +815,7 @@ Gfx* lvlRender(Gfx* DL)
 
         pcount = getViewCount();
 
-        /* Perf probe: the clip ratio is how far outside the view a triangle may reach
-           before the RSP clips it (the RDP scissors the rest) */
-        gMoveWd(DL++, G_MW_CLIP, G_MWO_CLIP_RNX, g_PerfClipRatio);
-        gMoveWd(DL++, G_MW_CLIP, G_MWO_CLIP_RNY, g_PerfClipRatio);
-        gMoveWd(DL++, G_MW_CLIP, G_MWO_CLIP_RPX, (u16)-g_PerfClipRatio);
-        gMoveWd(DL++, G_MW_CLIP, G_MWO_CLIP_RPY, (u16)-g_PerfClipRatio);
+        gSPClipRatio(DL++, FRUSTRATIO_2);
 
         for(i = 0; i < pcount; i++)
         {
@@ -1009,10 +1003,6 @@ Gfx* lvlRender(Gfx* DL)
                 {
                     g_PerfSkip |= PERFSKIP_LETTERBOX;
                 }
-            }
-            if (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS))
-            {
-                g_PerfClipRatio = (g_PerfClipRatio == 2) ? 3 : (g_PerfClipRatio == 3) ? 4 : (g_PerfClipRatio == 4) ? 6 : 2;
             }
             if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
             {
