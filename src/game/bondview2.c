@@ -4946,6 +4946,12 @@ void bondviewApplyVertaTheta(void)
  * EU address 7F081A18.
  * Perfect Dark method bmoveProcessInput.
 */
+/**
+ * Co-op: set when a player respawns, until they let go of the buttons they
+ * respawned with, so that pressing Start to respawn doesn't also open the watch.
+ */
+s32 g_CoopRespawnButtonsHeld[4];
+
 void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 {
     struct MoveData moveData; // sp120
@@ -5052,6 +5058,18 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     moveData.analogPitch = moveData.controlStickYSafe;
     moveData.analogStrafe = moveData.controlStickXSafe;
     moveData.analogWalk = moveData.controlStickYSafe;
+
+    if (g_CoopMode && g_CoopRespawnButtonsHeld[get_cur_playernum()])
+    {
+        if (buttons & START_BUTTON)
+        {
+            oldbuttons |= START_BUTTON;
+        }
+        else
+        {
+            g_CoopRespawnButtonsHeld[get_cur_playernum()] = FALSE;
+        }
+    }
 
     if (g_CurrentPlayer->bonddead == FALSE
         && g_bondviewForceDisarm <= 0
@@ -9004,15 +9022,21 @@ void mp_respawn_handler(void)
  */
 #define COOP_RESPAWN_DELAY60 (10 * 60)
 
+/**
+ * Co-op: a partner closer than this to the start pad is in the way of a respawn.
+ */
+#define COOP_RESPAWN_CLEAR 80.0f
+
 s32 g_CoopDeathTime[4];
 s32 g_CoopDeathWeapons[4][2];
 
 /**
- * Co-op: bring the current (dead) player back beside a living partner.
- * Like mp_respawn_handler, but the player keeps their inventory and ammo,
- * since mission items are needed to finish the level.
+ * Co-op: bring the current (dead) player back at the level's start point,
+ * which is the penalty for dying. Like mp_respawn_handler, but the player
+ * keeps their inventory and ammo, since mission items are needed to finish
+ * the level. Only happens while a partner is still alive.
  */
-void coopRespawnNearPartner(void)
+void coopRespawnPlayer(void)
 {
     struct player *partner = NULL;
     coord3d pos;
@@ -9052,15 +9076,36 @@ void coopRespawnNearPartner(void)
     hudmsgsSetOn(-1);
     bondviewClearUpperTextDisplayFlag(-1);
 
-    pos = partner->prop->pos;
-    stan = partner->prop->stan;
-    look_angle = (partner->vv_theta * M_TAU_F) / 360.0f;
-    coopFindPartnerSpawn(&pos, &stan, look_angle);
+    if (startpadcount > 0)
+    {
+        f32 dx;
+        f32 dz;
+
+        pos = g_Startpad[0]->pos;
+        stan = g_Startpad[0]->stan;
+        look_angle = M_TAU_F - atan2f(g_Startpad[0]->look.f[0], g_Startpad[0]->look.f[2]);
+
+        // Step aside if the partner is standing on the start pad.
+        dx = partner->prop->pos.x - pos.x;
+        dz = partner->prop->pos.z - pos.z;
+
+        if ((dx * dx + dz * dz) < (COOP_RESPAWN_CLEAR * COOP_RESPAWN_CLEAR))
+        {
+            coopFindPartnerSpawn(&pos, &stan, look_angle);
+        }
+    }
+    else
+    {
+        pos = partner->prop->pos;
+        stan = partner->prop->stan;
+        look_angle = (partner->vv_theta * M_TAU_F) / 360.0f;
+        coopFindPartnerSpawn(&pos, &stan, look_angle);
+    }
 
     stan_height = bondviewYPositionRelated(stan, pos.x, pos.z);
     pos.y = g_CurrentPlayer->eyeheight + stan_height;
     g_CurrentPlayer->field_70 = stan_height;
-    g_CurrentPlayer->vv_theta = partner->vv_theta;
+    g_CurrentPlayer->vv_theta = (look_angle * 360.0f) / M_TAU_F;
     g_CurrentPlayer->stanHeight = stan_height;
 #if defined(VERSION_EU)
     g_CurrentPlayer->field_6C = (f32) (stan_height / 0.2004f);
@@ -9411,7 +9456,8 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                         if (((g_GlobalTimer - g_CoopDeathTime[get_cur_playernum()]) >= COOP_RESPAWN_DELAY60)
                             && joyGetButtons(get_cur_playernum(), 0xB000))
                         {
-                            coopRespawnNearPartner();
+                            coopRespawnPlayer();
+                            g_CoopRespawnButtonsHeld[get_cur_playernum()] = TRUE;
                         }
                     }
                     else if (!isMpGame())

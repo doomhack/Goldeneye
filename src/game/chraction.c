@@ -92,6 +92,7 @@ s32 chrlvMaybeSameRoom                        (ChrRecord *self, coord3d *arg1, S
 s32 chrlvCurrentPlayerCall7F0B0E24            (ChrRecord *self);
 s32 chrlvCall7F0B0E24WithChrWidthHeight       (PropRecord *arg0, coord3d *arg1, coord3d *arg2);
 void chrlvSetTargetToPlayer                   (ChrRecord *self);
+void coopChrShotByCurrentPlayer               (ChrRecord *self);
 s32 chrSawTargetRecently                      (ChrRecord *);
 s32 chrCheckTargetInSight                     (ChrRecord *self);
 void chrlvModelRotyRelated                    (ChrRecord *self, s32 arg1, coord3d *arg2);
@@ -2626,6 +2627,11 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
         }
         else
         {
+            if (isPlayer)
+            {
+                coopChrShotByCurrentPlayer(self);
+            }
+
             self->chrflags |= CHRFLAG_WAS_DAMAGED;
 #    ifdef XBLA
             if (!cheatIsActive(76))
@@ -9340,14 +9346,97 @@ void chrlvTickPatrol(ChrRecord *self)
 #define COOP_RETARGET_INTERVAL60 30
 
 /**
+ * Co-op: how often a chr that is fighting one player checks whether it can
+ * see the other player closer by.
+ */
+#define COOP_SWITCH_INTERVAL60 60
+
+/**
+ * Co-op: the other player must be this much closer (as a fraction of the
+ * distance to the current target) for a chr to switch to them.
+ */
+#define COOP_SWITCH_CLOSER 0.75f
+
+static f32 coopChrDistSqToPlayer(ChrRecord *self, s32 player)
+{
+    PropRecord *prop = g_playerPointers[player]->prop;
+    f32 dx = prop->pos.x - self->prop->pos.x;
+    f32 dz = prop->pos.z - self->prop->pos.z;
+
+    return (dx * dx) + (dz * dz);
+}
+
+/**
+ * Co-op: a chr busy fighting one player switches to another living player it
+ * can see who is clearly closer, so that a second player walking into a
+ * fight gets shot at too.
+ */
+static s32 coopChrTrySwitchToCloserPlayer(ChrRecord *self, s32 target)
+{
+    s32 count = getPlayerCount();
+    f32 targetdist = coopChrDistSqToPlayer(self, target);
+    s32 i;
+
+    for (i = 0; i < count; i++)
+    {
+        s32 lastsee = self->lastseetarget60;
+
+        if ((i == target) || g_playerPointers[i]->bonddead)
+        {
+            continue;
+        }
+
+        if (coopChrDistSqToPlayer(self, i) >= (targetdist * (COOP_SWITCH_CLOSER * COOP_SWITCH_CLOSER)))
+        {
+            continue;
+        }
+
+        set_cur_player(i);
+
+        if (chrCanSeeBond(self))
+        {
+            // chrCanSeeBond noted the sighting; make it the new target's.
+            self->targetplayer = i;
+            chrlvSetTargetToPlayer(self);
+            self->lastheartarget60 = 0;
+            return i;
+        }
+
+        self->lastseetarget60 = lastsee;
+    }
+
+    return target;
+}
+
+/**
+ * Co-op: a chr shot by a player turns on them.
+ */
+void coopChrShotByCurrentPlayer(ChrRecord *self)
+{
+    s32 player = get_cur_playernum();
+
+    if (!g_CoopMode || (self->prop == NULL) || (self->prop->type != PROP_TYPE_CHR) || (self->targetplayer == player))
+    {
+        return;
+    }
+
+    self->targetplayer = player;
+    self->lastseetarget60 = 0;
+    self->lastheartarget60 = g_GlobalTimer;
+}
+
+/**
  * Co-op: pick the player this chr fights and make them the current player
  * for its AI list and action tick, so all of the "Bond" logic (sight,
  * shooting, damage, chasing) applies to that player.
  *
  * A chr keeps a living target. Without one, or when it hasn't seen anyone
- * for a while, it switches to the nearest living player every half second.
+ * for a while, it switches to the nearest living player every half second,
+ * forgetting when it last saw or heard its old target.
  * Seeing or hearing the other player retargets it straight away (see the
- * any-player AI commands in ai()).
+ * any-player AI commands in ai()), and so does being shot by them. While it
+ * fights one player it also switches to the other if it can see them
+ * clearly closer by (checked every second).
  */
 static void coopChrSelectTarget(ChrRecord *self)
 {
@@ -9379,7 +9468,7 @@ static void coopChrSelectTarget(ChrRecord *self)
     }
     else if ((self->prop != NULL)
         && (g_playerPointers[target]->bonddead
-            || (!chrSawTargetRecently(self) && ((((u32)g_GlobalTimer + self->chrnum) % COOP_RETARGET_INTERVAL60) == 0))))
+            || (!chrSawTargetRecently(self) && ((((u32)g_GlobalTimer + self->chrnum) % COOP_RETARGET_INTERVAL60) < (u32)g_ClockTimer))))
     {
         f32 bestdist = 0.0f;
         s32 best = -1;
@@ -9411,6 +9500,22 @@ static void coopChrSelectTarget(ChrRecord *self)
         {
             target = best;
         }
+    }
+    else if ((self->prop != NULL)
+        && (self->prop->type == PROP_TYPE_CHR)
+        && chrSawTargetRecently(self)
+        && ((((u32)g_GlobalTimer + self->chrnum) % COOP_SWITCH_INTERVAL60) < (u32)g_ClockTimer))
+    {
+        target = coopChrTrySwitchToCloserPlayer(self, target);
+    }
+
+    if (target != self->targetplayer)
+    {
+        // What a chr saw or heard was the old target. Without this the new
+        // target counts as seen for up to 10 seconds, so guards would know
+        // where a respawned player is without looking.
+        self->lastseetarget60 = 0;
+        self->lastheartarget60 = 0;
     }
 
     self->targetplayer = target;
