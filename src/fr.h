@@ -248,6 +248,16 @@ void viSet800232A0(s32 arg0);
 Gfx *viClearZBufCurrentPlayer(Gfx *gdl);
 Gfx *viSetupCurrentPlayerView(Gfx *gdl);
 void viGetZRange(f32 *zrange);
+
+/* Fast render: opaque surfaces drop RDP anti-aliasing (no framebuffer read) */
+s32 viFastRenderEnabled(void);
+u32 viFastRenderMode(u32 mode);
+void viFastRenderPatchDL(Gfx *start, Gfx *end);
+
+/* For files that build render modes at runtime: route them through the filter */
+#define gDPSetRenderModeFast(pkt, c0, c1) \
+    gSPSetOtherMode(pkt, G_SETOTHERMODE_L, G_MDSFT_RENDERMODE, 29, viFastRenderMode((c0) | (c1)))
+
 #endif
 
 

@@ -2572,6 +2572,15 @@ void bgLoadRoomModelData(s32 roomID)
         }
     }
 
+    viFastRenderPatchDL(g_BgRoomInfo[roomID].ptr_expanded_mapping_info,
+        (Gfx *)((u8 *)g_BgRoomInfo[roomID].ptr_expanded_mapping_info + g_BgRoomInfo[roomID].usize_primary_DL_binary));
+
+    if (g_BgRoomInfo[roomID].ptr_secondary_expanded_mapping_info)
+    {
+        viFastRenderPatchDL(g_BgRoomInfo[roomID].ptr_secondary_expanded_mapping_info,
+            (Gfx *)((u8 *)g_BgRoomInfo[roomID].ptr_secondary_expanded_mapping_info + g_BgRoomInfo[roomID].usize_secondary_DL_binary));
+    }
+
     bgBuildRoomVtxBounds(roomID);
     roomsHandleStateDebugging();
 

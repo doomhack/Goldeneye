@@ -6,6 +6,7 @@
 #include "chr.h"
 #include "chrobjdata.h"
 #include "gbi_extension.h"
+#include <fr.h>
 #include "initunk_005520.h"
 #include "math_asinfacosf.h"
 #include "math_floor.h"
@@ -3449,11 +3450,11 @@ void modelApplyRenderModeType1(ModelRenderData *renderdata)
 
     if (renderdata->zbufferenabled)
     {
-        gDPSetRenderMode(renderdata->gdl++, G_RM_AA_ZB_OPA_SURF2, G_RM_AA_ZB_OPA_SURF);
+        gDPSetRenderModeFast(renderdata->gdl++, G_RM_AA_ZB_OPA_SURF2, G_RM_AA_ZB_OPA_SURF);
     }
     else
     {
-        gDPSetRenderMode(renderdata->gdl++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);
+        gDPSetRenderModeFast(renderdata->gdl++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);
     }
 
     gDPSetCombineMode(renderdata->gdl++, G_CC_MODULATEIA, G_CC_MODULATEIA);
@@ -3491,22 +3492,22 @@ void modelApplyRenderModeType3(ModelRenderData *renderdata, bool isPrimary)
 
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
             }
         }
         else
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
             }
         }
     }
@@ -3534,11 +3535,11 @@ void modelApplyRenderModeType3(ModelRenderData *renderdata, bool isPrimary)
 
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
             }
         }
     }
@@ -3563,22 +3564,22 @@ void modelApplyRenderModeType3(ModelRenderData *renderdata, bool isPrimary)
 
                 if (renderdata->zbufferenabled)
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
                 }
                 else
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
                 }
             }
             else
             {
                 if (renderdata->zbufferenabled)
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
                 }
                 else
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
                 }
             }
         }
@@ -3600,11 +3601,11 @@ void modelApplyRenderModeType3(ModelRenderData *renderdata, bool isPrimary)
 
                 if (renderdata->zbufferenabled)
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_TEX_EDGE2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_TEX_EDGE2);
                 }
                 else
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_TEX_EDGE2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_TEX_EDGE2);
                 }
             }
             else
@@ -3614,11 +3615,11 @@ void modelApplyRenderModeType3(ModelRenderData *renderdata, bool isPrimary)
 
                 if (renderdata->zbufferenabled)
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_TEX_EDGE2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_TEX_EDGE2);
                 }
                 else
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_TEX_EDGE2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_TEX_EDGE2);
                 }
             }
         }
@@ -3640,22 +3641,22 @@ void modelApplyRenderModeType3(ModelRenderData *renderdata, bool isPrimary)
 
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
             }
         }
         else
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
             }
         }
     }
@@ -3695,11 +3696,11 @@ void modelApplyRenderModeType3(ModelRenderData *renderdata, bool isPrimary)
 
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
             }
         }
         else
@@ -3726,22 +3727,22 @@ void modelApplyRenderModeType3(ModelRenderData *renderdata, bool isPrimary)
 
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_PASS, G_RM_AA_ZB_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_PASS, G_RM_AA_ZB_OPA_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_PASS, G_RM_AA_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_PASS, G_RM_AA_OPA_SURF2);
             }
         }
         else
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_PASS, G_RM_AA_ZB_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_PASS, G_RM_AA_ZB_XLU_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_PASS, G_RM_AA_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_PASS, G_RM_AA_XLU_SURF2);
             }
         }
     }
@@ -3779,22 +3780,22 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
             }
         }
         else
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
             }
         }
     }
@@ -3820,11 +3821,11 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
 
         if (renderdata->zbufferenabled)
         {
-            gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+            gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
         }
         else
         {
-            gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+            gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
         }
     }
     else if (renderdata->PropType == PROP_TYPE_SMOKE+1)
@@ -3848,11 +3849,11 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
 
                 if (renderdata->zbufferenabled)
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
                 }
                 else
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
                 }
             }
             else
@@ -3861,11 +3862,11 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
 
                 if (renderdata->zbufferenabled)
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
                 }
                 else
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
                 }
             }
         }
@@ -3887,11 +3888,11 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
 
                 if (renderdata->zbufferenabled)
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_TEX_EDGE2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_TEX_EDGE2);
                 }
                 else
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_TEX_EDGE2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_TEX_EDGE2);
                 }
             }
             else
@@ -3901,11 +3902,11 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
 
                 if (renderdata->zbufferenabled)
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_TEX_EDGE2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_TEX_EDGE2);
                 }
                 else
                 {
-                    gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_TEX_EDGE2);
+                    gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_TEX_EDGE2);
                 }
             }
         }
@@ -3927,22 +3928,22 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
             }
         }
         else
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
             }
         }
     }
@@ -3988,11 +3989,11 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
 
         if (renderdata->zbufferenabled)
         {
-            gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+            gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
         }
         else
         {
-            gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+            gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
         }
     }
     else
@@ -4006,22 +4007,22 @@ void modelApplyRenderModeType4(ModelRenderData *renderdata, bool isPrimary)
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_OPA_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
             }
         }
         else
         {
             if (renderdata->zbufferenabled)
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_ZB_XLU_SURF2);
             }
             else
             {
-                gDPSetRenderMode(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
+                gDPSetRenderModeFast(renderdata->gdl++, G_RM_FOG_PRIM_A, G_RM_AA_XLU_SURF2);
             }
         }
     }
@@ -4038,11 +4039,11 @@ void modelApplyRenderModeType2(ModelRenderData *renderdata)
 
     if (renderdata->zbufferenabled)
     {
-        gDPSetRenderMode(renderdata->gdl++, G_RM_PASS, G_RM_AA_ZB_OPA_SURF2);
+        gDPSetRenderModeFast(renderdata->gdl++, G_RM_PASS, G_RM_AA_ZB_OPA_SURF2);
     }
     else
     {
-        gDPSetRenderMode(renderdata->gdl++, G_RM_PASS, G_RM_AA_OPA_SURF2);
+        gDPSetRenderModeFast(renderdata->gdl++, G_RM_PASS, G_RM_AA_OPA_SURF2);
     }
 
     gDPSetCombineMode(renderdata->gdl++, G_CC_TRILERP, G_CC_MODULATEIA2);
