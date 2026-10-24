@@ -9034,6 +9034,25 @@ void mp_respawn_handler(void)
 s32 g_CoopDeathTime[4];
 
 /**
+ * Co-op: TRUE if no other player died after the current player.
+ */
+static s32 coopDiedLast(void)
+{
+    s32 cur = get_cur_playernum();
+    s32 i;
+
+    for (i = 0; i < getPlayerCount(); i++)
+    {
+        if ((i != cur) && ((s32)(g_CoopDeathTime[i] - g_CoopDeathTime[cur]) > 0))
+        {
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+/**
  * Co-op: give the current player the level's starting loadout again, the
  * guns and ammo the setup's intro hands out, holding the starting weapon.
  * Objects they picked up (keys, mission items) are kept.
@@ -9548,7 +9567,12 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                     }
                     else if (!isMpGame())
                     {
-                        bondviewSetCameraMode(CAMERAMODE_DEATH_CAM_SP);
+                        // Co-op: the replay shows the player who died last,
+                        // so wait for their death to play out.
+                        if (!g_CoopMode || coopDiedLast())
+                        {
+                            bondviewSetCameraMode(CAMERAMODE_DEATH_CAM_SP);
+                        }
                     }
                     else
                     {
