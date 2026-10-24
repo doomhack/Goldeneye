@@ -290,6 +290,9 @@ f32 fogGetScaledFarFogIntensitySquared(void)
  */
 #define COOP_NEAR_DRAW_SCALE 0.5f
 
+/* Perf probe (lv.c, L + C-left) can change it at run time */
+f32 g_CoopNearDrawScale = COOP_NEAR_DRAW_SCALE;
+
 static EnvironmentRecord *s_FogLastEnvironment;
 
 /**
@@ -328,7 +331,7 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
 
     if (g_CoopMode && get_draw_near_setting())
     {
-        farfog *= COOP_NEAR_DRAW_SCALE;
+        farfog *= g_CoopNearDrawScale;
     }
 
     viSetZRange(arg0->Visibility.BlendMultiplier, farfog);

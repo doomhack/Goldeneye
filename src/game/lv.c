@@ -11,6 +11,7 @@
 #include <ramrom.h>
 #include <random.h>
 #include <joy.h>
+#include "bgfog.h"
 #include <token.h>
 #include "debugmenu_handler.h"
 #include "lv.h"
@@ -675,6 +676,8 @@ static u32 s_FpsLastCount;
  * L + C-up draws rooms in 1-cycle mode (wrong looking: no fog blend, no
  * mip blend) and L + C-down letterboxes each view (scissor 1/8 off top and
  * bottom), to see what 2-cycle mode and pixel count cost.
+ * L + C-left steps co-op's "near" draw distance through 50/35/25/15% of
+ * the level's (the draw distance option must be on near).
  */
 #define PERFSKIP_SKY    0x1
 #define PERFSKIP_ROOMS  0x2
@@ -750,10 +753,10 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         s_FpsLastTasks = tasks;
     }
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n%s%s%s%s%s%s %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
         (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_ROOMS) ? "NOROOM " : "",
         (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2 " : "",
-        (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX" : "", s_PerfPatched);
+        (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX" : "", s_PerfPatched, (s32)(g_CoopNearDrawScale * 100.0f + 0.5f));
 
     width = 0;
     height = 0;
@@ -973,6 +976,11 @@ Gfx* lvlRender(Gfx* DL)
                 s_PerfPatched = bgPerfProbePatchAllRooms((g_PerfSkip & PERFSKIP_1CYCLE) != 0);
             }
             if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS)) g_PerfSkip ^= PERFSKIP_LETTERBOX;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
+            {
+                g_CoopNearDrawScale = (g_CoopNearDrawScale > 0.4f) ? 0.35f : (g_CoopNearDrawScale > 0.3f) ? 0.25f : (g_CoopNearDrawScale > 0.2f) ? 0.15f : 0.5f;
+                fogReloadCurrentEnvironment();
+            }
         }
 
         DL = lvlRenderFpsCounter(DL);
