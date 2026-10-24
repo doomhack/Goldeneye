@@ -690,6 +690,7 @@ s32 g_PerfSkip = 0;
 s32 g_PerfClipRatio = 2;
 extern s32 g_PerfRoomTris; /* bg.c: room triangles/vertices drawn this frame */
 extern s32 g_PerfRoomVtx;
+extern s32 g_PerfRoomUniq;
 s32 bgPerfProbePatchAllRooms(s32 onecycle);
 static s32 s_PerfPatched;
 static s32 s_FpsFrames;
@@ -723,6 +724,7 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
     char text[160];
     s32 tris = g_PerfRoomTris;
     s32 vtx = g_PerfRoomVtx;
+    s32 uniq = g_PerfRoomUniq;
     s32 x;
     s32 y;
     s32 width;
@@ -761,9 +763,10 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
 
     g_PerfRoomTris = 0;
     g_PerfRoomVtx = 0;
+    g_PerfRoomUniq = 0;
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\nTRI %d VTX %d CLIP %d\n%s%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
-        tris, vtx, g_PerfClipRatio,
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\nTRI %d VTX %d/%d CLIP %d\n%s%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
+        tris, vtx, uniq, g_PerfClipRatio,
         (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_ROOMS) ? "NOROOM " : "",
         (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2 " : "",
         (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX " : "",

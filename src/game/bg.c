@@ -629,12 +629,17 @@ static s32 bgPerfProbePatchDL(Gfx *start, Gfx *end, s32 onecycle)
 /* Perf probe: triangles and vertices in each room's display lists, summed per frame for the rooms drawn */
 static u16 s_RoomPerfTris[MAXROOMCOUNT];
 static u16 s_RoomPerfVtx[MAXROOMCOUNT];
+static u16 s_RoomPerfUniq[MAXROOMCOUNT];
 s32 g_PerfRoomTris;
 s32 g_PerfRoomVtx;
+s32 g_PerfRoomUniq;
+static u8 s_PerfVtxSeen[0x800]; /* one bit per room vertex */
 
-static void bgPerfCountDL(Gfx *g, Gfx *end, s32 *tris, s32 *vtx)
+static void bgPerfCountDL(Gfx *g, Gfx *end, s32 *tris, s32 *vtx, s32 *uniq)
 {
     s32 i;
+    u32 first;
+    u32 n;
 
     if (g == NULL)
     {
@@ -651,7 +656,20 @@ static void bgPerfCountDL(Gfx *g, Gfx *end, s32 *tris, s32 *vtx)
         }
         else if (cmd == (s8)G_VTX)
         {
-            *vtx += ((g->words.w0 >> 20) & 0xf) + 1;
+            n = ((g->words.w0 >> 20) & 0xf) + 1;
+            *vtx += n;
+            first = (g->words.w1 & 0xffffff) / sizeof(Vtx);
+
+            for (i = 0; i < n; i++)
+            {
+                u32 v = first + i;
+
+                if ((v < sizeof(s_PerfVtxSeen) * 8) && !(s_PerfVtxSeen[v >> 3] & (1 << (v & 7))))
+                {
+                    s_PerfVtxSeen[v >> 3] |= 1 << (v & 7);
+                    *uniq += 1;
+                }
+            }
         }
         else if (cmd == (s8)G_TRI1)
         {
@@ -676,18 +694,21 @@ static void bgPerfCountRoom(s32 roomID)
     s_room_info *room = &g_BgRoomInfo[roomID];
     s32 tris = 0;
     s32 vtx = 0;
+    s32 uniq = 0;
 
+    bzero(s_PerfVtxSeen, sizeof(s_PerfVtxSeen));
     bgPerfCountDL(room->ptr_expanded_mapping_info,
-        (Gfx *)((u8 *)room->ptr_expanded_mapping_info + room->usize_primary_DL_binary), &tris, &vtx);
+        (Gfx *)((u8 *)room->ptr_expanded_mapping_info + room->usize_primary_DL_binary), &tris, &vtx, &uniq);
 
     if (room->ptr_secondary_expanded_mapping_info)
     {
         bgPerfCountDL(room->ptr_secondary_expanded_mapping_info,
-            (Gfx *)((u8 *)room->ptr_secondary_expanded_mapping_info + room->usize_secondary_DL_binary), &tris, &vtx);
+            (Gfx *)((u8 *)room->ptr_secondary_expanded_mapping_info + room->usize_secondary_DL_binary), &tris, &vtx, &uniq);
     }
 
     s_RoomPerfTris[roomID] = tris;
     s_RoomPerfVtx[roomID] = vtx;
+    s_RoomPerfUniq[roomID] = uniq;
 }
 
 s32 bgPerfProbePatchRoom(s32 roomID, s32 onecycle)
@@ -2848,6 +2869,7 @@ Gfx *bgRenderRoomPrimary(Gfx *gdl, s32 room_index)
             gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(g_BgRoomInfo[room_index].ptr_expanded_mapping_info));
             g_PerfRoomTris += s_RoomPerfTris[room_index];
             g_PerfRoomVtx += s_RoomPerfVtx[room_index];
+            g_PerfRoomUniq += s_RoomPerfUniq[room_index];
 
             // Set the room's state to "loaded"
             g_BgRoomInfo[room_index].model_bin_loaded = 1;
