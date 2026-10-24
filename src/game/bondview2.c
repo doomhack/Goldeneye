@@ -9111,7 +9111,13 @@ static void coopGiveStartingLoadout(void)
                 case 6: // INTROTYPE_CAMERA
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroCamera));
                     break;
-                default: // INTROTYPE_WATCH, INTROTYPE_CREDITS
+                case 7: // INTROTYPE_WATCH
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroWatch));
+                    break;
+                case 8: // INTROTYPE_CREDITS
+                    intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroCredits));
+                    break;
+                default:
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroEmpty));
                     break;
             }
