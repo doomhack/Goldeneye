@@ -280,6 +280,9 @@ s32 D_8004485C = 1;
 void unload_rooms(void);
 Gfx *sub_GAME_7F0B8D78(Gfx *arg0);
 Gfx *sub_GAME_7F0B3C8C(Gfx *arg0);
+void bgCullBuildRoom(s32 roomID);
+void bgCullFreeRoom(s32 roomID);
+s32 memaGetLongestFree(void);
 extern s32 g_PerfSkip; /* lv.c performance probe: 0x2 rooms, 0x4 props, 0x10 1-cycle rooms, 0x20 letterbox */
 s32 bgCheckIfRoomModelNeedsLoad(s32 roomID);
 void bgLoadRoomModelData(s32 room);
@@ -646,6 +649,7 @@ s32 bgPerfProbePatchAllRooms(s32 onecycle)
         if (g_BgRoomInfo[i].model_bin_loaded != 0)
         {
             count += bgPerfProbePatchRoom(i, onecycle);
+            bgCullBuildRoom(i);
         }
     }
 
@@ -2646,6 +2650,7 @@ void bgLoadRoomModelData(s32 roomID)
     bgPerfProbePatchRoom(roomID, (g_PerfSkip & 0x10) != 0);
 
     bgBuildRoomVtxBounds(roomID);
+    bgCullBuildRoom(roomID);
     roomsHandleStateDebugging();
 
 end:;
@@ -2662,6 +2667,8 @@ void delete_room_data(s32 roomID)
     s32 size;
     s32 size2;
     Vtx *pointindex;
+
+    bgCullFreeRoom(roomID);
 
     if (room->vtx_batch_bounds != NULL) {
         memaFree(
@@ -2748,6 +2755,361 @@ void bgRoomsTickUnload(void)
  * Ensures the room's bg data is loaded if budget allows, then appends its display list.
  * Also resets the age of rendered rooms so bgRoomsTickUnload won't unload it.
 */
+
+/*
+ * Per-batch room culling.
+ *
+ * GE culls whole rooms (portals plus a bounding box test), and once a room
+ * passes its whole display list is drawn. Outdoor levels are a few very large
+ * rooms, so most of their triangles reach the RDP even when far away or off
+ * to the side. When a room loads, its primary display list is copied into
+ * runs that each end with G_ENDDL: state runs (textures, modes) and geometry
+ * runs (a G_VTX and the triangles that use it). At draw time each vertex
+ * batch's bounding sphere is tested against the view's screen rectangle and
+ * far plane, and geometry runs of batches that fail are left out. State runs
+ * are always sent so the RDP state matches the original list.
+ */
+typedef struct BgCullRun {
+    Gfx *gdl;
+    s16 group;      /* -1: state, always drawn */
+    s16 pad;
+} BgCullRun;
+
+typedef struct BgCullGroup {
+    f32 x, y, z;    /* world centre */
+    f32 radius;
+} BgCullGroup;
+
+typedef struct BgRoomCull {
+    void *mem;
+    s32 memsize;
+    BgCullRun *runs;
+    BgCullGroup *groups;
+    s16 numruns;
+    s16 numgroups;
+} BgRoomCull;
+
+static BgRoomCull s_BgRoomCull[MAXROOMCOUNT];
+s32 g_BgCullBatches = TRUE;
+s32 g_BgCullGroupsDrawn;
+s32 g_BgCullGroupsTotal;
+
+/* Keep this much of the room heap free for room loads */
+#define BG_CULL_HEAP_HEADROOM 0x10000
+
+static s32 bgCullIsGeometryOp(u8 op)
+{
+    return (op == (u8)G_VTX) || (op == (u8)G_TRI1) || (op == (u8)G_TRI4);
+}
+
+void bgCullFreeRoom(s32 roomID)
+{
+    BgRoomCull *cull = &s_BgRoomCull[roomID];
+
+    if (cull->mem != NULL)
+    {
+        memaFree(cull->mem, cull->memsize);
+    }
+
+    cull->mem = NULL;
+    cull->numruns = 0;
+}
+
+void bgCullBuildRoom(s32 roomID)
+{
+    BgRoomCull *cull = &s_BgRoomCull[roomID];
+    s_room_info *room = &g_BgRoomInfo[roomID];
+    Gfx *src;
+    Gfx *dst;
+    RoomVtxBatchBounds *bounds;
+    s32 numcmds;
+    s32 numruns;
+    s32 numgroups;
+    s32 batch;
+    s32 group;
+    s32 runkind;
+    s32 kind;
+    s32 size;
+    s32 i;
+    u8 op;
+    f32 mins[3];
+    f32 maxs[3];
+
+    bgCullFreeRoom(roomID);
+
+    src = room->ptr_expanded_mapping_info;
+    bounds = room->vtx_batch_bounds;
+
+    if ((src == NULL) || (bounds == NULL) || (room->num_vtx_batch_bounds < 2))
+    {
+        return;
+    }
+
+    /* Pass 1: count commands, runs and groups */
+    numcmds = 0;
+    numruns = 0;
+    numgroups = 0;
+    group = -1;
+    runkind = -2;
+
+    for (i = 0; src[i].dma.cmd != (u8)G_ENDDL; i++)
+    {
+        op = src[i].dma.cmd;
+
+        if (op == (u8)G_VTX)
+        {
+            /* A load into the middle of the vertex buffer may share vertices
+             * with the previous batch, so it joins that batch's group */
+            if ((group < 0) || ((src[i].dma.par & 0xf) == 0))
+            {
+                group = numgroups++;
+            }
+        }
+
+        kind = (bgCullIsGeometryOp(op) && (group >= 0)) ? group : -1;
+
+        if (kind != runkind)
+        {
+            numruns++;
+            runkind = kind;
+        }
+
+        numcmds++;
+    }
+
+    if ((numgroups < 2) || (numruns > 0x7fff))
+    {
+        return;
+    }
+
+    size = ((numcmds + numruns) * sizeof(Gfx)) + (numruns * sizeof(BgCullRun)) + (numgroups * sizeof(BgCullGroup));
+    size = (size + 0xf) & ~0xf;
+
+    if (memaGetLongestFree() < size + BG_CULL_HEAP_HEADROOM)
+    {
+        return;
+    }
+
+    cull->mem = memaAlloc(size);
+
+    if (cull->mem == NULL)
+    {
+        return;
+    }
+
+    cull->memsize = size;
+    dst = cull->mem;
+    cull->runs = (BgCullRun *)(dst + numcmds + numruns);
+    cull->groups = (BgCullGroup *)(cull->runs + numruns);
+    cull->numgroups = numgroups;
+
+    /* Pass 2: copy runs (each ends with G_ENDDL) and gather group bounds */
+    numruns = 0;
+    numgroups = 0;
+    group = -1;
+    runkind = -2;
+    batch = 0;
+
+    for (i = 0; src[i].dma.cmd != (u8)G_ENDDL; i++)
+    {
+        op = src[i].dma.cmd;
+
+        if (op == (u8)G_VTX)
+        {
+            if ((group < 0) || ((src[i].dma.par & 0xf) == 0))
+            {
+                if (group >= 0)
+                {
+                    cull->groups[group].x = (mins[0] + maxs[0]) * 0.5f;
+                    cull->groups[group].y = (mins[1] + maxs[1]) * 0.5f;
+                    cull->groups[group].z = (mins[2] + maxs[2]) * 0.5f;
+                    cull->groups[group].radius = sqrtf(((maxs[0] - mins[0]) * (maxs[0] - mins[0]))
+                        + ((maxs[1] - mins[1]) * (maxs[1] - mins[1]))
+                        + ((maxs[2] - mins[2]) * (maxs[2] - mins[2]))) * 0.5f;
+                }
+
+                group = numgroups++;
+                mins[0] = mins[1] = mins[2] = 1e30f;
+                maxs[0] = maxs[1] = maxs[2] = -1e30f;
+            }
+
+            if (batch < room->num_vtx_batch_bounds)
+            {
+                if (bounds[batch].xmin < mins[0]) mins[0] = bounds[batch].xmin;
+                if (bounds[batch].ymin < mins[1]) mins[1] = bounds[batch].ymin;
+                if (bounds[batch].zmin < mins[2]) mins[2] = bounds[batch].zmin;
+                if (bounds[batch].xmax > maxs[0]) maxs[0] = bounds[batch].xmax;
+                if (bounds[batch].ymax > maxs[1]) maxs[1] = bounds[batch].ymax;
+                if (bounds[batch].zmax > maxs[2]) maxs[2] = bounds[batch].zmax;
+            }
+            else
+            {
+                /* No bounds for this batch: make the group never cull */
+                mins[0] = mins[1] = mins[2] = -1e15f;
+                maxs[0] = maxs[1] = maxs[2] = 1e15f;
+            }
+
+            batch++;
+        }
+
+        kind = (bgCullIsGeometryOp(op) && (group >= 0)) ? group : -1;
+
+        if (kind != runkind)
+        {
+            if (runkind != -2)
+            {
+                gSPEndDisplayList(dst++);
+            }
+
+            cull->runs[numruns].gdl = dst;
+            cull->runs[numruns].group = kind;
+            numruns++;
+            runkind = kind;
+        }
+
+        *dst++ = src[i];
+    }
+
+    gSPEndDisplayList(dst++);
+
+    if (group >= 0)
+    {
+        cull->groups[group].x = (mins[0] + maxs[0]) * 0.5f;
+        cull->groups[group].y = (mins[1] + maxs[1]) * 0.5f;
+        cull->groups[group].z = (mins[2] + maxs[2]) * 0.5f;
+        cull->groups[group].radius = sqrtf(((maxs[0] - mins[0]) * (maxs[0] - mins[0]))
+            + ((maxs[1] - mins[1]) * (maxs[1] - mins[1]))
+            + ((maxs[2] - mins[2]) * (maxs[2] - mins[2]))) * 0.5f;
+    }
+
+    cull->numruns = numruns;
+    osWritebackDCache(cull->mem, size);
+}
+
+/**
+ * Is a bounding sphere (world units) inside the current player's view?
+ * Conservative: only says no when the sphere is wholly past the far plane,
+ * behind the camera or outside the view rectangle.
+ */
+static s32 bgCullSphereVisible(BgCullGroup *g, Mtxf *mtx, f32 farz)
+{
+    coord3d c;
+    f32 depth;
+    f32 r;
+    f32 inv;
+    f32 sx;
+    f32 sy;
+    f32 rx;
+    f32 ry;
+    f32 left;
+    f32 top;
+
+    c.x = g->x * room_data_float2;
+    c.y = g->y * room_data_float2;
+    c.z = g->z * room_data_float2;
+    r = g->radius * room_data_float2;
+    mtx4TransformVecInPlace(mtx, &c);
+
+    depth = -c.z;
+
+    if ((depth - r) > farz)
+    {
+        return FALSE;
+    }
+
+    if ((depth + r) < 0.0f)
+    {
+        return FALSE;
+    }
+
+    if ((depth - r) < 1.0f)
+    {
+        /* Too close to project safely */
+        return TRUE;
+    }
+
+    inv = 1.0f / depth;
+    sx = (g_CurrentPlayer->c_screenleft + g_CurrentPlayer->c_halfwidth) - (c.x * inv * g_CurrentPlayer->c_recipscalex);
+    sy = (c.y * inv * g_CurrentPlayer->c_recipscaley) + (g_CurrentPlayer->c_screentop + g_CurrentPlayer->c_halfheight);
+
+    inv = r / (depth - r);
+    rx = inv * g_CurrentPlayer->c_recipscalex;
+    ry = inv * g_CurrentPlayer->c_recipscaley;
+
+    if (rx < 0.0f) rx = -rx;
+    if (ry < 0.0f) ry = -ry;
+
+    left = g_CurrentPlayer->viewleft;
+    top = g_CurrentPlayer->viewtop;
+
+    if ((sx + rx) < left) return FALSE;
+    if ((sx - rx) > left + g_CurrentPlayer->viewx) return FALSE;
+    if ((sy + ry) < top) return FALSE;
+    if ((sy - ry) > top + g_CurrentPlayer->viewy) return FALSE;
+
+    return TRUE;
+}
+
+/**
+ * Appends the room's primary geometry, leaving out batches outside the view.
+ * Returns NULL if the room has no cull data (draw it the normal way).
+ */
+static Gfx *bgCullRenderRoomPrimary(Gfx *gdl, s32 roomID)
+{
+    BgRoomCull *cull = &s_BgRoomCull[roomID];
+    u8 visible[256];
+    Mtxf *mtx;
+    f32 zrange[2];
+    s32 numvisible;
+    s32 numgroups;
+    s32 i;
+    s32 group;
+
+    if (!g_BgCullBatches || (cull->mem == NULL))
+    {
+        return NULL;
+    }
+
+    numgroups = cull->numgroups;
+
+    if (numgroups > 256)
+    {
+        return NULL;
+    }
+
+    mtx = camGetWorldToScreenMtxf();
+    viGetZRange(zrange);
+    zrange[1] /= mCurrentLevelVisibilityScale;
+
+    numvisible = 0;
+
+    for (i = 0; i < numgroups; i++)
+    {
+        visible[i] = bgCullSphereVisible(&cull->groups[i], mtx, zrange[1]);
+        numvisible += visible[i];
+    }
+
+    g_BgCullGroupsTotal += numgroups;
+    g_BgCullGroupsDrawn += numvisible;
+
+    if (numvisible == numgroups)
+    {
+        return NULL;
+    }
+
+    for (i = 0; i < cull->numruns; i++)
+    {
+        group = cull->runs[i].group;
+
+        if ((group < 0) || visible[group])
+        {
+            gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(cull->runs[i].gdl));
+        }
+    }
+
+    return gdl;
+}
+
 Gfx *bgRenderRoomPrimary(Gfx *gdl, s32 room_index)
 {
     if (room_index >= g_MaxNumRooms)
@@ -2775,7 +3137,19 @@ Gfx *bgRenderRoomPrimary(Gfx *gdl, s32 room_index)
             gdl = applyRoomMatrixToDisplayList(gdl, room_index);
 
             gSPSegment(gdl++, SPSEGMENT_BG_VTX, OS_K0_TO_PHYSICAL(g_BgRoomInfo[room_index].vertices));
-            gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(g_BgRoomInfo[room_index].ptr_expanded_mapping_info));
+
+            {
+                Gfx *culled = bgCullRenderRoomPrimary(gdl, room_index);
+
+                if (culled != NULL)
+                {
+                    gdl = culled;
+                }
+                else
+                {
+                    gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(g_BgRoomInfo[room_index].ptr_expanded_mapping_info));
+                }
+            }
 
             // Set the room's state to "loaded"
             g_BgRoomInfo[room_index].model_bin_loaded = 1;

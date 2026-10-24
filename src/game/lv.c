@@ -678,6 +678,8 @@ static u32 s_FpsLastCount;
  * bottom), to see what 2-cycle mode and pixel count cost.
  * L + C-left steps co-op's "near" draw distance through 50/35/25/15% of
  * the level's (the draw distance option must be on near).
+ * L + C-right turns per-batch room culling off and on. The last line shows
+ * how many room vertex batches were drawn of those tested (both views).
  */
 #define PERFSKIP_SKY    0x1
 #define PERFSKIP_ROOMS  0x2
@@ -686,6 +688,11 @@ static u32 s_FpsLastCount;
 #define PERFSKIP_1CYCLE 0x10
 #define PERFSKIP_LETTERBOX 0x20
 s32 g_PerfSkip = 0;
+extern s32 g_BgCullBatches;
+extern s32 g_BgCullGroupsDrawn;
+extern s32 g_BgCullGroupsTotal;
+static s32 s_CullDrawn;
+static s32 s_CullTotal;
 s32 bgPerfProbePatchAllRooms(s32 onecycle);
 static s32 s_PerfPatched;
 static s32 s_FpsFrames;
@@ -716,7 +723,7 @@ static s32 s_FpsTmemMs;
  */
 static Gfx *lvlRenderFpsCounter(Gfx *DL)
 {
-    char text[128];
+    char text[160];
     s32 x;
     s32 y;
     s32 width;
@@ -753,10 +760,11 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
         s_FpsLastTasks = tasks;
     }
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n%s%s%s%s%s%s %d NEAR %d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d TMEM %d\n%s%s%s%s%s%s %d NEAR %d\nCULL %s %d/%d", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, s_FpsPipeMs, s_FpsTmemMs,
         (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_ROOMS) ? "NOROOM " : "",
         (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "", (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2 " : "",
-        (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX" : "", s_PerfPatched, (s32)(g_CoopNearDrawScale * 100.0f + 0.5f));
+        (g_PerfSkip & PERFSKIP_1CYCLE) ? "1CYC " : "", (g_PerfSkip & PERFSKIP_LETTERBOX) ? "LBOX" : "", s_PerfPatched, (s32)(g_CoopNearDrawScale * 100.0f + 0.5f),
+        g_BgCullBatches ? "ON" : "OFF", s_CullDrawn, s_CullTotal);
 
     width = 0;
     height = 0;
@@ -962,6 +970,11 @@ Gfx* lvlRender(Gfx* DL)
         gDPPipeSync(DL++);
     }
 
+    s_CullDrawn = g_BgCullGroupsDrawn;
+    s_CullTotal = g_BgCullGroupsTotal;
+    g_BgCullGroupsDrawn = 0;
+    g_BgCullGroupsTotal = 0;
+
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && get_fps_setting())
     {
         if (joyGetButtons(PLAYER_1, L_TRIG))
@@ -976,6 +989,7 @@ Gfx* lvlRender(Gfx* DL)
                 s_PerfPatched = bgPerfProbePatchAllRooms((g_PerfSkip & PERFSKIP_1CYCLE) != 0);
             }
             if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS)) g_PerfSkip ^= PERFSKIP_LETTERBOX;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS)) g_BgCullBatches = !g_BgCullBatches;
             if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
             {
                 g_CoopNearDrawScale = (g_CoopNearDrawScale > 0.4f) ? 0.35f : (g_CoopNearDrawScale > 0.3f) ? 0.25f : (g_CoopNearDrawScale > 0.2f) ? 0.15f : 0.5f;
