@@ -10462,6 +10462,12 @@ void bondviewSetUpperTextDisplayFlag(PLAYERFLAG flag)
 }
 
 
+/**
+ * Co-op: the player each top message (a character speaking to them) shows
+ * for. The top text is shared, so the other player's view skips it.
+ */
+static s8 s_CoopTopTextPlayer[2];
+
 void hudmsgTopShow(char* mess)
 {
     s32 index;
@@ -10471,6 +10477,7 @@ void hudmsgTopShow(char* mess)
     if (display_upper_text_window >= 2) { return; }
 
     index = (upper_text_buffer_index + display_upper_text_window) % 2;
+    s_CoopTopTextPlayer[index] = get_cur_playernum();
 #if defined(LEFTOVERDEBUG)
     strncpy(stringbuffer_top[index], mess, (BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1));
     display_upper_text_window += 1;
@@ -10550,7 +10557,8 @@ Gfx *sub_GAME_7F08AAE8(Gfx *gdl)
             if (dword_CODE_bss_80079DC8[upper_text_buffer_index][0] != '\0')
 #endif
             {
-                if (g_CurrentPlayer->mpmenuon == 0)
+                if ((g_CurrentPlayer->mpmenuon == 0)
+                    && (!g_CoopMode || (s_CoopTopTextPlayer[upper_text_buffer_index] == get_cur_playernum())))
                 {
                     gdl = microcode_constructor(gdl);
                     msg.textwidth = 0;

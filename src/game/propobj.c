@@ -9772,6 +9772,7 @@ TICKOP propobjInteract(PropRecord *prop)
     }
 
     obj->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
+    coopNoteActivator();
     sub_GAME_7F03E6A0(prop);
 
     return op;
@@ -13871,6 +13872,7 @@ void doorActivateWrapper(PropRecord *prop) //#MATCH
         }
     }
     door->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
+    coopNoteActivator();
     door->flags2 &= ~8;
     sub_GAME_7F03E6A0(prop);
 }
@@ -14019,6 +14021,7 @@ TICKOP propdoorInteract(PropRecord* doorprop)
             }
         }
         door->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
+        coopNoteActivator();
         door->flags2 |= PROPFLAG2_00000008;
         #ifdef XBLA
         //part of showing key marker

@@ -166,6 +166,18 @@ s32 coopPartnerCanRevive(void)
     return FALSE;
 }
 
+/**
+ * Co-op: the player who last used an object (a switch, a door, a computer,
+ * a gadget on something). Level scripts react to the object a frame later,
+ * and their messages go to this player.
+ */
+s32 g_CoopLastActivator = 0;
+
+void coopNoteActivator(void)
+{
+    g_CoopLastActivator = get_cur_playernum();
+}
+
 s32 coopPartnerAlive(void)
 {
     s32 count = getPlayerCount();

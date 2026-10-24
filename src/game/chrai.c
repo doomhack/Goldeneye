@@ -936,6 +936,25 @@ static s32 coopAnyPlayerStillHasItem(ITEM_IDS item)
 }
 
 /**
+ * Co-op: an object a level script checks was used. The rest of the script
+ * (messages such as "Door unlocked", objectives, fades) acts on the player
+ * who used it, as for the level conditions in coopAiEnd.
+ */
+static void coopAiActOnActivator(ChrRecord *chr)
+{
+    s32 player = g_CoopLastActivator;
+
+    if (!g_CoopMode || (chr == NULL) || (player < 0) || (player >= getPlayerCount()) || g_playerPointers[player]->bonddead)
+    {
+        return;
+    }
+
+    chr->targetplayer = player;
+    chr->targetlock60 = COOP_AI_TARGET_LOCK60;
+    set_cur_player(player);
+}
+
+/**
  * Called before each command. Starts repeating it over the players if it
  * needs that, with the current player first.
  */
@@ -2450,6 +2469,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (obj && obj->prop && (obj->runtime_bitflags & RUNTIMEBITFLAG_ACTIVATED))
                     {
                         obj->runtime_bitflags &= ~RUNTIMEBITFLAG_ACTIVATED;
+                        coopAiActOnActivator(ChrEntityp);
                         Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
@@ -2465,6 +2485,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (obj && obj->prop && (obj->state & PROPSTATE_ACTIVATED))
                     {
                         obj->state &= ~PROPSTATE_ACTIVATED;
+                        coopAiActOnActivator(ChrEntityp);
                         Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else

@@ -101,6 +101,8 @@ s32 viewIsHalfWidth(void);
 s32 isMpGame(void);
 s32 coopPartnerAlive(void);
 s32 coopPartnerCanRevive(void);
+void coopNoteActivator(void);
+extern s32 g_CoopLastActivator;
 extern s32 g_CoopMode;
 extern s32 g_CoopPlayersOverlap;
 extern s32 g_CoopSoloView;
