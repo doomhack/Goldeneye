@@ -4187,6 +4187,66 @@ s32 glassCalculateOpacity(coord3d *pos, f32 xludist, f32 opadist, f32 arg3)
 }
 
 
+/**
+ * Co-op: TRUE if a camera or drone gun may watch the player. Counter-op:
+ * only Bond, as they are the guards' side's own. Co-op: any living player.
+ */
+static s32 coopObjMayWatchPlayer(s32 player)
+{
+    if (g_CounterOpMode)
+    {
+        return player == COUNTEROP_BOND;
+    }
+
+    return !g_playerPointers[player]->bonddead;
+}
+
+/**
+ * Co-op: the player a drone gun aims at and shoots this frame, or -1 to
+ * keep the current one (outside co-op, or with nobody to watch). Objects
+ * only tick on one player's pass a frame, and which player that is changes
+ * from frame to frame, so the gun takes the nearest player it may watch
+ * instead and keeps one target.
+ */
+static s32 coopAutogunTargetPlayer(PropRecord *prop)
+{
+    s32 best = -1;
+    f32 bestdist = 0.0f;
+    s32 i;
+
+    if (!g_CoopMode)
+    {
+        return -1;
+    }
+
+    for (i = 0; i < getPlayerCount(); i++)
+    {
+        PropRecord *pp = g_playerPointers[i]->prop;
+        f32 x;
+        f32 y;
+        f32 z;
+        f32 dist;
+
+        if ((pp == NULL) || !coopObjMayWatchPlayer(i))
+        {
+            continue;
+        }
+
+        x = pp->pos.f[0] - prop->pos.f[0];
+        y = pp->pos.f[1] - prop->pos.f[1];
+        z = pp->pos.f[2] - prop->pos.f[2];
+        dist = (x * x) + (y * y) + (z * z);
+
+        if ((best < 0) || (dist < bestdist))
+        {
+            best = i;
+            bestdist = dist;
+        }
+    }
+
+    return best;
+}
+
 s32 objTick(struct PropRecord *prop)
 {
 	Mtxf *mtxs;
@@ -4239,6 +4299,11 @@ s32 objTick(struct PropRecord *prop)
 	struct coord3d pad5EC;
 	f32 temp_f0_13;
 	s32 cctvSeesPlayer;
+	s32 cctvWatch;
+	s32 cctvWatchEnd;
+	s32 cctvSawPlayer;
+	s32 coopPrevPlayer;
+	s32 coopTarget;
 	f32 var_f2;
 	f32 temp_f0_14;
 	f32 angleDelta;
@@ -5087,84 +5152,103 @@ s32 objTick(struct PropRecord *prop)
 				m_RocketGravity = bottom_pad->unkD0;
 			}
 
-			playerProp = getCurrentPlayerProp();
-			xdiff = playerProp->pos.f[0] - obj->runtime_pos.f[0];
-			temp_f0_13 = bottom_pad->unkE8;
-			ydiff = playerProp->pos.f[1] - obj->runtime_pos.f[1];
-			temp_f14_3 = playerProp->pos.f[2] - obj->runtime_pos.f[2];
-			cctvSeesPlayer = 1;
+			// Co-op: the camera watches every player it may, and an alarm
+			// needs it to see any of them for long enough.
+			cctvWatch = g_CoopMode ? 0 : get_cur_playernum();
+			cctvWatchEnd = g_CoopMode ? getPlayerCount() : (cctvWatch + 1);
+			cctvSawPlayer = FALSE;
 
-			if ((temp_f0_13 > 0.0f) && ((temp_f0_13 * temp_f0_13) < (((xdiff * xdiff) + (ydiff * ydiff)) + (temp_f14_3 * temp_f14_3))))
+			for (; cctvWatch < cctvWatchEnd; cctvWatch++)
 			{
-				cctvSeesPlayer = 0;
-			}
-
-			if (obj->flags & PROPFLAG_INMOTION)
-			{
-				cctvSeesPlayer = 0;
-			}
-
-			if (cctvSeesPlayer != 0)
-			{
-				temp_f0_14 = atan2f(xdiff, temp_f14_3);
-				var_f2 = bottom_pad->unkC8;
-
-				if (var_f2 < 0.0f)
+				if (g_CoopMode && (!coopObjMayWatchPlayer(cctvWatch) || (g_playerPointers[cctvWatch]->prop == NULL)))
 				{
-					var_f2 += M_TAU_F;
-				}
-				else if (var_f2 >= M_TAU_F)
-				{
-					var_f2 -= M_TAU_F;
+					continue;
 				}
 
-				var_f2 += bottom_pad->unkC4;
+				playerProp = g_CoopMode ? g_playerPointers[cctvWatch]->prop : getCurrentPlayerProp();
+				xdiff = playerProp->pos.f[0] - obj->runtime_pos.f[0];
+				temp_f0_13 = bottom_pad->unkE8;
+				ydiff = playerProp->pos.f[1] - obj->runtime_pos.f[1];
+				temp_f14_3 = playerProp->pos.f[2] - obj->runtime_pos.f[2];
+				cctvSeesPlayer = 1;
 
-				if (var_f2 >= M_TAU_F)
-				{
-					var_f2 -= M_TAU_F;
-				}
-
-				angleDelta = temp_f0_14 - var_f2;
-
-				if (temp_f0_14 < var_f2)
-				{
-					angleDelta += M_TAU_F;
-				}
-
-				angleDelta -= M_PI_F;
-
-				if (angleDelta < 0.0f)
-				{
-					angleDelta += M_TAU_F;
-				}
-
-				if (angleDelta > M_PI_F)
-				{
-					angleDelta -= M_TAU_F;
-				}
-
-				if ((angleDelta > DegToRad(45)) || (angleDelta < DegToRad(-45)))
+				if ((temp_f0_13 > 0.0f) && ((temp_f0_13 * temp_f0_13) < (((xdiff * xdiff) + (ydiff * ydiff)) + (temp_f14_3 * temp_f14_3))))
 				{
 					cctvSeesPlayer = 0;
 				}
-			}
 
-			if (cctvSeesPlayer != 0)
-			{
-				sp4F0 = prop->stan;
-				bondviewUpdateGuardTankFlagsRelated(playerProp, 0);
-				if (stanTestLineUnobstructed(&sp4F0, prop->pos.f[0], prop->pos.f[2], playerProp->pos.f[0], playerProp->pos.f[2], 0x1B, 100.0f, 100.0f, 0.0f, 1.0f) != 0)
+				if (obj->flags & PROPFLAG_INMOTION)
 				{
-					bottom_pad->timer += g_ClockTimer;
-					if (bottom_pad->timer >= ((s32) (CCTV_ALARM_FRAMES * F_80030B14)))
+					cctvSeesPlayer = 0;
+				}
+
+				if (cctvSeesPlayer != 0)
+				{
+					temp_f0_14 = atan2f(xdiff, temp_f14_3);
+					var_f2 = bottom_pad->unkC8;
+
+					if (var_f2 < 0.0f)
 					{
-						alarmActivate();
-						bottom_pad->timer = 0;
+						var_f2 += M_TAU_F;
+					}
+					else if (var_f2 >= M_TAU_F)
+					{
+						var_f2 -= M_TAU_F;
+					}
+
+					var_f2 += bottom_pad->unkC4;
+
+					if (var_f2 >= M_TAU_F)
+					{
+						var_f2 -= M_TAU_F;
+					}
+
+					angleDelta = temp_f0_14 - var_f2;
+
+					if (temp_f0_14 < var_f2)
+					{
+						angleDelta += M_TAU_F;
+					}
+
+					angleDelta -= M_PI_F;
+
+					if (angleDelta < 0.0f)
+					{
+						angleDelta += M_TAU_F;
+					}
+
+					if (angleDelta > M_PI_F)
+					{
+						angleDelta -= M_TAU_F;
+					}
+
+					if ((angleDelta > DegToRad(45)) || (angleDelta < DegToRad(-45)))
+					{
+						cctvSeesPlayer = 0;
 					}
 				}
 
-				bondviewUpdateGuardTankFlagsRelated(playerProp, 1);
+				if (cctvSeesPlayer != 0)
+				{
+					sp4F0 = prop->stan;
+					bondviewUpdateGuardTankFlagsRelated(playerProp, 0);
+					if (stanTestLineUnobstructed(&sp4F0, prop->pos.f[0], prop->pos.f[2], playerProp->pos.f[0], playerProp->pos.f[2], 0x1B, 100.0f, 100.0f, 0.0f, 1.0f) != 0)
+					{
+						cctvSawPlayer = TRUE;
+					}
+
+					bondviewUpdateGuardTankFlagsRelated(playerProp, 1);
+				}
+			}
+
+			if (cctvSawPlayer)
+			{
+				bottom_pad->timer += g_ClockTimer;
+				if (bottom_pad->timer >= ((s32) (CCTV_ALARM_FRAMES * F_80030B14)))
+				{
+					alarmActivate();
+					bottom_pad->timer = 0;
+				}
 			}
 
 			if (bottom_pad->unkC8 < m_RocketGravity)
@@ -5235,7 +5319,8 @@ s32 objTick(struct PropRecord *prop)
 		else if ((obj->type == PROPDEF_AUTOGUN) && (!(obj->flags & PROPFLAG_IS_DRONE_GUN)))
 		{
 			poAGun = (struct AutogunRecord *) prop->obj;
-			playerProp2 = getCurrentPlayerProp();
+			coopTarget = coopAutogunTargetPlayer(prop);
+			playerProp2 = (coopTarget >= 0) ? g_playerPointers[coopTarget]->prop : getCurrentPlayerProp();
 			AutogunSeesPlayer = 0;
 			isTracking = 0;
 			hasLineOfSight = 0;
@@ -6343,7 +6428,10 @@ s32 objTick(struct PropRecord *prop)
 					sp10C = NULL;
 					sp108 = prop->stan;
 					sp104 = (autogun->unkAC & 3) == 0;
-					sp100 = getCurrentPlayerProp();
+					// Co-op: the shots are for the gun's target, wherever this
+					// pass's player is.
+					coopTarget = coopAutogunTargetPlayer(prop);
+					sp100 = (coopTarget >= 0) ? g_playerPointers[coopTarget]->prop : getCurrentPlayerProp();
 					var_a0_6 = 5;
 
 					if ((model->obj->Switches[7] != 0) && (!(autogun->unkAC & 7)))
@@ -6392,6 +6480,13 @@ s32 objTick(struct PropRecord *prop)
 						sp110.f[2] -= 26.0f * sp120.f[2];
 					}
 
+					coopPrevPlayer = get_cur_playernum();
+
+					if (coopTarget >= 0)
+					{
+						set_cur_player(coopTarget);
+					}
+
 					if (g_GlobalTimer == ((s32) autogun->unkBC))
 					{
 						beam_xdiff = sp100->pos.f[0] - sp12C.f[0];
@@ -6421,6 +6516,11 @@ s32 objTick(struct PropRecord *prop)
 								}
 							}
 						}
+					}
+
+					if (coopTarget >= 0)
+					{
+						set_cur_player(coopPrevPlayer);
 					}
 
 					if (sp11C != 0)
