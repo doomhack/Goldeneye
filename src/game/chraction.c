@@ -2665,7 +2665,23 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
             }
 
             set_cur_player(getPlayerPointerIndex(self->prop));
-            record_damage_kills(damageToCause, vector->x, vector->z, playerNum, 1);
+
+            if (g_CounterOpMode && counterOpIsGuardPlayer(playerNum))
+            {
+                // For the end screen: how much of Bond's health and armour
+                // this shot took.
+                f32 before = g_CurrentPlayer->bondhealth + g_CurrentPlayer->bondarmour;
+
+                record_damage_kills(damageToCause, vector->x, vector->z, playerNum, 1);
+                f32 after = g_CurrentPlayer->bondhealth + g_CurrentPlayer->bondarmour;
+
+                counterOpNoteDamageToBond((before - ((after > 0.0f) ? after : 0.0f)) * 100.0f);
+            }
+            else
+            {
+                record_damage_kills(damageToCause, vector->x, vector->z, playerNum, 1);
+            }
+
             set_cur_player(playerNum);
         }
         else
