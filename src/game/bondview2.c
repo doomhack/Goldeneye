@@ -361,7 +361,13 @@ void solo_char_load(void)
 
         bondviewDeregisterPlayerRoom(g_CurrentPlayer);
 
-        if (!isMpGame() && ((get_cur_playernum() == 0) || frontCoopPartnerIsBond()) && !counterOpIsGuardPlayer(get_cur_playernum()))
+        if (counterOpIsGuardPlayer(get_cur_playernum()) && counterOpGetGuardModels(&head, &body))
+        {
+            // Counter-op: the guard player wears the guard they took over.
+        }
+        // Counter-op: until then (the intro) the guard player is a Bond, as
+        // player 2's co-op character may be one with no head or body entry.
+        else if (!isMpGame() && ((get_cur_playernum() == 0) || frontCoopPartnerIsBond() || counterOpIsGuardPlayer(get_cur_playernum())))
         {
             helddst = fileGetBondForCurrentFolder();
             switch (g_CurrentPlayer->bondtype)
@@ -471,10 +477,6 @@ void solo_char_load(void)
                     head = HEAD_Male_Brosnan_Tuxedo;
                     break;
             }
-        }
-        else if (counterOpIsGuardPlayer(get_cur_playernum()) && counterOpGetGuardModels(&head, &body))
-        {
-            // Counter-op: the guard player wears the guard they took over.
         }
         else if (g_CoopMode)
         {
@@ -9432,21 +9434,35 @@ static s32 counterOpSpotIsHidden(coord3d *pos, StandTile *stan, f32 height, Prop
 static const s16 s_CounterOpExcludedModels[] = {
     BODY_Boris, BODY_Ourumov, BODY_Trevelyan_Janus, BODY_Trevelyan_006,
     BODY_Valentin_, BODY_Xenia, BODY_Baron_Samedi, BODY_Jaws, BODY_Mayday,
-    BODY_Oddjob, BODY_Natalya_Skirt, BODY_Siberian_Guard_1_Mishkin,
+    BODY_Oddjob, BODY_Natalya_Skirt, BODY_Natalya_Jungle_Fatigues,
+    BODY_Siberian_Guard_1_Mishkin, BODY_Russian_Commandant,
     BODY_Naval_Officer, BODY_Rosika, BODY_Scientist_2_Female,
     BODY_Civilian_1_Female, BODY_Civilian_4, BODY_Civilian_2, BODY_Civilian_3,
     BODY_Scientist_1_Male, BODY_Helicopter_Pilot,
-    BODY_Brosnan_Tuxedo,
-    BODY_Male_Dave_Dr_Doak, BODY_Male_Mishkin,
+    BODY_Brosnan_Tuxedo, BODY_Male_Pierce_Bond_1, BODY_Male_Pierce_Bond_2,
+    BODY_Male_Pierce_Bond_3, BODY_Male_Pierce_Bond_Parka, BODY_Male_Pierce_Bond_Tuxedo,
+    BODY_Male_Dave_Dr_Doak, BODY_Male_Mishkin, BODY_Female_Marion_Rosika,
 };
 
 static s32 counterOpChrIsExcluded(ChrRecord *chr)
 {
+    PropRecord *child;
     s32 i;
 
     if (chr->chrflags & CHRFLAG_COUNT_DEATH_AS_CIVILIAN)
     {
         return TRUE;
+    }
+
+    // A guard carrying anything besides their guns and hat (a key card,
+    // a mission item) keeps it for Bond to take from their body.
+    for (child = chr->prop->child; child != NULL; child = child->prev)
+    {
+        if ((child != chr->handle_positiondata_hat) && (child != chr->weapons_held[GUNLEFT])
+            && (child != chr->weapons_held[GUNRIGHT]) && !(child->weapon->flags & 0x2000))
+        {
+            return TRUE;
+        }
     }
 
     for (i = 0; i < (s32)(sizeof(s_CounterOpExcludedModels) / sizeof(s_CounterOpExcludedModels[0])); i++)
@@ -9700,7 +9716,12 @@ s32 counterOpSuicidePillTick(s32 triggerOn)
     s32 pressed;
     s32 selected;
 
-    if (!counterOpIsGuardPlayer(get_cur_playernum()) || g_CurrentPlayer->bonddead)
+    if (!counterOpIsGuardPlayer(get_cur_playernum()))
+    {
+        return triggerOn;
+    }
+
+    if (g_CurrentPlayer->bonddead)
     {
         // The button pressed to respawn mustn't count as a fresh press.
         s_CounterOpPillTrigger = TRUE;
