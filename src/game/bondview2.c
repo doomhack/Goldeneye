@@ -7841,10 +7841,10 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         if (sp6C->actiontype == ACT_DIE)
                         {
 #if defined(VERSION_US) && !defined(BACKPORT_R1)
-                            if ((sp6C->chrflags << 7) >= 0)
+                            if ((sp6C->chrflags & CHRFLAG_01000000) == 0)
 #endif
 #if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
-                            if ((sp6C->chrflags << 7) >= 0 && lvlGetControlsLockedFlag() == 0)
+                            if ((sp6C->chrflags & CHRFLAG_01000000) == 0 && lvlGetControlsLockedFlag() == 0)
 #endif
                             {
                                 sp6C->chrflags |= CHRFLAG_01000000;
@@ -9745,6 +9745,10 @@ s32 counterOpSuicidePillTick(s32 triggerOn)
     if (selected && !s_CounterOpPillSelected)
     {
         HUDMESSAGEBOTTOM("Suicide pill: fire to use\n");
+
+        // Hold it for 3 seconds rather than the usual 1.6 (PAL) or 2
+        // (NTSC), so it's still up once the gun is put away.
+        g_CurrentPlayer->bondmesscnt = 180;
     }
 
     s_CounterOpPillSelected = selected;
