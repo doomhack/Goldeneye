@@ -14107,6 +14107,13 @@ TICKOP propdoorInteract(PropRecord* doorprop)
         sp28 = 0;
     }
 
+    // Counter-op: a door a level script watches stays shut for the guard
+    // player (it shows as locked), as opening it would be Bond's progress.
+    if (counterOpIsGuardPlayer(get_cur_playernum()) && counterOpDoorIsScripted(door))
+    {
+        sp28 = 0;
+    }
+
     if (sp28 != 0)
     {
         doorsChooseSwingDirection(playerprop, door);

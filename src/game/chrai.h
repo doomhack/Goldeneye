@@ -304,4 +304,5 @@ void               projectRectCornersTo2D(struct coord3d *arg0, struct coord2d *
 void               sub_GAME_7F03E6A0(PropRecord *prop);
 struct PropRecord *propFindForInteract(void);
 void               aiForObject(PropDefHeaderRecord *Entityp);
+s32                counterOpDoorIsScripted(DoorRecord *door);
 #endif
