@@ -643,6 +643,10 @@ STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE l
                 return STAGESTATUS_COMPLETED; //found on first try, stage has been completed and a time saved.
             }
 
+#ifdef UNLOCK_ALL_LEVELS
+            return STAGESTATUS_UNLOCKED;
+#endif
+
             if ((levelid == SP_LEVEL_AZTEC && difficulty < DIFFICULTY_SECRET) ||
                 (levelid == SP_LEVEL_EGYPT && difficulty < DIFFICULTY_00))
             {
@@ -1599,6 +1603,10 @@ s32 fileIs007ModeUnlocked(u32 folder)
 {
     LEVEL_SOLO_SEQUENCE levelid;
     save_data* save;
+
+#ifdef UNLOCK_ALL_LEVELS
+    return TRUE;
+#endif
 
     save = fileGetSaveForFoldernum(folder);
 

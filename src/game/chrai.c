@@ -1145,6 +1145,46 @@ void aiForObject(PropDefHeaderRecord *Entityp)
 }
 
 /**
+ * Counter-op: doors whose opening is progress for Bond, so the guard player
+ * can't open them. Other doors level scripts watch (lifts driving floor
+ * monitors, ending cutscenes, guard ambushes) stay open to them.
+ */
+static const struct
+{
+    s16 stage;
+    u8 tag;
+} s_CounterOpBondOnlyDoors[] = {
+    { LEVELID_DEPOT, 0x06 }, // Trevelyan's train: opening it completes "Locate Trevelyan's train"
+};
+
+/**
+ * Counter-op: TRUE if this door, or a door linked to it, is one the guard
+ * player can't open (see s_CounterOpBondOnlyDoors).
+ */
+s32 counterOpDoorIsScripted(DoorRecord *door)
+{
+    s32 stage = bossGetStageNum();
+    DoorRecord *cur = door;
+    s32 i;
+
+    do
+    {
+        for (i = 0; i < (s32)(sizeof(s_CounterOpBondOnlyDoors) / sizeof(s_CounterOpBondOnlyDoors[0])); i++)
+        {
+            if ((s_CounterOpBondOnlyDoors[i].stage == stage)
+                && (objFindByTagId(s_CounterOpBondOnlyDoors[i].tag) == (ObjectRecord *)cur))
+            {
+                return TRUE;
+            }
+        }
+
+        cur = cur->linkedDoor;
+    } while ((cur != NULL) && (cur != door));
+
+    return FALSE;
+}
+
+/**
  Execute AI List from Character, Stage, Vehichle(truck) or Aircraft(heli)
  Note: GE has little error checking (eg, using a chr action on aircraft) - this was fixed in PD
  @param *Entityp: Pointer to Entity (non-typed)
