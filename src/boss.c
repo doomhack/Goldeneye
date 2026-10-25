@@ -20,6 +20,7 @@
 #include "memp.h"
 #include "music.h"
 #include "game/ob.h"
+#include "game/objective_status.h"
 #include "ramrom.h"
 #include "random.h"
 #include "rmon.h" /*<PR/rmon.h>*/
@@ -777,7 +778,7 @@ LEVELID bossGetStageNum() {
  *     return to title screen from stage
  */
 void bossReturnTitleStage(void) {
-#ifdef BUGFIX_R1
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     display_objective_status_text_on_status_change();
     objectivestatusDisableStatusDisplay();
 #endif

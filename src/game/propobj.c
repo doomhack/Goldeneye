@@ -3271,7 +3271,7 @@ bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNode *nod
 /**
  * Named same as Perfect Dark.
 */
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
 s32 propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
 #else
 void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
@@ -3279,7 +3279,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
 {
     ObjectRecord *prop_obj; // sp92
     s32 playernum; // sp88
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
     s32 ret;
 #endif
     struct PropRecord *parent;
@@ -3321,14 +3321,14 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
         if ((parent->flags & PROPFLAG_00000008) == 0
             && walkTilesBetweenPoints_NoCallback(&stan, parent->pos.f[0], parent->pos.f[2], pos.x, pos.z))
         {
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
 #endif
             explosionCreate(0, &pos, stan, (s16) explosionType, (prop_obj->flags & 0xE) == 0, playernum, parent->rooms, 0);
         }
         else
         {
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
 #endif
             explosionCreate(0, &pos, stan, (s16) explosionType, 0, playernum, parent->rooms, 1);
@@ -3336,7 +3336,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
     }
     else
     {
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
 #endif
         explosionCreate(
@@ -3350,7 +3350,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
             (prop->flags & PROPFLAG_00000008) != 0);
     }
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
     return ret;
 #endif
 }
@@ -3368,7 +3368,7 @@ void chrobjWeaponTick(struct PropRecord* prop)
 {
     struct ObjectRecord* obj;
     struct WeaponObjRecord *weapon;
-#if defined(VERSION_US)
+#if defined(VERSION_US) && !defined(BACKPORT_R1)
     u32 owner_player_number;
     u32 owner_player_as_bitflag;
 #else
@@ -3438,7 +3438,7 @@ void chrobjWeaponTick(struct PropRecord* prop)
 
             if (weapon->timer < 0)
             {
-#if defined(VERSION_US)
+#if defined(VERSION_US) && !defined(BACKPORT_R1)
                 propExplode(prop, (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD);
 #else
                 exp_result = propExplode(prop, (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD);
@@ -3475,7 +3475,7 @@ void chrobjWeaponTick(struct PropRecord* prop)
             }
             else if (weapon->timer == 0)
             {
-#if defined(VERSION_US)
+#if defined(VERSION_US) && !defined(BACKPORT_R1)
                 if (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM)
                 {
                     propExplode(prop, EXPLOSION_DEF_MASSIVE);
@@ -3542,7 +3542,7 @@ void chrobjWeaponTick(struct PropRecord* prop)
 
             if (weapon->timer == 0)
             {
-#if defined(VERSION_US)
+#if defined(VERSION_US) && !defined(BACKPORT_R1)
                 propExplode(prop, (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD);
 #else
                 exp_result = propExplode(prop, (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD);
@@ -3745,7 +3745,7 @@ bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2,
 */
 s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct rect4f *arg2, s32 arg3)
 {
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
     s32 i;
     struct coord3d sp48;
 
@@ -5004,7 +5004,7 @@ s32 objTick(struct PropRecord *prop)
 						prop->flags |= PROPFLAG_00000010;
 					}
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
 					if (obj->type == PROPDEF_COLLECTABLE)
 					{
 						objectivestatusCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
@@ -10142,7 +10142,7 @@ void add_ammo_to_inventory(AMMOTYPE ammotype,int amount,int doplaysound,int dodi
         {
             curammo = check_cur_player_ammo_amount_in_inventory(ammotype);
             give_cur_player_ammo(ammotype,curammo + amount);
-#if defined(BUGFIX_R1)
+#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
         }
 #endif
             if (dodisplaytext != 0)
@@ -10200,7 +10200,7 @@ void add_ammo_to_inventory(AMMOTYPE ammotype,int amount,int doplaysound,int dodi
             {
                 bondinvAddInvItem(ITEM_PLASTIQUE);
             }
-#if !defined(BUGFIX_R1)
+#if !defined(BUGFIX_R1) && !defined(BACKPORT_R1)
         }
 #endif
     }
@@ -10889,7 +10889,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
 
         ammoCrateObj = (AmmoCrateRecord*)prop->obj;
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
         if (check_cur_player_ammo_amount_in_inventory(ammoCrateObj->ammoType) >= get_max_ammo_for_type(ammoCrateObj->ammoType)
             && !(
                 ((ammoCrateObj->ammoType == AMMO_GRENADE) && (!bondinvHasInvItem(ITEM_GRENADE)))
@@ -10937,7 +10937,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
                     break;
                 }
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
                 if (((sp64 == AMMO_GRENADE) && (!bondinvHasInvItem(ITEM_GRENADE)))
                     || ((sp64 == AMMO_REMOTEMINE) && (!bondinvHasInvItem(ITEM_REMOTEMINE)))
                     || ((sp64 == AMMO_PROXMINE) && (!bondinvHasInvItem(ITEM_PROXIMITYMINE)))

@@ -66,7 +66,7 @@ void set_missionstate(MISSION_STATE_ID arg0)
         case MISSION_STATE_0:
         switch (arg0)
         {
-#if defined(VERSION_US)
+#if defined(VERSION_US) && !defined(BACKPORT_R1)
             case MISSION_STATE_0:
                 return;
             case MISSION_STATE_1:
@@ -92,7 +92,7 @@ void set_missionstate(MISSION_STATE_ID arg0)
                 break;
 #endif
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
             case MISSION_STATE_0:
                 musicTrack1Stop();
                 musicTrack2Stop();

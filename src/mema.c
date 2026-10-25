@@ -29,11 +29,8 @@
  * pointers throughout the game code which mema cannot do.
  */
 
-#if defined(VERSION_EU)
-#define ALLOCATIONS_LENGTH 125
-#else
+/* PAL shrank this to 125 to fit 4MB; with the Expansion Pak all versions use the NTSC size. */
 #define ALLOCATIONS_LENGTH 509
-#endif
 
 typedef struct memaspace {
     s32 addr;

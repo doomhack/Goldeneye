@@ -534,7 +534,7 @@ void solo_char_load(void)
             {
                 fileLoad(bodyheader, c_item_entries[body].filename);
             }
-#ifndef VERSION_US
+#if !defined(VERSION_US) || defined(BACKPORT_R1)
             if (c_item_entries[body].hasHead)
             {
                 head       = -1;
@@ -561,7 +561,7 @@ void solo_char_load(void)
         self->chrflags |= CHRFLAG_INIT;
         setsuboffset((*pp)->bodyModel, &(*pp)->prop->pos);
         setsubroty(g_CurrentPlayer->bodyModel, yaw);
-#ifndef VERSION_US
+#if !defined(VERSION_US) || defined(BACKPORT_R1)
         self->headnum = head;
         self->bodynum = body;
 #endif
@@ -1435,7 +1435,7 @@ void bondviewFrozenCameraTick(u16 buttons, u16 oldbuttons, struct coord3d *pos, 
         arg6->f[1] = g_CurrentPlayer->field_488.pos.f[1] + (g_MpSwirlDistance * 0.08f);
         arg6->f[2] = g_CurrentPlayer->field_488.pos.f[2];
 
-#if defined(VERSION_EU)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
         if (((get_player_position_in_shuffled(get_cur_playernum()) + 1) == getPlayerCount()) && (g_MpSwirlDistance < 5.0f))
         {
             g_CameraAfterCinema = CAMERAMODE_INTRO;
@@ -6375,7 +6375,7 @@ void bondviewPlayerTickDamageAndHealth(void)
             }
 
 // Ensure we don't read out of bounds of the g_DamageTypes array.
-#if defined(VERSION_EU) || defined(VERSION_JP)
+#if defined(VERSION_EU) || defined(VERSION_JP) || defined(BACKPORT_R1)
             if (g_CurrentPlayer->damagetype < 0)
             {
                 g_CurrentPlayer->damagetype = 0;
@@ -6480,7 +6480,7 @@ void bondviewPlayerTickDamageAndHealth(void)
                 g_CurrentPlayer->healthdamagetype = 7;
             }
 
-#if defined(VERSION_EU) || defined(VERSION_JP)
+#if defined(VERSION_EU) || defined(VERSION_JP) || defined(BACKPORT_R1)
             if (g_CurrentPlayer->healthdamagetype < 0)
             {
                 g_CurrentPlayer->healthdamagetype = 0;
@@ -7828,10 +7828,10 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                         if (sp6C->actiontype == ACT_DIE)
                         {
-#if defined(VERSION_US)
+#if defined(VERSION_US) && !defined(BACKPORT_R1)
                             if ((sp6C->chrflags << 7) >= 0)
 #endif
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
                             if ((sp6C->chrflags << 7) >= 0 && lvlGetControlsLockedFlag() == 0)
 #endif
                             {
@@ -9843,12 +9843,12 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
                                 sp28 = 1;
                             }
 
-#if defined(VERSION_EU) || defined(VERSION_JP)
+#if defined(VERSION_EU) || defined(VERSION_JP) || defined(BACKPORT_R1)
                             drop_inventory();
 #endif
                             if (sp2C != playerid)
                             {
-#if defined(VERSION_US)
+#if defined(VERSION_US) && !defined(BACKPORT_R1)
                                 drop_inventory();
 #endif
                                 increment_num_deaths();
@@ -9897,7 +9897,7 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
 
 #undef ZERO_7F08991C
 
-#if defined(VERSION_EU) || defined(VERSION_JP)
+#if defined(VERSION_EU) || defined(VERSION_JP) || defined(BACKPORT_R1)
                 if (!lvlGetControlsLockedFlag())
                 {
                     sndPlaySfx(g_musicSfxBufferPtr, BOND_GET_HIT1_SFX, 0);

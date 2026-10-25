@@ -817,12 +817,62 @@ s32 get_BONDdata_field_10E0(void) {
     return g_CurrentPlayer->field_10E0;
 }
 
+/*
+ * Co-op: each view's world-to-screen matrix lives in display memory, which is
+ * double buffered. A player whose view isn't drawn for a while (the other
+ * player has the watch or a cutscene full-screen) keeps a pointer into a
+ * buffer that has since been reused, and guards checking whether that player
+ * aims at them read bad floats (a crash on hardware). Keep a copy of each
+ * player's matrix from the last frame their view was drawn.
+ */
+static s32 s_CoopFrame;
+static s32 s_CoopWorldToScreenFrame[4];
+static s32 s_CoopWorldToScreenSaved[4];
+static Mtxf s_CoopWorldToScreen[4];
+
+static s32 coopCurrentPlayerIndex(void)
+{
+    s32 i;
+
+    for (i = 0; i < 4; i++)
+    {
+        if (g_playerPointers[i] == g_CurrentPlayer)
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
 void *currentPlayerSetMatrix10CC(Mtxf *matrix) {
     g_CurrentPlayer->field_10E8 = g_CurrentPlayer->field_10CC;
     g_CurrentPlayer->field_10CC = matrix;
+
+    if (g_CoopMode)
+    {
+        s32 player = coopCurrentPlayerIndex();
+
+        if (player >= 0)
+        {
+            s_CoopWorldToScreenFrame[player] = s_CoopFrame;
+        }
+    }
 }
 
 Mtxf *camGetWorldToScreenMtxf(void) {
+    if (g_CoopMode)
+    {
+        s32 player = coopCurrentPlayerIndex();
+
+        // Set this frame or last frame: still in a live display buffer.
+        if ((player >= 0) && s_CoopWorldToScreenSaved[player]
+            && (s_CoopFrame - s_CoopWorldToScreenFrame[player] >= 2))
+        {
+            return &s_CoopWorldToScreen[player];
+        }
+    }
+
     return g_CurrentPlayer->field_10CC;
 }
 
@@ -867,6 +917,8 @@ void coopViewsBegin(void)
 {
     struct player *player;
 
+    s_CoopFrame++;
+
     if ((s_CoopLastViewPlayer < 0) || (s_CoopLastViewPlayer >= 4))
     {
         return;
@@ -886,7 +938,20 @@ void coopViewsBegin(void)
  */
 void coopViewsEnd(s32 lastplayer)
 {
+    s32 i;
+
     s_CoopLastViewPlayer = lastplayer;
+
+    for (i = 0; i < 4; i++)
+    {
+        struct player *player = g_playerPointers[i];
+
+        if ((player != NULL) && (player->field_10CC != NULL) && (s_CoopWorldToScreenFrame[i] == s_CoopFrame))
+        {
+            matrix_4x4_copy(player->field_10CC, &s_CoopWorldToScreen[i]);
+            s_CoopWorldToScreenSaved[i] = TRUE;
+        }
+    }
 }
 
 /**
