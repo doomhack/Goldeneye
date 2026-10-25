@@ -9045,6 +9045,12 @@ static s32 coopDiedLast(void)
     s32 cur = get_cur_playernum();
     s32 i;
 
+    // Counter-op: the mission ends with Bond, so his death is the replay.
+    if (g_CounterOpMode)
+    {
+        return (cur == COUNTEROP_BOND);
+    }
+
     for (i = 0; i < getPlayerCount(); i++)
     {
         if ((i != cur) && ((s32)(g_CoopDeathTime[i] - g_CoopDeathTime[cur]) > 0))
@@ -9292,6 +9298,15 @@ static ITEM_IDS s_CounterOpWeapons[2];
 
 void counterOpResetForStage(void)
 {
+    s32 i;
+
+    // g_GlobalTimer restarts each stage, so death times from the last
+    // stage would look newer than any death in this one.
+    for (i = 0; i < 4; i++)
+    {
+        g_CoopDeathTime[i] = 0;
+    }
+
     s_CounterOpPossessed = FALSE;
     s_CounterOpHead = -1;
     s_CounterOpBody = -1;
