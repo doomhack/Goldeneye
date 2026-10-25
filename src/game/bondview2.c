@@ -9281,6 +9281,12 @@ void coopRespawnPlayer(void)
 #define COUNTEROP_MIN_GUARD_DIST 2000.0f
 
 /**
+ * Counter-op: the guard player takes over a guard closer to Bond than
+ * this when there is one, so they start near the action. About 60 metres.
+ */
+#define COUNTEROP_MAX_GUARD_DIST 6000.0f
+
+/**
  * Counter-op: the guard the guard player took over last. Their body, guns
  * and toughness are that guard's.
  */
@@ -9384,11 +9390,14 @@ static ChrRecord *counterOpPickGuard(void)
 {
     PropRecord *bondprop = g_playerPointers[COUNTEROP_BOND]->prop;
     ChrRecord *pick = NULL;
+    ChrRecord *nearest = NULL;
+    f32 nearestdist = 0.0f;
     s32 count = 0;
     s32 i;
 
-    // Any guard that qualifies, at random, so Bond can't tell which guard
-    // the guard player will be.
+    // Any guard that qualifies within range of Bond, at random, so Bond
+    // can't tell which guard the guard player will be. With none in range,
+    // the nearest that qualifies.
     for (i = 0; i < g_NumChrSlots; i++)
     {
         ChrRecord *chr = &g_ChrSlots[i];
@@ -9399,15 +9408,24 @@ static ChrRecord *counterOpPickGuard(void)
             continue;
         }
 
-        count++;
-
-        if ((randomGetNext() % count) == 0)
+        if ((nearest == NULL) || (dist < nearestdist))
         {
-            pick = chr;
+            nearest = chr;
+            nearestdist = dist;
+        }
+
+        if (dist <= (COUNTEROP_MAX_GUARD_DIST * COUNTEROP_MAX_GUARD_DIST))
+        {
+            count++;
+
+            if ((randomGetNext() % count) == 0)
+            {
+                pick = chr;
+            }
         }
     }
 
-    return pick;
+    return (pick != NULL) ? pick : nearest;
 }
 
 /**
