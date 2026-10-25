@@ -531,8 +531,27 @@ void joyPoll(void)
 }
 
 
+/**
+ * Counter-op: when controller 2 plays Bond (player 1), controllers 1 and 2
+ * are swapped while a mission runs, so each player keeps their own
+ * controller. See g_CounterOpBondPad.
+ */
+s32 g_JoySwapPads = FALSE;
+
+static s8 joyMapPad(s8 contpadnum)
+{
+    if (g_JoySwapPads && (contpadnum < 2))
+    {
+        return contpadnum ^ 1;
+    }
+
+    return contpadnum;
+}
+
 s8 joyGetStickX(s8 contpadnum)
 {
+    contpadnum = joyMapPad(contpadnum);
+
     //this assert is on ALL stick functions below
 #ifdef DEBUG
     assert(contpadnum > 0); //j
@@ -549,6 +568,8 @@ s8 joyGetStickX(s8 contpadnum)
 //duplicate?
 s8 joy7000C174(s8 contpadnum)
 {
+    contpadnum = joyMapPad(contpadnum);
+
     if ((g_ContDataPtr->playbackcontcount < 0) && ((g_ConnectedControllers >> contpadnum & 1) == 0))
     {
         g_ContBadReadsStickX[contpadnum]++;
@@ -560,6 +581,8 @@ s8 joy7000C174(s8 contpadnum)
 
 s8 joyGetStickY(s8 contpadnum)
 {
+    contpadnum = joyMapPad(contpadnum);
+
     if ((g_ContDataPtr->playbackcontcount < 0) && ((g_ConnectedControllers >> contpadnum & 1) == 0))
     {
         g_ContBadReadsStickY[contpadnum]++;
@@ -571,6 +594,8 @@ s8 joyGetStickY(s8 contpadnum)
 
 s8 joy7000C284(s8 contpadnum)
 {
+    contpadnum = joyMapPad(contpadnum);
+
     if ((g_ContDataPtr->playbackcontcount < 0) && ((g_ConnectedControllers >> contpadnum & 1) == 0))
     {
         g_ContBadReadsStickY[contpadnum]++;
@@ -582,6 +607,8 @@ s8 joy7000C284(s8 contpadnum)
 
 u16 joyGetButtons(s8 contpadnum, u16 mask)
 {
+    contpadnum = joyMapPad(contpadnum);
+
     if ((g_ContDataPtr->playbackcontcount < 0) && ((g_ConnectedControllers >> contpadnum & 1) == 0))
     {
         g_ContBadReadsButtons[contpadnum]++;
@@ -593,6 +620,8 @@ u16 joyGetButtons(s8 contpadnum, u16 mask)
 
 u16 joyGetButtonsPressedThisFrame(s8 contpadnum, u16 mask)
 {
+    contpadnum = joyMapPad(contpadnum);
+
     if ((g_ContDataPtr->playbackcontcount < 0) && ((g_ConnectedControllers >> contpadnum & 1) == 0))
     {
         g_ContBadReadsButtonsPressed[contpadnum]++;
@@ -820,6 +849,8 @@ s32 joyGamePakLongWrite(u8 address, u8 *buffer, s32 nbytes)
 void joyRumblePakStart(s32 controller, f32 duration)
 {
     s32 duration60 = (duration * 60.0f);
+
+    controller = joyMapPad(controller);
 
     if ((g_ContPlaybackFunc == NULL) && (g_ContRumblePakInitState[controller] > RUMBLEPAKINITSTATE_NOT_READY))
     {

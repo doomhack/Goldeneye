@@ -1298,6 +1298,21 @@ void fileSaveSettingsForFolder(save_data *save)
 }
 
 /**
+ * The control style saved in a folder's options.
+ */
+s32 fileGetFolderControlType(u32 folder)
+{
+    save_data *save = fileGetSaveForFoldernum(folder);
+
+    if (save == NULL)
+    {
+        return CONTROLLER_CONFIG_HONEY;
+    }
+
+    return ((save->options & OPTION_CONTROLTYPE) >> 8) & 0xFFFF;
+}
+
+/**
  * Loads settings from save file
  *
  * @param folder

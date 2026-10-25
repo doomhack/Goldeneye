@@ -501,6 +501,10 @@ void bossMainloop(void)
             g_CurentMaMallocValue *= 2;
         }
 
+        // Counter-op: when controller 2 plays Bond (player 1), the two
+        // controllers swap places for the mission. Menus use them as wired.
+        g_JoySwapPads = g_CounterOpMode && (g_CounterOpBondPad != 0) && (g_StageNum != LEVELID_TITLE);
+
         memaReset(mempAllocBytesInBank(g_CurentMaMallocValue, MEMPOOL_STAGE), g_CurentMaMallocValue);
         reset_play_data_ptrs();
 

@@ -2464,7 +2464,14 @@ void chrpropUpdateAutoaimTarget(void)
             }
 
             // In co-op the other player is a friend, so auto-aim must not lock onto them.
-            if (g_CoopMode && (candidate_prop->type == PROP_TYPE_VIEWER))
+            // In counter-op they are the enemy, and the guard player only
+            // fights Bond.
+            if (g_CoopMode && !g_CounterOpMode && (candidate_prop->type == PROP_TYPE_VIEWER))
+            {
+                continue;
+            }
+
+            if (counterOpIsGuardPlayer(get_cur_playernum()) && (candidate_prop->type != PROP_TYPE_VIEWER))
             {
                 continue;
             }

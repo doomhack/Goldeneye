@@ -82,7 +82,7 @@ Gfx *zbufInit(Gfx *gdl) {
     if (z_buffer_is_gameplay) {
         z_buffer_width = VI_SX(SCREEN_WIDTH);
     }
-    if (!(get_cur_playernum() < 2) || ((getViewCount() == 2) && !coopSplitSideBySide() && (get_cur_playernum() == 1))) {
+    if (!(get_cur_playernum() < 2) || ((getViewCount() == 2) && !coopSplitSideBySide() && (coopPlayerPerson(get_cur_playernum()) == 1))) {
         phi_a3 = z_buffer_width * SCREEN_HEIGHT;
     } else {
         phi_a3 = 0;
@@ -118,7 +118,7 @@ Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
     if (!viewIsHalfWidth()) {
         start_x = 0;
         end_x = VI_SX(viGetX()) - 1;
-    } else if ((get_cur_playernum() == 0) || (get_cur_playernum() == 2)) {
+    } else if ((coopPlayerPerson(get_cur_playernum()) == 0) || (get_cur_playernum() == 2)) {
         start_x = 0;
         end_x = VI_SX(viGetX() / 2) - 1;
     } else {

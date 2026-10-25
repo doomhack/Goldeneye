@@ -16,6 +16,8 @@ struct contsample {
 typedef s32 (*contplaybackfunc)(struct contsample*, s32);
 typedef void (*contrecordfunc)(struct contsample*, s32, s32);
 
+extern s32 g_JoySwapPads;
+
 void joyInit(void);
 void joyCheckStatusThreadSafe(void);
 s8 joyGetControllerCount(void);

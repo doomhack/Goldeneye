@@ -361,7 +361,7 @@ void solo_char_load(void)
 
         bondviewDeregisterPlayerRoom(g_CurrentPlayer);
 
-        if (!isMpGame() && ((get_cur_playernum() == 0) || frontCoopPartnerIsBond()))
+        if (!isMpGame() && ((get_cur_playernum() == 0) || frontCoopPartnerIsBond()) && !counterOpIsGuardPlayer(get_cur_playernum()))
         {
             helddst = fileGetBondForCurrentFolder();
             switch (g_CurrentPlayer->bondtype)
@@ -471,6 +471,10 @@ void solo_char_load(void)
                     head = HEAD_Male_Brosnan_Tuxedo;
                     break;
             }
+        }
+        else if (counterOpIsGuardPlayer(get_cur_playernum()) && counterOpGetGuardModels(&head, &body))
+        {
+            // Counter-op: the guard player wears the guard they took over.
         }
         else if (g_CoopMode)
         {
@@ -4061,7 +4065,7 @@ void trigger_solo_watch_menu(s32 arg0)
     {
         // Co-op: the save folder holds player 1's options; player 2's are
         // kept separately.
-        if (!g_CoopMode || (get_cur_playernum() == 0))
+        if (!g_CoopMode || (coopPlayerPerson(get_cur_playernum()) == 0))
         {
             deleteCurrentSelectedFolder();
         }
@@ -7996,7 +8000,8 @@ s16 get_curplayer_viewport_ulx(void)
 {
     if (viewIsHalfWidth())
     {
-        if ((get_cur_playernum() == 1) || (get_cur_playernum() == 3))
+        // Counter-op: each view stays where its controller's player sits.
+        if ((coopPlayerPerson(get_cur_playernum()) == 1) || (get_cur_playernum() == 3))
         {
                 return 0xa1;
         }
@@ -8064,7 +8069,7 @@ s16 bondviewGetCurrentPlayerViewportUly(void)
 
     if ((getViewCount() == 2) && !coopSplitSideBySide())
     {
-        if (get_cur_playernum() == 0)
+        if (coopPlayerPerson(get_cur_playernum()) == 0)
         {
 #ifdef VERSION_EU
             return 0;
@@ -9041,6 +9046,12 @@ static s32 coopDiedLast(void)
     s32 cur = get_cur_playernum();
     s32 i;
 
+    // Counter-op: the mission ends with Bond, so his death is the replay.
+    if (g_CounterOpMode)
+    {
+        return (cur == COUNTEROP_BOND);
+    }
+
     for (i = 0; i < getPlayerCount(); i++)
     {
         if ((i != cur) && ((s32)(g_CoopDeathTime[i] - g_CoopDeathTime[cur]) > 0))
@@ -9130,6 +9141,47 @@ static void coopGiveStartingLoadout(void)
 }
 
 /**
+ * Co-op: puts the current player at pos (on the floor of stan), facing
+ * look_angle (radians).
+ */
+static void coopPlaceCurrentPlayer(coord3d *posp, StandTile *stan, f32 look_angle)
+{
+    coord3d pos = *posp;
+    f32 stan_height;
+
+    stan_height = bondviewYPositionRelated(stan, pos.x, pos.z);
+    pos.y = g_CurrentPlayer->eyeheight + stan_height;
+    g_CurrentPlayer->field_70 = stan_height;
+    g_CurrentPlayer->vv_theta = (look_angle * 360.0f) / M_TAU_F;
+    g_CurrentPlayer->stanHeight = stan_height;
+#if defined(VERSION_EU)
+    g_CurrentPlayer->field_6C = (f32) (stan_height / 0.2004f);
+#else
+    g_CurrentPlayer->field_6C = (f32) (stan_height / 0.17000002f);
+#endif
+
+    change_player_pos_to_target(&g_CurrentPlayer->field_488, &pos, stan);
+
+    g_CurrentPlayer->field_488.theta_transform.x = -sinf(look_angle);
+    g_CurrentPlayer->field_488.theta_transform.y = 0.0f;
+    g_CurrentPlayer->field_488.theta_transform.z = cosf(look_angle);
+    g_CurrentPlayer->prop->pos.x = g_CurrentPlayer->bondprevpos.x = pos.f[0];
+    g_CurrentPlayer->prop->pos.y = g_CurrentPlayer->bondprevpos.y = pos.f[1];
+    g_CurrentPlayer->prop->pos.z = g_CurrentPlayer->bondprevpos.z = pos.f[2];
+    g_CurrentPlayer->prop->stan = stan;
+#if defined(VERSION_EU)
+    g_CurrentPlayer->field_3B8.x = (f32) (g_CurrentPlayer->field_488.pos.x / 0.118799984f);
+    g_CurrentPlayer->field_3B8.y = (f32) (g_CurrentPlayer->field_488.pos.y / 0.118799984f);
+    g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.118799984f);
+#else
+    g_CurrentPlayer->field_3B8.x = (f32) (g_CurrentPlayer->field_488.pos.x / 0.100000024f);
+    g_CurrentPlayer->field_3B8.y = (f32) (g_CurrentPlayer->field_488.pos.y / 0.100000024f);
+    g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.100000024f);
+#endif
+    bondviewUpdatePlayerCollisionBounds();
+}
+
+/**
  * Co-op: bring the current (dead) player back at the level's start point
  * with the level's starting loadout, which is the penalty for dying. Only
  * happens while a partner is still alive.
@@ -9140,7 +9192,6 @@ void coopRespawnPlayer(void)
     coord3d pos;
     StandTile *stan;
     f32 look_angle;
-    f32 stan_height;
     s32 count = getPlayerCount();
     s32 cur = get_cur_playernum();
     s32 i;
@@ -9206,37 +9257,7 @@ void coopRespawnPlayer(void)
         coopFindPartnerSpawn(&pos, &stan, look_angle);
     }
 
-    stan_height = bondviewYPositionRelated(stan, pos.x, pos.z);
-    pos.y = g_CurrentPlayer->eyeheight + stan_height;
-    g_CurrentPlayer->field_70 = stan_height;
-    g_CurrentPlayer->vv_theta = (look_angle * 360.0f) / M_TAU_F;
-    g_CurrentPlayer->stanHeight = stan_height;
-#if defined(VERSION_EU)
-    g_CurrentPlayer->field_6C = (f32) (stan_height / 0.2004f);
-#else
-    g_CurrentPlayer->field_6C = (f32) (stan_height / 0.17000002f);
-#endif
-
-    change_player_pos_to_target(&g_CurrentPlayer->field_488, &pos, stan);
-
-    g_CurrentPlayer->field_488.theta_transform.x = -sinf(look_angle);
-    g_CurrentPlayer->field_488.theta_transform.y = 0.0f;
-    g_CurrentPlayer->field_488.theta_transform.z = cosf(look_angle);
-    g_CurrentPlayer->prop->pos.x = g_CurrentPlayer->bondprevpos.x = pos.f[0];
-    g_CurrentPlayer->prop->pos.y = g_CurrentPlayer->bondprevpos.y = pos.f[1];
-    g_CurrentPlayer->prop->pos.z = g_CurrentPlayer->bondprevpos.z = pos.f[2];
-    g_CurrentPlayer->prop->stan = stan;
-#if defined(VERSION_EU)
-    g_CurrentPlayer->field_3B8.x = (f32) (g_CurrentPlayer->field_488.pos.x / 0.118799984f);
-    g_CurrentPlayer->field_3B8.y = (f32) (g_CurrentPlayer->field_488.pos.y / 0.118799984f);
-    g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.118799984f);
-#else
-    g_CurrentPlayer->field_3B8.x = (f32) (g_CurrentPlayer->field_488.pos.x / 0.100000024f);
-    g_CurrentPlayer->field_3B8.y = (f32) (g_CurrentPlayer->field_488.pos.y / 0.100000024f);
-    g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.100000024f);
-#endif
-    bondviewUpdatePlayerCollisionBounds();
-
+    coopPlaceCurrentPlayer(&pos, stan, look_angle);
     coopGiveStartingLoadout();
 
     // Like Perfect Dark: the partner's health and armour, counted together,
@@ -9253,6 +9274,290 @@ void coopRespawnPlayer(void)
     currentPlayerStartChrFade(120.0f, 1.0f);
 }
 
+
+/**
+ * Counter-op: a guard closer to Bond than this can't be taken over, so the
+ * guard player has time to get into position. About 20 metres.
+ */
+#define COUNTEROP_MIN_GUARD_DIST 2000.0f
+
+/**
+ * Counter-op: the guard player takes over a guard closer to Bond than
+ * this when there is one, so they start near the action. About 60 metres.
+ */
+#define COUNTEROP_MAX_GUARD_DIST 6000.0f
+
+/**
+ * Counter-op: the guard the guard player took over last. Their body, guns
+ * and toughness are that guard's.
+ */
+static s32 s_CounterOpPossessed = FALSE;
+static s32 s_CounterOpHead = -1;
+static s32 s_CounterOpBody = -1;
+static f32 s_CounterOpGuardHealth = 4.0f;
+static ITEM_IDS s_CounterOpWeapons[2];
+
+void counterOpResetForStage(void)
+{
+    s32 i;
+
+    // g_GlobalTimer restarts each stage, so death times from the last
+    // stage would look newer than any death in this one.
+    for (i = 0; i < 4; i++)
+    {
+        g_CoopDeathTime[i] = 0;
+    }
+
+    s_CounterOpPossessed = FALSE;
+    s_CounterOpHead = -1;
+    s_CounterOpBody = -1;
+    s_CounterOpGuardHealth = 4.0f;
+}
+
+/**
+ * Counter-op: the guard player's full health in a guard's damage units.
+ */
+f32 counterOpGetGuardHealth(void)
+{
+    return (s_CounterOpGuardHealth > 0.0f) ? s_CounterOpGuardHealth : 4.0f;
+}
+
+/**
+ * Counter-op: the head and body the guard player wears, or FALSE before
+ * they have taken over a guard.
+ */
+s32 counterOpGetGuardModels(s32 *head, s32 *body)
+{
+    if (!g_CounterOpMode || (s_CounterOpBody < 0))
+    {
+        return FALSE;
+    }
+
+    *head = s_CounterOpHead;
+    *body = s_CounterOpBody;
+    return TRUE;
+}
+
+/**
+ * Counter-op: TRUE if Bond has a clear line of sight to chr.
+ */
+static s32 counterOpBondCanSee(ChrRecord *chr, PropRecord *bondprop)
+{
+    StandTile *stan = chr->prop->stan;
+    f32 height = chr->chrheight - 20.0f;
+
+    return stanTestLineUnobstructed(&stan, chr->prop->pos.x, chr->prop->pos.z, bondprop->pos.x, bondprop->pos.z,
+            CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, height, height, 0.0f, 1.0f)
+        && (stan == bondprop->stan);
+}
+
+/**
+ * Counter-op: TRUE if the guard player may take over chr: a living, armed
+ * guard, out of Bond's sight and not too close to him.
+ */
+static s32 counterOpGuardCanBeTaken(ChrRecord *chr, PropRecord *bondprop, f32 *distp)
+{
+    f32 dx;
+    f32 dz;
+
+    if ((chr->model == NULL) || (chr->prop == NULL) || (chr->prop->type != PROP_TYPE_CHR)
+        || !(chr->prop->flags & PROPFLAG_ENABLED)
+        || (chr->actiontype == ACT_DIE) || (chr->actiontype == ACT_DEAD)
+        || (chr->damage >= chr->maxdamage)
+        || (chr->chrflags & (CHRFLAG_INVINCIBLE | CHRFLAG_HIDDEN))
+        || (chr->hidden & CHRHIDDEN_REMOVE)
+        || ((chr->weapons_held[GUNRIGHT] == NULL) && (chr->weapons_held[GUNLEFT] == NULL)))
+    {
+        return FALSE;
+    }
+
+    dx = chr->prop->pos.x - bondprop->pos.x;
+    dz = chr->prop->pos.z - bondprop->pos.z;
+    *distp = (dx * dx) + (dz * dz);
+
+    if (*distp < (COUNTEROP_MIN_GUARD_DIST * COUNTEROP_MIN_GUARD_DIST))
+    {
+        return FALSE;
+    }
+
+    return !counterOpBondCanSee(chr, bondprop);
+}
+
+/**
+ * Counter-op: picks the guard for the guard player to take over, or NULL
+ * if none qualifies right now.
+ */
+static ChrRecord *counterOpPickGuard(void)
+{
+    PropRecord *bondprop = g_playerPointers[COUNTEROP_BOND]->prop;
+    ChrRecord *pick = NULL;
+    ChrRecord *nearest = NULL;
+    f32 nearestdist = 0.0f;
+    s32 count = 0;
+    s32 i;
+
+    // Any guard that qualifies within range of Bond, at random, so Bond
+    // can't tell which guard the guard player will be. With none in range,
+    // the nearest that qualifies.
+    for (i = 0; i < g_NumChrSlots; i++)
+    {
+        ChrRecord *chr = &g_ChrSlots[i];
+        f32 dist;
+
+        if (!counterOpGuardCanBeTaken(chr, bondprop, &dist))
+        {
+            continue;
+        }
+
+        if ((nearest == NULL) || (dist < nearestdist))
+        {
+            nearest = chr;
+            nearestdist = dist;
+        }
+
+        if (dist <= (COUNTEROP_MAX_GUARD_DIST * COUNTEROP_MAX_GUARD_DIST))
+        {
+            count++;
+
+            if ((randomGetNext() % count) == 0)
+            {
+                pick = chr;
+            }
+        }
+    }
+
+    return (pick != NULL) ? pick : nearest;
+}
+
+/**
+ * Counter-op: the guard player's inventory is the guard's gun, or pair of
+ * guns, with full ammo.
+ */
+static void counterOpGiveGuardWeapons(void)
+{
+    textoverride *overrides = g_CurrentPlayer->textoverrides;
+    ITEM_IDS right = s_CounterOpWeapons[GUNRIGHT];
+    ITEM_IDS left = s_CounterOpWeapons[GUNLEFT];
+    s32 i;
+
+    bondinvReinitInv();
+    g_CurrentPlayer->textoverrides = overrides;
+
+    for (i = 0; i < 30; i++)
+    {
+        g_CurrentPlayer->ammoheldarr[i] = 0;
+    }
+
+    if (right == ITEM_UNARMED)
+    {
+        right = left;
+        left = ITEM_UNARMED;
+    }
+
+    if (left == right)
+    {
+        bondinvAddDoublesInvItem(right, left);
+    }
+    else
+    {
+        bondinvAddInvItem(right);
+        left = ITEM_UNARMED;
+    }
+
+    give_cur_player_ammo(get_ammo_type_for_weapon(right), get_max_ammo_for_type(get_ammo_type_for_weapon(right)));
+
+    currentPlayerEquipWeaponWrapper(GUNLEFT, left);
+    currentPlayerEquipWeaponWrapper(GUNRIGHT, right);
+}
+
+/**
+ * Counter-op: the current (guard) player takes over a guard. The guard
+ * leaves the level and the player appears where they stood, wearing their
+ * head and body, carrying their guns, with their toughness. Returns FALSE
+ * if no guard can be taken over right now.
+ */
+s32 counterOpTakeOverGuard(void)
+{
+    ChrRecord *chr = counterOpPickGuard();
+    coord3d pos;
+    StandTile *stan;
+    f32 look_angle;
+    s32 hand;
+
+    if (chr == NULL)
+    {
+        return FALSE;
+    }
+
+    pos = chr->prop->pos;
+    stan = chr->prop->stan;
+    // A model's yaw turns the other way to a player's view.
+    look_angle = M_TAU_F - getsubroty(chr->model);
+    s_CounterOpHead = chr->headnum;
+    s_CounterOpBody = chr->bodynum;
+    s_CounterOpGuardHealth = chr->maxdamage;
+
+    for (hand = GUNRIGHT; hand <= GUNLEFT; hand++)
+    {
+        s_CounterOpWeapons[hand] = (chr->weapons_held[hand] != NULL) ? chr->weapons_held[hand]->weapon->weaponnum : ITEM_UNARMED;
+    }
+
+    // The guard leaves (with their guns) on their next tick.
+    chr->hidden |= CHRHIDDEN_REMOVE;
+
+    if (g_CurrentPlayer->bonddead)
+    {
+        init_player_BONDdata();
+        bondviewPlayerBeginLife();
+
+        g_CurrentPlayer->bonddead = 0;
+        g_CurrentPlayer->deathanimfinished = 0;
+        g_CurrentPlayer->redbloodfinished = 0;
+        g_CurrentPlayer->startnewbonddie = 1;
+        g_CurrentPlayer->healthdamagetype = 7;
+        g_CurrentPlayer->damagetype = 7;
+        g_CurrentPlayer->gunammooff = 0;
+        g_CurrentPlayer->gunsightmode = 2;
+
+        g_CurrentPlayer->field_78 = 0.0f;
+        g_CurrentPlayer->field_7C = -0.0001f;
+        g_CurrentPlayer->field_80 = 0.0f;
+        currentPlayerStartChrFade(120.0f, 1.0f);
+    }
+
+    coopPlaceCurrentPlayer(&pos, stan, look_angle);
+    counterOpGiveGuardWeapons();
+
+    g_CurrentPlayer->bondhealth = 1.0f;
+    g_CurrentPlayer->bondarmour = 0.0f;
+
+    // Swap the body for the guard's.
+    if (g_CurrentPlayer->prop->chr != NULL)
+    {
+        chrpropCleanupForRemoval(g_CurrentPlayer->prop);
+        g_CurrentPlayer->prop->chr = NULL;
+        g_CurrentPlayer->bodyModel = NULL;
+    }
+
+    solo_char_load();
+    bondviewUpdatePlayerRoom(g_CurrentPlayer);
+
+    s_CounterOpPossessed = TRUE;
+    return TRUE;
+}
+
+/**
+ * Counter-op: called for each player each frame. The guard player takes
+ * over their first guard once the intro is over.
+ */
+void counterOpTick(void)
+{
+    if (counterOpIsGuardPlayer(get_cur_playernum()) && !s_CounterOpPossessed
+        && !g_CurrentPlayer->bonddead && (g_CameraMode == CAMERAMODE_FP))
+    {
+        counterOpTakeOverGuard();
+    }
+}
 
 /**
  * Address: 7F088CD8
@@ -9453,6 +9758,11 @@ Gfx *maybe_mp_interface(Gfx *gdl)
         return bondviewRenderCredits(gdl);
     }
 
+    if (g_CounterOpMode)
+    {
+        counterOpTick();
+    }
+
     gunUpdateAndFireBothHands();
     gunRenderCasings(&gdl);
     gunRenderFirstPersonGunModels(&gdl);
@@ -9567,8 +9877,15 @@ Gfx *maybe_mp_interface(Gfx *gdl)
                             && coopPartnerCanRevive()
                             && joyGetButtons(get_cur_playernum(), 0xB000))
                         {
-                            coopRespawnPlayer();
-                            g_CoopRespawnButtonsHeld[get_cur_playernum()] = TRUE;
+                            if (!g_CounterOpMode)
+                            {
+                                coopRespawnPlayer();
+                                g_CoopRespawnButtonsHeld[get_cur_playernum()] = TRUE;
+                            }
+                            else if (counterOpTakeOverGuard())
+                            {
+                                g_CoopRespawnButtonsHeld[get_cur_playernum()] = TRUE;
+                            }
                         }
                     }
                     else if (!isMpGame())
@@ -9717,6 +10034,12 @@ void bondviewKillCurrentPlayer(void)
             g_ExplodeTankOnDeathFlag = 1;
         }
 
+        // Counter-op: the guard player drops their gun like a guard.
+        if (counterOpIsGuardPlayer(get_cur_playernum()) && (g_CurrentPlayer->prop->chr != NULL))
+        {
+            drop_inventory();
+        }
+
         currentPlayerEquipWeaponWrapper(GUNLEFT, 0);
         currentPlayerEquipWeaponWrapper(GUNRIGHT, 0);
 
@@ -9791,7 +10114,10 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
         }
 
         if (g_CurrentPlayer->cheatBondInvincible == FALSE && g_CurrentPlayer->bonddead == FALSE && g_PlayerInvincible == FALSE &&
-            (g_CurrentPlayer->damageshowtime < 0 || (isMpGame() && g_CurrentPlayer->damageshowtime == 0)))
+            (g_CurrentPlayer->damageshowtime < 0 || (isMpGame() && g_CurrentPlayer->damageshowtime == 0)
+                // Counter-op: like the guard they took over, the guard
+                // player feels every shot, not one per damage flash.
+                || counterOpIsGuardPlayer(get_cur_playernum())))
         {
             if (g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0x5 && g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0xc)
             {
@@ -9875,6 +10201,16 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
                             if(1);
 
                             g_playerPlayerData[playerid].kill_counts[sp2C]++;
+                        }
+                        else if (g_CounterOpMode && (playerid >= 0) && (playerid < getPlayerCount())
+                                 && (playerid != get_cur_playernum()))
+                        {
+                            // Counter-op: killing the other player counts
+                            // as a kill, as killing a guard does.
+                            sp2C = get_cur_playernum();
+                            set_cur_player(playerid);
+                            increment_num_kills_display_text_in_MP();
+                            set_cur_player(sp2C);
                         }
 
                         bondviewKillCurrentPlayer();
@@ -10398,7 +10734,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
             {
                 view_left = viGetViewLeft() + 0x1E;
             }
-            else if (get_cur_playernum() & 1)
+            else if (coopPlayerPerson(get_cur_playernum()) & 1)
             {
                 view_left = viGetViewLeft() + 0xA;
             }
@@ -10420,7 +10756,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
                     view_top = (viGetViewTop() + viGetViewHeight()) - BONDVIEW_VIEW_TOP_OFFSET_2;
                 }
 #if !defined(VERSION_EU)
-                if (get_cur_playernum() == 1)
+                if (coopPlayerPerson(get_cur_playernum()) == 1)
                 {
                     view_top -= 8;
                 }
