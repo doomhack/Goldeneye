@@ -14107,8 +14107,8 @@ TICKOP propdoorInteract(PropRecord* doorprop)
         sp28 = 0;
     }
 
-    // Counter-op: a door a level script watches stays shut for the guard
-    // player (it shows as locked), as opening it would be Bond's progress.
+    // Counter-op: a door whose opening is Bond's progress (Depot's train)
+    // stays shut for the guard player, showing as locked.
     if (counterOpIsGuardPlayer(get_cur_playernum()) && counterOpDoorIsScripted(door))
     {
         sp28 = 0;

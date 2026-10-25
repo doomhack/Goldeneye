@@ -1144,62 +1144,35 @@ void aiForObject(PropDefHeaderRecord *Entityp)
     set_cur_player(prevplayer);
 }
 
-#define COUNTEROP_MAX_SCRIPTED_DOORS 32
-
 /**
- * Counter-op: the tags of the doors this level's AI lists check the state
- * of (e.g. Depot's train door, whose opening completes "Locate Trevelyan's
- * train"), gathered once per setup.
+ * Counter-op: doors whose opening is progress for Bond, so the guard player
+ * can't open them. Other doors level scripts watch (lifts driving floor
+ * monitors, ending cutscenes, guard ambushes) stay open to them.
  */
-static AIListRecord *s_CounterOpDoorScanLists = NULL;
-static s32 s_CounterOpScriptedDoorCount = 0;
-static u8 s_CounterOpScriptedDoors[COUNTEROP_MAX_SCRIPTED_DOORS];
-
-static void counterOpScanScriptedDoors(void)
+static const struct
 {
-    s32 i;
-
-    s_CounterOpDoorScanLists = g_CurrentSetup.ailists;
-    s_CounterOpScriptedDoorCount = 0;
-
-    for (i = 0; (g_CurrentSetup.ailists != NULL) && (g_CurrentSetup.ailists[i].ailist != NULL); i++)
-    {
-        u8 *list = (u8 *)g_CurrentSetup.ailists[i].ailist;
-        s32 offset = 0;
-
-        while (list[offset] != AI_EndList)
-        {
-            if (((list[offset] == AI_IFDoorStateEqual) || (list[offset] == AI_IFDoorHasBeenOpenedBefore))
-                && (s_CounterOpScriptedDoorCount < COUNTEROP_MAX_SCRIPTED_DOORS))
-            {
-                s_CounterOpScriptedDoors[s_CounterOpScriptedDoorCount++] = list[offset + 1];
-            }
-
-            offset += chraiitemsize(list, offset);
-        }
-    }
-}
+    s16 stage;
+    u8 tag;
+} s_CounterOpBondOnlyDoors[] = {
+    { LEVELID_DEPOT, 0x06 }, // Trevelyan's train: opening it completes "Locate Trevelyan's train"
+};
 
 /**
- * Counter-op: TRUE if a level script checks whether this door (or a door
- * linked to it) is open. The guard player can't open those, as that would
- * be progress for Bond.
+ * Counter-op: TRUE if this door, or a door linked to it, is one the guard
+ * player can't open (see s_CounterOpBondOnlyDoors).
  */
 s32 counterOpDoorIsScripted(DoorRecord *door)
 {
+    s32 stage = bossGetStageNum();
     DoorRecord *cur = door;
     s32 i;
 
-    if (s_CounterOpDoorScanLists != g_CurrentSetup.ailists)
-    {
-        counterOpScanScriptedDoors();
-    }
-
     do
     {
-        for (i = 0; i < s_CounterOpScriptedDoorCount; i++)
+        for (i = 0; i < (s32)(sizeof(s_CounterOpBondOnlyDoors) / sizeof(s_CounterOpBondOnlyDoors[0])); i++)
         {
-            if (objFindByTagId(s_CounterOpScriptedDoors[i]) == (ObjectRecord *)cur)
+            if ((s_CounterOpBondOnlyDoors[i].stage == stage)
+                && (objFindByTagId(s_CounterOpBondOnlyDoors[i].tag) == (ObjectRecord *)cur))
             {
                 return TRUE;
             }
