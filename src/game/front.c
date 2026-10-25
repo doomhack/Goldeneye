@@ -7817,10 +7817,15 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
     s32 x;
     s32 y;
 
+    // Counter-op has two more rows, so they sit closer together to fit on
+    // the page.
+    s32 top = g_CounterOpMode ? 0xC6 : 0xCC;
+    s32 step = lineheight + (g_CounterOpMode ? 1 : 4);
+
     for (i = 0; i < 2; i++)
     {
         x = columns[i];
-        y = 0xCC;
+        y = top;
         if (g_CounterOpMode)
         {
             sprintf(text, (i == COUNTEROP_BOND) ? "BOND\n" : "GUARD\n");
@@ -7841,7 +7846,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
             TITLE_STR_109_HEADHITS,  // Head hits:
             TITLE_STR_113_KILLTOTAL, // Kill total:
         };
-        s32 rowy = 0xDC + (row * (lineheight + 4));
+        s32 rowy = top + 0x10 + (row * step);
 
         x = 0x37;
         y = rowy;

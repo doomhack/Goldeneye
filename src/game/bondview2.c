@@ -9702,6 +9702,8 @@ s32 counterOpSuicidePillTick(s32 triggerOn)
 
     if (!counterOpIsGuardPlayer(get_cur_playernum()) || g_CurrentPlayer->bonddead)
     {
+        // The button pressed to respawn mustn't count as a fresh press.
+        s_CounterOpPillTrigger = TRUE;
         s_CounterOpPillSelected = FALSE;
         return triggerOn;
     }
@@ -9711,8 +9713,11 @@ s32 counterOpSuicidePillTick(s32 triggerOn)
     pressed = triggerOn && !s_CounterOpPillTrigger;
     s_CounterOpPillTrigger = triggerOn;
 
+    // Not while the hand is empty only because a gun is being drawn, as
+    // after spawning.
     selected = (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_UNARMED)
-               && (getCurrentPlayerWeaponId(GUNLEFT) == ITEM_UNARMED);
+               && (getCurrentPlayerWeaponId(GUNLEFT) == ITEM_UNARMED)
+               && (g_CurrentPlayer->hands[GUNRIGHT].weapon_next_weapon == ITEM_UNARMED);
 
     if (selected && !s_CounterOpPillSelected)
     {
