@@ -11,9 +11,6 @@
 #include "game/bondview.h"
 #include "game/viewport.h"
 #include "game/dyn.h"
-#ifdef ENABLE_USB
-#include "usb.h"
-#endif
 
 /**
  * EU .data, offset from start of data_seg : 0x2484

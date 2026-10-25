@@ -2510,12 +2510,8 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
         }
         else //steel helmate - ricochet
         {
-#ifdef __sgi
-            s16 mrs[3] = metal_ricochet_SFX;
-#else
             s16 mrs[3];
             bcopy(metal_ricochet_SFX, mrs, sizeof(mrs));
-#endif
             ALSoundState * p = sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, mrs[randomGetNext() % 3U], NULL);
             chrobjSndCreatePostEventDefault(p, &self->prop->pos);
         }
@@ -6429,11 +6425,7 @@ void chrlvUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item
     {
         temp_f0_3 = sqrtf(dxdydz_square);
 
-#if defined(VERSION_JP)
-        phi_f2_4 = 0.16f * g_JP_GlobalTimerDelta;
-#else
         phi_f2_4 = 0.16f * g_GlobalTimerDelta;
-#endif
 
         if (temp_f0_3 > 300.0f)
         {

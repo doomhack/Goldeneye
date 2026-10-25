@@ -2443,7 +2443,7 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
             s32 pFontChars2;
             char string_builder_allocation[2000];
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
             s32 pFontFile;
             s32 base_y;
             char formattedString[32];
@@ -2451,7 +2451,7 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
 
 #define LINEHEIGHT() (j_text_trigger ? 14 : 12)
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
 #define WATCH_INV_BASE_Y() base_y
 #else
 #define WATCH_INV_BASE_Y() 0x8C
@@ -2464,11 +2464,6 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
             pFontFile2 = ptrFontBankGothic;
             pFontChars2 = ptrFontBankGothicChars;
             base_y = (j_text_trigger) ? (0x82) : (0xAA);
-            string_builder_allocation[0] = 0;
-#elif defined(VERSION_JP)
-            pFontFile2 = ptrFontBankGothic;
-            pFontChars2 = ptrFontBankGothicChars;
-            base_y = (j_text_trigger) ? (0x82) : (0x8C);
             string_builder_allocation[0] = 0;
 #else
             string_builder_allocation[0] = 0;
@@ -2507,7 +2502,7 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
             gdl = microcode_constructor_related_to_menus(gdl, 0x4B, temp_s0_3, textwidth + 0x52, (LINEHEIGHT() + temp_s0_3) - 2, 0x800050);
 
             {
-#if !defined(VERSION_JP) && !defined(VERSION_EU)
+#if !defined(VERSION_EU)
                 char formattedString[32];
                 s32 pFontFile;
 #endif

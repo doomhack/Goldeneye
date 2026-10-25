@@ -54,9 +54,7 @@ SECTIONS
    BEGIN_SEG(code, _startSegmentRomEnd, _startSegmentEnd) SUBALIGN(16)
    {
 #include "ld/lib.text.ld.inc"
-#ifdef COMPILER_GCC
       build/OUTCODE/src/gcc/libgcc_compat.o (.text);
-#endif
    }
    END_SEG(code)
 
@@ -74,6 +72,7 @@ SECTIONS
    {
       build/OUTCODE/src/inflate/inflate.o (.text);
       build/OUTCODE/src/inflate/inflate.o (.data);
+      build/OUTCODE/src/inflate/inflate.o (.rodata);
    }
    END_SEG(inflate)
 

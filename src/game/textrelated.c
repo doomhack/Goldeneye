@@ -419,7 +419,7 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
 			}
 
             // perfect dark: 0x3c8
-#if defined(VERSION_EU) || defined(VERSION_JP)
+#if defined(VERSION_EU)
             if ((codepoint & 0x1fff) >= 0x3c8)
 #else
 			if ((codepoint & 0x1fff) >= 0x3c7)
@@ -648,7 +648,7 @@ Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y,
 				sp74.height = 16;
 			}
 
-#if defined(VERSION_EU) || defined(VERSION_JP)
+#if defined(VERSION_EU)
             if ((codepoint & 0x1fff) >= 0x3c8)
 #else
 			if ((codepoint & 0x1fff) >= 0x3c7)

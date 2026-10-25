@@ -34,7 +34,7 @@ PLAYER_ID array_PLAYER_IDs[4];
 #define DEFAULT_C_HALFHEIGHT    136.0f
 #define DEFAULT_SCREENYMAXF     (f32)SCREEN_HEIGHT
 #define DEFAULT_ASPECT          ASPECT_RATIO
-#elif defined(VERSION_US) || defined(VERSION_JP)
+#elif defined(VERSION_US)
 #define DEFAULT_FIELD_3B8_Z     9.999998f
 #define DEFAULT_HEADDAMP        0.93f
 #define DEFAULT_HEADLOOKSUM_VAL 14.285716f
@@ -299,7 +299,7 @@ void initBONDdataforPlayer(s32 player_num)
     assert(players[num]==NULL); //according to assert, this file name is "player.c"
 #endif
     default_hand = D_8003FDA0;
-#if defined(VERSION_US) || defined(VERSION_JP)
+#if defined(VERSION_US)
     g_playerPointers[player_num] = mempAllocBytesInBank(0x2A80U, MEMPOOL_STAGE);
 #elif defined(VERSION_EU)
     g_playerPointers[player_num] = mempAllocBytesInBank(0x2A70U, MEMPOOL_STAGE);

@@ -7,14 +7,8 @@
   .ifdef VERSION_US
     .incbin "build\/u\/assets\/obseg\/\path\/\name\.rz"
   .endif
-  .ifdef VERSION_JP
-    .incbin "build\/j\/assets\/obseg\/\path\/\name\.rz"
-  .endif
   .ifdef VERSION_EU
     .incbin "build\/e\/assets\/obseg\/\path\/\name\.rz"
-  .endif
-  .ifdef VERSION_DEBUG
-    .incbin "build\/d\/assets\/obseg\/\path\/\name\.rz"
   .endif
     .balign 16
   end_\name:
@@ -27,17 +21,9 @@
     #.warning "obseg_file_Z: build\/u\/assets\/obseg\/\path\/\name\.rz"
     .incbin "build\/u\/assets\/obseg\/\path\/\name\.rz"
   .endif
-  .ifdef VERSION_JP
-    #.warning "obseg_file_Z: build\/j\/assets\/obseg\/\path\/\name\.rz"
-    .incbin "build\/j\/assets\/obseg\/\path\/\name\.rz"
-  .endif
   .ifdef VERSION_EU
     #.warning "obseg_file_Z: build\/e\/assets\/obseg\/\path\/\name\.rz"
     .incbin "build\/e\/assets\/obseg\/\path\/\name\.rz"
-  .endif
-  .ifdef VERSION_DEBUG
-    #.warning "obseg_file_Z: build\/d\/assets\/obseg\/\path\/\name\.rz"
-    .incbin "build\/d\/assets\/obseg\/\path\/\name\.rz"
   .endif
     .balign 16
   end_\name:
@@ -51,17 +37,10 @@
     .incbin "build/u/assets/obseg/bg/\sname\.seg"
   .endif
   
-  .ifdef VERSION_JP
-    .incbin "build/j/assets/obseg/bg/\sname\.seg"
-  .endif
-
   .ifdef VERSION_EU
     .incbin "build/e/assets/obseg/bg/\sname\.seg"
   .endif
 
-  .ifdef VERSION_DEBUG
-    .incbin "build/d/assets/obseg/bg/\sname\.seg"
-  .endif
   end_\name:
 .endm
 

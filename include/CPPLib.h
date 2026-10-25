@@ -23,13 +23,8 @@
 #define ONE()  1
 #define STR(n) #n
 
-#ifdef __sgi
-#    define EXPAND(a) a
-#    define EAT(x)
-#else
 #    define EXPAND(...) __VA_ARGS__
 #    define EAT(x, ...) __VA_ARGS__
-#endif
 
 
 /**
@@ -92,11 +87,7 @@
 #define EVAL8(a)   EVAL4(EVAL2(EVAL1(a)))
 #define EVAL4(a)   EVAL2(EVAL1(a))
 #define EVAL2(a)   EVAL1(a)
-#ifdef __sgi
-#    define EVAL1(VA) IF_VA(EXPAND(DEFER(IS_PAREN)(VA)))(DEFER(EXPAND_ARGS_STACK)) VA
-#else
 #    define EVAL1(...) __VA_ARGS__
-#endif
 
 /**
  * Causes a function-style macro to require an additional pass to be expanded.
@@ -190,29 +181,15 @@
 #define CAT(a, b)          PRIMITIVECAT(a, b)
 #define PRIMITIVECAT(a, b) a##b
 
-#ifdef __sgi
-    /**
-     * Get the first argument and ignore the rest.
-     */
-    #define FIRST_PRE_VA(a) a
-#else
     /**
      * Get the first argument and ignore the rest.
      */
     #    define FIRST_PRE_VA(a,...) a
-#endif
 
-#ifdef __sgi
-    /**
-     * Get the second argument and ignore the rest.
-     */
-    #    define SECOND_PRE_VA(a, b) b
-#else
     /**
      * Get the second argument and ignore the rest.
      */
     #    define SECOND_PRE_VA(a, b,...) b
-#endif
 
 /**
  * Expects a single input (not containing commas). Returns 1 if the input is
@@ -223,26 +200,16 @@
  * This macro abuses the fact that PROBE() contains a comma while other valid
  * inputs must not.
  */
-#ifdef __sgi
-#    define IS_PROBE(a) SECOND_PRE_VA(a, 0)
-#    define PROBE()  ~, 1
-#else
 #    define IS_PROBE(...) SECOND_PRE_VA(__VA_ARGS__,0)
 #    define PROBE(...)    ~, 1, __VA_ARGS__
-#endif
 
 /**
  * Detect Parenthesis
  * @return TRUE/FALSE
  */
 
-#ifdef __sgi
-#    define IS_PAREN(x)       IS_PROBE(IS_PAREN_PROBE x)
-#    define IS_PAREN_PROBE(A) PROBE(~)
-#else
 #        define IS_PAREN(...)       IS_PROBE(IS_PAREN_PROBE __VA_ARGS__)
 #        define IS_PAREN_PROBE(...) PROBE(~) __VA_ARGS__
-#endif
 
 #ifdef EXPAND_EXAMPLES
     //IS PAREN
@@ -253,15 +220,9 @@
 /**
  * Detects if arg or macro is defined as nothing.
  */
-#if defined(__GNUC__) && !defined(__sgi)
 /* GCC rejects pasting arbitrary tokens (e.g. "_" ## "0.1"), so use __VA_OPT__ */
 #    define IS_EMPTY(...)            _IS_EMPTY_FIRST(__VA_OPT__(0, ) 1, ~)
 #    define _IS_EMPTY_FIRST(a, ...)  a
-#else
-#define IS_EMPTY(x)  _IS_EMPTY(x)
-#define _IS_EMPTY(x) IS_PROBE(CAT(_IS_EMPTY, _##x##_))
-#define _IS_EMPTY__  PROBE(~) /*NULL*/
-#endif
 
 /**
  * Detects if arg or macro is a Bool (1 or 0).
@@ -446,15 +407,8 @@ IF_VA(NOT(IS_EMPTY(A)))/*
  * Push/Pop VA Args arrays
  */
 
-#ifdef __sgi
-#    define POP_ARG(A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,AE,AF) /*
-         */(IF_VA(IS_PAREN(A))(_POP_ARG A) /*
-         ELSE*/IF_VA(NOT(IS_PAREN(A)))(EXPAND_ARGS_STACK(B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z,AA,AB,AC,AD,AE,AF)))
-#    define _POP_ARG(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, AB, AC, AD, AE, AF) EXPAND_ARGS_STACK(B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, AB, AC, AD, AE, AF)
-#else
 #    define POP_ARG(A, ...)   (IF_VA(IS_PAREN(A))(_POP_ARG A) IF_VA(NOT(IS_PAREN(A))) (_POP_ARG(A, __VA_ARGS__))
 #    define _POP_ARG(A, ...)     __VA_ARGS__
-#endif
 #    define PUSH_ARG(A,B)(A, TRY_EXPAND(B))
 
  /**
@@ -462,26 +416,11 @@ IF_VA(NOT(IS_EMPTY(A)))/*
  */
 #define TRY_EXPAND(c)     _TRY_EXPAND(IS_PAREN(c))(c)
 #define _TRY_EXPAND(c)    CAT(__TRY_EXPAND_, c)
-#ifdef __sgi
-#    define __TRY_EXPAND_1(a) EXPAND_ARGS_STACK a
-#else
 #    define __TRY_EXPAND_1(A)    __TRY_EXPAND_11 A
 #    define __TRY_EXPAND_11(...) __VA_ARGS__
-#endif
 #define __TRY_EXPAND_0(a) a
 
 
-#ifdef __sgi
-    /**
-     * Get the first argument and ignore the rest.
-     */
-#    define FIRST(a)             EXPAND(DEFER(FIRST_PRE_VA)(TRY_EXPAND(a)))
-    /**
-     * Get the second argument and ignore the rest.
-     */
-#    define SECOND(a, b) EXPAND(DEFER(SECOND_PRE_VA)(TRY_EXPAND(a), b))
-
-#else
     /**
      * Get the first argument and ignore the rest.
      */
@@ -490,7 +429,6 @@ IF_VA(NOT(IS_EMPTY(A)))/*
      * Get the second argument and ignore the rest.
      */
 #    define SECOND(a, b,...) EXPAND(DEFER(SECOND_PRE_VA)(TRY_EXPAND(a), b))
-#endif
 
 
 #ifdef EXPAND_EXAMPLES
@@ -581,11 +519,7 @@ IF_VA(NOT(IS_EMPTY(A)))/*
  * that the first argument exists.
  * @return TRUE/FALSE
  */
-#ifdef __sgi
-#    define HAS_ARGS(a) BOOL(EXPAND(_END_OF_ARGUMENTS_ FIRST(a)()))
-#else
 #    define HAS_ARGS(...) BOOL(FIRST(__VA_ARGS__))
-#endif
 #define _END_OF_ARGUMENTS_() 0
 
 /*
@@ -619,29 +553,9 @@ HAS_ARGS((      ())) //this one has too many parens
     // RECURSE
     EVAL16(RECURSE((this, is, a, test, WITH, MANY, ARGS)))
 #endif
-#ifdef __sgi
-#define COUNTPARAMS(X) \
-    IF_ELSE(IS_PAREN(X)) /*
-    */( /*
-        */EVAL8(COUNTPARAMS_INNER(X, 0)) /*
-    */) /*
-    */( /*
-        */0() /*
-    */)
-#define COUNTPARAMS_INNER(X, COUNT) \
-    IF_ELSE(HAS_ARGS(X))/*
-    */( /*
-        */DEFER3(_COUNTPARMS)()(POP_ARG(X), INC(COUNT))/*
-    */) /*
-    */( /*
-        */COUNT /*
-    */)
-#    define _COUNTPARMS() COUNTPARAMS_INNER
-#else
 #    define ELEVENTH_ARGUMENT(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, ...) a11
 #    define COUNTPARAMS(...)                                                     IF_ELSE(IS_PAREN(__VA_ARGS__))(_COUNTPARAMS __VA_ARGS__)(ELEVENTH_ARGUMENT(dummy, ##__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
 #    define _COUNTPARAMS(...)                                                    ELEVENTH_ARGUMENT(dummy, ##__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-#endif
 
 #ifdef EXPAND_EXAMPLES
     // COUNTPARAMS - IT WORKS!!!, THIS WILL BE GREAT FOR AI

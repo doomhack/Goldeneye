@@ -52,17 +52,13 @@
 #include "vtxstore.h"
 
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
 #define MONITOR_TIMER_DELTA g_JP_GlobalTimerDelta
 #else
 #define MONITOR_TIMER_DELTA g_GlobalTimerDelta
 #endif
 
-#if defined(VERSION_JP)
-#define OBJECT_INTERACTION_TIMER_DELTA g_JP_GlobalTimerDelta
-#else
 #define OBJECT_INTERACTION_TIMER_DELTA g_GlobalTimerDelta
-#endif
 
 #define PROXIMITY_MINE_TRIGGER_DISTANCE 62500.0f
 
@@ -3271,7 +3267,7 @@ bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNode *nod
 /**
  * Named same as Perfect Dark.
 */
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
 s32 propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
 #else
 void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
@@ -3279,7 +3275,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
 {
     ObjectRecord *prop_obj; // sp92
     s32 playernum; // sp88
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
     s32 ret;
 #endif
     struct PropRecord *parent;
@@ -3321,14 +3317,14 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
         if ((parent->flags & PROPFLAG_00000008) == 0
             && walkTilesBetweenPoints_NoCallback(&stan, parent->pos.f[0], parent->pos.f[2], pos.x, pos.z))
         {
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
 #endif
             explosionCreate(0, &pos, stan, (s16) explosionType, (prop_obj->flags & 0xE) == 0, playernum, parent->rooms, 0);
         }
         else
         {
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
 #endif
             explosionCreate(0, &pos, stan, (s16) explosionType, 0, playernum, parent->rooms, 1);
@@ -3336,7 +3332,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
     }
     else
     {
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
 #endif
         explosionCreate(
@@ -3350,7 +3346,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
             (prop->flags & PROPFLAG_00000008) != 0);
     }
 
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
     return ret;
 #endif
 }
@@ -3745,7 +3741,7 @@ bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2,
 */
 s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct rect4f *arg2, s32 arg3)
 {
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
     s32 i;
     struct coord3d sp48;
 
@@ -4323,7 +4319,7 @@ s32 objTick(struct PropRecord *prop)
 	s32 sp548;
 	struct coord3d sp53C;
 	struct coord3d sp530;
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
 	u32 jp_stack_pad[1];
 #endif
 	s32 temp_v0_32;
@@ -5069,7 +5065,7 @@ s32 objTick(struct PropRecord *prop)
 						prop->flags |= PROPFLAG_00000010;
 					}
 
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
 					if (obj->type == PROPDEF_COLLECTABLE)
 					{
 						objectivestatusCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
@@ -5099,8 +5095,6 @@ s32 objTick(struct PropRecord *prop)
 			previousOpenPosition = door->openPosition;
 #if defined(VERSION_EU)
 			if ((((((s32) door->openedTime) > 0) && (door->openstate == DOORSTATE_STATIONARY)) && (!(door->flags & PROPFLAG_DOOR_KEEPOPEN))) && (((s32) door->openedTime) < (((s32) g_GlobalTimer) - ((((s32) door->autoCloseFrames) * 50) / 60))))
-#elif defined(VERSION_JP)
-			if ((((((s32) door->openedTime) > 0) && (door->openstate == DOORSTATE_STATIONARY)) && (!(door->flags & PROPFLAG_DOOR_KEEPOPEN))) && (((s32) door->openedTime) < (((s32) g_GlobalTimer) - ((s32) door->autoCloseFrames))))
 #else
 			if ((((((s32) door->openedTime) > 0) && (((s32) door->openedTime) < (((s32) g_GlobalTimer) - ((s32) door->autoCloseFrames)))) && (door->openstate == DOORSTATE_STATIONARY)) && (!(door->flags & PROPFLAG_DOOR_KEEPOPEN)))
 #endif
@@ -10591,7 +10585,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                     text = langGet(getStringID(LPROPOBJ, PROPOBJ_STR_3C_PICKEDUPAKEY)); // "Picked up a key.\n",
                 }
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
                 jp_hudmsgBottomShow(text);
 #else
                 hudmsgBottomShow(text);
@@ -10686,7 +10680,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
                     if (text)
                     {
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
                         jp_hudmsgBottomShow(text);
 #else
                         hudmsgBottomShow(text);
@@ -10717,7 +10711,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                     {
                         collected = 1;
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
                         jp_hudmsgBottomShow(text);
 #else
                         hudmsgBottomShow(text);
@@ -10779,7 +10773,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
                 }
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
                 jp_hudmsgBottomShow(text);
 #else
                 hudmsgBottomShow(text);
@@ -10843,7 +10837,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                     text = langGet(getStringID(LPROPOBJ, PROPOBJ_STR_3F_PICKEDUPSOMETHING)); // "Picked up something.\n",
                 }
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
                 jp_hudmsgBottomShow(text);
 #else
                 hudmsgBottomShow(text);
@@ -11003,7 +10997,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
 
         ammoCrateObj = (AmmoCrateRecord*)prop->obj;
 
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
         if (check_cur_player_ammo_amount_in_inventory(ammoCrateObj->ammoType) >= get_max_ammo_for_type(ammoCrateObj->ammoType)
             && !(
                 ((ammoCrateObj->ammoType == AMMO_GRENADE) && (!bondinvHasInvItem(ITEM_GRENADE)))
@@ -11051,7 +11045,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
                     break;
                 }
 
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
                 if (((sp64 == AMMO_GRENADE) && (!bondinvHasInvItem(ITEM_GRENADE)))
                     || ((sp64 == AMMO_REMOTEMINE) && (!bondinvHasInvItem(ITEM_REMOTEMINE)))
                     || ((sp64 == AMMO_PROXMINE) && (!bondinvHasInvItem(ITEM_PROXIMITYMINE)))
@@ -11116,7 +11110,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
         s32 var_v0;
 #endif
         struct PropRecord* temp_v0_5;
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
         s32 pad;
 #endif
         s32 pickup;
@@ -14359,7 +14353,7 @@ Gfx *countdownTimerRender(Gfx *DL)
 
         DL = microcode_constructor(DL);
 
-        #if defined(VERSION_US) || defined(VERSION_JP)
+        #if defined(VERSION_US)
             valign_offset = 18;
         #else
             valign_offset = 28;

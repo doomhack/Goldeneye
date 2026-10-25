@@ -335,16 +335,13 @@ void lvlStageLoad(s32 stage)
 #ifdef VERSION_US
     g_GlobalTimerDelta = 1.0f;
 #endif
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
     g_JP_GlobalTimerDelta = 1.0f;
 #endif
 
     D_80048380 = 0;
     g_GlobalTimer = 0;
 
-#if defined(VERSION_JP)
-    g_GlobalTimerDelta = 1.f;
-#endif
 #if defined(VERSION_EU)
     g_GlobalTimerDelta = 1.20000004768f;
 #endif

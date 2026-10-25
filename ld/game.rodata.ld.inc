@@ -135,5 +135,4 @@
       build/OUTCODE/src/game/viewport.o (.rodata);
       build/OUTCODE/src/game/music_0D2720.o (.rodata);
 #ifndef VERSION_EU
-      build/OUTCODE/src/game/spectrum.o (.rodata);
 #endif

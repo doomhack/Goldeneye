@@ -467,12 +467,8 @@ Gfx *chrpropsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
     s32 i;
     s32* rp;
     s32 unused2;
-#ifdef __sgi
-    s32 sp48[PROPRECORD_STAN_ROOM_LEN];
-#else
     // chraiGetPropRoomIds() writes up to PROPRECORD_STAN_ROOM_LEN ids plus a -1 terminator; other callers use 8
     s32 sp48[8];
-#endif
     s32 unused3;
     s32 unused4;
 

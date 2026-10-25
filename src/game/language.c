@@ -15,17 +15,13 @@ struct jpncharpixels* g_JpnCharCachePixels;
 struct  jpncacheitem *g_JpnCacheCacheItems;
 
 
-#ifdef LANG_JP
-s32 j_text_trigger = 1;
-#else
 /**
  * EU .data 80041150
 */
 s32 j_text_trigger = 0;
-#endif
 
 
-#if defined(LANG_US) || defined(LANG_JP)
+#if defined(LANG_US)
 
 void *LnameX_lookuptable[45][2] = {
     {NULL, NULL},                    /* Null (unused) */

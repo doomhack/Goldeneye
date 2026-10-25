@@ -5,21 +5,9 @@ default: all
 
 ### Default Build Options ###
 # Version of the game to build
-FINAL := YES
 VERSION := US
-IDO_RECOMP := YES
-VERBOSE := 2
-# If COMPARE is 1, check the output sha1sum when building 'all', and if fail to match
-# then compare ELF sections to known md5 checksums.
-COMPARE := 1
-# COMPILER selects the compiler for the game code (src/*.c, src/game/*.c).
-#   ido: original IDO 5.3 (no longer kept matching; the TLB-paging removal changed the layout)
-#   gcc: modern GCC (default). libultra, inflate, chraidata.c and asset data still use IDO.
-COMPILER := gcc
-# Optimisation level for game code when COMPILER=gcc
-GCC_OPT := -O2
-# Source files that stay on IDO when COMPILER=gcc (space separated, eg src/init.c)
-GCC_EXCLUDE :=
+# Optimisation level for game code
+OPTIMIZATION := -O2
 
 # Include Terminal Codes for colourising text.
 include include/make/VT100Codes.make
@@ -34,28 +22,11 @@ else
   TOOLCHAIN := mips64-elf-
 endif
 
-# Use IDO Recomp UNLESS specified otherwise
-ifeq ($(IDO_RECOMP), NO)
-  QEMU_IRIX := $(shell which qemu-irix 2>/dev/null)
-  ifeq (, $(QEMU_IRIX))
-    $(error Using the IDO compiler requires qemu-irix. Please install qemu-irix package or set the QEMU_IRIX environment variable to the full qemu-irix binary path)
-  endif
-  IRIX_ROOT := tools/irix/root
-else
-  IRIX_ROOT := tools/ido5.3_recomp
-endif
-
 # other tools
 TOOLS_DIR := tools
 DATASEG_COMP := $(TOOLS_DIR)/data_compress.sh
 RZ_COMP := $(TOOLS_DIR)/1172compress.sh
 N64CKSUM := $(TOOLS_DIR)/n64cksum
-
-ifeq ($(VERBOSE), 1)
- SHA1SUM = sha1sum
-else
- SHA1SUM = sha1sum --quiet
-endif
 
 # Convert AI Print commands from readable strings to byte arrays automatically.
 ConvertAIPRINT = sed -E -e ':loop s/PRINT\("(..*?)(.)"/PRINT\("\1",\x27\2\x27/g; tloop; \
@@ -65,23 +36,13 @@ ConvertAIPRINT = sed -E -e ':loop s/PRINT\("(..*?)(.)"/PRINT\("\1",\x27\2\x27/g;
                 s/PRINT\((.*)\)/AI_PRINT,\1/g'
 
 # per VERSION flags
-ifeq ($(FINAL), YES)
- OPTIMIZATION := -O2
- LCDEFS :=
- CFLAGWARNING :=
-else
- OPTIMIZATION := -g
- LCDEFS := -DDEBUG
- CFLAGWARNING :=-fullwarn -wlint
-endif
-
 # BACKPORT_R1: turns on the JP/PAL bug fixes we chose to take into the NTSC build.
 ifeq ($(VERSION), US)
  COUNTRYCODE := u
  OUTCODE := $(COUNTRYCODE)
  LANG := US
- LCDEFS := -DVERSION_US -DLANG_US -DREFRESH_NTSC -DLEFTOVERDEBUG -DLEFTOVERSPECTRUM -DBUGFIX_R0 -DBACKPORT_R1 -DBYTEMATCH
- ASMDEFS := --defsym VERSION_US=1 --defsym LANG_US=1 --defsym REFRESH_NTSC=1 --defsym LEFTOVERDEBUG=1 --defsym LEFTOVERSPECTRUM=1 --defsym BUGFIX_R0=1 --defsym BACKPORT_R1=1 --defsym BYTEMATCH=1
+ LCDEFS := -DVERSION_US -DLANG_US -DREFRESH_NTSC -DLEFTOVERDEBUG -DBUGFIX_R0 -DBACKPORT_R1
+ ASMDEFS := --defsym VERSION_US=1 --defsym LANG_US=1 --defsym REFRESH_NTSC=1 --defsym LEFTOVERDEBUG=1 --defsym BUGFIX_R0=1 --defsym BACKPORT_R1=1
  LDFILEOPTS := -DVERSION_$(LANG) -DOUTCODE=$(OUTCODE)
 endif
 
@@ -89,38 +50,9 @@ ifeq ($(VERSION), EU)
  COUNTRYCODE := e
  OUTCODE := $(COUNTRYCODE)
  LANG := EU
- LCDEFS := -DVERSION_EU -DLANG_EU -DREFRESH_PAL -DBUGFIX_R1 -DBUGFIX_R2 -DBYTEMATCH
- ASMDEFS := --defsym VERSION_EU=1 --defsym LANG_EU=1 --defsym REFRESH_PAL=1 --defsym BUGFIX_R1=1 --defsym BUGFIX_R2=1 --defsym BYTEMATCH=1
+ LCDEFS := -DVERSION_EU -DLANG_EU -DREFRESH_PAL -DBUGFIX_R1 -DBUGFIX_R2
+ ASMDEFS := --defsym VERSION_EU=1 --defsym LANG_EU=1 --defsym REFRESH_PAL=1 --defsym BUGFIX_R1=1 --defsym BUGFIX_R2=1
  LDFILEOPTS := -DVERSION_$(LANG) -DOUTCODE=$(OUTCODE)
-endif
-
-ifeq ($(VERSION), JP)
- COUNTRYCODE := j
- OUTCODE := $(COUNTRYCODE)
- LANG := JP
- LCDEFS := -DVERSION_JP -DLANG_JP -DREFRESH_NTSC -DBUGFIX_R1 -DLEFTOVERDEBUG -DLEFTOVERSPECTRUM -DBYTEMATCH
- ASMDEFS := --defsym VERSION_JP=1 --defsym LANG_JP=1 --defsym REFRESH_NTSC=1 --defsym BUGFIX_R1=1 --defsym LEFTOVERDEBUG=1 --defsym LEFTOVERSPECTRUM=1 --defsym BYTEMATCH=1
- LDFILEOPTS := -DVERSION_$(LANG) -DOUTCODE=$(OUTCODE)
-endif
-
-ifeq ($(VERSION), DEBUG)
- COUNTRYCODE := u
- OUTCODE := d
- LANG := US
- LCDEFS := -DVERSION_US -DLANG_US -DREFRESH_NTSC -DLEFTOVERDEBUG -DLEFTOVERSPECTRUM -DBUGFIX_R0 -DDEBUGMENU -DVERSION_DEBUG
- ASMDEFS := --defsym VERSION_DEBUG=1 --defsym LANG_US=1 --defsym REFRESH_NTSC=1 --defsym LEFTOVERDEBUG=1 --defsym LEFTOVERSPECTRUM=1 --defsym BUGFIX_R0=1 --defsym DEBUGMENU=1
- COMPARE := 0
- LDFILEOPTS := -DVERSION_$(LANG) -DOUTCODE=$(OUTCODE)
-endif
-
-ifeq ($(VERSION), USB)
- COUNTRYCODE := u
- OUTCODE := usb
- LANG := US
- LCDEFS := -DVERSION_US -DLANG_US -DREFRESH_NTSC -DLEFTOVERDEBUG -DLEFTOVERSPECTRUM -DBUGFIX_R0 -DDEBUGMENU -DENABLE_USB
- ASMDEFS := --defsym VERSION_US=1 --defsym LANG_US=1 --defsym REFRESH_NTSC=1 --defsym LEFTOVERDEBUG=1 --defsym LEFTOVERSPECTRUM=1 --defsym BUGFIX_R0=1 --defsym DEBUGMENU=1 --defsym ENABLE_USB=1
- COMPARE := 0
- LDFILEOPTS := -DVERSION_$(LANG) -DOUTCODE=$(OUTCODE) -DENABLE_USB
 endif
 
 # make UNLOCK_ALL=1: every mission and difficulty (007 too) is open in
@@ -129,8 +61,11 @@ ifeq ($(UNLOCK_ALL), 1)
   LCDEFS += -DUNLOCK_ALL_LEVELS
 endif
 
-ALLOWED_VERSIONS := US EU JP DEBUG USB
-ALLOWED_COUNTRYCODE := u e j
+ALLOWED_VERSIONS := US EU
+ALLOWED_COUNTRYCODE := u e
+ifeq ($(filter $(VERSION),$(ALLOWED_VERSIONS)),)
+  $(error VERSION "$(VERSION)" not supported, use one of: $(ALLOWED_VERSIONS))
+endif
 
 BUILD_DIR_BASE := build
 # BUILD_DIR is the location where all build artefacts are placed
@@ -191,52 +126,24 @@ IMAGE_OBJS := $(foreach file,$(IMAGE_BINS),$(BUILD_DIR)/$(file:.bin=.o))
 RZFILES := inflate/inflate.c
 RZOBJECTS := $(foreach file,$(RZFILES),$(BUILD_DIR)/src/$(file:.c=.o))
 
-# libgcc helper functions, only needed (and linked) when building with GCC
-ifeq ($(COMPILER), gcc)
-  CODEOBJECTS += $(BUILD_DIR)/src/gcc/libgcc_compat.o
-  LDFILEOPTS += -DCOMPILER_GCC
-endif
+# libgcc helper functions GCC expects
+CODEOBJECTS += $(BUILD_DIR)/src/gcc/libgcc_compat.o
 
 OBJECTS := $(RSPOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(OBSEGMENT) $(ROMOBJECTS) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(IMAGE_OBJS)
 
-ifeq ($(COMPILER), gcc)
-  # A GCC build can never match, so skip the sha1 comparison
-  COMPARE := 0
-else ifneq ($(COMPILER), ido)
-  $(error COMPILER must be "ido" or "gcc")
-endif
-
 ## Command Line args for builders ##
-
-MIPSISET := -mips2 -32
 
 INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src -I src/game -I src/inflate
 
-# ignore warnings:
-# 609 : The number of arguments in the macro invocation does not match the definition - disabled because CPPLib uses "VarArgs" which wasnt invented till c99
-# 649 : Missing member name in structure / union                                      - used for "Inheritance"
-# 709 : Incompatible pointer type assignment                                          - could be fixed by casting, but implicit is fine.
-# 712 : illegal combination of pointer and integer                                    - could be fixed by casting, but implicit is fine.
-# 807 : member cannot be of function or incomplete type                               - Variable length structs
-# 838 : Microsoft extension (unnamed structs)                                         - used for "Inheritance" and member/array call swapping
-# 763 : Max Float
-WOFF :=  -woff 609,649,709,712,807,838,763
-
-ifeq ($(IDO_RECOMP), NO)
-  CC := $(QEMU_IRIX) -silent -L $(IRIX_ROOT) $(IRIX_ROOT)/usr/bin/cc
-else
-  CC := $(IRIX_ROOT)/cc
-endif
-
-CFLAGS := -Wab,-r4300_mul -non_shared -Olimit 2000 -G 0 -Xcpluscomm $(CFLAGWARNING) $(WOFF) $(INCLUDE) $(MIPSISET) $(LCDEFS) -DTARGET_N64
-
-GCC := $(TOOLCHAIN)gcc
+CC := $(TOOLCHAIN)gcc
+# Code generation flags shared by the game, libultra and the asset data.
 # -nostdinc keeps the host's C library headers out; GCC's own freestanding headers are added back
-GCC_CFLAGS := -nostdinc -isystem $(shell $(GCC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 0 \
+CC_BASEFLAGS := -nostdinc -isystem $(shell $(CC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 0 \
   -ffreestanding -fno-builtin -fno-common -fms-extensions -fno-strict-aliasing -fwrapv -funsigned-char \
   -fno-merge-constants -fno-reorder-functions -fno-toplevel-reorder -fno-zero-initialized-in-bss \
   -fno-delete-null-pointer-checks -fno-isolate-erroneous-paths-dereference -fno-aggressive-loop-optimizations -fno-math-errno \
-  -w $(INCLUDE) $(LCDEFS) -DTARGET_N64 $(GCC_OPT)
+  -fno-tree-loop-distribute-patterns -w -DTARGET_N64 -MMD -MP
+CFLAGS := $(CC_BASEFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
 
 LD := $(TOOLCHAIN)ld
 LD_SCRIPT := $(BUILD_DIR)/ge007.$(OUTCODE).ld
@@ -278,10 +185,10 @@ OBJCOPY := $(TOOLCHAIN)objcopy
 .PRECIOUS: %.bin  %.o
 
 # Run the following targets sequentially in this order (unnamed targets will still run in parallel)
-.NOTPARALLEL: print_info create_directories $(APPROM) checksum
+.NOTPARALLEL: print_info create_directories $(APPROM)
 
 # Phony Recipes - These targets are not files, Get Make to do something
-.PHONY: print_info create_directories build_tools prerequisites checksum all_p1 all default commonclean setupclean stanclean dataclean libultraclean codeclean clean nuke help cmdbuidler test  context extractassets forceextractassets textures convert_props convert_chrs convert_guns extract_u extract_e extract_j force_extract_u force_extract_e force_extract_j extract_rsp
+.PHONY: print_info create_directories build_tools prerequisites all_p1 all default commonclean setupclean stanclean dataclean libultraclean codeclean clean nuke help cmdbuidler context extractassets forceextractassets textures convert_props convert_chrs convert_guns extract_u extract_e force_extract_u force_extract_e extract_rsp
 
 
 # this file references variables defined above: BUILD_DIR, CFLAGWARNING, INCLUDE, LCDEFS
@@ -319,24 +226,21 @@ $(BUILD_DIR)/assets/images/combined/%.o: assets/images/combined/combined.bin
 $(BUILD_DIR)/$(OBSEGMENT): $(OBSEG_RZ) $(IMAGE_OBJS)
 
 
-#Build GCC-only support files
+#Build GCC support files
 $(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
 	@mkdir -p $(dir $@)
-	$(GCC) -c $(GCC_CFLAGS) -fno-tree-loop-distribute-patterns -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 #Build C files in src/
-# convert AI_PRINT commands from readable to byte-array
-# chraidata.c (AI script data, IDO-only macros) and inflate.c (own ROM segment) always use IDO.
 # libultra's "memset" is an alias of bzero(ptr, len), so GCC's memset calls are redirected
 # to the real memset in src/gcc/libgcc_compat.c.
 $(BUILD_DIR)/src/%.o: src/%.c
-	@if [ "$$(basename $<)" = "chraidata.c" ]; then \
-		$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) tools/include-stdin.c -o $@ $(OPTIMIZATION); \
-	elif [ "$(COMPILER)" = "gcc" ] && [ "$<" != "src/inflate/inflate.c" ] && [ -z "$(filter $<,$(GCC_EXCLUDE))" ]; then \
-		$(GCC) -c $(GCC_CFLAGS) -o $@ $< && $(OBJCOPY) --redefine-sym memset=gcc_memset $@; \
-	else \
-		$(CC) -c $(CFLAGS) -o $@ $(OPTIMIZATION) $<; \
-	fi
+	$(CC) -c $(CFLAGS) -o $@ $<
+	$(OBJCOPY) --redefine-sym memset=gcc_memset $@
+
+# chraidata.c: convert AI_PRINT commands from readable to byte-array first
+$(BUILD_DIR)/src/game/chraidata.o: src/game/chraidata.c
+	$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) -I $(dir $<) -x c -o $@ -
 
 
 #Build RamRom
@@ -345,7 +249,7 @@ $(BUILD_DIR)/assets/ramrom/%.o: assets/ramrom/%.s
 
 #Build fonts
 $(BUILD_DIR)/assets/font/%.o: assets/font/%.c
-	$(CC) -c $(CFLAGS) -o $@ $(OPTIMIZATION) $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 #Build asm files in assets/
 $(BUILD_DIR)/assets/%.o: assets/%.s
@@ -357,26 +261,14 @@ $(BUILD_DIR)/assets/obseg/%.o: assets/obseg/%.s $(OBSEG_RZ)
 
 #Build C files in assets/
 $(BUILD_DIR)/assets/%.o: assets/%.c
-ifeq ($(filter-out %setup%,$<),)
-	$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) tools/include-stdin.c -o $@ $(OPTIMIZATION)
-else
-	$(CC) -c $(CFLAGS) -o $@ $(OPTIMIZATION) $<
-endif
-
-#$(BUILD_DIR)/src/random.o: OPTIMIZATION := -O3
-#$(BUILD_DIR)/src/random.o: INCLUDE := -I . -I include -I include/PR
-#$(BUILD_DIR)/src/random.o: MIPSISET := -mips3 -o32
-#$(BUILD_DIR)/src/random.o: src/random.c
-#	$(CC) -c -Wab,-r4300_mul -non_shared -G 0 -Xcpluscomm $(CFLAGWARNING) -woff 819,820,852,821,838,649 -signed $(INCLUDE) $(MIPSISET) $(LCDEFS) -DTARGET_N64 $(OPTIMIZATION) -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 #Link Files
 $(APPELF): $(RSPOBJECTS) $(ULTRAOBJECTS) $(HEADEROBJECTS) $(OBSEG_RZ) $(BUILD_DIR)/$(OBSEGMENT) $(MUSIC_RZ_FILES) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(ROMOBJECTS) $(ASSET_DATAOBJECTS) $(ROMOBJECTS2) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(OBSEG_OBJECTS) ge007.ld
 	cpp $(LDFILEOPTS) -P ge007.ld -o $(BUILD_DIR)/ge007.$(OUTCODE).ld
-ifeq ($(COMPILER), gcc)
-	@# GCC emits extra sections (.rodata.*, .text.*) that the matching script names exactly
+	@# GCC emits extra sections (.rodata.*, .text.*) that the per-object lines name exactly
 	sed -i -E -e '/\.o *\(/s/\((\.text|\.data|\.rodata)\)/(\1 \1.*)/' -e '/\.o *\(/s/\(\.bss\)/(.bss .bss.* COMMON)/' \
 		-e 's|^( */DISCARD/ : \{)|\1\n      * (.comment);\n      * (.note*);|' $(BUILD_DIR)/ge007.$(OUTCODE).ld
-endif
 	@echo "Linking Files into ELF"
 	$(LD) $(LDFLAGS) -o $@
 
@@ -408,13 +300,8 @@ prerequisites: print_info create_directories build_tools extractassets
 
 combine_images: assets/images/combined/combined.bin
 
-checksum: $(APPROM)
-ifeq ($(COMPARE), 1)
-	scripts/make/checksum.sh "$(SHA1SUM)" "$(OUTCODE)" "$(BUILD_DIR)"
-endif
-
 all_p1: prerequisites
-all: all_p1 $(APPROM) checksum
+all: all_p1 $(APPROM)
 	@echo "Rom File Generated in Build Directory."
 
 commonclean:
@@ -428,6 +315,7 @@ stanclean: commonclean
 
 dataclean: commonclean stanclean setupclean
 	rm -f $(OBSEG_OBJECTS) $(OBSEG_RZ) $(ROMOBJECTS) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(IMAGE_OBJS) $(MUSIC_RZ_FILES)
+	rm -f $(ASSET_DATAOBJECTS) $(ROMOBJECTS2)
 	rm -f $(BUILD_DIR)/imagelist.csv
 
 libultraclean: commonclean
@@ -437,6 +325,7 @@ codeclean: commonclean libultraclean
 	rm -f $(HEADEROBJECTS) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(RSPOBJECTS)
 
 clean: codeclean dataclean
+	find $(BUILD_DIR) -name '*.d' -delete 2>/dev/null || true
 	@echo "\nAll Code and Asset Binaries Cleared! Make will Re-Build these next time.\n"
 
 nuke: clean
@@ -461,7 +350,6 @@ help:
 	@echo "    cmdbuidler                     BuildAI Commands"
 	@echo "    context [file]                 BuildContext File from [file]"
 	@echo "                                    eg make context src/game/chrai.c"
-	@echo "    test                            Re-Run Data Verification "
 	@echo ""
 	@echo ""
 	@echo "  options:"
@@ -471,8 +359,6 @@ help:
 
 include include/make/cmd.make
 
-
-test: checksum
 
 
 ifneq ($(filter-out context,$(MAKECMDGOALS)),)
@@ -489,14 +375,14 @@ ifeq ($(CONTEXTFILE),build/ctx.c)
 	@echo "#include <bondtypes.h>" > build/ctx.c
 endif
 	@sed -n -E ':x /\\$$/ { N; s/\\\n//g ; bx };''/(^\s*#define)|(\\$$)/p; /(\\$$)/p;' src/bondconstants.h src/bondtypes.h $(CONTEXTFILE) >> build/ctx.h
-	@$(CC) -c $(CFLAGS) $(CONTEXTFILE) -E > build/ctx2.h 2> /dev/null || (rm build/ctx2.h && exit 1)
+	@$(CC) $(CFLAGS) $(CONTEXTFILE) -E -P > build/ctx2.h 2> /dev/null || (rm build/ctx2.h && exit 1)
 	@sed -E '/^\s*$$/d' build/ctx2.h >> build/ctx.h
 	@rm build/ctx.c build/ctx2.h || exit 0
 	@echo You can find it in Build [build/ctx.h].
 
-extractassets: extract_u extract_e extract_j convert_props convert_chrs convert_guns
+extractassets: extract_u extract_e convert_props convert_chrs convert_guns
 
-forceextractassets: force_extract_u force_extract_e force_extract_j convert_props convert_chrs convert_guns
+forceextractassets: force_extract_u force_extract_e convert_props convert_chrs convert_guns
 
 extract_u:
 	@if [ ! -f assets/obseg/ob__ob_end.seg ]; then \
@@ -536,26 +422,6 @@ force_extract_e:
 		scripts/extract_diff.e.sh; \
 	else \
 		echo "Error: baserom.e.z64 not found."; \
-	fi
-
-extract_j:
-	@if [ ! -f assets/obseg/text/j/LstatJ.bin ]; then \
-		echo "Extracting assets for j..."; \
-		if [ -f baserom.j.z64 ]; then \
-			scripts/extract_diff.j.sh; \
-		else \
-			echo "Error: baserom.j.z64 not found."; \
-		fi \
-	else \
-		echo "Assets for j already extracted."; \
-	fi
-
-force_extract_j:
-	@echo "Force extracting assets for j..."; \
-	if [ -f baserom.j.z64 ]; then \
-		scripts/extract_diff.j.sh; \
-	else \
-		echo "Error: baserom.j.z64 not found."; \
 	fi
 
 extract_rsp:
@@ -626,3 +492,6 @@ tools/mktex/build/tex2png:
 		echo "Building tex2png..."; \
 		cd tools/mktex && $(MAKE); \
 	fi
+
+# Header dependencies written by -MMD
+-include $(shell find $(BUILD_DIR) -name '*.d' 2>/dev/null)

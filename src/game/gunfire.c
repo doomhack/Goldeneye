@@ -918,7 +918,7 @@ void gunUpdateAndFire(GUNHAND handnum)
                 break;
             case ITEM_LASER:
             case ITEM_WATCHLASER:
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
                 hand->field_8A0 = hand->field_8A0 + 1;
 #endif
                 gunCreateBeamForHand(handnum);
@@ -2470,7 +2470,7 @@ void sub_GAME_7F0649D8(enum GUNHAND hand)
     }
 }
 
-#if defined(VERSION_US) || defined(VERSION_JP)
+#if defined(VERSION_US)
     #define WEAPON_1P_ANIM_TIME(x) ((f32)(x))
     #define WHEN_1_CASE_GRENADELAUNCH_FLD890 6
     #define WHEN_1_CASE_GRENADE_FLD890 0xf0
@@ -2569,61 +2569,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 stack14;
     s32 stack15;
 #endif
-#if defined(VERSION_JP)
-    s32 stack1;
-    s32 stack2;
-    s32 sp1C4;
-    s32 stack3;
-    struct hand *sp1BC;
-    s32 stack4;
-    s32 sp1B4;
-    struct sfx2 sp1B0;
-    s32 stack5;
-    struct WeaponStats *weapon_stats;
-    s32 sp1A4;
-    s32 sp1A0;
-    f32 sp19C;
-    s32 stat_2;
-    s32 stat_3;
-    s32 stat_4;
-    f32 sp198;
-    s32 stack14;
-    f32 sp190;
-    f32 sp18C;
-    s32 sp188;
-    f32 sp184;
-    s32 stack7;
-    s32 stack8;
-    s32 sp178;
-    f32 sp174;
-    s32 stack9;
-    s32 stack10;
-    Mtxf sp12C;
-    f32 sp128;
-    s32 stack11;
-    Mtxf spE4;
-    s32 stack12;
-    f32 tempf;
-    Mtxf sp9C;
-    f32 sp98;
-    f32 sp94;
-    struct hand *handptr;
-    f32 sp8C;
-    f32 sp88;
-    enum ITEM_IDS temp_v0_3;
-    struct sfx3 sp7C;
-    enum ITEM_IDS var_s1;
-    Weapon1PTransformKeyframe *sp74;
-    struct PropRecord *temp_v0_8;
-    f32 temp_f0_2;
-    u32 var_a0_2;
-    f32 temp_v1_9;
-    struct hand *temp_v1_5;
-    f32 un_f32_num = 0.0f;
-    f32 un_f32_div_1 = 16.0f;
-    f32 un_f32_div_2 = 23.0f;
-    s32 stack15;
-#endif
 #if defined(VERSION_EU)
     s32 stack1;
     s32 stack2;
@@ -2705,7 +2650,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
     if (handptr->weapon_action_state == GUN_ANIM_STATE_IDLE)
     {
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
         if ((var_s1 == ITEM_LASER) && (handptr->field_888 != 0))
         {
             handptr->field_8A0 = 0;
@@ -2715,7 +2660,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             (handptr->weapon_hold_time != 0)
             && (var_s1 != ITEM_UNARMED)
             && (((bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_CLICKY) != 0)) || (handptr->weapon_ammo_in_magazine > 0))
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
             && ((var_s1 != ITEM_LASER) || (handptr->field_8A0 < 0xC8))
 #endif
         )
@@ -3160,7 +3105,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             handptr->field_88C = 0;
 
             if ((!isMpGame())
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
                 || ((checkGamePaused() == 0) && (g_CurrentPlayer->mpmenuon == 0))
 #else
                 || (checkGamePaused() == 0)
@@ -3196,13 +3141,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             sp1A4 = weapon_stats->b44[0];
             sp1A0 = weapon_stats->b44[1];
 #endif
-#if defined(VERSION_JP)
-            sp1A4 = weapon_stats->b44[0];
-            sp1A0 = weapon_stats->b44[1];
-            stat_2 = weapon_stats->b44[2];
-            stat_3 = weapon_stats->b44[3];
-            stat_4 = weapon_stats->SingleFiringRate;
-#endif
 #if defined(VERSION_EU)
             sp1A4 = ((s32)weapon_stats->b44[0] * 50) / 60;
             sp1A0 = ((s32)weapon_stats->b44[1] * 50) / 60;
@@ -3222,7 +3160,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 #if defined(VERSION_US)
                     && (handptr->field_890 >= (sp1A4 + sp1A0 + weapon_stats->SingleFiringRate))
 #endif
-#if defined(VERSION_JP) ||  defined(VERSION_EU)
+#if  defined(VERSION_EU)
                     && (handptr->field_890 >= (sp1A4 + sp1A0 + stat_4))
 #endif
                 )
@@ -3239,7 +3177,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 #if defined(VERSION_US)
                 && (handptr->field_890 >= weapon_stats->b44[2])
 #endif
-#if defined(VERSION_JP) ||  defined(VERSION_EU)
+#if  defined(VERSION_EU)
                 && (handptr->field_890 >= stat_2)
 #endif
 
@@ -3251,7 +3189,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 && (handptr->field_890 + weapon_stats->b44[3] < (0,sp1A4) + sp1A0)
                 && (handptr->field_890 + weapon_stats->b44[3] >= (s32)weapon_stats->b44[2])
 #endif
-#if defined(VERSION_JP) ||  defined(VERSION_EU)
+#if  defined(VERSION_EU)
                 && (handptr->field_890 + stat_3 < sp1A4 + sp1A0)
                 && (handptr->field_890 + stat_3 >= (s32)stat_2)
 #endif
@@ -3263,7 +3201,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 #if defined(VERSION_US)
                 handptr->field_8A8 = weapon_stats->b44[3];
 #endif
-#if defined(VERSION_JP) ||  defined(VERSION_EU)
+#if  defined(VERSION_EU)
                 handptr->field_8A8 = stat_3;
 #endif
             }
@@ -3499,7 +3437,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
                 && (Gun_hand_without_item(hand) != 0)
                 && (g_PlayerInvincible == FALSE)
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
                 && (g_CurrentPlayer->bonddead == 0)
 #endif
                )
@@ -3616,13 +3554,13 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     if (handptr->weapon_action_state == GUN_ANIM_STATE_RELOAD_SWAP)
     {
         if ((handptr->field_88C == 0)
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
             && (g_ClockTimer > 0)
 #endif
             && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
             && (Gun_hand_without_item(hand) != 0)
             && (g_PlayerInvincible == FALSE)
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
             && (g_CurrentPlayer->bonddead == 0)
 #endif
            )
@@ -4753,7 +4691,7 @@ void sub_GAME_7F067F58(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed)
 {
     f32 aim_lock_speed;
 
-#if defined(VERSION_US) || defined(VERSION_JP)
+#if defined(VERSION_US)
     aim_lock_speed = get_ptr_item_statistics(getCurrentPlayerWeaponId(GUNRIGHT))->AimLockSpeed;
 #elif defined(VERSION_EU)
     aim_lock_speed = get_ptr_item_statistics(getCurrentPlayerWeaponId(GUNRIGHT))->CrosshairSpeed;
@@ -4782,9 +4720,6 @@ void sub_GAME_7F067FBC(f32 turn_x, f32 turn_y)
 #elif defined(VERSION_EU)
     guncrossdamp = 0.7651f;
     gunaimdamp = item_stats->CrosshairSpeed;
-#elif defined(VERSION_JP)
-    guncrossdamp = 0.8f;
-    gunaimdamp = item_stats->AimLockSpeed;
 #endif
 
     caclulate_gun_crosshair_position_rotation(turn_x, turn_y, guncrossdamp, gunaimdamp);
@@ -5530,7 +5465,7 @@ void update_bullet_casing(CasingRecord* casing)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-#if defined(VERSION_US) || defined(VERSION_JP)
+#if defined(VERSION_US)
         matrix_4x4_multiply_homogeneous_in_place(&casing->rot_velocity_mtx, &casing->rot_mtx);
 #else
         matrix_4x4_multiply_homogeneous_in_place_eu(casing->rot_velocity_mtx, casing->rot_mtx);
@@ -5864,11 +5799,7 @@ Gfx *microcode_generation_ammo_related(Gfx *gdl, struct sImageTableEntry *tconfi
  */
 Gfx *set_rgba_redirect_generate_microcode(Gfx *gdl, sImageTableEntry *tconfig, f32 x, f32 y, f32 arg4, s32 arg5, f32 arg6, s32 arg7)
 {
-#ifdef __sgi
-    microcode_generation_ammo_related(gdl, tconfig, x, y, arg4, arg5, arg6, arg7, 0xff, 0xff, 0xff, 0xff);
-#else
     return microcode_generation_ammo_related(gdl, tconfig, x, y, arg4, arg5, arg6, arg7, 0xff, 0xff, 0xff, 0xff);
-#endif
 }
 
 
@@ -6291,7 +6222,7 @@ void increment_num_kills_display_text_in_MP(void)
 
 #if defined(VERSION_US)
     hudmsgBottomShow(&buffer);
-#elif defined(VERSION_JP) || defined(VERSION_EU)
+#elif defined(VERSION_EU)
     jp_hudmsgBottomShow(&buffer);
 #endif
 
@@ -6364,7 +6295,7 @@ void increment_num_deaths(void)
         {
             sprintf(buffer, g_GunDeathCountFormat, langGet(getStringID(LGUN, GUN_STR_DC_DIED)), g_CurrentPlayer->deathcount, langGet(getStringID(LGUN, GUN_STR_DD_TIMES))); //died times
         }
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
 		jp_hudmsgBottomShow(buffer);
 #else
 		hudmsgBottomShow(buffer);
@@ -6390,7 +6321,7 @@ void increment_num_suicides_display_MP(void) {
 
         sprintf(&buffer, &aSD_0, langGet(getStringID(LGUN, GUN_STR_DE_SUICIDECOUNT)), g_CurrentPlayer->num_suicides); // "suicide count"
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
 		jp_hudmsgBottomShow(&buffer);
 #else
 		hudmsgBottomShow(&buffer);

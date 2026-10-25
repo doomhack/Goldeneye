@@ -35,11 +35,7 @@ s32 mission_state = MISSION_STATE_0;
 
 u16 sub_GAME_7F0C0BF0(void)
 {
-#ifdef __sgi
-    get_mTrack2Vol();
-#else
     return get_mTrack2Vol();
-#endif
 }
 
 u16 sub_GAME_7F0C0C10(void)
@@ -92,7 +88,7 @@ void set_missionstate(MISSION_STATE_ID arg0)
                 break;
 #endif
 
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
             case MISSION_STATE_0:
                 musicTrack1Stop();
                 musicTrack2Stop();

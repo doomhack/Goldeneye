@@ -45,7 +45,10 @@ void load_resource(u8 *ptrdata, s32 bytes,  fileentry *srcfile,  resource_lookup
         romCopy(ptrdata, srcfile->hw_address, lookupdata->rom_size);
         return;
     }
-    source = (ptrdata + bytes) - ((lookupdata->rom_size + 7) & -8);
+    // Keep 16 bytes clear after the compressed data. mupen64plus drops the last
+    // byte of a PI DMA that ends exactly at the top of RDRAM, which corrupts a
+    // file whose compressed size is a multiple of 16 when its bank ends there.
+    source = (ptrdata + bytes) - ((lookupdata->rom_size + 7) & -8) - 0x10;
     if ((u32) (source - ptrdata) < 8U)
     {
         lookupdata->poolRemaining = 0;

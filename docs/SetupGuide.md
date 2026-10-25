@@ -8,7 +8,6 @@
     * [B. Docker](#b-docker)
     * [C. Docker Compose](#c-docker-compose)
   * [Usage](#usage)
-    * [Recompile IDO](#recompile-ido)
     * [Extract assets from base rom(s)](#extract-assets-from-base-roms)
     * [Build the ROM](#build-the-rom)
   * [In-depth build process](#in-depth-build-process)
@@ -25,7 +24,7 @@
 
 * clone this repository to a directory of your choosing
 * place an unmodified copy of your existing NTSC (US) ROM inside the root of this repository with the name `baserom.u.z64`
-  * optionally: if you want to extract assets from NTSC (JP) or PAL (EU), **additionally** place `baserom.j.z64` and `baserom.e.z64` into the root dir
+  * to build PAL (EU), **additionally** place `baserom.e.z64` into the root dir
 
 ## Install dependencies
 
@@ -39,27 +38,13 @@ The requirements for Debian / Ubuntu should be:
 
 ```bash
 sudo apt-get update
-sudo apt-get install binutils-mips-linux-gnu make git python3
+sudo apt-get install binutils-mips-linux-gnu gcc-mips-linux-gnu make git python3
 ```
 
 If you don't have host development tools already installed then you will also need to install `build-essential`:
 
 ```bash
 sudo apt-get install build-essential
-```
-
-> **Note:** `libcapstone-dev`/`pkg-config` are **no longer required**. Older
-> versions of this repo's recompiled IDO toolchain (`tools/ido5.3_recomp`,
-> see [Recompile IDO](#recompile-ido) below) linked against the system
-> `libcapstone` library for MIPS disassembly. The current toolchain vendors
-> its own disassembly library (`rabbitizer`) instead, so there's nothing
-> extra to install for it beyond the compiler already covered by
-> `build-essential` above.
-
-Additionally, [qemu-irix](https://github.com/n64decomp/qemu-irix/releases) is needed. Download the package to a desired location and install with:
-
-```bash
-sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
 ```
 
 ### B. Docker
@@ -75,31 +60,6 @@ sudo dpkg -i qemu-irix-2.11.0-2169-g32ab296eef_amd64.deb
 Alternatively, you can start the container with `docker compose up` and connect to the container in e.g. docker desktop
 
 ## Usage
-
-### Recompile IDO
-
-This project can compile the ROM's C code in one of two ways, controlled by the `IDO_RECOMP` build option (see
-[Build the ROM](#build-the-rom)):
-
-* `IDO_RECOMP=YES` (the default) — uses `tools/ido5.3_recomp/cc`, a copy of the original SGI IRIX 5.3 IDO compiler
-  that has been *statically recompiled* into a native x86-64 Linux program. Since it runs directly on your machine
-  instead of under an emulator, it's noticeably faster to compile with — this is why the setup step below exists.
-* `IDO_RECOMP=NO` — runs the original, unmodified IRIX IDO binaries (`tools/irix/root/usr/bin/cc` etc.) under the
-  [qemu-irix](https://github.com/n64decomp/qemu-irix/releases) user-mode emulator instead. Slower, but useful as a
-  lower-risk reference if you ever suspect the recompiled toolchain is misbehaving.
-
-The recompiled toolchain isn't checked into git — it's generated locally the first time it's needed, from the
-original IDO binaries in `tools/irix/root`. A plain `make` from the repo root builds it automatically if it's
-missing (wired up via `tools/Makefile`), so most people never need to run this step by hand. To build it explicitly
-(e.g. to watch its own build output, or force a rebuild after changing it):
-
-```bash
-cd tools/ido5.3_recomp
-make
-```
-
-For what this toolchain actually *is*, where it comes from upstream, and how to update it to a newer version, see
-[`tools/ido5.3_recomp/README.md`](../tools/ido5.3_recomp/README.md).
 
 Be careful! If you previously compiled GoldenEye on a different operating system or CPU architecture, the binaries (gzip, n64cksum) that were compiled will be incompatible.
 You must delete them.
@@ -117,13 +77,7 @@ To extract the NTSC (US) base rom assets run the following from root directory:
 ./scripts/extract_baserom.u.sh
 ```
 
-> **Extracting NTSC (US) base rom assets is mandatory before extracting NTSC (JP) or PAL (EU) assets.**
-
-To extract the NTSC (JP) base rom assets run the following from root directory:
-
-```bash
-./scripts/extract_baserom.u.sh && ./scripts/extract_diff.j.sh
-```
+> **Extracting NTSC (US) base rom assets is mandatory before extracting PAL (EU) assets.**
 
 To extract the PAL (EU) base rom assets run the following from root directory:
 
@@ -154,26 +108,20 @@ Run `make` from root directory to build the ROM (defaults to `VERSION=US`).
 make
 ```
 
-If all goes well, resulting artifacts can be found in the `build` directory and the following text should be printed:
-
-```bash
-build/u/ge007.u.z64: OK
-```
+If all goes well, the ROM is written to `build/u/ge007.u.z64`.
 
 Other examples:
 
 ```bash
-make VERSION=JP -j4       # build NTSC (JP) version instead with 4 jobs
-make VERSION=EU COMPARE=0 # build PAL (EU) version but do not compare ROM hashes
+make -j4                  # build with 4 jobs
+make VERSION=EU -j4       # build PAL (EU) version instead
+make UNLOCK_ALL=1         # open every mission and difficulty, for testing
 ```
 
 The full list of configurable variables are listed below, **with the default being the first listed**:
 
-* ``VERSION``: ``US``, ``JP``, ``EU``
-* ``COMPARE``: ``1`` (compare ROM hash), ``0`` (do not compare ROM hash)
-* ``IDO_RECOMP``: ``YES`` (build with IDO recomp), ``NO`` (build using [qemu-irix](https://github.com/n64decomp/qemu-irix/releases))
-* ``FINAL``: ``YES`` (builds final version with -O2 optimization), ``NO`` (debug)
-* ``VERBOSE``: ``0`` (quiet), ``1``
+* ``VERSION``: ``US``, ``EU``
+* ``UNLOCK_ALL``: ``0``, ``1`` (all missions and difficulties unlocked)
 
 Additional documentation of the build process can be found in the next section.
 
@@ -183,27 +131,24 @@ This section explains the details of the build process.
 
 ### Requirements
 
-It is required that `qemu-irix` be installed and available.
+A GCC MIPS cross compiler and binutils (`mips-linux-gnu-`, `mips64-linux-gnu-` or `mips64-elf-` prefix) must be installed.
 
 ### Environment
 
-The build uses the `US` version by default. Available options are `US`, `EU`, and `JP`. For example
+The build uses the `US` version by default. Available options are `US` and `EU`. For example
 
-    make clean VERSION=JP
-    make VERSION=JP
+    make clean VERSION=EU
+    make VERSION=EU
 
 ### C Compiler
 
-The c compiler can be found in `tools/irix/root/usr/bin/cc`. This splits the compilation process into several steps.
-
-- cfe: compiler front end
-- uopt: ?
-- ugen: ?
+All C code (game, libultra and asset data) is compiled with the GCC MIPS cross compiler at `-O2`.
+Header dependencies are tracked automatically, so a plain `make` rebuilds whatever a header change affects.
 
 ### Assembly Preprocessor
 
 `GLOBAL_ASM` is retired in this repository, so no asm preprocessor step is used during normal builds.
-Source `.c` files are compiled directly by the IRIX compiler.
+Source `.c` files are compiled directly by GCC.
 
 ### Code build process
 
@@ -231,7 +176,7 @@ in `assets/obseg/ob_seg.s` and music is bundled in `assets/music/music.s`.
 
 Once all code and assets are compiled into .o files, these are combined into one .elf file. The layout of the object files
 is given by the `ge007.*.ld` files in the root of the project. For a list of individual methods, assets, and files see
-the map file in `build/[uje]/ge007.*.map` (where `*` is the country code, `u`, `e`, or `j`).
+the map file in `build/[ue]/ge007.*.map` (where `*` is the country code, `u` or `e`).
 
 The toolchain `-objcopy` program is then used to create the bundled .bin of the entire ROM.
 

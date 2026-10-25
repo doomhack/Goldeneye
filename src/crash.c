@@ -649,22 +649,6 @@ u32 crashIndyIsValidReadBufferResourceId(void)
 void crashIndyRemoved01(void)
 {
     //from pd
-#ifdef VERSION_DEBUG
-	s32 numvalid = 0;
-	s32 i;
-
-	for (i = 0; i < 4; i++) {
-		if (g_indyReadBufferString1[i] >= '!' && g_indyReadBufferString1[i] <= 0x7f) {
-			numvalid++;
-		}
-	}
-
-	if (numvalid == 4) {
-		rmonPrintf("%.49s", g_indyReadBufferString1);
-	} else {
-		rmonPrintf("???");
-	}
-#endif
     return;
 }
 
@@ -674,22 +658,6 @@ void crashIndyRemoved01(void)
  */
 void crashIndyRemoved02(void)
 {
-#ifdef VERSION_DEBUG
-	s32 numvalid = 0;
-	s32 i;
-
-	for (i = 0; i < 4; i++) {
-		if (g_indyReadBufferString2[i] >= '!' && g_indyReadBufferString2[i] <= 0x7f) {
-			numvalid++;
-		}
-	}
-
-	if (numvalid == 4) {
-		rmonPrintf("%.41s", g_indyReadBufferString2);
-	} else {
-		rmonPrintf("???");
-	}
-#endif
     return;
 }
 
@@ -730,14 +698,9 @@ u32 * crashIndyGetReadBufferResourceId(void)
  */
 void * crashGetStackEnd(u32 sp, u32 tid)
 {
-#ifdef __sgi
-    void *localStackPointers1[STACK_POINTER_COUNT] = g_StackPtrs1;
-    void *localStackPointers2[STACK_POINTER_COUNT] = g_StackPtrs2;
-#else
     /* IDO allows initialising an array from another array, GCC does not */
     void **localStackPointers1 = g_StackPtrs1;
     void **localStackPointers2 = g_StackPtrs2;
-#endif
     void *p2;
     void *p1;
 
@@ -774,11 +737,7 @@ void * crashGetStackEnd(u32 sp, u32 tid)
  */
 void * crashGetStackStart(u32 sp, u32 tid)
 {
-#ifdef __sgi
-    void *localStackPointers3[STACK_POINTER_COUNT] = g_StackPtrs3;
-#else
     void **localStackPointers3 = g_StackPtrs3;
-#endif
     void *p;
 
     if ((s32)tid <= (s32)0 || (u32)tid > (u32)STACK_POINTER_COUNT)
@@ -830,20 +789,6 @@ s32 crashPrintFloat(s32 index, f32 value)
     return crashIsDouble(value);
 }
 
-#ifdef VERSION_DEBUG
-void crashPrint2Floats(s32 index, f32 value1, f32 value2)
-{
-	crashPrintFloat(index, value1);
-	crashPrintFloat(index + 1, value2);
-}
-
-void crashPrint3Floats(s32 index, f32 value1, f32 value2, f32 value3)
-{
-	crashPrintFloat(index, value1);
-	crashPrintFloat(index + 1, value2);
-	crashPrintFloat(index + 2, value3);
-}
-#endif
 /**
  * 61C8	700055C8
  *     removed: set normality of single-precision floats A1, A2, A3, SP+10 in table at A0
