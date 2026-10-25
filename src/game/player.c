@@ -110,6 +110,39 @@ void init_player_data_ptrs_construct_viewports(s32 playercount)
 s32 g_CoopMode = FALSE;
 
 /**
+ * Counter-op: player 2 plays a guard against Bond in a solo mission, as in
+ * Perfect Dark. g_CoopMode is set too, as the two modes share everything
+ * about two players in a solo mission. Bond is always player 1 (index 0);
+ * g_CounterOpBondPad says whose controller and settings that is.
+ */
+s32 g_CounterOpMode = FALSE;
+s32 g_CounterOpBondPad = 0;
+
+/**
+ * Whose controller and settings a player uses: 0 is controller 1 and the
+ * save folder's options, 1 is controller 2 and player 2's options. These
+ * only differ from the player index in counter-op when controller 2 plays
+ * Bond.
+ */
+s32 coopPlayerPerson(s32 player)
+{
+    if (g_CounterOpMode && (g_CounterOpBondPad != 0) && (player < 2))
+    {
+        return player ^ 1;
+    }
+
+    return player;
+}
+
+/**
+ * Counter-op: TRUE for the player who plays the guards' side.
+ */
+s32 counterOpIsGuardPlayer(s32 player)
+{
+    return g_CounterOpMode && (player == COUNTEROP_GUARD);
+}
+
+/**
  * Co-op: set when player 2 had to spawn inside player 1. The two players
  * then don't collide with each other until they have moved apart.
  */
@@ -154,6 +187,13 @@ s32 coopPartnerCanRevive(void)
         return FALSE;
     }
 
+    // Counter-op: the guard player comes back in a new guard while Bond is
+    // alive. Bond has one life.
+    if (g_CounterOpMode)
+    {
+        return counterOpIsGuardPlayer(cur) && !g_playerPointers[COUNTEROP_BOND]->bonddead;
+    }
+
     for (i = 0; i < count; i++)
     {
         if ((i != cur) && !g_playerPointers[i]->bonddead
@@ -187,6 +227,12 @@ s32 coopPartnerAlive(void)
     if (!g_CoopMode)
     {
         return FALSE;
+    }
+
+    // Counter-op: Bond's death ends the mission whoever is left.
+    if (g_CounterOpMode)
+    {
+        return counterOpIsGuardPlayer(cur) && !g_playerPointers[COUNTEROP_BOND]->bonddead;
     }
 
     for (i = 0; i < count; i++)
@@ -626,7 +672,7 @@ void set_cur_player(s32 playernum)
     player_num = playernum;
     g_CurrentPlayer = g_playerPointers[playernum];
     // Player 2 has their own options in co-op and in multiplayer.
-    optionsCoopUsePlayer(((playernum == 1) && (g_CoopMode || isMpGame())) ? 1 : 0);
+    optionsCoopUsePlayer(((coopPlayerPerson(playernum) == 1) && (g_CoopMode || isMpGame())) ? 1 : 0);
     g_playerPerm = &g_playerPlayerData[playernum];
 }
 

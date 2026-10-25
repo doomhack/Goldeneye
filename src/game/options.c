@@ -364,6 +364,8 @@ void init_watch_at_start_of_stage(int stage)
     D_80040B4C = 0x32;
     D_80040B50 = 0x32;
     D_80040B54 = 0x32;
+    // The save folder's options belong to controller 1's player.
+    optionsCoopUsePlayer(0);
     fileLoadSaveSettingsForSelectedFolder(stage);
     mission_failed_or_aborted = FALSE;
 }

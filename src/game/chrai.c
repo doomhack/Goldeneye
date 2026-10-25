@@ -868,6 +868,18 @@ struct CoopAiState
 
 static s32 coopAiCommandMode(u8 cmd)
 {
+    // Counter-op: level scripts and guards only know Bond. Only a cutscene's
+    // control lock reaches the guard player as well.
+    if (g_CounterOpMode)
+    {
+        if ((cmd == AI_BondDisableControl) || (cmd == AI_BondEnableControl))
+        {
+            return COOP_AI_EACH;
+        }
+
+        return COOP_AI_ONE;
+    }
+
     switch (cmd)
     {
         case AI_IFISeeBond:
@@ -944,7 +956,7 @@ static void coopAiActOnActivator(ChrRecord *chr)
 {
     s32 player = g_CoopLastActivator;
 
-    if (!g_CoopMode || (chr == NULL) || (player < 0) || (player >= getPlayerCount()) || g_playerPointers[player]->bonddead)
+    if (!g_CoopMode || g_CounterOpMode || (chr == NULL) || (player < 0) || (player >= getPlayerCount()) || g_playerPointers[player]->bonddead)
     {
         return;
     }
@@ -1075,6 +1087,28 @@ static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
     return FALSE;
 }
 
+
+void ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType);
+
+/**
+ Counter-op: runs a vehicle's or aircraft's AI list for Bond, putting the
+ current player back afterwards. Chrs do this in chrlvActionTick.
+*/
+void aiForObject(PropDefHeaderRecord *Entityp)
+{
+    s32 prevplayer;
+
+    if (!g_CounterOpMode)
+    {
+        ai(Entityp, PROP_TYPE_OBJ);
+        return;
+    }
+
+    prevplayer = get_cur_playernum();
+    set_cur_player(COUNTEROP_BOND);
+    ai(Entityp, PROP_TYPE_OBJ);
+    set_cur_player(prevplayer);
+}
 
 /**
  Execute AI List from Character, Stage, Vehichle(truck) or Aircraft(heli)

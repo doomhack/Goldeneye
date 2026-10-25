@@ -2726,14 +2726,16 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 //MODE SELECT
 //********************************************************************************************************
 /**
- * Mode select rows: select mission, co-op, multiplayer, cheat options.
+ * Mode select rows: select mission, co-op, counter-op, multiplayer, cheat
+ * options.
  */
-#define MODESEL_ROW_MISSION 0
-#define MODESEL_ROW_COOP    1
-#define MODESEL_ROW_MULTI   2
-#define MODESEL_ROW_CHEATS  3
+#define MODESEL_ROW_MISSION   0
+#define MODESEL_ROW_COOP      1
+#define MODESEL_ROW_COUNTEROP 2
+#define MODESEL_ROW_MULTI     3
+#define MODESEL_ROW_CHEATS    4
 
-static s32 modesel_row_y[4] = {0xCC, 0xE8, 0x104, 0x120};
+static s32 modesel_row_y[5] = {0xC4, 0xDE, 0xF8, 0x112, 0x12C};
 static s32 modesel_highlighted_row = -1;
 
 void init_menu06_modeselect(void)
@@ -2741,6 +2743,7 @@ void init_menu06_modeselect(void)
     // Co-op is picked again here (setCursorPOSforMode has already used it
     // to put the cursor back on the co-op row).
     g_CoopMode = FALSE;
+    g_CounterOpMode = FALSE;
     gamemode = GAMEMODE_INTRO;
     tab_next_selected = FALSE;
     tab_prev_selected = FALSE;
@@ -2813,8 +2816,8 @@ void interface_menu06_modesel(void)
             row = MODESEL_ROW_MULTI;
         }
 
-        // Co-op and multiplayer need a second controller.
-        if (((row == MODESEL_ROW_COOP) || (row == MODESEL_ROW_MULTI)) && (joyGetControllerCount() < 2))
+        // Co-op, counter-op and multiplayer need a second controller.
+        if (((row == MODESEL_ROW_COOP) || (row == MODESEL_ROW_COUNTEROP) || (row == MODESEL_ROW_MULTI)) && (joyGetControllerCount() < 2))
         {
             row = -1;
         }
@@ -2828,14 +2831,22 @@ void interface_menu06_modesel(void)
                 case MODESEL_ROW_MISSION:
                     gamemode = GAMEMODE_SOLO;
                     g_CoopMode = FALSE;
+                    g_CounterOpMode = FALSE;
                     break;
                 case MODESEL_ROW_COOP:
                     gamemode = GAMEMODE_SOLO;
                     g_CoopMode = TRUE;
+                    g_CounterOpMode = FALSE;
+                    break;
+                case MODESEL_ROW_COUNTEROP:
+                    gamemode = GAMEMODE_SOLO;
+                    g_CoopMode = TRUE;
+                    g_CounterOpMode = TRUE;
                     break;
                 case MODESEL_ROW_MULTI:
                     gamemode = GAMEMODE_MULTI;
                     g_CoopMode = FALSE;
+                    g_CounterOpMode = FALSE;
                     break;
                 case MODESEL_ROW_CHEATS:
                     gamemode = GAMEMODE_CHEATS;
@@ -2953,7 +2964,8 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
 
 /**
  * Puts the cursor on the mode select row for a game mode (GAMEMODE_SOLO
- * with g_CoopMode set is the co-op row).
+ * with g_CoopMode set is the co-op row, or the counter-op row with
+ * g_CounterOpMode).
  */
 void setCursorPOSforMode(int mode)
 {
@@ -2966,6 +2978,10 @@ void setCursorPOSforMode(int mode)
     else if (mode == GAMEMODE_CHEATS)
     {
         row = MODESEL_ROW_CHEATS;
+    }
+    else if (g_CounterOpMode)
+    {
+        row = MODESEL_ROW_COUNTEROP;
     }
     else if (g_CoopMode)
     {
@@ -3031,14 +3047,15 @@ Gfx* constructor_menu06_modesel(Gfx* DL)
     DL = frontDrawModeSelRow(DL, MODESEL_ROW_MISSION, "1.\n", (u8 *)textstring, 0xFF);
 
     DL = frontDrawModeSelRow(DL, MODESEL_ROW_COOP, "2.\n", (u8 *)"2 PLAYER CO-OP\n", text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COUNTEROP, "3.\n", (u8 *)"2 PLAYER COUNTER-OP\n", text_color);
 
     textstring = langGet((g_AppendCheatMultiPlayer != 0) ? getStringID(LTITLE, TITLE_STR_276_CHEATMULTIPLAYER) : getStringID(LTITLE, TITLE_STR_30_MULTIPLAYER));
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "3.\n", (u8 *)textstring, text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "4.\n", (u8 *)textstring, text_color);
 
     if (is_cheat_menu_available != 0)
     {
         textstring = langGet(getStringID(LTITLE, TITLE_STR_31_CHEATOPTIONS));
-        DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHEATS, "4.\n", (u8 *)textstring, 0xFF);
+        DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHEATS, "5.\n", (u8 *)textstring, 0xFF);
     }
 
     DL = frontAddPreviousTabText(DL);
@@ -3069,7 +3086,7 @@ Gfx* constructor_menu06_modesel(Gfx* DL)
 #define COOP_SETUP_CURSOR_X 0x28
 
 static char *coop_setup_row_labels[COOP_SETUP_ROW_COUNT] = {
-    "Player 2:\n",
+    "Player 2:\n", // "Bond:" in counter-op
     "Player 2 Controls:\n",
     "Split Screen:\n",
     "Hi-Res:\n",
@@ -3116,6 +3133,14 @@ static void frontCoopSetupStep(s32 row, s32 step)
     switch (row)
     {
         case COOP_SETUP_ROW_CHAR:
+            // Counter-op: which controller plays Bond. Player 2 plays
+            // whichever guard they take over, so there is no character.
+            if (g_CounterOpMode)
+            {
+                g_CounterOpBondPad ^= 1;
+                break;
+            }
+
             count = frontCoopCharCount();
             value = (frontCoopGetPartnerChar() + step + count) % count;
             fileCoopSetPartnerChar(value);
@@ -3153,6 +3178,7 @@ void interface_menu1A_coopsetup(void)
     if (joyGetControllerCount() < 2)
     {
         g_CoopMode = FALSE;
+        g_CounterOpMode = FALSE;
         frontChangeMenu(MENU_MODE_SELECT, FALSE);
         setCursorPOSforMode(GAMEMODE_SOLO);
         return;
@@ -3289,11 +3315,17 @@ Gfx *constructor_menu1A_coopsetup(Gfx *DL)
 
     x = 0x37;
     y = 0x5F;
-    DL = frontPrintText(DL, &x, &y, (u8 *)"2 Player Co-op\n", ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, (u8 *)(g_CounterOpMode ? "2 Player Counter-op\n" : "2 Player Co-op\n"), ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
     for (row = 0; row < COOP_SETUP_ROW_COUNT; row++)
     {
         text = (u8 *)coop_setup_row_labels[row];
+
+        if (g_CounterOpMode && (row == COOP_SETUP_ROW_CHAR))
+        {
+            text = (u8 *)"Bond:\n";
+        }
+
         textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
 
         if (coop_setup_highlighted_row == row)
@@ -3308,6 +3340,12 @@ Gfx *constructor_menu1A_coopsetup(Gfx *DL)
         switch (row)
         {
             case COOP_SETUP_ROW_CHAR:
+                if (g_CounterOpMode)
+                {
+                    text = (u8 *)(g_CounterOpBondPad ? "Player 2\n" : "Player 1\n");
+                    break;
+                }
+
                 text = frontCoopGetPartnerCharName();
                 break;
             case COOP_SETUP_ROW_CONTROLS:
@@ -3421,6 +3459,7 @@ void init_menu07_missionselect(void)
     if (joyGetControllerCount() < 2)
     {
         g_CoopMode = FALSE;
+        g_CounterOpMode = FALSE;
     }
     if (maybe_is_in_menu)
     {
@@ -4025,7 +4064,7 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
     {
         x = 0x37;
         y = 0x12C;
-        DL = frontPrintText(DL, &x, &y, (u8 *)"2 PLAYER CO-OP\n",
+        DL = frontPrintText(DL, &x, &y, (u8 *)(g_CounterOpMode ? "2 PLAYER COUNTER-OP\n" : "2 PLAYER CO-OP\n"),
             ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 

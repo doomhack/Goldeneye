@@ -498,6 +498,7 @@ void lvlStageLoad(s32 stage)
 
         init_path_table_links();
         init_ejected_cartridges();
+        counterOpResetForStage();
 
         for (s0 = 0; s0 < getPlayerCount(); s0++)
         {

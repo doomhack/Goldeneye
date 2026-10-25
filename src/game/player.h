@@ -101,9 +101,15 @@ s32 viewIsHalfWidth(void);
 s32 isMpGame(void);
 s32 coopPartnerAlive(void);
 s32 coopPartnerCanRevive(void);
+#define COUNTEROP_BOND  0
+#define COUNTEROP_GUARD 1
 void coopNoteActivator(void);
 extern s32 g_CoopLastActivator;
 extern s32 g_CoopMode;
+extern s32 g_CounterOpMode;
+extern s32 g_CounterOpBondPad;
+s32 coopPlayerPerson(s32 player);
+s32 counterOpIsGuardPlayer(s32 player);
 extern s32 g_CoopPlayersOverlap;
 extern s32 g_CoopSoloView;
 extern s32 g_CoopSoloViewIsCinema;

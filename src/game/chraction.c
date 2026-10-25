@@ -2460,6 +2460,26 @@ s16 metal_ricochet_SFX[3] = {HIT_BULLET_METAL_A3_SFX, HIT_BULLET_METAL_A_SFX, HI
 coord3d D_80030A44 = {0, 0, 0};
 
 /**
+ * Counter-op: damage one player's shot does to the other, in the units of
+ * record_damage_kills (a player's full health is 1).
+ *
+ * The guard player is as tough as the guard they took over: Bond's shot,
+ * with its body part and difficulty multipliers already in damage, is
+ * measured against that guard's health. The guard player's shot on Bond
+ * does what a guard's shot does (see the guard firing code below).
+ */
+f32 counterOpPlayerDamage(s32 shooter, f32 damage, s32 weaponid)
+{
+    if (counterOpIsGuardPlayer(shooter))
+    {
+        return 0.125f * gunItemGetDestructionAmount(weaponid) * g_AiDamageModifier * get_007_damage_mod();
+    }
+
+    return damage / counterOpGetGuardHealth();
+}
+
+
+/**
  * Address 0x7F02727C.
 */
 bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bool isPlayer)
@@ -2467,6 +2487,12 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
     s32 hattype;                     //sp78
     PropRecord *myprop = self->prop; //sp60
     s32 padd;
+
+    // Counter-op: the guard player's shots pass through other guards.
+    if (isPlayer && counterOpIsGuardPlayer(get_cur_playernum()) && (myprop->type != PROP_TYPE_VIEWER))
+    {
+        return FALSE;
+    }
 
     // Handle hat shots.
     if (hitpart == HIT_HAT && self->handle_positiondata_hat)
@@ -2615,15 +2641,31 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
             damageToCause = 0.0f;
         }
 
-        if ((self->prop->type == PROP_TYPE_VIEWER) && g_CoopMode && isPlayer)
+        if ((self->prop->type == PROP_TYPE_VIEWER) && g_CoopMode && (g_CounterOpMode ? !isPlayer : isPlayer))
         {
-            // Co-op: no friendly fire.
+            // Co-op: no friendly fire. Counter-op: the two players hurt
+            // each other, and guards' stray shots don't hurt the guard
+            // player.
+            if (g_CounterOpMode)
+            {
+                return FALSE;
+            }
         }
         else if (self->prop->type == PROP_TYPE_VIEWER)
         {
             playerNum = get_cur_playernum();
+
+            if (g_CounterOpMode)
+            {
+                damageToCause = counterOpPlayerDamage(playerNum, damageToCause, weaponid);
+            }
+            else
+            {
+                damageToCause *= 0.125f;
+            }
+
             set_cur_player(getPlayerPointerIndex(self->prop));
-            record_damage_kills(damageToCause * 0.125f, vector->x, vector->z, playerNum, 1);
+            record_damage_kills(damageToCause, vector->x, vector->z, playerNum, 1);
             set_cur_player(playerNum);
         }
         else
@@ -9416,7 +9458,7 @@ void coopChrShotByCurrentPlayer(ChrRecord *self)
 {
     s32 player = get_cur_playernum();
 
-    if (!g_CoopMode || (self->prop == NULL) || (self->prop->type != PROP_TYPE_CHR) || (self->targetplayer == player)
+    if (!g_CoopMode || g_CounterOpMode || (self->prop == NULL) || (self->prop->type != PROP_TYPE_CHR) || (self->targetplayer == player)
         || g_CurrentPlayer->bonddead)
     {
         return;
@@ -9464,6 +9506,11 @@ static void coopChrSelectTarget(ChrRecord *self)
         {
             target = 0;
         }
+    }
+    else if (g_CounterOpMode)
+    {
+        // Counter-op: every guard, and every level script, is about Bond.
+        target = COUNTEROP_BOND;
     }
     else if ((self->targetlock60 > 0) && !g_playerPointers[target]->bonddead)
     {
