@@ -8000,7 +8000,8 @@ s16 get_curplayer_viewport_ulx(void)
 {
     if (viewIsHalfWidth())
     {
-        if ((get_cur_playernum() == 1) || (get_cur_playernum() == 3))
+        // Counter-op: each view stays where its controller's player sits.
+        if ((coopPlayerPerson(get_cur_playernum()) == 1) || (get_cur_playernum() == 3))
         {
                 return 0xa1;
         }
@@ -8068,7 +8069,7 @@ s16 bondviewGetCurrentPlayerViewportUly(void)
 
     if ((getViewCount() == 2) && !coopSplitSideBySide())
     {
-        if (get_cur_playernum() == 0)
+        if (coopPlayerPerson(get_cur_playernum()) == 0)
         {
 #ifdef VERSION_EU
             return 0;
@@ -10201,6 +10202,16 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
 
                             g_playerPlayerData[playerid].kill_counts[sp2C]++;
                         }
+                        else if (g_CounterOpMode && (playerid >= 0) && (playerid < getPlayerCount())
+                                 && (playerid != get_cur_playernum()))
+                        {
+                            // Counter-op: killing the other player counts
+                            // as a kill, as killing a guard does.
+                            sp2C = get_cur_playernum();
+                            set_cur_player(playerid);
+                            increment_num_kills_display_text_in_MP();
+                            set_cur_player(sp2C);
+                        }
 
                         bondviewKillCurrentPlayer();
                     }
@@ -10723,7 +10734,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
             {
                 view_left = viGetViewLeft() + 0x1E;
             }
-            else if (get_cur_playernum() & 1)
+            else if (coopPlayerPerson(get_cur_playernum()) & 1)
             {
                 view_left = viGetViewLeft() + 0xA;
             }
@@ -10745,7 +10756,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
                     view_top = (viGetViewTop() + viGetViewHeight()) - BONDVIEW_VIEW_TOP_OFFSET_2;
                 }
 #if !defined(VERSION_EU)
-                if (get_cur_playernum() == 1)
+                if (coopPlayerPerson(get_cur_playernum()) == 1)
                 {
                     view_top -= 8;
                 }

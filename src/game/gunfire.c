@@ -5968,7 +5968,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
                 leftx = 59;
                 rightx = 59;
             }
-            else if (get_cur_playernum() & 1)
+            else if (coopPlayerPerson(get_cur_playernum()) & 1)
             {
                 leftx = 43;
                 rightx = 127;

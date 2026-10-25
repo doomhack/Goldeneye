@@ -948,6 +948,28 @@ static s32 coopAnyPlayerStillHasItem(ITEM_IDS item)
 }
 
 /**
+ * Counter-op: the player who used the object a level script just checked,
+ * for the rest of this ai() run, or -1.
+ */
+static s32 s_CounterOpTextPlayer = -1;
+
+/**
+ * Counter-op: switches to the player a script message is for. Returns the
+ * player to switch back to afterwards.
+ */
+static s32 counterOpTextBegin(void)
+{
+    s32 prev = get_cur_playernum();
+
+    if (s_CounterOpTextPlayer >= 0)
+    {
+        set_cur_player(s_CounterOpTextPlayer);
+    }
+
+    return prev;
+}
+
+/**
  * Co-op: an object a level script checks was used. The rest of the script
  * (messages such as "Door unlocked", objectives, fades) acts on the player
  * who used it, as for the level conditions in coopAiEnd.
@@ -956,7 +978,19 @@ static void coopAiActOnActivator(ChrRecord *chr)
 {
     s32 player = g_CoopLastActivator;
 
-    if (!g_CoopMode || g_CounterOpMode || (chr == NULL) || (player < 0) || (player >= getPlayerCount()) || g_playerPointers[player]->bonddead)
+    // Counter-op: the script stays about Bond, but its messages go to
+    // whoever used the object.
+    if (g_CounterOpMode)
+    {
+        if ((player >= 0) && (player < getPlayerCount()) && !g_playerPointers[player]->bonddead)
+        {
+            s_CounterOpTextPlayer = player;
+        }
+
+        return;
+    }
+
+    if (!g_CoopMode || (chr == NULL) || (player < 0) || (player >= getPlayerCount()) || g_playerPointers[player]->bonddead)
     {
         return;
     }
@@ -1141,6 +1175,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     struct CoopAiState coop;
 
     coop.start = -1;
+    s_CounterOpTextPlayer = -1;
 
     if (EntityType == PROP_TYPE_CHR)
     {
@@ -3973,11 +4008,13 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #ifdef ENABLE_LOG
                     osSyncPrintf("USING HUD MESSAGE Stringy = %d, ai->txt = %d\n", text, ntohs(ai->txt));
     #endif
+                    s32 prevplayer = counterOpTextBegin();
     #ifdef BUGFIX_R1
                     jp_hudmsgBottomShow(text);
     #else
                     hudmsgBottomShow(text);
     #endif
+                    set_cur_player(prevplayer);
                     Offset += sizeof(AiTextPrintBottomRecord);
                     break;
                 }
@@ -3992,7 +4029,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
     #endif
 
+                    s32 prevplayer = counterOpTextBegin();
                     hudmsgTopShow(text);
+                    set_cur_player(prevplayer);
                     Offset += sizeof(AiTextPrintTopRecord);
                     break;
                 }
