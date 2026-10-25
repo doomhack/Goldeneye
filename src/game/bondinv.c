@@ -1108,6 +1108,20 @@ s32 bondinvGetTextbyInvIndex(s32 index)
     return 0;
 }
 
+/**
+ * Counter-op: the guard player's empty hand is the suicide pill
+ * (counterOpSuicidePillTick), so the watch names it that instead of "-".
+ */
+static char *bondinvCounterOpPillName(ITEM_IDS weaponnum)
+{
+    if ((weaponnum == ITEM_UNARMED) && counterOpIsGuardPlayer(get_cur_playernum()))
+    {
+        return "suicide pill\n";
+    }
+
+    return NULL;
+}
+
 u16 *bondinvGetNameByIndex(s32 index)
 {
     InvItem      *item      = bondinvGetItemByIndex(index);
@@ -1163,6 +1177,11 @@ u16 *bondinvGetNameByIndex(s32 index)
             }
 #endif
         }
+    }
+
+    if (item && bondinvCounterOpPillName(weaponnum))
+    {
+        return (u16 *)bondinvCounterOpPillName(weaponnum);
     }
 
     return get_ptr_short_watch_text_for_item(weaponnum);
@@ -1223,6 +1242,11 @@ u16 *bondinvGetLongNameByIndex(s32 index)
             }
 #endif
         }
+    }
+
+    if (item && bondinvCounterOpPillName(weaponnum))
+    {
+        return (u16 *)bondinvCounterOpPillName(weaponnum);
     }
 
     return get_ptr_long_watch_text_for_item(weaponnum);
