@@ -2926,7 +2926,9 @@ void bondviewCalcUpdatePlayerCollision(struct coord3d *offset, s32 allow_scoot)
 
     bondviewUpdatePlayerRoom(g_CurrentPlayer);
 
-    if (g_CurrentPlayer->field_488.current_tile_ptr != NULL)
+    // Counter-op: only Bond's objectives are tracked, so rooms the guard
+    // player enters (Depot's train) don't count.
+    if ((g_CurrentPlayer->field_488.current_tile_ptr != NULL) && !counterOpIsGuardPlayer(get_cur_playernum()))
     {
         objectivestatusCheckRoomEntered(g_CurrentPlayer->field_488.current_tile_ptr->room);
     }
