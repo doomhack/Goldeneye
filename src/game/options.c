@@ -4134,11 +4134,14 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
                 setTextOverlapCorrection((j_text_trigger) ? (1) : (5));
                 sprintf(pageTitle, langGet(0xac3c));
 
-                for (i = 0; i < objectiveGetCount(); i++)
+                // Counter-op: the guard player has one objective of their own.
+                s32 guardplayer = counterOpIsGuardPlayer(get_cur_playernum());
+
+                for (i = 0; i < (guardplayer ? 1 : objectiveGetCount()); i++)
                 {
-                    if (get_difficulty_for_objective(i) <= lvlGetSelectedDifficulty())
+                    if (guardplayer || (get_difficulty_for_objective(i) <= lvlGetSelectedDifficulty()))
                     {
-                        objectiveText = get_text_for_objective(i);
+                        objectiveText = guardplayer ? "Kill Bond\n" : get_text_for_objective(i);
                         objectiveBuffer[0] = '\0';
 
                         for (j = 0; j < lineCount; j++)
@@ -4179,7 +4182,7 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
                             strcat(objectiveBuffer, D_80058454);
                         }
 
-                        switch (get_status_of_objective(i))
+                        switch (guardplayer ? OBJECTIVESTATUS_INCOMPLETE : get_status_of_objective(i))
                         {
                             case OBJECTIVESTATUS_INCOMPLETE:
                                 strcat(objectiveBuffer, incompleteText);

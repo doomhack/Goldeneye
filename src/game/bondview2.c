@@ -5664,7 +5664,9 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         else if (g_PlayerTankProp != NULL
             && g_PlayerTankProp->type == PROP_TYPE_OBJ
             && g_PlayerTankProp->obj->type == PROPDEF_TANK
-            && g_BondCanEnterTank)
+            && g_BondCanEnterTank
+            // Counter-op: the guard player can't drive the tank.
+            && !counterOpIsGuardPlayer(get_cur_playernum()))
         {
             spEC = (struct TankRecord *)g_PlayerTankProp->obj;
 
@@ -5717,6 +5719,8 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     {
         moveData.triggerOn = 0;
     }
+
+    moveData.triggerOn = counterOpSuicidePillTick(moveData.triggerOn);
 
     gunTickGameplay(moveData.triggerOn);
 
@@ -9297,6 +9301,55 @@ static s32 s_CounterOpBody = -1;
 static f32 s_CounterOpGuardHealth = 4.0f;
 static ITEM_IDS s_CounterOpWeapons[2];
 
+/**
+ * Counter-op: a place the guard player can appear, as the guard who stands
+ * (or stood) there.
+ */
+struct CounterOpSpawn
+{
+    coord3d pos;
+    StandTile *stan;
+    f32 look_angle;
+    f32 height;
+    f32 health;
+    s16 head;
+    s16 body;
+    s16 chrnum;
+    ITEM_IDS weapons[2];
+    ChrRecord *chr;
+};
+
+/**
+ * Counter-op: where each guard the guard player could take over stood when
+ * the mission started, so the guard player can still appear once those
+ * guards are dead. -1 until recorded.
+ */
+#define COUNTEROP_MAX_STARTS 80
+static struct CounterOpSpawn s_CounterOpStarts[COUNTEROP_MAX_STARTS];
+static s32 s_CounterOpStartCount = -1;
+
+/**
+ * Counter-op: for the end screen, the bodies the guard player has used and
+ * the damage they did to Bond, in percent of his health and armour.
+ */
+static s32 s_CounterOpBodiesUsed = 0;
+static f32 s_CounterOpDamageToBond = 0.0f;
+
+s32 counterOpGetBodiesUsed(void)
+{
+    return s_CounterOpBodiesUsed;
+}
+
+f32 counterOpGetDamageToBond(void)
+{
+    return s_CounterOpDamageToBond;
+}
+
+void counterOpNoteDamageToBond(f32 percent)
+{
+    s_CounterOpDamageToBond += percent;
+}
+
 void counterOpResetForStage(void)
 {
     s32 i;
@@ -9312,6 +9365,9 @@ void counterOpResetForStage(void)
     s_CounterOpHead = -1;
     s_CounterOpBody = -1;
     s_CounterOpGuardHealth = 4.0f;
+    s_CounterOpStartCount = -1;
+    s_CounterOpBodiesUsed = 0;
+    s_CounterOpDamageToBond = 0.0f;
 }
 
 /**
@@ -9339,40 +9395,25 @@ s32 counterOpGetGuardModels(s32 *head, s32 *body)
 }
 
 /**
- * Counter-op: TRUE if Bond has a clear line of sight to chr.
+ * Counter-op: TRUE if Bond has a clear line of sight to a point height
+ * above the floor at pos.
  */
-static s32 counterOpBondCanSee(ChrRecord *chr, PropRecord *bondprop)
+static s32 counterOpBondCanSeePos(coord3d *pos, StandTile *stan, f32 height, PropRecord *bondprop)
 {
-    StandTile *stan = chr->prop->stan;
-    f32 height = chr->chrheight - 20.0f;
-
-    return stanTestLineUnobstructed(&stan, chr->prop->pos.x, chr->prop->pos.z, bondprop->pos.x, bondprop->pos.z,
+    return stanTestLineUnobstructed(&stan, pos->x, pos->z, bondprop->pos.x, bondprop->pos.z,
             CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, height, height, 0.0f, 1.0f)
         && (stan == bondprop->stan);
 }
 
 /**
- * Counter-op: TRUE if the guard player may take over chr: a living, armed
- * guard, out of Bond's sight and not too close to him.
+ * Counter-op: TRUE if a spot is far enough from Bond and out of his sight
+ * for the guard player to appear there. *distp is the squared distance.
  */
-static s32 counterOpGuardCanBeTaken(ChrRecord *chr, PropRecord *bondprop, f32 *distp)
+static s32 counterOpSpotIsHidden(coord3d *pos, StandTile *stan, f32 height, PropRecord *bondprop, f32 *distp)
 {
-    f32 dx;
-    f32 dz;
+    f32 dx = pos->x - bondprop->pos.x;
+    f32 dz = pos->z - bondprop->pos.z;
 
-    if ((chr->model == NULL) || (chr->prop == NULL) || (chr->prop->type != PROP_TYPE_CHR)
-        || !(chr->prop->flags & PROPFLAG_ENABLED)
-        || (chr->actiontype == ACT_DIE) || (chr->actiontype == ACT_DEAD)
-        || (chr->damage >= chr->maxdamage)
-        || (chr->chrflags & (CHRFLAG_INVINCIBLE | CHRFLAG_HIDDEN))
-        || (chr->hidden & CHRHIDDEN_REMOVE)
-        || ((chr->weapons_held[GUNRIGHT] == NULL) && (chr->weapons_held[GUNLEFT] == NULL)))
-    {
-        return FALSE;
-    }
-
-    dx = chr->prop->pos.x - bondprop->pos.x;
-    dz = chr->prop->pos.z - bondprop->pos.z;
     *distp = (dx * dx) + (dz * dz);
 
     if (*distp < (COUNTEROP_MIN_GUARD_DIST * COUNTEROP_MIN_GUARD_DIST))
@@ -9380,7 +9421,179 @@ static s32 counterOpGuardCanBeTaken(ChrRecord *chr, PropRecord *bondprop, f32 *d
         return FALSE;
     }
 
-    return !counterOpBondCanSee(chr, bondprop);
+    return !counterOpBondCanSeePos(pos, stan, height, bondprop);
+}
+
+/**
+ * Counter-op: the named characters (allies, bosses, scientists and
+ * civilians) by body or head. Level scripts need them, so the guard player
+ * never takes one over.
+ */
+static const s16 s_CounterOpExcludedModels[] = {
+    BODY_Boris, BODY_Ourumov, BODY_Trevelyan_Janus, BODY_Trevelyan_006,
+    BODY_Valentin_, BODY_Xenia, BODY_Baron_Samedi, BODY_Jaws, BODY_Mayday,
+    BODY_Oddjob, BODY_Natalya_Skirt, BODY_Siberian_Guard_1_Mishkin,
+    BODY_Naval_Officer, BODY_Rosika, BODY_Scientist_2_Female,
+    BODY_Civilian_1_Female, BODY_Civilian_4, BODY_Civilian_2, BODY_Civilian_3,
+    BODY_Scientist_1_Male, BODY_Helicopter_Pilot,
+    BODY_Brosnan_Tuxedo,
+    BODY_Male_Dave_Dr_Doak, BODY_Male_Mishkin,
+};
+
+static s32 counterOpChrIsExcluded(ChrRecord *chr)
+{
+    s32 i;
+
+    if (chr->chrflags & CHRFLAG_COUNT_DEATH_AS_CIVILIAN)
+    {
+        return TRUE;
+    }
+
+    for (i = 0; i < (s32)(sizeof(s_CounterOpExcludedModels) / sizeof(s_CounterOpExcludedModels[0])); i++)
+    {
+        if ((chr->bodynum == s_CounterOpExcludedModels[i]) || (chr->headnum == s_CounterOpExcludedModels[i]))
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+/**
+ * Counter-op: TRUE if chr is a living, armed guard the guard player may
+ * become, wherever they are.
+ */
+static s32 counterOpChrIsGuard(ChrRecord *chr)
+{
+    return (chr->model != NULL) && (chr->prop != NULL) && (chr->prop->type == PROP_TYPE_CHR)
+        && (chr->prop->flags & PROPFLAG_ENABLED)
+        && (chr->actiontype != ACT_DIE) && (chr->actiontype != ACT_DEAD)
+        && (chr->damage < chr->maxdamage)
+        && !(chr->chrflags & (CHRFLAG_INVINCIBLE | CHRFLAG_HIDDEN))
+        && !(chr->hidden & CHRHIDDEN_REMOVE)
+        && ((chr->weapons_held[GUNRIGHT] != NULL) || (chr->weapons_held[GUNLEFT] != NULL))
+        && !counterOpChrIsExcluded(chr);
+}
+
+/**
+ * Counter-op: TRUE if the guard player may take over chr: a guard (see
+ * counterOpChrIsGuard), out of Bond's sight and not too close to him.
+ */
+static s32 counterOpGuardCanBeTaken(ChrRecord *chr, PropRecord *bondprop, f32 *distp)
+{
+    if (!counterOpChrIsGuard(chr))
+    {
+        return FALSE;
+    }
+
+    return counterOpSpotIsHidden(&chr->prop->pos, chr->prop->stan, chr->chrheight - 20.0f, bondprop, distp);
+}
+
+/**
+ * Counter-op: fills a spawn from a guard as they are now.
+ */
+static void counterOpSpawnFromChr(struct CounterOpSpawn *spawn, ChrRecord *chr)
+{
+    s32 hand;
+
+    spawn->pos = chr->prop->pos;
+    spawn->stan = chr->prop->stan;
+    // A model's yaw turns the other way to a player's view.
+    spawn->look_angle = M_TAU_F - getsubroty(chr->model);
+    spawn->height = chr->chrheight - 20.0f;
+    spawn->health = chr->maxdamage;
+    spawn->head = chr->headnum;
+    spawn->body = chr->bodynum;
+    spawn->chrnum = chr->chrnum;
+    spawn->chr = chr;
+
+    for (hand = GUNRIGHT; hand <= GUNLEFT; hand++)
+    {
+        spawn->weapons[hand] = (chr->weapons_held[hand] != NULL) ? chr->weapons_held[hand]->weapon->weaponnum : ITEM_UNARMED;
+    }
+}
+
+/**
+ * Counter-op: records where every guard stands as the mission starts.
+ */
+static void counterOpRecordStarts(void)
+{
+    s32 i;
+
+    s_CounterOpStartCount = 0;
+
+    for (i = 0; (i < g_NumChrSlots) && (s_CounterOpStartCount < COUNTEROP_MAX_STARTS); i++)
+    {
+        ChrRecord *chr = &g_ChrSlots[i];
+
+        if (counterOpChrIsGuard(chr))
+        {
+            counterOpSpawnFromChr(&s_CounterOpStarts[s_CounterOpStartCount++], chr);
+        }
+    }
+}
+
+/**
+ * Counter-op: when no guard can be taken over, picks the start of a guard
+ * who has died (or been taken over) that is out of Bond's sight, nearest
+ * first as for guards. FALSE if there is none either.
+ */
+static s32 counterOpPickDeadGuardStart(struct CounterOpSpawn *spawn)
+{
+    PropRecord *bondprop = g_playerPointers[COUNTEROP_BOND]->prop;
+    struct CounterOpSpawn *pick = NULL;
+    struct CounterOpSpawn *nearest = NULL;
+    f32 nearestdist = 0.0f;
+    s32 count = 0;
+    s32 i;
+
+    for (i = 0; i < s_CounterOpStartCount; i++)
+    {
+        struct CounterOpSpawn *start = &s_CounterOpStarts[i];
+        f32 dist;
+
+        // Still alive: they are a guard to take over, not a start to use.
+        if ((start->chr->chrnum == start->chrnum) && counterOpChrIsGuard(start->chr))
+        {
+            continue;
+        }
+
+        if (!counterOpSpotIsHidden(&start->pos, start->stan, start->height, bondprop, &dist))
+        {
+            continue;
+        }
+
+        if ((nearest == NULL) || (dist < nearestdist))
+        {
+            nearest = start;
+            nearestdist = dist;
+        }
+
+        if (dist <= (COUNTEROP_MAX_GUARD_DIST * COUNTEROP_MAX_GUARD_DIST))
+        {
+            count++;
+
+            if ((randomGetNext() % count) == 0)
+            {
+                pick = start;
+            }
+        }
+    }
+
+    if (pick == NULL)
+    {
+        pick = nearest;
+    }
+
+    if (pick == NULL)
+    {
+        return FALSE;
+    }
+
+    *spawn = *pick;
+    spawn->chr = NULL;
+    return TRUE;
 }
 
 /**
@@ -9466,44 +9679,102 @@ static void counterOpGiveGuardWeapons(void)
 
     give_cur_player_ammo(get_ammo_type_for_weapon(right), get_max_ammo_for_type(get_ammo_type_for_weapon(right)));
 
+    // The empty hand is the suicide pill (counterOpSuicidePillTick).
+    bondinvAddInvItem(ITEM_UNARMED);
+
     currentPlayerEquipWeaponWrapper(GUNLEFT, left);
     currentPlayerEquipWeaponWrapper(GUNRIGHT, right);
 }
 
 /**
+ * Counter-op: the guard player's empty hand is a suicide pill, a way out of
+ * a bad spawn. Pressing fire with it selected is a death that gives Bond no
+ * kill, followed by the usual Press Start prompt. Returns the trigger state
+ * left for the gun code.
+ */
+static s32 s_CounterOpPillTrigger = FALSE;
+static s32 s_CounterOpPillSelected = FALSE;
+
+s32 counterOpSuicidePillTick(s32 triggerOn)
+{
+    s32 pressed;
+    s32 selected;
+
+    if (!counterOpIsGuardPlayer(get_cur_playernum()) || g_CurrentPlayer->bonddead)
+    {
+        s_CounterOpPillSelected = FALSE;
+        return triggerOn;
+    }
+
+    // Only a fresh press, so the fire button still held from the gun
+    // doesn't take the pill.
+    pressed = triggerOn && !s_CounterOpPillTrigger;
+    s_CounterOpPillTrigger = triggerOn;
+
+    selected = (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_UNARMED)
+               && (getCurrentPlayerWeaponId(GUNLEFT) == ITEM_UNARMED);
+
+    if (selected && !s_CounterOpPillSelected)
+    {
+        HUDMESSAGEBOTTOM("Suicide pill: fire to use\n");
+    }
+
+    s_CounterOpPillSelected = selected;
+
+    if (!selected)
+    {
+        return triggerOn;
+    }
+
+    if (pressed)
+    {
+        bondviewKillCurrentPlayer();
+    }
+
+    return FALSE;
+}
+
+/**
  * Counter-op: the current (guard) player takes over a guard. The guard
  * leaves the level and the player appears where they stood, wearing their
- * head and body, carrying their guns, with their toughness. Returns FALSE
- * if no guard can be taken over right now.
+ * head and body, carrying their guns, with their toughness. With no guard
+ * to take over, the player appears as a dead guard where that guard stood
+ * at the start, so they are never out. Returns FALSE if neither can be
+ * done right now.
  */
 s32 counterOpTakeOverGuard(void)
 {
-    ChrRecord *chr = counterOpPickGuard();
-    coord3d pos;
-    StandTile *stan;
-    f32 look_angle;
+    ChrRecord *chr;
+    struct CounterOpSpawn spawn;
     s32 hand;
 
-    if (chr == NULL)
+    if (s_CounterOpStartCount < 0)
+    {
+        counterOpRecordStarts();
+    }
+
+    chr = counterOpPickGuard();
+
+    if (chr != NULL)
+    {
+        counterOpSpawnFromChr(&spawn, chr);
+
+        // The guard leaves (with their guns) on their next tick.
+        chr->hidden |= CHRHIDDEN_REMOVE;
+    }
+    else if (!counterOpPickDeadGuardStart(&spawn))
     {
         return FALSE;
     }
 
-    pos = chr->prop->pos;
-    stan = chr->prop->stan;
-    // A model's yaw turns the other way to a player's view.
-    look_angle = M_TAU_F - getsubroty(chr->model);
-    s_CounterOpHead = chr->headnum;
-    s_CounterOpBody = chr->bodynum;
-    s_CounterOpGuardHealth = chr->maxdamage;
+    s_CounterOpHead = spawn.head;
+    s_CounterOpBody = spawn.body;
+    s_CounterOpGuardHealth = spawn.health;
 
     for (hand = GUNRIGHT; hand <= GUNLEFT; hand++)
     {
-        s_CounterOpWeapons[hand] = (chr->weapons_held[hand] != NULL) ? chr->weapons_held[hand]->weapon->weaponnum : ITEM_UNARMED;
+        s_CounterOpWeapons[hand] = spawn.weapons[hand];
     }
-
-    // The guard leaves (with their guns) on their next tick.
-    chr->hidden |= CHRHIDDEN_REMOVE;
 
     if (g_CurrentPlayer->bonddead)
     {
@@ -9525,7 +9796,7 @@ s32 counterOpTakeOverGuard(void)
         currentPlayerStartChrFade(120.0f, 1.0f);
     }
 
-    coopPlaceCurrentPlayer(&pos, stan, look_angle);
+    coopPlaceCurrentPlayer(&spawn.pos, spawn.stan, spawn.look_angle);
     counterOpGiveGuardWeapons();
 
     g_CurrentPlayer->bondhealth = 1.0f;
@@ -9543,6 +9814,7 @@ s32 counterOpTakeOverGuard(void)
     bondviewUpdatePlayerRoom(g_CurrentPlayer);
 
     s_CounterOpPossessed = TRUE;
+    s_CounterOpBodiesUsed++;
     return TRUE;
 }
 

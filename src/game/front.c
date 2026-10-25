@@ -7651,6 +7651,23 @@ Gfx * constructor_menu0C_missionfailed(Gfx *DL)
     y = 0xA7;
     DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, phi_v1, viGetX(), viGetY(), 0, 0);
 
+    // Counter-op: Bond wins by completing the mission, the guard player by
+    // stopping him. Name the controller too, as either can be Bond.
+    if (g_CounterOpMode)
+    {
+        s32 bondwins = frontCompleteAllObjectivesAliveSuccess();
+        char winner[48];
+
+        sprintf(winner, "Winner: %s (Player %d)\n", bondwins ? "Bond" : "Guard",
+                (bondwins ? coopPlayerPerson(COUNTEROP_BOND) : coopPlayerPerson(COUNTEROP_GUARD)) + 1);
+        x2 = 0;
+        y2 = 0;
+        textMeasure(&y2, &x2, langGet(getStringID(LTITLE, TITLE_STR_98_REPORT)), ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        x = x2 + 0x37 + 0x10;
+        y = 0x8F;
+        DL = frontPrintText(DL, &x, &y, winner, ptrFontZurichBoldChars, ptrFontZurichBold, bondwins ? 0xFF : (0x78000000 | 0xFF), viGetX(), viGetY(), 0, 0);
+    }
+
     DL = print_objectives_and_status_to_menu(DL, 0xBF, &stagename, 1);
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
@@ -7804,11 +7821,19 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
     {
         x = columns[i];
         y = 0xCC;
-        sprintf(text, "PLAYER %d\n", i + 1);
+        if (g_CounterOpMode)
+        {
+            sprintf(text, (i == COUNTEROP_BOND) ? "BOND\n" : "GUARD\n");
+        }
+        else
+        {
+            sprintf(text, "PLAYER %d\n", i + 1);
+        }
         DL = frontPrintText(DL, &x, &y, (s8 *)text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
-    for (row = 0; row < 4; row++)
+    // Counter-op adds the guard player's bodies used and damage to Bond.
+    for (row = 0; row < (g_CounterOpMode ? 6 : 4); row++)
     {
         static const s32 labels[4] = {
             TITLE_STR_106_ACCURACY,  // Accuracy:
@@ -7820,7 +7845,14 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
 
         x = 0x37;
         y = rowy;
-        DL = frontPrintText(DL, &x, &y, langGet(getStringID(LTITLE, labels[row])), ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        if (row < 4)
+        {
+            DL = frontPrintText(DL, &x, &y, langGet(getStringID(LTITLE, labels[row])), ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        }
+        else
+        {
+            DL = frontPrintText(DL, &x, &y, (s8 *)((row == 4) ? "Bodies used:\n" : "Damage to Bond:\n"), ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        }
 
         for (i = 0; i < 2; i++)
         {
@@ -7845,8 +7877,21 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
                 case 2:
                     sprintf(text, "%d (%d%%)", headshots, (s32)floorFloat(((headshots * 100.0f) / ((allhits > 0) ? allhits : 1)) + 0.5f));
                     break;
-                default:
+                case 3:
                     sprintf(text, "%d", get_curplay_killcount());
+                    break;
+                case 4:
+                    sprintf(text, (i == COUNTEROP_BOND) ? "-" : "%d", counterOpGetBodiesUsed());
+                    break;
+                default:
+                    if (i == COUNTEROP_BOND)
+                    {
+                        sprintf(text, "-");
+                    }
+                    else
+                    {
+                        sprintf(text, "%d%%", (s32)floorFloat(counterOpGetDamageToBond() + 0.5f));
+                    }
                     break;
             }
 

@@ -9682,6 +9682,13 @@ bool objTestForInteract(PropRecord* prop)
 
     obj = prop->obj;
 
+    // Counter-op: of the objects, the guard player can only use alarms.
+    // Consoles, switches and mission objects are Bond's.
+    if (counterOpIsGuardPlayer(get_cur_playernum()) && (obj->type != PROPDEF_ALARM))
+    {
+        return TRUE;
+    }
+
     if (((obj->type == PROP_TYPE_PLAYER)
             || (obj->flags & PROPFLAG_00080000)
             || (obj->runtime_bitflags & (RUNTIMEBITFLAG_00000001 | RUNTIMEBITFLAG_00000002 | RUNTIMEBITFLAG_TAGGED))))
@@ -14027,8 +14034,13 @@ TICKOP propdoorInteract(PropRecord* doorprop)
 #endif
             }
         }
-        door->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
-        coopNoteActivator();
+        // Counter-op: the guard player trying a locked door isn't news to
+        // the level scripts.
+        if (!counterOpIsGuardPlayer(get_cur_playernum()))
+        {
+            door->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
+            coopNoteActivator();
+        }
         door->flags2 |= PROPFLAG2_00000008;
         #ifdef XBLA
         //part of showing key marker
