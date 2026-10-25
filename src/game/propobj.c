@@ -10462,6 +10462,13 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
         return TICKOP_NONE;
     }
 
+    // Counter-op: the guard player only has their guard's gun, so they
+    // can't take Bond's weapons or ammo.
+    if (counterOpIsGuardPlayer(get_cur_playernum()))
+    {
+        return TICKOP_NONE;
+    }
+
     switch (obj->type)
     {
         case PROPDEF_KEY:

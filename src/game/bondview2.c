@@ -9281,12 +9281,6 @@ void coopRespawnPlayer(void)
 #define COUNTEROP_MIN_GUARD_DIST 2000.0f
 
 /**
- * Counter-op: the guard player is given one of this many nearest guards
- * that qualify, at random.
- */
-#define COUNTEROP_GUARD_CHOICES 3
-
-/**
  * Counter-op: the guard the guard player took over last. Their body, guns
  * and toughness are that guard's.
  */
@@ -9389,12 +9383,12 @@ static s32 counterOpGuardCanBeTaken(ChrRecord *chr, PropRecord *bondprop, f32 *d
 static ChrRecord *counterOpPickGuard(void)
 {
     PropRecord *bondprop = g_playerPointers[COUNTEROP_BOND]->prop;
-    ChrRecord *best[COUNTEROP_GUARD_CHOICES];
-    f32 bestdist[COUNTEROP_GUARD_CHOICES];
+    ChrRecord *pick = NULL;
     s32 count = 0;
     s32 i;
-    s32 j;
 
+    // Any guard that qualifies, at random, so Bond can't tell which guard
+    // the guard player will be.
     for (i = 0; i < g_NumChrSlots; i++)
     {
         ChrRecord *chr = &g_ChrSlots[i];
@@ -9405,34 +9399,15 @@ static ChrRecord *counterOpPickGuard(void)
             continue;
         }
 
-        // Keep the nearest few, nearest first.
-        for (j = count; (j > 0) && (bestdist[j - 1] > dist); j--)
-        {
-            if (j < COUNTEROP_GUARD_CHOICES)
-            {
-                best[j] = best[j - 1];
-                bestdist[j] = bestdist[j - 1];
-            }
-        }
+        count++;
 
-        if (j < COUNTEROP_GUARD_CHOICES)
+        if ((randomGetNext() % count) == 0)
         {
-            best[j] = chr;
-            bestdist[j] = dist;
-
-            if (count < COUNTEROP_GUARD_CHOICES)
-            {
-                count++;
-            }
+            pick = chr;
         }
     }
 
-    if (count == 0)
-    {
-        return NULL;
-    }
-
-    return best[randomGetNext() % count];
+    return pick;
 }
 
 /**
