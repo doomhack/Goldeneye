@@ -123,6 +123,12 @@ ifeq ($(VERSION), USB)
  LDFILEOPTS := -DVERSION_$(LANG) -DOUTCODE=$(OUTCODE) -DENABLE_USB
 endif
 
+# make UNLOCK_ALL=1: every mission and difficulty (007 too) is open in
+# every save folder, for testing
+ifeq ($(UNLOCK_ALL), 1)
+  LCDEFS += -DUNLOCK_ALL_LEVELS
+endif
+
 ALLOWED_VERSIONS := US EU JP DEBUG USB
 ALLOWED_COUNTRYCODE := u e j
 
