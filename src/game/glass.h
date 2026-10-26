@@ -79,10 +79,7 @@ extern s32 SHATTERED_WINDOW_PIECES_BUFFER_LEN;
 extern s_shattered_window_piece* ptr_shattered_window_pieces;
 extern s32 g_NextShardNum;
 
-extern u32 D_80040980;
-extern u32 D_80040984;
-extern u32 D_80040988;
-extern u32 D_8004098C;
+extern Vtx D_80040980;
 extern u32 D_80040990;
 extern u32 watch_screen_index;
 extern u32 controller_options_index;

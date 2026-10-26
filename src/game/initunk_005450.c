@@ -6,14 +6,7 @@
 
 extern struct ModelHitEntry *g_ModelHitFreeList; // canonically freedist
 
-/**
- * These are linker/BSS labels. g_ModelHitEntries is the start of a
- * ModelHitEntry[600] pool. g_ModelHitEntriesPenultimate labels entry 598
- * inside that same pool and is kept as a raw char symbol so IDO emits the
- * original relocation.
- */
-extern char g_ModelHitEntries[]; // dword_CODE_bss_80076A50
-extern char g_ModelHitEntriesPenultimate[]; // dword_CODE_bss_80079908
+extern ModelHitEntry g_ModelHitEntries[MODELHITENTRIES_LEN]; // dword_CODE_bss_80076A50
 
 /**
  * Address: 7F005450
@@ -26,7 +19,7 @@ extern char g_ModelHitEntriesPenultimate[]; // dword_CODE_bss_80079908
 void initModelHitEntryFreeList(void)
 {
     s32 i;
-    ModelHitEntry *entries = (ModelHitEntry *)g_ModelHitEntries;
+    ModelHitEntry *entries = g_ModelHitEntries;
 
     g_ModelHitFreeList = entries;
 
@@ -38,5 +31,5 @@ void initModelHitEntryFreeList(void)
         entries[i].prev = &entries[i - 1];
     }
 
-    ((ModelHitEntry *)g_ModelHitEntries)[MODELHITENTRIES_LEN - 1].prev = (ModelHitEntry *)g_ModelHitEntriesPenultimate;
+    g_ModelHitEntries[MODELHITENTRIES_LEN - 1].prev = &g_ModelHitEntries[MODELHITENTRIES_LEN - 2];
 }
