@@ -24,7 +24,7 @@
 #include "game/prop/explosion.h"
 #include "game/chr/chrai.h"
 #include "game/audio/mp_music.h"
-#include "game/model/initunk_005520.h"
+#include "game/model/model.h"
 #include "game/gfx/initmttex.h"
 #include "game/prop/glass.h"
 #include "game/gfx/image_bank.h"
@@ -37,7 +37,7 @@
 #include "game/mission/objective.h"
 #include "game/menu/mpmenu.h"
 #include "game/gfx/vtxstore.h"
-#include "game/model/initunk_005450.h"
+#include "game/model/jointlist.h"
 #include "game/prop/initobjects.h"
 #include "game/chr/initguards.h"
 #include "game/prop/prop.h"
@@ -472,7 +472,7 @@ void lvlStageLoad(s32 stage)
     something_with_stage_objectives();
     mpwatchUnpauseGame();
     sub_GAME_7F09B820();
-    initModelHitEntryFreeList();
+    jointListInit();
     modelmgrResetSlotCounts();
     init_load_objpos_table();
     reinit_between_menus();

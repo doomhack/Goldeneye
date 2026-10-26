@@ -334,7 +334,7 @@ s32 modelLoad(s32 modelid)
 {
     if (PitemZ_entries[modelid].header->RootNode == NULL)
     {
-        fileLoad(PitemZ_entries[modelid].header,PitemZ_entries[modelid].filename/*, "prop"*/);
+        modelFileLoadToPool(PitemZ_entries[modelid].header,PitemZ_entries[modelid].filename/*, "prop"*/);
         modelCalculateRwDataLen(PitemZ_entries[modelid].header);
         return TRUE;
     }

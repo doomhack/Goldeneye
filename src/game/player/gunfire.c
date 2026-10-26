@@ -20,7 +20,9 @@
 #include "random.h"
 #include "game/math/trig.h"
 #include "game/model/loadobjectmodel.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/gfx/image.h"
 #include "game/gfx/tex.h"
 #include "game/debug/debugmenu_handler.h"
@@ -1555,7 +1557,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
         {
             model = handptr->rocket->model;
  
-            subdraw(&renderdata, model);
+            modelRender(&renderdata, model);
             bondviewTransformManyPosToViewMatrix(model->render_pos, model->obj->numMatrices);
  
             if (handptr->firedrocket != 0) 
@@ -1578,7 +1580,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
             }
         }
  
-        subdraw(&renderdata, (Model *)&handptr->field_B68);
+        modelRender(&renderdata, (Model *)&handptr->field_B68);
         gdl = renderdata.gdl;
  
         if (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) 
@@ -1763,7 +1765,7 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
     }
 
     renderdata.zbufferenabled = FALSE;
-    subdraw(&renderdata, (Model *) &model);
+    modelRender(&renderdata, (Model *) &model);
     gdl = renderdata.gdl;
     mtxPushUnitWorldScale();
     j = 0;
@@ -1923,7 +1925,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     }
 
     renderdata.zbufferenabled = TRUE;
-    subdraw(&renderdata, &modelstack);
+    modelRender(&renderdata, &modelstack);
     gdl = renderdata.gdl;
     mtxPushUnitWorldScale();
 
@@ -2158,7 +2160,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
         modelUpdateNodeRelations(&modelstack);
         renderdata.gdl = gdl;
-        subdraw(&renderdata, &modelstack);
+        modelRender(&renderdata, &modelstack);
         gdl = renderdata.gdl;
         mtxPushUnitWorldScale();
 
@@ -3240,7 +3242,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                     sp190 = (cosf(((f32) (handptr->field_890 - sp1A4) * M_PI_F) / (f32) sp1A0) * 0.5f) + 0.5f;
                 }
 
-                temp_f0_2 = sub_GAME_7F06D0CC(handptr->field_8C8, handptr->field_8D8, sp190);
+                temp_f0_2 = modelLerpAngle(handptr->field_8C8, handptr->field_8D8, sp190);
 
                 handptr->field_8E8 = temp_f0_2;
                 handptr->field_92C = 1;
@@ -3272,7 +3274,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             sp18C = (cosf(((f32) (handptr->field_8A8 - handptr->field_890) * M_PI_2F) / (f32) handptr->field_8A8) * 0.5f) + 0.5f;
 
-            temp_f0_2 = sub_GAME_7F06D0CC(handptr->field_8C8, handptr->field_8D8, sp18C);
+            temp_f0_2 = modelLerpAngle(handptr->field_8C8, handptr->field_8D8, sp18C);
 
             handptr->field_8E8 = temp_f0_2;
             handptr->field_92C = 1;
@@ -5573,7 +5575,7 @@ void sub_GAME_7F068EC4(CasingRecord *casing, Gfx **gdl)
              (g_CurrentPlayer->tileColor.g << 16)) |
             (g_CurrentPlayer->tileColor.b << 8);
 
-        subdraw(&render_data, (Model *)&model);
+        modelRender(&render_data, (Model *)&model);
 
         *gdl = render_data.gdl;
 

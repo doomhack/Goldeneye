@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include "game/model/initactorpropstuff.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "game/chr/chr.h"
 #include "game/player/gun.h"
 #include "math.h"
@@ -40,7 +40,7 @@ u32 sub_GAME_7F0001F0(void *ani, int aniid, int param_3) {
     u16 result = 0;
 
     while (aniid < param_3) {
-        result += sub_GAME_7F06D2E4(0, 0, &skeleton_guard, ani, aniid, asStack8);
+        result += animReadRootMotion16(0, 0, &skeleton_guard, ani, aniid, asStack8);
         aniid++;
     }
     return result;
@@ -58,7 +58,7 @@ s32 sub_GAME_7F000290(ModelAnimation *anim, s32 startframe, s32 endframe)
     {
         do
         {
-            sub_GAME_7F06D2E4(0, 0, &skeleton_guard, anim, startframe, out);
+            animReadRootMotion16(0, 0, &skeleton_guard, anim, startframe, out);
 
             startframe++;
             sum += out[2];
@@ -199,12 +199,12 @@ s32 initResolveAnimTable(struct StruckAnim *entries)
     ((ModelAnimation *)((s32)&anim + ((s32)ptr_animation_table)))
 
 #define ANIM_FRAC(anim) \
-    ((((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->unk04 - 1)) * 0.10000001f) / \
-        ((f32)((u32)ANIM_PTR(anim)->unk04)))
+    ((((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->numFrames - 1)) * 0.10000001f) / \
+        ((f32)((u32)ANIM_PTR(anim)->numFrames)))
 
 #define ANIM_FRAC_MUL_FIRST(anim) \
-    ((0.10000001f * ((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->unk04 - 1))) / \
-        ((f32)((u32)ANIM_PTR(anim)->unk04)))
+    ((0.10000001f * ((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->numFrames - 1))) / \
+        ((f32)((u32)ANIM_PTR(anim)->numFrames)))
 
 void initWeaponAnimGroups(void)
 {

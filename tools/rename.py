@@ -5,7 +5,9 @@
   tools/rename.py -f renames.txt          (one "OLD NEW" pair per line, # comments allowed)
 
 Replaces whole-word matches in the game's C, headers, assembly and linker scripts
-(src/, include/, assets/, ld/) and in docs/. It refuses a rename when NEW is already
+(src/, include/, assets/, ld/) and in docs/. In C files, text inside string literals is
+left alone (debug messages often contain function names, and changing them would move
+data in the ROM); comments are renamed. It refuses a rename when NEW is already
 used anywhere, so two things can't silently end up with one name. Afterwards run
 tools/compare/romcmp.sh: a pure rename leaves the ROM byte-identical.
 """
@@ -17,6 +19,11 @@ import sys
 
 ROOTS = ('src/', 'include/', 'assets/', 'ld/', 'docs/')
 EXTS = ('.c', '.h', '.s', '.inc', '.def', '.ld', '.md')
+
+
+# Comments first, so that quotes inside them don't start a string
+LITERAL = re.compile(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'|[^"\'/]+|/',
+                     re.S)
 
 
 def files():
@@ -61,8 +68,16 @@ def main():
 
     found = set()
     changed = 0
+
+    def rename(text):
+        return word.sub(lambda m: (found.add(m.group(1)), renames[m.group(1)])[1], text)
+
     for f, t in texts.items():
-        new = word.sub(lambda m: (found.add(m.group(1)), renames[m.group(1)])[1], t)
+        if f.endswith(('.c', '.h', '.inc')):
+            # Rename outside string and character literals only
+            new = LITERAL.sub(lambda m: m.group(0) if m.group(0)[0] in '"\'' else rename(m.group(0)), t)
+        else:
+            new = rename(t)
         if new != t:
             open(f, 'w', encoding='latin1').write(new)
             changed += 1

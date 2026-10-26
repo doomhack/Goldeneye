@@ -1,24 +1,33 @@
+/**
+ * Loading model files (the c*, g* and p* files: characters, guns and props).
+ *
+ * A model file holds the node tree, the switch table and the texture list, with pointers
+ * stored as offsets from 0x05000000. modelFileLoad loads the file into the stage pool (or a
+ * given buffer), turns those offsets into real pointers, then loads the model's textures
+ * into the space after the display lists and trims the allocation to fit.
+ */
 #include <ultra64.h>
 #include "game/model/chrobjdata.h"
 #include "game/gfx/image.h"
 #include "game/math/trig.h"
 #include "game/math/round.h"
-#include "game/model/math_unk_05A9E0.h"
+#include "game/model/model.h"
 #include "game/model/model.h"
 #include "game/asset/fileload.h"
 #include <memp.h>
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/math/quaternion.h"
 #include "game/gfx/tex.h"
 
 
-/***
- * Perfect Dark:
- * void modeldef0f1a7560(struct modeldef *modeldef, u16 filenum, u32 arg2, struct modeldef *modeldef2, struct texpool *texpool, bool arg5)
- * 
- * NTSC address 0x7F0762E0.
-*/
-void sub_GAME_7F0762E0(ModelFileHeader *objheader, u8 *name, u8 *dst, struct texpool *buffer)
+/**
+ * Loads the textures a model's display lists use, moving the display lists to the end of
+ * the file's buffer first so the textures can go in the space after them. Then trims the
+ * file's allocation (when it is in the stage pool) to what is used.
+ */
+void modelFileLoadTextures(ModelFileHeader *objheader, u8 *name, u8 *dst, struct texpool *buffer)
 {
     ModelNode *node;
     s32 romremaining;
@@ -83,10 +92,12 @@ void sub_GAME_7F0762E0(ModelFileHeader *objheader, u8 *name, u8 *dst, struct tex
 }
 
 
-/***
- * NTSC addres 0x7F0764A4.
-*/
-void load_object_fill_header(struct ModelFileHeader *objheader, u8 *name, u8* dst, s32 size, struct texpool * buffer)
+/**
+ * Loads a model file into `dst` (`size` bytes), or into the stage pool if `dst` is NULL,
+ * and gets it ready to use: header pointers set, offsets turned into pointers, textures
+ * loaded.
+ */
+void modelFileLoad(struct ModelFileHeader *objheader, u8 *name, u8* dst, s32 size, struct texpool * buffer)
 {
     void *filedata;
 
@@ -106,23 +117,23 @@ void load_object_fill_header(struct ModelFileHeader *objheader, u8 *name, u8* ds
     
     objheader->RootNode = (struct ModelNode *)&objheader->Textures[objheader->numtextures];
     
-    sub_GAME_7F075A90(objheader, 0x5000000, filedata);
-    sub_GAME_7F0762E0(objheader, name, dst, buffer);
+    modelFilePromotePointers(objheader, 0x5000000, filedata);
+    modelFileLoadTextures(objheader, name, dst, buffer);
 }
 
 
 
 
-void fileLoad(struct ModelFileHeader *header,char *name)
+void modelFileLoadToPool(struct ModelFileHeader *header,char *name)
 {
-   load_object_fill_header(header,name,0,0,0);
+   modelFileLoad(header,name,0,0,0);
    return;
 }
 
 
-void load_object_into_memory_unused_maybe(struct ModelFileHeader *header,int *recallstring,int *targetloc,int sizeleft)
+void modelFileLoadToAddr(struct ModelFileHeader *header,int *recallstring,int *targetloc,int sizeleft)
 {
-   load_object_fill_header(header,recallstring,targetloc,sizeleft,0);
+   modelFileLoad(header,recallstring,targetloc,sizeleft,0);
    return;
 }
 

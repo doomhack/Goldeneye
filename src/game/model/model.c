@@ -1,3 +1,18 @@
+/**
+ * Models: instances of model files, their matrices, animation and drawing.
+ *
+ * A model file (ModelFileHeader) is a tree of nodes. Some nodes position things (the root
+ * header, joints), some choose what is shown (level of detail, switches, the head slot),
+ * and some draw (display lists, gunfire, shadows). A Model is one instance of a file: its
+ * scale, its animation state, and per-node runtime data (rwdata).
+ *
+ * Each frame the owner of a model calls:
+ *   modelCalcPosition  - moves the root by the animation's root motion
+ *   modelCalcMatrices  - works out every joint's matrix from the animation
+ *   modelRender        - walks the tree and draws it
+ *
+ * See docs/subsystems/models.md.
+ */
 #include <ultra64.h>
 #include <memp.h>
 #include "game/model/model.h"
@@ -6,11 +21,13 @@
 #include "game/chr/chr.h"
 #include "game/model/chrobjdata.h"
 #include "gbi_extension.h"
-#include "game/model/initunk_005520.h"
+#include "game/model/model.h"
 #include "game/math/trig.h"
 #include "game/math/round.h"
-#include "game/model/math_unk_05A9E0.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/math/quaternion.h"
 #include "random.h"
 
@@ -25,6 +42,220 @@ typedef struct ModelGroupMtxBuildArg {
 // forward declarations
 void modelSetAnimFrame2WithChrStuff(struct Model *model, f32 framea, f32 frameb, f32 frame2a, f32 frame2b);
 
+
+
+struct AnimModelSlot *g_AnimModelSlots;
+struct ModelSlot *g_ModelSlots;
+
+
+s32 g_MaxAnimModelSlots = 0;
+s32 g_MaxModelSlots = 0;
+s32 g_ModelIsLvResetting = 0;
+u32 D_8003607C = 0;
+u32 D_80036080 = 0;
+s32 g_ModelLodDisabled = 0;
+f32 g_ModelLodScale = 1.0;
+struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices) = NULL;
+void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx) = NULL;
+coord3d D_80036094 = {0};
+coord3d D_800360A0 = {0};
+coord3d D_800360AC = {0};
+coord3d D_800360B8 = {0};
+struct bondstruct_unk_op07_related g_ModelTubeAngleTable[32] = {
+    { 0, 0, 0x10 },
+    { 1, 0x1000, 0xD },
+    { 1, 0x1000, 0xD },
+    { 9, 0x800, 0xC },
+    { 9, 0x800, 0xC },
+    { 0x19, 0x400, 0xB },
+    { 0x19, 0x400, 0xB },
+    { 0x39, 0x400, 0xB },
+    { 0x39, 0x400, 0xB },
+    { 0x59, 0x400, 0xB },
+    { 0x59, 0x400, 0xB },
+    { 0x79, 0x400, 0xB },
+    { 0x79, 0x400, 0xB },
+    { 0x99, 0x400, 0xB },
+    { 0x99, 0x400, 0xB, },
+    { 0xB9, 0x400, 0xB, },
+    { 0xB9, 0x400, 0xB, },
+    { 0xD9, 0x400, 0xB, },
+    { 0xD9, 0x400, 0xB, },
+    { 0xF9, 0x400, 0xB, },
+    { 0xF9, 0x400, 0xB, },
+    { 0x119, 0x400, 0xB, },
+    { 0x119, 0x400, 0xB, },
+    { 0x139, 0x400, 0xB, },
+    { 0x139, 0x400, 0xB, },
+    { 0x159, 0x400, 0xB, },
+    { 0x159, 0x400, 0xB, },
+    { 0x179, 0x800, 0xC, },
+    { 0x179, 0x800, 0xC, },
+    { 0x189, 0x1000, 0xD },
+    { 0x189, 0x1000, 0xD },
+    { 0x191, 0, 0x10 },
+};
+
+coord3d D_80036244 = { 0 };
+u32 g_ModelAnimMergingEnabled = 1;
+coord3d D_80036254 = { 0 };
+
+u32 D_80036260 = 0;
+u32 D_80036264 = 0;
+u32 D_80036268 = 0x10;
+u32 D_8003626C = 1;
+u32 D_80036270 = 0x1000;
+u32 D_80036274 = 0xD;
+u32 D_80036278 = 1;
+u32 D_8003627C = 0x1000;
+u32 D_80036280 = 0xD;
+u32 D_80036284 = 9;
+u32 D_80036288 = 0x800;
+u32 D_8003628C = 0xC;
+u32 D_80036290 = 9;
+u32 D_80036294 = 0x800;
+u32 D_80036298 = 0xC;
+u32 D_8003629C = 0x19;
+u32 D_800362A0 = 0x800;
+u32 D_800362A4 = 0xC;
+u32 D_800362A8 = 0x19;
+u32 D_800362AC = 0x800;
+u32 D_800362B0 = 0xC;
+u32 D_800362B4 = 0x29;
+u32 D_800362B8 = 0x800;
+u32 D_800362BC = 0xC;
+u32 D_800362C0 = 0x29;
+u32 D_800362C4 = 0x800;
+u32 D_800362C8 = 0xC;
+u32 D_800362CC = 0x39;
+u32 D_800362D0 = 0x800;
+u32 D_800362D4 = 0xC;
+u32 D_800362D8 = 0x39;
+u32 D_800362DC = 0x800;
+u32 D_800362E0 = 0xC;
+u32 D_800362E4 = 0x49;
+u32 D_800362E8 = 0x800;
+u32 D_800362EC = 0xC;
+u32 D_800362F0 = 0x49;
+u32 D_800362F4 = 0x800;
+u32 D_800362F8 = 0xC;
+u32 D_800362FC = 0x59;
+u32 D_80036300 = 0x1000;
+u32 D_80036304 = 0xD;
+u32 D_80036308 = 0x59;
+u32 D_8003630C = 0x1000;
+u32 D_80036310 = 0xD;
+u32 D_80036314 = 0x61;
+u32 D_80036318 = 0;
+u32 D_8003631C[] = {
+  0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+Vertex D_800363E0 = {
+    { 0, 0, 0 },
+    0,
+    { 0, 0 },
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF
+};
+
+u32 g_ModelShadowAlpha = 0x50;
+u32 D_800363F4 = 0;
+Vtx D_800363F8 = {
+    {
+        { 0, 0, 0 },
+        0,
+        { 0, 0 },
+        { 0xFF, 0xFF, 0xFF, 0x50 }
+    }
+};
+coord3d D_80036408 = { 1.0f, 0.0f, 0.0f };
+struct bondstruct_unk_animation_related* g_AnimFrameBuffer =  0;
+s32 D_80036418 =  0;
+s32 D_8003641C =  0;
+
+
+#define MODEL_SPARE_SLOTS          30
+#define ANIM_MODEL_SPARE_SLOTS     10
+
+#define MODEL_SPARE_RWDATALEN      0x14
+#define ANIM_MODEL_SPARE_RWDATALEN 0x8c
+
+
+void modelmgrResetSlotCounts(void)
+{
+    g_MaxAnimModelSlots = 0;
+    g_MaxModelSlots = 0;
+}
+
+
+void modelmgrSetLevelResetting(bool resetting) 
+{
+    g_ModelIsLvResetting = resetting;
+}
+
+//this may be a file split
+
+/**
+ * NTSC address 0x7F005540.
+*/
+void modelmgrAllocateModelSlots(s32 numobjs)
+{
+    s32 i;
+
+    g_MaxModelSlots = numobjs + MODEL_SPARE_SLOTS;
+    
+    g_ModelSlots = mempAlloc(g_MaxModelSlots * sizeof(struct ModelSlot), MEMPOOL_STAGE);
+
+    for (i = 0; i < g_MaxModelSlots; i++)
+    {
+        g_ModelSlots[i].obj = 0;
+
+        if (i < numobjs)
+        {
+            g_ModelSlots[i].datas = NULL;
+        }
+        else
+        {
+            g_ModelSlots[i].datas = mempAlloc(MODEL_SPARE_RWDATALEN * sizeof(u32), MEMPOOL_STAGE);
+            g_ModelSlots[i].rwdatalen = MODEL_SPARE_RWDATALEN;
+        }
+    }
+}
+
+
+/**
+ * NTSC address 0x7F005540.
+*/
+void modelmgrAllocateAnimModelSlots(s32 numanimated)
+{
+    s32 temp_t6;
+    s32 i;
+
+    g_MaxAnimModelSlots = numanimated + ANIM_MODEL_SPARE_SLOTS;
+
+    // mips2c says: g_AnimModelSlots = mempAlloc(temp_t6 * 0xC0, 4);
+    // however, the pointer is incremented by 0xbc in the loop below.
+    g_AnimModelSlots = mempAlloc(g_MaxAnimModelSlots * (4 + sizeof(struct AnimModelSlot)), MEMPOOL_STAGE);
+
+    for (i = 0; i < g_MaxAnimModelSlots; i++)
+    {
+        g_AnimModelSlots[i].obj = 0;
+
+        if (i < numanimated)
+        {
+            g_AnimModelSlots[i].datas = NULL;
+        }
+        else
+        {
+            g_AnimModelSlots[i].datas = mempAlloc(ANIM_MODEL_SPARE_RWDATALEN * sizeof(u32), MEMPOOL_STAGE);
+            g_AnimModelSlots[i].rwdatalen = ANIM_MODEL_SPARE_RWDATALEN;
+        }
+    }
+}
 
 
 //newfile per EU
@@ -57,7 +288,7 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
 
         for (i = 0; i < (g_MaxModelSlots - 30); i++) 
         {
-            if (g_ModelSlots[i].unk08 == 0) 
+            if (g_ModelSlots[i].obj == 0) 
             {
                 model = (Model *)&g_ModelSlots[i];
                 break;
@@ -81,10 +312,10 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
 
         for (i = 0; i < g_MaxModelSlots; i++) 
         {
-            if (g_ModelSlots[i].unk08 == 0 && modelmgrCanSlotFitRwdata((Model *)&g_ModelSlots[i], header)) 
+            if (g_ModelSlots[i].obj == 0 && modelmgrCanSlotFitRwdata((Model *)&g_ModelSlots[i], header)) 
             {
-                rwdata = g_ModelSlots[i].unk10;
-                rwdatalen = g_ModelSlots[i].unk02;
+                rwdata = g_ModelSlots[i].datas;
+                rwdatalen = g_ModelSlots[i].rwdatalen;
                 model = (Model *)&g_ModelSlots[i];
                 break;
             }
@@ -94,14 +325,14 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
     if (model != NULL) 
     {
         modelInit(model, header, rwdata);
-        ((struct ModelSlot *)model)->unk02 = rwdatalen;
+        ((struct ModelSlot *)model)->rwdatalen = rwdatalen;
     }
 
     return model;
 }
 
 
-void clear_model_obj(Model* model)
+void modelFreeSlot(Model* model)
 {
     model->obj = NULL;
 }
@@ -127,7 +358,7 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
     {
         for (i = 0; i < (g_MaxAnimModelSlots - 10); i++) 
         {
-            if (g_AnimModelSlots[i].unk08 == 0)
+            if (g_AnimModelSlots[i].obj == 0)
             {
                 newModel = (Model *)&g_AnimModelSlots[i];
                 break;
@@ -158,11 +389,11 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
 
         for (i2 = 0; i2 < g_MaxAnimModelSlots; i2++) 
         {
-            if ((g_AnimModelSlots[i2].unk08 == 0) && ((requiredRwdatalen <= 0) || ((g_AnimModelSlots[i2].unk10 != NULL) &&(g_AnimModelSlots[i2].unk02 >= requiredRwdatalen)))) 
+            if ((g_AnimModelSlots[i2].obj == 0) && ((requiredRwdatalen <= 0) || ((g_AnimModelSlots[i2].datas != NULL) &&(g_AnimModelSlots[i2].rwdatalen >= requiredRwdatalen)))) 
             {
                 newModel = (Model *)&g_AnimModelSlots[i2];
-                rwdatas = g_AnimModelSlots[i2].unk10;
-                rwdatalen = g_AnimModelSlots[i2].unk02;
+                rwdatas = g_AnimModelSlots[i2].datas;
+                rwdatalen = g_AnimModelSlots[i2].rwdatalen;
                 break;
             }
         }
@@ -182,32 +413,32 @@ void modelAttachHead(Model *model, ModelNode *node,  ModelFileHeader *head)
 {
     modelAttachPart(model,model->obj,node,head);
 #ifdef DEBUG
-    if (model->numRecords > 140 && g_ModelDistanceScale == 0) osSyncPrintf("WARNING: increase OASAVESIZE to %d!\n", *(model + 0x14));
+    if (model->numRecords > 140 && g_ModelLodScale == 0) osSyncPrintf("WARNING: increase OASAVESIZE to %d!\n", *(model + 0x14));
 #endif
 
     modelInitRwData(model,head->RootNode);
 }
 
 
-void clear_aircraft_model_obj(Model *objinstance)
+void modelFreeAnimSlot(Model *objinstance)
 {
     objinstance->obj = NULL;
     return;
 }
 
 
-void modelSetDistanceDisabled(s32 param_1) {
-  g_ModelDistanceDisabled = param_1;
+void modelSetLodDisabled(s32 param_1) {
+  g_ModelLodDisabled = param_1;
 }
 
 
-// PD: modelSetDistanceScale
-void modelSetDistanceScale(f32 param_1) {
-  g_ModelDistanceScale = param_1;
+// PD: modelSetLodScale
+void modelSetLodScale(f32 param_1) {
+  g_ModelLodScale = param_1;
 }
 
 
-void sub_GAME_7F06C418(Vew4s32 *src, Vew4s32 *dst) {
+void modelCopyMtx4s32(Vew4s32 *src, Vew4s32 *dst) {
     s32 i, j;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
@@ -217,14 +448,14 @@ void sub_GAME_7F06C418(Vew4s32 *src, Vew4s32 *dst) {
 }
 
 
-void set_vtxallocator(s32 param_1) {
-  vtxallocator = param_1;
+void modelSetVtxAllocator(s32 param_1) {
+  g_ModelVtxAllocator = param_1;
 }
 
 
 #if defined(LEFTOVERDEBUG)
 // called after a debug print during failed model operation possible "exit()" function in debug
-void return_null(void)
+void modelDebugBreak(void)
 {
     // dump something 8 bytes long?
 
@@ -236,7 +467,7 @@ void return_null(void)
 /**
  * Address: 7F06C474
  */
-void modelCalculateScaledRootToOriginDir(Model* model, coord3d* coord)
+void modelCalcDirToCamera(Model* model, coord3d* coord)
 {
     Mtxf* mtx;
     f32 dist;
@@ -245,7 +476,7 @@ void modelCalculateScaledRootToOriginDir(Model* model, coord3d* coord)
     f32 neg_z;
     f32 inv_dist;
 
-    mtx = getsubmatrix(model);
+    mtx = modelGetRootMtx(model);
     neg_x = -mtx->m[3][0];
     neg_y = -mtx->m[3][1];
     neg_z = -mtx->m[3][2];
@@ -269,9 +500,9 @@ void modelCalculateScaledRootToOriginDir(Model* model, coord3d* coord)
 /**
  * Address: 7F06C550
  */
-void modelGetScaledRootToOriginDir(Model* model, coord3d* coord)
+void modelGetDirToCamera(Model* model, coord3d* coord)
 {
-  modelCalculateScaledRootToOriginDir(model, coord);
+  modelCalcDirToCamera(model, coord);
 }
 
 
@@ -327,18 +558,18 @@ Mtxf *modelFindNodeMtx(struct Model *model, struct ModelNode *node, s32 arg2) {
 
 //rejoined per EU
 // PD: model0001a60c
-Mtxf *getsubmatrix(Model *objinst)
+Mtxf *modelGetRootMtx(Model *objinst)
 {
     #if defined(LEFTOVERDEBUG)
     if (!objinst)
     {
         osSyncPrintf("getsubmatrix: no objinst!\n");
-        return_null();
+        modelDebugBreak();
     }
     if (!objinst->obj)
     {
         osSyncPrintf("getsubmatrix: objinst has no object!\n");
-        return_null();
+        modelDebugBreak();
     }
     #endif
     return modelFindNodeMtx(objinst, objinst->obj->RootNode, 0);
@@ -346,11 +577,11 @@ Mtxf *getsubmatrix(Model *objinst)
 
 
 // unreferenced
-void sub_GAME_7F06C710(Model* model, coord3d* pos)
+void modelGetRootMtxPosition(Model* model, coord3d* pos)
 {
     Mtxf* mtx;
 
-    mtx = getsubmatrix(model);
+    mtx = modelGetRootMtx(model);
     if (mtx != NULL)
     {
         pos->f[0] = (f32) mtx->m[3][0];
@@ -365,9 +596,9 @@ void sub_GAME_7F06C710(Model* model, coord3d* pos)
 }
 
 
-f32 sub_GAME_7F06C768(Model *objinst)
+f32 modelGetRootDepth(Model *objinst)
 {
-    Mtxf *mtx = getsubmatrix(objinst);
+    Mtxf *mtx = modelGetRootMtx(objinst);
     if (mtx != 0)
     {
         return -mtx->m[3][2];
@@ -396,9 +627,9 @@ union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
             index = root->Data->DisplayListCollisions.RwDataIndex;
             break;
         }
-        case MODELNODE_OPCODE_OP07:
+        case MODELNODE_OPCODE_TUBE:
         {
-            index = root->Data->Op07.RwDataIndex;
+            index = root->Data->Tube.RwDataIndex;
             break;
         }
         case MODELNODE_OPCODE_LOD:
@@ -449,18 +680,18 @@ union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
 
 
 
-void getpartoffset(Model *objinst, ModelNode *part, coord3d *offset) //#MATCH - however OPCODE 3 needs defining
+void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#MATCH - however OPCODE 3 needs defining
 {
     #if defined(LEFTOVERDEBUG)
     if (!objinst)
     {
         osSyncPrintf("getpartoffset: no objinst!");
-        return_null();
+        modelDebugBreak();
     }
     if (!part)
     {
         osSyncPrintf("getpartoffset: no partdesc!");
-        return_null();
+        modelDebugBreak();
     }
     #endif
     switch (part->Opcode & 0xFF)
@@ -508,17 +739,17 @@ void getpartoffset(Model *objinst, ModelNode *part, coord3d *offset) //#MATCH - 
 }
 
 
-void setpartoffset(Model *model, ModelNode *node, coord3d *pos)
+void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
 {
 #if defined(LEFTOVERDEBUG)
     if (!model) {
         osSyncPrintf("setpartoffset: no objinst!");
-        return_null();
+        modelDebugBreak();
     }
 
     if (!node) {
         osSyncPrintf("setpartoffset: no partdesc!");
-        return_null();
+        modelDebugBreak();
     }
     else
     {
@@ -573,42 +804,42 @@ void setpartoffset(Model *model, ModelNode *node, coord3d *pos)
 }
 
 
-void getsuboffset(Model *objinst, coord3d *offset) //#MATCH
+void modelGetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 {
     #if defined(LEFTOVERDEBUG )
     if (!objinst)
     {
         osSyncPrintf("getsuboffset: no objinst!");
-        return_null();
+        modelDebugBreak();
     }
 
     if (!objinst->obj)
     {
         osSyncPrintf("getsuboffset: objinst has no object!");
-        return_null();
+        modelDebugBreak();
     }
     #endif
-    getpartoffset(objinst, objinst->obj->RootNode, offset);
+    modelGetNodePosition(objinst, objinst->obj->RootNode, offset);
 }
 
 
 
 
-void setsuboffset(Model *objinst, coord3d *offset) //#MATCH
+void modelSetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 {
     #if defined(LEFTOVERDEBUG )
     if (!objinst)
     {
         osSyncPrintf("setsuboffset: no objinst!");
-        return_null();
+        modelDebugBreak();
     }
     if (!objinst->obj)
     {
         osSyncPrintf("setsuboffset: objinst has no object!");
-        return_null();
+        modelDebugBreak();
     }
     #endif
-    setpartoffset(objinst, objinst->obj->RootNode, offset);
+    modelSetNodePosition(objinst, objinst->obj->RootNode, offset);
 }
 
 
@@ -618,7 +849,7 @@ void setsuboffset(Model *objinst, coord3d *offset) //#MATCH
 /**
  * Address 0x7F06CC80.
  */
-f32 getsubroty(Model *objinst)
+f32 modelGetRootRotY(Model *objinst)
 {
     ModelNode *root;
 
@@ -631,7 +862,7 @@ f32 getsubroty(Model *objinst)
     if (objinst == NULL)
     {
         osSyncPrintf("getsubroty: no objinst!");
-        return_null();
+        modelDebugBreak();
     }
 
     if(0)
@@ -642,7 +873,7 @@ f32 getsubroty(Model *objinst)
     if (objinst->obj == NULL)
     {
         osSyncPrintf("getsubroty: objinst has no object!");
-        return_null();
+        modelDebugBreak();
     }
 
     if(0)
@@ -653,7 +884,7 @@ f32 getsubroty(Model *objinst)
     if (objinst->obj->RootNode == NULL)
     {
         osSyncPrintf("getsubroty: objinst has no root part!");
-        return_null();
+        modelDebugBreak();
     }
 
     if(0)
@@ -672,26 +903,26 @@ f32 getsubroty(Model *objinst)
 }
 
 
-void setsubroty(Model *model, f32 angle)
+void modelSetRootRotY(Model *model, f32 angle)
 {
     ModelNode* node;
 #if defined(LEFTOVERDEBUG)
     if (!model)
     {
         osSyncPrintf("setsubroty: no objinst!");
-        return_null();
+        modelDebugBreak();
     }
 
     if (!model->obj) //< needs to be v1 not a1
     {
         osSyncPrintf("setsubroty: objinst has no object!");
-        return_null();
+        modelDebugBreak();
     }
 
     if (!model->obj->RootNode)
     {
         osSyncPrintf("setsubroty: objinst has no root part!");
-        return_null();
+        modelDebugBreak();
     }
 #endif
     node = model->obj->RootNode;
@@ -735,7 +966,7 @@ void modelSetAnimTranslationScale(Model* model, f32 scale)
 }
 
 
-f32 getjointsize(Model *model, ModelNode *node)
+f32 modelGetNodeRadius(Model *model, ModelNode *node)
 {
     Model     *temp_a2;
     ModelNode *temp_a1;
@@ -745,7 +976,7 @@ f32 getjointsize(Model *model, ModelNode *node)
     if (!model)
     {
         osSyncPrintf("getjointsize: no objinst!\n");
-        return_null();
+        modelDebugBreak();
     }
 #endif
 
@@ -819,19 +1050,19 @@ f32 getjointsize(Model *model, ModelNode *node)
  * Address 0x7F06D00C.
  * PD: model0001af80
 */
-f32 getinstsize(Model *arg0)
+f32 modelGetRadius(Model *arg0)
 {
     #if defined(LEFTOVERDEBUG)
     if (arg0 == NULL)
     {
         osSyncPrintf("getinstsize: no objinst!\n");
-        return_null();
+        modelDebugBreak();
     }
 
     if (arg0->obj == NULL)
     {
         osSyncPrintf("getinstsize: no objdesc!\n");
-        return_null();
+        modelDebugBreak();
     }
     #endif
 
@@ -841,7 +1072,7 @@ f32 getinstsize(Model *arg0)
 
 
 // PD: model0001af98
-void interpolate3dVectors(vec3d *v, vec3d *w, float frac)
+void modelLerp3(vec3d *v, vec3d *w, float frac)
 {
     v->x += (w->x - v->x) * frac;
     v->y += (w->y - v->y) * frac;
@@ -851,7 +1082,7 @@ void interpolate3dVectors(vec3d *v, vec3d *w, float frac)
 
 
 // PD: model0001afe8
-f32 sub_GAME_7F06D0CC(f32 arg0, f32 angle, f32 mult)
+f32 modelLerpAngle(f32 arg0, f32 angle, f32 mult)
 {
     f32 value = angle - arg0;
 
@@ -884,18 +1115,18 @@ f32 sub_GAME_7F06D0CC(f32 arg0, f32 angle, f32 mult)
 
 
 // PD: model0001b07c
-void sub_GAME_7F06D160(coord3d *arg0, coord3d *arg1, f32 mult)
+void modelLerpAngles3(coord3d *arg0, coord3d *arg1, f32 mult)
 {
-    arg0->x = sub_GAME_7F06D0CC(arg0->x, arg1->x, mult);
-    arg0->y = sub_GAME_7F06D0CC(arg0->y, arg1->y, mult);
-    arg0->z = sub_GAME_7F06D0CC(arg0->z, arg1->z, mult);
+    arg0->x = modelLerpAngle(arg0->x, arg1->x, mult);
+    arg0->y = modelLerpAngle(arg0->y, arg1->y, mult);
+    arg0->z = modelLerpAngle(arg0->z, arg1->z, mult);
 }
 
 
 /**
  * Address: 7F06D1CC
  */
-u16 modelAnimReadRootMotionValue(ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
+u16 animReadChannel(ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
 {
     u32 result;
     u32 new_var2;
@@ -962,14 +1193,14 @@ u16 modelAnimReadRootMotionValue(ModelAnimation *anim, s32 fieldIndex, s32 extra
 /**
  * Address: 7F06D2E4
  */
-u16 sub_GAME_7F06D2E4(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord16 *out)
+u16 animReadRootMotion16(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord16 *out)
 {
     u32 scaled;
     s32 base;
     u32 angle_raw;
     u16 angle_ret;
     
-    scaled = ((u32) anim->unk0C) * ((u32) frame);
+    scaled = ((u32) anim->rootBitsPerFrame) * ((u32) frame);
     
     if (flip)
     {
@@ -980,10 +1211,10 @@ u16 sub_GAME_7F06D2E4(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnim
         base = skeleton->Joints[jointnum].mtxA;
     }
     
-    out->x = modelAnimReadRootMotionValue(anim, base, scaled);
-    out->y = modelAnimReadRootMotionValue(anim, base + 1, scaled);
-    out->z = modelAnimReadRootMotionValue(anim, base + 2, scaled);
-    angle_raw = modelAnimReadRootMotionValue(anim, base + 3, scaled);
+    out->x = animReadChannel(anim, base, scaled);
+    out->y = animReadChannel(anim, base + 1, scaled);
+    out->z = animReadChannel(anim, base + 2, scaled);
+    angle_raw = animReadChannel(anim, base + 3, scaled);
     angle_ret = angle_raw;
     
     if (flip)
@@ -1000,12 +1231,12 @@ u16 sub_GAME_7F06D2E4(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnim
 }
 
 
-f32 sub_GAME_7F06D3F4(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord3d *pos)
+f32 animReadRootMotion(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord3d *pos)
 {
     s16 tmp[3];
     u16 angle;
 
-    angle = sub_GAME_7F06D2E4(jointnum, flip, skeleton, anim, frame, tmp);
+    angle = animReadRootMotion16(jointnum, flip, skeleton, anim, frame, tmp);
 
     pos->x = (f32)tmp[0];
     pos->y = (f32)tmp[1];
@@ -1018,7 +1249,7 @@ f32 sub_GAME_7F06D3F4(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnim
 /**
  * Address: 7F06D490
  */
-void sub_GAME_7F06D490(Model *model, ModelNode *modelNode)
+void modelCalcRootPosition(Model *model, ModelNode *modelNode)
 {
     union ModelRwData *rw;
     coord3d sp38;
@@ -1037,33 +1268,33 @@ void sub_GAME_7F06D490(Model *model, ModelNode *modelNode)
     sp38.z = rw->Header.unk34.z;
     rw->Header.unk14 = rw->Header.unk30;
 
-    if (model->unk2c != 0.0f)
+    if (model->frameFrac != 0.0f)
     {
         if (rw->Header.unk01 != 0)
         {
-            interpolate3dVectors(&sp38, &rw->Header.unk24, model->unk2c);
+            modelLerp3(&sp38, &rw->Header.unk24, model->frameFrac);
 
             // Weird do while loop but needed for matching.
             do
             {
-                rw->Header.unk14 = sub_GAME_7F06D0CC(rw->Header.unk30, rw->Header.unk20, model->unk2c);
+                rw->Header.unk14 = modelLerpAngle(rw->Header.unk30, rw->Header.unk20, model->frameFrac);
             }
-            while (model->unka0 * 0);
+            while (model->rootMoveCallback * 0);
         }
     }
 
-    if ((model->anim2 != 0) || (model->unk84 != 0.0f))
+    if ((model->anim2 != 0) || (model->mergeWeight != 0.0f))
     {
         if (rw->Header.unk02 != 0)
         {
             y = rw->Header.unk4c.y;
 
-            if (model->unk5c != 0.0f)
+            if (model->frame2Frac != 0.0f)
             {
-                y += (rw->Header.unk40.y - y) * model->unk5c;
+                y += (rw->Header.unk40.y - y) * model->frame2Frac;
             }
 
-            sp38.y += (y - sp38.y) * model->unk84;
+            sp38.y += (y - sp38.y) * model->mergeWeight;
         }
     }
 
@@ -1071,7 +1302,7 @@ void sub_GAME_7F06D490(Model *model, ModelNode *modelNode)
     sp2c.y = sp38.y;
     sp2c.z = sp38.z;
 
-    if (model->unka0 && !((s32 (*)(Model *, coord3d *, coord3d *, f32 *)) model->unka0)(model, &rw->Header.pos, &sp2c, &rw->Header.ground))
+    if (model->rootMoveCallback && !((s32 (*)(Model *, coord3d *, coord3d *, f32 *)) model->rootMoveCallback)(model, &rw->Header.pos, &sp2c, &rw->Header.ground))
     {
         return;
     }
@@ -1102,7 +1333,7 @@ void sub_GAME_7F06D490(Model *model, ModelNode *modelNode)
 }
 
 
-void subcalcpos(Model *arg0)
+void modelCalcPosition(Model *arg0)
 {
     struct ModelNode *root;
 
@@ -1110,24 +1341,24 @@ void subcalcpos(Model *arg0)
     if (arg0 == NULL)
     {
         osSyncPrintf("subcalcpos: no objanim!\n");
-        return_null();
+        modelDebugBreak();
     }
 
     if (arg0->obj == 0)
     {
         osSyncPrintf("subcalcpos: no objdesc!\n");
-        return_null();
+        modelDebugBreak();
     }
 #endif
 
     root = arg0->obj->RootNode;
     if ((root != NULL) && ((root->Opcode & 0xFF) == 1))
     {
-        sub_GAME_7F06D490(arg0, root);
+        modelCalcRootPosition(arg0, root);
     }
 }
 
-void process_01_group_heading(ModelRenderData* renderdata, Model* model, ModelNode* node)
+void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node)
 {
     union ModelRoData* rodata;
     union ModelRwData* rwdata;
@@ -1159,7 +1390,7 @@ void process_01_group_heading(ModelRenderData* renderdata, Model* model, ModelNo
 
     if (rwdata->Header.unk18 != 0.0f)
     {
-        unk14 = sub_GAME_7F06D0CC(unk14, rwdata->Header.unk1c, rwdata->Header.unk18);
+        unk14 = modelLerpAngle(unk14, rwdata->Header.unk1c, rwdata->Header.unk18);
     }
 
     if (var_a3 != NULL)
@@ -1187,7 +1418,7 @@ void process_01_group_heading(ModelRenderData* renderdata, Model* model, ModelNo
 /**
  * Address: 7F06D8B0
  */
-void modelBuildGroupMatrices(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildArg *mgm, coord3d *rot)
+void modelCalcJointMtxFromAngles(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildArg *mgm, coord3d *rot)
 {
     u32 flags;
     ModelRoData_GroupRecord *group;
@@ -1310,7 +1541,7 @@ void modelBuildGroupMatrices(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildA
 }
 
 
-void sub_GAME_7F06DB5C(ModelRenderData *arg0, Model *arg1, ModelNode *arg2, quatf arg3)
+void modelCalcJointMtxFromQuat(ModelRenderData *arg0, Model *arg1, ModelNode *arg2, quatf arg3)
 {
     s32 spA4;
     ModelRoData_GroupRecord *spA0;
@@ -1400,7 +1631,7 @@ void sub_GAME_7F06DB5C(ModelRenderData *arg0, Model *arg1, ModelNode *arg2, quat
 /**
  * Address: 7F06DE04
  */
-u32 modelAnimReadBitsAsU16Angle(u8 *bitstream, u8 width, u32 bitOffset)
+u32 animReadAngleBits(u8 *bitstream, u8 width, u32 bitOffset)
 {
     u32 value = 0;
     u32 mask;
@@ -1443,13 +1674,13 @@ u32 modelAnimReadBitsAsU16Angle(u8 *bitstream, u8 width, u32 bitOffset)
 /**
  * Address: 7F06DEC0
  */
-void sub_GAME_7F06DEC0(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, u8 *bitstream, coord3d *rot)
+void animReadJointRotation(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, u8 *bitstream, coord3d *rot)
 {
     u32 bitoffset;
     u8 width;
     u16 rotation[3];
 
-    width = anim->unk06;
+    width = anim->angleBits;
 
     // Mirrored joint rotation?
     if (flip)
@@ -1461,15 +1692,15 @@ void sub_GAME_7F06DEC0(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAni
         bitoffset = skeleton->Joints[jointnum].mtxA * width;
     }
 
-    width = anim->unk06;
+    width = anim->angleBits;
 
-    rotation[0] = modelAnimReadBitsAsU16Angle(bitstream, width, bitoffset);
+    rotation[0] = animReadAngleBits(bitstream, width, bitoffset);
     bitoffset += (unsigned long) width;
 
-    rotation[1] = modelAnimReadBitsAsU16Angle(bitstream, width, bitoffset);
+    rotation[1] = animReadAngleBits(bitstream, width, bitoffset);
     bitoffset += width;
 
-    rotation[2] = modelAnimReadBitsAsU16Angle(bitstream, width, bitoffset);
+    rotation[2] = animReadAngleBits(bitstream, width, bitoffset);
 
     rot->x = (rotation[0] * M_TAU_F) / M_U16_MAX_VALUE_F;
 
@@ -1501,7 +1732,7 @@ void sub_GAME_7F06DEC0(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAni
 }
 
 
-void process_02_position(ModelRenderData *arg0, Model *model, ModelNode *node)
+void modelCalcJointMtx(ModelRenderData *arg0, Model *model, ModelNode *node)
 {
     union
     {
@@ -1525,36 +1756,36 @@ void process_02_position(ModelRenderData *arg0, Model *model, ModelNode *node)
 
     rot1 = D_80036094;
     
-    sub_GAME_7F06DEC0(jointnum.v, model->gunhand, skeleton, model->anim, model->unk34, &rot1);
+    animReadJointRotation(jointnum.v, model->flip, skeleton, model->anim, model->frameaData, &rot1);
 
-    if (model->unk2c != 0.0f)
+    if (model->frameFrac != 0.0f)
     {
         rot2 = D_800360A0;
-        sub_GAME_7F06DEC0(jointnum.v, model->gunhand, skeleton, model->anim, model->unk38, &rot2);
-        sub_GAME_7F06D160(&rot1, &rot2, model->unk2c);
+        animReadJointRotation(jointnum.v, model->flip, skeleton, model->anim, model->framebData, &rot2);
+        modelLerpAngles3(&rot1, &rot2, model->frameFrac);
     }
 
-    if (model->unk84 != 0.0f)
+    if (model->mergeWeight != 0.0f)
     {
         rot3 = D_800360AC;
-        sub_GAME_7F06DEC0(jointnum.v, model->unk25, skeleton, model->anim2, model->unk64, &rot3);
+        animReadJointRotation(jointnum.v, model->flip2, skeleton, model->anim2, model->frame2aData, &rot3);
 
-        if (model->unk5c != 0.0f)
+        if (model->frame2Frac != 0.0f)
         {
             rot4 = D_800360B8;
-            sub_GAME_7F06DEC0(jointnum.v, model->unk25, skeleton, model->anim2, model->unk68, &rot4);
-            sub_GAME_7F06D160(&rot3, &rot4, model->unk5c);
+            animReadJointRotation(jointnum.v, model->flip2, skeleton, model->anim2, model->frame2bData, &rot4);
+            modelLerpAngles3(&rot3, &rot4, model->frame2Frac);
         }
 
         quatFromAngles(&rot1, q1);
         quatFromAngles(&rot3, q2);
         quatMakeShortestPath(q1, q2);
-        quatSlerp(q1, q2, model->unk84, result);
-        sub_GAME_7F06DB5C(arg0, model, node, result);
+        quatSlerp(q1, q2, model->mergeWeight, result);
+        modelCalcJointMtxFromQuat(arg0, model, node, result);
     }
     else
     {
-        modelBuildGroupMatrices(arg0, model, node, &rot1);
+        modelCalcJointMtxFromAngles(arg0, model, node, &rot1);
     }
 }
 
@@ -1562,7 +1793,7 @@ void process_02_position(ModelRenderData *arg0, Model *model, ModelNode *node)
 /**
  * Address: 7F06E2B8
  */
-void sub_GAME_7F06E2B8(ModelRenderData *renderData, Model *model, ModelNode *node, f32 angle)
+void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, ModelNode *node, f32 angle)
 {
     s32 opcode;
     union ModelRoData *data;
@@ -1678,7 +1909,7 @@ void sub_GAME_7F06E2B8(ModelRenderData *renderData, Model *model, ModelNode *nod
 
 
 // Decodes a packed joint angle from the animation bitstream using either mtxA or mtxB.
-f32 sub_GAME_7F06E540(s32 jointIndex, s32 useMtxB, ModelSkeleton *skeleton, ModelAnimation *anim, u8 *bitstream)
+f32 animReadJointYRotation(s32 jointIndex, s32 useMtxB, ModelSkeleton *skeleton, ModelAnimation *anim, u8 *bitstream)
 {    
     u32 bitOffset;
     u32 raw;
@@ -1686,7 +1917,7 @@ f32 sub_GAME_7F06E540(s32 jointIndex, s32 useMtxB, ModelSkeleton *skeleton, Mode
     f32 angle;
 
     angle = 0.0f;
-    width = anim->unk06;
+    width = anim->angleBits;
 
     if (useMtxB != 0) {
         bitOffset = skeleton->Joints[jointIndex].mtxB * width;
@@ -1694,7 +1925,7 @@ f32 sub_GAME_7F06E540(s32 jointIndex, s32 useMtxB, ModelSkeleton *skeleton, Mode
         bitOffset = skeleton->Joints[jointIndex].mtxA * width;
     }
 
-    raw = modelAnimReadBitsAsU16Angle(bitstream, width, bitOffset);
+    raw = animReadAngleBits(bitstream, width, bitOffset);
 
     if (useMtxB != 0) {
         if (raw != 0) {
@@ -1708,7 +1939,7 @@ f32 sub_GAME_7F06E540(s32 jointIndex, s32 useMtxB, ModelSkeleton *skeleton, Mode
 }
 
 
-void process_03_unknown(ModelRenderData *renderData, Model *model, ModelNode *node)
+void modelCalcYJointMtx(ModelRenderData *renderData, Model *model, ModelNode *node)
 {    
     ModelSkeleton *skeleton;
     ModelRoData_GroupRecord *rodata;
@@ -1721,29 +1952,29 @@ void process_03_unknown(ModelRenderData *renderData, Model *model, ModelNode *no
     jointIndex = rodata->JointID;
     skeleton = model->obj->Skeleton;
 
-    angle = sub_GAME_7F06E540(jointIndex, model->gunhand, skeleton, model->anim, (u8 *)model->unk34);
+    angle = animReadJointYRotation(jointIndex, model->flip, skeleton, model->anim, (u8 *)model->frameaData);
 
-    if (model->unk2c != 0.0f) {
-        tmp = sub_GAME_7F06E540(jointIndex, model->gunhand, skeleton, model->anim, (u8 *)model->unk38);
-        angle = sub_GAME_7F06D0CC(angle, tmp, model->unk2c);
+    if (model->frameFrac != 0.0f) {
+        tmp = animReadJointYRotation(jointIndex, model->flip, skeleton, model->anim, (u8 *)model->framebData);
+        angle = modelLerpAngle(angle, tmp, model->frameFrac);
     }
 
-    if (model->unk84 != 0.0f) {
-        tmp = sub_GAME_7F06E540(jointIndex, model->unk25, skeleton, model->anim2, (u8 *)model->unk64);
+    if (model->mergeWeight != 0.0f) {
+        tmp = animReadJointYRotation(jointIndex, model->flip2, skeleton, model->anim2, (u8 *)model->frame2aData);
 
-        if (model->unk5c != 0.0f) {
-            tmp2 = sub_GAME_7F06E540(jointIndex, model->unk25, skeleton, model->anim2, (u8 *)model->unk68);
-            tmp = sub_GAME_7F06D0CC(tmp, tmp2, model->unk5c);
+        if (model->frame2Frac != 0.0f) {
+            tmp2 = animReadJointYRotation(jointIndex, model->flip2, skeleton, model->anim2, (u8 *)model->frame2bData);
+            tmp = modelLerpAngle(tmp, tmp2, model->frame2Frac);
         }
 
-        angle = sub_GAME_7F06D0CC(angle, tmp, model->unk84);
+        angle = modelLerpAngle(angle, tmp, model->mergeWeight);
     }
 
-    sub_GAME_7F06E2B8(renderData, model, node, angle);
+    modelCalcYJointMtxFromAngle(renderData, model, node, angle);
 }
 
 
-void process_15_subposition(ModelRenderData* arg0, Model *model, ModelNode *node)
+void modelCalcOffsetMtx(ModelRenderData* arg0, Model *model, ModelNode *node)
 {
     union ModelRoData *rodata = node->Data;
     Mtxf *sp68;
@@ -1781,7 +2012,7 @@ void modelUpdateDistanceRelations(Model* model, ModelNode* node)
     Mtxf *mtx = modelFindNodeMtx(model, node, 0);
     f32 distance;
 
-    if (g_ModelDistanceDisabled)
+    if (g_ModelLodDisabled)
     {
         distance = 0;
     }
@@ -1789,9 +2020,9 @@ void modelUpdateDistanceRelations(Model* model, ModelNode* node)
     {
         distance = -mtx->m[3][2] * getPlayer_c_lodscalez();
 
-        if (g_ModelDistanceScale != 1)
+        if (g_ModelLodScale != 1)
         {
-            distance *= g_ModelDistanceScale;
+            distance *= g_ModelLodScale;
         }
     }
 
@@ -1991,7 +2222,7 @@ void modelUpdateReorderRelations(Model *model, ModelNode *node)
 }
 
 
-void process_07_unknown(Model *model, ModelNode *node)
+void modelUpdateTubeIndex(Model *model, ModelNode *node)
 {
     union ModelRoData *rodata = node->Data;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
@@ -2004,7 +2235,7 @@ void process_07_unknown(Model *model, ModelNode *node)
     s32 index2;
     s32 index3;
 
-    modelGetScaledRootToOriginDir(model, &coord);
+    modelGetDirToCamera(model, &coord);
 
     theta = mathAcos(((coord.x * mtx->m[1][0]) + (coord.y * mtx->m[1][1])) + (coord.z * mtx->m[1][2]));
     ratio = mathAcos((((coord.x * mtx->m[2][0]) + (coord.y * mtx->m[2][1])) + (coord.z * mtx->m[2][2])) / sinf(theta));
@@ -2018,12 +2249,12 @@ void process_07_unknown(Model *model, ModelNode *node)
     index1 = (theta * 64.0f) / M_TAU_F;
 
     index2 = (s32) ((ratio * M_U16_MAX_VALUE_F) / M_TAU_F);
-    index2 += D_800360C4[index1].unk04;
-    index2 = index2 >> D_800360C4[index1].unk0C;
+    index2 += g_ModelTubeAngleTable[index1].unk04;
+    index2 = index2 >> g_ModelTubeAngleTable[index1].unk0C;
 
-    index3 = index2 + D_800360C4[index1].unk00;
+    index3 = index2 + g_ModelTubeAngleTable[index1].unk00;
 
-    rwdata->Op07.index = rodata->Op07.Data[index3];
+    rwdata->Tube.index = rodata->Tube.Data[index3];
 }
 
 
@@ -2057,8 +2288,8 @@ void modelUpdateRelationsQuick(Model *model, ModelNode *parent)
             case MODELNODE_OPCODE_BSP:
                 modelUpdateReorderRelations(model, node);
                 break;
-            case MODELNODE_OPCODE_OP07:
-                process_07_unknown(model, node);
+            case MODELNODE_OPCODE_TUBE:
+                modelUpdateTubeIndex(model, node);
                 break;
             case MODELNODE_OPCODE_HEAD:
                 modelApplyHeadRelations(model, node);
@@ -2116,8 +2347,8 @@ void modelUpdateNodeRelations(Model *model)
                 modelUpdateReorderRelations(model, node);
                 break;
 
-            case MODELNODE_OPCODE_OP07:
-                process_07_unknown(model, node);
+            case MODELNODE_OPCODE_TUBE:
+                modelUpdateTubeIndex(model, node);
                 break;
 
             case MODELNODE_OPCODE_SWITCH:
@@ -2166,19 +2397,19 @@ void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
         switch (type)
         {
             case MODELNODE_OPCODE_HEADER:
-                process_01_group_heading(arg0, model, node);
+                modelCalcRootMtx(arg0, model, node);
                 break;
 
             case MODELNODE_OPCODE_GROUP:
-                process_02_position(arg0, model, node);
+                modelCalcJointMtx(arg0, model, node);
                 break;
 
             case MODELNODE_OPCODE_OP03:
-                process_03_unknown(arg0, model, node);
+                modelCalcYJointMtx(arg0, model, node);
                 break;
 
             case MODELNODE_OPCODE_GROUPSIMPLE:
-                process_15_subposition(arg0, model, node);
+                modelCalcOffsetMtx(arg0, model, node);
                 break;
 
             case MODELNODE_OPCODE_LOD:
@@ -2189,8 +2420,8 @@ void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
                 modelUpdateReorderRelations(model, node);
                 break;
 
-            case MODELNODE_OPCODE_OP07:
-                process_07_unknown(model, node);
+            case MODELNODE_OPCODE_TUBE:
+                modelUpdateTubeIndex(model, node);
                 break;
 
             case MODELNODE_OPCODE_SWITCH:
@@ -2227,25 +2458,25 @@ void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
 }
 
 
-void instcalcmatrices(ModelRenderData* arg0, Model* arg1)
+void modelCalcMatricesNoAnim(ModelRenderData* arg0, Model* arg1)
 {
 #if defined(LEFTOVERDEBUG)
     if (arg1 == NULL)
     {
         osSyncPrintf("instcalcmatrices: no objinst!\n");
-        return_null();
+        modelDebugBreak();
     }
 
     if (arg0->basemtx == NULL)
     {
         osSyncPrintf("instcalcmatrices: no basemtx!\n");
-        return_null();
+        modelDebugBreak();
     }
 
     if (arg0->mtxlist == NULL)
     {
         osSyncPrintf("instcalcmatrices: no mtxlist!\n");
-        return_null();
+        modelDebugBreak();
     }
 #endif
     arg1->render_pos = (RenderPosView* ) arg0->mtxlist;
@@ -2258,25 +2489,25 @@ void instcalcmatrices(ModelRenderData* arg0, Model* arg1)
  * Address 0x7F06F2F8 (VERSION_US, VERSION_JP)
  * Address 0x7F06F670 (VERSION_EU)
 */
-void subcalcmatrices(ModelRenderData *arg0, struct Model *arg1)
+void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
 {
 #if defined(LEFTOVERDEBUG)
     if (arg1 == NULL)
     {
         osSyncPrintf("subcalcmatrices: no objanim!\n");
-        return_null();
+        modelDebugBreak();
     }
 
     if (arg0->basemtx == NULL)
     {
         osSyncPrintf("subcalcmatrices: no basemtx!\n");
-        return_null();
+        modelDebugBreak();
     }
 
     if (arg0->mtxlist == NULL)
     {
         osSyncPrintf("subcalcmatrices: no mtxlist!\n");
-        return_null();
+        modelDebugBreak();
     }
 #endif
 
@@ -2286,29 +2517,29 @@ void subcalcmatrices(ModelRenderData *arg0, struct Model *arg1)
         if ((arg1->attachedto != NULL) && (arg1->attachedto_objinst == NULL))
         {
             osSyncPrintf("subcalcmatrices: no attach for objinst!\n");
-            return_null();
+            modelDebugBreak();
         }
 
-        if (((s32) arg1->framea < 0) || ((s32) arg1->framea >= (s32) arg1->anim->unk04))
+        if (((s32) arg1->framea < 0) || ((s32) arg1->framea >= (s32) arg1->anim->numFrames))
         {
             osSyncPrintf("subcalcmatrices: framea out of range!\n");
-            return_null();
+            modelDebugBreak();
         }
 
-        if (((s32) arg1->frameb < 0) || ((s32) arg1->frameb >= (s32) arg1->anim->unk04))
+        if (((s32) arg1->frameb < 0) || ((s32) arg1->frameb >= (s32) arg1->anim->numFrames))
         {
             osSyncPrintf("subcalcmatrices: frameb out of range!\n");
-            return_null();
+            modelDebugBreak();
         }
 
-        if ((arg1->unk84 == 0) || ((arg1->unk84 != 0) && (arg1->anim2 != NULL)))
+        if ((arg1->mergeWeight == 0) || ((arg1->mergeWeight != 0) && (arg1->anim2 != NULL)))
         {
             //
         }
         else
         {
             osSyncPrintf("subcalcmatrices: no anim2!\n");
-            return_null();
+            modelDebugBreak();
         }
 
         if (
@@ -2316,12 +2547,12 @@ void subcalcmatrices(ModelRenderData *arg0, struct Model *arg1)
             && (
                 (arg1->anim2 == NULL)
                 || (arg1->frame2a < 0)
-                || ((s32) arg1->frame2a >= (s32) arg1->anim2->unk04)
+                || ((s32) arg1->frame2a >= (s32) arg1->anim2->numFrames)
                 )
             )
         {
             osSyncPrintf("subcalcmatrices: frame2a out of range!\n");
-            return_null();
+            modelDebugBreak();
         }
 
         if (
@@ -2329,7 +2560,7 @@ void subcalcmatrices(ModelRenderData *arg0, struct Model *arg1)
             || (
                 (arg1->anim2 != NULL)
                  && (arg1->frame2b >= 0)
-                 && ((s32) arg1->frame2b < (s32) arg1->anim2->unk04)
+                 && ((s32) arg1->frame2b < (s32) arg1->anim2->numFrames)
                 )
             )
         {
@@ -2338,43 +2569,43 @@ void subcalcmatrices(ModelRenderData *arg0, struct Model *arg1)
         else
         {
             osSyncPrintf("subcalcmatrices: frame2b out of range!\n");
-            return_null();
+            modelDebugBreak();
         }
 #endif
 
-        arg1->unk34 = loadAnimationFrame(arg1->anim, arg1->framea, arg1->obj->Skeleton);
+        arg1->frameaData = animLoadFrame(arg1->anim, arg1->framea, arg1->obj->Skeleton);
 
-        if (arg1->unk2c != 0.0f)
+        if (arg1->frameFrac != 0.0f)
         {
-            arg1->unk38 = loadAnimationFrame(arg1->anim, arg1->frameb, arg1->obj->Skeleton);
+            arg1->framebData = animLoadFrame(arg1->anim, arg1->frameb, arg1->obj->Skeleton);
         }
 
         if (arg1->anim2 != NULL)
         {
-            arg1->unk64 = loadAnimationFrame(arg1->anim2, arg1->frame2a, arg1->obj->Skeleton);
+            arg1->frame2aData = animLoadFrame(arg1->anim2, arg1->frame2a, arg1->obj->Skeleton);
 
-            if (arg1->unk5c != 0.0f)
+            if (arg1->frame2Frac != 0.0f)
             {
-                arg1->unk68 = loadAnimationFrame(arg1->anim2, arg1->frame2b, arg1->obj->Skeleton);
+                arg1->frame2bData = animLoadFrame(arg1->anim2, arg1->frame2b, arg1->obj->Skeleton);
             }
         }
 
-        modelResetAnimationsScratchBuffer();
+        animResetFrameBuffer();
     }
 
-    instcalcmatrices(arg0, arg1);
+    modelCalcMatricesNoAnim(arg0, arg1);
 }
 
 /**
  * Address 0x7F06F5AC.
 */
-struct ModelAnimation * objecthandlerGetModelAnim(struct Model* model) {
+struct ModelAnimation * modelGetAnim(struct Model* model) {
     return model->anim;
 }
 
-s8 objecthandlerGetModelGunhand(Model *model) 
+s8 modelGetAnimFlip(Model *model) 
 {
-    return model->gunhand;
+    return model->flip;
 }
 
 
@@ -2383,7 +2614,7 @@ s8 objecthandlerGetModelGunhand(Model *model)
 */
 f32 modelGetAnimFrame(Model *model)
 {
-    return model->animframe1;
+    return model->frame;
 }
 
 
@@ -2403,7 +2634,7 @@ f32 modelGetAnimEndFrame(Model *model)
 
     if (modelAnimation != NULL)
     {
-        return modelAnimation->unk04 - 1;
+        return modelAnimation->numFrames - 1;
     }
 
     return 0.0f;
@@ -2446,8 +2677,8 @@ f32 modelGetEffectiveAnimSpeed(Model *model) {
 s32 modelConstrainOrWrapAnimFrame(s32 frame, ModelAnimation *anim, f32 endframe)
 {
     if (frame < 0) {
-        if (anim->unk07 & 1) {
-            frame = anim->unk04 - ((-frame) % anim->unk04);
+        if (anim->flags & 1) {
+            frame = anim->numFrames - ((-frame) % anim->numFrames);
         } else {
             frame = 0;
         }
@@ -2455,11 +2686,11 @@ s32 modelConstrainOrWrapAnimFrame(s32 frame, ModelAnimation *anim, f32 endframe)
     else if ((0.0f <= endframe) && ((s32)endframe < frame)) {
         frame = mathCeilToInt(endframe);
     }
-    else if (frame >= anim->unk04) {
-        if (anim->unk07 & 1) {
-            frame %= anim->unk04;
+    else if (frame >= anim->numFrames) {
+        if (anim->flags & 1) {
+            frame %= anim->numFrames;
         } else {
-            frame = anim->unk04 - 1;
+            frame = anim->numFrames - 1;
         }
     }
     else {
@@ -2484,17 +2715,17 @@ void modelCopyAnimForMerge(Model *model, f32 timemerge)
             opcode = root->Opcode & 0xff;
 
             model->anim2 = anim;
-            model->animframe2 = model->animframe1;
-            model->unk5c = model->unk2c;
-            model->unk25 = model->gunhand;
+            model->frame2 = model->frame;
+            model->frame2Frac = model->frameFrac;
+            model->flip2 = model->flip;
             model->frame2a = model->framea;
             model->frame2b = model->frameb;
             model->speed2 = model->speed;
-            model->unk74 = model->newspeed;
-            model->unk78 = model->oldspeed;
-            model->unk7c = model->timespeed;
-            model->unk80 = model->elapsespeed;
-            model->unk6c = model->endframe;
+            model->newspeed2 = model->newspeed;
+            model->oldspeed2 = model->oldspeed;
+            model->timespeed2 = model->timespeed;
+            model->elapsespeed2 = model->elapsespeed;
+            model->endframe2 = model->endframe;
 
             if (opcode == MODELNODE_OPCODE_HEADER) {
                 rwdata = (struct modeldata_root *)modelGetNodeRwData(model, root);
@@ -2522,16 +2753,16 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
     s32 type;
 
     if (model->anim2 != NULL) {
-        model->unk88 = arg5;
-        model->unk8c = 0.0f;
-        model->unk84 = 1.0f;
+        model->mergeTime = arg5;
+        model->mergeElapsed = 0.0f;
+        model->mergeWeight = 1.0f;
     } else {
-        model->unk88 = 0.0f;
-        model->unk84 = 0.0f;
+        model->mergeTime = 0.0f;
+        model->mergeWeight = 0.0f;
     }
 
     model->anim = anim;
-    model->gunhand = flip;
+    model->flip = flip;
     model->endframe = -1.0f;
     model->speed = speed;
     model->timespeed = 0.0f;
@@ -2560,7 +2791,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
         scale = model->scale * model->anim_translation_scale;
         pos = D_80036244;
 
-        angleDelta = sub_GAME_7F06D3F4(animPart, model->gunhand, skeleton, model->anim, model->frameb, &pos
+        angleDelta = animReadRootMotion(animPart, model->flip, skeleton, model->anim, model->frameb, &pos
         );
 
         if (scale != 1.0f) {
@@ -2571,9 +2802,9 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
 
         cosAngle = cosf(rwdata->unk14);
         sinAngle = sinf(rwdata->unk14);
-        scale = model->unk2c;
+        scale = model->frameFrac;
 
-        if (model->unk2c == 0.0f) {
+        if (model->frameFrac == 0.0f) {
             rwdata->unk34.x = rwdata->pos.f[0];
             rwdata->unk34.y = rwdata->pos.f[1] - rwdata->ground;
             rwdata->unk34.z = rwdata->pos.f[2];
@@ -2606,16 +2837,16 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
             y = pos.f[1];
             z = -pos.f[0] * sinAngle + pos.f[2] * cosAngle;
 
-            tmppos[0].x = rwdata->pos.f[0] + x * (1.0f - model->unk2c);
+            tmppos[0].x = rwdata->pos.f[0] + x * (1.0f - model->frameFrac);
             tmppos[0].y = y;
-            tmppos[0].z = rwdata->pos.f[2] + z * (1.0f - model->unk2c);
+            tmppos[0].z = rwdata->pos.f[2] + z * (1.0f - model->frameFrac);
 
             rwdata->unk24.x = tmppos[0].x;
             rwdata->unk24.y = tmppos[0].y;
             rwdata->unk24.z = tmppos[0].z;
 
             rwdata->unk34.f[0] = rwdata->unk24.f[0] - x;
-            rwdata->unk34.f[1] = (rwdata->pos.f[1] - rwdata->ground) - (y - (rwdata->pos.f[1] - rwdata->ground)) * model->unk2c / (1.0f - model->unk2c);
+            rwdata->unk34.f[1] = (rwdata->pos.f[1] - rwdata->ground) - (y - (rwdata->pos.f[1] - rwdata->ground)) * model->frameFrac / (1.0f - model->frameFrac);
             rwdata->unk34.f[2] = rwdata->unk24.f[2] - z;
 
             temp_f14 = rwdata->unk14 - angleDelta;
@@ -2624,7 +2855,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
                 temp_f14 += M_TAU_F;
             }
 
-            rwdata->unk30 = sub_GAME_7F06D0CC(rwdata->unk14, temp_f14, model->unk2c);
+            rwdata->unk30 = modelLerpAngle(rwdata->unk14, temp_f14, model->frameFrac);
 
             if (rwdata->unk18 == 0.0f) {
                 rwdata->unk20 = rwdata->unk30 + angleDelta;
@@ -2659,7 +2890,7 @@ void modelSetAnimation(Model *model, ModelAnimation *modelAnimation, s32 flip, f
 
 
 /*
- * Match-only overlay types for sub_GAME_7F06FCFC.
+ * Match-only overlay types for modelCopyAnimState.
  */
 typedef struct ModelCopyHead {
     u32 words[8];      // 0x00-0x1f
@@ -2678,7 +2909,7 @@ typedef struct ModelCopyBc {
  * then restores the destination's base/resource fields (0x00-0x1f).
  * Maybe some kind of old/abandoned anim copy function.
  */
-void sub_GAME_7F06FCFC(Model *src, Model *dst)
+void modelCopyAnimState(Model *src, Model *dst)
 {
     ModelCopyHead tmp;
 
@@ -2698,7 +2929,7 @@ void modelSetAnimLooping(Model *model, f32 loopframe, f32 loopmerge) {
 void modelSetAnimEndFrame(Model *model, f32 endframe) {
     ModelAnimation *modelAnimation = model->anim;
 
-    if ((modelAnimation != NULL) && (endframe < (modelAnimation->unk04 - 1))) {
+    if ((modelAnimation != NULL) && (endframe < (modelAnimation->numFrames - 1))) {
         model->endframe = endframe;
     } else {
         model->endframe = -1.0f;
@@ -2717,7 +2948,7 @@ void modelSetAnimFlipFunction(Model *model, void *callback) {
 /**
  * Unused Function
 */
-void sub_GAME_7F06FE44(Model *model, s32 arg1) {
+void modelSetUnk9c(Model *model, s32 arg1) {
     model->unk9c = arg1;
 }
 
@@ -2742,13 +2973,13 @@ void modelSetAnimSpeed(Model *model, f32 anim_speed, f32 startframe) {
  *
  * Address 0x7F06FE90.
 */
-void sub_GAME_7F06FE90(Model *model, f32 arg1, f32 arg2)
+void modelSetAnimSpeedToReachFrame(Model *model, f32 arg1, f32 arg2)
 {
     f32 temp_f0;
     f32 phi_f2;
     f32 t;
 
-    temp_f0 = model->animframe1;
+    temp_f0 = model->frame;
 
     if (temp_f0 <= arg1)
     {
@@ -2756,7 +2987,7 @@ void sub_GAME_7F06FE90(Model *model, f32 arg1, f32 arg2)
     }
     else
     {
-        phi_f2 = ( (f32)model->anim->unk04 - temp_f0) + arg1;
+        phi_f2 = ( (f32)model->anim->numFrames - temp_f0) + arg1;
     }
 
     t = model->speed + ((2.0f * phi_f2) / arg2);
@@ -2765,19 +2996,19 @@ void sub_GAME_7F06FE90(Model *model, f32 arg1, f32 arg2)
 
 void modelSetAnimPlaySpeed(Model *model, f32 animation_rate, f32 startframe) {
     if (startframe > 0.0f) {
-        model->unkb0 = startframe;
-        model->animrate = animation_rate;
-        model->unkb4 = 0.0f;
-        model->unkac = model->playspeed;
+        model->timeplayspeed = startframe;
+        model->newplayspeed = animation_rate;
+        model->elapseplayspeed = 0.0f;
+        model->oldplayspeed = model->playspeed;
         return;
     }
     model->playspeed = animation_rate;
-    model->unkb0 = 0.0f;
+    model->timeplayspeed = 0.0f;
 }
 
 
-void sub_GAME_7F06FF5C(Model *model, s32 arg1) {
-    model->unka0 = arg1;
+void modelSetRootMoveCallback(Model *model, s32 arg1) {
+    model->rootMoveCallback = arg1;
 }
 
 
@@ -2797,20 +3028,20 @@ void modelSetAnimFrame(Model* model, f32 frame)
 
     if (model->framea == model->frameb)
     {
-        model->unk2c = 0.0f;
-        model->animframe1 = model->framea;
+        model->frameFrac = 0.0f;
+        model->frame = model->framea;
     }
     else if (forwards)
     {
         f32 tmp = frame - framea;
-        model->unk2c = tmp;
-        model->animframe1 = model->framea + tmp;
+        model->frameFrac = tmp;
+        model->frame = model->framea + tmp;
     }
     else
     {
         f32 tmp = 1.0f - (frame - (f32) frameb);
-        model->unk2c = tmp;
-        model->animframe1 = model->frameb + (1.0f - tmp);
+        model->frameFrac = tmp;
+        model->frame = model->frameb + (1.0f - tmp);
     }
 }
 
@@ -2830,25 +3061,25 @@ void modelSetAnimFrame2(Model* model, f32 frame1, f32 frame2)
         forwards = (model->speed2 >= 0.0f);
         frameb = forwards ? (framea + 1) : (framea - 1);
 
-        model->frame2a = modelConstrainOrWrapAnimFrame(framea, model->anim2, model->unk6c);
-        model->frame2b = modelConstrainOrWrapAnimFrame(frameb, model->anim2, model->unk6c);
+        model->frame2a = modelConstrainOrWrapAnimFrame(framea, model->anim2, model->endframe2);
+        model->frame2b = modelConstrainOrWrapAnimFrame(frameb, model->anim2, model->endframe2);
 
         if (model->frame2a == model->frame2b)
         {
-            model->unk5c = 0.0f;
-            model->animframe2 = model->frame2a;
+            model->frame2Frac = 0.0f;
+            model->frame2 = model->frame2a;
         }
         else if (forwards != 0)
         {
             f32 tmp = frame2 - framea;
-            model->unk5c = tmp;
-            model->animframe2 = model->frame2a + tmp;
+            model->frame2Frac = tmp;
+            model->frame2 = model->frame2a + tmp;
         }
         else
         {
             f32 tmp = 1.0f - (frame2 - (f32) frameb);
-            model->unk5c = tmp;
-            model->animframe2 = model->frame2b + (1.0f - tmp);
+            model->frame2Frac = tmp;
+            model->frame2 = model->frame2b + (1.0f - tmp);
         }
     }
 }
@@ -2993,7 +3224,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                 }
                 else
                 {
-                    angledelta = sub_GAME_7F06D3F4(jointnum, modelptr->gunhand, skeleton, modelptr->anim, framenum, &pos);
+                    angledelta = animReadRootMotion(jointnum, modelptr->flip, skeleton, modelptr->anim, framenum, &pos);
 
                     if (scale != 1.0f)
                     {
@@ -3045,7 +3276,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                 if (modelptr->frameb != modelptr->framea)
                 {
-                    angledelta = sub_GAME_7F06D3F4(jointnum, modelptr->gunhand, skeleton, modelptr->anim, framenum, &pos);
+                    angledelta = animReadRootMotion(jointnum, modelptr->flip, skeleton, modelptr->anim, framenum, &pos);
                     flag = 1;
 
                     if (scale != 1.0f)
@@ -3076,14 +3307,14 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                         if (0.0f < speed)
                         {
-                            f32 t = modelptr->unk84 - (modelptr->playspeed / (speed * modelptr->unk88));
+                            f32 t = modelptr->mergeWeight - (modelptr->playspeed / (speed * modelptr->mergeTime));
 
                             if (t < 0.0f)
                             {
                                 t = 0.0f;
                             }
 
-                            t = (modelptr->unk84 + t) * 0.5f;
+                            t = (modelptr->mergeWeight + t) * 0.5f;
 
                             v[0] = ((header->unk40.x - header->unk4c.x) * speed2) / speed;
                             v[2] = ((header->unk40.z - header->unk4c.z) * speed2) / speed;
@@ -3093,8 +3324,8 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         }
                         else
                         {
-                            pos24.f[0] += (header->unk40.x - header->unk4c.x) * modelptr->unk84;
-                            pos24.f[2] += (header->unk40.z - header->unk4c.z) * modelptr->unk84;
+                            pos24.f[0] += (header->unk40.x - header->unk4c.x) * modelptr->mergeWeight;
+                            pos24.f[2] += (header->unk40.z - header->unk4c.z) * modelptr->mergeWeight;
                         }
 
                         pos24.f[0] += pos34.f[0];
@@ -3163,18 +3394,18 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
             if (vb == va)
             {
-                modelptr->unk2c = 0.0f;
-                modelptr->animframe1 = va;
+                modelptr->frameFrac = 0.0f;
+                modelptr->frame = va;
             }
             else if (forward)
             {
-                modelptr->unk2c = frameb - (f32)endframe;
-                modelptr->animframe1 = (f32)va + modelptr->unk2c;
+                modelptr->frameFrac = frameb - (f32)endframe;
+                modelptr->frame = (f32)va + modelptr->frameFrac;
             }
             else
             {
-                modelptr->unk2c = (f32)endframe - frameb;
-                modelptr->animframe1 = (f32)vb + (1.0f - modelptr->unk2c);
+                modelptr->frameFrac = (f32)endframe - frameb;
+                modelptr->frame = (f32)vb + (1.0f - modelptr->frameFrac);
             }
 
             if (modelptr->anim2 != NULL)
@@ -3193,11 +3424,11 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         header->unk4c.y = header->unk34.y;
                     }
 
-                    modelptr->frame2a = modelConstrainOrWrapAnimFrame(end2, modelptr->anim2, modelptr->unk6c);
-                    framenum = modelConstrainOrWrapAnimFrame(end2 + 1, modelptr->anim2, modelptr->unk6c);
+                    modelptr->frame2a = modelConstrainOrWrapAnimFrame(end2, modelptr->anim2, modelptr->endframe2);
+                    framenum = modelConstrainOrWrapAnimFrame(end2 + 1, modelptr->anim2, modelptr->endframe2);
                     modelptr->frame2b = framenum;
 
-                    sub_GAME_7F06D3F4(jointnum, modelptr->unk25, skeleton, modelptr->anim2, framenum, &pos);
+                    animReadRootMotion(jointnum, modelptr->flip2, skeleton, modelptr->anim2, framenum, &pos);
 
                     if (scale != 1.0f)
                     {
@@ -3210,13 +3441,13 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                 if (forward)
                 {
-                    modelptr->unk5c = frame2b - (f32)end2;
-                    modelptr->animframe2 = (f32)modelptr->frame2a + modelptr->unk5c;
+                    modelptr->frame2Frac = frame2b - (f32)end2;
+                    modelptr->frame2 = (f32)modelptr->frame2a + modelptr->frame2Frac;
                 }
                 else
                 {
-                    modelptr->unk5c = 1.0f - (frame2b - (f32)end2);
-                    modelptr->animframe2 = (f32)modelptr->frame2b + (1.0f - modelptr->unk5c);
+                    modelptr->frame2Frac = 1.0f - (frame2b - (f32)end2);
+                    modelptr->frame2 = (f32)modelptr->frame2b + (1.0f - modelptr->frame2Frac);
                 }
             }
             else
@@ -3242,8 +3473,8 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
     f32 frame2;
     f32 animlast;
 
-    frame = model->animframe1;
-    frame2 = model->animframe2;
+    frame = model->frame;
+    frame2 = model->frame2;
 
     if (numticks > 0) 
     {
@@ -3259,41 +3490,41 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
             f32 saved_elapsespeed;
             f32 loopframe;
             
-            if (model->unkb0 > 0.0f) 
+            if (model->timeplayspeed > 0.0f) 
             {
-                model->unkb4 += 1.0f;
+                model->elapseplayspeed += 1.0f;
 
-                if (model->unkb4 < model->unkb0) 
+                if (model->elapseplayspeed < model->timeplayspeed) 
                 {
-                    model->playspeed = model->unkac + ((model->animrate - model->unkac) * model->unkb4) / model->unkb0;
+                    model->playspeed = model->oldplayspeed + ((model->newplayspeed - model->oldplayspeed) * model->elapseplayspeed) / model->timeplayspeed;
                 } 
                 else 
                 {
-                    model->unkb0 = 0.0f;
-                    model->playspeed = model->animrate;
+                    model->timeplayspeed = 0.0f;
+                    model->playspeed = model->newplayspeed;
                 }
             }
 
             playspeed = model->playspeed;
 
-            if (model->unk88 > 0.0f)
+            if (model->mergeTime > 0.0f)
             {
-                model->unk8c += playspeed;
+                model->mergeElapsed += playspeed;
 
-                if (model->unk8c == 0.0f)
+                if (model->mergeElapsed == 0.0f)
                 {
-                    model->unk84 = 1.0f;
+                    model->mergeWeight = 1.0f;
                     playspeed = model->playspeed;
                 } 
-                else if (model->unk8c < model->unk88) 
+                else if (model->mergeElapsed < model->mergeTime) 
                 {
-                    model->unk84 = (model->unk88 - model->unk8c) / model->unk88;
+                    model->mergeWeight = (model->mergeTime - model->mergeElapsed) / model->mergeTime;
                     playspeed = model->playspeed;
                 } 
                 else 
                 {
-                    model->unk88 = 0.0f;
-                    model->unk84 = 0.0f;
+                    model->mergeTime = 0.0f;
+                    model->mergeWeight = 0.0f;
                     model->anim2 = NULL;
                     playspeed = model->playspeed;
                 }
@@ -3323,20 +3554,20 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
 
             if (model->anim2 != NULL) 
             {
-                if (model->unk7c > 0.0f) 
+                if (model->timespeed2 > 0.0f) 
                 {
-                    model->unk80 += playspeed;
+                    model->elapsespeed2 += playspeed;
 
-                    if (model->unk80 < model->unk7c) 
+                    if (model->elapsespeed2 < model->timespeed2) 
                     {
-                        model->speed2 = model->unk78 + ((model->unk74 - model->unk78) * model->unk80) / model->unk7c;
+                        model->speed2 = model->oldspeed2 + ((model->newspeed2 - model->oldspeed2) * model->elapsespeed2) / model->timespeed2;
                         playspeed = model->playspeed;
                     } 
                     else 
                     {
-                        model->unk7c = 0.0f;
+                        model->timespeed2 = 0.0f;
                         playspeed = model->playspeed;
-                        model->speed2 = model->unk74;
+                        model->speed2 = model->newspeed2;
                     }
                 }
 
@@ -3347,7 +3578,7 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
 
             if (model->animlooping) 
             {
-                animlast = model->anim->unk04 - 1;
+                animlast = model->anim->numFrames - 1;
                 endframe = model->endframe;
 
                 if (endframe);
@@ -3382,14 +3613,14 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
 
                     if (update_chrstuff) 
                     {
-                        modelSetAnimFrame2WithChrStuff(model, model->animframe1, limit, 0.0f, 0.0f);
+                        modelSetAnimFrame2WithChrStuff(model, model->frame, limit, 0.0f, 0.0f);
                     } 
                     else 
                     {
                         modelSetAnimFrame2(model, limit, 0.0f);
                     }
 
-                    modelSetAnimation(model, model->anim, model->gunhand, loopframe, model->speed, model->animloopmerge);
+                    modelSetAnimation(model, model->anim, model->flip, loopframe, model->speed, model->animloopmerge);
 
                     model->animlooping = 1;
                     model->endframe = endframe;
@@ -3415,11 +3646,11 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
         {
             if (model->anim2 != NULL) 
             {
-                modelSetAnimFrame2WithChrStuff(model, model->animframe1, frame, model->animframe2, frame2);
+                modelSetAnimFrame2WithChrStuff(model, model->frame, frame, model->frame2, frame2);
             } 
             else 
             {
-                modelSetAnimFrame2WithChrStuff(model, model->animframe1, frame, 0.0f, 0.0f);
+                modelSetAnimFrame2WithChrStuff(model, model->frame, frame, 0.0f, 0.0f);
             }
         } 
         else 
@@ -4317,7 +4548,7 @@ void modelRenderNodeDl(ModelRenderData *renderdata, Model *model, ModelNode *nod
 }
 
 
-void sub_GAME_7F072C10(ModelRenderData *param_1, struct Model *param_2, struct ModelNode *param_3)
+void modelRenderNodeOp20(ModelRenderData *param_1, struct Model *param_2, struct ModelNode *param_3)
 {
     return;
 }
@@ -4331,7 +4562,7 @@ void sub_GAME_7F072C10(ModelRenderData *param_1, struct Model *param_2, struct M
  * writes them to a newly allocated vertices table and queues the node's
  * displaylist to the renderdata's DL.
  */
-void dorottex(ModelRenderData *renderdata, ModelNode *node)
+void modelRenderNodeRotTex(ModelRenderData *renderdata, ModelNode *node)
 {
     if (renderdata->unk18 == 0 && (renderdata->flags & 2))
     {
@@ -4347,16 +4578,16 @@ void dorottex(ModelRenderData *renderdata, ModelNode *node)
             src = (Vertex *) rodata->Vertices;
 
 #ifndef VERSION_EU
-            if (vtxallocator != NULL)
+            if (g_ModelVtxAllocator != NULL)
             {
             }
             else
             {
                 osSyncPrintf("dorottex: no vtx allocator!\n");
-                return_null();
+                modelDebugBreak();
             }
 #endif
-            dst = vtxallocator(rodata->numVertices * 4);
+            dst = g_ModelVtxAllocator(rodata->numVertices * 4);
 
             gSPSegment(renderdata->gdl++, SPSEGMENT_MODEL_VTX, osVirtualToPhysical(dst));
             gSPSegment(renderdata->gdl++, SPSEGMENT_MODEL_COL1, osVirtualToPhysical(rodata->BaseAddr));
@@ -4413,24 +4644,24 @@ void dorottex(ModelRenderData *renderdata, ModelNode *node)
 }
 
 
-void sub_GAME_7F073038(ModelRenderData *renderdata, struct sImageTableEntry *tconfig, s32 arg2)
+void modelSelectTexture(ModelRenderData *renderdata, struct sImageTableEntry *tconfig, s32 arg2)
 {
     texSelect(&renderdata->gdl, tconfig, arg2, renderdata->zbufferenabled, 2);
 }
 
 
-void sub_GAME_7F07306C(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
+void modelRenderNodeOp05(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
 {
     return;
 }
 
 
-void dotube(ModelRenderData* renderdata, Model* model, ModelNode* node)
+void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* node)
 {
     s32 rw_index_sel;
     s32 rw_index_sel2;
     s32 c_entry_count;
-    struct ModelRoData_Op07Record *rodata2;
+    struct ModelRoData_TubeRecord *rodata2;
     s32 c_entry2_count;
     s32 c_entry_index;
     s32 renderpos_index;
@@ -4440,9 +4671,9 @@ void dotube(ModelRenderData* renderdata, Model* model, ModelNode* node)
     u8 *entry2_04;
     s32 unused1;
     bool swap_order;
-    struct ModelRoData_Op07Record *rodata;
+    struct ModelRoData_TubeRecord *rodata;
     struct ModelRoData_Child *c_entry;
-    struct ModelRwData_Op07Record *rwdata;
+    struct ModelRwData_TubeRecord *rwdata;
     Vertex *vtx_10;
     Vertex *vtx_10_2;
     RenderPosView *render_pos2;
@@ -4450,14 +4681,14 @@ void dotube(ModelRenderData* renderdata, Model* model, ModelNode* node)
     s32 rw_index2;
     s32 rw_index;
     Vertex *vtx1;
-    struct ModelRwData_Op07Record *rwdata2;
+    struct ModelRwData_TubeRecord *rwdata2;
     u8 *entry_04;
     s32 unused2;
     s32 renderpos_index2;
     s32 unused3;
 
-    rodata = &node->Data->Op07;
-    rwdata = &modelGetNodeRwData(model, node)->Op07;
+    rodata = &node->Data->Tube;
+    rwdata = &modelGetNodeRwData(model, node)->Tube;
 
     if (rodata->unk00 != NULL)
     {
@@ -4468,8 +4699,8 @@ void dotube(ModelRenderData* renderdata, Model* model, ModelNode* node)
         node_from_07 = rodata->unk04;
     }
 
-    rodata2 = &node_from_07->Data->Op07;
-    rwdata2 = &modelGetNodeRwData(model, node_from_07)->Op07;
+    rodata2 = &node_from_07->Data->Tube;
+    rwdata2 = &modelGetNodeRwData(model, node_from_07)->Tube;
     swap_order = 1;
 
     if (renderdata->flags & 1)
@@ -4542,13 +4773,13 @@ void dotube(ModelRenderData* renderdata, Model* model, ModelNode* node)
                     {
                         struct ModelRoData_Child_Vtx* child_vtx = ((struct ModelRoData_Child_Vtx*)entry_04);
 #if defined(LEFTOVERDEBUG)
-                        if (vtxallocator == NULL)
+                        if (g_ModelVtxAllocator == NULL)
                         {
                             osSyncPrintf("dotube: no vtx allocator!\n");
-                            return_null();
+                            modelDebugBreak();
                         }
 #endif
-                        vtx1 = vtxallocator(2);
+                        vtx1 = g_ModelVtxAllocator(2);
                         vtx2 = &vtx1[1];
 
                         *vtx1 = rodata->Vertices[child_vtx->VtxIndex];
@@ -4661,12 +4892,12 @@ void dotube(ModelRenderData* renderdata, Model* model, ModelNode* node)
                         struct ModelRoData_Child_Image* child_image = (struct ModelRoData_Child_Image*)entry_04;
                         if (child_image->ImageIndex != 0xFF)
                         {
-                            sub_GAME_7F073038(renderdata, &rodata->Images[child_image->ImageIndex], 1);
+                            modelSelectTexture(renderdata, &rodata->Images[child_image->ImageIndex], 1);
                             entry_04 += sizeof(struct ModelRoData_Child_Image);
                         }
                         else
                         {
-                            sub_GAME_7F073038(renderdata, NULL, 1);
+                            modelSelectTexture(renderdata, NULL, 1);
                             entry_04 += sizeof(struct ModelRoData_Child_Image);
                         }
                         break;
@@ -4685,20 +4916,20 @@ void dotube(ModelRenderData* renderdata, Model* model, ModelNode* node)
 }
 
 
-void sub_GAME_7F0737EC(s32 param_1,struct Model *param_2, struct ModelNode *param_3)
+void modelRenderNodeOp06(s32 param_1,struct Model *param_2, struct ModelNode *param_3)
 {
     return;
 }
 
 
-void sub_GAME_7F0737FC(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
+void modelRenderNodeOp11(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
 {
     return;
 }
 
 
 // PD: modelRenderNodeChrGunfire
-void dogfnegx(ModelRenderData *renderdata, Model *model, ModelNode *node)
+void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
     u32 unused[3];
     f32 negspc0;
@@ -4790,13 +5021,13 @@ void dogfnegx(ModelRenderData *renderdata, Model *model, ModelNode *node)
         sp90.f[2] = rodata->Offset.f[2];
 
 #if defined (LEFTOVERDEBUG)
-        if (vtxallocator == NULL) {
+        if (g_ModelVtxAllocator == NULL) {
             osSyncPrintf("dogfnegx: no vtx allocator!\n");
-            return_null();
+            modelDebugBreak();
         }
 #endif
 
-        vertices = vtxallocator(4);
+        vertices = g_ModelVtxAllocator(4);
 
         vertices[0] = vtxtemplate;
         vertices[1] = vtxtemplate;
@@ -4842,11 +5073,11 @@ void dogfnegx(ModelRenderData *renderdata, Model *model, ModelNode *node)
             vertices[3].s = centre - sp58;
             vertices[3].t = centre + sp5c;
 
-            sub_GAME_7F073038(renderdata, tconfig, 4);
+            modelSelectTexture(renderdata, tconfig, 4);
         }
         else
         {
-            sub_GAME_7F073038(renderdata, NULL, 1);
+            modelSelectTexture(renderdata, NULL, 1);
         }
 
         gSPSetGeometryMode(renderdata->gdl++, G_CULL_BACK);
@@ -4858,9 +5089,9 @@ void dogfnegx(ModelRenderData *renderdata, Model *model, ModelNode *node)
 }
 
 
-void sub_GAME_7F073FC8(s32 arg0)
+void modelSetShadowAlpha(s32 arg0)
 {
-    D_800363F0 = arg0;
+    g_ModelShadowAlpha = arg0;
 }
 
 
@@ -4869,7 +5100,7 @@ void sub_GAME_7F073FC8(s32 arg0)
 const char aDoshadowNoVtxAllocator[] = "doshadow: no vtx allocator!\n";
 #endif
 
-void doshadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
+void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
     sImageTableEntry *image;
     RenderPosView *mtx;
@@ -4883,7 +5114,7 @@ void doshadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
     f32 height;
     ModelRwData_HeaderRecord *rwdata;
 
-    if ((s32) D_800363F0 <= 0)
+    if ((s32) g_ModelShadowAlpha <= 0)
     {
         return;
     }
@@ -4902,11 +5133,11 @@ void doshadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
 
     if ((renderdata->PropType == PROP_TYPE_CHR) || (renderdata->PropType == PROP_TYPE_SMOKE))
     {
-        temp = (vtxtemplate.v.cn[3] = ((renderdata->envcolour.word & 0xff) * D_800363F0) / 255);
+        temp = (vtxtemplate.v.cn[3] = ((renderdata->envcolour.word & 0xff) * g_ModelShadowAlpha) / 255);
     }
     else
     {
-        vtxtemplate.v.cn[3] = D_800363F0;
+        vtxtemplate.v.cn[3] = g_ModelShadowAlpha;
     }
 
     temp = modelFindNodeMtxIndex(node, 0);
@@ -4938,15 +5169,15 @@ void doshadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
     }
 
 #ifdef LEFTOVERDEBUG
-    if (vtxallocator == NULL)
+    if (g_ModelVtxAllocator == NULL)
     {
         if (1);
         osSyncPrintf(aDoshadowNoVtxAllocator);
-        return_null();
+        modelDebugBreak();
     }
 #endif
 
-    vtx = (Vtx *) vtxallocator(4);
+    vtx = (Vtx *) g_ModelVtxAllocator(4);
 
     vtx[0] = vtxtemplate;
     vtx[1] = vtxtemplate;
@@ -4981,11 +5212,11 @@ void doshadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
         vtx[3].v.tc[0] = 0;
         vtx[3].v.tc[1] = (image->height << 5) - 1;
 
-        sub_GAME_7F073038(renderdata, image, 4);
+        modelSelectTexture(renderdata, image, 4);
     }
     else
     {
-        sub_GAME_7F073038(renderdata, NULL, 1);
+        modelSelectTexture(renderdata, NULL, 1);
     }
 
     gSPSetGeometryMode(renderdata->gdl++, G_CULL_BACK);
@@ -5003,19 +5234,19 @@ void doshadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
 }
 
 
-void sub_GAME_7F074514(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
+void modelRenderNodeBbox(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
 {
     return;
 }
 
 
-void sub_GAME_7F074524(Gfx *param_1,struct Model *param_2, struct ModelNode *param_3)
+void modelRenderNodeOp17(Gfx *param_1,struct Model *param_2, struct ModelNode *param_3)
 {
     return;
 }
 
 
-void sub_GAME_7F074534(ModelRenderData* data, Model* model, ModelNode* node) {
+void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
     u32 id = node->Opcode & 0xFF;
     switch (id) {
     case MODELNODE_OPCODE_LOD:
@@ -5031,19 +5262,19 @@ void sub_GAME_7F074534(ModelRenderData* data, Model* model, ModelNode* node) {
         modelApplyReorderRelations(model, node);
         return;
     case MODELNODE_OPCODE_OP11:
-        sub_GAME_7F0737FC(data, model, node);
+        modelRenderNodeOp11(data, model, node);
         return;
     case MODELNODE_OPCODE_GUNFIRE:
-        dogfnegx(data, model, node);
+        modelRenderNodeGunfire(data, model, node);
         return;
     case MODELNODE_OPCODE_SHADOW:
-        doshadow(data, model, node);
+        modelRenderNodeShadow(data, model, node);
         return;
     case MODELNODE_OPCODE_BBOX:
-        sub_GAME_7F074514(data, model, node);
+        modelRenderNodeBbox(data, model, node);
         return;
     case MODELNODE_OPCODE_OP17:
-        sub_GAME_7F074524(data, model, node);
+        modelRenderNodeOp17(data, model, node);
         return;
     case MODELNODE_OPCODE_DL:
         modelRenderNodeGundl(data, node);
@@ -5052,19 +5283,19 @@ void sub_GAME_7F074534(ModelRenderData* data, Model* model, ModelNode* node) {
         modelRenderNodeDl(data, model, node);
         return;
     case MODELNODE_OPCODE_OP20:
-        sub_GAME_7F072C10(data, model, node);
+        modelRenderNodeOp20(data, model, node);
         return;
     case MODELNODE_OPCODE_DLPRIMARY:
-        dorottex(data, node);
+        modelRenderNodeRotTex(data, node);
         return;
     case MODELNODE_OPCODE_OP05:
-        sub_GAME_7F07306C(data, model, node);
+        modelRenderNodeOp05(data, model, node);
         return;
-    case MODELNODE_OPCODE_OP07:
-        dotube(data, model, node);
+    case MODELNODE_OPCODE_TUBE:
+        modelRenderNodeTube(data, model, node);
         return;
     case MODELNODE_OPCODE_OP06:
-        sub_GAME_7F0737EC(data,model,node);
+        modelRenderNodeOp06(data,model,node);
         return;
     case MODELNODE_OPCODE_HEADER:
     case MODELNODE_OPCODE_GROUP:
@@ -5078,7 +5309,7 @@ void sub_GAME_7F074534(ModelRenderData* data, Model* model, ModelNode* node) {
 }
 
 
-void subdraw(ModelRenderData *mrData, Model *mdl)
+void modelRender(ModelRenderData *mrData, Model *mdl)
 {
     ModelNode *root = mdl->obj->RootNode;
     #if defined(LEFTOVERDEBUG)
@@ -5086,7 +5317,7 @@ void subdraw(ModelRenderData *mrData, Model *mdl)
     if (mrData->gdl == NULL)
     {
         osSyncPrintf("subdraw: no gfxlist!\n");
-        return_null();
+        modelDebugBreak();
     }
 
     if (mdl->obj->isLoaded)
@@ -5095,14 +5326,14 @@ void subdraw(ModelRenderData *mrData, Model *mdl)
     else
     {
         osSyncPrintf("subdraw: object not initialised! (0x%X)\n", (u32)mdl->obj);
-        return_null();
+        modelDebugBreak();
     }
     #endif
     gSPSegment(mrData->gdl++, 3, osVirtualToPhysical(mdl->render_pos));
 
     while (root != NULL)
     {
-        sub_GAME_7F074534(mrData, mdl, root);
+        modelRenderNode(mrData, mdl, root);
 
         if (root->Child)
         {
@@ -5125,11 +5356,11 @@ void subdraw(ModelRenderData *mrData, Model *mdl)
 
 
 // unreferenced
-void sub_GAME_7F074790(ModelRenderData* arg0, Model* arg1)
+void modelCalcAndRender(ModelRenderData* arg0, Model* arg1)
 {
-    subcalcpos(arg1);
-    subcalcmatrices(arg0, arg1);
-    subdraw((s32) arg0, arg1);
+    modelCalcPosition(arg1);
+    modelCalcMatrices(arg0, arg1);
+    modelRender((s32) arg0, arg1);
 }
 
 
@@ -5362,7 +5593,7 @@ bool modelTestRayIntersectsNodeBBox(Model *model, ModelNode *node, coord3d *pos,
 /**
  * Address: 7F074CAC
  */
-s32 sub_GAME_7F074CAC(Model *model, ModelNode *node, coord3d *raypos, coord3d *raydir)
+s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypos, coord3d *raydir)
 {
     ModelRoData_Op17Record *hitData;
     Mtxf *nodeMtx;
@@ -5513,7 +5744,7 @@ s32 sub_GAME_7F074CAC(Model *model, ModelNode *node, coord3d *raypos, coord3d *r
 /**
  * Address: 7F0752FC
  */
-u32 modelFindNextProjectileHitCandidate(Model *model, coord3d *arg1, coord3d *arg2, ModelNode **nodeptr)
+u32 modelFindRayHitNext(Model *model, coord3d *arg1, coord3d *arg2, ModelNode **nodeptr)
 {
     ModelNode *node;
     s32 descend;
@@ -5567,7 +5798,7 @@ u32 modelFindNextProjectileHitCandidate(Model *model, coord3d *arg1, coord3d *ar
                 break;
 
             case MODELNODE_OPCODE_OP17 - 1:
-                if (sub_GAME_7F074CAC(model, node, arg1, arg2) != 0) {
+                if (modelTestRayIntersectsNodeOp17(model, node, arg1, arg2) != 0) {
                     *nodeptr = node;
                     return *(u32 *)node->Data;
                 }
@@ -5600,10 +5831,10 @@ u32 modelFindNextProjectileHitCandidate(Model *model, coord3d *arg1, coord3d *ar
 /**
  * Unreferenced
  */
-u32 *sub_GAME_7F07549C(void *arg0, f32 *arg1, f32 *arg2, ModelNode **nodeptr)
+u32 *modelFindRayHit(void *arg0, f32 *arg1, f32 *arg2, ModelNode **nodeptr)
 {
     *nodeptr = NULL;
-    return modelFindNextProjectileHitCandidate(arg0, arg1, arg2, nodeptr);
+    return modelFindRayHitNext(arg0, arg1, arg2, nodeptr);
 }
 
 
@@ -5611,7 +5842,7 @@ u32 *sub_GAME_7F07549C(void *arg0, f32 *arg1, f32 *arg2, ModelNode **nodeptr)
  * Address 7F0754BC.
  * Copy animation from ROM to RAM
 */
-s32 loadAnimationFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
+s32 animLoadFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
 {
     s32 ret;
     s32 source;
@@ -5620,17 +5851,17 @@ s32 loadAnimationFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
     u32 size;
 
     ret = 0;
-    frameSize = anim->unk0E >> 3; // divide by 8
+    frameSize = anim->frameBits >> 3; // divide by 8
 
     if (anim->address & 0x80000000) // If animation's address is in RAM
     {
         // Load that frame from RAM
         ret = anim->address + (frame * frameSize);
     }
-    else if (D_80036414 != NULL) // should never be NULL after initAnimationsBuffer is called
+    else if (g_AnimFrameBuffer != NULL) // should never be NULL after animInitFrameBuffer is called
     {
-        // Get dest from this D_80036414 which points to an array. Align to 16 bytes.
-        dest = ((u32) (D_80036414->animBufferPtr2 + 15) >> 4) * 16;
+        // Get dest from this g_AnimFrameBuffer which points to an array. Align to 16 bytes.
+        dest = ((u32) (g_AnimFrameBuffer->animBufferPtr2 + 15) >> 4) * 16;
         ret = dest;
 
         // Get source of this animation in ROM with the offset of the frame we'll load
@@ -5649,11 +5880,11 @@ s32 loadAnimationFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
         romCopy((void* ) dest, (void* ) source, size);
 
         // Increment this which serves nothing
-        D_80036414->uselessPointer += 1;
+        g_AnimFrameBuffer->uselessPointer += 1;
 
         // Set this to point to the end of the copied frame
         // This allows to copy another frame after this one
-        D_80036414->animBufferPtr2 = dest + size;
+        g_AnimFrameBuffer->animBufferPtr2 = dest + size;
     }
     return ret;
 }
@@ -5662,13 +5893,13 @@ s32 loadAnimationFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
 /**
  * Address 7F0755B0.
 */
-void modelResetAnimationsScratchBuffer(void)
+void animResetFrameBuffer(void)
 {
-    if (D_80036414 != NULL) // should never be NULL after initAnimationsBuffer is called
+    if (g_AnimFrameBuffer != NULL) // should never be NULL after animInitFrameBuffer is called
     {
         // Reset the pointer to point to the start of the array
-        D_80036414->animBufferPtr2 = D_80036414->animBufferPtr1;
-        D_80036414->uselessPointer = NULL;
+        g_AnimFrameBuffer->animBufferPtr2 = g_AnimFrameBuffer->animBufferPtr1;
+        g_AnimFrameBuffer->uselessPointer = NULL;
     }
 }
 
@@ -5761,9 +5992,9 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
                     break;
                 }
 
-            case MODELNODE_OPCODE_OP07:
+            case MODELNODE_OPCODE_TUBE:
                 {
-                    ModelRoData_Op07Record* rodata = &node->Data->Op07;
+                    ModelRoData_TubeRecord* rodata = &node->Data->Tube;
                     PROMOTE(rodata->unk00);
                     PROMOTE(rodata->unk04);
 
@@ -5877,7 +6108,7 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
 /**
  * Address 7F075A90.
 */
-void sub_GAME_7F075A90(ModelFileHeader *header, s32 vma, u32 addr) {
+void modelFilePromotePointers(ModelFileHeader *header, s32 vma, u32 addr) {
     s32 diff = addr - vma;
     s32 i;
 
@@ -5918,12 +6149,12 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                     len += sizeof(struct ModelRwData_HeaderRecord) / 4;
                     break;
                 }
-            case MODELNODE_OPCODE_OP07:
+            case MODELNODE_OPCODE_TUBE:
                 if (1)
                 {
-                    ModelRoData_Op07Record *rodata = &node->Data->Op07;
+                    ModelRoData_TubeRecord *rodata = &node->Data->Tube;
                     rodata->RwDataIndex = len;
-                    len += sizeof(struct ModelRwData_Op07Record) / 4;
+                    len += sizeof(struct ModelRwData_TubeRecord) / 4;
                     break;
                 }
             case MODELNODE_OPCODE_LOD:
@@ -6073,10 +6304,10 @@ void modelInitRwData(Model *model, ModelNode *startnode)
                     break;
                 }
 
-            case MODELNODE_OPCODE_OP07:
+            case MODELNODE_OPCODE_TUBE:
                 if (1)
                 {
-                    ModelRwData_Op07Record* rwdata = &modelGetNodeRwData(model, node)->Op07;
+                    ModelRwData_TubeRecord* rwdata = &modelGetNodeRwData(model, node)->Tube;
                     rwdata->index = 0;
                     break;
                 }
@@ -6198,20 +6429,20 @@ void animInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data)
     objinst->animlooping = 0;
     objinst->animflipfunc = 0;
     objinst->unk9c = 0;
-    objinst->unka0 = 0;
-    objinst->unk2c = 0.0f;
+    objinst->rootMoveCallback = 0;
+    objinst->frameFrac = 0.0f;
     objinst->timespeed = 0.0f;
-    objinst->unk5c = 0.0f;
-    objinst->unk7c = 0.0f;
-    objinst->unk84 = 0.0f;
-    objinst->unk88 = 0.0f;
-    objinst->unkb0 = 0.0f;
+    objinst->frame2Frac = 0.0f;
+    objinst->timespeed2 = 0.0f;
+    objinst->mergeWeight = 0.0f;
+    objinst->mergeTime = 0.0f;
+    objinst->timeplayspeed = 0.0f;
     objinst->speed = 1.0f;
     objinst->speed2 = 1.0f;
     objinst->playspeed = 1.0f;
     objinst->anim_translation_scale = 1.0f;
     objinst->endframe = -1.0f;
-    objinst->unk6c = -1.0f;
+    objinst->endframe2 = -1.0f;
 }
 
 
@@ -6391,4 +6622,14 @@ void modelNodeReplaceGdl(u32 arg0, ModelNode *node, Gfx *find, Gfx *replacement)
             }
             break;
     }
+}
+
+
+/**
+ * How much to stretch a joint's matrix along z when it bends by twice `halfangle`, so that
+ * the skin around an elbow or knee doesn't look pinched.
+ */
+f32 modelGetBendStretchScale(f32 halfangle) 
+{
+    return sqrtf(((sinf(halfangle) / cosf(halfangle)) + 1.0f));
 }

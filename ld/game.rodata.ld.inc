@@ -2,8 +2,7 @@
       build/OUTCODE/src/game/player/initweaponanigroups.o (.rodata);
       build/OUTCODE/src/game/model/initactorpropstuff.o (.rodata);
       build/OUTCODE/src/game/level/initnull_0009D0.o (.rodata);
-      build/OUTCODE/src/game/model/initunk_0009E0.o (.rodata);
-      build/OUTCODE/src/game/model/initanitable.o (.rodata);
+      build/OUTCODE/src/game/model/anim.o (.rodata);
       build/OUTCODE/src/game/player/initplayergaitobject.o (.rodata);
       build/OUTCODE/src/game/gfx/setguscale.o (.rodata);
       build/OUTCODE/src/game/level/initnull_000BC0.o (.rodata);
@@ -17,8 +16,6 @@
       build/OUTCODE/src/game/mission/objective.o (.rodata);
       build/OUTCODE/src/game/player/ejectedcartridges.o (.rodata);
       build/OUTCODE/src/game/player/initBondDATA.o (.rodata);
-      build/OUTCODE/src/game/model/initunk_005450.o (.rodata);
-      build/OUTCODE/src/game/model/initunk_005520.o (.rodata);
       build/OUTCODE/src/game/player/bondview_r.o (.rodata);
       build/OUTCODE/src/game/player/inititemslots.o (.rodata);
       build/OUTCODE/src/game/player/initBondDATAdefaults.o (.rodata);
@@ -61,7 +58,6 @@
       build/OUTCODE/src/game/math/physics.o (.rodata);
       build/OUTCODE/src/game/math/math_sincos.o (.rodata);
       build/OUTCODE/src/game/math/matrix.o (.rodata);
-      build/OUTCODE/src/game/model/math_unk_05A9E0.o (.rodata);
       build/OUTCODE/src/game/math/trig.o (.rodata);
       build/OUTCODE/src/game/math/interp.o (.rodata);
       build/OUTCODE/src/game/math/quaternion.o (.rodata);
@@ -71,9 +67,9 @@
       build/OUTCODE/src/game/player/gunfire.o (.rodata);
       build/OUTCODE/src/game/player/gunfire.o (.data);
       build/OUTCODE/src/game/hud/bondwalk2.o (.rodata);
-      build/OUTCODE/src/game/model/objecthandler.o (.rodata);
+      build/OUTCODE/src/game/model/jointlist.o (.rodata);
       build/OUTCODE/src/game/model/model.o (.rodata);
-      build/OUTCODE/src/game/model/objecthandler_2.o (.rodata);
+      build/OUTCODE/src/game/model/modelfile.o (.rodata);
       build/OUTCODE/src/game/gfx/othermodemicrocode.o (.rodata);
       build/OUTCODE/src/game/player/bondview.o (.rodata);
       build/OUTCODE/src/game/player/bondview2.o (.rodata);

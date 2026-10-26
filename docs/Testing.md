@@ -31,7 +31,13 @@ uses `assert` changes a string.
 
 To rename things, use `tools/rename.py OLD NEW [OLD NEW ...]` (or `-f list.txt`). It
 replaces whole words in `src/`, `include/`, `assets/`, `ld/` and `docs/`, and refuses a new
-name that is already in use.
+name that is already in use. It leaves C string literals alone, because debug messages
+often contain function names and changing them would move data in the ROM.
+
+Struct fields need `tools/renamefield.py TYPE OLD NEW [...]` instead, because names like
+`unk04` are shared by many structs. Rename the field in the struct definition by hand, then
+run it: it builds US and PAL, and renames each use the compiler reports as "TYPE has no
+member named OLD", until there are none left.
 
 ## Comparing code: `tools/compare/compare.sh [BASE] [VERSION]`
 

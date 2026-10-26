@@ -9,7 +9,7 @@
 #include "game/chr/chraidata.h"
 #include "game/save/file.h"
 #include "game/player/gun.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "game/text/language.h"
 #include "game/model/loadobjectmodel.h"
 #include "game/level/lv.h"
@@ -17,7 +17,9 @@
 #include "game/math/round.h"
 #include "game/model/model.h"
 #include "game/audio/mp_music.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/mission/objective_status.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
@@ -4472,8 +4474,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             // chr->prop->pos  = pos;
                             chr->prop->stan = stan;
                             chr->chrflags   = chr->chrflags | CHRFLAG_INIT;
-                            setsubroty(chr->model, FacingDirection);
-                            setsuboffset(chr->model, &pos);
+                            modelSetRootRotY(chr->model, FacingDirection);
+                            modelSetRootPosition(chr->model, &pos);
                             chrDetectRooms(chr);
                             if (chr->prop == g_CurrentPlayer->prop)
                             {

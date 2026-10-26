@@ -14,14 +14,16 @@
 #include "game/chr/chr_b.h"
 #include "game/model/chrobjdata.h"
 #include "game/gfx/image.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "math.h"
 #include "game/math/round.h"
 #include "game/math/matrix.h"
 #include "game/model/model.h"
 #include "music.h"
 #include "game/asset/fileload.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/menu/title.h"
 #include "game/menu/title2.h"
 #include "game/menu/title3.h"
@@ -202,7 +204,7 @@ Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
     u32 pad;
     ModelRenderData renderData;
     u32 pad2[2];
-    ModelHitEntry *entry;
+    JointListEntry *entry;
     bool playedShot;
     s32 i;
 
@@ -235,9 +237,9 @@ Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
         }
     }
 
-    modelSetDistanceDisabled(1);
-    sub_GAME_7F073FC8(80);
-    subcalcpos(chrModelInstance);
+    modelSetLodDisabled(1);
+    modelSetShadowAlpha(80);
+    modelCalcPosition(chrModelInstance);
 
     if (gunModelInstance->obj->Switches[0] != NULL)
     {
@@ -251,28 +253,28 @@ Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
 
     renderData.basemtx = matrix;
     renderData.mtxlist = dynAllocate(chrModelInstance->obj->numMatrices << 6);
-    subcalcmatrices(&renderData, chrModelInstance);
+    modelCalcMatrices(&renderData, chrModelInstance);
 
     renderData.basemtx = modelFindNodeMtx(chrModelInstance, gunModelInstance->attachedto_objinst, 0);
     renderData.mtxlist = dynAllocate(gunModelInstance->obj->numMatrices << 6);
-    instcalcmatrices(&renderData, gunModelInstance);
+    modelCalcMatricesNoAnim(&renderData, gunModelInstance);
 
-    entry = sub_GAME_7F06B120(NULL, chrModelInstance);
-    entry = sub_GAME_7F06B120(entry, gunModelInstance);
-    sub_GAME_7F06B29C(entry);
-    entry = sub_GAME_7F06BB28(entry);
+    entry = jointListAddModel(NULL, chrModelInstance);
+    entry = jointListAddModel(entry, gunModelInstance);
+    jointListCalcDepths(entry);
+    entry = jointListSortByDepth(entry);
 
     renderData.PropType = 7;
     renderData.zbufferenabled = FALSE;
     renderData.gdl = gdl;
     renderData.flags = 1;
-    drawjointlist(&renderData, entry);
+    jointListDraw(&renderData, entry);
 
     renderData.flags = 2;
-    drawjointlist(&renderData, entry);
+    jointListDraw(&renderData, entry);
 
-    modelSetDistanceDisabled(0);
-    sub_GAME_7F06B248(entry);
+    modelSetLodDisabled(0);
+    jointListFree(entry);
 
     for (i = 0; i < chrModelInstance->obj->numMatrices; i++)
     {
@@ -486,13 +488,13 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
     gfxBuffer += temp_t9;
     bufferSize -= temp_t9;
     
-    load_object_fill_header(c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Brosnan_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
+    modelFileLoad(c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Brosnan_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
     
     temp_t9 = ((fileGetLoadedSizeByName(c_item_entries[BODY_Brosnan_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= temp_t9;
     gfxBuffer += temp_t9;
     
-    load_object_fill_header(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
+    modelFileLoad(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
     
     temp_t9 = ((fileGetLoadedSizeByName(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= temp_t9;
@@ -502,8 +504,8 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
 
     modelSetScale(chrModelInstance, 0.18779343f);
     modelSetAnimTranslationScale(chrModelInstance, 1.0f);
-    setsuboffset(chrModelInstance, &sp50);
-    setsubroty(chrModelInstance, 0.0f);
+    modelSetRootPosition(chrModelInstance, &sp50);
+    modelSetRootRotY(chrModelInstance, 0.0f);
 #if defined(VERSION_EU)
     #define S_7F008E80_ANIM_SPEED 0.6f
 #else
@@ -513,14 +515,14 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
 #undef S_7F008E80_ANIM_SPEED
     
     animation = (struct ModelAnimation*)((s32)ptr_animation_table + (s32)&ANIM_DATA_bond_eye_walk);
-    startframe = animation->unk04 - 0x44;
+    startframe = animation->numFrames - 0x44;
     while (startframe < 0)
     {
-        startframe += animation->unk04;
+        startframe += animation->numFrames;
     }
     
     modelSetAnimation(chrModelInstance, (struct ModelAnimation *) animation, 0, (f32) startframe, 0.91f, 0.0f);
-    load_object_fill_header(PitemZ_entries[PROP_CHRWPPK].header, PitemZ_entries[PROP_CHRWPPK].filename, gfxBuffer, bufferSize, &texturePool);
+    modelFileLoad(PitemZ_entries[PROP_CHRWPPK].header, PitemZ_entries[PROP_CHRWPPK].filename, gfxBuffer, bufferSize, &texturePool);
     
     temp_t9 = ((fileGetLoadedSizeByName(PitemZ_entries[PROP_CHRWPPK].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= temp_t9;
@@ -542,12 +544,12 @@ void clearChrGunModelInstances(void)
 {
     if (chrModelInstance)
     {
-        clear_aircraft_model_obj(chrModelInstance);
+        modelFreeAnimSlot(chrModelInstance);
     }
 
     if (gunModelInstance)
     {
-        clear_model_obj(gunModelInstance);
+        modelFreeSlot(gunModelInstance);
     }
 }
 

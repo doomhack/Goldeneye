@@ -20,7 +20,9 @@
 #include "random.h"
 #include "game/math/trig.h"
 #include "game/model/loadobjectmodel.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/gfx/image.h"
 #include "game/gfx/tex.h"
 #include "game/debug/debugmenu_handler.h"
@@ -483,10 +485,6 @@ u16 D_80036058[] = { 0, 0, 0, 0, };
 
 extern struct ModelSkeleton skeleton_gun_kf7;
 
-//i may belong to objecthandler.c
-// D:80036060 canonically freedist
-struct ModelHitEntry *g_ModelHitFreeList = NULL;
-
 typedef struct ModelHeader {
             s16                unk00;
             s16                Type;
@@ -890,17 +888,17 @@ void used_to_load_1st_person_model_on_demand(GUNHAND hand)
                 if (item == ITEM_SUIT_LF_HAND)
                 {
                     texInitPool(&g_CurrentPlayer->item_related[hand], buffer_weapon + 0xBD70, size_buffer_weapon + 0xFFFF4290);
-                    load_object_fill_header(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, 0xBD70, &g_CurrentPlayer->item_related[hand]);
+                    modelFileLoad(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, 0xBD70, &g_CurrentPlayer->item_related[hand]);
                 }
                 else if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
                 {
                     texInitPool(&g_CurrentPlayer->item_related[hand], buffer_weapon + 0xAFD0, size_buffer_weapon + 0xFFFF5030);
-                    load_object_fill_header(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, 0xAFD0, &g_CurrentPlayer->item_related[hand]);
+                    modelFileLoad(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, 0xAFD0, &g_CurrentPlayer->item_related[hand]);
                 }
                 else
                 {
                     texInitPool(&g_CurrentPlayer->item_related[hand], &buffer_weapon[D_80032464[hand]], size_buffer_weapon - D_80032464[hand]);
-                    load_object_fill_header(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, D_80032464[hand], &g_CurrentPlayer->item_related[hand]);
+                    modelFileLoad(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, D_80032464[hand], &g_CurrentPlayer->item_related[hand]);
                 }
             }
 

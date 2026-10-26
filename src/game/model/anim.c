@@ -1,8 +1,25 @@
+/**
+ * The animation table: the guard, player and vehicle animations.
+ *
+ * At boot the animation headers (ModelAnimation) are copied from ROM into the permanent
+ * pool and their offsets turned into pointers. The frame data stays in ROM: as an
+ * animation plays, animLoadFrame (model.c) copies the frames it needs into a small buffer.
+ */
 #include <ultra64.h>
 #include <memp.h>
-#include "game/model/initanitable.h"
-#include "game/model/objecthandler.h"
+#include "game/model/anim.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "bondgame.h"
+
+/** Sets the buffer that animLoadFrame copies animation frames from ROM into. */
+void animInitFrameBuffer(struct bondstruct_unk_animation_related* animBuffer, OSMesgQueue* mq, s32 unused) {
+    g_AnimFrameBuffer = animBuffer; // Data structure with offset and two tables
+    D_80036418 = mq;   // Unused message queue
+    D_8003641C = unused; // Some unused array
+}
+
 
 //bss
 
@@ -230,7 +247,7 @@ struct anim_entry
     s32 unk10;
 };
 
-void expand_ani_table_entries(s32** arg0)
+void animResolveTable(s32** arg0)
 {
     s32** var_v0;
 
@@ -251,18 +268,18 @@ void expand_ani_table_entries(s32** arg0)
     }
 }
 
-void alloc_load_expand_ani_table(void)
+void animLoadTable(void)
 {
     s32 animsDataSegmentSize;
     
     osCreateMesgQueue(&animMsgQ, animMesg, 8);
-    initAnimationsBuffer(&D_80029D60, &animMsgQ, &dword_CODE_bss_80069458);
+    animInitFrameBuffer(&D_80029D60, &animMsgQ, &dword_CODE_bss_80069458);
     
     animsDataSegmentSize = (s32)&_animation_dataSegmentEnd - (s32)&_animation_dataSegmentStart;
     
     ptr_animation_table = mempAlloc(animsDataSegmentSize, MEMPOOL_PERMANENT);
 
     romCopy(ptr_animation_table, &_animation_dataSegmentRomStart, animsDataSegmentSize);
-    expand_ani_table_entries((s32*)&animation_table_ptrs1);
-    expand_ani_table_entries((s32*)&animation_table_ptrs2);
+    animResolveTable((s32*)&animation_table_ptrs1);
+    animResolveTable((s32*)&animation_table_ptrs2);
 }

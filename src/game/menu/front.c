@@ -22,7 +22,7 @@
 #include "game/menu/front.h"
 #include "game/gfx/image_bank.h"
 #include "game/level/lv.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "game/menu/mp_weapon.h"
 #include "game/math/round.h"
 #include "game/mission/objective_status.h"
@@ -32,7 +32,9 @@
 #include "game/gfx/othermodemicrocode.h"
 #include "game/hud/bondwalk2.h"
 #include "game/save/file2.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/gfx/dyn.h"
 #include "assets/obseg/text/LtitleE.h"
 #include "game/math/matrix.h"
@@ -1409,7 +1411,7 @@ void init_menu00_legalscreen(void)
     maybe_is_in_menu = TRUE;
     g_MenuTimer = 0;
     pos = legalpage_pos;
-    load_object_fill_header(PitemZ_entries[PROP_LEGALPAGE].header, PitemZ_entries[PROP_LEGALPAGE].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
+    modelFileLoad(PitemZ_entries[PROP_LEGALPAGE].header, PitemZ_entries[PROP_LEGALPAGE].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
     modelCalculateRwDataLen(PitemZ_entries[PROP_LEGALPAGE].header);
 
     logoinst = modelmgrInstantiateModel(PitemZ_entries[PROP_LEGALPAGE].header);
@@ -1417,7 +1419,7 @@ void init_menu00_legalscreen(void)
         assert(logoinst);
     #endif
     modelSetScale(logoinst, 1.0f);
-    setsuboffset(logoinst, &pos);
+    modelSetRootPosition(logoinst, &pos);
     fileValidateSaves();
 }
 
@@ -1425,7 +1427,7 @@ void init_menu00_legalscreen(void)
 void update_menu00_legalscreen(void)
 {
     is_first_time_on_legal_screen = FALSE;
-    clear_model_obj(logoinst);
+    modelFreeSlot(logoinst);
 }
 
 
@@ -1526,7 +1528,7 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
     renderdata.zbufferenabled = 0;
     renderdata.gdl = DL;
     
-    subdraw(&renderdata, logoinst);
+    modelRender(&renderdata, logoinst);
     
     DL = renderdata.gdl;
     
@@ -1600,11 +1602,11 @@ void init_menu01_nintendo(void)
 
     g_MenuTimer = 0;
     pos = nintendologo_pos;
-    load_object_fill_header(PitemZ_entries[PROP_NINTENDOLOGO].header, PitemZ_entries[PROP_NINTENDOLOGO].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
+    modelFileLoad(PitemZ_entries[PROP_NINTENDOLOGO].header, PitemZ_entries[PROP_NINTENDOLOGO].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
     modelCalculateRwDataLen(PitemZ_entries[PROP_NINTENDOLOGO].header);
     logoinst = modelmgrInstantiateModel(PitemZ_entries[PROP_NINTENDOLOGO].header);
     modelSetScale(logoinst, 1.0f);
-    setsuboffset(logoinst, &pos);
+    modelSetRootPosition(logoinst, &pos);
     musicTrack1Play(M_INTROSWOOSH);
     maybe_is_in_menu = TRUE;
     ninLogoRotRate = -1.39626348019f;
@@ -1616,7 +1618,7 @@ void init_menu01_nintendo(void)
 
 void update_menu01_nintendo(void)
 {
-    clear_model_obj(logoinst);
+    modelFreeSlot(logoinst);
 }
 
 
@@ -1742,7 +1744,7 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
     ninlogo.zbufferenabled = FALSE;
     ninlogo.gdl = DL;
 
-    subdraw(&ninlogo, logoinst);
+    modelRender(&ninlogo, logoinst);
 
     DL = ninlogo.gdl;
 
@@ -1871,7 +1873,7 @@ void init_menu04_goldeneyelogo(void)
 
     g_MenuTimer = 0;
     pos = goldeneyelogo_pos;
-    load_object_fill_header(PitemZ_entries[PROP_GOLDENEYELOGO].header, PitemZ_entries[PROP_GOLDENEYELOGO].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
+    modelFileLoad(PitemZ_entries[PROP_GOLDENEYELOGO].header, PitemZ_entries[PROP_GOLDENEYELOGO].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
     modelCalculateRwDataLen(PitemZ_entries[PROP_GOLDENEYELOGO].header);
     logoinst = modelmgrInstantiateModel(PitemZ_entries[PROP_GOLDENEYELOGO].header);
     #ifdef DEBUG
@@ -1879,7 +1881,7 @@ void init_menu04_goldeneyelogo(void)
     #endif
 
     modelSetScale(logoinst, 1.0f);
-    setsuboffset(logoinst, &pos);
+    modelSetRootPosition(logoinst, &pos);
 }
 
 
@@ -1888,7 +1890,7 @@ void init_menu04_goldeneyelogo(void)
 
 void update_menu04_goldeneye(void) {
     is_first_time_on_main_menu = FALSE;
-    clear_model_obj(logoinst);
+    modelFreeSlot(logoinst);
 }
 
 void interface_menu04_goldeneyelogo(void)
@@ -1971,7 +1973,7 @@ Gfx *constructor_menu04_goldeneyelogo(Gfx *DL)
     gelogo.zbufferenabled = FALSE;
     gelogo.gdl = DL;
 
-    subdraw(&gelogo, logoinst);
+    modelRender(&gelogo, logoinst);
 
     DL = gelogo.gdl;
 
@@ -2066,7 +2068,7 @@ void load_walletbond(void)
 
     if (walletinst[0] == NULL)
     {
-        load_object_fill_header(
+        modelFileLoad(
             PitemZ_entries[PROP_WALLETBOND].header,
             (s8*)PitemZ_entries[PROP_WALLETBOND].filename,
             (u8*)ptr_logo_and_walletbond_DL,
@@ -2112,7 +2114,7 @@ void frontCleanUpWalletBond(void)
     {
         if (walletinst[i] == NULL) { continue; }
 
-        clear_aircraft_model_obj(walletinst[i]);
+        modelFreeAnimSlot(walletinst[i]);
         walletinst[i] = NULL;
     }
 }
@@ -2494,7 +2496,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         renderdata.gdl = DL;
 
         // Render the folder wall model.
-        subdraw(&renderdata, walletinst[j]);
+        modelRender(&renderdata, walletinst[j]);
 
         DL = renderdata.gdl;
 
@@ -2935,7 +2937,7 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
     sp10C.zbufferenabled = FALSE;
     sp10C.gdl = DL;
 
-    subdraw(&sp10C, walletinst[0]);
+    modelRender(&sp10C, walletinst[0]);
 
     DL = sp10C.gdl;
 
@@ -8553,7 +8555,7 @@ void init_menu18_displaycast(void)
     bufferPtr += allocSize;
     bodyHeader = c_item_entries[body].header;
 
-    load_object_fill_header(c_item_entries[body].header, c_item_entries[body].filename, bufferPtr, bufferRemaining, &texPool);
+    modelFileLoad(c_item_entries[body].header, c_item_entries[body].filename, bufferPtr, bufferRemaining, &texPool);
     allocSize = ALIGN64_V2(fileGetLoadedSizeByName(c_item_entries[body].filename));
     bufferRemaining -= allocSize;
     bufferPtr += allocSize;
@@ -8561,7 +8563,7 @@ void init_menu18_displaycast(void)
     if (head >= 0)
     {
         headHeader = c_item_entries[head].header;
-        load_object_fill_header(c_item_entries[head].header, c_item_entries[head].filename, bufferPtr, bufferRemaining, &texPool);
+        modelFileLoad(c_item_entries[head].header, c_item_entries[head].filename, bufferPtr, bufferRemaining, &texPool);
         allocSize = ALIGN64_V2(fileGetLoadedSizeByName(c_item_entries[head].filename));
         bufferRemaining -= allocSize;
         bufferPtr += allocSize;
@@ -8611,7 +8613,7 @@ void init_menu18_displaycast(void)
         }
 
         weaponHeader = PitemZ_entries[weaponProp].header;
-        load_object_fill_header(weaponHeader, PitemZ_entries[weaponProp].filename, bufferPtr, bufferRemaining, &texPool);
+        modelFileLoad(weaponHeader, PitemZ_entries[weaponProp].filename, bufferPtr, bufferRemaining, &texPool);
         allocSize = ALIGN64_V2(fileGetLoadedSizeByName(PitemZ_entries[weaponProp].filename));
         bufferRemaining -= allocSize;
         bufferPtr += allocSize;
@@ -8628,8 +8630,8 @@ void init_menu18_displaycast(void)
     }
 
     modelSetAnimTranslationScale(cast_model, 0.1f);
-    setsuboffset(cast_model, &subOffset);
-    setsubroty(cast_model, 0.0f);
+    modelSetRootPosition(cast_model, &subOffset);
+    modelSetRootRotY(cast_model, 0.0f);
 
 #if defined VERSION_EU
     modelSetAnimPlaySpeed(cast_model, 0.6f, 0);
@@ -8657,10 +8659,10 @@ void init_menu18_displaycast(void)
 
 void update_menu18_displaycast(void) {
     if (cast_model != 0) {
-        clear_aircraft_model_obj(cast_model);
+        modelFreeAnimSlot(cast_model);
     }
     if (cast_model_weapon != 0) {
-        clear_model_obj(cast_model_weapon);
+        modelFreeSlot(cast_model_weapon);
         return;
     }
 }
@@ -8845,9 +8847,9 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     gSPLookAt(DL++, light);
  
     modelTickAnim(cast_model, g_ClockTimer, 1);
-    modelSetDistanceDisabled(1);
-    sub_GAME_7F073FC8(0);
-    subcalcpos(cast_model);
+    modelSetLodDisabled(1);
+    modelSetShadowAlpha(0);
+    modelCalcPosition(cast_model);
  
     if (cast_model_weapon != NULL && cast_model_weapon->obj->Switches[0] != NULL)
     {
@@ -8865,8 +8867,8 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
  
     renderdata.basemtx = &mtx;
  
-    subcalcmatrices(&renderdata, cast_model);
-    getsuboffset(cast_model, &suboffset);
+    modelCalcMatrices(&renderdata, cast_model);
+    modelGetRootPosition(cast_model, &suboffset);
  
     if (cast_camera_reset)
     {
@@ -8942,7 +8944,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     renderdata.basemtx = &mtx;
     renderdata.mtxlist = (Mtxf *)dynAllocate(cast_model->obj->numMatrices << 6);
  
-    subcalcmatrices(&renderdata, cast_model);
+    modelCalcMatrices(&renderdata, cast_model);
  
     if (cast_model_weapon != NULL)
     {
@@ -8958,7 +8960,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
  
         renderdata.mtxlist = (Mtxf *)dynAllocate(cast_model_weapon->obj->numMatrices << 6);
  
-        instcalcmatrices(&renderdata, cast_model_weapon);
+        modelCalcMatricesNoAnim(&renderdata, cast_model_weapon);
     }
  
     renderdata.PropType = PROP_TYPE_EXPLOSION;
@@ -8966,16 +8968,16 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     renderdata.gdl = DL;
     renderdata.flags = 3;
  
-    subdraw(&renderdata, cast_model);
+    modelRender(&renderdata, cast_model);
  
     if (cast_model_weapon != NULL)
     {
-        subdraw(&renderdata, cast_model_weapon);
+        modelRender(&renderdata, cast_model_weapon);
     }
  
     DL = renderdata.gdl;
  
-    modelSetDistanceDisabled(0);
+    modelSetLodDisabled(0);
  
     for (i = 0; i < cast_model->obj->numMatrices; i++)
     {

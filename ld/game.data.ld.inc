@@ -2,8 +2,7 @@
       build/OUTCODE/src/game/player/initweaponanigroups.o (.data);
       build/OUTCODE/src/game/model/initactorpropstuff.o (.data);
       build/OUTCODE/src/game/level/initnull_0009D0.o (.data);
-      build/OUTCODE/src/game/model/initunk_0009E0.o (.data);
-      build/OUTCODE/src/game/model/initanitable.o (.data);
+      build/OUTCODE/src/game/model/anim.o (.data);
       build/OUTCODE/src/game/player/initplayergaitobject.o (.data);
       build/OUTCODE/src/game/gfx/setguscale.o (.data);
       build/OUTCODE/src/game/level/initnull_000BC0.o (.data);
@@ -17,8 +16,6 @@
       build/OUTCODE/src/game/mission/objective.o (.data);
       build/OUTCODE/src/game/player/ejectedcartridges.o (.data);
       build/OUTCODE/src/game/player/initBondDATA.o (.data);
-      build/OUTCODE/src/game/model/initunk_005450.o (.data);
-      build/OUTCODE/src/game/model/initunk_005520.o (.data);
       build/OUTCODE/src/game/player/bondview_r.o (.data);
       build/OUTCODE/src/game/player/inititemslots.o (.data);
       build/OUTCODE/src/game/player/initBondDATAdefaults.o (.data);
@@ -61,7 +58,6 @@
       build/OUTCODE/src/game/math/physics.o (.data);
       build/OUTCODE/src/game/math/math_sincos.o (.data);
       build/OUTCODE/src/game/math/matrix.o (.data);
-      build/OUTCODE/src/game/model/math_unk_05A9E0.o (.data);
       build/OUTCODE/src/game/math/trig.o (.data);
       build/OUTCODE/src/game/math/interp.o (.data);
       build/OUTCODE/src/game/math/quaternion.o (.data);
@@ -69,9 +65,9 @@
       build/OUTCODE/src/game/player/gun.o (.data);
       build/OUTCODE/src/game/player/gun_rodata.o (.data);
       build/OUTCODE/src/game/hud/bondwalk2.o (.data);
-      build/OUTCODE/src/game/model/objecthandler.o (.data);
+      build/OUTCODE/src/game/model/jointlist.o (.data);
       build/OUTCODE/src/game/model/model.o (.data);
-      build/OUTCODE/src/game/model/objecthandler_2.o (.data);
+      build/OUTCODE/src/game/model/modelfile.o (.data);
       build/OUTCODE/src/game/gfx/othermodemicrocode.o (.data);
       build/OUTCODE/src/game/player/bondview.o (.data);
       build/OUTCODE/src/game/player/bondview2.o (.data);

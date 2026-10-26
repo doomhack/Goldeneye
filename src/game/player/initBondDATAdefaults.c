@@ -3,9 +3,11 @@
 #include <bondtypes.h>
 #include "game/chr/chr.h"
 #include "game/model/chrobjdata.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "game/player/initBondDATAdefaults.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/player/player.h"
 #include "game/player/bondhead.h"
 #include "game/model/model.h"
@@ -53,7 +55,7 @@ void sub_GAME_7F0062C0(void *anim, s32 arg1, s32 arg2, s32 *arg3);
 */
 void sub_GAME_7F0062C0(void *anim, s32 arg1, s32 arg2, s32 *arg3)
 {
-    // todo: is this a struct? see: sub_GAME_7F06D2E4
+    // todo: is this a struct? see: animReadRootMotion16
     s16 sp40[6];
 
     arg3[0] = 0;
@@ -62,7 +64,7 @@ void sub_GAME_7F0062C0(void *anim, s32 arg1, s32 arg2, s32 *arg3)
 
     for (; arg1<arg2; arg1++)
     {
-        sub_GAME_7F06D2E4(0, 0, &skeleton_guard, anim, arg1, &sp40[2]);
+        animReadRootMotion16(0, 0, &skeleton_guard, anim, arg1, &sp40[2]);
         arg3[0] += sp40[2];
         arg3[1] += sp40[3];
         arg3[2] += sp40[4];
@@ -92,7 +94,7 @@ void sets_a_bunch_of_BONDdata_values_to_default(void)
 #ifdef LEFTOVERDEBUG
     if ((s32) player_gait_object_header.numRecords >= 0x1F)
     {
-        return_null();
+        modelDebugBreak();
     }
 #endif
 
@@ -171,13 +173,13 @@ void sets_a_bunch_of_BONDdata_values_to_default(void)
 
     modelSetAnimation(&g_CurrentPlayer->model, (struct ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_idle], 0, 0.0f, 0.5f, 0.0f);
 
-    subcalcpos(&g_CurrentPlayer->model);
+    modelCalcPosition(&g_CurrentPlayer->model);
     mtx4LoadIdentity(&identityMatrix);
 
     renderData.basemtx = &identityMatrix;
     renderData.mtxlist = &g_CurrentPlayer->bondheadmatrices[0];
 
-    subcalcmatrices(&renderData, &g_CurrentPlayer->model);
+    modelCalcMatrices(&renderData, &g_CurrentPlayer->model);
 
     g_CurrentPlayer->standheight = g_CurrentPlayer->bondheadmatrices[0].m[3][1];
     g_CurrentPlayer->standbodyoffset.x = 0.0f;

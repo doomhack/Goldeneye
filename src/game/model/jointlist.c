@@ -1,237 +1,51 @@
+/**
+ * Joint lists: the joints of every model in a scene, in one list sorted by depth.
+ *
+ * Each character keeps one (chr->field_20) for its body, head and hat. Characters are
+ * drawn joint by joint from the back to the front (jointListDraw), and shots are tested
+ * against the joints from the front to the back, so the first hit found is the nearest
+ * (jointListFindHit).
+ *
+ * The entries come from a fixed pool of 600 on a free list. Callers build a list with
+ * jointListAddModel, sort it with jointListCalcDepths and jointListSortByDepth, use it,
+ * and give it back with jointListFree.
+ */
 #include <ultra64.h>
-#include <memp.h>
-#include "game/model/objecthandler.h"
 #include "game/model/model.h"
+#include "game/model/jointlist.h"
 
-// bss
-//CODE.bss:80076A50
-// Pool of 600 entries, threaded into a free list by initModelHitEntryFreeList. The decomp had it as a
-// run of placeholder globals, which only worked while they stayed together in .bss.
-ModelHitEntry g_ModelHitEntries[600];
+#define JOINTLIST_LEN 600
 
-//CODE.bss:80079930
-struct AnimModelSlot *g_AnimModelSlots;
-//CODE.bss:80079934
-struct ModelSlot *g_ModelSlots;
+JointListEntry g_JointListEntries[JOINTLIST_LEN];
+JointListEntry *g_JointListFree = NULL;
 
+/** Called on level load: threads all the entries into the free list. */
+void jointListInit(void)
+{
+    s32 i;
+    JointListEntry *entries = g_JointListEntries;
 
-// data
-//D:80036070
-s32 g_MaxAnimModelSlots = 0;
-//D:80036074
-s32 g_MaxModelSlots = 0;
-//D:80036078
-s32 g_ModelIsLvResetting = 0;
-//D:8003607C
-u32 D_8003607C = 0;
-//D:80036080
-u32 D_80036080 = 0;
-//D:80036084
-s32 g_ModelDistanceDisabled = 0;
-//D:80036088
-f32 g_ModelDistanceScale = 1.0;
-//D:8003608C
-struct Vertex* (*vtxallocator)(s32 numvertices) = NULL;
-//D:80036090
-void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx) = NULL;
-//D:80036094
-coord3d D_80036094 = {0};
-//D:800360A0
-coord3d D_800360A0 = {0};
-//D:800360AC
-coord3d D_800360AC = {0};
-//D:800360B8
-coord3d D_800360B8 = {0};
-//D:800360C4
-struct bondstruct_unk_op07_related D_800360C4[32] = {
-    { 0, 0, 0x10 },
-    { 1, 0x1000, 0xD },
-    { 1, 0x1000, 0xD },
-    { 9, 0x800, 0xC },
-    { 9, 0x800, 0xC },
-    { 0x19, 0x400, 0xB },
-    { 0x19, 0x400, 0xB },
-    { 0x39, 0x400, 0xB },
-    { 0x39, 0x400, 0xB },
-    { 0x59, 0x400, 0xB },
-    { 0x59, 0x400, 0xB },
-    { 0x79, 0x400, 0xB },
-    { 0x79, 0x400, 0xB },
-    { 0x99, 0x400, 0xB },
-    { 0x99, 0x400, 0xB, },
-    { 0xB9, 0x400, 0xB, },
-    { 0xB9, 0x400, 0xB, },
-    { 0xD9, 0x400, 0xB, },
-    { 0xD9, 0x400, 0xB, },
-    { 0xF9, 0x400, 0xB, },
-    { 0xF9, 0x400, 0xB, },
-    { 0x119, 0x400, 0xB, },
-    { 0x119, 0x400, 0xB, },
-    { 0x139, 0x400, 0xB, },
-    { 0x139, 0x400, 0xB, },
-    { 0x159, 0x400, 0xB, },
-    { 0x159, 0x400, 0xB, },
-    { 0x179, 0x800, 0xC, },
-    { 0x179, 0x800, 0xC, },
-    { 0x189, 0x1000, 0xD },
-    { 0x189, 0x1000, 0xD },
-    { 0x191, 0, 0x10 },
-};
+    g_JointListFree = entries;
 
-//D:80036244
-coord3d D_80036244 = { 0 };
-//D:80036250
-u32 g_ModelAnimMergingEnabled = 1;
-//D:80036254
-coord3d D_80036254 = { 0 };
+    entries[0].next = &entries[1];
 
-//D:80036260
-u32 D_80036260 = 0;
-//D:80036264
-u32 D_80036264 = 0;
-//D:80036268
-u32 D_80036268 = 0x10;
-//D:8003626C
-u32 D_8003626C = 1;
-//D:80036270
-u32 D_80036270 = 0x1000;
-//D:80036274
-u32 D_80036274 = 0xD;
-//D:80036278
-u32 D_80036278 = 1;
-//D:8003627C
-u32 D_8003627C = 0x1000;
-//D:80036280
-u32 D_80036280 = 0xD;
-//D:80036284
-u32 D_80036284 = 9;
-//D:80036288
-u32 D_80036288 = 0x800;
-//D:8003628C
-u32 D_8003628C = 0xC;
-//D:80036290
-u32 D_80036290 = 9;
-//D:80036294
-u32 D_80036294 = 0x800;
-//D:80036298
-u32 D_80036298 = 0xC;
-//D:8003629C
-u32 D_8003629C = 0x19;
-//D:800362A0
-u32 D_800362A0 = 0x800;
-//D:800362A4
-u32 D_800362A4 = 0xC;
-//D:800362A8
-u32 D_800362A8 = 0x19;
-//D:800362AC
-u32 D_800362AC = 0x800;
-//D:800362B0
-u32 D_800362B0 = 0xC;
-//D:800362B4
-u32 D_800362B4 = 0x29;
-//D:800362B8
-u32 D_800362B8 = 0x800;
-//D:800362BC
-u32 D_800362BC = 0xC;
-//D:800362C0
-u32 D_800362C0 = 0x29;
-//D:800362C4
-u32 D_800362C4 = 0x800;
-//D:800362C8
-u32 D_800362C8 = 0xC;
-//D:800362CC
-u32 D_800362CC = 0x39;
-//D:800362D0
-u32 D_800362D0 = 0x800;
-//D:800362D4
-u32 D_800362D4 = 0xC;
-//D:800362D8
-u32 D_800362D8 = 0x39;
-//D:800362DC
-u32 D_800362DC = 0x800;
-//D:800362E0
-u32 D_800362E0 = 0xC;
-//D:800362E4
-u32 D_800362E4 = 0x49;
-//D:800362E8
-u32 D_800362E8 = 0x800;
-//D:800362EC
-u32 D_800362EC = 0xC;
-//D:800362F0
-u32 D_800362F0 = 0x49;
-//D:800362F4
-u32 D_800362F4 = 0x800;
-//D:800362F8
-u32 D_800362F8 = 0xC;
-//D:800362FC
-u32 D_800362FC = 0x59;
-//D:80036300
-u32 D_80036300 = 0x1000;
-//D:80036304
-u32 D_80036304 = 0xD;
-//D:80036308
-u32 D_80036308 = 0x59;
-//D:8003630C
-u32 D_8003630C = 0x1000;
-//D:80036310
-u32 D_80036310 = 0xD;
-//D:80036314
-u32 D_80036314 = 0x61;
-//D:80036318
-u32 D_80036318 = 0;
-//D:8003631C
-u32 D_8003631C[] = {
-  0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
-//D:800363EC0
-Vertex D_800363E0 = {
-    { 0, 0, 0 },
-    0,
-    { 0, 0 },
-    0xFF,
-    0xFF,
-    0xFF,
-    0xFF
-};
-
-//D:800363F0
-u32 D_800363F0 = 0x50;
-//D:800363F4
-u32 D_800363F4 = 0;
-//D:800363F8
-Vtx D_800363F8 = {
+    for (i = 1; i < JOINTLIST_LEN - 1; i++)
     {
-        { 0, 0, 0 },
-        0,
-        { 0, 0 },
-        { 0xFF, 0xFF, 0xFF, 0x50 }
+        entries[i].next = &entries[i + 1];
+        entries[i].prev = &entries[i - 1];
     }
-};
-//D:80036408
-coord3d D_80036408 = { 1.0f, 0.0f, 0.0f };
-//D:80036414
-struct bondstruct_unk_animation_related* D_80036414 =  0;
-//D:80036418
-s32 D_80036418 =  0;
-//D:8003641C
-s32 D_8003641C =  0;
 
+    g_JointListEntries[JOINTLIST_LEN - 1].prev = &g_JointListEntries[JOINTLIST_LEN - 2];
+}
 
-
-
-/*
-*/
-
-ModelHitEntry* sub_GAME_7F06B120(ModelHitEntry* head, Model* context) {
-    ModelHitEntry* freeListCursor;
+JointListEntry* jointListAddModel(JointListEntry* head, Model* context) {
+    JointListEntry* freeListCursor;
     ModelNode* sceneCursor;
     ModelNode* childPtr;
     s32 nodeType;
 
     sceneCursor = context->obj->RootNode;
-    freeListCursor = g_ModelHitFreeList;
+    freeListCursor = g_JointListFree;
 
     while ((sceneCursor != NULL) && (freeListCursor != NULL)) {
         nodeType = sceneCursor->Opcode & 0xFF;
@@ -272,51 +86,51 @@ ModelHitEntry* sub_GAME_7F06B120(ModelHitEntry* head, Model* context) {
         }
     }
 
-    if (freeListCursor != g_ModelHitFreeList) {
+    if (freeListCursor != g_JointListFree) {
         if (head != NULL) {
-            ModelHitEntry *tail = head;
+            JointListEntry *tail = head;
 
             while (tail->next != NULL) {
                 tail = tail->next;
             }
 
-            tail->next = g_ModelHitFreeList;
-            g_ModelHitFreeList->prev = tail;
+            tail->next = g_JointListFree;
+            g_JointListFree->prev = tail;
         } else {
-            head = g_ModelHitFreeList;
+            head = g_JointListFree;
         }
 
         if (freeListCursor != NULL) {
-            ModelHitEntry* prevNode = freeListCursor->prev;
+            JointListEntry* prevNode = freeListCursor->prev;
             if (prevNode != NULL) {
                 prevNode->next = NULL;
                 freeListCursor->prev = NULL;
             }
         }
 
-        g_ModelHitFreeList = freeListCursor;
+        g_JointListFree = freeListCursor;
     }
 
     return head;
 }
 
 
-void sub_GAME_7F06B248(ModelHitEntry *entry)
+void jointListFree(JointListEntry *entry)
 {
-    ModelHitEntry *oldhead;
-    ModelHitEntry *tail;
+    JointListEntry *oldhead;
+    JointListEntry *tail;
     
     if (entry != NULL) {
-        oldhead = g_ModelHitFreeList;
+        oldhead = g_JointListFree;
         if (oldhead != NULL) {
             tail = entry;
             while (tail->next != NULL) {
                 tail = tail->next;
             }
             tail->next = oldhead;
-            g_ModelHitFreeList->prev = tail;
+            g_JointListFree->prev = tail;
         }
-        g_ModelHitFreeList = entry;
+        g_JointListFree = entry;
     }
 }
 
@@ -332,10 +146,10 @@ void sub_GAME_7F06B248(ModelHitEntry *entry)
 /**
  * Address: 7F06B29C
  */
-void sub_GAME_7F06B29C(ModelHitEntry *arg0)
+void jointListCalcDepths(JointListEntry *arg0)
 {
-    ModelHitEntry *entry;
-    ModelHitEntry *special;
+    JointListEntry *entry;
+    JointListEntry *special;
 
     entry = arg0;
     special = NULL;
@@ -557,9 +371,9 @@ void sub_GAME_7F06B29C(ModelHitEntry *arg0)
             void *op16data;
             ModelNode *node0c;
             ModelNode *node10;
-            ModelHitEntry *entry0e;
-            ModelHitEntry *entry0c;
-            ModelHitEntry *entry10;
+            JointListEntry *entry0e;
+            JointListEntry *entry0c;
+            JointListEntry *entry10;
             Mtxf *mtx;
             f32 axis2dot;
             f32 axis1dot;
@@ -569,7 +383,7 @@ void sub_GAME_7F06B29C(ModelHitEntry *arg0)
             f32 sort0c;
             f32 sort10;
             coord3d transformed;
-            ModelHitEntry *scan;
+            JointListEntry *scan;
             f32 tempf;
 
             tempf = special->sortvalue;
@@ -743,14 +557,14 @@ void sub_GAME_7F06B29C(ModelHitEntry *arg0)
 /**
  * Address: 7F06BB28
  */
-ModelHitEntry *sub_GAME_7F06BB28(ModelHitEntry *modelhit)
+JointListEntry *jointListSortByDepth(JointListEntry *modelhit)
 {
-    ModelHitEntry stacknodes[2];
-    ModelHitEntry *last;
-    ModelHitEntry *current;
-    ModelHitEntry *next;
-    ModelHitEntry *scan;
-    ModelHitEntry *best;
+    JointListEntry stacknodes[2];
+    JointListEntry *last;
+    JointListEntry *current;
+    JointListEntry *next;
+    JointListEntry *scan;
+    JointListEntry *best;
     f32 bestvalue;
 
     if (modelhit != NULL)
@@ -827,7 +641,7 @@ ModelHitEntry *sub_GAME_7F06BB28(ModelHitEntry *modelhit)
 
 
 #if defined(VERSION_US)
-void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
+void jointListDraw(ModelRenderData *data, JointListEntry *entry)
 {
     ModelNode *root;
     ModelNode *node;
@@ -838,7 +652,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
     if (data->gdl == NULL)
     {
         osSyncPrintf("drawjointlist: no gfxlist!\n");
-        return_null();
+        modelDebugBreak();
     }
 
     while (entry != NULL)
@@ -849,18 +663,18 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
         if (entry->model->obj == NULL)
         {
             osSyncPrintf("drawjointlist: no object! (0x%X)\n", entry->model);
-            return_null();
+            modelDebugBreak();
         }
 
         if (!entry->model->obj->isLoaded)
         {
             osSyncPrintf("drawjointlist: object not initialised! (0x%X)\n", entry->model->obj);
-            return_null();
+            modelDebugBreak();
         }
 
         if (data->unk18 != 0)
         {
-            if (entry->sortvalue < getjointsize(entry->model, root))
+            if (entry->sortvalue < modelGetNodeRadius(entry->model, root))
             {
                 node = NULL;
             }
@@ -892,7 +706,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
                 case MODELNODE_OPCODE_GROUPSIMPLE:
                     if (node == root)
                     {
-                        sub_GAME_7F074534(data, entry->model, node);
+                        modelRenderNode(data, entry->model, node);
                     }
                     else
                     {
@@ -903,7 +717,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
                 case MODELNODE_OPCODE_DL:
                 case MODELNODE_OPCODE_OP05:
                 case MODELNODE_OPCODE_OP06:
-                case MODELNODE_OPCODE_OP07:
+                case MODELNODE_OPCODE_TUBE:
                 case MODELNODE_OPCODE_LOD:
                 case MODELNODE_OPCODE_BSP:
                 case MODELNODE_OPCODE_BBOX:
@@ -915,7 +729,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
                 case MODELNODE_OPCODE_HEAD:
                 case MODELNODE_OPCODE_DLCOLLISION:
                 default:
-                    sub_GAME_7F074534(data, entry->model, node);
+                    modelRenderNode(data, entry->model, node);
                     break;
                 }
 
@@ -954,7 +768,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
 
 
 #if defined(VERSION_EU)
-void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
+void jointListDraw(ModelRenderData *data, JointListEntry *entry)
 {
     ModelNode *root;
     ModelNode *node;
@@ -969,7 +783,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
 
         if (data->unk18 != 0)
         {
-            if (entry->sortvalue < getjointsize(entry->model, root))
+            if (entry->sortvalue < modelGetNodeRadius(entry->model, root))
             {
                 node = NULL;
             }
@@ -1001,7 +815,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
                 case MODELNODE_OPCODE_GROUPSIMPLE:
                     if (node == root)
                     {
-                        sub_GAME_7F074534(data, entry->model, node);
+                        modelRenderNode(data, entry->model, node);
                     }
                     else
                     {
@@ -1012,7 +826,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
                 case MODELNODE_OPCODE_DL:
                 case MODELNODE_OPCODE_OP05:
                 case MODELNODE_OPCODE_OP06:
-                case MODELNODE_OPCODE_OP07:
+                case MODELNODE_OPCODE_TUBE:
                 case MODELNODE_OPCODE_LOD:
                 case MODELNODE_OPCODE_BSP:
                 case MODELNODE_OPCODE_BBOX:
@@ -1024,7 +838,7 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
                 case MODELNODE_OPCODE_HEAD:
                 case MODELNODE_OPCODE_DLCOLLISION:
                 default:
-                    sub_GAME_7F074534(data, entry->model, node);
+                    modelRenderNode(data, entry->model, node);
                     break;
                 }
 
@@ -1062,9 +876,9 @@ void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
 #endif
 
 
-s32 probably_damage_detail_blood_effect_related(ModelHitEntry **entryptr, coord3d *raypos, coord3d *raydir, Model **outModel, ModelNode **inoutNode)
+s32 jointListFindHitNext(JointListEntry **entryptr, coord3d *raypos, coord3d *raydir, Model **outModel, ModelNode **inoutNode)
 {
-    ModelHitEntry *entry = *entryptr;
+    JointListEntry *entry = *entryptr;
     ModelNode *node;
     s32 descend;
     ModelNode *root;
@@ -1148,7 +962,7 @@ walk_node:
                     break;
             
                 case MODELNODE_OPCODE_OP17:
-                    if (sub_GAME_7F074CAC(entry->model, node, raypos, raydir)) {
+                    if (modelTestRayIntersectsNodeOp17(entry->model, node, raypos, raydir)) {
                         *outModel = entry->model;
                         *inoutNode = node;
                         *entryptr = entry;
@@ -1191,7 +1005,7 @@ walk_node:
 * https://decomp.me/scratch/IDiXU
  * #MATCH! Unlikley match, not sure why we are setting the root node to the last node.
  
-f32 sub_GAME_7F06C010(ModelFileHeader *head, s32 unused, s32 unused2, s32 *arg3, s32 *arg4)
+f32 jointListFindHit(ModelFileHeader *head, s32 unused, s32 unused2, s32 *arg3, s32 *arg4)
 {
     ModelNode *lastnode = head->RootNode;
 
@@ -1203,19 +1017,19 @@ f32 sub_GAME_7F06C010(ModelFileHeader *head, s32 unused, s32 unused2, s32 *arg3,
     head->RootNode = lastnode;
     *arg3          = 0;
     *arg4          = 0;
-    return probably_damage_detail_blood_effect_related(head, unused, unused2, arg3, arg4);
+    return jointListFindHitNext(head, unused, unused2, arg3, arg4);
 }*/
 
 
 /**
  * Address: 7F06C010
  * 
- * Update: decompiling probably_damage_detail_blood_effect_related revealed that the first argument for this function is a ModelHitEntry.
- * The previous function matched because both ModelNode and ModelHitEntry happen to have a normal 32 bit field at offset 0x0c.
+ * Update: decompiling jointListFindHitNext revealed that the first argument for this function is a JointListEntry.
+ * The previous function matched because both ModelNode and JointListEntry happen to have a normal 32 bit field at offset 0x0c.
  */
-s32 sub_GAME_7F06C010(ModelHitEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode)
+s32 jointListFindHit(JointListEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode)
 {
-    ModelHitEntry *entry = *entryptr;
+    JointListEntry *entry = *entryptr;
 
     while (entry->next != NULL) 
     {
@@ -1226,6 +1040,6 @@ s32 sub_GAME_7F06C010(ModelHitEntry **entryptr, coord3d *modelRayStart, coord3d 
     *outModel = NULL;
     *outNode = NULL;
 
-    return probably_damage_detail_blood_effect_related( entryptr, modelRayStart, modelRayDir, outModel, outNode);
+    return jointListFindHitNext( entryptr, modelRayStart, modelRayDir, outModel, outNode);
 }
 
