@@ -80,6 +80,8 @@ class Elf:
             end = data.find(b'\0', addend)
             if end > addend and all(32 <= c < 127 or c in (9, 10) for c in data[addend:end]):
                 return repr(data[addend:end].decode('latin1'))
+            # An unnamed constant, e.g. a float literal: compare by value, not by where it sits.
+            return f"{self.secs[shndx]['name']}:{data[addend:addend + 8].hex()}"
         return f"{self.secs[shndx]['name']}+{addend:#x}"
 
 
