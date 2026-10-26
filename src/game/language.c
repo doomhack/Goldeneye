@@ -269,8 +269,8 @@ void langTick(void)
 }
 
 
-extern u8 _efontchardataSegmentRomStart;
-extern u8 _jfontchardataSegmentRomStart;
+extern u8 _efontchardataSegmentRomStart NO_SDATA;
+extern u8 _jfontchardataSegmentRomStart NO_SDATA;
 void romCopy(void *target, void *source, u32 size);
 
 struct jpncharpixels *langGetJpnCharPixels(s32 codepoint)

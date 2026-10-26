@@ -23,5 +23,5 @@ void set_mt_tex_alloc(void)
         bytes += COOP_EXTRA_TEXTURE_BYTES;
     }
 
-    texInitPool(&ptr_texture_alloc_start, mempAllocBytesInBank(bytes, MEMPOOL_STAGE), bytes);
+    texInitPool(&g_TexSharedPool, mempAllocBytesInBank(bytes, MEMPOOL_STAGE), bytes);
 }

@@ -5,32 +5,32 @@
 #include <bondconstants.h>  // game constants
 #include <bondtypes.h>      // game structs and types
 
-extern u32 *_bssSegmentEnd;
+extern u32 *_bssSegmentEnd NO_SDATA;
 
-extern u32 *_codeSegmentStart;
-extern u32 *_codeSegmentEnd;
-extern u32 *_codeSegmentRomStart;
-extern u32 *_codeSegmentRomEnd;
+extern u32 *_codeSegmentStart NO_SDATA;
+extern u32 *_codeSegmentEnd NO_SDATA;
+extern u32 *_codeSegmentRomStart NO_SDATA;
+extern u32 *_codeSegmentRomEnd NO_SDATA;
 
-extern u32 *_csegmentSegmentStart;
-extern u32 *_csegmentSegmentEnd;
-extern u32 *_cdataSegmentRomStart;
-extern u32 *_cdataSegmentRomEnd;
+extern u32 *_csegmentSegmentStart NO_SDATA;
+extern u32 *_csegmentSegmentEnd NO_SDATA;
+extern u32 *_cdataSegmentRomStart NO_SDATA;
+extern u32 *_cdataSegmentRomEnd NO_SDATA;
 
-extern u32 *_inflateSegmentVaddrStart;
-extern u32 *_inflateSegmentVaddrEnd;
-extern u32 *_inflateSegmentRomStart;
-extern u32 *_inflateSegmentRomEnd;
+extern u32 *_inflateSegmentVaddrStart NO_SDATA;
+extern u32 *_inflateSegmentVaddrEnd NO_SDATA;
+extern u32 *_inflateSegmentRomStart NO_SDATA;
+extern u32 *_inflateSegmentRomEnd NO_SDATA;
 
-extern u32 *_gameSegmentStart;
-extern u32 *_gameSegmentEnd;
-extern u32 *_heapSegmentStart;
-extern u32 *_gameSegmentRomStart;
-extern u32 *_gameSegmentRomEnd;
+extern u32 *_gameSegmentStart NO_SDATA;
+extern u32 *_gameSegmentEnd NO_SDATA;
+extern u32 *_heapSegmentStart NO_SDATA;
+extern u32 *_gameSegmentRomStart NO_SDATA;
+extern u32 *_gameSegmentRomEnd NO_SDATA;
 
-extern u32* _animation_dataSegmentRomStart;
-extern u32* _animation_dataSegmentStart;
-extern u32* _animation_dataSegmentEnd;
+extern u32* _animation_dataSegmentRomStart NO_SDATA;
+extern u32* _animation_dataSegmentStart NO_SDATA;
+extern u32* _animation_dataSegmentEnd NO_SDATA;
 
 extern u8 sp_boot[SP_BOOT_SZ];
 extern u8 sp_rmon[SP_RMON_SZ];

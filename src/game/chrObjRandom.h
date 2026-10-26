@@ -3,7 +3,7 @@
 
 #include <ultra64.h>
 
-extern u64 g_chrObjRandomSeed;
+extern u64 g_chrObjRandomSeed NO_SDATA;
 
 u32 chrObjRandomGetNext(void);
 void chrObjRandomSetSeed(u32 param_1);

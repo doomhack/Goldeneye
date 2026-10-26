@@ -9,10 +9,10 @@
 #define RESET_TYPE_NMI 1
 #define RESET_TYPE_BOOT_DISK 2
 
-extern u32 osTvType;
-extern u32 osRomBase;
-extern u32 osResetType;
-extern u32 osMemSize;
+extern u32 osTvType NO_SDATA;
+extern u32 osRomBase NO_SDATA;
+extern u32 osResetType NO_SDATA;
+extern u32 osMemSize NO_SDATA;
 extern u8 osAppNmiBuffer[64];
 
 #endif /* _LIBULTRA_H */

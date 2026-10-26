@@ -315,11 +315,11 @@ Gfx *insert_bond_eye_intro(Gfx *gdl) {
 }
 
 
-extern Gfx *D_020043E8;
-extern Gfx *DL_RAREWARETEXT;
-extern Gfx *D_02004758;
-extern u8 *D_02004FE8;
-extern u8 *D_02005FF0;
+extern Gfx *D_020043E8 NO_SDATA;
+extern Gfx *DL_RAREWARETEXT NO_SDATA;
+extern Gfx *D_02004758 NO_SDATA;
+extern u8 *D_02004FE8 NO_SDATA;
+extern u8 *D_02005FF0 NO_SDATA;
 
 Gfx *load_display_rare_logo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     cameraPosition1[2] = arg3;
@@ -368,9 +368,9 @@ Gfx *load_display_rare_logo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 }
 
 
-extern void *_rarewarelogoSegmentRomStart;
-extern void *_rarewarelogoSegmentStart;
-extern void *_rarewarelogoSegmentEnd; 
+extern void *_rarewarelogoSegmentRomStart NO_SDATA;
+extern void *_rarewarelogoSegmentStart NO_SDATA;
+extern void *_rarewarelogoSegmentEnd NO_SDATA;
 void setupRarewareLogoData(s32 address, s32 size) {
     gunbarrel_mode = 0;
     g_TitleX = 880.0f;
@@ -434,8 +434,8 @@ s32 isGunBarrelInMode2(void) {
 }
 
 
-extern void *unknown2;
-extern void *unknown2_end;
+extern void *unknown2 NO_SDATA;
+extern void *unknown2_end NO_SDATA;
 void sub_GAME_7F008DE4(u8 **addr, s32 *size) {
     dword_CODE_bss_8006958C = *addr;
     *size -= 0x40400;

@@ -137,12 +137,21 @@ INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src -I src/game -
 
 CC := $(TOOLCHAIN)gcc
 # Code generation flags shared by the game, libultra and the asset data.
-# -nostdinc keeps the host's C library headers out; GCC's own freestanding headers are added back
-CC_BASEFLAGS := -nostdinc -isystem $(shell $(CC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 0 \
-  -ffreestanding -fno-builtin -fno-common -fms-extensions -fno-strict-aliasing -fwrapv -funsigned-char \
-  -fno-merge-constants -fno-reorder-functions -fno-toplevel-reorder -fno-zero-initialized-in-bss \
+# -nostdinc keeps the host's C library headers out; GCC's own freestanding headers are added back.
+# -G 8 puts variables of up to 8 bytes in .sdata/.sbss, which code reaches with one instruction from $gp
+# (see _gp in ge007.ld) instead of a lui + offset pair.
+# The -fno-* flags on the third and fourth lines keep GCC from optimising away decomp-era undefined
+# behaviour (type punning, signed overflow, null and out-of-bounds accesses).
+# -fno-toplevel-reorder keeps globals in source order: some code still treats neighbouring globals
+# as one array or struct (without it the menu text comes out garbled and the game hangs at file select).
+# -mno-check-zero-division drops the trap GCC puts after every integer divide.
+CC_BASEFLAGS := -nostdinc -isystem $(shell $(CC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 8 \
+  -ffreestanding -fno-builtin -fno-common -fms-extensions -fno-strict-aliasing -fwrapv -funsigned-char -fno-toplevel-reorder \
   -fno-delete-null-pointer-checks -fno-isolate-erroneous-paths-dereference -fno-aggressive-loop-optimizations -fno-math-errno \
-  -fno-tree-loop-distribute-patterns -w -DTARGET_N64 -MMD -MP
+  -fno-tree-loop-distribute-patterns -mno-check-zero-division -w -DTARGET_N64 -MMD -MP
+# Asset data (and the two boot-time blobs below) is copied out of the object byte for byte, so it
+# must keep every variable in .data, zeros and duplicate constants included, and stay off $gp.
+LAYOUT_CFLAGS := -G 0 -fno-zero-initialized-in-bss -fno-merge-constants
 CFLAGS := $(CC_BASEFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
 
 LD := $(TOOLCHAIN)ld
@@ -258,6 +267,10 @@ $(BUILD_DIR)/assets/%.o: assets/%.s
 #Build Obseg
 $(BUILD_DIR)/assets/obseg/%.o: assets/obseg/%.s $(OBSEG_RZ)
 	$(AS) $(ASFLAGS) -o $@ $<
+
+# Objects whose sections the linker script or the asset tools take as raw data
+$(BUILD_DIR)/assets/%.o: CFLAGS += $(LAYOUT_CFLAGS)
+$(BUILD_DIR)/src/c_data_filler.o $(RZOBJECTS): CFLAGS += $(LAYOUT_CFLAGS)
 
 #Build C files in assets/
 $(BUILD_DIR)/assets/%.o: assets/%.c

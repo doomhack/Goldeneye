@@ -12,13 +12,9 @@
 
 // bss
 //8008C720
-struct texpool *ptr_texture_alloc_start;
-//8008C724
-s32 ptr_texture_alloc_end;
-//8008C728
-s32 ptr_next_available_space;
-//8008C72C
-s32 ptr_last_entry_facemapping;
+// The original declared the four fields as separate globals and took the address of the first,
+// so it only worked while the compiler kept them together in source order.
+struct texpool g_TexSharedPool;
 //8008C730
 struct texcacheitem g_TexCacheItems[150];
 //8008D090
@@ -2288,7 +2284,7 @@ struct tex *texFindInPool(s32 texturenum, struct texpool *arg1)
 
     if (arg1 == NULL)
     {
-        arg1 = &ptr_texture_alloc_start;
+        arg1 = &g_TexSharedPool;
     }
 
     end = arg1->end;
@@ -2331,7 +2327,7 @@ void texLoadFromDisplayList(Gfx *gdl, struct texpool *arg1)
 }
 
 
-extern u8 _imagesSegmentRomStart;
+extern u8 _imagesSegmentRomStart NO_SDATA;
 
 /**
  * Load and decompress a texture from ROM.
@@ -2384,7 +2380,7 @@ void texLoad(s32 *updateword, struct texpool *pool)
 
     if (pool == NULL)
     {
-        pool = (struct texpool*) &ptr_texture_alloc_start;
+        pool = &g_TexSharedPool;
     }
 
     g_TexNumToLoad = *updateword & 0xffff;

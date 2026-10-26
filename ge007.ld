@@ -92,8 +92,16 @@ SECTIONS
 #include "ld/game.rodata.ld.inc"
       build/OUTCODE/src/gspboot.o (.data);
       build/OUTCODE/src/aspboot.o (.data);
+      /* Small data (-G 8 in the Makefile), reached as an offset from $gp. Uninitialised small
+         variables are kept here as loaded zeros too, so all of it is within 32 KB of _gp. */
+      . = ALIGN(16);
+      _gp = . + 0x7FF0;
+      * (.sdata .sdata.* .srodata .srodata.*);
+      * (.sbss .sbss.* .scommon);
    }
    END_SEG(csegment)
+
+   __gpCheck = ASSERT(_csegmentSegmentEnd - (_gp - 0x7FF0) <= 0x10000, "small data is bigger than 64 KB, lower -G in the Makefile");
 
    _dataSegmentVaddrEnd = _csegmentSegmentRomEnd;
 

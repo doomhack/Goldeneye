@@ -2,7 +2,7 @@
 #define _RANDOM_H_
 #include <ultra64.h>
 
-extern u64 g_randomSeed;
+extern u64 g_randomSeed NO_SDATA;
 
 void randomSetSeed(u32 param_1);
 u32 randomGetNext(void);
