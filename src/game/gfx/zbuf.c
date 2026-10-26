@@ -1,3 +1,9 @@
+/**
+ * The z-buffer: allocated in the stage pool the first time a level draws (wide enough for
+ * hi-res, so the option can change mid-level), and cleared for each player's view as it is
+ * drawn. Front-end screens hand in their own buffer instead (zbufSetBuffer).
+ */
+
 #include <ultra64.h>
 #include <memp.h>
 #include "game/player/bondview.h"

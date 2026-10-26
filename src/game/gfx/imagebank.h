@@ -1,5 +1,5 @@
-#ifndef _IMAGE_BANK_H_
-#define _IMAGE_BANK_H_
+#ifndef _IMAGEBANK_H_
+#define _IMAGEBANK_H_
 #include <ultra64.h>
 #include <bondtypes.h>
 #include "game/player/bondview.h"
@@ -22,13 +22,9 @@ extern struct sImageTableEntry *g_ImageFlare3;
 extern struct sImageTableEntry *g_ImageFlare4;
 extern struct sImageTableEntry *g_ImageFlare5;
 
-extern u8* g_TexBitsPos;
-extern s32 g_TexBitsCount;
 extern s32 *g_ImageBank;
 extern s32 g_ImageBankOffset;
 
 void imageBankLoad(void);
-u32 texBitsRead(s32 bitCount);
-void texBitsInit(s32 pos);
 
 #endif

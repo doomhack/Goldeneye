@@ -296,7 +296,6 @@ void bossInitMainthreadData(void)
     debmenuInit();
     default_player_perspective_and_height();
     store_osgetcount();
-    vtxstoreInit();
     speedgraphInit();
     explosionInitScaleMtx();
     null_init_main_2();
@@ -649,8 +648,6 @@ void bossMainloop(void)
                             {
                                 mempCheckPools();
                                 memaDumpPrePostMerge();
-                                dynDebugStub(gdl);
-                                texDebugStub(0);
                                 g_ShowMemUseFlag = 0;
                             }
 
@@ -659,7 +656,7 @@ void bossMainloop(void)
                                 dynDrawMembars(gdl);
                             }
 
-                            freeGfx = dynGetFreeGfx2(gdl);
+                            freeGfx = dynGetFreeGfx(gdl);
                             dynSwapBuffers();
                             video_related_8();
 

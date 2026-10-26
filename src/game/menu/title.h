@@ -24,4 +24,6 @@ extern s32 gunbarrelTimer;
 extern u32 D_8002A7D0;
 
 Gfx *titleRenderFolderMenuBackground(Gfx *gdl, s32 xOffset, struct FolderSelectColour *topColour, struct FolderSelectColour *bottomColour);
+void titleAllocMatrices(void);
+
 #endif

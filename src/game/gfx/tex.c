@@ -1,3 +1,14 @@
+/**
+ * Turning a model's display list into one the RDP can draw: texLoadFromGdl copies a display
+ * list, loads every texture it names and replaces each texture command with the commands
+ * that load it into TMEM and set up its tiles (the texHandleType* and texWrite* helpers).
+ * The tile state is cached (g_TexTileStates, g_TexTileSizes) so repeated settings are
+ * skipped.
+ *
+ * Also holds the surface sound and impact tables: which bullet hit sound and impact
+ * texture each kind of surface uses.
+ */
+
 #include <ultra64.h>
 #include "gbi_extension.h"
 #include "game/world/lightfixture.h"
@@ -6,10 +17,8 @@
 #include "game/gfx/tex.h"
 
 s32 g_TexLutMode;
-s32 g_TexUnusedBss1; // unused/padding
 s_bss_8008D148 g_TexTileStates[8]; //[0x160]; //8 entries of 0x2c ea
 s_bss_8008D2A8 g_TexTileSizes[8]; //[0xA0]; //8 entries of 0x14 ea
-s32 g_TexUnusedBss2; // unused/padding
 
 //D:8004E760
 u16 default_hit_sfx[] = {HIT_BULLET_STONE1_SFX, HIT_BULLET_STONE2_SFX};
@@ -136,11 +145,6 @@ char * image_sound_names[] = {
 };
 
 
-void texUnusedStub2(void) {
-    return;
-}
-
-
 void texResetTileState(void)
 {
     int i;
@@ -151,26 +155,6 @@ void texResetTileState(void)
         g_TexTileSizes[i].inuse = 0;
     }
     g_TexLutMode = -1;
-}
-
-
-s32 texCopyBytes(u8* src, s32 count, u8* dst)
-{
-    u8* src_itr;
-    u8* dst_itr;
-
-    src_itr = src;
-    dst_itr = dst;
-
-    while (count > 0)
-    {
-        *dst_itr = *src_itr;
-        dst_itr++;
-        src_itr++;
-        count--;
-    }
-
-    return dst_itr - dst;
 }
 
 

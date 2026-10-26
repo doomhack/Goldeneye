@@ -4,10 +4,7 @@
       build/OUTCODE/src/game/level/initnull_0009D0.o (.text);
       build/OUTCODE/src/game/model/anim.o (.text);
       build/OUTCODE/src/game/player/initplayergaitobject.o (.text);
-      build/OUTCODE/src/game/gfx/setguscale.o (.text);
       build/OUTCODE/src/game/level/initnull_000BC0.o (.text);
-      build/OUTCODE/src/game/gfx/initimages.o (.text);
-      build/OUTCODE/src/game/gfx/initintromatrices.o (.text);
       build/OUTCODE/src/game/menu/initmenus.o (.text);
       build/OUTCODE/src/game/chr/initguards.o (.text);
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.text);
@@ -25,7 +22,6 @@
       build/OUTCODE/src/game/prop/alloc_window_pieces.o (.text);
       build/OUTCODE/src/game/world/initunk_007290.o (.text);
       build/OUTCODE/src/game/menu/initcheattext.o (.text);
-      build/OUTCODE/src/game/gfx/initmttex.o (.text);
       build/OUTCODE/src/game/chr/cleanup_guard_data.o (.text);
       build/OUTCODE/src/game/prop/cleanup_object_sounds.o (.text);
       build/OUTCODE/src/game/prop/cleanup_alarms.o (.text);
@@ -39,7 +35,6 @@
       build/OUTCODE/src/game/player/cleanplayersound.o (.text);
       build/OUTCODE/src/game/menu/title.o (.text);
       build/OUTCODE/src/game/menu/front.o (.text);
-      build/OUTCODE/src/game/gfx/rle.o (.text);
       build/OUTCODE/src/game/menu/title2.o (.text);
       build/OUTCODE/src/game/menu/title3.o (.text);
       build/OUTCODE/src/game/hud/blood_animation.o (.text);
@@ -69,7 +64,7 @@
       build/OUTCODE/src/game/model/jointlist.o (.text);
       build/OUTCODE/src/game/model/model.o (.text);
       build/OUTCODE/src/game/model/modelfile.o (.text);
-      build/OUTCODE/src/game/gfx/othermodemicrocode.o (.text);
+      build/OUTCODE/src/game/gfx/texselect.o (.text);
       build/OUTCODE/src/game/player/bondview.o (.text);
       build/OUTCODE/src/game/player/bondview2.o (.text);
       build/OUTCODE/src/game/player/bondinv.o (.text);
@@ -115,7 +110,7 @@
       build/OUTCODE/src/game/hud/radar.o (.text);
       build/OUTCODE/src/game/menu/mp_weapon.o (.text);
       build/OUTCODE/src/game/gfx/image.o (.text);
-      build/OUTCODE/src/game/gfx/image_bank.o (.text);
+      build/OUTCODE/src/game/gfx/imagebank.o (.text);
       build/OUTCODE/src/game/gfx/tex.o (.text);
       build/OUTCODE/src/game/asset/rzip.o (.text);
       build/OUTCODE/src/game/gfx/rsp.o (.text);
@@ -124,7 +119,7 @@
       build/OUTCODE/src/game/level/game_debug.o (.text);
       build/OUTCODE/src/game/level/compiletime.o (.text);
       build/OUTCODE/src/game/debug/speedgraphrenderer.o (.text);
-      build/OUTCODE/src/game/gfx/viewport.o (.text);
+      build/OUTCODE/src/game/gfx/zbuf.o (.text);
       build/OUTCODE/src/game/audio/music_0D2720.o (.text);
 #ifndef VERSION_EU
 #endif

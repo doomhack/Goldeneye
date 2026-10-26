@@ -7,7 +7,7 @@
 #include "game/math/trig.h"
 #include "gbi_extension.h"
 #include "game/prop/glass.h"
-#include "game/gfx/image_bank.h"
+#include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
 #include "game/mission/objective_status.h"
 #include "random.h"

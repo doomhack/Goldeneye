@@ -7,9 +7,9 @@
 #include "game/level/lv.h"
 #include "game/world/bgfog.h"
 #include "game/world/bg.h"
-#include "game/gfx/othermodemicrocode.h"
+#include "game/gfx/texselect.h"
 #include "fr.h"
-#include "game/gfx/image_bank.h"
+#include "game/gfx/imagebank.h"
 
 #define SKYABS(val) (val >= 0.0f ? (val) : -(val))
 

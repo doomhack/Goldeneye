@@ -1,9 +1,16 @@
+/**
+ * texSelect sets up the RDP to draw with one image from an image table (the HUD, sky,
+ * explosions, menus): it loads the texture, sets the render mode (texSetRenderMode) and
+ * writes the tile and LoadBlock commands. The texLoadBlock* helpers work out a LoadBlock's
+ * texel count and dxt for each pixel size.
+ */
+
 #include <ultra64.h>
 #include <R4300.h>
 #include "game/gfx/tex.h"
 #include "game/gfx/image.h"
 #include "bondtypes.h"
-#include "game/gfx/othermodemicrocode.h"
+#include "game/gfx/texselect.h"
 #include "gbi_extension.h"
 
 s32 texMaskBits(int number)
@@ -680,16 +687,5 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
 
     *gdlptr = gdl;
 }
-
-
-
-/**
- * Unreferenced.
-*/
-void texUnusedStub(s32 arg0, s32 arg1, s32 arg2, s32 arg3)
-{
-    return;
-}
-
 
 

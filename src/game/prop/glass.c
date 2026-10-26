@@ -2,7 +2,7 @@
 #include <limits.h>
 #include <music.h>
 #include "game/prop/glass.h"
-#include "game/gfx/image_bank.h"
+#include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/mission/objective_status.h"

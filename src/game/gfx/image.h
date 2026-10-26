@@ -74,8 +74,15 @@ extern struct texpool g_TexSharedPool;
 extern struct image_entry g_Textures[];
 extern s32 g_TexCacheCount;
 extern u32 g_TexSharedPoolSize;
+extern u8 *g_TexBitsPos;
+extern s32 g_TexBitsCount;
 
-void texDebugStub(s32 arg0);
+void texBitsInit(s32 pos);
+u32 texBitsRead(s32 bitCount);
+void texResolveTableOffsets(void);
+void texInitSharedPool(void);
+void rleExpand8Bit(u8 *src, u8 *dst);
+
 
 void texInflateHuffman(u8 *dst, s32 numiterations, s32 chansize);
 void texInflateRle(u8 *dst, s32 blockstotal);

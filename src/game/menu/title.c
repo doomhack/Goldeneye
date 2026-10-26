@@ -1,4 +1,5 @@
 #include <ultra64.h>
+#include <memp.h>
 #include <PR/gbi.h>
 #include <PR/gu.h>
 #include <PR/os.h>
@@ -701,4 +702,18 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
 
 s32 isGunBarrelInMode9(void) {
     return (gunbarrel_mode == 9);
+}
+
+
+/** Allocates the matrices the intro sequence (Rare logo, gun barrel, Bond) draws with. */
+void titleAllocMatrices(void)
+{
+    D_8002A7D0 = 0;
+    matrixBufferRareLogo0     = mempAlloc(0x80, MEMPOOL_STAGE);
+    matrixBufferGunbarrel0    = mempAlloc(0x40, MEMPOOL_STAGE);
+    matrixBufferRareLogo1     = mempAlloc(0x80, MEMPOOL_STAGE);
+    matrixBufferRareLogo2     = mempAlloc(0x80, MEMPOOL_STAGE);
+    matrixBufferGunbarrel1    = mempAlloc(0x80, MEMPOOL_STAGE);
+    matrixBufferIntroBackdrop = mempAlloc(0x80, MEMPOOL_STAGE);
+    matrixBufferIntroBond     = mempAlloc(0x80, MEMPOOL_STAGE);
 }

@@ -14,8 +14,8 @@
 #include "game/gfx/dyn.h"
 #include "game/prop/explosion.h"
 #include "fr.h"
-#include "game/gfx/image_bank.h"
-#include "game/gfx/othermodemicrocode.h"
+#include "game/gfx/imagebank.h"
+#include "game/gfx/texselect.h"
 #include "game/level/lv.h"
 #include "game/math/matrix.h"
 #include "music.h"
@@ -2302,3 +2302,7 @@ Gfx * explosionCallRenderBulletImpactOnProp(Gfx *arg0)
 }
 
 
+/** Called once at boot: the scale matrix explosions are drawn with. */
+void explosionInitScaleMtx(void) {
+    guScale((Mtx *)&g_ExplosionScaleMtx, 0.1f, 0.1f, 0.1f);
+}

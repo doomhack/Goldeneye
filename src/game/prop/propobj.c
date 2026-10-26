@@ -32,7 +32,7 @@
 #include "fr.h"
 #include "game/prop/glass.h"
 #include "game/player/gun.h"
-#include "game/gfx/image_bank.h"
+#include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
 #include "game/math/round.h"
@@ -7766,7 +7766,7 @@ void objDeform(ObjectRecord *obj, E_EXPLOSIONTYPE explosiontype)
         adjust_height = 1;
     }
     
-    newverts = vtxstoreAllocate(rodata->numVertices, 0x0b0b, model->obj, objGetDestroyedLevel(obj));
+    newverts = vtxstoreAllocate(rodata->numVertices, VTXSTORE_OBJ, model->obj, objGetDestroyedLevel(obj));
     
     if (newverts != NULL)
     {

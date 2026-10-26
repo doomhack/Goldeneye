@@ -4,8 +4,8 @@
 #include "game/menu/front.h"
 #include "fr.h"
 #include "game/player/player.h"
-#include "game/gfx/othermodemicrocode.h"
-#include "game/gfx/image_bank.h"
+#include "game/gfx/texselect.h"
+#include "game/gfx/imagebank.h"
 
 
 /**

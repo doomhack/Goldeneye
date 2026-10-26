@@ -1,3 +1,14 @@
+/**
+ * Per-instance copies of model vertices, for models whose vertices change at run time.
+ *
+ * Characters get a copy when a blood stain is painted on them (VTXSTORE_CHR). Props get one
+ * when damage moves their vertices (VTXSTORE_OBJ); props with the same model and damage
+ * level can share a copy, and vtxstoreTick merges such duplicates when the store runs low.
+ * Each store is a block of vertices carved into batches, kept as a doubly linked list in
+ * address order so neighbouring free batches can be merged. Sizes are set per level by
+ * vtxstoreReset (bigger in multiplayer).
+ */
+
 #include <ultra64.h>
 #include <memp.h>
 #include "bondtypes.h"
@@ -5,7 +16,7 @@
 #include "game/prop/propobj.h"
 #include "game/model/model.h"
 
-// unsure if these structs are defined as something else, elsewhere
+/** One block of a store: in use (refs > 0), free (0) or an unused entry (-1). */
 struct VtxstoreBatch {
     Vertex* vertices;
     s32 modeldef;
@@ -37,30 +48,6 @@ struct VtxstoreBatch* g_VtxstoreObjBatches; // array ( uses g_VtxstoreObjNumBatc
 s16 g_VtxstoreChrFreeVtx;
 //CODE.bss:8007A0F2
 s16 g_VtxstoreObjFreeVtx;
-
-void vtxstoreInit(void)
-{
-    return;
-}
-
-
-void vtxstoreCheckChrBatches(void)
-{
-    s32 i;
-    for (i = 0; i < g_VtxstoreChrNumBatches; i++)
-    {
-        if (g_VtxstoreChrBatches[i].vertices);
-    }
-}
-
-void vtxstoreCheckObjBatches(void)
-{
-    s32 i;
-    for (i = 0; i < g_VtxstoreObjNumBatches; i++)
-    {
-        if (g_VtxstoreObjBatches[i].vertices);
-    }
-}
 
 /*
 * Address: 7F09B820(
@@ -279,15 +266,15 @@ s32 vtxstoreAllocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
     struct VtxstoreBatch* var_t0;
 
     switch (type) {
-        case 0xCCCC:
+        case VTXSTORE_CHR:
             var_t0 = g_VtxstoreChrBatches;
             var_t3 = &g_VtxstoreChrFreeVtx;
-            var_a2 = ((s16 *)&g_VtxstoreChrNumBatches)[1];
+            var_a2 = (s16)g_VtxstoreChrNumBatches;
             break;
-        case 0xB0B:
+        case VTXSTORE_OBJ:
             var_t0 = g_VtxstoreObjBatches;
             var_t3 = &g_VtxstoreObjFreeVtx;
-            var_a2 = ((s16 *)&g_VtxstoreObjNumBatches)[1];
+            var_a2 = (s16)g_VtxstoreObjNumBatches;
             break;
         default:
             return 0;
@@ -309,8 +296,6 @@ s32 vtxstoreAllocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
         }
     } while (var_v1_2 == 0);
     if (var_a2 < var_v0) {
-        vtxstoreCheckChrBatches();
-        vtxstoreCheckObjBatches();
         return 0;
     }
     // FAKE
@@ -371,8 +356,6 @@ void vtxstoreFree(Vertex* arg0) {
         var_a3 = g_VtxstoreObjBatches;
         var_t2 = &g_VtxstoreObjFreeVtx;
     } else {
-        vtxstoreCheckChrBatches();
-        vtxstoreCheckObjBatches();
         return;
     }
 

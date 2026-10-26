@@ -2,7 +2,7 @@
 #include <memp.h>
 #include "game/menu/front.h"
 #include "game/menu/initmenus.h"
-#include "game/gfx/initintromatrices.h"
+#include "game/menu/title.h"
 #include <macro.h>
 
 void init_menus_or_reset(void)

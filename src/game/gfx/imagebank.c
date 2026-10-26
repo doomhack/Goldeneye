@@ -1,17 +1,18 @@
+/**
+ * The global image bank: images used everywhere, such as ammo icons, the crosshair,
+ * explosion smoke, bullet impacts and lens flares.
+ *
+ * imageBankLoad copies the bank from ROM into the stage pool on each level load, points the
+ * g_Image* globals at its entries, and loads the textures of the images that are always
+ * needed. The bank is also mapped to its own RSP segment (SPSEGMENT_GETITLE).
+ */
+
 #include <ultra64.h>
 #include <rom.h>
 #include <memp.h>
-#include "game/gfx/image_bank.h"
+#include "game/gfx/imagebank.h"
 
 // bss
-//8008D0A0
-u8* g_TexBitsPos;
-//8008D0A4
-u32 g_TexBitsBuffer;
-//8008D0A8
-s32 g_TexBitsCount;
-//8008D0AC
-s32 g_ImageUnusedBss;
 //8008D0B0;
 s32 g_ImageBankOffset;
 //8008D0B4;
@@ -83,32 +84,6 @@ struct sImageTableEntry *g_ImagesMpStageSelect;
 
 
 extern u8* _GlobalimagetableSegmentRomStart NO_SDATA;
-
-
-void texBitsInit(s32 pos) {
-    g_TexBitsPos = pos;
-    g_TexBitsBuffer = 0;
-    g_TexBitsCount = 0;
-}
-
-
-
-u32 texBitsRead(s32 bitCount)
-{
-    if (g_TexBitsCount < bitCount)
-    {
-        do
-        {
-            g_TexBitsBuffer = (*g_TexBitsPos | (g_TexBitsBuffer << 8));
-            g_TexBitsPos++;
-            g_TexBitsCount = g_TexBitsCount + 8;
-        } while (g_TexBitsCount < bitCount);
-    }
-    
-    g_TexBitsCount -= bitCount;
-    return (g_TexBitsBuffer >> g_TexBitsCount) & ((1 << bitCount) - 1);
-}
-
 
 
 extern u32* _GlobalimagetableSegmentStart NO_SDATA;

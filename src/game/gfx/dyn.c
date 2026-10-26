@@ -76,10 +76,6 @@ Gfx *dynGetMasterDisplayList(void) {
     return (Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex];
 }
 
-s32 dynGetFreeGfx2(Gfx *gdl) {
-    return (Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex + 1] - gdl;
-}
-
 /**
  * Address: 7F0BD6C4
  */
@@ -118,9 +114,6 @@ void dynSwapBuffers(void) {
     g_GfxActiveBufferIndex = (g_GfxActiveBufferIndex ^ 1);
     g_GfxRequestedDisplayList = FALSE;
     g_GfxMemPos = g_VtxBuffers[g_GfxActiveBufferIndex];
-}
-
-void dynDebugStub(Gfx *gdl) {
 }
 
 s32 dynGetFreeGfx(Gfx *gdl) {

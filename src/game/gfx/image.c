@@ -1,11 +1,29 @@
+/**
+ * Textures: loading them from ROM, decompressing them, and the pools they live in.
+ *
+ * Display lists in ROM name textures by number (a G_SETTIMG whose address is 0xabcdNNNN).
+ * texLoad finds texture NNNN in g_Textures, copies it from ROM, decompresses it into a
+ * texture pool and replaces the number with the texture's address. A pool fills from both
+ * ends: pixel data from the left, a struct tex describing each texture from the right.
+ *
+ * Most textures go in the shared pool (g_TexSharedPool, sized by the level's -mt token);
+ * models and the guns can pass their own. Textures use one of several compression methods
+ * (zlib, Huffman, RLE, lookup tables, see TEXCOMPMETHOD_*), and can hold several levels of
+ * detail. See docs/subsystems/rendering.md.
+ */
+
 #include <ultra64.h>
 #include "bondconstants.h"
 #include "game/gfx/image.h"
-#include "game/gfx/image_bank.h"
+#include "game/gfx/imagebank.h"
 #include <assets/image_externs.h>
 #include <PR/R4300.h>
 #include "rom.h"
 #include "game/asset/rzip.h"
+#include <token.h>
+#include <str.h>
+#include <memp.h>
+#include "game/player/player.h"
 
 
 #define TEX_ALPHA_WEIGHT 961
@@ -15,6 +33,10 @@
 // The original declared the four fields as separate globals and took the address of the first,
 // so it only worked while the compiler kept them together in source order.
 struct texpool g_TexSharedPool;
+// The bit reader the texture decoders use (texBitsInit, texBitsRead)
+u8 *g_TexBitsPos;
+u32 g_TexBitsBuffer;
+s32 g_TexBitsCount;
 //8008C730
 struct texcacheitem g_TexCacheItems[150];
 //8008D090
@@ -25,8 +47,6 @@ s32 g_TexNumToLoad;
 // data
 //D:80049170
 u32 g_TexSharedPoolSize = 0x6DDD0;
-//D:80049174
-u32 g_TexUnused80049174 = 0;
 
 //D:80049178 #1	#bytes in pixel data for image
 s32 g_TexFormatNumChannels[] = 
@@ -89,11 +109,6 @@ s32 g_TexFormatLutModes[] = {
 	G_TT_IA16,
 	G_TT_IA16,
 };
-//D:800492e4
-s32 g_TexUnused800492E4[] = 
-{
-    0, 0, 0, 0, 0, 0, 0
-};
 #define IMAGE(NAME, SZ, HS, HT, F3, F4, F5, F6) \
     {HS, HT, SZ, F3, F4, F5, F6 },
 
@@ -104,11 +119,6 @@ struct image_entry g_Textures[] = {
     {HIT_DEFAULT, HIT_DEFAULT,0xFFFF,0,0,0,0}
 };
 #undef IMAGE
-
-
-void texDebugStub(s32 arg0) {
-    if (arg0);
-}
 
 
 /**
@@ -2472,4 +2482,113 @@ void texLoadFromTextureNum(s32 texturenum, struct texpool *arg1)
     u32 texturenumcopy;
     texturenumcopy = texturenum;
     texLoad(&texturenumcopy, arg1);
+}
+
+
+/** Starts reading bits at pos (a ROM-loaded buffer address). */
+void texBitsInit(s32 pos) {
+    g_TexBitsPos = pos;
+    g_TexBitsBuffer = 0;
+    g_TexBitsCount = 0;
+}
+
+
+/** Reads the next bitCount bits, most significant first. */
+u32 texBitsRead(s32 bitCount)
+{
+    if (g_TexBitsCount < bitCount)
+    {
+        do
+        {
+            g_TexBitsBuffer = (*g_TexBitsPos | (g_TexBitsBuffer << 8));
+            g_TexBitsPos++;
+            g_TexBitsCount = g_TexBitsCount + 8;
+        } while (g_TexBitsCount < bitCount);
+    }
+    
+    g_TexBitsCount -= bitCount;
+    return (g_TexBitsBuffer >> g_TexBitsCount) & ((1 << bitCount) - 1);
+}
+
+
+/**
+ * Called once at boot: g_Textures holds each texture's compressed size, turn those into
+ * offsets from the start of the texture data.
+ */
+void texResolveTableOffsets(void)
+{   
+    s32 offset;
+    s32 next_offset;
+    s32 temp_t3;
+    struct image_entry *entryp;
+
+    entryp = g_Textures;
+    offset = 0;
+    next_offset = entryp->dataoffset;
+
+    while (entryp->dataoffset != 0xffff)
+    {
+        temp_t3 = entryp->dataoffset;
+        entryp->dataoffset = offset;
+        offset += temp_t3;
+        entryp++;
+        next_offset = entryp->dataoffset;
+    }
+
+    entryp->dataoffset = offset;
+}
+
+
+#define COOP_EXTRA_TEXTURE_BYTES (512 * 1024)
+
+void texInitSharedPool(void)
+{  
+    g_TexCacheCount = 0;
+
+    if (tokenFind(1, "-mt"))
+    {
+        g_TexSharedPoolSize = strtol(tokenFind(1, "-mt"), 0x0, 0) * 1024; //get KB
+    }
+
+    if (g_CoopMode)
+    {
+        // The per-level sizes are tuned for solo, where Bond's body textures
+        // go in the weapon buffer. Co-op loads both bodies MP style into this
+        // pool, and textures that no longer fit draw as garbage.
+        g_TexSharedPoolSize += COOP_EXTRA_TEXTURE_BYTES;
+    }
+
+    texInitPool(&g_TexSharedPool, mempAlloc(g_TexSharedPoolSize, MEMPOOL_STAGE), g_TexSharedPoolSize);
+}
+
+
+/**
+ * Decode RLE-compressed 8-bit image data into a raw byte buffer.
+ */
+void rleExpand8Bit(u8 *src, u8 *dst)
+{
+    u8 *in;
+    s32 remaining;
+    s32 count;
+    s32 more;
+    u16 w, h;
+    u8 value;
+
+    w = *(u16 *)&src[0];
+    h = *(u16 *)&src[2];
+    remaining = w * h;
+    in = &src[10];
+
+    do {
+        count = *in++;
+        value = *in++;
+        remaining -= count;
+        count--;
+
+        do {
+            more = 0 < count;
+            count--;
+            *dst++ = value;
+        } while (more);
+    } while (remaining > 0);
 }

@@ -27,7 +27,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `mission/` | Objectives and briefings | `objective.c`, `objective_status.c` |
 | `world/` | The level geometry: rooms and portals (`bg.c`), fog, sky, light fixtures | `bg.c`, `bgfog.c`, `sky.c` |
 | `model/` | Model files, skeletons, animation, joint lists and the model slots. `cobjdata.c`, `gobjdata.c` and `pobjdata.c` hold the tables of character, gun and prop model files. See [subsystems/models.md](subsystems/models.md) | `model.c`, `anim.c`, `jointlist.c`, `modelfile.c` |
-| `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, vertex pools | `image.c`, `tex.c`, `dyn.c`, `rsp.c`, `viewport.c` |
+| `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, per-instance vertex copies. See [subsystems/rendering.md](subsystems/rendering.md) | `image.c`, `tex.c`, `texselect.c`, `dyn.c`, `rsp.c`, `zbuf.c`, `vtxstore.c` |
 | `text/` | Text rendering and language banks | `textrelated.c`, `language.c` |
 | `math/` | Matrices, quaternions, trig, interpolation, gravity. See [subsystems/math.md](subsystems/math.md) | `matrix.c`, `quaternion.c`, `trig.c` |
 | `asset/` | Loading files from ROM and decompressing them. See [subsystems/assets-memory.md](subsystems/assets-memory.md) | `fileload.c`, `rzip.c` |
@@ -54,6 +54,7 @@ that subsystem's main file.
 | `hud/bondwalk2.c` | Drawing a textured rectangle on screen |
 | `model/loadobjectmodel.c` | Setup and prop helpers (finding setup objects, loading a prop's model, room placement), not model code |
 | `model/initactorpropstuff.c` | Weapon animation groups and ejected casings |
+| `gfx/tex.c` | Also the surface sound and bullet impact tables |
 | `world/unk_092E50.c` | Sky cloud and mipmap display lists |
 | `world/initunk_007290.c` | Resets three floats used by `unk_092E50.c` |
 | `player/ejectedcartridges.c` | Loads the gun casing models and resets their sound slots |
