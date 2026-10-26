@@ -1,3 +1,18 @@
+/**
+ * Models: instances of model files, their matrices, animation and drawing.
+ *
+ * A model file (ModelFileHeader) is a tree of nodes. Some nodes position things (the root
+ * header, joints), some choose what is shown (level of detail, switches, the head slot),
+ * and some draw (display lists, gunfire, shadows). A Model is one instance of a file: its
+ * scale, its animation state, and per-node runtime data (rwdata).
+ *
+ * Each frame the owner of a model calls:
+ *   modelCalcPosition  - moves the root by the animation's root motion
+ *   modelCalcMatrices  - works out every joint's matrix from the animation
+ *   modelRender        - walks the tree and draws it
+ *
+ * See docs/subsystems/models.md.
+ */
 #include <ultra64.h>
 #include <memp.h>
 #include "game/model/model.h"
@@ -6,11 +21,13 @@
 #include "game/chr/chr.h"
 #include "game/model/chrobjdata.h"
 #include "gbi_extension.h"
-#include "game/model/initunk_005520.h"
+#include "game/model/model.h"
 #include "game/math/trig.h"
 #include "game/math/round.h"
-#include "game/model/math_unk_05A9E0.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/math/quaternion.h"
 #include "random.h"
 
@@ -25,6 +42,220 @@ typedef struct ModelGroupMtxBuildArg {
 // forward declarations
 void modelSetAnimFrame2WithChrStuff(struct Model *model, f32 framea, f32 frameb, f32 frame2a, f32 frame2b);
 
+
+
+struct AnimModelSlot *g_AnimModelSlots;
+struct ModelSlot *g_ModelSlots;
+
+
+s32 g_MaxAnimModelSlots = 0;
+s32 g_MaxModelSlots = 0;
+s32 g_ModelIsLvResetting = 0;
+u32 D_8003607C = 0;
+u32 D_80036080 = 0;
+s32 g_ModelLodDisabled = 0;
+f32 g_ModelLodScale = 1.0;
+struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices) = NULL;
+void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx) = NULL;
+coord3d D_80036094 = {0};
+coord3d D_800360A0 = {0};
+coord3d D_800360AC = {0};
+coord3d D_800360B8 = {0};
+struct bondstruct_unk_op07_related g_ModelTubeAngleTable[32] = {
+    { 0, 0, 0x10 },
+    { 1, 0x1000, 0xD },
+    { 1, 0x1000, 0xD },
+    { 9, 0x800, 0xC },
+    { 9, 0x800, 0xC },
+    { 0x19, 0x400, 0xB },
+    { 0x19, 0x400, 0xB },
+    { 0x39, 0x400, 0xB },
+    { 0x39, 0x400, 0xB },
+    { 0x59, 0x400, 0xB },
+    { 0x59, 0x400, 0xB },
+    { 0x79, 0x400, 0xB },
+    { 0x79, 0x400, 0xB },
+    { 0x99, 0x400, 0xB },
+    { 0x99, 0x400, 0xB, },
+    { 0xB9, 0x400, 0xB, },
+    { 0xB9, 0x400, 0xB, },
+    { 0xD9, 0x400, 0xB, },
+    { 0xD9, 0x400, 0xB, },
+    { 0xF9, 0x400, 0xB, },
+    { 0xF9, 0x400, 0xB, },
+    { 0x119, 0x400, 0xB, },
+    { 0x119, 0x400, 0xB, },
+    { 0x139, 0x400, 0xB, },
+    { 0x139, 0x400, 0xB, },
+    { 0x159, 0x400, 0xB, },
+    { 0x159, 0x400, 0xB, },
+    { 0x179, 0x800, 0xC, },
+    { 0x179, 0x800, 0xC, },
+    { 0x189, 0x1000, 0xD },
+    { 0x189, 0x1000, 0xD },
+    { 0x191, 0, 0x10 },
+};
+
+coord3d D_80036244 = { 0 };
+u32 g_ModelAnimMergingEnabled = 1;
+coord3d D_80036254 = { 0 };
+
+u32 D_80036260 = 0;
+u32 D_80036264 = 0;
+u32 D_80036268 = 0x10;
+u32 D_8003626C = 1;
+u32 D_80036270 = 0x1000;
+u32 D_80036274 = 0xD;
+u32 D_80036278 = 1;
+u32 D_8003627C = 0x1000;
+u32 D_80036280 = 0xD;
+u32 D_80036284 = 9;
+u32 D_80036288 = 0x800;
+u32 D_8003628C = 0xC;
+u32 D_80036290 = 9;
+u32 D_80036294 = 0x800;
+u32 D_80036298 = 0xC;
+u32 D_8003629C = 0x19;
+u32 D_800362A0 = 0x800;
+u32 D_800362A4 = 0xC;
+u32 D_800362A8 = 0x19;
+u32 D_800362AC = 0x800;
+u32 D_800362B0 = 0xC;
+u32 D_800362B4 = 0x29;
+u32 D_800362B8 = 0x800;
+u32 D_800362BC = 0xC;
+u32 D_800362C0 = 0x29;
+u32 D_800362C4 = 0x800;
+u32 D_800362C8 = 0xC;
+u32 D_800362CC = 0x39;
+u32 D_800362D0 = 0x800;
+u32 D_800362D4 = 0xC;
+u32 D_800362D8 = 0x39;
+u32 D_800362DC = 0x800;
+u32 D_800362E0 = 0xC;
+u32 D_800362E4 = 0x49;
+u32 D_800362E8 = 0x800;
+u32 D_800362EC = 0xC;
+u32 D_800362F0 = 0x49;
+u32 D_800362F4 = 0x800;
+u32 D_800362F8 = 0xC;
+u32 D_800362FC = 0x59;
+u32 D_80036300 = 0x1000;
+u32 D_80036304 = 0xD;
+u32 D_80036308 = 0x59;
+u32 D_8003630C = 0x1000;
+u32 D_80036310 = 0xD;
+u32 D_80036314 = 0x61;
+u32 D_80036318 = 0;
+u32 D_8003631C[] = {
+  0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+Vertex D_800363E0 = {
+    { 0, 0, 0 },
+    0,
+    { 0, 0 },
+    0xFF,
+    0xFF,
+    0xFF,
+    0xFF
+};
+
+u32 g_ModelShadowAlpha = 0x50;
+u32 D_800363F4 = 0;
+Vtx D_800363F8 = {
+    {
+        { 0, 0, 0 },
+        0,
+        { 0, 0 },
+        { 0xFF, 0xFF, 0xFF, 0x50 }
+    }
+};
+coord3d D_80036408 = { 1.0f, 0.0f, 0.0f };
+struct bondstruct_unk_animation_related* g_AnimFrameBuffer =  0;
+s32 D_80036418 =  0;
+s32 D_8003641C =  0;
+
+
+#define MODEL_SPARE_SLOTS          30
+#define ANIM_MODEL_SPARE_SLOTS     10
+
+#define MODEL_SPARE_RWDATALEN      0x14
+#define ANIM_MODEL_SPARE_RWDATALEN 0x8c
+
+
+void modelmgrResetSlotCounts(void)
+{
+    g_MaxAnimModelSlots = 0;
+    g_MaxModelSlots = 0;
+}
+
+
+void modelmgrSetLevelResetting(bool resetting) 
+{
+    g_ModelIsLvResetting = resetting;
+}
+
+//this may be a file split
+
+/**
+ * NTSC address 0x7F005540.
+*/
+void modelmgrAllocateModelSlots(s32 numobjs)
+{
+    s32 i;
+
+    g_MaxModelSlots = numobjs + MODEL_SPARE_SLOTS;
+    
+    g_ModelSlots = mempAlloc(g_MaxModelSlots * sizeof(struct ModelSlot), MEMPOOL_STAGE);
+
+    for (i = 0; i < g_MaxModelSlots; i++)
+    {
+        g_ModelSlots[i].obj = 0;
+
+        if (i < numobjs)
+        {
+            g_ModelSlots[i].datas = NULL;
+        }
+        else
+        {
+            g_ModelSlots[i].datas = mempAlloc(MODEL_SPARE_RWDATALEN * sizeof(u32), MEMPOOL_STAGE);
+            g_ModelSlots[i].rwdatalen = MODEL_SPARE_RWDATALEN;
+        }
+    }
+}
+
+
+/**
+ * NTSC address 0x7F005540.
+*/
+void modelmgrAllocateAnimModelSlots(s32 numanimated)
+{
+    s32 temp_t6;
+    s32 i;
+
+    g_MaxAnimModelSlots = numanimated + ANIM_MODEL_SPARE_SLOTS;
+
+    // mips2c says: g_AnimModelSlots = mempAlloc(temp_t6 * 0xC0, 4);
+    // however, the pointer is incremented by 0xbc in the loop below.
+    g_AnimModelSlots = mempAlloc(g_MaxAnimModelSlots * (4 + sizeof(struct AnimModelSlot)), MEMPOOL_STAGE);
+
+    for (i = 0; i < g_MaxAnimModelSlots; i++)
+    {
+        g_AnimModelSlots[i].obj = 0;
+
+        if (i < numanimated)
+        {
+            g_AnimModelSlots[i].datas = NULL;
+        }
+        else
+        {
+            g_AnimModelSlots[i].datas = mempAlloc(ANIM_MODEL_SPARE_RWDATALEN * sizeof(u32), MEMPOOL_STAGE);
+            g_AnimModelSlots[i].rwdatalen = ANIM_MODEL_SPARE_RWDATALEN;
+        }
+    }
+}
 
 
 //newfile per EU
@@ -2227,7 +2458,7 @@ void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
 }
 
 
-void modelCalcMatrices2(ModelRenderData* arg0, Model* arg1)
+void modelCalcMatricesNoAnim(ModelRenderData* arg0, Model* arg1)
 {
 #if defined(LEFTOVERDEBUG)
     if (arg1 == NULL)
@@ -2362,7 +2593,7 @@ void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
         animResetFrameBuffer();
     }
 
-    modelCalcMatrices2(arg0, arg1);
+    modelCalcMatricesNoAnim(arg0, arg1);
 }
 
 /**
@@ -6391,4 +6622,14 @@ void modelNodeReplaceGdl(u32 arg0, ModelNode *node, Gfx *find, Gfx *replacement)
             }
             break;
     }
+}
+
+
+/**
+ * How much to stretch a joint's matrix along z when it bends by twice `halfangle`, so that
+ * the skin around an elbow or knee doesn't look pinched.
+ */
+f32 modelGetBendStretchScale(f32 halfangle) 
+{
+    return sqrtf(((sinf(halfangle) / cosf(halfangle)) + 1.0f));
 }

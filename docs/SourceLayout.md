@@ -26,7 +26,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `nav/` | Where things can stand and walk: floor tiles (`stan.c`) and the pad and waypoint graph guards path along | `stan.c`, `padhalllv.c` |
 | `mission/` | Objectives and briefings | `objective.c`, `objective_status.c` |
 | `world/` | The level geometry: rooms and portals (`bg.c`), fog, sky, light fixtures | `bg.c`, `bgfog.c`, `sky.c` |
-| `model/` | Model files, skeletons, animation tables and the model slot manager. `cobjdata.c`, `gobjdata.c` and `pobjdata.c` hold the tables of character, gun and prop model files | `model.c`, `loadobjectmodel.c`, `objecthandler.c` |
+| `model/` | Model files, skeletons, animation, joint lists and the model slots. `cobjdata.c`, `gobjdata.c` and `pobjdata.c` hold the tables of character, gun and prop model files. See [subsystems/models.md](subsystems/models.md) | `model.c`, `anim.c`, `jointlist.c`, `modelfile.c` |
 | `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, vertex pools | `image.c`, `tex.c`, `dyn.c`, `rsp.c`, `viewport.c` |
 | `text/` | Text rendering and language banks | `textrelated.c`, `language.c` |
 | `math/` | Matrices, quaternions, trig, interpolation, gravity. See [subsystems/math.md](subsystems/math.md) | `matrix.c`, `quaternion.c`, `trig.c` |
@@ -42,7 +42,7 @@ uses `math/`.
 ## Small init and cleanup files
 
 The original code was split into many tiny files named after what they set up or tear down
-(`initguards.c`, `cleanup_objects.c`, `initunk_005520.c`), each holding one or two
+(`initguards.c`, `cleanup_objects.c`), each holding one or two
 functions. They sit in the folder of the subsystem they belong to and will be merged into
 that subsystem's main file.
 
@@ -52,7 +52,8 @@ that subsystem's main file.
 | --- | --- |
 | `hud/glass2.c` | Health and armour bars, the watch background, bullet sparks |
 | `hud/bondwalk2.c` | Drawing a textured rectangle on screen |
-| `model/math_unk_05A9E0.c` | One model joint helper, `modelGetBendStretchScale` |
+| `model/loadobjectmodel.c` | Setup and prop helpers (finding setup objects, loading a prop's model, room placement), not model code |
+| `model/initactorpropstuff.c` | Weapon animation groups and ejected casings |
 | `world/unk_092E50.c` | Sky cloud and mipmap display lists |
 | `world/initunk_007290.c` | Resets three floats used by `unk_092E50.c` |
 | `player/ejectedcartridges.c` | Loads the gun casing models and resets their sound slots |

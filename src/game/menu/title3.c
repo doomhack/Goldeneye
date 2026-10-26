@@ -3,10 +3,12 @@
 #include "bondtypes.h"
 #include "game/gfx/image.h"
 #include "math.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/asset/fileload.h"
 #include "game/chr/chr_b.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "game/model/chrobjdata.h"
 
 /*

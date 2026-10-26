@@ -3,9 +3,11 @@
 #include <bondtypes.h>
 #include "game/chr/chr.h"
 #include "game/model/chrobjdata.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "game/player/initBondDATAdefaults.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/player/player.h"
 #include "game/player/bondhead.h"
 #include "game/model/model.h"

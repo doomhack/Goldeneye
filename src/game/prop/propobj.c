@@ -39,7 +39,9 @@
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
 #include "game/model/model.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/mission/objective_status.h"
 #include "game/player/player.h"
 #include "game/math/quaternion.h"
@@ -12181,7 +12183,7 @@ void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
                 }
 
                 renderData.mtxlist = dynAllocate(heldModel->obj->numMatrices * sizeof(Mtxf));
-                modelCalcMatrices2(&renderData, heldModel);
+                modelCalcMatricesNoAnim(&renderData, heldModel);
 
                 if (gdl != NULL) 
                 {

@@ -1,5 +1,5 @@
-#ifndef _INITANITABLE_H_
-#define _INITANITABLE_H_
+#ifndef _ANIM_H_
+#define _ANIM_H_
 #include <ultra64.h>
 #include <assets/animationtable_data.h>
 
@@ -36,5 +36,18 @@ extern s32 animation_table_ptrs1[];
  * The value corresponds to (e.g. index=0) PTR_ANIM_helicopter_cradle (same as ANIM_DATA_helicopter_cradle)
 */
 extern struct ModelAnimation * animation_table_ptrs2[];
+
+/** Where animLoadFrame copies animation frames to. */
+struct bondstruct_unk_animation_related {
+    char* uselessPointer; // Is incremented like a count when an animation is copied from ROM to RAM but it's never read
+    char* animBufferPtr1; 
+    char* animBufferPtr2; 
+};
+
+extern struct bondstruct_unk_animation_related *g_AnimFrameBuffer;
+
+void animInitFrameBuffer(struct bondstruct_unk_animation_related *animBuffer, OSMesgQueue *mq, s32 unused);
+void animResolveTable(s32 **table);
+void animLoadTable(void);
 
 #endif

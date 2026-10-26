@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include "game/model/initactorpropstuff.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "game/chr/chr.h"
 #include "game/player/gun.h"
 #include "math.h"

@@ -21,12 +21,14 @@
 #include "game/prop/explosion.h"
 #include "game/save/file.h"
 #include "game/player/gun.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "joy.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
 #include "game/math/matrix.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
 #include "game/nav/stan.h"
@@ -2642,7 +2644,7 @@ after_position_update:
             renderdata.basemtx = modelFindNodeMtx(model, hatmodel->attachedto_objinst, 0);
             renderdata.mtxlist = dynAllocate(hatmodel->obj->numMatrices * (sizeof(Mtxf)));
 
-            modelCalcMatrices2(&renderdata, hatmodel);
+            modelCalcMatricesNoAnim(&renderdata, hatmodel);
 
             if ((chr->headnum >= HEAD_START) && (chr->headnum < BODY_Female_Sally))
             {

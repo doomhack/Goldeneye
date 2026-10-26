@@ -1,8 +1,25 @@
+/**
+ * The animation table: the guard, player and vehicle animations.
+ *
+ * At boot the animation headers (ModelAnimation) are copied from ROM into the permanent
+ * pool and their offsets turned into pointers. The frame data stays in ROM: as an
+ * animation plays, animLoadFrame (model.c) copies the frames it needs into a small buffer.
+ */
 #include <ultra64.h>
 #include <memp.h>
-#include "game/model/initanitable.h"
-#include "game/model/objecthandler.h"
+#include "game/model/anim.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "bondgame.h"
+
+/** Sets the buffer that animLoadFrame copies animation frames from ROM into. */
+void animInitFrameBuffer(struct bondstruct_unk_animation_related* animBuffer, OSMesgQueue* mq, s32 unused) {
+    g_AnimFrameBuffer = animBuffer; // Data structure with offset and two tables
+    D_80036418 = mq;   // Unused message queue
+    D_8003641C = unused; // Some unused array
+}
+
 
 //bss
 

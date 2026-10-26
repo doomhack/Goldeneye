@@ -4,7 +4,9 @@
 #include "game/chr/chr.h"
 #include "game/chr/chr_b.h"
 #include "game/model/chrobjdata.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/model/model.h"
 
 s32 load_body_head_if_not_loaded(s32 model)

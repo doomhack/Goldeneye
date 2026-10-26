@@ -1,228 +1,42 @@
+/**
+ * Joint lists: the joints of every model in a scene, in one list sorted by depth.
+ *
+ * Each character keeps one (chr->field_20) for its body, head and hat. Characters are
+ * drawn joint by joint from the back to the front (jointListDraw), and shots are tested
+ * against the joints from the front to the back, so the first hit found is the nearest
+ * (jointListFindHit).
+ *
+ * The entries come from a fixed pool of 600 on a free list. Callers build a list with
+ * jointListAddModel, sort it with jointListCalcDepths and jointListSortByDepth, use it,
+ * and give it back with jointListFree.
+ */
 #include <ultra64.h>
-#include <memp.h>
-#include "game/model/objecthandler.h"
 #include "game/model/model.h"
+#include "game/model/jointlist.h"
 
-// bss
-//CODE.bss:80076A50
-// Pool of 600 entries, threaded into a free list by jointListInit. The decomp had it as a
-// run of placeholder globals, which only worked while they stayed together in .bss.
-JointListEntry g_JointListEntries[600];
+#define JOINTLIST_LEN 600
 
-//CODE.bss:80079930
-struct AnimModelSlot *g_AnimModelSlots;
-//CODE.bss:80079934
-struct ModelSlot *g_ModelSlots;
+JointListEntry g_JointListEntries[JOINTLIST_LEN];
+JointListEntry *g_JointListFree = NULL;
 
+/** Called on level load: threads all the entries into the free list. */
+void jointListInit(void)
+{
+    s32 i;
+    JointListEntry *entries = g_JointListEntries;
 
-// data
-//D:80036070
-s32 g_MaxAnimModelSlots = 0;
-//D:80036074
-s32 g_MaxModelSlots = 0;
-//D:80036078
-s32 g_ModelIsLvResetting = 0;
-//D:8003607C
-u32 D_8003607C = 0;
-//D:80036080
-u32 D_80036080 = 0;
-//D:80036084
-s32 g_ModelLodDisabled = 0;
-//D:80036088
-f32 g_ModelLodScale = 1.0;
-//D:8003608C
-struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices) = NULL;
-//D:80036090
-void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx) = NULL;
-//D:80036094
-coord3d D_80036094 = {0};
-//D:800360A0
-coord3d D_800360A0 = {0};
-//D:800360AC
-coord3d D_800360AC = {0};
-//D:800360B8
-coord3d D_800360B8 = {0};
-//D:800360C4
-struct bondstruct_unk_op07_related g_ModelTubeAngleTable[32] = {
-    { 0, 0, 0x10 },
-    { 1, 0x1000, 0xD },
-    { 1, 0x1000, 0xD },
-    { 9, 0x800, 0xC },
-    { 9, 0x800, 0xC },
-    { 0x19, 0x400, 0xB },
-    { 0x19, 0x400, 0xB },
-    { 0x39, 0x400, 0xB },
-    { 0x39, 0x400, 0xB },
-    { 0x59, 0x400, 0xB },
-    { 0x59, 0x400, 0xB },
-    { 0x79, 0x400, 0xB },
-    { 0x79, 0x400, 0xB },
-    { 0x99, 0x400, 0xB },
-    { 0x99, 0x400, 0xB, },
-    { 0xB9, 0x400, 0xB, },
-    { 0xB9, 0x400, 0xB, },
-    { 0xD9, 0x400, 0xB, },
-    { 0xD9, 0x400, 0xB, },
-    { 0xF9, 0x400, 0xB, },
-    { 0xF9, 0x400, 0xB, },
-    { 0x119, 0x400, 0xB, },
-    { 0x119, 0x400, 0xB, },
-    { 0x139, 0x400, 0xB, },
-    { 0x139, 0x400, 0xB, },
-    { 0x159, 0x400, 0xB, },
-    { 0x159, 0x400, 0xB, },
-    { 0x179, 0x800, 0xC, },
-    { 0x179, 0x800, 0xC, },
-    { 0x189, 0x1000, 0xD },
-    { 0x189, 0x1000, 0xD },
-    { 0x191, 0, 0x10 },
-};
+    g_JointListFree = entries;
 
-//D:80036244
-coord3d D_80036244 = { 0 };
-//D:80036250
-u32 g_ModelAnimMergingEnabled = 1;
-//D:80036254
-coord3d D_80036254 = { 0 };
+    entries[0].next = &entries[1];
 
-//D:80036260
-u32 D_80036260 = 0;
-//D:80036264
-u32 D_80036264 = 0;
-//D:80036268
-u32 D_80036268 = 0x10;
-//D:8003626C
-u32 D_8003626C = 1;
-//D:80036270
-u32 D_80036270 = 0x1000;
-//D:80036274
-u32 D_80036274 = 0xD;
-//D:80036278
-u32 D_80036278 = 1;
-//D:8003627C
-u32 D_8003627C = 0x1000;
-//D:80036280
-u32 D_80036280 = 0xD;
-//D:80036284
-u32 D_80036284 = 9;
-//D:80036288
-u32 D_80036288 = 0x800;
-//D:8003628C
-u32 D_8003628C = 0xC;
-//D:80036290
-u32 D_80036290 = 9;
-//D:80036294
-u32 D_80036294 = 0x800;
-//D:80036298
-u32 D_80036298 = 0xC;
-//D:8003629C
-u32 D_8003629C = 0x19;
-//D:800362A0
-u32 D_800362A0 = 0x800;
-//D:800362A4
-u32 D_800362A4 = 0xC;
-//D:800362A8
-u32 D_800362A8 = 0x19;
-//D:800362AC
-u32 D_800362AC = 0x800;
-//D:800362B0
-u32 D_800362B0 = 0xC;
-//D:800362B4
-u32 D_800362B4 = 0x29;
-//D:800362B8
-u32 D_800362B8 = 0x800;
-//D:800362BC
-u32 D_800362BC = 0xC;
-//D:800362C0
-u32 D_800362C0 = 0x29;
-//D:800362C4
-u32 D_800362C4 = 0x800;
-//D:800362C8
-u32 D_800362C8 = 0xC;
-//D:800362CC
-u32 D_800362CC = 0x39;
-//D:800362D0
-u32 D_800362D0 = 0x800;
-//D:800362D4
-u32 D_800362D4 = 0xC;
-//D:800362D8
-u32 D_800362D8 = 0x39;
-//D:800362DC
-u32 D_800362DC = 0x800;
-//D:800362E0
-u32 D_800362E0 = 0xC;
-//D:800362E4
-u32 D_800362E4 = 0x49;
-//D:800362E8
-u32 D_800362E8 = 0x800;
-//D:800362EC
-u32 D_800362EC = 0xC;
-//D:800362F0
-u32 D_800362F0 = 0x49;
-//D:800362F4
-u32 D_800362F4 = 0x800;
-//D:800362F8
-u32 D_800362F8 = 0xC;
-//D:800362FC
-u32 D_800362FC = 0x59;
-//D:80036300
-u32 D_80036300 = 0x1000;
-//D:80036304
-u32 D_80036304 = 0xD;
-//D:80036308
-u32 D_80036308 = 0x59;
-//D:8003630C
-u32 D_8003630C = 0x1000;
-//D:80036310
-u32 D_80036310 = 0xD;
-//D:80036314
-u32 D_80036314 = 0x61;
-//D:80036318
-u32 D_80036318 = 0;
-//D:8003631C
-u32 D_8003631C[] = {
-  0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
-//D:800363EC0
-Vertex D_800363E0 = {
-    { 0, 0, 0 },
-    0,
-    { 0, 0 },
-    0xFF,
-    0xFF,
-    0xFF,
-    0xFF
-};
-
-//D:800363F0
-u32 g_ModelShadowAlpha = 0x50;
-//D:800363F4
-u32 D_800363F4 = 0;
-//D:800363F8
-Vtx D_800363F8 = {
+    for (i = 1; i < JOINTLIST_LEN - 1; i++)
     {
-        { 0, 0, 0 },
-        0,
-        { 0, 0 },
-        { 0xFF, 0xFF, 0xFF, 0x50 }
+        entries[i].next = &entries[i + 1];
+        entries[i].prev = &entries[i - 1];
     }
-};
-//D:80036408
-coord3d D_80036408 = { 1.0f, 0.0f, 0.0f };
-//D:80036414
-struct bondstruct_unk_animation_related* g_AnimFrameBuffer =  0;
-//D:80036418
-s32 D_80036418 =  0;
-//D:8003641C
-s32 D_8003641C =  0;
 
-
-
-
-/*
-*/
+    g_JointListEntries[JOINTLIST_LEN - 1].prev = &g_JointListEntries[JOINTLIST_LEN - 2];
+}
 
 JointListEntry* jointListAddModel(JointListEntry* head, Model* context) {
     JointListEntry* freeListCursor;

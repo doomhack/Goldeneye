@@ -652,12 +652,12 @@ typedef union
      */
     typedef struct ModelRenderData
     {
-        Mtxf   *basemtx;        /*0x00*/ // Canonical name. See modelCalcMatrices2 in model.c.
+        Mtxf   *basemtx;        /*0x00*/ // Canonical name. See modelCalcMatricesNoAnim in model.c.
         bool    zbufferenabled; /*0x04*/
         u32     flags;          /*0x08*/
         Gfx    *gdl;            /*0x0c*/
 
-        Mtxf   *mtxlist;        /*0x10*/ // Canonical name. See modelCalcMatrices2 in model.c.
+        Mtxf   *mtxlist;        /*0x10*/ // Canonical name. See modelCalcMatricesNoAnim in model.c.
         u32     unk14;          /*0x14*/
         u32     unk18;          /*0x18*/
         u32     unk1c;          /*0x1c*/

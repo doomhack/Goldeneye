@@ -2,8 +2,7 @@
       build/OUTCODE/src/game/player/initweaponanigroups.o (.bss);
       build/OUTCODE/src/game/model/initactorpropstuff.o (.bss);
       build/OUTCODE/src/game/level/initnull_0009D0.o (.bss);
-      build/OUTCODE/src/game/model/initunk_0009E0.o (.bss);
-      build/OUTCODE/src/game/model/initanitable.o (.bss);
+      build/OUTCODE/src/game/model/anim.o (.bss);
       build/OUTCODE/src/game/player/initplayergaitobject.o (.bss);
       build/OUTCODE/src/game/gfx/setguscale.o (.bss);
       build/OUTCODE/src/game/level/initnull_000BC0.o (.bss);
@@ -17,8 +16,6 @@
       build/OUTCODE/src/game/mission/objective.o (.bss);
       build/OUTCODE/src/game/player/ejectedcartridges.o (.bss);
       build/OUTCODE/src/game/player/initBondDATA.o (.bss);
-      build/OUTCODE/src/game/model/initunk_005450.o (.bss);
-      build/OUTCODE/src/game/model/initunk_005520.o (.bss);
       build/OUTCODE/src/game/player/bondview_r.o (.bss);
       build/OUTCODE/src/game/player/inititemslots.o (.bss);
       build/OUTCODE/src/game/player/initBondDATAdefaults.o (.bss);
@@ -61,7 +58,6 @@
       build/OUTCODE/src/game/math/physics.o (.bss);
       build/OUTCODE/src/game/math/math_sincos.o (.bss);
       build/OUTCODE/src/game/math/matrix.o (.bss);
-      build/OUTCODE/src/game/model/math_unk_05A9E0.o (.bss);
       build/OUTCODE/src/game/math/trig.o (.bss);
       build/OUTCODE/src/game/math/interp.o (.bss);
       build/OUTCODE/src/game/math/quaternion.o (.bss);
@@ -70,9 +66,9 @@
       build/OUTCODE/src/game/player/gun_rodata.o (.bss);
       build/OUTCODE/src/game/player/gunfire.o (.bss);
       build/OUTCODE/src/game/hud/bondwalk2.o (.bss);
-      build/OUTCODE/src/game/model/objecthandler.o (.bss);
+      build/OUTCODE/src/game/model/jointlist.o (.bss);
       build/OUTCODE/src/game/model/model.o (.bss);
-      build/OUTCODE/src/game/model/objecthandler_2.o (.bss);
+      build/OUTCODE/src/game/model/modelfile.o (.bss);
       build/OUTCODE/src/game/gfx/othermodemicrocode.o (.bss);
       build/OUTCODE/src/game/player/bondview.o (.bss);
       build/OUTCODE/src/game/player/bondview2.o (.bss);

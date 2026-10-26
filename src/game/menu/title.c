@@ -14,14 +14,16 @@
 #include "game/chr/chr_b.h"
 #include "game/model/chrobjdata.h"
 #include "game/gfx/image.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "math.h"
 #include "game/math/round.h"
 #include "game/math/matrix.h"
 #include "game/model/model.h"
 #include "music.h"
 #include "game/asset/fileload.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/menu/title.h"
 #include "game/menu/title2.h"
 #include "game/menu/title3.h"
@@ -255,7 +257,7 @@ Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
 
     renderData.basemtx = modelFindNodeMtx(chrModelInstance, gunModelInstance->attachedto_objinst, 0);
     renderData.mtxlist = dynAllocate(gunModelInstance->obj->numMatrices << 6);
-    modelCalcMatrices2(&renderData, gunModelInstance);
+    modelCalcMatricesNoAnim(&renderData, gunModelInstance);
 
     entry = jointListAddModel(NULL, chrModelInstance);
     entry = jointListAddModel(entry, gunModelInstance);

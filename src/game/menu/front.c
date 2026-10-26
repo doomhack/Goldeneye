@@ -22,7 +22,7 @@
 #include "game/menu/front.h"
 #include "game/gfx/image_bank.h"
 #include "game/level/lv.h"
-#include "game/model/initanitable.h"
+#include "game/model/anim.h"
 #include "game/menu/mp_weapon.h"
 #include "game/math/round.h"
 #include "game/mission/objective_status.h"
@@ -32,7 +32,9 @@
 #include "game/gfx/othermodemicrocode.h"
 #include "game/hud/bondwalk2.h"
 #include "game/save/file2.h"
-#include "game/model/objecthandler.h"
+#include "game/model/model.h"
+#include "game/model/jointlist.h"
+#include "game/model/modelfile.h"
 #include "game/gfx/dyn.h"
 #include "assets/obseg/text/LtitleE.h"
 #include "game/math/matrix.h"
@@ -8958,7 +8960,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
  
         renderdata.mtxlist = (Mtxf *)dynAllocate(cast_model_weapon->obj->numMatrices << 6);
  
-        modelCalcMatrices2(&renderdata, cast_model_weapon);
+        modelCalcMatricesNoAnim(&renderdata, cast_model_weapon);
     }
  
     renderdata.PropType = PROP_TYPE_EXPLOSION;
