@@ -22,7 +22,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `player/` | Bond: movement, collision and camera (`bondview*.c`), inventory, guns and firing, ejected casings | `bondview.c`, `bondview2.c`, `bondinv.c`, `gun.c`, `gunfire.c`, `player.c` |
 | `hud/` | On-screen overlays: radar, health and armour bars, the death blood effect, bullet sparks | `radar.c`, `glass2.c`, `blood_animation.c` |
 | `chr/` | Guards and other characters: actions and animation state (`chraction.c`), the AI script interpreter (`chrai.c`) and the global AI scripts (`chraidata.c`) | `chr.c`, `chraction.c`, `chrai.c`, `chrprop.c` |
-| `prop/` | Props: doors, weapons on the floor, vehicles, explosions, glass, alarms | `prop.c`, `propobj.c`, `explosion.c`, `glass.c` |
+| `prop/` | Props: level setup, doors, weapons on the floor, vehicles, explosions, glass, alarms. See [subsystems/props.md](subsystems/props.md) | `prop.c`, `propobj.c`, `explosion.c`, `glass.c` |
 | `nav/` | Where things can stand and walk: floor tiles (`stan.c`) and the waypoint graph guards path along. See [subsystems/nav.md](subsystems/nav.md) | `stan.c`, `waypoint.c` |
 | `mission/` | Objectives and briefings | `objective.c`, `objective_status.c` |
 | `world/` | The level geometry: rooms and portals (`bg.c`), fog, sky, light fixtures | `bg.c`, `bgfog.c`, `sky.c` |
@@ -42,7 +42,7 @@ uses `math/`.
 ## Small init and cleanup files
 
 The original code was split into many tiny files named after what they set up or tear down
-(`initguards.c`, `cleanup_objects.c`), each holding one or two
+(`initguards.c`, `inititemslots.c`), each holding one or two
 functions. They sit in the folder of the subsystem they belong to and will be merged into
 that subsystem's main file.
 
@@ -52,7 +52,6 @@ that subsystem's main file.
 | --- | --- |
 | `hud/glass2.c` | Health and armour bars, the watch background, bullet sparks |
 | `hud/bondwalk2.c` | Drawing a textured rectangle on screen |
-| `model/loadobjectmodel.c` | Setup and prop helpers (finding setup objects, loading a prop's model, room placement), not model code |
 | `model/initactorpropstuff.c` | Weapon animation groups and ejected casings |
 | `gfx/tex.c` | Also the surface sound and bullet impact tables |
 | `world/unk_092E50.c` | Sky cloud and mipmap display lists |

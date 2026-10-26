@@ -1,10 +1,21 @@
-/*---------------------------------------------------------------------
-
-	File		propobj.c
-
-	Comments	Prop Objects code.
-
-  ---------------------------------------------------------------------*/
+/**
+ * Objects and doors at run time: everything a prop does after it is created.
+ *
+ * - Projectiles: objects that fly (thrown, dropped, knocked off) get a Projectile from a
+ *   pool of 20; objects stuck to something get an Embedment. objTick moves them with
+ *   projectileMove, bouncing off walls and props.
+ * - objTick: the per-frame tick for every object and door: falling and flying, CCTV,
+ *   autoguns, vehicles, aircraft, the tank, weapons such as mines (chrobjWeaponTick).
+ *   It is about 2,400 lines long.
+ * - Drawing (chrobjRenderProp, objRenderModel) and the monitor screen animations, a
+ *   small bytecode interpreted by monitorTickAnimation.
+ * - Damage: shot tests (objTestShot), damage and destroyed levels (objApplyDamage),
+ *   deforming the model (objDeform), exploding (objExplode), shattering glass.
+ * - Pickups: collecting weapons, ammo, keys and hats (propPickupByPlayer).
+ * - Weapon and hat slots: pools of props created at run time for dropped guns and hats.
+ * - Doors: opening and closing, sounds, portals, and which side the player is on.
+ * - Alarm, gas leak and the countdown timer.
+ */
 
 #include <ultra64.h>
 #include <math.h>

@@ -1,3 +1,8 @@
+/**
+ * Glass shards. When a window breaks, glassCreateShards fills its area with small
+ * triangles that fall and spin, and vanish after 150 ticks. They come from one buffer of 200 shared by all
+ * players (halved on Streets and Depot) and are reused oldest first.
+ */
 #include <ultra64.h>
 #include <bondconstants.h>
 #include <memp.h>

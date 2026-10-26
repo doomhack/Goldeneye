@@ -1,3 +1,12 @@
+/**
+ * Explosions and what they leave behind. An explosion and its smoke are props of their
+ * own (PROP_TYPE_EXPLOSION, PROP_TYPE_SMOKE), taken from fixed buffers (6 explosions,
+ * 20 smokes) and ticked and drawn like any other prop. explosionInflictDamage hurts
+ * characters and objects in range.
+ *
+ * Also here: debris particles, scorch marks on the floor (solo only), bullet impacts
+ * on walls and props (a ring buffer of 100), and the screen shake.
+ */
 #include <ultra64.h>
 #include <memp.h>
 #include <PR/os.h>

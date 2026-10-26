@@ -1,3 +1,16 @@
+/**
+ * Level setup for props. setupCreateProps loads the setup file, fixes up its pointers,
+ * counts the props to size the model slots, then walks the propdef list and creates
+ * every door, object, weapon, monitor and so on (setupObject, setupDoor, setupWeapon...).
+ * The propdefs are used in place: an ObjectRecord is the setup file's own record, so the
+ * level's prop data lives in the setup file for the whole level. setupFreeProps frees
+ * them again at level end.
+ *
+ * Also here: helpers for finding setup records by index (setupCommandGetObject,
+ * tagGetCommandIndex), loading a prop's model (modelLoad), placing a prop in its rooms
+ * (setupUpdateObjectRoomPosition), and the per-level reset of the prop list, room prop
+ * lists and the global prop state (propsInit, propsResetLevelState).
+ */
 #include <ultra64.h>
 #include "game/model/chrobjdata.h"
 #include <PR/libaudio.h>
