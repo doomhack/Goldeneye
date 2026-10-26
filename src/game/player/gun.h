@@ -393,4 +393,7 @@ void gunRenderCasings(Gfx **gdl);
 void gunRenderFirstPersonGunModels(Gfx **gdl);
 Gfx *generate_ammo_total_microcode(Gfx *gdl);
 
+void        shotFireHands(void);
+void        shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, s32 unk44, Model *model, bool countsAsPenetration, s32 blocksFurtherHits);
+
 #endif

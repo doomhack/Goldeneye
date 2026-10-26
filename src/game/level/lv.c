@@ -38,7 +38,7 @@
 #include "game/gfx/vtxstore.h"
 #include "game/model/jointlist.h"
 #include "game/chr/initguards.h"
-#include "game/prop/prop.h"
+#include "game/prop/setup.h"
 #include "game/world/initunk_007290.h"
 #include "game/menu/initcheattext.h"
 #include "game/nav/waypoint.h"

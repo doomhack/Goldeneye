@@ -28,7 +28,7 @@
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "game/text/language.h"
-#include "game/prop/prop.h"
+#include "game/prop/setup.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/math/matrix.h"

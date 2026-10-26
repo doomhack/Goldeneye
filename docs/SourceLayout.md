@@ -21,8 +21,8 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `save/` | EEPROM save files and 007 mode settings | `file.c`, `file2.c`, `crc.c` |
 | `player/` | Bond: movement, collision and camera (`bondview*.c`), inventory, guns and firing, ejected casings | `bondview.c`, `bondview2.c`, `bondinv.c`, `gun.c`, `gunfire.c`, `player.c` |
 | `hud/` | On-screen overlays: radar, health and armour bars, the death blood effect, bullet sparks | `radar.c`, `glass2.c`, `blood_animation.c` |
-| `chr/` | Guards and other characters: actions and animation state (`chraction.c`), the AI script interpreter (`chrai.c`) and the global AI scripts (`chraidata.c`) | `chr.c`, `chraction.c`, `chrai.c`, `chrprop.c` |
-| `prop/` | Props: level setup, doors, weapons on the floor, vehicles, explosions, glass, alarms. See [subsystems/props.md](subsystems/props.md) | `prop.c`, `propobj.c`, `explosion.c`, `glass.c` |
+| `chr/` | Guards and other characters: actions and animation state (`chraction.c`), the AI script interpreter (`chrai.c`) and the global AI scripts (`chraidata.c`) | `chr.c`, `chraction.c`, `chrai.c` |
+| `prop/` | Props: the prop pool and per-frame tick and draw loops, level setup, doors, weapons on the floor, vehicles, explosions, glass, alarms. See [subsystems/props.md](subsystems/props.md) | `prop.c`, `setup.c`, `propobj.c`, `explosion.c`, `glass.c` |
 | `nav/` | Where things can stand and walk: floor tiles (`stan.c`) and the waypoint graph guards path along. See [subsystems/nav.md](subsystems/nav.md) | `stan.c`, `waypoint.c` |
 | `mission/` | Objectives and briefings | `objective.c`, `objective_status.c` |
 | `world/` | The level geometry: rooms and portals (`bg.c`), fog, sky, light fixtures | `bg.c`, `bgfog.c`, `sky.c` |

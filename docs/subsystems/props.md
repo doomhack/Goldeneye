@@ -5,11 +5,11 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 
 | File | What it holds |
 | --- | --- |
-| `src/game/prop/prop.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop resets |
+| `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
+| `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
 | `src/game/prop/propobj.c` | Objects and doors at run time: movement and projectiles, the per-frame tick, drawing, damage, pickups, weapon and hat slots, doors, alarm, gas and the countdown timer |
 | `src/game/prop/explosion.c` | Explosions, smoke, debris particles, scorch marks, bullet impacts, screen shake |
 | `src/game/prop/glass.c` | Glass shards from broken windows |
-| `src/game/chr/chrprop.c` | Not in this folder yet: the prop pool, the active list, room prop lists, and the loop that ticks and draws every prop. It is covered with the guards |
 
 ## Props and objects
 
@@ -20,9 +20,30 @@ to each other (`parent`, `child`): a gun held by a guard, a crate inside another
 mine stuck to a door.
 
 There are 600 props in one pool (`g_Props`), on a free list that `propsInit` rebuilds each
-level. Allocating, listing and freeing them is in `chrprop.c`, as is the per-frame loop:
-it calls `objTick`, `explosionTick` or `explosionSmokeTick` for each prop, and the tick
-returns a `TICKOP` saying whether to keep, free or disable the prop.
+level. `propAllocate` takes one, `propActivate` adds it to the active list, and `propFree`
+gives it back.
+
+## Each frame
+
+1. `propsTickOnce` runs once per frame: guard AI (`chrlvAllChrTick`), weapon respawns,
+   tracers, and the explosion and smoke ticks.
+2. For each player's view, `propsTickPerPlayer` ticks every active prop (`chrTick`,
+   `objTick`, `explosionPropTick`, `smokePropTick`, `playerTick`). Each tick also decides
+   whether its prop is on screen, and returns a `TICKOP` saying whether to keep, free or
+   disable the prop (`propExecuteTickOperation`).
+3. `propsSortOnscreen` sorts the props on screen by depth, and `propsRenderPass` draws
+   them room by room.
+4. `shotFireHands` (in `player/gunfire.c`) fires the player's guns, `propsTickPickups`
+   checks what the player is touching, and `playerInteract` handles the use button.
+
+## Room prop lists
+
+Each room has a list of the props in it, kept in blocks of 15 prop numbers
+(`g_RoomPropBlocks`, 256 blocks shared by all rooms, chained per room from
+`g_RoomFirstPropBlock`). `propAddToRooms` and `propRemoveFromRooms` keep them up to date
+as props move, and `propsDefragRoomProps` compacts them. `roomGetProps` collects the props
+in a list of rooms into `g_RoomPropsFound`, which is how collision, line-of-sight and shot
+tests find nearby props without looking at all 600.
 
 For doors, objects and weapons, the record behind the prop is an `ObjectRecord` (or a
 type that starts with one: `DoorRecord`, `WeaponObjRecord`, `MonitorObjRecord`...). It
@@ -66,7 +87,7 @@ Objects that do not move only need placing once: `objPlaceAtPad` puts an object 
 pad, `objPlaceOnFloor` drops it to the floor below, and `objGetTileShading` lights it with
 the colour of the tile it is on.
 
-## The per-frame tick
+## The object tick
 
 `objTick` is the tick for every object and door, and is about 2,400 lines long. It handles
 falling and flying, security cameras spotting Bond, autoguns aiming and firing, vehicles
@@ -74,8 +95,8 @@ and aircraft following their paths, the tank, doors opening and closing, and wea
 as mines (`chrobjWeaponTick`). Attached props are ticked through `objTickAttached`, and
 props out of view do the minimum through `objTickOffscreen`.
 
-`objTickPlayer` and `weaponTickPlayer` check whether a player is touching a prop and can
-pick it up.
+`objTickPlayer` and `weaponTickPlayer`, called from `propsTickPickups`, check whether a
+player is touching a prop and can pick it up.
 
 ## Damage
 
@@ -164,5 +185,5 @@ oldest first, and vanish after 150 ticks.
   decomp.
 * `objTick` mixes the tick for every object type in one function. Splitting it is Phase 2
   work.
-* The prop pool and its lists are in `chr/chrprop.c`, and the room prop list globals
-  (`g_RoomPropBlocks`) still have decomp names.
+* `prop.c` used to be `chr/chrprop.c`, and the setup code used to be `prop.c`. Old notes
+  and Perfect Dark comparisons may use the old names.

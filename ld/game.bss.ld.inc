@@ -8,7 +8,7 @@
       build/OUTCODE/src/game/menu/initmenus.o (.bss);
       build/OUTCODE/src/game/chr/initguards.o (.bss);
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.bss);
-      build/OUTCODE/src/game/prop/prop.o (.bss);
+      build/OUTCODE/src/game/prop/setup.o (.bss);
       build/OUTCODE/src/game/mission/objective.o (.bss);
       build/OUTCODE/src/game/player/ejectedcartridges.o (.bss);
       build/OUTCODE/src/game/player/initBondDATA.o (.bss);
@@ -36,7 +36,7 @@
       build/OUTCODE/src/game/chr/chr_b.o (.bss);
       build/OUTCODE/src/game/chr/chraction.o (.bss);
       build/OUTCODE/src/game/chr/chrai.o (.bss);
-      build/OUTCODE/src/game/chr/chrprop.o (.bss);
+      build/OUTCODE/src/game/prop/prop.o (.bss);
       build/OUTCODE/src/game/prop/propobj.o (.bss);
       build/OUTCODE/src/game/mission/objective_status.o (.bss);
       build/OUTCODE/src/game/math/physics.o (.bss);
