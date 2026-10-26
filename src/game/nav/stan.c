@@ -1634,13 +1634,13 @@ s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f3
         spD0[sp124] = -1;
         roomGetProps((s32 *)&spD0);
 
-        for (spB8 = ptr_list_object_lookup_indices; *spB8 >= 0; spB8++)
+        for (spB8 = g_RoomPropsFound; *spB8 >= 0; spB8++)
         {
             prop = &g_Props[*spB8];
 
             if (propIsOfCdType(prop, cdtypes) != 0)
             {
-                chraiGetCollisionBounds(prop, &polygon, &numvertices0, &spA4, &spA0);
+                propGetCollisionPolygon(prop, &polygon, &numvertices0, &spA4, &spA0);
 
                 if (numvertices0 > 0)
                 {
@@ -1790,7 +1790,7 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
         roomBuffer[roomCount] = -1;
         roomGetProps(roomBuffer);
 
-        propIndexPtr = ptr_list_object_lookup_indices;
+        propIndexPtr = g_RoomPropsFound;
 
         // Fake but needed for matching.
         if (polygon);
@@ -1803,7 +1803,7 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
 
                 if (propIsOfCdType(prop, cdtypes))
                 {
-                    chraiGetCollisionBoundsWithoutY(prop, &polygon, &numEdges);
+                    propGetCollisionPolygon2d(prop, &polygon, &numEdges);
 
                     if (numEdges > 0)
                     {
@@ -1974,13 +1974,13 @@ s32 stanTestVolume(StandTile **arg0, f32 arg1, f32 arg2, f32 arg3, s32 cdtypes, 
         spA8[spFC] = -1;
         roomGetProps(&spA8[0]);
 
-        for (sp100 = ptr_list_object_lookup_indices; *sp100 >= 0; sp100++)
+        for (sp100 = g_RoomPropsFound; *sp100 >= 0; sp100++)
         {
             prop = &g_Props[*sp100];
 
             if (propIsOfCdType(prop, cdtypes) != 0)
             {
-                chraiGetCollisionBounds(prop, &polygon, &numvertices0, &sp94, &sp90);
+                propGetCollisionPolygon(prop, &polygon, &numvertices0, &sp94, &sp90);
                 if ((numvertices0 > 0) && ((sp108 == 0) || ((sp90 <= arg5) && (arg6 <= sp94))))
                 {
                     var_f24 = -1.0f;

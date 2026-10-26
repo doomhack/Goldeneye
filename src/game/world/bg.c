@@ -639,7 +639,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 0);
+                        gdl = propsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 0);
                     }
                 }
  
@@ -668,7 +668,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 2);
+                        gdl = propsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 2);
                     }
                 }
  
@@ -730,7 +730,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                 {
                     if (sub_GAME_7F0BD8F0())
                     {
-                        gdl = chrpropsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 1);
+                        gdl = propsRenderPass(gdl, dword_CODE_bss_8007FFA0[j].roomid, 1);
                     }
                 }
  

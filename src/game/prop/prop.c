@@ -220,7 +220,7 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
             }
 
             modelSetScale(arg1->model, arg1->model->scale * sp78);
-            chrpropReparent(var_v0, sp6C->prop);
+            propReparent(var_v0, sp6C->prop);
         }
         #ifdef DEBUG
         else
@@ -485,8 +485,8 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
             }
 
             setupUpdateObjectRoomPosition(arg1);
-            chrpropActivate(sp60);
-            chrpropEnable(sp60);
+            propActivate(sp60);
+            propEnable(sp60);
         }
         #ifdef DEBUG
         else
@@ -836,7 +836,7 @@ void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
                 monitor->model->attachedto_objinst = owner->model->obj->Switches[3];;
             }
 
-            chrpropReparent(prop, owner->prop);
+            propReparent(prop, owner->prop);
             mtx4LoadXRotation(0.36651915f, (Mtxf*)&monitor->embedment->matrix);
             mtx4ScaleRows012(monitor->model->scale / owner->model->scale, (f32*)&monitor->embedment->matrix);
         }
@@ -1154,7 +1154,7 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
         }
 
         prop->rooms[0] = prop->stan->room;
-        chrpropRegisterRoom(prop, prop->stan->room);
+        propAddToRoom(prop, prop->stan->room);
         prop->rooms[1] = 0xFFU;
         prop->rooms[2] = 0xFFU;
 
@@ -1165,13 +1165,13 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
                 if (sp1B0 >= 0)
                 {
                     prop->rooms[1] = sp1B0;
-                    chrpropRegisterRoom(prop, sp1B0);
+                    propAddToRoom(prop, sp1B0);
                 }
             }
             else if (sp1AC >= 0)
             {
                 prop->rooms[1] = sp1AC;
-                chrpropRegisterRoom(prop, sp1AC);
+                propAddToRoom(prop, sp1AC);
             }
 
             if (prop->rooms[1] != 0xff && 1)
@@ -1209,8 +1209,8 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
             modelSetScale(door->model, door->model->scale * scale);
         }
 
-        chrpropActivate(prop);
-        chrpropEnable(prop);
+        propActivate(prop);
+        propEnable(prop);
 
         if (door->linkedDoorOffset != 0)
         {
@@ -1882,7 +1882,7 @@ void setupCreateProps(enum LEVELID stageId)
                             {
                                 pdef_obj->runtime_bitflags |= RUNTIMEBITFLAG_HASOWNER;
                                 modelSetScale(pdef_obj->model, pdef_obj->model->scale);
-                                chrpropReparent(pdef_obj->prop, inobj->prop);
+                                propReparent(pdef_obj->prop, inobj->prop);
                             }
 
 #ifdef DEBUG
@@ -2111,24 +2111,24 @@ void roomPropListsInit(void)
     s32 j;
     s32 i;
 
-    ptr_list_object_lookup_indices = (s16 *)mempAlloc(PTR_LIST_OBJECT_LOOKUP_INDICES_LEN * sizeof(s16), MEMPOOL_STAGE);
-    RoomPropListBlockIndices       = (s16 *)mempAlloc((((g_MaxNumRooms * 4) + 0xF) | 0xF) ^ 0xF, MEMPOOL_STAGE);
-    RoomPropListBlocks             = (s16 *)mempAlloc(BSS_8007161C_LEN * sizeof(struct roomproplistblock), MEMPOOL_STAGE);
+    g_RoomPropsFound = (s16 *)mempAlloc(ROOMPROPSFOUND_LEN * sizeof(s16), MEMPOOL_STAGE);
+    g_RoomFirstPropBlock       = (s16 *)mempAlloc((((g_MaxNumRooms * 4) + 0xF) | 0xF) ^ 0xF, MEMPOOL_STAGE);
+    g_RoomPropBlocks             = (s16 *)mempAlloc(ROOMPROPBLOCKS_LEN * sizeof(struct roomproplistblock), MEMPOOL_STAGE);
 
-    ptr_list_object_lookup_indices[0] = -1;
+    g_RoomPropsFound[0] = -1;
 
     for (i=0; i<g_MaxNumRooms; i++)
     {
-        RoomPropListBlockIndices[i] = -1;
+        g_RoomFirstPropBlock[i] = -1;
     }
 
-    for (i=0; i<BSS_8007161C_LEN; i++)
+    for (i=0; i<ROOMPROPBLOCKS_LEN; i++)
     {
-        RoomPropListBlocks[i].propnums[0] = -2;
+        g_RoomPropBlocks[i].propnums[0] = -2;
 
-        for (j=1; j<BSS_8007161C_DATA_LEN; j++)
+        for (j=1; j<ROOMPROPBLOCK_LEN; j++)
         {
-            RoomPropListBlocks[i].propnums[j] = -1;
+            g_RoomPropBlocks[i].propnums[j] = -1;
         }
     }
 }
@@ -2703,7 +2703,7 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 
     temp_s1 = obj->prop;
     phi_f20 = 0.0f;
-    chrpropDeregisterRooms(temp_s1);
+    propRemoveFromRooms(temp_s1);
 
     if (obj->flags2 & 0x20000)
     {
@@ -2723,13 +2723,13 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 
         if (sp30 != NULL)
         {
-            sp40.f[0] = chrpropSumMatrixPosX(sp30, &obj->mtx) - 30.0f;
-            sp40.f[1] = chrpropSumMatrixPosY(sp30, &obj->mtx);
-            sp40.f[2] = chrpropSumMatrixPosZ(sp30, &obj->mtx) - 30.0f;
+            sp40.f[0] = bboxRotatedMinX(sp30, &obj->mtx) - 30.0f;
+            sp40.f[1] = bboxRotatedMinY(sp30, &obj->mtx);
+            sp40.f[2] = bboxRotatedMinZ(sp30, &obj->mtx) - 30.0f;
 
-            sp34.f[0] = chrpropSumMatrixNegX(sp30, &obj->mtx) + 30.0f;
-            sp34.f[1] = chrpropSumMatrixNegY(sp30, &obj->mtx);
-            sp34.f[2] = chrpropSumMatrixNegZ(sp30, &obj->mtx) + 30.0f;
+            sp34.f[0] = bboxRotatedMaxX(sp30, &obj->mtx) + 30.0f;
+            sp34.f[1] = bboxRotatedMaxY(sp30, &obj->mtx);
+            sp34.f[2] = bboxRotatedMaxZ(sp30, &obj->mtx) + 30.0f;
 
             if (phi_f20 < -sp40.f[0])
             {
@@ -2759,11 +2759,11 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
             sp34.f[1] += obj->runtime_pos.f[1];
             sp34.f[2] += obj->runtime_pos.f[2];
 
-            chrpropUpdateRoomList(temp_s1, &sp40, &sp34, phi_f20);
+            propCalcRooms(temp_s1, &sp40, &sp34, phi_f20);
         }
     }
 
-    chrpropRegisterRooms(temp_s1);
+    propAddToRooms(temp_s1);
 }
 
 

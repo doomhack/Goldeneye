@@ -539,7 +539,7 @@ void bondviewLoadSetupIntroSection(void)
 
     bondviewResetIntroCameraMessageDialogs();
     bondviewResetUpperTextDisplay();
-    g_CurrentPlayer->prop = chrpropAllocate();
+    g_CurrentPlayer->prop = propAllocate();
     g_CurrentPlayer->prop->obj = NULL;
     g_CurrentPlayer->prop->type = PROP_TYPE_VIEWER;
 
@@ -554,8 +554,8 @@ void bondviewLoadSetupIntroSection(void)
 
     g_CurrentPlayer->prop->stan = start_stan;
 
-    chrpropActivate(g_CurrentPlayer->prop);
-    chrpropEnable(g_CurrentPlayer->prop);
+    propActivate(g_CurrentPlayer->prop);
+    propEnable(g_CurrentPlayer->prop);
     g_CurrentPlayer->field_3B8.f[0] = (g_CurrentPlayer->field_488.pos.f[0] / FIELD_3B8_FACTOR);
     g_CurrentPlayer->field_3B8.f[1] = (g_CurrentPlayer->field_488.pos.f[1] / FIELD_3B8_FACTOR);
     g_CurrentPlayer->field_3B8.f[2] = (g_CurrentPlayer->field_488.pos.f[2] / FIELD_3B8_FACTOR);

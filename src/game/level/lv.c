@@ -793,18 +793,18 @@ Gfx* lvlRender(Gfx* DL)
             DL = viSetupScreensForNumPlayers(DL);
             DL = skyRender(DL);
             bgRoomVisibilityRelated();
-            propsTick();
-            chraiUpdateOnscreenPropCount();
-            chrpropUpdateAutoaimTarget();
-            chraiCheckUseHeldItems();
+            propsTickPerPlayer();
+            propsSortOnscreen();
+            autoaimUpdateTarget();
+            shotFireHands();
 
-            if (bond_pressed_reload_activate() && bond_interact_object())
+            if (bond_pressed_reload_activate() && playerInteract())
             {
                 attempt_reload_item_in_hand(GUNRIGHT);
                 attempt_reload_item_in_hand(GUNLEFT);
             }
 
-            propsTickPlayer();
+            propsTickPickups();
             DL = bgLevelRender(DL);
 
             if (get_debug_portal_flag())
@@ -1382,7 +1382,7 @@ void lvlManageMpGame(void)
             set_cur_player(0);
         }
 
-        chrpropTick();
+        propsTickOnce();
         reset_all_music_slots();
         langTick();
 

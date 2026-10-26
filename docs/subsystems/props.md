@@ -165,4 +165,4 @@ oldest first, and vanish after 150 ticks.
 * `objTick` mixes the tick for every object type in one function. Splitting it is Phase 2
   work.
 * The prop pool and its lists are in `chr/chrprop.c`, and the room prop list globals
-  (`RoomPropListBlocks`) still have decomp names.
+  (`g_RoomPropBlocks`) still have decomp names.

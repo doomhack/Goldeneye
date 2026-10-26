@@ -5112,13 +5112,13 @@ _AI_CMD(
             }
             else
             {
-                chrpropDeregisterRooms(obj->prop);
-                chrpropDelist(obj->prop);
-                chrpropDisable(obj->prop);
+                propRemoveFromRooms(obj->prop);
+                propDelist(obj->prop);
+                propDisable(obj->prop);
             }
             if (obj->type != PROPDEF_COLLECTABLE || !chrEquipWeapon(obj, chr))
             {
-                chrpropReparent(obj->prop, chr->prop);
+                propReparent(obj->prop, chr->prop);
             }
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -10417,7 +10417,7 @@ _AI_CMD(
             pos.y = pad->pos.y;
             pos.z = pad->pos.z;
             stan = pad->stan;
-            sub_GAME_7F03D058(chr->prop, FALSE);
+            propSetMoving(chr->prop, FALSE);
             if (chrAdjustPosForSpawn(&pos, &stan, FacingDirection, TRUE))
             {
                 {
@@ -10439,7 +10439,7 @@ _AI_CMD(
                 }
                 pass = TRUE;
             }
-            sub_GAME_7F03D058(chr->prop, TRUE);
+            propSetMoving(chr->prop, TRUE);
         }
         if (pass)
         {

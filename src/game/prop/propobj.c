@@ -609,10 +609,10 @@ void chrobjCollisionRelated(ObjectRecord *obj)
         bbox = chrobjGetBboxFromObjectRecord(obj);
         mtx4Copy(&obj->mtx, &sp24);
         mtx4SetTranslation(&obj->runtime_pos, &sp24);
-        sub_GAME_7F03F540(bbox, &sp24, &obj->ptr_allocated_collisiondata_block->polygon, obj->ptr_allocated_collisiondata_block);
+        bboxGetHull2d(bbox, &sp24, &obj->ptr_allocated_collisiondata_block->polygon, obj->ptr_allocated_collisiondata_block);
 
-        obj->ptr_allocated_collisiondata_block->bottom = obj->runtime_pos.f[1] + chrpropSumMatrixPosY(bbox, &sp24);
-        obj->ptr_allocated_collisiondata_block->top = obj->runtime_pos.f[1] + chrpropSumMatrixNegY(bbox, &sp24);
+        obj->ptr_allocated_collisiondata_block->bottom = obj->runtime_pos.f[1] + bboxRotatedMinY(bbox, &sp24);
+        obj->ptr_allocated_collisiondata_block->top = obj->runtime_pos.f[1] + bboxRotatedMaxY(bbox, &sp24);
 
         if (obj->type == PROPDEF_AIRCRAFT)
         {
@@ -626,7 +626,7 @@ PropRecord* objInit(ObjectRecord* obj, ModelFileHeader* model_header, PropRecord
 {
     if (prop == NULL)
     {
-        prop = chrpropAllocate();
+        prop = propAllocate();
     }
 
     if (model == NULL)
@@ -699,7 +699,7 @@ PropRecord* objInit(ObjectRecord* obj, ModelFileHeader* model_header, PropRecord
 
         if (prop != NULL)
         {
-            chrpropFree(prop);
+            propFree(prop);
             prop = NULL;
         }
     }
@@ -749,7 +749,7 @@ void objPlaceOnFloor(ObjectRecord* obj, coord3d* pos, Mtxf* matrix, StandTile* s
     struct ModelRoData_BoundingBoxRecord *modelunk = chrobjGetBboxFromObjFile(obj->model->obj);
 
     pos->y = stanGetPositionYValue(stan, pos->x, pos->z) + 4.0f;
-    pos->y = pos->y - chrpropSumMatrixPosY(modelunk, matrix);
+    pos->y = pos->y - bboxRotatedMinY(modelunk, matrix);
 
     objChangeShading(obj, pos, matrix, stan);
     chrobjCollisionRelated(obj);
@@ -768,8 +768,8 @@ void objPlaceAtPad(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix, Sta
     Mtxf mtxcopy;
 
     modelBoundingBox = chrobjGetBboxFromObjFile(baseobj->model->obj);
-    xmax = chrpropBBOXGetYmin(modelBoundingBox);
-    ymin = chrpropBBOXGetYmax(modelBoundingBox);
+    xmax = bboxGetYmin(modelBoundingBox);
+    ymin = bboxGetYmax(modelBoundingBox);
     mStan = stan;
 
     if (baseobj->flags & 4)
@@ -801,12 +801,12 @@ void objPlaceAtPad(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix, Sta
         mtx4Copy(matrix, &mtxcopy);
         newPos.x = pos2->f[0] - (mtxcopy.m[1][0] * xmax);
         newPos.z = pos2->f[2] - (mtxcopy.m[1][2] * xmax);
-        roomObj  = sub_GAME_7F03FAB0(pos, stan->room);
+        roomObj  = objFindAtPos(pos, stan->room);
 
         if (roomObj)
         {
             PropRecord *roomObjProp = roomObj->prop;
-            chraiGetCollisionBounds(roomObjProp, &byrefA, &byrefB, &byrefC, &byrefD);
+            propGetCollisionPolygon(roomObjProp, &byrefA, &byrefB, &byrefC, &byrefD);
 
             if ((distfromTileCenter < byrefC) && (byrefD < ((mtxcopy.m[1][1] * (ymin - xmax)) + distfromTileCenter + 4.0f)))
             {
@@ -859,7 +859,7 @@ void objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *arg2, StandTil
     Mtxf matrix;
     Mtxf sp2C;
 
-    spBC = chrpropBBOXGetZmin(chrobjGetBboxFromObjFile(obj->model->obj));
+    spBC = bboxGetZmin(chrobjGetBboxFromObjFile(obj->model->obj));
     stan = stan2;
     sp6C_ptr = &matrix;
 
@@ -1006,7 +1006,7 @@ void objFree(ObjectRecord* obj, s32 freeprop, s32 canregen)
                 objDetach(obj->prop);
             }
 
-            chrpropDeregisterRooms(obj->prop);
+            propRemoveFromRooms(obj->prop);
 
             child = obj->prop->child;
             while (child)
@@ -1032,9 +1032,9 @@ void objFree(ObjectRecord* obj, s32 freeprop, s32 canregen)
 
             if (freeprop != 0)
             {
-                chrpropDelist(obj->prop);
-                chrpropDisable(obj->prop);
-                chrpropFree(obj->prop);
+                propDelist(obj->prop);
+                propDisable(obj->prop);
+                propFree(obj->prop);
             }
 
             obj->prop = NULL;
@@ -1202,7 +1202,7 @@ bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *ray
 
     bestfrac = 1.0f;
     bestedge = -1;
-    chraiGetCollisionBounds(prop, &polygon, &numedges, &ymax, &ymin);
+    propGetCollisionPolygon(prop, &polygon, &numedges, &ymax, &ymin);
 
     if (numedges > 0)
     {
@@ -1521,7 +1521,7 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
     {
         roomGetProps(rooms);
 
-        for (propnumptr = ptr_list_object_lookup_indices; *propnumptr >= 0; propnumptr++)
+        for (propnumptr = g_RoomPropsFound; *propnumptr >= 0; propnumptr++)
         {
             iterprop = &g_Props[*propnumptr];
 
@@ -3225,7 +3225,7 @@ void objPlaceOnSurface(ObjectRecord* obj, coord3d* pos, StandTile* stan, coord3d
     mtx4ScaleRows012(obj->model->scale, matrix.m[0]);
     objChangeShading(obj, pos, &matrix, stan);
 
-    temp_f0 = chrpropBBOXGetYmin(chrobjGetBboxFromObjFile(obj->model->obj));
+    temp_f0 = bboxGetYmin(chrobjGetBboxFromObjFile(obj->model->obj));
 
     obj->runtime_pos.f[0] -= temp_f0 * obj->mtx.m[1][0];
     obj->runtime_pos.f[1] -= temp_f0 * obj->mtx.m[1][1];
@@ -3254,14 +3254,14 @@ bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNode *nod
 
             obj->runtime_bitflags |= RUNTIMEBITFLAG_EMBEDDED;
 
-            chrpropDeregisterRooms(prop);
-            chrpropDelist(prop);
-            chrpropDisable(prop);
+            propRemoveFromRooms(prop);
+            propDelist(prop);
+            propDisable(prop);
 
             obj->model->attachedto = model;
             obj->model->attachedto_objinst = node;
 
-            chrpropReparent(prop, parent);
+            propReparent(prop, parent);
 
             mtx4Copy(&obj->mtx, &mtx1);
             mtx4SetTranslation(&obj->runtime_pos, &mtx1);
@@ -3693,7 +3693,7 @@ bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2,
             tmp.x = rect1->points[i].x;
             tmp.y = 0.0f;
             tmp.z = rect1->points[i].y;
-            if (chrpropTestPointInPolygon(&tmp, rect2, numvertices1))
+            if (polygonContainsPoint(&tmp, rect2, numvertices1))
             {
                 return FALSE;
             }
@@ -3764,7 +3764,7 @@ s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct 
         sp48.f[1] = 0.0f;
         sp48.f[2] = arg0->points[i].f[1];
 
-        if (chrpropTestPointInPolygon(&sp48, arg2, arg3) != 0)
+        if (polygonContainsPoint(&sp48, arg2, arg3) != 0)
         {
             return 1;
         }
@@ -3776,7 +3776,7 @@ s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct 
         sp48.f[1] = 0.0f;
         sp48.f[2] = arg2->points[i].f[1];
 
-        if (chrpropTestPointInPolygon(&sp48, arg0, arg1) != 0)
+        if (polygonContainsPoint(&sp48, arg0, arg1) != 0)
         {
             return 1;
         }
@@ -3875,19 +3875,19 @@ s32 vehicleFindBlockingProp(struct PropRecord *argProp)
     f32 top;
     f32 bottom;
 
-    chraiGetCollisionBounds(argProp, &polygon2, &edges2, &chrTop, &chrBottom);
+    propGetCollisionPolygon(argProp, &polygon2, &edges2, &chrTop, &chrBottom);
 
     if (edges2 <= 0)
     {
         return 1;
     }
 
-    chraiGetPropRoomIds(argProp, (s32*)&roomids);
+    propGetRoomIds(argProp, (s32*)&roomids);
     roomGetProps((s32*)&roomids);
 
     propss = (PropRecord *)&g_Props;
 
-    for (temp_s0 = ptr_list_object_lookup_indices; *temp_s0 >= 0; temp_s0++)
+    for (temp_s0 = g_RoomPropsFound; *temp_s0 >= 0; temp_s0++)
     {
         PropRecord *prop = &propss[*temp_s0];
 
@@ -3898,9 +3898,9 @@ s32 vehicleFindBlockingProp(struct PropRecord *argProp)
                 temp_v0_2 = prop->obj;
                 if ((temp_v0_2 == NULL) || !((s32) temp_v0_2->model & 0x400))
                 {
-                    chrpropGetCollisionBounds(prop, &radius, &height, &arbitratyNumber);
+                    propGetCollisionRadius(prop, &radius, &height, &arbitratyNumber);
 
-                    ground = sub_GAME_7F03CFE8(prop);
+                    ground = propGetGroundY(prop);
                     arbitratyNumber += ground;
                     height += ground;
 
@@ -3910,7 +3910,7 @@ s32 vehicleFindBlockingProp(struct PropRecord *argProp)
 
                         if (chrBottom <= height)
                         {
-                            if (chrpropTestPointInPolygon(&prop->pos, polygon2, edges2) != 0)
+                            if (polygonContainsPoint(&prop->pos, polygon2, edges2) != 0)
                             {
                                 var_s0 = 0;
                             }
@@ -3940,7 +3940,7 @@ s32 vehicleFindBlockingProp(struct PropRecord *argProp)
                     (argProp->type != PROP_TYPE_DOOR)
                     || ((prop->type != PROP_TYPE_DOOR) && ((prop->obj->type != PROPDEF_SAFE)) && (prop->obj->type != PROPDEF_AIRCRAFT))))
             {
-                chraiGetCollisionBounds(prop, &polygon, &edges, &top, &bottom);
+                propGetCollisionPolygon(prop, &polygon, &edges, &top, &bottom);
 
                 if ((edges > 0)
                     && (bottom <= chrTop)
@@ -4151,7 +4151,7 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
         mtx4ScaleRows012(model->scale, (f32 *) (&obj->mtx));
         mtx4TransformVec(&obj->mtx, modelpoint0, &point1);
 
-        ypos = (point0.y - (chrpropBBOXGetYmin(bbox) * model->scale)) - point1.y;
+        ypos = (point0.y - (bboxGetYmin(bbox) * model->scale)) - point1.y;
         prop->pos.y = ypos;
         obj->runtime_pos.y = ypos;
     }
@@ -4160,7 +4160,7 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
         mtx4LoadYRotation(((VehichleRecord *)obj)->roty, &obj->mtx);
         mtx4ScaleRows012(model->scale, (f32 *) (&obj->mtx));
 
-        ypos = stanGetPositionYValue(prop->stan, prop->pos.x, prop->pos.z) - ((chrpropBBOXGetYmin(bbox) + modelpoint0->f[1]) * model->scale);
+        ypos = stanGetPositionYValue(prop->stan, prop->pos.x, prop->pos.z) - ((bboxGetYmin(bbox) + modelpoint0->f[1]) * model->scale);
 
         prop->pos.y = ypos;
         obj->runtime_pos.y = ypos;
@@ -4567,14 +4567,14 @@ s32 objTick(struct PropRecord *prop)
 
 				if (Rocket->ownerprop != NULL)
 				{
-					sub_GAME_7F03D058(Rocket->ownerprop, 0);
+					propSetMoving(Rocket->ownerprop, 0);
 				}
 
 				moveResult = objMove(obj, &Rocket->unkd4, &sp64C, &sp658, 0, moveOnlyIfPathClear);
 
 				if (Rocket->ownerprop != NULL)
 				{
-					sub_GAME_7F03D058(Rocket->ownerprop, 1);
+					propSetMoving(Rocket->ownerprop, 1);
 				}
 
                 /*
@@ -4681,14 +4681,14 @@ s32 objTick(struct PropRecord *prop)
 
 				if (Rocket->ownerprop != NULL)
 				{
-					sub_GAME_7F03D058(Rocket->ownerprop, 0);
+					propSetMoving(Rocket->ownerprop, 0);
 				}
 
 				moveResult = objMove(obj, &RocketCurrent.f[0], &collisionPoint, &collisionNormal, canEmbed, 0);
 
 				if (Rocket->ownerprop != NULL)
 				{
-					sub_GAME_7F03D058(Rocket->ownerprop, 1);
+					propSetMoving(Rocket->ownerprop, 1);
 				}
 
 				objMovedThisFrame = 1;
@@ -4842,7 +4842,7 @@ s32 objTick(struct PropRecord *prop)
 					if (!(Rocket->flags & PROJECTILEFLAG_00000008))
 					{
 						temp_f20 = stanGetPositionYValue(prop->stan, prop->pos.f[0], prop->pos.f[2]);
-						bboxBottomOffset = chrpropSumMatrixPosY(projectileBBox, &objectMatrix[0]);
+						bboxBottomOffset = bboxRotatedMinY(projectileBBox, &objectMatrix[0]);
 						hitGround = (prop->pos.f[1] < (temp_f20 - bboxBottomOffset));
 					}
 					else
@@ -5055,7 +5055,7 @@ s32 objTick(struct PropRecord *prop)
 					objMove(obj, &RocketCurrent.f[0], &sp530, &sp53C, 0, 0);
 					objMovedThisFrame = 1;
 					temp_f20 = stanGetPositionYValue(prop->stan, prop->pos.f[0], prop->pos.f[2]);
-					angleDelta = (temp_f20 - chrpropSumMatrixPosY(objectBBox, objectMatrix)) + 4.0f;
+					angleDelta = (temp_f20 - bboxRotatedMinY(objectBBox, objectMatrix)) + 4.0f;
 					prop->pos.f[1] = angleDelta;
 					obj->runtime_pos.f[1] = angleDelta;
 					if ((Rocket->speed.f[0] < 0.1f) && (Rocket->speed.f[0] > (-0.1f)))
@@ -6321,7 +6321,7 @@ s32 objTick(struct PropRecord *prop)
 				mtx4LoadTranslation(sp15C, &mtxs[2]);
 				mtx4MultAffineInPlace(&mtxs[1], &mtxs[2]);
 				mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), &mtxs[1], &sp16C);
-				sub_GAME_7F03F540(sp158, &sp16C, &tank_render->rect, (struct collision_data *) (&tank_render->collision));
+				bboxGetHull2d(sp158, &sp16C, &tank_render->rect, (struct collision_data *) (&tank_render->collision));
 
 				if (model->obj->Switches[7] != NULL)
 				{
@@ -6646,7 +6646,7 @@ Gfx *weaponRenderTracers(Gfx *gdl)
     s32 one;
     s32 type_chr;
 
-    prop = chrpropGetActiveTail();
+    prop = propsGetActiveTail();
     if (prop != NULL)
     {
         type_viewer = PROP_TYPE_VIEWER;
@@ -7822,8 +7822,8 @@ void objDeform(ObjectRecord *obj, E_EXPLOSIONTYPE explosiontype)
         node = (ModelNode *) obj->model->obj;
         modelscale = obj->model->scale;
         node = (ModelNode *) chrobjGetBboxFromObjFile((ModelFileHeader *) node);
-        obj->prop->pos.y += (modelscale * chrpropBBOXGetYmin((ModelRoData_BoundingBoxRecord *) node)) * 0.15000001f;
-        obj->runtime_pos.y += (modelscale * chrpropBBOXGetYmin((ModelRoData_BoundingBoxRecord *) node)) * 0.15000001f;
+        obj->prop->pos.y += (modelscale * bboxGetYmin((ModelRoData_BoundingBoxRecord *) node)) * 0.15000001f;
+        obj->runtime_pos.y += (modelscale * bboxGetYmin((ModelRoData_BoundingBoxRecord *) node)) * 0.15000001f;
         return;
     }
     
@@ -8070,7 +8070,7 @@ void objDetach(PropRecord *prop)
         ObjectRecord *obj = prop->obj;
         Model *model = obj->model;
 
-        chrpropDetach(prop);
+        propDetach(prop);
 
         model->attachedto_objinst = NULL;
 
@@ -8230,7 +8230,7 @@ s32 objDrop(PropRecord *prop)
                 cdtypes = CDTYPE_OBJS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER;
             }
 
-            sub_GAME_7F03D058(root, FALSE);
+            propSetMoving(root, FALSE);
 
             if ((stanTestLineUnobstructed(&rootstan, root->pos.f[0], root->pos.f[2], spB8.m[3][0], spB8.m[3][2], cdtypes, 0.0f, 1.0f, 0.0f, 1.0f) != 0)
                 && (stanTestVolume(&rootstan, spB8.m[3][0], spB8.m[3][2], objwidth, cdtypes, 0.0f, 1.0f) < 0))
@@ -8245,7 +8245,7 @@ s32 objDrop(PropRecord *prop)
                 spB8.m[3][2] = root->pos.z;
             }
 
-            sub_GAME_7F03D058(root, TRUE);
+            propSetMoving(root, TRUE);
             prop->zDepth = -sp58->m[3][2];
 
         }
@@ -8260,8 +8260,8 @@ s32 objDrop(PropRecord *prop)
         }
 
         objDetach(prop);
-        chrpropActivate(prop);
-        chrpropEnable(prop);
+        propActivate(prop);
+        propEnable(prop);
 
         obj->runtime_pos.x = prop->pos.x = spB8.m[3][0];
         obj->runtime_pos.y = prop->pos.y = spB8.m[3][1];
@@ -8362,11 +8362,11 @@ void objDestroySupportedObjects(PropRecord* tableprop, s32 playernum)
     tableobj = tableprop->obj;
     room = tableprop->stan->room;
 
-    chraiGetCollisionBoundsWithoutY(tableprop, &rect, &edges);
+    propGetCollisionPolygon2d(tableprop, &rect, &edges);
 
     if (edges > 0)
     {
-        prop = chrpropGetActiveTail();
+        prop = propsGetActiveTail();
         while (prop)
         {
             if (((prop->type == PROP_TYPE_OBJ) || (prop->type == PROP_TYPE_WEAPON)) && (prop->stan->room == room))
@@ -8374,7 +8374,7 @@ void objDestroySupportedObjects(PropRecord* tableprop, s32 playernum)
                 obj = prop->obj;
                 if ((tableobj->runtime_pos.y < obj->runtime_pos.y)
                         && ((s32) obj->runtime_bitflags & RUNTIMEBITFLAG_00008000)
-                        && (chrpropTestPointInPolygon(&obj->runtime_pos, rect, edges) != 0))
+                        && (polygonContainsPoint(&obj->runtime_pos, rect, edges) != 0))
                 {
                     objFall(obj, playernum);
                 }
@@ -9364,7 +9364,7 @@ apply_damage:
                         if (objInitWithModelDef((ObjectRecord *)crate, PitemZ_entries[modelnum].header) != NULL)
                         {
                             modelSetScale(crate->model, crate->model->scale);
-                            chrpropReparent(crate->prop, obj->prop);
+                            propReparent(crate->prop, obj->prop);
                         }
 
                         break;
@@ -9557,7 +9557,7 @@ dummy_label_995911:
                     }
                 }
 
-                chrpropAddBulletHit(hitinfo, prop, -pos.z, hitpart, node, &hit, mtxindex, (s32) hitnode, model, penetrates, (obj->flags2 & PROPFLAG2_00100000) != FALSE);
+                shotAddHit(hitinfo, prop, -pos.z, hitpart, node, &hit, mtxindex, (s32) hitnode, model, penetrates, (obj->flags2 & PROPFLAG2_00100000) != FALSE);
             }
         }
     }
@@ -9579,7 +9579,7 @@ void objTestShot(PropRecord* prop, struct ShotData* shotdata)
     if ((prop->flags & PROPFLAG_ONSCREEN)
             && (obj->runtime_bitflags & RUNTIMEBITFLAG_00001000) == 0
             && (obj->flags2 & PROPFLAG2_SHOOTTHROUGH) == 0) {
-        tmp = -(model->render_pos->pos.m[3][2] + chrpropSumMatrixNegZ(bbox, (Mtxf*)model->render_pos));
+        tmp = -(model->render_pos->pos.m[3][2] + bboxRotatedMaxZ(bbox, (Mtxf*)model->render_pos));
 
         if (tmp <= shotdata->maxdist) {
             objTestShotHit(prop, (void*)shotdata);
@@ -9887,7 +9887,7 @@ TICKOP propobjInteract(PropRecord *prop)
 
     obj->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
     coopNoteActivator();
-    sub_GAME_7F03E6A0(prop);
+    switchActivateLinkedDoors(prop);
 
     return op;
 }
@@ -11268,7 +11268,7 @@ PropRecord *hatApplyToChr(HatRecord *hat, ChrRecord *chr, ModelFileHeader *filed
         hat->model->attachedto = chr->model;
         hat->model->attachedto_objinst = chr->model->obj->Switches[6];
 
-        chrpropReparent(prop, chr->prop);
+        propReparent(prop, chr->prop);
         chr->handle_positiondata_hat = prop;
     }
 
@@ -11303,13 +11303,13 @@ PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags)
     modeldef = PitemZ_entries[modelnum].header;
 
     modelLoad(modelnum);
-    prop = chrpropAllocate();
+    prop = propAllocate();
     model = modelmgrInstantiateModel(modeldef);
     hat = hatCreate(prop == NULL, model == NULL, modeldef);
 
     if (prop == NULL)
     {
-        prop = chrpropAllocate();
+        prop = propAllocate();
     }
 
     if (model == NULL)
@@ -11364,7 +11364,7 @@ PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags)
 
         if (prop)
         {
-            chrpropFree(prop);
+            propFree(prop);
             prop = NULL;
         }
     }
@@ -11693,7 +11693,7 @@ KeyRecord *weaponFindThrown(s32 KeyID) //MATCH
     KeyRecord  *obj;
     PropRecord *prop;
 
-    for (prop = chrpropGetActiveTail(); prop; prop = prop->prev)
+    for (prop = propsGetActiveTail(); prop; prop = prop->prev)
     {
         obj = keyFindInProp(KeyID, prop);
         if (obj && (!(obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)))
@@ -11881,7 +11881,7 @@ bool chrEquipWeapon(WeaponObjRecord *wep, ChrRecord *chr)
                 return FALSE;
             }
         }
-        chrpropReparent(wep2->prop, chr->prop);
+        propReparent(wep2->prop, chr->prop);
     }
     return TRUE;
 }
@@ -11969,7 +11969,7 @@ ObjectRecord *weaponCreateFromModel(PROP modelnum, s32 weaponid)
 
     modelLoad(modelnum);
 
-    prop = chrpropAllocate();
+    prop = propAllocate();
 
     model = modelmgrInstantiateModel(modeldef);
 
@@ -11977,7 +11977,7 @@ ObjectRecord *weaponCreateFromModel(PROP modelnum, s32 weaponid)
 
     if (prop == NULL)
     {
-        prop = chrpropAllocate();
+        prop = propAllocate();
     }
 
     if (model == NULL)
@@ -12007,7 +12007,7 @@ ObjectRecord *weaponCreateFromModel(PROP modelnum, s32 weaponid)
 
         if (prop != NULL)
         {
-            chrpropFree(prop);
+            propFree(prop);
         }
     }
 
@@ -12070,7 +12070,7 @@ PropRecord *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 fl
         modelLoad(propid);
     }
 
-    lastobjentry = chrpropAllocate();
+    lastobjentry = propAllocate();
     objinst = modelmgrInstantiateModel((ModelFileHeader *)prop_header);
 
     if (!weapon)
@@ -12080,7 +12080,7 @@ PropRecord *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 fl
 
     if (!lastobjentry)
     {
-        lastobjentry = chrpropAllocate();
+        lastobjentry = propAllocate();
     }
 
     if (!objinst)
@@ -12111,7 +12111,7 @@ PropRecord *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 fl
 
         if (lastobjentry)
         {
-            chrpropFree(lastobjentry);
+            propFree(lastobjentry);
             lastobjentry = NULL;
         }
     }
@@ -12467,11 +12467,11 @@ void doorUpdateBbox(DoorRecord *door)
     }
 
     doorGetMtx(door, &sp2C);
-    sub_GAME_7F03F540(&door->bbox, &sp2C, &door->ptr_allocated_collisiondata_block->polygon, door->ptr_allocated_collisiondata_block);
+    bboxGetHull2d(&door->bbox, &sp2C, &door->ptr_allocated_collisiondata_block->polygon, door->ptr_allocated_collisiondata_block);
 
     if (door->doorType == DOORTYPE_VERTICAL)
     {
-        door->ptr_allocated_collisiondata_block->bottom = door->runtime_pos.f[1] + chrpropSumMatrixPosY(&door->bbox, &sp2C);
+        door->ptr_allocated_collisiondata_block->bottom = door->runtime_pos.f[1] + bboxRotatedMinY(&door->bbox, &sp2C);
     }
     else if (door->doorType == DOORTYPE_FALLAWAY)
     {
@@ -12479,7 +12479,7 @@ void doorUpdateBbox(DoorRecord *door)
     }
     else
     {
-        door->ptr_allocated_collisiondata_block->bottom = sp2C.m[3][1] + chrpropSumMatrixPosY(&door->bbox, &sp2C);
+        door->ptr_allocated_collisiondata_block->bottom = sp2C.m[3][1] + bboxRotatedMinY(&door->bbox, &sp2C);
 
         if (door->doorFlags & DOORFLAG_EXTENDEDY)
         {
@@ -12500,7 +12500,7 @@ void doorUpdateBbox(DoorRecord *door)
     }
     else
     {
-        door->ptr_allocated_collisiondata_block->top = sp2C.m[3][1] + chrpropSumMatrixNegY(&door->bbox, &sp2C);
+        door->ptr_allocated_collisiondata_block->top = sp2C.m[3][1] + bboxRotatedMaxY(&door->bbox, &sp2C);
 
         if (door->doorFlags & DOORFLAG_EXTENDEDY)
         {
@@ -13372,7 +13372,7 @@ s32 propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox)
     s32 room_id;
     bbox2d bbox2;
 
-    chraiGetPropRoomIds(prop, room_ids);
+    propGetRoomIds(prop, room_ids);
     rooms = room_ids;
     room_id = *rooms;
 
@@ -13500,7 +13500,7 @@ bool posIsOnScreen(PropRecord *prop, coord3d *pos, f32 arg2, bool arg3)
     bbox2d bbox;
 
     result = FALSE;
-    chraiGetPropRoomIds(prop, room_ids);
+    propGetRoomIds(prop, room_ids);
     rooms = room_ids;
     roomnum = *rooms;
 
@@ -13942,12 +13942,12 @@ bool doorTestForInteract(PropRecord *prop)
 		}
         else
         {
-            chraiGetPropRoomIds(prop, (s32*)rooms1);
-            chraiGetPropRoomIds(playerprop, (s32*)rooms2);
-            if (sub_GAME_7F03DB70((s32*)rooms1, (s32*)rooms2) != 0)
+            propGetRoomIds(prop, (s32*)rooms1);
+            propGetRoomIds(playerprop, (s32*)rooms2);
+            if (roomListsOverlap((s32*)rooms1, (s32*)rooms2) != 0)
             {
                 boundpads = &g_CurrentSetup.boundpads[door->pad];
-                if (chrpropTestPointInPaddedBoundPad(&playerprop->pos, 150.0f, boundpads))
+                if (padBoundsContainPoint(&playerprop->pos, 150.0f, boundpads))
                 {
                     maybe = TRUE;
                 }
@@ -13995,7 +13995,7 @@ void doorActivateWrapper(PropRecord *prop) //#MATCH
     door->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
     coopNoteActivator();
     door->flags2 &= ~8;
-    sub_GAME_7F03E6A0(prop);
+    switchActivateLinkedDoors(prop);
 }
 
 
@@ -14432,7 +14432,7 @@ void objsFreeDeformedVertices(void)
     ModelNode *t0;
     ModelRoData_DisplayList_CollisionRecord *s0;
 
-    s2 = chrpropGetActiveTail();
+    s2 = propsGetActiveTail();
     for (; s2 != NULL; s2 = s2->prev)
     {
         if ((s2->type == 1) && ((s2->flags & 2) == 0))

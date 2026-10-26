@@ -137,7 +137,7 @@ void vtxstoreFixRefs(s32 find, s32 replacement) {
     ModelFileHeader* var_v1;
     s32 val;
 
-    var_s1 = chrpropGetActiveTail();
+    var_s1 = propsGetActiveTail();
     while (var_s1 != NULL) {
         if (var_s1->type == 1) {
             var_v0 = var_s1->chr;

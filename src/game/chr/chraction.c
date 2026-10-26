@@ -277,8 +277,8 @@ void expand_09_characters(s32 stageid, GuardRecord *arg1, s32 arg2)
 
             if (temp_v0_4 != 0)
             {
-                chrpropActivate(temp_v0_4);
-                chrpropEnable(temp_v0_4);
+                propActivate(temp_v0_4);
+                propEnable(temp_v0_4);
 
                 temp_v0_5 = temp_v0_4->chr;
                 temp_v0_5->chrnum = (s16) arg1->chrnum;
@@ -3415,15 +3415,15 @@ bool chrlvIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan)
 
     roomGetProps(roomids);
 
-    for (propnum = ptr_list_object_lookup_indices; *propnum >= 0; propnum++)
+    for (propnum = g_RoomPropsFound; *propnum >= 0; propnum++)
     {
         PropRecord *prop = &props[*propnum];
 
         if (prop->type == PROP_TYPE_OBJ)
         {
-            chraiGetCollisionBoundsWithoutY(prop, &polygon, &numedges);
+            propGetCollisionPolygon2d(prop, &polygon, &numedges);
 
-            if (numedges > 0 && chrpropTestPointInPolygon(pos, polygon, numedges))
+            if (numedges > 0 && polygonContainsPoint(pos, polygon, numedges))
             {
                 return FALSE;
             }
@@ -10949,8 +10949,8 @@ PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, coord3d *pos, StandTile *s
 
                 if (chrprop != NULL)
                 {
-                    chrpropActivateThisFrame(chrprop);
-                    chrpropEnable(chrprop);
+                    propActivateThisFrame(chrprop);
+                    propEnable(chrprop);
                     chr          = chrprop->chr;
                     chr->headnum = headnum;
                     chr->bodynum = bodynum;
@@ -11099,7 +11099,7 @@ bool chrTryStartAlarm(ChrRecord *self, s32 PadId)
 
     if (chrIsNotDeadOrShot(self))
     {
-        objinst = scan_position_data_table_for_normal_object_at_preset(PadId);
+        objinst = objFindAtPad(PadId);
 
         if (objinst && objIsHealthy(objinst))
         {
@@ -11196,7 +11196,7 @@ bool chrDropItem(ChrRecord *self, s32 modelnum, u8 weaponid)
     if (NewModel && NewModel->prop)
     {
         modelSetScale(NewModel->model, NewModel->model->scale);
-        chrpropReparent(NewModel->prop, self->prop);
+        propReparent(NewModel->prop, self->prop);
         NewModel->timer = CHRLV_DEFAULT_TIMER;
         propobjSetDropped(NewModel->prop, 1);
         self->hidden = self->hidden | CHRHIDDEN_DROP_HELD_ITEMS;

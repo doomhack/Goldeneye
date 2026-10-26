@@ -281,7 +281,7 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
 
     if (sp40 != NULL)
     {
-        sp30 = chrpropAllocate();
+        sp30 = propAllocate();
 
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
         if ((explosion_type != 0x10) && (explosion_type != 1))
@@ -319,8 +319,8 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
                 sp30->flags |= PROPFLAG_00000008;
             }
 
-            chrpropActivateThisFrame(sp30);
-            chrpropEnable(sp30);
+            propActivateThisFrame(sp30);
+            propEnable(sp30);
 
             sp40->explosion_type = explosion_type;
             sp40->age = 0;
@@ -484,10 +484,10 @@ void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range)
 
     if (temp_s2->age >= temp_s2->unk3CA)
     {
-        chraiGetPropRoomIds(arg0, &spE0[0]);
+        propGetRoomIds(arg0, &spE0[0]);
         roomGetProps(&spE0[0]);
 
-        for (var_s3 = ptr_list_object_lookup_indices; *var_s3 >= 0; var_s3++)
+        for (var_s3 = g_RoomPropsFound; *var_s3 >= 0; var_s3++)
         {
             temp_s0 = &g_Props[*var_s3];
 
@@ -769,7 +769,7 @@ s32 explosionTick(PropRecord* arg0)
 
         // end explosionGetBboxAtFrame.
 
-        chrpropUpdateRoomList(arg0, &sp90, &sp84, hrange);
+        propCalcRooms(arg0, &sp90, &sp84, hrange);
 
         vrange = explosiontype->explosion_range + (((explosiontype->dmg_range - explosiontype->explosion_range) * (f32) exp->age) / (f32) explosiontype->duration);
         explosionInflictDamage(arg0, vrange, vrange);
@@ -828,7 +828,7 @@ s32 explosionTick(PropRecord* arg0)
 /*
 * Address: 0x7F09D4EC
 */
-u8 explosionChrpropExplosionTick(PropRecord* prop)
+u8 explosionPropTick(PropRecord* prop)
 {
     Mtxf* player_matrix;
 
@@ -1248,7 +1248,7 @@ void explosionCreateSmoke(coord3d *pos, StandTile *stan, s16 smoke_type, u8 *roo
 
     if (smoke == NULL) { return; }
 
-    prop = chrpropAllocate();
+    prop = propAllocate();
     if (prop == NULL) { return; }
 
     prop->type = 8;
@@ -1270,8 +1270,8 @@ void explosionCreateSmoke(coord3d *pos, StandTile *stan, s16 smoke_type, u8 *roo
         prop->flags |= 8;
     }
 
-    chrpropActivateThisFrame(prop);
-    chrpropEnable(prop);
+    propActivateThisFrame(prop);
+    propEnable(prop);
     smoke->prop = prop;
     smoke->duration = 0;
     smoke->smoke_type = smoke_type;
@@ -1417,7 +1417,7 @@ s32 explosionSmokeTick(PropRecord *arg0)
         var_f14 = bbmax.f[2] - arg0->pos.f[2];
     }
 
-    chrpropUpdateRoomList(arg0, &bbmin, &bbmax, var_f14);
+    propCalcRooms(arg0, &bbmin, &bbmax, var_f14);
 
     if (smoke->duration > g_SmokeTypes[smoke->smoke_type].ratedissolve)
     {
@@ -1450,7 +1450,7 @@ s32 explosionSmokeTick(PropRecord *arg0)
 /*
 * Address: 0x7F09EF9C
 */
-u8 explosionChrpropSmokeTick(PropRecord* prop)
+u8 smokePropTick(PropRecord* prop)
 {
     Mtxf* player_matrix;
 
@@ -2397,9 +2397,9 @@ void explosionsReset(void)
         {
             if (g_ExplosionBuffer[i].prop != NULL)
             {
-                chrpropDelist(g_ExplosionBuffer[i].prop);
-                chrpropDisable(g_ExplosionBuffer[i].prop);
-                chrpropFree(g_ExplosionBuffer[i].prop);
+                propDelist(g_ExplosionBuffer[i].prop);
+                propDisable(g_ExplosionBuffer[i].prop);
+                propFree(g_ExplosionBuffer[i].prop);
                 g_ExplosionBuffer[i].prop = NULL;
             }
         }
@@ -2412,9 +2412,9 @@ void explosionsReset(void)
         {
             if (g_SmokeBuffer[i].prop != NULL)
             {
-                chrpropDelist(g_SmokeBuffer[i].prop);
-                chrpropDisable(g_SmokeBuffer[i].prop);
-                chrpropFree(g_SmokeBuffer[i].prop);
+                propDelist(g_SmokeBuffer[i].prop);
+                propDisable(g_SmokeBuffer[i].prop);
+                propFree(g_SmokeBuffer[i].prop);
                 g_SmokeBuffer[i].prop = NULL;
             }
         }

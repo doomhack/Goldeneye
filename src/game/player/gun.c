@@ -1603,8 +1603,8 @@ void gunInitProjectileObject(ObjectRecord *obj, coord3d *pos, StandTile *stan, M
 
     if (temp_s1 != NULL)
     {
-        chrpropActivate(temp_s1);
-        chrpropEnable(temp_s1);
+        propActivate(temp_s1);
+        propEnable(temp_s1);
         mtx4ScaleRows012(obj->model->scale, matrix);
         objChangeShading(obj, pos, matrix, stan);
 

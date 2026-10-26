@@ -1736,7 +1736,7 @@ PropRecord * chrAllocate( Model * arg0, coord3d * arg1, f32 arg2,  StandTile * a
     PropRecord * ret;
     s32 phi_a0;
 
-    ret = chrpropAllocate();
+    ret = propAllocate();
 
     if (ret != 0)
     {
@@ -1775,7 +1775,7 @@ void chrpropCleanupForRemoval(PropRecord *prop)
     }
 
     modelResetDeformedVertices(model);
-    chrpropDeregisterRooms(prop);
+    propRemoveFromRooms(prop);
 
     child = prop->child;
 
@@ -2286,13 +2286,13 @@ void chrDetectRooms(ChrRecord *self)
     upperbounds.z = myprop->pos.z + 50.0f;
 
     // Delist the character prop from its previous room(s)
-    chrpropDeregisterRooms(myprop);
+    propRemoveFromRooms(myprop);
 
     // Detect rooms overlapped by the bounding box
-    chrpropUpdateRoomList(myprop, &lowerbounds, &upperbounds, 50.0f);
+    propCalcRooms(myprop, &lowerbounds, &upperbounds, 50.0f);
 
     // Re-register the character prop in those rooms
-    chrpropRegisterRooms(myprop);
+    propAddToRooms(myprop);
 }
 
 
@@ -3382,7 +3382,7 @@ after_opcode:
  *
  * First tests the shot against the chr's bounding sphere expanded by the
  * largest held weapon's model size. On a bounds hit, the model hit list is
- * walked for a body part. A confirmed body hit is registered via chrpropAddBulletHit; 
+ * walked for a body part. A confirmed body hit is registered via shotAddHit; 
  * a near miss inside max range flags CHRFLAG_NEAR_MISS and bumps numclosearghs.
  *
  * PD: chr_test_hit
@@ -3513,7 +3513,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
 
         if (dist < shotdata->maxdist)
         {
-            chrpropAddBulletHit(shotdata, prop, dist, hitpart, hitnode, &hitthing, mtxindex, dlnode, hitmodel, TRUE, FALSE);
+            shotAddHit(shotdata, prop, dist, hitpart, hitnode, &hitthing, mtxindex, dlnode, hitmodel, TRUE, FALSE);
         }
     }
 
