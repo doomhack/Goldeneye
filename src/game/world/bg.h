@@ -195,7 +195,7 @@ void bgInit(void);
 // sub_GAME_7F033B38 requres arg be s32
 bool bgRoomsSharePortal(s32 roomA, s32 roomB);
 
-//f32 sub_GAME_7F0B4F9C(s32 room); // u8 not s32 for sub_GAME_7F0B2FE0
+//f32 sub_GAME_7F0B4F9C(s32 room); // u8 not s32 for stanGetTileRoomValue
 s32 bgCopyVisibleRoomsToList(s32 *rooms, s32 max);
 u32 bgDecompress(u8* source, u8 *target);
 bool bgTestBulletHitBackground(coord3d *from, coord3d *to, s32 roomnum, struct HitThing *hit);

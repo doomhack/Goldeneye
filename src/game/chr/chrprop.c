@@ -957,7 +957,7 @@ void chraiDefaultWeaponFireHandler(s32 hand)
     dest.y = (shotdata.dir.y * M_U16_MAX_VALUE_F) + shotdata.gunpos.y;
     dest.z = (shotdata.dir.z * M_U16_MAX_VALUE_F) + shotdata.gunpos.z;
 
-    if (walkTilesBetweenPoints_NoCallback(&fromtile, playerprop->pos.x, playerprop->pos.z, shotdata.gunpos.x, shotdata.gunpos.z))
+    if (stanWalkLineNoCallback(&fromtile, playerprop->pos.x, playerprop->pos.z, shotdata.gunpos.x, shotdata.gunpos.z))
     {
         distscale = get_room_data_float1() * bgGetLevelVisibilityScale();
         playerpos = bondviewGetCurrentPlayersPosition();
@@ -969,7 +969,7 @@ void chraiDefaultWeaponFireHandler(s32 hand)
 
         stanResetHits();
 
-        if (!walkTilesBetweenPoints_NoCallback(&fromtile, shotdata.gunpos.x, shotdata.gunpos.z, dest.x, dest.z))
+        if (!stanWalkLineNoCallback(&fromtile, shotdata.gunpos.x, shotdata.gunpos.z, dest.x, dest.z))
         {
             chrlvStanLineDirIntersection(&shotdata.gunpos, &shotdata.dir, &stanhit);
             hitbgstan = 1;
@@ -988,7 +988,7 @@ void chraiDefaultWeaponFireHandler(s32 hand)
         scaleddir.y = playerpos->y * distscale;
         scaleddir.z = playerpos->z * distscale;
         hittile = fromtile;
-        startroom = getTileRoom(fromtile);
+        startroom = stanGetTileRoom(fromtile);
 
         for (i = 0; i < 256; i++)
         {
@@ -1006,11 +1006,11 @@ void chraiDefaultWeaponFireHandler(s32 hand)
         {
             if (g_BgPortals[0].offset_portal != 0)
             {
-                bestroom = chrpropFindFirstBgHitInConnectedRooms(getTileRoom(getCurrentPlayerProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
+                bestroom = chrpropFindFirstBgHitInConnectedRooms(stanGetTileRoom(getCurrentPlayerProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
             }
             else
             {
-                bestroom = chrpropFindClosestBgHitRoom(getTileRoom(getCurrentPlayerProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
+                bestroom = chrpropFindClosestBgHitRoom(stanGetTileRoom(getCurrentPlayerProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
             }
         }
 
@@ -2932,7 +2932,7 @@ void chrpropUpdateRoomList(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32
         // Seed from the stan tile locus around the prop's X/Z position.
         tile = prop->stan;
         count = 0;
-        sub_GAME_7F0B21B0(&tile, prop->pos.x, prop->pos.z, radius, rooms, &count, 7);
+        stanCircleRooms(&tile, prop->pos.x, prop->pos.z, radius, rooms, &count, 7);
     }
 
     // Update the room list with neighboring rooms reachable through portals and overlapped by the bounding box.

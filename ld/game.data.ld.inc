@@ -16,8 +16,6 @@
       build/OUTCODE/src/game/player/bondview_r.o (.data);
       build/OUTCODE/src/game/player/inititemslots.o (.data);
       build/OUTCODE/src/game/player/initBondDATAdefaults.o (.data);
-      build/OUTCODE/src/game/nav/initpathtablesomething.o (.data);
-      build/OUTCODE/src/game/nav/initpathtablelinks.o (.data);
       build/OUTCODE/src/game/prop/initexplosioncasing.o (.data);
       build/OUTCODE/src/game/prop/alloc_window_pieces.o (.data);
       build/OUTCODE/src/game/world/initunk_007290.o (.data);
@@ -68,7 +66,7 @@
       build/OUTCODE/src/game/player/bondview2.o (.data);
       build/OUTCODE/src/game/player/bondinv.o (.data);
       build/OUTCODE/src/game/player/bondhead.o (.data);
-      build/OUTCODE/src/game/nav/padhalllv.o (.data);
+      build/OUTCODE/src/game/nav/waypoint.o (.data);
       build/OUTCODE/src/game/debug/debugmenu_08FE00.o (.data);
       build/OUTCODE/src/game/debug/debugmenu_handler.o (.data);
       build/OUTCODE/src/game/debug/debug_camera.o (.data);
@@ -91,7 +89,6 @@
       build/OUTCODE/src/game/menu/options.o (.data);
       build/OUTCODE/src/game/text/textrelated.o (.data);
       build/OUTCODE/src/game/nav/stan.o (.data);
-      build/OUTCODE/src/game/nav/stanintersection.o (.data);
       build/OUTCODE/src/game/world/bg.o (.data);
       build/OUTCODE/src/game/world/bgapply.o (.data);
       build/OUTCODE/src/game/world/bgfog.o (.data);

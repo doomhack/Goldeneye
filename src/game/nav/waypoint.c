@@ -1,24 +1,722 @@
+/**
+ * The path graph guards follow. Waypoints sit on pads and link to their neighbours;
+ * waypoints are also grouped, and the groups link to each other. A route is found in two
+ * steps: a breadth-first search over the groups (waygroupsMarkRoute), then within each
+ * group over its waypoints (waypointFindRouteInGroup). Both searches number the nodes by
+ * distance in a dist field, then follow the numbers from one end to the other.
+ */
+
 #include <ultra64.h>
+#include "game/nav/waypoint.h"
+#include "bondtypes.h"
 #include "game/chr/chrai.h"
-#include "game/nav/initpathtablelinks.h"
-#include "game/nav/padhalllv.h"
+#include "random.h"
 
 
 /**
- * NTSC address 0x7F006890.
- * 
- * Ryan spent a few minutes looking at this and left some notes about what this function does:
+ * Unreferenced.
+ */
+waypoint *waypointFindNearestToPos(coord3d *pos, s32 arg1)
+{
+    waypoint *head;
+    PadRecord *pad;
+    f32 sqrdist;
+    f32 compare;
+    waypoint *node;
+    waypoint *ret;
+
+    head = g_CurrentSetup.pathwaypoints;
+    ret = NULL;
+
+    if (head)
+    {
+        node = head;
+        compare = -1.0f;
+        while (node->padID >= 0)
+        {
+            pad = &g_CurrentSetup.pads[node->padID];
+            sqrdist = ((pos->z - pad->pos.z) * (pos->z - pad->pos.z))
+                    + ((pos->x - pad->pos.x) * (pos->x - pad->pos.x));
+
+            if ((compare < 0.0f) || (sqrdist < compare))
+            {
+                compare = sqrdist;
+                ret = node;
+            }
+
+            node++;
+        }
+    }
+
+    return ret;
+}
+
+
+/**
+ * Unreferenced.
+ */
+waypoint* waypointRefineNearestToPos(coord3d* pos, s32 arg1, waypoint* arg2)
+{
+    PadRecord* pad;
+    f32 sqrdist2;
+    f32 sqrdist;
+    s32* neighbor;
+    waypoint* node;
+    waypoint* ret;
+    waypoint* waypoints;
+
+    neighbor = arg2->neighbours;
+    ret = arg2;
+
+    if (neighbor != NULL)
+    {
+        pad = &g_CurrentSetup.pads[arg2->padID];
+        sqrdist = ((pos->z - pad->pos.z) * (pos->z - pad->pos.z))
+                + ((pos->x - pad->pos.x) * (pos->x - pad->pos.x));
+        waypoints = g_CurrentSetup.pathwaypoints;
+
+        while (*neighbor >= 0)
+        {
+            node = &waypoints[*neighbor];
+            pad = &g_CurrentSetup.pads[node->padID];
+            sqrdist2 = ((pos->z - pad->pos.z) * (pos->z - pad->pos.z))
+                     + ((pos->x - pad->pos.x) * (pos->x - pad->pos.x));
+
+            if (sqrdist2 < sqrdist)
+            {
+                sqrdist = sqrdist2;
+                ret = node;
+            }
+            neighbor++;
+        }
+    }
+    return ret;
+}
+
+
+waygroup *waygroupFindByDist(s32 *groupnums, s32 value)
+{
+    waygroup *groups = g_CurrentSetup.waypointgroups;
+
+    while (*groupnums >= 0)
+    {
+        waygroup *group = &groups[*groupnums];
+
+        if (group->dist == value)
+        {
+            return group;
+        }
+
+        groupnums++;
+    }
+
+    return NULL;
+}
+
+
+/**
+ * For each group number in the given list assign value to their
+ * dist if their dist has no value (ie. is negative).
+ */
+void waygroupsSetUnvisitedDist(s32 *groupnums, s32 value)
+{
+    waygroup *groups = g_CurrentSetup.waypointgroups;
+
+    while (*groupnums >= 0)
+    {
+        waygroup *group = &groups[*groupnums];
+
+        if (group->dist < 0)
+        {
+            group->dist = value;
+        }
+
+        groupnums++;
+    }
+}
+
+
+/**
+ * Iterate the given groups and find any with a dist matching arg1.
+ * For all groups that match, iterate their neighbouring groups and set their
+ * dist to arg1 + 1, but only if their they have no existing dist value.
+ *
+ * Return true if any matched.
+ */
+bool waygroupsPropagateDist(struct waygroup *group, s32 arg1)
+{
+    bool result = FALSE;
+
+    while (group->neighbours)
+    {
+        if (group->dist == arg1)
+        {
+            result = TRUE;
+            waygroupsSetUnvisitedDist(group->neighbours, arg1 + 1);
+        }
+
+        group++;
+    }
+
+    return result;
+}
+
+
+bool waygroupsFloodDist(struct waygroup *from, struct waygroup *to, struct waygroup *groups, s32 arg3)
+{
+    bool result = TRUE;
+    struct waygroup *group;
+    s32 i;
+
+    for (group = groups; group->neighbours; group++)
+    {
+        group->dist = -1;
+    }
+
+    from->dist = 0;
+
+    for (i = 0; (arg3 || to->dist < 0) && result; i++)
+    {
+        result = waygroupsPropagateDist(groups, i);
+    }
+
+    return result;
+}
+
+
+bool waygroupsMarkRoute(waygroup *from, waygroup *to, waygroup *groups)
+{
+    u32 stack[2];
+    bool result = waygroupsFloodDist(from, to, groups, 0);
+
+    if (result)
+    {
+        waygroup *curto = to;
+        s32 i = curto->dist - 1;
+
+        while (i >= 0)
+        {
+            curto->dist += 10000;
+            curto = waygroupFindByDist(curto->neighbours, i);
+            i--;
+        }
+
+        curto->dist += 10000;
+    }
+
+    return result;
+}
+
+
+/**
+ * Unreferenced.
+ */
+s32 waygroupFindRoute(waygroup* from, waygroup* to, waygroup** arr, s32 arrlen)
+{
+    waygroup **arrptr = arr;
+    waygroup *curfrom;
+    s32 i;
+
+    if (arrlen >= 2 && g_CurrentSetup.waypointgroups && waygroupsMarkRoute(from, to, g_CurrentSetup.waypointgroups) != 0)
+    {
+        *arr = from;
+        arrptr++;
+
+        curfrom = from;
+        arrlen += 9999;
+        i = 10001;
+
+        while (i <= to->dist && i < arrlen)
+        {
+            curfrom = waygroupFindByDist(curfrom->neighbours, i);
+            *arrptr = curfrom;
+            arrptr++;
+            i++;
+        }
+    }
+
+    *arrptr = NULL;
+    arrptr++;
+
+    return arrptr - arr;
+}
+
+
+waypoint *waypointFindByDist(s32 *pointnums, s32 arg1, s32 groupnum)
+{
+    waypoint *points = g_CurrentSetup.pathwaypoints;
+
+    while (*pointnums >= 0)
+    {
+        waypoint *point = &points[*pointnums];
+
+        if (point->groupNum == groupnum && point->dist == arg1)
+        {
+            return point;
+        }
+
+        *pointnums++;
+    }
+
+    return NULL;
+}
+
+
+void waypointsSetUnvisitedDist(s32 *pointnums, s32 value, s32 groupnum)
+{
+    waypoint *waypoints = g_CurrentSetup.pathwaypoints;
+
+    while (*pointnums >= 0)
+    {
+        waypoint *waypoint = &waypoints[*pointnums];
+
+        if (waypoint->groupNum == groupnum && waypoint->dist < 0)
+        {
+            waypoint->dist = value;
+        }
+
+        *pointnums++;
+    }
+}
+
+
+bool waypointsPropagateDist(s32 *pointnums, s32 arg1, s32 groupnum)
+{
+    bool result = FALSE;
+    waypoint *points = g_CurrentSetup.pathwaypoints;
+
+    while (*pointnums >= 0)
+    {
+        waypoint *point = &points[*pointnums];
+
+        if (arg1 == point->dist && point->neighbours)
+        {
+            result = TRUE;
+            waypointsSetUnvisitedDist(point->neighbours, arg1 + 1, groupnum);
+        }
+
+        pointnums++;
+    }
+
+    return result;
+}
+
+
+void waypointsFloodDist(waypoint *from, waypoint *to, s32 arg2)
+{
+    waygroup *groups = g_CurrentSetup.waypointgroups;
+    waypoint *points = g_CurrentSetup.pathwaypoints;
+    waypoint *point;
+    s32 *pointnums = groups[from->groupNum].waypoints;
+    s32 i;
+    bool more;
+
+    while (*pointnums >= 0)
+    {
+        point = &points[*pointnums];
+        point->dist = -1; // reset waypoint
+        pointnums++;
+    }
+
+    from->dist = 0;
+
+    more = TRUE;
+
+    for (i = 0; (arg2 || to->dist < 0) && more; i++)
+    {
+        more = waypointsPropagateDist(groups[from->groupNum].waypoints, i, from->groupNum);
+    }
+}
+
+
+void waypointMarkRoute(waypoint *from, waypoint *to)
+{
+    waypoint *curto;
+    s32 value;
+
+    waypointsFloodDist(from, to, 0);
+
+    value = to->dist - 1;
+    curto = to;
+
+    while (value >= 0)
+    {
+        curto->dist += 10000;
+        curto = waypointFindByDist(curto->neighbours, value, from->groupNum);
+
+        value--;
+    }
+
+    curto->dist += 10000;
+}
+
+
+s32 waypointFindRouteInGroup(waypoint *from, waypoint *to, waypoint **arr, s32 arrlen)
+{
+    waypoint **arrptr = arr;
+    waypoint *curfrom;
+    s32 i;
+
+    if (arrlen >= 2)
+    {
+        waypointMarkRoute(from, to);
+
+        *arr = from;
+        arrptr++;
+
+        curfrom = from;
+        arrlen += 9999;
+        i = 10001;
+
+        while (i <= to->dist && i < arrlen)
+        {
+            curfrom = waypointFindByDist(curfrom->neighbours, i, from->groupNum);
+            *arrptr = curfrom;
+            arrptr++;
+            i++;
+        }
+    }
+
+    *arrptr = NULL;
+    arrptr++;
+
+    return arrptr - arr;
+}
+
+
+void waygroupFindLinkPoints(waygroup *groupa, waygroup *groupb, waypoint **pointa, waypoint **pointb)
+{
+    waypoint *points = g_CurrentSetup.pathwaypoints;
+    waygroup *groups = g_CurrentSetup.waypointgroups;
+    s32 *groupapointnums = groupa->waypoints;
+    s32 stack;
+
+    while (*groupapointnums >= 0)
+    {
+        waypoint *groupapoint = &points[*groupapointnums];
+        s32 *neighbournums = groupapoint->neighbours;
+
+        while (*neighbournums >= 0)
+        {
+            waypoint *neighbour = &points[*neighbournums];
+
+            if (groupb == &groups[neighbour->groupNum])
+            {
+                *pointa = groupapoint;
+                *pointb = neighbour;
+                return;
+            }
+
+            neighbournums++;
+        }
+
+        groupapointnums++;
+    }
+    *pointb = NULL;
+    *pointa = NULL;
+}
+
+
+/**
+ * Find a route from frompoint to topoint. The arr argument will be populated
+ * with pointers to the route's waypoints. If arr is not big enough then only
+ * the first part of the route will be populated into the array.
+ *
+ * The return value is the number of elements populated into the array.
+ */
+s32 waypointFindRoute(waypoint *frompoint, waypoint *topoint, waypoint **arr, s32 arrlen)
+{
+    waypoint **arrptr = arr;
+    waygroup *groups = g_CurrentSetup.waypointgroups;
+
+    if (groups)
+    {
+        waygroup *fromgroup = &groups[frompoint->groupNum];
+        waygroup *togroup = &groups[topoint->groupNum];
+
+        if (waygroupsMarkRoute(fromgroup, togroup, groups))
+        {
+            waypoint *curfrompoint = frompoint;
+            waygroup *curfromgroup = fromgroup;
+            s32 i;
+
+            for (i = fromgroup->dist + 1; i <= togroup->dist && arrlen >= 2; i++)
+            {
+                s32 numwritten;
+                waygroup *nextfromgroup = waygroupFindByDist(curfromgroup->neighbours, i);
+                waypoint *tmppoint;
+                waypoint *nextfrompoint;
+
+                waygroupFindLinkPoints(curfromgroup, nextfromgroup, &tmppoint, &nextfrompoint);
+                numwritten = waypointFindRouteInGroup(curfrompoint, tmppoint, arrptr, arrlen) - 1;
+
+                arrlen -= numwritten;
+                arrptr += numwritten;
+
+                curfrompoint = nextfrompoint;
+                curfromgroup = nextfromgroup;
+            }
+
+            arrptr += waypointFindRouteInGroup(curfrompoint, topoint, arrptr, arrlen) - 1;
+        }
+    }
+
+    *arrptr = NULL;
+    arrptr++;
+
+    return arrptr - arr;
+}
+
+
+// Resets waypoint distance, seems useless since
+// waypointsFloodDist already does this for its own
+// waypoint group. Even if waypointsFloodDist doesn't
+// reset waypoints outside of its own group, is that really needed?
+void waypointsResetDist(void)
+{
+    waypoint * waypoint;
+    waypoint = g_CurrentSetup.pathwaypoints;
+
+    while (waypoint->padID >= 0)
+    {
+        waypoint->dist = -1;
+        waypoint++;
+    }
+}
+
+
+waypoint *waypointFindRandomByDist(s32 *pointnums, s32 dist)
+{
+	s32 len = 0;
+	s32 randomindex;
+	s32 i;
+
+	while (pointnums[len] >= 0)
+    {
+		len++;
+	}
+
+	// This is effectively randomly dividing the pointnums list into two,
+	// then checking the upper portion before the lower portion. Both loops
+	// have the same logic so this seems unusual, but there is reason to do
+	// this if they want the returned waypoint to be any random waypoint that
+	// meets the arg1 criteria, with equal weighting.
+
+	randomindex = randomGetNext() % len;
+
+	for (i = randomindex; i < len; i++)
+    {
+		waypoint *point = &g_CurrentSetup.pathwaypoints[pointnums[i]];
+
+		if (point->dist == dist)
+        {
+			return point;
+		}
+	}
+
+	for (i = 0; i < randomindex; i++)
+    {
+		waypoint *point = &g_CurrentSetup.pathwaypoints[pointnums[i]];
+
+		if (point->dist == dist)
+        {
+			return point;
+		}
+	}
+
+	return NULL;
+}
+
+
+waygroup *waygroupFindRandomByDist(s32 *groupnums, s32 dist)
+{
+    s32 len = 0;
+    s32 randomindex;
+    s32 i;
+
+    while (groupnums[len] >= 0)
+    {
+        len++;
+    }
+
+    // Similar to the above function, return a random waygroup
+    // which matches the dist criteria.
+    randomindex = randomGetNext() % len;
+
+    for (i = randomindex; i < len; i++)
+    {
+        waygroup *group = &g_CurrentSetup.waypointgroups[groupnums[i]];
+
+        if (group->dist == dist)
+        {
+            return group;
+        }
+    }
+
+    for (i = 0; i < randomindex; i++)
+    {
+        waygroup *group = &g_CurrentSetup.waypointgroups[groupnums[i]];
+
+        if (group->dist == dist)
+        {
+            return group;
+        }
+    }
+
+    return NULL;
+}
+
+
+waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
+{
+    if (g_CurrentSetup.waypointgroups)
+    {
+        waygroup *groupa = &g_CurrentSetup.waypointgroups[pointa->groupNum];
+        waygroup *groupb = &g_CurrentSetup.waypointgroups[pointb->groupNum];
+        waypoint *result;
+        s32 stack;
+
+        if (groupa == groupb)
+        {
+            waypointsResetDist();
+            waypointsFloodDist(pointb, pointa, 1);
+
+            result = waypointFindRandomByDist(pointa->neighbours, -1);
+
+            if (result)
+            {
+                return result;
+            }
+
+            result = waypointFindRandomByDist(pointa->neighbours, pointa->dist + 1);
+
+            if (result)
+            {
+                return result;
+            }
+        }
+        else
+        {
+            waygroupsFloodDist(groupb, groupa, g_CurrentSetup.waypointgroups, 0);
+
+            if (groupa->dist >= 0)
+            {
+                waygroup *tmpgroup = waygroupFindRandomByDist(groupa->neighbours, -1);
+
+                if (tmpgroup)
+                {
+                    waypoint *sp48;
+                    waypoint *sp44;
+                    waypoint *arr[3];
+
+                    waygroupFindLinkPoints(groupa, tmpgroup, &sp48, &sp44);
+
+                    if (sp48 == pointa)
+                    {
+                        return sp44;
+                    }
+
+                    if (waypointFindRouteInGroup(pointa, sp48, arr, 3) >= 3)
+                    {
+                        return arr[1];
+                    }
+                }
+                else
+                {
+                    waygroup *tmpgroup = waygroupFindByDist(groupa->neighbours, groupa->dist - 1);
+
+                    if (tmpgroup)
+                    {
+                        waypoint *sp30;
+                        waypoint *sp2c;
+
+                        waygroupFindLinkPoints(groupa, tmpgroup, &sp30, &sp2c);
+                        waypointsFloodDist(sp30, pointa, 1);
+                        result = waypointFindByDist(pointa->neighbours, pointa->dist + 1, pointa->groupNum);
+
+                        if (result)
+                        {
+                            return result;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return NULL;
+}
+
+
+/**
+ * Unreferenced
+ */
+void waypointDebugTestRandomRoute(void)
+{
+    waypoint* waypoints;
+    s32 count;
+    waypoint* entry;
+    waypoint* from;
+    waypoint* to;
+    waypoint** arr_entry;
+    u32 unused[0x30];
+
+    waypoints = g_CurrentSetup.pathwaypoints;
+
+    if (waypoints != NULL)
+    {
+        waypoint *arr;
+        count = 0;
+        entry = waypoints;
+
+        while (entry->padID >= 0)
+        {
+            entry++;
+            count++;
+        }
+
+        from = &waypoints[randomGetNext() % count];
+        to = &waypoints[randomGetNext() % count];
+
+#ifdef DEBUG
+        osSyncPrintf("route from loc number %d to number %d", from->padID, to->padID);
+#endif
+
+        if (waypointFindRoute(from, to, &arr, 0x32) != 0)
+        {
+            for (arr_entry = &arr; *arr_entry; arr_entry++)
+            {
+#ifdef DEBUG
+                osSyncPrintf("%d", arr_entry[0]->padID);
+#endif
+            }
+        }
+#ifdef DEBUG
+        else
+        {
+            osSyncPrintf(" not connected");
+        }
+#endif
+    }
+#ifdef DEBUG
+    osSyncPrintf("\n");
+#endif
+}
+
+
+/**
+ * Checks the level's path graph at load and hangs if it is broken. Ryan spent a few minutes looking at this and left some notes about what this function does:
  *
  * var_s6 is an "error" variable. If set anywhere, the function goes into an infinite loop at the end.
  * The first outer loop appears to be verifying that the waypoints don't list themselves as their own neighbour.
- * The second outer loop appears to do the same but for waygroups. It also calls sub_GAME_7F08F438, which is a more simple version of PD's waypointFindSegmentIntoGroup, so it's likely verifying that there is a waypoint path between this group and each neighbour.
+ * The second outer loop appears to do the same but for waygroups. It also calls waygroupFindLinkPoints, which is a more simple version of PD's waypointFindSegmentIntoGroup, so it's likely verifying that there is a waypoint path between this group and each neighbour.
  * The third outer loop is iterating waygroups, then iterating each group's waypoints, and assigning each waypoint's groupNum if it's less than 0. If a value is stored and it's wrong, the error variable is set.
  * The fourth outer loop is checking that all waypoints have a groupNum assigned.
  * The fifth outer loop I'm not sure about without actually decompiling it and naming stuff. It appears to be using the waypoint->dist property temporary so it can validate something. If it doesn't like it then the error variable is set.
  * The final outer loop is the infinite loop which occurs if the error variable is true.
  */
 
-void init_path_table_links(void)
+void waypointsValidate(void)
 {
     stagesetup *setup;
     waygroup *groups;
@@ -207,7 +905,7 @@ void init_path_table_links(void)
                             else
                                 if (g_CurrentSetup.pathwaypoints != NULL)
                                 {
-                                    sub_GAME_7F08F438(validationGroup, linkedGroup, &connectionWaypoint1, &connectionWaypoint2);
+                                    waygroupFindLinkPoints(validationGroup, linkedGroup, &connectionWaypoint1, &connectionWaypoint2);
 
                                     if ((connectionWaypoint1 == NULL) || (connectionWaypoint2 == NULL))
                                     {

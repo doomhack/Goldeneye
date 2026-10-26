@@ -1204,7 +1204,7 @@ f32 chrUnusedYPositionRelated(PropRecord *arg0)
 {
     if (arg0->stan != 0)
     {
-        if (sub_GAME_7F0B20D0(&arg0->stan, arg0->pos.x, arg0->pos.z, 1.0f) < 0)
+        if (stanCircleLegal(&arg0->stan, arg0->pos.x, arg0->pos.z, 1.0f) < 0)
         {
             return stanGetPositionYValue(arg0->stan, arg0->pos.x, arg0->pos.z);
         }
@@ -1270,7 +1270,7 @@ StandTile *sub_GAME_7F01F614(ChrRecord *guard, StandTile *stan, coord3d *src, co
 
     hasprojection = 0;
 
-    if (getCollisionEdge_maybe(&edgeA, &edgeB))
+    if (stanGetCollisionEdge(&edgeA, &edgeB))
     {
         delta.x = dst->x - src->x;
         delta.z = dst->z - src->z;

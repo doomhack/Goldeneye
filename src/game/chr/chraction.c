@@ -1924,7 +1924,7 @@ void chrlvLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *li
 
 /**
  * Line-line intersection.
- * The first two points are retrieved from getCollisionEdge_maybe.
+ * The first two points are retrieved from stanGetCollisionEdge.
  * The arguments to the method supply the other line, described by a point and direction.
  *
  * 3d coord/vector are passed as arguments, but only the 2d (x,z) values are used to find the intersection.
@@ -1940,7 +1940,7 @@ void chrlvStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *resu
     coord3d sp2C;
     coord3d sp20;
 
-    getCollisionEdge_maybe(&sp2C, &sp20);
+    stanGetCollisionEdge(&sp2C, &sp20);
     chrlvLineLineIntersection(&sp2C, &sp20, line2_p3, dir, result);
 }
 
@@ -1958,7 +1958,7 @@ void chrlvStanPointPointIntersection(coord3d *arg0, coord3d *arg1, coord3d *resu
     coord3d sp20;
     f32 v;
 
-    getCollisionEdge_maybe(&sp2C, &sp20);
+    stanGetCollisionEdge(&sp2C, &sp20);
 
     // see comments in chrlvLineLineIntersection
 
@@ -2980,7 +2980,7 @@ s32 chrlvStanRoomRelated(ChrRecord *self, coord3d *arg1, StandTile *tile)
     s32 i;
 
     prop = self->prop;
-    tile_something = sub_GAME_7F0B0D0C(prop->stan, prop->pos.x, prop->pos.f[2], &tile, arg1->f[0], arg1->f[2], &sp48[0], BUFFER_SIZE_7F027DB0);
+    tile_something = stanGetRoomsBetween(prop->stan, prop->pos.x, prop->pos.f[2], &tile, arg1->f[0], arg1->f[2], &sp48[0], BUFFER_SIZE_7F027DB0);
 
     if (tile_something > 0 && tile_something < BUFFER_SIZE_7F027DB0)
     {
@@ -4932,7 +4932,7 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
                 region.z = (pad->up.z * (self->chrwidth * 1.1f)) + pad->pos.z;
 
                 //if able to reach region surrounding pad?
-                if (walkTilesBetweenPoints_NoCallback(&stan2, pad->pos.x, pad->pos.z, region.x, region.z) &&
+                if (stanWalkLineNoCallback(&stan2, pad->pos.x, pad->pos.z, region.x, region.z) &&
                     plot_course_for_actor(self, &region, stan2, speed))
                 {
                     return TRUE;
@@ -6847,8 +6847,8 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
                         else
                         {
                             if ((
-                                    (stanSavedColl_posData == NULL)
-                                    || ((stanSavedColl_posData->type != PROP_TYPE_CHR) && (stanSavedColl_posData->type != PROP_TYPE_VIEWER))
+                                    (g_StanHitProp == NULL)
+                                    || ((g_StanHitProp->type != PROP_TYPE_CHR) && (g_StanHitProp->type != PROP_TYPE_VIEWER))
                                 )
                                 && (sp20C < 10000.0f))
                             {
@@ -6863,21 +6863,21 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
                                 bullet_spark_create(&sp258, 1, 26.0f, (s16) sp254->room);
                             }
 
-                            if (stanSavedColl_posData != NULL)
+                            if (g_StanHitProp != NULL)
                             {
-                                recall_joy2_hits_edit_detail_edit_flag(prop_selfchr->act_attack.attack_item, &stanSavedColl_posData->type, -1);
+                                recall_joy2_hits_edit_detail_edit_flag(prop_selfchr->act_attack.attack_item, &g_StanHitProp->type, -1);
 
-                                if (stanSavedColl_posData->type == PROP_TYPE_CHR)
+                                if (g_StanHitProp->type == PROP_TYPE_CHR)
                                 {
                                     if ((self->chrflags & CHRFLAG_CAN_SHOOT_CHRS) != 0)
                                     {
-                                        handles_shot_actors(stanSavedColl_posData->chr, 0xF, &sp220, prop_selfchr->act_attack.attack_item, 0);
+                                        handles_shot_actors(g_StanHitProp->chr, 0xF, &sp220, prop_selfchr->act_attack.attack_item, 0);
                                     }
                                 }
-                                else if ((stanSavedColl_posData->type == PROP_TYPE_OBJ) || (stanSavedColl_posData->type == PROP_TYPE_WEAPON))
+                                else if ((g_StanHitProp->type == PROP_TYPE_OBJ) || (g_StanHitProp->type == PROP_TYPE_WEAPON))
                                 {
                                     chrobjMaybeDetonateObjectIfFlags(
-                                        stanSavedColl_posData->obj,
+                                        g_StanHitProp->obj,
                                         gunItemGetDestructionAmount(prop_selfchr->act_attack.attack_item),
                                         &sp258,
                                         prop_selfchr->act_attack.attack_item,
@@ -8401,7 +8401,7 @@ s32 sub_GAME_7F03081C(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
     {
         sp88 = 1;
 
-        getCollisionEdge_maybe(&sp78, &sp6C);
+        stanGetCollisionEdge(&sp78, &sp6C);
         chrlvSwapIfDiffArg2Determinate(&sp78, &sp6C, &spA0);
     }
 
@@ -8432,7 +8432,7 @@ s32 sub_GAME_7F03081C(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
     {
         sp84 = 1;
 
-        getCollisionEdge_maybe(&sp60, &sp54);
+        stanGetCollisionEdge(&sp60, &sp54);
         chrlvSwapIfDiffArg2Determinate(&sp60, &sp54, &spA0);
     }
 
@@ -8480,7 +8480,7 @@ s32 sub_GAME_7F03081C(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         }
         else
         {
-            getCollisionEdge_maybe(arg4, arg5);
+            stanGetCollisionEdge(arg4, arg5);
             chrlvSwapIfDiffArg2Determinate(arg4, arg5, &spA0);
         }
     }
@@ -8575,10 +8575,10 @@ s32 sub_GAME_7F030D70(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
     {
         sp88 = 1;
 
-        getCollisionEdge_maybe(&sp78, &sp6C);
+        stanGetCollisionEdge(&sp78, &sp6C);
         chrlvSwapIfDiffArg2Determinate(&sp78, &sp6C, &spA0);
 
-        stanval1 = stanSavedColl_someMin;
+        stanval1 = g_StanHitFrac;
     }
 
     spAC = arg2;
@@ -8608,10 +8608,10 @@ s32 sub_GAME_7F030D70(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
     {
         sp84 = 1;
 
-        getCollisionEdge_maybe(&sp60, &sp54);
+        stanGetCollisionEdge(&sp60, &sp54);
         chrlvSwapIfDiffArg2Determinate(&sp60, &sp54, &spA0);
 
-        stanval2 = stanSavedColl_someMin;
+        stanval2 = g_StanHitFrac;
     }
 
     if ((sp88 != 0) && (sp84 != 0))
@@ -8668,7 +8668,7 @@ s32 sub_GAME_7F030D70(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         }
         else
         {
-            getCollisionEdge_maybe(arg4, arg5);
+            stanGetCollisionEdge(arg4, arg5);
             chrlvSwapIfDiffArg2Determinate(arg4, arg5, &spA0);
         }
     }
@@ -9067,7 +9067,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
 
     if (((s32) arg3->age % 10) == 0)
     {
-        phi_s3 = sub_GAME_7F0B1410(self_prop->stan, self_prop->pos.f[0], self_prop->pos.f[2], arg3->pos_copy.f[0], arg3->pos_copy.f[2], 0x5000);
+        phi_s3 = stanLineFindDoor(self_prop->stan, self_prop->pos.f[0], self_prop->pos.f[2], arg3->pos_copy.f[0], arg3->pos_copy.f[2], 0x5000);
 
         if (phi_s3 != NULL)
         {
@@ -9953,7 +9953,7 @@ bool check_if_room_for_preset_loaded(ChrRecord *self, s32 padnum)
 
     if (padstan)
     {
-        return getROOMID_isRendered(getTileRoom(padstan));
+        return getROOMID_isRendered(stanGetTileRoom(padstan));
     }
 
     return FALSE;
@@ -10816,13 +10816,13 @@ s32 chrIsTargetNearlyInSight(ChrRecord *self)
 
     stanResetHits();
 
-    if (walkTilesBetweenPoints_NoCallback(&stan, self_prop->pos.x, self_prop->pos.z, player_prop->pos.x, player_prop->pos.z))
+    if (stanWalkLineNoCallback(&stan, self_prop->pos.x, self_prop->pos.z, player_prop->pos.x, player_prop->pos.z))
     {
         return FALSE;
     }
     else
     {
-        getCollisionEdge_maybe(&sp48, &sp3C); //extreme edges of stan tile
+        stanGetCollisionEdge(&sp48, &sp3C); //extreme edges of stan tile
 
         if (
             sub_GAME_7F0304AC(self, &self_prop->pos, self_prop->stan, &sp48, &player_prop->pos, player_prop->stan, 0)
@@ -10847,9 +10847,9 @@ s32 chrIsPosOffScreen(coord3d *arg0, StandTile *tile)
 
     offscreen = TRUE;
 
-    if (getROOMID_isRendered(getTileRoom(tile)) && fogPositionIsVisibleThroughFog(arg0, 0.0f))
+    if (getROOMID_isRendered(stanGetTileRoom(tile)) && fogPositionIsVisibleThroughFog(arg0, 0.0f))
     {
-        if (bgGet2dBboxByRoomId(getTileRoom(tile), &box))
+        if (bgGet2dBboxByRoomId(stanGetTileRoom(tile), &box))
         {
             offscreen = camIsPosInScreenBox(arg0, 200.0f, &box) == 0;
         }

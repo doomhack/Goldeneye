@@ -23,7 +23,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `hud/` | On-screen overlays: radar, health and armour bars, the death blood effect, bullet sparks | `radar.c`, `glass2.c`, `blood_animation.c` |
 | `chr/` | Guards and other characters: actions and animation state (`chraction.c`), the AI script interpreter (`chrai.c`) and the global AI scripts (`chraidata.c`) | `chr.c`, `chraction.c`, `chrai.c`, `chrprop.c` |
 | `prop/` | Props: doors, weapons on the floor, vehicles, explosions, glass, alarms | `prop.c`, `propobj.c`, `explosion.c`, `glass.c` |
-| `nav/` | Where things can stand and walk: floor tiles (`stan.c`) and the pad and waypoint graph guards path along | `stan.c`, `padhalllv.c` |
+| `nav/` | Where things can stand and walk: floor tiles (`stan.c`) and the waypoint graph guards path along. See [subsystems/nav.md](subsystems/nav.md) | `stan.c`, `waypoint.c` |
 | `mission/` | Objectives and briefings | `objective.c`, `objective_status.c` |
 | `world/` | The level geometry: rooms and portals (`bg.c`), fog, sky, light fixtures | `bg.c`, `bgfog.c`, `sky.c` |
 | `model/` | Model files, skeletons, animation, joint lists and the model slots. `cobjdata.c`, `gobjdata.c` and `pobjdata.c` hold the tables of character, gun and prop model files. See [subsystems/models.md](subsystems/models.md) | `model.c`, `anim.c`, `jointlist.c`, `modelfile.c` |
