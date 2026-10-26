@@ -803,7 +803,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
 
     if (texpool == NULL)
     {
-        texpool = &ptr_texture_alloc_start;
+        texpool = &g_TexSharedPool;
     }
 
     while (count > 0)

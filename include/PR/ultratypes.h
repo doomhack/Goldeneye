@@ -28,6 +28,11 @@
  */
 #if defined(_LANGUAGE_C) || defined(_LANGUAGE_C_PLUS_PLUS)
 
+/* For extern declarations of things that are not C small data: linker script symbols, asset
+ * offsets and variables defined in assembly. Without it, -G 8 makes GCC reach them through $gp,
+ * which only works for variables placed in .sdata/.sbss. */
+#define NO_SDATA __attribute__((section(".data")))
+
 typedef unsigned char               u8;  /* unsigned  8-bit */
 typedef unsigned short              u16; /* unsigned 16-bit */
 typedef unsigned int                u32; /* unsigned 32-bit */

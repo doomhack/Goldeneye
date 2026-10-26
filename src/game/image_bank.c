@@ -82,7 +82,7 @@ struct sImageTableEntry *mpcharselimages;
 struct sImageTableEntry *mpstageselimages;
 
 
-extern u8* _GlobalimagetableSegmentRomStart;
+extern u8* _GlobalimagetableSegmentRomStart NO_SDATA;
 
 
 void texSetBitstring(s32 pos) {
@@ -111,58 +111,58 @@ u32 texReadBits(s32 bitCount)
 
 
 
-extern u32* _GlobalimagetableSegmentStart;
-extern u32* _GlobalimagetableSegmentEnd;
-extern void* s_genericimage;
-extern void* s_impactimages;
-extern void* s_explosion_smokeimages;
-extern void* s_scattered_explosions;
-extern void* s_flareimage1;
-extern void* s_flareimage2;
-extern void* s_flareimage3;
-extern void* s_flareimage4;
-extern void* s_flareimage5;
-extern void* s_ammo9mmimage;
-extern void* s_rifleammoimage;
-extern void* s_shotgunammoimage;
-extern void* s_knifeammoimage;
-extern void* s_glammoimage;
-extern void* s_rocketammoimage;
-extern void* s_genericmineammoimage;
-extern void* s_grenadeammoimage;
-extern void* s_magnumammoimage;
-extern void* s_goldengunammoimage;
-extern void* s_remotemineammoimage;
-extern void* s_timedmineammoimage;
-extern void* s_proxmineammoimage;
-extern void* s_tankammoimage;
-extern void* s_crosshairimage;
-extern void* s_betacrosshairimage;
-extern void* s_glassoverlayimage;
-extern void* s_monitorimages;
-extern void* s_skywaterimages;
-extern void* s_mainfolderimages;
-extern void* s_mpradarimages;
-extern void* s_mpcharselimages;
-extern void* s_mpstageselimages;
+extern u32* _GlobalimagetableSegmentStart NO_SDATA;
+extern u32* _GlobalimagetableSegmentEnd NO_SDATA;
+extern void* s_genericimage NO_SDATA;
+extern void* s_impactimages NO_SDATA;
+extern void* s_explosion_smokeimages NO_SDATA;
+extern void* s_scattered_explosions NO_SDATA;
+extern void* s_flareimage1 NO_SDATA;
+extern void* s_flareimage2 NO_SDATA;
+extern void* s_flareimage3 NO_SDATA;
+extern void* s_flareimage4 NO_SDATA;
+extern void* s_flareimage5 NO_SDATA;
+extern void* s_ammo9mmimage NO_SDATA;
+extern void* s_rifleammoimage NO_SDATA;
+extern void* s_shotgunammoimage NO_SDATA;
+extern void* s_knifeammoimage NO_SDATA;
+extern void* s_glammoimage NO_SDATA;
+extern void* s_rocketammoimage NO_SDATA;
+extern void* s_genericmineammoimage NO_SDATA;
+extern void* s_grenadeammoimage NO_SDATA;
+extern void* s_magnumammoimage NO_SDATA;
+extern void* s_goldengunammoimage NO_SDATA;
+extern void* s_remotemineammoimage NO_SDATA;
+extern void* s_timedmineammoimage NO_SDATA;
+extern void* s_proxmineammoimage NO_SDATA;
+extern void* s_tankammoimage NO_SDATA;
+extern void* s_crosshairimage NO_SDATA;
+extern void* s_betacrosshairimage NO_SDATA;
+extern void* s_glassoverlayimage NO_SDATA;
+extern void* s_monitorimages NO_SDATA;
+extern void* s_skywaterimages NO_SDATA;
+extern void* s_mainfolderimages NO_SDATA;
+extern void* s_mpradarimages NO_SDATA;
+extern void* s_mpcharselimages NO_SDATA;
+extern void* s_mpstageselimages NO_SDATA;
 
-extern Gfx* globalDL_0x000;
-extern Gfx* globalDL_0x078;
-extern Gfx* globalDL_0x120;
-extern Gfx* globalDL_0x1c8;
-extern Gfx* globalDL_0x270;
-extern Gfx* globalDL_0x318;
-extern Gfx* globalDL_0x3c0;
-extern Gfx* globalDL_0x468;
-extern Gfx* globalDL_0x510;
-extern Gfx* globalDL_0x5b8;
-extern Gfx* globalDL_0x660;
-extern Gfx* globalDL_0x708;
-extern Gfx* globalDL_0x7b0;
-extern Gfx* globalDL_0x858;
-extern Gfx* globalDL_0x900;
-extern Gfx* globalDL_0x9a8;
-extern Gfx* globalDL_0xa50;
+extern Gfx* globalDL_0x000 NO_SDATA;
+extern Gfx* globalDL_0x078 NO_SDATA;
+extern Gfx* globalDL_0x120 NO_SDATA;
+extern Gfx* globalDL_0x1c8 NO_SDATA;
+extern Gfx* globalDL_0x270 NO_SDATA;
+extern Gfx* globalDL_0x318 NO_SDATA;
+extern Gfx* globalDL_0x3c0 NO_SDATA;
+extern Gfx* globalDL_0x468 NO_SDATA;
+extern Gfx* globalDL_0x510 NO_SDATA;
+extern Gfx* globalDL_0x5b8 NO_SDATA;
+extern Gfx* globalDL_0x660 NO_SDATA;
+extern Gfx* globalDL_0x708 NO_SDATA;
+extern Gfx* globalDL_0x7b0 NO_SDATA;
+extern Gfx* globalDL_0x858 NO_SDATA;
+extern Gfx* globalDL_0x900 NO_SDATA;
+extern Gfx* globalDL_0x9a8 NO_SDATA;
+extern Gfx* globalDL_0xa50 NO_SDATA;
 
 void texReset(void)
 {

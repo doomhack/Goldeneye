@@ -27,7 +27,7 @@ struct rgba_u8 g_BulletSparkColors[8] = {
     { 0 },
     { 0 }
 };
-u32 D_80040980 = 0;
+Vtx D_80040980 = {0};
 
 
 // something explosion related
@@ -635,7 +635,7 @@ void bullet_spark_render(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
         return;
     }
 
-    vtx = *((Vtx *) (&D_80040980));
+    vtx = D_80040980;
     mtx = currentPlayerGetViewToWorldMtxf();
     gdl = *((Gfx **) gdlarg);
     vertices = dynAllocateVertices(4);

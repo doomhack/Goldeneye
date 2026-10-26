@@ -769,13 +769,13 @@ extern OSViMode	osViModeMpalHaf1;
 extern OSViMode	osViModeMpalHpn2;
 extern OSViMode	osViModeMpalHpf2;
 
-extern s32 	osRomType;	/* Bulk or cartridge ROM. 0=cartridge 1=bulk */
-extern u32 	osRomBase;	/* Rom base address of the game image */
-extern u32 	osTvType;	/* 0 = PAL, 1 = NTSC, 2 = MPAL */
-extern u32 	osResetType;	/* 0 = cold reset, 1 = NMI */
-extern s32 	osCicId;
-extern s32 	osVersion;
-extern u32	osMemSize;	/* Memory Size */
+extern s32 	osRomType NO_SDATA;	/* Bulk or cartridge ROM. 0=cartridge 1=bulk */
+extern u32 	osRomBase NO_SDATA;	/* Rom base address of the game image */
+extern u32 	osTvType NO_SDATA;	/* 0 = PAL, 1 = NTSC, 2 = MPAL */
+extern u32 	osResetType NO_SDATA;	/* 0 = cold reset, 1 = NMI */
+extern s32 	osCicId NO_SDATA;
+extern s32 	osVersion NO_SDATA;
+extern u32	osMemSize NO_SDATA;	/* Memory Size */
 extern u8	osAppNMIBuffer[];
 
 extern OSIntMask __OSGlobalIntMask;	/* global interrupt mask */

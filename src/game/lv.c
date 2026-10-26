@@ -224,8 +224,8 @@ s16 g_DebugMpGameSoundFxIndex = 0;
 s16 D_800483E6 = 0;
 
 
-extern u8* _fontdlSegmentRomStart;
-extern u8* _fontdlSegmentRomEnd;
+extern u8* _fontdlSegmentRomStart NO_SDATA;
+extern u8* _fontdlSegmentRomEnd NO_SDATA;
 
 
 // forward declarations

@@ -1903,18 +1903,10 @@ s32 current_visibility = 0;
 //D:80044900
 f32 D_80044900 = 0;
 
-//D:80044904
-s32 D_80044904 = 0x7F7FFFFF;
-//D:80044908
-s32 D_80044908 = 0x7F7FFFFF;
-//D:8004490C
-s32 D_8004490C = 0x7F7FFFFF;
+//D:80044904 (+/-FLT_MAX, starting bounds for portal min/max)
+coord3d D_80044904 = {3.4028235e38f, 3.4028235e38f, 3.4028235e38f};
 //D:80044910
-s32 D_80044910 = 0xFF7FFFFF;
-//D:80044914
-s32 D_80044914 = 0xFF7FFFFF;
-//D:80044918
-s32 D_80044918 = 0xFF7FFFFF;
+coord3d D_80044910 = {-3.4028235e38f, -3.4028235e38f, -3.4028235e38f};
 //D:8004491C
 u32 D_8004491C = 0;
 //D:80044920
@@ -5423,8 +5415,8 @@ void sub_GAME_7F0BA2D4(coord3d *bbmin, coord3d *bbmax, s32 *room_list, s32 *coun
                         goto next_portal;
                     }
                     
-                    portal_min = *(coord3d *) &D_80044904;
-                    portal_max = *(coord3d *) &D_80044910;
+                    portal_min = D_80044904;
+                    portal_max = D_80044910;
                     portal_pts = g_BgPortals[portal_idx].offset_portal;
                     
                     for (j = 0; j < portal_pts->numPoints; j++)

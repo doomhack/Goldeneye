@@ -594,11 +594,11 @@ s16 *g_sndSfxSlotVolume;
  */
 u16 *g_sndSfxSlotNaturalVolume;
 
-extern u32 _sfxtblSegmentRomStart;
-extern u32 _sfxctlSegmentRomStart;
-extern u32 _instrumentstblSegmentRomStart;
-extern u32 _instrumentsctlSegmentRomStart;
-extern u32 _musicsampletblSegmentRomStart;
+extern u32 _sfxtblSegmentRomStart NO_SDATA;
+extern u32 _sfxctlSegmentRomStart NO_SDATA;
+extern u32 _instrumentstblSegmentRomStart NO_SDATA;
+extern u32 _instrumentsctlSegmentRomStart NO_SDATA;
+extern u32 _musicsampletblSegmentRomStart NO_SDATA;
 
 static u8 sMusicHuftBuffer[0x2100];
 #    define MUSIC_HLIST ((struct huft *)sMusicHuftBuffer)

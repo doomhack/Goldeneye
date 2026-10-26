@@ -193,7 +193,11 @@ u8 die_blood_image_1[] = {
    0xE5, 0xE5, 0xE5, 0xE5
 };
 
-u8 die_blood_image_end = 0;
+// The original marked the end of the data with a separate zero byte defined
+// after the array (die_blood_image_end). Once the compiler stops keeping the
+// two together the decoder runs past the end and overwrites memory, so use
+// the array's own end.
+#define die_blood_image_end die_blood_image_1[sizeof(die_blood_image_1)]
 
 Gfx *clear_framebuffer_black(Gfx *gdl) 
 {

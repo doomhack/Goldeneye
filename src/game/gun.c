@@ -364,37 +364,18 @@ Vtx D_80035C98 = {0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff };
 coord3d D_80035CA8 = { 0.0f, 0.0f, 0.0f };
 //D:80035CB4
 coord3d D_80035CB4 = { 0.0f, 0.0f, 0.0f };
+// These were a zero scalar followed by an array, read as one ModelRenderData
+// (or coord3d) through a cast. That only works while the compiler keeps them
+// adjacent, which -G 8 and zero-init-in-bss do not, so define real structs.
 //D:80035CC0
-u32 D_80035CC0 = 0;
-
-
-
-//D:80035CC4
-u32 D_80035CC4[] =                      { 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,           0,  0};
-/* ModelRenderData D_8002CCBC = {NULL,
-                                TRUE,
-                                0x00000003,
-                                NULL,
-                                NULL,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                0,
-                                {0, 0, 0, 0},
-                                {0, 0, 0, 0},
-                                CULLMODE_BOTH};
-*/
+ModelRenderData D_80035CC0 = {NULL, TRUE, 0x00000003};
 //D:80035D00
-u32 D_80035D00 = 0;
-//D:80035D04
-u32 D_80035D04[] = {1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+ModelRenderData D_80035D00 = {NULL, TRUE, 0x00000003};
+//D:80035D40
+ModelRenderData D_80035D40 = {NULL, TRUE, 0x00000003};
 //D:80035D44
 u32 watchControllerButtonBases[] = {
-	1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
 
@@ -455,15 +436,9 @@ struct gun_trigger_state g_ZeroTriggerState = { 0, 0 };
 //D:80035EA0
 //u32 D_80035EA0 = 0;
 //D:80035EA4
-u32 D_80035EA4 = 0;
-//D:80035EA8
-u32 D_80035EA8 = 0;
-//D:80035EAC
-u32 D_80035EAC = 0;
+coord3d D_80035EA4 = {0.0f, 0.0f, 0.0f};
 //D:80035EB0
-u32 g_DefaultCasingModelRenderData[] = {0, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//D:80035EEC
-u32 dword_D_80035EEC = 0; // Unused
+ModelRenderData g_DefaultCasingModelRenderData = {NULL, TRUE, 0x00000003};
 
 //D:80035EF0
 #define AMMO_RELATED_MAX 30

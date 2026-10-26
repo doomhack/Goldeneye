@@ -141,8 +141,7 @@
 // bss - TLB section
 
 OSThread g_tlbThread;
-u8 g_CrashMessage[0x500]; // unused/unreferenced (waste of space)
-char g_tlbStack[0x2300];
+char g_tlbStack[0x2300] __attribute__((aligned(16)));
 OSMesgQueue g_faultMesgQ;
 OSMesg *g_faultMesgBuf;
 OSTimer g_crashTimer;
@@ -329,7 +328,9 @@ void crashInit(void)
 {
     crashInitBuffers();
     osCreateMesgQueue(&g_faultMesgQ, (OSMesg *)&g_faultMesgBuf, TLB_MESSAGE_QUEUE_SIZE);
-    osCreateThread(&g_tlbThread, TLB_THREAD_ID, &crashMain, NULL, &g_tlbStack, TLB_THREAD_PRIORITY);
+    // The stack grows down, so it starts at the end of the array. The original passed the start of the array
+    // and ran on whatever the linker put in front of it (g_CrashMessage, as long as variables kept source order).
+    osCreateThread(&g_tlbThread, TLB_THREAD_ID, &crashMain, NULL, g_tlbStack + sizeof(g_tlbStack), TLB_THREAD_PRIORITY);
     osStartThread(&g_tlbThread);
 }
 

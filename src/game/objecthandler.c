@@ -5,51 +5,9 @@
 
 // bss
 //CODE.bss:80076A50
-char g_ModelHitEntries[0xC];
-//CODE.bss:80076A5C
-u32 dword_CODE_bss_80076A5C;
-//CODE.bss:80076A60
-u32 dword_CODE_bss_80076A60;
-//CODE.bss:80076A64;
-u32 dword_CODE_bss_80076A64;
-//CODE.bss:80076A68;
-u32 dword_CODE_bss_80076A68;
-//CODE.bss:80076A6C;
-u32 dword_CODE_bss_80076A6C;
-//CODE.bss:80076A70
-u32 dword_CODE_bss_80076A70;
-//CODE.bss:80076A74
-u32 dword_CODE_bss_80076A74;
-//CODE.bss:80076A78
-char dword_CODE_bss_80076A78[0xC];
-//CODE.bss:80076A84
-u32 dword_CODE_bss_80076A84;
-//CODE.bss:80076A88
-u32 dword_CODE_bss_80076A88;
-//CODE.bss:80076A8C
-char dword_CODE_bss_80076A8C;
-char dword_CODE_bss_80076A8D;
-char dword_CODE_bss_80076A8E;
-char dword_CODE_bss_80076A8F;
-char dword_CODE_bss_80076A90[0x10];
-//CODE.bss:80076AA0
-char dword_CODE_bss_80076AA0[0x14];
-//CODE.bss:80076AB4
-char dword_CODE_bss_80076AB4;
-char dword_CODE_bss_80076AB5;
-char dword_CODE_bss_80076AB6;
-char dword_CODE_bss_80076AB7;
-char dword_CODE_bss_80076AB8[0x10];
-//CODE.bss:80076AC8
-char dword_CODE_bss_80076AC8[0x14];
-//CODE.bss:80076ADC
-char dword_CODE_bss_80076ADC;
-char dword_CODE_bss_80076ADD;
-char dword_CODE_bss_80076ADE;
-char dword_CODE_bss_80076ADF;
-char dword_CODE_bss_80076AE0[0x2E28];
-//CODE.bss:80079908
-char g_ModelHitEntriesPenultimate[0x28];
+// Pool of 600 entries, threaded into a free list by initModelHitEntryFreeList. The decomp had it as a
+// run of placeholder globals, which only worked while they stayed together in .bss.
+ModelHitEntry g_ModelHitEntries[600];
 
 //CODE.bss:80079930
 struct AnimModelSlot *g_AnimModelSlots;
