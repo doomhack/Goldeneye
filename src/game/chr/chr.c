@@ -1615,13 +1615,13 @@ PropRecord *init_GUARDdata_with_set_values(PropRecord *arg0, Model *arg1, struct
     arg0->pos.f[2] = arg2->f[2];
     arg0->stan = arg4;
 
-    sub_GAME_7F06FF5C(arg1, (s32) sub_GAME_7F01FC10);
+    modelSetRootMoveCallback(arg1, (s32) sub_GAME_7F01FC10);
 
     arg1->unk00 = 0xA;
     arg1->chr = var_s0;
 
-    setsuboffset(arg1, arg2);
-    setsubroty(arg1, arg3);
+    modelSetRootPosition(arg1, arg2);
+    modelSetRootRotY(arg1, arg3);
 
     #if defined(VERSION_EU)
     modelSetAnimPlaySpeed(arg1, animation_rate * 1.2f, 0.0f);
@@ -1786,13 +1786,13 @@ void chrpropCleanupForRemoval(PropRecord *prop)
         } while (child != NULL);
     }
 
-    clear_aircraft_model_obj(model);
+    modelFreeAnimSlot(model);
 
     chr->model = NULL;
     chr->chrnum = -1;
 
     if (chr->field_20 != NULL) {
-        sub_GAME_7F06B248(chr->field_20);
+        jointListFree(chr->field_20);
     }
 }
 
@@ -2306,18 +2306,18 @@ void chrUpdateAnim(ChrRecord *chr, s32 tickamount)
 
     if (!(chr->hidden & CHRHIDDEN_FREEZE))
     {
-        getsuboffset(model, &chr->prevpos);
+        modelGetRootPosition(model, &chr->prevpos);
         modelTickAnim(model, tickamount, 1);
-        subcalcpos(model);
+        modelCalcPosition(model);
         set_color_shading_from_tile(prop, &chr->nextcol);
-        getsuboffset(model, &prop->pos);
+        modelGetRootPosition(model, &prop->pos);
         chrDetectRooms(chr);
 
         return;
     }
 
-    subcalcpos(model);
-    getsuboffset(model, &prop->pos);
+    modelCalcPosition(model);
+    modelGetRootPosition(model, &prop->pos);
 }
 
 
@@ -2371,7 +2371,7 @@ s32 chrTick(PropRecord *prop)
         {
             if (((ModelAnimation *)animation_table_ptrs1[g_AnimationTablePointerCountRelated]) != ((ModelAnimation *)1))
             {
-                if (objecthandlerGetModelAnim(model) != ((ModelAnimation *)animation_table_ptrs1[g_AnimationTablePointerCountRelated]))
+                if (modelGetAnim(model) != ((ModelAnimation *)animation_table_ptrs1[g_AnimationTablePointerCountRelated]))
                 {
                     modelSetAnimation(model, (ModelAnimation *)animation_table_ptrs1[g_AnimationTablePointerCountRelated], 0, 0.0f, 0.5f, 0.0f);
                 }
@@ -2455,7 +2455,7 @@ s32 chrTick(PropRecord *prop)
         {
             if (((chr->actiontype == ACT_PATROL) && (chr->act_patrol.waydata.mode == WAYMODE_MAGIC)) || ((chr->actiontype == ACT_GOPOS) && (chr->act_gopos.waydata.mode == WAYMODE_MAGIC)))
             {
-                headSwitchVisible = posIsOnScreen(prop, &prop->pos, getinstsize(model), 1);
+                headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
 
                 if (headSwitchVisible)
                 {
@@ -2463,10 +2463,10 @@ s32 chrTick(PropRecord *prop)
                     osSyncPrintf("\nVISIBLE MAGIC MODE!!!!\n\n");
 #endif
 
-                    getsuboffset(model, &chr->prevpos);
-                    subcalcpos(model);
+                    modelGetRootPosition(model, &chr->prevpos);
+                    modelCalcPosition(model);
                     set_color_shading_from_tile(prop, &chr->nextcol);
-                    getsuboffset(model, &prop->pos);
+                    modelGetRootPosition(model, &prop->pos);
                     chrDetectRooms(chr);
                 }
             }
@@ -2476,7 +2476,7 @@ s32 chrTick(PropRecord *prop)
                 {
                     chrUpdateAnim(chr, tickamount);
                 }
-                headSwitchVisible = posIsOnScreen(prop, &prop->pos, getinstsize(model), 1);
+                headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
 
                 if (headSwitchVisible)
                 {
@@ -2493,7 +2493,7 @@ s32 chrTick(PropRecord *prop)
         }
         else if ((chr->actiontype == ACT_ANIM) && (chr->act_anim.unk02c == 0))
         {
-            headSwitchVisible = posIsOnScreen(prop, &prop->pos, getinstsize(model), 1);
+            headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
 
             if (headSwitchVisible && (chr->act_anim.noTranslate == 0))
             {
@@ -2512,7 +2512,7 @@ s32 chrTick(PropRecord *prop)
         }
         else if (chr->actiontype == ACT_STAND)
         {
-            headSwitchVisible = posIsOnScreen(prop, &prop->pos, getinstsize(model), 1);
+            headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
 
             if (headSwitchVisible || (chr->chrflags & CHRFLAG_INIT))
             {
@@ -2546,7 +2546,7 @@ s32 chrTick(PropRecord *prop)
                 }
             }
 
-            headSwitchVisible = posIsOnScreen(prop, &prop->pos, getinstsize(model), 1);
+            headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
         }
     }
 
@@ -2563,7 +2563,7 @@ after_position_update:
 
     if (chr->field_20 != NULL)
     {
-        sub_GAME_7F06B248(chr->field_20);
+        jointListFree(chr->field_20);
         chr->field_20 = NULL;
     }
 
@@ -2579,7 +2579,7 @@ after_position_update:
     {
         if (chrCanUseDKModeScaling(chr->bodynum, chr->headnum))
         {
-            modelSetDistanceScale(0.3125f);
+            modelSetLodScale(0.3125f);
 
             if (chr->chrflags & CHRFLAG_10000000)
             {
@@ -2591,7 +2591,7 @@ after_position_update:
 #else
         if (cheatIsActive(CHEAT_DK_MODE))
         {
-            modelSetDistanceScale(0.3125f);
+            modelSetLodScale(0.3125f);
         }
 #endif
 
@@ -2615,16 +2615,16 @@ after_position_update:
             }
         }
 
-        subcalcmatrices(&renderdata, model);
+        modelCalcMatrices(&renderdata, model);
 
         g_ModelJointPositionedFunc = NULL;
-        modelSetDistanceScale(1.0f);
+        modelSetLodScale(1.0f);
 
         update_color_shading(&chr->shadecol, &chr->nextcol);
 
-        prop->zDepth = sub_GAME_7F06C768(model);
+        prop->zDepth = modelGetRootDepth(model);
 
-        chr->field_20 = sub_GAME_7F06B120(NULL, model);
+        chr->field_20 = jointListAddModel(NULL, model);
 
         chrRenderHeldWeapon(prop, GUNRIGHT, (Gfx **)(&chr->field_20));
         chrRenderHeldWeapon(prop, GUNLEFT, (Gfx **)(&chr->field_20));
@@ -2642,7 +2642,7 @@ after_position_update:
             renderdata.basemtx = modelFindNodeMtx(model, hatmodel->attachedto_objinst, 0);
             renderdata.mtxlist = dynAllocate(hatmodel->obj->numMatrices * (sizeof(Mtxf)));
 
-            instcalcmatrices(&renderdata, hatmodel);
+            modelCalcMatrices2(&renderdata, hatmodel);
 
             if ((chr->headnum >= HEAD_START) && (chr->headnum < BODY_Female_Sally))
             {
@@ -2778,7 +2778,7 @@ after_position_update:
 
             if ((!(chr->hidden & CHRHIDDEN_DROP_HELD_ITEMS)) || (!(hatobj->runtime_bitflags & RUNTIMEBITFLAG_00000080)))
             {
-                chr->field_20 = sub_GAME_7F06B120(chr->field_20, hatmodel);
+                chr->field_20 = jointListAddModel(chr->field_20, hatmodel);
             }
         }
 
@@ -2796,8 +2796,8 @@ after_position_update:
             }
         }
 
-        sub_GAME_7F06B29C(chr->field_20);
-        chr->field_20 = sub_GAME_7F06BB28(chr->field_20);
+        jointListCalcDepths(chr->field_20);
+        chr->field_20 = jointListSortByDepth(chr->field_20);
     }
     else
     {
@@ -2942,7 +2942,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
     if (!(chr->chrflags & CHRFLAG_04000000))
     {
-        f32 f = chrobjFogVisRangeRelated(prop, getinstsize(chrmodel)); //0-1
+        f32 f = chrobjFogVisRangeRelated(prop, modelGetRadius(chrmodel)); //0-1
         chrfadealpha = (s32) (f * (f32) chrfadealpha);
     }
 
@@ -3024,7 +3024,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
                 sp4C = ((1.0f - spC0.a) * (f32)(sp4C));
             }
 
-            sub_GAME_7F073FC8(sp4C);
+            modelSetShadowAlpha(sp4C);
 
             chrShade.r = chr->shadecol.r;
             chrShade.g = chr->shadecol.g;
@@ -3047,7 +3047,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
             }
 
             g_playerPerm->time_other_players_on_screen += 1;
-            drawjointlist(&mrData, chr->field_20);
+            jointListDraw(&mrData, chr->field_20);
 
             gdl = mrData.gdl;
 
@@ -3090,7 +3090,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
     if (withalpha != 0)
     {
-        sub_GAME_7F06B248(chr->field_20);
+        jointListFree(chr->field_20);
         chr->field_20 = NULL;
     }
 
@@ -3410,7 +3410,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
     f32 len;
     struct WeaponObjRecord *weapon;
     f32 dist;
-    ModelHitEntry *entry;
+    JointListEntry *entry;
     coord3d viewdir;
     f32 size;
     s32 i;
@@ -3425,7 +3425,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
     }
 
     model = chr->model;
-    modelsize = getinstsize(model);
+    modelsize = modelGetRadius(model);
 
     if ((prop->flags & PROPFLAG_ONSCREEN) == FALSE)
     {
@@ -3443,7 +3443,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
     hitnode = NULL;
     hitbounds = FALSE;
     dlnode = NULL;
-    submatrix = getsubmatrix(model);
+    submatrix = modelGetRootMtx(model);
     heldmodelsize = 0.0f;
 
     for (i = 0; i < 2; i++)
@@ -3451,7 +3451,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
         if (chr->weapons_held[i] != NULL)
         {
             weapon = chr->weapons_held[i]->weapon;
-            size = model->scale * getinstsize(weapon->model);
+            size = model->scale * modelGetRadius(weapon->model);
 
             if (heldmodelsize < size)
             {
@@ -3471,7 +3471,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
     if (hitpart != HIT_NULL_PART)
     {
         entry = chr->field_20;
-        hitpart = sub_GAME_7F06C010(&entry, &shotdata->viewOrigin, &shotdata->viewDir, &hitmodel, &hitnode);
+        hitpart = jointListFindHit(&entry, &shotdata->viewOrigin, &shotdata->viewDir, &hitmodel, &hitnode);
 
         while ((hitpart == HIT_GUN) || (hitpart == HIT_HAT))
         {
@@ -3483,7 +3483,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
             // Leave if (1) for matching.
             if (1)
             {
-                hitpart = probably_damage_detail_blood_effect_related(&entry, &shotdata->viewOrigin, &shotdata->viewDir, &hitmodel, &hitnode);
+                hitpart = jointListFindHitNext(&entry, &shotdata->viewOrigin, &shotdata->viewDir, &hitmodel, &hitnode);
             }
         }
     }
@@ -3641,9 +3641,9 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     jointpos.y += (jointpos.y - mtx->m[3][1]) * 0.5f;
     jointpos.z += (jointpos.z - mtx->m[3][2]) * 0.5f;
 
-    jointpos.x -= getjointsize(bhit->model, bhit->node) * 0.5f * shot->viewDir.x;
-    jointpos.y -= getjointsize(bhit->model, bhit->node) * 0.5f * shot->viewDir.y;
-    jointpos.z -= getjointsize(bhit->model, bhit->node) * 0.5f * shot->viewDir.z;
+    jointpos.x -= modelGetNodeRadius(bhit->model, bhit->node) * 0.5f * shot->viewDir.x;
+    jointpos.y -= modelGetNodeRadius(bhit->model, bhit->node) * 0.5f * shot->viewDir.y;
+    jointpos.z -= modelGetNodeRadius(bhit->model, bhit->node) * 0.5f * shot->viewDir.z;
 
     mtx4InvertRigid(mtx, &invmtx);
     mtx4TransformVecInPlace(&invmtx, &jointpos);

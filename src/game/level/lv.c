@@ -472,7 +472,7 @@ void lvlStageLoad(s32 stage)
     something_with_stage_objectives();
     mpwatchUnpauseGame();
     sub_GAME_7F09B820();
-    initModelHitEntryFreeList();
+    jointListInit();
     modelmgrResetSlotCounts();
     init_load_objpos_table();
     reinit_between_menus();

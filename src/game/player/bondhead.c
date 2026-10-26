@@ -256,24 +256,24 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
     modelTickAnim(&g_CurrentPlayer->model, g_ClockTimer, 1);
     modelSetAnimMergingEnabled((s32) isMergable);
 
-    subcalcpos(&g_CurrentPlayer->model);
+    modelCalcPosition(&g_CurrentPlayer->model);
     mtx4LoadIdentity(&sp40);
 
     renderData.basemtx = &sp40;
     renderData.mtxlist = &g_CurrentPlayer->bondheadmatrices[0];
 
-    subcalcmatrices(&renderData, &g_CurrentPlayer->model);
+    modelCalcMatrices(&renderData, &g_CurrentPlayer->model);
 
     g_CurrentPlayer->headbodyoffset.f[0] = g_CurrentPlayer->standbodyoffset.x;
     g_CurrentPlayer->headbodyoffset.f[1] = g_CurrentPlayer->standbodyoffset.y;
     g_CurrentPlayer->headbodyoffset.f[2] = g_CurrentPlayer->standbodyoffset.z;
 
-    getsuboffset(&g_CurrentPlayer->model, (struct float3 *) &offset);
+    modelGetRootPosition(&g_CurrentPlayer->model, (struct float3 *) &offset);
 
     offset.f[0] -= g_CurrentPlayer->bondheadmatrices[0].m[3][0];
     offset.f[2] -= g_CurrentPlayer->bondheadmatrices[0].m[3][2];
 
-    setsuboffset(&g_CurrentPlayer->model, (coord3d *) &offset);
+    modelSetRootPosition(&g_CurrentPlayer->model, (coord3d *) &offset);
 
     if (abs_anim_speed > 0.0f)
     {

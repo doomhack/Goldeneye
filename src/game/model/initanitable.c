@@ -230,7 +230,7 @@ struct anim_entry
     s32 unk10;
 };
 
-void expand_ani_table_entries(s32** arg0)
+void animResolveTable(s32** arg0)
 {
     s32** var_v0;
 
@@ -251,18 +251,18 @@ void expand_ani_table_entries(s32** arg0)
     }
 }
 
-void alloc_load_expand_ani_table(void)
+void animLoadTable(void)
 {
     s32 animsDataSegmentSize;
     
     osCreateMesgQueue(&animMsgQ, animMesg, 8);
-    initAnimationsBuffer(&D_80029D60, &animMsgQ, &dword_CODE_bss_80069458);
+    animInitFrameBuffer(&D_80029D60, &animMsgQ, &dword_CODE_bss_80069458);
     
     animsDataSegmentSize = (s32)&_animation_dataSegmentEnd - (s32)&_animation_dataSegmentStart;
     
     ptr_animation_table = mempAlloc(animsDataSegmentSize, MEMPOOL_PERMANENT);
 
     romCopy(ptr_animation_table, &_animation_dataSegmentRomStart, animsDataSegmentSize);
-    expand_ani_table_entries((s32*)&animation_table_ptrs1);
-    expand_ani_table_entries((s32*)&animation_table_ptrs2);
+    animResolveTable((s32*)&animation_table_ptrs1);
+    animResolveTable((s32*)&animation_table_ptrs2);
 }

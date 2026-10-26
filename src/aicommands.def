@@ -10427,8 +10427,8 @@ _AI_CMD(
                 }
                 chr->prop->stan = stan;
                 chr->chrflags = chr->chrflags | CHRFLAG_INIT;
-                setsubroty(chr->model, FacingDirection);
-                setsuboffset(chr->model, &pos);
+                modelSetRootRotY(chr->model, FacingDirection);
+                modelSetRootPosition(chr->model, &pos);
                 sub_GAME_7F020D94(chr);
                 if (chr->prop == pPlayer->prop)
                 {

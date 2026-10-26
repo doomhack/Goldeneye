@@ -652,12 +652,12 @@ typedef union
      */
     typedef struct ModelRenderData
     {
-        Mtxf   *basemtx;        /*0x00*/ // Canonical name. See instcalcmatrices in model.c.
+        Mtxf   *basemtx;        /*0x00*/ // Canonical name. See modelCalcMatrices2 in model.c.
         bool    zbufferenabled; /*0x04*/
         u32     flags;          /*0x08*/
         Gfx    *gdl;            /*0x0c*/
 
-        Mtxf   *mtxlist;        /*0x10*/ // Canonical name. See instcalcmatrices in model.c.
+        Mtxf   *mtxlist;        /*0x10*/ // Canonical name. See modelCalcMatrices2 in model.c.
         u32     unk14;          /*0x14*/
         u32     unk18;          /*0x18*/
         u32     unk1c;          /*0x1c*/
@@ -802,7 +802,7 @@ typedef union
     #pragma region Model Node OpCode Definitions
 
         /*
-         * These are some extra RoData structs that are used by Op07 (and presumably Op05)
+         * These are some extra RoData structs that are used by tube nodes (and presumably Op05)
          * Not sure how these fit in with the rest, they appear to be separate
          */
 
@@ -988,7 +988,7 @@ typedef union
          *  Opcode 7
          *  unused but referenced
          */
-        typedef struct ModelRoData_Op07Record
+        typedef struct ModelRoData_TubeRecord
         {
             struct ModelNode* unk00;     /*0x00*/
             struct ModelNode* unk04;     /*0x04*/
@@ -1003,12 +1003,12 @@ typedef union
             u16 unk1A8;      /*0x1A8*/
             u16 RwDataIndex; /*0x1AA*/
             void* BaseAddr;
-        } ModelRoData_Op07Record;
+        } ModelRoData_TubeRecord;
 
-        typedef struct ModelRwData_Op07Record
+        typedef struct ModelRwData_TubeRecord
         {
             s32 index;
-        } ModelRwData_Op07Record;
+        } ModelRwData_TubeRecord;
 
         /**
          *  Opcode 8
@@ -1310,7 +1310,7 @@ typedef union
         struct ModelRoData_DisplayListRecord DisplayList;
         struct ModelRoData_Op05Record Op05;
         struct ModelRoData_Op06Record Op06;
-        struct ModelRoData_Op07Record Op07;
+        struct ModelRoData_TubeRecord Tube;
         struct ModelRoData_LODRecord LOD;
         struct ModelRoData_BSPRecord BSP;
         struct ModelRoData_BoundingBoxRecord BoundingBox;
@@ -1334,7 +1334,7 @@ typedef union
     {
         struct ModelRwData_HeaderRecord Header;
         struct ModelRwData_DisplayListRecord DisplayList;
-        struct ModelRwData_Op07Record Op07;
+        struct ModelRwData_TubeRecord Tube;
         struct ModelRwData_LODRecord LOD;
         struct ModelRwData_BSPRecord BSP;
         struct ModelRwData_Op11Record Op11;
@@ -1456,7 +1456,7 @@ typedef union
             u8      unk02;   /*2*/
             f32     ground;  /*4*/
             coord3d pos;     //8, 12, 16 - this is the right poition for this, but no idea what this node actually is (used in modelGetNodeRwData)
-            f32     subroty; //14 angle - this also happens to fit best for getsubroty
+            f32     subroty; //14 angle - this also happens to fit best for modelGetRootRotY
             f32     unk18;   /*18*/
             u32     unk1c;   /*1c*/
             f32     unk20;   //20 angle
@@ -1564,7 +1564,7 @@ typedef union
             s32               animflipfunc; /*0x98*/
             s32               unk9c;
             // 0xa0
-            s32               unka0; // This is likely a function pointer, see sub_GAME_7F06D490()
+            s32               unka0; // This is likely a function pointer, see modelCalcRootPosition()
             f32               playspeed; // used by ACT_STAND in chrlv
             f32               animrate;
             f32               unkac;
@@ -1650,13 +1650,13 @@ typedef union
         BulletHit hits[10];         // 0x38
     } ShotData;
 
-    typedef struct ModelHitEntry {
+    typedef struct JointListEntry {
         struct Model *model;                  /* 0x00 */
         struct ModelNode *rootnode;           /* 0x04 */
         f32 sortvalue;                        /* 0x08 */
-        struct ModelHitEntry *next;           /* 0x0c */
-        struct ModelHitEntry *prev;           /* 0x10 */
-    } ModelHitEntry;
+        struct JointListEntry *next;           /* 0x0c */
+        struct JointListEntry *prev;           /* 0x10 */
+    } JointListEntry;
 
 #pragma endregion Hit Structures
 
@@ -2376,7 +2376,7 @@ typedef union
         CHRFLAG         chrflags;                    /* 0x0014 */
         PropRecord     *prop;                        /* 0x0018 */
         Model          *model;                       /* 0x001C */
-        ModelHitEntry  *field_20;                    /* 0x0020 */
+        JointListEntry  *field_20;                    /* 0x0020 */
         f32             chrwidth;                    /* 0x0024 */
         f32             chrheight;                   /* 0x0028 */
         union

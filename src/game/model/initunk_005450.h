@@ -2,6 +2,6 @@
 #define _INITUNK_005450_H_
 #include <ultra64.h>
 
-void initModelHitEntryFreeList(void);
+void jointListInit(void);
 
 #endif

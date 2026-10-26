@@ -210,7 +210,7 @@ void door7F0526EC(DoorRecord *door, Mtxf *rhs);
 void objBreakCCTVGlass(ObjectRecord *obj);
 void save_img_index_to_obj_ani_slot(MonitorRecord *mon, void *unk88);
 void save_ptr_monitor_ani_code_to_obj_ani_slot(MonitorRecord *mon, void *image);
-s32 sub_GAME_7F06C010(ModelHitEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode);
+s32 jointListFindHit(JointListEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode);
 AmmoCrateRecord *ammocrateAllocate(void);
 ModelNode* sub_GAME_7F04B478(ObjectRecord* obj);
 bool sub_GAME_7F04B590(ModelFileHeader* arg0, ModelNode* arg1);
@@ -676,11 +676,11 @@ PropRecord* objInit(ObjectRecord* obj, ModelFileHeader* model_header, PropRecord
         {
             if (obj->type == PROPDEF_AIRCRAFT)
             {
-                clear_aircraft_model_obj(model);
+                modelFreeAnimSlot(model);
             }
             else
             {
-                clear_model_obj(model);
+                modelFreeSlot(model);
             }
         }
 
@@ -1010,11 +1010,11 @@ void objFree(ObjectRecord* obj, s32 freeprop, s32 canregen)
 
             if (obj->type == PROPDEF_AIRCRAFT)
             {
-                clear_aircraft_model_obj(obj->model);
+                modelFreeAnimSlot(obj->model);
             }
             else
             {
-                clear_model_obj(obj->model);
+                modelFreeSlot(obj->model);
             }
 
             if (freeprop != 0)
@@ -1109,7 +1109,7 @@ bool projectileLineTestModel(ObjectRecord *obj, coord3d *modelRayOrigin, coord3d
     {
         do 
         {
-            found = modelFindNextProjectileHitCandidate(model, modelRayOrigin, modelRayDir, &node);
+            found = modelFindRayHitNext(model, modelRayOrigin, modelRayDir, &node);
 
             if (found > 0) 
             {
@@ -1278,7 +1278,7 @@ bool projectileTestObjectCollision(ObjectRecord *obj, coord3d *worldRayOrigin, c
     f32 dz;
     PropRecord *prop;
 
-    instsize = getinstsize(modelstack[0] = obj->model);
+    instsize = modelGetRadius(modelstack[0] = obj->model);
     prop = obj->prop;
     value = 0.0f;
 
@@ -1309,7 +1309,7 @@ bool projectileTestObjectCollision(ObjectRecord *obj, coord3d *worldRayOrigin, c
             // Cheaper bounds test for off screen props.
             } else {
                 prop = obj->prop;
-                instsize = getinstsize(modelstack[0]);
+                instsize = modelGetRadius(modelstack[0]);
 
                 if (projectileTestPropBoundingSphere(worldRayOrigin, worldRayDir, &obj->runtime_pos, instsize)) {
                     *hitDist = maxDist;
@@ -1409,12 +1409,12 @@ bool sub_GAME_7F041BB8(ChrRecord *chr, coord3d *arg1, coord3d *arg2, f32 arg3, c
     s32 bodyPart;
     Model *model;
     ModelNode *node;
-    ModelHitEntry *entry;
+    JointListEntry *entry;
     Mtxf *mtx;
     PropRecord *prop;
 
     prop = chr->prop;
-    instSize = getinstsize(chr->model);
+    instSize = modelGetRadius(chr->model);
     dx = prop->pos.x - arg1->x;
     dy = prop->pos.y - arg1->y;
     dz = prop->pos.z - arg1->z;
@@ -1422,7 +1422,7 @@ bool sub_GAME_7F041BB8(ChrRecord *chr, coord3d *arg1, coord3d *arg2, f32 arg3, c
 
     if ((-instSize <= planeDist) && (planeDist <= (arg3 + instSize)) && (prop->flags & PROPFLAG_ONSCREEN)) {
         entry = chr->field_20;
-        bodyPart = sub_GAME_7F06C010(&entry, arg4, arg5, &model, &node);
+        bodyPart = jointListFindHit(&entry, arg4, arg5, &model, &node);
         if (bodyPart > 0) {
             mtx = modelFindNodeMtx(model, node, 0);
             dx = mtx->m[3][0] - arg4->x;
@@ -3299,7 +3299,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
 
         if (prop->flags & PROPFLAG_ONSCREEN)
         {
-            mtx = getsubmatrix(prop_obj->model);
+            mtx = modelGetRootMtx(prop_obj->model);
 
             pos.x = mtx->m[3][0];
 			pos.y = mtx->m[3][1];
@@ -4473,7 +4473,7 @@ s32 objTick(struct PropRecord *prop)
      */
 	if (objMovedThisFrame > tickop)
 	{
-		previousOpenPosition -= (getjointsize(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[0];
+		previousOpenPosition -= (modelGetNodeRadius(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[0];
 	}
 
 	previousOpenPosition = 0.0f;
@@ -4765,9 +4765,9 @@ s32 objTick(struct PropRecord *prop)
 										bloodStainPos.f[1] += (bloodStainPos.f[1] - ((Mtxf *) playerProp2)->m[3][1]) * 0.5f;
 										bloodStainPos.f[2] += (bloodStainPos.f[2] - ((Mtxf *) playerProp2)->m[3][2]) * 0.5f;
 
-										bloodStainPos.f[0] -= (getjointsize(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[0];
-										bloodStainPos.f[1] -= (getjointsize(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[1];
-										bloodStainPos.f[2] -= (getjointsize(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[2];
+										bloodStainPos.f[0] -= (modelGetNodeRadius(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[0];
+										bloodStainPos.f[1] -= (modelGetNodeRadius(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[1];
+										bloodStainPos.f[2] -= (modelGetNodeRadius(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[2];
     
 										mtx4InvertRigid((Mtxf *) playerProp2, &inverseNodeMatrix);
 										mtx4TransformVecInPlace(&inverseNodeMatrix, &bloodStainPos);
@@ -5782,7 +5782,7 @@ s32 objTick(struct PropRecord *prop)
 
 			if (temp_s0_6->anim != NULL)
 			{
-				setsuboffset(temp_s0_6, &render_pad2F4->runtime_pos);
+				modelSetRootPosition(temp_s0_6, &render_pad2F4->runtime_pos);
 #if defined(VERSION_EU)
 				modelSetAnimPlaySpeed(render_pad2F4->model, 1.2f, 0.0f);
 #endif
@@ -5791,27 +5791,27 @@ s32 objTick(struct PropRecord *prop)
 				if (temp_s0_6->anim == animation_table_ptrs2[1])
 				{
 					modelSetAnimTranslationScale(temp_s0_6, 10.438f);
-					setsubroty(render_pad2F4->model, M_PI_F);
+					modelSetRootRotY(render_pad2F4->model, M_PI_F);
 				}
 				else if (bossGetStageNum() == 22)
 				{
 					modelSetAnimTranslationScale(render_pad2F4->model, 1.0438f);
-					setsubroty(render_pad2F4->model, 2.3561945f);
+					modelSetRootRotY(render_pad2F4->model, 2.3561945f);
 				}
 				else if (bossGetStageNum() == 26)
 				{
 					modelSetAnimTranslationScale(render_pad2F4->model, 1.0438f);
-					setsubroty(render_pad2F4->model, 3.9269907f);
+					modelSetRootRotY(render_pad2F4->model, 3.9269907f);
 				}
 				else
 				{
 					modelSetAnimTranslationScale(render_pad2F4->model, 1.0438f);
-					setsubroty(render_pad2F4->model, 0.0f);
+					modelSetRootRotY(render_pad2F4->model, 0.0f);
 				}
 
 				modelTickAnim(render_pad2F4->model, g_ClockTimer, 1);
-				subcalcpos(render_pad2F4->model);
-				getsuboffset(render_pad2F4->model, &render_pad2F4->runtime_pos);
+				modelCalcPosition(render_pad2F4->model);
+				modelGetRootPosition(render_pad2F4->model, &render_pad2F4->runtime_pos);
 				prop->pos.f[0] = render_pad2F4->runtime_pos.f[0];
 				prop->pos.f[2] = render_pad2F4->runtime_pos.f[2];
 				if (render_pad2F4->pad < 10000)
@@ -5825,7 +5825,7 @@ s32 objTick(struct PropRecord *prop)
 
 				prop->pos.f[1] = var_v1_4->pos.f[1] + render_pad2F4->runtime_pos.f[1];
 				render_pad2F4->runtime_pos.f[1] = prop->pos.f[1];
-				setsuboffset(render_pad2F4->model, &render_pad2F4->runtime_pos);
+				modelSetRootPosition(render_pad2F4->model, &render_pad2F4->runtime_pos);
 			}
 
 			angleDelta = render_pad2F4->speedtime60;
@@ -5941,7 +5941,7 @@ s32 objTick(struct PropRecord *prop)
 	}
 	else
 	{
-		var_v1_5 = ((!(obj->runtime_bitflags & RUNTIMEBITFLAG_00000800)) && (!(obj->flags2 & PROPFLAG2_00080000))) ? (posIsOnScreen(prop, &obj->runtime_pos, getinstsize(model), applyFogCull)) : (0);
+		var_v1_5 = ((!(obj->runtime_bitflags & RUNTIMEBITFLAG_00000800)) && (!(obj->flags2 & PROPFLAG2_00080000))) ? (posIsOnScreen(prop, &obj->runtime_pos, modelGetRadius(model), applyFogCull)) : (0);
 	}
 
 	if (var_v1_5 != 0)
@@ -6234,7 +6234,7 @@ s32 objTick(struct PropRecord *prop)
 					sp1B0 = D_80030B34;
 					sp1B0.basemtx = camGetWorldToScreenMtxf();
 					sp1B0.mtxlist = &mtxs[0];
-					subcalcmatrices(&sp1B0, aircraft_render->model);
+					modelCalcMatrices(&sp1B0, aircraft_render->model);
 				}
 				else
 				{
@@ -7418,7 +7418,7 @@ void sub_GAME_7F04AC20(PropRecord *prop, ModelRenderData *mrData, s32 arg2)
         }
 
         mrData->gdl = gdl;
-        subdraw(mrData, model);
+        modelRender(mrData, model);
         gdl = mrData->gdl;
 
         if (obj->type == PROPDEF_DOOR)
@@ -7492,7 +7492,7 @@ Gfx *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 arg2)
 
     if ((u8) obj->type != PROPDEF_TINTED_GLASS)
     {
-        temp_f0 = chrobjFogVisRangeRelated(prop, getinstsize(obj->model));
+        temp_f0 = chrobjFogVisRangeRelated(prop, modelGetRadius(obj->model));
 
         if (((s32) prop->timetoregen > 0) && ((s32) prop->timetoregen < CHROBJ_TIMETOREGEN))
         {
@@ -8123,7 +8123,7 @@ s32 objDrop(PropRecord *prop)
             ChrRecord* chr = parent->chr;
             Model *chrmodel = chr->model;
             coord3d rot = { 0.0f, 0.0f, 0.0f };
-            f32 angle = getsubroty(chrmodel);
+            f32 angle = modelGetRootRotY(chrmodel);
 
             projectile->speed.x = sinf(angle) * 1.6666666f;
             projectile->speed.y = -RANDOMFRAC() * 1.6666666f * 0.5f;
@@ -8146,7 +8146,7 @@ s32 objDrop(PropRecord *prop)
             ChrRecord* chr = parent->chr;
             Model *chrmodel = chr->model;
             coord3d rot = { 0.0f, 0.0f, 0.0f };
-            f32 angle = getsubroty(chrmodel);
+            f32 angle = modelGetRootRotY(chrmodel);
 
             projectile->speed.x = sinf(angle) * 13.333333f;
             projectile->speed.y = 6.6666665f;
@@ -8207,7 +8207,7 @@ s32 objDrop(PropRecord *prop)
         {
             // Do collision checks
             f32 objwidth = objGetWidth(obj);
-            Mtxf *sp58 = getsubmatrix(model);
+            Mtxf *sp58 = modelGetRootMtx(model);
             s32 cdtypes = CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER;
 
             mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), sp58, &spB8);
@@ -9503,7 +9503,7 @@ dummy_label_995911:
         {
             do
             {
-                hitpart = modelFindNextProjectileHitCandidate(model, &hitinfo->viewOrigin, &hitinfo->viewDir, &node);
+                hitpart = modelFindRayHitNext(model, &hitinfo->viewOrigin, &hitinfo->viewDir, &node);
 
                 if (hitpart > HIT_NULL_PART)
                 {
@@ -11162,7 +11162,7 @@ bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *arg1, struct coord2d 
     if (prop->flags & PROPFLAG_ONSCREEN)
     {
         ObjectRecord *obj = prop->obj;
-        Mtxf *matrix = getsubmatrix(obj->model);
+        Mtxf *matrix = modelGetRootMtx(obj->model);
 
         arg1->z = matrix->m[3][2];
 
@@ -11346,7 +11346,7 @@ PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags)
     {
         if (model)
         {
-            clear_model_obj(model);
+            modelFreeSlot(model);
         }
 
         if (prop)
@@ -11989,7 +11989,7 @@ ObjectRecord *create_new_item_instance_of_model(PROP modelnum, s32 weaponid)
 
         if (model != NULL)
         {
-            clear_model_obj(model);
+            modelFreeSlot(model);
         }
 
         if (prop != NULL)
@@ -12093,7 +12093,7 @@ PropRecord *something_with_generating_object(ChrRecord *self, s32 propid, ITEM_I
     {
         if (objinst)
         {
-            clear_model_obj(objinst);
+            modelFreeSlot(objinst);
         }
 
         if (lastobjentry)
@@ -12181,13 +12181,13 @@ void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
                 }
 
                 renderData.mtxlist = dynAllocate(heldModel->obj->numMatrices * sizeof(Mtxf));
-                instcalcmatrices(&renderData, heldModel);
+                modelCalcMatrices2(&renderData, heldModel);
 
                 if (gdl != NULL) 
                 {
                     if (!(weaponObj->runtime_bitflags & RUNTIMEBITFLAG_00000080)) 
                     {
-                        *gdl = sub_GAME_7F06B120(*gdl, heldModel);
+                        *gdl = jointListAddModel(*gdl, heldModel);
                     }
                 }
 

@@ -31,7 +31,7 @@ void init_ejected_cartridges(void)
 
     while (ejected_cartridge[i].header != 0) 
     {
-        fileLoad(ejected_cartridge[i].header, ejected_cartridge[i].text);
+        modelFileLoadToPool(ejected_cartridge[i].header, ejected_cartridge[i].text);
         i++;
     }
 }

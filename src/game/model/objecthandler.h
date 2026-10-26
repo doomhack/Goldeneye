@@ -85,15 +85,15 @@ struct ModelSlot {
 extern struct AnimModelSlot *g_AnimModelSlots;
 extern struct ModelSlot *g_ModelSlots;
 
-extern struct ModelHitEntry *g_ModelHitFreeList;
-extern s32 g_ModelDistanceDisabled;
-extern f32 g_ModelDistanceScale;
+extern struct JointListEntry *g_JointListFree;
+extern s32 g_ModelLodDisabled;
+extern f32 g_ModelLodScale;
 extern u32 g_ModelAnimMergingEnabled;
 extern s32 D_80036410;
-extern struct bondstruct_unk_animation_related* D_80036414;
+extern struct bondstruct_unk_animation_related* g_AnimFrameBuffer;
 extern s32 D_80036418;
 extern s32 D_8003641C;
-extern u32 D_800363F0;
+extern u32 g_ModelShadowAlpha;
 
 extern coord3d D_80036094;
 extern coord3d D_800360A0;
@@ -102,29 +102,29 @@ extern coord3d D_800360B8;
 extern coord3d D_80036244;
 extern coord3d D_80036254;
 
-extern struct Vertex* (*vtxallocator)(s32 numvertices);
+extern struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices);
 extern void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx);
-extern struct bondstruct_unk_op07_related D_800360C4[];
+extern struct bondstruct_unk_op07_related g_ModelTubeAngleTable[];
 extern Vertex D_800363E0;
 extern Vtx D_800363F8;
 extern coord3d D_80036408;
 
-void fileLoad(ModelFileHeader *header,char *name);
-void load_object_into_memory_unused_maybe(ModelFileHeader *header,int *recallstring,int *targetloc,int sizeleft);
+void modelFileLoadToPool(ModelFileHeader *header,char *name);
+void modelFileLoadToAddr(ModelFileHeader *header,int *recallstring,int *targetloc,int sizeleft);
 
 // tentative signature
 PropRecord *chrGiveWeapon(ChrRecord *self, s32 PropID, ITEM_IDS ItemID, s32 flags);
 
 // called with struct ChrRecord->field_20
-ModelHitEntry* sub_GAME_7F06B120(ModelHitEntry* head, Model* context);
-void sub_GAME_7F06B248(ModelHitEntry *entry);
-void drawjointlist(ModelRenderData *arg0, ModelHitEntry *entry);
-void sub_GAME_7F06B29C(ModelHitEntry *arg0);
-ModelHitEntry *sub_GAME_7F06BB28(ModelHitEntry *modelhit);
-s32 probably_damage_detail_blood_effect_related(ModelHitEntry **entryptr, coord3d *raypos, coord3d *raydir, Model **outModel, ModelNode **inoutNode);
-s32 sub_GAME_7F06C010(ModelHitEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode);
+JointListEntry* jointListAddModel(JointListEntry* head, Model* context);
+void jointListFree(JointListEntry *entry);
+void jointListDraw(ModelRenderData *arg0, JointListEntry *entry);
+void jointListCalcDepths(JointListEntry *arg0);
+JointListEntry *jointListSortByDepth(JointListEntry *modelhit);
+s32 jointListFindHitNext(JointListEntry **entryptr, coord3d *raypos, coord3d *raydir, Model **outModel, ModelNode **inoutNode);
+s32 jointListFindHit(JointListEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode);
 
-void load_object_fill_header(struct ModelFileHeader *objheader, u8 *name, u8* dst, s32 size, struct texpool * buffer);
+void modelFileLoad(struct ModelFileHeader *objheader, u8 *name, u8* dst, s32 size, struct texpool * buffer);
 
 
 #endif

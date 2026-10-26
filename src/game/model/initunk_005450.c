@@ -4,24 +4,24 @@
 
 #define MODELHITENTRIES_LEN 600
 
-extern struct ModelHitEntry *g_ModelHitFreeList; // canonically freedist
+extern struct JointListEntry *g_JointListFree; // canonically freedist
 
-extern ModelHitEntry g_ModelHitEntries[MODELHITENTRIES_LEN]; // dword_CODE_bss_80076A50
+extern JointListEntry g_JointListEntries[MODELHITENTRIES_LEN]; // dword_CODE_bss_80076A50
 
 /**
  * Address: 7F005450
  * 
  * Called by stage load.
  * 
- * Initializes a fixed pool of ModelHitEntry records used while building per-model hit/collision traversal lists.
+ * Initializes a fixed pool of JointListEntry records used while building per-model hit/collision traversal lists.
  * The pool is threaded as a doubly linked free list and consumed by objecthandler.c.
  */
-void initModelHitEntryFreeList(void)
+void jointListInit(void)
 {
     s32 i;
-    ModelHitEntry *entries = g_ModelHitEntries;
+    JointListEntry *entries = g_JointListEntries;
 
-    g_ModelHitFreeList = entries;
+    g_JointListFree = entries;
 
     entries[0].next = &entries[1];
 
@@ -31,5 +31,5 @@ void initModelHitEntryFreeList(void)
         entries[i].prev = &entries[i - 1];
     }
 
-    g_ModelHitEntries[MODELHITENTRIES_LEN - 1].prev = &g_ModelHitEntries[MODELHITENTRIES_LEN - 2];
+    g_JointListEntries[MODELHITENTRIES_LEN - 1].prev = &g_JointListEntries[MODELHITENTRIES_LEN - 2];
 }

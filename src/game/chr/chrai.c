@@ -4472,8 +4472,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             // chr->prop->pos  = pos;
                             chr->prop->stan = stan;
                             chr->chrflags   = chr->chrflags | CHRFLAG_INIT;
-                            setsubroty(chr->model, FacingDirection);
-                            setsuboffset(chr->model, &pos);
+                            modelSetRootRotY(chr->model, FacingDirection);
+                            modelSetRootPosition(chr->model, &pos);
                             chrDetectRooms(chr);
                             if (chr->prop == g_CurrentPlayer->prop)
                             {

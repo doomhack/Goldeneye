@@ -301,7 +301,7 @@ void bossInitMainthreadData(void)
     set_gu_scale();
     null_init_main_2();
     casingsInit();
-    alloc_load_expand_ani_table();
+    animLoadTable();
     init_weapon_animation_groups_maybe();
     reset_counter_rand_body_head();
     null_init_main_3();

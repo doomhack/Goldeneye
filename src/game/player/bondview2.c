@@ -502,7 +502,7 @@ void solo_char_load(void)
             texInitPool(&pool, weaponbuf1, size1);
             bodyheader  = get_ptr_itemheader_in_hand(GUNRIGHT);
             *bodyheader = *c_item_entries[body].header;
-            load_object_fill_header(bodyheader, (u8 *)c_item_entries[body].filename, weaponbuf0, size0, &pool);
+            modelFileLoad(bodyheader, (u8 *)c_item_entries[body].filename, weaponbuf0, size0, &pool);
             cursor = fileGetLoadedSizeByName((u8 *)c_item_entries[body].filename);
 
             do
@@ -514,7 +514,7 @@ void solo_char_load(void)
 
                 if(1);
 
-                load_object_fill_header(headheader, (u8 *)c_item_entries[head].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
+                modelFileLoad(headheader, (u8 *)c_item_entries[head].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
                 cursor = ALIGN64_V3(fileGetLoadedSizeByName((u8 *)c_item_entries[head].filename) + cursor + 0x3f);
                 model  = (Model *)(weaponbuf0 + cursor);
                 cursor = ALIGN64_V3(cursor + 0xfb);
@@ -539,7 +539,7 @@ void solo_char_load(void)
 
             if (bodyheader->RootNode == NULL)
             {
-                fileLoad(bodyheader, c_item_entries[body].filename);
+                modelFileLoadToPool(bodyheader, c_item_entries[body].filename);
             }
 #if !defined(VERSION_US) || defined(BACKPORT_R1)
             if (c_item_entries[body].hasHead)
@@ -554,7 +554,7 @@ void solo_char_load(void)
 
                 if (headheader->RootNode == NULL)
                 {
-                    fileLoad(headheader, c_item_entries[head].filename);
+                    modelFileLoadToPool(headheader, c_item_entries[head].filename);
                 }
             }
         }
@@ -566,8 +566,8 @@ void solo_char_load(void)
         (*pp)->prop->type = PROP_TYPE_VIEWER;
         self              = (*pp)->prop->chr;
         self->chrflags |= CHRFLAG_INIT;
-        setsuboffset((*pp)->bodyModel, &(*pp)->prop->pos);
-        setsubroty(g_CurrentPlayer->bodyModel, yaw);
+        modelSetRootPosition((*pp)->bodyModel, &(*pp)->prop->pos);
+        modelSetRootRotY(g_CurrentPlayer->bodyModel, yaw);
 #if !defined(VERSION_US) || defined(BACKPORT_R1)
         self->headnum = head;
         self->bodynum = body;
@@ -583,7 +583,7 @@ void solo_char_load(void)
                 cursor       = ALIGN64_V3(cursor + 0xc7);
                 pitemheader  = get_ptr_itemheader_in_hand(GUNLEFT);
                 *pitemheader = *PitemZ_entries[prop].header;
-                load_object_fill_header(pitemheader, (u8 *)PitemZ_entries[prop].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
+                modelFileLoad(pitemheader, (u8 *)PitemZ_entries[prop].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
                 fileGetLoadedSizeByName((u8 *)PitemZ_entries[prop].filename);
                 modelCalculateRwDataLen(pitemheader);
             }
@@ -609,8 +609,8 @@ void solo_char_load(void)
 
         self->chrflags |= CHRFLAG_INIT;
         chrlvMergeKneelToStand(self, 0.0f);
-        setsuboffset(g_CurrentPlayer->bodyModel, &g_CurrentPlayer->prop->pos);
-        setsubroty(g_CurrentPlayer->bodyModel, yaw);
+        modelSetRootPosition(g_CurrentPlayer->bodyModel, &g_CurrentPlayer->prop->pos);
+        modelSetRootRotY(g_CurrentPlayer->bodyModel, yaw);
     }
 }
 
@@ -1019,8 +1019,8 @@ void bondviewSetCameraMode(s32 arg0)
 
             modelSetAnimation(
                 g_CurrentPlayer->bodyModel,
-                objecthandlerGetModelAnim((Model *) &g_CurrentPlayer->model),
-                objecthandlerGetModelGunhand(&g_CurrentPlayer->model),
+                modelGetAnim((Model *) &g_CurrentPlayer->model),
+                modelGetAnimFlip(&g_CurrentPlayer->model),
                 0.0f,
                 0.5f,
                 0.0f);
@@ -1030,9 +1030,9 @@ void bondviewSetCameraMode(s32 arg0)
             temp_v1_2->sleep = 0;
             temp_v1_2->chrflags |= CHRFLAG_INIT;
 
-            setsuboffset(g_CurrentPlayer->bodyModel, &g_CurrentPlayer->prop->pos);
+            modelSetRootPosition(g_CurrentPlayer->bodyModel, &g_CurrentPlayer->prop->pos);
             var_f0 = bondviewGetPlayerYawRadians();
-            setsubroty(g_CurrentPlayer->bodyModel, var_f0);
+            modelSetRootRotY(g_CurrentPlayer->bodyModel, var_f0);
         }
 
         if (g_ExplodeTankOnDeathFlag && (g_PlayerTankProp != NULL))
@@ -3341,7 +3341,7 @@ void sub_GAME_7F07E7CC(void) {
     modelCalculateRwDataLen(itemheader);
 #ifndef VERSION_EU
     if (0x32 < itemheader->numRecords) {
-        return_null();
+        modelDebugBreak();
     }
 #endif
     animInit((Model *)((u8 *)g_CurrentPlayer + 0x230), itemheader, (u32 *)((u8 *)g_CurrentPlayer + 0x2ec));
@@ -6613,8 +6613,8 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     sp390 = 0.0f;
 
     #if defined(VERSION_US)
-    if (stick_x >= 100 || stick_x <= -100) return_null(); // __LINE__ __FILE__ (#6414 bondview.c) "joystick x has value %d!\n"
-    if (stick_y >= 100 || stick_y <= -100) return_null(); // __LINE__ __FILE__ (#6415 bondview.c) "joystick y has value %d!\n"
+    if (stick_x >= 100 || stick_x <= -100) modelDebugBreak(); // __LINE__ __FILE__ (#6414 bondview.c) "joystick x has value %d!\n"
+    if (stick_y >= 100 || stick_y <= -100) modelDebugBreak(); // __LINE__ __FILE__ (#6415 bondview.c) "joystick y has value %d!\n"
     #endif
 
     if (g_bondviewForceDisarm > 0)
@@ -7334,7 +7334,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             {
                 #if DEBUG
                     // unknown what went here.
-                    return_null();
+                    modelDebugBreak();
                 #endif
             }
 #endif
@@ -8743,7 +8743,7 @@ Gfx *bondviewRenderWatch(Gfx *gdl)
         bondviewSelectCuff((Model *) (&g_CurrentPlayer->something_with_watch_object_instance), objheader, 4);
         renderdata.basemtx = &watchmtx;
         renderdata.mtxlist = matrices;
-        subcalcmatrices(&renderdata, (Model *) (&g_CurrentPlayer->something_with_watch_object_instance));
+        modelCalcMatrices(&renderdata, (Model *) (&g_CurrentPlayer->something_with_watch_object_instance));
         nodepos = (f32 *) objheader->Switches[0]->Data;
         time = watch_time_0;
         t = g_CurrentPlayer->pause_watch_related_adjust / 20.0f;
@@ -8812,7 +8812,7 @@ Gfx *bondviewRenderWatch(Gfx *gdl)
             renderdata.envcolour.word = g_CurrentPlayer->tileColor.a | (((g_CurrentPlayer->tileColor.r << 24) | (g_CurrentPlayer->tileColor.g << 16)) | (g_CurrentPlayer->tileColor.b << 8));
         }
     
-        subdraw(&renderdata, (Model *) (&g_CurrentPlayer->something_with_watch_object_instance));
+        modelRender(&renderdata, (Model *) (&g_CurrentPlayer->something_with_watch_object_instance));
         gdl = renderdata.gdl;
         nodepos2 = (f32 *) objheader->Switches[2]->Data;
         finalmtx = dynAllocateMatrix();
@@ -9515,7 +9515,7 @@ static void counterOpSpawnFromChr(struct CounterOpSpawn *spawn, ChrRecord *chr)
     spawn->pos = chr->prop->pos;
     spawn->stan = chr->prop->stan;
     // A model's yaw turns the other way to a player's view.
-    spawn->look_angle = M_TAU_F - getsubroty(chr->model);
+    spawn->look_angle = M_TAU_F - modelGetRootRotY(chr->model);
     spawn->height = chr->chrheight - 20.0f;
     spawn->health = chr->maxdamage;
     spawn->head = chr->headnum;
@@ -11733,11 +11733,11 @@ join_768:
     prop->pos.z = ppointers[index]->field_488.collision_position.z;
     prop->stan = ppointers[index]->field_488.current_tile_ptr;
  
-    getsuboffset(chr->model, &off);
+    modelGetRootPosition(chr->model, &off);
     off.x = prop->pos.x;
     off.z = prop->pos.z;
-    setsuboffset(chr->model, &off);
-    setsubroty(chr->model, (((360.0f - ppointers[index]->vv_theta) + ppointers[index]->field_1280) * M_TAU_F) / 360.0f);
+    modelSetRootPosition(chr->model, &off);
+    modelSetRootRotY(chr->model, (((360.0f - ppointers[index]->vv_theta) + ppointers[index]->field_1280) * M_TAU_F) / 360.0f);
  
     chr->chrflags |= CHRFLAG_INIT;
     chr->actiontype = ACT_BONDMULTI;
