@@ -1612,7 +1612,7 @@ void gunInitProjectileObject(ObjectRecord *obj, coord3d *pos, StandTile *stan, M
         setupUpdateObjectRoomPosition(obj);
 
         chrobjCollisionRelated(obj);
-        sub_GAME_7F03FDA8(temp_s1);
+        objEnsureProjectile(temp_s1);
 
         if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
         {
@@ -1772,7 +1772,7 @@ void generate_player_thrown_grenade(s32 hand)
     sp40_f.m[3][2] = 0.0f;
     mtx4MultInPlace(&sp40_f, &spA0_a);
 
-    wor = create_new_item_instance_of_model(PROP_CHRGRENADE, current_weapon);
+    wor = weaponCreateFromModel(PROP_CHRGRENADE, current_weapon);
 
     if (wor != NULL)
     {
@@ -1864,7 +1864,7 @@ void generate_player_thrown_knife(s32 hand)
 
     guRotateF(&spFC, 360.0f / ((randomGetNext() * (0.5f / (f32)INT_MAX)) + 12.1f), spA0_a.m[1][0], spA0_a.m[1][1], spA0_a.m[1][2]);
 
-    wor = create_new_item_instance_of_model(PROP_CHRKNIFE, ITEM_THROWKNIFE);
+    wor = weaponCreateFromModel(PROP_CHRKNIFE, ITEM_THROWKNIFE);
 
     if (wor != NULL)
     {
@@ -2005,7 +2005,7 @@ void generate_player_thrown_object(s32 hand)
 
         }
 
-        wor = create_new_item_instance_of_model(new_prop_type, current_weapon);
+        wor = weaponCreateFromModel(new_prop_type, current_weapon);
     }
 
     if (wor != NULL)
@@ -2135,7 +2135,7 @@ void gunSpawnGLGrenade(s32 handnum)
     launchmtx.m[3][1] = 0.0f;
     launchmtx.m[3][2] = 0.0f;
 
-    grenadeobj = create_new_item_instance_of_model(PROP_CHRGRENADEROUND, ITEM_GRENADEROUND);
+    grenadeobj = weaponCreateFromModel(PROP_CHRGRENADEROUND, ITEM_GRENADEROUND);
 
     if (grenadeobj != NULL)
     {
@@ -2223,7 +2223,7 @@ void currentPlayerCreateRocket(GUNHAND hand)
 
     if ((hand_ptr->rocket == NULL) && (hand_ptr->weapon_ammo_in_magazine > 0))
     {
-        rocket = (struct WeaponObjRecord *)create_new_item_instance_of_model(PROP_CHRROCKET, ITEM_ROCKETROUND);
+        rocket = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
 
         if (rocket != NULL)
         {
@@ -2330,7 +2330,7 @@ void gunFireTankShell(s32 handnum)
 
         if ((g_CurrentPlayer && g_CurrentPlayer));
 
-        setSixExplosionAndSmokeEntries();
+        explosionStartShake();
     } 
     else 
     {
@@ -2372,7 +2372,7 @@ void gunFireTankShell(s32 handnum)
     } 
     else 
     {
-        obj = (WeaponObjRecord *) create_new_item_instance_of_model(PROP_CHRROCKET, ITEM_ROCKETROUND);
+        obj = (WeaponObjRecord *) weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
     }
 
     if (obj == NULL) 

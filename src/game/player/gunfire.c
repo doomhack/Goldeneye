@@ -226,7 +226,7 @@ void gunFireTankShell(s32 handnum)
 
         if ((g_CurrentPlayer && g_CurrentPlayer));
 
-        setSixExplosionAndSmokeEntries();
+        explosionStartShake();
     } 
     else 
     {
@@ -268,7 +268,7 @@ void gunFireTankShell(s32 handnum)
     } 
     else 
     {
-        obj = (WeaponObjRecord *) create_new_item_instance_of_model(PROP_CHRROCKET, ITEM_ROCKETROUND);
+        obj = (WeaponObjRecord *) weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
     }
 
     if (obj == NULL) 
@@ -1534,12 +1534,12 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
  
             if (item == ITEM_ROCKETLAUNCH) 
             {
-                save_img_index_to_obj_ani_slot(&g_UnknownAnimController, g_ImageCrosshair);
-                gdl = process_monitor_animation_microcode(model, (*(Model *)&handptr->field_B68).obj->Switches[16], &g_UnknownAnimController, gdl, 0, 4);
+                monitorSetImage(&g_UnknownAnimController, g_ImageCrosshair);
+                gdl = monitorTickAnimation(model, (*(Model *)&handptr->field_B68).obj->Switches[16], &g_UnknownAnimController, gdl, 0, 4);
             } 
             else 
             {
-                gdl = process_monitor_animation_microcode(model, (*(Model *)&handptr->field_B68).obj->Switches[16], &g_TaserAnimController, gdl, 0, 1);
+                gdl = monitorTickAnimation(model, (*(Model *)&handptr->field_B68).obj->Switches[16], &g_TaserAnimController, gdl, 0, 1);
             }
         }
  
@@ -2216,7 +2216,7 @@ void recall_joy2_hits_edit_detail_edit_flag(enum ITEM_IDS item, PropRecord* prop
     struct BulletFleshSounds bullet_flesh_sounds_copy;
     u32 sfx_index;
 
-    sp6C = sub_GAME_7F0539E4(&prop->pos);
+    sp6C = sndVolumeForPosDefault(&prop->pos);
 
     rnd1 = randomGetNext();
     rnd2 = randomGetNext();
@@ -4196,11 +4196,11 @@ s32 get_keyanalyzer_flag(void)
 
 void give_weapon_case_items(void)
 {
-  add_ammo_to_inventory(AMMO_KNIFE, 2, 0, 1);
-  add_ammo_to_inventory(AMMO_GRENADE, 2, 0, 1);
+  pickupAddAmmo(AMMO_KNIFE, 2, 0, 1);
+  pickupAddAmmo(AMMO_GRENADE, 2, 0, 1);
   bondinvAddInvItem(ITEM_SNIPERRIFLE);
-  set_sound_effect_for_weapontype_collection(ITEM_SNIPERRIFLE);
-  display_text_for_weapon_in_lower_left_corner(ITEM_SNIPERRIFLE);
+  pickupPlayWeaponSound(ITEM_SNIPERRIFLE);
+  pickupShowWeaponText(ITEM_SNIPERRIFLE);
   give_cur_player_ammo(sniperrifle_stats.AmmoType, check_cur_player_ammo_amount_in_inventory(sniperrifle_stats.AmmoType) + sniperrifle_stats.MagSize);
   bondinvRemoveItemByID(ITEM_WEAPONCASE);
   currentPlayerEquipWeaponWrapper(GUNRIGHT,ITEM_SNIPERRIFLE);
@@ -4542,13 +4542,13 @@ void gunTickGameplay(s32 triggerOn)
 
     if (g_CurrentPlayer->resetshadecol)
     {
-        set_color_shading_from_tile(getCurrentPlayerProp(), (struct rgba_u8 *) &g_CurrentPlayer->tileColor);
+        objGetTileShading(getCurrentPlayerProp(), (struct rgba_u8 *) &g_CurrentPlayer->tileColor);
         g_CurrentPlayer->resetshadecol = FALSE;
     }
     else
     {
-        set_color_shading_from_tile(getCurrentPlayerProp(), &weapon_color);
-        update_color_shading(&g_CurrentPlayer->tileColor, &weapon_color);
+        objGetTileShading(getCurrentPlayerProp(), &weapon_color);
+        objUpdateShading(&g_CurrentPlayer->tileColor, &weapon_color);
     }
 
     bondinvIncrementHeldTime(getCurrentPlayerWeaponId(GUNRIGHT), getCurrentPlayerWeaponId(GUNLEFT));

@@ -474,14 +474,14 @@ void lvlStageLoad(s32 stage)
     vtxstoreReset();
     jointListInit();
     modelmgrResetSlotCounts();
-    init_load_objpos_table();
-    reinit_between_menus();
-    init_sound_effects_registers();
+    propsInit();
+    propsResetLevelState();
+    objSoundsInit();
     init_guards();
     bodiesReset(stage);
-    proplvreset2(stage);
-    alloc_explosion_smoke_casing_scorch_impact_buffers();
-    alloc_shattered_window_pieces();
+    setupCreateProps(stage);
+    explosionsInit();
+    glassInitShards();
     sub_GAME_7F007290();
     initCheatTextBuffer();
 
@@ -1377,7 +1377,7 @@ void lvlManageMpGame(void)
         bullet_sparks_update_all();
 #endif
         update_bullet_casings();
-        update_broken_windows();
+        glassTickShards();
         explosionUpdateFlyingParticles();
 
         // Co-op (first step): guards and level scripts only deal with player 1.
@@ -1717,10 +1717,10 @@ void lvlUnloadStageTextData(void)
     cleanupGuardData();
     cleanupObjectSounds();
     cleanupExplosions();
-    cleanup_window_pieces();
+    glassResetShards();
     cleanup_REMOVED_();
     cleanupAlarms();
-    cleanupObjects(g_CurrentStageToLoad);
+    setupFreeProps(g_CurrentStageToLoad);
     cleanupObjectives();
     cleanupSFXRelated();
     cleanupplayersoundrelated();

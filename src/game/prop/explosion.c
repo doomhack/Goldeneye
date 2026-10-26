@@ -381,7 +381,7 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
 }
 
 
-void setSixExplosionAndSmokeEntries(void) {
+void explosionStartShake(void) {
         g_NumExplosionEntries = 6;
         g_NumSmokeEntries = 6;
 }
@@ -546,7 +546,7 @@ void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range)
 
                         if (!(spCC->runtime_bitflags & 0x1000) && !(spCC->flags2 & 0x200400))
                         {
-                            maybe_detonate_object_and_its_children(
+                            objDetonateRecursive(
                                 temp_s0,
                                 ((RANDOMFRAC() * 0.5f) + 1.0f) * minfrac,
                                 &spCC->runtime_pos,
@@ -871,7 +871,7 @@ Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
     }
     else
     {
-        if (getPropCombinedRoomsBBox2D(prop, &sp70) > 0)
+        if (propGetRoomsBbox2d(prop, &sp70) > 0)
         {
             gdl = bgScissorCurrentPlayerViewF(gdl, sp70.min.f[0], sp70.min.f[1], sp70.max.f[0], sp70.max.f[1]);
         }
@@ -1483,7 +1483,7 @@ Gfx *explosionRenderPropSmoke(PropRecord *arg0, Gfx *gdl, s32 withalpha)
         return gdl;
     }
 
-    if (getPropCombinedRoomsBBox2D(arg0, &sp78) > 0)
+    if (propGetRoomsBbox2d(arg0, &sp78) > 0)
     {
         gdl = bgScissorCurrentPlayerViewF(gdl, sp78.min.f[0], sp78.min.f[1], sp78.max.f[0], sp78.max.f[1]);
     }

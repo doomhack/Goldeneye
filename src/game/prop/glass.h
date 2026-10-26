@@ -86,7 +86,7 @@ extern u32 controller_options_index;
 extern u32 game_options_index;
 
 void sub_GAME_7F0A47FC(void);
-void update_broken_windows(void);
+void glassTickShards(void);
 
 Gfx * glassRenderShards(Gfx *arg0);
 void sub_GAME_7F0A33F8(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 arg3);

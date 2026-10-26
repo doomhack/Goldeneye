@@ -3,7 +3,7 @@
 
 
 
-void cleanup_window_pieces(void) {
+void glassResetShards(void) {
     s32 i;
     for (i = 0; i < SHATTERED_WINDOW_PIECES_BUFFER_LEN; i++)
     {

@@ -15,9 +15,9 @@ f32 g_DoorScale = 1.0f;
 
 // forward declarations
 
-void alloc_lookup_buffers();
-void write_monitor_ani_control_blocks();
-void initialize_proxy_mine_table();
+void roomPropListsInit();
+void monitorsInitAnimations();
+void proxminesInit();
 
 // end forward declarations
 
@@ -25,7 +25,7 @@ void initialize_proxy_mine_table();
 /**
  * Address 0x7F0014B0.
 */
-void init_sound_effects_registers(void)
+void objSoundsInit(void)
 {
     s32 i;
 
@@ -40,7 +40,7 @@ void init_sound_effects_registers(void)
 /**
  * Address 0x7F0014E0.
 */
-void init_load_objpos_table(void)
+void propsInit(void)
 {
     s32 i;
 
@@ -56,14 +56,14 @@ void init_load_objpos_table(void)
         g_Props[i].prev = &g_Props[i + 1];
     }
 
-    alloc_lookup_buffers();
+    roomPropListsInit();
 }
 
 
 /**
  * Address 0x7F0015D0.
 */
-void alloc_lookup_buffers(void)
+void roomPropListsInit(void)
 {
     s32 j;
     s32 i;
@@ -95,12 +95,12 @@ void alloc_lookup_buffers(void)
 /**
  * Address 0x7F001750.
 */
-void reinit_between_menus(void)
+void propsResetLevelState(void)
 {
     s32 i;
 
-    write_monitor_ani_control_blocks();
-    initialize_proxy_mine_table();
+    monitorsInitAnimations();
+    proxminesInit();
     alarm_timer = 0;
     ptr_alarm_sfx = 0;
     toxic_gas_sound_timer = 0.0f;
@@ -161,10 +161,10 @@ void reinit_between_menus(void)
 }
 
 /**
- * Called from proplvreset2 when PROPDEF type is PROPDEF_SWITCH.
+ * Called from setupCreateProps when PROPDEF type is PROPDEF_SWITCH.
  * Address 0x7F001910.
 */
-void initSetLevelLoadPropSwitch(struct LinkRecord *arg0)
+void setupLinkSwitch(struct LinkRecord *arg0)
 {
     arg0->next = g_LevelLoadPropSwitch;
     g_LevelLoadPropSwitch = arg0;
@@ -172,10 +172,10 @@ void initSetLevelLoadPropSwitch(struct LinkRecord *arg0)
 
 
 /**
- * Called from proplvreset2 when PROPDEF type is PROPDEF_LOCK_DOOR.
+ * Called from setupCreateProps when PROPDEF type is PROPDEF_LOCK_DOOR.
  * Address 0x7F001928.
 */
-void initSetLevelLoadPropLockDoor(struct LockDoorRecord *arg0)
+void setupLinkLockDoor(struct LockDoorRecord *arg0)
 {
     arg0->next = g_LevelLoadPropLockDoor;
     g_LevelLoadPropLockDoor = arg0;
@@ -183,10 +183,10 @@ void initSetLevelLoadPropLockDoor(struct LockDoorRecord *arg0)
 
 
 /**
- * Called from proplvreset2 when PROPDEF type is PROPDEF_SAFE_ITEM.
+ * Called from setupCreateProps when PROPDEF type is PROPDEF_SAFE_ITEM.
  * Address 0x7F001940.
 */
-void initSetLevelLoadPropSafeItem(struct ObjectRecord *arg0)
+void setupLinkSafeItem(struct ObjectRecord *arg0)
 {
     arg0->prop = g_LevelLoadPropSafeItem;
     g_LevelLoadPropSafeItem = arg0;
@@ -196,7 +196,7 @@ void initSetLevelLoadPropSafeItem(struct ObjectRecord *arg0)
 /**
  * Address 0x7F001958.
 */
-void write_monitor_ani_control_blocks(void)
+void monitorsInitAnimations(void)
 {
     MonitorRecord spEC;
     struct object_animation_controller sp78;
@@ -214,7 +214,7 @@ void write_monitor_ani_control_blocks(void)
 }
 
 
-void initialize_proxy_mine_table(void)
+void proxminesInit(void)
 {
     s32 i;
 

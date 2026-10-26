@@ -5,7 +5,7 @@
 
 void cleanupAlarms(void) {
     alarmDeactivate();
-    check_deactivate_gas_sound();
+    gasStopSound();
 }
 
 

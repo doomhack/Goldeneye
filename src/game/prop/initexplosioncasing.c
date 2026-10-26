@@ -8,7 +8,7 @@
     #define osSyncPrintf(...)
 #endif
 
-void alloc_explosion_smoke_casing_scorch_impact_buffers(void)
+void explosionsInit(void)
 {
     s32 i;
     s32 j;

@@ -2840,7 +2840,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (check_if_toxic_gas_activated())
+        if (gasIsActive())
         {
             Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
         }
@@ -5174,7 +5174,7 @@ _AI_CMD(
             {
                 mtx4ScaleRows012(obj->model->scale, &matrix);
             }
-            sub_GAME_7F04088C(obj, pad, &matrix, pad->stan, pad);
+            objPlaceAtPad(obj, pad, &matrix, pad->stan, pad);
             setupUpdateObjectRoomPosition(obj);
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -9610,7 +9610,7 @@ _AI_CMD(
         if (ai->slotID >= 0 && ai->slotID < 8)
         {
             sfx_related[ai->slotID].sfxID = sfxID;
-            sfx_related[ai->slotID].Volume = sub_GAME_7F0539B8(vol);
+            sfx_related[ai->slotID].Volume = sndVolumeForDistanceDefault(vol);
             sfx_related[ai->slotID].pos = NULL;
             sfx_related[ai->slotID].Obj = NULL;
             if (sfxID == 0)
@@ -11795,7 +11795,7 @@ _AI_CMD(
 _AI_CMD(
     {
         void *p[3] = ptr_80030A88_3words;
-        init_trigger_toxic_gas_effect(p);
+        gasStart(p);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -11849,7 +11849,7 @@ _AI_CMD(
         ObjectRecord *obj = objFindByTagId(ai->val);
         if (obj && obj->prop)
         {
-            sub_GAME_7F03FDA8(obj->prop);
+            objEnsureProjectile(obj->prop);
             if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
             {
                 obj->projectile->flags |= 0x601;

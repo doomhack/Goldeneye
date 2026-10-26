@@ -6,7 +6,7 @@
 
 
 
-void alloc_shattered_window_pieces(void)
+void glassInitShards(void)
 {
     s32 i;
     s32 level = lvlGetCurrentStageToLoad();

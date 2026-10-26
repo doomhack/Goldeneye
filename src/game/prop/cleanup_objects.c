@@ -7,7 +7,7 @@
 #include "game/model/loadobjectmodel.h"
 
 
-void cleanupObjects(s32 stage)
+void setupFreeProps(s32 stage)
 {
     u32 *obj = (u32)g_CurrentSetup.propDefs;
     

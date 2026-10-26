@@ -52,7 +52,7 @@ u32 num_obj_position_data_entries;
  * Address 0x80069C38.
  * 
  * This 600 length prop pool provides storage for every PropRecord in the game.
- * Props are never allocated anywhere else. init_load_objpos_table threads
+ * Props are never allocated anywhere else. propsInit threads
  * all 600 slots onto the free list, and chrpropAllocate/chrpropFree pop and push to that list.
  * 
  * This is g_Vars.props in PD.
@@ -1068,7 +1068,7 @@ void chraiDefaultWeaponFireHandler(s32 hand)
             }
             else if (((prop->type == PROP_TYPE_OBJ) || (prop->type == PROP_TYPE_WEAPON)) || (prop->type == PROP_TYPE_DOOR))
             {
-                sub_GAME_7F04E9BC(prop, &shotdata);
+                objTestShot(prop, &shotdata);
             }
         }
     }
@@ -1455,7 +1455,7 @@ void chraiCheckUseHeldItem(s32 hand)
 
         if (item_id == ITEM_TRIGGER)
         {
-            trigger_remote_mine_detonation();
+            remoteMinesDetonate();
         }
         else if (item_id == ITEM_GRENADELAUNCH
             || item_id == ITEM_ROCKETLAUNCH
@@ -1812,7 +1812,7 @@ void chrpropTick(void)
 
                         obj->maxdamage = 0.0f;
                         obj->state &= ~PROPSTATE_DESTROYED;
-                        sub_GAME_7F050DE8(obj->model);
+                        modelResetDeformedVertices(obj->model);
                     }
 
                     if (obj->type == PROPDEF_ARMOUR)
@@ -1963,7 +1963,7 @@ void propsTick(void)
 
     if (get_player_position_in_shuffled(get_cur_playernum()) == 0)
     {
-        handle_alarm_gas_timer_calldamage();
+        alarmGasTimerTick();
         loop_set_sound_effect_all_slots();
         propsDefragRoomProps();
     }
@@ -2035,7 +2035,7 @@ void chraiGetCollisionBounds(PropRecord *prop, struct rect4f **polygon, s32 *edg
     }
     else if ((prop->type == PROP_TYPE_OBJ) || (prop->type == PROP_TYPE_DOOR))
     {
-        sub_GAME_7F04F244(prop, polygon, edges, top, bottom);
+        objGetCollisionBounds(prop, polygon, edges, top, bottom);
     }
     else if (prop->type == PROP_TYPE_PLAYER)
     {
@@ -2211,7 +2211,7 @@ void sub_GAME_7F03D058(PropRecord *prop, bool unset) //#MATCH
     }
     else if ((prop->type == PROP_TYPE_OBJ) || (prop->type == PROP_TYPE_DOOR) || (prop->type == PROP_TYPE_WEAPON))
     {
-        sub_GAME_7F04F218(prop, unset);
+        objSetMoving(prop, unset);
     }
 }
 

@@ -52,7 +52,7 @@ u32 D_8004095C = 0;
 
 
 // rodata
-void sub_GAME_7F0A1DA0(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax, f32 arg8, f32 arg9)
+void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax, f32 arg8, f32 arg9)
 {
     f32      len;
     f32      angle;
@@ -219,7 +219,7 @@ void glassCreateShard(coord3d* pos, f32 rotX, f32 shard_size)
 }
 
 
-void update_broken_windows(void) {
+void glassTickShards(void) {
     f32 var_f0;
     s32 i;
     s32 j;
