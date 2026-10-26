@@ -2,7 +2,7 @@
 #include <limits.h>
 #include <music.h>
 #include "game/prop/glass.h"
-#include "game/gfx/image_bank.h"
+#include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/mission/objective_status.h"
@@ -270,7 +270,7 @@ Gfx *glassRenderShards(Gfx *gdl)
     s32 i;
     Mtx *mtx;
 
-    texSelect(&gdl, glassoverlayimage + 1, 2, 1, 2);
+    texSelect(&gdl, g_ImageGlassOverlay + 1, 2, 1, 2);
 
     gSPTexture(gdl++, 0x0D80, 0x0D80, 2, G_TX_RENDERTILE, 1);
     gDPSetCycleType(gdl++, G_CYC_2CYCLE);

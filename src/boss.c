@@ -240,7 +240,7 @@ void bossInitMainthreadData(void)
     bossCheckExpansionPak();
     debInit();
     romCreateMesgQueue();
-    image_entries_load();
+    texResolveTableOffsets();
     mempInit();
     memaInit();
     bgInit();
@@ -296,9 +296,8 @@ void bossInitMainthreadData(void)
     debmenuInit();
     default_player_perspective_and_height();
     store_osgetcount();
-    null_init_main_1();
     speedgraphInit();
-    set_gu_scale();
+    explosionInitScaleMtx();
     null_init_main_2();
     casingsInit();
     animLoadTable();
@@ -649,8 +648,6 @@ void bossMainloop(void)
                             {
                                 mempCheckPools();
                                 memaDumpPrePostMerge();
-                                dynRemovedFunc(gdl);
-                                nullsub_41(0);
                                 g_ShowMemUseFlag = 0;
                             }
 
@@ -659,7 +656,7 @@ void bossMainloop(void)
                                 dynDrawMembars(gdl);
                             }
 
-                            freeGfx = dynGetFreeGfx2(gdl);
+                            freeGfx = dynGetFreeGfx(gdl);
                             dynSwapBuffers();
                             video_related_8();
 

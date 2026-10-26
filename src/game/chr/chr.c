@@ -15,6 +15,7 @@
 #include "game/model/chrobjdata.h"
 #include "game/debug/debugmenu_handler.h"
 #include "game/gfx/dyn.h"
+#include "game/gfx/vtxstore.h"
 #include "game/prop/glass.h"
 #include "game/save/file2.h"
 #include "game/prop/propobj.h"
@@ -3313,7 +3314,7 @@ after_opcode:
 
     if (((ModelRwData_DisplayList_CollisionRecord *) rwdata)->Vertices == ((ModelRoData_DisplayList_CollisionRecord *) node)->Vertices)
     {
-        newvertices = (Vertex *) vtxstore_allocate(((ModelRoData_DisplayList_CollisionRecord *) node)->numVertices, 0xcccc, 0, 0);
+        newvertices = (Vertex *) vtxstoreAllocate(((ModelRoData_DisplayList_CollisionRecord *) node)->numVertices, VTXSTORE_CHR, 0, 0);
 
         if (newvertices != NULL)
         {
@@ -3330,7 +3331,7 @@ after_opcode:
 
     if ((relatedrwdata != NULL) && (relatedrwdata->Vertices == relatedrodata->Vertices))
     {
-        newvertices = (Vertex *) vtxstore_allocate(relatedrodata->numVertices, 0xcccc, 0, 0);
+        newvertices = (Vertex *) vtxstoreAllocate(relatedrodata->numVertices, VTXSTORE_CHR, 0, 0);
 
         if (newvertices != NULL)
         {

@@ -209,7 +209,7 @@ typedef struct AmmoStats {
     /**
      * Segmented address (segment 0x02, global image bank) of this ammo
      * type's HUD icon image. 0 for no icon. Resolved to an RDRAM pointer
-     * by adding globalbank_rdram_offset before use.
+     * by adding g_ImageBankOffset before use.
      */
     u32 IconImage;
 

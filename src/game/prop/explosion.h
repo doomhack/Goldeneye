@@ -144,7 +144,7 @@ struct FlyingParticles {
 };
 
 extern f32 g_SpExplosionDamageMult;
-extern Mtx dword_CODE_bss_8007A100;
+extern Mtx g_ExplosionScaleMtx;
 extern struct Smoke *g_SmokeBuffer;
 extern struct Explosion *g_ExplosionBuffer;
 extern s32 max_particles;
@@ -184,5 +184,7 @@ s32 sub_GAME_7F09C250(s32 arg0, struct coord3d *pos, struct StandTile *stan, s16
 void explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_stan, s16 /* enum EXPLOSION_DEF */ explosion_type, s32 arg4, s32 player, u8 *rooms, s32 arg7);
 void sub_GAME_7F09C250(s32 arg0, struct coord3d *pos, struct StandTile *stan, s16 arg3, s32 flag4, s32 playernum, u8 *rooms, s32 flag7);
 #endif
+
+void explosionInitScaleMtx(void);
 
 #endif

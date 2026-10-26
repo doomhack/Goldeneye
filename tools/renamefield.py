@@ -17,6 +17,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 
 ERROR = re.compile(r"^(?P<file>[^:\s]+):(?P<line>\d+):(?P<col>\d+): error: "
                    r"'(?:struct |union )?(?P<type>\w+)'(?: \{aka '[^']*'\})? has no member named '(?P<old>\w+)'")
@@ -65,15 +66,22 @@ def main():
     os.chdir(subprocess.run(['git', 'rev-parse', '--show-toplevel'], capture_output=True,
                             text=True, check=True).stdout.strip())
     total = 0
+    edited = set()
     for attempt in range(20):
         errors = [e for e in build_errors() if (e[3], e[4]) in renames]
         if not errors:
+            # Files edited in the same second as the build look up to date to make, which
+            # would leave stale objects in the next build. Touch them a second later.
+            time.sleep(1)
+            for path in edited:
+                os.utime(path)
             print(f'{total} uses renamed')
             return
         # Several errors can share a line; fix each place once per round
         for path, lineno, col, typ, old in sorted(set(errors), key=lambda e: (e[0], e[1], -e[2])):
             if fix(path, lineno, col, old, renames[(typ, old)]):
                 total += 1
+                edited.add(path)
             else:
                 print(f'{path}:{lineno}: could not find {old}', file=sys.stderr)
     sys.exit('still failing after 20 rounds')

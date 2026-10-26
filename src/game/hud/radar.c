@@ -4,8 +4,8 @@
 #include "game/menu/front.h"
 #include "fr.h"
 #include "game/player/player.h"
-#include "game/gfx/othermodemicrocode.h"
-#include "game/gfx/image_bank.h"
+#include "game/gfx/texselect.h"
+#include "game/gfx/imagebank.h"
 
 
 /**
@@ -76,7 +76,7 @@ Gfx *display_red_blue_on_radar(Gfx *DL)
         start_left += 0xF;
     }
     
-    texSelect(&DL, mpradarimages, 2, 0, 2);
+    texSelect(&DL, g_ImagesMpRadar, 2, 0, 2);
 
     DL = microcode_constructor(DL);
 

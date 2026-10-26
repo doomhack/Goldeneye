@@ -1,5 +1,5 @@
-#ifndef _OTHERMODEMICROCODE_H_
-#define _OTHERMODEMICROCODE_H_
+#ifndef _TEXSELECT_H_
+#define _TEXSELECT_H_
 #include <ultra64.h>
 #include "game/player/bondview.h"
 

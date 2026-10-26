@@ -14,8 +14,8 @@
 #include "game/gfx/dyn.h"
 #include "game/prop/explosion.h"
 #include "fr.h"
-#include "game/gfx/image_bank.h"
-#include "game/gfx/othermodemicrocode.h"
+#include "game/gfx/imagebank.h"
+#include "game/gfx/texselect.h"
 #include "game/level/lv.h"
 #include "game/math/matrix.h"
 #include "music.h"
@@ -29,7 +29,7 @@
 // bss
 //CODE.bss:8007A100
 // possibly   printf("Allocating %d bytes for glass data (%d bits)\n",DAT_83bd5fb0 * 0x88 + 0xf & 0xfffffff0,         DAT_83bd5fb0);
-Mtx dword_CODE_bss_8007A100;
+Mtx g_ExplosionScaleMtx;
 
 /**
  * g_SmokeBuffer = mempAlloc(0x1FE0, MEMPOOL_STAGE);
@@ -885,7 +885,7 @@ Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
         gdl = applyRoomMatrixToDisplayList(gdl, temp_s1);
 
-        gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(pGlobalimagetable));
+        gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(g_ImageBank));
 
         for (var_s2 = 14;
             var_s2 >= 0;
@@ -1498,9 +1498,9 @@ Gfx *explosionRenderPropSmoke(PropRecord *arg0, Gfx *gdl, s32 withalpha)
 
     gdl = applyRoomMatrixToDisplayList(gdl, temp_s1);
 
-    gSPMatrix(gdl++, osVirtualToPhysical((void*)&dword_CODE_bss_8007A100), G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
+    gSPMatrix(gdl++, osVirtualToPhysical((void*)&g_ExplosionScaleMtx), G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
 
-    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical((void*)pGlobalimagetable));
+    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical((void*)g_ImageBank));
 
     gSPDisplayList(gdl++, &globalDL_0x000);
 
@@ -1716,7 +1716,7 @@ Gfx *explosionRenderFlyingParticles(Gfx *gdl)
     struct FlyingParticles *particles;
 
     gSPClearGeometryMode(gdl++, G_CULL_BOTH);
-    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical((void*)pGlobalimagetable));
+    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical((void*)g_ImageBank));
     gSPDisplayList(gdl++, &globalDL_0xa50);
     gDPSetRenderMode(gdl++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
 
@@ -1806,7 +1806,7 @@ void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room)
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.ob[2] = (s16) (s32) (pos->f[2] + sp4C);
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.tc[0] = 0;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.tc[1] = genericimage->width << 5;
+        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.tc[1] = g_ImageGeneric->width << 5;
         temp_hi = randomGetNext() % 50U;
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.cn[2] = (u8) temp_hi;
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.cn[1] = (u8) temp_hi;
@@ -1827,7 +1827,7 @@ void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room)
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.ob[0] = (s16) (s32) (pos->f[0] - sp50);
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.ob[2] = (s16) (s32) (pos->f[2] - sp4C);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.tc[0] = genericimage->height << 5;
+        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.tc[0] = g_ImageGeneric->height << 5;
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.tc[1] = 0;
         temp_hi = randomGetNext() % 50U;
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.cn[2] = (u8) temp_hi;
@@ -1838,8 +1838,8 @@ void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room)
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.ob[0] = (s16) (s32) (pos->f[0] - sp4C);
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.ob[2] = (s16) (s32) (pos->f[2] + sp50);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.tc[0] = genericimage->width << 5;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.tc[1] = genericimage->height << 5;
+        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.tc[0] = g_ImageGeneric->width << 5;
+        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.tc[1] = g_ImageGeneric->height << 5;
         temp_hi = randomGetNext() % 50U;
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.cn[2] = (u8) temp_hi;
         g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.cn[1] = (u8) temp_hi;
@@ -1876,7 +1876,7 @@ Gfx *explosionRenderScorchBuffer(Gfx *arg0)
         gSPClearGeometryMode(arg0++, G_CULL_FRONT | G_FOG);
         gDPSetColorDither(arg0++, G_CD_NOISE);
 
-        texSelect(&arg0, genericimage, 4, 1, 2);
+        texSelect(&arg0, g_ImageGeneric, 4, 1, 2);
 
         for (i=0; i<20; i++)
         {
@@ -2108,7 +2108,7 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.ob[1] = explosionRoundFloat((spA0.f[1] - zero) - (sp98 * spB4));
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.ob[2] = explosionRoundFloat((spA0.f[2] - (sp9C * spBC)) - (sp98 * spB0));
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.tc[0] = 0;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.tc[1] = impactimages[impact_type].height << 5;
+    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.tc[1] = g_ImagesImpact[impact_type].height << 5;
 #ifdef DEBUG
     assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.ob));
 #endif
@@ -2125,7 +2125,7 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.ob[0] = explosionRoundFloat(spA0.f[0] + (sp9C * spC4) + (sp98 * spB8));
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.ob[1] = explosionRoundFloat(spA0.f[1] + zero + (sp98 * spB4));
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.ob[2] = explosionRoundFloat(spA0.f[2] + (sp9C * spBC) + (sp98 * spB0));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.tc[0] = impactimages[impact_type].width << 5;
+    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.tc[0] = g_ImagesImpact[impact_type].width << 5;
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.tc[1] = 0;
 #ifdef DEBUG
     assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.ob));
@@ -2134,8 +2134,8 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.ob[0] = explosionRoundFloat((spA0.f[0] + (sp9C * spC4)) - (sp98 * spB8));
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.ob[1] = explosionRoundFloat((spA0.f[1] + zero) - (sp98 * spB4));
     g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.ob[2] = explosionRoundFloat((spA0.f[2] + (sp9C * spBC)) - (sp98 * spB0));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.tc[0] = impactimages[impact_type].width << 5;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.tc[1] = impactimages[impact_type].height << 5;
+    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.tc[0] = g_ImagesImpact[impact_type].width << 5;
+    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.tc[1] = g_ImagesImpact[impact_type].height << 5;
 #ifdef DEBUG
     assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.ob));
 #endif
@@ -2270,7 +2270,7 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2)
 
                         if (sp48 != impact_type)
                         {
-                            texSelect(&gdl, &impactimages[impact_type], g_ImpactTypes[impact_type].unk1, g_ImpactTypes[impact_type].unk2, 2U);
+                            texSelect(&gdl, &g_ImagesImpact[impact_type], g_ImpactTypes[impact_type].unk1, g_ImpactTypes[impact_type].unk2, 2U);
                             sp48 = impact_type;
                         }
 
@@ -2302,3 +2302,7 @@ Gfx * explosionCallRenderBulletImpactOnProp(Gfx *arg0)
 }
 
 
+/** Called once at boot: the scale matrix explosions are drawn with. */
+void explosionInitScaleMtx(void) {
+    guScale((Mtx *)&g_ExplosionScaleMtx, 0.1f, 0.1f, 0.1f);
+}

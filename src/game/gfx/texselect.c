@@ -1,12 +1,19 @@
+/**
+ * texSelect sets up the RDP to draw with one image from an image table (the HUD, sky,
+ * explosions, menus): it loads the texture, sets the render mode (texSetRenderMode) and
+ * writes the tile and LoadBlock commands. The texLoadBlock* helpers work out a LoadBlock's
+ * texel count and dxt for each pixel size.
+ */
+
 #include <ultra64.h>
 #include <R4300.h>
 #include "game/gfx/tex.h"
 #include "game/gfx/image.h"
 #include "bondtypes.h"
-#include "game/gfx/othermodemicrocode.h"
+#include "game/gfx/texselect.h"
 #include "gbi_extension.h"
 
-s32 is_less_than_certain_power_of_2(int number)
+s32 texMaskBits(int number)
 {
     if (number < 2) {
         return 0;
@@ -44,7 +51,7 @@ s32 is_less_than_certain_power_of_2(int number)
 }
 
 
-s32 ceil8000(s32 arg0)
+s32 texLoadBlockDxt4b(s32 arg0)
 {
     f32 temp_f0;
     s32 temp_f10;
@@ -57,7 +64,7 @@ s32 ceil8000(s32 arg0)
 }
 
 
-s32 ceil4000(s32 arg0)
+s32 texLoadBlockDxt8b(s32 arg0)
 {
     f32 temp_f0;
     s32 temp_f10;
@@ -70,7 +77,7 @@ s32 ceil4000(s32 arg0)
 }
 
 
-s32 ceil2000(s32 arg0)
+s32 texLoadBlockDxt16b(s32 arg0)
 {
     f32 temp_f0;
     s32 temp_f10;
@@ -83,7 +90,7 @@ s32 ceil2000(s32 arg0)
 }
 
 
-s32 ceil1000(s32 arg0)
+s32 texLoadBlockDxt32b(s32 arg0)
 {
     f32 temp_f0;
     s32 temp_f10;
@@ -96,7 +103,7 @@ s32 ceil1000(s32 arg0)
 }
 
 
-s32 sub_GAME_7F0767D8(s32 arg0, s32 arg1, s32 arg2)
+s32 texLoadBlockTexels4b(s32 arg0, s32 arg1, s32 arg2)
 {
     s32 ret;
     ret = 0;
@@ -114,7 +121,7 @@ s32 sub_GAME_7F0767D8(s32 arg0, s32 arg1, s32 arg2)
 }
 
 
-s32 sub_GAME_7F076848(s32 arg0, s32 arg1, s32 arg2)
+s32 texLoadBlockTexels8b(s32 arg0, s32 arg1, s32 arg2)
 {
     s32 ret;
     ret = 0;
@@ -132,7 +139,7 @@ s32 sub_GAME_7F076848(s32 arg0, s32 arg1, s32 arg2)
 }
 
 
-s32 sub_GAME_7F0768B8(s32 arg0, s32 arg1, s32 arg2)
+s32 texLoadBlockTexels16b(s32 arg0, s32 arg1, s32 arg2)
 {
     s32 ret;
     ret = 0;
@@ -150,7 +157,7 @@ s32 sub_GAME_7F0768B8(s32 arg0, s32 arg1, s32 arg2)
 }
 
 
-s32 sub_GAME_7F076928(s32 arg0, s32 arg1, s32 arg2)
+s32 texLoadBlockTexels32b(s32 arg0, s32 arg1, s32 arg2)
 {
     s32 ret;
     ret = 0;
@@ -387,26 +394,26 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
                     break;
                 case G_IM_SIZ_32b:
                     depth2 = G_IM_SIZ_32b;
-                    lrs = sub_GAME_7F076928(width, height, 1) - 1;
-                    sp138 = ceil1000(width);
+                    lrs = texLoadBlockTexels32b(width, height, 1) - 1;
+                    sp138 = texLoadBlockDxt32b(width);
                     line = (s32) (width + 3) >> 2;
                     break;
                 case G_IM_SIZ_16b:
                     depth2 = G_IM_SIZ_16b;
-                    lrs = sub_GAME_7F0768B8(width, height, 1) - 1;
-                    sp138 = ceil2000(width);
+                    lrs = texLoadBlockTexels16b(width, height, 1) - 1;
+                    sp138 = texLoadBlockDxt16b(width);
                     line = (s32) (width + 3) >> 2;
                     break;
                 case G_IM_SIZ_8b:
                     depth2 = G_IM_SIZ_16b;
-                    lrs = sub_GAME_7F076848(width, height, 1) - 1;
-                    sp138 = ceil4000(width);
+                    lrs = texLoadBlockTexels8b(width, height, 1) - 1;
+                    sp138 = texLoadBlockDxt8b(width);
                     line = (s32) (width + 7) >> 3;
                     break;
                 case G_IM_SIZ_4b:
                     depth2 = G_IM_SIZ_16b;
-                    lrs = sub_GAME_7F0767D8(width, height, 1) - 1;
-                    sp138 = ceil8000(width);
+                    lrs = texLoadBlockTexels4b(width, height, 1) - 1;
+                    sp138 = texLoadBlockDxt4b(width);
                     line = (s32) (width + 0xF) >> 4;
                     break;
             }
@@ -487,8 +494,8 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
             }
 
             gDPSetTile(gdl++, format, depth, line, 0, G_TX_RENDERTILE, 0,
-                tconfig->flagsT, is_less_than_certain_power_of_2(height), G_TX_NOLOD,
-                tconfig->flagsS, is_less_than_certain_power_of_2(width), G_TX_NOLOD);
+                tconfig->flagsT, texMaskBits(height), G_TX_NOLOD,
+                tconfig->flagsS, texMaskBits(width), G_TX_NOLOD);
 
             gDPSetTileSize(gdl++, G_TX_RENDERTILE, ulst, ulst, (((width - 1) << 2) + ulst), (((height - 1) << 2) + ulst));
         }
@@ -527,22 +534,22 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
                 {
                     case G_IM_SIZ_32b:
                         depth2 = G_IM_SIZ_32b;
-                        lrs = sub_GAME_7F076928(width, height, lod) - 1;
+                        lrs = texLoadBlockTexels32b(width, height, lod) - 1;
                     break;
                     
                     case G_IM_SIZ_16b:
                         depth2 = G_IM_SIZ_16b;
-                        lrs = sub_GAME_7F0768B8(width, height, lod) - 1;
+                        lrs = texLoadBlockTexels16b(width, height, lod) - 1;
                     break;
                     
                     case G_IM_SIZ_8b:
                         depth2 = G_IM_SIZ_16b;
-                        lrs = sub_GAME_7F076848(width, height, lod) - 1;
+                        lrs = texLoadBlockTexels8b(width, height, lod) - 1;
                     break;
                     
                     case G_IM_SIZ_4b:
                         depth2 = G_IM_SIZ_16b;
-                        lrs = sub_GAME_7F0767D8(width, height, lod) - 1;
+                        lrs = texLoadBlockTexels4b(width, height, lod) - 1;
                     break;
                 }
             }
@@ -667,8 +674,8 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
                 }
                 
                 gDPSetTile(gdl++, format, depth, line, tmem, tile, 0,
-                    tconfig->flagsT, is_less_than_certain_power_of_2(height), tile,
-                    tconfig->flagsS, is_less_than_certain_power_of_2(width), tile);
+                    tconfig->flagsT, texMaskBits(height), tile,
+                    tconfig->flagsS, texMaskBits(width), tile);
 
                 gDPSetTileSize(gdl++, tile, ulst, ulst, (((width - 1) << 2) + ulst), (((height - 1) << 2) + ulst));
 
@@ -680,16 +687,5 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
 
     *gdlptr = gdl;
 }
-
-
-
-/**
- * Unreferenced.
-*/
-void sub_GAME_7F077BB8(s32 arg0, s32 arg1, s32 arg2, s32 arg3)
-{
-    return;
-}
-
 
 

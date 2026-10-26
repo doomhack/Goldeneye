@@ -9,7 +9,7 @@
 #include <PR/os.h>
 #include "game/debug/indy_comms.h"
 #include "game/player/bondview.h"
-#include "game/gfx/viewport.h"
+#include "game/gfx/zbuf.h"
 #include "game/gfx/dyn.h"
 
 /**

@@ -1,3 +1,8 @@
+/**
+ * Starting the RSP graphics task each frame: the microcode, its DRAM stack, the yield
+ * buffer and the RDP output buffer.
+ */
+
 #include <ultra64.h>
 #include "game/gfx/rsp.h"
 #include <init.h>

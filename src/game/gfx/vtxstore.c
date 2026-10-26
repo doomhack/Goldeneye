@@ -1,3 +1,14 @@
+/**
+ * Per-instance copies of model vertices, for models whose vertices change at run time.
+ *
+ * Characters get a copy when a blood stain is painted on them (VTXSTORE_CHR). Props get one
+ * when damage moves their vertices (VTXSTORE_OBJ); props with the same model and damage
+ * level can share a copy, and vtxstoreTick merges such duplicates when the store runs low.
+ * Each store is a block of vertices carved into batches, kept as a doubly linked list in
+ * address order so neighbouring free batches can be merged. Sizes are set per level by
+ * vtxstoreReset (bigger in multiplayer).
+ */
+
 #include <ultra64.h>
 #include <memp.h>
 #include "bondtypes.h"
@@ -5,69 +16,45 @@
 #include "game/prop/propobj.h"
 #include "game/model/model.h"
 
-// unsure if these structs are defined as something else, elsewhere
-struct unk_09B7A0_struct_parent {
-    Vertex* unk00;
-    s32 unk04;
-    s32 unk08;
-    s16 unk0C;
-    s16 unk0E;
-    s16 unk10;
-    s16 unk12;
+/** One block of a store: in use (refs > 0), free (0) or an unused entry (-1). */
+struct VtxstoreBatch {
+    Vertex* vertices;
+    s32 modeldef;
+    s32 destroyedLevel;
+    s16 numVtx;
+    s16 refs;
+    s16 next;
+    s16 prev;
 };
 
 // bss
 //CODE.bss:8007A0D0
-s32 dword_CODE_bss_8007A0D0; // item count for dword_CODE_bss_8007A0E0
+s32 g_VtxstoreChrNumVtx; // item count for g_VtxstoreChrVtx
 //CODE.bss:8007A0D4
-s32 dword_CODE_bss_8007A0D4; // item count for dword_CODE_bss_8007A0E8
+s32 g_VtxstoreChrNumBatches; // item count for g_VtxstoreChrBatches
 //CODE.bss:8007A0D8
-s32 dword_CODE_bss_8007A0D8; // item count for dword_CODE_bss_8007A0E4
+s32 g_VtxstoreObjNumVtx; // item count for g_VtxstoreObjVtx
 //CODE.bss:8007A0DC
-s32 dword_CODE_bss_8007A0DC; // item count for dword_CODE_bss_8007A0EC
+s32 g_VtxstoreObjNumBatches; // item count for g_VtxstoreObjBatches
 //CODE.bss:8007A0E0
-Vertex* dword_CODE_bss_8007A0E0; // array ( uses dword_CODE_bss_8007A0D0 as alloc count, item size 0x10 )
+Vertex* g_VtxstoreChrVtx; // array ( uses g_VtxstoreChrNumVtx as alloc count, item size 0x10 )
 //CODE.bss:8007A0E4
-Vertex* dword_CODE_bss_8007A0E4; // array ( uses dword_CODE_bss_8007A0D8 as alloc count, item size 0x10 )
+Vertex* g_VtxstoreObjVtx; // array ( uses g_VtxstoreObjNumVtx as alloc count, item size 0x10 )
 //CODE.bss:8007A0E8
-struct unk_09B7A0_struct_parent* dword_CODE_bss_8007A0E8; // array ( uses dword_CODE_bss_8007A0D4 as alloc count, item size 0x14 )
+struct VtxstoreBatch* g_VtxstoreChrBatches; // array ( uses g_VtxstoreChrNumBatches as alloc count, item size 0x14 )
 //CODE.bss:8007A0EC
-struct unk_09B7A0_struct_parent* dword_CODE_bss_8007A0EC; // array ( uses dword_CODE_bss_8007A0DC as alloc count, item size 0x14 )
+struct VtxstoreBatch* g_VtxstoreObjBatches; // array ( uses g_VtxstoreObjNumBatches as alloc count, item size 0x14 )
 //CODE.bss:8007A0F0
-s16 word_CODE_bss_8007A0F0;
+s16 g_VtxstoreChrFreeVtx;
 //CODE.bss:8007A0F2
-s16 word_CODE_bss_8007A0F2;
-
-void null_init_main_1(void)
-{
-    return;
-}
-
-
-void sub_GAME_7F09B7A8(void)
-{
-    s32 i;
-    for (i = 0; i < dword_CODE_bss_8007A0D4; i++)
-    {
-        if (dword_CODE_bss_8007A0E8[i].unk00);
-    }
-}
-
-void sub_GAME_7F09B7E4(void)
-{
-    s32 i;
-    for (i = 0; i < dword_CODE_bss_8007A0DC; i++)
-    {
-        if (dword_CODE_bss_8007A0EC[i].unk00);
-    }
-}
+s16 g_VtxstoreObjFreeVtx;
 
 /*
 * Address: 7F09B820(
 * PD name: vtxstore_reset
 */
 
-void sub_GAME_7F09B820(void)
+void vtxstoreReset(void)
 {
     u32 tmp;
     s32 stage;
@@ -77,58 +64,58 @@ void sub_GAME_7F09B820(void)
 
     if (getPlayerCount() >= 2)
     {
-        dword_CODE_bss_8007A0D0 = 0xBB8;
-        dword_CODE_bss_8007A0D4 = 0x50;
-        dword_CODE_bss_8007A0D8 = 0x1F4;
-        dword_CODE_bss_8007A0DC = 0x14;
+        g_VtxstoreChrNumVtx = 0xBB8;
+        g_VtxstoreChrNumBatches = 0x50;
+        g_VtxstoreObjNumVtx = 0x1F4;
+        g_VtxstoreObjNumBatches = 0x14;
     }
     else
     {
         stage = lvlGetCurrentStageToLoad();
         if ((stage != 0x1E) && (stage != 0x1D))
         {
-            dword_CODE_bss_8007A0D0 = 0x1F4;
-            dword_CODE_bss_8007A0D4 = 0x14;
-            dword_CODE_bss_8007A0D8 = tmp;
-            dword_CODE_bss_8007A0DC = 0x28;
+            g_VtxstoreChrNumVtx = 0x1F4;
+            g_VtxstoreChrNumBatches = 0x14;
+            g_VtxstoreObjNumVtx = tmp;
+            g_VtxstoreObjNumBatches = 0x28;
         }
         else
         {
-            dword_CODE_bss_8007A0D0 = 0x1F4;
-            dword_CODE_bss_8007A0D4 = 0x14;
-            dword_CODE_bss_8007A0D8 = 0x1F4;
-            dword_CODE_bss_8007A0DC = 0x14;
+            g_VtxstoreChrNumVtx = 0x1F4;
+            g_VtxstoreChrNumBatches = 0x14;
+            g_VtxstoreObjNumVtx = 0x1F4;
+            g_VtxstoreObjNumBatches = 0x14;
         }
     }
 
     tmp = 0x14;
-    dword_CODE_bss_8007A0E8 = mempAlloc(dword_CODE_bss_8007A0D4 * tmp, MEMPOOL_STAGE);
-    dword_CODE_bss_8007A0E0 = mempAlloc(dword_CODE_bss_8007A0D0 * 0x10, MEMPOOL_STAGE);
-    dword_CODE_bss_8007A0EC = mempAlloc(dword_CODE_bss_8007A0DC * tmp, MEMPOOL_STAGE);
-    dword_CODE_bss_8007A0E4 = mempAlloc(dword_CODE_bss_8007A0D8 * 0x10, MEMPOOL_STAGE);
+    g_VtxstoreChrBatches = mempAlloc(g_VtxstoreChrNumBatches * tmp, MEMPOOL_STAGE);
+    g_VtxstoreChrVtx = mempAlloc(g_VtxstoreChrNumVtx * 0x10, MEMPOOL_STAGE);
+    g_VtxstoreObjBatches = mempAlloc(g_VtxstoreObjNumBatches * tmp, MEMPOOL_STAGE);
+    g_VtxstoreObjVtx = mempAlloc(g_VtxstoreObjNumVtx * 0x10, MEMPOOL_STAGE);
 
-    word_CODE_bss_8007A0F0 = (s16) dword_CODE_bss_8007A0D0;
-    dword_CODE_bss_8007A0E8->unk00 = dword_CODE_bss_8007A0E0;
-    dword_CODE_bss_8007A0E8->unk0C = (s16) dword_CODE_bss_8007A0D0;
-    dword_CODE_bss_8007A0E8->unk0E = 0;
-    dword_CODE_bss_8007A0E8->unk10 = -1;
-    dword_CODE_bss_8007A0E8->unk12 = -1;
+    g_VtxstoreChrFreeVtx = (s16) g_VtxstoreChrNumVtx;
+    g_VtxstoreChrBatches->vertices = g_VtxstoreChrVtx;
+    g_VtxstoreChrBatches->numVtx = (s16) g_VtxstoreChrNumVtx;
+    g_VtxstoreChrBatches->refs = 0;
+    g_VtxstoreChrBatches->next = -1;
+    g_VtxstoreChrBatches->prev = -1;
 
-    for (i = 1; i < dword_CODE_bss_8007A0D4; i++)
+    for (i = 1; i < g_VtxstoreChrNumBatches; i++)
     {
-        dword_CODE_bss_8007A0E8[i].unk0E = -1;
+        g_VtxstoreChrBatches[i].refs = -1;
     }
 
-    word_CODE_bss_8007A0F2 = (s16) dword_CODE_bss_8007A0D8;
-    dword_CODE_bss_8007A0EC->unk00 = dword_CODE_bss_8007A0E4;
-    dword_CODE_bss_8007A0EC->unk0C = (s16) dword_CODE_bss_8007A0D8;
-    dword_CODE_bss_8007A0EC->unk0E = 0;
-    dword_CODE_bss_8007A0EC->unk10 = -1;
-    dword_CODE_bss_8007A0EC->unk12 = -1;
+    g_VtxstoreObjFreeVtx = (s16) g_VtxstoreObjNumVtx;
+    g_VtxstoreObjBatches->vertices = g_VtxstoreObjVtx;
+    g_VtxstoreObjBatches->numVtx = (s16) g_VtxstoreObjNumVtx;
+    g_VtxstoreObjBatches->refs = 0;
+    g_VtxstoreObjBatches->next = -1;
+    g_VtxstoreObjBatches->prev = -1;
 
-    for (i = 1; i < dword_CODE_bss_8007A0DC; i++)
+    for (i = 1; i < g_VtxstoreObjNumBatches; i++)
     {
-        dword_CODE_bss_8007A0EC[i].unk0E = -1;
+        g_VtxstoreObjBatches[i].refs = -1;
     }
 }
 
@@ -141,7 +128,7 @@ void sub_GAME_7F09B820(void)
 *  Search all props and their model data for references to the `find` address
 *  and replace it with the `replacement` address.
 */
-void sub_GAME_7F09BAC4(s32 find, s32 replacement) {
+void vtxstoreFixRefs(s32 find, s32 replacement) {
     PropRecord* var_s1;
     ChrRecord* var_v0;
     Model* temp_a0;
@@ -193,7 +180,7 @@ void sub_GAME_7F09BAC4(s32 find, s32 replacement) {
 * PD name: vtxstore_tick
 * Description: Merge duplicate batches. May free memory.
 */
-void sub_GAME_7F09BBBC(void)
+void vtxstoreTick(void)
 {
     s16 temp_s2;
     s16 var_fp;
@@ -204,23 +191,23 @@ void sub_GAME_7F09BBBC(void)
 
     var_s6 = 0;
 
-    if (word_CODE_bss_8007A0F2 < ((s32)dword_CODE_bss_8007A0D8 >> 2))
+    if (g_VtxstoreObjFreeVtx < ((s32)g_VtxstoreObjNumVtx >> 2))
     {
-        for (var_fp = 0; var_fp < dword_CODE_bss_8007A0DC - 1; var_fp++) {
-            if (dword_CODE_bss_8007A0EC[var_fp].unk0E > 0)
+        for (var_fp = 0; var_fp < g_VtxstoreObjNumBatches - 1; var_fp++) {
+            if (g_VtxstoreObjBatches[var_fp].refs > 0)
             {
-                for (var_s2 = var_fp + 1; var_s2 < dword_CODE_bss_8007A0DC; var_s2++) {
-                    if ((dword_CODE_bss_8007A0EC[var_s2].unk0E > 0) &&
-                        (dword_CODE_bss_8007A0EC[var_fp].unk04 == dword_CODE_bss_8007A0EC[var_s2].unk04) &&
-                        (dword_CODE_bss_8007A0EC[var_fp].unk08 == dword_CODE_bss_8007A0EC[var_s2].unk08))
+                for (var_s2 = var_fp + 1; var_s2 < g_VtxstoreObjNumBatches; var_s2++) {
+                    if ((g_VtxstoreObjBatches[var_s2].refs > 0) &&
+                        (g_VtxstoreObjBatches[var_fp].modeldef == g_VtxstoreObjBatches[var_s2].modeldef) &&
+                        (g_VtxstoreObjBatches[var_fp].destroyedLevel == g_VtxstoreObjBatches[var_s2].destroyedLevel))
                     {
-                        sub_GAME_7F09BAC4((s32)dword_CODE_bss_8007A0EC[var_s2].unk00, (s32)dword_CODE_bss_8007A0EC[var_fp].unk00);
+                        vtxstoreFixRefs((s32)g_VtxstoreObjBatches[var_s2].vertices, (s32)g_VtxstoreObjBatches[var_fp].vertices);
                         var_s6 = 1;
 
-                        dword_CODE_bss_8007A0EC[var_fp].unk0E += dword_CODE_bss_8007A0EC[var_s2].unk0E;
-                        dword_CODE_bss_8007A0EC[var_s2].unk0E = 0;
+                        g_VtxstoreObjBatches[var_fp].refs += g_VtxstoreObjBatches[var_s2].refs;
+                        g_VtxstoreObjBatches[var_s2].refs = 0;
                         
-                        word_CODE_bss_8007A0F2 += dword_CODE_bss_8007A0EC[var_s2].unk0C;
+                        g_VtxstoreObjFreeVtx += g_VtxstoreObjBatches[var_s2].numVtx;
                     }
                 }
             }
@@ -232,18 +219,18 @@ void sub_GAME_7F09BBBC(void)
         var_fp = 0;
 
         while (stop == 0) {
-            var_s2 = dword_CODE_bss_8007A0EC[var_fp].unk10;
+            var_s2 = g_VtxstoreObjBatches[var_fp].next;
 
             if (var_s2 >= 0) {
-                if (dword_CODE_bss_8007A0EC[var_fp].unk0E == 0) {
-                    if (dword_CODE_bss_8007A0EC[var_s2].unk0E == 0) {
-                        dword_CODE_bss_8007A0EC[var_fp].unk0C += dword_CODE_bss_8007A0EC[var_s2].unk0C;
-                        dword_CODE_bss_8007A0EC[var_s2].unk0E = -1;
-                        var_s2 = dword_CODE_bss_8007A0EC[var_s2].unk10;
-                        dword_CODE_bss_8007A0EC[var_fp].unk10 = var_s2;
+                if (g_VtxstoreObjBatches[var_fp].refs == 0) {
+                    if (g_VtxstoreObjBatches[var_s2].refs == 0) {
+                        g_VtxstoreObjBatches[var_fp].numVtx += g_VtxstoreObjBatches[var_s2].numVtx;
+                        g_VtxstoreObjBatches[var_s2].refs = -1;
+                        var_s2 = g_VtxstoreObjBatches[var_s2].next;
+                        g_VtxstoreObjBatches[var_fp].next = var_s2;
 
                         if (var_s2 >= 0) {
-                            dword_CODE_bss_8007A0EC[var_s2].unk12 = var_fp;
+                            g_VtxstoreObjBatches[var_s2].prev = var_fp;
                         }
                         continue;
                     }
@@ -255,7 +242,7 @@ void sub_GAME_7F09BBBC(void)
         }
     }
 
-    if (word_CODE_bss_8007A0F2 < ((s32)dword_CODE_bss_8007A0D8 >> 2)) {
+    if (g_VtxstoreObjFreeVtx < ((s32)g_VtxstoreObjNumVtx >> 2)) {
         sub_GAME_7F056690();
     }
 }
@@ -263,10 +250,10 @@ void sub_GAME_7F09BBBC(void)
 
 /*
 * Address: 7F09BE4C
-* PD name: vtxstore_allocate
+* PD name: vtxstoreAllocate
 * Description: Allocation for batches within the storage space
 */
-s32 vtxstore_allocate(s32 arg0, s32 type, s32 arg2, s32 arg3) 
+s32 vtxstoreAllocate(s32 arg0, s32 type, s32 arg2, s32 arg3) 
 {
     s16* var_t3;
     s16 temp_t2;
@@ -276,18 +263,18 @@ s32 vtxstore_allocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
     s32 var_v0;
     s32 var_v1;
     s16 var_v1_2;
-    struct unk_09B7A0_struct_parent* var_t0;
+    struct VtxstoreBatch* var_t0;
 
     switch (type) {
-        case 0xCCCC:
-            var_t0 = dword_CODE_bss_8007A0E8;
-            var_t3 = &word_CODE_bss_8007A0F0;
-            var_a2 = ((s16 *)&dword_CODE_bss_8007A0D4)[1];
+        case VTXSTORE_CHR:
+            var_t0 = g_VtxstoreChrBatches;
+            var_t3 = &g_VtxstoreChrFreeVtx;
+            var_a2 = (s16)g_VtxstoreChrNumBatches;
             break;
-        case 0xB0B:
-            var_t0 = dword_CODE_bss_8007A0EC;
-            var_t3 = &word_CODE_bss_8007A0F2;
-            var_a2 = ((s16 *)&dword_CODE_bss_8007A0DC)[1];
+        case VTXSTORE_OBJ:
+            var_t0 = g_VtxstoreObjBatches;
+            var_t3 = &g_VtxstoreObjFreeVtx;
+            var_a2 = (s16)g_VtxstoreObjNumBatches;
             break;
         default:
             return 0;
@@ -298,10 +285,10 @@ s32 vtxstore_allocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
     var_a1 = 0;
     
     do {
-        if ((var_t0[var_a1].unk0E == 0) && (var_t0[var_a1].unk0C >= arg0)) {
+        if ((var_t0[var_a1].refs == 0) && (var_t0[var_a1].numVtx >= arg0)) {
             var_v1_2 = 1;
         } else {
-            var_a1 = var_t0[var_a1].unk10;
+            var_a1 = var_t0[var_a1].next;
             var_v0 += 1;
             if ((var_a1 == -1) || (var_a2 < var_v0)) {
                 var_v1_2 = (s16)-1;
@@ -309,32 +296,30 @@ s32 vtxstore_allocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
         }
     } while (var_v1_2 == 0);
     if (var_a2 < var_v0) {
-        sub_GAME_7F09B7A8();
-        sub_GAME_7F09B7E4();
         return 0;
     }
     // FAKE
     if (var_v0) {}
     if (var_v1_2 == 1) {
         var_t4 = 0;
-        temp_t2 = var_t0[var_a1].unk0C;
-        var_t0[var_a1].unk04 = arg2;
-        var_t0[var_a1].unk08 = arg3;
-        var_t0[var_a1].unk0E++;
+        temp_t2 = var_t0[var_a1].numVtx;
+        var_t0[var_a1].modeldef = arg2;
+        var_t0[var_a1].destroyedLevel = arg3;
+        var_t0[var_a1].refs++;
         if (temp_t2 != arg0) {
             for (var_v1 = 0; var_v1 < var_a2; var_v1++) {
-                if (var_t0[var_v1].unk0E == -1) {
-                    var_t0[var_a1].unk0C = arg0;
-                    var_t0[var_v1].unk00 = var_t0[var_a1].unk00 + arg0;
-                    var_t0[var_v1].unk0C = temp_t2 - arg0;
-                    var_t0[var_v1].unk0E = 0;
-                    var_t0[var_v1].unk12 = var_a1;
+                if (var_t0[var_v1].refs == -1) {
+                    var_t0[var_a1].numVtx = arg0;
+                    var_t0[var_v1].vertices = var_t0[var_a1].vertices + arg0;
+                    var_t0[var_v1].numVtx = temp_t2 - arg0;
+                    var_t0[var_v1].refs = 0;
+                    var_t0[var_v1].prev = var_a1;
                     var_t4 = 1;
-                    var_t0[var_v1].unk10 = var_t0[var_a1].unk10;
-                    if (var_t0[var_a1].unk10 >= 0) {
-                        var_t0[var_t0[var_a1].unk10].unk12 = var_v1;
+                    var_t0[var_v1].next = var_t0[var_a1].next;
+                    if (var_t0[var_a1].next >= 0) {
+                        var_t0[var_t0[var_a1].next].prev = var_v1;
                     }
-                    var_t0[var_a1].unk10 = var_v1;
+                    var_t0[var_a1].next = var_v1;
                     break;
                 }
             }
@@ -344,7 +329,7 @@ s32 vtxstore_allocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
         } else {
             *var_t3 -= temp_t2;
         }
-        return (s32)var_t0[var_a1].unk00;
+        return (s32)var_t0[var_a1].vertices;
     }
     return 0;
 }
@@ -355,24 +340,22 @@ s32 vtxstore_allocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
 * PD name: vtxstore_free (likely)
 * Description: Either deforming a vertex or frees a vertex (deallocation)
 */
-void sub_GAME_7F09C044(Vertex* arg0) {
+void vtxstoreFree(Vertex* arg0) {
     s16* var_t2;
-    struct unk_09B7A0_struct_parent* var_a3;
+    struct VtxstoreBatch* var_a3;
     s16 var_a1;
     s32 stop;
     s32 var_v1;
 
-    if ((arg0 >= dword_CODE_bss_8007A0E0) &&
-        (arg0 <= dword_CODE_bss_8007A0E0 + (dword_CODE_bss_8007A0D0 - 1))) {
-        var_a3 = dword_CODE_bss_8007A0E8;
-        var_t2 = &word_CODE_bss_8007A0F0;
-    } else if ((arg0 >= dword_CODE_bss_8007A0E4) &&
-               (arg0 <= dword_CODE_bss_8007A0E4 + (dword_CODE_bss_8007A0D8 - 1))) {
-        var_a3 = dword_CODE_bss_8007A0EC;
-        var_t2 = &word_CODE_bss_8007A0F2;
+    if ((arg0 >= g_VtxstoreChrVtx) &&
+        (arg0 <= g_VtxstoreChrVtx + (g_VtxstoreChrNumVtx - 1))) {
+        var_a3 = g_VtxstoreChrBatches;
+        var_t2 = &g_VtxstoreChrFreeVtx;
+    } else if ((arg0 >= g_VtxstoreObjVtx) &&
+               (arg0 <= g_VtxstoreObjVtx + (g_VtxstoreObjNumVtx - 1))) {
+        var_a3 = g_VtxstoreObjBatches;
+        var_t2 = &g_VtxstoreObjFreeVtx;
     } else {
-        sub_GAME_7F09B7A8();
-        sub_GAME_7F09B7E4();
         return;
     }
 
@@ -380,45 +363,45 @@ void sub_GAME_7F09C044(Vertex* arg0) {
     stop = 0;
 
     while (stop == 0) {
-        if (var_a3[var_a1].unk00 == arg0) {
+        if (var_a3[var_a1].vertices == arg0) {
             stop = 1;
             // FAKE
-            if (var_a3[var_a1].unk0E);
-            var_a3[var_a1].unk0E--;
-            if (var_a3[var_a1].unk0E == 0) {
-                *var_t2 += var_a3[var_a1].unk0C;
+            if (var_a3[var_a1].refs);
+            var_a3[var_a1].refs--;
+            if (var_a3[var_a1].refs == 0) {
+                *var_t2 += var_a3[var_a1].numVtx;
 
                 // Merge with next free block
-                var_v1 = var_a3[var_a1].unk10;
+                var_v1 = var_a3[var_a1].next;
                 if (var_v1 >= 0) {
-                    if (var_a3[var_v1].unk0E == 0) {
-                        var_a3[var_a1].unk0C += var_a3[var_v1].unk0C;
-                        var_a3[var_a1].unk10 = var_a3[var_v1].unk10;
-                        var_a3[var_v1].unk0E = -1;
-                        var_v1 = var_a3[var_a1].unk10;
+                    if (var_a3[var_v1].refs == 0) {
+                        var_a3[var_a1].numVtx += var_a3[var_v1].numVtx;
+                        var_a3[var_a1].next = var_a3[var_v1].next;
+                        var_a3[var_v1].refs = -1;
+                        var_v1 = var_a3[var_a1].next;
                         if (var_v1 >= 0) {
-                            var_a3[var_v1].unk12 = var_a1;
+                            var_a3[var_v1].prev = var_a1;
                         }
                     }
                 }
 
                 // Merge with prev free block
-                var_v1 = var_a3[var_a1].unk12;
+                var_v1 = var_a3[var_a1].prev;
                 if (var_v1 >= 0) {
-                    if (var_a3[var_v1].unk0E == 0) {
-                        var_a3[var_v1].unk0C += var_a3[var_a1].unk0C;
-                        var_a3[var_v1].unk10 = var_a3[var_a1].unk10;
-                        var_a3[var_a1].unk0E = -1;
+                    if (var_a3[var_v1].refs == 0) {
+                        var_a3[var_v1].numVtx += var_a3[var_a1].numVtx;
+                        var_a3[var_v1].next = var_a3[var_a1].next;
+                        var_a3[var_a1].refs = -1;
                         var_a1 = var_v1;
-                        var_v1 = var_a3[var_a1].unk10;
+                        var_v1 = var_a3[var_a1].next;
                         if (var_v1 >= 0) {
-                            var_a3[var_v1].unk12 = var_a1;
+                            var_a3[var_v1].prev = var_a1;
                         }
                     }
                 }
             }
         } else {
-            var_a1 = var_a3[var_a1].unk10;
+            var_a1 = var_a3[var_a1].next;
             if (var_a1 == -1) {
                 stop = 1;
             }

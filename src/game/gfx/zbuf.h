@@ -1,5 +1,5 @@
-#ifndef _VIEWPORT_H_
-#define _VIEWPORT_H_
+#ifndef _ZBUF_H_
+#define _ZBUF_H_
 
 #include <ultra64.h>
 
