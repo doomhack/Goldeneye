@@ -580,12 +580,12 @@ typedef union
     typedef struct ModelAnimation
     {
         s32 address;
-        u16 unk04; // number of frames in the animation
-        u8 unk06;
-        u8 unk07; // bit 0 is a loop flag: 0 means freeze anim at end, 1 means loop anim
+        u16 numFrames;
+        u8 angleBits;    // bits per joint rotation angle in each frame
+        u8 flags;        // bit 0: loops (otherwise it stops on the last frame)
         ModelAnimBitField *bitDescriptors; // 0x08
-        u16 unk0C;
-        u16 unk0E;
+        u16 rootBitsPerFrame; // stride of the root motion channels in bitStream
+        u16 frameBits;  // size of one frame of joint rotations
         u8  *bitStream; // 0x10
         s32 unk14;
         s32 unk18;
@@ -1494,13 +1494,13 @@ typedef union
             // need `struct anim` definition from AI branch.
             ModelAnimation   *anim; /*0x20*/
 
-            s8                gunhand; // used by ACT_STAND
-            s8                unk25;
+            s8                flip;       /* play the animation mirrored */
+            s8                flip2;
             s8                animlooping; /*0x26*/
             s8                unk27;
 
-            f32               animframe1; /*0x28*/
-            f32               unk2c;
+            f32               frame;      /*0x28 current frame, with fraction */
+            f32               frameFrac;  /* how far between framea and frameb */
 
             /**
              * Animation framea (per debug message)
@@ -1513,8 +1513,8 @@ typedef union
              * Offset 0x32.
             */
             s16               frameb;
-            s32               unk34;
-            s32               unk38;
+            s32               frameaData; /* framea's joint rotations, loaded from ROM */
+            s32               framebData;
             f32               endframe;
 
             f32               speed; /*0x40*/
@@ -1525,8 +1525,8 @@ typedef union
 
             ModelAnimation   *anim2;
 
-            f32               animframe2; /* 0x58*/
-            f32               unk5c;
+            f32               frame2;     /* 0x58*/
+            f32               frame2Frac;
 
             /**
              * Animation frame2a (per debug message)
@@ -1540,37 +1540,37 @@ typedef union
             */
             s16               frame2b;
 
-            s32               unk64;
-            s32               unk68;
-            f32               unk6c;
+            s32               frame2aData;
+            s32               frame2bData;
+            f32               endframe2;
             // 0x70
             f32               speed2;
-            f32               unk74;
-            f32               unk78;
-            f32               unk7c;
+            f32               newspeed2;
+            f32               oldspeed2;
+            f32               timespeed2;
             // 0x80
-            f32               unk80;
+            f32               elapsespeed2;
 
             /**
              * Related to "anim2", per debug message.
             */
-            f32               unk84;
+            f32               mergeWeight; /* how much of anim2 still shows, 1 to 0 */
 
-            f32               unk88;
-            f32               unk8c;
+            f32               mergeTime;
+            f32               mergeElapsed;
             // 0x90
             f32               animloopframe; /*0x90*/
             f32               animloopmerge; /*0x94*/
             s32               animflipfunc; /*0x98*/
             s32               unk9c;
             // 0xa0
-            s32               unka0; // This is likely a function pointer, see modelCalcRootPosition()
+            s32               rootMoveCallback; /* can veto or adjust root motion, see modelCalcRootPosition */
             f32               playspeed; // used by ACT_STAND in chrlv
-            f32               animrate;
-            f32               unkac;
+            f32               newplayspeed;
+            f32               oldplayspeed;
             // 0xb0
-            f32               unkb0;
-            f32               unkb4;
+            f32               timeplayspeed;
+            f32               elapseplayspeed;
             f32               anim_translation_scale; // used by ACT_ANIM in chrlv
         } Model;
 

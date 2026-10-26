@@ -199,12 +199,12 @@ s32 initResolveAnimTable(struct StruckAnim *entries)
     ((ModelAnimation *)((s32)&anim + ((s32)ptr_animation_table)))
 
 #define ANIM_FRAC(anim) \
-    ((((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->unk04 - 1)) * 0.10000001f) / \
-        ((f32)((u32)ANIM_PTR(anim)->unk04)))
+    ((((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->numFrames - 1)) * 0.10000001f) / \
+        ((f32)((u32)ANIM_PTR(anim)->numFrames)))
 
 #define ANIM_FRAC_MUL_FIRST(anim) \
-    ((0.10000001f * ((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->unk04 - 1))) / \
-        ((f32)((u32)ANIM_PTR(anim)->unk04)))
+    ((0.10000001f * ((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->numFrames - 1))) / \
+        ((f32)((u32)ANIM_PTR(anim)->numFrames)))
 
 void initWeaponAnimGroups(void)
 {

@@ -513,10 +513,10 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
 #undef S_7F008E80_ANIM_SPEED
     
     animation = (struct ModelAnimation*)((s32)ptr_animation_table + (s32)&ANIM_DATA_bond_eye_walk);
-    startframe = animation->unk04 - 0x44;
+    startframe = animation->numFrames - 0x44;
     while (startframe < 0)
     {
-        startframe += animation->unk04;
+        startframe += animation->numFrames;
     }
     
     modelSetAnimation(chrModelInstance, (struct ModelAnimation *) animation, 0, (f32) startframe, 0.91f, 0.0f);

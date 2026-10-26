@@ -57,7 +57,7 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
 
         for (i = 0; i < (g_MaxModelSlots - 30); i++) 
         {
-            if (g_ModelSlots[i].unk08 == 0) 
+            if (g_ModelSlots[i].obj == 0) 
             {
                 model = (Model *)&g_ModelSlots[i];
                 break;
@@ -81,10 +81,10 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
 
         for (i = 0; i < g_MaxModelSlots; i++) 
         {
-            if (g_ModelSlots[i].unk08 == 0 && modelmgrCanSlotFitRwdata((Model *)&g_ModelSlots[i], header)) 
+            if (g_ModelSlots[i].obj == 0 && modelmgrCanSlotFitRwdata((Model *)&g_ModelSlots[i], header)) 
             {
-                rwdata = g_ModelSlots[i].unk10;
-                rwdatalen = g_ModelSlots[i].unk02;
+                rwdata = g_ModelSlots[i].datas;
+                rwdatalen = g_ModelSlots[i].rwdatalen;
                 model = (Model *)&g_ModelSlots[i];
                 break;
             }
@@ -94,7 +94,7 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
     if (model != NULL) 
     {
         modelInit(model, header, rwdata);
-        ((struct ModelSlot *)model)->unk02 = rwdatalen;
+        ((struct ModelSlot *)model)->rwdatalen = rwdatalen;
     }
 
     return model;
@@ -127,7 +127,7 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
     {
         for (i = 0; i < (g_MaxAnimModelSlots - 10); i++) 
         {
-            if (g_AnimModelSlots[i].unk08 == 0)
+            if (g_AnimModelSlots[i].obj == 0)
             {
                 newModel = (Model *)&g_AnimModelSlots[i];
                 break;
@@ -158,11 +158,11 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
 
         for (i2 = 0; i2 < g_MaxAnimModelSlots; i2++) 
         {
-            if ((g_AnimModelSlots[i2].unk08 == 0) && ((requiredRwdatalen <= 0) || ((g_AnimModelSlots[i2].unk10 != NULL) &&(g_AnimModelSlots[i2].unk02 >= requiredRwdatalen)))) 
+            if ((g_AnimModelSlots[i2].obj == 0) && ((requiredRwdatalen <= 0) || ((g_AnimModelSlots[i2].datas != NULL) &&(g_AnimModelSlots[i2].rwdatalen >= requiredRwdatalen)))) 
             {
                 newModel = (Model *)&g_AnimModelSlots[i2];
-                rwdatas = g_AnimModelSlots[i2].unk10;
-                rwdatalen = g_AnimModelSlots[i2].unk02;
+                rwdatas = g_AnimModelSlots[i2].datas;
+                rwdatalen = g_AnimModelSlots[i2].rwdatalen;
                 break;
             }
         }
@@ -969,7 +969,7 @@ u16 animReadRootMotion16(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelA
     u32 angle_raw;
     u16 angle_ret;
     
-    scaled = ((u32) anim->unk0C) * ((u32) frame);
+    scaled = ((u32) anim->rootBitsPerFrame) * ((u32) frame);
     
     if (flip)
     {
@@ -1037,33 +1037,33 @@ void modelCalcRootPosition(Model *model, ModelNode *modelNode)
     sp38.z = rw->Header.unk34.z;
     rw->Header.unk14 = rw->Header.unk30;
 
-    if (model->unk2c != 0.0f)
+    if (model->frameFrac != 0.0f)
     {
         if (rw->Header.unk01 != 0)
         {
-            modelLerp3(&sp38, &rw->Header.unk24, model->unk2c);
+            modelLerp3(&sp38, &rw->Header.unk24, model->frameFrac);
 
             // Weird do while loop but needed for matching.
             do
             {
-                rw->Header.unk14 = modelLerpAngle(rw->Header.unk30, rw->Header.unk20, model->unk2c);
+                rw->Header.unk14 = modelLerpAngle(rw->Header.unk30, rw->Header.unk20, model->frameFrac);
             }
-            while (model->unka0 * 0);
+            while (model->rootMoveCallback * 0);
         }
     }
 
-    if ((model->anim2 != 0) || (model->unk84 != 0.0f))
+    if ((model->anim2 != 0) || (model->mergeWeight != 0.0f))
     {
         if (rw->Header.unk02 != 0)
         {
             y = rw->Header.unk4c.y;
 
-            if (model->unk5c != 0.0f)
+            if (model->frame2Frac != 0.0f)
             {
-                y += (rw->Header.unk40.y - y) * model->unk5c;
+                y += (rw->Header.unk40.y - y) * model->frame2Frac;
             }
 
-            sp38.y += (y - sp38.y) * model->unk84;
+            sp38.y += (y - sp38.y) * model->mergeWeight;
         }
     }
 
@@ -1071,7 +1071,7 @@ void modelCalcRootPosition(Model *model, ModelNode *modelNode)
     sp2c.y = sp38.y;
     sp2c.z = sp38.z;
 
-    if (model->unka0 && !((s32 (*)(Model *, coord3d *, coord3d *, f32 *)) model->unka0)(model, &rw->Header.pos, &sp2c, &rw->Header.ground))
+    if (model->rootMoveCallback && !((s32 (*)(Model *, coord3d *, coord3d *, f32 *)) model->rootMoveCallback)(model, &rw->Header.pos, &sp2c, &rw->Header.ground))
     {
         return;
     }
@@ -1449,7 +1449,7 @@ void animReadJointRotation(s32 jointnum, s32 flip, ModelSkeleton *skeleton, Mode
     u8 width;
     u16 rotation[3];
 
-    width = anim->unk06;
+    width = anim->angleBits;
 
     // Mirrored joint rotation?
     if (flip)
@@ -1461,7 +1461,7 @@ void animReadJointRotation(s32 jointnum, s32 flip, ModelSkeleton *skeleton, Mode
         bitoffset = skeleton->Joints[jointnum].mtxA * width;
     }
 
-    width = anim->unk06;
+    width = anim->angleBits;
 
     rotation[0] = animReadAngleBits(bitstream, width, bitoffset);
     bitoffset += (unsigned long) width;
@@ -1525,31 +1525,31 @@ void modelCalcJointMtx(ModelRenderData *arg0, Model *model, ModelNode *node)
 
     rot1 = D_80036094;
     
-    animReadJointRotation(jointnum.v, model->gunhand, skeleton, model->anim, model->unk34, &rot1);
+    animReadJointRotation(jointnum.v, model->flip, skeleton, model->anim, model->frameaData, &rot1);
 
-    if (model->unk2c != 0.0f)
+    if (model->frameFrac != 0.0f)
     {
         rot2 = D_800360A0;
-        animReadJointRotation(jointnum.v, model->gunhand, skeleton, model->anim, model->unk38, &rot2);
-        modelLerpAngles3(&rot1, &rot2, model->unk2c);
+        animReadJointRotation(jointnum.v, model->flip, skeleton, model->anim, model->framebData, &rot2);
+        modelLerpAngles3(&rot1, &rot2, model->frameFrac);
     }
 
-    if (model->unk84 != 0.0f)
+    if (model->mergeWeight != 0.0f)
     {
         rot3 = D_800360AC;
-        animReadJointRotation(jointnum.v, model->unk25, skeleton, model->anim2, model->unk64, &rot3);
+        animReadJointRotation(jointnum.v, model->flip2, skeleton, model->anim2, model->frame2aData, &rot3);
 
-        if (model->unk5c != 0.0f)
+        if (model->frame2Frac != 0.0f)
         {
             rot4 = D_800360B8;
-            animReadJointRotation(jointnum.v, model->unk25, skeleton, model->anim2, model->unk68, &rot4);
-            modelLerpAngles3(&rot3, &rot4, model->unk5c);
+            animReadJointRotation(jointnum.v, model->flip2, skeleton, model->anim2, model->frame2bData, &rot4);
+            modelLerpAngles3(&rot3, &rot4, model->frame2Frac);
         }
 
         quatFromAngles(&rot1, q1);
         quatFromAngles(&rot3, q2);
         quatMakeShortestPath(q1, q2);
-        quatSlerp(q1, q2, model->unk84, result);
+        quatSlerp(q1, q2, model->mergeWeight, result);
         modelCalcJointMtxFromQuat(arg0, model, node, result);
     }
     else
@@ -1686,7 +1686,7 @@ f32 animReadJointYRotation(s32 jointIndex, s32 useMtxB, ModelSkeleton *skeleton,
     f32 angle;
 
     angle = 0.0f;
-    width = anim->unk06;
+    width = anim->angleBits;
 
     if (useMtxB != 0) {
         bitOffset = skeleton->Joints[jointIndex].mtxB * width;
@@ -1721,22 +1721,22 @@ void modelCalcYJointMtx(ModelRenderData *renderData, Model *model, ModelNode *no
     jointIndex = rodata->JointID;
     skeleton = model->obj->Skeleton;
 
-    angle = animReadJointYRotation(jointIndex, model->gunhand, skeleton, model->anim, (u8 *)model->unk34);
+    angle = animReadJointYRotation(jointIndex, model->flip, skeleton, model->anim, (u8 *)model->frameaData);
 
-    if (model->unk2c != 0.0f) {
-        tmp = animReadJointYRotation(jointIndex, model->gunhand, skeleton, model->anim, (u8 *)model->unk38);
-        angle = modelLerpAngle(angle, tmp, model->unk2c);
+    if (model->frameFrac != 0.0f) {
+        tmp = animReadJointYRotation(jointIndex, model->flip, skeleton, model->anim, (u8 *)model->framebData);
+        angle = modelLerpAngle(angle, tmp, model->frameFrac);
     }
 
-    if (model->unk84 != 0.0f) {
-        tmp = animReadJointYRotation(jointIndex, model->unk25, skeleton, model->anim2, (u8 *)model->unk64);
+    if (model->mergeWeight != 0.0f) {
+        tmp = animReadJointYRotation(jointIndex, model->flip2, skeleton, model->anim2, (u8 *)model->frame2aData);
 
-        if (model->unk5c != 0.0f) {
-            tmp2 = animReadJointYRotation(jointIndex, model->unk25, skeleton, model->anim2, (u8 *)model->unk68);
-            tmp = modelLerpAngle(tmp, tmp2, model->unk5c);
+        if (model->frame2Frac != 0.0f) {
+            tmp2 = animReadJointYRotation(jointIndex, model->flip2, skeleton, model->anim2, (u8 *)model->frame2bData);
+            tmp = modelLerpAngle(tmp, tmp2, model->frame2Frac);
         }
 
-        angle = modelLerpAngle(angle, tmp, model->unk84);
+        angle = modelLerpAngle(angle, tmp, model->mergeWeight);
     }
 
     modelCalcYJointMtxFromAngle(renderData, model, node, angle);
@@ -2289,19 +2289,19 @@ void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
             modelDebugBreak();
         }
 
-        if (((s32) arg1->framea < 0) || ((s32) arg1->framea >= (s32) arg1->anim->unk04))
+        if (((s32) arg1->framea < 0) || ((s32) arg1->framea >= (s32) arg1->anim->numFrames))
         {
             osSyncPrintf("subcalcmatrices: framea out of range!\n");
             modelDebugBreak();
         }
 
-        if (((s32) arg1->frameb < 0) || ((s32) arg1->frameb >= (s32) arg1->anim->unk04))
+        if (((s32) arg1->frameb < 0) || ((s32) arg1->frameb >= (s32) arg1->anim->numFrames))
         {
             osSyncPrintf("subcalcmatrices: frameb out of range!\n");
             modelDebugBreak();
         }
 
-        if ((arg1->unk84 == 0) || ((arg1->unk84 != 0) && (arg1->anim2 != NULL)))
+        if ((arg1->mergeWeight == 0) || ((arg1->mergeWeight != 0) && (arg1->anim2 != NULL)))
         {
             //
         }
@@ -2316,7 +2316,7 @@ void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
             && (
                 (arg1->anim2 == NULL)
                 || (arg1->frame2a < 0)
-                || ((s32) arg1->frame2a >= (s32) arg1->anim2->unk04)
+                || ((s32) arg1->frame2a >= (s32) arg1->anim2->numFrames)
                 )
             )
         {
@@ -2329,7 +2329,7 @@ void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
             || (
                 (arg1->anim2 != NULL)
                  && (arg1->frame2b >= 0)
-                 && ((s32) arg1->frame2b < (s32) arg1->anim2->unk04)
+                 && ((s32) arg1->frame2b < (s32) arg1->anim2->numFrames)
                 )
             )
         {
@@ -2342,20 +2342,20 @@ void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
         }
 #endif
 
-        arg1->unk34 = animLoadFrame(arg1->anim, arg1->framea, arg1->obj->Skeleton);
+        arg1->frameaData = animLoadFrame(arg1->anim, arg1->framea, arg1->obj->Skeleton);
 
-        if (arg1->unk2c != 0.0f)
+        if (arg1->frameFrac != 0.0f)
         {
-            arg1->unk38 = animLoadFrame(arg1->anim, arg1->frameb, arg1->obj->Skeleton);
+            arg1->framebData = animLoadFrame(arg1->anim, arg1->frameb, arg1->obj->Skeleton);
         }
 
         if (arg1->anim2 != NULL)
         {
-            arg1->unk64 = animLoadFrame(arg1->anim2, arg1->frame2a, arg1->obj->Skeleton);
+            arg1->frame2aData = animLoadFrame(arg1->anim2, arg1->frame2a, arg1->obj->Skeleton);
 
-            if (arg1->unk5c != 0.0f)
+            if (arg1->frame2Frac != 0.0f)
             {
-                arg1->unk68 = animLoadFrame(arg1->anim2, arg1->frame2b, arg1->obj->Skeleton);
+                arg1->frame2bData = animLoadFrame(arg1->anim2, arg1->frame2b, arg1->obj->Skeleton);
             }
         }
 
@@ -2374,7 +2374,7 @@ struct ModelAnimation * modelGetAnim(struct Model* model) {
 
 s8 modelGetAnimFlip(Model *model) 
 {
-    return model->gunhand;
+    return model->flip;
 }
 
 
@@ -2383,7 +2383,7 @@ s8 modelGetAnimFlip(Model *model)
 */
 f32 modelGetAnimFrame(Model *model)
 {
-    return model->animframe1;
+    return model->frame;
 }
 
 
@@ -2403,7 +2403,7 @@ f32 modelGetAnimEndFrame(Model *model)
 
     if (modelAnimation != NULL)
     {
-        return modelAnimation->unk04 - 1;
+        return modelAnimation->numFrames - 1;
     }
 
     return 0.0f;
@@ -2446,8 +2446,8 @@ f32 modelGetEffectiveAnimSpeed(Model *model) {
 s32 modelConstrainOrWrapAnimFrame(s32 frame, ModelAnimation *anim, f32 endframe)
 {
     if (frame < 0) {
-        if (anim->unk07 & 1) {
-            frame = anim->unk04 - ((-frame) % anim->unk04);
+        if (anim->flags & 1) {
+            frame = anim->numFrames - ((-frame) % anim->numFrames);
         } else {
             frame = 0;
         }
@@ -2455,11 +2455,11 @@ s32 modelConstrainOrWrapAnimFrame(s32 frame, ModelAnimation *anim, f32 endframe)
     else if ((0.0f <= endframe) && ((s32)endframe < frame)) {
         frame = mathCeilToInt(endframe);
     }
-    else if (frame >= anim->unk04) {
-        if (anim->unk07 & 1) {
-            frame %= anim->unk04;
+    else if (frame >= anim->numFrames) {
+        if (anim->flags & 1) {
+            frame %= anim->numFrames;
         } else {
-            frame = anim->unk04 - 1;
+            frame = anim->numFrames - 1;
         }
     }
     else {
@@ -2484,17 +2484,17 @@ void modelCopyAnimForMerge(Model *model, f32 timemerge)
             opcode = root->Opcode & 0xff;
 
             model->anim2 = anim;
-            model->animframe2 = model->animframe1;
-            model->unk5c = model->unk2c;
-            model->unk25 = model->gunhand;
+            model->frame2 = model->frame;
+            model->frame2Frac = model->frameFrac;
+            model->flip2 = model->flip;
             model->frame2a = model->framea;
             model->frame2b = model->frameb;
             model->speed2 = model->speed;
-            model->unk74 = model->newspeed;
-            model->unk78 = model->oldspeed;
-            model->unk7c = model->timespeed;
-            model->unk80 = model->elapsespeed;
-            model->unk6c = model->endframe;
+            model->newspeed2 = model->newspeed;
+            model->oldspeed2 = model->oldspeed;
+            model->timespeed2 = model->timespeed;
+            model->elapsespeed2 = model->elapsespeed;
+            model->endframe2 = model->endframe;
 
             if (opcode == MODELNODE_OPCODE_HEADER) {
                 rwdata = (struct modeldata_root *)modelGetNodeRwData(model, root);
@@ -2522,16 +2522,16 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
     s32 type;
 
     if (model->anim2 != NULL) {
-        model->unk88 = arg5;
-        model->unk8c = 0.0f;
-        model->unk84 = 1.0f;
+        model->mergeTime = arg5;
+        model->mergeElapsed = 0.0f;
+        model->mergeWeight = 1.0f;
     } else {
-        model->unk88 = 0.0f;
-        model->unk84 = 0.0f;
+        model->mergeTime = 0.0f;
+        model->mergeWeight = 0.0f;
     }
 
     model->anim = anim;
-    model->gunhand = flip;
+    model->flip = flip;
     model->endframe = -1.0f;
     model->speed = speed;
     model->timespeed = 0.0f;
@@ -2560,7 +2560,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
         scale = model->scale * model->anim_translation_scale;
         pos = D_80036244;
 
-        angleDelta = animReadRootMotion(animPart, model->gunhand, skeleton, model->anim, model->frameb, &pos
+        angleDelta = animReadRootMotion(animPart, model->flip, skeleton, model->anim, model->frameb, &pos
         );
 
         if (scale != 1.0f) {
@@ -2571,9 +2571,9 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
 
         cosAngle = cosf(rwdata->unk14);
         sinAngle = sinf(rwdata->unk14);
-        scale = model->unk2c;
+        scale = model->frameFrac;
 
-        if (model->unk2c == 0.0f) {
+        if (model->frameFrac == 0.0f) {
             rwdata->unk34.x = rwdata->pos.f[0];
             rwdata->unk34.y = rwdata->pos.f[1] - rwdata->ground;
             rwdata->unk34.z = rwdata->pos.f[2];
@@ -2606,16 +2606,16 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
             y = pos.f[1];
             z = -pos.f[0] * sinAngle + pos.f[2] * cosAngle;
 
-            tmppos[0].x = rwdata->pos.f[0] + x * (1.0f - model->unk2c);
+            tmppos[0].x = rwdata->pos.f[0] + x * (1.0f - model->frameFrac);
             tmppos[0].y = y;
-            tmppos[0].z = rwdata->pos.f[2] + z * (1.0f - model->unk2c);
+            tmppos[0].z = rwdata->pos.f[2] + z * (1.0f - model->frameFrac);
 
             rwdata->unk24.x = tmppos[0].x;
             rwdata->unk24.y = tmppos[0].y;
             rwdata->unk24.z = tmppos[0].z;
 
             rwdata->unk34.f[0] = rwdata->unk24.f[0] - x;
-            rwdata->unk34.f[1] = (rwdata->pos.f[1] - rwdata->ground) - (y - (rwdata->pos.f[1] - rwdata->ground)) * model->unk2c / (1.0f - model->unk2c);
+            rwdata->unk34.f[1] = (rwdata->pos.f[1] - rwdata->ground) - (y - (rwdata->pos.f[1] - rwdata->ground)) * model->frameFrac / (1.0f - model->frameFrac);
             rwdata->unk34.f[2] = rwdata->unk24.f[2] - z;
 
             temp_f14 = rwdata->unk14 - angleDelta;
@@ -2624,7 +2624,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
                 temp_f14 += M_TAU_F;
             }
 
-            rwdata->unk30 = modelLerpAngle(rwdata->unk14, temp_f14, model->unk2c);
+            rwdata->unk30 = modelLerpAngle(rwdata->unk14, temp_f14, model->frameFrac);
 
             if (rwdata->unk18 == 0.0f) {
                 rwdata->unk20 = rwdata->unk30 + angleDelta;
@@ -2698,7 +2698,7 @@ void modelSetAnimLooping(Model *model, f32 loopframe, f32 loopmerge) {
 void modelSetAnimEndFrame(Model *model, f32 endframe) {
     ModelAnimation *modelAnimation = model->anim;
 
-    if ((modelAnimation != NULL) && (endframe < (modelAnimation->unk04 - 1))) {
+    if ((modelAnimation != NULL) && (endframe < (modelAnimation->numFrames - 1))) {
         model->endframe = endframe;
     } else {
         model->endframe = -1.0f;
@@ -2748,7 +2748,7 @@ void modelSetAnimSpeedToReachFrame(Model *model, f32 arg1, f32 arg2)
     f32 phi_f2;
     f32 t;
 
-    temp_f0 = model->animframe1;
+    temp_f0 = model->frame;
 
     if (temp_f0 <= arg1)
     {
@@ -2756,7 +2756,7 @@ void modelSetAnimSpeedToReachFrame(Model *model, f32 arg1, f32 arg2)
     }
     else
     {
-        phi_f2 = ( (f32)model->anim->unk04 - temp_f0) + arg1;
+        phi_f2 = ( (f32)model->anim->numFrames - temp_f0) + arg1;
     }
 
     t = model->speed + ((2.0f * phi_f2) / arg2);
@@ -2765,19 +2765,19 @@ void modelSetAnimSpeedToReachFrame(Model *model, f32 arg1, f32 arg2)
 
 void modelSetAnimPlaySpeed(Model *model, f32 animation_rate, f32 startframe) {
     if (startframe > 0.0f) {
-        model->unkb0 = startframe;
-        model->animrate = animation_rate;
-        model->unkb4 = 0.0f;
-        model->unkac = model->playspeed;
+        model->timeplayspeed = startframe;
+        model->newplayspeed = animation_rate;
+        model->elapseplayspeed = 0.0f;
+        model->oldplayspeed = model->playspeed;
         return;
     }
     model->playspeed = animation_rate;
-    model->unkb0 = 0.0f;
+    model->timeplayspeed = 0.0f;
 }
 
 
 void modelSetRootMoveCallback(Model *model, s32 arg1) {
-    model->unka0 = arg1;
+    model->rootMoveCallback = arg1;
 }
 
 
@@ -2797,20 +2797,20 @@ void modelSetAnimFrame(Model* model, f32 frame)
 
     if (model->framea == model->frameb)
     {
-        model->unk2c = 0.0f;
-        model->animframe1 = model->framea;
+        model->frameFrac = 0.0f;
+        model->frame = model->framea;
     }
     else if (forwards)
     {
         f32 tmp = frame - framea;
-        model->unk2c = tmp;
-        model->animframe1 = model->framea + tmp;
+        model->frameFrac = tmp;
+        model->frame = model->framea + tmp;
     }
     else
     {
         f32 tmp = 1.0f - (frame - (f32) frameb);
-        model->unk2c = tmp;
-        model->animframe1 = model->frameb + (1.0f - tmp);
+        model->frameFrac = tmp;
+        model->frame = model->frameb + (1.0f - tmp);
     }
 }
 
@@ -2830,25 +2830,25 @@ void modelSetAnimFrame2(Model* model, f32 frame1, f32 frame2)
         forwards = (model->speed2 >= 0.0f);
         frameb = forwards ? (framea + 1) : (framea - 1);
 
-        model->frame2a = modelConstrainOrWrapAnimFrame(framea, model->anim2, model->unk6c);
-        model->frame2b = modelConstrainOrWrapAnimFrame(frameb, model->anim2, model->unk6c);
+        model->frame2a = modelConstrainOrWrapAnimFrame(framea, model->anim2, model->endframe2);
+        model->frame2b = modelConstrainOrWrapAnimFrame(frameb, model->anim2, model->endframe2);
 
         if (model->frame2a == model->frame2b)
         {
-            model->unk5c = 0.0f;
-            model->animframe2 = model->frame2a;
+            model->frame2Frac = 0.0f;
+            model->frame2 = model->frame2a;
         }
         else if (forwards != 0)
         {
             f32 tmp = frame2 - framea;
-            model->unk5c = tmp;
-            model->animframe2 = model->frame2a + tmp;
+            model->frame2Frac = tmp;
+            model->frame2 = model->frame2a + tmp;
         }
         else
         {
             f32 tmp = 1.0f - (frame2 - (f32) frameb);
-            model->unk5c = tmp;
-            model->animframe2 = model->frame2b + (1.0f - tmp);
+            model->frame2Frac = tmp;
+            model->frame2 = model->frame2b + (1.0f - tmp);
         }
     }
 }
@@ -2993,7 +2993,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                 }
                 else
                 {
-                    angledelta = animReadRootMotion(jointnum, modelptr->gunhand, skeleton, modelptr->anim, framenum, &pos);
+                    angledelta = animReadRootMotion(jointnum, modelptr->flip, skeleton, modelptr->anim, framenum, &pos);
 
                     if (scale != 1.0f)
                     {
@@ -3045,7 +3045,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                 if (modelptr->frameb != modelptr->framea)
                 {
-                    angledelta = animReadRootMotion(jointnum, modelptr->gunhand, skeleton, modelptr->anim, framenum, &pos);
+                    angledelta = animReadRootMotion(jointnum, modelptr->flip, skeleton, modelptr->anim, framenum, &pos);
                     flag = 1;
 
                     if (scale != 1.0f)
@@ -3076,14 +3076,14 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                         if (0.0f < speed)
                         {
-                            f32 t = modelptr->unk84 - (modelptr->playspeed / (speed * modelptr->unk88));
+                            f32 t = modelptr->mergeWeight - (modelptr->playspeed / (speed * modelptr->mergeTime));
 
                             if (t < 0.0f)
                             {
                                 t = 0.0f;
                             }
 
-                            t = (modelptr->unk84 + t) * 0.5f;
+                            t = (modelptr->mergeWeight + t) * 0.5f;
 
                             v[0] = ((header->unk40.x - header->unk4c.x) * speed2) / speed;
                             v[2] = ((header->unk40.z - header->unk4c.z) * speed2) / speed;
@@ -3093,8 +3093,8 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         }
                         else
                         {
-                            pos24.f[0] += (header->unk40.x - header->unk4c.x) * modelptr->unk84;
-                            pos24.f[2] += (header->unk40.z - header->unk4c.z) * modelptr->unk84;
+                            pos24.f[0] += (header->unk40.x - header->unk4c.x) * modelptr->mergeWeight;
+                            pos24.f[2] += (header->unk40.z - header->unk4c.z) * modelptr->mergeWeight;
                         }
 
                         pos24.f[0] += pos34.f[0];
@@ -3163,18 +3163,18 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
             if (vb == va)
             {
-                modelptr->unk2c = 0.0f;
-                modelptr->animframe1 = va;
+                modelptr->frameFrac = 0.0f;
+                modelptr->frame = va;
             }
             else if (forward)
             {
-                modelptr->unk2c = frameb - (f32)endframe;
-                modelptr->animframe1 = (f32)va + modelptr->unk2c;
+                modelptr->frameFrac = frameb - (f32)endframe;
+                modelptr->frame = (f32)va + modelptr->frameFrac;
             }
             else
             {
-                modelptr->unk2c = (f32)endframe - frameb;
-                modelptr->animframe1 = (f32)vb + (1.0f - modelptr->unk2c);
+                modelptr->frameFrac = (f32)endframe - frameb;
+                modelptr->frame = (f32)vb + (1.0f - modelptr->frameFrac);
             }
 
             if (modelptr->anim2 != NULL)
@@ -3193,11 +3193,11 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         header->unk4c.y = header->unk34.y;
                     }
 
-                    modelptr->frame2a = modelConstrainOrWrapAnimFrame(end2, modelptr->anim2, modelptr->unk6c);
-                    framenum = modelConstrainOrWrapAnimFrame(end2 + 1, modelptr->anim2, modelptr->unk6c);
+                    modelptr->frame2a = modelConstrainOrWrapAnimFrame(end2, modelptr->anim2, modelptr->endframe2);
+                    framenum = modelConstrainOrWrapAnimFrame(end2 + 1, modelptr->anim2, modelptr->endframe2);
                     modelptr->frame2b = framenum;
 
-                    animReadRootMotion(jointnum, modelptr->unk25, skeleton, modelptr->anim2, framenum, &pos);
+                    animReadRootMotion(jointnum, modelptr->flip2, skeleton, modelptr->anim2, framenum, &pos);
 
                     if (scale != 1.0f)
                     {
@@ -3210,13 +3210,13 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                 if (forward)
                 {
-                    modelptr->unk5c = frame2b - (f32)end2;
-                    modelptr->animframe2 = (f32)modelptr->frame2a + modelptr->unk5c;
+                    modelptr->frame2Frac = frame2b - (f32)end2;
+                    modelptr->frame2 = (f32)modelptr->frame2a + modelptr->frame2Frac;
                 }
                 else
                 {
-                    modelptr->unk5c = 1.0f - (frame2b - (f32)end2);
-                    modelptr->animframe2 = (f32)modelptr->frame2b + (1.0f - modelptr->unk5c);
+                    modelptr->frame2Frac = 1.0f - (frame2b - (f32)end2);
+                    modelptr->frame2 = (f32)modelptr->frame2b + (1.0f - modelptr->frame2Frac);
                 }
             }
             else
@@ -3242,8 +3242,8 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
     f32 frame2;
     f32 animlast;
 
-    frame = model->animframe1;
-    frame2 = model->animframe2;
+    frame = model->frame;
+    frame2 = model->frame2;
 
     if (numticks > 0) 
     {
@@ -3259,41 +3259,41 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
             f32 saved_elapsespeed;
             f32 loopframe;
             
-            if (model->unkb0 > 0.0f) 
+            if (model->timeplayspeed > 0.0f) 
             {
-                model->unkb4 += 1.0f;
+                model->elapseplayspeed += 1.0f;
 
-                if (model->unkb4 < model->unkb0) 
+                if (model->elapseplayspeed < model->timeplayspeed) 
                 {
-                    model->playspeed = model->unkac + ((model->animrate - model->unkac) * model->unkb4) / model->unkb0;
+                    model->playspeed = model->oldplayspeed + ((model->newplayspeed - model->oldplayspeed) * model->elapseplayspeed) / model->timeplayspeed;
                 } 
                 else 
                 {
-                    model->unkb0 = 0.0f;
-                    model->playspeed = model->animrate;
+                    model->timeplayspeed = 0.0f;
+                    model->playspeed = model->newplayspeed;
                 }
             }
 
             playspeed = model->playspeed;
 
-            if (model->unk88 > 0.0f)
+            if (model->mergeTime > 0.0f)
             {
-                model->unk8c += playspeed;
+                model->mergeElapsed += playspeed;
 
-                if (model->unk8c == 0.0f)
+                if (model->mergeElapsed == 0.0f)
                 {
-                    model->unk84 = 1.0f;
+                    model->mergeWeight = 1.0f;
                     playspeed = model->playspeed;
                 } 
-                else if (model->unk8c < model->unk88) 
+                else if (model->mergeElapsed < model->mergeTime) 
                 {
-                    model->unk84 = (model->unk88 - model->unk8c) / model->unk88;
+                    model->mergeWeight = (model->mergeTime - model->mergeElapsed) / model->mergeTime;
                     playspeed = model->playspeed;
                 } 
                 else 
                 {
-                    model->unk88 = 0.0f;
-                    model->unk84 = 0.0f;
+                    model->mergeTime = 0.0f;
+                    model->mergeWeight = 0.0f;
                     model->anim2 = NULL;
                     playspeed = model->playspeed;
                 }
@@ -3323,20 +3323,20 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
 
             if (model->anim2 != NULL) 
             {
-                if (model->unk7c > 0.0f) 
+                if (model->timespeed2 > 0.0f) 
                 {
-                    model->unk80 += playspeed;
+                    model->elapsespeed2 += playspeed;
 
-                    if (model->unk80 < model->unk7c) 
+                    if (model->elapsespeed2 < model->timespeed2) 
                     {
-                        model->speed2 = model->unk78 + ((model->unk74 - model->unk78) * model->unk80) / model->unk7c;
+                        model->speed2 = model->oldspeed2 + ((model->newspeed2 - model->oldspeed2) * model->elapsespeed2) / model->timespeed2;
                         playspeed = model->playspeed;
                     } 
                     else 
                     {
-                        model->unk7c = 0.0f;
+                        model->timespeed2 = 0.0f;
                         playspeed = model->playspeed;
-                        model->speed2 = model->unk74;
+                        model->speed2 = model->newspeed2;
                     }
                 }
 
@@ -3347,7 +3347,7 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
 
             if (model->animlooping) 
             {
-                animlast = model->anim->unk04 - 1;
+                animlast = model->anim->numFrames - 1;
                 endframe = model->endframe;
 
                 if (endframe);
@@ -3382,14 +3382,14 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
 
                     if (update_chrstuff) 
                     {
-                        modelSetAnimFrame2WithChrStuff(model, model->animframe1, limit, 0.0f, 0.0f);
+                        modelSetAnimFrame2WithChrStuff(model, model->frame, limit, 0.0f, 0.0f);
                     } 
                     else 
                     {
                         modelSetAnimFrame2(model, limit, 0.0f);
                     }
 
-                    modelSetAnimation(model, model->anim, model->gunhand, loopframe, model->speed, model->animloopmerge);
+                    modelSetAnimation(model, model->anim, model->flip, loopframe, model->speed, model->animloopmerge);
 
                     model->animlooping = 1;
                     model->endframe = endframe;
@@ -3415,11 +3415,11 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
         {
             if (model->anim2 != NULL) 
             {
-                modelSetAnimFrame2WithChrStuff(model, model->animframe1, frame, model->animframe2, frame2);
+                modelSetAnimFrame2WithChrStuff(model, model->frame, frame, model->frame2, frame2);
             } 
             else 
             {
-                modelSetAnimFrame2WithChrStuff(model, model->animframe1, frame, 0.0f, 0.0f);
+                modelSetAnimFrame2WithChrStuff(model, model->frame, frame, 0.0f, 0.0f);
             }
         } 
         else 
@@ -5620,7 +5620,7 @@ s32 animLoadFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
     u32 size;
 
     ret = 0;
-    frameSize = anim->unk0E >> 3; // divide by 8
+    frameSize = anim->frameBits >> 3; // divide by 8
 
     if (anim->address & 0x80000000) // If animation's address is in RAM
     {
@@ -6198,20 +6198,20 @@ void animInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data)
     objinst->animlooping = 0;
     objinst->animflipfunc = 0;
     objinst->unk9c = 0;
-    objinst->unka0 = 0;
-    objinst->unk2c = 0.0f;
+    objinst->rootMoveCallback = 0;
+    objinst->frameFrac = 0.0f;
     objinst->timespeed = 0.0f;
-    objinst->unk5c = 0.0f;
-    objinst->unk7c = 0.0f;
-    objinst->unk84 = 0.0f;
-    objinst->unk88 = 0.0f;
-    objinst->unkb0 = 0.0f;
+    objinst->frame2Frac = 0.0f;
+    objinst->timespeed2 = 0.0f;
+    objinst->mergeWeight = 0.0f;
+    objinst->mergeTime = 0.0f;
+    objinst->timeplayspeed = 0.0f;
     objinst->speed = 1.0f;
     objinst->speed2 = 1.0f;
     objinst->playspeed = 1.0f;
     objinst->anim_translation_scale = 1.0f;
     objinst->endframe = -1.0f;
-    objinst->unk6c = -1.0f;
+    objinst->endframe2 = -1.0f;
 }
 
 

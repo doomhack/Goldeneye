@@ -2117,7 +2117,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
                 }
             }
         }
-        else if (chr->model->gunhand != GUNRIGHT)
+        else if (chr->model->flip != GUNRIGHT)
         {
             xrot = chr->aimuplshoulder;
         }

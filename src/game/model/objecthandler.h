@@ -18,11 +18,11 @@ struct bondstruct_unk_op07_related {
 
 struct AnimModelSlot {
     s16 unk00;
-    s16 unk02;
+    s16 rwdatalen;
     s32 unk04;
-    s32 unk08;
+    s32 obj;
     s32 unk0c;
-    void *unk10;
+    void *datas;
     s32 unk14;
     s32 unk18;
     s32 unk1c;
@@ -72,11 +72,11 @@ struct AnimModelSlot {
 
 struct ModelSlot {
     s16 unk00;
-    s16 unk02;
+    s16 rwdatalen;
     s32 unk04;
-    s32 unk08;
+    s32 obj;
     s32 unk0c;
-    void *unk10;
+    void *datas;
     s32 unk14;
     s32 unk18;
     s32 unk1c;

@@ -488,12 +488,12 @@ void chrlvKneelingAnimationRelated(ChrRecord *self)
 
         if ((s32)modelGetAnim(self->model) == (s32)&ANIM_DATA_fire_kneel_forward_one_handed_weapon_slow + (s32)&ptr_animation_table->data)
         {
-            modelSetAnimation(self->model, (struct ModelAnimation*)((s32)&ANIM_DATA_fire_kneel_forward_one_handed_weapon_slow + (s32)&ptr_animation_table->data), (s32) self->model->gunhand, 109.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+            modelSetAnimation(self->model, (struct ModelAnimation*)((s32)&ANIM_DATA_fire_kneel_forward_one_handed_weapon_slow + (s32)&ptr_animation_table->data), (s32) self->model->flip, 109.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
             modelSetAnimEndFrame(self->model, 140.0f);
         }
         else
         {
-            modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_kneel_left_leg], (s32) self->model->gunhand, 120.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+            modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_kneel_left_leg], (s32) self->model->flip, 120.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
             modelSetAnimEndFrame(self->model, 151.0f);
         }
 
@@ -5014,7 +5014,7 @@ void chrlvTickStand(ChrRecord *self)
     {
         if (self->act_stand.reaim)
         {
-            subrotyarg2 = modelGetAnim(self->model)->unk04 - 1;
+            subrotyarg2 = modelGetAnim(self->model)->numFrames - 1;
             self->act_stand.turning = chrlvSetSubroty(self, self->act_stand.turning, subrotyarg2, 1.0f, 0.0f);
 
             if (self->act_stand.turning != 1)
@@ -5713,7 +5713,7 @@ f32 chrlvGetSubrotySideback(ChrRecord *self)
 
     if (phi_f12 != 0.0f)
     {
-        if (self->model->gunhand != GUNRIGHT)
+        if (self->model->flip != GUNRIGHT)
         {
             phi_f12 = M_TAU_F - phi_f12;
         }
@@ -6123,7 +6123,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
 
             calc_aimendsideback += self->aimsideback;
 
-            if (self->model->gunhand != GUNRIGHT)
+            if (self->model->flip != GUNRIGHT)
             {
                 if (calc_aimendsideback < -arg1->max_left)
                 {
@@ -6970,7 +6970,7 @@ s32 chrlvAttackrollAnimationRelated7F02E2E0(ChrRecord *self)
     if ((self->act_attackroll.animfloats == &D_80030078[2]) || (self->act_attackroll.animfloats == &D_80030078[3]))
     {
         model = self->model;
-        sp24 = (s32) model->gunhand;
+        sp24 = (s32) model->flip;
         self->act_attackroll.unk30 = 2;
         self->act_attackroll.animfloats = &D_80030078[1];
         self->sleep = 0;
@@ -7011,7 +7011,7 @@ void chrlvAttackrollAnimationRelated7F02E3B8(ChrRecord *self)
         modelSetAnimation(
             model,
             modelGetAnim(model),
-            (s32) model->gunhand,
+            (s32) model->flip,
             self->act_attackroll.animfloats->recoil_end_frame,
             chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
             8.0f);
@@ -7021,7 +7021,7 @@ void chrlvAttackrollAnimationRelated7F02E3B8(ChrRecord *self)
         modelSetAnimation(
             model,
             modelGetAnim(model),
-            (s32) model->gunhand,
+            (s32) model->flip,
             self->act_attackroll.animfloats->shoot_end_frame,
             chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
             8.0f);
@@ -7073,7 +7073,7 @@ void chrlvTickAttackCommon(ChrRecord *self)
                         modelSetAnimation(
                             self_model,
                             modelGetAnim(self_model),
-                            (s32) self_model->gunhand,
+                            (s32) self_model->flip,
                             self->act_attack.animfloats->shoot_end_frame,
                             chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
                             8.0f);
@@ -7171,7 +7171,7 @@ void chrlvTickAttackCommon(ChrRecord *self)
 
             self->act_attack.unk31 = 0;
 
-            modelSetAnimation(self_model, modelGetAnim(self_model), (s32) self_model->gunhand, fp1, temp_f0_6, 8.0f);
+            modelSetAnimation(self_model, modelGetAnim(self_model), (s32) self_model->flip, fp1, temp_f0_6, 8.0f);
             modelSetAnimEndFrame(self_model, fp2);
         }
 
@@ -7191,7 +7191,7 @@ void chrlvTickAttackCommon(ChrRecord *self)
             }
         }
 
-        if (self_model->gunhand != GUNRIGHT)
+        if (self_model->flip != GUNRIGHT)
         {
             fn40 = M_TAU_F - fn40;
         }
@@ -7335,7 +7335,7 @@ void chrlvTickAttack(ChrRecord *self)
             modelSetAnimation(
                 self_model,
                 modelGetAnim(self_model),
-                (s32) self_model->gunhand,
+                (s32) self_model->flip,
                 phi_f2,
                 chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
                 16.0f);
@@ -7408,7 +7408,7 @@ void chrlvTickAttack(ChrRecord *self)
                 modelSetAnimation(
                     self_model,
                     modelGetAnim(self_model),
-                    (s32) self_model->gunhand,
+                    (s32) self_model->flip,
                     self->act_attack.animfloats->recoil_end_frame,
                     chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
                     16.0f);
@@ -7459,7 +7459,7 @@ void chrlvTickAttackRoll(ChrRecord *self)
         {
             if (self->act_attackroll.animfloats->end_frame <= temp_f0)
             {
-                sp38 = (s32) temp_a0->gunhand;
+                sp38 = (s32) temp_a0->flip;
                 phi_v1 = &self->act_attackroll.animfloats[4];
 
                 phi_f2_2 = 16.0f;
@@ -7585,7 +7585,7 @@ void chrlvTickAttackRoll(ChrRecord *self)
             {
                 if (modelGetAnimEndFrame(temp_a0) <= temp_f0)
                 {
-                    modelSetAnimation(temp_a0, modelGetAnim(temp_a0), (s32) temp_a0->gunhand, self->act_attackroll.animfloats->recoil_end_frame, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+                    modelSetAnimation(temp_a0, modelGetAnim(temp_a0), (s32) temp_a0->flip, self->act_attackroll.animfloats->recoil_end_frame, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
 
                     if (self->act_attackroll.unk37 != 0)
                     {
@@ -7618,7 +7618,7 @@ void chrlvTickThrowGrenade(ChrRecord *self)
 
     self_model = self->model;
     temp_f2 = modelGetAnimFrame(self_model);
-    gunhand = (self_model->gunhand != GUNRIGHT) ? GUNLEFT : GUNRIGHT;
+    gunhand = (self_model->flip != GUNRIGHT) ? GUNLEFT : GUNRIGHT;
     held_prop = chrGetEquippedWeaponProp(self, gunhand);
 
     if ((temp_f2 >= 20.0f) && (held_prop != NULL))
@@ -7855,13 +7855,13 @@ void chrlvTickAttackWalk(ChrRecord *self)
         || (self->lastmoveok60 < (g_GlobalTimer - CHRLV_LASTMOVEOK60_CHECK))
         || (self->act_attackwalk.clock_timer34 < self->act_attackwalk.clock_timer30))
     {
-        if (modelGetAnimFrame(self_model) > ((f32)modelGetAnim(self_model)->unk04 * 0.5f))
+        if (modelGetAnimFrame(self_model) > ((f32)modelGetAnim(self_model)->numFrames * 0.5f))
         {
             modelSetAnimSpeedToReachFrame(self_model, 0.0f, 16.0f);
         }
         else
         {
-            modelSetAnimSpeedToReachFrame(self_model, (f32)modelGetAnim(self_model)->unk04 * 0.5f, 16.0f);
+            modelSetAnimSpeedToReachFrame(self_model, (f32)modelGetAnim(self_model)->numFrames * 0.5f, 16.0f);
         }
 
         chrlvSetTargetToPlayer(self);
@@ -8070,21 +8070,21 @@ void chrlvTickRunPos(ChrRecord *self)
 
         if (phi_f2 < 0.0f)
         {
-            phi_f2 += (f32)modelGetAnim(self_model)->unk04;
+            phi_f2 += (f32)modelGetAnim(self_model)->numFrames;
         }
 
-        if (((f32)modelGetAnim(self_model)->unk04 * 0.5f) < phi_f2)
+        if (((f32)modelGetAnim(self_model)->numFrames * 0.5f) < phi_f2)
         {
-            phi_f2 = (f32)modelGetAnim(self_model)->unk04 - offset;
+            phi_f2 = (f32)modelGetAnim(self_model)->numFrames - offset;
             modelSetAnimSpeedToReachFrame(self_model, phi_f2, 16.0f);
         }
         else
         {
-            phi_f2 = ((f32)modelGetAnim(self_model)->unk04 * 0.5f) - offset;
+            phi_f2 = ((f32)modelGetAnim(self_model)->numFrames * 0.5f) - offset;
 
             if (phi_f2 < 0)
             {
-                phi_f2 += (f32)modelGetAnim(self_model)->unk04;
+                phi_f2 += (f32)modelGetAnim(self_model)->numFrames;
             }
 
             modelSetAnimSpeedToReachFrame(self_model, phi_f2, 16.0f);
