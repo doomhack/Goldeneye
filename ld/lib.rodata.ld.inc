@@ -15,7 +15,7 @@
       /*deb_print may be part of fault per pd beta (.rodata);*/
       /*build/OUTCODE/src/deb_print.o (.rodata);*/
       build/OUTCODE/src/getra.o (.rodata);
-      build/OUTCODE/src/ramrom.o (.rodata);
+      build/OUTCODE/src/rom.o (.rodata);
       build/OUTCODE/src/boss.o (.rodata);
       build/OUTCODE/src/dbgscreen.o (.rodata);
       build/OUTCODE/src/music.o (.rodata);

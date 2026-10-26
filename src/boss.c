@@ -19,9 +19,9 @@
 #include "mema.h"
 #include "memp.h"
 #include "music.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "game/mission/objective_status.h"
-#include "ramrom.h"
+#include "rom.h"
 #include "random.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "sched.h"
@@ -248,7 +248,7 @@ void bossInitMainthreadData(void)
     viInitVideoSettings();
     indycommInit();
     g_DebugAndUpdateStageFlag = rmonGetToken();
-    obInit();
+    fileInit();
     rspInit();
     dynInit();
     joyInit();
@@ -287,8 +287,8 @@ void bossInitMainthreadData(void)
     }
 
     start = (u32) &_heapSegmentStart;
-    mempCheckMemflagTokens(start, PHYS_TO_K0(osMemSize) - start);
-    mempResetBank(MEMPOOL_PERMANENT);
+    mempInitPools(start, PHYS_TO_K0(osMemSize) - start);
+    mempResetPool(MEMPOOL_PERMANENT);
     langInit();
     lvInit();
     bossInit();
@@ -486,8 +486,8 @@ void bossMainloop(void)
             tokenSetString(memallocstringtable[stringIndex].string);
         }
 
-        mempResetBank(MEMPOOL_STAGE);
-        obBlankResourcesLoadedInBank(MEMPOOL_STAGE);
+        mempResetPool(MEMPOOL_STAGE);
+        fileForgetPool(MEMPOOL_STAGE);
         if (tokenFind(1, "-ma"))
         {
             g_CurentMaMallocValue = (s32) (strtol(tokenFind(1, "-ma"), NULL, 0) * 1024);
@@ -506,7 +506,7 @@ void bossMainloop(void)
         // controllers swap places for the mission. Menus use them as wired.
         g_JoySwapPads = g_CounterOpMode && (g_CounterOpBondPad != 0) && (g_StageNum != LEVELID_TITLE);
 
-        memaReset(mempAllocBytesInBank(g_CurentMaMallocValue, MEMPOOL_STAGE), g_CurentMaMallocValue);
+        memaReset(mempAlloc(g_CurentMaMallocValue, MEMPOOL_STAGE), g_CurentMaMallocValue);
         reset_play_data_ptrs();
 
         localSelectedNumPlayers = 0;
@@ -647,7 +647,7 @@ void bossMainloop(void)
 
                             if (g_ShowMemUseFlag)
                             {
-                                nulled_mempLoopAllMemBanks();
+                                mempCheckPools();
                                 memaDumpPrePostMerge();
                                 dynRemovedFunc(gdl);
                                 nullsub_41(0);
@@ -717,8 +717,8 @@ void bossMainloop(void)
 
         lvlUnloadStageTextData();
         stop_demo_playback();
-        mempNullNextEntryInBank(MEMPOOL_STAGE);
-        obBlankResourcesLoadedInBank(MEMPOOL_STAGE);
+        mempClosePool(MEMPOOL_STAGE);
+        fileForgetPool(MEMPOOL_STAGE);
 
 #if defined(VERSION_EU)
         if(1);

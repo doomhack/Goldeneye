@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include <bondgame.h>
-#include "ramrom.h"
+#include "rom.h"
 #include "deb.h"
 #include "str.h"
 #include "memp.h"
@@ -54,7 +54,7 @@ u8 *debAllocate(s32 size) {
     {
         curr -= size;
         *pos = curr;
-        return mempAllocBytesInBank(size, MEMPOOL_PERMANENT);
+        return mempAlloc(size, MEMPOOL_PERMANENT);
     }
     else
     {

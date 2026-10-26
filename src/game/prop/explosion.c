@@ -32,14 +32,14 @@
 Mtx dword_CODE_bss_8007A100;
 
 /**
- * g_SmokeBuffer = mempAllocBytesInBank(0x1FE0, MEMPOOL_STAGE);
+ * g_SmokeBuffer = mempAlloc(0x1FE0, MEMPOOL_STAGE);
  * printf("Allocating %d bytes for smoke data\n",0x9f60);
  * Address 0x8007A140.
 */
 struct Smoke *g_SmokeBuffer;
 
 /**
- * g_ExplosionBuffer = mempAllocBytesInBank(0x1740, MEMPOOL_STAGE);
+ * g_ExplosionBuffer = mempAlloc(0x1740, MEMPOOL_STAGE);
  * printf("Allocating %d bytes for explosion data\n",0x2e80);
  * Address 0x8007A144.
 */
@@ -52,7 +52,7 @@ s32 max_particles;
 struct FlyingParticles *g_FlyingParticlesBuffer;
 
 /**
- * g_ScorchBuffer = mempAllocBytesInBank(0x6E0, MEMPOOL_STAGE);
+ * g_ScorchBuffer = mempAlloc(0x6E0, MEMPOOL_STAGE);
  * printf("Allocating %d bytes for scorch data\n",0xa50);
  * sizeof each entry == 0x58
  * Address 0x8007A150.
@@ -60,7 +60,7 @@ struct FlyingParticles *g_FlyingParticlesBuffer;
 struct Scorch *g_ScorchBuffer;
 
 /**
- * g_BulletImpactBuffer = mempAllocBytesInBank(0x1F40, MEMPOOL_STAGE);
+ * g_BulletImpactBuffer = mempAlloc(0x1F40, MEMPOOL_STAGE);
  * printf("Allocating %d bytes for wallhit data\n",0x3070);
  * Address 0x8007A154.
  * cannonically wallhitlist

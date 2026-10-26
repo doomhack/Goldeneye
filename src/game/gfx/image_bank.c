@@ -1,5 +1,5 @@
 #include <ultra64.h>
-#include <ramrom.h>
+#include <rom.h>
 #include <memp.h>
 #include "game/gfx/image_bank.h"
 
@@ -170,7 +170,7 @@ void texReset(void)
     s32 i;
 
     size = (u32)&_GlobalimagetableSegmentEnd - (u32)&_GlobalimagetableSegmentStart;
-    pGlobalimagetable = mempAllocBytesInBank(size + 0x1000, MEMPOOL_STAGE);
+    pGlobalimagetable = mempAlloc(size + 0x1000, MEMPOOL_STAGE);
     pGlobalimagetable = ((u32)pGlobalimagetable + 0xFFFU) & 0xFFFFF000;
 
     romCopy(pGlobalimagetable, &_GlobalimagetableSegmentRomStart, size);

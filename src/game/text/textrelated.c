@@ -110,7 +110,7 @@ void load_font_tables(void)
     text_t = 0;
 
     len = (romptr_t)&_fontbankgothicSegmentEnd - (romptr_t)&_fontbankgothicSegmentStart;
-	ptrFontBankGothic = (struct font *)mempAllocBytesInBank(len, MEMPOOL_STAGE);
+	ptrFontBankGothic = (struct font *)mempAlloc(len, MEMPOOL_STAGE);
 	ptrFontBankGothicChars = ptrFontBankGothic->chars;
 
 	romCopy(ptrFontBankGothic, (void *) &_fontbankgothicSegmentRomStart, len);
@@ -121,7 +121,7 @@ void load_font_tables(void)
 	}
 
     len = (romptr_t)&_fontzurichboldSegmentEnd - (romptr_t)&_fontzurichboldSegmentStart;
-	ptrFontZurichBold = (struct font *)mempAllocBytesInBank(len, MEMPOOL_STAGE);
+	ptrFontZurichBold = (struct font *)mempAlloc(len, MEMPOOL_STAGE);
 	ptrFontZurichBoldChars = ptrFontZurichBold->chars;
 
 	romCopy(ptrFontZurichBold, (void *) &_fontzurichboldSegmentRomStart, len);

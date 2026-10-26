@@ -8,7 +8,7 @@
 #include <music.h>
 #include <fr.h>
 #include <snd.h>
-#include <ramrom.h>
+#include <rom.h>
 #include <random.h>
 #include <joy.h>
 #include <token.h>
@@ -251,7 +251,7 @@ void lvInit(void)
     debTryAdd(&lvl_c_debug_notice_list, "lv_c_debug");
     size = (s32)&_fontdlSegmentRomEnd - (s32)&_fontdlSegmentRomStart;
     lvl_c_debug_notice_list = 1;
-    ptr_font_DL = mempAllocBytesInBank(size, MEMPOOL_PERMANENT);
+    ptr_font_DL = mempAlloc(size, MEMPOOL_PERMANENT);
     romCopy(ptr_font_DL, &_fontdlSegmentRomStart, size);
 }
 
@@ -1393,7 +1393,7 @@ void lvlManageMpGame(void)
         if ((get_debug_joy2detailedit_flag() != 0) && (D_800483C8 == 0))
         {
             s32 i;
-            D_800483C8 = (struct LvlMpUnknown *)mempAllocBytesInBank(0x3000, MEMPOOL_STAGE);
+            D_800483C8 = (struct LvlMpUnknown *)mempAlloc(0x3000, MEMPOOL_STAGE);
             if (D_800483C8 != 0)
             {
                 for (i=0; i<3000; i++)

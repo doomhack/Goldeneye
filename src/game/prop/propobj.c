@@ -635,7 +635,7 @@ PropRecord* objInit(ObjectRecord* obj, ModelFileHeader* model_header, PropRecord
 
         if (obj->flags & 0x100)
         {
-            obj->ptr_allocated_collisiondata_block = mempAllocBytesInBank(0x50U, MEMPOOL_STAGE);
+            obj->ptr_allocated_collisiondata_block = mempAlloc(0x50U, MEMPOOL_STAGE);
             obj->state = (u8) (obj->state | PROPSTATE_EXT_COLISION_BLOCK);
         }
         else
@@ -12653,7 +12653,7 @@ PropRecord* doorInit(DoorRecord* door, coord3d* pos, Mtxf* mtx, StandTile* stan,
 
     prop = objInitWithAutoModel((ObjectRecord* ) door);
     scale = PitemZ_entries[door->obj].scale;
-    door->ptr_allocated_collisiondata_block = mempAllocBytesInBank(0x50U, MEMPOOL_STAGE);
+    door->ptr_allocated_collisiondata_block = mempAlloc(0x50U, MEMPOOL_STAGE);
 
     mtx4Copy(mtx, &door->mtx);
     mtx4ScaleRows012(scale, door->mtx.m[0]);
@@ -12675,7 +12675,7 @@ PropRecord* doorInit(DoorRecord* door, coord3d* pos, Mtxf* mtx, StandTile* stan,
 
     if (door->doorFlags & DOORFLAG_CLIP_TO_BBOX) {
         union ModelRoData *rodata = door->model->obj->RootNode->Child->Child->Data;
-        door->unkcc = mempAllocBytesInBank(rodata->DisplayListCollisions.numVertices * sizeof(Vertex), MEMPOOL_STAGE);
+        door->unkcc = mempAlloc(rodata->DisplayListCollisions.numVertices * sizeof(Vertex), MEMPOOL_STAGE);
     } else {
         door->unkcc = NULL;
     }

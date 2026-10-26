@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include <deb.h>
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include <memp.h>
 #include "game/level/game_debug.h"
 
@@ -13,14 +13,14 @@ void gameInit(void) {
 }
 
 void reset_mem_bank_5(void) {
-    obBlankResourcesInBank5();
-    mempResetBank(MEMPOOL_ME);
-    obBlankResourcesLoadedInBank(MEMPOOL_ME);
+    fileForgetMePool();
+    mempResetPool(MEMPOOL_ME);
+    fileForgetPool(MEMPOOL_ME);
 }
 
 void sub_GAME_7F0D1A7C(void) {
-    mempNullNextEntryInBank(MEMPOOL_ME);
-    obBlankResourcesLoadedInBank(MEMPOOL_ME);
+    mempClosePool(MEMPOOL_ME);
+    fileForgetPool(MEMPOOL_ME);
 }
 
 

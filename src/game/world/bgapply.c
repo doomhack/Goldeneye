@@ -7,7 +7,7 @@
 #include "game/world/bg.h"
 #include "game/player/bondview.h"
 #include "game/debug/debugmenu_handler.h"
-#include "game/asset/decompress.h"
+#include "game/asset/rzip.h"
 #include "game/world/bgfog.h"
 #include "game/level/lv.h"
 #include "game/math/round.h"

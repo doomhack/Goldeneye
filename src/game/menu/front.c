@@ -41,7 +41,7 @@
 #include "game/menu/title.h"
 #include <assets/font_dl.h>
 #include "game/gfx/image.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "gbi_extension.h"
 #include "game/model/model.h"
 
@@ -7127,7 +7127,7 @@ void load_briefing_text_for_stage(void)
 
     // alright
     argg = 0x200;
-    ptrbriefingdata = _fileNameLoadToAddr(mission_folder_setup_entries[briefingpage].briefing_name_ptr, FILELOADMETHOD_DEFAULT, (u8 *) temp_s0, argg);
+    ptrbriefingdata = fileLoadByNameToAddr(mission_folder_setup_entries[briefingpage].briefing_name_ptr, FILELOAD_TRIM, (u8 *) temp_s0, argg);
 
     // what is this
     temp_s0 += argg / 8;
@@ -8554,7 +8554,7 @@ void init_menu18_displaycast(void)
     bodyHeader = c_item_entries[body].header;
 
     load_object_fill_header(c_item_entries[body].header, c_item_entries[body].filename, bufferPtr, bufferRemaining, &texPool);
-    allocSize = ALIGN64_V2(get_pc_buffer_remaining_value(c_item_entries[body].filename));
+    allocSize = ALIGN64_V2(fileGetLoadedSizeByName(c_item_entries[body].filename));
     bufferRemaining -= allocSize;
     bufferPtr += allocSize;
 
@@ -8562,7 +8562,7 @@ void init_menu18_displaycast(void)
     {
         headHeader = c_item_entries[head].header;
         load_object_fill_header(c_item_entries[head].header, c_item_entries[head].filename, bufferPtr, bufferRemaining, &texPool);
-        allocSize = ALIGN64_V2(get_pc_buffer_remaining_value(c_item_entries[head].filename));
+        allocSize = ALIGN64_V2(fileGetLoadedSizeByName(c_item_entries[head].filename));
         bufferRemaining -= allocSize;
         bufferPtr += allocSize;
     }
@@ -8612,7 +8612,7 @@ void init_menu18_displaycast(void)
 
         weaponHeader = PitemZ_entries[weaponProp].header;
         load_object_fill_header(weaponHeader, PitemZ_entries[weaponProp].filename, bufferPtr, bufferRemaining, &texPool);
-        allocSize = ALIGN64_V2(get_pc_buffer_remaining_value(PitemZ_entries[weaponProp].filename));
+        allocSize = ALIGN64_V2(fileGetLoadedSizeByName(PitemZ_entries[weaponProp].filename));
         bufferRemaining -= allocSize;
         bufferPtr += allocSize;
 

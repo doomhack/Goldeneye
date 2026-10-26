@@ -66,12 +66,12 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
 
         if (model == NULL) 
         {
-            model = mempAllocBytesInBank(0x20, MEMPOOL_STAGE);
+            model = mempAlloc(0x20, MEMPOOL_STAGE);
         }
 
         if (header->numRecords > 0) 
         {
-            rwdata = mempAllocBytesInBank((((header->numRecords * 4) + 0xf) | 0xf) ^ 0xf, MEMPOOL_STAGE);
+            rwdata = mempAlloc((((header->numRecords * 4) + 0xf) | 0xf) ^ 0xf, MEMPOOL_STAGE);
             rwdatalen = header->numRecords;
         }
     } 
@@ -136,7 +136,7 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
 
         if (newModel == NULL) 
         {
-            newModel = mempAllocBytesInBank(0xc0, MEMPOOL_STAGE);
+            newModel = mempAlloc(0xc0, MEMPOOL_STAGE);
         }
 
         requiredRwdatalen = modelFileHeader->numRecords;
@@ -148,7 +148,7 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
         if (requiredRwdatalen > 0) 
         {
             i = requiredRwdatalen;
-            rwdatas = mempAllocBytesInBank((((i * 4) + 0xf) | 0xf) ^ 0xf, MEMPOOL_STAGE);
+            rwdatas = mempAlloc((((i * 4) + 0xf) | 0xf) ^ 0xf, MEMPOOL_STAGE);
             rwdatalen = modelFileHeader->numRecords;
         }
     } 

@@ -3,11 +3,11 @@
 #include "inflate/inflate.h"
 #include "audi.h"
 #include <bondconstants.h>
-#include "game/asset/decompress.h"
+#include "game/asset/rzip.h"
 #include "game/gfx/dyn.h"
 #include "memp.h"
 #include "music.h"
-#include "ramrom.h"
+#include "rom.h"
 #include "snd.h"
 #include <macro.h>
 
@@ -34,7 +34,7 @@
 #define MAX_NUM_MUSIC_TRACKS_W_NONE  (NUM_MUSIC_TRACKS + 2)
 
 /**
- * Bytes allocated by call to mempAllocBytesInBank. This sets up a local heap,
+ * Bytes allocated by call to mempAlloc. This sets up a local heap,
  * the rest of the memory allocations in this file come from this heap.
  */
 #define MUSIC_ALLOCATION_BYTES   0x2E000
@@ -653,7 +653,7 @@ void musicSeqPlayerInit(void)
         return;
     }
 
-    p = (u8 *)mempAllocBytesInBank(MUSIC_ALLOCATION_BYTES, MEMPOOL_PERMANENT);
+    p = (u8 *)mempAlloc(MUSIC_ALLOCATION_BYTES, MEMPOOL_PERMANENT);
 
     mempAddress = p;
     do
@@ -831,7 +831,7 @@ void musicTrack1Play(s32 track)
     temp_a0 = (u8*)((t3 + (s32)thing.seqData) - trackSizeBytes);
 
     romCopy(temp_a0, romAddress, trackSizeBytes);
-    decompressdata(temp_a0, thing.seqData, MUSIC_HLIST);
+    rzipInflate(temp_a0, thing.seqData, MUSIC_HLIST);
 
     alCSeqNew(&g_musicXTrack1Seq, g_musicXTrack1SeqData);
     alCSPSetSeq(g_musicXTrack1SeqPlayer, &g_musicXTrack1Seq);
@@ -1019,7 +1019,7 @@ void musicTrack2Play(s32 track)
     temp_a0 = (u8*)((t3 + (s32)thing.seqData) - trackSizeBytes);
 
     romCopy(temp_a0, romAddress, trackSizeBytes);
-    decompressdata(temp_a0, thing.seqData, MUSIC_HLIST);
+    rzipInflate(temp_a0, thing.seqData, MUSIC_HLIST);
 
     alCSeqNew(&g_musicXTrack2Seq, g_musicXTrack2SeqData);
     alCSPSetSeq(g_musicXTrack2SeqPlayer, &g_musicXTrack2Seq);
@@ -1207,7 +1207,7 @@ void musicTrack3Play(s32 track)
     temp_a0 = (u8*)((t3 + (s32)thing.seqData) - trackSizeBytes);
 
     romCopy(temp_a0, romAddress, trackSizeBytes);
-    decompressdata(temp_a0, thing.seqData, MUSIC_HLIST);
+    rzipInflate(temp_a0, thing.seqData, MUSIC_HLIST);
 
     alCSeqNew(&g_musicXTrack3Seq, g_musicXTrack3SeqData);
     alCSPSetSeq(g_musicXTrack3SeqPlayer, &g_musicXTrack3Seq);

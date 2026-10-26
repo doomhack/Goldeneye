@@ -17,7 +17,7 @@
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
 #include "game/menu/mp_weapon.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "game/mission/objective.h"
 #include "game/mission/objective_status.h"
 #include "game/model/objecthandler.h"
@@ -722,7 +722,7 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
     autogun->unk8C = ((*((s32 *) (&autogun->unk8C))) * M_TAU_F) / 65536.0f;
 #endif
 
-    beam          = mempAllocBytesInBank(0x30U, MEMPOOL_STAGE);
+    beam          = mempAlloc(0x30U, MEMPOOL_STAGE);
     autogun->beam = beam;
     *beam = -1;
 
@@ -1264,7 +1264,7 @@ void proplvreset2(enum LEVELID stageId)
 
         strcat(strResource, setup_text_pointers[stageId] + 1); // Add remaining text back U[mp_] + setupxxxZ
 
-        g_ptrStageSetupFile = _fileNameLoadToBank(strResource, FILELOADMETHOD_DEFAULT, 256, MEMPOOL_STAGE);
+        g_ptrStageSetupFile = fileLoadByNameToPool(strResource, FILELOAD_TRIM, 256, MEMPOOL_STAGE);
 
         local_stage = g_ptrStageSetupFile;
         langLoadToAddr(langGetLangBankIndexFromStagenum(stageId));

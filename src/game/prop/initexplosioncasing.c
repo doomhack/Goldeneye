@@ -21,7 +21,7 @@ void alloc_explosion_smoke_casing_scorch_impact_buffers(void)
     g_SpExplosionDamageMult = 1.0f;
 
     osSyncPrintf("Allocating %d bytes for explosion data\n", EXPLOSION_BUFFER_LEN * sizeof(struct Explosion));
-    g_ExplosionBuffer = (struct Explosion *)mempAllocBytesInBank(EXPLOSION_BUFFER_LEN * sizeof(struct Explosion), MEMPOOL_STAGE);
+    g_ExplosionBuffer = (struct Explosion *)mempAlloc(EXPLOSION_BUFFER_LEN * sizeof(struct Explosion), MEMPOOL_STAGE);
 
     for (i=0; i<EXPLOSION_BUFFER_LEN; i++)
     {
@@ -34,7 +34,7 @@ void alloc_explosion_smoke_casing_scorch_impact_buffers(void)
     }
 
     osSyncPrintf("Allocating %d bytes for smoke data\n", SMOKE_BUFFER_LEN * sizeof(struct Smoke));
-    g_SmokeBuffer = (struct Smoke *)mempAllocBytesInBank(SMOKE_BUFFER_LEN * sizeof(struct Smoke), MEMPOOL_STAGE);
+    g_SmokeBuffer = (struct Smoke *)mempAlloc(SMOKE_BUFFER_LEN * sizeof(struct Smoke), MEMPOOL_STAGE);
 
     for (i=0; i<SMOKE_BUFFER_LEN; i++)
     {
@@ -50,7 +50,7 @@ void alloc_explosion_smoke_casing_scorch_impact_buffers(void)
     {
         osSyncPrintf("Allocating %d bytes for scorch data\n", SCORCH_BUFFER_LEN * sizeof(struct Scorch));
         // scorches are the circle burn marks left on the ground from explosions
-        g_ScorchBuffer = (struct Scorch *)mempAllocBytesInBank(SCORCH_BUFFER_LEN * sizeof(struct Scorch), MEMPOOL_STAGE);
+        g_ScorchBuffer = (struct Scorch *)mempAlloc(SCORCH_BUFFER_LEN * sizeof(struct Scorch), MEMPOOL_STAGE);
 
         for (i=0; i<SCORCH_BUFFER_LEN; i++)
         {
@@ -59,7 +59,7 @@ void alloc_explosion_smoke_casing_scorch_impact_buffers(void)
     }
 
     osSyncPrintf("Allocating %d bytes for wallhit data\n", BULLET_IMPACT_BUFFER_LEN * sizeof(struct BulletImpact));
-    g_BulletImpactBuffer = (struct BulletImpact *)mempAllocBytesInBank(BULLET_IMPACT_BUFFER_LEN * sizeof(struct BulletImpact), MEMPOOL_STAGE);
+    g_BulletImpactBuffer = (struct BulletImpact *)mempAlloc(BULLET_IMPACT_BUFFER_LEN * sizeof(struct BulletImpact), MEMPOOL_STAGE);
 
     for (i=0; i<BULLET_IMPACT_BUFFER_LEN; i++)
     {
@@ -74,7 +74,7 @@ void alloc_explosion_smoke_casing_scorch_impact_buffers(void)
     }
 
     osSyncPrintf("Allocating %d bytes for debris data (%d bits)\n", max_particles * sizeof(struct FlyingParticles), max_particles);
-    g_FlyingParticlesBuffer = (struct FlyingParticles *)mempAllocBytesInBank(((max_particles * sizeof(struct FlyingParticles)) + 0xF) & ~0xF, MEMPOOL_STAGE);
+    g_FlyingParticlesBuffer = (struct FlyingParticles *)mempAlloc(((max_particles * sizeof(struct FlyingParticles)) + 0xF) & ~0xF, MEMPOOL_STAGE);
 
     for (i=0; i<max_particles; i++)
     {

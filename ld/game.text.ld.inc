@@ -107,7 +107,7 @@
       build/OUTCODE/src/game/world/bgfog.o (.text);
       build/OUTCODE/src/game/world/lightfixture.o (.text);
       build/OUTCODE/src/game/world/bgroomtrans.o (.text);
-      build/OUTCODE/src/game/asset/ob.o (.text);
+      build/OUTCODE/src/game/asset/fileload.o (.text);
       build/OUTCODE/src/game/gfx/dyn.o (.text);
       build/OUTCODE/src/game/level/lv.o (.text);
       build/OUTCODE/src/game/replay/ramromreplay.o (.text);
@@ -121,8 +121,7 @@
       build/OUTCODE/src/game/gfx/image.o (.text);
       build/OUTCODE/src/game/gfx/image_bank.o (.text);
       build/OUTCODE/src/game/gfx/tex.o (.text);
-      build/OUTCODE/src/game/asset/decompress.o (.text);
-      build/OUTCODE/src/game/asset/zlib.o (.text);
+      build/OUTCODE/src/game/asset/rzip.o (.text);
       build/OUTCODE/src/game/gfx/rsp.o (.text);
       build/OUTCODE/src/game/debug/indy_comms.o (.text);
       build/OUTCODE/src/game/debug/indy_commands.o (.text);
