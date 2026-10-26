@@ -1462,7 +1462,7 @@ void setupCreateProps(enum LEVELID stageId)
 
         if (withchrs)
         {
-            alloc_init_GUARDdata_entries(setupCountPropdefs(PROPDEF_GUARD));
+            chrsAllocateSlots(setupCountPropdefs(PROPDEF_GUARD));
             numAnimatedObjects += setupCountPropdefs(PROPDEF_GUARD);
             numObjects += setupCountPropdefs(PROPDEF_COLLECTABLE);
             numObjects += setupCountPropdefs(PROPDEF_KEY);
@@ -1470,7 +1470,7 @@ void setupCreateProps(enum LEVELID stageId)
         }
         else
         {
-            alloc_init_GUARDdata_entries(0); // chrmgrConfigure
+            chrsAllocateSlots(0); // chrmgrConfigure
         }
 
         if (withobjs)
@@ -1557,7 +1557,7 @@ void setupCreateProps(enum LEVELID stageId)
                     case PROPDEF_GUARD:
                         if (withchrs)
                         {
-                            expand_09_characters(stageId, (struct GuardRecord *) phead, pdefIndex);
+                            setupGuard(stageId, (struct GuardRecord *) phead, pdefIndex);
                         }
                         break;
                     case PROPDEF_DOOR:
@@ -2039,7 +2039,7 @@ void setupCreateProps(enum LEVELID stageId)
         g_CurrentSetup.boundpads = NULL;
         g_CurrentSetup.padnames = NULL;
         g_CurrentSetup.boundpadnames = NULL;
-        alloc_init_GUARDdata_entries(0);
+        chrsAllocateSlots(0);
         modelmgrAllocateModelSlots(0);
         modelmgrAllocateAnimModelSlots(0);
     }

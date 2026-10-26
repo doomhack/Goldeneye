@@ -6827,7 +6827,7 @@ void shotFireBullet(s32 hand)
 
         if (!stanWalkLineNoCallback(&fromtile, shotdata.gunpos.x, shotdata.gunpos.z, dest.x, dest.z))
         {
-            chrlvStanLineDirIntersection(&shotdata.gunpos, &shotdata.dir, &stanhit);
+            chrStanLineDirIntersection(&shotdata.gunpos, &shotdata.dir, &stanhit);
             hitbgstan = 1;
         }
         else
@@ -7281,7 +7281,7 @@ void shotPunch(s32 hand, s32 item_id)
         bullet_path_from_screen_center(&from, &vector, hand);
         mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &vector);
 
-        if (handles_shot_actors(chr, hitpart, &vector, item_id, 1))
+        if (chrTakeShot(chr, hitpart, &vector, item_id, 1))
         {
             recall_joy2_hits_edit_detail_edit_flag(item_id, prop, -1);
             hit = 1;

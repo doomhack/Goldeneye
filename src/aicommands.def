@@ -134,7 +134,7 @@ _AI_CMD(GONEXT,
     (BYTE(LABEL)),
     {  /*Match*/
         AIRecord1 *ai = AiListp + Offset;
-        Offset        = chraiGoToLabel(AiListp, Offset, ai->val);
+        Offset        = aiFindLabel(AiListp, Offset, ai->val);
         break;
     },
     (
@@ -163,7 +163,7 @@ _AI_CMD(GONEXT,
 
 _AI_CMD({ /*Match*/
           AIRecord1 *ai = AiListp + Offset;
-          Offset        = chraiGoToLabel(AiListp, Offset, ai->val);
+          Offset        = aiFindLabel(AiListp, Offset, ai->val);
           break;
 })
 
@@ -203,7 +203,7 @@ _AI_CMD_POLYMORPH(,
 
 _AI_CMD({ /*Match*/
           AIRecord1 *ai = AiListp + Offset;
-          Offset        = chraiGoToLabel(AiListp, 0, ai->val);
+          Offset        = aiFindLabel(AiListp, 0, ai->val);
           break;
 })
 
@@ -691,7 +691,7 @@ _AI_CMD(
 
 _AI_CMD(
     {
-        check_if_able_to_then_kneel(ChrEntityp);
+        chrTryKneel(ChrEntityp);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -747,7 +747,7 @@ _AI_CMD(
         }
         if (ChrEntityp)
         {
-            check_if_able_to_then_perform_animation(ChrEntityp, anim_id, startframe, endframe, ai->val[6], ai->val[7]);
+            chrTryStartAnim(ChrEntityp, anim_id, startframe, endframe, ai->val[6], ai->val[7]);
         }
         else if (AircraftEntityp)
         {
@@ -807,7 +807,7 @@ _AI_CMD(
         AIRecord1 *ai = (AiListp + Offset);
         if (ChrEntityp->actiontype == ACT_ANIM)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -915,9 +915,9 @@ _AI_CMD(
 _AI_CMD(
                 {
     AIRecord1 *ai = AiListp + Offset;
-    if (actor_steps_sideways(ChrEntityp))
+    if (chrTrySidestep(ChrEntityp))
     {
-        Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+        Offset = aiFindLabel(AiListp, Offset, ai->val);
     }
     else
     {
@@ -957,9 +957,9 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord1 *ai = AiListp + Offset;
-        if (actor_hops_sideways(ChrEntityp))
+        if (chrTryJumpOut(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -1001,7 +1001,7 @@ _AI_CMD(
         AIRecord1 *ai = AiListp + Offset;
         if (actor_Runs_sideways(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -1041,9 +1041,9 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord1 *ai = AiListp + Offset;
-        if (actor_walks_and_fires(ChrEntityp))
+        if (chrTryAttackWalk(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -1083,9 +1083,9 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord1 *ai = AiListp + Offset;
-        if (actor_runs_and_fires(ChrEntityp))
+        if (chrTryAttackRun(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -1125,9 +1125,9 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord1 *ai = AiListp + Offset;
-        if (actor_rolls_fires_crouched(ChrEntityp))
+        if (chrTryAttackRoll(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -1172,9 +1172,9 @@ _AI_CMD(
         AIRecord *ai         = AiListp + Offset;
         s32       targetid   = CharArrayTo16(ai->val,2);
         s32       targettype = CharArrayTo16(ai->val,0);
-        if (actor_aim_at_actor(ChrEntityp, targettype, targetid))
+        if (chrTryAttackStand(ChrEntityp, targettype, targetid))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[4]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[4]);
         }
         else
         {
@@ -1244,9 +1244,9 @@ _AI_CMD(
         AIRecord *ai         = AiListp + Offset;
         s32       targetid   = CharArrayTo16(ai->val,2);
         s32       targettype = CharArrayTo16(ai->val,0);
-        if (actor_kneel_aim_at_actor(ChrEntityp, targettype, targetid))
+        if (chrTryAttackKneel(ChrEntityp, targettype, targetid))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[4]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[4]);
         }
         else
         {
@@ -1317,9 +1317,9 @@ _AI_CMD(
         AIRecord *ai         = AiListp + Offset;
         s32       targetid   = CharArrayTo16(ai->val,2);
         s32       targettype = CharArrayTo16(ai->val,0);
-        if (actor_fire_or_aim_at_target_update(ChrEntityp, targettype, targetid))
+        if (chrTryModifyAttack(ChrEntityp, targettype, targetid))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[4]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[4]);
         }
         else
         {
@@ -1392,9 +1392,9 @@ _AI_CMD(
         AIRecord *ai         = AiListp + Offset;
         s32       targetid   = CharArrayTo16(ai->val,2);
         s32       targettype = CharArrayTo16(ai->val,0);
-        if (check_set_actor_standing_still(ChrEntityp, targettype, targetid))
+        if (chrTryStop(ChrEntityp, targettype, targetid))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[4]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[4]);
         }
         else
         {
@@ -1449,7 +1449,7 @@ _AI_CMD(
         vec3d      vec = New_Vector();
         if (chr && chr->prop)
         {
-            handles_shot_actors(chr, (s8)ai->val[1], &vec, ai->val[2], NULL);
+            chrTakeShot(chr, (s8)ai->val[1], &vec, ai->val[2], NULL);
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
@@ -1514,7 +1514,7 @@ _AI_CMD(
                 {
                 }
                 weapon = prop->weapon;
-                handles_shot_actors(chr2, (s8)ai->val[2], &vec, weapon->weaponnum, 0);
+                chrTakeShot(chr2, (s8)ai->val[2], &vec, weapon->weaponnum, 0);
             }
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -1565,9 +1565,9 @@ _AI_CMD_POLYMORPH(,
 _AI_CMD(
     {
         AIRecord1 *ai = AiListp + Offset;
-        if (actor_draws_throws_grenade_at_player_if_possible(ChrEntityp))
+        if (chrTryThrowGrenade(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -1613,7 +1613,7 @@ _AI_CMD(
         u16       modelnum = CharArrayTo16(ai->val,0);
         if (chrDropItem(ChrEntityp, modelnum, ai->val[2]))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -1803,7 +1803,7 @@ _AI_CMD(
     {
         AIRecord *  ai   = AiListp + Offset;
         PathRecord *path = pathFindById(ai->val[0]);
-        if_actor_able_set_on_path(ChrEntityp, path);
+        chrTryStartPatrol(ChrEntityp, path);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -1969,7 +1969,7 @@ _AI_CMD(
         u16       pad_id = CharArrayTo16(ai->val,0);
         if (chrTryStartAlarm(ChrEntityp, pad_id))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -2068,9 +2068,9 @@ _AI_CMD(
 _AI_CMD(
     {
     AIRecord1 *ai = AiListp + Offset;
-    if (removed_animation_routine_27(ChrEntityp))
+    if (chrRemovedAiCommand27(ChrEntityp))
     {
-        Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+        Offset = aiFindLabel(AiListp, Offset, ai->val);
     }
     else
     {
@@ -2111,7 +2111,7 @@ _AI_CMD(
         AIRecord1 *ai = AiListp + Offset;
         if (chrGoToBond(ChrEntityp, SPEED_RUN))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -2154,7 +2154,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrGoToBond(ChrEntityp, SPEED_WALK))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -2197,7 +2197,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrGoToBond(ChrEntityp, SPEED_SPRINT))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -2236,9 +2236,9 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (removed_animation_routine_2B(ChrEntityp))
+        if (chrRemovedAiCommand2B(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -2282,7 +2282,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrGoToChr(ChrEntityp, ai->val[0], SPEED_RUN))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -2331,7 +2331,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrGoToChr(ChrEntityp, ai->val[0], SPEED_WALK))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -2380,7 +2380,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrGoToChr(ChrEntityp, ai->val[0] & 0xff, SPEED_SPRINT))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -2429,7 +2429,7 @@ _AI_CMD(
         AIRecord1 *ai = AiListp + Offset;
         if (chrHasStoppedOrPatroling(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -2472,7 +2472,7 @@ _AI_CMD(
         ChrRecord *chr = chrFindById(ChrEntityp, ai->val[0]);
         if (!chr || chrIsDead(chr))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -2522,7 +2522,7 @@ _AI_CMD(
         ChrRecord *chr = chrFindById(ChrEntityp, ai->val[0]);
         if (!chr || !chr->model)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -2583,7 +2583,7 @@ _AI_CMD(
         AIRecord1 *ai = AiListp + Offset;
         if (chrCheckTargetInSight(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -2659,7 +2659,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] > ChrEntityp->random)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -2708,7 +2708,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] < ChrEntityp->random)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -2759,7 +2759,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrCanHearAlarm(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -2800,7 +2800,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (alarmIsActive())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -2842,7 +2842,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (gasIsActive())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -2886,7 +2886,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrIsHearingBond(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -2930,7 +2930,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrSawInjury(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -2973,7 +2973,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrSawDeath(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3019,7 +3019,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrCanSeeBond(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3062,7 +3062,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrIsTargetNearlyInSight(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3110,7 +3110,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrSawTargetRecently(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3154,7 +3154,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrHeardTargetRecently(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3195,9 +3195,9 @@ _AI_CMD(
     {
         AIRecord * ai  = AiListp + Offset;
         ChrRecord *chr = chrFindById(ChrEntityp, *ai->val);
-        if (chr && chr->prop && check_if_position_in_same_room(ChrEntityp, &chr->prop->pos, chr->prop->stan))
+        if (chr && chr->prop && chrHasLineOfSightToPos(ChrEntityp, &chr->prop->pos, chr->prop->stan))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -3240,7 +3240,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (!(ChrEntityp->chrflags & CHRFLAG_HAS_BEEN_ON_SCREEN))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3282,7 +3282,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if ((ChrEntityp->prop->flags & PROPFLAG_ONSCREEN))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3326,7 +3326,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (getROOMID_isRendered(stanGetTileRoom(ChrEntityp->prop->stan)))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3368,9 +3368,9 @@ _AI_CMD(
     {
         AIRecord *ai     = AiListp + Offset;
         u16       pad_id = CharArrayTo16(ai->val,0);
-        if (check_if_room_for_preset_loaded(ChrEntityp, pad_id))
+        if (chrPadRoomIsVisible(ChrEntityp, pad_id))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -3410,9 +3410,9 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (sub_GAME_7F0333F8(ChrEntityp))
+        if (chrIsTargetedByPlayer(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3456,7 +3456,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrIfNearMiss(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -3502,7 +3502,7 @@ _AI_CMD(
         float     rad = chrGetAngleToBond(ChrEntityp);
         if (ByteToRadian((ai->val[0])) > rad)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -3582,7 +3582,7 @@ _AI_CMD(
         float     rad = chrGetAngleToBond(ChrEntityp);
         if (ByteToRadian((ai->val[0])) < rad)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -3660,7 +3660,7 @@ _AI_CMD(
         float     rad = chrGetAngleFromBond(ChrEntityp);
         if (ByteToRadian((ai->val[0])) > rad)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -3738,7 +3738,7 @@ _AI_CMD(
         float     rad = chrGetAngleFromBond(ChrEntityp);
         if (ByteToRadian((ai->val[0])) < rad)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -3816,7 +3816,7 @@ _AI_CMD(
         f32       distance = CharArrayTo16(ai->val,0) * 10.0f;
         if (distance > chrGetDistanceToBond(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -3872,7 +3872,7 @@ _AI_CMD(
         f32       distance = CharArrayTo16(ai->val,0) * 10.0f;
         if (distance < chrGetDistanceToBond(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -3931,7 +3931,7 @@ _AI_CMD(
         f32        value  = CharArrayTo16(ai->val,1) * 10.0f;
         if (chr && (value > chrGetDistanceToPad(chr, padnum)))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[5]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[5]);
         }
         else
         {
@@ -4001,7 +4001,7 @@ _AI_CMD(
         f32        value  = CharArrayTo16(ai->val,1) * 10.0f;
         if (chr && (value < chrGetDistanceToPad(chr, padnum)))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[5]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[5]);
         }
         else
         {
@@ -4068,7 +4068,7 @@ _AI_CMD(
         f32       cutoff = CharArrayTo16(ai->val,0) * 10.0f;
         if (cutoff > chrGetDistanceToChr(ChrEntityp, ai->val[2]))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -4126,7 +4126,7 @@ _AI_CMD(
         f32       cutoff = CharArrayTo16(ai->val,0) * 10.0f;
         if (cutoff < chrGetDistanceToChr(ChrEntityp, ai->val[2]))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -4183,9 +4183,9 @@ _AI_CMD(
     {
         AIRecord *ai       = AiListp + Offset;
         f32       distance = CharArrayTo16(ai->val,0) * 10.0f;
-        if (sub_GAME_7F033B38(ChrEntityp, distance))
+        if (chrSetChrPresetToNearbyChr(ChrEntityp, distance))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -4244,7 +4244,7 @@ _AI_CMD(
         f32       value = CharArrayTo16(ai->val,0) * 10.0f;
         if (value > chrGetDistanceFromBondToPad(ChrEntityp, pad))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[4]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[4]);
         }
         else
         {
@@ -4301,7 +4301,7 @@ _AI_CMD(
         f32       value = CharArrayTo16(ai->val,0) * 10.0f;
         if (value < chrGetDistanceFromBondToPad(ChrEntityp, pad))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[4]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[4]);
         }
         else
         {
@@ -4357,7 +4357,7 @@ _AI_CMD(
         u16       pad_id = CharArrayTo16(ai->val,1);
         if (chrIfInPadRoom(ChrEntityp, ai->val[0], pad_id))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -4409,9 +4409,9 @@ _AI_CMD(
     {
         AIRecord *ai     = AiListp + Offset;
         u16       pad_id = CharArrayTo16(ai->val,0);
-        if (check_if_actor_is_at_preset(ChrEntityp, pad_id))
+        if (chrPlayerIsInPadRoom(ChrEntityp, pad_id))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -4453,7 +4453,7 @@ _AI_CMD(
         ObjectRecord *obj = objFindByTagId(ai->val[0]);
         if (obj && obj->prop && bondinvHasPropInInv(obj->prop))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -4497,7 +4497,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (weaponFindThrown(ai->val[0]))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -4567,7 +4567,7 @@ _AI_CMD(
         }
         if (pass)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val2);
+            Offset = aiFindLabel(AiListp, Offset, ai->val2);
         }
         else
         {
@@ -4608,7 +4608,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] == getCurrentPlayerWeaponId(GUNRIGHT) || ai->val[0] == getCurrentPlayerWeaponId(GUNLEFT))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -4650,7 +4650,7 @@ _AI_CMD(
         ObjectRecord *obj = objFindByTagId(ai->val[0]);
         if (obj && obj->prop)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -4692,7 +4692,7 @@ _AI_CMD(
         ObjectRecord *obj = objFindByTagId(ai->val[0]);
         if (obj && obj->prop && objIsHealthy(obj))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -4738,7 +4738,7 @@ _AI_CMD(
         if (obj && obj->prop && (obj->runtime_bitflags & RUNTIMEBITFLAG_ACTIVATED))
         {
             obj->runtime_bitflags &= ~RUNTIMEBITFLAG_ACTIVATED;
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -4787,7 +4787,7 @@ _AI_CMD(
         if (obj && obj->prop && (obj->openstate & PROPSTATE_ACTIVATED))
         {
             obj->openstate &= ~PROPSTATE_ACTIVATED;
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -5308,7 +5308,7 @@ _AI_CMD(
         }
         if (pass)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -5417,7 +5417,7 @@ _AI_CMD(
         ObjectRecord *obj = objFindByTagId(ai->val[0]);
         if (obj && obj->prop && obj->type == PROPDEF_DOOR && (obj->runtime_bitflags & RUNTIMEBITFLAG_BEENOPENED))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -5549,7 +5549,7 @@ _AI_CMD(
         }
         if (pass)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -5597,7 +5597,7 @@ _AI_CMD(
         } *ai = AiListp + Offset;
         if (objectiveGetCount() > ai->val && OBJECTIVESTATUS_COMPLETE == objectiveGetStatus(ai->val))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->label);
+            Offset = aiFindLabel(AiListp, Offset, ai->label);
         }
         else
         {
@@ -5641,9 +5641,9 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (check_2328_preset_set_with_method(ChrEntityp, ai->val[0]))
+        if (chrSetPadPresetToWaypointInTargetQuadrant(ChrEntityp, ai->val[0]))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -5687,9 +5687,9 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (sub_GAME_7F033AAC(ChrEntityp, ai->val[0]))
+        if (chrSetPadPresetToWaypointInQuadrant(ChrEntityp, ai->val[0]))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -5732,7 +5732,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] > lvlGetSelectedDifficulty())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -5775,7 +5775,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] < lvlGetSelectedDifficulty())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -5816,7 +5816,7 @@ _AI_CMD(
         f32       target = CharArrayTo16(ai->val,0);
         if (target > lvlGetCurrentMultiPlayerSec())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -5857,7 +5857,7 @@ _AI_CMD(
         f32       target = CharArrayTo16(ai->val,0);
         if (target < lvlGetCurrentMultiPlayerSec())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -5898,7 +5898,7 @@ _AI_CMD(
         f32       target = CharArrayTo16(ai->val,0) * CHRLV_FRAMERATE_F;
         if (target > lvlGetCurrentMultiPlayerMin())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -5939,7 +5939,7 @@ _AI_CMD(
         f32       target = CharArrayTo16(ai->val,0) * CHRLV_FRAMERATE_F;
         if (target < lvlGetCurrentMultiPlayerMin())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -5979,7 +5979,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] > bossGetStageNum())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6019,7 +6019,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] < bossGetStageNum())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6060,7 +6060,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] > chrGetNumArghs(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6101,7 +6101,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] < chrGetNumArghs(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6141,7 +6141,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] > chrGetNumCloseArghs(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6181,7 +6181,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] < chrGetNumCloseArghs(ChrEntityp))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6227,7 +6227,7 @@ _AI_CMD(
         ChrRecord *chr   = chrFindById(ChrEntityp, ai->val[0]);
         if (chr && ((chr->maxdamage - chr->damage) < value))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -6287,7 +6287,7 @@ _AI_CMD(
         ChrRecord *chr   = chrFindById(ChrEntityp, ai->val[0]);
         if (chr && ((chr->maxdamage - chr->damage) > value))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -6347,7 +6347,7 @@ _AI_CMD(
         if (chr && (chr->chrflags & CHRFLAG_WAS_DAMAGED))
         {
             chr->chrflags &= ~CHRFLAG_WAS_DAMAGED;
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6396,7 +6396,7 @@ _AI_CMD(
         float     val = (ai->val[0]) / 255.0f;
         if (val > currentPlayerGetHealth())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6438,7 +6438,7 @@ _AI_CMD(
         float     val = (ai->val[0]) / 255.0f;
         if (val < currentPlayerGetHealth())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6592,7 +6592,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] > ChrEntityp->morale)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6631,7 +6631,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ChrEntityp->morale < ChrEntityp->random)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -6785,7 +6785,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] > ChrEntityp->alertness)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -6824,7 +6824,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ChrEntityp->alertness < ChrEntityp->random)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -7340,7 +7340,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrHasFlag(ChrEntityp, ai->val[0]))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -7468,7 +7468,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (chrHasFlagById(ChrEntityp, ai->val[0], ai->val[1]))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -7590,7 +7590,7 @@ _AI_CMD(
         s32       flags = CharArrayTo32(ai->val,0);
         if (chrHasStageFlag(ChrEntityp, flags)) /* PD && ai->val[4] == 1) || (!chrHasStageFlag(ChrEntityp, flags) && ai->val[4] == 0* */
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[4]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[4]);
         }
         else
         {
@@ -7724,7 +7724,7 @@ _AI_CMD(
         CHRFLAG   flags = CharArrayTo32(ai->val,0);
         if ((ChrEntityp->chrflags & flags) == flags)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[4]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[4]);
         }
         else
         {
@@ -7855,7 +7855,7 @@ _AI_CMD(
         ChrRecord *chr   = chrFindById(ChrEntityp, ai->val[0]);
         if (chr && (chr->chrflags & flags) == flags)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[5]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[5]);
         }
         else
         {
@@ -7973,7 +7973,7 @@ _AI_CMD(
         ObjectRecord *obj   = objFindByTagId(ai->val[0]);
         if (obj && obj->prop && (obj->flags & flags) == flags)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[5]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[5]);
         }
         else
         {
@@ -8091,7 +8091,7 @@ _AI_CMD(
         ObjectRecord *obj   = objFindByTagId(ai->val[0]);
         if (obj && obj->prop && ((obj->flags2 & flags) == flags))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[5]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[5]);
         }
         else
         {
@@ -8164,7 +8164,7 @@ _AI_CMD_POLYMORPH(,
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        chrSetChrPreset2(ChrEntityp, ai->val[0], ai->val[1]);
+        chrSetChrPresetOf(ChrEntityp, ai->val[0], ai->val[1]);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -8275,7 +8275,7 @@ sed -e 's/PRINT\("(.)"(.*)\)/PRINT,\'$1\'$2,\'\0\',/g'
 
 _AI_DEBUG(
     {
-        Offset += chraiitemsize(AiListp, Offset);
+        Offset += aiCommandSize(AiListp, Offset);
         break;
     })
 
@@ -8470,7 +8470,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (((ChrEntityp->hidden & CHRHIDDEN_TIMER_ACTIVE) == 0))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -8519,7 +8519,7 @@ _AI_CMD(
         f32      valf = ((unsigned) CharArrayTo24(ai->val,0)) / CHRLV_FRAMERATE_F;
         if (chrGetTimer(ChrEntityp) < valf)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -8586,7 +8586,7 @@ _AI_CMD(
         f32       valf = ((unsigned) CharArrayTo24(ai->val,0)) / CHRLV_FRAMERATE_F;
         if (chrGetTimer(ChrEntityp) > valf)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -8805,7 +8805,7 @@ _AI_CMD(
         AIRecord * ai = AiListp + Offset;
         if (!countdownTimerIsRunning())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -8847,7 +8847,7 @@ _AI_CMD(
         f32       value = CharArrayTo16(ai->val,0);
         if (countdownTimerGetValue() < value * CHRLV_FRAMERATE_F)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -8889,7 +8889,7 @@ _AI_CMD(
         f32       value = CharArrayTo16(ai->val,0);
         if (countdownTimerGetValue() > value * CHRLV_FRAMERATE_F)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -8938,7 +8938,7 @@ _AI_CMD(
         AIRecord *ailist = ailistFindById(ailistid);
         if (chrSpawnAtPad(ChrEntityp, ai->val[0], (s8) ai->val[1], pad, ailist, flags))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[10]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[10]);
         }
         else
         {
@@ -8986,7 +8986,7 @@ _AI_CMD(
         AIRecord *ailist = ailistFindById(ailistid);
         if (chrSpawnAtChr(ChrEntityp, ai->val[0], (s8) ai->val[1], ai->val[2], ailist, flags))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[9]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[9]);
         }
         else
         {
@@ -9089,7 +9089,7 @@ _AI_CMD(
         }
         if (prop)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[7]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[7]);
         }
         else
         {
@@ -9140,7 +9140,7 @@ _AI_CMD(
         }
         if (ok)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[6]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[6]);
         }
         else
         {
@@ -9250,7 +9250,7 @@ _AI_CMD(
         }
         if (pass)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -9393,7 +9393,7 @@ _AI_CMD(
     {
         AIRecord * ai = AiListp + Offset;
         s16       audio_id = CharArrayTo16(ai->val,0);
-        audioPlayFromProp((s8) ai->val[2], audio_id);
+        aiSoundPlay((s8) ai->val[2], audio_id);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -9449,7 +9449,7 @@ _AI_CMD(
             sfx_related[ai->slotID].Obj = obj;
             if (sfxID == 0)
             {
-                audioPlayFromProp2(ai->slotID);
+                aiSoundTick(ai->slotID);
             }
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -9509,7 +9509,7 @@ _AI_CMD(
             sfx_related[ai->SlotID].Obj = NULL;
             if (sfxID == 0)
             {
-                audioPlayFromProp2(ai->SlotID);
+                aiSoundTick(ai->SlotID);
             }
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -9562,7 +9562,7 @@ _AI_CMD(
             sfx_related[ai->slotID].Obj = NULL;
             if (sfxID == 0)
             {
-                audioPlayFromProp2(ai->slotID);
+                aiSoundTick(ai->slotID);
             }
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -9615,7 +9615,7 @@ _AI_CMD(
             sfx_related[ai->slotID].Obj = NULL;
             if (sfxID == 0)
             {
-                audioPlayFromProp2(ai->slotID);
+                aiSoundTick(ai->slotID);
             }
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -9648,7 +9648,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord1s * ai = AiListp + Offset;
-        sub_GAME_7F0349BC(ai->val);
+        aiSoundStop(ai->val);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -9692,7 +9692,7 @@ _AI_CMD(
         s16 vol = CharArrayTo16(ai->val,0);
         if ((ai->slotID >= 0) && (ai->slotID < 8) && (sfx_related[ai->slotID].Volume2 < vol))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -9882,7 +9882,7 @@ _AI_CMD(
         AIRecord * ai = AiListp + Offset;
         if ((get_camera_mode() == 1) || (get_camera_mode() == 2))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -9922,7 +9922,7 @@ _AI_CMD(
         AIRecord * ai = AiListp + Offset;
         if (get_camera_mode() == 3)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -10012,7 +10012,7 @@ _AI_CMD(
         AIRecord * ai = AiListp + Offset;
         if (isBondInTank() == TRUE)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -10264,7 +10264,7 @@ _AI_CMD(
         f32       bondpos = (s16) CharArrayTo16(ai->val,0);
         if (getCurrentPlayerProp()->pos.y < bondpos)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -10443,7 +10443,7 @@ _AI_CMD(
         }
         if (pass)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -10562,7 +10562,7 @@ _AI_CMD(
         AIRecord * ai = AiListp + Offset;
         if (pPlayer->colourfadetimemax60 < 0)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -10600,7 +10600,7 @@ _AI_CMD(
 _AI_CMD(
     {
         s32 num;
-        for (num = get_numguards() - 1; num >= 0; num--)
+        for (num = chrsGetNumSlots() - 1; num >= 0; num--)
         {
             if (g_ChrSlots[num].model != NULL)
             {
@@ -10637,7 +10637,7 @@ _AI_CMD(
 _AI_CMD(
     {
         s32 num;
-        for (num = get_numguards() - 1; num >= 0; num--)
+        for (num = chrsGetNumSlots() - 1; num >= 0; num--)
         {
             g_ChrSlots[num].chrflags &= ~CHRFLAG_HIDDEN;
         }
@@ -10767,7 +10767,7 @@ _AI_CMD(
         } *ai = AiListp + Offset;
         if (getPlayerCount() < ai->val)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->label);
+            Offset = aiFindLabel(AiListp, Offset, ai->label);
         }
         else
         {
@@ -10822,7 +10822,7 @@ _AI_CMD(
         AIRecord * ai = AiListp + Offset;
         if (currentPlayerGetAmmoCount((s8) ai->val[0]) < (s8) ai->val[1])
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[2]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
         else
         {
@@ -10978,7 +10978,7 @@ _AI_CMD(
         }
         if (pad->stan && obj && obj->prop && (pad->stan->RoomID == obj->prop->stan->RoomID))
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[3]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[3]);
         }
         else
         {
@@ -11019,7 +11019,7 @@ _AI_CMD(
             !ChrEntityp->act_attack.type_of_motion &&
              ChrEntityp->act_attack.attacktype & ATTACKTYPE_DONTTURN)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -11058,7 +11058,7 @@ _AI_CMD(
         AIRecord1 * ai = AiListp + Offset;
         if (ChrEntityp->actiontype == ACT_ATTACK)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val);
+            Offset = aiFindLabel(AiListp, Offset, ai->val);
         }
         else
         {
@@ -11167,7 +11167,7 @@ _AI_CMD(
         AIRecord * ai = AiListp + Offset;
         if (pPlayer->bonddead)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -11369,7 +11369,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (credits_state == 2)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -11411,7 +11411,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (objectiveIsAllComplete())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -11456,7 +11456,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (fileGetBondForCurrentFolder() == (s8)ai->val[0])
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -11498,7 +11498,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (g_PlayerInvincible)
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[0]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
         else
         {
@@ -11648,7 +11648,7 @@ _AI_CMD(
         AIRecord *ai = AiListp + Offset;
         if (ai->val[0] < get_civilian_casualties())
         {
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {
@@ -11692,7 +11692,7 @@ _AI_CMD(
         if (chr && chr->chrflags & CHRFLAG_WAS_HIT)
         {
             chr->chrflags &= ~CHRFLAG_WAS_HIT;
-            Offset = chraiGoToLabel(AiListp, Offset, ai->val[1]);
+            Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
         else
         {

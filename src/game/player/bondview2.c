@@ -561,9 +561,9 @@ void solo_char_load(void)
             }
         }
 
-        g_CurrentPlayer->bodyModel = makeonebody(body, head, bodyheader, headheader, 0, model);
+        g_CurrentPlayer->bodyModel = bodyCreateModel(body, head, bodyheader, headheader, 0, model);
         modelSetScale(g_CurrentPlayer->bodyModel, g_CurrentPlayer->bodyModel->scale * 0.97f);
-        init_GUARDdata_with_set_values(g_CurrentPlayer->prop, g_CurrentPlayer->bodyModel, &g_CurrentPlayer->prop->pos, yaw, g_CurrentPlayer->prop->stan, NULL);
+        chrInit(g_CurrentPlayer->prop, g_CurrentPlayer->bodyModel, &g_CurrentPlayer->prop->pos, yaw, g_CurrentPlayer->prop->stan, NULL);
         pp = &g_CurrentPlayer;
         (*pp)->prop->type = PROP_TYPE_VIEWER;
         self              = (*pp)->prop->chr;
@@ -598,7 +598,7 @@ void solo_char_load(void)
             chrGiveWeaponEx(self, prop, item, 0, (WeaponObjRecord *)helddst, (ItemModelFileRecord *)pitemheader);
         }
 
-        chrlvMergeKneelToStand(self, 0.0f);
+        chrStandImmediate(self, 0.0f);
     }
     else
     {
@@ -610,7 +610,7 @@ void solo_char_load(void)
         }
 
         self->chrflags |= CHRFLAG_INIT;
-        chrlvMergeKneelToStand(self, 0.0f);
+        chrStandImmediate(self, 0.0f);
         modelSetRootPosition(g_CurrentPlayer->bodyModel, &g_CurrentPlayer->prop->pos);
         modelSetRootRotY(g_CurrentPlayer->bodyModel, yaw);
     }
@@ -624,7 +624,7 @@ void bondviewRemovePlayerBody(void)
 {
     if ((g_CurrentPlayer->prop->chr) && (getPlayerCount() == 1))
     {
-        chrpropCleanupForRemoval(g_CurrentPlayer->prop);
+        chrFreeResources(g_CurrentPlayer->prop);
         g_CurrentPlayer->prop->chr = NULL;
         g_CurrentPlayer->bodyModel = 0;
         g_bondviewForceDisarm = 1;
@@ -701,7 +701,7 @@ s32 pickDeathCameraAngles(PropRecord *prop1, coord3d *pos, PropRecord *prop2, co
 
             if (!lineok)
             {
-                chrlvStanPointPointIntersection(collision_pos, &spBC, &spB0);
+                chrStanPointPointIntersection(collision_pos, &spBC, &spB0);
 
                 {
                     f32 dx = spB0.x - collision_pos->x;
@@ -6023,7 +6023,7 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             }
             else
             {
-                chrlvStanPointPointIntersection(&g_CurrentPlayer->field_488.collision_position, &g_CurrentPlayer->field_488.theta_transform, (struct coord3d *) &spAC);
+                chrStanPointPointIntersection(&g_CurrentPlayer->field_488.collision_position, &g_CurrentPlayer->field_488.theta_transform, (struct coord3d *) &spAC);
                 ftemp_nostack_spD0 = spAC.f[0] - g_CurrentPlayer->field_488.collision_position.f[0];
                 ftemp_nostack_spCC = spAC.f[2] - g_CurrentPlayer->field_488.collision_position.f[2];
                 spBC = sqrtf((ftemp_nostack_spD0 * ftemp_nostack_spD0) + (ftemp_nostack_spCC * ftemp_nostack_spCC));
@@ -7870,7 +7870,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         sp70.f[1] = prop->pos.f[1];
                         sp70.f[2] = sp138_tank_as_ObjectRecord->runtime_pos.f[2];
 
-                        chrlvExplosionDamage(prop->chr, &sp70, 3.0f, 1);
+                        chrExplosionDamage(prop->chr, &sp70, 3.0f, 1);
                     }
                 }
                 else if (prop->type == PROP_TYPE_OBJ)
@@ -9836,7 +9836,7 @@ s32 counterOpTakeOverGuard(void)
     // Swap the body for the guard's.
     if (g_CurrentPlayer->prop->chr != NULL)
     {
-        chrpropCleanupForRemoval(g_CurrentPlayer->prop);
+        chrFreeResources(g_CurrentPlayer->prop);
         g_CurrentPlayer->prop->chr = NULL;
         g_CurrentPlayer->bodyModel = NULL;
     }
@@ -11715,7 +11715,7 @@ join_768:
             if (firingtable != NULL)
             {
                 chr->hidden &= ~CHRHIDDEN_0400;
-                chrlvUpdateAimendbackShoulders(chr, firingtable, 0, 1, local8c);
+                chrUpdateAimendbackShoulders(chr, firingtable, 0, 1, local8c);
             }
             else
             {
@@ -11752,7 +11752,7 @@ join_768:
  
     for (i = 0; i != 2; i++)
     {
-        if (sub_GAME_7F02D630(chr, i, &ppointers[index]->field_2A18[i]) != 0)
+        if (chrGetHandPos(chr, i, &ppointers[index]->field_2A18[i]) != 0)
         {
             (&ppointers[index]->field_2A30)[i] = D_80048380;
         }

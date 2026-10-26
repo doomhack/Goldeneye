@@ -9,7 +9,7 @@
 #include "game/model/modelfile.h"
 #include "game/model/model.h"
 
-s32 load_body_head_if_not_loaded(s32 model)
+s32 bodyLoad(s32 model)
 {
     if (c_item_entries[model].header->RootNode == 0)
     {
@@ -27,7 +27,7 @@ s32 load_body_head_if_not_loaded(s32 model)
  * Not a very descriptive name for a function. What it does is load Bond's model or those
  * for spawning guards. It is not used for guards that spawn at level loading.
 */
-struct Model *makeonebody(s32 body, s32 head, struct ModelFileHeader *bodyHeader, struct ModelFileHeader *headHeader, s32 sunglasses, struct Model *model)
+struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHeader, struct ModelFileHeader *headHeader, s32 sunglasses, struct Model *model)
 {
     f32 scale;
     f32 pov;
@@ -66,7 +66,7 @@ struct Model *makeonebody(s32 body, s32 head, struct ModelFileHeader *bodyHeader
                 modelFileLoadToPool(headHeader, c_item_entries[head].filename);
 #ifdef XBLADEBUG
     #error fix XBLADEBUG
-      //osSyncPrintf("makeonebody: no head attachment for body number %d!\n",lVar3);
+      //osSyncPrintf("bodyCreateModel: no head attachment for body number %d!\n",lVar3);
 #endif
             }
 
@@ -119,7 +119,7 @@ struct Model *makeonebody(s32 body, s32 head, struct ModelFileHeader *bodyHeader
 }
 
 //sub_GAME_7F0234A8
-Model *setup_chr_instance(int body,int head,ModelFileHeader *body_header, ModelFileHeader *head_header,int sunglasses)
+Model *bodyCreateModelNew(int body,int head,ModelFileHeader *body_header, ModelFileHeader *head_header,int sunglasses)
 {
-  return makeonebody(body,head,body_header,head_header,sunglasses,0x0);
+  return bodyCreateModel(body,head,body_header,head_header,sunglasses,0x0);
 }

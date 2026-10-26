@@ -628,7 +628,7 @@ void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range)
 
                         if (temp_s0->type == PROP_TYPE_CHR)
                         {
-                            chrlvExplosionDamage(temp_s0->chr, &arg0->pos, minfrac, 1);
+                            chrExplosionDamage(temp_s0->chr, &arg0->pos, minfrac, 1);
                         }
                         else
                         {

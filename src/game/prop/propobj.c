@@ -1240,7 +1240,7 @@ bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *ray
                 edgeEnd3d.y = 0.0f;
                 edgeEnd3d.z = polygon->points[next].y;
 
-                chrlvLineLineIntersection(&edgeStart3d, &edgeEnd3d, rayStart, rayDir, &intersection);
+                chrLineLineIntersection(&edgeStart3d, &edgeEnd3d, rayStart, rayDir, &intersection);
                 dist = (rayDir->z * (intersection.z - rayStart->z)) + (((intersection.x - rayStart->x) * rayDir->x) + ((intersection.y - rayStart->y) * rayDir->y));
 
                 if (dist < (*hitDist))
@@ -1970,7 +1970,7 @@ normaldone:
         dir.y = target.f[1] - prop->pos.y;
         dir.z = target.f[2] - prop->pos.z;
 
-        chrlvStanLineDirIntersection(&prop->pos, &dir, arg2);
+        chrStanLineDirIntersection(&prop->pos, &dir, arg2);
 
         rayinfo.x = width;
         rayinfo.y = prop->pos.x;
@@ -4743,7 +4743,7 @@ s32 objTick(struct PropRecord *prop)
 								temp_v0_40 = obj->projectile;
 								temp_s0_13 = (struct coord3d *) playerProp2->chr;
 
-								if ((((temp_v0_40->flags & PROJECTILEFLAG_AIRBORNE) && (((s32) temp_v0_40->unk90) <= 0)) && (obj->runtime_bitflags & RUNTIMEBITFLAG_THROWING_KNIFE_RELATED)) && (handles_shot_actors((struct ChrRecord *) temp_s0_13, bodypartshot, &flt_CODE_bss_80075B78, ((struct WeaponObjRecord *) obj)->weaponnum, 1) != 0))
+								if ((((temp_v0_40->flags & PROJECTILEFLAG_AIRBORNE) && (((s32) temp_v0_40->unk90) <= 0)) && (obj->runtime_bitflags & RUNTIMEBITFLAG_THROWING_KNIFE_RELATED)) && (chrTakeShot((struct ChrRecord *) temp_s0_13, bodypartshot, &flt_CODE_bss_80075B78, ((struct WeaponObjRecord *) obj)->weaponnum, 1) != 0))
 								{
 									projectileStopped = 1;
 
@@ -4795,7 +4795,7 @@ s32 objTick(struct PropRecord *prop)
 							projectileStopped = 1;
 							if (var_v0_3 == 3)
 							{
-								chrlvExplosionDamage((ChrRecord *) playerProp2->chr, &obj->runtime_pos, 2.0f, 1);
+								chrExplosionDamage((ChrRecord *) playerProp2->chr, &obj->runtime_pos, 2.0f, 1);
 							}
 							else if ((var_v0_3 == 1) || (var_v0_3 == 4))
 							{
@@ -5363,7 +5363,7 @@ s32 objTick(struct PropRecord *prop)
 					distanceToPlayer = sqrtf(horizontalDistSq);
 				}
 
-				sp4A0 = chrlvGetAimLimitAngle(horizontalDistSq);
+				sp4A0 = chrGetAimLimitAngle(horizontalDistSq);
 				sp4D8 = poAGun->rot_related;
 				targetPitch = poAGun->unk98;
 				if (distanceToPlayer <= poAGun->aimdist)
@@ -5440,7 +5440,7 @@ s32 objTick(struct PropRecord *prop)
 
 				if (AutogunSeesPlayer != 0)
 				{
-					sp4A0 = chrlvGetAimLimitAngle(horizontalDistSq);
+					sp4A0 = chrGetAimLimitAngle(horizontalDistSq);
 				}
 
 				if (poAGun->is_active != 0)
@@ -5655,7 +5655,7 @@ s32 objTick(struct PropRecord *prop)
 					forwardDir.f[0] = sinf(poTruck->roty);
 					forwardDir.f[1] = 0.0f;
 					forwardDir.f[2] = cosf(poTruck->roty);
-					if (chrlvGeometryRelated7F02FC34(&poTruck->runtime_pos, &forwardDir, waypointPosition, 10.0f) != 0)
+					if (rayPassesNearPoint2d(&poTruck->runtime_pos, &forwardDir, waypointPosition, 10.0f) != 0)
 					{
 						targetYaw = poTruck->roty;
 					}
@@ -5735,7 +5735,7 @@ s32 objTick(struct PropRecord *prop)
 						vehicleAlignToFloor(poTruck);
 						doorGetTileShading(prop, &poTruck->nextcol);
 						proxminesDetonateNear(&poTruck->runtime_pos);
-						if ((waypointPosition != NULL) && (chrlvIsArrivingLaterallyAtPos(&sp450, &RocketCurrent, waypointPosition, 100.0f) != 0))
+						if ((waypointPosition != NULL) && (chrIsArrivingLaterallyAtPos(&sp450, &RocketCurrent, waypointPosition, 100.0f) != 0))
 						{
 							poTruck->nextstep++;
 							if (poTruck->path->waypoints[poTruck->nextstep] < 0)
@@ -6480,7 +6480,7 @@ s32 objTick(struct PropRecord *prop)
 
 					if (stanTestLineUnobstructed(&sp108, sp12C.f[0], sp12C.f[2], sp110.f[0], sp110.f[2], 2, 100.0f, 100.0f, 0.0f, 1.0f) == 0)
 					{
-						chrlvStanLineDirIntersection(&sp12C, &sp120, &sp110);
+						chrStanLineDirIntersection(&sp12C, &sp120, &sp110);
 						sp10C = sp108;
 						sp110.f[0] -= 26.0f * sp120.f[0];
 						sp110.f[1] -= 26.0f * sp120.f[1];
@@ -11783,7 +11783,7 @@ void proxminesTickGuards(void)
     s32 numslots;
     s32 i;
 
-    numslots = get_numguards();
+    numslots = chrsGetNumSlots();
 
     for (i = 0; i < numslots; i++)
     {
@@ -11791,7 +11791,7 @@ void proxminesTickGuards(void)
         if ((guard->model != NULL) && (guard->hidden & CHRHIDDEN_BACKGROUND_AI))
         {
             coord3d pos;
-            chrlvGetPatrolPercentOrPosition(guard, &pos);
+            chrGetMovementTarget(guard, &pos);
             proxminesDetonateNear(&pos);
         }
     }

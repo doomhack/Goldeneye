@@ -115,13 +115,13 @@ void debug_object_load_all_models(void)
                     break;
 
                 case AI_TRYSpawningChrAtPad:
-                    if (load_body_head_if_not_loaded(cmd[1])) osSyncPrintf("loaded createchrhead obj=%d (body)", cmd[1]);
-                    if ((s8)cmd[2] >= 0 && load_body_head_if_not_loaded((s8)cmd[2])) osSyncPrintf("loaded createchrhead obj=%d (head)", cmd[2]);
+                    if (bodyLoad(cmd[1])) osSyncPrintf("loaded createchrhead obj=%d (body)", cmd[1]);
+                    if ((s8)cmd[2] >= 0 && bodyLoad((s8)cmd[2])) osSyncPrintf("loaded createchrhead obj=%d (head)", cmd[2]);
                     break;
 
                 case AI_TRYSpawningChrNextToChr:
-                    if (load_body_head_if_not_loaded(cmd[1])) osSyncPrintf("loaded createchrheadatchr obj=%d (body)", cmd[1]);
-                    if ((s8)cmd[2] >= 0 && load_body_head_if_not_loaded((s8)cmd[2])) osSyncPrintf("loaded createchrheadatchr obj=%d (head)", cmd[2]);
+                    if (bodyLoad(cmd[1])) osSyncPrintf("loaded createchrheadatchr obj=%d (body)", cmd[1]);
+                    if ((s8)cmd[2] >= 0 && bodyLoad((s8)cmd[2])) osSyncPrintf("loaded createchrheadatchr obj=%d (head)", cmd[2]);
                     break;
 
                 case AI_TRYGiveMeItem:
@@ -134,7 +134,7 @@ void debug_object_load_all_models(void)
                     break;
             }
 
-            cmd += chraiitemsize(cmd, 0);
+            cmd += aiCommandSize(cmd, 0);
         }
 
         i++;

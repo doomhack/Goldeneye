@@ -777,7 +777,7 @@ void propsTickOnce(void)
     ObjectRecord *setupobj;
 
     // Advance AI states e.g. attacking, walking, dying, etc...
-    chrlvAllChrTick();
+    chrsTick();
 
     prop = propsGetActiveTail();
 
@@ -1032,7 +1032,7 @@ void propsTickPerPlayer(void)
     if (get_player_position_in_shuffled(get_cur_playernum()) == 0)
     {
         alarmGasTimerTick();
-        loop_set_sound_effect_all_slots();
+        aiSoundsTick();
         propsDefragRoomProps();
     }
 }

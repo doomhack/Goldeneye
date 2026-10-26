@@ -3,9 +3,9 @@
 
 //uncomment when actor is worked on
 //#include "chr.h"
-extern s32 get_ptr_allocated_block_for_vertices NO_SDATA;
+extern s32 dynAllocateVerticesDiscard NO_SDATA;
 
 void init_weapon_animation_groups_maybe(void) {
-    modelSetVtxAllocator(&get_ptr_allocated_block_for_vertices);
+    modelSetVtxAllocator(&dynAllocateVerticesDiscard);
     initWeaponAnimGroups();
 }

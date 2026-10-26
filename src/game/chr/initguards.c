@@ -6,15 +6,15 @@
 #include "game/model/chrobjdata.h"
 #include "game/chr/initguards.h"
 
-void init_guards(void) {
-    animation_rate = 1.0f;
-    D_8002C904 = 0;
-    g_AnimationTablePointerCountRelated = 0;
-    D_8002C90C = 0;
-    D_8002C910 = 0;
-    D_8002CC58 = 0;
-    show_patrols_flag = FALSE;
-    player1_guardID = 0x1388;
+void chrsInit(void) {
+    g_ChrAnimRate = 1.0f;
+    g_ChrDebugAnimOverride = 0;
+    g_ChrDebugAnimIndex = 0;
+    g_ChrDebugPaused = 0;
+    g_ChrDebugStep = 0;
+    g_ChrUnused = 0;
+    g_ChrShowPatrols = FALSE;
+    g_NextChrNum = 0x1388;
     g_ChrSlots = 0;
     g_NumChrSlots = 0;
     init_obj_register_difficulty_vals();
@@ -23,7 +23,7 @@ void init_guards(void) {
 //consolidate with other align_addr_zero macro when cleaning up
 #define align_addr_zero(X) ((((X) + 0xF) | 0xF) ^ 0xF)
 
-void alloc_init_GUARDdata_entries(s32 count)
+void chrsAllocateSlots(s32 count)
 {
     s32 i;
     

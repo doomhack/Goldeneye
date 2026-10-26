@@ -48,7 +48,7 @@ sfxRecord  sfx_related[SFX_RELATED_LEN];
  * Play Audio in slot X from Prop or Pad
  * @param slot: Where audio is loaded
  */
-void       audioPlayFromProp2(s32 slot)
+void       aiSoundTick(s32 slot)
 {
     int        tempvol;
     sfxRecord *sfx = &sfx_related[slot]; // always added to stack anyway, cleaner to use
@@ -96,12 +96,12 @@ void       audioPlayFromProp2(s32 slot)
 /**
  Play All Sounds in all slots
 */
-void loop_set_sound_effect_all_slots(void)
+void aiSoundsTick(void)
 {
     int i;
     for (i = 0; i < SFX_RELATED_LEN; i++)
     {
-        audioPlayFromProp2(i);
+        aiSoundTick(i);
     }
 }
 
@@ -110,7 +110,7 @@ void loop_set_sound_effect_all_slots(void)
  * @param slot: where to load sound
  * @param soundIndex: SFX_ID
  */
-void audioPlayFromProp(s32 slot, s16 soundIndex)
+void aiSoundPlay(s32 slot, s16 soundIndex)
 {
     sfxRecord *sfx = NULL; // always added to stack anyway, cleaner to use
     //"Existing ai sound number %d!\n"
@@ -139,7 +139,7 @@ void audioPlayFromProp(s32 slot, s16 soundIndex)
 /**
  Stop All Sounds in all slots
 */
-void sub_GAME_7F0349BC(s32 slot)
+void aiSoundStop(s32 slot)
 {
     if ((slot >= 0) && (slot < SFX_RELATED_LEN))
     {
@@ -154,7 +154,7 @@ void sub_GAME_7F0349BC(s32 slot)
  * @return The number of bytes of AI command
  * @canonical name
  */
-s32 chraiitemsize(u8 *AIList, s32 offset)
+s32 aiCommandSize(u8 *AIList, s32 offset)
 {
     // matches only as u8* despite text evidence of ai->val structs
     switch (AIList[offset])
@@ -699,7 +699,7 @@ s32 chraiitemsize(u8 *AIList, s32 offset)
  * @param AIList: Ailist to get ID of
  * @return ID of AIList
  */
-s32 chraiGetAIListID(AIRecord *AIList, bool *isGlobalAIList)
+s32 ailistGetId(AIRecord *AIList, bool *isGlobalAIList)
 {
     s32 i;
 
@@ -733,7 +733,7 @@ s32 chraiGetAIListID(AIRecord *AIList, bool *isGlobalAIList)
  * @param LabelNum: Integer/enum ID to go to
  * @return Offset of label from beggining of AIList.
  */
-s32 chraiGoToLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
+s32 aiFindLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
 {
     s32   listID;
     char *debAIListTypeString;
@@ -752,7 +752,7 @@ s32 chraiGoToLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
         else if (AIList[Offset].cmd == AI_EndList)
         {
             // restart ai list PC if next label not found - causes infinite loop outside of debug
-            listID = chraiGetAIListID(AIList, &isGlobalAIList);
+            listID = ailistGetId(AIList, &isGlobalAIList);
 #ifdef DEBUG
             if (isGlobalAIList)
             {
@@ -767,7 +767,7 @@ s32 chraiGoToLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
             return 0;
         }
 
-        Offset += chraiitemsize(AIList, Offset);
+        Offset += aiCommandSize(AIList, Offset);
     }
 }
 
@@ -1051,7 +1051,7 @@ static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset, ChrR
     }
 
     st->start = offset;
-    st->size = chraiitemsize(list, offset);
+    st->size = aiCommandSize(list, offset);
     st->mode = mode;
     st->next = 1;
 }
@@ -1127,7 +1127,7 @@ void ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType);
 
 /**
  Counter-op: runs a vehicle's or aircraft's AI list for Bond, putting the
- current player back afterwards. Chrs do this in chrlvActionTick.
+ current player back afterwards. Chrs do this in chrActionTick.
 */
 void aiForObject(PropDefHeaderRecord *Entityp)
 {
@@ -1280,7 +1280,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_GotoNext:
                 {
                     AiGotoNextRecord *ai = AiListp + Offset;
-                    Offset               = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                    Offset               = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
     #ifdef ENABLE_LOG
                     osSyncPrintf("GOTO Next (%d)\n", ai->GOTOLABEL);
     #endif
@@ -1289,7 +1289,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_GotoFirst:
                 {
                     AiGotoFirstRecord *ai = AiListp + Offset;
-                    Offset                = chraiGoToLabel(AiListp, 0, ai->GOTOLABEL);
+                    Offset                = aiFindLabel(AiListp, 0, ai->GOTOLABEL);
     #ifdef ENABLE_LOG
                     osSyncPrintf("GOTO First (%d)\n", ai->GOTOLABEL);
     #endif
@@ -1325,7 +1325,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     // Not an error to be here, same as yield except without pushing offset past it. (just keeps looping)
     #ifdef ENABLE_LOG
         #ifdef IS_PD
-                    listID = chraiGetAIListID(AIList, &isGlobalAIList);
+                    listID = ailistGetId(AIList, &isGlobalAIList);
                     if (isGlobalAIList)
                     {
                         debAIListTypeString = "global";
@@ -1412,7 +1412,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_Kneel:
                 {
-                    check_if_able_to_then_kneel(ChrEntityp);
+                    chrTryKneel(ChrEntityp);
                     Offset += sizeof(AiKneelRecord);
                     break;
                 }
@@ -1436,7 +1436,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (ChrEntityp)
                     {
-                        check_if_able_to_then_perform_animation(ChrEntityp, anim_id, startframe, endframe, ai->BITFIELD, ai->INTERPOL_TIME60);
+                        chrTryStartAnim(ChrEntityp, anim_id, startframe, endframe, ai->BITFIELD, ai->INTERPOL_TIME60);
                     }
                     else if (AircraftEntityp)
                     {
@@ -1456,7 +1456,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (ChrEntityp->actiontype == ACT_ANIM)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1481,7 +1481,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFImOnPatrolOrStoppedRecord *ai = AiListp + Offset;
                     if (chrHasStoppedOrPatroling(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1496,7 +1496,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (!chr || chrIsDead(chr))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1511,7 +1511,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (!chr || !chr->model)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1525,7 +1525,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (chrCheckTargetInSight(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1538,9 +1538,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiTRYSidesteppingRecord *ai = AiListp + Offset;
 
-                    if (actor_steps_sideways(ChrEntityp))
+                    if (chrTrySidestep(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1552,9 +1552,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiTRYSideHoppingRecord *ai = AiListp + Offset;
 
-                    if (actor_hops_sideways(ChrEntityp))
+                    if (chrTryJumpOut(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1566,9 +1566,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiTRYSideRunningRecord *ai = AiListp + Offset;
 
-                    if (actor_jogs_sideways(ChrEntityp))
+                    if (chrTryRunSideways(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1580,9 +1580,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiTRYFiringWalkRecord *ai = AiListp + Offset;
 
-                    if (actor_walks_and_fires(ChrEntityp))
+                    if (chrTryAttackWalk(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1594,9 +1594,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiTRYFiringRunRecord *ai = AiListp + Offset;
 
-                    if (actor_runs_and_fires(ChrEntityp))
+                    if (chrTryAttackRun(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1608,9 +1608,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiTRYFiringRollRecord *ai = AiListp + Offset;
 
-                    if (actor_rolls_fires_crouched(ChrEntityp))
+                    if (chrTryAttackRoll(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1623,9 +1623,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYFireOrAimAtTargetRecord *ai         = AiListp + Offset;
                     s32                           targetid   = ntohs(ai->TARGET);
                     s32                           targettype = ntohs(ai->BITFIELD);
-                    if (actor_aim_at_actor(ChrEntityp, targettype, targetid))
+                    if (chrTryAttackStand(ChrEntityp, targettype, targetid))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1638,9 +1638,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYFireOrAimAtTargetKneelRecord *ai         = AiListp + Offset;
                     s32                                targetid   = ntohs(ai->TARGET);
                     s32                                targettype = ntohs(ai->BITFIELD);
-                    if (actor_kneel_aim_at_actor(ChrEntityp, targettype, targetid))
+                    if (chrTryAttackKneel(ChrEntityp, targettype, targetid))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1656,7 +1656,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         !ChrEntityp->act_attack.type_of_motion &&
                         ChrEntityp->act_attack.attacktype & ATTACKTYPE_DONTTURN)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1670,7 +1670,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (ChrEntityp->actiontype == ACT_ATTACK)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1684,9 +1684,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYFireOrAimAtTargetUpdateRecord *ai         = AiListp + Offset;
                     s32                                 targetid   = ntohs(ai->TARGET);
                     s32                                 targettype = ntohs(ai->BITFIELD);
-                    if (actor_fire_or_aim_at_target_update(ChrEntityp, targettype, targetid))
+                    if (chrTryModifyAttack(ChrEntityp, targettype, targetid))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1699,9 +1699,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYFacingTargetRecord *ai         = AiListp + Offset;
                     s32                      targetid   = ntohs(ai->TARGET);
                     s32                      targettype = ntohs(ai->BITFIELD);
-                    if (check_set_actor_standing_still(ChrEntityp, targettype, targetid))
+                    if (chrTryStop(ChrEntityp, targettype, targetid))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1717,7 +1717,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (chr && chr->prop)
                     {
-                        handles_shot_actors(chr, ai->PART_NUM, &vec, ai->ITEM_NUM, FALSE);
+                        chrTakeShot(chr, ai->PART_NUM, &vec, ai->ITEM_NUM, FALSE);
                     }
 
                     Offset += sizeof(AiHitChrWithItemRecord);
@@ -1750,7 +1750,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             {
                             } // prop needs upgrading to v1 instead of t
                             weapon = prop->weapon;
-                            handles_shot_actors(chr2, ai->PART_NUM, &vec, weapon->weaponnum, 0);
+                            chrTakeShot(chr2, ai->PART_NUM, &vec, weapon->weaponnum, 0);
                         }
                     }
                     Offset += sizeof(AiChrHitChrRecord);
@@ -1760,9 +1760,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiTRYThrowingGrenadeRecord *ai = AiListp + Offset;
 
-                    if (actor_draws_throws_grenade_at_player_if_possible(ChrEntityp))
+                    if (chrTryThrowGrenade(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1776,7 +1776,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     u16                      modelnum = ntohs(ai->PROP_NUM);
                     if (chrDropItem(ChrEntityp, modelnum, ai->ITEM_NUM))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1814,7 +1814,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     u16                              pad_id = ntohs(ai->PAD);
                     if (chrTryStartAlarm(ChrEntityp, pad_id))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1837,9 +1837,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_TRYRunFromBond:
                 { // run from bond
                     AiTRYRunFromBondRecord *ai = AiListp + Offset;
-                    if (removed_animation_routine_27(ChrEntityp))
+                    if (chrRemovedAiCommand27(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1852,7 +1852,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYRunToBondRecord *ai = AiListp + Offset;
                     if (chrGoToBond(ChrEntityp, SPEED_RUN))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1865,7 +1865,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYWalkToBondRecord *ai = AiListp + Offset;
                     if (chrGoToBond(ChrEntityp, SPEED_WALK))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1878,7 +1878,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYSprintToBondRecord *ai = AiListp + Offset;
                     if (chrGoToBond(ChrEntityp, SPEED_SPRINT))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1889,9 +1889,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_TRYFindCover:
                 { // Find Cover
                     AiTRYFindCoverRecord *ai = AiListp + Offset;
-                    if (removed_animation_routine_2B(ChrEntityp))
+                    if (chrRemovedAiCommand2B(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1904,7 +1904,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYRunToChrRecord *ai = AiListp + Offset;
                     if (chrGoToChr(ChrEntityp, ai->CHR_NUM, SPEED_RUN))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1917,7 +1917,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTRYWalkToChrRecord *ai = AiListp + Offset;
                     if (chrGoToChr(ChrEntityp, ai->CHR_NUM, SPEED_WALK))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1931,7 +1931,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (chrGoToChr(ChrEntityp, ai->CHR_NUM & 0xff, SPEED_SPRINT)) // &0xff is here to increase t reg by 1
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1952,7 +1952,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (ai->BYTE > ChrEntityp->random)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -1965,7 +1965,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFRandomGreaterThanRecord *ai = AiListp + Offset;
                     if (ai->BYTE < ChrEntityp->random)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2017,7 +2017,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiStartPatrolRecord *ai   = AiListp + Offset;
                     PathRecord          *path = pathFindById(ai->PATH_NUM);
-                    if_actor_able_set_on_path(ChrEntityp, path);
+                    chrTryStartPatrol(ChrEntityp, path);
                     Offset += sizeof(AiStartPatrolRecord);
                     break;
                 }
@@ -2026,7 +2026,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFICanHearAlarmRecord *ai = AiListp + Offset;
                     if (chrCanHearAlarm(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2039,7 +2039,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFAlarmIsOnRecord *ai = AiListp + Offset;
                     if (alarmIsActive())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2052,7 +2052,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFGasIsLeakingRecord *ai = AiListp + Offset;
                     if (gasIsActive())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2065,7 +2065,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFIHeardBondRecord *ai = AiListp + Offset;
                     if (chrIsHearingBond(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2078,7 +2078,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFISeeSomeoneShotRecord *ai = AiListp + Offset;
                     if (chrSawInjury(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2091,7 +2091,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFISeeSomeoneDieRecord *ai = AiListp + Offset;
                     if (chrSawDeath(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2104,7 +2104,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFICouldSeeBondRecord *ai = AiListp + Offset;
                     if (chrCanSeeBond(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2117,7 +2117,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFICouldSeeBondsStanRecord *ai = AiListp + Offset;
                     if (chrIsTargetNearlyInSight(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2130,7 +2130,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFIWasShotRecentlyRecord *ai = AiListp + Offset;
                     if (chrSawTargetRecently(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2143,7 +2143,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFIHeardBondRecentlyRecord *ai = AiListp + Offset;
                     if (chrHeardTargetRecently(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2155,9 +2155,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFImInRoomWithChrRecord *ai  = AiListp + Offset;
                     ChrRecord                 *chr = chrFindById(ChrEntityp, ai->CHR_NUM);
-                    if (chr && chr->prop && check_if_position_in_same_room(ChrEntityp, &chr->prop->pos, chr->prop->stan))
+                    if (chr && chr->prop && chrHasLineOfSightToPos(ChrEntityp, &chr->prop->pos, chr->prop->stan))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2170,7 +2170,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFIveNotBeenSeenRecord *ai = AiListp + Offset;
                     if (!(ChrEntityp->chrflags & CHRFLAG_HAS_BEEN_ON_SCREEN))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2183,7 +2183,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFImOnScreenRecord *ai = AiListp + Offset;
                     if ((ChrEntityp->prop->flags & PROPFLAG_ONSCREEN))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2197,7 +2197,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (getROOMID_isRendered(stanGetTileRoom(ChrEntityp->prop->stan))) // embedded func to match, must be s32 not u8
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2209,9 +2209,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFRoomWithPadIsOnScreenRecord *ai     = AiListp + Offset;
                     u16                              pad_id = ntohs(ai->PAD);
-                    if (check_if_room_for_preset_loaded(ChrEntityp, pad_id))
+                    if (chrPadRoomIsVisible(ChrEntityp, pad_id))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2222,9 +2222,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFImTargetedByBond:
                 {
                     AiIFImTargetedByBondRecord *ai = AiListp + Offset;
-                    if (sub_GAME_7F0333F8(ChrEntityp))
+                    if (chrIsTargetedByPlayer(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2237,7 +2237,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFBondMissedMeRecord *ai = AiListp + Offset;
                     if (chrIfNearMiss(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2253,7 +2253,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     float                            rad = chrGetAngleToBond(ChrEntityp); // must use float to save "hidden var"
                     if (ByteToRadian((ai->ANGLE)) > rad)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2267,7 +2267,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     float                               rad = chrGetAngleToBond(ChrEntityp);
                     if (ByteToRadian((ai->ANGLE)) < rad)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2281,7 +2281,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     float                              rad = chrGetAngleFromBond(ChrEntityp);
                     if (ByteToRadian((ai->ANGLE)) > rad)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2295,7 +2295,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     float                                 rad = chrGetAngleFromBond(ChrEntityp);
                     if (ByteToRadian((ai->ANGLE)) < rad)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2309,7 +2309,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                          distance = ntohs(ai->DISTANCE) * 10.0f;
                     if (distance > chrGetDistanceToBond(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2323,7 +2323,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                             distance = ntohs(ai->DISTANCE) * 10.0f;
                     if (distance < chrGetDistanceToBond(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2339,7 +2339,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                          value  = ntohs(ai->DISTANCE) * 10.0f;
                     if (chr && (value > chrGetDistanceToPad(chr, padnum)))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2355,7 +2355,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                             value  = ntohs(ai->DISTANCE) * 10.0f;
                     if (chr && (value < chrGetDistanceToPad(chr, padnum)))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2369,7 +2369,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                         cutoff = ntohs(ai->DISTANCE) * 10.0f;
                     if (cutoff > chrGetDistanceToChr(ChrEntityp, ai->CHR_NUM))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2383,7 +2383,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                            cutoff = ntohs(ai->DISTANCE) * 10.0f;
                     if (cutoff < chrGetDistanceToChr(ChrEntityp, ai->CHR_NUM))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2395,9 +2395,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiTRYSettingMyPresetToChrWithinDistanceDecimeterRecord *ai       = AiListp + Offset;
                     f32                                                     distance = ntohs(ai->DISTANCE) * 10.0f;
-                    if (sub_GAME_7F033B38(ChrEntityp, distance))
+                    if (chrSetChrPresetToNearbyChr(ChrEntityp, distance))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2412,7 +2412,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                           value = ntohs(ai->DISTANCE) * 10.0f;
                     if (value > chrGetDistanceFromBondToPad(ChrEntityp, pad))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2427,7 +2427,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                              value = ntohs(ai->DISTANCE) * 10.0f;
                     if (value < chrGetDistanceFromBondToPad(ChrEntityp, pad))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2441,7 +2441,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     u16                         pad_id = ntohs(ai->PAD);
                     if (chrIfInPadRoom(ChrEntityp, ai->CHR_NUM, pad_id))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2453,12 +2453,12 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFBondInRoomWithPadRecord *ai     = AiListp + Offset;
                     u16                          pad_id = ntohs(ai->PAD);
-                    if (check_if_actor_is_at_preset(ChrEntityp, pad_id))
+                    if (chrPlayerIsInPadRoom(ChrEntityp, pad_id))
                     {
     #ifdef ENABLE_LOG
                         osSyncPrintf("BOND IN ROOM\n");
     #endif
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2475,7 +2475,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ObjectRecord                  *obj = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop && bondinvHasPropInInv(obj->prop))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2500,7 +2500,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (weaponFindThrown(ai->KEY_ID) && !coopsecondcopy)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2532,7 +2532,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (pass)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2545,7 +2545,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFBondHasItemEquippedRecord *ai = AiListp + Offset;
                     if (ai->ITEM_NUM == getCurrentPlayerWeaponId(GUNRIGHT) || ai->ITEM_NUM == getCurrentPlayerWeaponId(GUNLEFT)) // order matters
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2559,7 +2559,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ObjectRecord           *obj = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2573,7 +2573,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ObjectRecord                 *obj = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop && objIsHealthy(obj))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2589,7 +2589,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         obj->runtime_bitflags &= ~RUNTIMEBITFLAG_ACTIVATED;
                         coopAiActOnActivator(ChrEntityp);
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2605,7 +2605,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         obj->state &= ~PROPSTATE_ACTIVATED;
                         coopAiActOnActivator(ChrEntityp);
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2825,7 +2825,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (pass)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2839,7 +2839,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ObjectRecord                      *obj = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop && obj->type == PROPDEF_DOOR && (obj->runtime_bitflags & RUNTIMEBITFLAG_BEENOPENED))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2889,7 +2889,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (pass)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2905,7 +2905,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     */
                     if (objectiveGetCount() > ai->OBJ_NUM && OBJECTIVESTATUS_COMPLETE == objectiveGetStatus_WEAK(ai->OBJ_NUM * 1, ai->OBJ_NUM))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2916,9 +2916,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_TRYUnknown6e:
                 {
                     AiTRYUnknown6eRecord *ai = AiListp + Offset;
-                    if (check_2328_preset_set_with_method(ChrEntityp, ai->val))
+                    if (chrSetPadPresetToWaypointInTargetQuadrant(ChrEntityp, ai->val))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2929,9 +2929,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_TRYUnknown6f:
                 {
                     AiTRYUnknown6fRecord *ai = AiListp + Offset;
-                    if (sub_GAME_7F033AAC(ChrEntityp, ai->val))
+                    if (chrSetPadPresetToWaypointInQuadrant(ChrEntityp, ai->val))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2945,7 +2945,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyNumArghsLessThanRecord *ai = AiListp + Offset;
                     if (ai->val > chrGetNumArghs(ChrEntityp)) // order matter
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2958,7 +2958,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyNumArghsGreaterThanRecord *ai = AiListp + Offset;
                     if (ai->val < chrGetNumArghs(ChrEntityp)) // order matter
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2971,7 +2971,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyNumCloseArghsLessThanRecord *ai = AiListp + Offset;
                     if (ai->val > chrGetNumCloseArghs(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -2984,7 +2984,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyNumCloseArghsGreaterThanRecord *ai = AiListp + Offset;
                     if (ai->val < chrGetNumCloseArghs(ChrEntityp))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3000,7 +3000,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (chr && ((chr->maxdamage - chr->damage) < value))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3016,7 +3016,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (chr && ((chr->maxdamage - chr->damage) > value))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3031,7 +3031,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (chr && (chr->chrflags & CHRFLAG_WAS_DAMAGED))
                     {
                         chr->chrflags &= ~CHRFLAG_WAS_DAMAGED; // disable flag
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3045,7 +3045,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     float                         val = (ai->HEALTH) / 255.0f;
                     if (val > currentPlayerGetHealth())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3059,7 +3059,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     float                            val = (ai->HEALTH) / 255.0f;
                     if (val < currentPlayerGetHealth())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3072,7 +3072,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFGameDifficultyLessThanRecord *ai = AiListp + Offset;
                     if (ai->DIFICULTY_ID > lvlGetSelectedDifficulty())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3085,7 +3085,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFGameDifficultyGreaterThanRecord *ai = AiListp + Offset;
                     if (ai->DIFICULTY_ID < lvlGetSelectedDifficulty())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3099,7 +3099,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                            target = ntohs(ai->SECONDS);
                     if (target > lvlGetCurrentMultiPlayerSec())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3113,7 +3113,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                               target = ntohs(ai->SECONDS);
                     if (target < lvlGetCurrentMultiPlayerSec())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3127,7 +3127,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                target = ntohs(ai->MINUTES) * CHRAI_TICKRATE_F;
                     if (target > lvlGetCurrentMultiPlayerMin())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3141,7 +3141,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                   target = ntohs(ai->MINUTES) * CHRAI_TICKRATE_F;
                     if (target < lvlGetCurrentMultiPlayerMin())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3154,7 +3154,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFLevelIdLessThanRecord *ai = AiListp + Offset;
                     if (ai->LEVEL_ID > bossGetStageNum())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3167,7 +3167,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFLevelIdGreaterThanRecord *ai = AiListp + Offset;
                     if (ai->LEVEL_ID < bossGetStageNum())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3225,7 +3225,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyMoraleLessThanRecord *ai = AiListp + Offset;
                     if (ai->val > ChrEntityp->morale)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3238,7 +3238,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyMoraleLessThanRandomRecord *ai = AiListp + Offset;
                     if (ChrEntityp->morale < ChrEntityp->random)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3289,7 +3289,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyAlertnessLessThanRecord *ai = AiListp + Offset;
                     if (ai->CHRBYTE > ChrEntityp->alertness)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3302,7 +3302,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyAlertnessLessThanRandomRecord *ai = AiListp + Offset;
                     if (ChrEntityp->alertness < ChrEntityp->random)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3411,7 +3411,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyFlags2HasRecord *ai = AiListp + Offset;
                     if (chrHasFlags2(ChrEntityp, ai->BITS))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3438,7 +3438,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFChrBitfieldHasRecord *ai = AiListp + Offset;
                     if (chrHasFlags2ById(ChrEntityp, ai->CHR_NUM, ai->BITS))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3468,7 +3468,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     s32                             flags = ntohl(ai->BITS);
                     if (chrHasStageFlag(ChrEntityp, flags)) /* PD && ai->val[4] == 1) || (!chrHasStageFlag(ChrEntityp, flags) && ai->val[4] == 0  * */
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3498,7 +3498,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     CHRFLAG                  flags = ntohl(ai->CHRFLAGS);
                     if ((ChrEntityp->chrflags & flags) == flags)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3537,7 +3537,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ChrRecord                *chr   = chrFindById(ChrEntityp, ai->CHR_NUM);
                     if (chr && (chr->chrflags & flags) == flags)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3576,7 +3576,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ObjectRecord             *obj   = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop && (obj->flags & flags) == flags)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3615,7 +3615,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ObjectRecord              *obj   = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop && ((obj->flags2 & flags) == flags))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3633,7 +3633,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_SetChrChrPreset:
                 {
                     AiSetChrChrPresetRecord *ai = AiListp + Offset;
-                    chrSetChrPreset2(ChrEntityp, ai->CHR_NUM, ai->PRESET);
+                    chrSetChrPresetOf(ChrEntityp, ai->CHR_NUM, ai->PRESET);
                     Offset += sizeof(AiSetChrChrPresetRecord);
                     break;
                 }
@@ -3682,7 +3682,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
         #endif
     #endif
-                    Offset += chraiitemsize(AiListp, Offset);
+                    Offset += aiCommandSize(AiListp, Offset);
                     break;
                 }
                 case AI_MyTimerStart:
@@ -3714,7 +3714,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFMyTimerIsNotRunningRecord *ai = AiListp + Offset;
                     if (((ChrEntityp->hidden & CHRHIDDEN_TIMER_ACTIVE) == 0))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3729,7 +3729,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (chrGetTimer(ChrEntityp) < valf)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3743,7 +3743,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                valf = ((unsigned)CharArrayTo24(((unsigned char *)(&(ai->TICKS))), 0)) / CHRAI_TICKRATE_F;
                     if (chrGetTimer(ChrEntityp) > valf)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3788,7 +3788,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFHudCountdownIsNotRunningRecord *ai = AiListp + Offset;
                     if (!countdownTimerIsRunning())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3802,7 +3802,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                             value = ntohs(ai->SECONDS);
                     if (countdownTimerGetValue() < value * CHRAI_TICKRATE_F)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3816,7 +3816,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                                value = ntohs(ai->SECONDS);
                     if (countdownTimerGetValue() > value * CHRAI_TICKRATE_F)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3839,7 +3839,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #endif
                     if (chrSpawnAtPad(ChrEntityp, ai->BODY_NUM, ai->HEAD_NUM, pad, ailist, flags))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3855,7 +3855,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AIRecord                        *ailist   = ailistFindById(ailistid);
                     if (chrSpawnAtChr(ChrEntityp, ai->BODY_NUM, ai->HEAD_NUM, ai->CHR_NUM_TARGET, ailist, flags))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3927,7 +3927,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (prop)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -3947,7 +3947,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (ok)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4034,7 +4034,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (pass)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4080,7 +4080,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiSfxPlayRecord *ai       = AiListp + Offset;
                     s16              audio_id = ntohs(ai->SOUND_NUM);
-                    audioPlayFromProp((s8)ai->CHANNEL_NUM, audio_id);
+                    aiSoundPlay((s8)ai->CHANNEL_NUM, audio_id);
                     Offset += sizeof(AiSfxPlayRecord);
                     break;
                 }
@@ -4088,7 +4088,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_SfxStopChannel:
                 {
                     AiSfxStopChannelRecord *ai = AiListp + Offset;
-                    sub_GAME_7F0349BC(ai->CHANNEL_NUM);
+                    aiSoundStop(ai->CHANNEL_NUM);
                     Offset += sizeof(AiSfxStopChannelRecord);
                     break;
                 }
@@ -4109,7 +4109,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         sfx_related[ai->slotID].Obj    = NULL;
                         if (sfxID == 0)
                         {
-                            audioPlayFromProp2(ai->slotID);
+                            aiSoundTick(ai->slotID);
                         }
                     }
                     /*
@@ -4138,7 +4138,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         sfx_related[ai->slotID].Obj    = NULL;
                         if (sfxID == 0)
                         {
-                            audioPlayFromProp2(ai->slotID);
+                            aiSoundTick(ai->slotID);
                         }
                     }
                     Offset += sizeof(AiSfxFadeChannelVolumeRecord);
@@ -4160,7 +4160,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         sfx_related[ai->slotID].Obj = obj;
                         if (sfxID == 0)
                         {
-                            audioPlayFromProp2(ai->slotID);
+                            aiSoundTick(ai->slotID);
                         }
                     }
                     Offset += sizeof(AiSfxEmitFromObjectRecord);
@@ -4191,7 +4191,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         sfx_related[ai->slotID].Obj = NULL;
                         if (sfxID == 0)
                         {
-                            audioPlayFromProp2(ai->slotID);
+                            aiSoundTick(ai->slotID);
                         }
                     }
                     Offset += sizeof(AiSfxEmitFromPadRecord);
@@ -4208,7 +4208,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if ((ai->slotID >= 0) && (ai->slotID < 8) && (sfx_related[ai->slotID].Volume2 < vol))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4259,7 +4259,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFCameraIsInIntroRecord *ai = AiListp + Offset;
                     if ((bondviewGetCameraMode() == 1) || (bondviewGetCameraMode() == 2))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4272,7 +4272,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFCameraIsInBondSwirlRecord *ai = AiListp + Offset;
                     if (bondviewGetCameraMode() == 3)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4312,7 +4312,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #endif
                     if (isBondInTank() == TRUE)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4390,7 +4390,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     f32                         bondpos = (s16)ntohs(ai->Y_POS);
                     if (getCurrentPlayerProp()->pos.y < bondpos)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4492,7 +4492,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (pass)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4525,7 +4525,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFScreenFadeCompletedRecord *ai = AiListp + Offset;
                     if (g_CurrentPlayer->colourfadetimemax60 < 0)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4536,7 +4536,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_HideAllChrs:
                 {
                     s32 num;
-                    for (num = get_numguards() - 1; num >= 0; num--)
+                    for (num = chrsGetNumSlots() - 1; num >= 0; num--)
                     {
                         if (g_ChrSlots[num].model != NULL)
                         {
@@ -4558,7 +4558,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_ShowAllChrs:
                 {
                     s32 num;
-                    for (num = get_numguards() - 1; num >= 0; num--)
+                    for (num = chrsGetNumSlots() - 1; num >= 0; num--)
                     {
                         g_ChrSlots[num].chrflags &= ~CHRFLAG_HIDDEN;
                     }
@@ -4600,7 +4600,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIfNumberOfActivePlayersLessThanRecord *ai = AiListp + Offset;
                     if (getPlayerCount() < ai->NUMBER)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4613,7 +4613,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFBondItemTotalAmmoLessThanRecord *ai = AiListp + Offset;
                     if (currentPlayerGetAmmoCount(ai->ITEM_NUM) < ai->AMMO_TOTAL)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4671,7 +4671,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (pad->stan && obj && obj->prop && (pad->stan->room == obj->prop->stan->room))
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4699,7 +4699,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFBondIsDeadRecord *ai = AiListp + Offset;
                     if (g_CurrentPlayer->bonddead)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4759,7 +4759,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFCreditsHasCompletedRecord *ai = AiListp + Offset;
                     if (credits_state == 2)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4773,7 +4773,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     // bool a = objectiveIsAllComplete();
                     if (objectiveIsAllComplete())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4786,7 +4786,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFFolderActorIsEqualRecord *ai = AiListp + Offset;
                     if (fileGetBondForCurrentFolder() == ai->BOND_ACTOR_INDEX)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4799,7 +4799,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFBondDamageAndPickupsDisabledRecord *ai = AiListp + Offset;
                     if (g_PlayerInvincible)
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4838,7 +4838,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiIFKilledCiviliansGreaterThanRecord *ai = AiListp + Offset;
                     if (ai->CIVILIANS_KILLED < get_civilian_casualties())
                     {
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4853,7 +4853,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (chr && chr->chrflags & CHRFLAG_WAS_HIT)
                     {
                         chr->chrflags &= ~CHRFLAG_WAS_HIT;
-                        Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
+                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
                     {
@@ -4912,13 +4912,13 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                      * This is attempting to handle situations where the command
                      * type is invalid by passing over them and continuing
                      * execution.
-                     * chraiitemsize returns 1 which is pointless really
+                     * aiCommandSize returns 1 which is pointless really
                      * could have done it here without a jump
                      *
                      * Outcome:crash
                      */
                     {
-                        Offset += chraiitemsize(AiListp, Offset);
+                        Offset += aiCommandSize(AiListp, Offset);
                     }
             } // switch
 

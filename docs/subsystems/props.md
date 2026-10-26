@@ -25,7 +25,7 @@ gives it back.
 
 ## Each frame
 
-1. `propsTickOnce` runs once per frame: guard AI (`chrlvAllChrTick`), weapon respawns,
+1. `propsTickOnce` runs once per frame: guard AI (`chrsTick`), weapon respawns,
    tracers, and the explosion and smoke ticks.
 2. For each player's view, `propsTickPerPlayer` ticks every active prop (`chrTick`,
    `objTick`, `explosionPropTick`, `smokePropTick`, `playerTick`). Each tick also decides
