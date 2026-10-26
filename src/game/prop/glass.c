@@ -1,4 +1,6 @@
 #include <ultra64.h>
+#include <bondconstants.h>
+#include <memp.h>
 #include <limits.h>
 #include <music.h>
 #include "game/prop/glass.h"
@@ -306,4 +308,35 @@ Gfx *glassRenderShards(Gfx *gdl)
     gSPMatrix(gdl++, (u32)currentPlayerGetMatrix10C8(), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
     return gdl;
+}
+
+
+void glassInitShards(void)
+{
+    s32 i;
+    s32 level = lvlGetCurrentStageToLoad();
+
+    SHATTERED_WINDOW_PIECES_BUFFER_LEN = (200 / getPlayerCount());
+    if ((level == LEVELID_STREETS) || (level == LEVELID_DEPOT))
+    {
+        SHATTERED_WINDOW_PIECES_BUFFER_LEN = (SHATTERED_WINDOW_PIECES_BUFFER_LEN >> 1);
+    }
+
+    ptr_shattered_window_pieces = mempAlloc(((SHATTERED_WINDOW_PIECES_BUFFER_LEN * sizeof(s_shattered_window_piece)) + 0xF) & ~0xF, MEMPOOL_STAGE);
+
+    for(i=0; i<SHATTERED_WINDOW_PIECES_BUFFER_LEN; i++)
+    {
+        ptr_shattered_window_pieces[i].active = 0;
+    }
+
+    g_NextShardNum = 0;
+}
+
+
+void glassResetShards(void) {
+    s32 i;
+    for (i = 0; i < SHATTERED_WINDOW_PIECES_BUFFER_LEN; i++)
+    {
+        ptr_shattered_window_pieces[i].active = 0;
+    }
 }

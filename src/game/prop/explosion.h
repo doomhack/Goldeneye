@@ -172,6 +172,8 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *arg0, PropRecord *arg1, s32 arg2);
 
 void explosionCreateSmoke(coord3d *pos, StandTile *stan, s16 smoke_type, u8 *rooms, s32 flags);
 void explosionUpdateFlyingParticles(void);
+void explosionsInit(void);
+void explosionsReset(void);
 u8 explosionChrpropSmokeTick(PropRecord* prop);
 u8 explosionChrpropExplosionTick(PropRecord* prop);
 void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* result);

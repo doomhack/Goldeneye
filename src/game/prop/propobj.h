@@ -141,6 +141,7 @@ s32                  chrobjTestPointPolygonCollision(struct coord3d *arg0, f32 a
 void                 objDetonateRecursive(PropRecord *arg0, f32 arg1, struct coord3d *arg2, s32 arg3, s32 owner);
 struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *arg0);
 void                 alarmStopSound(void);
+void                 alarmsReset(void);
 bool                 chrpropTestPointInPaddedBoundPad(coord3d* pos, f32 arg1, BoundPadRecord *boundpads);
 void                 glassCreateShards(f32*, f32*, f32*, f32*, f32, f32, f32, f32, f32, f32);
 void                 modelGetXYExtents(Model *model, f32 *arg1, f32 *arg2, f32 *arg3, f32 *arg4);

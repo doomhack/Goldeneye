@@ -20,7 +20,6 @@
 #include "game/player/bondinv.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
-#include "game/prop/cleanup_objects.h"
 #include "game/prop/explosion.h"
 #include "game/chr/chrai.h"
 #include "game/audio/mp_music.h"
@@ -38,11 +37,8 @@
 #include "game/menu/mpmenu.h"
 #include "game/gfx/vtxstore.h"
 #include "game/model/jointlist.h"
-#include "game/prop/initobjects.h"
 #include "game/chr/initguards.h"
 #include "game/prop/prop.h"
-#include "game/prop/initexplosioncasing.h"
-#include "game/prop/alloc_window_pieces.h"
 #include "game/world/initunk_007290.h"
 #include "game/menu/initcheattext.h"
 #include "game/nav/waypoint.h"
@@ -1715,11 +1711,11 @@ void lvlUnloadStageTextData(void)
 
     cheatDisableAllCheats();
     cleanupGuardData();
-    cleanupObjectSounds();
-    cleanupExplosions();
+    objSoundsStopAll();
+    explosionsReset();
     glassResetShards();
     cleanup_REMOVED_();
-    cleanupAlarms();
+    alarmsReset();
     setupFreeProps(g_CurrentStageToLoad);
     cleanupObjectives();
     cleanupSFXRelated();

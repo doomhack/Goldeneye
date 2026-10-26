@@ -1,4 +1,5 @@
 #include <ultra64.h>
+#include <memp.h>
 #include <PR/os.h>
 #include <PR/gbi.h>
 #include <gbi_extension.h>
@@ -2305,4 +2306,108 @@ Gfx * explosionCallRenderBulletImpactOnProp(Gfx *arg0)
 /** Called once at boot: the scale matrix explosions are drawn with. */
 void explosionInitScaleMtx(void) {
     guScale((Mtx *)&g_ExplosionScaleMtx, 0.1f, 0.1f, 0.1f);
+}
+
+
+void explosionsInit(void)
+{
+    s32 i;
+    s32 j;
+
+    g_NumExplosionEntries = 0;
+    g_NumSmokeEntries = 0;
+    g_NumParticleEntries = 0;
+    g_NumScorchEntries = 0;
+    g_NumImpactEntries = 0;
+    g_SpExplosionDamageMult = 1.0f;
+    g_ExplosionBuffer = (struct Explosion *)mempAlloc(EXPLOSION_BUFFER_LEN * sizeof(struct Explosion), MEMPOOL_STAGE);
+
+    for (i=0; i<EXPLOSION_BUFFER_LEN; i++)
+    {
+        g_ExplosionBuffer[i].prop = NULL;
+
+        for (j=0; j<EXPLOSION_PARTS_LEN; j++)
+        {
+            g_ExplosionBuffer[i].parts[j].frame = 0;
+        }
+    }
+    g_SmokeBuffer = (struct Smoke *)mempAlloc(SMOKE_BUFFER_LEN * sizeof(struct Smoke), MEMPOOL_STAGE);
+
+    for (i=0; i<SMOKE_BUFFER_LEN; i++)
+    {
+        g_SmokeBuffer[i].prop = NULL;
+
+        for (j=0; j<SMOKE_PARTS_LEN; j++)
+        {
+            g_SmokeBuffer[i].parts[j].size = 0.0f;
+        }
+    }
+
+    if (!isMpGame())
+    {
+        // scorches are the circle burn marks left on the ground from explosions
+        g_ScorchBuffer = (struct Scorch *)mempAlloc(SCORCH_BUFFER_LEN * sizeof(struct Scorch), MEMPOOL_STAGE);
+
+        for (i=0; i<SCORCH_BUFFER_LEN; i++)
+        {
+            g_ScorchBuffer[i].roomid = -1;
+        }
+    }
+    g_BulletImpactBuffer = (struct BulletImpact *)mempAlloc(BULLET_IMPACT_BUFFER_LEN * sizeof(struct BulletImpact), MEMPOOL_STAGE);
+
+    for (i=0; i<BULLET_IMPACT_BUFFER_LEN; i++)
+    {
+        g_BulletImpactBuffer[i].room = -1;
+    }
+
+    max_particles = MAX_FLYING_PARTICLES / getPlayerCount();
+
+    if ((lvlGetCurrentStageToLoad() == LEVELID_STREETS) || (lvlGetCurrentStageToLoad() == LEVELID_DEPOT))
+    {
+        max_particles = (s32) max_particles >> 1;
+    }
+    g_FlyingParticlesBuffer = (struct FlyingParticles *)mempAlloc(((max_particles * sizeof(struct FlyingParticles)) + 0xF) & ~0xF, MEMPOOL_STAGE);
+
+    for (i=0; i<max_particles; i++)
+    {
+        g_FlyingParticlesBuffer[i].unk00 = 0;
+    }
+}
+
+
+void explosionsReset(void)
+{
+    s32 i;
+  
+    g_NumExplosionEntries = 0;
+    viShake(0.0);
+
+    if (g_ExplosionBuffer != NULL)
+    {
+        for (i = 0; i<EXPLOSION_BUFFER_LEN; i++)
+        {
+            if (g_ExplosionBuffer[i].prop != NULL)
+            {
+                chrpropDelist(g_ExplosionBuffer[i].prop);
+                chrpropDisable(g_ExplosionBuffer[i].prop);
+                chrpropFree(g_ExplosionBuffer[i].prop);
+                g_ExplosionBuffer[i].prop = NULL;
+            }
+        }
+    }
+
+  
+    if (g_SmokeBuffer != NULL)
+    {
+        for (i = 0; i<SMOKE_BUFFER_LEN; i++)
+        {
+            if (g_SmokeBuffer[i].prop != NULL)
+            {
+                chrpropDelist(g_SmokeBuffer[i].prop);
+                chrpropDisable(g_SmokeBuffer[i].prop);
+                chrpropFree(g_SmokeBuffer[i].prop);
+                g_SmokeBuffer[i].prop = NULL;
+            }
+        }
+    }
 }

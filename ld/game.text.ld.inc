@@ -8,7 +8,6 @@
       build/OUTCODE/src/game/menu/initmenus.o (.text);
       build/OUTCODE/src/game/chr/initguards.o (.text);
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.text);
-      build/OUTCODE/src/game/prop/initobjects.o (.text);
       build/OUTCODE/src/game/prop/prop.o (.text);
       build/OUTCODE/src/game/mission/objective.o (.text);
       build/OUTCODE/src/game/player/ejectedcartridges.o (.text);
@@ -16,19 +15,12 @@
       build/OUTCODE/src/game/player/bondview_r.o (.text);
       build/OUTCODE/src/game/player/inititemslots.o (.text);
       build/OUTCODE/src/game/player/initBondDATAdefaults.o (.text);
-      build/OUTCODE/src/game/prop/initexplosioncasing.o (.text);
-      build/OUTCODE/src/game/prop/alloc_window_pieces.o (.text);
       build/OUTCODE/src/game/world/initunk_007290.o (.text);
       build/OUTCODE/src/game/menu/initcheattext.o (.text);
       build/OUTCODE/src/game/chr/cleanup_guard_data.o (.text);
-      build/OUTCODE/src/game/prop/cleanup_object_sounds.o (.text);
-      build/OUTCODE/src/game/prop/cleanup_alarms.o (.text);
-      build/OUTCODE/src/game/prop/cleanup_objects.o (.text);
       build/OUTCODE/src/game/mission/cleanup_objectives.o (.text);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.text);
       build/OUTCODE/src/game/player/playerstats_007770.o (.text);
-      build/OUTCODE/src/game/prop/cleanexplosions.o (.text);
-      build/OUTCODE/src/game/prop/cleanwindowpieces.o (.text);
       build/OUTCODE/src/game/level/null_007970.o (.text);
       build/OUTCODE/src/game/player/cleanplayersound.o (.text);
       build/OUTCODE/src/game/menu/title.o (.text);

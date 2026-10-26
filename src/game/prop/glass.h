@@ -86,6 +86,8 @@ extern u32 controller_options_index;
 extern u32 game_options_index;
 
 void sub_GAME_7F0A47FC(void);
+void glassInitShards(void);
+void glassResetShards(void);
 void glassTickShards(void);
 
 Gfx * glassRenderShards(Gfx *arg0);

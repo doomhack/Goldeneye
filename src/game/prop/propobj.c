@@ -14484,3 +14484,9 @@ void playerDropInventory(void)
         }
     }
 }
+
+
+void alarmsReset(void) {
+    alarmDeactivate();
+    gasStopSound();
+}
