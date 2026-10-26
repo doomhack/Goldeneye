@@ -1,3 +1,18 @@
+/**
+ * Stan: the floor. Every level has a stan file, a list of flat polygons ("tiles") that
+ * cover everywhere a character can stand, grouped by room. Each tile edge either links to
+ * the neighbouring tile or is a wall.
+ *
+ * Collision and movement are walks over this graph instead of tests against the room
+ * geometry: stanWalkLine follows a line from tile to tile until it reaches its end or hits
+ * a wall, and stanWalkCircle visits every tile a circle touches. The other tests here
+ * (stanCircleLegal, stanLineRooms, stanTestLineUnobstructed, stanTestVolume) are those
+ * two walks with different callbacks. A hit is saved in g_StanHit* for the caller to read.
+ *
+ * Tile coordinates are 16-bit integers; g_StanScale converts world units to them.
+ * See docs/subsystems/nav.md.
+ */
+
 #include <ultra64.h>
 //#include <bondtypes.h>
 #include <deb.h>
@@ -5,8 +20,9 @@
 #include "game/world/bg.h"
 #include "game/chr/chrai.h"
 #include "game/chr/chr.h"
-#include "game/nav/stanintersection.h"
+#include "game/nav/stan.h"
 #include "assert.h"
+#include "limits.h"
 
 void stanGetTileMidPoint(StandTile *tile, coord3d *out);
 
@@ -19,26 +35,19 @@ struct StanPrefixRecord {
 };
 
 struct StanPrefixRecord *g_StanFile;
-s32 g_StanUnusedBss1;
 
 //CODE.bss:8007B128
 StandTile *g_StanRoomFirstTile[139];
-//CODE.bss:8007B354
-s32 g_StanUnusedBss2;
 //CODE.bss:8007B358 //stan list array
 StanRoomBounds g_StanRoomBounds[139];
 //CODE.bss:8007B9DC
 s32 g_StanNumRooms; //region?
-//CODE.bss:8007B9E0
-s32 g_StanUnusedBss3;
 
 // All relating to a saved collision, but not one struct
 //CODE.bss:8007B9E4
 StandTile *g_StanHitTile;
 //CODE.bss:8007B9E8
 s32 g_StanHitEdge;
-//CODE.bss:8007B9EC
-s32 g_StanHitUnused;
 //CODE.bss:8007B9F0
 struct coord2d g_StanHitLineA;
 //CODE.bss:8007B9F8
@@ -49,8 +58,6 @@ f32 g_StanHitFrac;
 //CODE.bss:8007BA04
 PropRecord * g_StanHitProp;
 
-//CODE.bss:8007BA08
-s32 g_StanUnusedBss4;
 //CODE.bss:8007BA0C
 StandTile * g_StanLadderTile;
 //CODE.bss:8007BA10
@@ -148,13 +155,6 @@ bool stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 dis
 
 // end forward declarations
 
-s32 stanBitwiseCastF32(f32 arg0)
-{
-    // disgusting
-    return *(s32*)&arg0;
-}
-
-
 // maybe getstanroomID and returns a string
 char *stanGetTileName(StandTile *tile)
 {
@@ -204,15 +204,6 @@ char *stanGetTileName(StandTile *tile)
     sprintf(buffer, aCDCC, type + 'p', masked_number, letter + 'a', idpart1);
     
     return buffer;
-}
-
-
-/**
- * Unreferenced.
- */
-void stanUnusedGetTileName(StandTile *tile)
-{
-    stanGetTileName(tile); //maybe getstanroomID
 }
 
 
@@ -3287,9 +3278,234 @@ s32 stanTestLineFromTile(StandTile *tile, StandTile **pTile, f32 p_x, f32 p_z, f
 }
 
 
-void stanUnusedTestVolume(s32 arg0, StandTile *arg1, f32 arg2, f32 arg3, f32 arg4, s32 arg5, f32 arg6, f32 arg7) {
-    stanTestVolume(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+/*
+* Address: 0x7f0b3200
+*/
+f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, coord2d *end2)
+{
+    f32 deltaX = start2->f[1] - end2->f[1];
+    f32 deltaY = end2->f[0] - start2->f[0];
+    f32 intersectionFactor = (start2->f[1] - start1->f[1]) * deltaY + (start2->f[0] - start1->f[0]) * deltaX;
+    f32 totalLineLength = (end1->f[1] - start1->f[1]) * deltaY + (end1->f[0] - start1->f[0]) * deltaX;
+
+    if (totalLineLength == 0.0f)
+    {
+        return 1.0f;
+    }
+
+    intersectionFactor /= totalLineLength;
+
+    if (intersectionFactor < 0.0f || intersectionFactor > 1.0f)
+    {
+        return 1.0f;
+    }
+
+    return intersectionFactor;
 }
 
 
+/*
+* Address: 0x7F0B32D8
+*/
+f32 stanPointLineDist(struct coord3d *point3D, coord2d *lineStart, coord2d *lineEnd)
+{
+    f32 projectedDistance;
+    f32 perpendicularDistance;
+    f32 distanceSquared;
+    f32 deltaX;
+    f32 deltaY;
 
+    deltaX = lineEnd->x - point3D->y;
+    deltaY = lineEnd->y - point3D->z;
+
+    perpendicularDistance = deltaY * lineStart->x - deltaX * lineStart->y;
+    projectedDistance = deltaX * lineStart->x + deltaY * lineStart->y;
+
+    distanceSquared = (point3D->x - perpendicularDistance) * (point3D->x + perpendicularDistance);
+
+    if (distanceSquared < 0.0f)
+    {
+        return FLT_MAX;
+    }
+
+    projectedDistance -= sqrtf(distanceSquared);
+
+    if (projectedDistance < 0.0f)
+    {
+        if (projectedDistance * projectedDistance + perpendicularDistance * perpendicularDistance <= point3D->x * point3D->x)
+        {
+            return 0.0f;
+        }
+
+        return FLT_MAX;
+    }
+
+    return projectedDistance;
+}
+
+
+/*
+* Address: 0x7f0b33dc
+*/
+f32 stanRaySegmentFrac(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd, coord2d *direction)
+{
+    f32 directionLength ;
+    f32 tempCrossProduct;
+    coord2d normalizedDir;
+    f32 deltaY;
+    f32 deltaX;
+    f32 lineLength;
+    f32 inverseLineLength ;
+    f32 normalY;
+    f32 normalX;
+    f32 proj1;
+    f32 proj2;
+    f32 parallelLineStartY;
+    f32 parallelLineStartX;
+    f32 parallelLineEndY;
+    f32 parallelLineEndX;
+    f32 crossProductPoint;
+    f32 crossProductStart;
+    f32 crossProductEnd;
+    f32 intersectionFactor;
+    f32 intersectionFactorLineEnd;
+    f32 startProjection;
+    f32 endProjection;
+
+    directionLength  = sqrtf(direction->x * direction->x + direction->y * direction->y);
+
+    if (directionLength  == 0.0f)
+    {
+        return 1.0f;
+    }
+
+    normalizedDir.x = direction->x * (1.0f / directionLength );
+    normalizedDir.y = direction->y * (1.0f / directionLength );
+
+    deltaX = lineEnd->x - lineStart->x;
+    deltaY = lineEnd->y - lineStart->y;
+
+    lineLength = sqrtf(deltaX * deltaX + deltaY * deltaY);
+
+    if (lineLength == 0.0f)
+    {
+        goto handlezero;
+    }
+
+    inverseLineLength  = 1.0f / lineLength;
+    normalX = deltaY * inverseLineLength ;
+    normalY = -deltaX * inverseLineLength ;
+
+    proj1 = point3D->x * normalX;
+    proj2 = point3D->x * normalY;
+
+    if (proj1 * (point3D->y - lineStart->x) + proj2 * (point3D->z - lineStart->y) < 0.0f)
+    {
+        proj1 = -proj1;
+        proj2 = -proj2;
+    }
+
+    parallelLineStartX = lineStart->x + proj1;
+    parallelLineStartY = lineStart->y + proj2;
+    parallelLineEndX = lineEnd->x + proj1;
+    parallelLineEndY = lineEnd->y + proj2;
+
+    crossProductStart = (direction->y * parallelLineStartX) - (parallelLineStartY * direction->x);
+    crossProductPoint = (point3D->y * direction->y) - (point3D->z * direction->x);
+    crossProductEnd = (direction->y * parallelLineEndX) - (parallelLineEndY * direction->x);
+
+    if (crossProductEnd < crossProductStart)
+    {
+        coord2d *tmp;
+
+        tempCrossProduct = crossProductStart;
+        crossProductStart = crossProductEnd;
+        crossProductEnd = tempCrossProduct;
+
+        tmp = lineStart;
+        lineStart = lineEnd;
+        lineEnd = tmp;
+
+        normalX = -normalX;
+        normalY = -normalY;
+    }
+
+    if (crossProductEnd == crossProductStart)
+    {
+        intersectionFactor = stanPointLineDist(point3D, &normalizedDir, lineStart);
+        intersectionFactorLineEnd = stanPointLineDist(point3D, &normalizedDir, lineEnd);
+
+        if (intersectionFactorLineEnd < intersectionFactor)
+        {
+            intersectionFactor = intersectionFactorLineEnd;
+        }
+    }
+    else if (crossProductEnd < crossProductPoint)
+    {
+handlezero:
+        intersectionFactor = stanPointLineDist(point3D, &normalizedDir, lineEnd);
+    }
+    else if (crossProductPoint < crossProductStart)
+    {
+        intersectionFactor = stanPointLineDist(point3D, &normalizedDir, lineStart);
+    }
+    else
+    {
+        startProjection = normalX * (point3D->y - lineStart->x) + normalY * (point3D->z - lineStart->y);
+        endProjection = normalX * (point3D->y + direction->x - lineStart->x) + normalY * (point3D->z + direction->y - lineStart->y);
+
+        if (startProjection == endProjection)
+        {
+            return 1.0f;
+        }
+
+        intersectionFactor = (startProjection - point3D->x) * directionLength  / (startProjection - endProjection);
+    }
+
+    if (directionLength  < intersectionFactor)
+    {
+        return 1.0f;
+    }
+
+    if (intersectionFactor < 0.0f)
+    {
+        return 0.0f;
+    }
+
+    return (f32) intersectionFactor * (1.0f / directionLength );
+}
+
+
+/**
+ * Finds the floor tile under a pad from the tile name the setup gives it. If the name is
+ * missing or the pad is outside that tile, moves to the nearest place on any tile where a
+ * point fits and walks back towards the pad.
+ * Returns 1 if the named tile was right, 2 if another tile was found, 0 if none.
+ */
+s32 stanResolvePadTile(struct PadRecord *pad, char *tilename, struct StandTile **tile_stack)
+{
+    struct coord3d coord;
+   
+    *tile_stack = stanMatchTileName(tilename);
+    
+    if ((*tile_stack == NULL) || (stanIsInsideTriWorld(*tile_stack, pad->pos.f[0], pad->pos.f[2]) == 0))
+    {
+        coord.f[0] = pad->pos.f[0];
+        coord.f[1] = pad->pos.f[1];
+        coord.f[2] = pad->pos.f[2];
+        
+        *tile_stack = stanFindNearestLegalPos(&coord.f[0], &coord.f[1], &coord.f[2], 0);
+        
+        if ((*tile_stack != NULL) && (stanWalkLineNoCallback(tile_stack, coord.f[0], coord.f[2], pad->pos.f[0], pad->pos.f[2]) != 0))
+        {
+            return 2;
+        }
+        
+        *tile_stack = NULL;
+        
+        return 0;
+    }
+    
+    return 1;
+}
+ 

@@ -16,8 +16,6 @@
       build/OUTCODE/src/game/player/bondview_r.o (.rodata);
       build/OUTCODE/src/game/player/inititemslots.o (.rodata);
       build/OUTCODE/src/game/player/initBondDATAdefaults.o (.rodata);
-      build/OUTCODE/src/game/nav/initpathtablesomething.o (.rodata);
-      build/OUTCODE/src/game/nav/initpathtablelinks.o (.rodata);
       build/OUTCODE/src/game/prop/initexplosioncasing.o (.rodata);
       build/OUTCODE/src/game/prop/alloc_window_pieces.o (.rodata);
       build/OUTCODE/src/game/world/initunk_007290.o (.rodata);
@@ -70,7 +68,7 @@
       build/OUTCODE/src/game/player/bondview2.o (.rodata);
       build/OUTCODE/src/game/player/bondinv.o (.rodata);
       build/OUTCODE/src/game/player/bondhead.o (.rodata);
-      build/OUTCODE/src/game/nav/padhalllv.o (.rodata);
+      build/OUTCODE/src/game/nav/waypoint.o (.rodata);
       build/OUTCODE/src/game/debug/debugmenu_08FE00.o (.rodata);
       build/OUTCODE/src/game/debug/debugmenu_handler.o (.rodata);
       build/OUTCODE/src/game/debug/debug_camera.o (.rodata);
@@ -93,7 +91,6 @@
       build/OUTCODE/src/game/menu/options.o (.rodata);
       build/OUTCODE/src/game/text/textrelated.o (.rodata);
       build/OUTCODE/src/game/nav/stan.o (.rodata);
-      build/OUTCODE/src/game/nav/stanintersection.o (.rodata);
       build/OUTCODE/src/game/world/bg.o (.rodata);
       build/OUTCODE/src/game/world/bgapply.o (.rodata);
       build/OUTCODE/src/game/world/bgfog.o (.rodata);

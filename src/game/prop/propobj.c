@@ -47,7 +47,7 @@
 #include "game/math/quaternion.h"
 #include "random.h"
 #include "game/nav/stan.h"
-#include "game/nav/stanintersection.h"
+#include "game/nav/stan.h"
 #include "game/gfx/tex.h"
 #include "game/text/textrelated.h"
 #include "game/gfx/vtxstore.h"

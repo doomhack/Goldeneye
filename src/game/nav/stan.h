@@ -104,4 +104,9 @@ struct StandTilePoint *stanMatchTileName(char *id);
 s32 stanIsInsideTriWorld(struct StandTile *tile, f32 p_x, f32 p_z);
 s32 stanCircleRooms(StandTile **tileStack, f32 target_x, f32 target_z, f32 radius, s32 *rooms, s32 *count_rtn, s32 bufMax);
 StandTile *stanFindTileBelowPos(coord3d *pos, u8 *rooms, f32 *yRtn);
+f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, coord2d *end2);
+f32 stanPointLineDist(struct coord3d *point3D, coord2d *lineStart, coord2d *lineEnd);
+f32 stanRaySegmentFrac(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd, coord2d *direction);
+s32 stanResolvePadTile(struct PadRecord *pad, char *tilename, struct StandTile **tile_stack);
+
 #endif

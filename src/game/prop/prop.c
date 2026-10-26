@@ -10,7 +10,7 @@
 #include "game/prop/propobj.h"
 #include "game/player/inititemslots.h"
 #include "game/prop/initobjects.h"
-#include "game/nav/initpathtablesomething.h"
+#include "game/nav/stan.h"
 #include "limits.h"
 #include "game/model/loadobjectmodel.h"
 #include "game/text/language.h"

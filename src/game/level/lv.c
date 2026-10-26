@@ -45,7 +45,7 @@
 #include "game/prop/alloc_window_pieces.h"
 #include "game/world/initunk_007290.h"
 #include "game/menu/initcheattext.h"
-#include "game/nav/initpathtablelinks.h"
+#include "game/nav/waypoint.h"
 #include "game/player/ejectedcartridges.h"
 #include "game/player/inititemslots.h"
 #include "game/player/initBondDATA.h"
