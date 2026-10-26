@@ -6,7 +6,6 @@
       build/OUTCODE/src/game/player/initplayergaitobject.o (.rodata);
       build/OUTCODE/src/game/level/initnull_000BC0.o (.rodata);
       build/OUTCODE/src/game/menu/initmenus.o (.rodata);
-      build/OUTCODE/src/game/chr/initguards.o (.rodata);
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.rodata);
       build/OUTCODE/src/game/prop/setup.o (.rodata);
       build/OUTCODE/src/game/mission/objective.o (.rodata);
@@ -17,7 +16,6 @@
       build/OUTCODE/src/game/player/initBondDATAdefaults.o (.rodata);
       build/OUTCODE/src/game/world/initunk_007290.o (.rodata);
       build/OUTCODE/src/game/menu/initcheattext.o (.rodata);
-      build/OUTCODE/src/game/chr/cleanup_guard_data.o (.rodata);
       build/OUTCODE/src/game/mission/cleanup_objectives.o (.rodata);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.rodata);
       build/OUTCODE/src/game/player/playerstats_007770.o (.rodata);
@@ -33,7 +31,7 @@
       build/OUTCODE/src/game/save/file.o (.rodata);
       build/OUTCODE/src/game/save/file2.o (.rodata);
       build/OUTCODE/src/game/chr/chr.o (.rodata);
-      build/OUTCODE/src/game/chr/chr_b.o (.rodata);
+      build/OUTCODE/src/game/chr/body.o (.rodata);
       build/OUTCODE/src/game/chr/chraction.o (.rodata);
       build/OUTCODE/src/game/chr/chrai.o (.rodata);
       build/OUTCODE/src/game/prop/prop.o (.rodata);

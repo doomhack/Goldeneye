@@ -1,8 +1,9 @@
 #include <ultra64.h>
+#include <random.h>
 #include <bondtypes.h>
 #include "game/menu/cheat.h"
 #include "game/chr/chr.h"
-#include "game/chr/chr_b.h"
+#include "game/chr/body.h"
 #include "game/model/chrobjdata.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
@@ -122,4 +123,108 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
 Model *bodyCreateModelNew(int body,int head,ModelFileHeader *body_header, ModelFileHeader *head_header,int sunglasses)
 {
   return bodyCreateModel(body,head,body_header,head_header,sunglasses,0x0);
+}
+
+
+/**
+ * Address 0x7F0234D0.
+ */
+Model * bodyCreateModelWithFlags(s32 body, s32 head, u32 bitflags)
+{
+    ModelFileHeader *body_header;
+    ModelFileHeader *head_header;
+    s32 sunglasses;
+
+    body_header = c_item_entries[body].header;
+    head_header = NULL;
+
+    sunglasses = 0;
+
+    if ((bitflags & 1))
+    {
+        sunglasses = 1;
+    }
+    else if ((bitflags & 2))
+    {
+        sunglasses = (randomGetNext() & 1) == 0;
+    }
+
+    if ((head >= 0) && (c_item_entries[body].hasHead == 0))
+    {
+        head_header = c_item_entries[head].header;
+    }
+
+    return bodyCreateModelNew(body, head, body_header, head_header, sunglasses);
+}
+
+s32 bodyGetRandom(void)
+{
+  return list_of_bodies[current_random_body];
+}
+
+/**
+ * Address 0x7F0235AC.
+ * Get a Random Male Head Only
+ * @param id: Integer Index of body
+ * @return an integer ID of a head to use
+ */
+s32 bodyChooseHead(s32 id)
+{
+    s32 ret;
+
+    if (c_item_entries[id].isMale)
+    {
+        ret = randomGetNext() & 3;
+        ret = ((s32)current_random_male_head + ret) % (s32)num_male_heads;
+        ret = random_male_heads[ret];
+    }
+    else
+    {
+        ret = random_female_heads[current_random_female_head];
+    }
+
+    return ret;
+}
+
+/**
+ * Get a Random head for body ID
+ * @param id: Integer Index of body
+ * @return an integer ID of a head to use
+*/
+s32 bodyGetRandomHead(s32 id)
+{
+    return (c_item_entries[id].isMale ? random_male_heads[randomGetNext() % num_male_heads] : random_female_heads[randomGetNext() % num_female_heads]);
+}
+
+
+void bodiesReset(u32 stagenum)
+{
+    s32 i;
+  
+    for (i=0; c_item_entries[i].header!=0; i++)
+    {
+        c_item_entries[i].header->RootNode = (ModelNode*)0;
+    }
+#if defined(ISGOLDFINGER) || defined(IS_NSNA)
+    {
+        s32 rnext = randomGetNext();
+
+        for (i = 0; i < 8; i++)
+        {
+            if (i == 0)
+            {
+                current_random_male_head[i] = 0;
+            }
+            else
+            {
+                current_random_male_head[i] = rnext % i;
+            }
+            rnext >>= 1;
+        };
+    }
+#else
+    current_random_male_head = randomGetNext() % num_male_heads;
+    current_random_female_head = randomGetNext() % num_female_heads;
+#endif
+    current_random_body = randomGetNext() % num_bodies;
 }

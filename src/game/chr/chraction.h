@@ -43,13 +43,9 @@
 
 
 
-Model * bodyCreateModelWithFlags(s32 body, s32 head, u32 bitflags);
 
-s32 bodyGetRandom(void);
 
-s32 bodyChooseHead(s32 id);
 
-s32 bodyGetRandomHead(s32 id);
 f32 chrGetDistanceToBond(ChrRecord *guardData);
 s32 chrCheckTargetInSight(ChrRecord *self);
 bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid);
@@ -142,7 +138,6 @@ bool chrRemovedAiCommand2B(ChrRecord *self);
 bool chrTryStartAlarm(ChrRecord *self, s32 PadId);
 bool chrTryThrowGrenade(ChrRecord *self);
 bool chrDropItem(ChrRecord *self, s32 modelnum, u8 weaponid);
-void setupGuard(s32 stageid, GuardRecord *arg1, s32 arg2);
 void chrGetMovementTarget(ChrRecord *arg0, coord3d *arg1);
 s32 chrExplosionDamage(ChrRecord *arg0, coord3d *arg1, f32 arg2, s32 arg3);
 

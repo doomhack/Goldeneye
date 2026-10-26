@@ -2,7 +2,7 @@
 #include <bondconstants.h>
 #include <memp.h>
 #include "game/chr/chr.h"
-#include "game/chr/chr_b.h"
+#include "game/chr/body.h"
 #include "game/debug/deb_loadallmodels.h"
 #include "game/prop/setup.h"
 #include "aicommands2.h"

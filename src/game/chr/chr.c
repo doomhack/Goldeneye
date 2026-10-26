@@ -1,4 +1,6 @@
 #include <ultra64.h>
+#include <memp.h>
+#include "game/debug/deb_loadallmodels.h"
 #include <PR/gbi.h>
 #include <bondgame.h>
 #include <bondconstants.h>
@@ -3930,4 +3932,50 @@ s32 chrGetOnscreenRenderBounds(PropRecord *arg0, struct coord3d *arg1, struct co
     }
 
     return 0;
+}
+
+
+//consolidate with other align_addr_zero macro when cleaning up
+#define align_addr_zero(X) ((((X) + 0xF) | 0xF) ^ 0xF)
+
+void chrsInit(void) {
+    g_ChrAnimRate = 1.0f;
+    g_ChrDebugAnimOverride = 0;
+    g_ChrDebugAnimIndex = 0;
+    g_ChrDebugPaused = 0;
+    g_ChrDebugStep = 0;
+    g_ChrUnused = 0;
+    g_ChrShowPatrols = FALSE;
+    g_NextChrNum = 0x1388;
+    g_ChrSlots = 0;
+    g_NumChrSlots = 0;
+    init_obj_register_difficulty_vals();
+}
+
+void chrsAllocateSlots(s32 count)
+{
+    s32 i;
+    
+    g_NumChrSlots = count + 10; //special guards?
+
+    g_ChrSlots = mempAlloc(align_addr_zero(g_NumChrSlots * sizeof(ChrRecord)), MEMPOOL_STAGE);
+    for(i = 0; g_NumChrSlots > i; i++)
+    {
+        g_ChrSlots[i].model = 0;
+    }
+}
+
+
+void chrsFreeAll(void)
+{
+    int i;
+
+    for (i = 0; i < g_NumChrSlots; i++) {
+        if (g_ChrSlots[i].model != 0) {
+            chrFreeResources(g_ChrSlots[i].prop);
+            propDelist(g_ChrSlots[i].prop);
+            propDisable(g_ChrSlots[i].prop);
+            propFree(g_ChrSlots[i].prop);
+        }
+    }
 }

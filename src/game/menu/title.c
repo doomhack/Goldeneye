@@ -12,7 +12,7 @@
 #include "game/hud/blood_animation.h"
 #include "bondtypes.h"
 #include "game/chr/chr.h"
-#include "game/chr/chr_b.h"
+#include "game/chr/body.h"
 #include "game/model/chrobjdata.h"
 #include "game/gfx/image.h"
 #include "game/model/anim.h"

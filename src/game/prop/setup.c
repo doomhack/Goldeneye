@@ -2835,3 +2835,80 @@ ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr,
 
     return NULL;
 }
+
+
+/**
+ * Address 0x7F02370C.
+*/
+void setupGuard(s32 stageid, GuardRecord *arg1, s32 arg2)
+{
+    struct PadRecord *pad;
+    struct ChrRecord *temp_v0_5;
+    struct StandTile *sp54; // 84
+    struct coord3d sp48; // 72
+    struct PropRecord *temp_v0_4;
+    struct ChrModelFileRecord *cmfr;
+    f32 sp3C; // 60
+    struct Model *sp38; //56
+    s32 bodyid;
+    s32 headid;
+
+    pad = &g_CurrentSetup.pads[arg1->PadID];
+
+    if (getposstan(&pad->pos, pad->stan, 20.0f, &sp48, &sp54) != 0)
+    {
+        headid = -1;
+        bodyid = (arg1->BodyID == 0xFFFF)
+            ? bodyGetRandom()
+            : arg1->BodyID;
+
+        cmfr = &c_item_entries[bodyid];
+        if (cmfr->hasHead == 0)
+        {
+            headid = (arg1->HeadID >= 0)
+                ? arg1->HeadID
+                : bodyChooseHead(bodyid);
+        }
+
+        sp38 = bodyCreateModelWithFlags(bodyid, headid, (u32) arg1->bitflags);
+
+        if (sp38 != 0)
+        {
+            sp3C = mathAtan2(pad->look.f[0], pad->look.f[2]);
+            temp_v0_4 = chrAllocate(sp38, &sp48, sp3C, sp54, ailistFindById(arg1->AIListID));
+
+            if (temp_v0_4 != 0)
+            {
+                propActivate(temp_v0_4);
+                propEnable(temp_v0_4);
+
+                temp_v0_5 = temp_v0_4->chr;
+                temp_v0_5->chrnum = (s16) arg1->chrnum;
+                temp_v0_5->hearingscale = ((f32)arg1->health) / 1000.0f;
+                temp_v0_5->visionrange = (f32)arg1->ReactionTime;
+                temp_v0_5->padpreset1 = (s16) arg1->Preset;
+                temp_v0_5->chrpreset1 = (s16) arg1->chrpreset1;
+                temp_v0_5->headnum = (s8) headid;
+                temp_v0_5->bodynum = (s8) bodyid;
+
+                if ((arg1->bitflags & 4) != 0)
+                {
+                    temp_v0_5->chrflags |= CHRFLAG_CLONE;
+                }
+
+                if ((arg1->bitflags & 8) != 0)
+                {
+                    temp_v0_5->chrflags |= CHRFLAG_INVINCIBLE;
+                }
+
+                arg1->Data = temp_v0_5;
+            }
+        }
+    }
+    #ifdef DEBUG
+    else
+    {
+    osSyncPrintf("chr not reset! (prop num=%d chr num=%d stan=%s) ",arg2 + 1, arg1->chrnum, GetStanName(pad->stan));
+    }
+    #endif
+}

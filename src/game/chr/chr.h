@@ -301,4 +301,8 @@ void        chrTestHit(PropRecord *prop, ShotData *shotdata);
 bool chrCanUseDKModeScaling(s32 bodynum, s32 headnum);
 #endif
 
+void chrsInit(void);
+void chrsAllocateSlots(s32 count);
+void chrsFreeAll(void);
+
 #endif
