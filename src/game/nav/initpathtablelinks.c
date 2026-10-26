@@ -11,14 +11,14 @@
  *
  * var_s6 is an "error" variable. If set anywhere, the function goes into an infinite loop at the end.
  * The first outer loop appears to be verifying that the waypoints don't list themselves as their own neighbour.
- * The second outer loop appears to do the same but for waygroups. It also calls sub_GAME_7F08F438, which is a more simple version of PD's waypointFindSegmentIntoGroup, so it's likely verifying that there is a waypoint path between this group and each neighbour.
+ * The second outer loop appears to do the same but for waygroups. It also calls waygroupFindLinkPoints, which is a more simple version of PD's waypointFindSegmentIntoGroup, so it's likely verifying that there is a waypoint path between this group and each neighbour.
  * The third outer loop is iterating waygroups, then iterating each group's waypoints, and assigning each waypoint's groupNum if it's less than 0. If a value is stored and it's wrong, the error variable is set.
  * The fourth outer loop is checking that all waypoints have a groupNum assigned.
  * The fifth outer loop I'm not sure about without actually decompiling it and naming stuff. It appears to be using the waypoint->dist property temporary so it can validate something. If it doesn't like it then the error variable is set.
  * The final outer loop is the infinite loop which occurs if the error variable is true.
  */
 
-void init_path_table_links(void)
+void waypointsValidate(void)
 {
     stagesetup *setup;
     waygroup *groups;
@@ -207,7 +207,7 @@ void init_path_table_links(void)
                             else
                                 if (g_CurrentSetup.pathwaypoints != NULL)
                                 {
-                                    sub_GAME_7F08F438(validationGroup, linkedGroup, &connectionWaypoint1, &connectionWaypoint2);
+                                    waygroupFindLinkPoints(validationGroup, linkedGroup, &connectionWaypoint1, &connectionWaypoint2);
 
                                     if ((connectionWaypoint1 == NULL) || (connectionWaypoint2 == NULL))
                                     {

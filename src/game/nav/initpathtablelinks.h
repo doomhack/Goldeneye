@@ -3,6 +3,6 @@
 #include <ultra64.h>
 
 
-void init_path_table_links(void);
+void waypointsValidate(void);
 
 #endif

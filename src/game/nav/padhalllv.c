@@ -234,7 +234,7 @@ s32 waygroupFindRoute(waygroup* from, waygroup* to, waygroup** arr, s32 arrlen)
 }
 
 
-waypoint *findPadWithDistAndSet(s32 *pointnums, s32 arg1, s32 groupnum)
+waypoint *waypointFindByDist(s32 *pointnums, s32 arg1, s32 groupnum)
 {
     waypoint *points = g_CurrentSetup.pathwaypoints;
 
@@ -294,7 +294,7 @@ bool waypointsPropagateDist(s32 *pointnums, s32 arg1, s32 groupnum)
 }
 
 
-void do_BFS_withinPathSet(waypoint *from, waypoint *to, s32 arg2)
+void waypointsFloodDist(waypoint *from, waypoint *to, s32 arg2)
 {
     waygroup *groups = g_CurrentSetup.waypointgroups;
     waypoint *points = g_CurrentSetup.pathwaypoints;
@@ -326,7 +326,7 @@ void waypointMarkRoute(waypoint *from, waypoint *to)
     waypoint *curto;
     s32 value;
 
-    do_BFS_withinPathSet(from, to, 0);
+    waypointsFloodDist(from, to, 0);
 
     value = to->dist - 1;
     curto = to;
@@ -334,7 +334,7 @@ void waypointMarkRoute(waypoint *from, waypoint *to)
     while (value >= 0)
     {
         curto->dist += 10000;
-        curto = findPadWithDistAndSet(curto->neighbours, value, from->groupNum);
+        curto = waypointFindByDist(curto->neighbours, value, from->groupNum);
 
         value--;
     }
@@ -362,7 +362,7 @@ s32 waypointFindRouteInGroup(waypoint *from, waypoint *to, waypoint **arr, s32 a
 
         while (i <= to->dist && i < arrlen)
         {
-            curfrom = findPadWithDistAndSet(curfrom->neighbours, i, from->groupNum);
+            curfrom = waypointFindByDist(curfrom->neighbours, i, from->groupNum);
             *arrptr = curfrom;
             arrptr++;
             i++;
@@ -376,7 +376,7 @@ s32 waypointFindRouteInGroup(waypoint *from, waypoint *to, waypoint **arr, s32 a
 }
 
 
-void sub_GAME_7F08F438(waygroup *groupa, waygroup *groupb, waypoint **pointa, waypoint **pointb)
+void waygroupFindLinkPoints(waygroup *groupa, waygroup *groupb, waypoint **pointa, waypoint **pointb)
 {
     waypoint *points = g_CurrentSetup.pathwaypoints;
     waygroup *groups = g_CurrentSetup.waypointgroups;
@@ -439,7 +439,7 @@ s32 waypointFindRoute(waypoint *frompoint, waypoint *topoint, waypoint **arr, s3
                 waypoint *tmppoint;
                 waypoint *nextfrompoint;
 
-                sub_GAME_7F08F438(curfromgroup, nextfromgroup, &tmppoint, &nextfrompoint);
+                waygroupFindLinkPoints(curfromgroup, nextfromgroup, &tmppoint, &nextfrompoint);
                 numwritten = waypointFindRouteInGroup(curfrompoint, tmppoint, arrptr, arrlen) - 1;
 
                 arrlen -= numwritten;
@@ -461,10 +461,10 @@ s32 waypointFindRoute(waypoint *frompoint, waypoint *topoint, waypoint **arr, s3
 
 
 // Resets waypoint distance, seems useless since
-// do_BFS_withinPathSet already does this for its own
-// waypoint group. Even if do_BFS_withinPathSet doesn't
+// waypointsFloodDist already does this for its own
+// waypoint group. Even if waypointsFloodDist doesn't
 // reset waypoints outside of its own group, is that really needed?
-void resetWaypointDistances(void)
+void waypointsResetDist(void)
 {
     waypoint * waypoint;
     waypoint = g_CurrentSetup.pathwaypoints;
@@ -570,8 +570,8 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 
         if (groupa == groupb)
         {
-            resetWaypointDistances();
-            do_BFS_withinPathSet(pointb, pointa, 1);
+            waypointsResetDist();
+            waypointsFloodDist(pointb, pointa, 1);
 
             result = waypointFindRandomByDist(pointa->neighbours, -1);
 
@@ -601,7 +601,7 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
                     waypoint *sp44;
                     waypoint *arr[3];
 
-                    sub_GAME_7F08F438(groupa, tmpgroup, &sp48, &sp44);
+                    waygroupFindLinkPoints(groupa, tmpgroup, &sp48, &sp44);
 
                     if (sp48 == pointa)
                     {
@@ -622,9 +622,9 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
                         waypoint *sp30;
                         waypoint *sp2c;
 
-                        sub_GAME_7F08F438(groupa, tmpgroup, &sp30, &sp2c);
-                        do_BFS_withinPathSet(sp30, pointa, 1);
-                        result = findPadWithDistAndSet(pointa->neighbours, pointa->dist + 1, pointa->groupNum);
+                        waygroupFindLinkPoints(groupa, tmpgroup, &sp30, &sp2c);
+                        waypointsFloodDist(sp30, pointa, 1);
+                        result = waypointFindByDist(pointa->neighbours, pointa->dist + 1, pointa->groupNum);
 
                         if (result)
                         {

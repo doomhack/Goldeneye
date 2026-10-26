@@ -493,7 +493,7 @@ void lvlStageLoad(s32 stage)
     {
         s32 s0;
 
-        init_path_table_links();
+        waypointsValidate();
         init_ejected_cartridges();
         counterOpResetForStage();
 
@@ -818,19 +818,19 @@ Gfx* lvlRender(Gfx* DL)
 
             if (get_debug_stan_problems_flag())
             {
-                DL = sub_GAME_7F0B303C(DL);
+                DL = stanDebugDrawProblems(DL);
             }
 
             if (get_debug_stanhit_flag())
             {
-                DL = sub_GAME_7F0B3034(DL);
+                DL = stanDebugBeginDraw(DL);
                 DL = write_stan_tiles_in_yellow(DL);
             }
 
             if (get_debug_stanregion_flag())
             {
-                DL = sub_GAME_7F0B3034(DL);
-                DL = sub_GAME_7F0B312C(DL, -0x7FC0);
+                DL = stanDebugBeginDraw(DL);
+                DL = stanDebugDrawRegion(DL, -0x7FC0);
             }
 
             if (tokenFind(1, "-stanshow_"))
@@ -838,8 +838,8 @@ Gfx* lvlRender(Gfx* DL)
                 StandTilePoint *tile1 = stanMatchTileName(tokenFind(1, "-stanshow_"));
                 if (tile1)
                 {
-                    DL = sub_GAME_7F0B3034(DL);
-                    DL = sub_GAME_7F0B3024(DL, tile1, 0xFF0000FF);
+                    DL = stanDebugBeginDraw(DL);
+                    DL = stanDebugDrawTile(DL, tile1, 0xFF0000FF);
                 }
             }
 
@@ -848,8 +848,8 @@ Gfx* lvlRender(Gfx* DL)
                 StandTilePoint *tile2 = stanMatchTileName(tokenFind(2, "-stanshow_"));
                 if (tile2)
                 {
-                    DL = sub_GAME_7F0B3034(DL);
-                    DL = sub_GAME_7F0B3024(DL, tile2, 0xFF00FF);
+                    DL = stanDebugBeginDraw(DL);
+                    DL = stanDebugDrawTile(DL, tile2, 0xFF00FF);
                 }
             }
 
@@ -858,8 +858,8 @@ Gfx* lvlRender(Gfx* DL)
                 StandTilePoint *tile3 = stanMatchTileName(tokenFind(3, "-stanshow_"));
                 if (tile3)
                 {
-                    DL = sub_GAME_7F0B3034(DL);
-                    DL = sub_GAME_7F0B3024(DL, tile3, 0xFFFF);
+                    DL = stanDebugBeginDraw(DL);
+                    DL = stanDebugDrawTile(DL, tile3, 0xFFFF);
                 }
             }
 
@@ -1416,14 +1416,14 @@ void lvlManageMpGame(void)
             {
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
                 {
-                    sub_GAME_7F0AF630(-1);
-                    debugStanView(0, 0, 0);
+                    stanDebugStepRegion(-1);
+                    stanDebugView(0, 0, 0);
                 }
 
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS))
                 {
-                    sub_GAME_7F0AF630(1);
-                    debugStanView(0, 0, 0);
+                    stanDebugStepRegion(1);
+                    stanDebugView(0, 0, 0);
                 }
             }
             break;
@@ -1621,11 +1621,11 @@ void lvlViewMoveTick(void)
         {
             if (getDebugMode() == DEB_STAN_VIEW)
             {
-                debugStanView(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
+                stanDebugView(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
             }
             else
             {
-                debugStanView(joyGetStickX(local_player_number), joyGetStickY(local_player_number), 0);
+                stanDebugView(joyGetStickX(local_player_number), joyGetStickY(local_player_number), 0);
             }
         }
         break;

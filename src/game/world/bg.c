@@ -848,7 +848,7 @@ void load_bg_file(LEVEL_INDEX levelid)
     stanLoadFile((struct StanPrefixRecord *) gptr_stan);
  
     sub_GAME_7F0B4810(levelinfotable[levelentry_index].levelscale);
-    setLevelScale(levelinfotable[levelentry_index].levelscale);
+    stanSetLevelScale(levelinfotable[levelentry_index].levelscale);
     setDebugCameraScale(levelinfotable[levelentry_index].levelscale);
     chrRemoved7F022E1C(levelinfotable[levelentry_index].levelscale);
  
@@ -4709,7 +4709,7 @@ void bgRoomCalcBB(s32 room) // canonical name
 
     if (roomdata->pPointTableBin == NULL)
     {
-        if ((room < dword_CODE_bss_8007B9DC) && ((s32) firststaninroom[room] != ((StanRoomBounds *) vertices)->min[j] % 1))
+        if ((room < g_StanNumRooms) && ((s32) g_StanRoomFirstTile[room] != ((StanRoomBounds *) vertices)->min[j] % 1))
         {
             for (j = 0; j < 3; j++)
             {

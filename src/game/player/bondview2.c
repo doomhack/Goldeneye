@@ -2346,9 +2346,9 @@ s32 bondviewTryMoveToStan(struct coord3d *arg0, StandTile **stan)
         }
 
         sub_GAME_7F03D058(g_CurrentPlayer->prop, 0);
-        sp7C = stanTileDistanceRelated(&sp90, arg0->f[0], arg0->f[2], collision_radius, &sp3C);
+        sp7C = stanCircleGetSpecial(&sp90, arg0->f[0], arg0->f[2], collision_radius, &sp3C);
 
-        if (stanGetLocusField0(&sp3C) != 0)
+        if (stanLocusIsCrouch(&sp3C) != 0)
         {
             g_CurrentPlayer->autocrouchpos = CROUCH_SQUAT;
         }
@@ -2390,13 +2390,13 @@ block_20:
             // Co-op: the tank is solid for a player while the other uses it.
             if (g_PlayerTankProp == NULL
                 && !s_CoopTankStash.hidden
-                && (stanSavedColl_posData != NULL)
-                && (stanSavedColl_posData->type == PROP_TYPE_OBJ))
+                && (g_StanHitProp != NULL)
+                && (g_StanHitProp->type == PROP_TYPE_OBJ))
             {
-                tank = (struct TankRecord *)stanSavedColl_posData->obj;
+                tank = (struct TankRecord *)g_StanHitProp->obj;
                 if (tank->type == PROPDEF_TANK)
                 {
-                    g_WorldTankProp = stanSavedColl_posData;
+                    g_WorldTankProp = g_StanHitProp;
                 }
             }
         }
@@ -2446,7 +2446,7 @@ s32 bondviewTrySimpleMovePlayerCollision(coord3d *next_pos, coord3d *collision_p
         return 1;
     }
 
-    getCollisionEdge_maybe(collision_pt0, collision_pt1);
+    stanGetCollisionEdge(collision_pt0, collision_pt1);
 
     return 0;
 }
@@ -2455,7 +2455,7 @@ s32 bondviewTrySimpleMovePlayerCollision(coord3d *next_pos, coord3d *collision_p
 /**
  * This is a fallback method used when bondviewTrySimpleMovePlayerCollision fails.
  * Instead of moving to the full coordinate specified by `next_pos`, it will
- * scale the position using `calculateRayToSegmentIntersectionNormalized` and try to move to that position.
+ * scale the position using `stanRaySegmentFrac` and try to move to that position.
  *
  * @param next_pos: 3d coordinate to attempt to move to.
  * @param collision1_pt0: Prior collision point 0.
@@ -2505,7 +2505,7 @@ s32 bondviewTryFractionMovePlayerCollision(
     sp38.f[0] = delta_pos.f[0];
     sp38.f[1] = delta_pos.f[2];
 
-    temp_f0 = calculateRayToSegmentIntersectionNormalized(&sp50, &sp48, &sp40, &sp38);
+    temp_f0 = stanRaySegmentFrac(&sp50, &sp48, &sp40, &sp38);
 
     try_next_pos.f[0] = g_CurrentPlayer->field_488.collision_position.f[0] + (delta_pos.f[0] * temp_f0 * 0.25f);
     try_next_pos.f[2] = g_CurrentPlayer->field_488.collision_position.f[2] + (delta_pos.f[2] * temp_f0 * 0.25f);
@@ -2519,7 +2519,7 @@ s32 bondviewTryFractionMovePlayerCollision(
         return 1;
     }
 
-    getCollisionEdge_maybe(collision2_pt0, collision2_pt1);
+    stanGetCollisionEdge(collision2_pt0, collision2_pt1);
 
     if (collision2_pt0->f[0] != collision1_pt0->f[0]
         || collision2_pt0->f[1] != collision1_pt0->f[1]
@@ -2868,7 +2868,7 @@ void bondviewCalcUpdatePlayerCollision(struct coord3d *offset, s32 allow_scoot)
      * This block seems to be some error checking code, this will only occur when Bond
      * goes out of bounds.
     */
-    if (stanTestPointWithinTileBoundsMaybe(
+    if (stanIsNearlyInsideTri(
             g_CurrentPlayer->field_488.current_tile_ptr,
             g_CurrentPlayer->field_488.collision_position.f[0],
             g_CurrentPlayer->field_488.collision_position.f[2]) == 0)
@@ -2901,8 +2901,8 @@ void bondviewCalcUpdatePlayerCollision(struct coord3d *offset, s32 allow_scoot)
                     if (phi_a0_3 == temp_a3)
                     {
                         // note: no `>> 4`
-                        // maybe: stan = &(standTileStart)[stan->points[i+1].link];
-                        stan = (struct StandTile*)&((struct dummy_struct*)standTileStart)[( ((struct StandTilePoint*)stan)[i+1].link)];
+                        // maybe: stan = &(g_StanTiles)[stan->points[i+1].link];
+                        stan = (struct StandTile*)&((struct dummy_struct*)g_StanTiles)[( ((struct StandTilePoint*)stan)[i+1].link)];
                         break;
                     }
 
@@ -2912,7 +2912,7 @@ void bondviewCalcUpdatePlayerCollision(struct coord3d *offset, s32 allow_scoot)
 
             if(1);
 
-            if (stanTestPointWithinTileBoundsMaybe(
+            if (stanIsNearlyInsideTri(
                 stan,
                 g_CurrentPlayer->field_488.collision_position.f[0],
                 g_CurrentPlayer->field_488.collision_position.f[2]))
@@ -4853,17 +4853,17 @@ void bondviewUpdatePlayerCollisionPositionFields(void)
     }
 
     sp2C = g_CurrentPlayer->field_488.current_tile_ptr;
-    sp28 = stanlinelog_flag;
-    stanlinelog_flag = 0;
+    sp28 = g_StanLineLog;
+    g_StanLineLog = 0;
 
-    walkTilesBetweenPoints_NoCallback(
+    stanWalkLineNoCallback(
         &sp2C,
         g_CurrentPlayer->field_488.collision_position.f[0],
         g_CurrentPlayer->field_488.collision_position.f[2],
         g_CurrentPlayer->field_488.pos.f[0],
         g_CurrentPlayer->field_488.pos.f[2]);
 
-    stanlinelog_flag = sp28;
+    g_StanLineLog = sp28;
 
     g_CurrentPlayer->field_488.current_tile_ptr_for_portals = sp2C;
 
@@ -6773,7 +6773,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             sp31C = -1; //sp31C: scope within this block, used throughout
             sp304 = -1; //sp304: scope within this block, used throughout
 
-            getCollisionEdge_maybe(&tank_collision_pt1, &tank_collision_pt2);
+            stanGetCollisionEdge(&tank_collision_pt1, &tank_collision_pt2);
 
             tank_collision_dx = (tank_collision_pt2.f[0] - tank_collision_pt1.f[0]);
             tank_collision_dz = (tank_collision_pt2.f[2] - tank_collision_pt1.f[2]);
@@ -7536,7 +7536,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         bondviewCalcUpdatePlayerCollision(&move_offset, (g_CurrentPlayer->swaytarget == 0.0f));
 
-        stanTileDistanceRelated(
+        stanCircleGetSpecial(
             &sp200,
             start_collision_pos_x,
             start_collision_pos_z,
@@ -7549,7 +7549,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             use_stanHeight = 1;
         }
 
-        stanTileDistanceRelated(
+        stanCircleGetSpecial(
             &g_CurrentPlayer->field_488.current_tile_ptr,
             g_CurrentPlayer->field_488.collision_position.f[0],
             g_CurrentPlayer->field_488.collision_position.f[2],
@@ -7562,7 +7562,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             use_stanHeight = 1;
         }
 
-        stanTileDistanceRelated(
+        stanCircleGetSpecial(
             &g_CurrentPlayer->field_488.current_tile_ptr,
             g_CurrentPlayer->field_488.collision_position.f[0],
             g_CurrentPlayer->field_488.collision_position.f[2],
@@ -7572,7 +7572,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         /* almost always true */
         if (stanGetLocusCount(&curLocus) == 0)
         {
-            stanTileDistanceRelated(
+            stanCircleGetSpecial(
                 &sp200,
                 start_collision_pos_x,
                 start_collision_pos_z,
@@ -7778,7 +7778,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         sp138_tank_as_ObjectRecord->prop->stan = g_CurrentPlayer->field_488.current_tile_ptr;
 
-        stanlineret = walkTilesBetweenPoints_NoCallback(
+        stanlineret = stanWalkLineNoCallback(
             &sp138_tank_as_ObjectRecord->prop->stan,
             g_CurrentPlayer->field_488.collision_position.f[0],
             g_CurrentPlayer->field_488.collision_position.f[2],
@@ -7898,7 +7898,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     {
         f32 sp5C_out_unused;
 
-        copy_tile_RGB_as_24bit(
+        stanGetTileColour(
             g_CurrentPlayer->field_488.current_tile_ptr,
             g_CurrentPlayer->field_488.collision_position.f[0],
             g_CurrentPlayer->field_488.collision_position.f[2],
@@ -10245,12 +10245,12 @@ Gfx *write_stan_tiles_in_yellow(Gfx *gdl)
 {
     if (dword_CODE_bss_80079DA0 != NULL)
     {
-        gdl = sub_GAME_7F0B3024(gdl, dword_CODE_bss_80079DA0, 0xFF00FF80U);
+        gdl = stanDebugDrawTile(gdl, dword_CODE_bss_80079DA0, 0xFF00FF80U);
     }
 
     if (dword_CODE_bss_80079DA4 != NULL)
     {
-        gdl = sub_GAME_7F0B3024(gdl, dword_CODE_bss_80079DA4, 0xFF00FF80U);
+        gdl = stanDebugDrawTile(gdl, dword_CODE_bss_80079DA4, 0xFF00FF80U);
     }
 
     return gdl;

@@ -261,7 +261,7 @@ void domakedefaultobj(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
 
                 spCC = var_s0->stan;
 
-                if (walkTilesBetweenPoints_NoCallback(&spCC, var_s0->pos.f[0], var_s0->pos.f[2], spD0.f[0], spD0.f[2]) == 0)
+                if (stanWalkLineNoCallback(&spCC, var_s0->pos.f[0], var_s0->pos.f[2], spD0.f[0], spD0.f[2]) == 0)
                 {
                     spD0.f[0] = var_s0->pos.f[0];
                     spD0.f[1] = var_s0->pos.f[1];
@@ -869,7 +869,7 @@ void sub_GAME_7F00324C(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, struct
     sub_GAME_7F001BD4(arg0, &center);
     sp2C = (StandTile *)arg0->stan;
 
-    if (walkTilesBetweenPoints_NoCallback(&sp2C, arg0->pos.f[0], arg0->pos.f[2], center.f[0], center.f[2]) == 0)
+    if (stanWalkLineNoCallback(&sp2C, arg0->pos.f[0], arg0->pos.f[2], center.f[0], center.f[2]) == 0)
     {
         sp2C = (StandTile *)arg0->stan;
         center.f[0] = arg0->pos.f[0];
@@ -893,7 +893,7 @@ void sub_GAME_7F00324C(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, struct
     arg3->f[2] = center.f[2] + (normal.f[2] * 50.0f);
 
 
-    walkTilesBetweenPoints_NoCallback(&sp4C, center.f[0], center.f[2], arg3->f[0], arg3->f[2]);
+    stanWalkLineNoCallback(&sp4C, center.f[0], center.f[2], arg3->f[0], arg3->f[2]);
 
     if (1);
 
@@ -904,7 +904,7 @@ void sub_GAME_7F00324C(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, struct
     arg4->f[1] = center.f[1];
     arg4->f[2] = center.f[2] - (normal.f[2] * 50.0f);
 
-    walkTilesBetweenPoints_NoCallback(&sp4C, center.f[0], center.f[2], arg4->f[0], arg4->f[2]);
+    stanWalkLineNoCallback(&sp4C, center.f[0], center.f[2], arg4->f[0], arg4->f[2]);
 
     if (1);
 
@@ -1003,7 +1003,7 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
             }
 
             sp16C = pad->stan;
-            if (walkTilesBetweenPoints_NoCallback(&sp16C, pad->pos.f[0], pad->pos.f[2], sp170.f[0], sp170.f[2]) != 0)
+            if (stanWalkLineNoCallback(&sp16C, pad->pos.f[0], pad->pos.f[2], sp170.f[0], sp170.f[2]) != 0)
             {
                 pad->stan = sp16C;
                 pad->pos.f[0] = sp170.f[0];
@@ -1071,7 +1071,7 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 
         if (!(door->flags2 & 1))
         {
-            if (walkTilesBetweenPoints_NoCallback(&sp114_stan, sp1B8.f[0], sp1B8.f[2], sp118.f[0], sp118.f[2]) != 0)
+            if (stanWalkLineNoCallback(&sp114_stan, sp1B8.f[0], sp1B8.f[2], sp118.f[0], sp118.f[2]) != 0)
             {
                 sp1C8_stan = sp114_stan;
             }
@@ -1363,7 +1363,7 @@ void proplvreset2(enum LEVELID stageId)
         
 #ifdef DEBUG
                 {
-                    s32 sret = init_pathtable_something(pad, pad->plink, &pad->stan);
+                    s32 sret = stanResolvePadTile(pad, pad->plink, &pad->stan);
                     if (sret == 0)
                     {
                         osSyncPrintf("pad number %d has no stan! (%s)\n", (s32)(pad - g_CurrentSetup.pads), pad->plink);
@@ -1374,7 +1374,7 @@ void proplvreset2(enum LEVELID stageId)
                     }
                 }
 #else
-                init_pathtable_something(pad, pad->plink, &pad->stan);
+                stanResolvePadTile(pad, pad->plink, &pad->stan);
 #endif
 
                 if (1);
@@ -1408,7 +1408,7 @@ void proplvreset2(enum LEVELID stageId)
 
 #ifdef DEBUG
                 {
-                    s32 sret = init_pathtable_something((struct PadRecord *) vol, vol->plink, &vol->stan);
+                    s32 sret = stanResolvePadTile((struct PadRecord *) vol, vol->plink, &vol->stan);
                     if (sret == 0)
                     {
                         osSyncPrintf("vol number %d has no stan! (%s)\n", (s32)(vol - g_CurrentSetup.boundpads), vol->plink);
@@ -1419,7 +1419,7 @@ void proplvreset2(enum LEVELID stageId)
                     }
                 }
 #else
-                init_pathtable_something((struct PadRecord *) vol, vol->plink, &vol->stan);
+                stanResolvePadTile((struct PadRecord *) vol, vol->plink, &vol->stan);
 #endif
 
                 if (1);

@@ -327,14 +327,14 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
                     sp40->pos.f[0] = arg0->pos.f[0];
                     sp40->pos.f[1] = stanGetPositionYValue(arg0->stan, arg0->pos.f[0], arg0->pos.f[2]) + 4.0f;
                     sp40->pos.f[2] = arg0->pos.f[2];
-                    sp40->room = getTileRoom(arg0->stan);
+                    sp40->room = stanGetTileRoom(arg0->stan);
                 }
                 else
                 {
                     sp40->pos.f[0] = target_pos->f[0];
                     sp40->pos.f[1] = stanGetPositionYValue(target_stan, target_pos->f[0], target_pos->f[2]) + 4.0f;
                     sp40->pos.f[2] = target_pos->f[2];
-                    sp40->room = getTileRoom(target_stan);
+                    sp40->room = stanGetTileRoom(target_stan);
                 }
             }
             else

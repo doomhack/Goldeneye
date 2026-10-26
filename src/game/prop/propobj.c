@@ -497,7 +497,7 @@ void set_color_shading_from_tile(PropRecord *prop, u8 col[4])
     s32 tmp2;
     s32 range;
 
-    copy_tile_RGB_as_24bit(prop->stan, prop->pos.x, prop->pos.z, col);
+    stanGetTileColour(prop->stan, prop->pos.x, prop->pos.z, col);
 
     tmp = (col[0] * 79 + col[1] * 156 + col[2] * 21) >> 8;
     col[3] = (255 - tmp) * 0.75f;
@@ -813,7 +813,7 @@ void sub_GAME_7F04088C(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix,
         }
     }
 
-    if (!(baseobj->flags2 & 1) && walkTilesBetweenPoints_NoCallback(&mStan, pos->f[0], pos->f[2], newPos.x, newPos.z))
+    if (!(baseobj->flags2 & 1) && stanWalkLineNoCallback(&mStan, pos->f[0], pos->f[2], newPos.x, newPos.z))
     {
         objChangeShading(baseobj, &newPos, &mtxcopy, mStan);
     }
@@ -864,7 +864,7 @@ void sub_GAME_7F040BA0(ObjectRecord *obj, coord3d *pos, Mtxf *arg2, StandTile *s
     posdiff.y = pos2->y - (sp6Cm_ptr[2][1] * spBC);
     posdiff.z = pos2->z - (sp6Cm_ptr[2][2] * spBC);
 
-    if ((!(((s32) obj->flags2) & 1)) && (walkTilesBetweenPoints_NoCallback(&stan, pos->x, pos->z, posdiff.x, posdiff.z) != 0))
+    if ((!(((s32) obj->flags2) & 1)) && (stanWalkLineNoCallback(&stan, pos->x, pos->z, posdiff.x, posdiff.z) != 0))
     {
         objChangeShading(obj, &posdiff, &matrix, stan);
     }
@@ -1204,13 +1204,13 @@ bool sub_GAME_7F041400(PropRecord *prop, coord3d *rayStart, coord3d *rayEnd, coo
             for (i = 0; i < numedges; i++)
             {
                 next = (i + 1) % numedges;
-                if (doSegmentsIntersect(rayStart->x, rayStart->z, rayEnd->x, rayEnd->z, polygon->points[i].x, polygon->points[i].y, polygon->points[next].x, polygon->points[next].y))
+                if (stanSegmentsIntersect(rayStart->x, rayStart->z, rayEnd->x, rayEnd->z, polygon->points[i].x, polygon->points[i].y, polygon->points[next].x, polygon->points[next].y))
                 {
                     edgeStart2d.x = polygon->points[i].x;
                     edgeStart2d.y = polygon->points[i].y;
                     edgeEnd2d.x = polygon->points[next].x;
                     edgeEnd2d.y = polygon->points[next].y;
-                    dist = calculateSegmentIntersectionFraction(&rayStart2d, &rayEnd2d, &edgeStart2d, &edgeEnd2d);
+                    dist = stanSegmentIntersectFrac(&rayStart2d, &rayEnd2d, &edgeStart2d, &edgeEnd2d);
 
                     if (dist < bestfrac)
                     {
@@ -1804,7 +1804,7 @@ after_bg_loop:
     {
         tile = prop->stan;
 
-        if ((walkTilesBetweenPoints_NoCallback(&tile, prop->pos.x, prop->pos.z, obj->runtime_pos.x, arg0->runtime_pos.z) == TRUE) && (tile != NULL))
+        if ((stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, obj->runtime_pos.x, arg0->runtime_pos.z) == TRUE) && (tile != NULL))
         {
             prop->stan = tile;
             prop->pos.x = arg0->runtime_pos.x;
@@ -1929,7 +1929,7 @@ s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *
         }
     }
 
-    getCollisionEdge_maybe(&edgeA, &edgeB);
+    stanGetCollisionEdge(&edgeA, &edgeB);
 
     arg3->x = edgeB.z - edgeA.z;
     arg3->y = 0.0f;
@@ -1974,7 +1974,7 @@ normaldone:
         dir2d.y = target.f[2] - prop->pos.z;
 
         new_var = &partialpos.z;
-        tmp = calculateRayToSegmentIntersectionNormalized(&rayinfo, &edgeStart, &edgeEnd, &dir2d);
+        tmp = stanRaySegmentFrac(&rayinfo, &edgeStart, &edgeEnd, &dir2d);
 
         stan = prop->stan;
 
@@ -3317,7 +3317,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
         }
 
         if ((parent->flags & PROPFLAG_00000008) == 0
-            && walkTilesBetweenPoints_NoCallback(&stan, parent->pos.f[0], parent->pos.f[2], pos.x, pos.z))
+            && stanWalkLineNoCallback(&stan, parent->pos.f[0], parent->pos.f[2], pos.x, pos.z))
         {
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
@@ -3823,8 +3823,8 @@ s32 chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius,
             temp_f0 = -temp_f0;
         }
 
-        temp_f26 = distBetweenPoints2d(polygon->points[i].f[0], polygon->points[i].f[1], px, pz);
-        temp_f30 = distBetweenPoints2d(temp_s0->f[0], temp_s0->f[1], px, pz);
+        temp_f26 = stanDist2d(polygon->points[i].f[0], polygon->points[i].f[1], px, pz);
+        temp_f30 = stanDist2d(temp_s0->f[0], temp_s0->f[1], px, pz);
 
         if ((temp_f0 < collision_radius)
             && ((temp_f26 < collision_radius)
@@ -3997,7 +3997,7 @@ s32 sub_GAME_7F044B38(ObjectRecord *obj)
     mtx4TransformVec(&mtx, modelpoint3, &point3);
 
     tile = prop->stan;
-    if (walkTilesBetweenPoints_NoCallback(&tile, prop->pos.x, prop->pos.z, point0.x, point0.z))
+    if (stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, point0.x, point0.z))
     {
         point0.y = stanGetPositionYValue(tile, point0.x, point0.z);
     }
@@ -4007,7 +4007,7 @@ s32 sub_GAME_7F044B38(ObjectRecord *obj)
     }
 
     tile = prop->stan;
-    if (walkTilesBetweenPoints_NoCallback(&tile, prop->pos.x, prop->pos.z, point1.x, point1.z))
+    if (stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, point1.x, point1.z))
     {
         point1.y = stanGetPositionYValue(tile, point1.x, point1.z);
     }
@@ -4017,7 +4017,7 @@ s32 sub_GAME_7F044B38(ObjectRecord *obj)
     }
 
     tile = prop->stan;
-    if (walkTilesBetweenPoints_NoCallback(&tile, prop->pos.x, prop->pos.z, point2.x, point2.z))
+    if (stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, point2.x, point2.z))
     {
         point2.y = stanGetPositionYValue(tile, point2.x, point2.z);
     }
@@ -4027,7 +4027,7 @@ s32 sub_GAME_7F044B38(ObjectRecord *obj)
     }
 
     tile = prop->stan;
-    if (walkTilesBetweenPoints_NoCallback(&tile, prop->pos.x, prop->pos.z, point3.x, point3.z))
+    if (stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, point3.x, point3.z))
     {
         point3.y = stanGetPositionYValue(tile, point3.x, point3.z);
     }
@@ -5713,7 +5713,7 @@ s32 objTick(struct PropRecord *prop)
 						vec400.f[0] = temp_v0_25[6] * poTruck->mtx.m[2][0];
 						vec400.f[2] = temp_v0_25[6] * poTruck->mtx.m[2][2];
 						currentTile = prop->stan;
-						if (((((walkTilesBetweenPoints_NoCallback(&currentTile, prop->pos.f[0], prop->pos.f[2], (prop->pos.f[0] + vec424.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec424.f[2]) + vec40C.f[2]) == 0) || (walkTilesBetweenPoints_NoCallback(&currentTile, (prop->pos.f[0] + vec424.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec424.f[2]) + vec40C.f[2], (prop->pos.f[0] + vec418.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec418.f[2]) + vec40C.f[2]) == 0)) || (walkTilesBetweenPoints_NoCallback(&currentTile, (prop->pos.f[0] + vec418.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec418.f[2]) + vec40C.f[2], (prop->pos.f[0] + vec418.f[0]) + vec400.f[0], (prop->pos.f[2] + vec418.f[2]) + vec400.f[2]) == 0)) || (walkTilesBetweenPoints_NoCallback(&currentTile, (prop->pos.f[0] + vec418.f[0]) + vec400.f[0], (prop->pos.f[2] + vec418.f[2]) + vec400.f[2], (prop->pos.f[0] + vec424.f[0]) + vec400.f[0], (prop->pos.f[2] + vec424.f[2]) + vec400.f[2]) == 0)) || (walkTilesBetweenPoints_NoCallback(&currentTile, (prop->pos.f[0] + vec424.f[0]) + vec400.f[0], (prop->pos.f[2] + vec424.f[2]) + vec400.f[2], (prop->pos.f[0] + vec424.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec424.f[2]) + vec40C.f[2]) == 0))
+						if (((((stanWalkLineNoCallback(&currentTile, prop->pos.f[0], prop->pos.f[2], (prop->pos.f[0] + vec424.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec424.f[2]) + vec40C.f[2]) == 0) || (stanWalkLineNoCallback(&currentTile, (prop->pos.f[0] + vec424.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec424.f[2]) + vec40C.f[2], (prop->pos.f[0] + vec418.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec418.f[2]) + vec40C.f[2]) == 0)) || (stanWalkLineNoCallback(&currentTile, (prop->pos.f[0] + vec418.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec418.f[2]) + vec40C.f[2], (prop->pos.f[0] + vec418.f[0]) + vec400.f[0], (prop->pos.f[2] + vec418.f[2]) + vec400.f[2]) == 0)) || (stanWalkLineNoCallback(&currentTile, (prop->pos.f[0] + vec418.f[0]) + vec400.f[0], (prop->pos.f[2] + vec418.f[2]) + vec400.f[2], (prop->pos.f[0] + vec424.f[0]) + vec400.f[0], (prop->pos.f[2] + vec424.f[2]) + vec400.f[2]) == 0)) || (stanWalkLineNoCallback(&currentTile, (prop->pos.f[0] + vec424.f[0]) + vec400.f[0], (prop->pos.f[2] + vec424.f[2]) + vec400.f[2], (prop->pos.f[0] + vec424.f[0]) + vec40C.f[0], (prop->pos.f[2] + vec424.f[2]) + vec40C.f[2]) == 0))
 						{
 							var_s2_5 = 0;
 						}
@@ -6444,7 +6444,7 @@ s32 objTick(struct PropRecord *prop)
 						sp12C.f[2] = temp_v1_11->f[2];
 						mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), temp_s2_7, &spB8);
 						mtx4TransformVecInPlace(&spB8, &sp12C);
-						if (walkTilesBetweenPoints_NoCallback(&sp108, prop->pos.f[0], prop->pos.f[2], sp12C.f[0], sp12C.f[2]) == 0)
+						if (stanWalkLineNoCallback(&sp108, prop->pos.f[0], prop->pos.f[2], sp12C.f[0], sp12C.f[2]) == 0)
 						{
 							sp12C.f[0] = prop->pos.f[0];
 							sp12C.f[1] = prop->pos.f[1];
@@ -8416,7 +8416,7 @@ void objExplode(ObjectRecord *obj, coord3d *target_pos, s32 playernum)
 
         if (stan != NULL)
         {
-            if ((!(tailprop->flags & PROPFLAG_00000008)) && walkTilesBetweenPoints_NoCallback(&stan, tailprop->pos.x, tailprop->pos.z, target_pos->x, target_pos->z))
+            if ((!(tailprop->flags & PROPFLAG_00000008)) && stanWalkLineNoCallback(&stan, tailprop->pos.x, tailprop->pos.z, target_pos->x, target_pos->z))
             {
                 explosionCreate(prop, target_pos, stan, explosion_type, (obj->flags & 0xe) == 0, playernum, tailprop->rooms, 0);
             }
@@ -8464,7 +8464,7 @@ void objExplode(ObjectRecord *obj, coord3d *target_pos, s32 playernum)
 
         if (stan != NULL)
         {
-            if ((!(tailprop->flags & PROPFLAG_00000008)) && walkTilesBetweenPoints_NoCallback(&stan, tailprop->pos.x, tailprop->pos.z, target_pos->x, target_pos->z))
+            if ((!(tailprop->flags & PROPFLAG_00000008)) && stanWalkLineNoCallback(&stan, tailprop->pos.x, tailprop->pos.z, target_pos->x, target_pos->z))
             {
                 explosionCreate(prop, target_pos, stan, 0x10, (obj->flags & (PROPFLAG_ONSCREEN | PROPFLAG_ENABLED | PROPFLAG_00000008)) == 0, playernum, tailprop->rooms, 0);
             }
@@ -9836,7 +9836,7 @@ bool objTestForInteract(PropRecord* prop)
 
                 if (anglediff <= sp30)
                 {
-                    if (!(obj->flags2 & PROPFLAG2_INTERACTCHECKLOS) || (walkTilesBetweenPoints_NoCallback(&stan, player->pos.x, player->pos.z, prop->pos.x, prop->pos.z) != 0))
+                    if (!(obj->flags2 & PROPFLAG2_INTERACTCHECKLOS) || (stanWalkLineNoCallback(&stan, player->pos.x, player->pos.z, prop->pos.x, prop->pos.z) != 0))
                     {
                         g_InteractProp = prop;
                     }
