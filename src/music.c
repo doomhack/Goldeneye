@@ -600,14 +600,8 @@ extern u32 _instrumentstblSegmentRomStart;
 extern u32 _instrumentsctlSegmentRomStart;
 extern u32 _musicsampletblSegmentRomStart;
 
-#ifdef __sgi
-/* inflate uses this as its 0x2100 byte huffman table area, so it overruns into
- * the caller's stack frame. That happens to be harmless with IDO's frame layout. */
-#    define MUSIC_HLIST &hlist
-#else
 static u8 sMusicHuftBuffer[0x2100];
 #    define MUSIC_HLIST ((struct huft *)sMusicHuftBuffer)
-#endif
 
 /**
  * 75F0	700069F0
@@ -805,9 +799,6 @@ void musicTrack1Play(s32 track)
     u8 *temp_a0;
     void *romAddress;
     u32 t3;
-#ifdef __sgi
-    struct huft hlist;
-#endif
 
     if (g_sndBootswitchSound)
     {
@@ -996,9 +987,6 @@ void musicTrack2Play(s32 track)
     u8 *temp_a0;
     void *romAddress;
     u32 t3;
-#ifdef __sgi
-    struct huft hlist;
-#endif
 
     if (g_sndBootswitchSound)
     {
@@ -1187,9 +1175,6 @@ void musicTrack3Play(s32 track)
     u8 *temp_a0;
     void *romAddress;
     u32 t3;
-#ifdef __sgi
-    struct huft hlist;
-#endif
 
     if (g_sndBootswitchSound)
     {

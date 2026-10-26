@@ -17,7 +17,7 @@ $(BUILD_DIR)/$(OBSEG_DIR)/brief/%.elf: $(BUILD_DIR)/$(OBSEG_DIR)/brief/%.o
 
 # Build .o from .c
 $(BUILD_DIR)/$(OBSEG_DIR)/brief/%.o: $(OBSEG_DIR)/brief/%.c
-	$(CC) -c $(CFLAGS) -o $@ -O2 $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build BRIEF_RZ_NAMES from BRIEFNAMELIST
 BRIEF_RZ_NAMES = $(foreach lvl,$(BRIEFNAMELIST),Ubrief$(lvl)Z)

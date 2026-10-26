@@ -2,7 +2,7 @@
 #include <game/stan.h>
 
 // forward declarations
-StandTile tile_0;
+extern StandTile tile_0;
 
 StandFileHeader Tbg_cat_all_p_stanZ = {
     NULL,

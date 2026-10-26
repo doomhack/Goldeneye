@@ -17,12 +17,6 @@ if [ "$DOALL" == "1" ] || [ $1 == 'files' ]; then
     do
         echo "removing $name"
         rm -f $name
-    done < filediff.j.csv
-
-    while IFS=, read -r offset size name compressed extract
-    do
-        echo "removing $name"
-        rm -f $name
     done < filediff.e.csv
 fi
 

@@ -534,7 +534,7 @@ _AI_CMD_POLYMORPH(\
                    DEFER(RPAREN)() DEFER(LPAREN)() AI_ERR_NO_THIS   DEFER(RPAREN)() DEFER(LPAREN)() DEFER(LPAREN)() \
                   SetReturnAiList(THIS) ,\
                   CALL,\
-                  (CHR_SELF, (!isBGAIListID(AI_LIST_ID) && isSubroutine(AI_LIST_ID) ? AI_LIST_ID : AI_ERR_NOTSUB)) DEFER2(RPAREN)() DEFER2(RPAREN)() DEFER2(COMMA)(),\
+                  (CHR_SELF, (!isBGAIListID(AI_LIST_ID) && isSubroutine(AI_LIST_ID) ? AI_LIST_ID : AI_ERR_NOTSUB)) DEFER2(RPAREN)() DEFER2(RPAREN)(),\
                   (AI_LIST_ID)\
 )
 

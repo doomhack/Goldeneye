@@ -236,7 +236,7 @@ Gfx *explosionRenderPart(struct ExplosionPart *arg0, Gfx *gdl, struct coord3d *c
  * Named same as Perfect Dark.
  * NTSC 0x7F09C250
 */
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
 s32
 #else
 void
@@ -273,7 +273,7 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
     {
         sp30 = chrpropAllocate();
 
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
         if ((explosion_type != 0x10) && (explosion_type != 1))
         {
             g_NumExplosionEntries = 6;
@@ -375,7 +375,7 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
         }
     }
 
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
     return sp40 != 0;
 #endif
 }

@@ -181,26 +181,37 @@ u8 m_IdleAnimations[] = {
 
     Label(lblDone)
 #else
-    SWITCH(SetNewRandom(),
-        IFRandomGreaterThan, 250,
-            PlayAnimation(ANIM_sneeze          , 0, 137, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-        IFRandomGreaterThan,200,
-            PlayAnimation(ANIM_adjusting_crotch, 0,  56, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-        IFRandomGreaterThan,150,
-            PlayAnimation(ANIM_scratching_butt , 0, 123, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-        IFRandomGreaterThan,100,
-            PlayAnimation(ANIM_scratching_leg  , 0, 183, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-        IFRandomGreaterThan,50,
-            PlayAnimation(ANIM_swatting_flies  , 0, 294, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-        /*DEFAULT*/,,
-            PlayAnimation(ANIM_yawning         , 0, 193, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-    )
+    /* what SWITCH() expanded to: random 0-50 yawn, 51-100 swat flies, ... 251+ sneeze */
+    SetNewRandom()
+        IFRandomGreaterThan(50, lblNext)
+        PlayAnimation(ANIM_yawning         , 0, 193, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblNext)
+        IFRandomGreaterThan(100, lblNext)
+        PlayAnimation(ANIM_swatting_flies  , 0, 294, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblNext)
+        IFRandomGreaterThan(150, lblNext)
+        PlayAnimation(ANIM_scratching_leg  , 0, 183, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblNext)
+        IFRandomGreaterThan(200, lblNext)
+        PlayAnimation(ANIM_scratching_butt , 0, 123, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblNext)
+        IFRandomGreaterThan(250, lblNext)
+        PlayAnimation(ANIM_adjusting_crotch, 0,  56, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblNext)
+        PlayAnimation(ANIM_sneeze          , 0, 137, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblDone)
 #endif
     Return()
     EndList()
@@ -234,20 +245,26 @@ u8 m_BashKeyboard[] = {
         GotoNext(lblDone) /* jump to end, we're done */
     Label(lblDone)
         #endif
-    SWITCH(SetNewRandom(),
-        IFRandomGreaterThan,180,
-            PlayAnimation(ANIM_keyboard_right_hand_tapping, 0, 89, 0x00, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-        IFRandomGreaterThan,120,
-            PlayAnimation(ANIM_keyboard_left_hand, 0, 79, 0x00, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-        IFRandomGreaterThan,60,
-            PlayAnimation(ANIM_keyboard_right_hand2, 0, 74, 0x00, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-        /*DEFAULT*/,,
-            PlayAnimation(ANIM_keyboard_right_hand1, 0, 69, 0x00, ANIM_DEFAULT_INTERPOLATION)
-            BREAK,
-    )
+    SetNewRandom()
+        IFRandomGreaterThan(60, lblNext)
+        PlayAnimation(ANIM_keyboard_right_hand1, 0, 69, 0x00, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblNext)
+        IFRandomGreaterThan(120, lblNext)
+        PlayAnimation(ANIM_keyboard_right_hand2, 0, 74, 0x00, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblNext)
+        IFRandomGreaterThan(180, lblNext)
+        PlayAnimation(ANIM_keyboard_left_hand, 0, 79, 0x00, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblNext)
+        PlayAnimation(ANIM_keyboard_right_hand_tapping, 0, 89, 0x00, ANIM_DEFAULT_INTERPOLATION)
+        GotoNext(lblDone)
+
+    Label(lblDone)
 
     Return()
     EndList()};
@@ -621,24 +638,38 @@ u8 m_RunToBondPersistent[] = {
 
         Label(lblDone)
         #else
-            SWITCH(SetNewRandom(),
-                IFRandomGreaterThan,200,
-                    TRYFireAtBondKneeling,
-                IFRandomGreaterThan, 150,
-                    TRYFireAtBond,
-                IFRandomGreaterThan, 100,
-                    TRYFiringRun,
-                IFRandomGreaterThan,80,
-                    TRYFiringWalk,
-                IFRandomGreaterThan,60,
-                    TRYFiringRoll,
-                IFRandomGreaterThan,50,
-                    TRYFiringRoll,
-                IFRandomGreaterThan,10,
-                    TRYSidestepping,
-                /*DEFAULT*/,,
-                    TRYThrowingGrenade,
-            )/*lblDone*/
+            SetNewRandom()
+            IFRandomGreaterThan(10, lblNext)
+            TRYThrowingGrenade(lblDone)
+
+        Label(lblNext)
+            IFRandomGreaterThan(50, lblNext)
+            TRYSidestepping(lblDone)
+
+        Label(lblNext)
+            IFRandomGreaterThan(60, lblNext)
+            TRYFiringRoll(lblDone)
+
+        Label(lblNext)
+            IFRandomGreaterThan(80, lblNext)
+            TRYFiringRoll(lblDone)
+
+        Label(lblNext)
+            IFRandomGreaterThan(100, lblNext)
+            TRYFiringWalk(lblDone)
+
+        Label(lblNext)
+            IFRandomGreaterThan(150, lblNext)
+            TRYFiringRun(lblDone)
+
+        Label(lblNext)
+            IFRandomGreaterThan(200, lblNext)
+            TRYFireAtBond(lblDone)
+
+        Label(lblNext)
+            TRYFireAtBondKneeling(lblDone)
+
+        Label(lblDone)
         #endif
             IFICouldSeeBond(lblNext)
             GotoNext(lblRunning)

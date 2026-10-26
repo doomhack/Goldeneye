@@ -77,20 +77,15 @@ typedef enum prefix                                                             
 #define CREATE_STRINGS1(prefix, name) IF_VA(DEFINED(DEBUG))(IF_ELSE(prefix)              \
 (#prefix "_" #name)(#name)COMMA())
 
-#if defined(__sgi) || defined(__GNUC__)
 /**
  * Auto Generate Bitflag enums. (up to 32bit) - Unfortunatly we loose intellisense comments
  * @param NAME: Name of bitflag
  * @param a-af: bitfield names (will be appended to bitflag name for every field)
  * @return Enum of bitflags
  */
-#ifdef __sgi
-#    define BITFLAG _BITFLAG32
-#else
 /* GCC needs every parameter supplied, so pad the list with empty arguments */
 #    define BITFLAG(NAME, ...) _BITFLAG_PAD(NAME, __VA_ARGS__,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,)
 #    define _BITFLAG_PAD(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af,...) _BITFLAG32(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af)
-#endif
 #define _BITFLAG32(NAME,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z,aa,ab,ac,ad,ae,af)\
 typedef enum NAME \
 { /*\
@@ -128,9 +123,6 @@ typedef enum NAME \
   */IF(NOT(IS_EMPTY(ae)))(NAME ## _ ## ae = 1 << 30) EVAL1(COMMA_IF_I(NOT(IS_EMPTY(af))))/*\
   */IF(NOT(IS_EMPTY(af)))(NAME ## _ ## af = 1 << 31)                   /*\
 */} NAME;
-#else
-#    define BITFLAG(...)
-#endif
 
 #pragma endregion
 
@@ -734,17 +726,10 @@ AI_CMD_SIGNED_ENUM = -1,
 #ifndef _SYNHILITE
 
 // makes enum list
-#    ifdef __sgi
-#        define _AI_CMD(C) CAT(AI_, CMDNAME),
-#        define _AI_DEBUG(C) CAT(AI_, CMDNAME),
-#        define _AI_CMD_POLYMORPH(CMD, A, P, Q, D)
-#        define DEFINE(x)
-#    else
 #        define _AI_CMD(...)   CAT(AI_, CMDNAME),
 #        define _AI_DEBUG(...) CAT(AI_, CMDNAME),
 #        define _AI_CMD_POLYMORPH(...)
 #        define DEFINE(...)
-#    endif
 
 
 #    include "aicommands.def"
@@ -1892,7 +1877,6 @@ typedef enum MENU
     MENU_NO_CONTROLLERS,
     MENU_SWITCH_SCREENS,
     MENU_DISPLAY_CAST,
-    MENU_SPECTRUM_EMU,
     MENU_COOP_SETUP,
     MENU_MAX
 } MENU;
@@ -4821,11 +4805,7 @@ typedef enum PROJECTILES
     )                                                      \
     };
 
-#ifdef __sgi
-#define MODELSKELETON(NAME, NUMJOINTS, SKELSIZE) ModelSkeleton SKELETON( ## NAME ## ) = {NUMJOINTS, 0, JOINTLIST( ## NAME ## ), SKELSIZE, 0};
-#else
 #define MODELSKELETON(NAME, NUMJOINTS, SKELSIZE) ModelSkeleton SKELETON(NAME) = {NUMJOINTS, 0, JOINTLIST(NAME), SKELSIZE, 0};
-#endif
 
 
 /**

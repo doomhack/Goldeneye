@@ -4049,7 +4049,7 @@ int main(int argc, char *argv[])
 
 #pragma endregion // foreach item in setupheader
 
-        printf("/*\n* This file was automatically generated from %s\n*\n* $Date: %s*/\n\n#include <bondtypes.h>\n#include <bondaicommands.h>\n\n// forward declarations\nwaypoint       pathwaypoints[];\nwaygroup       pathsets[];\ns32            intro[];\ns32            propDefs[];\nPathRecord     patrolpaths[];\nAIListRecord   ailists[];\nPadRecord      pads[];\nBoundPadRecord vols[];\nchar          *NAVPADs[];\nchar          *NAVnames[];\n\nstagesetup %s = {\n    &pathwaypoints,\n    &pathsets,\n    &intro,\n    &propDefs,\n    &patrolpaths,\n    &ailists,\n    &pads,\n    &vols,\n    &NAVPADs,\n    &NAVnames\n};\n\n", fname, ctime(&current_time), fname);
+        printf("/*\n* This file was automatically generated from %s\n*\n* $Date: %s*/\n\n#include <bondtypes.h>\n#include <bondaicommands.h>\n\n// forward declarations\nextern waypoint       pathwaypoints[];\nextern waygroup       pathsets[];\nextern s32            intro[];\nextern s32            propDefs[];\nextern PathRecord     patrolpaths[];\nextern AIListRecord   ailists[];\nextern PadRecord      pads[];\nextern BoundPadRecord vols[];\nextern char          *NAVPADs[];\nextern char          *NAVnames[];\n\nstagesetup %s = {\n    &pathwaypoints,\n    &pathsets,\n    &intro,\n    &propDefs,\n    &patrolpaths,\n    &ailists,\n    &pads,\n    &vols,\n    &NAVPADs,\n    &NAVnames\n};\n\n", fname, ctime(&current_time), fname);
 
         // retain file-order
         for (lastAddr = g_ptrStageSetupFile; lastAddr < g_ptrStageSetupFile + fsize; lastAddr += 4)

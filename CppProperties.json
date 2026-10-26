@@ -26,10 +26,8 @@
             "LANG_US",
             "REFRESH_NTSC",
             "LEFTOVERDEBUG",
-            "LEFTOVERSPECTRUM",
-            "BUGFIX_R0",
-            "BYTEMATCH"
-            /* IDO 5.3 Defs below */,
+            "BUGFIX_R0"
+            /* MIPS target defs below */,
             "_MIPS_FPSET=16",
             "_MIPS_ISA=2",
             "_ABIO32=1",
@@ -86,10 +84,8 @@
             "LANG_US",
             "REFRESH_NTSC",
             "LEFTOVERDEBUG",
-            "LEFTOVERSPECTRUM",
-            "BUGFIX_R0",
-            "BYTEMATCH"
-            /* IDO 5.3 Defs below */,
+            "BUGFIX_R0"
+            /* MIPS target defs below */,
             "_MIPS_FPSET=16",
             "_MIPS_ISA=2",
             "_ABIO32=1",
@@ -144,7 +140,7 @@
             "TRI4_Ext",
             "VERSION_US",
             "TARGET_N64"
-            /* IDO 5.3 Defs below */,
+            /* MIPS target defs below */,
             "_MIPS_FPSET=16",
             "_MIPS_ISA=2",
             "_ABIO32=1",
@@ -198,7 +194,7 @@
             "TRI4_Ext",
             "VERSION_US",
             "TARGET_N64"
-            /* IDO 5.3 Defs below */,
+            /* MIPS target defs below */,
             "_MIPS_FPSET=16",
             "_MIPS_ISA=2",
             "_ABIO32=1",

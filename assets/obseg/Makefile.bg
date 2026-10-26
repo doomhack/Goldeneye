@@ -20,10 +20,10 @@ $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.elf: $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.o
 
 # Build .o from .c (country-specific and generic)
 $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.o: $(OBSEG_DIR)/bg/%.c
-	$(CC) -c $(CFLAGS) -o $@ -O2 $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.o: $(OBSEG_DIR)/bg/$(COUNTRYCODE)/%.c
-	$(CC) -c $(CFLAGS) -o $@ -O2 $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 # List of segment names (from LEVELNAMELIST)
 BG_SEG_NAMES = $(foreach lvl,$(LEVELNAMELIST),bg_$(lvl)_all_p)

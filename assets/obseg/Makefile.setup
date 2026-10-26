@@ -26,10 +26,10 @@ $(BUILD_DIR)/$(OBSEG_DIR)/setup/%.elf: $(BUILD_DIR)/$(OBSEG_DIR)/setup/%.o
 
 # Build .o from .c (country-specific and generic)
 $(BUILD_DIR)/$(OBSEG_DIR)/setup/%.o: $(OBSEG_DIR)/setup/$(COUNTRYCODE)/%.c
-	$(CC) -c $(CFLAGS) -o $@ -O2 $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR)/$(OBSEG_DIR)/setup/%.o: $(OBSEG_DIR)/setup/%.c
-	$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) tools/include-stdin.c -o $@ $(OPTIMIZATION)
+	$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) -I $(dir $<) -x c -o $@ -
 
 # Generate all file targets
 SETUP_O_FILES := $(foreach name,$(SETUP_NAMES),$(BUILD_DIR)/$(OBSEG_DIR)/setup/$(name).o)

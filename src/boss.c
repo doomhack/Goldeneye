@@ -582,21 +582,7 @@ void bossMainloop(void)
 
                             gdl = firstGdl = dynGetMasterDisplayList();
 
-#ifdef DEBUGMENU
-                            //ported from pd beta, official way to open debug menu
-			                // If menu is open (?) or player has pressed C down + C up
-			                if (g_BossIsDebugMenuOpen || joyGetButtons(0, U_CBUTTONS | D_CBUTTONS) == (U_CBUTTONS | D_CBUTTONS)) {
-			                	joyStickXPos = joyGetStickX(0);
-			                	joyStickYPos = joyGetStickY(0);
-			                	joyButtons = joyGetButtons(0, ANY_BUTTON);
-			                	g_BossIsDebugMenuOpen = debug_menu_processor(joyStickXPos, joyStickYPos, joyButtons, joyGetButtonsPressedThisFrame(0, ANY_BUTTON));
-			                } else if (joyGetButtons(0, START_BUTTON) == 0) {
-                                g_DebugMode = g_DebugHighlightedOption;
-			                } else
-#endif
-#ifndef DEBUGMENU
                             if (g_BossIsDebugMenuOpen)
-#endif
                             {
 			                	joyStickXPos = joyGetStickX(0);
 			                	joyStickYPos = joyGetStickY(0);

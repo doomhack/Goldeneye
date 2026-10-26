@@ -868,7 +868,7 @@ ModelHitEntry *sub_GAME_7F06BB28(ModelHitEntry *modelhit)
 }
 
 
-#if defined(VERSION_US) || defined(VERSION_JP)
+#if defined(VERSION_US)
 void drawjointlist(ModelRenderData *data, ModelHitEntry *entry)
 {
     ModelNode *root;

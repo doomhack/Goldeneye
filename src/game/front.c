@@ -27,7 +27,6 @@
 #include "math_floor.h"
 #include "objective_status.h"
 #include "player.h"
-#include "spectrum.h"
 #include "textrelated.h"
 #include "blood_animation.h"
 #include "game/othermodemicrocode.h"
@@ -953,7 +952,6 @@ Gfx *constructor_menu15_cheat(Gfx *DL);
 Gfx *constructor_menu16_nocontrollers(Gfx *DL);
 Gfx *constructor_menu17_switchscreens(Gfx *DL);
 Gfx *constructor_menu18_displaycast(Gfx *DL);
-Gfx *constructor_menu19_spectrum(Gfx *DL);
 void disable_all_switches(Model *arg0);
 void set_item_visibility_in_objinstance(Model* objinstance, s32 item, s32 mode);
 void set_cursor_to_stage_solo(LEVEL_SOLO_SEQUENCE level);
@@ -1512,12 +1510,8 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
     
     DL = clear_framebuffer_black(DL);
     
-#ifdef __sgi
-    matrix_4x4_set_lookat_target(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, legal_text_ptr->v_pos * 0.0f);
-#else
     /* the original reads through legal_text_ptr before it is set; the result is always 0 */
     matrix_4x4_set_lookat_target(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-#endif
     
     renderdata.basemtx = &lookatmtx;
     renderdata.mtxlist = (Mtxf *) dynAllocate(logoinst->obj->numMatrices << 6);
@@ -1545,11 +1539,7 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
     DL = microcode_constructor(DL);
     
     legal_text_ptr = legalpage_text_array;
-#ifdef __sgi
-    legal_text_end = (struct legal_screen_text *)&legalscreen_MRD;
-#else
     legal_text_end = &legalpage_text_array[ARRAYCOUNT(legalpage_text_array)];
-#endif
     
     do
     {
@@ -3647,7 +3637,7 @@ void interface_menu07_missionsel(void)
     {
         frontChangeMenu(MENU_DIFFICULTY, 0);
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
         if (j_text_trigger != 0)
         {
             set_cursor_pos_difficulty(0);
@@ -3758,9 +3748,7 @@ Gfx *constructor_menu07_missionsel(Gfx *DL)
 
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
-#ifndef __sgi
     return DL;
-#endif
 }
 
 
@@ -6239,7 +6227,7 @@ void interface_menu11_mpcontrols(void)
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
 
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
             if (joyGetControllerCount() != 4)
             {
                 if (controlstyle_player[PLAYER_1] >= CONTROLLER_CONFIG_PLENTY)
@@ -8141,9 +8129,7 @@ tabs:
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
-#ifndef __sgi
     return DL;
-#endif
 }
 
 
@@ -9066,105 +9052,9 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
 }
 
 
-//********************************************************************************************************
-//SPECTRUM EMULATOR
-//********************************************************************************************************
-void init_menu19_spectrum(void)
-{
-    #if defined(LEFTOVERSPECTRUM)
-    SPECTRUMROMS rom = ROM_SABRE;
-
-    if (!joyGetButtons(2, L_CBUTTONS))
-    {
-        if (joyGetButtons(2, R_CBUTTONS))
-        {
-            rom = ROM_ATIC;
-        }
-        else if (joyGetButtons(2, U_CBUTTONS))
-        {
-            rom = ROM_JETPAC;
-        }
-        else if (joyGetButtons(2, D_CBUTTONS))
-        {
-            rom = ROM_JETMAN;
-        }
-        else if (joyGetButtons(2, L_JPAD))
-        {
-            rom = ROM_ALIEN8;
-        }
-        else if (joyGetButtons(2, R_JPAD))
-        {
-            rom = ROM_GUNFRIGHT;
-        }
-        else if (joyGetButtons(2, U_JPAD))
-        {
-            rom = ROM_UNDER;
-        }
-        else
-        {
-            rom = ROM_SABRE;
-            if (joyGetButtons(2, D_JPAD))
-            {
-                rom = ROM_KNIGHTLORE;
-            }
-        }
-    }
-    init_spectrum_game(rom);
-    #endif
-}
-
-
-void update_menu19_spectrum(void) 
-{
-    return;
-}
-
-
-void interface_menu19_spectrum(void)
-{
-    #if defined(LEFTOVERSPECTRUM)
-    viSetFovY(FOV_Y_F);
-    viSetAspect(ASPECT_RATIO_SD);
-    viSetZRange(100.0f, 10000.0f);
-    viSetUseZBuf(0);
-    run_spectrum_game();
-    #endif
-}
-
-
-#if !defined(LEFTOVERSPECTRUM)
-Gfx* constructor_menu19_spectrum(Gfx* DL)
-{
-    return DL;
-}
-#else
-// Address 0x7F01A4E0 NTSC
-Gfx * constructor_menu19_spectrum(Gfx * DL)
-{
-    DL = clear_framebuffer_black(DL);
-
-    gDPSetCycleType(DL++, G_CYC_1CYCLE);
-    gDPSetRenderMode(DL++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);
-    gSPClearGeometryMode(DL++, G_SHADE | G_SHADING_SMOOTH);
-    gDPSetCombineMode(DL++, G_CC_DECALRGB, G_CC_DECALRGB);
-    gDPSetTextureFilter(DL++, G_TF_POINT);
-    gDPSetTextureImage(DL++, G_IM_FMT_CI, G_IM_SIZ_16b, 1, color_palette_entries_50_percent);
-    gDPSetTile(DL++, G_IM_FMT_RGBA, G_IM_SIZ_4b, 1, 0x100, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-    gDPLoadSync(DL++);
-    gDPLoadTLUTCmd2(DL++, G_TX_LOADTILE, 7);
-    gDPPipeSync(DL++);
-    gDPSetTextureLUT(DL++, G_TT_RGBA16);
-
-    DL = spectrum_draw_screen(DL);
-
-    return DL;
-}
-#endif
-
-
 void frontChangeMenu(MENU menu, s32 reload)
 {
-    if ((menu == MENU_RUN_STAGE) || (menu == MENU_SPECTRUM_EMU))
+    if (menu == MENU_RUN_STAGE)
     {
         is_emulating_spectrum = TRUE;
     }
@@ -9271,7 +9161,6 @@ void menu_init(void)
             case MENU_CHEAT:                  update_menu15_cheat();                break;
             case MENU_NO_CONTROLLERS:         update_menu16_nocontrollers();        break;
             case MENU_DISPLAY_CAST:           update_menu18_displaycast();          break;
-            case MENU_SPECTRUM_EMU:           update_menu19_spectrum();             break;
             case MENU_COOP_SETUP:             update_menu1A_coopsetup();            break;
         }
 
@@ -9312,7 +9201,6 @@ void menu_init(void)
             case MENU_CHEAT:                  init_menu15_cheat();                  break;
             case MENU_NO_CONTROLLERS:         init_menu16_nocontroller();           break;
             case MENU_DISPLAY_CAST:           init_menu18_displaycast();            break;
-            case MENU_SPECTRUM_EMU:           init_menu19_spectrum();               break;
             case MENU_COOP_SETUP:             init_menu1A_coopsetup();              break;
         }
     }
@@ -9342,7 +9230,6 @@ void menu_init(void)
         case MENU_CHEAT:                  interface_menu15_cheat();                 break;
         case MENU_NO_CONTROLLERS:         interface_menu16_nocontrollers();         break;
         case MENU_DISPLAY_CAST:           interface_menu18_displaycast();           break;
-        case MENU_SPECTRUM_EMU:           interface_menu19_spectrum();              break;
         case MENU_COOP_SETUP:             interface_menu1A_coopsetup();             break;
         case MENU_RUN_STAGE:
             if (interface_menu0B_runstage())
@@ -9444,9 +9331,6 @@ Gfx * menu_jump_constructor_handler(Gfx *DL)
             break;
         case MENU_DISPLAY_CAST:
             DL = constructor_menu18_displaycast(DL);
-            break;
-        case MENU_SPECTRUM_EMU:
-            DL = constructor_menu19_spectrum(DL);
             break;
         case MENU_COOP_SETUP:
             DL = constructor_menu1A_coopsetup(DL);

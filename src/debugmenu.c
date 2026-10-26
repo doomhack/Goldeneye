@@ -415,11 +415,7 @@ Gfx *debmenuDraw(Gfx *gdl)
 						appliedpaletteindex = paletteindex;
 					}
 
-#ifndef DEBUGMENU
                     if ((randomGetNext() & 0xFF) < g_DebugMenuPercentage )
-#else
-                    if(1)
-#endif
                     {
 				    	if (dynGetFreeGfx(gdl) >= 1024)
                         {

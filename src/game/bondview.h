@@ -444,7 +444,7 @@ struct player
   /* 0x00ec */ f32 apparenthealth; // canonical name
   /* 0x00f0 */ f32 apparentarmour; // canonical name
 
-#if defined(VERSION_JP) || defined (VERSION_EU)
+#if defined (VERSION_EU)
 
     /*
     * When a non-negative integer:
@@ -2685,7 +2685,7 @@ extern vec3d g_ForceBondMoveOffset;
 extern s32 g_CoopForceMovePlayer;
 extern s32 mission_timer;
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
 extern f32 watch_time_0;
 #else
 extern s32 watch_time_0;

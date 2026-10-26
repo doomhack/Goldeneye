@@ -242,13 +242,9 @@ typedef union
             f32 f[3];
         };
     } coord3d;
-#ifdef __sgi
-#    define New_Coord3d _New_Coord3d3
-#else
 /* GCC needs every parameter supplied, so pad the list with empty arguments */
 #    define New_Coord3d(...) _New_Coord3d_PAD(__VA_ARGS__, , , )
 #    define _New_Coord3d_PAD(x, y, z, ...) _New_Coord3d3(x, y, z)
-#endif
 #define _New_Coord3d3(x, y, z)            \
     {                                   \
         IF_ELSE(IS_EMPTY(x))            \
@@ -257,13 +253,9 @@ typedef union
             IF_ELSE(IS_EMPTY(z))(0)(z)  \
     }
     typedef coord3d vec3d; //canononical name
-#ifdef __sgi
-#    define New_Vector _New_Vector3
-#else
 /* GCC needs every parameter supplied, so pad the list with empty arguments */
 #    define New_Vector(...) _New_Vector_PAD(__VA_ARGS__, , , )
 #    define _New_Vector_PAD(x, y, z, ...) _New_Vector3(x, y, z)
-#endif
 #define _New_Vector3(x, y, z)        \
     {                              \
         IF_ELSE(IS_EMPTY(x))(0)(x),\
@@ -515,10 +507,8 @@ typedef union
         s32 count;          /* 0x04 */
         s32 bufMax;         /* 0x08 */
         s32 nearEdgeCount;  /* 0x0c */
-#ifndef __sgi
         /* stanTileDistanceRelated() clears 0x40 bytes; IDO's stack layout hides the overrun, GCC's does not */
         s32 unk10[12];      /* 0x10 */
-#endif
     };
 
     typedef struct StandFileFooter

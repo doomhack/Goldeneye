@@ -142,18 +142,5 @@ char *LlenE[] = {
   0,
   0
  #endif
- #if defined(LANG_JP)
-  "Executive Producer\n",
-  "Hiroshi Yamauchi\n",
-  "Nintendo Producer\n",
-  "Kenji Miki\n",
-  "NCL Staff\n",
-  "Eiji Onozuka\n",
-  "Masashi Goto\n",
-  "NCL Super Mario Club\n",
-  "Special Thanks to\n",
-  "NCL\n",
-  "JAMES BOND WILL RETURN\n",
- #endif
 
 };

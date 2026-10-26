@@ -22,9 +22,7 @@ $(BUILD_DIR)/$(OBSEG_DIR)/prop/P%Z.elf: $(BUILD_DIR)/$(OBSEG_DIR)/prop/%/Model.o
 # If Model.c doesn't exist but PnameZ.bin does, convert it first
 $(BUILD_DIR)/$(OBSEG_DIR)/prop/%/Model.o: $(OBSEG_DIR)/prop/%/Model.c
 	@mkdir -p $(@D)
-	$(CC) -c $(CFLAGS) -Wab,-r4300_mul -non_shared -G 0 -Xcpluscomm -O2 -mips2 \
-		-woff 609,649,712,807,838 -DTARGET_N64 -I$(IRIX_ROOT)/usr/include \
-		-Iinclude -Isrc -I. -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Generate Model.c from binary if needed
 $(OBSEG_DIR)/prop/%/Model.c:
@@ -39,9 +37,7 @@ $(OBSEG_DIR)/prop/%/Model.c:
 # Build Switches.o from Switches.c (if it exists)
 $(BUILD_DIR)/$(OBSEG_DIR)/prop/%/Switches.o: $(OBSEG_DIR)/prop/%/Switches.c
 	@mkdir -p $(@D)
-	$(CC) -c $(CFLAGS) -Wab,-r4300_mul -non_shared -G 0 -Xcpluscomm -O2 -mips2 \
-		-woff 609,649,712,807,838 -DTARGET_N64 -I$(IRIX_ROOT)/usr/include \
-		-Iinclude -Isrc -I. -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Build PROP_RZ_NAMES from PROPNAMELIST
 PROP_RZ_NAMES = $(foreach prop,$(PROPNAMELIST),P$(prop)Z)

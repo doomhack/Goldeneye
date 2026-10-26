@@ -15,9 +15,6 @@
 .ifdef LANG_US
 .ascii "E"        # country
 .endif
-.ifdef LANG_JP
-.ascii "J"        # country
-.endif
 .ifdef LANG_EU
 .ascii "P"        # country
 .endif

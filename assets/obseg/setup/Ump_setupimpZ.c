@@ -10,14 +10,14 @@
 #include "bondaicommands.h"
 
 // forward declarations
-PadRecord padlist[];
-BoundPadRecord pad3dlist[];
-s32 propDefs[];
-s32 intro[];
-waygroup pathsets[];
-waypoint pathwaypoints[];
-PathRecord patrolpaths[];
-AIListRecord ailists[];
+extern PadRecord padlist[];
+extern BoundPadRecord pad3dlist[];
+extern s32 propDefs[];
+extern s32 intro[];
+extern waygroup pathsets[];
+extern waypoint pathwaypoints[];
+extern PathRecord patrolpaths[];
+extern AIListRecord ailists[];
 
 stagesetup Ump_setupimpZ = {
     &pathwaypoints,

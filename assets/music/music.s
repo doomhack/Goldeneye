@@ -98,14 +98,8 @@ _musicsampletblSegmentRomEnd:
   .ifdef VERSION_US
     .incbin "build\/u\/assets\/music\/\name\.rz"
   .endif
-  .ifdef VERSION_JP
-    .incbin "build\/j\/assets\/music\/\name\.rz"
-  .endif
   .ifdef VERSION_EU
     .incbin "build\/e\/assets\/music\/\name\.rz"
-  .endif
-  .ifdef VERSION_DEBUG
-    .incbin "build\/d\/assets\/music\/\name\.rz"
   .endif
     /* Check if file size is odd, add 0xA to pad file if needed to make it even */
     .if (. - \name) % 2 != 0

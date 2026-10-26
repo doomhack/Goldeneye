@@ -16,9 +16,8 @@ $(BUILD_DIR)/$(OBSEG_DIR)/stan/%.bin: $(BUILD_DIR)/$(OBSEG_DIR)/stan/%.elf
 $(BUILD_DIR)/$(OBSEG_DIR)/stan/%.elf: $(BUILD_DIR)/$(OBSEG_DIR)/stan/%.o
 	$(LD) -T assets/obseg/stan/Tbg_name_all_p_stan.ld -o $@ $<
 
-# suppress warning 807 for variable length array declarations
 $(BUILD_DIR)/$(OBSEG_DIR)/stan/%.o: $(OBSEG_DIR)/stan/%.c
-	$(CC) -c $(CFLAGS) -woff 807 -o $@ -O2 $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 # Generate all file targets
 STAN_O_FILES := $(foreach name,$(STAN_NAMES),$(BUILD_DIR)/$(OBSEG_DIR)/stan/$(name).o)

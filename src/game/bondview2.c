@@ -87,13 +87,13 @@
 #if defined(VERSION_US)
     #define BONDVIEW_2ND_FONTTABLE(_param) copy_2ndfonttable
     #define BONDVIEW_1ST_FONTTABLE(_param) copy_1stfonttable
-#elif defined(VERSION_JP) || defined(VERSION_EU)
+#elif defined(VERSION_EU)
     #define BONDVIEW_2ND_FONTTABLE(_param) dword_CODE_bss_jp80079CEC[_param]
     #define BONDVIEW_1ST_FONTTABLE(_param) dword_CODE_bss_jp80079Cd8[_param]
 #endif
 
 
-#if defined(VERSION_US) || defined(VERSION_JP)
+#if defined(VERSION_US)
     #define BONDVIEW_VIEW_TOP_OFFSET_1 0x0C
     #define BONDVIEW_VIEW_TOP_OFFSET_2 0x28
     #define BONDVIEW_VIEW_TOP_OFFSET_3 0x10
@@ -252,7 +252,7 @@ s32 dword_CODE_bss_80079A1C;
 //CODE.bss:80079A20
 s32 mission_timer;
 
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
 //CODE.bss:80079A24
 f32 watch_time_0;
 #else
@@ -1167,12 +1167,8 @@ void bondviewCalcIntroSwirlCamera(s32 index, f32 time, coord3d *pos, coord3d *lo
 {
     struct SetupIntroSwirl *base;
     struct SetupIntroSwirl *loopbase;
-#ifdef __sgi
-    f32 pointbuf[10];
-#else
     // four coord3d control points are written and read (pointbuf[9..11] is the last)
     f32 pointbuf[12];
-#endif
     struct SetupIntroSwirl *swirl;
     f32 frac;
     f32 *dst;
@@ -6387,7 +6383,7 @@ void bondviewPlayerTickDamageAndHealth(void)
             }
 
 // Ensure we don't read out of bounds of the g_DamageTypes array.
-#if defined(VERSION_EU) || defined(VERSION_JP) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
             if (g_CurrentPlayer->damagetype < 0)
             {
                 g_CurrentPlayer->damagetype = 0;
@@ -6492,7 +6488,7 @@ void bondviewPlayerTickDamageAndHealth(void)
                 g_CurrentPlayer->healthdamagetype = 7;
             }
 
-#if defined(VERSION_EU) || defined(VERSION_JP) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
             if (g_CurrentPlayer->healthdamagetype < 0)
             {
                 g_CurrentPlayer->healthdamagetype = 0;
@@ -6615,7 +6611,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     maxspeed = 0.0f;
     sp390 = 0.0f;
 
-    #if defined(VERSION_US) || defined(VERSION_JP)
+    #if defined(VERSION_US)
     if (stick_x >= 100 || stick_x <= -100) return_null(); // __LINE__ __FILE__ (#6414 bondview.c) "joystick x has value %d!\n"
     if (stick_y >= 100 || stick_y <= -100) return_null(); // __LINE__ __FILE__ (#6415 bondview.c) "joystick y has value %d!\n"
     #endif
@@ -7398,7 +7394,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             g_TankEngineSfxVolume -= (g_ClockTimer * 1000);
             #endif
 
-            #if defined(VERSION_JP) || defined(VERSION_EU)
+            #if defined(VERSION_EU)
             g_TankEngineSfxVolume -= (s32)(1000.0f * g_GlobalTimerDelta);
             #endif
 
@@ -7843,7 +7839,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 #if defined(VERSION_US) && !defined(BACKPORT_R1)
                             if ((sp6C->chrflags & CHRFLAG_01000000) == 0)
 #endif
-#if defined(VERSION_JP) || defined(VERSION_EU) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
                             if ((sp6C->chrflags & CHRFLAG_01000000) == 0 && lvlGetControlsLockedFlag() == 0)
 #endif
                             {
@@ -10473,7 +10469,7 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
                                 sp28 = 1;
                             }
 
-#if defined(VERSION_EU) || defined(VERSION_JP) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
                             drop_inventory();
 #endif
                             if (sp2C != playerid)
@@ -10521,7 +10517,7 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
                     }
                 }
 
-#if defined(VERSION_EU) || defined(VERSION_JP)
+#if defined(VERSION_EU)
     #define ZERO_7F08991C 0.0f
 #else
     #define ZERO_7F08991C 0
@@ -10537,7 +10533,7 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
 
 #undef ZERO_7F08991C
 
-#if defined(VERSION_EU) || defined(VERSION_JP) || defined(BACKPORT_R1)
+#if defined(VERSION_EU) || defined(BACKPORT_R1)
                 if (!lvlGetControlsLockedFlag())
                 {
                     sndPlaySfx(g_musicSfxBufferPtr, BOND_GET_HIT1_SFX, 0);
@@ -10908,8 +10904,6 @@ void hudmsgBottomShow(char *string, s32 font, s32 arg2)
         dword_CODE_bss_jp80079Cd8[index] = arg2;
 #if defined(VERSION_EU)
         g_CurrentPlayer->bondmesscnt = 0x64;
-#elif defined(VERSION_JP)
-        g_CurrentPlayer->bondmesscnt = 0x78;
 #endif
     }
 }
@@ -11069,7 +11063,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
             else
             {
                 view_top = viGetViewTop()
-#if defined(VERSION_JP) || defined(VERSION_EU)
+#if defined(VERSION_EU)
                          + (((j_text_trigger != 0) && (get_cur_playernum() < 2)) ? 8 : 0)
 #endif
                          + BONDVIEW_VIEW_TOP_OFFSET_3;
