@@ -47,7 +47,7 @@ struct Smoke *g_SmokeBuffer;
 struct Explosion *g_ExplosionBuffer;
 
 //CODE.bss:8007A148
-s32 max_particles;
+s32 g_MaxParticles;
 //CODE.bss:8007A14C
 // printf("Allocating %d bytes for debris data (%d bits)\n", DAT_83bd2af0 * 0xa4, DAT_83bd2af0);
 struct FlyingParticles *g_FlyingParticlesBuffer;
@@ -70,9 +70,9 @@ struct BulletImpact *g_BulletImpactBuffer;
 
 // data
 //D:80040170
-s32 g_NumExplosionEntries = 0;
+s32 g_ShakeTicks = 0;
 //D:80040174
-s32 g_NumSmokeEntries = 0;
+s32 g_ShakeBoostTicks = 0;
 //D:80040178
 f32 g_SpExplosionDamageMult = 1.0;
 
@@ -181,10 +181,10 @@ Gfx * g_ExplosionDisplayLists[] = {
     &globalDL_0x9a8
 };
 
-s32 g_NumParticleEntries = 0;
-s32 g_NumScorchEntries = 0;
+s32 g_NextParticle = 0;
+s32 g_NextScorch = 0;
 // canonically nextwallhit
-s32 g_NumImpactEntries = 0;
+s32 g_NextImpact = 0;
 
 //D:8004080C
 s_impacttype g_ImpactTypes[] = {
@@ -257,7 +257,7 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
 #if defined(VERSION_US) && !defined(BACKPORT_R1)
     if ((explosion_type != 0x10) && (explosion_type != 1))
     {
-        g_NumExplosionEntries = 6;
+        g_ShakeTicks = 6;
     }
 #endif
 
@@ -277,7 +277,7 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
         if ((explosion_type != 0x10) && (explosion_type != 1))
         {
-            g_NumExplosionEntries = 6;
+            g_ShakeTicks = 6;
         }
 #endif
 
@@ -383,8 +383,8 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
 
 
 void explosionStartShake(void) {
-        g_NumExplosionEntries = 6;
-        g_NumSmokeEntries = 6;
+        g_ShakeTicks = 6;
+        g_ShakeBoostTicks = 6;
 }
 
 
@@ -403,7 +403,7 @@ void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* res
     f32 dist;
     f32 dist2;
 
-    if (g_NumExplosionEntries == 0)
+    if (g_ShakeTicks == 0)
     {
         viShake(0.0f);
         return;
@@ -435,14 +435,14 @@ void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* res
         }
     }
 
-    if (g_NumSmokeEntries > 0)
+    if (g_ShakeBoostTicks > 0)
     {
-        g_NumSmokeEntries--;
+        g_ShakeBoostTicks--;
         explosion_mag++;
     }
 
-    g_NumExplosionEntries--;
-    if (g_NumExplosionEntries & 2)
+    g_ShakeTicks--;
+    if (g_ShakeTicks & 2)
     {
         result->y = explosion_mag;
         explosion_mag = -explosion_mag;
@@ -455,7 +455,7 @@ void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* res
     result->x = explosion_mag * mag_scalar_x;
     result->z = explosion_mag * mag_scalar_z;
 
-    viShake((f32) g_NumExplosionEntries * explosion_mag);
+    viShake((f32) g_ShakeTicks * explosion_mag);
 }
 
 /***
@@ -1544,33 +1544,33 @@ void explosionInitFlyingParticles(coord3d *spawnpos, f32 spawn_rand_scale, f32 s
     rand2 = ((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 1.12f) - 0.12f;
     rand3 = (2.0f * (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX))) - 1.0f;
 
-    g_FlyingParticlesBuffer[g_NumParticleEntries].unk00 = 1;
+    g_FlyingParticlesBuffer[g_NextParticle].unk00 = 1;
 
-    g_FlyingParticlesBuffer[g_NumParticleEntries].position.f[0] = spawnpos->f[0] + (spawn_rand_scale * rand1);
-    g_FlyingParticlesBuffer[g_NumParticleEntries].position.f[1] = spawnpos->f[1] + (spawn_rand_scale * rand2);
-    g_FlyingParticlesBuffer[g_NumParticleEntries].position.f[2] = spawnpos->f[2] + (spawn_rand_scale * rand3);
+    g_FlyingParticlesBuffer[g_NextParticle].position.f[0] = spawnpos->f[0] + (spawn_rand_scale * rand1);
+    g_FlyingParticlesBuffer[g_NextParticle].position.f[1] = spawnpos->f[1] + (spawn_rand_scale * rand2);
+    g_FlyingParticlesBuffer[g_NextParticle].position.f[2] = spawnpos->f[2] + (spawn_rand_scale * rand3);
 
-    g_FlyingParticlesBuffer[g_NumParticleEntries].position_drift.f[0] = rand1 * spawn_horiz_drift_scale;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].position_drift.f[1] = rand2 * spawn_vert_drift_scale;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].position_drift.f[2] = rand3 * spawn_horiz_drift_scale;
+    g_FlyingParticlesBuffer[g_NextParticle].position_drift.f[0] = rand1 * spawn_horiz_drift_scale;
+    g_FlyingParticlesBuffer[g_NextParticle].position_drift.f[1] = rand2 * spawn_vert_drift_scale;
+    g_FlyingParticlesBuffer[g_NextParticle].position_drift.f[2] = rand3 * spawn_horiz_drift_scale;
 
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.ob[0] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.ob[1] = 0;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.ob[0] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.ob[1] = 0;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
 
     if (1)
     {
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.ob[0] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.ob[1] = 0;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * (-spawn_tex_scale)));
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.ob[0] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.ob[1] = 0;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * (-spawn_tex_scale)));
 
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.ob[0] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * (-spawn_tex_scale)));
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.ob[1] = 0;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * (-spawn_tex_scale)));
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.ob[0] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * (-spawn_tex_scale)));
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.ob[1] = 0;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * (-spawn_tex_scale)));
 
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.ob[0] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * (-spawn_tex_scale)));
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.ob[1] = 0;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.ob[0] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * (-spawn_tex_scale)));
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.ob[1] = 0;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
     }
 
     if (1) {}
@@ -1578,71 +1578,71 @@ void explosionInitFlyingParticles(coord3d *spawnpos, f32 spawn_rand_scale, f32 s
     unk08_upper = (randomGetNext() & 3) << 8;
     unk0A_upper = (randomGetNext() & 3) << 8;
 
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.tc[0] = unk08_upper + 0xE0;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.tc[1] = unk0A_upper + 0xE0;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.tc[0] = unk08_upper + 0xE0;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.tc[1] = unk0A_upper;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.tc[0] = unk08_upper;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.tc[1] = unk0A_upper;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.tc[0] = unk08_upper;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.tc[1] = unk0A_upper + 0xE0;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.tc[0] = unk08_upper + 0xE0;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.tc[1] = unk0A_upper + 0xE0;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.tc[0] = unk08_upper + 0xE0;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.tc[1] = unk0A_upper;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.tc[0] = unk08_upper;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.tc[1] = unk0A_upper;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.tc[0] = unk08_upper;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.tc[1] = unk0A_upper + 0xE0;
 
     if (randomGetNext() & 1)
     {
         rand_s8 = 0xFF - (randomGetNext() & 0x3F);
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.cn[2] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.cn[1] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.cn[0] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.cn[2] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.cn[1] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.cn[0] = rand_s8;
         rand_s8 = 0xFF - (randomGetNext() & 0x3F);
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.cn[2] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.cn[1] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.cn[0] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.cn[2] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.cn[1] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.cn[0] = rand_s8;
         rand_s8 = 0xFF - (randomGetNext() & 0x3F);
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.cn[2] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.cn[1] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.cn[0] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.cn[2] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.cn[1] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.cn[0] = rand_s8;
         rand_s8 = 0xFF - (randomGetNext() & 0x3F);
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.cn[2] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.cn[1] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.cn[0] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.cn[2] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.cn[1] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.cn[0] = rand_s8;
     }
     else
     {
         rand_s8 = randomGetNext() & 0x3F;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.cn[2] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.cn[1] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.cn[0] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.cn[2] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.cn[1] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.cn[0] = rand_s8;
         rand_s8 = randomGetNext() & 0x3F;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.cn[2] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.cn[1] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.cn[0] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.cn[2] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.cn[1] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.cn[0] = rand_s8;
         rand_s8 = randomGetNext() & 0x3F;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.cn[2] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.cn[1] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.cn[0] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.cn[2] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.cn[1] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.cn[0] = rand_s8;
         rand_s8 = randomGetNext() & 0x3F;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.cn[2] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.cn[1] = rand_s8;
-        g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.cn[0] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.cn[2] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.cn[1] = rand_s8;
+        g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.cn[0] = rand_s8;
     }
 
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[0].v.cn[3] = 0xdc;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[1].v.cn[3] = 0xdc;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[2].v.cn[3] = 0xdc;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].vertex_list[3].v.cn[3] = 0xdc;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[0].v.cn[3] = 0xdc;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[1].v.cn[3] = 0xdc;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[2].v.cn[3] = 0xdc;
+    g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.cn[3] = 0xdc;
 
-    g_FlyingParticlesBuffer[g_NumParticleEntries].rotation.f[0] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * M_TAU_F;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].rotation.f[1] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * M_TAU_F;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].rotation.f[2] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * M_TAU_F;
+    g_FlyingParticlesBuffer[g_NextParticle].rotation.f[0] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * M_TAU_F;
+    g_FlyingParticlesBuffer[g_NextParticle].rotation.f[1] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * M_TAU_F;
+    g_FlyingParticlesBuffer[g_NextParticle].rotation.f[2] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * M_TAU_F;
 
-    g_FlyingParticlesBuffer[g_NumParticleEntries].rotation_drift.f[0] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.1f;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].rotation_drift.f[1] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.1f;
-    g_FlyingParticlesBuffer[g_NumParticleEntries].rotation_drift.f[2] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.1f;
+    g_FlyingParticlesBuffer[g_NextParticle].rotation_drift.f[0] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.1f;
+    g_FlyingParticlesBuffer[g_NextParticle].rotation_drift.f[1] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.1f;
+    g_FlyingParticlesBuffer[g_NextParticle].rotation_drift.f[2] = (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.1f;
 
-    g_NumParticleEntries++;
-    if (g_NumParticleEntries >= max_particles)
+    g_NextParticle++;
+    if (g_NextParticle >= g_MaxParticles)
     {
-        g_NumParticleEntries = 0;
+        g_NextParticle = 0;
     }
 }
 
@@ -1663,7 +1663,7 @@ void explosionUpdateFlyingParticles(void)
     }
 
 
-    for (i = 0; i < max_particles; i++)
+    for (i = 0; i < g_MaxParticles; i++)
     {
         if (g_FlyingParticlesBuffer[i].unk00 > 0)
         {
@@ -1721,7 +1721,7 @@ Gfx *explosionRenderFlyingParticles(Gfx *gdl)
     gSPDisplayList(gdl++, &globalDL_0xa50);
     gDPSetRenderMode(gdl++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
 
-    for (i = 0; i < max_particles; i++)
+    for (i = 0; i < g_MaxParticles; i++)
     {
         // HACK: regalloc has instructions backwards.
         particles = (struct FlyingParticles *)(u32)g_FlyingParticlesBuffer + i;
@@ -1792,65 +1792,65 @@ void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room)
         sp50 = cosf(sp54) * explosion_size;
         sp4C = sinf(sp54) * explosion_size;
 
-        g_ScorchBuffer[g_NumScorchEntries].roomid = room;
-        g_ScorchBuffer[g_NumScorchEntries].pos.f[0] = pos->f[0];
-        g_ScorchBuffer[g_NumScorchEntries].pos.f[1] = pos->f[1];
-        g_ScorchBuffer[g_NumScorchEntries].pos.f[2] = pos->f[2];
-        g_ScorchBuffer[g_NumScorchEntries].explosion_size = explosion_size;
+        g_ScorchBuffer[g_NextScorch].roomid = room;
+        g_ScorchBuffer[g_NextScorch].pos.f[0] = pos->f[0];
+        g_ScorchBuffer[g_NextScorch].pos.f[1] = pos->f[1];
+        g_ScorchBuffer[g_NextScorch].pos.f[2] = pos->f[2];
+        g_ScorchBuffer[g_NextScorch].explosion_size = explosion_size;
 
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0] = sp58;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1] = sp58;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2] = sp58;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3] = sp58;
+        g_ScorchBuffer[g_NextScorch].vertex_list[0] = sp58;
+        g_ScorchBuffer[g_NextScorch].vertex_list[1] = sp58;
+        g_ScorchBuffer[g_NextScorch].vertex_list[2] = sp58;
+        g_ScorchBuffer[g_NextScorch].vertex_list[3] = sp58;
 
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.ob[0] = (s16) (s32) (pos->f[0] + sp50);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.ob[2] = (s16) (s32) (pos->f[2] + sp4C);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.tc[0] = 0;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.tc[1] = g_ImageGeneric->width << 5;
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.ob[0] = (s16) (s32) (pos->f[0] + sp50);
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.ob[2] = (s16) (s32) (pos->f[2] + sp4C);
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.tc[0] = 0;
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.tc[1] = g_ImageGeneric->width << 5;
         temp_hi = randomGetNext() % 50U;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.cn[2] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.cn[1] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.cn[0] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[0].v.cn[3] = sp4B;
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.cn[2] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.cn[1] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.cn[0] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[0].v.cn[3] = sp4B;
 
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.ob[0] = (s16) (s32) (pos->f[0] + sp4C);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.ob[2] = (s16) (s32) (pos->f[2] - sp50);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.tc[0] = 0;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.tc[1] = 0;
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.ob[0] = (s16) (s32) (pos->f[0] + sp4C);
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.ob[2] = (s16) (s32) (pos->f[2] - sp50);
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.tc[0] = 0;
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.tc[1] = 0;
         temp_hi = randomGetNext() % 50U;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.cn[2] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.cn[1] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.cn[0] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[1].v.cn[3] = sp4B;
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.cn[2] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.cn[1] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.cn[0] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[1].v.cn[3] = sp4B;
 
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.ob[0] = (s16) (s32) (pos->f[0] - sp50);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.ob[2] = (s16) (s32) (pos->f[2] - sp4C);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.tc[0] = g_ImageGeneric->height << 5;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.tc[1] = 0;
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.ob[0] = (s16) (s32) (pos->f[0] - sp50);
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.ob[2] = (s16) (s32) (pos->f[2] - sp4C);
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.tc[0] = g_ImageGeneric->height << 5;
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.tc[1] = 0;
         temp_hi = randomGetNext() % 50U;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.cn[2] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.cn[1] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.cn[0] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[2].v.cn[3] = sp4B;
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.cn[2] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.cn[1] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.cn[0] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[2].v.cn[3] = sp4B;
 
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.ob[0] = (s16) (s32) (pos->f[0] - sp4C);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.ob[2] = (s16) (s32) (pos->f[2] + sp50);
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.tc[0] = g_ImageGeneric->width << 5;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.tc[1] = g_ImageGeneric->height << 5;
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.ob[0] = (s16) (s32) (pos->f[0] - sp4C);
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.ob[1] = (s16) (s32) (pos->f[1] + 0.5f);
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.ob[2] = (s16) (s32) (pos->f[2] + sp50);
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.tc[0] = g_ImageGeneric->width << 5;
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.tc[1] = g_ImageGeneric->height << 5;
         temp_hi = randomGetNext() % 50U;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.cn[2] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.cn[1] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.cn[0] = (u8) temp_hi;
-        g_ScorchBuffer[g_NumScorchEntries].vertex_list[3].v.cn[3] = sp4B;
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.cn[2] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.cn[1] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.cn[0] = (u8) temp_hi;
+        g_ScorchBuffer[g_NextScorch].vertex_list[3].v.cn[3] = sp4B;
 
-        g_NumScorchEntries++;
-        if (g_NumScorchEntries >= SCORCH_BUFFER_LEN)
+        g_NextScorch++;
+        if (g_NextScorch >= SCORCH_BUFFER_LEN)
         {
-            g_NumScorchEntries = 0;
+            g_NextScorch = 0;
         }
     }
 }
@@ -2094,51 +2094,51 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
         sp98 *= get_room_data_float1();
     }
 
-    g_BulletImpactBuffer[g_NumImpactEntries].prop = prop;
-    g_BulletImpactBuffer[g_NumImpactEntries].model_render_pos_index = model_render_pos_index;
-    g_BulletImpactBuffer[g_NumImpactEntries].room_clear_flag = room_clear_flag;
-    g_BulletImpactBuffer[g_NumImpactEntries].room = room;
-    g_BulletImpactBuffer[g_NumImpactEntries].impact_type = impact_type;
+    g_BulletImpactBuffer[g_NextImpact].prop = prop;
+    g_BulletImpactBuffer[g_NextImpact].model_render_pos_index = model_render_pos_index;
+    g_BulletImpactBuffer[g_NextImpact].room_clear_flag = room_clear_flag;
+    g_BulletImpactBuffer[g_NextImpact].room = room;
+    g_BulletImpactBuffer[g_NextImpact].impact_type = impact_type;
 
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0] = spE0;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[1] = spE0;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2] = spE0;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3] = spE0;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[0] = spE0;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[1] = spE0;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[2] = spE0;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[3] = spE0;
 
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.ob[0] = explosionRoundFloat((spA0.f[0] - (sp9C * spC4)) - (sp98 * spB8));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.ob[1] = explosionRoundFloat((spA0.f[1] - zero) - (sp98 * spB4));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.ob[2] = explosionRoundFloat((spA0.f[2] - (sp9C * spBC)) - (sp98 * spB0));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.tc[0] = 0;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.tc[1] = g_ImagesImpact[impact_type].height << 5;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.ob[0] = explosionRoundFloat((spA0.f[0] - (sp9C * spC4)) - (sp98 * spB8));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.ob[1] = explosionRoundFloat((spA0.f[1] - zero) - (sp98 * spB4));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.ob[2] = explosionRoundFloat((spA0.f[2] - (sp9C * spBC)) - (sp98 * spB0));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.tc[0] = 0;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.tc[1] = g_ImagesImpact[impact_type].height << 5;
 #ifdef DEBUG
-    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[0].v.ob));
+    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.ob));
 #endif
 
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[1].v.ob[0] = explosionRoundFloat((spA0.f[0] - (sp9C * spC4)) + (sp98 * spB8));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[1].v.ob[1] = explosionRoundFloat((spA0.f[1] - zero) + (sp98 * spB4));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[1].v.ob[2] = explosionRoundFloat((spA0.f[2] - (sp9C * spBC)) + (sp98 * spB0));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[1].v.tc[0] = 0;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[1].v.tc[1] = 0;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.ob[0] = explosionRoundFloat((spA0.f[0] - (sp9C * spC4)) + (sp98 * spB8));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.ob[1] = explosionRoundFloat((spA0.f[1] - zero) + (sp98 * spB4));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.ob[2] = explosionRoundFloat((spA0.f[2] - (sp9C * spBC)) + (sp98 * spB0));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.tc[0] = 0;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.tc[1] = 0;
 #ifdef DEBUG
-    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[1].v.ob));
+    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.ob));
 #endif
 
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.ob[0] = explosionRoundFloat(spA0.f[0] + (sp9C * spC4) + (sp98 * spB8));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.ob[1] = explosionRoundFloat(spA0.f[1] + zero + (sp98 * spB4));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.ob[2] = explosionRoundFloat(spA0.f[2] + (sp9C * spBC) + (sp98 * spB0));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.tc[0] = g_ImagesImpact[impact_type].width << 5;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.tc[1] = 0;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.ob[0] = explosionRoundFloat(spA0.f[0] + (sp9C * spC4) + (sp98 * spB8));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.ob[1] = explosionRoundFloat(spA0.f[1] + zero + (sp98 * spB4));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.ob[2] = explosionRoundFloat(spA0.f[2] + (sp9C * spBC) + (sp98 * spB0));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.tc[0] = g_ImagesImpact[impact_type].width << 5;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.tc[1] = 0;
 #ifdef DEBUG
-    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[2].v.ob));
+    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.ob));
 #endif
 
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.ob[0] = explosionRoundFloat((spA0.f[0] + (sp9C * spC4)) - (sp98 * spB8));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.ob[1] = explosionRoundFloat((spA0.f[1] + zero) - (sp98 * spB4));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.ob[2] = explosionRoundFloat((spA0.f[2] + (sp9C * spBC)) - (sp98 * spB0));
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.tc[0] = g_ImagesImpact[impact_type].width << 5;
-    g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.tc[1] = g_ImagesImpact[impact_type].height << 5;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.ob[0] = explosionRoundFloat((spA0.f[0] + (sp9C * spC4)) - (sp98 * spB8));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.ob[1] = explosionRoundFloat((spA0.f[1] + zero) - (sp98 * spB4));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.ob[2] = explosionRoundFloat((spA0.f[2] + (sp9C * spBC)) - (sp98 * spB0));
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.tc[0] = g_ImagesImpact[impact_type].width << 5;
+    g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.tc[1] = g_ImagesImpact[impact_type].height << 5;
 #ifdef DEBUG
-    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[3].v.ob));
+    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.ob));
 #endif
 
     for (i = 0; i < 4; i++)
@@ -2173,21 +2173,21 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
             break;
         }
 
-        g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[i].v.cn[0] = var_s0;
-        g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[i].v.cn[1] = sp62;
-        g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[i].v.cn[2] = sp61;
-        g_BulletImpactBuffer[g_NumImpactEntries].vertex_list[i].v.cn[3] = 0xff; // alpha
+        g_BulletImpactBuffer[g_NextImpact].vertex_list[i].v.cn[0] = var_s0;
+        g_BulletImpactBuffer[g_NextImpact].vertex_list[i].v.cn[1] = sp62;
+        g_BulletImpactBuffer[g_NextImpact].vertex_list[i].v.cn[2] = sp61;
+        g_BulletImpactBuffer[g_NextImpact].vertex_list[i].v.cn[3] = 0xff; // alpha
     }
 
-    g_NumImpactEntries++;
-    if (g_NumImpactEntries >= BULLET_IMPACT_BUFFER_LEN)
+    g_NextImpact++;
+    if (g_NextImpact >= BULLET_IMPACT_BUFFER_LEN)
     {
-        g_NumImpactEntries = 0;
+        g_NextImpact = 0;
     }
 
-    explosionSetBulletImpactAlpha(g_NumImpactEntries);
+    explosionSetBulletImpactAlpha(g_NextImpact);
 
-    g_BulletImpactBuffer[g_NumImpactEntries].room = -1;
+    g_BulletImpactBuffer[g_NextImpact].room = -1;
 }
 
 
@@ -2314,11 +2314,11 @@ void explosionsInit(void)
     s32 i;
     s32 j;
 
-    g_NumExplosionEntries = 0;
-    g_NumSmokeEntries = 0;
-    g_NumParticleEntries = 0;
-    g_NumScorchEntries = 0;
-    g_NumImpactEntries = 0;
+    g_ShakeTicks = 0;
+    g_ShakeBoostTicks = 0;
+    g_NextParticle = 0;
+    g_NextScorch = 0;
+    g_NextImpact = 0;
     g_SpExplosionDamageMult = 1.0f;
     g_ExplosionBuffer = (struct Explosion *)mempAlloc(EXPLOSION_BUFFER_LEN * sizeof(struct Explosion), MEMPOOL_STAGE);
 
@@ -2360,15 +2360,15 @@ void explosionsInit(void)
         g_BulletImpactBuffer[i].room = -1;
     }
 
-    max_particles = MAX_FLYING_PARTICLES / getPlayerCount();
+    g_MaxParticles = MAX_FLYING_PARTICLES / getPlayerCount();
 
     if ((lvlGetCurrentStageToLoad() == LEVELID_STREETS) || (lvlGetCurrentStageToLoad() == LEVELID_DEPOT))
     {
-        max_particles = (s32) max_particles >> 1;
+        g_MaxParticles = (s32) g_MaxParticles >> 1;
     }
-    g_FlyingParticlesBuffer = (struct FlyingParticles *)mempAlloc(((max_particles * sizeof(struct FlyingParticles)) + 0xF) & ~0xF, MEMPOOL_STAGE);
+    g_FlyingParticlesBuffer = (struct FlyingParticles *)mempAlloc(((g_MaxParticles * sizeof(struct FlyingParticles)) + 0xF) & ~0xF, MEMPOOL_STAGE);
 
-    for (i=0; i<max_particles; i++)
+    for (i=0; i<g_MaxParticles; i++)
     {
         g_FlyingParticlesBuffer[i].unk00 = 0;
     }
@@ -2379,7 +2379,7 @@ void explosionsReset(void)
 {
     s32 i;
   
-    g_NumExplosionEntries = 0;
+    g_ShakeTicks = 0;
     viShake(0.0);
 
     if (g_ExplosionBuffer != NULL)

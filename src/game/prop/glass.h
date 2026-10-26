@@ -75,8 +75,8 @@ typedef struct s_moving_bullet_spark
 } s_moving_bullet_spark;
 #endif
 
-extern s32 SHATTERED_WINDOW_PIECES_BUFFER_LEN;
-extern s_shattered_window_piece* ptr_shattered_window_pieces;
+extern s32 g_MaxShards;
+extern s_shattered_window_piece* g_Shards;
 extern s32 g_NextShardNum;
 
 extern Vtx D_80040980;
