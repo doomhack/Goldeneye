@@ -513,31 +513,31 @@ void bullet_sparks_init(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3
     {
         spark->lifetime = 1;
         spark->unk08 = 1.0f;
-        spark->unk0C = flareimage2;
+        spark->unk0C = g_ImageFlare2;
     }
     else if (arg2 == 1)
     {
         spark->lifetime = 11;
         spark->unk08 = 0.5f;
-        spark->unk0C = explosion_smokeimages;
+        spark->unk0C = g_ImagesExplosionSmoke;
     }
     else if (arg2 == 3)
     {
         spark->lifetime = 9;
         spark->unk08 = 0.5f;
-        spark->unk0C = scattered_explosions;
+        spark->unk0C = g_ImagesScatteredExplosions;
     }
     else if (arg2 == 6)
     {
         spark->lifetime = 100;
         spark->unk08 = 0.0f;
-        spark->unk0C = flareimage2;
+        spark->unk0C = g_ImageFlare2;
     }
     else
     {
         spark->lifetime = 11;
         spark->unk08 = 0.5f;
-        spark->unk0C = explosion_smokeimages;
+        spark->unk0C = g_ImagesExplosionSmoke;
     }
 
     spark->unk28 = g_BulletSparkColors[arg2].r;

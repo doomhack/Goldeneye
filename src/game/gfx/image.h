@@ -73,9 +73,9 @@ extern struct texcacheitem g_TexCacheItems[];
 extern struct texpool g_TexSharedPool;
 extern struct image_entry g_Textures[];
 extern s32 g_TexCacheCount;
-extern u32 bytes;
+extern u32 g_TexSharedPoolSize;
 
-void nullsub_41(s32 arg0);
+void texDebugStub(s32 arg0);
 
 void texInflateHuffman(u8 *dst, s32 numiterations, s32 chansize);
 void texInflateRle(u8 *dst, s32 blockstotal);

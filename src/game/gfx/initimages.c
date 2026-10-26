@@ -4,7 +4,7 @@
 /**
  * NTSC address 0x7F000BD0.
 */
-void image_entries_load(void)
+void texResolveTableOffsets(void)
 {   
     s32 offset;
     s32 next_offset;

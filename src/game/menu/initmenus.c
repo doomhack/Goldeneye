@@ -46,5 +46,5 @@ void init_menus_or_reset(void)
         walletinst[i] = NULL;
     }
 
-    alloc_intro_matrices();
+    titleAllocMatrices();
 }

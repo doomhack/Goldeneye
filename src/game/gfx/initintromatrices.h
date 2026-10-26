@@ -2,6 +2,6 @@
 #define _INITINTROMATRICES_H_
 #include <ultra64.h>
 
-void alloc_intro_matrices(void);
+void titleAllocMatrices(void);
 
 #endif

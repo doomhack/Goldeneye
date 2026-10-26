@@ -3313,7 +3313,7 @@ after_opcode:
 
     if (((ModelRwData_DisplayList_CollisionRecord *) rwdata)->Vertices == ((ModelRoData_DisplayList_CollisionRecord *) node)->Vertices)
     {
-        newvertices = (Vertex *) vtxstore_allocate(((ModelRoData_DisplayList_CollisionRecord *) node)->numVertices, 0xcccc, 0, 0);
+        newvertices = (Vertex *) vtxstoreAllocate(((ModelRoData_DisplayList_CollisionRecord *) node)->numVertices, 0xcccc, 0, 0);
 
         if (newvertices != NULL)
         {
@@ -3330,7 +3330,7 @@ after_opcode:
 
     if ((relatedrwdata != NULL) && (relatedrwdata->Vertices == relatedrodata->Vertices))
     {
-        newvertices = (Vertex *) vtxstore_allocate(relatedrodata->numVertices, 0xcccc, 0, 0);
+        newvertices = (Vertex *) vtxstoreAllocate(relatedrodata->numVertices, 0xcccc, 0, 0);
 
         if (newvertices != NULL)
         {

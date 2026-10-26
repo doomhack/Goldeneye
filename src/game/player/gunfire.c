@@ -1211,18 +1211,18 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
         flareoffset = D_80035CA8;
         extraorigin = D_80035CB4;
         extra_scale = 1.4142f; // ~√2
-        image = flareimage3;
+        image = g_ImageFlare3;
         worldtoscreen = camGetWorldToScreenMtxf();
 
         if (flash->item_id == ITEM_LASER)
         {
             radius = 50.0f;
-            image = flareimage4;
+            image = g_ImageFlare4;
         }
         else if (flash->item_id == ITEM_WATCHLASER)
         {
             radius = 10.0f;
-            image = flareimage4;
+            image = g_ImageFlare4;
             templatevtx.v.cn[3] = (randomGetNext() % 50) + 150;
 
             if ((randomGetNext() % 5) == 0)
@@ -1399,8 +1399,8 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
             vtx[4].v.ob[0] = extraorigin.f[0] + (up.f[0] * extra_scale);
             vtx[4].v.ob[1] = extraorigin.f[1] + (up.f[1] * extra_scale);
             vtx[4].v.ob[2] = extraorigin.f[2] + (up.f[2] * extra_scale);
-            vtx[4].v.tc[0] = flareimage5->width << 5;
-            vtx[4].v.tc[1] = flareimage5->height << 5;
+            vtx[4].v.tc[0] = g_ImageFlare5->width << 5;
+            vtx[4].v.tc[1] = g_ImageFlare5->height << 5;
 
             vtx[5].v.ob[0] = extraorigin.f[0] - (up.f[0] * extra_scale);
             vtx[5].v.ob[1] = extraorigin.f[1] - (up.f[1] * extra_scale);
@@ -1412,12 +1412,12 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
             vtx[6].v.ob[1] = extraorigin.f[1] + (right.f[1] * extra_scale);
             vtx[6].v.ob[2] = extraorigin.f[2] + (right.f[2] * extra_scale);
             vtx[6].v.tc[0] = 0;
-            vtx[6].v.tc[1] = flareimage5->height << 5;
+            vtx[6].v.tc[1] = g_ImageFlare5->height << 5;
 
             vtx[7].v.ob[0] = extraorigin.f[0] - (right.f[0] * extra_scale);
             vtx[7].v.ob[1] = extraorigin.f[1] - (right.f[1] * extra_scale);
             vtx[7].v.ob[2] = extraorigin.f[2] - (right.f[2] * extra_scale);
-            vtx[7].v.tc[0] = flareimage5->width << 5;
+            vtx[7].v.tc[0] = g_ImageFlare5->width << 5;
             vtx[7].v.tc[1] = 0;
         }
 
@@ -1434,7 +1434,7 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
 
         if (flash->item_id == ITEM_LASER)
         {
-            texSelect(&gdl, flareimage5, 4, arg2, 2);
+            texSelect(&gdl, g_ImageFlare5, 4, arg2, 2);
 
             gSPVertex(gdl++, osVirtualToPhysical(vtx), 8, 0);
 
@@ -1534,7 +1534,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
  
             if (item == ITEM_ROCKETLAUNCH) 
             {
-                save_img_index_to_obj_ani_slot(&g_UnknownAnimController, crosshairimage);
+                save_img_index_to_obj_ani_slot(&g_UnknownAnimController, g_ImageCrosshair);
                 gdl = process_monitor_animation_microcode(model, (*(Model *)&handptr->field_B68).obj->Switches[16], &g_UnknownAnimController, gdl, 0, 4);
             } 
             else 
@@ -5927,7 +5927,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
 
                     if (imageoffset_r != 0)
                     {
-                        imageoffset_r += globalbank_rdram_offset;
+                        imageoffset_r += g_ImageBankOffset;
                         gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset_r, (getPlayer_c_screenleft() + getPlayer_c_screenwidth()) - (f32)rightx, -1.0f,
 #if defined(VERSION_EU)
                             (viGetViewTop() + viGetViewHeight()) - 30, 0,
@@ -5993,7 +5993,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
 
                     if (imageoffset_l != 0)
                     {
-                        imageoffset_l += globalbank_rdram_offset;
+                        imageoffset_l += g_ImageBankOffset;
                         gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset_l, getPlayer_c_screenleft() + (f32)leftx, -1.0f,
 #if defined(VERSION_EU)
                             (viGetViewTop() + viGetViewHeight()) - 30, 1,
@@ -6084,7 +6084,7 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
 
             if (imageoffset != 0)
             {
-                imageoffset += globalbank_rdram_offset;
+                imageoffset += g_ImageBankOffset;
 
                 // Draw the ammo icon
 #if defined(VERSION_EU)
@@ -6162,7 +6162,7 @@ void gunDrawSight(s32 *gdl) {
 
     if ((g_CurrentPlayer->gunsightmode == 0) && (g_CurrentPlayer->mpmenuon == FALSE)) {
         sp54 = *gdl;
-        texSelect(&sp54, crosshairimage, 4, 0, 0);
+        texSelect(&sp54, g_ImageCrosshair, 4, 0, 0);
 
         xypos[0] = g_CurrentPlayer->crosshair_angle.f[0];
         xypos[1] = g_CurrentPlayer->crosshair_angle.f[1];
@@ -6175,7 +6175,7 @@ void gunDrawSight(s32 *gdl) {
 #ifdef VERSION_EU
         halfedxy[1] = halfedxy[1] * g_GunSightAspectRatio;
 #endif
-        display_image_at_position(&sp54, &xypos, &halfedxy, 0x20, 0x20, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0x6E, (crosshairimage->level > 0), 0);
+        display_image_at_position(&sp54, &xypos, &halfedxy, 0x20, 0x20, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0x6E, (g_ImageCrosshair->level > 0), 0);
         *gdl = sp54;
     }
 }

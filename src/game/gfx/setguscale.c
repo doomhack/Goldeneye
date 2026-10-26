@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include "game/prop/explosion.h"
 
-void set_gu_scale(void) {
-    guScale((Mtx *)&dword_CODE_bss_8007A100, 0.1f, 0.1f, 0.1f);
+void explosionInitScaleMtx(void) {
+    guScale((Mtx *)&g_ExplosionScaleMtx, 0.1f, 0.1f, 0.1f);
 }
 

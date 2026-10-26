@@ -24,9 +24,9 @@ s32 g_TexNumToLoad;
 
 // data
 //D:80049170
-u32 bytes = 0x6DDD0;
+u32 g_TexSharedPoolSize = 0x6DDD0;
 //D:80049174
-u32 D_80049174 = 0;
+u32 g_TexUnused80049174 = 0;
 
 //D:80049178 #1	#bytes in pixel data for image
 s32 g_TexFormatNumChannels[] = 
@@ -90,7 +90,7 @@ s32 g_TexFormatLutModes[] = {
 	G_TT_IA16,
 };
 //D:800492e4
-s32 D_800492E4[] = 
+s32 g_TexUnused800492E4[] = 
 {
     0, 0, 0, 0, 0, 0, 0
 };
@@ -106,7 +106,7 @@ struct image_entry g_Textures[] = {
 #undef IMAGE
 
 
-void nullsub_41(s32 arg0) {
+void texDebugStub(s32 arg0) {
     if (arg0);
 }
 
@@ -159,7 +159,7 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
     totalbytesout = 0;
     writetocache = FALSE;
 
-    texSetBitstring(src);
+    texBitsInit(src);
 
     if (arg2 && forcenumimages)
     {
@@ -186,20 +186,20 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
         }
     }
 
-    format = texReadBits(8);
-    numcolours = texReadBits(8) + 1;
+    format = texBitsRead(8);
+    numcolours = texBitsRead(8) + 1;
 
     for (i = 0; i < numcolours; i++)
     {
-        palette[i] = texReadBits(16);
+        palette[i] = texBitsRead(16);
     }
 
     foundthething = FALSE;
 
     for (j = 0; j < numimages; j++)
     {
-        width = texReadBits(8);
-        height = texReadBits(8);
+        width = texBitsRead(8);
+        height = texBitsRead(8);
 
         if (j == 0)
         {
@@ -221,9 +221,9 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
             return j * 0;
         }
 
-        rzipInflate(img_curpos, &scratch2, (struct huft *)&scratch);
+        rzipInflate(g_TexBitsPos, &scratch2, (struct huft *)&scratch);
         imagebytesout = texAlignIndices(scratch2, width, height, format, &dst[totalbytesout]);
-        texSetBitstring((s32) rzipGetInputEnd());
+        texBitsInit((s32) rzipGetInputEnd());
 
         if ((arg2 == 1) && (forcenumimages > 0))
         {
@@ -835,7 +835,7 @@ s32 texInflateNonZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct tex
     u8 *end;
     s32 writetocache = FALSE;
 
-    texSetBitstring(src);
+    texBitsInit(src);
 
     numimages = arg2 && forcenumimages ? forcenumimages : 1;
 
@@ -857,10 +857,10 @@ s32 texInflateNonZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct tex
 
     for (i = 0; i < numimages; i++)
     {
-        format = texReadBits(4);
-        width = texReadBits(8);
-        height = texReadBits(8);
-        compmethod = texReadBits(4);
+        format = texBitsRead(4);
+        width = texBitsRead(8);
+        height = texBitsRead(8);
+        compmethod = texBitsRead(4);
 
         if (i == 0)
         {
@@ -943,7 +943,7 @@ s32 texInflateNonZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct tex
                 break;
 
             case TEXCOMPMETHOD_HUFFMANBLUR:
-                stack = texReadBits(3);
+                stack = texBitsRead(3);
                 texInflateHuffman(scratch, g_TexFormatNumChannels[format] * width * height, g_TexFormatChannelSizes[format]);
                 texBlur(scratch, width, g_TexFormatNumChannels[format] * height, stack, g_TexFormatChannelSizes[format]);
 
@@ -956,7 +956,7 @@ s32 texInflateNonZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct tex
                 break;
 
             case TEXCOMPMETHOD_RLEBLUR:
-                stack = texReadBits(3);
+                stack = texBitsRead(3);
                 texInflateRle(scratch, g_TexFormatNumChannels[format] * width * height);
                 texBlur(scratch, width, g_TexFormatNumChannels[format] * height, stack, g_TexFormatChannelSizes[format]);
 
@@ -983,13 +983,13 @@ s32 texInflateNonZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct tex
         imagebytesout = (imagebytesout + 7) & ~7;
         totalbytesout += imagebytesout;
 
-        if (img_bitcount == 0)
+        if (g_TexBitsCount == 0)
         {
-            img_curpos++;
+            g_TexBitsPos++;
         }
         else
         {
-            img_bitcount = 0;
+            g_TexBitsCount = 0;
         }
     }
 
@@ -1337,7 +1337,7 @@ void texInflateHuffman(u8 *dst, s32 numiterations, s32 chansize)
 
 	// Read the frequencies list
 	for (i = 0; i < chansize; i++) {
-		frequencies[i] = texReadBits(8);
+		frequencies[i] = texBitsRead(8);
 	}
 
 	// Initialise the tree
@@ -1438,7 +1438,7 @@ void texInflateHuffman(u8 *dst, s32 numiterations, s32 chansize)
 		s32 indexorvalue = rootindex;
 
 		while (indexorvalue < 10000) {
-			indexorvalue = nodes[indexorvalue][texReadBits(1)];
+			indexorvalue = nodes[indexorvalue][texBitsRead(1)];
 		}
 
 		if (chansize <= 256) {
@@ -1485,9 +1485,9 @@ void texInflateHuffman(u8 *dst, s32 numiterations, s32 chansize)
  */
 void texInflateRle(u8 *dst, s32 blockstotal)
 {
-	s32 btfieldsize = texReadBits(3);
-	s32 rlfieldsize = texReadBits(3);
-	s32 blocksize = texReadBits(4);
+	s32 btfieldsize = texBitsRead(3);
+	s32 rlfieldsize = texBitsRead(3);
+	s32 blocksize = texBitsRead(4);
 	s32 cost;
 	s32 fudge;
 	s32 blocksdone;
@@ -1505,20 +1505,20 @@ void texInflateRle(u8 *dst, s32 blockstotal)
 	blocksdone = 0;
 
 	while (blocksdone < blockstotal) {
-		if (texReadBits(1) == 0) {
+		if (texBitsRead(1) == 0) {
 			// Found a literal directive
 			if (blocksize <= 8) {
-				dst[blocksdone] = texReadBits(blocksize);
+				dst[blocksdone] = texBitsRead(blocksize);
 				blocksdone++;
 			} else {
 				u16 *tmp = (u16 *)dst;
-				tmp[blocksdone] = texReadBits(blocksize);
+				tmp[blocksdone] = texBitsRead(blocksize);
 				blocksdone++;
 			}
 		} else {
 			// Found a run directive
-			s32 startblockindex = blocksdone - texReadBits(btfieldsize) - 1;
-			s32 runnumblocks = texReadBits(rlfieldsize) + fudge;
+			s32 startblockindex = blocksdone - texBitsRead(btfieldsize) - 1;
+			s32 runnumblocks = texBitsRead(rlfieldsize) + fudge;
 
 			if (blocksize <= 8) {
 				for (i = startblockindex; i < startblockindex + runnumblocks; i++) {
@@ -1527,7 +1527,7 @@ void texInflateRle(u8 *dst, s32 blockstotal)
 				}
 
 				// The next instruction must be a literal
-				dst[blocksdone] = texReadBits(blocksize);
+				dst[blocksdone] = texBitsRead(blocksize);
 				blocksdone++;
 			} else {
 				u16 *tmp = (u16 *)dst;
@@ -1538,7 +1538,7 @@ void texInflateRle(u8 *dst, s32 blockstotal)
 				}
 
 				// The next instruction must be a literal
-				tmp[blocksdone] = texReadBits(blocksize);
+				tmp[blocksdone] = texBitsRead(blocksize);
 				blocksdone++;
 			}
 		}
@@ -1559,7 +1559,7 @@ void texInflateRle(u8 *dst, s32 blockstotal)
  */
 s32 texBuildLookup(s8 *lookup, s32 bitsperpixel)
 {
-    s32 numcolors = texReadBits(11);
+    s32 numcolors = texBitsRead(11);
     s32 i;
     
     if (bitsperpixel <= 16)
@@ -1567,7 +1567,7 @@ s32 texBuildLookup(s8 *lookup, s32 bitsperpixel)
         u16 *image = (u16*)lookup;
         for (i = 0; i < numcolors; i++)
         {
-            image[i] = texReadBits(bitsperpixel);
+            image[i] = texBitsRead(bitsperpixel);
         }
     }
     else if (bitsperpixel <= 24)
@@ -1575,7 +1575,7 @@ s32 texBuildLookup(s8 *lookup, s32 bitsperpixel)
         u32 *image = (u32*)lookup;
         for (i = 0; i < numcolors; i++)
         {
-            image[i] = texReadBits(bitsperpixel);
+            image[i] = texBitsRead(bitsperpixel);
         }
     }
     else
@@ -1583,7 +1583,7 @@ s32 texBuildLookup(s8 *lookup, s32 bitsperpixel)
         u32 *image = (u32*)lookup;
         for (i = 0; i < numcolors; i++)
         {
-            image[i] = texReadBits(24) << 8 | texReadBits(bitsperpixel - 24);
+            image[i] = texBitsRead(24) << 8 | texBitsRead(bitsperpixel - 24);
         }
     }
     return numcolors;
@@ -1616,7 +1616,7 @@ void texReadAlphaBits(u8 *image,s32 count)
   
     for(i = 0; i < count; i++)
     {
-          image[i] = texReadBits(1);
+          image[i] = texBitsRead(1);
     }
 }
 
@@ -1640,8 +1640,8 @@ s32 texReadUncompressed(u8 *dst, s32 width, s32 height, s32 format)
 	case TEXFORMAT_RGBA32:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst32[x] = texReadBits(16) << 16;
-				dst32[x] |= texReadBits(16);
+				dst32[x] = texBitsRead(16) << 16;
+				dst32[x] |= texBitsRead(16);
 			}
 
 			dst32 += (width + 3) & 0xffc;
@@ -1651,7 +1651,7 @@ s32 texReadUncompressed(u8 *dst, s32 width, s32 height, s32 format)
 	case TEXFORMAT_RGB24:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst32[x] = texReadBits(24) << 8 | 0xff;
+				dst32[x] = texBitsRead(24) << 8 | 0xff;
 			}
 
 			dst32 += (width + 3) & 0xffc;
@@ -1662,7 +1662,7 @@ s32 texReadUncompressed(u8 *dst, s32 width, s32 height, s32 format)
 	case TEXFORMAT_IA16:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst16[x] = texReadBits(16);
+				dst16[x] = texBitsRead(16);
 			}
 
 			dst16 += (width + 3) & 0xffc;
@@ -1672,7 +1672,7 @@ s32 texReadUncompressed(u8 *dst, s32 width, s32 height, s32 format)
 	case TEXFORMAT_RGB15:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst16[x] = texReadBits(15) << 1 | 1;
+				dst16[x] = texBitsRead(15) << 1 | 1;
 			}
 
 			dst16 += (width + 3) & 0xffc;
@@ -1683,7 +1683,7 @@ s32 texReadUncompressed(u8 *dst, s32 width, s32 height, s32 format)
 	case TEXFORMAT_I8:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst8[x] = texReadBits(8);
+				dst8[x] = texBitsRead(8);
 			}
 
 			dst8 += (width + 7) & 0xff8;
@@ -1694,7 +1694,7 @@ s32 texReadUncompressed(u8 *dst, s32 width, s32 height, s32 format)
 	case TEXFORMAT_I4:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x += 2) {
-				dst8[x >> 1] = texReadBits(8);
+				dst8[x >> 1] = texBitsRead(8);
 			}
 
 			dst8 += ((width + 15) & 0xff0) >> 1;
@@ -1897,7 +1897,7 @@ s32 texInflateLookup(s32 width, s32 height, u8 *dst, u8 *lookup, s32 numcolours,
 	case TEXFORMAT_RGBA32:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst32[x] = lookup32[texReadBits(bitspercolour)];
+				dst32[x] = lookup32[texBitsRead(bitspercolour)];
 			}
 
 			dst32 += (width + 3) & 0xffc;
@@ -1907,7 +1907,7 @@ s32 texInflateLookup(s32 width, s32 height, u8 *dst, u8 *lookup, s32 numcolours,
 	case TEXFORMAT_RGB24:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst32[x] = lookup32[texReadBits(bitspercolour)] << 8;
+				dst32[x] = lookup32[texBitsRead(bitspercolour)] << 8;
 			}
 
 			dst32 += (width + 3) & 0xffc;
@@ -1918,7 +1918,7 @@ s32 texInflateLookup(s32 width, s32 height, u8 *dst, u8 *lookup, s32 numcolours,
 	case TEXFORMAT_IA16:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst16[x] = lookup16[texReadBits(bitspercolour)];
+				dst16[x] = lookup16[texBitsRead(bitspercolour)];
 			}
 
 			dst16 += (width + 3) & 0xffc;
@@ -1928,7 +1928,7 @@ s32 texInflateLookup(s32 width, s32 height, u8 *dst, u8 *lookup, s32 numcolours,
 	case TEXFORMAT_RGB15:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst16[x] = lookup16[texReadBits(bitspercolour)] << 1 | 1;
+				dst16[x] = lookup16[texBitsRead(bitspercolour)] << 1 | 1;
 			}
 
 			dst16 += (width + 3) & 0xffc;
@@ -1939,7 +1939,7 @@ s32 texInflateLookup(s32 width, s32 height, u8 *dst, u8 *lookup, s32 numcolours,
 	case TEXFORMAT_I8:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				dst8[x] = lookup16[texReadBits(bitspercolour)];
+				dst8[x] = lookup16[texBitsRead(bitspercolour)];
 			}
 
 			dst8 += (width + 7) & 0xff8;
@@ -1950,10 +1950,10 @@ s32 texInflateLookup(s32 width, s32 height, u8 *dst, u8 *lookup, s32 numcolours,
 	case TEXFORMAT_I4:
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x += 2) {
-				dst8[x >> 1] = lookup16[texReadBits(bitspercolour)] << 4;
+				dst8[x >> 1] = lookup16[texBitsRead(bitspercolour)] << 4;
 
 				if (x + 1 < width) {
-					dst8[x >> 1] |= lookup[(texReadBits(bitspercolour) * 2) + 1];
+					dst8[x >> 1] |= lookup[(texBitsRead(bitspercolour) * 2) + 1];
 				}
 			}
 

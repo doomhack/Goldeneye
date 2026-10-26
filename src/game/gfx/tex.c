@@ -6,10 +6,10 @@
 #include "game/gfx/tex.h"
 
 s32 g_TexLutMode;
-s32 dword_CODE_bss_8008D144; // unused/padding
+s32 g_TexUnusedBss1; // unused/padding
 s_bss_8008D148 g_TexTileStates[8]; //[0x160]; //8 entries of 0x2c ea
 s_bss_8008D2A8 g_TexTileSizes[8]; //[0xA0]; //8 entries of 0x14 ea
-s32 dword_CODE_bss_8008D348; // unused/padding
+s32 g_TexUnusedBss2; // unused/padding
 
 //D:8004E760
 u16 default_hit_sfx[] = {HIT_BULLET_STONE1_SFX, HIT_BULLET_STONE2_SFX};
@@ -136,12 +136,12 @@ char * image_sound_names[] = {
 };
 
 
-void nullsub_47(void) {
+void texUnusedStub2(void) {
     return;
 }
 
 
-void sub_GAME_7F0CC4C8(void)
+void texResetTileState(void)
 {
     int i;
 
@@ -154,7 +154,7 @@ void sub_GAME_7F0CC4C8(void)
 }
 
 
-s32 unused_copy_byte_array(u8* src, s32 count, u8* dst)
+s32 texCopyBytes(u8* src, s32 count, u8* dst)
 {
     u8* src_itr;
     u8* dst_itr;
@@ -386,13 +386,13 @@ u32 texModeToGbiMode(s32 arg0) {
 }
 
 
-s32 sub_GAME_7F0CCAFC(f32 arg0)
+s32 texCeil(f32 arg0)
 {
     return (s32)arg0 < (f32)arg0 ? (s32)arg0+1 : (s32)arg0;
 }
 
 
-s32 sub_GAME_7F0CCB38(s32 *arg0)
+s32 texGetLoadBlockDxt(s32 *arg0)
 {
     s32 temp_t7;
     s32 temp_v0;
@@ -401,17 +401,17 @@ s32 sub_GAME_7F0CCB38(s32 *arg0)
     temp_t7 = arg0[2] & 3;
     if (temp_t7 == 3)
     {
-        return sub_GAME_7F0CCAFC((2.0f / (f32) (temp_v0 * 4)) * 2048.0f);
+        return texCeil((2.0f / (f32) (temp_v0 * 4)) * 2048.0f);
     }
     if (temp_t7 == 2)
     {
-        return sub_GAME_7F0CCAFC((4.0f / (f32) (temp_v0 * 4)) * 2048.0f);
+        return texCeil((4.0f / (f32) (temp_v0 * 4)) * 2048.0f);
     }
     if (temp_t7 == 1)
     {
-        return sub_GAME_7F0CCAFC((8.0f / (f32) (temp_v0 * 8)) * 2048.0f);
+        return texCeil((8.0f / (f32) (temp_v0 * 8)) * 2048.0f);
     }
-    return sub_GAME_7F0CCAFC((16.0f / (f32) (temp_v0 * 0x10)) * 2048.0f);
+    return texCeil((16.0f / (f32) (temp_v0 * 0x10)) * 2048.0f);
 }
 
 
@@ -621,7 +621,7 @@ Gfx *texWriteLoadToTmemZero(Gfx *gdl, struct tex *tex)
 	s32 len;
 	s32 dxt;
 
-	dxt = sub_GAME_7F0CCB38((s32 *)tex);
+	dxt = texGetLoadBlockDxt((s32 *)tex);
 	texGetDepthAndSize(tex, &depth, &len);
 
 	if (tex->lutmodeindex == 0)
@@ -799,7 +799,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
 
     count = srcsize >> 3;
 
-    sub_GAME_7F0CC4C8();
+    texResetTileState();
 
     if (texpool == NULL)
     {
@@ -962,7 +962,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                     if (texnum == 1508)
                     {
                         out = sub_GAME_7F09343C(out, TRUE);
-                        sub_GAME_7F0CC4C8();
+                        texResetTileState();
                     }
 
                     /**
@@ -974,7 +974,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                     if (texnum == 1511)
                     {
                         out = sub_GAME_7F09365C(out, TRUE);
-                        sub_GAME_7F0CC4C8();
+                        texResetTileState();
                     }
 
                     if (check_if_imageID_is_light(texnum))

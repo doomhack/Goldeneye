@@ -3,7 +3,7 @@
 #include "game/menu/title.h"
 #include "game/gfx/initintromatrices.h"
 
-void alloc_intro_matrices(void)
+void titleAllocMatrices(void)
 {
     D_8002A7D0 = 0;
     matrixBufferRareLogo0     = mempAlloc(0x80, MEMPOOL_STAGE);

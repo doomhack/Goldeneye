@@ -270,7 +270,7 @@ Gfx *glassRenderShards(Gfx *gdl)
     s32 i;
     Mtx *mtx;
 
-    texSelect(&gdl, glassoverlayimage + 1, 2, 1, 2);
+    texSelect(&gdl, g_ImageGlassOverlay + 1, 2, 1, 2);
 
     gSPTexture(gdl++, 0x0D80, 0x0D80, 2, G_TX_RENDERTILE, 1);
     gDPSetCycleType(gdl++, G_CYC_2CYCLE);

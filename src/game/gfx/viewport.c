@@ -8,21 +8,21 @@
 #include <fr.h>
 
 // bss
-s32 z_buffer_width; // 0x8008e8f0
-s32 z_buffer_height; // 0x8008e8f4
+s32 g_ZbufWidth; // 0x8008e8f0
+s32 g_ZbufHeight; // 0x8008e8f4
 
 // data
-s32 z_buffer = 0; // 0x8004f010
+s32 g_Zbuf = 0; // 0x8004f010
 
-// TRUE when z_buffer is the gameplay buffer from zbufAllocate (sized for hi-res).
+// TRUE when g_Zbuf is the gameplay buffer from zbufAllocate (sized for hi-res).
 // Buffers handed in through zbufSetBuffer (front-end menus) keep their own width.
-static s32 z_buffer_is_gameplay = FALSE;
+static s32 g_ZbufIsGameplay = FALSE;
 
 /*
  * Address: 0x7f0d2870
 */
 void zbufDeallocate(void) {
-    z_buffer = 0;
+    g_Zbuf = 0;
 }
 
 
@@ -33,29 +33,29 @@ void zbufAllocate(void)
 {
     if (resolution != 0)
     {
-        z_buffer_width = Z_BUFFER_4_3_WIDTH;
-        z_buffer_height = Z_BUFFER_4_3_HEIGHT;
+        g_ZbufWidth = Z_BUFFER_4_3_WIDTH;
+        g_ZbufHeight = Z_BUFFER_4_3_HEIGHT;
     }
     else
     {
         // Sized for hi-res so the option can be toggled mid-level;
         // zbufInit sets the width actually used each frame.
-        z_buffer_width = SCREEN_WIDTH * VI_MAX_SCALEX;
+        g_ZbufWidth = SCREEN_WIDTH * VI_MAX_SCALEX;
 
         // Co-op also shows one view full-screen at times (watch, cutscenes).
         if ((getPlayerCount() == 1) || g_CoopMode)
         {
-            z_buffer_height = SCREEN_HEIGHT;
+            g_ZbufHeight = SCREEN_HEIGHT;
         }
         else
         {
-            z_buffer_height = Z_BUFFER_HEIGHT;
+            g_ZbufHeight = Z_BUFFER_HEIGHT;
         }
     }
 
-    z_buffer = mempAlloc((z_buffer_width * z_buffer_height * 2) + 64, MEMPOOL_STAGE);
-    z_buffer = ALIGN64_V1(z_buffer);
-    z_buffer_is_gameplay = (resolution == 0);
+    g_Zbuf = mempAlloc((g_ZbufWidth * g_ZbufHeight * 2) + 64, MEMPOOL_STAGE);
+    g_Zbuf = ALIGN64_V1(g_Zbuf);
+    g_ZbufIsGameplay = (resolution == 0);
 }
 
 
@@ -63,10 +63,10 @@ void zbufAllocate(void)
  * Address: 0x7f0d2938
 */
 void zbufSetBuffer(s32 buffer, s32 width, s32 height) {
-    z_buffer = buffer;
-    z_buffer_width = width;
-    z_buffer_height = height;
-    z_buffer_is_gameplay = FALSE;
+    g_Zbuf = buffer;
+    g_ZbufWidth = width;
+    g_ZbufHeight = height;
+    g_ZbufIsGameplay = FALSE;
 }
 
 
@@ -76,18 +76,18 @@ void zbufSetBuffer(s32 buffer, s32 width, s32 height) {
 Gfx *zbufInit(Gfx *gdl) {
     s32 phi_a3;
     s32 test;
-    if (z_buffer == 0) {
+    if (g_Zbuf == 0) {
         zbufAllocate();
     }
-    if (z_buffer_is_gameplay) {
-        z_buffer_width = VI_SX(SCREEN_WIDTH);
+    if (g_ZbufIsGameplay) {
+        g_ZbufWidth = VI_SX(SCREEN_WIDTH);
     }
     if (!(get_cur_playernum() < 2) || ((getViewCount() == 2) && !coopSplitSideBySide() && (coopPlayerPerson(get_cur_playernum()) == 1))) {
-        phi_a3 = z_buffer_width * SCREEN_HEIGHT;
+        phi_a3 = g_ZbufWidth * SCREEN_HEIGHT;
     } else {
         phi_a3 = 0;
     }
-    test = (z_buffer - phi_a3);
+    test = (g_Zbuf - phi_a3);
     test = test & ~0x3F;
     gDPPipeSync(gdl++);
     gDPSetDepthImage(gdl++, test);
@@ -101,7 +101,7 @@ Gfx *zbufInit(Gfx *gdl) {
 Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
     s32 start_x;
     s32 end_x;
-    s32 height = z_buffer_height;
+    s32 height = g_ZbufHeight;
 
     // Stacked views (co-op or 2 player multiplayer) only need half the rows
     // cleared.
@@ -111,7 +111,7 @@ Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
 
     gDPPipeSync(gdl++);
     gDPSetRenderMode(gdl++, G_RM_NOOP, G_RM_NOOP2);
-    gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, z_buffer_width, OS_K0_TO_PHYSICAL(z_buffer));
+    gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, g_ZbufWidth, OS_K0_TO_PHYSICAL(g_Zbuf));
     gDPSetCycleType(gdl++, G_CYC_FILL);
     gDPSetFillColor(gdl++, (GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0)));
     gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());

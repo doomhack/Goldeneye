@@ -4,31 +4,31 @@
 #include <bondtypes.h>
 #include "game/player/bondview.h"
 
-extern struct sImageTableEntry *crosshairimage;
+extern struct sImageTableEntry *g_ImageCrosshair;
 
-extern struct sImageTableEntry *mainfolderimages;
-extern struct sImageTableEntry *mpstageselimages;
-extern struct sImageTableEntry *genericimage;
-extern struct sImageTableEntry *skywaterimages;
-extern struct sImageTableEntry *monitorimages;
-extern struct sImageTableEntry *mpcharselimages;
-extern struct sImageTableEntry *mpradarimages;
-extern struct sImageTableEntry *impactimages;
-extern struct sImageTableEntry *explosion_smokeimages;
-extern struct sImageTableEntry *scattered_explosions;
-extern struct sImageTableEntry *flareimage2;
-extern struct sImageTableEntry *glassoverlayimage;
-extern struct sImageTableEntry *flareimage3;
-extern struct sImageTableEntry *flareimage4;
-extern struct sImageTableEntry *flareimage5;
+extern struct sImageTableEntry *g_ImagesMainFolder;
+extern struct sImageTableEntry *g_ImagesMpStageSelect;
+extern struct sImageTableEntry *g_ImageGeneric;
+extern struct sImageTableEntry *g_ImagesSkyWater;
+extern struct sImageTableEntry *g_ImagesMonitor;
+extern struct sImageTableEntry *g_ImagesMpCharSelect;
+extern struct sImageTableEntry *g_ImagesMpRadar;
+extern struct sImageTableEntry *g_ImagesImpact;
+extern struct sImageTableEntry *g_ImagesExplosionSmoke;
+extern struct sImageTableEntry *g_ImagesScatteredExplosions;
+extern struct sImageTableEntry *g_ImageFlare2;
+extern struct sImageTableEntry *g_ImageGlassOverlay;
+extern struct sImageTableEntry *g_ImageFlare3;
+extern struct sImageTableEntry *g_ImageFlare4;
+extern struct sImageTableEntry *g_ImageFlare5;
 
-extern u8* img_curpos;
-extern s32 img_bitcount;
-extern s32 *pGlobalimagetable;
-extern s32 globalbank_rdram_offset;
+extern u8* g_TexBitsPos;
+extern s32 g_TexBitsCount;
+extern s32 *g_ImageBank;
+extern s32 g_ImageBankOffset;
 
-void texReset(void);
-u32 texReadBits(s32 bitCount);
-void texSetBitstring(s32 pos);
+void imageBankLoad(void);
+u32 texBitsRead(s32 bitCount);
+void texBitsInit(s32 pos);
 
 #endif

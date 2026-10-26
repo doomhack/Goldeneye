@@ -1229,13 +1229,13 @@ Gfx *frontDrawCursor(Gfx *DL)
 
     option = folder_selection_screen_option_icon;
     if (option == 0) {
-        image = crosshairimage;
+        image = g_ImageCrosshair;
     }
     else if (option == 1) {
-        image = mainfolderimages + IMG_COPY; //COPY
+        image = g_ImagesMainFolder + IMG_COPY; //COPY
     }
     else if (option == 2) {
-        image = mainfolderimages + IMG_DEL;
+        image = g_ImagesMainFolder + IMG_DEL;
     }
 
     texSelect(&DL, image, 4, 0, 0);
@@ -2672,11 +2672,11 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         copypos.f[0] = 225.0f;
         copypos.f[1] = 285.0f;
 
-        copyhalfsize.f[0] = (f32) (mainfolderimages + IMG_COPY)->width * 0.5f;
-        copyhalfsize.f[1] = (f32) (mainfolderimages + IMG_COPY)->height * 0.5f;
+        copyhalfsize.f[0] = (f32) (g_ImagesMainFolder + IMG_COPY)->width * 0.5f;
+        copyhalfsize.f[1] = (f32) (g_ImagesMainFolder + IMG_COPY)->height * 0.5f;
 
-        texSelect(&DL, mainfolderimages, 4, 0, 0);
-        display_image_at_position(&DL, &copypos.f[0], &copyhalfsize.f[0], mainfolderimages->width, mainfolderimages->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) mainfolderimages->level > 0, 0);
+        texSelect(&DL, g_ImagesMainFolder, 4, 0, 0);
+        display_image_at_position(&DL, &copypos.f[0], &copyhalfsize.f[0], g_ImagesMainFolder->width, g_ImagesMainFolder->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) g_ImagesMainFolder->level > 0, 0);
 
         folder_option_COPY_bound.left = copypos.f[0] - copyhalfsize.f[0];
         folder_option_COPY_bound.up = copypos.f[1] - copyhalfsize.f[1];
@@ -2685,11 +2685,11 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         erasepos.f[0] = 335.0f;
         erasepos.f[1] = 285.0f;
 
-        erasehalfsize.f[0] = (mainfolderimages + IMG_DEL)->width * 0.5f;
-        erasehalfsize.f[1] = (mainfolderimages + IMG_DEL)->height * 0.5f;
+        erasehalfsize.f[0] = (g_ImagesMainFolder + IMG_DEL)->width * 0.5f;
+        erasehalfsize.f[1] = (g_ImagesMainFolder + IMG_DEL)->height * 0.5f;
 
-        texSelect(&DL, mainfolderimages + IMG_DEL, 4, 0, 0);
-        display_image_at_position(&DL, &erasepos.f[0], &erasehalfsize.f[0], (mainfolderimages + IMG_DEL)->width, (mainfolderimages + IMG_DEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (mainfolderimages + IMG_DEL)->level > 0, 0);
+        texSelect(&DL, g_ImagesMainFolder + IMG_DEL, 4, 0, 0);
+        display_image_at_position(&DL, &erasepos.f[0], &erasehalfsize.f[0], (g_ImagesMainFolder + IMG_DEL)->width, (g_ImagesMainFolder + IMG_DEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_DEL)->level > 0, 0);
 
         folder_option_ERASE_bound.left = (f32) (erasepos.f[0] - erasehalfsize.f[0]);
         folder_option_ERASE_bound.up = (f32) (erasepos.f[1] - erasehalfsize.f[1]);
@@ -2698,11 +2698,11 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         selectpos.f[0] = 110.0f;
         selectpos.f[1] = 285.0f;
 
-        selecthalfsize.f[0] = (mainfolderimages + IMG_SEL)->width * 0.5f;
-        selecthalfsize.f[1] = (mainfolderimages + IMG_SEL)->height * 0.5f;
+        selecthalfsize.f[0] = (g_ImagesMainFolder + IMG_SEL)->width * 0.5f;
+        selecthalfsize.f[1] = (g_ImagesMainFolder + IMG_SEL)->height * 0.5f;
 
-        texSelect(&DL, mainfolderimages + IMG_SEL, 4, 0, 0);
-        display_image_at_position(&DL, &selectpos.f[0], &selecthalfsize.f[0], (mainfolderimages + IMG_SEL)->width, (mainfolderimages + IMG_SEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (mainfolderimages + IMG_SEL)->level > 0, 0);
+        texSelect(&DL, g_ImagesMainFolder + IMG_SEL, 4, 0, 0);
+        display_image_at_position(&DL, &selectpos.f[0], &selecthalfsize.f[0], (g_ImagesMainFolder + IMG_SEL)->width, (g_ImagesMainFolder + IMG_SEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_SEL)->level > 0, 0);
     }
 
     if (folder_selected_for_deletion < 0)
@@ -4068,7 +4068,7 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
         if ((i == 0 || unlockedDifficulty >= i)
             && (check_if_stage_completed_on_difficulty(briefingpage, i) == 3))
         {
-            image = &mainfolderimages[IMAGE_CHECK];
+            image = &g_ImagesMainFolder[IMAGE_CHECK];
 
             xypos[0] = 280.0f;
             xypos[1] = (f32) ((i * 0x1E) + 0xBA);
@@ -5452,27 +5452,27 @@ void init_menu0f_mpcharsel(void)
         // Multiplayer character images are composed of 4 textures.
 
         // upper left
-        if (mpcharselimages[selected_photo * 4 + 0].index < (u32)(MAX_TEXTURES - 1))
+        if (g_ImagesMpCharSelect[selected_photo * 4 + 0].index < (u32)(MAX_TEXTURES - 1))
         {
-            texLoadFromTextureNum(mpcharselimages[selected_photo * 4 + 0].index, 0);
+            texLoadFromTextureNum(g_ImagesMpCharSelect[selected_photo * 4 + 0].index, 0);
         }
 
         // upper right
-        if (mpcharselimages[selected_photo * 4 + 1].index < (u32)(MAX_TEXTURES - 1))
+        if (g_ImagesMpCharSelect[selected_photo * 4 + 1].index < (u32)(MAX_TEXTURES - 1))
         {
-            texLoadFromTextureNum(mpcharselimages[selected_photo * 4 + 1].index, 0);
+            texLoadFromTextureNum(g_ImagesMpCharSelect[selected_photo * 4 + 1].index, 0);
         }
 
         // lower left
-        if (mpcharselimages[selected_photo * 4 + 2].index < (u32)(MAX_TEXTURES - 1))
+        if (g_ImagesMpCharSelect[selected_photo * 4 + 2].index < (u32)(MAX_TEXTURES - 1))
         {
-            texLoadFromTextureNum(mpcharselimages[selected_photo * 4 + 2].index, 0);
+            texLoadFromTextureNum(g_ImagesMpCharSelect[selected_photo * 4 + 2].index, 0);
         }
 
         // lower right
-        if (mpcharselimages[selected_photo * 4 + 3].index < (u32)(MAX_TEXTURES - 1))
+        if (g_ImagesMpCharSelect[selected_photo * 4 + 3].index < (u32)(MAX_TEXTURES - 1))
         {
-            texLoadFromTextureNum(mpcharselimages[selected_photo * 4 + 3].index, 0);
+            texLoadFromTextureNum(g_ImagesMpCharSelect[selected_photo * 4 + 3].index, 0);
         }
     }
 
@@ -5773,25 +5773,25 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg
     gSPVertex(DL++, spCC, 16, 0);
 
     selected_photo = mp_chr_setup[arg5].select_photo * 4;
-    simage = &mpcharselimages[mp_chr_setup[arg5].select_photo * 4];
+    simage = &g_ImagesMpCharSelect[mp_chr_setup[arg5].select_photo * 4];
     texSelect(&DL, simage + 2, 2, 0, 2);
     gSP1Triangle(DL++, 0, 1, 4, 0);
     gSP1Triangle(DL++, 4, 1, 5, 0);
 
     selected_photo = mp_chr_setup[arg5].select_photo * 4;
-    simage = &mpcharselimages[mp_chr_setup[arg5].select_photo * 4];
+    simage = &g_ImagesMpCharSelect[mp_chr_setup[arg5].select_photo * 4];
     texSelect(&DL, simage + 3, 2, 0, 2);
     gSP1Triangle(DL++, 2, 3, 6, 0);
     gSP1Triangle(DL++, 6, 3, 7, 0);
 
     selected_photo = mp_chr_setup[arg5].select_photo * 4;
-    simage = &mpcharselimages[mp_chr_setup[arg5].select_photo * 4];
+    simage = &g_ImagesMpCharSelect[mp_chr_setup[arg5].select_photo * 4];
     texSelect(&DL, simage + 0, 2, 0, 2);
     gSP1Triangle(DL++, 8, 9, 12, 0);
     gSP1Triangle(DL++, 12, 9, 13, 0);
 
     selected_photo = mp_chr_setup[arg5].select_photo * 4;
-    simage = &mpcharselimages[mp_chr_setup[arg5].select_photo * 4];
+    simage = &g_ImagesMpCharSelect[mp_chr_setup[arg5].select_photo * 4];
     texSelect(&DL, simage + 1, 2, 0, 2);
     gSP1Triangle(DL++, 10, 11, 14, 0);
     gSP1Triangle(DL++, 14, 11, 15, 0);
@@ -6526,7 +6526,7 @@ Gfx * constructor_menu12_mpstage(Gfx *DL)
 
     gDPSetTextureFilter(DL++, G_TF_POINT);
 
-    simage = mainfolderimages + 5;
+    simage = g_ImagesMainFolder + 5;
     texSelect(&DL, simage, 1, 0, 2); // IMAGE_DOT
 
     spF8.f[0] = 176.0f;
@@ -6557,7 +6557,7 @@ Gfx * constructor_menu12_mpstage(Gfx *DL)
         {
             if (count < 12)
             {
-                simage = &mpstageselimages[multi_stage_setups[count].photo];
+                simage = &g_ImagesMpStageSelect[multi_stage_setups[count].photo];
 
                 texSelect(&DL, simage, 1, 0, 2);
 

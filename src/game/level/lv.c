@@ -361,13 +361,13 @@ void lvlStageLoad(s32 stage)
     musicTrack3ApplySeqpVol(VOLUME_MAX);
     sub_GAME_7F0C1364();
     modelmgrSetLevelResetting(TRUE);
-    set_mt_tex_alloc();
+    texInitSharedPool();
 #ifdef VERSION_EU
     bullet_moving_sparks_reset();
 #else
     bullet_sparks_reset_all();
 #endif
-    texReset();
+    imageBankLoad();
     load_font_tables();
 
     /* If title screen, initialize screen and folder setup.
@@ -471,7 +471,7 @@ void lvlStageLoad(s32 stage)
 
     something_with_stage_objectives();
     mpwatchUnpauseGame();
-    sub_GAME_7F09B820();
+    vtxstoreReset();
     jointListInit();
     modelmgrResetSlotCounts();
     init_load_objpos_table();
@@ -1366,7 +1366,7 @@ void lvlManageMpGame(void)
     }
     else
     {
-        sub_GAME_7F09BBBC();
+        vtxstoreTick();
         lvlSetMultipliersForDifficulty();
         updateRoomStatusFlags();
         sub_GAME_7F092E50();

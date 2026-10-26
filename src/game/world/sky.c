@@ -860,7 +860,7 @@ Gfx *skyRender(Gfx *gdl)
         {
             gDPPipeSync(gdl++);
 
-            texSelect(&gdl, &skywaterimages[fogGetCurrentEnvironmentp()->WaterImageId], 1, 0, 2);
+            texSelect(&gdl, &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->WaterImageId], 1, 0, 2);
             gdl = sub_GAME_7F09343C(gdl, 0); // ???
             gDPSetRenderMode(gdl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
 
@@ -1279,7 +1279,7 @@ Gfx *skyRender(Gfx *gdl)
 
     gDPPipeSync(gdl++);
 
-    texSelect(&gdl, &skywaterimages[fogGetCurrentEnvironmentp()->SkyImageId], 1, 0, 2);
+    texSelect(&gdl, &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->SkyImageId], 1, 0, 2);
 
     if (1);
 
