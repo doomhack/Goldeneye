@@ -1,5 +1,5 @@
 #include <ultra64.h>
-#include "game/math/math_atan2f.h"
+#include "game/math/trig.h"
 #include "game/text/textrelated.h"
 #include "game/menu/front.h"
 #include "fr.h"

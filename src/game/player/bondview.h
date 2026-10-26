@@ -4,7 +4,7 @@
 #include <ultra64.h>
 #include <bondtypes.h>
 #include "game/chr/chr.h"
-#include "game/math/matrixmath.h"
+#include "game/math/matrix.h"
 #include "game/menu/options.h"
 #include "game/gfx/image.h"
 
@@ -2622,7 +2622,6 @@ extern struct coord3d g_DefaultFrozenPlayerOffset;
 extern struct coord3d g_DefaultFrozenMoveOffset;
 
 //D:80036830
-extern coord3d g_ZeroCoord;
 //D:8003683C
 extern ModelRenderData D_8003683C;
 //D:8003687C

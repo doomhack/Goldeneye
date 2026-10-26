@@ -1,43 +1,43 @@
 #include <ultra64.h>
 #include "game/math/quaternion.h"
-#include "game/math/math_asinfacosf.h"
+#include "game/math/trig.h"
 
 #define HALF2RAD(x) (x * (M_PI_F / 32768.0f))
 
 void quatFromAnglesU16(vec3u angles, quatf q)
 {
-    f32 cos_x = cosf(HALF2RAD(angles[0]) * 0.5f);
-    f32 sin_x = sinf(HALF2RAD(angles[0]) * 0.5f);
-    f32 cos_y = cosf(HALF2RAD(angles[1]) * 0.5f);
-    f32 sin_y = sinf(HALF2RAD(angles[1]) * 0.5f);
-    f32 cos_z = cosf(HALF2RAD(angles[2]) * 0.5f);
-    f32 sin_z = sinf(HALF2RAD(angles[2]) * 0.5f);
-    f32 cos_x_cos_y = cos_x * cos_y;
-    f32 cos_x_sin_y = cos_x * sin_y;
-    f32 sin_x_cos_y = sin_x * cos_y;
-    f32 sin_x_sin_y = sin_x * sin_y;
-    q[0] = ((cos_x_cos_y * cos_z) + (sin_x_sin_y * sin_z));
-    q[1] = ((sin_x_cos_y * cos_z) - (cos_x_sin_y * sin_z));
-    q[2] = ((cos_x_sin_y * cos_z) + (sin_x_cos_y * sin_z));
-    q[3] = ((cos_x_cos_y * sin_z) - (sin_x_sin_y * cos_z));
+    f32 cosX = cosf(HALF2RAD(angles[0]) * 0.5f);
+    f32 sinX = sinf(HALF2RAD(angles[0]) * 0.5f);
+    f32 cosY = cosf(HALF2RAD(angles[1]) * 0.5f);
+    f32 sinY = sinf(HALF2RAD(angles[1]) * 0.5f);
+    f32 cosZ = cosf(HALF2RAD(angles[2]) * 0.5f);
+    f32 sinZ = sinf(HALF2RAD(angles[2]) * 0.5f);
+    f32 cosXCosY = cosX * cosY;
+    f32 cosXSinY = cosX * sinY;
+    f32 sinXCosY = sinX * cosY;
+    f32 sinXSinY = sinX * sinY;
+    q[0] = ((cosXCosY * cosZ) + (sinXSinY * sinZ));
+    q[1] = ((sinXCosY * cosZ) - (cosXSinY * sinZ));
+    q[2] = ((cosXSinY * cosZ) + (sinXCosY * sinZ));
+    q[3] = ((cosXCosY * sinZ) - (sinXSinY * cosZ));
 }
 
 void quatFromAngles(vec3f angles, quatf q)
 {
-    f32 cos_x = cosf(angles[0] * 0.5f);
-    f32 sin_x = sinf(angles[0] * 0.5f);
-    f32 cos_y = cosf(angles[1] * 0.5f);
-    f32 sin_y = sinf(angles[1] * 0.5f);
-    f32 cos_z = cosf(angles[2] * 0.5f);
-    f32 sin_z = sinf(angles[2] * 0.5f);
-    f32 cos_x_cos_y = cos_x * cos_y;
-    f32 cos_x_sin_y = cos_x * sin_y;
-    f32 sin_x_cos_y = sin_x * cos_y;
-    f32 sin_x_sin_y = sin_x * sin_y;
-    q[0] = (cos_x_cos_y * cos_z) + (sin_x_sin_y * sin_z);
-    q[1] = (sin_x_cos_y * cos_z) - (cos_x_sin_y * sin_z);
-    q[2] = (cos_x_sin_y * cos_z) + (sin_x_cos_y * sin_z);
-    q[3] = (cos_x_cos_y * sin_z) - (sin_x_sin_y * cos_z);
+    f32 cosX = cosf(angles[0] * 0.5f);
+    f32 sinX = sinf(angles[0] * 0.5f);
+    f32 cosY = cosf(angles[1] * 0.5f);
+    f32 sinY = sinf(angles[1] * 0.5f);
+    f32 cosZ = cosf(angles[2] * 0.5f);
+    f32 sinZ = sinf(angles[2] * 0.5f);
+    f32 cosXCosY = cosX * cosY;
+    f32 cosXSinY = cosX * sinY;
+    f32 sinXCosY = sinX * cosY;
+    f32 sinXSinY = sinX * sinY;
+    q[0] = (cosXCosY * cosZ) + (sinXSinY * sinZ);
+    q[1] = (sinXCosY * cosZ) - (cosXSinY * sinZ);
+    q[2] = (cosXSinY * cosZ) + (sinXCosY * sinZ);
+    q[3] = (cosXCosY * sinZ) - (sinXSinY * cosZ);
 }
 
 void quatFromXRotation(f32 angle, quatf q)
@@ -66,28 +66,28 @@ void quatFromZRotation(f32 angle, quatf q)
 
 void quatToMtx4(quatf q, mat44f matrix)
 {
-    f32 temp_f6 = 2.0f / ((q[0] * q[0]) + (q[1] * q[1]) + (q[2] * q[2]) +  (q[3] * q[3]));
-    f32 temp_f18 = q[1] * temp_f6;
-    f32 temp_f16 = q[2] * temp_f6;
-    f32 temp_f14 = q[3] * temp_f6;
-    f32 sp34 = q[0] * temp_f18;
-    f32 sp30 = q[0] * temp_f16;
-    f32 sp2C = q[0] * temp_f14;
-    f32 sp28 = q[1] * temp_f18;
-    f32 sp24 = q[1] * temp_f16;
-    f32 sp20 = q[1] * temp_f14;
-    f32 sp1C = q[2] * temp_f16;
-    f32 sp18 = q[2] * temp_f14;
-    f32 sp14 = q[3] * temp_f14;
-    matrix[0][0] = (1.0f - (sp1C + sp14));
-    matrix[0][1] = (sp24 + sp2C);
-    matrix[0][2] = (sp20 - sp30);
-    matrix[1][0] = (sp24 - sp2C);
-    matrix[1][1] = (1.0f - (sp28 + sp14));
-    matrix[1][2] = (sp18 + sp34);
-    matrix[2][0] = (sp20 + sp30);
-    matrix[2][1] = (sp18 - sp34);
-    matrix[2][2] = (1.0f - (sp28 + sp1C));
+    f32 scale = 2.0f / ((q[0] * q[0]) + (q[1] * q[1]) + (q[2] * q[2]) +  (q[3] * q[3]));
+    f32 xs = q[1] * scale;
+    f32 ys = q[2] * scale;
+    f32 zs = q[3] * scale;
+    f32 wx = q[0] * xs;
+    f32 wy = q[0] * ys;
+    f32 wz = q[0] * zs;
+    f32 xx = q[1] * xs;
+    f32 xy = q[1] * ys;
+    f32 xz = q[1] * zs;
+    f32 yy = q[2] * ys;
+    f32 yz = q[2] * zs;
+    f32 zz = q[3] * zs;
+    matrix[0][0] = (1.0f - (yy + zz));
+    matrix[0][1] = (xy + wz);
+    matrix[0][2] = (xz - wy);
+    matrix[1][0] = (xy - wz);
+    matrix[1][1] = (1.0f - (xx + zz));
+    matrix[1][2] = (yz + wx);
+    matrix[2][0] = (xz + wy);
+    matrix[2][1] = (yz - wx);
+    matrix[2][2] = (1.0f - (xx + yy));
     matrix[3][0] = 0.0f;
     matrix[3][1] = 0.0f;
     matrix[3][2] = 0.0f;
@@ -97,38 +97,38 @@ void quatToMtx4(quatf q, mat44f matrix)
     matrix[3][3] = 1.0f;
 }
 
-void quatFromMtx4(mat44f arg0, quatf arg1)
+void quatFromMtx4(mat44f matrix, quatf q)
 {
-    f32 var1;
-    f32 var2;
-    f32 trace = arg0[0][0] + arg0[1][1] + arg0[2][2] + 1.0f;
+    f32 root;
+    f32 halfInvRoot;
+    f32 trace = matrix[0][0] + matrix[1][1] + matrix[2][2] + 1.0f;
     if (0.0f < trace) {
-        var1 = sqrtf(trace);
-        var2 = 0.5f / var1;
-        arg1[0] = var1 * 0.5f;
-        arg1[1] = (arg0[1][2] - arg0[2][1]) * var2;
-        arg1[2] = (arg0[2][0] - arg0[0][2]) * var2;
-        arg1[3] = (arg0[0][1] - arg0[1][0]) * var2;
+        root = sqrtf(trace);
+        halfInvRoot = 0.5f / root;
+        q[0] = root * 0.5f;
+        q[1] = (matrix[1][2] - matrix[2][1]) * halfInvRoot;
+        q[2] = (matrix[2][0] - matrix[0][2]) * halfInvRoot;
+        q[3] = (matrix[0][1] - matrix[1][0]) * halfInvRoot;
     } else {
         s32 i;
         s32 j;
         s32 indices[3] = {1,2,0};
         s32 k;
         i = 0;
-        if (arg0[0][0] < arg0[1][1]) {
+        if (matrix[0][0] < matrix[1][1]) {
             i = 1;
         }
-        if (arg0[i][i] < arg0[2][2]) {
+        if (matrix[i][i] < matrix[2][2]) {
             i = 2;
         }
         j = indices[i];
         k = indices[j];
-        var1 = sqrtf(arg0[i][i] - arg0[j][j] - arg0[k][k] + 1.0f);
-        var2 = 0.5f / var1;
-        arg1[i + 1] = var1 * 0.5f;
-        arg1[    0] = (arg0[j][k] - arg0[k][j]) * var2;
-        arg1[j + 1] = (arg0[i][j] + arg0[j][i]) * var2;
-        arg1[k + 1] = (arg0[i][k] + arg0[k][i]) * var2;
+        root = sqrtf(matrix[i][i] - matrix[j][j] - matrix[k][k] + 1.0f);
+        halfInvRoot = 0.5f / root;
+        q[i + 1] = root * 0.5f;
+        q[    0] = (matrix[j][k] - matrix[k][j]) * halfInvRoot;
+        q[j + 1] = (matrix[i][j] + matrix[j][i]) * halfInvRoot;
+        q[k + 1] = (matrix[i][k] + matrix[k][i]) * halfInvRoot;
     }
 }
 
@@ -146,11 +146,11 @@ void quatSlerp(quatf q1, quatf q2, f32 t, quatf result)
 {
     f32 dot = (q1[0] * q2[0]) + (q1[1] * q2[1]) + (q1[2] * q2[2]) + (q1[3] * q2[3]);
     f32 theta;
-    f32 theta_q1;
-    f32 theta_q2;
+    f32 thetaQ1;
+    f32 thetaQ2;
     f32 sine;
-    f32 coeff_q1;
-    f32 coeff_q2;
+    f32 coeffQ1;
+    f32 coeffQ2;
     if (dot < (-1.0f + EPSILON)) {
         result[0] = ((1.0f - t) * q1[0]) - (q2[0] * t);
         result[1] = ((1.0f - t) * q1[1]) - (q2[1] * t);
@@ -159,15 +159,15 @@ void quatSlerp(quatf q1, quatf q2, f32 t, quatf result)
     }
     else if (dot <= (1.0f - EPSILON)) {
         theta = mathAcos(dot);
-        theta_q1 = (1.0f - t) * theta;
-        theta_q2 = t * theta;
+        thetaQ1 = (1.0f - t) * theta;
+        thetaQ2 = t * theta;
         sine = sinf(theta);
-        coeff_q1 = sinf(theta_q1) / sine;
-        coeff_q2 = sinf(theta_q2) / sine;
-        result[0] = (coeff_q1 * q1[0]) + (q2[0] * coeff_q2);
-        result[1] = (coeff_q1 * q1[1]) + (q2[1] * coeff_q2);
-        result[2] = (coeff_q1 * q1[2]) + (q2[2] * coeff_q2);
-        result[3] = (coeff_q1 * q1[3]) + (q2[3] * coeff_q2);
+        coeffQ1 = sinf(thetaQ1) / sine;
+        coeffQ2 = sinf(thetaQ2) / sine;
+        result[0] = (coeffQ1 * q1[0]) + (q2[0] * coeffQ2);
+        result[1] = (coeffQ1 * q1[1]) + (q2[1] * coeffQ2);
+        result[2] = (coeffQ1 * q1[2]) + (q2[2] * coeffQ2);
+        result[3] = (coeffQ1 * q1[3]) + (q2[3] * coeffQ2);
     } else {
         result[0] = ((1.0f - t) * q1[0]) + (q2[0] * t);
         result[1] = ((1.0f - t) * q1[1]) + (q2[1] * t);
@@ -178,36 +178,36 @@ void quatSlerp(quatf q1, quatf q2, f32 t, quatf result)
 
 void quatSlerpFromIdentity(quatf q, f32 t, quatf result)
 {
-    f32 phi_f12 = q[0];
-    f32 phi_f16 = 1.0f;
-    f32 temp_f0_2;
-    f32 test2;
-    f32 temp_f4;
-    f32 sp20;
-    f32 temp_f2;
-    f32 test;
+    f32 dot = q[0];
+    f32 identityW = 1.0f;
+    f32 theta;
+    f32 thetaQ;
+    f32 thetaIdentity;
+    f32 sine;
+    f32 coeffQ;
+    f32 coeffIdentity;
     if (q[0] < 0.0f) {
-        phi_f12 = -phi_f12;
-        phi_f16 = -phi_f16;
+        dot = -dot;
+        identityW = -identityW;
     }
-    if (phi_f12 < -0.99998999f) {
-        result[0] = (q[0] * t) - ((1.0f - t) * phi_f16);
+    if (dot < -0.99998999f) {
+        result[0] = (q[0] * t) - ((1.0f - t) * identityW);
         result[1] = (q[1] * t);
         result[2] = (q[2] * t);
         result[3] = (q[3] * t);
-    } else if (phi_f12 <= 0.99998999f) {
-        temp_f0_2 = mathAcos(phi_f12);
-        test2 = t * temp_f0_2;
-        temp_f4 = (1.0f - t) * temp_f0_2;
-        sp20 = sinf(temp_f0_2);
-        temp_f2 = sinf(test2) / sp20;
-        test = sinf(temp_f4) / sp20;
-        result[0] = (q[0] * temp_f2) + (test * phi_f16);
-        result[1] = (q[1] * temp_f2);
-        result[2] = (q[2] * temp_f2);
-        result[3] = (q[3] * temp_f2);
+    } else if (dot <= 0.99998999f) {
+        theta = mathAcos(dot);
+        thetaQ = t * theta;
+        thetaIdentity = (1.0f - t) * theta;
+        sine = sinf(theta);
+        coeffQ = sinf(thetaQ) / sine;
+        coeffIdentity = sinf(thetaIdentity) / sine;
+        result[0] = (q[0] * coeffQ) + (coeffIdentity * identityW);
+        result[1] = (q[1] * coeffQ);
+        result[2] = (q[2] * coeffQ);
+        result[3] = (q[3] * coeffQ);
     } else {
-        result[0] = (q[0] * t) + ((1.0f - t) * phi_f16);
+        result[0] = (q[0] * t) + ((1.0f - t) * identityW);
         result[1] = (q[1] * t);
         result[2] = (q[2] * t);
         result[3] = (q[3] * t);
@@ -243,64 +243,64 @@ void quatMultInPlace(quatf lhs, quatf rhs)
     rhs[3] = result[3];
 }
 
-void quatLog(quatf q1, quatf q2)
+void quatLog(quatf q, quatf result)
 {
-    f32 angle = mathAcos(q1[0]);
+    f32 angle = mathAcos(q[0]);
     f32 sine = sinf(angle);
     if (sine == 0.0f) {
-        q2[0] = 0.0f;
-        q2[1] = 0.0f;
-        q2[2] = 0.0f;
-        q2[3] = 0.0f;
+        result[0] = 0.0f;
+        result[1] = 0.0f;
+        result[2] = 0.0f;
+        result[3] = 0.0f;
     } else {
-        q2[0] = 0.0f;
-        q2[1] = (q1[1] * (angle / sine));
-        q2[2] = (q1[2] * (angle / sine));
-        q2[3] = (q1[3] * (angle / sine));
+        result[0] = 0.0f;
+        result[1] = (q[1] * (angle / sine));
+        result[2] = (q[2] * (angle / sine));
+        result[3] = (q[3] * (angle / sine));
     }
 }
 
-void quatExp(quatf q1, quatf q2)
+void quatExp(quatf q, quatf result)
 {
     f32 sine;
-    f32 angle = sqrtf((q1[1] * q1[1]) + (q1[2] * q1[2]) + (q1[3] * q1[3]));
-    f32 unknown;
+    f32 angle = sqrtf((q[1] * q[1]) + (q[2] * q[2]) + (q[3] * q[3]));
+    f32 scale;
     if (angle == 0.0f) {
-        q2[0] = 1.0f;
-        q2[1] = 0.0f;
-        q2[2] = 0.0f;
-        q2[3] = 0.0f;
+        result[0] = 1.0f;
+        result[1] = 0.0f;
+        result[2] = 0.0f;
+        result[3] = 0.0f;
     } else {
         sine = sinf(angle);
-        unknown = sine / angle;
-        q2[0] = cosf(angle);
-        q2[1] = (q1[1] * unknown);
-        q2[2] = (q1[2] * unknown);
-        q2[3] = (q1[3] * unknown);
+        scale = sine / angle;
+        result[0] = cosf(angle);
+        result[1] = (q[1] * scale);
+        result[2] = (q[2] * scale);
+        result[3] = (q[3] * scale);
     }
 }
 
-void quatSquadControlPoint(quatf arg0, quatf arg1, quatf arg2, quatf result)
+void quatSquadControlPoint(quatf prev, quatf q, quatf next, quatf result)
 {
     quatf conjugate;
-    quatf sp50;
-    quatf sp40;
-    quatf sp30;
-    quatf sp20;
-    conjugate[0] = arg1[0];
-    conjugate[1] = -arg1[1];
-    conjugate[2] = -arg1[2];
-    conjugate[3] = -arg1[3];
-    quatMult(conjugate, arg0, sp50);
-    quatMult(conjugate, arg2, sp40);
-    quatLog(sp50, sp30);
-    quatLog(sp40, sp20);
-    sp30[0] = -(sp30[0] + sp20[0]) * 0.25f;
-    sp30[1] = -(sp30[1] + sp20[1]) * 0.25f;
-    sp30[2] = -(sp30[2] + sp20[2]) * 0.25f;
-    sp30[3] = -(sp30[3] + sp20[3]) * 0.25f;
-    quatExp(sp30, sp50);
-    quatMult(arg1, sp50, result);
+    quatf toPrev;
+    quatf toNext;
+    quatf logPrev;
+    quatf logNext;
+    conjugate[0] = q[0];
+    conjugate[1] = -q[1];
+    conjugate[2] = -q[2];
+    conjugate[3] = -q[3];
+    quatMult(conjugate, prev, toPrev);
+    quatMult(conjugate, next, toNext);
+    quatLog(toPrev, logPrev);
+    quatLog(toNext, logNext);
+    logPrev[0] = -(logPrev[0] + logNext[0]) * 0.25f;
+    logPrev[1] = -(logPrev[1] + logNext[1]) * 0.25f;
+    logPrev[2] = -(logPrev[2] + logNext[2]) * 0.25f;
+    logPrev[3] = -(logPrev[3] + logNext[3]) * 0.25f;
+    quatExp(logPrev, toPrev);
+    quatMult(q, toPrev, result);
 }
 
 void quatSquad(quatf q1, quatf q2, quatf q3, quatf q4, f32 t, quatf result)

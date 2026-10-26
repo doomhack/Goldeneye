@@ -6,7 +6,7 @@ file bgroomtrans.c
 #include "game/player/player.h"
 #include "game/world/bg.h"
 #include "game/world/bgroomtrans.h"
-#include "game/math/matrixmath.h"
+#include "game/math/matrix.h"
 
 #ifdef VERSION_EU
 #define AMT300 100

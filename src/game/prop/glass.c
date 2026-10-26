@@ -4,7 +4,7 @@
 #include "game/prop/glass.h"
 #include "game/gfx/image_bank.h"
 #include "game/level/lv.h"
-#include "game/math/math_atan2f.h"
+#include "game/math/trig.h"
 #include "game/mission/objective_status.h"
 #include "game/player/player.h"
 #include "random.h"

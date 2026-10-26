@@ -5,7 +5,8 @@ didn't break something by accident. Pick the cheapest check that fits the change
 
 | Change | Check | Time |
 | --- | --- | --- |
-| Renames, comments, moving code between files, deleting dead code | `tools/compare/compare.sh` reports no changed functions | about 1 min |
+| Renames, comments, moving files | `tools/compare/romcmp.sh` reports byte-identical ROMs | about 4 min |
+| Moving code between files, new headers, deleting dead code | `tools/compare/compare.sh` reports no changed functions | about 2 min |
 | Anything that changes generated code | `tools/testrun/demos.py check` matches the baseline | about 4 min |
 | Intended behaviour change | Look at where the demo checksums diverge, then re-record the baseline | |
 | End of a milestone | ares, then a real N64 and an Analogue 3D | |
@@ -21,6 +22,17 @@ Emulators don't model the N64's caches or DMA timing, so some bugs only show up 
 * Headless emulator: `apt install mupen64plus-ui-console mupen64plus-video-rice mupen64plus-rsp-hle
   libmupen64plus-dev xvfb python3-pil`.
 
+## Comparing ROMs: `tools/compare/romcmp.sh [BASE] [VERSION]`
+
+Builds this tree and `BASE` (default `HEAD`) with the same fixed build date and checks that
+the two ROMs are byte-identical. Symbol names never reach the ROM, so any rename passes.
+The one catch is `assert`, which puts its file's path into the ROM: moving a file that
+uses `assert` changes a string.
+
+To rename things, use `tools/rename.py OLD NEW [OLD NEW ...]` (or `-f list.txt`). It
+replaces whole words in `src/`, `include/`, `assets/`, `ld/` and `docs/`, and refuses a new
+name that is already in use.
+
 ## Comparing code: `tools/compare/compare.sh [BASE] [VERSION]`
 
 Builds the C objects of `BASE` (default `HEAD`) in a temporary worktree and compares every
@@ -28,7 +40,14 @@ function and data object with your tree. Relocated fields are compared by what t
 at, so moving code around doesn't count as a change, and renamed functions are matched by
 content. Use it for any change that should leave the machine code alone.
 
-`tools/compare/codecmp.py OLD_DIR NEW_DIR` does the comparison on two object directories.
+`VERBOSE=1` shows the first difference in each changed function and `KEEP=1` keeps both
+sets of objects for `objdump`. `tools/compare/codecmp.py OLD_DIR NEW_DIR` does the
+comparison on two object directories.
+
+A change in which declarations a file sees (adding a header, say) can make GCC schedule or
+allocate registers slightly differently in unrelated functions of that file. The code
+still does the same thing, but compare.sh reports it as changed; check those with the
+demo replays.
 
 ## Demo replays: `tools/testrun/demos.py`
 

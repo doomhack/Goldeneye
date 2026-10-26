@@ -35,10 +35,9 @@
 #include "game/gfx/image_bank.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
-#include "game/math/math_floor.h"
-#include "game/math/math_asinfacosf.h"
-#include "game/math/math_atan2f.h"
-#include "game/math/matrixmath.h"
+#include "game/math/round.h"
+#include "game/math/trig.h"
+#include "game/math/matrix.h"
 #include "game/model/model.h"
 #include "game/model/objecthandler.h"
 #include "game/mission/objective_status.h"
@@ -50,6 +49,7 @@
 #include "game/gfx/tex.h"
 #include "game/text/textrelated.h"
 #include "game/gfx/vtxstore.h"
+#include "game/math/physics.h"
 
 
 #if defined(VERSION_EU)

@@ -66,7 +66,7 @@ class Elf:
             return bytes(s['size'])
         return self.d[s['off']:s['off'] + s['size']]
 
-    def describe(self, shndx, addend):
+    def describe(self, shndx, addend, size=4):
         """Name a place in a section: a symbol + offset, or the string stored there."""
         best = None
         for sym in self.syms:
@@ -81,7 +81,7 @@ class Elf:
             if end > addend and all(32 <= c < 127 or c in (9, 10) for c in data[addend:end]):
                 return repr(data[addend:end].decode('latin1'))
             # An unnamed constant, e.g. a float literal: compare by value, not by where it sits.
-            return f"{self.secs[shndx]['name']}:{data[addend:addend + 8].hex()}"
+            return f"{self.secs[shndx]['name']}:{data[addend:addend + size].hex()}"
         return f"{self.secs[shndx]['name']}+{addend:#x}"
 
 
@@ -111,7 +111,9 @@ def normalise(elf, shndx, start, size):
             addend, mask = word, 0xffffffff
         struct.pack_into('>I', data, rel, word & ~mask & 0xffffffff)
         if sym['type'] == STT_SECTION or not sym['name']:
-            target = elf.describe(sym['shndx'], addend) if addend is not None else elf.secs[sym['shndx']]['name']
+            # ldc1/sdc1 load or store 8 bytes; everything else that points at a constant reads 4
+            size = 8 if (word >> 26) in (0x35, 0x3d) else 4
+            target = elf.describe(sym['shndx'], addend, size) if addend is not None else elf.secs[sym['shndx']]['name']
         else:
             target = sym['name'] if addend in (None, 0) else f"{sym['name']}+{addend}"
         refs.append((rel, typ, target))

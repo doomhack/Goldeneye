@@ -1,24 +1,32 @@
-#include "game/math/matrixmath.h"
-#include "game/math/math_atan2f.h"
+/**
+ * 4x4 float matrices (Mtxf) and their conversion to the N64's fixed-point Mtx.
+ *
+ * Matrices are stored the way the N64 and libultra expect: m[row][column], with points
+ * as row vectors on the left (p' = p * M). Rows 0-2 are the transformed x, y and z axes
+ * and row 3 is the translation, so m[3][0..2] is the position.
+ *
+ * mtx4Mult(a, b, out) makes `out` apply b first and then a. In column-vector notation that
+ * is out = a * b.
+ */
+#include "game/math/matrix.h"
+#include "game/math/trig.h"
 #include <PR/gu.h>
 #include <math.h>
 
-/* Avoid Gimble Lock? */
+/* Below this, mtx4GetRotation treats the matrix as pitched straight up or down. */
 #define EPSILON FLT_EPSILON * 16
 
-// bss
-//CODE.bss:80075DA0
-f32 s_MtxSavedWorldScale;
+/* The world scale while mtxPushUnitWorldScale has it set to 1. */
+f32 m_savedWorldScale;
 
-
-// data
-//D:80032310
+/*
+ * Scales applied when converting to fixed point (mtxF2L) and back (mtxL2F). [0] is for
+ * columns 0-2 and is 65536 times the level's world scale, see mtxSetWorldScale. [1] is
+ * for column 3 and is always 65536.
+ */
 f32 g_MtxFixedScale[2] = {M_U16_MAX_VALUE_F, M_U16_MAX_VALUE_F};
 
-
-
-//#ifdef VERSION_EU
-
+/* PAL only: 3x3 matrix helpers. */
 #ifdef VERSION_EU
 void mtx3Copy(f32 src[3][3], f32 dst[3][3])
 {
@@ -35,7 +43,7 @@ void mtx3Copy(f32 src[3][3], f32 dst[3][3])
 
 
 #ifdef VERSION_EU
-void mtx3MultInPlace (f32 lhs[3][3], f32 rhs[3][3])
+void mtx3MultInPlace(f32 lhs[3][3], f32 rhs[3][3])
 {
     f32 result[3][3];
     mtx3Mult(lhs, rhs, &result);
@@ -95,11 +103,6 @@ void mtx4ToMtx3(f32 src[][4], f32 dst[3][3])
 }
 #endif
 
-
-//nexthere
-
-//#endif
-
 void mtx4LoadIdentity(Mtxf *matrix)
 {
     matrix->m[0][0] = 1.0f;
@@ -132,6 +135,7 @@ void mtx4Copy(Mtxf *src, Mtxf *dst)
     }
 }
 
+/** rhs = lhs * rhs, see mtx4Mult. */
 void mtx4MultInPlace(Mtxf *lhs, Mtxf *rhs)
 {
     Mtxf result;
@@ -139,6 +143,7 @@ void mtx4MultInPlace(Mtxf *lhs, Mtxf *rhs)
     mtx4Copy(&result, rhs);
 }
 
+/** rhs = lhs * rhs for affine matrices, see mtx4MultAffine. */
 void mtx4MultAffineInPlace(Mtxf *lhs, Mtxf *rhs)
 {
     Mtxf result;
@@ -146,6 +151,7 @@ void mtx4MultAffineInPlace(Mtxf *lhs, Mtxf *rhs)
     mtx4Copy(&result, rhs);
 }
 
+/** result = lhs * rhs: transforms by rhs, then by lhs. result must not be lhs or rhs. */
 void mtx4Mult(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
 {
     s32 i, j;
@@ -158,6 +164,10 @@ void mtx4Mult(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
     }
 }
 
+/**
+ * mtx4Mult for affine matrices (no perspective): column 3 of both is assumed to be
+ * (0, 0, 0, 1) and is set to that in the result.
+ */
 void mtx4MultAffine(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
 {
     s32 i, j;
@@ -179,26 +189,31 @@ void mtx4MultAffine(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
     result->m[3][3] = 1.0f;
 }
 
-void mtx4MultPerspective(Mtxf *arg0, Mtxf *arg1, Mtxf *arg2)
+/**
+ * mtx4Mult for when `persp` is a perspective matrix (only the diagonal, m[3][2] and
+ * m[2][3] set), skipping the zero terms.
+ */
+void mtx4MultPerspective(Mtxf *persp, Mtxf *mtx, Mtxf *result)
 {
-    arg2->m[0][0] = (arg0->m[0][0] * arg1->m[0][0]);
-    arg2->m[1][0] = (arg0->m[0][0] * arg1->m[1][0]);
-    arg2->m[2][0] = (arg0->m[0][0] * arg1->m[2][0]);
-    arg2->m[3][0] = (arg0->m[0][0] * arg1->m[3][0]);
-    arg2->m[0][1] = (arg0->m[1][1] * arg1->m[0][1]);
-    arg2->m[1][1] = (arg0->m[1][1] * arg1->m[1][1]);
-    arg2->m[2][1] = (arg0->m[1][1] * arg1->m[2][1]);
-    arg2->m[3][1] = (arg0->m[1][1] * arg1->m[3][1]);
-    arg2->m[0][2] = (arg0->m[2][2] * arg1->m[0][2]);
-    arg2->m[1][2] = (arg0->m[2][2] * arg1->m[1][2]);
-    arg2->m[2][2] = (arg0->m[2][2] * arg1->m[2][2]);
-    arg2->m[3][2] = (arg0->m[2][2] * arg1->m[3][2]) + arg0->m[3][2];
-    arg2->m[0][3] = (arg0->m[2][3] * arg1->m[0][2]);
-    arg2->m[1][3] = (arg0->m[2][3] * arg1->m[1][2]);
-    arg2->m[2][3] = (arg0->m[2][3] * arg1->m[2][2]);
-    arg2->m[3][3] = (arg0->m[2][3] * arg1->m[3][2]);
+    result->m[0][0] = (persp->m[0][0] * mtx->m[0][0]);
+    result->m[1][0] = (persp->m[0][0] * mtx->m[1][0]);
+    result->m[2][0] = (persp->m[0][0] * mtx->m[2][0]);
+    result->m[3][0] = (persp->m[0][0] * mtx->m[3][0]);
+    result->m[0][1] = (persp->m[1][1] * mtx->m[0][1]);
+    result->m[1][1] = (persp->m[1][1] * mtx->m[1][1]);
+    result->m[2][1] = (persp->m[1][1] * mtx->m[2][1]);
+    result->m[3][1] = (persp->m[1][1] * mtx->m[3][1]);
+    result->m[0][2] = (persp->m[2][2] * mtx->m[0][2]);
+    result->m[1][2] = (persp->m[2][2] * mtx->m[1][2]);
+    result->m[2][2] = (persp->m[2][2] * mtx->m[2][2]);
+    result->m[3][2] = (persp->m[2][2] * mtx->m[3][2]) + persp->m[3][2];
+    result->m[0][3] = (persp->m[2][3] * mtx->m[0][2]);
+    result->m[1][3] = (persp->m[2][3] * mtx->m[1][2]);
+    result->m[2][3] = (persp->m[2][3] * mtx->m[2][2]);
+    result->m[3][3] = (persp->m[2][3] * mtx->m[3][2]);
 }
 
+/** Applies only the rotation and scale part of a matrix to a vector. */
 void mtx4RotateVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
 {
     s32 i;
@@ -217,6 +232,7 @@ void mtx4RotateVecInPlace(Mtxf *matrix, struct coord3d *vector)
     vector->f[2] = result.f[2];
 }
 
+/** Applies a matrix, translation included, to a point. */
 void mtx4TransformVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
 {
     mtx4RotateVec(matrix, vector, result);
@@ -233,6 +249,7 @@ void mtx4TransformVecInPlace(Mtxf *matrix, struct coord3d *vector)
     vector->f[2] += matrix->m[3][2];
 }
 
+/** A rotation by `angle` radians around the y axis, then a move to `position`. */
 void mtx4LoadYRotationWithTranslation(f32 *position, f32 angle, Mtxf *matrix)
 {
     f32 cosine      = cosf(angle);
@@ -255,6 +272,7 @@ void mtx4LoadYRotationWithTranslation(f32 *position, f32 angle, Mtxf *matrix)
     matrix->m[3][3] = 1.0f;
 }
 
+/** Rotations by `angle` radians around one axis. */
 void mtx4LoadXRotation(f32 angle, Mtxf *matrix)
 {
     f32 cosine      = cosf(angle);
@@ -321,29 +339,30 @@ void mtx4LoadZRotation(f32 angle, Mtxf *matrix)
     matrix->m[3][3] = 1.0f;
 }
 
+/** A rotation by the Euler angles in `angles` (radians), applied x first, then y, then z. */
 void mtx4LoadRotation(struct coord3d *angles, Mtxf *matrix)
 {
-    f32 cos_x       = cosf(angles->f[0]);
-    f32 sin_x       = sinf(angles->f[0]);
-    f32 cos_y       = cosf(angles->f[1]);
-    f32 sin_y       = sinf(angles->f[1]);
-    f32 cos_z       = cosf(angles->f[2]);
-    f32 sin_z       = sinf(angles->f[2]);
-    f32 sin_x_sin_z = sin_x * sin_z;
-    f32 cos_x_sin_z = cos_x * sin_z;
-    f32 sin_x_cos_z = sin_x * cos_z;
-    f32 cos_x_cos_z = cos_x * cos_z;
-    matrix->m[0][0] = (cos_y * cos_z);
-    matrix->m[0][1] = (cos_y * sin_z);
-    matrix->m[0][2] = -sin_y;
+    f32 cosX       = cosf(angles->f[0]);
+    f32 sinX       = sinf(angles->f[0]);
+    f32 cosY       = cosf(angles->f[1]);
+    f32 sinY       = sinf(angles->f[1]);
+    f32 cosZ       = cosf(angles->f[2]);
+    f32 sinZ       = sinf(angles->f[2]);
+    f32 sinXSinZ = sinX * sinZ;
+    f32 cosXSinZ = cosX * sinZ;
+    f32 sinXCosZ = sinX * cosZ;
+    f32 cosXCosZ = cosX * cosZ;
+    matrix->m[0][0] = (cosY * cosZ);
+    matrix->m[0][1] = (cosY * sinZ);
+    matrix->m[0][2] = -sinY;
     matrix->m[0][3] = 0.0f;
-    matrix->m[1][0] = ((sin_x_cos_z * sin_y) - cos_x_sin_z);
-    matrix->m[1][1] = ((sin_x_sin_z * sin_y) + cos_x_cos_z);
-    matrix->m[1][2] = sin_x * cos_y;
+    matrix->m[1][0] = ((sinXCosZ * sinY) - cosXSinZ);
+    matrix->m[1][1] = ((sinXSinZ * sinY) + cosXCosZ);
+    matrix->m[1][2] = sinX * cosY;
     matrix->m[1][3] = 0.0f;
-    matrix->m[2][0] = ((cos_x_cos_z * sin_y) + sin_x_sin_z);
-    matrix->m[2][1] = ((cos_x_sin_z * sin_y) - sin_x_cos_z);
-    matrix->m[2][2] = cos_x * cos_y;
+    matrix->m[2][0] = ((cosXCosZ * sinY) + sinXSinZ);
+    matrix->m[2][1] = ((cosXSinZ * sinY) - sinXCosZ);
+    matrix->m[2][2] = cosX * cosY;
     matrix->m[2][3] = 0.0f;
     matrix->m[3][0] = 0.0f;
     matrix->m[3][1] = 0.0f;
@@ -352,12 +371,13 @@ void mtx4LoadRotation(struct coord3d *angles, Mtxf *matrix)
 }
 
 // https://stackoverflow.com/a/15029416
+/** The inverse of mtx4LoadRotation: the Euler angles of a rotation matrix. */
 void mtx4GetRotation(Mtxf *matrix, struct coord3d *angles)
 {
     f32 norm;
-    f32 sin_x_cos_y = matrix->m[1][2];
-    f32 cos_x_cos_y = matrix->m[2][2];
-    norm            = sqrtf(SQR(sin_x_cos_y) + SQR(cos_x_cos_y));
+    f32 sinXCosY = matrix->m[1][2];
+    f32 cosXCosY = matrix->m[2][2];
+    norm            = sqrtf(SQR(sinXCosY) + SQR(cosXCosY));
     if (EPSILON < norm)
     {
         angles->f[0] = mathAtan2(matrix->m[1][2], matrix->m[2][2]);
@@ -378,12 +398,14 @@ void mtx4LoadRotationAndTranslation(struct coord3d *position, struct coord3d * r
     mtx4SetTranslation(position, matrix);
 }
 
+/** An identity matrix that moves to `position`. */
 void mtx4LoadTranslation(struct coord3d * position, Mtxf *matrix)
 {
     mtx4LoadIdentity(matrix);
     mtx4SetTranslation(position, matrix);
 }
 
+/** Replaces only the translation. */
 void mtx4SetTranslation(struct coord3d *position, Mtxf *matrix)
 {
     matrix->m[3][0] = position->f[0];
@@ -391,6 +413,11 @@ void mtx4SetTranslation(struct coord3d *position, Mtxf *matrix)
     matrix->m[3][2] = position->f[2];
 }
 
+/*
+ * Scaling parts of a matrix, treated as 16 floats. Row n is m[n], so rows 0-2 are the
+ * x, y and z axes. Scaling rows 0-2 scales the object before it is placed, scaling
+ * columns 0-2 scales the result, translation included.
+ */
 void mtx4ScaleRow0(f32 scalar, f32 *matrix)
 {
     matrix[0] *= scalar;
@@ -473,25 +500,33 @@ void mtx4ScaleColumns012(f32 scalar, f32 *matrix)
     matrix[14] *= scalar;
 }
 
-void mtxSetWorldScale(f32 arg0)
+/*
+ * The world scale. Each level has a scale (its "visibility" setting in the level table)
+ * that mtxF2L applies when it makes the fixed-point matrices the RSP uses, presumably so
+ * that large levels still fit the s15.16 range. The first-person gun code pushes a scale
+ * of 1 while it builds its matrices.
+ */
+void mtxSetWorldScale(f32 scale)
 {
-    g_MtxFixedScale[0] = (M_U16_MAX_VALUE_F * arg0);
+    g_MtxFixedScale[0] = (M_U16_MAX_VALUE_F * scale);
 }
 
 void mtxPushUnitWorldScale(void)
 {
-    s_MtxSavedWorldScale = g_MtxFixedScale[0];
+    m_savedWorldScale = g_MtxFixedScale[0];
     g_MtxFixedScale[0]         = M_U16_MAX_VALUE_F;
 }
 
 void mtxPopWorldScale(void)
 {
-    g_MtxFixedScale[0] = s_MtxSavedWorldScale;
+    g_MtxFixedScale[0] = m_savedWorldScale;
 }
 
-/*
- * Address: 0x7F058C9C
-*/
+/**
+ * Converts a float matrix to the N64's fixed-point Mtx (like libultra's guMtxF2L), applying
+ * the world scale to columns 0-2. The Mtx keeps the integer halves of all 16 values in its
+ * first 8 words and the fraction halves in the last 8.
+ */
 void mtxF2L(f32 mf[4][4], s32 ms[4][4])
 {
     f32 *src = (f32 *)mf;
@@ -509,10 +544,7 @@ void mtxF2L(f32 mf[4][4], s32 ms[4][4])
     }
 }
 
-/*
- * Address: 0x7F058E78
- * Reads packed s32 words from src, writes floats to dst (inverse of mtxF2L).
-*/
+/** The inverse of mtxF2L, dividing the world scale back out. */
 void mtxL2F(Mtxf *src, Mtxf *dst) {
     u32 *srcwords = (u32 *) src;
     f32 *dstfloats = (f32 *) dst;
@@ -527,27 +559,27 @@ void mtxL2F(Mtxf *src, Mtxf *dst) {
     }
 }
 
-void mtxF2LUnpacked(Mtxf *arg0, Mtx* arg1) {
+/** Unused: like mtxF2L but one value per word, without the world scale. */
+void mtxF2LUnpacked(Mtxf *src, Mtx* dst) {
     s32 i, j;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            arg1->m[i][j] = arg0->m[i][j] * M_U16_MAX_VALUE_F;
+            dst->m[i][j] = src->m[i][j] * M_U16_MAX_VALUE_F;
         }
     }
 }
 
-void mtxL2FUnpacked(Mtx* arg0, Mtxf *arg1) {
+/** Unused: the inverse of mtxF2LUnpacked. */
+void mtxL2FUnpacked(Mtx* src, Mtxf *dst) {
     s32 i, j;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            arg1->m[i][j] = arg0->m[i][j] / M_U16_MAX_VALUE_F;
+            dst->m[i][j] = src->m[i][j] / M_U16_MAX_VALUE_F;
         }
     }
 }
 
-/*
- * Address: 0x7F059244
-*/
+/** Converts 16 s15.16 values, one per word, into the N64 Mtx layout. Unused. */
 void mtxPackFixed(Mtx *src, Mtx *dst) {
     u32 *srcwords = (u32 *) src;
     u32 *dstwords = (u32 *) dst;
@@ -563,9 +595,7 @@ void mtxPackFixed(Mtx *src, Mtx *dst) {
 }
 
 
-/*
- * Address: 0x7F059334
-*/
+/** Converts an N64 Mtx into 16 s15.16 values, one per word. */
 void mtxUnpackFixed(Mtx *src, Mtx *dst) {
     u32 *srcwords = (u32 *) src;
     u32 *dstwords = (u32 *) dst;
@@ -580,126 +610,122 @@ void mtxUnpackFixed(Mtx *src, Mtx *dst) {
     }
 }
 
-/*
- * Address: 0x7F059424
-*/
-void mtx4LoadLookDir(Mtxf *matrix, f32 eye_x, f32 eye_y, f32 eye_z, f32 forward_x, f32 forward_y, f32 forward_z, f32 up_x, f32 up_y, f32 up_z) {
-    f32 right_x;
-    f32 right_y;
-    f32 norm_right;
-    f32 norm_up;
-    f32 right_z;
+/**
+ * A camera (view) matrix for an eye at `eye` looking along `forward`, with `up` roughly up.
+ * Like libultra's guLookAtF, but taking a direction instead of a target.
+ */
+void mtx4LoadLookDir(Mtxf *matrix, f32 eyeX, f32 eyeY, f32 eyeZ, f32 forwardX, f32 forwardY, f32 forwardZ, f32 upX, f32 upY, f32 upZ) {
+    f32 rightX;
+    f32 rightY;
+    f32 normRight;
+    f32 normUp;
+    f32 rightZ;
 
     // Normalize forward vector
-    f32 norm_forward = -1.0f / sqrtf((forward_x * forward_x) + (forward_y * forward_y) + (forward_z * forward_z));
-    forward_x *= norm_forward;
-    forward_y *= norm_forward;
-    forward_z *= norm_forward;
+    f32 normForward = -1.0f / sqrtf((forwardX * forwardX) + (forwardY * forwardY) + (forwardZ * forwardZ));
+    forwardX *= normForward;
+    forwardY *= normForward;
+    forwardZ *= normForward;
 
     // Compute right vector (cross product of up and forward)
-    right_x = (up_y * forward_z) - (up_z * forward_y);
-    right_y = (up_z * forward_x) - (up_x * forward_z);
-    right_z = (up_x * forward_y) - (up_y * forward_x);
+    rightX = (upY * forwardZ) - (upZ * forwardY);
+    rightY = (upZ * forwardX) - (upX * forwardZ);
+    rightZ = (upX * forwardY) - (upY * forwardX);
 
     // Normalize right vector
-    norm_right = 1.0f / sqrtf((right_x * right_x) + (right_y * right_y) + (right_z * right_z));
-    right_x *= norm_right;
-    right_y *= norm_right;
-    right_z *= norm_right;
+    normRight = 1.0f / sqrtf((rightX * rightX) + (rightY * rightY) + (rightZ * rightZ));
+    rightX *= normRight;
+    rightY *= normRight;
+    rightZ *= normRight;
 
     // Recompute up vector (cross product of forward and right)
-    up_x = (forward_y * right_z) - (forward_z * right_y);
-    up_y = (forward_z * right_x) - (forward_x * right_z);
-    up_z = (forward_x * right_y) - (forward_y * right_x);
+    upX = (forwardY * rightZ) - (forwardZ * rightY);
+    upY = (forwardZ * rightX) - (forwardX * rightZ);
+    upZ = (forwardX * rightY) - (forwardY * rightX);
 
     // Normalize up vector
-    norm_up = 1.0f / sqrtf((up_x * up_x) + (up_y * up_y) + (up_z * up_z));
-    up_x *= norm_up;
-    up_y *= norm_up;
-    up_z *= norm_up;
+    normUp = 1.0f / sqrtf((upX * upX) + (upY * upY) + (upZ * upZ));
+    upX *= normUp;
+    upY *= normUp;
+    upZ *= normUp;
 
     // Set matrix columns
-    matrix->m[0][0] = right_x;
-    matrix->m[1][0] = right_y;
-    matrix->m[2][0] = right_z;
-    matrix->m[3][0] = -((eye_x * right_x) + (eye_y * right_y) + (eye_z * right_z));
-    matrix->m[0][1] = up_x;
-    matrix->m[1][1] = up_y;
-    matrix->m[2][1] = up_z;
-    matrix->m[3][1] = -((eye_x * up_x) + (eye_y * up_y) + (eye_z * up_z));
-    matrix->m[0][2] = forward_x;
-    matrix->m[1][2] = forward_y;
-    matrix->m[2][2] = forward_z;
-    matrix->m[3][2] = -((eye_x * forward_x) + (eye_y * forward_y) + (eye_z * forward_z));
+    matrix->m[0][0] = rightX;
+    matrix->m[1][0] = rightY;
+    matrix->m[2][0] = rightZ;
+    matrix->m[3][0] = -((eyeX * rightX) + (eyeY * rightY) + (eyeZ * rightZ));
+    matrix->m[0][1] = upX;
+    matrix->m[1][1] = upY;
+    matrix->m[2][1] = upZ;
+    matrix->m[3][1] = -((eyeX * upX) + (eyeY * upY) + (eyeZ * upZ));
+    matrix->m[0][2] = forwardX;
+    matrix->m[1][2] = forwardY;
+    matrix->m[2][2] = forwardZ;
+    matrix->m[3][2] = -((eyeX * forwardX) + (eyeY * forwardY) + (eyeZ * forwardZ));
     matrix->m[0][3] = 0.0f;
     matrix->m[1][3] = 0.0f;
     matrix->m[2][3] = 0.0f;
     matrix->m[3][3] = 1.0f;
 }
 
-/*
- * Address: 0x7F059694
-*/
-void mtx4LoadLookAt(Mtxf *matrix, f32 eye_x, f32 eye_y, f32 eye_z, f32 target_x, f32 target_y, f32 target_z, f32 up_x, f32 up_y, f32 up_z) {
-    mtx4LoadLookDir(matrix, eye_x, eye_y, eye_z, target_x - eye_x, target_y - eye_y, target_z - eye_z, up_x, up_y, up_z);
+/** A camera (view) matrix for an eye at `eye` looking at `target`. */
+void mtx4LoadLookAt(Mtxf *matrix, f32 eyeX, f32 eyeY, f32 eyeZ, f32 targetX, f32 targetY, f32 targetZ, f32 upX, f32 upY, f32 upZ) {
+    mtx4LoadLookDir(matrix, eyeX, eyeY, eyeZ, targetX - eyeX, targetY - eyeY, targetZ - eyeZ, upX, upY, upZ);
 }
 
-/*
- * Address: 0x7F059708
-*/
-void mtx4LoadFacingDir(Mtxf *matrix, f32 pos_x, f32 pos_y, f32 pos_z, f32 basis_x, f32 basis_y, f32 basis_z, f32 up_x, f32 up_y, f32 up_z) {
-    f32 right_x;
-    f32 right_y;
-    f32 norm_right;
-    f32 norm_up;
-    f32 right_z;
-    f32 norm_basis = -1.0f / sqrtf((basis_x * basis_x) + (basis_y * basis_y) + (basis_z * basis_z));
-    basis_x *= norm_basis;
-    basis_y *= norm_basis;
-    basis_z *= norm_basis;
-    right_x = (up_y * basis_z) - (up_z * basis_y);
-    right_y = (up_z * basis_x) - (up_x * basis_z);
-    right_z = (up_x * basis_y) - (up_y * basis_x);
-    norm_right = 1.0f / sqrtf((right_x * right_x) + (right_y * right_y) + (right_z * right_z));
-    right_x *= norm_right;
-    right_y *= norm_right;
-    right_z *= norm_right;
-    up_x = (basis_y * right_z) - (basis_z * right_y);
-    up_y = (basis_z * right_x) - (basis_x * right_z);
-    up_z = (basis_x * right_y) - (basis_y * right_x);
-    norm_up = 1.0f / sqrtf((up_x * up_x) + (up_y * up_y) + (up_z * up_z));
-    up_x *= norm_up;
-    up_y *= norm_up;
-    up_z *= norm_up;
-    matrix->m[0][0] = right_x;
-    matrix->m[1][0] = up_x;
-    matrix->m[2][0] = basis_x;
-    matrix->m[3][0] = pos_x;
-    matrix->m[0][1] = right_y;
-    matrix->m[1][1] = up_y;
-    matrix->m[2][1] = basis_y;
-    matrix->m[3][1] = pos_y;
-    matrix->m[0][2] = right_z;
-    matrix->m[1][2] = up_z;
-    matrix->m[2][2] = basis_z;
-    matrix->m[3][2] = pos_z;
+/**
+ * The inverse of mtx4LoadLookDir: places an object at `pos` with its z axis pointing
+ * against `dir` and its y axis roughly along `up`.
+ */
+void mtx4LoadFacingDir(Mtxf *matrix, f32 posX, f32 posY, f32 posZ, f32 basisX, f32 basisY, f32 basisZ, f32 upX, f32 upY, f32 upZ) {
+    f32 rightX;
+    f32 rightY;
+    f32 normRight;
+    f32 normUp;
+    f32 rightZ;
+    f32 normBasis = -1.0f / sqrtf((basisX * basisX) + (basisY * basisY) + (basisZ * basisZ));
+    basisX *= normBasis;
+    basisY *= normBasis;
+    basisZ *= normBasis;
+    rightX = (upY * basisZ) - (upZ * basisY);
+    rightY = (upZ * basisX) - (upX * basisZ);
+    rightZ = (upX * basisY) - (upY * basisX);
+    normRight = 1.0f / sqrtf((rightX * rightX) + (rightY * rightY) + (rightZ * rightZ));
+    rightX *= normRight;
+    rightY *= normRight;
+    rightZ *= normRight;
+    upX = (basisY * rightZ) - (basisZ * rightY);
+    upY = (basisZ * rightX) - (basisX * rightZ);
+    upZ = (basisX * rightY) - (basisY * rightX);
+    normUp = 1.0f / sqrtf((upX * upX) + (upY * upY) + (upZ * upZ));
+    upX *= normUp;
+    upY *= normUp;
+    upZ *= normUp;
+    matrix->m[0][0] = rightX;
+    matrix->m[1][0] = upX;
+    matrix->m[2][0] = basisX;
+    matrix->m[3][0] = posX;
+    matrix->m[0][1] = rightY;
+    matrix->m[1][1] = upY;
+    matrix->m[2][1] = basisY;
+    matrix->m[3][1] = posY;
+    matrix->m[0][2] = rightZ;
+    matrix->m[1][2] = upZ;
+    matrix->m[2][2] = basisZ;
+    matrix->m[3][2] = posZ;
     matrix->m[0][3] = 0.0f;
     matrix->m[1][3] = 0.0f;
     matrix->m[2][3] = 0.0f;
     matrix->m[3][3] = 1.0f;
 }
 
-/*
- * Address: 0x7F059908
-*/
-void mtx4LoadFacing(Mtxf *matrix, f32 pos_x, f32 pos_y, f32 pos_z, f32 target_x, f32 target_y, f32 target_z, f32 up_x, f32 up_y, f32 up_z) {
-    mtx4LoadFacingDir(matrix, pos_x, pos_y, pos_z, target_x - pos_x, target_y - pos_y, target_z - pos_z, up_x, up_y, up_z);
+/** mtx4LoadFacingDir with a target point instead of a direction. */
+void mtx4LoadFacing(Mtxf *matrix, f32 posX, f32 posY, f32 posZ, f32 targetX, f32 targetY, f32 targetZ, f32 upX, f32 upY, f32 upZ) {
+    mtx4LoadFacingDir(matrix, posX, posY, posZ, targetX - posX, targetY - posY, targetZ - posZ, upX, upY, upZ);
 }
 
 
-/*
- * Address: 0x7F05997C
-*/
+/** The perspNorm value the RSP needs with a perspective matrix, like guPerspective's. */
 u32 mtxCalcPerspNorm(f32 near, f32 far)
 {
     f32 sum = near + far;
@@ -722,10 +748,11 @@ u32 mtxCalcPerspNorm(f32 near, f32 far)
     return result;
 }
 
-/*
- * Address: 0x7F059A48
-*/
-void mtx4LoadPerspective(Mtxf *matrix, u16* depth_scale, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale)
+/**
+ * A perspective projection, like libultra's guPerspectiveF but with `fovy` in radians and
+ * an extra `scale`. Writes the matching perspNorm to depthScale if it isn't NULL.
+ */
+void mtx4LoadPerspective(Mtxf *matrix, u16* depthScale, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale)
 {
     f32 temp = cosf(fovy * 0.5f) / sinf(fovy * 0.5f);
     scale *= M_U16_MAX_VALUE_F;
@@ -745,41 +772,39 @@ void mtx4LoadPerspective(Mtxf *matrix, u16* depth_scale, f32 fovy, f32 aspect, f
     matrix->m[0][3] = 0.0f;
     matrix->m[1][3] = 0.0f;
     matrix->m[3][3] = 0.0f;
-    if (depth_scale != 0) {
-        *depth_scale = mtxCalcPerspNorm(near, far);
+    if (depthScale != 0) {
+        *depthScale = mtxCalcPerspNorm(near, far);
     }
 }
 
-/*
- * Address: 0x7F059B58
-*/
+/** Like libultra's guAlignF, with the angle in radians. */
 void mtx4LoadAlign(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z) 
 {
     f32 sine;
     f32 cosine;
     f32 norm;
     f32 invnorm;
-    f32 cos_x;
-    f32 sin_x;
-    f32 cos_z;
-    f32 sin_z;
+    f32 cosX;
+    f32 sinX;
+    f32 cosZ;
+    f32 sinZ;
     guNormalize(&x, &y, &z);
     sine = sinf(angle);
     cosine = cosf(angle);
     norm = sqrtf((x * x) + (z * z));
     if (norm != 0.0f) {
-        cos_x = x * cosine;
-        sin_x = x * sine;
-        cos_z = z * cosine;
-        sin_z = z * sine;
+        cosX = x * cosine;
+        sinX = x * sine;
+        cosZ = z * cosine;
+        sinZ = z * sine;
         invnorm = 1.0f / norm;
-        matrix->m[0][0] = ((-cos_z - (y * sin_x)) * invnorm);
+        matrix->m[0][0] = ((-cosZ - (y * sinX)) * invnorm);
         matrix->m[1][0] = (sine * norm);
-        matrix->m[2][0] = ((cos_x - (y * sin_z)) * invnorm);
+        matrix->m[2][0] = ((cosX - (y * sinZ)) * invnorm);
         matrix->m[3][0] = 0.0f;
-        matrix->m[0][1] = ((sin_z - (y * cos_x)) * invnorm);
+        matrix->m[0][1] = ((sinZ - (y * cosX)) * invnorm);
         matrix->m[1][1] = (cosine * norm);
-        matrix->m[2][1] = ((-sin_x - (y * cos_z)) * invnorm);
+        matrix->m[2][1] = ((-sinX - (y * cosZ)) * invnorm);
         matrix->m[3][1] = 0.0f;
         matrix->m[0][2] = -x;
         matrix->m[1][2] = -y;
@@ -795,6 +820,7 @@ void mtx4LoadAlign(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z)
 }
 
 
+/** The same through libultra's guAlignF. */
 void mtx4LoadAlignViaGu(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z) 
 {
     angle = RadToDeg(angle);
@@ -802,6 +828,7 @@ void mtx4LoadAlignViaGu(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z)
 }
 
 // DEBUG prints a 4x4 matrix
+/** Prints a matrix in debug builds. */
 void mtx4Print(Mtxf *matrix)
 {
 #ifdef DEBUG
@@ -820,6 +847,7 @@ void mtx4Print(Mtxf *matrix)
     return;
 }
 
+/** The inverse of a pure rotation matrix (its transpose), dropping any translation. */
 void mtx4TransposeRotation(Mtxf *rotation, Mtxf *transpose) 
 {
     transpose->m[0][0] = rotation->m[0][0];
@@ -840,9 +868,7 @@ void mtx4TransposeRotation(Mtxf *rotation, Mtxf *transpose)
     transpose->m[3][3] = 1.0f;
 }
 
-/*
- * Address: 0x7F059DAC
-*/
+/** The inverse of a rotation with a uniform scale, dropping any translation. */
 void mtx4InvertRotation(Mtxf *matrix, Mtxf *result) {
     f32 norm = ((matrix->m[0][0] * matrix->m[0][0]) +
                 (matrix->m[1][0] * matrix->m[1][0]) +
@@ -866,9 +892,7 @@ void mtx4InvertRotation(Mtxf *matrix, Mtxf *result) {
     result->m[3][3] = 1.0f;
 }
 
-/*
- * Address: 0x7F059E64
-*/
+/** The inverse of a rotation with a uniform scale and a translation. */
 void mtx4InvertRigid(Mtxf *matrix, Mtxf *result) {
     f32 norm = (matrix->m[0][0] * matrix->m[0][0]) +
                (matrix->m[1][0] * matrix->m[1][0]) +
@@ -893,29 +917,27 @@ void mtx4InvertRigid(Mtxf *matrix, Mtxf *result) {
 }
 
 
-/*
- * Address: 0x7F059FB8
-*/
+/** The inverse of any affine matrix. */
 void mtx4InvertAffine(Mtxf *matrix, Mtxf *result)
 {
-    f32 f0 = 0.0f;
-    f0 += matrix->m[0][0] * matrix->m[1][1] * matrix->m[2][2];
-    f0 += matrix->m[0][1] * matrix->m[1][2] * matrix->m[2][0];
-    f0 += matrix->m[0][2] * matrix->m[1][0] * matrix->m[2][1];
-    f0 -= matrix->m[0][2] * matrix->m[1][1] * matrix->m[2][0];
-    f0 -= matrix->m[0][1] * matrix->m[1][0] * matrix->m[2][2];
-    f0 -= matrix->m[0][0] * matrix->m[1][2] * matrix->m[2][1];
-    f0 = 1.0f / f0;
+    f32 invDet = 0.0f;
+    invDet += matrix->m[0][0] * matrix->m[1][1] * matrix->m[2][2];
+    invDet += matrix->m[0][1] * matrix->m[1][2] * matrix->m[2][0];
+    invDet += matrix->m[0][2] * matrix->m[1][0] * matrix->m[2][1];
+    invDet -= matrix->m[0][2] * matrix->m[1][1] * matrix->m[2][0];
+    invDet -= matrix->m[0][1] * matrix->m[1][0] * matrix->m[2][2];
+    invDet -= matrix->m[0][0] * matrix->m[1][2] * matrix->m[2][1];
+    invDet = 1.0f / invDet;
 
-    result->m[0][0] = (matrix->m[1][1] * matrix->m[2][2] - matrix->m[1][2] * matrix->m[2][1]) * f0;
-    result->m[1][0] = (matrix->m[1][2] * matrix->m[2][0] - matrix->m[1][0] * matrix->m[2][2]) * f0;
-    result->m[2][0] = (matrix->m[1][0] * matrix->m[2][1] - matrix->m[1][1] * matrix->m[2][0]) * f0;
-    result->m[0][1] = (matrix->m[0][2] * matrix->m[2][1] - matrix->m[0][1] * matrix->m[2][2]) * f0;
-    result->m[1][1] = (matrix->m[0][0] * matrix->m[2][2] - matrix->m[0][2] * matrix->m[2][0]) * f0;
-    result->m[2][1] = (matrix->m[0][1] * matrix->m[2][0] - matrix->m[0][0] * matrix->m[2][1]) * f0;
-    result->m[0][2] = (matrix->m[0][1] * matrix->m[1][2] - matrix->m[0][2] * matrix->m[1][1]) * f0;
-    result->m[1][2] = (matrix->m[0][2] * matrix->m[1][0] - matrix->m[0][0] * matrix->m[1][2]) * f0;
-    result->m[2][2] = (matrix->m[0][0] * matrix->m[1][1] - matrix->m[0][1] * matrix->m[1][0]) * f0;
+    result->m[0][0] = (matrix->m[1][1] * matrix->m[2][2] - matrix->m[1][2] * matrix->m[2][1]) * invDet;
+    result->m[1][0] = (matrix->m[1][2] * matrix->m[2][0] - matrix->m[1][0] * matrix->m[2][2]) * invDet;
+    result->m[2][0] = (matrix->m[1][0] * matrix->m[2][1] - matrix->m[1][1] * matrix->m[2][0]) * invDet;
+    result->m[0][1] = (matrix->m[0][2] * matrix->m[2][1] - matrix->m[0][1] * matrix->m[2][2]) * invDet;
+    result->m[1][1] = (matrix->m[0][0] * matrix->m[2][2] - matrix->m[0][2] * matrix->m[2][0]) * invDet;
+    result->m[2][1] = (matrix->m[0][1] * matrix->m[2][0] - matrix->m[0][0] * matrix->m[2][1]) * invDet;
+    result->m[0][2] = (matrix->m[0][1] * matrix->m[1][2] - matrix->m[0][2] * matrix->m[1][1]) * invDet;
+    result->m[1][2] = (matrix->m[0][2] * matrix->m[1][0] - matrix->m[0][0] * matrix->m[1][2]) * invDet;
+    result->m[2][2] = (matrix->m[0][0] * matrix->m[1][1] - matrix->m[0][1] * matrix->m[1][0]) * invDet;
     result->m[3][0] = -(matrix->m[3][0] * result->m[0][0] + matrix->m[3][1] * result->m[1][0] + matrix->m[3][2] * result->m[2][0]);
     result->m[3][1] = -(matrix->m[3][0] * result->m[0][1] + matrix->m[3][1] * result->m[1][1] + matrix->m[3][2] * result->m[2][1]);
     result->m[3][2] = -(matrix->m[3][0] * result->m[0][2] + matrix->m[3][1] * result->m[1][2] + matrix->m[3][2] * result->m[2][2]);
@@ -926,24 +948,20 @@ void mtx4InvertAffine(Mtxf *matrix, Mtxf *result)
 }
 
 
-/*
- * Address: 0x7F05A250
-*/
+/** The inverse of any invertible matrix, through the adjugate. */
 void mtx4Invert(Mtxf *matrix, Mtxf *result) {
     s32 i, j;
-    f32 inv_det;
+    f32 invDet;
     mtx4Adjugate(matrix, result);
-    inv_det = 1.0f / mtx4Determinant(matrix);
+    invDet = 1.0f / mtx4Determinant(matrix);
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
-            result->m[i][j] *= inv_det;
+            result->m[i][j] *= invDet;
         }
     }
 }
 
-/*
- * Address: 0x7F05A310
-*/
+/** The adjugate (transposed cofactor) matrix. */
 void mtx4Adjugate(Mtxf *matrix, Mtxf *result)
 {
     f32 mtx00, mtx10, mtx20, mtx30;
@@ -978,34 +996,34 @@ void mtx4Adjugate(Mtxf *matrix, Mtxf *result)
     result->m[3][3] =  mtx3Determinant(mtx00, mtx10, mtx20, mtx04, mtx14, mtx24, mtx08, mtx18, mtx28);
 }
 
+/** Determinants, by cofactor expansion. The 3x3 and 2x2 versions take their values column by column. */
 f32 mtx4Determinant(Mtxf *matrix)
 {
-    f32 tmp;
-	f32 sp78, sp74, sp70, sp6c;
-	f32 sp68, sp64, sp60, sp5c;
-	f32 sp58, sp54, sp50, sp4c;
-	f32 sp48, sp44, sp40, sp3c;
-	f32 sp38;
-	f32 sp34;
-	f32 sp30;
+    f32 minor3;
+    f32 m00, m10, m20, m30;
+    f32 m01, m11, m21, m31;
+    f32 m02, m12, m22, m32;
+    f32 m03, m13, m23, m33;
+    f32 minor0;
+    f32 minor1;
+    f32 minor2;
 
-	sp78 = matrix->m[0][0]; sp68 = matrix->m[0][1];
-	sp58 = matrix->m[0][2]; sp48 = matrix->m[0][3];
-	sp74 = matrix->m[1][0]; sp64 = matrix->m[1][1];
-	sp54 = matrix->m[1][2]; sp44 = matrix->m[1][3];
-	sp70 = matrix->m[2][0]; sp60 = matrix->m[2][1];
-	sp50 = matrix->m[2][2]; sp40 = matrix->m[2][3];
-	sp6c = matrix->m[3][0]; sp5c = matrix->m[3][1];
-	sp4c = matrix->m[3][2]; sp3c = matrix->m[3][3];
+    m00 = matrix->m[0][0]; m01 = matrix->m[0][1];
+    m02 = matrix->m[0][2]; m03 = matrix->m[0][3];
+    m10 = matrix->m[1][0]; m11 = matrix->m[1][1];
+    m12 = matrix->m[1][2]; m13 = matrix->m[1][3];
+    m20 = matrix->m[2][0]; m21 = matrix->m[2][1];
+    m22 = matrix->m[2][2]; m23 = matrix->m[2][3];
+    m30 = matrix->m[3][0]; m31 = matrix->m[3][1];
+    m32 = matrix->m[3][2]; m33 = matrix->m[3][3];
 
-	sp30 = mtx3Determinant(sp74, sp70, sp6c, sp64, sp60, sp5c, sp44, sp40, sp3c);
-	sp34 = mtx3Determinant(sp74, sp70, sp6c, sp54, sp50, sp4c, sp44, sp40, sp3c);
-	sp38 = mtx3Determinant(sp64, sp60, sp5c, sp54, sp50, sp4c, sp44, sp40, sp3c);
+    minor2 = mtx3Determinant(m10, m20, m30, m11, m21, m31, m13, m23, m33);
+    minor1 = mtx3Determinant(m10, m20, m30, m12, m22, m32, m13, m23, m33);
+    minor0 = mtx3Determinant(m11, m21, m31, m12, m22, m32, m13, m23, m33);
 
-	tmp = mtx3Determinant(sp74, sp70, sp6c, sp64, sp60, sp5c, sp54, sp50, sp4c);
+    minor3 = mtx3Determinant(m10, m20, m30, m11, m21, m31, m12, m22, m32);
 
-	return (sp78 * sp38 - sp68 * sp34 + sp58 * sp30) - tmp * sp48;
-
+    return (m00 * minor0 - m01 * minor1 + m02 * minor2) - minor3 * m03;
 }
 
 f32 mtx3Determinant(f32 a, f32 d, f32 g, f32 b, f32 e, f32 h, f32 c, f32 f, f32 i) {

@@ -25,13 +25,14 @@
 #include "joy.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
-#include "game/math/matrixmath.h"
+#include "game/math/matrix.h"
 #include "game/model/objecthandler.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
 #include "game/nav/stan.h"
 #include "game/model/model.h"
 #include "game/gfx/tex.h"
+#include "game/math/physics.h"
 
 #ifdef VERSION_EU
 #define GROUND_SMOOTH_FACTOR 0.118799984f /* 0x3DF34D68 (PAL-scaled 0.1) */
@@ -45,7 +46,6 @@
 
 void chrUpdateAimProperties( ChrRecord *arg0);
 void chrUpdateAnim( ChrRecord *chr, s32 tickamount);
-void physFall(f32 *arg0, f32 *arg1, f32 arg2);
 f32  get_007_health_mod(void);
 
 // end forward declarations

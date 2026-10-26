@@ -17,7 +17,7 @@
 #include "game/gfx/image_bank.h"
 #include "game/gfx/othermodemicrocode.h"
 #include "game/level/lv.h"
-#include "game/math/matrixmath.h"
+#include "game/math/matrix.h"
 #include "music.h"
 #include "game/player/player.h"
 #include "random.h"

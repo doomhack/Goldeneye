@@ -4,7 +4,7 @@
 #include "game/chr/chr.h"
 #include "game/player/gun.h"
 #include "math.h"
-#include "game/math/math_floor.h"
+#include "game/math/round.h"
 
 
 /**

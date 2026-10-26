@@ -1,9 +1,8 @@
 #include <ultra64.h>
 #include "game/model/chrobjdata.h"
 #include "game/gfx/image.h"
-#include "game/math/math_asinfacosf.h"
-#include "game/math/math_ceil.h"
-#include "game/math/math_floor.h"
+#include "game/math/trig.h"
+#include "game/math/round.h"
 #include "game/model/math_unk_05A9E0.h"
 #include "game/model/model.h"
 #include "game/asset/ob.h"

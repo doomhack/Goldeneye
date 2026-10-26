@@ -18,7 +18,7 @@
 #include "game/player/player.h"
 #include "game/level/lv.h"
 #include "random.h"
-#include "game/math/math_asinfacosf.h"
+#include "game/math/trig.h"
 #include "game/model/loadobjectmodel.h"
 #include "game/model/objecthandler.h"
 #include "game/gfx/image.h"
@@ -32,10 +32,12 @@
 #include "game/menu/options.h"
 #include "game/menu/mpmenu.h"
 #include "joy.h"
-#include "game/math/matrixmath.h"
+#include "game/math/matrix.h"
 #include "game/player/bondinv.h"
 #include "game/nav/stan.h"
 #include "gbi_extension.h"
+#include "game/math/physics.h"
+#include "game/math/interp.h"
 
 
 // bss

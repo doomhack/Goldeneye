@@ -6,11 +6,12 @@
 #include "game/chr/chrai.h"
 #include "game/model/initanitable.h"
 #include "game/level/lv.h"
-#include "game/math/matrixmath.h"
+#include "game/math/matrix.h"
 #include "game/model/objecthandler.h"
 #include "game/player/player.h"
 #include "game/player/bondhead.h"
 #include "game/model/model.h"
+#include "game/math/interp.h"
 
 
 /**

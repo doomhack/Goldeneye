@@ -4,13 +4,14 @@
 #include "game/world/bgroomtrans.h"
 #include "game/player/bondview.h"
 #include "game/gfx/dyn.h"
-#include "game/math/math_atan2f.h"
+#include "game/math/trig.h"
 #include "gbi_extension.h"
 #include "game/prop/glass.h"
 #include "game/gfx/image_bank.h"
 #include "game/level/lv.h"
 #include "game/mission/objective_status.h"
 #include "random.h"
+#include "game/math/physics.h"
 
 #define BULLET_SPARKS_MAX 20
 #define BULLET_MOVING_SPARKS_MAX 50

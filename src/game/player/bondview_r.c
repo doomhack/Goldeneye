@@ -2,7 +2,7 @@
 #include <memp.h>
 #include <bondconstants.h>
 #include <boss.h>
-#include "game/math/math_atan2f.h"
+#include "game/math/trig.h"
 #include "game/player/bondview_r.h"
 #include "game/player/bondview.h"
 #include "random.h"

@@ -31,8 +31,8 @@
 #include "game/text/language.h"
 #include "game/model/loadobjectmodel.h"
 #include "game/level/lv.h"
-#include "game/math/math_atan2f.h"
-#include "game/math/matrixmath.h"
+#include "game/math/trig.h"
+#include "game/math/matrix.h"
 #include "game/model/model.h"
 #include "game/audio/mp_music.h"
 #include "game/menu/mpmenu.h"
@@ -46,6 +46,7 @@
 #include "game/nav/stan.h"
 #include "game/nav/stanintersection.h"
 #include "game/text/textrelated.h"
+#include "game/math/interp.h"
 
 #ifdef VERSION_EU
 
