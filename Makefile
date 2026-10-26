@@ -93,8 +93,8 @@ RSPOBJECTS := $(foreach file,$(RSPCODE),$(BUILD_DIR)/$(file:.s=.bin))
 CODEFILES := $(foreach dir,src,$(wildcard $(dir)/*.c))
 CODEOBJECTS := $(foreach file,$(CODEFILES),$(BUILD_DIR)/$(file:.c=.o))
 
-GAMEFILES_C := $(foreach dir,src/game,$(wildcard $(dir)/*.c))
-GAMEFILES_S := $(foreach dir,src/game,$(wildcard $(dir)/*.s))
+GAMEFILES_C := $(wildcard src/game/*/*.c)
+GAMEFILES_S := $(wildcard src/game/*/*.s)
 GAMEOBJECTS := $(foreach file,$(GAMEFILES_S),$(BUILD_DIR)/$(file:.s=.o)) \
 				$(foreach file,$(GAMEFILES_C),$(BUILD_DIR)/$(file:.c=.o))
 
@@ -133,7 +133,7 @@ OBJECTS := $(RSPOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(OBSEGMENT)
 
 ## Command Line args for builders ##
 
-INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src -I src/game -I src/inflate
+INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src -I src/inflate
 
 CC := $(TOOLCHAIN)gcc
 # Code generation flags shared by the game, libultra and the asset data.
@@ -222,6 +222,7 @@ $(BUILD_DIR)/%.o: src/%.s
 
 #Build asm files in src/
 $(BUILD_DIR)/src/%.o: src/%.s
+	@mkdir -p $(dir $@)
 	$(AS) $(ASFLAGS) -o $@ $<
 
 #Build Images
@@ -250,11 +251,13 @@ $(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
 # libultra's "memset" is an alias of bzero(ptr, len), so GCC's memset calls are redirected
 # to the real memset in src/gcc/libgcc_compat.c.
 $(BUILD_DIR)/src/%.o: src/%.c
+	@mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $<
 	$(OBJCOPY) --redefine-sym memset=gcc_memset $@
 
 # chraidata.c: convert AI_PRINT commands from readable to byte-array first
-$(BUILD_DIR)/src/game/chraidata.o: src/game/chraidata.c
+$(BUILD_DIR)/src/game/chr/chraidata.o: src/game/chr/chraidata.c
+	@mkdir -p $(dir $@)
 	$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) -I $(dir $<) -x c -o $@ -
 
 
@@ -368,7 +371,7 @@ help:
 	@echo "    setupclean                     Delete only setup build artifacts"
 	@echo "    cmdbuidler                     BuildAI Commands"
 	@echo "    context [file]                 BuildContext File from [file]"
-	@echo "                                    eg make context src/game/chrai.c"
+	@echo "                                    eg make context src/game/chr/chrai.c"
 	@echo ""
 	@echo ""
 	@echo "  options:"

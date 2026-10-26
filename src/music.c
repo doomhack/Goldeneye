@@ -3,8 +3,8 @@
 #include "inflate/inflate.h"
 #include "audi.h"
 #include <bondconstants.h>
-#include "decompress.h"
-#include "dyn.h"
+#include "game/asset/decompress.h"
+#include "game/gfx/dyn.h"
 #include "memp.h"
 #include "music.h"
 #include "ramrom.h"

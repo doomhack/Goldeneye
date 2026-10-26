@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include "speed_graph.h"
-#include "frametiming.h"
-#include "speedgraphrenderer.h"
+#include "game/level/frametiming.h"
+#include "game/debug/speedgraphrenderer.h"
 #include "debugmenu.h"
 #include "sched.h"
 

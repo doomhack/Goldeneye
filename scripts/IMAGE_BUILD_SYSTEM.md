@@ -234,7 +234,7 @@ The `images.def` file is included in C code to generate:
    } IMGAGESIZES;
    ```
 
-3. **Image properties table** (`src/game/image.c`):
+3. **Image properties table** (`src/game/gfx/image.c`):
    ```c
    #define IMAGE(NAME, SZ, HS, HT, F3, F4, F5, F6) {HS, HT, SZ, F3, F4, F5, F6 },
    struct image_entry g_Textures[] = {

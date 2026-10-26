@@ -6,7 +6,7 @@
 */
 
 #include <ultra64.h>
-#include <game/stan.h>
+#include "game/nav/stan.h"
 
 // forward declarations
 extern BetaStandTile tile_0;

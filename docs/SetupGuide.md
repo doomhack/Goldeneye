@@ -152,7 +152,7 @@ Source `.c` files are compiled directly by GCC.
 
 ### Code build process
 
-`src` and `src/game`: .c and .s files are compiled into .o files
+`src` and the subsystem folders under `src/game` (see [SourceLayout.md](SourceLayout.md)): .c and .s files are compiled into .o files
 
 `src/libultra`: .c and .s files are compiled into .o files
 

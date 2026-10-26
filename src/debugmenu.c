@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include "debugmenu.h"
 #include "vi.h"
-#include "game/dyn.h"
+#include "game/gfx/dyn.h"
 
 
 #ifdef LEFTOVERDEBUG
