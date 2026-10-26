@@ -4231,7 +4231,7 @@ struct font {
 
 /* included last: its arrays need the model record types above to be complete */
 #ifndef AIPARSE
-    #include "game/chrobjdata.h"
+    #include "game/model/chrobjdata.h"
 #endif
 
 #endif

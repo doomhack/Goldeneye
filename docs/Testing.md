@@ -41,7 +41,7 @@ tools/testrun/demos.py record u /tmp/baseline   # on the commit you start from
 tools/testrun/demos.py check u /tmp/baseline    # after your change
 ```
 
-The game logs two checksums every frame while a demo plays (`src/game/testhooks.c`): an exact
+The game logs two checksums every frame while a demo plays (`src/game/replay/testhooks.c`): an exact
 one over the players' and guards' positions, health and armour, objective states and the
 random seed, and a coarse one that rounds positions to whole units and health to 1%. `check`
 prints the first frame where each one differs from the baseline. The hooks do nothing unless

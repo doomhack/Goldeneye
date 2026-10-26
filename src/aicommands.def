@@ -89,7 +89,7 @@
 #ifndef _AI_CMD
     #define _SYNHILITE
     #include <bondgame.h>
-    #include "game/chrai.h"
+    #include "game/chr/chrai.h"
     #include "game/chr2.h"
     void aiExecute2(void *Entityp, s32 EntityType)    {    u8 *sp7B0;    u8 *sp7AC;    u32 Offset;    ChrRecord *ChrEntityp = 0;    VehichleRecord *VehichleEntityp;    VehichleRecord *AircraftEntityp;    u8 *AiListp;   u8 *CurrentCommandp = AiListp + Offset;   switch (CurrentCommandp[0]){case 0:
     #define _AI_CMD(CODE)

@@ -3,14 +3,14 @@
 #include "fr.h"
 #include <bondgame.h>
 #include <bondconstants.h>
-#include "player.h" // g_CurrentPlayer
+#include "game/player/player.h" // g_CurrentPlayer
 #include "sched.h"
-#include "rsp.h"
+#include "game/gfx/rsp.h"
 #include <PR/os.h>
-#include "indy_comms.h"
-#include "game/bondview.h"
-#include "game/viewport.h"
-#include "game/dyn.h"
+#include "game/debug/indy_comms.h"
+#include "game/player/bondview.h"
+#include "game/gfx/viewport.h"
+#include "game/gfx/dyn.h"
 
 /**
  * EU .data, offset from start of data_seg : 0x2484

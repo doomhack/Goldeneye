@@ -132,7 +132,7 @@ def main():
     ap.add_argument('--poke', action='append', default=[], metavar='SYMBOL=VALUE',
                     help='write a 32-bit value to a global at the first frame (needs --map)')
     ap.add_argument('--statelog', action='store_true',
-                    help='turn on the game\'s state checksums (src/game/testhooks.c) and write '
+                    help='turn on the game\'s state checksums (src/game/replay/testhooks.c) and write '
                          'OUTDIR/state.txt: timer exact coarse, one line per game frame')
     ap.add_argument('--demo', type=int, metavar='N',
                     help='play attract-mode demo N (0-13) and stop when it ends (needs --map)')

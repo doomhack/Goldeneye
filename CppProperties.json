@@ -9,7 +9,7 @@
         "cStandard": "c89",
         "includePath": [
             "\\\\wsl.localhost\\Ubuntu\\usr\\include"
-            /*INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src -I src/game -I src/inflate*/,
+            /*INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src -I src/inflate*/,
             "${workspaceRoot}",
             "${workspaceRoot}\\include",
             "${workspaceRoot}\\src",
