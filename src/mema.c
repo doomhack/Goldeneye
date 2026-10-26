@@ -5,14 +5,12 @@
 /**
  * mema - memory (ad hoc) allocation system.
  *
- * Mema's heap is 300KB and is itself allocated out of memp's stage pool.
- * Memp resets its stage pool each time a new stage is loaded, which means mema
- * is also reset each time a stage is loaded.
+ * Mema's heap is one allocation in memp's stage pool, so it is reset each time a
+ * level loads. Its size comes from the level's "-ma" token in boss.c (150 to 400 KB,
+ * doubled in co-op).
  *
- * Unlike memp, mema supports freeing of individual allocations. This makes it
- * a good system to use when the allocation is somewhat temporary and should be
- * freed without having to load a new stage. It's used by the (inaccessible)
- * Perfect Head editor, file listings and room code.
+ * Unlike memp, mema can free individual allocations. GoldenEye only uses it for room
+ * geometry (bg.c), which is loaded and dropped as the player moves around.
  *
  * Mema tracks what has been allocated by storing references to free spaces in
  * its spaces array. The allocations themselves are not referenced. When
@@ -29,7 +27,8 @@
  * pointers throughout the game code which mema cannot do.
  */
 
-/* PAL shrank this to 125 to fit 4MB; with the Expansion Pak all versions use the NTSC size. */
+/* Number of free-space slots, plus one. PAL shrank this to 125 to fit 4MB; with the
+ * Expansion Pak all versions use the NTSC size. */
 #define MEMA_SLOTS 509
 
 typedef struct MemaSpace {
@@ -43,12 +42,10 @@ typedef struct MemaSpace {
  * using loop counters (eg. a typical i < numspaces loop).
  */
 struct MemaHeap {
-	u32 unk000;
+    u32 unk000;
     u32 unk004;
-	struct MemaSpace start;
-    //u32 unk010;
-    //u32 unk014;
-	struct MemaSpace spaces[MEMA_SLOTS - 1];
+    struct MemaSpace start;
+    struct MemaSpace spaces[MEMA_SLOTS - 1];
 	struct MemaSpace end1;
 	struct MemaSpace end2;
 };
@@ -58,7 +55,7 @@ s32 m_memaHeapSize;
 struct MemaHeap m_memaHeap;
 void *m_memaDebug = NULL;
 
-// Swap two allocations.
+/** Swaps two free-space entries. */
 void memaSwap(MemaSpace *a, MemaSpace *b) {
     u32 tempaddr = a->addr;
     u32 tempsize = a->size;
@@ -68,16 +65,17 @@ void memaSwap(MemaSpace *a, MemaSpace *b) {
     b->size = tempsize;
 }
 
-// Merge two allocations.
+/** Adds b's space to a (they must be adjacent) and empties b. */
 void memaMerge(MemaSpace *a, MemaSpace *b) {
     a->size = (a->size + b->size);
     b->addr = 0;
     b->size = 0;
 }
 
-// Do a single iteration over the allocations and attempt to
-// merge adjacent ones. Return value indicates if there were
-// any merges.
+/**
+ * One pass over the free-space list: swaps entries that are out of address order and
+ * merges entries that touch. Returns TRUE if anything was merged.
+ */
 s32 memaDefragPass(struct MemaHeap *heap) {
     s32 any = FALSE;
 	struct MemaSpace *prev = &heap->start;
@@ -103,8 +101,7 @@ s32 memaDefragPass(struct MemaHeap *heap) {
     return any;
 }
 
-// Do multiple merge iterations until there are no
-// mergable pairs left.
+/** Defragments the free-space list until nothing more can be merged. */
 void memaDefrag(void)
 {
     while (memaDefragPass(&m_memaHeap));
@@ -171,6 +168,7 @@ MemaSpace *memaFindFreeSlot(struct MemaHeap *heap)
     return best;
 }
 
+/** Records the `size` bytes at `addr` as free space. */
 void memaMarkFree(s32 addr, s32 size)
 {
     // Choose an index in the spaces array which we'll mark a space as free,
@@ -204,12 +202,13 @@ void memaMarkFree(s32 addr, s32 size)
     curr->size = size;
 }
 
-// Initialize the (removed) debug features.
+/** Registers mema's (removed) debug features. */
 void memaInit(void)
 {
     debTryAdd(&m_memaDebug, "mema_c_debug");
 }
 
+/** Makes the `heapsize` bytes at `heapaddr` the heap, all of it free. */
 void memaReset(void *heapaddr, u32 heapsize)
 {
    struct MemaSpace *space;
@@ -240,10 +239,14 @@ void memaSingleDefragPass(void)
 }
 
 
-// Attempt to free up some memory. Start by looking through the first 16 allocations
-// for a suitable one. If none is found, then look through the rest for any that are
-// large enough. If this also fails, then do 8 merge iterations and then look through
-// entire buffer again. If successful, return the address to the freed memory, otherwise 0.
+/**
+ * Allocates `amount` bytes and returns their address, or NULL if no free space is big
+ * enough.
+ *
+ * It looks for the best fit among the first 16 free-space entries, stopping early at a
+ * close fit. If none of those is big enough, it takes the first big enough entry after
+ * them, and failing that defragments 8 times and takes the first big enough entry at all.
+ */
 void *memaAlloc(u32 amount) {
     s32 addr;
     u32 diff;
@@ -314,8 +317,11 @@ void *memaAlloc(u32 amount) {
     return (void*)addr;
 }
 
-// Find the MemaSpace of the given address and reduce its size by the given
-// amount. If successful, return the same address, otherwise 0.
+/**
+ * Claims `amount` bytes of free space starting exactly at `addr`, which lets an
+ * allocation that ends at `addr` grow in place. Returns `addr`, or 0 if there isn't that
+ * much free space there.
+ */
 s32 memaGrow(u32 addr, u32 amount)
 {
     u32        size = 0;
@@ -372,12 +378,14 @@ found:
     return new_addr;
 }
 
+/** Frees `size` bytes at `addr`. mema doesn't record allocation sizes, so the caller must. */
 void memaFree(void *addr, s32 size)
 {
 	memaMarkFree((uintptr_t) addr, size);
 }
 
 
+/** Empty; it was presumably a debug check of the free-space list. */
 void memaCheckSpaces(void)
 {
     s32 i;
@@ -395,8 +403,10 @@ void memaCheckSpaces(void)
 }
 
 
-// Calculate the ratio between the sum of all allocations minus
-// the largest one, and the sum of all allocations.
+/**
+ * How fragmented the free space is: the share of it that is not in the biggest free block.
+ * Unused.
+ */
 f32 memaGetFragmentation(void) {
     u32 tot = 0;
     u32 max = 0;
@@ -414,8 +424,10 @@ f32 memaGetFragmentation(void) {
     return ((f32)(tot - max) / tot);
 }
 
-// Print a list of allocations, in descending size order. Sizes are specified in
-// kilobytes, rounded to nearest integer. Up to 200 allocations can be listed.
+/**
+ * Writes the sizes of the free blocks, biggest first, in KB, into a local buffer that is
+ * then thrown away (the printing was removed).
+ */
 void memaDump(void)
 {
     char *pos;
@@ -479,8 +491,7 @@ void memaDump(void)
     }
 }
 
-// Dump a list of allocations before and after a full
-// merge pass.
+/** Dumps the free blocks before and after a full defragment. Only the defragment matters. */
 void memaDumpPrePostMerge(void) {
     s32 i;    
     memaDump();
@@ -490,6 +501,7 @@ void memaDumpPrePostMerge(void) {
     memaDump();
 }
 
+/** Calls `func` with the end address of each free block. Unused. */
 void memaForEachSpace(void (*func)(u32, MemaSpace*)) {
     MemaSpace *curr = &m_memaHeap.spaces[0];
     while (curr->addr != -1) {
@@ -527,11 +539,10 @@ s32 memaGetLongestFree(void)
 }
 
 /**
- * Resize an existing MemaSpace. Either by shrinking the old one, or
- * by registering a new MemaSpace containing the remaining bytes.
- * 
- * US address 7000A3DC.
-*/
+ * Resizes the allocation at `addr` in place from `oldsize` to `newsize` bytes. Growing
+ * only works if the free space right after it is big enough. Returns 1 on success, 0 if
+ * it couldn't grow.
+ */
 s32 memaRealloc(s32 addr, u32 oldsize, u32 newsize)
 {
     if ((newsize > oldsize))

@@ -5,7 +5,7 @@
 #include "game/menu/initcheattext.h"
 #include "game/menu/front.h"
 #include "game/replay/ramromreplay.h"
-#include <ramrom.h>
+#include <rom.h>
 #include <macro.h>
 #include "game/save/file.h"
 #include "game/save/file2.h"

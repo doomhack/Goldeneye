@@ -2,7 +2,7 @@
 #include <bondgame.h>
 #include <memp.h>
 #include "game/text/language.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 
 // bss
 //CODE.bss:8008C640

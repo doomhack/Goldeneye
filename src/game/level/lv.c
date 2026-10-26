@@ -8,7 +8,7 @@
 #include <music.h>
 #include <fr.h>
 #include <snd.h>
-#include <ramrom.h>
+#include <rom.h>
 #include <random.h>
 #include <joy.h>
 #include <token.h>

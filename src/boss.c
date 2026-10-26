@@ -19,9 +19,9 @@
 #include "mema.h"
 #include "memp.h"
 #include "music.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "game/mission/objective_status.h"
-#include "ramrom.h"
+#include "rom.h"
 #include "random.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "sched.h"

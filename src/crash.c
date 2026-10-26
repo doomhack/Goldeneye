@@ -3,7 +3,7 @@
 #include <bondgame.h>
 #include "fr.h"
 #include "crash.h"
-#include "ramrom.h"
+#include "rom.h"
 #include <PR/R4300.h>
 #include "thread_config.h"
 #include "dbgscreen.h"

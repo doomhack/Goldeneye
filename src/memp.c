@@ -4,30 +4,39 @@
 #include "game/text/language.h"
 
 /**
- * EU .data, offset from start of data_seg : 0x3640
-*/
-
-/**
- * @file memp.c
- * This file contains code for memp.
+ * memp: the pool allocator, which provides almost all of the game's memory.
+ *
+ * All RAM from the end of the game's code and data to the top of the 8 MB is split into
+ * pools. A pool hands out memory like a stack: each allocation comes straight after the
+ * previous one, nothing is freed on its own, and the whole pool is emptied at once.
+ *
+ *  - The stage pool holds everything for the current level and is emptied each time a
+ *    level (or the title screen) loads. mema's heap is one allocation in it.
+ *  - The permanent pool, 296 KB, holds things loaded once at boot.
+ *
+ * There is no error handling: running out of space hangs the game, except that when the
+ * stage pool is full, allocations spill over into the permanent pool.
  */
 
-//bss
 MemoryPool m_mempPools[MEMPOOL_COUNT];
 
-//data
 void *m_mempDebug = 0;
+/** Set once the stage pool has filled up and allocations have moved to the permanent pool. */
 s32 m_mempOverflowed = 0;
 s32 D_80024408 = 0;
 s32 D_8002440C = 0;
 s32 D_80024410 = 0;
 
-//overloaded
+/**
+ * Each size goes to the pool after the one named: the "ml" size sizes MEMPOOL_STAGE and
+ * the "me" size MEMPOOL_PERMANENT. These defaults are never used, because boss.c always
+ * sets "-ml0 -me0" (see mempInitPools).
+ */
 struct MempPoolSizes m_mempDefaultSizes = {
-    MEMPOOL_MF + 1,    0,  // MEMPOOL_MF
-    MEMPOOL_ML + 1,    82, // MEMPOOL_ML
-    MEMPOOL_ME + 1,    15, // MEMPOOL_ME
-    0,                 0   // MEMPOOL_END
+    MEMPOOL_MF + 1,    0,
+    MEMPOOL_ML + 1,    82,
+    MEMPOOL_ME + 1,    15,
+    0,                 0
 };
 
 void mempInit(void)
@@ -37,14 +46,17 @@ void mempInit(void)
 
 const char *tokenFind(s32 arg0, const char *arg1);
 long int strtol(const char *str, char **endptr, int base);
-void mempInitPools(s32 poolAreaStart, s32 poolAreaSize)
+/**
+ * Splits the area from `areaStart` into pools. The sizes come from the "-mf", "-ml" and
+ * "-me" command-line tokens. With "-me0", which boss.c always sets, the permanent pool gets
+ * 296 KB (308 KB for Japanese text) and the stage pool the rest.
+ */
+void mempInitPools(s32 areaStart, s32 areaSize)
 {
     MempPoolSizes poolSizes;
 
-    //set pool 0 to what boss wants (room_model_buffer)
-    //pool 0 = TotalPoolArea
-    m_mempPools[MEMPOOL_TOTAL].start = poolAreaStart;
-    m_mempPools[MEMPOOL_TOTAL].end = poolAreaStart + poolAreaSize;
+    m_mempPools[MEMPOOL_TOTAL].start = areaStart;
+    m_mempPools[MEMPOOL_TOTAL].end = areaStart + areaSize;
 
     poolSizes = m_mempDefaultSizes;
 
@@ -64,91 +76,83 @@ void mempInitPools(s32 poolAreaStart, s32 poolAreaSize)
     {
         poolSizes.mf = 0;
         poolSizes.me = ((j_text_trigger ? 308 : 296) * 1024);
-        poolSizes.ml = poolAreaSize - poolSizes.me;
+        poolSizes.ml = areaSize - poolSizes.me;
     }
 
     mempSetPoolSizes((s32*)&poolSizes);
 }
 
+/**
+ * Lays the pools out one after another, each the size given in `poolSizes` (a
+ * MempPoolSizes) scaled so that together they fill MEMPOOL_TOTAL, and rounded down to
+ * 16 bytes.
+ */
 void mempSetPoolSizes(s32 poolSizes[MEMPOOL_COUNT+1])
 {
     s32 i;
-    s32 bankstarts[MEMPOOL_COUNT] = {0};
-    s32 mempLen;
-    s32 mempRequested;
-    s32 mempStart;
+    s32 poolEnds[MEMPOOL_COUNT] = {0};
+    s32 areaLen;
+    s32 totalSize;
+    s32 areaStart;
 
-    //set MF, ML, ME first
+    // Put each size in its pool's slot. With "-ml0 -me0" (boss.c) this gives
+    // {0, 0, 0, 0, areaSize - 296K, 0, 296K}.
     i = 0;
     do
     {
-        // assign the "xxxIndex" the value of xxx+1 then skip "Indices", 0=2=mf, 2=4=ml, 4=6=me, 6=8=end
-        bankstarts[poolSizes[i]] = poolSizes[i+1];
+        poolEnds[poolSizes[i]] = poolSizes[i+1];
         i += 2;
-    } while (poolSizes[i] != 0); //while sizes not = 0 (bank 7 = 0)
-    //  0 1 2 3            4           5     6
-    // {0,0,0,0,poolAreaSize - 303104, 0, 303104}
+    } while (poolSizes[i] != 0);
 
-    //for each bankstart, add current to next
+    // Running totals: poolEnds[i] becomes the end of pool i and the start of pool i + 1
     for (i = MEMPOOL_TOTAL; i < MEMPOOL_COUNT - 1; i++)
     {
-        bankstarts[i + 1] += bankstarts[i];
+        poolEnds[i + 1] += poolEnds[i];
     }
-    // {0,0,0,0,poolAreaSize - 303104, poolAreaSize - 303104, poolAreaSize}
 
-
-    mempRequested = bankstarts[MEMPOOL_COUNT - 1]; //total accumulated size of banks = poolAreaSize
-    mempLen  = (m_mempPools[MEMPOOL_TOTAL].end - m_mempPools[MEMPOOL_TOTAL].start);
-
-    //for each bankstart, multiply by total pool size, then divide by size of banks 1-7
-    //spread each bank evenly
-    for (i = MEMPOOL_TOTAL; i < MEMPOOL_COUNT; i++)
-    {
-        bankstarts[i] = ((s64)bankstarts[i] * mempLen) / mempRequested;
-    }
-    // {0,0,0,0,poolAreaSize - 303104, poolAreaSize - 303104, poolAreaSize}
+    // Scale so that the pools fill the area exactly
+    totalSize = poolEnds[MEMPOOL_COUNT - 1];
+    areaLen  = (m_mempPools[MEMPOOL_TOTAL].end - m_mempPools[MEMPOOL_TOTAL].start);
 
     for (i = MEMPOOL_TOTAL; i < MEMPOOL_COUNT; i++)
     {
-        bankstarts[i] = ALIGN16_b(bankstarts[i]);
+        poolEnds[i] = ((s64)poolEnds[i] * areaLen) / totalSize;
     }
-    // {0,0,0,0,poolAreaSize - 303104, poolAreaSize - 303104, poolAreaSize}
 
+    for (i = MEMPOOL_TOTAL; i < MEMPOOL_COUNT; i++)
+    {
+        poolEnds[i] = ALIGN16_b(poolEnds[i]);
+    }
 
-    mempStart = m_mempPools[MEMPOOL_TOTAL].start;
-    //for each bank 1-7, add new start position
+    // The pools start closed (pos is NULL) until mempResetPool opens them
+    areaStart = m_mempPools[MEMPOOL_TOTAL].start;
+
     for (i = MEMPOOL_TOTAL; i < MEMPOOL_COUNT - 1; i++)
     {
-        m_mempPools[i + 1].start = bankstarts[i] + mempStart;
+        m_mempPools[i + 1].start = poolEnds[i] + areaStart;
         m_mempPools[i + 1].pos   = 0;
-        m_mempPools[i + 1].end   = bankstarts[i + 1] + mempStart;
+        m_mempPools[i + 1].end   = poolEnds[i + 1] + areaStart;
     }
-    /*
-                           rel-start              size
-    g_memPools[TOTAL]      0                      poolArea
-    g_memPools[MF]         0                      0
-    g_memPools[2]          0                      0
-    g_memPools[ML]         0                      0
-    g_memPools[STAGE]      0                      poolAreaSize - 303104
-    g_memPools[ME]         poolAreaSize - 303104  0
-    g_memPools[PERMANENT]  poolAreaSize - 303104  303104
-    */
 }
 
-
-void *mempAlloc(u32 bytes, u8 poolnum)
+/**
+ * Allocates `bytes` from a pool. Hangs if the pool is closed or full, except that when the
+ * stage pool is full the allocation comes from the permanent pool instead. Sizes are not
+ * rounded, so callers keep their own sizes aligned.
+ */
+void *mempAlloc(u32 bytes, u8 poolId)
 {
     /*
      * Retain this address expression. Using
-     * &m_mempPools[poolnum] changes regalloc.
+     * &m_mempPools[poolId] changes regalloc.
      */
-    MemoryPool *pool = (MemoryPool *)(((u8 **)m_mempPools) + ((poolnum * 2) << 1));
+    MemoryPool *pool = (MemoryPool *)(((u8 **)m_mempPools) + ((poolId * 2) << 1));
     u8 *allocation = pool->pos;
 
 #ifdef DEBUG
-    if ((poolnum < 0) || (4 < poolnum))
+    if ((poolId < 0) || (4 < poolId))
     {
-        osSyncPrintf("mempAlloc from invalid heap %d!", poolnum);
+        osSyncPrintf("mempAlloc from invalid heap %d!", poolId);
     }
 #endif
 
@@ -199,21 +203,23 @@ void *mempAlloc(u32 bytes, u8 poolnum)
 
 
 /**
- * Resize the most recent allocation in a pool without moving it.
+ * Grows or shrinks the most recent allocation in a pool to `newSize` bytes, without
+ * moving it. Returns MEMP_RESIZE_NOT_LAST, and does nothing, if `allocation` isn't the
+ * most recent one. Hangs if the pool can't fit the new size.
  */
-MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newsize, u8 poolnum)
+MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newSize, u8 poolId)
 {
     MemoryPool *pool;
-    s32 origsize;
-    s32 growsize;
+    s32 oldSize;
+    s32 growBy;
 
     if (m_mempOverflowed && allocation == m_mempPools[MEMPOOL_PERMANENT].prevpos)
     {
-        poolnum = MEMPOOL_PERMANENT;
+        poolId = MEMPOOL_PERMANENT;
     }
 
     allocation = (void *)(u64)allocation;
-    pool = &m_mempPools[poolnum];
+    pool = &m_mempPools[poolId];
 
     if (pool->pos == 0)
     {
@@ -225,12 +231,12 @@ MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newsize, u8 poolnum)
         return MEMP_RESIZE_NOT_LAST;
     }
 
-    origsize = pool->pos - pool->prevpos;
-    growsize = newsize - origsize;
+    oldSize = pool->pos - pool->prevpos;
+    growBy = newSize - oldSize;
 
-    if (growsize <= 0)
+    if (growBy <= 0)
     {
-        pool->pos += growsize;
+        pool->pos += growBy;
         return MEMP_RESIZE_OK;
     }
 
@@ -240,49 +246,53 @@ MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newsize, u8 poolnum)
         while (TRUE);
     }
 
-    if (pool->pos + growsize > pool->end)
+    if (pool->pos + growBy > pool->end)
     {
         mempCheckPools();
         while (TRUE);
     }
 
-    pool->pos += growsize;
+    pool->pos += growBy;
     return MEMP_RESIZE_OK;
 }
 
+/** Empty; it was presumably a debug check of every pool. */
 void mempCheckPools(void) {
-    u8 bank;
-    for (bank = MEMPOOL_MF; bank < MEMPOOL_COUNT; bank++)
+    u8 pool;
+    for (pool = MEMPOOL_MF; pool < MEMPOOL_COUNT; pool++)
     {
     }
 }
 
-s32 mempGetFreeBytes(u8 bank) {
+/** Bytes left in a pool, taking the stage pool's overflow into account. */
+s32 mempGetFreeBytes(u8 pool) {
     if (m_mempOverflowed) {
-        bank = MEMPOOL_PERMANENT;
+        pool = MEMPOOL_PERMANENT;
     }
 
-    if ((bank == MEMPOOL_STAGE) && (m_mempPools[MEMPOOL_STAGE].start == m_mempPools[MEMPOOL_STAGE].end))
+    if ((pool == MEMPOOL_STAGE) && (m_mempPools[MEMPOOL_STAGE].start == m_mempPools[MEMPOOL_STAGE].end))
     {
-        bank = MEMPOOL_PERMANENT;
+        pool = MEMPOOL_PERMANENT;
     }
 
-    return m_mempPools[bank].end - m_mempPools[bank].pos;
+    return m_mempPools[pool].end - m_mempPools[pool].pos;
 }
 
-// Last three bits contains the bank, the rest contains the size.
-u32 mempAllocPacked(u32 sizeandbank) {
-    return mempAlloc((sizeandbank >> 3), (sizeandbank & 7));
+/** Allocates with the pool in the bottom three bits and the size in the rest. Unused. */
+u32 mempAllocPacked(u32 sizeAndPool) {
+    return mempAlloc((sizeAndPool >> 3), (sizeAndPool & 7));
 }
 
-void mempResetPool(u8 bank) {
-    m_mempPools[bank].prevpos = 0;
-    m_mempPools[bank].pos = m_mempPools[bank].start;
+/** Frees everything in a pool (and opens it, if it was closed). */
+void mempResetPool(u8 pool) {
+    m_mempPools[pool].prevpos = 0;
+    m_mempPools[pool].pos = m_mempPools[pool].start;
 }
 
-void mempClosePool(u8 bank) {
+/** Closes a pool: any allocation from it hangs until mempResetPool. */
+void mempClosePool(u8 pool) {
     mempCheckPools();
-    if (m_mempPools[bank].pos != 0) {
-        m_mempPools[bank].pos = 0;
+    if (m_mempPools[pool].pos != 0) {
+        m_mempPools[pool].pos = 0;
     }
 }

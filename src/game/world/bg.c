@@ -6,13 +6,13 @@
 #include <deb.h>
 #include <fr.h>
 #include <memp.h>
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "game/world/bg.h"
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/debug/debug_camera.h"
 #include "game/debug/debugmenu_handler.h"
-#include "game/asset/decompress.h"
+#include "game/asset/rzip.h"
 #include "game/world/bgfog.h"
 #include "game/level/lv.h"
 #include "game/math/round.h"
@@ -839,7 +839,7 @@ void load_bg_file(LEVEL_INDEX levelid)
  
     size = (((((u32) ptr_bgdata_room_fileposition_list[1].pPointTableBin) & 0x00ffffff) - 1) | 0xf) + 1;
  
-    ptr_bg_data = (s32) mempAlloc(size, 4);
+    ptr_bg_data = (s32) mempAlloc(size, MEMPOOL_STAGE);
     fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) ptr_bg_data, 0, size);
  
     gptr_stan = (s32) fileLoadByNameToPool(levelinfotable[levelentry_index].bg_stan_filename, FILELOAD_TRIM_2, 0, MEMPOOL_STAGE);

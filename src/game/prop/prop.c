@@ -17,7 +17,7 @@
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
 #include "game/menu/mp_weapon.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "game/mission/objective.h"
 #include "game/mission/objective_status.h"
 #include "game/model/objecthandler.h"

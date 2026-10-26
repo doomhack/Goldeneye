@@ -1,12 +1,21 @@
+/**
+ * Decompression of Rare's "1172" format, used for most files in the ROM, compressed
+ * textures and music.
+ *
+ * A compressed file is the two bytes 0x11 0x72 followed by a raw deflate stream (a gzip
+ * file with its header and trailer cut off; see tools/1172compress.sh). The inflate code
+ * is Mark Adler's public domain inflate.c from gzip 1.2.4, with the sliding window
+ * replaced by writing straight into the output buffer.
+ *
+ * The boot code has its own copy in src/inflate/inflate.c, used to unpack the game code
+ * before this one is loaded.
+ */
 #include <ultra64.h>
-#include "game/asset/zlib.h"
+#include "game/asset/rzip.h"
 #include "include/string.h"
 #include "include/bstring.h"
 
-/* this file comes from gzip (1.2.4, 1993-08-20 release), but 
- * inflate.c placed in public domain by Mark Adler */
-
-#define GETBYTE()   (rz_inbuf[rz_inptr++])
+#define GETBYTE()   (m_inBuf[m_inPos++])
 #define NEXTBYTE()  (u8)GETBYTE()
 #define NEEDBITS(n) {while(k<(n)){b|=((u32)NEXTBYTE())<<k;k+=8;}}
 #define DUMPBITS(n) {b>>=(n);k-=(n);}
@@ -15,56 +24,45 @@
 #define BMAX 16
 #define N_MAX 288
 
-//.bss
 
-//bss:8008D350
-u8 *rz_inbuf;
-//bss:8008D354
-u8 *rz_outbuf;
-//bss:8008D358
-u32 rz_inptr;
-//bss:8008D35C
-u32 rz_wp;
-//bss:8008D360
-struct huft *rz_hlist;
-//bss:8008D364
-u32 rz_bb;
-//bss:8008D368
-u32 rz_bk;
-//bss:8008D36C
-u32 rz_hufts;
+static u8 *m_inBuf;
+static u8 *m_outBuf;
+static u32 m_inPos;
+static u32 m_outPos;
+static struct huft *m_huftBuf;
+static u32 m_bitBuf;
+static u32 m_bitCount;
+static u32 m_huftCount;
 
 
-//.data
-u8 rz_border[0x14] = {
+static u8 m_lengthOrder[0x14] = {
         16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
-u16 rz_cplens[0x20] = {
+static u16 m_lengthBase[0x20] = {
         3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
         35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
 
-u8 rz_cplext[0x20] = {
+static u8 m_lengthExtra[0x20] = {
         0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
         3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99};
 
-u16 rz_cpdist[0x1E] = {
+static u16 m_distBase[0x1E] = {
         1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
         257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
         8193, 12289, 16385, 24577};
 
-u8 rz_cpdext[0x20] = {
+static u8 m_distExtra[0x20] = {
         0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
         7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
         12, 12, 13, 13};
 
-u16 rz_mask_bits[] = {
+static u16 m_maskBits[] = {
     0, 1, 3, 7, 0xF, 0x1F, 0x3F, 0x7F, 0xFF, 0x1FF, 0x3FF, 0x7FF, 0xFFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF, 0
 };
 
-s32 rz_lbits = 9;
-s32 rz_dbits = 6;
+static s32 m_lengthBits = 9;
+static s32 m_distBits = 6;
 
-//.rodata
 
 
 /* Given a list of code lengths and a maximum table size, make a set of
@@ -72,7 +70,7 @@ s32 rz_dbits = 6;
    the given code set is incomplete (the tables are still built in this
    case), two if the input is invalid (all zero length codes or an
    oversubscribed set of lengths), and three if not enough memory. */
-s32 zlib_huft_build(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *m)
+static s32 huftBuild(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *m)
 {
 	u32 a;                   /* counter for codes of length k */
 	u32 c[BMAX+1];           /* bit length count table */
@@ -207,9 +205,9 @@ s32 zlib_huft_build(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *m
 				z = 1 << j;             /* table entries for j-bit table */
 
 				/* allocate and link in new table */
-				q = &rz_hlist[rz_hufts];
+				q = &m_huftBuf[m_huftCount];
 
-				rz_hufts += z + 1;         /* track memory usage */
+				m_huftCount += z + 1;         /* track memory usage */
 				*t = q + 1;             /* link to list for huft_free() */
 				*(t = &(q->v.t)) = (struct huft *)NULL;
 				u[h] = ++q;             /* table starts after link */
@@ -268,7 +266,7 @@ s32 zlib_huft_build(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *m
 
 
 
-s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
+static s32 inflateCodes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
 {
     register u32 e;    /* table entry flag/number of extra bits */
     u32 n;          /* length and index for copy */
@@ -282,13 +280,13 @@ s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
     register u32 b;    /* bit buffer */
 
     /* make local copies of globals */
-    b = rz_bb;                       /* initialize bit buffer */
-    k = rz_bk;
-    w = rz_wp;                       /* initialize window position */
+    b = m_bitBuf;                       /* initialize bit buffer */
+    k = m_bitCount;
+    w = m_outPos;                       /* initialize window position */
 
     /* inflate the coded data */
-    ml = rz_mask_bits[bl];
-    md = rz_mask_bits[bd];         /* precompute masks for speed */
+    ml = m_maskBits[bl];
+    md = m_maskBits[bd];         /* precompute masks for speed */
     
     for (;;)                      /* do until end of block */
     {
@@ -302,22 +300,22 @@ s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
                 e -= 16;
                 NEEDBITS(e)
 
-            } while ((e = (t = t->v.t + ((u32)b & rz_mask_bits[e]))->e) > 16);
+            } while ((e = (t = t->v.t + ((u32)b & m_maskBits[e]))->e) > 16);
         }
 
         DUMPBITS(t->b)
 
         if (e == 16)                /* then it's a literal */
         {
-            if ((u32)(s32)&rz_outbuf[w] >= (u32)(s32)&rz_inbuf[rz_inptr])
+            if ((u32)(s32)&m_outBuf[w] >= (u32)(s32)&m_inBuf[m_inPos])
             {
-                if ((u32)((s32)&rz_outbuf[w] - (s32)&rz_inbuf[rz_inptr]) < WSIZE)
+                if ((u32)((s32)&m_outBuf[w] - (s32)&m_inBuf[m_inPos]) < WSIZE)
                 {
                     while(1){}              
                 }
             }
             
-            rz_outbuf[w++] = (u8)t->v.n;
+            m_outBuf[w++] = (u8)t->v.n;
         }
         else                        /* it's an EOB or a length */
         {
@@ -329,7 +327,7 @@ s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
 
             NEEDBITS(e)
             /* get length of block to copy */
-            n = t->v.n + ((u32)b & rz_mask_bits[e]);
+            n = t->v.n + ((u32)b & m_maskBits[e]);
             DUMPBITS(e)
 
             /* decode distance of block to copy */
@@ -343,12 +341,12 @@ s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
                     e -= 16;
                     NEEDBITS(e)
 
-                } while ((e = (t = t->v.t + ((u32)b & rz_mask_bits[e]))->e) > 16);
+                } while ((e = (t = t->v.t + ((u32)b & m_maskBits[e]))->e) > 16);
             }
 
             DUMPBITS(t->b)
             NEEDBITS(e)
-            d = w - t->v.n - ((u32)b & rz_mask_bits[e]);
+            d = w - t->v.n - ((u32)b & m_maskBits[e]);
             DUMPBITS(e)
 
             /* do the copy */
@@ -359,15 +357,15 @@ s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
                 
                 if (w - d >= e)         /* (this test assumes unsigned comparison) */
                 {
-                    if ((u32)(s32)&rz_outbuf[w+e-1] >= (u32)(s32)&rz_inbuf[rz_inptr])
+                    if ((u32)(s32)&m_outBuf[w+e-1] >= (u32)(s32)&m_inBuf[m_inPos])
                     {
-                        if ((u32)((s32)&rz_outbuf[w+e-1] - (s32)&rz_inbuf[rz_inptr]) < WSIZE)
+                        if ((u32)((s32)&m_outBuf[w+e-1] - (s32)&m_inBuf[m_inPos]) < WSIZE)
                         {
                             while(1){}              
                         }
                     }
 
-                    memcpy(&rz_outbuf[w], &rz_outbuf[d], e);
+                    memcpy(&m_outBuf[w], &m_outBuf[d], e);
                     w += e;
                     d += e;
                 }
@@ -375,15 +373,15 @@ s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
                 {
                     do
                     {
-                        if ((u32)(s32)&rz_outbuf[w] >= (u32)(s32)&rz_inbuf[rz_inptr])
+                        if ((u32)(s32)&m_outBuf[w] >= (u32)(s32)&m_inBuf[m_inPos])
                         {
-                            if ((u32)((s32)&rz_outbuf[w] - (s32)&rz_inbuf[rz_inptr]) < WSIZE)
+                            if ((u32)((s32)&m_outBuf[w] - (s32)&m_inBuf[m_inPos]) < WSIZE)
                             {
                                 while(1){}              
                             }
                         }
 
-                        rz_outbuf[w++] = rz_outbuf[d++];
+                        m_outBuf[w++] = m_outBuf[d++];
                     } while (--e);
                 }
             } while (n);
@@ -391,9 +389,9 @@ s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
     }
 
     /* restore the globals from the locals */
-    rz_wp = w;                       /* restore global window pointer */
-    rz_bb = b;                       /* restore global bit buffer */
-    rz_bk = k;
+    m_outPos = w;                       /* restore global window pointer */
+    m_bitBuf = b;                       /* restore global bit buffer */
+    m_bitCount = k;
 
     /* done */
     return 0;
@@ -403,7 +401,7 @@ s32 zlib_inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
 
 
 
-s32 zlib_inflate_stored(void)
+static s32 inflateStored(void)
 {
 	u32 n;           /* number of bytes in block */
 	u32 w;           /* current window position */
@@ -411,9 +409,9 @@ s32 zlib_inflate_stored(void)
 	register u32 k;  /* number of bits in bit buffer */
     
 	/* make local copies of globals */
-	b = rz_bb;                       /* initialize bit buffer */
-	k = rz_bk;
-	w = rz_wp;                       /* initialize window position */
+	b = m_bitBuf;                       /* initialize bit buffer */
+	k = m_bitCount;
+	w = m_outPos;                       /* initialize window position */
 
 	/* go to byte boundary */
 	n = k & 7;
@@ -436,23 +434,23 @@ s32 zlib_inflate_stored(void)
     {
 		NEEDBITS(8)
         
-        if ((u32)(s32)&rz_outbuf[w] >= (u32)(s32)&rz_inbuf[rz_inptr])
+        if ((u32)(s32)&m_outBuf[w] >= (u32)(s32)&m_inBuf[m_inPos])
         {
-            if ((u32)((s32)&rz_outbuf[w] - (s32)&rz_inbuf[rz_inptr]) < WSIZE)
+            if ((u32)((s32)&m_outBuf[w] - (s32)&m_inBuf[m_inPos]) < WSIZE)
             {
                 while(1){}              
             }
         }
         
-        rz_outbuf[w++] = (u8)b;
+        m_outBuf[w++] = (u8)b;
         
         DUMPBITS(8)
 	}
 
 	/* restore the globals from the locals */
-	rz_wp = w;                       /* restore global window pointer */
-	rz_bb = b;                       /* restore global bit buffer */
-	rz_bk = k;
+	m_outPos = w;                       /* restore global window pointer */
+	m_bitBuf = b;                       /* restore global bit buffer */
+	m_bitCount = k;
 
 	return 0;
 }
@@ -460,14 +458,14 @@ s32 zlib_inflate_stored(void)
 
 
 
-s32 zlib_inflate_fixed(void)
+static s32 inflateFixed(void)
 {
 	s32 i;                /* temporary variable */
 	struct huft *tl;      /* literal/length code table */
 	struct huft *td;      /* distance code table */
 	s32 bl;               /* lookup bits for tl */
 	s32 bd;               /* lookup bits for td */
-	u32 l[288];           /* length list for zlib_huft_build */
+	u32 l[288];           /* length list for huftBuild */
 
 	/* set up literal table */
 	for (i = 0; i < 144; i++) {
@@ -485,7 +483,7 @@ s32 zlib_inflate_fixed(void)
 
 	bl = 7;
 
-	zlib_huft_build(l, 288, 257, rz_cplens, rz_cplext, &tl, &bl);
+	huftBuild(l, 288, 257, m_lengthBase, m_lengthExtra, &tl, &bl);
 
 	/* set up distance table */
 	for (i = 0; i < 30; i++) {
@@ -495,15 +493,15 @@ s32 zlib_inflate_fixed(void)
 	bd = 5;
 
 	/* decompress until an end-of-block code */
-	zlib_huft_build(l, 30, 0, rz_cpdist, rz_cpdext, &td, &bd);
+	huftBuild(l, 30, 0, m_distBase, m_distExtra, &td, &bd);
 
-	zlib_inflate_codes(tl, td, bl, bd);
+	inflateCodes(tl, td, bl, bd);
 
 	return 0;
 }
 
 
-s32 zlib_inflate_dynamic(void)
+static s32 inflateDynamic(void)
 {
 	s32 i;                /* temporary variables */
 	u32 j;
@@ -522,8 +520,8 @@ s32 zlib_inflate_dynamic(void)
 	u32 ll[286+30];  /* literal/length and distance code lengths */
 
 	/* make local bit buffer */
-	b = rz_bb;
-	k = rz_bk;
+	b = m_bitBuf;
+	k = m_bitCount;
 
 	/* read in table lengths */
 	NEEDBITS(5)
@@ -540,23 +538,23 @@ s32 zlib_inflate_dynamic(void)
 	for (j = 0; j < nb; j++)
     {
 		NEEDBITS(3)
-		ll[rz_border[j]] = b & 7;
+		ll[m_lengthOrder[j]] = b & 7;
 		DUMPBITS(3)
 	}
 
 	for (; j < 19; j++)
     {
-		ll[rz_border[j]] = 0;
+		ll[m_lengthOrder[j]] = 0;
 	}
 
 	/* build decoding table for trees--single level, 7 bit lookup */
 	bl = 7;
 
-	zlib_huft_build(ll, 19, 19, NULL, NULL, &tl, &bl);
+	huftBuild(ll, 19, 19, NULL, NULL, &tl, &bl);
 
 	/* read in literal and distance code lengths */
 	n = nl + nd;
-	m = rz_mask_bits[bl];
+	m = m_maskBits[bl];
 	i = l = 0;
 
 	while (i < n) {
@@ -600,34 +598,34 @@ s32 zlib_inflate_dynamic(void)
 	}
 
 	/* restore the global bit buffer */
-	rz_bb = b;
-	rz_bk = k;
+	m_bitBuf = b;
+	m_bitCount = k;
 
 	/* build the decoding tables for literal/length and distance codes */
-	bl = rz_lbits;
+	bl = m_lengthBits;
 
-	zlib_huft_build(ll, nl, 257, rz_cplens, rz_cplext, &tl, &bl);
+	huftBuild(ll, nl, 257, m_lengthBase, m_lengthExtra, &tl, &bl);
 
-	bd = rz_dbits;
+	bd = m_distBits;
 
-	zlib_huft_build(ll + nl, nd, 0, rz_cpdist, rz_cpdext, &td, &bd);
+	huftBuild(ll + nl, nd, 0, m_distBase, m_distExtra, &td, &bd);
 
 	/* decompress until an end-of-block code */
-	zlib_inflate_codes(tl, td, bl, bd);
+	inflateCodes(tl, td, bl, bd);
 
 	return 0;
 }
 
 
-s32 zlib_inflate_block(s32 *e)
+static s32 inflateBlock(s32 *e)
 {
 	u32 t;                   /* block type */
-	register u32 b = rz_bb;  /* bit buffer */
-	register u32 k = rz_bk;  /* number of bits in bit buffer */
+	register u32 b = m_bitBuf;  /* bit buffer */
+	register u32 k = m_bitCount;  /* number of bits in bit buffer */
 
 	/* make local bit buffer */
-	b = rz_bb;
-	k = rz_bk;
+	b = m_bitBuf;
+	k = m_bitCount;
 
 	/* read in last block bit */
 	NEEDBITS(1)
@@ -640,23 +638,23 @@ s32 zlib_inflate_block(s32 *e)
 	DUMPBITS(2)
 
 	/* restore the global bit buffer */
-	rz_bb = b;
-	rz_bk = k;
+	m_bitBuf = b;
+	m_bitCount = k;
 
 	/* inflate that block type */
 	if (t == 2)
     {
-		return zlib_inflate_dynamic();
+		return inflateDynamic();
 	}
 
 	if (t == 0)
     {
-		return zlib_inflate_stored();
+		return inflateStored();
 	}
 
 	if (t == 1)
     {
-		return zlib_inflate_fixed();
+		return inflateFixed();
 	}
 
 	/* bad block type */
@@ -665,7 +663,7 @@ s32 zlib_inflate_block(s32 *e)
 
 
 
-int zlib_inflate(void)
+static int inflate(void)
 {
     /* last block flag */
     int e;
@@ -677,36 +675,61 @@ int zlib_inflate(void)
     unsigned h;
 
     /* initialize window, bit buffer */
-    rz_wp = 0;
-    rz_bk = 0;
-    rz_bb = 0;
+    m_outPos = 0;
+    m_bitCount = 0;
+    m_bitBuf = 0;
 
     /* decompress until the last block */
     h = 0;
 
     do
     {
-        rz_hufts = 0;
+        m_huftCount = 0;
         
-        if ((r = zlib_inflate_block(&e)) != 0)
+        if ((r = inflateBlock(&e)) != 0)
         {
             return r;
         }
         
-        if (rz_hufts > h)
+        if (m_huftCount > h)
         {
-            h = rz_hufts;
+            h = m_huftCount;
         }
     } while (!e);
 
     /* Undo too much lookahead. The next read will be byte aligned so we
     * can discard unused bits in the last meaningful byte.
     */
-    while (rz_bk >= 8)
+    while (m_bitCount >= 8)
     {
-        rz_bk -= 8;
-        rz_inptr--;
+        m_bitCount -= 8;
+        m_inPos--;
     }
 
     return 0;
+}
+
+/**
+ * Decompresses a 1172 file from `src` into `dst` and returns the decompressed size.
+ * `huftBuf` is scratch space for the Huffman tables, about 8 KB.
+ *
+ * The two magic bytes are not checked.
+ */
+u32 rzipInflate(u8 *src, u8 *dst, struct huft *huftBuf)
+{
+    m_inBuf = src + 2;
+    m_outBuf = dst;
+    m_huftBuf = huftBuf;
+    m_outPos = 0;
+    m_inPos = 0;
+
+    inflate();
+
+    return m_outPos;
+}
+
+/** Returns the address just past the compressed data that the last rzipInflate read. */
+u8 *rzipGetInputEnd(void)
+{
+    return m_inBuf + m_inPos;
 }

@@ -4,8 +4,8 @@
 #include "game/gfx/image_bank.h"
 #include <assets/image_externs.h>
 #include <PR/R4300.h>
-#include "ramrom.h"
-#include "game/asset/decompress.h"
+#include "rom.h"
+#include "game/asset/rzip.h"
 
 
 #define TEX_ALPHA_WEIGHT 961
@@ -223,7 +223,7 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
 
         rzipInflate(img_curpos, &scratch2, (struct huft *)&scratch);
         imagebytesout = texAlignIndices(scratch2, width, height, format, &dst[totalbytesout]);
-        texSetBitstring(rzipGetInputEnd());
+        texSetBitstring((s32) rzipGetInputEnd());
 
         if ((arg2 == 1) && (forcenumimages > 0))
         {

@@ -1,10 +1,13 @@
 #include <ultra64.h>
-#include "ramrom.h"
+#include "rom.h"
 #include <macro.h>
 
 /**
- * @file ramrom.c
- * This file contains code to handle reading and writing rom addresses.
+ * Copying data between the cartridge ROM and RAM by PI DMA. Every copy waits until it
+ * has finished.
+ *
+ * romWrite writes to the cartridge address space, which only does anything on Rare's
+ * development kit (where the "ROM" was RAM on the host); the ramrom demo recorder used it.
  */
 
 
@@ -12,44 +15,25 @@ OSIoMesg m_romIoMesg;
 OSMesg m_romMesg;
 OSMesgQueue m_romQueue;
 
-/**
- * 6760	70005B60
- * external
- * romCreateMesgQueue
- * creates a message queue
- */
+/** Creates the message queue that DMA completions are sent to. */
 void romCreateMesgQueue(void)
 {
     osCreateMesgQueue(&m_romQueue, &m_romMesg, 1);
 }
 
-/**
- * 6790	70005B90
- * romStartDma
- * invalidate cache and do pi dma
- */
+/** Starts a DMA from ROM to RAM, after dropping the target from the data cache. */
 void romStartDma(void *target, void *source, u32 size)
 {
     osInvalDCache(target, size);
     osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_READ, source, target, size, &m_romQueue);
 }
 
-/**
- * 67F0	70005BF0
- * romWaitDma
- * receives a message queue
- */
+/** Waits for the DMA in progress to finish. */
 void romWaitDma(void)
 {
     osRecvMesg(&m_romQueue, NULL, OS_MESG_BLOCK);
 }
 
-/**
- * 681C	70005C1C
- * external
- * romCopy
- * copy from rom to ram
- */
 /**
  * A DMA target that shares a data cache line with other data is not safe on
  * real hardware: if the CPU touches that line while the DMA is in flight, the
@@ -76,6 +60,10 @@ static void romCopyBounced(u8 *target, u8 *source, u32 size)
     }
 }
 
+/**
+ * Copies `size` bytes from ROM to RAM. The ROM address must be even. A target that is not
+ * 16-byte aligned, and any partial cache line at the end, go through the bounce buffer.
+ */
 void romCopy(void *target, void *source, u32 size)
 {
     u32 direct;
@@ -102,10 +90,9 @@ void romCopy(void *target, void *source, u32 size)
 }
 
 /**
- * 6844	70005C44
- * external
- * romCopyUnaligned
- * aligns data, does a romCopy(), then returns aligned pointer to target
+ * Copies from any ROM address, even an odd one: copies from the even address below it
+ * into the 16-byte aligned address at or above `target`, and returns where the requested
+ * data starts. The buffer needs about 17 bytes to spare.
  */
 s32 romCopyUnaligned(void *target, void *source, s32 length)
 {
@@ -122,23 +109,14 @@ s32 romCopyUnaligned(void *target, void *source, s32 length)
     return ((s32)target_aligned + target_offset);
 }
 
-/**
- * 68A8	70005CA8
- * romStartWrite
- * actually writes to rom (buffer on Indy)
- */
+/** Starts a DMA from RAM to the cartridge address space, after writing back the cache. */
 void romStartWrite(void *source, void *target, u32 size)
 {
     osWritebackDCache(source, size);
     osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_WRITE, target, source, size, &m_romQueue);
 }
 
-/**
- * 6908	70005D08
- * external
- * romWrite
- * let's write to the rom (buffer on Indy)
- */
+/** Writes to the cartridge address space and waits. Development kit only. */
 void romWrite(void *source, void *target, u32 size)
 {
     romStartWrite(source, target, size);

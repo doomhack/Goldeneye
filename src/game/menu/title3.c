@@ -4,7 +4,7 @@
 #include "game/gfx/image.h"
 #include "math.h"
 #include "game/model/objecthandler.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "game/chr/chr_b.h"
 #include "game/model/initanitable.h"
 #include "game/model/chrobjdata.h"

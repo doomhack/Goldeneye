@@ -1,5 +1,5 @@
-#ifndef _RAMROM_H_
-#define _RAMROM_H_
+#ifndef _ROM_H_
+#define _ROM_H_
 #include <ultra64.h>
 
 void romCreateMesgQueue(void);

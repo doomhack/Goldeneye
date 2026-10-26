@@ -30,7 +30,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, vertex pools | `image.c`, `tex.c`, `dyn.c`, `rsp.c`, `viewport.c` |
 | `text/` | Text rendering and language banks | `textrelated.c`, `language.c` |
 | `math/` | Matrices, quaternions, trig, interpolation, gravity. See [subsystems/math.md](subsystems/math.md) | `matrix.c`, `quaternion.c`, `trig.c` |
-| `asset/` | Loading files from ROM and decompressing them | `ob.c`, `zlib.c`, `decompress.c` |
+| `asset/` | Loading files from ROM and decompressing them. See [subsystems/assets-memory.md](subsystems/assets-memory.md) | `fileload.c`, `rzip.c` |
 | `audio/` | Music track choice per level and multiplayer music | `music_0D2720.c`, `mp_music.c` |
 | `replay/` | Rare's demo playback, and the test hooks the replay tests use | `ramromreplay.c`, `testhooks.c` |
 | `debug/` | Debug menu, free camera, speed graph, host link (Indy) code. To be deleted in Phase 2 | `debugmenu_handler.c`, `debug_camera.c` |

@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include <bondgame.h>
-#include "ramrom.h"
+#include "rom.h"
 #include "deb.h"
 #include "str.h"
 #include "memp.h"

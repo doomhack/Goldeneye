@@ -1,5 +1,5 @@
-#ifndef _OB_H_
-#define _OB_H_
+#ifndef _FILELOAD_H_
+#define _FILELOAD_H_
 #include <ultra64.h>
 
 typedef struct FileInfo

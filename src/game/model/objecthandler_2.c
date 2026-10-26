@@ -5,7 +5,7 @@
 #include "game/math/round.h"
 #include "game/model/math_unk_05A9E0.h"
 #include "game/model/model.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include <memp.h>
 #include "game/model/objecthandler.h"
 #include "game/math/quaternion.h"

@@ -1,5 +1,5 @@
 #include <ultra64.h>
-#include <ramrom.h>
+#include <rom.h>
 #include <memp.h>
 #include "game/gfx/image_bank.h"
 

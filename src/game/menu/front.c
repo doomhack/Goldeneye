@@ -41,7 +41,7 @@
 #include "game/menu/title.h"
 #include <assets/font_dl.h>
 #include "game/gfx/image.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "gbi_extension.h"
 #include "game/model/model.h"
 

@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include <deb.h>
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include <memp.h>
 #include "game/level/game_debug.h"
 

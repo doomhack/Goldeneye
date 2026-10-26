@@ -7,7 +7,7 @@
 #include <bondgame.h>
 #include <fr.h>
 #include <macro.h>
-#include <ramrom.h>
+#include <rom.h>
 #include "game/hud/blood_animation.h"
 #include "bondtypes.h"
 #include "game/chr/chr.h"
@@ -20,7 +20,7 @@
 #include "game/math/matrix.h"
 #include "game/model/model.h"
 #include "music.h"
-#include "game/asset/ob.h"
+#include "game/asset/fileload.h"
 #include "game/model/objecthandler.h"
 #include "game/menu/title.h"
 #include "game/menu/title2.h"

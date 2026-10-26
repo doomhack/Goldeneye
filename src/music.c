@@ -3,11 +3,11 @@
 #include "inflate/inflate.h"
 #include "audi.h"
 #include <bondconstants.h>
-#include "game/asset/decompress.h"
+#include "game/asset/rzip.h"
 #include "game/gfx/dyn.h"
 #include "memp.h"
 #include "music.h"
-#include "ramrom.h"
+#include "rom.h"
 #include "snd.h"
 #include <macro.h>
 
