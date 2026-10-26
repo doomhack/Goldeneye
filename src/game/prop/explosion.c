@@ -641,21 +641,21 @@ void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range)
                                 zdist *= 1.0f / temp_f2_3;
                             }
 
-                            sp90 = get_cur_playernum();
-                            set_cur_player(getPlayerPointerIndex(temp_s0));
+                            sp90 = playerGetCurrentNum();
+                            playerSetCurrent(playerGetIndexForProp(temp_s0));
 
                             if (!isMpGame())
                             {
                                 minfrac *= g_SpExplosionDamageMult;
                             }
 
-                            if (isBondInTank() == 1)
+                            if (playerIsInTank() == 1)
                             {
                                 minfrac *= 2.0f;
                             }
 
-                            record_damage_kills(minfrac, xdist, zdist, (s32) temp_s2->player, 1);
-                            set_cur_player(sp90);
+                            playerTakeDamage(minfrac, xdist, zdist, (s32) temp_s2->player, 1);
+                            playerSetCurrent(sp90);
                         }
                     }
                 }
@@ -891,7 +891,7 @@ Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
         }
 
         gSPClearGeometryMode(gdl++, G_CULL_BOTH | G_FOG);
-        gSPMatrix(gdl++, osVirtualToPhysical((void*)get_BONDdata_field_10E0()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+        gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
 
         gdl = applyRoomMatrixToDisplayList(gdl, temp_s1);
 
@@ -913,7 +913,7 @@ Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
             }
         }
 
-        gSPMatrix(gdl++, osVirtualToPhysical((void*)currentPlayerGetProjectionMatrix()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+        gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
 
         temp_f10 = (s32) (g_ExplosionTypes[temp_s5->explosion_type].flareanimspeed * 15.0f);
 
@@ -967,8 +967,8 @@ Gfx *explosionRenderPart(struct ExplosionPart *arg0, Gfx *gdl, struct coord3d *c
 
     spA0 = g_ExplosionRenderPartDefaultVertex;
 
-    sp9C = currentPlayerGetViewToWorldMtxf();
-    sp98 = bondviewGetCurrentPlayersPosition();
+    sp9C = camGetViewToWorldMtxf();
+    sp98 = playerGetPos();
 
     sp64 = arg0->pos.f[0] - sp98->f[0];
     sp60 = arg0->pos.f[1] - sp98->f[1];
@@ -1087,8 +1087,8 @@ Gfx *explosionSmokeRenderPart(struct Smoke *smoke, struct SmokePart *smoke_part,
 
     spC0 = g_SmokeRenderPartDefaultVertex;
 
-    mtx = currentPlayerGetViewToWorldMtxf();
-    sp70 = bondviewGetCurrentPlayersPosition();
+    mtx = camGetViewToWorldMtxf();
+    sp70 = playerGetPos();
 
     if (g_SmokeTypes[smoke->smoke_type].rateappear >= smoke_part->count)
     {
@@ -1504,7 +1504,7 @@ Gfx *explosionRenderPropSmoke(PropRecord *arg0, Gfx *gdl, s32 withalpha)
 
     gSPClearGeometryMode(gdl++, G_CULL_BOTH | G_FOG);
 
-    gSPMatrix(gdl++, osVirtualToPhysical((void*)get_BONDdata_field_10E0()), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
+    gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
     gdl = applyRoomMatrixToDisplayList(gdl, temp_s1);
 
@@ -1530,7 +1530,7 @@ Gfx *explosionRenderPropSmoke(PropRecord *arg0, Gfx *gdl, s32 withalpha)
 
     gDPSetColorDither(gdl++, G_CD_BAYER);
 
-    gSPMatrix(gdl++, osVirtualToPhysical((void*)currentPlayerGetProjectionMatrix()), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
+    gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
     return gdl;
 }

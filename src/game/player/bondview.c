@@ -317,7 +317,7 @@ struct SetupIntroCamera *ptr_random06cam_entry = NULL;
 s32 g_VisibleToGuardsFlag = TRUE;
 
 //D:800364C8
-s32 obj_collision_flag = TRUE;
+s32 g_PlayerCollisionOn = TRUE;
 //D:800364CC
 f32 D_800364CC = 1.0;
 //D:800364D0
@@ -549,73 +549,73 @@ f32 D_80036AC4 = 0.1;
 
 // forward declarations
 
-void bondviewUpdatePlayerRoom(struct player *player);
+void playerUpdateRooms(struct player *player);
 s32 chrTick(PropRecord *prop);
-void bondviewDeregisterPlayerRoom(struct player *player);
-void bondviewUpdateWatchZoomIn(void);
-void bondviewSetPauseWatchRelated(f32 arg0);
-void bondviewSetPauseWatchRelatedAlt(f32 arg0);
-void bondviewStepWatchAnimation(void);
-f32 bondviewGetPauseAnimationPercent(void);
-void bondviewCurrentPlayerUpdateSpeedVerta(f32 value);
-void bondviewCurrentPlayerUpdateSpeedTheta(f32 value);
-s16 bondviewGetCurrentPlayerViewportWidth(void);
-s16 bondviewGetCurrentPlayerViewportHeight(void);
-s16 bondviewGetCurrentPlayerViewportUly(void);
+void playerRemoveFromRooms(struct player *player);
+void watchUpdateZoom(void);
+void watchStartRaise(f32 arg0);
+void watchStartLower(f32 arg0);
+void watchStepAnim(void);
+f32 watchGetAnimFrac(void);
+void playerUpdateSpeedVerta(f32 value);
+void playerUpdateSpeedTheta(f32 value);
+s16 playerGetViewportWidth(void);
+s16 playerGetViewportHeight(void);
+s16 playerGetViewportTop(void);
 void currentPlayerTickChrFade(void);
-void currentPlayerUpdateColourScreenProperties(void);
-s16 getWidth320or440(void);
-s16 getHeight330or240(void);
-void bondviewAdvanceCameraMode(void);
+void currentPlayerTickColourFade(void);
+s16 viGetFrameWidth(void);
+s16 viGetFrameHeight(void);
+void playerAdvanceCameraMode(void);
 bool currentPlayerIsFadeComplete(void);
-s16 get_curplayer_viewport_ulx(void);
-void bondviewFrozenMoveBond(s8, s8, u16, u16);
-void bondviewMovePlayerUpdateViewport(s8 arg0, s8 arg1, u16 arg2);
-void bondviewUpdateCurrentRoomPosition(s32 arg0);
-void trigger_solo_watch_menu(s32 arg0);
-void bondviewUpdatePlayerCollisionBounds(void);
-void bondviewGetTankCollisionBounds(struct rect4f *, coord3d *, f32);
-void bondviewIntroCameraTextTick(void);
-void bondviewUpperTextWindowTimerTick(void);
-void MoveBond(s8 arg0, s8 arg1, u16 arg2, u16 arg3);
-void bondviewProcessInput(s8 arg0, s8 arg1, u16 arg2, u16 arg3);
-void bondviewPlayerTickDamageAndHealth(void);
-void bondviewPlayerTickExplode(void);
-void bondviewPlayerStopAudioForPause(void);
-void bondviewWatchAnimationTick(void);
-void bondviewUpdatePlayerCollisionPositionFields(void);
-void bondviewTankModelRotationRelated(void);
-s32 bondviewTankCollisionStatus(struct coord3d *collision_position, StandTile *arg1, f32 tank_orientation_angle, struct coord3d *arg3, struct coord3d *arg4);
-s32 bondviewCallTankCollisionStatus(struct coord3d *arg0, struct StandTile *arg1, f32 arg2);
-s32 sub_GAME_7F07CDD4(struct coord3d *arg0, f32 arg1, struct StandTile **arg2);
-s32 bondviewTryMoveToStan(struct coord3d *arg0, struct StandTile **stan);
-s32 bondviewTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, struct coord3d *coord_p, struct coord3d *coord_dest);
+s16 playerGetViewportLeft(void);
+void playerMoveFrozen(s8, s8, u16, u16);
+void playerUpdate(s8 arg0, s8 arg1, u16 arg2);
+void camSetRoomOrigin(s32 arg0);
+void watchTrigger(s32 arg0);
+void playerUpdateCollisionBounds(void);
+void tankGetCollisionBounds(struct rect4f *, coord3d *, f32);
+void hudmsgTickIntroText(void);
+void hudmsgTopTick(void);
+void playerMove(s8 arg0, s8 arg1, u16 arg2, u16 arg3);
+void playerProcessInput(s8 arg0, s8 arg1, u16 arg2, u16 arg3);
+void playerTickDamageAndHealth(void);
+void playerTickExplode(void);
+void pauseStopSounds(void);
+void watchTick(void);
+void playerUpdatePosFromCollision(void);
+void tankUpdateTurretOffset(void);
+s32 tankTestCollision(struct coord3d *collision_position, StandTile *arg1, f32 tank_orientation_angle, struct coord3d *arg3, struct coord3d *arg4);
+s32 tankTestCollisionAt(struct coord3d *arg0, struct StandTile *arg1, f32 arg2);
+s32 tankTryMoveTo(struct coord3d *arg0, f32 arg1, struct StandTile **arg2);
+s32 playerTestMove(struct coord3d *arg0, struct StandTile **stan);
+s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, struct coord3d *coord_p, struct coord3d *coord_dest);
 
-s32 bondviewTryFractionMovePlayerCollision(struct coord3d *next_pos, struct coord3d *collision1_pt0, struct coord3d *collision1_pt1, struct coord3d *collision2_pt0, struct coord3d *collision2_pt1);
-s32 bondviewTryEdgeMovePlayerCollision(struct coord3d *prior_next_pos, struct coord3d *collision_pt0, struct coord3d *collision_pt1);
-s32 bondviewTryEndHopPlayerCollision(struct coord3d *prior_next_pos, struct coord3d *collision_pt0, struct coord3d *collision_pt1);
-void bondviewApplyVertaTheta(void);
+s32 playerTryMoveFraction(struct coord3d *next_pos, struct coord3d *collision1_pt0, struct coord3d *collision1_pt1, struct coord3d *collision2_pt0, struct coord3d *collision2_pt1);
+s32 playerTryMoveAlongEdge(struct coord3d *prior_next_pos, struct coord3d *collision_pt0, struct coord3d *collision_pt1);
+s32 playerTryMoveRoundCorner(struct coord3d *prior_next_pos, struct coord3d *collision_pt0, struct coord3d *collision_pt1);
+void playerUpdateVertaTheta(void);
 
 f32 bheadGetBreathingValue(void);
-void bondviewMoveAnimationTick(f32 speed, f32 speedforwards, f32 speedsideways);
-void bondviewCalcUpdatePlayerCollision(struct coord3d *offset, s32 allow_scoot);
-f32 bondviewSetupPauseTransition(bool topause);
-void bondviewStartPauseTransition(f32 duration);
-void bondviewStartUnpauseTransition(f32 duration);
-bool bondViewIsPauseTransitioning(void);
-f32 sub_GAME_7F080228(f32 arg0);
-void currentPlayerSetSwayTarget(s32 value);
-void currentPlayerAdjustCrouchPos(s32 value);
-void bondviewUpdateSpeedSideways(s32 arg0);
-void bondviewUpdateSpeedForwards(s32 arg0);
-void bondviewFrozenCameraTick(u16 buttons, u16 oldbuttons, struct coord3d *pos, struct coord3d *pos2, struct coord3d *offset, struct StandTile **stan, struct coord3d *arg6);
-void bondviewCalcIntroSwirlCamera(s32, f32, struct coord3d *, struct coord3d *);
-s32 pickDeathCameraAngles(PropRecord *prop1, coord3d *pos, PropRecord *prop2, coord3d *collision_pos, StandTile *tile, f32 camera_dist);
+void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways);
+void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot);
+f32 watchSetupPauseTilt(bool topause);
+void watchStartPauseTilt(f32 duration);
+void watchStartUnpauseTilt(f32 duration);
+bool watchIsPauseTilting(void);
+f32 playerScaleLookSpeedTheta(f32 arg0);
+void playerSetLeanTarget(s32 value);
+void playerAdjustCrouch(s32 value);
+void playerUpdateSpeedSideways(s32 arg0);
+void playerUpdateSpeedForwards(s32 arg0);
+void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, struct coord3d *pos2, struct coord3d *offset, struct StandTile **stan, struct coord3d *arg6);
+void playerCalcIntroSwirlCamera(s32, f32, struct coord3d *, struct coord3d *);
+s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, coord3d *collision_pos, StandTile *tile, f32 camera_dist);
 Gfx* hudmsgBottomRender(Gfx* arg0);
-Gfx *sub_GAME_7F08AAE8(Gfx *gdl);
-Gfx *bondviewRenderCredits(Gfx *gdl);
-Gfx *bondviewRenderWatch(Gfx *gdl);
-Gfx *bondviewRenderGaugeBars(Gfx *gdl);
+Gfx *hudmsgTopRender(Gfx *gdl);
+Gfx *hudRenderCredits(Gfx *gdl);
+Gfx *watchRender(Gfx *gdl);
+Gfx *hudRenderHealthBars(Gfx *gdl);
 
 // end forward declarations
 
@@ -625,7 +625,7 @@ void nullsub_75(void)
 }
 
 
-void currentPlayerSetScreenSize(f32 width, f32 height)
+void camSetScreenSize(f32 width, f32 height)
 {
     g_CurrentPlayer->c_screenwidth = width;
     g_CurrentPlayer->c_screenheight = height;
@@ -634,14 +634,14 @@ void currentPlayerSetScreenSize(f32 width, f32 height)
 }
 
 
-void currentPlayerSetScreenPosition(f32 left, f32 top)
+void camSetScreenPosition(f32 left, f32 top)
 {
     g_CurrentPlayer->c_screenleft = left;
     g_CurrentPlayer->c_screentop = top;
 }
 
 
-void currentPlayerSetPerspective(f32 near, f32 fovy, f32 aspect)
+void camSetPerspective(f32 near, f32 fovy, f32 aspect)
 {
     g_CurrentPlayer->c_perspnear = near;
     g_CurrentPlayer->c_perspfovy = fovy;
@@ -649,7 +649,7 @@ void currentPlayerSetPerspective(f32 near, f32 fovy, f32 aspect)
 }
 
 
-void currentPlayerSetCameraScale(void)
+void camUpdateScale(void)
 {
 	f32 fVar4;
 	f32 tmp;
@@ -698,7 +698,7 @@ void currentPlayerSetCameraScale(void)
  * 'out' looks to be a vector which probably has the length 'length'
  * It starts from the middle of the screenn.
  */
-void transformAndNormalizeByLength2Dto3D(coord2d *in, coord3d *out, f32 length)
+void camScreenToViewDir(coord2d *in, coord3d *out, f32 length)
 {
     f32 norm;
     f32 x;
@@ -715,14 +715,14 @@ void transformAndNormalizeByLength2Dto3D(coord2d *in, coord3d *out, f32 length)
 }
 
 
-void scale3DCoordinates(coord3d *in, f32 value, coord3d *out)
+void camScreenDeltaToView(coord3d *in, f32 value, coord3d *out)
 {
     out->y = ((in->y * value) * g_CurrentPlayer->c_scaley);
     out->x = ((in->x * value) * g_CurrentPlayer->c_scalex);
 }
 
 
-void transform3Dto2DCoords(coord3d *in, coord2d *out)
+void camViewToScreen(coord3d *in, coord2d *out)
 {
     f32 inv_z = (1.0f / in->z);
     out->y = (in->y * inv_z * g_CurrentPlayer->c_recipscaley) + (g_CurrentPlayer->c_screentop + g_CurrentPlayer->c_halfheight);
@@ -730,7 +730,7 @@ void transform3Dto2DCoords(coord3d *in, coord2d *out)
 }
 
 
-void transform3Dto2DWithZScaling(coord3d *in, coord3d *out)
+void camViewToScreenSafe(coord3d *in, coord3d *out)
 {
 	f32 inv_z;
 
@@ -748,14 +748,14 @@ void transform3Dto2DWithZScaling(coord3d *in, coord3d *out)
 }
 
 
-void divide3DCoordinates(coord3d *in, f32 divisor, coord3d *out)
+void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out)
 {
 	out->y = in->y * (1.0f / divisor) * g_CurrentPlayer->c_recipscaley;
 	out->x = in->x * (1.0f / divisor) * g_CurrentPlayer->c_recipscalex;
 }
 
 
-void transform3DCoordinatesWithAngle(coord3d *in, coord3d *out, f32 value1, f32 angle, f32 value2)
+void camScreenToViewDirWithFov(coord3d *in, coord3d *out, f32 value1, f32 angle, f32 value2)
 {
     f32 var1;
     f32 x;
@@ -778,7 +778,7 @@ void transform3DCoordinatesWithAngle(coord3d *in, coord3d *out, f32 value1, f32 
  *
  * Address 0x7F078258.
  */
-void transform3DCoordinatesWithAngleAndValue(coord3d *in, coord3d *out, f32 angle, f32 value)
+void camViewToScreenWithFov(coord3d *in, coord3d *out, f32 angle, f32 value)
 {
     f32 var1 = (cosf(mDegToHalfRad(angle)) * g_CurrentPlayer->c_halfheight) / (sinf(mDegToHalfRad(angle)) * in->f[2]);
     f32 var2 = (var1 * g_CurrentPlayer->c_halfwidth) / (value * g_CurrentPlayer->c_halfheight);
@@ -787,35 +787,35 @@ void transform3DCoordinatesWithAngleAndValue(coord3d *in, coord3d *out, f32 angl
     out->f[0] = (g_CurrentPlayer->c_screenleft + g_CurrentPlayer->c_halfwidth) - (in->f[0] * var2);
 }
 
-void currentPlayerSetMatrix10C4(Mtx *matrix) {
+void camSetWorldToViewScaledMtx(Mtx *matrix) {
     g_CurrentPlayer->field_10C4 = matrix;
 }
 
-Mtx *currentPlayerGetMatrix10C4(void) {
+Mtx *camGetWorldToViewScaledMtx(void) {
     return g_CurrentPlayer->field_10C4;
 }
 
-void currentPlayerSetMatrix10C8(Mtx *matrix) {
+void camSetWorldToViewMtx(Mtx *matrix) {
     g_CurrentPlayer->field_10C8 = matrix;
 }
 
-Mtx *currentPlayerGetMatrix10C8(void) {
+Mtx *camGetWorldToViewMtx(void) {
     return g_CurrentPlayer->field_10C8;
 }
 
-void currentPlayerSetProjectionMatrix(Mtx *matrix) {
+void camSetProjectionMtx(Mtx *matrix) {
     g_CurrentPlayer->projmatrix = matrix;
 }
 
-Mtx *currentPlayerGetProjectionMatrix(void) {
+Mtx *camGetProjectionMtx(void) {
     return g_CurrentPlayer->projmatrix;
 }
 
-void set_BONDdata_field_10E0(s32 arg0) {
+void camSetProjViewMtx(s32 arg0) {
     g_CurrentPlayer->field_10E0 = arg0;
 }
 
-s32 get_BONDdata_field_10E0(void) {
+s32 camGetProjViewMtx(void) {
     return g_CurrentPlayer->field_10E0;
 }
 
@@ -847,7 +847,7 @@ static s32 coopCurrentPlayerIndex(void)
     return -1;
 }
 
-void *currentPlayerSetMatrix10CC(Mtxf *matrix) {
+void *camSetWorldToScreenMtxf(Mtxf *matrix) {
     g_CurrentPlayer->field_10E8 = g_CurrentPlayer->field_10CC;
     g_CurrentPlayer->field_10CC = matrix;
 
@@ -878,32 +878,32 @@ Mtxf *camGetWorldToScreenMtxf(void) {
     return g_CurrentPlayer->field_10CC;
 }
 
-void currentPlayerSetProjectionMatrixF(Mtxf *matrix) {
+void camSetProjectionMtxf(Mtxf *matrix) {
     g_CurrentPlayer->projmatrixf = matrix;
 }
 
-Mtxf *currentPlayerGetProjectionMatrixF(void) {
+Mtxf *camGetProjectionMtxf(void) {
     return g_CurrentPlayer->projmatrixf;
 }
 
-Mtxf *currentPlayerGetMatrix10E8(void) {
+Mtxf *camGetPrevWorldToScreenMtxf(void) {
     return g_CurrentPlayer->field_10E8;
 }
 
-void sub_GAME_7F078404(s32 arg0) {
+void camSetField10D0(s32 arg0) {
     g_CurrentPlayer->field_10D0 = arg0;
 }
 
-s32 sub_GAME_7F078414(void) {
+s32 camGetField10D0(void) {
     return g_CurrentPlayer->field_10D0;
 }
 
-void currentPlayerSetViewToWorldMtxf(Mtxf *matrix) {
+void camSetViewToWorldMtxf(Mtxf *matrix) {
     g_CurrentPlayer->field_10EC = g_CurrentPlayer->viewtoworldmtxf;
     g_CurrentPlayer->viewtoworldmtxf = matrix;
 }
 
-Mtxf *currentPlayerGetViewToWorldMtxf(void) {
+Mtxf *camGetViewToWorldMtxf(void) {
     return g_CurrentPlayer->viewtoworldmtxf;
 }
 
@@ -967,7 +967,7 @@ void coopViewsEnd(s32 lastplayer)
  * once it holds bad floats). A gun's matrices are only kept as on screen when
  * the last view drawn showed it, so that view's matrix is the right one.
  */
-Mtxf *currentPlayerGetMatrix10EC(void) {
+Mtxf *camGetPrevViewToWorldMtxf(void) {
     if (g_CoopMode)
     {
         return &s_CoopPrevViewToWorld;
@@ -976,84 +976,84 @@ Mtxf *currentPlayerGetMatrix10EC(void) {
     return g_CurrentPlayer->field_10EC;
 }
 
-void sub_GAME_7F078464(s32 arg0) {
+void camSetLookAt(s32 arg0) {
     g_CurrentPlayer->field_10E4 = arg0;
 }
 
-s32 sub_GAME_7F078474(void)
+s32 camGetLookAt(void)
 {
     return g_CurrentPlayer->field_10E4;
 }
 
-f32 getPlayer_c_lodscalez(void)
+f32 camGetLodScaleZ(void)
 {
     return g_CurrentPlayer->c_lodscalez;
 }
 
-u32 getPlayer_c_lodscalezu32(void)
+u32 camGetLodScaleZU32(void)
 {
     return g_CurrentPlayer->c_lodscalezu32;
 }
 
-f32 getPlayer_c_screenwidth(void)
+f32 camGetScreenWidth(void)
 {
     return g_CurrentPlayer->c_screenwidth;
 }
 
-f32 getPlayer_c_screenheight(void)
+f32 camGetScreenHeight(void)
 {
     return g_CurrentPlayer->c_screenheight;
 }
 
-f32 getPlayer_c_screenleft(void)
+f32 camGetScreenLeft(void)
 {
     return g_CurrentPlayer->c_screenleft;
 }
 
-f32 getPlayer_c_screentop(void)
+f32 camGetScreenTop(void)
 {
     return g_CurrentPlayer->c_screentop;
 }
 
-f32 getPlayer_c_perspfovy(void)
+f32 camGetPerspFovY(void)
 {
     return g_CurrentPlayer->c_perspfovy;
 }
 
-f32 getPlayer_c_perspaspect(void)
+f32 camGetPerspAspect(void)
 {
     return g_CurrentPlayer->c_perspaspect;
 }
 
-void getPlayer_c_cameratopnorm(coord3d *out)
+void camGetTopNorm(coord3d *out)
 {
     out->x = (g_CurrentPlayer->c_cameratopnorm).x;
     out->y = (g_CurrentPlayer->c_cameratopnorm).y;
     out->z = (g_CurrentPlayer->c_cameratopnorm).z;
 }
 
-void getPlayer_c_cameratopnorm_inverted_y(coord3d *out)
+void camGetTopNormFlipY(coord3d *out)
 {
     out->x = (g_CurrentPlayer->c_cameratopnorm).x;
     out->y = -(g_CurrentPlayer->c_cameratopnorm).y;
     out->z = (g_CurrentPlayer->c_cameratopnorm).z;
 }
 
-void getPlayer_c_cameraleftnorm(coord3d *out)
+void camGetLeftNorm(coord3d *out)
 {
     out->x = (g_CurrentPlayer->c_cameraleftnorm).x;
     out->y = (g_CurrentPlayer->c_cameraleftnorm).y;
     out->z = (g_CurrentPlayer->c_cameraleftnorm).z;
 }
 
-void getPlayer_c_cameraleftnorm_inverted_x(coord3d *out)
+void camGetLeftNormFlipX(coord3d *out)
 {
     out->x = -(g_CurrentPlayer->c_cameraleftnorm).x;
     out->y = (g_CurrentPlayer->c_cameraleftnorm).y;
     out->z = (g_CurrentPlayer->c_cameraleftnorm).z;
 }
 
-f32 getPlayer_c_perspnear(void)
+f32 camGetPerspNear(void)
 {
     return g_CurrentPlayer->c_perspnear;
 }
@@ -1064,7 +1064,7 @@ f32 getPlayer_c_perspnear(void)
  *
  * Update the world space frustum planes used for object visibility tests.
  */
-void bondviewUpdateFrustumPlanes()
+void camUpdateFrustumPlanes()
 {
     f32 h_div;
     f32 h2;
@@ -1126,7 +1126,7 @@ void bondviewUpdateFrustumPlanes()
  *
  * Unreferenced.
  */
-void bondviewGetFrustumTopPlane(coord3d *normal, f32 *offset)
+void camGetFrustumTopPlane(coord3d *normal, f32 *offset)
 {
     normal->x = g_CamFrustumTopNormal.x;
     normal->y = g_CamFrustumTopNormal.y;
@@ -1140,7 +1140,7 @@ void bondviewGetFrustumTopPlane(coord3d *normal, f32 *offset)
  *
  * Unreferenced.
  */
-void bondviewGetFrustumBottomPlane(coord3d *normal, f32 *offset)
+void camGetFrustumBottomPlane(coord3d *normal, f32 *offset)
 {
     normal->x = g_CamFrustumBottomNormal.x;
     normal->y = g_CamFrustumBottomNormal.y;
@@ -1154,7 +1154,7 @@ void bondviewGetFrustumBottomPlane(coord3d *normal, f32 *offset)
  *
  * Unreferenced.
  */
-void bondviewGetFrustumLeftPlane(coord3d *normal, f32 *offset)
+void camGetFrustumLeftPlane(coord3d *normal, f32 *offset)
 {
     normal->x = g_CamFrustumLeftNormal.x;
     normal->y = g_CamFrustumLeftNormal.y;
@@ -1168,7 +1168,7 @@ void bondviewGetFrustumLeftPlane(coord3d *normal, f32 *offset)
  *
  * Unreferenced.
  */
-void bondviewGetFrustumRightPlane(coord3d *normal, f32 *offset)
+void camGetFrustumRightPlane(coord3d *normal, f32 *offset)
 {
     normal->x = g_CamFrustumRightNormal.x;
     normal->y = g_CamFrustumRightNormal.y;
@@ -1182,7 +1182,7 @@ void bondviewGetFrustumRightPlane(coord3d *normal, f32 *offset)
  *
  * Unreferenced.
  */
-void bondviewGetFrustumNearPlane(coord3d *normal, f32 *offset)
+void camGetFrustumNearPlane(coord3d *normal, f32 *offset)
 {
     normal->x = g_CurrentPlayer->viewtoworldmtxf->m[2][0];
     normal->y = g_CurrentPlayer->viewtoworldmtxf->m[2][1];
@@ -1342,7 +1342,7 @@ bool camIsPosInScreenBox(coord3d *pos, f32 margin, bbox2d *box)
 
 
 //split here makes sense to have the pd split make sense
-s32 bondviewGetRandomSpawnPadIndex(void)
+s32 playerChooseSpawnPad(void)
 {
     PadRecord *pad;
     PropRecord *player_prop;
@@ -1357,7 +1357,7 @@ s32 bondviewGetRandomSpawnPadIndex(void)
     f32 diff_z;
 
     // set up initial values
-    player_num = get_cur_playernum();
+    player_num = playerGetCurrentNum();
     player_count = getPlayerCount();
     enemy_nearby = TRUE;
 #ifdef DEBUG
@@ -1477,12 +1477,12 @@ s32 bondviewGetRandomSpawnPadIndex(void)
  * 
  * Called when a stage is loaded, then called again for each time a player respawns in MP.
  */
-void init_player_BONDdata(void)
+void playerResetLife(void)
 {
     // Co-op: player 1 keeps the save folder's options. Player 2 (in co-op
     // and in multiplayer) gets their own control style and watch options.
     // In counter-op with controller 2 playing Bond, the two swap.
-    s32 person = coopPlayerPerson(get_cur_playernum());
+    s32 person = coopPlayerPerson(playerGetCurrentNum());
 
     if (isMpGame() || (g_CoopMode && (person > 0)))
     {
@@ -1495,7 +1495,7 @@ void init_player_BONDdata(void)
             fileCoopRestorePartnerOptions();
         }
     }
-    else if (g_CoopMode && (get_cur_playernum() > 0))
+    else if (g_CoopMode && (playerGetCurrentNum() > 0))
     {
         cur_player_set_control_type(fileGetFolderControlType(selected_folder_num));
     }
@@ -1635,13 +1635,13 @@ void init_player_BONDdata(void)
 }
 
 
-void bondviewPlayerBeginLife(void)
+void playerStartNewLife(void)
 {
     g_CurrentPlayer->eyeheight = ((g_playerPerm->player_perspective_height * 185.0f * (s32)1) - 10.0f);
 
     // Reset per-life counters
     g_CurrentPlayer->kills_this_life = 0;
-    g_CurrentPlayer->lifestarttime60 = getMissiontimer();
+    g_CurrentPlayer->lifestarttime60 = lvGetMissionTime60();
     g_CurrentPlayer->healthdisplaytime = 0;
 
     bondinvAddInvItem(ITEM_FIST);
@@ -1653,7 +1653,7 @@ void bondviewPlayerBeginLife(void)
 
         if (g_CurrentPlayer->bodyModel == NULL)
         {
-            solo_char_load();
+            playerLoadBody();
         }
     }
 }
@@ -1667,13 +1667,13 @@ void bondviewPlayerBeginLife(void)
  *  0 for no lean
  *  1 to lean right
  */
-void currentPlayerSetSwayTarget(s32 value)
+void playerSetLeanTarget(s32 value)
 {
     g_CurrentPlayer->swaytarget = (value * 75.0f);
 }
 
 
-void currentPlayerAdjustCrouchPos(s32 value)
+void playerAdjustCrouch(s32 value)
 {
     g_CurrentPlayer->crouchpos = g_CurrentPlayer->crouchpos + value;
 
@@ -1702,7 +1702,7 @@ s32 playerGetCrouchPos(s32 playernum)
 }
 
 
-void currentPlayerSetCameraMode(s32 mode)
+void playerSetCameraModeRaw(s32 mode)
 {
     g_CurrentPlayer->cameramode = mode;
 }
@@ -1715,7 +1715,7 @@ void currentPlayerSetCameraMode(s32 mode)
  *
  * Address 0x7F079A60.
  */
-void bondviewSetCurrentPlayerPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *tile, coord3d *stan_walk_start)
+void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *tile, coord3d *stan_walk_start)
 {
     StandTile *tilefromstart;
     StandTile *tilefromprev;

@@ -1144,7 +1144,7 @@ bool projectileLineTestModel(ObjectRecord *obj, coord3d *modelRayOrigin, coord3d
         hitPos->z = hitthing.hitpos.z;
 
         mtx4TransformVecInPlace(mtx, hitPos);
-        mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), hitPos);
+        mtx4TransformVecInPlace(camGetViewToWorldMtxf(), hitPos);
 
         hitNormal->x = hitthing.normal.x;
         hitNormal->y = hitthing.normal.y;
@@ -1159,7 +1159,7 @@ bool projectileLineTestModel(ObjectRecord *obj, coord3d *modelRayOrigin, coord3d
             hitNormal->z = -hitNormal->z;
         }
 
-        mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), hitNormal);
+        mtx4RotateVecInPlace(camGetViewToWorldMtxf(), hitNormal);
 
         if (hitNormal->x != 0.0f || hitNormal->y != 0.0f || hitNormal->z != 0.0f) 
         {
@@ -1486,7 +1486,7 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
 
     result = FALSE;
     found_collision = FALSE;
-    playerstank = get_ptr_for_players_tank();
+    playerstank = playerGetTank();
 
     sp98.x = worldRayEnd->x - worldRayStart->x;
     sp98.y = worldRayEnd->y - worldRayStart->y;
@@ -1564,7 +1564,7 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
 
                     if (iterprop->type == PROP_TYPE_VIEWER)
                     {
-                        if (!g_playerPointers[getPlayerPointerIndex(iterprop)]->field_AC || (cdtypes & CDTYPE_PLAYERS) == 0)
+                        if (!g_playerPointers[playerGetIndexForProp(iterprop)]->field_AC || (cdtypes & CDTYPE_PLAYERS) == 0)
                         {
                             continue;
                         }
@@ -1582,7 +1582,7 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
                         found_collision = TRUE;
                     }
                 }
-                else if (iterprop->type == PROP_TYPE_VIEWER && g_playerPointers[getPlayerPointerIndex(iterprop)]->field_AC)
+                else if (iterprop->type == PROP_TYPE_VIEWER && g_playerPointers[playerGetIndexForProp(iterprop)]->field_AC)
                 {
                     if (projectileTestPropPolygon(iterprop, worldRayStart, worldRayEnd, &sp98, outHitPos, outHitNormal, &spa8))
                     {
@@ -3265,7 +3265,7 @@ bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNode *nod
 
             mtx4Copy(&obj->mtx, &mtx1);
             mtx4SetTranslation(&obj->runtime_pos, &mtx1);
-            mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), nodemtx, &mtx2);
+            mtx4MultAffine(camGetViewToWorldMtxf(), nodemtx, &mtx2);
             mtx4InvertAffine((f32 (*)[4]) &mtx2.m, (f32 (*)[4]) &mtx3.m);
             mtx4MultAffine((Mtxf* ) &mtx3.m, &mtx1, &obj->embedment->matrix);
 
@@ -3318,7 +3318,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
 			pos.y = mtx->m[3][1];
 			pos.z = mtx->m[3][2];
 
-            mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &pos);
+            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &pos);
         }
         else
         {
@@ -3393,7 +3393,7 @@ void chrobjWeaponTick(struct PropRecord* prop)
 
     obj = prop->obj;
 
-    if (get_player_position_in_shuffled(get_cur_playernum()) != 0)
+    if (playerGetShuffledIndex(playerGetCurrentNum()) != 0)
     {
         return;
     }
@@ -3437,7 +3437,7 @@ void chrobjWeaponTick(struct PropRecord* prop)
             {
                 propExplode(prop, EXPLOSION_DEF_MASSIVE);
                 obj->runtime_bitflags |= RUNTIMEBITFLAG_REMOVE;
-                SurroundWithExplosions(PLASTIQUE_EXPLOSION_DELAY_TICKS);
+                playerSurroundWithExplosions(PLASTIQUE_EXPLOSION_DELAY_TICKS);
                 countdownTimerSetVisible(2, FALSE);
             }
         }
@@ -3537,7 +3537,7 @@ void chrobjWeaponTick(struct PropRecord* prop)
             }
             else if (weapon->timer == 1)
             {
-                player_prop = getCurrentPlayerProp();
+                player_prop = currentPlayerGetProp();
 
                 diff_x = player_prop->pos.f[0] - prop->pos.f[0];
                 diff_y = player_prop->pos.f[1] - prop->pos.f[1];
@@ -4172,7 +4172,7 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
 
 s32 glassCalculateOpacity(coord3d *pos, f32 xludist, f32 opadist, f32 arg3)
 {
-    coord3d *campos = &getCurrentPlayerProp()->pos;
+    coord3d *campos = &currentPlayerGetProp()->pos;
     s32 opacity;
     f32 xdiff = pos->x - campos->x;
     f32 ydiff = pos->y - campos->y;
@@ -4272,7 +4272,7 @@ s32 objTick(struct PropRecord *prop)
      * Relevant only for MP. TRUE on the one pass per frame that advances this object's
 	 * shared state (projectile physics, door sounds) -- things you want to calculate
      * only once per frame, not for every player per frame. Normally applies to
-	 * first player in the shuffled order determined by get_player_position_in_shuffled().
+	 * first player in the shuffled order determined by playerGetShuffledIndex().
      * But for an in-flight projectile it applies to the player who fired it.
 	 * Code outside this guard is per-viewport render setup and runs every pass. 
      */
@@ -4515,7 +4515,7 @@ s32 objTick(struct PropRecord *prop)
 	}
 	else
 	{
-		isSimOwner = get_player_position_in_shuffled(get_cur_playernum()) == 0;
+		isSimOwner = playerGetShuffledIndex(playerGetCurrentNum()) == 0;
 
 		if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
 		{
@@ -4524,7 +4524,7 @@ s32 objTick(struct PropRecord *prop)
 			// JP/EU added the player check. Without it a guard's dropped gun
 			// (owner = the guard) is never simulated, so in co-op it floats.
 			if (projectile->ownerprop != NULL
-				&& getPlayerPointerIndex(projectile->ownerprop) >= 0
+				&& playerGetIndexForProp(projectile->ownerprop) >= 0
 			)
 			
             isSimOwner = projectile->ownerprop == g_CurrentPlayer->prop;
@@ -4737,7 +4737,7 @@ s32 objTick(struct PropRecord *prop)
 
 						if (temp_v1_10->weaponnum == ITEM_THROWKNIFE)
 						{
-							if ((playerProp2->type == PROP_TYPE_CHR) || (((playerProp2->type == PROP_TYPE_VIEWER) && (playerProp2->obj != NULL)) && (getPlayerPointerIndex(playerProp2) != get_cur_playernum())))
+							if ((playerProp2->type == PROP_TYPE_CHR) || (((playerProp2->type == PROP_TYPE_VIEWER) && (playerProp2->obj != NULL)) && (playerGetIndexForProp(playerProp2) != playerGetCurrentNum())))
 							{
 								playerProp2 = D_80030B0C;
 								temp_v0_40 = obj->projectile;
@@ -5161,7 +5161,7 @@ s32 objTick(struct PropRecord *prop)
 
 			// Co-op: the camera watches every player it may, and an alarm
 			// needs it to see any of them for long enough.
-			cctvWatch = g_CoopMode ? 0 : get_cur_playernum();
+			cctvWatch = g_CoopMode ? 0 : playerGetCurrentNum();
 			cctvWatchEnd = g_CoopMode ? getPlayerCount() : (cctvWatch + 1);
 			cctvSawPlayer = FALSE;
 
@@ -5172,7 +5172,7 @@ s32 objTick(struct PropRecord *prop)
 					continue;
 				}
 
-				playerProp = g_CoopMode ? g_playerPointers[cctvWatch]->prop : getCurrentPlayerProp();
+				playerProp = g_CoopMode ? g_playerPointers[cctvWatch]->prop : currentPlayerGetProp();
 				xdiff = playerProp->pos.f[0] - obj->runtime_pos.f[0];
 				temp_f0_13 = bottom_pad->unkE8;
 				ydiff = playerProp->pos.f[1] - obj->runtime_pos.f[1];
@@ -5238,13 +5238,13 @@ s32 objTick(struct PropRecord *prop)
 				if (cctvSeesPlayer != 0)
 				{
 					sp4F0 = prop->stan;
-					bondviewUpdateGuardTankFlagsRelated(playerProp, 0);
+					playerSetMoving(playerProp, 0);
 					if (stanTestLineUnobstructed(&sp4F0, prop->pos.f[0], prop->pos.f[2], playerProp->pos.f[0], playerProp->pos.f[2], 0x1B, 100.0f, 100.0f, 0.0f, 1.0f) != 0)
 					{
 						cctvSawPlayer = TRUE;
 					}
 
-					bondviewUpdateGuardTankFlagsRelated(playerProp, 1);
+					playerSetMoving(playerProp, 1);
 				}
 			}
 
@@ -5327,7 +5327,7 @@ s32 objTick(struct PropRecord *prop)
 		{
 			poAGun = (struct AutogunRecord *) prop->obj;
 			coopTarget = coopAutogunTargetPlayer(prop);
-			playerProp2 = (coopTarget >= 0) ? g_playerPointers[coopTarget]->prop : getCurrentPlayerProp();
+			playerProp2 = (coopTarget >= 0) ? g_playerPointers[coopTarget]->prop : currentPlayerGetProp();
 			AutogunSeesPlayer = 0;
 			isTracking = 0;
 			hasLineOfSight = 0;
@@ -5416,7 +5416,7 @@ s32 objTick(struct PropRecord *prop)
 							sp494 -= M_TAU_F;
 						}
 
-						bondviewUpdateGuardTankFlagsRelated(playerProp2, 0);
+						playerSetMoving(playerProp2, 0);
 						if ((((sp494 <= poAGun->unk88) && (poAGun->unk8C <= sp494)) && (stanTestLineUnobstructed(&collisionTile, prop->pos.f[0], prop->pos.f[2], playerProp2->pos.f[0], playerProp2->pos.f[2], 0x1B, prop->pos.f[1], prop->pos.f[1], playerProp2->pos.f[1], playerProp2->pos.f[1]) != 0)) && ((collisionTile) == playerProp2->stan))
 						{
 							obj->flags |= PROPFLAG_INMOTION;
@@ -5434,7 +5434,7 @@ s32 objTick(struct PropRecord *prop)
 							AutogunSeesPlayer = 0;
 						}
 
-						bondviewUpdateGuardTankFlagsRelated(playerProp2, 1);
+						playerSetMoving(playerProp2, 1);
 					}
 				}
 
@@ -5944,7 +5944,7 @@ s32 objTick(struct PropRecord *prop)
 		}
 	}
 
-	if ((obj->type == PROPDEF_TANK) && (get_ptr_for_players_tank() == prop))
+	if ((obj->type == PROPDEF_TANK) && (playerGetTank() == prop))
 	{
 		var_v1_5 = 1;
 	}
@@ -6320,7 +6320,7 @@ s32 objTick(struct PropRecord *prop)
 				mtx4MultAffineInPlace(&mtxs[3], &mtxs[4]);
 				mtx4LoadTranslation(sp15C, &mtxs[2]);
 				mtx4MultAffineInPlace(&mtxs[1], &mtxs[2]);
-				mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), &mtxs[1], &sp16C);
+				mtx4MultAffine(camGetViewToWorldMtxf(), &mtxs[1], &sp16C);
 				bboxGetHull2d(sp158, &sp16C, &tank_render->rect, (struct collision_data *) (&tank_render->collision));
 
 				if (model->obj->Switches[7] != NULL)
@@ -6438,7 +6438,7 @@ s32 objTick(struct PropRecord *prop)
 					// Co-op: the shots are for the gun's target, wherever this
 					// pass's player is.
 					coopTarget = coopAutogunTargetPlayer(prop);
-					sp100 = (coopTarget >= 0) ? g_playerPointers[coopTarget]->prop : getCurrentPlayerProp();
+					sp100 = (coopTarget >= 0) ? g_playerPointers[coopTarget]->prop : currentPlayerGetProp();
 					var_a0_6 = 5;
 
 					if ((model->obj->Switches[7] != 0) && (!(autogun->unkAC & 7)))
@@ -6453,7 +6453,7 @@ s32 objTick(struct PropRecord *prop)
 						sp12C.f[0] = temp_v1_11->f[0];
 						sp12C.f[1] = temp_v1_11->f[1];
 						sp12C.f[2] = temp_v1_11->f[2];
-						mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), temp_s2_7, &spB8);
+						mtx4MultAffine(camGetViewToWorldMtxf(), temp_s2_7, &spB8);
 						mtx4TransformVecInPlace(&spB8, &sp12C);
 						if (stanWalkLineNoCallback(&sp108, prop->pos.f[0], prop->pos.f[2], sp12C.f[0], sp12C.f[2]) == 0)
 						{
@@ -6487,11 +6487,11 @@ s32 objTick(struct PropRecord *prop)
 						sp110.f[2] -= 26.0f * sp120.f[2];
 					}
 
-					coopPrevPlayer = get_cur_playernum();
+					coopPrevPlayer = playerGetCurrentNum();
 
 					if (coopTarget >= 0)
 					{
-						set_cur_player(coopTarget);
+						playerSetCurrent(coopTarget);
 					}
 
 					if (g_GlobalTimer == ((s32) autogun->unkBC))
@@ -6503,7 +6503,7 @@ s32 objTick(struct PropRecord *prop)
 						beam_xdiff = sp110.f[0] - sp12C.f[0];
 						beam_ydiff = sp110.f[1] - sp12C.f[1];
 						beam_collisionTile = sp110.f[2] - sp12C.f[2];
-						if ((temp_f20_4 <= (((beam_xdiff * beam_xdiff) + (beam_ydiff * beam_ydiff)) + (beam_collisionTile * beam_collisionTile))) && (bondviewGetIfCurrentPlayerDamageShowTime() == 0))
+						if ((temp_f20_4 <= (((beam_xdiff * beam_xdiff) + (beam_ydiff * beam_ydiff)) + (beam_collisionTile * beam_collisionTile))) && (playerIsShowingDamage() == 0))
 						{
 							temp_f0_35 = sqrtf(temp_f20_4);
 							var_f2_7 = (0.16f * OBJECT_INTERACTION_TIMER_DELTA) * g_AutogunPendingDamageTick;
@@ -6515,9 +6515,9 @@ s32 objTick(struct PropRecord *prop)
 							autogun->unkD4 += var_f2_7;
 							if (autogun->unkD4 >= 1.0f)
 							{
-								bondviewCallRecordDamageKills((gunItemGetDestructionAmount(14) * 0.125f) * g_AutogunDamageScalar, autogun->unk90, -1, 1);
+								playerTakeDamageFromAngle((gunItemGetDestructionAmount(14) * 0.125f) * g_AutogunDamageScalar, autogun->unk90, -1, 1);
 								autogun->unkD4 = 0.0f;
-								if (bondviewGetIfCurrentPlayerDamageShowTime() != 0)
+								if (playerIsShowingDamage() != 0)
 								{
 									sp11C = 0;
 								}
@@ -6527,7 +6527,7 @@ s32 objTick(struct PropRecord *prop)
 
 					if (coopTarget >= 0)
 					{
-						set_cur_player(coopPrevPlayer);
+						playerSetCurrent(coopPrevPlayer);
 					}
 
 					if (sp11C != 0)
@@ -6676,8 +6676,8 @@ Gfx *weaponRenderTracers(Gfx *gdl)
             {
                 if (prop->voidp != NULL)
                 {
-                    playernum = getPlayerPointerIndex(prop);
-                    if (get_cur_playernum() != playernum)
+                    playernum = playerGetIndexForProp(prop);
+                    if (playerGetCurrentNum() != playernum)
                     {
                         chr2 = prop->chr;
                         gdl = sub_GAME_7F061E18(gdl, &chr2->beams[0], one);
@@ -7279,7 +7279,7 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 arg2)
 
         if (destroyed)
         {
-            destroyed = get_BONDdata_field_10E0();
+            destroyed = camGetProjViewMtx();
             destroyed = destroyed != 0;
         }
 
@@ -7427,7 +7427,7 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 arg2)
         if (destroyed)
         {
             // Keep on one line for matching.
-            g3 = gdl++; gSPMatrix(g3, get_BONDdata_field_10E0(), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
+            g3 = gdl++; gSPMatrix(g3, camGetProjViewMtx(), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
         }
 
         mrData->gdl = gdl;
@@ -7447,7 +7447,7 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 arg2)
         if (destroyed)
         {
             // Keep on one line for matching.
-            g2 = gdl++; gSPMatrix(g2, currentPlayerGetProjectionMatrix(), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
+            g2 = gdl++; gSPMatrix(g2, camGetProjectionMtx(), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
         }
 
         mrData->gdl = gdl;
@@ -7461,11 +7461,11 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 arg2)
         {
             if (destroyed != FALSE)
             {
-                sub_GAME_7F08BEEC((Mtxf *)model->render_pos, model->obj->numMatrices);
+                camMtxsToRoomSpace((Mtxf *)model->render_pos, model->obj->numMatrices);
             }
             else
             {
-                bondviewTransformManyPosToViewMatrix(model->render_pos, model->obj->numMatrices);
+                mtxsF2L(model->render_pos, model->obj->numMatrices);
             }
         }
     }
@@ -8029,11 +8029,11 @@ void objBounce(ObjectRecord *obj, coord3d *arg1)
         dir.y = arg1->y;
         dir.z = arg1->z;
 
-        mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), (f32*)&dir);
+        mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&dir);
 
         projectile->speed.x += 3.3333333f * dir.x;
         projectile->speed.z += 3.3333333f * dir.z;
-        projectile->ownerprop = getCurrentPlayerProp();
+        projectile->ownerprop = currentPlayerGetProp();
         projectile->unk90 = 1;
     }
 }
@@ -8182,7 +8182,7 @@ s32 objDrop(PropRecord *prop)
         else if (projectile->droptype == DROPTYPE_HAT)
         {
             coord3d rot = { 0.0f, 0.0f, 0.0f };
-            PropRecord *playerprop = getCurrentPlayerProp();
+            PropRecord *playerprop = currentPlayerGetProp();
             f32 x = parent->pos.x - playerprop->pos.x;
             f32 z = parent->pos.z - playerprop->pos.z;
             f32 angle = mathAtan2(x, z);
@@ -8223,7 +8223,7 @@ s32 objDrop(PropRecord *prop)
             Mtxf *sp58 = modelGetRootMtx(model);
             s32 cdtypes = CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER;
 
-            mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), sp58, &spB8);
+            mtx4MultAffine(camGetViewToWorldMtxf(), sp58, &spB8);
 
             if (projectile->flags & 0x40)
             {
@@ -9031,7 +9031,7 @@ void objBreakCCTVGlass(ObjectRecord *obj)
 
         node_mtx = modelFindNodeMtx(model, model->obj->Switches[1], 0);
 
-        mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), node_mtx, &glassNodeWorldMtx);
+        mtx4MultAffine(camGetViewToWorldMtxf(), node_mtx, &glassNodeWorldMtx);
 
         glassCreateShards(glassNodeWorldMtx.m[3], glassNodeWorldMtx.m[0], glassNodeWorldMtx.m[1], glassNodeWorldMtx.m[2], ((f32 *)rodata)[1], ((f32 *)rodata)[2], ((f32 *)rodata)[3], ((f32 *)rodata)[4], ((f32 *)rodata)[5], ((f32 *)rodata)[6]);
     }
@@ -9614,7 +9614,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
     pos.y -= 26.0f * shotdata->viewDir.y;
     pos.z -= 26.0f * shotdata->viewDir.z;
 
-    mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &pos);
+    mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &pos);
 
     if (hit->countsAsPenetration != 0)
     {
@@ -9712,7 +9712,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
             damage *= F_80030B18;
         }
 
-        chrobjMaybeDetonateObjectIfFlags(obj, damage, &pos, shotdata->weapon, get_cur_playernum());
+        chrobjMaybeDetonateObjectIfFlags(obj, damage, &pos, shotdata->weapon, playerGetCurrentNum());
     }
 
     if ((obj->model->obj->Skeleton == &skeleton_door) && (hit->countsAsPenetration == 0))
@@ -9791,7 +9791,7 @@ bool objTestForInteract(PropRecord* prop)
 
     // Counter-op: of the objects, the guard player can only use alarms.
     // Consoles, switches and mission objects are Bond's.
-    if (counterOpIsGuardPlayer(get_cur_playernum()) && (obj->type != PROPDEF_ALARM))
+    if (counterOpIsGuardPlayer(playerGetCurrentNum()) && (obj->type != PROPDEF_ALARM))
     {
         return TRUE;
     }
@@ -9805,7 +9805,7 @@ bool objTestForInteract(PropRecord* prop)
                 && !(obj->flags & PROPFLAG_CANNOT_ACTIVATE))
         {
 
-            player = getCurrentPlayerProp();
+            player = currentPlayerGetProp();
 
             xdiff = obj->runtime_pos.x - player->pos.x;
             ydiff = obj->runtime_pos.y - player->pos.y;
@@ -10239,7 +10239,7 @@ void pickupShowAmmoText(s32 ammotype, s32 quantity)
 #ifdef VERSION_US
     hudmsgBottomShow(buffer);
 #else
-    jp_hudmsgBottomShow(buffer);
+    hudmsgBottomShowText(buffer);
 #endif
 }
 
@@ -10578,7 +10578,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
     // Counter-op: the guard player only has their guard's gun, so they
     // can't take Bond's weapons or ammo.
-    if (counterOpIsGuardPlayer(get_cur_playernum()))
+    if (counterOpIsGuardPlayer(playerGetCurrentNum()))
     {
         return TICKOP_NONE;
     }
@@ -10599,7 +10599,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                 }
 
 #if defined(VERSION_EU)
-                jp_hudmsgBottomShow(text);
+                hudmsgBottomShowText(text);
 #else
                 hudmsgBottomShow(text);
 #endif
@@ -10694,7 +10694,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                     if (text)
                     {
 #if defined(VERSION_EU)
-                        jp_hudmsgBottomShow(text);
+                        hudmsgBottomShowText(text);
 #else
                         hudmsgBottomShow(text);
 #endif
@@ -10725,7 +10725,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                         collected = 1;
 
 #if defined(VERSION_EU)
-                        jp_hudmsgBottomShow(text);
+                        hudmsgBottomShowText(text);
 #else
                         hudmsgBottomShow(text);
 #endif
@@ -10766,7 +10766,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
         case PROPDEF_ARMOUR: // Body armor
         {
-            bondviewAddCurrentPlayerArmor(((struct BodyArmourRecord *)prop->obj)->amount);
+            currentPlayerAddArmor(((struct BodyArmourRecord *)prop->obj)->amount);
             sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, ARMOUR_COLLECT_SFX, 0);
 
             if (showstring)
@@ -10787,7 +10787,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                 }
 
 #if defined(VERSION_EU)
-                jp_hudmsgBottomShow(text);
+                hudmsgBottomShowText(text);
 #else
                 hudmsgBottomShow(text);
 #endif
@@ -10851,7 +10851,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                 }
 
 #if defined(VERSION_EU)
-                jp_hudmsgBottomShow(text);
+                hudmsgBottomShowText(text);
 #else
                 hudmsgBottomShow(text);
 #endif
@@ -11128,7 +11128,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
 #endif
         s32 pickup;
 
-        temp_v0_5 = getCurrentPlayerProp();
+        temp_v0_5 = currentPlayerGetProp();
 
         temp_f0 = obj->runtime_pos.x - temp_v0_5->pos.x;
         temp_f12 = obj->runtime_pos.y - temp_v0_5->pos.y;
@@ -11641,7 +11641,7 @@ AmmoCrateRecord *ammocrateAllocate(void)
 
 void remoteMinesDetonate(void)
 {
-    u32 uVar1 = 1 << (get_cur_playernum());
+    u32 uVar1 = 1 << (playerGetCurrentNum());
     g_RemoteMineOwnerTriggerFlag = uVar1 | g_RemoteMineOwnerTriggerFlag;
     sndPlaySfx(g_musicSfxBufferPtr, WATCH_DETONATE_MINE_SFX, NULL);
 }
@@ -12018,7 +12018,7 @@ ObjectRecord *weaponCreateFromModel(PROP modelnum, s32 weaponid)
 /**
  * Set removed flag on hand
  */
-void chrSetWeaponFlag4(ChrRecord *chr, GUNHAND hand) //#MATCH
+void chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand) //#MATCH
 {
     if (chr->weapons_held[hand])
     {
@@ -13434,7 +13434,7 @@ f32 chrobjFogVisRangeRelated(PropRecord *prop, f32 size)
 
     if ((nfd != NULL) && (nfd->MaxObfuscationRange < prop->zDepth))
     {
-        temp_f12 = getPlayer_c_lodscalez();
+        temp_f12 = camGetLodScaleZ();
         temp_f12 = ((((prop->zDepth - nfd->MaxObfuscationRange) * 100.0f) / size) + nfd->MaxObfuscationRange) * temp_f12;
 
         if (nfd->MaxVisRange <= temp_f12)
@@ -13463,7 +13463,7 @@ bool posIsBeforeFogEnd(coord3d *coord, f32 arg1)
 
     if (ptr != NULL)
     {
-        coord3d *campos = bondviewGetCurrentPlayersPosition();
+        coord3d *campos = playerGetPos();
         Mtxf *mtx = camGetWorldToScreenMtxf();
 
         tmp.x = coord->x - campos->x;
@@ -13474,7 +13474,7 @@ bool posIsBeforeFogEnd(coord3d *coord, f32 arg1)
 
         if (sp20 > ptr->z)
         {
-            f32 scalez = getPlayer_c_lodscalez();
+            f32 scalez = camGetLodScaleZ();
             sp20 = ((sp20 - ptr->z) * 100 / arg1 + ptr->z) * scalez;
 
             if (sp20 >= ptr->y)
@@ -13521,7 +13521,7 @@ bool posIsOnScreen(PropRecord *prop, coord3d *pos, f32 arg2, bool arg3)
 
                 if (result)
                 {
-                    coord3d *campos = bondviewGetCurrentPlayersPosition();
+                    coord3d *campos = playerGetPos();
                     f32 xdiff = pos->x - campos->x;
                     f32 ydiff = pos->y - campos->y;
                     f32 zdiff = pos->z - campos->z;
@@ -13744,7 +13744,7 @@ void doorGetAnglesToPlayer(DoorRecord *door, f32 *arg1, f32 *arg2, s32 altcoords
     f32 xbound;
 
     pad = &g_CurrentSetup.boundpads[door->pad];
-    playerprop = getCurrentPlayerProp();
+    playerprop = currentPlayerGetProp();
 
     if (1) { scale = 1.0f; }
     playerpos.f[0] = (((g_CurrentPlayer->field_488.theta_transform.x * 30.0f) * scale) * 0.75f) + playerprop->pos.x;
@@ -13930,7 +13930,7 @@ bool doorTestForInteract(PropRecord *prop)
 			&& (prop->flags & PROPFLAG_ONSCREEN))
     {
 		maybe = FALSE;
-		playerprop = getCurrentPlayerProp();
+		playerprop = currentPlayerGetProp();
 
 		xdiff = door->runtime_pos.x - playerprop->pos.x;
 		ydiff = door->runtime_pos.y - playerprop->pos.y;
@@ -14087,7 +14087,7 @@ TICKOP propdoorInteract(PropRecord* doorprop)
 
     door = doorprop->door;
     sp28 = 0;
-    playerprop = getCurrentPlayerProp();
+    playerprop = currentPlayerGetProp();
 
     if (door->keyflags == 0)
     {
@@ -14116,7 +14116,7 @@ TICKOP propdoorInteract(PropRecord* doorprop)
 
     // Counter-op: a door whose opening is Bond's progress (Depot's train)
     // stays shut for the guard player, showing as locked.
-    if (counterOpIsGuardPlayer(get_cur_playernum()) && counterOpDoorIsScripted(door))
+    if (counterOpIsGuardPlayer(playerGetCurrentNum()) && counterOpDoorIsScripted(door))
     {
         sp28 = 0;
     }
@@ -14136,7 +14136,7 @@ TICKOP propdoorInteract(PropRecord* doorprop)
 #ifdef VERSION_US
                 hudmsgBottomShow(langGet((s32) txt->pickuptext));
 #else
-                jp_hudmsgBottomShow(langGet((s32) txt->pickuptext));
+                hudmsgBottomShowText(langGet((s32) txt->pickuptext));
 #endif
             }
             else
@@ -14144,13 +14144,13 @@ TICKOP propdoorInteract(PropRecord* doorprop)
 #ifdef VERSION_US
                 hudmsgBottomShow(langGet(0xA440));
 #else
-                jp_hudmsgBottomShow(langGet(0xA440));
+                hudmsgBottomShowText(langGet(0xA440));
 #endif
             }
         }
         // Counter-op: the guard player trying a locked door isn't news to
         // the level scripts.
-        if (!counterOpIsGuardPlayer(get_cur_playernum()))
+        if (!counterOpIsGuardPlayer(playerGetCurrentNum()))
         {
             door->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
             coopNoteActivator();
@@ -14264,7 +14264,7 @@ void gasTick(void)
             }
             if (toxic_gas_sound_timer >= 1800.0f)
             {
-                record_damage_kills(0.125f, 0.0f, 0.0f, -1, 0);
+                playerTakeDamage(0.125f, 0.0f, 0.0f, -1, 0);
             }
         }
 
@@ -14476,12 +14476,12 @@ void playerDropInventory(void)
 
     playerchr = g_CurrentPlayer->prop->chr;
 
-    chrSetWeaponFlag4(playerchr, GUNRIGHT);
-    chrSetWeaponFlag4(playerchr, GUNLEFT);
+    chrRemoveHeldWeapon(playerchr, GUNRIGHT);
+    chrRemoveHeldWeapon(playerchr, GUNLEFT);
 
     for (item = ITEM_FIST; item != ITEM_IDS_MAX; item++)
     {
-        propid = getPropForHeldItem(item);
+        propid = weaponGetChrModel(item);
 
         if ((propid >= 0) && (bondinvHasInvItem(item) != 0))
         {

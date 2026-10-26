@@ -518,7 +518,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx);
 void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos);
 Vtx *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
-void divide3DCoordinates(coord3d *in, f32 divisor, coord3d *out);
+void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 
 // end forward declarations
 
@@ -1179,7 +1179,7 @@ void currentPlayerUnEquipWeaponWrapper(enum GUNHAND hand, enum ITEM_IDS weapid)
 
     if (getPlayerCount() >= 2)
     {
-        sub_GAME_7F09B368(hand);
+        playerBodyRemoveGun(hand);
     }
 
     sub_GAME_7F05FB00(hand);
@@ -1350,9 +1350,9 @@ void gunSetBondWeaponSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
         }
     }
 
-    if (g_CurrentPlayer->gunposamplitude < (bondviewGetBondBreathing() * 0.3f))
+    if (g_CurrentPlayer->gunposamplitude < (playerGetBreathing() * 0.3f))
     {
-        g_CurrentPlayer->gunposamplitude = bondviewGetBondBreathing() * 0.3f;
+        g_CurrentPlayer->gunposamplitude = playerGetBreathing() * 0.3f;
     }
 
     if (g_CurrentPlayer->gunposamplitude < 0.5f * sp50)
@@ -1660,8 +1660,8 @@ void gunInitProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *ar
         return;
     }
 
-    playerprop = getCurrentPlayerProp();
-    stanheight = bondviewGetPlayerStanHeight(g_CurrentPlayer);
+    playerprop = currentPlayerGetProp();
+    stanheight = playerGetStanHeight(g_CurrentPlayer);
 
     usedfallback = 0;
 
@@ -1676,7 +1676,7 @@ void gunInitProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *ar
     }
 
     tile = playerprop->stan;
-    bondviewUpdateGuardTankFlagsRelated(playerprop, 0);
+    playerSetMoving(playerprop, 0);
 
     // If there is no obstruction, spawn the projectile at the target position.
     if (stanTestLineUnobstructed(&tile, playerprop->pos.x, playerprop->pos.z, targetpos->x, targetpos->z, 0x1f, yhi, ylo, 0.0f, 1.0f))
@@ -1695,7 +1695,7 @@ void gunInitProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *ar
         usedfallback = 1;
     }
 
-    bondviewUpdateGuardTankFlagsRelated(playerprop, 1);
+    playerSetMoving(playerprop, 1);
 
     gunInitProjectileObject(obj, &pos, tile, arg2, velocity, arg4, playerprop);
 
@@ -1707,10 +1707,10 @@ void gunInitProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *ar
             ((coord3d *)&obj->projectile->unkd4)->z = targetpos->z;
         }
 
-        rooms[0] = bondviewGetCurrentPlayersRoom();
+        rooms[0] = playerGetRoom();
         rooms[1] = 0xff;
 
-        bgFindRoomsAlongSegment(bondviewGetCurrentPlayersPosition3(), &pos, rooms, obj->projectile->unkCC, &sp54, &sp50, 0x14);
+        bgFindRoomsAlongSegment(playerGetPos3(), &pos, rooms, obj->projectile->unkCC, &sp54, &sp50, 0x14);
     }
 }
 
@@ -1741,13 +1741,13 @@ void generate_player_thrown_grenade(s32 hand)
     wor = NULL;
     base_velocity = 16.666666f;
 
-    player_prop = getCurrentPlayerProp();
-    bondprevpos = getCurrentPlayerPrevPos();
+    player_prop = currentPlayerGetProp();
+    bondprevpos = playerGetPrevPos();
     current_weapon = getCurrentPlayerWeaponId(hand);
 
     physRandomLaunch(&throw_speed_vec, &spFC);
     bullet_path_from_screen_center(&sp94, &base_speed_vec, hand);
-    mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), (f32*)&base_speed_vec);
+    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
     throw_speed_vec.f[1] = (base_speed_vec.f[1] * base_velocity) + 5.0f;
@@ -1783,7 +1783,7 @@ void generate_player_thrown_grenade(s32 hand)
         }
 
         wor->runtime_bitflags &= ~(RUNTIMEBITFLAG_OWNER);
-        wor->runtime_bitflags |= get_cur_playernum() << RUNTIMEBITSHIFT_OWNER;
+        wor->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
         gunInitProjectileFromPlayer(wor, &spE0, &spA0_a, &throw_speed_vec, &spFC);
 
@@ -1829,12 +1829,12 @@ void generate_player_thrown_knife(s32 hand)
     wor = NULL;
     base_velocity = 25.0f;
 
-    player_prop = getCurrentPlayerProp();
-    bondprevpos = getCurrentPlayerPrevPos();
+    player_prop = currentPlayerGetProp();
+    bondprevpos = playerGetPrevPos();
 
     physRandomLaunch(&throw_speed_vec, &spFC);
     bullet_path_from_screen_center(&sp94, &base_speed_vec, hand);
-    mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), (f32*)&base_speed_vec);
+    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
     throw_speed_vec.f[1] = (base_speed_vec.f[1] * base_velocity) + 5.0f;
@@ -1868,7 +1868,7 @@ void generate_player_thrown_knife(s32 hand)
     if (wor != NULL)
     {
         wor->runtime_bitflags &= ~(RUNTIMEBITFLAG_OWNER);
-        wor->runtime_bitflags |= get_cur_playernum() << RUNTIMEBITSHIFT_OWNER;
+        wor->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
         gunInitProjectileFromPlayer(wor, &spE0, &spA0_a, &throw_speed_vec, &spFC);
 
@@ -1922,8 +1922,8 @@ void generate_player_thrown_object(s32 hand)
     wor = NULL;
     base_velocity = 16.666666f;
 
-    player_prop = getCurrentPlayerProp();
-    bondprevpos = getCurrentPlayerPrevPos();
+    player_prop = currentPlayerGetProp();
+    bondprevpos = playerGetPrevPos();
     current_weapon = getCurrentPlayerWeaponId(hand);
 
     if (current_weapon == ITEM_GOLDENEYEKEY)
@@ -1933,7 +1933,7 @@ void generate_player_thrown_object(s32 hand)
 
     physRandomLaunch(&throw_speed_vec, &unk_mtxf);
     bullet_path_from_screen_center(&sp94, &base_speed_vec, hand);
-    mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), (f32*)&base_speed_vec);
+    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
     throw_speed_vec.f[1] = (base_speed_vec.f[1] * base_velocity) + 5.0f;
@@ -2068,7 +2068,7 @@ void generate_player_thrown_object(s32 hand)
         }
 
         wor->runtime_bitflags &= ~(RUNTIMEBITFLAG_OWNER);
-        wor->runtime_bitflags |= get_cur_playernum() << RUNTIMEBITSHIFT_OWNER;
+        wor->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
         gunInitProjectileFromPlayer(wor, &spE0, &spA0_a, &throw_speed_vec, &unk_mtxf);
 
@@ -2110,12 +2110,12 @@ void gunSpawnGLGrenade(s32 handnum)
 
     hand = &g_CurrentPlayer->hands[handnum];
 
-    playerprop = getCurrentPlayerProp();
-    prevplayerpos = getCurrentPlayerPrevPos();
+    playerprop = currentPlayerGetProp();
+    prevplayerpos = playerGetPrevPos();
 
     mtx4LoadIdentity(&identitymtx);
     bullet_path_from_screen_center(&aimpos, &aimdir, handnum);
-    mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &aimdir);
+    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
 
     launchvel.x = aimdir.x * 33.333332f;
     launchvel.y = aimdir.y * 33.333332f;
@@ -2140,7 +2140,7 @@ void gunSpawnGLGrenade(s32 handnum)
     {
         grenadeobj->timer = GLGRENADE_TIMER;
         grenadeobj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
-        grenadeobj->runtime_bitflags |= get_cur_playernum() << RUNTIMEBITSHIFT_OWNER;
+        grenadeobj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
         gunInitProjectileFromPlayer(grenadeobj, &hand->field_B58, &launchmtx, &launchvel, (s32 *)&identitymtx);
 
@@ -2183,7 +2183,7 @@ void gunUpdateAttachedRocket(s32 handIndex)
         return;
     }
 
-    prop = getCurrentPlayerProp();
+    prop = currentPlayerGetProp();
     rocketModel = attachedRocket->model;
 
     mtx4Copy(&entry->throw_item_pos_related, &worldMtx);
@@ -2279,26 +2279,26 @@ void gunFireTankShell(s32 handnum)
 
     hand = &g_CurrentPlayer->hands[handnum];
 
-    playerprop = getCurrentPlayerProp();
-    prevplayerpos = getCurrentPlayerPrevPos();
+    playerprop = currentPlayerGetProp();
+    prevplayerpos = playerGetPrevPos();
     weaponid = getCurrentPlayerWeaponId(handnum);
 
     mtx4LoadIdentity(&identitymtx);
 
     if (weaponid == ITEM_TANKSHELLS) 
     {
-        tankprop = get_ptr_for_players_tank();
+        tankprop = playerGetTank();
 
         if (1);
 
         if ((tankprop != NULL) && (tankprop->flags & TANK_RUN_STATE_RUNNING)) 
         {
-            bondviewSet3dCoord7F07CEB0(&aimdir);
+            tankGetTurretDir(&aimdir);
         } 
         else 
         {
             sub_GAME_7F068190(&screenpos, &aimdir);
-            mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &aimdir);
+            mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
         }
 
         velocity.x = aimdir.x * g_TankShellSpeed;
@@ -2318,7 +2318,7 @@ void gunFireTankShell(s32 handnum)
             spawnpos.y = tankobj->model->render_pos[4].pos.m[3][1];
             spawnpos.z = tankobj->model->render_pos[4].pos.m[3][2];
 
-            mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &spawnpos);
+            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &spawnpos);
         } 
         else 
         {
@@ -2334,7 +2334,7 @@ void gunFireTankShell(s32 handnum)
     else 
     {
         bullet_path_from_screen_center(&screenpos, &aimdir, handnum);
-        mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &aimdir);
+        mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
 
         spawnpos.x = hand->field_B58.x;
         spawnpos.y = hand->field_B58.y;
@@ -2381,7 +2381,7 @@ void gunFireTankShell(s32 handnum)
 
     obj->timer = -1;
     obj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
-    obj->runtime_bitflags |= get_cur_playernum() << RUNTIMEBITSHIFT_OWNER;
+    obj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
     gunInitProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, (s32 *) &identitymtx);
 

@@ -4,7 +4,7 @@
 #include <ultra64.h>
 #include <bondconstants.h>
 
-void bondviewLoadSetupIntroSection(void);
+void playerApplyIntro(void);
 u32 weaponLoadProjectileModels(ITEM_IDS modelid);
 
 #endif

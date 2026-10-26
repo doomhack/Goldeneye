@@ -241,6 +241,6 @@ struct BONDdata_item_control_blocks {
     int anonymous_0;
 };
 
-void init_player_BONDdata_stats(void);
+void playerInitHands(void);
 
 #endif

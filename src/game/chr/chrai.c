@@ -935,14 +935,14 @@ extern int bondinvHasInvItem(ITEM_IDS item);
  */
 static s32 coopAnyPlayerStillHasItem(ITEM_IDS item)
 {
-    s32 prevplayer = get_cur_playernum();
+    s32 prevplayer = playerGetCurrentNum();
     s32 ammotype = get_ammo_type_for_weapon(item);
     s32 found = FALSE;
     s32 i;
 
     for (i = 0; (i < getPlayerCount()) && !found; i++)
     {
-        set_cur_player(i);
+        playerSetCurrent(i);
 
         if (bondinvHasInvItem(item) && ((ammotype == AMMO_NONE) || (currentPlayerGetAmmoCount(ammotype) > 0)))
         {
@@ -950,7 +950,7 @@ static s32 coopAnyPlayerStillHasItem(ITEM_IDS item)
         }
     }
 
-    set_cur_player(prevplayer);
+    playerSetCurrent(prevplayer);
     return found;
 }
 
@@ -966,11 +966,11 @@ static s32 s_CounterOpTextPlayer = -1;
  */
 static s32 counterOpTextBegin(void)
 {
-    s32 prev = get_cur_playernum();
+    s32 prev = playerGetCurrentNum();
 
     if (s_CounterOpTextPlayer >= 0)
     {
-        set_cur_player(s_CounterOpTextPlayer);
+        playerSetCurrent(s_CounterOpTextPlayer);
     }
 
     return prev;
@@ -1004,7 +1004,7 @@ static void coopAiActOnActivator(ChrRecord *chr)
 
     chr->targetplayer = player;
     chr->targetlock60 = COOP_AI_TARGET_LOCK60;
-    set_cur_player(player);
+    playerSetCurrent(player);
 }
 
 /**
@@ -1039,7 +1039,7 @@ static void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset, ChrR
     }
 
     count = getPlayerCount();
-    st->base = get_cur_playernum();
+    st->base = playerGetCurrentNum();
     st->count = 0;
 
     for (i = 0; i < count; i++)
@@ -1094,7 +1094,7 @@ static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
 
     if (again && (st->next < st->count))
     {
-        set_cur_player(st->players[st->next++]);
+        playerSetCurrent(st->players[st->next++]);
         *offset = st->start;
         return TRUE;
     }
@@ -1102,13 +1102,13 @@ static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
     if (taken && (chr != NULL) && g_CurrentPlayer->bonddead)
     {
         // Never fight a dead player.
-        set_cur_player(st->base);
+        playerSetCurrent(st->base);
     }
     else if ((st->mode == COOP_AI_ANY_SEEN) && taken && (chr != NULL))
     {
         // Fight the player that was seen. They stay current for the rest
         // of this chr's tick.
-        chr->targetplayer = get_cur_playernum();
+        chr->targetplayer = playerGetCurrentNum();
     }
     else if ((st->mode == COOP_AI_ANY) && taken && (chr != NULL))
     {
@@ -1116,12 +1116,12 @@ static s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
         // player. The rest of the script acts on them: fades, the camera,
         // Bond's cutscene animations. Keep them for a while so later ticks
         // of the same script don't switch to the other player.
-        chr->targetplayer = get_cur_playernum();
+        chr->targetplayer = playerGetCurrentNum();
         chr->targetlock60 = COOP_AI_TARGET_LOCK60;
     }
     else
     {
-        set_cur_player(st->base);
+        playerSetCurrent(st->base);
     }
 
     st->start = -1;
@@ -1145,10 +1145,10 @@ void aiForObject(PropDefHeaderRecord *Entityp)
         return;
     }
 
-    prevplayer = get_cur_playernum();
-    set_cur_player(COUNTEROP_BOND);
+    prevplayer = playerGetCurrentNum();
+    playerSetCurrent(COUNTEROP_BOND);
     ai(Entityp, PROP_TYPE_OBJ);
-    set_cur_player(prevplayer);
+    playerSetCurrent(prevplayer);
 }
 
 /**
@@ -4057,11 +4057,11 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #endif
                     s32 prevplayer = counterOpTextBegin();
     #ifdef BUGFIX_R1
-                    jp_hudmsgBottomShow(text);
+                    hudmsgBottomShowText(text);
     #else
                     hudmsgBottomShow(text);
     #endif
-                    set_cur_player(prevplayer);
+                    playerSetCurrent(prevplayer);
                     Offset += sizeof(AiTextPrintBottomRecord);
                     break;
                 }
@@ -4078,7 +4078,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     s32 prevplayer = counterOpTextBegin();
                     hudmsgTopShow(text);
-                    set_cur_player(prevplayer);
+                    playerSetCurrent(prevplayer);
                     Offset += sizeof(AiTextPrintTopRecord);
                     break;
                 }
@@ -4263,7 +4263,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFCameraIsInIntro:
                 {
                     AiIFCameraIsInIntroRecord *ai = AiListp + Offset;
-                    if ((bondviewGetCameraMode() == 1) || (bondviewGetCameraMode() == 2))
+                    if ((playerGetCameraMode() == 1) || (playerGetCameraMode() == 2))
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -4276,7 +4276,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFCameraIsInBondSwirl:
                 {
                     AiIFCameraIsInBondSwirlRecord *ai = AiListp + Offset;
-                    if (bondviewGetCameraMode() == 3)
+                    if (playerGetCameraMode() == 3)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -4316,7 +4316,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #ifdef ENABLE_LOG
                     osSyncPrintf("ai_ifbondintank\n");
     #endif
-                    if (isBondInTank() == TRUE)
+                    if (playerIsInTank() == TRUE)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -4345,7 +4345,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_CameraReturnToBond:
                 {
-                    bondviewSetCameraMode(CAMERAMODE_FP_NOINPUT);
+                    playerSetCameraMode(CAMERAMODE_FP_NOINPUT);
                     Offset += sizeof(AiCameraReturnToBondRecord);
                     break;
                 }
@@ -4361,7 +4361,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         g_CameraLookAtBondPad = (PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(padnum)];
                     }
-                    bondviewSetCameraMode(CAMERAMODE_POSEND);
+                    playerSetCameraMode(CAMERAMODE_POSEND);
                     Offset += sizeof(AiCameraLookAtBondFromPadRecord);
                     break;
                 }
@@ -4384,7 +4384,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             gBondViewCutscene       = cdef;
                             dword_CODE_bss_80079A18 = ntohs(ai->LOOK_AT_BOND_FLAG);
                             dword_CODE_bss_80079A1C = ntohs(ai->UNUSED_FLAG);
-                            bondviewSetCameraMode(CAMERAMODE_POSEND);
+                            playerSetCameraMode(CAMERAMODE_POSEND);
                         }
                     }
                     Offset += AI_CameraSwitch_LENGTH;
@@ -4394,7 +4394,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFBondYPosLessThanRecord *ai      = AiListp + Offset;
                     f32                         bondpos = (s16)ntohs(ai->Y_POS);
-                    if (getCurrentPlayerProp()->pos.y < bondpos)
+                    if (currentPlayerGetProp()->pos.y < bondpos)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -4415,7 +4415,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (!(ai->val & PLAYERFLAG_LOCKCONTROLS))
                     {
-                        bondviewSetUpperTextDisplayFlag(PLAYERFLAG_NOCONTROL);
+                        hudmsgTopSetFlag(PLAYERFLAG_NOCONTROL);
                     }
                     if (!(ai->val & PLAYERFLAG_NOTIMER))
                     {
@@ -4433,7 +4433,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     gunSetSightVisible(GUNSIGHTREASON_NOCONTROL, TRUE);
                     gunSetGunAmmoVisible(GUNAMMOREASON_NOCONTROL, TRUE);
                     hudmsgsSetOn(PLAYERFLAG_NOCONTROL);
-                    bondviewClearUpperTextDisplayFlag(2);
+                    hudmsgTopClearFlag(2);
                     countdownTimerSetVisible(16, TRUE);
                     is_timer_active = TRUE;
                     Offset += sizeof(AiBondEnableControlRecord);
@@ -4596,7 +4596,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ChrRecord                   *chr = chrFindById(ChrEntityp, ai->CHR_NUM);
                     if (chr)
                     {
-                        chrSetWeaponFlag4(chr, ai->HAND_INDEX);
+                        chrRemoveHeldWeapon(chr, ai->HAND_INDEX);
                     }
                     Offset += sizeof(AiChrRemoveItemInHandRecord);
                     break;
@@ -4655,7 +4655,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     g_ForceBondMoveOffset.y           = 0;
                     g_ForceBondMoveOffset.z           = ai->Z_SPEED60;
                     // Only the player this script is acting on is pushed.
-                    g_CoopForceMovePlayer             = get_cur_playernum();
+                    g_CoopForceMovePlayer             = playerGetCurrentNum();
                     Offset += sizeof(AiBondSetLockedVelocityRecord);
                     break;
                 }
@@ -4750,7 +4750,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     flt_CODE_bss_80079A0C   = camHeight;
                     flt_CODE_bss_80079A10   = targetHeight;
                     dword_CODE_bss_80079A14 = padnum;
-                    bondviewSetCameraMode(CAMERAMODE_POSEND);
+                    playerSetCameraMode(CAMERAMODE_POSEND);
                     Offset += sizeof(AiCameraOrbitPadRecord);
                     break;
                 }
@@ -4835,7 +4835,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_TriggerExplosionsAroundBond:
                 {
-                    SurroundWithExplosions(0);
+                    playerSurroundWithExplosions(0);
                     Offset += sizeof(AiTriggerExplosionsAroundBondRecord);
                     break;
                 }

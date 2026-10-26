@@ -2213,7 +2213,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
         yrot += M_TAU_F;
     }
 
-    mtx4MultAffineInPlace(currentPlayerGetViewToWorldMtxf(), matrix);
+    mtx4MultAffineInPlace(camGetViewToWorldMtxf(), matrix);
 
     savedposx = matrix->m[3][0];
     savedposy = matrix->m[3][1];
@@ -2371,7 +2371,7 @@ s32 chrTick(PropRecord *prop)
     // animation at all: with no time passing it would only redo the same
     // position, room and shading work.
     coopRepeat = g_CoopMode && (prop->type == PROP_TYPE_CHR)
-        && (get_player_position_in_shuffled(get_cur_playernum()) != 0);
+        && (playerGetShuffledIndex(playerGetCurrentNum()) != 0);
 
     if (coopRepeat)
     {
@@ -2442,7 +2442,7 @@ s32 chrTick(PropRecord *prop)
     }
     else
     {
-        if (((prop->type == PROP_TYPE_VIEWER) && (g_playerPointers[getPlayerPointerIndex(prop)]->cameramode == 1)) || (chr->chrflags & CHRFLAG_CULL_USING_HITBOX))
+        if (((prop->type == PROP_TYPE_VIEWER) && (g_playerPointers[playerGetIndexForProp(prop)]->cameramode == 1)) || (chr->chrflags & CHRFLAG_CULL_USING_HITBOX))
         {
             headSwitchVisible = 1;
 
@@ -3081,21 +3081,21 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
             if (withalpha != 0)
             {
-                bondviewTransformManyPosToViewMatrix(chr->model->render_pos, chr->model->obj->numMatrices);
+                mtxsF2L(chr->model->render_pos, chr->model->obj->numMatrices);
 
                 if ((held_right_obj != NULL) && ((held_right_obj->runtime_bitflags & 0x800) == 0))
                 {
-                    bondviewTransformManyPosToViewMatrix(held_right_obj->model->render_pos, held_right_obj->model->obj->numMatrices);
+                    mtxsF2L(held_right_obj->model->render_pos, held_right_obj->model->obj->numMatrices);
                 }
 
                 if ((held_left_obj != NULL) && ((held_left_obj->runtime_bitflags & 0x800) == 0))
                 {
-                    bondviewTransformManyPosToViewMatrix(held_left_obj->model->render_pos, held_left_obj->model->obj->numMatrices);
+                    mtxsF2L(held_left_obj->model->render_pos, held_left_obj->model->obj->numMatrices);
                 }
 
                 if (held_hat_obj != NULL)
                 {
-                    bondviewTransformManyPosToViewMatrix(held_hat_obj->model->render_pos, held_hat_obj->model->obj->numMatrices);
+                    mtxsF2L(held_hat_obj->model->render_pos, held_hat_obj->model->obj->numMatrices);
                 }
             }
         }
@@ -3153,7 +3153,7 @@ void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos
             sp3c.y = vec->y * scale;
             sp3c.z = vec->z * scale;
 
-            mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &sp3c);
+            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &sp3c);
 
             bullet_spark_create(&sp3c, entry->backImpactPuffCount, entry->backImpactPuffSize, prop->stan->room);
         }
@@ -3507,7 +3507,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
         viewdir.y = shotdata->viewDir.y;
         viewdir.z = shotdata->viewDir.z;
 
-        submatrix = currentPlayerGetViewToWorldMtxf();
+        submatrix = camGetViewToWorldMtxf();
         mtx4RotateVecInPlace(submatrix, &viewdir);
         nodemtx = modelFindNodeMtx(hitmodel, hitnode, 0);
 
@@ -3573,7 +3573,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     nearhitpos.y = hitpos.f[1] * scale;
     nearhitpos.z = hitpos.f[2] * scale;
 
-    mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &nearhitpos);
+    mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &nearhitpos);
 
     // Point the tracer effect towards the impact position.
     gunSetTracerTarget(&nearhitpos);
@@ -3611,7 +3611,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
                         propobjSetDropped(prop, 1);
                         chr->hidden |= 1;
 
-                        objApplyDamage(prop->obj, gunItemGetDestructionAmount(shot->weapon), &hitpos, shot->weapon, get_cur_playernum());
+                        objApplyDamage(prop->obj, gunItemGetDestructionAmount(shot->weapon), &hitpos, shot->weapon, playerGetCurrentNum());
                     // Create a bullet hole on the character's held weapon.
                     } else {
                         if (bhit->hit.texturenum < 0) {

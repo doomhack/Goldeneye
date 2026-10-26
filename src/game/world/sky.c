@@ -35,11 +35,11 @@ void skyGetWorldPosFromScreenPos(f32 offset_x, f32 offset_y, coord3d* out) {
     coord2d coords;
     f32 screen_top;
 
-    player_mtxf = currentPlayerGetViewToWorldMtxf();
-    coords.x = getPlayer_c_screenleft() + offset_x;
-    screen_top = getPlayer_c_screentop();
+    player_mtxf = camGetViewToWorldMtxf();
+    coords.x = camGetScreenLeft() + offset_x;
+    screen_top = camGetScreenTop();
     coords.y = fogGetCurrentEnvironmentp()->WaterConcavity + (offset_y + screen_top);
-    transformAndNormalizeByLength2Dto3D(&coords, out, 100.0f);
+    camScreenToViewDir(&coords, out, 100.0f);
     mtx4RotateVecInPlace(player_mtxf, out->f);
 }
 
@@ -48,7 +48,7 @@ void skyGetWorldPosFromScreenPos(f32 offset_x, f32 offset_y, coord3d* out) {
 */
 bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 {
-    coord3d *eye = bondviewGetCurrentPlayersPosition();
+    coord3d *eye = playerGetPos();
     f32 f12 = 2.0f * corner3dpos->y / sqrtf(corner3dpos->f[0] * corner3dpos->f[0] + corner3dpos->f[2] * corner3dpos->f[2] + 0.0001f);
     f32 sp2c;
     f32 f12_2;
@@ -100,7 +100,7 @@ bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 */
 bool skyIsCornerInWater(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 {
-    coord3d *eye = bondviewGetCurrentPlayersPosition();
+    coord3d *eye = playerGetPos();
     f32 f12 = -2.0f * corner3dpos->y / sqrtf(corner3dpos->f[0] * corner3dpos->f[0] + corner3dpos->f[2] * corner3dpos->f[2] + 0.0001f);
     f32 sp2c;
     f32 f12_2;
@@ -358,9 +358,9 @@ Gfx *skyRender(Gfx *gdl)
     if (&sp6a4);
 
     skyGetWorldPosFromScreenPos(0.0f, 0.0f, &sp6a4);
-    skyGetWorldPosFromScreenPos(getPlayer_c_screenwidth() - 0.1f, 0.0f, &sp698);
-    skyGetWorldPosFromScreenPos(0.0f, getPlayer_c_screenheight() - 0.1f, &sp68c);
-    skyGetWorldPosFromScreenPos(getPlayer_c_screenwidth() - 0.1f, getPlayer_c_screenheight() - 0.1f, &sp680);
+    skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, 0.0f, &sp698);
+    skyGetWorldPosFromScreenPos(0.0f, camGetScreenHeight() - 0.1f, &sp68c);
+    skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, camGetScreenHeight() - 0.1f, &sp680);
 
     sp538 = skyIsScreenCornerInSky(&sp6a4, &sp644, &sp58c);
     sp534 = skyIsScreenCornerInSky(&sp698, &sp638, &sp588);
@@ -374,9 +374,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (sp538 != sp530)
     {
-        sp54c = getPlayer_c_screentop() + getPlayer_c_screenheight() * (sp6a4.f[1] / (sp6a4.f[1] - sp68c.f[1]));
+        sp54c = camGetScreenTop() + camGetScreenHeight() * (sp6a4.f[1] / (sp6a4.f[1] - sp68c.f[1]));
 
-        skyGetWorldPosFromScreenPos(0.0f, sp54c - getPlayer_c_screentop(), &sp65c);
+        skyGetWorldPosFromScreenPos(0.0f, sp54c - camGetScreenTop(), &sp65c);
         skyCalculateEdgeVertex(&sp6a4, &sp68c, &sp65c);
         skyIsScreenCornerInSky(&sp65c, &sp5fc, &sp574);
         skyIsCornerInWater(&sp65c, &sp59c, &sp554);
@@ -388,9 +388,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (sp534 != sp52c)
     {
-        sp548 = getPlayer_c_screentop() + getPlayer_c_screenheight() * (sp698.f[1] / (sp698.f[1] - sp680.f[1]));
+        sp548 = camGetScreenTop() + camGetScreenHeight() * (sp698.f[1] / (sp698.f[1] - sp680.f[1]));
 
-        skyGetWorldPosFromScreenPos(getPlayer_c_screenwidth() - 0.1f, sp548 - getPlayer_c_screentop(), &sp650);
+        skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, sp548 - camGetScreenTop(), &sp650);
         skyCalculateEdgeVertex(&sp698, &sp680, &sp650);
         skyIsScreenCornerInSky(&sp650, &sp5f0, &sp570);
         skyIsCornerInWater(&sp650, &sp590, &sp550);
@@ -402,7 +402,7 @@ Gfx *skyRender(Gfx *gdl)
 
     if (sp538 != sp534)
     {
-        skyGetWorldPosFromScreenPos(getPlayer_c_screenwidth() * (sp6a4.f[1] / (sp6a4.f[1] - sp698.f[1])), 0.0f, &sp674);
+        skyGetWorldPosFromScreenPos(camGetScreenWidth() * (sp6a4.f[1] / (sp6a4.f[1] - sp698.f[1])), 0.0f, &sp674);
         skyCalculateEdgeVertex(&sp6a4, &sp698, &sp674);
         skyIsScreenCornerInSky(&sp674, &sp614, &sp57c);
         skyIsCornerInWater(&sp674, &sp5b4, &sp55c);
@@ -410,9 +410,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (sp530 != sp52c)
     {
-        tmp = getPlayer_c_screenleft() + getPlayer_c_screenwidth() * (sp68c.f[1] / (sp68c.f[1] - sp680.f[1]));
+        tmp = camGetScreenLeft() + camGetScreenWidth() * (sp68c.f[1] / (sp68c.f[1] - sp680.f[1]));
 
-        skyGetWorldPosFromScreenPos(tmp - getPlayer_c_screenleft(), getPlayer_c_screenheight() - 0.1f, &sp668);
+        skyGetWorldPosFromScreenPos(tmp - camGetScreenLeft(), camGetScreenHeight() - 0.1f, &sp668);
         skyCalculateEdgeVertex(&sp68c, &sp680, &sp668);
         skyIsScreenCornerInSky(&sp668, &sp608, &sp578);
         skyIsCornerInWater(&sp668, &sp5a8, &sp558);
@@ -814,7 +814,7 @@ Gfx *skyRender(Gfx *gdl)
         s32 i;
         s32 unused[3];
 
-        mtx4Mult(currentPlayerGetProjectionMatrixF(), camGetWorldToScreenMtxf(), &sp3cc);
+        mtx4Mult(camGetProjectionMtxf(), camGetWorldToScreenMtxf(), &sp3cc);
         guScaleF(dword_CODE_bss_80079E98.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
         mtx4Mult(&sp3cc, &dword_CODE_bss_80079E98, &sp38c);
 
@@ -822,11 +822,11 @@ Gfx *skyRender(Gfx *gdl)
         {
             sub_GAME_7F097388(&sp43c[i], &sp38c, 130, 65535.0f, 65535.0f, &sp274[i]);
 
-            sp274[i].unk28 = skyClamp(sp274[i].unk28, VI_SX(getPlayer_c_screenleft()) * 4.0f, VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f);
-            sp274[i].unk2c = skyClamp(sp274[i].unk2c, getPlayer_c_screentop() * 4.0f, (getPlayer_c_screentop() + getPlayer_c_screenheight()) * 4.0f - 1.0f);
+            sp274[i].unk28 = skyClamp(sp274[i].unk28, VI_SX(camGetScreenLeft()) * 4.0f, VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f);
+            sp274[i].unk2c = skyClamp(sp274[i].unk2c, camGetScreenTop() * 4.0f, (camGetScreenTop() + camGetScreenHeight()) * 4.0f - 1.0f);
 
-            if (sp274[i].unk2c > getPlayer_c_screentop() * 4.0f + 4.0f
-                    && sp274[i].unk2c < (getPlayer_c_screentop() + getPlayer_c_screenheight()) * 4.0f - 4.0f)
+            if (sp274[i].unk2c > camGetScreenTop() * 4.0f + 4.0f
+                    && sp274[i].unk2c < (camGetScreenTop() + camGetScreenHeight()) * 4.0f - 4.0f)
             {
                 sp274[i].unk2c -= 4.0f;
             }
@@ -1295,7 +1295,7 @@ Gfx *skyRender(Gfx *gdl)
         s32 i;
         s32 stack[2];
 
-        mtx4Mult(currentPlayerGetProjectionMatrixF(), camGetWorldToScreenMtxf(), &sp1ec);
+        mtx4Mult(camGetProjectionMtxf(), camGetWorldToScreenMtxf(), &sp1ec);
         guScaleF(dword_CODE_bss_80079E98.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
         mtx4Mult(&sp1ec, &dword_CODE_bss_80079E98, &sp1ac);
 
@@ -1303,8 +1303,8 @@ Gfx *skyRender(Gfx *gdl)
         {
             sub_GAME_7F097388(&sp4b4[i], &sp1ac, 130, 65535.0f, 65535.0f, &sp94[i]);
 
-            sp94[i].unk28 = skyClamp(sp94[i].unk28, VI_SX(getPlayer_c_screenleft()) * 4.0f, VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f);
-            sp94[i].unk2c = skyClamp(sp94[i].unk2c, getPlayer_c_screentop() * 4.0f, (getPlayer_c_screentop() + getPlayer_c_screenheight()) * 4.0f - 1.0f);
+            sp94[i].unk28 = skyClamp(sp94[i].unk28, VI_SX(camGetScreenLeft()) * 4.0f, VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f);
+            sp94[i].unk2c = skyClamp(sp94[i].unk2c, camGetScreenTop() * 4.0f, (camGetScreenTop() + camGetScreenHeight()) * 4.0f - 1.0f);
         }
 
         if (s1 == 4)
@@ -1315,12 +1315,12 @@ Gfx *skyRender(Gfx *gdl)
                 {
                     if (sp94[3].unk2c >= sp94[1].unk2c + 4.0f)
                     {
-                        sp94[0].unk28 = VI_SX(getPlayer_c_screenleft()) * 4.0f;
-                        sp94[0].unk2c = getPlayer_c_screentop() * 4.0f;
-                        sp94[1].unk28 = VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
-                        sp94[1].unk2c = getPlayer_c_screentop() * 4.0f;
-                        sp94[2].unk28 = VI_SX(getPlayer_c_screenleft()) * 4.0f;
-                        sp94[3].unk28 = VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
+                        sp94[0].unk28 = VI_SX(camGetScreenLeft()) * 4.0f;
+                        sp94[0].unk2c = camGetScreenTop() * 4.0f;
+                        sp94[1].unk28 = VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f;
+                        sp94[1].unk2c = camGetScreenTop() * 4.0f;
+                        sp94[2].unk28 = VI_SX(camGetScreenLeft()) * 4.0f;
+                        sp94[3].unk28 = VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f;
 
                         gdl = skyRenderFull(gdl, &sp94[0], &sp94[1], &sp94[2], &sp94[3], 130.0f);
                     }
@@ -1331,12 +1331,12 @@ Gfx *skyRender(Gfx *gdl)
                 }
                 else if (sp94[2].unk2c >= sp94[0].unk2c + 4.0f)
                 {
-                    sp94[0].unk28 = VI_SX(getPlayer_c_screenleft()) * 4.0f;
-                    sp94[0].unk2c = getPlayer_c_screentop() * 4.0f;
-                    sp94[1].unk28 = VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
-                    sp94[1].unk2c = getPlayer_c_screentop() * 4.0f;
-                    sp94[2].unk28 = VI_SX(getPlayer_c_screenleft()) * 4.0f;
-                    sp94[3].unk28 = VI_SX(getPlayer_c_screenleft() + getPlayer_c_screenwidth()) * 4.0f - 1.0f;
+                    sp94[0].unk28 = VI_SX(camGetScreenLeft()) * 4.0f;
+                    sp94[0].unk2c = camGetScreenTop() * 4.0f;
+                    sp94[1].unk28 = VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f;
+                    sp94[1].unk2c = camGetScreenTop() * 4.0f;
+                    sp94[2].unk28 = VI_SX(camGetScreenLeft()) * 4.0f;
+                    sp94[3].unk28 = VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f;
 
                     gdl = skyRenderFull(gdl, &sp94[1], &sp94[0], &sp94[3], &sp94[2], 130.0f);
                 }
@@ -1406,8 +1406,8 @@ void sub_GAME_7F097388(SkyRelated18 *arg0, Mtxf *arg1, u16 arg2, f32 arg3, f32 a
     sp48[3] = sp68[3] * f0 * mult;
 
     // Screen x in physical (hi-res) quarter pixels: the RDP triangles are built from it
-    sp38[0] = sp48[0] * (VI_SX(getPlayer_c_screenwidth()) * 2) + (VI_SX(getPlayer_c_screenwidth()) * 2 + VI_SX(getPlayer_c_screenleft()) * 4);
-    sp38[1] = -sp48[1] * (getPlayer_c_screenheight() * 2) + (getPlayer_c_screenheight() * 2 + getPlayer_c_screentop() * 4);
+    sp38[0] = sp48[0] * (VI_SX(camGetScreenWidth()) * 2) + (VI_SX(camGetScreenWidth()) * 2 + VI_SX(camGetScreenLeft()) * 4);
+    sp38[1] = -sp48[1] * (camGetScreenHeight() * 2) + (camGetScreenHeight() * 2 + camGetScreenTop() * 4);
 
     sp38[2] = sp48[2] * 511.0f + 511.0f;
     sp38[3] = sp48[3] * 0 + 0;
@@ -2204,19 +2204,19 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         }
         else
         {
-            sp1bc = -(VI_SX(getPlayer_c_screenwidth()) - 0.25f) / ((arg3->unk2c - arg4->unk2c) / 4.0f);
+            sp1bc = -(VI_SX(camGetScreenWidth()) - 0.25f) / ((arg3->unk2c - arg4->unk2c) / 4.0f);
         }
 
         gImmp1(gdl++, G_RDPHALF_1, (G_TRI_SHADE_TXTR << 24) | 0x00800000 | (s32) arg3->unk2c);
         gImmp1(gdl++, G_RDPHALF_CONT, (s32) arg4->unk2c << 16 | (s32) arg1->unk2c);
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft()) + VI_SX(getPlayer_c_screenwidth()) - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp1bc));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft())));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft())));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft()) + VI_SX(getPlayer_c_screenwidth()) - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
     }
     else
@@ -2229,19 +2229,19 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         }
         else
         {
-            sp198 = (VI_SX(getPlayer_c_screenwidth()) - 0.25f) / ((arg3->unk2c - arg4->unk2c) / 4.0f);
+            sp198 = (VI_SX(camGetScreenWidth()) - 0.25f) / ((arg3->unk2c - arg4->unk2c) / 4.0f);
         }
 
         gImmp1(gdl++, G_RDPHALF_1, 0xce000000 | (s32) arg3->unk2c);
         gImmp1(gdl++, G_RDPHALF_CONT, (s32) arg4->unk2c << 16 | (s32) arg1->unk2c);
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft())));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft())));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp198));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft()) + VI_SX(getPlayer_c_screenwidth()) - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(getPlayer_c_screenleft())));
+        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft())));
         gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
     }
 

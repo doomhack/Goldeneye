@@ -228,7 +228,7 @@ struct hand hand_data_dummy = {
 };
 
 
-void init_player_BONDdata_stats(void)
+void playerInitHands(void)
 {
     s32 i;
     struct hand sp24;

@@ -632,7 +632,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
         {
             if (i == dword_CODE_bss_8007FFA0[j].unk1)
             {
-                gSPMatrix(gdl++, osVirtualToPhysical((void*)currentPlayerGetProjectionMatrix()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+                gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
                 if (get_debug_do_draw_obj())
@@ -643,7 +643,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                     }
                 }
  
-                gSPMatrix(gdl++, osVirtualToPhysical((void*)get_BONDdata_field_10E0()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+                gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogSetRenderFogColor(
                     bgScissorCurrentPlayerViewF(
                         gdl++,
@@ -661,7 +661,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                     }
                 }
  
-                gSPMatrix(gdl++, osVirtualToPhysical((void*)currentPlayerGetProjectionMatrix()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+                gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
                 if (get_debug_do_draw_obj())
@@ -684,7 +684,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
     #endif
  
     gdl = bgScissorCurrentPlayerViewDefault(fogRenderClearFogMode(gdl));
-    gSPMatrix(gdl++, osVirtualToPhysical((void*)get_BONDdata_field_10E0()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+    gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
  
     if (sub_GAME_7F0BD8F0())
     {
@@ -705,7 +705,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
         {
             if (i == dword_CODE_bss_8007FFA0[j].unk1)
             {
-                gSPMatrix(gdl++, osVirtualToPhysical((void*)get_BONDdata_field_10E0()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+                gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogSetRenderFogColor(
                     bgScissorCurrentPlayerViewF(
                         gdl++,
@@ -723,7 +723,7 @@ Gfx *sub_GAME_7F0B3C8C(Gfx *gdl)
                     }
                 }
  
-                gSPMatrix(gdl++, osVirtualToPhysical((void*)currentPlayerGetProjectionMatrix()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+                gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
                 if (get_debug_do_draw_obj())
@@ -854,7 +854,7 @@ void load_bg_file(LEVEL_INDEX levelid)
  
     mCurrentLevelVisibilityScale = levelinfotable[levelentry_index].visibility;
  
-    sub_GAME_7F08976C(mCurrentLevelVisibilityScale);
+    camSetPosScale(mCurrentLevelVisibilityScale);
     mtxSetWorldScale(mCurrentLevelVisibilityScale);
  
     data = (s32 *)ptr_bg_data;
@@ -1067,11 +1067,11 @@ void bgRoomVisibilityRelated(void)
 
     num_visible_rooms_in_cur_global_vis_packet = 0;
 
-    if (get_player_position_in_shuffled(get_cur_playernum()) == 0) {
+    if (playerGetShuffledIndex(playerGetCurrentNum()) == 0) {
         bgRoomsTickUnload();
     }
 
-    cammode = bondviewGetCameraMode();
+    cammode = playerGetCameraMode();
 
     g_RoomLoadBudget = 3;
 
@@ -1090,11 +1090,11 @@ void bgRoomVisibilityRelated(void)
         break;
     }
 
-    room = bondviewGetCurrentPlayersRoom();
+    room = playerGetRoom();
     g_BgCurrentRoom = room;
 
-    pos = bondviewGetCurrentPlayersPosition();
-    pos3 = bondviewGetCurrentPlayersPosition3();
+    pos = playerGetPos();
+    pos3 = playerGetPos3();
 
     // FAKE
     if (1) {}
@@ -1257,7 +1257,7 @@ void bgFindRoomsAlongSegment(coord3d *fromPos, coord3d *toPos, u8 *fromRooms, u8
 Gfx *bgLevelRender(Gfx *arg0)
 {
     gSPSetLights1(arg0++, GlobalLight);
-    gSPLookAt(arg0++, sub_GAME_7F078474());
+    gSPLookAt(arg0++, camGetLookAt());
     gSPSegment(arg0++, SPSEGMENT_BG_DL, ptr_bg_data);
 
     if (dword_CODE_bss_8007FF88 == 1)
@@ -1271,7 +1271,7 @@ Gfx *bgLevelRender(Gfx *arg0)
 
     gSPMatrix(arg0++, g_viProjectionMatrix, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
-    return bondviewGfxPlayerField5cMatrix(arg0++);
+    return camLoadWorldToViewMtx(arg0++);
 }
 
 
@@ -1523,7 +1523,7 @@ bool bgProjectRoomCoordToScreen(coord3d* src, coord3d* dst)
     dst->z = src->z * room_data_float2;
     mtx4TransformVecInPlace(temp_a0, dst);
 
-    transform3Dto2DWithZScaling(dst, dst);
+    camViewToScreenSafe(dst, dst);
 
     if (dst->z > 0.0f)
     {
@@ -1647,7 +1647,7 @@ s32 sub_GAME_7F0B5864(s32 portalnum, bbox2d *bbox)
         {
             if (points[j].z <= 0.0f)
             {
-                transform3Dto2DWithZScaling(&points[j], &screenpos);
+                camViewToScreenSafe(&points[j], &screenpos);
 
                 if (onscreencount == 0)
                 {
@@ -3706,7 +3706,7 @@ void sub_GAME_7F0B7F84(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, 
 
     if (i);
  
-    playerpos = bondviewGetCurrentPlayersPosition();
+    playerpos = playerGetPos();
     sub_GAME_7F0B96CC(portalnum, &metric);
     playermetric = ((metric.normal.z * playerpos->z) + ((metric.normal.x * playerpos->x) + (metric.normal.y * playerpos->y))) * room_data_float1;
     portalmetric = sub_GAME_7F0B9990(portalnum);
@@ -3847,7 +3847,7 @@ s32 sub_GAME_7F0B7F84(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s
 
     if (i);
  
-    playerpos = bondviewGetCurrentPlayersPosition();
+    playerpos = playerGetPos();
     sub_GAME_7F0B96CC(portalnum, &metric);
     playermetric = ((metric.normal.z * playerpos->z) + ((metric.normal.x * playerpos->x) + (metric.normal.y * playerpos->y))) * room_data_float1;
     portalmetric = sub_GAME_7F0B9990(portalnum);

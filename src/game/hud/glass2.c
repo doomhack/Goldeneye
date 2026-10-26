@@ -637,7 +637,7 @@ void bullet_spark_render(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
     }
 
     vtx = D_80040980;
-    mtx = currentPlayerGetViewToWorldMtxf();
+    mtx = camGetViewToWorldMtxf();
     gdl = *((Gfx **) gdlarg);
     vertices = dynAllocateVertices(4);
     room = thing->unk06;
@@ -695,12 +695,12 @@ void bullet_spark_render(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
     vertices[3].v.tc[1] = ((struct sImageTableEntry *) (((u8 *) thing->unk0C) + (frame * 12)))->height << 5;
     
     gSPSetGeometryMode(gdl++, G_CULL_BACK);
-    gSPMatrix(gdl++, osVirtualToPhysical((void *) get_BONDdata_field_10E0()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+    gSPMatrix(gdl++, osVirtualToPhysical((void *) camGetProjViewMtx()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
     gdl = applyRoomMatrixToDisplayList(gdl, room);
     texSelect(&gdl, (struct sImageTableEntry *) (((u8 *) thing->unk0C) + (frame * 12)), 4, zbufferMode, 2);
     gSPVertex(gdl++, osVirtualToPhysical(vertices), 4, 0);
     gSP2Triangles(gdl++, 0, 1, 2, 0, 0, 2, 3, 0);
-    gSPMatrix(gdl++, osVirtualToPhysical(currentPlayerGetProjectionMatrix()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+    gSPMatrix(gdl++, osVirtualToPhysical(camGetProjectionMtx()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
     *((Gfx **) gdlarg) = gdl;
 }
 

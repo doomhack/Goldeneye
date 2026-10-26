@@ -2,7 +2,7 @@
 #define _INITBONDDATADEFAULTS_H_
 #include <ultra64.h>
 
-void sets_a_bunch_of_BONDdata_values_to_default(void);
+void bheadInit(void);
 #ifdef LEFTOVERDEBUG
 extern void exit(void);
 #endif

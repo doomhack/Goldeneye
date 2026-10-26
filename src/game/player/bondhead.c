@@ -353,7 +353,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
 #else
         bheadSetdamp(0.99f);
 #endif
-        g_CurrentPlayer->standfrac += (0.008333334f + (0.025000002f * bondviewGetBondBreathing())) * g_GlobalTimerDelta;
+        g_CurrentPlayer->standfrac += (0.008333334f + (0.025000002f * playerGetBreathing())) * g_GlobalTimerDelta;
 
         if (g_CurrentPlayer->standfrac >= 1.0f)
         {
@@ -369,8 +369,8 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
             g_CurrentPlayer->standfrac,
             &lookvel);
 
-        lookvel.f[0] *= (1.0f + (5.0f * bondviewGetBondBreathing()));
-        lookvel.f[1] *= (1.0f + (5.0f * bondviewGetBondBreathing()));
+        lookvel.f[0] *= (1.0f + (5.0f * playerGetBreathing()));
+        lookvel.f[1] *= (1.0f + (5.0f * playerGetBreathing()));
 
         // result = x vector plus ((y - x vector) * scaler)
         // upvel = ...
@@ -380,8 +380,8 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
             g_CurrentPlayer->standfrac,
             &upvel);
 
-        upvel.f[0] *= (1.0f + (5.0f * bondviewGetBondBreathing()));
-        upvel.f[2] *= (1.0f + (5.0f * bondviewGetBondBreathing()));
+        upvel.f[0] *= (1.0f + (5.0f * playerGetBreathing()));
+        upvel.f[2] *= (1.0f + (5.0f * playerGetBreathing()));
     }
 
     bheadUpdatePos(&headpos);
@@ -478,8 +478,8 @@ void bheadSetSpeed(f32 speed)
 f32 bheadGetBreathingValue(void)
 {
 	if (g_CurrentPlayer->headanim >= 0) {
-        // bondviewGetBondBreathing() * (1/80) + (1/240)
-		f32 baseBreathing = bondviewGetBondBreathing() * 0.012500001f + 0.004166667f;
+        // playerGetBreathing() * (1/80) + (1/240)
+		f32 baseBreathing = playerGetBreathing() * 0.012500001f + 0.004166667f;
 		f32 animSpeed = modelGetAbsAnimSpeed(&g_CurrentPlayer->model);
 
 		if (animSpeed > 0) {

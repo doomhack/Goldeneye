@@ -1114,7 +1114,7 @@ s32 bondinvGetTextbyInvIndex(s32 index)
  */
 static char *bondinvCounterOpPillName(ITEM_IDS weaponnum)
 {
-    if ((weaponnum == ITEM_UNARMED) && counterOpIsGuardPlayer(get_cur_playernum()))
+    if ((weaponnum == ITEM_UNARMED) && counterOpIsGuardPlayer(playerGetCurrentNum()))
     {
         return "suicide pill\n";
     }

@@ -335,7 +335,7 @@ void debmenuHandleMoveView(void)
 */
 void debmenuHandleStanView(void)
 {
-    bondviewRemovePlayerBody();
+    playerRemoveBody();
     g_DebugHighlightedOption = get_highlighted_debug_option();
     debug_render_raster = debug_freeze_processing = g_DebugHighlightedOption;
 }
@@ -347,7 +347,7 @@ void debmenuHandleStanView(void)
 */
 void debmenuHandleBondView(void)
 {
-    bondviewRemovePlayerBody();
+    playerRemoveBody();
     g_DebugHighlightedOption = get_highlighted_debug_option();
     debug_render_raster = debug_freeze_processing = g_DebugHighlightedOption;
 }
@@ -557,22 +557,22 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
                 break;
 
             case DEB_INVINCIBLE: // invincible
-                set_bondata_invincible_flag(get_bondata_invincible_flag() == 0);
+                playerSetInvincible(playerGetInvincible() == 0);
                 break;
 
             case DEB_VISIBILE: // visible
-                bondviewSetVisibleToGuardsFlag(bondviewGetVisibleToGuardsFlag() == 0);
+                playerSetVisibleToGuards(playerGetVisibleToGuards() == 0);
                 break;
 
             case DEB_COLLISIONS: // collisions
-                set_obj_collision_flag(get_obj_collision_flag() == FALSE);
+                playerSetCollisionOn(playerGetCollisionOn() == FALSE);
                 break;
 
             case DEB_ALLGUNS: // all guns
             {
                 for (i1 = 0; i1 < getPlayerCount(); i1++)
                 {
-                    set_cur_player(i1);
+                    playerSetCurrent(i1);
                     bondinvSetAllGunsFlag(bondinvGetAllGunsFlag() == 0);
                 }
                 break;
@@ -580,13 +580,13 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
 
             case DEB_MAXAMMO: // max ammo
             {
-                sp54 = get_cur_playernum();
+                sp54 = playerGetCurrentNum();
                 for (i2 = 0; i2 < getPlayerCount(); i2++)
                 {
-                    set_cur_player(i2);
+                    playerSetCurrent(i2);
                     set_max_ammo_for_cur_player();
                 }
-                set_cur_player(sp54);
+                playerSetCurrent(sp54);
                 break;
             }
 
@@ -631,7 +631,7 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
                 break;
 
             case DEB_BONDDIE: // bond die
-                bondviewKillCurrentPlayer();
+                playerDie();
                 break;
 
             case DEB_PRROOMLOADS: // pr room loads
@@ -726,7 +726,7 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
                 break;
 
             case DEB_INTRO: // intro
-                bondviewSetCameraMode(CAMERAMODE_SWIRL);
+                playerSetCameraMode(CAMERAMODE_SWIRL);
                 break;
 
             case DEB_INTRO_POS: // intro pos
@@ -743,7 +743,7 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
                 }
                 else
                 {
-                    playerprop = getCurrentPlayerProp();
+                    playerprop = currentPlayerGetProp();
                     if (playerprop)
                     {
 

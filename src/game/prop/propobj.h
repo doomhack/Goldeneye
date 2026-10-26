@@ -106,7 +106,7 @@ void                 objFreeEmbedmentOrProjectile(PropRecord *);
 void                 objBounce(ObjectRecord *obj, coord3d *arg1);
 bool                 alarmIsActive(void);
 void                 gasStart(coord3d *source);
-void                 chrSetWeaponFlag4(ChrRecord *chr, GUNHAND hand);
+void                 chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand);
 void                 doorStopSounds(DoorRecord *door);
 void                 doorActivatePortal(DoorRecord *door);
 void                 doorUpdateBbox(DoorRecord *door);

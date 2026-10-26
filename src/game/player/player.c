@@ -24,7 +24,7 @@ PLAYER_ID array_PLAYER_IDs[4];
 //s32 dword_CODE_bss_8007A0C8;
 //s32 dword_CODE_bss_8007A0CC;
 
-/* Define default values that are different between EU and the rest for initBONDdataforPlayer */
+/* Define default values that are different between EU and the rest for playerInit */
 #ifdef VERSION_EU
 #define DEFAULT_FIELD_3B8_Z     8.417509f
 #define DEFAULT_HEADDAMP        0.9166f
@@ -47,7 +47,7 @@ PLAYER_ID array_PLAYER_IDs[4];
 
 //newfile per EU
 
-void default_player_perspective_and_height(void)
+void playersResetHandicaps(void)
 {
   float value  = 1.0f;
 
@@ -63,7 +63,7 @@ void default_player_perspective_and_height(void)
   g_playerPlayerData[PLAYER_4].handicap = value;
 }
 
-void reset_play_data_ptrs(void)
+void playersReset(void)
 {
     g_playerPointers[PLAYER_1] = NULL;
     g_playerPointers[PLAYER_2] = NULL;
@@ -79,7 +79,7 @@ void reset_play_data_ptrs(void)
     array_PLAYER_IDs[PLAYER_4] = 3;
 }
 
-void init_player_data_ptrs_construct_viewports(s32 playercount)
+void playersInit(s32 playercount)
 {
     s32 i;
 
@@ -92,15 +92,15 @@ void init_player_data_ptrs_construct_viewports(s32 playercount)
     {
         for (i = 0; i < playercount; i++)
         {
-            initBONDdataforPlayer(i);
+            playerInit(i);
         }
-        set_cur_player(PLAYER_1);
+        playerSetCurrent(PLAYER_1);
         return;
     }
-    initBONDdataforPlayer(PLAYER_1);
-    set_cur_player(PLAYER_1);
-    set_cur_player_screen_size(viGetViewWidth(), viGetViewHeight());
-    set_cur_player_viewport_size(viGetViewLeft(), viGetViewTop());
+    playerInit(PLAYER_1);
+    playerSetCurrent(PLAYER_1);
+    playerSetScreenSize(viGetViewWidth(), viGetViewHeight());
+    playerSetViewportPos(viGetViewLeft(), viGetViewTop());
 }
 
 /**
@@ -150,7 +150,7 @@ s32 g_CoopPlayersOverlap = FALSE;
 
 /**
  * Co-op: the player whose view fills the screen on its own this frame, or
- * -1 while every player's view is shown (see bondviewCoopUpdateSoloView).
+ * -1 while every player's view is shown (see coopUpdateSoloView).
  * g_CoopSoloViewIsCinema is set when that is a cutscene, intro or final
  * death replay rather than a player's watch.
  */
@@ -179,7 +179,7 @@ s32 isMpGame(void)
 s32 coopPartnerCanRevive(void)
 {
     s32 count = getPlayerCount();
-    s32 cur = get_cur_playernum();
+    s32 cur = playerGetCurrentNum();
     s32 i;
 
     if (!g_CoopMode)
@@ -215,13 +215,13 @@ s32 g_CoopLastActivator = 0;
 
 void coopNoteActivator(void)
 {
-    g_CoopLastActivator = get_cur_playernum();
+    g_CoopLastActivator = playerGetCurrentNum();
 }
 
 s32 coopPartnerAlive(void)
 {
     s32 count = getPlayerCount();
-    s32 cur = get_cur_playernum();
+    s32 cur = playerGetCurrentNum();
     s32 i;
 
     if (!g_CoopMode)
@@ -290,7 +290,7 @@ s32 getPlayerCount(void)
     return count;
 }
 
-void initBONDdataforPlayer(s32 player_num)
+void playerInit(s32 player_num)
 {
     s32 i;
     struct hand default_hand;
@@ -388,7 +388,7 @@ void initBONDdataforPlayer(s32 player_num)
     g_playerPointers[player_num]->vv_verta = -4.0f;
     // @bug
     // -229.1831 degrees = -4 radians
-    // This doesn't matter, because bondviewApplyVertaTheta overwrites vv_verta360 with the value from vv_verta
+    // This doesn't matter, because playerUpdateVertaTheta overwrites vv_verta360 with the value from vv_verta
     g_playerPointers[player_num]->vv_verta360 = -229.1831f;
     g_playerPointers[player_num]->speedverta = 0.0f;
     g_playerPointers[player_num]->vv_cosverta = 1.0f;
@@ -657,11 +657,11 @@ void initBONDdataforPlayer(s32 player_num)
     g_playerPointers[player_num]->field_2A70 = NULL;
 
     g_VisibleToGuardsFlag = TRUE;
-    obj_collision_flag = TRUE;
+    g_PlayerCollisionOn = TRUE;
 }
 
 
-void set_cur_player(s32 playernum)
+void playerSetCurrent(s32 playernum)
 {
 #ifdef DEBUG
     assert(num>=0);
@@ -677,11 +677,11 @@ void set_cur_player(s32 playernum)
 }
 
 
-s32 get_cur_playernum(void) {
+s32 playerGetCurrentNum(void) {
     return player_num;
 }
 
-s32 getPlayerPointerIndex(PropRecord* prop)
+s32 playerGetIndexForProp(PropRecord* prop)
 {
     s32 i;
 
@@ -695,7 +695,7 @@ s32 getPlayerPointerIndex(PropRecord* prop)
 }
 
 
-void set_cur_player_screen_size(u32 width, u32 height) {
+void playerSetScreenSize(u32 width, u32 height) {
     #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
@@ -703,7 +703,7 @@ void set_cur_player_screen_size(u32 width, u32 height) {
   g_CurrentPlayer->viewy = height;
 }
 
-void set_cur_player_viewport_size(u32 ulx, u32 uly) {
+void playerSetViewportPos(u32 ulx, u32 uly) {
         #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
@@ -711,21 +711,21 @@ void set_cur_player_viewport_size(u32 ulx, u32 uly) {
   g_CurrentPlayer->viewtop = uly;
 }
 
-void set_cur_player_fovy(f32 fovy) {
+void playerSetFovY(f32 fovy) {
     #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
     g_CurrentPlayer->fovy = fovy;
 }
 
-void set_cur_player_aspect(f32 aspect) {
+void playerSetAspect(f32 aspect) {
     #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
     g_CurrentPlayer->aspect = aspect;
 }
 
-f32 get_cur_player_fovy(void) {
+f32 playerGetFovY(void) {
     #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
@@ -733,7 +733,7 @@ f32 get_cur_player_fovy(void) {
 }
 
 
-PROP getPropForHeldItem(ITEM_IDS arg0)
+PROP weaponGetChrModel(ITEM_IDS arg0)
 {
     PROP ret = -1;
     switch (arg0)
@@ -773,12 +773,12 @@ PROP getPropForHeldItem(ITEM_IDS arg0)
 }
 
 
-void sub_GAME_7F09B368(enum GUNHAND hand)
+void playerBodyRemoveGun(enum GUNHAND hand)
 {
-    chrSetWeaponFlag4(g_CurrentPlayer->prop->chr, hand);
+    chrRemoveHeldWeapon(g_CurrentPlayer->prop->chr, hand);
 }
 
-void sub_GAME_7F09B398(enum GUNHAND hand)
+void playerBodyGiveGun(enum GUNHAND hand)
 {
     ChrRecord *chr;
     enum ITEM_IDS wepid;
@@ -790,7 +790,7 @@ void sub_GAME_7F09B398(enum GUNHAND hand)
     if (chr->weapons_held[hand] == NULL)
     {
         wepid = getCurrentPlayerWeaponId(hand);
-        prop = getPropForHeldItem(wepid);
+        prop = weaponGetChrModel(wepid);
         if (prop >= 0)
         {
             flags = ((hand * 4) == 0)
@@ -801,7 +801,7 @@ void sub_GAME_7F09B398(enum GUNHAND hand)
     }
 }
 
-void shuffle_player_ids(void) {
+void playersShuffleOrder(void) {
     s32 i;
     u32 random;
     PLAYER_ID temp;
@@ -833,7 +833,7 @@ void shuffle_player_ids(void) {
     }
 }
 
-s32 get_player_position_in_shuffled(s32 current_player_num) {
+s32 playerGetShuffledIndex(s32 current_player_num) {
     s32 i;
     s32 position = 0;
 
@@ -854,7 +854,7 @@ s32 get_player_position_in_shuffled(s32 current_player_num) {
     return position;
 }
 
-s32 get_nth_player_from_shuffled(PLAYER_ID id)
+s32 playerGetShuffled(PLAYER_ID id)
 {
     s32 i;
 

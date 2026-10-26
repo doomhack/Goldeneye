@@ -1192,12 +1192,12 @@ void frontUpdateControlStickPosition(void) {
         cursor_h_pos += (f32)(( (f32)stickx * 0.075f - 0.5f) * g_GlobalTimerDelta);
     }
 
-    if ((getPlayer_c_screenleft() + getPlayer_c_screenwidth() - 20.0f) < cursor_h_pos) {
-        cursor_h_pos = (getPlayer_c_screenleft() + getPlayer_c_screenwidth() - 20.0f);
+    if ((camGetScreenLeft() + camGetScreenWidth() - 20.0f) < cursor_h_pos) {
+        cursor_h_pos = (camGetScreenLeft() + camGetScreenWidth() - 20.0f);
     }
     else {
-        if (cursor_h_pos < getPlayer_c_screenleft() + 20.0f) {
-            cursor_h_pos = getPlayer_c_screenleft() + 20.0f;
+        if (cursor_h_pos < camGetScreenLeft() + 20.0f) {
+            cursor_h_pos = camGetScreenLeft() + 20.0f;
         }
     }
 
@@ -1208,12 +1208,12 @@ void frontUpdateControlStickPosition(void) {
         cursor_v_pos += (f32)(( (f32)sticky * 0.075f - 0.5f) * g_GlobalTimerDelta);
     }
 
-    if ((getPlayer_c_screentop() + getPlayer_c_screenheight() - 20.0f) < cursor_v_pos) {
-        cursor_v_pos = (getPlayer_c_screentop() + getPlayer_c_screenheight() - 20.0f);
+    if ((camGetScreenTop() + camGetScreenHeight() - 20.0f) < cursor_v_pos) {
+        cursor_v_pos = (camGetScreenTop() + camGetScreenHeight() - 20.0f);
         return;
     }
-    if (cursor_v_pos < (getPlayer_c_screentop() + 20.0f)) {
-        cursor_v_pos = (getPlayer_c_screentop() + 20.0f);
+    if (cursor_v_pos < (camGetScreenTop() + 20.0f)) {
+        cursor_v_pos = (camGetScreenTop() + 20.0f);
     }
 }
 
@@ -2187,7 +2187,7 @@ void toggle_deletion_menu_for_folder(int index)
 {
   struct coord2d local_8;
 
-  transform3Dto2DCoords(&folderpositions_camspace[index],&local_8);
+  camViewToScreen(&folderpositions_camspace[index],&local_8);
   cursor_h_pos = local_8.x + -1.0f;
   cursor_v_pos = local_8.y + 20.0f;
 }
@@ -2520,7 +2520,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 
         folderworldpos = &folderpositions_camspace[foldernum];
 
-        transform3Dto2DCoords(folderworldpos, &folderpos2d);
+        camViewToScreen(folderworldpos, &folderpos2d);
 
         if (foldernum == folder_selected_for_deletion)
         {
@@ -7935,7 +7935,7 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     DL = frontSetupMenuBackground(DL);
     DL = microcode_constructor(DL);
 
-    missiontimer = getMissiontimer();
+    missiontimer = lvGetMissionTime60();
     killcount = get_curplay_killcount();
     shotsfired = get_curplayer_shot_register(0);
     headshots = get_curplayer_shot_register(1);
@@ -8679,9 +8679,9 @@ void interface_menu18_displaycast(void)
     viSetZRange(10.0f, 2000.0f);
     viSetUseZBuf(TRUE);
     viSetAspect(ASPECT_RATIO_SD);
-    set_cur_player_screen_size(440, 330);
+    playerSetScreenSize(440, 330);
     viSetViewSize(440, 330);
-    set_cur_player_viewport_size(0, 0);
+    playerSetViewportPos(0, 0);
     viSetViewPosition(0, 0);
 
     g_MenuTimer += g_ClockTimer;
@@ -9116,9 +9116,9 @@ void menu_init(void)
         viSetAspect(MENU_INIT_ASPECT_440);
         viSetXY(440, 330);
         viSetBuf(440, 330);
-        set_cur_player_screen_size(440, 330);
+        playerSetScreenSize(440, 330);
         viSetViewSize(440, 330);
-        set_cur_player_viewport_size(0, 0);
+        playerSetViewportPos(0, 0);
         viSetViewPosition(0, 0);
     }
     else
@@ -9126,9 +9126,9 @@ void menu_init(void)
         viSetAspect(MENU_INIT_ASPECT_320);
         viSetXY(320, SCREEN_HEIGHT);
         viSetBuf(320, SCREEN_HEIGHT);
-        set_cur_player_screen_size(320, SCREEN_HEIGHT);
+        playerSetScreenSize(320, SCREEN_HEIGHT);
         viSetViewSize(320, SCREEN_HEIGHT);
-        set_cur_player_viewport_size(0, 0);
+        playerSetViewportPos(0, 0);
         viSetViewPosition(0, 0);
     }
 

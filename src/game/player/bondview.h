@@ -26,7 +26,7 @@ typedef struct invitem_dual
 
 /**
  * We know this is a struct from the compiler auto-generated
- * code to copy structs in bondview.c bondviewKillCurrentPlayer.
+ * code to copy structs in bondview.c playerDie.
  *
  * sizeof == 84 (0x54)
  */
@@ -71,7 +71,7 @@ struct collision434 {
     coord3d pos;
 
     /**
-     * bondviewMoveAnimationTick calculates 4x4 view matrix transform and then writes rotation
+     * playerTickMoveAnim calculates 4x4 view matrix transform and then writes rotation
      * to this property and applied_view2. Removing the update to this property will fix
      * Bond's camera orientation such that Bond can still turn, but the camera is always
      * locked facing the starting position.
@@ -2500,7 +2500,7 @@ extern struct SetupIntroCamera *ptr_random06cam_entry;
 //D:800364C4
 extern s32 g_VisibleToGuardsFlag;
 //D:800364C8
-extern s32 obj_collision_flag;
+extern s32 g_PlayerCollisionOn;
 //D:800364CC
 extern f32 D_800364CC;
 //D:800364D0
@@ -2704,24 +2704,24 @@ extern s32 dword_CODE_bss_80079DA8[];
 
 
 
-PropRecord* getCurrentPlayerProp(void);
+PropRecord* currentPlayerGetProp(void);
 
 f32 currentPlayerGetHealth(void);
 f32 currentPlayerGetArmor(void);
 
 bool currentPlayerGetIsAiming(void);
 
-void currentPlayerSetScreenSize(f32 width, f32 height);
-void currentPlayerSetCameraScale(void);
-void currentPlayerSetScreenPosition(f32 left, f32 top);
-void currentPlayerSetPerspective(f32 near, f32 fovy, f32 aspect);
+void camSetScreenSize(f32 width, f32 height);
+void camUpdateScale(void);
+void camSetScreenPosition(f32 left, f32 top);
+void camSetPerspective(f32 near, f32 fovy, f32 aspect);
 
-f32 getPlayer_c_screenwidth(void);
-f32 getPlayer_c_screenheight(void);
-f32 getPlayer_c_screenleft(void);
-f32 getPlayer_c_screentop(void);
-f32 getPlayer_c_perspfovy(void);
-f32 getPlayer_c_perspaspect(void);
+f32 camGetScreenWidth(void);
+f32 camGetScreenHeight(void);
+f32 camGetScreenLeft(void);
+f32 camGetScreenTop(void);
+f32 camGetPerspFovY(void);
+f32 camGetPerspAspect(void);
 
 void currentPlayerSetXAutoAimEnabled(bool enabled);
 bool currentPlayerGetXAutoAimEnabled(void);
@@ -2731,45 +2731,45 @@ bool currentPlayerGetYAutoAimEnabled(void);
 bool currentPlayerGetYAutoAimEnabledRedirect(void);
 void currentPlayerSetLookAheadSetting(bool enabled);
 
-u32 bondviewGetCameraMode(void);
+u32 playerGetCameraMode(void);
 
-void bondviewTriggerWatchZoom(f32 zoominfovy);
+void watchZoomTo(f32 zoominfovy);
 
-void trigger_watch_zoom(f32 final, f32 time);
+void watchStartZoom(f32 final, f32 time);
 
-void set_open_close_solo_watch_menu_to1(void);
+void watchRequestToggle(void);
 
-void init_player_BONDdata(void);
-void bondviewPlayerBeginLife(void);
+void playerResetLife(void);
+void playerStartNewLife(void);
 
 
-void bondviewMovePlayerUpdateViewport(s8 arg0, s8 arg1, u16 arg2);
+void playerUpdate(s8 arg0, s8 arg1, u16 arg2);
 
 #if defined(BUGFIX_R1)
-#define HUDMESSAGEBOTTOM jp_hudmsgBottomShow
+#define HUDMESSAGEBOTTOM hudmsgBottomShowText
 void hudmsgBottomShow(char *string, s32 arg1, s32 arg2);
-void jp_hudmsgBottomShow(char *string);
+void hudmsgBottomShowText(char *string);
 #else
 // VERSION_US
 #define HUDMESSAGEBOTTOM hudmsgBottomShow
 void hudmsgBottomShow(char *string);
-void setFontTables(s32 arg0, s32 arg1);
+void hudmsgSetFonts(s32 arg0, s32 arg1);
 #endif
 
-Gfx * bondviewRenderDebugBondView(Gfx *arg0);
-s32 bond_pressed_reload_activate(void);
-Gfx* write_stan_tiles_in_yellow(Gfx *arg0);
-Gfx * maybe_mp_interface(Gfx *arg0);
+Gfx * camSetupFrame(Gfx *arg0);
+s32 playerPressedActivate(void);
+Gfx* stanDebugRenderTiles(Gfx *arg0);
+Gfx * hudRender(Gfx *arg0);
 Gfx * bondviewRemoved7F08BCB8(Gfx *arg0);
 bool camIsPosInScreen(coord3d *vec_scale, f32 norm_scale);
 bool camIsPosInScreenBox(coord3d *, f32, struct bbox2d *);
-s32 getMissiontimer(void);
-void solo_char_load(void);
-void bondviewUpdateYAutoAimTime(struct PropRecord *autoaim_target, f32 auto_aim_y);
-void bondviewUpdateXAutoAimTime(struct PropRecord *autoaim_target, f32 auto_aim_x);
-void bondviewSet3dCoord7F07CEB0(coord3d *arg0);
-f32 bondviewYPositionRelated(struct StandTile *arg0, f32 arg1, f32 arg2);
-void bondviewUpdatePlayerCollisionBounds(void);
+s32 lvGetMissionTime60(void);
+void playerLoadBody(void);
+void playerUpdateAutoAimY(struct PropRecord *autoaim_target, f32 auto_aim_y);
+void playerUpdateAutoAimX(struct PropRecord *autoaim_target, f32 auto_aim_x);
+void tankGetTurretDir(coord3d *arg0);
+f32 playerGetFloorY(struct StandTile *arg0, f32 arg1, f32 arg2);
+void playerUpdateCollisionBounds(void);
 void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle);
 void coopRespawnPlayer(void);
 void counterOpResetForStage(void);
@@ -2787,66 +2787,66 @@ s32 coopTankUsedByPartner(void);
 void coopTankBeginPlayer(void);
 void coopTankEndPlayer(s32 moved);
 extern s32 g_CoopCinemaPlayer;
-void bondviewCoopUpdateSoloView(void);
-f32 bondviewGetPlayerDuckingHeightRelated(struct player *player);
-void bondviewGetCollisionRadius(PropRecord* arg0, f32 *collision_radius, f32 *height, f32 *always_30);
-void bondviewUpdatePlayerY(s32 use_stanHeight, f32 stanHeight_offset);
+void coopUpdateSoloView(void);
+f32 playerGetEyeHeight(struct player *player);
+void playerGetCollisionSize(PropRecord* arg0, f32 *collision_radius, f32 *height, f32 *always_30);
+void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset);
 void currentPlayerSetFadeColour(s32 r, s32 g, s32 b, f32 frac);
 void currentPlayerSetFadeFrac(f32 maxfadetime, f32 frac);
-f32 bondviewGetPlayerStanHeight(struct player *player);
-void record_damage_kills(f32, f32, f32, s32, s32);
-void bondviewCallRecordDamageKills(f32 arg0, f32 rad, s32 arg2, s32 arg3);
-int bondviewGetIfCurrentPlayerDamageShowTime(void);
-int bondviewGetIfCurrentPlayerHealthShowTime(void);
-u8 bondviewGetCurrentPlayersRoom(void);
-coord3d *bondviewGetCurrentPlayersPosition(void);
-void bondviewUpdateGuardTankFlagsRelated(PropRecord *prop, s32 flag);
-void bondviewGetPropHeightRelatedValues(PropRecord *arg0, struct rect4f **field_B0, s32 *arg2, f32 *height_related, f32 *collision);
-void bondviewAddCurrentPlayerArmor(f32 arg0);
-void bondviewResetIntroCameraMessageDialogs(void);
+f32 playerGetStanHeight(struct player *player);
+void playerTakeDamage(f32, f32, f32, s32, s32);
+void playerTakeDamageFromAngle(f32 arg0, f32 rad, s32 arg2, s32 arg3);
+int playerIsShowingDamage(void);
+int playerIsShowingHealth(void);
+u8 playerGetRoom(void);
+coord3d *playerGetPos(void);
+void playerSetMoving(PropRecord *prop, s32 flag);
+void playerGetPropBounds(PropRecord *arg0, struct rect4f **field_B0, s32 *arg2, f32 *height_related, f32 *collision);
+void currentPlayerAddArmor(f32 arg0);
+void hudmsgResetIntroText(void);
 void hudmsgsSetOn(s32 flag);
 void hudmsgsSetOff(s32 flags);
-Gfx* bondviewGfxPlayerField5cMatrix(Gfx* gdl);
-Mtxf *currentPlayerGetViewToWorldMtxf(void);
-void sub_GAME_7F08BEEC(Mtxf *arg0, s32 arg1);
+Gfx* camLoadWorldToViewMtx(Gfx* gdl);
+Mtxf *camGetViewToWorldMtxf(void);
+void camMtxsToRoomSpace(Mtxf *arg0, s32 arg1);
 void currentPlayerStartChrFade(f32 duration60, f32 targetfrac);
-s32 bondviewGetVisibleToGuardsFlag(void);
-u8 get_bondata_invincible_flag(void);
-void set_bondata_invincible_flag(u32 arg0);
-void bondviewSetVisibleToGuardsFlag(s32 param_1);
-Mtxf *currentPlayerGetMatrix10EC(void);
+s32 playerGetVisibleToGuards(void);
+u8 playerGetInvincible(void);
+void playerSetInvincible(u32 arg0);
+void playerSetVisibleToGuards(s32 param_1);
+Mtxf *camGetPrevViewToWorldMtxf(void);
 void coopViewsBegin(void);
 void coopViewsEnd(s32 lastplayer);
 f32 bondviewGetPlayerYawRadians(void);
 Mtxf *camGetWorldToScreenMtxf(void);
-void transformAndNormalizeByLength2Dto3D(struct coord2d *in, coord3d *out, f32 value);
-void bondviewTransformManyPosToViewMatrix(RenderPosView *arg0, s32 arg1);
-s32 sub_GAME_7F078474(void);
-s32 get_BONDdata_field_10E0(void);
-Mtx *currentPlayerGetProjectionMatrix(void);
-Gfx *bondviewRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2);
-f32 getPlayer_c_lodscalez(void);
-f32 bondviewGetBondBreathing(void);
-void     bondviewClearUpperTextDisplayFlag(int param_1);
+void camScreenToViewDir(struct coord2d *in, coord3d *out, f32 value);
+void mtxsF2L(RenderPosView *arg0, s32 arg1);
+s32 camGetLookAt(void);
+s32 camGetProjViewMtx(void);
+Mtx *camGetProjectionMtx(void);
+Gfx *playerRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2);
+f32 camGetLodScaleZ(void);
+f32 playerGetBreathing(void);
+void     hudmsgTopClearFlag(int param_1);
 
-void     bondviewSetUpperTextDisplayFlag(PLAYERFLAG flag);
-void     bondviewSetCameraMode(s32 arg0);
-bool     isBondInTank(void);
+void     hudmsgTopSetFlag(PLAYERFLAG flag);
+void     playerSetCameraMode(s32 arg0);
+bool     playerIsInTank(void);
 void     hudmsgTopShow(char* string);
-void     SurroundWithExplosions(int delay);
-s32 check_watch_page_transistion_running(void);
-f32 bondviewWatchAnimationRelated(void);
-struct coord3d *getCurrentPlayerPrevPos(void);
-struct PropRecord *get_ptr_for_players_tank(void);
-s32 bondviewGetRandomSpawnPadIndex(void);
-void change_player_pos_to_target(struct collision434* arg0, struct coord3d *arg1, struct StandTile *arg2);
-void sub_GAME_7F089718(f32);
-void bondviewResetUpperTextDisplay(void);
-Mtxf *currentPlayerGetProjectionMatrixF(void);
-void transform3Dto2DCoords(coord3d *in, coord2d *out);
-void bondviewRemovePlayerBody(void);
+void     playerSurroundWithExplosions(int delay);
+s32 watchIsZooming(void);
+f32 watchGetOpenFrac(void);
+struct coord3d *playerGetPrevPos(void);
+struct PropRecord *playerGetTank(void);
+s32 playerChooseSpawnPad(void);
+void playerResetCollision(struct collision434* arg0, struct coord3d *arg1, struct StandTile *arg2);
+void playerSetWorldScale(f32);
+void hudmsgTopReset(void);
+Mtxf *camGetProjectionMtxf(void);
+void camViewToScreen(coord3d *in, coord2d *out);
+void playerRemoveBody(void);
 void currentPlayerAdjustFade(f32 maxfadetime, s32 r, s32 g, s32 b, f32 frac);
-void bondviewSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex);
-void sub_GAME_7F08976C(f32 param_1);
+void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex);
+void camSetPosScale(f32 param_1);
 
 #endif

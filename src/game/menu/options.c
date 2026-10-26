@@ -19,7 +19,7 @@
 #include "assets/obseg/text/LoptionE.h"
 
 // The controller that drives the watch: in co-op, the player who has it out.
-#define WATCH_PAD (g_CoopMode ? get_cur_playernum() : PLAYER_1)
+#define WATCH_PAD (g_CoopMode ? playerGetCurrentNum() : PLAYER_1)
 
 #define WATCH_BACKGROUND_VERTEX_COUNT 30
 
@@ -594,7 +594,7 @@ void set_draw_near_setting(u32 near)
 
 /**
  * Co-op: game_options_entries holds the current player's own options (look,
- * aim, sight, ammo, screen size). set_cur_player swaps them in, so the watch
+ * aim, sight, ammo, screen size). playerSetCurrent swaps them in, so the watch
  * and the cur_player_* getters see that player's values. Ratio, hi-res,
  * split screen and the fps counter are shared.
  */
@@ -821,14 +821,14 @@ void watch_screen0_navigation(void)
         {
             watch_screen_index = WATCH_INDEX_MISSION_BRIEFING;
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM1, 15.0f);
+            watchStartZoom(WATCHZOOM1, 15.0f);
         }
 
         if (goto_watch_screen_index_1)
         {
             watch_screen_index = WATCH_INDEX_INVENTORY;
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM1, 15.0f);
+            watchStartZoom(WATCHZOOM1, 15.0f);
             return;
         }
     }
@@ -881,7 +881,7 @@ void watch_screen1_navigation(void)
             watch_screen_index = WATCH_INDEX_MISSION_STATUS;
             zero_D_800409A4();
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM2, 15.0f);
+            watchStartZoom(WATCHZOOM2, 15.0f);
 
         }
 
@@ -890,7 +890,7 @@ void watch_screen1_navigation(void)
             watch_screen_index = WATCH_INDEX_CONTROL_OPTIONS;
             set_controlstick_lr_disabled();
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM3, 15.0f);
+            watchStartZoom(WATCHZOOM3, 15.0f);
         }
     }
 }
@@ -914,7 +914,7 @@ void unused_watch_screen_navigation(void) {
             watch_screen_index = WATCH_INDEX_CONTROL_OPTIONS;
             reset_controller_options_index();
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM3, 15.0f);
+            watchStartZoom(WATCHZOOM3, 15.0f);
         }
     }
 }
@@ -929,7 +929,7 @@ void watch_screen2_navigation(void) {
         {
             watch_screen_index = WATCH_INDEX_INVENTORY;
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM1, 15.0f);
+            watchStartZoom(WATCHZOOM1, 15.0f);
             return;
         }
     }
@@ -964,7 +964,7 @@ void watch_screen3_navigation(void) {
         {
             watch_screen_index = WATCH_INDEX_MISSION_BRIEFING;
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM1, 15.0f);
+            watchStartZoom(WATCHZOOM1, 15.0f);
         }
     }
 }
@@ -980,7 +980,7 @@ void watch_screen4_navigation(void) {
             watch_screen_index = WATCH_INDEX_GAME_OPTIONS;
             reset_game_options_index();
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM3, 15.0f);
+            watchStartZoom(WATCHZOOM3, 15.0f);
             return;
         }
     }
@@ -991,7 +991,7 @@ void watch_screen4_navigation(void) {
             watch_screen_index = WATCH_INDEX_MISSION_STATUS;
             zero_D_800409A4();
             sub_GAME_7F0A5210();
-            trigger_watch_zoom(WATCHZOOM2, 15.0f);
+            watchStartZoom(WATCHZOOM2, 15.0f);
         }
     }
 }
@@ -1572,7 +1572,7 @@ void sub_GAME_7F0A6A80(void)
 
     if (joyGetButtonsPressedThisFrame(WATCH_PAD, START_BUTTON))
     {
-        set_open_close_solo_watch_menu_to1();
+        watchRequestToggle();
     }
 
     if (controlstick_lr_enabled == 0)
@@ -1823,7 +1823,7 @@ Gfx *draw_background_health_and_armor(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
 
     scale = 1;
 
-    if (check_watch_page_transistion_running())
+    if (watchIsZooming())
     {
         scale = (g_CurrentPlayer->zoomintime * (g_CurrentPlayer->zoominfovynew - g_CurrentPlayer->zoominfovyold))
             / g_CurrentPlayer->zoomintimemax;
@@ -1848,7 +1848,7 @@ Gfx *draw_background_health_and_armor(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
 
         if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x4 || g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x6)
         {
-            scale = bondviewWatchAnimationRelated();
+            scale = watchGetOpenFrac();
         }
     }
 
@@ -1920,7 +1920,7 @@ Gfx *draw_background_health_and_armor(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
 
     /**
      * This section renders the green rectangles/page select at the bottom of the screen.
-     * This is setup in bondview trigger_solo_watch_menu.
+     * This is setup in bondview watchTrigger.
     */
     gDPSetRenderMode(gdl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
     gDPSetCombineMode(gdl++, G_CC_SHADE, G_CC_SHADE);
@@ -2278,7 +2278,7 @@ Gfx *draw_watch_mission_status_page(Gfx *gdl, Mtx *param_2)
 {
     gdl = draw_background_health_and_armor(gdl, param_2, 0);
 
-    if (check_watch_page_transistion_running() != 1)
+    if (watchIsZooming() != 1)
     {
         gdl = draw_text_q_watch_v201_beta(gdl);
         gdl = draw_text_mission_status(gdl);
@@ -2286,7 +2286,7 @@ Gfx *draw_watch_mission_status_page(Gfx *gdl, Mtx *param_2)
     }
     else
     {
-        check_watch_page_transistion_running();
+        watchIsZooming();
     }
 
     return gdl;
@@ -2362,7 +2362,7 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
 
     gdl = draw_background_health_and_armor(gdl, param_2, 0);
 
-    if (check_watch_page_transistion_running() != 1)
+    if (watchIsZooming() != 1)
     {
         sp924 = dynAllocateMatrix();
         sp894 = bondinvGet45AngleForIndex(g_curWatchItemIndex);
@@ -2575,7 +2575,7 @@ Gfx *unused_draw_watch_inventory_page(Gfx *gdl, Mtx *param_2) {
     long_name = bondinvGetLongNameByIndex(g_curWatchItemIndex);
     gdl = draw_background_health_and_armor(gdl, param_2, 0);
 
-    if (check_watch_page_transistion_running() != 1)
+    if (watchIsZooming() != 1)
     {
         temp_1 = D_800409C4;
         if (temp_1 > 0)
@@ -3585,7 +3585,7 @@ Gfx *draw_watch_control_options_page(Gfx *gdl, Mtx *param_2) {
 
     gdl = draw_background_health_and_armor(gdl, param_2, 0);
 
-    if (check_watch_page_transistion_running() != 1) {
+    if (watchIsZooming() != 1) {
 
         gdl = draw_watch_controller(gdl);
         pFontFile = ptrFontBankGothic;
@@ -3893,7 +3893,7 @@ Gfx *draw_watch_game_options_page(Gfx *gdl, Mtx *param_2) {
 
     gdl = draw_background_health_and_armor(gdl, param_2, 0);
 
-    if (check_watch_page_transistion_running() != 1)
+    if (watchIsZooming() != 1)
     {
         gdl = draw_music_volume_slider(gdl);
         gdl = draw_fx_volume_slider(gdl);
@@ -4022,7 +4022,7 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
 {
     gdl = draw_background_health_and_armor(gdl, param_2, 0);
 
-    if (check_watch_page_transistion_running() != 1)
+    if (watchIsZooming() != 1)
     {
         /**
          * spDAC, spDA4, spD68 are unused.
@@ -4130,7 +4130,7 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
                 sprintf(pageTitle, langGet(0xac3c));
 
                 // Counter-op: the guard player has one objective of their own.
-                s32 guardplayer = counterOpIsGuardPlayer(get_cur_playernum());
+                s32 guardplayer = counterOpIsGuardPlayer(playerGetCurrentNum());
 
                 for (i = 0; i < (guardplayer ? 1 : objectiveGetCount()); i++)
                 {
@@ -4268,7 +4268,7 @@ Gfx *draw_watch_current_page(Gfx *gdl, Mtx *arg1, s32 watch_transitioning)
 
     if (watch_transitioning == TRUE)
     {
-        set_BONDdata_outside_watch_menu_flag(FALSE);
+        playerSetOutsideWatchMenu(FALSE);
         sub_GAME_7F0BD8FC(0);
 
         // Handle A or Z button click when in any page but inventory page
@@ -4298,7 +4298,7 @@ Gfx *draw_watch_current_page(Gfx *gdl, Mtx *arg1, s32 watch_transitioning)
     else if (watch_transitioning == FALSE)
     {
         sub_GAME_7F0BD8FC(1);
-        set_BONDdata_outside_watch_menu_flag(TRUE);
+        playerSetOutsideWatchMenu(TRUE);
         gdl = draw_background_health_and_armor_transitioning(gdl, arg1);
     }
 

@@ -37,7 +37,7 @@ ModelRenderData D_8002A790 = {
 
 // forward declarations
 
-void sub_GAME_7F0062C0(void *anim, s32 arg1, s32 arg2, s32 *arg3);
+void bheadSumRootMotion(void *anim, s32 arg1, s32 arg2, s32 *arg3);
 
 // end forward declarations
 
@@ -53,7 +53,7 @@ void sub_GAME_7F0062C0(void *anim, s32 arg1, s32 arg2, s32 *arg3);
  *
  * Address 0x7F0062C0.
 */
-void sub_GAME_7F0062C0(void *anim, s32 arg1, s32 arg2, s32 *arg3)
+void bheadSumRootMotion(void *anim, s32 arg1, s32 arg2, s32 *arg3)
 {
     // todo: is this a struct? see: animReadRootMotion16
     s16 sp40[6];
@@ -84,7 +84,7 @@ void sub_GAME_7F0062C0(void *anim, s32 arg1, s32 arg2, s32 *arg3)
 #endif
 
 
-void sets_a_bunch_of_BONDdata_values_to_default(void)
+void bheadInit(void)
 {
     s32 i;
     s32 spD0[3];
@@ -159,7 +159,7 @@ void sets_a_bunch_of_BONDdata_values_to_default(void)
 
     for (i=0; i<2; i++)
     {
-        sub_GAME_7F0062C0(
+        bheadSumRootMotion(
             // match hack: addu address calculated backwards
             (void*)((s32)g_BondMoveAnimationSetup[i].anim_id + (s32)&ptr_animation_table->data),
             (s32)g_BondMoveAnimationSetup[i].loopframe,
