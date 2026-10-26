@@ -31,12 +31,12 @@ void init_menus_or_reset(void)
         menu_update = MENU_FILE_SELECT;
     }
 
-    ptr_logo_and_walletbond_DL = (u8 *)mempAllocBytesInBank(0x78000, MEMPOOL_STAGE); // allocation in bytes so cast to u8 from gfx
+    ptr_logo_and_walletbond_DL = (u8 *)mempAlloc(0x78000, MEMPOOL_STAGE); // allocation in bytes so cast to u8 from gfx
 
 #if defined(VERSION_EU)
-    ptr_menu_videobuffer = mempAllocBytesInBank(0x55040, MEMPOOL_STAGE);
+    ptr_menu_videobuffer = mempAlloc(0x55040, MEMPOOL_STAGE);
 #else
-    ptr_menu_videobuffer = mempAllocBytesInBank(0x4b040, MEMPOOL_STAGE);
+    ptr_menu_videobuffer = mempAlloc(0x4b040, MEMPOOL_STAGE);
 #endif
 
     ptr_menu_videobuffer = ALIGN64_V1(ptr_menu_videobuffer);

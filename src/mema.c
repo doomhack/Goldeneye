@@ -19,7 +19,7 @@
  * initialising the spaces array, the first element is set to the entire heap
  * and the remaining elements are set to 0.
  *
- * This creates a bit of a terminology problem. Just remember that a memaspace
+ * This creates a bit of a terminology problem. Just remember that a MemaSpace
  * is not an allocation; it's a free space that is available for allocation.
  *
  * Due to the ability to free individual allocations, both the heap and the
@@ -30,36 +30,36 @@
  */
 
 /* PAL shrank this to 125 to fit 4MB; with the Expansion Pak all versions use the NTSC size. */
-#define ALLOCATIONS_LENGTH 509
+#define MEMA_SLOTS 509
 
-typedef struct memaspace {
+typedef struct MemaSpace {
     s32 addr;
     u32 size;
-} memaspace;
+} MemaSpace;
 
 /**
  * This structure contains dummy entries before and after the spaces array.
  * These are used as start and end markers, but could have been avoided by
  * using loop counters (eg. a typical i < numspaces loop).
  */
-struct memaheap {
+struct MemaHeap {
 	u32 unk000;
     u32 unk004;
-	struct memaspace start;
+	struct MemaSpace start;
     //u32 unk010;
     //u32 unk014;
-	struct memaspace spaces[ALLOCATIONS_LENGTH - 1];
-	struct memaspace end1;
-	struct memaspace end2;
+	struct MemaSpace spaces[MEMA_SLOTS - 1];
+	struct MemaSpace end1;
+	struct MemaSpace end2;
 };
 
-s32 g_MemaHeapStart;
-s32 g_MemaHeapSize;
-struct memaheap g_MemoryAllocations;
-void *g_MemoryAllocationDebugData = NULL;
+s32 m_memaHeapStart;
+s32 m_memaHeapSize;
+struct MemaHeap m_memaHeap;
+void *m_memaDebug = NULL;
 
 // Swap two allocations.
-void memaSwap(memaspace *a, memaspace *b) {
+void memaSwap(MemaSpace *a, MemaSpace *b) {
     u32 tempaddr = a->addr;
     u32 tempsize = a->size;
     a->addr = b->addr;
@@ -69,7 +69,7 @@ void memaSwap(memaspace *a, memaspace *b) {
 }
 
 // Merge two allocations.
-void memaMerge(memaspace *a, memaspace *b) {
+void memaMerge(MemaSpace *a, MemaSpace *b) {
     a->size = (a->size + b->size);
     b->addr = 0;
     b->size = 0;
@@ -78,11 +78,11 @@ void memaMerge(memaspace *a, memaspace *b) {
 // Do a single iteration over the allocations and attempt to
 // merge adjacent ones. Return value indicates if there were
 // any merges.
-s32 memaDefragPass(struct memaheap *heap) {
+s32 memaDefragPass(struct MemaHeap *heap) {
     s32 any = FALSE;
-	struct memaspace *prev = &heap->start;
-	struct memaspace *curr = &heap->spaces[0];
-	struct memaspace *last = &heap->spaces[ALLOCATIONS_LENGTH - 2];
+	struct MemaSpace *prev = &heap->start;
+	struct MemaSpace *curr = &heap->spaces[0];
+	struct MemaSpace *last = &heap->spaces[MEMA_SLOTS - 2];
 
     u32 addr = 0;
     while (curr <= last) {
@@ -107,7 +107,7 @@ s32 memaDefragPass(struct memaheap *heap) {
 // mergable pairs left.
 void memaDefrag(void)
 {
-    while (memaDefragPass(&g_MemoryAllocations));
+    while (memaDefragPass(&m_memaHeap));
 }
 
 /**
@@ -116,10 +116,10 @@ void memaDefrag(void)
  * If none can be found, return the smallest run of free space so it can be
  * overwritten by the caller.
  */
-memaspace *memaSearch(struct memaheap *heap)
+MemaSpace *memaFindFreeSlot(struct MemaHeap *heap)
 {
-    struct memaspace *curr = &heap->spaces[0];
-	struct memaspace *best;
+    struct MemaSpace *curr = &heap->spaces[0];
+	struct MemaSpace *best;
 
     u32 min;
     s32 i;
@@ -128,8 +128,8 @@ memaspace *memaSearch(struct memaheap *heap)
 	// end. Though in most cases it's roughly in order anyway, and the excessive
 	// looping is just wasting CPU cycles. In reality this situation probably
 	// never occurs.
-    for (i = 0; i < (ALLOCATIONS_LENGTH - 1); i++) {
-        while (curr <= &heap->spaces[ALLOCATIONS_LENGTH - 2]) {
+    for (i = 0; i < (MEMA_SLOTS - 1); i++) {
+        while (curr <= &heap->spaces[MEMA_SLOTS - 2]) {
             if (curr->size == 0) {
                 return curr;
             }
@@ -159,7 +159,7 @@ memaspace *memaSearch(struct memaheap *heap)
 	// original run of free space to be unusable until the mema heap is reset.
     min = 0xFFFFFFFF;
     best = curr;
-    while (curr <= &heap->spaces[ALLOCATIONS_LENGTH - 2]) {
+    while (curr <= &heap->spaces[MEMA_SLOTS - 2]) {
         if (curr->size < min) {            
             best = curr;
             min = curr->size;
@@ -171,15 +171,15 @@ memaspace *memaSearch(struct memaheap *heap)
     return best;
 }
 
-void _memaFree(s32 addr, s32 size)
+void memaMarkFree(s32 addr, s32 size)
 {
     // Choose an index in the spaces array which we'll mark a space as free,
 	// based on how far into the heap the allocation is. This is a rough
 	// estimate and doesn't need to be any particular index, but the defrag
 	// function tries to order the spaces by address so the closer we get to it
 	// the less work the defrag function will have to do should it be called.
-    s32 index = ((addr - g_MemaHeapStart) * (ALLOCATIONS_LENGTH-1)) / g_MemaHeapSize;
-    struct memaspace *curr = &g_MemoryAllocations.spaces[index];
+    s32 index = ((addr - m_memaHeapStart) * (MEMA_SLOTS-1)) / m_memaHeapSize;
+    struct MemaSpace *curr = &m_memaHeap.spaces[index];
 
     // If the entry is taken, keep moving forward until a zero is found.
     while (curr->size != 0) {
@@ -188,14 +188,14 @@ void _memaFree(s32 addr, s32 size)
 
     // If we reached the end of the spaces list, go backwards instead
     if (curr->addr == -1) {
-        curr = &g_MemoryAllocations.spaces[index];
+        curr = &m_memaHeap.spaces[index];
 
         while (curr->size != 0) {
             curr--;
         }
 
         if (curr->addr == 0) {
-            curr = memaSearch(&g_MemoryAllocations);
+            curr = memaFindFreeSlot(&m_memaHeap);
         }
     }
 
@@ -207,36 +207,36 @@ void _memaFree(s32 addr, s32 size)
 // Initialize the (removed) debug features.
 void memaInit(void)
 {
-    debTryAdd(&g_MemoryAllocationDebugData, "mema_c_debug");
+    debTryAdd(&m_memaDebug, "mema_c_debug");
 }
 
 void memaReset(void *heapaddr, u32 heapsize)
 {
-   struct memaspace *space;
+   struct MemaSpace *space;
 
-    g_MemoryAllocations.unk000 = 0;
-    g_MemoryAllocations.unk004 = 0;
+    m_memaHeap.unk000 = 0;
+    m_memaHeap.unk004 = 0;
 
-	g_MemoryAllocations.start.addr = 0;
-	g_MemoryAllocations.start.size = 0;
+	m_memaHeap.start.addr = 0;
+	m_memaHeap.start.size = 0;
 
-	g_MemoryAllocations.end1.addr = 0xffffffff;
-	g_MemoryAllocations.end1.size = 0;
-	g_MemoryAllocations.end2.addr = 0xffffffff;
-	g_MemoryAllocations.end2.size = 0xffffffff;
+	m_memaHeap.end1.addr = 0xffffffff;
+	m_memaHeap.end1.size = 0;
+	m_memaHeap.end2.addr = 0xffffffff;
+	m_memaHeap.end2.size = 0xffffffff;
 
-	for (space = &g_MemoryAllocations.spaces[0]; space <= &g_MemoryAllocations.spaces[ALLOCATIONS_LENGTH - 2]; space++) {
+	for (space = &m_memaHeap.spaces[0]; space <= &m_memaHeap.spaces[MEMA_SLOTS - 2]; space++) {
 		space->addr = 0;
 		space->size = 0;
 	}
 
-	g_MemoryAllocations.spaces[0].addr = g_MemaHeapStart = (uintptr_t) heapaddr;
-	g_MemoryAllocations.spaces[0].size = g_MemaHeapSize = heapsize;
+	m_memaHeap.spaces[0].addr = m_memaHeapStart = (uintptr_t) heapaddr;
+	m_memaHeap.spaces[0].size = m_memaHeapSize = heapsize;
 }
 
 void memaSingleDefragPass(void)
 {
-    memaDefragPass(&g_MemoryAllocations);
+    memaDefragPass(&m_memaHeap);
 }
 
 
@@ -249,13 +249,13 @@ void *memaAlloc(u32 amount) {
     u32 diff;
     s32 i;
 
-    struct memaspace *curr;
+    struct MemaSpace *curr;
 	u32 bestdiff;
-	struct memaspace *best;
+	struct MemaSpace *best;
 
     if(1);
 
-	curr = &g_MemoryAllocations.spaces[0];
+	curr = &m_memaHeap.spaces[0];
 	bestdiff = 0xffffffff;
 	best = NULL;
 
@@ -286,10 +286,10 @@ void *memaAlloc(u32 amount) {
 
         if (curr->addr == 0xffffffff) {
             for (i = 0; i < 8; i++) {
-                memaDefragPass(&g_MemoryAllocations);
+                memaDefragPass(&m_memaHeap);
             }
 
-            curr = &g_MemoryAllocations.spaces[0];
+            curr = &m_memaHeap.spaces[0];
 
             while (curr->size < amount) {
                 curr++;
@@ -314,13 +314,13 @@ void *memaAlloc(u32 amount) {
     return (void*)addr;
 }
 
-// Find the memaspace of the given address and reduce its size by the given
+// Find the MemaSpace of the given address and reduce its size by the given
 // amount. If successful, return the same address, otherwise 0.
 s32 memaGrow(u32 addr, u32 amount)
 {
     u32        size = 0;
     s32        new_addr;
-    memaspace *curr;
+    MemaSpace *curr;
     short      __unused_1 = addr + 3;
     u32        __unused_2;
     s32        __unused_3;
@@ -330,7 +330,7 @@ s32 memaGrow(u32 addr, u32 amount)
     if (addr) {}
     if (__unused_1) {}
 
-    curr     = &g_MemoryAllocations.spaces[0];
+    curr     = &m_memaHeap.spaces[0];
     new_addr = addr;
     __unused_2 = !new_addr;
 
@@ -374,18 +374,18 @@ found:
 
 void memaFree(void *addr, s32 size)
 {
-	_memaFree((uintptr_t) addr, size);
+	memaMarkFree((uintptr_t) addr, size);
 }
 
 
-void mema7000A040(void)
+void memaCheckSpaces(void)
 {
     s32 i;
-    struct memaspace *curr;
+    struct MemaSpace *curr;
 
-    for (i=0; i<ALLOCATIONS_LENGTH - 1; i++)
+    for (i=0; i<MEMA_SLOTS - 1; i++)
     {
-        curr = &g_MemoryAllocations.spaces[i];
+        curr = &m_memaHeap.spaces[i];
 
         if (curr->addr)
         {
@@ -397,10 +397,10 @@ void mema7000A040(void)
 
 // Calculate the ratio between the sum of all allocations minus
 // the largest one, and the sum of all allocations.
-f32 memaCalculateNonLargestToTotalRatio(void) {
+f32 memaGetFragmentation(void) {
     u32 tot = 0;
     u32 max = 0;
-    memaspace *curr = &g_MemoryAllocations.spaces[0];
+    MemaSpace *curr = &m_memaHeap.spaces[0];
     while (curr->addr != -1) {
         tot += curr->size;
         if (max < curr->size) {
@@ -422,14 +422,14 @@ void memaDump(void)
     u32 tot = 0;
     s32 lim = (1 << 31);
     s32 count;
-    memaspace *curr;
+    MemaSpace *curr;
     char buffer[4096];
     u32 max;
     u32 acc;
 
     count = 0;
 
-    for (curr = &g_MemoryAllocations.spaces[0], tot = 0; curr->addr != -1; curr++)
+    for (curr = &m_memaHeap.spaces[0], tot = 0; curr->addr != -1; curr++)
     {
         tot += curr->size;
     }
@@ -438,7 +438,7 @@ void memaDump(void)
 
     for (max = 0, acc = 0; 1; lim = max, max = 0)
     {
-        for (curr = &g_MemoryAllocations.spaces[0]; curr->addr != -1; curr++)
+        for (curr = &m_memaHeap.spaces[0]; curr->addr != -1; curr++)
         {
             if ((curr->size < lim) && (curr->size > max))
             {
@@ -455,7 +455,7 @@ void memaDump(void)
         
         lim = max;
         
-        for (curr = &g_MemoryAllocations.spaces[0],acc=0; curr->addr != -1; curr++)
+        for (curr = &m_memaHeap.spaces[0],acc=0; curr->addr != -1; curr++)
         {
             if (curr->size == lim)
             {
@@ -484,14 +484,14 @@ void memaDump(void)
 void memaDumpPrePostMerge(void) {
     s32 i;    
     memaDump();
-    for (i = 0; i < (ALLOCATIONS_LENGTH-1); i++) {
-        memaDefragPass(&g_MemoryAllocations);
+    for (i = 0; i < (MEMA_SLOTS-1); i++) {
+        memaDefragPass(&m_memaHeap);
     }
     memaDump();
 }
 
-void mema7000A2F8(void (*func)(u32, memaspace*)) {
-    memaspace *curr = &g_MemoryAllocations.spaces[0];
+void memaForEachSpace(void (*func)(u32, MemaSpace*)) {
+    MemaSpace *curr = &m_memaHeap.spaces[0];
     while (curr->addr != -1) {
         func((curr->addr + curr->size), curr);
         curr++;
@@ -504,12 +504,12 @@ void mema7000A2F8(void (*func)(u32, memaspace*)) {
  */
 s32 memaGetLongestFree(void)
 {
-	struct memaspace *curr;
+	struct MemaSpace *curr;
 	s32 biggest = 0;
 
 	memaDefrag();
 
-	curr = &g_MemoryAllocations.spaces[0];
+	curr = &m_memaHeap.spaces[0];
 
 	while (curr->addr != -1) {
 		if (curr->size > biggest) {
@@ -527,8 +527,8 @@ s32 memaGetLongestFree(void)
 }
 
 /**
- * Resize an existing memaspace. Either by shrinking the old one, or
- * by registering a new memaspace containing the remaining bytes.
+ * Resize an existing MemaSpace. Either by shrinking the old one, or
+ * by registering a new MemaSpace containing the remaining bytes.
  * 
  * US address 7000A3DC.
 */

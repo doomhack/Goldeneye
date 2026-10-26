@@ -227,8 +227,8 @@ void langInit(void) {
     s32 i;
 
     if (j_text_trigger) {
-        g_JpnCharCachePixels = mempAllocBytesInBank(0x2E80, MEMPOOL_PERMANENT);
-        g_JpnCacheCacheItems = mempAllocBytesInBank(0x100, MEMPOOL_PERMANENT);
+        g_JpnCharCachePixels = mempAlloc(0x2E80, MEMPOOL_PERMANENT);
+        g_JpnCacheCacheItems = mempAlloc(0x100, MEMPOOL_PERMANENT);
         for(i = 0;i != 124;i++) {
             g_JpnCacheCacheItems[i].ttl =0;
             g_JpnCacheCacheItems[i].codepoint =-1;
@@ -238,13 +238,13 @@ void langInit(void) {
 	for (i = 0; i < 45; i++) {
 		g_LangBanks[i] = 0;
 	}
-    g_LangBanks[LGUN] = _fileNameLoadToBank(LnameX_lookuptable[LGUN][j_text_trigger], FILELOADMETHOD_DEFAULT, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LTITLE] = _fileNameLoadToBank(LnameX_lookuptable[LTITLE][j_text_trigger], FILELOADMETHOD_DEFAULT, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMPMENU] = _fileNameLoadToBank(LnameX_lookuptable[LMPMENU][j_text_trigger], FILELOADMETHOD_DEFAULT, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LPROPOBJ] = _fileNameLoadToBank(LnameX_lookuptable[LPROPOBJ][j_text_trigger], FILELOADMETHOD_DEFAULT, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMPWEAPONS] = _fileNameLoadToBank(LnameX_lookuptable[LMPWEAPONS][j_text_trigger], FILELOADMETHOD_DEFAULT, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LOPTIONS] = _fileNameLoadToBank(LnameX_lookuptable[LOPTIONS][j_text_trigger], FILELOADMETHOD_DEFAULT, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMISC] = _fileNameLoadToBank(LnameX_lookuptable[LMISC][j_text_trigger], FILELOADMETHOD_DEFAULT, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LGUN] = fileLoadByNameToPool(LnameX_lookuptable[LGUN][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LTITLE] = fileLoadByNameToPool(LnameX_lookuptable[LTITLE][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMPMENU] = fileLoadByNameToPool(LnameX_lookuptable[LMPMENU][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LPROPOBJ] = fileLoadByNameToPool(LnameX_lookuptable[LPROPOBJ][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMPWEAPONS] = fileLoadByNameToPool(LnameX_lookuptable[LMPWEAPONS][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LOPTIONS] = fileLoadByNameToPool(LnameX_lookuptable[LOPTIONS][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMISC] = fileLoadByNameToPool(LnameX_lookuptable[LMISC][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
 }
 
 
@@ -349,13 +349,13 @@ struct jpncharpixels *langGetJpnCharPixels(s32 codepoint)
 
 void langLoadToAddr(u32 id)
 {
-    g_LangBanks[id] = _fileNameLoadToBank(LnameX_lookuptable[id][j_text_trigger],1,0x100,MEMPOOL_STAGE);
+    g_LangBanks[id] = fileLoadByNameToPool(LnameX_lookuptable[id][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_STAGE);
 }
 
 
 void langLoadToBank(int id,u8 *target,int size)
 {
-    g_LangBanks[id] = _fileNameLoadToAddr(LnameX_lookuptable[id][j_text_trigger],1,target,size);
+    g_LangBanks[id] = fileLoadByNameToAddr(LnameX_lookuptable[id][j_text_trigger], FILELOAD_TRIM, target, size);
 }
 
 

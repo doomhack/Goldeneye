@@ -29,7 +29,7 @@ struct aaa {
 };
 
 
-u32 decompressdata(u8 *src, u8 *dst, struct huft *huffman_table)
+u32 rzipInflate(u8 *src, u8 *dst, struct huft *huffman_table)
 {
   s32 header_check;
   struct aaa *p = &rz_header_bytes;
@@ -69,7 +69,7 @@ u32 decompressdata(u8 *src, u8 *dst, struct huft *huffman_table)
 }
 
 
-s32 rzipGetSomething(void) {
+s32 rzipGetInputEnd(void) {
     return (rz_inbuf + rz_inptr);
 }
 

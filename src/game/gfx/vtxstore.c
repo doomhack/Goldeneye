@@ -102,10 +102,10 @@ void sub_GAME_7F09B820(void)
     }
 
     tmp = 0x14;
-    dword_CODE_bss_8007A0E8 = mempAllocBytesInBank(dword_CODE_bss_8007A0D4 * tmp, MEMPOOL_STAGE);
-    dword_CODE_bss_8007A0E0 = mempAllocBytesInBank(dword_CODE_bss_8007A0D0 * 0x10, MEMPOOL_STAGE);
-    dword_CODE_bss_8007A0EC = mempAllocBytesInBank(dword_CODE_bss_8007A0DC * tmp, MEMPOOL_STAGE);
-    dword_CODE_bss_8007A0E4 = mempAllocBytesInBank(dword_CODE_bss_8007A0D8 * 0x10, MEMPOOL_STAGE);
+    dword_CODE_bss_8007A0E8 = mempAlloc(dword_CODE_bss_8007A0D4 * tmp, MEMPOOL_STAGE);
+    dword_CODE_bss_8007A0E0 = mempAlloc(dword_CODE_bss_8007A0D0 * 0x10, MEMPOOL_STAGE);
+    dword_CODE_bss_8007A0EC = mempAlloc(dword_CODE_bss_8007A0DC * tmp, MEMPOOL_STAGE);
+    dword_CODE_bss_8007A0E4 = mempAlloc(dword_CODE_bss_8007A0D8 * 0x10, MEMPOOL_STAGE);
 
     word_CODE_bss_8007A0F0 = (s16) dword_CODE_bss_8007A0D0;
     dword_CODE_bss_8007A0E8->unk00 = dword_CODE_bss_8007A0E0;

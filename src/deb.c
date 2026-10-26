@@ -54,7 +54,7 @@ u8 *debAllocate(s32 size) {
     {
         curr -= size;
         *pos = curr;
-        return mempAllocBytesInBank(size, MEMPOOL_PERMANENT);
+        return mempAlloc(size, MEMPOOL_PERMANENT);
     }
     else
     {

@@ -221,9 +221,9 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
             return j * 0;
         }
 
-        decompressdata(img_curpos, &scratch2, (struct huft *)&scratch);
+        rzipInflate(img_curpos, &scratch2, (struct huft *)&scratch);
         imagebytesout = texAlignIndices(scratch2, width, height, format, &dst[totalbytesout]);
-        texSetBitstring(rzipGetSomething());
+        texSetBitstring(rzipGetInputEnd());
 
         if ((arg2 == 1) && (forcenumimages > 0))
         {

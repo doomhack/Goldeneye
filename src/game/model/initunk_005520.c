@@ -35,7 +35,7 @@ void modelmgrAllocateModelSlots(s32 numobjs)
 
     g_MaxModelSlots = numobjs + MODEL_SPARE_SLOTS;
     
-    g_ModelSlots = mempAllocBytesInBank(g_MaxModelSlots * sizeof(struct ModelSlot), MEMPOOL_STAGE);
+    g_ModelSlots = mempAlloc(g_MaxModelSlots * sizeof(struct ModelSlot), MEMPOOL_STAGE);
 
     for (i = 0; i < g_MaxModelSlots; i++)
     {
@@ -47,7 +47,7 @@ void modelmgrAllocateModelSlots(s32 numobjs)
         }
         else
         {
-            g_ModelSlots[i].unk10 = mempAllocBytesInBank(MODEL_SPARE_RWDATALEN * sizeof(u32), MEMPOOL_STAGE);
+            g_ModelSlots[i].unk10 = mempAlloc(MODEL_SPARE_RWDATALEN * sizeof(u32), MEMPOOL_STAGE);
             g_ModelSlots[i].unk02 = MODEL_SPARE_RWDATALEN;
         }
     }
@@ -64,9 +64,9 @@ void modelmgrAllocateAnimModelSlots(s32 numanimated)
 
     g_MaxAnimModelSlots = numanimated + ANIM_MODEL_SPARE_SLOTS;
 
-    // mips2c says: g_AnimModelSlots = mempAllocBytesInBank(temp_t6 * 0xC0, 4);
+    // mips2c says: g_AnimModelSlots = mempAlloc(temp_t6 * 0xC0, 4);
     // however, the pointer is incremented by 0xbc in the loop below.
-    g_AnimModelSlots = mempAllocBytesInBank(g_MaxAnimModelSlots * (4 + sizeof(struct AnimModelSlot)), MEMPOOL_STAGE);
+    g_AnimModelSlots = mempAlloc(g_MaxAnimModelSlots * (4 + sizeof(struct AnimModelSlot)), MEMPOOL_STAGE);
 
     for (i = 0; i < g_MaxAnimModelSlots; i++)
     {
@@ -78,7 +78,7 @@ void modelmgrAllocateAnimModelSlots(s32 numanimated)
         }
         else
         {
-            g_AnimModelSlots[i].unk10 = mempAllocBytesInBank(ANIM_MODEL_SPARE_RWDATALEN * sizeof(u32), MEMPOOL_STAGE);
+            g_AnimModelSlots[i].unk10 = mempAlloc(ANIM_MODEL_SPARE_RWDATALEN * sizeof(u32), MEMPOOL_STAGE);
             g_AnimModelSlots[i].unk02 = ANIM_MODEL_SPARE_RWDATALEN;
         }
     }

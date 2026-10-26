@@ -6,6 +6,7 @@
 #include "game/model/math_unk_05A9E0.h"
 #include "game/model/model.h"
 #include "game/asset/ob.h"
+#include <memp.h>
 #include "game/model/objecthandler.h"
 #include "game/math/quaternion.h"
 #include "game/gfx/tex.h"
@@ -33,8 +34,8 @@ void sub_GAME_7F0762E0(ModelFileHeader *objheader, u8 *name, u8 *dst, struct tex
     filedata = (s32) objheader->Switches;
     filenum = fileGetIndex((char *) name);
 
-    romremaining = get_rom_remaining_buffer_for_index(filenum);
-    pcremaining = get_pc_remaining_buffer_for_index(filenum);
+    romremaining = fileGetAllocSize(filenum);
+    pcremaining = fileGetLoadedSize(filenum);
     node = 0;
     modelIterateDisplayLists(objheader, &node, &gdl);
 
@@ -91,11 +92,11 @@ void load_object_fill_header(struct ModelFileHeader *objheader, u8 *name, u8* ds
 
     if (dst != 0)
     {
-        filedata = _fileNameLoadToAddr(name, 0, dst, size);
+        filedata = fileLoadByNameToAddr(name, FILELOAD_KEEP_SPARE, dst, size);
     }
     else
     {
-        filedata = _fileNameLoadToBank(name, 0, 0x100, 4);
+        filedata = fileLoadByNameToPool(name, FILELOAD_KEEP_SPARE, 0x100, MEMPOOL_STAGE);
     }
     
     objheader->Switches = (struct ModelNode **)filedata;

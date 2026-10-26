@@ -53,7 +53,7 @@ void zbufAllocate(void)
         }
     }
 
-    z_buffer = mempAllocBytesInBank((z_buffer_width * z_buffer_height * 2) + 64, MEMPOOL_STAGE);
+    z_buffer = mempAlloc((z_buffer_width * z_buffer_height * 2) + 64, MEMPOOL_STAGE);
     z_buffer = ALIGN64_V1(z_buffer);
     z_buffer_is_gameplay = (resolution == 0);
 }

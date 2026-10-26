@@ -143,7 +143,7 @@ void finalize_ramrom_on_hw(void)
 
     a1 = INDY_RAMROM_DEMO_POINTER;
 
-    ptr_active_demofile = romCopyAligned(ramrom_data_target, a1, 0xf0);
+    ptr_active_demofile = romCopyUnaligned(ramrom_data_target, a1, 0xf0);
     ptr_active_demofile->totaltime_ms = g_GlobalTimer - g_ClockTimer;
     ptr_active_demofile->filesize = (s32)address_demo_loaded - (s32)a1;
     romWrite(ptr_active_demofile, a1, 0xf0);
@@ -184,7 +184,7 @@ void load_ramrom_from_devtool(void)
     if (indycommHostCheckFileExists(&strDemoFileName, &size) != 0)
     {
         indycommHostRamRomLoad(&strDemoFileName, (u8 *)INDY_RAMROM_DEMO_ADDRESS, size);
-        ptr_active_demofile = romCopyAligned(&ramrom_data_target, (u8 *)INDY_RAMROM_DEMO_ADDRESS, sizeof(struct ramromfilestructure));
+        ptr_active_demofile = romCopyUnaligned(&ramrom_data_target, (u8 *)INDY_RAMROM_DEMO_ADDRESS, sizeof(struct ramromfilestructure));
     }
 }
 
@@ -340,12 +340,12 @@ void iterate_ramrom_entries_handle_camera_out(void)
     s32 temp_v1;
     s32 var_a3;
     
-    ramrom_blkbuf_2 = romCopyAligned(ramrom_data_target + 0x1F8, address_demo_loaded, sizeof(struct ramrom_seed));
+    ramrom_blkbuf_2 = romCopyUnaligned(ramrom_data_target + 0x1F8, address_demo_loaded, sizeof(struct ramrom_seed));
 
     var_a3 = ramrom_blkbuf_2->count;
     if (var_a3 > 0)
     {
-        ramrom_blkbuf_3 = romCopyAligned(
+        ramrom_blkbuf_3 = romCopyUnaligned(
             ramrom_data_target + 0x21E,
             address_demo_loaded + 4,
             ptr_active_demofile->size_cmds * sizeof(struct ramrom_blockbuf) * ramrom_blkbuf_2->count);
@@ -495,7 +495,7 @@ void stop_recording_ramrom(void)
 void replay_recorded_ramrom_at_address(ramromfilestructure *demofile)
 {
     address_demo_loaded = demofile;
-    ptr_active_demofile = romCopyAligned(&ramrom_data_target, address_demo_loaded, sizeof(struct ramromfilestructure));
+    ptr_active_demofile = romCopyUnaligned(&ramrom_data_target, address_demo_loaded, sizeof(struct ramromfilestructure));
     address_demo_loaded += sizeof(ramromfilestructure);
     g_ramromPlayBackFlag = 1;
     set_solo_and_ptr_briefing(ptr_active_demofile->stagenum);

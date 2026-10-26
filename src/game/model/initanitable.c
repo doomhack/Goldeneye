@@ -260,7 +260,7 @@ void alloc_load_expand_ani_table(void)
     
     animsDataSegmentSize = (s32)&_animation_dataSegmentEnd - (s32)&_animation_dataSegmentStart;
     
-    ptr_animation_table = mempAllocBytesInBank(animsDataSegmentSize, MEMPOOL_PERMANENT);
+    ptr_animation_table = mempAlloc(animsDataSegmentSize, MEMPOOL_PERMANENT);
 
     romCopy(ptr_animation_table, &_animation_dataSegmentRomStart, animsDataSegmentSize);
     expand_ani_table_entries((s32*)&animation_table_ptrs1);

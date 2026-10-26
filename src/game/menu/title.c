@@ -488,13 +488,13 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
     
     load_object_fill_header(c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Brosnan_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
     
-    temp_t9 = ((get_pc_buffer_remaining_value(c_item_entries[BODY_Brosnan_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    temp_t9 = ((fileGetLoadedSizeByName(c_item_entries[BODY_Brosnan_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= temp_t9;
     gfxBuffer += temp_t9;
     
     load_object_fill_header(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
     
-    temp_t9 = ((get_pc_buffer_remaining_value(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    temp_t9 = ((fileGetLoadedSizeByName(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= temp_t9;
     gfxBuffer += temp_t9;
     
@@ -522,7 +522,7 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
     modelSetAnimation(chrModelInstance, (struct ModelAnimation *) animation, 0, (f32) startframe, 0.91f, 0.0f);
     load_object_fill_header(PitemZ_entries[PROP_CHRWPPK].header, PitemZ_entries[PROP_CHRWPPK].filename, gfxBuffer, bufferSize, &texturePool);
     
-    temp_t9 = ((get_pc_buffer_remaining_value(PitemZ_entries[PROP_CHRWPPK].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    temp_t9 = ((fileGetLoadedSizeByName(PitemZ_entries[PROP_CHRWPPK].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= temp_t9;
     gfxBuffer += temp_t9;
     

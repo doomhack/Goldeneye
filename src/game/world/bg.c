@@ -6,6 +6,7 @@
 #include <deb.h>
 #include <fr.h>
 #include <memp.h>
+#include "game/asset/ob.h"
 #include "game/world/bg.h"
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
@@ -829,7 +830,7 @@ void load_bg_file(LEVEL_INDEX levelid)
     lightFixtureInitTables();
  
     ptr_bg_data = (s32)header;
-    obLoadBGFileBytesAtOffset(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) ptr_bg_data, 0, 0x40);
+    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) ptr_bg_data, 0, 0x40);
 
     if (((levelid && ptr_bg_data) && levelentry_index));
 
@@ -838,10 +839,10 @@ void load_bg_file(LEVEL_INDEX levelid)
  
     size = (((((u32) ptr_bgdata_room_fileposition_list[1].pPointTableBin) & 0x00ffffff) - 1) | 0xf) + 1;
  
-    ptr_bg_data = (s32) mempAllocBytesInBank(size, 4);
-    obLoadBGFileBytesAtOffset(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) ptr_bg_data, 0, size);
+    ptr_bg_data = (s32) mempAlloc(size, 4);
+    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) ptr_bg_data, 0, size);
  
-    gptr_stan = (s32) _fileNameLoadToBank(levelinfotable[levelentry_index].bg_stan_filename, 2, 0, 4);
+    gptr_stan = (s32) fileLoadByNameToPool(levelinfotable[levelentry_index].bg_stan_filename, FILELOAD_TRIM_2, 0, MEMPOOL_STAGE);
  
     stanDetermineEOF((struct StanPrefixRecord *) gptr_stan, 0, (u8 *) gptr_stan);
     stanLoadFile((struct StanPrefixRecord *) gptr_stan);
@@ -2239,7 +2240,7 @@ void roomsHandleStateDebugging(void)
 u32 bgDecompress(u8* source, u8 *target)
 {
     u8 buffer[0x2100];
-    return decompressdata(source, target, buffer);
+    return rzipInflate(source, target, buffer);
 }
 
 
@@ -2268,7 +2269,7 @@ s32 bgLoadRoomVtxData(s32 roomnum, u8 *dst, s32 len)
     * Adding 0xf1000000 strips the 0x0f000000 segment tag, yielding a file offset.
     */
     offset = (((u8 *)ptr_bgdata_room_fileposition_list[roomnum].pPointTableBin + ptr_bg_data) - ptr_bg_data) + 0xf1000000;
-    obLoadBGFileBytesAtOffset(levelinfotable[levelentry_index].bg_seg_filename, dst + (len - alignedsize), offset, alignedsize);
+    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, dst + (len - alignedsize), offset, alignedsize);
     result = bgDecompress(dst + (len - alignedsize), dst);
 
     room->vertices = (Vtx *)dst;
@@ -2313,7 +2314,7 @@ s32 bgLoadRoomPrimaryGdl(s32 roomnum, u8 *dst, s32 allocsize)
     fileoffset = (s32)((u8 *)ptr_bgdata_room_fileposition_list[roomnum].pPriMappingBin + ptr_bg_data) - ptr_bg_data;
     fileoffset += 0xf1000000;
 
-    obLoadBGFileBytesAtOffset(levelinfotable[levelentry_index].bg_seg_filename, scratch, fileoffset, size);
+    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, scratch, fileoffset, size);
 
     // Decompress from the end-of-buffer location at dst.
     expanded_size = bgDecompress(scratch, dst);
@@ -2378,7 +2379,7 @@ s32 bgLoadRoomSecondaryGdl(s32 roomnum, u8 *dst, s32 allocsize)
     fileoffset = (s32)((u8 *)ptr_bgdata_room_fileposition_list[roomnum].pSecMappingBin + ptr_bg_data)  - ptr_bg_data;
     fileoffset += 0xf1000000;
 
-    obLoadBGFileBytesAtOffset(levelinfotable[levelentry_index].bg_seg_filename, scratch, fileoffset, size);
+    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, scratch, fileoffset, size);
 
     // Decompress from the end-of-buffer location at dst.
     expanded_size = bgDecompress(scratch, dst);

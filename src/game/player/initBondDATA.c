@@ -235,11 +235,11 @@ void init_player_BONDdata_stats(void)
 
     sp24 = hand_data_dummy;
 
-    g_CurrentPlayer->ptr_hand_weapon_buffer[GUNRIGHT] = mempAllocBytesInBank(size_item_buffer[0], MEMPOOL_STAGE);
+    g_CurrentPlayer->ptr_hand_weapon_buffer[GUNRIGHT] = mempAlloc(size_item_buffer[0], MEMPOOL_STAGE);
 
     if (!isMpGame())
     {
-        g_CurrentPlayer->ptr_hand_weapon_buffer[GUNLEFT] = mempAllocBytesInBank(size_item_buffer[1], MEMPOOL_STAGE);
+        g_CurrentPlayer->ptr_hand_weapon_buffer[GUNLEFT] = mempAlloc(size_item_buffer[1], MEMPOOL_STAGE);
     }
 
     g_CurrentPlayer->hand_invisible[GUNRIGHT] = 0;

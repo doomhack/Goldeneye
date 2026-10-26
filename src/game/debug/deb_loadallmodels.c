@@ -64,7 +64,7 @@ void alloc_false_GUARDdata_to_exec_global_action(void)
         ChrRecord tmp;
 
         // Allocate BG chrs
-        g_ActiveChrs = mempAllocBytesInBank(ALIGN16_a(g_ActiveChrsCount * sizeof(ChrRecord)), MEMPOOL_STAGE);
+        g_ActiveChrs = mempAlloc(ALIGN16_a(g_ActiveChrsCount * sizeof(ChrRecord)), MEMPOOL_STAGE);
 
         // Initialise BG chrs
         i = 0;

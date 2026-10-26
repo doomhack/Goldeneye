@@ -13,17 +13,17 @@
  */
 
 //bss
-MemoryPool g_mempPools[MEMPOOL_COUNT];
+MemoryPool m_mempPools[MEMPOOL_COUNT];
 
 //data
-void *ptr_memp_c_debug_debug_notice_list = 0;
-s32 needmemallocation = 0;
+void *m_mempDebug = 0;
+s32 m_mempOverflowed = 0;
 s32 D_80024408 = 0;
 s32 D_8002440C = 0;
 s32 D_80024410 = 0;
 
 //overloaded
-struct s_mempMVALS sdefaultmvals = {
+struct MempPoolSizes m_mempDefaultSizes = {
     MEMPOOL_MF + 1,    0,  // MEMPOOL_MF
     MEMPOOL_ML + 1,    82, // MEMPOOL_ML
     MEMPOOL_ME + 1,    15, // MEMPOOL_ME
@@ -32,21 +32,21 @@ struct s_mempMVALS sdefaultmvals = {
 
 void mempInit(void)
 {
-    debTryAdd(&ptr_memp_c_debug_debug_notice_list, "memp_c_debug");
+    debTryAdd(&m_mempDebug, "memp_c_debug");
 }
 
 const char *tokenFind(s32 arg0, const char *arg1);
 long int strtol(const char *str, char **endptr, int base);
-void mempCheckMemflagTokens(s32 poolAreaStart, s32 poolAreaSize)
+void mempInitPools(s32 poolAreaStart, s32 poolAreaSize)
 {
-    s_mempMVALS poolSizes;
+    MempPoolSizes poolSizes;
 
     //set pool 0 to what boss wants (room_model_buffer)
     //pool 0 = TotalPoolArea
-    g_mempPools[MEMPOOL_TOTAL].start = poolAreaStart;
-    g_mempPools[MEMPOOL_TOTAL].end = poolAreaStart + poolAreaSize;
+    m_mempPools[MEMPOOL_TOTAL].start = poolAreaStart;
+    m_mempPools[MEMPOOL_TOTAL].end = poolAreaStart + poolAreaSize;
 
-    poolSizes = sdefaultmvals;
+    poolSizes = m_mempDefaultSizes;
 
     if (tokenFind(1, "-mf"))
     {
@@ -67,10 +67,10 @@ void mempCheckMemflagTokens(s32 poolAreaStart, s32 poolAreaSize)
         poolSizes.ml = poolAreaSize - poolSizes.me;
     }
 
-    mempSetBankStarts((s32*)&poolSizes);
+    mempSetPoolSizes((s32*)&poolSizes);
 }
 
-void mempSetBankStarts(s32 poolSizes[MEMPOOL_COUNT+1])
+void mempSetPoolSizes(s32 poolSizes[MEMPOOL_COUNT+1])
 {
     s32 i;
     s32 bankstarts[MEMPOOL_COUNT] = {0};
@@ -98,7 +98,7 @@ void mempSetBankStarts(s32 poolSizes[MEMPOOL_COUNT+1])
 
 
     mempRequested = bankstarts[MEMPOOL_COUNT - 1]; //total accumulated size of banks = poolAreaSize
-    mempLen  = (g_mempPools[MEMPOOL_TOTAL].end - g_mempPools[MEMPOOL_TOTAL].start);
+    mempLen  = (m_mempPools[MEMPOOL_TOTAL].end - m_mempPools[MEMPOOL_TOTAL].start);
 
     //for each bankstart, multiply by total pool size, then divide by size of banks 1-7
     //spread each bank evenly
@@ -115,13 +115,13 @@ void mempSetBankStarts(s32 poolSizes[MEMPOOL_COUNT+1])
     // {0,0,0,0,poolAreaSize - 303104, poolAreaSize - 303104, poolAreaSize}
 
 
-    mempStart = g_mempPools[MEMPOOL_TOTAL].start;
+    mempStart = m_mempPools[MEMPOOL_TOTAL].start;
     //for each bank 1-7, add new start position
     for (i = MEMPOOL_TOTAL; i < MEMPOOL_COUNT - 1; i++)
     {
-        g_mempPools[i + 1].start = bankstarts[i] + mempStart;
-        g_mempPools[i + 1].pos   = 0;
-        g_mempPools[i + 1].end   = bankstarts[i + 1] + mempStart;
+        m_mempPools[i + 1].start = bankstarts[i] + mempStart;
+        m_mempPools[i + 1].pos   = 0;
+        m_mempPools[i + 1].end   = bankstarts[i + 1] + mempStart;
     }
     /*
                            rel-start              size
@@ -136,19 +136,19 @@ void mempSetBankStarts(s32 poolSizes[MEMPOOL_COUNT+1])
 }
 
 
-void *mempAllocBytesInBank(u32 bytes, u8 poolnum)
+void *mempAlloc(u32 bytes, u8 poolnum)
 {
     /*
      * Retain this address expression. Using
-     * &g_mempPools[poolnum] changes regalloc.
+     * &m_mempPools[poolnum] changes regalloc.
      */
-    MemoryPool *pool = (MemoryPool *)(((u8 **)g_mempPools) + ((poolnum * 2) << 1));
+    MemoryPool *pool = (MemoryPool *)(((u8 **)m_mempPools) + ((poolnum * 2) << 1));
     u8 *allocation = pool->pos;
 
 #ifdef DEBUG
     if ((poolnum < 0) || (4 < poolnum))
     {
-        osSyncPrintf("mempAllocBytesInBank from invalid heap %d!", poolnum);
+        osSyncPrintf("mempAlloc from invalid heap %d!", poolnum);
     }
 #endif
 
@@ -159,32 +159,32 @@ void *mempAllocBytesInBank(u32 bytes, u8 poolnum)
 
     if (pool->pos > pool->end)
     {
-        nulled_mempLoopAllMemBanks();
+        mempCheckPools();
 
         while (1);
     }
 
     if (pool->pos + bytes > pool->end)
     {
-        if (g_mempPools[MEMPOOL_PERMANENT].pos + bytes <= g_mempPools[MEMPOOL_PERMANENT].end)
+        if (m_mempPools[MEMPOOL_PERMANENT].pos + bytes <= m_mempPools[MEMPOOL_PERMANENT].end)
         {
             /*
              * There was probably debug code in the original that got mostly
              * stripped, but it still perturbs register allocation. These
              * statements fill t1/t3/t4 so the registers match.
              */
-            if (needmemallocation);
+            if (m_mempOverflowed);
             if (&D_8002440C == &D_80024408);
-            if (needmemallocation);
+            if (m_mempOverflowed);
             if (&D_80024410 == &D_80024408);
-            if (!needmemallocation);
+            if (!m_mempOverflowed);
 
-            needmemallocation = TRUE;
+            m_mempOverflowed = TRUE;
 
-            return mempAllocBytesInBank(bytes, MEMPOOL_PERMANENT);
+            return mempAlloc(bytes, MEMPOOL_PERMANENT);
         }
 
-        nulled_mempLoopAllMemBanks();
+        mempCheckPools();
 
         while (1);
     }
@@ -192,7 +192,7 @@ void *mempAllocBytesInBank(u32 bytes, u8 poolnum)
     pool->pos += bytes;
     pool->prevpos = allocation;
 
-    if (needmemallocation);
+    if (m_mempOverflowed);
 
     return allocation;
 }
@@ -201,19 +201,19 @@ void *mempAllocBytesInBank(u32 bytes, u8 poolnum)
 /**
  * Resize the most recent allocation in a pool without moving it.
  */
-MEMP_ADD_ENTRY_RESULT mempAddEntryOfSizeToBank(void *allocation, s32 newsize, u8 poolnum)
+MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newsize, u8 poolnum)
 {
     MemoryPool *pool;
     s32 origsize;
     s32 growsize;
 
-    if (needmemallocation && allocation == g_mempPools[MEMPOOL_PERMANENT].prevpos)
+    if (m_mempOverflowed && allocation == m_mempPools[MEMPOOL_PERMANENT].prevpos)
     {
         poolnum = MEMPOOL_PERMANENT;
     }
 
     allocation = (void *)(u64)allocation;
-    pool = &g_mempPools[poolnum];
+    pool = &m_mempPools[poolnum];
 
     if (pool->pos == 0)
     {
@@ -222,7 +222,7 @@ MEMP_ADD_ENTRY_RESULT mempAddEntryOfSizeToBank(void *allocation, s32 newsize, u8
 
     if (allocation != pool->prevpos)
     {
-        return MEMP_ADD_ENTRY_NOT_LAST_ALLOCATION;
+        return MEMP_RESIZE_NOT_LAST;
     }
 
     origsize = pool->pos - pool->prevpos;
@@ -231,58 +231,58 @@ MEMP_ADD_ENTRY_RESULT mempAddEntryOfSizeToBank(void *allocation, s32 newsize, u8
     if (growsize <= 0)
     {
         pool->pos += growsize;
-        return MEMP_ADD_ENTRY_SUCCESS;
+        return MEMP_RESIZE_OK;
     }
 
     if (pool->pos > pool->end)
     {
-        nulled_mempLoopAllMemBanks();
+        mempCheckPools();
         while (TRUE);
     }
 
     if (pool->pos + growsize > pool->end)
     {
-        nulled_mempLoopAllMemBanks();
+        mempCheckPools();
         while (TRUE);
     }
 
     pool->pos += growsize;
-    return MEMP_ADD_ENTRY_SUCCESS;
+    return MEMP_RESIZE_OK;
 }
 
-void nulled_mempLoopAllMemBanks(void) {
+void mempCheckPools(void) {
     u8 bank;
     for (bank = MEMPOOL_MF; bank < MEMPOOL_COUNT; bank++)
     {
     }
 }
 
-s32 mempGetBankSizeLeft(u8 bank) {
-    if (needmemallocation) {
+s32 mempGetFreeBytes(u8 bank) {
+    if (m_mempOverflowed) {
         bank = MEMPOOL_PERMANENT;
     }
 
-    if ((bank == MEMPOOL_STAGE) && (g_mempPools[MEMPOOL_STAGE].start == g_mempPools[MEMPOOL_STAGE].end))
+    if ((bank == MEMPOOL_STAGE) && (m_mempPools[MEMPOOL_STAGE].start == m_mempPools[MEMPOOL_STAGE].end))
     {
         bank = MEMPOOL_PERMANENT;
     }
 
-    return g_mempPools[bank].end - g_mempPools[bank].pos;
+    return m_mempPools[bank].end - m_mempPools[bank].pos;
 }
 
 // Last three bits contains the bank, the rest contains the size.
-u32 mempAllocPackedBytesInBank(u32 sizeandbank) {
-    return mempAllocBytesInBank((sizeandbank >> 3), (sizeandbank & 7));
+u32 mempAllocPacked(u32 sizeandbank) {
+    return mempAlloc((sizeandbank >> 3), (sizeandbank & 7));
 }
 
-void mempResetBank(u8 bank) {
-    g_mempPools[bank].prevpos = 0;
-    g_mempPools[bank].pos = g_mempPools[bank].start;
+void mempResetPool(u8 bank) {
+    m_mempPools[bank].prevpos = 0;
+    m_mempPools[bank].pos = m_mempPools[bank].start;
 }
 
-void mempNullNextEntryInBank(u8 bank) {
-    nulled_mempLoopAllMemBanks();
-    if (g_mempPools[bank].pos != 0) {
-        g_mempPools[bank].pos = 0;
+void mempClosePool(u8 bank) {
+    mempCheckPools();
+    if (m_mempPools[bank].pos != 0) {
+        m_mempPools[bank].pos = 0;
     }
 }

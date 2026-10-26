@@ -300,9 +300,9 @@ void initBONDdataforPlayer(s32 player_num)
 #endif
     default_hand = D_8003FDA0;
 #if defined(VERSION_US)
-    g_playerPointers[player_num] = mempAllocBytesInBank(0x2A80U, MEMPOOL_STAGE);
+    g_playerPointers[player_num] = mempAlloc(0x2A80U, MEMPOOL_STAGE);
 #elif defined(VERSION_EU)
-    g_playerPointers[player_num] = mempAllocBytesInBank(0x2A70U, MEMPOOL_STAGE);
+    g_playerPointers[player_num] = mempAlloc(0x2A70U, MEMPOOL_STAGE);
 #endif
 
 #ifdef DEBUG

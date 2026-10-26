@@ -503,7 +503,7 @@ void solo_char_load(void)
             bodyheader  = get_ptr_itemheader_in_hand(GUNRIGHT);
             *bodyheader = *c_item_entries[body].header;
             load_object_fill_header(bodyheader, (u8 *)c_item_entries[body].filename, weaponbuf0, size0, &pool);
-            cursor = get_pc_buffer_remaining_value((u8 *)c_item_entries[body].filename);
+            cursor = fileGetLoadedSizeByName((u8 *)c_item_entries[body].filename);
 
             do
             {
@@ -515,7 +515,7 @@ void solo_char_load(void)
                 if(1);
 
                 load_object_fill_header(headheader, (u8 *)c_item_entries[head].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
-                cursor = ALIGN64_V3(get_pc_buffer_remaining_value((u8 *)c_item_entries[head].filename) + cursor + 0x3f);
+                cursor = ALIGN64_V3(fileGetLoadedSizeByName((u8 *)c_item_entries[head].filename) + cursor + 0x3f);
                 model  = (Model *)(weaponbuf0 + cursor);
                 cursor = ALIGN64_V3(cursor + 0xfb);
                 modelCalculateRwDataLen(bodyheader);
@@ -584,7 +584,7 @@ void solo_char_load(void)
                 pitemheader  = get_ptr_itemheader_in_hand(GUNLEFT);
                 *pitemheader = *PitemZ_entries[prop].header;
                 load_object_fill_header(pitemheader, (u8 *)PitemZ_entries[prop].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
-                get_pc_buffer_remaining_value((u8 *)PitemZ_entries[prop].filename);
+                fileGetLoadedSizeByName((u8 *)PitemZ_entries[prop].filename);
                 modelCalculateRwDataLen(pitemheader);
             }
             else

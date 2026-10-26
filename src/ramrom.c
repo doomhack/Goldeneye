@@ -8,9 +8,9 @@
  */
 
 
-OSIoMesg memoryMesgMB;
-OSMesg memoryMesg;
-OSMesgQueue memoryMesgQueue;
+OSIoMesg m_romIoMesg;
+OSMesg m_romMesg;
+OSMesgQueue m_romQueue;
 
 /**
  * 6760	70005B60
@@ -20,28 +20,28 @@ OSMesgQueue memoryMesgQueue;
  */
 void romCreateMesgQueue(void)
 {
-    osCreateMesgQueue(&memoryMesgQueue, &memoryMesg, 1);
+    osCreateMesgQueue(&m_romQueue, &m_romMesg, 1);
 }
 
 /**
  * 6790	70005B90
- * doRomCopy
+ * romStartDma
  * invalidate cache and do pi dma
  */
-void doRomCopy(void *target, void *source, u32 size)
+void romStartDma(void *target, void *source, u32 size)
 {
     osInvalDCache(target, size);
-    osPiStartDma(&memoryMesgMB, OS_MESG_PRI_NORMAL, OS_READ, source, target, size, &memoryMesgQueue);
+    osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_READ, source, target, size, &m_romQueue);
 }
 
 /**
  * 67F0	70005BF0
- * romReceiveMesg
+ * romWaitDma
  * receives a message queue
  */
-void romReceiveMesg(void)
+void romWaitDma(void)
 {
-    osRecvMesg(&memoryMesgQueue, NULL, OS_MESG_BLOCK);
+    osRecvMesg(&m_romQueue, NULL, OS_MESG_BLOCK);
 }
 
 /**
@@ -67,8 +67,8 @@ static void romCopyBounced(u8 *target, u8 *source, u32 size)
     while (size != 0)
     {
         chunk = (size < ROM_BOUNCE_SIZE) ? size : ROM_BOUNCE_SIZE;
-        doRomCopy(romBounceBuffer, source, ALIGN16_a(chunk));
-        romReceiveMesg();
+        romStartDma(romBounceBuffer, source, ALIGN16_a(chunk));
+        romWaitDma();
         bcopy(romBounceBuffer, target, chunk);
         target += chunk;
         source += chunk;
@@ -91,8 +91,8 @@ void romCopy(void *target, void *source, u32 size)
 
     if (direct != 0)
     {
-        doRomCopy(target, source, direct);
-        romReceiveMesg();
+        romStartDma(target, source, direct);
+        romWaitDma();
     }
 
     if (direct != size)
@@ -104,10 +104,10 @@ void romCopy(void *target, void *source, u32 size)
 /**
  * 6844	70005C44
  * external
- * romCopyAligned
+ * romCopyUnaligned
  * aligns data, does a romCopy(), then returns aligned pointer to target
  */
-s32 romCopyAligned(void *target, void *source, s32 length)
+s32 romCopyUnaligned(void *target, void *source, s32 length)
 {
     s32 target_offset;
     s32 *target_aligned;
@@ -124,13 +124,13 @@ s32 romCopyAligned(void *target, void *source, s32 length)
 
 /**
  * 68A8	70005CA8
- * doRomWrite
+ * romStartWrite
  * actually writes to rom (buffer on Indy)
  */
-void doRomWrite(void *source, void *target, u32 size)
+void romStartWrite(void *source, void *target, u32 size)
 {
     osWritebackDCache(source, size);
-    osPiStartDma(&memoryMesgMB, OS_MESG_PRI_NORMAL, OS_WRITE, target, source, size, &memoryMesgQueue);
+    osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_WRITE, target, source, size, &m_romQueue);
 }
 
 /**
@@ -141,6 +141,6 @@ void doRomWrite(void *source, void *target, u32 size)
  */
 void romWrite(void *source, void *target, u32 size)
 {
-    doRomWrite(source, target, size);
-    romReceiveMesg();
+    romStartWrite(source, target, size);
+    romWaitDma();
 }
