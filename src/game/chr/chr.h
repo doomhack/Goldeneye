@@ -117,8 +117,8 @@ struct anim_group_info
 };
 
 extern s32 objectiveregisters1;
-extern ChrRecord* g_ActiveChrs;
-extern s32 g_ActiveChrsCount;
+extern ChrRecord* g_BgChrs;
+extern s32 g_NumBgChrs;
 
 extern f32 g_AiAccuracyModifier;
 extern f32 g_AiDamageModifier;

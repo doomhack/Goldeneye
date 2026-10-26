@@ -1,3 +1,11 @@
+/**
+ * Guard actions: what a guard is physically doing (ACT_STAND, ACT_PATROL, ACT_GOPOS,
+ * ACT_ATTACK, ACT_DIE...). Each action has a function that starts it and a tick function
+ * called from chrActionTick. Also sight checks, walking round obstacles, firing, taking
+ * shots, spawning guards at pads, and the background AI chrs (g_BgChrs) that run level
+ * scripts not tied to a guard.
+ * The chrTry* functions are the ones the AI commands call. See docs/subsystems/guards.md.
+ */
 #include <ultra64.h>
 #include <bondaicommands.h>
 #include <bondgame.h>
@@ -9547,11 +9555,12 @@ static void chrActionTickBody(ChrRecord *self)
 
 
 /**
- * Calls chrActionTick on all characters, and updates count of guards that have recently seen bond.
+ * Runs the background AI scripts (level scripts with no guard of their own), and updates
+ * the count of guards that have recently seen Bond.
  *
  * Address 0x7F03291C.
 */
-void chrsTick(void)
+void bgChrsTick(void)
 {
     s32 i;
     s32 max;
@@ -9559,9 +9568,9 @@ void chrsTick(void)
 
     max = chrsGetNumSlots();
 
-    for (i=0; i<g_ActiveChrsCount; i++)
+    for (i=0; i<g_NumBgChrs; i++)
     {
-        chrActionTick(&g_ActiveChrs[i]);
+        chrActionTick(&g_BgChrs[i]);
     }
 
     g_SeenBondRecentlyGuardCount = 0;
@@ -9863,11 +9872,11 @@ ChrRecord *chrFindById(ChrRecord *self, s32 guard_id)
 
     if (guard == NULL)
     {
-        for (i=0; i<g_ActiveChrsCount; i++)
+        for (i=0; i<g_NumBgChrs; i++)
         {
-            if (guard_id == g_ActiveChrs[i].chrnum)
+            if (guard_id == g_BgChrs[i].chrnum)
             {
-                guard = &g_ActiveChrs[i];
+                guard = &g_BgChrs[i];
                 break;
             }
         }

@@ -1,3 +1,7 @@
+/**
+ * Bodies and heads: loading their model files, building a chr's model from a body and a
+ * head, and choosing random bodies and heads for guards. See docs/subsystems/guards.md.
+ */
 #include <ultra64.h>
 #include <random.h>
 #include <bondtypes.h>

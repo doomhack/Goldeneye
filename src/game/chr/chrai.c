@@ -1,3 +1,9 @@
+/**
+ * The AI script interpreter. ai() runs a chr's (or object's) AI list from its saved
+ * offset until a command yields. The commands are defined in src/aicommands.def, which
+ * is included twice: once for the interpreter and once for aiCommandSize. Also the AI
+ * sound slots. See docs/subsystems/guards.md.
+ */
 #include "game/chr/chrai.h"
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"

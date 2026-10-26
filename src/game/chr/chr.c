@@ -1,3 +1,11 @@
+/**
+ * Guard slots and the per-frame guard tick. chrsAllocateSlots makes one ChrRecord per
+ * guard in the setup file plus spares for guards spawned in play. chrTick runs from the
+ * prop loop for each player's view; the first pass advances the guard (AI and action via
+ * chrActionTick, animation, moving with collision), every pass draws it. Also here:
+ * shot hit tests against the body, and hearing.
+ * See docs/subsystems/guards.md.
+ */
 #include <ultra64.h>
 #include <memp.h>
 #include "game/debug/deb_loadallmodels.h"
@@ -1084,14 +1092,14 @@ s32 objectiveregisters1 = 0;
  *
  * Address 0x8003097C.
 */
-ChrRecord* g_ActiveChrs = 0;
+ChrRecord* g_BgChrs = 0;
 
 /**
- * Number of items in g_ActiveChrs.
+ * Number of items in g_BgChrs.
  *
  * Adress 0x0x80030980.
 */
-s32 g_ActiveChrsCount = 0;
+s32 g_NumBgChrs = 0;
 
 /**
  * Default factor in chrGetRunAnimSpeed.

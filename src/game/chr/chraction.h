@@ -82,7 +82,7 @@ void chrTriggerFireWeapon(ChrRecord *arg0);
 s32 rayPassesNearPoint2d(coord3d *arg0, coord3d *arg1, coord3d *arg2, f32 arg3);
 s32 chrIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *targetpos, f32 range);
 void chrActionTick(ChrRecord *arg0);
-void chrsTick(void);
+void bgChrsTick(void);
 s32 chrSawTargetRecently(ChrRecord *arg0);
 s32 chrHeardTargetRecently(ChrRecord *arg0);
 ChrRecord *chrFindById(ChrRecord *arg0, s32);

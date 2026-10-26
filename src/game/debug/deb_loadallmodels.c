@@ -16,7 +16,7 @@
 
 //i belong in a header, probably to another file
 
-ChrRecord global_action_block_temp_buffer = { 0 };
+ChrRecord g_BgChrTemplate = { 0 };
 
 WeaponProjectileModels weapon_models_for_weapon_load = {
     PROJECTILES_TYPE_KNIFE, PROJECTILES_TYPE_GRENADE,
@@ -35,13 +35,13 @@ void init_obj_register_difficulty_vals(void) {
 }
 
 
-void alloc_false_GUARDdata_to_exec_global_action(void)
+void bgChrsInit(void)
 {
     s32 i;
     s32 count;
 
-    g_ActiveChrs = NULL;
-    g_ActiveChrsCount = 0;
+    g_BgChrs = NULL;
+    g_NumBgChrs = 0;
 
     if (!g_CurrentSetup.ailists) { return; }
 
@@ -53,18 +53,18 @@ void alloc_false_GUARDdata_to_exec_global_action(void)
     {
         if (g_CurrentSetup.ailists[i].ID >= 0x1000)
         {
-            g_ActiveChrsCount++;
+            g_NumBgChrs++;
         }
 
         i++;
     }
 
-    if (g_ActiveChrsCount > 0)
+    if (g_NumBgChrs > 0)
     {
         ChrRecord tmp;
 
         // Allocate BG chrs
-        g_ActiveChrs = mempAlloc(ALIGN16_a(g_ActiveChrsCount * sizeof(ChrRecord)), MEMPOOL_STAGE);
+        g_BgChrs = mempAlloc(ALIGN16_a(g_NumBgChrs * sizeof(ChrRecord)), MEMPOOL_STAGE);
 
         // Initialise BG chrs
         i = 0;
@@ -72,15 +72,15 @@ void alloc_false_GUARDdata_to_exec_global_action(void)
         {
             if (g_CurrentSetup.ailists[i].ID >= 0x1000)
             {
-                tmp = global_action_block_temp_buffer;
+                tmp = g_BgChrTemplate;
 
-                g_ActiveChrs[count] = tmp;
+                g_BgChrs[count] = tmp;
 
-                g_ActiveChrs[count].chrnum = 0xFE;
-                g_ActiveChrs[count].ailist = g_CurrentSetup.ailists[i].ailist;
-                g_ActiveChrs[count].aioffset = 0;
-                g_ActiveChrs[count].aireturnlist = -1;
-                g_ActiveChrs[count].actiontype = ACT_NULL;
+                g_BgChrs[count].chrnum = 0xFE;
+                g_BgChrs[count].ailist = g_CurrentSetup.ailists[i].ailist;
+                g_BgChrs[count].aioffset = 0;
+                g_BgChrs[count].aireturnlist = -1;
+                g_BgChrs[count].actiontype = ACT_NULL;
                 count++;
             }
 
