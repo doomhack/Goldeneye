@@ -38,7 +38,6 @@
       build/OUTCODE/src/game/chr/chrai.o (.rodata);
       build/OUTCODE/src/game/chr/chrprop.o (.rodata);
       build/OUTCODE/src/game/prop/propobj.o (.rodata);
-      build/OUTCODE/src/game/model/loadobjectmodel.o (.rodata);
       build/OUTCODE/src/game/mission/objective_status.o (.rodata);
       build/OUTCODE/src/game/math/physics.o (.rodata);
       build/OUTCODE/src/game/math/math_sincos.o (.rodata);

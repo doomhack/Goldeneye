@@ -38,7 +38,6 @@
       build/OUTCODE/src/game/chr/chrai.o (.bss);
       build/OUTCODE/src/game/chr/chrprop.o (.bss);
       build/OUTCODE/src/game/prop/propobj.o (.bss);
-      build/OUTCODE/src/game/model/loadobjectmodel.o (.bss);
       build/OUTCODE/src/game/mission/objective_status.o (.bss);
       build/OUTCODE/src/game/math/physics.o (.bss);
       build/OUTCODE/src/game/math/math_sincos.o (.bss);

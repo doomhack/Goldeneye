@@ -19,7 +19,7 @@
 #include "game/level/lv.h"
 #include "random.h"
 #include "game/math/trig.h"
-#include "game/model/loadobjectmodel.h"
+#include "game/prop/prop.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"

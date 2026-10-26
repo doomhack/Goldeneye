@@ -22,7 +22,7 @@
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "game/text/language.h"
-#include "game/model/loadobjectmodel.h"
+#include "game/prop/prop.h"
 #include "game/level/lv.h"
 #include "math.h"
 #include "game/math/trig.h"

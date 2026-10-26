@@ -19,7 +19,7 @@
 #include "game/level/lv.h"
 #include "random.h"
 #include "game/math/trig.h"
-#include "game/model/loadobjectmodel.h"
+#include "game/prop/prop.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
@@ -1608,7 +1608,6 @@ void gunInitProjectileObject(ObjectRecord *obj, coord3d *pos, StandTile *stan, M
         mtx4ScaleRows012(obj->model->scale, matrix);
         objChangeShading(obj, pos, matrix, stan);
 
-        // loadobjectmodel.c
         setupUpdateObjectRoomPosition(obj);
 
         chrobjCollisionRelated(obj);
