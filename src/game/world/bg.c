@@ -850,7 +850,7 @@ void load_bg_file(LEVEL_INDEX levelid)
     sub_GAME_7F0B4810(levelinfotable[levelentry_index].levelscale);
     stanSetLevelScale(levelinfotable[levelentry_index].levelscale);
     setDebugCameraScale(levelinfotable[levelentry_index].levelscale);
-    chrRemoved7F022E1C(levelinfotable[levelentry_index].levelscale);
+    chrRemovedUnused(levelinfotable[levelentry_index].levelscale);
  
     mCurrentLevelVisibilityScale = levelinfotable[levelentry_index].visibility;
  

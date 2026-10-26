@@ -1,4 +1,14 @@
+/**
+ * Guard slots and the per-frame guard tick. chrsAllocateSlots makes one ChrRecord per
+ * guard in the setup file plus spares for guards spawned in play. chrTick runs from the
+ * prop loop for each player's view; the first pass advances the guard (AI and action via
+ * chrActionTick, animation, moving with collision), every pass draws it. Also here:
+ * shot hit tests against the body, and hearing.
+ * See docs/subsystems/guards.md.
+ */
 #include <ultra64.h>
+#include <memp.h>
+#include "game/debug/deb_loadallmodels.h"
 #include <PR/gbi.h>
 #include <bondgame.h>
 #include <bondconstants.h>
@@ -54,15 +64,15 @@ f32  get_007_health_mod(void);
 // end forward declarations
 
 // data
-f32 animation_rate = 0;
-s32 D_8002C904 = 0;
+f32 g_ChrAnimRate = 0;
+s32 g_ChrDebugAnimOverride = 0;
 
 /**
  * Address 0x8002C908.
  */
-s32 g_AnimationTablePointerCountRelated = 0;
-s32 D_8002C90C = 0;
-s32 D_8002C910 = 0;
+s32 g_ChrDebugAnimIndex = 0;
+s32 g_ChrDebugPaused = 0;
+s32 g_ChrDebugStep = 0;
 
 /*
  * D:8002C914
@@ -93,9 +103,9 @@ struct ChrHitReaction g_HitReactionTable[] = {
 /* terminator         */ {0xFFFFFFFF               , 0,   0,   0.0,   0,  0,    0.0,  NULL,                 0,  NULL,                  0},
 };
 
-s32 D_8002CC58 = 0; // Set to 0 but otherwise never used.
-s32 show_patrols_flag = FALSE;
-s32 player1_guardID = 5000;
+s32 g_ChrUnused = 0; // Set to 0 but otherwise never used.
+s32 g_ChrShowPatrols = FALSE;
+s32 g_NextChrNum = 5000;
 ChrRecord *g_ChrSlots = 0;
 s32 g_NumChrSlots = 0;
 
@@ -1082,65 +1092,65 @@ s32 objectiveregisters1 = 0;
  *
  * Address 0x8003097C.
 */
-ChrRecord* g_ActiveChrs = 0;
+ChrRecord* g_BgChrs = 0;
 
 /**
- * Number of items in g_ActiveChrs.
+ * Number of items in g_BgChrs.
  *
  * Adress 0x0x80030980.
 */
-s32 g_ActiveChrsCount = 0;
+s32 g_NumBgChrs = 0;
 
 /**
- * Default factor in chrlvModelScaleAnimationRelated.
+ * Default factor in chrGetRunAnimSpeed.
  * Address 0x80030984.
 */
 f32 D_80030984 = 0;
 
 /**
- * Scale factor in chrlvModelScaleAnimationRelated, used by ANIM_DATA_running.
+ * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_running.
  * Address 0x80030988.
 */
 f32 D_80030988 = 0;
 
 /**
- * Scale factor in chrlvModelScaleAnimationRelated, used by ANIM_DATA_sprinting.
+ * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_sprinting.
  * Address 0x8003098C.
 */
 f32 D_8003098C = 0;
 
 /**
- * Scale factor in chrlvModelScaleAnimationRelated, used by ANIM_DATA_walking_unarmed.
+ * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_walking_unarmed.
  * Address 0x80030990.
 */
 f32 D_80030990 = 0;
 
 /**
- * Scale factor in chrlvModelScaleAnimationRelated, used by ANIM_DATA_running_one_handed_weapon.
+ * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_running_one_handed_weapon.
  * Address 0x80030994.
 */
 f32 D_80030994 = 0;
 
 /**
- * Scale factor in chrlvModelScaleAnimationRelated, used by first ANIM_DATA_sprinting_one_handed_weapon.
+ * Scale factor in chrGetRunAnimSpeed, used by first ANIM_DATA_sprinting_one_handed_weapon.
  * Address 0x80030998.
 */
 f32 D_80030998 = 0;
 
 /**
- * Scale factor in chrlvModelScaleAnimationRelated, used by ANIM_DATA_walking_female.
+ * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_walking_female.
  * Address 0x8003099C.
 */
 f32 D_8003099C = 0;
 
 /**
- * Scale factor in chrlvModelScaleAnimationRelated, used by ANIM_DATA_running_female.
+ * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_running_female.
  * Address 0x800309A0.
 */
 f32 D_800309A0 = 0;
 
 /**
- * Scale factor in chrlvModelScaleAnimationRelated, used by duplicate ANIM_DATA_sprinting_one_handed_weapon.
+ * Scale factor in chrGetRunAnimSpeed, used by duplicate ANIM_DATA_sprinting_one_handed_weapon.
  * Address 0x800309A4.
 */
 f32 D_800309A4 = 0;
@@ -1171,27 +1181,27 @@ point2d D_800309E0 = {0, 0};
 point2d D_800309E8 = {0, 0};
 
 
-s32 get_numguards(void)
+s32 chrsGetNumSlots(void)
 {
   return g_NumChrSlots;
 }
 
 
-void get_ptr_allocated_block_for_vertices(int param_1)
+void dynAllocateVerticesDiscard(int param_1)
 {
   dynAllocate(param_1 << 4);
 }
 
 
-void set_show_patrols_flag(s32 flag)
+void chrSetShowPatrols(s32 flag)
 {
-  show_patrols_flag = flag;
+  g_ChrShowPatrols = flag;
 }
 
 
-s32 get_show_patrols_flag(void)
+s32 chrGetShowPatrols(void)
 {
-  return show_patrols_flag;
+  return g_ChrShowPatrols;
 }
 
 
@@ -1200,7 +1210,7 @@ s32 get_show_patrols_flag(void)
  *
  * Address 0x7F01F574.
  */
-f32 chrUnusedYPositionRelated(PropRecord *arg0)
+f32 chrGetGroundYUnused(PropRecord *arg0)
 {
     if (arg0->stan != 0)
     {
@@ -1230,7 +1240,7 @@ void chrSetMoving(ChrRecord *self, bool unset)
 }
 
 
-StandTile *sub_GAME_7F01F614(ChrRecord *guard, StandTile *stan, coord3d *src, coord3d *dst, s32 updateLastMoveOk)
+StandTile *chrMoveWithCollision(ChrRecord *guard, StandTile *stan, coord3d *src, coord3d *dst, s32 updateLastMoveOk)
 {
     StandTile *ret;
     StandTile *tile;
@@ -1404,7 +1414,7 @@ done:
 }
 
 
-s32 sub_GAME_7F01FC10(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
+s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
 {
     ChrRecord *chr;
     s32 moved;
@@ -1449,7 +1459,7 @@ s32 sub_GAME_7F01FC10(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
         dst->x += chr->fallspeed.x * g_GlobalTimerDelta;
         dst->z += chr->fallspeed.z * g_GlobalTimerDelta;
 
-        tile = sub_GAME_7F01F614(chr, chr->prop->stan, src, dst, 1);
+        tile = chrMoveWithCollision(chr, chr->prop->stan, src, dst, 1);
 
         if (tile != NULL)
         {
@@ -1594,7 +1604,7 @@ f32 chrGetArmor(ChrRecord *chr)
 }
 
 
-PropRecord *init_GUARDdata_with_set_values(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg3, StandTile *arg4, struct AIListRecord *arg5)
+PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg3, StandTile *arg4, struct AIListRecord *arg5)
 {
     ChrRecord *var_s0;
     s32 var_v0;
@@ -1618,7 +1628,7 @@ PropRecord *init_GUARDdata_with_set_values(PropRecord *arg0, Model *arg1, struct
     arg0->pos.f[2] = arg2->f[2];
     arg0->stan = arg4;
 
-    modelSetRootMoveCallback(arg1, (s32) sub_GAME_7F01FC10);
+    modelSetRootMoveCallback(arg1, (s32) chrRootMoveCallback);
 
     arg1->unk00 = 0xA;
     arg1->chr = var_s0;
@@ -1627,13 +1637,13 @@ PropRecord *init_GUARDdata_with_set_values(PropRecord *arg0, Model *arg1, struct
     modelSetRootRotY(arg1, arg3);
 
     #if defined(VERSION_EU)
-    modelSetAnimPlaySpeed(arg1, animation_rate * 1.2f, 0.0f);
+    modelSetAnimPlaySpeed(arg1, g_ChrAnimRate * 1.2f, 0.0f);
     #else
-    modelSetAnimPlaySpeed(arg1, animation_rate, 0.0f);
+    modelSetAnimPlaySpeed(arg1, g_ChrAnimRate, 0.0f);
     #endif
 
-    var_s0->chrnum = (s16) player1_guardID;
-    player1_guardID += 1;
+    var_s0->chrnum = (s16) g_NextChrNum;
+    g_NextChrNum += 1;
     var_s0->headnum = 0;
     var_s0->bodynum = 0;
     var_s0->prop = arg0;
@@ -1721,7 +1731,7 @@ PropRecord *init_GUARDdata_with_set_values(PropRecord *arg0, Model *arg1, struct
     var_s0->chrwidth = 20.0f;
     var_s0->chrheight = 185.0f;
 
-    sub_GAME_7F01FC10(arg1, &arg0->pos, &arg0->pos, &var_s0->ground);
+    chrRootMoveCallback(arg1, &arg0->pos, &arg0->pos, &var_s0->ground);
     chrDetectRooms(var_s0);
 
     return arg0;
@@ -1740,7 +1750,7 @@ PropRecord * chrAllocate( Model * arg0, coord3d * arg1, f32 arg2,  StandTile * a
 
     if (ret != 0)
     {
-        ret = init_GUARDdata_with_set_values(ret, arg0, arg1, arg2, arg3, arg4);
+        ret = chrInit(ret, arg0, arg1, arg2, arg3, arg4);
     }
 
     return ret;
@@ -1750,7 +1760,7 @@ PropRecord * chrAllocate( Model * arg0, coord3d * arg1, f32 arg2,  StandTile * a
 /**
  * Address: 7F020414.
  */
-void chrpropCleanupForRemoval(PropRecord *prop)
+void chrFreeResources(PropRecord *prop)
 {
     ChrRecord *chr;
     Model *model;
@@ -1804,11 +1814,11 @@ void chrpropCleanupForRemoval(PropRecord *prop)
  * Address 0x7F020540 (VERSION_US, VERSION_JP).
  * Address 0x7F0203B4 (VERSION_EU).
  */
-void setAnimationRate(f32 arg0)
+void chrsSetAnimRate(f32 arg0)
 {
     s32 i;
 
-    animation_rate = arg0;
+    g_ChrAnimRate = arg0;
 
     for (i=0; i<g_NumChrSlots; i++)
     {
@@ -1816,18 +1826,18 @@ void setAnimationRate(f32 arg0)
         {
 #if defined(REFRESH_PAL)
 /* should reference D_80047E4C (1.2f) */
-            modelSetAnimPlaySpeed(g_ChrSlots[i].model, animation_rate * 1.2f, 600.0f);
+            modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate * 1.2f, 600.0f);
 #else
-            modelSetAnimPlaySpeed(g_ChrSlots[i].model, animation_rate, 600.0f);
+            modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate, 600.0f);
 #endif
         }
     }
 }
 
 
-f32 getAnimationRate(void)
+f32 chrsGetAnimRate(void)
 {
-  return animation_rate;
+  return g_ChrAnimRate;
 }
 
 
@@ -2187,7 +2197,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
         return;
     }
 
-    sideback = chrlvGetSubrotySideback(chr);
+    sideback = chrGetSubrotySideback(chr);
 
     if (xrot < 0.0f)
     {
@@ -2370,19 +2380,19 @@ s32 chrTick(PropRecord *prop)
 
     if ((!(chr->chrflags & CHRFLAG_HIDDEN)) || (chr->chrflags & CHRFLAG_00040000))
     {
-        if (D_8002C904)
+        if (g_ChrDebugAnimOverride)
         {
-            if (((ModelAnimation *)animation_table_ptrs1[g_AnimationTablePointerCountRelated]) != ((ModelAnimation *)1))
+            if (((ModelAnimation *)animation_table_ptrs1[g_ChrDebugAnimIndex]) != ((ModelAnimation *)1))
             {
-                if (modelGetAnim(model) != ((ModelAnimation *)animation_table_ptrs1[g_AnimationTablePointerCountRelated]))
+                if (modelGetAnim(model) != ((ModelAnimation *)animation_table_ptrs1[g_ChrDebugAnimIndex]))
                 {
-                    modelSetAnimation(model, (ModelAnimation *)animation_table_ptrs1[g_AnimationTablePointerCountRelated], 0, 0.0f, 0.5f, 0.0f);
+                    modelSetAnimation(model, (ModelAnimation *)animation_table_ptrs1[g_ChrDebugAnimIndex], 0, 0.0f, 0.5f, 0.0f);
                 }
             }
         }
         else if (!coopRepeat)
         {
-            chrlvActionTick(chr);
+            chrActionTick(chr);
 
             if (chr->model == NULL)
             {
@@ -2390,23 +2400,23 @@ s32 chrTick(PropRecord *prop)
             }
         }
 
-        if (D_8002C90C)
+        if (g_ChrDebugPaused)
         {
             tickamount = 0;
 
-            if (D_8002C910)
+            if (g_ChrDebugStep)
             {
                 tickamount = 1;
             }
 #ifdef DEBUG
-            osSyncPrintf("anim=%d frame=%f backy=%f\n", g_AnimationTablePointerCountRelated, chr->model->animframe1, (chr->aimendlshoulder * 360.0) / 6.283185);
+            osSyncPrintf("anim=%d frame=%f backy=%f\n", g_ChrDebugAnimIndex, chr->model->animframe1, (chr->aimendlshoulder * 360.0) / 6.283185);
 #endif
         }
     }
 
     if (chr->hidden & CHRHIDDEN_REMOVE)
     {
-        chrpropCleanupForRemoval(prop);
+        chrFreeResources(prop);
         return TICKOP_FREE;
     }
 
@@ -2846,7 +2856,7 @@ after_position_update:
             chr->hidden &= ~CHRHIDDEN_DROP_HELD_ITEMS;
         }
 
-        chrlvTriggerFireWeapon(chr);
+        chrTriggerFireWeapon(chr);
     }
 
     return TICKOP_NONE;
@@ -3574,7 +3584,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     chrCreateHitPuffs(bhit->prop, bhit->hitpart, &hitpos, &nearhitpos);
 
     // Apply damage to the character.
-    if (!handles_shot_actors(chr, bhit->hitpart, &shot->dir, shot->weapon, TRUE)) {
+    if (!chrTakeShot(chr, bhit->hitpart, &shot->dir, shot->weapon, TRUE)) {
         return;
     }
 
@@ -3661,36 +3671,36 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
  *
  * Address 0x7F022E1C.
  */
-void chrRemoved7F022E1C(f32 arg0)
+void chrRemovedUnused(f32 arg0)
 {
     // removed
 }
 
 
-void setanimationdebugflag(s32 param_1)
+void chrDebugSetAnimOverride(s32 param_1)
 {
-  D_8002C904 = param_1;
+  g_ChrDebugAnimOverride = param_1;
   return;
 }
 
 
 /**
- * Decrements g_AnimationTablePointerCountRelated.
+ * Decrements g_ChrDebugAnimIndex.
  * If less than zero, the variable will then be set to the
  * number of non-zero entries in animation_table_ptrs1.
  *
  * Address 0x7F022E30.
  */
-void chrDecrementAnimationTablePointerCount(void)
+void chrDebugPrevAnim(void)
 {
-    g_AnimationTablePointerCountRelated--;
+    g_ChrDebugAnimIndex--;
 
-    if (g_AnimationTablePointerCountRelated < 0)
+    if (g_ChrDebugAnimIndex < 0)
     {
         for (
-            g_AnimationTablePointerCountRelated = 0;
-            animation_table_ptrs1[g_AnimationTablePointerCountRelated+1] != 0;
-            g_AnimationTablePointerCountRelated++)
+            g_ChrDebugAnimIndex = 0;
+            animation_table_ptrs1[g_ChrDebugAnimIndex+1] != 0;
+            g_ChrDebugAnimIndex++)
         {
             // nothing to do.
         }
@@ -3699,19 +3709,19 @@ void chrDecrementAnimationTablePointerCount(void)
 
 
 /**
- * Decrements g_AnimationTablePointerCountRelated.
+ * Decrements g_ChrDebugAnimIndex.
  * If the entry in animation_table_ptrs1 at that index is zero
  * then the global variable will be set to zero.
  *
  * Address 0x7F022E90.
  */
-void chrIncrementAnimationTablePointerCount(void)
+void chrDebugNextAnim(void)
 {
-    g_AnimationTablePointerCountRelated++;
+    g_ChrDebugAnimIndex++;
 
-    if (animation_table_ptrs1[g_AnimationTablePointerCountRelated] == 0)
+    if (animation_table_ptrs1[g_ChrDebugAnimIndex] == 0)
     {
-        g_AnimationTablePointerCountRelated = 0;
+        g_ChrDebugAnimIndex = 0;
     }
 }
 
@@ -3719,14 +3729,14 @@ void chrIncrementAnimationTablePointerCount(void)
 /**
  * Address 0x7F022EC8.
  */
-void chrToggleD_8002C90C(void)
+void chrDebugTogglePause(void)
 {
-    D_8002C90C = !D_8002C90C;
+    g_ChrDebugPaused = !g_ChrDebugPaused;
 }
 
 
-void sub_GAME_7F022EE0(s32 param_1){
-  D_8002C910 = param_1;
+void chrDebugSetStep(s32 param_1){
+  g_ChrDebugStep = param_1;
 }
 
 
@@ -3747,7 +3757,7 @@ void chrCheckGuardsHeardSound(f32 noise)
         {
             if (chrGetDistanceToBond(&g_ChrSlots[i]) < g_ChrSlots[i].hearingscale * (noise * 100.0f))
             {
-                chrlvAlertGuardToPlayerPosition(&g_ChrSlots[i]);
+                chrAlertGuardToPlayerPosition(&g_ChrSlots[i]);
             }
         }
     }
@@ -3930,4 +3940,50 @@ s32 chrGetOnscreenRenderBounds(PropRecord *arg0, struct coord3d *arg1, struct co
     }
 
     return 0;
+}
+
+
+//consolidate with other align_addr_zero macro when cleaning up
+#define align_addr_zero(X) ((((X) + 0xF) | 0xF) ^ 0xF)
+
+void chrsInit(void) {
+    g_ChrAnimRate = 1.0f;
+    g_ChrDebugAnimOverride = 0;
+    g_ChrDebugAnimIndex = 0;
+    g_ChrDebugPaused = 0;
+    g_ChrDebugStep = 0;
+    g_ChrUnused = 0;
+    g_ChrShowPatrols = FALSE;
+    g_NextChrNum = 0x1388;
+    g_ChrSlots = 0;
+    g_NumChrSlots = 0;
+    init_obj_register_difficulty_vals();
+}
+
+void chrsAllocateSlots(s32 count)
+{
+    s32 i;
+    
+    g_NumChrSlots = count + 10; //special guards?
+
+    g_ChrSlots = mempAlloc(align_addr_zero(g_NumChrSlots * sizeof(ChrRecord)), MEMPOOL_STAGE);
+    for(i = 0; g_NumChrSlots > i; i++)
+    {
+        g_ChrSlots[i].model = 0;
+    }
+}
+
+
+void chrsFreeAll(void)
+{
+    int i;
+
+    for (i = 0; i < g_NumChrSlots; i++) {
+        if (g_ChrSlots[i].model != 0) {
+            chrFreeResources(g_ChrSlots[i].prop);
+            propDelist(g_ChrSlots[i].prop);
+            propDisable(g_ChrSlots[i].prop);
+            propFree(g_ChrSlots[i].prop);
+        }
+    }
 }

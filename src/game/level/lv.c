@@ -37,7 +37,8 @@
 #include "game/menu/mpmenu.h"
 #include "game/gfx/vtxstore.h"
 #include "game/model/jointlist.h"
-#include "game/chr/initguards.h"
+#include "game/chr/chr.h"
+#include "game/chr/body.h"
 #include "game/prop/setup.h"
 #include "game/world/initunk_007290.h"
 #include "game/menu/initcheattext.h"
@@ -473,7 +474,7 @@ void lvlStageLoad(s32 stage)
     propsInit();
     propsResetLevelState();
     objSoundsInit();
-    init_guards();
+    chrsInit();
     bodiesReset(stage);
     setupCreateProps(stage);
     explosionsInit();
@@ -859,7 +860,7 @@ Gfx* lvlRender(Gfx* DL)
                 }
             }
 
-            setanimationdebugflag(getDebugMode() == DEB_SELANIM);
+            chrDebugSetAnimOverride(getDebugMode() == DEB_SELANIM);
             DL = weaponRenderTracers(DL);
 
 #if defined(VERSION_EU)
@@ -1428,20 +1429,20 @@ void lvlManageMpGame(void)
             {
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
                 {
-                    chrDecrementAnimationTablePointerCount();
+                    chrDebugPrevAnim();
                 }
 
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS))
                 {
-                    chrIncrementAnimationTablePointerCount();
+                    chrDebugNextAnim();
                 }
 
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, L_TRIG))
                 {
-                    chrToggleD_8002C90C();
+                    chrDebugTogglePause();
                 }
 
-                sub_GAME_7F022EE0(joyGetButtons(PLAYER_1, R_TRIG) != 0);
+                chrDebugSetStep(joyGetButtons(PLAYER_1, R_TRIG) != 0);
             }
             break;
         }
@@ -1710,7 +1711,7 @@ void lvlUnloadStageTextData(void)
     }
 
     cheatDisableAllCheats();
-    cleanupGuardData();
+    chrsFreeAll();
     objSoundsStopAll();
     explosionsReset();
     glassResetShards();

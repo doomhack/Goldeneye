@@ -3,7 +3,8 @@
  * one from the free list, propActivate puts it on the active list, and propFree returns
  * it. Each frame:
  *
- * - propsTickOnce runs once: guard AI, weapon respawns, tracers, explosions and smoke.
+ * - propsTickOnce runs once: background AI scripts, weapon respawns, tracers, explosions
+ *   and smoke.
  * - For each player's view, propsTickPerPlayer ticks every active prop (chrTick, objTick,
  *   playerTick...), which also decide whether it is on screen; propsSortOnscreen sorts those far
  *   to near, and propsRenderPass draws them room by room.
@@ -777,7 +778,7 @@ void propsTickOnce(void)
     ObjectRecord *setupobj;
 
     // Advance AI states e.g. attacking, walking, dying, etc...
-    chrlvAllChrTick();
+    bgChrsTick();
 
     prop = propsGetActiveTail();
 
@@ -1032,7 +1033,7 @@ void propsTickPerPlayer(void)
     if (get_player_position_in_shuffled(get_cur_playernum()) == 0)
     {
         alarmGasTimerTick();
-        loop_set_sound_effect_all_slots();
+        aiSoundsTick();
         propsDefragRoomProps();
     }
 }

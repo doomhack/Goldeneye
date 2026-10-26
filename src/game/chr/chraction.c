@@ -1,3 +1,11 @@
+/**
+ * Guard actions: what a guard is physically doing (ACT_STAND, ACT_PATROL, ACT_GOPOS,
+ * ACT_ATTACK, ACT_DIE...). Each action has a function that starts it and a tick function
+ * called from chrActionTick. Also sight checks, walking round obstacles, firing, taking
+ * shots, spawning guards at pads, and the background AI chrs (g_BgChrs) that run level
+ * scripts not tied to a guard.
+ * The chrTry* functions are the ones the AI commands call. See docs/subsystems/guards.md.
+ */
 #include <ultra64.h>
 #include <bondaicommands.h>
 #include <bondgame.h>
@@ -13,7 +21,7 @@
 #include "game/player/bondhead.h"
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
-#include "game/chr/chr_b.h"
+#include "game/chr/body.h"
 #include "game/chr/chrai.h"
 #include "game/save/file.h"
 #include "game/menu/front.h"
@@ -38,283 +46,129 @@ point2d D_800309F0 = {0, 0};
 // forward declarations
 
 u32 weaponIsOneHanded            (PropRecord *arg0);
-void chrlvIdleAnimationRelated                (ChrRecord *self, f32 arg1);
-f32 chrlvGetGuard007SpeedRating               (ChrRecord *self, f32 min, f32 max);
-s32 chrlvGetGuard007SpeedRatingInt            (ChrRecord *self, s32 arg1);
-f32 chrlvGetGuard007ArghRating                (ChrRecord *self, f32 min, f32 max);
-void chrlvKneelingAnimationRelated            (ChrRecord *self);
-void chrlvIdleAnimationRelated7F023E14        (ChrRecord *self, f32 arg1);
-void chrlvKneelingAnimationRelated7F023E48    (ChrRecord *self);
+void chrStandChooseAnimation                (ChrRecord *self, f32 arg1);
+f32 chrGetGuard007SpeedRating               (ChrRecord *self, f32 min, f32 max);
+s32 chrGetGuard007SpeedRatingInt            (ChrRecord *self, s32 arg1);
+f32 chrGetGuard007ArghRating                (ChrRecord *self, f32 min, f32 max);
+void chrStand            (ChrRecord *self);
+void chrStandImmediateCheckWall        (ChrRecord *self, f32 arg1);
+void chrStandCheckWall    (ChrRecord *self);
 void chrKneelChooseAnimation                  (ChrRecord *self);
-void chrlvPerformAnimationForActor            (ChrRecord *self, s32 arg1, s32 arg2, s32 arg3, u8 arg4, s32 arg5);
+void chrStartAnim            (ChrRecord *self, s32 arg1, s32 arg2, s32 arg3, u8 arg4, s32 arg5);
 void chrStartAlarmChooseAnimation             (ChrRecord *self);
-void chrlvThrowGrenade                        (ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startframe);
-void chrlvSpotBondAnimationRelated            (ChrRecord *self, f32 arg1);
-void chrlvActorShuffleFeet                    (ChrRecord *self);
-void chrlvSurrenderAnimationRelated           (ChrRecord *self);
-void chrlvActorLookFlustered                  (ChrRecord *self);
-void chrlvActorThrowWeaponSurrender           (ChrRecord *self);
-void chrlvActorFadeAway                       (ChrRecord *self);
-void chrlvDeathStaggerAnimationRelated        (ChrRecord *self);
-void chrlvAttackActionRelated                 (ChrRecord *self);
-f32 chrlvDistanceToChrRelated                 (ChrRecord *self, s32 arg1, s32 arg2);
-f32 get_distance_actor_to_position            (ChrRecord *self, coord3d *arg1);
-f32 chrlvPathingCollisionRelated              (PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtypes, f32 unkHeight, f32 unkA);
-f32 chrlvPathingCollisionRelated7F0264B0      (PropRecord *arg0, f32 arg1, f32 arg2);
-void triggered_on_shot_hit                    (ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_id, ITEM_IDS item);
-s32 chrlvAttackAnimationRelated7F026F30       (ChrRecord *self, f32 *result);
-s32 chrlvStanRoomRelated                      (ChrRecord *self, coord3d *arg1, StandTile *tile);
-f32 chrlvModelScaleAnimationRelated           (ChrRecord *self);
-void chrlvActGoposRelated                     (ChrRecord *self, coord3d *arg1, StandTile **arg2);
-s32 chrlvMovementTargetRelated                (ChrRecord *self);
-waypoint *get_ptrpreset_in_table_matching_tile           (StandTile* tile);
-s32 check_if_any_path_preset_lies_on_tile     (StandTile* tile);
-f32 chrlvPadPresetRelated                     (coord3d *arg0, waypoint *arg1);
-waypoint *chrlvStanPathRelated                (coord3d *arg0, StandTile *arg1);
-s32 chrlvStanRoomRelatedPad                   (ChrRecord *self, PadRecord *arg1);
-void sub_GAME_7F025560                        (ChrRecord *self, s32 attack_type, s32 arg2);
-coord3d *chrlvGetChrOrPresetLocation          (ChrRecord *self, s32 flags, s32 lookup_id, StandTile **stan);
+void chrThrowGrenade                        (ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startframe);
+void chrSpotChooseAnimation            (ChrRecord *self, f32 arg1);
+void chrActorShuffleFeet                    (ChrRecord *self);
+void chrStartSurprised           (ChrRecord *self);
+void chrActorLookFlustered                  (ChrRecord *self);
+void chrActorThrowWeaponSurrender           (ChrRecord *self);
+void chrActorFadeAway                       (ChrRecord *self);
+void chrStaggerToWall        (ChrRecord *self);
+void chrAttackSetEndFrame                 (ChrRecord *self);
+f32 chrGetAngleToTarget                 (ChrRecord *self, s32 arg1, s32 arg2);
+f32 chrGetAngleToPos            (ChrRecord *self, coord3d *arg1);
+f32 chrGetClearDistInDir              (PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtypes, f32 unkHeight, f32 unkA);
+f32 chrGetClearDistInDirDefault      (PropRecord *arg0, f32 arg1, f32 arg2);
+void chrReactToHit                    (ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_id, ITEM_IDS item);
+s32 chrGetHitInterruptFrame       (ChrRecord *self, f32 *result);
+s32 chrPathIsOffscreen                      (ChrRecord *self, coord3d *arg1, StandTile *tile);
+f32 chrGetRunAnimSpeed           (ChrRecord *self);
+void chrGoPosGetCurWaypointInfo                     (ChrRecord *self, coord3d *arg1, StandTile **arg2);
+s32 chrGoPosCalculateBaseTtl                (ChrRecord *self);
+waypoint *waypointFindOnTile           (StandTile* tile);
+s32 waypointIsOnTile     (StandTile* tile);
+f32 waypointDistSqXz                     (coord3d *arg0, waypoint *arg1);
+waypoint *waypointFindNearPos                (coord3d *arg0, StandTile *arg1);
+s32 chrPathToPadIsOffscreen                   (ChrRecord *self, PadRecord *arg1);
+void chrAttackStand                        (ChrRecord *self, s32 attack_type, s32 arg2);
+coord3d *chrGetChrOrPresetLocation          (ChrRecord *self, s32 flags, s32 lookup_id, StandTile **stan);
 void chrStopFiring                            (ChrRecord *self);
-void sub_GAME_7F0281F4                        (ChrRecord *self);
-s32 plot_course_for_actor                     (ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed);
-void chrlvPlotCourseRelated                   (ChrRecord *self);
-void chrlvActGoposSetTargetPosRelated         (ChrRecord *self);
-void chrlvActGoposIncCurIndex                 (ChrRecord *self);
-void play_hit_soundeffect_and_proper_volume   (ChrRecord *self);
-void get_sound_at_range                       (ChrRecord *self, s32 arg1, s32 arg2);
-void chrlvSetGoposSegDistTotal                (ChrRecord *self, struct waydata *arg1, coord3d *arg2);
-void chrlvIterateGuardSeeShotDie              (ChrRecord *, s32);
-s32 chrlvCall7F02982C                         (PropRecord *arg0, coord3d *arg1, f32 arg2);
-void chrlvTickSurrender                       (ChrRecord *self);
-void chrlvWalkingAnimationRelated             (ChrRecord *self);
-void setSeenBondTimeToNow                     (ChrRecord *guardData);
-s32 chrlvAttackRelated7F0292A8                (ChrRecord *self, coord3d *arg1, StandTile *arg2);
-s32 chrlvMaybeSameRoom                        (ChrRecord *self, coord3d *arg1, StandTile *arg2);
-s32 chrlvCurrentPlayerCall7F0B0E24            (ChrRecord *self);
-s32 chrlvCall7F0B0E24WithChrWidthHeight       (PropRecord *arg0, coord3d *arg1, coord3d *arg2);
-void chrlvSetTargetToPlayer                   (ChrRecord *self);
+void chrGoPosClearRestartTtl                        (ChrRecord *self);
+s32 chrGoToPos                     (ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed);
+void chrGoPosConsiderRestart                   (ChrRecord *self);
+void chrGoPosResetMagic         (ChrRecord *self);
+void chrActGoposIncCurIndex                 (ChrRecord *self);
+void chrGoPosChooseAnimation   (ChrRecord *self);
+void chrGoPosChooseAnimationEx                       (ChrRecord *self, s32 arg1, s32 arg2);
+void chrSetGoposSegDistTotal                (ChrRecord *self, struct waydata *arg1, coord3d *arg2);
+void chrAlertOthersOfInjury              (ChrRecord *, s32);
+s32 propCanWalkInDir                         (PropRecord *arg0, coord3d *arg1, f32 arg2);
+void chrTickSurrender                       (ChrRecord *self);
+void chrPatrolChooseAnimation             (ChrRecord *self);
+void chrRecordSawTarget                     (ChrRecord *guardData);
+s32 chrCheckCanSeeTarget                (ChrRecord *self, coord3d *arg1, StandTile *arg2);
+s32 chrCanSeePos                        (ChrRecord *self, coord3d *arg1, StandTile *arg2);
+s32 chrHasLineOfSightToPlayer            (ChrRecord *self);
+s32 propCanWalkLine       (PropRecord *arg0, coord3d *arg1, coord3d *arg2);
+void chrSetTargetToPlayer                   (ChrRecord *self);
 void coopChrShotByCurrentPlayer               (ChrRecord *self);
 s32 chrSawTargetRecently                      (ChrRecord *);
 s32 chrCheckTargetInSight                     (ChrRecord *self);
-void chrlvModelRotyRelated                    (ChrRecord *self, s32 arg1, coord3d *arg2);
+void chrGetSideDir                    (ChrRecord *self, s32 arg1, coord3d *arg2);
 s32 chrIsNotDeadOrShot                        (ChrRecord *chr);
-void chrlvTickAnim                            (ChrRecord *self);
-void chrlvTickDead                            (ChrRecord *self);
-void chrlvTickArgh                            (ChrRecord *self);
-void chrlvTickPreArgh                         (ChrRecord *self);
-void chrlvTickSidestep                        (ChrRecord *self);
-void chrlvTickJumpout                         (ChrRecord *self);
-void chrlvTickTest                            (ChrRecord *self);
-void chrlvTickStartAlarm                      (ChrRecord *self);
-void chrlvTickSurprised                       (ChrRecord *self);
-void sub_GAME_7F02BFE4                        (ChrRecord *self, s32 arg1, s32 arg2);
-s32 chrlvSetSubroty                           (ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4);
-s32 chrlvUpdateAimendsideback                 (ChrRecord *self, struct weapon_firing_animation_table *arg1, s32 arg2, s32 arg3, f32 arg4);
-void chrlvResetAimend                         (ChrRecord *self);
-void chrlvToggleHiddenRelated                 (ChrRecord *self, s32 arg1, s32 arg2);
-void chrlvUpdateShotbondsum                   (ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item);
-f32 sub_GAME_7F02C27C                         (ChrRecord *self);
-void chrlvFireWeaponRelated                   (ChrRecord *self, s32 hand);
-s32 chrlvAttackrollAnimationRelated7F02E2E0   (ChrRecord *self);
-void chrlvAttackrollAnimationRelated7F02E3B8  (ChrRecord *self);
-void sub_GAME_7F0256F0                        (ChrRecord *self, s32 attack_type, s32 arg2);
-void chrlvTickAttack                          (ChrRecord *self);
-void chrlvTickAttackCommon                    (ChrRecord *);
-void chrlvInitActAttackWalk                   (ChrRecord *chr, s32);
-void sub_GAME_7F024CF8                        (ChrRecord *self, coord3d *arg1);
-void chrlvTickThrowGrenade                    (ChrRecord *self);
-void chrlvTickBondIntro                       (ChrRecord *self);
-void chrlvTickBondDieRemoved                  (ChrRecord *self);
-s32 chrlvApplySpeed                           (ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr);
-void chrlvTickAttackWalk                      (ChrRecord *self);
-void chrlvTickRunPos                          (ChrRecord *self);
-s32 sub_GAME_7F030128                         (ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, StandTile * arg4, s32 cdtypes);
-s32 sub_GAME_7F0301FC                         (ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, f32 arg4, s32 cdtypes);
-s32 sub_GAME_7F0304AC                         (ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, StandTile *arg5, s32 cdtypes);
-void chrlvSwapIfDiffArg2Determinate           (coord3d *arg0, coord3d *arg1, coord3d *arg2);
-s32 sub_GAME_7F03081C                         (ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes);
-s32 sub_GAME_7F030D70                         (ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes);
-void chrlvTravelTickMagic                     (ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d *arg3, StandTile *arg4);
-void chrlvTravelTick                          (ChrRecord *, coord3d *, StandTile *, struct waydata *);
-void chrlvTickGoPos                           (ChrRecord *self);
-void chrlvSetNextActPatrolStepPadPos          (ChrRecord *self);
-void chrlvAdvancePatrolStep                   (ChrRecord *self);
-void chrlvTickPatrol                          (ChrRecord *self);
-f32 get_distance_actor_to_position            (ChrRecord *self, coord3d *pos);
+void chrTickAnim                            (ChrRecord *self);
+void chrTickDead                            (ChrRecord *self);
+void chrTickArgh                            (ChrRecord *self);
+void chrTickPreArgh                         (ChrRecord *self);
+void chrTickSidestep                        (ChrRecord *self);
+void chrTickJumpout                         (ChrRecord *self);
+void chrTickTest                            (ChrRecord *self);
+void chrTickStartAlarm                      (ChrRecord *self);
+void chrTickSurprised                       (ChrRecord *self);
+void chrPlayGunfireSound                        (ChrRecord *self, s32 arg1, s32 arg2);
+s32 chrSetSubroty                           (ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4);
+s32 chrUpdateAimendsideback                 (ChrRecord *self, struct weapon_firing_animation_table *arg1, s32 arg2, s32 arg3, f32 arg4);
+void chrResetAimend                         (ChrRecord *self);
+void chrSetHandFiring                 (ChrRecord *self, s32 arg1, s32 arg2);
+void chrUpdateShotbondsum                   (ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item);
+f32 chrGetAimUpAngle                         (ChrRecord *self);
+void chrFireHand                   (ChrRecord *self, s32 hand);
+s32 chrAttackRollToKneel   (ChrRecord *self);
+void chrAttackRollResumeAfterShot  (ChrRecord *self);
+void chrAttackKneel                        (ChrRecord *self, s32 attack_type, s32 arg2);
+void chrTickAttack                          (ChrRecord *self);
+void chrTickAttackCommon                    (ChrRecord *);
+void chrInitActAttackWalk                   (ChrRecord *chr, s32);
+void chrRunToPos                        (ChrRecord *self, coord3d *arg1);
+void chrTickThrowGrenade                    (ChrRecord *self);
+void chrTickBondIntro                       (ChrRecord *self);
+void chrTickBondDieRemoved                  (ChrRecord *self);
+s32 chrApplySpeed                           (ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr);
+void chrTickAttackWalk                      (ChrRecord *self);
+void chrTickRunPos                          (ChrRecord *self);
+s32 chrCanWalkLine                         (ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, StandTile * arg4, s32 cdtypes);
+s32 chrCanWalkLineWithin                         (ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, f32 arg4, s32 cdtypes);
+s32 chrCanWalkViaPoint                         (ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, StandTile *arg5, s32 cdtypes);
+void orderPointsBySide           (coord3d *arg0, coord3d *arg1, coord3d *arg2);
+s32 chrNavCanSeeNextPos                         (ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes);
+s32 chrNavCheckForObstacle                         (ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes);
+void chrGoPosTickMagic                     (ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d *arg3, StandTile *arg4);
+void chrNavTick                          (ChrRecord *, coord3d *, StandTile *, struct waydata *);
+void chrTickGoPos                           (ChrRecord *self);
+void chrSetNextActPatrolStepPadPos          (ChrRecord *self);
+void chrAdvancePatrolStep                   (ChrRecord *self);
+void chrTickPatrol                          (ChrRecord *self);
+f32 chrGetAngleToPos            (ChrRecord *self, coord3d *pos);
 s32 chrResolveId                              (ChrRecord *self, s32 id);
-s32 sub_GAME_7F033780                         (waypoint *arg0, coord3d *arg1, f32 angle);
-s32 chrlvFindPathNeighborRelated              (coord3d *bondpos, StandTile *stan, f32 rot, u8 quadrant);
+s32 waypointIsWithin90DegreesOfPosAngle                         (waypoint *arg0, coord3d *arg1, f32 angle);
+s32 waypointFindInQuadrant              (coord3d *bondpos, StandTile *stan, f32 rot, u8 quadrant);
 s32 chrIsPosOffScreen                         (coord3d *arg0, StandTile *arg1);
 PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, coord3d *pos, StandTile *stan, f32 angle, AIListRecord *ailist, s32 spawnflags);
-void chrlvInitActAttack                       (ChrRecord *self, struct anim_group_info ** arg1, s32 arg2, point2d *arg3, s32 attack_type, s32 arg5, s32 arg6);
-s32 chrlvPatrolCalculateStep                  (ChrRecord *self, bool *forward, s32 numsteps);
-bool chrlvIsPosClearOfObjectBounds            (coord3d *pos, StandTile *stan);
-s32 sub_GAME_7F03130C                         (ChrRecord *self,coord3d *arg1,s32 arg2,coord3d *arg3,f32 arg4,s32 arg5,coord3d *arg6,struct waydata *arg7,f32 arg8,s32 arg9,s32 set_copy);
-void chrlvTickStand                           (ChrRecord *self);
-PadRecord * chrlvGetPatrolStepPad             (ChrRecord *self, s32 numsteps);
+void chrInitActAttack                       (ChrRecord *self, struct anim_group_info ** arg1, s32 arg2, point2d *arg3, s32 attack_type, s32 arg5, s32 arg6);
+s32 chrPatrolCalculateStep                  (ChrRecord *self, bool *forward, s32 numsteps);
+bool chrIsPosClearOfObjectBounds            (coord3d *pos, StandTile *stan);
+s32 chrNavTryObstacle                         (ChrRecord *self,coord3d *arg1,s32 arg2,coord3d *arg3,f32 arg4,s32 arg5,coord3d *arg6,struct waydata *arg7,f32 arg8,s32 arg9,s32 set_copy);
+void chrTickStand                           (ChrRecord *self);
+PadRecord * chrGetPatrolStepPad             (ChrRecord *self, s32 numsteps);
 
 // unknown type for arg1, reads offsets 0x30,0x34,0x40,0x44
 // arg2 is only used to compare to zero, either flag or pointer
-void chrlvUpdateAimendbackShoulders           (ChrRecord *, void *, s32, s32, f32);
+void chrUpdateAimendbackShoulders           (ChrRecord *, void *, s32, s32, f32);
 
 
 // end forward declarations
 
 
-/**
- * Address 0x7F0234D0.
- */
-Model * retrieve_header_for_body_and_head(s32 body, s32 head, u32 bitflags)
-{
-    ModelFileHeader *body_header;
-    ModelFileHeader *head_header;
-    s32 sunglasses;
-
-    body_header = c_item_entries[body].header;
-    head_header = NULL;
-
-    sunglasses = 0;
-
-    if ((bitflags & 1))
-    {
-        sunglasses = 1;
-    }
-    else if ((bitflags & 2))
-    {
-        sunglasses = (randomGetNext() & 1) == 0;
-    }
-
-    if ((head >= 0) && (c_item_entries[body].hasHead == 0))
-    {
-        head_header = c_item_entries[head].header;
-    }
-
-    return setup_chr_instance(body, head, body_header, head_header, sunglasses);
-}
-
-
-s32 get_current_random_body(void)
-{
-  return list_of_bodies[current_random_body];
-}
-
-
-/**
- * Address 0x7F0235AC.
- * Get a Random Male Head Only
- * @param id: Integer Index of body
- * @return an integer ID of a head to use
- */
-s32 bodyChooseHead(s32 id)
-{
-    s32 ret;
-
-    if (c_item_entries[id].isMale)
-    {
-        ret = randomGetNext() & 3;
-        ret = ((s32)current_random_male_head + ret) % (s32)num_male_heads;
-        ret = random_male_heads[ret];
-    }
-    else
-    {
-        ret = random_female_heads[current_random_female_head];
-    }
-
-    return ret;
-}
-
-
-/**
- * Get a Random head for body ID
- * @param id: Integer Index of body
- * @return an integer ID of a head to use
-*/
-s32 get_random_head(s32 id)
-{
-    return (c_item_entries[id].isMale ? random_male_heads[randomGetNext() % num_male_heads] : random_female_heads[randomGetNext() % num_female_heads]);
-}
-
-
-/**
- * Address 0x7F02370C.
-*/
-void expand_09_characters(s32 stageid, GuardRecord *arg1, s32 arg2)
-{
-    struct PadRecord *pad;
-    struct ChrRecord *temp_v0_5;
-    struct StandTile *sp54; // 84
-    struct coord3d sp48; // 72
-    struct PropRecord *temp_v0_4;
-    struct ChrModelFileRecord *cmfr;
-    f32 sp3C; // 60
-    struct Model *sp38; //56
-    s32 bodyid;
-    s32 headid;
-
-    pad = &g_CurrentSetup.pads[arg1->PadID];
-
-    if (getposstan(&pad->pos, pad->stan, 20.0f, &sp48, &sp54) != 0)
-    {
-        headid = -1;
-        bodyid = (arg1->BodyID == 0xFFFF)
-            ? get_current_random_body()
-            : arg1->BodyID;
-
-        cmfr = &c_item_entries[bodyid];
-        if (cmfr->hasHead == 0)
-        {
-            headid = (arg1->HeadID >= 0)
-                ? arg1->HeadID
-                : bodyChooseHead(bodyid);
-        }
-
-        sp38 = retrieve_header_for_body_and_head(bodyid, headid, (u32) arg1->bitflags);
-
-        if (sp38 != 0)
-        {
-            sp3C = mathAtan2(pad->look.f[0], pad->look.f[2]);
-            temp_v0_4 = chrAllocate(sp38, &sp48, sp3C, sp54, ailistFindById(arg1->AIListID));
-
-            if (temp_v0_4 != 0)
-            {
-                propActivate(temp_v0_4);
-                propEnable(temp_v0_4);
-
-                temp_v0_5 = temp_v0_4->chr;
-                temp_v0_5->chrnum = (s16) arg1->chrnum;
-                temp_v0_5->hearingscale = ((f32)arg1->health) / 1000.0f;
-                temp_v0_5->visionrange = (f32)arg1->ReactionTime;
-                temp_v0_5->padpreset1 = (s16) arg1->Preset;
-                temp_v0_5->chrpreset1 = (s16) arg1->chrpreset1;
-                temp_v0_5->headnum = (s8) headid;
-                temp_v0_5->bodynum = (s8) bodyid;
-
-                if ((arg1->bitflags & 4) != 0)
-                {
-                    temp_v0_5->chrflags |= CHRFLAG_CLONE;
-                }
-
-                if ((arg1->bitflags & 8) != 0)
-                {
-                    temp_v0_5->chrflags |= CHRFLAG_INVINCIBLE;
-                }
-
-                arg1->Data = temp_v0_5;
-            }
-        }
-    }
-    #ifdef DEBUG
-    else
-    {
-    osSyncPrintf("chr not reset! (prop num=%d chr num=%d stan=%s) ",arg2 + 1, arg1->chrnum, GetStanName(pad->stan));
-    }
-    #endif
-}
-
-/*
-* above is chrlv.c
-//#possible file break - rest of file is chraction.c
-*/
 
 /**
  * Address 0x7F023910.
@@ -336,7 +190,7 @@ u32 weaponIsOneHanded(PropRecord *arg0)
 /**
  * Address 0x7F023948.
  */
-void chrlvIdleAnimationRelated(ChrRecord *self, f32 duration)
+void chrStandChooseAnimation(ChrRecord *self, f32 duration)
 {
     PropRecord *left;
     PropRecord *right;
@@ -377,7 +231,7 @@ void chrlvIdleAnimationRelated(ChrRecord *self, f32 duration)
 /**
  * At the end of a character's kneeling animation smoothly merge into their standing animation.
  */
-void chrlvMergeKneelToStand(ChrRecord *self, f32 mergetime)
+void chrStandImmediate(ChrRecord *self, f32 mergetime)
 {
     f32 fsleep;
 
@@ -411,7 +265,7 @@ void chrlvMergeKneelToStand(ChrRecord *self, f32 mergetime)
     }
 
     self->sleep = (s8) (s32) fsleep;
-    chrlvIdleAnimationRelated(self, mergetime);
+    chrStandChooseAnimation(self, mergetime);
 }
 
 
@@ -421,7 +275,7 @@ void chrlvMergeKneelToStand(ChrRecord *self, f32 mergetime)
  * @param max: max reaction speed range
  * Address 0x7F023B5C.
  */
-f32 chrlvGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max)
+f32 chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max)
 {
     f32 ret;
 
@@ -437,7 +291,7 @@ f32 chrlvGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max)
  * @param scale: scale factor
  * Address 0x7F023BC0.
  */
-s32 chrlvGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale)
+s32 chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale)
 {
     s32 ret;
 
@@ -455,7 +309,7 @@ s32 chrlvGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale)
  * @param max: max argh speed range
  * Address 0x7F023C54.
  */
-f32 chrlvGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max)
+f32 chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max)
 {
     f32 ret;
 
@@ -469,9 +323,8 @@ f32 chrlvGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max)
 
 /**
  * Address 0x7F023CB8.
- * PD: chrStand
  */
-void chrlvKneelingAnimationRelated(ChrRecord *self)
+void chrStand(ChrRecord *self)
 {
     if (self->actiontype == ACT_KNEEL)
     {
@@ -490,19 +343,19 @@ void chrlvKneelingAnimationRelated(ChrRecord *self)
 
         if ((s32)modelGetAnim(self->model) == (s32)&ANIM_DATA_fire_kneel_forward_one_handed_weapon_slow + (s32)&ptr_animation_table->data)
         {
-            modelSetAnimation(self->model, (struct ModelAnimation*)((s32)&ANIM_DATA_fire_kneel_forward_one_handed_weapon_slow + (s32)&ptr_animation_table->data), (s32) self->model->flip, 109.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+            modelSetAnimation(self->model, (struct ModelAnimation*)((s32)&ANIM_DATA_fire_kneel_forward_one_handed_weapon_slow + (s32)&ptr_animation_table->data), (s32) self->model->flip, 109.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
             modelSetAnimEndFrame(self->model, 140.0f);
         }
         else
         {
-            modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_kneel_left_leg], (s32) self->model->flip, 120.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+            modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_kneel_left_leg], (s32) self->model->flip, 120.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
             modelSetAnimEndFrame(self->model, 151.0f);
         }
 
         return;
     }
 
-    chrlvMergeKneelToStand(self, 16.0f);
+    chrStandImmediate(self, 16.0f);
 }
 
 
@@ -511,9 +364,9 @@ void chrlvKneelingAnimationRelated(ChrRecord *self)
  * Address 0x7F023E14.
  * PD: func0f02ed28
  */
-void chrlvIdleAnimationRelated7F023E14(ChrRecord *self, f32 arg1)
+void chrStandImmediateCheckWall(ChrRecord *self, f32 arg1)
 {
-    chrlvMergeKneelToStand(self, arg1);
+    chrStandImmediate(self, arg1);
     self->act_stand.checkfacingwall = 1;
 }
 
@@ -524,9 +377,9 @@ void chrlvIdleAnimationRelated7F023E14(ChrRecord *self, f32 arg1)
  * Address 0x7F023E48.
  * PD: chrStop
  */
-void chrlvKneelingAnimationRelated7F023E48(ChrRecord *self)
+void chrStandCheckWall(ChrRecord *self)
 {
-    chrlvKneelingAnimationRelated(self);
+    chrStand(self);
     self->act_stand.checkfacingwall = 1;
 }
 
@@ -553,12 +406,12 @@ void chrKneelChooseAnimation(ChrRecord *self)
         || weaponIsOneHanded(right))
     {
         s32 r = randomGetNext() & 1;
-        modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_kneel_forward_one_handed_weapon_slow], r, 0.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+        modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_kneel_forward_one_handed_weapon_slow], r, 0.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
         modelSetAnimEndFrame(self->model, 28.0f);
     }
     else if (right || left)
     {
-        modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_kneel_left_leg], left != NULL, 0.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+        modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_kneel_left_leg], left != NULL, 0.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
         modelSetAnimEndFrame(self->model, 27.0f);
     }
 
@@ -571,7 +424,7 @@ void chrKneelChooseAnimation(ChrRecord *self)
 /**
  * Address 0x7F023FE4.
  */
-void chrlvPerformAnimationForActor(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60)
+void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60)
 {
     f32 startframef = (f32)startframe;
     f32 phi_f0;
@@ -654,9 +507,8 @@ void chrStartAlarmChooseAnimation(ChrRecord *self)
  * Play the grenade throw animation. Takes a PropRecord* as an argument but
  * does not use it.
  * 
- * PD: chrThrowGrenade
  */
-void chrlvThrowGrenade(ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startframe)
+void chrThrowGrenade(ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startframe)
 {
     chrStopFiring(self);
 
@@ -665,11 +517,11 @@ void chrlvThrowGrenade(ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 star
 
     if (startframe != 0)
     {
-        modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_throw_grenade], hand != 0, 0.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+        modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_throw_grenade], hand != 0, 0.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
     }
     else
     {
-        modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_throw_grenade], hand != 0, 84.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+        modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_throw_grenade], hand != 0, 84.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
     }
 
     modelSetAnimEndFrame(self->model, 193.0f);
@@ -681,7 +533,7 @@ void chrlvThrowGrenade(ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 star
 /**
  * Address 0x7F024334.
  */
-void chrlvSpotBondAnimationRelated(ChrRecord *self, f32 arg1)
+void chrSpotChooseAnimation(ChrRecord *self, f32 arg1)
 {
     PropRecord *left;
     PropRecord *right;
@@ -701,7 +553,7 @@ void chrlvSpotBondAnimationRelated(ChrRecord *self, f32 arg1)
         sp2C = randomGetNext() & 1;
     }
 
-    objarg4 = chrlvGetGuard007SpeedRating(self, 0.6f, 0.96000004f); // 0.96000004 is different from 0.96
+    objarg4 = chrGetGuard007SpeedRating(self, 0.6f, 0.96000004f); // 0.96000004 is different from 0.96
     modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_spotting_bond], sp2C, 10.0f, objarg4, arg1);
     modelSetAnimEndFrame(self->model, 52.0f);
 }
@@ -712,7 +564,7 @@ void chrlvSpotBondAnimationRelated(ChrRecord *self, f32 arg1)
 /**
  * Address 0x7F024418.
  */
-void chrlvActorShuffleFeet(ChrRecord *self)
+void chrActorShuffleFeet(ChrRecord *self)
 {
     f32 temp_f0;
 
@@ -720,7 +572,7 @@ void chrlvActorShuffleFeet(ChrRecord *self)
 
     if ((temp_f0 < 0.17453294f) || (temp_f0 > 6.1086526f))
     {
-        chrlvSpotBondAnimationRelated(self, 16.0f);
+        chrSpotChooseAnimation(self, 16.0f);
         chrStopFiring(self);
         self->actiontype = ACT_SURPRISED;
         self->sleep = 0;
@@ -730,7 +582,7 @@ void chrlvActorShuffleFeet(ChrRecord *self)
 
     if (chrHasStoppedOrPatroling(self) == 0)
     {
-        chrlvKneelingAnimationRelated(self);
+        chrStand(self);
     }
 }
 
@@ -739,12 +591,12 @@ void chrlvActorShuffleFeet(ChrRecord *self)
 /**
  * Address 0x7F0244AC.
  */
-void chrlvSurrenderAnimationRelated(ChrRecord *self)
+void chrStartSurprised(ChrRecord *self)
 {
     chrStopFiring(self);
     self->actiontype = ACT_SURPRISED;
     self->sleep = 0;
-    modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_surrendering_armed], randomGetNext() & 1, 0.0f, chrlvGetGuard007SpeedRating(self, 0.35f, 0.56f), 16.0f);
+    modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_surrendering_armed], randomGetNext() & 1, 0.0f, chrGetGuard007SpeedRating(self, 0.35f, 0.56f), 16.0f);
     modelSetAnimEndFrame(self->model, 7.0f);
 }
 
@@ -754,7 +606,7 @@ void chrlvSurrenderAnimationRelated(ChrRecord *self)
  * Address 0x7F024548.
  * PD: chrSurprisedChooseAnimation
  */
-void chrlvActorLookFlustered(ChrRecord *self)
+void chrActorLookFlustered(ChrRecord *self)
 {
     u32 sp2C;
 
@@ -768,15 +620,15 @@ void chrlvActorLookFlustered(ChrRecord *self)
 
     if (sp2C == 0)
     {
-        modelSetAnimEndFrame(self->model, chrlvGetGuard007SpeedRating(self, 38.0f, 8.0f));
+        modelSetAnimEndFrame(self->model, chrGetGuard007SpeedRating(self, 38.0f, 8.0f));
     }
     else if (sp2C == 1)
     {
-        modelSetAnimEndFrame(self->model, chrlvGetGuard007SpeedRating(self, 66.0f, 8.0f));
+        modelSetAnimEndFrame(self->model, chrGetGuard007SpeedRating(self, 66.0f, 8.0f));
     }
     else
     {
-        modelSetAnimEndFrame(self->model, chrlvGetGuard007SpeedRating(self, 96.0f, 8.0f));
+        modelSetAnimEndFrame(self->model, chrGetGuard007SpeedRating(self, 96.0f, 8.0f));
     }
 }
 
@@ -787,7 +639,7 @@ void chrlvActorLookFlustered(ChrRecord *self)
  * Address 0x7F024648.
  * PD: chrSurrenderChooseAnimation
  */
-void chrlvActorThrowWeaponSurrender(ChrRecord *self)
+void chrActorThrowWeaponSurrender(ChrRecord *self)
 {
     PropRecord *left;
     PropRecord *right;
@@ -836,7 +688,7 @@ void chrlvActorThrowWeaponSurrender(ChrRecord *self)
 /**
  * Address 0x7F0247B8.
  */
-void chrlvActorFadeAway(ChrRecord *self)
+void chrActorFadeAway(ChrRecord *self)
 {
     if (self->actiontype != ACT_DEAD)
     {
@@ -854,7 +706,7 @@ void chrlvActorFadeAway(ChrRecord *self)
  * Address 0x7F024800.
  * PD: chrSidestepChooseAnimation (Somewhat similar)
  */
-void chrlvSideStepAnimationRelated(ChrRecord *self, GUNHAND side)
+void chrSidestep(ChrRecord *self, GUNHAND side)
 {
     PropRecord *left;
     PropRecord *right;
@@ -889,12 +741,12 @@ void chrlvSideStepAnimationRelated(ChrRecord *self, GUNHAND side)
     {
         if (side != GUNRIGHT)
         {
-            modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_side_step_left], 0, 5.0f, chrlvGetGuard007SpeedRating(self, 0.55f, 0.88000005f), 16.0f);
+            modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_side_step_left], 0, 5.0f, chrGetGuard007SpeedRating(self, 0.55f, 0.88000005f), 16.0f);
             modelSetAnimEndFrame(self->model, 27.0f);
         }
         else
         {
-            modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_side_step_left], 1, 5.0f, chrlvGetGuard007SpeedRating(self, 0.55f, 0.88000005f), 16.0f);
+            modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_side_step_left], 1, 5.0f, chrGetGuard007SpeedRating(self, 0.55f, 0.88000005f), 16.0f);
             modelSetAnimEndFrame(self->model, 27.0f);
         }
 
@@ -904,13 +756,13 @@ void chrlvSideStepAnimationRelated(ChrRecord *self, GUNHAND side)
     if (((side != GUNRIGHT) && (sp2C == 0)) ||
         ((side == GUNRIGHT) && (sp2C != 0)))
     {
-        modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_slide_left], sp2C, 5.0f, chrlvGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
+        modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_slide_left], sp2C, 5.0f, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
         modelSetAnimEndFrame(self->model, 34.0f);
 
     }
     else
     {
-        modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_slide_right], sp2C, 5.0f, chrlvGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
+        modelSetAnimation(self->model, (void*)&ptr_animation_table->data[(s32)&ANIM_DATA_slide_right], sp2C, 5.0f, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
         modelSetAnimEndFrame(self->model, 32.0f);
     }
 
@@ -924,7 +776,7 @@ void chrlvSideStepAnimationRelated(ChrRecord *self, GUNHAND side)
  * Address 0x7F024A84.
  * PD: chrSidestepChooseAnimation (somewhat similar)
  */
-void chrlvFireJumpToSideAnimationRelated(ChrRecord *self, GUNHAND side)
+void chrJumpOut(ChrRecord *self, GUNHAND side)
 {
     PropRecord *left;
     PropRecord *right;
@@ -958,12 +810,12 @@ void chrlvFireJumpToSideAnimationRelated(ChrRecord *self, GUNHAND side)
     {
         if ((randomGetNext() & 1) != 0)
         {
-            modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_jump_to_side_left], side2, 5.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+            modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_jump_to_side_left], side2, 5.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
             modelSetAnimEndFrame(self->model, 49.0f);
         }
         else
         {
-            modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_jump_to_side_right], side2, 130.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+            modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_jump_to_side_right], side2, 130.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
             modelSetAnimEndFrame(self->model, 173.0f);
         }
 
@@ -972,12 +824,12 @@ void chrlvFireJumpToSideAnimationRelated(ChrRecord *self, GUNHAND side)
 
     if ((randomGetNext() & 1) != 0)
     {
-        modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_jump_to_side_right], side2, 20.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+        modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_jump_to_side_right], side2, 20.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
         modelSetAnimEndFrame(self->model, 63.0f);
     }
     else
     {
-        modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_jump_to_side_left], side2, 91.0f, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+        modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_fire_jump_to_side_left], side2, 91.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
         modelSetAnimEndFrame(self->model, 136.0f);
     }
 
@@ -992,7 +844,7 @@ void chrlvFireJumpToSideAnimationRelated(ChrRecord *self, GUNHAND side)
  * Address 0x7F024CE0 (VERSION_EU).
  * PD: chrJumpOutChooseAnimation (has a few things in common)
  */
-void sub_GAME_7F024CF8(ChrRecord *self, coord3d *arg1)
+void chrRunToPos(ChrRecord *self, coord3d *arg1)
 {
     f32 dx;
     f32 dz;
@@ -1063,7 +915,7 @@ void sub_GAME_7F024CF8(ChrRecord *self, coord3d *arg1)
 
 
 // unused / unreferenced
-void chrlvDeathStaggerAnimationRelated(ChrRecord *self)
+void chrStaggerToWall(ChrRecord *self)
 {
     chrStopFiring(self);
     self->actiontype = ACT_TEST;
@@ -1077,11 +929,11 @@ void chrlvDeathStaggerAnimationRelated(ChrRecord *self)
 
 
 /**
- * Called from actor_fire_or_aim_at_target_update, where action type is ACT_ATTACK.
+ * Called from chrTryModifyAttack, where action type is ACT_ATTACK.
  *
  * Address 0x7F024F8C.
  */
-void chrlvAttackActionRelated(ChrRecord *self)
+void chrAttackSetEndFrame(ChrRecord *self)
 {
     Model* model = self->model;
 
@@ -1128,7 +980,7 @@ void chrlvAttackActionRelated(ChrRecord *self)
 /**
  * Address 0x7F0250BC.
  */
-f32 chrlvDistanceToChrRelated(ChrRecord *self, s32 arg1, s32 arg2)
+f32 chrGetAngleToTarget(ChrRecord *self, s32 arg1, s32 arg2)
 {
     f32 ret;
     StandTile *out_unused;
@@ -1152,7 +1004,7 @@ f32 chrlvDistanceToChrRelated(ChrRecord *self, s32 arg1, s32 arg2)
         return ret;
     }
 
-    return get_distance_actor_to_position(self, chrlvGetChrOrPresetLocation(self, arg1, arg2, &out_unused));
+    return chrGetAngleToPos(self, chrGetChrOrPresetLocation(self, arg1, arg2, &out_unused));
 }
 
 
@@ -1163,12 +1015,12 @@ f32 chrlvDistanceToChrRelated(ChrRecord *self, s32 arg1, s32 arg2)
   * @param arg2: flag of some sort related to calculating distance
   * @param arg3: flags
   * @param attack_type:
-  * @param arg5: chrlvDistanceToChrRelated arg2
+  * @param arg5: chrGetAngleToTarget arg2
   * @param arg6: set self->act_attack.unk54 to this
   *
   * Address 0x7F02516C.
   */
-void chrlvInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, point2d *arg3, s32 attack_type, s32 arg5, s32 arg6)
+void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, point2d *arg3, s32 attack_type, s32 arg5, s32 arg6)
 {
     /**
      * Two unused stack variables, I tried to use them with the animation table
@@ -1197,7 +1049,7 @@ void chrlvInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2
     phi_s6 = 1;
     phi_s7 = 0;
 
-    dist = chrlvDistanceToChrRelated(self, attack_type, arg5);
+    dist = chrGetAngleToTarget(self, attack_type, arg5);
 
     if (arg2 != 0)
     {
@@ -1318,10 +1170,10 @@ void chrlvInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2
         (struct ModelAnimation *) panim_float->anim.anim,
         arg2,
         panim_float->start_frame,
-        chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
+        chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
         16.0f);
 
-    chrlvAttackActionRelated(self);
+    chrAttackSetEndFrame(self);
 }
 
 
@@ -1329,7 +1181,7 @@ void chrlvInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2
 /**
  * Address 0x7F025560.
 */
-void sub_GAME_7F025560(ChrRecord *self, s32 attack_type, s32 arg2)
+void chrAttackStand(ChrRecord *self, s32 attack_type, s32 arg2)
 {
     PropRecord *left;
     PropRecord *right;
@@ -1392,16 +1244,15 @@ void sub_GAME_7F025560(ChrRecord *self, s32 attack_type, s32 arg2)
         }
     }
 
-    chrlvInitActAttack(self, animation_pointer, last_arg2, &sp, attack_type, arg2, 1);
+    chrInitActAttack(self, animation_pointer, last_arg2, &sp, attack_type, arg2, 1);
 }
 
 
 
 /**
  * Address 0x7F0256F0.
- * PD: chrAttackKneel.
 */
-void sub_GAME_7F0256F0(ChrRecord *self, s32 attack_type, s32 arg2)
+void chrAttackKneel(ChrRecord *self, s32 attack_type, s32 arg2)
 {
     PropRecord *left;
     PropRecord *right;
@@ -1464,7 +1315,7 @@ void sub_GAME_7F0256F0(ChrRecord *self, s32 attack_type, s32 arg2)
         }
     }
 
-    chrlvInitActAttack(self, animation_pointer, last_arg2, &sp, attack_type, arg2, 0);
+    chrInitActAttack(self, animation_pointer, last_arg2, &sp, attack_type, arg2, 0);
 }
 
 
@@ -1472,7 +1323,7 @@ void sub_GAME_7F0256F0(ChrRecord *self, s32 attack_type, s32 arg2)
  * // run forward shooting
  * Address 0x7F02587C.
 */
-void chrlvInitActAttackWalk(ChrRecord *chr, s32 arg1)
+void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
 {
     struct weapon_firing_animation_table *panim_float; // 132
     s32 i; //
@@ -1653,7 +1504,7 @@ void chrlvInitActAttackWalk(ChrRecord *chr, s32 arg1)
  * chrRollToSide
  * Address 0x7F025C40.
 */
-void chrlvInitActAttackRoll(ChrRecord *chr, GUNHAND side)
+void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
 {
     Model *self_model; // 140
     struct weapon_firing_animation_table *panim_float; // 136
@@ -1829,7 +1680,7 @@ void chrlvInitActAttackRoll(ChrRecord *chr, GUNHAND side)
         (struct ModelAnimation *) panim_float->anim.anim,
         sp7C,
         panim_float->start_frame,
-        chrlvGetGuard007SpeedRating(chr, 0.5f, 0.8f),
+        chrGetGuard007SpeedRating(chr, 0.5f, 0.8f),
         16.0f);
 
     if (sp78 == 0)
@@ -1870,7 +1721,7 @@ void chrlvInitActAttackRoll(ChrRecord *chr, GUNHAND side)
  *
  * Address 0x7F026130.
  */
-void chrlvLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result)
+void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result)
 {
     /*
      * Line1 = P1 + u * (P2 - P1)
@@ -1935,13 +1786,13 @@ void chrlvLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *li
  *
  * Address 0x7F02624C.
  */
-void chrlvStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result)
+void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result)
 {
     coord3d sp2C;
     coord3d sp20;
 
     stanGetCollisionEdge(&sp2C, &sp20);
-    chrlvLineLineIntersection(&sp2C, &sp20, line2_p3, dir, result);
+    chrLineLineIntersection(&sp2C, &sp20, line2_p3, dir, result);
 }
 
 
@@ -1952,7 +1803,7 @@ void chrlvStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *resu
  *
  * Address 0x7F026298.
  */
-void chrlvStanPointPointIntersection(coord3d *arg0, coord3d *arg1, coord3d *result)
+void chrStanPointPointIntersection(coord3d *arg0, coord3d *arg1, coord3d *result)
 {
     coord3d sp2C;
     coord3d sp20;
@@ -1960,7 +1811,7 @@ void chrlvStanPointPointIntersection(coord3d *arg0, coord3d *arg1, coord3d *resu
 
     stanGetCollisionEdge(&sp2C, &sp20);
 
-    // see comments in chrlvLineLineIntersection
+    // see comments in chrLineLineIntersection
 
     v = ((arg1->f[0] * (sp2C.f[2] - arg0->f[2])) - (arg1->f[2] * (sp2C.f[0] - arg0->f[0])))
         / ((arg1->f[2] * (sp20.f[0] - sp2C.f[0])) - (arg1->f[0] * (sp20.f[2] - sp2C.f[2])));
@@ -1974,7 +1825,7 @@ void chrlvStanPointPointIntersection(coord3d *arg0, coord3d *arg1, coord3d *resu
 /**
  * Address 0x7F026364.
  */
-f32 chrlvPathingCollisionRelated(PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtypes, f32 unkHeight, f32 unkA)
+f32 chrGetClearDistInDir(PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtypes, f32 unkHeight, f32 unkA)
 {
     coord3d sp5C; // sp92
     f32 dest_x; // sp88
@@ -2002,7 +1853,7 @@ f32 chrlvPathingCollisionRelated(PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtyp
     }
     else
     {
-        chrlvStanLineDirIntersection(&arg0->pos, &sp5C, &sp3C);
+        chrStanLineDirIntersection(&arg0->pos, &sp5C, &sp3C);
         dest_x = sp3C.f[0] - arg0->pos.f[0];
         dest_z = sp3C.f[2] - arg0->pos.f[2];
         ret = sqrtf((dest_x * dest_x) + (dest_z * dest_z));
@@ -2017,14 +1868,14 @@ f32 chrlvPathingCollisionRelated(PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtyp
 /**
  * Address 0x7F0264B0.
 */
-f32 chrlvPathingCollisionRelated7F0264B0(PropRecord *arg0, f32 arg1, f32 arg2)
+f32 chrGetClearDistInDirDefault(PropRecord *arg0, f32 arg1, f32 arg2)
 {
     f32 sp2C;
     f32 sp28;
     f32 sp24;
 
     chrGetChrWidthHeight(arg0, &sp24, &sp2C, &sp28);
-    return chrlvPathingCollisionRelated(arg0, arg1, arg2, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, sp2C, sp28);
+    return chrGetClearDistInDir(arg0, arg1, arg2, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, sp2C, sp28);
 }
 
 
@@ -2037,7 +1888,7 @@ f32 chrlvPathingCollisionRelated7F0264B0(PropRecord *arg0, f32 arg1, f32 arg2)
  *
  * Address 0x7F026508.
  */
-void triggered_on_shot_hit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_id, ITEM_IDS item)
+void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_id, ITEM_IDS item)
 {
     // stack offset in decimal
 
@@ -2097,8 +1948,8 @@ void triggered_on_shot_hit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_ani
                     f_under -= M_TAU_F;
                 }
 
-                f_over = chrlvPathingCollisionRelated7F0264B0(prop, fa, 150.0f);
-                f_under = chrlvPathingCollisionRelated7F0264B0(prop, f_under, 150.0f);
+                f_over = chrGetClearDistInDirDefault(prop, fa, 150.0f);
+                f_under = chrGetClearDistInDirDefault(prop, f_under, 150.0f);
 
                 if ((f_over < 150.0f) && (f_under < 150.0f))
                 {
@@ -2210,15 +2061,15 @@ void triggered_on_shot_hit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_ani
 
                     if (sp54 < 2U)
                     {
-                        modelSetAnimEndFrame(model, chrlvGetGuard007ArghRating(self, 34.0f, 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, 34.0f, 8.0f));
                     }
                     else if (sp54 < 4U)
                     {
-                        modelSetAnimEndFrame(model, chrlvGetGuard007ArghRating(self, 71.0f, 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, 71.0f, 8.0f));
                     }
                     else
                     {
-                        modelSetAnimEndFrame(model, chrlvGetGuard007ArghRating(self, (f32) (((u16*)sp80)[2] - 1), 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, (f32) (((u16*)sp80)[2] - 1), 8.0f));
                     }
                 }
                 else
@@ -2228,15 +2079,15 @@ void triggered_on_shot_hit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_ani
 
                     if (sp54 < 2U)
                     {
-                        modelSetAnimEndFrame(model, chrlvGetGuard007ArghRating(self, 37.0f, 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, 37.0f, 8.0f));
                     }
                     else if (sp54 < 4U)
                     {
-                        modelSetAnimEndFrame(model, chrlvGetGuard007ArghRating(self, 70.0f, 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, 70.0f, 8.0f));
                     }
                     else
                     {
-                        modelSetAnimEndFrame(model, chrlvGetGuard007ArghRating(self, (f32) (((u16*)sp80)[2] - 1), 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, (f32) (((u16*)sp80)[2] - 1), 8.0f));
                     }
                 }
 
@@ -2280,11 +2131,11 @@ void triggered_on_shot_hit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_ani
 
                     if (struck_ani->endframe >= 0.0f)
                     {
-                        modelSetAnimEndFrame(model, chrlvGetGuard007ArghRating(self, struck_ani->endframe, 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, struck_ani->endframe, 8.0f));
                     }
                     else
                     {
-                        modelSetAnimEndFrame(model, chrlvGetGuard007ArghRating(self, (f32)((s32)((u16*)struck_ani->struck_anim)[2] - (s32)1), 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, (f32)((s32)((u16*)struck_ani->struck_anim)[2] - (s32)1), 8.0f));
                     }
                 }
             }
@@ -2317,7 +2168,7 @@ void triggered_on_shot_hit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_ani
  *
  * Address 0x7F026F30.
 */
-s32 chrlvAttackAnimationRelated7F026F30(ChrRecord *self, f32 *result)
+s32 chrGetHitInterruptFrame(ChrRecord *self, f32 *result)
 {
     s32 flag;
     f32 out_val;
@@ -2371,7 +2222,7 @@ s32 chrlvAttackAnimationRelated7F026F30(ChrRecord *self, f32 *result)
 /**
  * Address 0x7F027060.
  */
-void play_sound_for_shot_actor(ChrRecord *self)
+void chrPlayHurtSound(ChrRecord *self)
 {
     PropRecord *prop;
     bool male;
@@ -2483,7 +2334,7 @@ f32 counterOpPlayerDamage(s32 shooter, f32 damage, s32 weaponid)
 /**
  * Address 0x7F02727C.
 */
-bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bool isPlayer)
+bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bool isPlayer)
 {
     s32 hattype;                     //sp78
     PropRecord *myprop = self->prop; //sp60
@@ -2580,7 +2431,7 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
         vec.x = myprop->pos.x - vector->x;
         vec.y = myprop->pos.y - vector->y;
         vec.z = myprop->pos.z - vector->z;
-        angle = get_distance_actor_to_position(self, &vec); //chrGetAngleToPos
+        angle = chrGetAngleToPos(self, &vec);
 
         if (hitpart == HIT_GENERAL)
         {
@@ -2697,7 +2548,7 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
             if (self->damage < 0.0f)
             {
                 f32 endframe = -1.0f; //sp34
-                if (!chrlvAttackAnimationRelated7F026F30(self, &endframe))
+                if (!chrGetHitInterruptFrame(self, &endframe))
                 {
                     chrSetHiddenToRandom(self);
                     return FALSE;
@@ -2709,9 +2560,9 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
         {
             // Cancel current animation and prepare for argh
             f32 endframe2 = -1.0f; //sp30
-            play_sound_for_shot_actor(self);
+            chrPlayHurtSound(self);
 
-            if (chrlvAttackAnimationRelated7F026F30(self, &endframe2)) //chrIsAnimPreventingArgh
+            if (chrGetHitInterruptFrame(self, &endframe2)) //chrIsAnimPreventingArgh
             {
                 if (endframe2 >= 0.0f)
                 {
@@ -2729,7 +2580,7 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
             }
             else
             {
-                triggered_on_shot_hit(self, vector, angle, hitpart, weaponid);
+                chrReactToHit(self, vector, angle, hitpart, weaponid);
             }
         }
     }
@@ -2743,7 +2594,7 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
 /**
  * Address 0x7F027804.
 */
-s32 chrlvExplosionDamage(ChrRecord *self, coord3d *arg1, f32 damage, s32 arg3)
+s32 chrExplosionDamage(ChrRecord *self, coord3d *arg1, f32 damage, s32 arg3)
 {
     Model *self_model; // 84
     PropRecord *self_prop; // 80
@@ -2844,7 +2695,7 @@ s32 chrlvExplosionDamage(ChrRecord *self, coord3d *arg1, f32 damage, s32 arg3)
 
         if (arg3 != 0)
         {
-            play_sound_for_shot_actor(self);
+            chrPlayHurtSound(self);
         }
 
         chrDropItems(self);
@@ -2879,7 +2730,7 @@ s32 chrlvExplosionDamage(ChrRecord *self, coord3d *arg1, f32 damage, s32 arg3)
  * 
  * Given a stan tile, find the first waypoint on that tile.
  */
-waypoint *get_ptrpreset_in_table_matching_tile(StandTile *tile)
+waypoint *waypointFindOnTile(StandTile *tile)
 {
     waypoint *head;
     waypoint *wp;
@@ -2904,9 +2755,9 @@ waypoint *get_ptrpreset_in_table_matching_tile(StandTile *tile)
 /**
  * Address 0x7F027C60.
 */
-s32 check_if_any_path_preset_lies_on_tile(StandTile* tile)
+s32 waypointIsOnTile(StandTile* tile)
 {
-    return get_ptrpreset_in_table_matching_tile(tile) != NULL;
+    return waypointFindOnTile(tile) != NULL;
 }
 
 
@@ -2914,7 +2765,7 @@ s32 check_if_any_path_preset_lies_on_tile(StandTile* tile)
  * 100% match, unsure of argument types.
  * Addresss 0x7F027C84.
 */
-f32 chrlvPadPresetRelated(coord3d *arg0, waypoint *arg1)
+f32 waypointDistSqXz(coord3d *arg0, waypoint *arg1)
 {
     f32 temp_f12;
     f32 temp_f2;
@@ -2931,7 +2782,7 @@ f32 chrlvPadPresetRelated(coord3d *arg0, waypoint *arg1)
 /**
  * Address 0x7F027CD4.
 */
-waypoint *chrlvStanPathRelated(coord3d *arg0, StandTile *arg1)
+waypoint *waypointFindNearPos(coord3d *arg0, StandTile *arg1)
 {
     StandTile *tile = NULL;
     f32 temp_f20;
@@ -2939,20 +2790,20 @@ waypoint *chrlvStanPathRelated(coord3d *arg0, StandTile *arg1)
     waypoint *wayp = NULL;
     s32 *n = NULL;
 
-    tile = stanFillSearch(arg1, check_if_any_path_preset_lies_on_tile);
+    tile = stanFillSearch(arg1, waypointIsOnTile);
     if (tile != NULL)
     {
-        ret = get_ptrpreset_in_table_matching_tile(tile);
+        ret = waypointFindOnTile(tile);
 
         if (ret != NULL)
         {
-            temp_f20 = chrlvPadPresetRelated(arg0, ret);
+            temp_f20 = waypointDistSqXz(arg0, ret);
 
             for (n = ret->neighbours; *n >= 0; n++)
             {
                 wayp = &g_CurrentSetup.pathwaypoints[*n];
 
-                if (chrlvPadPresetRelated(arg0, wayp) < temp_f20)
+                if (waypointDistSqXz(arg0, wayp) < temp_f20)
                 {
                     ret = wayp;
                 }
@@ -2969,7 +2820,7 @@ waypoint *chrlvStanPathRelated(coord3d *arg0, StandTile *arg1)
 /**
  * Address 0x7F027DB0.
 */
-s32 chrlvStanRoomRelated(ChrRecord *self, coord3d *arg1, StandTile *tile)
+s32 chrPathIsOffscreen(ChrRecord *self, coord3d *arg1, StandTile *tile)
 {
 
 #define BUFFER_SIZE_7F027DB0 0x14
@@ -3005,9 +2856,9 @@ s32 chrlvStanRoomRelated(ChrRecord *self, coord3d *arg1, StandTile *tile)
 /**
  * Address 0x7F027E70.
 */
-s32 chrlvStanRoomRelatedPad(ChrRecord *self, PadRecord *arg1)
+s32 chrPathToPadIsOffscreen(ChrRecord *self, PadRecord *arg1)
 {
-    return chrlvStanRoomRelated(self, &arg1->pos, arg1->stan);
+    return chrPathIsOffscreen(self, &arg1->pos, arg1->stan);
 }
 
 
@@ -3017,7 +2868,7 @@ s32 chrlvStanRoomRelatedPad(ChrRecord *self, PadRecord *arg1)
  * Address 0x7F027E90.
  * PD: chrGoPosInitMagic
 */
-void chrlvSetGoposSegDistTotal(ChrRecord *self, struct waydata *arg1, coord3d *arg2)
+void chrSetGoposSegDistTotal(ChrRecord *self, struct waydata *arg1, coord3d *arg2)
 {
     PropRecord *prop;
     f32 dx;
@@ -3046,7 +2897,7 @@ void chrlvSetGoposSegDistTotal(ChrRecord *self, struct waydata *arg1, coord3d *a
  * Address 0x7F027F20.
  * PD: chrGoPosGetCurWaypointInfoWithFlags (somewhat similar)
 */
-void chrlvActGoposRelated(ChrRecord *self, coord3d *target_point, StandTile **target_stan)
+void chrGoPosGetCurWaypointInfo(ChrRecord *self, coord3d *target_point, StandTile **target_stan)
 {
     waypoint *waypoint;
     PadRecord *pad;
@@ -3078,7 +2929,7 @@ void chrlvActGoposRelated(ChrRecord *self, coord3d *target_point, StandTile **ta
  * Address 0x7F027FA8.
  * PD: func0f0370a8 (but GE has much more cases)
 */
-f32 chrlvModelScaleAnimationRelated(ChrRecord *self)
+f32 chrGetRunAnimSpeed(ChrRecord *self)
 {
     f32 scale_factor = D_80030984;
 
@@ -3126,9 +2977,8 @@ f32 chrlvModelScaleAnimationRelated(ChrRecord *self)
 
 /**
  * Address 0x7F028144.
- * PD: chrGoPosCalculateBaseTtl
 */
-s32 chrlvMovementTargetRelated(ChrRecord *self)
+s32 chrGoPosCalculateBaseTtl(ChrRecord *self)
 {
     f32 dx;
     f32 dz;
@@ -3138,7 +2988,7 @@ s32 chrlvMovementTargetRelated(ChrRecord *self)
     f32 sp18; // 24
 
     sp18 = modelGetAbsAnimSpeed(self->model);
-    chrlvActGoposRelated(self, &sp20, &sp1C);
+    chrGoPosGetCurWaypointInfo(self, &sp20, &sp1C);
     temp_v0 = self->prop;
     dx = sp20.f[0] - temp_v0->pos.f[0];
     dz = sp20.f[2] - temp_v0->pos.f[2];
@@ -3153,16 +3003,15 @@ s32 chrlvMovementTargetRelated(ChrRecord *self)
         dz = -dz;
     }
 
-    return (s32) ((dx + dz) / (chrlvModelScaleAnimationRelated(self) * sp18));
+    return (s32) ((dx + dz) / (chrGetRunAnimSpeed(self) * sp18));
 }
 
 
 
 /**
  * Address 0x7F0281F4.
- * PD: chrGoPosClearRestartTtl
 */
-void sub_GAME_7F0281F4(ChrRecord *self)
+void chrGoPosClearRestartTtl(ChrRecord *self)
 {
     self->act_gopos.unk5a = 0;
 }
@@ -3171,9 +3020,8 @@ void sub_GAME_7F0281F4(ChrRecord *self)
 /**
  * Address 0x7F0281FC (US,JP)
  * Address 0x7F028214 (VERSION_EU)
- * PD: chrGoPosConsiderRestart
 */
-void chrlvPlotCourseRelated(ChrRecord *self)
+void chrGoPosConsiderRestart(ChrRecord *self)
 {
     s32 temp_a1;
     s32 temp_v0;
@@ -3186,9 +3034,9 @@ void chrlvPlotCourseRelated(ChrRecord *self)
         if (temp_v0 == 0)
         {
 #ifndef REFRESH_PAL
-            temp_a1 = (chrlvMovementTargetRelated(self) * 2) + 300;
+            temp_a1 = (chrGoPosCalculateBaseTtl(self) * 2) + 300;
 #else
-            temp_a1 = ((chrlvMovementTargetRelated(self) * 100) + 15000) / 60;
+            temp_a1 = ((chrGoPosCalculateBaseTtl(self) * 100) + 15000) / 60;
 #endif
 
             if (temp_a1 >= 0x10000)
@@ -3205,7 +3053,7 @@ void chrlvPlotCourseRelated(ChrRecord *self)
 
         if (temp_v1 >= temp_v0)
         {
-            plot_course_for_actor(self, &self->act_gopos.targetpos, self->act_gopos.target, self->act_gopos.unk59);
+            chrGoToPos(self, &self->act_gopos.targetpos, self->act_gopos.target, self->act_gopos.unk59);
 
             return;
         }
@@ -3220,12 +3068,12 @@ void chrlvPlotCourseRelated(ChrRecord *self)
  * Address 0x7F02828C.
  * PD: chrGoPosInitExpensive
 */
-void chrlvActGoposSetTargetPosRelated(ChrRecord *self)
+void chrGoPosResetMagic(ChrRecord *self)
 {
     coord3d sp1C;
     StandTile *sp18;
 
-    chrlvActGoposRelated(self, (coord3d *) &sp1C, &sp18);
+    chrGoPosGetCurWaypointInfo(self, (coord3d *) &sp1C, &sp18);
 
     self->act_gopos.waydata.mode = 0;
     self->act_gopos.waydata.unk01 = 0;
@@ -3235,7 +3083,7 @@ void chrlvActGoposSetTargetPosRelated(ChrRecord *self)
     self->act_gopos.waydata.pos.f[1] = sp1C.f[1];
     self->act_gopos.waydata.pos.f[2] = sp1C.f[2];
 
-    sub_GAME_7F0281F4(self);
+    chrGoPosClearRestartTtl(self);
 }
 
 
@@ -3244,7 +3092,7 @@ void chrlvActGoposSetTargetPosRelated(ChrRecord *self)
  * Address 0x7F0282E0.
  * PD: chrGoPosAdvanceWaypoint
 */
-void chrlvActGoposIncCurIndex(ChrRecord *self)
+void chrActGoposIncCurIndex(ChrRecord *self)
 {
     if (self->act_gopos.curindex < 3)
     {
@@ -3259,7 +3107,7 @@ void chrlvActGoposIncCurIndex(ChrRecord *self)
         waypointFindRoute(p, self->act_gopos.target_path, (waypoint **)&self->act_gopos.waypoints, MAX_CHRWAYPOINTS);
     }
 
-    chrlvActGoposSetTargetPosRelated(self);
+    chrGoPosResetMagic(self);
 }
 
 
@@ -3274,9 +3122,8 @@ void chrlvActGoposIncCurIndex(ChrRecord *self)
  *
  * Address 0x7F028348.
  *
- * PD: chrPatrolCalculateStep
  */
-s32 chrlvPatrolCalculateStep(ChrRecord *self, bool *forward, s32 numsteps)
+s32 chrPatrolCalculateStep(ChrRecord *self, bool *forward, s32 numsteps)
 {
     s32 nextstep = self->act_patrol.nextstep;
     bool isforward = *forward;
@@ -3342,7 +3189,7 @@ s32 chrlvPatrolCalculateStep(ChrRecord *self, bool *forward, s32 numsteps)
  * 
  * PD: chrPatrolCalculatePadNum (had some nice finds when searching for "patrol" in "chraction.c" in PD)
 */
-PadRecord *chrlvGetPatrolStepPad(ChrRecord *self, s32 numsteps)
+PadRecord *chrGetPatrolStepPad(ChrRecord *self, s32 numsteps)
 {
     waypoint *wp;
     s32 forward;
@@ -3350,7 +3197,7 @@ PadRecord *chrlvGetPatrolStepPad(ChrRecord *self, s32 numsteps)
     s32 *data;
 
     forward = self->act_patrol.forward;
-    step = chrlvPatrolCalculateStep(self, &forward, numsteps);
+    step = chrPatrolCalculateStep(self, &forward, numsteps);
 
     data = &self->act_patrol.path->data[step];
 
@@ -3363,20 +3210,20 @@ PadRecord *chrlvGetPatrolStepPad(ChrRecord *self, s32 numsteps)
 /**
  * Address 0x7F028474.
 */
-PadRecord * chrlvGetNextPatrolStepPad(ChrRecord *self)
+PadRecord * chrGetNextPatrolStepPad(ChrRecord *self)
 {
-    return chrlvGetPatrolStepPad(self, 0);
+    return chrGetPatrolStepPad(self, 0);
 }
 
 
 /**
  * Address 0x7F028494.
 */
-void chrlvSetNextActPatrolStepPadPos(ChrRecord *self)
+void chrSetNextActPatrolStepPadPos(ChrRecord *self)
 {
     PadRecord *temp_v0;
 
-    temp_v0 = chrlvGetNextPatrolStepPad(self);
+    temp_v0 = chrGetNextPatrolStepPad(self);
     self->act_patrol.waydata.mode = 0;
     self->act_patrol.waydata.unk01 = 0;
     self->act_patrol.waydata.unk02 = 0;
@@ -3389,10 +3236,10 @@ void chrlvSetNextActPatrolStepPadPos(ChrRecord *self)
 /**
  * Address 0x7F0284DC.
 */
-void chrlvAdvancePatrolStep(ChrRecord *self)
+void chrAdvancePatrolStep(ChrRecord *self)
 {
-    self->act_patrol.nextstep = chrlvPatrolCalculateStep(self, &self->act_patrol.forward, 1);
-    chrlvSetNextActPatrolStepPadPos(self);
+    self->act_patrol.nextstep = chrPatrolCalculateStep(self, &self->act_patrol.forward, 1);
+    chrSetNextActPatrolStepPadPos(self);
 }
 
 
@@ -3402,7 +3249,7 @@ void chrlvAdvancePatrolStep(ChrRecord *self)
  * Returns true if pos is not inside the 2D collision footprint of
  * any normal object (PROP_TYPE_OBJ) in the stan's room.
 */
-bool chrlvIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan)
+bool chrIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan)
 {
     s32 roomids[8];
     s16 *propnum;
@@ -3435,10 +3282,10 @@ bool chrlvIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan)
 
 
 /**
- * contrast with @see chrlvTravelTick
+ * contrast with @see chrNavTick
  * Address 0x7F028600.
 */
-void chrlvTravelTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d *arg3, StandTile *arg4)
+void chrGoPosTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d *arg3, StandTile *arg4)
 {
     /**
      * Three unused stack variables.
@@ -3463,7 +3310,7 @@ void chrlvTravelTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord
 
         if (
             (stanTestVolume(&arg4, arg3->f[0], arg3->f[2], self->chrwidth, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, 0.0f, 1.0f) < 0)
-            && chrlvIsPosClearOfObjectBounds(arg3, arg4))
+            && chrIsPosClearOfObjectBounds(arg3, arg4))
         {
             self_prop = self->prop;
             self_prop->stan = arg4;
@@ -3473,13 +3320,13 @@ void chrlvTravelTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord
             self->chrflags |= CHRFLAG_INIT;
 
             modelSetRootPosition(self->model, arg3);
-            sub_GAME_7F01FC10(self->model, &self_prop->pos, &self_prop->pos, &self->ground);
+            chrRootMoveCallback(self->model, &self_prop->pos, &self_prop->pos, &self->ground);
             chrDetectRooms(self);
 
             if (self->actiontype == ACT_PATROL)
             {
-                chrlvAdvancePatrolStep(self);
-                chrlvSetGoposSegDistTotal(self, arg1, chrlvGetNextPatrolStepPad(self));
+                chrAdvancePatrolStep(self);
+                chrSetGoposSegDistTotal(self, arg1, chrGetNextPatrolStepPad(self));
             }
             else if (self->actiontype == ACT_GOPOS)
             {
@@ -3497,13 +3344,13 @@ void chrlvTravelTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord
                             mathAtan2(self_prop->pos.f[0] - pad->pos.f[0], self_prop->pos.f[2] - pad->pos.f[2]));
                     }
 
-                    chrlvKneelingAnimationRelated7F023E48(self);
+                    chrStandCheckWall(self);
                 }
                 else
                 {
-                    chrlvActGoposIncCurIndex(self);
-                    chrlvActGoposRelated(self, &sp40, &sp3C);
-                    chrlvSetGoposSegDistTotal(self, arg1, &sp40);
+                    chrActGoposIncCurIndex(self);
+                    chrGoPosGetCurWaypointInfo(self, &sp40, &sp3C);
+                    chrSetGoposSegDistTotal(self, arg1, &sp40);
                 }
             }
         }
@@ -3514,12 +3361,12 @@ void chrlvTravelTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord
             if (self->actiontype == ACT_PATROL)
             {
                 self->act_patrol.lastvisible60 = g_GlobalTimer;
-                chrlvSetNextActPatrolStepPadPos(self);
+                chrSetNextActPatrolStepPadPos(self);
             }
             else
             {
                 self->act_gopos.unk9c = g_GlobalTimer;
-                chrlvActGoposSetTargetPosRelated(self);
+                chrGoPosResetMagic(self);
             }
         }
 
@@ -3540,7 +3387,7 @@ void chrlvTravelTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord
  * Address 0x7F028894.
  * PD: chrCalculatePosition.
 */
-void chrlvGetPatrolPercentOrPosition(ChrRecord *self, coord3d *arg1)
+void chrGetMovementTarget(ChrRecord *self, coord3d *arg1)
 {
     PadRecord *pad;
     f32 percent;
@@ -3549,7 +3396,7 @@ void chrlvGetPatrolPercentOrPosition(ChrRecord *self, coord3d *arg1)
 
     if ((self->actiontype == ACT_PATROL) && (self->act_patrol.waydata.mode == WAYMODE_MAGIC))
     {
-        pad = chrlvGetNextPatrolStepPad(self);
+        pad = chrGetNextPatrolStepPad(self);
 
         if (self->act_patrol.waydata.segdisttotal <= self->act_patrol.waydata.segdistdone)
         {
@@ -3571,7 +3418,7 @@ void chrlvGetPatrolPercentOrPosition(ChrRecord *self, coord3d *arg1)
 
     if ((self->actiontype == ACT_GOPOS) && (self->act_gopos.waydata.mode == WAYMODE_MAGIC))
     {
-        chrlvActGoposRelated(self, &sp2C, &stan);
+        chrGoPosGetCurWaypointInfo(self, &sp2C, &stan);
 
         if (self->act_gopos.waydata.segdisttotal <= self->act_gopos.waydata.segdistdone)
         {
@@ -3605,7 +3452,7 @@ void chrlvGetPatrolPercentOrPosition(ChrRecord *self, coord3d *arg1)
  *
  * Address 0x7F028A5C.
 */
-void get_sound_at_range(ChrRecord *self, s32 arg1, s32 arg2)
+void chrGoPosChooseAnimationEx(ChrRecord *self, s32 arg1, s32 arg2)
 {
     PropRecord *left;
     PropRecord *right;
@@ -3694,9 +3541,9 @@ void get_sound_at_range(ChrRecord *self, s32 arg1, s32 arg2)
 /**
  * Address 0x7F028DA0.
 */
-void play_hit_soundeffect_and_proper_volume( ChrRecord *self)
+void chrGoPosChooseAnimation( ChrRecord *self)
 {
-    get_sound_at_range(self, self->act_ubytes.padding[45], c_item_entries[self->bodynum].isMale);
+    chrGoPosChooseAnimationEx(self, self->act_ubytes.padding[45], c_item_entries[self->bodynum].isMale);
 }
 
 
@@ -3705,7 +3552,7 @@ void play_hit_soundeffect_and_proper_volume( ChrRecord *self)
 /**
  * Address 0x7F028DDC.
 */
-s32 plot_course_for_actor(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed)
+s32 chrGoToPos(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed)
 {
     PropRecord *prop; //sp 100
     waypoint *prop_waypoint; // sp96
@@ -3720,8 +3567,8 @@ s32 plot_course_for_actor(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED
 
     phi_v0 = (self->actiontype == ACT_GOPOS) && (self->act_gopos.unk59 == (u8)speed);
 
-    prop_waypoint = chrlvStanPathRelated(&prop->pos, prop->stan);
-    target_waypoint = chrlvStanPathRelated(arg1, stan);
+    prop_waypoint = waypointFindNearPos(&prop->pos, prop->stan);
+    target_waypoint = waypointFindNearPos(arg1, stan);
 
     if ((prop_waypoint != NULL)
         && (target_waypoint != NULL)
@@ -3749,19 +3596,19 @@ s32 plot_course_for_actor(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED
             self->act_gopos.waypoints[i] = sp44[i];
         }
 
-        chrlvActGoposSetTargetPosRelated(self);
+        chrGoPosResetMagic(self);
         self->sleep = 0;
 
         if (phi_v0 == 0)
         {
-            play_hit_soundeffect_and_proper_volume(self);
+            chrGoPosChooseAnimation(self);
         }
 
-        chrlvActGoposRelated(self, &sp34, &sp30);
+        chrGoPosGetCurWaypointInfo(self, &sp34, &sp30);
 
-        if (((prop->flags & 2) == 0) && (chrlvStanRoomRelated(self, &sp34, sp30) != 0))
+        if (((prop->flags & 2) == 0) && (chrPathIsOffscreen(self, &sp34, sp30) != 0))
         {
-            chrlvSetGoposSegDistTotal(self, &self->act_gopos.waydata, &sp34);
+            chrSetGoposSegDistTotal(self, &self->act_gopos.waydata, &sp34);
         }
 
         return 1;
@@ -3776,7 +3623,7 @@ s32 plot_course_for_actor(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED
 /**
  * Address 0x7F028FAC.
 */
-void chrlvWalkingAnimationRelated(ChrRecord *self)
+void chrPatrolChooseAnimation(ChrRecord *self)
 {
     PropRecord *left;
     PropRecord *right;
@@ -3825,7 +3672,7 @@ void chrlvWalkingAnimationRelated(ChrRecord *self)
 /**
  * Address: 7F0290F8
  */
-void set_actor_on_path(ChrRecord *self, struct patrol_path *path)
+void chrStartPatrol(ChrRecord *self, struct patrol_path *path)
 {
     PadRecord *pad;
     s32 next_step = -1;
@@ -3885,25 +3732,25 @@ void set_actor_on_path(ChrRecord *self, struct patrol_path *path)
     self->act_init.padding[0x13] = -1;
     self->act_patrol.speed = 0.0f;
 
-    chrlvSetNextActPatrolStepPadPos(self);
+    chrSetNextActPatrolStepPadPos(self);
 
     self->sleep = 0;
 
-    chrlvWalkingAnimationRelated(self);
+    chrPatrolChooseAnimation(self);
 
-    pad = chrlvGetNextPatrolStepPad(self);
+    pad = chrGetNextPatrolStepPad(self);
 
     if ((self->prop->flags & PROPFLAG_ONSCREEN) == FALSE)
     {
-        if (chrlvStanRoomRelatedPad(self, pad) != 0)
+        if (chrPathToPadIsOffscreen(self, pad) != 0)
         {
-            chrlvSetGoposSegDistTotal(self, &self->act_patrol.waydata, &pad->pos);
+            chrSetGoposSegDistTotal(self, &self->act_patrol.waydata, &pad->pos);
         }
     }
 }
 
 
-void setSeenBondTimeToNow(ChrRecord *self)
+void chrRecordSawTarget(ChrRecord *self)
 {
   self->seen_bond_time = g_GlobalTimer;
   return;
@@ -3914,7 +3761,7 @@ void setSeenBondTimeToNow(ChrRecord *self)
 /**
  * Address 0x7F0292A8.
 */
-s32 chrlvAttackRelated7F0292A8(ChrRecord *self, coord3d *arg1, StandTile *arg2)
+s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *arg1, StandTile *arg2)
 {
     s32 ret;
     s32 flags;
@@ -3937,7 +3784,7 @@ s32 chrlvAttackRelated7F0292A8(ChrRecord *self, coord3d *arg1, StandTile *arg2)
     else
     {
         stan = arg2;
-        sp3C = chrlvGetChrOrPresetLocation(self, flags, self->act_attack.entityid, &sp40);
+        sp3C = chrGetChrOrPresetLocation(self, flags, self->act_attack.entityid, &sp40);
         chrSetMoving(self, 0);
 
         if ((flags & 1) != 0)
@@ -3948,7 +3795,7 @@ s32 chrlvAttackRelated7F0292A8(ChrRecord *self, coord3d *arg1, StandTile *arg2)
             {
                 if ((stanTestLineUnobstructed(&stan, arg1->x, arg1->f[2], sp3C->x, sp3C->f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, arg1->f[1], arg1->f[1], sp3C->f[1], sp3C->f[1]) != 0) && (stan == sp40))
                 {
-                    setSeenBondTimeToNow(self);
+                    chrRecordSawTarget(self);
                     ret = 1;
                 }
             }
@@ -4003,7 +3850,7 @@ bool chrCanSeeBond(ChrRecord *self)
 
         if (stanTestLineUnobstructed(&mystan, myprop->pos.x, myprop->pos.z, bondprop->pos.x, bondprop->pos.z, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, myheight, myheight, 0.0f, 1.0f) && (mystan == bondprop->stan))
         {
-            setSeenBondTimeToNow(self);
+            chrRecordSawTarget(self);
             pass = TRUE;
         }
 
@@ -4020,7 +3867,7 @@ bool chrCanSeeBond(ChrRecord *self)
 /**
  * Address 0x7F0295D0.
 */
-bool check_if_position_in_same_room(ChrRecord *self, coord3d *pos, StandTile *stan)
+bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan)
 {
     PropRecord *myprop   = self->prop;
     StandTile  *propstan;
@@ -4046,7 +3893,7 @@ bool check_if_position_in_same_room(ChrRecord *self, coord3d *pos, StandTile *st
 /**
  * Address 0x7F02969C.
 */
-s32 chrlvMaybeSameRoom(ChrRecord *self, coord3d *arg1, StandTile *arg2)
+s32 chrCanSeePos(ChrRecord *self, coord3d *arg1, StandTile *arg2)
 {
     f32 atan;
     f32 roty;
@@ -4063,7 +3910,7 @@ s32 chrlvMaybeSameRoom(ChrRecord *self, coord3d *arg1, StandTile *arg2)
     // if NOT in rear left quadrant?
     if ((df < DegToRad(100)) || (df > DegToRad(260)))
     {
-        return check_if_position_in_same_room(self, arg1, arg2);
+        return chrHasLineOfSightToPos(self, arg1, arg2);
     }
 
     return 0;
@@ -4075,7 +3922,7 @@ s32 chrlvMaybeSameRoom(ChrRecord *self, coord3d *arg1, StandTile *arg2)
 /**
  * Address 0x7F029760.
 */
-s32 chrlvCurrentPlayerCall7F0B0E24(ChrRecord *self)
+s32 chrHasLineOfSightToPlayer(ChrRecord *self)
 {
     PropRecord *sp3C;
     PropRecord *bond_prop;
@@ -4117,7 +3964,7 @@ s32 chrlvCurrentPlayerCall7F0B0E24(ChrRecord *self)
 /**
  * Address 0x7F02982C.
 */
-s32 chrlvCall7F0B0E24WithChrWidthHeight(PropRecord *arg0, coord3d *arg1, coord3d *arg2)
+s32 propCanWalkLine(PropRecord *arg0, coord3d *arg1, coord3d *arg2)
 {
     ChrRecord *sp7C;
     f32 sp78;
@@ -4180,7 +4027,7 @@ s32 chrlvCall7F0B0E24WithChrWidthHeight(PropRecord *arg0, coord3d *arg1, coord3d
 /**
  * Addres 0x7F029A94.
 */
-s32 chrlvCall7F02982C(PropRecord *arg0, coord3d *arg1, f32 arg2)
+s32 propCanWalkInDir(PropRecord *arg0, coord3d *arg1, f32 arg2)
 {
     coord3d sp1C;
 
@@ -4188,7 +4035,7 @@ s32 chrlvCall7F02982C(PropRecord *arg0, coord3d *arg1, f32 arg2)
     sp1C.f[1] = arg0->pos.f[1];
     sp1C.f[2] = arg0->pos.f[2] + (arg1->f[2] * arg2);
 
-    return chrlvCall7F0B0E24WithChrWidthHeight(arg0, &sp1C, arg1);
+    return propCanWalkLine(arg0, &sp1C, arg1);
 }
 
 
@@ -4198,7 +4045,7 @@ s32 chrlvCall7F02982C(PropRecord *arg0, coord3d *arg1, f32 arg2)
  *
  * Address 0x7F029AF0.
 */
-s32 chrlvCall7F0B0E24Normalized(PropRecord *arg0, coord3d *arg1)
+s32 propCanWalkTowardUnused(PropRecord *arg0, coord3d *arg1)
 {
     coord3d sp24;
     f32 temp_f2;
@@ -4217,18 +4064,18 @@ s32 chrlvCall7F0B0E24Normalized(PropRecord *arg0, coord3d *arg1)
     sp24.f[0] *= temp_f2;
     sp24.f[2] *= temp_f2;
 
-    return chrlvCall7F0B0E24WithChrWidthHeight(arg0, arg1, &sp24);
+    return propCanWalkLine(arg0, arg1, &sp24);
 }
 
 
 
 
 /**
- * Same as chrlvAlertGuardToPlayerPosition, except without setting `hidden` flag 0x2.
+ * Same as chrAlertGuardToPlayerPosition, except without setting `hidden` flag 0x2.
  *
  * Address 0x7F029BB0.
 */
-void chrlvSetTargetToPlayer(ChrRecord *self)
+void chrSetTargetToPlayer(ChrRecord *self)
 {
     PropRecord *temp_v0;
 
@@ -4244,11 +4091,11 @@ void chrlvSetTargetToPlayer(ChrRecord *self)
 
 
 /**
- * See also chrlvSetTargetToPlayer.
+ * See also chrSetTargetToPlayer.
  *
  * Address 0x7F029C00.
  */
-void chrlvAlertGuardToPlayerPosition(ChrRecord *self)
+void chrAlertGuardToPlayerPosition(ChrRecord *self)
 {
     PropRecord *temp_v0;
 
@@ -4369,7 +4216,7 @@ bool chrCheckTargetInSight(ChrRecord *self)
                     distance *= (s32)((f0 * 24.0f) / M_TAU_F) + 1;
                 }
 
-                distance = chrlvGetGuard007SpeedRatingInt(self, distance) + 1;
+                distance = chrGetGuard007SpeedRatingInt(self, distance) + 1;
                 pass = ((u32)randomGetNext() % (u32)distance) == 0;
             }
         }
@@ -4382,7 +4229,7 @@ bool chrCheckTargetInSight(ChrRecord *self)
 
     if (pass)
     {
-        chrlvSetTargetToPlayer(self);
+        chrSetTargetToPlayer(self);
     }
 
     return pass;
@@ -4398,7 +4245,7 @@ bool chrCheckTargetInSight(ChrRecord *self)
  *
  * Address 0x7F02A044.
 */
-void chrlvNormDistanceToPlayer(ChrRecord *self, GUNHAND side, vec3d *vec)
+void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, vec3d *vec)
 {
     PropRecord *prop;
     f32 norm;
@@ -4434,24 +4281,23 @@ void chrlvNormDistanceToPlayer(ChrRecord *self, GUNHAND side, vec3d *vec)
 
 
 /**
- * chrIsClearLow
- * @see sub_GAME_7F02A1E8
+ * @see chrIsClear
  * Address 0x7F02A0EC.
 */
-s32 sub_GAME_7F02A0EC(ChrRecord *self, GUNHAND side, f32 distance)
+s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
     coord3d sp28;
     coord3d sp1C;
 
     prop = self->prop;
-    chrlvNormDistanceToPlayer(self, side, &sp28);
+    chrNormDistanceToPlayer(self, side, &sp28);
 
     sp1C.f[0] = prop->pos.f[0] + (sp28.f[0] * distance);
     sp1C.f[1] = prop->pos.f[1];
     sp1C.f[2] = prop->pos.f[2] + (sp28.f[2] * distance);
 
-    return chrlvCall7F0B0E24WithChrWidthHeight(prop, &sp1C, &sp28);
+    return propCanWalkLine(prop, &sp1C, &sp28);
 }
 
 
@@ -4464,7 +4310,7 @@ s32 sub_GAME_7F02A0EC(ChrRecord *self, GUNHAND side, f32 distance)
  *
  * Address 0x7F02A15C.
 */
-void chrlvModelRotyRelated(ChrRecord *self, s32 arg1, coord3d *arg2)
+void chrGetSideDir(ChrRecord *self, s32 arg1, coord3d *arg2)
 {
     f32 temp_f12;
 
@@ -4488,25 +4334,24 @@ void chrlvModelRotyRelated(ChrRecord *self, s32 arg1, coord3d *arg2)
 
 
 /**
- * chrIsClear
- * @see sub_GAME_7F02A0EC
+ * @see chrIsClearLow
  *
  * Address 0x7F02A1E8.
 */
-s32 sub_GAME_7F02A1E8(ChrRecord *self, GUNHAND side, f32 distance)
+s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
     coord3d sp28;
     coord3d sp1C;
 
     prop = self->prop;
-    chrlvModelRotyRelated(self, side, &sp28);
+    chrGetSideDir(self, side, &sp28);
 
     sp1C.f[0] = prop->pos.f[0] + (sp28.f[0] * distance);
     sp1C.f[1] = prop->pos.f[1];
     sp1C.f[2] = prop->pos.f[2] + (sp28.f[2] * distance);
 
-    return chrlvCall7F0B0E24WithChrWidthHeight(prop, &sp1C, &sp28);
+    return propCanWalkLine(prop, &sp1C, &sp28);
 }
 
 
@@ -4539,7 +4384,7 @@ bool chrIsDead(ChrRecord *self)
 /**
  * Address 0x7F02A2C8.
 */
-bool actor_steps_sideways(ChrRecord *self)
+bool chrTrySidestep(ChrRecord *self)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
@@ -4571,17 +4416,17 @@ bool actor_steps_sideways(ChrRecord *self)
         )
         {
             HopDirection = (randomGetNext() & 1) == 0;         //Hop Left or Right
-            if (sub_GAME_7F02A1E8(self, HopDirection, 100.0f)) //able to step dir?
+            if (chrIsClear(self, HopDirection, 100.0f)) //able to step dir?
             {
-                chrlvSideStepAnimationRelated(self, HopDirection);
+                chrSidestep(self, HopDirection);
                 return TRUE;
             }
 
             HopOtherDirection = HopDirection == 0;
 
-            if (sub_GAME_7F02A1E8(self, HopOtherDirection, 100.0f)) //able to step other dir?
+            if (chrIsClear(self, HopOtherDirection, 100.0f)) //able to step other dir?
             {
-                chrlvSideStepAnimationRelated(self, HopOtherDirection);
+                chrSidestep(self, HopOtherDirection);
                 return TRUE;
             }
         }
@@ -4595,7 +4440,7 @@ bool actor_steps_sideways(ChrRecord *self)
 /**
  * Address 0x7F02A428.
 */
-bool actor_hops_sideways(ChrRecord *self)
+bool chrTryJumpOut(ChrRecord *self)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
@@ -4628,17 +4473,17 @@ bool actor_hops_sideways(ChrRecord *self)
         {
             HopDirection = (randomGetNext() & 1) == 0;         //Hop Left or Right
 
-            if (sub_GAME_7F02A1E8(self, HopDirection, 200.0f)) //able to hop dir?
+            if (chrIsClear(self, HopDirection, 200.0f)) //able to hop dir?
             {
-                chrlvFireJumpToSideAnimationRelated(self, HopDirection);
+                chrJumpOut(self, HopDirection);
                 return TRUE;
             }
 
             HopOtherDirection = HopDirection == 0;
 
-            if (sub_GAME_7F02A1E8(self, HopOtherDirection, 200.0f)) //able to hop other dir?
+            if (chrIsClear(self, HopOtherDirection, 200.0f)) //able to hop other dir?
             {
-                chrlvFireJumpToSideAnimationRelated(self, HopOtherDirection);
+                chrJumpOut(self, HopOtherDirection);
                 return TRUE;
             }
         }
@@ -4652,7 +4497,7 @@ bool actor_hops_sideways(ChrRecord *self)
 /**
  * Address 0x7F02A588.
 */
-bool actor_jogs_sideways(ChrRecord *self)
+bool chrTryRunSideways(ChrRecord *self)
 {
     PropRecord *myprop;
     f32         distToRun;
@@ -4663,15 +4508,15 @@ bool actor_jogs_sideways(ChrRecord *self)
     {
         myprop    = self->prop;
         distToRun = ((u32)randomGetNext() * (1.0f / UINT_MAX) * 200.0f) + 200.0f;         //random dist to run between 0 and 200
-        chrlvNormDistanceToPlayer(self, ((u32)randomGetNext() & 1) == 0, &TargetVector);  //get vector to run on
+        chrNormDistanceToPlayer(self, ((u32)randomGetNext() & 1) == 0, &TargetVector);  //get vector to run on
 
         TargetCoord.x = (TargetVector.x * distToRun) + myprop->pos.x;
         TargetCoord.y = myprop->pos.y;
         TargetCoord.z = (TargetVector.z * distToRun) + myprop->pos.z;
 
-        if (chrlvCall7F0B0E24WithChrWidthHeight(myprop, &TargetCoord, &TargetVector))
+        if (propCanWalkLine(myprop, &TargetCoord, &TargetVector))
         {
-            sub_GAME_7F024CF8(self, &TargetCoord);
+            chrRunToPos(self, &TargetCoord);
             return TRUE;
         }
 
@@ -4682,9 +4527,9 @@ bool actor_jogs_sideways(ChrRecord *self)
         TargetCoord.z  = (TargetVector.z * distToRun) + myprop->pos.z;
 
 
-        if (chrlvCall7F0B0E24WithChrWidthHeight(myprop, &TargetCoord, &TargetVector))
+        if (propCanWalkLine(myprop, &TargetCoord, &TargetVector))
         {
-            sub_GAME_7F024CF8(self, &TargetCoord);
+            chrRunToPos(self, &TargetCoord);
             return TRUE;
         }
     }
@@ -4697,7 +4542,7 @@ bool actor_jogs_sideways(ChrRecord *self)
 /**
  * Address 0x7F02A704.
 */
-bool actor_walks_and_fires(ChrRecord *self)
+bool chrTryAttackWalk(ChrRecord *self)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
@@ -4719,7 +4564,7 @@ bool actor_walks_and_fires(ChrRecord *self)
 
             if ( (SQR(dx) + SQR(dy) + SQR(dz)) >= (1000000.0f))
             {
-                chrlvInitActAttackWalk(self, SPEED_WALK);
+                chrInitActAttackWalk(self, SPEED_WALK);
                 return TRUE;
             }
         }
@@ -4733,7 +4578,7 @@ bool actor_walks_and_fires(ChrRecord *self)
 /**
  * Address 0x7F02A7F8.
 */
-bool actor_runs_and_fires(ChrRecord *self)
+bool chrTryAttackRun(ChrRecord *self)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
@@ -4755,7 +4600,7 @@ bool actor_runs_and_fires(ChrRecord *self)
 
             if ((SQR(dx) + SQR(dy) + SQR(dz)) >= (1000000.0f))
             {
-                chrlvInitActAttackWalk(self, SPEED_RUN);
+                chrInitActAttackWalk(self, SPEED_RUN);
                 return TRUE;
             }
         }
@@ -4769,7 +4614,7 @@ bool actor_runs_and_fires(ChrRecord *self)
 /**
  * Address 0x7F02A8EC.
 */
-bool actor_rolls_fires_crouched(ChrRecord *self)
+bool chrTryAttackRoll(ChrRecord *self)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
@@ -4796,17 +4641,17 @@ bool actor_rolls_fires_crouched(ChrRecord *self)
             {
                 HopDirection = (randomGetNext() & 1) == 0; //Hop Left or Right
 
-                if (sub_GAME_7F02A0EC(self, HopDirection, 200))
+                if (chrIsClearLow(self, HopDirection, 200))
                 {
-                    chrlvInitActAttackRoll(self, HopDirection);
+                    chrInitActAttackRoll(self, HopDirection);
                     return TRUE;
                 }
 
                 HopOtherDirection = HopDirection == 0;
 
-                if (sub_GAME_7F02A0EC(self, HopOtherDirection, 200))
+                if (chrIsClearLow(self, HopOtherDirection, 200))
                 {
-                    chrlvInitActAttackRoll(self, HopOtherDirection);
+                    chrInitActAttackRoll(self, HopOtherDirection);
                     return TRUE;
                 }
             }
@@ -4821,12 +4666,12 @@ bool actor_rolls_fires_crouched(ChrRecord *self)
 /**
  * Address 0x7F02AA1C.
 */
-bool actor_aim_at_actor(ChrRecord *self, s32 attack_type, s32 b)
+bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b)
 {
     if ((chrIsNotDeadOrShot(self)) &&
         ((chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT)) || (chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))))
     {
-        sub_GAME_7F025560(self, attack_type, b);
+        chrAttackStand(self, attack_type, b);
         return TRUE;
     }
 
@@ -4839,12 +4684,12 @@ bool actor_aim_at_actor(ChrRecord *self, s32 attack_type, s32 b)
 /**
  * Address 0x7F02AA88.
 */
-bool actor_kneel_aim_at_actor(ChrRecord *self, s32 targettype, s32 targetid)
+bool chrTryAttackKneel(ChrRecord *self, s32 targettype, s32 targetid)
 {
     if ((chrIsNotDeadOrShot(self)) &&
         ((chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT)) || (chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))))
     {
-        sub_GAME_7F0256F0(self, targettype, targetid);
+        chrAttackKneel(self, targettype, targetid);
         return TRUE;
     }
 
@@ -4856,7 +4701,7 @@ bool actor_kneel_aim_at_actor(ChrRecord *self, s32 targettype, s32 targetid)
 /**
  * Address 0x7F02AAF4
 */
-bool actor_fire_or_aim_at_target_update(ChrRecord *self, s32 newtargettype, s32 newtargetid)
+bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid)
 {
     if (self->actiontype == ACT_ATTACK)
     {
@@ -4864,7 +4709,7 @@ bool actor_fire_or_aim_at_target_update(ChrRecord *self, s32 newtargettype, s32 
         {
             self->act_attack.attacktype = newtargettype;
             self->act_attack.entityid   = newtargetid;
-            chrlvAttackActionRelated(self);
+            chrAttackSetEndFrame(self);
             return TRUE;
         }
     }
@@ -4876,13 +4721,13 @@ bool actor_fire_or_aim_at_target_update(ChrRecord *self, s32 newtargettype, s32 
 /**
  * Address 0x7F02AB44.
 */
-bool check_set_actor_standing_still(ChrRecord *self, s32 faceentitytype, s32 faceentityid)
+bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid)
 {
     if (chrIsNotDeadOrShot(self) != 0)
     {
         if (self->actiontype != ACT_STAND)
         {
-            chrlvKneelingAnimationRelated(self);
+            chrStand(self);
         }
 
         self->act_stand.face_entitytype = faceentitytype;
@@ -4933,7 +4778,7 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 
                 //if able to reach region surrounding pad?
                 if (stanWalkLineNoCallback(&stan2, pad->pos.x, pad->pos.z, region.x, region.z) &&
-                    plot_course_for_actor(self, &region, stan2, speed))
+                    chrGoToPos(self, &region, stan2, speed))
                 {
                     return TRUE;
                 }
@@ -4944,7 +4789,7 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
                     }
                 #endif
             }
-            else if (plot_course_for_actor(self, &pad->pos, stan, speed))
+            else if (chrGoToPos(self, &pad->pos, stan, speed))
             {
                 return TRUE;
             }
@@ -4959,11 +4804,11 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 /**
  * Address 0x7F02AD54.
 */
-bool if_actor_able_set_on_path(ChrRecord *self, s32 pathid)
+bool chrTryStartPatrol(ChrRecord *self, s32 pathid)
 {
     if (pathid && chrIsNotDeadOrShot(self))
     {
-        set_actor_on_path(self, pathid);
+        chrStartPatrol(self, pathid);
         return TRUE;
     }
 
@@ -4974,9 +4819,8 @@ bool if_actor_able_set_on_path(ChrRecord *self, s32 pathid)
 
 /**
  * Address 0x7F02AD98.
- * PD: chrTickStand
 */
-void chrlvTickStand(ChrRecord *self)
+void chrTickStand(ChrRecord *self)
 {
     s32 i;             // any
     f32 aaa;
@@ -5003,7 +4847,7 @@ void chrlvTickStand(ChrRecord *self)
         // needs to save $f0 into sp(0x3c)
         if (modelGetAnimFrame(self->model) >= modelGetAnimEndFrame(self->model))
         {
-            chrlvIdleAnimationRelated(self, 8.0f);
+            chrStandChooseAnimation(self, 8.0f);
             self->act_stand.prestand = 0;
         }
 
@@ -5017,11 +4861,11 @@ void chrlvTickStand(ChrRecord *self)
         if (self->act_stand.reaim)
         {
             subrotyarg2 = modelGetAnim(self->model)->numFrames - 1;
-            self->act_stand.turning = chrlvSetSubroty(self, self->act_stand.turning, subrotyarg2, 1.0f, 0.0f);
+            self->act_stand.turning = chrSetSubroty(self, self->act_stand.turning, subrotyarg2, 1.0f, 0.0f);
 
             if (self->act_stand.turning != 1)
             {
-                chrlvIdleAnimationRelated(self, 8.0f);
+                chrStandChooseAnimation(self, 8.0f);
                 self->act_stand.reaim = 0;
 
                 if (self->act_stand.face_entitytype & 0x10)
@@ -5032,7 +4876,7 @@ void chrlvTickStand(ChrRecord *self)
         }
         else
         {
-            temp_f0 = chrlvDistanceToChrRelated(self, self->act_stand.face_entitytype, self->act_stand.face_entityid);
+            temp_f0 = chrGetAngleToTarget(self, self->act_stand.face_entitytype, self->act_stand.face_entityid);
             if ((temp_f0 > 0.34906587f) && (temp_f0 < 5.9341197f))
             {
                 left = chrGetEquippedWeaponProp(self, 1);
@@ -5114,7 +4958,7 @@ void chrlvTickStand(ChrRecord *self)
                     temp_f0 -= M_TAU_F;
                 }
 
-                sp74[i] = chrlvPathingCollisionRelated(self->prop, temp_f0, 1000.0f, 0, 0.0f, 1.0f);
+                sp74[i] = chrGetClearDistInDir(self->prop, temp_f0, 1000.0f, 0, 0.0f, 1.0f);
             }
 
             for (i = 0; i < 8; i++)
@@ -5183,7 +5027,7 @@ void chrlvTickStand(ChrRecord *self)
                     temp_f0 -= M_TAU_F;
                 }
 
-                check_set_actor_standing_still(self, 0x10, (s32) ((temp_f0 * M_U16_MAX_VALUE_F) / M_TAU_F));
+                chrTryStop(self, 0x10, (s32) ((temp_f0 * M_U16_MAX_VALUE_F) / M_TAU_F));
             }
             else
             {
@@ -5195,7 +5039,7 @@ void chrlvTickStand(ChrRecord *self)
 
 
 
-void chrlvTickKneel(ChrRecord *actor) {
+void chrTickKneel(ChrRecord *actor) {
     actor->sleep = 0;
 }
 
@@ -5205,7 +5049,7 @@ void chrlvTickKneel(ChrRecord *actor) {
 /**
  * Address 0x7F02B4E8.
 */
-void chrlvTickAnim(ChrRecord *self)
+void chrTickAnim(ChrRecord *self)
 {
     s32 unused[1];
 
@@ -5215,7 +5059,7 @@ void chrlvTickAnim(ChrRecord *self)
 
         if (modelGetAnimEndFrame(self->model) <= sp20)
         {
-            chrlvKneelingAnimationRelated(self);
+            chrStand(self);
         }
     }
 
@@ -5244,7 +5088,7 @@ void chrlvTickAnim(ChrRecord *self)
 /**
  * Address 0x7F02B638.
 */
-void chrlvTickSurrender(ChrRecord *self)
+void chrTickSurrender(ChrRecord *self)
 {
     Model *model;
 
@@ -5263,7 +5107,7 @@ void chrlvTickSurrender(ChrRecord *self)
             sp30.f[0] = -sinf(t);
             sp30.f[2] = -cosf(t);
 
-            if (chrlvCall7F02982C(self->prop, &sp30, 20.0f) == 0)
+            if (propCanWalkInDir(self->prop, &sp30, 20.0f) == 0)
             {
                 modelSetAnimation(self->model, (struct ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_surrendering_armed], randomGetNext() & 1, 30.0f, 0.5f, 16.0f);
                 modelSetAnimLooping(self->model, 30.0f, 16.0f);
@@ -5277,7 +5121,7 @@ void chrlvTickSurrender(ChrRecord *self)
 /**
  * Address 0x7F02B774.
 */
-void chrlvTickDead(ChrRecord *self)
+void chrTickDead(ChrRecord *self)
 {
     if (self->act_init.padding[0] >= 0)
     {
@@ -5307,7 +5151,7 @@ void chrlvTickDead(ChrRecord *self)
  *
  * Address 0x7F02B800.
 */
-void chrlvIterateGuardSeeShotDie(ChrRecord *self, s32 flag)
+void chrAlertOthersOfInjury(ChrRecord *self, s32 flag)
 {
     ChrRecord *guard;
     PropRecord *self_prop;
@@ -5319,7 +5163,7 @@ void chrlvIterateGuardSeeShotDie(ChrRecord *self, s32 flag)
     s32 i = 0;
     s32 alert_count = 0;
 
-    numguards = get_numguards();
+    numguards = chrsGetNumSlots();
 
     /*
      * Maybe there's removed code in these if,elseif blocks?
@@ -5349,7 +5193,7 @@ void chrlvIterateGuardSeeShotDie(ChrRecord *self, s32 flag)
             {
                 alert_count++;
 
-                if (chrlvMaybeSameRoom(guard, &self_prop->pos, self_prop->stan))
+                if (chrCanSeePos(guard, &self_prop->pos, self_prop->stan))
                 {
                     if (flag == 0)
                     {
@@ -5379,9 +5223,8 @@ void chrlvIterateGuardSeeShotDie(ChrRecord *self, s32 flag)
 
 /**
  * Address 0x7F02B9A4.
- * PD: void chrTickDie(struct chrdata *chr).
 */
-void chrlvTickDie(ChrRecord *self)
+void chrTickDie(ChrRecord *self)
 {
     Model *model = self->model;
 
@@ -5438,10 +5281,10 @@ void chrlvTickDie(ChrRecord *self)
             return;
         }
 
-        chrlvActorFadeAway(self);
+        chrActorFadeAway(self);
     }
 
-    chrlvIterateGuardSeeShotDie(self, 1);
+    chrAlertOthersOfInjury(self, 1);
 }
 
 
@@ -5450,25 +5293,25 @@ void chrlvTickDie(ChrRecord *self)
 /**
  * Address 0x7F02BC80.
 */
-void chrlvTickArgh(ChrRecord *self)
+void chrTickArgh(ChrRecord *self)
 {
     Model *model = self->model;
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
-        chrlvSetTargetToPlayer(self);
+        chrSetTargetToPlayer(self);
 
         if ((s32)modelGetAnim(model) == (s32)&ptr_animation_table->data[(s32)&ANIM_DATA_death_left_leg])
         {
-            chrlvIdleAnimationRelated7F023E14(self, 26.0f);
+            chrStandImmediateCheckWall(self, 26.0f);
         }
         else
         {
-            chrlvKneelingAnimationRelated7F023E48(self);
+            chrStandCheckWall(self);
         }
     }
 
-    chrlvIterateGuardSeeShotDie(self, 0);
+    chrAlertOthersOfInjury(self, 0);
 }
 
 
@@ -5476,7 +5319,7 @@ void chrlvTickArgh(ChrRecord *self)
 /**
  * Address 0x7F02BD20.
 */
-void chrlvTickPreArgh(ChrRecord *self)
+void chrTickPreArgh(ChrRecord *self)
 {
     Model *model;
     coord3d sp30;
@@ -5488,7 +5331,7 @@ void chrlvTickPreArgh(ChrRecord *self)
         sp30.f[0] = self->act_preargh.pos.f[0];
         sp30.f[1] = self->act_preargh.pos.f[1];
         sp30.f[2] = self->act_preargh.pos.f[2];
-        triggered_on_shot_hit(self, &sp30, self->act_preargh.unk038, self->act_preargh.unk03c, self->act_preargh.unk040);
+        chrReactToHit(self, &sp30, self->act_preargh.unk038, self->act_preargh.unk03c, self->act_preargh.unk040);
     }
 }
 
@@ -5496,39 +5339,39 @@ void chrlvTickPreArgh(ChrRecord *self)
 
 
 /**
- * @see chrlvTickJumpout
- * @see chrlvTickTest
- * @see chrlvTickStartAlarm
+ * @see chrTickJumpout
+ * @see chrTickTest
+ * @see chrTickStartAlarm
  *
  * Address 0x7F02BDA4.
 */
-void chrlvTickSidestep(ChrRecord *self)
+void chrTickSidestep(ChrRecord *self)
 {
     Model *model = self->model;
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
-        chrlvSetTargetToPlayer(self);
-        chrlvIdleAnimationRelated7F023E14(self, 10.0f);
+        chrSetTargetToPlayer(self);
+        chrStandImmediateCheckWall(self, 10.0f);
     }
 }
 
 
 /**
- * @see chrlvTickSidestep
- * @see chrlvTickTest
- * @see chrlvTickStartAlarm
+ * @see chrTickSidestep
+ * @see chrTickTest
+ * @see chrTickStartAlarm
  *
  * Address 0x7F02BE00.
 */
-void chrlvTickJumpout(ChrRecord *self)
+void chrTickJumpout(ChrRecord *self)
 {
     Model *model = self->model;
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
-        chrlvSetTargetToPlayer(self);
-        chrlvKneelingAnimationRelated7F023E48(self);
+        chrSetTargetToPlayer(self);
+        chrStandCheckWall(self);
     }
 }
 
@@ -5536,32 +5379,32 @@ void chrlvTickJumpout(ChrRecord *self)
 
 
 /**
- * @see chrlvTickSidestep
- * @see chrlvTickJumpout
- * @see chrlvTickStartAlarm
+ * @see chrTickSidestep
+ * @see chrTickJumpout
+ * @see chrTickStartAlarm
  *
  * Address 0x7F02BE58.
 */
-void chrlvTickTest(ChrRecord *self)
+void chrTickTest(ChrRecord *self)
 {
     Model *model = self->model;
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
-        chrlvKneelingAnimationRelated(self);
+        chrStand(self);
     }
 }
 
 
 
 /**
- * @see chrlvTickSidestep
- * @see chrlvTickJumpout
- * @see chrlvTickTest
+ * @see chrTickSidestep
+ * @see chrTickJumpout
+ * @see chrTickTest
  *
  * Address 0x7F02BEA8.
 */
-void chrlvTickStartAlarm(ChrRecord *self)
+void chrTickStartAlarm(ChrRecord *self)
 {
     Model *model = self->model;
 
@@ -5573,7 +5416,7 @@ void chrlvTickStartAlarm(ChrRecord *self)
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
-        chrlvKneelingAnimationRelated7F023E48(self);
+        chrStandCheckWall(self);
     }
 }
 
@@ -5582,7 +5425,7 @@ void chrlvTickStartAlarm(ChrRecord *self)
 /**
  * Address 0x7F02BF24.
 */
-void chrlvTickSurprised(ChrRecord *self)
+void chrTickSurprised(ChrRecord *self)
 {
     Model *model = self->model;
 
@@ -5590,22 +5433,22 @@ void chrlvTickSurprised(ChrRecord *self)
     {
         if ((s32)modelGetAnim(model) == (s32)&ptr_animation_table->data[(s32)&ANIM_DATA_surrendering_armed])
         {
-            chrlvIdleAnimationRelated7F023E14(self, 26.0f);
+            chrStandImmediateCheckWall(self, 26.0f);
         }
         else if ((s32)modelGetAnim(model) == (s32)&ptr_animation_table->data[(s32)&ANIM_DATA_spotting_bond])
         {
-            chrlvIdleAnimationRelated7F023E14(self, 26.0f);
+            chrStandImmediateCheckWall(self, 26.0f);
         }
         else
         {
-            chrlvKneelingAnimationRelated7F023E48(self);
+            chrStandCheckWall(self);
         }
     }
 }
 
 
 
-void sub_GAME_7F02BFE4(ChrRecord *self, s32 arg1, s32 arg2)
+void chrPlayGunfireSound(ChrRecord *self, s32 arg1, s32 arg2)
 {
     PropRecord *prop;
     ChrRecord *temp_v1;
@@ -5682,7 +5525,7 @@ void sub_GAME_7F02BFE4(ChrRecord *self, s32 arg1, s32 arg2)
 /**
  * Address 0x7F02C190.
 */
-f32 chrlvGetSubrotySideback(ChrRecord *self)
+f32 chrGetSubrotySideback(ChrRecord *self)
 {
     Model *model;
     f32 phi_f12;
@@ -5737,7 +5580,7 @@ f32 chrlvGetSubrotySideback(ChrRecord *self)
 /**
  * Address 0x7F02C27C.
 */
-f32 sub_GAME_7F02C27C(ChrRecord *self)
+f32 chrGetAimUpAngle(ChrRecord *self)
 {
     f32 temp_f2;
 
@@ -5755,7 +5598,7 @@ f32 sub_GAME_7F02C27C(ChrRecord *self)
 /**
  * Address 0x7F02C2B0.
 */
-s32 chrlvSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
+s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
 {
     Model *model;
     f32 sp28; //sp40
@@ -5778,17 +5621,17 @@ s32 chrlvSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
 
         if (self->actiontype == ACT_ATTACK)
         {
-            dist = chrlvDistanceToChrRelated(self, self->act_attack.attacktype, self->act_attack.entityid);
+            dist = chrGetAngleToTarget(self, self->act_attack.attacktype, self->act_attack.entityid);
         }
         else if (self->actiontype == ACT_STAND)
         {
-            dist = chrlvDistanceToChrRelated(self, self->act_stand.face_entitytype, self->act_stand.face_entityid);
+            dist = chrGetAngleToTarget(self, self->act_stand.face_entitytype, self->act_stand.face_entityid);
         }
         else
         {
             PropRecord* p;
             p = getCurrentPlayerProp();
-            dist = get_distance_actor_to_position(self, &p->pos);
+            dist = chrGetAngleToPos(self, &p->pos);
         }
 
         dist = dist - arg4;
@@ -5852,7 +5695,7 @@ s32 chrlvSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
  *
  * Address 0x7F02C4C0.
 */
-s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_table *arg1, s32 arg2, s32 arg3, f32 arg4)
+s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_table *arg1, s32 arg2, s32 arg3, f32 arg4)
 {
     f32 sp164; // sp356
     f32 calc_aimendsideback; // sp352
@@ -5975,7 +5818,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
         else
         {
             modelGetRootPosition(self->model, &sp120);
-            current_player_pos = chrlvGetChrOrPresetLocation(self, attack_type, entity_id, &pstan);
+            current_player_pos = chrGetChrOrPresetLocation(self, attack_type, entity_id, &pstan);
             dx = current_player_pos->f[0] - sp120.f[0];
             dy = current_player_pos->f[1] - sp120.f[1];
             dz = current_player_pos->f[2] - sp120.f[2];
@@ -6012,7 +5855,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
 
             ////////////////////////////////////////////
 
-            subroty = chrlvGetSubrotySideback(self);
+            subroty = chrGetSubrotySideback(self);
 
             if (arg3)
             {
@@ -6023,7 +5866,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
                 weapon_prop = chrGetEquippedWeaponProp(self, GUNLEFT);
             }
 
-            // This if block is a slight modification of @see sub_GAME_7F02D630.
+            // This if block is a slight modification of @see chrGetHandPos.
             if ((weapon_prop != NULL) && (weapon_prop->flags & 2) && (dxdydz_square < 1000000.0f))
             {
                 obj = weapon_prop->obj;
@@ -6070,7 +5913,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
                     sp44.f[0] = self_prop->pos.f[0] - dz;
                     sp44.f[1] = self_prop->pos.f[1];
                     sp44.f[2] = self_prop->pos.f[2] + dx;
-                    chrlvLineLineIntersection(&self_prop->pos, &sp44, &sp104, &sp50, &sp5C);
+                    chrLineLineIntersection(&self_prop->pos, &sp44, &sp104, &sp50, &sp5C);
                     dx = current_player_pos->f[0] - sp5C.f[0];
                     dz = current_player_pos->f[2] - sp5C.f[2];
                 }
@@ -6104,7 +5947,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
             if ((attack_type & 1) && ((attack_type & 0x60) == 0))
             {
                 t1 = (((f32) ((s32) ((s32) ((f32) g_GlobalTimer * self->model->playspeed) + self->chrnum) % 60) * M_TAU_F) / 60.0f);
-                t1 = sinf(t1) * (chrlvGetAimLimitAngle(dxdydz_square) * 0.5f);
+                t1 = sinf(t1) * (chrGetAimLimitAngle(dxdydz_square) * 0.5f);
                 calc_aimendsideback += t1;
 
                 if (calc_aimendsideback < 0.0f)
@@ -6154,7 +5997,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
         }
     }
 
-    chrlvUpdateAimendbackShoulders(self, arg1, arg2, arg3, sp164);
+    chrUpdateAimendbackShoulders(self, arg1, arg2, arg3, sp164);
     self->aimendsideback = calc_aimendsideback;
     self->aimendcount = 0xA;
 
@@ -6179,7 +6022,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
  *
  * Address 0x7F02D048.
 */
-void chrlvUpdateAimendbackShoulders(ChrRecord *self, void *arg1, s32 same, s32 swap, f32 next)
+void chrUpdateAimendbackShoulders(ChrRecord *self, void *arg1, s32 same, s32 swap, f32 next)
 {
     f32 next_lshoulder;
     f32 next_rshoulder;
@@ -6242,7 +6085,7 @@ void chrlvUpdateAimendbackShoulders(ChrRecord *self, void *arg1, s32 same, s32 s
 /**
  * Address 0x7F02D0F8.
 */
-void chrlvResetAimend(ChrRecord *self)
+void chrResetAimend(ChrRecord *self)
 {
     self->aimendcount = 0xA;
     self->aimendrshoulder = 0.0f;
@@ -6276,7 +6119,7 @@ void chrSetFiring(ChrRecord *self, s32 hand, s32 firing)
  *
  * Address 0x7F02D148.
 */
-s32 sub_GAME_7F02D148(ChrRecord *self, s32 hand)
+s32 chrIsGunfireVisibleUnused(ChrRecord *self, s32 hand)
 {
     PropRecord *prop;
 
@@ -6299,14 +6142,14 @@ void chrStopFiring(ChrRecord *self)
 {
     chrSetFiring(self, GUNRIGHT, FALSE);
     chrSetFiring(self, GUNLEFT, FALSE);
-    chrlvResetAimend(self);
+    chrResetAimend(self);
 }
 
 
 /**
  * Address 0x7F02D1C4.
 */
-void chrlvToggleHiddenRelated(ChrRecord *self, s32 hand, s32 arg2)
+void chrSetHandFiring(ChrRecord *self, s32 hand, s32 arg2)
 {
     if (arg2 != 0)
     {
@@ -6340,7 +6183,7 @@ void chrlvToggleHiddenRelated(ChrRecord *self, s32 hand, s32 arg2)
 /**
  * Address 0x7F02D244.
 */
-f32 chrlvGetAimLimitAngle(f32 sqdist)
+f32 chrGetAimLimitAngle(f32 sqdist)
 {
     if (sqdist > (1600.0f * 1600.0f))
     {
@@ -6375,7 +6218,7 @@ f32 chrlvGetAimLimitAngle(f32 sqdist)
  *
  * Address 0x7F02D2E4.
 */
-void chrlvUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
+void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
 {
     f32 limit_angle;
     f32 dxdydz_square;
@@ -6401,11 +6244,11 @@ void chrlvUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item
     dz = player_prop->pos.f[2] - self_prop->pos.f[2];
 
     atan = mathAtan2(dx, dz);
-    subroty = chrlvGetSubrotySideback(self);
+    subroty = chrGetSubrotySideback(self);
     phi_f2 = atan - subroty;
     dxdydz_square = (dx * dx) + (dy * dy) + (dz * dz);
 
-    limit_angle = chrlvGetAimLimitAngle(dxdydz_square);
+    limit_angle = chrGetAimLimitAngle(dxdydz_square);
 
     if (phi_f2 < 0.0f)
     {
@@ -6495,11 +6338,11 @@ void chrlvUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item
 
 
 /**
- * Slight modification of a part of @see chrlvUpdateAimendsideback.
+ * Slight modification of a part of @see chrUpdateAimendsideback.
  *
  * Address 0x7F02D630.
 */
-s32 sub_GAME_7F02D630(ChrRecord *self, GUNHAND hand, coord3d *arg2)
+s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *arg2)
 {
     struct ObjectRecord *obj;
     PropRecord *weapon_prop;
@@ -6557,7 +6400,7 @@ s32 sub_GAME_7F02D630(ChrRecord *self, GUNHAND hand, coord3d *arg2)
 /**
  * Address 0x7F02D734.
 */
-void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
+void chrFireHand(ChrRecord *self, s32 hand)
 {
     PropRecord *self_prop; // 644
     s32 phi_a2; // ?
@@ -6651,12 +6494,12 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
             if (sp268 != 0)
             {
                 sp254 = NULL;
-                subroty = chrlvGetSubrotySideback(self);
-                sp24C = sub_GAME_7F02C27C(self);
+                subroty = chrGetSubrotySideback(self);
+                sp24C = chrGetAimUpAngle(self);
                 self_stan = self_prop->stan;
                 sp27C = 1;
 
-                if (sub_GAME_7F02D630(self, hand, (coord3d *) &sp240) == 0)
+                if (chrGetHandPos(self, hand, (coord3d *) &sp240) == 0)
                 {
                     sp240.f[0] = self_prop->pos.f[0];
                     sp240.f[1] = self_prop->pos.f[1] + 30.0f;
@@ -6690,7 +6533,7 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
                     sp230 = 0;
                     sp22C = 1;
 
-                    sp21C = chrlvAttackRelated7F0292A8(self, &sp240, sp238);
+                    sp21C = chrCheckCanSeeTarget(self, &sp240, sp238);
 
                     sp220.f[0] = cosf(sp24C) * sinf(subroty);
                     sp220.f[1] = sinf(sp24C);
@@ -6706,7 +6549,7 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
 
                     if (stanTestLineUnobstructed(&self_stan, sp240.f[0], sp240.f[2], sp258.f[0], sp258.f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, sp240.f[1], sp240.f[1], sp258.f[1], sp258.f[1]) == 0)
                     {
-                        chrlvStanLineDirIntersection(&sp240, &sp220, &sp258);
+                        chrStanLineDirIntersection(&sp240, &sp220, &sp258);
                         sp254 = self_stan;
                         sp258.f[0] -= 26.0f * sp220.f[0];
                         sp258.f[1] -= 26.0f * sp220.f[1];
@@ -6819,7 +6662,7 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
 
                             if (((dx * dx) + (dy * dy) + (dz * dz)) <= sp20C)
                             {
-                                chrlvUpdateShotbondsum(self, &sp234, &sp230, prop_selfchr->act_attack.attack_item);
+                                chrUpdateShotbondsum(self, &sp234, &sp230, prop_selfchr->act_attack.attack_item);
                                 sp22C = sp230 == 0;
 
                                 if ((sp234 != 0) && ((self->actiontype == ACT_ATTACK) || (self->actiontype == ACT_ATTACKROLL)))
@@ -6871,7 +6714,7 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
                                 {
                                     if ((self->chrflags & CHRFLAG_CAN_SHOOT_CHRS) != 0)
                                     {
-                                        handles_shot_actors(g_StanHitProp->chr, 0xF, &sp220, prop_selfchr->act_attack.attack_item, 0);
+                                        chrTakeShot(g_StanHitProp->chr, 0xF, &sp220, prop_selfchr->act_attack.attack_item, 0);
                                     }
                                 }
                                 else if ((g_StanHitProp->type == PROP_TYPE_OBJ) || (g_StanHitProp->type == PROP_TYPE_WEAPON))
@@ -6929,7 +6772,7 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
 
             phi_a2 = (sp27C != 0) || (sp278 != 0);
 
-            sub_GAME_7F02BFE4(self, hand, phi_a2);
+            chrPlayGunfireSound(self, hand, phi_a2);
         }
 
         chrSetFiring(self, hand, sp27C);
@@ -6940,20 +6783,20 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
 /**
  * Address 0x7F02E26C.
 */
-void chrlvTriggerFireWeapon(ChrRecord *self)
+void chrTriggerFireWeapon(ChrRecord *self)
 {
     self->hidden &= ~CHRHIDDEN_FIRE_TRACER;
 
     if (self->hidden & CHRHIDDEN_FIRE_WEAPON_RIGHT)
     {
-        chrlvFireWeaponRelated(self, GUNRIGHT);
+        chrFireHand(self, GUNRIGHT);
 
         self->hidden &= ~CHRHIDDEN_FIRE_WEAPON_RIGHT;
     }
 
      if (self->hidden & CHRHIDDEN_FIRE_WEAPON_LEFT)
     {
-        chrlvFireWeaponRelated(self, GUNLEFT);
+        chrFireHand(self, GUNLEFT);
 
         self->hidden &= ~CHRHIDDEN_FIRE_WEAPON_LEFT;
     }
@@ -6963,7 +6806,7 @@ void chrlvTriggerFireWeapon(ChrRecord *self)
 /**
  * Address 0x7F02E2E0.
 */
-s32 chrlvAttackrollAnimationRelated7F02E2E0(ChrRecord *self)
+s32 chrAttackRollToKneel(ChrRecord *self)
 {
     Model *model;
     struct weapon_firing_animation_table *p;
@@ -6984,7 +6827,7 @@ s32 chrlvAttackrollAnimationRelated7F02E2E0(ChrRecord *self)
             (void *) p->anim.anim,
             sp24,
             p->shoot_end_frame,
-            chrlvGetGuard007SpeedRating(self, 0.7f, 1.12f),
+            chrGetGuard007SpeedRating(self, 0.7f, 1.12f),
             22.0f);
 
         if (D_80030078[1].end_frame >= 0.0f)
@@ -7002,7 +6845,7 @@ s32 chrlvAttackrollAnimationRelated7F02E2E0(ChrRecord *self)
 /**
  * Address 0x7F02E3B8.
 */
-void chrlvAttackrollAnimationRelated7F02E3B8(ChrRecord *self)
+void chrAttackRollResumeAfterShot(ChrRecord *self)
 {
     Model *model;
 
@@ -7015,7 +6858,7 @@ void chrlvAttackrollAnimationRelated7F02E3B8(ChrRecord *self)
             modelGetAnim(model),
             (s32) model->flip,
             self->act_attackroll.animfloats->recoil_end_frame,
-            chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
+            chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
             8.0f);
     }
     else
@@ -7025,7 +6868,7 @@ void chrlvAttackrollAnimationRelated7F02E3B8(ChrRecord *self)
             modelGetAnim(model),
             (s32) model->flip,
             self->act_attackroll.animfloats->shoot_end_frame,
-            chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
+            chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
             8.0f);
     }
 
@@ -7040,7 +6883,7 @@ void chrlvAttackrollAnimationRelated7F02E3B8(ChrRecord *self)
  * Address 0x7F02E4C0.
  * Address 0x7F02E4F4 (VERSION_EU).
 */
-void chrlvTickAttackCommon(ChrRecord *self)
+void chrTickAttackCommon(ChrRecord *self)
 {
     s32 i;
     Model *self_model;
@@ -7070,14 +6913,14 @@ void chrlvTickAttackCommon(ChrRecord *self)
             {
                 if (self->act_attack.unk36 == 0)
                 {
-                    if (chrlvAttackrollAnimationRelated7F02E2E0(self) == 0)
+                    if (chrAttackRollToKneel(self) == 0)
                     {
                         modelSetAnimation(
                             self_model,
                             modelGetAnim(self_model),
                             (s32) self_model->flip,
                             self->act_attack.animfloats->shoot_end_frame,
-                            chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
+                            chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
                             8.0f);
 
                         if (self->act_attack.animfloats->end_frame >= 0.0f)
@@ -7088,7 +6931,7 @@ void chrlvTickAttackCommon(ChrRecord *self)
                 }
                 else
                 {
-                    chrlvAttackrollAnimationRelated7F02E3B8(self);
+                    chrAttackRollResumeAfterShot(self);
                 }
 
                 self->act_attack.unk33 = (s8) (self->act_attack.unk34 + 1);
@@ -7101,14 +6944,14 @@ void chrlvTickAttackCommon(ChrRecord *self)
     {
         if ((self->act_attack.unk37 != 0) || (self->act_attack.unk34 < self->act_attack.unk33))
         {
-            if (chrlvAttackrollAnimationRelated7F02E2E0(self) == 0)
+            if (chrAttackRollToKneel(self) == 0)
             {
                 if ((self->act_attack.attacktype & TARGET_BOND) != 0)
                 {
-                    chrlvSetTargetToPlayer(self);
+                    chrSetTargetToPlayer(self);
                 }
 
-                chrlvKneelingAnimationRelated7F023E48(self);
+                chrStandCheckWall(self);
 
                 return;
             }
@@ -7116,7 +6959,7 @@ void chrlvTickAttackCommon(ChrRecord *self)
         else if (self->act_attack.unk33 == self->act_attack.unk34)
         {
             self->act_attack.unk33++;
-            chrlvAttackrollAnimationRelated7F02E3B8(self);
+            chrAttackRollResumeAfterShot(self);
         }
         else if (self->act_attack.unk31 != 0)
         {
@@ -7198,21 +7041,21 @@ void chrlvTickAttackCommon(ChrRecord *self)
             fn40 = M_TAU_F - fn40;
         }
 
-        self->act_attack.unk30 = chrlvSetSubroty(
+        self->act_attack.unk30 = chrSetSubroty(
             self,
             (s32) self->act_attack.unk30,
             fanon1,
-            chrlvGetGuard007SpeedRating(self, 1.0f, 1.6f),
+            chrGetGuard007SpeedRating(self, 1.0f, 1.6f),
             fn40);
     }
 
     if ((self->act_attack.animfloats->aim_start_frame < phi_f20) && (phi_f20 < self->act_attack.animfloats->aim_end_frame))
     {
-        chrlvUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.unk38[1], (s32) self->act_attack.unk38[0], 1.0f);
+        chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.unk38[1], (s32) self->act_attack.unk38[0], 1.0f);
     }
     else
     {
-        chrlvResetAimend(self);
+        chrResetAimend(self);
     }
 
     for (i=0; i<2; i++)
@@ -7223,7 +7066,7 @@ void chrlvTickAttackCommon(ChrRecord *self)
             {
                 if ((self->act_attack.animfloats->shoot_start_frame <= phi_f20) && (phi_f20 < self->act_attack.animfloats->shoot_end_frame))
                 {
-                    chrlvToggleHiddenRelated(self, i, 1);
+                    chrSetHandFiring(self, i, 1);
                     self->act_attack.unk44 = g_GlobalTimer;
 
                     if (self->actiontype == ACT_ATTACKROLL)
@@ -7262,15 +7105,15 @@ void chrlvTickAttackCommon(ChrRecord *self)
                 }
                 else
                 {
-                    chrlvToggleHiddenRelated(self, i, 0);
+                    chrSetHandFiring(self, i, 0);
 
                     if (self->actiontype == ACT_ATTACKROLL)
                     {
-                        modelSetAnimSpeed(self_model, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 0.0f);
+                        modelSetAnimSpeed(self_model, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 0.0f);
                     }
                     else
                     {
-                        modelSetAnimSpeed(self_model, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 0.0f);
+                        modelSetAnimSpeed(self_model, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 0.0f);
                     }
                 }
             }
@@ -7293,16 +7136,16 @@ void chrlvTickAttackCommon(ChrRecord *self)
                 self->act_attack.unk33++;
                 self->act_attack.unk44 = g_GlobalTimer;
 
-                chrlvToggleHiddenRelated(self, i, 1);
+                chrSetHandFiring(self, i, 1);
             }
             else
             {
-                chrlvToggleHiddenRelated(self, i, 0);
+                chrSetHandFiring(self, i, 0);
             }
         }
         else
         {
-            chrlvToggleHiddenRelated(self, i, 0);
+            chrSetHandFiring(self, i, 0);
         }
     }
 }
@@ -7312,7 +7155,7 @@ void chrlvTickAttackCommon(ChrRecord *self)
  * Address 0x7F02EBFC (VERSION_US).
  * Adresss 0x7F02EF04 (other).
 */
-void chrlvTickAttack(ChrRecord *self)
+void chrTickAttack(ChrRecord *self)
 {
     Model *self_model;
     f32 temp_f0;
@@ -7339,7 +7182,7 @@ void chrlvTickAttack(ChrRecord *self)
                 modelGetAnim(self_model),
                 (s32) self_model->flip,
                 phi_f2,
-                chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
+                chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
                 16.0f);
 
             if (self->act_attack.animfloats->end_frame >= 0.0f)
@@ -7348,7 +7191,7 @@ void chrlvTickAttack(ChrRecord *self)
             }
 
             self->act_attack.type_of_motion = 2;
-            chrlvResetAimend(self);
+            chrResetAimend(self);
 
             return;
         }
@@ -7366,12 +7209,12 @@ void chrlvTickAttack(ChrRecord *self)
 
                 if (self->act_attack.unk54 != 0)
                 {
-                    sub_GAME_7F025560(self, (s32) self->act_attack.attacktype, self->act_attack.entityid);
+                    chrAttackStand(self, (s32) self->act_attack.attacktype, self->act_attack.entityid);
 
                     return;
                 }
 
-                sub_GAME_7F0256F0(self, (s32) self->act_attack.attacktype, self->act_attack.entityid);
+                chrAttackKneel(self, (s32) self->act_attack.attacktype, self->act_attack.entityid);
 
                 return;
             }
@@ -7384,7 +7227,7 @@ void chrlvTickAttack(ChrRecord *self)
     {
         if ((self->act_attack.attacktype & TARGET_DONTTURN) != 0)
         {
-            if (chrlvUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.unk38[1], (s32) self->act_attack.unk38[0], 0.2f) == 0)
+            if (chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.unk38[1], (s32) self->act_attack.unk38[0], 0.2f) == 0)
             {
                 self->act_attack.type_of_motion = 1;
             }
@@ -7412,7 +7255,7 @@ void chrlvTickAttack(ChrRecord *self)
                     modelGetAnim(self_model),
                     (s32) self_model->flip,
                     self->act_attack.animfloats->recoil_end_frame,
-                    chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f),
+                    chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
                     16.0f);
 
                 if (self->act_attack.unk37 != 0)
@@ -7430,14 +7273,14 @@ void chrlvTickAttack(ChrRecord *self)
         }
     }
 
-    chrlvTickAttackCommon(self);
+    chrTickAttackCommon(self);
 }
 
 
 /**
  * Address 0x7F02EEE0.
 */
-void chrlvTickAttackRoll(ChrRecord *self)
+void chrTickAttackRoll(ChrRecord *self)
 {
     Model *temp_a0; // 68
     f32 temp_f0;
@@ -7531,7 +7374,7 @@ void chrlvTickAttackRoll(ChrRecord *self)
                 self->act_attackroll.animfloats = phi_v1;
                 self->sleep = 0;
 
-                modelSetAnimation(temp_a0, (void *) phi_v1->anim.anim, sp38, phi_v1->start_frame, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), phi_f2_2);
+                modelSetAnimation(temp_a0, (void *) phi_v1->anim.anim, sp38, phi_v1->start_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), phi_f2_2);
 
                 if (self->act_attackroll.unk36 != 0)
                 {
@@ -7587,7 +7430,7 @@ void chrlvTickAttackRoll(ChrRecord *self)
             {
                 if (modelGetAnimEndFrame(temp_a0) <= temp_f0)
                 {
-                    modelSetAnimation(temp_a0, modelGetAnim(temp_a0), (s32) temp_a0->flip, self->act_attackroll.animfloats->recoil_end_frame, chrlvGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+                    modelSetAnimation(temp_a0, modelGetAnim(temp_a0), (s32) temp_a0->flip, self->act_attackroll.animfloats->recoil_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
 
                     if (self->act_attackroll.unk37 != 0)
                     {
@@ -7604,14 +7447,14 @@ void chrlvTickAttackRoll(ChrRecord *self)
             }
         }
     }
-    chrlvTickAttackCommon(self);
+    chrTickAttackCommon(self);
 }
 
 
 /**
  * Address 0x7F02F3F8.
 */
-void chrlvTickThrowGrenade(ChrRecord *self)
+void chrTickThrowGrenade(ChrRecord *self)
 {
     Model *self_model;
     f32 temp_f2;
@@ -7643,14 +7486,14 @@ void chrlvTickThrowGrenade(ChrRecord *self)
 
     if (modelGetAnimFrame(self_model) >= modelGetAnimEndFrame(self_model))
     {
-        chrlvKneelingAnimationRelated7F023E48(self);
+        chrStandCheckWall(self);
 
         return;
     }
 
     if ((temp_f2 >= 87.0f) && (temp_f2 <= 110.0f))
     {
-        chrlvSetSubroty(self, 1, 110.0f, chrlvGetGuard007SpeedRating(self, 1.0f, 1.6f), 0.0f);
+        chrSetSubroty(self, 1, 110.0f, chrGetGuard007SpeedRating(self, 1.0f, 1.6f), 0.0f);
     }
 }
 
@@ -7658,7 +7501,7 @@ void chrlvTickThrowGrenade(ChrRecord *self)
 /**
  * Address 0x7F02F5A4.
 */
-void chrlvTickBondIntro(ChrRecord *self)
+void chrTickBondIntro(ChrRecord *self)
 {
     Model *self_model;
     f32 sp28;
@@ -7683,7 +7526,7 @@ void chrlvTickBondIntro(ChrRecord *self)
 
     if (modelGetAnimEndFrame(self_model) <= sp28)
     {
-        chrlvKneelingAnimationRelated(self);
+        chrStand(self);
     }
 }
 
@@ -7691,7 +7534,7 @@ void chrlvTickBondIntro(ChrRecord *self)
 /**
  * Address 0x7F02F688.
 */
-void chrlvTickBondDieRemoved(ChrRecord *self)
+void chrTickBondDieRemoved(ChrRecord *self)
 {
     // removed.
 }
@@ -7732,7 +7575,7 @@ void chrlvTickBondDieRemoved(ChrRecord *self)
 /**
  * Address 0x7F02F690.
 */
-s32 chrlvApplySpeed(ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr)
+s32 chrApplySpeed(ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr)
 {
     f32 maxSpeed;
     Model *self_model; // 72
@@ -7837,7 +7680,7 @@ s32 chrlvApplySpeed(ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr)
 /**
  * Address 0x7F02F888.
 */
-void chrlvTickAttackWalk(ChrRecord *self)
+void chrTickAttackWalk(ChrRecord *self)
 {
     Model *self_model;
     PropRecord *player_prop;
@@ -7866,8 +7709,8 @@ void chrlvTickAttackWalk(ChrRecord *self)
             modelSetAnimSpeedToReachFrame(self_model, (f32)modelGetAnim(self_model)->numFrames * 0.5f, 16.0f);
         }
 
-        chrlvSetTargetToPlayer(self);
-        chrlvKneelingAnimationRelated7F023E48(self);
+        chrSetTargetToPlayer(self);
+        chrStandCheckWall(self);
 
         return;
     }
@@ -7876,24 +7719,24 @@ void chrlvTickAttackWalk(ChrRecord *self)
     temp_f2 = player_prop->pos.f[2] - self_prop->pos.f[2];
     if ((temp_f0 < 300.0f) && (temp_f0 > -300.0f) && (temp_f2 < 300.0f) && (temp_f2 > -300.0f))
     {
-        chrlvSetTargetToPlayer(self);
-        chrlvKneelingAnimationRelated7F023E48(self);
+        chrSetTargetToPlayer(self);
+        chrStandCheckWall(self);
 
         return;
     }
 
-    if (chrlvApplySpeed(self, &player_prop->pos, 0, &self->act_attackwalk.speed) != 0)
+    if (chrApplySpeed(self, &player_prop->pos, 0, &self->act_attackwalk.speed) != 0)
     {
         self->act_attackwalk.unk038 = 1;
     }
 
     if (self->act_attackwalk.clock_timer30 >= CHRLV_ATTACKWALK_CLOCK_TIMER30_MIN)
     {
-        chrlvUpdateAimendsideback(self, self->act_attackwalk.animfloats, (s32) self->act_attackwalk.unk48[1], (s32) self->act_attackwalk.unk48[0], 1.0f);
+        chrUpdateAimendsideback(self, self->act_attackwalk.animfloats, (s32) self->act_attackwalk.unk48[1], (s32) self->act_attackwalk.unk48[0], 1.0f);
     }
     else
     {
-        chrlvResetAimend(self);
+        chrResetAimend(self);
     }
 
     if (self->act_attackwalk.unk038 && !(self->act_attackwalk.clock_timer30 < CHRLV_ATTACKWALK_CLOCK_TIMER30_MAX))
@@ -7904,7 +7747,7 @@ void chrlvTickAttackWalk(ChrRecord *self)
             {
                 if (self->act_attackwalk.unk4a[i] == 0)
                 {
-                    chrlvToggleHiddenRelated(self, i, 1);
+                    chrSetHandFiring(self, i, 1);
                 }
                 else
                 {
@@ -7935,25 +7778,25 @@ void chrlvTickAttackWalk(ChrRecord *self)
 
                         self->act_attackwalk.unk044 = 1 - self->act_attackwalk.unk044;
 
-                        chrlvToggleHiddenRelated(self, i, 1);
+                        chrSetHandFiring(self, i, 1);
                     }
                     else
                     {
-                        chrlvToggleHiddenRelated(self, i, 0);
+                        chrSetHandFiring(self, i, 0);
                     }
                 }
             }
             else
             {
-                chrlvToggleHiddenRelated(self, i, 0);
+                chrSetHandFiring(self, i, 0);
             }
         }
 
         return;
     }
 
-    chrlvToggleHiddenRelated(self, GUNLEFT, 0);
-    chrlvToggleHiddenRelated(self, GUNRIGHT, 0);
+    chrSetHandFiring(self, GUNLEFT, 0);
+    chrSetHandFiring(self, GUNRIGHT, 0);
 }
 
 
@@ -7965,7 +7808,7 @@ void chrlvTickAttackWalk(ChrRecord *self)
  *
  * Address 0x7F02FC34.
 */
-s32 chrlvGeometryRelated7F02FC34(coord3d *arg0, coord3d *arg1, coord3d *arg2, f32 arg3)
+s32 rayPassesNearPoint2d(coord3d *arg0, coord3d *arg1, coord3d *arg2, f32 arg3)
 {
     coord3d dd;
     f32 temp_f14;
@@ -8008,7 +7851,7 @@ s32 chrlvGeometryRelated7F02FC34(coord3d *arg0, coord3d *arg1, coord3d *arg2, f3
  *
  * PD posIsArrivingLaterallyAtPos.
 */
-s32 chrlvIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *targetpos, f32 range)
+s32 chrIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *targetpos, f32 range)
 {
     coord3d sp34;
 
@@ -8036,15 +7879,14 @@ s32 chrlvIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *ta
     sp34.f[1] = 0.0f;
     sp34.f[2] = curpos->f[2] - prevpos->f[2];
 
-    return chrlvGeometryRelated7F02FC34(prevpos, &sp34, targetpos, range);
+    return rayPassesNearPoint2d(prevpos, &sp34, targetpos, range);
 }
 
 
 /**
  * Address 0x7F02FE78.
- * PD chrTickRunPos
 */
-void chrlvTickRunPos(ChrRecord *self)
+void chrTickRunPos(ChrRecord *self)
 {
     PropRecord *self_prop;
     Model *self_model;
@@ -8061,7 +7903,7 @@ void chrlvTickRunPos(ChrRecord *self)
 
     if ((self->invalidmove == 1)
         || (self->lastmoveok60 < (g_GlobalTimer - CHRLV_LASTMOVEOK60_CHECK))
-        || (chrlvIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &self->act_runpos.pos, self->act_runpos.neardist)))
+        || (chrIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &self->act_runpos.pos, self->act_runpos.neardist)))
     {
         f32 offset = 0;
 
@@ -8092,12 +7934,12 @@ void chrlvTickRunPos(ChrRecord *self)
             modelSetAnimSpeedToReachFrame(self_model, phi_f2, 16.0f);
         }
 
-        chrlvKneelingAnimationRelated7F023E48(self);
+        chrStandCheckWall(self);
 
         return;
     }
 
-    chrlvApplySpeed(self, &self->act_runpos.pos, 1, &self->act_runpos.turnspeed);
+    chrApplySpeed(self, &self->act_runpos.pos, 1, &self->act_runpos.turnspeed);
 
     if (self->act_runpos.eta60 > 0)
     {
@@ -8122,7 +7964,7 @@ void chrlvTickRunPos(ChrRecord *self)
 /**
  * Address 0x7F030128.
 */
-s32 sub_GAME_7F030128(ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, StandTile * arg4, s32 cdtypes)
+s32 chrCanWalkLine(ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, StandTile * arg4, s32 cdtypes)
 {
     StandTile *sp44;
     s32 sp40;
@@ -8153,7 +7995,7 @@ s32 sub_GAME_7F030128(ChrRecord *self, coord3d *point, StandTile *arg2, coord3d 
 /**
  * Address 0x7F0301FC.
 */
-s32 sub_GAME_7F0301FC(ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, f32 arg4, s32 cdtypes)
+s32 chrCanWalkLineWithin(ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, f32 arg4, s32 cdtypes)
 {
     StandTile *pstan;
     coord3d dd;
@@ -8214,7 +8056,7 @@ s32 sub_GAME_7F0301FC(ChrRecord *self, coord3d *point, StandTile *arg2, coord3d 
 /**
  * Address 0x7F0304AC.
 */
-s32 sub_GAME_7F0304AC(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *arg3, coord3d *bondpos, StandTile *bondstan, s32 cdtypes)
+s32 chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *arg3, coord3d *bondpos, StandTile *bondstan, s32 cdtypes)
 {
     StandTile *sp44;
     bool pass;
@@ -8251,7 +8093,7 @@ s32 sub_GAME_7F0304AC(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3
  *
  * Address 0x7F0305E0.
 */
-s32 sub_GAME_7F0305E0(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, f32 arg5, s32 cdtypes)
+s32 chrCanWalkViaPointWithinUnused(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, f32 arg5, s32 cdtypes)
 {
     StandTile *sp4C;
     s32 sp48;
@@ -8271,8 +8113,8 @@ s32 sub_GAME_7F0305E0(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         sp38 = sp4C;
 
         if (stanTestLineUnobstructed(&sp38, arg3->x, arg3->f[2], arg4->x, arg4->f[2], cdtypes, sp44, sp40, 0.0f, 1.0f)
-            && sub_GAME_7F0301FC(self, arg1, arg2, arg3, arg5, cdtypes)
-            && sub_GAME_7F0301FC(self, arg3, sp4C, arg4, arg5, cdtypes))
+            && chrCanWalkLineWithin(self, arg1, arg2, arg3, arg5, cdtypes)
+            && chrCanWalkLineWithin(self, arg3, sp4C, arg4, arg5, cdtypes))
         {
             sp48 = 1;
         }
@@ -8290,7 +8132,7 @@ s32 sub_GAME_7F0305E0(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
  *
  * Address 0x7F03074C.
 */
-void chrlvSwapIfDiffArg2Determinate(coord3d *arg0, coord3d *arg1, coord3d *arg2)
+void orderPointsBySide(coord3d *arg0, coord3d *arg1, coord3d *arg2)
 {
     coord3d spock;
     coord3d kirk;
@@ -8321,10 +8163,10 @@ void chrlvSwapIfDiffArg2Determinate(coord3d *arg0, coord3d *arg1, coord3d *arg2)
 
 
 /**
- * Very similar to @see sub_GAME_7F030D70 .
+ * Very similar to @see chrNavCheckForObstacle .
  * Address 0x7F03081C.
 */
-s32 sub_GAME_7F03081C(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes)
+s32 chrNavCanSeeNextPos(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes)
 {
     StandTile *spAC;
     coord3d spA0;
@@ -8402,7 +8244,7 @@ s32 sub_GAME_7F03081C(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         sp88 = 1;
 
         stanGetCollisionEdge(&sp78, &sp6C);
-        chrlvSwapIfDiffArg2Determinate(&sp78, &sp6C, &spA0);
+        orderPointsBySide(&sp78, &sp6C, &spA0);
     }
 
     spAC = arg2;
@@ -8433,13 +8275,13 @@ s32 sub_GAME_7F03081C(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         sp84 = 1;
 
         stanGetCollisionEdge(&sp60, &sp54);
-        chrlvSwapIfDiffArg2Determinate(&sp60, &sp54, &spA0);
+        orderPointsBySide(&sp60, &sp54, &spA0);
     }
 
     if ((sp88 != 0) && (sp84 != 0))
     {
-        chrlvSwapIfDiffArg2Determinate(&sp78, &sp60, &spA0);
-        chrlvSwapIfDiffArg2Determinate(&sp6C, &sp54, &spA0);
+        orderPointsBySide(&sp78, &sp60, &spA0);
+        orderPointsBySide(&sp6C, &sp54, &spA0);
 
         arg4->f[0] = sp78.f[0];
         arg4->f[1] = sp78.f[1];
@@ -8481,7 +8323,7 @@ s32 sub_GAME_7F03081C(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         else
         {
             stanGetCollisionEdge(arg4, arg5);
-            chrlvSwapIfDiffArg2Determinate(arg4, arg5, &spA0);
+            orderPointsBySide(arg4, arg5, &spA0);
         }
     }
 
@@ -8492,11 +8334,11 @@ s32 sub_GAME_7F03081C(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
 
 
 /**
- * Very similar to @see sub_GAME_7F03081C .
+ * Very similar to @see chrNavCanSeeNextPos .
  *
  * Address 0x7F030D70.
 */
-s32 sub_GAME_7F030D70(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes)
+s32 chrNavCheckForObstacle(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes)
 {
     StandTile *spAC;
     coord3d spA0;
@@ -8576,7 +8418,7 @@ s32 sub_GAME_7F030D70(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         sp88 = 1;
 
         stanGetCollisionEdge(&sp78, &sp6C);
-        chrlvSwapIfDiffArg2Determinate(&sp78, &sp6C, &spA0);
+        orderPointsBySide(&sp78, &sp6C, &spA0);
 
         stanval1 = g_StanHitFrac;
     }
@@ -8609,7 +8451,7 @@ s32 sub_GAME_7F030D70(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         sp84 = 1;
 
         stanGetCollisionEdge(&sp60, &sp54);
-        chrlvSwapIfDiffArg2Determinate(&sp60, &sp54, &spA0);
+        orderPointsBySide(&sp60, &sp54, &spA0);
 
         stanval2 = g_StanHitFrac;
     }
@@ -8669,7 +8511,7 @@ s32 sub_GAME_7F030D70(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
         else
         {
             stanGetCollisionEdge(arg4, arg5);
-            chrlvSwapIfDiffArg2Determinate(arg4, arg5, &spA0);
+            orderPointsBySide(arg4, arg5, &spA0);
         }
     }
 
@@ -8682,7 +8524,7 @@ s32 sub_GAME_7F030D70(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *
 /**
  * Address 0x7F03130C.
 */
-s32 sub_GAME_7F03130C(
+s32 chrNavTryObstacle(
     ChrRecord *self,
     coord3d *arg1,
     s32 arg2,
@@ -8748,8 +8590,8 @@ s32 sub_GAME_7F03130C(
     sp64.f[1] = arg1->f[1];
     sp64.f[2] = arg1->f[2] + sp50.f[2];
 
-    if (sub_GAME_7F03081C(self, &self_prop->pos, self_prop->stan, &sp64, sp4C, sp48, arg8, self->chrwidth, cdtypes)
-        && ((arg5 == 0) || sub_GAME_7F0304AC(self, &self_prop->pos, self_prop->stan, &sp64, arg6, NULL, cdtypes)))
+    if (chrNavCanSeeNextPos(self, &self_prop->pos, self_prop->stan, &sp64, sp4C, sp48, arg8, self->chrwidth, cdtypes)
+        && ((arg5 == 0) || chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &sp64, arg6, NULL, cdtypes)))
     {
         if (set_copy != 0)
         {
@@ -8780,13 +8622,13 @@ s32 sub_GAME_7F03130C(
  * 10% chance to open door.
  * Calls apply speed.
  *
- * @see chrlvTickPatrol
- * @see chrlvTickGoPos
- * contrast with @see chrlvTravelTickMagic
+ * @see chrTickPatrol
+ * @see chrTickGoPos
+ * contrast with @see chrGoPosTickMagic
  *
  * Address 0x7F0315A4.
 */
-void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata *arg3)
+void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata *arg3)
 {
     s32 spF0;
     coord3d sp100; // 260
@@ -8832,7 +8674,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
             sp100.f[1] = arg1->f[1];
             sp100.f[2] = arg1->f[2];
 
-            if (sub_GAME_7F03081C(self, &self_prop->pos, self_prop->stan, &sp100, &arg3->pos2, &arg3->pos3, -(self->chrwidth), self->chrwidth, CDTYPE_PATHBLOCKER) != 0)
+            if (chrNavCanSeeNextPos(self, &self_prop->pos, self_prop->stan, &sp100, &arg3->pos2, &arg3->pos3, -(self->chrwidth), self->chrwidth, CDTYPE_PATHBLOCKER) != 0)
             {
                 arg3->unk02 = (u8) 1;
                 arg3->pos.f[0] = sp100.f[0];
@@ -8858,11 +8700,11 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
         {
             spE8 = self->chrwidth * 1.2f * 1.05f;
 
-            if (sub_GAME_7F03130C(self, &arg3->pos2, 1, &spF4, spE8, 1, arg1, arg3, 0.0f, 0x10, 0) != 0)
+            if (chrNavTryObstacle(self, &arg3->pos2, 1, &spF4, spE8, 1, arg1, arg3, 0.0f, 0x10, 0) != 0)
             {
                 arg3->mode = WAYMODE_4;
             }
-            else if (sub_GAME_7F03130C(self, &arg3->pos3, 0, &spF4, spE8, 1, arg1, arg3, 0.0f, 0x10, 0) != 0)
+            else if (chrNavTryObstacle(self, &arg3->pos3, 0, &spF4, spE8, 1, arg1, arg3, 0.0f, 0x10, 0) != 0)
             {
                 arg3->mode = WAYMODE_4;
             }
@@ -8879,11 +8721,11 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
         {
             spE4 = self->chrwidth * 1.2f * 1.05f;
 
-            if (sub_GAME_7F03130C(self, &arg3->pos2, 1, &spF4, spE4, 0, NULL, arg3, 0.0f, 0x10, 0) != 0)
+            if (chrNavTryObstacle(self, &arg3->pos2, 1, &spF4, spE4, 0, NULL, arg3, 0.0f, 0x10, 0) != 0)
             {
                 arg3->mode = WAYMODE_4;
             }
-            else if (sub_GAME_7F03130C(self, &arg3->pos3, 0, &spF4, spE4, 0, NULL, arg3, 0.0f, 0x10, 0) != 0)
+            else if (chrNavTryObstacle(self, &arg3->pos3, 0, &spF4, spE4, 0, NULL, arg3, 0.0f, 0x10, 0) != 0)
             {
                 arg3->mode = WAYMODE_4;
             }
@@ -8906,7 +8748,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
         }
         else if (arg3->mode == WAYMODE_4)
         {
-            if (sub_GAME_7F030D70(self, &self_prop->pos, self_prop->stan, &arg3->pos, &arg3->pos2, &arg3->pos3, -(self->chrwidth), self->chrwidth, cdtypes) != 0)
+            if (chrNavCheckForObstacle(self, &self_prop->pos, self_prop->stan, &arg3->pos, &arg3->pos2, &arg3->pos3, -(self->chrwidth), self->chrwidth, cdtypes) != 0)
             {
                 arg3->unk03 = max;
                 arg3->mode = WAYMODE_0;
@@ -8960,7 +8802,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
 
             if (atan_pos2_a < atan_pos3_a)
             {
-                if (sub_GAME_7F03130C(self, &arg3->pos2, 1, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0)
+                if (chrNavTryObstacle(self, &arg3->pos2, 1, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0)
                 {
                     arg3->mode = WAYMODE_0;
                     break;
@@ -8996,7 +8838,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
                         atan_pos3_b = -atan_pos3_b;
                     }
 
-                    if ((atan_pos3_b < atan_pos2_b) && (sub_GAME_7F03130C(self, &spF4, 0, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0))
+                    if ((atan_pos3_b < atan_pos2_b) && (chrNavTryObstacle(self, &spF4, 0, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0))
                     {
                         arg3->mode = WAYMODE_0;
                         break;
@@ -9005,7 +8847,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
             }
             else
             {
-                if (sub_GAME_7F03130C(self,  &arg3->pos3, 0, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0)
+                if (chrNavTryObstacle(self,  &arg3->pos3, 0, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0)
                 {
                     arg3->mode = WAYMODE_0;
                     break;
@@ -9041,7 +8883,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
                         atan_pos3_c = -atan_pos3_c;
                     }
 
-                    if ((atan_pos3_c < atan_pos2_c) && (sub_GAME_7F03130C(self, &spF4, 1, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0))
+                    if ((atan_pos3_c < atan_pos2_c) && (chrNavTryObstacle(self, &spF4, 1, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0))
                     {
                         arg3->mode = WAYMODE_0;
                         break;
@@ -9080,7 +8922,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
 
                 if (((dx * dx) + (dy * dy) + (dz  * dz )) < 40000.0f)
                 {
-                    sub_GAME_7F0281F4(self);
+                    chrGoPosClearRestartTtl(self);
                     doorsChooseSwingDirection(self_prop, phi_s3->door);
                     doorActivate(phi_s3->door, 1);
 
@@ -9088,7 +8930,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
                         && (modelGetAnim(self->model) != (struct ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_idle_unarmed])
                         && (modelGetAnim(self->model) != (struct ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_idle]))
                     {
-                        chrlvIdleAnimationRelated(self, 16.0f);
+                        chrStandChooseAnimation(self, 16.0f);
                         self->lastmoveok60 = g_GlobalTimer;
                     }
                 }
@@ -9110,11 +8952,11 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
             {
                 if (self->actiontype == ACT_PATROL)
                 {
-                    chrlvWalkingAnimationRelated(self);
+                    chrPatrolChooseAnimation(self);
                 }
                 else
                 {
-                    play_hit_soundeffect_and_proper_volume(self);
+                    chrGoPosChooseAnimation(self);
                 }
             }
 
@@ -9127,11 +8969,11 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
 
     if (self->actiontype == ACT_PATROL)
     {
-        chrlvApplySpeed(self, &arg3->pos_copy, 0, &self->act_patrol.speed);
+        chrApplySpeed(self, &arg3->pos_copy, 0, &self->act_patrol.speed);
     }
     else
     {
-        chrlvApplySpeed(self, &arg3->pos_copy, (s32) self->act_gopos.unk59, &self->act_gopos.speed);
+        chrApplySpeed(self, &arg3->pos_copy, (s32) self->act_gopos.unk59, &self->act_gopos.speed);
 
         if (self->act_gopos.unk59 == 2)
         {
@@ -9166,7 +9008,7 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
 /**
  * Address 0x7F032088.
 */
-void chrlvTickGoPos(ChrRecord *self)
+void chrTickGoPos(ChrRecord *self)
 {
     waypoint *wp;
     coord3d *wp_pos;
@@ -9188,43 +9030,43 @@ void chrlvTickGoPos(ChrRecord *self)
 
     if (self->lastmoveok60 < (g_GlobalTimer - CHRLV_LASTMOVEOK60_CHECK))
     {
-        plot_course_for_actor(self, &self->act_gopos.targetpos, self->act_gopos.target, (s32) self->act_gopos.unk59);
+        chrGoToPos(self, &self->act_gopos.targetpos, self->act_gopos.target, (s32) self->act_gopos.unk59);
     }
 
-    chrlvPlotCourseRelated(self);
+    chrGoPosConsiderRestart(self);
 
     if ((self->act_gopos.waydata.mode != WAYMODE_MAGIC) && ((self->act_gopos.unk9c + CHRLV_DEFAULT_TIMER) < g_GlobalTimer))
     {
-        chrlvActGoposRelated(self, &sp68, &sp64);
+        chrGoPosGetCurWaypointInfo(self, &sp68, &sp64);
 
-        if (chrlvStanRoomRelated(self, &sp68, sp64))
+        if (chrPathIsOffscreen(self, &sp68, sp64))
         {
             sp74 = 1;
-            chrlvSetGoposSegDistTotal(self, &self->act_gopos.waydata, &sp68);
+            chrSetGoposSegDistTotal(self, &self->act_gopos.waydata, &sp68);
         }
     }
 
     if (g_SeenBondRecentlyGuardCount >= 0xA)
     {
-        chrlvKneelingAnimationRelated7F023E48(self);
+        chrStandCheckWall(self);
 
         return;
     }
 
     if (self->act_gopos.waydata.mode == WAYMODE_MAGIC)
     {
-        chrlvActGoposRelated(self, &sp58, &sp54);
+        chrGoPosGetCurWaypointInfo(self, &sp58, &sp54);
 
         if ((sp74 == 0)
-            && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrlvStanRoomRelated(self, &sp58, sp54) == 0)))
+            && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrPathIsOffscreen(self, &sp58, sp54) == 0)))
         {
-            chrlvActGoposSetTargetPosRelated(self);
+            chrGoPosResetMagic(self);
             self->act_gopos.unk9c = g_GlobalTimer;
 
             return;
         }
 
-        chrlvTravelTickMagic(self, &self->act_gopos.waydata, chrlvModelScaleAnimationRelated(self), &sp58, sp54);
+        chrGoPosTickMagic(self, &self->act_gopos.waydata, chrGetRunAnimSpeed(self), &sp58, sp54);
 
         return;
     }
@@ -9236,16 +9078,16 @@ void chrlvTickGoPos(ChrRecord *self)
 
     if (wp != NULL)
     {
-        if (chrlvIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &g_CurrentSetup.pads[wp->padID].pos, 30.0f) != 0)
+        if (chrIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &g_CurrentSetup.pads[wp->padID].pos, 30.0f) != 0)
         {
             phi_v1 = 1;
         }
     }
     else
     {
-        if (chrlvIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &self->act_gopos.targetpos, 30.0f) != 0)
+        if (chrIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &self->act_gopos.targetpos, 30.0f) != 0)
         {
-            chrlvKneelingAnimationRelated7F023E48(self);
+            chrStandCheckWall(self);
 
             return;
         }
@@ -9253,7 +9095,7 @@ void chrlvTickGoPos(ChrRecord *self)
 
     if (phi_v1 != 0)
     {
-        chrlvActGoposIncCurIndex(self);
+        chrActGoposIncCurIndex(self);
     }
 
     if (((s32) self->act_gopos.waydata.age % 10) == 5)
@@ -9280,11 +9122,11 @@ void chrlvTickGoPos(ChrRecord *self)
                     wp_stan = self->act_gopos.target;
                 }
 
-                if (sub_GAME_7F030128(self, &self_prop->pos, self_prop->stan, wp_pos, wp_stan, CDTYPE_PATHBLOCKER)
-                    && sub_GAME_7F0301FC(self, &self_prop->pos, self_prop->stan, wp_pos, self->chrwidth * 1.2f, CDTYPE_PATHBLOCKER))
+                if (chrCanWalkLine(self, &self_prop->pos, self_prop->stan, wp_pos, wp_stan, CDTYPE_PATHBLOCKER)
+                    && chrCanWalkLineWithin(self, &self_prop->pos, self_prop->stan, wp_pos, self->chrwidth * 1.2f, CDTYPE_PATHBLOCKER))
                 {
-                    chrlvActGoposIncCurIndex(self);
-                    chrlvActGoposIncCurIndex(self);
+                    chrActGoposIncCurIndex(self);
+                    chrActGoposIncCurIndex(self);
                 }
             }
         }
@@ -9310,10 +9152,10 @@ void chrlvTickGoPos(ChrRecord *self)
                 wp_stan = self->act_gopos.target;
             }
 
-            if (sub_GAME_7F030128(self, &self_prop->pos, self_prop->stan, wp_pos, wp_stan, CDTYPE_PATHBLOCKER)
-                && sub_GAME_7F0301FC(self, &self_prop->pos, self_prop->stan, wp_pos, self->chrwidth * 1.2f, CDTYPE_PATHBLOCKER))
+            if (chrCanWalkLine(self, &self_prop->pos, self_prop->stan, wp_pos, wp_stan, CDTYPE_PATHBLOCKER)
+                && chrCanWalkLineWithin(self, &self_prop->pos, self_prop->stan, wp_pos, self->chrwidth * 1.2f, CDTYPE_PATHBLOCKER))
             {
-                chrlvActGoposIncCurIndex(self);
+                chrActGoposIncCurIndex(self);
             }
         }
     }
@@ -9332,14 +9174,14 @@ void chrlvTickGoPos(ChrRecord *self)
         wp_stan = self->act_gopos.target;
     }
 
-    chrlvTravelTick(self, wp_pos, wp_stan, &self->act_gopos.waydata);
+    chrNavTick(self, wp_pos, wp_stan, &self->act_gopos.waydata);
 }
 
 
 /**
  * Address 0x7F032548.
 */
-void chrlvTickPatrol(ChrRecord *self)
+void chrTickPatrol(ChrRecord *self)
 {
     PropRecord *self_prop;
     s32 unused_1;
@@ -9347,30 +9189,30 @@ void chrlvTickPatrol(ChrRecord *self)
     PadRecord *temp_v0;
 
     self_prop = self->prop;
-    temp_v0 = (PadRecord *) chrlvGetNextPatrolStepPad(self);
+    temp_v0 = (PadRecord *) chrGetNextPatrolStepPad(self);
     sp34 = 0;
     self->act_patrol.waydata.age += 1;
     self->lastwalk60 = g_GlobalTimer;
 
     if ((self->act_patrol.waydata.mode != WAYMODE_MAGIC)
         && ((self->act_patrol.lastvisible60 + CHRLV_DEFAULT_TIMER) < g_GlobalTimer)
-        && chrlvStanRoomRelatedPad(self, temp_v0))
+        && chrPathToPadIsOffscreen(self, temp_v0))
     {
         sp34 = 1;
-        chrlvSetGoposSegDistTotal(self, &self->act_patrol.waydata, &temp_v0->pos);
+        chrSetGoposSegDistTotal(self, &self->act_patrol.waydata, &temp_v0->pos);
     }
 
     if (self->act_patrol.waydata.mode == WAYMODE_MAGIC)
     {
         if ((sp34 == 0)
-            && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrlvStanRoomRelatedPad(self, temp_v0) == 0)))
+            && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrPathToPadIsOffscreen(self, temp_v0) == 0)))
         {
             self->act_patrol.lastvisible60 = g_GlobalTimer;
-            chrlvSetNextActPatrolStepPadPos(self);
+            chrSetNextActPatrolStepPadPos(self);
         }
         else
         {
-            chrlvTravelTickMagic(self, &self->act_patrol.waydata, D_80030984, &temp_v0->pos, temp_v0->stan);
+            chrGoPosTickMagic(self, &self->act_patrol.waydata, D_80030984, &temp_v0->pos, temp_v0->stan);
         }
     }
     else
@@ -9380,13 +9222,13 @@ void chrlvTickPatrol(ChrRecord *self)
             // removed
         }
 
-        if (chrlvIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &temp_v0->pos, 30.0f))
+        if (chrIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &temp_v0->pos, 30.0f))
         {
-            chrlvAdvancePatrolStep(self);
-            temp_v0 = (PadRecord *)chrlvGetNextPatrolStepPad(self);
+            chrAdvancePatrolStep(self);
+            temp_v0 = (PadRecord *)chrGetNextPatrolStepPad(self);
         }
 
-        chrlvTravelTick(self, &temp_v0->pos, temp_v0->stan, &self->act_patrol.waydata);
+        chrNavTick(self, &temp_v0->pos, temp_v0->stan, &self->act_patrol.waydata);
     }
 }
 
@@ -9449,7 +9291,7 @@ static s32 coopChrTrySwitchToCloserPlayer(ChrRecord *self, s32 target)
         {
             // chrCanSeeBond noted the sighting; make it the new target's.
             self->targetplayer = i;
-            chrlvSetTargetToPlayer(self);
+            chrSetTargetToPlayer(self);
             self->lastheartarget60 = 0;
             return i;
         }
@@ -9584,7 +9426,7 @@ static void coopChrSelectTarget(ChrRecord *self)
     set_cur_player(target);
 }
 
-static void chrlvActionTickBody(ChrRecord *self);
+static void chrActionTickBody(ChrRecord *self);
 
 /**
  * Runs a chr's AI list and current action.
@@ -9594,30 +9436,30 @@ static void chrlvActionTickBody(ChrRecord *self);
  *
  * Address 0x7F0326BC.
  */
-void chrlvActionTick(ChrRecord *self)
+void chrActionTick(ChrRecord *self)
 {
     s32 prevplayer;
 
     if (!g_CoopMode)
     {
-        chrlvActionTickBody(self);
+        chrActionTickBody(self);
         return;
     }
 
     prevplayer = get_cur_playernum();
     coopChrSelectTarget(self);
-    chrlvActionTickBody(self);
+    chrActionTickBody(self);
     set_cur_player(prevplayer);
 }
 
-static void chrlvActionTickBody(ChrRecord *self)
+static void chrActionTickBody(ChrRecord *self)
 {
     if (g_ClockTimer > 0)
     {
         if (self->actiontype == ACT_INIT)
         {
             self->chrflags |= CHRFLAG_INIT;
-            chrlvMergeKneelToStand(self, 0.0f);
+            chrStandImmediate(self, 0.0f);
             self->sleep = 0;
         }
 
@@ -9636,70 +9478,70 @@ static void chrlvActionTickBody(ChrRecord *self)
             switch (self->actiontype)
             {
                 case ACT_STAND:
-                    chrlvTickStand(self);
+                    chrTickStand(self);
                     break;
                 case ACT_KNEEL:
-                    chrlvTickKneel(self);
+                    chrTickKneel(self);
                     break;
                 case ACT_ANIM:
-                    chrlvTickAnim(self);
+                    chrTickAnim(self);
                     break;
                 case ACT_DIE:
-                    chrlvTickDie(self);
+                    chrTickDie(self);
                     break;
                 case ACT_ARGH:
-                    chrlvTickArgh(self);
+                    chrTickArgh(self);
                     break;
                 case ACT_PREARGH:
-                    chrlvTickPreArgh(self);
+                    chrTickPreArgh(self);
                     break;
                 case ACT_SIDESTEP:
-                    chrlvTickSidestep(self);
+                    chrTickSidestep(self);
                     break;
                 case ACT_JUMPOUT:
-                    chrlvTickJumpout(self);
+                    chrTickJumpout(self);
                     break;
                 case ACT_DEAD:
-                    chrlvTickDead(self);
+                    chrTickDead(self);
                     break;
                 case ACT_ATTACK:
-                    chrlvTickAttack(self);
+                    chrTickAttack(self);
                     break;
                 case ACT_ATTACKWALK:
-                    chrlvTickAttackWalk(self);
+                    chrTickAttackWalk(self);
                     break;
                 case ACT_ATTACKROLL:
-                    chrlvTickAttackRoll(self);
+                    chrTickAttackRoll(self);
                     break;
                 case ACT_RUNPOS:
-                    chrlvTickRunPos(self);
+                    chrTickRunPos(self);
                     break;
                 case ACT_PATROL:
-                    chrlvTickPatrol(self);
+                    chrTickPatrol(self);
                     break;
                 case ACT_GOPOS:
-                    chrlvTickGoPos(self);
+                    chrTickGoPos(self);
                     break;
                 case ACT_SURRENDER:
-                    chrlvTickSurrender(self);
+                    chrTickSurrender(self);
                     break;
                 case ACT_TEST:
-                    chrlvTickTest(self);
+                    chrTickTest(self);
                     break;
                 case ACT_SURPRISED:
-                    chrlvTickSurprised(self);
+                    chrTickSurprised(self);
                     break;
                 case ACT_STARTALARM:
-                    chrlvTickStartAlarm(self);
+                    chrTickStartAlarm(self);
                     break;
                 case ACT_THROWGRENADE:
-                    chrlvTickThrowGrenade(self);
+                    chrTickThrowGrenade(self);
                     break;
                 case ACT_BONDINTRO:
-                    chrlvTickBondIntro(self);
+                    chrTickBondIntro(self);
                     break;
                 case ACT_BONDDIE:
-                    chrlvTickBondDieRemoved(self);
+                    chrTickBondDieRemoved(self);
                     break;
             }
 
@@ -9713,21 +9555,22 @@ static void chrlvActionTickBody(ChrRecord *self)
 
 
 /**
- * Calls chrlvActionTick on all characters, and updates count of guards that have recently seen bond.
+ * Runs the background AI scripts (level scripts with no guard of their own), and updates
+ * the count of guards that have recently seen Bond.
  *
  * Address 0x7F03291C.
 */
-void chrlvAllChrTick(void)
+void bgChrsTick(void)
 {
     s32 i;
     s32 max;
     ChrRecord *guard;
 
-    max = get_numguards();
+    max = chrsGetNumSlots();
 
-    for (i=0; i<g_ActiveChrsCount; i++)
+    for (i=0; i<g_NumBgChrs; i++)
     {
-        chrlvActionTick(&g_ActiveChrs[i]);
+        chrActionTick(&g_BgChrs[i]);
     }
 
     g_SeenBondRecentlyGuardCount = 0;
@@ -9777,7 +9620,7 @@ s32 chrHeardTargetRecently(ChrRecord *self)
  * Address 0x7F032BD8.
  * get angle to pos in Radians
 */
-f32 get_distance_actor_to_position(ChrRecord *self, coord3d *pos)
+f32 chrGetAngleToPos(ChrRecord *self, coord3d *pos)
 {
     f32         radToPos;
     f32         radMyHeading;
@@ -9803,7 +9646,7 @@ f32 get_distance_actor_to_position(ChrRecord *self, coord3d *pos)
 */
 f32 chrGetAngleToBond(ChrRecord *self)
 {
-    return get_distance_actor_to_position(self, &getCurrentPlayerProp()->pos);
+    return chrGetAngleToPos(self, &getCurrentPlayerProp()->pos);
 }
 
 
@@ -9816,7 +9659,7 @@ f32 chrGetAngleToBond(ChrRecord *self)
  *
  * Address 0x7F032C78.
 */
-coord3d *chrlvGetChrOrPresetLocation(ChrRecord *self, s32 flags, s32 lookup_id, StandTile **stan)
+coord3d *chrGetChrOrPresetLocation(ChrRecord *self, s32 flags, s32 lookup_id, StandTile **stan)
 {
     ChrRecord *guard;
     PropRecord *player_prop;
@@ -9933,7 +9776,7 @@ f32 chrGetDistanceToPad(ChrRecord *self, s32 padID)
 /**
  * Address 0x7F032EFC.
 */
-bool check_if_room_for_preset_loaded(ChrRecord *self, s32 padnum)
+bool chrPadRoomIsVisible(ChrRecord *self, s32 padnum)
 {
     PadRecord *pad;
     StandTile *padstan;
@@ -10029,11 +9872,11 @@ ChrRecord *chrFindById(ChrRecord *self, s32 guard_id)
 
     if (guard == NULL)
     {
-        for (i=0; i<g_ActiveChrsCount; i++)
+        for (i=0; i<g_NumBgChrs; i++)
         {
-            if (guard_id == g_ActiveChrs[i].chrnum)
+            if (guard_id == g_BgChrs[i].chrnum)
             {
-                guard = &g_ActiveChrs[i];
+                guard = &g_BgChrs[i];
                 break;
             }
         }
@@ -10221,7 +10064,7 @@ bool chrTrySurrender(ChrRecord *self)
 {
     if (chrIsNotDeadOrShot(self))
     {
-        chrlvActorThrowWeaponSurrender(self);
+        chrActorThrowWeaponSurrender(self);
 
         return TRUE;
     }
@@ -10235,7 +10078,7 @@ bool chrTrySurrender(ChrRecord *self)
 */
 bool chrFadeOut(ChrRecord *self)
 {
-    chrlvActorFadeAway(self);
+    chrActorFadeAway(self);
 
     return TRUE;
 }
@@ -10263,7 +10106,7 @@ f32 chrGetTimer(ChrRecord *self)
 /**
  * Address 0x7F0333F8.
 */
-bool sub_GAME_7F0333F8(ChrRecord *self)
+bool chrIsTargetedByPlayer(ChrRecord *self)
 {
     Model  *mymodel;
     coord3d zeropos;
@@ -10271,7 +10114,7 @@ bool sub_GAME_7F0333F8(ChrRecord *self)
     vec3d vec;
     f32     scale;
 
-    if (chrlvCurrentPlayerCall7F0B0E24(self))
+    if (chrHasLineOfSightToPlayer(self))
     {
         mymodel = self->model;
         scale   = modelGetRadius(mymodel) * 0.8f;
@@ -10309,7 +10152,7 @@ bool chrGoToBond(ChrRecord *self, SPEED speed)
     {
         bondprop = getCurrentPlayerProp();
 
-        if (plot_course_for_actor(self, &bondprop->pos, bondprop->stan, speed))
+        if (chrGoToPos(self, &bondprop->pos, bondprop->stan, speed))
         {
             return TRUE;
         }
@@ -10334,7 +10177,7 @@ bool chrGoToChr(ChrRecord *self, s32 chrid, SPEED speed)
         {
             chrprop = chr->prop;
 
-            if (plot_course_for_actor(self, &chrprop->pos, chrprop->stan, speed))
+            if (chrGoToPos(self, &chrprop->pos, chrprop->stan, speed))
             {
                 return TRUE;
             }
@@ -10398,7 +10241,7 @@ bool chraiStopAnimation(ChrRecord *self)
 {
     if (chrIsNotDeadOrShot(self))
     {
-        chrlvKneelingAnimationRelated7F023E48(self);
+        chrStandCheckWall(self);
 
         return TRUE;
     }
@@ -10414,7 +10257,7 @@ bool chrTrySurprisedOneHand(ChrRecord *self)
 {
     if (chrIsNotDeadOrShot(self))
     {
-        chrlvActorShuffleFeet(self);
+        chrActorShuffleFeet(self);
 
         return TRUE;
     }
@@ -10430,7 +10273,7 @@ bool chrTrySurprisedSurrender(ChrRecord *self)
 {
     if (chrIsNotDeadOrShot(self))
     {
-        chrlvSurrenderAnimationRelated(self);
+        chrStartSurprised(self);
 
         return TRUE;
 
@@ -10446,7 +10289,7 @@ bool chrTrySurprisedLookAround(ChrRecord *self)
 {
     if (chrIsNotDeadOrShot(self))
     {
-        chrlvActorLookFlustered(self);
+        chrActorLookFlustered(self);
 
         return TRUE;
     }
@@ -10458,7 +10301,7 @@ bool chrTrySurprisedLookAround(ChrRecord *self)
 /**
  * Address 0x7F0336C4.
 */
-bool check_if_able_to_then_kneel(ChrRecord *self)
+bool chrTryKneel(ChrRecord *self)
 {
     if (chrIsNotDeadOrShot(self))
     {
@@ -10474,11 +10317,11 @@ bool check_if_able_to_then_kneel(ChrRecord *self)
 /**
  * Address 0x7F033700.
 */
-s32 check_if_able_to_then_perform_animation(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60)
+s32 chrTryStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60)
 {
     if (chrIsNotDeadOrShot(self))
     {
-        chrlvPerformAnimationForActor(self, animID, startframe, endframe, bitfield, interpol_time60);
+        chrStartAnim(self, animID, startframe, endframe, bitfield, interpol_time60);
 
         return TRUE;
     }
@@ -10505,9 +10348,8 @@ bool chrCanHearAlarm(ChrRecord *self)
 
 /**
  * Address 0x7F033780.
- * PD: waypointIsWithin90DegreesOfPosAngle
 */
-s32 sub_GAME_7F033780(waypoint *arg0, coord3d *arg1, f32 angle)
+s32 waypointIsWithin90DegreesOfPosAngle(waypoint *arg0, coord3d *arg1, f32 angle)
 {
     f32 temp_f0;
     PadRecord *pad;
@@ -10552,7 +10394,7 @@ s32 sub_GAME_7F033780(waypoint *arg0, coord3d *arg1, f32 angle)
  * Address 0x7F033834.
  * PD: chrFindWaypointWithinPosQuadrant
 */
-s32 chrlvFindPathNeighborRelated(coord3d *bondpos, StandTile *stan, f32 rot, u8 quadrant)
+s32 waypointFindInQuadrant(coord3d *bondpos, StandTile *stan, f32 rot, u8 quadrant)
 {
     s32 padnum_2;
     s32 temp_s1;
@@ -10561,7 +10403,7 @@ s32 chrlvFindPathNeighborRelated(coord3d *bondpos, StandTile *stan, f32 rot, u8 
     s32 path_id;
     s32 neighbor_index;
 
-    waypoint = chrlvStanPathRelated(bondpos, stan);
+    waypoint = waypointFindNearPos(bondpos, stan);
 
     if (waypoint)
     {
@@ -10588,7 +10430,7 @@ s32 chrlvFindPathNeighborRelated(coord3d *bondpos, StandTile *stan, f32 rot, u8 
             rot = rot - M_TAU_F;
         }
 
-        if (sub_GAME_7F033780(waypoint, bondpos, rot))
+        if (waypointIsWithin90DegreesOfPosAngle(waypoint, bondpos, rot))
         {
             return waypoint->padID;
         }
@@ -10599,7 +10441,7 @@ s32 chrlvFindPathNeighborRelated(coord3d *bondpos, StandTile *stan, f32 rot, u8 
             neighbor_index++, path_id = waypoint->neighbours[neighbor_index]
             )
         {
-            if (sub_GAME_7F033780(&g_CurrentSetup.pathwaypoints[path_id], bondpos, rot) != 0)
+            if (waypointIsWithin90DegreesOfPosAngle(&g_CurrentSetup.pathwaypoints[path_id], bondpos, rot) != 0)
             {
                 return g_CurrentSetup.pathwaypoints[path_id].padID;
             }
@@ -10613,7 +10455,7 @@ s32 chrlvFindPathNeighborRelated(coord3d *bondpos, StandTile *stan, f32 rot, u8 
 /**
  * Address 0x7F033998.
 */
-bool check_2328_preset_set_with_method(ChrRecord *self, u8 quadrant)
+bool chrSetPadPresetToWaypointInTargetQuadrant(ChrRecord *self, u8 quadrant)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
@@ -10627,8 +10469,8 @@ bool check_2328_preset_set_with_method(ChrRecord *self, u8 quadrant)
     {
         myprop               = self->prop;
         bondprop             = getCurrentPlayerProp();
-        myclosestwaypoint    = chrlvStanPathRelated(&myprop->pos, myprop->stan);
-        bondsclosestwaypoint = chrlvStanPathRelated(&bondprop->pos, bondprop->stan);
+        myclosestwaypoint    = waypointFindNearPos(&myprop->pos, myprop->stan);
+        bondsclosestwaypoint = waypointFindNearPos(&bondprop->pos, bondprop->stan);
 
         if (myclosestwaypoint != NULL && bondsclosestwaypoint != NULL)
         {
@@ -10655,7 +10497,7 @@ bool check_2328_preset_set_with_method(ChrRecord *self, u8 quadrant)
     }
     else
     {
-        s32 closestpadid = chrlvFindPathNeighborRelated(&self->prop->pos, self->prop->stan, modelGetRootRotY(self->model), quadrant);
+        s32 closestpadid = waypointFindInQuadrant(&self->prop->pos, self->prop->stan, modelGetRootRotY(self->model), quadrant);
 
         if (closestpadid >= 0)
         {
@@ -10672,7 +10514,7 @@ bool check_2328_preset_set_with_method(ChrRecord *self, u8 quadrant)
 /**
  * Address 0x7F033AAC.
 */
-bool sub_GAME_7F033AAC(ChrRecord *self, u8 padnum)
+bool chrSetPadPresetToWaypointInQuadrant(ChrRecord *self, u8 padnum)
 {
     f32 sp1C;
     s32 bondnearestpad;
@@ -10680,12 +10522,12 @@ bool sub_GAME_7F033AAC(ChrRecord *self, u8 padnum)
 
     if ((padnum == 16) || (padnum == 32))
     {
-        return check_2328_preset_set_with_method(self, padnum);
+        return chrSetPadPresetToWaypointInTargetQuadrant(self, padnum);
     }
 
     sp1C           = bondviewGetPlayerYawRadians();
     bondprop       = getCurrentPlayerProp();
-    bondnearestpad = chrlvFindPathNeighborRelated(&bondprop->pos, bondprop->stan, sp1C, padnum);
+    bondnearestpad = waypointFindInQuadrant(&bondprop->pos, bondprop->stan, sp1C, padnum);
 
     if (bondnearestpad >= 0)
     {
@@ -10702,7 +10544,7 @@ bool sub_GAME_7F033AAC(ChrRecord *self, u8 padnum)
  * Address 0x7F033B38.
  * PD: chrSetChrPresetToChrNearPos
 */
-bool sub_GAME_7F033B38(ChrRecord *self, f32 distance)
+bool chrSetChrPresetToNearbyChr(ChrRecord *self, f32 distance)
 {
     PropRecord *myprop;
     ChrRecord *chr;
@@ -10712,7 +10554,7 @@ bool sub_GAME_7F033B38(ChrRecord *self, f32 distance)
     s32 myroom;
     s32 i;
 
-    numguards = get_numguards();
+    numguards = chrsGetNumSlots();
     myprop    = self->prop;
     myroom    = myprop->stan->room;
 
@@ -10763,7 +10605,7 @@ void chrSetChrPreset(ChrRecord *self, s32 id)
 /**
  * Address 0x7F033D1C.
 */
-void chrSetChrPreset2(ChrRecord *self, s32 id, s32 id2)
+void chrSetChrPresetOf(ChrRecord *self, s32 id, s32 id2)
 {
     ChrRecord *chr;
 
@@ -10825,8 +10667,8 @@ s32 chrIsTargetNearlyInSight(ChrRecord *self)
         stanGetCollisionEdge(&sp48, &sp3C); //extreme edges of stan tile
 
         if (
-            sub_GAME_7F0304AC(self, &self_prop->pos, self_prop->stan, &sp48, &player_prop->pos, player_prop->stan, 0)
-            || sub_GAME_7F0304AC(self, &self_prop->pos, self_prop->stan, &sp3C, &player_prop->pos, player_prop->stan, 0))
+            chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &sp48, &player_prop->pos, player_prop->stan, 0)
+            || chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &sp3C, &player_prop->pos, player_prop->stan, 0))
         {
             return TRUE;
         }
@@ -10941,7 +10783,7 @@ PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, coord3d *pos, StandTile *s
 
         if (chrAdjustPosForSpawn(&newpos, &stancopy, angle, ((spawnflags & 0x10) != 0)))
         {
-            chrHeader = retrieve_header_for_body_and_head(bodynum, headnum, spawnflags);
+            chrHeader = bodyCreateModelWithFlags(bodynum, headnum, spawnflags);
 
             if (chrHeader != NULL)
             {
@@ -11044,7 +10886,7 @@ bool chrIfInPadRoom(ChrRecord *self, s32 chrnum, s32 padnum)
 /**
  * Address 0x7F03444C.
 */
-bool check_if_actor_is_at_preset(ChrRecord *self, s32 padnum)
+bool chrPlayerIsInPadRoom(ChrRecord *self, s32 padnum)
 {
     PropRecord *bondprop;
     PadRecord  *pad;
@@ -11073,7 +10915,7 @@ bool check_if_actor_is_at_preset(ChrRecord *self, s32 padnum)
 /**
  * Address 0x7F0344FC.
 */
-bool removed_animation_routine_27(ChrRecord *self)
+bool chrRemovedAiCommand27(ChrRecord *self)
 {
     return FALSE;
 }
@@ -11082,7 +10924,7 @@ bool removed_animation_routine_27(ChrRecord *self)
 /**
  * Address 0x7F034508.
 */
-bool removed_animation_routine_2B(ChrRecord *self)
+bool chrRemovedAiCommand2B(ChrRecord *self)
 {
     return FALSE;
 }
@@ -11116,7 +10958,7 @@ bool chrTryStartAlarm(ChrRecord *self, s32 PadId)
 /**
  * Address 0x7F03457C.
 */
-bool actor_draws_throws_grenade_at_player_if_possible(ChrRecord *self)
+bool chrTryThrowGrenade(ChrRecord *self)
 {
     PropRecord *Left;
     PropRecord *Right;
@@ -11146,14 +10988,14 @@ bool actor_draws_throws_grenade_at_player_if_possible(ChrRecord *self)
 
         if (Right && (RightWep = Right->weapon, RightWep->weaponnum == ITEM_GRENADE))
         {
-            chrlvThrowGrenade(self, Right, GUNRIGHT, 0);
+            chrThrowGrenade(self, Right, GUNRIGHT, 0);
 
             return TRUE;
         }
 
         if (Left && (LeftWep = Left->weapon, LeftWep->weaponnum == ITEM_GRENADE))
         {
-            chrlvThrowGrenade(self, Left, GUNLEFT, 0);
+            chrThrowGrenade(self, Left, GUNLEFT, 0);
 
             return TRUE;
         }
@@ -11174,7 +11016,7 @@ bool actor_draws_throws_grenade_at_player_if_possible(ChrRecord *self)
                 NewGrenadeObj = NewGrenadeProp->weapon;
                 NewGrenadeObj->runtime_bitflags |= 0x800; //manual bitflags are more effecient
 
-                chrlvThrowGrenade(self, NewGrenadeProp, !Right ? GUNRIGHT : GUNLEFT, 1);
+                chrThrowGrenade(self, NewGrenadeProp, !Right ? GUNRIGHT : GUNLEFT, 1);
 
                 return TRUE;
             }

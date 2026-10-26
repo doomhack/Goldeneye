@@ -2994,15 +2994,15 @@ void modelSetAnimSpeedToReachFrame(Model *model, f32 arg1, f32 arg2)
     modelSetAnimSpeed(model, t, arg2);
 }
 
-void modelSetAnimPlaySpeed(Model *model, f32 animation_rate, f32 startframe) {
+void modelSetAnimPlaySpeed(Model *model, f32 g_ChrAnimRate, f32 startframe) {
     if (startframe > 0.0f) {
         model->timeplayspeed = startframe;
-        model->newplayspeed = animation_rate;
+        model->newplayspeed = g_ChrAnimRate;
         model->elapseplayspeed = 0.0f;
         model->oldplayspeed = model->playspeed;
         return;
     }
-    model->playspeed = animation_rate;
+    model->playspeed = g_ChrAnimRate;
     model->timeplayspeed = 0.0f;
 }
 

@@ -722,7 +722,7 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
                 break;
 
             case DEB_SHOWPATROLS: // show patrols
-                set_show_patrols_flag(get_show_patrols_flag() == FALSE);
+                chrSetShowPatrols(chrGetShowPatrols() == FALSE);
                 break;
 
             case DEB_INTRO: // intro

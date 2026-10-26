@@ -7,7 +7,7 @@
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "game/asset/fileload.h"
-#include "game/chr/chr_b.h"
+#include "game/chr/body.h"
 #include "game/model/anim.h"
 #include "game/model/chrobjdata.h"
 

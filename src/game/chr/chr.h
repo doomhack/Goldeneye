@@ -92,13 +92,13 @@ struct weapon_firing_animation_table
     f32 max_down;
 
     /**
-     * Some kind of minimum. See chrlvUpdateAimendsideback.
+     * Some kind of minimum. See chrUpdateAimendsideback.
      * Offset 0x38.
     */
     f32 max_left;
 
     /**
-     * Some kind of maximum. See chrlvUpdateAimendsideback.
+     * Some kind of maximum. See chrUpdateAimendsideback.
      * Offset 0x3c.
     */
     f32 max_right;
@@ -117,8 +117,8 @@ struct anim_group_info
 };
 
 extern s32 objectiveregisters1;
-extern ChrRecord* g_ActiveChrs;
-extern s32 g_ActiveChrsCount;
+extern ChrRecord* g_BgChrs;
+extern s32 g_NumBgChrs;
 
 extern f32 g_AiAccuracyModifier;
 extern f32 g_AiDamageModifier;
@@ -203,15 +203,15 @@ extern struct anim_group_info *ptr_crouched_rifle_firing_animation_groups[];
 extern struct anim_group_info *ptr_crouched_pistol_firing_animation_groups[];
 extern struct anim_group_info *ptr_crouched_doubles_firing_animation_groups[];
 
-extern f32 animation_rate;
-extern s32 D_8002C904;
-extern s32 g_AnimationTablePointerCountRelated;
-extern s32 D_8002C90C;
-extern s32 D_8002C910;
+extern f32 g_ChrAnimRate;
+extern s32 g_ChrDebugAnimOverride;
+extern s32 g_ChrDebugAnimIndex;
+extern s32 g_ChrDebugPaused;
+extern s32 g_ChrDebugStep;
 
-extern s32 D_8002CC58;
-extern s32 show_patrols_flag;
-extern s32 player1_guardID;
+extern s32 g_ChrUnused;
+extern s32 g_ChrShowPatrols;
+extern s32 g_NextChrNum;
 extern ChrRecord *g_ChrSlots;
 extern s32 g_NumChrSlots;
 extern ModelRenderData D_8002CC6C;
@@ -261,20 +261,20 @@ extern s16 metal_ricochet_SFX[3];
 extern struct explosion_anim_group_info explosion_animation_table[];
 extern struct explosion_death_animation D_8002E648[];
 
-void        sub_GAME_7F022EE0(s32 param_1);
-void        setanimationdebugflag(s32 param_1);
-void        chrpropCleanupForRemoval(PropRecord* prop);
+void        chrDebugSetStep(s32 param_1);
+void        chrDebugSetAnimOverride(s32 param_1);
+void        chrFreeResources(PropRecord* prop);
 void        chrDetectRooms(ChrRecord *);
 void        chrSetMoving(ChrRecord *guard,s32 param_2);
-f32         getAnimationRate(void);
-void        setAnimationRate(f32);
-PropRecord *init_GUARDdata_with_set_values(PropRecord *, Model *, coord3d *, f32 arg2, StandTile * arg3, struct AIListRecord *arg4);
+f32         chrsGetAnimRate(void);
+void        chrsSetAnimRate(f32);
+PropRecord *chrInit(PropRecord *, Model *, coord3d *, f32 arg2, StandTile * arg3, struct AIListRecord *arg4);
 PropRecord *chrAllocate(struct Model * arg0, coord3d * arg1, f32 arg2, StandTile * arg3, s32 arg4);
 void        chrSetHiddenToRandom(ChrRecord *arg0);
-void        chrRemoved7F022E1C(f32 arg0);
-void        chrDecrementAnimationTablePointerCount(void);
-void        chrIncrementAnimationTablePointerCount(void);
-void        chrToggleD_8002C90C(void);
+void        chrRemovedUnused(f32 arg0);
+void        chrDebugPrevAnim(void);
+void        chrDebugNextAnim(void);
+void        chrDebugTogglePause(void);
 void        chrCheckGuardsHeardSound(f32 arg0);
 ChrRecord  *chrFindByLiteralId(s32 index);
 PropRecord *chrGetEquippedWeaponProp(ChrRecord *arg0, GUNHAND arg1);
@@ -283,7 +283,7 @@ void        chrUpdateCollisionBounds(PropRecord *arg0, struct rect4f **arg1, s32
 void        chrGetChrWidthHeight(PropRecord *arg0, f32 *width, f32 *height, f32 *always_20);
 f32         chrGetChrGround(PropRecord *arg0);
 void        chrDropItems(struct ChrRecord *arg0);
-s32         get_numguards(void);
+s32         chrsGetNumSlots(void);
 Gfx        *chrRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2);
 
 void        chrAddHealth(ChrRecord *chr, f32 health);
@@ -293,12 +293,16 @@ s32         chrGetOnscreenRenderBounds(PropRecord *arg0, struct coord3d *arg1, s
 void        chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit);
 
 //tentative signature
-s32         sub_GAME_7F01FC10(Model *, coord3d *, coord3d *, f32 *);
+s32         chrRootMoveCallback(Model *, coord3d *, coord3d *, f32 *);
 void        chrCreateBloodStain(Model *arg0, s32 arg1, ModelNode *arg2, struct coord3d *arg3);
 void        chrTestHit(PropRecord *prop, ShotData *shotdata);
 
 #ifdef BUGFIX_R1
 bool chrCanUseDKModeScaling(s32 bodynum, s32 headnum);
 #endif
+
+void chrsInit(void);
+void chrsAllocateSlots(s32 count);
+void chrsFreeAll(void);
 
 #endif

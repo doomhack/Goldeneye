@@ -14,7 +14,7 @@
 #include <macro.h>  
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
-#include "game/chr/chr_b.h"
+#include "game/chr/body.h"
 #include "game/chr/chraction.h"
 #include "game/menu/cheat.h"
 #include "game/model/chrobjdata.h"
@@ -8538,7 +8538,7 @@ void init_menu18_displaycast(void)
 
     if (head == HEAD_RANDOM) 
     { 
-        head = get_random_head(body); 
+        head = bodyGetRandomHead(body); 
     } 
 
     allocSize = 0x19000; 
@@ -8569,7 +8569,7 @@ void init_menu18_displaycast(void)
         bufferPtr += allocSize;
     }
 
-    cast_model = setup_chr_instance(body, head, bodyHeader, headHeader, 0);
+    cast_model = bodyCreateModelNew(body, head, bodyHeader, headHeader, 0);
     modelSetScale((Model *) cast_model, 0.1f);
 
     if (cameraPreset != INTRO_WEAPON_TYPE_NONE)

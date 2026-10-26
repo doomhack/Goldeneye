@@ -245,7 +245,7 @@ extern stagesetup                        *g_ptrStageSetupFile;
 extern char *setup_text_pointers[];
 
 void               alarmDeactivate(void);
-s32                chraiitemsize(u8 *AIList, s32 offset);
+s32                aiCommandSize(u8 *AIList, s32 offset);
 void               gasStopSound(void);
 AIRecord          *ailistFindById(s32 ID);
 void               aiForObject(PropDefHeaderRecord *Entityp);

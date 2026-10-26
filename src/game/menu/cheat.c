@@ -1257,19 +1257,19 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_FAST_ANIMATION:
-            if (getAnimationRate() < 4.0f)
+            if (chrsGetAnimRate() < 4.0f)
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_34_FASTMOTION_LF)));
-                setAnimationRate(4.0f);
+                chrsSetAnimRate(4.0f);
                 return;
             }
             return;
 
         case CHEAT_SLOW_ANIMATION:
-            if (getAnimationRate() > 0.25f)
+            if (chrsGetAnimRate() > 0.25f)
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_32_SLOWMOTION_LF)));
-                setAnimationRate(0.25);
+                chrsSetAnimRate(0.25);
                 return;
             }
             return;
@@ -1695,7 +1695,7 @@ void cheatButtonSetDkMode(CHEAT_ID cheat_id)
     Model *model;
     ChrRecord* guard = g_ChrSlots;
 
-    numslots = get_numguards();
+    numslots = chrsGetNumSlots();
 
     if (cheat_id)
     {

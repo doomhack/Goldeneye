@@ -185,7 +185,7 @@ void modelSetAnimEndFrame(Model *model, f32 endframe);
 void modelSetAnimFlipFunction(Model *model, void *callback);
 void modelSetAnimSpeed(Model *model, f32 anim_speed, f32 startframe);
 void modelSetAnimSpeedToReachFrame(Model *model, f32 arg1, f32 arg2);
-void modelSetAnimPlaySpeed(Model *model, f32 animation_rate, f32 startframe);
+void modelSetAnimPlaySpeed(Model *model, f32 g_ChrAnimRate, f32 startframe);
 void modelSetRootMoveCallback(Model *model, s32 arg1);
 void modelSetAnimFrame(Model* model, f32 frame);
 void modelSetAnimFrame2(Model* model, f32 frame1, f32 frame2);

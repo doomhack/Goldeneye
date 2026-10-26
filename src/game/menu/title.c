@@ -12,7 +12,7 @@
 #include "game/hud/blood_animation.h"
 #include "bondtypes.h"
 #include "game/chr/chr.h"
-#include "game/chr/chr_b.h"
+#include "game/chr/body.h"
 #include "game/model/chrobjdata.h"
 #include "game/gfx/image.h"
 #include "game/model/anim.h"
@@ -501,7 +501,7 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
     bufferSize -= temp_t9;
     gfxBuffer += temp_t9;
     
-    chrModelInstance = setup_chr_instance(BODY_Brosnan_Tuxedo, BODY_Male_Pierce_Bond_Tuxedo, c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, 0);
+    chrModelInstance = bodyCreateModelNew(BODY_Brosnan_Tuxedo, BODY_Male_Pierce_Bond_Tuxedo, c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, 0);
 
     modelSetScale(chrModelInstance, 0.18779343f);
     modelSetAnimTranslationScale(chrModelInstance, 1.0f);

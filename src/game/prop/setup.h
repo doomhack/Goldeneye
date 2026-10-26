@@ -25,4 +25,6 @@ void propsResetLevelState(void);
 void objSoundsInit(void);
 void objSoundsStopAll(void);
 
+void setupGuard(s32 stageid, GuardRecord *arg1, s32 arg2);
+
 #endif
