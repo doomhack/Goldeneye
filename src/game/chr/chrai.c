@@ -11,7 +11,7 @@
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "game/text/language.h"
-#include "game/prop/prop.h"
+#include "game/prop/setup.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/math/round.h"
@@ -2726,13 +2726,13 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         }
                         else
                         {
-                            chrpropDeregisterRooms(obj->prop);
-                            chrpropDelist(obj->prop);
-                            chrpropDisable(obj->prop);
+                            propRemoveFromRooms(obj->prop);
+                            propDelist(obj->prop);
+                            propDisable(obj->prop);
                         }
                         if (obj->type != PROPDEF_COLLECTABLE || !chrEquipWeapon(obj, chr))
                         {
-                            chrpropReparent(obj->prop, chr->prop);
+                            propReparent(obj->prop, chr->prop);
                         }
                     }
                     Offset += sizeof(AiChrEquipObjectRecord);
@@ -4462,7 +4462,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         pos.z           = pad->pos.z;
                         // pos  = pad->pos; <-uses lw instead of lwc1
                         stan            = pad->stan;
-                        sub_GAME_7F03D058(chr->prop, FALSE);
+                        propSetMoving(chr->prop, FALSE);
 
                         if (chrAdjustPosForSpawn(&pos, &stan, FacingDirection, TRUE))
                         {
@@ -4488,7 +4488,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             }
                             pass = TRUE;
                         }
-                        sub_GAME_7F03D058(chr->prop, TRUE);
+                        propSetMoving(chr->prop, TRUE);
                     }
                     if (pass)
                     {

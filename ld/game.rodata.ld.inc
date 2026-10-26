@@ -8,7 +8,7 @@
       build/OUTCODE/src/game/menu/initmenus.o (.rodata);
       build/OUTCODE/src/game/chr/initguards.o (.rodata);
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.rodata);
-      build/OUTCODE/src/game/prop/prop.o (.rodata);
+      build/OUTCODE/src/game/prop/setup.o (.rodata);
       build/OUTCODE/src/game/mission/objective.o (.rodata);
       build/OUTCODE/src/game/player/ejectedcartridges.o (.rodata);
       build/OUTCODE/src/game/player/initBondDATA.o (.rodata);
@@ -36,7 +36,7 @@
       build/OUTCODE/src/game/chr/chr_b.o (.rodata);
       build/OUTCODE/src/game/chr/chraction.o (.rodata);
       build/OUTCODE/src/game/chr/chrai.o (.rodata);
-      build/OUTCODE/src/game/chr/chrprop.o (.rodata);
+      build/OUTCODE/src/game/prop/prop.o (.rodata);
       build/OUTCODE/src/game/prop/propobj.o (.rodata);
       build/OUTCODE/src/game/mission/objective_status.o (.rodata);
       build/OUTCODE/src/game/math/physics.o (.rodata);

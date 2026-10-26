@@ -29,7 +29,7 @@
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "game/text/language.h"
-#include "game/prop/prop.h"
+#include "game/prop/setup.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
@@ -693,11 +693,11 @@ s32 pickDeathCameraAngles(PropRecord *prop1, coord3d *pos, PropRecord *prop2, co
 
             spC8 = tile;
 
-            sub_GAME_7F03D058(prop2, 0);
+            propSetMoving(prop2, 0);
 
             lineok = stanTestLineUnobstructed(&spC8, collision_pos->x, collision_pos->z, spB0.x, spB0.z, 0x13, 0.0f, 1.0f, 0.0f, 1.0f);
 
-            sub_GAME_7F03D058(prop2, 1);
+            propSetMoving(prop2, 1);
 
             if (!lineok)
             {
@@ -735,11 +735,11 @@ s32 pickDeathCameraAngles(PropRecord *prop1, coord3d *pos, PropRecord *prop2, co
 
                     spC8 = tile;
 
-                    sub_GAME_7F03D058(prop2, 0);
+                    propSetMoving(prop2, 0);
 
                     lineok = stanTestLineUnobstructed(&spC8, collision_pos->x, collision_pos->z, flt_CODE_bss_800799E8.x, flt_CODE_bss_800799E8.z, 0x13, 0.0f, 1.0f, 0.0f, 1.0f);
 
-                    sub_GAME_7F03D058(prop2, 1);
+                    propSetMoving(prop2, 1);
 
                     if (lineok)
                     {
@@ -1999,7 +1999,7 @@ s32 bondviewTankCollisionStatus(struct coord3d *collision_position, StandTile *a
 
     if (g_PlayerTankProp != NULL)
     {
-        sub_GAME_7F03D058(g_PlayerTankProp, 0);
+        propSetMoving(g_PlayerTankProp, 0);
     }
 
     if ((bondviewTestLineUnobstructed(&spBC, collision_position->f[0], collision_position->f[2], tank_collision_bounds.points[0].f[0], tank_collision_bounds.points[0].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, arg3, arg4) != 0)
@@ -2057,7 +2057,7 @@ s32 bondviewTankCollisionStatus(struct coord3d *collision_position, StandTile *a
 
     if (g_PlayerTankProp != NULL)
     {
-        sub_GAME_7F03D058(g_PlayerTankProp, 1);
+        propSetMoving(g_PlayerTankProp, 1);
     }
 
     return sp94;
@@ -2335,17 +2335,17 @@ s32 bondviewTryMoveToStan(struct coord3d *arg0, StandTile **stan)
 
         if (g_WorldTankProp != NULL)
         {
-            sub_GAME_7F03D058(g_WorldTankProp, 0);
+            propSetMoving(g_WorldTankProp, 0);
         }
 
         overlap_partner = coopGetOverlappingPartner();
 
         if (overlap_partner != NULL)
         {
-            sub_GAME_7F03D058(overlap_partner, 0);
+            propSetMoving(overlap_partner, 0);
         }
 
-        sub_GAME_7F03D058(g_CurrentPlayer->prop, 0);
+        propSetMoving(g_CurrentPlayer->prop, 0);
         sp7C = stanCircleGetSpecial(&sp90, arg0->f[0], arg0->f[2], collision_radius, &sp3C);
 
         if (stanLocusIsCrouch(&sp3C) != 0)
@@ -2401,16 +2401,16 @@ block_20:
             }
         }
 
-        sub_GAME_7F03D058(g_CurrentPlayer->prop, 1);
+        propSetMoving(g_CurrentPlayer->prop, 1);
 
         if (overlap_partner != NULL)
         {
-            sub_GAME_7F03D058(overlap_partner, 1);
+            propSetMoving(overlap_partner, 1);
         }
 
         if (g_WorldTankProp != NULL)
         {
-            sub_GAME_7F03D058(g_WorldTankProp, 1);
+            propSetMoving(g_WorldTankProp, 1);
         }
     }
 
@@ -2766,10 +2766,10 @@ void bondviewCalcUpdatePlayerCollision(struct coord3d *offset, s32 allow_scoot)
 
     if (g_WorldTankProp != NULL)
     {
-        chraiGetCollisionBoundsWithoutY(g_WorldTankProp, &polygon, &edges);
+        propGetCollisionPolygon2d(g_WorldTankProp, &polygon, &edges);
 
         if ((g_PlayerIsInTank == 1)
-            || (chrpropTestPointInPolygon(&g_CurrentPlayer->field_488.collision_position, polygon, edges) != 0)
+            || (polygonContainsPoint(&g_CurrentPlayer->field_488.collision_position, polygon, edges) != 0)
             || ((chrobjTestPointPolygonCollision(&g_CurrentPlayer->field_488.collision_position, g_CurrentPlayer->field_488.collision_radius, polygon, edges) != 0)))
         {
 
@@ -2784,7 +2784,7 @@ void bondviewCalcUpdatePlayerCollision(struct coord3d *offset, s32 allow_scoot)
             temp_f2 = (farr5[4] - farr5[3]) * obj->model->scale;
 
             if (g_PlayerIsInTank == 1
-                || (chrpropTestPointInPolygon(&g_CurrentPlayer->field_488.collision_position, &tank_objrecord->rect, (s32)tank_objrecord->collision) != 0))
+                || (polygonContainsPoint(&g_CurrentPlayer->field_488.collision_position, &tank_objrecord->rect, (s32)tank_objrecord->collision) != 0))
             {
                 temp_f2 += (farr6[4] - farr6[3]) * obj->model->scale;
                 g_BondCanEnterTank = 1;
@@ -2939,7 +2939,7 @@ void bondviewCalcUpdatePlayerCollision(struct coord3d *offset, s32 allow_scoot)
  */
 void bondviewDeregisterPlayerRoom(struct player *player) 
 {
-    chrpropDeregisterRoom(player->prop, player->registeredroom);
+    propRemoveFromRoom(player->prop, player->registeredroom);
     player->registeredroom = -1;
 }
 
@@ -2961,7 +2961,7 @@ void bondviewUpdatePlayerRoom(struct player *player)
     {
         player->registeredroom = (s16) player->field_488.current_tile_ptr->room;
 
-        chrpropRegisterRoom(player->prop, player->registeredroom);
+        propAddToRoom(player->prop, player->registeredroom);
     }
 }
 
@@ -3495,7 +3495,7 @@ void bondviewPlayerStopAudioForPause(void)
 		}
     }
 
-    for (prop = chrpropGetActiveTail(); prop; prop = prop->prev)
+    for (prop = propsGetActiveTail(); prop; prop = prop->prev)
     {
         if (prop->type != PROP_TYPE_DOOR && prop->type == PROP_TYPE_OBJ)
         {
@@ -7797,7 +7797,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         ftemp_12 = (sp140_tank_as_TankRecord->unkD0 * (1.0f - TANK_UNKD0_SCALE));
         spE4.f[1] = ftemp_12
-            - (chrpropBBOXGetYmin(sp130) * sp138_tank_as_ObjectRecord->model->scale)
+            - (bboxGetYmin(sp130) * sp138_tank_as_ObjectRecord->model->scale)
             + 4.0f;
 
         mtx4Copy(&spF0,  &sp138_tank_as_ObjectRecord->mtx);
@@ -7809,12 +7809,12 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         setupUpdateObjectRoomPosition(sp138_tank_as_ObjectRecord);
         chrobjCollisionRelated(sp138_tank_as_ObjectRecord);
         bondviewGetTankCollisionBounds(&spB4_tank_collision_bounds, &g_CurrentPlayer->field_488.collision_position, g_TankOrientationAngle);
-        chraiGetPropRoomIds(sp138_tank_as_ObjectRecord->prop, &sp94);
+        propGetRoomIds(sp138_tank_as_ObjectRecord->prop, &sp94);
 
-        // update num_obj_position_data_entries
+        // update g_NumRoomPropsFound
         roomGetProps(&sp94);
 
-        for (lookup_index=ptr_list_object_lookup_indices; *lookup_index>=0; lookup_index++)
+        for (lookup_index=g_RoomPropsFound; *lookup_index>=0; lookup_index++)
         {
             prop = &g_Props[*lookup_index];
             if (prop != sp138_tank_as_ObjectRecord->prop)
@@ -7831,9 +7831,9 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                     sp7C = 1;
                     sp6C = prop->chr;
-                    chrpropGetCollisionBounds(prop, &sp80_collision_radius, &sp88_collision_bound_height, &sp84_collision_bound_z);
+                    propGetCollisionRadius(prop, &sp80_collision_radius, &sp88_collision_bound_height, &sp84_collision_bound_z);
 
-                    if (chrpropTestPointInPolygon(&prop->pos, &spB4_tank_collision_bounds, 4))
+                    if (polygonContainsPoint(&prop->pos, &spB4_tank_collision_bounds, 4))
                     {
                         sp7C = 0;
 
@@ -7878,7 +7878,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     struct rect4f *polygon;
                     s32 edges;
 
-                    chraiGetCollisionBoundsWithoutY(prop, &polygon, &edges);
+                    propGetCollisionPolygon2d(prop, &polygon, &edges);
                     if ((edges > 0) && chrobjTestPolygonsTouchingOrOverlap2D(polygon, edges, &spB4_tank_collision_bounds, 4))
                     {
                         // Explode destroyable props when the tank touches them

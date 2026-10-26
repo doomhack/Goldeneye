@@ -1,6 +1,7 @@
 #ifndef _CHRAI_H_
 #define _CHRAI_H_
 #include <ultra64.h>
+#include "game/prop/prop.h"
 
 #include <bondtypes.h>
 
@@ -162,9 +163,9 @@ Rotate Image:
 
 #define SFX_RELATED_LEN 8
 #define MAX_PROPS 600
-#define PTR_LIST_OBJECT_LOOKUP_INDICES_LEN 512
-#define BSS_8007161C_LEN 256
-#define BSS_8007161C_DATA_LEN 16
+#define ROOMPROPSFOUND_LEN 512
+#define ROOMPROPBLOCKS_LEN 256
+#define ROOMPROPBLOCK_LEN 16
 #define MAX_WEAPON_SLOTS 30
 #define MAX_HAT_SLOTS 10
 #define MAX_AMMO_CRATES 20
@@ -223,19 +224,9 @@ extern f32 gasTimeToFullOpacity;
 extern u32 gasDoesDamageFlag;
 extern f32 difficulty ;
 extern stagesetup g_CurrentSetup;
-extern s16 * ptr_list_object_lookup_indices;
-extern PropRecord g_Props[];
 
-extern PropRecord *g_ActivePropsTail;
-extern PropRecord *g_ActivePropsHead;
-extern PropRecord *g_FreeProps;
 
-extern s32                                g_OnScreenPropCount;
-extern PropRecord **                      g_LastOnScreenProp;
-extern PropRecord *                       g_OnScreenPropList[];
 extern PropRecord *                       g_InteractProp;
-extern s16 *                              RoomPropListBlockIndices;
-extern struct roomproplistblock *         RoomPropListBlocks;
 extern sfxRecord                          sfx_related[];
 extern struct WeaponObjRecord             g_WeaponSlots[];
 extern struct HatRecord                   g_HatSlots[];
@@ -256,53 +247,7 @@ extern char *setup_text_pointers[];
 void               alarmDeactivate(void);
 s32                chraiitemsize(u8 *AIList, s32 offset);
 void               gasStopSound(void);
-void               chrpropTick(void);
-void               propsTick(void);
-void               chraiUpdateOnscreenPropCount(void);
-void               chrpropUpdateAutoaimTarget(void);
-void               chraiCheckUseHeldItems(void);
-bool               bond_interact_object(void);
-void               propsTickPlayer(void);
-void               chrpropRegisterRoom(PropRecord *, s16);
-PropRecord*        chrpropAllocate(void);
-void               chrpropReparent(PropRecord *newChild, PropRecord *host);
-void               chrpropDelist(PropRecord *prop);
-void               chrpropDeregisterRooms(PropRecord *);
-void               chrpropUpdateRoomList(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius);
-void               chrpropRegisterRooms(PropRecord *posData);
-void               chrpropActivate(PropRecord *);
-void               chrpropEnable(PropRecord *);
-void               chrpropActivateThisFrame(PropRecord *);
 AIRecord          *ailistFindById(s32 ID);
-void               chraiGetCollisionBounds(PropRecord *prop, struct rect4f **polygon, s32 *edges, f32 *arg3, f32 *arg4);
-void               sub_GAME_7F03D058(PropRecord *prop, bool unset);
-void               chraiGetCollisionBoundsWithoutY(PropRecord *prop, struct rect4f **polygon, s32 *edges);
-s32                chrpropTestPointInPolygon(coord3d *point, struct rect4f *polygon, s32 edges);
-void               roomGetProps(s32 *roomids);
-ObjectRecord      *scan_position_data_table_for_normal_object_at_preset(s32 arg0);
-Gfx               *chrpropsRenderPass(Gfx *arg0, s32 roomid, s32 arg2);
-PropRecord        *chrpropGetActiveTail(void);
-void               propsDefragRoomProps(void);
-void               chraiGetPropRoomIds(PropRecord *self, s32 *roomids);
-void               chrpropFree(PropRecord *prop);
-void               chrpropDisable(PropRecord *prop);
-f32                chrpropBBOXGetXmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
-f32                chrpropBBOXGetYmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
-f32                chrpropBBOXGetYmax(ModelRoData_BoundingBoxRecord *modelBoundingBox);
-f32                chrpropBBOXGetZmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
-ObjectRecord      *sub_GAME_7F03FAB0(struct coord3d *pos, s32 RoomID);
-void               chrpropGetCollisionBounds(PropRecord *arg0, f32 *arg1, f32 *arg2, f32 *arg3);
-f32                sub_GAME_7F03CFE8(PropRecord *arg0);
-f32                chrpropSumMatrixPosX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1);
-f32                chrpropSumMatrixNegX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1);
-f32                chrpropSumMatrixPosY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1);
-f32                chrpropSumMatrixNegY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1);
-f32                chrpropSumMatrixPosZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1);
-f32                chrpropSumMatrixNegZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1);
-void               sub_GAME_7F03F540(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1, struct rect4f* arg2, struct collision_data *arg3);
-void               projectRectCornersTo2D(struct coord3d *arg0, struct coord2d *arg1, struct coord2d *arg2, struct coord2d *arg3, struct coord2d *arg4);
-void               sub_GAME_7F03E6A0(PropRecord *prop);
-struct PropRecord *propFindForInteract(void);
 void               aiForObject(PropDefHeaderRecord *Entityp);
 s32                counterOpDoorIsScripted(DoorRecord *door);
 #endif

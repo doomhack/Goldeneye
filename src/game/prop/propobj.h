@@ -142,7 +142,7 @@ void                 objDetonateRecursive(PropRecord *arg0, f32 arg1, struct coo
 struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *arg0);
 void                 alarmStopSound(void);
 void                 alarmsReset(void);
-bool                 chrpropTestPointInPaddedBoundPad(coord3d* pos, f32 arg1, BoundPadRecord *boundpads);
+bool                 padBoundsContainPoint(coord3d* pos, f32 arg1, BoundPadRecord *boundpads);
 void                 glassCreateShards(f32*, f32*, f32*, f32*, f32, f32, f32, f32, f32, f32);
 void                 modelGetXYExtents(Model *model, f32 *arg1, f32 *arg2, f32 *arg3, f32 *arg4);
 s32                  vehicleFindBlockingProp(struct PropRecord *arg0);

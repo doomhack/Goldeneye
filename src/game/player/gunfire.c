@@ -1,4 +1,13 @@
 #include <ultra64.h>
+#include <assert.h>
+#include <bondaicommands.h>
+#include "game/world/bg.h"
+#include "game/chr/chr.h"
+#include "game/chr/chraction.h"
+#include "game/prop/explosion.h"
+#include "game/prop/glass.h"
+#include "game/save/file.h"
+#include "game/world/bgfog.h"
 #include "include/limits.h"
 #include <bondconstants.h>
 #include <bondtypes.h>
@@ -19,7 +28,7 @@
 #include "game/level/lv.h"
 #include "random.h"
 #include "game/math/trig.h"
-#include "game/prop/prop.h"
+#include "game/prop/setup.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
@@ -6416,3 +6425,952 @@ const f32 g_CasingMaxMatrixTranslation = 30000.0f;
 #if VERSION_EU
 const f32 g_GunSightAspectRatio = 25.0f / 21.0f;
 #endif
+
+
+/**
+ * Address: 7F03A97C
+ *
+ * Tests if a ray intersects the bounding box of the given room.
+ * @return TRUE if the ray intersects, otherwise FALSE.
+*/
+s32 shotRayHitsRoomBbox(s32 room, coord3d* start, coord3d* dir)
+{
+    s32 max[3];
+    s32 min[3];
+    s_room_info* roominfo;
+
+    roominfo = &g_BgRoomInfo[room];
+
+    // Skip check if room has no collision data
+    if (roominfo->vtx_batch_bounds != NULL)
+    {
+        min[0] = roominfo->minbounds.f[0];
+        min[1] = roominfo->minbounds.f[1];
+        min[2] = roominfo->minbounds.f[2];
+        max[0] = roominfo->maxbounds.f[0];
+        max[1] = roominfo->maxbounds.f[1];
+        max[2] = roominfo->maxbounds.f[2];
+        if (bgTestRayIntersectsBbox(start, dir, min, max)) {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+
+
+/**
+ * Address: 7F03AA44
+ *
+ * Unreferenced
+ *
+ * This takes a list of rooms and flags the ones that do *not* intersect a ray.
+ */
+void shotSkipRoomsOffRay(s32 arg0, coord3d *from, coord3d *to, u8 *rooms)
+{
+    coord3d start;
+    coord3d dir;
+    f32 scale;
+    s32 i;
+
+    scale = get_room_data_float1() * bgGetLevelVisibilityScale();
+
+    dir.x = to->x - from->x;
+    dir.y = to->y - from->y;
+    dir.z = to->z - from->z;
+
+    start.x = from->x * scale;
+    start.y = from->y * scale;
+    start.z = from->z * scale;
+
+    for (i = 1; i < getMaxNumRooms(); i++) {
+        if (!rooms[i] && shotRayHitsRoomBbox(i, &start, &dir) == 0) {
+            rooms[i] = 1;
+        }
+    }
+}
+
+
+/**
+ * Address: 7F03AB58
+ *
+ * Refines an existing background bullet hit by checking currently visible rooms
+ * that have not already been tested.
+ *
+ * The function scans the visible room list, marks each tested room in visited,
+ * performs a room bbox test first, then tests the room geometry. If no previous hit exists,
+ * the first visible room hit is accepted.
+ * Otherwise, a hit is accepted only if it lies between from and the current
+ * best hit on all three axes, making it closer along the shot ray.
+ *
+ * @return Returns the room number of the accepted hit, or the bestroom if no
+ * closer visible room hit is found.
+ */
+s32 shotFindBgHitInVisibleRooms(coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *besthit, s32 bestroom)
+{
+    s32 rooms[100];
+    s32 *roomptr;
+    s32 *end;
+    s32 numrooms;
+    struct HitThing hit;
+    f32 scale;
+    s32 room;
+
+    scale = get_room_data_float2();
+
+    // Get up to 100 currently visible rooms.
+    numrooms = bgCopyVisibleRoomsToList(&rooms[0], 100);
+
+    if (numrooms > 0)
+    {
+        roomptr = rooms;
+        // The bitwise AND is just a matching trick and effectively does nothing.
+        end = roomptr + (numrooms & 0xFFFFFFFF);
+
+        do
+        {
+            // Only check rooms that have not been visited.
+            if (visited[*roomptr] == 0)
+            {
+                visited[*roomptr] = 1;
+
+                if (shotRayHitsRoomBbox(*roomptr, scaledDir, dir))
+                {
+                    if (bgTestBulletHitBackground(from, to, *roomptr, &hit))
+                    {
+                        room = *roomptr;
+                        hit.hitpos.x *= scale;
+                        hit.hitpos.y *= scale;
+                        hit.hitpos.z *= scale;
+
+                        /**
+                         * The (numrooms * 0) is weird but harmless and needed for matching.
+                         */
+                        if ((bestroom <= (numrooms * 0))
+                                || (((((from->x <= besthit->hitpos.x)
+                                            && (from->x <= hit.hitpos.x))
+                                            && (hit.hitpos.x < besthit->hitpos.x))
+                                        || (((besthit->hitpos.x <= from->x)
+                                            && (hit.hitpos.x <= from->x))
+                                            && (besthit->hitpos.x < hit.hitpos.x)))
+                                    && ((((from->y <= besthit->hitpos.y)
+                                            && (from->y <= hit.hitpos.y))
+                                            && (hit.hitpos.y < besthit->hitpos.y))
+                                        || (((besthit->hitpos.y <= from->y)
+                                            && (hit.hitpos.y <= from->y))
+                                            && (besthit->hitpos.y < hit.hitpos.y)))
+                                    && ((((from->z <= besthit->hitpos.z)
+                                            && (from->z <= hit.hitpos.z))
+                                            && (hit.hitpos.z < besthit->hitpos.z))
+                                        || (((besthit->hitpos.z <= from->z)
+                                            && (hit.hitpos.z <= from->z))
+                                            && (besthit->hitpos.z < hit.hitpos.z)))))
+                        {
+                            bestroom = room;
+                            *besthit = hit;
+                        }
+                    }
+                }
+            }
+
+            roomptr++;
+        }
+        while (roomptr < end);
+
+        if (rooms);
+    }
+
+    return bestroom;
+}
+
+
+/**
+ * Address: 7F03ADF4
+ *
+ * Beginning at startroom, walk connected rooms looking for a background
+ * bullet hit.
+ *
+ * Rooms are skipped if already marked in visited, and newly processed rooms are
+ * marked visited.
+ * @return Return 0 if no hit is found, otherwise the room number of the first room whose bbox and
+ * background geometry intersect the bullet ray.
+ */
+s32 shotFindBgHitInConnectedRooms(s32 startroom, coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *hit)
+{
+    u8 rooms[256];
+    s32 pad;
+    s32 neighbours[100];
+    s32 numneighbours;
+    s32 i;
+    s32 j;
+    s32 count;
+    s32 curindex;
+    s32 room;
+
+    rooms[0] = startroom;
+    count = 1;
+
+    for (curindex = 0; curindex < count; curindex++)
+    {
+        room = rooms[curindex];
+
+        if (visited[room] == 0)
+        {
+            visited[room] = 1;
+
+            if (shotRayHitsRoomBbox(room, scaledDir, dir))
+            {
+                if (bgTestBulletHitBackground(from, to, room, hit))
+                {
+                    return room;
+                }
+            }
+        }
+
+        numneighbours = bgGetConnectedRooms(room, neighbours, 100);
+
+        for (i = 0; i < numneighbours; i++)
+        {
+            for (j = 0; j < count; j++)
+            {
+                if (rooms[j] == neighbours[i])
+                {
+                    break;
+                }
+            }
+
+            if (j == count)
+            {
+                rooms[count] = neighbours[i];
+                count++;
+            }
+        }
+    }
+
+    return 0;
+}
+
+
+/**
+ * Address: 7F03AF5C
+ *
+ * Finds the closest bg bullet collision among rooms not already visited by the shot traversal.
+ * It first does a cheap bounding box test, then a precise test for rooms whose bounding boxes are intersected.
+ * This seems to be a brute force/fallback version of the function above, shotFindBgHitInConnectedRooms.
+ * @return 0 if no bg hit in any unvisited room, otherwise the room number containing the closest bg hit.
+ */
+s32 shotFindBgHit(s32 unused, coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *besthit)
+{
+    f32 dx;
+    f32 dy;
+    struct HitThing hit;
+    f32 scale;
+    f32 dist;
+    f32 adjusteddist;
+    f32 bestdist;
+    s32 bestroom;
+    f32 tmp;
+    s32 room;
+
+    bestdist = M_U32_MAX_VALUE_F;
+    bestroom = 0;
+
+    scale = get_room_data_float2();
+
+    room = 1;
+
+    if (getMaxNumRooms() >= 2)
+    {
+        do
+        {
+            if (visited[room] == 0)
+            {
+                visited[room] = 1;
+
+                if (shotRayHitsRoomBbox(room, scaledDir, dir))
+                {
+                    if (bgTestBulletHitBackground(from, to, room, &hit))
+                    {
+                        dx = (hit.hitpos.x * scale) - from->x;
+                        dy = ((hit.hitpos.y * scale) - from->y) * 1.0f;
+                        dist = (hit.hitpos.z * scale) - from->z;
+                        dist = (tmp = ((dx * dx) + (dy * dy)) + (dist * dist));
+                        adjusteddist = tmp;
+
+                        if (check_if_imageID_is_light(hit.texturenum))
+                        {
+                            adjusteddist = tmp - 4.0f;
+                        }
+
+                        if (adjusteddist < bestdist)
+                        {
+                            besthit->hitpos.x = hit.hitpos.x;
+                            besthit->hitpos.y = hit.hitpos.y;
+                            besthit->hitpos.z = hit.hitpos.z;
+
+                            bestdist = adjusteddist;
+                            bestroom = room;
+
+                            besthit->normal.x = hit.normal.x;
+                            besthit->normal.y = hit.normal.y;
+                            besthit->normal.z = hit.normal.z;
+
+                            besthit->vtx0 = hit.vtx0;
+                            besthit->vtx1 = hit.vtx1;
+                            besthit->vtx2 = hit.vtx2;
+
+                            besthit->texturenum = hit.texturenum;
+                            besthit->tricmd = hit.tricmd;
+                            besthit->unk28 = hit.unk28;
+                        }
+                    }
+                }
+            }
+
+            room++;
+        }
+        while (room < getMaxNumRooms());
+    }
+
+    return bestroom;
+}
+
+/*
+* Address: 0x7F03B15C
+*
+* This function has a bunch of issues. It allows the player to shoot through walls
+* and even creates sparks in the distance when they shoot at the sky. Some of these
+* issues arise because it traces over the stan tiles to find the first room to test.
+* This leads to the player being able to shoot through floors if they have a portal
+* in front of them (because it's a room boundary which leads to another room) as
+* the code tracing over stan tiles only cares about the furthest stan's room. Luckily,
+* none of those bugs affect props, so prop hits are always the best candidate.
+*/
+void shotFireBullet(s32 hand)
+{
+    f32 new_var;
+    coord3d *playerpos;
+    s32 hitbgstan;
+    coord3d stanhit;
+    StandTile *hittile;
+    s32 createSpark;
+    s32 gotbghit;
+    coord3d visiblehitpos;
+    s32 bestroom;
+    s32 besttexture;
+    HitThing bghit;
+    f32 negz;
+    coord3d besthitpos;
+    s32 pad;
+    StandTile *fromtile;
+    coord3d dest;
+    ShotData shotdata;
+    coord3d *finalpos;
+    s32 numhits;
+    u8 visited[256];
+    struct image_sound *impact_sounds;
+    coord3d scaleddir;
+    coord3d hitdir;
+    f32 distscale;
+    PropRecord *playerprop;
+    PropRecord *prop;
+    PropRecord **pp;
+    s32 startroom;
+    s32 k;
+    s32 i;
+    u8 rooms[2];
+
+    hitbgstan = 0;
+    hittile = 0;
+    gotbghit = 0;
+    bestroom = 0;
+    playerprop = getCurrentPlayerProp();
+    fromtile = playerprop->stan;
+    numhits = 0;
+    bullet_path_from_screen_center(&shotdata.viewOrigin, &shotdata.viewDir, hand);
+    shotdata.weapon = getCurrentPlayerWeaponId(hand);
+    shotdata.maxdist = M_U32_MAX_VALUE_F;
+
+    for (k = 0; k < 10; k++)
+    {
+        shotdata.hits[k].prop = 0;
+        shotdata.hits[k].hitpart = 0;
+        shotdata.hits[k].node = 0;
+    }
+
+    shotdata.gunpos.x = shotdata.viewOrigin.x;
+    shotdata.gunpos.y = shotdata.viewOrigin.y;
+    shotdata.gunpos.z = shotdata.viewOrigin.z;
+
+    mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &shotdata.gunpos);
+
+    shotdata.dir.x = shotdata.viewDir.x;
+    shotdata.dir.y = shotdata.viewDir.y;
+    shotdata.dir.z = shotdata.viewDir.z;
+
+    mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &shotdata.dir);
+
+    dest.x = (shotdata.dir.x * M_U16_MAX_VALUE_F) + shotdata.gunpos.x;
+    dest.y = (shotdata.dir.y * M_U16_MAX_VALUE_F) + shotdata.gunpos.y;
+    dest.z = (shotdata.dir.z * M_U16_MAX_VALUE_F) + shotdata.gunpos.z;
+
+    if (stanWalkLineNoCallback(&fromtile, playerprop->pos.x, playerprop->pos.z, shotdata.gunpos.x, shotdata.gunpos.z))
+    {
+        distscale = get_room_data_float1() * bgGetLevelVisibilityScale();
+        playerpos = bondviewGetCurrentPlayersPosition();
+
+        new_var++;
+        new_var--;
+
+        if (new_var == new_var);
+
+        stanResetHits();
+
+        if (!stanWalkLineNoCallback(&fromtile, shotdata.gunpos.x, shotdata.gunpos.z, dest.x, dest.z))
+        {
+            chrlvStanLineDirIntersection(&shotdata.gunpos, &shotdata.dir, &stanhit);
+            hitbgstan = 1;
+        }
+        else
+        {
+            stanhit.x = dest.x;
+            stanhit.y = dest.y;
+            stanhit.z = dest.z;
+        }
+
+        hitdir.x = stanhit.x - playerpos->x;
+        hitdir.y = stanhit.y - playerpos->y;
+        hitdir.z = stanhit.z - playerpos->z;
+        scaleddir.x = playerpos->x * distscale;
+        scaleddir.y = playerpos->y * distscale;
+        scaleddir.z = playerpos->z * distscale;
+        hittile = fromtile;
+        startroom = stanGetTileRoom(fromtile);
+
+        for (i = 0; i < 256; i++)
+        {
+            visited[i] = 0;
+        }
+
+        if (bgTestBulletHitBackground(playerpos, &stanhit, startroom, &bghit))
+        {
+            bestroom = startroom;
+        }
+
+        visited[startroom] = 1;
+
+        if (bestroom <= 0)
+        {
+            if (g_BgPortals[0].offset_portal != 0)
+            {
+                bestroom = shotFindBgHitInConnectedRooms(stanGetTileRoom(getCurrentPlayerProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
+            }
+            else
+            {
+                bestroom = shotFindBgHit(stanGetTileRoom(getCurrentPlayerProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
+            }
+        }
+
+        if (bestroom > 0)
+        {
+            distscale = get_room_data_float2();
+            bghit.hitpos.x *= distscale;
+            bghit.hitpos.y *= distscale;
+            bghit.hitpos.z *= distscale;
+        }
+
+        bestroom = shotFindBgHitInVisibleRooms(playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit, bestroom);
+
+        if (bestroom > 0)
+        {
+            gotbghit = 1;
+            besttexture = bghit.texturenum;
+            besthitpos.f[0] = (visiblehitpos.f[0] = bghit.hitpos.f[0]);
+            besthitpos.f[1] = (visiblehitpos.f[1] = bghit.hitpos.f[1]);
+            besthitpos.f[2] = (visiblehitpos.f[2] = bghit.hitpos.f[2]);
+        }
+        else
+        {
+            bestroom = startroom;
+            besttexture = -1;
+            besthitpos.x = dest.x;
+            besthitpos.y = dest.y;
+            besthitpos.z = dest.z;
+        }
+
+        if (hitbgstan || gotbghit)
+        {
+            mtx4TransformVecInPlace(camGetWorldToScreenMtxf(), &besthitpos);
+            negz = -besthitpos.f[2];
+            shotdata.maxdist = negz;
+        }
+    }
+
+    new_var = 300.0f;
+
+    if ((shotdata.weapon == 23) && (shotdata.maxdist > new_var))
+    {
+        shotdata.maxdist = new_var;
+    }
+
+    for (pp = g_LastOnScreenProp; (--pp) >= g_OnScreenPropList;)
+    {
+        prop = *pp;
+
+        if (prop != 0)
+        {
+            if ((prop->type == PROP_TYPE_CHR) || (((prop->type == PROP_TYPE_VIEWER) && (prop->chr != 0)) && (getPlayerPointerIndex(prop) != get_cur_playernum())))
+            {
+                chrTestHit(prop, &shotdata);
+            }
+            else if (((prop->type == PROP_TYPE_OBJ) || (prop->type == PROP_TYPE_WEAPON)) || (prop->type == PROP_TYPE_DOOR))
+            {
+                objTestShot(prop, &shotdata);
+            }
+        }
+    }
+
+    for (k = 0; k < 10; k++)
+    {
+        if (shotdata.hits[k].prop != 0)
+        {
+#ifdef DEBUG
+        assert(!IsBadVec3d((vec3d *)&shotdata.hits[k].hit.hitpos));
+#endif
+            if ((shotdata.hits[k].prop->type == PROP_TYPE_CHR) || (shotdata.hits[k].prop->type == PROP_TYPE_VIEWER))
+            {
+                chrHandleBulletHit(&shotdata, &shotdata.hits[k]);
+            }
+            else if (((shotdata.hits[k].prop->type == PROP_TYPE_OBJ) || (shotdata.hits[k].prop->type == PROP_TYPE_WEAPON)) || (shotdata.hits[k].prop->type == PROP_TYPE_DOOR))
+            {
+                objHit(&shotdata, &shotdata.hits[k]);
+            }
+
+            if (shotdata.hits[k].countsAsPenetration)
+            {
+                numhits++;
+
+                if (numhits >= bondwalkItemGetObjectsShootThrough(shotdata.weapon))
+                {
+                    gotbghit = 0;
+                    hitbgstan = 0;
+                }
+            }
+        }
+    }
+
+    if (gotbghit || hitbgstan)
+    {
+        finalpos = 0;
+        createSpark = 1;
+
+        if ((shotdata.weapon == 23) && (negz > new_var))
+        {
+            createSpark = 0;
+        }
+
+        if (gotbghit)
+        {
+            if (bghit.texturenum < 0)
+            {
+                impact_sounds = g_HitTypeSounds[0];
+            }
+            else
+            {
+                impact_sounds = g_HitTypeSounds[((u8 *) (&g_Textures[bghit.texturenum]))[0] & 0xf];
+            }
+
+            if (createSpark)
+            {
+                if ((impact_sounds->thing2_len > 0) && (shotdata.weapon != 23))
+                {
+                    pad = randomGetNext() % impact_sounds->thing2_len;
+                    explosionCreateBulletImpact(&visiblehitpos, &bghit.normal, impact_sounds->thing2[pad], bestroom, 0, -1, 0);
+                }
+
+                if (check_if_imageID_is_light(bghit.texturenum))
+                {
+                    lightFixtureBreak(bghit.tricmd, bghit.unk28, bestroom);
+                }
+            }
+
+            finalpos = &visiblehitpos;
+        }
+        else if (hitbgstan)
+        {
+            stanhit.x = (shotdata.dir.x * M_U16_MAX_VALUE_F) + shotdata.gunpos.x;
+            stanhit.y = (shotdata.dir.y * M_U16_MAX_VALUE_F) + shotdata.gunpos.y;
+            stanhit.z = (shotdata.dir.z * M_U16_MAX_VALUE_F) + shotdata.gunpos.z;
+            finalpos = &stanhit;
+        }
+
+        if (finalpos != 0)
+        {
+            if (createSpark)
+            {
+                recall_joy2_hits_edit_flag(shotdata.weapon, finalpos, besttexture);
+
+                if (((0xf & ((u8 *) g_Textures)[besttexture * 8]) != 5) && ((((u8 *) g_Textures)[besttexture * 8] & 0xf) != 6))
+                {
+                    rooms[0] = bestroom;
+                    rooms[1] = 255;
+                    explosionCreate(0, finalpos, hittile, 1, 0, get_cur_playernum(), rooms, 0);
+                }
+            }
+
+            finalpos->x -= 26.0f * shotdata.dir.x;
+            finalpos->y -= 26.0f * shotdata.dir.y;
+            finalpos->z -= 26.0f * shotdata.dir.z;
+
+            gunSetTracerTarget(finalpos);
+
+            if (createSpark)
+            {
+                bullet_spark_create(finalpos, 1, 26.0f, bestroom);
+            }
+        }
+    }
+}
+
+
+/**
+ * Address: 7F03B9C0
+ *
+ * Hitscans gather candidate hits along the bullet path. This function records each candidate hit into shotdata
+ * and enforces pentration limits and removes hits that should be blocked by closer objects.
+ */
+void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, s32 unk44, Model *model, bool countsAsPenetration, s32 blocksFurtherHits)
+{
+    s32 pad;
+    s32 i;
+    s32 furthestindex;
+    f32 prevfurthest;
+    s32 numPenetratedObjects;
+    f32 furthest;
+    struct ShotData *localshot; // Assigned but never used, required for matching.
+
+    /**
+     * If countsAsPenetration is true, then this hit is on an object that bullets may pass through,
+     * and it counts against the weapon's shoot-through object limit.
+     */
+    if (countsAsPenetration)
+    {
+        furthest = 0.0f;
+        prevfurthest = furthest;
+        furthestindex = 0;
+        numPenetratedObjects = 0;
+        localshot = shotdata;
+
+        for (i = 0; i < ARRAYCOUNT(shotdata->hits); i++)
+        {
+            if (shotdata->hits[i].prop != NULL && shotdata->hits[i].countsAsPenetration)
+            {
+                numPenetratedObjects++;
+
+                if (furthest < shotdata->hits[i].dist)
+                {
+                    prevfurthest = furthest;
+                    furthest = shotdata->hits[i].dist;
+                    furthestindex = i;
+                }
+            }
+        }
+
+        /**
+         * The bullet has reached the max number of objects it can penetrate.
+         */
+        if (numPenetratedObjects >= bondwalkItemGetObjectsShootThrough(shotdata->weapon))
+        {
+            // Make room for this new hit.
+            shotdata->hits[furthestindex].prop = NULL;
+            shotdata->maxdist = prevfurthest;
+
+            // Update the shot's useful distance.
+            if (prevfurthest < dist)
+            {
+                shotdata->maxdist = dist;
+            }
+
+            // Remove hits that are beyond the penetration limit.
+            for (i = 0; i < ARRAYCOUNT(shotdata->hits); i++)
+            {
+                if (shotdata->hits[i].prop != NULL && (!shotdata->hits[i].countsAsPenetration) && prevfurthest < shotdata->hits[i].dist)
+                {
+                    shotdata->hits[i].prop = NULL;
+                }
+            }
+        }
+        else
+        {
+            /**
+             * This hit is the final allowed penetrable object.
+             */
+            if (numPenetratedObjects + 1 == bondwalkItemGetObjectsShootThrough(shotdata->weapon))
+            {
+                if (dist < shotdata->maxdist)
+                {
+                    shotdata->maxdist = dist;
+                }
+            }
+        }
+    }
+
+    /**
+     * If true, this stops the bullets for all weapons except the Cougar Magnum and Silver PP7.
+     * Any already recorded hits farther than this one are removed,
+     * and the shot's max distance is clamped to this hit distance.
+     * Used by bulletproof glass.
+    */
+    if (blocksFurtherHits)
+    {
+        if (shotdata->weapon != ITEM_RUGER && shotdata->weapon != ITEM_SILVERWPPK)
+        {
+            for (i = 0; i < ARRAYCOUNT(shotdata->hits); i++)
+            {
+                if (shotdata->hits[i].prop != NULL && dist < shotdata->hits[i].dist)
+                {
+                    shotdata->hits[i].prop = NULL;
+                }
+            }
+
+            shotdata->maxdist = dist;
+        }
+    }
+
+    for (i = 0; i < ARRAYCOUNT(shotdata->hits); i++)
+    {
+        if (shotdata->hits[i].prop == NULL)
+        {
+            shotdata->hits[i].dist = dist;
+            shotdata->hits[i].prop = prop;
+            shotdata->hits[i].hitpart = hitpart;
+            shotdata->hits[i].node = node;
+            shotdata->hits[i].hit = *hitthing;
+            shotdata->hits[i].room = room;
+            shotdata->hits[i].unk44 = unk44;
+            shotdata->hits[i].model = model;
+            shotdata->hits[i].countsAsPenetration = countsAsPenetration;
+            break;
+        }
+    }
+}
+
+
+void shotPunch(s32 hand, s32 item_id)
+{
+    PropRecord *playerprop;
+    f32 ducking;
+    s32 hit;
+    PropRecord *prop;
+    PropRecord **propptr;
+    ChrRecord *chr;
+    f32 max0;
+    f32 min0;
+    f32 max1;
+    f32 min1;
+    f32 max2;
+    f32 min2;
+    s32 hitpart;
+    StandTile *tile;
+    coord3d from;
+    coord3d vector;
+    f32 reach;
+
+    hit = 0;
+    playerprop = getCurrentPlayerProp();
+    ducking = bondviewGetPlayerDuckingHeightRelated(g_CurrentPlayer);
+
+    for (propptr = g_LastOnScreenProp - 1; propptr >= g_OnScreenPropList; propptr--)
+    {
+        prop = *propptr;
+
+        if (prop == NULL)
+        {
+            continue;
+        }
+
+        if (!(prop->zDepth < 500.0f))
+        {
+            continue;
+        }
+
+        if (prop->type != PROP_TYPE_CHR)
+        {
+            if (prop->type != PROP_TYPE_VIEWER)
+            {
+                continue;
+            }
+
+            if (prop->chr == NULL)
+            {
+                continue;
+            }
+
+            if (getPlayerPointerIndex(prop) == get_cur_playernum())
+            {
+                continue;
+            }
+        }
+
+        reach = 50.0f;
+        chr = prop->chr;
+
+        if (getCurrentWeaponOrItem() == ITEM_SNIPERRIFLE)
+        {
+            reach = 100.0f;
+        }
+
+        modelGetAxisExtents(chr->model, &max0, &min0, 0);
+
+        if (!(0.0f <= max0))
+        {
+            continue;
+        }
+
+        if (!(min0 <= 0.0f))
+        {
+            continue;
+        }
+
+        modelGetAxisExtents(chr->model, &max1, &min1, 1);
+
+        if (!(0.0f <= max1))
+        {
+            continue;
+        }
+
+        if (!(min1 <= 0.0f))
+        {
+            continue;
+        }
+
+        modelGetAxisExtents(chr->model, &max2, &min2, 2);
+
+        if (!(min2 <= 0.0f))
+        {
+            continue;
+        }
+
+        if (!((-reach) <= max2))
+        {
+            continue;
+        }
+
+        tile = playerprop->stan;
+
+        if (!stanTestLineUnobstructed(&tile, playerprop->pos.x, playerprop->pos.z, prop->pos.x, prop->pos.z, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER, ducking, ducking, 0.0f, 1.0f))
+        {
+            continue;
+        }
+
+        if (tile != prop->stan) {
+            continue;
+        }
+
+        hitpart = HIT_CHEST;
+
+        if (currentPlayerGetCrouchPos() == CROUCH_HALF) {
+            hitpart = HIT_GENERAL;
+        }
+        else if (currentPlayerGetCrouchPos() == CROUCH_SQUAT)
+        {
+            hitpart = HIT_GENERALHALF;
+        }
+
+        if (g_musicSfxBufferPtr && g_musicSfxBufferPtr);
+
+        bullet_path_from_screen_center(&from, &vector, hand);
+        mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &vector);
+
+        if (handles_shot_actors(chr, hitpart, &vector, item_id, 1))
+        {
+            recall_joy2_hits_edit_detail_edit_flag(item_id, prop, -1);
+            hit = 1;
+        }
+    }
+
+    if ((!hit) && (item_id == ITEM_FIST))
+    {
+        sndPlaySfx(g_musicSfxBufferPtr, PUNCHING_AIR_SFX, 0);
+    }
+}
+
+
+void shotFireBullet(s32);
+
+/**
+ * Address 0x7F03C0F0.
+*/
+void shotFireHand(s32 hand)
+{
+    s32 item_id;
+    s32 i;
+
+    if (get_hands_firing_status(hand) != 0)
+    {
+        item_id = getCurrentPlayerWeaponId(hand);
+
+        if (item_id == ITEM_TRIGGER)
+        {
+            remoteMinesDetonate();
+        }
+        else if (item_id == ITEM_GRENADELAUNCH
+            || item_id == ITEM_ROCKETLAUNCH
+            || item_id == ITEM_GRENADE
+            || item_id == ITEM_THROWKNIFE
+            || item_id == ITEM_REMOTEMINE
+            || item_id == ITEM_PROXIMITYMINE
+            || item_id == ITEM_TIMEDMINE
+            || item_id == ITEM_FLAREPISTOL
+            || item_id == ITEM_PITONGUN
+            || item_id == ITEM_BOMBCASE
+            || item_id == ITEM_BUG
+            || item_id == ITEM_MICROCAMERA
+            || item_id == ITEM_GOLDENEYEKEY
+            || item_id == ITEM_TOKEN
+            || item_id == ITEM_PLASTIQUE
+        )
+        {
+            // nothing to do
+        }
+        else if (item_id == ITEM_TANKSHELLS)
+        {
+            gunFireTankShell(hand);
+        }
+        else if (item_id == ITEM_FIST || item_id == ITEM_KNIFE)
+        {
+            shotPunch(hand, item_id);
+        }
+        else if (item_id == ITEM_SHOTGUN || item_id == ITEM_AUTOSHOT)
+        {
+            inc_curplayer_hitcount_with_weapon(item_id, SHOT_REGISTER_TOTAL);
+
+            for (i=0; i<NUMBER_SHOTGUN_BULLETS; i++)
+            {
+                shotFireBullet(hand);
+            }
+        }
+        else if (item_id == ITEM_CAMERA)
+        {
+            objectiveTakePictureHandler();
+        }
+        else if (item_id == ITEM_WATCHMAGNETATTRACT)
+        {
+            g_CurrentPlayer->magnetattracttime = 0;
+        }
+        else
+        {
+            inc_curplayer_hitcount_with_weapon(item_id, SHOT_REGISTER_TOTAL);
+            shotFireBullet(hand);
+        }
+    }
+}
+
+
+/**
+ * Address 0x7F03C294.
+*/
+void shotFireHands(void)
+{
+    shotFireHand(GUNRIGHT);
+    shotFireHand(GUNLEFT);
+}

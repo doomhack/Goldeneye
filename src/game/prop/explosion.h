@@ -174,8 +174,8 @@ void explosionCreateSmoke(coord3d *pos, StandTile *stan, s16 smoke_type, u8 *roo
 void explosionUpdateFlyingParticles(void);
 void explosionsInit(void);
 void explosionsReset(void);
-u8 explosionChrpropSmokeTick(PropRecord* prop);
-u8 explosionChrpropExplosionTick(PropRecord* prop);
+u8 smokePropTick(PropRecord* prop);
+u8 explosionPropTick(PropRecord* prop);
 void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* result);
 void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 impact_type, s16 room, PropRecord *prop, s8 model_render_pos_index, s8 room_clear_flag);
 s32 explosionTick(PropRecord* arg0);

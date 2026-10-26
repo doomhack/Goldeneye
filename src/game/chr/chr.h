@@ -1,6 +1,7 @@
 #ifndef _CHR_H_
 #define _CHR_H_
 #include <ultra64.h>
+#include "game/prop/prop.h"
 #include <bondgame.h>
 #include <bondtypes.h>
 #include "game/chr/chrai.h"
@@ -290,14 +291,11 @@ void        chrSetMaxDamage(ChrRecord *chr, f32 maxdamage);
 s32         propIsOfCdType(PropRecord* prop, s32 cdtypes);
 s32         chrGetOnscreenRenderBounds(PropRecord *arg0, struct coord3d *arg1, struct coord2d *arg2, struct coord2d *arg3);
 void        chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit);
-void        propExecuteTickOperation(PropRecord *prop, TICKOP op);
 
 //tentative signature
 s32         sub_GAME_7F01FC10(Model *, coord3d *, coord3d *, f32 *);
 void        chrCreateBloodStain(Model *arg0, s32 arg1, ModelNode *arg2, struct coord3d *arg3);
-void        chrpropAddBulletHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, s32 unk44, Model *model, bool countsAsPenetration, s32 blocksFurtherHits);
 void        chrTestHit(PropRecord *prop, ShotData *shotdata);
-void        sub_GAME_7F03E134(PropRecord* p);
 
 #ifdef BUGFIX_R1
 bool chrCanUseDKModeScaling(s32 bodynum, s32 headnum);
