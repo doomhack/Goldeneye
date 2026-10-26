@@ -115,6 +115,7 @@
       build/OUTCODE/src/game/dyn.o (.bss);
       build/OUTCODE/src/game/lv.o (.bss);
       build/OUTCODE/src/game/ramromreplay.o (.bss);
+      build/OUTCODE/src/game/testhooks.o (.bss);
       build/OUTCODE/src/game/frametiming.o (.bss);
       build/OUTCODE/src/game/mp_music.o (.bss);
       build/OUTCODE/src/game/language.o (.bss);

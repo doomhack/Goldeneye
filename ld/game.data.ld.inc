@@ -113,6 +113,7 @@
       build/OUTCODE/src/game/dyn.o (.data);
       build/OUTCODE/src/game/lv.o (.data);
       build/OUTCODE/src/game/ramromreplay.o (.data);
+      build/OUTCODE/src/game/testhooks.o (.data);
       build/OUTCODE/src/game/frametiming.o (.data);
       build/OUTCODE/src/game/mp_music.o (.data);
       build/OUTCODE/src/game/language.o (.data);

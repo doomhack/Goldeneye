@@ -12,6 +12,7 @@
 #include <random.h>
 #include "joy.h"
 #include "frametiming.h"
+#include "testhooks.h"
 //D:800483F0
 
 struct ramrom_struct
@@ -306,12 +307,15 @@ s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
 
     if (ramrom_blkbuf_2->randseed != (u8)g_randomSeed)
     {
+        // The game has drifted from the recording.
+        g_TestDemoDesynced = TRUE;
         ramromFadeToTitle();
     }
 
     var_t0 += (u8)((u8)ramrom_blkbuf_2->speedframes + (u8)ramrom_blkbuf_2->count + ramrom_blkbuf_2->randseed);
     if (ramrom_blkbuf_2->check != var_t0)
     {
+        g_TestDemoDesynced = TRUE;
         ramromFadeToTitle();
     }
     
@@ -541,6 +545,12 @@ void select_ramrom_to_play(void)
 
     for (i = 0; ramrom_table[i].fdata != NULL && temp_v0 >= ramrom_table[i].locked; i++)
     {}
+
+    if (g_TestForceDemo >= 0 && g_TestForceDemo < i)
+    {
+        replay_recorded_ramrom_at_address(ramrom_table[g_TestForceDemo].fdata);
+        return;
+    }
 
     replay_recorded_ramrom_at_address(ramrom_table[randomGetNext() % i].fdata);
 }

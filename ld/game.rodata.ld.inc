@@ -115,6 +115,7 @@
       build/OUTCODE/src/game/dyn.o (.rodata);
       build/OUTCODE/src/game/lv.o (.rodata);
       build/OUTCODE/src/game/ramromreplay.o (.rodata);
+      build/OUTCODE/src/game/testhooks.o (.rodata);
       build/OUTCODE/src/game/frametiming.o (.rodata);
       build/OUTCODE/src/game/mp_music.o (.rodata);
       build/OUTCODE/src/game/language.o (.rodata);

@@ -36,6 +36,7 @@
 #include "game/debugmenu_handler.h"
 #include "game/lv.h"
 #include "game/ramromreplay.h"
+#include "game/testhooks.h"
 #include "game/rsp.h"
 #include "game/stan.h"
 #include "game/textrelated.h"
@@ -613,6 +614,7 @@ void bossMainloop(void)
                             }
 
                             gdl = lvlRender(gdl);
+                            testhooksEndFrame();
 
                             // Lets Visualise the Coverage Value used for Scilohete Anti-Ailising (edges)
                             // (done on the VI), also produces a cool looking linemode - providing AA is working.
