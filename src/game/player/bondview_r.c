@@ -496,7 +496,7 @@ void bondviewLoadSetupIntroSection(void)
         stan_height = bondviewYPositionRelated(start_stan, start_pos.f[0], start_pos.f[2]);
         start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
         g_CurrentPlayer->field_70 = stan_height;
-        start_look_angle = M_TAU_F - atan2f(g_Startpad[rand_pad_index]->look.f[0], g_Startpad[rand_pad_index]->look.f[2]);
+        start_look_angle = M_TAU_F - mathAtan2(g_Startpad[rand_pad_index]->look.f[0], g_Startpad[rand_pad_index]->look.f[2]);
 
         if (g_CoopMode && (get_cur_playernum() > 0))
         {

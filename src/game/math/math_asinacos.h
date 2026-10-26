@@ -3,7 +3,7 @@
 
 #include <ultra64.h>
 
-u16 acos(s16 arg0);
-s16 asin(s16 arg0);
+u16 mathAcosFixed(s16 arg0);
+s16 mathAsinFixed(s16 arg0);
 
 #endif

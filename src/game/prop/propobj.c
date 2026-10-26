@@ -594,8 +594,8 @@ void chrobjCollisionRelated(ObjectRecord *obj)
     if (obj->ptr_allocated_collisiondata_block != NULL)
     {
         bbox = chrobjGetBboxFromObjectRecord(obj);
-        matrix_4x4_copy(&obj->mtx, &sp24);
-        matrix_4x4_set_position(&obj->runtime_pos, &sp24);
+        mtx4Copy(&obj->mtx, &sp24);
+        mtx4SetTranslation(&obj->runtime_pos, &sp24);
         sub_GAME_7F03F540(bbox, &sp24, &obj->ptr_allocated_collisiondata_block->polygon, obj->ptr_allocated_collisiondata_block);
 
         obj->ptr_allocated_collisiondata_block->bottom = obj->runtime_pos.f[1] + chrpropSumMatrixPosY(bbox, &sp24);
@@ -712,7 +712,7 @@ void objChangeShading(ObjectRecord* obj, coord3d* pos, Mtxf* matrix, StandTile* 
 
     PropRecord *prop = obj->prop;
 
-    matrix_4x4_copy(matrix, &obj->mtx);
+    mtx4Copy(matrix, &obj->mtx);
 
     obj->runtime_pos.x = prop->pos.x = pos->x;
     obj->runtime_pos.y = prop->pos.y = pos->y;
@@ -761,15 +761,15 @@ void sub_GAME_7F04088C(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix,
 
     if (baseobj->flags & 4)
     {
-        matrix_4x4_set_rotation_around_z(M_PI, &mtxcopy);
-        matrix_4x4_multiply_in_place(matrix, &mtxcopy);
+        mtx4LoadZRotation(M_PI, &mtxcopy);
+        mtx4MultInPlace(matrix, &mtxcopy);
         newPos.x = pos2->f[0] - (mtxcopy.m[1][0] * ymin);
         newPos.y = pos2->f[1] - (mtxcopy.m[1][1] * ymin);
         newPos.z = pos2->f[2] - (mtxcopy.m[1][2] * ymin);
     }
     else if (baseobj->flags & 8)
     {
-        matrix_4x4_copy(matrix, &mtxcopy);
+        mtx4Copy(matrix, &mtxcopy);
         newPos.x = pos2->f[0] - (mtxcopy.m[1][0] * xmax);
         newPos.y = pos2->f[1] - (mtxcopy.m[1][1] * xmax);
         newPos.z = pos2->f[2] - (mtxcopy.m[1][2] * xmax);
@@ -785,7 +785,7 @@ void sub_GAME_7F04088C(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix,
 
         distfromTileCenter = stanGetPositionYValue(mStan, pos->f[0], pos->f[2]);
 
-        matrix_4x4_copy(matrix, &mtxcopy);
+        mtx4Copy(matrix, &mtxcopy);
         newPos.x = pos2->f[0] - (mtxcopy.m[1][0] * xmax);
         newPos.z = pos2->f[2] - (mtxcopy.m[1][2] * xmax);
         roomObj  = sub_GAME_7F03FAB0(pos, stan->room);
@@ -850,13 +850,13 @@ void sub_GAME_7F040BA0(ObjectRecord *obj, coord3d *pos, Mtxf *arg2, StandTile *s
     stan = stan2;
     sp6C_ptr = &matrix;
 
-    matrix_4x4_set_rotation_around_x(4.712389f, sp6C_ptr);
+    mtx4LoadXRotation(4.712389f, sp6C_ptr);
 
     sp6Cm_ptr = matrix.m;
 
-    matrix_4x4_set_rotation_around_y(M_PI_F, &sp2C);
-    matrix_4x4_multiply_in_place(&sp2C, sp6C_ptr);
-    matrix_4x4_multiply_in_place(arg2, &matrix);
+    mtx4LoadYRotation(M_PI_F, &sp2C);
+    mtx4MultInPlace(&sp2C, sp6C_ptr);
+    mtx4MultInPlace(arg2, &matrix);
 
     posdiff.x = pos2->x - (sp6Cm_ptr[2][0] * spBC);
     posdiff.y = pos2->y - (sp6Cm_ptr[2][1] * spBC);
@@ -2188,12 +2188,12 @@ void objSettle(ObjectRecord *obj, coord3d *arg1)
     projectile->flags &= ~PROJECTILEFLAG_AIRBORNE;
     projectile->flags &= ~PROJECTILEFLAG_STICKY;
 
-    matrix_4x4_get_rotation_around_xyz(&obj->mtx, &angles);
-    matrix_4x4_set_rotation_around_xyz(&angles, &rotmtx);
-    quaternion_set_rotation_around_xyzf((f32 *)&angles, projectile->unk68);
+    mtx4GetRotation(&obj->mtx, &angles);
+    mtx4LoadRotation(&angles, &rotmtx);
+    quatFromAngles((f32 *)&angles, projectile->unk68);
 
-    matrix_4x4_set_rotation_inverse(&rotmtx, &aimmtx);
-    matrix_4x4_multiply(&aimmtx, &obj->mtx, &scalemtx);
+    mtx4TransposeRotation(&rotmtx, &aimmtx);
+    mtx4Mult(&aimmtx, &obj->mtx, &scalemtx);
 
     projectile->unkC0 = sqrtf(
         ((scalemtx.m[0][0] * scalemtx.m[0][0])
@@ -2254,13 +2254,13 @@ void objSettle(ObjectRecord *obj, coord3d *arg1)
     aimmtx.m[3][2] = 0.0f;
     aimmtx.m[3][3] = 1.0f;
 
-    matrix_4x4_get_rotation_around_xyz(&aimmtx, &angles);
-    quaternion_set_rotation_around_xyzf((f32 *)&angles, projectile->unk78);
-    quaternion_ensure_shortest_path(projectile->unk68, projectile->unk78);
+    mtx4GetRotation(&aimmtx, &angles);
+    quatFromAngles((f32 *)&angles, projectile->unk78);
+    quatMakeShortestPath(projectile->unk68, projectile->unk78);
 
     projectile->unk60 = 0.0f;
 
-    angle = acosf(
+    angle = mathAcos(
         ((aimmtx.m[0][0] * rotmtx.m[0][0])
         + (aimmtx.m[0][1] * rotmtx.m[0][1]))
         + (aimmtx.m[0][2] * rotmtx.m[0][2]));
@@ -2276,7 +2276,7 @@ void objSettle(ObjectRecord *obj, coord3d *arg1)
     } else {
         modelscale = obj->model->scale;
 
-        tmp = acosf(
+        tmp = mathAcos(
             (((arg1->x * obj->mtx.m[0][0])
             + (arg1->y * obj->mtx.m[0][1]))
             + (obj->mtx.m[0][2] * arg1->z))
@@ -3185,9 +3185,9 @@ void sub_GAME_7F043838(coord3d *arg0, Mtxf *arg1)
         sp11c = sp108 * sp118;
     }
 
-    spf4 = atan2f(sp118, sp114);
+    spf4 = mathAtan2(sp118, sp114);
 
-    matrix_4x4_set_rotation_around_y(-spf4, &spb0);
+    mtx4LoadYRotation(-spf4, &spb0);
 
     sp24.x = sp124;
     sp24.y = sp120;
@@ -3195,12 +3195,12 @@ void sub_GAME_7F043838(coord3d *arg0, Mtxf *arg1)
 
     mtx4RotateVecInPlace(&spb0, sp24.f);
 
-    spf0 = atan2f(sp24.x, sp24.y);
+    spf0 = mathAtan2(sp24.x, sp24.y);
 
-    matrix_4x4_set_rotation_around_y(-1.5707964f + spf4, &sp70);
-    matrix_4x4_set_rotation_around_x(-1.5707964f - spf0, &sp30);
+    mtx4LoadYRotation(-1.5707964f + spf4, &sp70);
+    mtx4LoadXRotation(-1.5707964f - spf0, &sp30);
 
-    matrix_4x4_multiply(&sp70, &sp30, arg1);
+    mtx4Mult(&sp70, &sp30, arg1);
 }
 
 void sub_GAME_7F0439B8(ObjectRecord* obj, coord3d* pos, StandTile* stan, coord3d* arg3)
@@ -3209,7 +3209,7 @@ void sub_GAME_7F0439B8(ObjectRecord* obj, coord3d* pos, StandTile* stan, coord3d
     f32 temp_f0;
 
     sub_GAME_7F043838(arg3, &matrix);
-    matrix_scalar_multiply(obj->model->scale, matrix.m[0]);
+    mtx4ScaleRows012(obj->model->scale, matrix.m[0]);
     objChangeShading(obj, pos, &matrix, stan);
 
     temp_f0 = chrpropBBOXGetYmin(chrobjGetBboxFromObjFile(obj->model->obj));
@@ -3250,11 +3250,11 @@ bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNode *nod
 
             chrpropReparent(prop, parent);
 
-            matrix_4x4_copy(&obj->mtx, &mtx1);
-            matrix_4x4_set_position(&obj->runtime_pos, &mtx1);
-            matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), nodemtx, &mtx2);
-            matrix_4x4_invert_affine((f32 (*)[4]) &mtx2.m, (f32 (*)[4]) &mtx3.m);
-            matrix_4x4_multiply_homogeneous((Mtxf* ) &mtx3.m, &mtx1, &obj->embedment->matrix);
+            mtx4Copy(&obj->mtx, &mtx1);
+            mtx4SetTranslation(&obj->runtime_pos, &mtx1);
+            mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), nodemtx, &mtx2);
+            mtx4InvertAffine((f32 (*)[4]) &mtx2.m, (f32 (*)[4]) &mtx3.m);
+            mtx4MultAffine((Mtxf* ) &mtx3.m, &mtx1, &obj->embedment->matrix);
 
             return TRUE;
         }
@@ -3621,7 +3621,7 @@ void sub_GAME_7F0442DC(PropRecord* prop)
         prop->flags |= PROPFLAG_ONSCREEN;
         model->render_pos = (RenderPosView*)dynAllocate(model->obj->numMatrices << 6);
 
-        matrix_4x4_multiply_homogeneous(mtx, &obj->embedment->matrix, (Mtxf*)model->render_pos);
+        mtx4MultAffine(mtx, &obj->embedment->matrix, (Mtxf*)model->render_pos);
         modelUpdateRelationsQuick(model, model->obj->RootNode);
         chrobjWeaponTick(prop);
 
@@ -3985,14 +3985,14 @@ s32 sub_GAME_7F044B38(ObjectRecord *obj)
     result = 1;
     bbox = (ModelRoData_BoundingBoxRecord *) model->obj->Switches[6]->Data;
 
-    matrix_4x4_set_rotation_around_y(((VehichleRecord *)obj)->roty, &mtx);
-    matrix_scalar_multiply(model->scale, (f32 *) (&mtx));
-    matrix_4x4_set_position(&obj->runtime_pos, &mtx);
+    mtx4LoadYRotation(((VehichleRecord *)obj)->roty, &mtx);
+    mtx4ScaleRows012(model->scale, (f32 *) (&mtx));
+    mtx4SetTranslation(&obj->runtime_pos, &mtx);
 
-    matrix_4x4_transform_vector(&mtx, modelpoint0, &point0);
-    matrix_4x4_transform_vector(&mtx, modelpoint1, &point1);
-    matrix_4x4_transform_vector(&mtx, modelpoint2, &point2);
-    matrix_4x4_transform_vector(&mtx, modelpoint3, &point3);
+    mtx4TransformVec(&mtx, modelpoint0, &point0);
+    mtx4TransformVec(&mtx, modelpoint1, &point1);
+    mtx4TransformVec(&mtx, modelpoint2, &point2);
+    mtx4TransformVec(&mtx, modelpoint3, &point3);
 
     tile = prop->stan;
     if (walkTilesBetweenPoints_NoCallback(&tile, prop->pos.x, prop->pos.z, point0.x, point0.z))
@@ -4094,7 +4094,7 @@ s32 sub_GAME_7F044B38(ObjectRecord *obj)
         yawvec.y = 0.0f;
         yawvec.z = cosf(((VehichleRecord *)obj)->roty);
 
-        matrix_4x4_set_identity(&obj->mtx);
+        mtx4LoadIdentity(&obj->mtx);
 
         if (obj->mtx.m[0][0])
         {
@@ -4135,8 +4135,8 @@ s32 sub_GAME_7F044B38(ObjectRecord *obj)
         obj->mtx.m[2][1] = (((f32 *)(&obj->mtx))[2] * ((f32 *)(&obj->mtx))[4]) - (((f32 *)(&obj->mtx))[0] * ((f32 *)(&obj->mtx))[6]);
         obj->mtx.m[2][2] = (((f32 *)(&obj->mtx))[0] * obj->mtx.m[1][1]) - (((f32 *)(&obj->mtx))[1] * ((f32 *)(&obj->mtx))[4]);
 
-        matrix_scalar_multiply(model->scale, (f32 *) (&obj->mtx));
-        matrix_4x4_transform_vector(&obj->mtx, modelpoint0, &point1);
+        mtx4ScaleRows012(model->scale, (f32 *) (&obj->mtx));
+        mtx4TransformVec(&obj->mtx, modelpoint0, &point1);
 
         ypos = (point0.y - (chrpropBBOXGetYmin(bbox) * model->scale)) - point1.y;
         prop->pos.y = ypos;
@@ -4144,8 +4144,8 @@ s32 sub_GAME_7F044B38(ObjectRecord *obj)
     }
     else
     {
-        matrix_4x4_set_rotation_around_y(((VehichleRecord *)obj)->roty, &obj->mtx);
-        matrix_scalar_multiply(model->scale, (f32 *) (&obj->mtx));
+        mtx4LoadYRotation(((VehichleRecord *)obj)->roty, &obj->mtx);
+        mtx4ScaleRows012(model->scale, (f32 *) (&obj->mtx));
 
         ypos = stanGetPositionYValue(prop->stan, prop->pos.x, prop->pos.z) - ((chrpropBBOXGetYmin(bbox) + modelpoint0->f[1]) * model->scale);
 
@@ -4658,7 +4658,7 @@ s32 objTick(struct PropRecord *prop)
 				Rocket->speed.f[2] += Rocket->unk10.f[2] * g_GlobalTimerDelta;
 				RocketCurrent.f[0] += Rocket->speed.f[0] * g_GlobalTimerDelta;
 				RocketCurrent.f[2] += Rocket->speed.f[2] * g_GlobalTimerDelta;
-				sub_GAME_7F057DF8(objectMatrix, projectileMatrix, g_ClockTimer);
+				physApplyTumble(objectMatrix, projectileMatrix, g_ClockTimer);
 
                 // Determine which projectiles can stick to surfaces.
 				if ((obj->type == PROPDEF_COLLECTABLE) && (((((((airborneWeapon->weaponnum == ITEM_REMOTEMINE) || (airborneWeapon->weaponnum == ITEM_TIMEDMINE)) || (airborneWeapon->weaponnum == ITEM_PROXIMITYMINE)) || (airborneWeapon->weaponnum == ITEM_BOMBCASE)) || (airborneWeapon->weaponnum == ITEM_BUG)) || (airborneWeapon->weaponnum == ITEM_MICROCAMERA)) || (airborneWeapon->weaponnum == ITEM_PLASTIQUE)))
@@ -4745,7 +4745,7 @@ s32 objTick(struct PropRecord *prop)
 
 									if (!(Rocket->flags & PROJECTILEFLAG_00000200))
 									{
-										mtxLoadRandomRotation(projectileMatrix);
+										physRandomTumble(projectileMatrix);
 									}
 
 									Rocket->unk90 += 1;
@@ -4769,7 +4769,7 @@ s32 objTick(struct PropRecord *prop)
 										bloodStainPos.f[1] -= (getjointsize(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[1];
 										bloodStainPos.f[2] -= (getjointsize(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[2];
     
-										matrix_4x4_set_inverse_rotation_and_translation((Mtxf *) playerProp2, &inverseNodeMatrix);
+										mtx4InvertRigid((Mtxf *) playerProp2, &inverseNodeMatrix);
 										mtx4TransformVecInPlace(&inverseNodeMatrix, &bloodStainPos);
 										chrCreateBloodStain(g_CurrentProjectileModel, bodypartshot, dword_CODE_bss_80075B74, &bloodStainPos);
 									}
@@ -4841,7 +4841,7 @@ s32 objTick(struct PropRecord *prop)
 					{
 						if (!(Rocket->flags & PROJECTILEFLAG_00000200))
 						{
-							mtxLoadRandomRotation(projectileMatrix);
+							physRandomTumble(projectileMatrix);
 						}
 
 						Rocket->unk90 += 1;
@@ -4995,12 +4995,12 @@ s32 objTick(struct PropRecord *prop)
 						Rocket->unk60 = 1.0f;
 					}
 
-					quaternion_slerp((f32 *) (&Rocket->unk68), (f32 *) (&Rocket->unk78), Rocket->unk60, (f32 *) (&sp550));
+					quatSlerp((f32 *) (&Rocket->unk68), (f32 *) (&Rocket->unk78), Rocket->unk60, (f32 *) (&sp550));
 					objectMatrix = &obj->mtx;
-					quaternion_to_matrix((f32 *) (&sp550), (f32 *) (&obj->mtx));
-					matrix_column_1_scalar_multiply(Rocket->unkC0, (f32 *) objectMatrix);
-					matrix_column_2_scalar_multiply(Rocket->unkC4, (f32 *) objectMatrix);
-					matrix_column_3_scalar_multiply_2(Rocket->unkC8, (f32 *) objectMatrix);
+					quatToMtx4((f32 *) (&sp550), (f32 *) (&obj->mtx));
+					mtx4ScaleRow0(Rocket->unkC0, (f32 *) objectMatrix);
+					mtx4ScaleRow1(Rocket->unkC4, (f32 *) objectMatrix);
+					mtx4ScaleRow2(Rocket->unkC8, (f32 *) objectMatrix);
 					projectileAlive = 0;
 				}
 
@@ -5178,7 +5178,7 @@ s32 objTick(struct PropRecord *prop)
 
 				if (cctvSeesPlayer != 0)
 				{
-					temp_f0_14 = atan2f(xdiff, temp_f14_3);
+					temp_f0_14 = mathAtan2(xdiff, temp_f14_3);
 					var_f2 = bottom_pad->unkC8;
 
 					if (var_f2 < 0.0f)
@@ -5356,8 +5356,8 @@ s32 objTick(struct PropRecord *prop)
 				if (distanceToPlayer <= poAGun->aimdist)
 				{
 					if (sp4A0);
-					playerYaw = atan2f(playerDirVec.f[2], playerDirVec.f[0]);
-					playerPitch = atan2f(playerDirVec.f[1], horizontalDist);
+					playerYaw = mathAtan2(playerDirVec.f[2], playerDirVec.f[0]);
+					playerPitch = mathAtan2(playerDirVec.f[1], horizontalDist);
 					if ((obj->flags & PROPFLAG_NO_AMMO) || (obj->flags & PROPFLAG_INMOTION))
 					{
 						AutogunSeesPlayer = 1;
@@ -5615,7 +5615,7 @@ s32 objTick(struct PropRecord *prop)
 				temp_a1_6 = &poTruck->path->waypoints[poTruck->nextstep];
 				currentWaypoint = &g_CurrentSetup.pathwaypoints[*temp_a1_6];
 				waypointPosition = &g_CurrentSetup.pads[currentWaypoint->padID].pos;
-				targetYaw = atan2f(waypointPosition->f[0] - poTruck->runtime_pos.f[0], waypointPosition->f[2] - poTruck->runtime_pos.f[2]);
+				targetYaw = mathAtan2(waypointPosition->f[0] - poTruck->runtime_pos.f[0], waypointPosition->f[2] - poTruck->runtime_pos.f[2]);
 				if (poTruck->flags & PROPFLAG_INMOTION)
 				{
 					poTruck->roty = targetYaw;
@@ -5625,7 +5625,7 @@ s32 objTick(struct PropRecord *prop)
 			}
 			else if (poTruck->flags & PROPFLAG_INMOTION) 
 			{
-				poTruck->roty = atan2f(poTruck->mtx.m[2][0], poTruck->mtx.m[2][2]);
+				poTruck->roty = mathAtan2(poTruck->mtx.m[2][0], poTruck->mtx.m[2][2]);
 				poTruck->flags &= ~PROPFLAG_INMOTION;
 				sub_GAME_7F044B38(poTruck);
 			}
@@ -5767,7 +5767,7 @@ s32 objTick(struct PropRecord *prop)
 			}
 			else if (poTruck->flags & PROPFLAG_INMOTION)
 			{
-				poTruck->roty = atan2f(poTruck->mtx.m[2][0], poTruck->mtx.m[2][2]);
+				poTruck->roty = mathAtan2(poTruck->mtx.m[2][0], poTruck->mtx.m[2][2]);
 				poTruck->flags &= ~PROPFLAG_INMOTION;
 				sub_GAME_7F044B38(poTruck);
 			}
@@ -5959,21 +5959,21 @@ s32 objTick(struct PropRecord *prop)
 		{
 			sp39C = (struct DoorRecord *) prop->obj;
 			door7F0526EC(sp39C, mtxs);
-			matrix_4x4_multiply_homogeneous_in_place(camGetWorldToScreenMtxf(), mtxs);
+			mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), mtxs);
 
 			if (model->obj->Skeleton == (&skeleton_eyelid_door))
 			{
 				sp394 = M_TAU_F - ((sp39C->openPosition * M_TAU_F) / 360.0f);
 				render_pad388 = &mtxs[1];
 				temp_s0_10 = (Mtxf *) model->obj->Switches[1]->Data;
-				matrix_4x4_set_rotation_around_x(sp394, render_pad388);
-				matrix_4x4_set_position((struct coord3d *) temp_s0_10, render_pad388);
-				matrix_4x4_multiply_in_place(mtxs, render_pad388);
+				mtx4LoadXRotation(sp394, render_pad388);
+				mtx4SetTranslation((struct coord3d *) temp_s0_10, render_pad388);
+				mtx4MultInPlace(mtxs, render_pad388);
 				render_pad388 = &mtxs[2];
 				temp_s0_10 = (Mtxf *) model->obj->Switches[2]->Data;
-				matrix_4x4_set_rotation_around_x(M_TAU_F - sp394, render_pad388);
-				matrix_4x4_set_position((struct coord3d *) temp_s0_10, render_pad388);
-				matrix_4x4_multiply_in_place(mtxs, render_pad388);
+				mtx4LoadXRotation(M_TAU_F - sp394, render_pad388);
+				mtx4SetTranslation((struct coord3d *) temp_s0_10, render_pad388);
+				mtx4MultInPlace(mtxs, render_pad388);
 			}
 			else if (model->obj->Skeleton == (&skeleton_iris_door))
 			{
@@ -6005,13 +6005,13 @@ s32 objTick(struct PropRecord *prop)
 					temp_v0_32 = sp38C << 1;
 					var_v1_5 = temp_v0_32 + 2;
 					sp390 = (Mtxf *) model->obj->Switches[temp_v0_32 + 1]->Data;
-					matrix_4x4_set_rotation_around_z(sp380, (Mtxf *) ((((u8 *) mtxs) + (temp_v0_32 * (sizeof(Mtxf)))) + (sizeof(Mtxf))));
-					matrix_4x4_set_position((struct coord3d *) sp390, (Mtxf *) ((((u8 *) mtxs) + (temp_v0_32 * (sizeof(Mtxf)))) + (sizeof(Mtxf))));
-					matrix_4x4_multiply_in_place(mtxs, (Mtxf *) ((((u8 *) mtxs) + (temp_v0_32 * (sizeof(Mtxf)))) + (sizeof(Mtxf))));
+					mtx4LoadZRotation(sp380, (Mtxf *) ((((u8 *) mtxs) + (temp_v0_32 * (sizeof(Mtxf)))) + (sizeof(Mtxf))));
+					mtx4SetTranslation((struct coord3d *) sp390, (Mtxf *) ((((u8 *) mtxs) + (temp_v0_32 * (sizeof(Mtxf)))) + (sizeof(Mtxf))));
+					mtx4MultInPlace(mtxs, (Mtxf *) ((((u8 *) mtxs) + (temp_v0_32 * (sizeof(Mtxf)))) + (sizeof(Mtxf))));
 					sp390 = (Mtxf *) model->obj->Switches[var_v1_5]->Data;
-					matrix_4x4_set_rotation_around_z(sp384, (Mtxf *) (((u8 *) mtxs) + (var_v1_5 << 6)));
-					matrix_4x4_set_position((struct coord3d *) sp390, &mtxs[var_v1_5]);
-					matrix_4x4_multiply_in_place((Mtxf *) ((((u8 *) mtxs) + (temp_v0_32 * (sizeof(Mtxf)))) + (sizeof(Mtxf))), &mtxs[var_v1_5]);
+					mtx4LoadZRotation(sp384, (Mtxf *) (((u8 *) mtxs) + (var_v1_5 << 6)));
+					mtx4SetTranslation((struct coord3d *) sp390, &mtxs[var_v1_5]);
+					mtx4MultInPlace((Mtxf *) ((((u8 *) mtxs) + (temp_v0_32 * (sizeof(Mtxf)))) + (sizeof(Mtxf))), &mtxs[var_v1_5]);
 					sp38C++;
 				}
 
@@ -6020,9 +6020,9 @@ s32 objTick(struct PropRecord *prop)
 		}
 		else
 		{
-			matrix_4x4_copy(&obj->mtx, &tempMatrix2);
-			matrix_4x4_set_position(&obj->runtime_pos, &tempMatrix2);
-			matrix_4x4_multiply_homogeneous(camGetWorldToScreenMtxf(), &tempMatrix2, mtxs);
+			mtx4Copy(&obj->mtx, &tempMatrix2);
+			mtx4SetTranslation(&obj->runtime_pos, &tempMatrix2);
+			mtx4MultAffine(camGetWorldToScreenMtxf(), &tempMatrix2, mtxs);
 
 			if (obj->type == PROPDEF_CCTV)
 			{
@@ -6039,14 +6039,14 @@ s32 objTick(struct PropRecord *prop)
 					angleDelta_7 -= M_TAU_F;
 				}
 
-				matrix_4x4_set_rotation_around_y(angleDelta_7, &tempMatrix);
-				matrix_4x4_multiply(&tempMatrix, &sp370->unk84, &mtxs[1]);
+				mtx4LoadYRotation(angleDelta_7, &tempMatrix);
+				mtx4Mult(&tempMatrix, &sp370->unk84, &mtxs[1]);
 				sp360.f[0] = temp_s0_13->f[0];
 				sp360.f[1] = temp_s0_13->f[1];
 				sp360.f[2] = temp_s0_13->f[2];
 				mtx4TransformVecInPlace(&tempMatrix2, &sp360);
-				matrix_4x4_set_position(&sp360, &mtxs[1]);
-				matrix_4x4_multiply_homogeneous_in_place(camGetWorldToScreenMtxf(), &mtxs[1]);
+				mtx4SetTranslation(&sp360, &mtxs[1]);
+				mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), &mtxs[1]);
 			}
 			else if (obj->type == PROPDEF_AUTOGUN)
 			{
@@ -6065,39 +6065,39 @@ s32 objTick(struct PropRecord *prop)
 				sp308.f[2] = temp_s0_13->f[2];
 
 				mtx4TransformVecInPlace(&tempMatrix2, &sp308);
-				matrix_4x4_set_rotation_around_y(sp304, &mtxs[1]);
-				matrix_4x4_set_position(&sp308, &mtxs[1]);
-				matrix_scalar_multiply(sp318->model->scale, mtxs[1].m[0]);
-				matrix_4x4_multiply_homogeneous_in_place(camGetWorldToScreenMtxf(), &mtxs[1]);
+				mtx4LoadYRotation(sp304, &mtxs[1]);
+				mtx4SetTranslation(&sp308, &mtxs[1]);
+				mtx4ScaleRows012(sp318->model->scale, mtxs[1].m[0]);
+				mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), &mtxs[1]);
 				temp_s0_13 = (struct coord3d *) model->obj->Switches[2]->Data;
-				matrix_4x4_set_rotation_around_z(sp300, &mtxs[2]);
-				matrix_4x4_set_position(temp_s0_13, &mtxs[2]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[1], &mtxs[2]);
+				mtx4LoadZRotation(sp300, &mtxs[2]);
+				mtx4SetTranslation(temp_s0_13, &mtxs[2]);
+				mtx4MultAffineInPlace(&mtxs[1], &mtxs[2]);
 
 				if (model->obj->Switches[3] != NULL)
 				{
 					sp2FC = modelFindNodeMtx(model, model->obj->Switches[3], 0);
 					temp_s0_13 = (struct coord3d *) model->obj->Switches[3]->Data;
-					matrix_4x4_set_rotation_around_x(sp318->unkB4, sp2FC);
-					matrix_4x4_set_position(temp_s0_13, sp2FC);
-					matrix_4x4_multiply_homogeneous_in_place(&mtxs[2], sp2FC);
+					mtx4LoadXRotation(sp318->unkB4, sp2FC);
+					mtx4SetTranslation(temp_s0_13, sp2FC);
+					mtx4MultAffineInPlace(&mtxs[2], sp2FC);
 				}
 
 				if (model->obj->Switches[4] != NULL)
 				{
 					sp2FC = modelFindNodeMtx(model, model->obj->Switches[4], 0);
 					temp_s0_13 = (struct coord3d *) model->obj->Switches[4]->Data;
-					matrix_4x4_set_identity_and_position(temp_s0_13, sp2FC);
-					matrix_4x4_multiply_homogeneous_in_place(&mtxs[2], sp2FC);
+					mtx4LoadTranslation(temp_s0_13, sp2FC);
+					mtx4MultAffineInPlace(&mtxs[2], sp2FC);
 				}
 
 				if (model->obj->Switches[6] != NULL)
 				{
 					sp2FC = modelFindNodeMtx(model, model->obj->Switches[6], 0);
 					temp_s0_13 = (struct coord3d *) model->obj->Switches[6]->Data;
-					matrix_4x4_set_rotation_around_x(sp318->unkB4, sp2FC);
-					matrix_4x4_set_position(temp_s0_13, sp2FC);
-					matrix_4x4_multiply_homogeneous_in_place(&mtxs[2], sp2FC);
+					mtx4LoadXRotation(sp318->unkB4, sp2FC);
+					mtx4SetTranslation(temp_s0_13, sp2FC);
+					mtx4MultAffineInPlace(&mtxs[2], sp2FC);
 				}
 			}
 			else if (obj->type == PROPDEF_COLLECTABLE)
@@ -6109,7 +6109,7 @@ s32 objTick(struct PropRecord *prop)
 				{
 					do
 					{
-						matrix_4x4_set_identity((Mtxf *) (((u8 *) mtxs) + (sp2F8 * 64)));
+						mtx4LoadIdentity((Mtxf *) (((u8 *) mtxs) + (sp2F8 * 64)));
 						sp2F8++;
 					}
 
@@ -6118,14 +6118,14 @@ s32 objTick(struct PropRecord *prop)
 			}
 			else if (obj->type == PROPDEF_RACK)
 			{
-				matrix_4x4_set_identity_and_position(model->obj->Switches[0]->Data, &mtxs[1]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[1]);
-				matrix_4x4_set_identity_and_position(model->obj->Switches[1]->Data, &mtxs[2]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[2]);
-				matrix_4x4_set_identity_and_position(model->obj->Switches[2]->Data, &mtxs[3]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[3]);
-				matrix_4x4_set_identity_and_position(model->obj->Switches[3]->Data, &mtxs[4]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[4]);
+				mtx4LoadTranslation(model->obj->Switches[0]->Data, &mtxs[1]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[1]);
+				mtx4LoadTranslation(model->obj->Switches[1]->Data, &mtxs[2]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[2]);
+				mtx4LoadTranslation(model->obj->Switches[2]->Data, &mtxs[3]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[3]);
+				mtx4LoadTranslation(model->obj->Switches[3]->Data, &mtxs[4]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[4]);
 			}
 			else if (obj->type == PROPDEF_VEHICHLE)
 			{
@@ -6170,7 +6170,7 @@ s32 objTick(struct PropRecord *prop)
 				}
 
 
-				matrix_4x4_set_rotation_around_x(vehicle_render->wheelxrot, &sp2AC);
+				mtx4LoadXRotation(vehicle_render->wheelxrot, &sp2AC);
 				if (vehicle_render->speed > 0.0f)
 				{
 					sp24C = vehicle_render->turnrot60;
@@ -6181,7 +6181,7 @@ s32 objTick(struct PropRecord *prop)
 					}
 
 					sp248 = sinf(sp24C) * sp250;
-					vehicle_render->wheelyrot = atan2f(sp248, (cosf(sp24C) * sp250) - (sp250 - vehicle_render->speed));
+					vehicle_render->wheelyrot = mathAtan2(sp248, (cosf(sp24C) * sp250) - (sp250 - vehicle_render->speed));
 					if (vehicle_render->wheelyrot < sp24C)
 					{
 						vehicle_render->wheelyrot = sp24C;
@@ -6193,20 +6193,20 @@ s32 objTick(struct PropRecord *prop)
 					}
 				}
 
-				matrix_4x4_set_rotation_around_y(vehicle_render->wheelyrot, &sp26C);
-				matrix_4x4_copy(&sp2AC, &mtxs[3]);
-				matrix_4x4_set_position(sp258, &mtxs[3]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[3]);
-				matrix_4x4_copy(&sp2AC, &mtxs[4]);
-				matrix_4x4_set_position(sp254, &mtxs[4]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[4]);
-				matrix_4x4_multiply_homogeneous_in_place(&sp26C, &sp2AC);
-				matrix_4x4_copy(&sp2AC, &mtxs[1]);
-				matrix_4x4_set_position(sp260, &mtxs[1]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[1]);
-				matrix_4x4_copy(&sp2AC, &mtxs[2]);
-				matrix_4x4_set_position(sp25C, &mtxs[2]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[2]);
+				mtx4LoadYRotation(vehicle_render->wheelyrot, &sp26C);
+				mtx4Copy(&sp2AC, &mtxs[3]);
+				mtx4SetTranslation(sp258, &mtxs[3]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[3]);
+				mtx4Copy(&sp2AC, &mtxs[4]);
+				mtx4SetTranslation(sp254, &mtxs[4]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[4]);
+				mtx4MultAffineInPlace(&sp26C, &sp2AC);
+				mtx4Copy(&sp2AC, &mtxs[1]);
+				mtx4SetTranslation(sp260, &mtxs[1]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[1]);
+				mtx4Copy(&sp2AC, &mtxs[2]);
+				mtx4SetTranslation(sp25C, &mtxs[2]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[2]);
 			}
 			else if (obj->type == PROPDEF_AIRCRAFT)
 			{
@@ -6238,38 +6238,38 @@ s32 objTick(struct PropRecord *prop)
 				}
 				else
 				{
-					matrix_4x4_copy(&mtxs[0], &mtxs[1]);
+					mtx4Copy(&mtxs[0], &mtxs[1]);
 				}
 
 				if (aircraft_render->flags & PROPFLAG_INMOTION)
 				{
-					matrix_4x4_set_rotation_around_z(aircraft_render->rotoryrot, &sp200);
+					mtx4LoadZRotation(aircraft_render->rotoryrot, &sp200);
 				}
 				else
 				{
-					matrix_4x4_set_rotation_around_y(aircraft_render->rotoryrot, &sp200);
+					mtx4LoadYRotation(aircraft_render->rotoryrot, &sp200);
 				}
 
-				matrix_4x4_copy(&sp200, &mtxs[2]);
-				matrix_4x4_set_position(sp1FC, &mtxs[2]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[1], &mtxs[2]);
+				mtx4Copy(&sp200, &mtxs[2]);
+				mtx4SetTranslation(sp1FC, &mtxs[2]);
+				mtx4MultAffineInPlace(&mtxs[1], &mtxs[2]);
 
 				if (model->obj->Switches[3] != NULL)
 				{
 					temp_s0_14 = (struct coord3d *) model->obj->Switches[3]->Data;
 					temp_s0_21 = modelFindNodeMtx(model, model->obj->Switches[3], 0);
-					matrix_4x4_set_rotation_around_x(aircraft_render->rotoryrot, &sp200);
-					matrix_4x4_copy(&sp200, temp_s0_21);
-					matrix_4x4_set_position(temp_s0_14, temp_s0_21);
-					matrix_4x4_multiply_homogeneous_in_place(&mtxs[1], temp_s0_21);
+					mtx4LoadXRotation(aircraft_render->rotoryrot, &sp200);
+					mtx4Copy(&sp200, temp_s0_21);
+					mtx4SetTranslation(temp_s0_14, temp_s0_21);
+					mtx4MultAffineInPlace(&mtxs[1], temp_s0_21);
 				}
 
 				if (model->obj->Switches[4] != NULL)
 				{
 					temp_s0_14 = (struct coord3d *) model->obj->Switches[4]->Data;
 					temp_s0_21 = modelFindNodeMtx(model, model->obj->Switches[4], 0);
-					matrix_4x4_set_identity_and_position(temp_s0_14, temp_s0_21);
-					matrix_4x4_multiply_homogeneous_in_place(&mtxs[1], temp_s0_21);
+					mtx4LoadTranslation(temp_s0_14, temp_s0_21);
+					mtx4MultAffineInPlace(&mtxs[1], temp_s0_21);
 				}
 			}
 			else if (obj->type == PROPDEF_TANK)
@@ -6296,18 +6296,18 @@ s32 objTick(struct PropRecord *prop)
 					angleDelta_9 += M_TAU_F;
 				}
 
-				matrix_4x4_set_rotation_around_y(angleDelta_9, &mtxs[1]);
-				matrix_4x4_set_position(sp168, &mtxs[1]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[0], &mtxs[1]);
-				matrix_4x4_set_rotation_around_x(sp154, &mtxs[3]);
-				matrix_4x4_set_position(sp164, &mtxs[3]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[1], &mtxs[3]);
-				matrix_4x4_set_rotation_around_y(M_PI_2F, &mtxs[4]);
-				matrix_4x4_set_position(sp160, &mtxs[4]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[3], &mtxs[4]);
-				matrix_4x4_set_identity_and_position(sp15C, &mtxs[2]);
-				matrix_4x4_multiply_homogeneous_in_place(&mtxs[1], &mtxs[2]);
-				matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), &mtxs[1], &sp16C);
+				mtx4LoadYRotation(angleDelta_9, &mtxs[1]);
+				mtx4SetTranslation(sp168, &mtxs[1]);
+				mtx4MultAffineInPlace(&mtxs[0], &mtxs[1]);
+				mtx4LoadXRotation(sp154, &mtxs[3]);
+				mtx4SetTranslation(sp164, &mtxs[3]);
+				mtx4MultAffineInPlace(&mtxs[1], &mtxs[3]);
+				mtx4LoadYRotation(M_PI_2F, &mtxs[4]);
+				mtx4SetTranslation(sp160, &mtxs[4]);
+				mtx4MultAffineInPlace(&mtxs[3], &mtxs[4]);
+				mtx4LoadTranslation(sp15C, &mtxs[2]);
+				mtx4MultAffineInPlace(&mtxs[1], &mtxs[2]);
+				mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), &mtxs[1], &sp16C);
 				sub_GAME_7F03F540(sp158, &sp16C, &tank_render->rect, (struct collision_data *) (&tank_render->collision));
 
 				if (model->obj->Switches[7] != NULL)
@@ -6440,7 +6440,7 @@ s32 objTick(struct PropRecord *prop)
 						sp12C.f[0] = temp_v1_11->f[0];
 						sp12C.f[1] = temp_v1_11->f[1];
 						sp12C.f[2] = temp_v1_11->f[2];
-						matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), temp_s2_7, &spB8);
+						mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), temp_s2_7, &spB8);
 						mtx4TransformVecInPlace(&spB8, &sp12C);
 						if (walkTilesBetweenPoints_NoCallback(&sp108, prop->pos.f[0], prop->pos.f[2], sp12C.f[0], sp12C.f[2]) == 0)
 						{
@@ -8008,7 +8008,7 @@ void objBounce(ObjectRecord *obj, coord3d *arg1)
         rot.z = (RANDOMFRAC() * M_TAU_F * 0.015625f) - 0.049087387f;
 #endif
 
-        matrix_4x4_set_rotation_around_xyz((f32*)&rot, &projectile->mtx);
+        mtx4LoadRotation((f32*)&rot, &projectile->mtx);
 
         projectile->flags |= PROJECTILEFLAG_AIRBORNE;
 
@@ -8139,7 +8139,7 @@ s32 objDrop(PropRecord *prop)
             rot.z = (RANDOMFRAC() * M_TAU_F * 0.0078125f) - 0.024543693f;
 #endif
 
-            matrix_4x4_set_rotation_around_xyz(rot.f, &projectile->mtx);
+            mtx4LoadRotation(rot.f, &projectile->mtx);
         }
         else if (projectile->droptype == DROPTYPE_THROWGRENADE && parent->type == PROP_TYPE_CHR)
         {
@@ -8162,7 +8162,7 @@ s32 objDrop(PropRecord *prop)
             rot.z = (RANDOMFRAC() * M_TAU_F * 0.0078125f) - 0.024543693f;
 #endif
 
-            matrix_4x4_set_rotation_around_xyz(rot.f, &projectile->mtx);
+            mtx4LoadRotation(rot.f, &projectile->mtx);
             projectile->flags |= 0x40;
 
         }
@@ -8172,7 +8172,7 @@ s32 objDrop(PropRecord *prop)
             PropRecord *playerprop = getCurrentPlayerProp();
             f32 x = parent->pos.x - playerprop->pos.x;
             f32 z = parent->pos.z - playerprop->pos.z;
-            f32 angle = atan2f(x, z);
+            f32 angle = mathAtan2(x, z);
 
             projectile->speed.x = ((2.0f * (RANDOMFRAC() * 1.6666666f)) + 3.3333333f) * sinf(angle);
             projectile->speed.y = 2.0f * (RANDOMFRAC() * 1.6666666f);
@@ -8188,12 +8188,12 @@ s32 objDrop(PropRecord *prop)
             rot.z = (RANDOMFRAC() * M_TAU_F * 0.03125f) - 0.09817477f;
 #endif
 
-            matrix_4x4_set_rotation_around_xyz(rot.f, &projectile->mtx);
+            mtx4LoadRotation(rot.f, &projectile->mtx);
         }
         else
         {
             // DROPTYPE_OWNERREAP ?
-            sub_GAME_7F057C14(&projectile->speed, &projectile->mtx);
+            physRandomLaunch(&projectile->speed, &projectile->mtx);
         }
 
         while (root->parent != NULL)
@@ -8210,7 +8210,7 @@ s32 objDrop(PropRecord *prop)
             Mtxf *sp58 = getsubmatrix(model);
             s32 cdtypes = CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER;
 
-            matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), sp58, &spB8);
+            mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), sp58, &spB8);
 
             if (projectile->flags & 0x40)
             {
@@ -8241,9 +8241,9 @@ s32 objDrop(PropRecord *prop)
             // No collision checks
             // Helpful for throwing mines through doors during speedruns
             prop->stan = root->stan;
-            matrix_4x4_set_identity(&spB8);
-            matrix_scalar_multiply(model->scale, spB8.m[0]);
-            matrix_4x4_set_position(&root->pos, &spB8);
+            mtx4LoadIdentity(&spB8);
+            mtx4ScaleRows012(model->scale, spB8.m[0]);
+            mtx4SetTranslation(&root->pos, &spB8);
         }
 
         objDetach(prop);
@@ -8258,7 +8258,7 @@ s32 objDrop(PropRecord *prop)
         spB8.m[3][1] = 0.0f;
         spB8.m[3][2] = 0.0f;
 
-        matrix_4x4_copy(&spB8, &obj->mtx);
+        mtx4Copy(&spB8, &obj->mtx);
 
         sub_GAME_7F0402B4(obj->prop, &obj->nextcol);
 
@@ -8320,7 +8320,7 @@ void objFall(ObjectRecord *obj, s32 playernum)
 #endif
             }
 
-            matrix_4x4_set_rotation_around_xyz(rot.f, &projectile->mtx);
+            mtx4LoadRotation(rot.f, &projectile->mtx);
 
             projectile->flags |= PROJECTILEFLAG_AIRBORNE;
 
@@ -8896,7 +8896,7 @@ bool propobjFindHit(Model *model, ModelNode *startNode, coord3d *rayPos, coord3d
             {
                 spd0 = mtx;
 
-                matrix_4x4_invert_affine(mtx->m, sp64.m);
+                mtx4InvertAffine(mtx->m, sp64.m);
 
                 spec.x = rayPos->x;
                 spec.y = rayPos->y;
@@ -9018,7 +9018,7 @@ void objBreakCCTVGlass(ObjectRecord *obj)
 
         node_mtx = modelFindNodeMtx(model, model->obj->Switches[1], 0);
 
-        matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), node_mtx, &glassNodeWorldMtx);
+        mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), node_mtx, &glassNodeWorldMtx);
 
         sub_GAME_7F0A1DA0(glassNodeWorldMtx.m[3], glassNodeWorldMtx.m[0], glassNodeWorldMtx.m[1], glassNodeWorldMtx.m[2], ((f32 *)rodata)[1], ((f32 *)rodata)[2], ((f32 *)rodata)[3], ((f32 *)rodata)[4], ((f32 *)rodata)[5], ((f32 *)rodata)[6]);
     }
@@ -9818,7 +9818,7 @@ bool objTestForInteract(PropRecord* prop)
             if ((xzdiff < var_f2) && (ydiff < var_f0) && (-var_f0 < ydiff))
             {
 
-                angle = atan2f(xdiff, zdiff);
+                angle = mathAtan2(xdiff, zdiff);
                 playerangle = bondviewGetPlayerYawRadians();
                 anglediff = angle - playerangle;
 
@@ -12175,8 +12175,8 @@ void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
 
                 if (hand == GUNLEFT) 
                 {
-                    matrix_4x4_set_rotation_around_z(3.1415927f, &rotationMtx);
-                    matrix_4x4_multiply_in_place(renderData.basemtx, &rotationMtx);
+                    mtx4LoadZRotation(3.1415927f, &rotationMtx);
+                    mtx4MultInPlace(renderData.basemtx, &rotationMtx);
                     renderData.basemtx = &rotationMtx;
                 }
 
@@ -12369,38 +12369,38 @@ void door7F0526EC(DoorRecord *door, Mtxf *rhs)
         sp48.f[1] = door->runtime_pos.f[1] - sp54.f[1];
         sp48.f[2] = door->runtime_pos.f[2] - sp54.f[2];
 
-        matrix_4x4_copy(&door->mtx, rhs);
-        matrix_4x4_set_identity_and_position(&sp48, &lhs);
-        matrix_4x4_multiply_in_place(&lhs, rhs);
+        mtx4Copy(&door->mtx, rhs);
+        mtx4LoadTranslation(&sp48, &lhs);
+        mtx4MultInPlace(&lhs, rhs);
 
         if (door->doorType == DOORTYPE_AZTECCHAIR)
         {
             if (door->flags & PROPFLAG_DOOR_OPENTOFRONT)
             {
-                matrix_4x4_set_rotation_around_z(M_TAU_F - ((door->openPosition * M_TAU_F) / 360.0f), &lhs);
+                mtx4LoadZRotation(M_TAU_F - ((door->openPosition * M_TAU_F) / 360.0f), &lhs);
             }
             else
             {
-                matrix_4x4_set_rotation_around_z((door->openPosition * M_TAU_F) / 360.0f, &lhs);
+                mtx4LoadZRotation((door->openPosition * M_TAU_F) / 360.0f, &lhs);
             }
         }
         else if (door->flags & PROPFLAG_DOOR_OPENTOFRONT)
         {
-            matrix_4x4_set_rotation_around_y(M_TAU_F - ((door->openPosition * M_TAU_F) / 360.0f), &lhs);
+            mtx4LoadYRotation(M_TAU_F - ((door->openPosition * M_TAU_F) / 360.0f), &lhs);
         }
         else
         {
-            matrix_4x4_set_rotation_around_y((door->openPosition * M_TAU_F) / 360.0f, &lhs);
+            mtx4LoadYRotation((door->openPosition * M_TAU_F) / 360.0f, &lhs);
         }
 
-        matrix_4x4_multiply_in_place(&lhs, rhs);
-        matrix_4x4_set_identity_and_position(&sp54, &lhs);
-        matrix_4x4_multiply_in_place(&lhs, rhs);
+        mtx4MultInPlace(&lhs, rhs);
+        mtx4LoadTranslation(&sp54, &lhs);
+        mtx4MultInPlace(&lhs, rhs);
     }
     else if ((door->doorType == DOORTYPE_EYE) || (door->doorType == DOORTYPE_IRIS))
     {
-        matrix_4x4_copy(&door->mtx, rhs);
-        matrix_4x4_set_position(&door->runtime_pos, rhs);
+        mtx4Copy(&door->mtx, rhs);
+        mtx4SetTranslation(&door->runtime_pos, rhs);
     }
     else
     {
@@ -12408,13 +12408,13 @@ void door7F0526EC(DoorRecord *door, Mtxf *rhs)
         sp2C.f[1] = (door->unkac * door->openPosition) + door->runtime_pos.y;
         sp2C.f[2] = (door->unkb0 * door->openPosition) + door->runtime_pos.z;
 
-        matrix_4x4_copy(&door->mtx, rhs);
-        matrix_4x4_set_position(&sp2C, rhs);
+        mtx4Copy(&door->mtx, rhs);
+        mtx4SetTranslation(&sp2C, rhs);
     }
 
     if (door->doorFlags & DOORFLAG_FLIP)
     {
-        matrix_column_3_scalar_multiply_2(-1.0f, rhs);
+        mtx4ScaleRow2(-1.0f, rhs);
     }
 }
 
@@ -12655,8 +12655,8 @@ PropRecord* doorInit(DoorRecord* door, coord3d* pos, Mtxf* mtx, StandTile* stan,
     scale = PitemZ_entries[door->obj].scale;
     door->ptr_allocated_collisiondata_block = mempAllocBytesInBank(0x50U, MEMPOOL_STAGE);
 
-    matrix_4x4_copy(mtx, &door->mtx);
-    matrix_scalar_multiply(scale, door->mtx.m[0]);
+    mtx4Copy(mtx, &door->mtx);
+    mtx4ScaleRows012(scale, door->mtx.m[0]);
 
     door->frac  = (f32) coord->x;
     door->unkac = (f32) coord->y;
@@ -13259,7 +13259,7 @@ void doorFinishOpen(DoorRecord *door)
         if (door->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
         {
             door->projectile->flags |= 1;
-            matrix_4x4_set_identity(&door->projectile->mtx);
+            mtx4LoadIdentity(&door->projectile->mtx);
         }
     }
 }
@@ -13757,7 +13757,7 @@ void door7F05522C(DoorRecord *door, f32 *arg1, f32 *arg2, s32 altcoordsystem)
 
     x1 = (pad->pos.x + (normal.x * xmin)) - playerpos.x;
     y1 = (pad->pos.z + (normal.z * xmin)) - playerpos.z;
-    angle = atan2f(x1, y1);
+    angle = mathAtan2(x1, y1);
 
     playerangle = bondviewGetPlayerYawRadians();
     anglediff = angle - playerangle;
@@ -13789,7 +13789,7 @@ void door7F05522C(DoorRecord *door, f32 *arg1, f32 *arg2, s32 altcoordsystem)
         x1 = ((pad->pos.x + (normal.x * xmin)) + (xbound * ((normal.x * cosine) + (normal.z * sine)))) - playerpos.x;
         y1 = ((pad->pos.z + (normal.z * xmin)) + (xbound * (((-normal.x) * sine) + (normal.z * cosine)))) - playerpos.z;
 
-        angle = atan2f(x1, y1);
+        angle = mathAtan2(x1, y1);
         playerangle = bondviewGetPlayerYawRadians();
 
         anglediff2 = angle - playerangle;
@@ -13807,7 +13807,7 @@ void door7F05522C(DoorRecord *door, f32 *arg1, f32 *arg2, s32 altcoordsystem)
         x1 = (pad->pos.x + (normal.x * xmax)) - playerpos.x;
         y1 = (pad->pos.z + (normal.z * xmax)) - playerpos.z;
 
-        angle = atan2f(x1, y1);
+        angle = mathAtan2(x1, y1);
         playerangle = bondviewGetPlayerYawRadians();
 
         anglediff2 = angle - playerangle;
@@ -14347,9 +14347,9 @@ Gfx *countdownTimerRender(Gfx *DL)
             time = -time;
         }
 
-        mins = (s32) floorFloat(time / 3600.0f);
-        secs = (s32) floorFloat(time / 60.0f) - (mins * 60);
-        ms = ((s32) floorFloat((time * 100.0f) / 60.0f) - (mins * 6000)) - (secs * 100);
+        mins = (s32) mathFloor(time / 3600.0f);
+        secs = (s32) mathFloor(time / 60.0f) - (mins * 60);
+        ms = ((s32) mathFloor((time * 100.0f) / 60.0f) - (mins * 6000)) - (secs * 100);
 
         DL = microcode_constructor(DL);
 

@@ -167,7 +167,7 @@ Gfx *insert_sniper_sight_eye_intro(Gfx *gdl)
 
     gDPSetCombineMode(gdl++, G_CC_MODULATEI_PRIM, G_CC_MODULATEI_PRIM);
 
-    return titleRenderFolderMenuBackground(gdl, floorFloat((viGetX() * g_TitleX) / 1280.0f), &topGradientColour, &bottomGradientColour);
+    return titleRenderFolderMenuBackground(gdl, mathFloor((viGetX() * g_TitleX) / 1280.0f), &topGradientColour, &bottomGradientColour);
 }
 
 
@@ -278,16 +278,16 @@ Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
     {
         Mtxf sp88;
 
-        matrix_4x4_copy((Mtxf *) &((s8 *) chrModelInstance->render_pos)[i * sizeof(Mtxf)], &sp88);
-        matrix_4x4_f32_to_s32(&sp88, &((Mtxf *) chrModelInstance->render_pos)[i]);
+        mtx4Copy((Mtxf *) &((s8 *) chrModelInstance->render_pos)[i * sizeof(Mtxf)], &sp88);
+        mtxF2L(&sp88, &((Mtxf *) chrModelInstance->render_pos)[i]);
     }
 
     for (i = 0; i < gunModelInstance->obj->numMatrices; i++)
     {
         Mtxf sp48;
 
-        matrix_4x4_copy((Mtxf *) &((s8 *) gunModelInstance->render_pos)[i * sizeof(Mtxf)], &sp48);
-        matrix_4x4_f32_to_s32(&sp48, &((Mtxf *) gunModelInstance->render_pos)[i]);
+        mtx4Copy((Mtxf *) &((s8 *) gunModelInstance->render_pos)[i * sizeof(Mtxf)], &sp48);
+        mtxF2L(&sp48, &((Mtxf *) gunModelInstance->render_pos)[i]);
     }
 
     return renderData.gdl;
@@ -305,7 +305,7 @@ Gfx *insert_bond_eye_intro(Gfx *gdl) {
     gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferIntroBond[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
     gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferIntroBackdrop[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
     
-    matrix_4x4_set_lookat_target(&matrix, gunbarrelPosition1[0], gunbarrelPosition1[1], gunbarrelPosition1[2], (gunbarrelPosition1[0] + gunbarrelPosition2[0]), (gunbarrelPosition1[1] + gunbarrelPosition2[1]), (gunbarrelPosition1[2] + gunbarrelPosition2[2]), gunbarrelPosition3[0], gunbarrelPosition3[1], gunbarrelPosition3[2]);
+    mtx4LoadLookAt(&matrix, gunbarrelPosition1[0], gunbarrelPosition1[1], gunbarrelPosition1[2], (gunbarrelPosition1[0] + gunbarrelPosition2[0]), (gunbarrelPosition1[1] + gunbarrelPosition2[1]), (gunbarrelPosition1[2] + gunbarrelPosition2[2]), gunbarrelPosition3[0], gunbarrelPosition3[1], gunbarrelPosition3[2]);
 
 #if defined REFRESH_PAL
     return sub_GAME_7F007F30(gdl, 1, &matrix);

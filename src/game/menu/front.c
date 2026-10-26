@@ -1238,8 +1238,8 @@ Gfx *frontDrawCursor(Gfx *DL)
 
     texSelect(&DL, image, 4, 0, 0);
 
-    xypos[0] = floorFloat(cursor_h_pos + 0.5f);
-    xypos[1] = floorFloat(cursor_v_pos + 0.5f);
+    xypos[0] = mathFloor(cursor_h_pos + 0.5f);
+    xypos[1] = mathFloor(cursor_v_pos + 0.5f);
 
     halfedxy[0] = image->width * 0.5f;
     halfedxy[1] = image->height * 0.5f;
@@ -1511,12 +1511,12 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
     DL = clear_framebuffer_black(DL);
     
     /* the original reads through legal_text_ptr before it is set; the result is always 0 */
-    matrix_4x4_set_lookat_target(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    mtx4LoadLookAt(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     
     renderdata.basemtx = &lookatmtx;
     renderdata.mtxlist = (Mtxf *) dynAllocate(logoinst->obj->numMatrices << 6);
     
-    matrix_4x4_copy(&lookatmtx, renderdata.mtxlist);
+    mtx4Copy(&lookatmtx, renderdata.mtxlist);
     
     logoinst->render_pos = (union RenderPosView *) renderdata.mtxlist;
     
@@ -1532,8 +1532,8 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
     
     for (i = 0; i < logoinst->obj->numMatrices; i++)
     {
-        matrix_4x4_copy((Mtxf *)&((s8 *)logoinst->render_pos)[i * 0x40], &tmpmtx);
-        matrix_4x4_f32_to_s32(&tmpmtx, &((Mtxf *) logoinst->render_pos)[i]);
+        mtx4Copy((Mtxf *)&((s8 *)logoinst->render_pos)[i * 0x40], &tmpmtx);
+        mtxF2L(&tmpmtx, &((Mtxf *) logoinst->render_pos)[i]);
     }
     
     DL = microcode_constructor(DL);
@@ -1710,8 +1710,8 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
     {
         Mtxf tmpMtx;
 
-        matrix_4x4_set_rotation_around_y(ninLogoRotRate, &tmpMtx);
-        matrix_scalar_multiply_3(ninLogoScale, (f32*)&tmpMtx);
+        mtx4LoadYRotation(ninLogoRotRate, &tmpMtx);
+        mtx4ScaleColumns012(ninLogoScale, (f32*)&tmpMtx);
 
 #if defined(VERSION_EU)
         ninLogoScale *= 1.09647190571f;
@@ -1723,16 +1723,16 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
             ninLogoScale = 1.1f;
         }
 
-        matrix_4x4_set_lookat_target(&ninlogoMtxf, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-        matrix_4x4_multiply_in_place(&ninlogoMtxf, &tmpMtx);
-        matrix_4x4_copy(&tmpMtx, &ninlogoMtxf);
+        mtx4LoadLookAt(&ninlogoMtxf, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        mtx4MultInPlace(&ninlogoMtxf, &tmpMtx);
+        mtx4Copy(&tmpMtx, &ninlogoMtxf);
     }
 
     ninlogo.basemtx = &ninlogoMtxf;
 
     ninlogo.mtxlist = dynAllocate(logoinst->obj->numMatrices << 6);
 
-    matrix_4x4_copy(&ninlogoMtxf, ninlogo.mtxlist);
+    mtx4Copy(&ninlogoMtxf, ninlogo.mtxlist);
 
     logoinst->render_pos = (union RenderPosView*)ninlogo.mtxlist;
 
@@ -1752,8 +1752,8 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
         s32 padding2;
 
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        matrix_4x4_copy(&((s8*)logoinst->render_pos)[i*0x40], &tmpMtxf);
-        matrix_4x4_f32_to_s32(&tmpMtxf, &((Mtxf*)logoinst->render_pos)[i]);
+        mtx4Copy(&((s8*)logoinst->render_pos)[i*0x40], &tmpMtxf);
+        mtxF2L(&tmpMtxf, &((Mtxf*)logoinst->render_pos)[i]);
 
         if(i);
     }
@@ -1957,12 +1957,12 @@ Gfx *constructor_menu04_goldeneyelogo(Gfx *DL)
     // gSPLookAt macro expands to gSPLookAtX + gSPLookAtY
     gSPLookAt(DL++, logoLookAt);
 
-    matrix_4x4_set_lookat_target(&logoMatrix, 0.0f, 0.0f, 3000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    mtx4LoadLookAt(&logoMatrix, 0.0f, 0.0f, 3000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     gelogo.basemtx = &logoMatrix;
     gelogo.mtxlist = dynAllocate(logoinst->obj->numMatrices << 6);
 
-    matrix_scalar_multiply(1.2f, logoMatrix.m[0]);
-    matrix_4x4_copy(&logoMatrix, gelogo.mtxlist);
+    mtx4ScaleRows012(1.2f, logoMatrix.m[0]);
+    mtx4Copy(&logoMatrix, gelogo.mtxlist);
     logoinst->render_pos = (union RenderPosView*)gelogo.mtxlist;
 
     modelUpdateNodeRelations(logoinst);
@@ -1981,8 +1981,8 @@ Gfx *constructor_menu04_goldeneyelogo(Gfx *DL)
         s32 padding2;
 
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        matrix_4x4_copy(&((s8*)logoinst->render_pos)[i*0x40], &tempMtxf);
-        matrix_4x4_f32_to_s32(&tempMtxf, &((Mtxf*)logoinst->render_pos)[i]);
+        mtx4Copy(&((s8*)logoinst->render_pos)[i*0x40], &tempMtxf);
+        mtxF2L(&tempMtxf, &((Mtxf*)logoinst->render_pos)[i]);
 
         if(i);
     }
@@ -2227,13 +2227,13 @@ s32 interface_menu05_fileselect(void)
     {
         folderpos = &folderpositions[walletnum];
 
-        matrix_4x4_set_lookat_target(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-        matrix_4x4_set_identity_and_position(folderpos, &walletmtx);
-        matrix_scalar_multiply(0.37f, (f32*)&walletmtx);
-        matrix_4x4_multiply_in_place(&lookatmtx, &walletmtx);
+        mtx4LoadLookAt(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        mtx4LoadTranslation(folderpos, &walletmtx);
+        mtx4ScaleRows012(0.37f, (f32*)&walletmtx);
+        mtx4MultInPlace(&lookatmtx, &walletmtx);
 
         walletinst[walletnum]->render_pos = dynAllocate(walletinst[walletnum]->obj->numMatrices << 6);
-        matrix_4x4_copy(&walletmtx, &walletinst[walletnum]->render_pos->pos);
+        mtx4Copy(&walletmtx, &walletinst[walletnum]->render_pos->pos);
 
         folderpositions_camspace[walletnum].f[0] = walletinst[walletnum]->render_pos->pos.m[3][0];
         folderpositions_camspace[walletnum].f[1] = walletinst[walletnum]->render_pos->pos.m[3][1];
@@ -2479,7 +2479,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
     gDPSetEnvColor(DL++, 0xFF, 0xFF, 0xFF, 0x14);
 
     // Render the gun barrel background image.
-    DL = titleRenderFolderMenuBackground(DL, (s32) floorFloat(((f32) viGetX() * -80.0f) / 1280.0f), &topcolour, &bottomcolour);
+    DL = titleRenderFolderMenuBackground(DL, (s32) mathFloor(((f32) viGetX() * -80.0f) / 1280.0f), &topcolour, &bottomcolour);
 
     gSPDisplayList(DL++, &dlBasicGeometry);
     gSPDisplayList(DL++, &dlFastPipelineSetup);
@@ -2500,8 +2500,8 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 
         for (i=0; i < walletinst[j]->obj->numMatrices; i++)
         {
-            matrix_4x4_copy((Mtxf*)&((s8*)walletinst[j]->render_pos)[i * sizeof(Mtxf)], &mtx);
-            matrix_4x4_f32_to_s32(&mtx, &((Mtxf*)walletinst[j]->render_pos)[i]);
+            mtx4Copy((Mtxf*)&((s8*)walletinst[j]->render_pos)[i * sizeof(Mtxf)], &mtx);
+            mtxF2L(&mtx, &((Mtxf*)walletinst[j]->render_pos)[i]);
 
         }
     }
@@ -2522,20 +2522,20 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 
         if (foldernum == folder_selected_for_deletion)
         {
-            textpos.p[1] = (s32) floorFloat(folderpos2d.f[0]) - 0x31;
-            textpos.p[0] = (s32) floorFloat(folderpos2d.f[1]) + 0x19;
+            textpos.p[1] = (s32) mathFloor(folderpos2d.f[0]) - 0x31;
+            textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x19;
 
             DL = microcode_constructor_related_to_menus(DL, textpos.p[1], textpos.p[0], textpos.p[1] + 0x63, textpos.p[0] + 0x2A, 0x32);
 
             langp = langGet(getStringID(LTITLE, TITLE_STR_23_ERASEFILE)); /* Erase file? */
-            textpos.p[1] = (s32) floorFloat(folderpos2d.f[0]) - 0x2F;
-            textpos.p[0] = (s32) floorFloat(folderpos2d.f[1]) + 0x1E;
+            textpos.p[1] = (s32) mathFloor(folderpos2d.f[0]) - 0x2F;
+            textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x1E;
 
             DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
 
             langp = langGet(getStringID(LTITLE, TITLE_STR_24_CANCEL)); /* cancel */
-            textpos.p[1] = (s32) floorFloat(folderpos2d.f[0]) - 0x2F;
-            textpos.p[0] = (s32) floorFloat(folderpos2d.f[1]) + 0x32;
+            textpos.p[1] = (s32) mathFloor(folderpos2d.f[0]) - 0x2F;
+            textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x32;
 
             if (folder_selected_for_deletion_choice != 0)
             {
@@ -2552,9 +2552,9 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 
             langp = langGet(getStringID(LTITLE, TITLE_STR_25_CONFIRM)); /* confirm */
 
-            folderx = floorFloat(folderpos2d.f[0]);
+            folderx = mathFloor(folderpos2d.f[0]);
             textpos.p[1] = (((j_text_trigger != 0) ? 0x17 : -1) + (s32) folderx) - 1;
-            textpos.p[0] = (s32) floorFloat(folderpos2d.f[1]) + 0x32;
+            textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x32;
 
             if (folder_selected_for_deletion_choice != 0)
             {
@@ -2587,8 +2587,8 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
                     textsize.p[1] = 0;
 
                     textMeasure(&textsize.p[1], &textsize.p[0], (char *)&difficultytext, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
-                    textpos.p[1] = ((s32) floorFloat(folderpos2d.f[0]) - (textsize.p[0] / 2)) - 1;
-                    textpos.p[0] = (s32) floorFloat(folderpos2d.f[1]) + 0x15;
+                    textpos.p[1] = ((s32) mathFloor(folderpos2d.f[0]) - (textsize.p[0] / 2)) - 1;
+                    textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x15;
                     DL = textRender(DL, &textpos.p[1], &textpos.p[0], (char *)&difficultytext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
                 }
 
@@ -2619,8 +2619,8 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
                     textsize.p[1] = 0;
 
                     textMeasure(&textsize.p[1], &textsize.p[0], (char *)missiontext, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
-                    textpos.p[1] = ((s32) floorFloat(folderpos2d.f[0]) - (textsize.p[0] / 2)) - 1;
-                    textpos.p[0] = (s32) floorFloat(folderpos2d.f[1]) + 0x2D;
+                    textpos.p[1] = ((s32) mathFloor(folderpos2d.f[0]) - (textsize.p[0] / 2)) - 1;
+                    textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x2D;
 
                     DL = textRender(DL, &textpos.p[1], &textpos.p[0], (char *)missiontext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
                 }
@@ -2918,16 +2918,16 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
     temp_f0 += D_8002AFC4;
     temp_f2 += D_8002AFC8;
 
-    matrix_4x4_set_lookat_target(&spC8, temp_f0, temp_f2, 4000.0f + D_8002AFCC, temp_f0, temp_f2, 0.0f, 0.0f, 1.0f, 0.0f);
-    matrix_4x4_set_identity_and_position(&folderpositions[selected_folder_num], &sp88);
-    matrix_scalar_multiply(0.25f, sp88.m[0]);
-    matrix_4x4_multiply_in_place(&spC8, &sp88);
+    mtx4LoadLookAt(&spC8, temp_f0, temp_f2, 4000.0f + D_8002AFCC, temp_f0, temp_f2, 0.0f, 0.0f, 1.0f, 0.0f);
+    mtx4LoadTranslation(&folderpositions[selected_folder_num], &sp88);
+    mtx4ScaleRows012(0.25f, sp88.m[0]);
+    mtx4MultInPlace(&spC8, &sp88);
 
     sp10C.basemtx = &sp88;
 
     sp10C.mtxlist = dynAllocate(walletinst[0]->obj->numMatrices << 6);
 
-    matrix_4x4_copy(&sp88, sp10C.mtxlist);
+    mtx4Copy(&sp88, sp10C.mtxlist);
 
     walletinst[0]->render_pos = (union RenderPosView*)sp10C.mtxlist;
 
@@ -2942,8 +2942,8 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
     for (i=0; i<walletinst[0]->obj->numMatrices; i++)
     {
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        matrix_4x4_copy(&((s8*)walletinst[0]->render_pos)[i*0x40], &sp48);
-        matrix_4x4_f32_to_s32(&sp48, &((Mtxf*)walletinst[0]->render_pos)[i]);
+        mtx4Copy(&((s8*)walletinst[0]->render_pos)[i*0x40], &sp48);
+        mtxF2L(&sp48, &((Mtxf*)walletinst[0]->render_pos)[i]);
     }
 
 
@@ -7868,7 +7868,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
                     sprintf(text, "%d", shotsfired);
                     break;
                 case 2:
-                    sprintf(text, "%d (%d%%)", headshots, (s32)floorFloat(((headshots * 100.0f) / ((allhits > 0) ? allhits : 1)) + 0.5f));
+                    sprintf(text, "%d (%d%%)", headshots, (s32)mathFloor(((headshots * 100.0f) / ((allhits > 0) ? allhits : 1)) + 0.5f));
                     break;
                 case 3:
                     sprintf(text, "%d", get_curplay_killcount());
@@ -7883,7 +7883,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
                     }
                     else
                     {
-                        sprintf(text, "%d%%", (s32)floorFloat(counterOpGetDamageToBond() + 0.5f));
+                        sprintf(text, "%d%%", (s32)mathFloor(counterOpGetDamageToBond() + 0.5f));
                     }
                     break;
             }
@@ -8079,7 +8079,7 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     x = 0xB4;
     y = 0xF4;
     DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
-    sprintf(stagename, "%d (%d%%)", headshots, (s32)(floorFloat(((headshots * 100.0f) / allhits) + 0.5f)));
+    sprintf(stagename, "%d (%d%%)", headshots, (s32)(mathFloor(((headshots * 100.0f) / allhits) + 0.5f)));
     x = 0x12C;
     y = 0xF4;
     DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
@@ -8089,7 +8089,7 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     x = 0xB4;
     y = y2 + 0xF4;
     DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
-    sprintf(stagename, "%d (%d%%)", bodyshots, (s32)floorFloat(((bodyshots * 100.0f) / allhits) + 0.5f));
+    sprintf(stagename, "%d (%d%%)", bodyshots, (s32)mathFloor(((bodyshots * 100.0f) / allhits) + 0.5f));
     x = 0x12C;
     y = y2 + 0xF4;
     DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
@@ -8099,7 +8099,7 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     x = 0xB4;
     y = (y2 * 2) + 0xF4;
     DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
-    sprintf(stagename, "%d (%d%%)", limbshots, (s32)floorFloat(((limbshots * 100.0f) / allhits) + 0.5f));
+    sprintf(stagename, "%d (%d%%)", limbshots, (s32)mathFloor(((limbshots * 100.0f) / allhits) + 0.5f));
     x = 0x12C;
     y = (y2 * 2) + 0xF4;
     DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
@@ -8110,7 +8110,7 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     y = (y2 * 3) + 0xF4;
     temp = reg5 + reg4;
     DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
-    sprintf(stagename, "%d (%d%%)", temp, (s32)floorFloat(((temp * 100.0f) / allhits) + 0.5f));
+    sprintf(stagename, "%d (%d%%)", temp, (s32)mathFloor(((temp * 100.0f) / allhits) + 0.5f));
     x = 0x12C;
     y = (y2 * 3) + 0xF4;
     DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
@@ -8861,7 +8861,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
  
     renderdata.mtxlist = (Mtxf *)dynAllocate(cast_model->obj->numMatrices << 6);
  
-    matrix_4x4_set_identity(&mtx);
+    mtx4LoadIdentity(&mtx);
  
     renderdata.basemtx = &mtx;
  
@@ -8937,7 +8937,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     campos.y += cast_rootpos_smoothed.y + 52.5f;
     campos.z += cast_rootpos_smoothed.z;
  
-    matrix_4x4_set_lookat_target(&mtx, campos.x, campos.y, campos.z, tarpos.x, tarpos.y, tarpos.z, up.x, up.y, up.z);
+    mtx4LoadLookAt(&mtx, campos.x, campos.y, campos.z, tarpos.x, tarpos.y, tarpos.z, up.x, up.y, up.z);
  
     renderdata.basemtx = &mtx;
     renderdata.mtxlist = (Mtxf *)dynAllocate(cast_model->obj->numMatrices << 6);
@@ -8950,8 +8950,8 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
  
         if (cast_model_weapon->attachedto_objinst == cast_model->obj->Switches[5])
         {
-            matrix_4x4_set_rotation_around_z(M_PI_F, &mtx2);
-            matrix_4x4_multiply_in_place(renderdata.basemtx, &mtx2);
+            mtx4LoadZRotation(M_PI_F, &mtx2);
+            mtx4MultInPlace(renderdata.basemtx, &mtx2);
  
             renderdata.basemtx = &mtx2;
         }
@@ -8979,17 +8979,17 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
  
     for (i = 0; i < cast_model->obj->numMatrices; i++)
     {
-        matrix_4x4_copy(&((s8 *)cast_model->render_pos)[i * sizeof(Mtxf)], &mtx2);
-        matrix_4x4_f32_to_s32(&mtx2, &((Mtxf *)cast_model->render_pos)[i]);
+        mtx4Copy(&((s8 *)cast_model->render_pos)[i * sizeof(Mtxf)], &mtx2);
+        mtxF2L(&mtx2, &((Mtxf *)cast_model->render_pos)[i]);
     }
  
     if (cast_model_weapon != NULL)
     {
         for (i = 0; i < cast_model_weapon->obj->numMatrices; i++)
         {
-            matrix_4x4_copy(&((s8 *)cast_model_weapon->render_pos)[i * sizeof(Mtxf)], &mtx2);
+            mtx4Copy(&((s8 *)cast_model_weapon->render_pos)[i * sizeof(Mtxf)], &mtx2);
  
-            matrix_4x4_f32_to_s32(&mtx2, &((Mtxf *)cast_model_weapon->render_pos)[i]);
+            mtxF2L(&mtx2, &((Mtxf *)cast_model_weapon->render_pos)[i]);
         }
     }
  

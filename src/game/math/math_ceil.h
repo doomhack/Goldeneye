@@ -3,7 +3,7 @@
 
 #include <ultra64.h>
 
-f32 ceilFloat(f32 arg0);
-s32 ceilFloatToInt(f32 arg0);
+f32 mathCeil(f32 arg0);
+s32 mathCeilToInt(f32 arg0);
 
 #endif

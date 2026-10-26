@@ -92,7 +92,7 @@ void sub_GAME_7F0A1DA0(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *za
     ymax *= len;
     if (&ymax) {}
     if (&xnorm) {}
-    angle    = atan2f(zaxis->x, zaxis->z);
+    angle    = mathAtan2(zaxis->x, zaxis->z);
     arg8     = xmax - xmin;
     arg9     = ymax - ymin;
     new_var3 = &ynorm;
@@ -286,13 +286,13 @@ Gfx *glassRenderShards(Gfx *gdl)
         if (WINDOW_PIECE(i)->active > 0) {
             mtx = dynAllocateMatrix();
 
-            matrix_4x4_set_position_and_rotation_around_xyz(&WINDOW_PIECE(i)->pos, &WINDOW_PIECE(i)->rot, &mtxf);
+            mtx4LoadRotationAndTranslation(&WINDOW_PIECE(i)->pos, &WINDOW_PIECE(i)->rot, &mtxf);
 
             mtxf.m[3][0] -= g_CurrentPlayer->current_model_pos.x;
             mtxf.m[3][1] -= g_CurrentPlayer->current_model_pos.y;
             mtxf.m[3][2] -= g_CurrentPlayer->current_model_pos.z;
 
-            matrix_4x4_f32_to_s32(&mtxf, (Mtxf *)mtx);
+            mtxF2L(&mtxf, (Mtxf *)mtx);
 
             gSPMatrix(gdl++, osVirtualToPhysical(mtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
             gSPVertex(gdl++, osVirtualToPhysical(&WINDOW_PIECE(i)->v1x), 3, 0);

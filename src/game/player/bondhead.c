@@ -256,7 +256,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
     modelSetAnimMergingEnabled((s32) isMergable);
 
     subcalcpos(&g_CurrentPlayer->model);
-    matrix_4x4_set_identity(&sp40);
+    mtx4LoadIdentity(&sp40);
 
     renderData.basemtx = &sp40;
     renderData.mtxlist = &g_CurrentPlayer->bondheadmatrices[0];
@@ -360,7 +360,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
 
         // result = x vector plus ((y - x vector) * scaler)
         // lookvel = ...
-        vec3Lerp(
+        interpLerp3(
             &g_CurrentPlayer->standlook[g_CurrentPlayer->standcnt].f[0],
             &g_CurrentPlayer->standlook[1 - g_CurrentPlayer->standcnt].f[0],
             g_CurrentPlayer->standfrac,
@@ -371,7 +371,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
 
         // result = x vector plus ((y - x vector) * scaler)
         // upvel = ...
-        vec3Lerp(
+        interpLerp3(
             &g_CurrentPlayer->standup[g_CurrentPlayer->standcnt].f[0],
             &g_CurrentPlayer->standup[1 - g_CurrentPlayer->standcnt].f[0],
             g_CurrentPlayer->standfrac,

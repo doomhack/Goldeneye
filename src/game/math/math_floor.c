@@ -8,7 +8,7 @@
  * @return Returns float. If non-negative, returns closest integral value toward zero. If
  * negative integer, returns that value. Otherwise returns the next lowest integral value.
  */
-f32 floorFloat(f32 arg0)
+f32 mathFloor(f32 arg0)
 {
     f32 temp_f2;
 
@@ -39,7 +39,7 @@ f32 floorFloat(f32 arg0)
  * @return Returns signed int. If non-negative, returns closest integer value toward zero. If
  * negative integer, returns that value. Otherwise returns the next lowest integer value.
  */
-s32 floorFloatToInt(f32 arg0)
+s32 mathFloorToInt(f32 arg0)
 {
     s32 temp_f8;
 

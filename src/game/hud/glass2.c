@@ -813,7 +813,7 @@ void bullet_moving_sparks_update(void)
             {
                 if (ptr->unk00.lifetime > ptr->unk00.age)
                 {
-                    sub_GAME_7F057D88(&ptr->unk00.unk10, &ptr->velocity, g_GlobalTimerDelta);
+                    physMoveWithGravity(&ptr->unk00.unk10, &ptr->velocity, g_GlobalTimerDelta);
                     if (ptr->unk00.unk14 < ptr->unk38)
                     {
                         ptr->unk00.lifetime = 0;

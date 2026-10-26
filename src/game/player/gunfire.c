@@ -177,7 +177,7 @@ void gunFireTankShell(s32 handnum)
     prevplayerpos = getCurrentPlayerPrevPos();
     weaponid = getCurrentPlayerWeaponId(handnum);
 
-    matrix_4x4_set_identity(&identitymtx);
+    mtx4LoadIdentity(&identitymtx);
 
     if (weaponid == ITEM_TANKSHELLS) 
     {
@@ -252,7 +252,7 @@ void gunFireTankShell(s32 handnum)
         }
     }
 
-    matrix_4x4_copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &shellmtx);
+    mtx4Copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &shellmtx);
 
     shellmtx.m[3][0] = 0.0f;
     shellmtx.m[3][1] = 0.0f;
@@ -417,9 +417,9 @@ void gunUpdateAndFire(GUNHAND handnum)
 
     i = hand->curblendpos;
 
-    coord3dCatmullRomInterp(&hand->blendpos[(i + 3) % 4], &hand->blendpos[i], &hand->blendpos[(i + 1) % 4], &hand->blendpos[(i + 2) % 4], hand->dampt, &blendedpos);
-    coord3dCatmullRomInterp(&hand->blendlook[(i + 3) % 4], &hand->blendlook[i], &hand->blendlook[(i + 1) % 4], &hand->blendlook[(i + 2) % 4], hand->dampt, &blendedlook);
-    coord3dCatmullRomInterp(&hand->blendup[(i + 3) % 4], &hand->blendup[i], &hand->blendup[(i + 1) % 4], &hand->blendup[(i + 2) % 4], hand->dampt, &blendedup);
+    interpCatmullRom3(&hand->blendpos[(i + 3) % 4], &hand->blendpos[i], &hand->blendpos[(i + 1) % 4], &hand->blendpos[(i + 2) % 4], hand->dampt, &blendedpos);
+    interpCatmullRom3(&hand->blendlook[(i + 3) % 4], &hand->blendlook[i], &hand->blendlook[(i + 1) % 4], &hand->blendlook[(i + 2) % 4], hand->dampt, &blendedlook);
+    interpCatmullRom3(&hand->blendup[(i + 3) % 4], &hand->blendup[i], &hand->blendup[(i + 1) % 4], &hand->blendup[(i + 2) % 4], hand->dampt, &blendedup);
 
     blendedpos.x *= g_CurrentPlayer->gunposamplitude;
     blendedpos.y *= g_CurrentPlayer->gunposamplitude;
@@ -521,25 +521,25 @@ void gunUpdateAndFire(GUNHAND handnum)
     }
 
     sub_GAME_7F05C614();
-    matrix_4x4_set_identity(&rotmtx);
+    mtx4LoadIdentity(&rotmtx);
 
     if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
     {
             trigrot = D_80035C70;
-            matrix_4x4_set_rotation_around_xyz(&trigrot, &tmpmtx);
-            matrix_4x4_multiply_homogeneous_in_place(&tmpmtx, &rotmtx);
+            mtx4LoadRotation(&trigrot, &tmpmtx);
+            mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
     }
     else if (item == ITEM_TASER)
     {
         taserrot = D_80035C7C;
-        matrix_4x4_set_rotation_around_xyz(&taserrot, &tmpmtx);
-        matrix_4x4_multiply_homogeneous_in_place(&tmpmtx, &rotmtx);
+        mtx4LoadRotation(&taserrot, &tmpmtx);
+        mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
     }
     else if ((item == ITEM_FIST) && (g_CurrentPlayer->cur_item_weapon_getname == ITEM_SNIPERRIFLE))
     {
         fistrot = D_80035C88;
-        matrix_4x4_set_rotation_around_xyz(&fistrot, &tmpmtx);
-        matrix_4x4_multiply_homogeneous_in_place(&tmpmtx, &rotmtx);
+        mtx4LoadRotation(&fistrot, &tmpmtx);
+        mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
         gunofs.x += -2.5f;
         gunofs.y += 27.8f;
         gunofs.z += 2.0f;
@@ -550,7 +550,7 @@ void gunUpdateAndFire(GUNHAND handnum)
         gunofs.x += hand->field_8EC.m[3][0];
         gunofs.y += hand->field_8EC.m[3][1];
         gunofs.z += hand->field_8EC.m[3][2];
-        matrix_4x4_multiply_homogeneous_in_place(&hand->field_8EC, &rotmtx);
+        mtx4MultAffineInPlace(&hand->field_8EC, &rotmtx);
         rotmtx.m[3][0] = 0.0f;
         rotmtx.m[3][1] = 0.0f;
         rotmtx.m[3][2] = 0.0f;
@@ -563,15 +563,15 @@ void gunUpdateAndFire(GUNHAND handnum)
         hand->field_8E4 = (-0.0f) + 0.0f;
     }
 
-    matrix_4x4_set_basis_and_position_target(&tmpmtx, 0.0f, 0.0f, 0.0f, hand->sway_look_x, hand->sway_look_y, hand->sway_look_z, hand->sway_up_x, hand->sway_up_y, hand->sway_up_z);
-    matrix_4x4_multiply_homogeneous_in_place(&tmpmtx, &rotmtx);
-    matrix_4x4_align(&tmpmtx, 0.0f, gunofs.x - hand->field_A38, gunofs.y - hand->field_A3C, gunofs.z - hand->field_A40);
-    matrix_4x4_multiply_homogeneous_in_place(&tmpmtx, &rotmtx);
-    matrix_4x4_copy(&rotmtx, &gunmtx);
-    matrix_4x4_set_position(&gunofs, &gunmtx);
-    matrix_4x4_copy(&gunmtx, &hand->gunmtx_camspace);
-    matrix_4x4_copy(&hand->throw_item_pos_related, &hand->throw_item_pos_related_prev);
-    matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), &hand->gunmtx_camspace, &hand->throw_item_pos_related);
+    mtx4LoadFacing(&tmpmtx, 0.0f, 0.0f, 0.0f, hand->sway_look_x, hand->sway_look_y, hand->sway_look_z, hand->sway_up_x, hand->sway_up_y, hand->sway_up_z);
+    mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
+    mtx4LoadAlignViaGu(&tmpmtx, 0.0f, gunofs.x - hand->field_A38, gunofs.y - hand->field_A3C, gunofs.z - hand->field_A40);
+    mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
+    mtx4Copy(&rotmtx, &gunmtx);
+    mtx4SetTranslation(&gunofs, &gunmtx);
+    mtx4Copy(&gunmtx, &hand->gunmtx_camspace);
+    mtx4Copy(&hand->throw_item_pos_related, &hand->throw_item_pos_related_prev);
+    mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), &hand->gunmtx_camspace, &hand->throw_item_pos_related);
     hand->field_87F = 1;
 
     if (((((((get_ptr_weapon_model_header_line(item) == 0) || (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)) || (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0)) 
@@ -595,7 +595,7 @@ void gunUpdateAndFire(GUNHAND handnum)
         {
             do
             {
-                matrix_4x4_set_identity((Mtxf *) (((u8 *) rwmtx) + (j * ((s32) (sizeof(Mtxf))))));
+                mtx4LoadIdentity((Mtxf *) (((u8 *) rwmtx) + (j * ((s32) (sizeof(Mtxf))))));
                 j += 1;
             }
             while (j < mdlhdr->numMatrices);
@@ -637,11 +637,11 @@ void gunUpdateAndFire(GUNHAND handnum)
 
         if ((bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) && (handnum == GUNLEFT))
         {
-            matrix_column_1_scalar_multiply(-1.0f, gunmtx.m[0]);
+            mtx4ScaleRow0(-1.0f, gunmtx.m[0]);
         }
 
-        matrix_scalar_multiply(IDO_POINT_ONE, gunmtx.m[0]);
-        matrix_4x4_copy(&gunmtx, rwmtx);
+        mtx4ScaleRows012(IDO_POINT_ONE, gunmtx.m[0]);
+        mtx4Copy(&gunmtx, rwmtx);
 
         if (mdlhdr->Skeleton == (&skeleton_gun_revolver))
         {
@@ -682,9 +682,9 @@ void gunUpdateAndFire(GUNHAND handnum)
 #endif
             }
 
-                matrix_4x4_set_rotation_around_z(rndf, &tmpmtx);
-                matrix_4x4_set_position((coord3d *) cylinderdata, &tmpmtx);
-                matrix_4x4_multiply(&gunmtx, &tmpmtx, &rwmtx[3]);
+                mtx4LoadZRotation(rndf, &tmpmtx);
+                mtx4SetTranslation((coord3d *) cylinderdata, &tmpmtx);
+                mtx4Mult(&gunmtx, &tmpmtx, &rwmtx[3]);
             }
 
             swdata = (f32 *) mdlhdr->Switches[5];
@@ -714,15 +714,15 @@ void gunUpdateAndFire(GUNHAND handnum)
                         rndf = (2.0f * ((-((f32) (6 - hand->field_890))) * DegToRad(30.0f))) / 6.0f;
                     }
 #endif
-                    matrix_4x4_set_rotation_around_x(rndf, &tmpmtx);
-                    matrix_4x4_set_position((coord3d *) hammerdata, &tmpmtx);
+                    mtx4LoadXRotation(rndf, &tmpmtx);
+                    mtx4SetTranslation((coord3d *) hammerdata, &tmpmtx);
                 }
                 else
                 {
-                    matrix_4x4_set_identity_and_position((coord3d *) hammerdata, &tmpmtx);
+                    mtx4LoadTranslation((coord3d *) hammerdata, &tmpmtx);
                 }
 
-                matrix_4x4_multiply(&gunmtx, &tmpmtx, &rwmtx[4]);
+                mtx4Mult(&gunmtx, &tmpmtx, &rwmtx[4]);
             }
         }
 
@@ -742,18 +742,18 @@ void gunUpdateAndFire(GUNHAND handnum)
             {
                 rnd = randomGetNext();
                 rndf = (f32) ((u32) rnd);
-                matrix_4x4_set_rotation_around_z((rndf * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, &flashmtx);
-                matrix_4x4_set_position((coord3d *) flashdata, &flashmtx);
+                mtx4LoadZRotation((rndf * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, &flashmtx);
+                mtx4SetTranslation((coord3d *) flashdata, &flashmtx);
             }
             else
             {
-                matrix_4x4_set_identity_and_position((coord3d *) flashdata, &flashmtx);
+                mtx4LoadTranslation((coord3d *) flashdata, &flashmtx);
             }
 
-            matrix_scalar_multiply(flashscale, flashmtx.m[0]);
-            matrix_column_3_scalar_multiply(flashext, flashmtx.m[0]);
-            matrix_4x4_multiply_in_place(&gunmtx, &flashmtx);
-            matrix_4x4_copy(&flashmtx, &rwmtx[1]);
+            mtx4ScaleRows012(flashscale, flashmtx.m[0]);
+            mtx4ScaleRow2AndW(flashext, flashmtx.m[0]);
+            mtx4MultInPlace(&gunmtx, &flashmtx);
+            mtx4Copy(&flashmtx, &rwmtx[1]);
 
             hand->field_B58.x = flashmtx.m[3][0];
             hand->field_B58.y = flashmtx.m[3][1];
@@ -777,14 +777,14 @@ void gunUpdateAndFire(GUNHAND handnum)
                     flashpos.y = (((((f32 *) nodepos)[0] * flashmtx.m[0][1]) + (((f32 *) nodepos)[1] * flashmtx.m[1][1])) + (((f32 *) nodepos)[2] * flashmtx.m[2][1])) + flashmtx.m[3][1];
                     flashpos.z = (((((f32 *) nodepos)[0] * flashmtx.m[0][2]) + (((f32 *) nodepos)[1] * flashmtx.m[1][2])) + (((f32 *) nodepos)[2] * flashmtx.m[2][2])) + flashmtx.m[3][2];
 
-                    matrix_4x4_align(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
-                    matrix_scalar_multiply(IDO_POINT_ONE * flashscale, flash2mtx.m[0]);
-                    matrix_4x4_set_rotation_axis_angle(&aimmtx, 0, gunofs.x - hand->field_A38, gunofs.y - hand->field_A3C, gunofs.z - hand->field_A40);
-                    matrix_4x4_multiply_in_place(&aimmtx, &flash2mtx);
-                    matrix_row_3_scalar_multiply(flashext, flash2mtx.m[0]);
-                    matrix_4x4_multiply_in_place(&rotmtx, &flash2mtx);
-                    matrix_4x4_set_position(&flashpos, &flash2mtx);
-                    matrix_4x4_copy(&flash2mtx, &rwmtx[2]);
+                    mtx4LoadAlignViaGu(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
+                    mtx4ScaleRows012(IDO_POINT_ONE * flashscale, flash2mtx.m[0]);
+                    mtx4LoadAlign(&aimmtx, 0, gunofs.x - hand->field_A38, gunofs.y - hand->field_A3C, gunofs.z - hand->field_A40);
+                    mtx4MultInPlace(&aimmtx, &flash2mtx);
+                    mtx4ScaleColumn2(flashext, flash2mtx.m[0]);
+                    mtx4MultInPlace(&rotmtx, &flash2mtx);
+                    mtx4SetTranslation(&flashpos, &flash2mtx);
+                    mtx4Copy(&flash2mtx, &rwmtx[2]);
                 }
 
                 if (mdlhdr->Skeleton == (&skeleton_gun_kf7))
@@ -798,14 +798,14 @@ void gunUpdateAndFire(GUNHAND handnum)
                         flashpos.y = (((((f32 *) nodepos)[0] * flashmtx.m[0][1]) + (((f32 *) nodepos)[1] * flashmtx.m[1][1])) + (((f32 *) nodepos)[2] * flashmtx.m[2][1])) + flashmtx.m[3][1];
                         flashpos.z = (((((f32 *) nodepos)[0] * flashmtx.m[0][2]) + (((f32 *) nodepos)[1] * flashmtx.m[1][2])) + (((f32 *) nodepos)[2] * flashmtx.m[2][2])) + flashmtx.m[3][2];
                         stackpad_scale = IDO_POINT_ONE * flashscale;
-                        matrix_4x4_align(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
-                        matrix_scalar_multiply(stackpad_scale, flash2mtx.m[0]);
-                        matrix_4x4_set_rotation_axis_angle(&aimmtx, 0, gunofs.x - hand->field_A38, gunofs.y - hand->field_A3C, gunofs.z - hand->field_A40);
-                        matrix_4x4_multiply_in_place(&aimmtx, &flash2mtx);
-                        matrix_row_3_scalar_multiply(flashext, flash2mtx.m[0]);
-                        matrix_4x4_multiply_in_place(&rotmtx, &flash2mtx);
-                        matrix_4x4_set_position(&flashpos, &flash2mtx);
-                        matrix_4x4_copy(&flash2mtx, &rwmtx[3]);
+                        mtx4LoadAlignViaGu(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
+                        mtx4ScaleRows012(stackpad_scale, flash2mtx.m[0]);
+                        mtx4LoadAlign(&aimmtx, 0, gunofs.x - hand->field_A38, gunofs.y - hand->field_A3C, gunofs.z - hand->field_A40);
+                        mtx4MultInPlace(&aimmtx, &flash2mtx);
+                        mtx4ScaleColumn2(flashext, flash2mtx.m[0]);
+                        mtx4MultInPlace(&rotmtx, &flash2mtx);
+                        mtx4SetTranslation(&flashpos, &flash2mtx);
+                        mtx4Copy(&flash2mtx, &rwmtx[3]);
                     }
                 }
             }
@@ -830,14 +830,14 @@ void gunUpdateAndFire(GUNHAND handnum)
             {
                 hingedata = (f32 *) mdlhdr->Switches[28]->Data;
                 guRotateF(tmpmtx.m, (((hand->field_A84 + M_TAU_F) - get_value_if_watch_is_on_hand_or_not(handnum)) * 360.0f) / M_TAU_F, hingedata[0] - hingedata[3], hingedata[1] - hingedata[4], hingedata[2] - hingedata[5]);
-                matrix_4x4_set_position((coord3d *) swdata, &tmpmtx);
+                mtx4SetTranslation((coord3d *) swdata, &tmpmtx);
             }
             else
             {
-                matrix_4x4_set_position_and_rotation_around_y(swdata, hand->field_A84, &tmpmtx);
+                mtx4LoadYRotationWithTranslation(swdata, hand->field_A84, &tmpmtx);
             }
 
-            matrix_4x4_multiply_homogeneous(&gunmtx, &tmpmtx, &rwmtx[sw6mtxidx]);
+            mtx4MultAffine(&gunmtx, &tmpmtx, &rwmtx[sw6mtxidx]);
         }
 
         if (mdlhdr->numSwitches >= 0x1E)
@@ -852,9 +852,9 @@ void gunUpdateAndFire(GUNHAND handnum)
             sw7data = (f32 *) node->Data;
             sw7mtxidx = modelFindNodeMtxIndex(node, 0);
             sub_GAME_7F05E83C(handnum);
-            matrix_4x4_set_identity_and_position((coord3d *) sw7data, &tmpmtx);
+            mtx4LoadTranslation((coord3d *) sw7data, &tmpmtx);
             tmpmtx.m[3][2] -= hand->field_A88;
-            matrix_4x4_multiply(&gunmtx, &tmpmtx, &rwmtx[sw7mtxidx]);
+            mtx4Mult(&gunmtx, &tmpmtx, &rwmtx[sw7mtxidx]);
         }
 
         shellidx = 0;
@@ -1155,7 +1155,7 @@ void gunCreateBeamForHand(enum GUNHAND hand)
     diff2_z = hand_ptr->item_related.z - hand_ptr->field_B58.z;
     guNormalize(&diff2_x, &diff2_y, &diff2_z);
 
-    val = acosf(
+    val = mathAcos(
         + (diff2_z * diff1_z)
         + ((diff1_x * diff2_x)
         + (diff1_y * diff2_y)));
@@ -1292,10 +1292,10 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
 
         mtx = dynAllocateMatrix();
 
-        matrix_4x4_set_identity_and_position(&pos, &mtxf);
-        matrix_scalar_multiply(0.1f, (f32 *)&mtxf);
-        matrix_4x4_multiply_homogeneous_in_place(worldtoscreen, &mtxf);
-        matrix_4x4_f32_to_s32(&mtxf, (Mtxf *)mtx);
+        mtx4LoadTranslation(&pos, &mtxf);
+        mtx4ScaleRows012(0.1f, (f32 *)&mtxf);
+        mtx4MultAffineInPlace(worldtoscreen, &mtxf);
+        mtxF2L(&mtxf, (Mtxf *)mtx);
 
         vtx[0] = templatevtx;
         vtx[1] = templatevtx;
@@ -1516,7 +1516,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
             gSPLookAt(gdl++, sub_GAME_7F078474());
         }
  
-        gSPPerspNormalize(gdl++, matrix_4x4_calc_depth_scale(0.0f, 300.0f));
+        gSPPerspNormalize(gdl++, mtxCalcPerspNorm(0.0f, 300.0f));
  
         if ((*(Model *)&handptr->field_B68).obj->numSwitches >= 0x11 && (*(Model *)&handptr->field_B68).obj->Switches[16] != NULL)
         {
@@ -1548,7 +1548,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
                                   | ((u32)g_CurrentPlayer->tileColor.b << 8);
         renderdata.zbufferenabled = 0;
  
-        matrix_4x4_7F058C64();
+        mtxPushUnitWorldScale();
  
         if (item == ITEM_ROCKETLAUNCH && handptr->rocket != NULL) 
         {
@@ -1586,7 +1586,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
         }
  
         bondviewTransformManyPosToViewMatrix((*(Model *)&handptr->field_B68).render_pos, (*(Model *)&handptr->field_B68).obj->numMatrices);
-        matrix_4x4_7F058C88();
+        mtxPopWorldScale();
  
         gSPPerspNormalize(gdl++, viGetPerspNorm());
  
@@ -1641,7 +1641,7 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
     
     for (i = 0; i < bodymodel->numMatrices; i++)
     {
-        matrix_4x4_set_identity(&matrices[i]);
+        mtx4LoadIdentity(&matrices[i]);
     }
 
     i = 0;
@@ -1661,19 +1661,19 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
         }
     }
 
-    matrix_4x4_copy(mtx, matrices);
+    mtx4Copy(mtx, matrices);
   
     if (bodymodel->Skeleton == (&skeleton_gun_revolver))
     {
         if (bodymodel->Switches[4] != NULL)
         {
-            matrix_4x4_set_identity_and_position((coord3d *) bodymodel->Switches[4]->Data, &sp74);
-            matrix_4x4_multiply(mtx, &sp74, &matrices[3]);
+            mtx4LoadTranslation((coord3d *) bodymodel->Switches[4]->Data, &sp74);
+            mtx4Mult(mtx, &sp74, &matrices[3]);
         }
         if (bodymodel->Switches[5] != NULL)
         {
-            matrix_4x4_set_identity_and_position((coord3d *) bodymodel->Switches[5]->Data, &sp74);
-            matrix_4x4_multiply(mtx, &sp74, &matrices[4]);
+            mtx4LoadTranslation((coord3d *) bodymodel->Switches[5]->Data, &sp74);
+            mtx4Mult(mtx, &sp74, &matrices[4]);
         }
     }
 
@@ -1684,8 +1684,8 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
 
         pos = (coord3d *) bodymodel->Switches[6]->Data;
         index = modelFindNodeMtxIndex(bodymodel->Switches[6], 0);
-        matrix_4x4_set_identity_and_position(pos, &sp74);
-        matrix_4x4_multiply(mtx, &sp74, &matrices[index]);
+        mtx4LoadTranslation(pos, &sp74);
+        mtx4Mult(mtx, &sp74, &matrices[index]);
     }
 
     if (bodymodel->Switches[7] != NULL)
@@ -1696,8 +1696,8 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
 
         pos = (coord3d *) bodymodel->Switches[7]->Data;
         index = modelFindNodeMtxIndex(bodymodel->Switches[7], 0);
-        matrix_4x4_set_identity_and_position(pos, &sp74);
-        matrix_4x4_multiply(mtx, &sp74, &matrices[index]);
+        mtx4LoadTranslation(pos, &sp74);
+        mtx4Mult(mtx, &sp74, &matrices[index]);
     }
 
     if (bodymodel->numSwitches >= 19)
@@ -1764,22 +1764,22 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
     renderdata.zbufferenabled = FALSE;
     subdraw(&renderdata, (Model *) &model);
     gdl = renderdata.gdl;
-    matrix_4x4_7F058C64();
+    mtxPushUnitWorldScale();
     j = 0;
 
     if (bodymodel->numMatrices > 0)
     {
         do
         {
-            matrix_4x4_copy((Mtxf *) (((u8 *) ((Model *) &model)->render_pos) + j), &sp74);
-            matrix_4x4_f32_to_s32(&sp74, (Mtxf *) ((i << 6) + (u8 *) ((Model *) &model)->render_pos));
+            mtx4Copy((Mtxf *) (((u8 *) ((Model *) &model)->render_pos) + j), &sp74);
+            mtxF2L(&sp74, (Mtxf *) ((i << 6) + (u8 *) ((Model *) &model)->render_pos));
             i++;
             j += 0x40;
         }
         while (i < bodymodel->numMatrices);
     }
 
-    matrix_4x4_7F058C88();
+    mtxPopWorldScale();
 
 earlyreturn:
     return gdl;
@@ -1804,13 +1804,13 @@ void sub_GAME_7F06351C(struct coord3d* arg0, Mtxf* arg1, Mtxf* arg2, Mtxf* arg3,
 {
     Mtxf sp20;
 
-    matrix_4x4_set_identity_and_position(arg0, arg6);
-    matrix_4x4_multiply_in_place(arg1, arg6);
-    matrix_4x4_multiply_in_place(arg2, arg6);
-    matrix_4x4_multiply_in_place(arg3, arg6);
-    matrix_4x4_set_identity_and_position(arg4, &sp20);
-    matrix_4x4_multiply_in_place(&sp20, arg6);
-    matrix_4x4_multiply_in_place(arg5, arg6);
+    mtx4LoadTranslation(arg0, arg6);
+    mtx4MultInPlace(arg1, arg6);
+    mtx4MultInPlace(arg2, arg6);
+    mtx4MultInPlace(arg3, arg6);
+    mtx4LoadTranslation(arg4, &sp20);
+    mtx4MultInPlace(&sp20, arg6);
+    mtx4MultInPlace(arg5, arg6);
 }
 
 
@@ -1883,7 +1883,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
     modelInit(&modelstack, objheader, rwdata);
     modelstack.render_pos = (RenderPosView*) matrices;
-    matrix_4x4_copy(basemtx, &matrices[0]);
+    mtx4Copy(basemtx, &matrices[0]);
     
     for (i = 1; i < 13; i++)
     {
@@ -1893,18 +1893,18 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
         if (i == 2)
         {
             angle = ((((-(f32) joyGetStickX(*contpadnum)) * M_TAU_F) * 0.6f)) / 360.0f;
-            matrix_4x4_set_rotation_around_z(angle, &sp41c);
+            mtx4LoadZRotation(angle, &sp41c);
             angle = ((((-(f32) joyGetStickY(*contpadnum)) * M_TAU_F) * 0.6f)) / 360.0f;
-            matrix_4x4_set_rotation_around_x(angle, &sp3dc);
-            matrix_4x4_multiply_in_place(&sp3dc, &sp41c);
-            matrix_4x4_set_position(position, &sp41c);
+            mtx4LoadXRotation(angle, &sp3dc);
+            mtx4MultInPlace(&sp3dc, &sp41c);
+            mtx4SetTranslation(position, &sp41c);
         }
         else
         {
-            matrix_4x4_set_identity_and_position(position, &sp41c);
+            mtx4LoadTranslation(position, &sp41c);
         }
 
-        matrix_4x4_multiply(basemtx, &sp41c, &matrices[i]);
+        mtx4Mult(basemtx, &sp41c, &matrices[i]);
     }
 
     modelUpdateNodeRelations(&modelstack);
@@ -1924,15 +1924,15 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     renderdata.zbufferenabled = TRUE;
     subdraw(&renderdata, &modelstack);
     gdl = renderdata.gdl;
-    matrix_4x4_7F058C64();
+    mtxPushUnitWorldScale();
 
     for (i = 0; i < objheader->numMatrices; i++)
     {
-        matrix_4x4_copy((u32)modelstack.render_pos + i * sizeof(Mtxf), &sp41c);
-        matrix_4x4_f32_to_s32(&sp41c, &modelstack.render_pos[i]);
+        mtx4Copy((u32)modelstack.render_pos + i * sizeof(Mtxf), &sp41c);
+        mtxF2L(&sp41c, &modelstack.render_pos[i]);
     }
 
-    matrix_4x4_7F058C88();
+    mtxPopWorldScale();
 
     if (animatebuttons)
     {
@@ -1949,25 +1949,25 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
         // Update the positions and/or rotations of the free floating buttons on the sides of the screen.
         for (i = 0; i < 13; i++)
         {
-            matrix_4x4_set_lookat_target(&sp20c, -5.0f, 2000.0f, -168.0f, -5.0f, 0.0f, -168.0f, 0.0f, 0.0f, -1.0f);
-            matrix_4x4_set_lookat_target(&sp38c, -5.0f, 2000.0f, -168.0f, -5.0f, 0.0f, -168.0f, 0.0f, 0.0f, -1.0f);
-            matrix_4x4_set_identity(&sp24c);
-            matrix_4x4_set_identity(&sp1cc);
-            matrix_4x4_copy(&sp1cc, &sp2cc);
+            mtx4LoadLookAt(&sp20c, -5.0f, 2000.0f, -168.0f, -5.0f, 0.0f, -168.0f, 0.0f, 0.0f, -1.0f);
+            mtx4LoadLookAt(&sp38c, -5.0f, 2000.0f, -168.0f, -5.0f, 0.0f, -168.0f, 0.0f, 0.0f, -1.0f);
+            mtx4LoadIdentity(&sp24c);
+            mtx4LoadIdentity(&sp1cc);
+            mtx4Copy(&sp1cc, &sp2cc);
             
             // Joy stick
             if (i == 2)
             {
                 coord_node2 = buttonpositions->joystick;
-                matrix_4x4_set_identity_and_position(&coord_node2, &sp34c);
+                mtx4LoadTranslation(&coord_node2, &sp34c);
                 angle = ((((-(f32) joyGetStickX(*contpadnum)) * M_TAU_F) * 0.6f)) / 360.0f;
-                matrix_4x4_set_rotation_around_z(angle, &sp41c);
+                mtx4LoadZRotation(angle, &sp41c);
                 angle = ((((-(f32) joyGetStickY(*contpadnum)) * M_TAU_F) * 0.6f)) / 360.0f;
-                matrix_4x4_set_rotation_around_x(angle, &sp3dc);
-                matrix_4x4_multiply_in_place(&sp3dc, &sp41c);
-                matrix_4x4_multiply_in_place(&sp34c, &sp41c);
-                matrix_4x4_multiply(&sp20c, &sp41c, &sp30c);
-                matrix_4x4_copy(&sp30c, &matrices[i]);
+                mtx4LoadXRotation(angle, &sp3dc);
+                mtx4MultInPlace(&sp3dc, &sp41c);
+                mtx4MultInPlace(&sp34c, &sp41c);
+                mtx4Mult(&sp20c, &sp41c, &sp30c);
+                mtx4Copy(&sp30c, &matrices[i]);
             }
             // R
             else if (i == 11)
@@ -1977,12 +1977,12 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
                 if (joyGetButtons(*contpadnum, R_TRIG))
                 {
-                    matrix_4x4_set_rotation_around_y(-0.17453294f, &sp24c);
+                    mtx4LoadYRotation(-0.17453294f, &sp24c);
                 }
 
-                matrix_4x4_set_rotation_around_x(1.0471976f, &sp28c);
+                mtx4LoadXRotation(1.0471976f, &sp28c);
                 sub_GAME_7F06351C(&coord_node11_base, &sp24c, &sp28c, &sp1cc, &coord_node11_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // C-Up
             else if (i == 4)
@@ -1995,9 +1995,9 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                     coord_node4_base.y += -10.0f;
                 }
 
-                matrix_4x4_set_rotation_around_x(-1.0471976f, &sp28c);
+                mtx4LoadXRotation(-1.0471976f, &sp28c);
                 sub_GAME_7F06351C(&coord_node4_base, &sp24c, &sp28c, &sp1cc, &coord_node4_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // C-Down
             else if (i == 5)
@@ -2010,9 +2010,9 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                     coord_node5_base.y += -10.0f;
                 }
 
-                matrix_4x4_set_rotation_around_x(-1.0471976f, &sp28c);
+                mtx4LoadXRotation(-1.0471976f, &sp28c);
                 sub_GAME_7F06351C(&coord_node5_base, &sp24c, &sp28c, &sp1cc, &coord_node5_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // C-Left
             else if (i == 6)
@@ -2025,9 +2025,9 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                     coord_node6_base.y += -10.0f;
                 }
 
-                matrix_4x4_set_rotation_around_x(-1.0471976f, &sp28c);
+                mtx4LoadXRotation(-1.0471976f, &sp28c);
                 sub_GAME_7F06351C(&coord_node6_base, &sp24c, &sp28c, &sp1cc, &coord_node6_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // C-Right
             else if (i == 7)
@@ -2040,9 +2040,9 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                     coord_node7_base.y += -10.0f;
                 }
 
-                matrix_4x4_set_rotation_around_x(-1.0471976f, &sp28c);
+                mtx4LoadXRotation(-1.0471976f, &sp28c);
                 sub_GAME_7F06351C(&coord_node7_base, &sp24c, &sp28c, &sp1cc, &coord_node7_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // B
             else if (i == 9)
@@ -2055,9 +2055,9 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                     coord_node9_base.y += -10.0f;
                 }
 
-                matrix_4x4_set_rotation_around_x(-1.0471976, &sp28c);
+                mtx4LoadXRotation(-1.0471976, &sp28c);
                 sub_GAME_7F06351C(&coord_node9_base, &sp24c, &sp28c, &sp1cc, &coord_node9_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // A
             else if (i == 8)
@@ -2070,9 +2070,9 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                     coord_node8_base.y += -10.0f;
                 }
 
-                matrix_4x4_set_rotation_around_x(-1.0471976f, &sp28c);
+                mtx4LoadXRotation(-1.0471976f, &sp28c);
                 sub_GAME_7F06351C(&coord_node8_base, &sp24c, &sp28c, &sp1cc, &coord_node8_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // L
             else if (i == 10)
@@ -2082,42 +2082,42 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
                 if (joyGetButtons(*contpadnum, L_TRIG))
                 {
-                    matrix_4x4_set_rotation_around_y(0.17453294f, &sp24c);
+                    mtx4LoadYRotation(0.17453294f, &sp24c);
                 }
 
-                matrix_4x4_set_rotation_around_x(1.0471976f, &sp28c);
+                mtx4LoadXRotation(1.0471976f, &sp28c);
                 sub_GAME_7F06351C(&coord_node10_base, &sp24c, &sp28c, &sp1cc, &coord_node10_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // D-pad
             else if (i == 3)
             {
                 coord_node3_base = ((struct coord3d *)watchControllerButtonBases)[13];
                 coord_node3_pos = buttonpositions->dPad;
-                matrix_4x4_set_identity(&spb4);
+                mtx4LoadIdentity(&spb4);
 
                 if (joyGetButtons(*contpadnum, U_JPAD))
                 {
-                    matrix_4x4_set_rotation_around_x(-0.17453294f, &sp24c);
+                    mtx4LoadXRotation(-0.17453294f, &sp24c);
                 }
                 else if (joyGetButtons(*contpadnum, D_JPAD))
                 {
-                    matrix_4x4_set_rotation_around_x(0.17453294f, &sp24c);
+                    mtx4LoadXRotation(0.17453294f, &sp24c);
                 }
 
                 if (joyGetButtons(*contpadnum, L_JPAD))
                 {
-                    matrix_4x4_set_rotation_around_z(0.17453294f, &spb4);
+                    mtx4LoadZRotation(0.17453294f, &spb4);
                 }
                 else if (joyGetButtons(*contpadnum, R_JPAD))
                 {
-                    matrix_4x4_set_rotation_around_z(-0.17453294f, &spb4);
+                    mtx4LoadZRotation(-0.17453294f, &spb4);
                 }
 
-                matrix_4x4_multiply_in_place(&spb4, &sp24c);
-                matrix_4x4_set_rotation_around_x(-0.89759791f, &sp28c);
+                mtx4MultInPlace(&spb4, &sp24c);
+                mtx4LoadXRotation(-0.89759791f, &sp28c);
                 sub_GAME_7F06351C(&coord_node3_base, &sp24c, &sp28c, &sp1cc, &coord_node3_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // Start
             else if (i == 1)
@@ -2130,9 +2130,9 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                     coord_node1_base.y += -10.0f;
                 }
 
-                matrix_4x4_set_rotation_around_x(-1.0471976f, &sp28c);
+                mtx4LoadXRotation(-1.0471976f, &sp28c);
                 sub_GAME_7F06351C(&coord_node1_base, &sp24c, &sp28c, &sp1cc, &coord_node1_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             // Z
             else if (i == 12)
@@ -2142,16 +2142,16 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
                 if (joyGetButtons(*contpadnum, Z_TRIG))
                 {
-                    matrix_4x4_set_rotation_around_x(-0.17453294f, &sp24c);
+                    mtx4LoadXRotation(-0.17453294f, &sp24c);
                 }
 
-                matrix_4x4_set_rotation_around_z(M_PI_F, &sp28c);
+                mtx4LoadZRotation(M_PI_F, &sp28c);
                 sub_GAME_7F06351C(&coord_node12_base, &sp24c, &sp28c, &sp1cc, &coord_node12_pos, &sp20c, &sp38c);
-                matrix_4x4_copy(&sp38c, &matrices[i]);
+                mtx4Copy(&sp38c, &matrices[i]);
             }
             else
             {
-                matrix_4x4_copy(basemtx, &matrices[i]);
+                mtx4Copy(basemtx, &matrices[i]);
             }
         }
 
@@ -2159,15 +2159,15 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
         renderdata.gdl = gdl;
         subdraw(&renderdata, &modelstack);
         gdl = renderdata.gdl;
-        matrix_4x4_7F058C64();
+        mtxPushUnitWorldScale();
 
         for (i = 0; i < objheader->numMatrices; i++)
         {
-            matrix_4x4_copy((u32)modelstack.render_pos + i * sizeof(Mtxf), &sp41c);
-            matrix_4x4_f32_to_s32(&sp41c, &modelstack.render_pos[i]);
+            mtx4Copy((u32)modelstack.render_pos + i * sizeof(Mtxf), &sp41c);
+            mtxF2L(&sp41c, &modelstack.render_pos[i]);
         }
 
-        matrix_4x4_7F058C88();
+        mtxPopWorldScale();
     }
 
     return gdl;
@@ -3247,8 +3247,8 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 handptr->field_8E0 = ((handptr->field_8D0 - handptr->field_8C0) * sp190) + handptr->field_8C0;
                 handptr->field_8E4 = ((handptr->field_8D4 - handptr->field_8C4) * sp190) + handptr->field_8C4;
 
-                matrix_4x4_set_rotation_around_x(temp_f0_2, &handptr->field_8EC);
-                matrix_4x4_set_position((struct coord3d *)&handptr->field_8DC, &handptr->field_8EC);
+                mtx4LoadXRotation(temp_f0_2, &handptr->field_8EC);
+                mtx4SetTranslation((struct coord3d *)&handptr->field_8DC, &handptr->field_8EC);
             }
         }
     }
@@ -3279,8 +3279,8 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             handptr->field_8E0 = ((handptr->field_8D0 - handptr->field_8C0) * sp18C) + handptr->field_8C0;
             handptr->field_8E4 = ((handptr->field_8D4 - handptr->field_8C4) * sp18C) + handptr->field_8C4;
 
-            matrix_4x4_set_rotation_around_x(temp_f0_2, &handptr->field_8EC);
-            matrix_4x4_set_position((struct coord3d *)&handptr->field_8DC, &handptr->field_8EC);
+            mtx4LoadXRotation(temp_f0_2, &handptr->field_8EC);
+            mtx4SetTranslation((struct coord3d *)&handptr->field_8DC, &handptr->field_8EC);
         }
         else
         {
@@ -3353,7 +3353,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             sp184 = ((f32) handptr->field_890 * M_LN2F) / (f32) sp188;
             handptr->field_92C = 1;
 
-            matrix_4x4_set_rotation_around_x(sp184, &handptr->field_8EC);
+            mtx4LoadXRotation(sp184, &handptr->field_8EC);
 
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = (1.0f - cosf(sp184)) * -60.0f;
@@ -3406,7 +3406,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         if ((handptr->weapon_action_state == GUN_ANIM_STATE_SWITCH_SWAP) || (handptr->weapon_action_state == GUN_ANIM_STATE_SWITCH_HOLD))
         {
             handptr->field_92C = 1;
-            matrix_4x4_set_rotation_around_x(M_LN2F, &handptr->field_8EC);
+            mtx4LoadXRotation(M_LN2F, &handptr->field_8EC);
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = (1.0f - cosf(M_LN2F)) * -60.0f;
             handptr->field_8EC.m[3][2] = sinf(M_LN2F) * 15.0f;
@@ -3496,7 +3496,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             sp174 = ((f32) (sp178 - handptr->field_890) * M_LN2F) / (f32) sp178;
             handptr->field_92C = 1;
-            matrix_4x4_set_rotation_around_x(sp174, &handptr->field_8EC);
+            mtx4LoadXRotation(sp174, &handptr->field_8EC);
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = (1.0f - cosf(sp174)) * -60.0f;
             handptr->field_8EC.m[3][2] = sinf(sp174) * 15.0f;
@@ -3535,15 +3535,15 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
             if (hand == GUNRIGHT)
             {
-                matrix_4x4_set_rotation_around_z((un_f32_num / un_f32_div_1), &handptr->field_8EC);
+                mtx4LoadZRotation((un_f32_num / un_f32_div_1), &handptr->field_8EC);
             }
             else
             {
-                matrix_4x4_set_rotation_around_z(-(un_f32_num / un_f32_div_1), &handptr->field_8EC);
+                mtx4LoadZRotation(-(un_f32_num / un_f32_div_1), &handptr->field_8EC);
             }
 
-            matrix_4x4_set_rotation_around_x(sp128, &sp12C);
-            matrix_4x4_multiply_in_place(&sp12C, &handptr->field_8EC);
+            mtx4LoadXRotation(sp128, &sp12C);
+            mtx4MultInPlace(&sp12C, &handptr->field_8EC);
             sinf((un_f32_num / un_f32_div_1));
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = sub_GAME_7F0649AC(var_s1) * (1.0f - cosf(sp128));
@@ -3649,15 +3649,15 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
             if (hand == GUNRIGHT)
             {
-                matrix_4x4_set_rotation_around_z(un_f32_num, &handptr->field_8EC);
+                mtx4LoadZRotation(un_f32_num, &handptr->field_8EC);
             }
             else
             {
-                matrix_4x4_set_rotation_around_z(-un_f32_num, &handptr->field_8EC);
+                mtx4LoadZRotation(-un_f32_num, &handptr->field_8EC);
             }
 
-            matrix_4x4_set_rotation_around_x(M_LN2F, &spE4);
-            matrix_4x4_multiply_in_place(&spE4, &handptr->field_8EC);
+            mtx4LoadXRotation(M_LN2F, &spE4);
+            mtx4MultInPlace(&spE4, &handptr->field_8EC);
             sinf(un_f32_num);
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = sub_GAME_7F0649AC(var_s1) * (1.0f - cosf(M_LN2F));
@@ -3689,15 +3689,15 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
             if (hand == GUNRIGHT)
             {
-                matrix_4x4_set_rotation_around_z((un_f32_num / un_f32_div_2), &handptr->field_8EC);
+                mtx4LoadZRotation((un_f32_num / un_f32_div_2), &handptr->field_8EC);
             }
             else
             {
-                matrix_4x4_set_rotation_around_z(-(un_f32_num / un_f32_div_2), &handptr->field_8EC);
+                mtx4LoadZRotation(-(un_f32_num / un_f32_div_2), &handptr->field_8EC);
             }
 
-            matrix_4x4_set_rotation_around_x(sp98, &sp9C);
-            matrix_4x4_multiply_in_place(&sp9C, &handptr->field_8EC);
+            mtx4LoadXRotation(sp98, &sp9C);
+            mtx4MultInPlace(&sp9C, &handptr->field_8EC);
             sinf(un_f32_num / un_f32_div_2);
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = sub_GAME_7F0649AC(var_s1) * (1.0f - cosf(sp98));
@@ -3718,7 +3718,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             sp94 = ((f32) handptr->field_890 * M_LN2F) / un_f32_div_1;
             handptr->field_92C = 1;
 
-            matrix_4x4_set_rotation_around_x(sp94, &handptr->field_8EC);
+            mtx4LoadXRotation(sp94, &handptr->field_8EC);
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = (1.0f - cosf(sp94)) * -60.0f;
             handptr->field_8EC.m[3][2] = sinf(sp94) * 15.0f;
@@ -3742,7 +3742,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         else
         {
             handptr->field_92C = 1;
-            matrix_4x4_set_rotation_around_x(M_LN2F, &handptr->field_8EC);
+            mtx4LoadXRotation(M_LN2F, &handptr->field_8EC);
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = (1.0f - cosf(M_LN2F)) * -60.0f;
             handptr->field_8EC.m[3][2] = sinf(M_LN2F) * 15.0f;
@@ -3774,7 +3774,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             sp8C = ((f32) (WHEN_10_FLD890 - handptr->field_890) * M_LN2F) / un_f32_div_2;
             handptr->field_92C = 1;
-            matrix_4x4_set_rotation_around_x(sp8C, &handptr->field_8EC);
+            mtx4LoadXRotation(sp8C, &handptr->field_8EC);
             handptr->field_8EC.m[3][0] = 0.0f;
             handptr->field_8EC.m[3][1] = (1.0f - cosf(sp8C)) * -60.0f;
             handptr->field_8EC.m[3][2] = sinf(sp8C) * 15.0f;
@@ -4760,7 +4760,7 @@ void sub_GAME_7F0680D4(coord3d * coord)
     g_CurrentPlayer->field_1010.x = coord->x;
     g_CurrentPlayer->field_1010.y = coord->y;
     g_CurrentPlayer->field_1010.z = coord->z;
-    matrix_4x4_set_rotation_around_xyz(coord->f, &g_CurrentPlayer->field_101C);
+    mtx4LoadRotation(coord->f, &g_CurrentPlayer->field_101C);
 
     tmp.x = g_CurrentPlayer->field_101C.m[2][0] * 1000.0f;
     tmp.y = g_CurrentPlayer->field_101C.m[2][1] * 1000.0f;
@@ -4850,7 +4850,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
         entry->pos.y = mtx->m[3][1];
         entry->pos.z = mtx->m[3][2];
 #if VERSION_EU
-        matrix_7f05842c_eu(mtx, entry->rot_mtx);
+        mtx4ToMtx3(mtx, entry->rot_mtx);
 #else
         entry->rot_mtx.m[0][0] = mtx->m[0][0];
         entry->rot_mtx.m[0][1] = mtx->m[0][1];
@@ -4972,12 +4972,12 @@ void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
         switchpos.y = switchdata->y * g_CasingSwitchScale;
         switchpos.z = switchdata->z * g_CasingSwitchScale;
  
-        matrix_4x4_set_identity_and_position(&switchpos, &mtx);
-        matrix_4x4_multiply_in_place(THROWMTX, &mtx);
+        mtx4LoadTranslation(&switchpos, &mtx);
+        mtx4MultInPlace(THROWMTX, &mtx);
     }
     else
     {
-        matrix_4x4_copy(THROWMTX, &mtx);
+        mtx4Copy(THROWMTX, &mtx);
     }
  
     casing = casingCreate(cartridge_header, &mtx);
@@ -5012,11 +5012,11 @@ void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
         rot.z = (((rand + rand) * g_PistolCasingRotationScaleZ) * newvely) - g_PistolCasingRotationOffsetZ;
  
 #if VERSION_EU
-        matrix_4x4_set_rotation_around_xyz(&rot, &rotmtx);
-        matrix_7f05842c_eu(&rotmtx, casing->rot_velocity_mtx);
+        mtx4LoadRotation(&rot, &rotmtx);
+        mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
         if (handoffset);
 #else
-        matrix_4x4_set_rotation_around_xyz(&rot, &casing->rot_velocity_mtx);
+        mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
  
 #if VERSION_EU
@@ -5068,11 +5068,11 @@ void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
         rot.z = (((rand + rand) * g_RifleCasingRotationScaleZ) * 0.0625f) - g_RifleCasingRotationOffsetZ;
  
 #if VERSION_EU
-        matrix_4x4_set_rotation_around_xyz(&rot, &rotmtx);
-        matrix_7f05842c_eu(&rotmtx, casing->rot_velocity_mtx);
+        mtx4LoadRotation(&rot, &rotmtx);
+        mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
         if (handoffset);
 #else
-        matrix_4x4_set_rotation_around_xyz(&rot, &casing->rot_velocity_mtx);
+        mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
         randval = ((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10;
 #if VERSION_EU
@@ -5196,7 +5196,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
         entry->pos.y = mtx->m[3][1];
         entry->pos.z = mtx->m[3][2];
 #if VERSION_EU
-        matrix_7f05842c_eu(mtx, entry->rot_mtx);
+        mtx4ToMtx3(mtx, entry->rot_mtx);
 #else
         entry->rot_mtx.m[0][0] = mtx->m[0][0];
         entry->rot_mtx.m[0][1] = mtx->m[0][1];
@@ -5289,12 +5289,12 @@ void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
         switchpos.y = switchdata->y * g_CasingSwitchScale;
         switchpos.z = switchdata->z * g_CasingSwitchScale;
  
-        matrix_4x4_set_identity_and_position(&switchpos, &mtx);
-        matrix_4x4_multiply_in_place(THROWMTX, &mtx);
+        mtx4LoadTranslation(&switchpos, &mtx);
+        mtx4MultInPlace(THROWMTX, &mtx);
     }
     else
     {
-        matrix_4x4_copy(THROWMTX, &mtx);
+        mtx4Copy(THROWMTX, &mtx);
     }
  
     casing = casingCreate(cartridge_header, &mtx);
@@ -5329,11 +5329,11 @@ void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
         rot.z = (((rand + rand) * g_PistolCasingRotationScaleZ) * newvely) - g_PistolCasingRotationOffsetZ;
  
 #if VERSION_EU
-        matrix_4x4_set_rotation_around_xyz(&rot, &rotmtx);
-        matrix_7f05842c_eu(&rotmtx, casing->rot_velocity_mtx);
+        mtx4LoadRotation(&rot, &rotmtx);
+        mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
         if (handoffset);
 #else
-        matrix_4x4_set_rotation_around_xyz(&rot, &casing->rot_velocity_mtx);
+        mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
  
 #if VERSION_EU
@@ -5385,11 +5385,11 @@ void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
         rot.z = (((rand + rand) * g_RifleCasingRotationScaleZ) * 0.0625f) - g_RifleCasingRotationOffsetZ;
  
 #if VERSION_EU
-        matrix_4x4_set_rotation_around_xyz(&rot, &rotmtx);
-        matrix_7f05842c_eu(&rotmtx, casing->rot_velocity_mtx);
+        mtx4LoadRotation(&rot, &rotmtx);
+        mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
         if (handoffset);
 #else
-        matrix_4x4_set_rotation_around_xyz(&rot, &casing->rot_velocity_mtx);
+        mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
         randval = ((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10;
 #if VERSION_EU
@@ -5466,9 +5466,9 @@ void update_bullet_casing(CasingRecord* casing)
     for (i = 0; i < g_ClockTimer; i++)
     {
 #if defined(VERSION_US)
-        matrix_4x4_multiply_homogeneous_in_place(&casing->rot_velocity_mtx, &casing->rot_mtx);
+        mtx4MultAffineInPlace(&casing->rot_velocity_mtx, &casing->rot_mtx);
 #else
-        matrix_4x4_multiply_homogeneous_in_place_eu(casing->rot_velocity_mtx, casing->rot_mtx);
+        mtx3MultInPlace(casing->rot_velocity_mtx, casing->rot_mtx);
 #endif
     }
 }
@@ -5522,17 +5522,17 @@ void sub_GAME_7F068EC4(CasingRecord *casing, Gfx **gdl)
     model.render_pos = model_matrices;
 
 #if defined(VERSION_EU)
-    matrix_4x4_copy_eu(casing->rot_mtx, casing_model_mtx.m);
+    mtx3ToMtx4(casing->rot_mtx, casing_model_mtx.m);
 #else
-    matrix_4x4_copy(&casing->rot_mtx, &casing_model_mtx);
+    mtx4Copy(&casing->rot_mtx, &casing_model_mtx);
 #endif
 
     model_scale_or_min_translation = g_CasingModelScale;
-    matrix_scalar_multiply(model_scale_or_min_translation, &casing_model_mtx);
+    mtx4ScaleRows012(model_scale_or_min_translation, &casing_model_mtx);
 
-    matrix_4x4_set_position(&casing->pos, &casing_model_mtx);
+    mtx4SetTranslation(&casing->pos, &casing_model_mtx);
 
-    matrix_4x4_multiply_homogeneous(
+    mtx4MultAffine(
         camGetWorldToScreenMtxf(),
         &casing_model_mtx,
         (Mtxf *)model.render_pos);

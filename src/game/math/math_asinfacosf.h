@@ -3,7 +3,7 @@
 
 #include <ultra64.h>
 
-f32 acosf(f32 cosinef);
-f32 asinf(f32 sinef);
+f32 mathAcos(f32 cosinef);
+f32 mathAsin(f32 sinef);
 
 #endif

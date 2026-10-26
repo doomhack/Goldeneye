@@ -854,7 +854,7 @@ void load_bg_file(LEVEL_INDEX levelid)
     mCurrentLevelVisibilityScale = levelinfotable[levelentry_index].visibility;
  
     sub_GAME_7F08976C(mCurrentLevelVisibilityScale);
-    matrix_4x4_7F058C4C(mCurrentLevelVisibilityScale);
+    mtxSetWorldScale(mCurrentLevelVisibilityScale);
  
     data = (s32 *)ptr_bg_data;
     dword_CODE_bss_8007BF98 = *data;
@@ -1012,7 +1012,7 @@ void load_bg_file(LEVEL_INDEX levelid)
 
 void cleanup_rooms(void) {
     unload_rooms();
-    matrix_4x4_7F058C4C(1.0);
+    mtxSetWorldScale(1.0);
 }
 
 
@@ -1315,8 +1315,8 @@ Gfx* bgScissorCurrentPlayerViewF(Gfx* arg0, f32 arg1, f32 arg2, f32 arg3, f32 ar
         arg0,
         (s32)arg1,
         (s32)arg2,
-        ceilFloatToInt(arg3),
-        ceilFloatToInt(arg4));
+        mathCeilToInt(arg3),
+        mathCeilToInt(arg4));
 }
 
 

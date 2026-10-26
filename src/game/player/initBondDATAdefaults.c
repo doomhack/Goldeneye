@@ -172,7 +172,7 @@ void sets_a_bunch_of_BONDdata_values_to_default(void)
     modelSetAnimation(&g_CurrentPlayer->model, (struct ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_idle], 0, 0.0f, 0.5f, 0.0f);
 
     subcalcpos(&g_CurrentPlayer->model);
-    matrix_4x4_set_identity(&identityMatrix);
+    mtx4LoadIdentity(&identityMatrix);
 
     renderData.basemtx = &identityMatrix;
     renderData.mtxlist = &g_CurrentPlayer->bondheadmatrices[0];

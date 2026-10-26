@@ -2622,7 +2622,7 @@ extern struct coord3d g_DefaultFrozenPlayerOffset;
 extern struct coord3d g_DefaultFrozenMoveOffset;
 
 //D:80036830
-extern coord3d ZeroCoord;
+extern coord3d g_ZeroCoord;
 //D:8003683C
 extern ModelRenderData D_8003683C;
 //D:8003687C

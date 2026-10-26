@@ -2,7 +2,7 @@
 
 //data 
 //D:80032320
-u16 table_1[] = {
+u16 s_AcosTableCoarse[] = {
     0x8000,0x7EBA,0x7D74,0x7C2D,0x7AE7,0x79A0,0x7859,0x7711,0x75C9,0x7480,
     0x7337,0x71EC,0x70A1,0x6F55,0x6E07,0x6CB8,0x6B68,0x6A17,0x68C4,0x6770,
     0x661A,0x64C1,0x6367,0x620B,0x60AD,0x5F4C,0x5DE9,0x5C83,0x5B1A,0x59AE,
@@ -13,7 +13,7 @@ u16 table_1[] = {
 };
 
 //D:8003239C
-u16 table_2[] = {
+u16 s_AcosTableFine[] = {
     0x1CF6,0x1CBB,0x1C80,0x1C45,0x1C08,0x1BCC,0x1B8F,0x1B51,0x1B13,0x1AD4,
     0x1A95,0x1A55,0x1A14,0x19D3,0x1992,0x194F,0x190C,0x18C9,0x1884,0x183F,
     0x17F9,0x17B3,0x176B,0x1723,0x16DA,0x1690,0x1645,0x15F9,0x15AC,0x155E,
@@ -24,12 +24,12 @@ u16 table_2[] = {
 };
 
 //D:8003241C
-u16 table_3[] = {
+u16 s_AcosTableFinest[] = {
     0x39A, 0x31E, 0x28C, 0x1CD,     0,     0
 };
 
 // PD: func0f096890
-static s32 sub_GAME_7F05AB70(s32 arg0)
+static s32 acosFixedFromTable(s32 arg0)
 {
     s32 mask;
     u16 *table;
@@ -43,21 +43,21 @@ static s32 sub_GAME_7F05AB70(s32 arg0)
     {
         mask = 7;
         shift = 3;
-        table = &table_3;
+        table = &s_AcosTableFinest;
         arg0 = arg0 - 0x7FE0;
     }
     else if (arg0 >= 0x7800)
     {
         mask = 0x1F;
         shift = 5;
-        table = &table_2;
+        table = &s_AcosTableFine;
         arg0 = arg0 - 0x7800;
     }
     else
     {
         mask = 0x1FF;
         shift = 9;
-        table = &table_1;
+        table = &s_AcosTableCoarse;
     }
 
     first = table[arg0 >> shift];
@@ -66,7 +66,7 @@ static s32 sub_GAME_7F05AB70(s32 arg0)
     return first - dd;
 }
 
-u16 acos(s16 arg0)
+u16 mathAcosFixed(s16 arg0)
 {
     s32 phi_a0;
 
@@ -79,7 +79,7 @@ u16 acos(s16 arg0)
         phi_a0 = -arg0;
     }
 
-    phi_a0 = sub_GAME_7F05AB70(phi_a0);
+    phi_a0 = acosFixedFromTable(phi_a0);
 
     if (arg0 < 0)
     {
@@ -89,7 +89,7 @@ u16 acos(s16 arg0)
     return (u16)phi_a0;
 }
 
-s16 asin(s16 arg0)
+s16 mathAsinFixed(s16 arg0)
 {
     s32 temp_v0;
     s32 phi_a0;
@@ -103,7 +103,7 @@ s16 asin(s16 arg0)
         phi_a0 = -arg0;
     }
 
-    temp_v0 = sub_GAME_7F05AB70(phi_a0);
+    temp_v0 = acosFixedFromTable(phi_a0);
 
     if (arg0 >= 0)
     {

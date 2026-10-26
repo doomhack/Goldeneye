@@ -928,7 +928,7 @@ void coopViewsBegin(void)
 
     if ((player != NULL) && (player->viewtoworldmtxf != NULL))
     {
-        matrix_4x4_copy(player->viewtoworldmtxf, &s_CoopPrevViewToWorld);
+        mtx4Copy(player->viewtoworldmtxf, &s_CoopPrevViewToWorld);
     }
 }
 
@@ -948,7 +948,7 @@ void coopViewsEnd(s32 lastplayer)
 
         if ((player != NULL) && (player->field_10CC != NULL) && (s_CoopWorldToScreenFrame[i] == s_CoopFrame))
         {
-            matrix_4x4_copy(player->field_10CC, &s_CoopWorldToScreen[i]);
+            mtx4Copy(player->field_10CC, &s_CoopWorldToScreen[i]);
             s_CoopWorldToScreenSaved[i] = TRUE;
         }
     }

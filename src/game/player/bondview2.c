@@ -1249,7 +1249,7 @@ void bondviewCalcIntroSwirlCamera(s32 index, f32 time, coord3d *pos, coord3d *lo
         scale = base->scale.fval;
         base = (void *)(index << 5);
 
-        coord3dCubicSplineInterp((coord3d *) &pointbuf[0], (coord3d *) &pointbuf[3], (coord3d *) &pointbuf[6], (coord3d *) &pointbuf[9], frac, scale, pos);
+        interpCardinal3((coord3d *) &pointbuf[0], (coord3d *) &pointbuf[3], (coord3d *) &pointbuf[6], (coord3d *) &pointbuf[9], frac, scale, pos);
 
         pos->x += g_CurrentPlayer->field_3C4;
         pos->y += g_CurrentPlayer->field_3C8;
@@ -1890,7 +1890,7 @@ void bondviewTankModelRotationRelated(void) {
         temp_v0 = obj->model->obj->Switches;
         sp68 = (struct coord3d *)temp_v0[2]->Data;
         sp64 = (struct coord3d *)temp_v0[1]->Data;
-        matrix_4x4_set_rotation_around_y(M_TAU_F - g_TankTurretOrientationAngleRad, &sp24);
+        mtx4LoadYRotation(M_TAU_F - g_TankTurretOrientationAngleRad, &sp24);
         g_TankModelPositionOffset.f[0] = sp68->f[0];
         g_TankModelPositionOffset.f[1] = sp68->f[1];
         g_TankModelPositionOffset.f[2] = sp68->f[2];
@@ -2033,7 +2033,7 @@ s32 bondviewTankCollisionStatus(struct coord3d *collision_position, StandTile *a
                 temp_f0 += M_TAU_F;
             }
 
-            matrix_4x4_set_rotation_around_y(M_TAU_F - temp_f0, &sp34);
+            mtx4LoadYRotation(M_TAU_F - temp_f0, &sp34);
             mtx4RotateVecInPlace(&sp34, (f32*)&sp74);
 
             sp74.f[0] *= sp8C->scale;
@@ -4550,11 +4550,11 @@ void bondviewMoveAnimationTick(f32 speed, f32 speedforwards, f32 speedsideways)
 
     bheadUpdate(percent_speed, speedsideways);
 
-    matrix_4x4_set_rotation_around_x((360.0f - g_CurrentPlayer->vv_verta360) * DegToRad1Fact(1), &sp8C);
-    matrix_4x4_set_basis_and_position_target(&sp4C, 0.0f, 0.0f, 0.0f, -g_CurrentPlayer->headlook.f[0], -g_CurrentPlayer->headlook.f[1], -g_CurrentPlayer->headlook.f[2], g_CurrentPlayer->headup.f[0], g_CurrentPlayer->headup.f[1], g_CurrentPlayer->headup.f[2]);
-    matrix_4x4_multiply_in_place(&sp4C, &sp8C);
-    matrix_4x4_set_rotation_around_y((360.0f - g_CurrentPlayer->vv_theta) * DegToRad1Fact(1), &sp4C);
-    matrix_4x4_multiply_in_place(&sp4C, &sp8C);
+    mtx4LoadXRotation((360.0f - g_CurrentPlayer->vv_verta360) * DegToRad1Fact(1), &sp8C);
+    mtx4LoadFacing(&sp4C, 0.0f, 0.0f, 0.0f, -g_CurrentPlayer->headlook.f[0], -g_CurrentPlayer->headlook.f[1], -g_CurrentPlayer->headlook.f[2], g_CurrentPlayer->headup.f[0], g_CurrentPlayer->headup.f[1], g_CurrentPlayer->headup.f[2]);
+    mtx4MultInPlace(&sp4C, &sp8C);
+    mtx4LoadYRotation((360.0f - g_CurrentPlayer->vv_theta) * DegToRad1Fact(1), &sp4C);
+    mtx4MultInPlace(&sp4C, &sp8C);
 
     g_CurrentPlayer->field_488.applied_view.f[0] = sp8C.m[2][0];
     g_CurrentPlayer->field_488.applied_view.f[1] = sp8C.m[2][1];
@@ -6033,7 +6033,7 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                 if ((ftemp_nostack_spC8 > -300.0f) && (ftemp_nostack_spC8 < 500.0f))
                 {
-                    targetPitch = ((atan2f(ftemp_nostack_spC8, spBC) * 360.0f) / M_TAU_F) + -4.0f;
+                    targetPitch = ((mathAtan2(ftemp_nostack_spC8, spBC) * 360.0f) / M_TAU_F) + -4.0f;
 
                     if (targetPitch >= 180.0f)
                     {
@@ -6962,7 +6962,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             tank_move_offset.f[0] = g_TankModelPositionOffset.f[0];
             tank_move_offset.f[2] = g_TankModelPositionOffset.f[2];
 
-            matrix_4x4_set_rotation_around_y(tankChangeInAngle, &sp2B4);
+            mtx4LoadYRotation(tankChangeInAngle, &sp2B4);
             mtx4RotateVecInPlace(&sp2B4, &tank_move_offset);
             bondviewTankModelRotationRelated();
 
@@ -6972,8 +6972,8 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             tank_move_offset.f[0] = g_TankModelPositionOffset.f[0] - tank_move_offset.f[0];
             tank_move_offset.f[2] = g_TankModelPositionOffset.f[2] - tank_move_offset.f[2];
 
-            matrix_4x4_set_rotation_around_y(M_TAU_F - g_TankOrientationAngle, &sp2B4);
-            matrix_scalar_multiply(temp_tank->model->scale, &sp2B4);
+            mtx4LoadYRotation(M_TAU_F - g_TankOrientationAngle, &sp2B4);
+            mtx4ScaleRows012(temp_tank->model->scale, &sp2B4);
             mtx4RotateVecInPlace(&sp2B4, &tank_move_offset);
             bondviewCalcUpdatePlayerCollision(&tank_move_offset, 1);
         }
@@ -7088,8 +7088,8 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             if (g_PlayerTankProp != NULL)
             {
                 tank_obj = g_PlayerTankProp->obj;
-                matrix_4x4_set_rotation_around_y(M_TAU_F - g_TankOrientationAngle, &sp268);
-                matrix_scalar_multiply(tank_obj->model->scale, &sp268);
+                mtx4LoadYRotation(M_TAU_F - g_TankOrientationAngle, &sp268);
+                mtx4ScaleRows012(tank_obj->model->scale, &sp268);
 
                 sp25C.f[0] = g_TankModelPositionOffset.f[0];
                 sp25C.f[1] = g_TankModelPositionOffset.f[1];
@@ -7761,8 +7761,8 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         sp140_tank_as_TankRecord->turret_orientation_angle = g_TankTurretOrientationAngleRad;
         sp140_tank_as_TankRecord->tank_orientation_angle = g_TankOrientationAngle;
 
-        matrix_4x4_set_rotation_around_y(M_TAU_F - g_TankOrientationAngle, &spF0);
-        matrix_scalar_multiply(sp138_tank_as_ObjectRecord->model->scale, &spF0);
+        mtx4LoadYRotation(M_TAU_F - g_TankOrientationAngle, &spF0);
+        mtx4ScaleRows012(sp138_tank_as_ObjectRecord->model->scale, &spF0);
 
         spE4.f[0] = -g_TankModelPositionOffset.f[0];
         spE4.f[1] = -g_TankModelPositionOffset.f[1];
@@ -7797,7 +7797,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             - (chrpropBBOXGetYmin(sp130) * sp138_tank_as_ObjectRecord->model->scale)
             + 4.0f;
 
-        matrix_4x4_copy(&spF0,  &sp138_tank_as_ObjectRecord->mtx);
+        mtx4Copy(&spF0,  &sp138_tank_as_ObjectRecord->mtx);
 
         sp138_tank_as_ObjectRecord->runtime_pos.f[0] = sp138_tank_as_ObjectRecord->prop->pos.f[0] = spE4.f[0];
         sp138_tank_as_ObjectRecord->runtime_pos.f[1] = sp138_tank_as_ObjectRecord->prop->pos.f[1] = spE4.f[1];
@@ -8391,7 +8391,7 @@ void bondviewUpdateCameraMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord
     clpos.f[1] = scaledpos.f[1] + cam_look_dir->f[1];
     clpos.f[2] = scaledpos.f[2] + cam_look_dir->f[2];
 
-    matrix_4x4_set_lookat(&spC4,
+    mtx4LoadLookDir(&spC4,
         scaledpos.x, scaledpos.y, scaledpos.z,
         cam_look_dir->x, cam_look_dir->y, cam_look_dir->z,
         cam_up->x, cam_up->y, cam_up->z);
@@ -8401,12 +8401,12 @@ void bondviewUpdateCameraMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord
         clpos.x, clpos.y, clpos.z,
         cam_up->x, cam_up->y, cam_up->z);
 
-    matrix_4x4_set_lookat((Mtxf*) g_CurrentPlayer->field_64,
+    mtx4LoadLookDir((Mtxf*) g_CurrentPlayer->field_64,
         cam_pos->x, cam_pos->y, cam_pos->z,
         cam_look_dir->x, cam_look_dir->y, cam_look_dir->z,
         cam_up->x, cam_up->y, cam_up->z);
 
-    matrix_4x4_set_basis_and_position((Mtxf*) g_CurrentPlayer->field_68,
+    mtx4LoadFacingDir((Mtxf*) g_CurrentPlayer->field_68,
         cam_pos->x, cam_pos->y, cam_pos->z,
         cam_look_dir->x, cam_look_dir->y, cam_look_dir->z,
         cam_up->x, cam_up->y, cam_up->z);
@@ -8414,7 +8414,7 @@ void bondviewUpdateCameraMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord
     temp_s0 = dynAllocateMatrix();
 
     projmtx = currentPlayerGetProjectionMatrixF();
-    matrix_4x4_multiply(projmtx, &spC4, &sp60);
+    mtx4Mult(projmtx, &spC4, &sp60);
 
 	for (i = 0; i < 4; i++)
     {
@@ -8436,9 +8436,9 @@ void bondviewUpdateCameraMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord
 
     scale = bgGetLevelVisibilityScale();
 
-    matrix_scalar_multiply(scale, spC4.m[0]);
+    mtx4ScaleRows012(scale, spC4.m[0]);
     guMtxF2L((f32 (*)[4]) &spC4, (Mtx* ) g_CurrentPlayer->field_5C);
-    sub_GAME_7F059334((s32* ) g_CurrentPlayer->field_5C, (s32* ) g_CurrentPlayer->field_60);
+    mtxUnpackFixed((s32* ) g_CurrentPlayer->field_5C, (s32* ) g_CurrentPlayer->field_60);
 
     currentPlayerSetMatrix10C8((Mtx* ) g_CurrentPlayer->field_5C);
     currentPlayerSetMatrix10C4((Mtx* ) g_CurrentPlayer->field_60);
@@ -8541,14 +8541,14 @@ Gfx *bondviewRenderDebugBondView(Gfx *gdl)
     vec_y = vec.y;
     horizontal_len = sqrtf((vec.z * vec.z) + (vec.x * vec.x));
     vertical_rot = bondviewGetPlayerPitchRadians();
-    ft4 = atan2f(vec_y, horizontal_len) + vertical_rot;
+    ft4 = mathAtan2(vec_y, horizontal_len) + vertical_rot;
 
     if (ft4 >= M_PI_F) {
         ft4 -= M_TAU_F;
     }
     g_CurrentPlayer->field_2A08 = ft4;
 
-    angle = atan2f(-vec.x, -vec.z);
+    angle = mathAtan2(-vec.x, -vec.z);
     if (angle >= M_PI_F) {
         angle -= M_TAU_F;
     }
@@ -8736,8 +8736,8 @@ Gfx *bondviewRenderWatch(Gfx *gdl)
         watchpos.y = g_CurrentPlayer->headbodyoffset.y + g_CurrentPlayer->field_488.collision_position.y;
         watchpos.z = (g_CurrentPlayer->field_488.theta_transform.z * (g_CurrentPlayer->headbodyoffset.z + (-12.0f))) + (g_CurrentPlayer->field_488.collision_position.z + (g_CurrentPlayer->headbodyoffset.x * g_CurrentPlayer->field_488.theta_transform.x));
     
-        matrix_4x4_set_position_and_rotation_around_y(watchpos.f, (360.0f - g_CurrentPlayer->vv_theta) * 0.017453292f, &watchmtx);
-        matrix_4x4_multiply_homogeneous_in_place(camGetWorldToScreenMtxf(), &watchmtx);
+        mtx4LoadYRotationWithTranslation(watchpos.f, (360.0f - g_CurrentPlayer->vv_theta) * 0.017453292f, &watchmtx);
+        mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), &watchmtx);
         matrices = dynAllocate(objheader->numMatrices << 6);
         bondviewSelectCuff((Model *) (&g_CurrentPlayer->something_with_watch_object_instance), objheader, 4);
         renderdata.basemtx = &watchmtx;
@@ -8756,16 +8756,16 @@ Gfx *bondviewRenderWatch(Gfx *gdl)
         targetpos.y = matrices->m[3][1] + (((g_CurrentPlayer->field_1D8 + (nodepos[2] * g_CurrentPlayer->watch_scale_destination)) - matrices->m[3][1]) * t);
         targetpos.z = matrices->m[3][2] + (((g_CurrentPlayer->pause_watch_position - (nodepos[1] * g_CurrentPlayer->watch_scale_destination)) - matrices->m[3][2]) * t);
     
-        matrix_4x4_set_basis_and_position_target(&targetmtx, 0.0f, 0.0f, 0.0f, g_CurrentPlayer->field_1E0, g_CurrentPlayer->field_1E4, g_CurrentPlayer->field_1E8, g_CurrentPlayer->field_1EC, g_CurrentPlayer->field_1F0, g_CurrentPlayer->field_1F4);
-        matrix_4x4_get_rotation_around_xyz(matrices, &currot);
-        matrix_4x4_get_rotation_around_xyz(&targetmtx, &targetrot);
-        quaternion_set_rotation_around_xyzf(currot.f, quat1);
-        quaternion_set_rotation_around_xyzf(targetrot.f, quat2);
-        quaternion_ensure_shortest_path(quat1, quat2);
-        quaternion_slerp(quat1, quat2, t, quat3);
-        quaternion_to_matrix(quat3, matrices->m);
-        matrix_4x4_set_position(&targetpos, matrices);
-        matrix_scalar_multiply(g_CurrentPlayer->watch_scale_destination, (f32 *) matrices);
+        mtx4LoadFacing(&targetmtx, 0.0f, 0.0f, 0.0f, g_CurrentPlayer->field_1E0, g_CurrentPlayer->field_1E4, g_CurrentPlayer->field_1E8, g_CurrentPlayer->field_1EC, g_CurrentPlayer->field_1F0, g_CurrentPlayer->field_1F4);
+        mtx4GetRotation(matrices, &currot);
+        mtx4GetRotation(&targetmtx, &targetrot);
+        quatFromAngles(currot.f, quat1);
+        quatFromAngles(targetrot.f, quat2);
+        quatMakeShortestPath(quat1, quat2);
+        quatSlerp(quat1, quat2, t, quat3);
+        quatToMtx4(quat3, matrices->m);
+        mtx4SetTranslation(&targetpos, matrices);
+        mtx4ScaleRows012(g_CurrentPlayer->watch_scale_destination, (f32 *) matrices);
         total_seconds = time / 60;
         seconds = total_seconds % 60;
         total_minutes = total_seconds / 60;
@@ -8790,12 +8790,12 @@ Gfx *bondviewRenderWatch(Gfx *gdl)
             hoursAngle += M_TAU_F;
         }
     
-        matrix_4x4_set_position_and_rotation_around_y((f32 *) objheader->Switches[0]->Data, hoursAngle, &matrices[1]);
-        matrix_4x4_multiply_in_place(matrices, &matrices[1]);
-        matrix_4x4_set_position_and_rotation_around_y((f32 *) objheader->Switches[1]->Data, minutesAngle, &matrices[2]);
-        matrix_4x4_multiply_in_place(matrices, &matrices[2]);
-        matrix_4x4_set_position_and_rotation_around_y((f32 *) objheader->Switches[2]->Data, secondsAngle, &matrices[3]);
-        matrix_4x4_multiply_in_place(matrices, &matrices[3]);
+        mtx4LoadYRotationWithTranslation((f32 *) objheader->Switches[0]->Data, hoursAngle, &matrices[1]);
+        mtx4MultInPlace(matrices, &matrices[1]);
+        mtx4LoadYRotationWithTranslation((f32 *) objheader->Switches[1]->Data, minutesAngle, &matrices[2]);
+        mtx4MultInPlace(matrices, &matrices[2]);
+        mtx4LoadYRotationWithTranslation((f32 *) objheader->Switches[2]->Data, secondsAngle, &matrices[3]);
+        mtx4MultInPlace(matrices, &matrices[3]);
         
         renderdata.flags = 3;
         renderdata.zbufferenabled = 0;
@@ -8815,15 +8815,15 @@ Gfx *bondviewRenderWatch(Gfx *gdl)
         gdl = renderdata.gdl;
         nodepos2 = (f32 *) objheader->Switches[2]->Data;
         finalmtx = dynAllocateMatrix();
-        matrix_4x4_set_identity_and_position((coord3d *) nodepos2, &handmtx);
-        matrix_4x4_multiply_in_place(matrices, &handmtx);
-        matrix_4x4_7F058C64();
-        matrix_4x4_f32_to_s32(&handmtx, finalmtx);
-        matrix_4x4_7F058C88();
+        mtx4LoadTranslation((coord3d *) nodepos2, &handmtx);
+        mtx4MultInPlace(matrices, &handmtx);
+        mtxPushUnitWorldScale();
+        mtxF2L(&handmtx, finalmtx);
+        mtxPopWorldScale();
         gdl = draw_watch_current_page(gdl, finalmtx, (g_CurrentPlayer->watch_animation_state == 5) || (g_CurrentPlayer->watch_animation_state == 12));
-        matrix_4x4_7F058C64();
+        mtxPushUnitWorldScale();
         bondviewTransformManyPosToViewMatrix(g_CurrentPlayer->field_23C, objheader->numMatrices);
-        matrix_4x4_7F058C88();
+        mtxPopWorldScale();
     }
  
     end:
@@ -8859,14 +8859,14 @@ Gfx *bondviewRenderGaugeBars(Gfx *gdl)
 
     gSPMatrix(gdl++, osVirtualToPhysical(orthomtx), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
 
-    matrix_4x4_set_lookat_target(
+    mtx4LoadLookAt(
         &lookatmtxf,
         0.0f, 500.0f, 0.0f,
         0.0f, 0.0f,   0.0f,
         0.0f, 0.0f,  -1.0f
     );
 
-    matrix_4x4_f32_to_s32(&lookatmtxf, (Mtxf *)lookatmtx);
+    mtxF2L(&lookatmtxf, (Mtxf *)lookatmtx);
 
     gSPMatrix(gdl++, osVirtualToPhysical(lookatmtx), G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
 
@@ -9242,7 +9242,7 @@ void coopRespawnPlayer(void)
 
         pos = g_Startpad[0]->pos;
         stan = g_Startpad[0]->stan;
-        look_angle = M_TAU_F - atan2f(g_Startpad[0]->look.f[0], g_Startpad[0]->look.f[2]);
+        look_angle = M_TAU_F - mathAtan2(g_Startpad[0]->look.f[0], g_Startpad[0]->look.f[2]);
 
         // Step aside if the partner is standing on the start pad.
         dx = partner->prop->pos.x - pos.x;
@@ -10427,7 +10427,7 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
                 if (isMpGame())
                 {
                     cur_player_num = get_cur_playernum();
-                    angle = g_playerPointers[cur_player_num]->vv_theta - (360.0f - ((atan2f(vectorx, vectorz) * 180.0f) / 3.1415927f));
+                    angle = g_playerPointers[cur_player_num]->vv_theta - (360.0f - ((mathAtan2(vectorx, vectorz) * 180.0f) / 3.1415927f));
 
                     if (angle < 0.0f)
                     {
@@ -11262,7 +11262,7 @@ Gfx *sub_GAME_7F08AAE8(Gfx *gdl)
     if (get_debug_testingmanpos_flag())
     {
         theta_x = g_CurrentPlayer->field_488.theta_transform.x;
-        debug_angle = (s32) ((atan2f(-theta_x, g_CurrentPlayer->field_488.theta_transform.z) * 180.0f) / M_PI_F);
+        debug_angle = (s32) ((mathAtan2(-theta_x, g_CurrentPlayer->field_488.theta_transform.z) * 180.0f) / M_PI_F);
         directions = g_DebugCompassLabels;
         roomid = bgDebPrintROOMID(g_CurrentPlayer->field_488.current_tile_ptr->room);
 
@@ -11365,7 +11365,7 @@ s32 playerTick(PropRecord *prop)
             if (prop->flags & PROPFLAG_ONSCREEN)
             {
                 RenderPosView *rp = g_playerPointers[index]->bodyModel->render_pos;
-                matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), (Mtxf *) rp, (Mtxf *) mtx);
+                mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), (Mtxf *) rp, (Mtxf *) mtx);
                 g_playerPointers[index]->field_488.pos.x = mtx[12] + (mtx[4] * 7.0f);
                 g_playerPointers[index]->field_488.pos.y = mtx[13] + (mtx[5] * 7.0f);
                 g_playerPointers[index]->field_488.pos.z = mtx[14] + (mtx[6] * 7.0f);
@@ -11829,8 +11829,8 @@ void bondviewTransformPosToViewMatrix(RenderPosView *arg0)
 {
     Mtxf sp18;
 
-    matrix_4x4_copy(&arg0->pos, (Mtxf *) &sp18);
-    matrix_4x4_f32_to_s32((Mtxf *) &sp18, &arg0->view);
+    mtx4Copy(&arg0->pos, (Mtxf *) &sp18);
+    mtxF2L((Mtxf *) &sp18, &arg0->view);
 }
 
 
@@ -11854,8 +11854,8 @@ void bondviewTransformManyPosToViewMatrix(RenderPosView * arg0, s32 arg1)
     rpv_entry = arg0;
     do
     {
-        matrix_4x4_copy(&rpv_entry->pos, &mtx);
-        matrix_4x4_f32_to_s32(&mtx, &arg0[i].pos);
+        mtx4Copy(&rpv_entry->pos, &mtx);
+        mtxF2L(&mtx, &arg0[i].pos);
         i++;
         rpv_entry++;
     } while (i != arg1);
@@ -11872,11 +11872,11 @@ void sub_GAME_7F08BDC4(Mtxf *arg0)
 {
     Mtxf sp20;
 
-    matrix_4x4_copy(arg0, (Mtxf *) &sp20);
+    mtx4Copy(arg0, (Mtxf *) &sp20);
     sp20.m[3][0] -= g_CurrentPlayer->previous_model_pos.f[0];
     sp20.m[3][1] -= g_CurrentPlayer->previous_model_pos.f[1];
     sp20.m[3][2] -= g_CurrentPlayer->previous_model_pos.f[2];
-    matrix_4x4_f32_to_s32((Mtxf *) &sp20, arg0);
+    mtxF2L((Mtxf *) &sp20, arg0);
 }
 
 
@@ -11892,13 +11892,13 @@ void sub_GAME_7F08BE2C(Mtxf *matrices, s32 count)
 
     for (i = 0; i < count; i++)
     {
-        matrix_4x4_copy((Mtxf *)((uintptr_t)matrices + i * sizeof(Mtxf)), &copy);
+        mtx4Copy((Mtxf *)((uintptr_t)matrices + i * sizeof(Mtxf)), &copy);
 
         copy.m[3][0] -= g_CurrentPlayer->previous_model_pos.x;
         copy.m[3][1] -= g_CurrentPlayer->previous_model_pos.y;
         copy.m[3][2] -= g_CurrentPlayer->previous_model_pos.z;
 
-        matrix_4x4_f32_to_s32(&copy, matrices + i);
+        mtxF2L(&copy, matrices + i);
     }
 }
 
@@ -11911,13 +11911,13 @@ void sub_GAME_7F08BEEC(Mtxf *matrices, s32 count)
 
     for (i = 0, j = 0; i < count; i++, j += sizeof(Mtxf))
     {
-        matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), (Mtxf *)((u32)matrices + j), &sp40);
+        mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), (Mtxf *)((u32)matrices + j), &sp40);
 
         sp40.m[3][0] -= g_CurrentPlayer->current_model_pos.f[0];
         sp40.m[3][1] -= g_CurrentPlayer->current_model_pos.f[1];
         sp40.m[3][2] -= g_CurrentPlayer->current_model_pos.f[2];
 
-        matrix_4x4_f32_to_s32(&sp40, matrices + i);
+        mtxF2L(&sp40, matrices + i);
     }
 }
 

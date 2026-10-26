@@ -3,6 +3,6 @@
 
 #include <ultra64.h>
 
-f32 atan2f(f32 y, f32 x);
+f32 mathAtan2(f32 y, f32 x);
 
 #endif

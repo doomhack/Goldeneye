@@ -814,9 +814,9 @@ Gfx *skyRender(Gfx *gdl)
         s32 i;
         s32 unused[3];
 
-        matrix_4x4_multiply(currentPlayerGetProjectionMatrixF(), camGetWorldToScreenMtxf(), &sp3cc);
+        mtx4Mult(currentPlayerGetProjectionMatrixF(), camGetWorldToScreenMtxf(), &sp3cc);
         guScaleF(dword_CODE_bss_80079E98.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
-        matrix_4x4_multiply(&sp3cc, &dword_CODE_bss_80079E98, &sp38c);
+        mtx4Mult(&sp3cc, &dword_CODE_bss_80079E98, &sp38c);
 
         for (i = 0; i < s1; i++)
         {
@@ -1295,9 +1295,9 @@ Gfx *skyRender(Gfx *gdl)
         s32 i;
         s32 stack[2];
 
-        matrix_4x4_multiply(currentPlayerGetProjectionMatrixF(), camGetWorldToScreenMtxf(), &sp1ec);
+        mtx4Mult(currentPlayerGetProjectionMatrixF(), camGetWorldToScreenMtxf(), &sp1ec);
         guScaleF(dword_CODE_bss_80079E98.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
-        matrix_4x4_multiply(&sp1ec, &dword_CODE_bss_80079E98, &sp1ac);
+        mtx4Mult(&sp1ec, &dword_CODE_bss_80079E98, &sp1ac);
 
         for (i = 0; i < s1; i++)
         {

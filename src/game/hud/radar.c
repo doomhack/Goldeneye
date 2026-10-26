@@ -132,7 +132,7 @@ Gfx *display_red_blue_on_radar(Gfx *DL)
                 temp_f20 = other_player_prop->pos.f[0] - player_prop->pos.f[0];
                 temp_f22 = other_player_prop->pos.f[2] - player_prop->pos.f[2];
                 
-                temp_f28 = ((atan2f(temp_f20, temp_f22) * 180.0f) / M_PI_F) + g_CurrentPlayer->vv_theta + 180.0f;
+                temp_f28 = ((mathAtan2(temp_f20, temp_f22) * 180.0f) / M_PI_F) + g_CurrentPlayer->vv_theta + 180.0f;
                 
                 temp_f24 = 16;
                 temp_f16 = 4000;

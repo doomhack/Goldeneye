@@ -109,7 +109,7 @@ s32 initResolveAnimGroupTable(struct weapon_firing_animation_table *animconfig)
         do
         {
             config->anim.anim = (struct ModelAnimation *)(((0, animoffset)) + ((s32)ptr_animation_table));
-            endframe = floorFloatToInt(config->unk04);
+            endframe = mathFloorToInt(config->unk04);
             angle16 = sub_GAME_7F0001F0(config->anim.anim, 0, endframe) & 0xffff;
             duration = config->unk04;
 

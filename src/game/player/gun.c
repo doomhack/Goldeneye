@@ -571,9 +571,9 @@ void sub_GAME_7F05C540(coord3d* pos)
 void sub_GAME_7F05C594(Mtxf* mtxf)
 {
     Mtxf sp18;
-    matrix_4x4_set_rotation_around_xyz(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot, &sp18);
-    matrix_4x4_multiply_in_place(mtxf, &sp18);
-    matrix_4x4_get_rotation_around_xyz(&sp18, &DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot);
+    mtx4LoadRotation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot, &sp18);
+    mtx4MultInPlace(mtxf, &sp18);
+    mtx4GetRotation(&sp18, &DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot);
 }
 
 
@@ -582,8 +582,8 @@ void sub_GAME_7F05C614(void)
     if (!cartridges_eject) { return; }
 
     g_CurrentPlayer->hands[0].field_92C = 1;
-    matrix_4x4_set_rotation_around_xyz(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
-    matrix_4x4_set_position(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
+    mtx4LoadRotation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
+    mtx4SetTranslation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
     cartridges_eject = 0;
 }
 
@@ -645,26 +645,26 @@ s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *m
 
     if (current[i].isFinalKey & 1)
     {
-        matrix_4x4_set_rotation_around_xyz(&current->rot, matrix);
-        matrix_4x4_set_position(&current->pos, matrix);
+        mtx4LoadRotation(&current->rot, matrix);
+        mtx4SetTranslation(&current->pos, matrix);
         return 0;
     }
 
     frac = time / current->duration;
     tangent = current->interpParam;
 
-    quaternion_set_rotation_around_xyzf(&current[-1].rot, &q0);
-    quaternion_set_rotation_around_xyzf(&current->rot, &q1);
-    quaternion_set_rotation_around_xyzf(&current[1].rot, &q2);
-    quaternion_set_rotation_around_xyzf(&current[2].rot, &q3);
+    quatFromAngles(&current[-1].rot, &q0);
+    quatFromAngles(&current->rot, &q1);
+    quatFromAngles(&current[1].rot, &q2);
+    quatFromAngles(&current[2].rot, &q3);
 
-    quaternion_ensure_shortest_path(&q1, &q2);
-    quaternion_ensure_shortest_path(&q2, &q3);
-    quaternion_ensure_shortest_path(&q1, &q0);
+    quatMakeShortestPath(&q1, &q2);
+    quatMakeShortestPath(&q2, &q3);
+    quatMakeShortestPath(&q1, &q0);
 
-    quaternion_7F05C2F0(&q0, &q1, &q2, &q3, frac, &qResult);
+    quatSpline(&q0, &q1, &q2, &q3, frac, &qResult);
 
-    coord3dCubicSplineInterp(&current[-1].pos, &current->pos, &current[1].pos, &current[2].pos, frac, tangent, &posResult);
+    interpCardinal3(&current[-1].pos, &current->pos, &current[1].pos, &current[2].pos, frac, tangent, &posResult);
 
     if (hand == GUNLEFT)
     {
@@ -673,8 +673,8 @@ s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *m
         qResult[1] = -qResult[1];
     }
 
-    quaternion_to_matrix(&qResult, matrix);
-    matrix_4x4_set_position(&posResult, matrix);
+    quatToMtx4(&qResult, matrix);
+    mtx4SetTranslation(&posResult, matrix);
 
     return 1;
 }
@@ -1605,7 +1605,7 @@ void gunInitProjectileObject(ObjectRecord *obj, coord3d *pos, StandTile *stan, M
     {
         chrpropActivate(temp_s1);
         chrpropEnable(temp_s1);
-        matrix_scalar_multiply(obj->model->scale, matrix);
+        mtx4ScaleRows012(obj->model->scale, matrix);
         objChangeShading(obj, pos, matrix, stan);
 
         // loadobjectmodel.c
@@ -1620,7 +1620,7 @@ void gunInitProjectileObject(ObjectRecord *obj, coord3d *pos, StandTile *stan, M
             temp_v0->flags |= 0x41;
             obj->projectile->ownerprop = owner;
             projectileSetSticky(temp_s1);
-            matrix_4x4_copy(arg5, &obj->projectile->mtx);
+            mtx4Copy(arg5, &obj->projectile->mtx);
             obj->projectile->speed.f[0] = velocity->f[0];
             obj->projectile->speed.f[1] = velocity->f[1];
             obj->projectile->speed.f[2] = velocity->f[2];
@@ -1746,7 +1746,7 @@ void generate_player_thrown_grenade(s32 hand)
     bondprevpos = getCurrentPlayerPrevPos();
     current_weapon = getCurrentPlayerWeaponId(hand);
 
-    sub_GAME_7F057C14(&throw_speed_vec, &spFC);
+    physRandomLaunch(&throw_speed_vec, &spFC);
     bullet_path_from_screen_center(&sp94, &base_speed_vec, hand);
     mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
@@ -1765,12 +1765,12 @@ void generate_player_thrown_grenade(s32 hand)
     spE0.f[1] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][1];
     spE0.f[2] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][2];
 
-    matrix_4x4_set_identity(&spA0_a);
-    matrix_4x4_copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
+    mtx4LoadIdentity(&spA0_a);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
     sp40_f.m[3][0] = 0.0f;
     sp40_f.m[3][1] = 0.0f;
     sp40_f.m[3][2] = 0.0f;
-    matrix_4x4_multiply_in_place(&sp40_f, &spA0_a);
+    mtx4MultInPlace(&sp40_f, &spA0_a);
 
     wor = create_new_item_instance_of_model(PROP_CHRGRENADE, current_weapon);
 
@@ -1833,7 +1833,7 @@ void generate_player_thrown_knife(s32 hand)
     player_prop = getCurrentPlayerProp();
     bondprevpos = getCurrentPlayerPrevPos();
 
-    sub_GAME_7F057C14(&throw_speed_vec, &spFC);
+    physRandomLaunch(&throw_speed_vec, &spFC);
     bullet_path_from_screen_center(&sp94, &base_speed_vec, hand);
     mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
@@ -1852,15 +1852,15 @@ void generate_player_thrown_knife(s32 hand)
     spE0.f[1] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][1];
     spE0.f[2] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][2];
 
-    matrix_4x4_set_rotation_around_z(4.712389f, &spA0_a);
-    matrix_4x4_set_rotation_around_x(M_PI_F, &sp40_f);
-    matrix_4x4_multiply_in_place(&sp40_f, &spA0_a);
-    matrix_4x4_copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
+    mtx4LoadZRotation(4.712389f, &spA0_a);
+    mtx4LoadXRotation(M_PI_F, &sp40_f);
+    mtx4MultInPlace(&sp40_f, &spA0_a);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
 
     sp40_f.m[3][0] = 0.0f;
     sp40_f.m[3][1] = 0.0f;
     sp40_f.m[3][2] = 0.0f;
-    matrix_4x4_multiply_in_place(&sp40_f, &spA0_a);
+    mtx4MultInPlace(&sp40_f, &spA0_a);
 
     guRotateF(&spFC, 360.0f / ((randomGetNext() * (0.5f / (f32)INT_MAX)) + 12.1f), spA0_a.m[1][0], spA0_a.m[1][1], spA0_a.m[1][2]);
 
@@ -1932,7 +1932,7 @@ void generate_player_thrown_object(s32 hand)
         base_velocity = 6.6666665f;
     }
 
-    sub_GAME_7F057C14(&throw_speed_vec, &unk_mtxf);
+    physRandomLaunch(&throw_speed_vec, &unk_mtxf);
     bullet_path_from_screen_center(&sp94, &base_speed_vec, hand);
     mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
@@ -1951,12 +1951,12 @@ void generate_player_thrown_object(s32 hand)
     spE0.f[1] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][1];
     spE0.f[2] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][2];
 
-    matrix_4x4_set_identity(&spA0_a);
-    matrix_4x4_copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
+    mtx4LoadIdentity(&spA0_a);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
     sp40_f.m[3][0] = 0.0f;
     sp40_f.m[3][1] = 0.0f;
     sp40_f.m[3][2] = 0.0f;
-    matrix_4x4_multiply_in_place(&sp40_f, &spA0_a);
+    mtx4MultInPlace(&sp40_f, &spA0_a);
 
     if (current_weapon == ITEM_GOLDENEYEKEY)
     {
@@ -2114,7 +2114,7 @@ void gunSpawnGLGrenade(s32 handnum)
     playerprop = getCurrentPlayerProp();
     prevplayerpos = getCurrentPlayerPrevPos();
 
-    matrix_4x4_set_identity(&identitymtx);
+    mtx4LoadIdentity(&identitymtx);
     bullet_path_from_screen_center(&aimpos, &aimdir, handnum);
     mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &aimdir);
 
@@ -2129,7 +2129,7 @@ void gunSpawnGLGrenade(s32 handnum)
         launchvel.z += (playerprop->pos.z - prevplayerpos->z) / g_GlobalTimerDelta;
     }
 
-    matrix_4x4_copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &launchmtx);
+    mtx4Copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &launchmtx);
 
     launchmtx.m[3][0] = 0.0f;
     launchmtx.m[3][1] = 0.0f;
@@ -2187,23 +2187,23 @@ void gunUpdateAttachedRocket(s32 handIndex)
     prop = getCurrentPlayerProp();
     rocketModel = attachedRocket->model;
 
-    matrix_4x4_copy(&entry->throw_item_pos_related, &worldMtx);
+    mtx4Copy(&entry->throw_item_pos_related, &worldMtx);
 
     worldMtx.m[3][0] = 0.0f;
     worldMtx.m[3][1] = 0.0f;
     worldMtx.m[3][2] = 0.0f;
 
-    matrix_scalar_multiply(attachedRocket->model->scale, (f32 *)&worldMtx);
+    mtx4ScaleRows012(attachedRocket->model->scale, (f32 *)&worldMtx);
 
     objChangeShading(attachedRocket, &entry->field_B58, &worldMtx, prop->stan);
     chrobjCollisionRelated(attachedRocket);
 
     rocketModel->render_pos = dynAllocate((s32)rocketModel->obj->numMatrices << 6);
 
-    matrix_4x4_copy(&attachedRocket->transform, &worldMtx);
-    matrix_4x4_set_position((Mtxf *)&attachedRocket->position, &worldMtx);
+    mtx4Copy(&attachedRocket->transform, &worldMtx);
+    mtx4SetTranslation((Mtxf *)&attachedRocket->position, &worldMtx);
 
-    matrix_4x4_multiply_homogeneous(camGetWorldToScreenMtxf(), &worldMtx, rocketModel->render_pos);
+    mtx4MultAffine(camGetWorldToScreenMtxf(), &worldMtx, rocketModel->render_pos);
     modelUpdateRelationsQuick(rocketModel, rocketModel->obj->RootNode);
 
     attachmentChild->flags1 |= 2;
@@ -2284,7 +2284,7 @@ void gunFireTankShell(s32 handnum)
     prevplayerpos = getCurrentPlayerPrevPos();
     weaponid = getCurrentPlayerWeaponId(handnum);
 
-    matrix_4x4_set_identity(&identitymtx);
+    mtx4LoadIdentity(&identitymtx);
 
     if (weaponid == ITEM_TANKSHELLS) 
     {
@@ -2359,7 +2359,7 @@ void gunFireTankShell(s32 handnum)
         }
     }
 
-    matrix_4x4_copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &shellmtx);
+    mtx4Copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &shellmtx);
 
     shellmtx.m[3][0] = 0.0f;
     shellmtx.m[3][1] = 0.0f;

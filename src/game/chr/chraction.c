@@ -271,7 +271,7 @@ void expand_09_characters(s32 stageid, GuardRecord *arg1, s32 arg2)
 
         if (sp38 != 0)
         {
-            sp3C = atan2f(pad->look.f[0], pad->look.f[2]);
+            sp3C = mathAtan2(pad->look.f[0], pad->look.f[2]);
             temp_v0_4 = chrAllocate(sp38, &sp48, sp3C, sp54, ailistFindById(arg1->AIListID));
 
             if (temp_v0_4 != 0)
@@ -2779,7 +2779,7 @@ s32 chrlvExplosionDamage(ChrRecord *self, coord3d *arg1, f32 damage, s32 arg3)
 
         subroty = getsubroty(self_model);
 
-        atan = atan2f(self_prop->pos.f[0] - arg1->f[0], self_prop->pos.f[2] - arg1->f[2]);
+        atan = mathAtan2(self_prop->pos.f[0] - arg1->f[0], self_prop->pos.f[2] - arg1->f[2]);
 
         sp2C.f[0] = self_prop->pos.f[0] - arg1->f[0];
         sp2C.f[1] = self_prop->pos.f[1] - arg1->f[1];
@@ -3027,7 +3027,7 @@ void chrlvSetGoposSegDistTotal(ChrRecord *self, struct waydata *arg1, coord3d *a
     dx = arg2->f[0] - prop->pos.f[0];
     dz = arg2->f[2] - prop->pos.f[2];
 
-    sp18 = atan2f(dx, dz);
+    sp18 = mathAtan2(dx, dz);
 
     arg1->mode = 6;
     arg1->segdistdone = 0.0f;
@@ -3493,7 +3493,7 @@ void chrlvTravelTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord
 
                         setsubroty(
                             self->model,
-                            atan2f(self_prop->pos.f[0] - pad->pos.f[0], self_prop->pos.f[2] - pad->pos.f[2]));
+                            mathAtan2(self_prop->pos.f[0] - pad->pos.f[0], self_prop->pos.f[2] - pad->pos.f[2]));
                     }
 
                     chrlvKneelingAnimationRelated7F023E48(self);
@@ -4052,7 +4052,7 @@ s32 chrlvMaybeSameRoom(ChrRecord *self, coord3d *arg1, StandTile *arg2)
     f32 df;
 
     roty = getsubroty(self->model);
-    atan = atan2f(arg1->f[0] - self->prop->pos.f[0], arg1->f[2] - self->prop->pos.f[2]);
+    atan = mathAtan2(arg1->f[0] - self->prop->pos.f[0], arg1->f[2] - self->prop->pos.f[2]);
     df = atan - roty;
 
     if (atan < roty)
@@ -4316,7 +4316,7 @@ bool chrCheckTargetInSight(ChrRecord *self)
     vec.y                = bondprop->pos.y - myprop->pos.y;
     vec.x                = bondprop->pos.z - myprop->pos.z;
 
-    atn = atan2f(vec.z, vec.x);
+    atn = mathAtan2(vec.z, vec.x);
 
     pass                = FALSE;
     rrr                 = atn - myRadDirection;
@@ -4556,7 +4556,7 @@ bool actor_steps_sideways(ChrRecord *self)
         myprop                = self->prop;
         bondprop              = getCurrentPlayerProp();
         myRadDirection        = getsubroty(self->model);
-        myRadDirectionToBond  = atan2f(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
+        myRadDirectionToBond  = mathAtan2(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
         radChangeToFaceBond   = myRadDirectionToBond - myRadDirection;
         myNormalizedRadToBond = radChangeToFaceBond;
 
@@ -4612,7 +4612,7 @@ bool actor_hops_sideways(ChrRecord *self)
         myprop                = self->prop;
         bondprop              = getCurrentPlayerProp();
         myRadDirection        = getsubroty(self->model);
-        myRadDirectionToBond  = atan2f(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
+        myRadDirectionToBond  = mathAtan2(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
         radChangeToFaceBond   = myRadDirectionToBond - myRadDirection;
         myNormalizedRadToBond = radChangeToFaceBond;
 
@@ -5983,7 +5983,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
         if ((attack_type & 0x100) == 0)
         {
             f32 sr = sqrtf((dx * dx) + (dz * dz));
-            sp164 = atan2f(dy, sr);
+            sp164 = mathAtan2(dy, sr);
 
             if (sp164 >= M_PI_F)
             {
@@ -6033,9 +6033,9 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
                 {
                     temp_a0 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[0], 0);
                     spB8 = weapon_prop_model->obj->Switches[0]->Data;
-                    sub_GAME_7F058E78(temp_a0, &spBC);
+                    mtxL2F(temp_a0, &spBC);
 
-                    matrix_4x4_multiply_homogeneous_in_place(currentPlayerGetMatrix10EC(), &spBC);
+                    mtx4MultAffineInPlace(currentPlayerGetMatrix10EC(), &spBC);
 
                     spAC.f[0] = spB8[0];
                     spAC.f[1] = spB8[1];
@@ -6052,8 +6052,8 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
                 else if (weapon_prop_model->obj->Switches[1])
                 {
                     temp_a0 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[1], 0);
-                    sub_GAME_7F058E78(temp_a0, &sp68);
-                    matrix_4x4_multiply_homogeneous_in_place(currentPlayerGetMatrix10EC(), &sp68);
+                    mtxL2F(temp_a0, &sp68);
+                    mtx4MultAffineInPlace(currentPlayerGetMatrix10EC(), &sp68);
                     sp104.f[0] = sp68.m[3][0];
                     sp104.f[1] = sp68.m[3][1];
                     sp104.f[2] = sp68.m[3][2];
@@ -6075,7 +6075,7 @@ s32 chrlvUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_ta
                 }
             }
 
-            t1 = atan2f(dx, dz);
+            t1 = mathAtan2(dx, dz);
 
             calc_aimendsideback = t1 - subroty;
             if (t1 < subroty)
@@ -6399,7 +6399,7 @@ void chrlvUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item
     dy = player_prop->pos.f[1] - self_prop->pos.f[1];
     dz = player_prop->pos.f[2] - self_prop->pos.f[2];
 
-    atan = atan2f(dx, dz);
+    atan = mathAtan2(dx, dz);
     subroty = chrlvGetSubrotySideback(self);
     phi_f2 = atan - subroty;
     dxdydz_square = (dx * dx) + (dy * dy) + (dz * dz);
@@ -6529,7 +6529,7 @@ s32 sub_GAME_7F02D630(ChrRecord *self, GUNHAND hand, coord3d *arg2)
                 arg2->f[1] = spB8[1];
                 arg2->f[2] = spB8[2];
 
-                matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), temp_a0, &sp74);
+                mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), temp_a0, &sp74);
                 mtx4TransformVecInPlace(&sp74, arg2);
 
                 ret = 1;
@@ -6537,7 +6537,7 @@ s32 sub_GAME_7F02D630(ChrRecord *self, GUNHAND hand, coord3d *arg2)
             else if (weapon_prop_model->obj->Switches[1])
             {
                 temp_a0_2 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[1], 0);
-                matrix_4x4_multiply_homogeneous(currentPlayerGetViewToWorldMtxf(), temp_a0_2, &sp68);
+                mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), temp_a0_2, &sp68);
 
                 arg2->f[0] = sp68.m[3][0];
                 arg2->f[1] = sp68.m[3][1];
@@ -6727,10 +6727,10 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
                             sp208 = (struct WeaponObjRecord *)create_new_item_instance_of_model(PROP_CHRROCKET, 0x56);
                             if (sp208 != NULL)
                             {
-                                matrix_4x4_set_identity(&sp1C8);
-                                matrix_4x4_set_rotation_around_x(sp24C, &sp16C);
-                                matrix_4x4_set_rotation_around_y(subroty, &sp12C);
-                                matrix_4x4_multiply_homogeneous_in_place(&sp12C, &sp16C);
+                                mtx4LoadIdentity(&sp1C8);
+                                mtx4LoadXRotation(sp24C, &sp16C);
+                                mtx4LoadYRotation(subroty, &sp12C);
+                                mtx4MultAffineInPlace(&sp12C, &sp16C);
 
                                 sp1AC.f[0] = sp220.f[0] * 1.111111f;
                                 sp1AC.f[1] = sp220.f[1] * 1.111111f;
@@ -6781,13 +6781,13 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
                             sp128 = (struct WeaponObjRecord *)create_new_item_instance_of_model(PROP_CHRGRENADEROUND, 0x57);
                             if (sp128 != NULL)
                             {
-                                matrix_4x4_set_identity(&spE8);
+                                mtx4LoadIdentity(&spE8);
                                 spDC.f[0] = sp220.f[0] * 33.333332f;
                                 spDC.f[1] = sp220.f[1] * 33.333332f;
                                 spDC.f[2] = sp220.f[2] * 33.333332f;
-                                matrix_4x4_set_rotation_around_x(sp24C, &sp9C);
-                                matrix_4x4_set_rotation_around_y(subroty, &sp5C);
-                                matrix_4x4_multiply_homogeneous_in_place(&sp5C, &sp9C);
+                                mtx4LoadXRotation(sp24C, &sp9C);
+                                mtx4LoadYRotation(subroty, &sp5C);
+                                mtx4MultAffineInPlace(&sp5C, &sp9C);
                                 sp128->timer = CHRLV_DEFAULT_TIMER;
                                 gunInitProjectileObject((ObjectRecord *) sp128, &sp240, sp238, &sp9C, &spDC, &spE8, self_prop);
 
@@ -7751,7 +7751,7 @@ s32 chrlvApplySpeed(ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr)
     dx = arg1->f[0] - self_prop->pos.f[0];
     dz = arg1->f[2] - self_prop->pos.f[2];
 
-    maxFrac = atan2f(dx, dz);
+    maxFrac = mathAtan2(dx, dz);
     openPosition = getsubroty(self_model);
 
     sp24 = 0;
@@ -8731,7 +8731,7 @@ s32 sub_GAME_7F03130C(
     }
     else
     {
-        phi_f12 = acosf(arg4 * norm);
+        phi_f12 = mathAcos(arg4 * norm);
     }
 
     if ((arg2 == 0) && (phi_f12 != 0.0f))
@@ -8923,9 +8923,9 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
         {
             spe0 = self->chrwidth * 1.2f * 1.05f;
 
-            atan_pos =       atan2f( arg3->pos.f[0] - self_prop->pos.f[0],  arg3->pos.f[2] - self_prop->pos.f[2]);
-            atan_pos2_a = atan_pos - atan2f(arg3->pos2.f[0] - self_prop->pos.f[0], arg3->pos2.f[2] - self_prop->pos.f[2]);
-            atan_pos3_a = atan_pos - atan2f(arg3->pos3.f[0] - self_prop->pos.f[0], arg3->pos3.f[2] - self_prop->pos.f[2]);
+            atan_pos =       mathAtan2( arg3->pos.f[0] - self_prop->pos.f[0],  arg3->pos.f[2] - self_prop->pos.f[2]);
+            atan_pos2_a = atan_pos - mathAtan2(arg3->pos2.f[0] - self_prop->pos.f[0], arg3->pos2.f[2] - self_prop->pos.f[2]);
+            atan_pos3_a = atan_pos - mathAtan2(arg3->pos3.f[0] - self_prop->pos.f[0], arg3->pos3.f[2] - self_prop->pos.f[2]);
 
             if (atan_pos2_a < 0.0f)
             {
@@ -8966,8 +8966,8 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
                 }
                 else
                 {
-                    atan_pos2_b = atan_pos - atan2f(arg3->pos2.f[0] - self_prop->pos.f[0], arg3->pos2.f[2] - self_prop->pos.f[2]);
-                    atan_pos3_b = atan_pos - atan2f(spF4.f[0] - self_prop->pos.f[0], spF4.f[2] - self_prop->pos.f[2]);
+                    atan_pos2_b = atan_pos - mathAtan2(arg3->pos2.f[0] - self_prop->pos.f[0], arg3->pos2.f[2] - self_prop->pos.f[2]);
+                    atan_pos3_b = atan_pos - mathAtan2(spF4.f[0] - self_prop->pos.f[0], spF4.f[2] - self_prop->pos.f[2]);
 
                     if (atan_pos2_b < 0.0f)
                     {
@@ -9011,8 +9011,8 @@ void chrlvTravelTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct way
                 }
                 else
                 {
-                    atan_pos2_c = atan_pos - atan2f(arg3->pos3.f[0] - self_prop->pos.f[0], arg3->pos3.f[2] - self_prop->pos.f[2]);
-                    atan_pos3_c = atan_pos - atan2f(spF4.f[0] - self_prop->pos.f[0], spF4.f[2] - self_prop->pos.f[2]);
+                    atan_pos2_c = atan_pos - mathAtan2(arg3->pos3.f[0] - self_prop->pos.f[0], arg3->pos3.f[2] - self_prop->pos.f[2]);
+                    atan_pos3_c = atan_pos - mathAtan2(spF4.f[0] - self_prop->pos.f[0], spF4.f[2] - self_prop->pos.f[2]);
 
                     if (atan_pos2_c < 0.0f)
                     {
@@ -9785,7 +9785,7 @@ f32 get_distance_actor_to_position(ChrRecord *self, coord3d *pos)
 
     radMyHeading = getsubroty(self->model);
     myprop       = self->prop;
-    anglebetween = atan2f(pos->x - myprop->pos.x, pos->z - myprop->pos.z);
+    anglebetween = mathAtan2(pos->x - myprop->pos.x, pos->z - myprop->pos.z);
     radToPos     = anglebetween - radMyHeading;
 
     if (anglebetween < radMyHeading)
@@ -9869,7 +9869,7 @@ f32 chrGetAngleFromBond(ChrRecord *self)
     f32 radBondHeading   = bondviewGetPlayerYawRadians();
     PropRecord *myprop   = self->prop;
     PropRecord *bondprop = getCurrentPlayerProp();
-    f32 anglebetween     = atan2f(myprop->pos.x - bondprop->pos.x, myprop->pos.z - bondprop->pos.z);
+    f32 anglebetween     = mathAtan2(myprop->pos.x - bondprop->pos.x, myprop->pos.z - bondprop->pos.z);
     f32 radFromBond      = anglebetween - radBondHeading;
 
     if (anglebetween < radBondHeading)
@@ -10518,7 +10518,7 @@ s32 sub_GAME_7F033780(waypoint *arg0, coord3d *arg1, f32 angle)
     dx = pad->pos.f[0] - arg1->f[0];
     dz = pad->pos.f[2] - arg1->f[2];
 
-    temp_f0 = atan2f(dx, dz);
+    temp_f0 = mathAtan2(dx, dz);
     ff = angle - temp_f0;
 
     if (angle < temp_f0)
@@ -10984,7 +10984,7 @@ PropRecord *chrSpawnAtPad(ChrRecord *self, s32 bodynum, s32 headnum, s32 padid, 
     #ifdef ENABLE_LOG
     osSyncPrintf("%s%s new char x = %f, y = %f, z = %f \n", "", "", pad->pos.x, pad->pos.y, pad->pos.z);
     #endif
-    return chrSpawnAtCoord(bodynum, headnum, &pad->pos, pad->stan, atan2f(pad->look.f[0], pad->look.f[2]), ailist, flags);
+    return chrSpawnAtCoord(bodynum, headnum, &pad->pos, pad->stan, mathAtan2(pad->look.f[0], pad->look.f[2]), ailist, flags);
 }
 
 

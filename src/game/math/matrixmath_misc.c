@@ -8,7 +8,7 @@
  * 
  * Standard linear interpolation between two 3D points.
  */
-void vec3Lerp(vec3d *x, vec3d *y, f32 scaler, vec3d *result)
+void interpLerp3(vec3d *x, vec3d *y, f32 scaler, vec3d *result)
 {
     result->x = ((y->x - x->x) * scaler) + x->x;
     result->y = ((y->y - x->y) * scaler) + x->y;
@@ -23,7 +23,7 @@ void vec3Lerp(vec3d *x, vec3d *y, f32 scaler, vec3d *result)
  * 
  * Unused.
  */ 
-f32 scalarCatmullRomInterp(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4)
+f32 interpCatmullRom(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4)
 {
     f32 cube;
     f32 square;
@@ -59,7 +59,7 @@ f32 scalarCatmullRomInterp(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4)
  * Specific to GoldenEye, every few seconds the game picks a small randomzied offset to slightly change
  * where the first person weapon view model points. This function smooths the weapon's drift from one target vector to the next.
  */
-void coord3dCatmullRomInterp(coord3d *p0, coord3d *p1, coord3d *p2, coord3d *p3, f32 fraction, coord3d *result)
+void interpCatmullRom3(coord3d *p0, coord3d *p1, coord3d *p2, coord3d *p3, f32 fraction, coord3d *result)
 {
     f32 stack;
     f32 mult0;
@@ -96,7 +96,7 @@ void coord3dCatmullRomInterp(coord3d *p0, coord3d *p1, coord3d *p2, coord3d *p3,
  * 
  * This function is used to move the camera smoothly between waypoints in the intro camera swirl.
  */
-void coord3dCubicSplineInterp(coord3d *prev, coord3d *start, coord3d *end, coord3d *next, f32 fraction, f32 tangentScale, coord3d *result)
+void interpCardinal3(coord3d *prev, coord3d *start, coord3d *end, coord3d *next, f32 fraction, f32 tangentScale, coord3d *result)
 {
     f32 square;
     f32 scale;
@@ -125,7 +125,7 @@ void coord3dCubicSplineInterp(coord3d *prev, coord3d *start, coord3d *end, coord
  * 
  * Unused.
  */ 
-f32 scalarCubicHermiteInterp(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4)
+f32 interpHermite(f32 arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4)
 {
     /*
     Quick substition (so this may be wrong), but let x=arg4. Then

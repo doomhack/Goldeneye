@@ -2237,11 +2237,11 @@ Gfx* draw_current_hand_item_and_ammo(Gfx* gdl) {
 
     gSPMatrix(gdl++, osVirtualToPhysical(sp114), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
 
-    matrix_4x4_set_rotation_around_y((roty * 6.2831855f) / 360.0f, &matrix2);
-    matrix_4x4_set_rotation_around_z(6.2831855f - ((rotx * 6.2831855f) / 360.0f), &matrix);
-    matrix_4x4_multiply_in_place(&matrix, &matrix2);
-    matrix_4x4_set_lookat_target(&matrix, sp64, sp6C, sp68, 0.0f, sp6C, sp68, 0.0f, 1.0f, 0.0f);
-    matrix_4x4_multiply_in_place(&matrix, &matrix2);
+    mtx4LoadYRotation((roty * 6.2831855f) / 360.0f, &matrix2);
+    mtx4LoadZRotation(6.2831855f - ((rotx * 6.2831855f) / 360.0f), &matrix);
+    mtx4MultInPlace(&matrix, &matrix2);
+    mtx4LoadLookAt(&matrix, sp64, sp6C, sp68, 0.0f, sp6C, sp68, 0.0f, 1.0f, 0.0f);
+    mtx4MultInPlace(&matrix, &matrix2);
 
     gdl = sub_GAME_7F0A6EE8(gdl);
 
@@ -2422,16 +2422,16 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
 
         gSPMatrix(gdl++, osVirtualToPhysical(sp924), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
-        matrix_4x4_set_rotation_around_y((sp87C * M_TAU_F) / 360.0f, &sp8E0);
-        matrix_4x4_set_rotation_around_z(M_TAU_F - ((sp880 * M_TAU_F) / 360.0f), &sp8A0);
-        matrix_4x4_multiply_in_place(&sp8A0, &sp8E0);
+        mtx4LoadYRotation((sp87C * M_TAU_F) / 360.0f, &sp8E0);
+        mtx4LoadZRotation(M_TAU_F - ((sp880 * M_TAU_F) / 360.0f), &sp8A0);
+        mtx4MultInPlace(&sp8A0, &sp8E0);
 
         temp_cos = cosf(D_80040B14) * sp888;
         temp_sin = sinf(D_80040B14) * sp888;
 
-        matrix_4x4_set_lookat_target(&sp8A0, temp_cos, sp88C, temp_sin + sp890, 0.0f, sp88C, sp890, 0.0f, 1.0f, 0.0f);
+        mtx4LoadLookAt(&sp8A0, temp_cos, sp88C, temp_sin + sp890, 0.0f, sp88C, sp890, 0.0f, 1.0f, 0.0f);
 
-        matrix_4x4_multiply_in_place(&sp8A0, &sp8E0);
+        mtx4MultInPlace(&sp8A0, &sp8E0);
 
         gdl = set_enviro_fog_for_items_in_solo_watch_menu(sub_GAME_7F0A6EE8(gdl), sp884, &sp8E0, 0x40, 0xA0FFA03C);
 
@@ -3431,12 +3431,12 @@ Gfx *draw_watch_controller(Gfx *gdl)
     table2 = g_2ContRightButtonPositions[0];
 
     sub_GAME_7F0A9684(0, &D_80040B2C, &g_WatchControllerSpinSpeed, &g_WatchControllerSpinAngle);
-    matrix_4x4_set_identity(&identity);
+    mtx4LoadIdentity(&identity);
 
     g_WatchControllerSpinAngle += (g_WatchControllerSpinSpeed * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
     g_WatchControllerSpinAngle = watchWrapAroundPI(g_WatchControllerSpinAngle);
 
-    matrix_4x4_set_rotation_around_z(g_WatchControllerSpinAngle, &zrotmtx);
+    mtx4LoadZRotation(g_WatchControllerSpinAngle, &zrotmtx);
 
     if (watch_item_is_actively_selected && (controller_options_index == CONTROLLER_OPTIONS_INDEX_INPUTS))
     {
@@ -3447,11 +3447,11 @@ Gfx *draw_watch_controller(Gfx *gdl)
         g_WatchControllerPitch = sub_GAME_7F0A95C4(g_WatchControllerPitch, 0.0f, 4.0f);
     }
 
-    matrix_4x4_set_rotation_around_x((-g_WatchControllerPitch) - 0.78539819f, &xrotmtx);
-    matrix_4x4_multiply(&identity, &zrotmtx, &tmpmtx1);
-    matrix_4x4_multiply(&tmpmtx1, &xrotmtx, &tmpmtx2);
-    matrix_4x4_set_identity_and_position(&pos, &tmpmtx1);
-    matrix_4x4_multiply(&tmpmtx1, &tmpmtx2, &modelmtx);
+    mtx4LoadXRotation((-g_WatchControllerPitch) - 0.78539819f, &xrotmtx);
+    mtx4Mult(&identity, &zrotmtx, &tmpmtx1);
+    mtx4Mult(&tmpmtx1, &xrotmtx, &tmpmtx2);
+    mtx4LoadTranslation(&pos, &tmpmtx1);
+    mtx4Mult(&tmpmtx1, &tmpmtx2, &modelmtx);
 
     if (controllerCheckDualControllerTypesAllowed())
     {
@@ -3461,15 +3461,15 @@ Gfx *draw_watch_controller(Gfx *gdl)
 
         if (1);
 
-        matrix_4x4_set_lookat_target(&lookat1, eye, 2500.0f, 32.0f, eye, 0.0f, 32.0f, 0.0f, 0.0f, -1.0f);
+        mtx4LoadLookAt(&lookat1, eye, 2500.0f, 32.0f, eye, 0.0f, 32.0f, 0.0f, 0.0f, -1.0f);
     }
     else
     {
         watchTable = &table0;
-        matrix_4x4_set_lookat_target(&lookat1, -5.0f, 2000.0f, -168.0f, -5.0f, 0.0f, -168.0f, 0.0f, 0.0f, -1.0f);
+        mtx4LoadLookAt(&lookat1, -5.0f, 2000.0f, -168.0f, -5.0f, 0.0f, -168.0f, 0.0f, 0.0f, -1.0f);
     }
 
-    matrix_4x4_multiply(&lookat1, &modelmtx, &finalmtx);
+    mtx4Mult(&lookat1, &modelmtx, &finalmtx);
 
     guPerspective(perspmtx, &perspNorm, WATCH_PERSPECTIVE_FOVY, WATCH_PERSPECTIVE_ASPECT, 1000.0f, 3000.0f, 1.0f);
 
@@ -3491,12 +3491,12 @@ Gfx *draw_watch_controller(Gfx *gdl)
     if (controllerCheckDualControllerTypesAllowed())
     {
         sub_GAME_7F0A9684(1, &D_80040B3C, &D_80040B38, &D_80040B34);
-        matrix_4x4_set_identity(&identity);
+        mtx4LoadIdentity(&identity);
 
         D_80040B34 += (D_80040B38 * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
         D_80040B34 = watchWrapAroundPI(D_80040B34);
 
-        matrix_4x4_set_rotation_around_z(D_80040B34, &zrotmtx);
+        mtx4LoadZRotation(D_80040B34, &zrotmtx);
 
         if (watch_item_is_actively_selected && (controller_options_index == CONTROLLER_OPTIONS_INDEX_INPUTS))
         {
@@ -3507,13 +3507,13 @@ Gfx *draw_watch_controller(Gfx *gdl)
             D_80040B30 = sub_GAME_7F0A95C4(D_80040B30, 0.0f, 4.0f);
         }
 
-        matrix_4x4_set_rotation_around_x((-D_80040B30) - 0.78539819f, &xrotmtx);
-        matrix_4x4_multiply(&identity, &zrotmtx, &tmpmtx1);
-        matrix_4x4_multiply(&tmpmtx1, &xrotmtx, &tmpmtx2);
-        matrix_4x4_set_identity_and_position(&pos, &tmpmtx1);
-        matrix_4x4_multiply(&tmpmtx1, &tmpmtx2, &modelmtx);
-        matrix_4x4_set_lookat_target(&lookat2, -505.0f, 2500.0f, 32.0f, -505.0f, 0.0f, 32.0f, 0.0f, 0.0f, -1.0f);
-        matrix_4x4_multiply(&lookat2, &modelmtx, &finalmtx);
+        mtx4LoadXRotation((-D_80040B30) - 0.78539819f, &xrotmtx);
+        mtx4Mult(&identity, &zrotmtx, &tmpmtx1);
+        mtx4Mult(&tmpmtx1, &xrotmtx, &tmpmtx2);
+        mtx4LoadTranslation(&pos, &tmpmtx1);
+        mtx4Mult(&tmpmtx1, &tmpmtx2, &modelmtx);
+        mtx4LoadLookAt(&lookat2, -505.0f, 2500.0f, 32.0f, -505.0f, 0.0f, 32.0f, 0.0f, 0.0f, -1.0f);
+        mtx4Mult(&lookat2, &modelmtx, &finalmtx);
 
         guPerspective(perspmtx, &perspNorm, WATCH_PERSPECTIVE_FOVY, WATCH_PERSPECTIVE_ASPECT, 1000.0f, 3000.0f, 1.0f);
 

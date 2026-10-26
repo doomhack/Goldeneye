@@ -3,7 +3,7 @@
 
 #include <ultra64.h>
 
-f32 floorFloat(f32 arg0);
-s32 floorFloatToInt(f32 arg0);
+f32 mathFloor(f32 arg0);
+s32 mathFloorToInt(f32 arg0);
 
 #endif

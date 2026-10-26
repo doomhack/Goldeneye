@@ -4,7 +4,7 @@
 
 #define HALF2RAD(x) (x * (M_PI_F / 32768.0f))
 
-void quaternion_set_rotation_around_xyz(vec3u angles, quatf q)
+void quatFromAnglesU16(vec3u angles, quatf q)
 {
     f32 cos_x = cosf(HALF2RAD(angles[0]) * 0.5f);
     f32 sin_x = sinf(HALF2RAD(angles[0]) * 0.5f);
@@ -22,7 +22,7 @@ void quaternion_set_rotation_around_xyz(vec3u angles, quatf q)
     q[3] = ((cos_x_cos_y * sin_z) - (sin_x_sin_y * cos_z));
 }
 
-void quaternion_set_rotation_around_xyzf(vec3f angles, quatf q)
+void quatFromAngles(vec3f angles, quatf q)
 {
     f32 cos_x = cosf(angles[0] * 0.5f);
     f32 sin_x = sinf(angles[0] * 0.5f);
@@ -40,7 +40,7 @@ void quaternion_set_rotation_around_xyzf(vec3f angles, quatf q)
     q[3] = (cos_x_cos_y * sin_z) - (sin_x_sin_y * cos_z);
 }
 
-void quaternion_set_rotation_around_x(f32 angle, quatf q)
+void quatFromXRotation(f32 angle, quatf q)
 {
     q[0] = cosf(angle * 0.5f);
     q[1] = sinf(angle * 0.5f);
@@ -48,7 +48,7 @@ void quaternion_set_rotation_around_x(f32 angle, quatf q)
     q[3] = 0.0f;
 }
 
-void quaternion_set_rotation_around_y(f32 angle, quatf q)
+void quatFromYRotation(f32 angle, quatf q)
 {
     q[0] = cosf(angle * 0.5f);
     q[1] = 0.0f;
@@ -56,7 +56,7 @@ void quaternion_set_rotation_around_y(f32 angle, quatf q)
     q[3] = 0.0f;
 }
 
-void quaternion_set_rotation_around_z(f32 angle, quatf q)
+void quatFromZRotation(f32 angle, quatf q)
 {
     q[0] = cosf(angle * 0.5f);
     q[1] = 0.0f;
@@ -64,7 +64,7 @@ void quaternion_set_rotation_around_z(f32 angle, quatf q)
     q[3] = sinf(angle * 0.5f);
 }
 
-void quaternion_to_matrix(quatf q, mat44f matrix)
+void quatToMtx4(quatf q, mat44f matrix)
 {
     f32 temp_f6 = 2.0f / ((q[0] * q[0]) + (q[1] * q[1]) + (q[2] * q[2]) +  (q[3] * q[3]));
     f32 temp_f18 = q[1] * temp_f6;
@@ -97,7 +97,7 @@ void quaternion_to_matrix(quatf q, mat44f matrix)
     matrix[3][3] = 1.0f;
 }
 
-void quaternion_from_matrix(mat44f arg0, quatf arg1)
+void quatFromMtx4(mat44f arg0, quatf arg1)
 {
     f32 var1;
     f32 var2;
@@ -132,9 +132,9 @@ void quaternion_from_matrix(mat44f arg0, quatf arg1)
     }
 }
 
-void quaternion_to_transform_matrix(vec3f position, quatf rotation, mat44f matrix)
+void quatToMtx4WithTranslation(vec3f position, quatf rotation, mat44f matrix)
 {
-    quaternion_to_matrix(rotation, matrix);
+    quatToMtx4(rotation, matrix);
     matrix[3][0] = position[0];
     matrix[3][1] = position[1];
     matrix[3][2] = position[2];
@@ -142,7 +142,7 @@ void quaternion_to_transform_matrix(vec3f position, quatf rotation, mat44f matri
 
 #define EPSILON 0.00001001f
 
-void quaternion_slerp(quatf q1, quatf q2, f32 t, quatf result)
+void quatSlerp(quatf q1, quatf q2, f32 t, quatf result)
 {
     f32 dot = (q1[0] * q2[0]) + (q1[1] * q2[1]) + (q1[2] * q2[2]) + (q1[3] * q2[3]);
     f32 theta;
@@ -158,7 +158,7 @@ void quaternion_slerp(quatf q1, quatf q2, f32 t, quatf result)
         result[3] = ((1.0f - t) * q1[3]) - (q2[3] * t);
     }
     else if (dot <= (1.0f - EPSILON)) {
-        theta = acosf(dot);
+        theta = mathAcos(dot);
         theta_q1 = (1.0f - t) * theta;
         theta_q2 = t * theta;
         sine = sinf(theta);
@@ -176,7 +176,7 @@ void quaternion_slerp(quatf q1, quatf q2, f32 t, quatf result)
     }
 }
 
-void quaternion_7F05BC68(quatf q, f32 t, quatf result)
+void quatSlerpFromIdentity(quatf q, f32 t, quatf result)
 {
     f32 phi_f12 = q[0];
     f32 phi_f16 = 1.0f;
@@ -196,7 +196,7 @@ void quaternion_7F05BC68(quatf q, f32 t, quatf result)
         result[2] = (q[2] * t);
         result[3] = (q[3] * t);
     } else if (phi_f12 <= 0.99998999f) {
-        temp_f0_2 = acosf(phi_f12);
+        temp_f0_2 = mathAcos(phi_f12);
         test2 = t * temp_f0_2;
         temp_f4 = (1.0f - t) * temp_f0_2;
         sp20 = sinf(temp_f0_2);
@@ -214,7 +214,7 @@ void quaternion_7F05BC68(quatf q, f32 t, quatf result)
     }
 }
 
-void quaternion_ensure_shortest_path(quatf q1, quatf q2)
+void quatMakeShortestPath(quatf q1, quatf q2)
 {
     f32 dot = (q1[0] * q2[0]) + (q1[1] * q2[1]) + (q1[2] * q2[2]) + (q1[3] * q2[3]);
     if (dot < 0.0f) {
@@ -225,7 +225,7 @@ void quaternion_ensure_shortest_path(quatf q1, quatf q2)
     }
 }
 
-void quaternion_multiply(quatf lhs, quatf rhs, quatf result)
+void quatMult(quatf lhs, quatf rhs, quatf result)
 {
     result[0] = (lhs[0] * rhs[0]) - (lhs[1] * rhs[1]) - (lhs[2] * rhs[2]) - (lhs[3] * rhs[3]);
     result[1] = (lhs[0] * rhs[1]) + (rhs[0] * lhs[1]) + (lhs[2] * rhs[3]) - (lhs[3] * rhs[2]);
@@ -233,19 +233,19 @@ void quaternion_multiply(quatf lhs, quatf rhs, quatf result)
     result[3] = (lhs[0] * rhs[3]) + (rhs[0] * lhs[3]) + (lhs[1] * rhs[2]) - (lhs[2] * rhs[1]);
 }
 
-void quaternion_multiply_in_place(quatf lhs, quatf rhs)
+void quatMultInPlace(quatf lhs, quatf rhs)
 {
     quatf result;
-    quaternion_multiply(lhs, rhs, result);
+    quatMult(lhs, rhs, result);
     rhs[0] = result[0];
     rhs[1] = result[1];
     rhs[2] = result[2];
     rhs[3] = result[3];
 }
 
-void quaternion_7F05BFD4(quatf q1, quatf q2)
+void quatLog(quatf q1, quatf q2)
 {
-    f32 angle = acosf(q1[0]);
+    f32 angle = mathAcos(q1[0]);
     f32 sine = sinf(angle);
     if (sine == 0.0f) {
         q2[0] = 0.0f;
@@ -260,7 +260,7 @@ void quaternion_7F05BFD4(quatf q1, quatf q2)
     }
 }
 
-void quaternion_7F05C068(quatf q1, quatf q2)
+void quatExp(quatf q1, quatf q2)
 {
     f32 sine;
     f32 angle = sqrtf((q1[1] * q1[1]) + (q1[2] * q1[2]) + (q1[3] * q1[3]));
@@ -280,7 +280,7 @@ void quaternion_7F05C068(quatf q1, quatf q2)
     }
 }
 
-void quaternion_7F05C138(quatf arg0, quatf arg1, quatf arg2, quatf result)
+void quatSquadControlPoint(quatf arg0, quatf arg1, quatf arg2, quatf result)
 {
     quatf conjugate;
     quatf sp50;
@@ -291,36 +291,36 @@ void quaternion_7F05C138(quatf arg0, quatf arg1, quatf arg2, quatf result)
     conjugate[1] = -arg1[1];
     conjugate[2] = -arg1[2];
     conjugate[3] = -arg1[3];
-    quaternion_multiply(conjugate, arg0, sp50);
-    quaternion_multiply(conjugate, arg2, sp40);
-    quaternion_7F05BFD4(sp50, sp30);
-    quaternion_7F05BFD4(sp40, sp20);
+    quatMult(conjugate, arg0, sp50);
+    quatMult(conjugate, arg2, sp40);
+    quatLog(sp50, sp30);
+    quatLog(sp40, sp20);
     sp30[0] = -(sp30[0] + sp20[0]) * 0.25f;
     sp30[1] = -(sp30[1] + sp20[1]) * 0.25f;
     sp30[2] = -(sp30[2] + sp20[2]) * 0.25f;
     sp30[3] = -(sp30[3] + sp20[3]) * 0.25f;
-    quaternion_7F05C068(sp30, sp50);
-    quaternion_multiply(arg1, sp50, result);
+    quatExp(sp30, sp50);
+    quatMult(arg1, sp50, result);
 }
 
-void quaternion_7F05C250(quatf q1, quatf q2, quatf q3, quatf q4, f32 t, quatf result)
+void quatSquad(quatf q1, quatf q2, quatf q3, quatf q4, f32 t, quatf result)
 {
     quatf q5;
     quatf q6;
     f32 t2 = (t + t) * (1.0f - t);
-    quaternion_ensure_shortest_path(q1, q4);
-    quaternion_slerp(q1, q4, t, q5);
-    quaternion_ensure_shortest_path(q2, q3);
-    quaternion_slerp(q2, q3, t, q6);
-    quaternion_ensure_shortest_path(q5, q6);
-    quaternion_slerp(q5, q6, t2, result);
+    quatMakeShortestPath(q1, q4);
+    quatSlerp(q1, q4, t, q5);
+    quatMakeShortestPath(q2, q3);
+    quatSlerp(q2, q3, t, q6);
+    quatMakeShortestPath(q5, q6);
+    quatSlerp(q5, q6, t2, result);
 }
 
-void quaternion_7F05C2F0(quatf q1, quatf q2, quatf q3, quatf q4, f32 t, quatf result)
+void quatSpline(quatf q1, quatf q2, quatf q3, quatf q4, f32 t, quatf result)
 {
     quatf q5;
     quatf q6;
-    quaternion_7F05C138(q1, q2, q3, q5);
-    quaternion_7F05C138(q2, q3, q4, q6);
-    quaternion_7F05C250(q2, q5, q6, q3, t, result);
+    quatSquadControlPoint(q1, q2, q3, q5);
+    quatSquadControlPoint(q2, q3, q4, q6);
+    quatSquad(q2, q5, q6, q3, t, result);
 }

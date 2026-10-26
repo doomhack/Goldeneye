@@ -1,5 +1,5 @@
 /**
-* Isnt atan2f a libc file? 
+* Isnt mathAtan2 a libc file? 
 * there doesnt seem to be any source for it (SDK or IRIX) so maybe part of cc itself?
 */
 
@@ -8,7 +8,7 @@
 #include "game/math/math_asinfacosf.h"
 #include "game/math/math_atan2f.h"
 
-f32 atan2f(f32 y, f32 x)
+f32 mathAtan2(f32 y, f32 x)
 {
     f32 angle;
     if (y == 0.0f) {
@@ -26,12 +26,12 @@ f32 atan2f(f32 y, f32 x)
     } else {
         angle = sqrtf((y * y) + (x * x));
         if (x < y) {
-            angle = acosf(x / angle);
+            angle = mathAcos(x / angle);
             if (y < 0.0f) {
                 angle = M_TAU_F - angle;
             }
         } else {
-            angle = M_HALF_PI - acosf(y / angle);
+            angle = M_HALF_PI - mathAcos(y / angle);
             if (x < 0.0f) {
                 angle = M_PI_F - angle;
             }

@@ -1727,8 +1727,8 @@ Gfx *explosionRenderFlyingParticles(Gfx *gdl)
 
         if (particles->unk00 > 0)
         {
-            matrix_4x4_set_position_and_rotation_around_xyz(&particles->position, &particles->rotation, &sp80);
-            matrix_4x4_multiply_homogeneous_in_place(camGetWorldToScreenMtxf(), &sp80);
+            mtx4LoadRotationAndTranslation(&particles->position, &particles->rotation, &sp80);
+            mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), &sp80);
 
             if ((sp80.m[3][0] < 20000.0f)
                 && (sp80.m[3][0] > -20000.0f)
@@ -1738,7 +1738,7 @@ Gfx *explosionRenderFlyingParticles(Gfx *gdl)
                 && (sp80.m[3][2] > -20000.0f))
             {
                 temp_v0_2 = dynAllocateMatrix();
-                matrix_4x4_f32_to_s32(&sp80, (Mtxf *)temp_v0_2);
+                mtxF2L(&sp80, (Mtxf *)temp_v0_2);
 
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)temp_v0_2), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
                 gSPVertex(gdl++, osVirtualToPhysical((void*)g_FlyingParticlesBuffer[i].vertex_list), 4, 0)

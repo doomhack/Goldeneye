@@ -45,7 +45,7 @@
 
 void chrUpdateAimProperties( ChrRecord *arg0);
 void chrUpdateAnim( ChrRecord *chr, s32 tickamount);
-void sub_GAME_7F057D44(f32 *arg0, f32 *arg1, f32 arg2);
+void physFall(f32 *arg0, f32 *arg1, f32 arg2);
 f32  get_007_health_mod(void);
 
 // end forward declarations
@@ -1474,7 +1474,7 @@ s32 sub_GAME_7F01FC10(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
             {
                 if ((chr->fallspeed.y != 0.0f) || (chr->manground > chr->ground))
                 {
-                    sub_GAME_7F057D44(&chr->manground, &chr->fallspeed.y, g_GlobalTimerDelta);
+                    physFall(&chr->manground, &chr->fallspeed.y, g_GlobalTimerDelta);
 
                     if (chr->manground <= chr->ground)
                     {
@@ -2200,7 +2200,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
         yrot += M_TAU_F;
     }
 
-    matrix_4x4_multiply_homogeneous_in_place(currentPlayerGetViewToWorldMtxf(), matrix);
+    mtx4MultAffineInPlace(currentPlayerGetViewToWorldMtxf(), matrix);
 
     savedposx = matrix->m[3][0];
     savedposy = matrix->m[3][1];
@@ -2219,40 +2219,40 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
             yrot += M_TAU_F;
         }
 
-        matrix_4x4_set_rotation_around_y(yrot, &rotmtx);
-        matrix_4x4_multiply_homogeneous_in_place(&rotmtx, matrix);
+        mtx4LoadYRotation(yrot, &rotmtx);
+        mtx4MultAffineInPlace(&rotmtx, matrix);
 
         if (xrot != 0.0f)
         {
-            matrix_4x4_set_rotation_around_x(xrot, &rotmtx);
-            matrix_4x4_multiply_homogeneous_in_place(&rotmtx, matrix);
+            mtx4LoadXRotation(xrot, &rotmtx);
+            mtx4MultAffineInPlace(&rotmtx, matrix);
         }
 
         if (zrot != 0.0f)
         {
-            matrix_4x4_set_rotation_around_z(zrot, &rotmtx);
-            matrix_4x4_multiply_homogeneous_in_place(&rotmtx, matrix);
+            mtx4LoadZRotation(zrot, &rotmtx);
+            mtx4MultAffineInPlace(&rotmtx, matrix);
         }
 
-        matrix_4x4_set_rotation_around_y(sideback, &rotmtx);
-        matrix_4x4_multiply_homogeneous_in_place(&rotmtx, matrix);
+        mtx4LoadYRotation(sideback, &rotmtx);
+        mtx4MultAffineInPlace(&rotmtx, matrix);
     }
     else
     {
-        matrix_4x4_set_rotation_around_y(yrot, &rotmtx);
-        matrix_4x4_multiply_homogeneous_in_place(&rotmtx, matrix);
+        mtx4LoadYRotation(yrot, &rotmtx);
+        mtx4MultAffineInPlace(&rotmtx, matrix);
     }
 
     if (scale != 1.0f)
     {
-        matrix_scalar_multiply(scale, (f32 *) matrix);
+        mtx4ScaleRows012(scale, (f32 *) matrix);
     }
 
     matrix->m[3][0] = savedposx;
     matrix->m[3][1] = savedposy;
     matrix->m[3][2] = savedposz;
 
-    matrix_4x4_multiply_homogeneous_in_place(camGetWorldToScreenMtxf(), matrix);
+    mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), matrix);
 }
 
 
@@ -2761,14 +2761,14 @@ after_position_update:
                 yscale = entry->ysize;
                 zscale = entry->zsize;
 
-                matrix_4x4_set_identity_and_position(&pos, &mtx);
+                mtx4LoadTranslation(&pos, &mtx);
 
-                matrix_column_1_scalar_multiply(xscale, (f32 *)(&mtx));
-                matrix_column_2_scalar_multiply(yscale, (f32 *)(&mtx));
-                matrix_column_3_scalar_multiply_2(zscale, (f32 *)(&mtx));
+                mtx4ScaleRow0(xscale, (f32 *)(&mtx));
+                mtx4ScaleRow1(yscale, (f32 *)(&mtx));
+                mtx4ScaleRow2(zscale, (f32 *)(&mtx));
 
-                matrix_4x4_multiply_homogeneous((Mtxf *)hatmodel->render_pos, &mtx, &tmp);
-                matrix_4x4_copy(&tmp, (Mtxf *)hatmodel->render_pos);
+                mtx4MultAffine((Mtxf *)hatmodel->render_pos, &mtx, &tmp);
+                mtx4Copy(&tmp, (Mtxf *)hatmodel->render_pos);
 
                 if (hat == HATTYPE_PEAKED)
                 {
@@ -3645,7 +3645,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     jointpos.y -= getjointsize(bhit->model, bhit->node) * 0.5f * shot->viewDir.y;
     jointpos.z -= getjointsize(bhit->model, bhit->node) * 0.5f * shot->viewDir.z;
 
-    matrix_4x4_set_inverse_rotation_and_translation(mtx, &invmtx);
+    mtx4InvertRigid(mtx, &invmtx);
     mtx4TransformVecInPlace(&invmtx, &jointpos);
 
     // Create a blood stain at the impact point.

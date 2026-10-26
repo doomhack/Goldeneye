@@ -2,7 +2,7 @@
 #include "game/math/math_asinacos.h"
 #include "game/math/math_asinfacosf.h"
 
-f32 acosf(f32 cosinef)
+f32 mathAcos(f32 cosinef)
 {
     s16 cosines;
 
@@ -14,10 +14,10 @@ f32 acosf(f32 cosinef)
         cosines = (cosinef * 32767.0f);
     }
 
-    return (acos(cosines) * M_PI_F) / 65535.0f;
+    return (mathAcosFixed(cosines) * M_PI_F) / 65535.0f;
 }
 
-f32 asinf(f32 sinef)
+f32 mathAsin(f32 sinef)
 {
     s16 sines;
 
@@ -29,5 +29,5 @@ f32 asinf(f32 sinef)
         sines = (sinef * 32767.0f);
     }
 
-    return (asin(sines) * M_PI_F) / 65535.0f;
+    return (mathAsinFixed(sines) * M_PI_F) / 65535.0f;
 }

@@ -2321,8 +2321,8 @@ f32 chrpropScoreAutoAimTarget(PropRecord *targetprop, coord3d *aimpos, f32 *worl
     {
         passes_horizontal_check = FALSE;
         get_bullet_angle(&crosshair_x, &crosshair_y);
-        screen_left_edge[0] = floorFloat(screen_left_edge[0]);
-        screen_right_edge[0] = ceilFloat(screen_right_edge[0]);
+        screen_left_edge[0] = mathFloor(screen_left_edge[0]);
+        screen_right_edge[0] = mathCeil(screen_right_edge[0]);
 
         if (currentPlayerGetXAutoAimEnabledRedirect())
         {

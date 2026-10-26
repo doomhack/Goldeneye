@@ -220,7 +220,7 @@ void domakedefaultobj(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
         {
             sp64 = &g_CurrentSetup.pads[arg1->pad];
 
-            matrix_4x4_set_basis_and_position_target(&sp8C, 0.0f, 0.0f, 0.0f, -sp64->look.f[0], -sp64->look.f[1], -sp64->look.f[2], sp64->up.f[0], sp64->up.f[1], sp64->up.f[2]);
+            mtx4LoadFacing(&sp8C, 0.0f, 0.0f, 0.0f, -sp64->look.f[0], -sp64->look.f[1], -sp64->look.f[2], sp64->up.f[0], sp64->up.f[1], sp64->up.f[2]);
 
             spD0.f[0] = sp64->pos.f[0];
             spD0.f[1] = sp64->pos.f[1];
@@ -247,7 +247,7 @@ void domakedefaultobj(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
         {
             var_s0 = &g_CurrentSetup.boundpads[getBoundPadNum(arg1->pad)];
 
-            matrix_4x4_set_basis_and_position_target(&sp8C, 0.0f, 0.0f, 0.0f, -var_s0->look.f[0], -var_s0->look.f[1], -var_s0->look.f[2], var_s0->up.f[0], var_s0->up.f[1], var_s0->up.f[2]);
+            mtx4LoadFacing(&sp8C, 0.0f, 0.0f, 0.0f, -var_s0->look.f[0], -var_s0->look.f[1], -var_s0->look.f[2], var_s0->up.f[0], var_s0->up.f[1], var_s0->up.f[2]);
 
             if (!(arg1->flags2 & PROPFLAG2_00000001))
             {
@@ -449,16 +449,16 @@ void domakedefaultobj(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
                         sp58 = 1.0f;
                     }
 
-                    matrix_column_1_scalar_multiply(sp58, sp8C.m[0]);
-                    matrix_column_2_scalar_multiply(sp54, sp8C.m[0]);
-                    matrix_column_3_scalar_multiply_2(sp50, sp8C.m[0]);
+                    mtx4ScaleRow0(sp58, sp8C.m[0]);
+                    mtx4ScaleRow1(sp54, sp8C.m[0]);
+                    mtx4ScaleRow2(sp50, sp8C.m[0]);
 
                     modelSetScale(arg1->model, arg1->model->scale * sp48);
                 }
             }
 
             modelSetScale(arg1->model, arg1->model->scale * sp78);
-            matrix_scalar_multiply(arg1->model->scale, sp8C.m[0]);
+            mtx4ScaleRows012(arg1->model->scale, sp8C.m[0]);
 
             if (arg1->flags & PROPFLAG_ONSCREEN)
             {
@@ -667,8 +667,8 @@ void setupCctv(s32 arg0, CCTVRecord *arg1, s32 cmdindex)
         sp44.f[1] += arg1->prop->pos.f[1];
         sp44.f[2] += arg1->prop->pos.f[2];
 
-        matrix_4x4_set_basis_and_position_target(sp3C, 0.0f, 0.0f, 0.0f, sp44.f[0] - sp50->pos.f[0], sp44.f[1] - sp50->pos.f[1], sp44.f[2] - sp50->pos.f[2], 0.0f, 1.0f, 0.0f);
-        matrix_scalar_multiply(arg1->model->scale, sp3C->m[0]);
+        mtx4LoadFacing(sp3C, 0.0f, 0.0f, 0.0f, sp44.f[0] - sp50->pos.f[0], sp44.f[1] - sp50->pos.f[1], sp44.f[2] - sp50->pos.f[2], 0.0f, 1.0f, 0.0f);
+        mtx4ScaleRows012(arg1->model->scale, sp3C->m[0]);
 
         if (arg1->convert_to_f32 == 0)
         {
@@ -682,7 +682,7 @@ void setupCctv(s32 arg0, CCTVRecord *arg1, s32 cmdindex)
         arg1->unkD4 = 0;
         arg1->unkD8 = 0.0f;
         arg1->unkC8 = arg1->unkCC;
-        arg1->unkC4 = atan2f(sp44.f[0] - sp50->pos.f[0], sp44.f[2] - sp50->pos.f[2]);
+        arg1->unkC4 = mathAtan2(sp44.f[0] - sp50->pos.f[0], sp44.f[2] - sp50->pos.f[2]);
         arg1->timer = 0;
     }
 }
@@ -754,8 +754,8 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
         ydiff = pad->pos.y - prop->pos.y;
         zdiff = pad->pos.z - prop->pos.z;
 
-        autogun->rot_related = atan2f(xdiff, zdiff);
-        autogun->unk98 = atan2f(ydiff, sqrtf((xdiff * xdiff) + (zdiff * zdiff)));
+        autogun->rot_related = mathAtan2(xdiff, zdiff);
+        autogun->unk98 = mathAtan2(ydiff, sqrtf((xdiff * xdiff) + (zdiff * zdiff)));
     }
 }
 
@@ -822,8 +822,8 @@ void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
             }
 
             chrpropReparent(prop, owner->prop);
-            matrix_4x4_set_rotation_around_x(0.36651915f, (Mtxf*)&monitor->embedment->matrix);
-            matrix_scalar_multiply(monitor->model->scale / owner->model->scale, (f32*)&monitor->embedment->matrix);
+            mtx4LoadXRotation(0.36651915f, (Mtxf*)&monitor->embedment->matrix);
+            mtx4ScaleRows012(monitor->model->scale / owner->model->scale, (f32*)&monitor->embedment->matrix);
         }
     }
     else
@@ -1026,7 +1026,7 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 
     if (getposstan(&pad->pos, pad->stan, 0.0f, &sp1B8, &sp1C8_stan) != 0)
     {
-        matrix_4x4_set_basis_and_position_target(&sp12C, 0, 0, 0, -pad->look.f[0], -pad->look.f[1], -pad->look.f[2], pad->up.f[0], pad->up.f[1], pad->up.f[2]);
+        mtx4LoadFacing(&sp12C, 0, 0, 0, -pad->look.f[0], -pad->look.f[1], -pad->look.f[2], pad->up.f[0], pad->up.f[1], pad->up.f[2]);
         sp124 = PitemZ_entries[modelnum].header;
         sp114_stan = sp1C8_stan;
 
@@ -1037,10 +1037,10 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
         bb2.xmax = pad->bbox.zmin; //6c
         bb2.xmin = pad->bbox.zmax; //68
 
-        matrix_4x4_set_rotation_around_x(M_HALF_PI, &spD4);
-        matrix_4x4_set_rotation_around_z(M_HALF_PI, &sp88);
-        matrix_4x4_multiply_in_place(&sp88, &spD4);
-        matrix_4x4_multiply_in_place(&sp12C, &spD4);
+        mtx4LoadXRotation(M_HALF_PI, &spD4);
+        mtx4LoadZRotation(M_HALF_PI, &sp88);
+        mtx4MultInPlace(&sp88, &spD4);
+        mtx4MultInPlace(&sp12C, &spD4);
         sub_GAME_7F001BD4(pad, &sp118);
 
         temp_v0 = (struct ModelRoData_BoundingBoxRecord *)sp124->RootNode->Child->Data;
@@ -1059,9 +1059,9 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
                 zscale = 1.0f;
         }
 
-        matrix_column_1_scalar_multiply(xscale, spD4.m[0]);
-        matrix_column_2_scalar_multiply(yscale, spD4.m[0]);
-        matrix_column_3_scalar_multiply_2(zscale, spD4.m[0]);
+        mtx4ScaleRow0(xscale, spD4.m[0]);
+        mtx4ScaleRow1(yscale, spD4.m[0]);
+        mtx4ScaleRow2(zscale, spD4.m[0]);
 
         spC8.f[0] = sp118.f[0];
         spC8.f[1] = sp118.f[1];
@@ -1701,7 +1701,7 @@ void proplvreset2(enum LEVELID stageId)
                             domakedefaultobj(stageId, (struct ObjectRecord *) pdef_tank, pdefIndex);
                             pdef_tank->turret_vertical_angle = 0.0f;
                             pdef_tank->turret_orientation_angle = 0.0f;
-                            pdef_tank->tank_orientation_angle = M_TAU_F - atan2f(pdef_tank->mtx.m[2][0], pdef_tank->mtx.m[2][2]);
+                            pdef_tank->tank_orientation_angle = M_TAU_F - mathAtan2(pdef_tank->mtx.m[2][0], pdef_tank->mtx.m[2][2]);
                             tank_prop = pdef_tank->prop;
 
                             if (tank_prop)

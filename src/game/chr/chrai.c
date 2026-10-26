@@ -2758,11 +2758,11 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #ifdef ENABLE_LOG
                         osSyncPrintf("aiMoveObj: moving object to pad %d\n", pad);
     #endif
-                        matrix_4x4_set_basis_and_position_target(&matrix, 0, 0, 0, -pad->look.x, -pad->look.y, -pad->look.z, pad->up.x, pad->up.y, pad->up.z);
+                        mtx4LoadFacing(&matrix, 0, 0, 0, -pad->look.x, -pad->look.y, -pad->look.z, pad->up.x, pad->up.y, pad->up.z);
 
                         if (obj->model)
                         {
-                            matrix_scalar_multiply(obj->model->scale, &matrix);
+                            mtx4ScaleRows012(obj->model->scale, &matrix);
                         }
                         sub_GAME_7F04088C(obj, &pad->pos, &matrix, pad->stan, &pad->pos);
                         setupUpdateObjectRoomPosition(obj);
@@ -4455,7 +4455,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             pad = (PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(padnum)];
                         }
 
-                        FacingDirection = atan2f(pad->look.x, pad->look.z);
+                        FacingDirection = mathAtan2(pad->look.x, pad->look.z);
                         pos.x           = pad->pos.x;
                         pos.y           = pad->pos.y;
                         pos.z           = pad->pos.z;
@@ -4892,7 +4892,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         {
                             obj->projectile->flags |= 0x601;
                             projectileSetSticky(obj->prop);
-                            matrix_4x4_set_identity(&obj->projectile->mtx);
+                            mtx4LoadIdentity(&obj->projectile->mtx);
                             obj->projectile->speed.x = 0;
                             obj->projectile->speed.y = 0.016666666f; // step height?
                             obj->projectile->speed.z = 0;

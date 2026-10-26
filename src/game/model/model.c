@@ -1165,22 +1165,22 @@ void process_01_group_heading(ModelRenderData* renderdata, Model* model, ModelNo
 
     if (var_a3 != NULL)
     {
-        matrix_4x4_set_position_and_rotation_around_y(pos, unk14, &sp20);
+        mtx4LoadYRotationWithTranslation(pos, unk14, &sp20);
 
         if (scale != 1.0f)
         {
-            matrix_scalar_multiply_2(scale, sp20.m[0]);
+            mtx4Scale3x3(scale, sp20.m[0]);
         }
 
-        matrix_4x4_multiply_homogeneous(var_a3, &sp20, &renderpos->pos);
+        mtx4MultAffine(var_a3, &sp20, &renderpos->pos);
         return;
     }
 
-    matrix_4x4_set_position_and_rotation_around_y(pos, unk14, &renderpos->pos);
+    mtx4LoadYRotationWithTranslation(pos, unk14, &renderpos->pos);
 
     if (scale != 1.0f)
     {
-        matrix_scalar_multiply_2(scale, renderpos->pos.m[0]);
+        mtx4Scale3x3(scale, renderpos->pos.m[0]);
     }
 }
 
@@ -1232,10 +1232,10 @@ void modelBuildGroupMatrices(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildA
     
     if (parent != NULL)
     {
-        matrix_4x4_set_position_and_rotation_around_xyz(&group->Origin, rot, &tmp);
+        mtx4LoadRotationAndTranslation(&group->Origin, rot, &tmp);
 
         matrix0_mtx = &render_pos[matrix0].pos;
-        matrix_4x4_multiply_homogeneous(parent, &tmp, matrix0_mtx);
+        mtx4MultAffine(parent, &tmp, matrix0_mtx);
 
         if (g_ModelJointPositionedFunc != NULL)
         {
@@ -1244,22 +1244,22 @@ void modelBuildGroupMatrices(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildA
     }
     else
     {
-        matrix_4x4_set_position_and_rotation_around_xyz(&group->Origin, rot, &render_pos[matrix0].pos);
+        mtx4LoadRotationAndTranslation(&group->Origin, rot, &render_pos[matrix0].pos);
     }
     
     if (flags & MODELGROUP_MTX_HAS_MATRIX1)
     {
-        quaternion_set_rotation_around_xyzf(rot->f, q);
-        quaternion_7F05BC68(q, 0.5f, q2);
+        quatFromAngles(rot->f, q);
+        quatSlerpFromIdentity(q, 0.5f, q2);
         
         if (parent != NULL)
         {
-            quaternion_to_transform_matrix(origin, q2, tmp.m);
-            matrix_4x4_multiply_homogeneous(parent, &tmp, &render_pos[matrix1].pos);
+            quatToMtx4WithTranslation(origin, q2, tmp.m);
+            mtx4MultAffine(parent, &tmp, &render_pos[matrix1].pos);
         }
         else
         {
-            quaternion_to_transform_matrix(origin, q2, (render_pos + matrix1)->pos.m);
+            quatToMtx4WithTranslation(origin, q2, (render_pos + matrix1)->pos.m);
         }
     }
 
@@ -1285,7 +1285,7 @@ void modelBuildGroupMatrices(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildA
             angle = M_TAU_F - ((M_TAU_F - angle) * 0.5f);
         }
         
-        matrix_4x4_set_rotation_around_y(angle, dst);
+        mtx4LoadYRotation(angle, dst);
         
         if (angle >= M_PI_F)
         {
@@ -1300,12 +1300,12 @@ void modelBuildGroupMatrices(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildA
             angle = 1.5f;
         }
         
-        matrix_column_3_scalar_multiply_2(angle, (f32 *) dst);
-        matrix_4x4_set_position(&group->Origin, dst);
+        mtx4ScaleRow2(angle, (f32 *) dst);
+        mtx4SetTranslation(&group->Origin, dst);
         
         if (parent != NULL)
         {
-            matrix_4x4_multiply_homogeneous(parent, dst, &render_pos[matrix2].pos);
+            mtx4MultAffine(parent, dst, &render_pos[matrix2].pos);
         }
     }
 }
@@ -1348,23 +1348,23 @@ void sub_GAME_7F06DB5C(ModelRenderData *arg0, Model *arg1, ModelNode *arg2, quat
     }
 
     if (sp9C != 0) {
-        quaternion_to_transform_matrix(&spA0->Origin, arg3, &sp58);
+        quatToMtx4WithTranslation(&spA0->Origin, arg3, &sp58);
         sp1C = (s32)&sp48[sp54];
-        matrix_4x4_multiply_homogeneous(sp9C, &sp58, (Mtxf *)sp1C);
+        mtx4MultAffine(sp9C, &sp58, (Mtxf *)sp1C);
         if (g_ModelJointPositionedFunc != NULL) {
             ((void (*)(s32, s32, s32)) g_ModelJointPositionedFunc)(sp54, sp1C, sp1C);
         }
     } else {
-        quaternion_to_transform_matrix(&spA0->Origin, arg3, (Mtxf *)&sp48[sp54]);
+        quatToMtx4WithTranslation(&spA0->Origin, arg3, (Mtxf *)&sp48[sp54]);
     }
 
     if (spA4 & 0x100) {
-        quaternion_7F05BC68(arg3, 0.5f, sp2C);
+        quatSlerpFromIdentity(arg3, 0.5f, sp2C);
         if (sp9C != 0) {
-            quaternion_to_transform_matrix(&spA0->Origin, sp2C, &sp58);
-            matrix_4x4_multiply_homogeneous(sp9C, &sp58, (Mtxf *)&sp48[sp50]);
+            quatToMtx4WithTranslation(&spA0->Origin, sp2C, &sp58);
+            mtx4MultAffine(sp9C, &sp58, (Mtxf *)&sp48[sp50]);
         } else {
-            quaternion_to_transform_matrix(&spA0->Origin, sp2C, (Mtxf *)&sp48[sp50]);
+            quatToMtx4WithTranslation(&spA0->Origin, sp2C, (Mtxf *)&sp48[sp50]);
         }
     }
 
@@ -1374,13 +1374,13 @@ void sub_GAME_7F06DB5C(ModelRenderData *arg0, Model *arg1, ModelNode *arg2, quat
         } else {
             sp28 = (Mtxf *)&sp48[sp4C];
         }
-        sp24 = 2.0f * acosf(*arg3);
+        sp24 = 2.0f * mathAcos(*arg3);
         if (sp24 < 3.1415927f) {
             sp24 = sp24 * 0.5f;
         } else {
             sp24 = 6.2831855f - ((6.2831855f - sp24) * 0.5f);
         }
-        matrix_4x4_set_rotation_around_y(sp24, sp28);
+        mtx4LoadYRotation(sp24, sp28);
         if (sp24 >= 3.1415927f) {
             sp24 = 6.2831855f - sp24;
         }
@@ -1389,10 +1389,10 @@ void sub_GAME_7F06DB5C(ModelRenderData *arg0, Model *arg1, ModelNode *arg2, quat
         } else {
             sp24 = 1.5f;
         }
-        matrix_column_3_scalar_multiply_2(sp24, (f32 *)sp28);
-        matrix_4x4_set_position(&spA0->Origin, sp28);
+        mtx4ScaleRow2(sp24, (f32 *)sp28);
+        mtx4SetTranslation(&spA0->Origin, sp28);
         if (sp9C != 0) {
-            matrix_4x4_multiply_homogeneous(sp9C, sp28, (Mtxf *)&sp48[sp4C]);
+            mtx4MultAffine(sp9C, sp28, (Mtxf *)&sp48[sp4C]);
         }
     }
 }
@@ -1547,10 +1547,10 @@ void process_02_position(ModelRenderData *arg0, Model *model, ModelNode *node)
             sub_GAME_7F06D160(&rot3, &rot4, model->unk5c);
         }
 
-        quaternion_set_rotation_around_xyzf(&rot1, q1);
-        quaternion_set_rotation_around_xyzf(&rot3, q2);
-        quaternion_ensure_shortest_path(q1, q2);
-        quaternion_slerp(q1, q2, model->unk84, result);
+        quatFromAngles(&rot1, q1);
+        quatFromAngles(&rot3, q2);
+        quatMakeShortestPath(q1, q2);
+        quatSlerp(q1, q2, model->unk84, result);
         sub_GAME_7F06DB5C(arg0, model, node, result);
     }
     else
@@ -1601,13 +1601,13 @@ void sub_GAME_7F06E2B8(ModelRenderData *renderData, Model *model, ModelNode *nod
 
     if (mtx != NULL)
     {
-        matrix_4x4_set_position_and_rotation_around_y((f32 *) &data->Group.Origin, angle, localMtxPtr);
-        matrix_4x4_multiply_homogeneous(mtx, &localMtx, &render_pos[m0].pos);
+        mtx4LoadYRotationWithTranslation((f32 *) &data->Group.Origin, angle, localMtxPtr);
+        mtx4MultAffine(mtx, &localMtx, &render_pos[m0].pos);
     }
     else
     {
         origin = (f32 *) &data->Group.Origin;
-        matrix_4x4_set_position_and_rotation_around_y(origin, angle, &render_pos[m0].pos);
+        mtx4LoadYRotationWithTranslation(origin, angle, &render_pos[m0].pos);
     }
 
     matrix2Flag = 0x200;
@@ -1631,12 +1631,12 @@ void sub_GAME_7F06E2B8(ModelRenderData *renderData, Model *model, ModelNode *nod
     {
         if (mtx != NULL)
         {
-            matrix_4x4_set_position_and_rotation_around_y((f32 *) &data->Group.Origin, angle, &localMtx);
-            matrix_4x4_multiply_homogeneous(mtx, localMtxPtr, &render_pos[m1].pos);
+            mtx4LoadYRotationWithTranslation((f32 *) &data->Group.Origin, angle, &localMtx);
+            mtx4MultAffine(mtx, localMtxPtr, &render_pos[m1].pos);
         }
         else
         {
-            matrix_4x4_set_position_and_rotation_around_y((f32 *) &data->Group.Origin, angle, &render_pos[m1].pos);
+            mtx4LoadYRotationWithTranslation((f32 *) &data->Group.Origin, angle, &render_pos[m1].pos);
         }
     }
 
@@ -1651,7 +1651,7 @@ void sub_GAME_7F06E2B8(ModelRenderData *renderData, Model *model, ModelNode *nod
             matrixPtr = &render_pos[m2].pos;
         }
 
-        matrix_4x4_set_rotation_around_y(angle, matrixPtr);
+        mtx4LoadYRotation(angle, matrixPtr);
 
         if (M_PI_F <= angle)
         {
@@ -1667,12 +1667,12 @@ void sub_GAME_7F06E2B8(ModelRenderData *renderData, Model *model, ModelNode *nod
             scalar = 1.5f;
         }
 
-        matrix_column_3_scalar_multiply_2(scalar, (f32 *) matrixPtr);
-        matrix_4x4_set_position(&data->Group.Origin, matrixPtr);
+        mtx4ScaleRow2(scalar, (f32 *) matrixPtr);
+        mtx4SetTranslation(&data->Group.Origin, matrixPtr);
 
         if (mtx != NULL)
         {
-            matrix_4x4_multiply_homogeneous(mtx, matrixPtr, &render_pos[m2].pos);
+            mtx4MultAffine(mtx, matrixPtr, &render_pos[m2].pos);
         }
     }
 }
@@ -1763,12 +1763,12 @@ void process_15_subposition(ModelRenderData* arg0, Model *model, ModelNode *node
 
     if (sp68)
     {
-        matrix_4x4_set_identity_and_position(&rodata->GroupSimple.Origin, &sp28);
-        matrix_4x4_multiply_homogeneous(sp68, &sp28, &matrices[mtxindex]);
+        mtx4LoadTranslation(&rodata->GroupSimple.Origin, &sp28);
+        mtx4MultAffine(sp68, &sp28, &matrices[mtxindex]);
     }
     else
     {
-        matrix_4x4_set_identity_and_position(&rodata->GroupSimple.Origin, &matrices[mtxindex]);
+        mtx4LoadTranslation(&rodata->GroupSimple.Origin, &matrices[mtxindex]);
     }
 }
 
@@ -2007,8 +2007,8 @@ void process_07_unknown(Model *model, ModelNode *node)
 
     modelGetScaledRootToOriginDir(model, &coord);
 
-    theta = acosf(((coord.x * mtx->m[1][0]) + (coord.y * mtx->m[1][1])) + (coord.z * mtx->m[1][2]));
-    ratio = acosf((((coord.x * mtx->m[2][0]) + (coord.y * mtx->m[2][1])) + (coord.z * mtx->m[2][2])) / sinf(theta));
+    theta = mathAcos(((coord.x * mtx->m[1][0]) + (coord.y * mtx->m[1][1])) + (coord.z * mtx->m[1][2]));
+    ratio = mathAcos((((coord.x * mtx->m[2][0]) + (coord.y * mtx->m[2][1])) + (coord.z * mtx->m[2][2])) / sinf(theta));
     coord_multiplied = ((coord.x * mtx->m[0][0]) + (coord.y * mtx->m[0][1])) + (coord.z * mtx->m[0][2]);
 
     if ((coord_multiplied < 0.0f) && (ratio > 0.0f))
@@ -2454,7 +2454,7 @@ s32 modelConstrainOrWrapAnimFrame(s32 frame, ModelAnimation *anim, f32 endframe)
         }
     }
     else if ((0.0f <= endframe) && ((s32)endframe < frame)) {
-        frame = ceilFloatToInt(endframe);
+        frame = mathCeilToInt(endframe);
     }
     else if (frame >= anim->unk04) {
         if (anim->unk07 & 1) {
@@ -2788,7 +2788,7 @@ void modelSetAnimFrame(Model* model, f32 frame)
     s32 frameb;
     bool forwards;
 
-    framea = floorFloatToInt(frame);
+    framea = mathFloorToInt(frame);
 
     forwards = (model->speed >= 0);
     frameb = (forwards ? framea + 1 : framea - 1);
@@ -2826,7 +2826,7 @@ void modelSetAnimFrame2(Model* model, f32 frame1, f32 frame2)
 
     if (model->anim2 != NULL)
     {
-        framea = floorFloatToInt(frame2);
+        framea = mathFloorToInt(frame2);
 
         forwards = (model->speed2 >= 0.0f);
         frameb = forwards ? (framea + 1) : (framea - 1);
@@ -2952,13 +2952,13 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
             if (forward)
             {
-                curframe = floorFloatToInt(framea) + 1;
-                endframe = floorFloatToInt(frameb);
+                curframe = mathFloorToInt(framea) + 1;
+                endframe = mathFloorToInt(frameb);
             }
             else
             {
-                curframe = ceilFloatToInt(framea) - 1;
-                endframe = ceilFloatToInt(frameb);
+                curframe = mathCeilToInt(framea) - 1;
+                endframe = mathCeilToInt(frameb);
             }
 
             while (1)
@@ -3180,8 +3180,8 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
             if (modelptr->anim2 != NULL)
             {
-                curframe = floorFloatToInt(frame2a);
-                end2 = floorFloatToInt(frame2b);
+                curframe = mathFloorToInt(frame2a);
+                end2 = mathFloorToInt(frame2b);
 
                 if ((forward && (curframe < end2)) || (!forward && (end2 < curframe)))
                 {
@@ -4754,8 +4754,8 @@ void dogfnegx(ModelRenderData *renderdata, Model *model, ModelNode *node)
             spe0.f[2] = 1 / model->scale;
         }
 
-        spec = acosf(spe0.f[0] * mtx->m[1][0] + spe0.f[1] * mtx->m[1][1] + spe0.f[2] * mtx->m[1][2]);
-        spf0 = acosf(-(spe0.f[0] * mtx->m[2][0] + spe0.f[1] * mtx->m[2][1] + spe0.f[2] * mtx->m[2][2]) / sinf(spec));
+        spec = mathAcos(spe0.f[0] * mtx->m[1][0] + spe0.f[1] * mtx->m[1][1] + spe0.f[2] * mtx->m[1][2]);
+        spf0 = mathAcos(-(spe0.f[0] * mtx->m[2][0] + spe0.f[1] * mtx->m[2][1] + spe0.f[2] * mtx->m[2][2]) / sinf(spec));
 
         tmp = -(spe0.f[0] * mtx->m[0][0] + spe0.f[1] * mtx->m[0][1] + spe0.f[2] * mtx->m[0][2]);
 

@@ -8,19 +8,19 @@
 
 // bss
 //CODE.bss:80075DA0
-f32 flt_CODE_bss_80075DA0;
+f32 s_MtxSavedWorldScale;
 
 
 // data
 //D:80032310
-f32 D_80032310[2] = {M_U16_MAX_VALUE_F, M_U16_MAX_VALUE_F};
+f32 g_MtxFixedScale[2] = {M_U16_MAX_VALUE_F, M_U16_MAX_VALUE_F};
 
 
 
 //#ifdef VERSION_EU
 
 #ifdef VERSION_EU
-void matrix_4x4_copy_homogeneous_eu(f32 src[3][3], f32 dst[3][3])
+void mtx3Copy(f32 src[3][3], f32 dst[3][3])
 {
     s32 i, j;
     for (i = 0; i < 3; i++)
@@ -35,17 +35,17 @@ void matrix_4x4_copy_homogeneous_eu(f32 src[3][3], f32 dst[3][3])
 
 
 #ifdef VERSION_EU
-void matrix_4x4_multiply_homogeneous_in_place_eu (f32 lhs[3][3], f32 rhs[3][3])
+void mtx3MultInPlace (f32 lhs[3][3], f32 rhs[3][3])
 {
     f32 result[3][3];
-    matrix_4x4_multiply_homogeneous_eu(lhs, rhs, &result);
-    matrix_4x4_copy_homogeneous_eu(&result, rhs);
+    mtx3Mult(lhs, rhs, &result);
+    mtx3Copy(&result, rhs);
 }
 #endif
 
 
 #ifdef VERSION_EU
-void matrix_4x4_multiply_homogeneous_eu(f32 lhs[3][3], f32 rhs[3][3], f32 result[3][3])
+void mtx3Mult(f32 lhs[3][3], f32 rhs[3][3], f32 result[3][3])
 {
     s32 i, j;
     for (i = 0; i < 3; i++)
@@ -60,7 +60,7 @@ void matrix_4x4_multiply_homogeneous_eu(f32 lhs[3][3], f32 rhs[3][3], f32 result
 
 
 #ifdef VERSION_EU
-void matrix_4x4_copy_eu(f32 src[][3], f32 dst[4][4])
+void mtx3ToMtx4(f32 src[][3], f32 dst[4][4])
 {
     s32 i, j;
     for (i = 0; i < 3; i++)
@@ -82,7 +82,7 @@ void matrix_4x4_copy_eu(f32 src[][3], f32 dst[4][4])
 #endif
 
 #ifdef VERSION_EU
-void matrix_7f05842c_eu(f32 src[][4], f32 dst[3][3])
+void mtx4ToMtx3(f32 src[][4], f32 dst[3][3])
 {
     s32 i, j;
     for (i = 0; i < 3; i++)
@@ -100,7 +100,7 @@ void matrix_7f05842c_eu(f32 src[][4], f32 dst[3][3])
 
 //#endif
 
-void matrix_4x4_set_identity(Mtxf *matrix)
+void mtx4LoadIdentity(Mtxf *matrix)
 {
     matrix->m[0][0] = 1.0f;
     matrix->m[0][1] = 0.0f;
@@ -120,7 +120,7 @@ void matrix_4x4_set_identity(Mtxf *matrix)
     matrix->m[3][3] = 1.0f;
 }
 
-void matrix_4x4_copy(Mtxf *src, Mtxf *dst)
+void mtx4Copy(Mtxf *src, Mtxf *dst)
 {
     s32 i, j;
     for (i = 0; i < 4; i++)
@@ -132,21 +132,21 @@ void matrix_4x4_copy(Mtxf *src, Mtxf *dst)
     }
 }
 
-void matrix_4x4_multiply_in_place(Mtxf *lhs, Mtxf *rhs)
+void mtx4MultInPlace(Mtxf *lhs, Mtxf *rhs)
 {
     Mtxf result;
-    matrix_4x4_multiply(lhs, rhs, &result);
-    matrix_4x4_copy(&result, rhs);
+    mtx4Mult(lhs, rhs, &result);
+    mtx4Copy(&result, rhs);
 }
 
-void matrix_4x4_multiply_homogeneous_in_place(Mtxf *lhs, Mtxf *rhs)
+void mtx4MultAffineInPlace(Mtxf *lhs, Mtxf *rhs)
 {
     Mtxf result;
-    matrix_4x4_multiply_homogeneous(lhs, rhs, &result);
-    matrix_4x4_copy(&result, rhs);
+    mtx4MultAffine(lhs, rhs, &result);
+    mtx4Copy(&result, rhs);
 }
 
-void matrix_4x4_multiply(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
+void mtx4Mult(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
 {
     s32 i, j;
     for (i = 0; i < 4; i++)
@@ -158,7 +158,7 @@ void matrix_4x4_multiply(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
     }
 }
 
-void matrix_4x4_multiply_homogeneous(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
+void mtx4MultAffine(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
 {
     s32 i, j;
     for (i = 0; i < 3; i++)
@@ -179,7 +179,7 @@ void matrix_4x4_multiply_homogeneous(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
     result->m[3][3] = 1.0f;
 }
 
-void matrix_4x4_7F058274(Mtxf *arg0, Mtxf *arg1, Mtxf *arg2)
+void mtx4MultPerspective(Mtxf *arg0, Mtxf *arg1, Mtxf *arg2)
 {
     arg2->m[0][0] = (arg0->m[0][0] * arg1->m[0][0]);
     arg2->m[1][0] = (arg0->m[0][0] * arg1->m[1][0]);
@@ -199,7 +199,7 @@ void matrix_4x4_7F058274(Mtxf *arg0, Mtxf *arg1, Mtxf *arg2)
     arg2->m[3][3] = (arg0->m[2][3] * arg1->m[3][2]);
 }
 
-void matrix_4x4_rotate_vector(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
+void mtx4RotateVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
 {
     s32 i;
     for (i = 0; i < 3; i++)
@@ -211,15 +211,15 @@ void matrix_4x4_rotate_vector(Mtxf *matrix, struct coord3d *vector, struct coord
 void mtx4RotateVecInPlace(Mtxf *matrix, struct coord3d *vector)
 {
     struct coord3d result;
-    matrix_4x4_rotate_vector(matrix, vector, &result);
+    mtx4RotateVec(matrix, vector, &result);
     vector->f[0] = result.f[0];
     vector->f[1] = result.f[1];
     vector->f[2] = result.f[2];
 }
 
-void matrix_4x4_transform_vector(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
+void mtx4TransformVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
 {
-    matrix_4x4_rotate_vector(matrix, vector, result);
+    mtx4RotateVec(matrix, vector, result);
     result->f[0] += matrix->m[3][0];
     result->f[1] += matrix->m[3][1];
     result->f[2] += matrix->m[3][2];
@@ -233,7 +233,7 @@ void mtx4TransformVecInPlace(Mtxf *matrix, struct coord3d *vector)
     vector->f[2] += matrix->m[3][2];
 }
 
-void matrix_4x4_set_position_and_rotation_around_y(f32 *position, f32 angle, Mtxf *matrix)
+void mtx4LoadYRotationWithTranslation(f32 *position, f32 angle, Mtxf *matrix)
 {
     f32 cosine      = cosf(angle);
     f32 sine        = sinf(angle);
@@ -255,7 +255,7 @@ void matrix_4x4_set_position_and_rotation_around_y(f32 *position, f32 angle, Mtx
     matrix->m[3][3] = 1.0f;
 }
 
-void matrix_4x4_set_rotation_around_x(f32 angle, Mtxf *matrix)
+void mtx4LoadXRotation(f32 angle, Mtxf *matrix)
 {
     f32 cosine      = cosf(angle);
     f32 sine        = sinf(angle);
@@ -277,7 +277,7 @@ void matrix_4x4_set_rotation_around_x(f32 angle, Mtxf *matrix)
     matrix->m[3][3] = 1.0f;
 }
 
-void matrix_4x4_set_rotation_around_y(f32 angle, Mtxf *matrix)
+void mtx4LoadYRotation(f32 angle, Mtxf *matrix)
 {
     f32 cosine      = cosf(angle);
     f32 sine        = sinf(angle);
@@ -299,7 +299,7 @@ void matrix_4x4_set_rotation_around_y(f32 angle, Mtxf *matrix)
     matrix->m[3][3] = 1.0f;
 }
 
-void matrix_4x4_set_rotation_around_z(f32 angle, Mtxf *matrix)
+void mtx4LoadZRotation(f32 angle, Mtxf *matrix)
 {
     f32 cosine      = cosf(angle);
     f32 sine        = sinf(angle);
@@ -321,7 +321,7 @@ void matrix_4x4_set_rotation_around_z(f32 angle, Mtxf *matrix)
     matrix->m[3][3] = 1.0f;
 }
 
-void matrix_4x4_set_rotation_around_xyz(struct coord3d *angles, Mtxf *matrix)
+void mtx4LoadRotation(struct coord3d *angles, Mtxf *matrix)
 {
     f32 cos_x       = cosf(angles->f[0]);
     f32 sin_x       = sinf(angles->f[0]);
@@ -352,7 +352,7 @@ void matrix_4x4_set_rotation_around_xyz(struct coord3d *angles, Mtxf *matrix)
 }
 
 // https://stackoverflow.com/a/15029416
-void matrix_4x4_get_rotation_around_xyz(Mtxf *matrix, struct coord3d *angles)
+void mtx4GetRotation(Mtxf *matrix, struct coord3d *angles)
 {
     f32 norm;
     f32 sin_x_cos_y = matrix->m[1][2];
@@ -360,52 +360,52 @@ void matrix_4x4_get_rotation_around_xyz(Mtxf *matrix, struct coord3d *angles)
     norm            = sqrtf(SQR(sin_x_cos_y) + SQR(cos_x_cos_y));
     if (EPSILON < norm)
     {
-        angles->f[0] = atan2f(matrix->m[1][2], matrix->m[2][2]);
-        angles->f[1] = atan2f(-matrix->m[0][2], norm);
-        angles->f[2] = atan2f(matrix->m[0][1], matrix->m[0][0]);
+        angles->f[0] = mathAtan2(matrix->m[1][2], matrix->m[2][2]);
+        angles->f[1] = mathAtan2(-matrix->m[0][2], norm);
+        angles->f[2] = mathAtan2(matrix->m[0][1], matrix->m[0][0]);
     }
     else
     {
         angles->f[0] = 0.0f;
-        angles->f[1] = atan2f(-matrix->m[0][2], norm);
-        angles->f[2] = atan2f(-matrix->m[1][0], matrix->m[1][1]);
+        angles->f[1] = mathAtan2(-matrix->m[0][2], norm);
+        angles->f[2] = mathAtan2(-matrix->m[1][0], matrix->m[1][1]);
     }
 }
 
-void matrix_4x4_set_position_and_rotation_around_xyz(struct coord3d *position, struct coord3d * rotation, Mtxf *matrix)
+void mtx4LoadRotationAndTranslation(struct coord3d *position, struct coord3d * rotation, Mtxf *matrix)
 {
-    matrix_4x4_set_rotation_around_xyz(rotation, matrix);
-    matrix_4x4_set_position(position, matrix);
+    mtx4LoadRotation(rotation, matrix);
+    mtx4SetTranslation(position, matrix);
 }
 
-void matrix_4x4_set_identity_and_position(struct coord3d * position, Mtxf *matrix)
+void mtx4LoadTranslation(struct coord3d * position, Mtxf *matrix)
 {
-    matrix_4x4_set_identity(matrix);
-    matrix_4x4_set_position(position, matrix);
+    mtx4LoadIdentity(matrix);
+    mtx4SetTranslation(position, matrix);
 }
 
-void matrix_4x4_set_position(struct coord3d *position, Mtxf *matrix)
+void mtx4SetTranslation(struct coord3d *position, Mtxf *matrix)
 {
     matrix->m[3][0] = position->f[0];
     matrix->m[3][1] = position->f[1];
     matrix->m[3][2] = position->f[2];
 }
 
-void matrix_column_1_scalar_multiply(f32 scalar, f32 *matrix)
+void mtx4ScaleRow0(f32 scalar, f32 *matrix)
 {
     matrix[0] *= scalar;
     matrix[1] *= scalar;
     matrix[2] *= scalar;
 }
 
-void matrix_column_2_scalar_multiply(f32 scalar, f32 *matrix)
+void mtx4ScaleRow1(f32 scalar, f32 *matrix)
 {
     matrix[4] *= scalar;
     matrix[5] *= scalar;
     matrix[6] *= scalar;
 }
 
-void matrix_column_3_scalar_multiply(f32 scalar, f32 *matrix)
+void mtx4ScaleRow2AndW(f32 scalar, f32 *matrix)
 {
     matrix[8] *= scalar;
     matrix[9] *= scalar;
@@ -413,14 +413,14 @@ void matrix_column_3_scalar_multiply(f32 scalar, f32 *matrix)
     matrix[11] *= scalar;
 }
 
-void matrix_column_3_scalar_multiply_2(f32 scalar, f32 *matrix)
+void mtx4ScaleRow2(f32 scalar, f32 *matrix)
 {
     matrix[8] *= scalar;
     matrix[9] *= scalar;
     matrix[10] *= scalar;
 }
 
-void matrix_scalar_multiply(f32 scalar, f32 *matrix)
+void mtx4ScaleRows012(f32 scalar, f32 *matrix)
 {
     matrix[0] *= scalar;
     matrix[1] *= scalar;
@@ -436,7 +436,7 @@ void matrix_scalar_multiply(f32 scalar, f32 *matrix)
     matrix[11] *= scalar;
 }
 
-void matrix_scalar_multiply_2(f32 scalar, f32 *matrix)
+void mtx4Scale3x3(f32 scalar, f32 *matrix)
 {
     matrix[0] *= scalar;
     matrix[1] *= scalar;
@@ -449,7 +449,7 @@ void matrix_scalar_multiply_2(f32 scalar, f32 *matrix)
     matrix[10] *= scalar;
 }
 
-void matrix_row_3_scalar_multiply(f32 scalar, f32 *matrix)
+void mtx4ScaleColumn2(f32 scalar, f32 *matrix)
 {
     matrix[2] *= scalar;
     matrix[6] *= scalar;
@@ -457,7 +457,7 @@ void matrix_row_3_scalar_multiply(f32 scalar, f32 *matrix)
     matrix[14] *= scalar;
 }
 
-void matrix_scalar_multiply_3(f32 scalar, f32 *matrix)
+void mtx4ScaleColumns012(f32 scalar, f32 *matrix)
 {
     matrix[0] *= scalar;
     matrix[4] *= scalar;
@@ -473,26 +473,26 @@ void matrix_scalar_multiply_3(f32 scalar, f32 *matrix)
     matrix[14] *= scalar;
 }
 
-void matrix_4x4_7F058C4C(f32 arg0)
+void mtxSetWorldScale(f32 arg0)
 {
-    D_80032310[0] = (M_U16_MAX_VALUE_F * arg0);
+    g_MtxFixedScale[0] = (M_U16_MAX_VALUE_F * arg0);
 }
 
-void matrix_4x4_7F058C64(void)
+void mtxPushUnitWorldScale(void)
 {
-    flt_CODE_bss_80075DA0 = D_80032310[0];
-    D_80032310[0]         = M_U16_MAX_VALUE_F;
+    s_MtxSavedWorldScale = g_MtxFixedScale[0];
+    g_MtxFixedScale[0]         = M_U16_MAX_VALUE_F;
 }
 
-void matrix_4x4_7F058C88(void)
+void mtxPopWorldScale(void)
 {
-    D_80032310[0] = flt_CODE_bss_80075DA0;
+    g_MtxFixedScale[0] = s_MtxSavedWorldScale;
 }
 
 /*
  * Address: 0x7F058C9C
 */
-void matrix_4x4_f32_to_s32(f32 mf[4][4], s32 ms[4][4])
+void mtxF2L(f32 mf[4][4], s32 ms[4][4])
 {
     f32 *src = (f32 *)mf;
     s32 *dst = (s32 *)ms;
@@ -502,8 +502,8 @@ void matrix_4x4_f32_to_s32(f32 mf[4][4], s32 ms[4][4])
     {
         s32 e1, e2;
 
-        e1 = (s32)(src[((i + 0) << 1) + 0] * D_80032310[0]);
-        e2 = (s32)(src[((i + 0) << 1) + 1] * D_80032310[(i + 0) & 1]);
+        e1 = (s32)(src[((i + 0) << 1) + 0] * g_MtxFixedScale[0]);
+        e2 = (s32)(src[((i + 0) << 1) + 1] * g_MtxFixedScale[(i + 0) & 1]);
         dst[(i + 0) + 0] = (e1 & 0xffff0000) | (((u32)e2) >> 16);
         dst[(i + 0) + 8] = (e1 << 16) | (e2 & 0xffff);
     }
@@ -511,9 +511,9 @@ void matrix_4x4_f32_to_s32(f32 mf[4][4], s32 ms[4][4])
 
 /*
  * Address: 0x7F058E78
- * Reads packed s32 words from src, writes floats to dst (inverse of matrix_4x4_f32_to_s32).
+ * Reads packed s32 words from src, writes floats to dst (inverse of mtxF2L).
 */
-void sub_GAME_7F058E78(Mtxf *src, Mtxf *dst) {
+void mtxL2F(Mtxf *src, Mtxf *dst) {
     u32 *srcwords = (u32 *) src;
     f32 *dstfloats = (f32 *) dst;
     s32 i;
@@ -522,12 +522,12 @@ void sub_GAME_7F058E78(Mtxf *src, Mtxf *dst) {
         u32 word1 = srcwords[i + 0];
         u32 word2 = srcwords[i + 8];
 
-        dstfloats[(i << 1) + 0] = (s32) ((word1 & 0xffff0000) | (word2 >> 16)) / D_80032310[0];
-        dstfloats[(i << 1) + 1] = (s32) ((word1 << 16) | (word2 & 0xffff)) / D_80032310[i & 1];
+        dstfloats[(i << 1) + 0] = (s32) ((word1 & 0xffff0000) | (word2 >> 16)) / g_MtxFixedScale[0];
+        dstfloats[(i << 1) + 1] = (s32) ((word1 << 16) | (word2 & 0xffff)) / g_MtxFixedScale[i & 1];
     }
 }
 
-void matrix_4x4_7F059044(Mtxf *arg0, Mtx* arg1) {
+void mtxF2LUnpacked(Mtxf *arg0, Mtx* arg1) {
     s32 i, j;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
@@ -536,7 +536,7 @@ void matrix_4x4_7F059044(Mtxf *arg0, Mtx* arg1) {
     }
 }
 
-void matrix_4x4_7F05914C(Mtx* arg0, Mtxf *arg1) {
+void mtxL2FUnpacked(Mtx* arg0, Mtxf *arg1) {
     s32 i, j;
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
@@ -548,7 +548,7 @@ void matrix_4x4_7F05914C(Mtx* arg0, Mtxf *arg1) {
 /*
  * Address: 0x7F059244
 */
-void sub_GAME_7F059244(Mtx *src, Mtx *dst) {
+void mtxPackFixed(Mtx *src, Mtx *dst) {
     u32 *srcwords = (u32 *) src;
     u32 *dstwords = (u32 *) dst;
     s32 i;
@@ -566,7 +566,7 @@ void sub_GAME_7F059244(Mtx *src, Mtx *dst) {
 /*
  * Address: 0x7F059334
 */
-void sub_GAME_7F059334(Mtx *src, Mtx *dst) {
+void mtxUnpackFixed(Mtx *src, Mtx *dst) {
     u32 *srcwords = (u32 *) src;
     u32 *dstwords = (u32 *) dst;
     s32 i;
@@ -583,7 +583,7 @@ void sub_GAME_7F059334(Mtx *src, Mtx *dst) {
 /*
  * Address: 0x7F059424
 */
-void matrix_4x4_set_lookat(Mtxf *matrix, f32 eye_x, f32 eye_y, f32 eye_z, f32 forward_x, f32 forward_y, f32 forward_z, f32 up_x, f32 up_y, f32 up_z) {
+void mtx4LoadLookDir(Mtxf *matrix, f32 eye_x, f32 eye_y, f32 eye_z, f32 forward_x, f32 forward_y, f32 forward_z, f32 up_x, f32 up_y, f32 up_z) {
     f32 right_x;
     f32 right_y;
     f32 norm_right;
@@ -640,14 +640,14 @@ void matrix_4x4_set_lookat(Mtxf *matrix, f32 eye_x, f32 eye_y, f32 eye_z, f32 fo
 /*
  * Address: 0x7F059694
 */
-void matrix_4x4_set_lookat_target(Mtxf *matrix, f32 eye_x, f32 eye_y, f32 eye_z, f32 target_x, f32 target_y, f32 target_z, f32 up_x, f32 up_y, f32 up_z) {
-    matrix_4x4_set_lookat(matrix, eye_x, eye_y, eye_z, target_x - eye_x, target_y - eye_y, target_z - eye_z, up_x, up_y, up_z);
+void mtx4LoadLookAt(Mtxf *matrix, f32 eye_x, f32 eye_y, f32 eye_z, f32 target_x, f32 target_y, f32 target_z, f32 up_x, f32 up_y, f32 up_z) {
+    mtx4LoadLookDir(matrix, eye_x, eye_y, eye_z, target_x - eye_x, target_y - eye_y, target_z - eye_z, up_x, up_y, up_z);
 }
 
 /*
  * Address: 0x7F059708
 */
-void matrix_4x4_set_basis_and_position(Mtxf *matrix, f32 pos_x, f32 pos_y, f32 pos_z, f32 basis_x, f32 basis_y, f32 basis_z, f32 up_x, f32 up_y, f32 up_z) {
+void mtx4LoadFacingDir(Mtxf *matrix, f32 pos_x, f32 pos_y, f32 pos_z, f32 basis_x, f32 basis_y, f32 basis_z, f32 up_x, f32 up_y, f32 up_z) {
     f32 right_x;
     f32 right_y;
     f32 norm_right;
@@ -692,15 +692,15 @@ void matrix_4x4_set_basis_and_position(Mtxf *matrix, f32 pos_x, f32 pos_y, f32 p
 /*
  * Address: 0x7F059908
 */
-void matrix_4x4_set_basis_and_position_target(Mtxf *matrix, f32 pos_x, f32 pos_y, f32 pos_z, f32 target_x, f32 target_y, f32 target_z, f32 up_x, f32 up_y, f32 up_z) {
-    matrix_4x4_set_basis_and_position(matrix, pos_x, pos_y, pos_z, target_x - pos_x, target_y - pos_y, target_z - pos_z, up_x, up_y, up_z);
+void mtx4LoadFacing(Mtxf *matrix, f32 pos_x, f32 pos_y, f32 pos_z, f32 target_x, f32 target_y, f32 target_z, f32 up_x, f32 up_y, f32 up_z) {
+    mtx4LoadFacingDir(matrix, pos_x, pos_y, pos_z, target_x - pos_x, target_y - pos_y, target_z - pos_z, up_x, up_y, up_z);
 }
 
 
 /*
  * Address: 0x7F05997C
 */
-u32 matrix_4x4_calc_depth_scale(f32 near, f32 far)
+u32 mtxCalcPerspNorm(f32 near, f32 far)
 {
     f32 sum = near + far;
     u16 result;
@@ -725,7 +725,7 @@ u32 matrix_4x4_calc_depth_scale(f32 near, f32 far)
 /*
  * Address: 0x7F059A48
 */
-void matrix_4x4_set_projection(Mtxf *matrix, u16* depth_scale, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale)
+void mtx4LoadPerspective(Mtxf *matrix, u16* depth_scale, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale)
 {
     f32 temp = cosf(fovy * 0.5f) / sinf(fovy * 0.5f);
     scale *= M_U16_MAX_VALUE_F;
@@ -746,14 +746,14 @@ void matrix_4x4_set_projection(Mtxf *matrix, u16* depth_scale, f32 fovy, f32 asp
     matrix->m[1][3] = 0.0f;
     matrix->m[3][3] = 0.0f;
     if (depth_scale != 0) {
-        *depth_scale = matrix_4x4_calc_depth_scale(near, far);
+        *depth_scale = mtxCalcPerspNorm(near, far);
     }
 }
 
 /*
  * Address: 0x7F059B58
 */
-void matrix_4x4_set_rotation_axis_angle(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z) 
+void mtx4LoadAlign(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z) 
 {
     f32 sine;
     f32 cosine;
@@ -791,18 +791,18 @@ void matrix_4x4_set_rotation_axis_angle(Mtxf *matrix, f32 angle, f32 x, f32 y, f
         matrix->m[3][3] = 1.0f;
         return;
     }
-    matrix_4x4_set_identity(matrix);
+    mtx4LoadIdentity(matrix);
 }
 
 
-void matrix_4x4_align(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z) 
+void mtx4LoadAlignViaGu(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z) 
 {
     angle = RadToDeg(angle);
     guAlignF(matrix->m, angle, x, y, z);
 }
 
 // DEBUG prints a 4x4 matrix
-void matrix_4x4_7F059D30(Mtxf *matrix)
+void mtx4Print(Mtxf *matrix)
 {
 #ifdef DEBUG
     int i, j;
@@ -820,7 +820,7 @@ void matrix_4x4_7F059D30(Mtxf *matrix)
     return;
 }
 
-void matrix_4x4_set_rotation_inverse(Mtxf *rotation, Mtxf *transpose) 
+void mtx4TransposeRotation(Mtxf *rotation, Mtxf *transpose) 
 {
     transpose->m[0][0] = rotation->m[0][0];
     transpose->m[0][1] = rotation->m[1][0];
@@ -843,7 +843,7 @@ void matrix_4x4_set_rotation_inverse(Mtxf *rotation, Mtxf *transpose)
 /*
  * Address: 0x7F059DAC
 */
-void matrix_4x4_normalize_rotation(Mtxf *matrix, Mtxf *result) {
+void mtx4InvertRotation(Mtxf *matrix, Mtxf *result) {
     f32 norm = ((matrix->m[0][0] * matrix->m[0][0]) +
                 (matrix->m[1][0] * matrix->m[1][0]) +
                 (matrix->m[2][0] * matrix->m[2][0]));
@@ -869,7 +869,7 @@ void matrix_4x4_normalize_rotation(Mtxf *matrix, Mtxf *result) {
 /*
  * Address: 0x7F059E64
 */
-void matrix_4x4_set_inverse_rotation_and_translation(Mtxf *matrix, Mtxf *result) {
+void mtx4InvertRigid(Mtxf *matrix, Mtxf *result) {
     f32 norm = (matrix->m[0][0] * matrix->m[0][0]) +
                (matrix->m[1][0] * matrix->m[1][0]) +
                (matrix->m[2][0] * matrix->m[2][0]);
@@ -896,7 +896,7 @@ void matrix_4x4_set_inverse_rotation_and_translation(Mtxf *matrix, Mtxf *result)
 /*
  * Address: 0x7F059FB8
 */
-void matrix_4x4_invert_affine(Mtxf *matrix, Mtxf *result)
+void mtx4InvertAffine(Mtxf *matrix, Mtxf *result)
 {
     f32 f0 = 0.0f;
     f0 += matrix->m[0][0] * matrix->m[1][1] * matrix->m[2][2];
@@ -929,11 +929,11 @@ void matrix_4x4_invert_affine(Mtxf *matrix, Mtxf *result)
 /*
  * Address: 0x7F05A250
 */
-void matrix_4x4_invert(Mtxf *matrix, Mtxf *result) {
+void mtx4Invert(Mtxf *matrix, Mtxf *result) {
     s32 i, j;
     f32 inv_det;
-    matrix_4x4_calc_adjugate(matrix, result);
-    inv_det = 1.0f / matrix_4x4_determinant(matrix);
+    mtx4Adjugate(matrix, result);
+    inv_det = 1.0f / mtx4Determinant(matrix);
     for (i = 0; i < 4; i++) {
         for (j = 0; j < 4; j++) {
             result->m[i][j] *= inv_det;
@@ -944,7 +944,7 @@ void matrix_4x4_invert(Mtxf *matrix, Mtxf *result) {
 /*
  * Address: 0x7F05A310
 */
-void matrix_4x4_calc_adjugate(Mtxf *matrix, Mtxf *result)
+void mtx4Adjugate(Mtxf *matrix, Mtxf *result)
 {
     f32 mtx00, mtx10, mtx20, mtx30;
     f32 mtx04, mtx14, mtx24, mtx34;
@@ -960,25 +960,25 @@ void matrix_4x4_calc_adjugate(Mtxf *matrix, Mtxf *result)
     mtx30 = matrix->m[3][0]; mtx34 = matrix->m[3][1];
     mtx38 = matrix->m[3][2]; mtx3c = matrix->m[3][3];
 
-    result->m[0][0] =  matrix_3x3_determinant(mtx14, mtx24, mtx34, mtx18, mtx28, mtx38, mtx1c, mtx2c, mtx3c);
-    result->m[1][0] = -matrix_3x3_determinant(mtx10, mtx20, mtx30, mtx18, mtx28, mtx38, mtx1c, mtx2c, mtx3c);
-    result->m[2][0] =  matrix_3x3_determinant(mtx10, mtx20, mtx30, mtx14, mtx24, mtx34, mtx1c, mtx2c, mtx3c);
-    result->m[3][0] = -matrix_3x3_determinant(mtx10, mtx20, mtx30, mtx14, mtx24, mtx34, mtx18, mtx28, mtx38);
-    result->m[0][1] = -matrix_3x3_determinant(mtx04, mtx24, mtx34, mtx08, mtx28, mtx38, mtx0c, mtx2c, mtx3c);
-    result->m[1][1] =  matrix_3x3_determinant(mtx00, mtx20, mtx30, mtx08, mtx28, mtx38, mtx0c, mtx2c, mtx3c);
-    result->m[2][1] = -matrix_3x3_determinant(mtx00, mtx20, mtx30, mtx04, mtx24, mtx34, mtx0c, mtx2c, mtx3c);
-    result->m[3][1] =  matrix_3x3_determinant(mtx00, mtx20, mtx30, mtx04, mtx24, mtx34, mtx08, mtx28, mtx38);
-    result->m[0][2] =  matrix_3x3_determinant(mtx04, mtx14, mtx34, mtx08, mtx18, mtx38, mtx0c, mtx1c, mtx3c);
-    result->m[1][2] = -matrix_3x3_determinant(mtx00, mtx10, mtx30, mtx08, mtx18, mtx38, mtx0c, mtx1c, mtx3c);
-    result->m[2][2] =  matrix_3x3_determinant(mtx00, mtx10, mtx30, mtx04, mtx14, mtx34, mtx0c, mtx1c, mtx3c);
-    result->m[3][2] = -matrix_3x3_determinant(mtx00, mtx10, mtx30, mtx04, mtx14, mtx34, mtx08, mtx18, mtx38);
-    result->m[0][3] = -matrix_3x3_determinant(mtx04, mtx14, mtx24, mtx08, mtx18, mtx28, mtx0c, mtx1c, mtx2c);
-    result->m[1][3] =  matrix_3x3_determinant(mtx00, mtx10, mtx20, mtx08, mtx18, mtx28, mtx0c, mtx1c, mtx2c);
-    result->m[2][3] = -matrix_3x3_determinant(mtx00, mtx10, mtx20, mtx04, mtx14, mtx24, mtx0c, mtx1c, mtx2c);
-    result->m[3][3] =  matrix_3x3_determinant(mtx00, mtx10, mtx20, mtx04, mtx14, mtx24, mtx08, mtx18, mtx28);
+    result->m[0][0] =  mtx3Determinant(mtx14, mtx24, mtx34, mtx18, mtx28, mtx38, mtx1c, mtx2c, mtx3c);
+    result->m[1][0] = -mtx3Determinant(mtx10, mtx20, mtx30, mtx18, mtx28, mtx38, mtx1c, mtx2c, mtx3c);
+    result->m[2][0] =  mtx3Determinant(mtx10, mtx20, mtx30, mtx14, mtx24, mtx34, mtx1c, mtx2c, mtx3c);
+    result->m[3][0] = -mtx3Determinant(mtx10, mtx20, mtx30, mtx14, mtx24, mtx34, mtx18, mtx28, mtx38);
+    result->m[0][1] = -mtx3Determinant(mtx04, mtx24, mtx34, mtx08, mtx28, mtx38, mtx0c, mtx2c, mtx3c);
+    result->m[1][1] =  mtx3Determinant(mtx00, mtx20, mtx30, mtx08, mtx28, mtx38, mtx0c, mtx2c, mtx3c);
+    result->m[2][1] = -mtx3Determinant(mtx00, mtx20, mtx30, mtx04, mtx24, mtx34, mtx0c, mtx2c, mtx3c);
+    result->m[3][1] =  mtx3Determinant(mtx00, mtx20, mtx30, mtx04, mtx24, mtx34, mtx08, mtx28, mtx38);
+    result->m[0][2] =  mtx3Determinant(mtx04, mtx14, mtx34, mtx08, mtx18, mtx38, mtx0c, mtx1c, mtx3c);
+    result->m[1][2] = -mtx3Determinant(mtx00, mtx10, mtx30, mtx08, mtx18, mtx38, mtx0c, mtx1c, mtx3c);
+    result->m[2][2] =  mtx3Determinant(mtx00, mtx10, mtx30, mtx04, mtx14, mtx34, mtx0c, mtx1c, mtx3c);
+    result->m[3][2] = -mtx3Determinant(mtx00, mtx10, mtx30, mtx04, mtx14, mtx34, mtx08, mtx18, mtx38);
+    result->m[0][3] = -mtx3Determinant(mtx04, mtx14, mtx24, mtx08, mtx18, mtx28, mtx0c, mtx1c, mtx2c);
+    result->m[1][3] =  mtx3Determinant(mtx00, mtx10, mtx20, mtx08, mtx18, mtx28, mtx0c, mtx1c, mtx2c);
+    result->m[2][3] = -mtx3Determinant(mtx00, mtx10, mtx20, mtx04, mtx14, mtx24, mtx0c, mtx1c, mtx2c);
+    result->m[3][3] =  mtx3Determinant(mtx00, mtx10, mtx20, mtx04, mtx14, mtx24, mtx08, mtx18, mtx28);
 }
 
-f32 matrix_4x4_determinant(Mtxf *matrix)
+f32 mtx4Determinant(Mtxf *matrix)
 {
     f32 tmp;
 	f32 sp78, sp74, sp70, sp6c;
@@ -998,21 +998,21 @@ f32 matrix_4x4_determinant(Mtxf *matrix)
 	sp6c = matrix->m[3][0]; sp5c = matrix->m[3][1];
 	sp4c = matrix->m[3][2]; sp3c = matrix->m[3][3];
 
-	sp30 = matrix_3x3_determinant(sp74, sp70, sp6c, sp64, sp60, sp5c, sp44, sp40, sp3c);
-	sp34 = matrix_3x3_determinant(sp74, sp70, sp6c, sp54, sp50, sp4c, sp44, sp40, sp3c);
-	sp38 = matrix_3x3_determinant(sp64, sp60, sp5c, sp54, sp50, sp4c, sp44, sp40, sp3c);
+	sp30 = mtx3Determinant(sp74, sp70, sp6c, sp64, sp60, sp5c, sp44, sp40, sp3c);
+	sp34 = mtx3Determinant(sp74, sp70, sp6c, sp54, sp50, sp4c, sp44, sp40, sp3c);
+	sp38 = mtx3Determinant(sp64, sp60, sp5c, sp54, sp50, sp4c, sp44, sp40, sp3c);
 
-	tmp = matrix_3x3_determinant(sp74, sp70, sp6c, sp64, sp60, sp5c, sp54, sp50, sp4c);
+	tmp = mtx3Determinant(sp74, sp70, sp6c, sp64, sp60, sp5c, sp54, sp50, sp4c);
 
 	return (sp78 * sp38 - sp68 * sp34 + sp58 * sp30) - tmp * sp48;
 
 }
 
-f32 matrix_3x3_determinant(f32 a, f32 d, f32 g, f32 b, f32 e, f32 h, f32 c, f32 f, f32 i) {
-    f32 determinant = (a * matrix_2x2_determinant(e, h, f, i)) - (b * matrix_2x2_determinant(d, g, f, i)) + (c * matrix_2x2_determinant(d, g, e, h));
+f32 mtx3Determinant(f32 a, f32 d, f32 g, f32 b, f32 e, f32 h, f32 c, f32 f, f32 i) {
+    f32 determinant = (a * mtx2Determinant(e, h, f, i)) - (b * mtx2Determinant(d, g, f, i)) + (c * mtx2Determinant(d, g, e, h));
     return determinant;
 }
 
-f32 matrix_2x2_determinant(f32 a, f32 c, f32 b, f32 d) {
+f32 mtx2Determinant(f32 a, f32 c, f32 b, f32 d) {
      return (a * d) - (c * b);
 }
