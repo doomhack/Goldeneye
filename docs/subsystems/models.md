@@ -10,7 +10,6 @@ model; it lives in `world/`.
 | `src/game/model/jointlist.c` | Depth-sorted lists of character joints, for drawing and for shot hit tests |
 | `src/game/model/modelfile.c` | Loading model files and their textures |
 | `src/game/model/cobjdata.c`, `gobjdata.c`, `pobjdata.c` | The tables of character, gun and prop model files |
-| `src/game/model/loadobjectmodel.c` | Not model code: setup and prop helpers, left for the props pass |
 | `src/game/model/initactorpropstuff.c` | Not model code: weapon animation groups and casings, left for the player pass |
 
 ## Model files

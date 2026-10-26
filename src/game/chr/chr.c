@@ -1657,7 +1657,7 @@ PropRecord *init_GUARDdata_with_set_values(PropRecord *arg0, Model *arg1, struct
     var_s0->hearingscale = 1.0f;
 
     var_s0->maxdamage = get_007_health_mod() * 4.0f;
-    set_color_shading_from_tile(arg0, &var_s0->nextcol);
+    objGetTileShading(arg0, &var_s0->nextcol);
 
     var_s0->shadecol.rgba[0] = var_s0->nextcol.rgba[0];
     var_s0->shadecol.rgba[1] = var_s0->nextcol.rgba[1];
@@ -1774,7 +1774,7 @@ void chrpropCleanupForRemoval(PropRecord *prop)
         sndDeactivate(chr->field_160[1].ptr_SEbuffer2);
     }
 
-    sub_GAME_7F050DE8(model);
+    modelResetDeformedVertices(model);
     chrpropDeregisterRooms(prop);
 
     child = prop->child;
@@ -2312,7 +2312,7 @@ void chrUpdateAnim(ChrRecord *chr, s32 tickamount)
         modelGetRootPosition(model, &chr->prevpos);
         modelTickAnim(model, tickamount, 1);
         modelCalcPosition(model);
-        set_color_shading_from_tile(prop, &chr->nextcol);
+        objGetTileShading(prop, &chr->nextcol);
         modelGetRootPosition(model, &prop->pos);
         chrDetectRooms(chr);
 
@@ -2468,7 +2468,7 @@ s32 chrTick(PropRecord *prop)
 
                     modelGetRootPosition(model, &chr->prevpos);
                     modelCalcPosition(model);
-                    set_color_shading_from_tile(prop, &chr->nextcol);
+                    objGetTileShading(prop, &chr->nextcol);
                     modelGetRootPosition(model, &prop->pos);
                     chrDetectRooms(chr);
                 }
@@ -2623,7 +2623,7 @@ after_position_update:
         g_ModelJointPositionedFunc = NULL;
         modelSetLodScale(1.0f);
 
-        update_color_shading(&chr->shadecol, &chr->nextcol);
+        objUpdateShading(&chr->shadecol, &chr->nextcol);
 
         prop->zDepth = modelGetRootDepth(model);
 
@@ -2663,7 +2663,7 @@ after_position_update:
 
                 pos = D_8002CCAC;
 
-                hat = get_hat_model(chr->handle_positiondata_hat);
+                hat = hatGetModel(chr->handle_positiondata_hat);
 
                 headindex = chr->headnum - HEAD_START;
                 entry = &((struct headHat (*)[6]) headHat_array_8003E464)[headindex][hat];
@@ -3005,7 +3005,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
                 held_hat_obj = prop_held_hat->obj;
             }
 
-            if ((getPropCombinedRoomsBBox2D(prop, &sp60) > 0) && !(chr->chrflags & CHRFLAG_CULL_USING_HITBOX))
+            if ((propGetRoomsBbox2d(prop, &sp60) > 0) && !(chr->chrflags & CHRFLAG_CULL_USING_HITBOX))
             {
                 gdl = bgScissorCurrentPlayerViewF(gdl, sp60.left, sp60.top, sp60.width, sp60.height);
             }
@@ -3034,7 +3034,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
             chrShade.b = chr->shadecol.b;
             chrShade.a = chr->shadecol.a;
 
-            lerp_rgba_s32_with_rgba_f32(&chrShade, spBC, &spC0);
+            shadingLerp(&chrShade, spBC, &spC0);
 
             mrData.envcolour.word = ((gBloodColour.rgba[0] << 0x18) | (gBloodColour.rgba[1] << 0x10)) | (gBloodColour.rgba[2] << 0x08);
             mrData.fogcolour.word = (chrShade.rgba[0] << 0x18) | (chrShade.rgba[1] << 0x10) | (chrShade.rgba[2] << 0x08) | (chrShade.rgba[3] << 0x00);

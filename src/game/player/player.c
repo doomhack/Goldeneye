@@ -796,7 +796,7 @@ void sub_GAME_7F09B398(enum GUNHAND hand)
             flags = ((hand * 4) == 0)
                   ? 0
                   : PROPFLAG_WEAPON_LEFTHANDED;
-            something_with_generating_object(chr, prop, wepid, flags, NULL, NULL);
+            chrGiveWeaponEx(chr, prop, wepid, flags, NULL, NULL);
         }
     }
 }

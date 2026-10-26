@@ -1,4 +1,11 @@
+/**
+ * Glass shards. When a window breaks, glassCreateShards fills its area with small
+ * triangles that fall and spin, and vanish after 150 ticks. They come from one buffer of 200 shared by all
+ * players (halved on Streets and Depot) and are reused oldest first.
+ */
 #include <ultra64.h>
+#include <bondconstants.h>
+#include <memp.h>
 #include <limits.h>
 #include <music.h>
 #include "game/prop/glass.h"
@@ -24,9 +31,9 @@
 
 // bss
 //CODE.bss:8007A160
-s32 SHATTERED_WINDOW_PIECES_BUFFER_LEN;
+s32 g_MaxShards;
 //CODE.bss:8007A164
-s_shattered_window_piece* ptr_shattered_window_pieces;
+s_shattered_window_piece* g_Shards;
 //CODE.bss:8007A168
 u32 dword_CODE_bss_8007A168;
 //CODE.bss:8007A16C
@@ -52,7 +59,7 @@ u32 D_8004095C = 0;
 
 
 // rodata
-void sub_GAME_7F0A1DA0(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax, f32 arg8, f32 arg9)
+void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax, f32 arg8, f32 arg9)
 {
     f32      len;
     f32      angle;
@@ -97,7 +104,7 @@ void sub_GAME_7F0A1DA0(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *za
     arg9     = ymax - ymin;
     new_var3 = &ynorm;
     if (xmin) {}
-    shard_size = sqrtf((0, (arg8 * arg9) / (SHATTERED_WINDOW_PIECES_BUFFER_LEN / 2)));
+    shard_size = sqrtf((0, (arg8 * arg9) / (g_MaxShards / 2)));
     step       = (s32)shard_size;
     new_var    = step;
     basepos.x  = (pos->x + ((xmin + ((f32)(new_var >> 1))) * xnorm.x)) + ((*new_var3).x * (ymin + ((f32)(new_var >> 1))));
@@ -155,71 +162,71 @@ void glassCreateShard(coord3d* pos, f32 rotX, f32 shard_size)
 
     u8 alpha; // Shard opacity
 
-    ptr_shattered_window_pieces[g_NextShardNum].active = 1;
-    ptr_shattered_window_pieces[g_NextShardNum].pos.x = pos->x;
-    ptr_shattered_window_pieces[g_NextShardNum].pos.y = pos->y;
-    ptr_shattered_window_pieces[g_NextShardNum].pos.z = pos->z;
+    g_Shards[g_NextShardNum].active = 1;
+    g_Shards[g_NextShardNum].pos.x = pos->x;
+    g_Shards[g_NextShardNum].pos.y = pos->y;
+    g_Shards[g_NextShardNum].pos.z = pos->z;
 
-    ptr_shattered_window_pieces[g_NextShardNum].velocity.x= randSymmetricX * SHARD_HORIZ_VEL_SCALE;
-    ptr_shattered_window_pieces[g_NextShardNum].velocity.y = randBiasedY * SHARD_VERT_VEL_SCALE;
-    ptr_shattered_window_pieces[g_NextShardNum].velocity.z = randSymmetricZ * SHARD_HORIZ_VEL_SCALE;
+    g_Shards[g_NextShardNum].velocity.x= randSymmetricX * SHARD_HORIZ_VEL_SCALE;
+    g_Shards[g_NextShardNum].velocity.y = randBiasedY * SHARD_VERT_VEL_SCALE;
+    g_Shards[g_NextShardNum].velocity.z = randSymmetricZ * SHARD_HORIZ_VEL_SCALE;
 
-    ptr_shattered_window_pieces[g_NextShardNum].v1x = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * shard_size;
-    ptr_shattered_window_pieces[g_NextShardNum].v1y = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * shard_size;
-    ptr_shattered_window_pieces[g_NextShardNum].v1z = 0;
+    g_Shards[g_NextShardNum].v1x = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * shard_size;
+    g_Shards[g_NextShardNum].v1y = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * shard_size;
+    g_Shards[g_NextShardNum].v1z = 0;
 
-    ptr_shattered_window_pieces[g_NextShardNum].v2x = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * shard_size;
-    ptr_shattered_window_pieces[g_NextShardNum].v2y = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * -shard_size;
-    ptr_shattered_window_pieces[g_NextShardNum].v2z = 0;
+    g_Shards[g_NextShardNum].v2x = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * shard_size;
+    g_Shards[g_NextShardNum].v2y = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * -shard_size;
+    g_Shards[g_NextShardNum].v2z = 0;
 
-    ptr_shattered_window_pieces[g_NextShardNum].v3x = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * -shard_size;
-    ptr_shattered_window_pieces[g_NextShardNum].v3y = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * -shard_size;
-    ptr_shattered_window_pieces[g_NextShardNum].v3z = 0;
+    g_Shards[g_NextShardNum].v3x = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * -shard_size;
+    g_Shards[g_NextShardNum].v3y = ((randomGetNext() * (1.0f / (f32)UINT_MAX) * 0.5f) + 1.0f) * -shard_size;
+    g_Shards[g_NextShardNum].v3z = 0;
     
-    ptr_shattered_window_pieces[g_NextShardNum].v1s = 0;
-    ptr_shattered_window_pieces[g_NextShardNum].v1t = 0;
-    ptr_shattered_window_pieces[g_NextShardNum].v2s = 0;
-    ptr_shattered_window_pieces[g_NextShardNum].v2t = 0;
-    ptr_shattered_window_pieces[g_NextShardNum].v3s = 0;
-    ptr_shattered_window_pieces[g_NextShardNum].v3t = 0;
+    g_Shards[g_NextShardNum].v1s = 0;
+    g_Shards[g_NextShardNum].v1t = 0;
+    g_Shards[g_NextShardNum].v2s = 0;
+    g_Shards[g_NextShardNum].v2t = 0;
+    g_Shards[g_NextShardNum].v3s = 0;
+    g_Shards[g_NextShardNum].v3t = 0;
 
     /**
      * Create a colored gradient over the verts for environment mapping.
      */
-    ptr_shattered_window_pieces[g_NextShardNum].v1r = 5;
-    ptr_shattered_window_pieces[g_NextShardNum].v1g = 5;
-    ptr_shattered_window_pieces[g_NextShardNum].v1b = 0x7E;
-    ptr_shattered_window_pieces[g_NextShardNum].v2r = 5;
-    ptr_shattered_window_pieces[g_NextShardNum].v2g = 0xFB;
-    ptr_shattered_window_pieces[g_NextShardNum].v2b = 0x7E;
-    ptr_shattered_window_pieces[g_NextShardNum].v3r = 0xFB;
-    ptr_shattered_window_pieces[g_NextShardNum].v3g = 0xFB;
-    ptr_shattered_window_pieces[g_NextShardNum].v3b = 0x7E;
-    ptr_shattered_window_pieces[g_NextShardNum].v3a = 0xFF;
+    g_Shards[g_NextShardNum].v1r = 5;
+    g_Shards[g_NextShardNum].v1g = 5;
+    g_Shards[g_NextShardNum].v1b = 0x7E;
+    g_Shards[g_NextShardNum].v2r = 5;
+    g_Shards[g_NextShardNum].v2g = 0xFB;
+    g_Shards[g_NextShardNum].v2b = 0x7E;
+    g_Shards[g_NextShardNum].v3r = 0xFB;
+    g_Shards[g_NextShardNum].v3g = 0xFB;
+    g_Shards[g_NextShardNum].v3b = 0x7E;
+    g_Shards[g_NextShardNum].v3a = 0xFF;
 
-    alpha = ptr_shattered_window_pieces[g_NextShardNum].v3a;
-    ptr_shattered_window_pieces[g_NextShardNum].v2a = alpha;
-    ptr_shattered_window_pieces[g_NextShardNum].v1a = alpha;
+    alpha = g_Shards[g_NextShardNum].v3a;
+    g_Shards[g_NextShardNum].v2a = alpha;
+    g_Shards[g_NextShardNum].v1a = alpha;
 
-    ptr_shattered_window_pieces[g_NextShardNum].rot.x = rotX;
-    ptr_shattered_window_pieces[g_NextShardNum].rot.y = 0.0f;
-    ptr_shattered_window_pieces[g_NextShardNum].rot.z = (randomGetNext() * (1.0f / (f32)UINT_MAX)) * M_TAU_F;
+    g_Shards[g_NextShardNum].rot.x = rotX;
+    g_Shards[g_NextShardNum].rot.y = 0.0f;
+    g_Shards[g_NextShardNum].rot.z = (randomGetNext() * (1.0f / (f32)UINT_MAX)) * M_TAU_F;
 
     /**
      * Impart a random angular velocity on each shard piece.
      */
-    ptr_shattered_window_pieces[g_NextShardNum].angvel.x = (randomGetNext() * (1.0f / (f32)UINT_MAX)) * SHARD_ANGVEL_SCALE;
-    ptr_shattered_window_pieces[g_NextShardNum].angvel.y = (randomGetNext() * (1.0f / (f32)UINT_MAX)) * SHARD_ANGVEL_SCALE;
-    ptr_shattered_window_pieces[g_NextShardNum].angvel.z = (randomGetNext() * (1.0f / (f32)UINT_MAX)) * SHARD_ANGVEL_SCALE;
+    g_Shards[g_NextShardNum].angvel.x = (randomGetNext() * (1.0f / (f32)UINT_MAX)) * SHARD_ANGVEL_SCALE;
+    g_Shards[g_NextShardNum].angvel.y = (randomGetNext() * (1.0f / (f32)UINT_MAX)) * SHARD_ANGVEL_SCALE;
+    g_Shards[g_NextShardNum].angvel.z = (randomGetNext() * (1.0f / (f32)UINT_MAX)) * SHARD_ANGVEL_SCALE;
 
     g_NextShardNum++;
-    if (g_NextShardNum >= SHATTERED_WINDOW_PIECES_BUFFER_LEN) {
+    if (g_NextShardNum >= g_MaxShards) {
         g_NextShardNum = 0;
     }
 }
 
 
-void update_broken_windows(void) {
+void glassTickShards(void) {
     f32 var_f0;
     s32 i;
     s32 j;
@@ -229,34 +236,34 @@ void update_broken_windows(void) {
     } else {
         var_f0 = 15.0f;
     }
-    if (SHATTERED_WINDOW_PIECES_BUFFER_LEN > 0) {
+    if (g_MaxShards > 0) {
         i = 0;
         do {
-            if (ptr_shattered_window_pieces[i].active > 0) {
-                ptr_shattered_window_pieces[i].active += (s32)var_f0;
+            if (g_Shards[i].active > 0) {
+                g_Shards[i].active += (s32)var_f0;
                 j = 0;
-                ptr_shattered_window_pieces[i].rot.x += ptr_shattered_window_pieces[i].angvel.x * var_f0;
-                ptr_shattered_window_pieces[i].rot.y += ptr_shattered_window_pieces[i].angvel.y * var_f0;
-                ptr_shattered_window_pieces[i].rot.z += ptr_shattered_window_pieces[i].angvel.z * var_f0;
-                ptr_shattered_window_pieces[i].pos.x += ptr_shattered_window_pieces[i].velocity.x * var_f0;
-                ptr_shattered_window_pieces[i].pos.z += ptr_shattered_window_pieces[i].velocity.z * var_f0;
+                g_Shards[i].rot.x += g_Shards[i].angvel.x * var_f0;
+                g_Shards[i].rot.y += g_Shards[i].angvel.y * var_f0;
+                g_Shards[i].rot.z += g_Shards[i].angvel.z * var_f0;
+                g_Shards[i].pos.x += g_Shards[i].velocity.x * var_f0;
+                g_Shards[i].pos.z += g_Shards[i].velocity.z * var_f0;
                 if ((s32)var_f0 > 0) {
                     do {
-                        ptr_shattered_window_pieces[i].pos.y += ptr_shattered_window_pieces[i].velocity.y;
-                        ptr_shattered_window_pieces[i].velocity.y -= 0.1f;
+                        g_Shards[i].pos.y += g_Shards[i].velocity.y;
+                        g_Shards[i].velocity.y -= 0.1f;
                         j++;
                     } while (j < (s32)var_f0);
                 }
-                if (ptr_shattered_window_pieces[i].active >= 0x96) {
-                    ptr_shattered_window_pieces[i].active = 0;
+                if (g_Shards[i].active >= 0x96) {
+                    g_Shards[i].active = 0;
                 }
-                if (ptr_shattered_window_pieces[i].pos.y < -30000.0f ||
-                    ptr_shattered_window_pieces[i].pos.y > 30000.0f) {
-                    ptr_shattered_window_pieces[i].active = 0;
+                if (g_Shards[i].pos.y < -30000.0f ||
+                    g_Shards[i].pos.y > 30000.0f) {
+                    g_Shards[i].active = 0;
                 }
             }
             i++;
-        } while (i < SHATTERED_WINDOW_PIECES_BUFFER_LEN);
+        } while (i < g_MaxShards);
     }
 }
 
@@ -280,9 +287,9 @@ Gfx *glassRenderShards(Gfx *gdl)
     gSPSetGeometryMode(gdl++, G_LIGHTING | G_TEXTURE_GEN);
     gSPMatrix(gdl++, osVirtualToPhysical(get_BONDdata_field_10E0()), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
-    #define WINDOW_PIECE(_i) ((s_shattered_window_piece*)((u8*)ptr_shattered_window_pieces + ((_i) * sizeof(s_shattered_window_piece))))
+    #define WINDOW_PIECE(_i) ((s_shattered_window_piece*)((u8*)g_Shards + ((_i) * sizeof(s_shattered_window_piece))))
 
-    for (i = 0; i < SHATTERED_WINDOW_PIECES_BUFFER_LEN; i++) {
+    for (i = 0; i < g_MaxShards; i++) {
         if (WINDOW_PIECE(i)->active > 0) {
             mtx = dynAllocateMatrix();
 
@@ -306,4 +313,35 @@ Gfx *glassRenderShards(Gfx *gdl)
     gSPMatrix(gdl++, (u32)currentPlayerGetMatrix10C8(), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
     return gdl;
+}
+
+
+void glassInitShards(void)
+{
+    s32 i;
+    s32 level = lvlGetCurrentStageToLoad();
+
+    g_MaxShards = (200 / getPlayerCount());
+    if ((level == LEVELID_STREETS) || (level == LEVELID_DEPOT))
+    {
+        g_MaxShards = (g_MaxShards >> 1);
+    }
+
+    g_Shards = mempAlloc(((g_MaxShards * sizeof(s_shattered_window_piece)) + 0xF) & ~0xF, MEMPOOL_STAGE);
+
+    for(i=0; i<g_MaxShards; i++)
+    {
+        g_Shards[i].active = 0;
+    }
+
+    g_NextShardNum = 0;
+}
+
+
+void glassResetShards(void) {
+    s32 i;
+    for (i = 0; i < g_MaxShards; i++)
+    {
+        g_Shards[i].active = 0;
+    }
 }

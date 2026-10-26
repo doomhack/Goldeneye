@@ -243,7 +243,7 @@ void vtxstoreTick(void)
     }
 
     if (g_VtxstoreObjFreeVtx < ((s32)g_VtxstoreObjNumVtx >> 2)) {
-        sub_GAME_7F056690();
+        objsFreeDeformedVertices();
     }
 }
 

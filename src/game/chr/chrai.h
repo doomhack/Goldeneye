@@ -176,7 +176,7 @@ Rotate Image:
 
 
 /**
- * Getting a match on alloc_lookup_buffers makes it seem
+ * Getting a match on roomPropListsInit makes it seem
  * the struct is just one continuous array. (or maybe there's no struct....)
 */
 struct roomproplistblock
@@ -255,7 +255,7 @@ extern char *setup_text_pointers[];
 
 void               alarmDeactivate(void);
 s32                chraiitemsize(u8 *AIList, s32 offset);
-void               check_deactivate_gas_sound(void);
+void               gasStopSound(void);
 void               chrpropTick(void);
 void               propsTick(void);
 void               chraiUpdateOnscreenPropCount(void);

@@ -11,7 +11,7 @@
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "game/text/language.h"
-#include "game/model/loadobjectmodel.h"
+#include "game/prop/prop.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/math/round.h"
@@ -58,13 +58,13 @@ void       audioPlayFromProp2(s32 slot)
     {
         if (sfx->pos)
         {
-            sfx->Volume = sub_GAME_7F0539E4(sfx->pos);
+            sfx->Volume = sndVolumeForPosDefault(sfx->pos);
         }
         else
         {
             if (sfx->Obj && sfx->Obj->prop)
             {
-                sfx->Volume = sub_GAME_7F0539E4(&sfx->Obj->runtime_pos);
+                sfx->Volume = sndVolumeForPosDefault(&sfx->Obj->runtime_pos);
             }
         }
 
@@ -2050,7 +2050,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFGasIsLeaking:
                 {
                     AiIFGasIsLeakingRecord *ai = AiListp + Offset;
-                    if (check_if_toxic_gas_activated())
+                    if (gasIsActive())
                     {
                         Offset = chraiGoToLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2765,7 +2765,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         {
                             mtx4ScaleRows012(obj->model->scale, &matrix);
                         }
-                        sub_GAME_7F04088C(obj, &pad->pos, &matrix, pad->stan, &pad->pos);
+                        objPlaceAtPad(obj, &pad->pos, &matrix, pad->stan, &pad->pos);
                         setupUpdateObjectRoomPosition(obj);
                     }
                     Offset += sizeof(AiMoveObjectRecord);
@@ -4133,7 +4133,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #else
                         sfx_related[ai->slotID].sfxID = sfxID;
     #endif
-                        sfx_related[ai->slotID].Volume = sub_GAME_7F0539B8(vol);
+                        sfx_related[ai->slotID].Volume = sndVolumeForDistanceDefault(vol);
                         sfx_related[ai->slotID].pos    = NULL;
                         sfx_related[ai->slotID].Obj    = NULL;
                         if (sfxID == 0)
@@ -4579,7 +4579,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         door->openstate    = DOORSTATE_STATIONARY;
                         doorUpdateBbox(door);
                         doorActivatePortal(door); // doorActivatePortal
-                        door7F053B10(door);
+                        doorStopSounds(door);
                     }
                     Offset += sizeof(AiDoorOpenInstantRecord);
                     break;
@@ -4876,7 +4876,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_GasLeakAndFadeFog:
                 {
                     coord3d emitPos = New_Coord3d();
-                    init_trigger_toxic_gas_effect(&emitPos);
+                    gasStart(&emitPos);
                     Offset += sizeof(AiGasLeakAndFadeFogRecord);
                     break;
                 }
@@ -4887,7 +4887,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (obj && obj->prop)
                     {
-                        sub_GAME_7F03FDA8(obj->prop);
+                        objEnsureProjectile(obj->prop);
 
                         if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                         {

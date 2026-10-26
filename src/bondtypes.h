@@ -553,7 +553,7 @@ typedef union
 
 #pragma endregion
 
-//Animation controller located in initobjects.h
+//Animation controller located in prop.c
 #pragma region AnimationStuff
 
     typedef struct AnimTable2

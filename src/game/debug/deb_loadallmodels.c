@@ -4,7 +4,7 @@
 #include "game/chr/chr.h"
 #include "game/chr/chr_b.h"
 #include "game/debug/deb_loadallmodels.h"
-#include "game/model/loadobjectmodel.h"
+#include "game/prop/prop.h"
 #include "aicommands2.h"
 #include "game/gfx/dyn.h"
 #include "memp.h"

@@ -147,15 +147,15 @@ extern f32 g_SpExplosionDamageMult;
 extern Mtx g_ExplosionScaleMtx;
 extern struct Smoke *g_SmokeBuffer;
 extern struct Explosion *g_ExplosionBuffer;
-extern s32 max_particles;
+extern s32 g_MaxParticles;
 extern struct FlyingParticles *g_FlyingParticlesBuffer;
 extern struct Scorch *g_ScorchBuffer;
 extern struct BulletImpact *g_BulletImpactBuffer;
-extern s32 g_NumExplosionEntries;
-extern s32 g_NumSmokeEntries;
-extern s32 g_NumParticleEntries;
-extern s32 g_NumScorchEntries;
-extern s32 g_NumImpactEntries;
+extern s32 g_ShakeTicks;
+extern s32 g_ShakeBoostTicks;
+extern s32 g_NextParticle;
+extern s32 g_NextScorch;
+extern s32 g_NextImpact;
 
 
 
@@ -172,6 +172,8 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *arg0, PropRecord *arg1, s32 arg2);
 
 void explosionCreateSmoke(coord3d *pos, StandTile *stan, s16 smoke_type, u8 *rooms, s32 flags);
 void explosionUpdateFlyingParticles(void);
+void explosionsInit(void);
+void explosionsReset(void);
 u8 explosionChrpropSmokeTick(PropRecord* prop);
 u8 explosionChrpropExplosionTick(PropRecord* prop);
 void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* result);

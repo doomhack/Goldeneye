@@ -29,7 +29,7 @@
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "game/text/language.h"
-#include "game/model/loadobjectmodel.h"
+#include "game/prop/prop.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
@@ -595,7 +595,7 @@ void solo_char_load(void)
                 pitemheader = NULL;
             }
 
-            something_with_generating_object(self, prop, item, 0, (WeaponObjRecord *)helddst, (ItemModelFileRecord *)pitemheader);
+            chrGiveWeaponEx(self, prop, item, 0, (WeaponObjRecord *)helddst, (ItemModelFileRecord *)pitemheader);
         }
 
         chrlvMergeKneelToStand(self, 0.0f);
@@ -3476,8 +3476,8 @@ void bondviewPlayerStopAudioForPause(void)
     ObjectRecord *obj;
     PropRecord *prop;
 
-    deactivate_alarm_sound_effect();
-    check_deactivate_gas_sound();
+    alarmStopSound();
+    gasStopSound();
 
     for (i = 0; i < 2; i++)
     {
@@ -6287,7 +6287,7 @@ void bondviewProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     {
         g_CurrentPlayer->hands[GUNRIGHT].weapon_action_state = GUN_ANIM_STATE_IDLE;
         g_CurrentPlayer->hands[GUNRIGHT].weapon_current_animation = 0;
-        trigger_remote_mine_detonation();
+        remoteMinesDetonate();
     }
 
     canCycleWeapons = 1;
@@ -7882,7 +7882,7 @@ void MoveBond(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     if ((edges > 0) && chrobjTestPolygonsTouchingOrOverlap2D(polygon, edges, &spB4_tank_collision_bounds, 4))
                     {
                         // Explode destroyable props when the tank touches them
-                        maybe_detonate_object_and_its_children(prop, 10000.0f, &prop->obj->runtime_pos, 0x20, get_cur_playernum());
+                        objDetonateRecursive(prop, 10000.0f, &prop->obj->runtime_pos, 0x20, get_cur_playernum());
                         g_TankDamagePenaltyTicks = TANK_DAMAGE_PENTALTY_TICKS;
                     }
                 }
@@ -10340,7 +10340,7 @@ void bondviewKillCurrentPlayer(void)
         // Counter-op: the guard player drops their gun like a guard.
         if (counterOpIsGuardPlayer(get_cur_playernum()) && (g_CurrentPlayer->prop->chr != NULL))
         {
-            drop_inventory();
+            playerDropInventory();
         }
 
         currentPlayerEquipWeaponWrapper(GUNLEFT, 0);
@@ -10473,12 +10473,12 @@ void record_damage_kills(f32 damage_amount, f32 vectorx, f32 vectorz, s32 player
                             }
 
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
-                            drop_inventory();
+                            playerDropInventory();
 #endif
                             if (sp2C != playerid)
                             {
 #if defined(VERSION_US) && !defined(BACKPORT_R1)
-                                drop_inventory();
+                                playerDropInventory();
 #endif
                                 increment_num_deaths();
                             }
@@ -10713,7 +10713,7 @@ void bondviewUpdateGuardTankFlagsRelated(PropRecord *prop, s32 flag)
     if (g_PlayerTankProp != NULL)
     {
         // When commented out tank shells fired from the tank detonate immediately.
-        sub_GAME_7F04F218(g_PlayerTankProp, flag);
+        objSetMoving(g_PlayerTankProp, flag);
     }
 
     g_playerPointers[playerIndex]->field_AC = flag;
@@ -11048,7 +11048,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
 
             if (getPlayerCount() < 3)
             {
-                if ((get_ammo_type_for_weapon(getCurrentPlayerWeaponId(GUNLEFT)) == 0) && (is_clock_drawn_onscreen() == 0))
+                if ((get_ammo_type_for_weapon(getCurrentPlayerWeaponId(GUNLEFT)) == 0) && (countdownTimerIsVisible() == 0))
                 {
                     view_top = (viGetViewTop() + viGetViewHeight()) - BONDVIEW_VIEW_TOP_OFFSET_1;
                 }

@@ -20,7 +20,7 @@
 #include "game/prop/glass.h"
 #include "game/player/gun.h"
 #include "game/model/anim.h"
-#include "game/model/loadobjectmodel.h"
+#include "game/prop/prop.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
@@ -2498,7 +2498,7 @@ bool handles_shot_actors(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weap
     // Handle hat shots.
     if (hitpart == HIT_HAT && self->handle_positiondata_hat)
     {
-        hattype = get_hat_model(self->handle_positiondata_hat);
+        hattype = hatGetModel(self->handle_positiondata_hat);
 
         if (hattype == HATTYPE_MOON) //moon - count as head hit
         {
@@ -6725,7 +6725,7 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
                     {
                         if (((dx * dx) + (dy * dy) + (dz * dz)) > 160000.0f)
                         {
-                            sp208 = (struct WeaponObjRecord *)create_new_item_instance_of_model(PROP_CHRROCKET, 0x56);
+                            sp208 = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRROCKET, 0x56);
                             if (sp208 != NULL)
                             {
                                 mtx4LoadIdentity(&sp1C8);
@@ -6779,7 +6779,7 @@ void chrlvFireWeaponRelated(ChrRecord *self, s32 hand)
                     {
                         if (((dx * dx) + (dy * dy) + (dz * dz)) > 160000.0f)
                         {
-                            sp128 = (struct WeaponObjRecord *)create_new_item_instance_of_model(PROP_CHRGRENADEROUND, 0x57);
+                            sp128 = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRGRENADEROUND, 0x57);
                             if (sp128 != NULL)
                             {
                                 mtx4LoadIdentity(&spE8);
@@ -11191,7 +11191,7 @@ bool actor_draws_throws_grenade_at_player_if_possible(ChrRecord *self)
 */
 bool chrDropItem(ChrRecord *self, s32 modelnum, u8 weaponid)
 {
-    WeaponObjRecord *NewModel = (WeaponObjRecord *)create_new_item_instance_of_model(modelnum, weaponid);
+    WeaponObjRecord *NewModel = (WeaponObjRecord *)weaponCreateFromModel(modelnum, weaponid);
 
     if (NewModel && NewModel->prop)
     {

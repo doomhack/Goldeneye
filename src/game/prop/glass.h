@@ -75,8 +75,8 @@ typedef struct s_moving_bullet_spark
 } s_moving_bullet_spark;
 #endif
 
-extern s32 SHATTERED_WINDOW_PIECES_BUFFER_LEN;
-extern s_shattered_window_piece* ptr_shattered_window_pieces;
+extern s32 g_MaxShards;
+extern s_shattered_window_piece* g_Shards;
 extern s32 g_NextShardNum;
 
 extern Vtx D_80040980;
@@ -86,7 +86,9 @@ extern u32 controller_options_index;
 extern u32 game_options_index;
 
 void sub_GAME_7F0A47FC(void);
-void update_broken_windows(void);
+void glassInitShards(void);
+void glassResetShards(void);
+void glassTickShards(void);
 
 Gfx * glassRenderShards(Gfx *arg0);
 void sub_GAME_7F0A33F8(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 arg3);
