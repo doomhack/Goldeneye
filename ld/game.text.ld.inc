@@ -114,6 +114,7 @@
       build/OUTCODE/src/game/dyn.o (.text);
       build/OUTCODE/src/game/lv.o (.text);
       build/OUTCODE/src/game/ramromreplay.o (.text);
+      build/OUTCODE/src/game/testhooks.o (.text);
       build/OUTCODE/src/game/frametiming.o (.text);
       build/OUTCODE/src/game/mp_music.o (.text);
       build/OUTCODE/src/game/language.o (.text);
