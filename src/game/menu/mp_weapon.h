@@ -72,10 +72,10 @@ extern struct s_mp_weapon_set mp_weapon_set_rockets[];
 extern struct s_mp_weapon_set mp_weapon_set_lasers[];
 extern struct s_mp_weapon_set mp_weapon_set_golden[];
 
-void incrementMPWeaponSet(void);
-u16* getPtrMPWeaponSetTextID(void);
-struct s_mp_weapon_set* getPtrMPWeaponSetData(void);
-void setMPWeaponSet(s32 arg0);
-s32 getMPWeaponSet(void);
+void mpWeaponSetNext(void);
+u16* mpWeaponSetGetName(void);
+struct s_mp_weapon_set* mpWeaponSetGetItems(void);
+void mpWeaponSetSelect(s32 arg0);
+s32 mpWeaponSetGetIndex(void);
 
 #endif

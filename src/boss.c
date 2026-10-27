@@ -444,7 +444,7 @@ void bossMainloop(void)
         {
             stringIndex = -1;
 
-            if (g_StageNum != LEVELID_TITLE && get_selected_num_players() >= 2)
+            if (g_StageNum != LEVELID_TITLE && frontGetPlayerCount() >= 2)
             {
                 stringIndex = 0;
 
@@ -514,9 +514,9 @@ void bossMainloop(void)
         if (g_StageNum != LEVELID_TITLE)
         {
             localSelectedNumPlayers = 1;
-            if (get_selected_num_players() >= 2)
+            if (frontGetPlayerCount() >= 2)
             {
-                localSelectedNumPlayers = get_selected_num_players();
+                localSelectedNumPlayers = frontGetPlayerCount();
             }
         }
 

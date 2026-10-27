@@ -175,11 +175,11 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
     {
         sp74 = 1;
 
-        if ((get_scenario() == SCENARIO_TLD) && (arg1->obj == PROP_FLAG))
+        if ((frontGetMpScenario() == SCENARIO_TLD) && (arg1->obj == PROP_FLAG))
         {
             sp74 = 0;
         }
-        else if ((get_scenario() == SCENARIO_MWTGG) && (arg1->obj == PROP_CHRGOLDEN))
+        else if ((frontGetMpScenario() == SCENARIO_MWTGG) && (arg1->obj == PROP_CHRGOLDEN))
         {
             sp74 = 0;
         }
@@ -580,7 +580,7 @@ void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
                 case ITEM_WPPKSIL + 0xF0:
                 case ITEM_TT33 + 0xF0:
                 case ITEM_SKORPION + 0xF0:
-                    weapon_set = getPtrMPWeaponSetData();
+                    weapon_set = mpWeaponSetGetItems();
 
                     temp_a0 = (u8)weapon->weaponnum - 0xF0;
                     lastmpweaponnum = temp_a0;
@@ -602,7 +602,7 @@ void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
                     hastoken = 1;
                     giveweapon = 1;
 
-                    if (get_scenario() != SCENARIO_TLD)
+                    if (frontGetMpScenario() != SCENARIO_TLD)
                     {
                         giveweapon = 0;
                     }
@@ -1680,7 +1680,7 @@ void setupCreateProps(enum LEVELID stageId)
 
                         if (isMpGame())
                         {
-                            struct s_mp_weapon_set *mpweapon = &getPtrMPWeaponSetData()[lastmpweaponnum];
+                            struct s_mp_weapon_set *mpweapon = &mpWeaponSetGetItems()[lastmpweaponnum];
                             
                             ammoqty = mpweapon->ammoamount;
                             if (mpweapon->ammotype);

@@ -95,15 +95,15 @@ typedef struct  {
 } CheatInfo;
 
 
-extern u8 g_CheatPlayerTextRelated[0x4C];
+extern u8 g_CheatPlayerMask[0x4C];
 
 //public Functions
 bool cheatIsEnemyRockets(CHEAT_ID cheatindex);
-void cheatButtonTurnOnCheatForPlayers(CHEAT_ID cheatindex);
-void cheat_buttons_mp_related(void);
+void cheatActivate(CHEAT_ID cheatindex);
+void cheatTick(void);
 bool cheatIsActive(CHEAT_ID cheatindex);
-bool cheatCheckIfMPCheat(CHEAT_ID cheatindex);
-void cheatDisableAllCheats(void);
-char *cheatGetMenuTextPointer(CHEAT_ID cheatindex);
+bool cheatIsMpCheat(CHEAT_ID cheatindex);
+void cheatTurnAllOff(void);
+char *cheatGetName(CHEAT_ID cheatindex);
 
 #endif

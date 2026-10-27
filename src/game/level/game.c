@@ -37,31 +37,31 @@ void gameCloseMePool(void) {
   *
   **/
 void gameInitData(void) {
-    current_menu = MENU_INVALID;
-    menu_update = MENU_LEGAL_SCREEN;
-    maybe_prev_menu = MENU_INVALID;
-    g_MenuTimer = 0;
-    selected_stage = LEVELID_NONE;
-    briefingpage = BRIEFING_INVALID;
-    selected_difficulty = DIFFICULTY_MULTI;
-    screen_size = SCREEN_SIZE_320x240;
-    folder_selection_screen_option_icon = 0;
-    selected_folder_num = FOLDER1;
-    mission_failed_or_aborted = FALSE;
-    is_first_time_on_legal_screen = TRUE;
-    is_first_time_on_main_menu = TRUE;
-    prev_keypresses = FALSE;
-    maybe_is_in_menu = TRUE;
-    slider_007_mode_reaction = 0.0f;
-    slider_007_mode_health = 1.0f;
-    slider_007_mode_damage = 1.0f;
-    slider_007_mode_accuracy = 1.0f;
-    intro_character_index = 0;
-    randomly_selected_intro_animation = ANIM_idle;
-    intro_animation_count = 0;
-    cast_model = NULL;
-    cast_model_weapon = NULL;
-    full_actor_intro = FALSE;
+    g_FrontMenu = MENU_INVALID;
+    g_FrontNextMenu = MENU_LEGAL_SCREEN;
+    g_FrontEnterMenu = MENU_INVALID;
+    g_FrontTimer = 0;
+    g_FrontStage = LEVELID_NONE;
+    g_FrontMission = BRIEFING_INVALID;
+    g_FrontDifficulty = DIFFICULTY_MULTI;
+    g_FrontScreenSize = SCREEN_SIZE_320x240;
+    g_FrontFolderIcon = 0;
+    g_FrontFolder = FOLDER1;
+    g_FrontMissionAborted = FALSE;
+    g_FrontFirstLegal = TRUE;
+    g_FrontFirstBoot = TRUE;
+    g_FrontSkipIntro = FALSE;
+    g_FrontStartMusic = TRUE;
+    g_Front007Reaction = 0.0f;
+    g_Front007Health = 1.0f;
+    g_Front007Damage = 1.0f;
+    g_Front007Accuracy = 1.0f;
+    g_CastIndex = 0;
+    g_CastAnim = ANIM_idle;
+    g_CastAnimCount = 0;
+    g_CastModel = NULL;
+    g_CastWeaponModel = NULL;
+    g_CastFull = FALSE;
 #ifdef DEBUG
     bodyLoad(BODY_Brosnan_Tuxedo, "char");
     bodyLoad(BODY_Male_Pierce_Bond_Tuxedo, "head");

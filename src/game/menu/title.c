@@ -35,23 +35,23 @@ extern signed short sins(unsigned short x);
 
 // bss
 //CODE.bss:80069550
-s32 barrelDisplayListPtr;
+s32 g_TitleBarrelVerts;
 //CODE.bss:80069554
-Gfx *gunbarrelgfxListPointer;
+Gfx *g_TitleBarrelGfx;
 //CODE.bss:80069558
-Mtx *matrixBufferRareLogo0;
+Mtx *g_TitleMtxRareLogo0;
 //CODE.bss:8006955C
-Mtx *matrixBufferGunbarrel0;
+Mtx *g_TitleMtxBarrel0;
 //CODE.bss:80069560
-Mtx *matrixBufferRareLogo1;
+Mtx *g_TitleMtxRareLogo1;
 //CODE.bss:80069564
-Mtx *matrixBufferRareLogo2;
+Mtx *g_TitleMtxRareLogo2;
 //CODE.bss:80069568
-Mtx *matrixBufferGunbarrel1;
+Mtx *g_TitleMtxBarrel1;
 //CODE.bss:8006956C
-Mtx *matrixBufferIntroBackdrop;
+Mtx *g_TitleMtxBackdrop;
 //CODE.bss:80069570
-Mtx *matrixBufferIntroBond;
+Mtx *g_TitleMtxBond;
 //CODE.bss:80069574
 f32 g_TitleX;
 //CODE.bss:80069578
@@ -61,31 +61,31 @@ f32 titleTransitionX;
 //CODE.bss:80069580
 f32 titleTransitionY;
 //CODE.bss:80069584
-s16 word_CODE_bss_80069584;
+s16 g_TitleBarrelAngle;
 //CODE.bss:80069588
-s32 dword_CODE_bss_80069588;
+s32 g_TitleBackdropPacked;
 //CODE.bss:8006958C
-s32 dword_CODE_bss_8006958C;
+s32 g_TitleBackdrop;
 //CODE.bss:80069590
-s32 virtualaddress;
+s32 g_TitleRareLogoData;
 
 /**
  * Address 80069594
  * EU .bss 800684D4
 */
-s32 gunbarrelTimer;
+s32 g_TitleTimer;
 
 
 // data
-u32 D_8002A7D0 = 0;
-u8 gunbarrel_mode = 0x3;
+u32 g_TitleMtxIndex = 0;
+u8 g_TitleStage = 0x3;
 u32 D_8002A7D8 = 0;
 
 struct FolderSelectColour g_FolderGradientBlack = { 0x00, 0x00, 0x00 };
 struct FolderSelectColour g_FolderGradientWhite = { 0xFF, 0xFF, 0xFF };
 
-Model *chrModelInstance = NULL;
-Model *gunModelInstance = NULL;
+Model *g_TitleBondModel = NULL;
+Model *g_TitleGunModel = NULL;
 
 ModelRenderData gunbarrelRenderData = { NULL, TRUE, 3, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0, 0, 0}, {0, 0, 0, 0}, CULLMODE_BOTH };
 
@@ -100,8 +100,8 @@ f32 cameraPosition2[3] = {0.0f, 0.0f, -1.0f};
 f32 cameraPosition3[3] = {0.0f, 1.0f, 0.0f};
 
 f32 D_8002A89C = 0.0f;
-s32 intro_eye_counter = 0;
-u32 intro_state_blood_animation = 0;
+s32 g_TitleCounter = 0;
+u32 g_TitleBloodDone = 0;
 struct coord3d D_8002A8A8 = { 0, 0, 0 };
 
 
@@ -111,34 +111,34 @@ struct coord3d D_8002A8A8 = { 0, 0, 0 };
  * @param gdl The display list to append graphics commands to.
  * @return Updated display list.
  */
-Gfx *manipulateGunbarrelAndLogoMatrices(Gfx *gdl)
+Gfx *titleRenderBarrel(Gfx *gdl)
 {
-    guTranslate(&matrixBufferRareLogo2[D_8002A7D0], g_TitleX, g_TitleY, -5.0f);
-    guTranslate(&matrixBufferGunbarrel1[D_8002A7D0], titleTransitionX, titleTransitionY, -5.0f);
+    guTranslate(&g_TitleMtxRareLogo2[g_TitleMtxIndex], g_TitleX, g_TitleY, -5.0f);
+    guTranslate(&g_TitleMtxBarrel1[g_TitleMtxIndex], titleTransitionX, titleTransitionY, -5.0f);
     gSPDisplayList(gdl++, &dlBasicGeometry);
 
     gdl = gunbarrelSetupDraw(screenClearBlack(gdl));
 
     gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
     gDPSetPrimColor(gdl++, 0, 0, 0xE6, 0xE6, 0xE6, 0x00);
-    gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(gunbarrelgfxListPointer));
-    gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferGunbarrel1[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
-    gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(gunbarrelgfxListPointer));
+    gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(g_TitleBarrelGfx));
+    gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxBarrel1[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
+    gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(g_TitleBarrelGfx));
 
     return gdl;
 }
 
-Gfx *insert_sight_backdrop_eye_intro(Gfx *gdl)
+Gfx *titleRenderBackdrop(Gfx *gdl)
 {
-    guTranslate(&matrixBufferRareLogo2[D_8002A7D0], g_TitleX + 768.0f, g_TitleY - 40.0f, -5.0f);
-    guScale(&matrixBufferGunbarrel1[D_8002A7D0], 2.7f, 2.57f, 1.0f);
+    guTranslate(&g_TitleMtxRareLogo2[g_TitleMtxIndex], g_TitleX + 768.0f, g_TitleY - 40.0f, -5.0f);
+    guScale(&g_TitleMtxBarrel1[g_TitleMtxIndex], 2.7f, 2.57f, 1.0f);
     gSPDisplayList(gdl++, &dlBasicGeometry);
     gSPDisplayList(gdl++, &dlFastPipelineSetup);
 
     gdl = gunbarrelSetupDraw(gdl);
 
-    gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferGunbarrel1[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
-    gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(gunbarrelgfxListPointer));
+    gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxBarrel1[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
+    gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(g_TitleBarrelGfx));
 
     return gdl;
 }
@@ -155,11 +155,11 @@ Gfx *titleRenderFolderMenuBackground(Gfx *gdl, s32 xOffset, struct FolderSelectC
     gDPSetTextureFilter(gdl++, G_TF_POINT);
     gDPPipeSync(gdl++);
 
-    return titleRenderFolderMenuBackgroundLines(gdl, OS_K0_TO_PHYSICAL(dword_CODE_bss_8006958C), xOffset, topColour, bottomColour);
+    return titleRenderFolderMenuBackgroundLines(gdl, OS_K0_TO_PHYSICAL(g_TitleBackdrop), xOffset, topColour, bottomColour);
 }
 
 
-Gfx *insert_sniper_sight_eye_intro(Gfx *gdl)
+Gfx *titleRenderSight(Gfx *gdl)
 {
     struct FolderSelectColour topGradientColour = g_FolderGradientBlack;
     struct FolderSelectColour bottomGradientColour = g_FolderGradientWhite;
@@ -174,7 +174,7 @@ Gfx *insert_sniper_sight_eye_intro(Gfx *gdl)
 }
 
 
-Gfx *sub_GAME_7F007E70(Gfx *gdl, u32 alpha)
+Gfx *titleRenderFade(Gfx *gdl, u32 alpha)
 {
     gdl = gunbarrelSetupDraw(gdl);
 
@@ -191,7 +191,7 @@ Gfx *sub_GAME_7F007E70(Gfx *gdl, u32 alpha)
 /**
  * Address: 7F007F30
  */
-Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
+Gfx *titleRenderBondModel(Gfx *gdl, s32 count, Mtxf *matrix)
 {
 #if defined(REFRESH_PAL)
     #define BOND_EYE_ANIM_START 114
@@ -214,24 +214,24 @@ Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
 
     for (i = 0; i < count; i++)
     {
-        if (gunbarrelTimer >= 0)
+        if (g_TitleTimer >= 0)
         {
-            gunbarrelTimer++;
+            g_TitleTimer++;
 
-            if (gunbarrelTimer == BOND_EYE_ANIM_START)
+            if (g_TitleTimer == BOND_EYE_ANIM_START)
             {
-                modelSetAnimation(chrModelInstance, (struct ModelAnimation *) ((s32) &ANIM_DATA_bond_eye_fire + (s32) &ptr_animation_table->data), 0, 2.0f, 0.910000026f, 16.0f);
+                modelSetAnimation(g_TitleBondModel, (struct ModelAnimation *) ((s32) &ANIM_DATA_bond_eye_fire + (s32) &ptr_animation_table->data), 0, 2.0f, 0.910000026f, 16.0f);
             }
 
-            if (gunbarrelTimer == BOND_EYE_ANIM_SPEEDUP)
+            if (g_TitleTimer == BOND_EYE_ANIM_SPEEDUP)
             {
-                modelSetAnimSpeed(chrModelInstance, 1.6f, 8.0f);
+                modelSetAnimSpeed(g_TitleBondModel, 1.6f, 8.0f);
             }
         }
 
-        modelTickAnim(chrModelInstance, 1, 1);
+        modelTickAnim(g_TitleBondModel, 1, 1);
 
-        if (gunbarrelTimer == BOND_EYE_FIRE_SHOT)
+        if (g_TitleTimer == BOND_EYE_FIRE_SHOT)
         {
             sndPlaySfx(g_musicSfxBufferPtr, GUN_RIFLE7BIG_1_SFX, NULL);
             playedShot = TRUE;
@@ -240,28 +240,28 @@ Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
 
     modelSetLodDisabled(1);
     modelSetShadowAlpha(80);
-    modelCalcPosition(chrModelInstance);
+    modelCalcPosition(g_TitleBondModel);
 
-    if (gunModelInstance->obj->Switches[0] != NULL)
+    if (g_TitleGunModel->obj->Switches[0] != NULL)
     {
-        modelGetNodeRwData(gunModelInstance, gunModelInstance->obj->Switches[0])->Gunfire.visible = playedShot;
+        modelGetNodeRwData(g_TitleGunModel, g_TitleGunModel->obj->Switches[0])->Gunfire.visible = playedShot;
     }
 
-    if (gunModelInstance->obj->Switches[2] != NULL)
+    if (g_TitleGunModel->obj->Switches[2] != NULL)
     {
-        modelGetNodeRwData(gunModelInstance, gunModelInstance->obj->Switches[2])->Switch.visible = playedShot;
+        modelGetNodeRwData(g_TitleGunModel, g_TitleGunModel->obj->Switches[2])->Switch.visible = playedShot;
     }
 
     renderData.basemtx = matrix;
-    renderData.mtxlist = dynAllocate(chrModelInstance->obj->numMatrices << 6);
-    modelCalcMatrices(&renderData, chrModelInstance);
+    renderData.mtxlist = dynAllocate(g_TitleBondModel->obj->numMatrices << 6);
+    modelCalcMatrices(&renderData, g_TitleBondModel);
 
-    renderData.basemtx = modelFindNodeMtx(chrModelInstance, gunModelInstance->attachedto_objinst, 0);
-    renderData.mtxlist = dynAllocate(gunModelInstance->obj->numMatrices << 6);
-    modelCalcMatricesNoAnim(&renderData, gunModelInstance);
+    renderData.basemtx = modelFindNodeMtx(g_TitleBondModel, g_TitleGunModel->attachedto_objinst, 0);
+    renderData.mtxlist = dynAllocate(g_TitleGunModel->obj->numMatrices << 6);
+    modelCalcMatricesNoAnim(&renderData, g_TitleGunModel);
 
-    entry = jointListAddModel(NULL, chrModelInstance);
-    entry = jointListAddModel(entry, gunModelInstance);
+    entry = jointListAddModel(NULL, g_TitleBondModel);
+    entry = jointListAddModel(entry, g_TitleGunModel);
     jointListCalcDepths(entry);
     entry = jointListSortByDepth(entry);
 
@@ -277,43 +277,43 @@ Gfx *sub_GAME_7F007F30(Gfx *gdl, s32 count, Mtxf *matrix)
     modelSetLodDisabled(0);
     jointListFree(entry);
 
-    for (i = 0; i < chrModelInstance->obj->numMatrices; i++)
+    for (i = 0; i < g_TitleBondModel->obj->numMatrices; i++)
     {
         Mtxf sp88;
 
-        mtx4Copy((Mtxf *) &((s8 *) chrModelInstance->render_pos)[i * sizeof(Mtxf)], &sp88);
-        mtxF2L(&sp88, &((Mtxf *) chrModelInstance->render_pos)[i]);
+        mtx4Copy((Mtxf *) &((s8 *) g_TitleBondModel->render_pos)[i * sizeof(Mtxf)], &sp88);
+        mtxF2L(&sp88, &((Mtxf *) g_TitleBondModel->render_pos)[i]);
     }
 
-    for (i = 0; i < gunModelInstance->obj->numMatrices; i++)
+    for (i = 0; i < g_TitleGunModel->obj->numMatrices; i++)
     {
         Mtxf sp48;
 
-        mtx4Copy((Mtxf *) &((s8 *) gunModelInstance->render_pos)[i * sizeof(Mtxf)], &sp48);
-        mtxF2L(&sp48, &((Mtxf *) gunModelInstance->render_pos)[i]);
+        mtx4Copy((Mtxf *) &((s8 *) g_TitleGunModel->render_pos)[i * sizeof(Mtxf)], &sp48);
+        mtxF2L(&sp48, &((Mtxf *) g_TitleGunModel->render_pos)[i]);
     }
 
     return renderData.gdl;
 }
 
 
-Gfx *insert_bond_eye_intro(Gfx *gdl) {
+Gfx *titleRenderBond(Gfx *gdl) {
     Mtxf matrix;
     u16 perspNorm;
-    guTranslate(&matrixBufferIntroBackdrop[D_8002A7D0], 0.0f, 0.0f, 0.0f);
-    guPerspective(&matrixBufferIntroBond[D_8002A7D0], &perspNorm, 46.0f, (320.0f / 240.0f), 10.0f, 10000.0f, 1.0f);
+    guTranslate(&g_TitleMtxBackdrop[g_TitleMtxIndex], 0.0f, 0.0f, 0.0f);
+    guPerspective(&g_TitleMtxBond[g_TitleMtxIndex], &perspNorm, 46.0f, (320.0f / 240.0f), 10.0f, 10000.0f, 1.0f);
     gSPPerspNormalize(gdl++, perspNorm);
     gDPSetCombineMode(gdl++, G_CC_SHADE, G_CC_SHADE);
     gDPSetRenderMode(gdl++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);
-    gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferIntroBond[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
-    gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferIntroBackdrop[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
+    gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxBond[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+    gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxBackdrop[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
     
     mtx4LoadLookAt(&matrix, gunbarrelPosition1[0], gunbarrelPosition1[1], gunbarrelPosition1[2], (gunbarrelPosition1[0] + gunbarrelPosition2[0]), (gunbarrelPosition1[1] + gunbarrelPosition2[1]), (gunbarrelPosition1[2] + gunbarrelPosition2[2]), gunbarrelPosition3[0], gunbarrelPosition3[1], gunbarrelPosition3[2]);
 
 #if defined REFRESH_PAL
-    return sub_GAME_7F007F30(gdl, 1, &matrix);
+    return titleRenderBondModel(gdl, 1, &matrix);
 #else
-    return sub_GAME_7F007F30(gdl, 2, &matrix);
+    return titleRenderBondModel(gdl, 2, &matrix);
 #endif
 }
 
@@ -324,27 +324,27 @@ extern Gfx *D_02004758 NO_SDATA;
 extern u8 *D_02004FE8 NO_SDATA;
 extern u8 *D_02005FF0 NO_SDATA;
 
-Gfx *load_display_rare_logo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+Gfx *titleRenderRareLogo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     cameraPosition1[2] = arg3;
     gSPDisplayList(gdl++, &dlBasicGeometry);
     gdl = screenClearBlack(gdl);
     {
         u16 perspNorm;
-        guPerspective(&matrixBufferRareLogo0[D_8002A7D0], &perspNorm, 60.0f, (320.0f / 240.0f), 100.0f, 5000.0f, 1.0f);
+        guPerspective(&g_TitleMtxRareLogo0[g_TitleMtxIndex], &perspNorm, 60.0f, (320.0f / 240.0f), 100.0f, 5000.0f, 1.0f);
         gSPPerspNormalize(gdl++, perspNorm);
     }
-    gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferRareLogo0[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+    gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxRareLogo0[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
     gSPClearGeometryMode(gdl++, -1);
     gSPSetGeometryMode(gdl++, (G_SHADE | G_CULL_BACK | G_LIGHTING | G_TEXTURE_GEN | G_SHADING_SMOOTH));
-    guLookAt(&matrixBufferRareLogo1[D_8002A7D0], cameraPosition1[0], cameraPosition1[1], cameraPosition1[2], (cameraPosition1[0] + cameraPosition2[0]), (cameraPosition1[1] + cameraPosition2[1]), (cameraPosition1[2] + cameraPosition2[2]), cameraPosition3[0], cameraPosition3[1], cameraPosition3[2]);
-    gSPMatrix(gdl++,  osVirtualToPhysical(&matrixBufferRareLogo1[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
-    guRotate(&matrixBufferRareLogo2[D_8002A7D0], D_8002A89C, 0.0f, 1.0f, 0.0f);
+    guLookAt(&g_TitleMtxRareLogo1[g_TitleMtxIndex], cameraPosition1[0], cameraPosition1[1], cameraPosition1[2], (cameraPosition1[0] + cameraPosition2[0]), (cameraPosition1[1] + cameraPosition2[1]), (cameraPosition1[2] + cameraPosition2[2]), cameraPosition3[0], cameraPosition3[1], cameraPosition3[2]);
+    gSPMatrix(gdl++,  osVirtualToPhysical(&g_TitleMtxRareLogo1[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
+    guRotate(&g_TitleMtxRareLogo2[g_TitleMtxIndex], D_8002A89C, 0.0f, 1.0f, 0.0f);
 #if defined(REFRESH_PAL)
     D_8002A89C += 2.4f;
 #else
     D_8002A89C += 2.0f;
 #endif
-    gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferRareLogo2[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
+    gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxRareLogo2[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
     gSPSetLights1(gdl++, gunbarrelLights);
     gunbarrelLights.a.l.col[0] = gunbarrelLights.a.l.col[1] = gunbarrelLights.a.l.col[2] = gunbarrelLights.a.l.colc[0] = gunbarrelLights.a.l.colc[1] = gunbarrelLights.a.l.colc[2] = arg4;
     gDPPipeSync(gdl++);
@@ -374,17 +374,17 @@ Gfx *load_display_rare_logo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 extern void *_rarewarelogoSegmentRomStart NO_SDATA;
 extern void *_rarewarelogoSegmentStart NO_SDATA;
 extern void *_rarewarelogoSegmentEnd NO_SDATA;
-void setupRarewareLogoData(s32 address, s32 size) {
-    gunbarrel_mode = 0;
+void titleLoadRareLogo(s32 address, s32 size) {
+    g_TitleStage = 0;
     g_TitleX = 880.0f;
     D_8002A89C = -40.0f;
-    intro_eye_counter = 0;
-    virtualaddress = address;
-    romCopy(virtualaddress, &_rarewarelogoSegmentRomStart, ALIGN64_V2((u32)&_rarewarelogoSegmentEnd - (u32)&_rarewarelogoSegmentStart));
+    g_TitleCounter = 0;
+    g_TitleRareLogoData = address;
+    romCopy(g_TitleRareLogoData, &_rarewarelogoSegmentRomStart, ALIGN64_V2((u32)&_rarewarelogoSegmentEnd - (u32)&_rarewarelogoSegmentStart));
 }
 
 
-Gfx *retrieve_display_rareware_logo(Gfx *gdl)
+Gfx *titleRenderRareIntro(Gfx *gdl)
 {
 #if defined(REFRESH_PAL)
 #define RAREWARE_LOGO_DEN 58
@@ -398,12 +398,12 @@ Gfx *retrieve_display_rareware_logo(Gfx *gdl)
 #define RAREWARE_LOGO_EYE_COUNT2 290
 #endif
 
-    D_8002A7D0 = (1 - D_8002A7D0);
-    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(virtualaddress));
-    if ((gunbarrel_mode == 0) || (gunbarrel_mode == 1)) {
+    g_TitleMtxIndex = (1 - g_TitleMtxIndex);
+    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(g_TitleRareLogoData));
+    if ((g_TitleStage == 0) || (g_TitleStage == 1)) {
         s32 var1;
         s32 var2;
-        var1 = (intro_eye_counter * 255) / RAREWARE_LOGO_DEN;
+        var1 = (g_TitleCounter * 255) / RAREWARE_LOGO_DEN;
         if (var1 > 255) {
             var1 = 255;
         }
@@ -411,19 +411,19 @@ Gfx *retrieve_display_rareware_logo(Gfx *gdl)
             var1 = 0;
         }
 
-        var2 = 255 - (((intro_eye_counter * 255) - RAREWARE_LOGO_SUB) / RAREWARE_LOGO_DEN);
+        var2 = 255 - (((g_TitleCounter * 255) - RAREWARE_LOGO_SUB) / RAREWARE_LOGO_DEN);
         if (var2 > 255) {
             var2 = 255;
         }
         if (var2 < 0) {
             var2 = 0;
         }
-        gdl = load_display_rare_logo(gdl, 403, 488, g_TitleX, (var1 * var2) / 255);
-        if (intro_eye_counter++ >= RAREWARE_LOGO_EYE_COUNT1) {
-            if (intro_eye_counter >= RAREWARE_LOGO_EYE_COUNT2) {
-                intro_eye_counter = 0;
-                gunbarrel_mode++;
-                gunbarrel_mode++;
+        gdl = titleRenderRareLogo(gdl, 403, 488, g_TitleX, (var1 * var2) / 255);
+        if (g_TitleCounter++ >= RAREWARE_LOGO_EYE_COUNT1) {
+            if (g_TitleCounter >= RAREWARE_LOGO_EYE_COUNT2) {
+                g_TitleCounter = 0;
+                g_TitleStage++;
+                g_TitleStage++;
             }
         }
     }
@@ -432,24 +432,24 @@ Gfx *retrieve_display_rareware_logo(Gfx *gdl)
 }
 
 
-s32 isGunBarrelInMode2(void) {
-    return (gunbarrel_mode == 2);
+s32 titleIsRareIntroDone(void) {
+    return (g_TitleStage == 2);
 }
 
 
 extern void *unknown2 NO_SDATA;
 extern void *unknown2_end NO_SDATA;
-void sub_GAME_7F008DE4(u8 **addr, s32 *size) {
-    dword_CODE_bss_8006958C = *addr;
+void titleLoadBackdrop(u8 **addr, s32 *size) {
+    g_TitleBackdrop = *addr;
     *size -= 0x40400;
     *addr += 0x40400;
-    dword_CODE_bss_80069588 = *addr;
-    romCopy(dword_CODE_bss_80069588, (void *)(s32)&unknown2, ALIGN64_V2(((u32)&unknown2_end - (u32)&unknown2)));
-    rleExpand8Bit(dword_CODE_bss_80069588, dword_CODE_bss_8006958C);
+    g_TitleBackdropPacked = *addr;
+    romCopy(g_TitleBackdropPacked, (void *)(s32)&unknown2, ALIGN64_V2(((u32)&unknown2_end - (u32)&unknown2)));
+    rleExpand8Bit(g_TitleBackdropPacked, g_TitleBackdrop);
 }
 
 
-void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
+void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
 {
     struct ModelAnimation *animation;
     struct coord3d sp50;
@@ -457,27 +457,27 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
     s32 temp_t9;
     s32 startframe;
     
-    gunbarrel_mode = 2;
+    g_TitleStage = 2;
     
-    guOrtho(matrixBufferGunbarrel0, 0.0f, 1280.0f, 0.0f, 960.0f, 1.0f, 8.0f, 256.0f);
+    guOrtho(g_TitleMtxBarrel0, 0.0f, 1280.0f, 0.0f, 960.0f, 1.0f, 8.0f, 256.0f);
     
     g_TitleX = -30.0f;
     g_TitleY = 482.0f;
     titleTransitionX = -100.0f;
     titleTransitionY = 482.0f;
-    word_CODE_bss_80069584 = 0x42;
-    barrelDisplayListPtr = gfxBuffer;
+    g_TitleBarrelAngle = 0x42;
+    g_TitleBarrelVerts = gfxBuffer;
     bufferSize -= 0x200;
     gfxBuffer += 0x200;
     
-    createGunbarrelRenderHole(barrelDisplayListPtr, 0x1E);
+    titleMakeBarrelHoleVerts(g_TitleBarrelVerts, 0x1E);
     
-    gunbarrelgfxListPointer = (Gfx*)gfxBuffer;
+    g_TitleBarrelGfx = (Gfx*)gfxBuffer;
     bufferSize -= 0x100;
     gfxBuffer += 0x100;
     
-    sub_GAME_7F01BFF8(gunbarrelgfxListPointer, barrelDisplayListPtr + 0x80000000, 0x1E);
-    sub_GAME_7F008DE4((u8 **)&gfxBuffer, &bufferSize);
+    titleMakeBarrelHoleGfx(g_TitleBarrelGfx, g_TitleBarrelVerts + 0x80000000, 0x1E);
+    titleLoadBackdrop((u8 **)&gfxBuffer, &bufferSize);
 
     // struct copy
     sp50 = D_8002A8A8;
@@ -501,18 +501,18 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
     bufferSize -= temp_t9;
     gfxBuffer += temp_t9;
     
-    chrModelInstance = bodyCreateModelNew(BODY_Brosnan_Tuxedo, BODY_Male_Pierce_Bond_Tuxedo, c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, 0);
+    g_TitleBondModel = bodyCreateModelNew(BODY_Brosnan_Tuxedo, BODY_Male_Pierce_Bond_Tuxedo, c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, 0);
 
-    modelSetScale(chrModelInstance, 0.18779343f);
-    modelSetAnimTranslationScale(chrModelInstance, 1.0f);
-    modelSetRootPosition(chrModelInstance, &sp50);
-    modelSetRootRotY(chrModelInstance, 0.0f);
+    modelSetScale(g_TitleBondModel, 0.18779343f);
+    modelSetAnimTranslationScale(g_TitleBondModel, 1.0f);
+    modelSetRootPosition(g_TitleBondModel, &sp50);
+    modelSetRootRotY(g_TitleBondModel, 0.0f);
 #if defined(VERSION_EU)
     #define S_7F008E80_ANIM_SPEED 0.6f
 #else
     #define S_7F008E80_ANIM_SPEED 0.5f
 #endif
-    modelSetAnimPlaySpeed(chrModelInstance, S_7F008E80_ANIM_SPEED, 0.0f);
+    modelSetAnimPlaySpeed(g_TitleBondModel, S_7F008E80_ANIM_SPEED, 0.0f);
 #undef S_7F008E80_ANIM_SPEED
     
     animation = (struct ModelAnimation*)((s32)ptr_animation_table + (s32)&ANIM_DATA_bond_eye_walk);
@@ -522,7 +522,7 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
         startframe += animation->numFrames;
     }
     
-    modelSetAnimation(chrModelInstance, (struct ModelAnimation *) animation, 0, (f32) startframe, 0.91f, 0.0f);
+    modelSetAnimation(g_TitleBondModel, (struct ModelAnimation *) animation, 0, (f32) startframe, 0.91f, 0.0f);
     modelFileLoad(PitemZ_entries[PROP_CHRWPPK].header, PitemZ_entries[PROP_CHRWPPK].filename, gfxBuffer, bufferSize, &texturePool);
     
     temp_t9 = ((fileGetLoadedSizeByName(PitemZ_entries[PROP_CHRWPPK].filename) + 0x3F) | 0x3F) ^ 0x3F;
@@ -531,26 +531,26 @@ void initializeGunBarrelIntro(u8 *gfxBuffer, s32 bufferSize)
     
     modelCalculateRwDataLen(PitemZ_entries[191].header);
     
-    gunModelInstance = modelmgrInstantiateModel(PitemZ_entries[PROP_CHRWPPK].header);
+    g_TitleGunModel = modelmgrInstantiateModel(PitemZ_entries[PROP_CHRWPPK].header);
     
-    modelSetScale(gunModelInstance, 0.18779343f);
+    modelSetScale(g_TitleGunModel, 0.18779343f);
     
-    gunModelInstance->attachedto = chrModelInstance;
-    gunModelInstance->attachedto_objinst = chrModelInstance->obj->Switches[3];
-    gunbarrelTimer = 0;    
+    g_TitleGunModel->attachedto = g_TitleBondModel;
+    g_TitleGunModel->attachedto_objinst = g_TitleBondModel->obj->Switches[3];
+    g_TitleTimer = 0;    
 }
 
 
-void clearChrGunModelInstances(void)
+void titleFreeBondModels(void)
 {
-    if (chrModelInstance)
+    if (g_TitleBondModel)
     {
-        modelFreeAnimSlot(chrModelInstance);
+        modelFreeAnimSlot(g_TitleBondModel);
     }
 
-    if (gunModelInstance)
+    if (g_TitleGunModel)
     {
-        modelFreeSlot(gunModelInstance);
+        modelFreeSlot(g_TitleGunModel);
     }
 }
 
@@ -578,25 +578,25 @@ void clearChrGunModelInstances(void)
 /*
  * Address: 0x7F009254
 */
-Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
-    D_8002A7D0 = (1 - D_8002A7D0);
-    switch (gunbarrel_mode - 2)
+Gfx *titleRenderGunbarrel (Gfx *gdl) {
+    g_TitleMtxIndex = (1 - g_TitleMtxIndex);
+    switch (g_TitleStage - 2)
     {
     case 0:
-        gdl = manipulateGunbarrelAndLogoMatrices(gdl);
+        gdl = titleRenderBarrel(gdl);
         g_TitleX += XINC;
-        if (word_CODE_bss_80069584 < 0) {
-            word_CODE_bss_80069584 = 200;
+        if (g_TitleBarrelAngle < 0) {
+            g_TitleBarrelAngle = 200;
             titleTransitionX = (g_TitleX - XDEC);
         } else {
 #if defined(VERSION_EU)
-            word_CODE_bss_80069584 -= 7;
+            g_TitleBarrelAngle -= 7;
 #else
-            word_CODE_bss_80069584 -= 6;
+            g_TitleBarrelAngle -= 6;
 #endif
         }
         if (g_TitleX > 1390.0f) {
-            gunbarrel_mode++;
+            g_TitleStage++;
             g_TitleX = 1276.0f;
         }
         break;
@@ -610,88 +610,88 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
         gdl = screenClearBlack(gdl++);
         gdl = screenClearBlack(gdl++);
         #endif
-        gdl = insert_sniper_sight_eye_intro(gdl++);
-        gdl = insert_sight_backdrop_eye_intro(gdl++);
+        gdl = titleRenderSight(gdl++);
+        gdl = titleRenderBackdrop(gdl++);
         
         if (g_TitleX < 600.0f) {
-            gdl = insert_bond_eye_intro(gdl);
+            gdl = titleRenderBond(gdl);
         }
         g_TitleX -= XDEC3;
         if (g_TitleX <= -80.0f) {
-            gunbarrel_mode++;
-            intro_eye_counter = 20;
+            g_TitleStage++;
+            g_TitleCounter = 20;
         }
         break;
 
     case 2:
-        gdl = insert_sniper_sight_eye_intro(gdl);
-        gdl = insert_sight_backdrop_eye_intro(gdl);
-        gdl = insert_bond_eye_intro(gdl);
-        intro_eye_counter--;
-        if (intro_eye_counter < 0) {
-            gunbarrel_mode++;
+        gdl = titleRenderSight(gdl);
+        gdl = titleRenderBackdrop(gdl);
+        gdl = titleRenderBond(gdl);
+        g_TitleCounter--;
+        if (g_TitleCounter < 0) {
+            g_TitleStage++;
             bloodNextFrame(0);
-            intro_state_blood_animation = 0;
-            intro_eye_counter = 1;
+            g_TitleBloodDone = 0;
+            g_TitleCounter = 1;
         }
         break;
 
     case 3:
-        intro_eye_counter--;
-        if (intro_eye_counter == 0) {
-            intro_state_blood_animation = bloodNextFrame(1);
-            intro_eye_counter = 2;
+        g_TitleCounter--;
+        if (g_TitleCounter == 0) {
+            g_TitleBloodDone = bloodNextFrame(1);
+            g_TitleCounter = 2;
         }
-        gdl = insert_sniper_sight_eye_intro(gdl);
-        gdl = insert_sight_backdrop_eye_intro(gdl);
-        gdl = insert_bond_eye_intro(gdl);
+        gdl = titleRenderSight(gdl);
+        gdl = titleRenderBackdrop(gdl);
+        gdl = titleRenderBond(gdl);
         gdl = bloodRenderGunbarrel(gdl);
-        if (intro_state_blood_animation != 0) {
-            gunbarrel_mode++;
-            word_CODE_bss_80069584 = 0;
+        if (g_TitleBloodDone != 0) {
+            g_TitleStage++;
+            g_TitleBarrelAngle = 0;
             titleTransitionX = g_TitleX;
-            intro_eye_counter = 0;
+            g_TitleCounter = 0;
         }
         break;
 
     case 4:
-        word_CODE_bss_80069584 += INCVAL;
-        intro_eye_counter++;
-        g_TitleX = ((sins(word_CODE_bss_80069584) * 64.0f) / 32768.0f) + titleTransitionX;
-        gdl = insert_sniper_sight_eye_intro(gdl);
-        gdl = insert_sight_backdrop_eye_intro(gdl);
-        gdl = insert_bond_eye_intro(gdl);
+        g_TitleBarrelAngle += INCVAL;
+        g_TitleCounter++;
+        g_TitleX = ((sins(g_TitleBarrelAngle) * 64.0f) / 32768.0f) + titleTransitionX;
+        gdl = titleRenderSight(gdl);
+        gdl = titleRenderBackdrop(gdl);
+        gdl = titleRenderBond(gdl);
         gdl = bloodRenderRedFill(gdl);
-        if (intro_eye_counter >= INTRO_EYE_COUNTER_CASE_4)
+        if (g_TitleCounter >= INTRO_EYE_COUNTER_CASE_4)
         {
-            intro_eye_counter = 0;
-            gunbarrel_mode++;
+            g_TitleCounter = 0;
+            g_TitleStage++;
         }
         break;
 
     case 5:
-        word_CODE_bss_80069584 += INCVAL;
-        g_TitleX = ((sins(word_CODE_bss_80069584) * 64.0f) / 32768.0f) + titleTransitionX;
-        gdl = insert_sniper_sight_eye_intro(gdl);
-        gdl = insert_sight_backdrop_eye_intro(gdl);
-        gdl = insert_bond_eye_intro(gdl);
+        g_TitleBarrelAngle += INCVAL;
+        g_TitleX = ((sins(g_TitleBarrelAngle) * 64.0f) / 32768.0f) + titleTransitionX;
+        gdl = titleRenderSight(gdl);
+        gdl = titleRenderBackdrop(gdl);
+        gdl = titleRenderBond(gdl);
         gdl = bloodRenderRedFill(gdl);
         
-        intro_eye_counter += INTRO_EYE_COUNTER_CASE_5_ADD;
+        g_TitleCounter += INTRO_EYE_COUNTER_CASE_5_ADD;
         
-        gdl = sub_GAME_7F007E70(gdl, intro_eye_counter);
-        if (intro_eye_counter >= 0xF7) {
-            intro_eye_counter = 0;
-            gunbarrel_mode++;                
+        gdl = titleRenderFade(gdl, g_TitleCounter);
+        if (g_TitleCounter >= 0xF7) {
+            g_TitleCounter = 0;
+            g_TitleStage++;                
         }
         break;
 
     case 6:
         gSPDisplayList(gdl++, &dlBasicGeometry);
         gdl = screenClearBlack(gdl);
-        if (intro_eye_counter++ >= INTRO_EYE_COUNTER_CASE_6) {
-            intro_eye_counter = 0;
-            gunbarrel_mode++;
+        if (g_TitleCounter++ >= INTRO_EYE_COUNTER_CASE_6) {
+            g_TitleCounter = 0;
+            g_TitleStage++;
         }
         break;
     };
@@ -700,20 +700,20 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
 }
 
 
-s32 isGunBarrelInMode9(void) {
-    return (gunbarrel_mode == 9);
+s32 titleIsGunbarrelDone(void) {
+    return (g_TitleStage == 9);
 }
 
 
 /** Allocates the matrices the intro sequence (Rare logo, gun barrel, Bond) draws with. */
 void titleAllocMatrices(void)
 {
-    D_8002A7D0 = 0;
-    matrixBufferRareLogo0     = mempAlloc(0x80, MEMPOOL_STAGE);
-    matrixBufferGunbarrel0    = mempAlloc(0x40, MEMPOOL_STAGE);
-    matrixBufferRareLogo1     = mempAlloc(0x80, MEMPOOL_STAGE);
-    matrixBufferRareLogo2     = mempAlloc(0x80, MEMPOOL_STAGE);
-    matrixBufferGunbarrel1    = mempAlloc(0x80, MEMPOOL_STAGE);
-    matrixBufferIntroBackdrop = mempAlloc(0x80, MEMPOOL_STAGE);
-    matrixBufferIntroBond     = mempAlloc(0x80, MEMPOOL_STAGE);
+    g_TitleMtxIndex = 0;
+    g_TitleMtxRareLogo0     = mempAlloc(0x80, MEMPOOL_STAGE);
+    g_TitleMtxBarrel0    = mempAlloc(0x40, MEMPOOL_STAGE);
+    g_TitleMtxRareLogo1     = mempAlloc(0x80, MEMPOOL_STAGE);
+    g_TitleMtxRareLogo2     = mempAlloc(0x80, MEMPOOL_STAGE);
+    g_TitleMtxBarrel1    = mempAlloc(0x80, MEMPOOL_STAGE);
+    g_TitleMtxBackdrop = mempAlloc(0x80, MEMPOOL_STAGE);
+    g_TitleMtxBond     = mempAlloc(0x80, MEMPOOL_STAGE);
 }

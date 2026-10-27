@@ -2,7 +2,7 @@
 #define _INITCHEATTEXT_
 #include <ultra64.h>
 
-void disableOnscreenCheatText(void);
-void initCheatTextBuffer(void);
+void cheatResetInput(void);
+void cheatResetPlayerMasks(void);
 
 #endif

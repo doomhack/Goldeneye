@@ -3,18 +3,18 @@
 #include "game/player/player.h"
 #include "game/menu/cheat.h"
 
-void initCheatTextBuffer(void) {
+void cheatResetPlayerMasks(void) {
     int i;
     
     for(i=0;i<75;i++)
     {
-        g_CheatPlayerTextRelated[i] = 0;
+        g_CheatPlayerMask[i] = 0;
     }
 
 }
 
 
-void disableOnscreenCheatText(void)
+void cheatResetInput(void)
 {
   g_CurrentPlayer->cheatInputBufferIndex = 0;
   g_CurrentPlayer->cheatInputCount = 0;

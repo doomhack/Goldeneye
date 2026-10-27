@@ -198,7 +198,7 @@ void playerApplyIntro(void)
     }
 
     intro_record = (struct SetupIntroEmpty *)g_CurrentSetup.intro;
-    g_isBondKIA = 0;
+    g_FrontBondKilled = 0;
     g_bondviewForceDisarm = 0;
     resolution = 0;
     cameraBufferToggle = 0;

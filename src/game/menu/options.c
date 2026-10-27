@@ -369,7 +369,7 @@ void init_watch_at_start_of_stage(int stage)
     // The save folder's options belong to controller 1's player.
     optionsCoopUsePlayer(0);
     fileLoadSaveSettingsForSelectedFolder(stage);
-    mission_failed_or_aborted = FALSE;
+    g_FrontMissionAborted = FALSE;
 }
 
 
@@ -839,7 +839,7 @@ void watch_screen0_navigation(void)
         D_800409A4 = 0;
         set_missionstate(MISSION_STATE_0);
         bossRunTitleStage();
-        mission_failed_or_aborted = TRUE;
+        g_FrontMissionAborted = TRUE;
         deleteCurrentSelectedFolder();
     }
 }

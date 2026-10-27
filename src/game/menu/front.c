@@ -126,21 +126,21 @@ struct coord3d cast_rootvel_accumulator;
 
 
 //CODE.bss:80069614
-f32 ninLogoRotRate;
+f32 g_NintendoLogoSpin;
 
 /**
  * Address 80069618
  * EU .bss 80068558
 */
-f32 ninLogoScale;
+f32 g_NintendoLogoScale;
 
 //CODE.bss:8006961C
 f32 flt_CODE_bss_8006961C;
 //CODE.bss:80069620
-coord3d folderpositions_camspace[MAX_FOLDER_COUNT];
+coord3d g_FrontFolderScreenPos[MAX_FOLDER_COUNT];
 
 //CODE.bss:80069650
-u8 cheat_available[CHEAT_MAX];
+u8 g_CheatAvailable[CHEAT_MAX];
 
 //CODE.bss:800696A0
 u8 g_CheatActivated[CHEAT_MAX];
@@ -150,34 +150,34 @@ u8 g_CheatActivated[CHEAT_MAX];
 /**
  * EU .bss 80068630
 */
-s32 mp_char_cur_select_player[MAX_PLAYER_COUNT];
+s32 g_MpCharCursor[MAX_PLAYER_COUNT];
 
 /**
  * EU .bss 80068680
 */
-s32 mp_char_prev_select_player[MAX_PLAYER_COUNT];
+s32 g_MpCharPrevCursor[MAX_PLAYER_COUNT];
 
 /**
  * EU .bss 80068650
 */
-s32 array_favweapon[MAX_PLAYER_COUNT][GUNHANDS];
+s32 g_MpFavWeapon[MAX_PLAYER_COUNT][GUNHANDS];
 
 #else
 
 /**
  * Address 800696F0
 */
-s32 array_favweapon[MAX_PLAYER_COUNT][GUNHANDS];
+s32 g_MpFavWeapon[MAX_PLAYER_COUNT][GUNHANDS];
 
 /**
  * Address 80069710
 */
-s32 mp_char_cur_select_player[MAX_PLAYER_COUNT];
+s32 g_MpCharCursor[MAX_PLAYER_COUNT];
 
 /**
  * Address 80069720
 */
-s32 mp_char_prev_select_player[MAX_PLAYER_COUNT];
+s32 g_MpCharPrevCursor[MAX_PLAYER_COUNT];
 
 #endif
 
@@ -186,152 +186,152 @@ s32 mp_char_prev_select_player[MAX_PLAYER_COUNT];
  * Address 80069730
  * EU .bss 80068690
 */
-s32 mp_char_select_scroll_offset[MAX_PLAYER_COUNT];
+s32 g_MpCharScroll[MAX_PLAYER_COUNT];
 
 //CODE.bss:80069740
-bool player_has_selected_char[MAX_PLAYER_COUNT];
+bool g_MpCharChosen[MAX_PLAYER_COUNT];
 
 //CODE.bss:80069750
-s32 size_mp_select_image_player[MAX_PLAYER_COUNT];
+s32 g_MpCharPortraitSize[MAX_PLAYER_COUNT];
 //CODE.bss:80069760
-s32 dword_CODE_bss_80069760[MAX_PLAYER_COUNT];
+s32 g_MpStickHeld[MAX_PLAYER_COUNT];
 //CODE.bss:80069770
-char* g_textPtrTAB1;
+char* g_FrontTabStartText;
 //CODE.bss:80069774
-char* g_textPtrTAB2;
+char* g_FrontTabNextText;
 //CODE.bss:80069778
-char* g_textPtrTAB3;
+char* g_FrontTabPrevText;
 //CODE.bss:8006977C
-s32 current_mp_stage_highlighted;
+s32 g_MpStageCursor;
 //CODE.bss:80069780
-s32 dword_CODE_bss_80069780;
+s32 g_MpScenarioCursor;
 //CODE.bss:80069784
-s32 mission_difficulty_highlighted;
+s32 g_FrontDifficultyHighlight;
 //CODE.bss:80069788
-s32 teamsize;
+s32 g_MpTeamsCursor;
 //CODE.bss:8006978C
-struct BriefingData *ptrbriefingdata;
+struct BriefingData *g_FrontBriefing;
 //CODE.bss:80069790
 s32 g_NewCheatUnlocked;
 //CODE.bss:80069794
-s32 highlight_enemy_reaction;
+s32 g_Front007HlReaction;
 //CODE.bss:80069798
-s32 highlight_enemy_health;
+s32 g_Front007HlHealth;
 //CODE.bss:8006979C
-s32 highlight_enemy_damage;
+s32 g_Front007HlDamage;
 //CODE.bss:800697A0
-s32 highlight_enemy_accuracy;
+s32 g_Front007HlAccuracy;
 
 //CODE.bss:800697A4
 s32 dword_CODE_bss_800697A4;
 
 //CODE.bss:800697A8
-s32 player_handicap[MAX_PLAYER_COUNT];
+s32 g_MpHandicap[MAX_PLAYER_COUNT];
 
 //CODE.bss:800697B8
-s32 controlstyle_player[MAX_PLAYER_COUNT];
+s32 g_MpControlStyle[MAX_PLAYER_COUNT];
 
 //CODE.bss:800697C8
-s32 highlight_players;
+s32 g_MpHlPlayers;
 //CODE.bss:800697CC
-s32 highlight_scenario;
+s32 g_MpHlScenario;
 //CODE.bss:800697D0
-s32 highlight_gameselect;
+s32 g_MpHlStage;
 //CODE.bss:800697D4
-s32 highlight_gamelength;
+s32 g_MpHlLength;
 //CODE.bss:800697D8
-s32 highlight_character;
+s32 g_MpHlChar;
 //CODE.bss:800697DC
-s32 highlight_weaponselect;
+s32 g_MpHlWeapons;
 //CODE.bss:800697E0
-s32 highlight_health;
+s32 g_MpHlHandicap;
 //CODE.bss:800697E4
-s32 highlight_controlstyle;
+s32 g_MpHlControls;
 //CODE.bss:800697E8
-s32 highlight_aimadjustment;
+s32 g_MpHlAim;
 //CODE.bss:800697EC                     .align 4
 
 /**
  * Address 0x800697F0
  * EU .bss 0x80058730
 */
-u32 arrayUnlockedCheats[CHEAT_INVALID];
+u32 g_CheatMenuList[CHEAT_INVALID];
 
 
-MENU current_menu = MENU_INVALID;
-MENU menu_update = MENU_INVALID;
-MENU maybe_prev_menu = MENU_INVALID;
+MENU g_FrontMenu = MENU_INVALID;
+MENU g_FrontNextMenu = MENU_INVALID;
+MENU g_FrontEnterMenu = MENU_INVALID;
 
-s32 g_MenuTimer = 0;
+s32 g_FrontTimer = 0;
 
-s32 tab_start_selected = FALSE;
-s32 tab_next_selected = FALSE;
-s32 tab_prev_selected = FALSE;
+s32 g_FrontTabStartSelected = FALSE;
+s32 g_FrontTabNextSelected = FALSE;
+s32 g_FrontTabPrevSelected = FALSE;
 
-s32 tab_start_highlight = FALSE;
-s32 tab_next_highlight = FALSE;
-s32 tab_prev_highlight = FALSE;
+s32 g_FrontTabStartHighlight = FALSE;
+s32 g_FrontTabNextHighlight = FALSE;
+s32 g_FrontTabPrevHighlight = FALSE;
 
-s32 selected_folder_num = FOLDER1;
-s32 selected_folder_num_copy = FOLDER1;
+s32 g_FrontFolder = FOLDER1;
+s32 g_FrontFolderSaved = FOLDER1;
 
-GAMEMODE gamemode = GAMEMODE_INTRO;
-s32 selected_stage = LEVELID_NONE;
-s32 briefingpage = BRIEFING_INVALID;
-DIFFICULTY selected_difficulty = DIFFICULTY_MULTI;
+GAMEMODE g_FrontGameMode = GAMEMODE_INTRO;
+s32 g_FrontStage = LEVELID_NONE;
+s32 g_FrontMission = BRIEFING_INVALID;
+DIFFICULTY g_FrontDifficulty = DIFFICULTY_MULTI;
 
 s32 g_AppendCheatSinglePlayer = FALSE;
 s32 g_AppendCheatMultiPlayer = FALSE;
 
-f32 cursor_h_pos = 220.0;
-f32 cursor_v_pos = 165.0;
+f32 g_FrontCursorX = 220.0;
+f32 g_FrontCursorY = 165.0;
 
-s32 final_menu_briefing_page = BRIEFING_M;
-s32 current_menu_briefing_page = BRIEFING_TITLE;
+s32 g_FrontBriefingLastPage = BRIEFING_M;
+s32 g_FrontBriefingPage = BRIEFING_TITLE;
 
-s32 folder_selection_screen_option_icon = 0;
-s32 folder_selected_for_deletion = FOLDER_INVALID;
-s32 folder_selected_for_deletion_choice = FOLDER2;
+s32 g_FrontFolderIcon = 0;
+s32 g_FrontFolderErase = FOLDER_INVALID;
+s32 g_FrontFolderEraseChoice = FOLDER2;
 
-s32 mission_failed_or_aborted = FALSE;
-s32 g_isBondKIA = FALSE;
+s32 g_FrontMissionAborted = FALSE;
+s32 g_FrontBondKilled = FALSE;
 
-s32 is_first_time_on_legal_screen = TRUE;
-s32 is_first_time_on_main_menu = TRUE;
+s32 g_FrontFirstLegal = TRUE;
+s32 g_FrontFirstBoot = TRUE;
 
-s32 prev_keypresses = FALSE;
-s32 ge_logo_bool = FALSE;
+s32 g_FrontSkipIntro = FALSE;
+s32 g_FrontLogoKeyPressed = FALSE;
 
-s32 maybe_is_in_menu = TRUE;
-s32 screen_size = SCREEN_SIZE_320x240;
+s32 g_FrontStartMusic = TRUE;
+s32 g_FrontScreenSize = SCREEN_SIZE_320x240;
 
-s32 spectrum_related_flag = 0;
-s32 is_emulating_spectrum = FALSE;
+s32 g_FrontHiResPending = 0;
+s32 g_FrontLowResPending = FALSE;
 
-s32 is_cheat_menu_available = FALSE;
+s32 g_CheatMenuAvailable = FALSE;
 
-u8 * ptr_logo_and_walletbond_DL = NULL;
-s32 ptr_menu_videobuffer = 0;
-struct Model *logoinst = NULL;
-struct Model * walletinst[] = { NULL, NULL, NULL, NULL};
+u8 * g_FrontModelBuffer = NULL;
+s32 g_FrontFrameBuffer = 0;
+struct Model *g_FrontLogoModel = NULL;
+struct Model * g_FrontFolderModels[] = { NULL, NULL, NULL, NULL};
 
-Lights1 gelogolight = gdSPDefLights1(
+Lights1 g_FrontLogoLight = gdSPDefLights1(
     0x96, 0x96, 0x96,
     0xFF, 0xFF, 0xFF,
     77, 77, 46
 );
 
-Lights1 ninlogolight = gdSPDefLights1(
+Lights1 g_FrontNintendoLight = gdSPDefLights1(
     0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00,
     0, 0, 0
 );
 
 
-f32 slider_007_mode_reaction = 0.0f;
-f32 slider_007_mode_health = 1.0f;
-f32 slider_007_mode_damage = 1.0f;
-f32 slider_007_mode_accuracy = 1.0f;
+f32 g_Front007Reaction = 0.0f;
+f32 g_Front007Health = 1.0f;
+f32 g_Front007Damage = 1.0f;
+f32 g_Front007Accuracy = 1.0f;
 
 /* 0x8002A9B0 */ rgba_u8 textglowR = { 160, 0, 0, 0 };
 /* 0x8002A9B4 */ rgba_u8 textglowG = { 150, 0, 0, 0 };
@@ -340,7 +340,7 @@ f32 slider_007_mode_accuracy = 1.0f;
 
 struct coord3d legalpage_pos = {0.0f, 0.0f, 0.0f};
 
-struct legal_screen_text legalpage_text_array[] = {
+struct legal_screen_text g_LegalTexts[] = {
     {220,  30, CENTER_ALIGN, CENTER_ALIGN, getStringID(LTITLE, TITLE_STR_07_TWY), 0}, //"TWYCROSS BOARD OF GAME CLASSIFICATION\n"
     { 34,  83, LEFT_ALIGN, CENTER_ALIGN, getStringID(LTITLE, TITLE_STR_08_CERT), 0}, //"This is to certify\n"
     {226,  84, LEFT_ALIGN, CENTER_ALIGN, getStringID(LTITLE, TITLE_STR_09_NINRARE), 0}, //"(c) 1997 Nintendo/Rare\n"
@@ -422,7 +422,7 @@ ModelRenderData       goldeneyelogo_MRD = {NULL,
                                     CULLMODE_BOTH};
 
 
-struct coord3d folderpositions[] = {
+struct coord3d g_FrontFolderPos[] = {
     {-900.0f, 800.0f, 0.0f},
     {1800.0f, 800.0f, 0.0f},
     {-1800.0f, -200.0f, 0.0f},
@@ -432,7 +432,7 @@ struct coord3d folderpositions[] = {
 struct rectbbox folder_option_COPY_bound = { 0 };
 struct rectbbox folder_option_ERASE_bound = { 0 };
 
-struct mission_folder_setup mission_folder_setup_entries[] = {
+struct mission_folder_setup g_FrontMissions[] = {
   /* string_ptr  folder_text_preset                                                         icon_text_preset                                            stage_id           unknown type             mission_num briefing_name_ptr */
     {"1",        getStringID(LTITLE, TITLE_STR_120_ARK)            /* Arkangelsk */,        0,                                                          LEVELID_NONE,           0, MISSION_HEADER,          -1, 0},
     {"i",        getStringID(LTITLE, TITLE_STR_121_DAM)            /* Dam */,               0,                                                          LEVELID_DAM,            0, MISSION_PART,             0, "UbriefdamZ"},
@@ -514,15 +514,15 @@ ModelRenderData       D_8002AF84           = {NULL,
 f32 D_8002AFC4 = 0;
 f32 D_8002AFC8 = 190.0;
 f32 D_8002AFCC = -3300.0;
-s32 cursor_xpos_table_mission_select[] = {73, 142, 212, 282, 352};
+s32 g_FrontMissionCursorX[] = {73, 142, 212, 282, 352};
 
 #if defined(VERSION_EU)
-s32 cursor_ypos_table_mission_select[] = {62, 130, 201, 270};
+s32 g_FrontMissionCursorY[] = {62, 130, 201, 270};
 #else
-s32 cursor_ypos_table_mission_select[] = {62, 131, 201, 270};
+s32 g_FrontMissionCursorY[] = {62, 131, 201, 270};
 #endif
 
-struct MP_game_length_settings multi_game_lengths[] = {
+struct MP_game_length_settings g_MpGameLengths[] = {
     {getStringID(LTITLE, TITLE_STR_45_UNLIMITED), 0, 0, 0},                    /* unlimited */
     {getStringID(LTITLE, TITLE_STR_46_5MIN), 0, MINS_TO_TIMER60(5), 0},   /* 5 minutes */
     {getStringID(LTITLE, TITLE_STR_47_10MIN), 0, MINS_TO_TIMER60(10), 0},  /* 10 minutes */
@@ -533,7 +533,7 @@ struct MP_game_length_settings multi_game_lengths[] = {
     {getStringID(LTITLE, TITLE_STR_52_LASTALIVE), 0, 0, 0}                     /* last person alive wins */
 };
 
-struct mp_stage_playercount mp_player_counts[] = {
+struct mp_stage_playercount g_MpStagePlayerCounts[] = {
     {getStringID(LTITLE, TITLE_STR_53_NORMAL), 2, 4}, //"Normal"
     {getStringID(LTITLE, TITLE_STR_54_YOLT), 2, 4}, //"You Only Live Twice"
     {getStringID(LTITLE, TITLE_STR_55_FLAGTAG), 2, 4}, //"The Living Daylights [Flag Tag]"
@@ -544,7 +544,7 @@ struct mp_stage_playercount mp_player_counts[] = {
     {getStringID(LTITLE, TITLE_STR_60_2V1), 3, 3}  //"Team: 2 vs 1"
 };
 
-struct mp_stage_setup multi_stage_setups[] = {
+struct mp_stage_setup g_MpStages[] = {
     /* unlocked by default */
     {getStringID(LTITLE, TITLE_STR_154_RANDOM), getStringID(LTITLE, TITLE_STR_155_RANDOM2), IMG_MP_RANDOM, LEVELID_NONE, -1, 1, 4},
     {getStringID(LTITLE, TITLE_STR_156_TEMPLE), getStringID(LTITLE, TITLE_STR_157_TEMPLE2), IMG_MP_TEMPLE, LEVELID_TEMPLE, -1, 1, 4},
@@ -569,10 +569,10 @@ struct mp_stage_setup multi_stage_setups[] = {
   //{getStringID(LTITLE, TITLE_STR_138_DEPOT), getStringID(LTITLE, TITLE_STR_138_DEPOT), IMG_MP_DEPOT, LEVELID_DEPOT, SP_LEVEL_DEPOT, 1, 4}, //depot (xbla setup)
 };
 
-s32 num_chars_selectable_mp = 8;
+s32 g_MpCharCount = 8;
 
 #ifdef BUGFIX_R0
-struct MP_selectable_chars mp_chr_setup[] = {
+struct MP_selectable_chars g_MpChars[] = {
     {getStringID(LTITLE, TITLE_STR_184_BOND), MALE,   IMG_MPC_BROSNAN, BODY_Brosnan_Tuxedo,                   HEAD_Male_Brosnan_Tuxedo, 1.0},
     {getStringID(LTITLE, TITLE_STR_191_NATALYA), FEMALE, IMG_MPC_NATALYA, BODY_Natalya_Skirt,            HEAD_Male_Brosnan_Tuxedo, 0.96609998},
     {getStringID(LTITLE, TITLE_STR_188_TREVELYAN), MALE,   IMG_MPC_TREVELYAN, BODY_Trevelyan_Janus,          HEAD_Male_Brosnan_Tuxedo, 1.0},
@@ -639,7 +639,7 @@ struct MP_selectable_chars mp_chr_setup[] = {
     {getStringID(LTITLE, TITLE_STR_226_VIVIEN), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Female_Vivien, 1.0446}
 };
 #else
-struct MP_selectable_chars mp_chr_setup[] = {
+struct MP_selectable_chars g_MpChars[] = {
     {getStringID(LTITLE, TITLE_STR_184_BOND), MALE,   IMG_MPC_BROSNAN, BODY_Brosnan_Tuxedo,                   HEAD_Male_Brosnan_Tuxedo, 1.0},
     {getStringID(LTITLE, TITLE_STR_191_NATALYA), FEMALE, IMG_MPC_NATALYA, BODY_Natalya_Skirt,            HEAD_Male_Brosnan_Tuxedo, 0.96609998},
     {getStringID(LTITLE, TITLE_STR_188_TREVELYAN), MALE,   IMG_MPC_TREVELYAN, BODY_Trevelyan_Janus,          HEAD_Male_Brosnan_Tuxedo, 1.0},
@@ -708,7 +708,7 @@ struct MP_selectable_chars mp_chr_setup[] = {
 #endif
 
 
-struct MP_handicap_menu MP_handicap_table[] = {
+struct MP_handicap_menu g_MpHandicaps[] = {
     {getStringID(LTITLE, TITLE_STR_61_HERO), 0, 10.0},       // "Health -10\n(Hero)"
     {getStringID(LTITLE, TITLE_STR_62_VET4), 0, 2.8560996},  // "Health -4\n(Veteran)"
     {getStringID(LTITLE, TITLE_STR_63_VET3), 0, 2.1969998},  // "Health -3\n(Veteran)"
@@ -722,7 +722,7 @@ struct MP_handicap_menu MP_handicap_table[] = {
     {getStringID(LTITLE, TITLE_STR_71_ROOKIE), 0, 0.1}         // "Health +10\n(Rookie)"
 };
 
-struct MP_controller_configuration_menu MP_controller_configuration_table[] = {
+struct MP_controller_configuration_menu g_MpControlStyles[] = {
     {getStringID(LTITLE, TITLE_STR_277_11HONEY), 0, 1}, //1.1 Honey*
     {getStringID(LTITLE, TITLE_STR_278_12SOLITAIRE), 1, 1}, //1.2 Solitaire*
     {getStringID(LTITLE, TITLE_STR_279_13KISSY), 2, 1}, //1.3 Kissy*
@@ -733,31 +733,31 @@ struct MP_controller_configuration_menu MP_controller_configuration_table[] = {
     {getStringID(LTITLE, TITLE_STR_284_24GOODHEAD), 7, 2}  //2.4 Goodhead*
 };
 
-struct MP_sight_aim_settings mp_sight_adjust_table[] = {
+struct MP_sight_aim_settings g_MpAimSettings[] = {
     {getStringID(LTITLE, TITLE_STR_72_SOFFAOFF), 0, 0}, // "Sight OFF, Auto Aim OFF"
     {getStringID(LTITLE, TITLE_STR_73_SONAOFF), 1, 0}, // "Sight ON, Auto Aim OFF"
     {getStringID(LTITLE, TITLE_STR_74_SOFFAON), 0, 1}, // "Sight OFF, Auto Aim ON"
     {getStringID(LTITLE, TITLE_STR_75_SONAON), 1, 1}  // "Sight ON, Auto Aim ON"
 };
 
-s32 selected_num_players = 0;
-s32 player_char[MAX_PLAYER_COUNT] = { -1, -1, -1, -1 };
-s32 MP_stage_selected = MP_STAGE_TEMPLE;
-s32 game_length = LEN_10MIN; //10minutes
-s32 aim_sight_adjustment = 3; //"Sight ON, Auto Aim ON"
-s32 scenario = SCENARIO_NORMAL;
+s32 g_MpPlayerCount = 0;
+s32 g_MpChar[MAX_PLAYER_COUNT] = { -1, -1, -1, -1 };
+s32 g_MpStage = MP_STAGE_TEMPLE;
+s32 g_MpGameLength = LEN_10MIN; //10minutes
+s32 g_MpAimSetting = 3; //"Sight ON, Auto Aim ON"
+s32 g_MpScenario = SCENARIO_NORMAL;
 
-s32 unlock_stage_select = TRUE;
-s32 unlock_game_length = TRUE;
-s32 unlock_chars = TRUE;
-s32 unlock_weapon_select = TRUE;
-s32 unlock_handicap = TRUE;
-s32 unlock_control_style = TRUE;
-s32 unlock_aim_sight = TRUE;
+s32 g_MpCanPickStage = TRUE;
+s32 g_MpCanPickLength = TRUE;
+s32 g_MpCanPickChar = TRUE;
+s32 g_MpCanPickWeapons = TRUE;
+s32 g_MpCanPickHandicap = TRUE;
+s32 g_MpCanPickControls = TRUE;
+s32 g_MpCanPickAim = TRUE;
 
-u32 D_8002B560 = 0;
+u32 g_MpTeamsBlinkTimer = 0;
 
-s16 solo_target_time_array[20][3] = {
+s16 g_FrontTargetTimes[20][3] = {
     {0, 160, 0}, // Dam
     {0, 0, 125}, // Facility
     {300, 0, 0}, // Runway
@@ -780,19 +780,19 @@ s16 solo_target_time_array[20][3] = {
     {0, 0, 360}  // Egyptian
 };
 
-s32 totalunlockedcheats = 0;
-s32 cheathighlighted = 0; // 0x8002B5E0
+s32 g_CheatMenuCount = 0;
+s32 g_CheatMenuCursor = 0; // 0x8002B5E0
 
 
-u32 MP_menu_selected_option = 0;
-s32 intro_character_index = 0;
-u32 randomly_selected_intro_animation = ANIM_idle;
-u32 intro_animation_count = 0;
-struct Model *cast_model = NULL;
-struct Model *cast_model_weapon = NULL;
-u32 full_actor_intro = 0;
+u32 g_CheatMenuToggle = 0;
+s32 g_CastIndex = 0;
+u32 g_CastAnim = ANIM_idle;
+u32 g_CastAnimCount = 0;
+struct Model *g_CastModel = NULL;
+struct Model *g_CastWeaponModel = NULL;
+u32 g_CastFull = 0;
 
-struct intro_char intro_char_table[] = {
+struct intro_char g_CastChars[] = {
     {BODY_Brosnan_Tuxedo,             HEAD_Male_Brosnan_Tuxedo, getStringID(LTITLE, TITLE_STR_227_LF),            getStringID(LTITLE, TITLE_STR_228_THEACTORS),             getStringID(LTITLE, TITLE_STR_227_LF),               0, 1},
     {BODY_Special_Operations_Uniform, HEAD_Male_Brosnan_Boiler, getStringID(LTITLE, TITLE_STR_229_STARRING),      getStringID(LTITLE, TITLE_STR_232_007),                   getStringID(LTITLE, TITLE_STR_233_JAMESBOND),        0, 0},
     {BODY_Natalya_Skirt,              HEAD_FIXED,               getStringID(LTITLE, TITLE_STR_229_STARRING),      getStringID(LTITLE, TITLE_STR_234_NATALYASIMONOVA),       getStringID(LTITLE, TITLE_STR_227_LF),               0, 0},
@@ -830,7 +830,7 @@ struct intro_char intro_char_table[] = {
     {0xFFFFFFFF,                      0,                        0,                                                0,                                                        0,                                                   0, 0}
 };
 
-struct intro_animation intro_animation_table[] = {
+struct intro_animation g_CastAnims[] = {
     {ANIM_spotting_bond, 98.0, 1.0, 0},
     {ANIM_fire_standing_draw_one_handed_weapon_fast, 21.0, 1.0, 1},
     {ANIM_fire_standing_draw_one_handed_weapon_slow, 26.0, 1.0, 1},
@@ -864,7 +864,7 @@ struct intro_random_rifles
     PROP props[INTRO_RANDOM_RIFLE_LEN];
 };
 
-struct intro_random_rifles random_rifles_in_intro = {
+struct intro_random_rifles g_CastRifles = {
     PROP_CHRKALASH,
     PROP_CHRM16,
     PROP_CHRFNP90,
@@ -879,7 +879,7 @@ struct intro_random_pistols
     PROP props[INTRO_RANDOM_PISTO_LEN];
 };
 
-struct intro_random_pistols random_pistols_in_intro = {
+struct intro_random_pistols g_CastPistols = {
     PROP_CHRWPPK,
     PROP_CHRWPPKSIL,
     PROP_CHRSKORPION,
@@ -892,7 +892,7 @@ struct intro_random_pistols random_pistols_in_intro = {
     PROP_CHRGOLDEN
 };
 
-struct coord3d cast_camera_pos    = { 0.0f, 0.0f, 1.0f }; // campos in constructor_menu18_displaycast is set to this, but is then immediately overwritten, so the values here have no effect.
+struct coord3d cast_camera_pos    = { 0.0f, 0.0f, 1.0f }; // campos in frontCastRender is set to this, but is then immediately overwritten, so the values here have no effect.
 struct coord3d cast_camera_target = { 0.0f, 0.0f, 0.0f };
 struct coord3d cast_camera_up     = { 0.0f, 1.0f, 0.0f }; // Display cast character up vector
 
@@ -917,7 +917,7 @@ ModelRenderData cast_renderdata_default = { NULL,
                                            CULLMODE_BOTH};
 
 
-struct coord3d cast_camera_offset = { 0.0f, 40.0f, 25.0f }; // vec in constructor_menu18_displaycast is initialized to this, but then gets overwritten before it's read, so these values don't have any effect.
+struct coord3d cast_camera_offset = { 0.0f, 40.0f, 25.0f }; // vec in frontCastRender is initialized to this, but then gets overwritten before it's read, so these values don't have any effect.
 
 u32 D_8002BAE8 = 0; // unused
 u32 D_8002BAEC = 1; // unused
@@ -928,38 +928,38 @@ u16 color_palette_entries_50_percent[] = {1, 0x1F, 0x3C1, 0x3DF, 0x7801, 0x781F,
 // forward declarations
 
 Gfx* frontAddPreviousTabText(Gfx* DL);
-s32 check_if_stage_completed_on_difficulty(int stage, DIFFICULTY difficulty);
-s32 get_highest_unlocked_difficulty_for_level(s32 arg0);
-Gfx *constructor_menu00_legalscreen(Gfx *DL);
-Gfx *constructor_menu01_nintendo(Gfx *DL);
-Gfx *constructor_menu02_rareware(Gfx *DL);
-Gfx *constructor_menu03_eye(Gfx *DL);
-Gfx *constructor_menu04_goldeneyelogo(Gfx *DL);
-Gfx *constructor_menu05_fileselect(Gfx *DL);
-Gfx *constructor_menu06_modesel(Gfx *DL);
-Gfx *constructor_menu07_missionsel(Gfx *DL);
-Gfx *constructor_menu08_difficulty(Gfx *DL);
-Gfx *constructor_menu09_007options(Gfx *DL);
-Gfx *constructor_menu0A_briefing(Gfx *DL);
-Gfx *constructor_menu0C_missionfailed(Gfx *DL);
-Gfx *constructor_menu0D_missioncomplete(Gfx *DL);
-Gfx *constructor_menu0E_mpoptions(Gfx *DL);
-Gfx *constructor_menu0F_mpcharsel(Gfx *DL);
-Gfx *constructor_menu10_mphandicap(Gfx *DL);
-Gfx *constructor_menu11_mpcontrol(Gfx *DL);
-Gfx *constructor_menu12_mpstage(Gfx *DL);
-Gfx *constructor_menu13_mpscenario(Gfx *DL);
-Gfx *constructor_menu14_mpteams(Gfx *DL);
-Gfx *constructor_menu15_cheat(Gfx *DL);
-Gfx *constructor_menu16_nocontrollers(Gfx *DL);
-Gfx *constructor_menu17_switchscreens(Gfx *DL);
-Gfx *constructor_menu18_displaycast(Gfx *DL);
-void disable_all_switches(Model *arg0);
-void set_item_visibility_in_objinstance(Model* objinstance, s32 item, s32 mode);
-void set_cursor_to_stage_solo(LEVEL_SOLO_SEQUENCE level);
-Gfx *display_aligned_white_text_to_screen(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u8 *arg5, s32 arg6, s32 arg7);
-void setCursorPOSforMode(int mode);
-void set_cursor_pos_difficulty(int difficulty);
+s32 frontIsMissionCompleted(int stage, DIFFICULTY difficulty);
+s32 frontGetHighestDifficulty(s32 arg0);
+Gfx *frontLegalRender(Gfx *DL);
+Gfx *frontNintendoRender(Gfx *DL);
+Gfx *frontRareRender(Gfx *DL);
+Gfx *frontGunbarrelRender(Gfx *DL);
+Gfx *frontLogoRender(Gfx *DL);
+Gfx *frontFileSelectRender(Gfx *DL);
+Gfx *frontModeSelectRender(Gfx *DL);
+Gfx *frontMissionSelectRender(Gfx *DL);
+Gfx *frontDifficultyRender(Gfx *DL);
+Gfx *frontOptions007Render(Gfx *DL);
+Gfx *frontBriefingRender(Gfx *DL);
+Gfx *frontDebriefRender(Gfx *DL);
+Gfx *frontStatsRender(Gfx *DL);
+Gfx *frontMpOptionsRender(Gfx *DL);
+Gfx *frontMpCharRender(Gfx *DL);
+Gfx *frontMpHandicapRender(Gfx *DL);
+Gfx *frontMpControlsRender(Gfx *DL);
+Gfx *frontMpStageRender(Gfx *DL);
+Gfx *frontMpScenarioRender(Gfx *DL);
+Gfx *frontMpTeamsRender(Gfx *DL);
+Gfx *frontCheatRender(Gfx *DL);
+Gfx *frontNoControllerRender(Gfx *DL);
+Gfx *frontBlankRender(Gfx *DL);
+Gfx *frontCastRender(Gfx *DL);
+void frontHideAllSwitches(Model *arg0);
+void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode);
+void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level);
+Gfx *frontDrawAlignedText(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u8 *arg5, s32 arg6, s32 arg7);
+void frontSetModeCursor(int mode);
+void frontSetDifficultyCursor(int difficulty);
 
 // end forward declarations.
 
@@ -1002,7 +1002,7 @@ Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, s8 *text, s32 second_font_table, s
 }
 
 
-s32 frontCheckIfCheatIsUnlocked(s32 cheat)
+s32 frontIsCheatUnlocked(s32 cheat)
 {
     switch(cheat)
     {
@@ -1060,73 +1060,73 @@ s32 frontCheckIfCheatIsUnlocked(s32 cheat)
             return 0;
 
         case CHEAT_INVINCIBILITY:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_FACILITY);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_FACILITY);
 
         case CHEAT_ALLGUNS:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_EGYPT);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_EGYPT);
 
         case CHEAT_NO_RADAR_MP:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_FRIGATE);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_FRIGATE);
 
         case CHEAT_FAST_ANIMATION:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_STATUE);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_STATUE);
 
         case CHEAT_INVISIBILITY:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_ARCHIVES);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_ARCHIVES);
 
         case CHEAT_INFINITE_AMMO:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_CONTROL);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CONTROL);
 
         case CHEAT_DK_MODE:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_RUNWAY);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_RUNWAY);
 
         case CHEAT_TINY_BOND:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_SURFACE2);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SURFACE2);
 
         case CHEAT_SLOW_ANIMATION:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_DEPOT);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_DEPOT);
 
         case CHEAT_PAINTBALL:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_DAM);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_DAM);
 
         case CHEAT_SILVER_PP7:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_TRAIN);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_TRAIN);
 
         case CHEAT_GOLD_PP7:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_CRADLE);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CRADLE);
 
         case CHEAT_ENEMY_ROCKETS:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_STREETS);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_STREETS);
 
         case CHEAT_2X_ROCKET_LAUNCHER:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_BUNKER1);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_BUNKER1);
 
         case CHEAT_2X_GRENADE_LAUNCHER:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_SURFACE1);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SURFACE1);
 
         case CHEAT_2X_RCP90:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_CAVERNS);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CAVERNS);
 
         case CHEAT_2X_THROWING_KNIFE:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_BUNKER2);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_BUNKER2);
 
         case CHEAT_2X_HUNTING_KNIFE:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_JUNGLE);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_JUNGLE);
 
         case CHEAT_2X_LASER:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_AZTEC);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_AZTEC);
 
         case CHEAT_TURBO_MODE:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(selected_folder_num), SP_LEVEL_SILO);
+            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SILO);
 
         case CHEAT_MAGNUM:
-            return fileIsCradleCompletedForFolder(selected_folder_num);
+            return fileIsCradleCompletedForFolder(g_FrontFolder);
 
         case CHEAT_LASER:
-            return fileIsAztecCompletedOnSecretOr00ForFolder(selected_folder_num);
+            return fileIsAztecCompletedOnSecretOr00ForFolder(g_FrontFolder);
 
         case CHEAT_GOLDEN_GUN:
-            return fileIsEgyptCompletedOn00ForFolder(selected_folder_num);
+            return fileIsEgyptCompletedOn00ForFolder(g_FrontFolder);
 
         default:
             do {/* WARNING: Do nothing block with infinite loop */
@@ -1135,14 +1135,14 @@ s32 frontCheckIfCheatIsUnlocked(s32 cheat)
 }
 
 
-int frontGetPlayersFavoriteWeaponInHand(int player,int hand) {
-    return itemGetChoiceText(array_favweapon[player][hand]);
+int frontGetFavWeaponText(int player,int hand) {
+    return itemGetChoiceText(g_MpFavWeapon[player][hand]);
 }
 
 
 
 
-void frontUpdateControlStickPosition(void) {
+void frontMoveCursor(void) {
     s8 stickx = joyGetStickX(PLAYER_1);
     s8 sticky = -joyGetStickY(PLAYER_1);
 
@@ -1186,34 +1186,34 @@ void frontUpdateControlStickPosition(void) {
     }
 
     if (stickx > 0) {
-        cursor_h_pos += (f32)(( (f32)stickx * 0.075f + 0.5f) * g_GlobalTimerDelta);
+        g_FrontCursorX += (f32)(( (f32)stickx * 0.075f + 0.5f) * g_GlobalTimerDelta);
     }
     else if (stickx < 0) {
-        cursor_h_pos += (f32)(( (f32)stickx * 0.075f - 0.5f) * g_GlobalTimerDelta);
+        g_FrontCursorX += (f32)(( (f32)stickx * 0.075f - 0.5f) * g_GlobalTimerDelta);
     }
 
-    if ((camGetScreenLeft() + camGetScreenWidth() - 20.0f) < cursor_h_pos) {
-        cursor_h_pos = (camGetScreenLeft() + camGetScreenWidth() - 20.0f);
+    if ((camGetScreenLeft() + camGetScreenWidth() - 20.0f) < g_FrontCursorX) {
+        g_FrontCursorX = (camGetScreenLeft() + camGetScreenWidth() - 20.0f);
     }
     else {
-        if (cursor_h_pos < camGetScreenLeft() + 20.0f) {
-            cursor_h_pos = camGetScreenLeft() + 20.0f;
+        if (g_FrontCursorX < camGetScreenLeft() + 20.0f) {
+            g_FrontCursorX = camGetScreenLeft() + 20.0f;
         }
     }
 
     if (sticky > 0) {
-        cursor_v_pos += (f32)(( (f32)sticky * 0.075f + 0.5f) * g_GlobalTimerDelta);
+        g_FrontCursorY += (f32)(( (f32)sticky * 0.075f + 0.5f) * g_GlobalTimerDelta);
     }
     else if (sticky < 0) {
-        cursor_v_pos += (f32)(( (f32)sticky * 0.075f - 0.5f) * g_GlobalTimerDelta);
+        g_FrontCursorY += (f32)(( (f32)sticky * 0.075f - 0.5f) * g_GlobalTimerDelta);
     }
 
-    if ((camGetScreenTop() + camGetScreenHeight() - 20.0f) < cursor_v_pos) {
-        cursor_v_pos = (camGetScreenTop() + camGetScreenHeight() - 20.0f);
+    if ((camGetScreenTop() + camGetScreenHeight() - 20.0f) < g_FrontCursorY) {
+        g_FrontCursorY = (camGetScreenTop() + camGetScreenHeight() - 20.0f);
         return;
     }
-    if (cursor_v_pos < (camGetScreenTop() + 20.0f)) {
-        cursor_v_pos = (camGetScreenTop() + 20.0f);
+    if (g_FrontCursorY < (camGetScreenTop() + 20.0f)) {
+        g_FrontCursorY = (camGetScreenTop() + 20.0f);
     }
 }
 
@@ -1227,7 +1227,7 @@ Gfx *frontDrawCursor(Gfx *DL)
     s32 unused;
     s32 option;
 
-    option = folder_selection_screen_option_icon;
+    option = g_FrontFolderIcon;
     if (option == 0) {
         image = g_ImageCrosshair;
     }
@@ -1240,8 +1240,8 @@ Gfx *frontDrawCursor(Gfx *DL)
 
     texSelect(&DL, image, 4, 0, 0);
 
-    xypos[0] = mathFloor(cursor_h_pos + 0.5f);
-    xypos[1] = mathFloor(cursor_v_pos + 0.5f);
+    xypos[0] = mathFloor(g_FrontCursorX + 0.5f);
+    xypos[1] = mathFloor(g_FrontCursorY + 0.5f);
 
     halfedxy[0] = image->width * 0.5f;
     halfedxy[1] = image->height * 0.5f;
@@ -1264,16 +1264,16 @@ Gfx* frontAddStartTabText(Gfx* DL)
     s32 textWidth;
     s32 textHeight;
 
-    g_textPtrTAB1 = langGet(getStringID(LTITLE, TITLE_STR_04_START));
+    g_FrontTabStartText = langGet(getStringID(LTITLE, TITLE_STR_04_START));
     setTextSpacingInverted(TRUE);
     textHeight = 0;
     textWidth = 0;
     //text is sideways so textWidth and textHeight are flipped
-    textMeasure(&textWidth, &textHeight, g_textPtrTAB1, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&textWidth, &textHeight, g_FrontTabStartText, ptrFontBankGothicChars, ptrFontBankGothic, 0);
     v = STARTTAB_TEXT_TOP;
     h = TABS_RIGHT_EDGE - (textWidth / 2);
 
-    if (tab_start_highlight)
+    if (g_FrontTabStartHighlight)
     {
         DL = microcode_constructor_related_to_menus(DL, (h - textWidth) + 1, STARTTAB_TEXT_TOP, h, STARTTAB_TEXT_BOTTOM, 50);
     }
@@ -1281,7 +1281,7 @@ Gfx* frontAddStartTabText(Gfx* DL)
     setTextOrientation(ROT_90CW);
 
     v = STARTTAB_TEXT_HALF - (textHeight / 2);
-    DL = textRender(DL, &v, &h, g_textPtrTAB1, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
+    DL = textRender(DL, &v, &h, g_FrontTabStartText, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
     setTextOrientation(ROT_NORMAL);
     setTextSpacingInverted(FALSE);
     return DL;
@@ -1290,7 +1290,7 @@ Gfx* frontAddStartTabText(Gfx* DL)
 
 s32 frontCheckCursorOnStartTab(void)
 {
-    if ((TABS_LEFT_EDGE < cursor_h_pos) && (cursor_v_pos <= STARTTAB_TAB_BOTTOM))
+    if ((TABS_LEFT_EDGE < g_FrontCursorX) && (g_FrontCursorY <= STARTTAB_TAB_BOTTOM))
     {
         return TRUE;
     }
@@ -1307,16 +1307,16 @@ Gfx* frontAddPreviousTabText(Gfx* DL)
     s32 textWidth;
     s32 textHeight;
 
-    g_textPtrTAB3 = langGet(getStringID(LTITLE, TITLE_STR_06_PREVIOUS));
+    g_FrontTabPrevText = langGet(getStringID(LTITLE, TITLE_STR_06_PREVIOUS));
     setTextSpacingInverted(TRUE);
     textHeight = 0;
     textWidth = 0;
     //text is sideways so textWidth and textHeight are flipped
-    textMeasure(&textWidth, &textHeight, g_textPtrTAB3, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&textWidth, &textHeight, g_FrontTabPrevText, ptrFontBankGothicChars, ptrFontBankGothic, 0);
     v = PREVTAB_TEXT_TOP;
     h = TABS_RIGHT_EDGE - (textWidth / 2);
 
-    if (tab_prev_highlight != 0)
+    if (g_FrontTabPrevHighlight != 0)
     {
         DL = microcode_constructor_related_to_menus(DL, (h - textWidth) + 1, PREVTAB_TEXT_TOP, h, PREVTAB_TEXT_BOTTOM, 50);
     }
@@ -1324,7 +1324,7 @@ Gfx* frontAddPreviousTabText(Gfx* DL)
     setTextOrientation(ROT_90CW);
 
     v = PREVTAB_TEXT_HALF - (textHeight / 2);
-    DL = textRender(DL, &v, &h, g_textPtrTAB3, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
+    DL = textRender(DL, &v, &h, g_FrontTabPrevText, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
     setTextOrientation(ROT_NORMAL);
     setTextSpacingInverted(FALSE);
 
@@ -1334,7 +1334,7 @@ Gfx* frontAddPreviousTabText(Gfx* DL)
 
 u32 frontCheckCursorOnPreviousTab(void)
 {
-    if ((TABS_LEFT_EDGE < cursor_h_pos) && (PREVTAB_TAB_TOP < cursor_v_pos))
+    if ((TABS_LEFT_EDGE < g_FrontCursorX) && (PREVTAB_TAB_TOP < g_FrontCursorY))
     {
         return 1;
     }
@@ -1346,8 +1346,8 @@ u32 frontCheckCursorOnPreviousTab(void)
 
 void frontSetCursorPositionToNextTab(void)
 {
-    cursor_h_pos = NEXTTAB_CURSOR_HPOS;
-    cursor_v_pos = NEXTTAB_CURSOR_VPOS;
+    g_FrontCursorX = NEXTTAB_CURSOR_HPOS;
+    g_FrontCursorY = NEXTTAB_CURSOR_VPOS;
 }
 
 
@@ -1359,16 +1359,16 @@ Gfx* frontAddNextTabText(Gfx* DL)
     s32 textWidth;
     s32 textHeight;
 
-    g_textPtrTAB2 = langGet(getStringID(LTITLE, TITLE_STR_05_NEXT)); //"NEXT\n"
+    g_FrontTabNextText = langGet(getStringID(LTITLE, TITLE_STR_05_NEXT)); //"NEXT\n"
     setTextSpacingInverted(TRUE);
     textHeight = 0;
     textWidth = 0;
     //text is sideways so textWidth and textHeight are flipped
-    textMeasure(&textWidth, &textHeight, g_textPtrTAB2, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&textWidth, &textHeight, g_FrontTabNextText, ptrFontBankGothicChars, ptrFontBankGothic, 0);
     v = NEXTTAB_TEXT_TOP;
     h = TABS_RIGHT_EDGE - (textWidth / 2);
 
-    if (tab_next_highlight != 0)
+    if (g_FrontTabNextHighlight != 0)
     {
         DL = microcode_constructor_related_to_menus(DL, (h - textWidth) + 1, NEXTTAB_TEXT_TOP, h, NEXTTAB_TEXT_BOTTOM, 50);
     }
@@ -1376,7 +1376,7 @@ Gfx* frontAddNextTabText(Gfx* DL)
     setTextOrientation(ROT_90CW);
 
     v = NEXTTAB_TEXT_HALF - (textHeight / 2);
-    DL = textRender(DL, &v, &h, g_textPtrTAB2, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
+    DL = textRender(DL, &v, &h, g_FrontTabNextText, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
     setTextOrientation(ROT_NORMAL);
     setTextSpacingInverted(FALSE);
     return DL;
@@ -1385,7 +1385,7 @@ Gfx* frontAddNextTabText(Gfx* DL)
 
 u32 frontCheckCursorOnNextTab(void)
 {
-    if (((TABS_LEFT_EDGE < cursor_h_pos) && (NEXTTAB_TAB_TOP < cursor_v_pos)) && (cursor_v_pos <= PREVTAB_TAB_TOP))
+    if (((TABS_LEFT_EDGE < g_FrontCursorX) && (NEXTTAB_TAB_TOP < g_FrontCursorY)) && (g_FrontCursorY <= PREVTAB_TAB_TOP))
     {
         return TRUE;
     }
@@ -1402,36 +1402,36 @@ u32 frontCheckCursorOnNextTab(void)
 //********************************************************************************************************
 //LEGAL SCREEN
 //********************************************************************************************************
-void init_menu00_legalscreen(void)
+void frontLegalEnter(void)
 {
     s32 padding;
     struct coord3d pos;
 
     musicTrack1Stop();
-    maybe_is_in_menu = TRUE;
-    g_MenuTimer = 0;
+    g_FrontStartMusic = TRUE;
+    g_FrontTimer = 0;
     pos = legalpage_pos;
-    modelFileLoad(PitemZ_entries[PROP_LEGALPAGE].header, PitemZ_entries[PROP_LEGALPAGE].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
+    modelFileLoad(PitemZ_entries[PROP_LEGALPAGE].header, PitemZ_entries[PROP_LEGALPAGE].filename, g_FrontModelBuffer, 0x3c000, 0);
     modelCalculateRwDataLen(PitemZ_entries[PROP_LEGALPAGE].header);
 
-    logoinst = modelmgrInstantiateModel(PitemZ_entries[PROP_LEGALPAGE].header);
+    g_FrontLogoModel = modelmgrInstantiateModel(PitemZ_entries[PROP_LEGALPAGE].header);
     #ifdef DEBUG
-        assert(logoinst);
+        assert(g_FrontLogoModel);
     #endif
-    modelSetScale(logoinst, 1.0f);
-    modelSetRootPosition(logoinst, &pos);
+    modelSetScale(g_FrontLogoModel, 1.0f);
+    modelSetRootPosition(g_FrontLogoModel, &pos);
     fileValidateSaves();
 }
 
 
-void update_menu00_legalscreen(void)
+void frontLegalLeave(void)
 {
-    is_first_time_on_legal_screen = FALSE;
-    modelFreeSlot(logoinst);
+    g_FrontFirstLegal = FALSE;
+    modelFreeSlot(g_FrontLogoModel);
 }
 
 
-void interface_menu00_legalscreen(void)
+void frontLegalTick(void)
 {
 #ifdef REFRESH_PAL
 #define MENU_LEGALSCREEN_MENU_TIMER_MAX (50*4+1)
@@ -1446,32 +1446,32 @@ void interface_menu00_legalscreen(void)
 #if defined(ISGOLDFINGER) || defined(USEEXPANSION)
     if (osGetMemSize != 0x00800000)
     {
-        frontChangeMenu(MENU_NO_CONTROLLERS, TRUE); //double up as No expansion pak window
+        frontSetMenu(MENU_NO_CONTROLLERS, TRUE); //double up as No expansion pak window
         return;
     }
 #endif
-    g_MenuTimer += g_ClockTimer;
+    g_FrontTimer += g_ClockTimer;
 
-    if (g_MenuTimer >= MENU_LEGALSCREEN_MENU_TIMER_MAX)
+    if (g_FrontTimer >= MENU_LEGALSCREEN_MENU_TIMER_MAX)
     {
-        if ((joyGetControllerCount() < 1) && (is_first_time_on_legal_screen))
+        if ((joyGetControllerCount() < 1) && (g_FrontFirstLegal))
         {
-            frontChangeMenu(MENU_NO_CONTROLLERS, TRUE);
+            frontSetMenu(MENU_NO_CONTROLLERS, TRUE);
         }
         else
         {
-            frontChangeMenu(MENU_NINTENDO_LOGO, TRUE);
+            frontSetMenu(MENU_NINTENDO_LOGO, TRUE);
         }
     }
-    else if (joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON) && (!is_first_time_on_legal_screen))
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON) && (!g_FrontFirstLegal))
     {
-        if (!is_first_time_on_main_menu)
+        if (!g_FrontFirstBoot)
         {
-            frontChangeMenu(MENU_FILE_SELECT, TRUE);
+            frontSetMenu(MENU_FILE_SELECT, TRUE);
         }
         else
         {
-            frontChangeMenu(MENU_NINTENDO_LOGO, TRUE);
+            frontSetMenu(MENU_NINTENDO_LOGO, TRUE);
         }
     }
 }
@@ -1480,7 +1480,7 @@ void interface_menu00_legalscreen(void)
 /**
  * Render a string of standard text on the legal screen e.g. "TWYCROSS BOARD OF GAME CLASSIFICATION"
  */
-Gfx *display_aligned_white_text_to_screen(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u8 *text, s32 arg6, s32 arg7)
+Gfx *frontDrawAlignedText(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u8 *text, s32 arg6, s32 arg7)
 {
     s32 sp4C;
     s32 sp48;
@@ -1497,7 +1497,7 @@ Gfx *display_aligned_white_text_to_screen(Gfx *dl, s32 arg1, s32 arg2, s32 halig
 }
 
 
-Gfx *constructor_menu00_legalscreen(Gfx *DL)
+Gfx *frontLegalRender(Gfx *DL)
 {
     struct legal_screen_text *legal_text_end;
     struct ModelRenderData renderdata;
@@ -1516,36 +1516,36 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
     mtx4LoadLookAt(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     
     renderdata.basemtx = &lookatmtx;
-    renderdata.mtxlist = (Mtxf *) dynAllocate(logoinst->obj->numMatrices << 6);
+    renderdata.mtxlist = (Mtxf *) dynAllocate(g_FrontLogoModel->obj->numMatrices << 6);
     
     mtx4Copy(&lookatmtx, renderdata.mtxlist);
     
-    logoinst->render_pos = (union RenderPosView *) renderdata.mtxlist;
+    g_FrontLogoModel->render_pos = (union RenderPosView *) renderdata.mtxlist;
     
-    modelUpdateNodeRelations(logoinst);
+    modelUpdateNodeRelations(g_FrontLogoModel);
     
     renderdata.flags = 3;
     renderdata.zbufferenabled = 0;
     renderdata.gdl = DL;
     
-    modelRender(&renderdata, logoinst);
+    modelRender(&renderdata, g_FrontLogoModel);
     
     DL = renderdata.gdl;
     
-    for (i = 0; i < logoinst->obj->numMatrices; i++)
+    for (i = 0; i < g_FrontLogoModel->obj->numMatrices; i++)
     {
-        mtx4Copy((Mtxf *)&((s8 *)logoinst->render_pos)[i * 0x40], &tmpmtx);
-        mtxF2L(&tmpmtx, &((Mtxf *) logoinst->render_pos)[i]);
+        mtx4Copy((Mtxf *)&((s8 *)g_FrontLogoModel->render_pos)[i * 0x40], &tmpmtx);
+        mtxF2L(&tmpmtx, &((Mtxf *) g_FrontLogoModel->render_pos)[i]);
     }
     
     DL = microcode_constructor(DL);
     
-    legal_text_ptr = legalpage_text_array;
-    legal_text_end = &legalpage_text_array[ARRAYCOUNT(legalpage_text_array)];
+    legal_text_ptr = g_LegalTexts;
+    legal_text_end = &g_LegalTexts[ARRAYCOUNT(g_LegalTexts)];
     
     do
     {
-        DL = display_aligned_white_text_to_screen(DL, legal_text_ptr->h_pos, legal_text_ptr->v_pos, legal_text_ptr->halign, legal_text_ptr->valign, langGet(legal_text_ptr->txtID), ptrFontZurichBoldChars, ptrFontZurichBold);
+        DL = frontDrawAlignedText(DL, legal_text_ptr->h_pos, legal_text_ptr->v_pos, legal_text_ptr->halign, legal_text_ptr->valign, langGet(legal_text_ptr->txtID), ptrFontZurichBoldChars, ptrFontZurichBold);
         legal_text_ptr++;
     }
     while (legal_text_ptr < legal_text_end);
@@ -1554,11 +1554,11 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
 }
 
 
-void reset_menutimer(void) {
-    g_MenuTimer = 0;
+void frontResetTimer(void) {
+    g_FrontTimer = 0;
 }
 
-void dummy7F00AAF8(void) {
+void frontNullStub(void) {
     // (function likely stub)
 }
 
@@ -1568,23 +1568,23 @@ void dummy7F00AAF8(void) {
 //********************************************************************************************************
 //SWITCH SCREEN
 //********************************************************************************************************
-void interface_menu17_switchscreens(void)
+void frontBlankTick(void)
 {
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
 
-    g_MenuTimer++;
-    if ((g_MenuTimer >= 4) && (!spectrum_related_flag) && (!is_emulating_spectrum))
+    g_FrontTimer++;
+    if ((g_FrontTimer >= 4) && (!g_FrontHiResPending) && (!g_FrontLowResPending))
     {
-        maybe_prev_menu = menu_update;
-        menu_update = MENU_INVALID;
+        g_FrontEnterMenu = g_FrontNextMenu;
+        g_FrontNextMenu = MENU_INVALID;
     }
 }
 
 
-Gfx * constructor_menu17_switchscreens(Gfx * DL)
+Gfx * frontBlankRender(Gfx * DL)
 {
     return screenClearBlack(DL);
 }
@@ -1596,35 +1596,35 @@ Gfx * constructor_menu17_switchscreens(Gfx * DL)
 //********************************************************************************************************
 //NINTENDO LOGO
 //********************************************************************************************************
-void init_menu01_nintendo(void)
+void frontNintendoEnter(void)
 {
     struct coord3d pos;
 
-    g_MenuTimer = 0;
+    g_FrontTimer = 0;
     pos = nintendologo_pos;
-    modelFileLoad(PitemZ_entries[PROP_NINTENDOLOGO].header, PitemZ_entries[PROP_NINTENDOLOGO].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
+    modelFileLoad(PitemZ_entries[PROP_NINTENDOLOGO].header, PitemZ_entries[PROP_NINTENDOLOGO].filename, g_FrontModelBuffer, 0x3c000, 0);
     modelCalculateRwDataLen(PitemZ_entries[PROP_NINTENDOLOGO].header);
-    logoinst = modelmgrInstantiateModel(PitemZ_entries[PROP_NINTENDOLOGO].header);
-    modelSetScale(logoinst, 1.0f);
-    modelSetRootPosition(logoinst, &pos);
+    g_FrontLogoModel = modelmgrInstantiateModel(PitemZ_entries[PROP_NINTENDOLOGO].header);
+    modelSetScale(g_FrontLogoModel, 1.0f);
+    modelSetRootPosition(g_FrontLogoModel, &pos);
     musicTrack1Play(M_INTROSWOOSH);
-    maybe_is_in_menu = TRUE;
-    ninLogoRotRate = -1.39626348019f;
-    ninLogoScale = 0.0183333326131f;
+    g_FrontStartMusic = TRUE;
+    g_NintendoLogoSpin = -1.39626348019f;
+    g_NintendoLogoScale = 0.0183333326131f;
 }
 
 
 
 
-void update_menu01_nintendo(void)
+void frontNintendoLeave(void)
 {
-    modelFreeSlot(logoinst);
+    modelFreeSlot(g_FrontLogoModel);
 }
 
 
 
 
-void interface_menu01_nintendo(void)
+void frontNintendoTick(void)
 {
 #ifdef REFRESH_PAL
 /*~= 8.32 * 50 + 1*/
@@ -1639,28 +1639,28 @@ void interface_menu01_nintendo(void)
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
 
-    g_MenuTimer += g_ClockTimer;
+    g_FrontTimer += g_ClockTimer;
 
-    if (g_MenuTimer >= NINTENDO_TIMER_MAX)
+    if (g_FrontTimer >= NINTENDO_TIMER_MAX)
     {
-        frontChangeMenu(MENU_RAREWARE_LOGO, TRUE);
+        frontSetMenu(MENU_RAREWARE_LOGO, TRUE);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON))
     {
-        if (!is_first_time_on_main_menu)
+        if (!g_FrontFirstBoot)
         {
-            frontChangeMenu(MENU_FILE_SELECT, TRUE);
+            frontSetMenu(MENU_FILE_SELECT, TRUE);
         }
         else
         {
-            prev_keypresses = TRUE;
-            frontChangeMenu(MENU_RAREWARE_LOGO, TRUE);
+            g_FrontSkipIntro = TRUE;
+            frontSetMenu(MENU_RAREWARE_LOGO, TRUE);
         }
     }
 }
 
 
-Gfx *constructor_menu01_nintendo(Gfx *DL)
+Gfx *frontNintendoRender(Gfx *DL)
 {
     ModelRenderData ninlogo;
     s32 padding;
@@ -1674,15 +1674,15 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
 
     // Lights macro? These need to be on one line.
     gSPNumLights(DL++, 1); \
-    gSPLight(DL++, &ninlogolight.l[0], 1); \
-    gSPLight(DL++, &ninlogolight, 2);
+    gSPLight(DL++, &g_FrontNintendoLight.l[0], 1); \
+    gSPLight(DL++, &g_FrontNintendoLight, 2);
 
 #if defined(VERSION_EU)
     // 0x100000000 ? 0xFFFECD34 = 0x132CC (78540 decimal)
-    ambiantlight = 0xFF - ((s32) ((g_MenuTimer * 0xFF) + 0xFFFECD34) / 83);
+    ambiantlight = 0xFF - ((s32) ((g_FrontTimer * 0xFF) + 0xFFFECD34) / 83);
 #else
     // 0x100000000 ? 0xFFFE8F72 = 0x1708E (94350 decimal)
-    ambiantlight = 0xFF - ((s32) ((g_MenuTimer * 0xFF) + 0xFFFE8F72) / 100);
+    ambiantlight = 0xFF - ((s32) ((g_FrontTimer * 0xFF) + 0xFFFE8F72) / 100);
 #endif
     if (ambiantlight >= 0x100)
     {
@@ -1693,17 +1693,17 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
         ambiantlight = 0;
     }
 
-    ninlogolight.a.l.colc[2] = ambiantlight;
-    ninlogolight.a.l.colc[1] = ambiantlight;
-    ninlogolight.a.l.colc[0] = ambiantlight;
-    ninlogolight.a.l.col[2] = ambiantlight;
-    ninlogolight.a.l.col[1] = ambiantlight;
-    ninlogolight.a.l.col[0] = ambiantlight;
+    g_FrontNintendoLight.a.l.colc[2] = ambiantlight;
+    g_FrontNintendoLight.a.l.colc[1] = ambiantlight;
+    g_FrontNintendoLight.a.l.colc[0] = ambiantlight;
+    g_FrontNintendoLight.a.l.col[2] = ambiantlight;
+    g_FrontNintendoLight.a.l.col[1] = ambiantlight;
+    g_FrontNintendoLight.a.l.col[0] = ambiantlight;
 
 #if defined(VERSION_EU)
-    ninLogoRotRate += 0.0209439527243f;
+    g_NintendoLogoSpin += 0.0209439527243f;
 #else
-    ninLogoRotRate += 0.017453292f;
+    g_NintendoLogoSpin += 0.017453292f;
 #endif
 
     // Not sure if this is actually an `if` block, but the sp90 variable
@@ -1712,17 +1712,17 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
     {
         Mtxf tmpMtx;
 
-        mtx4LoadYRotation(ninLogoRotRate, &tmpMtx);
-        mtx4ScaleColumns012(ninLogoScale, (f32*)&tmpMtx);
+        mtx4LoadYRotation(g_NintendoLogoSpin, &tmpMtx);
+        mtx4ScaleColumns012(g_NintendoLogoScale, (f32*)&tmpMtx);
 
 #if defined(VERSION_EU)
-        ninLogoScale *= 1.09647190571f;
+        g_NintendoLogoScale *= 1.09647190571f;
 #else
-        ninLogoScale *= 1.07977f;
+        g_NintendoLogoScale *= 1.07977f;
 #endif
-        if (ninLogoScale > 1.1f)
+        if (g_NintendoLogoScale > 1.1f)
         {
-            ninLogoScale = 1.1f;
+            g_NintendoLogoScale = 1.1f;
         }
 
         mtx4LoadLookAt(&ninlogoMtxf, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -1732,30 +1732,30 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
 
     ninlogo.basemtx = &ninlogoMtxf;
 
-    ninlogo.mtxlist = dynAllocate(logoinst->obj->numMatrices << 6);
+    ninlogo.mtxlist = dynAllocate(g_FrontLogoModel->obj->numMatrices << 6);
 
     mtx4Copy(&ninlogoMtxf, ninlogo.mtxlist);
 
-    logoinst->render_pos = (union RenderPosView*)ninlogo.mtxlist;
+    g_FrontLogoModel->render_pos = (union RenderPosView*)ninlogo.mtxlist;
 
-    modelUpdateNodeRelations(logoinst);
+    modelUpdateNodeRelations(g_FrontLogoModel);
 
     ninlogo.flags = 3;
     ninlogo.zbufferenabled = FALSE;
     ninlogo.gdl = DL;
 
-    modelRender(&ninlogo, logoinst);
+    modelRender(&ninlogo, g_FrontLogoModel);
 
     DL = ninlogo.gdl;
 
-    for (i=0; i<logoinst->obj->numMatrices; i++)
+    for (i=0; i<g_FrontLogoModel->obj->numMatrices; i++)
     {
         Mtxf tmpMtxf;
         s32 padding2;
 
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        mtx4Copy(&((s8*)logoinst->render_pos)[i*0x40], &tmpMtxf);
-        mtxF2L(&tmpMtxf, &((Mtxf*)logoinst->render_pos)[i]);
+        mtx4Copy(&((s8*)g_FrontLogoModel->render_pos)[i*0x40], &tmpMtxf);
+        mtxF2L(&tmpMtxf, &((Mtxf*)g_FrontLogoModel->render_pos)[i]);
 
         if(i);
     }
@@ -1781,38 +1781,38 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
 /*
  * Address: 0x7F008B58
 */
-void init_menu02_rarelogo(void)
+void frontRareEnter(void)
 {
-    setupRarewareLogoData(ptr_logo_and_walletbond_DL, 0x78000);
+    titleLoadRareLogo(g_FrontModelBuffer, 0x78000);
     sndPlaySfx(g_musicSfxBufferPtr, RARELOGO_SFX, 0);
 }
 
-void update_menu02_rareware(void) {
+void frontRareLeave(void) {
     return;
 }
 
-void interface_menu02_rareware(void)
+void frontRareTick(void)
 {
     viSetUseZBuf(FALSE);
-    if (isGunBarrelInMode2())
+    if (titleIsRareIntroDone())
     {
-        frontChangeMenu(MENU_EYE_INTRO, TRUE);
+        frontSetMenu(MENU_EYE_INTRO, TRUE);
         return;
     }
     if (joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON))
     {
-        if (!is_first_time_on_main_menu)
+        if (!g_FrontFirstBoot)
         {
-            frontChangeMenu(MENU_FILE_SELECT, TRUE);
+            frontSetMenu(MENU_FILE_SELECT, TRUE);
             return;
         }
-        prev_keypresses = TRUE;
-        frontChangeMenu(MENU_EYE_INTRO, TRUE);
+        g_FrontSkipIntro = TRUE;
+        frontSetMenu(MENU_EYE_INTRO, TRUE);
     }
 }
 
-Gfx * constructor_menu02_rareware(Gfx * DL) {
-    return retrieve_display_rareware_logo(DL);
+Gfx * frontRareRender(Gfx * DL) {
+    return titleRenderRareIntro(DL);
 }
 
 
@@ -1828,37 +1828,37 @@ Gfx * constructor_menu02_rareware(Gfx * DL) {
 //********************************************************************************************************
 //GUNBARREL
 //********************************************************************************************************
-void init_menu03_gunbarrel(void) {
-    initializeGunBarrelIntro(ptr_logo_and_walletbond_DL, 0x78000);
+void frontGunbarrelEnter(void) {
+    titleInitGunbarrel(g_FrontModelBuffer, 0x78000);
     musicTrack1Play(M_INTRO);
-    maybe_is_in_menu = TRUE;
+    g_FrontStartMusic = TRUE;
 }
 
 /*
  * Address: 0x7F00920C
 */
-void update_menu_03_gunbarrel(void) {
-    clearChrGunModelInstances();
+void frontGunbarrelLeave(void) {
+    titleFreeBondModels();
 }
 
-void interface_menu03_eye(void) {
+void frontGunbarrelTick(void) {
     viSetUseZBuf(FALSE);
-    if (isGunBarrelInMode9()) {
-        frontChangeMenu(MENU_GOLDENEYE_LOGO, TRUE);
+    if (titleIsGunbarrelDone()) {
+        frontSetMenu(MENU_GOLDENEYE_LOGO, TRUE);
         return;
     }
     if (joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON)) {
-        if (!is_first_time_on_main_menu) {
-            frontChangeMenu(MENU_FILE_SELECT, TRUE);
+        if (!g_FrontFirstBoot) {
+            frontSetMenu(MENU_FILE_SELECT, TRUE);
             return;
         }
-        prev_keypresses = TRUE;
-        frontChangeMenu(MENU_GOLDENEYE_LOGO, TRUE);
+        g_FrontSkipIntro = TRUE;
+        frontSetMenu(MENU_GOLDENEYE_LOGO, TRUE);
     }
 }
 
-Gfx * constructor_menu03_eye(Gfx * DL) {
-    return renderGunbarrelEyeIntroSequence (DL);
+Gfx * frontGunbarrelRender(Gfx * DL) {
+    return titleRenderGunbarrel (DL);
 }
 
 
@@ -1867,33 +1867,33 @@ Gfx * constructor_menu03_eye(Gfx * DL) {
 //********************************************************************************************************
 //GOLDENEYE LOGO
 //********************************************************************************************************
-void init_menu04_goldeneyelogo(void)
+void frontLogoEnter(void)
 {
     struct coord3d pos;
 
-    g_MenuTimer = 0;
+    g_FrontTimer = 0;
     pos = goldeneyelogo_pos;
-    modelFileLoad(PitemZ_entries[PROP_GOLDENEYELOGO].header, PitemZ_entries[PROP_GOLDENEYELOGO].filename, ptr_logo_and_walletbond_DL, 0x3c000, 0);
+    modelFileLoad(PitemZ_entries[PROP_GOLDENEYELOGO].header, PitemZ_entries[PROP_GOLDENEYELOGO].filename, g_FrontModelBuffer, 0x3c000, 0);
     modelCalculateRwDataLen(PitemZ_entries[PROP_GOLDENEYELOGO].header);
-    logoinst = modelmgrInstantiateModel(PitemZ_entries[PROP_GOLDENEYELOGO].header);
+    g_FrontLogoModel = modelmgrInstantiateModel(PitemZ_entries[PROP_GOLDENEYELOGO].header);
     #ifdef DEBUG
-        assert(logoinst);
+        assert(g_FrontLogoModel);
     #endif
 
-    modelSetScale(logoinst, 1.0f);
-    modelSetRootPosition(logoinst, &pos);
+    modelSetScale(g_FrontLogoModel, 1.0f);
+    modelSetRootPosition(g_FrontLogoModel, &pos);
 }
 
 
 
 
 
-void update_menu04_goldeneye(void) {
-    is_first_time_on_main_menu = FALSE;
-    modelFreeSlot(logoinst);
+void frontLogoLeave(void) {
+    g_FrontFirstBoot = FALSE;
+    modelFreeSlot(g_FrontLogoModel);
 }
 
-void interface_menu04_goldeneyelogo(void)
+void frontLogoTick(void)
 {
 #ifdef REFRESH_PAL
 #define GOLDENEYELOGO_TIMER_1 50*3
@@ -1907,34 +1907,34 @@ void interface_menu04_goldeneyelogo(void)
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
-    g_MenuTimer += g_ClockTimer;
-    if (((!is_first_time_on_main_menu) || (GOLDENEYELOGO_TIMER_1 < g_MenuTimer)) ||
-       ((ge_logo_bool && (GOLDENEYELOGO_TIMER_2 < g_MenuTimer)))) {
-        if (g_MenuTimer > GOLDENEYELOGO_TIMER_1) {
-            if (prev_keypresses) {
-                frontChangeMenu(MENU_FILE_SELECT,TRUE);
+    g_FrontTimer += g_ClockTimer;
+    if (((!g_FrontFirstBoot) || (GOLDENEYELOGO_TIMER_1 < g_FrontTimer)) ||
+       ((g_FrontLogoKeyPressed && (GOLDENEYELOGO_TIMER_2 < g_FrontTimer)))) {
+        if (g_FrontTimer > GOLDENEYELOGO_TIMER_1) {
+            if (g_FrontSkipIntro) {
+                frontSetMenu(MENU_FILE_SELECT,TRUE);
             }
             else {
-                do_extended_cast_display(FALSE);
-                frontChangeMenu(MENU_DISPLAY_CAST,TRUE);
+                frontSetFullCast(FALSE);
+                frontSetMenu(MENU_DISPLAY_CAST,TRUE);
             }
         }
         else {
-            if ((joyGetButtonsPressedThisFrame(PLAYER_1,ANY_BUTTON)) || ((is_first_time_on_main_menu && ge_logo_bool))) {
-                frontChangeMenu(MENU_FILE_SELECT,TRUE);
+            if ((joyGetButtonsPressedThisFrame(PLAYER_1,ANY_BUTTON)) || ((g_FrontFirstBoot && g_FrontLogoKeyPressed))) {
+                frontSetMenu(MENU_FILE_SELECT,TRUE);
             }
         }
     }
     else {
         if (joyGetButtonsPressedThisFrame(PLAYER_1,ANY_BUTTON)) {
-            ge_logo_bool = TRUE;
+            g_FrontLogoKeyPressed = TRUE;
         }
     }
 }
 
 
 
-Gfx *constructor_menu04_goldeneyelogo(Gfx *DL)
+Gfx *frontLogoRender(Gfx *DL)
 {
     ModelRenderData gelogo;
     s32 padding[2];
@@ -1953,38 +1953,38 @@ Gfx *constructor_menu04_goldeneyelogo(Gfx *DL)
 
     // Lights macro? These need to be on one line.
     gSPNumLights(DL++, 1); \
-    gSPLight(DL++, &gelogolight.l[0], 1); \
-    gSPLight(DL++, &gelogolight, 2);
+    gSPLight(DL++, &g_FrontLogoLight.l[0], 1); \
+    gSPLight(DL++, &g_FrontLogoLight, 2);
 
     // gSPLookAt macro expands to gSPLookAtX + gSPLookAtY
     gSPLookAt(DL++, logoLookAt);
 
     mtx4LoadLookAt(&logoMatrix, 0.0f, 0.0f, 3000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     gelogo.basemtx = &logoMatrix;
-    gelogo.mtxlist = dynAllocate(logoinst->obj->numMatrices << 6);
+    gelogo.mtxlist = dynAllocate(g_FrontLogoModel->obj->numMatrices << 6);
 
     mtx4ScaleRows012(1.2f, logoMatrix.m[0]);
     mtx4Copy(&logoMatrix, gelogo.mtxlist);
-    logoinst->render_pos = (union RenderPosView*)gelogo.mtxlist;
+    g_FrontLogoModel->render_pos = (union RenderPosView*)gelogo.mtxlist;
 
-    modelUpdateNodeRelations(logoinst);
+    modelUpdateNodeRelations(g_FrontLogoModel);
 
     gelogo.flags = 3;
     gelogo.zbufferenabled = FALSE;
     gelogo.gdl = DL;
 
-    modelRender(&gelogo, logoinst);
+    modelRender(&gelogo, g_FrontLogoModel);
 
     DL = gelogo.gdl;
 
-    for (i=0; i<logoinst->obj->numMatrices; i++)
+    for (i=0; i<g_FrontLogoModel->obj->numMatrices; i++)
     {
         Mtxf tempMtxf;
         s32 padding2;
 
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        mtx4Copy(&((s8*)logoinst->render_pos)[i*0x40], &tempMtxf);
-        mtxF2L(&tempMtxf, &((Mtxf*)logoinst->render_pos)[i]);
+        mtx4Copy(&((s8*)g_FrontLogoModel->render_pos)[i*0x40], &tempMtxf);
+        mtxF2L(&tempMtxf, &((Mtxf*)g_FrontLogoModel->render_pos)[i]);
 
         if(i);
     }
@@ -1994,7 +1994,7 @@ Gfx *constructor_menu04_goldeneyelogo(Gfx *DL)
 
 
 
-void disable_all_switches(Model *arg0)
+void frontHideAllSwitches(Model *arg0)
 {
     s32 i;
     ModelNode *mnode;
@@ -2016,7 +2016,7 @@ void disable_all_switches(Model *arg0)
 }
 
 
-void set_item_visibility_in_objinstance(Model* objinstance, s32 item, s32 mode)
+void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode)
 {
     if (objinstance->obj->Switches[item] != NULL)
     {
@@ -2031,26 +2031,26 @@ void set_item_visibility_in_objinstance(Model* objinstance, s32 item, s32 mode)
 //WALLETINIT
 //********************************************************************************************************
 
-void select_load_bond_picture(Model *objinstance, u32 bondID)
+void frontSelectBondPicture(Model *objinstance, u32 bondID)
 {
 #ifdef ALL_BONDS
-    set_item_visibility_in_objinstance(objinstance, SW_BROSNAN, (bondID == BOND_BROSNAN)); //brosnan picture
-    set_item_visibility_in_objinstance(objinstance, SW_CONNERY, (bondID == BOND_CONNERY));
-    set_item_visibility_in_objinstance(objinstance, SW_DALTON, (bondID == BOND_DALTON));
-    set_item_visibility_in_objinstance(objinstance, SW_MOORE, (bondID == BOND_MOORE));
-    set_item_visibility_in_objinstance(objinstance, SW_BROSNANCOVER, (bondID == BOND_BROSNAN)); //bigger brosnan picture
-    set_item_visibility_in_objinstance(objinstance, SW_CONNERYCOVER, (bondID == BOND_CONNERY));
-    set_item_visibility_in_objinstance(objinstance, SW_DALTONCOVER, (bondID == BOND_DALTON));
-    set_item_visibility_in_objinstance(objinstance, SW_MOORECOVER, (bondID == BOND_MOORE));
+    frontSetSwitchVisible(objinstance, SW_BROSNAN, (bondID == BOND_BROSNAN)); //brosnan picture
+    frontSetSwitchVisible(objinstance, SW_CONNERY, (bondID == BOND_CONNERY));
+    frontSetSwitchVisible(objinstance, SW_DALTON, (bondID == BOND_DALTON));
+    frontSetSwitchVisible(objinstance, SW_MOORE, (bondID == BOND_MOORE));
+    frontSetSwitchVisible(objinstance, SW_BROSNANCOVER, (bondID == BOND_BROSNAN)); //bigger brosnan picture
+    frontSetSwitchVisible(objinstance, SW_CONNERYCOVER, (bondID == BOND_CONNERY));
+    frontSetSwitchVisible(objinstance, SW_DALTONCOVER, (bondID == BOND_DALTON));
+    frontSetSwitchVisible(objinstance, SW_MOORECOVER, (bondID == BOND_MOORE));
 #else
-    set_item_visibility_in_objinstance(objinstance,SW_BROSNAN,TRUE); //brosnan picture
-    set_item_visibility_in_objinstance(objinstance,SW_CONNERY,FALSE);
-    set_item_visibility_in_objinstance(objinstance,SW_DALTON,FALSE);
-    set_item_visibility_in_objinstance(objinstance,SW_MOORE,FALSE);
-    set_item_visibility_in_objinstance(objinstance,SW_BROSNANCOVER,TRUE); //bigger brosnan picture
-    set_item_visibility_in_objinstance(objinstance,SW_CONNERYCOVER,FALSE);
-    set_item_visibility_in_objinstance(objinstance,SW_DALTONCOVER,FALSE);
-    set_item_visibility_in_objinstance(objinstance,SW_MOORECOVER,FALSE);
+    frontSetSwitchVisible(objinstance,SW_BROSNAN,TRUE); //brosnan picture
+    frontSetSwitchVisible(objinstance,SW_CONNERY,FALSE);
+    frontSetSwitchVisible(objinstance,SW_DALTON,FALSE);
+    frontSetSwitchVisible(objinstance,SW_MOORE,FALSE);
+    frontSetSwitchVisible(objinstance,SW_BROSNANCOVER,TRUE); //bigger brosnan picture
+    frontSetSwitchVisible(objinstance,SW_CONNERYCOVER,FALSE);
+    frontSetSwitchVisible(objinstance,SW_DALTONCOVER,FALSE);
+    frontSetSwitchVisible(objinstance,SW_MOORECOVER,FALSE);
 #endif
 }
 
@@ -2061,17 +2061,17 @@ void select_load_bond_picture(Model *objinstance, u32 bondID)
 /**
  * Address 0x7F00B8AC NTSC
 */
-void load_walletbond(void)
+void frontLoadFolders(void)
 {
     ModelNode *mnode;
     s32 i;
 
-    if (walletinst[0] == NULL)
+    if (g_FrontFolderModels[0] == NULL)
     {
         modelFileLoad(
             PitemZ_entries[PROP_WALLETBOND].header,
             (s8*)PitemZ_entries[PROP_WALLETBOND].filename,
-            (u8*)ptr_logo_and_walletbond_DL,
+            (u8*)g_FrontModelBuffer,
             0xA000,
             0);
 
@@ -2079,11 +2079,11 @@ void load_walletbond(void)
 
         for (i = FOLDER1; i < MAX_FOLDER_COUNT; i++)
         {
-            walletinst[i]  = modelmgrInstantiateModelWithAnim(PitemZ_entries[PROP_WALLETBOND].header);
+            g_FrontFolderModels[i]  = modelmgrInstantiateModelWithAnim(PitemZ_entries[PROP_WALLETBOND].header);
             #ifdef DEBUG
-            assert(walletinst[i]);
+            assert(g_FrontFolderModels[i]);
             #endif
-            modelSetScale(walletinst[i], 1.0f);
+            modelSetScale(g_FrontFolderModels[i], 1.0f);
         }
 
         mnode = PitemZ_entries[PROP_WALLETBOND].header->Switches[GFXHIT0_PICS];
@@ -2106,16 +2106,16 @@ void load_walletbond(void)
 
 
 
-void frontCleanUpWalletBond(void)
+void frontFreeFolders(void)
 {
     s32 i;
 
     for (i = FOLDER1; i < MAX_FOLDER_COUNT; i++)
     {
-        if (walletinst[i] == NULL) { continue; }
+        if (g_FrontFolderModels[i] == NULL) { continue; }
 
-        modelFreeAnimSlot(walletinst[i]);
-        walletinst[i] = NULL;
+        modelFreeAnimSlot(g_FrontFolderModels[i]);
+        g_FrontFolderModels[i] = NULL;
     }
 }
 
@@ -2124,30 +2124,30 @@ void frontCleanUpWalletBond(void)
 //********************************************************************************************************
 //FILE SELECT
 //********************************************************************************************************
-void init_menu05_fileselect(void)
+void frontFileSelectEnter(void)
 {
     s32 size = 0x6e000;
-    Gfx* DL = (s32)(ptr_logo_and_walletbond_DL) + (s32)(4096*10);
+    Gfx* DL = (s32)(g_FrontModelBuffer) + (s32)(4096*10);
     int i;
 
-    prev_keypresses = FALSE;
+    g_FrontSkipIntro = FALSE;
 
 
-    if (selected_folder_num < FOLDER1)
+    if (g_FrontFolder < FOLDER1)
     {
-        selected_folder_num = FOLDER1;
+        g_FrontFolder = FOLDER1;
     }
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    folder_selected_for_deletion = FOLDER_INVALID;
-    folder_selected_for_deletion_choice = FOLDER2;
-    sub_GAME_7F008DE4(&DL, &size);
-    load_walletbond();
-    if (maybe_is_in_menu){
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    g_FrontFolderErase = FOLDER_INVALID;
+    g_FrontFolderEraseChoice = FOLDER2;
+    titleLoadBackdrop(&DL, &size);
+    frontLoadFolders();
+    if (g_FrontStartMusic){
         musicTrack1Play(M_FOLDERS);
-        maybe_is_in_menu = FALSE;
+        g_FrontStartMusic = FALSE;
     }
-    g_MenuTimer = 0;
+    g_FrontTimer = 0;
     for(i=1;i<CHEAT_INVALID;i++){
         g_CheatActivated[i] = FALSE;
     }
@@ -2157,23 +2157,23 @@ void init_menu05_fileselect(void)
 
 
 
-void update_menu05_filesel(void)
+void frontFileSelectLeave(void)
 {
-    if ((menu_update == MENU_LEGAL_SCREEN) || (maybe_prev_menu == MENU_LEGAL_SCREEN))
+    if ((g_FrontNextMenu == MENU_LEGAL_SCREEN) || (g_FrontEnterMenu == MENU_LEGAL_SCREEN))
     {
-        frontCleanUpWalletBond();
+        frontFreeFolders();
     }
 }
 
 
 
-s32 get_chapter_briefing_entry(s32 briefing)
+s32 frontGetChapterStart(s32 briefing)
 {
     s32 i;
 
     for (i = briefing; i >= 0; i--)
     {
-        if (mission_folder_setup_entries[i].type != MISSION_PART)
+        if (g_FrontMissions[i].type != MISSION_PART)
         {
             return i;
         }
@@ -2183,13 +2183,13 @@ s32 get_chapter_briefing_entry(s32 briefing)
 }
 
 
-void toggle_deletion_menu_for_folder(int index)
+void frontSetCursorOnFolder(int index)
 {
   struct coord2d local_8;
 
-  camViewToScreen(&folderpositions_camspace[index],&local_8);
-  cursor_h_pos = local_8.x + -1.0f;
-  cursor_v_pos = local_8.y + 20.0f;
+  camViewToScreen(&g_FrontFolderScreenPos[index],&local_8);
+  g_FrontCursorX = local_8.x + -1.0f;
+  g_FrontCursorY = local_8.y + 20.0f;
 }
 
 
@@ -2199,7 +2199,7 @@ void toggle_deletion_menu_for_folder(int index)
  * Tick function for the file folder select screen. Rebuild's each folder model's render matrix
  * then handles input. Also keeps track of the 30 second idle timeout for going back to the legal screen.
  */
-s32 interface_menu05_fileselect(void)
+s32 frontFileSelectTick(void)
 {
     s32 walletnum;
     s32 foldernum;
@@ -2213,11 +2213,11 @@ s32 interface_menu05_fileselect(void)
      */
     if (((((joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON) != 0) || (joyGetStickX(0) < -5)) || (joyGetStickX(0) >= 6)) || (joyGetStickY(0) < -5)) || (joyGetStickY(0) >= 6))
     {
-        g_MenuTimer = 0;
+        g_FrontTimer = 0;
     }
     else
     {
-        g_MenuTimer += g_ClockTimer;
+        g_FrontTimer += g_ClockTimer;
     }
 
     viSetFovY(FOV_Y_F);
@@ -2227,83 +2227,83 @@ s32 interface_menu05_fileselect(void)
 
     for (walletnum = 0; walletnum < MAX_FOLDER_COUNT; walletnum++)
     {
-        folderpos = &folderpositions[walletnum];
+        folderpos = &g_FrontFolderPos[walletnum];
 
         mtx4LoadLookAt(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
         mtx4LoadTranslation(folderpos, &walletmtx);
         mtx4ScaleRows012(0.37f, (f32*)&walletmtx);
         mtx4MultInPlace(&lookatmtx, &walletmtx);
 
-        walletinst[walletnum]->render_pos = dynAllocate(walletinst[walletnum]->obj->numMatrices << 6);
-        mtx4Copy(&walletmtx, &walletinst[walletnum]->render_pos->pos);
+        g_FrontFolderModels[walletnum]->render_pos = dynAllocate(g_FrontFolderModels[walletnum]->obj->numMatrices << 6);
+        mtx4Copy(&walletmtx, &g_FrontFolderModels[walletnum]->render_pos->pos);
 
-        folderpositions_camspace[walletnum].f[0] = walletinst[walletnum]->render_pos->pos.m[3][0];
-        folderpositions_camspace[walletnum].f[1] = walletinst[walletnum]->render_pos->pos.m[3][1];
-        folderpositions_camspace[walletnum].f[2] = walletinst[walletnum]->render_pos->pos.m[3][2];
+        g_FrontFolderScreenPos[walletnum].f[0] = g_FrontFolderModels[walletnum]->render_pos->pos.m[3][0];
+        g_FrontFolderScreenPos[walletnum].f[1] = g_FrontFolderModels[walletnum]->render_pos->pos.m[3][1];
+        g_FrontFolderScreenPos[walletnum].f[2] = g_FrontFolderModels[walletnum]->render_pos->pos.m[3][2];
 
-        disable_all_switches(walletinst[walletnum]);
+        frontHideAllSwitches(g_FrontFolderModels[walletnum]);
 
-        select_load_bond_picture(walletinst[walletnum], fileGetBondForFolder(walletnum));
-        set_item_visibility_in_objinstance(walletinst[walletnum], 0xE, 1);
-        set_item_visibility_in_objinstance(walletinst[walletnum], 0xD, 1);
+        frontSelectBondPicture(g_FrontFolderModels[walletnum], fileGetBondForFolder(walletnum));
+        frontSetSwitchVisible(g_FrontFolderModels[walletnum], 0xE, 1);
+        frontSetSwitchVisible(g_FrontFolderModels[walletnum], 0xD, 1);
     }
 
-    if (selected_folder_num >= FOLDER1)
+    if (g_FrontFolder >= FOLDER1)
     {
-        if (selected_folder_num == RAMROM_FOLDERNUM)
+        if (g_FrontFolder == RAMROM_FOLDERNUM)
         {
-            selected_folder_num = selected_folder_num_copy;
+            g_FrontFolder = g_FrontFolderSaved;
         }
 
-        if ((selected_folder_num < FOLDER1) || (selected_folder_num >= MAX_FOLDER_COUNT))
+        if ((g_FrontFolder < FOLDER1) || (g_FrontFolder >= MAX_FOLDER_COUNT))
         {
-            selected_folder_num = FOLDER1;
+            g_FrontFolder = FOLDER1;
         }
 
-        toggle_deletion_menu_for_folder(selected_folder_num);
-        selected_folder_num = -1;
+        frontSetCursorOnFolder(g_FrontFolder);
+        g_FrontFolder = -1;
     }
 
-    if (folder_selected_for_deletion >= 0)
+    if (g_FrontFolderErase >= 0)
     {
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD | L_TRIG | L_CBUTTONS) != 0) && (folder_selected_for_deletion_choice == 0))
+        if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD | L_TRIG | L_CBUTTONS) != 0) && (g_FrontFolderEraseChoice == 0))
         {
-            folder_selected_for_deletion_choice = 1;
+            g_FrontFolderEraseChoice = 1;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
         }
-        else if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD | R_TRIG | R_CBUTTONS) != 0) && (folder_selected_for_deletion_choice != 0))
+        else if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD | R_TRIG | R_CBUTTONS) != 0) && (g_FrontFolderEraseChoice != 0))
         {
-            folder_selected_for_deletion_choice = 0;
+            g_FrontFolderEraseChoice = 0;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
         }
-        if ((joyGetStickX(0) < -0x2D) && (folder_selected_for_deletion_choice == 0))
+        if ((joyGetStickX(0) < -0x2D) && (g_FrontFolderEraseChoice == 0))
         {
-            folder_selected_for_deletion_choice = 1;
+            g_FrontFolderEraseChoice = 1;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
         }
-        else if ((joyGetStickX(0) >= 0x2E) && (folder_selected_for_deletion_choice != 0))
+        else if ((joyGetStickX(0) >= 0x2E) && (g_FrontFolderEraseChoice != 0))
         {
-            folder_selected_for_deletion_choice = 0;
+            g_FrontFolderEraseChoice = 0;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
         }
         if (joyGetButtonsPressedThisFrame(PLAYER_1, A_BUTTON | Z_TRIG | START_BUTTON) != 0)
         {
-            if (folder_selected_for_deletion_choice == 0)
+            if (g_FrontFolderEraseChoice == 0)
             {
-                fileDeleteSaveForFolder(folder_selected_for_deletion);
+                fileDeleteSaveForFolder(g_FrontFolderErase);
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
             }
             else
             {
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
             }
-            toggle_deletion_menu_for_folder(folder_selected_for_deletion);
-            folder_selected_for_deletion = -1;
+            frontSetCursorOnFolder(g_FrontFolderErase);
+            g_FrontFolderErase = -1;
         }
         else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON) != 0)
         {
-            toggle_deletion_menu_for_folder(folder_selected_for_deletion);
-            folder_selected_for_deletion = -1;
+            frontSetCursorOnFolder(g_FrontFolderErase);
+            g_FrontFolderErase = -1;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
         }
     }
@@ -2321,13 +2321,13 @@ s32 interface_menu05_fileselect(void)
             LEVEL_SOLO_SEQUENCE higheststage;
             DIFFICULTY highestdifficulty;
 
-            modelGetXYExtents(walletinst[foldernum], &xmax, &xmin, &ymax, &ymin);
-            projectRectCornersTo2D(&folderpositions_camspace[foldernum], &xmin, &ymin, &folderbbox.right, &folderbbox.left);
+            modelGetXYExtents(g_FrontFolderModels[foldernum], &xmax, &xmin, &ymax, &ymin);
+            projectRectCornersTo2D(&g_FrontFolderScreenPos[foldernum], &xmin, &ymin, &folderbbox.right, &folderbbox.left);
 
-            if ((folderbbox.right <= cursor_h_pos)
-                && (cursor_h_pos <= folderbbox.left)
-                && (folderbbox.down <= cursor_v_pos)
-                && (cursor_v_pos <= folderbbox.up))
+            if ((folderbbox.right <= g_FrontCursorX)
+                && (g_FrontCursorX <= folderbbox.left)
+                && (folderbbox.down <= g_FrontCursorY)
+                && (g_FrontCursorY <= folderbbox.up))
             {
                 fileGetHighestStageDifficultyCompletedForFolder(foldernum, &higheststage, &highestdifficulty);
 #ifdef DEBUG
@@ -2336,26 +2336,26 @@ s32 interface_menu05_fileselect(void)
 
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, A_BUTTON | Z_TRIG | START_BUTTON) != 0)
                 {
-                    if (folder_selection_screen_option_icon == 0)
+                    if (g_FrontFolderIcon == 0)
                     {
-                        selected_folder_num = foldernum;
+                        g_FrontFolder = foldernum;
                         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, PAPER_TURN_SFX, NULL);
                     }
-                    else if (folder_selection_screen_option_icon == 1)
+                    else if (g_FrontFolderIcon == 1)
                     {
                         fileCopyFolderToFirstFree(foldernum);
-                        folder_selection_screen_option_icon = 0;
+                        g_FrontFolderIcon = 0;
                         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, COPY_FILE_SFX, NULL);
                     }
-                    else if (folder_selection_screen_option_icon == 2)
+                    else if (g_FrontFolderIcon == 2)
                     {
                         if ((higheststage >= SP_LEVEL_DAM) && (highestdifficulty >= DIFFICULTY_AGENT))
                         {
-                            folder_selected_for_deletion = foldernum;
-                            folder_selected_for_deletion_choice = 1;
+                            g_FrontFolderErase = foldernum;
+                            g_FrontFolderEraseChoice = 1;
                         }
 
-                        folder_selection_screen_option_icon = 0;
+                        g_FrontFolderIcon = 0;
                         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
                     }
 
@@ -2366,59 +2366,59 @@ s32 interface_menu05_fileselect(void)
 
         if (joyGetButtonsPressedThisFrame(PLAYER_1, A_BUTTON | Z_TRIG | START_BUTTON) != 0)
         {
-            if ((folder_option_COPY_bound.left <= cursor_h_pos)
-                && (cursor_h_pos <= folder_option_COPY_bound.right)
-                && (folder_option_COPY_bound.up <= cursor_v_pos)
-                && (cursor_v_pos <= folder_option_COPY_bound.down))
+            if ((folder_option_COPY_bound.left <= g_FrontCursorX)
+                && (g_FrontCursorX <= folder_option_COPY_bound.right)
+                && (folder_option_COPY_bound.up <= g_FrontCursorY)
+                && (g_FrontCursorY <= folder_option_COPY_bound.down))
             {
-                folder_selection_screen_option_icon = 1;
+                g_FrontFolderIcon = 1;
                 sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_LOCK_SFX, NULL);
             }
-            else if ((folder_option_ERASE_bound.left <= cursor_h_pos)
-                && (cursor_h_pos <= folder_option_ERASE_bound.right)
-                && (folder_option_ERASE_bound.up <= cursor_v_pos)
-                && (cursor_v_pos <= folder_option_ERASE_bound.down))
+            else if ((folder_option_ERASE_bound.left <= g_FrontCursorX)
+                && (g_FrontCursorX <= folder_option_ERASE_bound.right)
+                && (folder_option_ERASE_bound.up <= g_FrontCursorY)
+                && (g_FrontCursorY <= folder_option_ERASE_bound.down))
             {
-                folder_selection_screen_option_icon = 2;
+                g_FrontFolderIcon = 2;
                 sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_LOCK_SFX, NULL);
             }
-            else if (folder_selection_screen_option_icon != 0)
+            else if (g_FrontFolderIcon != 0)
             {
-                folder_selection_screen_option_icon = 0;
+                g_FrontFolderIcon = 0;
                 sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
             }
         }
         else if ((joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON) != 0)
-            && (folder_selection_screen_option_icon != 0))
+            && (g_FrontFolderIcon != 0))
         {
-            folder_selection_screen_option_icon = 0;
+            g_FrontFolderIcon = 0;
             sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
         }
 
-        frontUpdateControlStickPosition();
+        frontMoveCursor();
     }
 
-    if (selected_folder_num >= FOLDER1)
+    if (g_FrontFolder >= FOLDER1)
     {
-        frontChangeMenu(MENU_MODE_SELECT, FALSE);
-        setCursorPOSforMode(0);
+        frontSetMenu(MENU_MODE_SELECT, FALSE);
+        frontSetModeCursor(0);
 
         return;
     }
 
     // Change to the legal screen if 30 seconds of no input have elapsed
 #if defined(VERSION_EU)
-    if (g_MenuTimer >= 1501) // PAL (50fps): 30 seconds + 1 frame
+    if (g_FrontTimer >= 1501) // PAL (50fps): 30 seconds + 1 frame
 #else
-    if (g_MenuTimer >= 1801) // NTSC (60fps): 30 seconds + 1 frame
+    if (g_FrontTimer >= 1801) // NTSC (60fps): 30 seconds + 1 frame
 #endif
     {
-        frontChangeMenu(MENU_LEGAL_SCREEN, TRUE);
+        frontSetMenu(MENU_LEGAL_SCREEN, TRUE);
     }
 }
 
 
-char* get_ptr_difficulty_name(s32 difficulty)
+char* frontGetDifficultyName(s32 difficulty)
 {
     char* text = NULL;
     switch (difficulty)
@@ -2449,7 +2449,7 @@ char* get_ptr_difficulty_name(s32 difficulty)
  * The declaration of difficultytext (spD0) is likely incorrect, if this function is modified
  * make sure to extend difficultytext to avoid overflow.
  */
-Gfx *constructor_menu05_fileselect(Gfx *DL)
+Gfx *frontFileSelectRender(Gfx *DL)
 {
     s32 foldernum;
     struct FolderSelectColour topcolour;
@@ -2457,9 +2457,9 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
     s32 j;
     s32 i;
     u8 *langp;
-    s32 chapterindex;                       // index of the chapter (MISSION_HEADER) row in mission_folder_setup_entries
+    s32 chapterindex;                       // index of the chapter (MISSION_HEADER) row in g_FrontMissions
     ModelRenderData renderdata;
-    s32 missionindex;                       // index of the mission (MISSION_PART) row in mission_folder_setup_entries
+    s32 missionindex;                       // index of the mission (MISSION_PART) row in g_FrontMissions
     Mtxf mtx;
     f32 folderx;
     struct point2d textpos;
@@ -2496,14 +2496,14 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         renderdata.gdl = DL;
 
         // Render the folder wall model.
-        modelRender(&renderdata, walletinst[j]);
+        modelRender(&renderdata, g_FrontFolderModels[j]);
 
         DL = renderdata.gdl;
 
-        for (i=0; i < walletinst[j]->obj->numMatrices; i++)
+        for (i=0; i < g_FrontFolderModels[j]->obj->numMatrices; i++)
         {
-            mtx4Copy((Mtxf*)&((s8*)walletinst[j]->render_pos)[i * sizeof(Mtxf)], &mtx);
-            mtxF2L(&mtx, &((Mtxf*)walletinst[j]->render_pos)[i]);
+            mtx4Copy((Mtxf*)&((s8*)g_FrontFolderModels[j]->render_pos)[i * sizeof(Mtxf)], &mtx);
+            mtxF2L(&mtx, &((Mtxf*)g_FrontFolderModels[j]->render_pos)[i]);
 
         }
     }
@@ -2518,11 +2518,11 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         s32 padding3;
         struct coord3d * folderworldpos;
 
-        folderworldpos = &folderpositions_camspace[foldernum];
+        folderworldpos = &g_FrontFolderScreenPos[foldernum];
 
         camViewToScreen(folderworldpos, &folderpos2d);
 
-        if (foldernum == folder_selected_for_deletion)
+        if (foldernum == g_FrontFolderErase)
         {
             textpos.p[1] = (s32) mathFloor(folderpos2d.f[0]) - 0x31;
             textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x19;
@@ -2539,7 +2539,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
             textpos.p[1] = (s32) mathFloor(folderpos2d.f[0]) - 0x2F;
             textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x32;
 
-            if (folder_selected_for_deletion_choice != 0)
+            if (g_FrontFolderEraseChoice != 0)
             {
                 textsize.p[0] = 0;
                 textsize.p[1] = 0;
@@ -2558,7 +2558,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
             textpos.p[1] = (((j_text_trigger != 0) ? 0x17 : -1) + (s32) folderx) - 1;
             textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x32;
 
-            if (folder_selected_for_deletion_choice != 0)
+            if (g_FrontFolderEraseChoice != 0)
             {
                 DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
             }
@@ -2578,7 +2578,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 
             if ((higheststage >= SP_LEVEL_DAM) && (highestdifficulty >= DIFFICULTY_AGENT))
             {
-                langp = get_ptr_difficulty_name(highestdifficulty);
+                langp = frontGetDifficultyName(highestdifficulty);
 
                 if (langp != NULL)
                 {
@@ -2600,22 +2600,22 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 
                     strcpy(missiontext, langGet(getStringID(LTITLE, TITLE_STR_26_MISSION))); /* Mission */
 
-                    for (missionindex = 0; mission_folder_setup_entries[missionindex].folder_text_preset != 0; missionindex++)
+                    for (missionindex = 0; g_FrontMissions[missionindex].folder_text_preset != 0; missionindex++)
                     {
-                        if (higheststage == mission_folder_setup_entries[missionindex].mission_num)
+                        if (higheststage == g_FrontMissions[missionindex].mission_num)
                         {
-                            chapterindex = get_chapter_briefing_entry(missionindex);
+                            chapterindex = frontGetChapterStart(missionindex);
                             break;
                         }
                     }
 
                     if (chapterindex >= 0)
                     {
-                        strcat((char *)missiontext, (char *)mission_folder_setup_entries[chapterindex].string_ptr);
+                        strcat((char *)missiontext, (char *)g_FrontMissions[chapterindex].string_ptr);
                         strcat((char *)missiontext, ".");
                     }
 
-                    strcat((char *)missiontext, (char *)mission_folder_setup_entries[missionindex].string_ptr);
+                    strcat((char *)missiontext, (char *)g_FrontMissions[missionindex].string_ptr);
                     strcat((char *)missiontext, "\n");
                     textsize.p[0] = 0;
                     textsize.p[1] = 0;
@@ -2705,7 +2705,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         texRectDrawImage(&DL, &selectpos.f[0], &selecthalfsize.f[0], (g_ImagesMainFolder + IMG_SEL)->width, (g_ImagesMainFolder + IMG_SEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_SEL)->level > 0, 0);
     }
 
-    if (folder_selected_for_deletion < 0)
+    if (g_FrontFolderErase < 0)
     {
         DL = frontDrawCursor(DL);
     }
@@ -2730,41 +2730,41 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
 static s32 modesel_row_y[5] = {0xC4, 0xDE, 0xF8, 0x112, 0x12C};
 static s32 modesel_highlighted_row = -1;
 
-void init_menu06_modeselect(void)
+void frontModeSelectEnter(void)
 {
-    // Co-op is picked again here (setCursorPOSforMode has already used it
+    // Co-op is picked again here (frontSetModeCursor has already used it
     // to put the cursor back on the co-op row).
     g_CoopMode = FALSE;
     g_CounterOpMode = FALSE;
-    gamemode = GAMEMODE_INTRO;
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    load_walletbond();
+    g_FrontGameMode = GAMEMODE_INTRO;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    frontLoadFolders();
     fileUpdateBondInCurrentFolder();
 }
 
 
-void update_menu06_modesel(void) 
+void frontModeSelectLeave(void) 
 {
     return;
 }
 
 
-void interface_menu06_modesel(void)
+void frontModeSelectTick(void)
 {
     u32 i;
 
-    is_cheat_menu_available = FALSE;
+    g_CheatMenuAvailable = FALSE;
     for (i=CHEAT_EXTRA_MP_CHARS; i != CHEAT_INVALID; i++)
     {
-        if (frontCheckIfCheatIsUnlocked(i))
+        if (frontIsCheatUnlocked(i))
         {
-            cheat_available[i] = TRUE;
-            is_cheat_menu_available = TRUE;
+            g_CheatAvailable[i] = TRUE;
+            g_CheatMenuAvailable = TRUE;
         }
         else
         {
-            cheat_available[i] = FALSE;
+            g_CheatAvailable[i] = FALSE;
         }
     }
     viSetFovY(FOV_Y_F);
@@ -2772,22 +2772,22 @@ void interface_menu06_modesel(void)
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(FALSE);
 
-    disable_all_switches(walletinst[0]);
-    select_load_bond_picture(walletinst[0], fileGetBondForFolder(selected_folder_num));
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PHOTOBOND, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_EYESONLY, 1);
-    tab_prev_highlight = FALSE;
-    mission_difficulty_highlighted = DIFFICULTY_MULTI;
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSelectBondPicture(g_FrontFolderModels[0], fileGetBondForFolder(g_FrontFolder));
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PHOTOBOND, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_EYESONLY, 1);
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontDifficultyHighlight = DIFFICULTY_MULTI;
     modesel_highlighted_row = -1;
     if (frontCheckCursorOnPreviousTab())
     {
-        tab_prev_highlight = TRUE;
+        g_FrontTabPrevHighlight = TRUE;
         if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
             sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, 0);
         }
     }
@@ -2797,13 +2797,13 @@ void interface_menu06_modesel(void)
 
         for (row = MODESEL_ROW_MISSION; row < MODESEL_ROW_CHEATS; row++)
         {
-            if (cursor_v_pos < modesel_row_y[row + 1] - 6)
+            if (g_FrontCursorY < modesel_row_y[row + 1] - 6)
             {
                 break;
             }
         }
 
-        if ((row == MODESEL_ROW_CHEATS) && !is_cheat_menu_available)
+        if ((row == MODESEL_ROW_CHEATS) && !g_CheatMenuAvailable)
         {
             row = MODESEL_ROW_MULTI;
         }
@@ -2821,27 +2821,27 @@ void interface_menu06_modesel(void)
             switch (row)
             {
                 case MODESEL_ROW_MISSION:
-                    gamemode = GAMEMODE_SOLO;
+                    g_FrontGameMode = GAMEMODE_SOLO;
                     g_CoopMode = FALSE;
                     g_CounterOpMode = FALSE;
                     break;
                 case MODESEL_ROW_COOP:
-                    gamemode = GAMEMODE_SOLO;
+                    g_FrontGameMode = GAMEMODE_SOLO;
                     g_CoopMode = TRUE;
                     g_CounterOpMode = FALSE;
                     break;
                 case MODESEL_ROW_COUNTEROP:
-                    gamemode = GAMEMODE_SOLO;
+                    g_FrontGameMode = GAMEMODE_SOLO;
                     g_CoopMode = TRUE;
                     g_CounterOpMode = TRUE;
                     break;
                 case MODESEL_ROW_MULTI:
-                    gamemode = GAMEMODE_MULTI;
+                    g_FrontGameMode = GAMEMODE_MULTI;
                     g_CoopMode = FALSE;
                     g_CounterOpMode = FALSE;
                     break;
                 case MODESEL_ROW_CHEATS:
-                    gamemode = GAMEMODE_CHEATS;
+                    g_FrontGameMode = GAMEMODE_CHEATS;
                     break;
             }
 
@@ -2853,49 +2853,49 @@ void interface_menu06_modesel(void)
     if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD|D_JPAD))
     {
         s32 row = MODESEL_ROW_MISSION;
-        s32 lastrow = is_cheat_menu_available ? MODESEL_ROW_CHEATS : MODESEL_ROW_MULTI;
+        s32 lastrow = g_CheatMenuAvailable ? MODESEL_ROW_CHEATS : MODESEL_ROW_MULTI;
 
-        while ((row < lastrow) && (cursor_v_pos >= modesel_row_y[row + 1] - 6))
+        while ((row < lastrow) && (g_FrontCursorY >= modesel_row_y[row + 1] - 6))
         {
             row++;
         }
 
         row += joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? 1 : -1;
         row = (row < MODESEL_ROW_MISSION) ? MODESEL_ROW_MISSION : ((row > lastrow) ? lastrow : row);
-        cursor_h_pos = 126.0f;
-        cursor_v_pos = modesel_row_y[row] + 6;
+        g_FrontCursorX = 126.0f;
+        g_FrontCursorY = modesel_row_y[row] + 6;
     }
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
-        tab_prev_selected = TRUE;
+        g_FrontTabPrevSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, 0);
     }
-    frontUpdateControlStickPosition();
-    if ((gamemode == GAMEMODE_SOLO) && g_CoopMode)
+    frontMoveCursor();
+    if ((g_FrontGameMode == GAMEMODE_SOLO) && g_CoopMode)
     {
-        frontChangeMenu(MENU_COOP_SETUP, FALSE);
+        frontSetMenu(MENU_COOP_SETUP, FALSE);
         return;
     }
-    if (gamemode == GAMEMODE_SOLO)
+    if (g_FrontGameMode == GAMEMODE_SOLO)
     {
-        frontChangeMenu(MENU_MISSION_SELECT, FALSE);
-        set_cursor_to_stage_solo(0);
+        frontSetMenu(MENU_MISSION_SELECT, FALSE);
+        frontSetMissionCursor(0);
         return;
     }
-    if (gamemode == GAMEMODE_MULTI)
+    if (g_FrontGameMode == GAMEMODE_MULTI)
     {
-        frontChangeMenu(MENU_MP_OPTIONS, FALSE);
+        frontSetMenu(MENU_MP_OPTIONS, FALSE);
         return;
     }
-    if (gamemode == GAMEMODE_CHEATS)
+    if (g_FrontGameMode == GAMEMODE_CHEATS)
     {
-        frontChangeMenu(MENU_CHEAT, FALSE);
+        frontSetMenu(MENU_CHEAT, FALSE);
         return;
     }
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_FILE_SELECT, FALSE);
+        frontSetMenu(MENU_FILE_SELECT, FALSE);
     }
 }
 
@@ -2912,8 +2912,8 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
     Mtxf sp88;
     Mtxf sp48;
 
-    temp_f0 = folderpositions[selected_folder_num].f[0];
-    temp_f2 = folderpositions[selected_folder_num].f[1];
+    temp_f0 = g_FrontFolderPos[g_FrontFolder].f[0];
+    temp_f2 = g_FrontFolderPos[g_FrontFolder].f[1];
 
     sp10C = D_8002AF84;
 
@@ -2921,31 +2921,31 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
     temp_f2 += D_8002AFC8;
 
     mtx4LoadLookAt(&spC8, temp_f0, temp_f2, 4000.0f + D_8002AFCC, temp_f0, temp_f2, 0.0f, 0.0f, 1.0f, 0.0f);
-    mtx4LoadTranslation(&folderpositions[selected_folder_num], &sp88);
+    mtx4LoadTranslation(&g_FrontFolderPos[g_FrontFolder], &sp88);
     mtx4ScaleRows012(0.25f, sp88.m[0]);
     mtx4MultInPlace(&spC8, &sp88);
 
     sp10C.basemtx = &sp88;
 
-    sp10C.mtxlist = dynAllocate(walletinst[0]->obj->numMatrices << 6);
+    sp10C.mtxlist = dynAllocate(g_FrontFolderModels[0]->obj->numMatrices << 6);
 
     mtx4Copy(&sp88, sp10C.mtxlist);
 
-    walletinst[0]->render_pos = (union RenderPosView*)sp10C.mtxlist;
+    g_FrontFolderModels[0]->render_pos = (union RenderPosView*)sp10C.mtxlist;
 
     sp10C.flags = 3;
     sp10C.zbufferenabled = FALSE;
     sp10C.gdl = DL;
 
-    modelRender(&sp10C, walletinst[0]);
+    modelRender(&sp10C, g_FrontFolderModels[0]);
 
     DL = sp10C.gdl;
 
-    for (i=0; i<walletinst[0]->obj->numMatrices; i++)
+    for (i=0; i<g_FrontFolderModels[0]->obj->numMatrices; i++)
     {
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        mtx4Copy(&((s8*)walletinst[0]->render_pos)[i*0x40], &sp48);
-        mtxF2L(&sp48, &((Mtxf*)walletinst[0]->render_pos)[i]);
+        mtx4Copy(&((s8*)g_FrontFolderModels[0]->render_pos)[i*0x40], &sp48);
+        mtxF2L(&sp48, &((Mtxf*)g_FrontFolderModels[0]->render_pos)[i]);
     }
 
 
@@ -2959,7 +2959,7 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
  * with g_CoopMode set is the co-op row, or the counter-op row with
  * g_CounterOpMode).
  */
-void setCursorPOSforMode(int mode)
+void frontSetModeCursor(int mode)
 {
     s32 row;
 
@@ -2984,8 +2984,8 @@ void setCursorPOSforMode(int mode)
         row = MODESEL_ROW_MISSION;
     }
 
-    cursor_h_pos = 126.0f;
-    cursor_v_pos = modesel_row_y[row] + 6;
+    g_FrontCursorX = 126.0f;
+    g_FrontCursorY = modesel_row_y[row] + 6;
 }
 
 /**
@@ -3019,7 +3019,7 @@ static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, char *number, u8 *textstring, 
 
 
 
-Gfx* constructor_menu06_modesel(Gfx* DL)
+Gfx* frontModeSelectRender(Gfx* DL)
 {
     char *textstring;
     s32 text_color;
@@ -3044,7 +3044,7 @@ Gfx* constructor_menu06_modesel(Gfx* DL)
     textstring = langGet((g_AppendCheatMultiPlayer != 0) ? getStringID(LTITLE, TITLE_STR_276_CHEATMULTIPLAYER) : getStringID(LTITLE, TITLE_STR_30_MULTIPLAYER));
     DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "4.\n", (u8 *)textstring, text_color);
 
-    if (is_cheat_menu_available != 0)
+    if (g_CheatMenuAvailable != 0)
     {
         textstring = langGet(getStringID(LTITLE, TITLE_STR_31_CHEATOPTIONS));
         DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHEATS, "5.\n", (u8 *)textstring, 0xFF);
@@ -3091,27 +3091,27 @@ static s32 frontCoopCharCount(void);
 static s32 frontCoopGetPartnerChar(void);
 static u8 *frontCoopGetPartnerCharName(void);
 
-void init_menu1A_coopsetup(void)
+void frontCoopSetupEnter(void)
 {
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    tab_next_highlight = FALSE;
-    tab_prev_highlight = FALSE;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
     coop_setup_highlighted_row = -1;
-    cursor_h_pos = COOP_SETUP_CURSOR_X;
-    cursor_v_pos = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_CHAR) + 6;
+    g_FrontCursorX = COOP_SETUP_CURSOR_X;
+    g_FrontCursorY = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_CHAR) + 6;
 
     // Co-op gives each player one controller, so only the 1.x styles.
-    if (controlstyle_player[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY)
+    if (g_MpControlStyle[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY)
     {
-        controlstyle_player[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
+        g_MpControlStyle[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
     }
 
-    load_walletbond();
+    frontLoadFolders();
 }
 
 
-void update_menu1A_coopsetup(void)
+void frontCoopSetupLeave(void)
 {
     return;
 }
@@ -3139,7 +3139,7 @@ static void frontCoopSetupStep(s32 row, s32 step)
             break;
 
         case COOP_SETUP_ROW_CONTROLS:
-            controlstyle_player[PLAYER_2] = (controlstyle_player[PLAYER_2] + step + CONTROLLER_CONFIG_PLENTY) % CONTROLLER_CONFIG_PLENTY;
+            g_MpControlStyle[PLAYER_2] = (g_MpControlStyle[PLAYER_2] + step + CONTROLLER_CONFIG_PLENTY) % CONTROLLER_CONFIG_PLENTY;
             break;
 
         case COOP_SETUP_ROW_SPLIT:
@@ -3157,7 +3157,7 @@ static void frontCoopSetupStep(s32 row, s32 step)
 }
 
 
-void interface_menu1A_coopsetup(void)
+void frontCoopSetupTick(void)
 {
     s32 step = 0;
     s32 row;
@@ -3171,28 +3171,28 @@ void interface_menu1A_coopsetup(void)
     {
         g_CoopMode = FALSE;
         g_CounterOpMode = FALSE;
-        frontChangeMenu(MENU_MODE_SELECT, FALSE);
-        setCursorPOSforMode(GAMEMODE_SOLO);
+        frontSetMenu(MENU_MODE_SELECT, FALSE);
+        frontSetModeCursor(GAMEMODE_SOLO);
         return;
     }
 
-    tab_prev_highlight = FALSE;
-    tab_next_highlight = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
     coop_setup_highlighted_row = -1;
 
     if (frontCheckCursorOnPreviousTab())
     {
-        tab_prev_highlight = TRUE;
+        g_FrontTabPrevHighlight = TRUE;
     }
     else if (frontCheckCursorOnNextTab())
     {
-        tab_next_highlight = TRUE;
+        g_FrontTabNextHighlight = TRUE;
     }
     else
     {
         for (row = 0; row < COOP_SETUP_ROW_COUNT; row++)
         {
-            if ((cursor_v_pos >= COOP_SETUP_ROW_Y(row) - 1) && (cursor_v_pos < COOP_SETUP_ROW_Y(row) + 0x13))
+            if ((g_FrontCursorY >= COOP_SETUP_ROW_Y(row) - 1) && (g_FrontCursorY < COOP_SETUP_ROW_Y(row) + 0x13))
             {
                 coop_setup_highlighted_row = row;
             }
@@ -3201,19 +3201,19 @@ void interface_menu1A_coopsetup(void)
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON))
     {
-        tab_next_selected = TRUE;
+        g_FrontTabNextSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, PAPER_TURN_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON))
     {
-        if (tab_prev_highlight)
+        if (g_FrontTabPrevHighlight)
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
             sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
-        else if (tab_next_highlight)
+        else if (g_FrontTabNextHighlight)
         {
-            tab_next_selected = TRUE;
+            g_FrontTabNextSelected = TRUE;
             sndPlaySfx(g_musicSfxBufferPtr, PAPER_TURN_SFX, NULL);
         }
         else
@@ -3231,7 +3231,7 @@ void interface_menu1A_coopsetup(void)
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
-        tab_prev_selected = TRUE;
+        g_FrontTabPrevSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
@@ -3253,41 +3253,41 @@ void interface_menu1A_coopsetup(void)
 
         row += joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? 1 : -1;
         row = (row < 0) ? 0 : ((row >= COOP_SETUP_ROW_COUNT) ? (COOP_SETUP_ROW_COUNT - 1) : row);
-        cursor_h_pos = COOP_SETUP_CURSOR_X;
-        cursor_v_pos = COOP_SETUP_ROW_Y(row) + 6;
+        g_FrontCursorX = COOP_SETUP_CURSOR_X;
+        g_FrontCursorY = COOP_SETUP_ROW_Y(row) + 6;
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CONFIDENTIAL2, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CONFIDENTIAL2, 1);
+    frontMoveCursor();
 
-    if (tab_prev_selected || tab_next_selected)
+    if (g_FrontTabPrevSelected || g_FrontTabNextSelected)
     {
         fileCoopSavePartnerSettings();
-        fileSaveDisplaySettingsForFolder(selected_folder_num);
+        fileSaveDisplaySettingsForFolder(g_FrontFolder);
     }
 
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
         // Mode select clears co-op once it opens; the cursor goes back to
         // the co-op row.
-        frontChangeMenu(MENU_MODE_SELECT, FALSE);
-        setCursorPOSforMode(GAMEMODE_SOLO);
+        frontSetMenu(MENU_MODE_SELECT, FALSE);
+        frontSetModeCursor(GAMEMODE_SOLO);
         return;
     }
 
-    if (tab_next_selected)
+    if (g_FrontTabNextSelected)
     {
-        frontChangeMenu(MENU_MISSION_SELECT, FALSE);
-        set_cursor_to_stage_solo(0);
+        frontSetMenu(MENU_MISSION_SELECT, FALSE);
+        frontSetMissionCursor(0);
     }
 }
 
 
-Gfx *constructor_menu1A_coopsetup(Gfx *DL)
+Gfx *frontCoopSetupRender(Gfx *DL)
 {
     u8 *text;
     s32 x;
@@ -3341,7 +3341,7 @@ Gfx *constructor_menu1A_coopsetup(Gfx *DL)
                 text = frontCoopGetPartnerCharName();
                 break;
             case COOP_SETUP_ROW_CONTROLS:
-                text = (u8 *)langGet(MP_controller_configuration_table[controlstyle_player[PLAYER_2]].text_preset);
+                text = (u8 *)langGet(g_MpControlStyles[g_MpControlStyle[PLAYER_2]].text_preset);
                 break;
             case COOP_SETUP_ROW_SPLIT:
                 text = (u8 *)(get_split_stacked_setting() ? "Stacked\n" : "Side by Side\n");
@@ -3370,13 +3370,13 @@ Gfx *constructor_menu1A_coopsetup(Gfx *DL)
 }
 
 
-s32 pull_and_display_text_for_folder_a0(s32 arg0)
+s32 frontFindMissionEntry(s32 arg0)
 {
     int i;
 
-    for (i=0; mission_folder_setup_entries[i].folder_text_preset != 0 ; i++)
+    for (i=0; g_FrontMissions[i].folder_text_preset != 0 ; i++)
     {
-        if (arg0 == mission_folder_setup_entries[i].mission_num)
+        if (arg0 == g_FrontMissions[i].mission_num)
         {
             return i;
         }
@@ -3386,14 +3386,14 @@ s32 pull_and_display_text_for_folder_a0(s32 arg0)
 }
 
 
-s32 check_if_stage_completed_on_difficulty(int stage, DIFFICULTY difficulty)
+s32 frontIsMissionCompleted(int stage, DIFFICULTY difficulty)
 {
     s32 num;
 
-    num = mission_folder_setup_entries[stage].mission_num;
+    num = g_FrontMissions[stage].mission_num;
     if (num >= 0)
     {
-        return fileIsStageUnlockedAtDifficulty(selected_folder_num, num, difficulty);
+        return fileIsStageUnlockedAtDifficulty(g_FrontFolder, num, difficulty);
     }
     return 0;
 }
@@ -3402,23 +3402,23 @@ s32 check_if_stage_completed_on_difficulty(int stage, DIFFICULTY difficulty)
 
 
 
-s32 get_highest_unlocked_difficulty_for_level(s32 arg0)
+s32 frontGetHighestDifficulty(s32 arg0)
 {
     s32 num;
     s32 difficulty;
     s32 temp_v0;
 
-    if (mission_folder_setup_entries[pull_and_display_text_for_folder_a0(arg0)].stage_id >= 0)
+    if (g_FrontMissions[frontFindMissionEntry(arg0)].stage_id >= 0)
     {
         num = DIFFICULTY_00;
-        if (fileIs007ModeUnlocked(selected_folder_num) || get_debug_007_unlock_flag())
+        if (fileIs007ModeUnlocked(g_FrontFolder) || get_debug_007_unlock_flag())
         {
             num = DIFFICULTY_007;
         }
 
         for (difficulty=num; difficulty >= 0; difficulty--)
         {
-            temp_v0 = fileIsStageUnlockedAtDifficulty(selected_folder_num, arg0, difficulty);
+            temp_v0 = fileIsStageUnlockedAtDifficulty(g_FrontFolder, arg0, difficulty);
             if (g_AppendCheatSinglePlayer == 0)
             {
                 if (temp_v0 != DIFFICULTY_AGENT)
@@ -3440,12 +3440,12 @@ s32 get_highest_unlocked_difficulty_for_level(s32 arg0)
 //********************************************************************************************************
 //MISSION SELECT
 //********************************************************************************************************
-void init_menu07_missionselect(void)
+void frontMissionSelectEnter(void)
 {
-    selected_stage = LEVELID_NONE;
-    briefingpage = BRIEFING_INVALID;
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
+    g_FrontStage = LEVELID_NONE;
+    g_FrontMission = BRIEFING_INVALID;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
     // Co-op is chosen on the mode select page and lasts until the player
     // goes back there.
     if (joyGetControllerCount() < 2)
@@ -3453,23 +3453,23 @@ void init_menu07_missionselect(void)
         g_CoopMode = FALSE;
         g_CounterOpMode = FALSE;
     }
-    if (maybe_is_in_menu)
+    if (g_FrontStartMusic)
     {
         musicTrack1Play(M_FOLDERS);
-        maybe_is_in_menu = FALSE;
+        g_FrontStartMusic = FALSE;
     }
-    load_walletbond();
+    frontLoadFolders();
 }
 
 
-void update_menu07_missionsel(void) 
+void frontMissionSelectLeave(void) 
 {
     return;
 }
 
 
 // Address 0x7F00DEB8 NTSC
-void interface_menu07_missionsel(void)
+void frontMissionSelectTick(void)
 {
     s32 var_s4;
     s32 var_s2;
@@ -3485,16 +3485,16 @@ void interface_menu07_missionsel(void)
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], 0, 1);
-    set_item_visibility_in_objinstance(walletinst[0], 0x13, 1);
-    set_item_visibility_in_objinstance(walletinst[0], 0x14, 1);
-    tab_prev_highlight = 0;
-    mission_difficulty_highlighted = -1;
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], 0, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], 0x13, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], 0x14, 1);
+    g_FrontTabPrevHighlight = 0;
+    g_FrontDifficultyHighlight = -1;
 
     if (frontCheckCursorOnPreviousTab() != 0)
     {
-        tab_prev_highlight = 1;
+        g_FrontTabPrevHighlight = 1;
     }
     else
     {
@@ -3502,7 +3502,7 @@ void interface_menu07_missionsel(void)
         {
             if (var_s4 < 4)
             {
-                if(!((cursor_xpos_table_mission_select[var_s4] + cursor_xpos_table_mission_select[var_s4+1]) * 0.5f > cursor_h_pos))
+                if(!((g_FrontMissionCursorX[var_s4] + g_FrontMissionCursorX[var_s4+1]) * 0.5f > g_FrontCursorX))
                 {
                     var_s4++;
                     continue;
@@ -3516,7 +3516,7 @@ void interface_menu07_missionsel(void)
         {
             if (var_s2 < 3)
             {
-                if(!((cursor_ypos_table_mission_select[var_s2] + cursor_ypos_table_mission_select[var_s2+1]) * 0.5f > cursor_v_pos))
+                if(!((g_FrontMissionCursorY[var_s2] + g_FrontMissionCursorY[var_s2+1]) * 0.5f > g_FrontCursorY))
                 {
                     var_s2++;
                     continue;
@@ -3530,7 +3530,7 @@ void interface_menu07_missionsel(void)
         {
             for (var_s1 = 0; var_s1 < 5; var_s1++)
             {
-                if (get_highest_unlocked_difficulty_for_level((var_s2 * 5) + var_s1) >= 0)
+                if (frontGetHighestDifficulty((var_s2 * 5) + var_s1) >= 0)
                 {
                     break;
                 }
@@ -3546,7 +3546,7 @@ void interface_menu07_missionsel(void)
 
         for ( ; var_s4 >= 0; var_s4--)
         {
-            if (get_highest_unlocked_difficulty_for_level((var_s2 * 5) + var_s4) >= 0)
+            if (frontGetHighestDifficulty((var_s2 * 5) + var_s4) >= 0)
             {
                 break;
             }
@@ -3556,23 +3556,23 @@ void interface_menu07_missionsel(void)
         {
             for (var_s4 = 0; var_s4 < 5; var_s4++)
             {
-                if (get_highest_unlocked_difficulty_for_level((var_s2 * 5) + var_s4) >= 0)
+                if (frontGetHighestDifficulty((var_s2 * 5) + var_s4) >= 0)
                 {
                     break;
                 }
             }
         }
 
-        mission_difficulty_highlighted = (var_s2 * 5) + var_s4;
+        g_FrontDifficultyHighlight = (var_s2 * 5) + var_s4;
     }
 
-    mnode = walletinst[0]->obj->Switches[0x15];
+    mnode = g_FrontFolderModels[0]->obj->Switches[0x15];
 
     if (mnode != NULL)
     {
         temp_s4 = (struct ModelRoData_DisplayList_CollisionRecord *)mnode->Data;
 
-        temp_s1 = (struct ModelRwData_DisplayList_CollisionRecord *)modelGetNodeRwData(walletinst[0], mnode);
+        temp_s1 = (struct ModelRwData_DisplayList_CollisionRecord *)modelGetNodeRwData(g_FrontFolderModels[0], mnode);
         temp_s1->Vertices = dynAllocateVertices(temp_s4->numVertices);
 
         for (i = 0; i < temp_s4->numVertices; i++)
@@ -3582,9 +3582,9 @@ void interface_menu07_missionsel(void)
 
             temp_a0 = i / 4;
 
-            if (get_highest_unlocked_difficulty_for_level(temp_a0) >= 0)
+            if (frontGetHighestDifficulty(temp_a0) >= 0)
             {
-                if (temp_a0 == mission_difficulty_highlighted)
+                if (temp_a0 == g_FrontDifficultyHighlight)
                 {
                     temp_s1->Vertices[i].r = 0xff;
                     temp_s1->Vertices[i].g = 0xff;
@@ -3611,61 +3611,61 @@ void interface_menu07_missionsel(void)
 
     if (joyGetButtonsPressedThisFrame(0, A_BUTTON | START_BUTTON | Z_TRIG) != 0)
     {
-        if (tab_prev_highlight != 0)
+        if (g_FrontTabPrevHighlight != 0)
         {
-            tab_prev_selected = 1;
+            g_FrontTabPrevSelected = 1;
 
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
-        else if (mission_difficulty_highlighted >= 0)
+        else if (g_FrontDifficultyHighlight >= 0)
         {
-            briefingpage = pull_and_display_text_for_folder_a0(mission_difficulty_highlighted);
-            selected_stage = mission_folder_setup_entries[briefingpage].stage_id;
-            tab_next_selected = 1;
+            g_FrontMission = frontFindMissionEntry(g_FrontDifficultyHighlight);
+            g_FrontStage = g_FrontMissions[g_FrontMission].stage_id;
+            g_FrontTabNextSelected = 1;
 
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     else if (joyGetButtonsPressedThisFrame(0, B_BUTTON) != 0)
     {
-        tab_prev_selected = 1;
+        g_FrontTabPrevSelected = 1;
 
         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
-    frontUpdateControlStickPosition();
+    frontMoveCursor();
 
-    if (tab_next_selected != 0)
+    if (g_FrontTabNextSelected != 0)
     {
-        frontChangeMenu(MENU_DIFFICULTY, 0);
+        frontSetMenu(MENU_DIFFICULTY, 0);
 
 #if defined(VERSION_EU)
         if (j_text_trigger != 0)
         {
-            set_cursor_pos_difficulty(0);
+            frontSetDifficultyCursor(0);
         }
         else
 #endif
         {
-            set_cursor_pos_difficulty(get_highest_unlocked_difficulty_for_level(mission_folder_setup_entries[briefingpage].mission_num));
+            frontSetDifficultyCursor(frontGetHighestDifficulty(g_FrontMissions[g_FrontMission].mission_num));
         }
     }
-    else if (tab_prev_selected != 0)
+    else if (g_FrontTabPrevSelected != 0)
     {
-        frontChangeMenu(MENU_MODE_SELECT, 0);
-        setCursorPOSforMode(0);
+        frontSetMenu(MENU_MODE_SELECT, 0);
+        frontSetModeCursor(0);
     }
 }
 
 
-void set_cursor_to_stage_solo(LEVEL_SOLO_SEQUENCE level)
+void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level)
 {
-    cursor_h_pos = cursor_xpos_table_mission_select[level % 5];
-    cursor_v_pos = cursor_ypos_table_mission_select[level / 5];
+    g_FrontCursorX = g_FrontMissionCursorX[level % 5];
+    g_FrontCursorY = g_FrontMissionCursorY[level / 5];
 }
 
 // Address 0x7F00E458 NTSC
-Gfx *constructor_menu07_missionsel(Gfx *DL)
+Gfx *frontMissionSelectRender(Gfx *DL)
 {
     s32 i;
     s32 spD8;
@@ -3694,24 +3694,24 @@ Gfx *constructor_menu07_missionsel(Gfx *DL)
 
         for (i = 0; i < 4 ; i++, var_s3 += 5)
         {
-            temp_s0 = pull_and_display_text_for_folder_a0(var_s3);
+            temp_s0 = frontFindMissionEntry(var_s3);
 
-            if (get_highest_unlocked_difficulty_for_level(var_s3) >= 0)
+            if (frontGetHighestDifficulty(var_s3) >= 0)
             {
                 var_s5 = 0x96969600;
 
-                if (var_s3 == mission_difficulty_highlighted)
+                if (var_s3 == g_FrontDifficultyHighlight)
                 {
                     var_s5 = -0x100;
                 }
 
-                if (mission_folder_setup_entries[temp_s0].icon_text_preset)
+                if (g_FrontMissions[temp_s0].icon_text_preset)
                 {
-                    strcpy(sp90, langGet(mission_folder_setup_entries[temp_s0].icon_text_preset));
+                    strcpy(sp90, langGet(g_FrontMissions[temp_s0].icon_text_preset));
                 }
                 else
                 {
-                    strcpy(sp90, langGet(mission_folder_setup_entries[temp_s0].folder_text_preset));
+                    strcpy(sp90, langGet(g_FrontMissions[temp_s0].folder_text_preset));
                 }
 
                 if (j_text_trigger == 0)
@@ -3733,14 +3733,14 @@ Gfx *constructor_menu07_missionsel(Gfx *DL)
 
                 textMeasure(&spC8, &spC4, sp90, ptrFontBankGothicChars, ptrFontBankGothic, 0);
 
-                sp8C = cursor_xpos_table_mission_select[spD8] - 0x1F;
-                sp88 = (cursor_ypos_table_mission_select[i] - spC8) + 0x1D;
+                sp8C = g_FrontMissionCursorX[spD8] - 0x1F;
+                sp88 = (g_FrontMissionCursorY[i] - spC8) + 0x1D;
 
                 DL = microcode_constructor_related_to_menus(DL, sp8C, sp88, sp8C + spC4, sp88 + spC8, 0);
                 DL = textRender(DL, &sp8C, &sp88, sp90, ptrFontBankGothicChars, ptrFontBankGothic, var_s5 | 0xFF, viGetX(), viGetY(), 0, 0);
 
-                sp8C = cursor_xpos_table_mission_select[spD8] - 0x1F;
-                sp88 = (cursor_ypos_table_mission_select[i] - spC8) + 0x1D;
+                sp8C = g_FrontMissionCursorX[spD8] - 0x1F;
+                sp88 = (g_FrontMissionCursorY[i] - spC8) + 0x1D;
 
                 DL = textRender(DL, &sp8C, &sp88, sp90, ptrFontBankGothicChars, ptrFontBankGothic, var_s5 | 0x64, viGetX(), viGetY(), 0, 0);
 
@@ -3758,71 +3758,71 @@ Gfx *constructor_menu07_missionsel(Gfx *DL)
 //********************************************************************************************************
 //DIFFICULTY SELECT
 //********************************************************************************************************
-void init_menu08_difficultyselect(void)
+void frontDifficultyEnter(void)
 {
-    selected_difficulty = DIFFICULTY_MULTI;
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    load_walletbond();
+    g_FrontDifficulty = DIFFICULTY_MULTI;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    frontLoadFolders();
 }
 
-void update_menu08_difficulty(void) {
+void frontDifficultyLeave(void) {
     return;
 }
 
 
-void interface_menu08_difficulty(void)
+void frontDifficultyTick(void)
 {
     s32 unlockedDifficulty;
 
-    unlockedDifficulty = get_highest_unlocked_difficulty_for_level(mission_folder_setup_entries[briefingpage].mission_num);
+    unlockedDifficulty = frontGetHighestDifficulty(g_FrontMissions[g_FrontMission].mission_num);
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(FALSE);
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CONFIDENTIAL, 1);
-    tab_prev_highlight = FALSE;
-    mission_difficulty_highlighted = DIFFICULTY_MULTI;
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CONFIDENTIAL, 1);
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontDifficultyHighlight = DIFFICULTY_MULTI;
 
     if (frontCheckCursorOnPreviousTab())
     {
-        tab_prev_highlight = TRUE;
+        g_FrontTabPrevHighlight = TRUE;
     }
-    else if ((unlockedDifficulty >= DIFFICULTY_007) && (cursor_v_pos >= 275.0f))
+    else if ((unlockedDifficulty >= DIFFICULTY_007) && (g_FrontCursorY >= 275.0f))
     {
-        mission_difficulty_highlighted = DIFFICULTY_007;
+        g_FrontDifficultyHighlight = DIFFICULTY_007;
     }
-    else if ((unlockedDifficulty >= DIFFICULTY_00) && (cursor_v_pos >= 243.0f))
+    else if ((unlockedDifficulty >= DIFFICULTY_00) && (g_FrontCursorY >= 243.0f))
     {
-        mission_difficulty_highlighted = DIFFICULTY_00;
+        g_FrontDifficultyHighlight = DIFFICULTY_00;
     }
-    else if ((unlockedDifficulty > DIFFICULTY_AGENT) && (cursor_v_pos >= 211.0f))
+    else if ((unlockedDifficulty > DIFFICULTY_AGENT) && (g_FrontCursorY >= 211.0f))
     {
-        mission_difficulty_highlighted = DIFFICULTY_SECRET;
+        g_FrontDifficultyHighlight = DIFFICULTY_SECRET;
     }
     else
     {
-        mission_difficulty_highlighted = DIFFICULTY_AGENT;
+        g_FrontDifficultyHighlight = DIFFICULTY_AGENT;
     }
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
     {
-        if (tab_prev_highlight)
+        if (g_FrontTabPrevHighlight)
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
 
             sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
         else
         {
-            if (mission_difficulty_highlighted >= DIFFICULTY_AGENT)
+            if (g_FrontDifficultyHighlight >= DIFFICULTY_AGENT)
             {
-                selected_difficulty = mission_difficulty_highlighted;
-                tab_next_selected = TRUE;
+                g_FrontDifficulty = g_FrontDifficultyHighlight;
+                g_FrontTabNextSelected = TRUE;
 
                 sndPlaySfx(g_musicSfxBufferPtr, PAPER_TURN_SFX, NULL);
             }
@@ -3830,58 +3830,58 @@ void interface_menu08_difficulty(void)
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
-        tab_prev_selected = TRUE;
+        g_FrontTabPrevSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
-    frontUpdateControlStickPosition();
+    frontMoveCursor();
 
-    if (tab_next_selected)
+    if (g_FrontTabNextSelected)
     {
-        if (selected_difficulty == DIFFICULTY_007)
+        if (g_FrontDifficulty == DIFFICULTY_007)
         {
-            frontChangeMenu(MENU_007_OPTIONS, FALSE);
+            frontSetMenu(MENU_007_OPTIONS, FALSE);
             frontSetCursorPositionToNextTab();
 
             return;
         }
 
-        frontChangeMenu(MENU_BRIEFING, FALSE);
+        frontSetMenu(MENU_BRIEFING, FALSE);
         frontSetCursorPositionToNextTab();
 
         return;
     }
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_MISSION_SELECT, FALSE);
-        set_cursor_to_stage_solo(mission_folder_setup_entries[briefingpage].mission_num);
+        frontSetMenu(MENU_MISSION_SELECT, FALSE);
+        frontSetMissionCursor(g_FrontMissions[g_FrontMission].mission_num);
     }
 }
 
 
-Gfx * print_current_solo_briefing_stage_name(Gfx *DL, char *text)
+Gfx * frontDrawMissionTitle(Gfx *DL, char *text)
 {
     s32 x;
     s32 y;
 
     int chapter;
 
-    if (selected_difficulty >= DIFFICULTY_AGENT)
+    if (g_FrontDifficulty >= DIFFICULTY_AGENT)
     {
-        strcpy(text, get_ptr_difficulty_name(selected_difficulty));
+        strcpy(text, frontGetDifficultyName(g_FrontDifficulty));
         strcat(text, langGet(getStringID(LTITLE, TITLE_STR_32_JB)));
         x = 0x37;
         y = 0x57;
         DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xff, viGetX(), viGetY(), 0, 0);
     }
 
-    chapter = get_chapter_briefing_entry(briefingpage);
+    chapter = frontGetChapterStart(g_FrontMission);
     if (chapter >=0 )
     {
         strcpy(text, langGet(getStringID(LTITLE, TITLE_STR_33_MISSION2)));
-        strcat(text, mission_folder_setup_entries[chapter].string_ptr);
+        strcat(text, g_FrontMissions[chapter].string_ptr);
         strcat(text, ": ");
-        strcat(text, langGet(mission_folder_setup_entries[chapter].folder_text_preset));
+        strcat(text, langGet(g_FrontMissions[chapter].folder_text_preset));
         strcat(text, "\n");
         x = 0x37;
         y = 0x67;
@@ -3889,9 +3889,9 @@ Gfx * print_current_solo_briefing_stage_name(Gfx *DL, char *text)
     }
 
     strcpy(text, langGet(getStringID(LTITLE, TITLE_STR_34_PART)));
-    strcat(text, mission_folder_setup_entries[briefingpage].string_ptr);
+    strcat(text, g_FrontMissions[g_FrontMission].string_ptr);
     strcat(text, ": ");
-    strcat(text, langGet(mission_folder_setup_entries[briefingpage].folder_text_preset));
+    strcat(text, langGet(g_FrontMissions[g_FrontMission].folder_text_preset));
     strcat(text, "\n");
     x = 0x37;
     y = 0x77;
@@ -3900,10 +3900,10 @@ Gfx * print_current_solo_briefing_stage_name(Gfx *DL, char *text)
 }
 
 
-void set_cursor_pos_difficulty(int difficulty)
+void frontSetDifficultyCursor(int difficulty)
 {
-    cursor_h_pos = 106.0;
-    cursor_v_pos = difficulty * 0x1e + 0xba;
+    g_FrontCursorX = 106.0;
+    g_FrontCursorY = difficulty * 0x1e + 0xba;
 }
 
 
@@ -3923,7 +3923,7 @@ struct MatchHack_front_rodata_3000 { u8 data[0xbb8]; };
 const struct MatchHack_front_rodata_3000 asc_D_8004F4B4 = { "\n" };
 #endif
 
-Gfx *constructor_menu08_difficulty(Gfx *DL)
+Gfx *frontDifficultyRender(Gfx *DL)
 {
     u8 *text_sp3180;
     s32 unlockedDifficulty; // sp3176
@@ -3942,7 +3942,7 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
     struct sImageTableEntry *image;   // sp ??
     s32 i;
 
-    unlockedDifficulty = get_highest_unlocked_difficulty_for_level(mission_folder_setup_entries[briefingpage].mission_num);
+    unlockedDifficulty = frontGetHighestDifficulty(g_FrontMissions[g_FrontMission].mission_num);
 
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
@@ -3971,7 +3971,7 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
 #endif
 
     DL = microcode_constructor(DL);
-    DL = print_current_solo_briefing_stage_name(DL, &stagename_struct);
+    DL = frontDrawMissionTitle(DL, &stagename_struct);
 
     //  "DIFFICULTY:\n"
     text_sp3180 = langGet(getStringID(LTITLE, TITLE_STR_35_DIFFICULTY));
@@ -3979,14 +3979,14 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
     y = 0x8F;
     DL = frontPrintText(DL, &x, &y, text_sp3180, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    if (mission_difficulty_highlighted >= 0)
+    if (g_FrontDifficultyHighlight >= 0)
     {
         DL = microcode_constructor_related_to_menus(
             DL,
             0x7E - (j_text_trigger ? 0x32 : 0),
-            (mission_difficulty_highlighted * 0x1E) + 0xB2,
+            (g_FrontDifficultyHighlight * 0x1E) + 0xB2,
             0xF0,
-            (mission_difficulty_highlighted * 0x1E) + 0xC3,
+            (g_FrontDifficultyHighlight * 0x1E) + 0xC3,
             0x32);
     }
 
@@ -4066,7 +4066,7 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
     for (i=0; i<3; i++)
     {
         if ((i == 0 || unlockedDifficulty >= i)
-            && (check_if_stage_completed_on_difficulty(briefingpage, i) == 3))
+            && (frontIsMissionCompleted(g_FrontMission, i) == 3))
         {
             image = &g_ImagesMainFolder[IMAGE_CHECK];
 
@@ -4090,29 +4090,29 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
 //007 DIFFICULTY SELECT
 //********************************************************************************************************
 
-void init_menu09_007difficultyselect(void)
+void frontOptions007Enter(void)
 {
-    tab_start_selected = 0;
-    tab_next_selected = 0;
-    tab_prev_selected = 0;
-    tab_prev_highlight = 0;
-    tab_next_highlight = 0;
-    tab_start_highlight = 0;
-    highlight_enemy_reaction = 0;
-    highlight_enemy_health = 0;
-    highlight_enemy_damage = 0;
-    highlight_enemy_accuracy = 0;
-    load_walletbond();
+    g_FrontTabStartSelected = 0;
+    g_FrontTabNextSelected = 0;
+    g_FrontTabPrevSelected = 0;
+    g_FrontTabPrevHighlight = 0;
+    g_FrontTabNextHighlight = 0;
+    g_FrontTabStartHighlight = 0;
+    g_Front007HlReaction = 0;
+    g_Front007HlHealth = 0;
+    g_Front007HlDamage = 0;
+    g_Front007HlAccuracy = 0;
+    frontLoadFolders();
 }
 
 
-void update_menu09_007options(void) 
+void frontOptions007Leave(void) 
 {
     return;
 }
 
 
-void interface_menu09_007options(void)
+void frontOptions007Tick(void)
 {
     f32 temp_x;
     s32 temp_y;
@@ -4123,83 +4123,83 @@ void interface_menu09_007options(void)
     viSetUseZBuf(FALSE);
     if (joyGetButtons(PLAYER_1, Z_TRIG|A_BUTTON) == 0)
     {
-        tab_prev_highlight = FALSE;
-        tab_next_highlight = FALSE;
-        tab_start_highlight = FALSE;
-        highlight_enemy_reaction = FALSE;
-        highlight_enemy_health = FALSE;
-        highlight_enemy_damage = FALSE;
-        highlight_enemy_accuracy = FALSE;
+        g_FrontTabPrevHighlight = FALSE;
+        g_FrontTabNextHighlight = FALSE;
+        g_FrontTabStartHighlight = FALSE;
+        g_Front007HlReaction = FALSE;
+        g_Front007HlHealth = FALSE;
+        g_Front007HlDamage = FALSE;
+        g_Front007HlAccuracy = FALSE;
 
         if (frontCheckCursorOnPreviousTab())
         {
-            tab_prev_highlight = TRUE;
+            g_FrontTabPrevHighlight = TRUE;
         }
         else if (frontCheckCursorOnNextTab())
         {
 
-            tab_next_highlight = TRUE;
+            g_FrontTabNextHighlight = TRUE;
         }
         else if (frontCheckCursorOnStartTab())
         {
-            tab_start_highlight = TRUE;
+            g_FrontTabStartHighlight = TRUE;
         }
         else
         {
-            temp_y = (s32) cursor_v_pos;
+            temp_y = (s32) g_FrontCursorY;
             if (temp_y >= 0x107)
             {
-                highlight_enemy_reaction = TRUE;
+                g_Front007HlReaction = TRUE;
             }
             else if (temp_y >= 0xE6)
             {
-                highlight_enemy_accuracy = TRUE;
+                g_Front007HlAccuracy = TRUE;
             }
             else if (temp_y >= 0xC5)
             {
-                highlight_enemy_damage = TRUE;
+                g_Front007HlDamage = TRUE;
             }
             else if (temp_y >= 0xA4)
             {
-                highlight_enemy_health = TRUE;
+                g_Front007HlHealth = TRUE;
             }
             else
             {
-                tab_next_highlight = TRUE;
+                g_FrontTabNextHighlight = TRUE;
             }
         }
     }
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON))
     {
-        tab_start_selected = TRUE;
+        g_FrontTabStartSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON))
     {
-        if (tab_next_highlight)
+        if (g_FrontTabNextHighlight)
         {
-            tab_next_selected = TRUE;
+            g_FrontTabNextSelected = TRUE;
         }
-        else if (tab_prev_highlight)
+        else if (g_FrontTabPrevHighlight)
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
         }
-        else if (tab_start_highlight)
+        else if (g_FrontTabStartHighlight)
         {
-            tab_start_selected = TRUE;
+            g_FrontTabStartSelected = TRUE;
         }
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
-        tab_prev_selected = TRUE;
+        g_FrontTabPrevSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
     if (joyGetButtons(PLAYER_1, Z_TRIG|A_BUTTON))
     {
-        temp_x = (cursor_h_pos - 55.0f) / 300.0f;
+        temp_x = (g_FrontCursorX - 55.0f) / 300.0f;
 
         if (temp_x > 1.0f)
         {
@@ -4211,47 +4211,47 @@ void interface_menu09_007options(void)
             temp_x = 0.0f;
         }
 
-        if (highlight_enemy_reaction)
+        if (g_Front007HlReaction)
         {
-            slider_007_mode_reaction = temp_x;
+            g_Front007Reaction = temp_x;
         }
-        else if (highlight_enemy_health)
+        else if (g_Front007HlHealth)
         {
-            slider_007_mode_health = (f32) (temp_x * temp_x * 10.0f);
+            g_Front007Health = (f32) (temp_x * temp_x * 10.0f);
         }
-        else if (highlight_enemy_damage)
+        else if (g_Front007HlDamage)
         {
-            slider_007_mode_damage = (f32) (temp_x * temp_x * 10.0f);
+            g_Front007Damage = (f32) (temp_x * temp_x * 10.0f);
         }
-        else if (highlight_enemy_accuracy)
+        else if (g_Front007HlAccuracy)
         {
-            slider_007_mode_accuracy = (f32) (temp_x * temp_x * 10.0f);
+            g_Front007Accuracy = (f32) (temp_x * temp_x * 10.0f);
         }
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CLASSIFIED, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CLASSIFIED, 1);
+    frontMoveCursor();
 
-    if (tab_start_selected)
+    if (g_FrontTabStartSelected)
     {
-        frontChangeMenu(MENU_RUN_STAGE, TRUE);
+        frontSetMenu(MENU_RUN_STAGE, TRUE);
         return;
     }
 
-    if (tab_next_selected)
+    if (g_FrontTabNextSelected)
     {
-        frontChangeMenu(MENU_BRIEFING, FALSE);
+        frontSetMenu(MENU_BRIEFING, FALSE);
         return;
     }
 
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_DIFFICULTY, FALSE);
-        set_cursor_pos_difficulty(selected_difficulty);
+        frontSetMenu(MENU_DIFFICULTY, FALSE);
+        frontSetDifficultyCursor(g_FrontDifficulty);
     }
 }
 
@@ -4264,7 +4264,7 @@ const struct MatchHack_front_rodata_3000 asc_D_80050074 = { "\n" };
  * Render the 007 Mode options. The slider bars are 300 pixels wide and
  * sit 33 pixels apart vertically.
  */
-Gfx *constructor_menu09_007options(Gfx *DL)
+Gfx *frontOptions007Render(Gfx *DL)
 {
     u8 *labeltext;
     s32 textx;
@@ -4287,7 +4287,7 @@ Gfx *constructor_menu09_007options(Gfx *DL)
 #endif
 
     DL = microcode_constructor(DL);
-    DL = print_current_solo_briefing_stage_name(DL, (char*)&textbuffer);
+    DL = frontDrawMissionTitle(DL, (char*)&textbuffer);
 
     labeltext = langGet(getStringID(LTITLE, TITLE_STR_40_SPECOPS)); /* SPECIAL OPTIONS */
 
@@ -4308,12 +4308,12 @@ Gfx *constructor_menu09_007options(Gfx *DL)
     // Render the bar background with a black color and an opacity of 50/255.
     DL = microcode_constructor_related_to_menus(DL, 55, 181, 355, 192, 0x00000032);
 
-    barwidth = (sqrtf(slider_007_mode_health / 10.0f)) * 300.0f;
+    barwidth = (sqrtf(g_Front007Health / 10.0f)) * 300.0f;
 
     // Render the filled portion of the bar with a black color and an opacity of 100/255.
     DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
 
-    if (highlight_enemy_health != 0)
+    if (g_Front007HlHealth != 0)
     {
         // Render a black rectangle over the "Enemy health" text to indicate it's highlighted.
         DL = microcode_constructor_related_to_menus(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
@@ -4322,7 +4322,7 @@ Gfx *constructor_menu09_007options(Gfx *DL)
     // Render "Enemy health" text.
     DL = frontPrintText(DL, &textx, &texty, (s8 *)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    sprintf((char*)&textbuffer, "%d%%\n", (s32) (slider_007_mode_health * 100.0f));
+    sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Health * 100.0f));
 
     textwidth = 0;
     textheight = 0;
@@ -4345,17 +4345,17 @@ Gfx *constructor_menu09_007options(Gfx *DL)
     texty = 197;
 
     DL = microcode_constructor_related_to_menus(DL, 55, 214, 355, 225, 0x00000032);
-    barwidth = (sqrtf(slider_007_mode_damage / 10.0f)) * 300.0f;
+    barwidth = (sqrtf(g_Front007Damage / 10.0f)) * 300.0f;
     DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
 
-    if (highlight_enemy_damage != 0)
+    if (g_Front007HlDamage != 0)
     {
         DL = microcode_constructor_related_to_menus(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
     DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    sprintf((char*)&textbuffer, "%d%%\n", (s32) (slider_007_mode_damage * 100.0f));
+    sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Damage * 100.0f));
 
     textwidth = 0;
     textheight = 0;
@@ -4378,17 +4378,17 @@ Gfx *constructor_menu09_007options(Gfx *DL)
     texty = 230;
 
     DL = microcode_constructor_related_to_menus(DL, 55, 247, 355, 258, 0x00000032);
-    barwidth = (sqrtf(slider_007_mode_accuracy / 10.0f)) * 300.0f;
+    barwidth = (sqrtf(g_Front007Accuracy / 10.0f)) * 300.0f;
     DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
 
-    if (highlight_enemy_accuracy != 0)
+    if (g_Front007HlAccuracy != 0)
     {
         DL = microcode_constructor_related_to_menus(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
     DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    sprintf((char*)&textbuffer, "%d%%\n", (s32) (slider_007_mode_accuracy * 10.0f));
+    sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Accuracy * 10.0f));
 
     textwidth = 0;
     textheight = 0;
@@ -4411,16 +4411,16 @@ Gfx *constructor_menu09_007options(Gfx *DL)
     texty = 263;
 
     DL = microcode_constructor_related_to_menus(DL, 55, 280, 355, 291, 0x00000032);
-    DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, (s32) (slider_007_mode_reaction * 300.0f * 1) + 55, texty + 28, 0x00000064);
+    DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, (s32) (g_Front007Reaction * 300.0f * 1) + 55, texty + 28, 0x00000064);
 
-    if (highlight_enemy_reaction != 0)
+    if (g_Front007HlReaction != 0)
     {
         DL = microcode_constructor_related_to_menus(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
     DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    sprintf((char*)&textbuffer, "%d%%\n", (s32) (slider_007_mode_reaction * 100.0f));
+    sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Reaction * 100.0f));
 
     textwidth = 0;
     textheight = 0;
@@ -4442,29 +4442,29 @@ Gfx *constructor_menu09_007options(Gfx *DL)
 }
 
 
-u32 get_player_control_style(s32 playernum)
+u32 frontGetMpControlStyle(s32 playernum)
 {
-  return controlstyle_player[playernum];
+  return g_MpControlStyle[playernum];
 }
 
 
-s32 check_if_mp_stage_unlocked(s32 stage)
+s32 frontIsMpStageAvailable(s32 stage)
 {
     s32 players;
-    if (!multi_stage_setups[stage].min_player)
+    if (!g_MpStages[stage].min_player)
     {
         return FALSE;
     }
-    players=get_selected_num_players();
-    if (multi_stage_setups[stage].max_player < players)
+    players=frontGetPlayerCount();
+    if (g_MpStages[stage].max_player < players)
     {
         return FALSE;
     }
-    if (multi_stage_setups[stage].unlock_after == -1)
+    if (g_MpStages[stage].unlock_after == -1)
     {
         return TRUE;
     }
-    if ( fileIsStageUnlockedAtDifficulty(selected_folder_num, multi_stage_setups[stage].unlock_after, DIFFICULTY_AGENT))
+    if ( fileIsStageUnlockedAtDifficulty(g_FrontFolder, g_MpStages[stage].unlock_after, DIFFICULTY_AGENT))
     {
         return TRUE;
     }
@@ -4472,18 +4472,18 @@ s32 check_if_mp_stage_unlocked(s32 stage)
 }
 
 
-void select_game_length(void)
+void frontStepMpGameLength(void)
 {
-    if (scenario != SCENARIO_TLD)
+    if (g_MpScenario != SCENARIO_TLD)
     {
-        game_length = (s32) ((s32) (game_length + 1) % 7);
+        g_MpGameLength = (s32) ((s32) (g_MpGameLength + 1) % 7);
         return;
     }
-    game_length = (s32) ((s32) (game_length + 1) % 4);
+    g_MpGameLength = (s32) ((s32) (g_MpGameLength + 1) % 4);
 }
 
 
-void copy_aim_settings_to_playerdata(void)
+void frontApplyMpAimSettings(void)
 {
     s32 i;
     struct player_data * p;
@@ -4491,29 +4491,29 @@ void copy_aim_settings_to_playerdata(void)
     for (i = 0; i < 4; i++)
     {
         p = &g_playerPlayerData[i];
-        p->autoaim = mp_sight_adjust_table[aim_sight_adjustment].autoaim;
-        p->sight   = mp_sight_adjust_table[aim_sight_adjustment].sight;
+        p->autoaim = g_MpAimSettings[g_MpAimSetting].autoaim;
+        p->sight   = g_MpAimSettings[g_MpAimSetting].sight;
     }
 }
 
 
-void advance_aim_settings_selection(void)
+void frontStepMpAimSettings(void)
 {
-    aim_sight_adjustment = (s32) ((s32) (aim_sight_adjustment + 1) % 4);
-    copy_aim_settings_to_playerdata();
+    g_MpAimSetting = (s32) ((s32) (g_MpAimSetting + 1) % 4);
+    frontApplyMpAimSettings();
 }
 
 
-void unlock_all_mp_chars(void) {
-    num_chars_selectable_mp = 0x40;
+void frontUnlockAllMpChars(void) {
+    g_MpCharCount = 0x40;
 }
 
 
-s32 get_selected_num_players(void)
+s32 frontGetPlayerCount(void)
 {
-    if (gamemode == GAMEMODE_MULTI)
+    if (g_FrontGameMode == GAMEMODE_MULTI)
     {
-        return selected_num_players;
+        return g_MpPlayerCount;
     }
     if (g_CoopMode)
     {
@@ -4522,31 +4522,31 @@ s32 get_selected_num_players(void)
     return 1;
 }
 
-u16 get_player_mp_char_head(s32 player)
+u16 frontGetMpCharHead(s32 player)
 {
-    if (player_char[player] < 0)
+    if (g_MpChar[player] < 0)
     {
-        return mp_chr_setup[player].head;
+        return g_MpChars[player].head;
     }
-    return mp_chr_setup[player_char[player]].head;
+    return g_MpChars[g_MpChar[player]].head;
 }
 
-u8 get_player_mp_char_gender(s32 player)
+u8 frontGetMpCharGender(s32 player)
 {
-    if (player_char[player] < 0)
+    if (g_MpChar[player] < 0)
     {
-        return mp_chr_setup[player].gender;
+        return g_MpChars[player].gender;
     }
-    return mp_chr_setup[player_char[player]].gender;
+    return g_MpChars[g_MpChar[player]].gender;
 }
 
-u16 get_player_mp_char_body(s32 player)
+u16 frontGetMpCharBody(s32 player)
 {
-    if (player_char[player] < 0)
+    if (g_MpChar[player] < 0)
     {
-        return mp_chr_setup[player].body;
+        return g_MpChars[player].body;
     }
-    return mp_chr_setup[player_char[player]].body;
+    return g_MpChars[g_MpChar[player]].body;
 }
 
 /**
@@ -4555,8 +4555,8 @@ u16 get_player_mp_char_body(s32 player)
  *   COOP_CHAR_BOND_AUTO        Bond, in an outfit that goes with player 1's
  *   1..COOP_BOND_OUTFIT_COUNT  Bond in that outfit (coop_bond_outfits)
  *   above that                 multiplayer character
- *                              mp_chr_setup[char - COOP_BOND_OUTFIT_COUNT]
- * (mp_chr_setup[0] is Bond in his tuxedo, which the outfits cover.)
+ *                              g_MpChars[char - COOP_BOND_OUTFIT_COUNT]
+ * (g_MpChars[0] is Bond in his tuxedo, which the outfits cover.)
  */
 #define COOP_CHAR_BOND_AUTO 0
 #define COOP_BOND_OUTFIT_COUNT 5
@@ -4591,12 +4591,12 @@ static s32 s_CoopPartnerCuff = -1;
  */
 static s32 frontCoopMpCharCount(void)
 {
-    if (num_chars_selectable_mp == 0x40)
+    if (g_MpCharCount == 0x40)
     {
-        return num_chars_selectable_mp;
+        return g_MpCharCount;
     }
 
-    if (fileIsStageUnlockedAtDifficulty(selected_folder_num, SP_LEVEL_CRADLE, DIFFICULTY_AGENT) == STAGESTATUS_COMPLETED)
+    if (fileIsStageUnlockedAtDifficulty(g_FrontFolder, SP_LEVEL_CRADLE, DIFFICULTY_AGENT) == STAGESTATUS_COMPLETED)
     {
         return 0x21;
     }
@@ -4638,7 +4638,7 @@ static u8 *frontCoopGetPartnerCharName(void)
         return (u8 *)coop_bond_outfits[character - 1].name;
     }
 
-    return (u8 *)langGet(mp_chr_setup[character - COOP_BOND_OUTFIT_COUNT].text_preset);
+    return (u8 *)langGet(g_MpChars[character - COOP_BOND_OUTFIT_COUNT].text_preset);
 }
 
 /**
@@ -4698,97 +4698,97 @@ s32 frontCoopGetPartnerCuff(s32 player1cuff)
 
 u16 frontCoopGetPartnerHead(void)
 {
-    return mp_chr_setup[frontCoopGetPartnerChar() - COOP_BOND_OUTFIT_COUNT].head;
+    return g_MpChars[frontCoopGetPartnerChar() - COOP_BOND_OUTFIT_COUNT].head;
 }
 
 u16 frontCoopGetPartnerBody(void)
 {
-    return mp_chr_setup[frontCoopGetPartnerChar() - COOP_BOND_OUTFIT_COUNT].body;
+    return g_MpChars[frontCoopGetPartnerChar() - COOP_BOND_OUTFIT_COUNT].body;
 }
 
-f32 get_player_mp_handicap(s32 player)
+f32 frontGetMpHandicap(s32 player)
 {
-    return MP_handicap_table[player_handicap[player]].damage_modifier;
+    return g_MpHandicaps[g_MpHandicap[player]].damage_modifier;
 }
 
-f32 get_player_mp_char_height(s32 player)
+f32 frontGetMpCharHeight(s32 player)
 {
-    if (player_char[player] < 0) {
-        return mp_chr_setup[player].pov;
+    if (g_MpChar[player] < 0) {
+        return g_MpChars[player].pov;
     }
-    return mp_chr_setup[player_char[player]].pov;
+    return g_MpChars[g_MpChar[player]].pov;
 }
 
-s32 get_mp_timelimit(void) {
-  return multi_game_lengths[game_length].time;
+s32 frontGetMpTimeLimit(void) {
+  return g_MpGameLengths[g_MpGameLength].time;
 }
 
-s32 get_mp_pointlimit(void) {
-  return multi_game_lengths[game_length].points;
+s32 frontGetMpPointLimit(void) {
+  return g_MpGameLengths[g_MpGameLength].points;
 }
 
-void reset_mp_options_for_scenario(MPSCENARIOS scenarioid)
+void frontSetMpScenario(MPSCENARIOS scenarioid)
 {
-    scenario = scenarioid;
+    g_MpScenario = scenarioid;
 
-    unlock_stage_select = 1;
-    unlock_game_length = 1;
-    unlock_chars = 1;
-    unlock_weapon_select = 1;
-    unlock_handicap = 1;
-    unlock_control_style = 1;
-    unlock_aim_sight = 1;
+    g_MpCanPickStage = 1;
+    g_MpCanPickLength = 1;
+    g_MpCanPickChar = 1;
+    g_MpCanPickWeapons = 1;
+    g_MpCanPickHandicap = 1;
+    g_MpCanPickControls = 1;
+    g_MpCanPickAim = 1;
 
 
-    switch(scenario)
+    switch(g_MpScenario)
     {
     case SCENARIO_NORMAL:
     case SCENARIO_2v2:
     case SCENARIO_3v1:
     case SCENARIO_2v1:
-        if (6 < game_length)
+        if (6 < g_MpGameLength)
         {
-            game_length = 2;
+            g_MpGameLength = 2;
         }
-        if (0xd < getMPWeaponSet())
+        if (0xd < mpWeaponSetGetIndex())
         {
-            setMPWeaponSet(0xd);
+            mpWeaponSetSelect(0xd);
         }
         break;
     case SCENARIO_YOLT:
-        game_length = 7;
+        g_MpGameLength = 7;
 
-        if (0xd < getMPWeaponSet())
+        if (0xd < mpWeaponSetGetIndex())
         {
-            setMPWeaponSet(0xd);
+            mpWeaponSetSelect(0xd);
         }
-        unlock_game_length = 0;
+        g_MpCanPickLength = 0;
         break;
     case SCENARIO_TLD:
-        if (3 < game_length)
+        if (3 < g_MpGameLength)
         {
-            game_length = 2;
+            g_MpGameLength = 2;
         }
-        if (0xd < getMPWeaponSet())
+        if (0xd < mpWeaponSetGetIndex())
         {
-            setMPWeaponSet(0xd);
+            mpWeaponSetSelect(0xd);
         }
         break;
     case SCENARIO_MWTGG:
-        if (6 < game_length)
+        if (6 < g_MpGameLength)
         {
-            game_length = 2;
+            g_MpGameLength = 2;
         }
-        setMPWeaponSet(0xd);
-        unlock_weapon_select = 0;
+        mpWeaponSetSelect(0xd);
+        g_MpCanPickWeapons = 0;
         break;
     case SCENARIO_LTK:
-        if (6 < game_length)
+        if (6 < g_MpGameLength)
         {
-            game_length = 2;
+            g_MpGameLength = 2;
         }
-        setMPWeaponSet(1);
-        unlock_handicap = 0;
+        mpWeaponSetSelect(1);
+        g_MpCanPickHandicap = 0;
     }
     return;
 }
@@ -4797,7 +4797,7 @@ void reset_mp_options_for_scenario(MPSCENARIOS scenarioid)
 
 
 // Address 0x7F010608 NTSC
-void init_mp_options_for_scenario(s32 numplayers)
+void frontSetMpPlayerCount(s32 numplayers)
 {
     s32 i;
 
@@ -4806,31 +4806,31 @@ void init_mp_options_for_scenario(s32 numplayers)
         numplayers = 2;
     }
 
-    selected_num_players = numplayers;
+    g_MpPlayerCount = numplayers;
 
-    for (i=0; i < selected_num_players; i++)
+    for (i=0; i < g_MpPlayerCount; i++)
     {
-        if (player_char[i] == -1)
+        if (g_MpChar[i] == -1)
         {
-            player_char[i] = i;
-            player_handicap[i] = 5;
+            g_MpChar[i] = i;
+            g_MpHandicap[i] = 5;
         }
 
-        if ((numplayers >= 3) && (controlstyle_player[i] >= CONTROLLER_CONFIG_PLENTY))
+        if ((numplayers >= 3) && (g_MpControlStyle[i] >= CONTROLLER_CONFIG_PLENTY))
         {
-            controlstyle_player[i] = CONTROLLER_CONFIG_HONEY;
+            g_MpControlStyle[i] = CONTROLLER_CONFIG_HONEY;
         }
     }
 
-    if ((mp_player_counts[scenario].max < selected_num_players) || (selected_num_players < mp_player_counts[scenario].min))
+    if ((g_MpStagePlayerCounts[g_MpScenario].max < g_MpPlayerCount) || (g_MpPlayerCount < g_MpStagePlayerCounts[g_MpScenario].min))
     {
-        reset_mp_options_for_scenario(SCENARIO_NORMAL);
+        frontSetMpScenario(SCENARIO_NORMAL);
 
     }
 
-    if (multi_stage_setups[MP_stage_selected].max_player < selected_num_players)
+    if (g_MpStages[g_MpStage].max_player < g_MpPlayerCount)
     {
-        MP_stage_selected = MP_STAGE_TEMPLE;
+        g_MpStage = MP_STAGE_TEMPLE;
     }
 }
 
@@ -4838,50 +4838,50 @@ void init_mp_options_for_scenario(s32 numplayers)
 //********************************************************************************************************
 //MULTIPLAYER OPTIONS
 //********************************************************************************************************
-void init_menu0E_mpoptions(void)
+void frontMpOptionsEnter(void)
 {
     int numplayers;
 
-    tab_start_selected = FALSE;
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    tab_prev_highlight = FALSE;
-    tab_next_highlight = FALSE;
-    tab_start_highlight = FALSE;
+    g_FrontTabStartSelected = FALSE;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabStartHighlight = FALSE;
 
-    if (maybe_is_in_menu)
+    if (g_FrontStartMusic)
     {
         sndApplyVolumeAllSfxSlot(0x7fff);
         musicTrack1ApplySeqpVol(0x7fff);
         g_musicXTrack1Fade = MUSIC_FADESTATE_UNSET;
         musicTrack1Play(M_FOLDERS);
-        maybe_is_in_menu = FALSE;
+        g_FrontStartMusic = FALSE;
     }
 
-    if (selected_num_players == 0)
+    if (g_MpPlayerCount == 0)
     {
         numplayers = joyGetControllerCount();
-        init_mp_options_for_scenario(numplayers);
+        frontSetMpPlayerCount(numplayers);
     }
 
-    if (check_if_mp_stage_unlocked(MP_stage_selected) == FALSE)
+    if (frontIsMpStageAvailable(g_MpStage) == FALSE)
     {
-        MP_stage_selected = MP_STAGE_TEMPLE;
+        g_MpStage = MP_STAGE_TEMPLE;
     }
 
-    highlight_players = FALSE;
-    highlight_scenario = FALSE;
-    highlight_gameselect = FALSE;
-    highlight_gamelength = FALSE;
-    highlight_character = FALSE;
-    highlight_weaponselect = FALSE;
-    highlight_health = FALSE;
-    highlight_controlstyle = FALSE;
-    highlight_aimadjustment = FALSE;
-    load_walletbond();
+    g_MpHlPlayers = FALSE;
+    g_MpHlScenario = FALSE;
+    g_MpHlStage = FALSE;
+    g_MpHlLength = FALSE;
+    g_MpHlChar = FALSE;
+    g_MpHlWeapons = FALSE;
+    g_MpHlHandicap = FALSE;
+    g_MpHlControls = FALSE;
+    g_MpHlAim = FALSE;
+    frontLoadFolders();
 }
 
-void update_menu0E_mpoptions(void)
+void frontMpOptionsLeave(void)
 {
     return;
 }
@@ -4890,7 +4890,7 @@ void update_menu0E_mpoptions(void)
 
 
 
-static s32 highlight_display = FALSE;
+static s32 g_MpHlDisplay = FALSE;
 
 /**
  * Steps the multiplayer display setting: with 2 players side by side,
@@ -4899,7 +4899,7 @@ static s32 highlight_display = FALSE;
  */
 static void frontMpStepDisplaySetting(void)
 {
-    if (selected_num_players != 2)
+    if (g_MpPlayerCount != 2)
     {
         set_hires_setting(!get_hires_setting());
         return;
@@ -4916,7 +4916,7 @@ static void frontMpStepDisplaySetting(void)
 }
 
 // Address 0x7F010848 NTSC
-void interface_menu0E_mpoptions(void)
+void frontMpOptionsTick(void)
 {
     s32 players_selected = 0;
     s32 scenario_selected = 0;
@@ -4935,138 +4935,138 @@ void interface_menu0E_mpoptions(void)
 
     if (joyGetControllerCount() < 2)
     {
-        frontChangeMenu(MENU_MODE_SELECT, 0);
-        setCursorPOSforMode(gamemode);
+        frontSetMenu(MENU_MODE_SELECT, 0);
+        frontSetModeCursor(g_FrontGameMode);
     }
 
-    if (joyGetControllerCount() < selected_num_players)
+    if (joyGetControllerCount() < g_MpPlayerCount)
     {
-        init_mp_options_for_scenario(joyGetControllerCount());
+        frontSetMpPlayerCount(joyGetControllerCount());
     }
 
     if (joyGetButtons(PLAYER_1, Z_TRIG|A_BUTTON) == 0)
     {
-        tab_prev_highlight = 0;
-        tab_next_highlight = 0;
-        tab_start_highlight = 0;
-        highlight_players = 0;
-        highlight_scenario = 0;
-        highlight_gameselect = 0;
-        highlight_gamelength = 0;
-        highlight_character = 0;
-        highlight_weaponselect = 0;
-        highlight_health = 0;
-        highlight_controlstyle = 0;
-        highlight_aimadjustment = 0;
-        highlight_display = 0;
+        g_FrontTabPrevHighlight = 0;
+        g_FrontTabNextHighlight = 0;
+        g_FrontTabStartHighlight = 0;
+        g_MpHlPlayers = 0;
+        g_MpHlScenario = 0;
+        g_MpHlStage = 0;
+        g_MpHlLength = 0;
+        g_MpHlChar = 0;
+        g_MpHlWeapons = 0;
+        g_MpHlHandicap = 0;
+        g_MpHlControls = 0;
+        g_MpHlAim = 0;
+        g_MpHlDisplay = 0;
 
         if (frontCheckCursorOnPreviousTab())
         {
-            tab_prev_highlight = 1;
+            g_FrontTabPrevHighlight = 1;
         }
         else if (frontCheckCursorOnStartTab())
         {
-            tab_start_highlight = 1;
+            g_FrontTabStartHighlight = 1;
         }
         else
         {
-            s32 temp_f6 = cursor_v_pos;
+            s32 temp_f6 = g_FrontCursorY;
             if (temp_f6 >= 0x12D)
             {
-                highlight_display = 1;
+                g_MpHlDisplay = 1;
             }
-            else if ((temp_f6 >= 0x119) && (unlock_aim_sight))
+            else if ((temp_f6 >= 0x119) && (g_MpCanPickAim))
             {
-                highlight_aimadjustment = 1;
+                g_MpHlAim = 1;
             }
-            else if ((temp_f6 >= 0x105) && (unlock_control_style))
+            else if ((temp_f6 >= 0x105) && (g_MpCanPickControls))
             {
-                highlight_controlstyle = 1;
+                g_MpHlControls = 1;
             }
-            else if ((temp_f6 >= 0xF1) && (unlock_handicap))
+            else if ((temp_f6 >= 0xF1) && (g_MpCanPickHandicap))
             {
-                highlight_health = 1;
+                g_MpHlHandicap = 1;
             }
-            else if ((temp_f6 >= 0xDD) && (unlock_chars))
+            else if ((temp_f6 >= 0xDD) && (g_MpCanPickChar))
             {
-                highlight_character = 1;
+                g_MpHlChar = 1;
             }
-            else if ((temp_f6 >= 0xC9) && (unlock_weapon_select))
+            else if ((temp_f6 >= 0xC9) && (g_MpCanPickWeapons))
             {
-                highlight_weaponselect = 1;
+                g_MpHlWeapons = 1;
             }
-            else if ((temp_f6 >= 0xB5) && (unlock_game_length))
+            else if ((temp_f6 >= 0xB5) && (g_MpCanPickLength))
             {
-                highlight_gamelength = 1;
+                g_MpHlLength = 1;
             }
-            else if ((temp_f6 >= 0xA1) && (unlock_stage_select))
+            else if ((temp_f6 >= 0xA1) && (g_MpCanPickStage))
             {
-                highlight_gameselect = 1;
+                g_MpHlStage = 1;
             }
             else if (temp_f6 >= 0x8D)
             {
-                highlight_scenario = 1;
+                g_MpHlScenario = 1;
             }
             else
             {
-                highlight_players = 1;
+                g_MpHlPlayers = 1;
             }
         }
     }
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON))
     {
-        tab_start_selected = 1;
+        g_FrontTabStartSelected = 1;
         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON))
     {
-        if (tab_prev_highlight)
+        if (g_FrontTabPrevHighlight)
         {
-            tab_prev_selected = 1;
+            g_FrontTabPrevSelected = 1;
         }
 
-        if (tab_start_highlight)
+        if (g_FrontTabStartHighlight)
         {
-            tab_start_selected = 1;
+            g_FrontTabStartSelected = 1;
         }
-        else if (highlight_players)
+        else if (g_MpHlPlayers)
         {
             players_selected = 1;
         }
-        else if (highlight_scenario)
+        else if (g_MpHlScenario)
         {
             scenario_selected = 1;
         }
-        else if (highlight_gameselect)
+        else if (g_MpHlStage)
         {
             gameselect_selected = 1;
         }
-        else if (highlight_gamelength)
+        else if (g_MpHlLength)
         {
             gamelength_selected = 1;
         }
-        else if (highlight_character)
+        else if (g_MpHlChar)
         {
             character_selected = 1;
         }
-        else if (highlight_weaponselect)
+        else if (g_MpHlWeapons)
         {
             weapon_selected = 1;
         }
-        else if (highlight_health)
+        else if (g_MpHlHandicap)
         {
             health_selected = 1;
         }
-        else if (highlight_controlstyle)
+        else if (g_MpHlControls)
         {
             controlstyle_selected = 1;
         }
-        else if (highlight_aimadjustment)
+        else if (g_MpHlAim)
         {
             aimadjust_selected = 1;
         }
-        else if (highlight_display)
+        else if (g_MpHlDisplay)
         {
             frontMpStepDisplaySetting();
         }
@@ -5075,46 +5075,46 @@ void interface_menu0E_mpoptions(void)
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
-        tab_prev_selected = 1;
+        g_FrontTabPrevSelected = 1;
         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CONFIDENTIAL2, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CONFIDENTIAL2, 1);
+    frontMoveCursor();
 
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_MODE_SELECT, 0);
-        setCursorPOSforMode(gamemode);
+        frontSetMenu(MENU_MODE_SELECT, 0);
+        frontSetModeCursor(g_FrontGameMode);
         return;
     }
 
-    if (tab_start_selected)
+    if (g_FrontTabStartSelected)
     {
         // Player 2's control style is shared with co-op.
         fileCoopSavePartnerSettings();
-        fileSaveDisplaySettingsForFolder(selected_folder_num);
+        fileSaveDisplaySettingsForFolder(g_FrontFolder);
 
-        if (multi_stage_setups[MP_stage_selected].stage_id < 0)
+        if (g_MpStages[g_MpStage].stage_id < 0)
         {
             s32 temp_hi;
             do
             {
                 temp_hi = randomGetNext() % (u32)(MP_STAGE_SELECTED_MAX - 1);
-                selected_stage = multi_stage_setups[1 + temp_hi].stage_id;
-            } while (check_if_mp_stage_unlocked(temp_hi + 1) == 0);
+                g_FrontStage = g_MpStages[1 + temp_hi].stage_id;
+            } while (frontIsMpStageAvailable(temp_hi + 1) == 0);
         }
         else
         {
-            selected_stage = multi_stage_setups[MP_stage_selected].stage_id;
+            g_FrontStage = g_MpStages[g_MpStage].stage_id;
         }
 
-        briefingpage = -1;
-        frontChangeMenu(MENU_RUN_STAGE, 1);
+        g_FrontMission = -1;
+        frontSetMenu(MENU_RUN_STAGE, 1);
 
         return;
     }
@@ -5123,62 +5123,62 @@ void interface_menu0E_mpoptions(void)
     {
         s32 tmpNumPlayers;
 
-        if (joyGetControllerCount() < selected_num_players + 1)
+        if (joyGetControllerCount() < g_MpPlayerCount + 1)
         {
             tmpNumPlayers = 2;
         }
         else
         {
-            tmpNumPlayers = selected_num_players + 1;
+            tmpNumPlayers = g_MpPlayerCount + 1;
         }
 
-        init_mp_options_for_scenario(tmpNumPlayers);
+        frontSetMpPlayerCount(tmpNumPlayers);
 
         return;
     }
     if (scenario_selected)
     {
-        frontChangeMenu(MENU_MP_SCENARIO_SELECT, 0);
+        frontSetMenu(MENU_MP_SCENARIO_SELECT, 0);
         return;
     }
     if (gameselect_selected)
     {
-        frontChangeMenu(MENU_MP_STAGE_SELECT, 0);
+        frontSetMenu(MENU_MP_STAGE_SELECT, 0);
         return;
     }
     if (gamelength_selected)
     {
-        select_game_length();
+        frontStepMpGameLength();
         return;
     }
     if (character_selected)
     {
-        frontChangeMenu(MENU_MP_CHAR_SELECT, 0);
+        frontSetMenu(MENU_MP_CHAR_SELECT, 0);
         return;
     }
     if (weapon_selected)
     {
-        incrementMPWeaponSet();
+        mpWeaponSetNext();
         return;
     }
     if (health_selected)
     {
-        frontChangeMenu(MENU_MP_HANDICAP, 0);
+        frontSetMenu(MENU_MP_HANDICAP, 0);
         return;
     }
     if (controlstyle_selected)
     {
-        frontChangeMenu(MENU_MP_CONTROL_STYLE, 0);
+        frontSetMenu(MENU_MP_CONTROL_STYLE, 0);
         return;
     }
     if (aimadjust_selected)
     {
-        advance_aim_settings_selection();
+        frontStepMpAimSettings();
     }
 }
 
 
-Gfx * constructor_menu0E_mpoptions(Gfx *DL)
+Gfx * frontMpOptionsRender(Gfx *DL)
 {
     u8 *text;
 
@@ -5209,7 +5209,7 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0x79;
-  if (highlight_players) {
+  if (g_MpHlPlayers) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0x78,iStack28 + 0x3c,0x87,0x32);
   }
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
@@ -5218,7 +5218,7 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0x8d;
-  if (highlight_scenario) {
+  if (g_MpHlScenario) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0x8c,iStack28 + 0x3c,0x9b,0x32);
   }
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
@@ -5227,10 +5227,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0xa1;
-  if (highlight_gameselect) {
+  if (g_MpHlStage) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0xa0,iStack28 + 0x3c,0xaf,0x32);
   }
-  if (unlock_stage_select) {
+  if (g_MpCanPickStage) {
     entry = 0xFF;
   }
   else {
@@ -5242,10 +5242,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0xb5;
-  if (highlight_gamelength) {
+  if (g_MpHlLength) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0xb4,iStack28 + 0x3c,0xc3,0x32);
   }
-  if (unlock_game_length) {
+  if (g_MpCanPickLength) {
     entry = 0xFF;
   }
   else {
@@ -5257,10 +5257,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0xc9;
-  if (highlight_weaponselect) {
+  if (g_MpHlWeapons) {
     DL = microcode_constructor_related_to_menus(DL,0x37,200,iStack28 + 0x3c,0xd7,0x32);
   }
-  if (unlock_weapon_select) {
+  if (g_MpCanPickWeapons) {
     entry = 0xFF;
   }
   else {
@@ -5272,10 +5272,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0xdd;
-  if (highlight_character) {
+  if (g_MpHlChar) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0xdc,iStack28 + 0x3c,0xeb,0x32);
   }
-  if (unlock_chars) {
+  if (g_MpCanPickChar) {
     entry = 0xFF;
   }
   else {
@@ -5287,10 +5287,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0xf1;
-  if (highlight_health) {
+  if (g_MpHlHandicap) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0xf0,iStack28 + 0x3c,0xff,0x32);
   }
-  if (unlock_handicap) {
+  if (g_MpCanPickHandicap) {
     entry = 0xFF;
   }
   else {
@@ -5302,10 +5302,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0x105;
-  if (highlight_controlstyle) {
+  if (g_MpHlControls) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0x104,iStack28 + 0x3c,0x113,0x32);
   }
-  if (unlock_control_style) {
+  if (g_MpCanPickControls) {
     entry = 0xFF;
   }
   else {
@@ -5317,10 +5317,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0x119;
-  if (highlight_aimadjustment) {
+  if (g_MpHlAim) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0x118,iStack28 + 0x3c,0x127,0x32);
   }
-  if (unlock_aim_sight) {
+  if (g_MpCanPickAim) {
     entry = 0xFF;
   }
   else {
@@ -5328,20 +5328,20 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   }
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
 
-  sprintf(acStack12,"%d",selected_num_players);
+  sprintf(acStack12,"%d",g_MpPlayerCount);
   x = 0xa0;
   y = 0x79;
   DL = frontPrintText(DL, &x, &y, acStack12, ptrFontZurichBoldChars, ptrFontZurichBold, 0xff, viGetX(), viGetY(), 0, 0);
 
-  text = langGet(mp_player_counts[scenario].stage);
+  text = langGet(g_MpStagePlayerCounts[g_MpScenario].stage);
   x = 0xa0;
   y = 0x8d;
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
 
-  text = langGet(multi_stage_setups[MP_stage_selected].folder_text_preset);
+  text = langGet(g_MpStages[g_MpStage].folder_text_preset);
   x = 0xa0;
   y = 0xa1;
-  if (unlock_stage_select) {
+  if (g_MpCanPickStage) {
     entry = 0xFF;
   }
   else {
@@ -5349,10 +5349,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   }
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
 
-  text = langGet(multi_game_lengths[game_length].text_preset);
+  text = langGet(g_MpGameLengths[g_MpGameLength].text_preset);
   x = 0xa0;
   y = 0xb5;
-  if (unlock_game_length) {
+  if (g_MpCanPickLength) {
     entry = 0xFF;
   }
   else {
@@ -5361,10 +5361,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
 
 
-  text = langGet(*(getPtrMPWeaponSetTextID()));
+  text = langGet(*(mpWeaponSetGetName()));
   x = 0xa0;
   y = 0xc9;
-  if (unlock_weapon_select) {
+  if (g_MpCanPickWeapons) {
     entry = 0xFF;
   }
   else {
@@ -5372,10 +5372,10 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   }
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
 
-  text = langGet(mp_sight_adjust_table[aim_sight_adjustment].anonymous_0);
+  text = langGet(g_MpAimSettings[g_MpAimSetting].anonymous_0);
   x = 0xa0;
   y = 0x119;
-  if (unlock_aim_sight) {
+  if (g_MpCanPickAim) {
     entry = 0xFF;
   }
   else {
@@ -5388,12 +5388,12 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
   textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
   x = 0x39;
   y = 0x12d;
-  if (highlight_display) {
+  if (g_MpHlDisplay) {
     DL = microcode_constructor_related_to_menus(DL,0x37,0x12c,iStack28 + 0x3c,0x13b,0x32);
   }
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
 
-  if (selected_num_players == 2) {
+  if (g_MpPlayerCount == 2) {
     if (get_split_stacked_setting()) {
       text = (u8 *)(get_hires_setting() ? "Stacked, Hi-Res\n" : "Stacked\n");
     }
@@ -5415,16 +5415,16 @@ Gfx * constructor_menu0E_mpoptions(Gfx *DL)
 }
 
 
-bool get_players_who_have_selected_mp_char(s32 character)
+bool frontIsMpCharTaken(s32 character)
 {
     s32 i;
     bool char_is_selected;
 
     char_is_selected = FALSE;
 
-    for (i = 0; i < selected_num_players; i++)
+    for (i = 0; i < g_MpPlayerCount; i++)
     {
-        if (player_has_selected_char[i] && character == player_char[i])
+        if (g_MpCharChosen[i] && character == g_MpChar[i])
         {
             char_is_selected = TRUE;
         }
@@ -5434,20 +5434,20 @@ bool get_players_who_have_selected_mp_char(s32 character)
 }
 
 // Address 0x7F011C3C NTSC
-void init_menu0f_mpcharsel(void)
+void frontMpCharEnter(void)
 {
     s32 i;
 
-    tab_start_selected = 0;
-    tab_next_selected = 0;
-    tab_prev_selected = 0;
-    tab_prev_highlight = 0;
-    tab_next_highlight = 0;
-    tab_start_highlight = 0;
+    g_FrontTabStartSelected = 0;
+    g_FrontTabNextSelected = 0;
+    g_FrontTabPrevSelected = 0;
+    g_FrontTabPrevHighlight = 0;
+    g_FrontTabNextHighlight = 0;
+    g_FrontTabStartHighlight = 0;
 
     for ( i = 0; i < 64; i += 1)
     {
-        s32 selected_photo = mp_chr_setup[i].select_photo;
+        s32 selected_photo = g_MpChars[i].select_photo;
 
         // Multiplayer character images are composed of 4 textures.
 
@@ -5476,25 +5476,25 @@ void init_menu0f_mpcharsel(void)
         }
     }
 
-    if (num_chars_selectable_mp != 0x40)
+    if (g_MpCharCount != 0x40)
     {
-        if (fileIsStageUnlockedAtDifficulty(selected_folder_num, SP_LEVEL_CRADLE, DIFFICULTY_AGENT) == STAGESTATUS_COMPLETED)
+        if (fileIsStageUnlockedAtDifficulty(g_FrontFolder, SP_LEVEL_CRADLE, DIFFICULTY_AGENT) == STAGESTATUS_COMPLETED)
         {
-            num_chars_selectable_mp = 0x21;
+            g_MpCharCount = 0x21;
         }
         else
         {
-            num_chars_selectable_mp = 8;
+            g_MpCharCount = 8;
 
             for ( i = 0; i < MAX_PLAYER_COUNT; i++)
             {
-                if (player_char[i] >= num_chars_selectable_mp)
+                if (g_MpChar[i] >= g_MpCharCount)
                 {
                     s32 count = 0;
 
-                    while (count < num_chars_selectable_mp)
+                    while (count < g_MpCharCount)
                     {
-                        if (get_players_who_have_selected_mp_char(count) != 0)
+                        if (frontIsMpCharTaken(count) != 0)
                         {
                             count++;
                             continue;
@@ -5503,7 +5503,7 @@ void init_menu0f_mpcharsel(void)
                         break;
                     }
 
-                    player_char[i] = count;
+                    g_MpChar[i] = count;
                 }
             }
         }
@@ -5511,14 +5511,14 @@ void init_menu0f_mpcharsel(void)
 
     for (i = 0; i < MAX_PLAYER_COUNT; i++)
     {
-        mp_char_cur_select_player[i] = player_char[i];
-        mp_char_prev_select_player[i] = player_char[i];
-        mp_char_select_scroll_offset[i] = 0;
-        player_has_selected_char[i] = 0;
-        size_mp_select_image_player[i] = 0;
+        g_MpCharCursor[i] = g_MpChar[i];
+        g_MpCharPrevCursor[i] = g_MpChar[i];
+        g_MpCharScroll[i] = 0;
+        g_MpCharChosen[i] = 0;
+        g_MpCharPortraitSize[i] = 0;
     }
 
-    load_walletbond();
+    frontLoadFolders();
 }
 
 
@@ -5527,14 +5527,14 @@ void init_menu0f_mpcharsel(void)
 //MULTIPLAYER CHARACTER SELECT
 //********************************************************************************************************
 
-void update_menu0F_mpcharsel(void) 
+void frontMpCharLeave(void) 
 {
     return;
 }
 
 
 // Address 0x7F011ED4 NTSC
-void interface_menu0F_mpcharsel(void)
+void frontMpCharTick(void)
 {
     s32 numplayers;
     s32 padding;
@@ -5543,7 +5543,7 @@ void interface_menu0F_mpcharsel(void)
     s32 i;
     s32 temp_v1_3;
 
-    numplayers = get_selected_num_players();
+    numplayers = frontGetPlayerCount();
     ready_players = 0;
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -5552,111 +5552,111 @@ void interface_menu0F_mpcharsel(void)
 
     for (i = 0; i < numplayers; i++)
     {
-        if (player_has_selected_char[i])
+        if (g_MpCharChosen[i])
         {
-            if ((size_mp_select_image_player[i] < 0xb) && (mp_char_prev_select_player[i] == mp_char_cur_select_player[i]))
+            if ((g_MpCharPortraitSize[i] < 0xb) && (g_MpCharPrevCursor[i] == g_MpCharCursor[i]))
             {
-                size_mp_select_image_player[i] = size_mp_select_image_player[i] + 1;
+                g_MpCharPortraitSize[i] = g_MpCharPortraitSize[i] + 1;
             }
 
             if (joyGetButtonsPressedThisFrame(i, B_BUTTON))
             {
-                player_has_selected_char[i] = 0;
+                g_MpCharChosen[i] = 0;
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
 
-        if (player_has_selected_char[i] == 0 && size_mp_select_image_player[i] > 0)
+        if (g_MpCharChosen[i] == 0 && g_MpCharPortraitSize[i] > 0)
         {
-            size_mp_select_image_player[i] = size_mp_select_image_player[i] - 1;
+            g_MpCharPortraitSize[i] = g_MpCharPortraitSize[i] - 1;
         }
-        else if (player_has_selected_char[i] == 0)
+        else if (g_MpCharChosen[i] == 0)
         {
             if (joyGetButtonsPressedThisFrame(i, L_JPAD|L_CBUTTONS)) // 0x202
             {
-                if (mp_char_cur_select_player[i] > 0)
+                if (g_MpCharCursor[i] > 0)
                 {
-                    mp_char_cur_select_player[i]--;
+                    g_MpCharCursor[i]--;
                 }
             }
             else if (joyGetButtonsPressedThisFrame(i, R_JPAD|R_CBUTTONS)) // 0x101
             {
-                if (mp_char_cur_select_player[i] < (num_chars_selectable_mp - 1))
+                if (g_MpCharCursor[i] < (g_MpCharCount - 1))
                 {
-                    mp_char_cur_select_player[i]++;
+                    g_MpCharCursor[i]++;
                 }
             }
             else if (joyGetButtonsPressedThisFrame(i, A_BUTTON|Z_TRIG|START_BUTTON)) // 0xb000
             {
-                if (get_players_who_have_selected_mp_char(mp_char_cur_select_player[i]) == 0)
+                if (frontIsMpCharTaken(g_MpCharCursor[i]) == 0)
                 {
-                    player_char[i] = mp_char_cur_select_player[i];
-                    size_mp_select_image_player[i] = 1;
-                    player_has_selected_char[i] = 1;
+                    g_MpChar[i] = g_MpCharCursor[i];
+                    g_MpCharPortraitSize[i] = 1;
+                    g_MpCharChosen[i] = 1;
 
                     sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
                 }
             }
             else if (joyGetStickXInRange(i, -2, 1) > 0)
             {
-                if (mp_char_select_scroll_offset[i] == 0)
+                if (g_MpCharScroll[i] == 0)
                 {
-                    if (mp_char_cur_select_player[i] < (num_chars_selectable_mp - 1))
+                    if (g_MpCharCursor[i] < (g_MpCharCount - 1))
                     {
-                        mp_char_cur_select_player[i]++;
+                        g_MpCharCursor[i]++;
                     }
                 }
             }
-            else if ((joyGetStickXInRange(i, -2, 1) < -1) && (mp_char_select_scroll_offset[i] == 0))
+            else if ((joyGetStickXInRange(i, -2, 1) < -1) && (g_MpCharScroll[i] == 0))
             {
-                if (mp_char_cur_select_player[i] > 0)
+                if (g_MpCharCursor[i] > 0)
                 {
-                    mp_char_cur_select_player[i]--;
+                    g_MpCharCursor[i]--;
                 }
             }
         }
 
-        temp_v1_3 = (mp_char_prev_select_player[i] * 0x54) + mp_char_select_scroll_offset[i];
+        temp_v1_3 = (g_MpCharPrevCursor[i] * 0x54) + g_MpCharScroll[i];
 
-        if (mp_char_cur_select_player[i] * 0x54 < temp_v1_3)
+        if (g_MpCharCursor[i] * 0x54 < temp_v1_3)
         {
-            mp_char_select_scroll_offset[i] -= 0xc;
-            if (mp_char_select_scroll_offset[i] < 0)
+            g_MpCharScroll[i] -= 0xc;
+            if (g_MpCharScroll[i] < 0)
             {
-                mp_char_select_scroll_offset[i] += 0x54;
-                mp_char_prev_select_player[i]--;
+                g_MpCharScroll[i] += 0x54;
+                g_MpCharPrevCursor[i]--;
             }
         }
-        else if (temp_v1_3 < mp_char_cur_select_player[i] * 0x54)
+        else if (temp_v1_3 < g_MpCharCursor[i] * 0x54)
         {
-            mp_char_select_scroll_offset[i] += 0xC;
-            if (mp_char_select_scroll_offset[i] >= 0x54)
+            g_MpCharScroll[i] += 0xC;
+            if (g_MpCharScroll[i] >= 0x54)
             {
-                mp_char_select_scroll_offset[i] -= 0x54;
-                mp_char_prev_select_player[i]++;
+                g_MpCharScroll[i] -= 0x54;
+                g_MpCharPrevCursor[i]++;
             }
         }
 
-        if (player_has_selected_char[i] != 0 && size_mp_select_image_player[i] == 0xb)
+        if (g_MpCharChosen[i] != 0 && g_MpCharPortraitSize[i] == 0xb)
         {
             ready_players++;
         }
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_BLANK, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_BLANK, 1);
+    frontMoveCursor();
 
     if (ready_players == numplayers)
     {
-        frontChangeMenu(MENU_MP_OPTIONS, 0);
+        frontSetMenu(MENU_MP_OPTIONS, 0);
     }
 }
 
 
 
-s32 frontCalculateCharacterImageAlpha(s32 arg0, s32 arg1, s32 arg2)
+s32 frontGetPortraitAlpha(s32 arg0, s32 arg1, s32 arg2)
 {
     if ((arg1 >= arg0) || (arg0 >= arg2))
     {
@@ -5718,7 +5718,7 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg
             var_s3 = (j >= 2) ? j - 1 : j;
             var_s2 = (i >= 2) ? i - 1 : i;
 
-            if ((get_players_who_have_selected_mp_char(arg5)) && (arg6 == 0))
+            if ((frontIsMpCharTaken(arg5)) && (arg6 == 0))
             {
                 var_v0 = 0x6E;
             }
@@ -5756,7 +5756,7 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg
 
             if (arg6 == 0)
             {
-                spCC[vtx_index].a = frontCalculateCharacterImageAlpha(spCC[vtx_index].coord.AsArray[0], arg1, arg2);
+                spCC[vtx_index].a = frontGetPortraitAlpha(spCC[vtx_index].coord.AsArray[0], arg1, arg2);
             }
             else
             {
@@ -5772,26 +5772,26 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg
 
     gSPVertex(DL++, spCC, 16, 0);
 
-    selected_photo = mp_chr_setup[arg5].select_photo * 4;
-    simage = &g_ImagesMpCharSelect[mp_chr_setup[arg5].select_photo * 4];
+    selected_photo = g_MpChars[arg5].select_photo * 4;
+    simage = &g_ImagesMpCharSelect[g_MpChars[arg5].select_photo * 4];
     texSelect(&DL, simage + 2, 2, 0, 2);
     gSP1Triangle(DL++, 0, 1, 4, 0);
     gSP1Triangle(DL++, 4, 1, 5, 0);
 
-    selected_photo = mp_chr_setup[arg5].select_photo * 4;
-    simage = &g_ImagesMpCharSelect[mp_chr_setup[arg5].select_photo * 4];
+    selected_photo = g_MpChars[arg5].select_photo * 4;
+    simage = &g_ImagesMpCharSelect[g_MpChars[arg5].select_photo * 4];
     texSelect(&DL, simage + 3, 2, 0, 2);
     gSP1Triangle(DL++, 2, 3, 6, 0);
     gSP1Triangle(DL++, 6, 3, 7, 0);
 
-    selected_photo = mp_chr_setup[arg5].select_photo * 4;
-    simage = &g_ImagesMpCharSelect[mp_chr_setup[arg5].select_photo * 4];
+    selected_photo = g_MpChars[arg5].select_photo * 4;
+    simage = &g_ImagesMpCharSelect[g_MpChars[arg5].select_photo * 4];
     texSelect(&DL, simage + 0, 2, 0, 2);
     gSP1Triangle(DL++, 8, 9, 12, 0);
     gSP1Triangle(DL++, 12, 9, 13, 0);
 
-    selected_photo = mp_chr_setup[arg5].select_photo * 4;
-    simage = &g_ImagesMpCharSelect[mp_chr_setup[arg5].select_photo * 4];
+    selected_photo = g_MpChars[arg5].select_photo * 4;
+    simage = &g_ImagesMpCharSelect[g_MpChars[arg5].select_photo * 4];
     texSelect(&DL, simage + 1, 2, 0, 2);
     gSP1Triangle(DL++, 10, 11, 14, 0);
     gSP1Triangle(DL++, 14, 11, 15, 0);
@@ -5800,7 +5800,7 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg
 }
 
 
-Gfx *constructor_menu0F_mpcharsel(Gfx *DL)
+Gfx *frontMpCharRender(Gfx *DL)
 {
     s32 numplayers;
     s32 playernum;
@@ -5822,7 +5822,7 @@ Gfx *constructor_menu0F_mpcharsel(Gfx *DL)
     s32 name_x;
     s32 name_y;
 
-    numplayers = get_selected_num_players();
+    numplayers = frontGetPlayerCount();
     
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
@@ -5859,7 +5859,7 @@ Gfx *constructor_menu0F_mpcharsel(Gfx *DL)
 
         panel_center_x = (panel_width >> 1) + panel_left;
 
-        if ((player_has_selected_char[playernum] == 0) && (size_mp_select_image_player[playernum] == 0))
+        if ((g_MpCharChosen[playernum] == 0) && (g_MpCharPortraitSize[playernum] == 0))
         {
             text = langGet(getStringID(LTITLE, TITLE_STR_85_SELECTCHARACTER));
             textMeasure(&select_char_height, &select_char_width, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
@@ -5869,45 +5869,45 @@ Gfx *constructor_menu0F_mpcharsel(Gfx *DL)
             DL = frontPrintText(DL, &select_char_x, &select_char_y, (s8 *) text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
         }
         
-        text = langGet(mp_chr_setup[mp_char_cur_select_player[playernum]].text_preset);
+        text = langGet(g_MpChars[g_MpCharCursor[playernum]].text_preset);
         textMeasure(&name_height, &name_width, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
         portrait_y_base = panel_top;
         name_x = panel_center_x - (name_width >> 1);
         name_y = (portrait_y_base + 0x46) + 0x32;
         DL = microcode_constructor(DL);
         DL = frontPrintText(DL, &name_x, &name_y, (s8 *) text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
-        DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, panel_center_x - mp_char_select_scroll_offset[playernum], portrait_y_base + 0x46, mp_char_prev_select_player[playernum], size_mp_select_image_player[playernum]);
+        DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, panel_center_x - g_MpCharScroll[playernum], portrait_y_base + 0x46, g_MpCharPrevCursor[playernum], g_MpCharPortraitSize[playernum]);
 
-        if (((player_has_selected_char[playernum] == 0) && (size_mp_select_image_player[playernum] == 0)) || (mp_char_prev_select_player[playernum] != mp_char_cur_select_player[playernum]))
+        if (((g_MpCharChosen[playernum] == 0) && (g_MpCharPortraitSize[playernum] == 0)) || (g_MpCharPrevCursor[playernum] != g_MpCharCursor[playernum]))
         {
-            if (mp_char_prev_select_player[playernum] >= 3)
+            if (g_MpCharPrevCursor[playernum] >= 3)
             {
-                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - mp_char_select_scroll_offset[playernum]) - 0xFC, portrait_y_base + 0x46, mp_char_prev_select_player[playernum] - 3, size_mp_select_image_player[playernum]);
+                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - g_MpCharScroll[playernum]) - 0xFC, portrait_y_base + 0x46, g_MpCharPrevCursor[playernum] - 3, g_MpCharPortraitSize[playernum]);
             }
 
-            if (mp_char_prev_select_player[playernum] >= 2)
+            if (g_MpCharPrevCursor[playernum] >= 2)
             {
-                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - mp_char_select_scroll_offset[playernum]) - 0xA8, portrait_y_base + 0x46, mp_char_prev_select_player[playernum] - 2, size_mp_select_image_player[playernum]);
+                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - g_MpCharScroll[playernum]) - 0xA8, portrait_y_base + 0x46, g_MpCharPrevCursor[playernum] - 2, g_MpCharPortraitSize[playernum]);
             }
 
-            if (mp_char_prev_select_player[playernum] >= 1)
+            if (g_MpCharPrevCursor[playernum] >= 1)
             {
-                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - mp_char_select_scroll_offset[playernum]) - 0x54, portrait_y_base + 0x46, mp_char_prev_select_player[playernum] - 1, size_mp_select_image_player[playernum]);
+                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - g_MpCharScroll[playernum]) - 0x54, portrait_y_base + 0x46, g_MpCharPrevCursor[playernum] - 1, g_MpCharPortraitSize[playernum]);
             }
 
-            if (mp_char_prev_select_player[playernum] < (num_chars_selectable_mp - 1))
+            if (g_MpCharPrevCursor[playernum] < (g_MpCharCount - 1))
             {
-                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - mp_char_select_scroll_offset[playernum]) + 0x54, portrait_y_base + 0x46, mp_char_prev_select_player[playernum] + 1, size_mp_select_image_player[playernum]);
+                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - g_MpCharScroll[playernum]) + 0x54, portrait_y_base + 0x46, g_MpCharPrevCursor[playernum] + 1, g_MpCharPortraitSize[playernum]);
             }
 
-            if (mp_char_prev_select_player[playernum] < (num_chars_selectable_mp - 2))
+            if (g_MpCharPrevCursor[playernum] < (g_MpCharCount - 2))
             {
-                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - mp_char_select_scroll_offset[playernum]) + 0xA8, portrait_y_base + 0x46, mp_char_prev_select_player[playernum] + 2, size_mp_select_image_player[playernum]);
+                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - g_MpCharScroll[playernum]) + 0xA8, portrait_y_base + 0x46, g_MpCharPrevCursor[playernum] + 2, g_MpCharPortraitSize[playernum]);
             }
 
-            if (mp_char_prev_select_player[playernum] < (num_chars_selectable_mp - 3))
+            if (g_MpCharPrevCursor[playernum] < (g_MpCharCount - 3))
             {
-                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - mp_char_select_scroll_offset[playernum]) + 0xFC, portrait_y_base + 0x46, mp_char_prev_select_player[playernum] + 3, size_mp_select_image_player[playernum]);
+                DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, (panel_center_x - g_MpCharScroll[playernum]) + 0xFC, portrait_y_base + 0x46, g_MpCharPrevCursor[playernum] + 3, g_MpCharPortraitSize[playernum]);
             }
         }
     }
@@ -5921,36 +5921,36 @@ Gfx *constructor_menu0F_mpcharsel(Gfx *DL)
 //********************************************************************************************************
 //MULTIPLAYER HANDICAP
 //********************************************************************************************************
-void init_menu10_mphandicap(void)
+void frontMpHandicapEnter(void)
 {
     s32 i = 0;
-    tab_start_selected = FALSE;
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    tab_prev_highlight = FALSE;
-    tab_next_highlight = FALSE;
-    tab_start_highlight = FALSE;
+    g_FrontTabStartSelected = FALSE;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabStartHighlight = FALSE;
     for (i = 0; i < MAX_PLAYER_COUNT; i++) {
-        player_has_selected_char[i] = FALSE;
-        dword_CODE_bss_80069760[i] = 0;
+        g_MpCharChosen[i] = FALSE;
+        g_MpStickHeld[i] = 0;
     }
-    load_walletbond();
+    frontLoadFolders();
 }
 
-void update_menu10_mphandicap(void) 
+void frontMpHandicapLeave(void) 
 {
     return;
 }
 
 
 // Address 0x7F012EC4 NTSC
-void interface_menu10_mphandicap(void)
+void frontMpHandicapTick(void)
 {
     s32 sp44;
     s32 i;
     s32 var_fp;
 
-    sp44 = get_selected_num_players();
+    sp44 = frontGetPlayerCount();
     var_fp = 0;
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -5959,67 +5959,67 @@ void interface_menu10_mphandicap(void)
 
     for (i = 0; i < sp44; i++)
     {
-        if (player_has_selected_char[i] && joyGetButtonsPressedThisFrame(i, B_BUTTON))
+        if (g_MpCharChosen[i] && joyGetButtonsPressedThisFrame(i, B_BUTTON))
         {
-            player_has_selected_char[i] = 0;
+            g_MpCharChosen[i] = 0;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
 
-        if (player_has_selected_char[i] == 0)
+        if (g_MpCharChosen[i] == 0)
         {
             // 0x202
-            if (joyGetButtonsPressedThisFrame(i, L_JPAD|L_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) < -1) && dword_CODE_bss_80069760[i] != 0))
+            if (joyGetButtonsPressedThisFrame(i, L_JPAD|L_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) < -1) && g_MpStickHeld[i] != 0))
             {
-                if (player_handicap[i] > 0)
+                if (g_MpHandicap[i] > 0)
                 {
-                    player_handicap[i]--;
+                    g_MpHandicap[i]--;
                 }
             }
             // 0x101
-            else if (joyGetButtonsPressedThisFrame(i, R_JPAD|R_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) > 0) && dword_CODE_bss_80069760[i] != 0))
+            else if (joyGetButtonsPressedThisFrame(i, R_JPAD|R_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) > 0) && g_MpStickHeld[i] != 0))
             {
-                if (player_handicap[i] < 0xA)
+                if (g_MpHandicap[i] < 0xA)
                 {
-                    player_handicap[i]++;
+                    g_MpHandicap[i]++;
                 }
             }
             else if (joyGetButtonsPressedThisFrame(i, A_BUTTON|Z_TRIG|START_BUTTON)) // 0xb000
             {
-                player_has_selected_char[i] = 1;
+                g_MpCharChosen[i] = 1;
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
 
             if ((joyGetStickXInRange(i, -2, 1) == -1) || (joyGetStickXInRange(i, -2, 1) == 0))
             {
-                dword_CODE_bss_80069760[i] = 1;
+                g_MpStickHeld[i] = 1;
             }
             else
             {
-                dword_CODE_bss_80069760[i] = 0;
+                g_MpStickHeld[i] = 0;
             }
         }
 
-        if (player_has_selected_char[i] != 0)
+        if (g_MpCharChosen[i] != 0)
         {
             var_fp++;
         }
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_BLANK, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_BLANK, 1);
+    frontMoveCursor();
 
     if (var_fp == sp44)
     {
-        frontChangeMenu(MENU_MP_OPTIONS, 0);
+        frontSetMenu(MENU_MP_OPTIONS, 0);
     }
 }
 
 
 
 // Address 0x7F01317C NTSC
-Gfx * constructor_menu10_mphandicap(Gfx *DL)
+Gfx * frontMpHandicapRender(Gfx *DL)
 {
     s32 spCC;
     s32 i; // spE0
@@ -6042,7 +6042,7 @@ Gfx * constructor_menu10_mphandicap(Gfx *DL)
     s32 sp84;
     s32 padding5;
 
-    spCC = get_selected_num_players();
+    spCC = frontGetPlayerCount();
 
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
@@ -6057,8 +6057,8 @@ Gfx * constructor_menu10_mphandicap(Gfx *DL)
 
     for (i = 0; i < spCC; i++)
     {
-        padding4 = player_has_selected_char[i];
-        padding1 = player_handicap[i];
+        padding4 = g_MpCharChosen[i];
+        padding1 = g_MpHandicap[i];
 
         var_s2 = 0;
 
@@ -6083,7 +6083,7 @@ Gfx * constructor_menu10_mphandicap(Gfx *DL)
         padding2 = ((var_s5 >> 1) + var_s3);
         padding5 = var_s2 + 0x46;
 
-        if (player_has_selected_char[i] == 0)
+        if (g_MpCharChosen[i] == 0)
         {
             text = langGet(getStringID(LTITLE, TITLE_STR_86_SELECTHANDICAP));
             textMeasure(&spA4, &spA0, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
@@ -6096,7 +6096,7 @@ Gfx * constructor_menu10_mphandicap(Gfx *DL)
         }
 
         {
-            text2 = langGet(MP_handicap_table[player_handicap[i]].text_preset);
+            text2 = langGet(g_MpHandicaps[g_MpHandicap[i]].text_preset);
             textMeasure(&sp90, &sp8C, text2, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
             sp88 = padding2 - (sp8C >> 1);
             sp84 = padding5 - (sp90 >> 1) + 0xf;
@@ -6116,25 +6116,25 @@ Gfx * constructor_menu10_mphandicap(Gfx *DL)
 //********************************************************************************************************
 //MULTIPLAYER CONTROL OPTIONS
 //********************************************************************************************************
-void init_menu11_mpcontrol(void)
+void frontMpControlsEnter(void)
 {
     s32 i;
-    tab_start_selected = FALSE;
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    tab_prev_highlight = FALSE;
-    tab_next_highlight = FALSE;
-    tab_start_highlight = FALSE;
+    g_FrontTabStartSelected = FALSE;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabStartHighlight = FALSE;
 
     for (i = 0; i < MAX_PLAYER_COUNT; i++) {
-        player_has_selected_char[i] = FALSE;
-        dword_CODE_bss_80069760[i] = 0;
+        g_MpCharChosen[i] = FALSE;
+        g_MpStickHeld[i] = 0;
     }
 
-    load_walletbond();
+    frontLoadFolders();
 }
 
-void update_menu11_mpcontrols(void) {
+void frontMpControlsLeave(void) {
     return;
 }
 
@@ -6145,13 +6145,13 @@ void update_menu11_mpcontrols(void) {
 
 // Address 0x7F013608 NTSC
 // Address 0x7F013648 NTSC-J
-void interface_menu11_mpcontrols(void)
+void frontMpControlsTick(void)
 {
     s32 sp44;
     s32 i;
     s32 var_fp;
 
-    sp44 = get_selected_num_players();
+    sp44 = frontGetPlayerCount();
     var_fp = 0;
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -6169,105 +6169,105 @@ void interface_menu11_mpcontrols(void)
 
     for (i = 0; i < sp44; i++)
     {
-        if (player_has_selected_char[i] && joyGetButtonsPressedThisFrame(i, B_BUTTON))
+        if (g_MpCharChosen[i] && joyGetButtonsPressedThisFrame(i, B_BUTTON))
         {
-            player_has_selected_char[i] = 0;
+            g_MpCharChosen[i] = 0;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
 
-        if (player_has_selected_char[i] == 0)
+        if (g_MpCharChosen[i] == 0)
         {
             // 0x202
-            if (joyGetButtonsPressedThisFrame(i, L_JPAD|L_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) < -1) && dword_CODE_bss_80069760[i] != 0))
+            if (joyGetButtonsPressedThisFrame(i, L_JPAD|L_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) < -1) && g_MpStickHeld[i] != 0))
             {
                 // if greater than 0
-                if (controlstyle_player[i] > CONTROLLER_CONFIG_HONEY)
+                if (g_MpControlStyle[i] > CONTROLLER_CONFIG_HONEY)
                 {
-                    // ... OR PLAYER_1 is 1.x OR controlstyle_player[i] is 1 + 2.x
-                    if ((sp44 != 2) || (i != PLAYER_2) MAYBE_OR_JOYCOUNT_NOT_4 || (controlstyle_player[PLAYER_1] < CONTROLLER_CONFIG_PLENTY) || (controlstyle_player[i] >= CONTROLLER_CONFIG_GALORE))
+                    // ... OR PLAYER_1 is 1.x OR g_MpControlStyle[i] is 1 + 2.x
+                    if ((sp44 != 2) || (i != PLAYER_2) MAYBE_OR_JOYCOUNT_NOT_4 || (g_MpControlStyle[PLAYER_1] < CONTROLLER_CONFIG_PLENTY) || (g_MpControlStyle[i] >= CONTROLLER_CONFIG_GALORE))
                     {
-                        controlstyle_player[i]--;
+                        g_MpControlStyle[i]--;
                     }
 
                     // ... AND PLAYER_1 is 1.x AND PLAYER_2 is 2.x
-                    if ((sp44 == 2) && (i == PLAYER_1) MAYBE_AND_JOYCOUNT_4 && (controlstyle_player[PLAYER_1] < CONTROLLER_CONFIG_PLENTY) && (controlstyle_player[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY))
+                    if ((sp44 == 2) && (i == PLAYER_1) MAYBE_AND_JOYCOUNT_4 && (g_MpControlStyle[PLAYER_1] < CONTROLLER_CONFIG_PLENTY) && (g_MpControlStyle[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY))
                     {
                         // PLAYER_2 is 1.1
-                        controlstyle_player[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
+                        g_MpControlStyle[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
                     }
                 }
             }
             // 0x101
-            else if (joyGetButtonsPressedThisFrame(i, R_JPAD|R_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) > 0) && dword_CODE_bss_80069760[i] != 0))
+            else if (joyGetButtonsPressedThisFrame(i, R_JPAD|R_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) > 0) && g_MpStickHeld[i] != 0))
             {
-                // ... controlstyle_player[i] is 2.x
-                if (((sp44 == 2) && (i == PLAYER_1) MAYBE_AND_JOYCOUNT_4) || controlstyle_player[i] >= CONTROLLER_CONFIG_PLENTY)
+                // ... g_MpControlStyle[i] is 2.x
+                if (((sp44 == 2) && (i == PLAYER_1) MAYBE_AND_JOYCOUNT_4) || g_MpControlStyle[i] >= CONTROLLER_CONFIG_PLENTY)
                 {
-                    // if controlstyle_player[i] < 2.4
-                    if (controlstyle_player[i] < CONTROLLER_CONFIG_GOODHEAD)
+                    // if g_MpControlStyle[i] < 2.4
+                    if (g_MpControlStyle[i] < CONTROLLER_CONFIG_GOODHEAD)
                     {
-                        controlstyle_player[i]++;
+                        g_MpControlStyle[i]++;
 
                         // ... AND PLAYER_1 is 2.1 AND PLAYER_2 is 1.x
-                        if ((i == PLAYER_1) && (controlstyle_player[PLAYER_1] == CONTROLLER_CONFIG_PLENTY) && (controlstyle_player[PLAYER_2] < CONTROLLER_CONFIG_PLENTY))
+                        if ((i == PLAYER_1) && (g_MpControlStyle[PLAYER_1] == CONTROLLER_CONFIG_PLENTY) && (g_MpControlStyle[PLAYER_2] < CONTROLLER_CONFIG_PLENTY))
                         {
                             // PLAYER_2 is 2.1
-                            controlstyle_player[PLAYER_2] = CONTROLLER_CONFIG_PLENTY;
+                            g_MpControlStyle[PLAYER_2] = CONTROLLER_CONFIG_PLENTY;
                         }
                     }
                 }
-                // else if controlstyle_player[i] < 1.45
-                else if (controlstyle_player[i] < CONTROLLER_CONFIG_GOODNIGHT)
+                // else if g_MpControlStyle[i] < 1.45
+                else if (g_MpControlStyle[i] < CONTROLLER_CONFIG_GOODNIGHT)
                 {
-                    controlstyle_player[i]++;
+                    g_MpControlStyle[i]++;
                 }
 
             }
             else if (joyGetButtonsPressedThisFrame(i, A_BUTTON|Z_TRIG|START_BUTTON)) // 0xb000
             {
-                player_has_selected_char[i] = 1;
+                g_MpCharChosen[i] = 1;
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
 
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
             if (joyGetControllerCount() != 4)
             {
-                if (controlstyle_player[PLAYER_1] >= CONTROLLER_CONFIG_PLENTY)
+                if (g_MpControlStyle[PLAYER_1] >= CONTROLLER_CONFIG_PLENTY)
                 {
-                    controlstyle_player[PLAYER_1] = CONTROLLER_CONFIG_HONEY;
+                    g_MpControlStyle[PLAYER_1] = CONTROLLER_CONFIG_HONEY;
                 }
 
-                if (controlstyle_player[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY)
+                if (g_MpControlStyle[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY)
                 {
-                    controlstyle_player[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
+                    g_MpControlStyle[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
                 }
             }
 #endif
 
             if ((joyGetStickXInRange(i, -2, 1) == -1) || (joyGetStickXInRange(i, -2, 1) == 0))
             {
-                dword_CODE_bss_80069760[i] = 1;
+                g_MpStickHeld[i] = 1;
             }
             else
             {
-                dword_CODE_bss_80069760[i] = 0;
+                g_MpStickHeld[i] = 0;
             }
         }
 
-        if (player_has_selected_char[i] != 0)
+        if (g_MpCharChosen[i] != 0)
         {
             var_fp++;
         }
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_BLANK, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_BLANK, 1);
+    frontMoveCursor();
 
     if (var_fp == sp44)
     {
-        frontChangeMenu(MENU_MP_OPTIONS, 0);
+        frontSetMenu(MENU_MP_OPTIONS, 0);
     }
 
 #undef MAYBE_OR_JOYCOUNT_NOT_4
@@ -6277,7 +6277,7 @@ void interface_menu11_mpcontrols(void)
 
 
 // Address 0x7F013980 NTSC
-Gfx * constructor_menu11_mpcontrol(Gfx *DL)
+Gfx * frontMpControlsRender(Gfx *DL)
 {
     s32 spCC;
     s32 i; // spE0
@@ -6300,7 +6300,7 @@ Gfx * constructor_menu11_mpcontrol(Gfx *DL)
     s32 sp84;
     s32 padding5;
 
-    spCC = get_selected_num_players();
+    spCC = frontGetPlayerCount();
 
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
@@ -6315,8 +6315,8 @@ Gfx * constructor_menu11_mpcontrol(Gfx *DL)
 
     for (i = 0; i < spCC; i++)
     {
-        padding4 = player_has_selected_char[i];
-        padding1 = controlstyle_player[i];
+        padding4 = g_MpCharChosen[i];
+        padding1 = g_MpControlStyle[i];
 
         var_s2 = 0;
 
@@ -6341,7 +6341,7 @@ Gfx * constructor_menu11_mpcontrol(Gfx *DL)
         padding2 = ((var_s5 >> 1) + var_s3);
         padding5 = var_s2 + 0x46;
 
-        if (player_has_selected_char[i] == 0)
+        if (g_MpCharChosen[i] == 0)
         {
             text = langGet(getStringID(LTITLE, TITLE_STR_285_SELECTCONTROLSTYLE));
             textMeasure(&spA4, &spA0, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
@@ -6354,7 +6354,7 @@ Gfx * constructor_menu11_mpcontrol(Gfx *DL)
         }
 
         {
-            text2 = langGet(MP_controller_configuration_table[controlstyle_player[i]].text_preset);
+            text2 = langGet(g_MpControlStyles[g_MpControlStyle[i]].text_preset);
             textMeasure(&sp90, &sp8C, text2, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
             sp88 = padding2 - (sp8C >> 1);
             sp84 = padding5 - (sp90 >> 1) + 0xf;
@@ -6374,25 +6374,25 @@ Gfx * constructor_menu11_mpcontrol(Gfx *DL)
 //********************************************************************************************************
 //MULTIPLAYER STAGE SELECT
 //********************************************************************************************************
-void init_menu12_mpstage(void)
+void frontMpStageEnter(void)
 {
-  tab_start_selected = FALSE;
-  tab_next_selected = FALSE;
-  tab_prev_selected = FALSE;
-  tab_prev_highlight = FALSE;
-  tab_next_highlight = FALSE;
-  tab_start_highlight = FALSE;
-  current_mp_stage_highlighted = MP_STAGE_RANDOM;
-  load_walletbond();
+  g_FrontTabStartSelected = FALSE;
+  g_FrontTabNextSelected = FALSE;
+  g_FrontTabPrevSelected = FALSE;
+  g_FrontTabPrevHighlight = FALSE;
+  g_FrontTabNextHighlight = FALSE;
+  g_FrontTabStartHighlight = FALSE;
+  g_MpStageCursor = MP_STAGE_RANDOM;
+  frontLoadFolders();
 }
 
-void update_menu12_mpstage(void) {
+void frontMpStageLeave(void) {
 return;
 }
 
 
 
-void interface_menu12_mpstage(void)
+void frontMpStageTick(void)
 {
     s32 row;
     s32 column;
@@ -6403,20 +6403,20 @@ void interface_menu12_mpstage(void)
     viSetUseZBuf(FALSE);
     if (joyGetButtons(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON) == 0)
     {
-        tab_prev_highlight = FALSE;
-        tab_next_highlight = FALSE;
-        tab_start_highlight = FALSE;
+        g_FrontTabPrevHighlight = FALSE;
+        g_FrontTabNextHighlight = FALSE;
+        g_FrontTabStartHighlight = FALSE;
         if (frontCheckCursorOnPreviousTab())
         {
-            tab_prev_highlight = TRUE;
+            g_FrontTabPrevHighlight = TRUE;
         }
         else
         {
-            if ((s32)cursor_v_pos >= 240)
+            if ((s32)g_FrontCursorY >= 240)
             {
                 row = 2;
             }
-            else if ((s32)cursor_v_pos >= 170)
+            else if ((s32)g_FrontCursorY >= 170)
             {
               row = 1;
             } else
@@ -6424,15 +6424,15 @@ void interface_menu12_mpstage(void)
                 row = 0;
             }
 
-            if ((s32) cursor_h_pos >= 292)
+            if ((s32) g_FrontCursorX >= 292)
             {
                 column = 3;
             }
-            else if ((s32) cursor_h_pos >= 207)
+            else if ((s32) g_FrontCursorX >= 207)
             {
                 column = 2;
             }
-            else if ((s32) cursor_h_pos >= 122)
+            else if ((s32) g_FrontCursorX >= 122)
             {
                 column = 1;
             }
@@ -6441,53 +6441,53 @@ void interface_menu12_mpstage(void)
                 column = 0;
             }
 
-            current_mp_stage_highlighted = (row * 4) + column;
-            while (check_if_mp_stage_unlocked(current_mp_stage_highlighted) == 0)
+            g_MpStageCursor = (row * 4) + column;
+            while (frontIsMpStageAvailable(g_MpStageCursor) == 0)
             {
-                current_mp_stage_highlighted = current_mp_stage_highlighted - 1;
+                g_MpStageCursor = g_MpStageCursor - 1;
             }
         }
     }
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
     {
-        if (tab_prev_highlight)
+        if (g_FrontTabPrevHighlight)
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
         }
         else
         {
-            if (current_mp_stage_highlighted >= MP_STAGE_RANDOM)
+            if (g_MpStageCursor >= MP_STAGE_RANDOM)
             {
-                tab_next_selected = TRUE;
-                MP_stage_selected = current_mp_stage_highlighted;
+                g_FrontTabNextSelected = TRUE;
+                g_MpStage = g_MpStageCursor;
             }
         }
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
-        tab_prev_selected = TRUE;
+        g_FrontTabPrevSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS,  1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_BLANK, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS,  1);
-    frontUpdateControlStickPosition();
-    if (tab_next_selected)
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS,  1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_BLANK, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS,  1);
+    frontMoveCursor();
+    if (g_FrontTabNextSelected)
     {
-        frontChangeMenu(MENU_MP_OPTIONS, FALSE);
+        frontSetMenu(MENU_MP_OPTIONS, FALSE);
         return;
     }
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_MP_OPTIONS, FALSE);
+        frontSetMenu(MENU_MP_OPTIONS, FALSE);
     }
 }
 
 
 // Address 0x7F014050 NTSC
-Gfx * constructor_menu12_mpstage(Gfx *DL)
+Gfx * frontMpStageRender(Gfx *DL)
 {
     s32 padding5;
     s32 sp130;
@@ -6557,11 +6557,11 @@ Gfx * constructor_menu12_mpstage(Gfx *DL)
         {
             if (count < 12)
             {
-                simage = &g_ImagesMpStageSelect[multi_stage_setups[count].photo];
+                simage = &g_ImagesMpStageSelect[g_MpStages[count].photo];
 
                 texSelect(&DL, simage, 1, 0, 2);
 
-                if (count == current_mp_stage_highlighted)
+                if (count == g_MpStageCursor)
                 {
                     gDPSetCycleType(DL++, G_CYC_2CYCLE);
                     gDPSetFogColor(DL++, 0xff, 0xff, 0xff, 0x0a);
@@ -6569,7 +6569,7 @@ Gfx * constructor_menu12_mpstage(Gfx *DL)
 
                     texRectDrawImage(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, simage->level > 0, 1);
                 }
-                else if (check_if_mp_stage_unlocked(count) != 0)
+                else if (frontIsMpStageAvailable(count) != 0)
                 {
                     texRectDrawImage(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0x6E, 0x6E, 0x6E, 0xFF, simage->level > 0, 0);
                 }
@@ -6608,28 +6608,28 @@ Gfx * constructor_menu12_mpstage(Gfx *DL)
 
             for (i_4 = 0; i_4 < 4; i_4++)
             {
-                if (count_2 < 12 && check_if_mp_stage_unlocked(count_2))
+                if (count_2 < 12 && frontIsMpStageAvailable(count_2))
                 {
                     var_s2_2 = 0x96969600;
 
-                    if (count_2 == current_mp_stage_highlighted)
+                    if (count_2 == g_MpStageCursor)
                     {
                         var_s2_2 = -0x100;
                     }
 
-                    textMeasure(&sp128, &sp124, langGet(multi_stage_setups[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                    textMeasure(&sp128, &sp124, langGet(g_MpStages[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, 0);
 
                     sp130 = var_s6 - 0x1F;
                     sp12C = sp90 - sp128;
 
                     DL = microcode_constructor_related_to_menus(DL, sp130, sp12C, sp130 + sp124, sp12C + sp128, 0);
 
-                    DL = textRender(DL, &sp130, &sp12C, langGet(multi_stage_setups[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, var_s2_2 | 0xFF, viGetX(), viGetY(), 0, 0);
+                    DL = textRender(DL, &sp130, &sp12C, langGet(g_MpStages[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, var_s2_2 | 0xFF, viGetX(), viGetY(), 0, 0);
 
                     sp130 = var_s6 - 0x1F;
                     sp12C = sp90 - sp128;
 
-                    DL = textRender(DL, &sp130, &sp12C, langGet(multi_stage_setups[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, var_s2_2 | 0x64, viGetX(), viGetY(), 0, 0);
+                    DL = textRender(DL, &sp130, &sp12C, langGet(g_MpStages[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, var_s2_2 | 0x64, viGetX(), viGetY(), 0, 0);
                 }
 
                 var_s6 += 0x55;
@@ -6650,26 +6650,26 @@ Gfx * constructor_menu12_mpstage(Gfx *DL)
 
 
 
-MPSCENARIOS get_scenario(void)
+MPSCENARIOS frontGetMpScenario(void)
 {
-  return scenario;
+  return g_MpScenario;
 }
 
 //********************************************************************************************************
 //MULTIPLAYER SCENARIO SELECT
 //********************************************************************************************************
-void init_menu13_mpscenariosel(void)
+void frontMpScenarioEnter(void)
 {
-  tab_start_selected = FALSE;
-  tab_next_selected = FALSE;
-  tab_prev_selected = FALSE;
-  tab_prev_highlight = FALSE;
-  tab_next_highlight = FALSE;
-  tab_start_highlight = FALSE;
-  load_walletbond();
+  g_FrontTabStartSelected = FALSE;
+  g_FrontTabNextSelected = FALSE;
+  g_FrontTabPrevSelected = FALSE;
+  g_FrontTabPrevHighlight = FALSE;
+  g_FrontTabNextHighlight = FALSE;
+  g_FrontTabStartHighlight = FALSE;
+  frontLoadFolders();
 }
 
-void update_menu13_mpscenario(void) {
+void frontMpScenarioLeave(void) {
     return;
 }
 
@@ -6679,7 +6679,7 @@ void update_menu13_mpscenario(void) {
 
 
 // Address 0x7F0147B8 NTSC
-void interface_menu13_mpscenario(void)
+void frontMpScenarioTick(void)
 {
     s32 isTeam;
     s32 scenarioid;
@@ -6692,27 +6692,27 @@ void interface_menu13_mpscenario(void)
     viSetUseZBuf(FALSE);
 
     if (joyGetButtons(PLAYER_1, Z_TRIG|A_BUTTON) == 0) {
-        tab_prev_highlight = FALSE;
-        tab_next_highlight = FALSE;
-        tab_start_highlight = FALSE;
+        g_FrontTabPrevHighlight = FALSE;
+        g_FrontTabNextHighlight = FALSE;
+        g_FrontTabStartHighlight = FALSE;
 
         if (frontCheckCursorOnPreviousTab())
         {
-            tab_prev_highlight = TRUE;
-            dword_CODE_bss_80069780 = SCENARIO_NORMAL;
+            g_FrontTabPrevHighlight = TRUE;
+            g_MpScenarioCursor = SCENARIO_NORMAL;
         }
         else
         {
-            dword_CODE_bss_80069780 = SCENARIO_YOLT;
+            g_MpScenarioCursor = SCENARIO_YOLT;
 
             for (i = 7; i != 0; i--)
             {
                 if (
-                    (s32)cursor_v_pos  >=  (0x83 + (-i * -0x16))
-                    && (mp_player_counts[i].min <= get_selected_num_players())
-                    && (get_selected_num_players() <= mp_player_counts[i].max))
+                    (s32)g_FrontCursorY  >=  (0x83 + (-i * -0x16))
+                    && (g_MpStagePlayerCounts[i].min <= frontGetPlayerCount())
+                    && (frontGetPlayerCount() <= g_MpStagePlayerCounts[i].max))
                 {
-                    dword_CODE_bss_80069780 = i + 1;
+                    g_MpScenarioCursor = i + 1;
                     break;
                 }
             }
@@ -6721,23 +6721,23 @@ void interface_menu13_mpscenario(void)
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
     {
-        if (tab_prev_highlight)
+        if (g_FrontTabPrevHighlight)
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
         }
         else
         {
-            scenarioid = dword_CODE_bss_80069780 - 1;
+            scenarioid = g_MpScenarioCursor - 1;
 
             if ((scenarioid == SCENARIO_2v2) || (scenarioid == SCENARIO_3v1) || (scenarioid == SCENARIO_2v1))
             {
-                reset_mp_options_for_scenario(scenarioid);
+                frontSetMpScenario(scenarioid);
                 isTeam = TRUE;
             }
             else
             {
-                reset_mp_options_for_scenario(scenarioid);
-                tab_prev_selected = TRUE;
+                frontSetMpScenario(scenarioid);
+                g_FrontTabPrevSelected = TRUE;
             }
         }
 
@@ -6745,32 +6745,32 @@ void interface_menu13_mpscenario(void)
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
-        tab_prev_selected = TRUE;
+        g_FrontTabPrevSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CLASSIFIED, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CLASSIFIED, 1);
+    frontMoveCursor();
 
     if (isTeam)
     {
-        frontChangeMenu(MENU_MP_TEAMS, FALSE);
+        frontSetMenu(MENU_MP_TEAMS, FALSE);
         return;
     }
 
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_MP_OPTIONS, FALSE);
+        frontSetMenu(MENU_MP_OPTIONS, FALSE);
     }
 }
 
 
 // Address 0x7F014A48 NTSC
-Gfx * constructor_menu13_mpscenario(Gfx *DL)
+Gfx * frontMpScenarioRender(Gfx *DL)
 {
     s32 padding1;
     s32 padding2;
@@ -6804,18 +6804,18 @@ Gfx * constructor_menu13_mpscenario(Gfx *DL)
     {
         var_s3 = 0xff;
 
-        if (((s32) mp_player_counts[i].max < get_selected_num_players()) || (get_selected_num_players() < (s32) mp_player_counts[i].min))
+        if (((s32) g_MpStagePlayerCounts[i].max < frontGetPlayerCount()) || (frontGetPlayerCount() < (s32) g_MpStagePlayerCounts[i].min))
         {
             var_s3 = 0x70;
         }
 
-        text = langGet(mp_player_counts[i].stage);
+        text = langGet(g_MpStagePlayerCounts[i].stage);
 
         textMeasure(&sp7C, &sp78, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
 
         x = 0x39;
         y = 0x83 + (i * 0x16);
-        if ((i + 1) == dword_CODE_bss_80069780)
+        if ((i + 1) == g_MpScenarioCursor)
         {
             DL = microcode_constructor_related_to_menus(DL, 0x37, y - 1, sp78 + 0x3C, y + 0xE, 0x32);
         }
@@ -6832,12 +6832,12 @@ Gfx * constructor_menu13_mpscenario(Gfx *DL)
 
 
 
-s32 get_players_team_or_scenario_item_flag(int player)
+s32 frontGetMpTeam(int player)
 {
   return g_playerPlayerData[player].have_token_or_goldengun;
 }
 
-void set_players_team_or_scenario_item_flag(int player,s32 flag)
+void frontSetMpTeam(int player,s32 flag)
 {
   g_playerPlayerData[player].have_token_or_goldengun = flag;
 }
@@ -6848,34 +6848,34 @@ void set_players_team_or_scenario_item_flag(int player,s32 flag)
 //MULTIPLAYER TEAM SELECT
 //********************************************************************************************************
 
-void init_menu14_mpteamsel(void)
+void frontMpTeamsEnter(void)
 {
-    tab_start_selected = FALSE;
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    tab_prev_highlight = FALSE;
-    tab_next_highlight = FALSE;
-    tab_start_highlight = FALSE;
+    g_FrontTabStartSelected = FALSE;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabStartHighlight = FALSE;
 
-    if (scenario == SCENARIO_2v1) {
-        teamsize = 2;
+    if (g_MpScenario == SCENARIO_2v1) {
+        g_MpTeamsCursor = 2;
     }
     else {
-        teamsize = 3;
+        g_MpTeamsCursor = 3;
     }
 
-    D_8002B560 = 0;
-    load_walletbond();
+    g_MpTeamsBlinkTimer = 0;
+    frontLoadFolders();
 }
 
-void update_menu14_mpteams(void) 
+void frontMpTeamsLeave(void) 
 {
     return;
 }
 
 
 // Address 0x7F014D48 NTSC
-void interface_menu14_mpteams(void)
+void frontMpTeamsTick(void)
 {
     s32 i;
     s32 var_a1;
@@ -6885,90 +6885,90 @@ void interface_menu14_mpteams(void)
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
 
-    D_8002B560 = (s32) (D_8002B560 + 1) % 20;
+    g_MpTeamsBlinkTimer = (s32) (g_MpTeamsBlinkTimer + 1) % 20;
 
     // 0x101
     if ((joyGetButtonsPressedThisFrame(0, R_JPAD|R_CBUTTONS)) || (joyGetStickXInRange(0, -2, 1) > 0))
     {
-        if (scenario == SCENARIO_2v1)
+        if (g_MpScenario == SCENARIO_2v1)
         {
-            if (!(teamsize & 1))
+            if (!(g_MpTeamsCursor & 1))
             {
-                teamsize = 1;
+                g_MpTeamsCursor = 1;
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
-        else if (!(teamsize & 1))
+        else if (!(g_MpTeamsCursor & 1))
         {
-            teamsize += 1;
+            g_MpTeamsCursor += 1;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     // 0x808
     else if ((joyGetButtonsPressedThisFrame(0, U_JPAD|U_CBUTTONS)) || (joyGetStickYInRange(0, -2, 1) > 0))
     {
-        if (scenario == SCENARIO_2v2)
+        if (g_MpScenario == SCENARIO_2v2)
         {
-            if (teamsize & 2)
+            if (g_MpTeamsCursor & 2)
             {
-                teamsize = 1;
+                g_MpTeamsCursor = 1;
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
-        else if (teamsize & 2)
+        else if (g_MpTeamsCursor & 2)
         {
-            teamsize -= 2;
+            g_MpTeamsCursor -= 2;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     // 0x202
     else if ((joyGetButtonsPressedThisFrame(0, L_JPAD|L_CBUTTONS)) || (joyGetStickXInRange(0, -2, 1) < -1))
     {
-        if (scenario == SCENARIO_2v2)
+        if (g_MpScenario == SCENARIO_2v2)
         {
-            if (teamsize & 1)
+            if (g_MpTeamsCursor & 1)
             {
-                teamsize = 2;
+                g_MpTeamsCursor = 2;
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
-        else if (teamsize & 1)
+        else if (g_MpTeamsCursor & 1)
         {
-            teamsize -= 1;
+            g_MpTeamsCursor -= 1;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     // 0x404
     else if ((joyGetButtonsPressedThisFrame(0, D_JPAD|D_CBUTTONS)) || (joyGetStickYInRange(0, -2, 1) < -1))
     {
-        if (scenario == SCENARIO_2v1)
+        if (g_MpScenario == SCENARIO_2v1)
         {
-            if (!(teamsize & 2))
+            if (!(g_MpTeamsCursor & 2))
             {
-                teamsize = 2;
+                g_MpTeamsCursor = 2;
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
-        else if (!(teamsize & 2))
+        else if (!(g_MpTeamsCursor & 2))
         {
-            teamsize += 2;
+            g_MpTeamsCursor += 2;
             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_BLANK, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_BLANK, 1);
+    frontMoveCursor();
 
     if (joyGetButtonsPressedThisFrame(0, A_BUTTON|Z_TRIG|START_BUTTON)) // 0xb000
     {
         for (i = 0; i < 4; i++)
         {
-            if (scenario == SCENARIO_2v2)
+            if (g_MpScenario == SCENARIO_2v2)
             {
 
-                if (i == 0 || i == teamsize)
+                if (i == 0 || i == g_MpTeamsCursor)
                 {
                     var_a1 = 0;
                 }
@@ -6977,11 +6977,11 @@ void interface_menu14_mpteams(void)
                     var_a1 = 1;
                 }
 
-                set_players_team_or_scenario_item_flag(i, var_a1);
+                frontSetMpTeam(i, var_a1);
             }
             else
             {
-                if (i != teamsize)
+                if (i != g_MpTeamsCursor)
                 {
                     var_a1 = 0;
                 }
@@ -6990,11 +6990,11 @@ void interface_menu14_mpteams(void)
                     var_a1 = 1;
                 }
 
-                set_players_team_or_scenario_item_flag(i, var_a1);
+                frontSetMpTeam(i, var_a1);
             }
         }
 
-        frontChangeMenu(MENU_MP_OPTIONS, 0);
+        frontSetMenu(MENU_MP_OPTIONS, 0);
         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 }
@@ -7003,7 +7003,7 @@ void interface_menu14_mpteams(void)
 /**
  * Address: 7F015138
  */
-Gfx *constructor_menu14_mpteams(Gfx *DL)
+Gfx *frontMpTeamsRender(Gfx *DL)
 {
     s32 numPlayers;
     s32 playerIndex;
@@ -7026,7 +7026,7 @@ Gfx *constructor_menu14_mpteams(Gfx *DL)
     s32 textY;
     char *titleText;
 
-    numPlayers = get_selected_num_players();
+    numPlayers = frontGetPlayerCount();
 
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
@@ -7062,13 +7062,13 @@ Gfx *constructor_menu14_mpteams(Gfx *DL)
             DL = frontPrintText(DL, &titleX, &titleYPos, titleText, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
-        if (scenario == SCENARIO_2v2)
+        if (g_MpScenario == SCENARIO_2v2)
         {
-            useFirstTeam = (playerIndex == 0) || (playerIndex == teamsize);
+            useFirstTeam = (playerIndex == 0) || (playerIndex == g_MpTeamsCursor);
         }
         else
         {
-            useFirstTeam = playerIndex != teamsize;
+            useFirstTeam = playerIndex != g_MpTeamsCursor;
         }
 
         if (useFirstTeam)
@@ -7094,7 +7094,7 @@ Gfx *constructor_menu14_mpteams(Gfx *DL)
         textX = centerX - (textWidth >> 1);
         textY = (rowTop - (textHeight >> 1)) + 0x46;
 
-        if ((playerIndex != teamsize) || ((playerIndex == teamsize) && (((s32) D_8002B560) < 0xA)))
+        if ((playerIndex != g_MpTeamsCursor) || ((playerIndex == g_MpTeamsCursor) && (((s32) g_MpTeamsBlinkTimer) < 0xA)))
         {
             DL = frontPrintText(DL, &textX, &textY, text, ptrFontZurichBoldChars, ptrFontZurichBold, textColour, viGetX(), viGetY(), 0, 0);
         }
@@ -7106,12 +7106,12 @@ Gfx *constructor_menu14_mpteams(Gfx *DL)
 }
 
 
-void set_briefing_page(WATCH_BRIEFING_PAGE page)
+void frontSetBriefingPage(WATCH_BRIEFING_PAGE page)
 {
     short new_var;
 
     // could be a dev typo
-    if (current_menu_briefing_page = page)
+    if (g_FrontBriefingPage = page)
     {
         // maybe previous code was optimized out
     }
@@ -7119,17 +7119,17 @@ void set_briefing_page(WATCH_BRIEFING_PAGE page)
 
 
 // Address 0x7F015520 NTSC
-void load_briefing_text_for_stage(void)
+void frontLoadBriefing(void)
 {
     Gfx *temp_s0;
     s32 argg;
 
     // what is this
-    temp_s0 = (s32)(ptr_logo_and_walletbond_DL) + (s32)(4096*10);
+    temp_s0 = (s32)(g_FrontModelBuffer) + (s32)(4096*10);
 
     // alright
     argg = 0x200;
-    ptrbriefingdata = fileLoadByNameToAddr(mission_folder_setup_entries[briefingpage].briefing_name_ptr, FILELOAD_TRIM, (u8 *) temp_s0, argg);
+    g_FrontBriefing = fileLoadByNameToAddr(g_FrontMissions[g_FrontMission].briefing_name_ptr, FILELOAD_TRIM, (u8 *) temp_s0, argg);
 
     // what is this
     temp_s0 += argg / 8;
@@ -7137,12 +7137,12 @@ void load_briefing_text_for_stage(void)
     // what is this
     argg *= 879;
 
-    langLoadToBank(langGetLangBankIndexFromStagenum(mission_folder_setup_entries[briefingpage].stage_id), (u8 *)temp_s0, argg);
+    langLoadToBank(langGetLangBankIndexFromStagenum(g_FrontMissions[g_FrontMission].stage_id), (u8 *)temp_s0, argg);
 
     // what is this
     for (argg = 0; argg < OBJECTIVES_MAX; argg++)
     {
-        if (ptrbriefingdata->objective[argg].textid == 0)
+        if (g_FrontBriefing->objective[argg].textid == 0)
         {
             break;
         }
@@ -7152,112 +7152,112 @@ void load_briefing_text_for_stage(void)
 //********************************************************************************************************
 //BRIEFING SCREEN
 //********************************************************************************************************
-void init_menu0A_briefing(void)
+void frontBriefingEnter(void)
 {
-    tab_next_selected = 0;
-    tab_prev_selected = 0;
-    final_menu_briefing_page = 5;
-    set_briefing_page(0);
-    load_walletbond();
-    load_briefing_text_for_stage();
+    g_FrontTabNextSelected = 0;
+    g_FrontTabPrevSelected = 0;
+    g_FrontBriefingLastPage = 5;
+    frontSetBriefingPage(0);
+    frontLoadFolders();
+    frontLoadBriefing();
 }
 
 
-void update_menu0A_briefing(void)
+void frontBriefingLeave(void)
 {
-  langClearBank(langGetLangBankIndexFromStagenum(mission_folder_setup_entries[briefingpage].stage_id));
-  if (-1 < menu_update) {
-    frontCleanUpWalletBond();
+  langClearBank(langGetLangBankIndexFromStagenum(g_FrontMissions[g_FrontMission].stage_id));
+  if (-1 < g_FrontNextMenu) {
+    frontFreeFolders();
   }
 }
 
 
-void interface_menu0A_briefing(void)
+void frontBriefingTick(void)
 {
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(FALSE);
-    tab_prev_highlight = FALSE;
-    tab_next_highlight = FALSE;
-    tab_start_highlight = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabStartHighlight = FALSE;
     if (frontCheckCursorOnPreviousTab())
     {
-        tab_prev_highlight = TRUE;
+        g_FrontTabPrevHighlight = TRUE;
     }
-    else if ((frontCheckCursorOnNextTab()) && (current_menu_briefing_page < (final_menu_briefing_page - 1)))
+    else if ((frontCheckCursorOnNextTab()) && (g_FrontBriefingPage < (g_FrontBriefingLastPage - 1)))
     {
-        tab_next_highlight = TRUE;
+        g_FrontTabNextHighlight = TRUE;
     }
     else if (frontCheckCursorOnStartTab())
     {
-        tab_start_highlight = TRUE;
+        g_FrontTabStartHighlight = TRUE;
     }
-    else if (current_menu_briefing_page < (final_menu_briefing_page - 1))
+    else if (g_FrontBriefingPage < (g_FrontBriefingLastPage - 1))
     {
-        tab_next_highlight = TRUE;
+        g_FrontTabNextHighlight = TRUE;
     }
     else
     {
-        tab_start_highlight = TRUE;
+        g_FrontTabStartHighlight = TRUE;
     }
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON))
     {
-        tab_next_selected = TRUE;
+        g_FrontTabNextSelected = TRUE;
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON))
     {
-        if (tab_next_highlight)
+        if (g_FrontTabNextHighlight)
         {
-            set_briefing_page(current_menu_briefing_page + 1);
+            frontSetBriefingPage(g_FrontBriefingPage + 1);
         }
-        else if (tab_prev_highlight)
+        else if (g_FrontTabPrevHighlight)
         {
-            if (current_menu_briefing_page > BRIEFING_TITLE)
+            if (g_FrontBriefingPage > BRIEFING_TITLE)
             {
-                set_briefing_page(current_menu_briefing_page - 1);
+                frontSetBriefingPage(g_FrontBriefingPage - 1);
             }
             else
             {
-                tab_prev_selected = TRUE;
+                g_FrontTabPrevSelected = TRUE;
             }
         }
-        else if (tab_start_highlight)
+        else if (g_FrontTabStartHighlight)
         {
-            tab_next_selected = TRUE;
+            g_FrontTabNextSelected = TRUE;
         }
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON) != 0)
     {
-        if (current_menu_briefing_page > BRIEFING_TITLE)
+        if (g_FrontBriefingPage > BRIEFING_TITLE)
         {
-            set_briefing_page(current_menu_briefing_page - 1);
+            frontSetBriefingPage(g_FrontBriefingPage - 1);
         }
         else
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
         }
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PHOTOBRIEF, current_menu_briefing_page == BRIEFING_TITLE);
-    set_item_visibility_in_objinstance(walletinst[0], mission_folder_setup_entries[briefingpage].mission_num + 0x16, current_menu_briefing_page == BRIEFING_TITLE);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CLASSIFIED, 1);
-    frontUpdateControlStickPosition();
-    if (tab_next_selected)
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PHOTOBRIEF, g_FrontBriefingPage == BRIEFING_TITLE);
+    frontSetSwitchVisible(g_FrontFolderModels[0], g_FrontMissions[g_FrontMission].mission_num + 0x16, g_FrontBriefingPage == BRIEFING_TITLE);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CLASSIFIED, 1);
+    frontMoveCursor();
+    if (g_FrontTabNextSelected)
     {
-        frontChangeMenu(MENU_RUN_STAGE, TRUE);
+        frontSetMenu(MENU_RUN_STAGE, TRUE);
         return;
     }
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_MISSION_SELECT, FALSE);
-        set_cursor_to_stage_solo(mission_folder_setup_entries[briefingpage].mission_num);
+        frontSetMenu(MENU_MISSION_SELECT, FALSE);
+        frontSetMissionCursor(g_FrontMissions[g_FrontMission].mission_num);
     }
 }
 
@@ -7265,7 +7265,7 @@ void interface_menu0A_briefing(void)
 
 
 // Address 0x7F015A08 NTSC
-Gfx *print_objectives_and_status_to_menu(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
+Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
 {
     s32 i; // sp9C
     s32 sp98;
@@ -7285,9 +7285,9 @@ Gfx *print_objectives_and_status_to_menu(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
 
     for (i = 0; i < OBJECTIVES_MAX; i++)
     {
-        if (ptrbriefingdata->objective[i].textid != 0 && selected_difficulty >= ptrbriefingdata->objective[i].enabled_difficulty)
+        if (g_FrontBriefing->objective[i].textid != 0 && g_FrontDifficulty >= g_FrontBriefing->objective[i].enabled_difficulty)
         {
-            v1 = ptrbriefingdata->objective[i].textid;
+            v1 = g_FrontBriefing->objective[i].textid;
             text = langGet(v1);
             strcpy((u8*)arg2, "a.\n");
             *arg2 = *arg2 + sp98;
@@ -7353,7 +7353,7 @@ Gfx *print_objectives_and_status_to_menu(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
 const struct MatchHack_front_rodata_3000 asc_D_80050C54 = { "\n" };
 #endif
 
-Gfx *constructor_menu0A_briefing(Gfx *DL)
+Gfx *frontBriefingRender(Gfx *DL)
 {
     u8 *spC0C;
     s32 spC08;
@@ -7373,9 +7373,9 @@ Gfx *constructor_menu0A_briefing(Gfx *DL)
 #endif
 
     DL = microcode_constructor(DL);
-    DL = print_current_solo_briefing_stage_name(DL, (char*)&sp4C);
+    DL = frontDrawMissionTitle(DL, (char*)&sp4C);
 
-    switch (current_menu_briefing_page)
+    switch (g_FrontBriefingPage)
     {
         case BRIEFING_TITLE:
             spC0C = langGet(getStringID(LTITLE, TITLE_STR_93_PRIMARYOBJECTIVES ));
@@ -7402,28 +7402,28 @@ Gfx *constructor_menu0A_briefing(Gfx *DL)
     spC04 = 0x8F;
     DL = frontPrintText(DL, &spC08, &spC04, (s8*)spC0C, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    if (current_menu_briefing_page == BRIEFING_TITLE)
+    if (g_FrontBriefingPage == BRIEFING_TITLE)
     {
-        DL = print_objectives_and_status_to_menu(DL, 0xA7, (char*)&sp4C, 0);
+        DL = frontDrawObjectives(DL, 0xA7, (char*)&sp4C, 0);
     }
     else
     {
-        switch (current_menu_briefing_page)
+        switch (g_FrontBriefingPage)
         {
             case BRIEFING_OVERVIEW:
-                spC0C = langGet(ptrbriefingdata->brief[0]);
+                spC0C = langGet(g_FrontBriefing->brief[0]);
             break;
 
             case BRIEFING_M:
-                spC0C = langGet(ptrbriefingdata->brief[1]);
+                spC0C = langGet(g_FrontBriefing->brief[1]);
             break;
 
             case BRIEFING_Q:
-                spC0C = langGet(ptrbriefingdata->brief[2]);
+                spC0C = langGet(g_FrontBriefing->brief[2]);
             break;
 
             case BRIEFING_MONEYPENNY:
-                spC0C = langGet(ptrbriefingdata->brief[3]);
+                spC0C = langGet(g_FrontBriefing->brief[3]);
             break;
         }
 
@@ -7438,7 +7438,7 @@ Gfx *constructor_menu0A_briefing(Gfx *DL)
     DL = frontAddStartTabText(DL);
     DL = frontAddPreviousTabText(DL);
 
-    if (current_menu_briefing_page < BRIEFING_MONEYPENNY)
+    if (g_FrontBriefingPage < BRIEFING_MONEYPENNY)
     {
         DL = frontAddNextTabText(DL);
     }
@@ -7453,73 +7453,73 @@ Gfx *constructor_menu0A_briefing(Gfx *DL)
 //********************************************************************************************************
 //RUN STAGE
 //********************************************************************************************************
-void init_menu0B_runstage(void)
+void frontRunStageEnter(void)
 {
     frontCoopResetPartnerOutfit();
-    bossSetLoadedStage(selected_stage);
-    lvSetDifficulty(selected_difficulty);
+    bossSetLoadedStage(g_FrontStage);
+    lvSetDifficulty(g_FrontDifficulty);
 }
 
 
 //********************************************************************************************************
 //MISSION FAILED
 //********************************************************************************************************
-void init_menu0C_missionfailed(void)
+void frontDebriefEnter(void)
 {
-  tab_next_selected = FALSE;
-  tab_prev_selected = FALSE;
-  load_walletbond();
-  load_briefing_text_for_stage();
+  g_FrontTabNextSelected = FALSE;
+  g_FrontTabPrevSelected = FALSE;
+  frontLoadFolders();
+  frontLoadBriefing();
   frontSetCursorPositionToNextTab();
-  if (maybe_is_in_menu != FALSE) {
+  if (g_FrontStartMusic != FALSE) {
     sndApplyVolumeAllSfxSlot(0x7fff);
     musicTrack1ApplySeqpVol(0x7fff);
     g_musicXTrack1Fade = MUSIC_FADESTATE_UNSET;
     musicTrack1Play(M_FOLDERS);
-    maybe_is_in_menu = FALSE;
+    g_FrontStartMusic = FALSE;
   }
 }
 
-void update_menu0C_missionfailed(void) {
+void frontDebriefLeave(void) {
     return;
 }
 
 
-void interface_menu0C_missionfailed(void)
+void frontDebriefTick(void)
 {
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(FALSE);
-    tab_next_highlight = FALSE;
-    tab_prev_highlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
     if (frontCheckCursorOnPreviousTab())
     {
-        tab_prev_highlight = TRUE;
+        g_FrontTabPrevHighlight = TRUE;
     }
     else
     {
         if (frontCheckCursorOnNextTab())
         {
-            tab_next_highlight = TRUE;
+            g_FrontTabNextHighlight = TRUE;
         }
         else
         {
-            tab_next_highlight = TRUE;
+            g_FrontTabNextHighlight = TRUE;
         }
     }
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
     {
-        if (tab_prev_highlight)
+        if (g_FrontTabPrevHighlight)
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
             sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, 0);
         }
         else
         {
-            if (tab_next_highlight)
+            if (g_FrontTabNextHighlight)
             {
-                tab_next_selected = TRUE;
+                g_FrontTabNextSelected = TRUE;
                 sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, 0);
             }
         }
@@ -7528,25 +7528,25 @@ void interface_menu0C_missionfailed(void)
     {
         if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
         {
-            tab_prev_selected = TRUE;
+            g_FrontTabPrevSelected = TRUE;
             sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, 0);
         }
     }
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CLASSIFIED, 1);
-    frontUpdateControlStickPosition();
-    if (tab_next_selected)
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CLASSIFIED, 1);
+    frontMoveCursor();
+    if (g_FrontTabNextSelected)
     {
-        frontChangeMenu(MENU_MISSION_COMPLETE, FALSE);
+        frontSetMenu(MENU_MISSION_COMPLETE, FALSE);
         return;
     }
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_MISSION_SELECT, FALSE);
-        set_cursor_to_stage_solo(mission_folder_setup_entries[briefingpage].mission_num);
+        frontSetMenu(MENU_MISSION_SELECT, FALSE);
+        frontSetMissionCursor(g_FrontMissions[g_FrontMission].mission_num);
     }
 }
 
@@ -7556,19 +7556,19 @@ void interface_menu0C_missionfailed(void)
 
 
 
-s32 frontCompleteAllObjectivesAliveSuccess(void)
+s32 frontIsMissionSuccess(void)
 {
     s32 i;
 
-    if (mission_failed_or_aborted || g_isBondKIA)
+    if (g_FrontMissionAborted || g_FrontBondKilled)
     {
         return 0;
     }
 
     for (i=0; i<10; i++)
     {
-        if (ptrbriefingdata->objective[i].textid != 0
-            && lvGetDifficulty() >= ptrbriefingdata->objective[i].enabled_difficulty
+        if (g_FrontBriefing->objective[i].textid != 0
+            && lvGetDifficulty() >= g_FrontBriefing->objective[i].enabled_difficulty
             && objectiveCheckStatus(i) != OBJECTIVESTATUS_COMPLETE)
             {
                 return 0;
@@ -7579,7 +7579,7 @@ s32 frontCompleteAllObjectivesAliveSuccess(void)
 }
 
 
-Gfx * constructor_menu0C_missionfailed(Gfx *DL)
+Gfx * frontDebriefRender(Gfx *DL)
 {
     s32 x;
     s32 y;
@@ -7600,7 +7600,7 @@ Gfx * constructor_menu0C_missionfailed(Gfx *DL)
     #endif
     DL = frontSetupMenuBackground(DL);
     DL = microcode_constructor(DL);
-    DL = print_current_solo_briefing_stage_name(DL, &stagename);
+    DL = frontDrawMissionTitle(DL, &stagename);
 
     text = langGet(getStringID(LTITLE, TITLE_STR_98_REPORT)); //REPORT:*
     x = 0x37;
@@ -7615,17 +7615,17 @@ Gfx * constructor_menu0C_missionfailed(Gfx *DL)
     y = 0xA7;
     DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    if (g_isBondKIA)
+    if (g_FrontBondKilled)
     {
         text = langGet(getStringID(LTITLE, TITLE_STR_100_KIA)); // KILLED IN ACTION*
         phi_v1 = 0x78000000 | 0xFF;
     }
-    else if (mission_failed_or_aborted)
+    else if (g_FrontMissionAborted)
     {
         text = langGet(getStringID(LTITLE, TITLE_STR_101_ABORTED)); // ABORTED*
         phi_v1 = 0x78000000 | 0xFF;
     }
-    else if (frontCompleteAllObjectivesAliveSuccess())
+    else if (frontIsMissionSuccess())
     {
 
         text = langGet(getStringID(LTITLE, TITLE_STR_102_COMPLETED)); // Completed*
@@ -7645,7 +7645,7 @@ Gfx * constructor_menu0C_missionfailed(Gfx *DL)
     // stopping him. Name the controller too, as either can be Bond.
     if (g_CounterOpMode)
     {
-        s32 bondwins = frontCompleteAllObjectivesAliveSuccess();
+        s32 bondwins = frontIsMissionSuccess();
         char winner[48];
 
         sprintf(winner, "Winner: %s (Player %d)\n", bondwins ? "Bond" : "Guard",
@@ -7658,7 +7658,7 @@ Gfx * constructor_menu0C_missionfailed(Gfx *DL)
         DL = frontPrintText(DL, &x, &y, winner, ptrFontZurichBoldChars, ptrFontZurichBold, bondwins ? 0xFF : (0x78000000 | 0xFF), viGetX(), viGetY(), 0, 0);
     }
 
-    DL = print_objectives_and_status_to_menu(DL, 0xBF, &stagename, 1);
+    DL = frontDrawObjectives(DL, 0xBF, &stagename, 1);
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
@@ -7668,19 +7668,19 @@ Gfx * constructor_menu0C_missionfailed(Gfx *DL)
 //********************************************************************************************************
 //MISSION COMPLETE
 //********************************************************************************************************
-void init_menu0D_missioncomplete(void)
+void frontStatsEnter(void)
 {
-    tab_next_selected = 0;
-    tab_prev_selected = 0;
-    load_walletbond();
-    load_briefing_text_for_stage();
+    g_FrontTabNextSelected = 0;
+    g_FrontTabPrevSelected = 0;
+    frontLoadFolders();
+    frontLoadBriefing();
     if (g_NewCheatUnlocked)
     {
         sndPlaySfx(g_musicSfxBufferPtr, RARELOGO_SFX, 0);
     }
 }
 
-void update_menu0D_missioncomplete(void) {
+void frontStatsLeave(void) {
     return;
 }
 
@@ -7690,7 +7690,7 @@ void update_menu0D_missioncomplete(void) {
 
 
 
-void interface_menu0D_missioncomplete()
+void frontStatsTick()
 {
     int entry;
 
@@ -7698,71 +7698,71 @@ void interface_menu0D_missioncomplete()
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
-    tab_prev_highlight = FALSE;
-    tab_next_highlight = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
 
     if (frontCheckCursorOnPreviousTab())
     {
-        tab_prev_highlight = 1;
+        g_FrontTabPrevHighlight = 1;
     }
     else
     {
         if (frontCheckCursorOnNextTab())
         {
-            tab_next_highlight = 1;
+            g_FrontTabNextHighlight = 1;
         }
         else
         {
-            tab_next_highlight = 1;
+            g_FrontTabNextHighlight = 1;
         }
     }
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON|Z_TRIG|A_BUTTON))
     {
-        if (tab_next_highlight)
+        if (g_FrontTabNextHighlight)
         {
-            tab_next_selected = 1;
+            g_FrontTabNextSelected = 1;
             sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
-        else if (tab_prev_highlight != FALSE)
+        else if (g_FrontTabPrevHighlight != FALSE)
         {
-            tab_prev_selected = 1;
+            g_FrontTabPrevSelected = 1;
             sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
-        tab_prev_selected = 1;
+        g_FrontTabPrevSelected = 1;
         sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_PAPER, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_OHMSS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CLASSIFIED, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CLASSIFIED, 1);
+    frontMoveCursor();
 
-    if (tab_next_selected)
+    if (g_FrontTabNextSelected)
     {
-        if (frontCompleteAllObjectivesAliveSuccess() && (!g_AppendCheatSinglePlayer))
+        if (frontIsMissionSuccess() && (!g_AppendCheatSinglePlayer))
         {
-            if (mission_folder_setup_entries[briefingpage].mission_num == SP_LEVEL_CRADLE)
+            if (g_FrontMissions[g_FrontMission].mission_num == SP_LEVEL_CRADLE)
             {
-                frontChangeMenu(MENU_RUN_STAGE, TRUE);
-                selected_stage = LEVELID_CUBA;
+                frontSetMenu(MENU_RUN_STAGE, TRUE);
+                g_FrontStage = LEVELID_CUBA;
             }
-            else if (mission_folder_setup_entries[briefingpage].mission_num >= SP_LEVEL_AZTEC)
+            else if (g_FrontMissions[g_FrontMission].mission_num >= SP_LEVEL_AZTEC)
             {
-                frontChangeMenu(MENU_MISSION_SELECT, FALSE);
-                set_cursor_to_stage_solo((s32)mission_folder_setup_entries[briefingpage].mission_num);
+                frontSetMenu(MENU_MISSION_SELECT, FALSE);
+                frontSetMissionCursor((s32)g_FrontMissions[g_FrontMission].mission_num);
             }
             else
             {
-                entry = briefingpage + 1;
-                while (mission_folder_setup_entries[entry].folder_text_preset)
+                entry = g_FrontMission + 1;
+                while (g_FrontMissions[entry].folder_text_preset)
                 {
-                    if (mission_folder_setup_entries[entry].stage_id >= 0)
+                    if (g_FrontMissions[entry].stage_id >= 0)
                     {
                         break;
                     }
@@ -7770,24 +7770,24 @@ void interface_menu0D_missioncomplete()
                     entry++;
                 }
 
-                if (mission_folder_setup_entries[entry].folder_text_preset)
+                if (g_FrontMissions[entry].folder_text_preset)
                 {
-                    briefingpage = entry;
-                    selected_stage = mission_folder_setup_entries[entry].stage_id;
+                    g_FrontMission = entry;
+                    g_FrontStage = g_FrontMissions[entry].stage_id;
                 }
 
-                frontChangeMenu(MENU_BRIEFING, FALSE);
+                frontSetMenu(MENU_BRIEFING, FALSE);
             }
         }
         else
         {
-            frontChangeMenu(MENU_BRIEFING, FALSE);
+            frontSetMenu(MENU_BRIEFING, FALSE);
         }
     }
-    else if (tab_prev_selected)
+    else if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_MISSION_SELECT, FALSE);
-        set_cursor_to_stage_solo((s32)mission_folder_setup_entries[briefingpage].mission_num);
+        frontSetMenu(MENU_MISSION_SELECT, FALSE);
+        frontSetMissionCursor((s32)g_FrontMissions[g_FrontMission].mission_num);
     }
 
     return;
@@ -7901,7 +7901,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
     return DL;
 }
 
-Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
+Gfx *frontStatsRender(Gfx *DL)
 {
     s32 x;
     s32 y;
@@ -7949,7 +7949,7 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     if (allhits <= 0) {
         allhits = 1;
     }
-    DL = print_current_solo_briefing_stage_name(DL, stagename);
+    DL = frontDrawMissionTitle(DL, stagename);
 
     text = langGet(getStringID(LTITLE, TITLE_STR_104_STATS)); //STATISTICS:*
     x = 0x37;
@@ -7965,19 +7965,19 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     y = 0xA7;
     DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    besttime = fileGetSaveStageDifficultyTime( fileGetSaveForFoldernum(selected_folder_num), mission_folder_setup_entries[briefingpage].mission_num, selected_difficulty);
+    besttime = fileGetSaveStageDifficultyTime( fileGetSaveForFoldernum(g_FrontFolder), g_FrontMissions[g_FrontMission].mission_num, g_FrontDifficulty);
     if ((besttime == 0) || (!(besttime < 0x3FF))) {
         besttime = -1;
     }
-    if (selected_difficulty >= DIFFICULTY_007) {
+    if (g_FrontDifficulty >= DIFFICULTY_007) {
         difficulty = DIFFICULTY_00;
     }
     else {
-        difficulty = selected_difficulty;
+        difficulty = g_FrontDifficulty;
     }
     missiontime = missiontimer / 60;
     stagename[0] = '\0';
-    targettime = solo_target_time_array[mission_folder_setup_entries[briefingpage].mission_num][difficulty];
+    targettime = g_FrontTargetTimes[g_FrontMissions[g_FrontMission].mission_num][difficulty];
     sprintf(stagename, "%02d:%02d", missiontime / 60, missiontime % 60);
     x = 0x82;
     y = 0xA7;
@@ -7990,7 +7990,7 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     }
 
 
-    if ((targettime > 0) && (selected_difficulty != DIFFICULTY_007)) {
+    if ((targettime > 0) && (g_FrontDifficulty != DIFFICULTY_007)) {
         text = langGet(getStringID(LTITLE, TITLE_STR_274_TARGET)); //Target:
         x = 0x37;
         y = y2 + 0xA9;
@@ -8056,8 +8056,8 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     x = 0x37;
     y = 0xDC;
     DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
-    strcpy(stagename, frontGetPlayersFavoriteWeaponInHand(0, 0));
-    if ((array_favweapon[0][0] > 0) && (array_favweapon[0][1] == array_favweapon[0][0]))
+    strcpy(stagename, frontGetFavWeaponText(0, 0));
+    if ((g_MpFavWeapon[0][0] > 0) && (g_MpFavWeapon[0][1] == g_MpFavWeapon[0][0]))
     {
         temp = strlen(stagename)-1;
         sprintf(&stagename[temp], " x 2\n");
@@ -8139,29 +8139,29 @@ tabs:
 //CHEAT SCREEN
 //********************************************************************************************************
 
-void init_menu15_cheat(void)
+void frontCheatEnter(void)
 {
     int i;
 
-    tab_start_selected = FALSE;
-    tab_next_selected = FALSE;
-    tab_prev_selected = FALSE;
-    tab_prev_highlight = FALSE;
-    tab_next_highlight = FALSE;
-    tab_start_highlight = FALSE;
-    totalunlockedcheats = 0x0;
+    g_FrontTabStartSelected = FALSE;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabStartHighlight = FALSE;
+    g_CheatMenuCount = 0x0;
 
     for (i = 1; i != CHEAT_INVALID; i++) {
-        if (cheat_available[i]) {
-          arrayUnlockedCheats[totalunlockedcheats] = i;
-          totalunlockedcheats++;
+        if (g_CheatAvailable[i]) {
+          g_CheatMenuList[g_CheatMenuCount] = i;
+          g_CheatMenuCount++;
         }
     };
-    load_walletbond();
+    frontLoadFolders();
 }
 
 
-void update_menu15_cheat(void)
+void frontCheatLeave(void)
 {
   int i;
   u32 appendsp;
@@ -8173,7 +8173,7 @@ void update_menu15_cheat(void)
   for (i = 1; i != CHEAT_INVALID; i++) {
     if (g_CheatActivated[i]) {
         appendsp = TRUE;
-        if (cheatCheckIfMPCheat(i)) {
+        if (cheatIsMpCheat(i)) {
             appendmp = TRUE;
         }
     }
@@ -8185,7 +8185,7 @@ void update_menu15_cheat(void)
 
 
 // Address 0x7F017C88 NTSC
-void interface_menu15_cheat(void)
+void frontCheatTick(void)
 {
     s32 i;
 
@@ -8194,48 +8194,48 @@ void interface_menu15_cheat(void)
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
 
-    MP_menu_selected_option = 0;
+    g_CheatMenuToggle = 0;
 
     if (joyGetButtons(PLAYER_1, A_BUTTON|Z_TRIG) == 0)
     {
-        tab_prev_highlight = 0;
-        tab_next_highlight = 0;
-        tab_start_highlight = 0;
-        cheathighlighted = 0;
+        g_FrontTabPrevHighlight = 0;
+        g_FrontTabNextHighlight = 0;
+        g_FrontTabStartHighlight = 0;
+        g_CheatMenuCursor = 0;
 
         if (frontCheckCursorOnPreviousTab())
         {
-            tab_prev_highlight = 1;
+            g_FrontTabPrevHighlight = 1;
         }
         else
         {
-            if (totalunlockedcheats >= 0xD)
+            if (g_CheatMenuCount >= 0xD)
             {
-                i = totalunlockedcheats - 0xD;
-                if ((s32) cursor_h_pos >= 0xDC)
+                i = g_CheatMenuCount - 0xD;
+                if ((s32) g_FrontCursorX >= 0xDC)
                 {
                     for (; i >= 0; i--)
                     {
-                        if ((s32) cursor_v_pos >= (i * 0x14) + 0x35)
+                        if ((s32) g_FrontCursorY >= (i * 0x14) + 0x35)
                         {
-                            cheathighlighted = i + 0xC;
+                            g_CheatMenuCursor = i + 0xC;
                             break;
                         }
                     }
                 }
             }
 
-            if (cheathighlighted == 0)
+            if (g_CheatMenuCursor == 0)
             {
-                i = (totalunlockedcheats >= 0xD)
+                i = (g_CheatMenuCount >= 0xD)
                     ? 0xB
-                    : totalunlockedcheats - 1;
+                    : g_CheatMenuCount - 1;
 
                 for (; i >= 0; i--)
                 {
-                    if ((s32) cursor_v_pos >= (i * 0x14) + 0x35)
+                    if ((s32) g_FrontCursorY >= (i * 0x14) + 0x35)
                     {
-                        cheathighlighted = i;
+                        g_CheatMenuCursor = i;
                         break;
                     }
                 }
@@ -8245,39 +8245,39 @@ void interface_menu15_cheat(void)
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, A_BUTTON|Z_TRIG))
     {
-        if (tab_prev_highlight != 0)
+        if (g_FrontTabPrevHighlight != 0)
         {
-            tab_prev_selected = 1;
+            g_FrontTabPrevSelected = 1;
         }
         else
         {
-            MP_menu_selected_option = 1;
+            g_CheatMenuToggle = 1;
         }
 
         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(0, 0x4000U) != 0)
     {
-        tab_prev_selected = 1;
+        g_FrontTabPrevSelected = 1;
         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
-    disable_all_switches(walletinst[0]);
-    set_item_visibility_in_objinstance(walletinst[0], SW_TABS, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_BLANK, 1);
-    set_item_visibility_in_objinstance(walletinst[0], SW_CLASSIFIED, 1);
-    frontUpdateControlStickPosition();
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_BLANK, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CLASSIFIED, 1);
+    frontMoveCursor();
 
-    if (tab_prev_selected)
+    if (g_FrontTabPrevSelected)
     {
-        frontChangeMenu(MENU_MODE_SELECT, 0);
-        setCursorPOSforMode(gamemode);
+        frontSetMenu(MENU_MODE_SELECT, 0);
+        frontSetModeCursor(g_FrontGameMode);
         return;
     }
 
-    if (MP_menu_selected_option)
+    if (g_CheatMenuToggle)
     {
-    i = arrayUnlockedCheats[cheathighlighted];
+    i = g_CheatMenuList[g_CheatMenuCursor];
         g_CheatActivated[i] = 1 - g_CheatActivated[i];
     }
 }
@@ -8286,7 +8286,7 @@ void interface_menu15_cheat(void)
 
 // Address 0x7F017F5C NTSC
 // Address 0x7F017EB8 PAL
-Gfx * constructor_menu15_cheat(Gfx *DL)
+Gfx * frontCheatRender(Gfx *DL)
 {
     s32 padding;
     s32 strID;
@@ -8308,53 +8308,53 @@ Gfx * constructor_menu15_cheat(Gfx *DL)
     DL = frontSetupMenuBackground(DL);
     DL = microcode_constructor(DL);
 
-    for (var_fp = 0; var_fp < ((totalunlockedcheats >= 0xD) ? 0xC : totalunlockedcheats); var_fp++)
+    for (var_fp = 0; var_fp < ((g_CheatMenuCount >= 0xD) ? 0xC : g_CheatMenuCount); var_fp++)
     {
-        temp_v0 = cheatGetMenuTextPointer(arrayUnlockedCheats[var_fp]);
+        temp_v0 = cheatGetName(g_CheatMenuList[var_fp]);
         textMeasure(&sp80, &sp7C, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
 
         sp88 = 0x37;
         sp84 = (var_fp * 0x14) + 0x35;
-        if ((var_fp == cheathighlighted) && (frontCheckCursorOnPreviousTab() == 0))
+        if ((var_fp == g_CheatMenuCursor) && (frontCheckCursorOnPreviousTab() == 0))
         {
             DL = microcode_constructor_related_to_menus(DL, sp88 - 2, sp84 - 1, sp88 + sp7C + 5, sp84 + 0xE, 0x32);
         }
 
         DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-        strID  = (g_CheatActivated[arrayUnlockedCheats[var_fp]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
+        strID  = (g_CheatActivated[g_CheatMenuList[var_fp]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
         temp_v0 = langGet(strID);
         textMeasure(&sp80, &sp7C, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
 
         sp88 = 0xB3;
         sp84 = (var_fp * 0x14) + 0x35;
 
-        DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, (g_CheatActivated[arrayUnlockedCheats[var_fp]]) ? 0xA00000FF : 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, (g_CheatActivated[g_CheatMenuList[var_fp]]) ? 0xA00000FF : 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
-    if (totalunlockedcheats >= 0xd)
+    if (g_CheatMenuCount >= 0xd)
     {
-        for (var_fp = 0; var_fp < (totalunlockedcheats - 0xC); var_fp++)
+        for (var_fp = 0; var_fp < (g_CheatMenuCount - 0xC); var_fp++)
         {
-            temp_v0 = cheatGetMenuTextPointer(arrayUnlockedCheats[var_fp + 12]);
+            temp_v0 = cheatGetName(g_CheatMenuList[var_fp + 12]);
             textMeasure(&sp80, &sp7C, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
 
             sp88 = 0xDC;
             sp84 = (var_fp * 0x14) + 0x35;
-            if ((var_fp + 0xc == cheathighlighted) && (frontCheckCursorOnPreviousTab() == 0))
+            if ((var_fp + 0xc == g_CheatMenuCursor) && (frontCheckCursorOnPreviousTab() == 0))
             {
                 DL = microcode_constructor_related_to_menus(DL, sp88 - 2, sp84 - 1, sp88 + sp7C + 5, sp84 + 0xE, 0x32);
             }
 
             DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
 
-            strID  = (g_CheatActivated[arrayUnlockedCheats[var_fp + 12]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
+            strID  = (g_CheatActivated[g_CheatMenuList[var_fp + 12]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
             temp_v0 = langGet(strID);
             textMeasure(&sp80, &sp7C, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
 
             sp88 = 0x158;
             sp84 = (var_fp * 0x14) + 0x35;
-            strID = (g_CheatActivated[arrayUnlockedCheats[var_fp + 12]]) ? 0xA00000FF : 0xFF;
+            strID = (g_CheatActivated[g_CheatMenuList[var_fp + 12]]) ? 0xA00000FF : 0xFF;
 
             DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, strID, viGetX(), viGetY(), 0, 0);
         }
@@ -8371,22 +8371,22 @@ Gfx * constructor_menu15_cheat(Gfx *DL)
 //********************************************************************************************************
 //NO CONTROLLER SCREEN
 //********************************************************************************************************
-void init_menu16_nocontroller(void) {
+void frontNoControllerEnter(void) {
     return;
 }
 
 
-void update_menu16_nocontrollers(void) {
+void frontNoControllerLeave(void) {
     return;
 }
 
 
-void interface_menu16_nocontrollers(void) {
+void frontNoControllerTick(void) {
     return;
 }
 
 
-Gfx *constructor_menu16_nocontrollers(Gfx *DL)
+Gfx *frontNoControllerRender(Gfx *DL)
 {
     s32 y2;
     s32 x2;
@@ -8447,22 +8447,22 @@ Gfx *constructor_menu16_nocontrollers(Gfx *DL)
 }
 
 
-void do_extended_cast_display(bool doExtended)
+void frontSetFullCast(bool doExtended)
 {
-    full_actor_intro = doExtended;
+    g_CastFull = doExtended;
     if (doExtended)
     {
-        intro_character_index = 0;
+        g_CastIndex = 0;
         return;
     }
-    intro_character_index = 1;
+    g_CastIndex = 1;
 }
 
 
 //********************************************************************************************************
 //CAST SCREEN
 //********************************************************************************************************
-void init_menu18_displaycast(void)
+void frontCastEnter(void)
 {
     u8 *bufferPtr;
     s32 bufferRemaining;
@@ -8481,27 +8481,27 @@ void init_menu18_displaycast(void)
     struct intro_random_rifles rifles;
     struct intro_random_pistols pistols;
     
-    bufferPtr = ptr_logo_and_walletbond_DL;
+    bufferPtr = g_FrontModelBuffer;
     subOffset = zeroCoord;
     headHeader = NULL;
     flip = randomGetNext() & 1;
 
-    if ((full_actor_intro != 0) && (intro_character_index == 0))
+    if ((g_CastFull != 0) && (g_CastIndex == 0))
     {
         musicTrack1ApplySeqpVol(VOLUME_MAX);
         g_musicXTrack1Fade = 0;
         musicTrack1Play(M_INTRO);
     }
 
-    for (intro_animation_count = 0; intro_animation_table[intro_animation_count].animID >= 0; intro_animation_count++)
+    for (g_CastAnimCount = 0; g_CastAnims[g_CastAnimCount].animID >= 0; g_CastAnimCount++)
     {
         // empty
     }
 
-    randomly_selected_intro_animation = randomGetNext() % ((u32) intro_animation_count);
-    body = intro_char_table[intro_character_index].body;
-    head = intro_char_table[intro_character_index].head;
-    cameraPreset = intro_animation_table[randomly_selected_intro_animation].camera_preset;
+    g_CastAnim = randomGetNext() % ((u32) g_CastAnimCount);
+    body = g_CastChars[g_CastIndex].body;
+    head = g_CastChars[g_CastIndex].head;
+    cameraPreset = g_CastAnims[g_CastAnim].camera_preset;
     
     if (body == BODY_Special_Operations_Uniform)
     {
@@ -8569,19 +8569,19 @@ void init_menu18_displaycast(void)
         bufferPtr += allocSize;
     }
 
-    cast_model = bodyCreateModelNew(body, head, bodyHeader, headHeader, 0);
-    modelSetScale((Model *) cast_model, 0.1f);
+    g_CastModel = bodyCreateModelNew(body, head, bodyHeader, headHeader, 0);
+    modelSetScale((Model *) g_CastModel, 0.1f);
 
     if (cameraPreset != INTRO_WEAPON_TYPE_NONE)
     {
         if (cameraPreset == INTRO_WEAPON_TYPE_RIFLE)
         {
-            rifles = random_rifles_in_intro;
+            rifles = g_CastRifles;
             weaponProp = rifles.props[randomGetNext() % 6];
         }
         else
         {
-            pistols = random_pistols_in_intro;
+            pistols = g_CastPistols;
             weaponProp = pistols.props[randomGetNext() % 10];
         }
 
@@ -8619,28 +8619,28 @@ void init_menu18_displaycast(void)
         bufferPtr += allocSize;
 
         modelCalculateRwDataLen(weaponHeader);
-        cast_model_weapon = modelmgrInstantiateModel(weaponHeader);
-        modelSetScale(cast_model_weapon, 0.1f);
-        cast_model_weapon->attachedto = cast_model;
-        cast_model_weapon->attachedto_objinst = cast_model->obj->Switches[(flip != FALSE) ? (5) : (3)];
+        g_CastWeaponModel = modelmgrInstantiateModel(weaponHeader);
+        modelSetScale(g_CastWeaponModel, 0.1f);
+        g_CastWeaponModel->attachedto = g_CastModel;
+        g_CastWeaponModel->attachedto_objinst = g_CastModel->obj->Switches[(flip != FALSE) ? (5) : (3)];
     }
     else
     {
-        cast_model_weapon = NULL;
+        g_CastWeaponModel = NULL;
     }
 
-    modelSetAnimTranslationScale(cast_model, 0.1f);
-    modelSetRootPosition(cast_model, &subOffset);
-    modelSetRootRotY(cast_model, 0.0f);
+    modelSetAnimTranslationScale(g_CastModel, 0.1f);
+    modelSetRootPosition(g_CastModel, &subOffset);
+    modelSetRootRotY(g_CastModel, 0.0f);
 
 #if defined VERSION_EU
-    modelSetAnimPlaySpeed(cast_model, 0.6f, 0);
+    modelSetAnimPlaySpeed(g_CastModel, 0.6f, 0);
 #else
-    modelSetAnimPlaySpeed(cast_model, 0.5f, 0);
+    modelSetAnimPlaySpeed(g_CastModel, 0.5f, 0);
 #endif
-    modelSetAnimation(cast_model, animation_table_ptrs1[intro_animation_table[randomly_selected_intro_animation].animID], flip, intro_animation_table[randomly_selected_intro_animation].startframeoffset, intro_animation_table[randomly_selected_intro_animation].playback_speed, 0.0f);
+    modelSetAnimation(g_CastModel, animation_table_ptrs1[g_CastAnims[g_CastAnim].animID], flip, g_CastAnims[g_CastAnim].startframeoffset, g_CastAnims[g_CastAnim].playback_speed, 0.0f);
 
-    g_MenuTimer = 0;
+    g_FrontTimer = 0;
     cast_camera_dist_start = ((((f32) ((u32) randomGetNext())) * (1.0f / U32_MAX)) * 80.0f) + 70.0f;
     cast_camera_dist_end = ((((f32) ((u32) randomGetNext())) * (1.0f / U32_MAX)) * 80.0f) + 70.0f;
     cast_camera_angle_start = ((((f32) ((u32) randomGetNext())) * (1.0f / U32_MAX)) - 0.5f) * M_TAU_F;
@@ -8657,12 +8657,12 @@ void init_menu18_displaycast(void)
 }
 
 
-void update_menu18_displaycast(void) {
-    if (cast_model != 0) {
-        modelFreeAnimSlot(cast_model);
+void frontCastLeave(void) {
+    if (g_CastModel != 0) {
+        modelFreeAnimSlot(g_CastModel);
     }
-    if (cast_model_weapon != 0) {
-        modelFreeSlot(cast_model_weapon);
+    if (g_CastWeaponModel != 0) {
+        modelFreeSlot(g_CastWeaponModel);
         return;
     }
 }
@@ -8670,7 +8670,7 @@ void update_menu18_displaycast(void) {
 
 // Address 0x7F018F60 NTSC
 
-void interface_menu18_displaycast(void)
+void frontCastTick(void)
 {
     s32 f;
 
@@ -8684,7 +8684,7 @@ void interface_menu18_displaycast(void)
     playerSetViewportPos(0, 0);
     viSetViewPosition(0, 0);
 
-    g_MenuTimer += g_ClockTimer;
+    g_FrontTimer += g_ClockTimer;
 
 #if defined(REFRESH_PAL)
 #define INTERFACE_MENU18_TIMER 151
@@ -8692,75 +8692,75 @@ void interface_menu18_displaycast(void)
 #define INTERFACE_MENU18_TIMER 181
 #endif
 
-    if (g_MenuTimer >= INTERFACE_MENU18_TIMER)
+    if (g_FrontTimer >= INTERFACE_MENU18_TIMER)
     {
 #undef INTERFACE_MENU18_TIMER
-        intro_character_index++;
+        g_CastIndex++;
 
         while (1)
         {
-            if (intro_char_table[intro_character_index].flag && full_actor_intro == 0 && 1)
+            if (g_CastChars[g_CastIndex].flag && g_CastFull == 0 && 1)
             {
-                intro_character_index++;
+                g_CastIndex++;
                 continue;
             }
 
-            if ((intro_char_table[intro_character_index].body == BODY_Moonraker_Elite_1_Male) && (check_aztec_completed_any_folder_secret_00()) == 0)
+            if ((g_CastChars[g_CastIndex].body == BODY_Moonraker_Elite_1_Male) && (check_aztec_completed_any_folder_secret_00()) == 0)
             {
-                intro_character_index++;
+                g_CastIndex++;
                 continue;
             }
 
-            if ((intro_char_table[intro_character_index].body == BODY_Moonraker_Elite_2_Female) && (check_aztec_completed_any_folder_secret_00() == 0))
+            if ((g_CastChars[g_CastIndex].body == BODY_Moonraker_Elite_2_Female) && (check_aztec_completed_any_folder_secret_00() == 0))
             {
-                intro_character_index++;
+                g_CastIndex++;
                 continue;
             }
 
-            if ((intro_char_table[intro_character_index].body == BODY_Mayday) && (check_aztec_completed_any_folder_secret_00() == 0 && (randomGetNext() % 0x2710U)))
+            if ((g_CastChars[g_CastIndex].body == BODY_Mayday) && (check_aztec_completed_any_folder_secret_00() == 0 && (randomGetNext() % 0x2710U)))
             {
-                intro_character_index++;
+                g_CastIndex++;
                 continue;
             }
 
-            if ((intro_char_table[intro_character_index].body == BODY_Jaws) && (check_aztec_completed_any_folder_secret_00() == 0 && (randomGetNext() % 0x2710U)))
+            if ((g_CastChars[g_CastIndex].body == BODY_Jaws) && (check_aztec_completed_any_folder_secret_00() == 0 && (randomGetNext() % 0x2710U)))
             {
-                intro_character_index++;
+                g_CastIndex++;
                 continue;
             }
 
-            if ((intro_char_table[intro_character_index].body == BODY_Oddjob) && (fileIsEgyptCompletedOn00AnyFolder() == 0 && (randomGetNext() % 0x2710U)))
+            if ((g_CastChars[g_CastIndex].body == BODY_Oddjob) && (fileIsEgyptCompletedOn00AnyFolder() == 0 && (randomGetNext() % 0x2710U)))
             {
-                intro_character_index++;
+                g_CastIndex++;
                 continue;
             }
 
-            if ((intro_char_table[intro_character_index].body == BODY_Baron_Samedi) && (fileIsEgyptCompletedOn00AnyFolder() == 0 && (randomGetNext() % 0x2710U) ))
+            if ((g_CastChars[g_CastIndex].body == BODY_Baron_Samedi) && (fileIsEgyptCompletedOn00AnyFolder() == 0 && (randomGetNext() % 0x2710U) ))
             {
-                intro_character_index++;
+                g_CastIndex++;
                 continue;
             }
 
             break;
         }
 
-        f = intro_character_index;
+        f = g_CastIndex;
 
-        if (intro_char_table[f].body < 0)
+        if (g_CastChars[f].body < 0)
         {
-            intro_character_index = 0;
+            g_CastIndex = 0;
             f = 0;
         }
 
-        if (intro_character_index > 0)
+        if (g_CastIndex > 0)
         {
-            frontChangeMenu(MENU_DISPLAY_CAST, 1);
+            frontSetMenu(MENU_DISPLAY_CAST, 1);
         }
-        else if (full_actor_intro != 0)
+        else if (g_CastFull != 0)
         {
-            frontChangeMenu(MENU_MISSION_SELECT, 1);
-            set_cursor_to_stage_solo(SP_LEVEL_CRADLE);
-            full_actor_intro = 0;
+            frontSetMenu(MENU_MISSION_SELECT, 1);
+            frontSetMissionCursor(SP_LEVEL_CRADLE);
+            g_CastFull = 0;
         }
         else
         {
@@ -8768,14 +8768,14 @@ void interface_menu18_displaycast(void)
         }
     }
 
-    else if ((joyGetButtonsPressedThisFrame(PLAYER_1, 0xFFFF) != 0) && (!full_actor_intro))
+    else if ((joyGetButtonsPressedThisFrame(PLAYER_1, 0xFFFF) != 0) && (!g_CastFull))
     {
-        frontChangeMenu(MENU_FILE_SELECT, TRUE);
+        frontSetMenu(MENU_FILE_SELECT, TRUE);
     }
 }
 
 
-Gfx *constructor_menu18_displaycast(Gfx *DL)
+Gfx *frontCastRender(Gfx *DL)
 {
     coord3d campos = cast_camera_pos;
     coord3d tarpos = cast_camera_target;
@@ -8791,7 +8791,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     s32 textwidth;
     s32 textheight;
     s32 i;
-    f32 menufrac = (f32)g_MenuTimer / CAST_INTRO_LEN_F;
+    f32 menufrac = (f32)g_FrontTimer / CAST_INTRO_LEN_F;
     f32 fade;
     char *text;
     coord3d vec = cast_camera_offset;
@@ -8801,17 +8801,17 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     Mtx lookatmtx;
     s32 padDC;
  
-    if (g_MenuTimer < 0 || g_MenuTimer >= CAST_INTRO_LEN)
+    if (g_FrontTimer < 0 || g_FrontTimer >= CAST_INTRO_LEN)
     {
         fade = 0.0f;
     }
-    else if (g_MenuTimer < CAST_INTRO_FADE)
+    else if (g_FrontTimer < CAST_INTRO_FADE)
     {
-        fade = (f32)g_MenuTimer / CAST_INTRO_FADE_F;
+        fade = (f32)g_FrontTimer / CAST_INTRO_FADE_F;
     }
-    else if (g_MenuTimer >= CAST_INTRO_FADEOUT)
+    else if (g_FrontTimer >= CAST_INTRO_FADEOUT)
     {
-        fade = (f32)(CAST_INTRO_LEN - g_MenuTimer) / CAST_INTRO_FADE_F;
+        fade = (f32)(CAST_INTRO_LEN - g_FrontTimer) / CAST_INTRO_FADE_F;
     }
     else
     {
@@ -8841,34 +8841,34 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     guLookAtReflect(&lookatmtx, (LookAt *)light, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
  
     gSPNumLights(DL++, 1); \
-    gSPLight(DL++, &gelogolight.l[0], 1); \
-    gSPLight(DL++, &gelogolight, 2);
+    gSPLight(DL++, &g_FrontLogoLight.l[0], 1); \
+    gSPLight(DL++, &g_FrontLogoLight, 2);
  
     gSPLookAt(DL++, light);
  
-    modelTickAnim(cast_model, g_ClockTimer, 1);
+    modelTickAnim(g_CastModel, g_ClockTimer, 1);
     modelSetLodDisabled(1);
     modelSetShadowAlpha(0);
-    modelCalcPosition(cast_model);
+    modelCalcPosition(g_CastModel);
  
-    if (cast_model_weapon != NULL && cast_model_weapon->obj->Switches[0] != NULL)
+    if (g_CastWeaponModel != NULL && g_CastWeaponModel->obj->Switches[0] != NULL)
     {
-        modelGetNodeRwData( cast_model_weapon, cast_model_weapon->obj->Switches[0])->Gunfire.visible = 0;
+        modelGetNodeRwData( g_CastWeaponModel, g_CastWeaponModel->obj->Switches[0])->Gunfire.visible = 0;
     }
  
-    if (cast_model_weapon != NULL && cast_model_weapon->obj->Switches[2] != NULL)
+    if (g_CastWeaponModel != NULL && g_CastWeaponModel->obj->Switches[2] != NULL)
     {
-        modelGetNodeRwData(cast_model_weapon, cast_model_weapon->obj->Switches[2])->Switch.visible = 0;
+        modelGetNodeRwData(g_CastWeaponModel, g_CastWeaponModel->obj->Switches[2])->Switch.visible = 0;
     }
  
-    renderdata.mtxlist = (Mtxf *)dynAllocate(cast_model->obj->numMatrices << 6);
+    renderdata.mtxlist = (Mtxf *)dynAllocate(g_CastModel->obj->numMatrices << 6);
  
     mtx4LoadIdentity(&mtx);
  
     renderdata.basemtx = &mtx;
  
-    modelCalcMatrices(&renderdata, cast_model);
-    modelGetRootPosition(cast_model, &suboffset);
+    modelCalcMatrices(&renderdata, g_CastModel);
+    modelGetRootPosition(g_CastModel, &suboffset);
  
     if (cast_camera_reset)
     {
@@ -8901,7 +8901,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     cast_rootpos_smoothed.y += cast_rootvel_smoothed.y * g_GlobalTimerDelta;
     cast_rootpos_smoothed.z += cast_rootvel_smoothed.z * g_GlobalTimerDelta;
  
-    mtx4TransformVecInPlace(cast_model->render_pos, &vec);
+    mtx4TransformVecInPlace(g_CastModel->render_pos, &vec);
  
     vec.f[0] -= cast_rootpos_smoothed.x;
     vec.f[1] -= cast_rootpos_smoothed.y;
@@ -8942,15 +8942,15 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     mtx4LoadLookAt(&mtx, campos.x, campos.y, campos.z, tarpos.x, tarpos.y, tarpos.z, up.x, up.y, up.z);
  
     renderdata.basemtx = &mtx;
-    renderdata.mtxlist = (Mtxf *)dynAllocate(cast_model->obj->numMatrices << 6);
+    renderdata.mtxlist = (Mtxf *)dynAllocate(g_CastModel->obj->numMatrices << 6);
  
-    modelCalcMatrices(&renderdata, cast_model);
+    modelCalcMatrices(&renderdata, g_CastModel);
  
-    if (cast_model_weapon != NULL)
+    if (g_CastWeaponModel != NULL)
     {
-        renderdata.basemtx = modelFindNodeMtx(cast_model, cast_model_weapon->attachedto_objinst, 0);
+        renderdata.basemtx = modelFindNodeMtx(g_CastModel, g_CastWeaponModel->attachedto_objinst, 0);
  
-        if (cast_model_weapon->attachedto_objinst == cast_model->obj->Switches[5])
+        if (g_CastWeaponModel->attachedto_objinst == g_CastModel->obj->Switches[5])
         {
             mtx4LoadZRotation(M_PI_F, &mtx2);
             mtx4MultInPlace(renderdata.basemtx, &mtx2);
@@ -8958,9 +8958,9 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
             renderdata.basemtx = &mtx2;
         }
  
-        renderdata.mtxlist = (Mtxf *)dynAllocate(cast_model_weapon->obj->numMatrices << 6);
+        renderdata.mtxlist = (Mtxf *)dynAllocate(g_CastWeaponModel->obj->numMatrices << 6);
  
-        modelCalcMatricesNoAnim(&renderdata, cast_model_weapon);
+        modelCalcMatricesNoAnim(&renderdata, g_CastWeaponModel);
     }
  
     renderdata.PropType = PROP_TYPE_EXPLOSION;
@@ -8968,30 +8968,30 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
     renderdata.gdl = DL;
     renderdata.flags = 3;
  
-    modelRender(&renderdata, cast_model);
+    modelRender(&renderdata, g_CastModel);
  
-    if (cast_model_weapon != NULL)
+    if (g_CastWeaponModel != NULL)
     {
-        modelRender(&renderdata, cast_model_weapon);
+        modelRender(&renderdata, g_CastWeaponModel);
     }
  
     DL = renderdata.gdl;
  
     modelSetLodDisabled(0);
  
-    for (i = 0; i < cast_model->obj->numMatrices; i++)
+    for (i = 0; i < g_CastModel->obj->numMatrices; i++)
     {
-        mtx4Copy(&((s8 *)cast_model->render_pos)[i * sizeof(Mtxf)], &mtx2);
-        mtxF2L(&mtx2, &((Mtxf *)cast_model->render_pos)[i]);
+        mtx4Copy(&((s8 *)g_CastModel->render_pos)[i * sizeof(Mtxf)], &mtx2);
+        mtxF2L(&mtx2, &((Mtxf *)g_CastModel->render_pos)[i]);
     }
  
-    if (cast_model_weapon != NULL)
+    if (g_CastWeaponModel != NULL)
     {
-        for (i = 0; i < cast_model_weapon->obj->numMatrices; i++)
+        for (i = 0; i < g_CastWeaponModel->obj->numMatrices; i++)
         {
-            mtx4Copy(&((s8 *)cast_model_weapon->render_pos)[i * sizeof(Mtxf)], &mtx2);
+            mtx4Copy(&((s8 *)g_CastWeaponModel->render_pos)[i * sizeof(Mtxf)], &mtx2);
  
-            mtxF2L(&mtx2, &((Mtxf *)cast_model_weapon->render_pos)[i]);
+            mtxF2L(&mtx2, &((Mtxf *)g_CastWeaponModel->render_pos)[i]);
         }
     }
  
@@ -9016,9 +9016,9 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
  
     DL = microcode_constructor(DL);
  
-    if (full_actor_intro == FALSE)
+    if (g_CastFull == FALSE)
     {
-        text = langGet( (u16)intro_char_table[intro_character_index].text1);
+        text = langGet( (u16)g_CastChars[g_CastIndex].text1);
  
         textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
  
@@ -9030,7 +9030,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
         DL = textRender(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, (u32)(255.0f * fade) | 0xFFFFFF00, viGetX(), viGetY(), 0, 0);
     }
  
-    text = langGet((u16)intro_char_table[intro_character_index].text2);
+    text = langGet((u16)g_CastChars[g_CastIndex].text2);
  
     textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
  
@@ -9041,7 +9041,7 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
  
     DL = textRender(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, (u32)(255.0f * fade) | 0xFFFFFF00, viGetX(), viGetY(), 0, 0);
  
-    text = langGet((u16)intro_char_table[intro_character_index].text3);
+    text = langGet((u16)g_CastChars[g_CastIndex].text3);
  
     textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
  
@@ -9054,47 +9054,47 @@ Gfx *constructor_menu18_displaycast(Gfx *DL)
 }
 
 
-void frontChangeMenu(MENU menu, s32 reload)
+void frontSetMenu(MENU menu, s32 reload)
 {
     if (menu == MENU_RUN_STAGE)
     {
-        is_emulating_spectrum = TRUE;
+        g_FrontLowResPending = TRUE;
     }
 
     if (reload)
     {
-        menu_update = menu;
+        g_FrontNextMenu = menu;
         return;
     }
 
-    maybe_prev_menu = menu;
+    g_FrontEnterMenu = menu;
 }
 
 
-MENU get_currentmenu(void)
+MENU frontGetMenu(void)
 {
-  return current_menu;
+  return g_FrontMenu;
 }
 
 
-void menu_init(void)
+void frontTick(void)
 {
     s32 var_v0;
 
-    if (current_menu == MENU_SWITCH_SCREENS)
+    if (g_FrontMenu == MENU_SWITCH_SCREENS)
     {
-        if (spectrum_related_flag != 0)
+        if (g_FrontHiResPending != 0)
         {
             if (viGetFrameBuf2() == (cfb_16[1]))
             {
-                screen_size = SCREEN_SIZE_440x330;
-                spectrum_related_flag = 0;
+                g_FrontScreenSize = SCREEN_SIZE_440x330;
+                g_FrontHiResPending = 0;
             }
         }
-        else if ((is_emulating_spectrum != 0) && (viGetFrameBuf2() == cfb_16[0]))
+        else if ((g_FrontLowResPending != 0) && (viGetFrameBuf2() == cfb_16[0]))
         {
-            screen_size = SCREEN_SIZE_320x240;
-            is_emulating_spectrum = 0;
+            g_FrontScreenSize = SCREEN_SIZE_320x240;
+            g_FrontLowResPending = 0;
         }
     }
 
@@ -9106,11 +9106,11 @@ void menu_init(void)
 #define MENU_INIT_ASPECT_320 ASPECT_RATIO
 #endif
 
-    if (screen_size != SCREEN_SIZE_320x240)
+    if (g_FrontScreenSize != SCREEN_SIZE_320x240)
     {
         if (viGetFrameBuf2() == (cfb_16[1]))
         {
-            viSetFrameBuf2(ptr_menu_videobuffer);
+            viSetFrameBuf2(g_FrontFrameBuffer);
         }
 
         viSetAspect(MENU_INIT_ASPECT_440);
@@ -9136,206 +9136,206 @@ void menu_init(void)
 #undef MENU_INIT_ASPECT_320
 
     if (
-        ((menu_update > MENU_INVALID) || (maybe_prev_menu > MENU_INVALID))
-        && (current_menu != MENU_SWITCH_SCREENS))
+        ((g_FrontNextMenu > MENU_INVALID) || (g_FrontEnterMenu > MENU_INVALID))
+        && (g_FrontMenu != MENU_SWITCH_SCREENS))
     {
-        switch(current_menu) {
-            case MENU_LEGAL_SCREEN:           update_menu00_legalscreen();          break;
-            case MENU_NINTENDO_LOGO:          update_menu01_nintendo();             break;
-            case MENU_RAREWARE_LOGO:          update_menu02_rareware();             break;
-            case MENU_EYE_INTRO:              update_menu_03_gunbarrel();                 break;
-            case MENU_GOLDENEYE_LOGO:         update_menu04_goldeneye();            break;
-            case MENU_FILE_SELECT:            update_menu05_filesel();              break;
-            case MENU_MODE_SELECT:            update_menu06_modesel();              break;
-            case MENU_MISSION_SELECT:         update_menu07_missionsel();           break;
-            case MENU_DIFFICULTY:             update_menu08_difficulty();           break;
-            case MENU_007_OPTIONS:            update_menu09_007options();           break;
-            case MENU_BRIEFING:               update_menu0A_briefing();             break;
-            case MENU_MISSION_FAILED:         update_menu0C_missionfailed();        break;
-            case MENU_MISSION_COMPLETE:       update_menu0D_missioncomplete();      break;
-            case MENU_MP_OPTIONS:             update_menu0E_mpoptions();            break;
-            case MENU_MP_SCENARIO_SELECT:     update_menu13_mpscenario();           break;
-            case MENU_MP_CHAR_SELECT:         update_menu0F_mpcharsel();            break;
-            case MENU_MP_TEAMS:               update_menu14_mpteams();              break;
-            case MENU_MP_HANDICAP:            update_menu10_mphandicap();           break;
-            case MENU_MP_CONTROL_STYLE:       update_menu11_mpcontrols();           break;
-            case MENU_MP_STAGE_SELECT:        update_menu12_mpstage();              break;
-            case MENU_CHEAT:                  update_menu15_cheat();                break;
-            case MENU_NO_CONTROLLERS:         update_menu16_nocontrollers();        break;
-            case MENU_DISPLAY_CAST:           update_menu18_displaycast();          break;
-            case MENU_COOP_SETUP:             update_menu1A_coopsetup();            break;
+        switch(g_FrontMenu) {
+            case MENU_LEGAL_SCREEN:           frontLegalLeave();          break;
+            case MENU_NINTENDO_LOGO:          frontNintendoLeave();             break;
+            case MENU_RAREWARE_LOGO:          frontRareLeave();             break;
+            case MENU_EYE_INTRO:              frontGunbarrelLeave();                 break;
+            case MENU_GOLDENEYE_LOGO:         frontLogoLeave();            break;
+            case MENU_FILE_SELECT:            frontFileSelectLeave();              break;
+            case MENU_MODE_SELECT:            frontModeSelectLeave();              break;
+            case MENU_MISSION_SELECT:         frontMissionSelectLeave();           break;
+            case MENU_DIFFICULTY:             frontDifficultyLeave();           break;
+            case MENU_007_OPTIONS:            frontOptions007Leave();           break;
+            case MENU_BRIEFING:               frontBriefingLeave();             break;
+            case MENU_MISSION_FAILED:         frontDebriefLeave();        break;
+            case MENU_MISSION_COMPLETE:       frontStatsLeave();      break;
+            case MENU_MP_OPTIONS:             frontMpOptionsLeave();            break;
+            case MENU_MP_SCENARIO_SELECT:     frontMpScenarioLeave();           break;
+            case MENU_MP_CHAR_SELECT:         frontMpCharLeave();            break;
+            case MENU_MP_TEAMS:               frontMpTeamsLeave();              break;
+            case MENU_MP_HANDICAP:            frontMpHandicapLeave();           break;
+            case MENU_MP_CONTROL_STYLE:       frontMpControlsLeave();           break;
+            case MENU_MP_STAGE_SELECT:        frontMpStageLeave();              break;
+            case MENU_CHEAT:                  frontCheatLeave();                break;
+            case MENU_NO_CONTROLLERS:         frontNoControllerLeave();        break;
+            case MENU_DISPLAY_CAST:           frontCastLeave();          break;
+            case MENU_COOP_SETUP:             frontCoopSetupLeave();            break;
         }
 
-        if (menu_update > MENU_INVALID)
+        if (g_FrontNextMenu > MENU_INVALID)
         {
-            current_menu = MENU_SWITCH_SCREENS;
-            reset_menutimer();
+            g_FrontMenu = MENU_SWITCH_SCREENS;
+            frontResetTimer();
         }
     }
 
-    if (maybe_prev_menu > MENU_INVALID)
+    if (g_FrontEnterMenu > MENU_INVALID)
     {
-        current_menu = maybe_prev_menu;
-        maybe_prev_menu = MENU_INVALID;
+        g_FrontMenu = g_FrontEnterMenu;
+        g_FrontEnterMenu = MENU_INVALID;
 
-        switch(current_menu) {
-            case MENU_LEGAL_SCREEN:           init_menu00_legalscreen();            break;
-            case MENU_NINTENDO_LOGO:          init_menu01_nintendo();               break;
-            case MENU_RAREWARE_LOGO:          init_menu02_rarelogo();               break;
-            case MENU_EYE_INTRO:              init_menu03_gunbarrel();               break;
-            case MENU_GOLDENEYE_LOGO:         init_menu04_goldeneyelogo();          break;
-            case MENU_FILE_SELECT:            init_menu05_fileselect();             break;
-            case MENU_MODE_SELECT:            init_menu06_modeselect();             break;
-            case MENU_MISSION_SELECT:         init_menu07_missionselect();          break;
-            case MENU_DIFFICULTY:             init_menu08_difficultyselect();       break;
-            case MENU_007_OPTIONS:            init_menu09_007difficultyselect();    break;
-            case MENU_BRIEFING:               init_menu0A_briefing();               break;
-            case MENU_RUN_STAGE:              init_menu0B_runstage();               break;
-            case MENU_MISSION_FAILED:         init_menu0C_missionfailed();          break;
-            case MENU_MISSION_COMPLETE:       init_menu0D_missioncomplete();        break;
-            case MENU_MP_OPTIONS:             init_menu0E_mpoptions();              break;
-            case MENU_MP_SCENARIO_SELECT:     init_menu13_mpscenariosel();          break;
-            case MENU_MP_CHAR_SELECT:         init_menu0f_mpcharsel();              break;
-            case MENU_MP_TEAMS:               init_menu14_mpteamsel();              break;
-            case MENU_MP_HANDICAP:            init_menu10_mphandicap();             break;
-            case MENU_MP_CONTROL_STYLE:       init_menu11_mpcontrol();              break;
-            case MENU_MP_STAGE_SELECT:        init_menu12_mpstage();                break;
-            case MENU_CHEAT:                  init_menu15_cheat();                  break;
-            case MENU_NO_CONTROLLERS:         init_menu16_nocontroller();           break;
-            case MENU_DISPLAY_CAST:           init_menu18_displaycast();            break;
-            case MENU_COOP_SETUP:             init_menu1A_coopsetup();              break;
+        switch(g_FrontMenu) {
+            case MENU_LEGAL_SCREEN:           frontLegalEnter();            break;
+            case MENU_NINTENDO_LOGO:          frontNintendoEnter();               break;
+            case MENU_RAREWARE_LOGO:          frontRareEnter();               break;
+            case MENU_EYE_INTRO:              frontGunbarrelEnter();               break;
+            case MENU_GOLDENEYE_LOGO:         frontLogoEnter();          break;
+            case MENU_FILE_SELECT:            frontFileSelectEnter();             break;
+            case MENU_MODE_SELECT:            frontModeSelectEnter();             break;
+            case MENU_MISSION_SELECT:         frontMissionSelectEnter();          break;
+            case MENU_DIFFICULTY:             frontDifficultyEnter();       break;
+            case MENU_007_OPTIONS:            frontOptions007Enter();    break;
+            case MENU_BRIEFING:               frontBriefingEnter();               break;
+            case MENU_RUN_STAGE:              frontRunStageEnter();               break;
+            case MENU_MISSION_FAILED:         frontDebriefEnter();          break;
+            case MENU_MISSION_COMPLETE:       frontStatsEnter();        break;
+            case MENU_MP_OPTIONS:             frontMpOptionsEnter();              break;
+            case MENU_MP_SCENARIO_SELECT:     frontMpScenarioEnter();          break;
+            case MENU_MP_CHAR_SELECT:         frontMpCharEnter();              break;
+            case MENU_MP_TEAMS:               frontMpTeamsEnter();              break;
+            case MENU_MP_HANDICAP:            frontMpHandicapEnter();             break;
+            case MENU_MP_CONTROL_STYLE:       frontMpControlsEnter();              break;
+            case MENU_MP_STAGE_SELECT:        frontMpStageEnter();                break;
+            case MENU_CHEAT:                  frontCheatEnter();                  break;
+            case MENU_NO_CONTROLLERS:         frontNoControllerEnter();           break;
+            case MENU_DISPLAY_CAST:           frontCastEnter();            break;
+            case MENU_COOP_SETUP:             frontCoopSetupEnter();              break;
         }
     }
 
-    switch(current_menu) {
-        case MENU_LEGAL_SCREEN:           interface_menu00_legalscreen();           break;
-        case MENU_SWITCH_SCREENS:         interface_menu17_switchscreens();         break;
-        case MENU_NINTENDO_LOGO:          interface_menu01_nintendo();              break;
-        case MENU_RAREWARE_LOGO:          interface_menu02_rareware();              break;
-        case MENU_EYE_INTRO:              interface_menu03_eye();                   break;
-        case MENU_GOLDENEYE_LOGO:         interface_menu04_goldeneyelogo();         break;
-        case MENU_FILE_SELECT:            interface_menu05_fileselect();            break;
-        case MENU_MODE_SELECT:            interface_menu06_modesel();               break;
-        case MENU_MISSION_SELECT:         interface_menu07_missionsel();            break;
-        case MENU_DIFFICULTY:             interface_menu08_difficulty();            break;
-        case MENU_007_OPTIONS:            interface_menu09_007options();            break;
-        case MENU_BRIEFING:               interface_menu0A_briefing();              break;
-        case MENU_MISSION_FAILED:         interface_menu0C_missionfailed();         break;
-        case MENU_MISSION_COMPLETE:       interface_menu0D_missioncomplete();       break;
-        case MENU_MP_OPTIONS:             interface_menu0E_mpoptions();             break;
-        case MENU_MP_SCENARIO_SELECT:     interface_menu13_mpscenario();            break;
-        case MENU_MP_CHAR_SELECT:         interface_menu0F_mpcharsel();             break;
-        case MENU_MP_TEAMS:               interface_menu14_mpteams();               break;
-        case MENU_MP_HANDICAP:            interface_menu10_mphandicap();            break;
-        case MENU_MP_CONTROL_STYLE:       interface_menu11_mpcontrols();            break;
-        case MENU_MP_STAGE_SELECT:        interface_menu12_mpstage();               break;
-        case MENU_CHEAT:                  interface_menu15_cheat();                 break;
-        case MENU_NO_CONTROLLERS:         interface_menu16_nocontrollers();         break;
-        case MENU_DISPLAY_CAST:           interface_menu18_displaycast();           break;
-        case MENU_COOP_SETUP:             interface_menu1A_coopsetup();             break;
+    switch(g_FrontMenu) {
+        case MENU_LEGAL_SCREEN:           frontLegalTick();           break;
+        case MENU_SWITCH_SCREENS:         frontBlankTick();         break;
+        case MENU_NINTENDO_LOGO:          frontNintendoTick();              break;
+        case MENU_RAREWARE_LOGO:          frontRareTick();              break;
+        case MENU_EYE_INTRO:              frontGunbarrelTick();                   break;
+        case MENU_GOLDENEYE_LOGO:         frontLogoTick();         break;
+        case MENU_FILE_SELECT:            frontFileSelectTick();            break;
+        case MENU_MODE_SELECT:            frontModeSelectTick();               break;
+        case MENU_MISSION_SELECT:         frontMissionSelectTick();            break;
+        case MENU_DIFFICULTY:             frontDifficultyTick();            break;
+        case MENU_007_OPTIONS:            frontOptions007Tick();            break;
+        case MENU_BRIEFING:               frontBriefingTick();              break;
+        case MENU_MISSION_FAILED:         frontDebriefTick();         break;
+        case MENU_MISSION_COMPLETE:       frontStatsTick();       break;
+        case MENU_MP_OPTIONS:             frontMpOptionsTick();             break;
+        case MENU_MP_SCENARIO_SELECT:     frontMpScenarioTick();            break;
+        case MENU_MP_CHAR_SELECT:         frontMpCharTick();             break;
+        case MENU_MP_TEAMS:               frontMpTeamsTick();               break;
+        case MENU_MP_HANDICAP:            frontMpHandicapTick();            break;
+        case MENU_MP_CONTROL_STYLE:       frontMpControlsTick();            break;
+        case MENU_MP_STAGE_SELECT:        frontMpStageTick();               break;
+        case MENU_CHEAT:                  frontCheatTick();                 break;
+        case MENU_NO_CONTROLLERS:         frontNoControllerTick();         break;
+        case MENU_DISPLAY_CAST:           frontCastTick();           break;
+        case MENU_COOP_SETUP:             frontCoopSetupTick();             break;
         case MENU_RUN_STAGE:
-            if (interface_menu0B_runstage())
+            if (frontRunStageTick())
             {
-                frontChangeMenu(MENU_LEGAL_SCREEN, 1);
+                frontSetMenu(MENU_LEGAL_SCREEN, 1);
             }
-            else if (gamemode == GAMEMODE_MULTI)
+            else if (g_FrontGameMode == GAMEMODE_MULTI)
             {
-                frontChangeMenu(MENU_MP_OPTIONS, 1);
+                frontSetMenu(MENU_MP_OPTIONS, 1);
             }
             /**
              * The intro roster only shows main characters. The credits roster shows minor characters like guards.
              */
-            else if (selected_stage == LEVELID_CUBA)
+            else if (g_FrontStage == LEVELID_CUBA)
             {
-                do_extended_cast_display(TRUE);
-                frontChangeMenu(MENU_DISPLAY_CAST, 1);
+                frontSetFullCast(TRUE);
+                frontSetMenu(MENU_DISPLAY_CAST, 1);
             }
             else
             {
-                frontChangeMenu(MENU_MISSION_FAILED, 1);
+                frontSetMenu(MENU_MISSION_FAILED, 1);
             }
     }
 
 }
 
 
-Gfx * menu_jump_constructor_handler(Gfx *DL)
+Gfx * frontRender(Gfx *DL)
 {
-    switch(current_menu) {
+    switch(g_FrontMenu) {
         case MENU_LEGAL_SCREEN:
-            DL = constructor_menu00_legalscreen(DL);
+            DL = frontLegalRender(DL);
             break;
         case MENU_SWITCH_SCREENS:
-            DL = constructor_menu17_switchscreens(DL);
+            DL = frontBlankRender(DL);
             break;
         case MENU_NINTENDO_LOGO:
-            DL = constructor_menu01_nintendo(DL);
+            DL = frontNintendoRender(DL);
             break;
         case MENU_RAREWARE_LOGO:
-            DL = constructor_menu02_rareware(DL);
+            DL = frontRareRender(DL);
             break;
         case MENU_EYE_INTRO:
-            DL = constructor_menu03_eye(DL);
+            DL = frontGunbarrelRender(DL);
             break;
         case MENU_GOLDENEYE_LOGO:
-            DL = constructor_menu04_goldeneyelogo(DL);
+            DL = frontLogoRender(DL);
             break;
         case MENU_FILE_SELECT:
-            DL = constructor_menu05_fileselect(DL);
+            DL = frontFileSelectRender(DL);
             break;
         case MENU_MODE_SELECT:
-            DL = constructor_menu06_modesel(DL);
+            DL = frontModeSelectRender(DL);
             break;
         case MENU_MISSION_SELECT:
-            DL = constructor_menu07_missionsel(DL);
+            DL = frontMissionSelectRender(DL);
             break;
         case MENU_DIFFICULTY:
-            DL = constructor_menu08_difficulty(DL);
+            DL = frontDifficultyRender(DL);
             break;
         case MENU_007_OPTIONS:
-            DL = constructor_menu09_007options(DL);
+            DL = frontOptions007Render(DL);
             break;
         case MENU_BRIEFING:
-            DL = constructor_menu0A_briefing(DL);
+            DL = frontBriefingRender(DL);
             break;
         case MENU_MISSION_FAILED:
-            DL = constructor_menu0C_missionfailed(DL);
+            DL = frontDebriefRender(DL);
             break;
         case MENU_MISSION_COMPLETE:
-            DL = constructor_menu0D_missioncomplete(DL);
+            DL = frontStatsRender(DL);
             break;
         case MENU_MP_OPTIONS:
-            DL = constructor_menu0E_mpoptions(DL);
+            DL = frontMpOptionsRender(DL);
             break;
         case MENU_MP_SCENARIO_SELECT:
-            DL = constructor_menu13_mpscenario(DL);
+            DL = frontMpScenarioRender(DL);
             break;
         case MENU_MP_CHAR_SELECT:
-            DL = constructor_menu0F_mpcharsel(DL);
+            DL = frontMpCharRender(DL);
             break;
         case MENU_MP_TEAMS:
-            DL = constructor_menu14_mpteams(DL);
+            DL = frontMpTeamsRender(DL);
             break;
         case MENU_MP_HANDICAP:
-            DL = constructor_menu10_mphandicap(DL);
+            DL = frontMpHandicapRender(DL);
             break;
         case MENU_MP_CONTROL_STYLE:
-            DL = constructor_menu11_mpcontrol(DL);
+            DL = frontMpControlsRender(DL);
             break;
         case MENU_MP_STAGE_SELECT:
-            DL = constructor_menu12_mpstage(DL);
+            DL = frontMpStageRender(DL);
             break;
         case MENU_CHEAT:
-            DL = constructor_menu15_cheat(DL);
+            DL = frontCheatRender(DL);
             break;
         case MENU_NO_CONTROLLERS:
-            DL = constructor_menu16_nocontrollers(DL);
+            DL = frontNoControllerRender(DL);
             break;
         case MENU_DISPLAY_CAST:
-            DL = constructor_menu18_displaycast(DL);
+            DL = frontCastRender(DL);
             break;
         case MENU_COOP_SETUP:
-            DL = constructor_menu1A_coopsetup(DL);
+            DL = frontCoopSetupRender(DL);
     }
 
     return DL;

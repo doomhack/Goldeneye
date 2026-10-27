@@ -14,7 +14,7 @@
 /*
 * Address: 0x7F01BAE0
 */
-void createGunbarrelRenderHole(struct s_display_list_something *var_s0, s32 arg1)
+void titleMakeBarrelHoleVerts(struct s_display_list_something *var_s0, s32 arg1)
 {
     s16 cosval;
     f32 temp_f20;
@@ -74,7 +74,7 @@ void createGunbarrelRenderHole(struct s_display_list_something *var_s0, s32 arg1
 /*
 * Address: 0x7F01BFF8
 */
-Gfx *sub_GAME_7F01BFF8(Gfx *gdl, Vtx *vertexList, s32 numVertices)
+Gfx *titleMakeBarrelHoleGfx(Gfx *gdl, Vtx *vertexList, s32 numVertices)
 {
     s8 j;
     

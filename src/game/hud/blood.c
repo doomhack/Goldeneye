@@ -219,8 +219,8 @@ Gfx *screenClearBlack(Gfx *gdl)
 }
 
 Gfx *gunbarrelSetupDraw(Gfx *gdl) {
-   gSPMatrix(gdl++, osVirtualToPhysical(matrixBufferGunbarrel0), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
-   gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferRareLogo2[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
+   gSPMatrix(gdl++, osVirtualToPhysical(g_TitleMtxBarrel0), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
+   gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxRareLogo2[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
    gDPPipeSync(gdl++);
    gDPSetCycleType(gdl++, G_CYC_1CYCLE);
    gDPSetRenderMode(gdl++, G_RM_AA_OPA_SURF, G_RM_AA_OPA_SURF2);

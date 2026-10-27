@@ -87,7 +87,7 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
 /**
  * Unreferenced.
  */
-Gfx *sub_GAME_7F01B6E0(Gfx *gdl, u8 *image, s32 arg2)
+Gfx *titleRenderImageLines(Gfx *gdl, u8 *image, s32 arg2)
 {
     static f32 D_8002BB2C = 0;
     static f32 D_8002BB28 = 0;

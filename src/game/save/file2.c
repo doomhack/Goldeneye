@@ -1355,7 +1355,7 @@ void fileLoadSettingsForFolder(u32 folder)
 
 /**
  * Player 2's settings: their options from the co-op watch, their control
- * style (shared with multiplayer, see controlstyle_player) and their co-op
+ * style (shared with multiplayer, see g_MpControlStyle) and their co-op
  * character. Player 2 isn't tied to a save folder, so these live in the
  * spare bytes of the EEPROM header block:
  * unk[1] = PARTNER_SAVE_MAGIC, unk[2..3] = options, unk[4] = character.
@@ -1378,7 +1378,7 @@ void fileCoopLoadPartnerSettings(smallSave *header)
         s_CoopPartnerOptions = (header->unk[2] << 8) | header->unk[3];
         s_CoopPartnerOptionsSet = TRUE;
         s_CoopPartnerChar = header->unk[4];
-        controlstyle_player[PLAYER_2] = (s_CoopPartnerOptions & OPTION_CONTROLTYPE) >> 8;
+        g_MpControlStyle[PLAYER_2] = (s_CoopPartnerOptions & OPTION_CONTROLTYPE) >> 8;
     }
 }
 
@@ -1399,7 +1399,7 @@ void fileCoopSavePartnerSettings(void)
         options = DEFAULT_OPTIONS;
     }
 
-    options = (options & ~OPTION_CONTROLTYPE) | ((controlstyle_player[PLAYER_2] << 8) & OPTION_CONTROLTYPE);
+    options = (options & ~OPTION_CONTROLTYPE) | ((g_MpControlStyle[PLAYER_2] << 8) & OPTION_CONTROLTYPE);
 
     if ((s_SaveHeader.unk[1] == PARTNER_SAVE_MAGIC)
         && (s_SaveHeader.unk[2] == (options >> 8))
@@ -1428,19 +1428,19 @@ void fileCoopSetPartnerChar(s32 character)
 
 /**
  * Called when player 2 closes their watch. Their control style goes to
- * controlstyle_player so that multiplayer uses it too.
+ * g_MpControlStyle so that multiplayer uses it too.
  */
 void fileCoopStorePartnerOptions(void)
 {
     s_CoopPartnerOptions = fileGetCurrentPlayerOptions();
     s_CoopPartnerOptionsSet = TRUE;
-    controlstyle_player[PLAYER_2] = cur_player_get_control_type();
+    g_MpControlStyle[PLAYER_2] = cur_player_get_control_type();
     fileCoopSavePartnerSettings();
 }
 
 /**
  * Gives the current player (player 2 in co-op or multiplayer) player 2's
- * options. The control style is set from controlstyle_player.
+ * options. The control style is set from g_MpControlStyle.
  */
 void fileCoopRestorePartnerOptions(void)
 {

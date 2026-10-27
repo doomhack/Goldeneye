@@ -5,45 +5,45 @@
 #include "game/menu/title.h"
 #include <macro.h>
 
-void init_menus_or_reset(void)
+void frontInit(void)
 {
     s32 i;
-    current_menu = ~MENU_LEGAL_SCREEN;
-    maybe_prev_menu = ~MENU_LEGAL_SCREEN;
-    screen_size = SCREEN_SIZE_320x240;
-    spectrum_related_flag = TRUE;
-    is_emulating_spectrum = FALSE;
-    folder_selection_screen_option_icon = 0;
-    folder_selected_for_deletion = -1;
-    folder_selected_for_deletion_choice = 1;
-    tab_start_highlight = FALSE;
-    tab_next_highlight = FALSE;
-    tab_prev_highlight = FALSE;
-    maybe_is_in_menu = TRUE;
+    g_FrontMenu = ~MENU_LEGAL_SCREEN;
+    g_FrontEnterMenu = ~MENU_LEGAL_SCREEN;
+    g_FrontScreenSize = SCREEN_SIZE_320x240;
+    g_FrontHiResPending = TRUE;
+    g_FrontLowResPending = FALSE;
+    g_FrontFolderIcon = 0;
+    g_FrontFolderErase = -1;
+    g_FrontFolderEraseChoice = 1;
+    g_FrontTabStartHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontStartMusic = TRUE;
 
-    if (prev_keypresses)
+    if (g_FrontSkipIntro)
     {
-        menu_update = MENU_FILE_SELECT;
+        g_FrontNextMenu = MENU_FILE_SELECT;
     }
 
-    if (menu_update < 0)
+    if (g_FrontNextMenu < 0)
     {
-        menu_update = MENU_FILE_SELECT;
+        g_FrontNextMenu = MENU_FILE_SELECT;
     }
 
-    ptr_logo_and_walletbond_DL = (u8 *)mempAlloc(0x78000, MEMPOOL_STAGE); // allocation in bytes so cast to u8 from gfx
+    g_FrontModelBuffer = (u8 *)mempAlloc(0x78000, MEMPOOL_STAGE); // allocation in bytes so cast to u8 from gfx
 
 #if defined(VERSION_EU)
-    ptr_menu_videobuffer = mempAlloc(0x55040, MEMPOOL_STAGE);
+    g_FrontFrameBuffer = mempAlloc(0x55040, MEMPOOL_STAGE);
 #else
-    ptr_menu_videobuffer = mempAlloc(0x4b040, MEMPOOL_STAGE);
+    g_FrontFrameBuffer = mempAlloc(0x4b040, MEMPOOL_STAGE);
 #endif
 
-    ptr_menu_videobuffer = ALIGN64_V1(ptr_menu_videobuffer);
+    g_FrontFrameBuffer = ALIGN64_V1(g_FrontFrameBuffer);
 
     for (i = 0; i < 4; i++)
     {
-        walletinst[i] = NULL;
+        g_FrontFolderModels[i] = NULL;
     }
 
     titleAllocMatrices();

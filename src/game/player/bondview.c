@@ -1495,8 +1495,8 @@ void playerResetLife(void)
 
     if (isMpGame() || (g_CoopMode && (person > 0)))
     {
-        g_CurrentPlayer->controldef = get_player_control_style(person);
-        cur_player_set_control_type(get_player_control_style(person));
+        g_CurrentPlayer->controldef = frontGetMpControlStyle(person);
+        cur_player_set_control_type(frontGetMpControlStyle(person));
 
         if (person == PLAYER_2)
         {
@@ -1506,7 +1506,7 @@ void playerResetLife(void)
     }
     else if (g_CoopMode && (playerGetCurrentNum() > 0))
     {
-        cur_player_set_control_type(fileGetFolderControlType(selected_folder_num));
+        cur_player_set_control_type(fileGetFolderControlType(g_FrontFolder));
     }
 
     g_CurrentPlayer->current_model_pos.f[0] = 0.0f;

@@ -388,7 +388,7 @@ void lvStageLoad(s32 stage)
     */
     if (stage == LEVELID_TITLE)
     {
-        init_menus_or_reset();
+        frontInit();
     }
     else
     {
@@ -404,7 +404,7 @@ void lvStageLoad(s32 stage)
                 {
                     if (g_CheatActivated[s0] && cheatIsEnemyRockets(s0))
                     {
-                        cheatButtonTurnOnCheatForPlayers(s0);
+                        cheatActivate(s0);
                     }
                 }
             }
@@ -439,21 +439,21 @@ void lvStageLoad(s32 stage)
                 // gets executed 16 times in multiplayer.
                 for (s3 = 0; s3 < 4; s3++)
                 {
-                    if (get_scenario() == SCENARIO_LTK)
+                    if (frontGetMpScenario() == SCENARIO_LTK)
                     {
                         g_playerPlayerData[s3].handicap = 200.0f;
                     }
                     else
                     {
-                        g_playerPlayerData[s3].handicap = get_player_mp_handicap(s3);
+                        g_playerPlayerData[s3].handicap = frontGetMpHandicap(s3);
                     }
 
-                    g_playerPlayerData[s3].player_perspective_height = get_player_mp_char_height(s3);
+                    g_playerPlayerData[s3].player_perspective_height = frontGetMpCharHeight(s3);
                 }
 
-                lvSetMpTimeLimit(get_mp_timelimit());
-                lvSetMpPointLimit(get_mp_pointlimit());
-                copy_aim_settings_to_playerdata();
+                lvSetMpTimeLimit(frontGetMpTimeLimit());
+                lvSetMpPointLimit(frontGetMpPointLimit());
+                frontApplyMpAimSettings();
             }
 
             // g_playerPlayerData s4 variable
@@ -492,11 +492,11 @@ void lvStageLoad(s32 stage)
     explosionsInit();
     glassInitShards();
     waterReset();
-    initCheatTextBuffer();
+    cheatResetPlayerMasks();
 
     if (g_CurrentStageToLoad == LEVELID_TITLE)
     {
-        disableOnscreenCheatText();
+        cheatResetInput();
     }
     else
     {
@@ -515,7 +515,7 @@ void lvStageLoad(s32 stage)
             playerApplyIntro();
             playerStartNewLife();
             bheadInit();
-            disableOnscreenCheatText();
+            cheatResetInput();
         }
 
         playerSetCurrent(0);
@@ -759,7 +759,7 @@ Gfx* lvRender(Gfx* DL)
         DL = viClearZBufCurrentPlayer(DL);
         DL = viSetupCurrentPlayerView(DL);
         gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, (s16)VI_SX(viGetX()), (s16)viGetY());
-        DL = menu_jump_constructor_handler(DL);
+        DL = frontRender(DL);
     }
     else
     {
@@ -1121,7 +1121,7 @@ void lvTick(void)
             {
                 if (g_CheatActivated[i] && !cheatIsEnemyRockets(i))
                 {
-                    cheatButtonTurnOnCheatForPlayers(i);
+                    cheatActivate(i);
                 }
             }
         }
@@ -1250,7 +1250,7 @@ void lvTick(void)
 
 
         // YOLT scenario: end-of-game tracking.
-        if ((get_scenario() == SCENARIO_YOLT) && (g_ClockTimer != 0))
+        if ((frontGetMpScenario() == SCENARIO_YOLT) && (g_ClockTimer != 0))
         {
             s32 player_count;
             s32 killed_count;
@@ -1369,8 +1369,8 @@ void lvTick(void)
 
     if (g_CurrentStageToLoad == LEVELID_TITLE)
     {
-        cheat_buttons_mp_related();
-        menu_init();
+        cheatTick();
+        frontTick();
         langTick();
     }
     else
@@ -1596,7 +1596,7 @@ void lvTick(void)
  * This updates the player viewport(s), and handles player movement.
  *
  * Multiplayer:
- * Updates distance_traveled and possibly (depending on scenario) have_token_or_goldengun.
+ * Updates distance_traveled and possibly (depending on the scenario) have_token_or_goldengun.
  *
  * US Address 0x7F0BF800.
  * EU address 7F0BEC44.
@@ -1609,7 +1609,7 @@ void lvPlayerTick(void)
     f32 temp_f2;
 
     local_player_number = playerGetCurrentNum();
-    cheat_buttons_mp_related();
+    cheatTick();
 
     switch (get_debug_freeze_processing())
     {
@@ -1660,7 +1660,7 @@ void lvPlayerTick(void)
 
     g_playerPerm->distance_traveled += sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2));
 
-    if (get_scenario() == SCENARIO_TLD)
+    if (frontGetMpScenario() == SCENARIO_TLD)
     {
         if (invHasFlagToken())
         {
@@ -1687,7 +1687,7 @@ void lvPlayerTick(void)
         return;
     }
 
-    if (get_scenario() == SCENARIO_MWTGG)
+    if (frontGetMpScenario() == SCENARIO_MWTGG)
     {
         if (invHasGoldenGun())
         {
@@ -1722,7 +1722,7 @@ void lvStageUnload(void)
         playersStoreFavouriteWeapons();
     }
 
-    cheatDisableAllCheats();
+    cheatTurnAllOff();
     chrsFreeAll();
     objSoundsStopAll();
     explosionsReset();

@@ -2256,7 +2256,7 @@ void chrPlayHurtSound(ChrRecord *self)
         }
         else
         {
-            if (get_player_mp_char_gender(playerGetIndexForProp(self->prop)) != FEMALE)
+            if (frontGetMpCharGender(playerGetIndexForProp(self->prop)) != FEMALE)
             {
                 male = TRUE;
             }
