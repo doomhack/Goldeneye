@@ -1,3 +1,10 @@
+/**
+ * The level's environment: fog distances and colour, the sky colour and the cloud and
+ * water images, chosen per level and player count from fog_tables. The record after the
+ * level's own is an alternative that AI scripts and toxic gas blend towards
+ * (fogSwitchToSolosky2).
+ */
+
 #include <ultra64.h>
 
 #include <bondtypes.h>

@@ -1,11 +1,14 @@
 /**
-file bgroomtrans.c
-*/
+ * The room matrix cache. Each room is drawn with its own matrix, which scales it from bg
+ * units to world units and places it relative to the camera's origin room
+ * (roomMtxSetOriginRoom). roomMtxLoad finds or builds the matrix for a room and the
+ * current origin; matrices not used for two frames are freed by roomMtxTick.
+ */
 
 #include <ultra64.h>
 #include "game/player/player.h"
 #include "game/world/bg.h"
-#include "game/world/bgroomtrans.h"
+#include "game/world/roommtx.h"
 #include "game/math/matrix.h"
 
 #ifdef VERSION_EU

@@ -41,7 +41,6 @@
 #include "game/chr/chr.h"
 #include "game/chr/body.h"
 #include "game/prop/setup.h"
-#include "game/world/initunk_007290.h"
 #include "game/menu/initcheattext.h"
 #include "game/nav/waypoint.h"
 #include "game/player/bondview.h"
@@ -51,8 +50,8 @@
 #include "game/player/gun.h"
 #include "game/debug/debug_camera.h"
 #include "game/audio/mp_music.h"
-#include "game/world/bgroomtrans.h"
-#include "game/world/unk_092E50.h"
+#include "game/world/roommtx.h"
+#include "game/world/water.h"
 #include "game/level/frametiming.h"
 #include "game/chr/chr.h"
 

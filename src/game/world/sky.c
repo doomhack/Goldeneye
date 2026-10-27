@@ -1,8 +1,14 @@
+/**
+ * The sky, drawn first each frame: a clear to the environment colour, or a textured cloud
+ * plane above the level and, below the horizon, a water plane or a flat fill. The planes'
+ * screen-edge crossings are worked out on the CPU and drawn as RDP triangles.
+ */
+
 #include <ultra64.h>
 #include <memp.h>
 #include "game/world/sky.h"
 #include "game/player/player.h"
-#include "game/world/unk_092E50.h"
+#include "game/world/water.h"
 #include "game/player/bondview.h"
 #include "game/level/lv.h"
 #include "game/world/bgfog.h"

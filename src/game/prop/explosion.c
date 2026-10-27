@@ -33,7 +33,7 @@
 #include "random.h"
 #include "snd.h"
 #include "game/nav/stan.h"
-#include "game/world/bgroomtrans.h"
+#include "game/world/roommtx.h"
 #include <assets/oddtextures.h>
 
 // bss

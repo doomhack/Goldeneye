@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <limits.h>
 #include "game/world/bg.h"
-#include "game/world/bgroomtrans.h"
+#include "game/world/roommtx.h"
 #include "game/player/bondview.h"
 #include "game/gfx/dyn.h"
 #include "game/math/trig.h"

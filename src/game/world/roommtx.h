@@ -1,5 +1,5 @@
-#ifndef _UNK_0BC530_H_
-#define _UNK_0BC530_H_
+#ifndef _ROOMMTX_H_
+#define _ROOMMTX_H_
 #include <ultra64.h>
 
 void roomMtxSetOriginRoom(s32 param_1);

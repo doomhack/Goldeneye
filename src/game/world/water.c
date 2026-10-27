@@ -1,7 +1,13 @@
+/**
+ * Animated water: waterTick scrolls the two layers of the water texture and pulses their
+ * blend each frame, and waterSetupGdl sets the render state sky.c draws the water plane
+ * with.
+ */
+
 #include <ultra64.h>
 #include "game/player/bondview.h"
 #include "game/level/lv.h"
-#include "game/world/unk_092E50.h"
+#include "game/world/water.h"
 
 // bss
 //CODE.bss:80079E80
@@ -323,4 +329,13 @@ Gfx* waterSetupGdlCi(Gfx *gdl, s32 arg1)
     }
 
     return gdl;
+}
+
+
+void waterReset(void)
+{
+  g_WaterScrollS = 0.0f;
+  g_WaterScrollT = 0.0f;
+  g_WaterBlendPhase = 0.0f;
+  return;
 }
