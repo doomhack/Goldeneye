@@ -162,10 +162,6 @@ extern struct StruckAnim death_gun[];
 extern struct StruckAnim flinch_gun[];
 extern struct StruckAnim death_stagger[];
 
-extern struct ChrHitReaction D_8002CAA0;
-extern struct ChrHitReaction D_8002CACC;
-extern struct ChrHitReaction D_8002CB24;
-extern struct ChrHitReaction D_8002CB50;
 
 extern struct weapon_firing_animation_table rifle_firing_animation_group1[];
 extern struct weapon_firing_animation_table rifle_firing_animation_group2[];
@@ -193,8 +189,8 @@ extern struct weapon_firing_animation_table crouched_doubles_firing_animation_gr
 extern struct weapon_firing_animation_table crouched_doubles_firing_animation_group3[];
 
 
-extern struct weapon_firing_animation_table D_80030078[];
-extern struct weapon_firing_animation_table D_80030660[];
+extern struct weapon_firing_animation_table g_ChrFireAnims[];
+extern struct weapon_firing_animation_table g_ChrMoveFireAnims[];
 
 extern struct anim_group_info *ptr_rifle_firing_animation_groups[];
 extern struct anim_group_info *ptr_pistol_firing_animation_groups[];
@@ -214,30 +210,17 @@ extern s32 g_ChrShowPatrols;
 extern s32 g_NextChrNum;
 extern ChrRecord *g_ChrSlots;
 extern s32 g_NumChrSlots;
-extern ModelRenderData D_8002CC6C;
-extern coord3d D_8002CCAC;
 extern rgba_u8 gBloodColour;
 
-extern f32 D_80030984;
-extern f32 D_80030988;
-extern f32 D_8003098C;
-extern f32 D_80030990;
-extern f32 D_80030994;
-extern f32 D_80030998;
-extern f32 D_8003099C;
-extern f32 D_800309A0;
-extern f32 D_800309A4;
-
-extern point2d D_800309A8;
-extern point2d D_800309B0;
-extern point2d D_800309B8;
-extern point2d D_800309C0;
-extern point2d D_800309C8;
-extern point2d D_800309D0;
-extern point2d D_800309D8;
-extern point2d D_800309E0;
-extern point2d D_800309E8;
-extern point2d D_800309F0;
+extern f32 g_ChrSpeedWalk;
+extern f32 g_ChrSpeedRun;
+extern f32 g_ChrSpeedSprint;
+extern f32 g_ChrSpeedWalkUnarmed;
+extern f32 g_ChrSpeedRunOneHanded;
+extern f32 g_ChrSpeedSprintOneHanded;
+extern f32 g_ChrSpeedWalkFemale;
+extern f32 g_ChrSpeedRunFemale;
+extern f32 g_ChrSpeedSprintOneHanded2;
 
 
 extern u32 num_bodies;
@@ -255,11 +238,10 @@ extern s16 female_guard_yelps[];
 extern s32 male_guard_yelp_counter;
 extern s16 male_guard_yelps[];
 
-extern coord3d D_80030A44;
 extern s16 metal_ricochet_SFX[3];
 
 extern struct explosion_anim_group_info explosion_animation_table[];
-extern struct explosion_death_animation D_8002E648[];
+extern struct explosion_death_animation g_ExplosionDeathAnims[];
 
 void        chrFreeResources(PropRecord* prop);
 void        chrDetectRooms(ChrRecord *);

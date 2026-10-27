@@ -45,9 +45,6 @@
 extern s32 objectiveGetStatus_WEAK(s32 objectiveNum, s32);
 
 // bss
-/**
- * Address 0x80069B70.
- */
 sfxRecord  sfx_related[SFX_RELATED_LEN];
 
 /**
@@ -795,17 +792,11 @@ extern enum CAMERAMODE g_CutsceneCamLookAtBond;
 extern s32             g_CutsceneCamUnusedFlag;
 extern vec3d           g_ForceBondMoveOffset;
 extern s32             g_CoopForceMovePlayer;
-// CODE.bss:80079A00
 extern f32             g_OrbitCamAngle;
-// CODE.bss:80079A04
 extern f32             g_OrbitCamSpeed;
-// CODE.bss:80079A08
 extern f32             g_OrbitCamDist;
-// CODE.bss:80079A0C
 extern f32             g_OrbitCamHeight;
-// CODE.bss:80079A10
 extern f32             g_OrbitCamTargetHeight;
-// CODE.bss:80079A14
 extern s32             g_OrbitCamPad;
 extern bool            g_FrontBondKilled;
 // end forward
@@ -1177,7 +1168,6 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
      *    ai(void) enery tune off (%d)
      *
      * Stack requires that each case declare its own AIRecord variable
-     *
      */
 
     ChrRecord      *ChrEntityp      = NULL;

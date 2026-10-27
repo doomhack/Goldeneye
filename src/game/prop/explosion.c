@@ -37,27 +37,22 @@
 #include <assets/oddtextures.h>
 
 // bss
-//CODE.bss:8007A100
 // possibly   printf("Allocating %d bytes for glass data (%d bits)\n",DAT_83bd5fb0 * 0x88 + 0xf & 0xfffffff0,         DAT_83bd5fb0);
 Mtx g_ExplosionScaleMtx;
 
 /**
  * g_SmokeBuffer = mempAlloc(0x1FE0, MEMPOOL_STAGE);
  * printf("Allocating %d bytes for smoke data\n",0x9f60);
- * Address 0x8007A140.
 */
 struct Smoke *g_SmokeBuffer;
 
 /**
  * g_ExplosionBuffer = mempAlloc(0x1740, MEMPOOL_STAGE);
  * printf("Allocating %d bytes for explosion data\n",0x2e80);
- * Address 0x8007A144.
 */
 struct Explosion *g_ExplosionBuffer;
 
-//CODE.bss:8007A148
 s32 g_MaxParticles;
-//CODE.bss:8007A14C
 // printf("Allocating %d bytes for debris data (%d bits)\n", DAT_83bd2af0 * 0xa4, DAT_83bd2af0);
 struct FlyingParticles *g_FlyingParticlesBuffer;
 
@@ -65,24 +60,19 @@ struct FlyingParticles *g_FlyingParticlesBuffer;
  * g_ScorchBuffer = mempAlloc(0x6E0, MEMPOOL_STAGE);
  * printf("Allocating %d bytes for scorch data\n",0xa50);
  * sizeof each entry == 0x58
- * Address 0x8007A150.
 */
 struct Scorch *g_ScorchBuffer;
 
 /**
  * g_BulletImpactBuffer = mempAlloc(0x1F40, MEMPOOL_STAGE);
  * printf("Allocating %d bytes for wallhit data\n",0x3070);
- * Address 0x8007A154.
  * cannonically wallhitlist
 */
 struct BulletImpact *g_BulletImpactBuffer;
 
 // data
-//D:80040170
 s32 g_ShakeTicks = 0;
-//D:80040174
 s32 g_ShakeBoostTicks = 0;
-//D:80040178
 f32 g_SpExplosionDamageMult = 1.0;
 
 #if defined(VERSION_EU)
@@ -101,7 +91,6 @@ s_smoketype g_SmokeTypes[] = {
     { 750,   50,  58,  900,  0.01f,  64,  64,  64,   0.3f,     150 }
 };
 #else
-//D:8004017C
 s_smoketype g_SmokeTypes[] = {
    // dur, appr, dis,size, bgrate,   r,  g,    b, fgrate, propclouds
     {   1,   60,  99,   0,   0.0f, 128, 128, 128,   0.3f,     180},
@@ -195,7 +184,6 @@ s32 g_NextScorch = 0;
 // canonically nextwallhit
 s32 g_NextImpact = 0;
 
-//D:8004080C
 s_impacttype g_ImpactTypes[] = {
     {10.0f, 10.0f, 1, 2, 8},
     { 6.0f,  6.0f, 1, 2, 8},
@@ -219,8 +207,8 @@ s_impacttype g_ImpactTypes[] = {
     {12.0f, 12.0f, 1, 2, 1},
 };
 
-// unused / unreferenced (padding)
-u32 D_800408FC = 0;
+/* Unused. Kept after the explosion types in case anything reads past their end. */
+u32 g_ExplosionTypesPad = 0;
 
 Vtx g_ExplosionRenderPartDefaultVertex = {0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff };
 Vtx g_SmokeRenderPartDefaultVertex = {0, 0, 0, 0, 0, 0, 0x0, 0x0, 0x0, 0x0 };
@@ -806,9 +794,6 @@ s32 explosionTick(PropRecord* arg0)
 }
 
 
-/*
-* Address: 0x7F09D4EC
-*/
 u8 explosionPropTick(PropRecord* prop)
 {
     Mtxf* player_matrix;
@@ -1427,9 +1412,6 @@ s32 explosionSmokeTick(PropRecord *arg0)
 }
 
 
-/*
-* Address: 0x7F09EF9C
-*/
 u8 smokePropTick(PropRecord* prop)
 {
     Mtxf* player_matrix;
@@ -1846,9 +1828,6 @@ void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room)
 
 
 
-/**
- * Address 0x7F0A0AB4.
-*/
 Gfx *explosionRenderScorchBuffer(Gfx *arg0)
 {
     //temp_t6 = arg0;

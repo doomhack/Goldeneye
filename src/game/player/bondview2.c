@@ -99,8 +99,8 @@
     #define BONDVIEW_2ND_FONTTABLE(_param) copy_2ndfonttable
     #define BONDVIEW_1ST_FONTTABLE(_param) copy_1stfonttable
 #elif defined(VERSION_EU)
-    #define BONDVIEW_2ND_FONTTABLE(_param) dword_CODE_bss_jp80079CEC[_param]
-    #define BONDVIEW_1ST_FONTTABLE(_param) dword_CODE_bss_jp80079Cd8[_param]
+    #define BONDVIEW_2ND_FONTTABLE(_param) g_HudMsgBottomFont2[_param]
+    #define BONDVIEW_1ST_FONTTABLE(_param) g_HudMsgBottomFont1[_param]
 #endif
 
 
@@ -181,133 +181,76 @@
 vec3d g_ForceBondMoveOffset;
 s32 g_CoopForceMovePlayer = 0;
 
-//CODE.bss:8007999C
 s32 g_SurroundBondWithExplosionsTicks;
-//CODE.bss:800799A0
 s32 g_PlayerTickExplodeCreatePosition;
 
-//CODE.bss:800799A8
 struct coord3d g_TankModelPositionOffset;
 
-//CODE.bss:800799B4
 s32 g_TankEngineSfxVolume;
 
 /**
- * Address 0x800799B8.
  * State 0: begin.
  * State 1: Finished sitting down/turning, queue audio.
  * State 2: complete
 */
 s32 g_EnterTankAudioState;
 
-/**
- * Address 0x800799BC.
-*/
 f32 g_TankEnteringSitHeight;
 
-/**
- * Address 0x800799C0.
-*/
 f32 g_TankEnteringSitHeightRemain;
 
-/**
- * Address 0x800799C4.
-*/
 f32 g_TankEnterBondHorizAngleDeg;
 
-/**
- * Address 0x800799C8.
-*/
 f32 g_TankEnterBondVertAngleDeg;
 
 
-//CODE.bss:800799D0
 struct coord3d g_EnterTankCoord;
 
 
-//CODE.bss:800799E0
 ITEM_IDS starting_weapon[2];
 
-//CODE.bss:800799E8
 struct coord3d g_DeathCamPos;
 
-//CODE.bss:800799F4
 struct PropRecord* g_DeathCamProp;
 
-//CODE.bss:800799F8
 PadRecord * g_CameraLookAtBondPad;
-//CODE.bss:800799FC
 CutsceneRecord *gBondViewCutscene;
-//CODE.bss:80079A00
 f32 g_OrbitCamAngle;
-//CODE.bss:80079A04
 f32 g_OrbitCamSpeed;
-//CODE.bss:80079A08
 f32 g_OrbitCamDist;
-//CODE.bss:80079A0C
 f32 g_OrbitCamHeight;
-//CODE.bss:80079A10
 f32 g_OrbitCamTargetHeight;
-//CODE.bss:80079A14
 s32 g_OrbitCamPad;
-//CODE.bss:80079A18
 enum CAMERAMODE g_CutsceneCamLookAtBond;
-//CODE.bss:80079A1C
 s32 g_CutsceneCamUnusedFlag;
-//CODE.bss:80079A20
 s32 mission_timer;
 
 #if defined(VERSION_EU)
-//CODE.bss:80079A24
 f32 watch_time_0;
 #else
-//CODE.bss:80079A24
 s32 watch_time_0;
 #endif
 
-/**
- * Address 80079A28
- * EU .bss 80068508
-*/
 char stringbuffer_lowerleft[0x5][BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH];
-char dword_CODE_bss_80079c21[0x04];
+/* Unused. Kept after stringbuffer_lowerleft in case a message runs past its end. */
+char g_StringBufferLowerLeftPad[0x04];
 
 #if defined(BUGFIX_R1)
-//CODE.bss:80079Cd8
-s32 dword_CODE_bss_jp80079Cd8[0x05];
-s32 dword_CODE_bss_jp80079CEC[0x05];
+s32 g_HudMsgBottomFont1[0x05];
+s32 g_HudMsgBottomFont2[0x05];
 #endif
 
-/**
- * Address 80079C28
- * EU .bss 80068738
-*/
 PadRecord *g_Startpad[0x10];
 
-//CODE.bss:80079C68
 s32 startpadcount;
 
-//CODE.bss:80079DA0
-/**
- * EU .bss 80078780
-*/
-StandTilePoint *dword_CODE_bss_80079DA0;
-//CODE.bss:80079DA4
-StandTilePoint *dword_CODE_bss_80079DA4;
-
-//CODE.bss:80079DA8
-s32 dword_CODE_bss_80079DA8[BSS_80079DA8_LENGTH];
 
 /* The two top-of-screen messages: the one showing and the next. */
 char g_HudmsgTopText[2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
 
-//CODE.bss:80079E04
 f32 g_MpSwirlRotateSpeed;
-//CODE.bss:80079E08
 f32 g_MpSwirlAngleDegrees;
-//CODE.bss:80079E0C
 f32 g_MpSwirlForwardSpeed;
-//CODE.bss:80079E10
 f32 g_MpSwirlDistance;
 
 #define ALIGN64_V3(val) (((val) | 0x3f) ^ 0x3f)
@@ -599,9 +542,6 @@ void playerLoadBody(void)
 }
 
 
-/**
- * Address 0x7F07A4A0.
- */
 void playerRemoveBody(void)
 {
     if ((g_CurrentPlayer->prop->chr) && (getPlayerCount() == 1))
@@ -843,7 +783,6 @@ static s32 coopPartnerHasWatchOut(void)
     return FALSE;
 }
 
-// Address 0x7F07A9B8 NTSC.
 void playerSetCameraMode(s32 arg0)
 {
 
@@ -857,7 +796,7 @@ void playerSetCameraMode(s32 arg0)
 
     if (g_CameraMode == CAMERAMODE_INTRO)
     {
-        if ((ptr_random06cam_entry != NULL) && (get_recording_ramrom_flag() == 0) && (get_is_ramrom_flag() == 0))
+        if ((g_IntroCamera != NULL) && (get_recording_ramrom_flag() == 0) && (get_is_ramrom_flag() == 0))
         {
             camera_transition_timer = 0.0f;
             currentPlayerSetFadeColour(0, 0, 0, 1.0f);
@@ -903,8 +842,8 @@ void playerSetCameraMode(s32 arg0)
             currentPlayerStartChrFade(0.0f, 1.0f);
             playerLoadBody();
 
-            // HACK: ptr_animation_table->data regalloc is backwards
-            sp38 = (struct ModelAnimation *)((s32)stage_intro_anim_table[g_IntroAnimationIndex].anonymous_0 + (s32)&ptr_animation_table->data);
+            // HACK: g_AnimTable->data regalloc is backwards
+            sp38 = (struct ModelAnimation *)((s32)stage_intro_anim_table[g_IntroAnimationIndex].anonymous_0 + (s32)&g_AnimTable->data);
             sp78 = stage_intro_anim_table[g_IntroAnimationIndex].anonymous_2;
             ftemp_1 = stage_intro_anim_table[g_IntroAnimationIndex].anonymous_1;
             ftemp_3 = stage_intro_anim_table[g_IntroAnimationIndex].anonymous_3;
@@ -1289,20 +1228,20 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
             {
 #if defined(VERSION_US)
                 hudmsgSetFonts(g_FontZurichChars, g_FontZurich);
-                hudmsgBottomShow(ptr_random06cam_entry->lang1c.lang_ptr);
+                hudmsgBottomShow(g_IntroCamera->lang1c.lang_ptr);
 #else
-                hudmsgBottomShow(ptr_random06cam_entry->lang1c.lang_ptr, g_FontZurichChars, g_FontZurich);
+                hudmsgBottomShow(g_IntroCamera->lang1c.lang_ptr, g_FontZurichChars, g_FontZurich);
 #endif
             }
 
-            if (ptr_random06cam_entry->lang20.lang_ptr != NULL)
+            if (g_IntroCamera->lang20.lang_ptr != NULL)
             {
                 if ((camera_transition_timer < 300.0f) && ((camera_transition_timer + g_GlobalTimerDelta) >= 300.0f))
                 {
 #if defined(VERSION_US)
-                    hudmsgBottomShow(ptr_random06cam_entry->lang20.lang_ptr);
+                    hudmsgBottomShow(g_IntroCamera->lang20.lang_ptr);
 #else
-                    hudmsgBottomShow(ptr_random06cam_entry->lang20.lang_ptr, g_FontZurichChars, g_FontZurich);
+                    hudmsgBottomShow(g_IntroCamera->lang20.lang_ptr, g_FontZurichChars, g_FontZurich);
 #endif
                 }
 
@@ -1329,15 +1268,15 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
             g_CameraAfterCinema = CAMERAMODE_INTRO;
         }
 
-        pos->f[0] = ptr_random06cam_entry->unk04.fval;
-        pos->f[1] = ptr_random06cam_entry->unk08.fval;
-        pos->f[2] = ptr_random06cam_entry->unk0C.fval;
+        pos->f[0] = g_IntroCamera->unk04.fval;
+        pos->f[1] = g_IntroCamera->unk08.fval;
+        pos->f[2] = g_IntroCamera->unk0C.fval;
 
-        pos2->f[0] = pos->f[0] + (cosf(ptr_random06cam_entry->unk14.fval) * sinf(ptr_random06cam_entry->unk10.fval));
-        pos2->f[1] = pos->f[1] + sinf(ptr_random06cam_entry->unk14.fval);
-        pos2->f[2] = pos->f[2] - (cosf(ptr_random06cam_entry->unk14.fval) * cosf(ptr_random06cam_entry->unk10.fval));
+        pos2->f[0] = pos->f[0] + (cosf(g_IntroCamera->unk14.fval) * sinf(g_IntroCamera->unk10.fval));
+        pos2->f[1] = pos->f[1] + sinf(g_IntroCamera->unk14.fval);
+        pos2->f[2] = pos->f[2] - (cosf(g_IntroCamera->unk14.fval) * cosf(g_IntroCamera->unk10.fval));
 
-        p = &g_CurrentSetup.pads[ptr_random06cam_entry->unk18];
+        p = &g_CurrentSetup.pads[g_IntroCamera->unk18];
         setupPad = p;
         *stan = setupPad->stan;
 
@@ -1676,9 +1615,6 @@ void currentPlayerSetYAutoAimEnabled(bool enabled)
 }
 
 
-/**
- * Address 0x7F07C580.
- */
 bool currentPlayerGetYAutoAimEnabled(void)
 {
     if (!isMpGame())
@@ -1705,8 +1641,6 @@ bool currentPlayerGetIsAiming(void)
 /**
  * Updates autoyaimtime60 by g_ClockTimer.
  * Will update player->autoaimy if new autoyaimtime60 < 0 or autoaim_target != g_CurrentPlayer->autoaim_target_y.
- *
- * Address 0x7F07C5F0.
  */
 void playerUpdateAutoAimY(struct PropRecord *autoaim_target, f32 auto_aim_y)
 {
@@ -1740,9 +1674,6 @@ void currentPlayerSetXAutoAimEnabled(bool enabled)
 }
 
 
-/**
- * Address 0x7F07C668.
- */
 bool currentPlayerGetXAutoAimEnabled(void)
 {
     if (!isMpGame())
@@ -1763,8 +1694,6 @@ bool currentPlayerGetXAutoAimEnabledRedirect(void)
 /**
  * Updates autoxaimtime60 by g_ClockTimer.
  * Will update player->autoaimx if new autoxaimtime60 < 0 or autoaim_target_x != g_CurrentPlayer->autoaim_target_x.
- *
- * Address 0x7F07C6C8.
  */
 void playerUpdateAutoAimX(struct PropRecord *autoaim_target, f32 auto_aim_x)
 {
@@ -1855,9 +1784,6 @@ void tankUpdateTurretOffset(void) {
 }
 
 
-/**
- * Address 0x7F07C888.
-*/
 void tankGetCollisionBounds(struct rect4f *tank_collision_bounds, struct coord3d *collision_position, f32 tank_orientation_angle)
 {
     ObjectRecord *sp4C;
@@ -1897,9 +1823,6 @@ void tankGetCollisionBounds(struct rect4f *tank_collision_bounds, struct coord3d
 }
 
 
-/**
- * Address 0x7F07CA2C.
-*/
 s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, struct coord3d *coord_p, struct coord3d *coord_dest)
 {
     s32 temp_v0;
@@ -1919,9 +1842,6 @@ s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s3
 }
 
 
-/**
- * Address 0x7F07CAC8.
-*/
 s32 tankTestCollision(struct coord3d *collision_position, StandTile *arg1, f32 tank_orientation_angle, struct coord3d *arg3, struct coord3d *arg4)
 {
     StandTile *spBC;
@@ -2010,18 +1930,12 @@ s32 tankTestCollision(struct coord3d *collision_position, StandTile *arg1, f32 t
 }
 
 
-/**
- * Address 0x7F07CDA8.
-*/
 s32 tankTestCollisionAt(struct coord3d *collision_position, StandTile *arg1, f32 tank_orientation_angle)
 {
     return tankTestCollision(collision_position, arg1, tank_orientation_angle, NULL, NULL);
 }
 
 
-/**
- * Address 0x7F07CDD4.
-*/
 s32 tankTryMoveTo(struct coord3d *arg0, f32 arg1, StandTile **arg2)
 {
     StandTile *sp3C;
@@ -2151,8 +2065,6 @@ struct PropRecord *playerGetTank(void)
 
 /**
  * Sets paraameter position based on global variables g_TankOrientationAngle, g_TankTurretOrientationAngleRad, g_TankTurretVerticalAngle.
- *
- * Address 0x7F07CEB0.
  */
 void tankGetTurretDir(coord3d *arg0)
 {
@@ -2207,9 +2119,6 @@ static PropRecord *coopGetOverlappingPartner(void)
     return other;
 }
 
-/**
- * Address 0x7F07CF8C.
-*/
 s32 playerTestMove(struct coord3d *arg0, StandTile **stan)
 {
     s32 sp94;
@@ -2337,8 +2246,6 @@ block_20:
  * @param collision_pt1: Out parameter. Will set {x,0,z} position of second point (from line edge) if Bond is in collision, otherwise ... Bond's look angle?
  *
  * @return 1 if able to update stan and collision position, zero otherwise.
- *
- * Address 0x7F07D234.
  */
 s32 playerTryMoveSimple(coord3d *next_pos, coord3d *collision_pt0, coord3d *collision_pt1)
 {
@@ -2823,9 +2730,6 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
 }
 
 
-/**
- * Address: 7F07DE64
- */
 void playerRemoveFromRooms(struct player *player) 
 {
     propRemoveFromRoom(player->prop, player->registeredroom);
@@ -2833,9 +2737,6 @@ void playerRemoveFromRooms(struct player *player)
 }
 
 
-/**
- * Address 0x7F07DE9C.
- */
 void playerUpdateRooms(struct player *player)
 {
     playerRemoveFromRooms(player);
@@ -2855,9 +2756,6 @@ void playerUpdateRooms(struct player *player)
 }
 
 
-/**
- * Address: 7F07DEFC
- */
 void watchInitPauseTilt(void)
 {
     g_CurrentPlayer->pause_starting_angle = g_CurrentPlayer->vv_verta;
@@ -2873,8 +2771,6 @@ void watchInitPauseTilt(void)
  *
  * @param topause: When set, pause_target_verta will be -40.0f, otherwise g_CurrentPlayer->vv_verta.
  * @return: How long the tilt should take.
- *
- * Address 0x7F07DF28.
  */
 f32 watchSetupPauseTilt(bool topause)
 {
@@ -3042,8 +2938,6 @@ f32 watchGetZoomTargetFovy(void) {
  * Triggers watch zoom if new value.
  *
  * @param zoominfovy: watch zoom fovy.
- *
- * Address 0x7F07E46C.
  */
 void watchZoomTo(f32 zoominfovy)
 {
@@ -3063,8 +2957,6 @@ void watchZoomTo(f32 zoominfovy)
 
 /**
  * Trigger watch zoom with default angle.
- *
- * Address 0x7F07E504.
  */
 void watchZoomToDefault(void)
 {
@@ -3072,9 +2964,6 @@ void watchZoomToDefault(void)
 }
 
 
-/**
- * Address 0x7F07E52C.
- */
 void watchZoomOnOpen(void)
 {
     f32 f;
@@ -3099,9 +2988,6 @@ void watchZoomOnOpen(void)
 }
 
 
-/**
- * Address 0x7F07E594.
- */
 void watchZoomOnExit(void)
 {
     f32 f;
@@ -3127,9 +3013,6 @@ s32 watchIsZooming(void)
 }
 
 
-/**
- * Address 0x7F07E62C.
- */
 void watchUpdateZoom(void)
 {
     if (g_CurrentPlayer->zoomintime < g_CurrentPlayer->zoomintimemax)
@@ -3176,9 +3059,6 @@ void watchUpdateZoom(void)
 }
 
 
-/**
- * Address 0x7F07E740.
- */
 f32 watchGetOpenFrac(void)
 {
     if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x4)
@@ -3207,14 +3087,11 @@ void watchInitHandModel(void) {
     modelCalculateRwDataLen(itemheader);
     animInit((Model *)((u8 *)g_CurrentPlayer + 0x230), itemheader, (u32 *)((u8 *)g_CurrentPlayer + 0x2ec));
     modelSetScale((Model *)((u8 *)g_CurrentPlayer + 0x230), c_item_entries[41].scale * 0.10000001f);
-    modelSetAnimation((Model *)((u8 *)g_CurrentPlayer + 0x230), (ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_bond_watch], 0, 0.0f, 0.5f * watch_transition_time, 0.0f);
+    modelSetAnimation((Model *)((u8 *)g_CurrentPlayer + 0x230), (ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_bond_watch], 0, 0.0f, 0.5f * watch_transition_time, 0.0f);
     *(s32 *)((u8 *)g_CurrentPlayer + 0x220) = 0;
 }
 
 
-/**
- * Address 0x7F07E8B0.
- */
 void watchStartRaise(f32 arg0)
 {
     if (g_CurrentPlayer->step_in_view_watch_animation == 0)
@@ -3231,9 +3108,6 @@ void watchStartRaise(f32 arg0)
 }
 
 
-/**
- * Address 0x7F07E910.
- */
 void watchStartLower(f32 arg0)
 {
     if (g_CurrentPlayer->step_in_view_watch_animation == 3)
@@ -3250,9 +3124,6 @@ void watchStartLower(f32 arg0)
 }
 
 
-/**
- * Address 0x7F07E964.
- */
 void watchStepAnim(void)
 {
     if ((g_CurrentPlayer->step_in_view_watch_animation != 0) && (g_CurrentPlayer->step_in_view_watch_animation != 3))
@@ -3283,9 +3154,6 @@ void watchStepAnim(void)
 }
 
 
-/**
- * Address 0x7F07EA78.
- */
 f32 watchGetAnimFrac(void)
 {
     if ((g_CurrentPlayer->step_in_view_watch_animation == 1) || (g_CurrentPlayer->step_in_view_watch_animation == 2))
@@ -4071,9 +3939,6 @@ f32 playerScaleLookSpeedVerta(f32 value) {
 }
 
 
-/**
- * Address 0x7F080010.
- */
 void playerUpdateSpeedVerta(f32 value)
 {
     f32 mult = viGetFovY() / FOV_Y_F;
@@ -4149,9 +4014,6 @@ f32 playerScaleLookSpeedTheta(f32 arg0) {
     }
 }
 
-/**
- * Address 0x7F0802C4.
- */
 void playerUpdateSpeedTheta(f32 value)
 {
     f32 mult = viGetFovY() / FOV_Y_F;
@@ -4346,7 +4208,6 @@ void currentPlayerTickChrFade(void)
  * Will apply a move animation update. The pass through call to bheadUpdate is
  * what allows Bond to move. This will also trigger the death animation once
  * Bond dies. This chooses a random death animation from g_bondviewBondDeathAnimations.
- * Address 0x7F080B34.
 */
 void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways)
 {
@@ -4373,10 +4234,10 @@ void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways)
     {
         if (g_CurrentPlayer->startnewbonddie)
         {
-            // HACK: ptr_animation_table dereference addition is backwards.
+            // HACK: g_AnimTable dereference addition is backwards.
             // this should be:
-            // ptr_animation_table->data[g_bondviewBondDeathAnimations[((u32) randomGetNext() % (u32) g_bondviewBondDeathAnimationsCount)]]
-            bheadStartDeathAnimation((struct ModelAnimation *) ((s32)g_bondviewBondDeathAnimations[((u32) randomGetNext() % (u32) g_bondviewBondDeathAnimationsCount)] + (s32)&ptr_animation_table->data[0]), randomGetNext() & 1, 0.0f, 1.0f);
+            // g_AnimTable->data[g_bondviewBondDeathAnimations[((u32) randomGetNext() % (u32) g_bondviewBondDeathAnimationsCount)]]
+            bheadStartDeathAnimation((struct ModelAnimation *) ((s32)g_bondviewBondDeathAnimations[((u32) randomGetNext() % (u32) g_bondviewBondDeathAnimationsCount)] + (s32)&g_AnimTable->data[0]), randomGetNext() & 1, 0.0f, 1.0f);
             g_CurrentPlayer->startnewbonddie = FALSE;
         }
 
@@ -4403,9 +4264,6 @@ void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways)
 }
 
 
-/**
- * Address 0x7F080D60.
- */
 f32 playerGetFloorY(StandTile *arg0, f32 arg1, f32 arg2)
 {
     f32 ret;
@@ -4734,7 +4592,6 @@ void playerUpdatePosFromCollision(void)
 /**
  * Fixes vv_verta within -90 and +90.
  * Updates vv_costheta, vv_sintheta, vv_verta360, vv_cosverta, vv_sinverta, field_488.theta_transform.
- * Address 0x7F081790.
  *
  * Perfect Dark function bmoveUpdateVerta.
 */
@@ -6180,7 +6037,6 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
 
 /**
- *
  * NTSC address 7F083FC8.
  * NTSC-J address 7F0845D8.
  * EU address 7F08406C.
@@ -7788,9 +7644,6 @@ s16 playerGetViewportLeft(void)
 }
 
 
-/**
- * Address 0x7F086D24.
- */
 s16 playerGetViewportHeight(void)
 {
     f32 t;
@@ -7834,9 +7687,6 @@ s16 playerGetViewportHeight(void)
 }
 
 
-/**
- * Address 0x7F086E38.
- */
 s16 playerGetViewportTop(void)
 {
     f32 t;
@@ -8102,9 +7952,6 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 }
 
 
-/**
- * Address 0x7F0875E4.
- */
 void camSetRoomOrigin(s32 arg0)
 {
     roomGetWorldPos(arg0, &g_CurrentPlayer->current_model_pos);
@@ -8123,9 +7970,6 @@ void camStorePrevOrigin(void) {
 }
 
 
-/**
- * Address: 7F0876C4
- */
 void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
 {
     Mtx sp108;
@@ -8220,9 +8064,6 @@ void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
 }
 
 
-/**
- * Address: 7F087A08
- */
 Gfx *camSetupFrame(Gfx *gdl)
 {
     coord3d cam_pos;
@@ -8432,9 +8273,6 @@ void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex)
 }
 
 
-/**
- * Address: 7F087E74
- */
 Gfx *watchRender(Gfx *gdl)
 {
     ModelRenderData renderdata;
@@ -8458,7 +8296,7 @@ Gfx *watchRender(Gfx *gdl)
         goto end;
     }
  
-    renderdata = D_8003683C;
+    renderdata = (ModelRenderData){NULL, TRUE, 3};
     watchpos = ZeroCoordWatchPos;
     objheader = gunGetHandModelHeader(GUNLEFT);
     nodepos = (f32 *) objheader->Switches[3];
@@ -8597,8 +8435,6 @@ Gfx *watchRender(Gfx *gdl)
 
 
 /**
- * Address: 7F088618
- *
  * Renders the in-game health and armor gauges.
  * The watch menu gauges are handled by watchTrigger().
  */
@@ -9616,9 +9452,6 @@ void counterOpTick(void)
     }
 }
 
-/**
- * Address: 7F088CD8
- */
 Gfx *hudRenderCredits(Gfx *gdl)
 {
     s32 frame;
@@ -9644,8 +9477,8 @@ Gfx *hudRenderCredits(Gfx *gdl)
         xpos2 = 0xdc;
         align1 = CREDITS_ALIGN_RIGHT;
         align2 = CREDITS_ALIGN_RIGHT;
-        camera_80036438++;
-        frame = camera_80036438;
+        g_CreditsScrollFrame++;
+        frame = g_CreditsScrollFrame;
         gdl = textSetupDraw(gdl);
         start = (frame - viGetViewHeight()) / 16;
         end = (frame / 16) + 1;
@@ -10011,18 +9844,12 @@ void camSetPosScale(f32 param_1)
 }
 
 
-/**
- * Address 0x7F089778.
- */
 f32 playerGetStanHeight(struct player *player)
 {
     return player->stanHeight;
 }
 
 
-/**
- * Address 0x7F089780.
- */
 f32 playerGetEyeHeight(struct player *player)
 {
     return player->eyeheight + player->field_88 + player->ducking_height_offset;
@@ -10034,9 +9861,6 @@ PropRecord* currentPlayerGetProp(void) {
 }
 
 
-/**
- * Address 0x7F0897A8.
- */
 void playerDie(void)
 {
     if ((g_CurrentPlayer->cheatBondInvincible == 0) && (g_CurrentPlayer->bonddead == FALSE))
@@ -10265,8 +10089,6 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
  * @param rad:  damage source angle
  * @param player_id: player index of player causing the damage
  * @param affects_armor: boolean, does the damage apply to body armor (e.g. false when gas)
- *
- * Address 0x7F089E4C.
  */
 void playerTakeDamageFromAngle(f32 damage_amount, f32 angle, s32 playerid, s32 affects_armor)
 {
@@ -10346,9 +10168,6 @@ s32 playerGetVisibleToGuards(void)
 }
 
 
-/**
- * Address 0x7F089F98.
- */
 u8 playerGetRoom(void)
 {
     if ((g_CurrentPlayer->cameramode == 1) && (g_CurrentPlayer->cameratile != 0))
@@ -10360,9 +10179,6 @@ u8 playerGetRoom(void)
 }
 
 
-/**
- * Address 0x7F089FD4.
- */
 coord3d *playerGetPos(void)
 {
     if (g_CurrentPlayer->cameramode == 1)
@@ -10391,9 +10207,6 @@ struct coord3d *playerGetPrevPos(void)
 }
 
 
-/**
- * Address 0x7F08A03C.
- */
 void playerSetMoving(PropRecord *prop, s32 flag)
 {
     s32 playerIndex;
@@ -10415,9 +10228,6 @@ void playerSetMoving(PropRecord *prop, s32 flag)
 }
 
 
-/**
- * Address 0x7F08A0B0.
- */
 void playerGetPropBounds(PropRecord *arg0, struct rect4f **field_B0, s32 *arg2, f32 *height_related, f32 *collision)
 {
     s32 temp_v0;
@@ -10444,9 +10254,6 @@ void playerGetPropBounds(PropRecord *arg0, struct rect4f **field_B0, s32 *arg2, 
 }
 
 
-/**
- * Address 0x7F08A19C.
- */
 void playerUpdateCollisionBounds(void)
 {
 
@@ -10473,8 +10280,6 @@ void playerUpdateCollisionBounds(void)
  * @param width: out parameter, will be set to field_488.collision_radius
  * @param height: out parameter, will be set to character height - 30
  * @param always_30: out parameter, will be set to 30
- *
- * Address 0x7F08A274.
  */
 void playerGetCollisionSize(PropRecord* arg0, f32 *collision_radius, f32 *height, f32 *always_30)
 {
@@ -10487,9 +10292,6 @@ void playerGetCollisionSize(PropRecord* arg0, f32 *collision_radius, f32 *height
 }
 
 
-/**
- * Address 0x7F08A2EC.
- */
 f32 currentPlayerGetHealth(void)
 {
     return g_CurrentPlayer->bondhealth;
@@ -10502,9 +10304,6 @@ f32 currentPlayerGetArmor(void)
 }
 
 
-/**
- * Address 0x7F08A30C.
- */
 void currentPlayerAddArmor(f32 arg0)
 {
     g_playerPerm->body_armor_pickups += arg0;
@@ -10512,9 +10311,6 @@ void currentPlayerAddArmor(f32 arg0)
 }
 
 
-/**
- * Address 0x7F08A330.
- */
 void hudmsgResetIntroText(void)
 {
     g_CurrentPlayer->hudmessoff = FALSE;
@@ -10535,9 +10331,6 @@ void hudmsgsSetOn(s32 flag)
 }
 
 
-/**
- * Address 0x7F08A39C.
- */
 void hudmsgsSetOff(s32 flags)
 {
     g_CurrentPlayer->hudmessoff |= flags;
@@ -10567,8 +10360,8 @@ void hudmsgBottomShow(char *string, s32 font, s32 arg2)
             abs_index = index;
             strncpy(stringbuffer_lowerleft[abs_index], string, (BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH-1));
             stringbuffer_lowerleft[abs_index][(BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH-1)] = 0;
-            dword_CODE_bss_jp80079CEC[abs_index] = font;
-            dword_CODE_bss_jp80079Cd8[abs_index] = arg2;
+            g_HudMsgBottomFont2[abs_index] = font;
+            g_HudMsgBottomFont1[abs_index] = arg2;
             display_statusbar++;
         }
     }
@@ -10577,8 +10370,8 @@ void hudmsgBottomShow(char *string, s32 font, s32 arg2)
         index = playerGetCurrentNum();
         strncpy(stringbuffer_lowerleft[index], string, (BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH-1));
         stringbuffer_lowerleft[index][(BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH-1)] = 0;
-        dword_CODE_bss_jp80079CEC[index] = font;
-        dword_CODE_bss_jp80079Cd8[index] = arg2;
+        g_HudMsgBottomFont2[index] = font;
+        g_HudMsgBottomFont1[index] = arg2;
 #if defined(VERSION_EU)
         g_CurrentPlayer->bondmesscnt = 0x64;
 #endif
@@ -10621,9 +10414,6 @@ void hudmsgBottomShowText(char *string)
 #endif
 
 
-/**
- * Address 0x7F08A4E4.
- */
 void hudmsgTickIntroText(void)
 {
     if ((g_CurrentPlayer->hudmessoff == FALSE) && (g_CurrentPlayer->mpmenuon == FALSE))
@@ -10661,9 +10451,6 @@ void hudmsgTickIntroText(void)
 }
 
 
-/**
- * Address: 7F08A5FC
- */
 Gfx* hudmsgBottomRender(Gfx* arg0)
 {
     s32 var_v1;
@@ -10787,9 +10574,6 @@ void hudmsgTopShow(char* mess)
 }
 
 
-/**
- * Address 0x7F08A9F8.
- */
 void hudmsgTopTick(void)
 {
     if ((g_UpperTextDisplayFlag == FALSE) && (g_CurrentPlayer->mpmenuon == FALSE))
@@ -10931,9 +10715,6 @@ Gfx *hudmsgTopRender(Gfx *gdl)
 }
 
 
-/**
- * Address: 0x7F08B0F0
- */
 s32 playerTick(PropRecord *prop)
 {
     s32 index;
@@ -11074,7 +10855,7 @@ s32 playerTick(PropRecord *prop)
             {
                 cur = ppointers[index]->players_cur_animation;
  
-                if (cur == (g_bondviewBondDeathAnimations[i] + ((s32) ptr_animation_table)))
+                if (cur == (g_bondviewBondDeathAnimations[i] + ((s32) g_AnimTable)))
                 {
                     found = 1;
                 }
@@ -11087,7 +10868,7 @@ s32 playerTick(PropRecord *prop)
             }
             else
             {
-                anim = g_bondviewBondDeathAnimations[randomGetNext() % g_bondviewBondDeathAnimationsCount] + ((s32) ptr_animation_table);
+                anim = g_bondviewBondDeathAnimations[randomGetNext() % g_bondviewBondDeathAnimationsCount] + ((s32) g_AnimTable);
                 angle = 0.5f;
             }
  
@@ -11269,7 +11050,7 @@ lean_return_to_centre:
  
             if (fa->anim != 0)
             {
-                anim = fa->anim + (s32) ptr_animation_table;
+                anim = fa->anim + (s32) g_AnimTable;
             }
  
             angle *= fa->x;
@@ -11409,9 +11190,6 @@ clear_and_return:
 }
 
 
-/**
- * Address 0x7F08BCC0.
- */
 Gfx *playerRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2)
 {
     if (arg0->chr != NULL)
@@ -11423,9 +11201,6 @@ Gfx *playerRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2)
 }
 
 
-/**
- * Address 0x7F08BCF4.
- */
 Gfx* camLoadWorldToViewMtx(Gfx* gdl)
 {
     gSPMatrix(gdl++, g_CurrentPlayer->field_5C, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
@@ -11433,12 +11208,6 @@ Gfx* camLoadWorldToViewMtx(Gfx* gdl)
 }
 
 
-/**
- * Address 0x7F08BD48.
- *
- * Notes: Similar to sub_GAME_7F08BE2C.
- *
- */
 void mtxsF2L(RenderPosView * arg0, s32 arg1)
 {
     Mtxf mtx;

@@ -1,8 +1,8 @@
 .section .data
 
 
-.global unknown2
-unknown2:
+.global g_TitleBackdropRle
+g_TitleBackdropRle:
 .incbin "assets/ge007.u.2A4D50.usedby7F008DE4.bin"
-.global unknown2_end
-unknown2_end:
+.global g_TitleBackdropRleEnd
+g_TitleBackdropRleEnd:

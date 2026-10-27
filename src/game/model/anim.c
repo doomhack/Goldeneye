@@ -14,10 +14,8 @@
 #include "bondgame.h"
 
 /** Sets the buffer that animLoadFrame copies animation frames from ROM into. */
-void animInitFrameBuffer(struct bondstruct_unk_animation_related* animBuffer, OSMesgQueue* mq, s32 unused) {
+void animInitFrameBuffer(struct bondstruct_unk_animation_related* animBuffer) {
     g_AnimFrameBuffer = animBuffer; // Data structure with offset and two tables
-    D_80036418 = mq;   // Unused message queue
-    D_8003641C = unused; // Some unused array
 }
 
 
@@ -26,16 +24,11 @@ void animInitFrameBuffer(struct bondstruct_unk_animation_related* animBuffer, OS
 // Where animation frames are saved. Can possibly hold as much as nine, but the game will ever store four at maximum.
 char animations_frame_buffer[0x2D0];
 
-// Msg Queue stuff (unused)
-OSMesgQueue animMsgQ;
-char dword_CODE_bss_80069458[0xC0]; // Unused. Possibly meant for unused message queue.
-OSMesg animMesg[8];
-
 // Animation table ptr
-struct animation_table_data * ptr_animation_table;
+struct animation_table_data * g_AnimTable;
 
 //data
-struct bondstruct_unk_animation_related D_80029D60 = {
+struct bondstruct_unk_animation_related g_AnimFrameBufferInfo = {
     NULL,
     &animations_frame_buffer, // Two pointers. One always points to the start of the buffer, the other can be modified.
     &animations_frame_buffer
@@ -254,9 +247,9 @@ void animResolveTable(s32** arg0)
     var_v0 = arg0;
     while (*var_v0 != 0) {
         if (*var_v0 != (s32*)1) {
-            *var_v0 = (s32)((s32)*var_v0 + (s32)(&ptr_animation_table->data));
-            ((struct anim_entry *)*var_v0)->unk08 += (s32)&ptr_animation_table->data;
-            ((struct anim_entry *)*var_v0)->unk10 += (s32)&ptr_animation_table->data;
+            *var_v0 = (s32)((s32)*var_v0 + (s32)(&g_AnimTable->data));
+            ((struct anim_entry *)*var_v0)->unk08 += (s32)&g_AnimTable->data;
+            ((struct anim_entry *)*var_v0)->unk10 += (s32)&g_AnimTable->data;
         }
         var_v0++;
     }
@@ -272,14 +265,13 @@ void animLoadTable(void)
 {
     s32 animsDataSegmentSize;
     
-    osCreateMesgQueue(&animMsgQ, animMesg, 8);
-    animInitFrameBuffer(&D_80029D60, &animMsgQ, &dword_CODE_bss_80069458);
+    animInitFrameBuffer(&g_AnimFrameBufferInfo);
     
     animsDataSegmentSize = (s32)&_animation_dataSegmentEnd - (s32)&_animation_dataSegmentStart;
     
-    ptr_animation_table = mempAlloc(animsDataSegmentSize, MEMPOOL_PERMANENT);
+    g_AnimTable = mempAlloc(animsDataSegmentSize, MEMPOOL_PERMANENT);
 
-    romCopy(ptr_animation_table, &_animation_dataSegmentRomStart, animsDataSegmentSize);
+    romCopy(g_AnimTable, &_animation_dataSegmentRomStart, animsDataSegmentSize);
     animResolveTable((s32*)&animation_table_ptrs1);
     animResolveTable((s32*)&animation_table_ptrs2);
 }

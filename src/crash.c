@@ -193,9 +193,6 @@ void crashMain(void* arg0);
 void crashPrintDescription(u32 mask, char *label, struct regDesc_t *description);
 // end forward declarations
 
-/**
- * 5AE0    70004EE0
- */
 void crashInit(void)
 {
     crashInitBuffers();
@@ -207,8 +204,6 @@ void crashInit(void)
 }
 
 /**
- * 5B54    70004F54
- * 
  * @param arg0 Unused.
  */
 extern OSThread *__osRunQueue;

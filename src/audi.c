@@ -177,7 +177,6 @@ s32 CUSTOM_FX_PARAMS_N[CUSTOM_FX_SECTION_COUNT * CUSTOM_FX_SECTION_SIZE + 2] = {
 s32 g_FirstTime = 1;
 
 /**
- * Address 8005E4B8.
  * (type is u64)
  * Used in amMain.
  * This looks like it stores the largest sDeltaTime between
@@ -186,7 +185,6 @@ s32 g_FirstTime = 1;
 OSTime g_LargestDeltaTime;
 
 /**
- * Address 8005E4C0.
  * (type is u64)
  * Used in amMain.
  * Stores the elpased time of main loop (difference between sEndTime and sStartTime).
@@ -195,7 +193,6 @@ OSTime g_DeltaTime;
 
 
 /**
- * Address 8005E4C8.
  * Every AUDIO_MANAGER_COUNT_INTERVAL number of events, the average for sDeltaTimeSum
  * is computed and stored here.
  */
@@ -203,13 +200,11 @@ u64 g_DeltaAverage;
 
 
 /**
- * Address 8005E4D0.
  * Tracks the sum total elapsed time. Reset every AUDIO_MANAGER_COUNT_INTERVAL.
  */
 u64 g_DeltaTimeSum;
 
 /**
- * Address 8005E4D8.
  * (type is u64)
  * Used in amMain.
  * Stores the time at the start of the loop.
@@ -217,7 +212,6 @@ u64 g_DeltaTimeSum;
 OSTime g_StartTime;
 
 /**
- * Address 8005E4E0.
  * (type is u64)
  * Used in amMain.
  * Stores the time after primary processing is done.
@@ -225,7 +219,6 @@ OSTime g_StartTime;
 OSTime g_EndTime;
 
 /**
- * Address 8005e518.
  * sizeof(struct AudioManager_s) == 0x288 (648)
  */
 struct AudioManager_s {
@@ -277,14 +270,8 @@ struct AudioManager_s {
 
 } g_AudioManager;
 
-/**
- * Address 0x8005e7a0.
- */
 OSScClient g_AudioClient[2];
 
-/**
- * Address 0x8005e7b0.
- */
 DMAState g_DmaState;
 
 DMABuffer g_DmaBuffers[NUMBER_DMA_BUFFERS];
@@ -388,7 +375,6 @@ void amCreateAudioManager(ALSynConfig* alconf)
 }
 
 /**
- * 2B58 70001F58
  * insert sound manager thread
  *	redirect to 7000D580: A0=8005E530
  */
@@ -398,7 +384,6 @@ void amStartAudioThread(void)
 }
 
 /**
- * 2B7C 70001F7C
  * Looks to be loosely based on method
  *     __amMain
  * from the n64devkit. This method makes some kind of video calls,
@@ -460,7 +445,6 @@ void amMain(void* arg)
 }
 
 /**
- * 2E44	70002244
  * Based on method
  *     static u32 __amHandleFrameMsg(AudioInfo *info, AudioInfo *lastInfo)
  * from the n64devkit demos_old/simple/audiomgr.c.
@@ -542,7 +526,6 @@ void amHandleFrameMessage(AudioInfo *info, AudioInfo *lastInfo)
 
 
 /**
- * 2FE4	700023E4
  * Based on method
  *     static void __amHandleDoneMsg(AudioInfo *info)
  * from the n64devkit demos_old/simple/audiomgr.c.
@@ -580,7 +563,6 @@ void amHandleDoneMessage(AudioInfo *info)
 }
 
 /**
- * 3024 70002424
  * Looks to be based on method
  *     s32 __amDMA(s32 addr, s32 len, void *state)
  * from the n64devkit.
@@ -697,7 +679,6 @@ s32 amDmaCallback(s32 addr, s32 len, void* state)
 }
 
 /**
- * 31D8 700025D8
  * Based on method
  *     ALDMAproc __amDmaNew(AMDMAState **state)
  * from the n64devkit demos_old/simple/audiomgr.c.
@@ -728,7 +709,6 @@ ALDMAproc amDmaNew(DMAState** state)
 }
 
 /**
- * 3210 70002610
  * Based on method
  *     static void __clearAudioDMA(void)
  * from the n64devkit demos_old/simple/audiomgr.c.

@@ -37,45 +37,24 @@ extern signed short sins(unsigned short x);
 
 
 // bss
-//CODE.bss:80069550
 s32 g_TitleBarrelVerts;
-//CODE.bss:80069554
 Gfx *g_TitleBarrelGfx;
-//CODE.bss:80069558
 Mtx *g_TitleMtxRareLogo0;
-//CODE.bss:8006955C
 Mtx *g_TitleMtxBarrel0;
-//CODE.bss:80069560
 Mtx *g_TitleMtxRareLogo1;
-//CODE.bss:80069564
 Mtx *g_TitleMtxRareLogo2;
-//CODE.bss:80069568
 Mtx *g_TitleMtxBarrel1;
-//CODE.bss:8006956C
 Mtx *g_TitleMtxBackdrop;
-//CODE.bss:80069570
 Mtx *g_TitleMtxBond;
-//CODE.bss:80069574
 f32 g_TitleX;
-//CODE.bss:80069578
 f32 g_TitleY;
-//CODE.bss:8006957C
 f32 titleTransitionX;
-//CODE.bss:80069580
 f32 titleTransitionY;
-//CODE.bss:80069584
 s16 g_TitleBarrelAngle;
-//CODE.bss:80069588
 s32 g_TitleBackdropPacked;
-//CODE.bss:8006958C
 s32 g_TitleBackdrop;
-//CODE.bss:80069590
 s32 g_TitleRareLogoData;
 
-/**
- * Address 80069594
- * EU .bss 800684D4
-*/
 s32 g_TitleTimer;
 
 
@@ -101,10 +80,9 @@ f32 cameraPosition1[3] = {0.0f, 0.0f, 4883.0f};
 f32 cameraPosition2[3] = {0.0f, 0.0f, -1.0f};
 f32 cameraPosition3[3] = {0.0f, 1.0f, 0.0f};
 
-f32 D_8002A89C = 0.0f;
+f32 g_TitleRareLogoAngle = 0.0f;
 s32 g_TitleCounter = 0;
 u32 g_TitleBloodDone = 0;
-struct coord3d D_8002A8A8 = { 0, 0, 0 };
 
 
 /**
@@ -146,9 +124,6 @@ Gfx *titleRenderBackdrop(Gfx *gdl)
 }
 
 
-/**
- * Address: 7F007CC8
- */
 Gfx *titleRenderFolderMenuBackground(Gfx *gdl, s32 xOffset, struct FolderSelectColour *topColour, struct FolderSelectColour *bottomColour)
 {
     gDPSetRenderMode(gdl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
@@ -190,9 +165,6 @@ Gfx *titleRenderFade(Gfx *gdl, u32 alpha)
 }
 
 
-/**
- * Address: 7F007F30
- */
 Gfx *titleRenderBondModel(Gfx *gdl, s32 count, Mtxf *matrix)
 {
 #if defined(REFRESH_PAL)
@@ -220,7 +192,7 @@ Gfx *titleRenderBondModel(Gfx *gdl, s32 count, Mtxf *matrix)
 
             if (g_TitleTimer == BOND_EYE_ANIM_START)
             {
-                modelSetAnimation(g_TitleBondModel, (struct ModelAnimation *) ((s32) &ANIM_DATA_bond_eye_fire + (s32) &ptr_animation_table->data), 0, 2.0f, 0.910000026f, 16.0f);
+                modelSetAnimation(g_TitleBondModel, (struct ModelAnimation *) ((s32) &ANIM_DATA_bond_eye_fire + (s32) &g_AnimTable->data), 0, 2.0f, 0.910000026f, 16.0f);
             }
 
             if (g_TitleTimer == BOND_EYE_ANIM_SPEEDUP)
@@ -318,11 +290,11 @@ Gfx *titleRenderBond(Gfx *gdl) {
 }
 
 
-extern Gfx *D_020043E8 NO_SDATA;
+extern Gfx *DL_RAREWARELOGO1 NO_SDATA;
 extern Gfx *DL_RAREWARETEXT NO_SDATA;
-extern Gfx *D_02004758 NO_SDATA;
-extern u8 *D_02004FE8 NO_SDATA;
-extern u8 *D_02005FF0 NO_SDATA;
+extern Gfx *DL_RAREWARELOGO2 NO_SDATA;
+extern u8 *TEX_RAREWARELOGO1 NO_SDATA;
+extern u8 *TEX_RAREWARELOGO2 NO_SDATA;
 
 Gfx *titleRenderRareLogo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     cameraPosition1[2] = arg3;
@@ -338,11 +310,11 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     gSPSetGeometryMode(gdl++, (G_SHADE | G_CULL_BACK | G_LIGHTING | G_TEXTURE_GEN | G_SHADING_SMOOTH));
     guLookAt(&g_TitleMtxRareLogo1[g_TitleMtxIndex], cameraPosition1[0], cameraPosition1[1], cameraPosition1[2], (cameraPosition1[0] + cameraPosition2[0]), (cameraPosition1[1] + cameraPosition2[1]), (cameraPosition1[2] + cameraPosition2[2]), cameraPosition3[0], cameraPosition3[1], cameraPosition3[2]);
     gSPMatrix(gdl++,  osVirtualToPhysical(&g_TitleMtxRareLogo1[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
-    guRotate(&g_TitleMtxRareLogo2[g_TitleMtxIndex], D_8002A89C, 0.0f, 1.0f, 0.0f);
+    guRotate(&g_TitleMtxRareLogo2[g_TitleMtxIndex], g_TitleRareLogoAngle, 0.0f, 1.0f, 0.0f);
 #if defined(REFRESH_PAL)
-    D_8002A89C += 2.4f;
+    g_TitleRareLogoAngle += 2.4f;
 #else
-    D_8002A89C += 2.0f;
+    g_TitleRareLogoAngle += 2.0f;
 #endif
     gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxRareLogo2[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
     gSPSetLights1(gdl++, gunbarrelLights);
@@ -359,13 +331,13 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     gDPPipeSync(gdl++);
     gDPPipeSync(gdl++);
     gSPTexture(gdl++, 0x0800, 0x0800, 0, G_TX_RENDERTILE, G_ON);
-    gDPLoadTextureBlock(gdl++, &D_02004FE8, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, (G_TX_NOMIRROR | G_TX_WRAP), (G_TX_NOMIRROR | G_TX_WRAP), 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+    gDPLoadTextureBlock(gdl++, &TEX_RAREWARELOGO1, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, (G_TX_NOMIRROR | G_TX_WRAP), (G_TX_NOMIRROR | G_TX_WRAP), 5, 5, G_TX_NOLOD, G_TX_NOLOD);
     gDPSetPrimColor(gdl++, 0, 0, arg4, arg4, arg4, 0xFF);
-    gSPDisplayList(gdl++, &D_020043E8);
+    gSPDisplayList(gdl++, &DL_RAREWARELOGO1);
     gSPDisplayList(gdl++, &DL_RAREWARETEXT);
-    gDPLoadTextureBlock(gdl++, &D_02005FF0, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, (G_TX_NOMIRROR | G_TX_WRAP), (G_TX_NOMIRROR | G_TX_WRAP), 5, 5, G_TX_NOLOD, G_TX_NOLOD);
+    gDPLoadTextureBlock(gdl++, &TEX_RAREWARELOGO2, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, (G_TX_NOMIRROR | G_TX_WRAP), (G_TX_NOMIRROR | G_TX_WRAP), 5, 5, G_TX_NOLOD, G_TX_NOLOD);
     gDPSetPrimColor(gdl++, 0, 0, ((arg4 * 0xF0) / 0xFF), ((arg4 * 0xD0) / 0xFF), ((arg4 * 0xF0) / 0xFF), 0xFF);
-    gSPDisplayList(gdl++, &D_02004758);
+    gSPDisplayList(gdl++, &DL_RAREWARELOGO2);
 
     return gdl;
 }
@@ -377,7 +349,7 @@ extern void *_rarewarelogoSegmentEnd NO_SDATA;
 void titleLoadRareLogo(s32 address, s32 size) {
     g_TitleStage = 0;
     g_TitleX = 880.0f;
-    D_8002A89C = -40.0f;
+    g_TitleRareLogoAngle = -40.0f;
     g_TitleCounter = 0;
     g_TitleRareLogoData = address;
     romCopy(g_TitleRareLogoData, &_rarewarelogoSegmentRomStart, ALIGN64_V2((u32)&_rarewarelogoSegmentEnd - (u32)&_rarewarelogoSegmentStart));
@@ -437,14 +409,14 @@ s32 titleIsRareIntroDone(void) {
 }
 
 
-extern void *unknown2 NO_SDATA;
-extern void *unknown2_end NO_SDATA;
+extern void *g_TitleBackdropRle NO_SDATA;
+extern void *g_TitleBackdropRleEnd NO_SDATA;
 void titleLoadBackdrop(u8 **addr, s32 *size) {
     g_TitleBackdrop = *addr;
     *size -= 0x40400;
     *addr += 0x40400;
     g_TitleBackdropPacked = *addr;
-    romCopy(g_TitleBackdropPacked, (void *)(s32)&unknown2, ALIGN64_V2(((u32)&unknown2_end - (u32)&unknown2)));
+    romCopy(g_TitleBackdropPacked, (void *)(s32)&g_TitleBackdropRle, ALIGN64_V2(((u32)&g_TitleBackdropRleEnd - (u32)&g_TitleBackdropRle)));
     rleExpand8Bit(g_TitleBackdropPacked, g_TitleBackdrop);
 }
 
@@ -480,7 +452,7 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     titleLoadBackdrop((u8 **)&gfxBuffer, &bufferSize);
 
     // struct copy
-    sp50 = D_8002A8A8;
+    sp50 = (struct coord3d){0};
     
     temp_t9 = 0x12C00;
     
@@ -515,7 +487,7 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     modelSetAnimPlaySpeed(g_TitleBondModel, S_7F008E80_ANIM_SPEED, 0.0f);
 #undef S_7F008E80_ANIM_SPEED
     
-    animation = (struct ModelAnimation*)((s32)ptr_animation_table + (s32)&ANIM_DATA_bond_eye_walk);
+    animation = (struct ModelAnimation*)((s32)g_AnimTable + (s32)&ANIM_DATA_bond_eye_walk);
     startframe = animation->numFrames - 0x44;
     while (startframe < 0)
     {
@@ -575,9 +547,6 @@ void titleFreeBondModels(void)
 #endif
 
 
-/*
- * Address: 0x7F009254
-*/
 Gfx *titleRenderGunbarrel (Gfx *gdl) {
     g_TitleMtxIndex = (1 - g_TitleMtxIndex);
     switch (g_TitleStage - 2)
@@ -719,17 +688,9 @@ void titleAllocMatrices(void)
 }
 
 
-f32 D_8002BB00 = 0; // Set but never read
-f32 D_8002BB04 = 0; // Set but never read
-f32 D_8002BB08 = 0; // Set but never read
-f32 D_8002BB0C = 255.0; // Set but never read
-f32 D_8002BB10 = 255.0; // Set but never read
-f32 D_8002BB14 = 255.0; // Set but never read
 
 
 /**
- * Address: 7F01B240
- * 
  * Render the gun barrel background in the folder select menu. 
  * Like all front end screens, this screen renders at the high res 440x330 resolution.
  * The 440x299 8-bit background texture is far too large to fit in the N64's 4KB texture cache (TMEM),
@@ -754,9 +715,6 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
     bottomRed = bottomColour->red;
     bottomGreen = bottomColour->green;
     bottomBlue = bottomColour->blue;
-    D_8002BB0C = bottomRed;
-    D_8002BB10 = bottomGreen;
-    D_8002BB14 = bottomBlue;
 
     i = 0;
 
@@ -792,17 +750,10 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
         image += 440; // Advance the image data by 440 bytes, since each texel is 1 byte.
     }
 
-    D_8002BB08 = topBlue;
-    D_8002BB04 = topGreen;
-    D_8002BB00 = topRed;
-
     return gdl;
 }
 
 
-/*
-* Address: 0x7F01BAE0
-*/
 void titleMakeBarrelHoleVerts(struct s_display_list_something *var_s0, s32 arg1)
 {
     s16 cosval;
@@ -860,9 +811,6 @@ void titleMakeBarrelHoleVerts(struct s_display_list_something *var_s0, s32 arg1)
 }
 
 
-/*
-* Address: 0x7F01BFF8
-*/
 Gfx *titleMakeBarrelHoleGfx(Gfx *gdl, Vtx *vertexList, s32 numVertices)
 {
     s8 j;

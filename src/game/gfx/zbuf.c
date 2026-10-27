@@ -24,17 +24,11 @@ s32 g_Zbuf = 0; // 0x8004f010
 // Buffers handed in through zbufSetBuffer (front-end menus) keep their own width.
 static s32 g_ZbufIsGameplay = FALSE;
 
-/*
- * Address: 0x7f0d2870
-*/
 void zbufDeallocate(void) {
     g_Zbuf = 0;
 }
 
 
-/*
- * Address: 0x7f0d287c
-*/
 void zbufAllocate(void)
 {
     if (resolution != 0)
@@ -65,9 +59,6 @@ void zbufAllocate(void)
 }
 
 
-/*
- * Address: 0x7f0d2938
-*/
 void zbufSetBuffer(s32 buffer, s32 width, s32 height) {
     g_Zbuf = buffer;
     g_ZbufWidth = width;
@@ -76,9 +67,6 @@ void zbufSetBuffer(s32 buffer, s32 width, s32 height) {
 }
 
 
-/*
- * Address: 0x7f0d2954
-*/
 Gfx *zbufInit(Gfx *gdl) {
     s32 phi_a3;
     s32 test;
@@ -101,9 +89,6 @@ Gfx *zbufInit(Gfx *gdl) {
 }
 
 
-/*
- * Address: 0x7f0d2a08
-*/
 Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
     s32 start_x;
     s32 end_x;

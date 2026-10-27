@@ -22,23 +22,17 @@
 #endif
 
 // bss
-//CODE.bss:8008C600
 s32 g_LevelMusicStage;
-//CODE.bss:8008C604
 s32 g_LevelMusicPausedState;
 
-//CODE.bss:8008C608
 s32 g_LevelMusicSlotActive[4];
 
-//CODE.bss:8008C618
 s32 g_LevelMusicSlotLinger[4];
 
-//CODE.bss:8008C628
 s32 g_LevelMusicSlotTotal[4];
 
 
 // data
-//D:800484C0
 s32 g_LevelMusicState = MUSICSTATE_SILENT;
 
 
@@ -475,7 +469,6 @@ struct music_setup
 };
 
 // data
-//D:8004EB10
 struct music_setup g_LevelMusic[] = {
     { LEVELID_BUNKER1,   M_BUNKER1,      0xFFFF,   M_BUNKER1X },
     { LEVELID_SILO,      M_SILO,         0xFFFF,   M_SILOX },
@@ -503,7 +496,6 @@ struct music_setup g_LevelMusic[] = {
     { 0 }
 };
 
-//D:8004EBD0
 s16 g_LevelMusicRandom[] = {
     M_TRAIN,
     M_DEPOT,

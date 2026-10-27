@@ -70,7 +70,6 @@ extern OSSched os_scheduler;
 extern OSScClient gfxClient[3];
 extern OSViMode g_ViModes[2];
 extern OSViMode *g_ViModePtrs[2];
-extern s32 dword_CODE_bss_8005DBE8[2];
 
 void permit_stderr(u32 flag);
 void CheckDisplayErrorBuffer(u32 *buffer);

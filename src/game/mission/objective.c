@@ -69,9 +69,6 @@ void briefingTextAdd(struct setup_objective_text *arg0)
 }
 
 
-/*
-* Address: 0x7f004fb8
-*/
 void objectiveAdd(struct objective_entry* objective)
 {
     g_Objectives[objective->menu] = objective;
@@ -104,19 +101,13 @@ void objectiveAddPicture(struct criteria_picture *arg0)
 
 //Public variables - move to header
 // bss
-//CODE.bss:80075D30
 struct objective_entry * g_Objectives[OBJECTIVES_MAX];
 OBJECTIVESTATUS         g_ObjectiveStatuses[OBJECTIVES_MAX]; //This is an array of 10 OBJECTIVESTATUS,
 
-//CODE.bss:80075D80
 u32 *g_Tags;
-//CODE.bss:80075D84
 struct watchMenuObjectiveText *g_BriefingTexts;
-//CODE.bss:80075D88
 struct criteria_roomentered *g_RoomEnteredCriteria;
-//CODE.bss:80075D8C
 struct criteria_deposit *g_DepositCriteria;
-//CODE.bss:80075D90
 struct criteria_picture *g_PictureCriteria;
 
 // data
@@ -149,7 +140,6 @@ TagObjectRecord *tagFind(s32 TagID) //#MATCH
 
 /*
  * Return Object with TagID  
- * Address 7F0570C0
  */
 ObjectRecord *objFindByTagId(s32 TagID) //#MATCH
 {
@@ -169,9 +159,6 @@ ObjectRecord *objFindByTagId(s32 TagID) //#MATCH
 
 
 
-/*
-* Address: 0x7f057104
-*/
 u8 * briefingGetText(WATCH_BRIEFING_PAGE page)
 {
     struct watchMenuObjectiveText * curentry;

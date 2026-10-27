@@ -130,128 +130,70 @@ struct solo_target_times {
 
 
 extern f32 cast_camera_dist;
-//CODE.bss:800695A4
 extern f32 cast_camera_dist_start;
-//CODE.bss:800695A8
 extern f32 cast_camera_dist_end;
-//CODE.bss:800695AC
 extern f32 cast_camera_angle;
-//CODE.bss:800695B0
 extern f32 cast_camera_angle_start;
-//CODE.bss:800695B4
 extern f32 cast_camera_angle_end;
-//CODE.bss:800695B8
 extern f32 cast_camera_height;
-//CODE.bss:800695BC
 extern f32 cast_camera_height_start;
-//CODE.bss:800695C0
 extern f32 cast_camera_height_end;
-//CODE.bss:800695C4                     .align 3
-//CODE.bss:800695C8
 extern struct coord3d cast_target_smoothed;
-//CODE.bss:800695D4                     .align 3
-//CODE.bss:800695D8
 extern struct coord3d cast_target_accumulator;
 
-//CODE.bss:800695E4
 extern s32 cast_camera_reset;
 
-//CODE.bss:800695E8
 extern struct coord3d cast_rootpos_smoothed;
 
-//CODE.bss:800695F4                     .align 3
-//CODE.bss:800695F8
 extern struct coord3d cast_rootvel_smoothed;
-//CODE.bss:80069604                     .align 3
-//CODE.bss:80069608
 extern struct coord3d cast_rootvel_accumulator;
 
-//CODE.bss:80069614
 extern f32 g_NintendoLogoSpin;
-//CODE.bss:80069618
 extern f32 g_NintendoLogoScale;
-//CODE.bss:80069620
 extern coord3d g_FrontFolderScreenPos[MAX_FOLDER_COUNT];
 
-//CODE.bss:80069650
 extern u8 g_CheatAvailable[];
 
-//CODE.bss:800696A0
 extern u8 g_CheatActivated[];
 
 
-//CODE.bss:800696F0
 extern s32 g_MpFavWeapon[4][2];
-//CODE.bss:80069710
 extern s32 g_MpCharCursor[4];
 
-//CODE.bss:80069720
 extern s32 g_MpCharPrevCursor[4];
 
-//CODE.bss:80069730
 extern s32 g_MpCharScroll[4];
 
-//CODE.bss:80069740
 extern s32 g_MpCharChosen[];
-//CODE.bss:80069750
 extern s32 g_MpCharPortraitSize[];
-//CODE.bss:80069760
 extern s32 g_MpHandicap[];
-//CODE.bss:80069770
 extern char* g_FrontTabStartText;
-//CODE.bss:80069774
 extern char* g_FrontTabNextText;
-//CODE.bss:80069778
 extern char* g_FrontTabPrevText;
-//CODE.bss:8006977C
 extern s32 g_MpStageCursor;
-//CODE.bss:80069780
 extern s32 g_MpScenarioCursor;
-//CODE.bss:80069784
 extern s32 g_FrontDifficultyHighlight;
-//CODE.bss:80069788
 extern s32 g_MpTeamsCursor;
-//CODE.bss:80069790
 extern s32 g_NewCheatUnlocked;
-//CODE.bss:80069794
 extern s32 g_Front007HlReaction;
-//CODE.bss:80069798
 extern s32 g_Front007HlHealth;
-//CODE.bss:8006979C
 extern s32 g_Front007HlDamage;
-//CODE.bss:800697A0
 extern s32 g_Front007HlAccuracy;
 
-//CODE.bss:800697A4                     .align 3
 
-//CODE.bss:800697A8
 extern s32 g_MpHandicap[];
-//CODE.bss:800697B8
 extern s32 g_MpControlStyle[];
 
 
-//CODE.bss:800697C8
 extern s32 g_MpHlPlayers;
-//CODE.bss:800697CC
 extern s32 g_MpHlScenario;
-//CODE.bss:800697D0
 extern s32 g_MpHlStage;
-//CODE.bss:800697D4
 extern s32 g_MpHlLength;
-//CODE.bss:800697D8
 extern s32 g_MpHlChar;
-//CODE.bss:800697DC
 extern s32 g_MpHlWeapons;
-//CODE.bss:800697E0
 extern s32 g_MpHlHandicap;
-//CODE.bss:800697E4
 extern s32 g_MpHlControls;
-//CODE.bss:800697E8
 extern s32 g_MpHlAim;
-//CODE.bss:800697EC                     .align 4
-/*
-CODE.bss:800697F0     dword_CODE_bss_800697F0:.space 0x130
-*/
 
 extern MENU g_FrontMenu;
 extern MENU g_FrontNextMenu;
@@ -288,7 +230,6 @@ extern s32 g_FrontBondKilled;
 extern s32 g_FrontFirstLegal;
 extern s32 g_FrontFirstBoot;
 extern s32 g_FrontSkipIntro;
-extern s32 dword_ge_logo_bool;
 extern s32 g_FrontStartMusic;
 extern s32 g_FrontScreenSize;
 extern s32 g_FrontHiResPending;

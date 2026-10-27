@@ -75,21 +75,6 @@
 #endif
 
 extern f32 g_TankShellSpeed;
-
-extern coord3d D_80035C40;
-extern coord3d D_80035C4C;
-extern coord3d D_80035C58;
-extern coord3d D_80035C64;
-extern coord3d D_80035C70;
-extern coord3d D_80035C7C;
-extern coord3d D_80035C88;
-extern Vtx D_80035C98;
-extern coord3d D_80035CA8;
-extern coord3d D_80035CB4;
-extern ModelRenderData D_80035CC0;
-extern ModelRenderData D_80035D00;
-extern ModelRenderData D_80035D40;
-extern coord3d D_80035EA4;
 extern u32 watchControllerButtonBases[];
 extern GunModelFileRecord gitem_structs[];
 extern struct gun_trigger_state g_ZeroTriggerState;
@@ -102,9 +87,8 @@ extern struct LaserRichochetSounds laser_ricochet_sounds;
 extern struct RicochetSoundsLarge ricochet_sounds_large;
 extern struct sfx2 watchlaser_fire_sounds;
 extern struct sfx3 knife_throw_sounds;
-extern u32 D_80032458;
-extern u32 D_80034CA4[];
-extern u32 D_80034E0C[];
+extern Weapon1PTransformKeyframe knifeSlashKeyframes1[];
+extern Weapon1PTransformKeyframe knifeSlashKeyframes2[];
 extern Weapon1PTransformKeyframe throwKnifeDrawBackKeyframes[];
 extern Weapon1PTransformKeyframe throwKnifeReleaseKeyframes[];
 extern Weapon1PTransformKeyframe grenadeThrowKeyframes[];
@@ -144,7 +128,7 @@ f32 gunSetHorizontalOffset(GUNHAND hand);
 f32 gunGetMaxHingeAngle(GUNHAND hand);
 void gunSetWatchMenuWeapon(GUNHAND hand, ITEM_IDS weaponnum_watchmenu);
 void gunStartBoltRecoil(GUNHAND hand);
-void sub_GAME_7F05EA94(Model *model, s32 val);
+void gunSetHeldItemVisible(Model *model, s32 val);
 void gunReload(enum GUNHAND hand);
 void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos);
 Vtx *dynAllocateVertices(s32 count);
@@ -168,11 +152,8 @@ void gunFreeRocket(enum GUNHAND hand)
 }
 
 
-extern f32 D_80053DDC;
+extern f32 g_ThrowVelocityScale;
 
-/*
-* Address: 0x7F05FB64
-*/
 void gunFireTankShell(s32 handnum)
 {
     WeaponObjRecord *obj;
@@ -252,9 +233,9 @@ void gunFireTankShell(s32 handnum)
         spawnpos.z = hand->field_B58.z;
 
 
-        unscaledvelocity.x = aimdir.x * D_80053DDC;
-        unscaledvelocity.y = aimdir.y * D_80053DDC;
-        unscaledvelocity.z = aimdir.z * D_80053DDC;
+        unscaledvelocity.x = aimdir.x * g_ThrowVelocityScale;
+        unscaledvelocity.y = aimdir.y * g_ThrowVelocityScale;
+        unscaledvelocity.z = aimdir.z * g_ThrowVelocityScale;
 
         velocity.x = unscaledvelocity.x * g_GlobalTimerDelta;
         velocity.y = unscaledvelocity.y * g_GlobalTimerDelta;
@@ -323,7 +304,7 @@ void gunFireTankShell(s32 handnum)
 
 
 /**
- * D_80053DDC belongs to gunFireTankShell, but must sit here
+ * g_ThrowVelocityScale belongs to gunFireTankShell, but must sit here
  * immediately ahead of this function's pool for that function to match.
  */
 #endif
@@ -336,7 +317,7 @@ void gunUpdateAndFire(GUNHAND handnum)
     Mtxf flash2mtx;
     Mtxf tmpmtx;
     ModelFileHeader *mdlhdr;
-    coord3d gunofs = D_80035C40;
+    coord3d gunofs = {0.0f, 0.0f, 0.0f};
     Mtxf rotmtx;
     Mtxf aimmtx;
     struct hand *hand;
@@ -425,9 +406,9 @@ void gunUpdateAndFire(GUNHAND handnum)
     /**
      * Gun sway system. This moves the held weapons in figure-eight pattern which becomes bigger depending how fast the player is moving.
      */
-    blendedpos = D_80035C4C;
-    blendedlook = D_80035C58;
-    blendedup = D_80035C64;
+    blendedpos = (coord3d){0};
+    blendedlook = (coord3d){0.0f, 0.0f, -1.0f};
+    blendedup = (coord3d){0.0f, 1.0f, 0.0f};
 
     i = hand->curblendpos;
 
@@ -539,19 +520,19 @@ void gunUpdateAndFire(GUNHAND handnum)
 
     if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
     {
-            trigrot = D_80035C70;
+            trigrot = (coord3d){6.2536321f, 6.2592888f, 0.204238f};
             mtx4LoadRotation(&trigrot, &tmpmtx);
             mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
     }
     else if (item == ITEM_TASER)
     {
-        taserrot = D_80035C7C;
+        taserrot = (coord3d){0.25044999f, 0.90482301f, 0.28716999f};
         mtx4LoadRotation(&taserrot, &tmpmtx);
         mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
     }
     else if ((item == ITEM_FIST) && (g_CurrentPlayer->cur_item_weapon_getname == ITEM_SNIPERRIFLE))
     {
-        fistrot = D_80035C88;
+        fistrot = (coord3d){1.715736f, 0.37460899f, 0.92193699f};
         mtx4LoadRotation(&fistrot, &tmpmtx);
         mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
         gunofs.x += -2.5f;
@@ -620,8 +601,8 @@ void gunUpdateAndFire(GUNHAND handnum)
 
 
         modelInit(model, mdlhdr, (s32 *) (&hand->modeldatas));
-        sub_GAME_7F05E978(model, 1);
-        sub_GAME_7F05EA94(model, hand->field_87E);
+        gunSetFirstPersonPartsVisible(model, 1);
+        gunSetHeldItemVisible(model, hand->field_87E);
         node = mdlhdr->Switches[1];
 
         if (node != NULL)
@@ -995,7 +976,6 @@ void gunUpdateAndFireBothHands(void)
  * @param arg2:
  * @param arg3:
  *
- * Address 0x7F061948.
  *
  * This function adjusts the length of the bullet beam that's rendered on screen.
  * This function is used for both player and guard beams.
@@ -1004,7 +984,6 @@ void gunUpdateAndFireBothHands(void)
  * The laser also has a shortened one, but it appears this is to avoid graphical glitches.
  * Other weapons have their bullet beam capped at 10000 max length, otherwise if the player
  * fires into the void, there may be graphical glitches with the beam.
- *
 */
 void beamCreate(struct BeamRecord *arg0, ITEM_IDS item, coord3d *arg2, coord3d *arg3)
 {
@@ -1200,12 +1179,12 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 arg2)
 
     if (flash->unk00 >= 0)
     {
-        templatevtx = D_80035C98;
+        templatevtx = (Vtx){0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff};
         playerpos = playerGetPos();
         startoffset = flash->unk28;
         dist = flash->unk24;
-        flareoffset = D_80035CA8;
-        extraorigin = D_80035CB4;
+        flareoffset = (coord3d){0};
+        extraorigin = (coord3d){0};
         extra_scale = 1.4142f; // ~√2
         image = g_ImageFlare3;
         worldtoscreen = camGetWorldToScreenMtxf();
@@ -1454,9 +1433,6 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 arg2)
 }
 
 
-/*
-* Address: 0x7F062B00
-*/
 void beamTick(BeamRecord* beam)
 {
     if (beam->unk00 >= 0)
@@ -1484,7 +1460,6 @@ void beamTick(BeamRecord* beam)
     }
 }
 
-// Address: 0x7F062BE4
 void gunRenderHands(Gfx **gdlptr)
 {
     Gfx *gdl = *gdlptr;
@@ -1492,7 +1467,7 @@ void gunRenderHands(Gfx **gdlptr)
     s32 handnum;
     Model *model;
  
-    renderdata = D_80035CC0;
+    renderdata = (ModelRenderData){NULL, TRUE, 3};
  
     for (handnum = 0; handnum != 2; handnum++) 
     {
@@ -1601,7 +1576,7 @@ void gunRenderHands(Gfx **gdlptr)
 
 Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
 {
-    ModelRenderData renderdata = D_80035D00;
+    ModelRenderData renderdata = {NULL, TRUE, 3};
     ModelHeader model;
     u8 spb8[0x80];
     Mtxf sp74;
@@ -1646,8 +1621,8 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
     ((Model *) &model)->render_pos = matrices;
     modelCalculateRwDataLen(bodymodel);
     modelInit((Model *) &model, bodymodel, spb8);
-    sub_GAME_7F05E978((Model *) &model, 0);
-    sub_GAME_7F05EA94((Model *) &model, 1);
+    gunSetFirstPersonPartsVisible((Model *) &model, 0);
+    gunSetHeldItemVisible((Model *) &model, 1);
 
     if (bodymodel->Switches[1] != NULL)
     {
@@ -1784,23 +1759,24 @@ earlyreturn:
 }
 
 
-void sub_GAME_7F06351C(struct coord3d* arg0, Mtxf* arg1, Mtxf* arg2, Mtxf* arg3, struct coord3d* arg4, Mtxf* arg5, Mtxf* arg6)
+/**
+ * The matrix for one button of the watch menu's controller model:
+ * out = m5 * translate(pos) * m3 * m2 * m1 * translate(base).
+ */
+void watchControllerButtonMtx(struct coord3d *base, Mtxf *m1, Mtxf *m2, Mtxf *m3, struct coord3d *pos, Mtxf *m5, Mtxf *out)
 {
-    Mtxf sp20;
+    Mtxf translation;
 
-    mtx4LoadTranslation(arg0, arg6);
-    mtx4MultInPlace(arg1, arg6);
-    mtx4MultInPlace(arg2, arg6);
-    mtx4MultInPlace(arg3, arg6);
-    mtx4LoadTranslation(arg4, &sp20);
-    mtx4MultInPlace(&sp20, arg6);
-    mtx4MultInPlace(arg5, arg6);
+    mtx4LoadTranslation(base, out);
+    mtx4MultInPlace(m1, out);
+    mtx4MultInPlace(m2, out);
+    mtx4MultInPlace(m3, out);
+    mtx4LoadTranslation(pos, &translation);
+    mtx4MultInPlace(&translation, out);
+    mtx4MultInPlace(m5, out);
 }
 
 
-/**
- * Address: 7F06359C
- */
 Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions* buttonpositions, s8* contpadnum)
 {
     ModelRenderData renderdata;
@@ -1847,7 +1823,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     struct coord3d coord_node12_pos;
     struct coord3d coord_node12_base;
 
-    renderdata = D_80035D40;
+    renderdata = (ModelRenderData){NULL, TRUE, 3};
 
     gunSetWatchMenuWeapon(GUNRIGHT, 0x55);
 
@@ -1961,7 +1937,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(1.0471976f, &sp28c);
-                sub_GAME_7F06351C(&coord_node11_base, &sp24c, &sp28c, &sp1cc, &coord_node11_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node11_base, &sp24c, &sp28c, &sp1cc, &coord_node11_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // C-Up
@@ -1976,7 +1952,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(-1.0471976f, &sp28c);
-                sub_GAME_7F06351C(&coord_node4_base, &sp24c, &sp28c, &sp1cc, &coord_node4_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node4_base, &sp24c, &sp28c, &sp1cc, &coord_node4_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // C-Down
@@ -1991,7 +1967,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(-1.0471976f, &sp28c);
-                sub_GAME_7F06351C(&coord_node5_base, &sp24c, &sp28c, &sp1cc, &coord_node5_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node5_base, &sp24c, &sp28c, &sp1cc, &coord_node5_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // C-Left
@@ -2006,7 +1982,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(-1.0471976f, &sp28c);
-                sub_GAME_7F06351C(&coord_node6_base, &sp24c, &sp28c, &sp1cc, &coord_node6_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node6_base, &sp24c, &sp28c, &sp1cc, &coord_node6_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // C-Right
@@ -2021,7 +1997,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(-1.0471976f, &sp28c);
-                sub_GAME_7F06351C(&coord_node7_base, &sp24c, &sp28c, &sp1cc, &coord_node7_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node7_base, &sp24c, &sp28c, &sp1cc, &coord_node7_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // B
@@ -2036,7 +2012,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(-1.0471976, &sp28c);
-                sub_GAME_7F06351C(&coord_node9_base, &sp24c, &sp28c, &sp1cc, &coord_node9_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node9_base, &sp24c, &sp28c, &sp1cc, &coord_node9_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // A
@@ -2051,7 +2027,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(-1.0471976f, &sp28c);
-                sub_GAME_7F06351C(&coord_node8_base, &sp24c, &sp28c, &sp1cc, &coord_node8_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node8_base, &sp24c, &sp28c, &sp1cc, &coord_node8_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // L
@@ -2066,7 +2042,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(1.0471976f, &sp28c);
-                sub_GAME_7F06351C(&coord_node10_base, &sp24c, &sp28c, &sp1cc, &coord_node10_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node10_base, &sp24c, &sp28c, &sp1cc, &coord_node10_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // D-pad
@@ -2096,7 +2072,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
                 mtx4MultInPlace(&spb4, &sp24c);
                 mtx4LoadXRotation(-0.89759791f, &sp28c);
-                sub_GAME_7F06351C(&coord_node3_base, &sp24c, &sp28c, &sp1cc, &coord_node3_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node3_base, &sp24c, &sp28c, &sp1cc, &coord_node3_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // Start
@@ -2111,7 +2087,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadXRotation(-1.0471976f, &sp28c);
-                sub_GAME_7F06351C(&coord_node1_base, &sp24c, &sp28c, &sp1cc, &coord_node1_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node1_base, &sp24c, &sp28c, &sp1cc, &coord_node1_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             // Z
@@ -2126,7 +2102,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
                 }
 
                 mtx4LoadZRotation(M_PI_F, &sp28c);
-                sub_GAME_7F06351C(&coord_node12_base, &sp24c, &sp28c, &sp1cc, &coord_node12_pos, &sp20c, &sp38c);
+                watchControllerButtonMtx(&coord_node12_base, &sp24c, &sp28c, &sp1cc, &coord_node12_pos, &sp20c, &sp38c);
                 mtx4Copy(&sp38c, &matrices[i]);
             }
             else
@@ -2154,18 +2130,12 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 }
 
 
-/**
- * Address: 7F064364
- */
 Gfx *watchRenderControllerOpaque(Gfx *gdl, Mtxf *basemtx, bool animatebuttons, WatchContButtonPositions *buttonpositions, s8 *contpadnum)
 {
     return watchRenderController(gdl, basemtx, 0xff, animatebuttons, buttonpositions, contpadnum);
 }
 
 
-/**
- * Address: 7F0643A0
- */
 ALSoundState* gunGetFreeSfxState(void)
 {
     s32 i;
@@ -2362,15 +2332,10 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index)
 }
 
 
-f32 sub_GAME_7F0649AC(s32 param_1)
+/** How far the gun dips during a reload: further for the rocket launcher. */
+f32 gunGetReloadDipDepth(s32 item)
 {
-  f32 fVar1;
-
-  fVar1 = -60.0f;
-  if (param_1 == 0x19) {
-    fVar1 -= 20.0f;
-  }
-  return fVar1;
+    return (item == ITEM_ROCKETLAUNCH) ? -80.0f : -60.0f;
 }
 
 
@@ -2458,9 +2423,6 @@ void gunReload(enum GUNHAND hand)
 #endif
 
 
-/**
- * Address: 7F064B28
- */
 void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 {
 #if defined(VERSION_US)
@@ -2495,7 +2457,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     struct PropRecord *temp_v0_8;
     Weapon1PTransformKeyframe *sp74;
     f32 temp_f0_2;
-    u32 var_a0_2;
+    Weapon1PTransformKeyframe *slashKeyframes;
     f32 temp_v1_9;
     struct hand *temp_v1_5;
     f32 un_f32_num = 0.0f;
@@ -2537,7 +2499,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     Weapon1PTransformKeyframe *sp74;
     struct PropRecord *temp_v0_8;
     f32 temp_f0_2;
-    u32 var_a0_2;
+    Weapon1PTransformKeyframe *slashKeyframes;
     f32 temp_v1_9;
     struct hand *temp_v1_5;
     f32 un_f32_num = 0.0f;
@@ -2608,14 +2570,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             if ((lvGetControlsLocked() == 0) && (g_CurrentPlayer->mpmenuon == 0))
             {
-                /**
-                 * D_80032458 is always 0 so this branch can never execute.
-                 */
-                if ((D_80032458 != 0) && (sp1C4 == 1) && (g_CurrentPlayer->ammoheldarr[sp1C4] <= 0))
-                {
-                    g_CurrentPlayer->ammoheldarr[sp1C4] = 1;
-                }
-
                 if (gunGetHeldAmmo(hand) > 0)
                 {
                     handptr->weapon_action_state = GUN_ANIM_STATE_RELOAD_START;
@@ -3460,7 +3414,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             mtx4MultInPlace(&sp12C, &handptr->field_8EC);
             sinf((un_f32_num / un_f32_div_1));
             handptr->field_8EC.m[3][0] = 0.0f;
-            handptr->field_8EC.m[3][1] = sub_GAME_7F0649AC(var_s1) * (1.0f - cosf(sp128));
+            handptr->field_8EC.m[3][1] = gunGetReloadDipDepth(var_s1) * (1.0f - cosf(sp128));
             handptr->field_8EC.m[3][2] = sinf(sp128) * 15.0f;
         }
     }
@@ -3570,7 +3524,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             mtx4MultInPlace(&spE4, &handptr->field_8EC);
             sinf(un_f32_num);
             handptr->field_8EC.m[3][0] = 0.0f;
-            handptr->field_8EC.m[3][1] = sub_GAME_7F0649AC(var_s1) * (1.0f - cosf(M_LN2F));
+            handptr->field_8EC.m[3][1] = gunGetReloadDipDepth(var_s1) * (1.0f - cosf(M_LN2F));
             handptr->field_8EC.m[3][2] = sinf(M_LN2F) * 15.0f;
         }
     }
@@ -3610,7 +3564,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             mtx4MultInPlace(&sp9C, &handptr->field_8EC);
             sinf(un_f32_num / un_f32_div_2);
             handptr->field_8EC.m[3][0] = 0.0f;
-            handptr->field_8EC.m[3][1] = sub_GAME_7F0649AC(var_s1) * (1.0f - cosf(sp98));
+            handptr->field_8EC.m[3][1] = gunGetReloadDipDepth(var_s1) * (1.0f - cosf(sp98));
             handptr->field_8EC.m[3][2] = sinf(sp98) * 15.0f;
         }
     }
@@ -3741,14 +3695,14 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             || (handptr->weapon_action_state == GUN_ANIM_STATE_KNIFE_SLASH1_STRIKE)
             || (handptr->weapon_action_state == GUN_ANIM_STATE_KNIFE_SLASH1_RECOVER))
         {
-            var_a0_2 = D_80034CA4;
+            slashKeyframes = knifeSlashKeyframes1;
         }
         else
         {
-            var_a0_2 = D_80034E0C;
+            slashKeyframes = knifeSlashKeyframes2;
         }
 
-        if (gunSample1PTransform(var_a0_2, sp88, &handptr->field_8EC, hand) != 0)
+        if (gunSample1PTransform(slashKeyframes, sp88, &handptr->field_8EC, hand) != 0)
         {
             handptr->field_92C = 1;
         }
@@ -4633,9 +4587,6 @@ void gunUpdateCrosshairManual(f32 turn_x, f32 turn_y)
 }
 
 
-/*
-* Address: 0x7f068008
-*/
 void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle) {
 	*horizontal_angle = g_CurrentPlayer->crosshair_angle.f[0];
 	*vertical_angle = g_CurrentPlayer->crosshair_angle.f[1];
@@ -4645,9 +4596,6 @@ void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle) {
 extern const f32 g_GunScreenAspectRatio;
 
 
-/**
- * Address 0x7F068190.
-*/
 #if !defined(VERSION_US)
 void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 {
@@ -4660,7 +4608,6 @@ void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 
 
 /*
-* Address: 0x7f0681cc
 * This function computes the angle the player's bullets are fired at
 */
 void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
@@ -4697,9 +4644,6 @@ void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
 }
 
 
-/*
-* Address: 0x7f068420
-*/
 CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
 {
     CasingRecord* entry = g_Casings;
@@ -4785,8 +4729,6 @@ extern const f32 g_RifleCasingGravity;
  
  
 /**
- * Address: 7F068508
- * 
  * Ejects a spent cartridge casing from the gun in the given hand.
  */
 #if defined(VERSION_EU)
@@ -4853,7 +4795,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         return;
     }
  
-    rot = D_80035EA4;
+    rot = (coord3d){0};
     casing->floor_y_pos = floor_y_pos;
  
     if (((((weaponid == ITEM_WPPK) || (weaponid == ITEM_WPPKSIL)) || (weaponid == ITEM_TT33)) || (weaponid == ITEM_SILVERWPPK)) || (weaponid == ITEM_GOLDWPPK))
@@ -4985,9 +4927,6 @@ extern const char aSD_0[];
 
 
 #if defined(VERSION_US)
-/**
- * Address 0x7F068190.
-*/
 void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 {
     zeropos->x = 0.0f;
@@ -4999,7 +4938,6 @@ void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 
 
 /*
-* Address: 0x7f0681cc
 * This function computes the angle the player's bullets are fired at
 */
 void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
@@ -5036,9 +4974,6 @@ void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
 }
 
 
-/*
-* Address: 0x7f068420
-*/
 CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
 {
     CasingRecord* entry = g_Casings;
@@ -5095,8 +5030,6 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
  
  
 /**
- * Address: 7F068508
- * 
  * Ejects a spent cartridge casing from the gun in the given hand.
  */
 #if !defined(VERSION_EU)
@@ -5165,7 +5098,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         return;
     }
  
-    rot = D_80035EA4;
+    rot = (coord3d){0};
     casing->floor_y_pos = floor_y_pos;
  
     if (((((weaponid == ITEM_WPPK) || (weaponid == ITEM_WPPKSIL)) || (weaponid == ITEM_TT33)) || (weaponid == ITEM_SILVERWPPK)) || (weaponid == ITEM_GOLDWPPK))
@@ -5434,7 +5367,6 @@ void casingRender(CasingRecord *casing, Gfx **gdl)
 }
 
 
-// Address: 0x7F06908C
 void casingsRender(Gfx **gdl)
 {
     CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
@@ -5892,9 +5824,6 @@ Gfx *hudRenderAmmo(Gfx *gdl)
 }
 
 
-/**
- * Address: 7F06A334
- */
 Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
 {
     ITEM_IDS offhanditem;
@@ -6245,8 +6174,6 @@ const f32 g_GunSightAspectRatio = 25.0f / 21.0f;
 
 
 /**
- * Address: 7F03A97C
- *
  * Tests if a ray intersects the bounding box of the given room.
  * @return TRUE if the ray intersects, otherwise FALSE.
 */
@@ -6276,8 +6203,6 @@ s32 shotRayHitsRoomBbox(s32 room, coord3d* start, coord3d* dir)
 
 
 /**
- * Address: 7F03AB58
- *
  * Refines an existing background bullet hit by checking currently visible rooms
  * that have not already been tested.
  *
@@ -6368,8 +6293,6 @@ s32 shotFindBgHitInVisibleRooms(coord3d *from, coord3d *to, coord3d *dir, coord3
 
 
 /**
- * Address: 7F03ADF4
- *
  * Beginning at startroom, walk connected rooms looking for a background
  * bullet hit.
  *
@@ -6434,8 +6357,6 @@ s32 shotFindBgHitInConnectedRooms(s32 startroom, coord3d *from, coord3d *to, coo
 
 
 /**
- * Address: 7F03AF5C
- *
  * Finds the closest bg bullet collision among rooms not already visited by the shot traversal.
  * It first does a cheap bounding box test, then a precise test for rooms whose bounding boxes are intersected.
  * This seems to be a brute force/fallback version of the function above, shotFindBgHitInConnectedRooms.
@@ -6518,8 +6439,6 @@ s32 shotFindBgHit(s32 unused, coord3d *from, coord3d *to, coord3d *dir, coord3d 
 }
 
 /*
-* Address: 0x7F03B15C
-*
 * This function has a bunch of issues. It allows the player to shoot through walls
 * and even creates sparks in the distance when they shoot at the sky. Some of these
 * issues arise because it traces over the stan tiles to find the first room to test.
@@ -6812,8 +6731,6 @@ void shotFireBullet(s32 hand)
 
 
 /**
- * Address: 7F03B9C0
- *
  * Hitscans gather candidate hits along the bullet path. This function records each candidate hit into shotdata
  * and enforces pentration limits and removes hits that should be blocked by closer objects.
  */
@@ -7074,9 +6991,6 @@ void shotPunch(s32 hand, s32 item_id)
 
 void shotFireBullet(s32);
 
-/**
- * Address 0x7F03C0F0.
-*/
 void shotFireHand(s32 hand)
 {
     s32 item_id;
@@ -7143,9 +7057,6 @@ void shotFireHand(s32 hand)
 }
 
 
-/**
- * Address 0x7F03C294.
-*/
 void shotFireHands(void)
 {
     shotFireHand(GUNRIGHT);

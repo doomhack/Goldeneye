@@ -358,6 +358,11 @@ float mathHalfMe(int in)
 `@param`, `@return` help with editors that support function hinting by showing these values in a
 tooltip.
 
+Don't write the original ROM addresses of functions or data (`Address 0x7F0...`, `//D:8003...`)
+in comments, and don't name anything after an address (`D_80...`, `sub_GAME_7F...`): the code no
+longer sits at those addresses. Name a thing after what it does, and if nobody knows yet, say so in
+a comment.
+
 
 ## SCOPE
 Variables inside braces have "Block" scope and end when the block ends (unless
@@ -458,7 +463,7 @@ A function should never need to declare a variable using extern.
 ```C
     #include "file1.h"                             // Brings into scope "Public" Variables and functions
 
-    s32 D_80000000;                                // Unknown label data (Private by default)
+    s32 mUnknownCounter;                           // Private by default
     g_f2GlobalData = 0;                            // camelCasedNaming and defined as early as possible
 
     typedef enum ID
@@ -496,7 +501,7 @@ A function should never need to declare a variable using extern.
         if (g_f2GlobalData == 1)
         {
             gGlobalData = 2;
-            D_80000000  = 10;
+            mUnknownCounter = 10;
         }
         else
         {

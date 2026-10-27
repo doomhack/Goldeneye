@@ -9,7 +9,6 @@ OSMesgQueue vi_c_debug_MQ;
 
 
 #ifndef VERSION_EU
-//80024518
 Gfx viDLEnd[] = {
 	gsSPEndDisplayList()
 };

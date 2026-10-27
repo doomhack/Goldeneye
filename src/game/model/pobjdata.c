@@ -2,10 +2,8 @@
 #include <bondgame.h>
 #include "game/model/chrobjdata.h"
 
-//D:800375D0
 #include <assets/obseg/prop/propModelFileHeaders.inc.c>
 
-//D:8003A050
 #include <assets/embedded/skeletons/props.inc.c>
 
 
@@ -16,6 +14,5 @@
 #if defined(VERSION_EU)
 #include <assets/obseg/prop/propExplosionDetailsRecords-eu.inc.c>
 #else
-//D:8003b224
 #include <assets/obseg/prop/propExplosionDetailsRecords.inc.c>
 #endif

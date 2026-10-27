@@ -9,7 +9,6 @@
 #include "game/asset/fileload.h"
 
 // bss
-//CODE.bss:8008C640
 s32 g_LangBanks[45];
 
 

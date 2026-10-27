@@ -22,12 +22,9 @@
 // bss
 s32 g_SkyStageNum;
 
-Mtxf dword_CODE_bss_80079E98;
+Mtxf g_SkyInvScaleMtx;
 
 
-/*
-* Address: 0x7F093880
-*/
 /**
  * offset_x/offset_y are relative to the current player's view. (Stock GE
  * passed some absolute positions here too, which put the sky's horizon
@@ -46,9 +43,6 @@ void skyGetWorldPosFromScreenPos(f32 offset_x, f32 offset_y, coord3d* out) {
     mtx4RotateVecInPlace(player_mtxf, out->f);
 }
 
-/*
-* Address: 0x7F0938FC
-*/
 bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 {
     coord3d *eye = playerGetPos();
@@ -94,9 +88,6 @@ bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 }
 
 
-/*
-* Address: 0x7F093A78
-*/
 bool skyIsCornerInWater(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 {
     coord3d *eye = playerGetPos();
@@ -141,9 +132,6 @@ bool skyIsCornerInWater(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
     return FALSE;
 }
 
-/*
-* Address: 0x7F093BFC
-*/
 void skyCalculateEdgeVertex(coord3d *base, coord3d* ref, coord3d* out)
 {
     f32 mult;
@@ -189,9 +177,6 @@ void skyChooseCloudVtxColour(SkyRelated18 *arg0, f32 arg1)
     arg0->a = 0xff;
 }
 
-/*
-* Address: 0x7F093FA4
-*/
 void skyChooseWaterVtxColour(SkyRelated18 *arg0, f32 arg1)
 {
     f32 r = fogGetCurrentEnvironmentp()->Red;
@@ -205,7 +190,6 @@ void skyChooseWaterVtxColour(SkyRelated18 *arg0, f32 arg1)
 }
 
 /*
-* Address: 0x7F094298
 * Has to do with converting a float to a 32-bits value that's later read in two 16-bits parts
 * Possibly converting floats to fixed point
 */
@@ -235,9 +219,6 @@ void skySetStageNum(s32 stagenum) {
 }
 
 
-/*
-* Address: 0x7F094438
-*/
 void skyTick(void)
 {
     #if defined(VERSION_EU)
@@ -805,8 +786,8 @@ Gfx *skyRender(Gfx *gdl)
         s32 i;
 
         mtx4Mult(camGetProjectionMtxf(), camGetWorldToScreenMtxf(), &sp3cc);
-        guScaleF(dword_CODE_bss_80079E98.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
-        mtx4Mult(&sp3cc, &dword_CODE_bss_80079E98, &sp38c);
+        guScaleF(g_SkyInvScaleMtx.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
+        mtx4Mult(&sp3cc, &g_SkyInvScaleMtx, &sp38c);
 
         for (i = 0; i < s1; i++)
         {
@@ -1284,8 +1265,8 @@ Gfx *skyRender(Gfx *gdl)
         s32 i;
 
         mtx4Mult(camGetProjectionMtxf(), camGetWorldToScreenMtxf(), &sp1ec);
-        guScaleF(dword_CODE_bss_80079E98.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
-        mtx4Mult(&sp1ec, &dword_CODE_bss_80079E98, &sp1ac);
+        guScaleF(g_SkyInvScaleMtx.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
+        mtx4Mult(&sp1ec, &g_SkyInvScaleMtx, &sp1ac);
 
         for (i = 0; i < s1; i++)
         {
@@ -1422,9 +1403,6 @@ void skyProjectVertex(SkyRelated18 *arg0, Mtxf *arg1, u16 arg2, f32 arg3, f32 ar
     arg5->a = arg0->a;
 }
 
-/*
-* Address: 0x7F0977B4
-*/
 bool skyVerticesAreTheSame(SkyRelated38 *arg0, SkyRelated38 *arg1)
 {
     f32 f0;
@@ -1435,9 +1413,6 @@ bool skyVerticesAreTheSame(SkyRelated38 *arg0, SkyRelated38 *arg1)
     return sqrtf((f0 * f0) + (f1 * f1)) < 1.0f ? TRUE : FALSE;
 }
 
-/*
-* Address: 0x7F097818
-*/
 Gfx *skyRenderTri(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38 *arg3, f32 arg4, bool textured)
 {
     SkyRelated38 *sp484;
@@ -1922,9 +1897,6 @@ Gfx *skyRenderTri(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38
     return gdl;
 }
 
-/*
-* Address: 0x7F098A2C
-*/
 Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38 *arg3, SkyRelated38 *arg4, f32 arg5)
 {
     SkyRelated38 *sp4cc;

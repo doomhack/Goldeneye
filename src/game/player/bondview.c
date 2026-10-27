@@ -95,8 +95,8 @@
     #define BONDVIEW_2ND_FONTTABLE(_param) copy_2ndfonttable
     #define BONDVIEW_1ST_FONTTABLE(_param) copy_1stfonttable
 #elif defined(VERSION_EU)
-    #define BONDVIEW_2ND_FONTTABLE(_param) dword_CODE_bss_jp80079CEC[_param]
-    #define BONDVIEW_1ST_FONTTABLE(_param) dword_CODE_bss_jp80079Cd8[_param]
+    #define BONDVIEW_2ND_FONTTABLE(_param) g_HudMsgBottomFont2[_param]
+    #define BONDVIEW_1ST_FONTTABLE(_param) g_HudMsgBottomFont1[_param]
 #endif
 
 
@@ -183,31 +183,20 @@ f32 g_CamFrustumNearOffset;
 /**
  * When set, will increment each tick until reaching a threshold value (4).
  * Then current items will be unequipped from left and run hands.
- * Address 0x80036424.
 */
 s32 g_bondviewForceDisarm = 0;
 
-//D:80036428
 s32 resolution = 0;
-//D:8003642C
 s32 cameraBufferToggle = 0;
-//D:80036430
 s32 cameraFrameCounter1 = 0;
-//D:80036434
 s32 cameraFrameCounter2 = 0;
-//D:80036438
-s32 camera_80036438 = 0;
-//D:8003643C
+s32 g_CreditsScrollFrame = 0;
 s32 credits_state = 0;
-//D:80036440
 CreditsEntry *credits_pointer = NULL;
-//D:80036444
 s32 g_SurroundBondWithExplosionsFlag = 0;
 
-//D:80036448
 s32 g_PlayerIsInTank = 0;
 
-//D:8003644C
 struct PropRecord *g_WorldTankProp = NULL;
 
 //D:80036450 cannonically bondonprop2
@@ -215,7 +204,6 @@ struct PropRecord *g_PlayerTankProp = NULL;
 
 /**
  * Related to g_PlayerTankProp.
- * Address 0x80036454.
  */
 f32 g_PlayerTankYOffset = 0;
 
@@ -226,39 +214,24 @@ ALSoundState * g_TankSfxState[2] = { NULL, NULL };
 
 /**
  * min -3.749999, max +3.749999
- * Address 0x80036460.
 */
 f32 g_TankTurnSpeed = 0;
 
-/**
- * Address 0x80036464.
-*/
 f32 g_TankOrientationAngle = 0;
 
-//D:80036468
 f32 tank_turret_unused_angle = 0.0f;
 
 /**
  * Argument to sinf,cosf.
- *
- * Address 0x8003646C.
  */
 f32 g_TankTurretVerticalAngle = 0;
 
-/**
- * Address 0x80036470.
-*/
 f32 g_TankTurretVerticalAngleRelated = 0;
 
-/**
- * Address 0x80036474.
-*/
 f32 g_TankTurretOrientationAngleRad = 0;
 
-//D:80036478
 f32 g_TankTurretOrientationAngleDeg = 0;
 
-//D:8003647C
 f32 tank_turret_turn_speed = 0;
 
 /**
@@ -267,66 +240,37 @@ f32 tank_turret_turn_speed = 0;
 */
 s32 g_BondCanEnterTank = 0;
 
-/**
- * Address 0x80036484.
-*/
 f32 g_TankTurretAngle = 0;
 
-/**
- * Address 0x80036488.
-*/
 f32 g_TankTurretTurn = 0;
 
-//D:8003648C
 s32 g_ExplodeTankOnDeathFlag = 0;
-//D:80036490
 s32 g_TankDamagePenaltyTicks = 0;
-//D:80036494
 enum CAMERAMODE g_CameraMode = CAMERAMODE_NONE;
-//D:80036498
 enum CAMERAMODE g_CameraAfterCinema = CAMERAMODE_NONE;
-//D:8003649C
 s32 camera_fade_active = 0;
-//D:800364A0
 s32 stop_time_flag = 0;
-//D:800364A4
 f32 camera_transition_timer = 0;
-//D:800364A8
 s32 intro_camera_index = 1;
-//D:800364AC
 struct SetupIntroSwirl *g_IntroSwirl = NULL;
-//D:800364B0
 s32 is_timer_active = 1;
-//D:800364B4
 bool g_PlayerInvincible = FALSE;
-//D:800364B8
 struct SetupIntroCamera* g_CurrentSetupIntroCamera = NULL;
-//D:800364BC
 s32 g_SetupIntroCameraCount = 0;
-//D:800364C0
-struct SetupIntroCamera *ptr_random06cam_entry = NULL;
+struct SetupIntroCamera *g_IntroCamera = NULL;
 
 /**
  * Flag to toggle invisibility cheat.
  * 1 = visible to guards
  * 0 = not visible to guards
- *
- * Address 0x800364C4.
  */
 s32 g_VisibleToGuardsFlag = TRUE;
 
-//D:800364C8
 s32 g_PlayerCollisionOn = TRUE;
-//D:800364CC
 f32 g_CamPosScale = 1.0;
-//D:800364D0
 f32 g_PlayerWorldScale = 1.0;
-//D:800364D4
 f32 g_PlayerWorldScaleInv = 1.0;
 
-/**
- * Address 0x800364D8.
-*/
 s32 g_bondviewBondDeathAnimations[] = {
     PTR_ANIM_death_forward_face_down,
     PTR_ANIM_death_forward_spin_face_up,
@@ -343,17 +287,11 @@ s32 g_bondviewBondDeathAnimations[] = {
     0
 };
 
-/**
- * Address 0x8003650C.
-*/
 s32 g_bondviewBondDeathAnimationsCount = 0;
 
-//D:80036510
 enum CAMERAMODE camera_mode = CAMERAMODE_NONE;
-//D:80036514
 s32 g_IntroAnimationIndex = 0;
 
-//D:80036518
 struct struct_4 stage_intro_anim_table[] = {
     {PTR_ANIM_extending_left_hand, 95.0, -1.0, 0.02},
     {PTR_ANIM_fire_standing_draw_one_handed_weapon_fast, 7.0, 40.0, 0.5},
@@ -366,10 +304,8 @@ struct struct_4 stage_intro_anim_table[] = {
     {PTR_ANIM_bond_eye_fire_alt, 0.0, -1.0, 0.5}
 };
 
-//D:800365A8
 f32 watch_transition_time = 0.90909088;
 
-//D:800365AC
 WeaponObjRecord dummy_08_pp7_obj[] = {
     0x0100,
     0x00,
@@ -404,7 +340,6 @@ WeaponObjRecord dummy_08_pp7_obj[] = {
 };
 
 
-//D:80036634
 struct DamageType g_DamageTypes[] = {
         {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF}, // 1 bars
         {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF},
@@ -417,7 +352,6 @@ struct DamageType g_DamageTypes[] = {
 };
 
 
-//D:80036794
 /**
  * The second column is how many frames before the gauge switches from showing the old health to the new health.
  * The third column is how many frames before the health display is hidden.
@@ -462,76 +396,48 @@ struct coord3d g_DefaultFrozenPlayerOffset = { 0, 1.0f, 0 };
  */
 struct coord3d g_DefaultFrozenMoveOffset = { 0 };
 
-//D:80036830
 struct coord3d ZeroCoordShake = { 0 };
 
-ModelRenderData D_8003683C = {NULL,
-                              TRUE,
-                              0x00000003,
-                              NULL,
-                              NULL,
-                              0,
-                              0,
-                              0,
-                              0,
-                              0,
-                              0,
-                              0,
-                              0,
-                              {0, 0, 0, 0},
-                              {0, 0, 0, 0},
-                              CULLMODE_BOTH};
 
-//D:8003687C
 coord3d ZeroCoordWatchPos = {0};
-//D:8003688C
 coord3d ZeroCoordSpawnPos = {0};
-//D:80036898
 s32 status_bar_text_buffer_index = 0;
-//D:8003689C
 s32 display_statusbar = 0;
 #ifdef BUGFIX_R0
-//D:800368A0
 s32 copy_1stfonttable = 0;
-//D:800368A4
 s32 copy_2ndfonttable = 0;
 #endif
-//D:800368A8
 s32 upper_text_buffer_index = 0;
-//D:800368AC
 s32 display_upper_text_window = 0;
-//D:800368B0
 s32 upper_text_window_timer = 0xFFFFFFFF;
 s32 g_UpperTextDisplayFlag = 0;
-//D:800368B8
 DirectionLabels g_DebugCompassLabels = {{"n", "ne", "e", "se", "s", "sw", "w", "nw", "n"}};
 s32 g_PlayerTickCount = 0;
 
-//D:800368D8
 struct firing_anim_struct firing_animation_groups[][6] = {
     {{pistol_firing_animation_group1, 0, 0.1, 79.0, 87.0},
-     {&D_80030660[2], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[3], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[8], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[9], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[2], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[3], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
      {crouched_pistol_firing_animation_group1, 0, 0.1, 56.0, 68.0}},
     {{rifle_firing_animation_group1, 0, 0.050000001, 35.0, 40.0},
-     {&D_80030660[0], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[1], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[8], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[9], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[0], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[1], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
      {crouched_rifle_firing_animation_groupA, 0, 0.1, 45.0, 55.0}},
     {{NULL, 0x8194, 0.25, 0.0, -1.0},
      {NULL, 0x8204, 0.5, 0.0, -1.0},
      {NULL, 0x777C, 0.5, 0.0, -1.0},
-     {&D_80030660[8], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[9], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
      {NULL, 0x6C18, 0.050000001, 28.0, 29.0}},
     {{doubles_firing_animation_group1, 0, 0.1, 32.0, 42.0},
-     {&D_80030660[4], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[5], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[8], 0, 0.5, 0.0, -1.0},
-     {&D_80030660[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[4], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[5], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
      {crouched_doubles_firing_animation_group1, 0, 0.1, 37.0, 47.0}}
  };
 
@@ -672,8 +578,6 @@ void camUpdateScale(void)
 
 
 /**
- * Address: 7F077EEC.
- * 
  * Transforms a 2D screen coordinate to a 3D world coordinate
  *
  * 'out' looks to be a vector which probably has the length 'length'
@@ -943,8 +847,6 @@ f32 camGetPerspAspect(void)
 
 
 /**
- * Address: 7F0785DC
- *
  * Update the world space frustum planes used for object visibility tests.
  */
 void camUpdateFrustumPlanes()
@@ -1015,8 +917,6 @@ void camUpdateFrustumPlanes()
  *
  * @param margin: Value added to g_CamFrustumNearOffset to compare g_CurrentPlayer->viewtoworldmtxf,
  * and the four values starting at g_CamFrustumLeftOffset.
- *
- * Address 0x7F078A58.
  */
 bool camIsPosInScreen(coord3d *pos, f32 margin)
 {
@@ -1495,8 +1395,6 @@ void playerSetCameraModeRaw(s32 mode)
  * Compares current player position to parameters. If different, sets current
  * player position values to parameter values.
  * Also updates related room pointer.
- *
- * Address 0x7F079A60.
  */
 void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *tile, coord3d *stan_walk_start)
 {

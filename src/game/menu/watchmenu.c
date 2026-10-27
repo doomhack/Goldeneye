@@ -63,44 +63,23 @@
 #endif
 
 // bss
-Mtx gfx_background_8007B0A0;
-Mtx gfx_background_8007B0E0;
+Mtx g_WatchBarsScaleMtx;
+Mtx g_WatchZoomScaleMtx;
 
 u32 g_WatchMenuPage = 0;
 u32 g_WatchMenuControlRow = 0;
 u32 g_WatchMenuOptionsRow = 0;
 // data
-//D:800409A0
 s32 g_WatchMenuBriefPage = BRIEF_INDEX_OBJECTIVES;
-//D:800409A4
 s32 g_WatchMenuAbortAsk = 0;
-//D:800409A8
 s32 g_WatchMenuSelected = 0;
-//D:800409AC
-s32 D_800409AC = 0;
-//D:800409B0
 s32 g_WatchMenuInvTextY = 0;
-//D:800409B4
 s32 g_WatchMenuInvTextTargetY = 0;
-//D:800409B8
 s32 g_WatchMenuItem = 0;
-//D:800409BC
 f32 g_WatchMenuInvCursor = 0.0f;
-//D:800409C0
 bool g_WatchMenuInvSettled = FALSE;
-//D:800409C4
 s32 g_WatchMenuEquipDelay = 0;
-//D:800409C8
-f32 D_800409C8 = 0.0f;
-//D:800409CC
-f32 D_800409CC = 0.0f;
-//D:800409D0
-s32 D_800409D0 = -1;
-//D:800409D4
-f32 D_800409D4 = 0.0f;
-//D:800409D8
 s32 g_WatchMenuControlStyleCount = 8;
-//D:800409DC
 u16 game_control_styles[] = {
     /*1.1 honey*/    getStringID(LOPTIONS, OPTION_STR_09_11HONEY_LF), /*weapon*/getStringID(LOPTIONS, OPTION_STR_03_WEAPON_LF), /*action*/getStringID(LOPTIONS, OPTION_STR_02_ACTION_LF), /*fire*/getStringID(LOPTIONS, OPTION_STR_00_FIRE_LF),    /*aim*/getStringID(LOPTIONS, OPTION_STR_01_AIM_LF),    /*aim*/getStringID(LOPTIONS, OPTION_STR_01_AIM_LF), /*look*/getStringID(LOPTIONS, OPTION_STR_06_LOOK_LF), /*look*/getStringID(LOPTIONS, OPTION_STR_06_LOOK_LF), /*pause*/getStringID(LOPTIONS, OPTION_STR_04_PAUSE_LF), /*move*/getStringID(LOPTIONS, OPTION_STR_05_MOVE_LF),
     /*1.2 solitaire*/getStringID(LOPTIONS, OPTION_STR_0A_12SOLITAIRE_LF), /*weapon*/getStringID(LOPTIONS, OPTION_STR_03_WEAPON_LF), /*action*/getStringID(LOPTIONS, OPTION_STR_02_ACTION_LF), /*fire*/getStringID(LOPTIONS, OPTION_STR_00_FIRE_LF),    /*aim*/getStringID(LOPTIONS, OPTION_STR_01_AIM_LF),    /*aim*/getStringID(LOPTIONS, OPTION_STR_01_AIM_LF), /*move*/getStringID(LOPTIONS, OPTION_STR_05_MOVE_LF), /*move*/getStringID(LOPTIONS, OPTION_STR_05_MOVE_LF), /*pause*/getStringID(LOPTIONS, OPTION_STR_04_PAUSE_LF), /*look*/getStringID(LOPTIONS, OPTION_STR_06_LOOK_LF),
@@ -127,83 +106,40 @@ struct game_options g_Options[] = {
     { {getStringID(LOPTIONS, OPTION_STR_42_DRAWDISTANCE_LF), getStringID(LOPTIONS, OPTION_STR_1F_FULL_LF), getStringID(LOPTIONS, OPTION_STR_43_NEAR_LF), 0}, 0} //draw distance (co-op), full, near
 };
 
-//D:80040ADC
 u32 g_WatchMenuStickXReady = 0;
-//D:80040AE0
 u32 g_WatchMenuStickYReadyFlag = 0;
-//D:80040AE4
 u32 g_WatchMenuStickYActive = 0;
-//D:80040AE8
-f32 D_80040AE8 = 0.0f;
-//D:80040AEC
-f32 D_80040AEC = 0.0f;
-//D:80040AF0
-f32 D_80040AF0 = 45.0f;
-//D:80040AF4
-u32 D_80040AF4 = 0xFF00A0;
-//D:80040AF8
-u32 D_80040AF8 = 0xA;
-//D:80040AFC
-u32 D_80040AFC = 0xFF;
+u32 g_WatchStatusColour = 0xFF00A0;
+u32 g_WatchStatusColourTimer = 0xA;
+u32 g_WatchObjectiveRed = 0xFF;
 
-//D:80040B00
-u32 D_80040B00 = 0xA;
+u32 g_WatchObjectiveRedTimer = 0xA;
 
-//D:80040B04
 s32 g_WatchBackgroundGreen = 0xE0;
 
-//D:80040B08
 u32 g_WatchStaticScanlineAlpha = 0;
 
-//D:80040B0C
-u32 D_80040B0C = 0xFFA0;
-//D:80040B10
-u32 D_80040B10 = 0xF800;
-//D:80040B14
-f32 D_80040B14 = 0.0f;
-//D:80040B18
-f32 D_80040B18 = 0.0f;
-//D:80040B1C
-f32 D_80040B1C = 2.5f;
-//D:80040B20
+u32 g_WatchStaticChance = 0xFFA0;
+u32 g_WatchBeepStaticChance = 0xF800;
+f32 g_WatchInvSpinAngle = 0.0f;
+f32 g_WatchInvSpinSpeed = 2.5f;
 f32 g_WatchControllerPitch = 0.0f;
-//D:80040B24
 f32 g_WatchControllerSpinAngle = 0.0f;
-//D:80040B28
 f32 g_WatchControllerSpinSpeed = 0.0f;
-//D:80040B2C
-s32 D_80040B2C = 0;
-//D:80040B30
-f32 D_80040B30 = 0.0f;
-//D:80040B34
-f32 D_80040B34 = 0.0f;
-//D:80040B38
-f32 D_80040B38 = 0.0f;
-//D:80040B3C
-s32 D_80040B3C = 0;
-//D:80040B40
+s32 g_WatchControllerSpinCounter = 0;
+f32 g_WatchController2Pitch = 0.0f;
+f32 g_WatchController2SpinAngle = 0.0f;
+f32 g_WatchController2SpinSpeed = 0.0f;
+s32 g_WatchController2SpinCounter = 0;
 s32 g_WatchStaticScanlineY = 0;
-//D:80040B44
-u16 D_80040B44 = 0x1;
-//D:80040B48
-u32 D_80040B48 = 0x32;
-//D:80040B4C
-u32 D_80040B4C = 0x32;
-//D:80040B50
-u32 D_80040B50 = 0x32;
-//D:80040B54
-u32 D_80040B54 = 0x32;
-//D:80040B58
 u16 g_OptionsMusicVolume = 0x7FFF;
 
-//D:80040B5C
 coord3d g_ControllerPos = {0.0f, 200.0f, -200.0f};
 
 typedef struct WatchContButtonPositions {
     f32 words[55]; /* 0xdc bytes */
 } WatchContButtonPositions;
 
-//D:80040B68
 // 3D positions for the buttons at the sides of the screen for the 1x control styles.
 WatchContButtonPositions g_1ContButtonPositions[] = {{
     0.0f, 0.0f, 0.0f,
@@ -227,7 +163,6 @@ WatchContButtonPositions g_1ContButtonPositions[] = {{
     -830.0f, 200.0f, 78.0f       // Z
 }};
 
-//D:80040C44
 // 3D positions for the buttons of the left controller for the 2x control styles.
 WatchContButtonPositions g_2ContLeftButtonPositions[] = {{
     0.0f, 0.0f, 0.0f,
@@ -251,7 +186,6 @@ WatchContButtonPositions g_2ContLeftButtonPositions[] = {{
     320.0f
 }};
 
-//D:80040D20
 // 3D positions for the buttons of the right controller for the 2x control styles.
 WatchContButtonPositions g_2ContRightButtonPositions[] = {{
     0.0f, 0.0f, 0.0f, 0.0f,
@@ -270,16 +204,11 @@ WatchContButtonPositions g_2ContRightButtonPositions[] = {{
     600.0f, 200.0f, 320.0f
 }};
 
-//D:80058440
-const char D_80058440[];
-//D:80058444
-const char D_80058444[];
-//D:80058448
+const char g_ObjectiveLineEnd[];
+const char g_ObjectiveLineEndGap[];
 const char aC_2[];
-//D:80058450
-const char D_80058450[];
-//D:80058454
-const char D_80058454[];
+const char g_ObjectiveLineEnd2[];
+const char g_ObjectiveLineEndGap2[];
 
 // forward declarations
 
@@ -310,17 +239,12 @@ void watchMenuReset(int stage)
     g_WatchMenuBriefPage = BRIEF_INDEX_OBJECTIVES;
     g_WatchMenuAbortAsk = 0;
     g_WatchMenuSelected = 0;
-    D_800409AC = 0;
     g_WatchMenuInvTextY = 0;
     g_WatchMenuInvTextTargetY = 0;
     g_WatchMenuItem = 0;
     g_WatchMenuInvCursor = 0.0f;
     g_WatchMenuInvSettled = FALSE;
     g_WatchMenuEquipDelay = 0;
-    D_800409C8 = 0.0f;
-    D_800409CC = 0.0f;
-    D_800409D0 = -1;
-    D_800409D4 = 0.0f;
 
     g_CurrentPlayer->neg_vspacing_for_control_type_entry = 0;
     g_CurrentPlayer->cur_player_control_type_1 = CONTROLLER_CONFIG_HONEY;
@@ -332,34 +256,25 @@ void watchMenuReset(int stage)
     g_WatchMenuStickXReady = 0;
     g_WatchMenuStickYReadyFlag = 0;
     g_WatchMenuStickYActive = 0;
-    D_80040AE8 = 0.0f;
-    D_80040AEC = 0.0f;
-    D_80040AF0 = 45.0f;
-    D_80040AF4 = 0xff00a0;
-    D_80040AF8 = 10;
-    D_80040AFC = 0xff;
-    D_80040B00 = 10;
+    g_WatchStatusColour = 0xff00a0;
+    g_WatchStatusColourTimer = 10;
+    g_WatchObjectiveRed = 0xff;
+    g_WatchObjectiveRedTimer = 10;
     g_WatchBackgroundGreen = 0xe0;
     g_WatchStaticScanlineAlpha = 0;
-    D_80040B0C = 0xffa0;
-    D_80040B10 = 0xf800;
-    D_80040B14 = 0.0f;
-    D_80040B18 = 0.0f;
-    D_80040B1C = 2.5f;
+    g_WatchStaticChance = 0xffa0;
+    g_WatchBeepStaticChance = 0xf800;
+    g_WatchInvSpinAngle = 0.0f;
+    g_WatchInvSpinSpeed = 2.5f;
     g_WatchControllerPitch = 0.0f;
     g_WatchControllerSpinAngle = 0.0f;
     g_WatchControllerSpinSpeed = 0.0f;
-    D_80040B2C = 0;
-    D_80040B30 = 0.0f;
-    D_80040B34 = 0.0f;
-    D_80040B38 = 0.0f;
-    D_80040B3C = 0;
+    g_WatchControllerSpinCounter = 0;
+    g_WatchController2Pitch = 0.0f;
+    g_WatchController2SpinAngle = 0.0f;
+    g_WatchController2SpinSpeed = 0.0f;
+    g_WatchController2SpinCounter = 0;
     g_WatchStaticScanlineY = 0;
-    D_80040B44 = 1;
-    D_80040B48 = 0x32;
-    D_80040B4C = 0x32;
-    D_80040B50 = 0x32;
-    D_80040B54 = 0x32;
     // The save folder's options belong to controller 1's player.
     optionsCoopUsePlayer(0);
     fileLoadCurrentSettings(stage);
@@ -695,7 +610,7 @@ void watchMenuPageBeep(void)
 {
     watchMenuStickXUsed();
     sndPlaySfx(g_musicSfxBufferPtr, CAMERA_BEEP1_SFX, NULL);
-    if ((D_80040B10 << 0x10) < randomGetNext()) {
+    if ((g_WatchBeepStaticChance << 0x10) < randomGetNext()) {
         watchMenuStatic();
     }
     return;
@@ -1414,8 +1329,6 @@ void watchMenuOpen(void)
     watchMenuClearSelect();
     g_WatchMenuPage = WATCH_INDEX_MISSION_STATUS;
     g_WatchMenuBriefPage = BRIEF_INDEX_OBJECTIVES;
-    D_800409C8 = 0.999f;
-    D_800409CC = 0.9999f;
     invDetermineEquippedItem();
 }
 
@@ -1457,11 +1370,11 @@ void watchMenuTick(void)
         {
             g_WatchMenuStickXReady = 1;
         }
-        else if ((joyGetStickX(WATCH_PAD) < 0xB) && (joy7000C174(WATCH_PAD) >= 0xB))
+        else if ((joyGetStickX(WATCH_PAD) < 0xB) && (joyGetPrevStickX(WATCH_PAD) >= 0xB))
         {
             g_WatchMenuStickXReady = 1;
         }
-        else if ((joyGetStickX(WATCH_PAD) >= -0xA) && (joy7000C174(WATCH_PAD) < -0xA))
+        else if ((joyGetStickX(WATCH_PAD) >= -0xA) && (joyGetPrevStickX(WATCH_PAD) < -0xA))
         {
             g_WatchMenuStickXReady = 1;
         }
@@ -1473,50 +1386,50 @@ void watchMenuTick(void)
         {
             g_WatchMenuStickYReadyFlag = 1;
         }
-        else if ((joyGetStickY(WATCH_PAD) < 0xB) && (joy7000C284(WATCH_PAD) >= 0xB))
+        else if ((joyGetStickY(WATCH_PAD) < 0xB) && (joyGetPrevStickY(WATCH_PAD) >= 0xB))
         {
             g_WatchMenuStickYReadyFlag = 1;
         }
-        else if ((joyGetStickY(WATCH_PAD) >= -0xA) && (joy7000C284(WATCH_PAD) < -0xA))
+        else if ((joyGetStickY(WATCH_PAD) >= -0xA) && (joyGetPrevStickY(WATCH_PAD) < -0xA))
         {
             g_WatchMenuStickYReadyFlag = 1;
         }
     }
 
-    temp_2 = D_80040AF8;
+    temp_2 = g_WatchStatusColourTimer;
     if (temp_2 < 0)
     {
-        D_80040AF4 = D_80040AF4 + 0xFFF00000;
+        g_WatchStatusColour = g_WatchStatusColour + 0xFFF00000;
     }
-    D_80040AF8 = temp_2 - 1;
+    g_WatchStatusColourTimer = temp_2 - 1;
 
-    if (D_80040AF4 < 0x5F00A1U)
+    if (g_WatchStatusColour < 0x5F00A1U)
     {
-        D_80040AF4 = 0xFF00A0U;
-        D_80040AF8 = 0xF;
+        g_WatchStatusColour = 0xFF00A0U;
+        g_WatchStatusColourTimer = 0xF;
     }
 
-    temp_3 = D_80040B00;
+    temp_3 = g_WatchObjectiveRedTimer;
     if (temp_3 < 0)
     {
-        D_80040AFC = D_80040AFC - 0x10;
+        g_WatchObjectiveRed = g_WatchObjectiveRed - 0x10;
     }
-    D_80040B00 = temp_3 - 1;
+    g_WatchObjectiveRedTimer = temp_3 - 1;
 
-    if (D_80040AFC < 0x60U)
+    if (g_WatchObjectiveRed < 0x60U)
     {
-        D_80040AFC = 0xFFU;
-        D_80040B00 = 0xF;
+        g_WatchObjectiveRed = 0xFFU;
+        g_WatchObjectiveRedTimer = 0xF;
     }
     #ifdef VERSION_US
-    D_80040B14 += ((D_80040B1C * g_FrameDelta * M_TAU_F) / 360.0f);
+    g_WatchInvSpinAngle += ((g_WatchInvSpinSpeed * g_FrameDelta * M_TAU_F) / 360.0f);
     #else
-    D_80040B14 += ((D_80040B1C * g_FrameDelta60 * M_TAU_F) / 360.0f);
+    g_WatchInvSpinAngle += ((g_WatchInvSpinSpeed * g_FrameDelta60 * M_TAU_F) / 360.0f);
     #endif
 
-    D_80040B14 = watchMenuWrapAngle(D_80040B14);
+    g_WatchInvSpinAngle = watchMenuWrapAngle(g_WatchInvSpinAngle);
 
-    temp_1 = D_80040B0C << 0x10;
+    temp_1 = g_WatchStaticChance << 0x10;
     if (temp_1 < randomGetNext())
     {
         watchMenuStatic();
@@ -1543,8 +1456,6 @@ void watchMenuTick(void)
         g_WatchStaticScanlineY = 0x156;
     }
 
-    D_80040B44 = (s16)D_80040B44 + 1;
-    D_80040B44 = (s16)D_80040B44 & 1;
 
     switch (g_WatchMenuPage)
     {
@@ -1726,9 +1637,9 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
         }
     }
 
-    guScale(&gfx_background_8007B0A0, 0.25f, 0.25f, 0.25f);
+    guScale(&g_WatchBarsScaleMtx, 0.25f, 0.25f, 0.25f);
 
-    gSPMatrix(gdl++, &gfx_background_8007B0A0, G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
+    gSPMatrix(gdl++, &g_WatchBarsScaleMtx, G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
 
     if (zoom_squish == 0)
     {
@@ -1742,9 +1653,9 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
     /**
      * This section renders main background, side health bar & body armor bars while zooming in or out.
     */
-    guScale(&gfx_background_8007B0E0, 1, 1, scale);
+    guScale(&g_WatchZoomScaleMtx, 1, 1, scale);
 
-    gSPMatrix(gdl++, &gfx_background_8007B0E0, G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
+    gSPMatrix(gdl++, &g_WatchZoomScaleMtx, G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
 
     if (zoom_squish == 1)
     {
@@ -1935,7 +1846,7 @@ Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
     }
     else
     {
-        sp4C = D_80040AF4;
+        sp4C = g_WatchStatusColour;
         txtptr_2 = langGet(getStringID(LOPTIONS, OPTION_STR_29_INCOMPLETE_LF)); //incomplete
     }
 
@@ -2207,8 +2118,8 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
         mtx4LoadZRotation(M_TAU_F - ((sp880 * M_TAU_F) / 360.0f), &sp8A0);
         mtx4MultInPlace(&sp8A0, &sp8E0);
 
-        temp_cos = cosf(D_80040B14) * sp888;
-        temp_sin = sinf(D_80040B14) * sp888;
+        temp_cos = cosf(g_WatchInvSpinAngle) * sp888;
+        temp_sin = sinf(g_WatchInvSpinAngle) * sp888;
 
         mtx4LoadLookAt(&sp8A0, temp_cos, sp88C, temp_sin + sp890, 0.0f, sp88C, sp890, 0.0f, 1.0f, 0.0f);
 
@@ -2331,9 +2242,6 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
 }
 
 
-/**
- * Address: 7F0A8D40
- */
 void watchMenuMakeSliderVerts(struct WatchVertex *verts, f32 fill_amount, s32 transition_width)
 {
     s32 i;
@@ -2414,9 +2322,6 @@ void watchMenuMakeSliderVerts(struct WatchVertex *verts, f32 fill_amount, s32 tr
 }
 
 
-/**
- * Address: 7F0A8ED0
- */
 void watchMenuAdjustVolume(u16* outVolume) {
     s32 joy_x;
     s32 adjusted_volume;
@@ -2456,9 +2361,6 @@ void watchMenuAdjustVolume(u16* outVolume) {
 }
 
 
-/**
- * Address: 7F0A8FEC
- */
 Gfx *watchMenuRenderFxVolume(Gfx *gdl)
 {
     u16 volume;
@@ -2509,9 +2411,6 @@ void optionsSetFxVolume(u16 arg0) {
 }
 
 
-/**
- * Address: 7F0A91C8
- */
 Gfx *watchMenuRenderMusicVolume(Gfx *gdl)
 {
     u16 volume;
@@ -2564,8 +2463,6 @@ void optionsSetMusicVolume(u16 param_1)
 
 
 /**
- * Address: 7F0A9398
- *
  * This draws the text for the toggle options (both option titles and values).
  * It also draws button names and the actions mapped to them on the controller screen.
  */
@@ -2688,9 +2585,6 @@ counter_done:
 }
 
 
-/**
- * Address: 7F0A97D0
- */
 Gfx *watchMenuRenderControlStyles(Gfx *gdl)
 {
     char text[2000];
@@ -3068,8 +2962,6 @@ Gfx *watchMenuRenderDualControlLabels(Gfx *gdl)
 
 
 /**
- * Address: 7F0AADC0
- * 
  * Draw the controller model(s) and the individual buttons.
  */
 Gfx *watchMenuRenderController(Gfx *gdl)
@@ -3104,7 +2996,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
     table1 = g_2ContLeftButtonPositions[0];
     table2 = g_2ContRightButtonPositions[0];
 
-    watchMenuSpinController(0, &D_80040B2C, &g_WatchControllerSpinSpeed, &g_WatchControllerSpinAngle);
+    watchMenuSpinController(0, &g_WatchControllerSpinCounter, &g_WatchControllerSpinSpeed, &g_WatchControllerSpinAngle);
     mtx4LoadIdentity(&identity);
 
     g_WatchControllerSpinAngle += (g_WatchControllerSpinSpeed * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
@@ -3163,24 +3055,24 @@ Gfx *watchMenuRenderController(Gfx *gdl)
 
     if (optionsIsDualControlStyle())
     {
-        watchMenuSpinController(1, &D_80040B3C, &D_80040B38, &D_80040B34);
+        watchMenuSpinController(1, &g_WatchController2SpinCounter, &g_WatchController2SpinSpeed, &g_WatchController2SpinAngle);
         mtx4LoadIdentity(&identity);
 
-        D_80040B34 += (D_80040B38 * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
-        D_80040B34 = watchMenuWrapAngle(D_80040B34);
+        g_WatchController2SpinAngle += (g_WatchController2SpinSpeed * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
+        g_WatchController2SpinAngle = watchMenuWrapAngle(g_WatchController2SpinAngle);
 
-        mtx4LoadZRotation(D_80040B34, &zrotmtx);
+        mtx4LoadZRotation(g_WatchController2SpinAngle, &zrotmtx);
 
         if (g_WatchMenuSelected && (g_WatchMenuControlRow == CONTROLLER_OPTIONS_INDEX_INPUTS))
         {
-            D_80040B30 = watchMenuApproach(D_80040B30, (((f32) joyGetStickY(PLAYER_2)) * M_TAU_F) / 360.0f, 4.0f);
+            g_WatchController2Pitch = watchMenuApproach(g_WatchController2Pitch, (((f32) joyGetStickY(PLAYER_2)) * M_TAU_F) / 360.0f, 4.0f);
         }
         else
         {
-            D_80040B30 = watchMenuApproach(D_80040B30, 0.0f, 4.0f);
+            g_WatchController2Pitch = watchMenuApproach(g_WatchController2Pitch, 0.0f, 4.0f);
         }
 
-        mtx4LoadXRotation((-D_80040B30) - 0.78539819f, &xrotmtx);
+        mtx4LoadXRotation((-g_WatchController2Pitch) - 0.78539819f, &xrotmtx);
         mtx4Mult(&identity, &zrotmtx, &tmpmtx1);
         mtx4Mult(&tmpmtx1, &xrotmtx, &tmpmtx2);
         mtx4LoadTranslation(&pos, &tmpmtx1);
@@ -3359,8 +3251,6 @@ void watchMenuOptionToggleTick(s32 option_index)
 
 
 /**
- * Address: 7F0AB908
- *
  * Set the color and draw the text for the values of the toggle options.
  * For example, draw the "ON" and "OFF" text for the Auto-Aim option,
  * but not the "AUTO-AIM" text itself.
@@ -3655,10 +3545,6 @@ u8 *textLastLine(u8 *arg)
 }
 
 
-#if defined(VERSION_EU)
-//D:800577C0
-const char D_800577C0[] = "\n";
-#endif
 
 
 Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
@@ -3700,7 +3586,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
         titleText = briefingGetText(BRIEFING_TITLE);
 
 #if defined(VERSION_EU)
-        strcpy(wrappedText, D_800577C0);
+        strcpy(wrappedText, "\n");
 #endif
 
         gdl = textSetupDraw(gdl);
@@ -3775,12 +3661,12 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
 
                         for (j = 0; j < lineCount; j++)
                         {
-                            strcat(objectiveBuffer, D_80058440);
+                            strcat(objectiveBuffer, g_ObjectiveLineEnd);
                         }
 
                         for (j = 0; j < objectiveRow; j++)
                         {
-                            strcat(objectiveBuffer, D_80058444);
+                            strcat(objectiveBuffer, g_ObjectiveLineEndGap);
                         }
 
                         objectiveLetterPtr = objectiveBuffer + strlen(objectiveBuffer);
@@ -3804,18 +3690,18 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
 
                         for (j = 0; j < lineCount; j++)
                         {
-                            strcat(objectiveBuffer, D_80058450);
+                            strcat(objectiveBuffer, g_ObjectiveLineEnd2);
                         }
                         for (j = 0; j < objectiveRow; j++)
                         {
-                            strcat(objectiveBuffer, D_80058454);
+                            strcat(objectiveBuffer, g_ObjectiveLineEndGap2);
                         }
 
                         switch (guardplayer ? OBJECTIVESTATUS_INCOMPLETE : objectiveCheckStatus(i))
                         {
                             case OBJECTIVESTATUS_INCOMPLETE:
                                 strcat(objectiveBuffer, incompleteText);
-                                colour = (D_80040AFC << 16) | 0x400040ff;
+                                colour = (g_WatchObjectiveRed << 16) | 0x400040ff;
                                 break;
 
                             case OBJECTIVESTATUS_COMPLETE:
@@ -3867,21 +3753,13 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
 }
 
 
-//D:80058440
-const char D_80058440[] = " \n";
-//D:80058444
-const char D_80058444[] = " \n\n";
-//D:80058448
+const char g_ObjectiveLineEnd[] = " \n";
+const char g_ObjectiveLineEndGap[] = " \n\n";
 const char aC_2[] = "%c: ";
-//D:80058450
-const char D_80058450[] = " \n";
-//D:80058454
-const char D_80058454[] = " \n\n";
+const char g_ObjectiveLineEnd2[] = " \n";
+const char g_ObjectiveLineEndGap2[] = " \n\n";
 
 
-/**
- * Address: 7F0ACA28
- */
 Gfx *watchMenuRender(Gfx *gdl, Mtx *arg1, s32 watch_transitioning)
 {
     watchMenuSetTabColours(g_WatchMenuPage, (struct WatchVertex *)g_CurrentPlayer->buffer_for_watch_greenbackdrop_vertices);

@@ -89,165 +89,91 @@ struct BriefingData
 };
 
 // bss
-//CODE.bss:800695A0
 f32 cast_camera_dist;
-//CODE.bss:800695A4
 f32 cast_camera_dist_start;
-//CODE.bss:800695A8
 f32 cast_camera_dist_end;
-//CODE.bss:800695AC
 f32 cast_camera_angle;
-//CODE.bss:800695B0
 f32 cast_camera_angle_start;
-//CODE.bss:800695B4
 f32 cast_camera_angle_end;
-//CODE.bss:800695B8
 f32 cast_camera_height;
-//CODE.bss:800695BC
 f32 cast_camera_height_start;
-//CODE.bss:800695C0
 f32 cast_camera_height_end;
-//CODE.bss:800695C8
 struct coord3d cast_target_smoothed;
-//CODE.bss:800695D8
 struct coord3d cast_target_accumulator;
 
-//CODE.bss:800695E4
 bool cast_camera_reset;
 
-//CODE.bss:800695E8
 struct coord3d cast_rootpos_smoothed;
 
-//CODE.bss:800695F8
 struct coord3d cast_rootvel_smoothed;
 
-//CODE.bss:80069608
 struct coord3d cast_rootvel_accumulator;
 
 
-//CODE.bss:80069614
 f32 g_NintendoLogoSpin;
 
-/**
- * Address 80069618
- * EU .bss 80068558
-*/
 f32 g_NintendoLogoScale;
 
-//CODE.bss:80069620
 coord3d g_FrontFolderScreenPos[MAX_FOLDER_COUNT];
 
-//CODE.bss:80069650
 u8 g_CheatAvailable[CHEAT_MAX];
 
-//CODE.bss:800696A0
 u8 g_CheatActivated[CHEAT_MAX];
 
 #ifdef VERSION_EU
 
-/**
- * EU .bss 80068630
-*/
 s32 g_MpCharCursor[MAX_PLAYER_COUNT];
 
-/**
- * EU .bss 80068680
-*/
 s32 g_MpCharPrevCursor[MAX_PLAYER_COUNT];
 
-/**
- * EU .bss 80068650
-*/
 s32 g_MpFavWeapon[MAX_PLAYER_COUNT][GUNHANDS];
 
 #else
 
-/**
- * Address 800696F0
-*/
 s32 g_MpFavWeapon[MAX_PLAYER_COUNT][GUNHANDS];
 
-/**
- * Address 80069710
-*/
 s32 g_MpCharCursor[MAX_PLAYER_COUNT];
 
-/**
- * Address 80069720
-*/
 s32 g_MpCharPrevCursor[MAX_PLAYER_COUNT];
 
 #endif
 
 
-/**
- * Address 80069730
- * EU .bss 80068690
-*/
 s32 g_MpCharScroll[MAX_PLAYER_COUNT];
 
-//CODE.bss:80069740
 bool g_MpCharChosen[MAX_PLAYER_COUNT];
 
-//CODE.bss:80069750
 s32 g_MpCharPortraitSize[MAX_PLAYER_COUNT];
-//CODE.bss:80069760
 s32 g_MpStickHeld[MAX_PLAYER_COUNT];
-//CODE.bss:80069770
 char* g_FrontTabStartText;
-//CODE.bss:80069774
 char* g_FrontTabNextText;
-//CODE.bss:80069778
 char* g_FrontTabPrevText;
-//CODE.bss:8006977C
 s32 g_MpStageCursor;
-//CODE.bss:80069780
 s32 g_MpScenarioCursor;
-//CODE.bss:80069784
 s32 g_FrontDifficultyHighlight;
-//CODE.bss:80069788
 s32 g_MpTeamsCursor;
-//CODE.bss:8006978C
 struct BriefingData *g_FrontBriefing;
-//CODE.bss:80069790
 s32 g_NewCheatUnlocked;
-//CODE.bss:80069794
 s32 g_Front007HlReaction;
-//CODE.bss:80069798
 s32 g_Front007HlHealth;
-//CODE.bss:8006979C
 s32 g_Front007HlDamage;
-//CODE.bss:800697A0
 s32 g_Front007HlAccuracy;
 
-//CODE.bss:800697A8
 s32 g_MpHandicap[MAX_PLAYER_COUNT];
 
-//CODE.bss:800697B8
 s32 g_MpControlStyle[MAX_PLAYER_COUNT];
 
-//CODE.bss:800697C8
 s32 g_MpHlPlayers;
-//CODE.bss:800697CC
 s32 g_MpHlScenario;
-//CODE.bss:800697D0
 s32 g_MpHlStage;
-//CODE.bss:800697D4
 s32 g_MpHlLength;
-//CODE.bss:800697D8
 s32 g_MpHlChar;
-//CODE.bss:800697DC
 s32 g_MpHlWeapons;
-//CODE.bss:800697E0
 s32 g_MpHlHandicap;
-//CODE.bss:800697E4
 s32 g_MpHlControls;
-//CODE.bss:800697E8
 s32 g_MpHlAim;
-//CODE.bss:800697EC                     .align 4
 
 /**
- * Address 0x800697F0
  * EU .bss 0x80058730
 */
 u32 g_CheatMenuList[CHEAT_INVALID];
@@ -345,7 +271,7 @@ struct legal_screen_text g_LegalTexts[] = {
     { 80, 280, LEFT_ALIGN, CENTER_ALIGN, getStringID(LTITLE, TITLE_STR_18_EMI), 0}  //"Used by permission of EMI Unart Catalog Inc.\n"
 };
 
-/* 0x8002AABC */ ModelRenderData legalscreen_MRD = {NULL,
+ModelRenderData legalscreen_MRD = {NULL,
                                     TRUE,
                                     0x00000003,
                                     NULL,
@@ -456,54 +382,14 @@ struct mission_folder_setup g_FrontMissions[] = {
     {NULL,       0,                                                                         0,                                                          LEVELID_NONE,          -1, MISSION_PART,            -1, 0}
 };
 
-struct FolderSelectColour unknown_folderselect_constructor = { 0x14, 0x14, 0x14 };
-struct FolderSelectColour unknown_folderselect_constructor_0 = { 0x32, 0x32, 0x32 };
 
 
-ModelRenderData     unknown_folderselect = {NULL,
-                                            TRUE,
-                                            0x00000003,
-                                            NULL,
-
-                                            NULL,
-                                            0,
-                                            0,
-                                            0,
-
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-
-                                            0,
-                                            {0, 0, 0, 0},
-                                            {0, 0, 0, 0},
-                                            CULLMODE_BOTH};
-
-ModelRenderData       D_8002AF84           = {NULL,
-                                              TRUE,
-                                              0x00000003,
-                                              NULL,
-
-                                              NULL,
-                                              0,
-                                              0,
-                                              0,
-
-                                              0,
-                                              0,
-                                              0,
-                                              0,
-
-                                              0,
-                                              {0, 0, 0, 0},
-                                              {0, 0, 0, 0},
-                                              CULLMODE_BOTH};
 
 
-f32 D_8002AFC4 = 0;
-f32 D_8002AFC8 = 190.0;
-f32 D_8002AFCC = -3300.0;
+
+f32 g_FrontFolderCamOffsetX = 0;
+f32 g_FrontFolderCamOffsetY = 190.0;
+f32 g_FrontFolderCamOffsetZ = -3300.0;
 s32 g_FrontMissionCursorX[] = {73, 142, 212, 282, 352};
 
 #if defined(VERSION_EU)
@@ -1700,9 +1586,6 @@ Gfx *frontNintendoRender(Gfx *DL)
 //RARE LOGO
 //********************************************************************************************************
 
-/*
- * Address: 0x7F008B58
-*/
 void frontRareEnter(void)
 {
     titleLoadRareLogo(g_FrontModelBuffer, 0x78000);
@@ -1747,9 +1630,6 @@ void frontGunbarrelEnter(void) {
     g_FrontStartMusic = TRUE;
 }
 
-/*
- * Address: 0x7F00920C
-*/
 void frontGunbarrelLeave(void) {
     titleFreeBondModels();
 }
@@ -1944,9 +1824,6 @@ void frontSelectBondPicture(Model *objinstance, u32 bondID)
 }
 
 
-/**
- * Address 0x7F00B8AC NTSC
-*/
 void frontLoadFolders(void)
 {
     ModelNode *mnode;
@@ -2072,8 +1949,6 @@ void frontSetCursorOnFolder(int index)
 
 
 /**
- * Address: 7F00BBCC
- * 
  * Tick function for the file folder select screen. Rebuild's each folder model's render matrix
  * then handles input. Also keeps track of the 30 second idle timeout for going back to the legal screen.
  */
@@ -2316,8 +2191,6 @@ char* frontGetDifficultyName(s32 difficulty)
 
 
 /**
- * Address: 7F00C408
- * 
  * Render the file folder select screen. That includes the background texture, four 3D wallet models, the progress text written on them,
  * the crosshair cursor, and the "SELECT FILE", "Copy", and "Erase" text and icons.
  *
@@ -2343,8 +2216,8 @@ Gfx *frontFileSelectRender(Gfx *DL)
     DIFFICULTY highestdifficulty;
     struct coord2d folderpos2d;             // folder position projected to screen space
 
-    topcolour = unknown_folderselect_constructor;
-    bottomcolour = unknown_folderselect_constructor_0;
+    topcolour = (struct FolderSelectColour){0x14, 0x14, 0x14};
+    bottomcolour = (struct FolderSelectColour){0x32, 0x32, 0x32};
 
     /** 
      * The background image doesn't fully cover the screen so it's necessary to clear the back framebuffer to opaque black.
@@ -2364,7 +2237,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
     for (j = 3; j >= 0; j--)
     {
         // struct copy
-        renderdata = unknown_folderselect;
+        renderdata = (ModelRenderData){NULL, TRUE, 3};
 
         renderdata.flags = 3;
         renderdata.zbufferenabled = FALSE;
@@ -2774,7 +2647,6 @@ void frontModeSelectTick(void)
 }
 
 
-// Address 0x7F00D5E8 NTSC
 Gfx *frontSetupMenuBackground(Gfx *DL)
 {
     f32 temp_f0;
@@ -2788,12 +2660,12 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
     temp_f0 = g_FrontFolderPos[g_FrontFolder].f[0];
     temp_f2 = g_FrontFolderPos[g_FrontFolder].f[1];
 
-    sp10C = D_8002AF84;
+    sp10C = (ModelRenderData){NULL, TRUE, 3};
 
-    temp_f0 += D_8002AFC4;
-    temp_f2 += D_8002AFC8;
+    temp_f0 += g_FrontFolderCamOffsetX;
+    temp_f2 += g_FrontFolderCamOffsetY;
 
-    mtx4LoadLookAt(&spC8, temp_f0, temp_f2, 4000.0f + D_8002AFCC, temp_f0, temp_f2, 0.0f, 0.0f, 1.0f, 0.0f);
+    mtx4LoadLookAt(&spC8, temp_f0, temp_f2, 4000.0f + g_FrontFolderCamOffsetZ, temp_f0, temp_f2, 0.0f, 0.0f, 1.0f, 0.0f);
     mtx4LoadTranslation(&g_FrontFolderPos[g_FrontFolder], &sp88);
     mtx4ScaleRows012(0.25f, sp88.m[0]);
     mtx4MultInPlace(&spC8, &sp88);
@@ -3335,7 +3207,6 @@ void frontMissionSelectLeave(void)
 }
 
 
-// Address 0x7F00DEB8 NTSC
 void frontMissionSelectTick(void)
 {
     s32 var_s4;
@@ -3520,7 +3391,6 @@ void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level)
     g_FrontCursorY = g_FrontMissionCursorY[level / 5];
 }
 
-// Address 0x7F00E458 NTSC
 Gfx *frontMissionSelectRender(Gfx *DL)
 {
     s32 i;
@@ -3756,18 +3626,7 @@ void frontSetDifficultyCursor(int difficulty)
 }
 
 
-/**
- * See notes below. Assume this is not in original codebase.
-*/
-struct MatchHack_front_rodata_3000 { u8 data[0xbb8]; };
 
-/**
- * See notes below. Assume this is not in original codebase.
- * (the struct isn't, but the 3000 character newline string is)
-*/
-#ifndef VERSION_EU
-const struct MatchHack_front_rodata_3000 asc_D_8004F4B4 = { "\n" };
-#endif
 
 Gfx *frontDifficultyRender(Gfx *DL)
 {
@@ -3776,8 +3635,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
     s32 x;    // sp3168
     s32 y;    // sp3164 (sp164 + 3000)
 
-    // This should be a `u8 [3000]`, see notes below.
-    struct MatchHack_front_rodata_3000 stagename_struct;
+    char stagename[3000]; /* frontDrawMissionTitle's line buffer */
 
     u8 *text_sp160; // sp ??
     s32 sp9C;                         // sp156
@@ -3797,26 +3655,9 @@ Gfx *frontDifficultyRender(Gfx *DL)
 #endif
     DL = frontSetupMenuBackground(DL);
 
-#ifndef VERSION_EU
-    /**
-     * MatchHack notes:
-     *
-     * There is a chunk of auto generated code that copies 3000 characters
-     * into the `stagename` variable. These 3000 characters are .rodata.
-     * It would make sense that this is an array initialization spot,
-     * but that means this is the start of a basic block which causes
-     * problems ... but that might indicate there was a seperate DEBUG
-     * difficulty menu. Anyways, a basic block split here messes
-     * with the `DL` variable.
-     * So that leaves struct copy, which just seems wrong.
-     * But at least it matches.
-     * -BB Feb 3, 2022
-    */
-    stagename_struct = asc_D_8004F4B4;
-#endif
 
     DL = textSetupDraw(DL);
-    DL = frontDrawMissionTitle(DL, &stagename_struct);
+    DL = frontDrawMissionTitle(DL, stagename);
 
     //  "DIFFICULTY:\n"
     text_sp3180 = langGet(getStringID(LTITLE, TITLE_STR_35_DIFFICULTY));
@@ -3843,8 +3684,8 @@ Gfx *frontDifficultyRender(Gfx *DL)
     {
         if (i == 0 || unlockedDifficulty >= i)
         {
-            sprintf(&stagename_struct, "%d.\n", i + 1);
-            text_sp160 = &stagename_struct;
+            sprintf(stagename, "%d.\n", i + 1);
+            text_sp160 = (u8 *) stagename;
 
             textMeasure(&sp98, &sp9C, text_sp160, g_FontZurichChars, g_FontZurich, 0);
 
@@ -4080,9 +3921,6 @@ void frontOptions007Tick(void)
 }
 
 
-#if !defined(VERSION_EU)
-const struct MatchHack_front_rodata_3000 asc_D_80050074 = { "\n" };
-#endif
 
 /**
  * Render the 007 Mode options. The slider bars are 300 pixels wide and
@@ -4093,7 +3931,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     u8 *labeltext;
     s32 textx;
     s32 texty;
-    struct MatchHack_front_rodata_3000 textbuffer;
+    char textbuffer[3000];
     s32 textheight;
     s32 textwidth;
     s32 barwidth;
@@ -4106,12 +3944,8 @@ Gfx *frontOptions007Render(Gfx *DL)
 #endif
     DL = frontSetupMenuBackground(DL);
 
-#if !defined(VERSION_EU)
-    textbuffer = asc_D_80050074;
-#endif
-
     DL = textSetupDraw(DL);
-    DL = frontDrawMissionTitle(DL, (char*)&textbuffer);
+    DL = frontDrawMissionTitle(DL, textbuffer);
 
     labeltext = langGet(getStringID(LTITLE, TITLE_STR_40_SPECOPS)); /* SPECIAL OPTIONS */
 
@@ -4146,18 +3980,18 @@ Gfx *frontOptions007Render(Gfx *DL)
     // Render "Enemy health" text.
     DL = frontPrintText(DL, &textx, &texty, (s8 *)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Health * 100.0f));
+    sprintf(textbuffer, "%d%%\n", (s32) (g_Front007Health * 100.0f));
 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, (char*)&textbuffer, g_FontZurichChars, g_FontZurich, 0);
+    textMeasure(&textheight, &textwidth, textbuffer, g_FontZurichChars, g_FontZurich, 0);
 
     textx = 285 - textwidth;
     texty = 164;
 
     // Render enemy health percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4179,18 +4013,18 @@ Gfx *frontOptions007Render(Gfx *DL)
 
     DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Damage * 100.0f));
+    sprintf(textbuffer, "%d%%\n", (s32) (g_Front007Damage * 100.0f));
 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, (char*)&textbuffer, g_FontZurichChars, g_FontZurich, 0);
+    textMeasure(&textheight, &textwidth, textbuffer, g_FontZurichChars, g_FontZurich, 0);
 
     textx = 285 - textwidth;
     texty = 197;
 
     // Render enemy damage percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4212,18 +4046,18 @@ Gfx *frontOptions007Render(Gfx *DL)
 
     DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Accuracy * 10.0f));
+    sprintf(textbuffer, "%d%%\n", (s32) (g_Front007Accuracy * 10.0f));
 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, (char*)&textbuffer, g_FontZurichChars, g_FontZurich, 0);
+    textMeasure(&textheight, &textwidth, textbuffer, g_FontZurichChars, g_FontZurich, 0);
 
     textx = 285 - textwidth;
     texty = 230;
 
     // Render enemy accuracy percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4244,18 +4078,18 @@ Gfx *frontOptions007Render(Gfx *DL)
 
     DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-    sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Reaction * 100.0f));
+    sprintf(textbuffer, "%d%%\n", (s32) (g_Front007Reaction * 100.0f));
 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, (char*)&textbuffer, g_FontZurichChars, g_FontZurich, 0);
+    textMeasure(&textheight, &textwidth, textbuffer, g_FontZurichChars, g_FontZurich, 0);
 
     textx = 285 - textwidth;
     texty = 263;
 
     // Render enemy reaction speed percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     DL = frontAddStartTabText(DL);
     DL = frontAddPreviousTabText(DL);
@@ -4618,7 +4452,6 @@ void frontSetMpScenario(MPSCENARIOS scenarioid)
 }
 
 
-// Address 0x7F010608 NTSC
 void frontSetMpPlayerCount(s32 numplayers)
 {
     s32 i;
@@ -4734,7 +4567,6 @@ static void frontMpStepDisplaySetting(void)
     optionsSetHiRes(!optionsGetHiRes());
 }
 
-// Address 0x7F010848 NTSC
 void frontMpOptionsTick(void)
 {
     s32 players_selected = 0;
@@ -5252,7 +5084,6 @@ bool frontIsMpCharTaken(s32 character)
     return char_is_selected;
 }
 
-// Address 0x7F011C3C NTSC
 void frontMpCharEnter(void)
 {
     s32 i;
@@ -5351,7 +5182,6 @@ void frontMpCharLeave(void)
 }
 
 
-// Address 0x7F011ED4 NTSC
 void frontMpCharTick(void)
 {
     s32 numplayers;
@@ -5492,7 +5322,6 @@ s32 frontGetPortraitAlpha(s32 arg0, s32 arg1, s32 arg2)
 }
 
 
-// Address 0x7F01231C NTSC
 Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6)
 {
     Mtx* spD4;
@@ -5754,7 +5583,6 @@ void frontMpHandicapLeave(void)
 }
 
 
-// Address 0x7F012EC4 NTSC
 void frontMpHandicapTick(void)
 {
     s32 sp44;
@@ -5828,7 +5656,6 @@ void frontMpHandicapTick(void)
 }
 
 
-// Address 0x7F01317C NTSC
 Gfx * frontMpHandicapRender(Gfx *DL)
 {
     s32 spCC;
@@ -5948,7 +5775,6 @@ void frontMpControlsLeave(void) {
 }
 
 
-// Address 0x7F013608 NTSC
 // Address 0x7F013648 NTSC-J
 void frontMpControlsTick(void)
 {
@@ -6073,7 +5899,6 @@ void frontMpControlsTick(void)
 }
 
 
-// Address 0x7F013980 NTSC
 Gfx * frontMpControlsRender(Gfx *DL)
 {
     s32 spCC;
@@ -6281,7 +6106,6 @@ void frontMpStageTick(void)
 }
 
 
-// Address 0x7F014050 NTSC
 Gfx * frontMpStageRender(Gfx *DL)
 {
     s32 sp130;
@@ -6460,7 +6284,6 @@ void frontMpScenarioLeave(void) {
 }
 
 
-// Address 0x7F0147B8 NTSC
 void frontMpScenarioTick(void)
 {
     s32 isTeam;
@@ -6551,7 +6374,6 @@ void frontMpScenarioTick(void)
 }
 
 
-// Address 0x7F014A48 NTSC
 Gfx * frontMpScenarioRender(Gfx *DL)
 {
     s32 x; // sp88
@@ -6650,7 +6472,6 @@ void frontMpTeamsLeave(void)
 }
 
 
-// Address 0x7F014D48 NTSC
 void frontMpTeamsTick(void)
 {
     s32 i;
@@ -6776,9 +6597,6 @@ void frontMpTeamsTick(void)
 }
 
 
-/**
- * Address: 7F015138
- */
 Gfx *frontMpTeamsRender(Gfx *DL)
 {
     s32 numPlayers;
@@ -6890,7 +6708,6 @@ void frontSetBriefingPage(WATCH_BRIEFING_PAGE page)
 }
 
 
-// Address 0x7F015520 NTSC
 void frontLoadBriefing(void)
 {
     Gfx *temp_s0;
@@ -7034,7 +6851,6 @@ void frontBriefingTick(void)
 }
 
 
-// Address 0x7F015A08 NTSC
 Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
 {
     s32 i; // sp9C
@@ -7118,17 +6934,13 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
 }
 
 
-// Address 0x7F015D74 NTSC
-#ifndef VERSION_EU
-const struct MatchHack_front_rodata_3000 asc_D_80050C54 = { "\n" };
-#endif
 
 Gfx *frontBriefingRender(Gfx *DL)
 {
     u8 *spC0C;
     s32 spC08;
     s32 spC04;
-    struct MatchHack_front_rodata_3000 sp4C;
+    char sp4C[3000];
 
     DL = viSetFillColor(DL,0,0,0);
     DL = viFillScreen(DL);
@@ -7138,12 +6950,8 @@ Gfx *frontBriefingRender(Gfx *DL)
 #endif
     DL = frontSetupMenuBackground(DL);
 
-#if !defined(VERSION_EU)
-    sp4C = asc_D_80050C54;
-#endif
-
     DL = textSetupDraw(DL);
-    DL = frontDrawMissionTitle(DL, (char*)&sp4C);
+    DL = frontDrawMissionTitle(DL, sp4C);
 
     switch (g_FrontBriefingPage)
     {
@@ -7174,7 +6982,7 @@ Gfx *frontBriefingRender(Gfx *DL)
 
     if (g_FrontBriefingPage == BRIEFING_TITLE)
     {
-        DL = frontDrawObjectives(DL, 0xA7, (char*)&sp4C, 0);
+        DL = frontDrawObjectives(DL, 0xA7, sp4C, 0);
     }
     else
     {
@@ -7199,9 +7007,9 @@ Gfx *frontBriefingRender(Gfx *DL)
 
         spC08 = 0x37;
         spC04 = 0xA7;
-        textWrap(0x140, (s8*)spC0C, (s8*)&sp4C, g_FontZurichChars, g_FontZurich);
+        textWrap(0x140, (s8*)spC0C, (s8*)sp4C, g_FontZurichChars, g_FontZurich);
         textSetOverlapCorrection(8);
-        DL = frontPrintText(DL, &spC08, &spC04, (s8*)&sp4C, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &spC08, &spC04, (s8*)sp4C, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         textSetOverlapCorrection(-1);
     }
 
@@ -7942,7 +7750,6 @@ void frontCheatLeave(void)
 }
 
 
-// Address 0x7F017C88 NTSC
 void frontCheatTick(void)
 {
     s32 i;
@@ -8041,8 +7848,6 @@ void frontCheatTick(void)
 }
 
 
-// Address 0x7F017F5C NTSC
-// Address 0x7F017EB8 PAL
 Gfx * frontCheatRender(Gfx *DL)
 {
     s32 strID;
@@ -8403,7 +8208,6 @@ void frontCastLeave(void) {
 }
 
 
-// Address 0x7F018F60 NTSC
 
 void frontCastTick(void)
 {

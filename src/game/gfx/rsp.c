@@ -14,32 +14,16 @@
 #define RSP_MEMP_BANK                   6
 #define RSP_MEMP_ALLOC_SIZE_BYTES  0xA000
 
-/**
- * Address 8008D370.
- */
 u8 g_gfxDramStack[SP_DRAM_STACK_SIZE8];
 
-/**
- * Address 8008D770.
- */
 u8 g_gfxYieldBuf[OS_YIELD_GFX_DATA_SIZE];
 
-/**
- * Address 8004E9E4.
- */
 s32 g_gfxRdpOutputBufferEnd = 0;
 
-/**
- * Address 8004E9E8.
- */
 s32 g_gfxRdpOutputBufferStart = 0;
 
-/**
- * Address 8004E9F0.
- */
 struct GfxInfo_s g_gfxTaskSettings[2] = 
 {
-    // 8004EA50
     {
         // next
         NULL,
@@ -114,7 +98,6 @@ struct GfxInfo_s g_gfxTaskSettings[2] =
         0
     },
 
-    // 8004EAB0
     {
         // next
         NULL,
@@ -191,7 +174,6 @@ struct GfxInfo_s g_gfxTaskSettings[2] =
 };
 
 /**
- * Address 8004EAB0.
  * Initialization needs to point this to an item in the g_gfxTaskSettings array
  * otherwise rspGfxTaskStart will fail.
  */

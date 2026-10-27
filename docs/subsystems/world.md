@@ -19,7 +19,7 @@ out. Things that move (doors, guards, weapons) are props; see [props](props.md).
 Each level has a bg file (`bg_*_all_p.seg`), loaded once by `bgLoad` at level start.
 It holds:
 
-* the room table (`ptr_bgdata_room_fileposition_list`): each room's position and where
+* the room table (`g_BgRoomFiles`): each room's position and where
   its compressed model data is in the file;
 * the portals (`g_BgPortals`): each joins two rooms (`connectedRoom1`, `connectedRoom2`)
   and has a polygon (`offset_portal`);

@@ -52,7 +52,6 @@ ALSoundState *g_CasingSfxState;
 ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
 
 CasingRecord g_Casings[20];
-s32 dword_CODE_bss_80076A48; // Unused
 
 #ifdef REFRESH_PAL
     /* PAL */
@@ -85,18 +84,6 @@ extern f32 g_GLGrenadeLaunchUnk94;
 extern f32 g_TankShellSpeed;
 
 // data
-////D:80032440
-//rgba_u8 D_80032440[] = {
-//	{0x96, 0x96, 0x96, 0},
-//	{0x96, 0x96, 0x96, 0}
-//};
-//
-////D:80032448
-//rgba_u8 D_80032448[] = {
-//	{0xFF, 0xFF, 0xFF, 0},
-//	{0xFF, 0xFF, 0xFF, 0},
-//	{0xB2, 0x4D, 0x2E, 0}
-//};
 /**
  * Controls the lighting on environment mapped weapons such as the Cougar Magnum and Golden Gun.
  */
@@ -104,20 +91,11 @@ Lights1 g_WeaponEnvmapLight = gdSPDefLights1(
     0x96, 0x96, 0x96,   // ambient RGB
     0xff, 0xff, 0xff,   // diffuse RGB
     0xb2, 0x4d, 0x2e);  // direction
-//D:80032454
-//u32 D_80032454 = 0;
-
-//D:80032458
-u32 D_80032458 = 0;
-
-//D:8003245C
 u32 size_item_buffer[] = {0x14820, 0x14820};
 
-//D:80032464
-u32 D_80032464[] ={0x7530, 0x7530};
+u32 g_GunModelBufferOffset[] ={0x7530, 0x7530};
 
 
-//D:8003246C
 CartridgeModelFileRecord ejected_cartridge[] = {
 	{&cartridge_header, "GcartridgeZ"},
 	{&cartrifle_header, "GcartrifleZ"},
@@ -128,66 +106,38 @@ CartridgeModelFileRecord ejected_cartridge[] = {
 
 #include <assets/obseg/gun/gunWeaponStats.inc.c>
 
-//D:80033924
 #include <assets/obseg/gun/gunModelFileRecord.inc.c>
 #include <PR/libaudio.h>
 
-//D:80034C9C
 u32 g_GunDebApplyKeyframe = 0;
-//D:80034CA0
 u32 g_gunDebKeyframeIndex = 0;
 
-//D:80034CA4
-u32 D_80034CA4[] = {
-	       0x0,           0x0,           0x0,           0x0,
-	       0x0,           0x0,           0x0,    0x3F000000,
-	0x41000000,           0x0,           0x0,           0x0,
-	       0x0,           0x0,           0x0,           0x0,
-	0x3F000000,    0x41000000,           0x0,    0x40C00000,
-	0xBFC00000,           0x0,    0x40B487B1,    0x3E70C0AD,
-	0x3E0AE536,    0x3F000000,    0x41000000,           0x0,
-	0x41480000,    0xC0600000,           0x0,    0x40C159EC,
-	0x3D374BC7,    0x3F0E4378,    0x3F000000,    0x41000000,
-	       0x0,    0xC1200000,    0xC1300000,           0x0,
-	0x3F9ED962,    0x3EA24C40,    0x3F8B0DF1,    0x3F000000,
-	0x41000000,           0x0,    0xC1600000,    0xC1700000,
-	       0x0,    0x3FEA4780,    0x40C498E3,    0x3FA316D3,
-	0x3F000000,    0x41200000,           0x0,    0xBF800000,
-	0xC1100000,           0x0,    0x3EC4BBA1,    0x3EB87C42,
-	0x3DD75968,    0x3F000000,    0x41200000,           0x0,
-	       0x0,           0x0,           0x0,           0x0,
-	       0x0,           0x0,    0x3F000000,    0x41A00000,
-	       0x0,           0x0,           0x0,           0x0,
-	       0x0,           0x0,           0x0,    0x3F000000,
-	0x41A00000,           0x1,           0x0,           0x0,
-	       0x0,           0x0,           0x0,           0x0,
-	       0,           0
+/** Knife slash: the first of the two alternating swings. */
+Weapon1PTransformKeyframe knifeSlashKeyframes1[10] = {
+    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 8.0f },
+    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 8.0f },
+    { 0, { 6.0f, -1.5f, 0.0f }, { 5.641564f, 0.23511f, 0.13564f }, 0.5f, 8.0f },
+    { 0, { 12.5f, -3.5f, 0.0f }, { 6.042227f, 0.04475f, 0.555717f }, 0.5f, 8.0f },
+    { 0, { -10.0f, -11.0f, 0.0f }, { 1.241009f, 0.316988f, 1.086363f }, 0.5f, 8.0f },
+    { 0, { -14.0f, -15.0f, 0.0f }, { 1.830307f, 6.143663f, 1.274134f }, 0.5f, 10.0f },
+    { 0, { -1.0f, -9.0f, 0.0f }, { 0.384244f, 0.360323f, 0.105151f }, 0.5f, 10.0f },
+    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 20.0f },
+    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 20.0f },
+    { 1, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f }
 };
 
-u32 D_80034E0C[] = {
-	       0x0,           0x0,           0x0,           0x0,
-	       0x0,           0x0,           0x0,    0x3F000000,
-	0x41000000,           0x0,           0x0,           0x0,
-	       0x0,           0x0,           0x0,           0x0,
-	0x3F000000,    0x41000000,           0x0,    0xC1080000,
-	0xC0C00000,           0x0,    0x40AF7506,    0x40BAB4B9,
-	0x40C2A5C2,    0x3F000000,    0x41000000,           0x0,
-	0xC0400000,    0xC0600000,           0x0,    0x3ECE08F2,
-	0x40B75721,    0x40B62409,    0x3F000000,    0x41000000,
-	       0x0,    0xBF000000,    0xC1080000,           0x0,
-	0x3F9DFD7A,    0x40B768CD,    0x40B37BDF,    0x3F000000,
-	0x41000000,           0x0,    0x40E00000,    0xC1E40000,
-	0xBFC00000,    0x3FA74949,    0x40B63EBC,    0x40B6443D,
-	0x3F000000,    0x41200000,           0x0,    0xBFC00000,
-	0xC1100000,           0x0,    0x3D8ADEEC,    0x40C84E72,
-	0x3E506749,    0x3F000000,    0x41200000,           0x0,
-	       0x0,           0x0,           0x0,           0x0,
-	       0x0,           0x0,    0x3F000000,    0x41A00000,
-	       0x0,           0x0,           0x0,           0x0,
-	       0x0,           0x0,           0x0,    0x3F000000,
-	0x41A00000,           0x1,           0x0,           0x0,
-	       0x0,           0x0,           0x0,           0x0,
-           0x0,           0x0
+/** Knife slash: the second swing. */
+Weapon1PTransformKeyframe knifeSlashKeyframes2[10] = {
+    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 8.0f },
+    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 8.0f },
+    { 0, { -8.5f, -6.0f, 0.0f }, { 5.483035f, 5.834561f, 6.082734f }, 0.5f, 8.0f },
+    { 0, { -3.0f, -3.5f, 0.0f }, { 0.402412f, 5.729386f, 5.691899f }, 0.5f, 8.0f },
+    { 0, { -0.5f, -8.5f, 0.0f }, { 1.234298f, 5.731543f, 5.608871f }, 0.5f, 8.0f },
+    { 0, { 7.0f, -28.5f, -1.5f }, { 1.306924f, 5.695158f, 5.69583f }, 0.5f, 10.0f },
+    { 0, { -1.5f, -9.0f, 0.0f }, { 0.067808f, 6.259576f, 0.203519f }, 0.5f, 10.0f },
+    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 20.0f },
+    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 20.0f },
+    { 1, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f }
 };
 
 /**
@@ -354,31 +304,11 @@ Weapon1PTransformKeyframe taserRaiseKeyframes[6] = {
     {1, { 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
 };
 
-coord3d D_80035C40 = {0.0f, 0.0f, 0.0f};
-coord3d D_80035C4C = {0.0f, 0.0f, 0.0f};
-coord3d D_80035C58 = {0.0f, 0.0f, -1.0f};
-coord3d D_80035C64 = {0.0f, 1.0f, 0.0f};
-coord3d D_80035C70 = {6.2536321f, 6.2592888f, 0.204238f};
-coord3d D_80035C7C = {0.25044999f, 0.90482301f, 0.28716999f};
-coord3d D_80035C88 = {1.715736f, 0.37460899f, 0.92193699f};
 
 
-//D:80035C98
-Vtx D_80035C98 = {0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff };
-//D:80035CA8
-coord3d D_80035CA8 = { 0.0f, 0.0f, 0.0f };
-//D:80035CB4
-coord3d D_80035CB4 = { 0.0f, 0.0f, 0.0f };
 // These were a zero scalar followed by an array, read as one ModelRenderData
 // (or coord3d) through a cast. That only works while the compiler keeps them
 // adjacent, which -G 8 and zero-init-in-bss do not, so define real structs.
-//D:80035CC0
-ModelRenderData D_80035CC0 = {NULL, TRUE, 0x00000003};
-//D:80035D00
-ModelRenderData D_80035D00 = {NULL, TRUE, 0x00000003};
-//D:80035D40
-ModelRenderData D_80035D40 = {NULL, TRUE, 0x00000003};
-//D:80035D44
 u32 watchControllerButtonBases[] = {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -393,14 +323,12 @@ struct RicochetSoundsSmall ricochet_sounds_small = {
     RICO_6_HBBA_A_SFX, RICO_6_HBBA_B_SFX, RICO_6_HBBA_C_SFX, RICO_6_HBBA_D_SFX
 };
 
-//D:80035E2C
 struct PunchSounds punch_sounds = {
     PUNCH1_SFX,
     PUNCH2_SFX,
     PUNCH3_SFX
 };
 
-//D:80035E34
 struct BulletFleshSounds bullet_flesh_sounds = {
     HIT_BULLET_FLESH_SFX,
     HIT_BULLET_FLESH_SFX
@@ -423,20 +351,11 @@ struct RicochetSoundsLarge ricochet_sounds_large = {
     RICO_6_HBBA_A_SFX, RICO_6_HBBA_B_SFX, RICO_6_HBBA_C_SFX, RICO_6_HBBA_D_SFX
 };
 
-//D:80035E90
 struct sfx2 watchlaser_fire_sounds = { RICO_LASER2_SFX, RICO_LASER3_SFX };
-//D:80035E94
 struct sfx3 knife_throw_sounds = { KNIFE_THROW1_SFX, KNIFE_THROW2_SFX, KNIFE_THROW3_SFX };
-//D:80035E9C
 struct gun_trigger_state g_ZeroTriggerState = { 0, 0 };
-//D:80035EA0
-//u32 D_80035EA0 = 0;
-//D:80035EA4
-coord3d D_80035EA4 = {0.0f, 0.0f, 0.0f};
-//D:80035EB0
 ModelRenderData g_DefaultCasingModelRenderData = {NULL, TRUE, 0x00000003};
 
-//D:80035EF0
 #define AMMO_RELATED_MAX 30
 AmmoStats ammo_related[AMMO_RELATED_MAX] = {
     { 0x0    , 0x00000000,   0.0f, },
@@ -471,9 +390,8 @@ AmmoStats ammo_related[AMMO_RELATED_MAX] = {
     { 0x1    , 0x00000000,   0.0f, },
 };
 
-//was previously attached to ammo_related[] (array at D:80035EF0)
-//D:80036058
-u16 D_80036058[] = { 0, 0, 0, 0, };
+/* Unused. Kept after ammo_related[] in case anything reads past the end of it. */
+u16 g_AmmoRelatedPad[] = { 0, 0, 0, 0, };
 
 extern struct ModelSkeleton skeleton_gun_kf7;
 
@@ -530,8 +448,6 @@ void gunDebApplyKeyframe(void)
 
 
 /**
- * Address: 7F05C6FC
- * 
  * Sample a first person weapon transform keyframe animation at `time` and
  * write the interpolated transform into `matrix`
  * 
@@ -796,8 +712,8 @@ void gunLoadHandModel(GUNHAND hand)
                 }
                 else
                 {
-                    texInitPool(&g_CurrentPlayer->item_related[hand], &buffer_weapon[D_80032464[hand]], size_buffer_weapon - D_80032464[hand]);
-                    modelFileLoad(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, D_80032464[hand], &g_CurrentPlayer->item_related[hand]);
+                    texInitPool(&g_CurrentPlayer->item_related[hand], &buffer_weapon[g_GunModelBufferOffset[hand]], size_buffer_weapon - g_GunModelBufferOffset[hand]);
+                    modelFileLoad(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, g_GunModelBufferOffset[hand], &g_CurrentPlayer->item_related[hand]);
                 }
             }
 
@@ -1133,9 +1049,6 @@ f32 weaponGetImpactForce(ITEM_IDS item)
 	return weaponGetStats(item)->ForceOfImpact;
 }
 
-/**
- * Address 0x7F05DFCC
- */
 s8 weaponGetFireRate(ITEM_IDS item) {
     return weaponGetStats(item)->AutomaticFiringRate;
 }
@@ -1379,7 +1292,8 @@ void gunTickBoltRecoil(GUNHAND hand)
 }
 
 
-void sub_GAME_7F05E978(Model* model, s32 val)
+/** Shows or hides the parts of a gun model only drawn in first person (switches 8-13 and 35). */
+void gunSetFirstPersonPartsVisible(Model* model, s32 val)
 {
     if (model->obj->Switches[8] != NULL)
     {
@@ -1421,7 +1335,8 @@ void sub_GAME_7F05E978(Model* model, s32 val)
 }
 
 
-void sub_GAME_7F05EA94(Model* model, s32 val)
+/** Shows or hides the item held in a thrown weapon's hand, such as the grenade (switches 14 and 15). */
+void gunSetHeldItemVisible(Model* model, s32 val)
 {
     ModelNode* switch_14;
     ModelNode* switch_15;
@@ -1445,9 +1360,6 @@ void sub_GAME_7F05EA94(Model* model, s32 val)
 }
 
 
-/**
- * Address 0x7F05EB0C.
-*/
 void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *arg5, PropRecord *owner)
 {
     PropRecord *temp_s1;
@@ -1485,8 +1397,6 @@ void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf 
 
 
 /**
- * Address: 7F05EC1C
- *
  * Determines where the projectile may safely enter the world. Ideally that is the targetpos position, but if targetpos
  * is obstructed the player's position used as a fallback. This prevents the player from launching
  * projectiles through nearby surfaces.
@@ -1925,8 +1835,6 @@ void gunThrowObject(s32 hand)
 
 
 /**
- * Address: 7F05F73C
- *
  * Spawns Grenade Launcher rounds and makes them inherit the player's momentum.
  */
 void gunSpawnGLGrenade(s32 handnum)
@@ -1988,7 +1896,6 @@ void gunSpawnGLGrenade(s32 handnum)
 
 
 /**
- * Address: 0x7F05F928
  * This function is responsible for attaching a rocket to the end of the Rocket Launcher and updating its matrices.
  */
 void gunUpdateAttachedRocket(s32 handIndex)
@@ -2043,9 +1950,6 @@ void gunUpdateAttachedRocket(s32 handIndex)
 }
 
 
-/*
-* Address: 0x7f05fa7c
-*/
 void gunCreateRocket(GUNHAND hand)
 {
     struct hand * hand_ptr;
@@ -2068,7 +1972,6 @@ void gunCreateRocket(GUNHAND hand)
 
 
 /*
-* Address: 0x7F05FB00
 * This function frees some sort of ObjectRecord from the given hand
 */
 #if defined(VERSION_EU)
@@ -2088,11 +1991,8 @@ void gunFreeRocket(enum GUNHAND hand)
 }
 
 
-extern f32 D_80053DDC;
+extern f32 g_ThrowVelocityScale;
 
-/*
-* Address: 0x7F05FB64
-*/
 void gunFireTankShell(s32 handnum)
 {
     WeaponObjRecord *obj;
@@ -2172,9 +2072,9 @@ void gunFireTankShell(s32 handnum)
         spawnpos.z = hand->field_B58.z;
 
 
-        unscaledvelocity.x = aimdir.x * D_80053DDC;
-        unscaledvelocity.y = aimdir.y * D_80053DDC;
-        unscaledvelocity.z = aimdir.z * D_80053DDC;
+        unscaledvelocity.x = aimdir.x * g_ThrowVelocityScale;
+        unscaledvelocity.y = aimdir.y * g_ThrowVelocityScale;
+        unscaledvelocity.z = aimdir.z * g_ThrowVelocityScale;
 
         velocity.x = unscaledvelocity.x * g_GlobalTimerDelta;
         velocity.y = unscaledvelocity.y * g_GlobalTimerDelta;
@@ -2258,8 +2158,6 @@ void gunsInitAnimGroups(void) {
 }
 
 
-// Address 0x7F007980 NTSC.
-// Address 0x7F007900 PAL.
 void gunsStopSounds(void)
 {
     int i;

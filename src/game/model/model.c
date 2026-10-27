@@ -54,10 +54,6 @@ s32 g_ModelLodDisabled = 0;
 f32 g_ModelLodScale = 1.0;
 struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices) = NULL;
 void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx) = NULL;
-coord3d D_80036094 = {0};
-coord3d D_800360A0 = {0};
-coord3d D_800360AC = {0};
-coord3d D_800360B8 = {0};
 struct bondstruct_unk_op07_related g_ModelTubeAngleTable[32] = {
     { 0, 0, 0x10 },
     { 1, 0x1000, 0xD },
@@ -93,11 +89,10 @@ struct bondstruct_unk_op07_related g_ModelTubeAngleTable[32] = {
     { 0x191, 0, 0x10 },
 };
 
-coord3d D_80036244 = { 0 };
 u32 g_ModelAnimMergingEnabled = 1;
-coord3d D_80036254 = { 0 };
 
-Vertex D_800363E0 = {
+/* Template for the vertices of muzzle flashes: opaque white */
+Vertex g_ModelGunfireVtxTemplate = {
     { 0, 0, 0 },
     0,
     { 0, 0 },
@@ -108,7 +103,8 @@ Vertex D_800363E0 = {
 };
 
 u32 g_ModelShadowAlpha = 0x50;
-Vtx D_800363F8 = {
+/* Template for the vertices of shadows: alpha is replaced from g_ModelShadowAlpha */
+Vtx g_ModelShadowVtxTemplate = {
     {
         { 0, 0, 0 },
         0,
@@ -116,10 +112,7 @@ Vtx D_800363F8 = {
         { 0xFF, 0xFF, 0xFF, 0x50 }
     }
 };
-coord3d D_80036408 = { 1.0f, 0.0f, 0.0f };
 struct bondstruct_unk_animation_related* g_AnimFrameBuffer =  0;
-s32 D_80036418 =  0;
-s32 D_8003641C =  0;
 
 
 #define MODEL_SPARE_SLOTS          30
@@ -210,8 +203,6 @@ bool modelmgrCanSlotFitRwdata(Model *modelslot, ModelFileHeader *modeldef)
 
 
 /**
- * Address: 7F06C094
- * 
  * Allocates 0x20 bytes for a new model without animations.
  * Models that need animations use modelmgrInstantiateModelWithAnim.
  */
@@ -380,9 +371,6 @@ void modelSetVtxAllocator(s32 param_1) {
 }
 
 
-/**
- * Address: 7F06C474
- */
 void modelCalcDirToCamera(Model* model, coord3d* coord)
 {
     Mtxf* mtx;
@@ -413,9 +401,6 @@ void modelCalcDirToCamera(Model* model, coord3d* coord)
 }
 
 
-/**
- * Address: 7F06C550
- */
 void modelGetDirToCamera(Model* model, coord3d* coord)
 {
   modelCalcDirToCamera(model, coord);
@@ -490,9 +475,6 @@ f32 modelGetRootDepth(Model *objinst)
 }
 
 
-/**
- * Address 0x7F06C79C.
-*/
 union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
 {
     s32 index  = 0;
@@ -671,9 +653,6 @@ void modelSetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 }
 
 
-/**
- * Address 0x7F06CC80.
- */
 f32 modelGetRootRotY(Model *objinst)
 {
     ModelNode *root;
@@ -720,8 +699,6 @@ void modelSetScale(Model *objinst, f32 scale)
 
 
 /**
- * Address: 7F06CE84
- * 
  * Scales only the translation component of the root node of an animation.
  * For example, the animation for the plane flight in Runway's outro doesn't
  * actually move the plane very far. This function is used to scale up the translation
@@ -804,7 +781,6 @@ f32 modelGetNodeRadius(Model *model, ModelNode *node)
 
 
 /**
- * Address 0x7F06D00C.
  * PD: model0001af80
 */
 f32 modelGetRadius(Model *arg0)
@@ -866,9 +842,6 @@ void modelLerpAngles3(coord3d *arg0, coord3d *arg1, f32 mult)
 }
 
 
-/**
- * Address: 7F06D1CC
- */
 u16 animReadChannel(ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
 {
     u32 result;
@@ -933,9 +906,6 @@ u16 animReadChannel(ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
 }
 
 
-/**
- * Address: 7F06D2E4
- */
 u16 animReadRootMotion16(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord16 *out)
 {
     u32 scaled;
@@ -989,9 +959,6 @@ f32 animReadRootMotion(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAni
 }
 
 
-/**
- * Address: 7F06D490
- */
 void modelCalcRootPosition(Model *model, ModelNode *modelNode)
 {
     union ModelRwData *rw;
@@ -1145,9 +1112,6 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
 }
 
 
-/**
- * Address: 7F06D8B0
- */
 void modelCalcJointMtxFromAngles(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildArg *mgm, coord3d *rot)
 {
     u32 flags;
@@ -1354,9 +1318,6 @@ void modelCalcJointMtxFromQuat(ModelRenderData *arg0, Model *arg1, ModelNode *ar
 }
 
 
-/**
- * Address: 7F06DE04
- */
 u32 animReadAngleBits(u8 *bitstream, u8 width, u32 bitOffset)
 {
     u32 value = 0;
@@ -1396,9 +1357,6 @@ u32 animReadAngleBits(u8 *bitstream, u8 width, u32 bitOffset)
 }
 
 
-/**
- * Address: 7F06DEC0
- */
 void animReadJointRotation(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, u8 *bitstream, coord3d *rot)
 {
     u32 bitoffset;
@@ -1479,25 +1437,25 @@ void modelCalcJointMtx(ModelRenderData *arg0, Model *model, ModelNode *node)
     jointnum.v = group->JointID;
     skeleton = model->obj->Skeleton;
 
-    rot1 = D_80036094;
+    rot1 = (coord3d){0};
     
     animReadJointRotation(jointnum.v, model->flip, skeleton, model->anim, model->frameaData, &rot1);
 
     if (model->frameFrac != 0.0f)
     {
-        rot2 = D_800360A0;
+        rot2 = (coord3d){0};
         animReadJointRotation(jointnum.v, model->flip, skeleton, model->anim, model->framebData, &rot2);
         modelLerpAngles3(&rot1, &rot2, model->frameFrac);
     }
 
     if (model->mergeWeight != 0.0f)
     {
-        rot3 = D_800360AC;
+        rot3 = (coord3d){0};
         animReadJointRotation(jointnum.v, model->flip2, skeleton, model->anim2, model->frame2aData, &rot3);
 
         if (model->frame2Frac != 0.0f)
         {
-            rot4 = D_800360B8;
+            rot4 = (coord3d){0};
             animReadJointRotation(jointnum.v, model->flip2, skeleton, model->anim2, model->frame2bData, &rot4);
             modelLerpAngles3(&rot3, &rot4, model->frame2Frac);
         }
@@ -1515,9 +1473,6 @@ void modelCalcJointMtx(ModelRenderData *arg0, Model *model, ModelNode *node)
 }
 
 
-/**
- * Address: 7F06E2B8
- */
 void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, ModelNode *node, f32 angle)
 {
     s32 opcode;
@@ -1726,9 +1681,6 @@ void modelCalcOffsetMtx(ModelRenderData* arg0, Model *model, ModelNode *node)
     }
 }
 
-/*
-* Address: 0x7F06E858
-*/
 void modelUpdateDistanceRelations(Model* model, ModelNode* node)
 {
     union ModelRoData *rodata = node->Data;
@@ -1764,9 +1716,6 @@ void modelUpdateDistanceRelations(Model* model, ModelNode* node)
     node->Child = NULL;
 }
 
-/*
-* Address: 0x7F06E970
-*/
 void modelApplyDistanceRelations(Model* model, ModelNode* node)
 {
     ModelRoData_LODRecord *rodata = &node->Data->LOD;
@@ -2050,9 +1999,6 @@ void modelUpdateRelationsQuick(Model *model, ModelNode *parent)
 }
 
 
-/*
- * Address: 0x7F06EFC4
-*/
 void modelUpdateNodeRelations(Model *model)
 {
     ModelNode *node = model->obj->RootNode;
@@ -2223,9 +2169,6 @@ void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
     modelCalcMatricesNoAnim(arg0, arg1);
 }
 
-/**
- * Address 0x7F06F5AC.
-*/
 struct ModelAnimation * modelGetAnim(struct Model* model) {
     return model->anim;
 }
@@ -2236,9 +2179,6 @@ s8 modelGetAnimFlip(Model *model)
 }
 
 
-/**
- * Address 0x7F06F5BC.
-*/
 f32 modelGetAnimFrame(Model *model)
 {
     return model->frame;
@@ -2275,7 +2215,6 @@ f32 modelGetAnimSpeed(Model *model)
 
 
 /**
- * Address 0x7F06F618.
  * PD: modelGetAbsAnimSpeed
 */
 f32 modelGetAbsAnimSpeed(Model *model)
@@ -2407,7 +2346,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
         animPart = rodata->AnimPart;
         skeleton = model->obj->Skeleton;
         scale = model->scale * model->anim_translation_scale;
-        pos = D_80036244;
+        pos = (coord3d){0};
 
         angleDelta = animReadRootMotion(animPart, model->flip, skeleton, model->anim, model->frameb, &pos
         );
@@ -2560,8 +2499,6 @@ void modelSetAnimSpeed(Model *model, f32 anim_speed, f32 startframe) {
  * @param arg0:
  * @param arg1:
  * @param arg2: must be non-zero.
- *
- * Address 0x7F06FE90.
 */
 void modelSetAnimSpeedToReachFrame(Model *model, f32 arg1, f32 arg2)
 {
@@ -2675,18 +2612,12 @@ void modelSetAnimFrame2(Model* model, f32 frame1, f32 frame2)
 }
 
 
-/**
- * Address 0x7F0701D4.
-*/
 void modelSetAnimMergingEnabled(s32 arg0)
 {
     g_ModelAnimMergingEnabled = arg0;
 }
 
 
-/**
- * Address 0x7F0701E0.
-*/
 u32 modelIsAnimMergingEnabled(void)
 {
     return g_ModelAnimMergingEnabled;
@@ -2737,7 +2668,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
             jointnum = node->Opcode;
             skeleton = modelptr->obj->Skeleton;
             scale = modelptr->scale * modelptr->anim_translation_scale;
-            pos = D_80036254;
+            pos = (coord3d){0};
 
             pos34.f[0] = header->unk34.x;
             pos34.f[1] = header->unk34.y;
@@ -4519,7 +4450,7 @@ void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode
     f32 tmp;
     coord3d sp9c;
     coord3d sp90;
-    Vertex vtxtemplate = D_800363E0;
+    Vertex vtxtemplate = g_ModelGunfireVtxTemplate;
     Vertex *vertices;
     f32 distance;
 
@@ -4672,7 +4603,7 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
     }
 
     shadow = &node->Data->Shadow;
-    vtxtemplate = D_800363F8;
+    vtxtemplate = g_ModelShadowVtxTemplate;
     rwdata = (ModelRwData_HeaderRecord *) modelGetNodeRwData(model, shadow->HeaderNode);
     height = rwdata->pos.y - rwdata->ground;
     sizex = shadow->size.x;
@@ -4876,8 +4807,6 @@ void modelRender(ModelRenderData *mrData, Model *mdl)
 
 
 /**
- * Address: 7F0747D0
- * 
  * Ray vs transformed bounding box test. The bbox is transformed by mtx while the ray
  * is defined by pos and dir.
  * 
@@ -5086,9 +5015,6 @@ bool modelTestRayIntersectsTransformedBBox(ModelRoData_BoundingBoxRecord *bbox, 
 }
 
 
-/**
- * Address: 7F074C68
- */
 bool modelTestRayIntersectsNodeBBox(Model *model, ModelNode *node, coord3d *pos, coord3d *dir)
 {
     ModelRoData_BoundingBoxRecord *bbox = &node->Data->BoundingBox;
@@ -5097,9 +5023,6 @@ bool modelTestRayIntersectsNodeBBox(Model *model, ModelNode *node, coord3d *pos,
 }
 
 
-/**
- * Address: 7F074CAC
- */
 s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypos, coord3d *raydir)
 {
     ModelRoData_Op17Record *hitData;
@@ -5117,7 +5040,7 @@ s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypo
     
     hitData = (ModelRoData_Op17Record *) node->Data;
     nodeMtx = modelFindNodeMtx(model, node, 0);
-    rayData->data.rel = D_80036408;
+    rayData->data.rel = (coord3d){1.0f, 0.0f, 0.0f};
     rayData->data.radiusSq = hitData->radiusSq;
     rayData->data.dir.f[0] = raydir->x;
     rayData->data.dir.f[1] = raydir->y;
@@ -5248,9 +5171,6 @@ s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypo
 }
 
 
-/**
- * Address: 7F0752FC
- */
 u32 modelFindRayHitNext(Model *model, coord3d *arg1, coord3d *arg2, ModelNode **nodeptr)
 {
     ModelNode *node;
@@ -5336,7 +5256,6 @@ u32 modelFindRayHitNext(Model *model, coord3d *arg1, coord3d *arg2, ModelNode **
 
 
 /**
- * Address 7F0754BC.
  * Copy animation from ROM to RAM
 */
 s32 animLoadFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
@@ -5387,9 +5306,6 @@ s32 animLoadFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
 }
 
 
-/**
- * Address 7F0755B0.
-*/
 void animResetFrameBuffer(void)
 {
     if (g_AnimFrameBuffer != NULL) // should never be NULL after animInitFrameBuffer is called
@@ -5602,9 +5518,6 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
     }
 }
 
-/**
- * Address 7F075A90.
-*/
 void modelFilePromotePointers(ModelFileHeader *header, s32 vma, u32 addr) {
     s32 diff = addr - vma;
     s32 i;

@@ -21,9 +21,6 @@
 #include "game/nav/stan.h"
 
 
-/**
- * Address 0x8002A780.
-*/
 struct coord3d default_start_position = { 0 };
 
 u32 weaponLoadProjectileModels(ITEM_IDS modelid)
@@ -183,7 +180,7 @@ void playerApplyIntro(void)
     __typeof__(camera_transition_timer) saved_transition_timer = camera_transition_timer;
     __typeof__(intro_camera_index) saved_intro_camera_index = intro_camera_index;
     __typeof__(camera_fade_active) saved_camera_fade_active = camera_fade_active;
-    __typeof__(ptr_random06cam_entry) saved_random06cam_entry = ptr_random06cam_entry;
+    __typeof__(g_IntroCamera) saved_random06cam_entry = g_IntroCamera;
     __typeof__(g_CurrentSetupIntroCamera) saved_setup_intro_camera = g_CurrentSetupIntroCamera;
     __typeof__(g_SetupIntroCameraCount) saved_setup_intro_camera_count = g_SetupIntroCameraCount;
 
@@ -213,7 +210,7 @@ void playerApplyIntro(void)
         cameraFrameCounter1 = 1;
     }
 
-    camera_80036438 = 0;
+    g_CreditsScrollFrame = 0;
     credits_state = 0;
     credits_pointer = NULL;
     g_ForceBondMoveOffset.f[0] = FLOAT_INIT;
@@ -253,7 +250,7 @@ void playerApplyIntro(void)
     camera_transition_timer = FLOAT_INIT;
     intro_camera_index = CAMERAMODE_INTRO;
     g_IntroSwirl = NULL;
-    ptr_random06cam_entry = NULL;
+    g_IntroCamera = NULL;
     g_CurrentSetupIntroCamera = NULL;
     g_SetupIntroCameraCount = 0;
     mission_timer = 0;
@@ -451,12 +448,12 @@ void playerApplyIntro(void)
 
     if (g_CurrentSetupIntroCamera != NULL)
     {
-        ptr_random06cam_entry = g_CurrentSetupIntroCamera;
+        g_IntroCamera = g_CurrentSetupIntroCamera;
         rand_camera_index = (s32)(randomGetNext() % (u32) g_SetupIntroCameraCount);
         while (rand_camera_index > 0)
         {
             rand_camera_index--;
-            ptr_random06cam_entry = ptr_random06cam_entry->prev;
+            g_IntroCamera = g_IntroCamera->prev;
         }
     }
 
@@ -524,15 +521,6 @@ void playerApplyIntro(void)
     g_CurrentPlayer->field_488.theta_transform.f[1] = FLOAT_INIT;
     g_CurrentPlayer->field_488.theta_transform.f[2] = cosf(start_look_angle);
     playerSetWorldScale(g_PlayerWorldScale);
-    dword_CODE_bss_80079DA0 = 0;
-
-
-    for (i=0; i<BSS_80079DA8_LENGTH; i++)
-    {
-        dword_CODE_bss_80079DA4 = 0;
-        dword_CODE_bss_80079DA8[i] = 0;
-    }
-
     hudmsgResetIntroText();
     hudmsgTopReset();
     g_CurrentPlayer->prop = propAllocate();
@@ -570,7 +558,7 @@ void playerApplyIntro(void)
             camera_transition_timer = saved_transition_timer;
             intro_camera_index = saved_intro_camera_index;
             camera_fade_active = saved_camera_fade_active;
-            ptr_random06cam_entry = saved_random06cam_entry;
+            g_IntroCamera = saved_random06cam_entry;
             g_CurrentSetupIntroCamera = saved_setup_intro_camera;
             g_SetupIntroCameraCount = saved_setup_intro_camera_count;
         }

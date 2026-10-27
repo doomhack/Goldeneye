@@ -85,24 +85,14 @@ extern struct ModelSlot *g_ModelSlots;
 extern s32 g_ModelLodDisabled;
 extern f32 g_ModelLodScale;
 extern u32 g_ModelAnimMergingEnabled;
-extern s32 D_80036410;
-extern s32 D_80036418;
-extern s32 D_8003641C;
 extern u32 g_ModelShadowAlpha;
 
-extern coord3d D_80036094;
-extern coord3d D_800360A0;
-extern coord3d D_800360AC;
-extern coord3d D_800360B8;
-extern coord3d D_80036244;
-extern coord3d D_80036254;
 
 extern struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices);
 extern void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx);
 extern struct bondstruct_unk_op07_related g_ModelTubeAngleTable[];
-extern Vertex D_800363E0;
-extern Vtx D_800363F8;
-extern coord3d D_80036408;
+extern Vertex g_ModelGunfireVtxTemplate;
+extern Vtx g_ModelShadowVtxTemplate;
 
 
 // tentative signature

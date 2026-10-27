@@ -32,14 +32,11 @@
 #define BULLET_SPARKS_MAX 20
 
 // bss
-//CODE.bss:8007A160
 s32 g_MaxShards;
-//CODE.bss:8007A164
 s_shattered_window_piece* g_Shards;
 
 
 // data
-//D:80040940
 s32 g_NextShardNum = 0;
 
 
@@ -248,9 +245,6 @@ void glassTickShards(void) {
 }
 
 
-/**
- * Address: 7F0A2C44
- */
 Gfx *glassRenderShards(Gfx *gdl)
 {
     Mtxf mtxf;

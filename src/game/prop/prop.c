@@ -62,15 +62,11 @@
 // bss
 
 
-//CODE.bss:80069C30
 s16 * g_RoomPropsFound;
 
-//CODE.bss:80069C34 canonically roompropsnum
 u32 g_NumRoomPropsFound;
 
 /**
- * Address 0x80069C38.
- * 
  * This 600 length prop pool provides storage for every PropRecord in the game.
  * Props are never allocated anywhere else. propsInit threads
  * all 600 slots onto the free list, and propAllocate/propFree pop and push to that list.
@@ -79,97 +75,59 @@ u32 g_NumRoomPropsFound;
 */
 PropRecord g_Props[MAX_PROPS];
 
-//CODE.bss:80071618
 s16 *g_RoomFirstPropBlock;
 
-//CODE.bss:8007161C
 struct roomproplistblock *g_RoomPropBlocks;
 
 /**
  * Array of pointers, containing onscreen props.
- *
- * Address 0x80071620.
 */
 PropRecord *g_OnScreenPropList[ONSCREEN_PROP_LIST_LEN];
 
 /**
  * Pointer to last onscreen prop.
- * Address 0x80071DF0.
 */
 PropRecord **g_LastOnScreenProp;
 
 /**
  * Count of onscreen props.
- * Address 0x80071DF4.
  * canonically propznum
 */
 s32 g_OnScreenPropCount;
 
-//CODE.bss:80071DF8
 PropRecord *g_InteractProp;
-//CODE.bss:80071E00
 WeaponObjRecord* proxy_mine_table[30];
 
-//CODE.bss:80071E78
 f32 gasTimeToFullOpacity;
-//CODE.bss:80071E7C
 u32 gasDoesDamageFlag;
 
-/**
- * Address 0x80071E80.
-*/
 WeaponObjRecord g_WeaponSlots[MAX_WEAPON_SLOTS];
 
-/**
- * Address 0x80072E70.
-*/
 HatRecord g_HatSlots[MAX_HAT_SLOTS];
 
-/**
- * Address 0x80073370.
-*/
 AmmoCrateRecord g_AmmoCrates[MAX_AMMO_CRATES];
 
-/**
- * Address 0x80073DC0.
-*/
 Projectile g_Projectiles[PROJECTILES_ARR_MAX];
 
-/**
- * Address 0x80075030.
-*/
 Embedment g_Embedments[EMBEDMENT_ARR_MAX];
 
-//CODE.bss:80075B70
 struct Model *g_CurrentProjectileModel;
-//CODE.bss:80075B74
-struct ModelNode * dword_CODE_bss_80075B74;
-//CODE.bss:80075B78
-coord3d flt_CODE_bss_80075B78;
-//CODE.bss:80075B88
-coord3d flt_CODE_bss_80075B88;
+struct ModelNode * g_ProjectileHitNode;
+coord3d g_ProjectileHitPos;
+coord3d g_ProjectileHitNormal;
 
-/**
- * Address 0x80075B98.
-*/
 MonitorRecord g_MonitorAnimController;
 
-/**
- * Address 0x80075C10.
-*/
 struct object_animation_controller g_UnknownAnimController;
 
 /**
  * Unused / unreferenced (from padding / align?)
- * Address 0x80075C88.
 */
 struct object_animation_controller g_TaserAnimController;
 
 
-//CODE.bss:80075D00 - 80075D24
 stagesetup g_CurrentSetup; //Public Working Setup
 
-//CODE.bss:80075D28
 stagesetup                        *g_ptrStageSetupFile;
 
 PropRecord *g_ActivePropsTail = 0;
@@ -192,8 +150,6 @@ void modelGetAxisExtents(Model* model, f32* max, f32* min, s32 axis);
 
 /**
  * Counts onscreen props.
- *
- * Address 0x7F03A240.
 */
 void propsSortOnscreen(void)
 {
@@ -415,9 +371,6 @@ void propDetach(PropRecord* prop) {
 }
 
 
-/**
- * Address: 7F03A62C
-*/
 Gfx *propRender(Gfx * gdl, PropRecord *prop, s32 withalpha)
 {
     u8 type;
@@ -449,9 +402,6 @@ Gfx *propRender(Gfx * gdl, PropRecord *prop, s32 withalpha)
 }
 
 
-/**
- * Address: 7F03A6F4
-*/
 Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
 {
     s32 flag;
@@ -927,7 +877,6 @@ void propsTickOnce(void)
 
 
 /*
-* Address: 0x7F03CA30
 * PD: propsTickPerPlayer (src/game/proptick.c)
 */
 void propsTickPerPlayer(void)
@@ -1007,8 +956,6 @@ void propsTickPerPlayer(void)
  *
  * @param self: prop
  * @param roomids: out parameter. Must contain enough space to store room ids.
- *
- * Address 0x7F03CB8C.
 */
 void propGetRoomIds(PropRecord *self, s32 *roomids)
 {
@@ -1044,8 +991,6 @@ void propGetRoomIds(PropRecord *self, s32 *roomids)
  * @param arg2: out parameter.
  * @param arg3: out parameter. Maybe ymin. (ground)
  * @param arg4: out parameter. Maybe ymax. (ground + chr/object height)
- *
- * Address 0x7F03CC20.
 */
 void propGetCollisionPolygon(PropRecord *prop, struct rect4f **polygon, s32 *edges, f32 *top, f32 *bottom)
 {
@@ -1087,8 +1032,6 @@ void propGetCollisionPolygon(PropRecord *prop, struct rect4f **polygon, s32 *edg
  * @param arg0:
  * @param arg1: out parameter. Bounding coords (x,z) by (x,z).
  * @param arg2: out parameter.
- *
- * Address 0x7F03CCB0.
 */
 void propGetCollisionPolygon2d(PropRecord *prop, struct rect4f **polygon, s32 *edges)
 {
@@ -1104,7 +1047,6 @@ void propGetCollisionPolygon2d(PropRecord *prop, struct rect4f **polygon, s32 *e
  * @param polygon: Convex polygon. Iterates edges and checks that
  * point is oriented correctly inside all of them.
  * @param edges: Number of edges to iterate in polygon.
- * Address 0x7F03CCD8.
 */
 s32 polygonContainsPoint(coord3d *point, struct rect4f *polygon, s32 edges)
 {
@@ -1175,8 +1117,6 @@ s32 polygonContainsPoint(coord3d *point, struct rect4f *polygon, s32 edges)
  * @param collision_radius: out parameter, will be set to character width or player collision radius.
  * @param height: out parameter, will be set to height
  * @param always_20: out parameter, will be set to either 20 or 30.
- *
- * Address 0x7F03CF88.
 */
 void propGetCollisionRadius(PropRecord *arg0, f32 *collision_radius, f32 *height, f32 *arg3)
 {
@@ -1196,9 +1136,6 @@ void propGetCollisionRadius(PropRecord *arg0, f32 *collision_radius, f32 *height
 }
 
 
-/**
- * Address 0x7F03CFE8.
-*/
 f32 propGetGroundY(PropRecord *arg0)
 {
     if (arg0->type == PROP_TYPE_CHR)
@@ -1278,8 +1215,6 @@ void propsTickPickups(void)
 
 
 /**
- * Address: 7F03D188
- *
  * Calculates an auto-aim score for a given prop based roughly on how close it is to the center of the screen.
  * Higher scores are better, with 1.0 being the best possible score.
  */
@@ -1539,9 +1474,6 @@ void autoaimUpdateTarget(void)
 }
 
 
-/*
-* Address: 7F03D9EC
-*/
 s32 propDoorGetCdTypes(PropRecord* prop)
 {
     s32 var_v1;
@@ -1567,7 +1499,6 @@ s32 propDoorGetCdTypes(PropRecord* prop)
 
 
 /*
-* Address: 7F03DA50
 * PD: prop_is_of_cd_type
 */
 s32 propIsOfCdType(PropRecord* prop, s32 cdtypes) {
@@ -1652,7 +1583,6 @@ s32 roomListsOverlap(s32* roomids1, s32* roomids2)
 #define MAXBLOCKS 256
 #define ROOMLISTMAX 256
 /*
-* Address: 0x7F03DBCC
 * PD: prop_try_add_to_chunk
 * block: canonical name
 */
@@ -1675,7 +1605,6 @@ s32 roomBlockAddProp(s16 propnum, s32 block)
 
 
 /*
-* Address: 0x7F03DCB8
 * canonical name newblockforroom
 * Description: Find an emtpy chunk that can be assigned to a room
 * PD: room_allocate_prop_list_chunk
@@ -1713,7 +1642,6 @@ s32 roomBlockAllocate(s32 room, s32 prevblock)
 
 
 /*
-* Address: 0x7F03DD9C
 * PD: prop_register_room
 * PD adds an upper bound check to make sure room is not above the max number of rooms
 */
@@ -1753,7 +1681,6 @@ void propAddToRoom(PropRecord *prop, s16 room)
 
 
 /*
-* Address: 0x7F03DE94
 * PD: prop_deregister_room
 * PD adds an upper bound check to make sure room is not above the max number of rooms
 */
@@ -1868,8 +1795,6 @@ void propAddToRooms(PropRecord *prop)
 
 
 /*
-* Address: 0x7F03E27C
-*
 * Recalculate the prop's room list with rooms it is found to be overlapping.
 */
 void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius)
@@ -2143,9 +2068,6 @@ f32 bboxGetZmin(ModelRoData_BoundingBoxRecord *modelBoundingBox)
 }
 
 
-/**
- * Address 0x7F03E87C.
-*/
 f32 bboxRotatedMinX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 {
     f32 phi_f2;
@@ -2183,9 +2105,6 @@ f32 bboxRotatedMinX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-/**
- * Address 0x7F03E91C.
-*/
 f32 bboxRotatedMaxX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 {
     f32 phi_f2;
@@ -2223,9 +2142,6 @@ f32 bboxRotatedMaxX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-/**
- * Address 0x7F03E9BC.
-*/
 f32 bboxRotatedMinY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 {
     f32 phi_f2;
@@ -2263,9 +2179,6 @@ f32 bboxRotatedMinY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-/**
- * Address 0x7F03EA5C.
-*/
 f32 bboxRotatedMaxY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 {
     f32 phi_f2;
@@ -2303,9 +2216,6 @@ f32 bboxRotatedMaxY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-/**
- * Address 0x7F03EAFC.
-*/
 f32 bboxRotatedMinZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 {
     f32 phi_f2;
@@ -2343,9 +2253,6 @@ f32 bboxRotatedMinZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-/**
- * Address 0x7F03EB9C.
-*/
 f32 bboxRotatedMaxZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 {
     f32 phi_f2;
@@ -2560,8 +2467,6 @@ void bboxGetHull2d(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf* arg1, struc
 
 
 /**
- * Address: 7F03F598
- *
  * Tests whether a world-space point is inside a bound pad's local bbox plus
  * a padding on all axes defined by the radius parameter.
  */
@@ -2603,9 +2508,6 @@ bool padBoundsContainPoint(coord3d *pos, f32 radius, BoundPadRecord *pad)
 }
 
 
-/*
-* Address: 7F03F748
-*/
 void modelGetAxisExtents(Model* model, f32* max, f32* min, s32 axis)
 {
     ModelNode *node = model->obj->RootNode;
@@ -2718,9 +2620,6 @@ void projectRectCornersTo2D(struct coord3d *center, struct coord2d *arg1, struct
 }
 
 
-/*
-* Address: 0x7F03FA44
-*/
 ObjectRecord *objFindAtPad(s32 PadId) {
     PropRecord *prop;
     s16 tempPadId = PadId;
@@ -2767,9 +2666,6 @@ ObjectRecord * objFindAtPos(struct coord3d *pos, s32 RoomID)
 }
 
 
-/**
- * Address 0x7F0014E0.
-*/
 void roomPropListsInit(void);
 
 void propsInit(void)
@@ -2791,9 +2687,6 @@ void propsInit(void)
     roomPropListsInit();
 }
 
-/**
- * Address 0x7F0015D0.
-*/
 void roomPropListsInit(void)
 {
     s32 j;

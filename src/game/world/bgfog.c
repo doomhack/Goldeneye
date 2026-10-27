@@ -17,14 +17,8 @@
 #include "game/menu/watchmenu.h"
 #include <limits.h>
 
-/**
- * Address 0x800825C0.
-*/
 s32 g_FogSkyIsEnabled;
 
-/**
- * Address 0x800825C4.
-*/
 NearFogRecord *g_NearFogValuesP;
 
 /**
@@ -40,29 +34,14 @@ struct FogDetails
     f32 near_fog_dist_scaled;
 } g_CurFogDetails;
 
-/**
- * Address 0x800825E0.
-*/
 f32 g_FarFogIntensity;
 
-/**
- * Address 0x800825E4.
-*/
 f32 g_DifferenceFromFarFogIntensity;
 
-/**
- * Address 0x800825E8.
-*/
 EnvironmentRecord *g_EnvironmentFoundp;
 
-/**
- * Address 0x800825EC.
-*/
 EnvironmentRecord * g_EnvironmentMainp;
 
-/**
- * Address 0x800825F0.
-*/
 EnvironmentRecord * g_EnvironmentAltp;
 
 #if defined(VERSION_EU)
@@ -70,19 +49,10 @@ struct NearFogRecordF eu_loadCurrentNearFog;
 #endif
 
 
-/**
- * Address 0x80044DC4.
-*/
 f32 g_ScaledFarFogIntensity = FLT_MAX;
 
-/**
- * Address 0x80044DC8.
-*/
 f32 g_ScaledDifferenceFromFarFogIntensity = 0.0;
 
-/**
- * Address 0x80044DCC.
-*/
 CurrentEnvironmentRecord g_CurrentEnvironment = {
     0x384, // s32 DifferenceFromFarIntensity;
     0x3e8, // u32 FarIntensity;
@@ -160,9 +130,6 @@ EnvironmentRecord fog_tables[] = {
     {ENVIRONMENTDATA_END},
 };
 #else
-/**
- * Address 0x80044E10.
-*/
 EnvironmentRecord fog_tables[] = {
      //stageID                              blendmultiplier    farfog    nearfog  mvisrng  mobfnrng  mnvisrng   intensity  dif_ght  far_alight    red     green     blue    clouds   cloudrept skyimid reserved  cloudred   green    blue   iswater  padding[3]  waterrepeat  waterid reserved2   water red,green,blue  waterconcavity
     {LEVELID_STATUE                             ,        15,      3500,    2000,     2500,    2000,        0,      0x3E7,    0x3E4,    0x3E8,       0,       0,       8,        1,      5000,    0,        0,        170,    100,     40,        0,    0,0,0,         -1000,       0,        0,        0,     0,    0,    30.0 },
@@ -248,9 +215,6 @@ f32 fogGetScaledFarFogIntensitySquared(void)
 }
 
 
-/**
- * Address 0x7F0BA758.
-*/
 /**
  * Co-op's "near" draw distance: the far plane comes in to this fraction of
  * the level's. Rooms and props past it aren't drawn, which saves time in both
@@ -362,9 +326,6 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
     g_FogSkyIsEnabled = 1;
 }
 
-/**
- * Address 0x7F0BA9D0.
-*/
 void fogLoadFoglessCurrentEnvironment(EnvironmentFoglessRecord *arg0)
 {
     g_CurrentEnvironment.Red = arg0->Red;
@@ -386,18 +347,6 @@ void fogLoadFoglessCurrentEnvironment(EnvironmentFoglessRecord *arg0)
 }
 
 
-/**
- * Address 0x7F0BAA5C.
-*/
-void fogRemoved7F0BAA5C(s32 a)
-{
-    return;
-}
-
-
-/**
- * Address 0x7F0BAA64.
-*/
 void fogLoadLevelEnvironment(s32 level_id, s32 arg1)
 {
     EnvironmentRecord *phi_v1;
@@ -498,7 +447,6 @@ void fogLoadLevelEnvironment(s32 level_id, s32 arg1)
 }
 
 /**
- * Address 0x7F0BACA8.
  * Switch to next Environment.
  * @param isTransition: Usually 0 for instant switch or 1 to transition gradually
  */
@@ -555,8 +503,6 @@ void fogSwitchToSolosky2(f32 arg0)
 /**
  * @param gdl:
  * @param arg1: not used?
- *
- * Address 0x7F0BB070.
 */
 Gfx *fogSetRenderFogColor(Gfx *gdl, s32 arg1)
 {
@@ -585,9 +531,6 @@ Gfx *fogSetRenderFogColor(Gfx *gdl, s32 arg1)
 }
 
 
-/**
- * Address 0x7F0BB298.
-*/
 Gfx *fogRenderClearFogMode(Gfx *gdl)
 {
     if (g_FogSkyIsEnabled == 0)
@@ -601,9 +544,6 @@ Gfx *fogRenderClearFogMode(Gfx *gdl)
 }
 
 
-/**
- * Address 0x7F0BB2C8.
-*/
 s32 fogPositionIsVisibleThroughFog(coord3d *pos, f32 range)
 {
     coord3d sp24;
@@ -640,9 +580,6 @@ NearFogRecord *fogGetNearFogValuesP(void)
 }
 
 
-/**
- * Address 0x7F0BB3A4.
-*/
 s32 fogGetPropDistColor(PropRecord *prop, rgba_f32 *color)
 {
     if (g_FogSkyIsEnabled == 0)

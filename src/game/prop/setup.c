@@ -891,7 +891,6 @@ void padGetRoomsEitherSide(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, st
 
 extern f32 g_DoorScale;
 /**
- *
  * NTSC ADDRESS: 7F003480
  * PAL ADDRESS: 7F0033F0
  * Perfect Dark: void setupCreateDoor(struct doorobj *door, s32 cmdindex)
@@ -1908,9 +1907,6 @@ void proxminesInit();
 // end forward declarations
 
 
-/**
- * Address 0x7F0014B0.
-*/
 void objSoundsInit(void)
 {
     s32 i;
@@ -1923,9 +1919,6 @@ void objSoundsInit(void)
 }
 
 
-/**
- * Address 0x7F001750.
-*/
 void propsResetLevelState(void)
 {
     s32 i;
@@ -1933,15 +1926,15 @@ void propsResetLevelState(void)
     monitorsInitAnimations();
     proxminesInit();
     alarm_timer = 0;
-    ptr_alarm_sfx = 0;
+    g_AlarmSound = 0;
     toxic_gas_sound_timer = 0.0f;
     activate_gas_sound_timer = 0;
     gasLeakSource.f[0] = 0.0f;
     gasLeakSource.f[1] = 0.0f;
     gasLeakSource.f[2] = 0.0f;
-    D_80030ADC = 0;
+    g_GasLastCoughTime = 0;
     gasLeakTimer = 0.0f;
-    ptr_gas_sound = 0;
+    g_GasSound = 0;
     clock_drawn_flag = 1;
     clock_enable = 0;
     clock_time = 0.0f;
@@ -1981,19 +1974,18 @@ void propsResetLevelState(void)
     g_LevelLoadPropSwitch = NULL;
     g_LevelLoadPropLockDoor = NULL;
     g_LevelLoadPropSafeItem = NULL;
-    D_80030B0C = NULL;
+    g_ProjectileHitProp = NULL;
     bodypartshot = -1;
-    F_80030B14 = 1.0f;
-    F_80030B18 = 1.0f;
+    g_CctvAlarmTimeScale = 1.0f;
+    g_CctvDamageScale = 1.0f;
     g_AutogunPendingDamageTick = 1.0f;
     g_AutogunDamageScalar = 1.0f;
-    F_80030B24 = 1.0f;
+    g_AutogunDamageScale = 1.0f;
     g_SoloAmmoMultiplier = 1.0f;
 }
 
 /**
  * Called from setupCreateProps when PROPDEF type is PROPDEF_SWITCH.
- * Address 0x7F001910.
 */
 void setupLinkSwitch(struct LinkRecord *arg0)
 {
@@ -2004,7 +1996,6 @@ void setupLinkSwitch(struct LinkRecord *arg0)
 
 /**
  * Called from setupCreateProps when PROPDEF type is PROPDEF_LOCK_DOOR.
- * Address 0x7F001928.
 */
 void setupLinkLockDoor(struct LockDoorRecord *arg0)
 {
@@ -2015,7 +2006,6 @@ void setupLinkLockDoor(struct LockDoorRecord *arg0)
 
 /**
  * Called from setupCreateProps when PROPDEF type is PROPDEF_SAFE_ITEM.
- * Address 0x7F001940.
 */
 void setupLinkSafeItem(struct ObjectRecord *arg0)
 {
@@ -2024,9 +2014,6 @@ void setupLinkSafeItem(struct ObjectRecord *arg0)
 }
 
 
-/**
- * Address 0x7F001958.
-*/
 void monitorsInitAnimations(void)
 {
     MonitorRecord spEC;
@@ -2142,7 +2129,6 @@ void setupFreeProps(s32 stage)
 }
 
 /**
- * Address 0x7F056850.
  * @brief getposstan
 */
 s32 getposstan(struct coord3d *pos, StandTile *stan, f32 radius, struct coord3d *posReturn, StandTile **stanReturn)
@@ -2296,9 +2282,6 @@ ObjectRecord *setupGetPtrToCommandByIndex(s32 index) //#MATCH
 }
 
 
-/**
- * Address 0x7F056B1C.
-*/
 s32 tagGetCommandIndex(struct ObjectRecord *tag)
 {
     PropDefHeaderRecord *object;
@@ -2323,9 +2306,6 @@ s32 tagGetCommandIndex(struct ObjectRecord *tag)
 }
 
 
-/**
- * Address 0x7F056BA8.
-*/
 s32 setupGetCommandIndexByProp(struct PropRecord *prop)
 {
     PropDefHeaderRecord *object;
@@ -2362,9 +2342,6 @@ s32 modelLoad(s32 modelid)
 }
 
 
-/**
- * Address 0x7F056CA0.
-*/
 void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 {
     PropRecord *temp_s1;
@@ -2439,9 +2416,6 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 }
 
 
-/**
- * Address 0x7F056EA0.
-*/
  ObjectRecord *setupCommandGetObject(s32 stageID, s32 index)
 {
      PropDefHeaderRecord *obj;
@@ -2564,9 +2538,6 @@ ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr,
 }
 
 
-/**
- * Address 0x7F02370C.
-*/
 void setupGuard(s32 stageid, GuardRecord *arg1, s32 arg2)
 {
     struct PadRecord *pad;

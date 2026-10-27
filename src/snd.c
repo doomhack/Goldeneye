@@ -87,17 +87,17 @@ union ALSndpSmallEvent_u {
     } align_size;
 };
 
-// TODO: is this struct really the answer?
-// 800243E4
-struct D_800243E4_s {
-    // address 800243E4 and 800243E8
-    ALLink node;
-    // address 800243EC
-    struct ALSoundState_s *g_sndPlayerSoundStatePtr;
+/**
+ * The sound states, each on one of two lists. `used.next` is the most recently started
+ * sound and `used.prev` the oldest, so sounds can be preempted oldest first. `free` is a
+ * singly linked list of unused states.
+ */
+struct SoundStateLists {
+    ALLink used;
+    struct ALSoundState_s *free;
 };
 
-// // TODO: is this struct really the answer?
-struct D_800243E4_s D_800243E4 = { {NULL, NULL}, NULL};
+struct SoundStateLists g_sndStates = { {NULL, NULL}, NULL};
 
 ALSndPlayer *g_sndPlayerPtr = &g_sndPlayer;
 
@@ -138,8 +138,6 @@ void sndSetSfxSlotVolume(u8 arg0, u16 arg1);
 // end forward declarations
 
 /**
- * 8720    70007B20
- *
  * Mostly identical to n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\sndplayer.c
  * method alSndpNew.
  */
@@ -165,7 +163,7 @@ void sndNewPlayerInit(ALSeqpSfxConfig *sfxSeqpConfig)
     ptr = alHeapAlloc(sfxSeqpConfig->heap, 1, sfxSeqpConfig->maxEvents * sizeof(ALEventListItem));
     alEvtqNew(&g_sndPlayerPtr->evtq, (ALEventListItem *)ptr, sfxSeqpConfig->maxEvents);
 
-    D_800243E4.g_sndPlayerSoundStatePtr = g_sndPlayerPtr->sndState;
+    g_sndStates.free = g_sndPlayerPtr->sndState;
 
     for(i = 1; i < sfxSeqpConfig->maybeSndStateCount; i++)
     {
@@ -203,8 +201,6 @@ void sndNewPlayerInit(ALSeqpSfxConfig *sfxSeqpConfig)
 }
 
 /**
- * 89DC    70007DDC
- *
  * Almost identical to \n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\sndplayer.c
  * method ALMicroTime _sndpVoiceHandler(void *node).
  */
@@ -308,7 +304,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                         // Not a looped or retriggered sound, and all retries have been exhausted.
                         if (limitReached) {
                             // Check if we can preempt a lower-priority sound.
-                            ALSoundState *iterState = (ALSoundState *) D_800243E4.node.prev;
+                            ALSoundState *iterState = (ALSoundState *) g_sndStates.used.prev;
 
                             do {
                                 if (!(iterState->unk3e & 0x12) && (iterState->unk3e & 0x4) &&
@@ -513,9 +509,6 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
 }
 
 
-/**
- * 9548    70008948
- */
 void sndDisposeSound(ALSoundState *state)
 {
     if (state->unk3e & 4)
@@ -528,9 +521,6 @@ void sndDisposeSound(ALSoundState *state)
     sndRemoveEvents(&g_sndPlayerPtr->evtq, state, 0xffff);
 }
 
-/**
- * 95C4    700089C4
- */
 void sndCreatePitchEvent(ALSoundState *state)
 {
     ALSndpEvent evt;
@@ -547,7 +537,6 @@ void sndCreatePitchEvent(ALSoundState *state)
 }
 
 /**
- * 9630     70008A30
  * Based on (almost identical to) the method
  * static void _removeEvents(ALEventQueue *evtq, ALSoundState *state)
  * from n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\sndplayer.c
@@ -590,14 +579,13 @@ void sndRemoveEvents(ALEventQueue *evtq, ALSoundState *state, u16 eventType)
 }
 
 /**
- * 96F0     70008AF0
  * Has similarities to
  * void alEvtqPrintEvtQueue(ALEventQueue *evtq)
  * from n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\event.c
  *
- * @param allocListCount Out param. Will contain the number of (next) nodes in the D_800243E4 allocList.
- * @param freeListCount Out param. Will contain the number of (next) nodes in the D_800243E4 freeList.
- * @return Number of (prev) nodes in the D_800243E4 freeList.
+ * @param allocListCount Out param. Will contain the number of (next) nodes in the g_sndStates allocList.
+ * @param freeListCount Out param. Will contain the number of (next) nodes in the g_sndStates freeList.
+ * @return Number of (prev) nodes in the g_sndStates freeList.
  */
 s32 sndCountAllocList(s16 *allocListCount, s16 *freeListCount)
 {
@@ -605,7 +593,7 @@ s32 sndCountAllocList(s16 *allocListCount, s16 *freeListCount)
     u16 counter2;
     u16 returnCounter;
 
-    ALEventQueue *evtq = (ALEventQueue *)&D_800243E4;
+    ALEventQueue *evtq = (ALEventQueue *)&g_sndStates;
 
     ALLink *freeListNodeForward = evtq->freeList.next;
     ALLink *allocListNodeForward = evtq->allocList.next;
@@ -633,8 +621,7 @@ s32 sndCountAllocList(s16 *allocListCount, s16 *freeListCount)
 }
 
 /**
- * 9770    70008B70
- * initializes soundstate to sound based on global g_sndPlayerSoundStatePtr.
+ * initializes soundstate to sound from the free list (g_sndStates.free).
  *     accepts: A0=sound data offset?, A1=sample address?
  *
  * @param soundBank unused.
@@ -644,29 +631,29 @@ ALSoundState *sndSetupSound(struct ALBankAlt_s *soundBank, ALSound* sound)
 {
     s32 decayTimeFlag;
     ALKeyMap *keymap = sound->keyMap;
-    ALSoundState *state = (ALSoundState *)D_800243E4.g_sndPlayerSoundStatePtr;
+    ALSoundState *state = (ALSoundState *)g_sndStates.free;
     OSIntMask mask;
 
     if (state != NULL)
     {
         mask = osSetIntMask(OS_IM_NONE);
 
-        D_800243E4.g_sndPlayerSoundStatePtr = (void *)state->link.next;
+        g_sndStates.free = (void *)state->link.next;
         alUnlink(&state->link);
 
-        if (D_800243E4.node.next != NULL)
+        if (g_sndStates.used.next != NULL)
         {
-            state->link.next = (void *)D_800243E4.node.next;
+            state->link.next = (void *)g_sndStates.used.next;
             state->link.prev = NULL;
-            D_800243E4.node.next->prev = (void *)state; // what?
-            D_800243E4.node.next = (void *)state;
+            g_sndStates.used.next->prev = (void *)state; // what?
+            g_sndStates.used.next = (void *)state;
         }
         else
         {
             state->link.prev = NULL;
             state->link.next = NULL;
-            D_800243E4.node.next = (void *)state;
-            D_800243E4.node.prev = (void *)state;
+            g_sndStates.used.next = (void *)state;
+            g_sndStates.used.prev = (void *)state;
         }
 
         osSetIntMask(mask);
@@ -705,35 +692,34 @@ ALSoundState *sndSetupSound(struct ALBankAlt_s *soundBank, ALSound* sound)
 
 
 /**
- * 9904    70008D04
  * some kind of dispose method, unlinks next/prev pointers.
  */
 void sndUnlinkClearSound(ALSoundState *state)
 {
-    if (state == (ALSoundState *)D_800243E4.node.next)
+    if (state == (ALSoundState *)g_sndStates.used.next)
     {
-        D_800243E4.node.next = state->link.next;
+        g_sndStates.used.next = state->link.next;
     }
 
-    if (state == (ALSoundState *)D_800243E4.node.prev)
+    if (state == (ALSoundState *)g_sndStates.used.prev)
     {
-        D_800243E4.node.prev = state->link.prev;
+        g_sndStates.used.prev = state->link.prev;
     }
 
     alUnlink(&state->link);
 
-    if (D_800243E4.g_sndPlayerSoundStatePtr != NULL)
+    if (g_sndStates.free != NULL)
     {
-        state->link.next = (void *)D_800243E4.g_sndPlayerSoundStatePtr;
+        state->link.next = (void *)g_sndStates.free;
         state->link.prev = NULL;
-        D_800243E4.g_sndPlayerSoundStatePtr->link.prev = (void *)state;
-        D_800243E4.g_sndPlayerSoundStatePtr = state;
+        g_sndStates.free->link.prev = (void *)state;
+        g_sndStates.free = state;
     }
     else
     {
         state->link.prev = NULL;
         state->link.next = NULL;
-        D_800243E4.g_sndPlayerSoundStatePtr = state;
+        g_sndStates.free = state;
     }
 
     if ((state->unk3e & 4) != 0)
@@ -755,7 +741,6 @@ void sndUnlinkClearSound(ALSoundState *state)
 }
 
 /**
- * 99F0    70008DF0
  * Gets Playing State if a state is available
  * @param state: the state to check
  * @return AL_PLAYSTATE
@@ -771,7 +756,6 @@ u8 sndGetPlayingState(ALSoundState *state)
 }
 
 /**
- * 9A08    70008E08
  *     sets sound effect; used by sound effect routines
  *
  * Old comments:
@@ -902,7 +886,6 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
 }
 
 /**
- * 9C20    70009020
  *     decativates sound effect
  *     accepts: A0=p->SE buffer
  */
@@ -922,7 +905,6 @@ void sndDeactivate(ALSoundState *state)
 }
 
 /**
- * 9C6C    7000906C
  * Similar to sndDeactivate, but iterates the global list and deactivates
  * items with the same unk3e flag.
  *
@@ -936,7 +918,7 @@ void sndDeactivateAllSfxByFlag(u8 flag)
 
     mask = osSetIntMask(OS_IM_NONE);
 
-    item = (ALSoundState *)D_800243E4.node.next;
+    item = (ALSoundState *)g_sndStates.used.next;
     while (item != NULL)
     {
         evt.common.type = AL_SNDP_DEACTIVATE_EVT;
@@ -955,7 +937,6 @@ void sndDeactivateAllSfxByFlag(u8 flag)
 }
 
 /**
- * 9D24    70009124
  *     redirect to 7000906C: A0=1
  */
 void sndDeactivateAllSfxByFlag_1(void)
@@ -964,7 +945,6 @@ void sndDeactivateAllSfxByFlag_1(void)
 }
 
 /**
- * 9D84    70009184
  * Calls alEvtqPostEvent with the method parameters and delta=0.
  *
  * @param state sound state.
@@ -986,7 +966,6 @@ void sndCreatePostEvent(ALSoundState *state, s16 eventType, s32 arg2)
 }
 
 /**
- * 9DC8    700091C8
  *     redirect to 70009264: A0=0
  */
 u16 sndGetSfxSlotFirstNaturalVolume(void)
@@ -994,9 +973,6 @@ u16 sndGetSfxSlotFirstNaturalVolume(void)
     return sndGetSfxSlotNaturalVolume(0);
 }
 
-/**
- * 9DE8    700091E8
- */
 void sndApplyVolumeAllSfxSlot(u16 volume)
 {
     u8 i;
@@ -1007,9 +983,6 @@ void sndApplyVolumeAllSfxSlot(u16 volume)
     }
 }
 
-/**
- * 9E38    70009238
- */
 void sndSetScalerApplyVolumeAllSfxSlot(f32 volumeScale)
 {
     g_sndSfxVolumeScale = volumeScale;
@@ -1017,7 +990,6 @@ void sndSetScalerApplyVolumeAllSfxSlot(f32 volumeScale)
 }
 
 /**
- * 9E64    70009264
  *     V0= halfword A0 in table at [80063BA8]; fries T6,T7,T8,T9
  */
 u16 sndGetSfxSlotNaturalVolume(u8 sfxIndex)
@@ -1025,9 +997,6 @@ u16 sndGetSfxSlotNaturalVolume(u8 sfxIndex)
     return g_sndSfxSlotNaturalVolume[sfxIndex];
 }
 
-/**
- * 9E84    70009284
- */
 void sndSetSfxSlotVolume(u8 sfxIndex, u16 volume)
 {
     // Not sure if these are debug leftovers, or is the type `ALSndpEvent` wrong?
@@ -1035,7 +1004,7 @@ void sndSetSfxSlotVolume(u8 sfxIndex, u16 volume)
     ALSndpEvent evt;
     ALSoundState *item;
 
-    item = (ALSoundState *)D_800243E4.node.next;
+    item = (ALSoundState *)g_sndStates.used.next;
 
     g_sndSfxSlotNaturalVolume[sfxIndex] = volume;
     g_sndSfxSlotVolume[sfxIndex] = (s16) ((f32) volume * g_sndSfxVolumeScale);

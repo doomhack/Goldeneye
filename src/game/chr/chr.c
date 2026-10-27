@@ -67,9 +67,6 @@ f32  file007Health(void);
 f32 g_ChrAnimRate = 0;
 s32 g_ChrDebugAnimOverride = 0;
 
-/**
- * Address 0x8002C908.
- */
 s32 g_ChrDebugAnimIndex = 0;
 s32 g_ChrDebugPaused = 0;
 s32 g_ChrDebugStep = 0;
@@ -109,47 +106,11 @@ s32 g_NextChrNum = 5000;
 ChrRecord *g_ChrSlots = 0;
 s32 g_NumChrSlots = 0;
 
-ModelRenderData D_8002CC6C         = {NULL,
-                                      TRUE,
-                                      0x00000003,
-                                      NULL,
-                                      NULL,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      {0, 0, 0, 0},
-                                      {0, 0, 0, 0},
-                                      CULLMODE_BOTH};
 
-coord3d D_8002CCAC = {0, 0, 0};
 
 rgba_u8 gBloodColour = { 0x5a, 0, 0, 0};
 
-/**
- * Address 0x8002CCBC.
-*/
 
-ModelRenderData D_8002CCBC         = {NULL,
-                                      TRUE,
-                                      0x00000003,
-                                      NULL,
-                                      NULL,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      {0, 0, 0, 0},
-                                      {0, 0, 0, 0},
-                                      CULLMODE_BOTH};
 
 u32 num_bodies = 0;
 u32 num_male_heads = 0;
@@ -213,7 +174,6 @@ f32 g_AiReactionSpeed = 1.0f;
  * Count of number of guards that have recently seen bond:
  *     (guard->lastseetarget60 > 0) && (g_GlobalTimer - guard->lastseetarget60 < 120)
  * Updated every tick.
- * Address 0x8002CE50.
 */
 s32 g_SeenBondRecentlyGuardCount = 0;
 
@@ -536,7 +496,7 @@ struct StruckAnim flinch_gun[] = {
 };
 
 
-struct explosion_death_animation D_8002E648[] = {
+struct explosion_death_animation g_ExplosionDeathAnims[] = {
     { PTR_ANIM_death_explosion_forward, 0, 0.5, 9.0, 18.0, 29.0, -1.0 },
     { PTR_ANIM_death_explosion_forward, 1, 0.5, 9.0, 18.0, 29.0, -1.0 },
     { PTR_ANIM_death_explosion_forward_face_down, 0, 0.5, 11.0, 19.0, 31.0, -1.0 },
@@ -982,104 +942,104 @@ struct anim_group_info* ptr_crouched_doubles_firing_animation_groups[] = {
     &ptr_crouched_doubles_firing_animation_group1
 };
 
-struct weapon_firing_animation_table D_80030078[] = {
+struct weapon_firing_animation_table g_ChrFireAnims[] = {
     // sizeof(struct weapon_firing_animation_table) = 0x48 = 72.
-    // address 0xD_80030078. Index 0, = D_80030078 + 0.
+    // address 0xD_80030078. Index 0, = g_ChrFireAnims + 0.
     { PTR_ANIM_fire_roll_left, 76.0, 0.0, 0.0, 20.0, -1.0, 98.0, 161.0, -1.0, -1.0, 93.0, 161.0, 0.87266463, -0.52359879, 0.69813174, -0.69813174, 1.7, 2.0 },
 
-    // address 0x800300C0. Index 1, = D_80030078 + 72.
+    // address 0x800300C0. Index 1, = g_ChrFireAnims + 72.
     { PTR_ANIM_fire_roll_right1, 58.0, 0.0, 0.0, 10.0, -1.0, 77.0, 104.0, -1.0, -1.0, 72.0, 104.0, 0.87266463, -0.34906587, 0.61086529, -0.69813174, 1.55, 1.5 },
 
-    // address 0x80030108. Index 2, = D_80030078 + 144.
+    // address 0x80030108. Index 2, = g_ChrFireAnims + 144.
     { PTR_ANIM_fire_roll_left_fast, 61.0, 0.0, 0.0, 10.0, -1.0, 83.0, 128.0, -1.0, -1.0, 78.0, 128.0, 0.87266463, -0.52359879, 0.87266463, -0.52359879, 1.2, 1.3 },
 
-    // address 0x80030150. Index 3, = D_80030078 + 216.
+    // address 0x80030150. Index 3, = g_ChrFireAnims + 216.
     { PTR_ANIM_fire_roll_right2, 63.0, 0.0, 0.0, 10.0, -1.0, 73.0, 114.0, -1.0, -1.0, 68.0, 114.0, 0.87266463, -0.52359879, 0.61086529, -0.61086529, 1.65, 1.5 },
 
-    // address 0x80030198. Index 4, = D_80030078 + 288.
+    // address 0x80030198. Index 4, = g_ChrFireAnims + 288.
     { PTR_ANIM_fire_roll_left, 76.0, 0.0, 0.0, 20.0, 76.0, 98.0, 161.0, -1.0, -1.0, 93.0, 161.0, 0.87266463, -0.52359879, 0.69813174, -0.69813174, 1.7, 2.0 },
 
-    // address 0x800301E0. Index 5, = D_80030078 + 360.
+    // address 0x800301E0. Index 5, = g_ChrFireAnims + 360.
     { PTR_ANIM_fire_roll_right1, 58.0, 0.0, 0.0, 10.0, 63.0, 77.0, 104.0, -1.0, -1.0, 72.0, 104.0, 0.87266463, -0.34906587, 0.61086529, -0.69813174, 1.55, 1.5 },
 
-    // address 0x80030228. Index 6, = D_80030078 + 432.
+    // address 0x80030228. Index 6, = g_ChrFireAnims + 432.
     { PTR_ANIM_fire_roll_left_fast, 61.0, 0.0, 0.0, 10.0, 56.0, 83.0, 128.0, -1.0, -1.0, 78.0, 128.0, 0.87266463, -0.52359879, 0.87266463, -0.52359879, 1.2, 1.3 },
 
-    // address 0x80030270. Index 7, = D_80030078 + 504.
+    // address 0x80030270. Index 7, = g_ChrFireAnims + 504.
     { PTR_ANIM_fire_roll_right2, 63.0, 0.0, 0.0, 10.0, 50.0, 73.0, 114.0, -1.0, -1.0, 68.0, 114.0, 0.87266463, -0.52359879, 0.61086529, -0.61086529, 1.65, 1.5 },
 
-    // address 0x800302B8. Index 8, = D_80030078 + 576.
+    // address 0x800302B8. Index 8, = g_ChrFireAnims + 576.
     { PTR_ANIM_fire_hip_one_handed_weapon_slow, 0.0, 0.0, 0.0, 7.0, 64.0, 19.0, 51.0, 24.0, 46.0, 14.0, 58.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
 
-    // address 0x80030300. Index 9, = D_80030078 + 648.
+    // address 0x80030300. Index 9, = g_ChrFireAnims + 648.
     { PTR_ANIM_fire_standing_left_one_handed_weapon_fast, 0.0, 0.0, 1.5707964, 14.0, 76.0, 26.0, 31.0, 31.0, 38.0, 15.0, 49.0, 0.87266463, -0.69813174, 0.52359879, -1.0471976, 0.0, 0.0 },
 
-    // address 0x80030348. Index 10, = D_80030078 + 720.
+    // address 0x80030348. Index 10, = g_ChrFireAnims + 720.
     { PTR_ANIM_fire_kneel_forward_one_handed_weapon_fast, 26.0, 0.0, 0.0, 25.0, 89.0, 41.0, 63.0, 41.0, 51.0, 21.0, 80.0, 0.87266463, -0.69813174, 0.34906587, -1.134464, 0.0, 0.0 },
 
-    // address 0x80030390. Index 11, = D_80030078 + 792.
+    // address 0x80030390. Index 11, = g_ChrFireAnims + 792.
     { PTR_ANIM_fire_kneel_left_one_handed_weapon_fast, 18.0, 0.0, 1.5707964, 11.0, 78.0, 33.0, 52.0, 35.0, 45.0, 15.0, 66.0, 0.87266463, -0.087266468, 0.69813174, -0.78539819, 1.5, 1.0 },
 
-    // address 0x800303D8. Index 12, = D_80030078 + 864.
+    // address 0x800303D8. Index 12, = g_ChrFireAnims + 864.
     { PTR_ANIM_fire_standing_dual_wield, 26.0, 0.0, 0.0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
 
-    // address 0x80030420. Index 13, = D_80030078 + 936.
+    // address 0x80030420. Index 13, = g_ChrFireAnims + 936.
     { PTR_ANIM_fire_standing_dual_wield_left, 26.0, 0.0, 1.5707964, 9.0, 112.0, 38.0, 87.0, -1.0, -1.0, 19.0, 98.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
 
-    // address 0x80030468. Index 14, = D_80030078 + 1008.
+    // address 0x80030468. Index 14, = g_ChrFireAnims + 1008.
     { PTR_ANIM_fire_kneel_dual_wield, 22.0, 0.0, 0.0, 10.0, 11.0, 34.0, 87.0, -1.0, -1.0, 17.0, 104.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
 
-    // address 0x800304B0. Index 15, = D_80030078 + 1080.
+    // address 0x800304B0. Index 15, = g_ChrFireAnims + 1080.
     { PTR_ANIM_fire_kneel_dual_wield_left, 28.0, 0.0, 1.5707964, 15.0, 108.0, 34.0, 73.0, -1.0, -1.0, 17.0, 93.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
 
-    // address 0x800304F8. Index 16, = D_80030078 + 1152.
+    // address 0x800304F8. Index 16, = g_ChrFireAnims + 1152.
     { PTR_ANIM_fire_standing_dual_wield, 26.0, 0.0, 0.0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
 
-    // address 0x80030540. Index 17, = D_80030078 + 1224.
+    // address 0x80030540. Index 17, = g_ChrFireAnims + 1224.
     { PTR_ANIM_fire_standing_dual_wield_hands_crossed_left, 25.0, 0.0, 1.5707964, 10.0, 112.0, 32.0, 86.0, -1.0, -1.0, 19.0, 97.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
 
-    // address 0x80030588. Index 18, = D_80030078 + 1296.
+    // address 0x80030588. Index 18, = g_ChrFireAnims + 1296.
     { PTR_ANIM_fire_kneel_dual_wield_hands_crossed, 25.0, 0.0, 0.0, 9.0, 92.0, 33.0, 62.0, -1.0, -1.0, 18.0, 69.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
 
-    // address 0x800305D0. Index 19, = D_80030078 + 1368.
+    // address 0x800305D0. Index 19, = g_ChrFireAnims + 1368.
     { PTR_ANIM_fire_kneel_dual_wield_hands_crossed_left, 19.0, 0.0, 1.5707964, 3.0, 95.0, 30.0, 64.0, -1.0, -1.0, 14.0, 71.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 1.5, 1.0 },
 
-    // address 0x80030618. Index 20, = D_80030078 + 1440.
+    // address 0x80030618. Index 20, = g_ChrFireAnims + 1440.
     {0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
-struct weapon_firing_animation_table D_80030660[] = {
-    // address 0x80030660. Index 0, = D_80030660 + 0.
+struct weapon_firing_animation_table g_ChrMoveFireAnims[] = {
+    // address 0x80030660. Index 0, = g_ChrMoveFireAnims + 0.
     { PTR_ANIM_fire_walking, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 1.4, 1.3 },
 
-    // address 0x800306A8. Index 1, = D_80030660 + 72.
+    // address 0x800306A8. Index 1, = g_ChrMoveFireAnims + 72.
     { PTR_ANIM_fire_running, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 1.1, 1.2 },
 
-    // address 0x800306F0. Index 2, = D_80030660 + 144.
+    // address 0x800306F0. Index 2, = g_ChrMoveFireAnims + 144.
     { PTR_ANIM_aim_walking_one_handed_weapon, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
-    // address 0x80030738. Index 3, = D_80030660 + 216.
+    // address 0x80030738. Index 3, = g_ChrMoveFireAnims + 216.
     { PTR_ANIM_aim_running_one_handed_weapon, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
-    // address 0x80030780. Index 4, = D_80030660 + 288.
+    // address 0x80030780. Index 4, = g_ChrMoveFireAnims + 288.
     { PTR_ANIM_fire_walking_dual_wield, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
-    // address 0x800307C8. Index 5, = D_80030660 + 360.
+    // address 0x800307C8. Index 5, = g_ChrMoveFireAnims + 360.
     { PTR_ANIM_fire_running_dual_wield, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
-    // address 0x80030810. Index 6, = D_80030660 + 432.
+    // address 0x80030810. Index 6, = g_ChrMoveFireAnims + 432.
     { PTR_ANIM_fire_walking_dual_wield_hands_crossed, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
-    // address 0x80030858. Index 7, = D_80030660 + 504.
+    // address 0x80030858. Index 7, = g_ChrMoveFireAnims + 504.
     { PTR_ANIM_fire_running_dual_wield_hands_crossed, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
-    // address 0x800308A0. Index 8, = D_80030660 + 576.
+    // address 0x800308A0. Index 8, = g_ChrMoveFireAnims + 576.
     { PTR_ANIM_aim_running_left_one_handed_weapon, 0.0, 0.0, 1.5707964, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
-    // address 0x800308E8. Index 9, = D_80030660 + 648.
+    // address 0x800308E8. Index 9, = g_ChrMoveFireAnims + 648.
     { PTR_ANIM_aim_running_right_one_handed_weapon, 0.0, 0.0, 4.712389, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
-    // address 0x80030930. Index 10, = D_80030660 + 720.
+    // address 0x80030930. Index 10, = g_ChrMoveFireAnims + 720.
     {0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
@@ -1087,8 +1047,6 @@ s32 objectiveregisters1 = 0;
 
 /**
  * List of characters updated every tick.
- *
- * Address 0x8003097C.
 */
 ChrRecord* g_BgChrs = 0;
 static ChrRecord g_BgChrTemplate = { 0 };
@@ -1102,82 +1060,60 @@ s32 g_NumBgChrs = 0;
 
 /**
  * Default factor in chrGetRunAnimSpeed.
- * Address 0x80030984.
 */
-f32 D_80030984 = 0;
+f32 g_ChrSpeedWalk = 0;
 
 /**
  * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_running.
- * Address 0x80030988.
 */
-f32 D_80030988 = 0;
+f32 g_ChrSpeedRun = 0;
 
 /**
  * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_sprinting.
- * Address 0x8003098C.
 */
-f32 D_8003098C = 0;
+f32 g_ChrSpeedSprint = 0;
 
 /**
  * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_walking_unarmed.
- * Address 0x80030990.
 */
-f32 D_80030990 = 0;
+f32 g_ChrSpeedWalkUnarmed = 0;
 
 /**
  * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_running_one_handed_weapon.
- * Address 0x80030994.
 */
-f32 D_80030994 = 0;
+f32 g_ChrSpeedRunOneHanded = 0;
 
 /**
  * Scale factor in chrGetRunAnimSpeed, used by first ANIM_DATA_sprinting_one_handed_weapon.
- * Address 0x80030998.
 */
-f32 D_80030998 = 0;
+f32 g_ChrSpeedSprintOneHanded = 0;
 
 /**
  * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_walking_female.
- * Address 0x8003099C.
 */
-f32 D_8003099C = 0;
+f32 g_ChrSpeedWalkFemale = 0;
 
 /**
  * Scale factor in chrGetRunAnimSpeed, used by ANIM_DATA_running_female.
- * Address 0x800309A0.
 */
-f32 D_800309A0 = 0;
+f32 g_ChrSpeedRunFemale = 0;
 
 /**
  * Scale factor in chrGetRunAnimSpeed, used by duplicate ANIM_DATA_sprinting_one_handed_weapon.
- * Address 0x800309A4.
 */
-f32 D_800309A4 = 0;
+f32 g_ChrSpeedSprintOneHanded2 = 0;
 
-point2d D_800309A8 = {0, 0};
-//s32 D_800309AC = 0;
-point2d D_800309B0 = {0, 0};
-//s32 D_800309B4 = 0;
 
 /**
  * Default firing state, left and right hand.
- * Address 0x800309B8.
 */
-point2d D_800309B8 = {0, 0};
 
 /**
  * Default firing state when crouched, left and right hand.
- * Address 0x800309C0.
 */
-point2d D_800309C0 = {0, 0};
 
-point2d D_800309C8 = {0, 0};
-point2d D_800309D0 = {0, 0};
-point2d D_800309D8 = {0, 0};
 
-point2d D_800309E0 = {0, 0};
 
-point2d D_800309E8 = {0, 0};
 
 
 s32 chrsGetNumSlots(void)
@@ -1685,9 +1621,6 @@ PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg
 }
 
 
-/**
- * Address 0x7F0203B8.
- */
 PropRecord * chrAllocate( Model * arg0, coord3d * arg1, f32 arg2,  StandTile * arg3, s32 arg4)
 {
     PropRecord * ret;
@@ -1703,9 +1636,6 @@ PropRecord * chrAllocate( Model * arg0, coord3d * arg1, f32 arg2,  StandTile * a
 }
 
 
-/**
- * Address: 7F020414.
- */
 void chrFreeResources(PropRecord *prop)
 {
     ChrRecord *chr;
@@ -1823,9 +1753,6 @@ void chrUpdateAimProperties( ChrRecord *self)
 }
 
 
-/**
- * Address 0x7F0206D4.
- */
 void chrSetHiddenToRandom(ChrRecord *self)
 {
     u32 rand;
@@ -1871,15 +1798,12 @@ void chrSetHiddenToRandom(ChrRecord *self)
 
 
 /**
- * Address: 7F020794
- * 
  * Flinch animation envelope. Maps a character's flinchcnt timer to a normalized
  * intensity that goes 0->1 then falls 1->0, used to drive the flinch animation.
  * 
  * Flinches happen when a character has body armor or has the CHRFLAG_INVINCIBLE flag and is shot in the arm or torso.
  * 
  * Rise and fall are measured in VI retraces: 1/60 s on NTSC and 1/50 s on PAL.
- * 
  */
 f32 chrGetFlinchAmount(ChrRecord *chr)
 {
@@ -1913,9 +1837,6 @@ f32 chrGetFlinchAmount(ChrRecord *chr)
 #define FIVEPI_OVER_18 0.87266463f
 
 
-/**
- * Address: 7F02083C
- */
 void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 {
     f32 scale;
@@ -2177,8 +2098,6 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 
 
 /**
- * Address 0x7F020D94.
- * 
  * For visibility, player collision, tank collision, bullet collision, and explosion damage
  * tests the game needs to know which room(s) a character is in. This allows the game to perform
  * tests on only characters in loaded rooms, not the entire stage.
@@ -2209,9 +2128,6 @@ void chrDetectRooms(ChrRecord *self)
 }
 
 
-/**
- * Address 0x7F020E40.
- */
 void chrUpdateAnim(ChrRecord *chr, s32 tickamount)
 {
     Model *model;
@@ -2262,7 +2178,7 @@ s32 chrTick(PropRecord *prop)
     s32 tickamount;
     s32 coopRepeat;
 
-    renderdata = D_8002CC6C;
+    renderdata = (ModelRenderData){NULL, TRUE, 3};
     chr = prop->chr;
     model = chr->model;
     headVisible = 1;
@@ -2562,12 +2478,12 @@ after_position_update:
                 struct headHat *entry;
                 s32 headindex;
 
-                pos = D_8002CCAC;
+                pos = (coord3d){0};
 
                 hat = hatGetModel(chr->handle_positiondata_hat);
 
                 headindex = chr->headnum - HEAD_START;
-                entry = &((struct headHat (*)[6]) headHat_array_8003E464)[headindex][hat];
+                entry = &((struct headHat (*)[6]) g_HeadHats)[headindex][hat];
 
 
                 pos.x = entry->xoffset * 21.3f;
@@ -2666,9 +2582,6 @@ after_position_update:
 }
 
 
-/**
- * Address 0x7F021B20.
- */
 void chrDropItems(ChrRecord *self)
 {
     PropRecord *childprop = self->prop->child;
@@ -2691,9 +2604,6 @@ void chrDropItems(ChrRecord *self)
 }
 
 
-/**
- * Address 0x7F021BFC.
-*/
 Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     ChrRecord *chr;
@@ -2754,7 +2664,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
     {
         if (chrfadealpha > 0)
         {
-            mrData = D_8002CCBC;
+            mrData = (ModelRenderData){NULL, TRUE, 3};
 
 
             sp4C = 0x50;
@@ -3149,9 +3059,6 @@ after_opcode:
 
 
 /**
- * 
- * Address: 7F022648
- * 
  * Tests a shot's ray against a character.
  *
  * First tests the shot against the chr's bounding sphere expanded by the
@@ -3297,8 +3204,6 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
 
 
 /**
- * Address: 7F022980
- *
  * Resolves a known hit against a character.
  */
 void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
@@ -3429,8 +3334,6 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
 
 /**
  * Removed.
- *
- * Address 0x7F022E1C.
  */
 void chrRemovedUnused(f32 arg0)
 {
@@ -3442,8 +3345,6 @@ void chrRemovedUnused(f32 arg0)
  * Iterates all guards and checks if the noise is within the hearing scale distance.
  *
  * @param noise: noise amount to check.
- *
- * Address 0x7F022EEC.
  */
 void chrCheckGuardsHeardSound(f32 noise)
 {
@@ -3466,7 +3367,6 @@ void chrCheckGuardsHeardSound(f32 noise)
  * Iterates g_ChrSlots. Returns the first object that (1) model
  * is not null and (2) chrnum matches index.
  *
- * Address 0x7F022FC8.
  * chrFindByLiteralId
  */
 ChrRecord* chrFindByLiteralId(s32 index)
@@ -3485,18 +3385,12 @@ ChrRecord* chrFindByLiteralId(s32 index)
 }
 
 
-/**
- * Address 0x7F02302C.
- */
 PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand)
 {
     return self->weapons_held[hand]; //0x160
 }
 
 
-/**
- * Address 0x7F02303C.
- */
 PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *self, GUNHAND hand)
 {
     PropRecord *gunprop = self->weapons_held[hand];
@@ -3521,8 +3415,6 @@ PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *self, GUNHAND hand)
  * @param arg2: out parameter, will contain 0 or 4
  * @param y_out: out parameter, will be character ground + character height
  * @param ground: out parameter, will contain character ground
- *
- * Address 0x7F02308C.
  */
 void chrUpdateCollisionBounds(PropRecord *prop, rect4f **polygon, s32 *edges, f32 *y_out, f32 *ground)
 {
@@ -3569,8 +3461,6 @@ void chrUpdateCollisionBounds(PropRecord *prop, rect4f **polygon, s32 *edges, f3
  * @param width: out parameter, will be set to character width
  * @param height: out parameter, will be set to character height - 20
  * @param always_20: out parameter, will be set to 20
- *
- * Address 0x7F023160.
  */
 void chrGetChrWidthHeight(PropRecord *arg0, f32 *width, f32 *height, f32 *always_20)
 {
@@ -3583,9 +3473,6 @@ void chrGetChrWidthHeight(PropRecord *arg0, f32 *width, f32 *height, f32 *always
 }
 
 
-/**
- * Address 0x7F023188.
- */
 f32 chrGetChrGround(PropRecord *arg0)
 {
     ChrRecord *c = arg0->chr;
