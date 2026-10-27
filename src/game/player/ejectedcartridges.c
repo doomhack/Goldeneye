@@ -8,12 +8,12 @@ extern ALSoundState* g_CasingSfxState;
 extern ALSoundState* g_UnusedSfxState;
 extern ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
 
-extern u32 cartridges_eject;
+extern u32 g_GunDebApplyKeyframe;
 extern u32 g_gunDebKeyframeIndex;
 
 extern CartridgeModelFileRecord ejected_cartridge[] ;
 
-void init_ejected_cartridges(void) 
+void casingsLoadModels(void) 
 {
     s32 i = 0;
 
@@ -26,7 +26,7 @@ void init_ejected_cartridges(void)
     }
 
     i = 0;
-    cartridges_eject = 0;
+    g_GunDebApplyKeyframe = 0;
     g_gunDebKeyframeIndex = 0;
 
     while (ejected_cartridge[i].header != 0) 

@@ -302,7 +302,7 @@ void bossInitMainthreadData(void)
     null_init_main_2();
     casingsInit();
     animLoadTable();
-    init_weapon_animation_groups_maybe();
+    gunsInitAnimGroups();
     reset_counter_rand_body_head();
     null_init_main_3();
     bheadInitGaitModel();

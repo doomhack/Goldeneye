@@ -4,7 +4,7 @@
 #include "game/player/bondinv.h"
 #include "game/player/inititemslots.h"
 
-void reinit_gunheld_totaltime(void) {
+void invResetHeldTimes(void) {
     s32 i;
   
     g_CurrentPlayer->equipallguns = FALSE;
@@ -14,7 +14,7 @@ void reinit_gunheld_totaltime(void) {
     }
 }
 
-void alloc_additional_item_slots(s32 additionalentries) {
+void invAllocate(s32 additionalentries) {
   g_CurrentPlayer->equipmaxitems = additionalentries + 0x1e;
     g_CurrentPlayer->p_itemcur     = mempAlloc((g_CurrentPlayer->equipmaxitems * 0x14 + 0xfU | 0xf) ^ 0xf, MEMPOOL_STAGE);
   invReset();

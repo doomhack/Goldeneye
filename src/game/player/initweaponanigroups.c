@@ -5,7 +5,7 @@
 //#include "chr.h"
 extern s32 dynAllocateVerticesDiscard NO_SDATA;
 
-void init_weapon_animation_groups_maybe(void) {
+void gunsInitAnimGroups(void) {
     modelSetVtxAllocator(&dynAllocateVerticesDiscard);
     initWeaponAnimGroups();
 }

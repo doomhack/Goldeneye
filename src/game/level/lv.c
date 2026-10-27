@@ -490,13 +490,13 @@ void lvlStageLoad(s32 stage)
         s32 s0;
 
         waypointsValidate();
-        init_ejected_cartridges();
+        casingsLoadModels();
         counterOpResetForStage();
 
         for (s0 = 0; s0 < getPlayerCount(); s0++)
         {
             playerSetCurrent(s0);
-            reinit_gunheld_totaltime();
+            invResetHeldTimes();
             playerInitHands();
             playerResetLife();
             playerApplyIntro();
@@ -1719,7 +1719,7 @@ void lvlUnloadStageTextData(void)
     setupFreeProps(g_CurrentStageToLoad);
     cleanupObjectives();
     cleanupSFXRelated();
-    cleanupplayersoundrelated();
+    gunsStopSounds();
     set_missionstate_zero();
     cleanup_rooms();
 }

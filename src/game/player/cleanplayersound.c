@@ -4,7 +4,7 @@
 
 // Address 0x7F007980 NTSC.
 // Address 0x7F007900 PAL.
-void cleanupplayersoundrelated(void)
+void gunsStopSounds(void)
 {
     int i;
     int j;

@@ -129,7 +129,7 @@ CartridgeModelFileRecord ejected_cartridge[] = {
 #include <assets/obseg/gun/gunModelFileRecord.inc.c>
 
 //D:80034C9C
-u32 cartridges_eject = 0;
+u32 g_GunDebApplyKeyframe = 0;
 //D:80034CA0
 u32 g_gunDebKeyframeIndex = 0;
 
@@ -528,13 +528,13 @@ void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 
 void gunDebSetApplyKeyframe(u32 uParm1)
 {
-    cartridges_eject = uParm1;
+    g_GunDebApplyKeyframe = uParm1;
 }
 
 
 u32 gunDebGetApplyKeyframe(void)
 {
-    return cartridges_eject;
+    return g_GunDebApplyKeyframe;
 }
 
 
@@ -579,12 +579,12 @@ void gunDebRotateKeyframe(Mtxf* mtxf)
 
 void gunDebApplyKeyframe(void)
 {
-    if (!cartridges_eject) { return; }
+    if (!g_GunDebApplyKeyframe) { return; }
 
     g_CurrentPlayer->hands[0].field_92C = 1;
     mtx4LoadRotation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
     mtx4SetTranslation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
-    cartridges_eject = 0;
+    g_GunDebApplyKeyframe = 0;
 }
 
 
