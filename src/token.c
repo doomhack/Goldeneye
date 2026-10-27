@@ -1,7 +1,6 @@
 #include "token.h"
 #include "pi.h"
 #include "snd.h"
-#include "game/text/language.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "str.h"
 
@@ -44,7 +43,7 @@ void tokenSetString(const char *str) {
 }
 
 // Reads a new token string from the PI device at address 0xFFB000. Also handles the 
-// -d (debug), -s (sound) and -j (japanese) switches.
+// -d (debug) and -s (sound) switches.
 s32 tokenReadIo(void)
 {
     u32 *ptr;
@@ -66,9 +65,6 @@ s32 tokenReadIo(void)
     }
     if (tokenFind(1, "-s") != NULL) {
         g_sndBootswitchSound = TRUE;
-    }
-    if (tokenFind(1, "-j") != NULL) {
-        g_TextJapanese = TRUE;
     }
     return debug;
 }

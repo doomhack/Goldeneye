@@ -748,19 +748,7 @@ void lvApplyDifficulty(void)
         g_AiHealthModifier = 1.0f;
         g_SpExplosionDamageMult = 0.75f;
 
-#if defined(BUGFIX_R1)
-        if (g_TextJapanese)
-        {
-            difficulty = 1.1f;
-        }
-        else
-        {
-            difficulty = 0.75f;
-        }
-#else
-        // VERSION_US
         difficulty = 0.75f;
-#endif
 
         g_SoloAmmoMultiplier = DEFAULT_SECRET_AGENT_SOLO_AMMO_MULTIPLIER;
         g_AiReactionSpeed = DEFAULT_SECRET_AGENT_AI_REACTION_SPEED;
@@ -777,19 +765,7 @@ void lvApplyDifficulty(void)
         g_AiHealthModifier = 1.0f;
         g_SpExplosionDamageMult = 1.0f;
 
-#if defined(BUGFIX_R1)
-        if (g_TextJapanese)
-        {
-            difficulty = 0.75f;
-        }
-        else
-        {
-            difficulty = 0.2f;
-        }
-#else
-        // VERSION_US
         difficulty = 0.2f;
-#endif
 
         g_SoloAmmoMultiplier = DEFAULT_00_AGENT_SOLO_AMMO_MULTIPLIER;
         g_AiReactionSpeed = DEFAULT_00_AGENT_AI_REACTION_SPEED;
@@ -1107,7 +1083,6 @@ void lvTick(void)
     {
         cheatTick();
         frontTick();
-        langTick();
     }
     else
     {
@@ -1133,7 +1108,6 @@ void lvTick(void)
 
         propsTickOnce();
         levelMusicTick();
-        langTick();
     }
 }
 

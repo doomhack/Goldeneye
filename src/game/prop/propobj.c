@@ -10186,16 +10186,6 @@ void pickupPlayWeaponSound(ITEM_IDS weapontype)
 void pickupBuildAmmoText(u8 *finaltext, AMMOTYPE ammotype, u32 quantity)
 {
     *finaltext = 0;
-    if (g_TextJapanese != 0)
-    {
-        pickupAppendAmmoType(finaltext,ammotype,quantity);
-        if (!viewIsHalfWidth())
-        {
-            pickupAppendPickedUp(finaltext, (u8 *)ammotype, (u8 *)quantity);
-        }
-        strcat(finaltext, "\n");
-        return;
-    }
     if (!viewIsHalfWidth())
     {
         pickupAppendPickedUp(finaltext, (u8 *)ammotype, (u8 *)quantity);
@@ -10354,28 +10344,14 @@ s32 pickupAmmoFromWeapon(WeaponObjRecord *weapon)
 
 void pickupBuildWeaponText(u8 *finalstring, ITEM_IDS itemtype)
 {
-    u32 morethan2players;
-
-    morethan2players = FALSE;
     /* Half-width views skip "Picked up" and strcat onto this, so it must start empty
        (the original left the caller's stack buffer uninitialised) */
     finalstring[0] = '\0';
 
-    if (g_TextJapanese != 0)
+    if (!viewIsHalfWidth())
     {
-          strcpy(finalstring,"");
-          if (viewIsHalfWidth())
-          {
-              morethan2players = TRUE;
-          }
-    }
-    else
-    {
-          if (!viewIsHalfWidth())
-          {
-             //Picked up
-            strcpy(finalstring, langGet(getStringID(LPROPOBJ,PROPOBJ_STR_00_PICKEDUP)));
-          }
+        //Picked up
+        strcpy(finalstring, langGet(getStringID(LPROPOBJ,PROPOBJ_STR_00_PICKEDUP)));
     }
 
     switch(itemtype)
@@ -10509,16 +10485,6 @@ void pickupBuildWeaponText(u8 *finalstring, ITEM_IDS itemtype)
             break;
     }
 
-    if ((g_TextJapanese != 0) && (!morethan2players))
-    {
-        if (finalstring[strlen(finalstring) - 1] == '\n')
-        {
-            finalstring[strlen(finalstring) - 1] = '\0';
-        }
-        //Picked up
-        strcat(finalstring, langGet(getStringID(LPROPOBJ,PROPOBJ_STR_00_PICKEDUP)));
-        strcat(finalstring,"\n");
-    }
 
 }
 

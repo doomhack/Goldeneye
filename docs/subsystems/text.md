@@ -14,8 +14,9 @@ plus the slot. A bank is one text file from ROM (`LtitleP`, `LoptionsP`...), a t
 offsets followed by the strings. `langGet(id)` finds the bank in `g_LangBanks` and returns
 the string, or NULL if that bank isn't loaded.
 
-`langInit` loads the banks every level uses (guns, titles, multiplayer menus, pickups,
-weapon sets, options, misc) once at boot. Each level has its own bank as well
+`g_LangFileNames` gives the ROM file for each bank id: the `E` files in the US build and
+the `P` files in the PAL build. `langInit` loads the banks every level uses (guns, titles,
+multiplayer menus, pickups, weapon sets, options, misc) once at boot. Each level has its own bank as well
 (`langGetBankForStage`): `setup.c` loads it with the level (`langLoadToAddr`) and
 `lvTick` frees it when the level ends (`langClearBank`). The briefing screens load a
 level's bank into the front end's buffer (`langLoadToBank`).
@@ -37,8 +38,8 @@ text. A few settings change how the next strings draw: `textSetSpacing`,
 
 ## Traps
 
-* `g_TextJapanese` was the Japanese version's switch (`j_text_trigger`). The JP build is
-  gone, so it is always 0, but the Japanese glyph cache and a lot of `if (g_TextJapanese)`
-  branches remain all over the code. Phase 2 can delete them.
+* There is no Japanese support any more. The fonts only have ASCII glyphs, and the
+  drawing and measuring code skips any byte of 0x80 or above. The Japanese text banks
+  (`L...J`), the kanji fonts and the `-j` boot switch were removed in phase 2b.
 * `textSetSpacing` stores the negative of what it's given.
 * `textUnused` and `textIdentity` are never called.

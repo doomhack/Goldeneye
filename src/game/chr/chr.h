@@ -293,7 +293,6 @@ void        chrCreateBloodStain(Model *arg0, s32 arg1, ModelNode *arg2, struct c
 void        chrTestHit(PropRecord *prop, ShotData *shotdata);
 
 #ifdef BUGFIX_R1
-bool chrCanUseDKModeScaling(s32 bodynum, s32 headnum);
 #endif
 
 void chrsInit(void);

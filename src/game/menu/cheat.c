@@ -1333,15 +1333,6 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             if (player_count == 1)
             {
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
-                if (g_TextJapanese)
-                {
-                    invAddItem(ITEM_ROCKETLAUNCH);
-                    invAddItem(ITEM_SNIPERRIFLE);
-                    invAddDualItem(ITEM_SNIPERRIFLE, ITEM_ROCKETLAUNCH);
-                    ammoGive(AMMO_ROCKETS, ammoGetMax(AMMO_ROCKETS));
-                    ammoGive(ITEM_THROWKNIFE, ammoGetMax(ITEM_THROWKNIFE));
-                    return;
-                }
                 invAddItem(ITEM_KNIFE);
 #endif
                 invAddDualItem(ITEM_KNIFE, ITEM_KNIFE);
@@ -1710,19 +1701,11 @@ void cheatSetDkMode(CHEAT_ID cheat_id)
     for (i=0; i<numslots; i++, guard++)
     {
 
-#if defined(VERSION_US)
         model = (Model*)guard->model;
         if (model)
         {
             modelSetScale(model, model->scale * scale);
         }
-#else
-        if (guard->model && chrCanUseDKModeScaling(guard->bodynum, guard->headnum))
-        {
-            model = (Model*)guard->model;
-            modelSetScale(model, model->scale * scale);
-        }
-#endif
     }
 }
 

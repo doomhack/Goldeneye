@@ -331,10 +331,6 @@ void watchMenuReset(int stage)
     D_800409D0 = -1;
     D_800409D4 = 0.0f;
 
-    if (g_TextJapanese ? 1 : 0 && 1)
-    {
-    }
-
     g_CurrentPlayer->neg_vspacing_for_control_type_entry = 0;
     g_CurrentPlayer->cur_player_control_type_1 = CONTROLLER_CONFIG_HONEY;
     g_CurrentPlayer->cur_player_control_type_0 = CONTROLLER_CONFIG_HONEY;
@@ -408,7 +404,7 @@ void optionsSetControlStyle(int type)
     g_CurrentPlayer->cur_player_control_type_1 = type;
     g_CurrentPlayer->cur_player_control_type_2 = (float)type;
 
-    langsize = g_TextJapanese ? 14 : 10;
+    langsize = 10;
 
     g_CurrentPlayer->neg_vspacing_for_control_type_entry = -(langsize * type);
     g_CurrentPlayer->has_set_control_type_data = TRUE;
@@ -1177,16 +1173,9 @@ void watchMenuInventoryListTick(void)
     // The current item is determined by the integer part of the cursor's position.
     g_WatchMenuItem = (s32) g_WatchMenuInvCursor;
 
-    if (g_TextJapanese)
-    {
-        item_line_height = 14;
-    }
-    else
-    {
-        item_line_height = 12;
-    }
+    item_line_height = 12;
 
-    selected_item_line_height = g_TextJapanese ? 14 : 12;
+    selected_item_line_height = 12;
     g_WatchMenuInvTextTargetY = (2 * selected_item_line_height) + (-g_WatchMenuItem * item_line_height);
 
     if (g_WatchMenuInvTextTargetY < g_WatchMenuInvTextY)
@@ -1906,11 +1895,11 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
     sp4C = langGet(getStringID(LOPTIONS, OPTION_STR_26_CANCEL_LF)); //cancel
     sp7C = 0x51;
 
-    sp78 = (g_TextJapanese ? 0xF : 0) + 0xBD;
+    sp78 = 0xBD;
 
-    sp74 = (g_TextJapanese ? 0xA : 0) + 0x88;
+    sp74 = 0x88;
 
-    sp70 = sp6C = sp68 = (g_TextJapanese ? 3 : 0) + (PAL ? 0x4E : 0x4C);
+    sp70 = sp6C = sp68 = (PAL ? 0x4E : 0x4C);
 
     if (g_WatchMenuSelected != 0)
     {
@@ -1999,14 +1988,7 @@ Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
     sp60 = YOFFSET_MISSIONSTATUS;
     gdl = textRender(gdl, &sp64, &sp60, txtptr_1, pFontChars, pFontFile, 0xFF00B0, sp58, sp5C, 0, 0);
 
-    if (g_TextJapanese)
-    {
-        joffset = 0x22;
-    }
-    else
-    {
-        joffset = 0;
-    }
+    joffset = 0;
 
     sp64 = sp64 + sp58 + joffset + 4;
     sp60 = sp60 - sp5C;
@@ -2036,14 +2018,7 @@ Gfx *watchMenuRenderVersion(Gfx *gdl)
 
     txtptr = langGet(getStringID(LOPTIONS, OPTION_STR_2B_QWATCHVERSION_LF)); //q watch v2.01 beta
 
-    if (g_TextJapanese)
-    {
-        joffset = -5;
-    }
-    else
-    {
-        joffset = 0;
-    }
+    joffset = 0;
     sp50 = joffset + 0x65;
     sp4C = YOFFSET_7;
     sp48 = 0;
@@ -2303,7 +2278,7 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
             char formattedString[32];
 #endif
 
-#define LINEHEIGHT() (g_TextJapanese ? 14 : 12)
+#define LINEHEIGHT() 12
 
 #if defined(VERSION_EU)
 #define WATCH_INV_BASE_Y() base_y
@@ -2317,7 +2292,7 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
 #if defined(VERSION_EU)
             pFontFile2 = g_FontBankGothic;
             pFontChars2 = g_FontBankGothicChars;
-            base_y = (g_TextJapanese) ? (0x82) : (0xAA);
+            base_y = 0xAA;
             string_builder_allocation[0] = 0;
 #else
             string_builder_allocation[0] = 0;
@@ -2889,41 +2864,32 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
     {
         if (g_WatchMenuControlRow == CONTROLLER_OPTIONS_INDEX_STYLE)
         {
-            watchMenuScrollList(&g_CurrentPlayer->cur_player_control_type_2, &g_CurrentPlayer->cur_player_control_type_0, g_WatchMenuControlStyleCount, &g_CurrentPlayer->neg_vspacing_for_control_type_entry, &g_CurrentPlayer->cur_player_control_type_1, (s32 *) (&g_CurrentPlayer->has_set_control_type_data), 0, 1, (g_TextJapanese) ? (0xe) : (0xa));
+            watchMenuScrollList(&g_CurrentPlayer->cur_player_control_type_2, &g_CurrentPlayer->cur_player_control_type_0, g_WatchMenuControlStyleCount, &g_CurrentPlayer->neg_vspacing_for_control_type_entry, &g_CurrentPlayer->cur_player_control_type_1, (s32 *) (&g_CurrentPlayer->has_set_control_type_data), 0, 1, 0xa);
         }
     }
 
     x = 0xaa;
-    tmp = g_TextJapanese;
     y = 0x1a;
 
-    textMeasure(&textheight, &textwidth, text, chars, font, (tmp) ? (0xe) : (0xa));
+    textMeasure(&textheight, &textwidth, text, chars, font, 0xa);
 
-    i = (g_TextJapanese) ? (0xe) : (0xa);
+    i = 0xa;
 
-    gdl = textRender(gdl, &x, &y, text, chars, font, 0x00aa00b0, textwidth, i, g_CurrentPlayer->neg_vspacing_for_control_type_entry, (g_TextJapanese) ? (0xe) : (0xa));
+    gdl = textRender(gdl, &x, &y, text, chars, font, 0x00aa00b0, textwidth, i, g_CurrentPlayer->neg_vspacing_for_control_type_entry, 0xa);
 
     if (g_CurrentPlayer->has_set_control_type_data != 0)
     {
         selectedtext = langGet(*(u16 *)((u8 *) game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20)));
 
-        textMeasure(&textheight, &textwidth, selectedtext, chars, font, (g_TextJapanese) ? (0xe) : (0xa));
+        textMeasure(&textheight, &textwidth, selectedtext, chars, font, 0xa);
 
         x = 0xaa;
 
-        if (g_TextJapanese ? 1 : 0)
-        {
-            goto selected_y_set;
-        }
-
-        goto selected_y_set;
-
-selected_y_set:
         y = 0x1a;
 
         selectedtext = langGet(*(u16 *)((u8 *) game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20)));
 
-        gdl = textRender(gdl, &x, &y, selectedtext, chars, font, 0xa0ffa0f0, textwidth, 0x64, 0, (g_TextJapanese) ? (0xe) : (0xa));
+        gdl = textRender(gdl, &x, &y, selectedtext, chars, font, 0xa0ffa0f0, textwidth, 0x64, 0, 0xa);
     }
 
     return gdl;
@@ -3570,24 +3536,9 @@ Gfx *watchMenuRenderOptionValue(Gfx *gdl, s32 y, s32 option_index, u32 state)
 
     entry = &g_Options[option_index];
 
-    if (g_TextJapanese)
-    {
-        x1 = 0xAA;
-        if (1);
-    }
-    else
-    {
-        x1 = 0xB4;
-    }
+    x1 = 0xB4;
 
-    if (g_TextJapanese)
-    {
-        x2 = 0xDC;
-    }
-    else
-    {
-        x2 = 0xE1;
-    }
+    x2 = 0xE1;
 
     // Option is unhighlighted
     if (state == 0)
@@ -3665,19 +3616,9 @@ state_selected:
 after_state:
     if (entry->text[3] == 0)
     {
-        if (g_TextJapanese)
-        {
-            x1 = 0xBE;
-        }
-        else
-        {
-            x1 = 0xC8;
-        }
+        x1 = 0xC8;
 
-        if (g_TextJapanese)
-        {
-            // This weird code must be kept on one line for matching.
-            x2 = 0xFA; } else { x2 = 0xFA; }
+        x2 = 0xFA;
         }
 
         drawentry = entry;
@@ -3980,7 +3921,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                 objectiveRow = 0;
                 visibleObjectiveIndex = 0;
 
-                textSetOverlapCorrection((g_TextJapanese) ? (1) : (5));
+                textSetOverlapCorrection(5);
                 sprintf(pageTitle, langGet(0xac3c));
 
                 // Counter-op: the guard player has one objective of their own.
@@ -4008,7 +3949,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                         sprintf(objectiveLetterPtr, aC_2, visibleObjectiveIndex + 'a');
                         strcat(objectiveBuffer, objectiveText);
 
-                        objY = boxTop + ((g_TextJapanese) ? (1) : (5));
+                        objY = boxTop + 5;
                         objX = 0x3c;
 
                         gdl = textRender(gdl, &objX, &objY, objectiveBuffer, chars, font, 0x00ff00b0, viGetX(), viGetY(), 0, 10);
@@ -4046,14 +3987,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                             case OBJECTIVESTATUS_FAILED:
                                 strcat(objectiveBuffer, failedText);
 
-                                if (g_TextJapanese)
-                                {
-                                    colour = 0xa0ffa0f0;
-                                }
-                                else
-                                {
-                                    colour = 0x00ff00b0;
-                                }
+                                colour = 0x00ff00b0;
                                 break;
 
                             default:
@@ -4061,16 +3995,9 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                         }
 
                         textMeasure(&textHeight, &textWidth, objectiveBuffer, chars, font, 10);
-                        objY = boxTop + ((g_TextJapanese) ? (1) : (5));
+                        objY = boxTop + 5;
 
-                        if (g_TextJapanese)
-                        {
-                            objX = 0xf5 - textWidth;
-                        }
-                        else
-                        {
-                            objX = 0xaf;
-                        }
+                        objX = 0xaf;
 
                         gdl = textRender(gdl, &objX, &objY, objectiveBuffer, chars, font, colour, 0xd2, viGetY(), 0, 10);
 

@@ -1593,14 +1593,7 @@ Gfx *mpMenuRender(Gfx *gdl)
             x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
             x2 = viGetViewTop();
  
-            if (g_TextJapanese) 
-            { 
-                i = 4; 
-            } 
-            else 
-            { 
-                i = 0; 
-            } 
+            i = 0;
 
             y = ((i + (u32) x2) - (fav_textheight >> 1)) + (53 + MPMENU_YOFF);
  

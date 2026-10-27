@@ -13,116 +13,108 @@
 s32 g_LangBanks[45];
 
 
-//CODE.bss:8008C6F4
-struct jpncharpixels* g_JpnCharCachePixels;
-//CODE.bss:8008C6F8 canonically  jloaddata
-struct  jpncacheitem *g_JpnCacheCacheItems;
-
-
-/**
- * EU .data 80041150
-*/
-s32 g_TextJapanese = 0;
-
-
 #if defined(LANG_US)
 
-void *LnameX_lookuptable[45][2] = {
-    {NULL, NULL},                    /* Null (unused) */
-    {"LameE", "LameJ"},              /* Library (multi) */
-    {"LarchE", "LarchJ"},            /* Archives */
-    {"LarkE", "LarkJ"},              /* Facility */
-    {"LashE", "LashJ"},              /* Stack (multi) */
-    {"LaztE", "LaztJ"},              /* Aztec */
-    {"LcatE", "LcatJ"},              /* Citadel (multi) */
-    {"LcaveE", "LcaveJ"},            /* Caverns */
-    {"LarecE", "LarecJ"},            /* Control */
-    {"LcradE", "LcradJ"},            /* Cradle */
-    {"LcrypE", "LcrypJ"},            /* Egypt */
-    {"LdamE", "LdamJ"},              /* Dam */
-    {"LdepoE", "LdepoJ"},            /* Depot */
-    {"LdestE", "LdestJ"},            /* Frigate */
-    {"LdishE", "LdishJ"},            /* Temple (multi) */
-    {"LearE", "LearJ"},              /* Ear (unused) */
-    {"LeldE", "LeldJ"},              /* Eld (unused) */
-    {"LimpE", "LimpJ"},              /* Basement (multi) */
-    {"LjunE", "LjunJ"},              /* Jungle */
-    {"LleeE", "LleeJ"},              /* Lee (unused) */
-    {"LlenE", "LlenJ"},              /* Cuba */
-    {"LlipE", "LlipJ"},              /* Lip (unused) */
-    {"LlueE", "LlueJ"},              /* Lue (unused) */
-    {"LoatE", "LoatJ"},              /* Cave (multi) */
-    {"LpamE", "LpamJ"},              /* Pam (unused) */
-    {"LpeteE", "LpeteJ"},            /* Streets */
-    {"LrefE", "LrefJ"},              /* Complex (multi) */
-    {"LritE", "LritJ"},              /* Rit (unused) */
-    {"LrunE", "LrunJ"},              /* Runway */
-    {"LsevbE", "LsevbJ"},            /* Bunker 2 */
-    {"LsevE", "LsevJ"},              /* Bunker 1 */
-    {"LsevxE", "LsevxJ"},            /* Surface 1 */
-    {"LsevxbE", "LsevxbJ"},          /* Surface 2 */
-    {"LshoE", "LshoJ"},              /* Shooting Range (unused) */
-    {"LsiloE", "LsiloJ"},            /* Silo */
-    {"LstatE", "LstatJ"},            /* Statue */
-    {"LtraE", "LtraJ"},              /* Train */
-    {"LwaxE", "LwaxJ"},              /* Wax (unused) */
-    {"LgunE", "LgunJ"},              /* Guns */
-    {"LtitleE", "LtitleJ"},          /* Stage and menu titles */
-    {"LmpmenuE", "LmpmenuJ"},        /* Multi menus */
-    {"LpropobjE", "LpropobjJ"},      /* In-game pickups */
-    {"LmpweaponsE", "LmpweaponsJ"},  /* Multi weapon select */
-    {"LoptionsE", "LoptionsJ"},      /* Solo in-game menus */
-    {"LmiscE", "LmiscJ"}};           /* Cheat options */
+// The text bank file for each language bank id.
+char *g_LangFileNames[45] = {
+    NULL,            /* Null (unused) */
+    "LameE",         /* Library (multi) */
+    "LarchE",        /* Archives */
+    "LarkE",         /* Facility */
+    "LashE",         /* Stack (multi) */
+    "LaztE",         /* Aztec */
+    "LcatE",         /* Citadel (multi) */
+    "LcaveE",        /* Caverns */
+    "LarecE",        /* Control */
+    "LcradE",        /* Cradle */
+    "LcrypE",        /* Egypt */
+    "LdamE",         /* Dam */
+    "LdepoE",        /* Depot */
+    "LdestE",        /* Frigate */
+    "LdishE",        /* Temple (multi) */
+    "LearE",         /* Ear (unused) */
+    "LeldE",         /* Eld (unused) */
+    "LimpE",         /* Basement (multi) */
+    "LjunE",         /* Jungle */
+    "LleeE",         /* Lee (unused) */
+    "LlenE",         /* Cuba */
+    "LlipE",         /* Lip (unused) */
+    "LlueE",         /* Lue (unused) */
+    "LoatE",         /* Cave (multi) */
+    "LpamE",         /* Pam (unused) */
+    "LpeteE",        /* Streets */
+    "LrefE",         /* Complex (multi) */
+    "LritE",         /* Rit (unused) */
+    "LrunE",         /* Runway */
+    "LsevbE",        /* Bunker 2 */
+    "LsevE",         /* Bunker 1 */
+    "LsevxE",        /* Surface 1 */
+    "LsevxbE",       /* Surface 2 */
+    "LshoE",         /* Shooting Range (unused) */
+    "LsiloE",        /* Silo */
+    "LstatE",        /* Statue */
+    "LtraE",         /* Train */
+    "LwaxE",         /* Wax (unused) */
+    "LgunE",         /* Guns */
+    "LtitleE",       /* Stage and menu titles */
+    "LmpmenuE",      /* Multi menus */
+    "LpropobjE",     /* In-game pickups */
+    "LmpweaponsE",   /* Multi weapon select */
+    "LoptionsE",     /* Solo in-game menus */
+    "LmiscE"         /* Cheat options */
+};
 
 #endif
 
 #if defined(LANG_EU)
-void *LnameX_lookuptable[45][2] = {
-    {NULL, NULL},                    /* Null (unused) */
-    {"LameP", "LameJ"},              /* Library (multi) */
-    {"LarchP", "LarchJ"},            /* Archives */
-    {"LarkP", "LarkJ"},              /* Facility */
-    {"LashP", "LashJ"},              /* Stack (multi) */
-    {"LaztP", "LaztJ"},              /* Aztec */
-    {"LcatP", "LcatJ"},              /* Citadel (multi) */
-    {"LcaveP", "LcaveJ"},            /* Caverns */
-    {"LarecP", "LarecJ"},            /* Control */
-    {"LcradP", "LcradJ"},            /* Cradle */
-    {"LcrypP", "LcrypJ"},            /* Egypt */
-    {"LdamP", "LdamJ"},              /* Dam */
-    {"LdepoP", "LdepoJ"},            /* Depot */
-    {"LdestP", "LdestJ"},            /* Frigate */
-    {"LdishP", "LdishJ"},            /* Temple (multi) */
-    {"LearP", "LearJ"},              /* Ear (unused) */
-    {"LeldP", "LeldJ"},              /* Eld (unused) */
-    {"LimpP", "LimpJ"},              /* Basement (multi) */
-    {"LjunP", "LjunJ"},              /* Jungle */
-    {"LleeP", "LleeJ"},              /* Lee (unused) */
-    {"LlenP", "LlenJ"},              /* Cuba */
-    {"LlipP", "LlipJ"},              /* Lip (unused) */
-    {"LlueP", "LlueJ"},              /* Lue (unused) */
-    {"LoatP", "LoatJ"},              /* Cave (multi) */
-    {"LpamP", "LpamJ"},              /* Pam (unused) */
-    {"LpeteP", "LpeteJ"},            /* Streets */
-    {"LrefP", "LrefJ"},              /* Complex (multi) */
-    {"LritP", "LritJ"},              /* Rit (unused) */
-    {"LrunP", "LrunJ"},              /* Runway */
-    {"LsevbP", "LsevbJ"},            /* Bunker 2 */
-    {"LsevP", "LsevJ"},              /* Bunker 1 */
-    {"LsevxP", "LsevxJ"},            /* Surface 1 */
-    {"LsevxbP", "LsevxbJ"},          /* Surface 2 */
-    {"LshoP", "LshoJ"},              /* Shooting Range (unused) */
-    {"LsiloP", "LsiloJ"},            /* Silo */
-    {"LstatP", "LstatJ"},            /* Statue */
-    {"LtraP", "LtraJ"},              /* Train */
-    {"LwaxP", "LwaxJ"},              /* Wax (unused) */
-    {"LgunP", "LgunJ"},              /* Guns */
-    {"LtitleP", "LtitleJ"},          /* Stage and menu titles */
-    {"LmpmenuP", "LmpmenuJ"},        /* Multi menus */
-    {"LpropobjP", "LpropobjJ"},      /* In-game pickups */
-    {"LmpweaponsP", "LmpweaponsJ"},  /* Multi weapon select */
-    {"LoptionsP", "LoptionsJ"},      /* Solo in-game menus */
-    {"LmiscP", "LmiscJ"}};           /* Cheat options */
+// The text bank file for each language bank id.
+char *g_LangFileNames[45] = {
+    NULL,            /* Null (unused) */
+    "LameP",         /* Library (multi) */
+    "LarchP",        /* Archives */
+    "LarkP",         /* Facility */
+    "LashP",         /* Stack (multi) */
+    "LaztP",         /* Aztec */
+    "LcatP",         /* Citadel (multi) */
+    "LcaveP",        /* Caverns */
+    "LarecP",        /* Control */
+    "LcradP",        /* Cradle */
+    "LcrypP",        /* Egypt */
+    "LdamP",         /* Dam */
+    "LdepoP",        /* Depot */
+    "LdestP",        /* Frigate */
+    "LdishP",        /* Temple (multi) */
+    "LearP",         /* Ear (unused) */
+    "LeldP",         /* Eld (unused) */
+    "LimpP",         /* Basement (multi) */
+    "LjunP",         /* Jungle */
+    "LleeP",         /* Lee (unused) */
+    "LlenP",         /* Cuba */
+    "LlipP",         /* Lip (unused) */
+    "LlueP",         /* Lue (unused) */
+    "LoatP",         /* Cave (multi) */
+    "LpamP",         /* Pam (unused) */
+    "LpeteP",        /* Streets */
+    "LrefP",         /* Complex (multi) */
+    "LritP",         /* Rit (unused) */
+    "LrunP",         /* Runway */
+    "LsevbP",        /* Bunker 2 */
+    "LsevP",         /* Bunker 1 */
+    "LsevxP",        /* Surface 1 */
+    "LsevxbP",       /* Surface 2 */
+    "LshoP",         /* Shooting Range (unused) */
+    "LsiloP",        /* Silo */
+    "LstatP",        /* Statue */
+    "LtraP",         /* Train */
+    "LwaxP",         /* Wax (unused) */
+    "LgunP",         /* Guns */
+    "LtitleP",       /* Stage and menu titles */
+    "LmpmenuP",      /* Multi menus */
+    "LpropobjP",     /* In-game pickups */
+    "LmpweaponsP",   /* Multi weapon select */
+    "LoptionsP",     /* Solo in-game menus */
+    "LmiscP"         /* Cheat options */
+};
 #endif
 
 // cannonically gettextloadnum
@@ -227,133 +219,29 @@ LEVELID langGetBankForStage(LEVELID level)
 void langInit(void) {
     s32 i;
 
-    if (g_TextJapanese) {
-        g_JpnCharCachePixels = mempAlloc(0x2E80, MEMPOOL_PERMANENT);
-        g_JpnCacheCacheItems = mempAlloc(0x100, MEMPOOL_PERMANENT);
-        for(i = 0;i != 124;i++) {
-            g_JpnCacheCacheItems[i].ttl =0;
-            g_JpnCacheCacheItems[i].codepoint =-1;
-        }
-    }
 
 	for (i = 0; i < 45; i++) {
 		g_LangBanks[i] = 0;
 	}
-    g_LangBanks[LGUN] = fileLoadByNameToPool(LnameX_lookuptable[LGUN][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LTITLE] = fileLoadByNameToPool(LnameX_lookuptable[LTITLE][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMPMENU] = fileLoadByNameToPool(LnameX_lookuptable[LMPMENU][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LPROPOBJ] = fileLoadByNameToPool(LnameX_lookuptable[LPROPOBJ][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMPWEAPONS] = fileLoadByNameToPool(LnameX_lookuptable[LMPWEAPONS][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LOPTIONS] = fileLoadByNameToPool(LnameX_lookuptable[LOPTIONS][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMISC] = fileLoadByNameToPool(LnameX_lookuptable[LMISC][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-}
-
-
-//assert here reveals this file is language.c
-void langTick(void)
-{
-    s32 i;
-
-    if (g_TextJapanese)
-    {
-        for (i = 0; i < 0x7c; i++)
-        {
-		    if (g_JpnCacheCacheItems[i].ttl)
-            {
-			    g_JpnCacheCacheItems[i].ttl--;
-		    }
-		}
-    }
-}
-
-
-extern u8 _efontchardataSegmentRomStart NO_SDATA;
-extern u8 _jfontchardataSegmentRomStart NO_SDATA;
-void romCopy(void *target, void *source, u32 size);
-
-struct jpncharpixels *langGetJpnCharPixels(s32 codepoint)
-{
-	s32 i;
-	s32 freeindexsingle = -1;
-	s32 freeindexmulti = -1;
-	s32 multibyte = 0;
-
-
-	if (codepoint & 0x2000) {
-		multibyte = 1;
-	}
-
-
-#define SHIFTAMOUNT 1
-#define TMUL 8
-
-	for (i = 0; i < 0x7C; i++) {
-		if (!multibyte && (codepoint >> SHIFTAMOUNT) == g_JpnCacheCacheItems[i].codepoint) {
-			break;
-		}
-
-		if (multibyte && i + 1 < 0x7C
-				&& (codepoint >> SHIFTAMOUNT) == g_JpnCacheCacheItems[i].codepoint
-				&& (codepoint >> SHIFTAMOUNT) == g_JpnCacheCacheItems[i + 1].codepoint) {
-			break;
-		}
-
-		if (g_JpnCacheCacheItems[i].ttl == 0) {
-			freeindexsingle = i;
-		}
-
-		if (g_JpnCacheCacheItems[i].ttl == 0 && g_JpnCacheCacheItems[i + 1].ttl == 0 && i + 1 < 0x7C) {
-			freeindexmulti = i;
-		}
-	}
-
-	if (i < 0x7C) {
-		if (!multibyte) {
-			g_JpnCacheCacheItems[i].ttl = 2;
-
-			return &g_JpnCharCachePixels[i * TMUL];
-		} else {
-			g_JpnCacheCacheItems[i + 0].ttl = 2;
-			g_JpnCacheCacheItems[i + 1].ttl = 2;
-
-			return &g_JpnCharCachePixels[TMUL * i];
-		}
-	}
-
-
-	if (!multibyte && freeindexsingle >= 0) {
-		g_JpnCacheCacheItems[freeindexsingle].ttl = 2;
-		g_JpnCacheCacheItems[freeindexsingle].codepoint = codepoint >> 1;
-
-		romCopy(&g_JpnCharCachePixels[freeindexsingle * 8], (romptr_t) &_jfontchardataSegmentRomStart + (codepoint >> SHIFTAMOUNT) * 0x60, 0x60);
-
-		return &g_JpnCharCachePixels[freeindexsingle * 8];
-	}
-
-	if (multibyte && freeindexmulti >= 0) {
-		g_JpnCacheCacheItems[freeindexmulti + 0].ttl = 2;
-		g_JpnCacheCacheItems[freeindexmulti + 1].ttl = 2;
-		g_JpnCacheCacheItems[freeindexmulti + 0].codepoint = codepoint >> 1;
-		g_JpnCacheCacheItems[freeindexmulti + 1].codepoint = codepoint >> 1;
-
-		romCopy(&g_JpnCharCachePixels[freeindexmulti * 8], (romptr_t) &_efontchardataSegmentRomStart + ((codepoint & 0x1fff) >> SHIFTAMOUNT) * 0x80, 0x80);
-
-		return &g_JpnCharCachePixels[freeindexmulti * 8];
-	}
-
-	return &g_JpnCharCachePixels[0];
+    g_LangBanks[LGUN] = fileLoadByNameToPool(g_LangFileNames[LGUN], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LTITLE] = fileLoadByNameToPool(g_LangFileNames[LTITLE], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMPMENU] = fileLoadByNameToPool(g_LangFileNames[LMPMENU], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LPROPOBJ] = fileLoadByNameToPool(g_LangFileNames[LPROPOBJ], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMPWEAPONS] = fileLoadByNameToPool(g_LangFileNames[LMPWEAPONS], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LOPTIONS] = fileLoadByNameToPool(g_LangFileNames[LOPTIONS], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMISC] = fileLoadByNameToPool(g_LangFileNames[LMISC], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
 }
 
 
 void langLoadToAddr(u32 id)
 {
-    g_LangBanks[id] = fileLoadByNameToPool(LnameX_lookuptable[id][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_STAGE);
+    g_LangBanks[id] = fileLoadByNameToPool(g_LangFileNames[id], FILELOAD_TRIM, 0x100, MEMPOOL_STAGE);
 }
 
 
 void langLoadToBank(int id,u8 *target,int size)
 {
-    g_LangBanks[id] = fileLoadByNameToAddr(LnameX_lookuptable[id][g_TextJapanese], FILELOAD_TRIM, target, size);
+    g_LangBanks[id] = fileLoadByNameToAddr(g_LangFileNames[id], FILELOAD_TRIM, target, size);
 }
 
 
@@ -362,7 +250,7 @@ void langClearBank(s32 textBank) {
 }
 
 /**
- * Get pointer of a string based on language of game (E/J)
+ * Get a pointer to a string.
  * @param slotID: UniqueID of string (a combination of Bank ID and string index)
  * @return char* string.
  */

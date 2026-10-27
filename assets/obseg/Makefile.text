@@ -29,7 +29,7 @@ $(BUILD_DIR)/$(OBSEG_DIR)/text/%.o: $(OBSEG_DIR)/text/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # List of language codes
-TEXT_LANGS := J E P
+TEXT_LANGS := E P
 
 # Compose all possible text file names
 TEXT_ALL_RZ_FILES := $(foreach lang,$(TEXT_LANGS),$(foreach name,$(TEXTNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/text/L$(name)$(lang).rz))
@@ -37,10 +37,10 @@ TEXT_ALL_RZ_FILES := $(foreach lang,$(TEXT_LANGS),$(foreach name,$(TEXTNAMELIST)
 # Region-specific file lists
 ifneq ($(VERSION), EU)
 TEXT_RZ_FILES := \
-	$(foreach lang,J E,$(foreach name,$(TEXTNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/text/L$(name)$(lang).rz))
+	$(foreach lang,E,$(foreach name,$(TEXTNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/text/L$(name)$(lang).rz))
 else
 TEXT_RZ_FILES := \
-	$(foreach lang,J E P,$(foreach name,$(TEXTNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/text/L$(name)$(lang).rz))
+	$(foreach lang,E P,$(foreach name,$(TEXTNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/text/L$(name)$(lang).rz))
 endif
 
 # Default target
