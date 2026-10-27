@@ -10,7 +10,7 @@
  *
  * NTSC address 0x7F004EC0.
  */
-void something_with_stage_objectives(void)
+void objectivesReset(void)
 {
     s32 i;
 
@@ -19,72 +19,72 @@ void something_with_stage_objectives(void)
 
     if (bossGetStageNum() != LEVELID_TITLE)
     {
-        objective_count = -1;
+        g_ObjectiveLastIndex = -1;
 
         for (i = 0; i < OBJECTIVES_MAX; i++)
         {
-            objectiveStatuses[i] = OBJECTIVESTATUS_INCOMPLETE;
+            g_ObjectiveStatuses[i] = OBJECTIVESTATUS_INCOMPLETE;
         }
     }
 
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
-    objective_status_display_disabled = FALSE;
+    g_ObjectiveStatusDisplayDisabled = FALSE;
 #endif
 
     for (i = 0; i < OBJECTIVES_MAX; i++)
     {
-        objective_ptrs[i] = NULL;
+        g_Objectives[i] = NULL;
     }
     
-    ptr_last_tag_entry_type16 = NULL;
-    ptr_last_briefing_setup_entry_type23 = NULL;
-    ptr_last_enter_room_subobject_entry_type20 = NULL;
-    ptr_last_deposit_in_room_subobject_entry_type21 = NULL;
-    ptr_last_photo_obj_in_room_subobject_entry_type1E = NULL;
+    g_Tags = NULL;
+    g_BriefingTexts = NULL;
+    g_RoomEnteredCriteria = NULL;
+    g_DepositCriteria = NULL;
+    g_PictureCriteria = NULL;
 }
 
-void set_parent_cur_tag_entry(struct TagObjectRecord *arg0)
+void tagAdd(struct TagObjectRecord *arg0)
 {
-    arg0->NextTag = ptr_last_tag_entry_type16;
-    ptr_last_tag_entry_type16 = arg0;
+    arg0->NextTag = g_Tags;
+    g_Tags = arg0;
 }
 
-void setup_briefing_text_entry_parent(struct setup_objective_text *arg0)
+void briefingTextAdd(struct setup_objective_text *arg0)
 {
-    arg0->next = ptr_last_briefing_setup_entry_type23;
-    ptr_last_briefing_setup_entry_type23 = arg0;
+    arg0->next = g_BriefingTexts;
+    g_BriefingTexts = arg0;
 }
 
 
 /*
 * Address: 0x7f004fb8
 */
-void add_ptr_to_objective(struct objective_entry* objective)
+void objectiveAdd(struct objective_entry* objective)
 {
-    objective_ptrs[objective->menu] = objective;
+    g_Objectives[objective->menu] = objective;
 
-    if (objective_count < objective->menu)
+    if (g_ObjectiveLastIndex < objective->menu)
     {
-        objective_count = objective->menu;
+        g_ObjectiveLastIndex = objective->menu;
     }
 }
 
-void set_parent_cur_obj_enter_room(struct criteria_roomentered *arg0)
+void objectiveAddRoomEntered(struct criteria_roomentered *arg0)
 {
-    arg0->next = ptr_last_enter_room_subobject_entry_type20;
-    ptr_last_enter_room_subobject_entry_type20 = arg0;
+    arg0->next = g_RoomEnteredCriteria;
+    g_RoomEnteredCriteria = arg0;
 }
 
-void set_parent_cur_obj_deposited_in_room(struct criteria_deposit *arg0)
+void objectiveAddDeposit(struct criteria_deposit *arg0)
 {
-    arg0->next = ptr_last_deposit_in_room_subobject_entry_type21;
-    ptr_last_deposit_in_room_subobject_entry_type21 = arg0;
+    arg0->next = g_DepositCriteria;
+    g_DepositCriteria = arg0;
 }
 
 
-void set_parent_cur_obj_photograph(struct criteria_picture *arg0)
+void objectiveAddPicture(struct criteria_picture *arg0)
 {
-    arg0->next = ptr_last_photo_obj_in_room_subobject_entry_type1E;
-    ptr_last_photo_obj_in_room_subobject_entry_type1E = arg0;
+    arg0->next = g_PictureCriteria;
+    g_PictureCriteria = arg0;
 }
 

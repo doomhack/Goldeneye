@@ -4368,7 +4368,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_CameraSwitch:
                 {
                     AiCameraSwitchRecord *ai  = AiListp + Offset;
-                    TagObjectRecord      *tag = sub_GAME_7F057080(ai->OBJECT_TAG);
+                    TagObjectRecord      *tag = tagFind(ai->OBJECT_TAG);
                     if (tag)
                     {
                         int TagIndex = tagGetCommandIndex(tag); // get index
@@ -4776,8 +4776,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFObjectiveAllCompleted:
                 {
                     AiIFObjectiveAllCompletedRecord *ai = AiListp + Offset;
-                    // bool a = objectiveIsAllComplete();
-                    if (objectiveIsAllComplete())
+                    // bool a = objectivesAllComplete();
+                    if (objectivesAllComplete())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }

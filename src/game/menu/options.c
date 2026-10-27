@@ -2056,7 +2056,7 @@ Gfx *draw_text_mission_status(Gfx *gdl)
     pFontFile = ptrFontBankGothic;
     pFontChars = ptrFontBankGothicChars;
 
-    if (objectiveIsAllComplete())
+    if (objectivesAllComplete())
     {
         sp4C = 0xFF00B0;
         txtptr_2 = langGet(getStringID(LOPTIONS, OPTION_STR_28_COMPLETE_LF)); //complete
@@ -4064,7 +4064,7 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
         completeText = langGet(0xac28);
         incompleteText = langGet(0xac29);
         failedText = langGet(0xac37);
-        titleText = get_ptr_text_for_watch_breifing_page(BRIEFING_TITLE);
+        titleText = briefingGetText(BRIEFING_TITLE);
 
 #if defined(VERSION_EU)
         strcpy(wrappedText, D_800577C0);
@@ -4087,25 +4087,25 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
         {
             case BRIEF_INDEX_BACKGROUND:
                 sprintf(pageTitle, langGet(0xac38));
-                textWrap(0xd2, get_ptr_text_for_watch_breifing_page(BRIEFING_OVERVIEW), wrappedText, chars, font);
+                textWrap(0xd2, briefingGetText(BRIEFING_OVERVIEW), wrappedText, chars, font);
                 mission_brief_background_navigation();
                 break;
 
             case BRIEF_INDEX_M:
                 sprintf(pageTitle, langGet(0xac39));
-                textWrap(0xd2, get_ptr_text_for_watch_breifing_page(BRIEFING_M), wrappedText, chars, font);
+                textWrap(0xd2, briefingGetText(BRIEFING_M), wrappedText, chars, font);
                 mission_brief_m_briefing_navigation();
                 break;
 
             case BRIEF_INDEX_Q:
                 sprintf(pageTitle, langGet(0xac3a));
-                textWrap(0xd2, get_ptr_text_for_watch_breifing_page(BRIEFING_Q), wrappedText, chars, font);
+                textWrap(0xd2, briefingGetText(BRIEFING_Q), wrappedText, chars, font);
                 mission_brief_q_branch_navigation();
                 break;
 
             case BRIEF_INDEX_MONEYPENNY:
                 sprintf(pageTitle, langGet(0xac3b));
-                textWrap(0xd2, get_ptr_text_for_watch_breifing_page(BRIEFING_MONEYPENNY), wrappedText, chars, font);
+                textWrap(0xd2, briefingGetText(BRIEFING_MONEYPENNY), wrappedText, chars, font);
                 mission_brief_moneypenny_navigation();
                 break;
 
@@ -4136,9 +4136,9 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
 
                 for (i = 0; i < (guardplayer ? 1 : objectiveGetCount()); i++)
                 {
-                    if (guardplayer || (get_difficulty_for_objective(i) <= lvGetDifficulty()))
+                    if (guardplayer || (objectiveGetDifficulty(i) <= lvGetDifficulty()))
                     {
-                        objectiveText = guardplayer ? "Kill Bond\n" : get_text_for_objective(i);
+                        objectiveText = guardplayer ? "Kill Bond\n" : objectiveGetText(i);
                         objectiveBuffer[0] = '\0';
 
                         for (j = 0; j < lineCount; j++)
@@ -4179,7 +4179,7 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
                             strcat(objectiveBuffer, D_80058454);
                         }
 
-                        switch (guardplayer ? OBJECTIVESTATUS_INCOMPLETE : get_status_of_objective(i))
+                        switch (guardplayer ? OBJECTIVESTATUS_INCOMPLETE : objectiveCheckStatus(i))
                         {
                             case OBJECTIVESTATUS_INCOMPLETE:
                                 strcat(objectiveBuffer, incompleteText);

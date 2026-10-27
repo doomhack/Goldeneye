@@ -3,15 +3,15 @@
 #include "game/mission/objective_status.h"
 
 
-void cleanupObjectives(void)
+void objectivesFinish(void)
 {
     int i;
 
     for (i = 0; i < OBJECTIVES_MAX; i++)
     {
-        if (objective_ptrs[i] != NULL && (objective_ptrs[i]->unkD & 1) && objectiveStatuses[i] != OBJECTIVESTATUS_FAILED)
+        if (g_Objectives[i] != NULL && (g_Objectives[i]->unkD & 1) && g_ObjectiveStatuses[i] != OBJECTIVESTATUS_FAILED)
         {
-            objectiveStatuses[i] = OBJECTIVESTATUS_COMPLETE;
+            g_ObjectiveStatuses[i] = OBJECTIVESTATUS_COMPLETE;
         }
     }
 }

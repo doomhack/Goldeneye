@@ -3,25 +3,25 @@
 #include <ultra64.h>
 #include <bondtypes.h>
 
-extern struct objective_entry * objective_ptrs[OBJECTIVES_MAX];
-extern  OBJECTIVESTATUS objectiveStatuses[OBJECTIVES_MAX]; //This is an array of 10 OBJECTIVESTATUS,
+extern struct objective_entry * g_Objectives[OBJECTIVES_MAX];
+extern  OBJECTIVESTATUS g_ObjectiveStatuses[OBJECTIVES_MAX]; //This is an array of 10 OBJECTIVESTATUS,
 
-extern u32 *ptr_last_tag_entry_type16;
-extern struct watchMenuObjectiveText *ptr_last_briefing_setup_entry_type23;
-extern struct criteria_roomentered *ptr_last_enter_room_subobject_entry_type20;
-extern struct criteria_deposit *ptr_last_deposit_in_room_subobject_entry_type21;
-extern struct criteria_picture *ptr_last_photo_obj_in_room_subobject_entry_type1E;
+extern u32 *g_Tags;
+extern struct watchMenuObjectiveText *g_BriefingTexts;
+extern struct criteria_roomentered *g_RoomEnteredCriteria;
+extern struct criteria_deposit *g_DepositCriteria;
+extern struct criteria_picture *g_PictureCriteria;
 
-extern s32 objective_count;
-extern s32 objective_status_display_disabled;
+extern s32 g_ObjectiveLastIndex;
+extern s32 g_ObjectiveStatusDisplayDisabled;
 
-void             objectiveTakePictureHandler(void);
-bool             objectiveIsAllComplete(void);
-TagObjectRecord *sub_GAME_7F057080(s32 TagID);
+void             objectivesCheckPicture(void);
+bool             objectivesAllComplete(void);
+TagObjectRecord *tagFind(s32 TagID);
 s32              objectiveGetCount(void);
 ObjectRecord *   objFindByTagId(s32 TagID);
-OBJECTIVESTATUS  get_status_of_objective(s32 objectiveNum);
-void objectivestatusCheckDeposit(s32 weaponnum, s32 roomid);
-void display_objective_status_text_on_status_change(void);
-void objectivestatusDisableStatusDisplay(void);
+OBJECTIVESTATUS  objectiveCheckStatus(s32 objectiveNum);
+void objectivesCheckDeposit(s32 weaponnum, s32 roomid);
+void objectivesTickStatusMessages(void);
+void objectivesDisableStatusDisplay(void);
 #endif

@@ -13,33 +13,33 @@
 //Public variables - move to header
 // bss
 //CODE.bss:80075D30
-struct objective_entry * objective_ptrs[OBJECTIVES_MAX];
-OBJECTIVESTATUS         objectiveStatuses[OBJECTIVES_MAX]; //This is an array of 10 OBJECTIVESTATUS,
+struct objective_entry * g_Objectives[OBJECTIVES_MAX];
+OBJECTIVESTATUS         g_ObjectiveStatuses[OBJECTIVES_MAX]; //This is an array of 10 OBJECTIVESTATUS,
 
 //CODE.bss:80075D80
-u32 *ptr_last_tag_entry_type16;
+u32 *g_Tags;
 //CODE.bss:80075D84
-struct watchMenuObjectiveText *ptr_last_briefing_setup_entry_type23;
+struct watchMenuObjectiveText *g_BriefingTexts;
 //CODE.bss:80075D88
-struct criteria_roomentered *ptr_last_enter_room_subobject_entry_type20;
+struct criteria_roomentered *g_RoomEnteredCriteria;
 //CODE.bss:80075D8C
-struct criteria_deposit *ptr_last_deposit_in_room_subobject_entry_type21;
+struct criteria_deposit *g_DepositCriteria;
 //CODE.bss:80075D90
-struct criteria_picture *ptr_last_photo_obj_in_room_subobject_entry_type1E;
+struct criteria_picture *g_PictureCriteria;
 
 // data
-s32 objective_count = 0xFFFFFFFF;
-s32 objective_status_display_disabled = FALSE;
+s32 g_ObjectiveLastIndex = 0xFFFFFFFF;
+s32 g_ObjectiveStatusDisplayDisabled = FALSE;
 
 
 
 /*
  * Return Tag with TagID
  */
-TagObjectRecord *sub_GAME_7F057080(s32 TagID) //#MATCH
+TagObjectRecord *tagFind(s32 TagID) //#MATCH
 {
     u16              ID  = TagID;
-    TagObjectRecord *tag = ptr_last_tag_entry_type16;
+    TagObjectRecord *tag = g_Tags;
     while (tag)
     {
         if (tag->ID == ID)
@@ -61,7 +61,7 @@ TagObjectRecord *sub_GAME_7F057080(s32 TagID) //#MATCH
  */
 ObjectRecord *objFindByTagId(s32 TagID) //#MATCH
 {
-    TagObjectRecord *tag = sub_GAME_7F057080(TagID);
+    TagObjectRecord *tag = tagFind(TagID);
     ObjectRecord *   obj = NULL;
 
     if (tag)
@@ -80,14 +80,14 @@ ObjectRecord *objFindByTagId(s32 TagID) //#MATCH
 /*
 * Address: 0x7f057104
 */
-u8 * get_ptr_text_for_watch_breifing_page(WATCH_BRIEFING_PAGE page)
+u8 * briefingGetText(WATCH_BRIEFING_PAGE page)
 {
     struct watchMenuObjectiveText * curentry;
     u8 * textptr;
 
     textptr = NULL;
 
-    for (curentry = ptr_last_briefing_setup_entry_type23; curentry != 0; curentry = curentry->nextentry)
+    for (curentry = g_BriefingTexts; curentry != 0; curentry = curentry->nextentry)
     {
         if (page == curentry->menu)
         {
@@ -120,30 +120,30 @@ u8 * get_ptr_text_for_watch_breifing_page(WATCH_BRIEFING_PAGE page)
 //objectiveGetCount
 s32 objectiveGetCount(void)
 {
-    return objective_count + 1;
+    return g_ObjectiveLastIndex + 1;
 }
 
 
 
-u8 * get_text_for_objective(int objectiveIndex)
+u8 * objectiveGetText(int objectiveIndex)
 {
     u8 *textptr;
     
-    if ((objectiveIndex < 10) && (objective_ptrs[objectiveIndex] != 0)) {
-        return langGet(objective_ptrs[objectiveIndex]->text);
+    if ((objectiveIndex < 10) && (g_Objectives[objectiveIndex] != 0)) {
+        return langGet(g_Objectives[objectiveIndex]->text);
     }
     return 0;
 }
 
 
 
-s32 get_difficulty_for_objective(s32 objectiveIndex)
+s32 objectiveGetDifficulty(s32 objectiveIndex)
 {
     struct objective_entry * entry;
 
     if (objectiveIndex < OBJECTIVES_MAX)
     {
-        entry = objective_ptrs[objectiveIndex];
+        entry = g_Objectives[objectiveIndex];
         if (entry != NULL)
         {
             return entry->difficulty;
@@ -155,15 +155,15 @@ s32 get_difficulty_for_objective(s32 objectiveIndex)
 
 
 //horrible hack to get ai matching, but it does correctly refrence this func with 2 params
-#pragma weak    objectiveGetStatus_WEAK = get_status_of_objective
+#pragma weak    objectiveGetStatus_WEAK = objectiveCheckStatus
 
 /*
  * Return Status of objective.
  * Note: This matches but may not in future depending on the result of var
- * "OBJECTIVESTATUS *objectiveStatuses". 
+ * "OBJECTIVESTATUS *g_ObjectiveStatuses". 
  * https://decomp.me/scratch/MF31e
  */
-OBJECTIVESTATUS get_status_of_objective(s32 objectiveNum) //#MATCH
+OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
 {
     MissionObjectiveRecord *objective;
     OBJECTIVESTATUS         currentstatus;
@@ -171,14 +171,14 @@ OBJECTIVESTATUS get_status_of_objective(s32 objectiveNum) //#MATCH
 
     if (objectiveNum < 10)
     {
-        if (!&objective_ptrs[objectiveNum]->id)
+        if (!&g_Objectives[objectiveNum]->id)
         {
-            status = objectiveStatuses[objectiveNum];
+            status = g_ObjectiveStatuses[objectiveNum];
         }
         else
         {
             // for each objective in objectives
-            for (objective = &objective_ptrs[objectiveNum]->id; objective->type != PROPDEF_OBJECTIVE_END; objective = sizepropdef(objective) + (PropDefHeaderRecord *)objective)
+            for (objective = &g_Objectives[objectiveNum]->id; objective->type != PROPDEF_OBJECTIVE_END; objective = sizepropdef(objective) + (PropDefHeaderRecord *)objective)
             {
                 {
                     currentstatus = OBJECTIVESTATUS_COMPLETE;
@@ -312,7 +312,7 @@ OBJECTIVESTATUS get_status_of_objective(s32 objectiveNum) //#MATCH
 
 
 
-bool objectiveIsAllComplete(void)
+bool objectivesAllComplete(void)
 {
     DIFFICULTY objdiff;
     DIFFICULTY curdiff;
@@ -320,9 +320,9 @@ bool objectiveIsAllComplete(void)
     
     for (objective = 0; objective < objectiveGetCount(); objective++)
     {
-        objdiff = get_difficulty_for_objective(objective);
+        objdiff = objectiveGetDifficulty(objective);
         curdiff = lvGetDifficulty();
-        if ((objdiff <= curdiff) && (get_status_of_objective(objective) != OBJECTIVESTATUS_COMPLETE))
+        if ((objdiff <= curdiff) && (objectiveCheckStatus(objective) != OBJECTIVESTATUS_COMPLETE))
         {
             return FALSE;
         }
@@ -332,15 +332,15 @@ bool objectiveIsAllComplete(void)
 
 
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
-void objectivestatusDisableStatusDisplay(void)
+void objectivesDisableStatusDisplay(void)
 {
-  objective_status_display_disabled = TRUE;
+  g_ObjectiveStatusDisplayDisabled = TRUE;
   return;
 }
 #endif
 
 
-void display_objective_status_text_on_status_change(void) 
+void objectivesTickStatusMessages(void) 
 {
     s32 i;
     s32 availableindex = 0;
@@ -348,14 +348,14 @@ void display_objective_status_text_on_status_change(void)
     enum OBJECTIVESTATUS status;
 
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
-    if (objective_status_display_disabled) { return; }
+    if (g_ObjectiveStatusDisplayDisabled) { return; }
 #endif
 
-    for (i = 0; i <= objective_count; i++) {
-        status = get_status_of_objective(i);
-        if (objectiveStatuses[i] != status) {
-            objectiveStatuses[i] = status;
-            if (get_difficulty_for_objective(i) <= lvGetDifficulty()) {
+    for (i = 0; i <= g_ObjectiveLastIndex; i++) {
+        status = objectiveCheckStatus(i);
+        if (g_ObjectiveStatuses[i] != status) {
+            g_ObjectiveStatuses[i] = status;
+            if (objectiveGetDifficulty(i) <= lvGetDifficulty()) {
                 if (j_text_trigger != 0)
                 {
                     sprintf(&buffer, "%s \x80%c ", langGet(getStringID(LMISC, MISC_STR_2C_OBJECTIVE)), availableindex + 0x1A);
@@ -404,7 +404,7 @@ void display_objective_status_text_on_status_change(void)
                 }
             }
         }
-        if (get_difficulty_for_objective(i) <= lvGetDifficulty()) {
+        if (objectiveGetDifficulty(i) <= lvGetDifficulty()) {
             availableindex++;
         }
     }
@@ -412,20 +412,20 @@ void display_objective_status_text_on_status_change(void)
 
 
 /**
- * Iterate list of ptr_last_enter_room_subobject_entry_type20, if it's the same
+ * Iterate list of g_RoomEnteredCriteria, if it's the same
  * room as the argument then set the `flag` property.
  * 
  * US address 7F057744.
  * 
  * Perfect Dark method objectiveCheckRoomEntered.
 */
-void objectivestatusCheckRoomEntered(s32 roomid)
+void objectivesCheckRoomEntered(s32 roomid)
 {
     struct criteria_roomentered *var_v0;
     struct PadRecord* setupPad;
     struct StandTile *stan;
     
-    var_v0 = ptr_last_enter_room_subobject_entry_type20;
+    var_v0 = g_RoomEnteredCriteria;
     while (var_v0 != NULL)
     {
         if (var_v0->status == 0)
@@ -458,13 +458,13 @@ void objectivestatusCheckRoomEntered(s32 roomid)
 /**
  * US address 7F0577E8.
 */
-void objectivestatusCheckDeposit(s32 weaponnum, s32 roomid)
+void objectivesCheckDeposit(s32 weaponnum, s32 roomid)
 {
     struct criteria_deposit *dep;
     s32 padid;
     PadRecord *pad;
 
-    for (dep = ptr_last_deposit_in_room_subobject_entry_type21; dep != NULL; dep = dep->next)
+    for (dep = g_DepositCriteria; dep != NULL; dep = dep->next)
     {
         if (dep->flag == 0 && weaponnum == dep->weaponnum)
         {
@@ -492,7 +492,7 @@ void objectivestatusCheckDeposit(s32 weaponnum, s32 roomid)
 /**
  * NTSC address 0x7F057898.
 */
-void objectiveTakePictureHandler(void)
+void objectivesCheckPicture(void)
 {
     ObjectRecord *target_object;
     PropRecord *target_prop;
@@ -503,7 +503,7 @@ void objectiveTakePictureHandler(void)
     s32 padding2[2];
     struct criteria_picture *criteria;
 
-    criteria = ptr_last_photo_obj_in_room_subobject_entry_type1E;
+    criteria = g_PictureCriteria;
     for (; criteria != NULL; criteria = criteria->next)
     {
         if (criteria->flag == 0)

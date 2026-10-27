@@ -478,7 +478,7 @@ void lvStageLoad(s32 stage)
         }
     }
 
-    something_with_stage_objectives();
+    objectivesReset();
     mpwatchUnpauseGame();
     vtxstoreReset();
     jointListInit();
@@ -1730,7 +1730,7 @@ void lvStageUnload(void)
     cleanup_REMOVED_();
     alarmsReset();
     setupFreeProps(g_CurrentStageToLoad);
-    cleanupObjectives();
+    objectivesFinish();
     cleanupSFXRelated();
     gunsStopSounds();
     set_missionstate_zero();

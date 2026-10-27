@@ -770,10 +770,10 @@ LEVELID bossGetStageNum() {
  */
 void bossReturnTitleStage(void) {
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
-    display_objective_status_text_on_status_change();
-    objectivestatusDisableStatusDisplay();
+    objectivesTickStatusMessages();
+    objectivesDisableStatusDisplay();
 #endif
-    if ((bossGetStageNum() != LEVELID_CUBA) && (objectiveIsAllComplete() != 0x0)) {
+    if ((bossGetStageNum() != LEVELID_CUBA) && (objectivesAllComplete() != 0x0)) {
         end_of_mission_briefing();
     }
     bossRunTitleStage();

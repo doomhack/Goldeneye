@@ -1798,7 +1798,7 @@ void setupCreateProps(enum LEVELID stageId)
                             taggedobj->runtime_bitflags |= RUNTIMEBITFLAG_TAGGED;
                         }
 
-                        set_parent_cur_tag_entry(pdef_tag);
+                        tagAdd(pdef_tag);
                         break;
                     }
                     case PROPDEF_RENAME:
@@ -1820,7 +1820,7 @@ void setupCreateProps(enum LEVELID stageId)
                         break;
                     }
                     case PROPDEF_WATCH_MENU_OBJECTIVE_TEXT:
-                        setup_briefing_text_entry_parent((struct setup_objective_text *) phead);
+                        briefingTextAdd((struct setup_objective_text *) phead);
                         break;
                     case PROPDEF_CAMERAPOS:
                     {
@@ -1834,16 +1834,16 @@ void setupCreateProps(enum LEVELID stageId)
                         break;
                     }
                     case PROPDEF_OBJECTIVE_START:
-                        add_ptr_to_objective((struct objective_entry *) phead);
+                        objectiveAdd((struct objective_entry *) phead);
                         break;
                     case PROPDEF_OBJECTIVE_ENTER_ROOM:
-                        set_parent_cur_obj_enter_room((struct criteria_roomentered *) phead);
+                        objectiveAddRoomEntered((struct criteria_roomentered *) phead);
                         break;
                     case PROPDEF_OBJECTIVE_DEPOSIT_OBJECT_IN_ROOM:
-                        set_parent_cur_obj_deposited_in_room((struct criteria_deposit *) phead);
+                        objectiveAddDeposit((struct criteria_deposit *) phead);
                         break;
                     case PROPDEF_OBJECTIVE_PHOTOGRAPH:
-                        set_parent_cur_obj_photograph((struct criteria_picture *) phead);
+                        objectiveAddPicture((struct criteria_picture *) phead);
                         break;
                 }
 

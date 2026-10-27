@@ -2939,7 +2939,7 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
     // player enters (Depot's train) don't count.
     if ((g_CurrentPlayer->field_488.current_tile_ptr != NULL) && !counterOpIsGuardPlayer(playerGetCurrentNum()))
     {
-        objectivestatusCheckRoomEntered(g_CurrentPlayer->field_488.current_tile_ptr->room);
+        objectivesCheckRoomEntered(g_CurrentPlayer->field_488.current_tile_ptr->room);
     }
 }
 
@@ -10109,7 +10109,7 @@ Gfx *hudRender(Gfx *gdl)
 
     if (!isMpGame())
     {
-        display_objective_status_text_on_status_change();
+        objectivesTickStatusMessages();
     }
 
     if (g_CurrentPlayer->bonddead != 0)
