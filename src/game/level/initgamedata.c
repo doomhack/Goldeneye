@@ -2,10 +2,10 @@
 #include "game/menu/front.h"
 #include <bondconstants.h>
  /**
-  * initGameData
+  * gameInitData
   *
   **/
-void initGameData(void) {
+void gameInitData(void) {
     current_menu = MENU_INVALID;
     menu_update = MENU_LEGAL_SCREEN;
     maybe_prev_menu = MENU_INVALID;

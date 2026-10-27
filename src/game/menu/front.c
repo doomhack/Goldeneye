@@ -7457,7 +7457,7 @@ void init_menu0B_runstage(void)
 {
     frontCoopResetPartnerOutfit();
     bossSetLoadedStage(selected_stage);
-    lvlSetSelectedDifficulty(selected_difficulty);
+    lvSetDifficulty(selected_difficulty);
 }
 
 
@@ -7568,7 +7568,7 @@ s32 frontCompleteAllObjectivesAliveSuccess(void)
     for (i=0; i<10; i++)
     {
         if (ptrbriefingdata->objective[i].textid != 0
-            && lvlGetSelectedDifficulty() >= ptrbriefingdata->objective[i].enabled_difficulty
+            && lvGetDifficulty() >= ptrbriefingdata->objective[i].enabled_difficulty
             && get_status_of_objective(i) != OBJECTIVESTATUS_COMPLETE)
             {
                 return 0;

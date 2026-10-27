@@ -319,7 +319,7 @@ Gfx *glassRenderShards(Gfx *gdl)
 void glassInitShards(void)
 {
     s32 i;
-    s32 level = lvlGetCurrentStageToLoad();
+    s32 level = lvGetCurrentStage();
 
     g_MaxShards = (200 / getPlayerCount());
     if ((level == LEVELID_STREETS) || (level == LEVELID_DEPOT))

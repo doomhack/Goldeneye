@@ -3,7 +3,7 @@
 
 #include <ultra64.h>
 
-char *get_compile_time(void);
+char *gameGetCompileTime(void);
 
 #endif
 

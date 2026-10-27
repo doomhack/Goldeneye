@@ -71,7 +71,7 @@ void vtxstoreReset(void)
     }
     else
     {
-        stage = lvlGetCurrentStageToLoad();
+        stage = lvGetCurrentStage();
         if ((stage != 0x1E) && (stage != 0x1D))
         {
             g_VtxstoreChrNumVtx = 0x1F4;

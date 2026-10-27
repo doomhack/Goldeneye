@@ -80,7 +80,7 @@ s32 g_CurrentStageToLoad = 0;
 //D:80048368
 f32 D_80048368 = 1.0;
 //D:8004836C
-s32 musictrack1_playing = 0;
+s32 g_LvMusicTrack = 0;
 //D:80048370
 s32 g_ControlsLockedFlag = 0;
 //D:80048374
@@ -90,11 +90,11 @@ s32 g_ClockTimer = 0;
 #if defined (BUGFIX_R1)
 // addresses updated, per build\ge007.j.map
 // 800483a8
-f32 g_JP_GlobalTimerDelta = 0;
+f32 g_GlobalTimerDeltaRaw = 0;
 // 800483ac
 s32 g_GlobalTimer = 0;
 // 800483b0
-s32 D_80048380 = 0;
+s32 g_LvTickCount = 0;
 // 800483b4
 f32 g_GlobalTimerDelta = 0;
 #else
@@ -103,7 +103,7 @@ f32 g_GlobalTimerDelta = 0;
 //D:8004837C
 s32 g_GlobalTimer = 0;
 //D:80048380
-s32 D_80048380 = 0;
+s32 g_LvTickCount = 0;
 //D:80048384
 #endif
 /*
@@ -113,13 +113,13 @@ s32 D_80048380 = 0;
 s32 g_SelectedDifficulty = DIFFICULTY_AGENT;
 
 //D:80048388
-s32 D_80048388 = 0;
+s32 g_LvIdle = 0;
 //D:8004838C
-s32 D_8004838C = 0;
+s32 g_LvIdleTime = 0;
 //D:80048390
-s32 D_80048390 = 0;
+s32 g_LvTimeSinceInput = 0;
 //D:80048394
-s32 D_80048394 = 0;
+s32 g_MissionTime = 0;
 
 /**
  * Address 0x80048398.
@@ -139,18 +139,18 @@ ALSoundState * g_MpSoundStateRelated = NULL;
 /**
  * Address 0x800483A4.
  */
-f32 g_CurrentMultiPlayerSec = 0.0;
+f32 g_MissionTimeSec = 0.0;
 
 //D:800483A8
-s32 D_800483A8 = 0;
+s32 g_SystemPowerTime = 0;
 
 /**
  * Address 0x800483AC.
  */
-f32 g_CurrentMultiPlayerMin = 0.0;
+f32 g_SystemPowerTimeSec = 0.0;
 
 //D:800483B0
-s32 D_800483B0 = 0;
+s32 g_StageTime = 0;
 
 /**
  * Address 0x800483B4.
@@ -158,7 +158,7 @@ s32 D_800483B0 = 0;
 f32 g_StageTimeSec = 0;
 
 //D:800483B8
-s32 D_800483B8 = 0;
+s32 g_PowerOnTime = 0;
 
 /**
  * Power on time in seconds.
@@ -172,13 +172,13 @@ f32 g_PowerOnTimeSec = 0;
  *
  * Addres 0x800483C0.
  */
-s32 D_800483C0 = 1;
+s32 g_LvDrawWorld = 1;
 
 //D:800483C4
-s32 D_800483C4 = 0xFFFFFFFF;
+s32 g_DebugHitTexNum = 0xFFFFFFFF;
 
 //D:800483C8
-struct LvlMpUnknown *D_800483C8 = NULL;
+struct LvlMpUnknown *g_DebugDetailEdit = NULL;
 
 /**
 * Debug variable, something to do with portals.
@@ -223,18 +223,18 @@ extern u8* _fontdlSegmentRomEnd NO_SDATA;
 
 // forward declarations
 
-Gfx * lvlPortalDebug7F0BDF10(Gfx * arg0);
+Gfx * lvPortalDebugRender(Gfx * arg0);
 
 // end forward declarations
 
-s32 sub_GAME_7F0BD8F0(void)
+s32 lvGetDrawWorld(void)
 {
-    return D_800483C0;
+    return g_LvDrawWorld;
 }
 
-void sub_GAME_7F0BD8FC(s32 arg0)
+void lvSetDrawWorld(s32 arg0)
 {
-    D_800483C0 = arg0;
+    g_LvDrawWorld = arg0;
 }
 
 void lvInit(void)
@@ -251,48 +251,48 @@ void lvInit(void)
 /**
  * Unreferenced.
  */
-void lvlPlayRandomMusicTrack1(void)
+void lvPlayRandomMusic(void)
 {
-    musictrack1_playing = randomGetNext() % 0x3dU + M_INTRO;
-    musicTrack1Play(musictrack1_playing);
+    g_LvMusicTrack = randomGetNext() % 0x3dU + M_INTRO;
+    musicTrack1Play(g_LvMusicTrack);
 }
 
-void lvlPlayMusicTrack1(MUSIC_TRACKS track)
+void lvPlayMusic(MUSIC_TRACKS track)
 {
-    musictrack1_playing = track;
-    musicTrack1Play(musictrack1_playing);
+    g_LvMusicTrack = track;
+    musicTrack1Play(g_LvMusicTrack);
 }
 
-void lvlMusicAppendPlaySoloDeathShort(void)
+void lvPlaySoloDeathMusic(void)
 {
-    musictrack1_playing = (musictrack1_playing + M_SHORT_SOLO_DEATH) % NUM_MUSIC_TRACKS;
+    g_LvMusicTrack = (g_LvMusicTrack + M_SHORT_SOLO_DEATH) % NUM_MUSIC_TRACKS;
 
-    if (musictrack1_playing == M_NONE)
+    if (g_LvMusicTrack == M_NONE)
     {
-        musictrack1_playing = M_SHORT_SOLO_DEATH;
+        g_LvMusicTrack = M_SHORT_SOLO_DEATH;
     }
 
-    musicTrack1Play(musictrack1_playing);
+    musicTrack1Play(g_LvMusicTrack);
 }
 
-void lvlMusicAppendPlayEndTheme(void)
+void lvPlayEndThemeMusic(void)
 {
-    musictrack1_playing = (musictrack1_playing + M_END_SOMETHING) % NUM_MUSIC_TRACKS;
+    g_LvMusicTrack = (g_LvMusicTrack + M_END_SOMETHING) % NUM_MUSIC_TRACKS;
 
-    if (musictrack1_playing == M_NONE)
+    if (g_LvMusicTrack == M_NONE)
     {
-        musictrack1_playing = M_END_SOMETHING;
+        g_LvMusicTrack = M_END_SOMETHING;
     }
 
-    musicTrack1Play(musictrack1_playing);
+    musicTrack1Play(g_LvMusicTrack);
 }
 
 /**
  * Unreferenced.
  */
-void lvlMusicPlayStageTrackOrRandom(void)
+void lvPlayStageMusic(void)
 {
-    lvlPlayMusicTrack1(getmusictrack_or_randomtrack(g_CurrentStageToLoad));
+    lvPlayMusic(getmusictrack_or_randomtrack(g_CurrentStageToLoad));
 }
 
 /**
@@ -305,7 +305,7 @@ void lvlMusicPlayStageTrackOrRandom(void)
  * NTSC-J Address: 7F0BE660.
  * PAL Address: 7F0BCE60.
  **/
-void lvlStageLoad(s32 stage)
+void lvStageLoad(s32 stage)
 {
     s32 i;
     struct player_data *player_data;
@@ -321,7 +321,7 @@ void lvlStageLoad(s32 stage)
         #endif
     }
 
-    D_800483C0 = 1;
+    g_LvDrawWorld = 1;
     g_ControlsLockedFlag = 0;
     g_ClockTimer = 1;
 
@@ -329,22 +329,22 @@ void lvlStageLoad(s32 stage)
     g_GlobalTimerDelta = 1.0f;
 #endif
 #if defined(VERSION_EU)
-    g_JP_GlobalTimerDelta = 1.0f;
+    g_GlobalTimerDeltaRaw = 1.0f;
 #endif
 
-    D_80048380 = 0;
+    g_LvTickCount = 0;
     g_GlobalTimer = 0;
 
 #if defined(VERSION_EU)
     g_GlobalTimerDelta = 1.20000004768f;
 #endif
 
-    D_80048388 = 0;
-    D_8004838C = 0;
-    D_80048390 = 0;
-    D_80048394 = 0;
-    g_CurrentMultiPlayerSec = 0.0f;
-    D_800483B0 = 0;
+    g_LvIdle = 0;
+    g_LvIdleTime = 0;
+    g_LvTimeSinceInput = 0;
+    g_MissionTime = 0;
+    g_MissionTimeSec = 0.0f;
+    g_StageTime = 0;
     g_StageTimeSec = 0.0f;
     g_MpSoundStateRelated = 0;
 
@@ -378,7 +378,7 @@ void lvlStageLoad(s32 stage)
     {
         g_NewCheatUnlocked = 0;
 
-        if ((g_CurrentStageToLoad != LEVELID_TITLE) && (D_80048394 == 0) && (g_ClockTimer > 0))
+        if ((g_CurrentStageToLoad != LEVELID_TITLE) && (g_MissionTime == 0) && (g_ClockTimer > 0))
         {
             if (g_AppendCheatSinglePlayer != 0)
             {
@@ -435,8 +435,8 @@ void lvlStageLoad(s32 stage)
                     g_playerPlayerData[s3].player_perspective_height = get_player_mp_char_height(s3);
                 }
 
-                lvlSetMpTime(get_mp_timelimit());
-                lvlSetMpPoint(get_mp_pointlimit());
+                lvSetMpTimeLimit(get_mp_timelimit());
+                lvSetMpPointLimit(get_mp_pointlimit());
                 copy_aim_settings_to_playerdata();
             }
 
@@ -514,12 +514,12 @@ void lvlStageLoad(s32 stage)
     zbufDeallocate();
     viSetVideoMode(MD_NORMAL);
     D_80048368 = 1.0f;
-    lvlSetControlsLockedFlag(0);
+    lvSetControlsLocked(0);
 }
 
 
 
-s32 lvlGetCurrentStageToLoad(void)
+s32 lvGetCurrentStage(void)
 {
     return g_CurrentStageToLoad;
 }
@@ -531,7 +531,7 @@ s32 lvlGetCurrentStageToLoad(void)
  * Debug method. Something to do with portals. Button press
  * on controller 1 and 2 are used for control flow.
  */
-Gfx *lvlPortalDebug7F0BDF10(Gfx *gdl)
+Gfx *lvPortalDebugRender(Gfx *gdl)
 {
     s32 temp_v1;
     bool portalDebugStateChanged; // This value has no observable use in the final assembly but the variable definitely existed in the orignal code.
@@ -553,12 +553,12 @@ Gfx *lvlPortalDebug7F0BDF10(Gfx *gdl)
 
         if ((temp_v1 == g_DebugPortalsInputBuffer3) == FALSE)
         {
-            D_800483C0 ^= 1;
+            g_LvDrawWorld ^= 1;
         }
 
         if ((g_DebugPortalsInputBuffer1 == g_DebugPortalsInputBuffer) == FALSE)
         {
-            D_800483C0 ^= 1;
+            g_LvDrawWorld ^= 1;
         }
 
         g_DebugPortalsInputBuffer4 = temp_v1;
@@ -673,7 +673,7 @@ static s32 s_FpsRdpMs;
  * the average milliseconds per frame the CPU spent building it, and the
  * graphics task took on the RSP and until the RDP finished drawing.
  */
-static Gfx *lvlRenderFpsCounter(Gfx *DL)
+static Gfx *lvRenderFpsCounter(Gfx *DL)
 {
     char text[40];
     s32 x;
@@ -730,7 +730,7 @@ static Gfx *lvlRenderFpsCounter(Gfx *DL)
  * Address 0x7F0BE30C (VERSION_US).
  */
 
-Gfx* lvlRender(Gfx* DL)
+Gfx* lvRender(Gfx* DL)
 {
     gSPSegment(DL++, SPSEGMENT_PHYSICAL, NULL);
     gSPSegment(DL++, SPSEGMENT_UNKNOWN, osVirtualToPhysical(ptr_font_DL));
@@ -806,7 +806,7 @@ Gfx* lvlRender(Gfx* DL)
 
             if (get_debug_portal_flag())
             {
-                DL = lvlPortalDebug7F0BDF10(DL);
+                DL = lvPortalDebugRender(DL);
             }
 
             if (get_debug_stan_problems_flag())
@@ -942,7 +942,7 @@ Gfx* lvlRender(Gfx* DL)
 
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && get_fps_setting())
     {
-        DL = lvlRenderFpsCounter(DL);
+        DL = lvRenderFpsCounter(DL);
     }
 
     return DL;
@@ -955,7 +955,7 @@ Gfx* lvlRender(Gfx* DL)
  *
  * address 0x7F0BE8D0
  */
-void lvlSetMultipliersForDifficulty(void)
+void lvApplyDifficulty(void)
 {
     if (g_SelectedDifficulty == DIFFICULTY_AGENT)
     {
@@ -1069,7 +1069,7 @@ void lvlSetMultipliersForDifficulty(void)
  * Address: 0x7F0BF7AC (NTSC-J).
  * Address: 0x7F0BDFAC (PAL).
  */
-void lvlManageMpGame(void)
+void lvTick(void)
 {
     if (g_ControlsLockedFlag != 0)
     {
@@ -1081,22 +1081,22 @@ void lvlManageMpGame(void)
     }
     else
     {
-        g_ClockTimer = speedgraphframes;
-        D_80048380 += 1;
+        g_ClockTimer = g_FrameDelta;
+        g_LvTickCount += 1;
     }
 
 #ifdef VERSION_US
     g_GlobalTimerDelta = (f32) g_ClockTimer;
 #else
-    g_JP_GlobalTimerDelta = (f32) g_ClockTimer;
+    g_GlobalTimerDeltaRaw = (f32) g_ClockTimer;
 #ifdef VERSION_EU
-    g_GlobalTimerDelta = g_JP_GlobalTimerDelta * 1.2f;
+    g_GlobalTimerDelta = g_GlobalTimerDeltaRaw * 1.2f;
 #else
-    g_GlobalTimerDelta = g_JP_GlobalTimerDelta;
+    g_GlobalTimerDelta = g_GlobalTimerDeltaRaw;
 #endif
 #endif
     g_GlobalTimer += g_ClockTimer;
-    if ((g_CurrentStageToLoad != LEVELID_TITLE) && (D_80048394 == 0) && (g_ClockTimer > 0))
+    if ((g_CurrentStageToLoad != LEVELID_TITLE) && (g_MissionTime == 0) && (g_ClockTimer > 0))
     {
         if (g_AppendCheatSinglePlayer != 0)
         {
@@ -1145,13 +1145,13 @@ void lvlManageMpGame(void)
             s32 current_time;
             s32 sp180;
             s32 i;
-            current_time = D_80048394;
-            sp180 = g_ClockTimer + D_80048394;
+            current_time = g_MissionTime;
+            sp180 = g_ClockTimer + g_MissionTime;
 
 #ifdef VERSION_EU
-            if ((D_80048394 < (g_MpTime - 0xBB8)) && (sp180 >= (g_MpTime - 0xBB8)))
+            if ((g_MissionTime < (g_MpTime - 0xBB8)) && (sp180 >= (g_MpTime - 0xBB8)))
 #else
-            if ((D_80048394 < (g_MpTime - 0xE10)) && (sp180 >= (g_MpTime - 0xE10)))
+            if ((g_MissionTime < (g_MpTime - 0xE10)) && (sp180 >= (g_MpTime - 0xE10)))
 #endif
             {
                 for (i = 0; i < getPlayerCount(); i++)
@@ -1167,16 +1167,16 @@ void lvlManageMpGame(void)
 
             // sound alarm when game is about to end (10 seconds before end)
 #ifdef VERSION_EU
-            if ((sp180 >= (g_MpTime - 0x1F4)) && (g_MpSoundStateRelated == 0) && (lvlGetControlsLockedFlag() == 0))
+            if ((sp180 >= (g_MpTime - 0x1F4)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
 #else
-            if ((sp180 >= (g_MpTime - 0x258)) && (g_MpSoundStateRelated == 0) && (lvlGetControlsLockedFlag() == 0))
+            if ((sp180 >= (g_MpTime - 0x258)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
 #endif
             {
                 sndPlaySfx(g_musicSfxBufferPtr, ALARM1_SFX, &g_MpSoundStateRelated);
             }
 
             // stop alarm
-            if (lvlGetControlsLockedFlag() != 0)
+            if (lvGetControlsLocked() != 0)
             {
                 if ((g_MpSoundStateRelated != NULL) && (sndGetPlayingState(g_MpSoundStateRelated) != 0))
                 {
@@ -1297,55 +1297,55 @@ void lvlManageMpGame(void)
         }
     }
 
-    D_80048394 = D_80048394 + g_ClockTimer;
+    g_MissionTime = g_MissionTime + g_ClockTimer;
 #ifdef VERSION_EU
-    g_CurrentMultiPlayerSec = (f32) (D_80048394) / 50.0f;
+    g_MissionTimeSec = (f32) (g_MissionTime) / 50.0f;
 #else
-    g_CurrentMultiPlayerSec = (f32) (D_80048394) / 60.0f;
+    g_MissionTimeSec = (f32) (g_MissionTime) / 60.0f;
 #endif
-    D_800483A8 = D_800483A8 + g_ClockTimer;
+    g_SystemPowerTime = g_SystemPowerTime + g_ClockTimer;
 #ifdef VERSION_EU
-    g_CurrentMultiPlayerMin = (f32) (D_800483A8) / 50.0f;
+    g_SystemPowerTimeSec = (f32) (g_SystemPowerTime) / 50.0f;
 #else
-    g_CurrentMultiPlayerMin = (f32) (D_800483A8) / 60.0f;
+    g_SystemPowerTimeSec = (f32) (g_SystemPowerTime) / 60.0f;
 #endif
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON))
     {
-        D_80048388 = 0;
-        D_80048390 = 0;
+        g_LvIdle = 0;
+        g_LvTimeSinceInput = 0;
     }
     else
     {
-        D_80048390 = D_80048390 + g_ClockTimer;
+        g_LvTimeSinceInput = g_LvTimeSinceInput + g_ClockTimer;
 
 #ifdef VERSION_EU
-        if (D_80048390 >= 0x5DC)
+        if (g_LvTimeSinceInput >= 0x5DC)
 #else
-        if (D_80048390 >= 0x708)
+        if (g_LvTimeSinceInput >= 0x708)
 #endif
         {
-            D_80048388 = 1;
+            g_LvIdle = 1;
         }
     }
 
-    if (D_80048388 != 0)
+    if (g_LvIdle != 0)
     {
-        D_8004838C += g_ClockTimer;
+        g_LvIdleTime += g_ClockTimer;
     }
     else
     {
-        D_800483B0 = D_800483B0 + g_ClockTimer;
+        g_StageTime = g_StageTime + g_ClockTimer;
 #ifdef VERSION_EU
-        g_StageTimeSec = (f32) (D_800483B0) / 50.0f;
+        g_StageTimeSec = (f32) (g_StageTime) / 50.0f;
 #else
-        g_StageTimeSec = (f32) (D_800483B0) / 60.0f;
+        g_StageTimeSec = (f32) (g_StageTime) / 60.0f;
 #endif
-        D_800483B8 = D_800483B8 + g_ClockTimer;
+        g_PowerOnTime = g_PowerOnTime + g_ClockTimer;
 #ifdef VERSION_EU
-        g_PowerOnTimeSec = (f32) (D_800483B8) / 50.0f;
+        g_PowerOnTimeSec = (f32) (g_PowerOnTime) / 50.0f;
 #else
-        g_PowerOnTimeSec = (f32) (D_800483B8) / 60.0f;
+        g_PowerOnTimeSec = (f32) (g_PowerOnTime) / 60.0f;
 #endif
     }
 
@@ -1360,7 +1360,7 @@ void lvlManageMpGame(void)
     else
     {
         vtxstoreTick();
-        lvlSetMultipliersForDifficulty();
+        lvApplyDifficulty();
         roomMtxTick();
         waterTick();
         skyTick();
@@ -1383,24 +1383,24 @@ void lvlManageMpGame(void)
         reset_all_music_slots();
         langTick();
 
-        if ((get_debug_joy2detailedit_flag() != 0) && (D_800483C8 == 0))
+        if ((get_debug_joy2detailedit_flag() != 0) && (g_DebugDetailEdit == 0))
         {
             s32 i;
-            D_800483C8 = (struct LvlMpUnknown *)mempAlloc(0x3000, MEMPOOL_STAGE);
-            if (D_800483C8 != 0)
+            g_DebugDetailEdit = (struct LvlMpUnknown *)mempAlloc(0x3000, MEMPOOL_STAGE);
+            if (g_DebugDetailEdit != 0)
             {
                 for (i=0; i<3000; i++)
                 {
-                    D_800483C8[i].unk_0 = 0xff;
-                    D_800483C8[i].unk_1 = (D_800483C8[i].unk_1 & 0xFF1F) | 0x20;
-                    D_800483C8[i].unk_1 = (D_800483C8[i].unk_1 & 0xFFE3) | 4;
+                    g_DebugDetailEdit[i].unk_0 = 0xff;
+                    g_DebugDetailEdit[i].unk_1 = (g_DebugDetailEdit[i].unk_1 & 0xFF1F) | 0x20;
+                    g_DebugDetailEdit[i].unk_1 = (g_DebugDetailEdit[i].unk_1 & 0xFFE3) | 4;
                 }
             }
         }
 
         if (get_debug_portal_flag() != 0)
         {
-            lvlPortalDebug7F0BDF10(0);
+            lvPortalDebugRender(0);
         }
 
         switch (getDebugMode())
@@ -1481,12 +1481,12 @@ void lvlManageMpGame(void)
             {
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, (L_JPAD | L_CBUTTONS)))
                 {
-                    lvlMusicAppendPlayEndTheme();
+                    lvPlayEndThemeMusic();
                 }
 
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, (R_JPAD | R_CBUTTONS)))
                 {
-                    lvlMusicAppendPlaySoloDeathShort();
+                    lvPlaySoloDeathMusic();
                 }
 
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD))
@@ -1585,7 +1585,7 @@ void lvlManageMpGame(void)
  * US Address 0x7F0BF800.
  * EU address 7F0BEC44.
  */
-void lvlViewMoveTick(void)
+void lvPlayerTick(void)
 {
     s8 local_player_number;
     s32 padding;
@@ -1690,7 +1690,7 @@ void lvlViewMoveTick(void)
 
 
 
-void lvlUnloadStageTextData(void)
+void lvStageUnload(void)
 {
     if (g_MpSoundStateRelated != NULL)
     {
@@ -1722,7 +1722,7 @@ void lvlUnloadStageTextData(void)
 }
 
 
-void lvlSetControlsLockedFlag(s32 arg0)
+void lvSetControlsLocked(s32 arg0)
 {
     #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if ((arg0 != 0) && (g_ControlsLockedFlag == 0))
@@ -1735,51 +1735,51 @@ void lvlSetControlsLockedFlag(s32 arg0)
 }
 
 
-s32 lvlGetControlsLockedFlag(void)
+s32 lvGetControlsLocked(void)
 {
     return g_ControlsLockedFlag;
 }
 
 
-DIFFICULTY lvlGetSelectedDifficulty(void)
+DIFFICULTY lvGetDifficulty(void)
 {
     return g_SelectedDifficulty;
 }
 
 
-void lvlSetSelectedDifficulty(DIFFICULTY arg0)
+void lvSetDifficulty(DIFFICULTY arg0)
 {
     g_SelectedDifficulty = arg0;
 }
 
-void lvlSetMpTime(s32 arg0)
+void lvSetMpTimeLimit(s32 arg0)
 {
     g_MpTime = arg0;
 }
 
 
-void lvlSetMpPoint(s32 arg0)
+void lvSetMpPointLimit(s32 arg0)
 {
     g_MpPoint = arg0;
 }
 
 
-f32 lvlGetCurrentMultiPlayerSec(void)
+f32 lvGetMissionTimeSec(void)
 {
-    return g_CurrentMultiPlayerSec;
+    return g_MissionTimeSec;
 }
 
 
-f32 lvlGetCurrentMultiPlayerMin(void)
+f32 lvGetSystemPowerTimeSec(void)
 {
-    return g_CurrentMultiPlayerMin;
+    return g_SystemPowerTimeSec;
 }
 
 
 /**
  * Unreferenced.
  */
-f32 lvlGetStageTimeSec(void)
+f32 lvGetStageTimeSec(void)
 {
     return g_StageTimeSec;
 }
@@ -1788,7 +1788,7 @@ f32 lvlGetStageTimeSec(void)
 /**
  * Unreferenced.
  */
-f32 lvlGetPowerOnTimeSec(void)
+f32 lvGetPowerOnTimeSec(void)
 {
     return g_PowerOnTimeSec;
 }

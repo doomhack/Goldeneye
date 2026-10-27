@@ -1513,7 +1513,7 @@ void setupCreateProps(enum LEVELID stageId)
             s32 pdefIndex;
 
             // per-difficulty "Don't Load" mask: PROPFLAG2_00000010/20/40 for Agent/Secret/00
-            flags = 1 << (lvlGetSelectedDifficulty() + 4);
+            flags = 1 << (lvGetDifficulty() + 4);
 
             /**
              * Complete the skip loading mask started on the line above. Checks for:

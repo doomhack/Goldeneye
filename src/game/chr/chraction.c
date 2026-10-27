@@ -5069,7 +5069,7 @@ void chrTickAnim(ChrRecord *self)
         && !(self->chrflags & CHRFLAG_02000000)
        )
     {
-        if (((D_80048380 & 1) == 0) && (chrGetDistanceToBond(self) < 800.0f))
+        if (((g_LvTickCount & 1) == 0) && (chrGetDistanceToBond(self) < 800.0f))
         {
             chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, SNEEZE_SFX, 0), &self->prop->pos);
         }
@@ -5614,7 +5614,7 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
         roty = modelGetRootRotY(model);
 
 #if defined(BUGFIX_R1)
-        temp_f14 = 0.06283186f * arg3 * g_JP_GlobalTimerDelta * model->playspeed;
+        temp_f14 = 0.06283186f * arg3 * g_GlobalTimerDeltaRaw * model->playspeed;
 #else /* VERSION_US */
         temp_f14 = 0.06283186f * arg3 * g_GlobalTimerDelta * model->playspeed;
 #endif

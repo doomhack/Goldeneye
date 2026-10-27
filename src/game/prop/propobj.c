@@ -66,7 +66,7 @@
 
 
 #if defined(VERSION_EU)
-#define MONITOR_TIMER_DELTA g_JP_GlobalTimerDelta
+#define MONITOR_TIMER_DELTA g_GlobalTimerDeltaRaw
 #else
 #define MONITOR_TIMER_DELTA g_GlobalTimerDelta
 #endif
@@ -2358,7 +2358,7 @@ void objUpdateThrowKnifeSound(ObjectRecord *obj)
             return;
         }
 
-        if (!lvlGetControlsLockedFlag()) 
+        if (!lvGetControlsLocked()) 
         {
             sndPlaySfx(g_musicSfxBufferPtr, Throwing_knife_SFX[sfxindex], &obj->projectile->sounds[slot]);
 
@@ -4948,7 +4948,7 @@ s32 objTick(struct PropRecord *prop)
 
 						if ((moveResult == 0) || (hitGround != 0))
 						{
-							if (((s32) Rocket->unkAC) < (((s32) D_80048380) - 2))
+							if (((s32) Rocket->unkAC) < (((s32) g_LvTickCount) - 2))
 							{
 								if ((airborneWeapon->weaponnum == ITEM_THROWKNIFE) || (airborneWeapon->weaponnum == ITEM_KNIFE))
 								{
@@ -4962,18 +4962,18 @@ s32 objTick(struct PropRecord *prop)
 								chrobjSndCreatePostEventDefault(sfx_state, &prop->pos);
 							}
 
-							Rocket->unkAC = D_80048380;
+							Rocket->unkAC = g_LvTickCount;
 						}
 					}
 				}
 
-				if (((airborneWeapon->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) && (Rocket->flags & PROJECTILEFLAG_FALLING)) && (!(D_80048380 & 7)))
+				if (((airborneWeapon->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) && (Rocket->flags & PROJECTILEFLAG_FALLING)) && (!(g_LvTickCount & 7)))
 				{
 					sp564.f[0] = airborneWeapon->runtime_pos.f[0] + 400.0f;
 					sp564.f[1] = airborneWeapon->runtime_pos.f[1] - 1800.0f;
 					sp564.f[2] = airborneWeapon->runtime_pos.f[2];
 
-					if (!(D_80048380 & 0xF))
+					if (!(g_LvTickCount & 0xF))
 					{
 						sp564.f[2] += 400.0f;
 					}
@@ -4984,7 +4984,7 @@ s32 objTick(struct PropRecord *prop)
 
 					explosionCreate(NULL, &sp564, airborneWeapon->prop->stan, 0x14, 0, 0, airborneWeapon->prop->rooms, 0);
                     //Spawn smoke every 40 frames
-					if ((((s32) D_80048380) % 40) == 0)
+					if ((((s32) g_LvTickCount) % 40) == 0)
 					{
 						explosionCreateSmoke(&sp564, airborneWeapon->prop->stan, 0xA, airborneWeapon->prop->rooms, 1);
 					}
@@ -5608,7 +5608,7 @@ s32 objTick(struct PropRecord *prop)
 
 			if (truckShouldPlayEngineSound > 0)
 			{
-				if (((poTruck->Sound == NULL) || (sndGetPlayingState(poTruck->Sound) == 0)) && (lvlGetControlsLockedFlag() == 0))
+				if (((poTruck->Sound == NULL) || (sndGetPlayingState(poTruck->Sound) == 0)) && (lvGetControlsLocked() == 0))
 				{
 					sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, TRUCK_RUN_SFX, &poTruck->Sound);
 				}
@@ -5880,7 +5880,7 @@ s32 objTick(struct PropRecord *prop)
 
 			if (truckShouldPlayEngineSound > 0)
 			{
-				if (((render_pad2F4->Sound == NULL) || (sndGetPlayingState(render_pad2F4->Sound) == 0)) && (lvlGetControlsLockedFlag() == 0))
+				if (((render_pad2F4->Sound == NULL) || (sndGetPlayingState(render_pad2F4->Sound) == 0)) && (lvGetControlsLocked() == 0))
 				{
 					sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, HELI_RUN_SFX, &render_pad2F4->Sound);
 				}
@@ -6380,7 +6380,7 @@ s32 objTick(struct PropRecord *prop)
 		{
 			doorUpdateSoundVolume((struct DoorRecord *) prop->obj);
 		}
-		else if ((obj->type == PROPDEF_AUTOGUN) && (lvlGetControlsLockedFlag() == 0))
+		else if ((obj->type == PROPDEF_AUTOGUN) && (lvGetControlsLocked() == 0))
 		{
 			struct AutogunRecord *autogun = (struct AutogunRecord *) prop->obj;
 			f32 beam_xdiff;
@@ -12816,7 +12816,7 @@ void doorUpdateSoundVolume(DoorRecord* arg0)
 
         sp1C = sndVolumeForPosDefault(&arg0->prop->pos);
 
-        if (lvlGetControlsLockedFlag() != 0)
+        if (lvGetControlsLocked() != 0)
         {
             sp1C = 0;
         }
@@ -14271,7 +14271,7 @@ void gasTick(void)
         if (gasLeakTimer < gasTimeToFullOpacity)
         {
             gasLeakTimer = gasLeakTimer + g_GlobalTimerDelta;
-            if ((ptr_gas_sound == NULL) && (lvlGetControlsLockedFlag() == 0))
+            if ((ptr_gas_sound == NULL) && (lvGetControlsLocked() == 0))
             {
                 sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, GAS_HISS_SFX, (ALSoundState* ) &ptr_gas_sound);
             }
@@ -14401,7 +14401,7 @@ void alarmGasTimerTick(void)
 {
     if (alarmIsActive() != 0)
     {
-        if ((ptr_alarm_sfx == 0) && (lvlGetControlsLockedFlag() == 0))
+        if ((ptr_alarm_sfx == 0) && (lvGetControlsLocked() == 0))
         {
             sndPlaySfx(g_musicSfxBufferPtr, ALARM3_SFX, &ptr_alarm_sfx);
         }

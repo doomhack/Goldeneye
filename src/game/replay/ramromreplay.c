@@ -249,7 +249,7 @@ void record_player_input_as_packet(struct contsample *arg0, s32 arg1, s32 arg2)
     }
         
     ramrom_blkbuf_2->count = var_t2;
-    ramrom_blkbuf_2->speedframes = speedgraphframes;
+    ramrom_blkbuf_2->speedframes = g_FrameDelta;
     ramrom_blkbuf_2->randseed = g_randomSeed;
     
     var_a3 += (u8) ((u8)ramrom_blkbuf_2->speedframes + (u8)ramrom_blkbuf_2->count + ramrom_blkbuf_2->randseed);
@@ -362,7 +362,7 @@ void iterate_ramrom_entries_handle_camera_out(void)
         address_demo_loaded += align_addr_even((ptr_active_demofile->size_cmds * sizeof(struct ramrom_blockbuf) * ramrom_blkbuf_2->count) + 5);
     }
 
-    updateFrameCounters(ramrom_blkbuf_2->speedframes);
+    frameAdvance(ramrom_blkbuf_2->speedframes);
 
     // BUG? Does this need to be adjusted for PAL?
     temp_v1 = ptr_active_demofile->totaltime_ms - 0x3C;

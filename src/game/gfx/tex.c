@@ -809,9 +809,9 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
 
                 texnum = in->words.w1 & 0xfff;
 
-                if ((texnum == D_800483C4) && (D_800483C8 != NULL))
+                if ((texnum == g_DebugHitTexNum) && (g_DebugDetailEdit != NULL))
                 {
-                    if (D_800483C8[texnum].unk_0_0 < 0xffU)
+                    if (g_DebugDetailEdit[texnum].unk_0_0 < 0xffU)
                     {
                         valid = TRUE;
                     }
@@ -843,16 +843,16 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                             shifts = (in->words.w0 >> 14) & 0xf;
                             shiftt = (in->words.w0 >> 10) & 0xf;
 
-                            if ((D_800483C8 != NULL) && (D_800483C8[texnum].unk_0_0 == 0xff))
+                            if ((g_DebugDetailEdit != NULL) && (g_DebugDetailEdit[texnum].unk_0_0 == 0xff))
                             {
                                 do
                                 {
                                     if (TRUE) {}
                                 } while (FALSE);
 
-                                D_800483C8[texnum].unk_0_0 = min;
-                                D_800483C8[texnum].unk_1_3 = 15 - shifts;
-                                D_800483C8[texnum].unk_1_0 = 15 - shiftt;
+                                g_DebugDetailEdit[texnum].unk_0_0 = min;
+                                g_DebugDetailEdit[texnum].unk_1_3 = 15 - shifts;
+                                g_DebugDetailEdit[texnum].unk_1_0 = 15 - shiftt;
                             }
 
                             if (valid)
@@ -863,9 +863,9 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                                     smode,
                                     tmode,
                                     offset,
-                                    15 - D_800483C8[texnum].unk_1_3,
-                                    15 - D_800483C8[texnum].unk_1_0,
-                                    D_800483C8[texnum].unk_0_0);
+                                    15 - g_DebugDetailEdit[texnum].unk_1_3,
+                                    15 - g_DebugDetailEdit[texnum].unk_1_0,
+                                    g_DebugDetailEdit[texnum].unk_0_0);
 
                                 gDPSetCycleType(out++, G_CYC_2CYCLE);
                                 gDPSetTextureLOD(out++, G_TL_LOD);
@@ -913,9 +913,9 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                                     smode,
                                     tmode,
                                     offset,
-                                    15 - D_800483C8[texnum].unk_1_3,
-                                    15 - D_800483C8[texnum].unk_1_0,
-                                    D_800483C8[texnum].unk_0_0);
+                                    15 - g_DebugDetailEdit[texnum].unk_1_3,
+                                    15 - g_DebugDetailEdit[texnum].unk_1_0,
+                                    g_DebugDetailEdit[texnum].unk_0_0);
 
                                 gDPSetCycleType(out++, G_CYC_2CYCLE);
                                 gDPSetTextureLOD(out++, G_TL_LOD);

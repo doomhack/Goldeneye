@@ -2,39 +2,39 @@
 #include "game/level/frametiming.h"
 
 // data
-s32 lastFrameCounter = -1;
-s32 currentFrameCounter = 0;
+s32 g_FrameCounterPrev = -1;
+s32 g_FrameCounter = 0;
 
 /**
  * Appears to be rendered framerate, or some kind of counter since the last frame update.
  */
-s32 speedgraphframes = 1;
+s32 g_FrameDelta = 1;
 
 #if defined(BUGFIX_R1)
 // EU address D_8004111C
-f32 jpD_800484CC = 1.0f;
+f32 g_FrameDeltaF = 1.0f;
 
 // EU address D_80041120
-f32 jpD_800484D0 = 1.0f;
+f32 g_FrameDelta60 = 1.0f;
 #endif
 
-s32 previousFrameCounter = -1;
-s32 halfFrameCounter = 0; // half of currentFrameCounter
-s32 isFrameCounterOdd = 0; // is currentFrameCounter Odd
-s32 halfMinusPreviousCounter = 0; // half - previousFrameCounter
-u32 copy_of_osgetcount_value_0 = 0;
-u32 copy_of_osgetcount_value_1 = 0;
-s32 frameDelay = 1; //usually 1
+s32 g_FrameHalfCounterPrev = -1;
+s32 g_FrameHalfCounter = 0; // half of g_FrameCounter
+s32 g_FrameCounterOdd = 0; // is g_FrameCounter Odd
+s32 g_FrameHalfDelta = 0; // half - g_FrameHalfCounterPrev
+u32 g_FramePrevCount = 0;
+u32 g_FrameStartCount = 0;
+s32 g_FrameMinFrames = 1; //usually 1
 
 
 
 /**
  * Stores the current OS count in the two global variables.
  */
-void store_osgetcount(void)
+void frameTimingStart(void)
 {
-    copy_of_osgetcount_value_1 = osGetCount();
-    copy_of_osgetcount_value_0 = copy_of_osgetcount_value_1;
+    g_FrameStartCount = osGetCount();
+    g_FramePrevCount = g_FrameStartCount;
 }
 
 
@@ -43,28 +43,28 @@ void store_osgetcount(void)
  *
  * @param deltaFrames The number of frames to add to the current frame counter.
  */
-void updateFrameCounters(s32 deltaFrames)
+void frameAdvance(s32 deltaFrames)
 {
-    copy_of_osgetcount_value_0 = (s32) copy_of_osgetcount_value_1;
-    copy_of_osgetcount_value_1 = osGetCount();
+    g_FramePrevCount = (s32) g_FrameStartCount;
+    g_FrameStartCount = osGetCount();
 
-    lastFrameCounter = currentFrameCounter;
-    currentFrameCounter = (s32) (currentFrameCounter + deltaFrames);
-    speedgraphframes = deltaFrames;
+    g_FrameCounterPrev = g_FrameCounter;
+    g_FrameCounter = (s32) (g_FrameCounter + deltaFrames);
+    g_FrameDelta = deltaFrames;
 
     #ifdef BUGFIX_R1
-    jpD_800484CC = (f32) deltaFrames;
+    g_FrameDeltaF = (f32) deltaFrames;
     #ifdef REFRESH_PAL
-    jpD_800484D0 = (jpD_800484CC * 60.0f) / 50.0f;
+    g_FrameDelta60 = (g_FrameDeltaF * 60.0f) / 50.0f;
     #else
-    jpD_800484D0 = (f32) jpD_800484CC;
+    g_FrameDelta60 = (f32) g_FrameDeltaF;
     #endif
     #endif
 
-    previousFrameCounter = (s32) halfFrameCounter;
-    halfFrameCounter = (s32) (currentFrameCounter / 2);
-    isFrameCounterOdd = (s32) (currentFrameCounter & 1);
-    halfMinusPreviousCounter = (s32) (halfFrameCounter - previousFrameCounter);
+    g_FrameHalfCounterPrev = (s32) g_FrameHalfCounter;
+    g_FrameHalfCounter = (s32) (g_FrameCounter / 2);
+    g_FrameCounterOdd = (s32) (g_FrameCounter & 1);
+    g_FrameHalfDelta = (s32) (g_FrameHalfCounter - g_FrameHalfCounterPrev);
 }
 
 
@@ -72,26 +72,26 @@ void updateFrameCounters(s32 deltaFrames)
  * Waits until the appropriate time has passed before updating the frame counters.
  * This function effectively controls the frame rate by waiting for the next tick.
  */
-void waitForNextFrame(void) //maybe WaitForTick
+void frameWaitForNext(void) //maybe WaitForTick
 {
   u32 nextFrameTime; //next frame time?
   
   do {
     #ifdef REFRESH_PAL
-    nextFrameTime = ((osGetCount() - copy_of_osgetcount_value_1) + 465525) / 931050; 
+    nextFrameTime = ((osGetCount() - g_FrameStartCount) + 465525) / 931050; 
     #else
-    nextFrameTime = ((osGetCount() - copy_of_osgetcount_value_1) + 387937) / 775875; //current time + 1/5
+    nextFrameTime = ((osGetCount() - g_FrameStartCount) + 387937) / 775875; //current time + 1/5
     #endif
-  } while (nextFrameTime < frameDelay);
+  } while (nextFrameTime < g_FrameMinFrames);
 
-  frameDelay = 1;
-  updateFrameCounters(nextFrameTime);
+  g_FrameMinFrames = 1;
+  frameAdvance(nextFrameTime);
 }
 
 
-void setFrameDelay(s32 arg0) {
+void frameSetMinFrames(s32 arg0) {
     #ifdef LEFTOVERDEBUG
-    frameDelay = arg0;
+    g_FrameMinFrames = arg0;
     #endif
 }
 

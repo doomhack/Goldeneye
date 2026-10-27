@@ -12,13 +12,13 @@ void gameInit(void) {
     debTryAdd(&D_8004EAE0, "game_c_debug");
 }
 
-void reset_mem_bank_5(void) {
+void gameResetMePool(void) {
     fileForgetMePool();
     mempResetPool(MEMPOOL_ME);
     fileForgetPool(MEMPOOL_ME);
 }
 
-void sub_GAME_7F0D1A7C(void) {
+void gameCloseMePool(void) {
     mempClosePool(MEMPOOL_ME);
     fileForgetPool(MEMPOOL_ME);
 }

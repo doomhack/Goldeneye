@@ -26,9 +26,9 @@
 #define WATCH_VOL_ADJUST_STEP 1024
 
 #if defined(VERSION_US)
-#define WATCH_ROTATION_FRAMES speedgraphframes
+#define WATCH_ROTATION_FRAMES g_FrameDelta
 #else
-#define WATCH_ROTATION_FRAMES jpD_800484D0
+#define WATCH_ROTATION_FRAMES g_FrameDelta60
 #endif
 
 #if defined(VERSION_EU)
@@ -1562,7 +1562,7 @@ f32 watchWrapAroundPI(f32 arg0)
 }
 
 
-extern f32 jpD_800484D0;
+extern f32 g_FrameDelta60;
 void sub_GAME_7F0A6A80(void)
 {
     u32 temp_1;
@@ -1633,9 +1633,9 @@ void sub_GAME_7F0A6A80(void)
         D_80040B00 = 0xF;
     }
     #ifdef VERSION_US
-    D_80040B14 += ((D_80040B1C * speedgraphframes * M_TAU_F) / 360.0f);
+    D_80040B14 += ((D_80040B1C * g_FrameDelta * M_TAU_F) / 360.0f);
     #else
-    D_80040B14 += ((D_80040B1C * jpD_800484D0 * M_TAU_F) / 360.0f);
+    D_80040B14 += ((D_80040B1C * g_FrameDelta60 * M_TAU_F) / 360.0f);
     #endif
 
     D_80040B14 = watchWrapAroundPI(D_80040B14);
@@ -4134,7 +4134,7 @@ Gfx *draw_watch_mission_briefing_page(Gfx *gdl, Mtx *param_2)
 
                 for (i = 0; i < (guardplayer ? 1 : objectiveGetCount()); i++)
                 {
-                    if (guardplayer || (get_difficulty_for_objective(i) <= lvlGetSelectedDifficulty()))
+                    if (guardplayer || (get_difficulty_for_objective(i) <= lvGetDifficulty()))
                     {
                         objectiveText = guardplayer ? "Kill Bond\n" : get_text_for_objective(i);
                         objectiveBuffer[0] = '\0';
@@ -4269,7 +4269,7 @@ Gfx *draw_watch_current_page(Gfx *gdl, Mtx *arg1, s32 watch_transitioning)
     if (watch_transitioning == TRUE)
     {
         playerSetOutsideWatchMenu(FALSE);
-        sub_GAME_7F0BD8FC(0);
+        lvSetDrawWorld(0);
 
         // Handle A or Z button click when in any page but inventory page
         if ((watch_screen_index != WATCH_INDEX_INVENTORY) && (joyGetButtonsPressedThisFrame(WATCH_PAD, Z_TRIG|A_BUTTON)))
@@ -4297,7 +4297,7 @@ Gfx *draw_watch_current_page(Gfx *gdl, Mtx *arg1, s32 watch_transitioning)
     }
     else if (watch_transitioning == FALSE)
     {
-        sub_GAME_7F0BD8FC(1);
+        lvSetDrawWorld(1);
         playerSetOutsideWatchMenu(TRUE);
         gdl = draw_background_health_and_armor_transitioning(gdl, arg1);
     }

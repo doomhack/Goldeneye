@@ -846,7 +846,7 @@ void propsTickOnce(void)
                             obj->runtime_bitflags &= ~RUNTIMEBITFLAG_00000800;
                             cmdindex = setupGetCommandIndexByProp(prop);
                             pad = obj->pad;
-                            setupobj = setupCommandGetObject(lvlGetCurrentStageToLoad(), cmdindex + pad);
+                            setupobj = setupCommandGetObject(lvGetCurrentStage(), cmdindex + pad);
 
                             if ((setupobj != NULL) && (setupobj->prop != NULL))
                             {

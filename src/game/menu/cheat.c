@@ -813,7 +813,7 @@ void cheatTryActivateFromInputBuffer(void)
     s32 cheatButtonIndex;
     bool foundCheat = FALSE;
 
-    if (lvlGetCurrentStageToLoad() == LEVELID_TITLE)
+    if (lvGetCurrentStage() == LEVELID_TITLE)
     {
         applicableMask = CHEAT_MASK_MENUS;
     }
@@ -1121,7 +1121,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
         case CHEAT_INFINITE_AMMO:
             HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_16_INFINITEAMMOON_LF)));
             /**
-            * Note: the lvlRender in lvl.c checks if infinite ammo is on then calls ammoGiveMaxAll
+            * Note: the lvRender in lvl.c checks if infinite ammo is on then calls ammoGiveMaxAll
             */
             return;
 
