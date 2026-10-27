@@ -32,7 +32,6 @@
 #include "game/menu/mp_weapon.h"
 #include "game/asset/fileload.h"
 #include "game/mission/objective.h"
-#include "game/mission/objective_status.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"

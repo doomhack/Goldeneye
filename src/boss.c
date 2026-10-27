@@ -20,7 +20,7 @@
 #include "memp.h"
 #include "music.h"
 #include "game/asset/fileload.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "rom.h"
 #include "random.h"
 #include "rmon.h" /*<PR/rmon.h>*/

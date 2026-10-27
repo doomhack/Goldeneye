@@ -49,7 +49,7 @@
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "os_extension.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"

@@ -25,7 +25,7 @@
 #include "game/model/anim.h"
 #include "game/menu/mp_weapon.h"
 #include "game/math/round.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "game/player/player.h"
 #include "game/text/textrelated.h"
 #include "game/hud/blood.h"

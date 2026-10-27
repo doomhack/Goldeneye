@@ -16,7 +16,7 @@
 #include "game/prop/glass.h"
 #include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "random.h"
 #include "game/math/physics.h"
 #include "game/hud/healthbar.h"

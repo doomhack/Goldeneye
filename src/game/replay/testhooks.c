@@ -4,7 +4,7 @@
 #include "boss.h"
 #include "game/chr/chr.h"
 #include "game/level/lv.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "game/player/player.h"
 #include "game/replay/testhooks.h"
 
