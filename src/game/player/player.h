@@ -130,4 +130,7 @@ s32 playerGetShuffledIndex(s32 current_player_num);
 void playerBodyRemoveGun(enum GUNHAND hand);
 void playerBodyGiveGun(enum GUNHAND hand);
 
+void playerInitHands(void);
+void playersStoreFavouriteWeapons(void);
+
 #endif

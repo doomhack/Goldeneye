@@ -25,4 +25,7 @@ void bheadAdjustAnimation(f32 arg0);
 void bheadStartDeathAnimation(struct ModelAnimation *arg0, s32 arg1, f32 arg2, f32 arg3);
 void bheadSetSpeed(f32 arg0);
 
+void bheadInit(void);
+void bheadInitGaitModel(void);
+
 #endif
