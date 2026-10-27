@@ -23,7 +23,7 @@
 #include "game/chr/chrai.h"
 #include "game/chr/chraction.h"
 #include "game/prop/propobj.h"
-#include "game/player/inititemslots.h"
+#include "game/player/bondinv.h"
 #include "game/nav/stan.h"
 #include "limits.h"
 #include "game/text/language.h"
@@ -1503,7 +1503,7 @@ void setupCreateProps(enum LEVELID stageId)
         for (i8 = 0; i8 < getPlayerCount(); i8++)
         {
             playerSetCurrent(i8);
-            alloc_additional_item_slots(setupCountPropdefs(PROPDEF_LINK));
+            invAllocate(setupCountPropdefs(PROPDEF_LINK));
         }
 
         if (g_CurrentSetup.propDefs)
@@ -1816,7 +1816,7 @@ void setupCreateProps(enum LEVELID stageId)
                             targetobj->runtime_bitflags |= RUNTIMEBITFLAG_DESTROYED;
                         }
 
-                        bondinvAddTextOverride((struct textoverride *) pdef_ren);
+                        invAddTextOverride((struct textoverride *) pdef_ren);
                         break;
                     }
                     case PROPDEF_WATCH_MENU_OBJECTIVE_TEXT:

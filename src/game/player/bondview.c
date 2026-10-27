@@ -1651,12 +1651,12 @@ void playerStartNewLife(void)
     g_CurrentPlayer->lifestarttime60 = lvGetMissionTime60();
     g_CurrentPlayer->healthdisplaytime = 0;
 
-    bondinvAddInvItem(ITEM_FIST);
+    invAddItem(ITEM_FIST);
 
     if (getPlayerCount() >= 2)
     {
-        currentPlayerEquipWeaponWrapper(GUNLEFT, starting_weapon[GUNLEFT]);
-        currentPlayerEquipWeaponWrapper(GUNRIGHT, starting_weapon[GUNRIGHT]);
+        gunEquip(GUNLEFT, starting_weapon[GUNLEFT]);
+        gunEquip(GUNRIGHT, starting_weapon[GUNRIGHT]);
 
         if (g_CurrentPlayer->bodyModel == NULL)
         {

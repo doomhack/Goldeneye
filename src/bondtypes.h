@@ -2485,7 +2485,7 @@ typedef union
 
         /* 0x0180 */
         /**
-         * Method chrFireHand calls CapBeamLengthAndDecideIfRendered, and passes an address
+         * Method chrFireHand calls beamCreate, and passes an address
          * which makes it look like this is an array at ChrRecord offset 180.
         */
         BeamRecord beams[2];

@@ -798,7 +798,7 @@ void playerBodyGiveGun(enum GUNHAND hand)
 
     if (chr->weapons_held[hand] == NULL)
     {
-        wepid = getCurrentPlayerWeaponId(hand);
+        wepid = gunGetWeapon(hand);
         prop = weaponGetChrModel(wepid);
         if (prop >= 0)
         {
@@ -1175,12 +1175,12 @@ void playerInitHands(void)
     g_CurrentPlayer->syncoffset = 0;
     g_CurrentPlayer->field_107C = 0.0f;
     g_CurrentPlayer->field_1080 = 0.0f;
-    bgunCalculateBlend(GUNRIGHT);
-    bgunCalculateBlend(GUNRIGHT);
-    bgunCalculateBlend(GUNRIGHT);
-    bgunCalculateBlend(GUNLEFT);
-    bgunCalculateBlend(GUNLEFT);
-    bgunCalculateBlend(GUNLEFT);
+    gunCalcBlend(GUNRIGHT);
+    gunCalcBlend(GUNRIGHT);
+    gunCalcBlend(GUNRIGHT);
+    gunCalcBlend(GUNLEFT);
+    gunCalcBlend(GUNLEFT);
+    gunCalcBlend(GUNLEFT);
     g_CurrentPlayer->gunammooff = FALSE;
     g_CurrentPlayer->gunsightmode = 2; //GUNSIGHTREASON_AIMING
     g_CurrentPlayer->sniper_zoom = sniperrifle_stats.Zoom;
@@ -1200,7 +1200,7 @@ void playersStoreFavouriteWeapons(void) {
 
     for (player = 0; player < player_count; player++) {
         playerSetCurrent(player);
-        bondinvGetWeaponOfChoice(&right_hand, &left_hand);
+        invGetWeaponOfChoice(&right_hand, &left_hand);
         store_favorite_weapon_current_player(right_hand, left_hand);
     }
 

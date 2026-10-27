@@ -358,13 +358,13 @@ void playerLoadBody(void)
     yaw = bondviewGetPlayerYawRadians();
     if (g_CurrentPlayer->prop->chr == NULL)
     {
-        weaponbuf0 = getPlayerWeaponBufferForHand(GUNRIGHT);
-        weaponbuf1 = getPlayerWeaponBufferForHand(GUNLEFT);
+        weaponbuf0 = gunGetHandModelBuffer(GUNRIGHT);
+        weaponbuf1 = gunGetHandModelBuffer(GUNLEFT);
         cursor     = 0;
-        size0      = getSizeBufferWeaponInHand(GUNRIGHT);
-        size1      = getSizeBufferWeaponInHand(GUNLEFT);
+        size0      = gunGetHandModelBufferSize(GUNRIGHT);
+        size1      = gunGetHandModelBufferSize(GUNLEFT);
         weapon     = dummy_08_pp7_obj[0];
-        item       = get_item_in_hand_or_watch_menu(GUNRIGHT);
+        item       = gunGetShownWeapon(GUNRIGHT);
         body       = BODY_Formal_Wear;
         head       = HEAD_Male_Brosnan_Default;
         model      = NULL;
@@ -507,10 +507,10 @@ void playerLoadBody(void)
 
         if (getPlayerCount() == 1)
         {
-            remove_item_in_hand(GUNLEFT);
-            remove_item_in_hand(GUNRIGHT);
+            gunClearHandModel(GUNLEFT);
+            gunClearHandModel(GUNRIGHT);
             texInitPool(&pool, weaponbuf1, size1);
-            bodyheader  = get_ptr_itemheader_in_hand(GUNRIGHT);
+            bodyheader  = gunGetHandModelHeader(GUNRIGHT);
             *bodyheader = *c_item_entries[body].header;
             modelFileLoad(bodyheader, (u8 *)c_item_entries[body].filename, weaponbuf0, size0, &pool);
             cursor = fileGetLoadedSizeByName((u8 *)c_item_entries[body].filename);
@@ -591,7 +591,7 @@ void playerLoadBody(void)
                 helddst      = cursor;
                 helddst      = ((s32)weaponbuf0) + helddst;
                 cursor       = ALIGN64_V3(cursor + 0xc7);
-                pitemheader  = get_ptr_itemheader_in_hand(GUNLEFT);
+                pitemheader  = gunGetHandModelHeader(GUNLEFT);
                 *pitemheader = *PitemZ_entries[prop].header;
                 modelFileLoad(pitemheader, (u8 *)PitemZ_entries[prop].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
                 fileGetLoadedSizeByName((u8 *)PitemZ_entries[prop].filename);
@@ -981,8 +981,8 @@ void playerSetCameraMode(s32 arg0)
 
         if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x0)
         {
-            currentPlayerEquipWeaponWrapper(GUNLEFT, starting_weapon[GUNLEFT]);
-            currentPlayerEquipWeaponWrapper(GUNRIGHT, starting_weapon[GUNRIGHT]);
+            gunEquip(GUNLEFT, starting_weapon[GUNLEFT]);
+            gunEquip(GUNRIGHT, starting_weapon[GUNRIGHT]);
         }
 
         stop_time_flag = 0;
@@ -3347,7 +3347,7 @@ f32 watchGetOpenFrac(void)
 void watchInitHandModel(void) {
     ModelFileHeader *itemheader;
 
-    itemheader = get_ptr_itemheader_in_hand(1);
+    itemheader = gunGetHandModelHeader(1);
     modelCalculateRwDataLen(itemheader);
 #ifndef VERSION_EU
     if (0x32 < itemheader->numRecords) {
@@ -3559,7 +3559,7 @@ void watchTick(void)
 
     if (g_CurrentPlayer->watch_animation_state)
     {
-        sp34 = getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_TRIGGER || getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_WATCHLASER;
+        sp34 = gunGetWeapon(GUNRIGHT) == ITEM_TRIGGER || gunGetWeapon(GUNRIGHT) == ITEM_WATCHLASER;
         sp3c = sp34;
 
 #if defined (VERSION_US)
@@ -3583,25 +3583,25 @@ void watchTick(void)
 
             if (g_CurrentPlayer->watch_pause_time == 1)
             {
-                draw_item_in_hand(GUNLEFT, ITEM_SUIT_LF_HAND);
+                gunStartWatchSwap(GUNLEFT, ITEM_SUIT_LF_HAND);
             }
             else if (g_CurrentPlayer->watch_pause_time == 2)
             {
                 if (sp34)
                 {
-                    draw_item_in_hand(GUNRIGHT, ITEM_UNARMED);
+                    gunStartWatchSwap(GUNRIGHT, ITEM_UNARMED);
                 }
             }
             else
             {
                 if (
-                    (get_item_in_hand_or_watch_menu(1) == ITEM_SUIT_LF_HAND)
-                    && (Gun_hand_without_item(GUNLEFT) != ITEM_UNARMED)
+                    (gunGetShownWeapon(1) == ITEM_SUIT_LF_HAND)
+                    && (gunHandModelIsEmpty(GUNLEFT) != ITEM_UNARMED)
                     && (
                         (sp34 == 0)
                         || (
-                            (get_item_in_hand_or_watch_menu(0) == ITEM_UNARMED)
-                            && (Gun_hand_without_item(GUNRIGHT) != ITEM_UNARMED)))
+                            (gunGetShownWeapon(0) == ITEM_UNARMED)
+                            && (gunHandModelIsEmpty(GUNRIGHT) != ITEM_UNARMED)))
                     && (g_CurrentPlayer->timer_1C4 >= sp38))
                 {
                     g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x2;
@@ -3749,11 +3749,11 @@ void watchTick(void)
                 watchZoomOnExit();
                 if (sp34)
                 {
-                    draw_item_in_hand(GUNRIGHT, ITEM_UNARMED);
+                    gunStartWatchSwap(GUNRIGHT, ITEM_UNARMED);
                 }
                 else
                 {
-                    sub_GAME_7F05DAE4(0);
+                    gunClearWatchMenuWeapon(0);
                 }
             }
             if (watchIsZooming())
@@ -3811,33 +3811,33 @@ void watchTick(void)
             if (g_CurrentPlayer->watch_pause_time == 1)
             {
 
-                if ((get_item_in_hand_or_watch_menu(GUNLEFT) != getCurrentPlayerWeaponId(GUNLEFT)) && (Gun_hand_without_item(GUNLEFT) != ITEM_UNARMED))
+                if ((gunGetShownWeapon(GUNLEFT) != gunGetWeapon(GUNLEFT)) && (gunHandModelIsEmpty(GUNLEFT) != ITEM_UNARMED))
                 {
-                    draw_item_in_hand(GUNLEFT, getCurrentPlayerWeaponId(GUNLEFT));
+                    gunStartWatchSwap(GUNLEFT, gunGetWeapon(GUNLEFT));
                 }
 
                 if (sp3c)
                 {
-                    if ((get_item_in_hand_or_watch_menu(GUNRIGHT) != getCurrentPlayerWeaponId(GUNRIGHT)) && (Gun_hand_without_item(GUNRIGHT) != ITEM_UNARMED))
+                    if ((gunGetShownWeapon(GUNRIGHT) != gunGetWeapon(GUNRIGHT)) && (gunHandModelIsEmpty(GUNRIGHT) != ITEM_UNARMED))
                     {
-                        draw_item_in_hand(GUNRIGHT, getCurrentPlayerWeaponId(GUNRIGHT));
+                        gunStartWatchSwap(GUNRIGHT, gunGetWeapon(GUNRIGHT));
                     }
                 }
             }
             else if (!watchIsPauseTilting())
             {
                 if (
-                    (get_item_in_hand_or_watch_menu(GUNLEFT) == getCurrentPlayerWeaponId(GUNLEFT))
-                    && (Gun_hand_without_item(GUNLEFT) != ITEM_UNARMED)
+                    (gunGetShownWeapon(GUNLEFT) == gunGetWeapon(GUNLEFT))
+                    && (gunHandModelIsEmpty(GUNLEFT) != ITEM_UNARMED)
                     && (
                         (sp3c == 0)
-                        || (((get_item_in_hand_or_watch_menu(GUNRIGHT) == getCurrentPlayerWeaponId(GUNRIGHT))) && (Gun_hand_without_item(GUNRIGHT) != ITEM_UNARMED))))
+                        || (((gunGetShownWeapon(GUNRIGHT) == gunGetWeapon(GUNRIGHT))) && (gunHandModelIsEmpty(GUNRIGHT) != ITEM_UNARMED))))
                 {
-                    sub_GAME_7F05DAE4(1);
+                    gunClearWatchMenuWeapon(1);
 
                     if (sp3c)
                     {
-                        sub_GAME_7F05DAE4(0);
+                        gunClearWatchMenuWeapon(0);
                     }
 
                     gunSetSightVisible(GUNAMMOREASON_DAMAGE, TRUE);
@@ -3858,11 +3858,11 @@ void watchTick(void)
             g_CurrentPlayer->pausing_flag = FALSE;
 
             if (
-                (getCurrentPlayerWeaponId(GUNLEFT) != get_item_in_hand_or_watch_menu(GUNLEFT))
-                && (Gun_hand_without_item(GUNLEFT) != ITEM_UNARMED)
+                (gunGetWeapon(GUNLEFT) != gunGetShownWeapon(GUNLEFT))
+                && (gunHandModelIsEmpty(GUNLEFT) != ITEM_UNARMED)
                 && (
                     (sp3c == 0)
-                    || (((getCurrentPlayerWeaponId(GUNRIGHT) != get_item_in_hand_or_watch_menu(GUNRIGHT))) && (Gun_hand_without_item(GUNRIGHT) != ITEM_UNARMED))))
+                    || (((gunGetWeapon(GUNRIGHT) != gunGetShownWeapon(GUNRIGHT))) && (gunHandModelIsEmpty(GUNRIGHT) != ITEM_UNARMED))))
             {
                 g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x8;
                 g_CurrentPlayer->watch_pause_time = 0;
@@ -3880,11 +3880,11 @@ void watchTick(void)
             }
 
             if (
-                (getCurrentPlayerWeaponId(GUNLEFT) != get_item_in_hand_or_watch_menu(GUNLEFT))
-                && (Gun_hand_without_item(GUNLEFT) != ITEM_UNARMED)
+                (gunGetWeapon(GUNLEFT) != gunGetShownWeapon(GUNLEFT))
+                && (gunHandModelIsEmpty(GUNLEFT) != ITEM_UNARMED)
                 && (
                     (sp3c == 0)
-                    || (((getCurrentPlayerWeaponId(GUNRIGHT) != get_item_in_hand_or_watch_menu(GUNRIGHT))) && (Gun_hand_without_item(GUNRIGHT) != ITEM_UNARMED))))
+                    || (((gunGetWeapon(GUNRIGHT) != gunGetShownWeapon(GUNRIGHT))) && (gunHandModelIsEmpty(GUNRIGHT) != ITEM_UNARMED))))
             {
                 g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x8;
                 g_CurrentPlayer->watch_pause_time = 0;
@@ -3897,13 +3897,13 @@ void watchTick(void)
             g_CurrentPlayer->pausing_flag = FALSE;
 
             if (
-                (getCurrentPlayerWeaponId(GUNLEFT) == get_item_in_hand_or_watch_menu(GUNLEFT))
-                && (Gun_hand_without_item(GUNLEFT) != ITEM_UNARMED)
+                (gunGetWeapon(GUNLEFT) == gunGetShownWeapon(GUNLEFT))
+                && (gunHandModelIsEmpty(GUNLEFT) != ITEM_UNARMED)
                 && (
                     (sp3c == 0)
                     || (
-                        ( (getCurrentPlayerWeaponId(GUNRIGHT) == get_item_in_hand_or_watch_menu(GUNRIGHT)))
-                        && (Gun_hand_without_item(GUNRIGHT) != ITEM_UNARMED))))
+                        ( (gunGetWeapon(GUNRIGHT) == gunGetShownWeapon(GUNRIGHT)))
+                        && (gunHandModelIsEmpty(GUNRIGHT) != ITEM_UNARMED))))
             {
                 g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x1;
                 g_CurrentPlayer->watch_pause_time = 0;
@@ -3915,8 +3915,8 @@ void watchTick(void)
         {
             g_CurrentPlayer->pausing_flag = FALSE;
 
-            if (Gun_hand_without_item(GUNLEFT)
-                && Gun_hand_without_item(GUNRIGHT))
+            if (gunHandModelIsEmpty(GUNLEFT)
+                && gunHandModelIsEmpty(GUNRIGHT))
             {
                 if ((g_CurrentPlayer->hands[GUNLEFT].weapon_action_state != GUN_ANIM_STATE_SWITCH_LOWER)
                     && (g_CurrentPlayer->hands[GUNLEFT].weapon_action_state != GUN_ANIM_STATE_SWITCH_SWAP)
@@ -3982,8 +3982,8 @@ void watchTrigger(s32 arg0)
                 watch_transition_time = 1.7f;
             }
 
-            if ((Gun_hand_without_item(GUNLEFT) != ITEM_UNARMED)
-                && (Gun_hand_without_item(GUNRIGHT) != ITEM_UNARMED)
+            if ((gunHandModelIsEmpty(GUNLEFT) != ITEM_UNARMED)
+                && (gunHandModelIsEmpty(GUNRIGHT) != ITEM_UNARMED)
                 && (g_CurrentPlayer->hands[GUNLEFT].weapon_action_state != GUN_ANIM_STATE_SWITCH_LOWER)
                 && (g_CurrentPlayer->hands[GUNLEFT].weapon_action_state != GUN_ANIM_STATE_SWITCH_SWAP)
                 && (g_CurrentPlayer->hands[GUNLEFT].weapon_action_state != GUN_ANIM_STATE_SWITCH_HOLD)
@@ -5289,7 +5289,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 moveData.aiming = g_CurrentPlayer->insightaimmode;
                 moveData.zooming = g_CurrentPlayer->insightaimmode;
 
-                if ((bondwalkItemCheckBitflags(getCurrentPlayerWeaponId(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH))
+                if ((weaponHasFlag(gunGetWeapon(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH))
                     && g_CurrentPlayer->insightaimmode)
                 {
                     if (tmpc2sticky < 0)
@@ -5315,11 +5315,11 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     }
                 }
 
-                moveData.crouchDown = (bondwalkItemCheckBitflags(getCurrentPlayerWeaponId(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH) == 0)
+                moveData.crouchDown = (weaponHasFlag(gunGetWeapon(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH) == 0)
                     && (g_CurrentPlayer->insightaimmode)
                     && (player_joyGetStickY < -30);
 
-                moveData.crouchUp = (bondwalkItemCheckBitflags(getCurrentPlayerWeaponId(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH) == 0)
+                moveData.crouchUp = (weaponHasFlag(gunGetWeapon(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH) == 0)
                     && (g_CurrentPlayer->insightaimmode)
                     && (player_joyGetStickY > 30);
 
@@ -5328,7 +5328,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         || (((buttons & B_BUTTON) != 0) && (((buttons & ~oldbuttons) & A_BUTTON) != 0))
                         || ((player_joyGetButtons & A_BUTTON) && ((player_joyGetButtons & ~copy_prev_buttons_pressed) & B_BUTTON))
                         || ((player_joyGetButtons & B_BUTTON) && ((player_joyGetButtons & ~copy_prev_buttons_pressed) & A_BUTTON)))
-                    && (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_REMOTEMINE))
+                    && (gunGetWeapon(GUNRIGHT) == ITEM_REMOTEMINE))
                 {
                     moveData.detonating = 1;
                     moveData.weaponBackOffset = 0;
@@ -5338,7 +5338,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                 if (g_PlayerIsInTank == 1 && g_CurrentPlayer->insightaimmode)
                 {
-                    if (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_TANKSHELLS)
+                    if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
                     {
                         moveData.controlStickXRaw = 0;
 
@@ -5560,7 +5560,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     moveData.aiming = g_CurrentPlayer->insightaimmode;
                     moveData.zooming = g_CurrentPlayer->insightaimmode;
 
-                    if ((bondwalkItemCheckBitflags(getCurrentPlayerWeaponId(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH))
+                    if ((weaponHasFlag(gunGetWeapon(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH))
                         && g_CurrentPlayer->insightaimmode
                         )
                     {
@@ -5576,11 +5576,11 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         }
                     }
 
-                    moveData.crouchDown = (bondwalkItemCheckBitflags(getCurrentPlayerWeaponId(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH) == 0)
+                    moveData.crouchDown = (weaponHasFlag(gunGetWeapon(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH) == 0)
                         && (g_CurrentPlayer->insightaimmode)
                         && ((buttons & (D_JPAD | D_CBUTTONS)));
 
-                    moveData.crouchUp = (bondwalkItemCheckBitflags(getCurrentPlayerWeaponId(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH) == 0)
+                    moveData.crouchUp = (weaponHasFlag(gunGetWeapon(GUNRIGHT), WEAPONSTATBITFLAG_DISABLE_CROUCH) == 0)
                         && (g_CurrentPlayer->insightaimmode)
                         && ((~buttons & (U_JPAD | U_CBUTTONS)));
 
@@ -5593,7 +5593,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     if (
                         ((((buttons & invButtons) != 0) && (((buttons & ~oldbuttons) & B_BUTTON) != 0))
                             || ((buttons & B_BUTTON) && (((buttons & ~oldbuttons) & invButtons) != 0)))
-                        && (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_REMOTEMINE))
+                        && (gunGetWeapon(GUNRIGHT) == ITEM_REMOTEMINE))
                     {
                         moveData.detonating = 1;
                         moveData.weaponBackOffset = 0;
@@ -5603,7 +5603,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                     if ((g_PlayerIsInTank == 1) && (g_CurrentPlayer->insightaimmode))
                     {
-                        if (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_TANKSHELLS)
+                        if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
                         {
                             moveData.controlStickXRaw = 0;
                             moveData.canTurnTank = 1;
@@ -5647,15 +5647,15 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         if (g_PlayerIsInTank == 1)
         {
             spF4 = (struct TankRecord *)g_PlayerTankProp->obj;
-            spF4->unkD8 = get_ammo_count_for_weapon(ITEM_TANKSHELLS);
+            spF4->unkD8 = weaponGetHeldAmmo(ITEM_TANKSHELLS);
 
-            add_ammo_to_weapon(ITEM_TANKSHELLS, 0);
-            bondinvRemoveItemByID(ITEM_TANKSHELLS);
+            weaponGiveAmmo(ITEM_TANKSHELLS, 0);
+            invRemoveItemByID(ITEM_TANKSHELLS);
 
-            if (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_TANKSHELLS)
+            if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
             {
-                spF4->unkD8 += get_ammo_in_hands_magazine(GUNRIGHT);
-                autoadvance_on_deplete_all_ammo();
+                spF4->unkD8 += gunGetMagazineAmmo(GUNRIGHT);
+                gunSwitchWhenEmpty();
             }
 
             spF4->is_firing_tank = 0;
@@ -5681,8 +5681,8 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         {
             spEC = (struct TankRecord *)g_PlayerTankProp->obj;
 
-            bondinvAddInvItem(ITEM_TANKSHELLS);
-            add_ammo_to_weapon(ITEM_TANKSHELLS, spEC->unkD8);
+            invAddItem(ITEM_TANKSHELLS);
+            weaponGiveAmmo(ITEM_TANKSHELLS, spEC->unkD8);
             spEC->unkD8 = 0;
             g_TankTurretVerticalAngle = spEC->turret_vertical_angle;
             g_TankTurretVerticalAngleRelated = g_TankTurretVerticalAngle / TANK_VERT_ANGLE_FACTOR;
@@ -5736,19 +5736,19 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     gunTickGameplay(moveData.triggerOn);
 
     if (playerGetVisibleToGuards()
-        && (get_hands_firing_status(GUNRIGHT)
-            || get_hands_firing_status(GUNLEFT)))
+        && (gunGetFiringStatus(GUNRIGHT)
+            || gunGetFiringStatus(GUNLEFT)))
     {
         noiseRadius = 0;
 
-        if (get_hands_firing_status(GUNRIGHT) && getCurrentPlayerNoise(GUNRIGHT) > noiseRadius)
+        if (gunGetFiringStatus(GUNRIGHT) && gunGetNoise(GUNRIGHT) > noiseRadius)
         {
-            noiseRadius = getCurrentPlayerNoise(GUNRIGHT);
+            noiseRadius = gunGetNoise(GUNRIGHT);
         }
 
-        if (get_hands_firing_status(GUNLEFT) && noiseRadius < getCurrentPlayerNoise(GUNLEFT))
+        if (gunGetFiringStatus(GUNLEFT) && noiseRadius < gunGetNoise(GUNLEFT))
         {
-            noiseRadius = getCurrentPlayerNoise(GUNLEFT);
+            noiseRadius = gunGetNoise(GUNLEFT);
         }
 
         chrCheckGuardsHeardSound(noiseRadius);
@@ -5758,12 +5758,12 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
     if (moveData.zoomOutFovPersec > 0)
     {
-        camera_sniper_zoom_out(moveData.zoomOutFovPersec);
+        gunZoomOut(moveData.zoomOutFovPersec);
     }
 
     if (moveData.zoomInFovPersec > 0)
     {
-        camera_sniper_zoom_in(moveData.zoomInFovPersec);
+        gunZoomIn(moveData.zoomInFovPersec);
     }
 
     if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x0)
@@ -5772,7 +5772,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         if (moveData.zooming)
         {
-            ftemp_nostack_spE0 = get_item_in_hand_zoom();
+            ftemp_nostack_spE0 = gunGetZoomFov();
 
             if (ftemp_nostack_spE0 <= 0)
             {
@@ -6300,7 +6300,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
     canCycleWeapons = 1;
 
-    if ((isMpGame()) && (get_scenario() == 2) && (bondinvIsAliveWithFlag()))
+    if ((isMpGame()) && (get_scenario() == 2) && (invHasFlagToken()))
     {
         canCycleWeapons = 0;
     }
@@ -6309,12 +6309,12 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     {
         if (moveData.weaponBackOffset)
         {
-            backstep_through_inventory();
+            gunCycleBackward();
         }
 
         if (moveData.weaponForwardOffset)
         {
-            advance_through_inventory();
+            gunCycleForward();
         }
     }
 
@@ -6334,7 +6334,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         if (moveData.canAutoAim
             && currentPlayerGetXAutoAimEnabledRedirect()
             && g_CurrentPlayer->autoaim_target_x
-            && bondwalkItemCheckBitflags(getCurrentPlayerWeaponId(GUNRIGHT), WEAPONSTATBITFLAG_HAS_AUTO_AIM))
+            && weaponHasFlag(gunGetWeapon(GUNRIGHT), WEAPONSTATBITFLAG_HAS_AUTO_AIM))
         {
             sp70 = g_CurrentPlayer->autoaimx;
         }
@@ -6346,7 +6346,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         if (moveData.canAutoAim
             && currentPlayerGetYAutoAimEnabledRedirect()
             && g_CurrentPlayer->autoaim_target_y
-            && bondwalkItemCheckBitflags(getCurrentPlayerWeaponId(GUNRIGHT), WEAPONSTATBITFLAG_HAS_AUTO_AIM))
+            && weaponHasFlag(gunGetWeapon(GUNRIGHT), WEAPONSTATBITFLAG_HAS_AUTO_AIM))
         {
             ftemp_nostack_sp78 = g_CurrentPlayer->autoaimy;
         }
@@ -6355,12 +6355,12 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             ftemp_nostack_sp78 = -g_CurrentPlayer->speedverta * 0.1f;
         }
 
-        sub_GAME_7F067F58(sp70, ftemp_nostack_sp78, MAX_AIMLOCK_SPEED_DEFAULT);
+        gunUpdateCrosshairSwivel(sp70, ftemp_nostack_sp78, MAX_AIMLOCK_SPEED_DEFAULT);
     }
     else if (g_CurrentPlayer->controldef == CONTROLLER_CONFIG_KISSY)
     {
         gunSetAimType(0);
-        sub_GAME_7F067FBC(((f32) moveData.controlStickXRaw * 0.65f) / 80.0f, ((f32) moveData.controlStickYRaw * 0.65f) / 80.0f);
+        gunUpdateCrosshairManual(((f32) moveData.controlStickXRaw * 0.65f) / 80.0f, ((f32) moveData.controlStickYRaw * 0.65f) / 80.0f);
     }
 }
 
@@ -6633,8 +6633,8 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             g_bondviewForceDisarm = 0;
             g_CurrentPlayer->lock_hand_model[GUNLEFT] = 0;
             g_CurrentPlayer->lock_hand_model[GUNRIGHT] = 0;
-            currentPlayerUnEquipWeaponWrapper(GUNLEFT, getCurrentPlayerWeaponId(GUNLEFT));
-            currentPlayerUnEquipWeaponWrapper(GUNRIGHT, getCurrentPlayerWeaponId(GUNRIGHT));
+            gunUnequip(GUNLEFT, gunGetWeapon(GUNLEFT));
+            gunUnequip(GUNRIGHT, gunGetWeapon(GUNRIGHT));
         }
     }
 
@@ -7285,7 +7285,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     sndCreatePostEvent(g_TankSfxState[0], 8, g_TankEngineSfxVolume);
                 }
 
-                if (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_TANKSHELLS)
+                if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
                 {
                     tank_vertical_angle = g_CurrentPlayer->field_2A08;
                     tank_vertical_angle += 0.17453294f; /* should be DegToRad1Fact(10), but that yields 0.17453293f */
@@ -7727,10 +7727,10 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         }
 
         // Perfect Dark call bgun0f09d8dc
-        gunSetBondWeaponSway(breathing, maxspeed, weapon_speed_verta, sp14C_temp);
+        gunUpdateSway(breathing, maxspeed, weapon_speed_verta, sp14C_temp);
 
         // Perfect Dark call bgunSetAdjustPos
-        gunSetOffsetRelated(DegToRad1Fact(g_CurrentPlayer->vv_verta360));
+        gunSetPullback(DegToRad1Fact(g_CurrentPlayer->vv_verta360));
     }
 
     // end perfect dark `void bwalk0f0c69b8(void)`
@@ -7763,8 +7763,8 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         sp138_tank_as_ObjectRecord = (struct  ObjectRecord*)g_PlayerTankProp->obj;
         sp130 = (struct ModelNode_BoundingBoxRecord *)((struct ModelNode *)sp138_tank_as_ObjectRecord->model->obj->Switches)->Child->Data;
 
-        sp140_tank_as_TankRecord->is_firing_tank = (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_TANKSHELLS)
-            && get_hands_firing_status(GUNRIGHT);
+        sp140_tank_as_TankRecord->is_firing_tank = (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
+            && gunGetFiringStatus(GUNRIGHT);
 
         sp140_tank_as_TankRecord->turret_vertical_angle = g_TankTurretVerticalAngle;
         sp140_tank_as_TankRecord->turret_orientation_angle = g_TankTurretOrientationAngleRad;
@@ -8318,8 +8318,8 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
     {
         if (g_CurrentPlayer->redbloodfinished == FALSE)
         {
-            currentPlayerEquipWeaponWrapper(GUNLEFT, 0);
-            currentPlayerEquipWeaponWrapper(GUNRIGHT, 0);
+            gunEquip(GUNLEFT, 0);
+            gunEquip(GUNRIGHT, 0);
 
             if (0)
             {
@@ -8544,7 +8544,7 @@ Gfx *camSetupFrame(Gfx *gdl)
     }
 
     camUpdateMatrices(&cam_pos, &cam_look, &cam_up);
-    sub_GAME_7F068190(&zeropos, &vec);
+    gunGetAimRay(&zeropos, &vec);
 
 
     vec_y = vec.y;
@@ -8704,7 +8704,7 @@ Gfx *watchRender(Gfx *gdl)
  
     renderdata = D_8003683C;
     watchpos = ZeroCoordWatchPos;
-    objheader = get_ptr_itemheader_in_hand(GUNLEFT);
+    objheader = gunGetHandModelHeader(GUNLEFT);
     nodepos = (f32 *) objheader->Switches[3];
     rwdata = modelGetNodeRwData((Model *) (&g_CurrentPlayer->something_with_watch_object_instance), (ModelNode *) nodepos);
     perspmtx = dynAllocateMatrix();
@@ -8977,7 +8977,7 @@ void mpRespawnPlayer(void)
     g_CurrentPlayer->field_3B8.z = (f32) (g_CurrentPlayer->field_488.pos.z / 0.100000024f);
 #endif
 
-    bondinvReinitInv();
+    invReset();
     var_v0 = 0;
 
     while (var_v0 != 30)
@@ -8997,16 +8997,16 @@ void mpRespawnPlayer(void)
                 case 1: // INTROTYPE_ITEM
                     if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback) {
                         if ( ((struct SetupIntroItem*)intro_record)->item_left >= 0) {
-                            bondinvAddDoublesInvItem(((struct SetupIntroItem*)intro_record)->item_right, ((struct SetupIntroItem*)intro_record)->item_left);
+                            invAddDualItem(((struct SetupIntroItem*)intro_record)->item_right, ((struct SetupIntroItem*)intro_record)->item_left);
                         } else {
-                            bondinvAddInvItem(((struct SetupIntroItem*)intro_record)->item_right);
+                            invAddItem(((struct SetupIntroItem*)intro_record)->item_right);
                         }
                     }
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroItem));
                     break;
                 case 2: // INTROTYPE_AMMO
                     if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback) {
-                        give_cur_player_ammo(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
+                        ammoGive(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
                     }
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroAmmo));
                     break;
@@ -9086,7 +9086,7 @@ static void coopGiveStartingLoadout(void)
     struct SetupIntroEmpty *intro_record = g_CurrentSetup.intro;
     s32 i;
 
-    bondinvReinitInvKeepProps();
+    invResetKeepProps();
 
     for (i = 0; i < 30; i++)
     {
@@ -9107,11 +9107,11 @@ static void coopGiveStartingLoadout(void)
                     {
                         if (((struct SetupIntroItem*)intro_record)->item_left >= 0)
                         {
-                            bondinvAddDoublesInvItem(((struct SetupIntroItem*)intro_record)->item_right, ((struct SetupIntroItem*)intro_record)->item_left);
+                            invAddDualItem(((struct SetupIntroItem*)intro_record)->item_right, ((struct SetupIntroItem*)intro_record)->item_left);
                         }
                         else
                         {
-                            bondinvAddInvItem(((struct SetupIntroItem*)intro_record)->item_right);
+                            invAddItem(((struct SetupIntroItem*)intro_record)->item_right);
                         }
                     }
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroItem));
@@ -9119,7 +9119,7 @@ static void coopGiveStartingLoadout(void)
                 case 2: // INTROTYPE_AMMO
                     if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback)
                     {
-                        give_cur_player_ammo(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
+                        ammoGive(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
                     }
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroAmmo));
                     break;
@@ -9148,9 +9148,9 @@ static void coopGiveStartingLoadout(void)
         }
     }
 
-    bondinvAddInvItem(ITEM_FIST);
-    currentPlayerEquipWeaponWrapper(GUNLEFT, starting_weapon[GUNLEFT]);
-    currentPlayerEquipWeaponWrapper(GUNRIGHT, starting_weapon[GUNRIGHT]);
+    invAddItem(ITEM_FIST);
+    gunEquip(GUNLEFT, starting_weapon[GUNLEFT]);
+    gunEquip(GUNRIGHT, starting_weapon[GUNRIGHT]);
 }
 
 /**
@@ -9676,7 +9676,7 @@ static void counterOpGiveGuardWeapons(void)
     ITEM_IDS left = s_CounterOpWeapons[GUNLEFT];
     s32 i;
 
-    bondinvReinitInv();
+    invReset();
     g_CurrentPlayer->textoverrides = overrides;
 
     for (i = 0; i < 30; i++)
@@ -9692,21 +9692,21 @@ static void counterOpGiveGuardWeapons(void)
 
     if (left == right)
     {
-        bondinvAddDoublesInvItem(right, left);
+        invAddDualItem(right, left);
     }
     else
     {
-        bondinvAddInvItem(right);
+        invAddItem(right);
         left = ITEM_UNARMED;
     }
 
-    give_cur_player_ammo(get_ammo_type_for_weapon(right), get_max_ammo_for_type(get_ammo_type_for_weapon(right)));
+    ammoGive(weaponGetAmmoType(right), ammoGetMax(weaponGetAmmoType(right)));
 
     // The empty hand is the suicide pill (counterOpSuicidePillTick).
-    bondinvAddInvItem(ITEM_UNARMED);
+    invAddItem(ITEM_UNARMED);
 
-    currentPlayerEquipWeaponWrapper(GUNLEFT, left);
-    currentPlayerEquipWeaponWrapper(GUNRIGHT, right);
+    gunEquip(GUNLEFT, left);
+    gunEquip(GUNRIGHT, right);
 }
 
 /**
@@ -9743,8 +9743,8 @@ s32 counterOpSuicidePillTick(s32 triggerOn)
 
     // Not while the hand is empty only because a gun is being drawn, as
     // after spawning.
-    selected = (getCurrentPlayerWeaponId(GUNRIGHT) == ITEM_UNARMED)
-               && (getCurrentPlayerWeaponId(GUNLEFT) == ITEM_UNARMED)
+    selected = (gunGetWeapon(GUNRIGHT) == ITEM_UNARMED)
+               && (gunGetWeapon(GUNLEFT) == ITEM_UNARMED)
                && (g_CurrentPlayer->hands[GUNRIGHT].weapon_next_weapon == ITEM_UNARMED);
 
     if (selected && !s_CounterOpPillSelected)
@@ -10073,8 +10073,8 @@ Gfx *hudRender(Gfx *gdl)
     }
 
     gunUpdateAndFireBothHands();
-    gunRenderCasings(&gdl);
-    gunRenderFirstPersonGunModels(&gdl);
+    casingsRender(&gdl);
+    gunRenderHands(&gdl);
     gdl = watchRender(gdl);
 
     if (g_CurrentPlayer->mpmenuon != 0)
@@ -10234,7 +10234,7 @@ Gfx *hudRender(Gfx *gdl)
     hudmsgTopTick();
     gdl = hudmsgTopRender(gdl);
     gunDrawSight(&gdl);
-    gdl = generate_ammo_total_microcode(gdl);
+    gdl = hudRenderAmmo(gdl);
     gdl = countdownTimerRender(gdl);
     gdl = display_red_blue_on_radar(gdl);
     return currentPlayerDrawFade(gdl);
@@ -10349,8 +10349,8 @@ void playerDie(void)
             playerDropInventory();
         }
 
-        currentPlayerEquipWeaponWrapper(GUNLEFT, 0);
-        currentPlayerEquipWeaponWrapper(GUNRIGHT, 0);
+        gunEquip(GUNLEFT, 0);
+        gunEquip(GUNRIGHT, 0);
 
         if ((lvGetMissionTime60() - g_CurrentPlayer->lifestarttime60) < g_playerPerm->shortest_inning)
         {
@@ -10473,7 +10473,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
                             sp2C = playerGetCurrentNum();
                             sp28 = 0;
 
-                            if (get_scenario() == 3 && bondinvHasGoldenGun())
+                            if (get_scenario() == 3 && invHasGoldenGun())
                             {
                                 sp28 = 1;
                             }
@@ -10486,22 +10486,22 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 #if defined(VERSION_US) && !defined(BACKPORT_R1)
                                 playerDropInventory();
 #endif
-                                increment_num_deaths();
+                                statsAddDeath();
                             }
 
                             playerSetCurrent(playerid);
 
                             if (sp2C == playerid)
                             {
-                                increment_num_suicides_display_MP();
+                                statsAddSuicide();
                             }
                             else
                             {
-                                increment_num_kills_display_text_in_MP();
+                                statsAddKill();
 
                                 if (sp28 != 0)
                                 {
-                                    increment_num_times_killed_MwtGC();
+                                    statsAddGoldenGunKill();
                                 }
                             }
 
@@ -10518,7 +10518,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
                             // as a kill, as killing a guard does.
                             sp2C = playerGetCurrentNum();
                             playerSetCurrent(playerid);
-                            increment_num_kills_display_text_in_MP();
+                            statsAddKill();
                             playerSetCurrent(sp2C);
                         }
 
@@ -11054,7 +11054,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
 
             if (getPlayerCount() < 3)
             {
-                if ((get_ammo_type_for_weapon(getCurrentPlayerWeaponId(GUNLEFT)) == 0) && (countdownTimerIsVisible() == 0))
+                if ((weaponGetAmmoType(gunGetWeapon(GUNLEFT)) == 0) && (countdownTimerIsVisible() == 0))
                 {
                     view_top = (viGetViewTop() + viGetViewHeight()) - BONDVIEW_VIEW_TOP_OFFSET_1;
                 }
@@ -11482,19 +11482,19 @@ s32 playerTick(PropRecord *prop)
         {
             group = 2;
         }
-        else if ((leftobj != NULL) && (bondwalkItemCheckBitflags(leftobj->weaponnum, WEAPONSTATBITFLAG_HOLD_AS_GUN) == 0))
+        else if ((leftobj != NULL) && (weaponHasFlag(leftobj->weaponnum, WEAPONSTATBITFLAG_HOLD_AS_GUN) == 0))
         {
             group = 2;
         }
-        else if ((rightobj != NULL) && (bondwalkItemCheckBitflags(rightobj->weaponnum, WEAPONSTATBITFLAG_HOLD_AS_GUN) == 0))
+        else if ((rightobj != NULL) && (weaponHasFlag(rightobj->weaponnum, WEAPONSTATBITFLAG_HOLD_AS_GUN) == 0))
         {
             group = 2;
         }
-        else if ((leftobj != NULL) && (bondwalkItemCheckBitflags(leftobj->weaponnum, WEAPONSTATBITFLAG_ONLY_1_HANDED) != 0))
+        else if ((leftobj != NULL) && (weaponHasFlag(leftobj->weaponnum, WEAPONSTATBITFLAG_ONLY_1_HANDED) != 0))
         {
             group = 0;
         }
-        else if ((rightobj != NULL) && (bondwalkItemCheckBitflags(rightobj->weaponnum, WEAPONSTATBITFLAG_ONLY_1_HANDED) != 0))
+        else if ((rightobj != NULL) && (weaponHasFlag(rightobj->weaponnum, WEAPONSTATBITFLAG_ONLY_1_HANDED) != 0))
         {
             group = 0;
         }

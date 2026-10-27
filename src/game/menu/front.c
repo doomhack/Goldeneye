@@ -1136,7 +1136,7 @@ s32 frontCheckIfCheatIsUnlocked(s32 cheat)
 
 
 int frontGetPlayersFavoriteWeaponInHand(int player,int hand) {
-    return get_ptr_long_watch_text_for_item(array_favweapon[player][hand]);
+    return itemGetChoiceText(array_favweapon[player][hand]);
 }
 
 
@@ -7856,15 +7856,15 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
             s32 headshots;
 
             g_playerPerm = &g_playerPlayerData[i];
-            shotsfired = get_curplayer_shot_register(0);
-            headshots = get_curplayer_shot_register(1);
-            allhits = headshots + get_curplayer_shot_register(2) + get_curplayer_shot_register(3)
-                + get_curplayer_shot_register(4) + get_curplayer_shot_register(5);
+            shotsfired = statsGetHits(0);
+            headshots = statsGetHits(1);
+            allhits = headshots + statsGetHits(2) + statsGetHits(3)
+                + statsGetHits(4) + statsGetHits(5);
 
             switch (row)
             {
                 case 0:
-                    sprintf(text, "%.1f%%", (shotsfired > 0) ? (((allhits + get_curplayer_shot_register(6)) * 100.0f) / shotsfired) : 0.0f);
+                    sprintf(text, "%.1f%%", (shotsfired > 0) ? (((allhits + statsGetHits(6)) * 100.0f) / shotsfired) : 0.0f);
                     break;
                 case 1:
                     sprintf(text, "%d", shotsfired);
@@ -7873,7 +7873,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
                     sprintf(text, "%d (%d%%)", headshots, (s32)mathFloor(((headshots * 100.0f) / ((allhits > 0) ? allhits : 1)) + 0.5f));
                     break;
                 case 3:
-                    sprintf(text, "%d", get_curplay_killcount());
+                    sprintf(text, "%d", statsGetKills());
                     break;
                 case 4:
                     sprintf(text, (i == COUNTEROP_BOND) ? "-" : "%d", counterOpGetBodiesUsed());
@@ -7936,14 +7936,14 @@ Gfx *constructor_menu0D_missioncomplete(Gfx *DL)
     DL = microcode_constructor(DL);
 
     missiontimer = lvGetMissionTime60();
-    killcount = get_curplay_killcount();
-    shotsfired = get_curplayer_shot_register(0);
-    headshots = get_curplayer_shot_register(1);
-    bodyshots = get_curplayer_shot_register(2);
-    limbshots = get_curplayer_shot_register(3);
-    reg4 = get_curplayer_shot_register(4);
-    reg5 = get_curplayer_shot_register(5);
-    reg6 = get_curplayer_shot_register(6);
+    killcount = statsGetKills();
+    shotsfired = statsGetHits(0);
+    headshots = statsGetHits(1);
+    bodyshots = statsGetHits(2);
+    limbshots = statsGetHits(3);
+    reg4 = statsGetHits(4);
+    reg5 = statsGetHits(5);
+    reg6 = statsGetHits(6);
     allhits = headshots + bodyshots + limbshots + reg4 + reg5;
     hitshots = allhits + reg6;
     if (allhits <= 0) {

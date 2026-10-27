@@ -1,5 +1,4 @@
       build/OUTCODE/src/game/level/initgamedata.o (.text);
-      build/OUTCODE/src/game/player/initweaponanigroups.o (.text);
       build/OUTCODE/src/game/model/initactorpropstuff.o (.text);
       build/OUTCODE/src/game/level/initnull_0009D0.o (.text);
       build/OUTCODE/src/game/model/anim.o (.text);
@@ -8,15 +7,12 @@
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.text);
       build/OUTCODE/src/game/prop/setup.o (.text);
       build/OUTCODE/src/game/mission/objective.o (.text);
-      build/OUTCODE/src/game/player/ejectedcartridges.o (.text);
       build/OUTCODE/src/game/player/bondview_r.o (.text);
-      build/OUTCODE/src/game/player/inititemslots.o (.text);
       build/OUTCODE/src/game/world/initunk_007290.o (.text);
       build/OUTCODE/src/game/menu/initcheattext.o (.text);
       build/OUTCODE/src/game/mission/cleanup_objectives.o (.text);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.text);
       build/OUTCODE/src/game/level/null_007970.o (.text);
-      build/OUTCODE/src/game/player/cleanplayersound.o (.text);
       build/OUTCODE/src/game/menu/title.o (.text);
       build/OUTCODE/src/game/menu/front.o (.text);
       build/OUTCODE/src/game/menu/title2.o (.text);

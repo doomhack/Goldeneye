@@ -1,3 +1,9 @@
+/**
+ * The hands each frame: the hand state machine (gunTickHandState), placing and drawing
+ * the gun models, beams and tracers, hit sounds, the crosshair and aim, ejected casings,
+ * ammo, the ammo HUD and sight, per-player stats, and firing shots into the world
+ * (shotFireHands). See docs/subsystems/weapons.md.
+ */
 #include <ultra64.h>
 #include <assert.h>
 #include <bondaicommands.h>
@@ -48,6 +54,7 @@
 #include "game/nav/stan.h"
 #include "gbi_extension.h"
 #include "game/math/interp.h"
+#include "bondtypes.h"
 
 
 #ifdef REFRESH_PAL
@@ -125,27 +132,27 @@ typedef struct ModelHeader {
 } ModelHeader;
 
 void gunCreateBeamForHand(enum GUNHAND hand);
-void bullet_path_from_screen_center(coord3d *arg0, coord3d *arg1, enum GUNHAND arg2);
-void gunInitProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *arg2, coord3d *velocity, Mtxf *arg4);
+void gunGetShotDir(coord3d *arg0, coord3d *arg1, enum GUNHAND arg2);
+void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *arg2, coord3d *velocity, Mtxf *arg4);
 s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
-void analyzeGEKey(void);
-void give_weapon_case_items(void);
+void gunAnalyzeGEKey(void);
+void gunOpenWeaponCase(void);
 struct ModelFileHeader *get_ptr_weapon_model_header_line(ITEM_IDS weapon);
-s32 get_ammo_in_hands_weapon(enum GUNHAND hand);
-s32 get_ammo_type_for_weapon(ITEM_IDS weapon);
+s32 gunGetHeldAmmo(enum GUNHAND hand);
+s32 weaponGetAmmoType(ITEM_IDS weapon);
 f32 gunSetHorizontalOffset(GUNHAND hand);
-f32 get_value_if_watch_is_on_hand_or_not(GUNHAND hand);
-void sub_GAME_7F05DA8C(GUNHAND hand, ITEM_IDS weaponnum_watchmenu);
-void sub_GAME_7F05E808(GUNHAND hand);
+f32 gunGetMaxHingeAngle(GUNHAND hand);
+void gunSetWatchMenuWeapon(GUNHAND hand, ITEM_IDS weaponnum_watchmenu);
+void gunStartBoltRecoil(GUNHAND hand);
 void sub_GAME_7F05EA94(Model *model, s32 val);
-void sub_GAME_7F0649D8(enum GUNHAND hand);
-void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos);
+void gunReload(enum GUNHAND hand);
+void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos);
 Vtx *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
 void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 
 #if !defined(VERSION_EU)
-void sub_GAME_7F05FB00(enum GUNHAND hand)
+void gunFreeRocket(enum GUNHAND hand)
 {
     struct hand* hand_ptr;
     ObjectRecord* hand_obj_record;
@@ -187,7 +194,7 @@ void gunFireTankShell(s32 handnum)
 
     playerprop = currentPlayerGetProp();
     prevplayerpos = playerGetPrevPos();
-    weaponid = getCurrentPlayerWeaponId(handnum);
+    weaponid = gunGetWeapon(handnum);
 
     mtx4LoadIdentity(&identitymtx);
 
@@ -203,7 +210,7 @@ void gunFireTankShell(s32 handnum)
         } 
         else 
         {
-            sub_GAME_7F068190(&screenpos, &aimdir);
+            gunGetAimRay(&screenpos, &aimdir);
             mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
         }
 
@@ -239,7 +246,7 @@ void gunFireTankShell(s32 handnum)
     } 
     else 
     {
-        bullet_path_from_screen_center(&screenpos, &aimdir, handnum);
+        gunGetShotDir(&screenpos, &aimdir, handnum);
         mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
 
         spawnpos.x = hand->field_B58.x;
@@ -289,7 +296,7 @@ void gunFireTankShell(s32 handnum)
     obj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
     obj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
-    gunInitProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, (s32 *) &identitymtx);
+    gunLaunchProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, (s32 *) &identitymtx);
 
     if (obj->runtime_bitflags & RUNTIMEBITFLAG_00000080)
     {
@@ -372,8 +379,8 @@ void gunUpdateAndFire(GUNHAND handnum)
     flashvisptr = NULL;
     flashdata = NULL;
     hand = &g_CurrentPlayer->hands[handnum];
-    item = get_item_in_hand_or_watch_menu(handnum);
-    itemstats = get_ptr_item_statistics(item);
+    item = gunGetShownWeapon(handnum);
+    itemstats = weaponGetStats(item);
 
     /**
      * When switching from a single weapon to dual wielding, both gun models interpolate a little to the sides of the screen
@@ -382,7 +389,7 @@ void gunUpdateAndFire(GUNHAND handnum)
      */
     if (handnum == GUNRIGHT)
     {
-        if (bondwalkItemCheckBitflags(get_item_in_hand_or_watch_menu(1), WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) != 0)
+        if (weaponHasFlag(gunGetShownWeapon(1), WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) != 0)
         {
             hand->field_A34 += (2.0f * g_GlobalTimerDelta) / 240.0f;
 
@@ -401,7 +408,7 @@ void gunUpdateAndFire(GUNHAND handnum)
             }
         }
     }
-    else if (bondwalkItemCheckBitflags(get_item_in_hand_or_watch_menu(0), WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) != 0)
+    else if (weaponHasFlag(gunGetShownWeapon(0), WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) != 0)
     {
         hand->field_A34 -= (2.0f * g_GlobalTimerDelta) / 240.0f;
 
@@ -438,7 +445,7 @@ void gunUpdateAndFire(GUNHAND handnum)
     blendedpos.z *= g_CurrentPlayer->gunposamplitude;
     blendedpos.x += hand->weapon_theta_displacement;
     blendedpos.y += hand->weapon_verta_displacement;
-    blendedpos.x += sub_GAME_7F05DCB8(handnum);
+    blendedpos.x += gunGetDualOffset(handnum);
 
     j = 0;
 
@@ -504,9 +511,9 @@ void gunUpdateAndFire(GUNHAND handnum)
         gunofs.z += (15.0f * g_CurrentPlayer->ducking_height_offset) / (-100.0f);
     }
 
-    if ((hand->weapon_firing_status != 0) && (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_00000020) != 0))
+    if ((hand->weapon_firing_status != 0) && (weaponHasFlag(item, WEAPONSTATBITFLAG_00000020) != 0))
     {
-        if (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_00000040) != 0)
+        if (weaponHasFlag(item, WEAPONSTATBITFLAG_00000040) != 0)
         {
             rnd = randomGetNext();
             rndf = (f32) ((u32) rnd);
@@ -532,7 +539,7 @@ void gunUpdateAndFire(GUNHAND handnum)
         gunofs.y -= (((g_CurrentPlayer->field_FFC.y - camGetScreenTop()) - (camGetScreenHeight() * 0.5f)) * itemstats->PlayX) / (camGetScreenHeight() * 0.5f);
     }
 
-    sub_GAME_7F05C614();
+    gunDebApplyKeyframe();
     mtx4LoadIdentity(&rotmtx);
 
     if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
@@ -586,13 +593,13 @@ void gunUpdateAndFire(GUNHAND handnum)
     mtx4MultAffine(camGetViewToWorldMtxf(), &hand->gunmtx_camspace, &hand->throw_item_pos_related);
     hand->field_87F = 1;
 
-    if (((((((get_ptr_weapon_model_header_line(item) == 0) || (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)) || (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0)) 
-    || (hand->weapon_action_state == GUN_ANIM_STATE_SWITCH_SWAP)) || (hand->weapon_action_state == GUN_ANIM_STATE_SWITCH_HOLD)) || (Gun_hand_without_item(handnum) == 0)) || (get_itemtype_in_hand(handnum) == 0))
+    if (((((((get_ptr_weapon_model_header_line(item) == 0) || (weaponHasFlag(item, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)) || (weaponHasFlag(item, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0)) 
+    || (hand->weapon_action_state == GUN_ANIM_STATE_SWITCH_SWAP)) || (hand->weapon_action_state == GUN_ANIM_STATE_SWITCH_HOLD)) || (gunHandModelIsEmpty(handnum) == 0)) || (gunGetHandModelItem(handnum) == 0))
     {
         hand->field_87F = 0;
     }
 
-    if ((hand->weapon_ammo_in_magazine <= 0) && (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_SINGLE_USE_RELOAD) != 0))
+    if ((hand->weapon_ammo_in_magazine <= 0) && (weaponHasFlag(item, WEAPONSTATBITFLAG_SINGLE_USE_RELOAD) != 0))
     {
         hand->field_87F = 0;
     }
@@ -647,7 +654,7 @@ void gunUpdateAndFire(GUNHAND handnum)
 
         hand->mtxlist = rwmtx;
 
-        if ((bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) && (handnum == GUNLEFT))
+        if ((weaponHasFlag(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) && (handnum == GUNLEFT))
         {
             mtx4ScaleRow0(-1.0f, gunmtx.m[0]);
         }
@@ -750,7 +757,7 @@ void gunUpdateAndFire(GUNHAND handnum)
             flashscale = ((rndf * (1.0f / M_U32_MAX_VALUE_F)) * 0.25f) + 1.0f;
             flashext = itemstats->MuzzleFlashExtension;
 
-            if (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_00000001) != 0)
+            if (weaponHasFlag(item, WEAPONSTATBITFLAG_00000001) != 0)
             {
                 rnd = randomGetNext();
                 rndf = (f32) ((u32) rnd);
@@ -836,12 +843,12 @@ void gunUpdateAndFire(GUNHAND handnum)
         {
             swdata = (f32 *) node->Data;
             sw6mtxidx = modelFindNodeMtxIndex(node, 0);
-            sub_GAME_7F05E6B4(handnum, hand->weapon_hold_time);
+            gunTickHingeAngle(handnum, hand->weapon_hold_time);
 
             if ((mdlhdr->numSwitches >= 0x1D) && (mdlhdr->Switches[28] != NULL))
             {
                 hingedata = (f32 *) mdlhdr->Switches[28]->Data;
-                guRotateF(tmpmtx.m, (((hand->field_A84 + M_TAU_F) - get_value_if_watch_is_on_hand_or_not(handnum)) * 360.0f) / M_TAU_F, hingedata[0] - hingedata[3], hingedata[1] - hingedata[4], hingedata[2] - hingedata[5]);
+                guRotateF(tmpmtx.m, (((hand->field_A84 + M_TAU_F) - gunGetMaxHingeAngle(handnum)) * 360.0f) / M_TAU_F, hingedata[0] - hingedata[3], hingedata[1] - hingedata[4], hingedata[2] - hingedata[5]);
                 mtx4SetTranslation((coord3d *) swdata, &tmpmtx);
             }
             else
@@ -863,7 +870,7 @@ void gunUpdateAndFire(GUNHAND handnum)
         {
             sw7data = (f32 *) node->Data;
             sw7mtxidx = modelFindNodeMtxIndex(node, 0);
-            sub_GAME_7F05E83C(handnum);
+            gunTickBoltRecoil(handnum);
             mtx4LoadTranslation((coord3d *) sw7data, &tmpmtx);
             tmpmtx.m[3][2] -= hand->field_A88;
             mtx4Mult(&gunmtx, &tmpmtx, &rwmtx[sw7mtxidx]);
@@ -946,7 +953,7 @@ void gunUpdateAndFire(GUNHAND handnum)
 
     if (hand->weapon_firing_status != 0)
     {
-        sub_GAME_7F068508(handnum, playerGetStanHeight(g_CurrentPlayer));
+        gunEjectCasings(handnum, playerGetStanHeight(g_CurrentPlayer));
 
         if (item == ITEM_GRENADELAUNCH)
         {
@@ -956,7 +963,7 @@ void gunUpdateAndFire(GUNHAND handnum)
 
         if (item == ITEM_GRENADE)
         {
-            generate_player_thrown_grenade(handnum);
+            gunThrowGrenade(handnum);
             return;
         }
 
@@ -968,13 +975,13 @@ void gunUpdateAndFire(GUNHAND handnum)
 
         if (item == ITEM_THROWKNIFE)
         {
-            generate_player_thrown_knife(handnum);
+            gunThrowKnife(handnum);
             return;
         }
 
         if ((((((((item == ITEM_REMOTEMINE) || (item == ITEM_PROXIMITYMINE)) || (item == ITEM_TIMEDMINE)) || (item == ITEM_BOMBCASE)) || (item == ITEM_BUG)) || (item == ITEM_MICROCAMERA)) || (item == ITEM_GOLDENEYEKEY)) || (item == ITEM_PLASTIQUE))
         {
-            generate_player_thrown_object(handnum);
+            gunThrowObject(handnum);
             return;
         }
 
@@ -1016,7 +1023,7 @@ void gunUpdateAndFireBothHands(void)
  * fires into the void, there may be graphical glitches with the beam.
  *
 */
-void CapBeamLengthAndDecideIfRendered(struct BeamRecord *arg0, ITEM_IDS item, coord3d *arg2, coord3d *arg3)
+void beamCreate(struct BeamRecord *arg0, ITEM_IDS item, coord3d *arg2, coord3d *arg3)
 {
     f32 phi_f12_2;
 
@@ -1148,7 +1155,7 @@ void gunCreateBeamForHand(enum GUNHAND hand)
 
     weapon_beam = &hand_ptr->weapon_beam;
 
-    CapBeamLengthAndDecideIfRendered(weapon_beam, getCurrentPlayerWeaponId(hand), &hand_ptr->field_B58, &hand_ptr->item_related);
+    beamCreate(weapon_beam, gunGetWeapon(hand), &hand_ptr->field_B58, &hand_ptr->item_related);
 
     if ((g_CurrentPlayer->prop->chr == NULL) || (getPlayerCount() < 2)) 
     { 
@@ -1177,11 +1184,11 @@ void gunCreateBeamForHand(enum GUNHAND hand)
         return; 
     }
 
-    CapBeamLengthAndDecideIfRendered(&chr->beams[hand], getCurrentPlayerWeaponId(hand), &g_CurrentPlayer->field_2A18[hand], &hand_ptr->item_related);
+    beamCreate(&chr->beams[hand], gunGetWeapon(hand), &g_CurrentPlayer->field_2A18[hand], &hand_ptr->item_related);
 }
 
 
-Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
+Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 arg2)
 {
     f32 posz;
     Mtx *mtx;
@@ -1470,7 +1477,7 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
 /*
 * Address: 0x7F062B00
 */
-void gunAdvanceBeamTimer(BeamRecord* beam)
+void beamTick(BeamRecord* beam)
 {
     if (beam->unk00 >= 0)
     {
@@ -1498,7 +1505,7 @@ void gunAdvanceBeamTimer(BeamRecord* beam)
 }
 
 // Address: 0x7F062BE4
-void gunRenderFirstPersonGunModels(Gfx **gdlptr)
+void gunRenderHands(Gfx **gdlptr)
 {
     Gfx *gdl = *gdlptr;
     ModelRenderData renderdata;
@@ -1510,7 +1517,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
     for (handnum = 0; handnum != 2; handnum++) 
     {
         struct hand *handptr = &g_CurrentPlayer->hands[handnum];
-        s32 item = get_item_in_hand_or_watch_menu(handnum);
+        s32 item = gunGetShownWeapon(handnum);
  
         if (handptr->field_87F == 0) 
         {
@@ -1519,7 +1526,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
  
         if (item != ITEM_WATCHLASER) 
         {
-            gdl = sub_GAME_7F061E18(gdl, &handptr->weapon_beam, 0);
+            gdl = beamRender(gdl, &handptr->weapon_beam, 0);
         }
  
         if (item == ITEM_GOLDENGUN || item == ITEM_RUGER || item == ITEM_KNIFE || item == ITEM_THROWKNIFE || item == ITEM_SILVERWPPK || item == ITEM_GOLDWPPK) 
@@ -1575,7 +1582,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
             }
         }
  
-        if (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) 
+        if (weaponHasFlag(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) 
         {
             gSPClearGeometryMode(renderdata.gdl++, G_CULL_BOTH);
  
@@ -1592,7 +1599,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
         modelRender(&renderdata, (Model *)&handptr->field_B68);
         gdl = renderdata.gdl;
  
-        if (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) 
+        if (weaponHasFlag(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) 
         {
             gSPClearGeometryMode(gdl++, G_CULL_BOTH);
         }
@@ -1604,7 +1611,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
  
         if (item == ITEM_WATCHLASER) 
         {
-            gdl = sub_GAME_7F061E18(gdl, &handptr->weapon_beam, 0);
+            gdl = beamRender(gdl, &handptr->weapon_beam, 0);
         }
     }
  
@@ -1612,7 +1619,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
 }
 
 
-Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
+Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
 {
     ModelRenderData renderdata = D_80035D00;
     ModelHeader model;
@@ -1630,9 +1637,9 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
         itemid = ITEM_WATCHMAGNETATTRACT;
     }
 
-    sub_GAME_7F05DA8C(GUNRIGHT, itemid);
+    gunSetWatchMenuWeapon(GUNRIGHT, itemid);
 
-    if ((!Gun_hand_without_item(GUNRIGHT)) || (!get_itemtype_in_hand(GUNRIGHT)))
+    if ((!gunHandModelIsEmpty(GUNRIGHT)) || (!gunGetHandModelItem(GUNRIGHT)))
     {
         return gdl;
     }
@@ -1644,7 +1651,7 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
         goto earlyreturn;
     }
 
-    if (bondwalkItemCheckBitflags(itemid, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_MENU))
+    if (weaponHasFlag(itemid, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_MENU))
     {
         goto earlyreturn;
     }
@@ -1801,7 +1808,7 @@ earlyreturn:
 
 void sub_GAME_7F0634D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3)
 {
-    set_enviro_fog_for_items_in_solo_watch_menu(arg0, arg1, arg2, arg3, -256);
+    watchRenderItem(arg0, arg1, arg2, arg3, -256);
 }
 
 
@@ -1880,9 +1887,9 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
     renderdata = D_80035D40;
 
-    sub_GAME_7F05DA8C(GUNRIGHT, 0x55);
+    gunSetWatchMenuWeapon(GUNRIGHT, 0x55);
 
-    if (!(Gun_hand_without_item(GUNRIGHT) && get_itemtype_in_hand(GUNRIGHT)))
+    if (!(gunHandModelIsEmpty(GUNRIGHT) && gunGetHandModelItem(GUNRIGHT)))
     {
         return gdl;
     }
@@ -2214,7 +2221,7 @@ ALSoundState* gunGetFreeSfxState(void)
 }
 
 
-void recall_joy2_hits_edit_detail_edit_flag(enum ITEM_IDS item, PropRecord* prop, s32 texture_index)
+void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_index)
 {
     s32 sp6C;
     u32 rnd1;
@@ -2323,7 +2330,7 @@ void recall_joy2_hits_edit_detail_edit_flag(enum ITEM_IDS item, PropRecord* prop
 }
 
 
-void sub_GAME_7F064720(coord3d* pos)
+void shotPlayGlassSound(coord3d* pos)
 {
     ALSoundState* sound;
     ALLink* link;
@@ -2347,7 +2354,7 @@ void sub_GAME_7F064720(coord3d* pos)
 }
 
 
-void recall_joy2_hits_edit_flag(enum ITEM_IDS item, coord3d* arg1, s32 texture_index)
+void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index)
 {
     ALSoundState *sound_state;
     u32 rnd1;
@@ -2411,7 +2418,7 @@ void recall_joy2_hits_edit_flag(enum ITEM_IDS item, coord3d* arg1, s32 texture_i
 }
 
 
-void sub_GAME_7F064934(ITEM_IDS item)
+void shotPlayWhizzSound(ITEM_IDS item)
 {
     struct EarWhistleSounds copied;
 
@@ -2439,7 +2446,7 @@ f32 sub_GAME_7F0649AC(s32 param_1)
 
 
 
-void sub_GAME_7F0649D8(enum GUNHAND hand)
+void gunReload(enum GUNHAND hand)
 {
     struct hand* hand_ptr;
     enum ITEM_IDS item_id;
@@ -2450,29 +2457,29 @@ void sub_GAME_7F0649D8(enum GUNHAND hand)
     s32 ammo_total;
 
     hand_ptr = &g_CurrentPlayer->hands[hand];
-    item_id = getCurrentPlayerWeaponId(hand);
+    item_id = gunGetWeapon(hand);
     ammo_in_magazine = hand_ptr->weapon_ammo_in_magazine;
-    ammo_in_hands = get_ammo_in_hands_weapon(hand);
-    item_stats = get_ptr_item_statistics(item_id);
+    ammo_in_hands = gunGetHeldAmmo(hand);
+    item_stats = weaponGetStats(item_id);
     ammo_total = ammo_in_hands + ammo_in_magazine;
 
     hand_ptr->weapon_ammo_in_magazine = (ammo_total >= item_stats->MagSize)
         ? item_stats->MagSize
         : ammo_total;
 
-    g_CurrentPlayer->ammoheldarr[item_stats->AmmoType] = (bondwalkItemCheckBitflags(item_id, WEAPONSTATBITFLAG_AMMO_CLIP_LIMIT) != 0)
+    g_CurrentPlayer->ammoheldarr[item_stats->AmmoType] = (weaponHasFlag(item_id, WEAPONSTATBITFLAG_AMMO_CLIP_LIMIT) != 0)
         ? 0
         : (g_CurrentPlayer->ammoheldarr[item_stats->AmmoType] - hand_ptr->weapon_ammo_in_magazine) + ammo_in_magazine;
 
     if (item_id == ITEM_ROCKETLAUNCH)
     {
-        currentPlayerCreateRocket(hand);
+        gunCreateRocket(hand);
         return;
     }
 
     if ((item_id == ITEM_SHOTGUN) || (item_id == ITEM_AUTOSHOT))
     {
-        ammo_in_hands = get_ammo_in_hands_weapon(hand);
+        ammo_in_hands = gunGetHeldAmmo(hand);
         if (ammo_in_hands >= 5)
         {
             hand_ptr->numvisibleshells = 5;
@@ -2638,8 +2645,8 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 #endif
 
     handptr = &g_CurrentPlayer->hands[hand];
-    var_s1 = get_item_in_hand_or_watch_menu(hand);
-    sp1C4 = get_ammo_type_for_weapon(var_s1);
+    var_s1 = gunGetShownWeapon(hand);
+    sp1C4 = weaponGetAmmoType(var_s1);
 
     handptr->field_884 = handptr->weapon_hold_time;
     handptr->weapon_hold_time = triggerOn;
@@ -2671,7 +2678,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         if (
             (handptr->weapon_hold_time != 0)
             && (var_s1 != ITEM_UNARMED)
-            && (((bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_CLICKY) != 0)) || (handptr->weapon_ammo_in_magazine > 0))
+            && (((weaponHasFlag(var_s1, WEAPONSTATBITFLAG_CLICKY) != 0)) || (handptr->weapon_ammo_in_magazine > 0))
 #if defined(VERSION_EU)
             && ((var_s1 != ITEM_LASER) || (handptr->field_8A0 < 0xC8))
 #endif
@@ -2708,7 +2715,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                     g_CurrentPlayer->ammoheldarr[sp1C4] = 1;
                 }
 
-                if (get_ammo_in_hands_weapon(hand) > 0)
+                if (gunGetHeldAmmo(hand) > 0)
                 {
                     handptr->weapon_action_state = GUN_ANIM_STATE_RELOAD_START;
                     handptr->field_890 = 0;
@@ -2718,7 +2725,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 {
                     if (g_CurrentPlayer->trigger_released != 0)
                     {
-                        temp_v0_3 = get_item_in_hand_or_watch_menu(1 - hand);
+                        temp_v0_3 = gunGetShownWeapon(1 - hand);
 
                         sp1BC = (g_CurrentPlayer->hands - hand) + 1;
 
@@ -2727,10 +2734,10 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                             && (
                                 (temp_v0_3 == ITEM_UNARMED)
                                 || ((sp1BC->weapon_ammo_in_magazine == 0)
-                                    && ((get_ammo_type_for_weapon(temp_v0_3) != 0))
-                                    && ((get_ammo_in_hands_weapon(1 - hand) <= 0)))))
+                                    && ((weaponGetAmmoType(temp_v0_3) != 0))
+                                    && ((gunGetHeldAmmo(1 - hand) <= 0)))))
                         {
-                            autoadvance_on_deplete_all_ammo();
+                            gunSwitchWhenEmpty();
 
                             handptr->field_88C = 0;
                             handptr->field_890 = 0;
@@ -2910,7 +2917,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
     if (handptr->weapon_action_state == GUN_ANIM_STATE_FIRE)
     {
-        if ((get_ammo_type_for_weapon(var_s1) == 0) || (handptr->weapon_ammo_in_magazine > 0))
+        if ((weaponGetAmmoType(var_s1) == 0) || (handptr->weapon_ammo_in_magazine > 0))
         {
             switch (var_s1)
             {
@@ -2954,7 +2961,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
                     handptr->weapon_firing_status = (lvlGetControlsLockedFlag() == 0) && (g_CurrentPlayer->mpmenuon == 0);
 
-                    sub_GAME_7F05E808(hand);
+                    gunStartBoltRecoil(hand);
                 }
                 else
                 {
@@ -2973,11 +2980,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             case ITEM_FNP90:
                 if ((handptr->field_88C == 0)
                     || (handptr->weapon_hold_time != 0)
-                    || ((bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_BURST_FIRE) != 0)
+                    || ((weaponHasFlag(var_s1, WEAPONSTATBITFLAG_BURST_FIRE) != 0)
                         && (currentPlayerGetIsAiming() == 0)
                         && (((s32) handptr->volley % 3) != 0)))
                 {
-                    if (((s32) handptr->field_88C % bondwalkItemGetAutomaticFiringRate(var_s1)) == 0)
+                    if (((s32) handptr->field_88C % weaponGetFireRate(var_s1)) == 0)
                     {
                         if ((!isMpGame()) || ((checkGamePaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
                         {
@@ -3052,12 +3059,12 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             {
                 sp1B4 = 0;
 
-                if (bondwalkItemGetSoundTriggerRate(var_s1) > 0)
+                if (weaponGetSoundRate(var_s1) > 0)
                 {
                     if ((g_CurrentPlayer->hands[1 - hand].field_A50 != g_GlobalTimer)
                         && (handptr->field_A4C < g_GlobalTimer))
                     {
-                        handptr->field_A4C = bondwalkItemGetSoundTriggerRate(var_s1) + g_GlobalTimer;
+                        handptr->field_A4C = weaponGetSoundRate(var_s1) + g_GlobalTimer;
                         sp1B4 = 1;
                     }
                 }
@@ -3081,15 +3088,15 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                             sndDeactivate((struct ALSoundState *) handptr->field_A48);
                         }
 
-                        if (bondwalkItemGetSound(var_s1) != 0)
+                        if (weaponGetSound(var_s1) != 0)
                         {
                             if (handptr->audioHandle == NULL)
                             {
-                                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, bondwalkItemGetSound(var_s1), (struct ALSoundState *) &handptr->audioHandle);
+                                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, weaponGetSound(var_s1), (struct ALSoundState *) &handptr->audioHandle);
                             }
                             else if ((struct ALSoundState *)handptr->field_A48 == 0)
                             {
-                                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, bondwalkItemGetSound(var_s1), (struct ALSoundState *) &handptr->field_A48);
+                                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, weaponGetSound(var_s1), (struct ALSoundState *) &handptr->field_A48);
                             }
 
                             handptr->field_A50 = g_GlobalTimer;
@@ -3147,7 +3154,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         }
         else
         {
-            weapon_stats = get_ptr_item_statistics(var_s1);
+            weapon_stats = weaponGetStats(var_s1);
 
 #if defined(VERSION_US)
             sp1A4 = weapon_stats->b44[0];
@@ -3306,7 +3313,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     {
         if (handptr->field_88C == 0)
         {
-            sub_GAME_7F05E808(hand);
+            gunStartBoltRecoil(hand);
         }
 
         if ((handptr->field_888 != 0) || ((handptr->field_888 == 0) && (handptr->field_890 >= WHEN_D_FLD890)))
@@ -3339,7 +3346,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
         if (handptr->field_890 >= sp188)
         {
-            g_CurrentPlayer->ammoheldarr[get_ammo_type_for_weapon(var_s1)] += handptr->weapon_ammo_in_magazine;
+            g_CurrentPlayer->ammoheldarr[weaponGetAmmoType(var_s1)] += handptr->weapon_ammo_in_magazine;
             handptr->weapon_ammo_in_magazine = 0;
 
             if (getPlayerCount() >= 2)
@@ -3347,11 +3354,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 playerBodyRemoveGun(hand);
             }
 
-            sub_GAME_7F05FB00(hand);
+            gunFreeRocket(hand);
 
             handptr->weapon_action_state = GUN_ANIM_STATE_SWITCH_SWAP;
 
-            if (bondinvItemAvailable(ITEM_SNIPERRIFLE) != 0)
+            if (invItemAvailable(ITEM_SNIPERRIFLE) != 0)
             {
                 g_CurrentPlayer->cur_item_weapon_getname = ITEM_SNIPERRIFLE;
             }
@@ -3392,22 +3399,22 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                     {
                         if (hand == GUNRIGHT)
                         {
-                            if (bondinvItemAvailableForHand(handptr->weapon_next_weapon, getCurrentPlayerWeaponId(GUNLEFT)) == 0)
+                            if (invItemAvailableForHand(handptr->weapon_next_weapon, gunGetWeapon(GUNLEFT)) == 0)
                             {
-                                currentPlayerEquipWeaponWrapper(GUNLEFT, 0);
+                                gunEquip(GUNLEFT, 0);
                             }
                         }
-                        else if (bondinvItemAvailableForHand(getCurrentPlayerWeaponId(GUNRIGHT), handptr->weapon_next_weapon) == 0)
+                        else if (invItemAvailableForHand(gunGetWeapon(GUNRIGHT), handptr->weapon_next_weapon) == 0)
                         {
                             handptr->weapon_next_weapon = ITEM_UNARMED;
                         }
                     }
                 }
-                currentPlayerUnEquipWeaponWrapper(hand, handptr->weapon_next_weapon);
-                var_s1 = get_item_in_hand_or_watch_menu(hand);
+                gunUnequip(hand, handptr->weapon_next_weapon);
+                var_s1 = gunGetShownWeapon(hand);
                 handptr->weapon_action_state = GUN_ANIM_STATE_SWITCH_HOLD;
             }
-            else if (Gun_hand_without_item(hand) != 0)
+            else if (gunHandModelIsEmpty(hand) != 0)
             {
                 handptr->weapon_action_state = GUN_ANIM_STATE_SWITCH_RAISE;
                 handptr->field_890 = 0.0f;
@@ -3441,13 +3448,13 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 playerBodyGiveGun(hand);
             }
 
-            sub_GAME_7F0649D8(hand);
+            gunReload(hand);
 
             g_CurrentPlayer->trigger_released = 0;
 
             if ((g_ClockTimer > 0)
                 && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
-                && (Gun_hand_without_item(hand) != 0)
+                && (gunHandModelIsEmpty(hand) != 0)
                 && (g_PlayerInvincible == FALSE)
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
                 && (g_CurrentPlayer->bonddead == 0)
@@ -3497,8 +3504,8 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
         if ((handptr->field_890 >= sp178)
             || (get_ptr_weapon_model_header_line(var_s1) == NULL)
-            || (bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)
-            || (bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0))
+            || (weaponHasFlag(var_s1, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)
+            || (weaponHasFlag(var_s1, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0))
         {
             handptr->weapon_action_state = GUN_ANIM_STATE_IDLE;
             handptr->field_890 = 0.0f;
@@ -3517,9 +3524,9 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
     if (handptr->weapon_action_state == GUN_ANIM_STATE_RELOAD_START)
     {
-        if (((handptr->weapon_ammo_in_magazine < get_ptr_item_statistics(var_s1)->MagSize)
-             || (bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_AMMO_CLIP_LIMIT) != 0))
-            && ((get_ammo_in_hands_weapon(hand) > 0)))
+        if (((handptr->weapon_ammo_in_magazine < weaponGetStats(var_s1)->MagSize)
+             || (weaponHasFlag(var_s1, WEAPONSTATBITFLAG_AMMO_CLIP_LIMIT) != 0))
+            && ((gunGetHeldAmmo(hand) > 0)))
         {
             handptr->weapon_action_state = GUN_ANIM_STATE_RELOAD_LOWER;
         }
@@ -3570,7 +3577,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             && (g_ClockTimer > 0)
 #endif
             && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
-            && (Gun_hand_without_item(hand) != 0)
+            && (gunHandModelIsEmpty(hand) != 0)
             && (g_PlayerInvincible == FALSE)
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
             && (g_CurrentPlayer->bonddead == 0)
@@ -3681,14 +3688,14 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     {
         if (handptr->field_88C == 0)
         {
-            sub_GAME_7F0649D8(hand);
+            gunReload(hand);
             g_CurrentPlayer->trigger_released = 0;
         }
 
         if ((handptr->field_890 >= WHEN_C_FLD890)
             || (get_ptr_weapon_model_header_line(var_s1) == NULL)
-            || (bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)
-            || (bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0))
+            || (weaponHasFlag(var_s1, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)
+            || (weaponHasFlag(var_s1, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0))
         {
             handptr->weapon_action_state = GUN_ANIM_STATE_IDLE;
             handptr->field_890 = 0.0f;
@@ -3739,13 +3746,13 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
     if (handptr->weapon_action_state == GUN_ANIM_STATE_WATCH_SWAP)
     {
-        if ((handptr->field_88C == 0) || (Gun_hand_without_item(hand) == 0))
+        if ((handptr->field_88C == 0) || (gunHandModelIsEmpty(hand) == 0))
         {
-            sub_GAME_7F05DA8C(hand, handptr->weapon_next_weapon);
-            var_s1 = get_item_in_hand_or_watch_menu(hand);
+            gunSetWatchMenuWeapon(hand, handptr->weapon_next_weapon);
+            var_s1 = gunGetShownWeapon(hand);
         }
 
-        if (Gun_hand_without_item(hand) != 0)
+        if (gunHandModelIsEmpty(hand) != 0)
         {
             handptr->weapon_action_state = GUN_ANIM_STATE_WATCH_RAISE;
             handptr->field_890 = 0.0f;
@@ -3769,14 +3776,14 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             {
                 playerBodyGiveGun(hand);
             }
-            sub_GAME_7F0649D8(hand);
+            gunReload(hand);
             g_CurrentPlayer->trigger_released = 0;
         }
 
         if ((handptr->field_890 >= WHEN_10_FLD890)
             || (get_ptr_weapon_model_header_line(var_s1) == NULL)
-            || (bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)
-            || (bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0))
+            || (weaponHasFlag(var_s1, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)
+            || (weaponHasFlag(var_s1, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0))
         {
             handptr->weapon_action_state = GUN_ANIM_STATE_IDLE;
             handptr->field_890 = 0.0f;
@@ -4037,7 +4044,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
     if (handptr->weapon_action_state == GUN_ANIM_STATE_MINE_PLACE)
     {
-        if ((handptr->weapon_ammo_in_magazine > 0) || (bondwalkItemCheckBitflags(var_s1, WEAPONSTATBITFLAG_CLICKY) != 0))
+        if ((handptr->weapon_ammo_in_magazine > 0) || (weaponHasFlag(var_s1, WEAPONSTATBITFLAG_CLICKY) != 0))
         {
             tempf = WEAPON_1P_ANIM_TIME(handptr->field_890);
             
@@ -4085,14 +4092,14 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             if (handptr->field_88C == 0)
             {
-                analyzeGEKey();
+                gunAnalyzeGEKey();
             }
         }
         else if (var_s1 == ITEM_WEAPONCASE)
         {
             if (handptr->field_88C == 0)
             {
-                give_weapon_case_items();
+                gunOpenWeaponCase();
             }
         }
         else if ((var_s1 == ITEM_BOMBDEFUSER)
@@ -4164,26 +4171,26 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 #undef WHEN_1E_FLD890
 
 
-void analyzeGEKey(void)
+void gunAnalyzeGEKey(void)
 {
-    if (bondinvHasGEKey())
+    if (invHasGEKey())
     {
    	    HUDMESSAGEBOTTOM(langGet(getStringID(LGUN, GUN_STR_D8_ANALYZINGTHEGOLDENEYEKEY_LF))); //Analyzing the GoldenEye key...
     	g_CurrentPlayer->copiedgoldeneye = TRUE;
     	sndPlaySfx(g_musicSfxBufferPtr, KEY_ANALYSER_SFX, 0x0);
-    	currentPlayerEquipWeaponWrapper(GUNRIGHT, ITEM_GOLDENEYEKEY);
-    	currentPlayerEquipWeaponWrapper(GUNLEFT, ITEM_UNARMED);
+    	gunEquip(GUNRIGHT, ITEM_GOLDENEYEKEY);
+    	gunEquip(GUNLEFT, ITEM_UNARMED);
   	}
   	else
   	{
 	    HUDMESSAGEBOTTOM(langGet(getStringID(LGUN, GUN_STR_D9_YOUDONOTHAVETHEGOLDENEYEKEY_LF))); //You do not have the GoldenEye key.
-	    sub_GAME_7F05D690();
+	    gunEquipPreviousWeapons();
   	}
   	return;
 }
 
 
-s32 get_keyanalyzer_flag(void)
+s32 playerHasCopiedGEKey(void)
 {
   s32 i;
 
@@ -4203,105 +4210,105 @@ s32 get_keyanalyzer_flag(void)
 }
 
 
-void give_weapon_case_items(void)
+void gunOpenWeaponCase(void)
 {
   pickupAddAmmo(AMMO_KNIFE, 2, 0, 1);
   pickupAddAmmo(AMMO_GRENADE, 2, 0, 1);
-  bondinvAddInvItem(ITEM_SNIPERRIFLE);
+  invAddItem(ITEM_SNIPERRIFLE);
   pickupPlayWeaponSound(ITEM_SNIPERRIFLE);
   pickupShowWeaponText(ITEM_SNIPERRIFLE);
-  give_cur_player_ammo(sniperrifle_stats.AmmoType, check_cur_player_ammo_amount_in_inventory(sniperrifle_stats.AmmoType) + sniperrifle_stats.MagSize);
-  bondinvRemoveItemByID(ITEM_WEAPONCASE);
-  currentPlayerEquipWeaponWrapper(GUNRIGHT,ITEM_SNIPERRIFLE);
-  currentPlayerEquipWeaponWrapper(GUNLEFT,ITEM_UNARMED);
+  ammoGive(sniperrifle_stats.AmmoType, ammoGetHeld(sniperrifle_stats.AmmoType) + sniperrifle_stats.MagSize);
+  invRemoveItemByID(ITEM_WEAPONCASE);
+  gunEquip(GUNRIGHT,ITEM_SNIPERRIFLE);
+  gunEquip(GUNLEFT,ITEM_UNARMED);
 }
 
 
-f32 get_vertical_position_solo_watch_menu_main_page_for_item(ITEM_IDS item)
+f32 itemGetWatchPosX(ITEM_IDS item)
 {
   return gitem_structs[item].watch_pos_x;
 }
 
 
-f32 get_lateral_position_solo_watch_menu_main_page_for_item(ITEM_IDS item)
+f32 itemGetWatchPosY(ITEM_IDS item)
 {
   return gitem_structs[item].watch_pos_y;
 }
 
 
-f32 get_depth_on_solo_watch_menu_page_for_item(ITEM_IDS item)
+f32 itemGetWatchPosZ(ITEM_IDS item)
 {
   return gitem_structs[item].watch_pos_z;
 }
 
 
-f32 get_xrotation_solo_watch_menu_for_item(ITEM_IDS item)
+f32 itemGetWatchRotX(ITEM_IDS item)
 
 {
   return gitem_structs[item].x_rotation;
 }
 
 
-f32 get_yrotation_solo_watch_menu_for_item(ITEM_IDS item)
+f32 itemGetWatchRotY(ITEM_IDS item)
 {
   return gitem_structs[item].y_rotation;
 }
 
 
-f32 get_45_degree_angle(s32 unk) {
+f32 itemGetWatchFov(s32 unk) {
   return 45.0f;
 }
 
 
-u16 *get_ptr_first_title_line_item(ITEM_IDS item)
+u16 *itemGetWatchTitle1(ITEM_IDS item)
 {
   return langGet(gitem_structs[item].upper_watch_text);
 }
 
 
-u16 *get_ptr_second_title_line_item(ITEM_IDS item)
+u16 *itemGetWatchTitle2(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].lower_watch_text);
 }
 
 
-u16 *get_ptr_short_watch_text_for_item(ITEM_IDS item)
+u16 *itemGetWatchText(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].watch_equipment_text);
 }
 
 
-u16 *get_ptr_long_watch_text_for_item(ITEM_IDS item)
+u16 *itemGetChoiceText(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].weapon_of_choice_text);
 }
 
 
-f32 get_45_degree_angle_0(s32 unk)
+f32 itemGetEquipFov(s32 unk)
 {
 	return 45.0f;
 }
 
 
-f32 get_horizontal_offset_on_solo_watch_menu_for_item(ITEM_IDS item)
+f32 itemGetEquipPosX(ITEM_IDS item)
 {
   return gitem_structs[item].equip_watch_x;
 }
 
 
-f32 get_vertical_offset_on_solo_watch_menu_for_item(ITEM_IDS item)
+f32 itemGetEquipPosY(ITEM_IDS item)
 {
   return gitem_structs[item].equip_watch_y;
 }
 
 
-f32 get_depth_offset_solo_watch_menu_inventory_page_for_item(ITEM_IDS item)
+f32 itemGetEquipPosZ(ITEM_IDS item)
 {
   return gitem_structs[item].equip_watch_z;
 }
 
 
-f32 getCurrentPlayerNoise(GUNHAND hand)
+f32 gunGetNoise(GUNHAND hand)
 {
     return g_CurrentPlayer->hands[hand].noise;
 }
@@ -4318,12 +4325,12 @@ void gunTickNoise(void)
     f32 noise_reduction_max;
     s32 unused;
 
-    weapon_id_right = getCurrentPlayerWeaponId(GUNRIGHT);
-    weapon_id_left = getCurrentPlayerWeaponId(GUNLEFT);
-    item_right_stats = get_ptr_item_statistics(weapon_id_right);
-    item_left_stats = get_ptr_item_statistics(weapon_id_left);
+    weapon_id_right = gunGetWeapon(GUNRIGHT);
+    weapon_id_left = gunGetWeapon(GUNLEFT);
+    item_right_stats = weaponGetStats(weapon_id_right);
+    item_left_stats = weaponGetStats(weapon_id_left);
 
-    if (weapon_id_right != ITEM_UNARMED && get_hands_firing_status(GUNRIGHT))
+    if (weapon_id_right != ITEM_UNARMED && gunGetFiringStatus(GUNRIGHT))
     {
         g_CurrentPlayer->hands[GUNRIGHT].noise += item_right_stats->NoiseIncreasePerShot;
 
@@ -4333,7 +4340,7 @@ void gunTickNoise(void)
         }
     }
 
-    if (weapon_id_left != ITEM_UNARMED && get_hands_firing_status(GUNLEFT))
+    if (weapon_id_left != ITEM_UNARMED && gunGetFiringStatus(GUNLEFT))
     {
         g_CurrentPlayer->hands[GUNLEFT].noise += item_left_stats->NoiseIncreasePerShot;
 
@@ -4380,7 +4387,7 @@ void gunTickNoise(void)
  */
 s32 gunCanUseWeapon(enum GUNHAND hand)
 {
-    return (get_ammo_type_for_weapon(getCurrentPlayerWeaponId(hand)) == 0)
+    return (weaponGetAmmoType(gunGetWeapon(hand)) == 0)
         || (g_CurrentPlayer->hands[hand].weapon_ammo_in_magazine > 0);
 }
 
@@ -4417,8 +4424,8 @@ void gunTickGameplay(s32 triggerOn)
     // Z button pressed this frame.
     if (g_CurrentPlayer->trigger_down != 0)
     {
-        weapon_id_right = getCurrentPlayerWeaponId(GUNRIGHT);
-        weapon_id_left = getCurrentPlayerWeaponId(GUNLEFT);
+        weapon_id_right = gunGetWeapon(GUNRIGHT);
+        weapon_id_left = gunGetWeapon(GUNLEFT);
 
         g_CurrentPlayer->z_trigger_timer += g_ClockTimer;
 
@@ -4426,7 +4433,7 @@ void gunTickGameplay(s32 triggerOn)
         if ((weapon_id_right != ITEM_UNARMED) && (weapon_id_left != ITEM_UNARMED))
         {
             // Both guns prefer to take turns firing in dual wield.
-            if ((bondwalkItemCheckBitflags(weapon_id_right, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) != 0) && (bondwalkItemCheckBitflags(weapon_id_left, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) != 0))
+            if ((weaponHasFlag(weapon_id_right, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) != 0) && (weaponHasFlag(weapon_id_left, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) != 0))
             {
                 // Trigger has been held longer than 20 ticks on NTSC (24 on PAL).
                 if (g_CurrentPlayer->z_trigger_timer > DUAL_WIELD_TRIGGER_SWAP_TICKS)
@@ -4458,7 +4465,7 @@ void gunTickGameplay(s32 triggerOn)
              * This doesn't happen much in the vanilla US version with the notable
              * exception of equipping Xenia's RC-P90 and Grenade Launcher in Jungle
             */
-            else if ((bondwalkItemCheckBitflags(weapon_id_right, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) != 0) || (bondwalkItemCheckBitflags(weapon_id_left, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) != 0))
+            else if ((weaponHasFlag(weapon_id_right, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) != 0) || (weaponHasFlag(weapon_id_left, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) != 0))
             {
                 // Z has been held more than 30 ticks on NTSC (36 for PAL), depress trigger on both guns.
                 if (g_CurrentPlayer->z_trigger_timer > DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS)
@@ -4473,7 +4480,7 @@ void gunTickGameplay(s32 triggerOn)
                 // Before the hold threshold (30 ticks NTSC or 36 PAL), prefer the hand whose weapon uses alternating dual wield fire.
                 else
                 {
-                    hand = bondwalkItemCheckBitflags(weapon_id_right, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) ? GUNRIGHT : GUNLEFT;
+                    hand = weaponHasFlag(weapon_id_right, WEAPONSTATBITFLAG_DUAL_WIELD_ALTERNATING_FIRE) ? GUNRIGHT : GUNLEFT;
 
                     if (gunCanUseWeapon(hand) != 0 || g_CurrentPlayer->hands[hand].weapon_hold_time != 0)
                     {
@@ -4528,7 +4535,7 @@ void gunTickGameplay(s32 triggerOn)
         // Not dual wielding.
         else
         {
-            if ((getCurrentPlayerWeaponId(g_CurrentPlayer->current_trigger_hand) == ITEM_UNARMED) && (getCurrentPlayerWeaponId(1 - g_CurrentPlayer->current_trigger_hand) != ITEM_UNARMED))
+            if ((gunGetWeapon(g_CurrentPlayer->current_trigger_hand) == ITEM_UNARMED) && (gunGetWeapon(1 - g_CurrentPlayer->current_trigger_hand) != ITEM_UNARMED))
             {
                 g_CurrentPlayer->current_trigger_hand = 1 - g_CurrentPlayer->current_trigger_hand;
             }
@@ -4545,8 +4552,8 @@ void gunTickGameplay(s32 triggerOn)
 
     gunTickHandState(0, trigger_state.triggerOn[0]); // Right hand
     gunTickHandState(1, trigger_state.triggerOn[1]); // Left hand
-    used_to_load_1st_person_model_on_demand(0);
-    used_to_load_1st_person_model_on_demand(1);
+    gunLoadHandModel(0);
+    gunLoadHandModel(1);
     gunTickNoise();
 
     if (g_CurrentPlayer->resetshadecol)
@@ -4560,7 +4567,7 @@ void gunTickGameplay(s32 triggerOn)
         objUpdateShading(&g_CurrentPlayer->tileColor, &weapon_color);
     }
 
-    bondinvIncrementHeldTime(getCurrentPlayerWeaponId(GUNRIGHT), getCurrentPlayerWeaponId(GUNLEFT));
+    invIncrementHeldTime(gunGetWeapon(GUNRIGHT), gunGetWeapon(GUNLEFT));
 
     if(1);
 
@@ -4607,13 +4614,13 @@ void gunSetAimType(s32 param_1)
 }
 
 
-void sub_GAME_7F067AB4(coord3d *param_1)
+void gunSetAimPos(coord3d *param_1)
 {
-  g_CurrentPlayer->hands[GUNRIGHT].field_A38 = sub_GAME_7F05DCB8(GUNRIGHT) + param_1->x;
+  g_CurrentPlayer->hands[GUNRIGHT].field_A38 = gunGetDualOffset(GUNRIGHT) + param_1->x;
   g_CurrentPlayer->hands[GUNRIGHT].field_A3C = param_1->y;
   g_CurrentPlayer->hands[GUNRIGHT].field_A40 = param_1->z;
 
-  g_CurrentPlayer->hands[GUNLEFT].field_A38 = sub_GAME_7F05DCB8(GUNLEFT) + param_1->x;
+  g_CurrentPlayer->hands[GUNLEFT].field_A38 = gunGetDualOffset(GUNLEFT) + param_1->x;
   g_CurrentPlayer->hands[GUNLEFT].field_A3C = param_1->y;
   g_CurrentPlayer->hands[GUNLEFT].field_A40 = param_1->z;
 
@@ -4628,7 +4635,7 @@ void gunSetTracerTarget(coord3d* pos)
 }
 
 
-void caclulate_gun_crosshair_position_rotation(f32 turn_x, f32 turn_y, f32 guncrossdamp, f32 gunaimdamp)
+void gunUpdateCrosshair(f32 turn_x, f32 turn_y, f32 guncrossdamp, f32 gunaimdamp)
 {
     s32 i;
     f32 screen_width;
@@ -4695,18 +4702,18 @@ void caclulate_gun_crosshair_position_rotation(f32 turn_x, f32 turn_y, f32 guncr
     g_CurrentPlayer->field_FFC.y += camGetScreenTop();
 
     camScreenToViewDir(&g_CurrentPlayer->field_FFC, &coords, 1000.0f);
-    sub_GAME_7F067AB4(&coords);
+    gunSetAimPos(&coords);
 }
 
 
-void sub_GAME_7F067F58(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed)
+void gunUpdateCrosshairSwivel(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed)
 {
     f32 aim_lock_speed;
 
 #if defined(VERSION_US)
-    aim_lock_speed = get_ptr_item_statistics(getCurrentPlayerWeaponId(GUNRIGHT))->AimLockSpeed;
+    aim_lock_speed = weaponGetStats(gunGetWeapon(GUNRIGHT))->AimLockSpeed;
 #elif defined(VERSION_EU)
-    aim_lock_speed = get_ptr_item_statistics(getCurrentPlayerWeaponId(GUNRIGHT))->CrosshairSpeed;
+    aim_lock_speed = weaponGetStats(gunGetWeapon(GUNRIGHT))->CrosshairSpeed;
 #endif
 
     if (aim_lock_speed < max_aim_lock_speed)
@@ -4714,17 +4721,17 @@ void sub_GAME_7F067F58(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed)
         aim_lock_speed = max_aim_lock_speed;
     }
 
-    caclulate_gun_crosshair_position_rotation(turn_x, turn_y, max_aim_lock_speed, aim_lock_speed);
+    gunUpdateCrosshair(turn_x, turn_y, max_aim_lock_speed, aim_lock_speed);
 }
 
 
-void sub_GAME_7F067FBC(f32 turn_x, f32 turn_y)
+void gunUpdateCrosshairManual(f32 turn_x, f32 turn_y)
 {
     WeaponStats * item_stats;
     f32 guncrossdamp;
     f32 gunaimdamp;
 
-    item_stats = get_ptr_item_statistics(getCurrentPlayerWeaponId(GUNRIGHT));
+    item_stats = weaponGetStats(gunGetWeapon(GUNRIGHT));
 
 #if defined(VERSION_US)
     guncrossdamp = item_stats->CrosshairSpeed;
@@ -4734,20 +4741,20 @@ void sub_GAME_7F067FBC(f32 turn_x, f32 turn_y)
     gunaimdamp = item_stats->CrosshairSpeed;
 #endif
 
-    caclulate_gun_crosshair_position_rotation(turn_x, turn_y, guncrossdamp, gunaimdamp);
+    gunUpdateCrosshair(turn_x, turn_y, guncrossdamp, gunaimdamp);
 }
 
 
 /*
 * Address: 0x7f068008
 */
-void get_bullet_angle(f32* horizontal_angle, f32* vertical_angle) {
+void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle) {
 	*horizontal_angle = g_CurrentPlayer->crosshair_angle.f[0];
 	*vertical_angle = g_CurrentPlayer->crosshair_angle.f[1];
 }
 
 
-void sub_GAME_7F06802C(void)
+void gunCentreCrosshair(void)
 {
     coord3d coord;
     f32 tmp;
@@ -4761,11 +4768,11 @@ void sub_GAME_7F06802C(void)
     g_CurrentPlayer->field_FFC.y = tmp;
 
     camScreenToViewDir((coord2d *) &g_CurrentPlayer->field_FFC, &coord, 1000.0f);
-    sub_GAME_7F067AB4(&coord);
+    gunSetAimPos(&coord);
 }
 
 
-void sub_GAME_7F0680D4(coord3d * coord)
+void gunSetAimDir(coord3d * coord)
 {
     coord3d tmp;
 
@@ -4782,7 +4789,7 @@ void sub_GAME_7F0680D4(coord3d * coord)
     g_CurrentPlayer->field_FFC.x = g_CurrentPlayer->crosshair_angle.x;
     g_CurrentPlayer->field_FFC.y = g_CurrentPlayer->crosshair_angle.y;
 
-    sub_GAME_7F067AB4(&tmp);
+    gunSetAimPos(&tmp);
 }
 
 extern const f32 g_GunScreenAspectRatio;
@@ -4792,7 +4799,7 @@ extern const f32 g_GunScreenAspectRatio;
  * Address 0x7F068190.
 */
 #if !defined(VERSION_US)
-void sub_GAME_7F068190(coord3d *zeropos, coord3d *vec)
+void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 {
     zeropos->x = 0.0f;
     zeropos->y = 0.0f;
@@ -4806,7 +4813,7 @@ void sub_GAME_7F068190(coord3d *zeropos, coord3d *vec)
 * Address: 0x7f0681cc
 * This function computes the angle the player's bullets are fired at
 */
-void bullet_path_from_screen_center(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
+void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
 {
     coord2d crosspos;
     s32 unused;
@@ -4814,8 +4821,8 @@ void bullet_path_from_screen_center(coord3d* arg0, coord3d* result, enum GUNHAND
     f32 scaledspread;
     f32 randfactor;
 
-    inaccuracy = get_ptr_item_statistics(getCurrentPlayerWeaponId(arg2))->Inaccuracy;
-    if ((bondwalkItemCheckBitflags(get_item_in_hand_or_watch_menu(arg2), WEAPONSTATBITFLAG_FIRST_SHOT_ACCURACY) != 0) && (g_CurrentPlayer->hands[arg2].volley == 1))
+    inaccuracy = weaponGetStats(gunGetWeapon(arg2))->Inaccuracy;
+    if ((weaponHasFlag(gunGetShownWeapon(arg2), WEAPONSTATBITFLAG_FIRST_SHOT_ACCURACY) != 0) && (g_CurrentPlayer->hands[arg2].volley == 1))
     {
         // Single shots are four times more accurate
         inaccuracy *= 0.25f;
@@ -4934,7 +4941,7 @@ extern const f32 g_RifleCasingGravity;
  * Ejects a spent cartridge casing from the gun in the given hand.
  */
 #if defined(VERSION_EU)
-void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
+void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 {
     CasingRecord *casing;
     Mtxf mtx;
@@ -4964,8 +4971,8 @@ void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
     s32 pad[2];
 #endif
  
-    weaponid = getCurrentPlayerWeaponId(handnum);
-    cartridge_header = get_ptr_item_statistics(weaponid)->ptr_cartridge_struct;
+    weaponid = gunGetWeapon(handnum);
+    cartridge_header = weaponGetStats(weaponid)->ptr_cartridge_struct;
  
     // Do not create ejected casings in multiplayer.
     if ((cartridge_header == NULL) || (getPlayerCount() >= 2))
@@ -5138,7 +5145,7 @@ extern const char aSD_0[];
 /**
  * Address 0x7F068190.
 */
-void sub_GAME_7F068190(coord3d *zeropos, coord3d *vec)
+void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 {
     zeropos->x = 0.0f;
     zeropos->y = 0.0f;
@@ -5152,7 +5159,7 @@ void sub_GAME_7F068190(coord3d *zeropos, coord3d *vec)
 * Address: 0x7f0681cc
 * This function computes the angle the player's bullets are fired at
 */
-void bullet_path_from_screen_center(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
+void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
 {
     coord2d crosspos;
     s32 unused;
@@ -5160,8 +5167,8 @@ void bullet_path_from_screen_center(coord3d* arg0, coord3d* result, enum GUNHAND
     f32 scaledspread;
     f32 randfactor;
 
-    inaccuracy = get_ptr_item_statistics(getCurrentPlayerWeaponId(arg2))->Inaccuracy;
-    if ((bondwalkItemCheckBitflags(get_item_in_hand_or_watch_menu(arg2), WEAPONSTATBITFLAG_FIRST_SHOT_ACCURACY) != 0) && (g_CurrentPlayer->hands[arg2].volley == 1))
+    inaccuracy = weaponGetStats(gunGetWeapon(arg2))->Inaccuracy;
+    if ((weaponHasFlag(gunGetShownWeapon(arg2), WEAPONSTATBITFLAG_FIRST_SHOT_ACCURACY) != 0) && (g_CurrentPlayer->hands[arg2].volley == 1))
     {
         // Single shots are four times more accurate
         inaccuracy *= 0.25f;
@@ -5251,7 +5258,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
  * Ejects a spent cartridge casing from the gun in the given hand.
  */
 #if !defined(VERSION_EU)
-void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
+void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 {
     CasingRecord *casing;
     Mtxf mtx;
@@ -5281,8 +5288,8 @@ void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos)
     s32 pad[2];
 #endif
  
-    weaponid = getCurrentPlayerWeaponId(handnum);
-    cartridge_header = get_ptr_item_statistics(weaponid)->ptr_cartridge_struct;
+    weaponid = gunGetWeapon(handnum);
+    cartridge_header = weaponGetStats(weaponid)->ptr_cartridge_struct;
  
     // Do not create ejected casings in multiplayer.
     if ((cartridge_header == NULL) || (getPlayerCount() >= 2))
@@ -5439,7 +5446,7 @@ extern const f32 g_CasingModelScale;
 extern const f32 g_CasingMinMatrixTranslation;
 extern const f32 g_CasingMaxMatrixTranslation;
 
-void update_bullet_casing(CasingRecord* casing)
+void casingTick(CasingRecord* casing)
 {
     f32 new_val_y;
     f32 delta;
@@ -5486,7 +5493,7 @@ void update_bullet_casing(CasingRecord* casing)
 }
 
 
-void update_bullet_casings(void)
+void casingsTick(void)
 {
     CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
     CasingRecord* entry = g_Casings;
@@ -5495,7 +5502,7 @@ void update_bullet_casings(void)
     {
         if (entry->header)
         {
-            update_bullet_casing(entry);
+            casingTick(entry);
         }
 
         entry++;
@@ -5514,7 +5521,7 @@ typedef struct ModelHead {
     ModelNode *attachedto_objinst;
 } ModelHead;
 
-void sub_GAME_7F068EC4(CasingRecord *casing, Gfx **gdl)
+void casingRender(CasingRecord *casing, Gfx **gdl)
 {
     Gfx             *savedgdl = *gdl;
     ModelFileHeader *model_header = casing->header;
@@ -5594,7 +5601,7 @@ void sub_GAME_7F068EC4(CasingRecord *casing, Gfx **gdl)
 
 
 // Address: 0x7F06908C
-void gunRenderCasings(Gfx **gdl)
+void casingsRender(Gfx **gdl)
 {
     CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
     CasingRecord* entry = g_Casings;
@@ -5603,7 +5610,7 @@ void gunRenderCasings(Gfx **gdl)
     {
         if (entry->header)
         {
-            sub_GAME_7F068EC4(entry, gdl);
+            casingRender(entry, gdl);
         }
         
         entry++;
@@ -5624,17 +5631,17 @@ void gunSetGunAmmoVisible(s32 reason, bool enable) {
 
 
 
-void give_cur_player_ammo(s32 ammo_type, s32 ammo_amount) {
+void ammoGive(s32 ammo_type, s32 ammo_amount) {
     enum ITEM_IDS weapon_id;
     s32 max_ammo;
 
-    weapon_id = getCurrentPlayerWeaponId(GUNRIGHT);
-    if ((get_ammo_type_for_weapon(weapon_id) == ammo_type) && (bondwalkItemCheckBitflags(weapon_id, WEAPONSTATBITFLAG_AMMO_CLIP_LIMIT) != 0))
+    weapon_id = gunGetWeapon(GUNRIGHT);
+    if ((weaponGetAmmoType(weapon_id) == ammo_type) && (weaponHasFlag(weapon_id, WEAPONSTATBITFLAG_AMMO_CLIP_LIMIT) != 0))
     {
         g_CurrentPlayer->hands[0].weapon_ammo_in_magazine += ammo_amount;
-        if (get_ptr_item_statistics(weapon_id)->MagSize < g_CurrentPlayer->hands[0].weapon_ammo_in_magazine)
+        if (weaponGetStats(weapon_id)->MagSize < g_CurrentPlayer->hands[0].weapon_ammo_in_magazine)
         {
-            g_CurrentPlayer->hands[0].weapon_ammo_in_magazine = (s32) get_ptr_item_statistics(weapon_id)->MagSize;
+            g_CurrentPlayer->hands[0].weapon_ammo_in_magazine = (s32) weaponGetStats(weapon_id)->MagSize;
         }
         g_CurrentPlayer->ammoheldarr[ammo_type] = 0;
         return;
@@ -5653,20 +5660,20 @@ void give_cur_player_ammo(s32 ammo_type, s32 ammo_amount) {
 
 
 
-s32 check_cur_player_ammo_amount_in_inventory(AMMOTYPE ammotype) {
+s32 ammoGetHeld(AMMOTYPE ammotype) {
     return g_CurrentPlayer->ammoheldarr[ammotype];
 }
 
-s32 currentPlayerGetAmmoCount(AMMOTYPE ammotype) {
+s32 ammoGetTotal(AMMOTYPE ammotype) {
 
-    s32 total_ammo = check_cur_player_ammo_amount_in_inventory(ammotype);
+    s32 total_ammo = ammoGetHeld(ammotype);
 
-    if (get_ammo_type_for_weapon(getCurrentPlayerWeaponId(GUNRIGHT)) == ammotype) {
-        total_ammo += get_ammo_in_hands_magazine(GUNRIGHT);
+    if (weaponGetAmmoType(gunGetWeapon(GUNRIGHT)) == ammotype) {
+        total_ammo += gunGetMagazineAmmo(GUNRIGHT);
     }
 
-    if (get_ammo_type_for_weapon(getCurrentPlayerWeaponId(GUNLEFT)) == ammotype) {
-        total_ammo += get_ammo_in_hands_magazine(GUNLEFT);
+    if (weaponGetAmmoType(gunGetWeapon(GUNLEFT)) == ammotype) {
+        total_ammo += gunGetMagazineAmmo(GUNLEFT);
     }
 
     return total_ammo;
@@ -5674,7 +5681,7 @@ s32 currentPlayerGetAmmoCount(AMMOTYPE ammotype) {
 
 
 
-s32 get_max_ammo_for_type(s32 arg0)
+s32 ammoGetMax(s32 arg0)
 {
     return ammo_related[arg0].MaxAmmo;
 }
@@ -5682,36 +5689,36 @@ s32 get_max_ammo_for_type(s32 arg0)
 
 
 
-void set_max_ammo_for_cur_player(void)
+void ammoGiveMaxAll(void)
 {
     s32 ammo_type;
 
     for (ammo_type = 0; ammo_type < AMMO_RELATED_MAX; ammo_type++)
     {
-        give_cur_player_ammo(ammo_type, ammo_related[ammo_type].MaxAmmo);
+        ammoGive(ammo_type, ammo_related[ammo_type].MaxAmmo);
     }
 }
 
 
 
-s32 get_ammo_in_hands_magazine(GUNHAND hand) {
+s32 gunGetMagazineAmmo(GUNHAND hand) {
     return g_CurrentPlayer->hands[hand].weapon_ammo_in_magazine;
 }
 
 
 
-s32 get_ammo_in_hands_weapon(enum GUNHAND hand)
+s32 gunGetHeldAmmo(enum GUNHAND hand)
 {
     s32 weapon_id;
     s32 ammo_count;
 
-    weapon_id = getCurrentPlayerWeaponId(hand);
-    ammo_count = get_ammo_count_for_weapon(weapon_id);
+    weapon_id = gunGetWeapon(hand);
+    ammo_count = weaponGetHeldAmmo(weapon_id);
 
     if ((weapon_id == ITEM_SHOTGUN) || (weapon_id == ITEM_AUTOSHOT))
     {
         s32 other_weapon_id;
-        other_weapon_id = getCurrentPlayerWeaponId(1 - hand);
+        other_weapon_id = gunGetWeapon(1 - hand);
 
         if ((other_weapon_id == ITEM_SHOTGUN) || (other_weapon_id == ITEM_AUTOSHOT))
         {
@@ -5727,26 +5734,26 @@ s32 get_ammo_in_hands_weapon(enum GUNHAND hand)
 
 
 
-s32 get_ammo_type_for_weapon(ITEM_IDS weapon) {
-    return get_ptr_item_statistics(weapon)->AmmoType;
+s32 weaponGetAmmoType(ITEM_IDS weapon) {
+    return weaponGetStats(weapon)->AmmoType;
 }
 
-s32 get_ammo_count_for_weapon(ITEM_IDS weapon) {
-  WeaponStats *weaponstats = get_ptr_item_statistics(weapon);
+s32 weaponGetHeldAmmo(ITEM_IDS weapon) {
+  WeaponStats *weaponstats = weaponGetStats(weapon);
   return g_CurrentPlayer->ammoheldarr[weaponstats->AmmoType];
 }
 
-void add_ammo_to_weapon(ITEM_IDS weapon, s32 ammo) {
-    give_cur_player_ammo(get_ptr_item_statistics(weapon)->AmmoType, ammo);
+void weaponGiveAmmo(ITEM_IDS weapon, s32 ammo) {
+    ammoGive(weaponGetStats(weapon)->AmmoType, ammo);
 }
 
-s32 get_max_ammo_for_weapon(enum ITEM_IDS weapon)
+s32 weaponGetMaxAmmo(enum ITEM_IDS weapon)
 {
-    return ammo_related[get_ptr_item_statistics(weapon)->AmmoType].MaxAmmo;
+    return ammo_related[weaponGetStats(weapon)->AmmoType].MaxAmmo;
 }
 
 
-Gfx *microcode_generation_ammo_related(Gfx *gdl, struct sImageTableEntry *tconfig, f32 x, f32 y, f32 arg4, s32 arg5, f32 arg6, s32 arg7, s32 red, s32 green, s32 blue, s32 alpha)
+Gfx *hudDrawImage(Gfx *gdl, struct sImageTableEntry *tconfig, f32 x, f32 y, f32 arg4, s32 arg5, f32 arg6, s32 arg7, s32 red, s32 green, s32 blue, s32 alpha)
 {
     f32 xy[2];
     f32 halfed[2];
@@ -5809,9 +5816,9 @@ Gfx *microcode_generation_ammo_related(Gfx *gdl, struct sImageTableEntry *tconfi
  * Address: TODO
  * WARNING: This function is missing a "return". This will cause bugs on other compilers.
  */
-Gfx *set_rgba_redirect_generate_microcode(Gfx *gdl, sImageTableEntry *tconfig, f32 x, f32 y, f32 arg4, s32 arg5, f32 arg6, s32 arg7)
+Gfx *hudDrawImageDefault(Gfx *gdl, sImageTableEntry *tconfig, f32 x, f32 y, f32 arg4, s32 arg5, f32 arg6, s32 arg7)
 {
-    return microcode_generation_ammo_related(gdl, tconfig, x, y, arg4, arg5, arg6, arg7, 0xff, 0xff, 0xff, 0xff);
+    return hudDrawImage(gdl, tconfig, x, y, arg4, arg5, arg6, arg7, 0xff, 0xff, 0xff, 0xff);
 }
 
 
@@ -5885,7 +5892,7 @@ Gfx *gunDrawHudInteger(Gfx *gdl, s32 value, s32 x, s32 halign, s32 y, s32 valign
  * Draw magazine ammo number, ammo type icon, and total ammo number at the bottom right of the viewport.
  * Render an additional ammo counter at the bottom left of the viewport when dual wielding.
  */
-Gfx *generate_ammo_total_microcode(Gfx *gdl)
+Gfx *hudRenderAmmo(Gfx *gdl)
 {
     ITEM_IDS weapon_left;
     ITEM_IDS weapon_right;
@@ -5903,8 +5910,8 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
     {
         if (g_CurrentPlayer->mpmenuon == 0)
         {
-            weapon_left = getCurrentPlayerWeaponId(GUNLEFT);
-            weapon_right = getCurrentPlayerWeaponId(GUNRIGHT);
+            weapon_left = gunGetWeapon(GUNLEFT);
+            weapon_right = gunGetWeapon(GUNRIGHT);
 
             if (!viewIsHalfWidth())
             {
@@ -5924,12 +5931,12 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
 
             if (weapon_right != ITEM_UNARMED)
             {
-                ammotype = get_ammo_type_for_weapon(weapon_right);
+                ammotype = weaponGetAmmoType(weapon_right);
 
                 if (ammotype != 0
                     && g_CurrentPlayer->hands[0].weapon_action_state != GUN_ANIM_STATE_SWITCH_SWAP
                     && g_CurrentPlayer->hands[0].weapon_action_state != GUN_ANIM_STATE_SWITCH_HOLD
-                    && !bondwalkItemCheckBitflags(weapon_right, WEAPONSTATBITFLAG_HIDE_AMMO_DISPLAY))
+                    && !weaponHasFlag(weapon_right, WEAPONSTATBITFLAG_HIDE_AMMO_DISPLAY))
                 {
                     imageoffset_r = ammo_related[ammotype].IconImage;
                     textwidth_r = 5;
@@ -5937,7 +5944,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
                     if (imageoffset_r != 0)
                     {
                         imageoffset_r += g_ImageBankOffset;
-                        gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset_r, (camGetScreenLeft() + camGetScreenWidth()) - (f32)rightx, -1.0f,
+                        gdl = hudDrawImageDefault(gdl, (u8 *)imageoffset_r, (camGetScreenLeft() + camGetScreenWidth()) - (f32)rightx, -1.0f,
 #if defined(VERSION_EU)
                             (viGetViewTop() + viGetViewHeight()) - 30, 0,
 #else
@@ -5949,7 +5956,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
 
                     gdl = microcode_constructor(gdl);
 
-                    if (bondwalkItemCheckBitflags(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+                    if (weaponHasFlag(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         magammo = 0;
                         reserveammo = g_CurrentPlayer->ammoheldarr[ammotype] + g_CurrentPlayer->hands[0].weapon_ammo_in_magazine;
@@ -5964,7 +5971,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
                         reserveammo = g_CurrentPlayer->ammoheldarr[ammotype];
                     }
 
-                    if (!bondwalkItemCheckBitflags(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+                    if (!weaponHasFlag(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         gdl = gunDrawHudInteger(gdl, magammo, (((viGetViewLeft() + viGetViewWidth()) - rightx) - (textwidth_r / 2)) - 4, 0,
 #if defined(VERSION_EU)
@@ -5974,7 +5981,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
 #endif
                     }
 
-                    if (reserveammo > 0 || bondwalkItemCheckBitflags(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+                    if (reserveammo > 0 || weaponHasFlag(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         gdl = gunDrawHudInteger(gdl, reserveammo, (((viGetViewLeft() + viGetViewWidth()) - rightx) + ((textwidth_r + 1) / 2)) + 3, 1,
 #if defined(VERSION_EU)
@@ -5990,12 +5997,12 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
 
             if (weapon_left != ITEM_UNARMED)
             {
-                ammotype = get_ammo_type_for_weapon(weapon_left);
+                ammotype = weaponGetAmmoType(weapon_left);
 
                 if (ammotype != 0
                     && g_CurrentPlayer->hands[1].weapon_action_state != GUN_ANIM_STATE_SWITCH_SWAP
                     && g_CurrentPlayer->hands[1].weapon_action_state != GUN_ANIM_STATE_SWITCH_HOLD
-                    && !bondwalkItemCheckBitflags(weapon_left, WEAPONSTATBITFLAG_HIDE_AMMO_DISPLAY))
+                    && !weaponHasFlag(weapon_left, WEAPONSTATBITFLAG_HIDE_AMMO_DISPLAY))
                 {
                     imageoffset_l = ammo_related[ammotype].IconImage;
                     textwidth_l = 5;
@@ -6003,7 +6010,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
                     if (imageoffset_l != 0)
                     {
                         imageoffset_l += g_ImageBankOffset;
-                        gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset_l, camGetScreenLeft() + (f32)leftx, -1.0f,
+                        gdl = hudDrawImageDefault(gdl, (u8 *)imageoffset_l, camGetScreenLeft() + (f32)leftx, -1.0f,
 #if defined(VERSION_EU)
                             (viGetViewTop() + viGetViewHeight()) - 30, 1,
 #else
@@ -6015,7 +6022,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
 
                     gdl = microcode_constructor(gdl);
 
-                    if (bondwalkItemCheckBitflags(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+                    if (weaponHasFlag(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         magammo = 0;
                         reserveammo = g_CurrentPlayer->ammoheldarr[ammotype] + g_CurrentPlayer->hands[1].weapon_ammo_in_magazine;
@@ -6030,7 +6037,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
                         reserveammo = g_CurrentPlayer->ammoheldarr[ammotype];
                     }
 
-                    if (!bondwalkItemCheckBitflags(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+                    if (!weaponHasFlag(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         gdl = gunDrawHudInteger(gdl, magammo, ((viGetViewLeft() + leftx) + (textwidth_l / 2)) + 3, 1,
 #if defined(VERSION_EU)
@@ -6040,7 +6047,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
 #endif
                     }
 
-                    if (reserveammo > 0 || bondwalkItemCheckBitflags(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+                    if (reserveammo > 0 || weaponHasFlag(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         gdl = gunDrawHudInteger(gdl, reserveammo, ((viGetViewLeft() + leftx) - ((textwidth_l + 1) / 2)) - 4, 0,
 #if defined(VERSION_EU)
@@ -6074,22 +6081,22 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
     s32 textwidth;
     s32 pad;
 
-    offhanditem = getCurrentPlayerWeaponId(1);
-    item = getCurrentPlayerWeaponId(0);
+    offhanditem = gunGetWeapon(1);
+    item = gunGetWeapon(0);
 
     if (item != ITEM_UNARMED)
     {
-        ammotype = get_ammo_type_for_weapon(item);
+        ammotype = weaponGetAmmoType(item);
 
         if (ammotype != 0
             && g_CurrentPlayer->hands[GUNRIGHT].weapon_action_state != GUN_ANIM_STATE_SWITCH_SWAP
             && g_CurrentPlayer->hands[GUNRIGHT].weapon_action_state != GUN_ANIM_STATE_SWITCH_HOLD
-            && !bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_HIDE_AMMO_DISPLAY))
+            && !weaponHasFlag(item, WEAPONSTATBITFLAG_HIDE_AMMO_DISPLAY))
         {
             imageoffset = ammo_related[ammotype].IconImage;
             textwidth = 5;
 
-            get_ptr_item_statistics(item);
+            weaponGetStats(item);
 
             if (imageoffset != 0)
             {
@@ -6097,9 +6104,9 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
 
                 // Draw the ammo icon
 #if defined(VERSION_EU)
-                gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset, 200.0f, 208.0f, (viGetViewTop() + viGetViewHeight()) - 30, 0, ammo_related[ammotype].IconYOffset, 1);
+                gdl = hudDrawImageDefault(gdl, (u8 *)imageoffset, 200.0f, 208.0f, (viGetViewTop() + viGetViewHeight()) - 30, 0, ammo_related[ammotype].IconYOffset, 1);
 #else
-                gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset, 200.0f, 180.0f, (viGetViewTop() + viGetViewHeight()) - 20, 0, ammo_related[ammotype].IconYOffset, 1);
+                gdl = hudDrawImageDefault(gdl, (u8 *)imageoffset, 200.0f, 180.0f, (viGetViewTop() + viGetViewHeight()) - 20, 0, ammo_related[ammotype].IconYOffset, 1);
 #endif
 
                 textwidth = ((u8 *)imageoffset)[4];
@@ -6107,7 +6114,7 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
 
             gdl = microcode_constructor(gdl);
 
-            if (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+            if (weaponHasFlag(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
             {
                 magammo = 0;
                 reserveammo = g_CurrentPlayer->ammoheldarr[ammotype] + g_CurrentPlayer->hands[0].weapon_ammo_in_magazine;
@@ -6123,7 +6130,7 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
                 reserveammo = g_CurrentPlayer->ammoheldarr[ammotype];
             }
 
-            if (!bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+            if (!weaponHasFlag(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
             {
                 // Draw the magazine ammo count.
 #if defined(VERSION_EU)
@@ -6133,7 +6140,7 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
 #endif
             }
 
-            if (reserveammo > 0 || bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
+            if (reserveammo > 0 || weaponHasFlag(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
             {
                 // Draw the reserve ammo count.
 #if defined(VERSION_EU)
@@ -6190,33 +6197,33 @@ void gunDrawSight(s32 *gdl) {
 }
 
 
-void inc_curplayer_hitcount_with_weapon(ITEM_IDS item, SHOT_REGISTER shot_register) {
+void statsAddHit(ITEM_IDS item, SHOT_REGISTER shot_register) {
 
-    if (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_PLAYER_STAT_HIT)) {
+    if (weaponHasFlag(item, WEAPONSTATBITFLAG_PLAYER_STAT_HIT)) {
         g_playerPerm->shot_count[shot_register] = g_playerPerm->shot_count[shot_register]+1;
     }
 }
 
 
-s32 get_curplayer_shot_register(SHOT_REGISTER shot_register)
+s32 statsGetHits(SHOT_REGISTER shot_register)
 {
   return g_playerPerm->shot_count[shot_register];
 }
 
 
-void inc_cur_civilian_casualties(void)
+void statsAddCivilianKill(void)
 {
     g_playerPerm->killed_civilians++;
 }
 
 
-s32 get_civilian_casualties(void)
+s32 statsGetCivilianKills(void)
 {
     return g_playerPerm->killed_civilians;
 }
 
 
-void increment_num_kills_display_text_in_MP(void)
+void statsAddKill(void)
 {
     s8 buffer[256];
     s32 time_since_kill;
@@ -6280,20 +6287,20 @@ void increment_num_kills_display_text_in_MP(void)
 
 
 
-s32 get_curplay_killcount(void) {
+s32 statsGetKills(void) {
     return g_playerPerm->kill_count;
 }
 
-void increment_num_times_killed_MwtGC(void){
+void statsAddGoldenGunKill(void){
     g_playerPerm->killed_gg_owner_count++;
 }
 
-s32 get_times_killed_mwtgx(void) {
+s32 statsGetGoldenGunKills(void) {
     return g_playerPerm->killed_gg_owner_count;
 }
 
 
-void increment_num_deaths(void)
+void statsAddDeath(void)
 {
 	char buffer[256];
     g_CurrentPlayer->deathcount = (s32) (g_CurrentPlayer->deathcount + 1);
@@ -6316,11 +6323,11 @@ void increment_num_deaths(void)
 }
 
 
-s32 get_curplayer_numdeaths(void) {
+s32 statsGetDeaths(void) {
     return g_CurrentPlayer->deathcount;
 }
 
-void increment_num_suicides_display_MP(void) {
+void statsAddSuicide(void) {
     char buffer[256];
     s32 time_diff;
     s32 recent_kill_count;
@@ -6377,7 +6384,7 @@ void increment_num_suicides_display_MP(void) {
     }
 }
 
-s32 get_curplayer_numsuicides(void) {
+s32 statsGetSuicides(void) {
     return g_CurrentPlayer->num_suicides;
 }
 
@@ -6786,8 +6793,8 @@ void shotFireBullet(s32 hand)
     playerprop = currentPlayerGetProp();
     fromtile = playerprop->stan;
     numhits = 0;
-    bullet_path_from_screen_center(&shotdata.viewOrigin, &shotdata.viewDir, hand);
-    shotdata.weapon = getCurrentPlayerWeaponId(hand);
+    gunGetShotDir(&shotdata.viewOrigin, &shotdata.viewDir, hand);
+    shotdata.weapon = gunGetWeapon(hand);
     shotdata.maxdist = M_U32_MAX_VALUE_F;
 
     for (k = 0; k < 10; k++)
@@ -6949,7 +6956,7 @@ void shotFireBullet(s32 hand)
             {
                 numhits++;
 
-                if (numhits >= bondwalkItemGetObjectsShootThrough(shotdata.weapon))
+                if (numhits >= weaponGetPenetration(shotdata.weapon))
                 {
                     gotbghit = 0;
                     hitbgstan = 0;
@@ -7007,7 +7014,7 @@ void shotFireBullet(s32 hand)
         {
             if (createSpark)
             {
-                recall_joy2_hits_edit_flag(shotdata.weapon, finalpos, besttexture);
+                shotPlayHitSound(shotdata.weapon, finalpos, besttexture);
 
                 if (((0xf & ((u8 *) g_Textures)[besttexture * 8]) != 5) && ((((u8 *) g_Textures)[besttexture * 8] & 0xf) != 6))
                 {
@@ -7078,7 +7085,7 @@ void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpa
         /**
          * The bullet has reached the max number of objects it can penetrate.
          */
-        if (numPenetratedObjects >= bondwalkItemGetObjectsShootThrough(shotdata->weapon))
+        if (numPenetratedObjects >= weaponGetPenetration(shotdata->weapon))
         {
             // Make room for this new hit.
             shotdata->hits[furthestindex].prop = NULL;
@@ -7104,7 +7111,7 @@ void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpa
             /**
              * This hit is the final allowed penetrable object.
              */
-            if (numPenetratedObjects + 1 == bondwalkItemGetObjectsShootThrough(shotdata->weapon))
+            if (numPenetratedObjects + 1 == weaponGetPenetration(shotdata->weapon))
             {
                 if (dist < shotdata->maxdist)
                 {
@@ -7214,7 +7221,7 @@ void shotPunch(s32 hand, s32 item_id)
         reach = 50.0f;
         chr = prop->chr;
 
-        if (getCurrentWeaponOrItem() == ITEM_SNIPERRIFLE)
+        if (gunGetFistModelItem() == ITEM_SNIPERRIFLE)
         {
             reach = 100.0f;
         }
@@ -7278,12 +7285,12 @@ void shotPunch(s32 hand, s32 item_id)
 
         if (g_musicSfxBufferPtr && g_musicSfxBufferPtr);
 
-        bullet_path_from_screen_center(&from, &vector, hand);
+        gunGetShotDir(&from, &vector, hand);
         mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &vector);
 
         if (chrTakeShot(chr, hitpart, &vector, item_id, 1))
         {
-            recall_joy2_hits_edit_detail_edit_flag(item_id, prop, -1);
+            shotPlayHitPropSound(item_id, prop, -1);
             hit = 1;
         }
     }
@@ -7305,9 +7312,9 @@ void shotFireHand(s32 hand)
     s32 item_id;
     s32 i;
 
-    if (get_hands_firing_status(hand) != 0)
+    if (gunGetFiringStatus(hand) != 0)
     {
-        item_id = getCurrentPlayerWeaponId(hand);
+        item_id = gunGetWeapon(hand);
 
         if (item_id == ITEM_TRIGGER)
         {
@@ -7342,7 +7349,7 @@ void shotFireHand(s32 hand)
         }
         else if (item_id == ITEM_SHOTGUN || item_id == ITEM_AUTOSHOT)
         {
-            inc_curplayer_hitcount_with_weapon(item_id, SHOT_REGISTER_TOTAL);
+            statsAddHit(item_id, SHOT_REGISTER_TOTAL);
 
             for (i=0; i<NUMBER_SHOTGUN_BULLETS; i++)
             {
@@ -7359,7 +7366,7 @@ void shotFireHand(s32 hand)
         }
         else
         {
-            inc_curplayer_hitcount_with_weapon(item_id, SHOT_REGISTER_TOTAL);
+            statsAddHit(item_id, SHOT_REGISTER_TOTAL);
             shotFireBullet(hand);
         }
     }
@@ -7373,4 +7380,38 @@ void shotFireHands(void)
 {
     shotFireHand(GUNRIGHT);
     shotFireHand(GUNLEFT);
+}
+
+
+// Copied from another file. Might need code reorganization to prevent the use of extra externs.
+extern ALSoundState* g_CasingSfxState;
+extern ALSoundState* g_UnusedSfxState;
+extern ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
+
+extern u32 g_GunDebApplyKeyframe;
+extern u32 g_gunDebKeyframeIndex;
+
+extern CartridgeModelFileRecord ejected_cartridge[] ;
+
+void casingsLoadModels(void) 
+{
+    s32 i = 0;
+
+    g_CasingSfxState = NULL;
+
+    while (i < NUM_IMPACT_SFX_STATES)
+    {
+        g_ImpactSfxStates[i] = NULL;
+        i++;
+    }
+
+    i = 0;
+    g_GunDebApplyKeyframe = 0;
+    g_gunDebKeyframeIndex = 0;
+
+    while (ejected_cartridge[i].header != 0) 
+    {
+        modelFileLoadToPool(ejected_cartridge[i].header, ejected_cartridge[i].text);
+        i++;
+    }
 }

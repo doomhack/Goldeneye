@@ -180,7 +180,7 @@ u32 weaponIsOneHanded(PropRecord *arg0)
     {
         ChrRecord *v = (ChrRecord*)arg0->voidp;
 
-        return bondwalkItemCheckBitflags(v->act_bytes.padding[84], WEAPONSTATBITFLAG_ONLY_1_HANDED);
+        return weaponHasFlag(v->act_bytes.padding[84], WEAPONSTATBITFLAG_ONLY_1_HANDED);
     }
 
     return 0U;
@@ -1093,7 +1093,7 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
         {
             temp_chr = chrGetEquippedWeaponProp(self, i)->chr;
 
-            if (bondwalkItemGetAutomaticFiringRate((s32) temp_chr->act_attack.attack_item) < 0)
+            if (weaponGetFireRate((s32) temp_chr->act_attack.attack_item) < 0)
             {
                 sp60.p[i] = 1;
                 if ((s32)temp_chr->act_attack.attack_item == ITEM_LASER)
@@ -1464,7 +1464,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
         {
             tmp_chr = chrGetEquippedWeaponProp(chr, i)->chr;
 
-            if (bondwalkItemGetAutomaticFiringRate((s32) tmp_chr->act_attackwalk.attack_item) < 0)
+            if (weaponGetFireRate((s32) tmp_chr->act_attackwalk.attack_item) < 0)
             {
                 sp68.p[i] = 1;
             }
@@ -1608,7 +1608,7 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
         {
             temp_v1_2 = chrGetEquippedWeaponProp(chr, i)->chr;
 
-            if (bondwalkItemGetAutomaticFiringRate((s32) temp_v1_2->act_attackroll.attack_item) < 0)
+            if (weaponGetFireRate((s32) temp_v1_2->act_attackroll.attack_item) < 0)
             {
                 sp54.p[i] = 1;
                 if (temp_v1_2->act_attackroll.attack_item == ITEM_LASER)
@@ -1884,7 +1884,7 @@ f32 chrGetClearDistInDirDefault(PropRecord *arg0, f32 arg1, f32 arg2)
  * @param arg1:
  * @param arg2:
  * @param req_animation_id: Lookup by id property in g_HitReactionTable
- * @param item: argument to bondwalkItemGetForceOfImpact
+ * @param item: argument to weaponGetImpactForce
  *
  * Address 0x7F026508.
  */
@@ -2017,7 +2017,7 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
                         modelSetAnimEndFrame(model, struck_anib->endframe);
                     }
 
-                    impact_force = bondwalkItemGetForceOfImpact(item);
+                    impact_force = weaponGetImpactForce(item);
 
                     if ((impact_force <= 0.0f) && ((self->chrflags & CHRFLAG_IMPACT_ALWAYS) != 0))
                     {
@@ -2036,11 +2036,11 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
             }
 
             chrDropItems(self);
-            increment_num_kills_display_text_in_MP();
+            statsAddKill();
 
             if (self->chrflags & CHRFLAG_COUNT_DEATH_AS_CIVILIAN)
             {
-                inc_cur_civilian_casualties();
+                statsAddCivilianKill();
             }
         }
         else
@@ -2324,7 +2324,7 @@ f32 counterOpPlayerDamage(s32 shooter, f32 damage, s32 weaponid)
 {
     if (counterOpIsGuardPlayer(shooter))
     {
-        return 0.125f * gunItemGetDestructionAmount(weaponid) * g_AiDamageModifier * get_007_damage_mod();
+        return 0.125f * weaponGetDamage(weaponid) * g_AiDamageModifier * get_007_damage_mod();
     }
 
     return damage / counterOpGetGuardHealth();
@@ -2376,28 +2376,28 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
         {
             case HIT_HEAD:
             {
-                inc_curplayer_hitcount_with_weapon(weaponid, SHOT_REGISTER_HEAD);
+                statsAddHit(weaponid, SHOT_REGISTER_HEAD);
                 break;
             }
             case HIT_GUN:
             {
-                inc_curplayer_hitcount_with_weapon(weaponid, SHOT_REGISTER_GUN);
+                statsAddHit(weaponid, SHOT_REGISTER_GUN);
                 break;
             }
             case HIT_HAT:
             {
-                inc_curplayer_hitcount_with_weapon(weaponid, SHOT_REGISTER_HAT);
+                statsAddHit(weaponid, SHOT_REGISTER_HAT);
                 break;
             }
             case HIT_CHEST:
             case HIT_PELVIS:
             {
-                inc_curplayer_hitcount_with_weapon(weaponid, SHOT_REGISTER_BODY);
+                statsAddHit(weaponid, SHOT_REGISTER_BODY);
                 break;
             }
             default:
             {
-                inc_curplayer_hitcount_with_weapon(weaponid, SHOT_REGISTER_LIMB);
+                statsAddHit(weaponid, SHOT_REGISTER_LIMB);
                 break;
             }
         }
@@ -2421,7 +2421,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
         f32   damageToCause;
         s32   playerNum;
 
-        damageToCause = gunItemGetDestructionAmount(weaponid);
+        damageToCause = weaponGetDamage(weaponid);
 
         if (isPlayer && (!isMpGame()))
         {
@@ -2699,11 +2699,11 @@ s32 chrExplosionDamage(ChrRecord *self, coord3d *arg1, f32 damage, s32 arg3)
         }
 
         chrDropItems(self);
-        increment_num_kills_display_text_in_MP();
+        statsAddKill();
 
         if (self->chrflags & CHRFLAG_COUNT_DEATH_AS_CIVILIAN)
         {
-            inc_cur_civilian_casualties();
+            statsAddCivilianKill();
         }
 
         if ((self->weapons_held[GUNRIGHT] != NULL) && ((self->weapons_held[GUNRIGHT]->obj->flags & 0x2000) == 0))
@@ -5461,8 +5461,8 @@ void chrPlayGunfireSound(ChrRecord *self, s32 arg1, s32 arg2)
     temp_v1 = prop->chr;
     phi_a1 = 0;
 
-    sp33 = bondwalkItemGetSoundTriggerRate((s32) temp_v1->act_attack.attack_item);
-    sp30 = bondwalkItemGetSound((s32) temp_v1->act_attack.attack_item);
+    sp33 = weaponGetSoundRate((s32) temp_v1->act_attack.attack_item);
+    sp30 = weaponGetSound((s32) temp_v1->act_attack.attack_item);
 
     if (arg2 != 0)
     {
@@ -6303,7 +6303,7 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
 
         phi_f2_4 *= g_AiAccuracyModifier;
 
-        if (bondwalkItemGetAutomaticFiringRate(item) <= 0)
+        if (weaponGetFireRate(item) <= 0)
         {
             phi_f2_4 *= 2.0f;
         }
@@ -6317,7 +6317,7 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
 
         if (self->shotbondsum >= 1.0f)
         {
-            t2 = (0.125f * gunItemGetDestructionAmount(item) * g_AiDamageModifier) * get_007_damage_mod();
+            t2 = (0.125f * weaponGetDamage(item) * g_AiDamageModifier) * get_007_damage_mod();
 
             if ((item == ITEM_SHOTGUN) || (item == ITEM_AUTOSHOT))
             {
@@ -6464,23 +6464,23 @@ void chrFireHand(ChrRecord *self, s32 hand)
         if (
             (sp44 == 0)
             || (self->seen_bond_time >= (g_GlobalTimer - CHRLV_SEEN_RECENT_CHECK))
-            || (bondwalkItemGetAutomaticFiringRate(prop_selfchr->act_attack.attack_item) < 0))
+            || (weaponGetFireRate(prop_selfchr->act_attack.attack_item) < 0))
         {
             sp268 = 0;
             sp264 = 0;
 
             self->firecount[hand]++;
 
-            if (bondwalkItemGetAutomaticFiringRate(prop_selfchr->act_attack.attack_item) < 0)
+            if (weaponGetFireRate(prop_selfchr->act_attack.attack_item) < 0)
             {
                 sp268 = 1;
                 sp264 = 1;
             }
-            else if (((s32) self->firecount[hand] % bondwalkItemGetAutomaticFiringRate(prop_selfchr->act_attack.attack_item)) == 0)
+            else if (((s32) self->firecount[hand] % weaponGetFireRate(prop_selfchr->act_attack.attack_item)) == 0)
             {
                 sp268 = 1;
 
-                if ((((s32) self->firecount[hand] % (s32) (bondwalkItemGetAutomaticFiringRate(prop_selfchr->act_attack.attack_item) * 2)) == 0)
+                if ((((s32) self->firecount[hand] % (s32) (weaponGetFireRate(prop_selfchr->act_attack.attack_item) * 2)) == 0)
                     || (prop_selfchr->act_attack.attack_item == ITEM_LASER))
                 {
                     sp264 = 1;
@@ -6584,7 +6584,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                 sp1BC.f[1] = sp1AC.f[1] * g_GlobalTimerDelta;
                                 sp1BC.f[2] = sp1AC.f[2] * g_GlobalTimerDelta;
 
-                                gunInitProjectileObject((ObjectRecord *)sp208, &sp240, sp238, &sp16C, &sp1BC, &sp1C8, self_prop);
+                                gunLaunchProjectile((ObjectRecord *)sp208, &sp240, sp238, &sp16C, &sp1BC, &sp1C8, self_prop);
 
                                 if (sp208->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                                 {
@@ -6633,7 +6633,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                 mtx4LoadYRotation(subroty, &sp5C);
                                 mtx4MultAffineInPlace(&sp5C, &sp9C);
                                 sp128->timer = CHRLV_DEFAULT_TIMER;
-                                gunInitProjectileObject((ObjectRecord *) sp128, &sp240, sp238, &sp9C, &spDC, &spE8, self_prop);
+                                gunLaunchProjectile((ObjectRecord *) sp128, &sp240, sp238, &sp9C, &spDC, &spE8, self_prop);
 
                                 if (sp128->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                                 {
@@ -6685,7 +6685,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                             sp258.f[1] = player_prop->pos.f[1];
                             sp258.f[2] = player_prop->pos.f[2];
                             sp254 = player_prop->stan;
-                            recall_joy2_hits_edit_detail_edit_flag(prop_selfchr->act_attack.attack_item, &player_prop->type, -1);
+                            shotPlayHitPropSound(prop_selfchr->act_attack.attack_item, &player_prop->type, -1);
                         }
                         else
                         {
@@ -6708,7 +6708,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
 
                             if (g_StanHitProp != NULL)
                             {
-                                recall_joy2_hits_edit_detail_edit_flag(prop_selfchr->act_attack.attack_item, &g_StanHitProp->type, -1);
+                                shotPlayHitPropSound(prop_selfchr->act_attack.attack_item, &g_StanHitProp->type, -1);
 
                                 if (g_StanHitProp->type == PROP_TYPE_CHR)
                                 {
@@ -6721,7 +6721,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                 {
                                     chrobjMaybeDetonateObjectIfFlags(
                                         g_StanHitProp->obj,
-                                        gunItemGetDestructionAmount(prop_selfchr->act_attack.attack_item),
+                                        weaponGetDamage(prop_selfchr->act_attack.attack_item),
                                         &sp258,
                                         prop_selfchr->act_attack.attack_item,
                                         playerGetCurrentNum());
@@ -6729,7 +6729,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                             }
                             else
                             {
-                                recall_joy2_hits_edit_flag(prop_selfchr->act_attack.attack_item, &sp258, -1);
+                                shotPlayHitSound(prop_selfchr->act_attack.attack_item, &sp258, -1);
                             }
                         }
 
@@ -6764,7 +6764,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
 
                         if (sp264 != 0)
                         {
-                            CapBeamLengthAndDecideIfRendered(&self->beams[hand], prop_selfchr->act_attack.attack_item, &sp240, &sp258);
+                            beamCreate(&self->beams[hand], prop_selfchr->act_attack.attack_item, &sp240, &sp258);
                         }
                     }
                 }
@@ -10118,7 +10118,7 @@ bool chrIsTargetedByPlayer(ChrRecord *self)
     {
         mymodel = self->model;
         scale   = modelGetRadius(mymodel) * 0.8f;
-        sub_GAME_7F068190(&zeropos, &pos);
+        gunGetAimRay(&zeropos, &pos);
         modelGetRootPosition(mymodel, &vec);
         mtx4TransformVecInPlace(camGetWorldToScreenMtxf(), &vec);
 

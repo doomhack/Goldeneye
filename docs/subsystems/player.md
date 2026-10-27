@@ -2,7 +2,7 @@
 
 Bond, or each player in multiplayer and co-op: movement and collision, the camera, the
 watch and pause tilt, HUD messages, health and death, and the tank. Guns, firing and the
-inventory are the weapons subsystem (`gun.c`, `gunfire.c`, `bondinv.c`), mapped separately.
+inventory are in [weapons](weapons.md).
 
 | File | What it holds |
 | --- | --- |

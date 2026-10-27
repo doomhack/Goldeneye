@@ -294,11 +294,11 @@ void playerApplyIntro(void)
                         if (intro_item->item_left >= 0)
                         {
                             weaponLoadProjectileModels(intro_item->item_left);
-                            bondinvAddDoublesInvItem(intro_item->item_right, intro_item->item_left);
+                            invAddDualItem(intro_item->item_right, intro_item->item_left);
                         }
                         else
                         {
-                            bondinvAddInvItem(intro_item->item_right);
+                            invAddItem(intro_item->item_right);
                         }
 
                         if (set_starting_weapon == 0)
@@ -324,7 +324,7 @@ void playerApplyIntro(void)
                 {
                     if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback)
                     {
-                        give_cur_player_ammo(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
+                        ammoGive(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
                     }
 
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroAmmo));
@@ -466,7 +466,7 @@ void playerApplyIntro(void)
         }
     }
 
-    bondinvAddInvItem(ITEM_FIST);
+    invAddItem(ITEM_FIST);
 
     if (set_starting_weapon == 0)
     {

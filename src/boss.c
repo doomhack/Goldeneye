@@ -41,6 +41,7 @@
 #include "game/nav/stan.h"
 #include "game/text/textrelated.h"
 #include "game/player/player.h"
+#include "game/player/gun.h"
 #include "game/player/bondhead.h"
 #include "game/level/frametiming.h"
 #include "PR/R4300.h"
@@ -302,7 +303,7 @@ void bossInitMainthreadData(void)
     null_init_main_2();
     casingsInit();
     animLoadTable();
-    init_weapon_animation_groups_maybe();
+    gunsInitAnimGroups();
     reset_counter_rand_body_head();
     null_init_main_3();
     bheadInitGaitModel();
