@@ -33,7 +33,6 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `asset/` | Loading files from ROM and decompressing them. See [subsystems/assets-memory.md](subsystems/assets-memory.md) | `fileload.c`, `rzip.c` |
 | `audio/` | Which music plays in a level and when it changes. See [subsystems/audio.md](subsystems/audio.md) | `levelmusic.c` |
 | `replay/` | Rare's demo playback, and the test hooks the replay tests use | `ramromreplay.c`, `testhooks.c` |
-| `debug/` | Debug menu, free camera, speed graph, host link (Indy) code. To be deleted in Phase 2 | `debugmenu_handler.c`, `debug_camera.c` |
 
 Each layer mostly calls the ones below it: menus and the level loop drive the player, guards
 and props; those use navigation, models and the world; everything draws through `gfx/` and
@@ -55,4 +54,3 @@ that subsystem's main file.
 | `player/bondview.c` | The camera helpers (`cam*`) and the player globals, not Bond's view as a whole |
 | `player/bondview2.c` | Most of the player: movement, camera modes, the watch, health, the HUD, co-op and counter-op |
 | `audio/levelmusic.c` | The level music state and the music slots (was `mp_music.c`), used in solo too |
-| `debug/deb_loadallmodels.c` | Debug model loading, but also `init_obj_register_difficulty_vals`, which guard setup calls on every level |

@@ -14,7 +14,6 @@
 #include "game/player/bondview.h"
 #include "game/menu/cheat.h"
 #include "game/chr/chr.h"
-#include "game/debug/debugmenu_handler.h"
 #include "game/save/file.h"
 #include "game/menu/front.h"
 #include "game/player/gun.h"
@@ -31,6 +30,9 @@
 
 
 u8 g_CheatPlayerMask[CHEAT_INVALID + 1];
+bool g_CheatLineMode = FALSE;
+bool g_CheatTurboMode = FALSE;
+bool g_CheatShowPos = FALSE;
 
 #pragma region ButtonCodes
 
@@ -1087,7 +1089,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_LINEMODE:
-            set_debug_VisCVG_flag(TRUE);
+            g_CheatLineMode = TRUE;
             return;
 
         case CHEAT_2X_HEALTH:
@@ -1241,10 +1243,10 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_TURBO_MODE:
-            if (!get_debug_fast_bond_flag())
+            if (!g_CheatTurboMode)
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_1D_FASTMODEON_LF)));
-                set_debug_fast_bond_flag(TRUE);
+                g_CheatTurboMode = TRUE;
                 return;
             }
             return;
@@ -1254,9 +1256,9 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
         //*/
         case CHEAT_DEBUG_POS:
-            if (!get_debug_testingmanpos_flag())
+            if (!g_CheatShowPos)
             {
-                set_debug_testingmanpos_flag(TRUE);
+                g_CheatShowPos = TRUE;
                 return;
             }
             return;
@@ -1435,9 +1437,6 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         default:
-            #ifdef DEBUG
-            osSyncPrintf("Dodgy Cheat Number\n");
-            #endif
             return;
     }
 }
@@ -1490,7 +1489,7 @@ void cheatTurnOff(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_LINEMODE:
-            set_debug_VisCVG_flag(FALSE);
+            g_CheatLineMode = FALSE;
             return;
 
         case CHEAT_INVISIBILITY:
@@ -1533,18 +1532,18 @@ void cheatTurnOff(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_TURBO_MODE:
-            if (get_debug_fast_bond_flag())
+            if (g_CheatTurboMode)
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_27_FASTMODEOFF_LF)));
-                set_debug_fast_bond_flag(FALSE);
+                g_CheatTurboMode = FALSE;
                 return;
             }
             return;
 
         case CHEAT_DEBUG_POS:
-            if (get_debug_testingmanpos_flag())
+            if (g_CheatShowPos)
             {
-                set_debug_testingmanpos_flag(FALSE);
+                g_CheatShowPos = FALSE;
             }
             return;
 
@@ -1614,9 +1613,6 @@ void cheatTurnOff(CHEAT_ID cheat_id)
         case CHEAT_UNLOCK_EGYPT:
 
         default:
-#ifdef DEBUG
-            osSyncPrintf("Dodgy Cheat Number\n");
-#endif
 
         break;
     }
@@ -1729,22 +1725,6 @@ void cheatSetDkMode(CHEAT_ID cheat_id)
 #endif
     }
 }
-#ifdef DEBUG
-void cheatResetText()
-{
-    int i;
-    for (i = 0; i < CHEAT_MAX; i++)
-    {
-        g_CheatPlayerMask[i] = 0;
-    }
-}
-
-void cheatResetPlayerDisplay()
-{
-    g_CurrentPlayer->count_of_something     = 0;
-    g_CurrentPlayer->can_display_cheat_text = 0;
-}
-#endif
 
 
 void cheatResetPlayerMasks(void) {

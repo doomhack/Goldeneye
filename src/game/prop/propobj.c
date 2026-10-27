@@ -345,9 +345,6 @@ void objEnsureProjectile(PropRecord *prop)
     ObjectRecord *po = prop->obj; //canonical name
     if (po->runtime_bitflags & RUNTIMEBITFLAG_EMBEDDED)
     {
-        #ifdef DEBUG
-        assert(po->move.attach->fallinfo==NULL);
-        #endif
         po->embedment->projectile = projectileAllocate();
     }
     else if ((po->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) == 0)
@@ -839,12 +836,6 @@ void objPlaceAtPad(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix, Sta
             baseobj->runtime_pos.y = newPos.y;
             baseobj->runtime_pos.z = newPos.z;
         }
-        #ifdef DEBUG
-        else
-        {
-            osSyncPrintf("prop not positioned correctly!\n");
-        }
-        #endif
     }
 
     chrobjCollisionRelated(baseobj);
@@ -904,16 +895,6 @@ void objFreeEmbedmentOrProjectile(PropRecord *prop)
             {
                 projectileFree(obj->embedment->projectile);
             }
-            #ifdef DEBUG
-            else
-            {
-                osSyncPrintf("ERROR: PROPHIDD_ATTACHED was, but move.attach was NULL\a\n");
-            osSyncPrintf("po->obj=%d\n", obj->obj);
-                osSyncPrintf("p->flags=%08x\n", prop->flags);
-                osSyncPrintf("po->flags2=%08x\n", obj->flags2);
-                osSyncPrintf("p->timetoregen=%d\n", prop->timetoregen);
-            }
-            #endif
 
             embedmentFree(obj->embedment);
         }
@@ -2340,7 +2321,7 @@ void objUpdateThrowKnifeSound(ObjectRecord *obj)
         slot = obj->projectile->soundSlot;
         sfxindex = randomGetNext() % 3;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
         if ((s32)obj->projectile->lastSfxTimer < g_GlobalTimer - 6) {
 #else
         if ((s32)obj->projectile->lastSfxTimer < g_GlobalTimer - 5) 
@@ -6958,9 +6939,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
                 } 
                 else 
                 {
-                    #ifdef DEBUG
-                    assert(m->time>0);
-                    #endif
 
                     yielding = TRUE;
                     screen->pause60 = m->time;
@@ -7757,15 +7735,9 @@ void objDeform(ObjectRecord *obj, E_EXPLOSIONTYPE explosiontype)
     }
 #endif
     
-    if (get_debug_explosioninfo_flag() || (deformseed == 0))
+    if (deformseed == 0)
     {
-        get_debug_explosioninfo_flag();
         deformseed = randomGetNext();
-        
-        if (get_debug_explosioninfo_flag())
-        {
-            deformseed &= 0xffff;
-        }
     }
     
     explosionClearBulletImpactRoom(obj->prop);
@@ -11715,9 +11687,6 @@ void proxmineAdd(WeaponObjRecord* proxy)
         if (proxy_mine_table[i] == NULL)
         {
             proxy_mine_table[i] = proxy;
-            #ifdef DEBUG
-                assert(i<PROXIMITYARRMAX);
-            #endif
 
             return;
         }
@@ -11877,9 +11846,6 @@ bool chrEquipWeapon(WeaponObjRecord *wep, ChrRecord *chr)
             }
             else
             {
-                 #ifdef DEBUG
-                    osSyncPrintf("attempted multiple attach!!!\n");
-                #endif
                 return FALSE;
             }
         }
@@ -12825,17 +12791,11 @@ void doorUpdateSoundVolume(DoorRecord* arg0)
 
         if (open_playing != 0)
         {
-            #ifdef DEBUG
-            assert( po->audiostate!=NULL);
-            #endif
             sndCreatePostEvent(arg0->openSoundState, 8, sp1C);
         }
 
         if (close_playing != 0)
         {
-            #ifdef DEBUG
-            assert( po->audiostate2!=NULL);
-            #endif
             sndCreatePostEvent(arg0->closeSoundState, 8, sp1C);
         }
     }
@@ -13424,7 +13384,7 @@ s32 propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox)
 f32 chrobjFogVisRangeRelated(PropRecord *prop, f32 size)
 {
     f32 ret;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     struct NearFogRecord *nfd;
 #else
     struct NearFogRecordF *nfd;

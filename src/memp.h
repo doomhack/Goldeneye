@@ -55,13 +55,10 @@ typedef enum MEMP_RESIZE_RESULT
     MEMP_RESIZE_OK = 1,
     MEMP_RESIZE_NOT_LAST = 2
 } MEMP_RESIZE_RESULT;
-
-void mempInit(void);
 void mempInitPools(int areaStart, int areaSize);
 void mempSetPoolSizes(s32 sizes[8]);
 void *mempAlloc(u32 bytes, u8 pool);
 MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newSize, u8 pool);
-void mempCheckPools(void);
 s32 mempGetFreeBytes(u8 pool);
 u32 mempAllocPacked(u32 sizeAndPool);
 void mempResetPool(u8 pool);

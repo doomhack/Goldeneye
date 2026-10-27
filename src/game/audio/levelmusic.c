@@ -310,9 +310,6 @@ void levelMusicSetState(MUSICSTATE arg0)
         default:
         break;
     }
-#ifdef DEBUG
-    osSyncPrintf("Invalid current music state %d\n", arg0);
-#endif
 
     while(1)
     {

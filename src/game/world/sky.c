@@ -60,9 +60,6 @@ bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
     f32 f12_2;
     f32 sp24;
     u32 stack[2];
-#ifdef DEBUG
-    assert(eye[1] < fogGetCurrentEnvironmentp()->skyheight); //canonically bgFogGet()
-#endif
 
     if (f12 > 1.0f)
     {
@@ -112,9 +109,6 @@ bool skyIsCornerInWater(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
     f32 f12_2;
     f32 sp24;
     u32 stack[2];
-#ifdef DEBUG
-    assert(eye[1] < fogGetCurrentEnvironmentp()->seaheight);
-#endif
 
     if (f12 > 1.0f)
     {

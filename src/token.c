@@ -12,7 +12,7 @@
 u32 g_TokenString[G_TOKEN_STRING_LEN];
 s32 g_TokenCount = 1;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 const char *g_Tokens[35] = {0};
 #else
 const char *g_Tokens[10] = {0};

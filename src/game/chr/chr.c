@@ -8,11 +8,11 @@
  */
 #include <ultra64.h>
 #include <memp.h>
-#include "game/debug/deb_loadallmodels.h"
 #include <PR/gbi.h>
 #include <bondgame.h>
 #include <bondconstants.h>
 #include <bondtypes.h>
+#include <macro.h>
 #include <random.h>
 #include <snd.h>
 #include <math.h>
@@ -23,7 +23,6 @@
 #include "game/chr/chrai.h"
 #include "game/chr/chraction.h"
 #include "game/model/chrobjdata.h"
-#include "game/debug/debugmenu_handler.h"
 #include "game/gfx/dyn.h"
 #include "game/gfx/vtxstore.h"
 #include "game/prop/glass.h"
@@ -1094,6 +1093,7 @@ s32 objectiveregisters1 = 0;
  * Address 0x8003097C.
 */
 ChrRecord* g_BgChrs = 0;
+static ChrRecord g_BgChrTemplate = { 0 };
 
 /**
  * Number of items in g_BgChrs.
@@ -1194,16 +1194,6 @@ void dynAllocateVerticesDiscard(int param_1)
 }
 
 
-void chrSetShowPatrols(s32 flag)
-{
-  g_ChrShowPatrols = flag;
-}
-
-
-s32 chrGetShowPatrols(void)
-{
-  return g_ChrShowPatrols;
-}
 
 
 /**
@@ -1941,7 +1931,7 @@ f32 chrGetFlinchAmount(ChrRecord *chr)
 {
     f32 temp_f2;
     f32 phi_f2;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     f32 rise = 10.0f;
     f32 fall = 20.0f;
 #else
@@ -2409,9 +2399,6 @@ s32 chrTick(PropRecord *prop)
             {
                 tickamount = 1;
             }
-#ifdef DEBUG
-            osSyncPrintf("anim=%d frame=%f backy=%f\n", g_ChrDebugAnimIndex, chr->model->animframe1, (chr->aimendlshoulder * 360.0) / 6.283185);
-#endif
         }
     }
 
@@ -2473,9 +2460,6 @@ s32 chrTick(PropRecord *prop)
 
                 if (headSwitchVisible)
                 {
-#ifdef DEBUG
-                    osSyncPrintf("\nVISIBLE MAGIC MODE!!!!\n\n");
-#endif
 
                     modelGetRootPosition(model, &chr->prevpos);
                     modelCalcPosition(model);
@@ -2583,7 +2567,6 @@ after_position_update:
 
     if (headSwitchVisible)
     {
-        if (get_debug_chrnum_flag()) {}
 
         prop->flags |= PROPFLAG_ONSCREEN;
         chr->chrflags |= CHRFLAG_HAS_BEEN_ON_SCREEN;
@@ -2679,93 +2662,6 @@ after_position_update:
                 headindex = chr->headnum - HEAD_START;
                 entry = &((struct headHat (*)[6]) headHat_array_8003E464)[headindex][hat];
 
-                if (!get_debug_render_raster())
-                {
-                    changed = 0;
-
-                    if (joyGetButtons(PLAYER_1, L_TRIG))
-                    {
-                        if (joyGetButtons(PLAYER_1, A_BUTTON))
-                        {
-                            /* The differing spellings of 0.02 (and 0.995/1.005
-                               below) are intentional and load-bearing: IDO interns
-                               float literals by lexical spelling, and the ROM's
-                               rodata pool contains six separate 0.02 words
-                               (formerly hosted as D_80051D58..D_80051D6C). */
-                            entry->zoffset -= 0.02f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, B_BUTTON))
-                        {
-                            entry->zoffset += 0.020f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, D_CBUTTONS))
-                        {
-                            entry->yoffset -= 0.0200f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, U_CBUTTONS))
-                        {
-                            entry->yoffset += 0.02000f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, L_CBUTTONS))
-                        {
-                            entry->xoffset -= 0.020000f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, R_CBUTTONS))
-                        {
-                            entry->xoffset += 0.0200000f;
-                            changed = 1;
-                        }
-                    }
-
-                    if (joyGetButtons(PLAYER_1, R_TRIG))
-                    {
-                        if (joyGetButtons(PLAYER_1, A_BUTTON))
-                        {
-                            entry->zsize *= 0.995f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, B_BUTTON))
-                        {
-                            entry->zsize *= 1.005f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, D_CBUTTONS))
-                        {
-                            entry->ysize *= 0.9950f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, U_CBUTTONS))
-                        {
-                            entry->ysize *= 1.0050f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, L_CBUTTONS))
-                        {
-                            entry->xsize *= 0.99500f;
-                            changed = 1;
-                        }
-
-                        if (joyGetButtons(PLAYER_1, R_CBUTTONS))
-                        {
-                            entry->xsize *= 1.00500f;
-                            changed = 1;
-                        }
-                    }
-                }
 
                 pos.x = entry->xoffset * 21.3f;
                 pos.y = entry->yoffset * 21.3f;
@@ -3678,67 +3574,9 @@ void chrRemovedUnused(f32 arg0)
 }
 
 
-void chrDebugSetAnimOverride(s32 param_1)
-{
-  g_ChrDebugAnimOverride = param_1;
-  return;
-}
 
 
-/**
- * Decrements g_ChrDebugAnimIndex.
- * If less than zero, the variable will then be set to the
- * number of non-zero entries in animation_table_ptrs1.
- *
- * Address 0x7F022E30.
- */
-void chrDebugPrevAnim(void)
-{
-    g_ChrDebugAnimIndex--;
 
-    if (g_ChrDebugAnimIndex < 0)
-    {
-        for (
-            g_ChrDebugAnimIndex = 0;
-            animation_table_ptrs1[g_ChrDebugAnimIndex+1] != 0;
-            g_ChrDebugAnimIndex++)
-        {
-            // nothing to do.
-        }
-    }
-}
-
-
-/**
- * Decrements g_ChrDebugAnimIndex.
- * If the entry in animation_table_ptrs1 at that index is zero
- * then the global variable will be set to zero.
- *
- * Address 0x7F022E90.
- */
-void chrDebugNextAnim(void)
-{
-    g_ChrDebugAnimIndex++;
-
-    if (animation_table_ptrs1[g_ChrDebugAnimIndex] == 0)
-    {
-        g_ChrDebugAnimIndex = 0;
-    }
-}
-
-
-/**
- * Address 0x7F022EC8.
- */
-void chrDebugTogglePause(void)
-{
-    g_ChrDebugPaused = !g_ChrDebugPaused;
-}
-
-
-void chrDebugSetStep(s32 param_1){
-  g_ChrDebugStep = param_1;
-}
 
 
 /**
@@ -3958,7 +3796,70 @@ void chrsInit(void) {
     g_NextChrNum = 0x1388;
     g_ChrSlots = 0;
     g_NumChrSlots = 0;
-    init_obj_register_difficulty_vals();
+    objectiveregisters1 = 0;
+    g_AiAccuracyModifier = 1.0f;
+    g_AiDamageModifier = 1.0f;
+    g_AiHealthModifier = 1.0f;
+    g_AiReactionSpeed = 1.0f;
+    g_SeenBondRecentlyGuardCount = 0;
+}
+
+/**
+ * Makes a background chr (g_BgChrs) for each of the setup's AI lists numbered 0x1000 and
+ * up: invisible dummies that only run their AI list.
+ */
+void bgChrsInit(void)
+{
+    s32 i;
+    s32 count;
+
+    g_BgChrs = NULL;
+    g_NumBgChrs = 0;
+
+    if (!g_CurrentSetup.ailists) { return; }
+
+    count = 0;
+
+    // Count the number of background AI lists
+    i = 0;
+    while (g_CurrentSetup.ailists[i].ailist)
+    {
+        if (g_CurrentSetup.ailists[i].ID >= 0x1000)
+        {
+            g_NumBgChrs++;
+        }
+
+        i++;
+    }
+
+    if (g_NumBgChrs > 0)
+    {
+        ChrRecord tmp;
+
+        // Allocate BG chrs
+        g_BgChrs = mempAlloc(ALIGN16_a(g_NumBgChrs * sizeof(ChrRecord)), MEMPOOL_STAGE);
+
+        // Initialise BG chrs
+        i = 0;
+        while (g_CurrentSetup.ailists[i].ailist)
+        {
+            if (g_CurrentSetup.ailists[i].ID >= 0x1000)
+            {
+                tmp = g_BgChrTemplate;
+
+                g_BgChrs[count] = tmp;
+
+                g_BgChrs[count].chrnum = 0xFE;
+                g_BgChrs[count].ailist = g_CurrentSetup.ailists[i].ailist;
+                g_BgChrs[count].aioffset = 0;
+                g_BgChrs[count].aireturnlist = -1;
+                g_BgChrs[count].actiontype = ACT_NULL;
+                count++;
+            }
+
+            i++;
+        }
+    }
 }
 
 void chrsAllocateSlots(s32 count)

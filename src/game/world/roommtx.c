@@ -77,11 +77,6 @@ void roomMtxSetOriginRoom(s32 roomIndex) {
  */
 void roomMtxAssign(int mtx,int room)
 {
-#ifdef DEBUG
-    //check we are clear first before assignment
-    assert(g_BgRoomInfo[room].mtxid == -1);
-    assert(mtxbufferroom[mtx] == -1);
-#endif
 
     g_BgRoomInfo[room].mtxIndex = mtx;
     g_RoomMtxRoom[mtx] = room;
@@ -95,11 +90,6 @@ void roomMtxAssign(int mtx,int room)
  */
 void roomMtxUnassign(int mtx,int room)
 {
-#ifdef DEBUG
-    // check the requested mtx is assigned before removing
-    assert(g_BgRoomInfo[room].mtxid == mtx);
-    assert(mtxbufferroom[mtx] == room);
-#endif
 
     g_BgRoomInfo[room].mtxIndex = -1;
     g_RoomMtxRoom[mtx] = -1;
@@ -191,18 +181,10 @@ s32 roomMtxGet(s32 room)
         roomMtxAssign(mtx, room);
 
         g_RoomMtxAge[mtx] = 0;
-#ifdef DEBUG
-        assert(g_BgRoomInfo[room].mtxid == mtx);
-       // assert(mtxbufferroom[mtx] == room);
-#endif
     }
     else
     {
         g_RoomMtxAge[mtx] = 0;
-        #ifdef DEBUG
-        assert(g_BgRoomInfo[room].mtxid == mtx);
-        //assert(mtxbufferroom[mtx] == room);
-        #endif
         return mtx;
     }
 

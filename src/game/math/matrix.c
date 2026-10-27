@@ -831,19 +831,6 @@ void mtx4LoadAlignViaGu(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z)
 /** Prints a matrix in debug builds. */
 void mtx4Print(Mtxf *matrix)
 {
-#ifdef DEBUG
-    int i, j;
-
-    for (i = 0; i < 4; i++)
-    {
-        osSyncPrintf("(");
-        for (j = 0; j < 4; j++)
-        {
-            osSyncPrintf(" %9f", matrix->m[i][j]);
-        }
-        osSyncPrintf(" )\n");
-    }
-#endif
     return;
 }
 

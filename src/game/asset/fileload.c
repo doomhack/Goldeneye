@@ -17,17 +17,14 @@
 #include <ultra64.h>
 #include "macro.h"
 #include "game/asset/fileload.h"
-#include <deb.h>
 #include <memp.h>
 #include <assets/obseg/obseg.h>
 #include "game/asset/rzip.h"
-#include "game/debug/indy_comms.h"
 #include "assets/obseg/file_resource_id_enums.h"
 
 /** What the loader knows about each file, indexed like g_FileTable. */
 FileInfo m_fileInfo[OBJ_INDEX_MAX];
 
-s32 m_fileDebug = 0;
 
 #include <assets/obseg/file_resource_table.inc.c>
 
@@ -69,56 +66,12 @@ void fileLoadFromRom(u8 *dst, s32 bufferSize, FileEntry *entry, FileInfo *info)
     }
 }
 
-/**
- * Like fileLoadFromRom, but loads the file from the development kit's host PC. Files from
- * the host may or may not be compressed.
- */
-void fileLoadFromHost(u8 *dst, s32 bufferSize, FileEntry *entry, FileInfo *info)
-{
-    u8 *payload;
-    u8 huftBuf[8448];
-    s32 size;
-    static const u8 rzipMagic1[] = {0x11, 0x72, 0x00, 0x00};
-    static const u8 rzipMagic2[] = {0x11, 0x72, 0x00, 0x00};
-
-    if (!bufferSize)
-    {
-        indycommHostLoadFile(entry->filename, dst);
-        return;
-    }
-
-    indycommHostCheckFileExists(entry->filename, &info->hostSize);
-    payload = (dst + bufferSize) - ((info->hostSize + 7) & -8);
-
-    if ((payload - dst) < 8U)
-    {
-        info->loadedSize = 0;
-    }
-    else
-    {
-        indycommHostLoadFile(entry->filename, payload);
-
-        if ((payload[0] == rzipMagic1[0]) && (payload[1] == rzipMagic2[1]))
-        {
-            size = rzipInflate(payload, dst, &huftBuf);
-        }
-        else
-        {
-            bcopy(payload, dst, info->hostSize);
-            size = info->hostSize;
-        }
-
-        info->loadedSize = size;
-    }
-}
-
 /** Works out each file's compressed size from where the next file starts in the ROM. */
 void fileInit(void)
 {
     s32 size;
     s32 i;
 
-    debTryAdd(&m_fileDebug, "ob_c_debug");
 
     for (i = 1; i < m_fileCount - 1; i++)
     {
@@ -126,7 +79,6 @@ void fileInit(void)
 
         m_fileInfo[i].romSize = size;
         m_fileInfo[i].loadedSize = 0;
-        m_fileInfo[i].hostSize = 0;
         m_fileInfo[i].allocatedSize = 0;
 
         if (size);
@@ -158,17 +110,6 @@ void fileLoadPartByName(u8 *name, u8 *dst, s32 offset, s32 len)
     }
 }
 
-#if defined(LEFTOVERDEBUG)
-void *fileLoadToPool2(s32 index, FileLoadMode mode, s32 size, u8 pool)
-{
-    return fileLoadToPool(index, mode, size, pool);
-}
-
-void *fileLoadToAddr2(int index, FileLoadMode mode, u8 *dst, int size)
-{
-    return fileLoadToAddr(index, mode, dst, size);
-}
-#endif
 
 void *fileLoadByNameToPool(char *name, FileLoadMode mode, s32 size, u8 pool)
 {
@@ -206,14 +147,7 @@ void *fileLoadToPool(s32 index, FileLoadMode mode, s32 size, u8 pool)
         data = mempAlloc(info->loadedSize, pool);
         info->allocatedSize = info->loadedSize;
 
-        if (g_FileTable[index].romAddr == 0)
-        {
-            fileLoadFromHost(data, info->loadedSize, &g_FileTable[index], info);
-        }
-        else
-        {
-            fileLoadFromRom(data, info->loadedSize, &g_FileTable[index], info);
-        }
+        fileLoadFromRom(data, info->loadedSize, &g_FileTable[index], info);
 
         if (mode != FILELOAD_KEEP_SPARE)
         {
@@ -225,27 +159,13 @@ void *fileLoadToPool(s32 index, FileLoadMode mode, s32 size, u8 pool)
         // Unused: loads the file without decompressing it.
         if (info->loadedSize == 0)
         {
-            if (info->romSize != 0)
-            {
-                info->loadedSize = info->romSize;
-            }
-            else
-            {
-                info->loadedSize = info->hostSize;
-            }
+            info->loadedSize = info->romSize;
         }
 
         data = mempAlloc(info->loadedSize, pool);
         info->allocatedSize = info->loadedSize;
 
-        if (g_FileTable[index].romAddr == 0)
-        {
-            fileLoadFromHost(data, 0, &g_FileTable[index], info);
-        }
-        else
-        {
-            fileLoadFromRom(data, 0, &g_FileTable[index], info);
-        }
+        fileLoadFromRom(data, 0, &g_FileTable[index], info);
 
         if (size == 0)
         {
@@ -267,39 +187,17 @@ void *fileLoadToAddr(s32 index, FileLoadMode mode, void *dst, s32 bufferSize)
 
     if (!info->loadedSize)
     {
-        if (info->romSize)
-        {
-            info->loadedSize = info->romSize;
-        }
-        else
-        {
-            info->loadedSize = info->hostSize;
-        }
+        info->loadedSize = info->romSize;
     }
 
     if (mode == FILELOAD_KEEP_SPARE || mode == FILELOAD_TRIM || mode == FILELOAD_TRIM_2)
     {
-        if (!g_FileTable[index].romAddr)
-        {
-            info->allocatedSize = bufferSize;
-            fileLoadFromHost(dst, bufferSize, &g_FileTable[index], &m_fileInfo[index]);
-        }
-        else
-        {
-            info->allocatedSize = bufferSize;
-            fileLoadFromRom(dst, bufferSize, &g_FileTable[index], &m_fileInfo[index]);
-        }
+        info->allocatedSize = bufferSize;
+        fileLoadFromRom(dst, bufferSize, &g_FileTable[index], &m_fileInfo[index]);
     }
     else
     {
-        if (!g_FileTable[index].romAddr)
-        {
-            fileLoadFromHost(dst, 0, &g_FileTable[index], &m_fileInfo[index]);
-        }
-        else
-        {
-            fileLoadFromRom(dst, 0, &g_FileTable[index], &m_fileInfo[index]);
-        }
+        fileLoadFromRom(dst, 0, &g_FileTable[index], &m_fileInfo[index]);
     }
 
     return dst;
@@ -368,19 +266,10 @@ void fileForgetMePool(void)
     fileForgetPool(MEMPOOL_ME);
 }
 
-/**
- * Returns the index of a file in g_FileTable, or 0 if there is no such file.
- *
- * If the name isn't in the table, it asks the development kit's host PC for it and adds
- * it to the table if it exists there. On a console that always fails, but m_fileCount is
- * still increased, so each failed lookup uses up a table slot.
- */
+/** Returns the index of a file in g_FileTable, or 0 if there is no such file. */
 s32 fileGetIndex(char *name)
 {
     s32 i;
-    s32 unused;
-    s32 size;
-    FileInfo *info;
 
     for (i = 1; i < m_fileCount; i++)
     {
@@ -393,36 +282,7 @@ s32 fileGetIndex(char *name)
         }
     }
 
-    i = m_fileCount;
-
-    if (i >= OBJ_INDEX_MAX)
-    {
-        return 0;
-    }
-
-    m_fileCount++;
-
-    if (indycommHostCheckFileExists(name, &size) == 0)
-    {
-        return 0;
-    }
-
-    g_FileTable[i].index = i;
-    g_FileTable[i].filename = name;
-
-    info = &m_fileInfo[i];
-
-    if (1);
-
-    info->unk_11 = 0;
-    g_FileTable[i].romAddr = 0;
-    info->romSize = 0;
-    info->loadedSize = 0;
-    info->hostSize = ALIGN16_a(size);
-    info->allocatedSize = 0;
-    info->loadedPool = 0;
-
-    return i;
+    return 0;
 }
 
 void removed_handle_filetable_entry(u32 index)

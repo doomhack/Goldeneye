@@ -7,9 +7,7 @@
       build/OUTCODE/src/libultrare/io/pimgr.o (.bss);
 #endif
       build/OUTCODE/src/audi.o (.bss);
-      build/OUTCODE/src/speed_graph.o (.bss);
       build/OUTCODE/src/fr.o (.bss);
-      build/OUTCODE/src/deb.o (.bss);
       build/OUTCODE/src/crash.o (.bss);
       /*deb_print may be part of fault per pd beta (.bss);*/
       /*build/OUTCODE/src/deb_print.o (.bss);*/
@@ -27,7 +25,6 @@
       build/OUTCODE/src/sprintf.o (.bss);
       build/OUTCODE/src/pi.o (.bss);
       build/OUTCODE/src/vi.o (.bss);
-      build/OUTCODE/src/debugmenu.o (.bss);
       build/OUTCODE/src/joy.o (.bss);
       build/OUTCODE/src/motor.o (.bss);
 #ifdef VERSION_EU

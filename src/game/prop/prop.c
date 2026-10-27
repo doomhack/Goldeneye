@@ -247,9 +247,6 @@ void propsSortOnscreen(void)
     if(1)
     {
         // removed
-        #ifdef DEBUG
-        assert(propznum<MAXPROPSVISIBLE); //800 props
-        #endif
     }
 
     g_LastOnScreenProp = (PropRecord *)&g_OnScreenPropList[count];
@@ -856,12 +853,6 @@ void propsTickOnce(void)
                                 propReparent(obj->prop, setupobj->prop);
                                 skip_regen_sfx = TRUE;
                             }
-#ifdef DEBUG
-                            else
-                            {
-                                osSyncPrintf("inobj link not found for object number %d\n", cmdindex + 1);
-                            }
-#endif
                         }
                         else
                         {
@@ -1718,9 +1709,6 @@ s32 roomListsOverlap(s32* roomids1, s32* roomids2)
 s32 roomBlockAddProp(s16 propnum, s32 block)
 {
     s32 i;
-    #ifdef DEBUG
-    assert(block<MAXBLOCKS); //prop.c line 2136
-    #endif
     // Note: The size of the propnums array is 16, but we're only iterating over the first 15 elements.
     //       Is this because the last element is always -1? Seems like a waste.
     for (i = 0; i < 15; i++)
@@ -1748,10 +1736,6 @@ s32 roomBlockAddProp(s16 propnum, s32 block)
 s32 roomBlockAllocate(s32 room, s32 prevblock)
 {
     s32 i;
-#ifdef DEBUG
-    assert(room < g_MaxNumRooms); // roomnumber
-    assert(prevblock<MAXBLOCKS);
-#endif
     for (i = 0; i < MAXBLOCKS; i++)
     {
         if (g_RoomPropBlocks[i].propnums[0] == -2)
@@ -1775,9 +1759,6 @@ s32 roomBlockAllocate(s32 room, s32 prevblock)
             return i;
         }
     }
-#ifdef DEBUG
-    osSyncPrintf("newblockforroom: no free blocks!\n");
-#endif
     return -1;
 }
 
@@ -1792,9 +1773,6 @@ s32 roomBlockAllocate(s32 room, s32 prevblock)
 void propAddToRoom(PropRecord *prop, s16 room)
 {
    	s32 prevchunk = -1;
-#ifdef DEBUG
-    assert(room < g_MaxNumRooms); // roomnumber
-#endif
     if (room < 0)
     {
         return;
@@ -1804,9 +1782,6 @@ void propAddToRoom(PropRecord *prop, s16 room)
         // Find which chunk to start at
         s32 block = g_RoomFirstPropBlock[room];
         s16 propnum = (prop - g_Props);
-#ifdef DEBUG
-        assert(block<MAXBLOCKS);
-#endif
 
         while (block >= 0)
         {
@@ -1817,9 +1792,6 @@ void propAddToRoom(PropRecord *prop, s16 room)
 
             prevchunk = block;
             block     = g_RoomPropBlocks[block].propnums[0xF];
-#ifdef DEBUG
-            assert(block<MAXBLOCKS);
-#endif
         }
 
         // Allocate a new chunk
@@ -1843,17 +1815,11 @@ void propAddToRoom(PropRecord *prop, s16 room)
 void propRemoveFromRoom(PropRecord* prop, s16 room) {
     bool removed = 0;
     s32 prev = -1;
-#ifdef DEBUG
-        assert(room < g_MaxNumRooms); // roomnumber
-#endif
 
     if (room >= 0)
     {
         s16 block = g_RoomFirstPropBlock[room];
         s16 propIndex = (prop - g_Props);
-#ifdef DEBUG
-        assert(block<MAXBLOCKS);
-#endif
 
         while (block >= 0)
         {
@@ -1899,9 +1865,6 @@ void propRemoveFromRoom(PropRecord* prop, s16 room) {
             }
 
             block = g_RoomPropBlocks[block].propnums[0xF];
-#ifdef DEBUG
-            assert(block<MAXBLOCKS);
-#endif
 
         }
     }
@@ -2076,9 +2039,6 @@ void roomGetProps(s32 *rooms)
     *writeptr = -1;
     writeptr++;
     g_NumRoomPropsFound = writeptr - g_RoomPropsFound;
-    #ifdef DEBUG
-    assert(roomspropnum<ROOMLISTMAX-1); //g_NumRoomPropsFound
-    #endif
 }
 
 
@@ -2153,11 +2113,6 @@ void propsDefragRoomProps(void)
 	}
 }
 
-
-void roomBlocksDebug(void)
-{
-
-}
 
 /**
  * NTSC address 0x7F03E6A0.

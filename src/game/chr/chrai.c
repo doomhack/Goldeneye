@@ -132,12 +132,6 @@ void aiSoundPlay(s32 slot, s16 soundIndex)
             sfx->pos     = NULL;
             sfx->Obj     = NULL;
         }
-#ifdef DEBUG
-        else
-        {
-            osSyncPrintf("Existing ai sound number %d!\n", slot);
-        }
-#endif
     }
     sndPlaySfx(g_musicSfxBufferPtr, soundIndex, sfx);
 }
@@ -759,17 +753,6 @@ s32 aiFindLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
         {
             // restart ai list PC if next label not found - causes infinite loop outside of debug
             listID = ailistGetId(AIList, &isGlobalAIList);
-#ifdef DEBUG
-            if (isGlobalAIList)
-            {
-                debAIListTypeString = "global";
-            }
-            else
-            {
-                debAIListTypeString = "local";
-            }
-            osSyncPrintf("AI error: endlist reached jump label=%d %s list=%d!\n", LabelNum, debAIListTypeString, listID);
-#endif
             return 0;
         }
 
@@ -3364,14 +3347,6 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_SetMySpeedRating:
                 {
                     AiSetMySpeedRatingRecord *ai = AiListp + Offset;
-    #ifdef DEBUG
-                    /*
-                        ".\\ported\\chrai.c", 2258, "Assertion failed: ai->val>=0"
-                        ".\\ported\\chrai.c", 2259, "Assertion failed: ai->val<=100"
-                     */
-                    assert(ai->val >= 0);
-                    assert(ai->val <= 100);
-    #endif
                     ChrEntityp->speedrating = ai->val;
                     Offset += sizeof(AiSetMySpeedRatingRecord);
                     break;
@@ -3379,14 +3354,6 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_SetMyArghRating:
                 {
                     AiSetMyArghRatingRecord *ai = AiListp + Offset;
-    #ifdef DEBUG
-                    /*
-                        ".\\ported\\chrai.c", 2268, "Assertion failed: ai->val>=0"
-                        ".\\ported\\chrai.c", 2269, "Assertion failed: ai->val<=100"
-                    */
-                    assert(ai->val >= 0);
-                    assert(ai->val <= 100);
-    #endif
                     ChrEntityp->arghrating = ai->val;
                     Offset += sizeof(AiSetMyArghRatingRecord);
                     break;

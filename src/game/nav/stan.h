@@ -65,16 +65,9 @@ extern s32 g_StanNumRooms;
 
 // Necessary forward declaration
 void stanLineRoomsCallback( StandTile *tile,  StandTile *unused,  struct StandTileWalkCallbackRecord *data);
-
-void stanInit(void);
 void stanSetLevelScale(f32 ls);
-void stanDebugView(s8 joyX, s8 joyY, u16 joyBtns);
-void stanDebugStepRegion(s32 arg0);
 void stanResetHits(void);
-Gfx * stanRenderDebugStanView(Gfx *arg0);
-Gfx * stanDebugDrawProblems(Gfx *arg0);
 Gfx * stanDebugBeginDraw(Gfx *arg0);
-Gfx * stanDebugDrawRegion(Gfx *arg0, s32 arg1);
 Gfx * stanDebugDrawTile(Gfx *ptrdl, StandTilePoint *tile_point, u32 RGBAColor);
 s32 stanWalkLineNoCallback(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z);
 s32 stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z);

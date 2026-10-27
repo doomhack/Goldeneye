@@ -42,7 +42,6 @@
 #include "game/model/modelfile.h"
 #include "game/gfx/image.h"
 #include "game/gfx/tex.h"
-#include "game/debug/debugmenu_handler.h"
 #include "fr.h"
 #include "assets/obseg/text/LgunE.h"
 #include "game/text/text.h"
@@ -623,16 +622,6 @@ void gunUpdateAndFire(GUNHAND handnum)
         }
 
         modelCalculateRwDataLen(mdlhdr);
-#ifdef DEBUG
-        /** 
-         * The model's runtime data is written into hand->modeldatas, which is a
-         * fixed run of 32 words (modeldatas .. field_C04, ending at volley).
-         */
-        if (mdlhdr->numRecords >= 32)
-        {
-                osSyncPrintf("Increase GUNSAVESIZE to %d!!! ", mdlhdr->numRecords);
-        }
-#endif
         model = (Model *) (&hand->field_B68);
 
         if (mdlhdr->Switches);
@@ -2241,10 +2230,6 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
 
     g_DebugHitTexNum = texture_index;
 
-    if (get_debug_joy2hitsedit_flag() == 0)
-    {
-        get_debug_joy2detailedit_flag();
-    }
 
     if ((item == ITEM_REMOTEMINE)
         || (item == ITEM_PROXIMITYMINE)
@@ -2323,9 +2308,6 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
             }
         }
     }
-#ifdef DEBUG
-    osSyncPrintf("Shot prop: hittype %d\n", g_Textures[texture_index].hitSound);
-#endif
 #ifdef ENABLE_LOG
     osSyncPrintf("Shot prop:  %S\n", HIT_TYPE_ToString[g_Textures[texture_index].hitSound]);
 #endif
@@ -2370,7 +2352,6 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index)
     rnd2 = randomGetNext();
 
     g_DebugHitTexNum = texture_index;
-    get_debug_joy2hitsedit_flag();
 
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
@@ -6942,9 +6923,6 @@ void shotFireBullet(s32 hand)
     {
         if (shotdata.hits[k].prop != 0)
         {
-#ifdef DEBUG
-        assert(!IsBadVec3d((vec3d *)&shotdata.hits[k].hit.hitpos));
-#endif
             if ((shotdata.hits[k].prop->type == PROP_TYPE_CHR) || (shotdata.hits[k].prop->type == PROP_TYPE_VIEWER))
             {
                 chrHandleBulletHit(&shotdata, &shotdata.hits[k]);

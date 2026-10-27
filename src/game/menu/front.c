@@ -1423,9 +1423,6 @@ void frontLegalEnter(void)
     modelCalculateRwDataLen(PitemZ_entries[PROP_LEGALPAGE].header);
 
     g_FrontLogoModel = modelmgrInstantiateModel(PitemZ_entries[PROP_LEGALPAGE].header);
-    #ifdef DEBUG
-        assert(g_FrontLogoModel);
-    #endif
     modelSetScale(g_FrontLogoModel, 1.0f);
     modelSetRootPosition(g_FrontLogoModel, &pos);
     fileValidateSaves();
@@ -1884,9 +1881,6 @@ void frontLogoEnter(void)
     modelFileLoad(PitemZ_entries[PROP_GOLDENEYELOGO].header, PitemZ_entries[PROP_GOLDENEYELOGO].filename, g_FrontModelBuffer, 0x3c000, 0);
     modelCalculateRwDataLen(PitemZ_entries[PROP_GOLDENEYELOGO].header);
     g_FrontLogoModel = modelmgrInstantiateModel(PitemZ_entries[PROP_GOLDENEYELOGO].header);
-    #ifdef DEBUG
-        assert(g_FrontLogoModel);
-    #endif
 
     modelSetScale(g_FrontLogoModel, 1.0f);
     modelSetRootPosition(g_FrontLogoModel, &pos);
@@ -2088,9 +2082,6 @@ void frontLoadFolders(void)
         for (i = FOLDER1; i < MAX_FOLDER_COUNT; i++)
         {
             g_FrontFolderModels[i]  = modelmgrInstantiateModelWithAnim(PitemZ_entries[PROP_WALLETBOND].header);
-            #ifdef DEBUG
-            assert(g_FrontFolderModels[i]);
-            #endif
             modelSetScale(g_FrontFolderModels[i], 1.0f);
         }
 
@@ -2338,9 +2329,6 @@ s32 frontFileSelectTick(void)
                 && (g_FrontCursorY <= folderbbox.up))
             {
                 fileGetHighestStageDifficultyCompletedForFolder(foldernum, &higheststage, &highestdifficulty);
-#ifdef DEBUG
-                osSyncPrintf("selected file %d\n", foldernum);
-#endif
 
                 if (joyGetButtonsPressedThisFrame(PLAYER_1, A_BUTTON | Z_TRIG | START_BUTTON) != 0)
                 {
@@ -3419,7 +3407,7 @@ s32 frontGetHighestDifficulty(s32 arg0)
     if (g_FrontMissions[frontFindMissionEntry(arg0)].stage_id >= 0)
     {
         num = DIFFICULTY_00;
-        if (fileIs007ModeUnlocked(g_FrontFolder) || get_debug_007_unlock_flag())
+        if (fileIs007ModeUnlocked(g_FrontFolder))
         {
             num = DIFFICULTY_007;
         }

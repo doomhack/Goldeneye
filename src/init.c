@@ -44,28 +44,6 @@ u32 piDeviceType = DEVICE_TYPE_CART;
 u32 piStatusReg = PI_CLR_INTR;
 u32 piDomAddr = PI_DOM1_ADDR2;
 
-union debug_handler_container
-{
-    /* There is a bulk memory copy of debug_handler_table,
-    * it seems to require a container with a known size,
-    * which doesn't seem correct ....
-    */
-    struct debug_handler_entry rows[MAXSP];
-    s32 data[MAXSP * 2];
-};
-
-union debug_handler_container debug_handler_table = {
-    {
-        {sp_boot, "boot"},
-        {sp_rmon, "rmon"},
-        {sp_idle, "idle"},
-        {sp_shed, "shed"},
-        {sp_main, "main"},
-        {sp_audi, "audi"},
-        {0, 0}
-    }
-};
-
 OSThread rmonThread;
 OSThread idleThread;
 OSThread mainThread;
@@ -255,22 +233,3 @@ void mainproc(void *args)
     bossEntry();
 }
 
-/**
- * 1508	70000908
- * initDebugHandlerTable - setup debug handler table
- * This is unused and is leftover from Indy debug.
- */
-void initDebugHandlerTable(void)
-{
-    union debug_handler_container dhe;
-    struct debug_handler_entry *p;
-
-    dhe = debug_handler_table;
-
-    p = &dhe.rows[0];
-
-    do
-    {
-        p++;
-    } while (p->address != NULL);
-}

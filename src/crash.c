@@ -270,12 +270,8 @@ static regDesc_t fpcsrDesc[] = {
 
 void *g_StackPtrs1[STACK_POINTER_COUNT] = {&sp_rmon, &sp_idle, &sp_shed, &sp_main, &sp_audi};
 
-#ifndef VERSION_EU
-void *g_StackPtrs2[STACK_POINTER_COUNT] = {&sp_idle, &sp_shed, &sp_main, &sp_audi, &sp_debug};
-#else
-// no sp_debug
-void *g_StackPtrs2[STACK_POINTER_COUNT] = {&sp_idle, &sp_shed, &sp_main, &sp_audi, &cfb_16};
-#endif
+/* Each stack's end is where the next one starts; the audio stack is last. */
+void *g_StackPtrs2[STACK_POINTER_COUNT] = {&sp_idle, &sp_shed, &sp_main, &sp_audi, sp_audi + SP_AUDI_SZ};
 
 void *g_StackPtrs3[STACK_POINTER_COUNT] = {&sp_rmon, &sp_idle, &sp_shed, &sp_main, &sp_audi};
 
@@ -564,124 +560,6 @@ s32 crashGetStrLen(u8 *arg0)
     return count;
 }
 
-
-// bss - indy/debug section
-u32 *g_indyCurrentReadBufferResourceId;
-u8 *g_indyReadBufferString1;
-u8 *g_indyReadBufferString2;
-char g_indyReadBuffer[g_indyReadBuffer_LEN];
-
-/**
- * 5E94    70005294
- *     V0= total size of one word, two strings at hardware A0
- *     accepts: A0=hardware address
- */
-u8 *crashIndyFileGetAddressSubsequentData(u8 *arg0)
-{
-    u32 returnAddress;
-
-    romCopy(&g_indyReadBuffer, arg0, g_indyReadBuffer_LEN);
-    
-    g_indyCurrentReadBufferResourceId = (u32*)(*(s32*) &g_indyReadBuffer);
-    g_indyReadBufferString1 = (u8*)&g_indyReadBuffer[4];
-    g_indyReadBufferString2 = (u8 *) (
-        crashGetStrLen(g_indyReadBufferString1)
-        + (u32)g_indyReadBufferString1
-        + 1);
-    
-    returnAddress = 
-        crashGetStrLen(g_indyReadBufferString1) 
-        + ((u32)arg0 + crashGetStrLen(g_indyReadBufferString2))
-        + 6;
-
-    if (returnAddress & 3)
-    {
-        returnAddress = ((returnAddress | 3) + 1);
-    }
-
-    return (u8 *)returnAddress;
-}
-
-/**
- * 5F40    70005340
- *     scan for and load resourceID A0 from indy.read.buf
- *     accepts: A0=resourceID
- */
-s32 crashIndyScanLoadResourceIdFromBuffer(u32 arg0)
-{
-	u32 this = 0x00e00004;
-	u32 prev = 0x00e00004;
-
-	while (TRUE) {
-		u32 next = crashIndyFileGetAddressSubsequentData(this);
-
-		if (arg0 >= (u32)g_indyCurrentReadBufferResourceId) {
-			prev = this;
-
-			if (g_indyCurrentReadBufferResourceId == 0) {
-				return FALSE;
-			}
-
-			this = next;
-		} else {
-			break;
-		}
-	}
-
-	crashIndyFileGetAddressSubsequentData(prev);
-
-	return TRUE;
-}
-
-/**
- * 5FC8    700053C8
- *     V0= TRUE if valid indy.read.buf.resourceID    [matches 826475BE]
- */
-u32 crashIndyIsValidReadBufferResourceId(void)
-{
-    crashIndyFileGetAddressSubsequentData((u8*)0xe00000);
-    return ((u32)g_indyCurrentReadBufferResourceId ^ 0x826475be) == 0;
-}
-
-/**
- * 5FFC    700053FC
- *     unconditional return
- */
-void crashIndyRemoved01(void)
-{
-    //from pd
-    return;
-}
-
-/**
- * 6004    70005404
- *     unconditional return
- */
-void crashIndyRemoved02(void)
-{
-    return;
-}
-
-/**
- * 600C    7000540C
- *     unconditional return
- */
-void crashIndyPrintReadBufferResourceIdI(void)
-{
-    #ifdef ENABLE_LOG
-    rmonPrintf("%08x",g_indyCurrentReadBufferResourceId); //from pd beta
-    #endif
-    return;
-}
-
-/**
- * 6014    70005414
- *     V0= indy.read.buf.resourceID    [80063664]
- */
-u32 * crashIndyGetReadBufferResourceId(void)
-{
-    return g_indyCurrentReadBufferResourceId;
-}
 
 /**
  * 6020    70005420

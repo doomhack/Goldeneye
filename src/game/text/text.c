@@ -68,12 +68,6 @@ Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 cli
 
 void textInit(void /*, char* asset */)
 {
-    #ifdef DEBUG
-    if (asset == 0)
-    {
-        osSyncPrintf("\n--- ASSERTION FAULT - %s - %s, line %d\n\n", "textInitText: NULL void* asset", ".\\text.cpp", 0x38 );
-    }
-    #endif
 }
 
 void textSetSpacing(s32 spacing) {

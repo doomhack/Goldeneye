@@ -31,7 +31,6 @@
 #include "game/model/modelfile.h"
 #include "game/gfx/image.h"
 #include "game/gfx/tex.h"
-#include "game/debug/debugmenu_handler.h"
 #include "fr.h"
 #include "assets/obseg/text/LgunE.h"
 #include "game/text/text.h"
@@ -533,55 +532,16 @@ void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 #define DEB_KEYFRAMES sniperMeleeKeyframes2
 
 
-void gunDebSetApplyKeyframe(u32 uParm1)
-{
-    g_GunDebApplyKeyframe = uParm1;
-}
-
-
-u32 gunDebGetApplyKeyframe(void)
-{
-    return g_GunDebApplyKeyframe;
-}
 
 
 // Unreferenced debPrintKeyframe
 // Address: ~ 7F05C538
 void nullsub_73(void)
 {
-#ifdef DEBUG
-    osSyncPrintf("\t{");
-    osSyncPrintf("0");
-    osSyncPrintf(",{%ff,%ff,%ff}", DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos.x, DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos.y, DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos.z);
-    osSyncPrintf(",{%ff,%ff,%ff}", DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot.x, DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot.y, DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot.z);
-    osSyncPrintf(",0.5f,20.0f");
-    osSyncPrintf("},\n");
-#endif
     return;
 }
 
 
-// Unreferenced - force keyframe to position
-// Address: 7F05C540
-void gunDebMoveKeyframe(coord3d* pos)
-{
-    Weapon1PTransformKeyframe* temp_v0;
-
-    temp_v0 = &DEB_KEYFRAMES[g_gunDebKeyframeIndex];
-    temp_v0->pos.x += pos->x;
-    temp_v0->pos.y += pos->y;
-    temp_v0->pos.z += pos->z;
-}
-
-
-// Unreferenced
-void gunDebRotateKeyframe(Mtxf* mtxf)
-{
-    Mtxf sp18;
-    mtx4LoadRotation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot, &sp18);
-    mtx4MultInPlace(mtxf, &sp18);
-    mtx4GetRotation(&sp18, &DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot);
-}
 
 
 void gunDebApplyKeyframe(void)
@@ -594,17 +554,6 @@ void gunDebApplyKeyframe(void)
     g_GunDebApplyKeyframe = 0;
 }
 
-
-// Unreferenced increment keyframe index, loop back to start if final keyframe is reached
-// Address: 7F05C6B8
-void gunDebAdvanceKeyframe(void)
-{
-    g_gunDebKeyframeIndex++;
-    if (DEB_KEYFRAMES[g_gunDebKeyframeIndex].isFinalKey & 1)
-    {
-        g_gunDebKeyframeIndex = 0;
-    }
-}
 
 
 /**
@@ -699,32 +648,6 @@ WeaponStats *weaponGetStats(ITEM_IDS item)
 
 
 
-void gunDebGetHandPos(coord3d *pos)
-{
-    ITEM_IDS item;
-    WeaponStats *stats;
-
-    item = gunGetWeapon(0);
-    stats = weaponGetStats(item);
-
-    pos->x = stats->PosX;
-    pos->y = stats->PosY;
-    pos->z = stats->PosZ;
-}
-
-
-void gunDebSetHandPos(coord3d *pos) {
-
-    WeaponStats *stats;
-    ITEM_IDS item;
-
-    item = gunGetWeapon(0);
-    stats = weaponGetStats(item);
-
-    stats->PosX = pos->x;
-    stats->PosY = pos->y;
-    stats->PosZ = pos->z;
-}
 
 
 void gunCalcBlend(enum GUNHAND handnum)
@@ -2004,10 +1927,6 @@ void gunThrowObject(s32 hand)
         case ITEM_PLASTIQUE:
             new_prop_type = PROP_CHRPLASTIQUE;
             break;
-#ifdef DEBUG
-        default:
-            assertmsg2(current_weapon = PROP_CHRREMOTEMINE, "throwmineremote - Not a mine!");
-#endif
 
         }
 

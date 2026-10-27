@@ -9,6 +9,7 @@
 #include <ultra64.h>
 #include <math.h>
 #include <bondtypes.h>
+#include "game/menu/cheat.h"
 #include <boss.h>
 #include <fr.h>
 #include <joy.h>
@@ -27,7 +28,6 @@
 #include "game/chr/body.h"
 #include "game/chr/chraction.h"
 #include "game/chr/chrai.h"
-#include "game/debug/debugmenu_handler.h"
 #include "game/prop/explosion.h"
 #include "game/save/file.h"
 #include "game/level/frametiming.h"
@@ -296,13 +296,6 @@ s32 startpadcount;
 //CODE.bss:80079C6C
 s32 dword_CODE_bss_80079C6C;
 
-#if defined LEFTOVERDEBUG
-//CODE.bss:80079C70
-/***/
-char stringbuffer_top[0x2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
-u16 dword_CODE_bss_80079d9E;
-#endif
-
 //CODE.bss:80079DA0
 /**
  * EU .bss 80078780
@@ -314,13 +307,8 @@ StandTilePoint *dword_CODE_bss_80079DA4;
 //CODE.bss:80079DA8
 s32 dword_CODE_bss_80079DA8[BSS_80079DA8_LENGTH];
 
-#ifndef VERSION_EU
-//CODE.bss:80079DC8
-char g_HudmsgTopText[0x3C];
-#else
-char g_HudmsgTopText[0x2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
-char dword_CODE_bss_80079EF6[0x3C];
-#endif
+/* The two top-of-screen messages: the one showing and the next. */
+char g_HudmsgTopText[2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
 
 //CODE.bss:80079E04
 f32 g_MpSwirlRotateSpeed;
@@ -1077,9 +1065,6 @@ void playerSetCameraMode(s32 arg0)
         {
             if (camera_mode == 0)
             {
-#ifdef DEBUG
-                osSyncPrintf("mute\n");
-#endif
 
                 musicTrack1Play(M_INTROSWOOSH);
                 sndSetScalerApplyVolumeAllSfxSlot(0.5f);
@@ -1928,9 +1913,6 @@ void tankGetCollisionBounds(struct rect4f *tank_collision_bounds, struct coord3d
     f32 sp34;
     struct ModelRoData_BoundingBoxRecord *bbox;
 
-    #ifdef DEBUG
-    assert(bondonprop2); // canonically g_PlayerTankProp is bondonprop2 - presumably because it was also motorbike code
-#endif
 
     sp4C = g_PlayerTankProp->obj;
 
@@ -3350,11 +3332,6 @@ void watchInitHandModel(void) {
 
     itemheader = gunGetHandModelHeader(1);
     modelCalculateRwDataLen(itemheader);
-#ifndef VERSION_EU
-    if (0x32 < itemheader->numRecords) {
-        modelDebugBreak();
-    }
-#endif
     animInit((Model *)((u8 *)g_CurrentPlayer + 0x230), itemheader, (u32 *)((u8 *)g_CurrentPlayer + 0x2ec));
     modelSetScale((Model *)((u8 *)g_CurrentPlayer + 0x230), c_item_entries[41].scale * 0.10000001f);
     modelSetAnimation((Model *)((u8 *)g_CurrentPlayer + 0x230), (ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_bond_watch], 0, 0.0f, 0.5f * watch_transition_time, 0.0f);
@@ -4720,7 +4697,7 @@ void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
             new_field_7c = g_CurrentPlayer->field_7C;
             new_field_70 = g_CurrentPlayer->field_70;
 
-            if ((get_debug_fast_bond_flag() != 0) && (g_ForceBondMoveOffset.f[0] == 0.0f) && (g_ForceBondMoveOffset.f[2] == 0.0f))
+            if ((g_CheatTurboMode) && (g_ForceBondMoveOffset.f[0] == 0.0f) && (g_ForceBondMoveOffset.f[2] == 0.0f))
             {
                 sp40 = 1.388889f;
             }
@@ -6621,10 +6598,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     maxspeed = 0.0f;
     sp390 = 0.0f;
 
-    #if defined(VERSION_US)
-    if (stick_x >= 100 || stick_x <= -100) modelDebugBreak(); // __LINE__ __FILE__ (#6414 bondview.c) "joystick x has value %d!\n"
-    if (stick_y >= 100 || stick_y <= -100) modelDebugBreak(); // __LINE__ __FILE__ (#6415 bondview.c) "joystick y has value %d!\n"
-    #endif
 
     if (g_bondviewForceDisarm > 0)
     {
@@ -7341,10 +7314,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             // Divide by zero check.
             if (g_GlobalTimerDelta == 0)
             {
-                #if DEBUG
-                    // unknown what went here.
-                    modelDebugBreak();
-                #endif
             }
 #endif
 
@@ -7526,7 +7495,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         start_collision_pos_z = g_CurrentPlayer->field_488.collision_position.f[2];
         sp200 = g_CurrentPlayer->field_488.current_tile_ptr;
 
-        if (get_debug_fast_bond_flag())
+        if (g_CheatTurboMode)
         {
             move_offset.f[0] +=
                 (
@@ -7791,9 +7760,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             g_CurrentPlayer->field_488.collision_position.f[2],
             spE4.f[0],
             spE4.f[2]);
-        #ifdef DEBUG
-        assert(stanlineret); // #7362
-        #endif
 
         sp140_tank_as_TankRecord->stan_y = stanGetPositionYValue(sp138_tank_as_ObjectRecord->prop->stan, spE4.f[0], spE4.f[2]);
 
@@ -7900,17 +7866,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     playerUpdateVertical(use_stanHeight, sp390);
     playerUpdatePosFromCollision();
     playerUpdateCollisionBounds();
-
-    if (get_debug_man_pos_flag() != 0)
-    {
-        f32 sp5C_out_unused;
-
-        stanGetTileColour(
-            g_CurrentPlayer->field_488.current_tile_ptr,
-            g_CurrentPlayer->field_488.collision_position.f[0],
-            g_CurrentPlayer->field_488.collision_position.f[2],
-            &sp5C_out_unused);
-    }
 }
 
 
@@ -8936,9 +8891,6 @@ void mpRespawnPlayer(void)
         var_v1 = 0;
     }
 
-    #ifdef DEBUG
-    assert(g_Startpad[var_v1]->stan);
-    #endif
 
     start_pos.x = g_Startpad[var_v1]->pos.x;
     start_pos.z = g_Startpad[var_v1]->pos.z;
@@ -9027,9 +8979,6 @@ void mpRespawnPlayer(void)
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroEmpty));
                     break;
             }
-    #ifdef DEBUG
-            ossyncprintf("unknown bondstart type %d!\n", var_v0_2);
-    #endif
         }
     }
 
@@ -10245,24 +10194,6 @@ Gfx *hudRender(Gfx *gdl)
 
 
 
-/**
- * Address 0x7F0896C0.
- */
-Gfx *stanDebugRenderTiles(Gfx *gdl)
-{
-    if (dword_CODE_bss_80079DA0 != NULL)
-    {
-        gdl = stanDebugDrawTile(gdl, dword_CODE_bss_80079DA0, 0xFF00FF80U);
-    }
-
-    if (dword_CODE_bss_80079DA4 != NULL)
-    {
-        gdl = stanDebugDrawTile(gdl, dword_CODE_bss_80079DA4, 0xFF00FF80U);
-    }
-
-    return gdl;
-}
-
 
 void playerSetWorldScale(f32 arg0)
 {
@@ -10642,14 +10573,6 @@ s32 playerGetVisibleToGuards(void)
     return g_VisibleToGuardsFlag;
 }
 
-void playerSetCollisionOn(s32 flag) {
-  g_PlayerCollisionOn = flag;
-}
-
-s32 playerGetCollisionOn(void) {
-    return g_PlayerCollisionOn;
-}
-
 
 
 
@@ -10919,18 +10842,10 @@ void hudmsgBottomShow(char *string, s32 font, s32 arg2)
 }
 
 #else
-#ifdef DEBUG
-void hudmsgBottomShow(char *mess, void *font)
-#else
 void hudmsgBottomShow(char *mess)
-#endif
 {
     s32 abs_index;
     s32 index;
-    #ifdef DEBUG
-        assert(font);
-        assert(strlen(mess)<=MAXMESSAGELEN);
-    #endif
     if (getPlayerCount() == 1)
     {
         if (display_statusbar < 5)
@@ -11121,22 +11036,13 @@ static s8 s_CoopTopTextPlayer[2];
 void hudmsgTopShow(char* mess)
 {
     s32 index;
-    #ifdef DEBUG
-        assert(strlen(mess)<=MAXTALKMESSLEN);
-    #endif
     if (display_upper_text_window >= 2) { return; }
 
     index = (upper_text_buffer_index + display_upper_text_window) % 2;
     s_CoopTopTextPlayer[index] = playerGetCurrentNum();
-#if defined(LEFTOVERDEBUG)
-    strncpy(stringbuffer_top[index], mess, (BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1));
-    display_upper_text_window += 1;
-    stringbuffer_top[index][(BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1)] = 0;
-#else
     strncpy(g_HudmsgTopText[index], mess, (BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1));
     display_upper_text_window += 1;
     g_HudmsgTopText[index][(BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1)] = 0;
-#endif
 }
 
 
@@ -11201,11 +11107,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
     {
         if (upper_text_window_timer >= 0)
         {
-#if defined(LEFTOVERDEBUG)
-            if (stringbuffer_top[upper_text_buffer_index][0] != '\0')
-#else
             if (g_HudmsgTopText[upper_text_buffer_index][0] != '\0')
-#endif
             {
                 if ((g_CurrentPlayer->mpmenuon == 0)
                     && (!g_CoopMode || (s_CoopTopTextPlayer[upper_text_buffer_index] == playerGetCurrentNum())))
@@ -11213,11 +11115,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     gdl = textSetupDraw(gdl);
                     msg.textwidth = 0;
                     msg.textheight = 0;
-#if defined(LEFTOVERDEBUG)
-                    textMeasure(&msg.textheight, &msg.textwidth, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, 0);
-#else
                     textMeasure(&msg.textheight, &msg.textwidth, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, 0);
-#endif
                     if (cameraBufferToggle != 0)
                     {
                         msg.x = viGetViewLeft() + 0x46;
@@ -11241,25 +11139,17 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     gdl = textRenderRect(gdl, 0, msg.y - 2, viGetX(), msg.bottom, 0x64);
 #ifdef VERSION_US
                     sw.screenwidth = viGetX();
-                    gdl = textRender(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
+                    gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
 #else
                     if (g_TextJapanese != 0)
                     {
                         sw.screenwidth = viGetX();
-#if defined(LEFTOVERDEBUG)
-                        gdl = textRenderOutlined(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
-#else
                         gdl = textRenderOutlined(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
-#endif
                     }
                     else
                     {
                         sw.screenwidth = viGetX();
-#if defined(LEFTOVERDEBUG)
-                        gdl = textRender(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
-#else
                         gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
-#endif
                     }
 #endif
                     gdl = textEndDraw(gdl);
@@ -11269,7 +11159,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
         }
     }
 
-    if (get_debug_testingmanpos_flag())
+    if (g_CheatShowPos)
     {
         theta_x = g_CurrentPlayer->field_488.theta_transform.x;
         debug_angle = (s32) ((mathAtan2(-theta_x, g_CurrentPlayer->field_488.theta_transform.z) * 180.0f) / M_PI_F);
@@ -11360,7 +11250,7 @@ s32 playerTick(PropRecord *prop)
  
     if (chr != NULL)
     {
-        if ((g_playerPointers[index]->bodyModel != NULL) && (!(get_debug_render_raster() && (g_playerPointers[index]->cameramode != 1))))
+        if ((g_playerPointers[index]->bodyModel != NULL) && (g_playerPointers[index]->cameramode == 1))
         {
             g_playerPointers[index]->field_AC = 0;
             ret = chrTick(prop);
@@ -11786,18 +11676,6 @@ clear_and_return:
     return TICKOP_NONE;
 }
 
-
-/**
- * Address 0x7F08BCB8.
- */
-Gfx * bondviewRemoved7F08BCB8(Gfx *arg0)
-{
-    #ifdef DEBUG
-    // removed
-    #endif
-
-    return arg0;
-}
 
 
 /**

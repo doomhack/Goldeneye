@@ -34,17 +34,8 @@ u8 *g_VtxBuffers[3];
 u8 *g_GfxMemPos;
 u8 g_GfxActiveBufferIndex;
 s32 g_GfxRequestedDisplayList;
-s32 g_DynDebug = 0;
 s32 g_GfxSizesByPlayerCount[] = {0x10000, 0x18000, 0x20000, 0x28000};
 s32 g_VtxSizesByPlayerCount[] = {0x10000, 0x18000, 0x20000, 0x28000};
-
-char g_DynMembarString1[] = ">>>>>>>>>>>>>>>>>>>>>>>>>";
-char g_DynMembarString2[] = "=========================";
-char g_DynMembarString3[] = "-------------------------";
-
-void dynInit(void) {
-    debTryAdd(&g_DynDebug, "dyn_c_debug");
-}
 
 void dynInitMemory(void) {
     // Solo levels size these for one view. Co-op draws the level twice.
@@ -124,28 +115,3 @@ s32 dynGetFreeVtx(void) {
 	return g_VtxBuffers[g_GfxActiveBufferIndex + 1] - g_GfxMemPos;
 }
 
-// Address 0x7F0BD7CC NTSC
-void dynCalculateMembarLength(const char* arg0, f32 arg1, f32 arg2)
-{
-    s32 len;
-    f32 zero = 0;
-    
-    len = strlen(arg0);
-    
-    arg1 /= arg2;
-    
-    if(zero);
-    
-    if (arg1 < zero && len > 1)
-    {
-        if (len > 1)
-        {
-            
-        }
-    }
-}
-
-void dynDrawMembars(Gfx *gdl) {
-    dynCalculateMembarLength(g_DynMembarString2, ((Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex + 1] - gdl), ((Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex + 1] - (Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex]));
-    dynCalculateMembarLength(g_DynMembarString2, (g_VtxBuffers[g_GfxActiveBufferIndex + 1] - g_GfxMemPos), (g_VtxBuffers[g_GfxActiveBufferIndex + 1] - g_VtxBuffers[g_GfxActiveBufferIndex]));
-}

@@ -215,9 +215,6 @@ LEVELID langGetBankForStage(LEVELID level)
             break;
         default:
         {
-            #ifdef DEBUG
-                osSyncPrintf("gettextloadnum: level %d unknown. (HANG now.)\n",level);
-            #endif
             /* infinite loop on invalid text bank */
             while(1) {};
         }
@@ -265,9 +262,6 @@ void langTick(void)
             {
 			    g_JpnCacheCacheItems[i].ttl--;
 		    }
-            #ifdef DEBUG
-            assert(jloaddata[i].timeleft<=3);
-            #endif
 		}
     }
 }
@@ -379,8 +373,5 @@ u8 * langGet(s32 slotID)
 
     u32 output_slot = textslot_offset; /* add the text slot offset to the base ptr to get the ptr to text file's slot */
     output_slot += (u32)textbank_ptr;
-    #ifdef DEBUG
-    return (textslot_offset != 0) ? (u8 *)output_slot : "Sorry, string not loaded.";
-    #endif
     return (textslot_offset != 0) ? (u8*)output_slot : NULL;
 }

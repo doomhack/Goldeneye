@@ -8,7 +8,7 @@ of this is `bossMainloop`, in `src/boss.c`.
 | --- | --- |
 | `src/game/level/lv.c` | The level: loading (`lvStageLoad`), the per-frame tick (`lvTick`, `lvPlayerTick`), drawing (`lvRender`), unloading (`lvStageUnload`), the game timers, difficulty, the multiplayer time and point limits, level music, the fps counter |
 | `src/game/level/frametiming.c` | The frame timer: waiting for the next frame (`frameWaitForNext`) and counting how many video frames each game frame took (`g_FrameDelta`) |
-| `src/game/level/game.c` | The game's one-time setup (`gameInit`, `gameInitData`: the menu state on power-on), resetting and closing the menu memory pool, the build date |
+| `src/game/level/game.c` | The game's one-time setup (`gameInitData`: the menu state on power-on), resetting and closing the menu memory pool, the build date |
 
 ## The main loop
 
@@ -39,8 +39,8 @@ point limits, awards and the end of the game), applies the difficulty
 matrices, water, sky, sparks, casings, glass, explosion particles, `propsTickOnce`), and
 the level music.
 
-`lvPlayerTick` runs for each view: normally `playerUpdate` (see [player](player.md)), or
-the debug free camera or floor tile viewer. It also adds up the distance the player
+`lvPlayerTick` runs for each view: `playerUpdate` (see [player](player.md)) and the
+multiplayer menu. It also adds up the distance the player
 walked and handles the flag and golden gun in multiplayer.
 
 `lvRender` draws each view in a shuffled order (`playerGetShuffled`):

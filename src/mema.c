@@ -1,6 +1,5 @@
 #include <ultra64.h>
 #include "mema.h"
-#include "deb.h"
 
 /**
  * mema - memory (ad hoc) allocation system.
@@ -53,7 +52,6 @@ struct MemaHeap {
 s32 m_memaHeapStart;
 s32 m_memaHeapSize;
 struct MemaHeap m_memaHeap;
-void *m_memaDebug = NULL;
 
 /** Swaps two free-space entries. */
 void memaSwap(MemaSpace *a, MemaSpace *b) {
@@ -200,12 +198,6 @@ void memaMarkFree(s32 addr, s32 size)
     // Mark this space as free
     curr->addr = addr;
     curr->size = size;
-}
-
-/** Registers mema's (removed) debug features. */
-void memaInit(void)
-{
-    debTryAdd(&m_memaDebug, "mema_c_debug");
 }
 
 /** Makes the `heapsize` bytes at `heapaddr` the heap, all of it free. */
@@ -422,83 +414,6 @@ f32 memaGetFragmentation(void) {
         return 0.0f;
     }
     return ((f32)(tot - max) / tot);
-}
-
-/**
- * Writes the sizes of the free blocks, biggest first, in KB, into a local buffer that is
- * then thrown away (the printing was removed).
- */
-void memaDump(void)
-{
-    char *pos;
-    u32 tot = 0;
-    s32 lim = (1 << 31);
-    s32 count;
-    MemaSpace *curr;
-    char buffer[4096];
-    u32 max;
-    u32 acc;
-
-    count = 0;
-
-    for (curr = &m_memaHeap.spaces[0], tot = 0; curr->addr != -1; curr++)
-    {
-        tot += curr->size;
-    }
-
-    pos = buffer;
-
-    for (max = 0, acc = 0; 1; lim = max, max = 0)
-    {
-        for (curr = &m_memaHeap.spaces[0]; curr->addr != -1; curr++)
-        {
-            if ((curr->size < lim) && (curr->size > max))
-            {
-                max = curr->size;
-                acc++;
-            }
-        }
-        
-        if (acc == 0)
-        {
-            break;
-        }
-
-        
-        lim = max;
-        
-        for (curr = &m_memaHeap.spaces[0],acc=0; curr->addr != -1; curr++)
-        {
-            if (curr->size == lim)
-            {
-                if (count < 200)
-                {
-                    pos += sprintf(pos, "%d ", ((curr->size + 512) / 1024));
-                }
-                else if (count == 200)
-                {
-                    pos += sprintf(pos, "...");
-                }
-                
-                count++;
-            }
-        }
-    }
-    
-    if (count > 200)
-    {
-        sprintf(pos, "[%d]", count);
-    }
-}
-
-/** Dumps the free blocks before and after a full defragment. Only the defragment matters. */
-void memaDumpPrePostMerge(void) {
-    s32 i;    
-    memaDump();
-    for (i = 0; i < (MEMA_SLOTS-1); i++) {
-        memaDefragPass(&m_memaHeap);
-    }
-    memaDump();
 }
 
 /** Calls `func` with the end address of each free block. Unused. */

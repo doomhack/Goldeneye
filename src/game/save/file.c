@@ -5,7 +5,6 @@
  */
 #include <ultra64.h>
 #include <bondconstants.h>
-#include "game/debug/debugmenu_handler.h"
 #include "joy.h"
 #include "game/player/player.h"
 #include "game/menu/watchmenu.h"
@@ -253,9 +252,6 @@ s32 fileGetSaveStageDifficultyTime(save_data* save, LEVEL_SOLO_SEQUENCE levelid,
                 break;
             default:
                 time = 0; // shouldnt reach
-#if DEBUG
-                osSyncPrintf("file.c: SHOULDN\'T GET HERE EVER [1]\n");
-#endif
         }
 
         return time;
@@ -317,9 +313,6 @@ void fileSetDifficultyStageTime(save_data *save, LEVEL_SOLO_SEQUENCE levelid, DI
                 save->times[index + 1] |= newtime & 0xfff;
                 break;
             default:
-#if DEBUG
-                osSyncPrintf("file.c: SHOULDN\'T GET HERE EVER [2]\n");
-#endif
                 break;
         }
     }
@@ -722,17 +715,6 @@ STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE l
             return STAGESTATUS_UNLOCKED;
         }
 
-        // no save, cheat enabled, its unlocked.
-        if (get_debug_enable_agent_levels_flag() && difficulty == DIFFICULTY_AGENT)
-        {
-            return STAGESTATUS_UNLOCKED;
-        }
-
-        // no save, cheat enabled, its unlocked. (basically a repeat of above)
-        if (get_debug_enable_all_levels_flag())
-        {
-            return STAGESTATUS_UNLOCKED;
-        }
     }
     // After all that the stage is not unlocked
     return STAGESTATUS_LOCKED;
@@ -1698,9 +1680,6 @@ void fileRecordMissionEnd(void)
 void fileLoadCurrentSettings(int stage)
 {
     if(stage){
-        #ifdef DEBUG
-
-        #endif
     }
     fileLoadSettingsForFolder(g_FrontFolder);
 }

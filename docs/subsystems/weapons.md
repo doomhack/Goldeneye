@@ -6,7 +6,7 @@ and the ammo HUD. The player as a whole is in [player](player.md).
 
 | File | What it holds |
 | --- | --- |
-| `src/game/player/gun.c` | The hands: which gun each holds, loading its first-person model, switching and cycling weapons, reloading, zoom, the weapon stats table lookups (`weaponGet*`), sway, throwing grenades, knives and mines, grenade launcher rounds, rockets and tank shells; also the gun keyframe editor (`gunDeb*`, debug only) |
+| `src/game/player/gun.c` | The hands: which gun each holds, loading its first-person model, switching and cycling weapons, reloading, zoom, the weapon stats table lookups (`weaponGet*`), sway, throwing grenades, knives and mines, grenade launcher rounds, rockets and tank shells |
 | `src/game/player/gunfire.c` | Each frame for the hands: the hand state machine (`gunTickHandState`), positioning and drawing the gun models, beams and tracers, hit sounds, the crosshair and aim, ejected casings, ammo, the ammo HUD and sight, per-player stats (`stats*`), and firing shots into the world (`shotFireHands`, `shotFireBullet`) |
 | `src/game/player/bondinv.c` | The inventory (`inv*`): what the player carries, cycling through it, keys, text overrides for picked-up objects, and the watch's item list |
 | `src/game/player/gun_rodata.c` | Four float constants kept in their own file so the linker keeps `gun.c`'s literal pool in order |

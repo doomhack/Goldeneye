@@ -20,15 +20,12 @@
 #include <PR/gbi.h>
 #include <gbi_extension.h>
 #include <bondconstants.h>
-#include <deb.h>
 #include <fr.h>
 #include <memp.h>
 #include "game/asset/fileload.h"
 #include "game/world/bg.h"
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
-#include "game/debug/debug_camera.h"
-#include "game/debug/debugmenu_handler.h"
 #include "game/asset/rzip.h"
 #include "game/world/bgfog.h"
 #include "game/level/lv.h"
@@ -141,7 +138,6 @@ s32 num_visible_rooms_in_cur_global_vis_packet;
 
 /* D:800413F0 Level gCurrentLevel = {0, 1.0, 1.0, 1.0, 1}; cant check this
    anymore however will concede seperate vars since below gets match? */
-s32 *ptr_bg_c_debug_debug_notice_list = 0;
 //D:800413F4
 f32 g_BgLevelScale = 1.0;
 //D:800413F8
@@ -341,7 +337,6 @@ void bgInit(void)
 #endif
     }
 
-    debTryAdd(&ptr_bg_c_debug_debug_notice_list, "bg_c_debug");
 }
 
 
@@ -642,9 +637,6 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
     for (i = b_min; i <= b_max; i++)
     {
-    #ifdef DEBUG
-        notdone = g_BgNumberOfRoomsDrawn;
-    #endif
         for (j = 0; j < g_BgNumberOfRoomsDrawn; j++)
         {
             if (i == g_BgRoomsDrawn[j].unk1)
@@ -652,12 +644,9 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
-                if (get_debug_do_draw_obj())
+                if (lvGetDrawWorld())
                 {
-                    if (lvGetDrawWorld())
-                    {
-                        gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 0);
-                    }
+                    gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 0);
                 }
  
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
@@ -670,35 +659,23 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                         g_BgRoomsDrawn[j].bbox.max.y),
                     0);
  
-                if (get_debug_do_draw_bg())
+                if (lvGetDrawWorld())
                 {
-                    if (lvGetDrawWorld())
-                    {
-                        gdl = bgRenderRoomPrimary(gdl, g_BgRoomsDrawn[j].roomid);
-                    }
+                    gdl = bgRenderRoomPrimary(gdl, g_BgRoomsDrawn[j].roomid);
                 }
  
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
-                if (get_debug_do_draw_obj())
+                if (lvGetDrawWorld())
                 {
-                    if (lvGetDrawWorld())
-                    {
-                        gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 2);
-                    }
+                    gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 2);
                 }
  
                 if (1);
             }
-    #ifdef DEBUG
-            notdone--;
-    #endif
         }
     }
-    #ifdef DEBUG
-    assert(notdone == 0);
-    #endif
  
     gdl = bgScissorCurrentPlayerViewDefault(fogRenderClearFogMode(gdl));
     gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
@@ -714,9 +691,6 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
     for (i = b_max; i >= b_min; i--)
     {
-    #ifdef DEBUG
-        notdone = g_BgNumberOfRoomsDrawn;
-    #endif
  
         for (j = 0; j < g_BgNumberOfRoomsDrawn; j++)
         {
@@ -732,35 +706,23 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                         g_BgRoomsDrawn[j].bbox.max.y),
                     1);
  
-                if (get_debug_do_draw_bg())
+                if (lvGetDrawWorld())
                 {
-                    if (lvGetDrawWorld())
-                    {
-                        gdl = bgRenderRoomSecondary(gdl, g_BgRoomsDrawn[j].roomid);
-                    }
+                    gdl = bgRenderRoomSecondary(gdl, g_BgRoomsDrawn[j].roomid);
                 }
  
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
-                if (get_debug_do_draw_obj())
+                if (lvGetDrawWorld())
                 {
-                    if (lvGetDrawWorld())
-                    {
-                        gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 1);
-                    }
+                    gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 1);
                 }
  
                 if (1);
             }
-    #ifdef DEBUG
-            notdone--;
-    #endif
         }
     }
-    #ifdef DEBUG
-    assert(notdone == 0);
-    #endif
  
     return gdl;
 }
@@ -866,7 +828,6 @@ void bgLoad(LEVEL_INDEX levelid)
  
     bgSetLevelScale(levelinfotable[levelentry_index].levelscale);
     stanSetLevelScale(levelinfotable[levelentry_index].levelscale);
-    setDebugCameraScale(levelinfotable[levelentry_index].levelscale);
     chrRemovedUnused(levelinfotable[levelentry_index].levelscale);
  
     mCurrentLevelVisibilityScale = levelinfotable[levelentry_index].visibility;
@@ -1814,23 +1775,6 @@ void bbox2dCopy(struct bbox2d *a, struct bbox2d *b)
 }
 
 
-/**
- * Formats a portal ID for debug output.
- */
-char *bgDebPrintPORTALID(s32 portID)
-{
-    static char bgDebPortalOutBuffer[10][9];
-    static s32 bgDebPortalOutLineNum = 0;
-    char *portIdStr;
-
-    bgDebPortalOutLineNum = (bgDebPortalOutLineNum + 1) % 10;
-    portIdStr = bgDebPortalOutBuffer[bgDebPortalOutLineNum];
-
-    sprintf(portIdStr, "PORT%d", portID);
-
-    return portIdStr;
-}
-
 
 /**
  * Formats a room ID for debug output.
@@ -2223,35 +2167,9 @@ s32 bgGetPortalIndex(s32 portalID)
             return i;
         }
     }
-    #ifdef DEBUG
-    osSyncPrintf("bg: bgPortalIndexFromPtr(): No portal found for %08x ",portalID);
-    #endif
     return 0;
 }
 
-
-void bgRoomsDebugTick(void)
-{
-    char roomstates[MAXROOMCOUNT + 1];
-    s32 roomnum;
-
-    if (debugIsRoomStateDebugEnabled())
-    {
-        for (roomnum = 1; roomnum < g_MaxNumRooms; roomnum++)
-        {
-            if (g_BgRoomInfo[roomnum].model_bin_loaded)
-            {
-                roomstates[roomnum] = (roomnum % 10) + '0';
-            }
-            else
-            {
-                roomstates[roomnum] = '.';
-            }
-        }
-
-        roomstates[roomnum] = '\0';
-    }
-}
 
 
 u32 bgDecompress(u8* source, u8 *target)
@@ -2474,10 +2392,6 @@ void bgLoadRoomModelData(s32 roomID)
     if (allocsize > 0)
     {
         // Unknown debug code
-        if (get_debug_joy2detailedit_flag())
-        {
-            allocsize += 0x400;
-        }
     }
     else
     {
@@ -2580,7 +2494,6 @@ void bgLoadRoomModelData(s32 roomID)
     }
 
     bgBuildRoomVtxBounds(roomID);
-    bgRoomsDebugTick();
 
 end:;
 
@@ -2626,7 +2539,6 @@ void bgUnloadRoom(s32 roomID)
     }
 
     room->model_bin_loaded = 0;
-    bgRoomsDebugTick();
 }
 
 
@@ -3609,9 +3521,6 @@ void bgQueuePortalTraversal(s32 arg0, s32 arg1, s32 portalnum, s32 depth, f32 *a
     }
     if (g_BgPortalQueueWriteIndex == g_BgPortalQueueReadIndex)
     {
-            #ifdef DEBUG
-            osSyncPrintf("bg: pstackat: Overflow ");
-            #endif
         g_BgPortalQueueWriteIndex--;
     }
 }
@@ -3691,9 +3600,6 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, b
  
     if (depth >= 101)
     {
-#ifdef DEBUG
-        osSyncPrintf("bg: << Deep\n");
-#endif
         return;
     }
  
@@ -3709,10 +3615,6 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, b
  
     if (depth);
  
-#ifdef DEBUG
-    assert(portalnum < PORTMAX);
-    osSyncPrintf("bg: << bgPortalDescend: Inside out portal '%s' ", bgDebPrintPORTALID(portalnum));
-#endif
 
     if (g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_DISABLED)
     {
@@ -3832,9 +3734,6 @@ s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s3
  
     if (depth >= 101)
     {
-#ifdef DEBUG
-        osSyncPrintf("bg: << Deep\n");
-#endif
         return value;
     }
  
@@ -3850,10 +3749,6 @@ s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s3
  
     if (depth);
  
-#ifdef DEBUG
-    assert(portalnum < PORTMAX);
-    osSyncPrintf("bg: << bgPortalDescend: Inside out portal '%s' ", bgDebPrintPORTALID(portalnum));
-#endif
  
     if (g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_DISABLED)
     {
@@ -4316,9 +4211,6 @@ void *bgRunVisCommands(s32 *pc)
     }
 
     bgStackGetNthValueFromEnd(0);
-    #ifdef DEBUG
-    assert( pc->type==RS_STOP)
-    #endif
 
     return bgParseVisCommands(pc, 1);
 }
@@ -4332,7 +4224,7 @@ void bgDetermineVisibleRooms(void)
     f32 screenbounds[4];
     s32 var_s0;
     s32 temp_a0;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     s32 sp44;
 #endif
     s32 temp_v1;
@@ -4361,7 +4253,7 @@ void bgDetermineVisibleRooms(void)
     
     D_80044858 = (s32) (D_80044858 + 1) % 10;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     dword_CODE_bss_8007FF98 = 0;
 #else
     *(s32 *) &g_BgRoomsDrawn[120] = 0;
@@ -4407,7 +4299,7 @@ void bgDetermineVisibleRooms(void)
         {
             if ((g_BgCurrentRoom == g_BgPortals[var_s0].connectedRoom1) || (g_BgCurrentRoom == g_BgPortals[var_s0].connectedRoom2)) 
             {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
                 bgQueuePortalTraversal(0, g_BgCurrentRoom, var_s0, 1, screenbounds);
 #else
                 bgQueuePortalTraversal(g_BgCurrentRoom, var_s0, 1, screenbounds);
@@ -4415,7 +4307,7 @@ void bgDetermineVisibleRooms(void)
             }
         }
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
         sp44 = 0;
 
         while (bgProcessNextQueuedPortal(&sp44) != 0) 
@@ -4609,23 +4501,6 @@ bool bgRoomsSharePortal(s32 room1, s32 room2)
 }
 
 
-/**
- * Unreferenced.
- *
- * Adjusts value in bgViewRelated and returns the new value.
- *
- * @param index: index into bgViewRelated.
- * @param times: multiples value by this amount first.
- * @param add: then adds this.
- *
- * Address 0x7F0B9040.
- */
-f32 bgDebugAdjustViewEdge(s32 index, f32 times, f32 add)
-{
-    bgViewRelated[index] = (s32) (((f32) bgViewRelated[index] * times) + add);
-    return (f32) bgViewRelated[index];
-}
-
 
 
 
@@ -4735,12 +4610,6 @@ void bgRoomCalcBB(s32 room) // canonical name
                 ptr_bgdata_room_fileposition_list[room].pos.f[j] = (g_StanRoomBounds[room].min[j] + g_StanRoomBounds[room].max[j]) / 2;
             }
         }
-#ifdef DEBUG
-        else
-        {
-            osSyncPrintf("bg: bgRoomCalcBB: ROOM%d has no gfx, and no stans! Can\'t make bb & roomoffset ", room);
-        }
-#endif
 
         return;
     }
@@ -4938,124 +4807,23 @@ u8 bgGetDataPortalsControlBytes2(s32 p)
 }
 
 
-void bgPortalThicknessInc(s32 portalnum)
+
+
+
+
+
+
+
+
+
+
+/** Swaps the two rooms a portal connects. */
+static void bgSwapConnectedRooms(s32 index)
 {
-    u8 value;
-    s32 upper;
-
-    value = g_BgPortals[portalnum].controlbytes2;
-
-    if (value >= 0xff)
-    {
-        value = 0xff;
-    }
-    else
-    {
-        value++;
-        upper = (value >> 4) & 0xf;
-
-        if (upper > 0)
-        {
-            value |= 8;
-        }
-    }
-
-    g_BgPortals[portalnum].controlbytes2 = value;
-}
-
-
-void bgPortalThicknessDec(s32 portalnum)
-{
-    u8 value;
-    s32 temp;
-
-    value = g_BgPortals[portalnum].controlbytes2;
-    temp = value;
-
-    if (((value >> 4) & 0xf) == 0)
-    {
-        if (temp > 0)
-        {
-            value--;
-        }
-    }
-    else
-    {
-        value--;
-
-        if ((value & 0xf) < 8)
-        {
-            value -= 8;
-        }
-    }
-
-    g_BgPortals[portalnum].controlbytes2 = value;
-}
-
-
-/**
- * @param index: index into portal array.
- *
- * Address 0x7F0B9AE4.
- */
-s32 bgGetDataPortalsControlBytes1Bit1(s32 index)
-{
-    return g_BgPortals[index].controlbytes1 & 1;
-}
-
-
-
-/**
- * @param index: index into portal array.
- *
- * Address 0x7F0B9B04.
- */
-s32 bgGetDataPortalsControlBytes1Bit2(s32 index)
-{
-    return g_BgPortals[index].controlbytes1 & 2;
-}
-
-
-
-/**
- * @param index: index into portal array.
- *
- * Address 0x7F0B9B24.
- */
-void bgSetDataPortalsControlBytes1Bit2(s32 index)
-{
-    g_BgPortals[index].controlbytes1 |= 2;
-}
-
-
-
-/**
- * @param index: index into portal array.
- *
- * Address 0x7F0B9B44.
- */
-void bgClearDataPortalsControlBytes1Low2Bits(s32 index)
-{
-    g_BgPortals[index].controlbytes1 &= 0xFD;
-}
-
-
-/**
- * Swaps connected rooms.
- *
- * @param index: index into portal array.
- *
- * Address 0x7F0B9B64.
- */
-s8 bgSwapConnectedRooms(s32 index)
-{
-    u8 t;
-
-    t = g_BgPortals[index].connectedRoom1;
+    u8 t = g_BgPortals[index].connectedRoom1;
     g_BgPortals[index].connectedRoom1 = g_BgPortals[index].connectedRoom2;
     g_BgPortals[index].connectedRoom2 = t;
 }
-
 
 /**
  * Address: 7F0B9B94
@@ -5081,9 +4849,6 @@ void bgOrderPortal(s32 portalnum) // canonical name
     bgGetPortalPlane(portalnum, &metric);
 
     if (metric.max - metric.min < 0.1f) {
-#ifdef DEBUG
-        osSyncPrintf("bg: bgOrderPortal: Portal '%s' not planar by %5.2f\n", bgDebPrintPORTALID(portalnum), metric.max - metric.min);
-#endif
     }
 
     tmp2 = metric.normal.f[2];
@@ -5127,9 +4892,7 @@ s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *arg2, coord3d *arg3)
     s32 i;
     s32 portalIndex = -1;
 
-    #ifndef DEBUG
         #define osSyncPrintf(...)
-    #endif
 
     for (i = 0; g_BgPortals[i].offset_portal != NULL; i++)
     {
@@ -5166,65 +4929,14 @@ s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *arg2, coord3d *arg3)
  */
 void bgToggleDataPortalsContrlBytes1Bit1(s32 portal, s32 toggle)
 {
-    #ifdef DEBUG
-    assert(portal<PORTMAX);
-    #endif
     g_BgPortals[portal].controlbytes1 = (g_BgPortals[portal].controlbytes1 | 1) ^ (toggle != 0);
 }
 
 
 
 
-/**
- * Debug method, called from lvl.c.
- * Something to do with portals.
- *
- * Address 0x7F0B9DE4.
- */
-s32 bgDebugRemoved7F0B9DE4(s32 arg0, s32 arg1, s32 arg2)
-{
-#if DEBUG
-    // removed
-    /*
- if (arg2 == NULL)
- {
-     arg2 = {0};
- }
- *arg0          = *arg1 + *arg2;
- arg0[1]        = arg1[1] + arg2[1];
- arg0[2]        = arg1[2] + arg2[2];
- *(arg0 + 3)    = 0;
- arg0[4]        = 0.0;
- arg0[5]        = 0.0;
- *(arg0 + 6)    = (param_4 & 0xcf00cf40) >> 0x18;
- *(arg0 + 0x19) = 0;
- *(arg0 + 0x1a) = (param_4 & 0xcf00cf40) >> 8;
- *(arg0 + 0x1b) = 0x40;
-
- */
-
-#endif
-
-    return arg0;
-}
 
 
-
-
-/**
- * Debug method, called from lvl.c.
- * Something to do with portals.
- *
- * Address 0x7F0B9DF4.
- */
-void bgRemoved7F0B9DF4(s32 arg0)
-{
-#if DEBUG
-    // removed
-#endif
-
-    return;
-}
 
 /**
  * Unreferenced.
@@ -5233,9 +4945,6 @@ void bgRemoved7F0B9DF4(s32 arg0)
  */
 void bgRemoved7F0B9DFC(s32 p)
 {
-#if DEBUG
-        osSyncPrintf("bg: Error: Multiple portals intersect line; \'%s\' dropped ", bgDebPrintPORTALID(p));
-#endif
 
     return;
 }
@@ -5259,18 +4968,12 @@ s32 bgFindPortalOnSegment(coord3d *arg0, coord3d *arg1)
             if (thisthing < 0)
             {
                 thisthing = -thisthing;
-#if DEBUG
-                osSyncPrintf("bg: Portal \'%s\' briefly considered for window\n", bgDebPrintPORTALID(i));
-#endif
             }
 
             if (thisthing < bestthing)
             {
                 if (count)
                 {
-#if DEBUG
-                    osSyncPrintf("bg: Portal \'%s\' briefly considered for window\n", bgDebPrintPORTALID(i));
-#endif
                 }
                 if (i);
                 bestportalnum = i;

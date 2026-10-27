@@ -1,6 +1,5 @@
 
 #include <ultra64.h>
-#include "game/debug/debugmenu_handler.h"
 #include "game/level/lv.h"
 #include "game/menu/cheat.h"
 #include "game/menu/front.h"
@@ -125,6 +124,7 @@ s32 frontRunStageTick(void) {
     return g_ramromPlayBackFlag;
 }
 
+
 // Address 0x7F0BFCB0 NTSC.
 void finalize_ramrom_on_hw(void)
 {
@@ -147,49 +147,6 @@ void finalize_ramrom_on_hw(void)
     ptr_active_demofile->filesize = (s32)address_demo_loaded - (s32)a1;
     romWrite(ptr_active_demofile, a1, 0xf0);
 }
-
-
-// Address 0x7F0BFD60 NTSC.
-void save_ramrom_to_devtool(void)
-{
-    int i;
-    char indyFileName [256];
-    u32 size;
-    
-    for (i = 1; ; i++)
-    {
-        sprintf(indyFileName, "replay/demo.%d", i);
-        
-        if (!indycommHostCheckFileExists(indyFileName, &size))
-        {
-            break;
-        }
-    }
-    
-    sprintf(indyFileName, "replay/demo.%d", i);
-    indycommHostSaveFile(indyFileName, INDY_RAMROM_DEMO_POINTER, ptr_active_demofile->filesize);
-}
-
-
-
-
-
-void load_ramrom_from_devtool(void)
-{
-
-    static const char strDemoFileName[] = "replay/demo.load";
-    s32 size;
-
-    if (indycommHostCheckFileExists(&strDemoFileName, &size) != 0)
-    {
-        indycommHostRamRomLoad(&strDemoFileName, (u8 *)INDY_RAMROM_DEMO_ADDRESS, size);
-        ptr_active_demofile = romCopyUnaligned(&ramrom_data_target, (u8 *)INDY_RAMROM_DEMO_ADDRESS, sizeof(struct ramromfilestructure));
-    }
-}
-
-
-
-
 
 
 // Address 0x7F0BFE5C NTSC
@@ -474,12 +431,6 @@ void test_if_recording_demos_this_stage_load(enum LEVELID arg0, enum DIFFICULTY 
 
 
 
-void setRamRomRecordSlot(s32 arg0)
-{
-    g_ramromRecordFlag = 1;
-    record_slot_num = arg0;
-}
-
 void stop_recording_ramrom(void)
 {
     if (ramrom_demo_related_6 != 0)
@@ -500,11 +451,6 @@ void replay_recorded_ramrom_at_address(ramromfilestructure *demofile)
     fileSetSoloStage(ptr_active_demofile->stagenum);
     fileSetDifficulty(ptr_active_demofile->difficulty);
     frontSetMenu(MENU_RUN_STAGE,1);
-}
-
-void replay_recorded_ramrom_from_indy(void)
-{
-    replay_recorded_ramrom_at_address(INDY_RAMROM_DEMO_ADDRESS);
 }
 
 void ramromFadeToTitle(void)

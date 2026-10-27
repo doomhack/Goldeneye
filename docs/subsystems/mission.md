@@ -54,9 +54,6 @@ the messages off (`objectivesDisableStatusDisplay`), and if `objectivesAllComple
 every objective for this difficulty is done, moves on to the end-of-mission screens.
 `objectivesFinish` marks objectives with a certain flag complete when the level unloads.
 
-The debug option "all objectives complete" makes `objectiveCheckStatus` always say
-complete.
-
 ## Traps
 
 * `g_ObjectiveLastIndex` is the highest objective letter in use, not the count:

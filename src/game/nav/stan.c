@@ -15,7 +15,6 @@
 
 #include <ultra64.h>
 //#include <bondtypes.h>
-#include <deb.h>
 #include "game/nav/stan.h"
 #include "game/world/bg.h"
 #include "game/chr/chrai.h"
@@ -75,7 +74,6 @@ u8 g_StanTileSpecialFlags[] = {
     0x00, 0x00, 0x00, 0x00
 };
 
-s32 g_StanDebug = 0;
 
 //D:80040F44
 f32 g_StanScale = 1.0;
@@ -102,7 +100,7 @@ s32 g_StanDebugRegion = 0;
 //D:80040FB4
 s32 g_StanLineLog = 0;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 
 s32 D_80040FB8[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -121,23 +119,11 @@ s32 D_80040FB8[] = {
 #endif
 //D:800413BC
 s32 g_StanSavedCollHasLine =  0;
-//D:800413C0
-f32 g_StanDebugThrottleAcc =  0.0;
-//D:800413C4
-f32 g_StanDebugThrottleRate =  0.0;
-//D:800413C8
-s32 g_StanDebugThrottleFrame =  1;
-//D:800413CC
-s32 g_StanDebugFrame =  1;
-//D:800413D0
-s32 g_StanDebugThrottleOff[] =  {0, 0, 0, 0, 0, 0, 0, 0};
 
 
 // rodata
 //D:800585A0
 const char aCDCC[] = "%c%d%c%c";
-//D:800585AC
-const char aStan_c_debug[] = "stan_c_debug";
 //D:800585BC
 const char aStanlinelog[] = "-stanlinelog";
 
@@ -210,24 +196,9 @@ char *stanGetTileName(StandTile *tile)
 //stanChecksf
 u32 stanCheckTilePtr(s32 arg0) 
 {
-#ifdef DEBUG
-    if (arg0 < g_StanFirstTileAddr)
-    {
-        osSyncPrintf("checksf: ERROR line %d %08x<%08x", __LINE__, arg0, g_StanFirstTileAddr);
-    }
-    if (g_StanTilesEnd < arg0)
-    {
-        osSyncPrintf("checksf: ERROR line %d %08x>%08x", __LINE__, arg0, g_StanTilesEnd);
-    }
-#endif
     return 0;
 }
 
-
-void stanInit(void) 
-{
-    debTryAdd(&g_StanDebug, &aStan_c_debug); //"stan_c_debug");
-}
 
 
 /**
@@ -492,35 +463,6 @@ void stanLoadFile(struct StanPrefixRecord *file)
 }
 
 
-//stanRegion()
-void stanDebugStepRegion(s32 arg0)
-{
-#ifdef DEBUG
-    StandTile **rooms;
-
-    rooms = &g_StanFile->ptr_firstroom;
-
-    if (arg0 < 0)
-    {
-        if (rooms[g_StanDebugRegion - 1] != NULL)
-        {
-            g_StanDebugRegion--;
-        }
-    }
-    else if (arg0 == 0)
-    {
-        g_StanDebugRegion = 1;
-    }
-    else if (rooms[g_StanDebugRegion] != NULL)
-    {
-        g_StanDebugRegion++;
-    }
-
-    osSyncPrintf("stanRegion():  region=%d", g_StanDebugRegion);
-#endif
-    return;
-}
-
 
 /**
  * Address: 7F0AF638
@@ -708,9 +650,6 @@ void stanGetPointInsideCorner(StandTile *tile, s32 tripleIndex /*canonically c *
     coord3d midPoint;
     s32 pntIndex;
 
-    #ifdef DEBUG
-    assert(c<3);
-    #endif
 
     pntIndex = (tile->tail.half >> (8 - (tripleIndex * 4))) & 0xf;
     
@@ -843,9 +782,6 @@ f32 stanEdgeDist(StandTile *tile,s32 index,f32 p_x,f32 p_z)
     struct StandTilePoint* nextPnt;
     f32 UNUSED;
 
-    #ifdef DEBUG
-    assert(ei<getsides(sf));
-    #endif
 
     // Omiting the '& 0xF' is equivalent, but keeping it is necessary to match.
     // Perhaps the structure isn't correct but this seems much cleaner than doing an explicit >> 0xC.
@@ -867,9 +803,6 @@ f32 stanEdgeDist(StandTile *tile,s32 index,f32 p_x,f32 p_z)
     }
     else
     {
-        #ifdef DEBUG
-        assert(d>0.0f);
-        #endif
 
         // | (AP x AB) / ||AB|| | = ||PA|| sin(a),
         // so we're returning the SIGNED displacement
@@ -897,9 +830,6 @@ f32 stanTriEdgeDist(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
     s32 nextPntI;
     s32 tail;
 
-    #ifdef DEBUG
-    assert(ei<getsides(sf));
-    #endif
 
     nextPntI = 2;
 
@@ -922,9 +852,6 @@ f32 stanTriEdgeDist(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
         return sqrtf((dx * dx) + (dz * dz));
     }
 
-    #ifdef DEBUG
-    assert(d>0.0f);
-    #endif
 
     crossProduct = (edgeZ * (p_x - tile->points[start3index].x)) + (-edgeX * (p_z - tile->points[start3index].z));
     return crossProduct / edgeLen;
@@ -1098,9 +1025,6 @@ f32 stanTriEdgeDist2(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
     f32 tempf;
     s32 extra_padding[2];
 
-    #ifdef DEBUG
-    assert(ei<getsides(sf));
-    #endif
 
     var_a0 = (start3index != 2) ? start3index + 1 : 0;
 
@@ -1116,9 +1040,6 @@ f32 stanTriEdgeDist2(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
         return 0.0f;
     }
 
-    #ifdef DEBUG
-    assert(d>0.0f);
-    #endif
 
     tempf = (temp_f14 * (p_x - tile->points[start3index].x)) + ((p_z - tile->points[start3index].z) * -temp_f2);
     return tempf / temp_f0;
@@ -1215,7 +1136,7 @@ bool stanSegmentsIntersect(f32 start1X, f32 start1Z, f32 end1X, f32 end1Z, f32 s
 }
 
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 stanSegmentsCross(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
                       f32 arg4, f32 arg5, f32 arg6, f32 arg7, s32 arg8) {
     f32 a_x;
@@ -1346,9 +1267,6 @@ bool stanWalkLine(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
         if (callback)
         {
             callback(tile, previousTile, callbackData);
-#ifdef DEBUG
-            ossyncPrintf("{\"%s\",0x%08x,0x%08x,0x%08x,0x%08x},\t/* %8.3f %8.3f  %8.3f %8.3f */\n", GetStanRoomID(*tilestack), start_x, start_z, dest_x, dest_z, start_x, start_z);
-#endif
         }
 
         curPoint = (StandTilePoint *) tile;
@@ -1381,11 +1299,6 @@ bool stanWalkLine(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
             }
         }
 
-#ifdef DEBUG
-        assert(crossings != 0);
-        assert(crossings != 3);
-        osSyncPrintf("sf: stanLineDo %d   %5.1f %5.1f %5.1f %5.1f  %s %s %s\n", 3, start_x, start_z, dest_x, dest_z, stanGetTileName(tile), stanGetTileName(previousTile), stanGetTileName(previousPreviousTile));
-#endif
 
         previousPreviousTile = previousTile;
         previousTile = tile;
@@ -1406,9 +1319,6 @@ bool stanWalkLine(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
         {
             g_StanHitTile = previousTile;
             g_StanHitEdge = savedPointIndex;
-#ifdef DEBUG
-            osSyncPrintf("stanLine: Looping; ret=0\n");
-#endif
             return FALSE;
         }
 
@@ -1528,10 +1438,6 @@ s32 stanGetRoomsBetween(StandTile *tile, f32 start_x, f32 start_z, StandTile **d
     }
 
     if (savedTile != *destTile) {
-        #ifdef DEBUG
-        osSyncPrintf("stan %s(%d) != %s(%d) from=%s\n", GetStanRoomID(savedTile),
-        /*funcForTileNumber(savedTile)*/, GetStanRoomID(tile), /*funcForTileNumber(tile)*/, GetStanRoomID(roomBuffer));
-        #endif
         return 0;
     }
 
@@ -1600,9 +1506,6 @@ s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f3
 
     if (sp124 > 20)
     {
-        #ifdef DEBUG
-            osSyncPrintf("stanLineObjType: %d rooms is more than %d\n", retval, 20);
-#endif
 
         sp124 = 20;
     }
@@ -1732,9 +1635,6 @@ s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f3
         dest_z *= sp140;
         dest_z = p_z + dest_z;
         /*stanlineret = */ stanWalkLineNoCallback(&sp154, p_x, p_z, dest_x, dest_z);
-        #ifdef DEBUG
-        assert(stanlineret==1)
-        #endif
     }
 
     *pTile = sp154;
@@ -1864,9 +1764,6 @@ f32 stanGetSignedPointLineDistance(f32 a_x, f32 a_z, f32 b_x, f32 b_z, f32 p_x, 
     {
         return sqrtf((p_x - b_x) * (p_x - b_x) + (p_z - b_z) * (p_z - b_z));
     }
-    #ifdef DEBUG
-    assert(d>0.0F);
-    #endif
     return ((b_z - a_z) * (p_x - a_x) + -(b_x - a_x) * (p_z - a_z)) / result;
 }
 
@@ -1954,9 +1851,6 @@ s32 stanTestVolume(StandTile **arg0, f32 arg1, f32 arg2, f32 arg3, s32 cdtypes, 
 
     if (spFC > 20)
     {
-        #ifdef DEBUG
-            osSyncPrintf("stanCircleLegalXFObjTypeY: %d rooms is more than %d\n",spFC,20);
-        #endif
         spFC = 20;
     }
 
@@ -2052,17 +1946,11 @@ void stanResetHits(void) {
 
 StandTile *stanGetCircleHitTile(void)
 {
-    #ifdef DEBUG
-        osSyncPrintf("Don\'t call stanCircleLegalHit()!\n");
-    #endif
     return g_StanHitTile;
 }
 
 s32 stanGetCircleHitEdge(void)
 {
-    #ifdef DEBUG
-        osSyncPrintf("Don\'t call stanCircleLegalHitEdge()!\n");
-    #endif
 
     return g_StanHitEdge;
 }
@@ -2186,12 +2074,6 @@ StanCollisionResult stanWalkCircle(StandTile **startTile, f32 x, f32 z, f32 radi
             while (pointINext < (((*tile).tail.half >> 12) & 0xf));
         }
 
-#ifdef DEBUG
-        if (cat>= 0x190)
-        {
-            osSyncPrintf("cat=%d !!!!!!!!!!!!!!!!!!!! NEED TO INCREASE ARRAY SIZE\n",cat);
-        }
-#endif
         // if (cat >= 0x320)
         // {
         //     return 5; //error value?
@@ -2455,9 +2337,6 @@ void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, coord3d
             
                 if (g_StanTileSpecialFlags[linkTileMid >> 12] & STANTILEFLAG_LADDER)
                 {
-#ifdef DEBUG
-                    assert(getsides(linktile) == 3);
-#endif
                     curtilePointI = (i + 2) % 3;
             
                     *tile1 = baseTile;
@@ -2485,9 +2364,6 @@ void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, coord3d
 
                         if (j == 12)
                         {
-#ifdef DEBUG
-                            osSyncPrintf("rotate==12\n");
-#endif
                             break;
                         }
 
@@ -2515,9 +2391,6 @@ void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, coord3d
         }
         while (TRUE);
     }
-#ifdef DEBUG
-    osSyncPrintf("Ladder %s has no neighbouring ladder stan\n", GetStanRoomID(baseTile));
-#endif
 }
 
 
@@ -2681,9 +2554,6 @@ StandTile *stanFillSearch(StandTile *starttile, tilePredicate_t predicate) // st
 
                             if ((u32)seenCount >= 351)
                             {
-                                #ifdef DEBUG
-                                    osSyncPrintf("Out of confs[] in stanFillSearch()\n");
-                                #endif
                                 return 0;
                             }
 
@@ -2759,14 +2629,6 @@ void stanSetLevelScale(f32 ls)
 {
     g_StanScale = ls;
     g_StanInvScale = (1.0f / ls);
-    #ifdef DEBUG
-    if (g_StanScale != 1.0)
-    {
-        osSyncPrintf("%5.2fm squared total area\n", /*lots of math*/ 1* g_StanInvScale * g_StanInvScale * 0.01 * 0.01);
-        //...
-        osSyncPrintf("%5.2fm squared BB extent\n\n",/*more maths*/ 1 * g_StanInvScale * g_StanInvScale * 0.01 * 0.01);
-    }
-    #endif
     return;
 }
 
@@ -2898,17 +2760,6 @@ f32 stanGetTileHeaderCMinY(StandTile *tile) {
 }
 
 
-void stanDebugView(s8 joyX, s8 joyY, u16 joyBtns) {
-    return;
-}
-
-
-/**
- * Address: 7F0B2D48
- */
-Gfx * stanRenderDebugStanView(Gfx *arg0) {
-    return arg0;
-}
 
 
  /**
@@ -2976,12 +2827,6 @@ void stanPackId(char *id, u16 *stanIdHi, u8 *stanIdLo)
                 {
                     if (str_end[1] == 0 || str_end[2] == 0)
                     {
-                        #ifdef DEBUG
-                        assert(bitsletter>=0&&bitsletter<=1);     // # 1094 "stan.c"
-                        assert(bitsnumber>=0&&bitsnumber<=32767); // # 1095 "stan.c"
-                        assert(bitsfile >=0&&bitsfile <=31);      // # 1096 "stan.c"
-                        assert(bitssubtri>=0&&bitssubtri<=7);     // # 1097 "stan.c"
-                        #endif
                         *stanIdHi = bitsletter << 0xf | bitsnumber;
                         *stanIdLo = bitsfile << 3 | bitssubtri;
                         return;
@@ -3076,9 +2921,6 @@ void stanDetermineEOF(struct StanPrefixRecord *file /* canonically r */, s32 ori
     delta = ((s32) newBase) - origBase;
     g_StanFile = file;
     
-    #ifdef DEBUG
-    assert(*r==0);
-    #endif
   
     g_StanTiles = (StandTile *)(((s32)file->ptr_firstroom + delta) - 0x80);
     g_StanFirstTileAddr = (s32)file->ptr_firstroom + delta;
@@ -3155,113 +2997,6 @@ Gfx * stanDebugDrawTile(Gfx *ptrdl, StandTilePoint *tile_point, u32 RGBAColor) {
 }
 
 Gfx * stanDebugBeginDraw(Gfx *arg0) {
-    return arg0;
-}
-
-Gfx * stanDebugDrawProblems(Gfx * arg0) {
-    return arg0;
-}
-
-s32 stanDebugThrottle(void) {
-    s32 sp1C;
-    f32 temp_f0;
-
-    sp1C = 0;
-    if (((dynGetFreeGfx() < 0x1000) || (dynGetFreeVtx() < 0x1000)) && (*g_StanDebugThrottleOff == 0)) {
-        g_StanDebugThrottleAcc = 0.0f;
-        g_StanDebugThrottleRate = 0.0f;
-        g_StanDebugThrottleFrame = g_StanDebugFrame;
-        *g_StanDebugThrottleOff = 1;
-    }
-    if (*g_StanDebugThrottleOff == 0) {
-        g_StanDebugThrottleAcc += g_StanDebugThrottleRate;
-        temp_f0 = g_StanDebugThrottleAcc;
-        if (temp_f0 > 1.0f) {
-            sp1C = 1;
-            g_StanDebugThrottleAcc = temp_f0 - 1.0f;
-        }
-    }
-    g_StanDebugFrame += 1;
-    return sp1C;
-}
-
-Gfx * stanDebugDrawRegion(Gfx *arg0, s32 arg1)
-{
-    #ifdef DEBUG
-      qword *pqVar1;
-      qword *pqVar2;
-      int iVar3;
-      char cVar4;
-      ulonglong uVar5;
-      ulonglong uVar6;
-      uint uStack00000014;
-      stanRecord *psStack0000001c;
-      char cStack00000027;
-      ushort **ppuStack0000002c;
-      uint uStack00000034;
-      dword local_80;
-      char *local_30;
-      dword local_2c;
-      uint local_28;
-      dword local_24;
-      dword local_20;
-      qword local_10;
-      dword local_8;
-
-      uStack00000034 = param_5;
-      ppuStack0000002c = param_4;
-      uVar6 = ZEXT48(param_2);
-      *ppuStack0000002c = param_2;
-      local_30 = &DAT_00000001;
-      uStack00000014 = param_1;
-      psStack0000001c = param_2;
-      cStack00000027 = param_3;
-      pqVar1 = Function_8237F158();
-      pqVar2 = Function_8237F058();
-      uVar5 = 0;
-      Function_82278968(pqVar2,pqVar1,0,param_4,param_5,param_6,uVar6);
-      do {
-        do {
-          if (local_30 == NULL) {
-            Function_82279088();
-            return;
-          }
-          local_30 = local_30 + -1;
-          psStack0000001c = ppuStack0000002c[local_30];
-        } while (*psStack0000001c >> 0xf == cStack00000027);
-        *psStack0000001c = *psStack0000001c ^ 0x8000;
-        stanTileHasZeroArea(psStack0000001c);
-        iVar3 = stanDebugThrottle();
-        if (iVar3 != 0) {
-          Function_8238AC90(psStack0000001c,uStack00000014,uVar5,param_4,param_5,param_6,uVar6);
-        }
-        for (local_28 = 0; cVar4 = getsides(psStack0000001c), local_28 < cVar4; local_28 = local_28 + 1)
-        {
-          if (psStack0000001c[local_28 + 1].tail >> 4 == 0) {
-            iVar3 = stanDebugThrottle();
-            if (iVar3 != 0) {
-              uVar5 = local_28 + 1;
-              cVar4 = getsides(psStack0000001c);
-              trapWord(6,cVar4,0);
-              trapWord(5,cVar4 & ~(((uVar5 & 0x7fffffff) << 1 | (uVar5 << 0x20) >> 0x3f) - 1),0xffff);
-              uVar5 = uVar5 - (uVar5 / cVar4) * cVar4;
-              param_4 = 0xffffffffffffffc0;
-              Function_8238B8F0(psStack0000001c,local_28,uVar5,0xffffffffffffffc0,param_5,param_6,uVar6)
-              ;
-            }
-          }
-          else if (*(stanTileStart + psStack0000001c[local_28 + 1].tail) >> 0xf != cStack00000027) {
-            uVar6 = ZEXT48(ppuStack0000002c);
-            ppuStack0000002c[local_30] = stanTileStart + psStack0000001c[local_28 + 1].tail;
-            local_30 = local_30 + 1;
-            if (uStack00000034 < local_30) {
-              osSyncPrintf("stanFillinVis: Stack overflow %d>%d",local_30,uStack00000034);
-              return;
-            }
-          }
-        }
-      } while( TRUE );
-    #endif
     return arg0;
 }
 

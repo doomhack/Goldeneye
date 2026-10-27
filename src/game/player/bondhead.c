@@ -586,12 +586,6 @@ void bheadInit(void)
     ModelRenderData renderData;
     Mtxf identityMatrix;
 
-#ifdef LEFTOVERDEBUG
-    if ((s32) player_gait_object_header.numRecords >= 0x1F)
-    {
-        modelDebugBreak();
-    }
-#endif
 
     animInit(&g_CurrentPlayer->model, &player_gait_object_header, &g_CurrentPlayer->field_654);
     modelSetScale(&g_CurrentPlayer->model, IDO_POINT_ONE);

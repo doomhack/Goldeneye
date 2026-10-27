@@ -1,5 +1,4 @@
 #include <ultra64.h>
-#include <deb.h>
 #include "memp.h"
 #include "game/text/language.h"
 
@@ -20,7 +19,6 @@
 
 MemoryPool m_mempPools[MEMPOOL_COUNT];
 
-void *m_mempDebug = 0;
 /** Set once the stage pool has filled up and allocations have moved to the permanent pool. */
 s32 m_mempOverflowed = 0;
 s32 D_80024408 = 0;
@@ -38,11 +36,6 @@ struct MempPoolSizes m_mempDefaultSizes = {
     MEMPOOL_ME + 1,    15,
     0,                 0
 };
-
-void mempInit(void)
-{
-    debTryAdd(&m_mempDebug, "memp_c_debug");
-}
 
 const char *tokenFind(s32 arg0, const char *arg1);
 long int strtol(const char *str, char **endptr, int base);
@@ -149,12 +142,6 @@ void *mempAlloc(u32 bytes, u8 poolId)
     MemoryPool *pool = (MemoryPool *)(((u8 **)m_mempPools) + ((poolId * 2) << 1));
     u8 *allocation = pool->pos;
 
-#ifdef DEBUG
-    if ((poolId < 0) || (4 < poolId))
-    {
-        osSyncPrintf("mempAlloc from invalid heap %d!", poolId);
-    }
-#endif
 
     if (pool->pos == NULL)
     {
@@ -163,7 +150,6 @@ void *mempAlloc(u32 bytes, u8 poolId)
 
     if (pool->pos > pool->end)
     {
-        mempCheckPools();
 
         while (1);
     }
@@ -188,7 +174,6 @@ void *mempAlloc(u32 bytes, u8 poolId)
             return mempAlloc(bytes, MEMPOOL_PERMANENT);
         }
 
-        mempCheckPools();
 
         while (1);
     }
@@ -242,26 +227,16 @@ MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newSize, u8 poolId)
 
     if (pool->pos > pool->end)
     {
-        mempCheckPools();
         while (TRUE);
     }
 
     if (pool->pos + growBy > pool->end)
     {
-        mempCheckPools();
         while (TRUE);
     }
 
     pool->pos += growBy;
     return MEMP_RESIZE_OK;
-}
-
-/** Empty; it was presumably a debug check of every pool. */
-void mempCheckPools(void) {
-    u8 pool;
-    for (pool = MEMPOOL_MF; pool < MEMPOOL_COUNT; pool++)
-    {
-    }
 }
 
 /** Bytes left in a pool, taking the stage pool's overflow into account. */
@@ -291,7 +266,6 @@ void mempResetPool(u8 pool) {
 
 /** Closes a pool: any allocation from it hangs until mempResetPool. */
 void mempClosePool(u8 pool) {
-    mempCheckPools();
     if (m_mempPools[pool].pos != 0) {
         m_mempPools[pool].pos = 0;
     }

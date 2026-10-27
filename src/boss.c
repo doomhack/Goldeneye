@@ -5,12 +5,12 @@
 #include <bondconstants.h>
 #include <bondgame.h>
 #include "boss.h"
-#include "deb.h"
-#include "debugmenu.h"
+#include "crash.h"
+#include "game/menu/cheat.h"
+#include "game/text/language.h"
 #include "game/gfx/dyn.h"
 #include "game/level/game.h"
 #include "game/save/file.h"
-#include "game/debug/indy_comms.h"
 #include "init.h"
 #include "joy.h"
 #include "game/level/lv.h"
@@ -24,7 +24,6 @@
 #include "random.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "sched.h"
-#include "speed_graph.h"
 #include "token.h"
 #include "fr.h"
 #include "game/gfx/image.h"
@@ -32,7 +31,6 @@
 #include "vi.h"
 #include "exppak_msg.h"
 #include "game/world/bg.h"
-#include "game/debug/debugmenu_handler.h"
 #include "game/level/lv.h"
 #include "game/replay/ramromreplay.h"
 #include "game/replay/testhooks.h"
@@ -49,7 +47,7 @@
  * @file boss.c
  * @brief Main game loop and initialization functions.
  * 
- * This file contains the core functions that drive the game loop, manage stages, and handle debug operations.
+ * This file contains the core functions that drive the game loop and manage stages.
  */
 
 
@@ -95,16 +93,12 @@ typedef union {
 void bossMainloop(void);
 
 /* data */
-u32 g_BossDebugNoticeEntry = 0;
-
 /* OS counts the CPU spent building frames, summed. See lvRenderFpsCounter. */
 u32 g_PerfCpuSum = 0;
 s32 g_DebugAndUpdateStageFlag = FALSE;
 s32 g_StageNum = LEVELID_TITLE;
 u32 g_CurentMMallocValue = 0x234800;
 u32 g_CurentMaMallocValue = 0x4B000;
-s32 g_ShowMemUseFlag = FALSE;
-s32 g_ShowMemBarsFlag = FALSE;
 
 struct memallocstring memallocstringtable[] = {
 { LEVELID_DAM,          "-ml0 -me0 -mgfx70  -mvtx50 -mt625 -ma275"},
@@ -150,7 +144,6 @@ struct memallocstring memallocstringtable[] = {
 };
 
 s32 g_MainStageNum = LEVELID_NONE;
-s32 g_BossIsDebugMenuOpen = FALSE;
 
 OSScMsg g_bossGfxDoneMsg = { OS_SC_DONE_MSG };
 
@@ -239,19 +232,14 @@ void bossInitMainthreadData(void)
     s32 i;
 
     bossCheckExpansionPak();
-    debInit();
+    crashInit();
     romCreateMesgQueue();
     texResolveTableOffsets();
-    mempInit();
-    memaInit();
     bgInit();
     viInit();
     viInitVideoSettings();
-    indycommInit();
     g_DebugAndUpdateStageFlag = rmonGetToken();
     fileInit();
-    rspInit();
-    dynInit();
     joyInit();
     osCreateMesgQueue(&bossmq, &bossmsg, 1);
 
@@ -274,9 +262,6 @@ void bossInitMainthreadData(void)
         g_DebugAndUpdateStageFlag = 1;
     }
 
-    stanInit();
-    gameInit();
-
     if (g_DebugAndUpdateStageFlag != 0)
     {
         tokenSetString("          -ml0 -me0 -mgfx100 -mvtx50 -mt700 -ma400");
@@ -292,12 +277,9 @@ void bossInitMainthreadData(void)
     mempResetPool(MEMPOOL_PERMANENT);
     langInit();
     lvInit();
-    bossInit();
     textInit();
-    debmenuInit();
     playersResetHandicaps();
     frameTimingStart();
-    speedgraphInit();
     explosionInitScaleMtx();
     null_init_main_2();
     casingsInit();
@@ -309,22 +291,6 @@ void bossInitMainthreadData(void)
     gameInitData();
     fileResetRamRomSave();
     clear_ramrom_block_buffer_heading_ptrs();
-}
-
-/**
- * 6BF4    70005FF4
- *     1 ->"show mem use" debug memory display [800241B4]; fry AT,T6
- */
-void bossEnableShowMemUseFlag(void) {
-    g_ShowMemUseFlag=TRUE;
-}
-
-/**
- * 6C04    70006004
- *     toggle "show mem bars" [800241B8]; fries V0,T6,T7
- */
-void bossMemBarsFlagToggle(void) {
-    g_ShowMemBarsFlag = g_ShowMemBarsFlag ^ 1;
 }
 
 /**
@@ -361,13 +327,8 @@ void bossEntry(void) {
  *         70006364 offsets stage number based on number of players unless main menu
  *         700063A0 parses and sets memory allocation, loads stage, etc.
  *         ...
- *         70006708 displays memory usage when active
- *         70006724 displays in-game debugger when active
  *         7000674C writes a full sync, end display list combo
- *         7000676C display mem use when active    [800241B4]
- *         700067A8 display mem bars when active    [800241B8]
  *         700067C0 follows...
- *         700067D8 tests if "u64.taskgrab.#.core" activated and dumps memory
  *         70006854 follows... (700068BC - stop demos)
  */
 void bossMainloop(void)
@@ -385,9 +346,6 @@ void bossMainloop(void)
     u32 nowCount;
     s32 i;
     s32 count;
-    s8 joyStickXPos;
-    s8 joyStickYPos;
-    u16 joyButtons;
     struct player *localPlayer;
     s32 localSelectedNumPlayers;
     u32 pendingGfx = 0;
@@ -524,9 +482,7 @@ void bossMainloop(void)
         joyCheckStatusThreadSafe();
         lvStageLoad(g_StageNum);
         viInitBuffers();
-        debmenuRefresh();
         frameWaitForNext();
-        speedgraphMarkerCommit();
 
         if(1); // regalloc
         if(1);
@@ -547,12 +503,6 @@ void bossMainloop(void)
             {
                 case (OS_SC_RETRACE_MSG):
                 {
-#ifdef DEBUG
-    /* debug logging from simple.c, I think this requires #include <ultralog.h>
-    * //    if (logging)
-    * //        osLogEvent(log, LOG_RETRACE, 1, pendingGfx);
-    */
-#endif
 
                     mainTickElapsed = (u32) (osGetCount() - g_FrameStartCount);
                     if (mainTickElapsed < MAIN_LOOP_TICK_INTERVAL)
@@ -574,22 +524,11 @@ void bossMainloop(void)
                                 frameWaitForNext();
                             }
 
-                            speedgraphRenderGraph();
-                            speedgraphMarkerCommit();
-                            speedgraphMarkerHandler(0x20000);
                             cpuFrameStart = osGetCount();
                             joyConsumeSamplesWrapper();
                             permit_stderr(0);
 
                             gdl = firstGdl = dynGetMasterDisplayList();
-
-                            if (g_BossIsDebugMenuOpen)
-                            {
-			                	joyStickXPos = joyGetStickX(0);
-			                	joyStickYPos = joyGetStickY(0);
-			                	joyButtons = joyGetButtons(0, ANY_BUTTON);
-			                	g_BossIsDebugMenuOpen = debug_menu_processor(joyStickXPos, joyStickYPos, joyButtons, joyGetButtonsPressedThisFrame(0, ANY_BUTTON));
-			                }
 
                             lvTick();
                             coopUpdateSoloView();
@@ -618,7 +557,7 @@ void bossMainloop(void)
 
                             // Lets Visualise the Coverage Value used for Scilohete Anti-Ailising (edges)
                             // (done on the VI), also produces a cool looking linemode - providing AA is working.
-                            if (get_debug_VisCVG_flag())
+                            if (g_CheatLineMode)
                             {
                                 gDPPipeSync(gdl++); // 0xe7000000, 0x00000000
                                 gDPSetCycleType(gdl++, G_CYC_1CYCLE); // 0xba001402, 0x00000000
@@ -629,61 +568,12 @@ void bossMainloop(void)
                                 gDPFillRectangle(gdl++, 0, 0, VI_SX(viGetX()) - 1, viGetY() - 1);
                             }
 
-                            gdl = debmenuDraw(gdl);
-
-                            if (get_memusage_display_flag())
-                            {
-                                gdl = speedgraphDisplayMetrics(gdl);
-                            }
-
-                            if (g_BossIsDebugMenuOpen)
-                            {
-                                debugmenuUpdate();
-                                gdl = debugmenuRender(gdl);
-                            }
-
                             gDPFullSync(gdl++); // 0xe9000000, 0x00000000
                             gSPEndDisplayList(gdl++); // 0xb8000000, 0x00000000
-
-                            if (g_ShowMemUseFlag)
-                            {
-                                mempCheckPools();
-                                memaDumpPrePostMerge();
-                                g_ShowMemUseFlag = 0;
-                            }
-
-                            if (g_ShowMemBarsFlag)
-                            {
-                                dynDrawMembars(gdl);
-                            }
 
                             freeGfx = dynGetFreeGfx(gdl);
                             dynSwapBuffers();
                             video_related_8();
-
-                            if ((get_debug_taskgrab_val())
-                                && (joyGetButtonsPressedThisFrame(0, (A_BUTTON | B_BUTTON)))
-                                && (joyGetButtons(0, (A_BUTTON | B_BUTTON)) == (A_BUTTON | B_BUTTON)))
-                            {
-                                static s32 taskgrab_ramdump_num = 1;
-                                u8 taskGrabBuffer[28];
-                                s32 taskGrabFileSize;
-
-                                while (1)
-                                {
-                                    s32 unusedSprintf = sprintf(taskGrabBuffer, "u64.taskgrab.%d.core", taskgrab_ramdump_num);
-
-                                    if (indycommHostCheckFileExists(taskGrabBuffer, &taskGrabFileSize) != NULL)
-                                    {
-                                        taskgrab_ramdump_num++;
-                                        continue;
-                                    }
-
-                                    break;
-                                }
-
-                                indycommHostSendDump(taskGrabBuffer, (u8*)0x80000000, 0x400000);
-                            }
 
                             rspReplyMsg = (s32)(&localGfxDoneMsg);
                             rspGfxTaskStart(firstGdl, gdl, 0, (s32*)rspReplyMsg);
@@ -695,7 +585,6 @@ void bossMainloop(void)
 #endif
                             toggleFlag ^= 1;
 
-                            speedgraphMarkerHandler(0x10000);
                             g_PerfCpuSum += osGetCount() - cpuFrameStart;
                             if(1);
                         }
@@ -776,21 +665,4 @@ void bossReturnTitleStage(void) {
         fileRecordMissionEnd();
     }
     bossRunTitleStage();
-}
-
-/**
- * 75B4    700069B4
- *     V0=state of debug menu (1:on; 0:off) [80024300]
- */
-s32 bossGetDebugParseFlag(void) {
-    return g_BossIsDebugMenuOpen;
-}
-
-
-/**
- * 75C0    700069C0
- *     V0= p->debug.notice.list entry for boss_c_debug using data at 800241A0
- */
-void bossInit(void) {
-    debTryAdd(&g_BossDebugNoticeEntry, "boss_c_debug");
 }

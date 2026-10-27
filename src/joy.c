@@ -62,7 +62,6 @@ OSMesgQueue g_ContEnablePollReceiveMessageQueue;
 
 OSContStatus g_ContStatus[MAXCONTROLLERS];
 OSPfs g_ContPfs[MAXCONTROLLERS];
-s32 g_ContDebugData = 0;
 
 struct contdata *g_ContDataPtr = &g_ContData[CONTDATA_REGULAR];
 s32 g_ContBusy = 0;
@@ -123,7 +122,6 @@ void joyInit(void)
     s32 i;
     s32 j;
 
-    debTryAdd(&g_ContDebugData, "joy_c_debug");
 
     osCreateMesgQueue(&g_ContDisablePollSendMessageQueue, g_ContDisablePollSendMessageBuffer, CONT_DISABLE_POLL_SEND_BUFFER_LEN);
     osCreateMesgQueue(&g_ContDisablePollReceiveMessageQueue, g_ContDisablePollReceiveMessageBuffer, CONT_DISABLE_POLL_RECEIVE_BUFFER_LEN);
@@ -553,9 +551,6 @@ s8 joyGetStickX(s8 contpadnum)
     contpadnum = joyMapPad(contpadnum);
 
     //this assert is on ALL stick functions below
-#ifdef DEBUG
-    assert(contpadnum > 0); //j
-#endif
 
     if ((g_ContDataPtr->playbackcontcount < 0) && ((g_ConnectedControllers >> contpadnum & 1) == 0))
     {

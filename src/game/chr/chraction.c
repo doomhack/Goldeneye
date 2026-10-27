@@ -3717,9 +3717,6 @@ void chrStartPatrol(ChrRecord *self, struct patrol_path *path)
 
     if (next_step < 0)
     {
-        #ifdef DEBUG
-        osSyncPrintf("Patrol first step not found for chr number %d\n",self->chrnum );
-        #endif
         next_step = 0;
     }
 
@@ -4784,12 +4781,6 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
                 {
                     return TRUE;
                 }
-                #ifdef DEBUG
-                else
-                {
-                    osSyncPrintf("could not go to pad %d!!!\n", padid);
-                    }
-                #endif
             }
             else if (chrGoToPos(self, &pad->pos, stan, speed))
             {
@@ -9810,12 +9801,6 @@ s32 chrResolvePadId(ChrRecord *guardData,s32 padNo)
     // Guard's target pad.
     if (padNo == PAD_PRESET1)
     {
-        #ifdef DEBUG
-        if (guardData->padpreset1 < 0)
-        {
-            osSyncPrintf("preset less than zero char = %d\n", guardData->chrnum);
-        }
-        #endif
         padNo = (s32)guardData->padpreset1;
     }
 

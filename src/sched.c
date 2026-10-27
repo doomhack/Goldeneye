@@ -7,7 +7,6 @@
 #include "fr.h"
 #include "joy.h"
 #include "music.h"
-#include "speed_graph.h"
 #include "thread_config.h"
 
 /**
@@ -315,7 +314,6 @@ void __scHandleRetrace(OSSched *sc) {
     s32         state;
     OSScTask    *sp = 0;
     OSScTask    *dp = 0;
-    speedgraphMarkerUpdate();
     sc->frameCount++;
     viVsyncRelated();
     joyPoll();
@@ -354,7 +352,6 @@ void __scHandleRSP(OSSched *sc) {
     t = sc->curRSPTask;
     sc->curRSPTask = 0;
 
-    speedgraphMarkerHandler(0x10001);
     if ((t->state & OS_SC_YIELD) && osSpTaskYielded(&t->list)) {
         t->state |= OS_SC_YIELDED;
         if ((t->flags & OS_SC_TYPE_MASK) == OS_SC_XBUS) {
@@ -379,17 +376,11 @@ void __scHandleRSP(OSSched *sc) {
     }
 }
 
-u32 *get_counters(void)
-{
-    return g_DisplayPerformanceCounters;
-}
-
 void __scHandleRDP(OSSched *sc)
 {
     OSScTask *t, *sp = NULL, *dp = NULL; 
     s32 state;
     if (sc->curRDPTask != NULL) {
-        speedgraphMarkerHandler(0x10002);
         osDpGetCounters(g_DisplayPerformanceCounters);
         g_PerfRdpSum += osGetCount() - g_PerfGfxStart;
         g_PerfGfxTasks++;
@@ -489,20 +480,10 @@ void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp)
             osDpSetStatus(0x3c0);
         }
         
-        if (sp->list.t.type == 2)
+        // A yielded graphics task resuming keeps its first start time.
+        if ((sp->list.t.type != M_AUDTASK) && (sp->state & OS_SC_YIELDED) == 0)
         {
-            speedgraphMarkerHandler(0x30001);
-        }
-        else
-        {
-            speedgraphMarkerHandler(0x40001);
-            speedgraphMarkerHandler(0x20002);
-
-            // A yielded task resuming keeps its first start time.
-            if ((sp->state & OS_SC_YIELDED) == 0)
-            {
-                g_PerfGfxStart = osGetCount();
-            }
+            g_PerfGfxStart = osGetCount();
         }
         sp->state &= ~(OS_SC_YIELD | OS_SC_YIELDED); 
         osSpTaskLoad(&sp->list);

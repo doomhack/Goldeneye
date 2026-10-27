@@ -8,9 +8,7 @@
       build/OUTCODE/src/libultrare/io/pimgr.o (.rodata);
 #endif
       build/OUTCODE/src/audi.o (.rodata);
-      build/OUTCODE/src/speed_graph.o (.rodata);
       build/OUTCODE/src/fr.o (.rodata);
-      build/OUTCODE/src/deb.o (.rodata);
       build/OUTCODE/src/crash.o (.rodata);
       /*deb_print may be part of fault per pd beta (.rodata);*/
       /*build/OUTCODE/src/deb_print.o (.rodata);*/
@@ -28,7 +26,6 @@
       build/OUTCODE/src/sprintf.o (.rodata);
       build/OUTCODE/src/pi.o (.rodata);
       build/OUTCODE/src/vi.o (.rodata);
-      build/OUTCODE/src/debugmenu.o (.rodata);
       build/OUTCODE/src/joy.o (.rodata);
       build/OUTCODE/src/motor.o (.rodata);
 #ifdef VERSION_EU

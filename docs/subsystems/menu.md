@@ -97,6 +97,11 @@ of the buffer and which applies here (menus, solo game or multiplayer game, by i
 `maskfield`). `cheatTurnOn` and `cheatTurnOff` do the work for each cheat: give weapons,
 change health, turn on DK mode (`cheatSetDkMode`), and so on.
 
+Line mode, turbo mode and the position display are plain switches the rest of the game
+reads: `g_CheatLineMode` (boss.c draws the coverage values over the frame),
+`g_CheatTurboMode` (Bond runs fast) and `g_CheatShowPos` (Bond's room, position and
+heading on screen). They used to live in the debug menu's flags.
+
 Cheats won by beating target times are listed in the cheat menu (`g_CheatMenuList`,
 `frontIsCheatUnlocked`) and switched on there (`g_CheatActivated`); `lvTick` turns them on
 in the first frame of a mission (`cheatActivate`).
@@ -155,7 +160,6 @@ end-of-game awards ("most deadly", "longest innings"...) from each player's stat
   `bossCheckExpansionPak` in `boss.c`, before the front end runs.
 * `titleRenderRareLogo` only clears the screen: the Rare logo itself isn't drawn there.
 * `g_CheatPlayerMask` is written when a cheat is turned on but never read.
-* `cheatResetText` and `cheatResetPlayerDisplay` are debug-only and never built.
 * `watchMenuReset` is defined with a stage argument but `lvStageLoad` calls it with none,
   so it has no prototype in `watchmenu.h`.
 * `watchMenuDebugNudge`, `watchMenuDebugNudgeGfx`, `watchMenuUnusedTick`,

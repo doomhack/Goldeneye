@@ -319,16 +319,6 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
     f32 temp_f0;
     f32 sp20; // 32
     f32 sp1C; // 28
-#ifdef DEBUG
-    f32 fmin; // hoisted to global
-    f32 fmax; // hoisted to global
-    fmin = arg0->Visibility.Nfd.NearFog / 1000;
-    assert(0.0F <= fmin);
-    assert(fmin <= 1.0F);
-    fmax = arg0->Visibility.Nfd.MaxVisRange / 1000;
-    assert(0.0F <= fmax);
-    assert(fmax <= 1.0F);
-#endif
 
     s_FogLastEnvironment = arg0;
     farfog = arg0->Visibility.FarFog;

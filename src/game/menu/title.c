@@ -605,7 +605,7 @@ Gfx *titleRenderGunbarrel (Gfx *gdl) {
         break;
 
     case 1:
-        #if defined(LEFTOVERDEBUG)
+        #if defined(VERSION_US)
         gSPDisplayList(gdl++, &dlBasicGeometry);
         gdl = screenClearBlack(gdl++);
         gdl = screenClearBlack(gdl++);

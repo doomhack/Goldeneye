@@ -202,16 +202,7 @@ bool bgTestBulletHitBackground(coord3d *from, coord3d *to, s32 roomnum, struct H
 void bgUnloadRoom(s32 roomID);
 void bgLoad(LEVEL_INDEX stagenum);
 
-s32 bgDebugRemoved7F0B9DE4(s32 arg0, s32 arg1, s32 arg2);
-void bgRemoved7F0B9DF4(s32 arg0);
-s8 bgSwapConnectedRooms(s32 index);
-s32 bgGetDataPortalsControlBytes1Bit1(s32 index);
 void bgToggleDataPortalsContrlBytes1Bit1(s32 index, s32 toggle);
-s32 bgGetDataPortalsControlBytes1Bit2(s32 arg0);
-void bgClearDataPortalsControlBytes1Low2Bits(s32 index);
-void bgSetDataPortalsControlBytes1Bit2(s32 index);
-void bgPortalThicknessDec(s32 portalnum);
-void bgPortalThicknessInc(s32 portalnum);
 void bgFindVisibleRooms(void);
 Gfx* bgLevelRender(Gfx *arg0);
 Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 left, s32 top, s32 width, s32 height);

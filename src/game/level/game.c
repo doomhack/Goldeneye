@@ -1,11 +1,10 @@
 /**
- * The game's one-time setup: gameInit and gameInitData (the menu state at power on), and
+ * The game's one-time setup: gameInitData (the menu state at power on), and
  * the menu memory pool (MEMPOOL_ME) helpers. Also the build date and two empty init
  * functions left from code Rare removed.
  */
 
 #include <ultra64.h>
-#include <deb.h>
 #include "game/asset/fileload.h"
 #include <memp.h>
 #include "game/level/game.h"
@@ -13,12 +12,6 @@
 #include <bondconstants.h>
 
 // data
-//D:8004EAE0
-s32 D_8004EAE0[] = {0, 0, 0, 0};
-
-void gameInit(void) {
-    debTryAdd(&D_8004EAE0, "game_c_debug");
-}
 
 void gameResetMePool(void) {
     fileForgetMePool();
@@ -62,12 +55,6 @@ void gameInitData(void) {
     g_CastModel = NULL;
     g_CastWeaponModel = NULL;
     g_CastFull = FALSE;
-#ifdef DEBUG
-    bodyLoad(BODY_Brosnan_Tuxedo, "char");
-    bodyLoad(BODY_Male_Pierce_Bond_Tuxedo, "head");
-    LoadItemModel(PROP_GOLDENEYELOGO);
-    LoadItemModel(PROP_LEGALPAGE);
-#endif
 }
 
 

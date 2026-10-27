@@ -23,7 +23,7 @@
 
 #define GAUGE_BAR_VERTEX_PAIR_STRIDE (2 * sizeof(struct WatchVertex))
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 /*
   Render Health Bars
   AI Comment: This function populates a radial array of HUD elements (HealthSegments) with position and color data
@@ -118,7 +118,7 @@ void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSeg
 }
 #endif
 
-#if !defined(LEFTOVERDEBUG)
+#if !defined(VERSION_US)
 void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSegments, s32 isArmour, f32 HealthValue)
 {
 	s32 new_var2;

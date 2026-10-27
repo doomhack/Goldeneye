@@ -7,7 +7,6 @@
 #include "game/gfx/rsp.h"
 #include <init.h>
 #include <memp.h>
-#include <deb.h>
 #include <sched.h>
 #include <PR/sptask.h>
 #include <PR/ucode.h>
@@ -24,11 +23,6 @@ u8 g_gfxDramStack[SP_DRAM_STACK_SIZE8];
  * Address 8008D770.
  */
 u8 g_gfxYieldBuf[OS_YIELD_GFX_DATA_SIZE];
-
-/**
- * Address 8004E9E0.
- */
-s32 g_gfxDebugEntryData = 0;
 
 /**
  * Address 8004E9E4.
@@ -212,11 +206,6 @@ extern long long int rspbootTextStart[];
 extern long long int rspbootTextEnd[];
 extern long long int gsp3DTextStart[];
 extern long long int gsp3DDataStart[];
-
-void rspInit(void)
-{
-    debTryAdd(&g_gfxDebugEntryData, "rsp_c_debug");
-}
 
 void rspAllocateBuffers(void)
 {
