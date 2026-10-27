@@ -28,7 +28,6 @@
 #include "game/debug/debugmenu_handler.h"
 #include "game/prop/explosion.h"
 #include "game/save/file.h"
-#include "game/save/file2.h"
 #include "game/level/frametiming.h"
 #include "game/menu/front.h"
 #include "game/prop/glass.h"
@@ -42,7 +41,7 @@
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
 #include "game/model/model.h"
-#include "game/audio/mp_music.h"
+#include "game/audio/levelmusic.h"
 #include "game/menu/mpmenu.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
@@ -55,7 +54,7 @@
 #include "random.h"
 #include "game/nav/stan.h"
 #include "game/nav/stan.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 
 #ifdef VERSION_EU
 

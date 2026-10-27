@@ -11541,7 +11541,7 @@ _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
-        musicPlaySlot((s8)ai->val[0], ai->val[1], ai->val[2]);
+        levelMusicSlotStart((s8)ai->val[0], ai->val[1], ai->val[2]);
         break;
     })
 
@@ -11579,7 +11579,7 @@ _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
-        musicStopSlot((s8)ai->val[0]);
+        levelMusicSlotStop((s8)ai->val[0]);
         break;
     })
 

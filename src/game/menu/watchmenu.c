@@ -20,7 +20,7 @@
 #include "game/menu/front.h"
 #include "game/text/language.h"
 #include "game/player/player.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
@@ -331,7 +331,7 @@ void watchMenuReset(int stage)
     D_800409D0 = -1;
     D_800409D4 = 0.0f;
 
-    if (j_text_trigger ? 1 : 0 && 1)
+    if (g_TextJapanese ? 1 : 0 && 1)
     {
     }
 
@@ -375,7 +375,7 @@ void watchMenuReset(int stage)
     D_80040B54 = 0x32;
     // The save folder's options belong to controller 1's player.
     optionsCoopUsePlayer(0);
-    fileLoadSaveSettingsForSelectedFolder(stage);
+    fileLoadCurrentSettings(stage);
     g_FrontMissionAborted = FALSE;
 }
 
@@ -435,11 +435,11 @@ Gfx * watchMenuDebugNudgeGfx(Gfx *DL)
         s32 y;
         s32 x;
 
-        pFontFile = ptrFontBankGothic;
-        pFontChars = ptrFontBankGothicChars;
+        pFontFile = g_FontBankGothic;
+        pFontChars = g_FontBankGothicChars;
         sprintf(buffer,"%d, %d\n",D_80040B48,D_80040B4C);
 
-        DL = microcode_constructor(DL++);
+        DL = textSetupDraw(DL++);
 
         textMeasure(&x, &y, buffer, pFontChars, pFontFile, 0);
         DL = textRender(DL, &D_80040B48, &D_80040B4C, buffer, pFontChars, pFontFile, 0xff0000ff, y, x, 0, 0);
@@ -477,7 +477,7 @@ void optionsSetControlStyle(int type)
     g_CurrentPlayer->cur_player_control_type_1 = type;
     g_CurrentPlayer->cur_player_control_type_2 = (float)type;
 
-    langsize = j_text_trigger ? 14 : 10;
+    langsize = g_TextJapanese ? 14 : 10;
 
     g_CurrentPlayer->neg_vspacing_for_control_type_entry = -(langsize * type);
     g_CurrentPlayer->has_set_control_type_data = TRUE;
@@ -844,10 +844,10 @@ void watchMenuStatusTick(void)
     else if ((g_WatchMenuAbortAsk) && (joyGetButtonsPressedThisFrame(WATCH_PAD, Z_TRIG|A_BUTTON)))
     {
         g_WatchMenuAbortAsk = 0;
-        set_missionstate(MISSION_STATE_0);
+        levelMusicSetState(MUSICSTATE_SILENT);
         bossRunTitleStage();
         g_FrontMissionAborted = TRUE;
-        deleteCurrentSelectedFolder();
+        fileClearCurrentFolder();
     }
 }
 
@@ -1255,7 +1255,7 @@ after_updown:
     // The current item is determined by the integer part of the cursor's position.
     g_WatchMenuItem = (s32) g_WatchMenuInvCursor;
 
-    if (j_text_trigger)
+    if (g_TextJapanese)
     {
         item_line_height = 14;
     }
@@ -1264,7 +1264,7 @@ after_updown:
         item_line_height = 12;
     }
 
-    selected_item_line_height = j_text_trigger ? 14 : 12;
+    selected_item_line_height = g_TextJapanese ? 14 : 12;
     g_WatchMenuInvTextTargetY = (2 * selected_item_line_height) + (-g_WatchMenuItem * item_line_height);
 
     if (g_WatchMenuInvTextTargetY < g_WatchMenuInvTextY)
@@ -1980,18 +1980,18 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
     s32 sp50;
     s32 sp4C;
 
-    pFontFile = ptrFontBankGothic;
-    pFontChars = ptrFontBankGothicChars;
+    pFontFile = g_FontBankGothic;
+    pFontChars = g_FontBankGothicChars;
     sp54 = langGet(getStringID(LOPTIONS, OPTION_STR_24_ABORT_LF)); //abort:
     sp50 = langGet(getStringID(LOPTIONS, OPTION_STR_25_CONFIRM_LF)); //confirm
     sp4C = langGet(getStringID(LOPTIONS, OPTION_STR_26_CANCEL_LF)); //cancel
     sp7C = 0x51;
 
-    sp78 = (j_text_trigger ? 0xF : 0) + 0xBD;
+    sp78 = (g_TextJapanese ? 0xF : 0) + 0xBD;
 
-    sp74 = (j_text_trigger ? 0xA : 0) + 0x88;
+    sp74 = (g_TextJapanese ? 0xA : 0) + 0x88;
 
-    sp70 = sp6C = sp68 = (j_text_trigger ? 3 : 0) + (PAL ? 0x4E : 0x4C);
+    sp70 = sp6C = sp68 = (g_TextJapanese ? 3 : 0) + (PAL ? 0x4E : 0x4C);
 
     if (g_WatchMenuSelected != 0)
     {
@@ -2060,8 +2060,8 @@ Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
     s32 joffset;
 
     txtptr_1 = langGet(getStringID(LOPTIONS, OPTION_STR_27_MISSIONSTATUS_LF)); //mission status:
-    pFontFile = ptrFontBankGothic;
-    pFontChars = ptrFontBankGothicChars;
+    pFontFile = g_FontBankGothic;
+    pFontChars = g_FontBankGothicChars;
 
     if (objectivesAllComplete())
     {
@@ -2074,13 +2074,13 @@ Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
         txtptr_2 = langGet(getStringID(LOPTIONS, OPTION_STR_29_INCOMPLETE_LF)); //incomplete
     }
 
-    gdl = microcode_constructor(gdl);
+    gdl = textSetupDraw(gdl);
     textMeasure(&sp5C, &sp58, txtptr_1, pFontChars, pFontFile, 0);
     sp64 = 0x51;
     sp60 = YOFFSET_MISSIONSTATUS;
     gdl = textRender(gdl, &sp64, &sp60, txtptr_1, pFontChars, pFontFile, 0xFF00B0, sp58, sp5C, 0, 0);
 
-    if (j_text_trigger)
+    if (g_TextJapanese)
     {
         joffset = 0x22;
     }
@@ -2117,7 +2117,7 @@ Gfx *watchMenuRenderVersion(Gfx *gdl)
 
     txtptr = langGet(getStringID(LOPTIONS, OPTION_STR_2B_QWATCHVERSION_LF)); //q watch v2.01 beta
 
-    if (j_text_trigger)
+    if (g_TextJapanese)
     {
         joffset = -5;
     }
@@ -2129,9 +2129,9 @@ Gfx *watchMenuRenderVersion(Gfx *gdl)
     sp4C = YOFFSET_7;
     sp48 = 0;
     sp44 = 0;
-    pFontFile = ptrFontBankGothic;
-    pFontChars = ptrFontBankGothicChars;
-    gdl = microcode_constructor(gdl);
+    pFontFile = g_FontBankGothic;
+    pFontChars = g_FontBankGothicChars;
+    gdl = textSetupDraw(gdl);
     textMeasure(&sp48, &sp44, txtptr, pFontChars, pFontFile, 0);
     gdl = textRender(gdl, &sp50, &sp4C, txtptr, pFontChars, pFontFile, 0xFF00B0, sp44, sp48, 0, 0);
     return gdl;
@@ -2190,8 +2190,8 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     sp84 = 0;
     sp80 = 0;
 
-    sp7C = ptrFontBankGothic;
-    sp78 = ptrFontBankGothicChars;
+    sp7C = g_FontBankGothic;
+    sp78 = g_FontBankGothicChars;
 
     temp_v0 = invGetCurEquippedItem();
     sp70 = invGetWeaponForIndex(temp_v0);
@@ -2260,7 +2260,7 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
         gdl = watchRenderItem(gdl, sp70, &matrix2, 0xFF, 0x64DC6428);
     }
 
-    gdl = microcode_constructor(gunDrawWatchAmmoDisplay(gdl));
+    gdl = textSetupDraw(gunDrawWatchAmmoDisplay(gdl));
 
     sp8C = 0x60;
 #if defined(LEFTOVERDEBUG)
@@ -2458,7 +2458,7 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
             char formattedString[32];
 #endif
 
-#define LINEHEIGHT() (j_text_trigger ? 14 : 12)
+#define LINEHEIGHT() (g_TextJapanese ? 14 : 12)
 
 #if defined(VERSION_EU)
 #define WATCH_INV_BASE_Y() base_y
@@ -2470,14 +2470,14 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
             textwidth = 0;
 
 #if defined(VERSION_EU)
-            pFontFile2 = ptrFontBankGothic;
-            pFontChars2 = ptrFontBankGothicChars;
-            base_y = (j_text_trigger) ? (0x82) : (0xAA);
+            pFontFile2 = g_FontBankGothic;
+            pFontChars2 = g_FontBankGothicChars;
+            base_y = (g_TextJapanese) ? (0x82) : (0xAA);
             string_builder_allocation[0] = 0;
 #else
             string_builder_allocation[0] = 0;
-            pFontFile2 = ptrFontBankGothic;
-            pFontChars2 = ptrFontBankGothicChars;
+            pFontFile2 = g_FontBankGothic;
+            pFontChars2 = g_FontBankGothicChars;
 #endif
 
             for (i = 0; i < invCountItems(); i++)
@@ -2500,15 +2500,15 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
             temp_s0_3 = 1;
             temp_s0_3 = (LINEHEIGHT() * 2) + WATCH_INV_BASE_Y() + temp_s0_3;
 
-            gdl = microcode_constructor(gdl);
+            gdl = textSetupDraw(gdl);
 
             textMeasure(&textheight, &textwidth, string_builder_allocation, pFontChars2, pFontFile2, LINEHEIGHT());
 
-            gdl = microcode_constructor_related_to_menus(gdl, 0x4E, WATCH_INV_BASE_Y(), textwidth + 0x4E, (LINEHEIGHT() * 5) + WATCH_INV_BASE_Y(), 0);
+            gdl = textRenderRect(gdl, 0x4E, WATCH_INV_BASE_Y(), textwidth + 0x4E, (LINEHEIGHT() * 5) + WATCH_INV_BASE_Y(), 0);
 
             gdl = textRender(gdl, &x1, &y1, string_builder_allocation, pFontChars2, pFontFile2, 0xAA00B0, textwidth + 1, LINEHEIGHT() * 5, g_WatchMenuInvTextY, LINEHEIGHT());
 
-            gdl = microcode_constructor_related_to_menus(gdl, 0x4B, temp_s0_3, textwidth + 0x52, (LINEHEIGHT() + temp_s0_3) - 2, 0x800050);
+            gdl = textRenderRect(gdl, 0x4B, temp_s0_3, textwidth + 0x52, (LINEHEIGHT() + temp_s0_3) - 2, 0x800050);
 
             {
 #if !defined(VERSION_EU)
@@ -2520,13 +2520,13 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
                 s32 y2;
                 char *invItemName;
 
-                pFontFile = ptrFontBankGothic;
-                pFontChars = ptrFontBankGothicChars;
+                pFontFile = g_FontBankGothic;
+                pFontChars = g_FontBankGothicChars;
                 invItemName = invGetNameByIndex(g_WatchMenuItem);
 
                 sprintf(formattedString, "%d, %d\n%d %f\n", g_WatchMenuInvTextY, g_WatchMenuInvTextTargetY, g_WatchMenuItem, (f64) g_WatchMenuInvCursor);
 
-                gdl = microcode_constructor(gdl);
+                gdl = textSetupDraw(gdl);
 
                 textMeasure(&y2, &x2, formattedString, pFontChars, pFontFile, 0);
 
@@ -2578,8 +2578,8 @@ Gfx *watchMenuRenderInventoryOld(Gfx *gdl, Mtx *param_2) {
     sp58 = 0;
     sp54 = 0;
 
-    pFontFile = ptrFontBankGothic;
-    pFontChars = ptrFontBankGothicChars;
+    pFontFile = g_FontBankGothic;
+    pFontChars = g_FontBankGothicChars;
 
     long_name = invGetLongNameByIndex(g_WatchMenuItem);
     gdl = watchMenuRenderBackground(gdl, param_2, 0);
@@ -2593,7 +2593,7 @@ Gfx *watchMenuRenderInventoryOld(Gfx *gdl, Mtx *param_2) {
         }
 
         watchMenuInventoryListTick();
-        gdl = microcode_constructor(gdl);
+        gdl = textSetupDraw(gdl);
 
         textMeasure(&sp58, &sp54, long_name, pFontChars, pFontFile, 0);
 
@@ -2601,7 +2601,7 @@ Gfx *watchMenuRenderInventoryOld(Gfx *gdl, Mtx *param_2) {
         temp_2 = sp70;
 
         sp6C = 0x1E;
-        gdl = microcode_constructor_related_to_menus(gdl, temp_2, 0x1E, sp60, sp5C, 0x800050);
+        gdl = textRenderRect(gdl, temp_2, 0x1E, sp60, sp5C, 0x800050);
 
         if (g_WatchMenuInvSettled)
         {
@@ -2877,8 +2877,8 @@ Gfx *watchMenuRenderLabel(Gfx *gdl, s32 x, s32 y, char *text, u32 colour, s32 ou
     struct font *font;
     struct fontchar *chars;
 
-    font = ptrFontBankGothic;
-    chars = ptrFontBankGothicChars;
+    font = g_FontBankGothic;
+    chars = g_FontBankGothicChars;
 
     textMeasure(&textheight, &textwidth, text, chars, font, 10);
 
@@ -2913,7 +2913,7 @@ Gfx *watchMenuRenderLabel(Gfx *gdl, s32 x, s32 y, char *text, u32 colour, s32 ou
 
     if (drawbg)
     {
-        gdl = microcode_constructor_related_to_menus(gdl, textx - 1, (y + outlined) + 1, textright + 1, textbottom + 1, bgcolour);
+        gdl = textRenderRect(gdl, textx - 1, (y + outlined) + 1, textright + 1, textbottom + 1, bgcolour);
     }
 
     gDPSetRenderMode(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
@@ -3019,8 +3019,8 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
     s32 tmp;
     u8 *selectedtext;
 
-    font = ptrFontBankGothic;
-    chars = ptrFontBankGothicChars;
+    font = g_FontBankGothic;
+    chars = g_FontBankGothicChars;
     textheight = 0;
     textwidth = 0;
     text[0] = '\0';
@@ -3044,29 +3044,29 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
     {
         if (g_WatchMenuControlRow == CONTROLLER_OPTIONS_INDEX_STYLE)
         {
-            watchMenuScrollList(&g_CurrentPlayer->cur_player_control_type_2, &g_CurrentPlayer->cur_player_control_type_0, g_WatchMenuControlStyleCount, &g_CurrentPlayer->neg_vspacing_for_control_type_entry, &g_CurrentPlayer->cur_player_control_type_1, (s32 *) (&g_CurrentPlayer->has_set_control_type_data), 0, 1, (j_text_trigger) ? (0xe) : (0xa));
+            watchMenuScrollList(&g_CurrentPlayer->cur_player_control_type_2, &g_CurrentPlayer->cur_player_control_type_0, g_WatchMenuControlStyleCount, &g_CurrentPlayer->neg_vspacing_for_control_type_entry, &g_CurrentPlayer->cur_player_control_type_1, (s32 *) (&g_CurrentPlayer->has_set_control_type_data), 0, 1, (g_TextJapanese) ? (0xe) : (0xa));
         }
     }
 
     x = 0xaa;
-    tmp = j_text_trigger;
+    tmp = g_TextJapanese;
     y = 0x1a;
 
     textMeasure(&textheight, &textwidth, text, chars, font, (tmp) ? (0xe) : (0xa));
 
-    i = (j_text_trigger) ? (0xe) : (0xa);
+    i = (g_TextJapanese) ? (0xe) : (0xa);
 
-    gdl = textRender(gdl, &x, &y, text, chars, font, 0x00aa00b0, textwidth, i, g_CurrentPlayer->neg_vspacing_for_control_type_entry, (j_text_trigger) ? (0xe) : (0xa));
+    gdl = textRender(gdl, &x, &y, text, chars, font, 0x00aa00b0, textwidth, i, g_CurrentPlayer->neg_vspacing_for_control_type_entry, (g_TextJapanese) ? (0xe) : (0xa));
 
     if (g_CurrentPlayer->has_set_control_type_data != 0)
     {
         selectedtext = langGet(*(u16 *)((u8 *) game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20)));
 
-        textMeasure(&textheight, &textwidth, selectedtext, chars, font, (j_text_trigger) ? (0xe) : (0xa));
+        textMeasure(&textheight, &textwidth, selectedtext, chars, font, (g_TextJapanese) ? (0xe) : (0xa));
 
         x = 0xaa;
 
-        if (j_text_trigger ? 1 : 0)
+        if (g_TextJapanese ? 1 : 0)
         {
             goto selected_y_set;
         }
@@ -3078,7 +3078,7 @@ selected_y_set:
 
         selectedtext = langGet(*(u16 *)((u8 *) game_control_styles + (g_CurrentPlayer->cur_player_control_type_0 * 20)));
 
-        gdl = textRender(gdl, &x, &y, selectedtext, chars, font, 0xa0ffa0f0, textwidth, 0x64, 0, (j_text_trigger) ? (0xe) : (0xa));
+        gdl = textRender(gdl, &x, &y, selectedtext, chars, font, 0xa0ffa0f0, textwidth, 0x64, 0, (g_TextJapanese) ? (0xe) : (0xa));
     }
 
     return gdl;
@@ -3119,7 +3119,7 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl)
         u8 pad[8];
  
         showmovesight = 0;
-        gdl = microcode_constructor(gdl);
+        gdl = textSetupDraw(gdl);
  
         if (joyGetButtons(WATCH_PAD, L_TRIG))
         {
@@ -3303,7 +3303,7 @@ Gfx *watchMenuRenderDualControlLabels(Gfx *gdl)
 {
     s32 textptr_aux;
 
-    gdl = microcode_constructor(gdl);
+    gdl = textSetupDraw(gdl);
 
     if (joyGetButtons(WATCH_PAD, A_BUTTON))
     {
@@ -3597,10 +3597,10 @@ Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *param_2) {
     if (watchIsZooming() != 1) {
 
         gdl = watchMenuRenderController(gdl);
-        pFontFile = ptrFontBankGothic;
-        pFontChars = ptrFontBankGothicChars;
+        pFontFile = g_FontBankGothic;
+        pFontChars = g_FontBankGothicChars;
 
-        gdl = microcode_constructor(gdl);
+        gdl = textSetupDraw(gdl);
         textptr = langGet(getStringID(LOPTIONS, OPTION_STR_32_CONTROLSTYLE_LF)); //control style
 
         sp5C = XOFFSET_1;
@@ -3725,7 +3725,7 @@ Gfx *watchMenuRenderOptionValue(Gfx *gdl, s32 y, s32 option_index, u32 state)
 
     entry = &g_Options[option_index];
 
-    if (j_text_trigger)
+    if (g_TextJapanese)
     {
         x1 = 0xAA;
         if (1);
@@ -3735,7 +3735,7 @@ Gfx *watchMenuRenderOptionValue(Gfx *gdl, s32 y, s32 option_index, u32 state)
         x1 = 0xB4;
     }
 
-    if (j_text_trigger)
+    if (g_TextJapanese)
     {
         x2 = 0xDC;
     }
@@ -3820,7 +3820,7 @@ state_selected:
 after_state:
     if (entry->text[3] == 0)
     {
-        if (j_text_trigger)
+        if (g_TextJapanese)
         {
             x1 = 0xBE;
         }
@@ -3829,7 +3829,7 @@ after_state:
             x1 = 0xC8;
         }
 
-        if (j_text_trigger)
+        if (g_TextJapanese)
         {
             // This weird code must be kept on one line for matching.
             x2 = 0xFA; } else { x2 = 0xFA; }
@@ -3854,7 +3854,7 @@ Gfx *watchMenuRenderOptionRows(Gfx *gdl)
     s32 y_offset;
     s32 i;
 
-    gdl = microcode_constructor(gdl);
+    gdl = textSetupDraw(gdl);
 
     for (i = 0, y_offset = YOFFSET_1; i < PLAYER_OPTION_COUNT; i = i + 1) {
 
@@ -3906,9 +3906,9 @@ Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *param_2) {
     {
         gdl = watchMenuRenderMusicVolume(gdl);
         gdl = watchMenuRenderFxVolume(gdl);
-        pFontFile = ptrFontBankGothic;
-        pFontChars = ptrFontBankGothicChars;
-        gdl = microcode_constructor(gdl);
+        pFontFile = g_FontBankGothic;
+        pFontChars = g_FontBankGothicChars;
+        gdl = textSetupDraw(gdl);
 
         textptr = langGet(getStringID(LOPTIONS, OPTION_STR_35_MUSIC_LF)); //music
 
@@ -4048,8 +4048,8 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
         s32 textHeight = 0;
         s32 textWidth = 0;
 
-        struct font *font = ptrFontBankGothic;
-        struct fontchar *chars = ptrFontBankGothicChars;
+        struct font *font = g_FontBankGothic;
+        struct fontchar *chars = g_FontBankGothicChars;
 
 #if defined(VERSION_EU)
             char wrappedText[3000];
@@ -4077,7 +4077,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
         strcpy(wrappedText, D_800577C0);
 #endif
 
-        gdl = microcode_constructor(gdl);
+        gdl = textSetupDraw(gdl);
         textMeasure(&textHeight, &textWidth, titleText, chars, font, 0);
 
         boxLeft = ((0xaa - textWidth) / 2) + 0x4b;
@@ -4085,7 +4085,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
         boxRight = boxLeft + textWidth;
         boxBottom = boxTop + textHeight;
 
-        gdl = draw_blackbox_to_screen(gdl, &boxLeft, &boxTop, &boxRight, &boxBottom);
+        gdl = textRenderBlackBox(gdl, &boxLeft, &boxTop, &boxRight, &boxBottom);
         gdl = textRender(gdl, &boxLeft, &boxTop, titleText, chars, font, 0xa0ffa0f0, textWidth, textHeight, 0, 0);
 
         boxLeft = 0x41;
@@ -4135,7 +4135,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                 objectiveRow = 0;
                 visibleObjectiveIndex = 0;
 
-                setTextOverlapCorrection((j_text_trigger) ? (1) : (5));
+                textSetOverlapCorrection((g_TextJapanese) ? (1) : (5));
                 sprintf(pageTitle, langGet(0xac3c));
 
                 // Counter-op: the guard player has one objective of their own.
@@ -4163,7 +4163,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                         sprintf(objectiveLetterPtr, aC_2, visibleObjectiveIndex + 'a');
                         strcat(objectiveBuffer, objectiveText);
 
-                        objY = boxTop + ((j_text_trigger) ? (1) : (5));
+                        objY = boxTop + ((g_TextJapanese) ? (1) : (5));
                         objX = 0x3c;
 
                         gdl = textRender(gdl, &objX, &objY, objectiveBuffer, chars, font, 0x00ff00b0, viGetX(), viGetY(), 0, 10);
@@ -4201,7 +4201,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                             case OBJECTIVESTATUS_FAILED:
                                 strcat(objectiveBuffer, failedText);
 
-                                if (j_text_trigger)
+                                if (g_TextJapanese)
                                 {
                                     colour = 0xa0ffa0f0;
                                 }
@@ -4216,9 +4216,9 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                         }
 
                         textMeasure(&textHeight, &textWidth, objectiveBuffer, chars, font, 10);
-                        objY = boxTop + ((j_text_trigger) ? (1) : (5));
+                        objY = boxTop + ((g_TextJapanese) ? (1) : (5));
 
-                        if (j_text_trigger)
+                        if (g_TextJapanese)
                         {
                             objX = 0xf5 - textWidth;
                         }
@@ -4234,7 +4234,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                     }
                 }
 
-                setTextOverlapCorrection(-1);
+                textSetOverlapCorrection(-1);
                 watchMenuBriefObjectivesTick();
 
                 break;

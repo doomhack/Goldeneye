@@ -4,13 +4,11 @@
       build/OUTCODE/src/game/prop/setup.o (.text);
       build/OUTCODE/src/game/mission/objective.o (.text);
       build/OUTCODE/src/game/player/bondview_r.o (.text);
-      build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.text);
       build/OUTCODE/src/game/menu/title.o (.text);
       build/OUTCODE/src/game/menu/front.o (.text);
       build/OUTCODE/src/game/hud/blood.o (.text);
       build/OUTCODE/src/game/debug/sub_GAME_7F01D1C0.o (.text);
       build/OUTCODE/src/game/save/file.o (.text);
-      build/OUTCODE/src/game/save/file2.o (.text);
       build/OUTCODE/src/game/chr/chr.o (.text);
       build/OUTCODE/src/game/chr/body.o (.text);
       build/OUTCODE/src/game/chr/chraction.o (.text);
@@ -50,7 +48,6 @@
       build/OUTCODE/src/game/world/water.o (.text);
       build/OUTCODE/src/game/world/sky.o (.text);
       build/OUTCODE/src/game/player/player.o (.text);
-      build/OUTCODE/src/game/save/crc.o (.text);
       build/OUTCODE/src/game/chr/chrObjRandom.o (.text);
       build/OUTCODE/src/game/gfx/vtxstore.o (.text);
       build/OUTCODE/src/game/prop/explosion.o (.text);
@@ -58,7 +55,7 @@
       build/OUTCODE/src/game/hud/healthbar.o (.text);
       build/OUTCODE/src/game/hud/sparks.o (.text);
       build/OUTCODE/src/game/menu/watchmenu.o (.text);
-      build/OUTCODE/src/game/text/textrelated.o (.text);
+      build/OUTCODE/src/game/text/text.o (.text);
       build/OUTCODE/src/game/nav/stan.o (.text);
       build/OUTCODE/src/game/world/bg.o (.text);
       build/OUTCODE/src/game/world/bgfog.o (.text);
@@ -70,7 +67,7 @@
       build/OUTCODE/src/game/replay/ramromreplay.o (.text);
       build/OUTCODE/src/game/replay/testhooks.o (.text);
       build/OUTCODE/src/game/level/frametiming.o (.text);
-      build/OUTCODE/src/game/audio/mp_music.o (.text);
+      build/OUTCODE/src/game/audio/levelmusic.o (.text);
       build/OUTCODE/src/game/text/language.o (.text);
       build/OUTCODE/src/game/menu/mpmenu.o (.text);
       build/OUTCODE/src/game/hud/radar.o (.text);
@@ -85,6 +82,5 @@
       build/OUTCODE/src/game/level/game.o (.text);
       build/OUTCODE/src/game/debug/speedgraphrenderer.o (.text);
       build/OUTCODE/src/game/gfx/zbuf.o (.text);
-      build/OUTCODE/src/game/audio/music_0D2720.o (.text);
 #ifndef VERSION_EU
 #endif

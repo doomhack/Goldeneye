@@ -4,13 +4,11 @@
       build/OUTCODE/src/game/prop/setup.o (.rodata);
       build/OUTCODE/src/game/mission/objective.o (.rodata);
       build/OUTCODE/src/game/player/bondview_r.o (.rodata);
-      build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.rodata);
       build/OUTCODE/src/game/menu/title.o (.rodata);
       build/OUTCODE/src/game/menu/front.o (.rodata);
       build/OUTCODE/src/game/hud/blood.o (.rodata);
       build/OUTCODE/src/game/debug/sub_GAME_7F01D1C0.o (.rodata);
       build/OUTCODE/src/game/save/file.o (.rodata);
-      build/OUTCODE/src/game/save/file2.o (.rodata);
       build/OUTCODE/src/game/chr/chr.o (.rodata);
       build/OUTCODE/src/game/chr/body.o (.rodata);
       build/OUTCODE/src/game/chr/chraction.o (.rodata);
@@ -51,7 +49,6 @@
       build/OUTCODE/src/game/world/water.o (.rodata);
       build/OUTCODE/src/game/world/sky.o (.rodata);
       build/OUTCODE/src/game/player/player.o (.rodata);
-      build/OUTCODE/src/game/save/crc.o (.rodata);
       build/OUTCODE/src/game/chr/chrObjRandom.o (.rodata);
       build/OUTCODE/src/game/gfx/vtxstore.o (.rodata);
       build/OUTCODE/src/game/prop/explosion.o (.rodata);
@@ -59,7 +56,7 @@
       build/OUTCODE/src/game/hud/healthbar.o (.rodata);
       build/OUTCODE/src/game/hud/sparks.o (.rodata);
       build/OUTCODE/src/game/menu/watchmenu.o (.rodata);
-      build/OUTCODE/src/game/text/textrelated.o (.rodata);
+      build/OUTCODE/src/game/text/text.o (.rodata);
       build/OUTCODE/src/game/nav/stan.o (.rodata);
       build/OUTCODE/src/game/world/bg.o (.rodata);
       build/OUTCODE/src/game/world/bgfog.o (.rodata);
@@ -71,7 +68,7 @@
       build/OUTCODE/src/game/replay/ramromreplay.o (.rodata);
       build/OUTCODE/src/game/replay/testhooks.o (.rodata);
       build/OUTCODE/src/game/level/frametiming.o (.rodata);
-      build/OUTCODE/src/game/audio/mp_music.o (.rodata);
+      build/OUTCODE/src/game/audio/levelmusic.o (.rodata);
       build/OUTCODE/src/game/text/language.o (.rodata);
       build/OUTCODE/src/game/menu/mpmenu.o (.rodata);
       build/OUTCODE/src/game/hud/radar.o (.rodata);
@@ -86,6 +83,5 @@
       build/OUTCODE/src/game/level/game.o (.rodata);
       build/OUTCODE/src/game/debug/speedgraphrenderer.o (.rodata);
       build/OUTCODE/src/game/gfx/zbuf.o (.rodata);
-      build/OUTCODE/src/game/audio/music_0D2720.o (.rodata);
 #ifndef VERSION_EU
 #endif

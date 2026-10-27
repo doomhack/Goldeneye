@@ -11,7 +11,7 @@
 #include <boss.h>
 #include <joy.h>
 #include <random.h>
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/level/frametiming.h"
 #include "game/player/player.h"
 #include "game/menu/mpmenu.h"
@@ -19,7 +19,7 @@
 #include "game/menu/front.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
-#include "game/audio/mp_music.h"
+#include "game/audio/levelmusic.h"
 #include "game/save/file.h"
 #include "assets/obseg/text/LmpmenuE.h"
 
@@ -354,9 +354,9 @@ void mpMenuCalculateAwards(bool gameoverdelay)
     duration = lvGetMissionTime60();
 
     sndDeactivateAllSfxByFlag_1();
-    set_missionstate(MISSION_STATE_0);
+    levelMusicSetState(MUSICSTATE_SILENT);
 
-    musicTrack1ApplySeqpVol(sub_GAME_7F0C0BF0());
+    musicTrack1ApplySeqpVol(levelMusicGetVolume());
     g_musicXTrack1Fade = 0;
     musicTrack1Play(M_INTROSWOOSH);
 
@@ -392,7 +392,7 @@ void mpMenuCalculateAwards(bool gameoverdelay)
         g_CurrentPlayer->ptr_text_second_mp_award = 0;
 
         invGetWeaponOfChoice(&weapon_choice_1, &weapon_choice_2);
-        store_favorite_weapon_current_player((u32) weapon_choice_1, (u32) weapon_choice_2);
+        fileSetFavWeapon((u32) weapon_choice_1, (u32) weapon_choice_2);
 
         metrics[i].num_shots = statsGetHits(SHOT_REGISTER_TOTAL);
         metrics[i].num_headshots = statsGetHits(SHOT_REGISTER_HEAD);
@@ -775,7 +775,7 @@ Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_colo
 
     sprintf(&text, "%d", points);
 
-    textMeasure(&textheight, &textwidth, &text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&textheight, &textwidth, &text, g_FontBankGothicChars, g_FontBankGothic, 0);
 
     textX = x - (textwidth >> 1);
     textY = y;
@@ -785,37 +785,37 @@ Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_colo
         case GREEN_NORMAL:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRender(gdl, &textX, &textY, &text, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF00B0, viX, viY, 0, 0);
+            gdl = textRender(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xFF00B0, viX, viY, 0, 0);
             break;
 
         case GREEN_HIGHLIGHT:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRenderOutlined(gdl, &textX, &textY, &text, ptrFontBankGothicChars, ptrFontBankGothic, 0xA0FFA0F0, 0x7000A0, viX, viY, 0, 0);
+            gdl = textRenderOutlined(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xA0FFA0F0, 0x7000A0, viX, viY, 0, 0);
             break;
 
         case RED_NORMAL:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRender(gdl, &textX, &textY, &text, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF4040B0, viX, viY, 0, 0);
+            gdl = textRender(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xFF4040B0, viX, viY, 0, 0);
             break;
 
         case RED_HIGHLIGHT:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRenderOutlined(gdl, &textX, &textY, &text, ptrFontBankGothicChars, ptrFontBankGothic, 0xFFA0A0F0, 0x700000A0, viX, viY, 0, 0);
+            gdl = textRenderOutlined(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xFFA0A0F0, 0x700000A0, viX, viY, 0, 0);
             break;
 
         case BLUE_NORMAL:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRender(gdl, &textX, &textY, &text, ptrFontBankGothicChars, ptrFontBankGothic, 0x4040FFB0, viX, viY, 0, 0);
+            gdl = textRender(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0x4040FFB0, viX, viY, 0, 0);
             break;
 
         case BLUE_HIGHLIGHT:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRenderOutlined(gdl, &textX, &textY, &text, ptrFontBankGothicChars, ptrFontBankGothic, 0xA0A0FFF0, 0x70A0, viX, viY, 0, 0);
+            gdl = textRenderOutlined(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xA0A0FFF0, 0x70A0, viX, viY, 0, 0);
             break;
     }
 
@@ -1101,7 +1101,7 @@ Gfx *mpMenuRender(Gfx *gdl)
  
     if (g_CurrentPlayer->mpmenuon)
     {
-        gdl = microcode_constructor(gdl);
+        gdl = textSetupDraw(gdl);
     
         if (player_count == 2)
         {
@@ -1158,7 +1158,7 @@ Gfx *mpMenuRender(Gfx *gdl)
                 break;
         }
  
-        textMeasure(&textheight, &textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+        textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
         x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
         y = (viGetViewTop() - (textheight >> 1)) + (22 + MPMENU_YOFF);
  
@@ -1166,13 +1166,13 @@ Gfx *mpMenuRender(Gfx *gdl)
         {
             viewleft = viGetX(); 
             h1 = viGetY();
-            gdl = textRenderOutlined(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
+            gdl = textRenderOutlined(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
         }
         else
         {
             viewleft = viGetX(); 
             h1 = viGetY();
-            gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+            gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
         }
  
         if (mpMenuCanGoLeft())
@@ -1196,13 +1196,13 @@ Gfx *mpMenuRender(Gfx *gdl)
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, (char *) ascii_MP_watch_menu_left_chevron, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, (char *) ascii_MP_watch_menu_left_chevron, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
             else
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRenderOutlined(gdl, &x, &y, (char *) ascii_MP_watch_menu_left_chevron, ptrFontBankGothicChars, ptrFontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
+                gdl = textRenderOutlined(gdl, &x, &y, (char *) ascii_MP_watch_menu_left_chevron, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
             }
         }
  
@@ -1224,13 +1224,13 @@ Gfx *mpMenuRender(Gfx *gdl)
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, (char *) ascii_MP_watch_menu_right_chevron, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, (char *) ascii_MP_watch_menu_right_chevron, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
             else
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRenderOutlined(gdl, &x, &y, (char *) ascii_MP_watch_menu_right_chevron, ptrFontBankGothicChars, ptrFontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
+                gdl = textRenderOutlined(gdl, &x, &y, (char *) ascii_MP_watch_menu_right_chevron, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
             }
         }
  
@@ -1258,13 +1258,13 @@ Gfx *mpMenuRender(Gfx *gdl)
             if (mpMenuShowRank(fav_x_offset))
             {
                 mpMenuFormatRank(rankbuffer, curplayernum);
-                textMeasure(&textheight, &textwidth, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                textMeasure(&textheight, &textwidth, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0);
  
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (textheight >> 1)) + (37 + MPMENU_YOFF);
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
 
             fav_x_offset = (g_MpGameOver == 0); 
@@ -1278,12 +1278,12 @@ Gfx *mpMenuRender(Gfx *gdl)
             {
                 scenario = frontGetMpScenario();
                 text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_1B_SCORES)); /* SCORES */
-                textMeasure(&textheight, &textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (textheight >> 1)) + (53 + MPMENU_YOFF);
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
  
                 if (((((scenario == SCENARIO_2v2) || (scenario == SCENARIO_3v1)) || (scenario == SCENARIO_2v1)) || (scenario == SCENARIO_TLD)) || (scenario == SCENARIO_MWTGG))
                 {
@@ -1401,11 +1401,11 @@ Gfx *mpMenuRender(Gfx *gdl)
             if (mpMenuShowRank(fav_x_offset))
             {
                 mpMenuFormatRank(rankbuffer, curplayernum);
-                textMeasure(&textheight, &textwidth, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                textMeasure(&textheight, &textwidth, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0);
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (textheight >> 1)) + (37 + MPMENU_YOFF);
                 viewleft = viGetX(); h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
  
             q = (s32) langGet(getStringID(LMPMENU, MPMENU_STR_1C_P)); /* P */
@@ -1414,12 +1414,12 @@ Gfx *mpMenuRender(Gfx *gdl)
             h2 = (s32) langGet(getStringID(LMPMENU, MPMENU_STR_1D_KILLS)), /* KILLS */
                 sprintf(rankbuffer, ascii_pnum_KILLS, (char *) q, curplayernum + 1, (char *) h2); /* -> "P<n> KILLS" */
  
-            textMeasure(&textheight, &textwidth, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+            textMeasure(&textheight, &textwidth, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
             y = (viGetViewTop() - (textheight >> 1)) + (53 + MPMENU_YOFF);
             viewleft = viGetX(); 
             h1 = viGetY();
-            gdl = textRender(gdl, &x, &y, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+            gdl = textRender(gdl, &x, &y, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
  
             if (player_count == 2)
             {
@@ -1470,12 +1470,12 @@ Gfx *mpMenuRender(Gfx *gdl)
             if (mpMenuShowRank(fav_x_offset))
             {
                 mpMenuFormatRank(rankbuffer, curplayernum);
-                textMeasure(&textheight, &textwidth, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                textMeasure(&textheight, &textwidth, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0);
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (textheight >> 1)) + (37 + MPMENU_YOFF);
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
  
             q = (s32) langGet(getStringID(LMPMENU, MPMENU_STR_1C_P)); /* P */
@@ -1484,12 +1484,12 @@ Gfx *mpMenuRender(Gfx *gdl)
             h2 = (s32) langGet(getStringID(LMPMENU, MPMENU_STR_1E_LOSSES)), /* LOSSES */
                 sprintf(rankbuffer, ascii_pnum_LOSSES, (char *) q, curplayernum + 1, (char *) h2); /* -> "P<n> LOSSES" */
  
-            textMeasure(&textheight, &textwidth, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+            textMeasure(&textheight, &textwidth, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
             y = (viGetViewTop() - (textheight >> 1)) + (53 + MPMENU_YOFF);
             viewleft = viGetX(); 
             h1 = viGetY();
-            gdl = textRender(gdl, &x, &y, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0xff4040b0, viewleft, h1, 0, 0);
+            gdl = textRender(gdl, &x, &y, rankbuffer, g_FontBankGothicChars, g_FontBankGothic, 0xff4040b0, viewleft, h1, 0, 0);
  
             if (player_count == 2)
             {
@@ -1593,17 +1593,17 @@ Gfx *mpMenuRender(Gfx *gdl)
             }
  
             text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_1F_WEAPONOFCHOICE)); /* Weapon of choice: */
-            textMeasure(&fav_textheight, &fav_textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+            textMeasure(&fav_textheight, &fav_textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
             y = (viGetViewTop() - (fav_textheight >> 1)) + (37 + MPMENU_YOFF);
             viewleft = viGetX(); h1 = viGetY();
-            gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+            gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             text = frontGetFavWeaponText(curplayernum, 0);
-            textMeasure(&fav_textheight, &fav_textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+            textMeasure(&fav_textheight, &fav_textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
             x2 = viGetViewTop();
  
-            if (j_text_trigger) 
+            if (g_TextJapanese) 
             { 
                 i = 4; 
             } 
@@ -1616,35 +1616,35 @@ Gfx *mpMenuRender(Gfx *gdl)
  
             viewleft = viGetX(); 
             h1 = viGetY();
-            gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+            gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
  
             if (g_CurrentPlayer->ptr_text_first_mp_award)
             {
                 text = (char *) g_CurrentPlayer->ptr_text_first_mp_award;
-                textMeasure(&fav_textheight, &fav_textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                textMeasure(&fav_textheight, &fav_textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
                 x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (fav_textheight >> 1)) + (75 + MPMENU_YOFF);
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
 
             if (g_CurrentPlayer->ptr_text_second_mp_award)
             {
                 text = (char *) g_CurrentPlayer->ptr_text_second_mp_award;
-                textMeasure(&fav_textheight, &fav_textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                textMeasure(&fav_textheight, &fav_textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
                 x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (fav_textheight >> 1)) + (88 + MPMENU_YOFF);
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
         }
 
         if (g_CurrentPlayer->mpmenumode == MENU_EXIT_CONFIRM)
         {
             text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_20_CANCEL)); /* cancel */
-            textMeasure(&textheight, &textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+            textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 54;
             y = (viGetViewTop() - (textheight >> 1)) + (54 + MPMENU_YOFF);
  
@@ -1652,17 +1652,17 @@ Gfx *mpMenuRender(Gfx *gdl)
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRenderOutlined(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
+                gdl = textRenderOutlined(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
             }
             else
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
  
             text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_21_CONFIRM)); /* confirm */
-            textMeasure(&textheight, &textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+            textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 104;
             y = (viGetViewTop() - (textheight >> 1)) + (54 + MPMENU_YOFF);
  
@@ -1670,16 +1670,16 @@ Gfx *mpMenuRender(Gfx *gdl)
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRenderOutlined(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
+                gdl = textRenderOutlined(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
             }
             else
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
         }
-        gdl = combiner_bayer_lod_perspective(gdl);
+        gdl = textEndDraw(gdl);
     }
     else if (((((g_CurrentPlayer->bonddead) && (g_CurrentPlayer->deathanimfinished)) && (g_CurrentPlayer->redbloodfinished)) && (!g_MpStopPlay)) && (!g_MpGameOver)
         && (!g_CoopMode || coopPartnerCanRevive())) // co-op: no respawn once both are dead, or the partner is too weak
@@ -1694,7 +1694,7 @@ Gfx *mpMenuRender(Gfx *gdl)
         if ((frontGetMpScenario() != SCENARIO_YOLT) || (total_kills_against_current < 2))
         {
             gdl = bgScissorCurrentPlayerViewDefault(gdl);
-            gdl = microcode_constructor(gdl);
+            gdl = textSetupDraw(gdl);
 
             if (g_CoopMode)
             {
@@ -1706,18 +1706,18 @@ Gfx *mpMenuRender(Gfx *gdl)
             }
 
             text3 = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_22_PRESSSTART_LF)); /* press start */
-            textMeasure(&textheight3, &textwidth3, text3, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+            textMeasure(&textheight3, &textwidth3, text3, g_FontBankGothicChars, g_FontBankGothic, 0);
             x2 = viGetViewLeft();
             x3 = (x2 + (viGetViewWidth() >> 1)) - (textwidth3 >> 1);
             x2 = viGetViewTop();
             y3 = (x2 + (viGetViewHeight() >> 1)) - (textheight3 >> 1);
 #if !defined(VERSION_US) || defined(BACKPORT_R1)
-            gdl = microcode_constructor_related_to_menus(gdl, x3 - 1, y3 - 1, x3 + textwidth3 + 1, y3 + textheight3 + 1, 0);
+            gdl = textRenderRect(gdl, x3 - 1, y3 - 1, x3 + textwidth3 + 1, y3 + textheight3 + 1, 0);
 #endif
             viewleft = viGetX(); 
             h1 = viGetY();
-            gdl = textRender(gdl, &x3, &y3, text3, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
-            gdl = combiner_bayer_lod_perspective(gdl);
+            gdl = textRender(gdl, &x3, &y3, text3, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+            gdl = textEndDraw(gdl);
         }
     }
  

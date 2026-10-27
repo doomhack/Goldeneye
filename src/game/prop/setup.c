@@ -1281,7 +1281,7 @@ void setupCreateProps(enum LEVELID stageId)
         g_ptrStageSetupFile = fileLoadByNameToPool(strResource, FILELOAD_TRIM, 256, MEMPOOL_STAGE);
 
         local_stage = g_ptrStageSetupFile;
-        langLoadToAddr(langGetLangBankIndexFromStagenum(stageId));
+        langLoadToAddr(langGetBankForStage(stageId));
 
         /**
          * The setup file stores every internal reference as a byte offset from the start of the file,
@@ -1620,7 +1620,7 @@ void setupCreateProps(enum LEVELID stageId)
                     {
                         struct BodyArmourRecord *pdef_ba = (struct BodyArmourRecord *) phead;
 #ifndef VERSION_US
-                        if (withobjs && (((pdef_ba->flags2 & flags) == 0) || j_text_trigger)) // JP: armour setup also proceeds when j_text_trigger is set
+                        if (withobjs && (((pdef_ba->flags2 & flags) == 0) || g_TextJapanese)) // JP: armour setup also proceeds when g_TextJapanese is set
 #else
                         if (withobjs && ((pdef_ba->flags2 & flags) == 0))
 #endif

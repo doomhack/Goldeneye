@@ -7,7 +7,7 @@
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/player/player.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include <bondconstants.h>
 #include "game/text/language.h"
 #include "game/player/bondinv.h"
@@ -266,7 +266,7 @@ s32 invItemAvailable(ITEM_IDS weaponid)
     if (((g_CurrentPlayer->equipallguns) && (weaponid != ITEM_UNARMED) && (weaponid < ITEM_BOMBCASE)))
     {
 #ifdef BUGFIX_R1
-        if ((!j_text_trigger || (weaponid != ITEM_KNIFE)))
+        if ((!g_TextJapanese || (weaponid != ITEM_KNIFE)))
         {
             return TRUE;
         }
@@ -300,7 +300,7 @@ s32 invItemAvailableForHand(ITEM_IDS right, ITEM_IDS left)
             right == left &&
             !isMpGame() &&
             weaponHasFlag(right, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) &&
-            (j_text_trigger == FALSE || (right != ITEM_KNIFE)))
+            (g_TextJapanese == FALSE || (right != ITEM_KNIFE)))
         {
             return TRUE;
         }
@@ -327,7 +327,7 @@ int invAddItem(ITEM_IDS item)
         if ((g_CurrentPlayer->equipallguns) && (item < ITEM_BOMBCASE))
         {
 #ifdef BUGFIX_R1
-            if ((!j_text_trigger || (item != ITEM_KNIFE)))
+            if ((!g_TextJapanese || (item != ITEM_KNIFE)))
             {
                 return FALSE;
             }
@@ -573,7 +573,7 @@ void invCycleForward(s32 *nextright, s32 *nextleft, s32 requireammo)
 
         if (!isMpGame() && weaponHasFlag(*nextright, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (*nextleft < *nextright) && (requireammo == FALSE || weaponHasAmmo(*nextright)) && (weapon1 != *nextright || *nextright < weapon2)
 #ifdef BUGFIX_R1
-            && (!j_text_trigger || *nextright != ITEM_KNIFE)
+            && (!g_TextJapanese || *nextright != ITEM_KNIFE)
 #endif
         )
         {
@@ -596,7 +596,7 @@ void invCycleForward(s32 *nextright, s32 *nextleft, s32 requireammo)
 
                     if ((requireammo == FALSE || weaponHasAmmo(candidate))
 #ifdef BUGFIX_R1
-                        && (!j_text_trigger || candidate != ITEM_KNIFE)
+                        && (!g_TextJapanese || candidate != ITEM_KNIFE)
 #endif
                     )
                     {
@@ -683,7 +683,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
             {
                 if (!isMpGame() && weaponHasFlag(candidate, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (requireammo == FALSE || weaponHasAmmo(candidate)) && (candidate != *nextright || candidate < *nextleft) && (weapon2 < candidate)
 #ifdef BUGFIX_R1
-                    && (!j_text_trigger || candidate != ITEM_KNIFE)
+                    && (!g_TextJapanese || candidate != ITEM_KNIFE)
 #endif
                 )
                 {
@@ -696,7 +696,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
             else if (
                 (requireammo == FALSE || weaponHasAmmo(candidate))
 #ifdef BUGFIX_R1
-                && (!j_text_trigger || candidate != ITEM_KNIFE)
+                && (!g_TextJapanese || candidate != ITEM_KNIFE)
 #endif
             )
             {
@@ -901,7 +901,7 @@ s32 invCountItems(void)
     if (g_CurrentPlayer->equipallguns)
     {
 #ifdef BUGFIX_R1
-        numitems = (j_text_trigger ? ITEM_TASER : ITEM_TANKSHELLS);
+        numitems = (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS);
 #else
         numitems = ITEM_TANKSHELLS;
 #endif
@@ -958,7 +958,7 @@ InvItem *invGetItemByIndex(s32 index)
     if (g_CurrentPlayer->equipallguns)
     {
 #ifdef BUGFIX_R1
-        if (index < (j_text_trigger ? ITEM_TASER : ITEM_TANKSHELLS))
+        if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
 #else
         if (index < ITEM_TANKSHELLS)
 #endif
@@ -967,7 +967,7 @@ InvItem *invGetItemByIndex(s32 index)
         }
 
 #ifdef BUGFIX_R1
-        index = index - (j_text_trigger ? ITEM_TASER : ITEM_TANKSHELLS);
+        index = index - (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS);
 #else
         index = index - ITEM_TANKSHELLS;
 #endif
@@ -1093,9 +1093,9 @@ s32 invGetWeaponForIndex(s32 index)
         if (g_CurrentPlayer->equipallguns)
         {
 #ifdef BUGFIX_R1
-            if (index < (j_text_trigger ? ITEM_TASER : ITEM_TANKSHELLS))
+            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
             {
-                if (j_text_trigger && ((index + 1) >= ITEM_KNIFE))
+                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
                 {
                     return index + 2;
                 }
@@ -1167,9 +1167,9 @@ u16 *invGetNameByIndex(s32 index)
         if (g_CurrentPlayer->equipallguns)
         {
 #ifdef BUGFIX_R1
-            if (index < (j_text_trigger ? ITEM_TASER : ITEM_TANKSHELLS))
+            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
             {
-                if (j_text_trigger && ((index + 1) >= ITEM_KNIFE))
+                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
                 {
                     return itemGetWatchText(index + 2);
                 }
@@ -1232,9 +1232,9 @@ u16 *invGetLongNameByIndex(s32 index)
         if (g_CurrentPlayer->equipallguns)
         {
 #ifdef BUGFIX_R1
-            if (index < (j_text_trigger ? ITEM_TASER : ITEM_TANKSHELLS))
+            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
             {
-                if (j_text_trigger && ((index + 1) >= ITEM_KNIFE))
+                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
                 {
                     return itemGetChoiceText(index + 2);
                 }
@@ -1318,9 +1318,9 @@ u16 *invGetWatchTitle1ForIndex(s32 index)
         if (g_CurrentPlayer->equipallguns)
         {
 #ifdef BUGFIX_R1
-            if (index < (j_text_trigger ? ITEM_TASER : ITEM_TANKSHELLS))
+            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
             {
-                if (j_text_trigger && ((index + 1) >= ITEM_KNIFE))
+                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
                 {
                     return itemGetWatchTitle1(index + 2);
                 }
@@ -1378,9 +1378,9 @@ u16 *invGetWatchTitle2ForIndex(s32 index)
         if (g_CurrentPlayer->equipallguns)
         {
 #ifdef BUGFIX_R1
-            if (index < (j_text_trigger ? ITEM_TASER : ITEM_TANKSHELLS))
+            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
             {
-                if (j_text_trigger && ((index + 1) >= ITEM_KNIFE))
+                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
                 {
                     return itemGetWatchTitle2(index + 2);
                 }

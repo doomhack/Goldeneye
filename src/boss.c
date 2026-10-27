@@ -10,7 +10,6 @@
 #include "game/gfx/dyn.h"
 #include "game/level/game.h"
 #include "game/save/file.h"
-#include "game/save/file2.h"
 #include "game/debug/indy_comms.h"
 #include "init.h"
 #include "joy.h"
@@ -39,7 +38,7 @@
 #include "game/replay/testhooks.h"
 #include "game/gfx/rsp.h"
 #include "game/nav/stan.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/player/player.h"
 #include "game/player/gun.h"
 #include "game/player/bondhead.h"
@@ -417,13 +416,13 @@ void bossMainloop(void)
     {
         fileValidateSaves();
         fileSetCurrentFolder(FOLDER1);
-        set_selected_difficulty(DIFFICULTY_AGENT);
-        set_solo_and_ptr_briefing(g_StageNum);
+        fileSetDifficulty(DIFFICULTY_AGENT);
+        fileSetSoloStage(g_StageNum);
 
         if (tokenFind(1, "-hard"))
         {
             // convert ASCII difficulty value to int in set difficulty calls eg '1' = 49, 49-48 = 1
-            set_selected_difficulty(*(const unsigned char*)tokenFind(1, "-hard") - '0');
+            fileSetDifficulty(*(const unsigned char*)tokenFind(1, "-hard") - '0');
             lvSetDifficulty(*(const unsigned char*)tokenFind(1, "-hard") - '0');
         }
     }
@@ -774,7 +773,7 @@ void bossReturnTitleStage(void) {
     objectivesDisableStatusDisplay();
 #endif
     if ((bossGetStageNum() != LEVELID_CUBA) && (objectivesAllComplete() != 0x0)) {
-        end_of_mission_briefing();
+        fileRecordMissionEnd();
     }
     bossRunTitleStage();
 }

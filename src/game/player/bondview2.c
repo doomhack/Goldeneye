@@ -30,7 +30,6 @@
 #include "game/debug/debugmenu_handler.h"
 #include "game/prop/explosion.h"
 #include "game/save/file.h"
-#include "game/save/file2.h"
 #include "game/level/frametiming.h"
 #include "game/menu/front.h"
 #include "game/prop/glass.h"
@@ -44,7 +43,7 @@
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
 #include "game/model/model.h"
-#include "game/audio/mp_music.h"
+#include "game/audio/levelmusic.h"
 #include "game/menu/mpmenu.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
@@ -57,7 +56,7 @@
 #include "random.h"
 #include "game/nav/stan.h"
 #include "game/nav/stan.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/math/interp.h"
 
 #ifdef VERSION_EU
@@ -1324,10 +1323,10 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
             if ((camera_transition_timer < 120.0f) && ((camera_transition_timer + g_GlobalTimerDelta) >= 120.0f))
             {
 #if defined(VERSION_US)
-                hudmsgSetFonts(ptrFontZurichBoldChars, ptrFontZurichBold);
+                hudmsgSetFonts(g_FontZurichChars, g_FontZurich);
                 hudmsgBottomShow(ptr_random06cam_entry->lang1c.lang_ptr);
 #else
-                hudmsgBottomShow(ptr_random06cam_entry->lang1c.lang_ptr, ptrFontZurichBoldChars, ptrFontZurichBold);
+                hudmsgBottomShow(ptr_random06cam_entry->lang1c.lang_ptr, g_FontZurichChars, g_FontZurich);
 #endif
             }
 
@@ -1338,7 +1337,7 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
 #if defined(VERSION_US)
                     hudmsgBottomShow(ptr_random06cam_entry->lang20.lang_ptr);
 #else
-                    hudmsgBottomShow(ptr_random06cam_entry->lang20.lang_ptr, ptrFontZurichBoldChars, ptrFontZurichBold);
+                    hudmsgBottomShow(ptr_random06cam_entry->lang20.lang_ptr, g_FontZurichChars, g_FontZurich);
 #endif
                 }
 
@@ -3725,7 +3724,7 @@ void watchTick(void)
         {
             if (g_CurrentPlayer->watch_pause_time == 1)
             {
-                sub_GAME_7F0C1310();
+                levelMusicPause();
             }
 
             g_CurrentPlayer->pausing_flag = TRUE;
@@ -4080,7 +4079,7 @@ void watchTrigger(s32 arg0)
         // kept separately.
         if (!g_CoopMode || (coopPlayerPerson(playerGetCurrentNum()) == 0))
         {
-            deleteCurrentSelectedFolder();
+            fileClearCurrentFolder();
         }
         else
         {
@@ -4093,7 +4092,7 @@ void watchTrigger(s32 arg0)
             fogReloadCurrentEnvironment();
         }
 
-        sub_GAME_7F0C1340();
+        levelMusicResume();
         g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0xc;
         g_CurrentPlayer->watch_pause_time = 0;
         g_CurrentPlayer->timer_1C4 = 0;
@@ -9900,7 +9899,7 @@ Gfx *hudRenderCredits(Gfx *gdl)
         align2 = CREDITS_ALIGN_RIGHT;
         camera_80036438++;
         frame = camera_80036438;
-        gdl = microcode_constructor(gdl);
+        gdl = textSetupDraw(gdl);
         start = (frame - viGetViewHeight()) / 16;
         end = (frame / 16) + 1;
 
@@ -9968,7 +9967,7 @@ Gfx *hudRenderCredits(Gfx *gdl)
                 textheight = 0;
                 textwidth = 0;
 
-                textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+                textMeasure(&textheight, &textwidth, text, g_FontZurichChars, g_FontZurich, 0);
 
                 entrysize = y + textheight;
 
@@ -9988,9 +9987,9 @@ Gfx *hudRenderCredits(Gfx *gdl)
                     x2 = xpos1 + textwidth;
                 }
 
-                gdl = microcode_constructor_related_to_menus(gdl, x, y - 1, x2 + 1, entrysize + 1, 0);
+                gdl = textRenderRect(gdl, x, y - 1, x2 + 1, entrysize + 1, 0);
 
-                gdl = textRender(gdl, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, -1, viGetX(), viGetY(), 0, 0);
+                gdl = textRender(gdl, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
             }
 
             if (credits_pointer[i].TextId2 != 0x5011)
@@ -10012,7 +10011,7 @@ Gfx *hudRenderCredits(Gfx *gdl)
                 textheight = 0;
                 textwidth = 0;
 
-                textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+                textMeasure(&textheight, &textwidth, text, g_FontZurichChars, g_FontZurich, 0);
 
                 entrysize = y + textheight;
 
@@ -10032,13 +10031,13 @@ Gfx *hudRenderCredits(Gfx *gdl)
                     x2 = xpos2 + textwidth;
                 }
 
-                gdl = microcode_constructor_related_to_menus(gdl, x, y - 1, x2 + 1, entrysize + 1, 0);
+                gdl = textRenderRect(gdl, x, y - 1, x2 + 1, entrysize + 1, 0);
 
-                gdl = textRender(gdl, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, -1, viGetX(), viGetY(), 0, 0);
+                gdl = textRender(gdl, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
             }
         }
 
-        gdl = combiner_bayer_lod_perspective(gdl);
+        gdl = textEndDraw(gdl);
     }
 
     return gdl;
@@ -10085,8 +10084,8 @@ Gfx *hudRender(Gfx *gdl)
         uly = viGetViewTop();
         lrx = viGetViewLeft() + viGetViewWidth();
         lry = viGetViewTop() + viGetViewHeight();
-        gdl = microcode_constructor(gdl);
-        gdl = microcode_constructor_related_to_menus(gdl, ulx, uly, lrx, lry, 160);
+        gdl = textSetupDraw(gdl);
+        gdl = textRenderRect(gdl, ulx, uly, lrx, lry, 160);
     }
 
     if (playerIsShowingHealth() &&
@@ -10133,8 +10132,8 @@ Gfx *hudRender(Gfx *gdl)
                 else if (!isMpGame())
                 {
                     // This unusual comma-expression syntax is required for a byte match.
-                    set_missionstate((musicStopSlot(-1), 0));
-                    musicTrack1ApplySeqpVol(sub_GAME_7F0C0BF0());
+                    levelMusicSetState((levelMusicSlotStop(-1), 0));
+                    musicTrack1ApplySeqpVol(levelMusicGetVolume());
                     g_musicXTrack1Fade = 0;
                     musicTrack2ApplySeqpVol(0);
                     g_musicXTrack2Fade = 0;
@@ -10142,7 +10141,7 @@ Gfx *hudRender(Gfx *gdl)
                 }
                 else
                 {
-                    set_missionstate(6);
+                    levelMusicSetState(6);
                 }
             }
             else
@@ -10853,8 +10852,8 @@ void hudmsgResetIntroText(void)
     status_bar_text_buffer_index = 0;
 
 #ifdef BUGFIX_R0
-    copy_1stfonttable = ptrFontBankGothic;
-    copy_2ndfonttable = ptrFontBankGothicChars;
+    copy_1stfonttable = g_FontBankGothic;
+    copy_2ndfonttable = g_FontBankGothicChars;
 #endif
 }
 
@@ -10958,7 +10957,7 @@ void hudmsgBottomShow(char *mess)
 #if defined(BUGFIX_R1)
 void hudmsgBottomShowText(char *string)
 {
-    hudmsgBottomShow(string, ptrFontBankGothicChars, ptrFontBankGothic);
+    hudmsgBottomShow(string, g_FontBankGothicChars, g_FontBankGothic);
 }
 #endif
 
@@ -11034,7 +11033,7 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
 
         if (var_v1 != 0)
         {
-            arg0 = microcode_constructor(arg0);
+            arg0 = textSetupDraw(arg0);
             view_left_offset = 0;
             view_top_offset = 0;
             textMeasure(&view_top_offset, &view_left_offset ,(u8* ) stringbuffer_lowerleft[status_bar_text_buffer_index], BONDVIEW_2ND_FONTTABLE(status_bar_text_buffer_index), BONDVIEW_1ST_FONTTABLE(status_bar_text_buffer_index), 0);
@@ -11075,14 +11074,14 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
             {
                 view_top = viGetViewTop()
 #if defined(VERSION_EU)
-                         + (((j_text_trigger != 0) && (playerGetCurrentNum() < 2)) ? 8 : 0)
+                         + (((g_TextJapanese != 0) && (playerGetCurrentNum() < 2)) ? 8 : 0)
 #endif
                          + BONDVIEW_VIEW_TOP_OFFSET_3;
             }
 
             view_vert = view_top - view_top_offset;
-            arg0 = draw_blackbox_to_screen(arg0, (s32) &view_left, (s32) &view_vert, (s32) &view_horiz, (s32) &view_top);
-            arg0 = combiner_bayer_lod_perspective(textRenderOutlined(arg0, &view_left, &view_vert, stringbuffer_lowerleft[status_bar_text_buffer_index], BONDVIEW_2ND_FONTTABLE(status_bar_text_buffer_index), BONDVIEW_1ST_FONTTABLE(status_bar_text_buffer_index), -1, 0x646464FFU, (s16) (s32) viGetX(), (s16) viGetY(), 0, 0));
+            arg0 = textRenderBlackBox(arg0, (s32) &view_left, (s32) &view_vert, (s32) &view_horiz, (s32) &view_top);
+            arg0 = textEndDraw(textRenderOutlined(arg0, &view_left, &view_vert, stringbuffer_lowerleft[status_bar_text_buffer_index], BONDVIEW_2ND_FONTTABLE(status_bar_text_buffer_index), BONDVIEW_1ST_FONTTABLE(status_bar_text_buffer_index), -1, 0x646464FFU, (s16) (s32) viGetX(), (s16) viGetY(), 0, 0));
         }
     }
 
@@ -11211,13 +11210,13 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                 if ((g_CurrentPlayer->mpmenuon == 0)
                     && (!g_CoopMode || (s_CoopTopTextPlayer[upper_text_buffer_index] == playerGetCurrentNum())))
                 {
-                    gdl = microcode_constructor(gdl);
+                    gdl = textSetupDraw(gdl);
                     msg.textwidth = 0;
                     msg.textheight = 0;
 #if defined(LEFTOVERDEBUG)
-                    textMeasure(&msg.textheight, &msg.textwidth, stringbuffer_top[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+                    textMeasure(&msg.textheight, &msg.textwidth, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, 0);
 #else
-                    textMeasure(&msg.textheight, &msg.textwidth, g_HudmsgTopText[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+                    textMeasure(&msg.textheight, &msg.textwidth, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, 0);
 #endif
                     if (cameraBufferToggle != 0)
                     {
@@ -11239,31 +11238,31 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     }
 
                     msg.bottom = msg.y + msg.textheight;
-                    gdl = microcode_constructor_related_to_menus(gdl, 0, msg.y - 2, viGetX(), msg.bottom, 0x64);
+                    gdl = textRenderRect(gdl, 0, msg.y - 2, viGetX(), msg.bottom, 0x64);
 #ifdef VERSION_US
                     sw.screenwidth = viGetX();
-                    gdl = textRender(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, sw.screenwidth, viGetY(), 0, 0);
+                    gdl = textRender(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
 #else
-                    if (j_text_trigger != 0)
+                    if (g_TextJapanese != 0)
                     {
                         sw.screenwidth = viGetX();
 #if defined(LEFTOVERDEBUG)
-                        gdl = textRenderOutlined(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
+                        gdl = textRenderOutlined(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
 #else
-                        gdl = textRenderOutlined(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
+                        gdl = textRenderOutlined(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
 #endif
                     }
                     else
                     {
                         sw.screenwidth = viGetX();
 #if defined(LEFTOVERDEBUG)
-                        gdl = textRender(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, sw.screenwidth, viGetY(), 0, 0);
+                        gdl = textRender(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
 #else
-                        gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, sw.screenwidth, viGetY(), 0, 0);
+                        gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
 #endif
                     }
 #endif
-                    gdl = combiner_bayer_lod_perspective(gdl);
+                    gdl = textEndDraw(gdl);
                     goto end;
                 }
             }
@@ -11286,23 +11285,23 @@ Gfx *hudmsgTopRender(Gfx *gdl)
         debug_x = viGetViewLeft() + 0x11;
         debug_y = viGetViewTop() + 0x11;
         debug_boxbottom = debug_y + 0xa;
-        gdl = microcode_constructor(gdl);
-        gdl = microcode_constructor_related_to_menus(gdl, 0, debug_y, viGetX(), debug_boxbottom + 1, 0x64);
+        gdl = textSetupDraw(gdl);
+        gdl = textRenderRect(gdl, 0, debug_y, viGetX(), debug_boxbottom + 1, 0x64);
         sw.screenwidth = viGetX();
-        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.room, ptrFontBankGothicChars, ptrFontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
+        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.room, g_FontBankGothicChars, g_FontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
         debug_x = viGetViewLeft() + 0x57;
         sw.screenwidth = viGetX();
-        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.x, ptrFontBankGothicChars, ptrFontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
+        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.x, g_FontBankGothicChars, g_FontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
         debug_x = viGetViewLeft() + 0x8d;
         sw.screenwidth = viGetX();
-        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.y, ptrFontBankGothicChars, ptrFontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
+        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.y, g_FontBankGothicChars, g_FontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
         debug_x = viGetViewLeft() + 0xc3;
         sw.screenwidth = viGetX();
-        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.z, ptrFontBankGothicChars, ptrFontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
+        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.z, g_FontBankGothicChars, g_FontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
         debug_x = viGetViewLeft() + 0xf9;
         sw.screenwidth = viGetX();
-        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.angle, ptrFontBankGothicChars, ptrFontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
-        gdl = combiner_bayer_lod_perspective(gdl);
+        gdl = textRender(gdl, &debug_x, &debug_y, debugtext.angle, g_FontBankGothicChars, g_FontBankGothic, -1, sw.screenwidth, viGetY(), 0, 0);
+        gdl = textEndDraw(gdl);
     }
 
     end:

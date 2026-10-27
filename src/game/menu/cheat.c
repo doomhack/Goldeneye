@@ -15,7 +15,7 @@
 #include "game/menu/cheat.h"
 #include "game/chr/chr.h"
 #include "game/debug/debugmenu_handler.h"
-#include "game/save/file2.h"
+#include "game/save/file.h"
 #include "game/menu/front.h"
 #include "game/player/gun.h"
 #include "game/text/language.h"
@@ -1331,7 +1331,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             if (player_count == 1)
             {
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
-                if (j_text_trigger)
+                if (g_TextJapanese)
                 {
                     invAddItem(ITEM_ROCKETLAUNCH);
                     invAddItem(ITEM_SNIPERRIFLE);

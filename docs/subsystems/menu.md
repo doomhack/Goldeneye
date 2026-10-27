@@ -127,7 +127,7 @@ screen, look ahead, screen size, ratio, hi-res, split screen, fps counter and dr
 distance, read through `optionsGet*`. The control style is kept per player in the player
 struct. In co-op, `optionsCoopUsePlayer` (called when the current player changes) swaps
 the first seven settings so each player has their own; the rest are shared. The save file
-stores the settings with each folder (see `file2.c`).
+stores the settings with each folder (see [save](save.md)).
 
 ## The multiplayer pause menu
 

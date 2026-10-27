@@ -29,10 +29,9 @@
 #include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
-#include "game/save/file2.h"
+#include "game/save/file.h"
 #include "game/prop/propobj.h"
 #include "game/prop/explosion.h"
-#include "game/save/file.h"
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "joy.h"
@@ -61,7 +60,7 @@
 
 void chrUpdateAimProperties( ChrRecord *arg0);
 void chrUpdateAnim( ChrRecord *chr, s32 tickamount);
-f32  get_007_health_mod(void);
+f32  file007Health(void);
 
 // end forward declarations
 
@@ -1579,7 +1578,7 @@ s32 chrGetNumFree(void)
 
 void chrSetMaxDamage(ChrRecord *chr, f32 maxdamage)
 {
-    chr->maxdamage = (get_007_health_mod() * maxdamage);
+    chr->maxdamage = (file007Health() * maxdamage);
 }
 
 
@@ -1591,7 +1590,7 @@ f32 chrGetMaxDamage(ChrRecord *chr)
 
 void chrAddHealth(ChrRecord *chr, f32 health)
 {
-    chr->damage -= (health * get_007_health_mod());
+    chr->damage -= (health * file007Health());
 }
 
 
@@ -1668,7 +1667,7 @@ PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg
     var_s0->visionrange = 250.0f;
     var_s0->hearingscale = 1.0f;
 
-    var_s0->maxdamage = get_007_health_mod() * 4.0f;
+    var_s0->maxdamage = file007Health() * 4.0f;
     objGetTileShading(arg0, &var_s0->nextcol);
 
     var_s0->shadecol.rgba[0] = var_s0->nextcol.rgba[0];
@@ -1969,7 +1968,7 @@ f32 chrGetFlinchAmount(ChrRecord *chr)
 #ifdef BUGFIX_R1
 bool chrCanUseDKModeScaling(s32 bodynum, s32 headnum)
 {
-    if (j_text_trigger == FALSE)
+    if (g_TextJapanese == FALSE)
     {
         return TRUE;
     }

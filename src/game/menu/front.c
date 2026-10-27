@@ -25,7 +25,7 @@
 #include "game/chr/chraction.h"
 #include "game/menu/cheat.h"
 #include "game/model/chrobjdata.h"
-#include "game/save/file2.h"
+#include "game/save/file.h"
 #include "game/menu/front.h"
 #include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
@@ -34,11 +34,10 @@
 #include "game/math/round.h"
 #include "game/mission/objective.h"
 #include "game/player/player.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/hud/blood.h"
 #include "game/gfx/texselect.h"
 #include "game/gfx/texrect.h"
-#include "game/save/file2.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
@@ -975,7 +974,7 @@ void frontSetDifficultyCursor(int difficulty);
 
 Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, s8 *text, s32 second_font_table, s32 first_font_table, s32 arg6, s32 view_x, s32 view_y, s32 arg9, s32 arga)
 {
-    if (j_text_trigger != 0)
+    if (g_TextJapanese != 0)
     {
         gdl = textRenderOutlined(
             gdl,
@@ -1274,25 +1273,25 @@ Gfx* frontAddStartTabText(Gfx* DL)
     s32 textHeight;
 
     g_FrontTabStartText = langGet(getStringID(LTITLE, TITLE_STR_04_START));
-    setTextSpacingInverted(TRUE);
+    textSetSpacing(TRUE);
     textHeight = 0;
     textWidth = 0;
     //text is sideways so textWidth and textHeight are flipped
-    textMeasure(&textWidth, &textHeight, g_FrontTabStartText, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&textWidth, &textHeight, g_FrontTabStartText, g_FontBankGothicChars, g_FontBankGothic, 0);
     v = STARTTAB_TEXT_TOP;
     h = TABS_RIGHT_EDGE - (textWidth / 2);
 
     if (g_FrontTabStartHighlight)
     {
-        DL = microcode_constructor_related_to_menus(DL, (h - textWidth) + 1, STARTTAB_TEXT_TOP, h, STARTTAB_TEXT_BOTTOM, 50);
+        DL = textRenderRect(DL, (h - textWidth) + 1, STARTTAB_TEXT_TOP, h, STARTTAB_TEXT_BOTTOM, 50);
     }
 
-    setTextOrientation(ROT_90CW);
+    textSetOrientation(ROT_90CW);
 
     v = STARTTAB_TEXT_HALF - (textHeight / 2);
-    DL = textRender(DL, &v, &h, g_FrontTabStartText, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
-    setTextOrientation(ROT_NORMAL);
-    setTextSpacingInverted(FALSE);
+    DL = textRender(DL, &v, &h, g_FrontTabStartText, g_FontBankGothicChars, g_FontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
+    textSetOrientation(ROT_NORMAL);
+    textSetSpacing(FALSE);
     return DL;
 }
 
@@ -1317,25 +1316,25 @@ Gfx* frontAddPreviousTabText(Gfx* DL)
     s32 textHeight;
 
     g_FrontTabPrevText = langGet(getStringID(LTITLE, TITLE_STR_06_PREVIOUS));
-    setTextSpacingInverted(TRUE);
+    textSetSpacing(TRUE);
     textHeight = 0;
     textWidth = 0;
     //text is sideways so textWidth and textHeight are flipped
-    textMeasure(&textWidth, &textHeight, g_FrontTabPrevText, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&textWidth, &textHeight, g_FrontTabPrevText, g_FontBankGothicChars, g_FontBankGothic, 0);
     v = PREVTAB_TEXT_TOP;
     h = TABS_RIGHT_EDGE - (textWidth / 2);
 
     if (g_FrontTabPrevHighlight != 0)
     {
-        DL = microcode_constructor_related_to_menus(DL, (h - textWidth) + 1, PREVTAB_TEXT_TOP, h, PREVTAB_TEXT_BOTTOM, 50);
+        DL = textRenderRect(DL, (h - textWidth) + 1, PREVTAB_TEXT_TOP, h, PREVTAB_TEXT_BOTTOM, 50);
     }
 
-    setTextOrientation(ROT_90CW);
+    textSetOrientation(ROT_90CW);
 
     v = PREVTAB_TEXT_HALF - (textHeight / 2);
-    DL = textRender(DL, &v, &h, g_FrontTabPrevText, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
-    setTextOrientation(ROT_NORMAL);
-    setTextSpacingInverted(FALSE);
+    DL = textRender(DL, &v, &h, g_FrontTabPrevText, g_FontBankGothicChars, g_FontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
+    textSetOrientation(ROT_NORMAL);
+    textSetSpacing(FALSE);
 
     return DL;
 }
@@ -1369,25 +1368,25 @@ Gfx* frontAddNextTabText(Gfx* DL)
     s32 textHeight;
 
     g_FrontTabNextText = langGet(getStringID(LTITLE, TITLE_STR_05_NEXT)); //"NEXT\n"
-    setTextSpacingInverted(TRUE);
+    textSetSpacing(TRUE);
     textHeight = 0;
     textWidth = 0;
     //text is sideways so textWidth and textHeight are flipped
-    textMeasure(&textWidth, &textHeight, g_FrontTabNextText, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&textWidth, &textHeight, g_FrontTabNextText, g_FontBankGothicChars, g_FontBankGothic, 0);
     v = NEXTTAB_TEXT_TOP;
     h = TABS_RIGHT_EDGE - (textWidth / 2);
 
     if (g_FrontTabNextHighlight != 0)
     {
-        DL = microcode_constructor_related_to_menus(DL, (h - textWidth) + 1, NEXTTAB_TEXT_TOP, h, NEXTTAB_TEXT_BOTTOM, 50);
+        DL = textRenderRect(DL, (h - textWidth) + 1, NEXTTAB_TEXT_TOP, h, NEXTTAB_TEXT_BOTTOM, 50);
     }
 
-    setTextOrientation(ROT_90CW);
+    textSetOrientation(ROT_90CW);
 
     v = NEXTTAB_TEXT_HALF - (textHeight / 2);
-    DL = textRender(DL, &v, &h, g_FrontTabNextText, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
-    setTextOrientation(ROT_NORMAL);
-    setTextSpacingInverted(FALSE);
+    DL = textRender(DL, &v, &h, g_FrontTabNextText, g_FontBankGothicChars, g_FontBankGothic, 0xFF, viGetY(), viGetX(), 0, 0);
+    textSetOrientation(ROT_NORMAL);
+    textSetSpacing(FALSE);
     return DL;
 }
 
@@ -1498,7 +1497,7 @@ Gfx *frontDrawAlignedText(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u
 
     sp48 = 0;
     sp4C = 0;
-    textMeasure(&sp4C, &sp48, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&sp4C, &sp48, text, g_FontZurichChars, g_FontZurich, 0);
     x = arg1 - ((s32) (halign * sp48) / 2);
     y = arg2 - ((s32) (valign * sp4C) / 2);
 
@@ -1547,14 +1546,14 @@ Gfx *frontLegalRender(Gfx *DL)
         mtxF2L(&tmpmtx, &((Mtxf *) g_FrontLogoModel->render_pos)[i]);
     }
     
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
     
     legal_text_ptr = g_LegalTexts;
     legal_text_end = &g_LegalTexts[ARRAYCOUNT(g_LegalTexts)];
     
     do
     {
-        DL = frontDrawAlignedText(DL, legal_text_ptr->h_pos, legal_text_ptr->v_pos, legal_text_ptr->halign, legal_text_ptr->valign, langGet(legal_text_ptr->txtID), ptrFontZurichBoldChars, ptrFontZurichBold);
+        DL = frontDrawAlignedText(DL, legal_text_ptr->h_pos, legal_text_ptr->v_pos, legal_text_ptr->halign, legal_text_ptr->valign, langGet(legal_text_ptr->txtID), g_FontZurichChars, g_FontZurich);
         legal_text_ptr++;
     }
     while (legal_text_ptr < legal_text_end);
@@ -2517,8 +2516,8 @@ Gfx *frontFileSelectRender(Gfx *DL)
         }
     }
 
-    DL = microcode_constructor(DL);
-    setTextSpacingInverted(0);
+    DL = textSetupDraw(DL);
+    textSetSpacing(0);
 
     for (foldernum = FOLDER1; foldernum < MAX_FOLDER_COUNT; foldernum++)
     {
@@ -2536,13 +2535,13 @@ Gfx *frontFileSelectRender(Gfx *DL)
             textpos.p[1] = (s32) mathFloor(folderpos2d.f[0]) - 0x31;
             textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x19;
 
-            DL = microcode_constructor_related_to_menus(DL, textpos.p[1], textpos.p[0], textpos.p[1] + 0x63, textpos.p[0] + 0x2A, 0x32);
+            DL = textRenderRect(DL, textpos.p[1], textpos.p[0], textpos.p[1] + 0x63, textpos.p[0] + 0x2A, 0x32);
 
             langp = langGet(getStringID(LTITLE, TITLE_STR_23_ERASEFILE)); /* Erase file? */
             textpos.p[1] = (s32) mathFloor(folderpos2d.f[0]) - 0x2F;
             textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x1E;
 
-            DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
+            DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, g_FontZurichChars, g_FontZurich, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
 
             langp = langGet(getStringID(LTITLE, TITLE_STR_24_CANCEL)); /* cancel */
             textpos.p[1] = (s32) mathFloor(folderpos2d.f[0]) - 0x2F;
@@ -2552,32 +2551,32 @@ Gfx *frontFileSelectRender(Gfx *DL)
             {
                 textsize.p[0] = 0;
                 textsize.p[1] = 0;
-                textMeasure(&textsize.p[1], &textsize.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
-                DL = microcode_constructor_related_to_menus(DL, textpos.p[1] - 1, textpos.p[0] - 1, textsize.p[0] + textpos.p[1] + 3, textsize.p[1] + textpos.p[0], 0x32);
-                DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, -1, viGetX(), viGetY(), 0, 0);
+                textMeasure(&textsize.p[1], &textsize.p[0], langp, g_FontZurichChars, g_FontZurich, 0);
+                DL = textRenderRect(DL, textpos.p[1] - 1, textpos.p[0] - 1, textsize.p[0] + textpos.p[1] + 3, textsize.p[1] + textpos.p[0], 0x32);
+                DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
             }
             else
             {
-                DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
+                DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, g_FontZurichChars, g_FontZurich, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
             }
 
             langp = langGet(getStringID(LTITLE, TITLE_STR_25_CONFIRM)); /* confirm */
 
             folderx = mathFloor(folderpos2d.f[0]);
-            textpos.p[1] = (((j_text_trigger != 0) ? 0x17 : -1) + (s32) folderx) - 1;
+            textpos.p[1] = (((g_TextJapanese != 0) ? 0x17 : -1) + (s32) folderx) - 1;
             textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x32;
 
             if (g_FrontFolderEraseChoice != 0)
             {
-                DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
+                DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, g_FontZurichChars, g_FontZurich, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
             }
             else
             {
                 textsize.p[0] = 0;
                 textsize.p[1] = 0;
-                textMeasure(&textsize.p[1], &textsize.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
-                DL = microcode_constructor_related_to_menus(DL, textpos.p[1] - 1, textpos.p[0] - 1, textsize.p[0] + textpos.p[1] + 3, textsize.p[1] + textpos.p[0], 0x32);
-                DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, -1, viGetX(), viGetY(), 0, 0);
+                textMeasure(&textsize.p[1], &textsize.p[0], langp, g_FontZurichChars, g_FontZurich, 0);
+                DL = textRenderRect(DL, textpos.p[1] - 1, textpos.p[0] - 1, textsize.p[0] + textpos.p[1] + 3, textsize.p[1] + textpos.p[0], 0x32);
+                DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
             }
 
         }
@@ -2597,10 +2596,10 @@ Gfx *frontFileSelectRender(Gfx *DL)
                     textsize.p[0] = 0;
                     textsize.p[1] = 0;
 
-                    textMeasure(&textsize.p[1], &textsize.p[0], (char *)&difficultytext, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+                    textMeasure(&textsize.p[1], &textsize.p[0], (char *)&difficultytext, g_FontZurichChars, g_FontZurich, 0);
                     textpos.p[1] = ((s32) mathFloor(folderpos2d.f[0]) - (textsize.p[0] / 2)) - 1;
                     textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x15;
-                    DL = textRender(DL, &textpos.p[1], &textpos.p[0], (char *)&difficultytext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
+                    DL = textRender(DL, &textpos.p[1], &textpos.p[0], (char *)&difficultytext, g_FontZurichChars, g_FontZurich, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
                 }
 
                 if (highestdifficulty != DIFFICULTY_007)
@@ -2629,11 +2628,11 @@ Gfx *frontFileSelectRender(Gfx *DL)
                     textsize.p[0] = 0;
                     textsize.p[1] = 0;
 
-                    textMeasure(&textsize.p[1], &textsize.p[0], (char *)missiontext, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+                    textMeasure(&textsize.p[1], &textsize.p[0], (char *)missiontext, g_FontZurichChars, g_FontZurich, 0);
                     textpos.p[1] = ((s32) mathFloor(folderpos2d.f[0]) - (textsize.p[0] / 2)) - 1;
                     textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x2D;
 
-                    DL = textRender(DL, &textpos.p[1], &textpos.p[0], (char *)missiontext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
+                    DL = textRender(DL, &textpos.p[1], &textpos.p[0], (char *)missiontext, g_FontZurichChars, g_FontZurich, 0xEBD879FF, viGetX(), viGetY(), 0, 0);
                 }
             }
         }
@@ -2649,19 +2648,19 @@ Gfx *frontFileSelectRender(Gfx *DL)
         struct coord2d selectpos;
         struct coord2d selecthalfsize;
 
-        setTextSpacingInverted(0);
+        textSetSpacing(0);
 
         langp = langGet(getStringID(LTITLE, TITLE_STR_27_COPY)); /* Copy */
 
         textsize.p[0] = 0;
         textsize.p[1] = 0;
 
-        textMeasure(&textsize.p[1], &textsize.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&textsize.p[1], &textsize.p[0], langp, g_FontZurichChars, g_FontZurich, 0);
 
         textpos.p[0] = 285 - (textsize.p[1] / 2);
         textpos.p[1] = 247;
 
-        DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, -1, viGetX(), viGetY(), 0, 0);
+        DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
         folder_option_COPY_bound.right = (f32) (textsize.p[0] + textpos.p[1]);
 
         langp = langGet(getStringID(LTITLE, TITLE_STR_28_ERASE)); /* Erase */
@@ -2669,12 +2668,12 @@ Gfx *frontFileSelectRender(Gfx *DL)
         textsize.p[0] = 0;
         textsize.p[1] = 0;
 
-        textMeasure(&textsize.p[1], &textsize.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&textsize.p[1], &textsize.p[0], langp, g_FontZurichChars, g_FontZurich, 0);
 
         textpos.p[1] = 357;
         textpos.p[0] = 285 - (textsize.p[1] / 2);
 
-        DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, ptrFontZurichBoldChars, ptrFontZurichBold, -1, viGetX(), viGetY(), 0, 0);
+        DL = textRender(DL, &textpos.p[1], &textpos.p[0], langp, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
 
         folder_option_ERASE_bound.right = (f32) (textsize.p[0] + textpos.p[1]);
 
@@ -3009,18 +3008,18 @@ static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, char *number, u8 *textstring, 
 
     x = 0x96;
     y = modesel_row_y[row];
-    DL = frontPrintText(DL, &x, &y, number, ptrFontZurichBoldChars, ptrFontZurichBold, text_color, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, number, g_FontZurichChars, g_FontZurich, text_color, viGetX(), viGetY(), 0, 0);
 
-    textMeasure(&x2, &y2, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&x2, &y2, textstring, g_FontZurichChars, g_FontZurich, 0);
 
     x = 0xAA;
     y = modesel_row_y[row];
     if (modesel_highlighted_row == row)
     {
-        DL = microcode_constructor_related_to_menus(DL, 0x94, modesel_row_y[row] - 2, y2 + 0xAF, modesel_row_y[row] + 0xE, 0x32);
+        DL = textRenderRect(DL, 0x94, modesel_row_y[row] - 2, y2 + 0xAF, modesel_row_y[row] + 0xE, 0x32);
     }
 
-    DL = frontPrintText(DL, &x, &y, textstring, ptrFontZurichBoldChars, ptrFontZurichBold, text_color, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, textstring, g_FontZurichChars, g_FontZurich, text_color, viGetX(), viGetY(), 0, 0);
 
     return DL;
 }
@@ -3040,7 +3039,7 @@ Gfx* frontModeSelectRender(Gfx* DL)
     DL = viFillScreen(DL);
     #endif
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     text_color = (joyGetControllerCount() >= 2) ? 0xFF : 0x70;
 
@@ -3312,11 +3311,11 @@ Gfx *frontCoopSetupRender(Gfx *DL)
     DL = viFillScreen(DL);
     #endif
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     x = 0x37;
     y = 0x5F;
-    DL = frontPrintText(DL, &x, &y, (u8 *)(g_CounterOpMode ? "2 Player Counter-op\n" : "2 Player Co-op\n"), ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, (u8 *)(g_CounterOpMode ? "2 Player Counter-op\n" : "2 Player Co-op\n"), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     for (row = 0; row < COOP_SETUP_ROW_COUNT; row++)
     {
@@ -3327,16 +3326,16 @@ Gfx *frontCoopSetupRender(Gfx *DL)
             text = (u8 *)"Bond:\n";
         }
 
-        textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&textheight, &textwidth, text, g_FontZurichChars, g_FontZurich, 0);
 
         if (coop_setup_highlighted_row == row)
         {
-            DL = microcode_constructor_related_to_menus(DL, 0x37, COOP_SETUP_ROW_Y(row) - 1, textwidth + 0x3C, COOP_SETUP_ROW_Y(row) + 0xE, 0x32);
+            DL = textRenderRect(DL, 0x37, COOP_SETUP_ROW_Y(row) - 1, textwidth + 0x3C, COOP_SETUP_ROW_Y(row) + 0xE, 0x32);
         }
 
         x = 0x39;
         y = COOP_SETUP_ROW_Y(row);
-        DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
         switch (row)
         {
@@ -3365,12 +3364,12 @@ Gfx *frontCoopSetupRender(Gfx *DL)
 
         x = COOP_SETUP_VALUE_X;
         y = COOP_SETUP_ROW_Y(row);
-        DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
     x = 0x39;
     y = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_COUNT) + 0x14;
-    DL = frontPrintText(DL, &x, &y, (u8 *)"A or Left/Right: change\n", ptrFontZurichBoldChars, ptrFontZurichBold, 0x70, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, (u8 *)"A or Left/Right: change\n", g_FontZurichChars, g_FontZurich, 0x70, viGetX(), viGetY(), 0, 0);
 
     DL = frontAddPreviousTabText(DL);
     DL = frontAddNextTabText(DL);
@@ -3649,7 +3648,7 @@ void frontMissionSelectTick(void)
         frontSetMenu(MENU_DIFFICULTY, 0);
 
 #if defined(VERSION_EU)
-        if (j_text_trigger != 0)
+        if (g_TextJapanese != 0)
         {
             frontSetDifficultyCursor(0);
         }
@@ -3695,7 +3694,7 @@ Gfx *frontMissionSelectRender(Gfx *DL)
     DL = viFillScreen(DL);
     gDPSetFogColor(DL++, 0xFF, 0xFF, 0xFF, 0xFF);
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     for (spD8 = 0; spD8 < 5; spD8++)
     {
@@ -3723,7 +3722,7 @@ Gfx *frontMissionSelectRender(Gfx *DL)
                     strcpy(sp90, langGet(g_FrontMissions[temp_s0].folder_text_preset));
                 }
 
-                if (j_text_trigger == 0)
+                if (g_TextJapanese == 0)
                 {
                     temp_v0_3 = strlen(sp90) - 1;
                     for (; temp_v0_3 >= 0; temp_v0_3--)
@@ -3740,18 +3739,18 @@ Gfx *frontMissionSelectRender(Gfx *DL)
                 spC4 = 0;
                 spC8 = 0;
 
-                textMeasure(&spC8, &spC4, sp90, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                textMeasure(&spC8, &spC4, sp90, g_FontBankGothicChars, g_FontBankGothic, 0);
 
                 sp8C = g_FrontMissionCursorX[spD8] - 0x1F;
                 sp88 = (g_FrontMissionCursorY[i] - spC8) + 0x1D;
 
-                DL = microcode_constructor_related_to_menus(DL, sp8C, sp88, sp8C + spC4, sp88 + spC8, 0);
-                DL = textRender(DL, &sp8C, &sp88, sp90, ptrFontBankGothicChars, ptrFontBankGothic, var_s5 | 0xFF, viGetX(), viGetY(), 0, 0);
+                DL = textRenderRect(DL, sp8C, sp88, sp8C + spC4, sp88 + spC8, 0);
+                DL = textRender(DL, &sp8C, &sp88, sp90, g_FontBankGothicChars, g_FontBankGothic, var_s5 | 0xFF, viGetX(), viGetY(), 0, 0);
 
                 sp8C = g_FrontMissionCursorX[spD8] - 0x1F;
                 sp88 = (g_FrontMissionCursorY[i] - spC8) + 0x1D;
 
-                DL = textRender(DL, &sp8C, &sp88, sp90, ptrFontBankGothicChars, ptrFontBankGothic, var_s5 | 0x64, viGetX(), viGetY(), 0, 0);
+                DL = textRender(DL, &sp8C, &sp88, sp90, g_FontBankGothicChars, g_FontBankGothic, var_s5 | 0x64, viGetX(), viGetY(), 0, 0);
 
             }
         }
@@ -3881,7 +3880,7 @@ Gfx * frontDrawMissionTitle(Gfx *DL, char *text)
         strcat(text, langGet(getStringID(LTITLE, TITLE_STR_32_JB)));
         x = 0x37;
         y = 0x57;
-        DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xff, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xff, viGetX(), viGetY(), 0, 0);
     }
 
     chapter = frontGetChapterStart(g_FrontMission);
@@ -3894,7 +3893,7 @@ Gfx * frontDrawMissionTitle(Gfx *DL, char *text)
         strcat(text, "\n");
         x = 0x37;
         y = 0x67;
-        DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xff, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xff, viGetX(), viGetY(), 0, 0);
     }
 
     strcpy(text, langGet(getStringID(LTITLE, TITLE_STR_34_PART)));
@@ -3904,7 +3903,7 @@ Gfx * frontDrawMissionTitle(Gfx *DL, char *text)
     strcat(text, "\n");
     x = 0x37;
     y = 0x77;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xff, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xff, viGetX(), viGetY(), 0, 0);
     return DL;
 }
 
@@ -3979,20 +3978,20 @@ Gfx *frontDifficultyRender(Gfx *DL)
     stagename_struct = asc_D_8004F4B4;
 #endif
 
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
     DL = frontDrawMissionTitle(DL, &stagename_struct);
 
     //  "DIFFICULTY:\n"
     text_sp3180 = langGet(getStringID(LTITLE, TITLE_STR_35_DIFFICULTY));
     x = 0x37;
     y = 0x8F;
-    DL = frontPrintText(DL, &x, &y, text_sp3180, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text_sp3180, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     if (g_FrontDifficultyHighlight >= 0)
     {
-        DL = microcode_constructor_related_to_menus(
+        DL = textRenderRect(
             DL,
-            0x7E - (j_text_trigger ? 0x32 : 0),
+            0x7E - (g_TextJapanese ? 0x32 : 0),
             (g_FrontDifficultyHighlight * 0x1E) + 0xB2,
             0xF0,
             (g_FrontDifficultyHighlight * 0x1E) + 0xC3,
@@ -4007,7 +4006,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
     {
         if (i == 0 || unlockedDifficulty >= i)
         {
-            if (j_text_trigger)
+            if (g_TextJapanese)
             {
                 switch (i)
                 {
@@ -4031,11 +4030,11 @@ Gfx *frontDifficultyRender(Gfx *DL)
                 text_sp160 = &stagename_struct;
             }
 
-            textMeasure(&sp98, &sp9C, text_sp160, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&sp98, &sp9C, text_sp160, g_FontZurichChars, g_FontZurich, 0);
 
-            x = 0x82 - (j_text_trigger ? (sp9C - 0xA) : 0);
+            x = 0x82 - (g_TextJapanese ? (sp9C - 0xA) : 0);
             y = (i * 0x1E) + 0xB4;
-            DL = frontPrintText(DL, &x, &y, text_sp160, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, text_sp160, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
             switch (i)
             {
@@ -4055,7 +4054,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
 
             x = 0x96;
             y = (i * 0x1E) + 0xB4;
-            DL = frontPrintText(DL, &x, &y, text_sp160, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, text_sp160, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -4064,7 +4063,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
         x = 0x37;
         y = 0x12C;
         DL = frontPrintText(DL, &x, &y, (u8 *)(g_CounterOpMode ? "2 PLAYER COUNTER-OP\n" : "2 PLAYER CO-OP\n"),
-            ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
     DL = frontAddPreviousTabText(DL);
@@ -4295,7 +4294,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     textbuffer = asc_D_80050074;
 #endif
 
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
     DL = frontDrawMissionTitle(DL, (char*)&textbuffer);
 
     labeltext = langGet(getStringID(LTITLE, TITLE_STR_40_SPECOPS)); /* SPECIAL OPTIONS */
@@ -4303,7 +4302,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     textx = 55;
     texty = 143;
 
-    DL = frontPrintText(DL, &textx, &texty, (s8 *)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8 *)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4315,34 +4314,34 @@ Gfx *frontOptions007Render(Gfx *DL)
     texty = 164;
 
     // Render the bar background with a black color and an opacity of 50/255.
-    DL = microcode_constructor_related_to_menus(DL, 55, 181, 355, 192, 0x00000032);
+    DL = textRenderRect(DL, 55, 181, 355, 192, 0x00000032);
 
     barwidth = (sqrtf(g_Front007Health / 10.0f)) * 300.0f;
 
     // Render the filled portion of the bar with a black color and an opacity of 100/255.
-    DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
+    DL = textRenderRect(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
 
     if (g_Front007HlHealth != 0)
     {
         // Render a black rectangle over the "Enemy health" text to indicate it's highlighted.
-        DL = microcode_constructor_related_to_menus(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
+        DL = textRenderRect(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
     // Render "Enemy health" text.
-    DL = frontPrintText(DL, &textx, &texty, (s8 *)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8 *)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Health * 100.0f));
 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, (char*)&textbuffer, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&textheight, &textwidth, (char*)&textbuffer, g_FontZurichChars, g_FontZurich, 0);
 
     textx = 285 - textwidth;
     texty = 164;
 
     // Render enemy health percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4353,29 +4352,29 @@ Gfx *frontOptions007Render(Gfx *DL)
     textx = 57;
     texty = 197;
 
-    DL = microcode_constructor_related_to_menus(DL, 55, 214, 355, 225, 0x00000032);
+    DL = textRenderRect(DL, 55, 214, 355, 225, 0x00000032);
     barwidth = (sqrtf(g_Front007Damage / 10.0f)) * 300.0f;
-    DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
+    DL = textRenderRect(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
 
     if (g_Front007HlDamage != 0)
     {
-        DL = microcode_constructor_related_to_menus(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
+        DL = textRenderRect(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
-    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Damage * 100.0f));
 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, (char*)&textbuffer, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&textheight, &textwidth, (char*)&textbuffer, g_FontZurichChars, g_FontZurich, 0);
 
     textx = 285 - textwidth;
     texty = 197;
 
     // Render enemy damage percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4386,29 +4385,29 @@ Gfx *frontOptions007Render(Gfx *DL)
     textx = 57;
     texty = 230;
 
-    DL = microcode_constructor_related_to_menus(DL, 55, 247, 355, 258, 0x00000032);
+    DL = textRenderRect(DL, 55, 247, 355, 258, 0x00000032);
     barwidth = (sqrtf(g_Front007Accuracy / 10.0f)) * 300.0f;
-    DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
+    DL = textRenderRect(DL, 55, texty + 17, barwidth + 55, texty + 28, 0x00000064);
 
     if (g_Front007HlAccuracy != 0)
     {
-        DL = microcode_constructor_related_to_menus(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
+        DL = textRenderRect(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
-    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Accuracy * 10.0f));
 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, (char*)&textbuffer, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&textheight, &textwidth, (char*)&textbuffer, g_FontZurichChars, g_FontZurich, 0);
 
     textx = 285 - textwidth;
     texty = 230;
 
     // Render enemy accuracy percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4419,28 +4418,28 @@ Gfx *frontOptions007Render(Gfx *DL)
     textx = 57;
     texty = 263;
 
-    DL = microcode_constructor_related_to_menus(DL, 55, 280, 355, 291, 0x00000032);
-    DL = microcode_constructor_related_to_menus(DL, 55, texty + 17, (s32) (g_Front007Reaction * 300.0f * 1) + 55, texty + 28, 0x00000064);
+    DL = textRenderRect(DL, 55, 280, 355, 291, 0x00000032);
+    DL = textRenderRect(DL, 55, texty + 17, (s32) (g_Front007Reaction * 300.0f * 1) + 55, texty + 28, 0x00000064);
 
     if (g_Front007HlReaction != 0)
     {
-        DL = microcode_constructor_related_to_menus(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
+        DL = textRenderRect(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
-    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     sprintf((char*)&textbuffer, "%d%%\n", (s32) (g_Front007Reaction * 100.0f));
 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, (char*)&textbuffer, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&textheight, &textwidth, (char*)&textbuffer, g_FontZurichChars, g_FontZurich, 0);
 
     textx = 285 - textwidth;
     texty = 263;
 
     // Render enemy reaction speed percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, (s8*)&textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     DL = frontAddStartTabText(DL);
     DL = frontAddPreviousTabText(DL);
@@ -5208,36 +5207,36 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   DL = viFillScreen(DL);
   #endif
   DL = frontSetupMenuBackground(DL);
-  DL = microcode_constructor(DL);
+  DL = textSetupDraw(DL);
   text = langGet(getStringID(LTITLE, TITLE_STR_76_MPOPTIONS));
   x = 0x37;
   y = 0x5f;
-  DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xff, viGetX(), viGetY(), 0, 0);
+  DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xff, viGetX(), viGetY(), 0, 0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_77_PLAYERS));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0x79;
   if (g_MpHlPlayers) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0x78,iStack28 + 0x3c,0x87,0x32);
+    DL = textRenderRect(DL,0x37,0x78,iStack28 + 0x3c,0x87,0x32);
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_78_SCENARIO));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0x8d;
   if (g_MpHlScenario) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0x8c,iStack28 + 0x3c,0x9b,0x32);
+    DL = textRenderRect(DL,0x37,0x8c,iStack28 + 0x3c,0x9b,0x32);
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_79_LEVEL));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0xa1;
   if (g_MpHlStage) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0xa0,iStack28 + 0x3c,0xaf,0x32);
+    DL = textRenderRect(DL,0x37,0xa0,iStack28 + 0x3c,0xaf,0x32);
   }
   if (g_MpCanPickStage) {
     entry = 0xFF;
@@ -5245,14 +5244,14 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_80_GAMELENGTH));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0xb5;
   if (g_MpHlLength) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0xb4,iStack28 + 0x3c,0xc3,0x32);
+    DL = textRenderRect(DL,0x37,0xb4,iStack28 + 0x3c,0xc3,0x32);
   }
   if (g_MpCanPickLength) {
     entry = 0xFF;
@@ -5260,14 +5259,14 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_81_WEAPONS));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0xc9;
   if (g_MpHlWeapons) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,200,iStack28 + 0x3c,0xd7,0x32);
+    DL = textRenderRect(DL,0x37,200,iStack28 + 0x3c,0xd7,0x32);
   }
   if (g_MpCanPickWeapons) {
     entry = 0xFF;
@@ -5275,14 +5274,14 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_82_CHARACTER));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0xdd;
   if (g_MpHlChar) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0xdc,iStack28 + 0x3c,0xeb,0x32);
+    DL = textRenderRect(DL,0x37,0xdc,iStack28 + 0x3c,0xeb,0x32);
   }
   if (g_MpCanPickChar) {
     entry = 0xFF;
@@ -5290,14 +5289,14 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_83_HEALTH));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0xf1;
   if (g_MpHlHandicap) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0xf0,iStack28 + 0x3c,0xff,0x32);
+    DL = textRenderRect(DL,0x37,0xf0,iStack28 + 0x3c,0xff,0x32);
   }
   if (g_MpCanPickHandicap) {
     entry = 0xFF;
@@ -5305,14 +5304,14 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_286_CONTROLSTYLE));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0x105;
   if (g_MpHlControls) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0x104,iStack28 + 0x3c,0x113,0x32);
+    DL = textRenderRect(DL,0x37,0x104,iStack28 + 0x3c,0x113,0x32);
   }
   if (g_MpCanPickControls) {
     entry = 0xFF;
@@ -5320,14 +5319,14 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_84_AIM));
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0x119;
   if (g_MpHlAim) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0x118,iStack28 + 0x3c,0x127,0x32);
+    DL = textRenderRect(DL,0x37,0x118,iStack28 + 0x3c,0x127,0x32);
   }
   if (g_MpCanPickAim) {
     entry = 0xFF;
@@ -5335,17 +5334,17 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   sprintf(acStack12,"%d",g_MpPlayerCount);
   x = 0xa0;
   y = 0x79;
-  DL = frontPrintText(DL, &x, &y, acStack12, ptrFontZurichBoldChars, ptrFontZurichBold, 0xff, viGetX(), viGetY(), 0, 0);
+  DL = frontPrintText(DL, &x, &y, acStack12, g_FontZurichChars, g_FontZurich, 0xff, viGetX(), viGetY(), 0, 0);
 
   text = langGet(g_MpStagePlayerCounts[g_MpScenario].stage);
   x = 0xa0;
   y = 0x8d;
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   text = langGet(g_MpStages[g_MpStage].folder_text_preset);
   x = 0xa0;
@@ -5356,7 +5355,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   text = langGet(g_MpGameLengths[g_MpGameLength].text_preset);
   x = 0xa0;
@@ -5367,7 +5366,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
 
   text = langGet(*(mpWeaponSetGetName()));
@@ -5379,7 +5378,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   text = langGet(g_MpAimSettings[g_MpAimSetting].anonymous_0);
   x = 0xa0;
@@ -5390,17 +5389,17 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   else {
     entry = 0x70;
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,entry,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   // Display: split screen layout (2 players) and hi-res, shared with co-op.
   text = (u8 *)"Display:\n";
-  textMeasure(&iStack24,&iStack28,text,ptrFontZurichBoldChars,ptrFontZurichBold,0);
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0x12d;
   if (g_MpHlDisplay) {
-    DL = microcode_constructor_related_to_menus(DL,0x37,0x12c,iStack28 + 0x3c,0x13b,0x32);
+    DL = textRenderRect(DL,0x37,0x12c,iStack28 + 0x3c,0x13b,0x32);
   }
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   if (g_MpPlayerCount == 2) {
     if (optionsGetSplitStacked()) {
@@ -5415,7 +5414,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   }
   x = 0xa0;
   y = 0x12d;
-  DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   DL = frontAddPreviousTabText(DL);
   DL = frontAddStartTabText(DL);
@@ -5709,7 +5708,7 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg
     spD4 = dynAllocateMatrix();
     spD0 = dynAllocateMatrix();
     spCC = dynAllocateVertices(16);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     guOrtho(spD4, 0.0f, 440.0f, 0.0f, 330.0f, 1.0f, 10.0f, 1.0f);
     guRotate(spD0, 3.1415927f, 1.0f, 0.0f, 0.0f);
@@ -5836,12 +5835,12 @@ Gfx *frontMpCharRender(Gfx *DL)
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
-    DL = microcode_constructor_related_to_menus(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
+    DL = textSetupDraw(DL);
+    DL = textRenderRect(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
 
     if (numplayers >= 3)
     {
-        DL = microcode_constructor_related_to_menus(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
+        DL = textRenderRect(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
     }
 
     for (playernum = 0; playernum < numplayers; playernum++)
@@ -5871,20 +5870,20 @@ Gfx *frontMpCharRender(Gfx *DL)
         if ((g_MpCharChosen[playernum] == 0) && (g_MpCharPortraitSize[playernum] == 0))
         {
             text = langGet(getStringID(LTITLE, TITLE_STR_85_SELECTCHARACTER));
-            textMeasure(&select_char_height, &select_char_width, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&select_char_height, &select_char_width, text, g_FontZurichChars, g_FontZurich, 0);
             select_char_x = panel_center_x - (select_char_width >> 1);
             select_char_y = panel_top + 5;
-            DL = microcode_constructor(DL);
-            DL = frontPrintText(DL, &select_char_x, &select_char_y, (s8 *) text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = textSetupDraw(DL);
+            DL = frontPrintText(DL, &select_char_x, &select_char_y, (s8 *) text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
         
         text = langGet(g_MpChars[g_MpCharCursor[playernum]].text_preset);
-        textMeasure(&name_height, &name_width, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&name_height, &name_width, text, g_FontZurichChars, g_FontZurich, 0);
         portrait_y_base = panel_top;
         name_x = panel_center_x - (name_width >> 1);
         name_y = (portrait_y_base + 0x46) + 0x32;
-        DL = microcode_constructor(DL);
-        DL = frontPrintText(DL, &name_x, &name_y, (s8 *) text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = textSetupDraw(DL);
+        DL = frontPrintText(DL, &name_x, &name_y, (s8 *) text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, panel_center_x - g_MpCharScroll[playernum], portrait_y_base + 0x46, g_MpCharPrevCursor[playernum], g_MpCharPortraitSize[playernum]);
 
         if (((g_MpCharChosen[playernum] == 0) && (g_MpCharPortraitSize[playernum] == 0)) || (g_MpCharPrevCursor[playernum] != g_MpCharCursor[playernum]))
@@ -5921,7 +5920,7 @@ Gfx *frontMpCharRender(Gfx *DL)
         }
     }
 
-    DL = combiner_bayer_lod_perspective(DL);
+    DL = textEndDraw(DL);
 
     return DL;
 }
@@ -6056,12 +6055,12 @@ Gfx * frontMpHandicapRender(Gfx *DL)
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
-    DL = microcode_constructor_related_to_menus(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
+    DL = textSetupDraw(DL);
+    DL = textRenderRect(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
 
     if (spCC >= 3)
     {
-        DL = microcode_constructor_related_to_menus(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
+        DL = textRenderRect(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
     }
 
     for (i = 0; i < spCC; i++)
@@ -6095,27 +6094,27 @@ Gfx * frontMpHandicapRender(Gfx *DL)
         if (g_MpCharChosen[i] == 0)
         {
             text = langGet(getStringID(LTITLE, TITLE_STR_86_SELECTHANDICAP));
-            textMeasure(&spA4, &spA0, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&spA4, &spA0, text, g_FontZurichChars, g_FontZurich, 0);
 
             sp9C = padding2 - (spA0 >> 1);
             sp98 = padding5 - (spA4 >> 1) - 0xf;
 
-            DL = microcode_constructor(DL);
-            DL = frontPrintText(DL, &sp9C, &sp98, (s8*)text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = textSetupDraw(DL);
+            DL = frontPrintText(DL, &sp9C, &sp98, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         {
             text2 = langGet(g_MpHandicaps[g_MpHandicap[i]].text_preset);
-            textMeasure(&sp90, &sp8C, text2, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&sp90, &sp8C, text2, g_FontZurichChars, g_FontZurich, 0);
             sp88 = padding2 - (sp8C >> 1);
             sp84 = padding5 - (sp90 >> 1) + 0xf;
 
-            DL = microcode_constructor(DL);
-            DL = frontPrintText(DL, &sp88, &sp84, (s8*)text2, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = textSetupDraw(DL);
+            DL = frontPrintText(DL, &sp88, &sp84, (s8*)text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
-    DL = combiner_bayer_lod_perspective(DL);
+    DL = textEndDraw(DL);
 
     return DL;
 }
@@ -6314,12 +6313,12 @@ Gfx * frontMpControlsRender(Gfx *DL)
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
-    DL = microcode_constructor_related_to_menus(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
+    DL = textSetupDraw(DL);
+    DL = textRenderRect(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
 
     if (spCC >= 3)
     {
-        DL = microcode_constructor_related_to_menus(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
+        DL = textRenderRect(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
     }
 
     for (i = 0; i < spCC; i++)
@@ -6353,27 +6352,27 @@ Gfx * frontMpControlsRender(Gfx *DL)
         if (g_MpCharChosen[i] == 0)
         {
             text = langGet(getStringID(LTITLE, TITLE_STR_285_SELECTCONTROLSTYLE));
-            textMeasure(&spA4, &spA0, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&spA4, &spA0, text, g_FontZurichChars, g_FontZurich, 0);
 
             sp9C = padding2 - (spA0 >> 1);
             sp98 = padding5 - (spA4 >> 1) - 0xf;
 
-            DL = microcode_constructor(DL);
-            DL = frontPrintText(DL, &sp9C, &sp98, (s8*)text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = textSetupDraw(DL);
+            DL = frontPrintText(DL, &sp9C, &sp98, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         {
             text2 = langGet(g_MpControlStyles[g_MpControlStyle[i]].text_preset);
-            textMeasure(&sp90, &sp8C, text2, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&sp90, &sp8C, text2, g_FontZurichChars, g_FontZurich, 0);
             sp88 = padding2 - (sp8C >> 1);
             sp84 = padding5 - (sp90 >> 1) + 0xf;
 
-            DL = microcode_constructor(DL);
-            DL = frontPrintText(DL, &sp88, &sp84, (s8*)text2, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = textSetupDraw(DL);
+            DL = frontPrintText(DL, &sp88, &sp84, (s8*)text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
-    DL = combiner_bayer_lod_perspective(DL);
+    DL = textEndDraw(DL);
 
     return DL;
 }
@@ -6524,14 +6523,14 @@ Gfx * frontMpStageRender(Gfx *DL)
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     for (i_1 = 0; i_1 != 3; i_1++)
     {
-        DL = microcode_constructor_related_to_menus(DL, 0x25, 0x6c + (i_1 * 0x46), 0x185, 0xa0 + (i_1 * 0x46), 0x101010FF);
+        DL = textRenderRect(DL, 0x25, 0x6c + (i_1 * 0x46), 0x185, 0xa0 + (i_1 * 0x46), 0x101010FF);
     }
 
-    DL = combiner_bayer_lod_perspective(DL);
+    DL = textEndDraw(DL);
 
     gDPSetTextureFilter(DL++, G_TF_POINT);
 
@@ -6595,7 +6594,7 @@ Gfx * frontMpStageRender(Gfx *DL)
         spD8.f[1] += 70.0f;
     }
 
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     count_2 = 0;
 
@@ -6626,19 +6625,19 @@ Gfx * frontMpStageRender(Gfx *DL)
                         var_s2_2 = -0x100;
                     }
 
-                    textMeasure(&sp128, &sp124, langGet(g_MpStages[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, 0);
+                    textMeasure(&sp128, &sp124, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, 0);
 
                     sp130 = var_s6 - 0x1F;
                     sp12C = sp90 - sp128;
 
-                    DL = microcode_constructor_related_to_menus(DL, sp130, sp12C, sp130 + sp124, sp12C + sp128, 0);
+                    DL = textRenderRect(DL, sp130, sp12C, sp130 + sp124, sp12C + sp128, 0);
 
-                    DL = textRender(DL, &sp130, &sp12C, langGet(g_MpStages[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, var_s2_2 | 0xFF, viGetX(), viGetY(), 0, 0);
+                    DL = textRender(DL, &sp130, &sp12C, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, var_s2_2 | 0xFF, viGetX(), viGetY(), 0, 0);
 
                     sp130 = var_s6 - 0x1F;
                     sp12C = sp90 - sp128;
 
-                    DL = textRender(DL, &sp130, &sp12C, langGet(g_MpStages[count_2].select_screen_text_preset), ptrFontBankGothicChars, ptrFontBankGothic, var_s2_2 | 0x64, viGetX(), viGetY(), 0, 0);
+                    DL = textRender(DL, &sp130, &sp12C, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, var_s2_2 | 0x64, viGetX(), viGetY(), 0, 0);
                 }
 
                 var_s6 += 0x55;
@@ -6649,7 +6648,7 @@ Gfx * frontMpStageRender(Gfx *DL)
         }
     }
 
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
 
@@ -6801,13 +6800,13 @@ Gfx * frontMpScenarioRender(Gfx *DL)
     DL = viFillScreen(DL);
 #endif
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     text = langGet(getStringID(LTITLE, TITLE_STR_87_SCENARIO2));
 
     x = 0x37;
     y = 0x66;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     for (i = 0; i < 8; i++)
     {
@@ -6820,16 +6819,16 @@ Gfx * frontMpScenarioRender(Gfx *DL)
 
         text = langGet(g_MpStagePlayerCounts[i].stage);
 
-        textMeasure(&sp7C, &sp78, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&sp7C, &sp78, text, g_FontZurichChars, g_FontZurich, 0);
 
         x = 0x39;
         y = 0x83 + (i * 0x16);
         if ((i + 1) == g_MpScenarioCursor)
         {
-            DL = microcode_constructor_related_to_menus(DL, 0x37, y - 1, sp78 + 0x3C, y + 0xE, 0x32);
+            DL = textRenderRect(DL, 0x37, y - 1, sp78 + 0x3C, y + 0xE, 0x32);
         }
 
-        DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, var_s3, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, var_s3, viGetX(), viGetY(), 0, 0);
     }
 
     DL = frontAddPreviousTabText(DL);
@@ -7040,12 +7039,12 @@ Gfx *frontMpTeamsRender(Gfx *DL)
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
-    DL = microcode_constructor_related_to_menus(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
+    DL = textSetupDraw(DL);
+    DL = textRenderRect(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
 
     if (numPlayers >= 3)
     {
-        DL = microcode_constructor_related_to_menus(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
+        DL = textRenderRect(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
     }
 
     for (playerIndex = 0; playerIndex < numPlayers; playerIndex++)
@@ -7063,12 +7062,12 @@ Gfx *frontMpTeamsRender(Gfx *DL)
             text = langGet(getStringID(LTITLE, TITLE_STR_88_SELECTTEAMS)); // "Select Teams"
             titleText = text;
 
-            textMeasure(&titleHeight, &titleWidth, titleText, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&titleHeight, &titleWidth, titleText, g_FontZurichChars, g_FontZurich, 0);
 
             titleYPos = rowTop + 5;
             titleX = centerX - (titleWidth >> 1);
 
-            DL = frontPrintText(DL, &titleX, &titleYPos, titleText, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &titleX, &titleYPos, titleText, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         if (g_MpScenario == SCENARIO_2v2)
@@ -7098,18 +7097,18 @@ Gfx *frontMpTeamsRender(Gfx *DL)
             textColour = 0x0000FFFF;
         }
 
-        textMeasure(&textHeight, &textWidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&textHeight, &textWidth, text, g_FontZurichChars, g_FontZurich, 0);
 
         textX = centerX - (textWidth >> 1);
         textY = (rowTop - (textHeight >> 1)) + 0x46;
 
         if ((playerIndex != g_MpTeamsCursor) || ((playerIndex == g_MpTeamsCursor) && (((s32) g_MpTeamsBlinkTimer) < 0xA)))
         {
-            DL = frontPrintText(DL, &textX, &textY, text, ptrFontZurichBoldChars, ptrFontZurichBold, textColour, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &textX, &textY, text, g_FontZurichChars, g_FontZurich, textColour, viGetX(), viGetY(), 0, 0);
         }
     }
 
-    DL = combiner_bayer_lod_perspective(DL);
+    DL = textEndDraw(DL);
 
     return DL;
 }
@@ -7146,7 +7145,7 @@ void frontLoadBriefing(void)
     // what is this
     argg *= 879;
 
-    langLoadToBank(langGetLangBankIndexFromStagenum(g_FrontMissions[g_FrontMission].stage_id), (u8 *)temp_s0, argg);
+    langLoadToBank(langGetBankForStage(g_FrontMissions[g_FrontMission].stage_id), (u8 *)temp_s0, argg);
 
     // what is this
     for (argg = 0; argg < OBJECTIVES_MAX; argg++)
@@ -7174,7 +7173,7 @@ void frontBriefingEnter(void)
 
 void frontBriefingLeave(void)
 {
-  langClearBank(langGetLangBankIndexFromStagenum(g_FrontMissions[g_FrontMission].stage_id));
+  langClearBank(langGetBankForStage(g_FrontMissions[g_FrontMission].stage_id));
   if (-1 < g_FrontNextMenu) {
     frontFreeFolders();
   }
@@ -7303,28 +7302,28 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
 
             sp94 = 0;
             sp90 = 0;
-            textMeasure(&sp94, &sp90, (u8*)arg2, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&sp94, &sp90, (u8*)arg2, g_FontZurichChars, g_FontZurich, 0);
 
 
             sp8C = 0x37;
             sp88 = (sp94 * var_fp) + arg1 + (i*0);
-            DL = frontPrintText(DL, &sp8C, &sp88, (s8*)arg2, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &sp8C, &sp88, (s8*)arg2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
             sp8C = 0x4B;
             sp88 = (sp94 * var_fp) + arg1 + (i*0);
 
             if (arg3 != 0)
             {
-                setTextWordWrap(2);
-                textWrap(0xDC, (s8*)text, (s8*)arg2, ptrFontZurichBoldChars, ptrFontZurichBold);
-                setTextWordWrap(0);
+                textSetWordWrap(2);
+                textWrap(0xDC, (s8*)text, (s8*)arg2, g_FontZurichChars, g_FontZurich);
+                textSetWordWrap(0);
             }
             else
             {
-                textWrap(0x140, (s8*)text, (s8*)arg2, ptrFontZurichBoldChars, ptrFontZurichBold);
+                textWrap(0x140, (s8*)text, (s8*)arg2, g_FontZurichChars, g_FontZurich);
             }
 
-            DL = frontPrintText(DL, &sp8C, &sp88, (s8*)arg2,  ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &sp8C, &sp88, (s8*)arg2,  g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
             if (arg3)
             {
@@ -7345,7 +7344,7 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
                 sp8C = 0x136;
                 sp88 = (sp94 * var_fp) + arg1 + (i*0);
 
-                DL = frontPrintText(DL, &sp8C, &sp88, (s8*)text, ptrFontZurichBoldChars, ptrFontZurichBold, var_s2, viGetX(), viGetY(), 0, 0);
+                DL = frontPrintText(DL, &sp8C, &sp88, (s8*)text, g_FontZurichChars, g_FontZurich, var_s2, viGetX(), viGetY(), 0, 0);
             }
 
             var_fp += textCountLines(arg2);
@@ -7381,7 +7380,7 @@ Gfx *frontBriefingRender(Gfx *DL)
     sp4C = asc_D_80050C54;
 #endif
 
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
     DL = frontDrawMissionTitle(DL, (char*)&sp4C);
 
     switch (g_FrontBriefingPage)
@@ -7409,7 +7408,7 @@ Gfx *frontBriefingRender(Gfx *DL)
 
     spC08 = 0x37;
     spC04 = 0x8F;
-    DL = frontPrintText(DL, &spC08, &spC04, (s8*)spC0C, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &spC08, &spC04, (s8*)spC0C, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     if (g_FrontBriefingPage == BRIEFING_TITLE)
     {
@@ -7438,10 +7437,10 @@ Gfx *frontBriefingRender(Gfx *DL)
 
         spC08 = 0x37;
         spC04 = 0xA7;
-        textWrap(0x140, (s8*)spC0C, (s8*)&sp4C, ptrFontZurichBoldChars, ptrFontZurichBold);
-        setTextOverlapCorrection(8);
-        DL = frontPrintText(DL, &spC08, &spC04, (s8*)&sp4C, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
-        setTextOverlapCorrection(-1);
+        textWrap(0x140, (s8*)spC0C, (s8*)&sp4C, g_FontZurichChars, g_FontZurich);
+        textSetOverlapCorrection(8);
+        DL = frontPrintText(DL, &spC08, &spC04, (s8*)&sp4C, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+        textSetOverlapCorrection(-1);
     }
 
     DL = frontAddStartTabText(DL);
@@ -7608,21 +7607,21 @@ Gfx * frontDebriefRender(Gfx *DL)
     DL = viFillScreen(DL);
     #endif
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
     DL = frontDrawMissionTitle(DL, &stagename);
 
     text = langGet(getStringID(LTITLE, TITLE_STR_98_REPORT)); //REPORT:*
     x = 0x37;
     y = 0x8F;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     text = langGet(getStringID(LTITLE, TITLE_STR_99_MISSIONSTATUS)); //Mission status:*
     x2 = 0;
     y2 = 0;
-    textMeasure(&y2, &x2, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&y2, &x2, text, g_FontZurichChars, g_FontZurich, 0);
     x = 0x37;
     y = 0xA7;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     if (g_FrontBondKilled)
     {
@@ -7648,7 +7647,7 @@ Gfx * frontDebriefRender(Gfx *DL)
 
     x = x2 + 0x37;
     y = 0xA7;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, phi_v1, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, phi_v1, viGetX(), viGetY(), 0, 0);
 
     // Counter-op: Bond wins by completing the mission, the guard player by
     // stopping him. Name the controller too, as either can be Bond.
@@ -7661,10 +7660,10 @@ Gfx * frontDebriefRender(Gfx *DL)
                 (bondwins ? coopPlayerPerson(COUNTEROP_BOND) : coopPlayerPerson(COUNTEROP_GUARD)) + 1);
         x2 = 0;
         y2 = 0;
-        textMeasure(&y2, &x2, langGet(getStringID(LTITLE, TITLE_STR_98_REPORT)), ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&y2, &x2, langGet(getStringID(LTITLE, TITLE_STR_98_REPORT)), g_FontZurichChars, g_FontZurich, 0);
         x = x2 + 0x37 + 0x10;
         y = 0x8F;
-        DL = frontPrintText(DL, &x, &y, winner, ptrFontZurichBoldChars, ptrFontZurichBold, bondwins ? 0xFF : (0x78000000 | 0xFF), viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, winner, g_FontZurichChars, g_FontZurich, bondwins ? 0xFF : (0x78000000 | 0xFF), viGetX(), viGetY(), 0, 0);
     }
 
     DL = frontDrawObjectives(DL, 0xBF, &stagename, 1);
@@ -7833,7 +7832,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
         {
             sprintf(text, "PLAYER %d\n", i + 1);
         }
-        DL = frontPrintText(DL, &x, &y, (s8 *)text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, (s8 *)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
     // Counter-op adds the guard player's bodies used and damage to Bond.
@@ -7851,11 +7850,11 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
         y = rowy;
         if (row < 4)
         {
-            DL = frontPrintText(DL, &x, &y, langGet(getStringID(LTITLE, labels[row])), ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, langGet(getStringID(LTITLE, labels[row])), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
         else
         {
-            DL = frontPrintText(DL, &x, &y, (s8 *)((row == 4) ? "Bodies used:\n" : "Damage to Bond:\n"), ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, (s8 *)((row == 4) ? "Bodies used:\n" : "Damage to Bond:\n"), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         for (i = 0; i < 2; i++)
@@ -7901,7 +7900,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
 
             x = columns[i];
             y = rowy;
-            DL = frontPrintText(DL, &x, &y, (s8 *)text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, (s8 *)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -7942,7 +7941,7 @@ Gfx *frontStatsRender(Gfx *DL)
     DL = viSetFillColor(DL, 0,0,0);
     DL = viFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     missiontimer = lvGetMissionTime60();
     killcount = statsGetKills();
@@ -7963,16 +7962,16 @@ Gfx *frontStatsRender(Gfx *DL)
     text = langGet(getStringID(LTITLE, TITLE_STR_104_STATS)); //STATISTICS:*
     x = 0x37;
     y = 0x8F;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     x2 = 0;
     y2 = 0;
-    textMeasure(&y2, &x2, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&y2, &x2, text, g_FontZurichChars, g_FontZurich, 0);
 
     text = langGet(getStringID(LTITLE, TITLE_STR_105_TIME)); //Time:*
     x = 0x37;
     y = 0xA7;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     besttime = fileGetSaveStageDifficultyTime( fileGetSaveForFoldernum(g_FrontFolder), g_FrontMissions[g_FrontMission].mission_num, g_FrontDifficulty);
     if ((besttime == 0) || (!(besttime < 0x3FF))) {
@@ -7990,12 +7989,12 @@ Gfx *frontStatsRender(Gfx *DL)
     sprintf(stagename, "%02d:%02d", missiontime / 60, missiontime % 60);
     x = 0x82;
     y = 0xA7;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     if (g_NewCheatUnlocked) {
         stagename[0] = '\0';
         sprintf(stagename, "     [%s]", langGet(getStringID(LTITLE, TITLE_STR_275_NEWCHEATAVAILABLE))); //New Cheat Available
-        DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xA00000FF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xA00000FF, viGetX(), viGetY(), 0, 0);
     }
 
 
@@ -8003,12 +8002,12 @@ Gfx *frontStatsRender(Gfx *DL)
         text = langGet(getStringID(LTITLE, TITLE_STR_274_TARGET)); //Target:
         x = 0x37;
         y = y2 + 0xA9;
-        DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         stagename[0] = '\0';
         sprintf(stagename, "%02d:%02d", targettime / 60, targettime % 60);
         x = 0x82;
         y = y2 + 0xA9;
-        DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         if (besttime >= 0) {
             if (besttime < 0x3FF) {
                 stagename[0] = '\0';
@@ -8018,7 +8017,7 @@ Gfx *frontStatsRender(Gfx *DL)
                 else {
                     sprintf(stagename, "");
                 }
-                DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+                DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
             }
         }
     }
@@ -8028,12 +8027,12 @@ Gfx *frontStatsRender(Gfx *DL)
                 text = langGet(getStringID(LTITLE, TITLE_STR_273_BESTTIME)); //Best Time:
                 x = 0x37;
                 y = y2 + 0xA9;
-                DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+                DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
                 stagename[0] = '\0';
                 sprintf(stagename, "%02d:%02d", besttime / 60, besttime % 60);
                 x = 0x82;
                 y = y2 + 0xA9;
-                DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+                DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
             }
         }
     }
@@ -8048,7 +8047,7 @@ Gfx *frontStatsRender(Gfx *DL)
     text = langGet(getStringID(LTITLE, TITLE_STR_106_ACCURACY)); //Accuracy:*
     x = 0x37;
     y = 0xCC;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     if (shotsfired > 0) {
         hitPct = (hitshots * 100.0f) / shotsfired;
     }
@@ -8058,13 +8057,13 @@ Gfx *frontStatsRender(Gfx *DL)
     sprintf(stagename, "%.1f%%",  hitPct);
     x = 0x82;
     y = 0xCC;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     text = langGet(getStringID(LTITLE, TITLE_STR_107_WEAPONOFCHOICE)); //Weapon of choice:*
     x = 0x37;
     y = 0xDC;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     strcpy(stagename, frontGetFavWeaponText(0, 0));
     if ((g_MpFavWeapon[0][0] > 0) && (g_MpFavWeapon[0][1] == g_MpFavWeapon[0][0]))
     {
@@ -8073,68 +8072,68 @@ Gfx *frontStatsRender(Gfx *DL)
     }
     x = 0xBE;
     y = 0xDC;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     text = langGet(getStringID(LTITLE, TITLE_STR_108_SHOTTOTAL)); //Shot total:*
     x = 0x37;
     y = 0xF4;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     sprintf(stagename, "%d", shotsfired);
     x = 0x82;
     y = 0xF4;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     text = langGet(getStringID(LTITLE, TITLE_STR_109_HEADHITS)); //Head hits:*
     x = 0xB4;
     y = 0xF4;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     sprintf(stagename, "%d (%d%%)", headshots, (s32)(mathFloor(((headshots * 100.0f) / allhits) + 0.5f)));
     x = 0x12C;
     y = 0xF4;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     text = langGet(getStringID(LTITLE, TITLE_STR_110_BODYHITS)); //Body hits:*
     x = 0xB4;
     y = y2 + 0xF4;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     sprintf(stagename, "%d (%d%%)", bodyshots, (s32)mathFloor(((bodyshots * 100.0f) / allhits) + 0.5f));
     x = 0x12C;
     y = y2 + 0xF4;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     text = langGet(getStringID(LTITLE, TITLE_STR_111_LIMBHITS)); //Limb hits:*
     x = 0xB4;
     y = (y2 * 2) + 0xF4;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     sprintf(stagename, "%d (%d%%)", limbshots, (s32)mathFloor(((limbshots * 100.0f) / allhits) + 0.5f));
     x = 0x12C;
     y = (y2 * 2) + 0xF4;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     text = langGet(getStringID(LTITLE, TITLE_STR_112_OTHER)); //Others:*
     x = 0xB4;
     y = (y2 * 3) + 0xF4;
     temp = reg5 + reg4;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     sprintf(stagename, "%d (%d%%)", temp, (s32)mathFloor(((temp * 100.0f) / allhits) + 0.5f));
     x = 0x12C;
     y = (y2 * 3) + 0xF4;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     text = langGet(getStringID(LTITLE, TITLE_STR_113_KILLTOTAL)); //Kill total:*
     x = 0x37;
     y = y2 + 0xF4;
-    DL = frontPrintText(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     sprintf(stagename, "%d", killcount);
     x = 0x82;
     y = y2 + 0xF4;
-    DL = frontPrintText(DL, &x, &y, stagename, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 tabs:
     DL = frontAddNextTabText(DL);
@@ -8315,30 +8314,30 @@ Gfx * frontCheatRender(Gfx *DL)
     DL = viFillScreen(DL);
 #endif
     DL = frontSetupMenuBackground(DL);
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
 
     for (var_fp = 0; var_fp < ((g_CheatMenuCount >= 0xD) ? 0xC : g_CheatMenuCount); var_fp++)
     {
         temp_v0 = cheatGetName(g_CheatMenuList[var_fp]);
-        textMeasure(&sp80, &sp7C, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&sp80, &sp7C, temp_v0, g_FontZurichChars, g_FontZurich, 0);
 
         sp88 = 0x37;
         sp84 = (var_fp * 0x14) + 0x35;
         if ((var_fp == g_CheatMenuCursor) && (frontCheckCursorOnPreviousTab() == 0))
         {
-            DL = microcode_constructor_related_to_menus(DL, sp88 - 2, sp84 - 1, sp88 + sp7C + 5, sp84 + 0xE, 0x32);
+            DL = textRenderRect(DL, sp88 - 2, sp84 - 1, sp88 + sp7C + 5, sp84 + 0xE, 0x32);
         }
 
-        DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &sp88, &sp84, temp_v0, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
         strID  = (g_CheatActivated[g_CheatMenuList[var_fp]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
         temp_v0 = langGet(strID);
-        textMeasure(&sp80, &sp7C, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&sp80, &sp7C, temp_v0, g_FontZurichChars, g_FontZurich, 0);
 
         sp88 = 0xB3;
         sp84 = (var_fp * 0x14) + 0x35;
 
-        DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, (g_CheatActivated[g_CheatMenuList[var_fp]]) ? 0xA00000FF : 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &sp88, &sp84, temp_v0, g_FontZurichChars, g_FontZurich, (g_CheatActivated[g_CheatMenuList[var_fp]]) ? 0xA00000FF : 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
     if (g_CheatMenuCount >= 0xd)
@@ -8346,26 +8345,26 @@ Gfx * frontCheatRender(Gfx *DL)
         for (var_fp = 0; var_fp < (g_CheatMenuCount - 0xC); var_fp++)
         {
             temp_v0 = cheatGetName(g_CheatMenuList[var_fp + 12]);
-            textMeasure(&sp80, &sp7C, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&sp80, &sp7C, temp_v0, g_FontZurichChars, g_FontZurich, 0);
 
             sp88 = 0xDC;
             sp84 = (var_fp * 0x14) + 0x35;
             if ((var_fp + 0xc == g_CheatMenuCursor) && (frontCheckCursorOnPreviousTab() == 0))
             {
-                DL = microcode_constructor_related_to_menus(DL, sp88 - 2, sp84 - 1, sp88 + sp7C + 5, sp84 + 0xE, 0x32);
+                DL = textRenderRect(DL, sp88 - 2, sp84 - 1, sp88 + sp7C + 5, sp84 + 0xE, 0x32);
             }
 
-            DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &sp88, &sp84, temp_v0, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
             strID  = (g_CheatActivated[g_CheatMenuList[var_fp + 12]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
             temp_v0 = langGet(strID);
-            textMeasure(&sp80, &sp7C, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+            textMeasure(&sp80, &sp7C, temp_v0, g_FontZurichChars, g_FontZurich, 0);
 
             sp88 = 0x158;
             sp84 = (var_fp * 0x14) + 0x35;
             strID = (g_CheatActivated[g_CheatMenuList[var_fp + 12]]) ? 0xA00000FF : 0xFF;
 
-            DL = frontPrintText(DL, &sp88, &sp84, temp_v0, ptrFontZurichBoldChars, ptrFontZurichBold, strID, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &sp88, &sp84, temp_v0, g_FontZurichChars, g_FontZurich, strID, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -8414,22 +8413,22 @@ Gfx *frontNoControllerRender(Gfx *DL)
     if ((conConnected & 2)) {
         numContCon++;
     }
-    DL = microcode_constructor(screenClearBlack(DL));
+    DL = textSetupDraw(screenClearBlack(DL));
 
 
     if ((numContCon == 0) || (numContCon == 1) || (numContCon == 2) || (numContCon == 3)) {
         text = langGet(getStringID(LTITLE, TITLE_STR_118_NOCONT)); //NO CONTROLLER IN CONTROLLER SOCKET 1
     }
-    textMeasure(&y2, &x2, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&y2, &x2, text, g_FontZurichChars, g_FontZurich, 0);
     x = 0xDC - (x2 >> 1);
     y = 0x99 - (y2 >> 1);
 #ifdef BUGFIX_R1
-    if (j_text_trigger) {
-        DL = textRenderOutlined(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, -1, 0x8000FF, viGetX(), viGetY(), 0, 0);
+    if (g_TextJapanese) {
+        DL = textRenderOutlined(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, 0x8000FF, viGetX(), viGetY(), 0, 0);
     }
     else {
 #endif
-        DL = textRender(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, -1, viGetX(), viGetY(), 0, 0);
+        DL = textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
 #ifdef BUGFIX_R1
     }
 #endif
@@ -8438,16 +8437,16 @@ Gfx *frontNoControllerRender(Gfx *DL)
     if ((numContCon == 0) || (numContCon == 1) || (numContCon == 2) || (numContCon == 3)) {
         text = langGet(getStringID(LTITLE, TITLE_STR_119_ATTACHCONT)); //PLEASE POWER OFF AND ATTACH A CONTROLLER
     }
-    textMeasure(&y2, &x2, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&y2, &x2, text, g_FontZurichChars, g_FontZurich, 0);
     x = 0xDC - (x2 >> 1);
     y = 0xB1 - (y2 >> 1);
 #ifdef BUGFIX_R1
-    if (j_text_trigger) {
-        DL = textRenderOutlined(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, -1, 0x8000FF, viGetX(), viGetY(), 0, 0);
+    if (g_TextJapanese) {
+        DL = textRenderOutlined(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, 0x8000FF, viGetX(), viGetY(), 0, 0);
     }
     else {
 #endif
-        DL = textRender(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, -1, viGetX(), viGetY(), 0, 0);
+        DL = textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
 #ifdef BUGFIX_R1
     }
 #endif
@@ -8606,7 +8605,7 @@ void frontCastEnter(void)
         // Replace Laser with PP7 if Aztec has not been completed on Secret Agent or 00 Agent on any folder.
         if (weaponProp == PROP_CHRLASER)
         {
-            if (check_aztec_completed_any_folder_secret_00() == FALSE)
+            if (fileIsAztecCompletedOnSecretOr00AnyFolder() == FALSE)
             {
                 weaponProp = PROP_CHRWPPK;
             }
@@ -8714,25 +8713,25 @@ void frontCastTick(void)
                 continue;
             }
 
-            if ((g_CastChars[g_CastIndex].body == BODY_Moonraker_Elite_1_Male) && (check_aztec_completed_any_folder_secret_00()) == 0)
+            if ((g_CastChars[g_CastIndex].body == BODY_Moonraker_Elite_1_Male) && (fileIsAztecCompletedOnSecretOr00AnyFolder()) == 0)
             {
                 g_CastIndex++;
                 continue;
             }
 
-            if ((g_CastChars[g_CastIndex].body == BODY_Moonraker_Elite_2_Female) && (check_aztec_completed_any_folder_secret_00() == 0))
+            if ((g_CastChars[g_CastIndex].body == BODY_Moonraker_Elite_2_Female) && (fileIsAztecCompletedOnSecretOr00AnyFolder() == 0))
             {
                 g_CastIndex++;
                 continue;
             }
 
-            if ((g_CastChars[g_CastIndex].body == BODY_Mayday) && (check_aztec_completed_any_folder_secret_00() == 0 && (randomGetNext() % 0x2710U)))
+            if ((g_CastChars[g_CastIndex].body == BODY_Mayday) && (fileIsAztecCompletedOnSecretOr00AnyFolder() == 0 && (randomGetNext() % 0x2710U)))
             {
                 g_CastIndex++;
                 continue;
             }
 
-            if ((g_CastChars[g_CastIndex].body == BODY_Jaws) && (check_aztec_completed_any_folder_secret_00() == 0 && (randomGetNext() % 0x2710U)))
+            if ((g_CastChars[g_CastIndex].body == BODY_Jaws) && (fileIsAztecCompletedOnSecretOr00AnyFolder() == 0 && (randomGetNext() % 0x2710U)))
             {
                 g_CastIndex++;
                 continue;
@@ -9023,43 +9022,43 @@ Gfx *frontCastRender(Gfx *DL)
     gDPSetTexturePersp(DL++, G_TP_PERSP);
     gDPSetTextureLOD(DL++, G_TL_LOD);
  
-    DL = microcode_constructor(DL);
+    DL = textSetupDraw(DL);
  
     if (g_CastFull == FALSE)
     {
         text = langGet( (u16)g_CastChars[g_CastIndex].text1);
  
-        textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+        textMeasure(&textheight, &textwidth, text, g_FontZurichChars, g_FontZurich, 0);
  
         x = 315 - textwidth / 2;
         y = 108;
  
-        DL = microcode_constructor_related_to_menus(DL, x, 108, x + textwidth + 1, textheight + 109, 0);
+        DL = textRenderRect(DL, x, 108, x + textwidth + 1, textheight + 109, 0);
  
-        DL = textRender(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, (u32)(255.0f * fade) | 0xFFFFFF00, viGetX(), viGetY(), 0, 0);
+        DL = textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, (u32)(255.0f * fade) | 0xFFFFFF00, viGetX(), viGetY(), 0, 0);
     }
  
     text = langGet((u16)g_CastChars[g_CastIndex].text2);
  
-    textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&textheight, &textwidth, text, g_FontZurichChars, g_FontZurich, 0);
  
     x = 315 - textwidth / 2;
     y = 152;
  
-    DL = microcode_constructor_related_to_menus(DL, x, 152, x + textwidth + 1, textheight + 153, 0);
+    DL = textRenderRect(DL, x, 152, x + textwidth + 1, textheight + 153, 0);
  
-    DL = textRender(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, (u32)(255.0f * fade) | 0xFFFFFF00, viGetX(), viGetY(), 0, 0);
+    DL = textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, (u32)(255.0f * fade) | 0xFFFFFF00, viGetX(), viGetY(), 0, 0);
  
     text = langGet((u16)g_CastChars[g_CastIndex].text3);
  
-    textMeasure(&textheight, &textwidth, text, ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+    textMeasure(&textheight, &textwidth, text, g_FontZurichChars, g_FontZurich, 0);
  
     x = 315 - textwidth / 2;
     y = 174;
  
-    DL = microcode_constructor_related_to_menus(DL, x, 174, x + textwidth + 1, textheight + 175, 0);
+    DL = textRenderRect(DL, x, 174, x + textwidth + 1, textheight + 175, 0);
  
-    return textRender(DL, &x, &y, text, ptrFontZurichBoldChars, ptrFontZurichBold, (u32)(255.0f * fade) | 0xFFFFFF00, viGetX(), viGetY(), 0, 0);
+    return textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, (u32)(255.0f * fade) | 0xFFFFFF00, viGetX(), viGetY(), 0, 0);
 }
 
 

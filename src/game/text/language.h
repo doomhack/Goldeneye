@@ -15,13 +15,13 @@ struct jpncacheitem {
 };
 
 
-extern s32 j_text_trigger;
+extern s32 g_TextJapanese;
 
 void langLoadToAddr(u32 id);
 void langTick(void);
 u8 * langGet(s32 slotID);
 void langLoadToBank(int id, u8 *target, int size);
-LEVELID langGetLangBankIndexFromStagenum(LEVELID level);
+LEVELID langGetBankForStage(LEVELID level);
 struct jpncharpixels *langGetJpnCharPixels(s32 codepoint);
 
 #endif

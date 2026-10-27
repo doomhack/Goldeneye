@@ -18,7 +18,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | --- | --- | --- |
 | `level/` | Level lifetime: stage load, the per-frame tick and render, the game timers (`lv.c`), frame timing (`frametiming.c`), one-time game init (`game.c`). See [subsystems/level.md](subsystems/level.md) | `lv.c`, `frametiming.c`, `game.c` |
 | `menu/` | Front end and in-game menus: the front-end menus and multiplayer setup (`front.c`), the intro sequence (`title.c`), cheats (`cheat.c`), multiplayer weapon sets (`mp_weapon.c`), the watch (pause) menu and per-player options (`watchmenu.c`), the multiplayer pause menu (`mpmenu.c`). See [subsystems/menu.md](subsystems/menu.md) | `front.c`, `title.c`, `cheat.c`, `mp_weapon.c`, `watchmenu.c`, `mpmenu.c` |
-| `save/` | EEPROM save files and 007 mode settings | `file.c`, `file2.c`, `crc.c` |
+| `save/` | Save files in the cartridge EEPROM: folders, completion, best times, cheats, settings. See [subsystems/save.md](subsystems/save.md) | `file.c` |
 | `player/` | Bond: the player list (`player.c`), camera helpers and player globals (`bondview.c`), movement, collision, camera modes, the watch, HUD and health (`bondview2.c`), level start (`bondview_r.c`), head bob (`bondhead.c`); inventory, guns and firing (`bondinv.c`, `gun.c`, `gunfire.c`). See [subsystems/player.md](subsystems/player.md) and [subsystems/weapons.md](subsystems/weapons.md) | `player.c`, `bondview.c`, `bondview2.c`, `bondinv.c`, `gun.c`, `gunfire.c` |
 | `hud/` | On-screen overlays: radar (`radar.c`), health and armour bars and the watch screen shapes (`healthbar.c`), the death blood effect (`blood.c`), bullet sparks (`sparks.c`). See [subsystems/hud.md](subsystems/hud.md) | `radar.c`, `healthbar.c`, `blood.c`, `sparks.c` |
 | `chr/` | Guards and other characters: slots and the per-frame tick (`chr.c`), actions such as patrolling, attacking and dying (`chraction.c`), the AI script interpreter (`chrai.c`), the global AI scripts (`chraidata.c`), bodies and heads (`body.c`). See [subsystems/guards.md](subsystems/guards.md) | `chr.c`, `chraction.c`, `chrai.c`, `body.c` |
@@ -28,10 +28,10 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `world/` | The level geometry: rooms and portals, visibility and drawing the rooms (`bg.c`), the room matrix cache (`roommtx.c`), fog (`bgfog.c`), sky (`sky.c`), water (`water.c`), light fixtures (`lightfixture.c`). See [subsystems/world.md](subsystems/world.md) | `bg.c`, `bgfog.c`, `sky.c` |
 | `model/` | Model files, skeletons, animation, joint lists and the model slots. `cobjdata.c`, `gobjdata.c` and `pobjdata.c` hold the tables of character, gun and prop model files. See [subsystems/models.md](subsystems/models.md) | `model.c`, `anim.c`, `jointlist.c`, `modelfile.c` |
 | `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, per-instance vertex copies. See [subsystems/rendering.md](subsystems/rendering.md) | `image.c`, `tex.c`, `texselect.c`, `dyn.c`, `rsp.c`, `zbuf.c`, `vtxstore.c`, `texrect.c` |
-| `text/` | Text rendering and language banks | `textrelated.c`, `language.c` |
+| `text/` | Strings and the language banks (`language.c`), fonts and drawing text (`text.c`). See [subsystems/text.md](subsystems/text.md) | `language.c`, `text.c` |
 | `math/` | Matrices, quaternions, trig, interpolation, gravity. See [subsystems/math.md](subsystems/math.md) | `matrix.c`, `quaternion.c`, `trig.c` |
 | `asset/` | Loading files from ROM and decompressing them. See [subsystems/assets-memory.md](subsystems/assets-memory.md) | `fileload.c`, `rzip.c` |
-| `audio/` | Music track choice per level and multiplayer music | `music_0D2720.c`, `mp_music.c` |
+| `audio/` | Which music plays in a level and when it changes. See [subsystems/audio.md](subsystems/audio.md) | `levelmusic.c` |
 | `replay/` | Rare's demo playback, and the test hooks the replay tests use | `ramromreplay.c`, `testhooks.c` |
 | `debug/` | Debug menu, free camera, speed graph, host link (Indy) code. To be deleted in Phase 2 | `debugmenu_handler.c`, `debug_camera.c` |
 
@@ -54,5 +54,5 @@ that subsystem's main file.
 | `gfx/tex.c` | Also the surface sound and bullet impact tables |
 | `player/bondview.c` | The camera helpers (`cam*`) and the player globals, not Bond's view as a whole |
 | `player/bondview2.c` | Most of the player: movement, camera modes, the watch, health, the HUD, co-op and counter-op |
-| `audio/mp_music.c` | The mission state (playing, cutscene, ended) and the music slots, used in solo too |
+| `audio/levelmusic.c` | The level music state and the music slots (was `mp_music.c`), used in solo too |
 | `debug/deb_loadallmodels.c` | Debug model loading, but also `init_obj_register_difficulty_vals`, which guard setup calls on every level |

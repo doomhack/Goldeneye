@@ -45,7 +45,7 @@
 #include "game/debug/debugmenu_handler.h"
 #include "fr.h"
 #include "assets/obseg/text/LgunE.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/chr/chrai.h"
 #include "game/model/model.h"
 #include "game/menu/watchmenu.h"
@@ -5843,7 +5843,7 @@ Gfx *gunDrawHudString(Gfx *gdl, s8 *text, s32 x, s32 halign, s32 y, s32 valign, 
     textwidth = 0;
     textheight = 0;
 
-    textMeasure(&textheight, &textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
 
     if (halign == HUDHALIGN_LEFT) { // left
 		x2 = x + textwidth;
@@ -5867,12 +5867,12 @@ Gfx *gunDrawHudString(Gfx *gdl, s8 *text, s32 x, s32 halign, s32 y, s32 valign, 
 		y1 = y2 - textheight;
 	}
 
-    gdl = draw_blackbox_to_screen(gdl, &x1, &y1, &x2, &y2);
+    gdl = textRenderBlackBox(gdl, &x1, &y1, &x2, &y2);
 
     if (outline) {
-        gdl = textRenderOutlined(gdl, &x1, &y1, text, ptrFontBankGothicChars, ptrFontBankGothic, -1, 0x646464FF, (s32) viGetX(), viGetY(), 0, 0);
+        gdl = textRenderOutlined(gdl, &x1, &y1, text, g_FontBankGothicChars, g_FontBankGothic, -1, 0x646464FF, (s32) viGetX(), viGetY(), 0, 0);
     } else {
-        gdl = textRender(gdl, &x1, &y1, text, ptrFontBankGothicChars, ptrFontBankGothic, 0xFF00B0, (s32) viGetX(), viGetY(), 0, 0);
+        gdl = textRender(gdl, &x1, &y1, text, g_FontBankGothicChars, g_FontBankGothic, 0xFF00B0, (s32) viGetX(), viGetY(), 0, 0);
     }
 
     return gdl;
@@ -5956,7 +5956,7 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                         textwidth_r = ((u8 *)imageoffset_r)[4];
                     }
 
-                    gdl = microcode_constructor(gdl);
+                    gdl = textSetupDraw(gdl);
 
                     if (weaponHasFlag(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
@@ -5993,7 +5993,7 @@ Gfx *hudRenderAmmo(Gfx *gdl)
 #endif
                     }
 
-                    gdl = combiner_bayer_lod_perspective(gdl);
+                    gdl = textEndDraw(gdl);
                 }
             }
 
@@ -6022,7 +6022,7 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                         textwidth_l = ((u8 *)imageoffset_l)[4];
                     }
 
-                    gdl = microcode_constructor(gdl);
+                    gdl = textSetupDraw(gdl);
 
                     if (weaponHasFlag(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
@@ -6059,7 +6059,7 @@ Gfx *hudRenderAmmo(Gfx *gdl)
 #endif
                     }
 
-                    gdl = combiner_bayer_lod_perspective(gdl);
+                    gdl = textEndDraw(gdl);
                 }
             }
         }
@@ -6114,7 +6114,7 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
                 textwidth = ((u8 *)imageoffset)[4];
             }
 
-            gdl = microcode_constructor(gdl);
+            gdl = textSetupDraw(gdl);
 
             if (weaponHasFlag(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
             {
@@ -6152,7 +6152,7 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
 #endif
             }
 
-            gdl = combiner_bayer_lod_perspective(gdl);
+            gdl = textEndDraw(gdl);
         }
     }
 
