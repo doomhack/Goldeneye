@@ -1,3 +1,8 @@
+/**
+ * Level start for a player: playerApplyIntro reads the intro section of the setup file
+ * (spawn pad, starting weapons and ammo, intro cameras). Also co-op spawn points and
+ * loading projectile models. See docs/subsystems/player.md.
+ */
 #include <ultra64.h>
 #include <memp.h>
 #include <bondconstants.h>

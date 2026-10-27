@@ -19,7 +19,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `level/` | Level lifetime: stage load, the per-frame tick and render (`lv.c`), frame timing, one-time game init | `lv.c`, `frametiming.c`, `initgamedata.c` |
 | `menu/` | Front end and in-game menus: title sequence, folder and mission select, the watch (pause) menu and per-player options, multiplayer setup, cheats | `front.c`, `options.c`, `mpmenu.c`, `title*.c`, `cheat.c` |
 | `save/` | EEPROM save files and 007 mode settings | `file.c`, `file2.c`, `crc.c` |
-| `player/` | Bond: movement, collision and camera (`bondview*.c`), inventory, guns and firing, ejected casings | `bondview.c`, `bondview2.c`, `bondinv.c`, `gun.c`, `gunfire.c`, `player.c` |
+| `player/` | Bond: the player list (`player.c`), camera helpers and player globals (`bondview.c`), movement, collision, camera modes, the watch, HUD and health (`bondview2.c`), level start (`bondview_r.c`), head bob (`bondhead.c`); inventory, guns and firing (`bondinv.c`, `gun.c`, `gunfire.c`). See [subsystems/player.md](subsystems/player.md) | `player.c`, `bondview.c`, `bondview2.c`, `bondinv.c`, `gun.c`, `gunfire.c` |
 | `hud/` | On-screen overlays: radar, health and armour bars, the death blood effect, bullet sparks | `radar.c`, `glass2.c`, `blood_animation.c` |
 | `chr/` | Guards and other characters: slots and the per-frame tick (`chr.c`), actions such as patrolling, attacking and dying (`chraction.c`), the AI script interpreter (`chrai.c`), the global AI scripts (`chraidata.c`), bodies and heads (`body.c`). See [subsystems/guards.md](subsystems/guards.md) | `chr.c`, `chraction.c`, `chrai.c`, `body.c` |
 | `prop/` | Props: the prop pool and per-frame tick and draw loops, level setup, doors, weapons on the floor, vehicles, explosions, glass, alarms. See [subsystems/props.md](subsystems/props.md) | `prop.c`, `setup.c`, `propobj.c`, `explosion.c`, `glass.c` |
@@ -56,6 +56,8 @@ that subsystem's main file.
 | `gfx/tex.c` | Also the surface sound and bullet impact tables |
 | `world/unk_092E50.c` | Sky cloud and mipmap display lists |
 | `world/initunk_007290.c` | Resets three floats used by `unk_092E50.c` |
+| `player/bondview.c` | The camera helpers (`cam*`) and the player globals, not Bond's view as a whole |
+| `player/bondview2.c` | Most of the player: movement, camera modes, the watch, health, the HUD, co-op and counter-op |
 | `player/ejectedcartridges.c` | Loads the gun casing models and resets their sound slots |
 | `audio/mp_music.c` | The mission state (playing, cutscene, ended) and the music slots, used in solo too |
 | `debug/deb_loadallmodels.c` | Debug model loading, but also `init_obj_register_difficulty_vals`, which guard setup calls on every level |

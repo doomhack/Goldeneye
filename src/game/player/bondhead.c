@@ -1,3 +1,8 @@
+/**
+ * Head bob. Bond has a hidden walk animation whose root motion moves the camera up and
+ * down and side to side as he walks; bheadUpdate advances it and bheadInit sets it up
+ * at level start. Also breathing. See docs/subsystems/player.md.
+ */
 #include <ultra64.h>
 #include <limits.h>
 #include <assets/animationtable_data.h>

@@ -1,3 +1,10 @@
+/**
+ * The player globals and the camera helpers. The cam* functions hold the current
+ * player's screen rectangle, field of view and view matrices, convert between view
+ * space and screen pixels, and keep the frustum planes for on-screen tests. Also
+ * choosing a spawn pad, resetting a player for a new life (playerResetLife), crouch,
+ * lean and setting the player's position. See docs/subsystems/player.md.
+ */
 #include <ultra64.h>
 #include <math.h>
 #include <bondtypes.h>

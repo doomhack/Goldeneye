@@ -1,3 +1,11 @@
+/**
+ * Most of the player. In file order: loading Bond's body, camera modes and the intro,
+ * cutscene and death cameras, auto-aim, the tank, moving with collision, the watch and
+ * pause tilt, look and walk speeds, screen fades, input (playerProcessInput), health
+ * and damage, the per-frame update (playerUpdate, playerMove), the frame's camera
+ * setup (camSetupFrame), the HUD (hudRender), co-op respawn, counter-op, HUD messages
+ * and the player prop tick (playerTick). See docs/subsystems/player.md.
+ */
 #include <ultra64.h>
 #include <math.h>
 #include <bondtypes.h>

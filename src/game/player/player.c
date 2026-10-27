@@ -1,3 +1,9 @@
+/**
+ * The player list. g_playerPointers holds every player and g_CurrentPlayer the one being
+ * worked on (playerSetCurrent). Also allocating each player (playerInit), the shuffled
+ * draw order, per-player screen size and field of view, and setting up the hands at
+ * level start (playerInitHands). See docs/subsystems/player.md.
+ */
 #include <ultra64.h>
 #include <memp.h>
 #include <fr.h>
