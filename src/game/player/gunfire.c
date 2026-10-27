@@ -1486,7 +1486,7 @@ void beamTick(BeamRecord* beam)
 #ifdef VERSION_US
             beam->unk28 += beam->unk20 * g_GlobalTimerDelta;
 #else
-            beam->unk28 += beam->unk20 * g_JP_GlobalTimerDelta;
+            beam->unk28 += beam->unk20 * g_GlobalTimerDeltaRaw;
 #endif
         }
         else
@@ -2237,7 +2237,7 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
     rnd1 = randomGetNext();
     rnd2 = randomGetNext();
 
-    D_800483C4 = texture_index;
+    g_DebugHitTexNum = texture_index;
 
     if (get_debug_joy2hitsedit_flag() == 0)
     {
@@ -2367,7 +2367,7 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index)
     rnd1 = randomGetNext();
     rnd2 = randomGetNext();
 
-    D_800483C4 = texture_index;
+    g_DebugHitTexNum = texture_index;
     get_debug_joy2hitsedit_flag();
 
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
@@ -2705,7 +2705,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             && (handptr->weapon_ammo_in_magazine == 0)
             && (sp1C4 != 0))
         {
-            if ((lvlGetControlsLockedFlag() == 0) && (g_CurrentPlayer->mpmenuon == 0))
+            if ((lvGetControlsLocked() == 0) && (g_CurrentPlayer->mpmenuon == 0))
             {
                 /**
                  * D_80032458 is always 0 so this branch can never execute.
@@ -2925,7 +2925,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             case ITEM_WATCHMAGNETATTRACT:
                 if (handptr->field_88C == 0)
                 {
-                    handptr->weapon_firing_status = (lvlGetControlsLockedFlag() == 0) && (g_CurrentPlayer->mpmenuon == 0);
+                    handptr->weapon_firing_status = (lvGetControlsLocked() == 0) && (g_CurrentPlayer->mpmenuon == 0);
                 }
                 else
                 {
@@ -2959,7 +2959,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                         handptr->field_87D = 1;
                     }
 
-                    handptr->weapon_firing_status = (lvlGetControlsLockedFlag() == 0) && (g_CurrentPlayer->mpmenuon == 0);
+                    handptr->weapon_firing_status = (lvGetControlsLocked() == 0) && (g_CurrentPlayer->mpmenuon == 0);
 
                     gunStartBoltRecoil(hand);
                 }
@@ -2991,7 +2991,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                             handptr->field_87D = 1;
                         }
 
-                        handptr->weapon_firing_status = (lvlGetControlsLockedFlag() == 0)
+                        handptr->weapon_firing_status = (lvGetControlsLocked() == 0)
                             && (g_CurrentPlayer->mpmenuon == 0);
                     }
                 }
@@ -3026,7 +3026,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
                     if (handptr->field_88C == 0)
                     {
-                        handptr->weapon_firing_status = (lvlGetControlsLockedFlag() == 0)
+                        handptr->weapon_firing_status = (lvGetControlsLocked() == 0)
                             && (g_CurrentPlayer->mpmenuon == 0);
                     }
                 }
@@ -4583,7 +4583,7 @@ void gunTickGameplay(s32 triggerOn)
             if (hand_right->audioHandle == NULL
                 || sndGetPlayingState((struct ALSoundState *) hand_right->audioHandle) == 0)
             {
-                if (lvlGetControlsLockedFlag() == 0)
+                if (lvGetControlsLocked() == 0)
                 {
                     sndPlaySfx(
                         (struct ALBankAlt_s *) g_musicSfxBufferPtr,

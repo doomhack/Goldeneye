@@ -6,7 +6,7 @@
 #include "sched.h"
 
 /**
-* Used in speedgraphDisplayMetrics to check if speedgraphframes and g_speedGraphCountAccumulator are
+* Used in speedgraphDisplayMetrics to check if g_FrameDelta and g_speedGraphCountAccumulator are
 * over the threshold for output.
 */
 #define COUNT_REQUIRED_FOR_OUTPUT 20
@@ -60,13 +60,13 @@ SpeedGraphColorSettings gSpeedGraphColorSettings[5] = {
 };
 
 /**
- * 80023224. Seems to accumulate speedgraphframes in speedgraphDisplayMetrics. Once above the threshold COUNT_REQUIRED_FOR_OUTPUT,
+ * 80023224. Seems to accumulate g_FrameDelta in speedgraphDisplayMetrics. Once above the threshold COUNT_REQUIRED_FOR_OUTPUT,
  * the value COUNT_REQUIRED_FOR_OUTPUT is repeatedly subtracted until below the threshold.
  */
 u32 g_speedGraphCountAccumulator = 0;
 
 /**
- * 80023228. Stores max value of speedgraphframes seen in speedgraphDisplayMetrics. Resets to zero once
+ * 80023228. Stores max value of g_FrameDelta seen in speedgraphDisplayMetrics. Resets to zero once
  * output is rendered.
  */
 s32 g_speedGraphMaxSeenCount = 0;
@@ -207,11 +207,11 @@ Gfx *speedgraphDisplayMetrics(Gfx *gdl)
     char buffer[12];
     volatile u32 *pcountAccumulator = &g_speedGraphCountAccumulator;
     
-    localCountAccumulator += speedgraphframes;
+    localCountAccumulator += g_FrameDelta;
 
-    if (*pmaxSeenCount < speedgraphframes)
+    if (*pmaxSeenCount < g_FrameDelta)
     {
-        *pmaxSeenCount = speedgraphframes;
+        *pmaxSeenCount = g_FrameDelta;
     }
 
     *pcountAccumulator = localCountAccumulator;
@@ -254,16 +254,16 @@ Gfx *speedgraphDisplayMetrics(Gfx *gdl)
         // hz (60 / framerate)
         // -- or 50 for PAL
         debmenuSetPos(28, 5);
-        sprintf(buffer, "%2d hz", ((speedgraphframes == 0) ? 0 : (VICLOCK / speedgraphframes)));
+        sprintf(buffer, "%2d hz", ((g_FrameDelta == 0) ? 0 : (VICLOCK / g_FrameDelta)));
         debmenuPrintString(buffer);
 
         // framerate
         debmenuSetPos(28, 6);
-        sprintf(buffer, "%2d frames", speedgraphframes);
+        sprintf(buffer, "%2d frames", g_FrameDelta);
         debmenuPrintString(buffer);
 
         // (continues framerate output)
-        if (speedgraphframes != g_speedGraphMaxSeenCount)
+        if (g_FrameDelta != g_speedGraphMaxSeenCount)
         {
             sprintf(buffer, " [%2d]", *pmaxSeenCount);
         }
@@ -305,7 +305,7 @@ void speedgraphRenderGraph(void)
     static u32 speedGraphCounterForFrames = 0;
     static s32 toggleFlag = 1;
 
-    speedGraphCounterForFrames += speedgraphframes;
+    speedGraphCounterForFrames += g_FrameDelta;
     if (speedGraphCounterForFrames > 200)
     {
         toggleFlag ^= 1;

@@ -1352,7 +1352,7 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
 
             camera_transition_timer += g_GlobalTimerDelta;
 
-            if ((lvlGetControlsLockedFlag() == 0)
+            if ((lvGetControlsLocked() == 0)
                 && (buttons & ~oldbuttons & (CONT_A | B_BUTTON | Z_TRIG | START_BUTTON | CONT_R | CONT_L)))
             {
                 g_CameraAfterCinema = CAMERAMODE_INTRO;
@@ -1502,7 +1502,7 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
 
         if ((sp30 > 60.0f) && (camera_fade_active == 0))
         {
-            if ((lvlGetControlsLockedFlag() == 0)
+            if ((lvGetControlsLocked() == 0)
                 && (buttons & ~oldbuttons & (A_BUTTON | B_BUTTON | Z_TRIG | START_BUTTON | L_TRIG | R_TRIG)))
             {
                 camera_fade_active = 1;
@@ -3276,17 +3276,17 @@ void watchUpdateZoom(void)
         if ((g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5) || (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0xc))
         {
 #if defined(BUGFIX_R1)
-            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (f32) jpD_800484D0;
+            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (f32) g_FrameDelta60;
 #else
-            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (f32) speedgraphframes;
+            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (f32) g_FrameDelta;
 #endif
         }
         else
         {
 #if defined(BUGFIX_R1)
-            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (jpD_800484D0 * watch_transition_time);
+            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (g_FrameDelta60 * watch_transition_time);
 #else
-            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (speedgraphframes * watch_transition_time);
+            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (g_FrameDelta * watch_transition_time);
 #endif
         }
 
@@ -3937,16 +3937,16 @@ void watchTick(void)
 
     if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5)
     {
-        lvlSetControlsLockedFlag(TRUE);
+        lvSetControlsLocked(TRUE);
         sub_GAME_7F0A6A80();
     }
     else if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0xc)
     {
-        lvlSetControlsLockedFlag(TRUE);
+        lvSetControlsLocked(TRUE);
     }
     else
     {
-        lvlSetControlsLockedFlag(FALSE);
+        lvSetControlsLocked(FALSE);
     }
 
 #undef WATCH_VAR_LOWER
@@ -5191,7 +5191,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 sp108 = ((player_joyGetButtons & ~copy_prev_buttons_pressed) & Z_TRIG) != 0;
             }
 
-            if (lvlGetControlsLockedFlag() == 0 && disablePlayerActionsWhenPausedOrInMpMenu())
+            if (lvGetControlsLocked() == 0 && disablePlayerActionsWhenPausedOrInMpMenu())
             {
                 if (cur_player_get_aim_control() == 0)
                 {
@@ -5390,7 +5390,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 invButtons = A_BUTTON;
             }
 
-            if (lvlGetControlsLockedFlag() == 0)
+            if (lvGetControlsLocked() == 0)
             {
                 if (disablePlayerActionsWhenPausedOrInMpMenu())
                 {
@@ -6463,9 +6463,9 @@ void playerTickDamageAndHealth(void)
             else
             {
 #if defined(VERSION_US)
-                g_CurrentPlayer->damageshowtime += speedgraphframes;
+                g_CurrentPlayer->damageshowtime += g_FrameDelta;
 #else
-                g_CurrentPlayer->damageshowtime += jpD_800484D0;
+                g_CurrentPlayer->damageshowtime += g_FrameDelta60;
 #endif
             }
         }
@@ -6643,7 +6643,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     playerTickExplode();
     playerProcessInput(stick_x, stick_y, buttons, oldbuttons);
 
-    if (lvlGetControlsLockedFlag())
+    if (lvGetControlsLocked())
     {
         pauseStopSounds();
     }
@@ -7186,7 +7186,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             if (g_EnterTankAudioState == TANK_RUN_STATE_STARTING)
             {
                 g_EnterTankAudioState = TANK_RUN_STATE_RUNNING;
-                if ((g_TankSfxState[0] == NULL) && (lvlGetControlsLockedFlag() == 0))
+                if ((g_TankSfxState[0] == NULL) && (lvGetControlsLocked() == 0))
                 {
                     sndPlaySfx(g_musicSfxBufferPtr, TRUCK_START_SFX, &g_TankSfxState[0]);
                 }
@@ -7232,7 +7232,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                     if (g_TankSfxState[1] == NULL)
                     {
-                        if (lvlGetControlsLockedFlag() == 0)
+                        if (lvGetControlsLocked() == 0)
                         {
                             sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, TANK_SFX, &g_TankSfxState[1]);
                         }
@@ -7268,7 +7268,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                 if (g_TankSfxState[0] == NULL)
                 {
-                    if (lvlGetControlsLockedFlag() == 0)
+                    if (lvGetControlsLocked() == 0)
                     {
                         sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, TRUCK_RUN_SFX, &g_TankSfxState[0]);
                     }
@@ -7849,15 +7849,15 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                             if ((sp6C->chrflags & CHRFLAG_01000000) == 0)
 #endif
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
-                            if ((sp6C->chrflags & CHRFLAG_01000000) == 0 && lvlGetControlsLockedFlag() == 0)
+                            if ((sp6C->chrflags & CHRFLAG_01000000) == 0 && lvGetControlsLocked() == 0)
 #endif
                             {
                                 sp6C->chrflags |= CHRFLAG_01000000;
-                                if ((D_80048380 % 3) < 2)
+                                if ((g_LvTickCount % 3) < 2)
                                 {
                                     chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, CRUSHED_YELL_SFX, NULL), &prop->pos);
                                 }
-                                if ((D_80048380 % 3) > 0)
+                                if ((g_LvTickCount % 3) > 0)
                                 {
                                     chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, TANK_CRUSH_MAN_SFX, NULL), &prop->pos);
                                 }
@@ -8163,7 +8163,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 
     playerSetFovY(FOV_Y_F);
 
-    // This call doesn't do anything, the call viSetFovY(g_CurrentPlayer->fovy); in lvlRender
+    // This call doesn't do anything, the call viSetFovY(g_CurrentPlayer->fovy); in lvRender
     // will actually change the field of view.
     // The call above should set g_CurrentPlayer->fovy, but it doesn't seem to affect
     // the fov....
@@ -8274,15 +8274,15 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
     }
 
 #if defined(BUGFIX_R1)
-    watch_time_0 += jpD_800484D0;
+    watch_time_0 += g_FrameDelta60;
 #else
     // VERSION_US
-    watch_time_0 += speedgraphframes;
+    watch_time_0 += g_FrameDelta;
 #endif
 
     if (stop_time_flag != 0)
     {
-        if ((lvlGetControlsLockedFlag() == 0) && ((buttons & ~(g_CurrentPlayer->buttons_pressed) & (CONT_A | B_BUTTON | Z_TRIG | START_BUTTON | CONT_R | CONT_L))))
+        if ((lvGetControlsLocked() == 0) && ((buttons & ~(g_CurrentPlayer->buttons_pressed) & (CONT_A | B_BUTTON | Z_TRIG | START_BUTTON | CONT_R | CONT_L))))
         {
             stop_time_flag = 2;
 
@@ -10543,7 +10543,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 #undef ZERO_7F08991C
 
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
-                if (!lvlGetControlsLockedFlag())
+                if (!lvGetControlsLocked())
                 {
                     sndPlaySfx(g_musicSfxBufferPtr, BOND_GET_HIT1_SFX, 0);
                 }
@@ -11760,9 +11760,9 @@ join_768:
     {
         if (chrGetHandPos(chr, i, &ppointers[index]->field_2A18[i]) != 0)
         {
-            (&ppointers[index]->field_2A30)[i] = D_80048380;
+            (&ppointers[index]->field_2A30)[i] = g_LvTickCount;
         }
-        else if ((&ppointers[index]->field_2A30)[i] < (D_80048380 - 1))
+        else if ((&ppointers[index]->field_2A30)[i] < (g_LvTickCount - 1))
         {
             ppointers[index]->field_2A18[i].x = ppointers[index]->hands[i].field_B58.x;
             ppointers[index]->field_2A18[i].y = ppointers[index]->hands[i].field_B58.y;

@@ -654,7 +654,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
                 if (get_debug_do_draw_obj())
                 {
-                    if (sub_GAME_7F0BD8F0())
+                    if (lvGetDrawWorld())
                     {
                         gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 0);
                     }
@@ -672,7 +672,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
                 if (get_debug_do_draw_bg())
                 {
-                    if (sub_GAME_7F0BD8F0())
+                    if (lvGetDrawWorld())
                     {
                         gdl = bgRenderRoomPrimary(gdl, g_BgRoomsDrawn[j].roomid);
                     }
@@ -683,7 +683,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
                 if (get_debug_do_draw_obj())
                 {
-                    if (sub_GAME_7F0BD8F0())
+                    if (lvGetDrawWorld())
                     {
                         gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 2);
                     }
@@ -703,7 +703,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
     gdl = bgScissorCurrentPlayerViewDefault(fogRenderClearFogMode(gdl));
     gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
  
-    if (sub_GAME_7F0BD8F0())
+    if (lvGetDrawWorld())
     {
         gdl = explosionRenderScorchBuffer(gdl);
         gdl = explosionCallRenderBulletImpactOnProp(gdl);
@@ -734,7 +734,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
                 if (get_debug_do_draw_bg())
                 {
-                    if (sub_GAME_7F0BD8F0())
+                    if (lvGetDrawWorld())
                     {
                         gdl = bgRenderRoomSecondary(gdl, g_BgRoomsDrawn[j].roomid);
                     }
@@ -745,7 +745,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
                 if (get_debug_do_draw_obj())
                 {
-                    if (sub_GAME_7F0BD8F0())
+                    if (lvGetDrawWorld())
                     {
                         gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 1);
                     }

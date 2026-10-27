@@ -1435,7 +1435,7 @@ s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
         if ((chr->actiontype == ACT_DIE) && (chr->act_die.timeextra > ground))
         {
 #ifdef BUGFIX_R1
-            tmp = ((model->playspeed * g_JP_GlobalTimerDelta) * (chr->act_die.timeextra - chr->act_die.elapseextra)) / chr->act_die.timeextra;
+            tmp = ((model->playspeed * g_GlobalTimerDeltaRaw) * (chr->act_die.timeextra - chr->act_die.elapseextra)) / chr->act_die.timeextra;
 #else
             tmp = ((model->playspeed * g_GlobalTimerDelta) * (chr->act_die.timeextra - chr->act_die.elapseextra)) / chr->act_die.timeextra;
 #endif
@@ -1445,7 +1445,7 @@ s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
             dst->z += chr->act_die.extraspeed.z * tmp;
 
 #ifdef BUGFIX_R1
-            chr->act_die.elapseextra += g_JP_GlobalTimerDelta * model->playspeed;
+            chr->act_die.elapseextra += g_GlobalTimerDeltaRaw * model->playspeed;
 #else
             chr->act_die.elapseextra += g_GlobalTimerDelta * model->playspeed;
 #endif
@@ -1851,7 +1851,7 @@ void chrUpdateAimProperties( ChrRecord *self)
     if (self->aimendcount >= 2)
     {
 #if defined(BUGFIX_R1)
-        mult = g_JP_GlobalTimerDelta / (f32) self->aimendcount;
+        mult = g_GlobalTimerDeltaRaw / (f32) self->aimendcount;
 #else
         mult = g_GlobalTimerDelta / (f32) self->aimendcount;
 #endif

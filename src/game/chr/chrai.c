@@ -84,7 +84,7 @@ void       aiSoundTick(s32 slot)
             }
             sfx->sfxID = sfx->sfxID - clock_timer;
         }
-        if (lvlGetControlsLockedFlag() != 0)
+        if (lvGetControlsLocked() != 0)
         {
             tempvol = 0;
         }
@@ -2907,7 +2907,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFObjectiveNumCompleteRecord *ai = AiListp + Offset;
                     /*  additional PD code for dificulty filtering
-                     == OBJECTIVE_COMPLETE && objectivelvlGetSelectedDifficultyBits(ai->val[0]) & (1 << lvlGetSelectedDifficulty()))  *
+                     == OBJECTIVE_COMPLETE && objectivelvlGetSelectedDifficultyBits(ai->val[0]) & (1 << lvGetDifficulty()))  *
                     */
                     if (objectiveGetCount() > ai->OBJ_NUM && OBJECTIVESTATUS_COMPLETE == objectiveGetStatus_WEAK(ai->OBJ_NUM * 1, ai->OBJ_NUM))
                     {
@@ -3076,7 +3076,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFGameDifficultyLessThan:
                 {
                     AiIFGameDifficultyLessThanRecord *ai = AiListp + Offset;
-                    if (ai->DIFICULTY_ID > lvlGetSelectedDifficulty())
+                    if (ai->DIFICULTY_ID > lvGetDifficulty())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -3089,7 +3089,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFGameDifficultyGreaterThan:
                 {
                     AiIFGameDifficultyGreaterThanRecord *ai = AiListp + Offset;
-                    if (ai->DIFICULTY_ID < lvlGetSelectedDifficulty())
+                    if (ai->DIFICULTY_ID < lvGetDifficulty())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -3103,7 +3103,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFMissionTimeLessThanRecord *ai     = AiListp + Offset;
                     f32                            target = ntohs(ai->SECONDS);
-                    if (target > lvlGetCurrentMultiPlayerSec())
+                    if (target > lvGetMissionTimeSec())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -3117,7 +3117,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFMissionTimeGreaterThanRecord *ai     = AiListp + Offset;
                     f32                               target = ntohs(ai->SECONDS);
-                    if (target < lvlGetCurrentMultiPlayerSec())
+                    if (target < lvGetMissionTimeSec())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -3131,7 +3131,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFSystemPowerTimeLessThanRecord *ai     = AiListp + Offset;
                     f32                                target = ntohs(ai->MINUTES) * CHRAI_TICKRATE_F;
-                    if (target > lvlGetCurrentMultiPlayerMin())
+                    if (target > lvGetSystemPowerTimeSec())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -3145,7 +3145,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFSystemPowerTimeGreaterThanRecord *ai     = AiListp + Offset;
                     f32                                   target = ntohs(ai->MINUTES) * CHRAI_TICKRATE_F;
-                    if (target < lvlGetCurrentMultiPlayerMin())
+                    if (target < lvGetSystemPowerTimeSec())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }

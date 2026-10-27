@@ -2371,7 +2371,7 @@ void explosionsInit(void)
 
     g_MaxParticles = MAX_FLYING_PARTICLES / getPlayerCount();
 
-    if ((lvlGetCurrentStageToLoad() == LEVELID_STREETS) || (lvlGetCurrentStageToLoad() == LEVELID_DEPOT))
+    if ((lvGetCurrentStage() == LEVELID_STREETS) || (lvGetCurrentStage() == LEVELID_DEPOT))
     {
         g_MaxParticles = (s32) g_MaxParticles >> 1;
     }

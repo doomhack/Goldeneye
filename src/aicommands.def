@@ -5730,7 +5730,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (ai->val[0] > lvlGetSelectedDifficulty())
+        if (ai->val[0] > lvGetDifficulty())
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
@@ -5773,7 +5773,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (ai->val[0] < lvlGetSelectedDifficulty())
+        if (ai->val[0] < lvGetDifficulty())
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
@@ -5814,7 +5814,7 @@ _AI_CMD(
     {
         AIRecord *ai     = AiListp + Offset;
         f32       target = CharArrayTo16(ai->val,0);
-        if (target > lvlGetCurrentMultiPlayerSec())
+        if (target > lvGetMissionTimeSec())
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
@@ -5855,7 +5855,7 @@ _AI_CMD(
     {
         AIRecord *ai     = AiListp + Offset;
         f32       target = CharArrayTo16(ai->val,0);
-        if (target < lvlGetCurrentMultiPlayerSec())
+        if (target < lvGetMissionTimeSec())
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
@@ -5896,7 +5896,7 @@ _AI_CMD(
     {
         AIRecord *ai     = AiListp + Offset;
         f32       target = CharArrayTo16(ai->val,0) * CHRLV_FRAMERATE_F;
-        if (target > lvlGetCurrentMultiPlayerMin())
+        if (target > lvGetSystemPowerTimeSec())
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
@@ -5937,7 +5937,7 @@ _AI_CMD(
     {
         AIRecord *ai     = AiListp + Offset;
         f32       target = CharArrayTo16(ai->val,0) * CHRLV_FRAMERATE_F;
-        if (target < lvlGetCurrentMultiPlayerMin())
+        if (target < lvGetSystemPowerTimeSec())
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }

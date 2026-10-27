@@ -40,13 +40,13 @@ struct LvlMpUnknown {
     };
 };
 
-extern s32 D_800483C4;
-extern struct LvlMpUnknown *D_800483C8;
+extern s32 g_DebugHitTexNum;
+extern struct LvlMpUnknown *g_DebugDetailEdit;
 
 extern s32 g_ClockTimer;
 extern s32 g_GlobalTimer;
 extern f32 g_GlobalTimerDelta;
-extern s32 D_80048380;
+extern s32 g_LvTickCount;
 extern u32 *ptr_font_DL;
 extern s32 dword_CODE_bss_8008C264;
 extern s32 dword_CODE_bss_8008C268;
@@ -57,26 +57,28 @@ extern u8 * address_demo_loaded;
 extern s32 dword_CODE_bss_8008C5F8;
 
 #if defined(BUGFIX_R1)
-extern f32 g_JP_GlobalTimerDelta;
+extern f32 g_GlobalTimerDeltaRaw;
 #endif
 
 void lvInit(void);
-Gfx * lvlRender(Gfx *);
-void lvlSetSelectedDifficulty(DIFFICULTY arg0);
-void lvlManageMpGame(void);
-void lvlViewMoveTick(void);
-void lvlUnloadStageTextData(void);
-DIFFICULTY lvlGetSelectedDifficulty(void);
-void lvlStageLoad(s32 stage);
+Gfx * lvRender(Gfx *);
+void lvSetDifficulty(DIFFICULTY arg0);
+void lvTick(void);
+void lvPlayerTick(void);
+void lvStageUnload(void);
+DIFFICULTY lvGetDifficulty(void);
+void lvStageLoad(s32 stage);
 
-void lvlSetMpTime(s32 arg0);
-void lvlSetMpPoint(s32 arg0);
-void lvlSetControlsLockedFlag(s32 arg0);
-s32 lvlGetControlsLockedFlag(void);
-void lvlSetMultipliersForDifficulty(void);
-s32 lvlGetCurrentStageToLoad(void);
-s32        sub_GAME_7F0BD8F0(void);
-f32        lvlGetCurrentMultiPlayerSec(void);
-f32        lvlGetCurrentMultiPlayerMin(void);
+void lvSetMpTimeLimit(s32 arg0);
+void lvSetMpPointLimit(s32 arg0);
+void lvSetControlsLocked(s32 arg0);
+s32 lvGetControlsLocked(void);
+void lvApplyDifficulty(void);
+s32 lvGetCurrentStage(void);
+s32        lvGetDrawWorld(void);
+f32        lvGetMissionTimeSec(void);
+f32        lvGetSystemPowerTimeSec(void);
+
+void cleanup_REMOVED_(void);
 
 #endif

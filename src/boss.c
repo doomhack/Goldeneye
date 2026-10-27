@@ -8,7 +8,7 @@
 #include "deb.h"
 #include "debugmenu.h"
 #include "game/gfx/dyn.h"
-#include "game/level/game_debug.h"
+#include "game/level/game.h"
 #include "game/save/file.h"
 #include "game/save/file2.h"
 #include "game/debug/indy_comms.h"
@@ -62,8 +62,8 @@
     #define CYCLES_PER_FRAME    ((u32) OS_CPU_COUNTER / 50U) // 937,500
     #define INTERVAL_INTER_MATH    (CYCLES_PER_FRAME / 2U) // 468,750
 
-    // this is: frameDelay * 931050 - 465525
-    #define MAIN_LOOP_TICK_INTERVAL frameDelay * (CYCLES_PER_FRAME - 6450U) - (INTERVAL_INTER_MATH - 3225U)
+    // this is: g_FrameMinFrames * 931050 - 465525
+    #define MAIN_LOOP_TICK_INTERVAL g_FrameMinFrames * (CYCLES_PER_FRAME - 6450U) - (INTERVAL_INTER_MATH - 3225U)
 
 #else
 
@@ -98,7 +98,7 @@ void bossMainloop(void);
 /* data */
 u32 g_BossDebugNoticeEntry = 0;
 
-/* OS counts the CPU spent building frames, summed. See lvlRenderFpsCounter. */
+/* OS counts the CPU spent building frames, summed. See lvRenderFpsCounter. */
 u32 g_PerfCpuSum = 0;
 s32 g_DebugAndUpdateStageFlag = FALSE;
 s32 g_StageNum = LEVELID_TITLE;
@@ -297,7 +297,7 @@ void bossInitMainthreadData(void)
     textInit();
     debmenuInit();
     playersResetHandicaps();
-    store_osgetcount();
+    frameTimingStart();
     speedgraphInit();
     explosionInitScaleMtx();
     null_init_main_2();
@@ -307,7 +307,7 @@ void bossInitMainthreadData(void)
     reset_counter_rand_body_head();
     null_init_main_3();
     bheadInitGaitModel();
-    initGameData();
+    gameInitData();
     fileResetRamRomSave();
     clear_ramrom_block_buffer_heading_ptrs();
 }
@@ -402,7 +402,7 @@ void bossMainloop(void)
     // end declarations
 
     done = 0;
-    reset_mem_bank_5();
+    gameResetMePool();
 
     if (tokenFind(1, "-level_") != NULL)
     {
@@ -424,7 +424,7 @@ void bossMainloop(void)
         {
             // convert ASCII difficulty value to int in set difficulty calls eg '1' = 49, 49-48 = 1
             set_selected_difficulty(*(const unsigned char*)tokenFind(1, "-hard") - '0');
-            lvlSetSelectedDifficulty(*(const unsigned char*)tokenFind(1, "-hard") - '0');
+            lvSetDifficulty(*(const unsigned char*)tokenFind(1, "-hard") - '0');
         }
     }
 
@@ -439,7 +439,7 @@ void bossMainloop(void)
         toggleFlag = 0;
         pendingGfx = 0;
 
-        test_if_recording_demos_this_stage_load(g_StageNum, lvlGetSelectedDifficulty());
+        test_if_recording_demos_this_stage_load(g_StageNum, lvGetDifficulty());
         if (g_DebugAndUpdateStageFlag)
         {
             stringIndex = -1;
@@ -523,10 +523,10 @@ void bossMainloop(void)
         playersInit(localSelectedNumPlayers);
         dynInitMemory();
         joyCheckStatusThreadSafe();
-        lvlStageLoad(g_StageNum);
+        lvStageLoad(g_StageNum);
         viInitBuffers();
         debmenuRefresh();
-        waitForNextFrame();
+        frameWaitForNext();
         speedgraphMarkerCommit();
 
         if(1); // regalloc
@@ -555,7 +555,7 @@ void bossMainloop(void)
     */
 #endif
 
-                    mainTickElapsed = (u32) (osGetCount() - copy_of_osgetcount_value_1);
+                    mainTickElapsed = (u32) (osGetCount() - g_FrameStartCount);
                     if (mainTickElapsed < MAIN_LOOP_TICK_INTERVAL)
                     {
                         // nothing to do.
@@ -572,7 +572,7 @@ void bossMainloop(void)
                             }
                             else
                             {
-                                waitForNextFrame();
+                                frameWaitForNext();
                             }
 
                             speedgraphRenderGraph();
@@ -592,7 +592,7 @@ void bossMainloop(void)
 			                	g_BossIsDebugMenuOpen = debug_menu_processor(joyStickXPos, joyStickYPos, joyButtons, joyGetButtonsPressedThisFrame(0, ANY_BUTTON));
 			                }
 
-                            lvlManageMpGame();
+                            lvTick();
                             coopUpdateSoloView();
                             playersShuffleOrder();
 
@@ -609,12 +609,12 @@ void bossMainloop(void)
                                     viSetViewPosition(localPlayer->viewleft, localPlayer->viewtop);
 
                                     coopTankBeginPlayer();
-                                    lvlViewMoveTick();
+                                    lvPlayerTick();
                                     coopTankEndPlayer(TRUE);
                                 }
                             }
 
-                            gdl = lvlRender(gdl);
+                            gdl = lvRender(gdl);
                             testhooksEndFrame();
 
                             // Lets Visualise the Coverage Value used for Scilohete Anti-Ailising (edges)
@@ -714,7 +714,7 @@ void bossMainloop(void)
             }
         }
 
-        lvlUnloadStageTextData();
+        lvStageUnload();
         stop_demo_playback();
         mempClosePool(MEMPOOL_STAGE);
         fileForgetPool(MEMPOOL_STAGE);
@@ -732,7 +732,7 @@ void bossMainloop(void)
         // removed ... or ido?
     ;
 
-    sub_GAME_7F0D1A7C();
+    gameCloseMePool();
 }
 
 

@@ -163,7 +163,7 @@ void set_mTrack2Vol(u16 param_1);
 void sub_GAME_7F0A91A0(u16 arg0);
 void cur_player_set_control_type(int type);
 
-// Do not declare a public prototype for this method. lvlStageLoad is expecting
+// Do not declare a public prototype for this method. lvStageLoad is expecting
 // this to be defined with no arguments, but the actual method is defined with
 // one argument.
 //void init_watch_at_start_of_stage(int a);

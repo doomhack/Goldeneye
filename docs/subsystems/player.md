@@ -28,7 +28,7 @@ view fills the screen. Views are drawn in a shuffled order (`playersShuffleOrder
 
 ## Level start
 
-For each player, `lvlStageLoad` (in `lv.c`) calls:
+For each player, `lvStageLoad` (in `lv.c`) calls:
 
 1. `playerInitHands`: gun buffers and empty hands.
 2. `playerResetLife`: position, health, armour, speeds and options back to defaults.

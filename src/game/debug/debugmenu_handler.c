@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include "game/debug/debugmenu_handler.h"
-#include "game/level/initgamedata.h"
+#include "game/level/game.h"
 #include <boss.h>
 #include <fr.h>
 

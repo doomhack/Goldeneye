@@ -300,7 +300,7 @@ s32 mpFindMinFloat(s32 numplayers, f32 value0, f32 value1, f32 value2, f32 value
 
 void pauseAndLockControls(void) 
 {
-    lvlSetControlsLockedFlag(1);
+    lvSetControlsLocked(1);
     g_pausedFlag = TRUE;
 }
 
@@ -586,7 +586,7 @@ void mpwatchMenuTick(void)
     // The player in shuffled position 0 drives down g_gameOverFlag which is both a flag and a timer.
     if (!playerGetShuffledIndex(player_num) && (g_gameOverFlag >= 2))
     {
-        g_gameOverFlag -= speedgraphframes;
+        g_gameOverFlag -= g_FrameDelta;
 
         if (g_gameOverFlag <= 0) 
         { 
@@ -608,8 +608,8 @@ void mpwatchMenuTick(void)
         {
             if (playerGetShuffledIndex(player_num) == 0)
             {
-                chevron_glow_timer += speedgraphframes;
-                alt_gameover_msg_timer += speedgraphframes;
+                chevron_glow_timer += g_FrameDelta;
+                alt_gameover_msg_timer += g_FrameDelta;
 
                 // Toggle chevron glow
                 if (chevron_glow_timer >= (PAL ? 16 : 20))
@@ -665,12 +665,12 @@ void mpwatchMenuTick(void)
                     {
                         g_pausedFlag = 1;
                         who_paused = playerGetCurrentNum();
-                        lvlSetControlsLockedFlag(1);
+                        lvSetControlsLocked(1);
                     }
                     else if (playerGetCurrentNum() == who_paused)
                     {
                         g_pausedFlag = 0;
-                        lvlSetControlsLockedFlag(0);
+                        lvSetControlsLocked(0);
                     }
                 }
                 else if (g_CurrentPlayer->mpmenumode == MENU_FINISHED)
@@ -712,7 +712,7 @@ void mpwatchMenuTick(void)
                         if (playerGetCurrentNum() == who_paused)
                         {
                             g_pausedFlag = 0;
-                            lvlSetControlsLockedFlag(0);
+                            lvSetControlsLocked(0);
                         }
                     }
                 }
