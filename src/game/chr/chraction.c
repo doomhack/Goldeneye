@@ -2542,9 +2542,6 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
             }
 
             self->chrflags |= CHRFLAG_WAS_DAMAGED;
-#    ifdef XBLA
-            if (!cheatIsActive(76))
-#    endif
                 self->damage += damageToCause;
 
             if (self->damage < 0.0f)
@@ -5608,7 +5605,7 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
 
 #if defined(BUGFIX_R1)
         temp_f14 = 0.06283186f * arg3 * g_GlobalTimerDeltaRaw * model->playspeed;
-#else /* VERSION_US */
+#else
         temp_f14 = 0.06283186f * arg3 * g_GlobalTimerDelta * model->playspeed;
 #endif
 
@@ -7533,7 +7530,7 @@ void chrTickBondDieRemoved(ChrRecord *self)
 }
 
 
-#if defined(REFRESH_NTSC)
+#if !defined(REFRESH_PAL)
 /* NTSC */
 #define MAX_SPEED_A 0.2991993f
 #define ACCEL_A 0.014959966f
@@ -10811,9 +10808,6 @@ PropRecord *chrSpawnAtPad(ChrRecord *self, s32 bodynum, s32 headnum, s32 padid, 
         pad = (PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(padid)];
     }
     //<- not here...
-    #ifdef ENABLE_LOG
-    osSyncPrintf("%s%s new char x = %f, y = %f, z = %f \n", "", "", pad->pos.x, pad->pos.y, pad->pos.z);
-    #endif
     return chrSpawnAtCoord(bodynum, headnum, &pad->pos, pad->stan, mathAtan2(pad->look.f[0], pad->look.f[2]), ailist, flags);
 }
 

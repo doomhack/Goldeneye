@@ -1895,21 +1895,6 @@ s32 eu_cdata_0x1f1c4 = 0;
                             (       -  )*     +  ,  (       -  )*     +
     G_CC_MODULATERGBA2	    COMBINED, 0, SHADE, 0, COMBINED, 0, SHADE, 0
 */
-#if 0
-//New Defines to be added to gbi.h
-/*custom combiner for triangle alpha*/
-#define	ModulateRGB_EnvA 	TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT
-/*custom combiner for triangle alpha*/
-#define	ModulateRGB_EnvA2 	COMBINED, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT
-/*custom combiner for Texture*triangle alpha*/
-#define	ModulateRGBA_EnvA 	TEXEL0, 0, SHADE, 0, TEXEL0, 0, ENVIRONMENT, 0
-/*custom combiner for texture*triangle alpha*/
-#define	ModulateRGBA_EnvA2 	COMBINED, 0, SHADE, 0, COMBINED, 0, ENVIRONMENT, 0
-/*custom combiner for triangle alpha*/
-#define	SHADE_EnvA 		    0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT
-/*Tri-linear filter colour, flat tile alpha (for cutouts)*/
-#define TLRGB_ATile1        TEXEL1, TEXEL0, LOD_FRACTION, TEXEL0, 1, 0, TEXEL1, 0
-#endif
 //D:80044928
 Gfx DL_LUT_UNKNOWN[] = {
     gsDPSetCombineMode(G_CC_TRILERP, G_CC_MODULATEIA2),

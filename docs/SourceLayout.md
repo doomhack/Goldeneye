@@ -12,6 +12,21 @@ Many file names still come from the decomp, which named files after ROM addresse
 at their contents, so a name doesn't always match what is inside. Those files are listed
 under "Misleading names" below and get renamed as each subsystem is cleaned up.
 
+## US and PAL
+
+The same sources build the US (`make VERSION=US`) and the PAL (`make VERSION=EU`) ROM. Code
+that differs between them sits behind these flags, which the Makefile sets:
+
+| Flag | Build | Meaning |
+| --- | --- | --- |
+| `VERSION_US`, `VERSION_EU` | one each | Which build this is |
+| `REFRESH_PAL` | PAL | 50 Hz timing |
+| `BUGFIX_R0` | US | Code and data only the US release has |
+| `BUGFIX_R1`, `BUGFIX_R2` | PAL | Fixes Rare made for the PAL release that the US build doesn't take |
+| `BACKPORT_R1` | US | PAL fixes taken into the US build, where the US code differs from PAL's |
+
+A PAL fix that both builds take is plain code with no flag around it.
+
 ## Folders, from the top of the frame down
 
 | Folder | What it does | Main files |

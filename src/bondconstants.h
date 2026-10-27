@@ -17,15 +17,6 @@
 #include <CPPLib.h>
 
 #pragma region Tools
-#ifdef __INTELLISENSE__
-/* This is only a helper for VS as the IF macro is a little complex for it to work out */
-
-#    define IF(a) IF1
-#    define IF1(a)     TRY_EXPAND(a)
-#    define IF_ELSE(a) _IF_E1
-#    define _IF_E1(a)  TRY_EXPAND(a) EAT
-#    define COMMA_IF_I(a) COMMA()
-#endif
 
 /**
  *  A single list can be made into an enum and string array for debug.
@@ -147,18 +138,6 @@ typedef enum ATTACKTYPE
     ATTACKTYPE_DONTTURN  = 1 << 6, // dont do a shooting animation that would change the chrs direction
     ATTACKTYPE_TARGET    = 1 << 7  // aim/shoot at whatever is in the chrs `target` field
 }ATTACKTYPE;
-#if 0
-BITFLAG(ATTACKTYPE,
-        BOND,      /* aim/shoot at Bond                                                */
-        FORWARD,   /* aim/shoot in front of self                                       */
-        CHR,       /* aim/shoot at chr (ID should be given in entity_id)               */
-        PAD,       /* aim/shoot at pad (ID should be given in entity_id)               */
-        DIRECTION, /* aim/shoot in compass direction (0000, 4000, 8000, c000)          */
-        AIMONLY,   /* aim only - do not shoot                                          */
-        DONTTURN,  /* dont do a shooting animation that would change the chrs direction*/
-        TARGET     /* aim/shoot at whatever is in the chrs `target` field              */
-)
-#endif
 
 // character flags
 typedef enum CHRHIDDEN
@@ -723,7 +702,6 @@ COUNT does not cause allocation of storage or change resulting
 typedef enum AI_CMD
 {
 AI_CMD_SIGNED_ENUM = -1,
-#ifndef _SYNHILITE
 
 // makes enum list
 #        define _AI_CMD(...)   CAT(AI_, CMDNAME),
@@ -733,7 +711,6 @@ AI_CMD_SIGNED_ENUM = -1,
 
 
 #    include "aicommands.def"
-#endif /* !_SYNHILITE */
 
     AI_CMD_COUNT
 } AI_CMD;
@@ -2051,66 +2028,6 @@ typedef enum MUSIC_TRACKS
     M_END_SOMETHING
 } MUSIC_TRACKS;
 
-#if 0
-//these dont match the listing at all, however they imply a listing was used
-    char *MUSIC_TRACK_ToString[] = {
-        "01Goldeneye 64 - James Bond Theme",
-        "02Goldeneye 64 - Train",
-        "03Goldeneye 64 - Depot",
-        "04Goldeneye 64 - Citadel",
-        "05Goldeneye 64 - _Unsquare Water Dance_",
-        "06Goldeneye 64 - Facility",
-        "07Goldeneye 64 - Control",
-        "08Goldeneye 64 - Dam",
-        "09Goldeneye 64 - Frigate",
-        "10Goldeneye 64 - Archives",
-        "11Goldeneye 64 - Silo",
-        "12Goldeneye 64 - Surface 2 X",
-        "13Goldeneye 64 - Streets",
-        "14Goldeneye 64 - Bunker 1",
-        "15Goldeneye 64 - Bunker 2",
-        "16Goldeneye 64 - Statue",
-        "17Goldeneye 64 - Elevator (control)",
-        "18Goldeneye 64 - Cradle",
-        "19Goldeneye 64 - Elevator (caverns)",
-        "20Goldeneye 64 - Egypt",
-        "56Goldeneye 64 - Mission Select",
-        "21Goldeneye 64 - 007 Watch Theme",
-        "22Goldeneye 64 - Aztec",
-        "23Goldeneye 64 - Caverns",
-        "24Goldeneye 64 - Mission Death",
-        "25Goldeneye 64 - Surface 2",
-        "26Goldeneye 64 - Train X",
-        "27Goldeneye 64 - Facility X",
-        "28Goldeneye 64 - Depot X",
-        "29Goldeneye 64 - Control X",
-        "30Goldeneye 64 - Caverns X",
-        "31Goldeneye 64 - Dam X",
-        "32Goldeneye 64 - Frigate X",
-        "33Goldeneye 64 - Archives X",
-        "34Goldeneye 64 - Silo X",
-        "35Goldeneye 64 - Streets X",
-        "36Goldeneye 64 - Bunker 1 X",
-        "37Goldeneye 64 - Bunker 2 X",
-        "38Goldeneye 64 - Jungle X",
-        "39Goldeneye 64 - Nintendo and Rareware",
-        "40Goldeneye 64 - Statue X",
-        "41Goldeneye 64 - Aztec X",
-        "42Goldeneye 64 - Egypt X",
-        "43Goldeneye 64 - Cradle X",
-        "44Goldeneye 64 - Ending Theme",
-        "45Goldeneye 64 - Runway",
-        "46Goldeneye 64 - Runway Plane",
-        "47Goldeneye 64 - The Basement",
-        "48Goldeneye 64 - Bungeee!",
-        "49Goldeneye 64 - Jungle",
-        "50Goldeneye 64 - Runway X",
-        "51Goldeneye 64 - Surface 1",
-        "52Goldeneye 64 - Multiplayer Death",
-        "53Goldeneye 64 - Captured! (surface)",
-        "54Goldeneye 64 - Captured! (statue)",
-        "55Goldeneye 64 - Frigate (beta)" };
-#endif
 
 typedef enum OPTIONS
 {
@@ -2713,11 +2630,6 @@ enum CCRMLUT
         BODY_Russian_Infantry,
         BODY_Janus_Special_Forces,
         BODY_Brosnan_Tuxedo,
-        #ifdef ALL_BONDS
-        BODY_Connery_Tuxedo,
-        BODY_Dalton_Tuxedo,
-        BODY_Moore_Tuxedo,
-        #endif
         BODY_Boris,
         BODY_Ourumov,
         BODY_Trevelyan_Janus,
@@ -2844,11 +2756,6 @@ enum CCRMLUT
         HEAD_Male_Brosnan_Jungle,
         HEAD_Male_Brosnan_Parka,
         HEAD_Male_Brosnan_Tuxedo,
-        #ifdef ALL_BONDS
-        HEAD_Male_Connery_Tuxedo,
-        HEAD_Male_Dalton_Tuxedo,
-        HEAD_Male_Moore_Tuxedo,
-        #endif
         HEAD_Natalya_Jungle_Fatigues,
         HEAD_END,
         /*The following are some maybe helpfull counts (maybe GE doesnt need them, but thought Id ad while here)*/

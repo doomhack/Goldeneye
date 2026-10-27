@@ -53,10 +53,6 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
             if (headHeader->RootNode == 0)
             {
                 modelFileLoadToPool(headHeader, c_item_entries[head].filename);
-#ifdef XBLADEBUG
-    #error fix XBLADEBUG
-      //osSyncPrintf("bodyCreateModel: no head attachment for body number %d!\n",lVar3);
-#endif
             }
 
             modelCalculateRwDataLen(headHeader);
@@ -69,16 +65,6 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
     {
         model = modelmgrInstantiateModelWithAnim(bodyHeader);
     }
-#ifdef XBLADEBUG
-    #error fix XBLADEBUG
-  //
-  //        assertPrint_8291E690
-  //                  (".\\ported\\chrlv.cpp",0xc4,
-  //                   "Assertion failed: chrsub->inst.savesize>=bodyobj->savesize");
-  //        }
-  //
-  //
-#endif
 
     if (model != 0)
     {
@@ -190,26 +176,7 @@ void bodiesReset(u32 stagenum)
     {
         c_item_entries[i].header->RootNode = (ModelNode*)0;
     }
-#if defined(ISGOLDFINGER) || defined(IS_NSNA)
-    {
-        s32 rnext = randomGetNext();
-
-        for (i = 0; i < 8; i++)
-        {
-            if (i == 0)
-            {
-                current_random_male_head[i] = 0;
-            }
-            else
-            {
-                current_random_male_head[i] = rnext % i;
-            }
-            rnext >>= 1;
-        };
-    }
-#else
     current_random_male_head = randomGetNext() % num_male_heads;
     current_random_female_head = randomGetNext() % num_female_heads;
-#endif
     current_random_body = randomGetNext() % num_bodies;
 }

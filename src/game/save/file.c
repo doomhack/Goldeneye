@@ -31,11 +31,7 @@ ChrRecord *g_CurModelChr;
 
 //data
 //D:8002C510
-#ifdef ALL_BONDS
-s32 g_SaveBond[] = {BOND_BROSNAN,BOND_CONNERY,BOND_DALTON,BOND_MOORE};
-#else
 s32 g_SaveBond[] = {BOND_BROSNAN,BOND_BROSNAN,BOND_BROSNAN,BOND_BROSNAN};
-#endif
 
 
 /**
@@ -1018,13 +1014,6 @@ bool fileIsEgyptCompletedOn00AnyFolder(void)
  */
 u8 fileGetBondForFolder(u32 folder)
 {
-#ifdef ALL_BONDS
-    //likely code based on behavior
-    if ((folder >= FOLDER1) && (folder < MAX_FOLDER_COUNT))
-    {
-        return g_SaveBond[folder];
-    }
-#endif
 
     return BOND_BROSNAN;
 }
@@ -1041,11 +1030,7 @@ void fileSetSelectedBondTofolder(s32 folder, s32 bond)
     {
         return;
     }
-#ifdef ALL_BONDS
-    g_SaveBond[folder] = bond;
-#else
     g_SaveBond[folder] = BOND_BROSNAN;
-#endif
 }
 
 /**

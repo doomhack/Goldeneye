@@ -246,11 +246,7 @@ Gfx *explosionRenderPart(struct ExplosionPart *arg0, Gfx *gdl, struct coord3d *c
  * Named same as Perfect Dark.
  * NTSC 0x7F09C250
 */
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
 s32
-#else
-void
-#endif
 explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_stan, s16 explosion_type, s32 arg4, s32 player, u8 *rooms, s32 arg7)
 {
     s_explosiontype *sp44;
@@ -263,12 +259,6 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
     sp44 = &g_ExplosionTypes[explosion_type];
     sp40 = NULL;
 
-#if defined(VERSION_US) && !defined(BACKPORT_R1)
-    if ((explosion_type != 0x10) && (explosion_type != 1))
-    {
-        g_ShakeTicks = 6;
-    }
-#endif
 
     for (var_v0 = 0; var_v0 < EXPLOSION_BUFFER_LEN; var_v0++)
     {
@@ -283,12 +273,10 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
     {
         sp30 = propAllocate();
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
         if ((explosion_type != 0x10) && (explosion_type != 1))
         {
             g_ShakeTicks = 6;
         }
-#endif
 
         if ((s32) sp44->sndID > 0)
         {
@@ -385,9 +373,7 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
         }
     }
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
     return sp40 != 0;
-#endif
 }
 
 
@@ -432,14 +418,9 @@ void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* res
             diff_x = explosion_prop->pos.x - source_pos->x;
             diff_y = explosion_prop->pos.y - source_pos->y;
             diff_z = explosion_prop->pos.z - source_pos->z;
-#if !defined(VERSION_US) || defined(BACKPORT_R1)
             dist = sqrtf((diff_x * diff_x) + (diff_y * diff_y) + (diff_z * diff_z));
             if (dist == 0.0f) { dist = 0.0001f; }
             dist2 = g_ExplosionTypes[g_ExplosionBuffer[i].explosion_type].explosion_size / dist;
-#else
-            dist = (diff_x * diff_x) + (diff_y * diff_y) + (diff_z * diff_z);
-            dist2 = g_ExplosionTypes[g_ExplosionBuffer[i].explosion_type].explosion_size / sqrtf(dist);
-#endif
             explosion_mag += dist2 * 15.0f;
         }
     }

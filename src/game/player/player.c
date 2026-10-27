@@ -694,39 +694,24 @@ s32 playerGetIndexForProp(PropRecord* prop)
 
 
 void playerSetScreenSize(u32 width, u32 height) {
-    #ifdef XBLADEBUG
-       assert(currentplayer);
-    #endif
   g_CurrentPlayer->viewx = width;
   g_CurrentPlayer->viewy = height;
 }
 
 void playerSetViewportPos(u32 ulx, u32 uly) {
-        #ifdef XBLADEBUG
-       assert(currentplayer);
-    #endif
   g_CurrentPlayer->viewleft = ulx;
   g_CurrentPlayer->viewtop = uly;
 }
 
 void playerSetFovY(f32 fovy) {
-    #ifdef XBLADEBUG
-       assert(currentplayer);
-    #endif
     g_CurrentPlayer->fovy = fovy;
 }
 
 void playerSetAspect(f32 aspect) {
-    #ifdef XBLADEBUG
-       assert(currentplayer);
-    #endif
     g_CurrentPlayer->aspect = aspect;
 }
 
 f32 playerGetFovY(void) {
-    #ifdef XBLADEBUG
-       assert(currentplayer);
-    #endif
     return g_CurrentPlayer->fovy;
 }
 

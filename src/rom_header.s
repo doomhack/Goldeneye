@@ -12,10 +12,10 @@
 .word  0x00000000 # unknown
 .word  0x0000004E # cartridge
 .ascii "GE"       # cartridge ID
-.ifdef LANG_US
+.ifdef VERSION_US
 .ascii "E"        # country
 .endif
-.ifdef LANG_EU
+.ifdef VERSION_EU
 .ascii "P"        # country
 .endif
 .byte  0x00       # version

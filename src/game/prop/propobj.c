@@ -3263,17 +3263,11 @@ bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNode *nod
 /**
  * Named same as Perfect Dark.
 */
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
 s32 propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
-#else
-void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
-#endif
 {
     ObjectRecord *prop_obj; // sp92
     s32 playernum; // sp88
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
     s32 ret;
-#endif
     struct PropRecord *parent;
     struct StandTile *stan; // sp80
     struct coord3d pos;
@@ -3313,24 +3307,18 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
         if ((parent->flags & PROPFLAG_00000008) == 0
             && stanWalkLineNoCallback(&stan, parent->pos.f[0], parent->pos.f[2], pos.x, pos.z))
         {
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
-#endif
             explosionCreate(0, &pos, stan, (s16) explosionType, (prop_obj->flags & 0xE) == 0, playernum, parent->rooms, 0);
         }
         else
         {
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
-#endif
             explosionCreate(0, &pos, stan, (s16) explosionType, 0, playernum, parent->rooms, 1);
         }
     }
     else
     {
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
     ret =
-#endif
         explosionCreate(
             0,
             &prop_obj->runtime_pos,
@@ -3342,9 +3330,7 @@ void propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
             (prop->flags & PROPFLAG_00000008) != 0);
     }
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
     return ret;
-#endif
 }
 
 
@@ -3360,15 +3346,10 @@ void chrobjWeaponTick(struct PropRecord* prop)
 {
     struct ObjectRecord* obj;
     struct WeaponObjRecord *weapon;
-#if defined(VERSION_US) && !defined(BACKPORT_R1)
-    u32 owner_player_number;
-    u32 owner_player_as_bitflag;
-#else
     s32 exp_result;
     u32 owner_player_number;
     s32 p1;
     u32 owner_player_as_bitflag;
-#endif
     struct PropRecord* player_prop;
     f32 diff_x;
     f32 diff_z;
@@ -3430,15 +3411,11 @@ void chrobjWeaponTick(struct PropRecord* prop)
 
             if (weapon->timer < 0)
             {
-#if defined(VERSION_US) && !defined(BACKPORT_R1)
-                propExplode(prop, (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD);
-#else
                 exp_result = propExplode(prop, (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD);
                 if (exp_result == 0)
                 {
                     return;
                 }
-#endif
                 weapon->timer = -1;
                 obj->runtime_bitflags |= RUNTIMEBITFLAG_REMOVE;
 
@@ -3467,20 +3444,6 @@ void chrobjWeaponTick(struct PropRecord* prop)
             }
             else if (weapon->timer == 0)
             {
-#if defined(VERSION_US) && !defined(BACKPORT_R1)
-                if (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM)
-                {
-                    propExplode(prop, EXPLOSION_DEF_MASSIVE);
-                }
-                else if (bossGetStageNum() == LEVELID_FACILITY)
-                {
-                    propExplode(prop, EXPLOSION_DEF_FACILITY_REMOTE);
-                }
-                else
-                {
-                    propExplode(prop, EXPLOSION_DEF_STANDARD);
-                }
-#else
                 if (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM)
                 {
                     p1 = EXPLOSION_DEF_MASSIVE;
@@ -3500,7 +3463,6 @@ void chrobjWeaponTick(struct PropRecord* prop)
                 {
                     return;
                 }
-#endif
                 weapon->timer = -1;
                 obj->runtime_bitflags |= RUNTIMEBITFLAG_REMOVE;
             }
@@ -3534,15 +3496,11 @@ void chrobjWeaponTick(struct PropRecord* prop)
 
             if (weapon->timer == 0)
             {
-#if defined(VERSION_US) && !defined(BACKPORT_R1)
-                propExplode(prop, (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD);
-#else
                 exp_result = propExplode(prop, (obj->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD);
                 if (exp_result == 0)
                 {
                     return;
                 }
-#endif
 
                 weapon->timer = -1;
                 obj->runtime_bitflags |= RUNTIMEBITFLAG_REMOVE;
@@ -3737,7 +3695,6 @@ bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2,
 */
 s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct rect4f *arg2, s32 arg3)
 {
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
     s32 i;
     struct coord3d sp48;
 
@@ -3764,7 +3721,6 @@ s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct 
             return 1;
         }
     }
-#endif
 
     if (chrobjSeparatingAxisTheorem(arg0, arg1, arg2, arg3))
     {
@@ -5061,12 +5017,10 @@ s32 objTick(struct PropRecord *prop)
 						prop->flags |= PROPFLAG_00000010;
 					}
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
 					if (obj->type == PROPDEF_COLLECTABLE)
 					{
 						objectivesCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
 					}
-#endif
 				}
 			}
 		}
@@ -10220,9 +10174,7 @@ void pickupAddAmmo(AMMOTYPE ammotype,int amount,int doplaysound,int dodisplaytex
         {
             curammo = ammoGetHeld(ammotype);
             ammoGive(ammotype,curammo + amount);
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
         }
-#endif
             if (dodisplaytext != 0)
             {
                 pickupShowAmmoText(ammotype,amount);
@@ -10278,9 +10230,6 @@ void pickupAddAmmo(AMMOTYPE ammotype,int amount,int doplaysound,int dodisplaytex
             {
                 invAddItem(ITEM_PLASTIQUE);
             }
-#if !defined(BUGFIX_R1) && !defined(BACKPORT_R1)
-        }
-#endif
     }
 }
 
@@ -10950,7 +10899,6 @@ TICKOP objTickPlayer(struct PropRecord* prop)
 
         ammoCrateObj = (AmmoCrateRecord*)prop->obj;
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
         if (ammoGetHeld(ammoCrateObj->ammoType) >= ammoGetMax(ammoCrateObj->ammoType)
             && !(
                 ((ammoCrateObj->ammoType == AMMO_GRENADE) && (!invHasItem(ITEM_GRENADE)))
@@ -10962,11 +10910,6 @@ TICKOP objTickPlayer(struct PropRecord* prop)
         ) {
             return TICKOP_NONE;
         }
-#else
-        if (ammoGetHeld(ammoCrateObj->ammoType) >= ammoGetMax(ammoCrateObj->ammoType)) {
-            return TICKOP_NONE;
-        }
-#endif
     } 
     else if (obj->type == PROPDEF_AMMO) 
     {
@@ -10998,7 +10941,6 @@ TICKOP objTickPlayer(struct PropRecord* prop)
                     break;
                 }
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
                 if (((sp64 == AMMO_GRENADE) && (!invHasItem(ITEM_GRENADE)))
                     || ((sp64 == AMMO_REMOTEMINE) && (!invHasItem(ITEM_REMOTEMINE)))
                     || ((sp64 == AMMO_PROXMINE) && (!invHasItem(ITEM_PROXIMITYMINE)))
@@ -11008,7 +10950,6 @@ TICKOP objTickPlayer(struct PropRecord* prop)
                     sp6C = 0;
                     break;
                 }
-#endif
             }
         }
 
@@ -14084,12 +14025,6 @@ TICKOP propdoorInteract(PropRecord* doorprop)
             coopNoteActivator();
         }
         door->flags2 |= PROPFLAG2_00000008;
-        #ifdef XBLA
-        //part of showing key marker
-            if ((door->keyflags) && (get_current_difficulty() == DIFFICULTY_AGENT)) {
-                Function_822881F8(door->keyflags);
-            }
-        #endif
     }
 
     return TICKOP_NONE;

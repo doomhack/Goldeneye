@@ -90,9 +90,6 @@ void *proutSyncPrintf(void *str, const char *buf, size_t n)
 #ifndef _FINALROM
     while (sent < n)
     {
-#    ifdef USERDB
-        sent += __osRdbSend((u8 *)&buf[sent], n - sent, RDB_TYPE_GtoH_PRINT);
-#    endif
         crashAppendChar(buf[sent++]);
     }
 #endif

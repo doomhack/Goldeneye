@@ -312,7 +312,6 @@ void joyRumblePakTick(void)
                 {
                     set_rumble_pak_init_state_not_ready(i);
                 }
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
             }
             else if (g_ContRumblePakTargetState[i] == RUMBLEPAKSTATE_UNKNOWN)
             {
@@ -324,7 +323,6 @@ void joyRumblePakTick(void)
                 osMotorStop(&g_ContPfs[i]);
                 g_ContRumblePakCurrentState[i] = RUMBLEPAKSTATE_OFF;
                 g_ContRumblePakTargetState[i] = RUMBLEPAKSTATE_OFF;
-#endif
             }
             else
             {
@@ -866,12 +864,7 @@ void joyRumblePakStop(void)
 
     for (i = 0; i < MAXCONTROLLERS; i++)
     {
-#if defined(BUGFIX_R0) && !defined(BACKPORT_R1)
-        g_ContRumblePakCurrentState[i] = RUMBLEPAKSTATE_ON;
-        g_ContRumblePakTargetState[i] = RUMBLEPAKSTATE_OFF;
-#else
         g_ContRumblePakTargetState[i] = RUMBLEPAKSTATE_UNKNOWN;
-#endif
     }
 }
 

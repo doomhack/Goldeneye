@@ -1429,13 +1429,6 @@ void frontLegalTick(void)
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
-#if defined(ISGOLDFINGER) || defined(USEEXPANSION)
-    if (osGetMemSize != 0x00800000)
-    {
-        frontSetMenu(MENU_NO_CONTROLLERS, TRUE); //double up as No expansion pak window
-        return;
-    }
-#endif
     g_FrontTimer += g_ClockTimer;
 
     if (g_FrontTimer >= MENU_LEGALSCREEN_MENU_TIMER_MAX)
@@ -2016,16 +2009,6 @@ void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode)
 
 void frontSelectBondPicture(Model *objinstance, u32 bondID)
 {
-#ifdef ALL_BONDS
-    frontSetSwitchVisible(objinstance, SW_BROSNAN, (bondID == BOND_BROSNAN)); //brosnan picture
-    frontSetSwitchVisible(objinstance, SW_CONNERY, (bondID == BOND_CONNERY));
-    frontSetSwitchVisible(objinstance, SW_DALTON, (bondID == BOND_DALTON));
-    frontSetSwitchVisible(objinstance, SW_MOORE, (bondID == BOND_MOORE));
-    frontSetSwitchVisible(objinstance, SW_BROSNANCOVER, (bondID == BOND_BROSNAN)); //bigger brosnan picture
-    frontSetSwitchVisible(objinstance, SW_CONNERYCOVER, (bondID == BOND_CONNERY));
-    frontSetSwitchVisible(objinstance, SW_DALTONCOVER, (bondID == BOND_DALTON));
-    frontSetSwitchVisible(objinstance, SW_MOORECOVER, (bondID == BOND_MOORE));
-#else
     frontSetSwitchVisible(objinstance,SW_BROSNAN,TRUE); //brosnan picture
     frontSetSwitchVisible(objinstance,SW_CONNERY,FALSE);
     frontSetSwitchVisible(objinstance,SW_DALTON,FALSE);
@@ -2034,7 +2017,6 @@ void frontSelectBondPicture(Model *objinstance, u32 bondID)
     frontSetSwitchVisible(objinstance,SW_CONNERYCOVER,FALSE);
     frontSetSwitchVisible(objinstance,SW_DALTONCOVER,FALSE);
     frontSetSwitchVisible(objinstance,SW_MOORECOVER,FALSE);
-#endif
 }
 
 
@@ -6102,13 +6084,8 @@ void frontMpControlsTick(void)
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
 
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     #define MAYBE_OR_JOYCOUNT_NOT_4 || joyGetControllerCount() != 4
     #define MAYBE_AND_JOYCOUNT_4 && joyGetControllerCount() == 4
-#else
-    #define MAYBE_OR_JOYCOUNT_NOT_4
-    #define MAYBE_AND_JOYCOUNT_4
-#endif
 
 
     for (i = 0; i < sp44; i++)
@@ -6173,7 +6150,6 @@ void frontMpControlsTick(void)
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
             if (joyGetControllerCount() != 4)
             {
                 if (g_MpControlStyle[PLAYER_1] >= CONTROLLER_CONFIG_PLENTY)
@@ -6186,7 +6162,6 @@ void frontMpControlsTick(void)
                     g_MpControlStyle[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
                 }
             }
-#endif
 
             if ((joyGetStickXInRange(i, -2, 1) == -1) || (joyGetStickXInRange(i, -2, 1) == 0))
             {

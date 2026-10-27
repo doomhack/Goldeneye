@@ -110,3 +110,11 @@ and after a deletion: anything new on the list was only used by what you deleted
 It answers "is this reachable", not "is this safe to delete": a call to a dead function can
 still sit inside live code (for example in a branch that never runs), so delete the call
 sites by hand and rebuild, rather than deleting every line that names the function.
+
+## Flag branches: `tools/compare/foldflags.py FILE...`
+
+Removes `#if` branches that come out the same way in the US and the PAL build: `#if 0`
+blocks, flags no build defines, and fixes both builds take. It knows each build's flags
+(listed at the top of the script, matching the Makefile) and leaves any condition that uses
+another macro alone. The ROMs stay byte-identical, so check the result with `romcmp.sh` for
+both versions.

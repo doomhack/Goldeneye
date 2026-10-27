@@ -657,10 +657,8 @@ LEVELID bossGetStageNum() {
  *     return to title screen from stage
  */
 void bossReturnTitleStage(void) {
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     objectivesTickStatusMessages();
     objectivesDisableStatusDisplay();
-#endif
     if ((bossGetStageNum() != LEVELID_CUBA) && (objectivesAllComplete() != 0x0)) {
         fileRecordMissionEnd();
     }

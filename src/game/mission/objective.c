@@ -44,9 +44,7 @@ void objectivesReset(void)
         }
     }
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
     g_ObjectiveStatusDisplayDisabled = FALSE;
-#endif
 
     for (i = 0; i < OBJECTIVES_MAX; i++)
     {
@@ -420,13 +418,11 @@ bool objectivesAllComplete(void)
 }
 
 
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
 void objectivesDisableStatusDisplay(void)
 {
   g_ObjectiveStatusDisplayDisabled = TRUE;
   return;
 }
-#endif
 
 
 void objectivesTickStatusMessages(void) 
@@ -436,9 +432,7 @@ void objectivesTickStatusMessages(void)
     char buffer[50] = "";
     enum OBJECTIVESTATUS status;
 
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ObjectiveStatusDisplayDisabled) { return; }
-#endif
 
     for (i = 0; i <= g_ObjectiveLastIndex; i++) {
         status = objectiveCheckStatus(i);

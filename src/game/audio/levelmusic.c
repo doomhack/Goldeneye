@@ -72,33 +72,7 @@ void levelMusicSetState(MUSICSTATE arg0)
         case MUSICSTATE_SILENT:
         switch (arg0)
         {
-#if defined(VERSION_US) && !defined(BACKPORT_R1)
-            case MUSICSTATE_SILENT:
-                return;
-            case MUSICSTATE_LEVEL:
-                musicTrack1ApplySeqpVol(levelMusicGetVolume());
-                g_musicXTrack1Fade = 0;
-                musicTrack1Play(levelMusicGetTrack(g_LevelMusicStage));
-                return;
-            case MUSICSTATE_XTRACK:
-                break;
-            case MUSICSTATE_WATCH:
-                break;
-            case MUSICSTATE_LEVEL_AMBIENT: // switch 2
-                musicTrack1ApplySeqpVol(levelMusicGetVolume());
-                g_musicXTrack1Fade = 0;
-                musicTrack1Play(levelMusicGetTrack(g_LevelMusicStage));
-                musicTrack3ApplySeqpVol(levelMusicGetFxVolume());
-                g_musicXTrack3Fade = 0;
-                musicTrack3Play(levelMusicGetAmbientTrack(g_LevelMusicStage));
-                return;
-            case MUSICSTATE_XTRACK_AMBIENT:
-                break;
-            case MUSICSTATE_MP_DEATH:
-                break;
-#endif
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
             case MUSICSTATE_SILENT:
                 musicTrack1Stop();
                 musicTrack2Stop();
@@ -126,7 +100,6 @@ void levelMusicSetState(MUSICSTATE arg0)
                 break;
             case MUSICSTATE_MP_DEATH:
                 break;
-#endif
         }
 
         case MUSICSTATE_LEVEL:
