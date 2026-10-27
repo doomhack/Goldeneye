@@ -528,9 +528,8 @@ void camSetScreenPosition(f32 left, f32 top)
 }
 
 
-void camSetPerspective(f32 near, f32 fovy, f32 aspect)
+void camSetPerspective(f32 fovy, f32 aspect)
 {
-    g_CurrentPlayer->c_perspnear = near;
     g_CurrentPlayer->c_perspfovy = fovy;
     g_CurrentPlayer->c_perspaspect = aspect;
 }
@@ -538,11 +537,6 @@ void camSetPerspective(f32 near, f32 fovy, f32 aspect)
 
 void camUpdateScale(void)
 {
-	f32 fVar4;
-	f32 tmp;
-	f32 fVar5;
-	f32 fVar2;
-
 	g_CurrentPlayer->c_scaley = sinf(mDegToHalfRad(g_CurrentPlayer->c_perspfovy)) / (cosf(mDegToHalfRad(g_CurrentPlayer->c_perspfovy)) * g_CurrentPlayer->c_halfheight);
 	g_CurrentPlayer->c_scalex = (g_CurrentPlayer->c_scaley * g_CurrentPlayer->c_perspaspect * g_CurrentPlayer->c_halfheight) / g_CurrentPlayer->c_halfwidth;
 
@@ -552,28 +546,6 @@ void camUpdateScale(void)
     g_CurrentPlayer->c_scalelod = g_CurrentPlayer->c_scaley;
     g_CurrentPlayer->c_scalelod60 = sinf(DegToRad(30)) / (cosf(DegToRad(30)) * 120.0f);
 	g_CurrentPlayer->c_lodscalez = g_CurrentPlayer->c_scalelod / g_CurrentPlayer->c_scalelod60;
-	tmp = (g_CurrentPlayer->c_lodscalez * M_U16_MAX_VALUE_F);
-
-	if (tmp > M_U32_MAX_VALUE_F) 
-    {
-		g_CurrentPlayer->c_lodscalezu32 = -1;
-	} 
-    else 
-    {
-		g_CurrentPlayer->c_lodscalezu32 = tmp;
-	}
-
-	fVar2 = g_CurrentPlayer->c_halfheight * g_CurrentPlayer->c_scaley;
-	fVar4 = 1.0f / sqrtf(fVar2 * fVar2 + 1.0f);
-	g_CurrentPlayer->c_cameratopnorm.x = 0;
-	g_CurrentPlayer->c_cameratopnorm.y = fVar4;
-	g_CurrentPlayer->c_cameratopnorm.z = fVar2 * fVar4;
-
-	fVar5 = -g_CurrentPlayer->c_halfwidth * g_CurrentPlayer->c_scalex;
-	fVar4 = 1.0f / sqrtf(fVar5 * fVar5 + 1.0f);
-	g_CurrentPlayer->c_cameraleftnorm.x = -fVar4;
-	g_CurrentPlayer->c_cameraleftnorm.y = 0;
-	g_CurrentPlayer->c_cameraleftnorm.z = -fVar5 * fVar4;
 }
 
 
@@ -633,10 +605,6 @@ void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out)
 }
 
 
-void camSetWorldToViewScaledMtx(Mtx *matrix) {
-    g_CurrentPlayer->worldToViewScaledMtx = matrix;
-}
-
 void camSetWorldToViewMtx(Mtx *matrix) {
     g_CurrentPlayer->worldToViewMtx = matrix;
 }
@@ -690,7 +658,6 @@ static s32 coopCurrentPlayerIndex(void)
 }
 
 void *camSetWorldToScreenMtxf(Mtxf *matrix) {
-    g_CurrentPlayer->prevWorldToScreenMtxf = g_CurrentPlayer->worldToScreenMtxf;
     g_CurrentPlayer->worldToScreenMtxf = matrix;
 
     if (g_CoopMode)
@@ -1189,9 +1156,6 @@ void playerResetLife(void)
     g_CurrentPlayer->previous_model_pos.f[0] = 0.0f;
     g_CurrentPlayer->previous_model_pos.f[1] = 0.0f;
     g_CurrentPlayer->previous_model_pos.f[2] = 0.0f;
-    g_CurrentPlayer->current_room_pos.f[0] = 0.0f;
-    g_CurrentPlayer->current_room_pos.f[1] = 0.0f;
-    g_CurrentPlayer->current_room_pos.f[2] = 0.0f;
     g_CurrentPlayer->cameramode = 0;
     g_CurrentPlayer->pos.f[0] = 0.0f;
     g_CurrentPlayer->pos.f[1] = 0.0f;
@@ -1248,7 +1212,6 @@ void playerResetLife(void)
     }
     g_CurrentPlayer->speedverta = 0.0f;
     g_CurrentPlayer->vv_cosverta = 1.0f;
-    g_CurrentPlayer->vv_sinverta = 0.0f;
     g_CurrentPlayer->speedsideways = 0.0f;
     g_CurrentPlayer->speedstrafe = 0.0f;
     g_CurrentPlayer->speedforwards = 0.0f;
@@ -1259,7 +1222,6 @@ void playerResetLife(void)
     g_CurrentPlayer->bondshotspeed.y = 0.0f;
     g_CurrentPlayer->bondshotspeed.z = 0.0f;
     g_CurrentPlayer->docentreupdown = FALSE;
-    g_CurrentPlayer->lastupdown60 = 0;
     g_CurrentPlayer->prevupdown = FALSE;
     g_CurrentPlayer->movecentrerelease = FALSE;
     g_CurrentPlayer->lookaheadcentreenabled = TRUE;

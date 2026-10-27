@@ -2509,7 +2509,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     var_s1 = gunGetShownWeapon(hand);
     sp1C4 = weaponGetAmmoType(var_s1);
 
-    handptr->prevTrigger = handptr->weapon_hold_time;
     handptr->weapon_hold_time = triggerOn;
 
     if (triggerOn == 0)
@@ -4445,12 +4444,6 @@ void gunTickGameplay(s32 triggerOn)
             }
         }
     }
-}
-
-
-void gunSetAimType(s32 param_1)
-{
-  g_CurrentPlayer->aimtype = param_1;
 }
 
 

@@ -157,5 +157,4 @@ Added for this fork, at the end of `bondview2.c`:
   or falling, `sumCrouch`/`crouchHeight` give the dip after landing, and
   `dampEyeSum`/`dampEye` ease the eye position. All use the same damped-sum pattern:
   `sum = sum * damp + value; smoothed = sum * (1 - damp)`.
-* The unused `field_XXX` padding that is left in `struct player` is removed in a later step.
 * `getMissiontimer` is now `lvGetMissionTime60`; on PAL it converts 50 Hz ticks to 60 Hz.
