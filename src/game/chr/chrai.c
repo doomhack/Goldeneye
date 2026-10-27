@@ -825,22 +825,22 @@ PathRecord *pathFindById(s32 ID)
 // forward
 extern PadRecord      *g_CameraLookAtBondPad;
 extern CutsceneRecord *gBondViewCutscene;
-extern enum CAMERAMODE dword_CODE_bss_80079A18;
-extern s32             dword_CODE_bss_80079A1C;
+extern enum CAMERAMODE g_CutsceneCamLookAtBond;
+extern s32             g_CutsceneCamUnusedFlag;
 extern vec3d           g_ForceBondMoveOffset;
 extern s32             g_CoopForceMovePlayer;
 // CODE.bss:80079A00
-extern f32             flt_CODE_bss_80079A00;
+extern f32             g_OrbitCamAngle;
 // CODE.bss:80079A04
-extern f32             flt_CODE_bss_80079A04;
+extern f32             g_OrbitCamSpeed;
 // CODE.bss:80079A08
-extern f32             flt_CODE_bss_80079A08;
+extern f32             g_OrbitCamDist;
 // CODE.bss:80079A0C
-extern f32             flt_CODE_bss_80079A0C;
+extern f32             g_OrbitCamHeight;
 // CODE.bss:80079A10
-extern f32             flt_CODE_bss_80079A10;
+extern f32             g_OrbitCamTargetHeight;
 // CODE.bss:80079A14
-extern s32             dword_CODE_bss_80079A14;
+extern s32             g_OrbitCamPad;
 extern bool            g_isBondKIA;
 // end forward
 
@@ -4382,8 +4382,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #endif
                             g_CameraLookAtBondPad = NULL;
                             gBondViewCutscene       = cdef;
-                            dword_CODE_bss_80079A18 = ntohs(ai->LOOK_AT_BOND_FLAG);
-                            dword_CODE_bss_80079A1C = ntohs(ai->UNUSED_FLAG);
+                            g_CutsceneCamLookAtBond = ntohs(ai->LOOK_AT_BOND_FLAG);
+                            g_CutsceneCamUnusedFlag = ntohs(ai->UNUSED_FLAG);
                             playerSetCameraMode(CAMERAMODE_POSEND);
                         }
                     }
@@ -4744,12 +4744,12 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     start                   = ntohs(ai->INITIAL_ROTATION);
                     g_CameraLookAtBondPad = NULL;
                     gBondViewCutscene       = NULL;
-                    flt_CODE_bss_80079A00   = (start * M_TAU_F) / M_U16_MAX_VALUE_F;   /*unit direction 0 - 1 (increments are 0.000001) */
-                    flt_CODE_bss_80079A04   = (speed60 * M_TAU_F) / M_U16_MAX_VALUE_F; /*how many increments per frame */
-                    flt_CODE_bss_80079A08   = camDististance;
-                    flt_CODE_bss_80079A0C   = camHeight;
-                    flt_CODE_bss_80079A10   = targetHeight;
-                    dword_CODE_bss_80079A14 = padnum;
+                    g_OrbitCamAngle   = (start * M_TAU_F) / M_U16_MAX_VALUE_F;   /*unit direction 0 - 1 (increments are 0.000001) */
+                    g_OrbitCamSpeed   = (speed60 * M_TAU_F) / M_U16_MAX_VALUE_F; /*how many increments per frame */
+                    g_OrbitCamDist   = camDististance;
+                    g_OrbitCamHeight   = camHeight;
+                    g_OrbitCamTargetHeight   = targetHeight;
+                    g_OrbitCamPad = padnum;
                     playerSetCameraMode(CAMERAMODE_POSEND);
                     Offset += sizeof(AiCameraOrbitPadRecord);
                     break;

@@ -2502,11 +2502,11 @@ extern s32 g_VisibleToGuardsFlag;
 //D:800364C8
 extern s32 g_PlayerCollisionOn;
 //D:800364CC
-extern f32 D_800364CC;
+extern f32 g_CamPosScale;
 //D:800364D0
-extern f32 D_800364D0;
+extern f32 g_PlayerWorldScale;
 //D:800364D4
-extern f32 D_800364D4;
+extern f32 g_PlayerWorldScaleInv;
 //D:800364D8
 extern s32 g_bondviewBondDeathAnimations[];
 

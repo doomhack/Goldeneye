@@ -319,11 +319,11 @@ s32 g_VisibleToGuardsFlag = TRUE;
 //D:800364C8
 s32 g_PlayerCollisionOn = TRUE;
 //D:800364CC
-f32 D_800364CC = 1.0;
+f32 g_CamPosScale = 1.0;
 //D:800364D0
-f32 D_800364D0 = 1.0;
+f32 g_PlayerWorldScale = 1.0;
 //D:800364D4
-f32 D_800364D4 = 1.0;
+f32 g_PlayerWorldScaleInv = 1.0;
 
 /**
  * Address 0x800364D8.

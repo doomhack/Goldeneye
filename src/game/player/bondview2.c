@@ -227,31 +227,31 @@ f32 flt_CODE_bss_800799DC; // unused/padding
 ITEM_IDS starting_weapon[2];
 
 //CODE.bss:800799E8
-struct coord3d flt_CODE_bss_800799E8;
+struct coord3d g_DeathCamPos;
 
 //CODE.bss:800799F4
-struct PropRecord* dword_CODE_bss_800799F4;
+struct PropRecord* g_DeathCamProp;
 
 //CODE.bss:800799F8
 PadRecord * g_CameraLookAtBondPad;
 //CODE.bss:800799FC
 CutsceneRecord *gBondViewCutscene;
 //CODE.bss:80079A00
-f32 flt_CODE_bss_80079A00;
+f32 g_OrbitCamAngle;
 //CODE.bss:80079A04
-f32 flt_CODE_bss_80079A04;
+f32 g_OrbitCamSpeed;
 //CODE.bss:80079A08
-f32 flt_CODE_bss_80079A08;
+f32 g_OrbitCamDist;
 //CODE.bss:80079A0C
-f32 flt_CODE_bss_80079A0C;
+f32 g_OrbitCamHeight;
 //CODE.bss:80079A10
-f32 flt_CODE_bss_80079A10;
+f32 g_OrbitCamTargetHeight;
 //CODE.bss:80079A14
-s32 dword_CODE_bss_80079A14;
+s32 g_OrbitCamPad;
 //CODE.bss:80079A18
-enum CAMERAMODE dword_CODE_bss_80079A18;
+enum CAMERAMODE g_CutsceneCamLookAtBond;
 //CODE.bss:80079A1C
-s32 dword_CODE_bss_80079A1C;
+s32 g_CutsceneCamUnusedFlag;
 //CODE.bss:80079A20
 s32 mission_timer;
 
@@ -307,9 +307,9 @@ s32 dword_CODE_bss_80079DA8[BSS_80079DA8_LENGTH];
 
 #ifndef VERSION_EU
 //CODE.bss:80079DC8
-char dword_CODE_bss_80079DC8[0x3C];
+char g_HudmsgTopText[0x3C];
 #else
-char dword_CODE_bss_80079DC8[0x2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
+char g_HudmsgTopText[0x2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
 char dword_CODE_bss_80079EF6[0x3C];
 #endif
 
@@ -654,7 +654,7 @@ s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, co
     s32 lineok;
     s32 angletries;
 
-    dword_CODE_bss_800799F4 = prop1;
+    g_DeathCamProp = prop1;
 
     found = 0;
     outertries = 0;
@@ -729,29 +729,29 @@ s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, co
                     candidateDist *= frac;
                     candidateDist += camera_dist;
 
-                    flt_CODE_bss_800799E8.x = (spBC.x * candidateDist) + pos->x;
-                    flt_CODE_bss_800799E8.y = pos->y;
-                    flt_CODE_bss_800799E8.z = (spBC.z * candidateDist) + pos->z;
+                    g_DeathCamPos.x = (spBC.x * candidateDist) + pos->x;
+                    g_DeathCamPos.y = pos->y;
+                    g_DeathCamPos.z = (spBC.z * candidateDist) + pos->z;
 
                     spC8 = tile;
 
                     propSetMoving(prop2, 0);
 
-                    lineok = stanTestLineUnobstructed(&spC8, collision_pos->x, collision_pos->z, flt_CODE_bss_800799E8.x, flt_CODE_bss_800799E8.z, 0x13, 0.0f, 1.0f, 0.0f, 1.0f);
+                    lineok = stanTestLineUnobstructed(&spC8, collision_pos->x, collision_pos->z, g_DeathCamPos.x, g_DeathCamPos.z, 0x13, 0.0f, 1.0f, 0.0f, 1.0f);
 
                     propSetMoving(prop2, 1);
 
                     if (lineok)
                     {
-                        lineok = stanTestVolume(&spC8, flt_CODE_bss_800799E8.x, flt_CODE_bss_800799E8.z, camclearance, 0x1f, 0.0f, 1.0f);
+                        lineok = stanTestVolume(&spC8, g_DeathCamPos.x, g_DeathCamPos.z, camclearance, 0x1f, 0.0f, 1.0f);
 
                         if (lineok < 0)
                         {
-                            floorY = stanGetPositionYValue(spC8, flt_CODE_bss_800799E8.x, flt_CODE_bss_800799E8.z);
+                            floorY = stanGetPositionYValue(spC8, g_DeathCamPos.x, g_DeathCamPos.z);
 
-                            flt_CODE_bss_800799E8.y = (floorY + camclearance) + ((((f32) randomGetNext()) * 2.3283064e-10f) * (185.0f - camclearance));
+                            g_DeathCamPos.y = (floorY + camclearance) + ((((f32) randomGetNext()) * 2.3283064e-10f) * (185.0f - camclearance));
 
-                            candidateDist = flt_CODE_bss_800799E8.y - pos->y;
+                            candidateDist = g_DeathCamPos.y - pos->y;
 
                             if (((-1000.0f) < candidateDist) && (candidateDist < 1000.0f))
                             {
@@ -1577,11 +1577,11 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
             }
         }
 
-        pos->f[0] = flt_CODE_bss_800799E8.f[0];
-        pos->f[1] = flt_CODE_bss_800799E8.f[1];
-        pos->f[2] = flt_CODE_bss_800799E8.f[2];
+        pos->f[0] = g_DeathCamPos.f[0];
+        pos->f[1] = g_DeathCamPos.f[1];
+        pos->f[2] = g_DeathCamPos.f[2];
 
-        if (dword_CODE_bss_800799F4 == g_CurrentPlayer->prop)
+        if (g_DeathCamProp == g_CurrentPlayer->prop)
         {
             pos2->f[0] = g_CurrentPlayer->field_3C4;
             pos2->f[1] = g_CurrentPlayer->field_3C8;
@@ -1589,9 +1589,9 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
         }
         else
         {
-            pos2->f[0] = dword_CODE_bss_800799F4->pos.f[0];
-            pos2->f[1] = dword_CODE_bss_800799F4->pos.f[1];
-            pos2->f[2] = dword_CODE_bss_800799F4->pos.f[2];
+            pos2->f[0] = g_DeathCamProp->pos.f[0];
+            pos2->f[1] = g_DeathCamProp->pos.f[1];
+            pos2->f[2] = g_DeathCamProp->pos.f[2];
         }
 
         *stan = g_CurrentPlayer->field_488.current_tile_ptr;
@@ -1643,7 +1643,7 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
             arg6->f[1] = setupPad->pos.f[1];
             arg6->f[2] = setupPad->pos.f[2];
 
-            if (dword_CODE_bss_80079A18 == CAMERAMODE_INTRO)
+            if (g_CutsceneCamLookAtBond == CAMERAMODE_INTRO)
             {
                 pos2->f[0] = g_CurrentPlayer->field_3C4;
                 pos2->f[1] = g_CurrentPlayer->field_3C8;
@@ -1659,13 +1659,13 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
             return;
         }
 
-        if (isNotBoundPad(dword_CODE_bss_80079A14))
+        if (isNotBoundPad(g_OrbitCamPad))
         {
-            setupPad = &g_CurrentSetup.pads[dword_CODE_bss_80079A14];
+            setupPad = &g_CurrentSetup.pads[g_OrbitCamPad];
         }
         else
         {
-            setupPad = (struct PadRecord*)&g_CurrentSetup.boundpads[getBoundPadNum(dword_CODE_bss_80079A14)];
+            setupPad = (struct PadRecord*)&g_CurrentSetup.boundpads[getBoundPadNum(g_OrbitCamPad)];
         }
 
         *stan = setupPad->stan;
@@ -1674,24 +1674,24 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
         arg6->f[1] = setupPad->pos.f[1];
         arg6->f[2] = setupPad->pos.f[2];
 
-        pos2->f[0] = setupPad->pos.f[0] + cosf(flt_CODE_bss_80079A00) * 0.0f;
-        pos2->f[1] = setupPad->pos.f[1] + flt_CODE_bss_80079A10;
-        pos2->f[2] = setupPad->pos.f[2] + sinf(flt_CODE_bss_80079A00) * 0.0f;
+        pos2->f[0] = setupPad->pos.f[0] + cosf(g_OrbitCamAngle) * 0.0f;
+        pos2->f[1] = setupPad->pos.f[1] + g_OrbitCamTargetHeight;
+        pos2->f[2] = setupPad->pos.f[2] + sinf(g_OrbitCamAngle) * 0.0f;
 
-        pos->f[0] = setupPad->pos.f[0] + (sinf(flt_CODE_bss_80079A00) * flt_CODE_bss_80079A08) + cosf(flt_CODE_bss_80079A00) * 0.0f;
-        pos->f[1] = setupPad->pos.f[1] + flt_CODE_bss_80079A10 + flt_CODE_bss_80079A0C;
-        pos->f[2] = setupPad->pos.f[2] + (cosf(flt_CODE_bss_80079A00) * flt_CODE_bss_80079A08) + sinf(flt_CODE_bss_80079A00) * 0.0f;
+        pos->f[0] = setupPad->pos.f[0] + (sinf(g_OrbitCamAngle) * g_OrbitCamDist) + cosf(g_OrbitCamAngle) * 0.0f;
+        pos->f[1] = setupPad->pos.f[1] + g_OrbitCamTargetHeight + g_OrbitCamHeight;
+        pos->f[2] = setupPad->pos.f[2] + (cosf(g_OrbitCamAngle) * g_OrbitCamDist) + sinf(g_OrbitCamAngle) * 0.0f;
 
-        flt_CODE_bss_80079A00 += flt_CODE_bss_80079A04 * g_GlobalTimerDelta;
+        g_OrbitCamAngle += g_OrbitCamSpeed * g_GlobalTimerDelta;
 
-        while (flt_CODE_bss_80079A00 >= M_TAU_F)
+        while (g_OrbitCamAngle >= M_TAU_F)
         {
-            flt_CODE_bss_80079A00 -= M_TAU_F;
+            g_OrbitCamAngle -= M_TAU_F;
         }
 
-        while (flt_CODE_bss_80079A00 < 0.0f)
+        while (g_OrbitCamAngle < 0.0f)
         {
-            flt_CODE_bss_80079A00 += M_TAU_F;
+            g_OrbitCamAngle += M_TAU_F;
         }
     }
 }
@@ -8382,7 +8382,7 @@ void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
 
     lookat = dynAllocateLights(2);
 
-    scale = D_800364CC;
+    scale = g_CamPosScale;
 
     scaledpos.x = (cam_pos->x - g_CurrentPlayer->current_model_pos.x) * scale;
     scaledpos.y = (cam_pos->y - g_CurrentPlayer->current_model_pos.y) * scale;
@@ -8856,7 +8856,7 @@ Gfx *hudRenderHealthBars(Gfx *gdl)
     lookatmtx = dynAllocateMatrix();
     orthomtx = dynAllocateMatrix();
 
-    guOrtho(orthomtx, -800.0f * D_800364CC, 800.0f * D_800364CC, -600.0f * D_800364CC, 600.0f * D_800364CC, -100.0f, 1000.0f, 1.0f);
+    guOrtho(orthomtx, -800.0f * g_CamPosScale, 800.0f * g_CamPosScale, -600.0f * g_CamPosScale, 600.0f * g_CamPosScale, -100.0f, 1000.0f, 1.0f);
 
     gSPMatrix(gdl++, osVirtualToPhysical(orthomtx), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
 
@@ -10260,20 +10260,20 @@ void playerSetWorldScale(f32 arg0)
     f32 scalar;
     struct collision434* col;
 
-    scalar = D_800364D0 / arg0;
+    scalar = g_PlayerWorldScale / arg0;
 
     col = &g_CurrentPlayer->field_488;
     col->collision_position.x *= scalar;
     col->collision_position.z *= scalar;
 
-    D_800364D0 = arg0;
-    D_800364D4 = 1.0f / arg0;
+    g_PlayerWorldScale = arg0;
+    g_PlayerWorldScaleInv = 1.0f / arg0;
 }
 
 
 void camSetPosScale(f32 param_1)
 {
-  D_800364CC = param_1;
+  g_CamPosScale = param_1;
 }
 
 
@@ -11124,9 +11124,9 @@ void hudmsgTopShow(char* mess)
     display_upper_text_window += 1;
     stringbuffer_top[index][(BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1)] = 0;
 #else
-    strncpy(dword_CODE_bss_80079DC8[index], mess, (BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1));
+    strncpy(g_HudmsgTopText[index], mess, (BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1));
     display_upper_text_window += 1;
-    dword_CODE_bss_80079DC8[index][(BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1)] = 0;
+    g_HudmsgTopText[index][(BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1)] = 0;
 #endif
 }
 
@@ -11195,7 +11195,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
 #if defined(LEFTOVERDEBUG)
             if (stringbuffer_top[upper_text_buffer_index][0] != '\0')
 #else
-            if (dword_CODE_bss_80079DC8[upper_text_buffer_index][0] != '\0')
+            if (g_HudmsgTopText[upper_text_buffer_index][0] != '\0')
 #endif
             {
                 if ((g_CurrentPlayer->mpmenuon == 0)
@@ -11207,7 +11207,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
 #if defined(LEFTOVERDEBUG)
                     textMeasure(&msg.textheight, &msg.textwidth, stringbuffer_top[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, 0);
 #else
-                    textMeasure(&msg.textheight, &msg.textwidth, dword_CODE_bss_80079DC8[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, 0);
+                    textMeasure(&msg.textheight, &msg.textwidth, g_HudmsgTopText[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, 0);
 #endif
                     if (cameraBufferToggle != 0)
                     {
@@ -11240,7 +11240,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
 #if defined(LEFTOVERDEBUG)
                         gdl = textRenderOutlined(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
 #else
-                        gdl = textRenderOutlined(gdl, &msg.x, &msg.y, dword_CODE_bss_80079DC8[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
+                        gdl = textRenderOutlined(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
 #endif
                     }
                     else
@@ -11249,7 +11249,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
 #if defined(LEFTOVERDEBUG)
                         gdl = textRender(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, sw.screenwidth, viGetY(), 0, 0);
 #else
-                        gdl = textRender(gdl, &msg.x, &msg.y, dword_CODE_bss_80079DC8[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, sw.screenwidth, viGetY(), 0, 0);
+                        gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], ptrFontZurichBoldChars, ptrFontZurichBold, -1, sw.screenwidth, viGetY(), 0, 0);
 #endif
                     }
 #endif

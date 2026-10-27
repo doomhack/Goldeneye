@@ -527,7 +527,7 @@ void playerApplyIntro(void)
     g_CurrentPlayer->field_488.theta_transform.f[0] = -sinf(start_look_angle);
     g_CurrentPlayer->field_488.theta_transform.f[1] = FLOAT_INIT;
     g_CurrentPlayer->field_488.theta_transform.f[2] = cosf(start_look_angle);
-    playerSetWorldScale(D_800364D0);
+    playerSetWorldScale(g_PlayerWorldScale);
     dword_CODE_bss_80079DA0 = 0;
 
 
