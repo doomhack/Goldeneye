@@ -995,8 +995,8 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
     {
         if (portalnum >= 0)
         {
-            sub_GAME_7F0B96CC(portalnum, &sp180);
-            sp180.min *= get_room_data_float2();
+            bgGetPortalPlane(portalnum, &sp180);
+            sp180.min *= bgGetLevelScaleInv();
 
             temp_f2 = (pad->pos.f[0] * sp180.normal.f[0]) + (pad->pos.f[1] * sp180.normal.f[1]) + (pad->pos.f[2] * sp180.normal.f[2]);
 
@@ -1364,7 +1364,7 @@ void setupCreateProps(enum LEVELID stageId)
         {
             struct PadRecord *pad;
     
-            roompos_1 = get_room_data_float2();
+            roompos_1 = bgGetLevelScaleInv();
             pad = g_CurrentSetup.pads;
 
             for (; pad->plink != NULL; pad++)
@@ -1398,7 +1398,7 @@ void setupCreateProps(enum LEVELID stageId)
         {
             struct BoundPadRecord *vol;
 
-            roompos_2 = get_room_data_float2();
+            roompos_2 = bgGetLevelScaleInv();
             vol = g_CurrentSetup.boundpads;
             
             for (; vol->plink != NULL; vol++)
@@ -1653,7 +1653,7 @@ void setupCreateProps(enum LEVELID stageId)
                                     up.y -= 10.0f * pad3d->up.y;
                                     up.z -= 10.0f * pad3d->up.z;
 
-                                    ((struct TintedGlassRecord *) phead)->portalnum = sub_GAME_7F0B9E04(&up, &up2);
+                                    ((struct TintedGlassRecord *) phead)->portalnum = bgFindPortalOnSegment(&up, &up2);
                                     ((struct TintedGlassRecord *) phead)->unk90 = (*((s32 *) (&((struct TintedGlassRecord *) phead)->unk90))) / M_U16_MAX_VALUE_F;
                                 }
                             }

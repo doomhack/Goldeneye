@@ -945,7 +945,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                     // Caverns water
                     if (texnum == 1508)
                     {
-                        out = sub_GAME_7F09343C(out, TRUE);
+                        out = waterSetupGdl(out, TRUE);
                         texResetTileState();
                     }
 
@@ -957,11 +957,11 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                      */
                     if (texnum == 1511)
                     {
-                        out = sub_GAME_7F09365C(out, TRUE);
+                        out = waterSetupGdlCi(out, TRUE);
                         texResetTileState();
                     }
 
-                    if (check_if_imageID_is_light(texnum))
+                    if (lightIsLightTexture(texnum))
                     {
                         lightFixtureEntryBegin(out);
                         lightPending = TRUE;

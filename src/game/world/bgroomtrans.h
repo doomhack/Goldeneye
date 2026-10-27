@@ -2,10 +2,10 @@
 #define _UNK_0BC530_H_
 #include <ultra64.h>
 
-void setPlayerRoomField(s32 param_1);
-void updateRoomStatusFlags(void);
-void getRoomPositionScaledByIndex(s32 index, struct coord3d *param_2);
-Gfx * applyRoomMatrixToDisplayList(Gfx *DL, s32 index);
-struct coord3d* getRoomPositionByIndex(s32 roomID);
+void roomMtxSetOriginRoom(s32 param_1);
+void roomMtxTick(void);
+void roomGetWorldPos(s32 index, struct coord3d *param_2);
+Gfx * roomMtxLoad(Gfx *DL, s32 index);
+struct coord3d* roomGetPos(s32 roomID);
 
 #endif

@@ -3,11 +3,11 @@
 #include "game/world/initunk_007290.h"
 
 
-void sub_GAME_7F007290(void)
+void waterReset(void)
 {
-  flt_CODE_bss_80079E80 = 0.0f;
-  flt_CODE_bss_80079E84 = 0.0f;
-  flt_CODE_bss_80079E88 = 0.0f;
+  g_WaterScrollS = 0.0f;
+  g_WaterScrollT = 0.0f;
+  g_WaterBlendPhase = 0.0f;
   return;
 }
 

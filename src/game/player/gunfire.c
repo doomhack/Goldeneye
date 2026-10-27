@@ -6479,7 +6479,7 @@ void shotSkipRoomsOffRay(s32 arg0, coord3d *from, coord3d *to, u8 *rooms)
     f32 scale;
     s32 i;
 
-    scale = get_room_data_float1() * bgGetLevelVisibilityScale();
+    scale = bgGetLevelScale() * bgGetLevelVisibilityScale();
 
     dir.x = to->x - from->x;
     dir.y = to->y - from->y;
@@ -6489,7 +6489,7 @@ void shotSkipRoomsOffRay(s32 arg0, coord3d *from, coord3d *to, u8 *rooms)
     start.y = from->y * scale;
     start.z = from->z * scale;
 
-    for (i = 1; i < getMaxNumRooms(); i++) {
+    for (i = 1; i < bgGetMaxNumRooms(); i++) {
         if (!rooms[i] && shotRayHitsRoomBbox(i, &start, &dir) == 0) {
             rooms[i] = 1;
         }
@@ -6522,7 +6522,7 @@ s32 shotFindBgHitInVisibleRooms(coord3d *from, coord3d *to, coord3d *dir, coord3
     f32 scale;
     s32 room;
 
-    scale = get_room_data_float2();
+    scale = bgGetLevelScaleInv();
 
     // Get up to 100 currently visible rooms.
     numrooms = bgCopyVisibleRoomsToList(&rooms[0], 100);
@@ -6681,11 +6681,11 @@ s32 shotFindBgHit(s32 unused, coord3d *from, coord3d *to, coord3d *dir, coord3d 
     bestdist = M_U32_MAX_VALUE_F;
     bestroom = 0;
 
-    scale = get_room_data_float2();
+    scale = bgGetLevelScaleInv();
 
     room = 1;
 
-    if (getMaxNumRooms() >= 2)
+    if (bgGetMaxNumRooms() >= 2)
     {
         do
         {
@@ -6703,7 +6703,7 @@ s32 shotFindBgHit(s32 unused, coord3d *from, coord3d *to, coord3d *dir, coord3d 
                         dist = (tmp = ((dx * dx) + (dy * dy)) + (dist * dist));
                         adjusteddist = tmp;
 
-                        if (check_if_imageID_is_light(hit.texturenum))
+                        if (lightIsLightTexture(hit.texturenum))
                         {
                             adjusteddist = tmp - 4.0f;
                         }
@@ -6735,7 +6735,7 @@ s32 shotFindBgHit(s32 unused, coord3d *from, coord3d *to, coord3d *dir, coord3d 
 
             room++;
         }
-        while (room < getMaxNumRooms());
+        while (room < bgGetMaxNumRooms());
     }
 
     return bestroom;
@@ -6822,7 +6822,7 @@ void shotFireBullet(s32 hand)
 
     if (stanWalkLineNoCallback(&fromtile, playerprop->pos.x, playerprop->pos.z, shotdata.gunpos.x, shotdata.gunpos.z))
     {
-        distscale = get_room_data_float1() * bgGetLevelVisibilityScale();
+        distscale = bgGetLevelScale() * bgGetLevelVisibilityScale();
         playerpos = playerGetPos();
 
         new_var++;
@@ -6879,7 +6879,7 @@ void shotFireBullet(s32 hand)
 
         if (bestroom > 0)
         {
-            distscale = get_room_data_float2();
+            distscale = bgGetLevelScaleInv();
             bghit.hitpos.x *= distscale;
             bghit.hitpos.y *= distscale;
             bghit.hitpos.z *= distscale;
@@ -6994,7 +6994,7 @@ void shotFireBullet(s32 hand)
                     explosionCreateBulletImpact(&visiblehitpos, &bghit.normal, impact_sounds->thing2[pad], bestroom, 0, -1, 0);
                 }
 
-                if (check_if_imageID_is_light(bghit.texturenum))
+                if (lightIsLightTexture(bghit.texturenum))
                 {
                     lightFixtureBreak(bghit.tricmd, bghit.unk28, bestroom);
                 }

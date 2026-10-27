@@ -529,7 +529,7 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
 
                     for (rp = sp48; *rp >= 0; rp++)
                     {
-                        if (getROOMID_isRendered(*rp))
+                        if (bgRoomIsVisible(*rp))
                         {
                             if (roomid == *rp)
                             {
@@ -561,7 +561,7 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
 
                 for (rp = sp48; *rp >= 0; rp++)
                 {
-                    if (getROOMID_isRendered(*rp))
+                    if (bgRoomIsVisible(*rp))
                     {
                         if (roomid == *rp)
                         {
@@ -2005,7 +2005,7 @@ void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius)
     }
 
     // Update the room list with neighboring rooms reachable through portals and overlapped by the bounding box.
-    sub_GAME_7F0BA2D4(bbmin, bbmax, rooms, &count, 7);
+    bgFindRoomsInBbox(bbmin, bbmax, rooms, &count, 7);
 
     for (i = 0; i < count; i++) {
         prop->rooms[i] = rooms[i];

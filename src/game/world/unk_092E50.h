@@ -7,12 +7,12 @@
 extern f32 g_SkyCloudOffset;
 extern struct hand D_8003FDA0;
 
-extern f32 flt_CODE_bss_80079E80;
-extern f32 flt_CODE_bss_80079E84;
-extern f32 flt_CODE_bss_80079E88;
+extern f32 g_WaterScrollS;
+extern f32 g_WaterScrollT;
+extern f32 g_WaterBlendPhase;
 
-void sub_GAME_7F092E50(void);
-Gfx* sub_GAME_7F09343C(Gfx *gdl, s32 arg1);
-Gfx* sub_GAME_7F09365C(Gfx *gdl, s32 arg1);
+void waterTick(void);
+Gfx* waterSetupGdl(Gfx *gdl, s32 arg1);
+Gfx* waterSetupGdlCi(Gfx *gdl, s32 arg1);
 
 #endif

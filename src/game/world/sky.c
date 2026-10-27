@@ -216,7 +216,7 @@ void skyChooseWaterVtxColour(SkyRelated18 *arg0, f32 arg1)
 * Has to do with converting a float to a 32-bits value that's later read in two 16-bits parts
 * Possibly converting floats to fixed point
 */
-u32 sub_GAME_7F094298(f32 arg0)
+u32 skyFloatToFixed(f32 arg0)
 {
     u32 result;
 
@@ -258,7 +258,7 @@ void skyTick(void)
     }
 }
 
-Gfx* sub_GAME_7F09343C(Gfx*, s32);
+Gfx* waterSetupGdl(Gfx*, s32);
 
 Gfx *skyRender(Gfx *gdl)
 {
@@ -318,7 +318,7 @@ Gfx *skyRender(Gfx *gdl)
     bool sp430;
     struct CurrentEnvironmentRecord *env;
 
-    scale = get_room_data_float1() / 30.0f;
+    scale = bgGetLevelScale() / 30.0f;
     sp430 = FALSE;
     env = fogGetCurrentEnvironmentp();
 
@@ -820,7 +820,7 @@ Gfx *skyRender(Gfx *gdl)
 
         for (i = 0; i < s1; i++)
         {
-            sub_GAME_7F097388(&sp43c[i], &sp38c, 130, 65535.0f, 65535.0f, &sp274[i]);
+            skyProjectVertex(&sp43c[i], &sp38c, 130, 65535.0f, 65535.0f, &sp274[i]);
 
             sp274[i].unk28 = skyClamp(sp274[i].unk28, VI_SX(camGetScreenLeft()) * 4.0f, VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f);
             sp274[i].unk2c = skyClamp(sp274[i].unk2c, camGetScreenTop() * 4.0f, (camGetScreenTop() + camGetScreenHeight()) * 4.0f - 1.0f);
@@ -861,7 +861,7 @@ Gfx *skyRender(Gfx *gdl)
             gDPPipeSync(gdl++);
 
             texSelect(&gdl, &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->WaterImageId], 1, 0, 2);
-            gdl = sub_GAME_7F09343C(gdl, 0); // ???
+            gdl = waterSetupGdl(gdl, 0); // ???
             gDPSetRenderMode(gdl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
 
             if (s1 == 4)
@@ -1301,7 +1301,7 @@ Gfx *skyRender(Gfx *gdl)
 
         for (i = 0; i < s1; i++)
         {
-            sub_GAME_7F097388(&sp4b4[i], &sp1ac, 130, 65535.0f, 65535.0f, &sp94[i]);
+            skyProjectVertex(&sp4b4[i], &sp1ac, 130, 65535.0f, 65535.0f, &sp94[i]);
 
             sp94[i].unk28 = skyClamp(sp94[i].unk28, VI_SX(camGetScreenLeft()) * 4.0f, VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f);
             sp94[i].unk2c = skyClamp(sp94[i].unk2c, camGetScreenTop() * 4.0f, (camGetScreenTop() + camGetScreenHeight()) * 4.0f - 1.0f);
@@ -1367,7 +1367,7 @@ Gfx *skyRender(Gfx *gdl)
 }
 
 
-void sub_GAME_7F097388(SkyRelated18 *arg0, Mtxf *arg1, u16 arg2, f32 arg3, f32 arg4, SkyRelated38 *arg5)
+void skyProjectVertex(SkyRelated18 *arg0, Mtxf *arg1, u16 arg2, f32 arg3, f32 arg4, SkyRelated38 *arg5)
 {
     f32 sp68[4];
     f32 sp64;
@@ -1700,14 +1700,14 @@ Gfx *skyRenderTri(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38
             | (s32) sp47c->unk2c);
     gImmp1(gdl++, G_RDPHALF_CONT, (s32) sp480->unk2c << 16 | (s32) sp484->unk2c);
 
-    gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(sp480->unk28 * 0.25f));
-    gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp384[0]));
+    gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(sp480->unk28 * 0.25f));
+    gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(sp384[0]));
 
-    gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(sp410));
-    gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp394[0]));
+    gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(sp410));
+    gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(sp394[0]));
 
-    gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(sp408));
-    gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp38c[0]));
+    gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(sp408));
+    gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(sp38c[0]));
 
     if (!textured)
     {
@@ -1804,25 +1804,25 @@ Gfx *skyRenderTri(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38
         u32 sp130;
         u32 sp12c;
 
-        sp168 = sub_GAME_7F094298(sp210[0]);
-        sp164 = sub_GAME_7F094298(sp210[1]);
-        sp160 = sub_GAME_7F094298(sp210[2]);
-        sp15c = sub_GAME_7F094298(sp210[3]);
+        sp168 = skyFloatToFixed(sp210[0]);
+        sp164 = skyFloatToFixed(sp210[1]);
+        sp160 = skyFloatToFixed(sp210[2]);
+        sp15c = skyFloatToFixed(sp210[3]);
 
-        sp158 = sub_GAME_7F094298(sp290[0]);
-        sp154 = sub_GAME_7F094298(sp290[1]);
-        sp150 = sub_GAME_7F094298(sp290[2]);
-        sp14c = sub_GAME_7F094298(sp290[3]);
+        sp158 = skyFloatToFixed(sp290[0]);
+        sp154 = skyFloatToFixed(sp290[1]);
+        sp150 = skyFloatToFixed(sp290[2]);
+        sp14c = skyFloatToFixed(sp290[3]);
 
-        sp138 = sub_GAME_7F094298(sp2b0[0]);
-        sp134 = sub_GAME_7F094298(sp2b0[1]);
-        sp130 = sub_GAME_7F094298(sp2b0[2]);
-        sp12c = sub_GAME_7F094298(sp2b0[3]);
+        sp138 = skyFloatToFixed(sp2b0[0]);
+        sp134 = skyFloatToFixed(sp2b0[1]);
+        sp130 = skyFloatToFixed(sp2b0[2]);
+        sp12c = skyFloatToFixed(sp2b0[3]);
 
-        sp148 = sub_GAME_7F094298(sp230[0]);
-        sp144 = sub_GAME_7F094298(sp230[1]);
-        sp140 = sub_GAME_7F094298(sp230[2]);
-        sp13c = sub_GAME_7F094298(sp230[3]);
+        sp148 = skyFloatToFixed(sp230[0]);
+        sp144 = skyFloatToFixed(sp230[1]);
+        sp140 = skyFloatToFixed(sp230[2]);
+        sp13c = skyFloatToFixed(sp230[3]);
 
         gImmp1(gdl++, G_RDPHALF_1, (sp168 & 0xffff0000) | (sp164 & 0xffff0000) >> 16);
         gImmp1(gdl++, G_RDPHALF_CONT, (sp160 & 0xffff0000) | (sp15c & 0xffff0000) >> 16);
@@ -1895,24 +1895,24 @@ Gfx *skyRenderTri(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38
         u32 spb0;
         u32 spac;
 
-        spe8 = sub_GAME_7F094298(sp210[4] * sp190[0]);
-        spe4 = sub_GAME_7F094298(sp210[5] * sp190[0]);
-        spe0 = sub_GAME_7F094298(sp210[6] * sp190[0]);
+        spe8 = skyFloatToFixed(sp210[4] * sp190[0]);
+        spe4 = skyFloatToFixed(sp210[5] * sp190[0]);
+        spe0 = skyFloatToFixed(sp210[6] * sp190[0]);
         spdc = 0;
 
-        spd8 = sub_GAME_7F094298(sp290[4] * sp190[0]);
-        spd4 = sub_GAME_7F094298(sp290[5] * sp190[0]);
-        spd0 = sub_GAME_7F094298(sp290[6] * sp190[0]);
+        spd8 = skyFloatToFixed(sp290[4] * sp190[0]);
+        spd4 = skyFloatToFixed(sp290[5] * sp190[0]);
+        spd0 = skyFloatToFixed(sp290[6] * sp190[0]);
         spcc = 0;
 
-        spb8 = sub_GAME_7F094298(sp2b0[4] * sp190[0]);
-        spb4 = sub_GAME_7F094298(sp2b0[5] * sp190[0]);
-        spb0 = sub_GAME_7F094298(sp2b0[6] * sp190[0]);
+        spb8 = skyFloatToFixed(sp2b0[4] * sp190[0]);
+        spb4 = skyFloatToFixed(sp2b0[5] * sp190[0]);
+        spb0 = skyFloatToFixed(sp2b0[6] * sp190[0]);
         spac = 0;
 
-        spc8 = sub_GAME_7F094298(sp230[4] * sp190[0]);
-        spc4 = sub_GAME_7F094298(sp230[5] * sp190[0]);
-        spc0 = sub_GAME_7F094298(sp230[6] * sp190[0]);
+        spc8 = skyFloatToFixed(sp230[4] * sp190[0]);
+        spc4 = skyFloatToFixed(sp230[5] * sp190[0]);
+        spc0 = skyFloatToFixed(sp230[6] * sp190[0]);
         spbc = 0;
 
         gImmp1(gdl++, G_RDPHALF_1, (spe8 & 0xffff0000) | (spe4 & 0xffff0000) >> 16);
@@ -2210,14 +2210,14 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         gImmp1(gdl++, G_RDPHALF_1, (G_TRI_SHADE_TXTR << 24) | 0x00800000 | (s32) arg3->unk2c);
         gImmp1(gdl++, G_RDPHALF_CONT, (s32) arg4->unk2c << 16 | (s32) arg1->unk2c);
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
-        gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp1bc));
+        gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(sp1bc));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft())));
-        gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
+        gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(VI_SX(camGetScreenLeft())));
+        gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(0.0f));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
-        gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
+        gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(0.0f));
     }
     else
     {
@@ -2235,14 +2235,14 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         gImmp1(gdl++, G_RDPHALF_1, 0xce000000 | (s32) arg3->unk2c);
         gImmp1(gdl++, G_RDPHALF_CONT, (s32) arg4->unk2c << 16 | (s32) arg1->unk2c);
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft())));
-        gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(sp198));
+        gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(VI_SX(camGetScreenLeft())));
+        gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(sp198));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
-        gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
+        gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(VI_SX(camGetScreenLeft()) + VI_SX(camGetScreenWidth()) - 0.25f));
+        gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(0.0f));
 
-        gImmp1(gdl++, G_RDPHALF_1, sub_GAME_7F094298(VI_SX(camGetScreenLeft())));
-        gImmp1(gdl++, G_RDPHALF_CONT, sub_GAME_7F094298(0.0f));
+        gImmp1(gdl++, G_RDPHALF_1, skyFloatToFixed(VI_SX(camGetScreenLeft())));
+        gImmp1(gdl++, G_RDPHALF_CONT, skyFloatToFixed(0.0f));
     }
 
     sp3b0[0] = sp4cc->unk0c * sp3c0;
@@ -2323,10 +2323,10 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         u32 sp158 = arg1->b * 65536.0f;
         u32 sp154 = arg1->a * 65536.0f;
 
-        u32 sp150 = sub_GAME_7F094298((sp170 - arg1->r) / ((arg2->unk28 - arg1->unk28) * 0.25f));
-        u32 sp14c = sub_GAME_7F094298((sp16c - arg1->g) / ((arg2->unk28 - arg1->unk28) * 0.25f));
-        u32 sp148 = sub_GAME_7F094298((sp168 - arg1->b) / ((arg2->unk28 - arg1->unk28) * 0.25f));
-        u32 sp144 = sub_GAME_7F094298((sp164 - arg1->a) / ((arg2->unk28 - arg1->unk28) * 0.25f));
+        u32 sp150 = skyFloatToFixed((sp170 - arg1->r) / ((arg2->unk28 - arg1->unk28) * 0.25f));
+        u32 sp14c = skyFloatToFixed((sp16c - arg1->g) / ((arg2->unk28 - arg1->unk28) * 0.25f));
+        u32 sp148 = skyFloatToFixed((sp168 - arg1->b) / ((arg2->unk28 - arg1->unk28) * 0.25f));
+        u32 sp144 = skyFloatToFixed((sp164 - arg1->a) / ((arg2->unk28 - arg1->unk28) * 0.25f));
 
         u32 sp140;
         u32 sp13c;
@@ -2337,10 +2337,10 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         u32 sp128;
         u32 sp124;
 
-        sp140 = sp130 = sub_GAME_7F094298((arg3->r - arg1->r) / ((arg3->unk2c - arg1->unk2c) * 0.25f));
-        sp13c = sp12c = sub_GAME_7F094298((arg3->g - arg1->g) / ((arg3->unk2c - arg1->unk2c) * 0.25f));
-        sp138 = sp128 = sub_GAME_7F094298((arg3->b - arg1->b) / ((arg3->unk2c - arg1->unk2c) * 0.25f));
-        sp124 = sp134 = sub_GAME_7F094298((arg3->a - arg1->a) / ((arg3->unk2c - arg1->unk2c) * 0.25f));
+        sp140 = sp130 = skyFloatToFixed((arg3->r - arg1->r) / ((arg3->unk2c - arg1->unk2c) * 0.25f));
+        sp13c = sp12c = skyFloatToFixed((arg3->g - arg1->g) / ((arg3->unk2c - arg1->unk2c) * 0.25f));
+        sp138 = sp128 = skyFloatToFixed((arg3->b - arg1->b) / ((arg3->unk2c - arg1->unk2c) * 0.25f));
+        sp124 = sp134 = skyFloatToFixed((arg3->a - arg1->a) / ((arg3->unk2c - arg1->unk2c) * 0.25f));
 
         gImmp1(gdl++, G_RDPHALF_1, (sp160 & 0xffff0000) | (sp15c & 0xffff0000) >> 16);
         gImmp1(gdl++, G_RDPHALF_CONT, (sp158 & 0xffff0000) | (sp154 & 0xffff0000) >> 16);
@@ -2413,25 +2413,25 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
         u32 spa8;
         u32 spa4;
 
-        spe0 = sub_GAME_7F094298(sp254[0] * sp1c4[0]);
-        spdc = sub_GAME_7F094298(sp254[1] * sp1c4[0]);
-        spd8 = sub_GAME_7F094298(sp254[2] * sp1c4[0]);
-        spd4 = sub_GAME_7F094298(sp254[3] * sp1c4[0]);
+        spe0 = skyFloatToFixed(sp254[0] * sp1c4[0]);
+        spdc = skyFloatToFixed(sp254[1] * sp1c4[0]);
+        spd8 = skyFloatToFixed(sp254[2] * sp1c4[0]);
+        spd4 = skyFloatToFixed(sp254[3] * sp1c4[0]);
 
-        spd0 = sub_GAME_7F094298(sp2d4[0] * sp1c4[0]);
-        spcc = sub_GAME_7F094298(sp2d4[1] * sp1c4[0]);
-        spc8 = sub_GAME_7F094298(sp2d4[2] * sp1c4[0]);
-        spc4 = sub_GAME_7F094298(sp2d4[3] * sp1c4[0]);
+        spd0 = skyFloatToFixed(sp2d4[0] * sp1c4[0]);
+        spcc = skyFloatToFixed(sp2d4[1] * sp1c4[0]);
+        spc8 = skyFloatToFixed(sp2d4[2] * sp1c4[0]);
+        spc4 = skyFloatToFixed(sp2d4[3] * sp1c4[0]);
 
-        spb0 = sub_GAME_7F094298(sp2f4[0] * sp1c4[0]);
-        spac = sub_GAME_7F094298(sp2f4[1] * sp1c4[0]);
-        spa8 = sub_GAME_7F094298(sp2f4[2] * sp1c4[0]);
-        spa4 = sub_GAME_7F094298(sp2f4[3] * sp1c4[0]);
+        spb0 = skyFloatToFixed(sp2f4[0] * sp1c4[0]);
+        spac = skyFloatToFixed(sp2f4[1] * sp1c4[0]);
+        spa8 = skyFloatToFixed(sp2f4[2] * sp1c4[0]);
+        spa4 = skyFloatToFixed(sp2f4[3] * sp1c4[0]);
 
-        spc0 = sub_GAME_7F094298(sp274[0] * sp1c4[0]);
-        spbc = sub_GAME_7F094298(sp274[1] * sp1c4[0]);
-        spb8 = sub_GAME_7F094298(sp274[2] * sp1c4[0]);
-        spb4 = sub_GAME_7F094298(sp274[3] * sp1c4[0]);
+        spc0 = skyFloatToFixed(sp274[0] * sp1c4[0]);
+        spbc = skyFloatToFixed(sp274[1] * sp1c4[0]);
+        spb8 = skyFloatToFixed(sp274[2] * sp1c4[0]);
+        spb4 = skyFloatToFixed(sp274[3] * sp1c4[0]);
 
         gImmp1(gdl++, G_RDPHALF_1, (spe0 & 0xffff0000) | (spdc & 0xffff0000) >> 16);
         gImmp1(gdl++, G_RDPHALF_CONT, (spd8 & 0xffff0000) | (spd4 & 0xffff0000) >> 16);

@@ -18,11 +18,11 @@ file bgroomtrans.c
 /**
  * EU .bss 8007DC90
 */
-u8 roomStatusFlags[AMT300];
+u8 g_RoomMtxAge[AMT300];
 
-s32 roomIndices[AMT300]; //mtxbufferroom
-s32 roomOwners[AMT300];
-Mtx roomMatrices[AMT300];
+s32 g_RoomMtxRoom[AMT300]; //mtxbufferroom
+s32 g_RoomMtxOrigin[AMT300];
+Mtx g_RoomMtxs[AMT300];
 
 
 /**
@@ -31,7 +31,7 @@ Mtx roomMatrices[AMT300];
  *
  * Address: 0x7F0BC530
  */
-void initializeRoomData(void)
+void roomMtxInit(void)
 {
     int i;
 
@@ -42,17 +42,17 @@ void initializeRoomData(void)
 
     for (i=0; i<AMT300; i++)
     {
-      roomIndices[i] = -1;
-      roomStatusFlags[i] = 2;
+      g_RoomMtxRoom[i] = -1;
+      g_RoomMtxAge[i] = 2;
 
-      roomOwners[i] = -1;
+      g_RoomMtxOrigin[i] = -1;
 
 
     }
 
-    for (i=0; i<getMaxNumRooms(); ++i)
+    for (i=0; i<bgGetMaxNumRooms(); ++i)
     {
-        g_BgRoomInfo[i].field_36 = -1;
+        g_BgRoomInfo[i].mtxIndex = -1;
     }
 }
 
@@ -62,7 +62,7 @@ void initializeRoomData(void)
  *
  * Address: 0x7F0BC624
  */
-void setPlayerRoomField(s32 roomIndex) {
+void roomMtxSetOriginRoom(s32 roomIndex) {
   g_CurrentPlayer->curRoomIndex = roomIndex;
 }
 
@@ -72,7 +72,7 @@ void setPlayerRoomField(s32 roomIndex) {
  *
  * Address: 0x7F0BC634
  */
-void assignRoomIndexToRoomID(int mtx,int room)
+void roomMtxAssign(int mtx,int room)
 {
 #ifdef DEBUG
     //check we are clear first before assignment
@@ -80,8 +80,8 @@ void assignRoomIndexToRoomID(int mtx,int room)
     assert(mtxbufferroom[mtx] == -1);
 #endif
 
-    g_BgRoomInfo[room].field_36 = mtx;
-    roomIndices[mtx] = room;
+    g_BgRoomInfo[room].mtxIndex = mtx;
+    g_RoomMtxRoom[mtx] = room;
 }
 
 
@@ -90,7 +90,7 @@ void assignRoomIndexToRoomID(int mtx,int room)
  *
  * Address: 0x7F0BC660
  */
-void removeRoomIndexFromRoomID(int mtx,int room)
+void roomMtxUnassign(int mtx,int room)
 {
 #ifdef DEBUG
     // check the requested mtx is assigned before removing
@@ -98,8 +98,8 @@ void removeRoomIndexFromRoomID(int mtx,int room)
     assert(mtxbufferroom[mtx] == room);
 #endif
 
-    g_BgRoomInfo[room].field_36 = -1;
-    roomIndices[mtx] = -1;
+    g_BgRoomInfo[room].mtxIndex = -1;
+    g_RoomMtxRoom[mtx] = -1;
 }
 
 
@@ -108,13 +108,13 @@ void removeRoomIndexFromRoomID(int mtx,int room)
  *
  * Address: 0x7F0BC690
  */
-void resetRoomState(int roomIndex)
+void roomMtxFree(int roomIndex)
 {
-    if (roomIndices[roomIndex] != -1) {
-        removeRoomIndexFromRoomID(roomIndex,roomIndices[roomIndex]);
+    if (g_RoomMtxRoom[roomIndex] != -1) {
+        roomMtxUnassign(roomIndex,g_RoomMtxRoom[roomIndex]);
     }
-    roomStatusFlags[roomIndex] = 2;
-    roomOwners[roomIndex] = -1;
+    g_RoomMtxAge[roomIndex] = 2;
+    g_RoomMtxOrigin[roomIndex] = -1;
 }
 
 
@@ -124,13 +124,13 @@ void resetRoomState(int roomIndex)
  *
  * Address: 0x7F0BC6F0
  */
-s32 findAvailableRoomIndex(void)
+s32 roomMtxFindFree(void)
 {
     s32 i;
 
     for (i = 0; i<AMT300; i++)
     {
-        if (((s32) roomStatusFlags[i] >= 2) && (roomOwners[i] == -1))
+        if (((s32) g_RoomMtxAge[i] >= 2) && (g_RoomMtxOrigin[i] == -1))
         {
             return i;
         }
@@ -144,19 +144,19 @@ s32 findAvailableRoomIndex(void)
  *
  * NTSC address 0x7F0BC7D4.
  */
-void updateRoomStatusFlags(void)
+void roomMtxTick(void)
 {
     s32 i;
 
     for(i = 0; i<AMT300; ++i)
     {
-        if (roomOwners[i] > -1)
+        if (g_RoomMtxOrigin[i] > -1)
         {
-            roomStatusFlags[i]++;
+            g_RoomMtxAge[i]++;
 
-            if (roomStatusFlags[i] >= 2)
+            if (g_RoomMtxAge[i] >= 2)
             {
-                resetRoomState(i);
+                roomMtxFree(i);
             }
         }
     }
@@ -170,24 +170,24 @@ void updateRoomStatusFlags(void)
  *
  * NTSC address 0x7F0BC85C.
  */
-s32 setupRoomTransformationMatrix(s32 room)
+s32 roomMtxGet(s32 room)
 {
     s32 mtx;
     Mtxf roomTransformMatrix;
 
-    mtx = g_BgRoomInfo[room].field_36;//mtxid
+    mtx = g_BgRoomInfo[room].mtxIndex;
 
-    if ((mtx == -1) || (g_CurrentPlayer->curRoomIndex != roomOwners[mtx]))
+    if ((mtx == -1) || (g_CurrentPlayer->curRoomIndex != g_RoomMtxOrigin[mtx]))
     {
         if (mtx != -1)
         {
-            removeRoomIndexFromRoomID(mtx, room);
+            roomMtxUnassign(mtx, room);
         }
 
-        mtx = findAvailableRoomIndex();
-        assignRoomIndexToRoomID(mtx, room);
+        mtx = roomMtxFindFree();
+        roomMtxAssign(mtx, room);
 
-        roomStatusFlags[mtx] = 0;
+        g_RoomMtxAge[mtx] = 0;
 #ifdef DEBUG
         assert(g_BgRoomInfo[room].mtxid == mtx);
        // assert(mtxbufferroom[mtx] == room);
@@ -195,7 +195,7 @@ s32 setupRoomTransformationMatrix(s32 room)
     }
     else
     {
-        roomStatusFlags[mtx] = 0;
+        g_RoomMtxAge[mtx] = 0;
         #ifdef DEBUG
         assert(g_BgRoomInfo[room].mtxid == mtx);
         //assert(mtxbufferroom[mtx] == room);
@@ -203,21 +203,21 @@ s32 setupRoomTransformationMatrix(s32 room)
         return mtx;
     }
 
-    roomOwners[mtx] = g_CurrentPlayer->curRoomIndex;
+    g_RoomMtxOrigin[mtx] = g_CurrentPlayer->curRoomIndex;
 
     mtx4LoadIdentity(&roomTransformMatrix);
 
     // set room size according to level scaling
-    roomTransformMatrix.m[0][0] = room_data_float2;
-    roomTransformMatrix.m[1][1] = room_data_float2;
-    roomTransformMatrix.m[2][2] = room_data_float2;
+    roomTransformMatrix.m[0][0] = g_BgLevelScaleInv;
+    roomTransformMatrix.m[1][1] = g_BgLevelScaleInv;
+    roomTransformMatrix.m[2][2] = g_BgLevelScaleInv;
 
     // room translation to position it relative to the player
-    roomTransformMatrix.m[3][0] = (ptr_bgdata_room_fileposition_list[room].pos.f[0] * room_data_float2) - g_CurrentPlayer->current_model_pos.f[0];
-    roomTransformMatrix.m[3][1] = (ptr_bgdata_room_fileposition_list[room].pos.f[1] * room_data_float2) - g_CurrentPlayer->current_model_pos.f[1];
-    roomTransformMatrix.m[3][2] = (ptr_bgdata_room_fileposition_list[room].pos.f[2] * room_data_float2) - g_CurrentPlayer->current_model_pos.f[2];
+    roomTransformMatrix.m[3][0] = (ptr_bgdata_room_fileposition_list[room].pos.f[0] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[0];
+    roomTransformMatrix.m[3][1] = (ptr_bgdata_room_fileposition_list[room].pos.f[1] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[1];
+    roomTransformMatrix.m[3][2] = (ptr_bgdata_room_fileposition_list[room].pos.f[2] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[2];
 
-    mtxF2L(&roomTransformMatrix, &roomMatrices[mtx]);
+    mtxF2L(&roomTransformMatrix, &g_RoomMtxs[mtx]);
 
     return mtx;
 }
@@ -228,12 +228,12 @@ s32 setupRoomTransformationMatrix(s32 room)
  *
  * Address: 0x7F0BC9C4
  */
-Gfx * applyRoomMatrixToDisplayList(Gfx *gdl,int roomID)
+Gfx * roomMtxLoad(Gfx *gdl,int roomID)
 {
     s32 roomIndex;
 
-    roomIndex = setupRoomTransformationMatrix(roomID);
-    gSPMatrix(gdl++, &roomMatrices[roomIndex], G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
+    roomIndex = roomMtxGet(roomID);
+    gSPMatrix(gdl++, &g_RoomMtxs[roomIndex], G_MTX_MODELVIEW|G_MTX_LOAD|G_MTX_NOPUSH);
     return gdl;
 }
 
@@ -243,7 +243,7 @@ Gfx * applyRoomMatrixToDisplayList(Gfx *gdl,int roomID)
  *
  * Address: 0x7f0bca14
  */
-struct coord3d* getRoomPositionByIndex(s32 roomID)
+struct coord3d* roomGetPos(s32 roomID)
 {
     return &ptr_bgdata_room_fileposition_list[roomID].pos;
 }
@@ -254,10 +254,10 @@ struct coord3d* getRoomPositionByIndex(s32 roomID)
  *
  * Address: 0x7F0BCA34
  */
-void getRoomPositionScaledByIndex(s32 roomID, coord3d *scaledPos)
+void roomGetWorldPos(s32 roomID, coord3d *scaledPos)
 {
-    scaledPos->x = ptr_bgdata_room_fileposition_list[roomID].pos.x * room_data_float2;
-    scaledPos->y = ptr_bgdata_room_fileposition_list[roomID].pos.y * room_data_float2;
-    scaledPos->z = ptr_bgdata_room_fileposition_list[roomID].pos.z * room_data_float2;
+    scaledPos->x = ptr_bgdata_room_fileposition_list[roomID].pos.x * g_BgLevelScaleInv;
+    scaledPos->y = ptr_bgdata_room_fileposition_list[roomID].pos.y * g_BgLevelScaleInv;
+    scaledPos->z = ptr_bgdata_room_fileposition_list[roomID].pos.z * g_BgLevelScaleInv;
 }
 

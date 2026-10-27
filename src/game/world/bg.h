@@ -89,7 +89,7 @@ typedef struct s_room_info {
 
     u8 room_loaded_mask;                    // 0x34
     u8 field_35;                            // 0x35
-    s16 field_36;                           // 0x36
+    s16 mtxIndex;                           // 0x36
 
     coord3d minbounds;                      // 0x38
     coord3d maxbounds;                      // 0x44
@@ -182,7 +182,7 @@ typedef struct bg_queued_portal_entry {
 extern bg_portal_data_entry *g_BgPortals;
 extern struct unk_portalstruct table_for_portals[PORTMAX];
 extern s32 g_MaxNumRooms;
-extern f32 room_data_float2;
+extern f32 g_BgLevelScaleInv;
 
 extern bg_room_data * ptr_bgdata_room_fileposition_list;
 extern s_room_info g_BgRoomInfo[];
@@ -195,12 +195,12 @@ void bgInit(void);
 // chrSetChrPresetToNearbyChr requres arg be s32
 bool bgRoomsSharePortal(s32 roomA, s32 roomB);
 
-//f32 sub_GAME_7F0B4F9C(s32 room); // u8 not s32 for stanGetTileRoomValue
+//f32 bgGetRoomValue(s32 room); // u8 not s32 for stanGetTileRoomValue
 s32 bgCopyVisibleRoomsToList(s32 *rooms, s32 max);
 u32 bgDecompress(u8* source, u8 *target);
 bool bgTestBulletHitBackground(coord3d *from, coord3d *to, s32 roomnum, struct HitThing *hit);
-void delete_room_data(s32 roomID);
-void load_bg_file(LEVEL_INDEX stagenum);
+void bgUnloadRoom(s32 roomID);
+void bgLoad(LEVEL_INDEX stagenum);
 
 s32 bgDebugRemoved7F0B9DE4(s32 arg0, s32 arg1, s32 arg2);
 void bgRemoved7F0B9DF4(s32 arg0);
@@ -210,25 +210,25 @@ void bgToggleDataPortalsContrlBytes1Bit1(s32 index, s32 toggle);
 s32 bgGetDataPortalsControlBytes1Bit2(s32 arg0);
 void bgClearDataPortalsControlBytes1Low2Bits(s32 index);
 void bgSetDataPortalsControlBytes1Bit2(s32 index);
-void sub_GAME_7F0B9A7C(s32 portalnum);
-void sub_GAME_7F0B9A2C(s32 portalnum);
-void bgRoomVisibilityRelated(void);
+void bgPortalThicknessDec(s32 portalnum);
+void bgPortalThicknessInc(s32 portalnum);
+void bgFindVisibleRooms(void);
 Gfx* bgLevelRender(Gfx *arg0);
 Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 left, s32 top, s32 width, s32 height);
 Gfx* bgScissorCurrentPlayerViewDefault(Gfx* arg0);
 Gfx* bgScissorCurrentPlayerViewF(Gfx* arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4);
-f32 get_room_data_float1(void);
-u8 getROOMID_isRendered(int roomID);
+f32 bgGetLevelScale(void);
+u8 bgRoomIsVisible(int roomID);
 s32 bgGet2dBboxByRoomId(s32 room_id, struct bbox2d *result);
 f32 bgGetLevelVisibilityScale(void);
 void bgRectOutersect(struct bbox2d *a, struct bbox2d *b);
-f32 get_room_data_float2(void);
+f32 bgGetLevelScaleInv(void);
 s32 bgGetPortalBetweenRooms(s32 arg0, s32 arg1, struct coord3d *arg2, struct coord3d *arg3);
-void sub_GAME_7F0B96CC(s32 portalnum, f32 *out);
+void bgGetPortalPlane(s32 portalnum, f32 *out);
 void bgApplyDynamicCCRMLUT(Gfx *arg0, Gfx *arg1, enum CCRMLUT arg2);
-void sub_GAME_7F0BA2D4(coord3d *, coord3d *, s32 *, s32 *, s32);
+void bgFindRoomsInBbox(coord3d *, coord3d *, s32 *, s32 *, s32);
 void bgFindRoomsAlongSegment(coord3d *pos1, coord3d *pos2, u8 *initialRooms, u8 *outRoomSet, s32 *outRoomNums, s32 *outRoomNumsCount, s32 outRoomNumsMax);
-s32 sub_GAME_7F0B9E04(coord3d *arg0, coord3d *arg1);
+s32 bgFindPortalOnSegment(coord3d *arg0, coord3d *arg1);
 void bgRoomCalcBB(s32 room);
 
 #endif

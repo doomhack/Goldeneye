@@ -17,7 +17,7 @@ struct s_darkened_light {
 };
 
 void lightFixtureEntryEnd(Gfx *param_1);
-bool check_if_imageID_is_light(s32 imageID);
+bool lightIsLightTexture(s32 imageID);
 void lightFixtureEntryBegin(Gfx *DL);
 
 #endif

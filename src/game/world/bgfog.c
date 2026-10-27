@@ -248,7 +248,7 @@ void fogLoadFoglessCurrentEnvironment(EnvironmentFoglessRecord *arg0);
  *
  * Address 0x7F0BA720.
 */
-void sub_GAME_7F0BA720(s32 a, s32 b)
+void fogRemoved7F0BA720(s32 a, s32 b)
 {
     return;
 }

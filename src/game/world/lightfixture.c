@@ -25,16 +25,16 @@
  * Lifecycle:
  * Level start   On level start lightFixtureInitTables() zeroes both tables.
  * 
- * Room load     bgLoadRoomPrimaryGdl() calls clear_light_fixturetable_in_room(),
+ * Room load     bgLoadRoomPrimaryGdl() calls lightFixtureClearRoom(),
  *               which drops that room's stale fixture entries and latches the
  *               room number into current_light_fixture_room. Then
  *               texLoadFromGdl() walks the room's display list. Every time it
- *               emits a texture that check_if_imageID_is_light() recognises
+ *               emits a texture that lightIsLightTexture() recognises
  *               it opens an entry via lightFixtureEntryBegin() 
  *               and closes it with lightFixtureEntryEnd(). So the
  *               fixture directory is a by-product of texture processing.
  * 
- * Room unload   Nothing! delete_room_data() frees ptr_expanded_mapping_info,
+ * Room unload   Nothing! bgUnloadRoom() frees ptr_expanded_mapping_info,
  *               the display list these entries point into, but never
  *               touches light_fixture_table. Thus a level could in theory have
  *               enough lights to fill the light_fixture_table and after that
@@ -42,11 +42,11 @@
  *               don't believe any levels actually have enough rooms and lights 
  *               to fill the table.
  *
- * Vertex load   after bgLoadRoomVtxData(), bg.c calls redarken_lights_in_room()
+ * Vertex load   after bgLoadRoomVtxData(), bg.c calls lightRedarkenRoom()
  *               to re-apply the >>2 to every vertex the darkened table lists for
  *               that room, restoring lights the player broke earlier.
  *
- * Bullet hit    gunfire.c checks check_if_imageID_is_light() on the hit
+ * Bullet hit    gunfire.c checks lightIsLightTexture() on the hit
  *               texture and, if it matches, calls lightFixtureBreak() with the
  *               display list command of the triangle that was hit.
  * 
@@ -141,7 +141,7 @@ void lightFixtureEntryEnd(Gfx *DL)
 }
 
 
-bool check_if_imageID_is_light(s32 imageID)
+bool lightIsLightTexture(s32 imageID)
 {
     if ((imageID == IMAGE_WALL_LAMP)     ||
         (imageID == IMAGE_203_LIGHT)     ||
@@ -193,7 +193,7 @@ Vtx *lightFindVertexBaseForTri(Gfx *gfx, s32 room_index)
 }
 
 
-void extract_vertex_indices_from_triangle(Gfx* gfx, u32 tri_type, s32* idx1, s32* idx2, s32* idx3)
+void lightGetTriVertexIndices(Gfx* gfx, u32 tri_type, s32* idx1, s32* idx2, s32* idx3)
 {
     switch (tri_type) 
     {
@@ -227,14 +227,14 @@ void extract_vertex_indices_from_triangle(Gfx* gfx, u32 tri_type, s32* idx1, s32
 }
 
 
-void extract_vertex_coords_from_triangle(Gfx * gfx, u32 tri_type, s32 room_index, coord16 * out1, coord16 * out2, coord16 * out3)
+void lightGetTriVertexCoords(Gfx * gfx, u32 tri_type, s32 room_index, coord16 * out1, coord16 * out2, coord16 * out3)
 {
     s32 idx1;
     s32 idx2;
     s32 idx3;
     Vtx * vertices;
 
-    extract_vertex_indices_from_triangle(gfx, tri_type, &idx1, &idx2, &idx3);
+    lightGetTriVertexIndices(gfx, tri_type, &idx1, &idx2, &idx3);
     vertices = lightFindVertexBaseForTri(gfx, room_index);
 
     out1->AsArray[0] = (s16) vertices[idx1].v.ob[0];
@@ -251,7 +251,7 @@ void extract_vertex_coords_from_triangle(Gfx * gfx, u32 tri_type, s32 room_index
 }
 
 
-void redarken_lights_in_room(s32 room_index)
+void lightRedarkenRoom(s32 room_index)
 {
     Vtx * vertex;
     s32 i;
@@ -273,12 +273,12 @@ void redarken_lights_in_room(s32 room_index)
 }
 
 
-void darken_vertex_in_room(Vtx * vertex, s32 room_index)
+void lightDarkenVertex(Vtx * vertex, s32 room_index)
 {
     s32 vtx_index;
 
     // Check if this vertex was already darkened
-    if (darkened_light_table_contains_vertex(vertex, room_index) != 0) { return; }
+    if (lightIsVertexDarkened(vertex, room_index) != 0) { return; }
 
     // weird memory stuff going on here
     vtx_index = ((u32)vertex - (u32)g_BgRoomInfo[room_index].vertices) >> 4;
@@ -300,7 +300,7 @@ void darken_vertex_in_room(Vtx * vertex, s32 room_index)
 }
 
 
-s32 darkened_light_table_contains_vertex(Vtx * vertex, s32 room_index)
+s32 lightIsVertexDarkened(Vtx * vertex, s32 room_index)
 {
     u32 vtx_index;
     s32 i;
@@ -320,7 +320,7 @@ s32 darkened_light_table_contains_vertex(Vtx * vertex, s32 room_index)
 }
 
 
-void darken_triangle_in_room(Gfx *gfx, u32 tri_type, s32 room_index)
+void lightDarkenTri(Gfx *gfx, u32 tri_type, s32 room_index)
 {
     Vtx * vertex;
     s32 idx1;
@@ -328,18 +328,18 @@ void darken_triangle_in_room(Gfx *gfx, u32 tri_type, s32 room_index)
     s32 idx3;
     Vtx * vertices;
 
-    extract_vertex_indices_from_triangle(gfx, tri_type, &idx1, &idx2, &idx3);
+    lightGetTriVertexIndices(gfx, tri_type, &idx1, &idx2, &idx3);
     vertices = lightFindVertexBaseForTri(gfx, room_index);
 
-    darken_vertex_in_room(&vertices[idx1], room_index);
-    darken_vertex_in_room(&vertices[idx2], room_index);
+    lightDarkenVertex(&vertices[idx1], room_index);
+    lightDarkenVertex(&vertices[idx2], room_index);
 
     vertex = &vertices[idx3];
-    darken_vertex_in_room(vertex, room_index);
+    lightDarkenVertex(vertex, room_index);
 }
 
 
-s32 darkened_light_table_contains_triangle(Gfx * gfx, u32 tri_type, s32 room_index)
+s32 lightIsTriDarkened(Gfx * gfx, u32 tri_type, s32 room_index)
 {
     s32 out3;
     s32 idx1;
@@ -349,11 +349,11 @@ s32 darkened_light_table_contains_triangle(Gfx * gfx, u32 tri_type, s32 room_ind
     s32 out2;
     s32 out1;
 
-    extract_vertex_indices_from_triangle(gfx, tri_type, &idx1, &idx2, &idx3);
+    lightGetTriVertexIndices(gfx, tri_type, &idx1, &idx2, &idx3);
     vertices = lightFindVertexBaseForTri(gfx, room_index);
-    out1 = darkened_light_table_contains_vertex(&vertices[idx2], room_index);
-    out2 = darkened_light_table_contains_vertex(&vertices[idx1], room_index);
-    out3 = darkened_light_table_contains_vertex(&vertices[idx3], room_index);
+    out1 = lightIsVertexDarkened(&vertices[idx2], room_index);
+    out2 = lightIsVertexDarkened(&vertices[idx1], room_index);
+    out3 = lightIsVertexDarkened(&vertices[idx3], room_index);
     return out3 + out2 + out1;
 }
 
@@ -384,7 +384,7 @@ s32 lightIsCoordNearDarkenedVertex(coord16 * coord, s32 room_index)
             if (dy < 0) { dy = -dy; }
             if (dz < 0) { dz = -dz; }
 
-            if ((dx + dy + dz) < (s32) (get_room_data_float1() * 100.0f))
+            if ((dx + dy + dz) < (s32) (bgGetLevelScale() * 100.0f))
             {
                 return 1;
             }
@@ -463,24 +463,24 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
         }
  
         // If this tri is already darkened, do not darken it again.
-        if (darkened_light_table_contains_triangle(hit_gfx, tri_type, light_fixture_table[i].room_index) != 0) 
+        if (lightIsTriDarkened(hit_gfx, tri_type, light_fixture_table[i].room_index) != 0) 
         { 
             return; 
         }
  
         //Darken the exact triangle that was shot. The check for other tris that are part of this light fixture comes later.
-        darken_triangle_in_room(hit_gfx, tri_type, light_fixture_table[i].room_index);
+        lightDarkenTri(hit_gfx, tri_type, light_fixture_table[i].room_index);
  
         /**
          * Measure the hit tri's three edges and turn each into a step size for the shard loops below.
          *
-         * edge_length is in room units; get_room_data_float2() is 1 / level scale, so multiplying gives 
+         * edge_length is in room units; bgGetLevelScaleInv() is 1 / level scale, so multiplying gives 
          * the edge length in world units, and 10.0f / that is the fraction of the edge 
          * spanning 10 world units. The loops add it to edge_frac from 0 to 1, so shards land every 10
          * world units and a longer edge sheds proportionally more. The per-axis diffs are kept because 
          * those loops reuse them as the direction to interpolate along.
          */
-        extract_vertex_coords_from_triangle(hit_gfx, tri_type, light_fixture_table[i].room_index, &hit_vtx1, &hit_vtx2, &hit_vtx3);
+        lightGetTriVertexCoords(hit_gfx, tri_type, light_fixture_table[i].room_index, &hit_vtx1, &hit_vtx2, &hit_vtx3);
  
 		diff_x_12 = hit_vtx1.AsArray[0] - hit_vtx2.AsArray[0];
 		diff_x_13 = hit_vtx1.AsArray[0] - hit_vtx3.AsArray[0];
@@ -495,15 +495,15 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
 		diff_z_23 = hit_vtx2.AsArray[2] - hit_vtx3.AsArray[2];
  
         edge_length = sqrtf((diff_x_12 * diff_x_12) + (diff_y_12 * diff_y_12) + (diff_z_12 * diff_z_12));
-        shard_step_12 = 10.0f / (get_room_data_float2() * edge_length);
+        shard_step_12 = 10.0f / (bgGetLevelScaleInv() * edge_length);
  
         edge_length = sqrtf((diff_x_13 * diff_x_13) + (diff_y_13 * diff_y_13) + (diff_z_13 * diff_z_13));
-        shard_step_13 = 10.0f / (get_room_data_float2() * edge_length);
+        shard_step_13 = 10.0f / (bgGetLevelScaleInv() * edge_length);
  
         edge_length = sqrtf((diff_x_23 * diff_x_23) + (diff_y_23 * diff_y_23) + (diff_z_23 * diff_z_23));
-        shard_step_23 = 10.0f / (get_room_data_float2() * edge_length);
+        shard_step_23 = 10.0f / (bgGetLevelScaleInv() * edge_length);
  
-        getRoomPositionScaledByIndex(light_fixture_table[i].room_index, &room_origin);
+        roomGetWorldPos(light_fixture_table[i].room_index, &room_origin);
  
         /**
          * Spawn glass shards along the edges of the hit tri.
@@ -512,25 +512,25 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
          */
         for (edge_frac = 0.0f; edge_frac < 1.0f; edge_frac += shard_step_12)
         {
-            shard_pos.x = ((hit_vtx2.AsArray[0] + (diff_x_12 * edge_frac)) * get_room_data_float2()) + room_origin.f[0];
-            shard_pos.y = ((hit_vtx2.AsArray[1] + (diff_y_12 * edge_frac)) * get_room_data_float2()) + room_origin.f[1];
-            shard_pos.z = ((hit_vtx2.AsArray[2] + (diff_z_12 * edge_frac)) * get_room_data_float2()) + room_origin.f[2];
+            shard_pos.x = ((hit_vtx2.AsArray[0] + (diff_x_12 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[0];
+            shard_pos.y = ((hit_vtx2.AsArray[1] + (diff_y_12 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[1];
+            shard_pos.z = ((hit_vtx2.AsArray[2] + (diff_z_12 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[2];
             glassCreateShard(&shard_pos, 0.0f, 10.0f);
         }
  
         for (edge_frac = 0.0f; edge_frac < 1.0f; edge_frac += shard_step_13)
         {
-            shard_pos.x = ((hit_vtx3.AsArray[0] + (diff_x_13 * edge_frac)) * get_room_data_float2()) + room_origin.f[0];
-            shard_pos.y = ((hit_vtx3.AsArray[1] + (diff_y_13 * edge_frac)) * get_room_data_float2()) + room_origin.f[1];
-            shard_pos.z = ((hit_vtx3.AsArray[2] + (diff_z_13 * edge_frac)) * get_room_data_float2()) + room_origin.f[2];
+            shard_pos.x = ((hit_vtx3.AsArray[0] + (diff_x_13 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[0];
+            shard_pos.y = ((hit_vtx3.AsArray[1] + (diff_y_13 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[1];
+            shard_pos.z = ((hit_vtx3.AsArray[2] + (diff_z_13 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[2];
             glassCreateShard(&shard_pos, 0.0f, 10.0f);
         }
  
         for (edge_frac = 0.0f; edge_frac < 1.0f; edge_frac += shard_step_23)
         {
-            shard_pos.x = ((hit_vtx3.AsArray[0] + (diff_x_23 * edge_frac)) * get_room_data_float2()) + room_origin.f[0];
-            shard_pos.y = ((hit_vtx3.AsArray[1] + (diff_y_23 * edge_frac)) * get_room_data_float2()) + room_origin.f[1];
-            shard_pos.z = ((hit_vtx3.AsArray[2] + (diff_z_23 * edge_frac)) * get_room_data_float2()) + room_origin.f[2];
+            shard_pos.x = ((hit_vtx3.AsArray[0] + (diff_x_23 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[0];
+            shard_pos.y = ((hit_vtx3.AsArray[1] + (diff_y_23 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[1];
+            shard_pos.z = ((hit_vtx3.AsArray[2] + (diff_z_23 * edge_frac)) * bgGetLevelScaleInv()) + room_origin.f[2];
             glassCreateShard(&shard_pos, 0.0f, 10.0f);
         }
  
@@ -545,7 +545,7 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
             {
                 darken_tri1 = 0;
  
-                extract_vertex_coords_from_triangle(fixture_gfx, 0, light_fixture_table[i].room_index, &cand_vtx1, &cand_vtx2, &cand_vtx3);
+                lightGetTriVertexCoords(fixture_gfx, 0, light_fixture_table[i].room_index, &cand_vtx1, &cand_vtx2, &cand_vtx3);
  
                 if (lightIsCoordNearDarkenedVertex(&cand_vtx1, light_fixture_table[i].room_index) != 0)
                 {
@@ -562,7 +562,7 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
  
                 if (darken_tri1 != 0)
                 {
-                    darken_triangle_in_room(fixture_gfx, 0, light_fixture_table[i].room_index);
+                    lightDarkenTri(fixture_gfx, 0, light_fixture_table[i].room_index);
                 }
             }
             else if (fixture_gfx->dma.cmd == G_TRI4)
@@ -571,7 +571,7 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
                 {
                     darken_tri4 = 0;
  
-                    extract_vertex_coords_from_triangle(fixture_gfx, j + 1, light_fixture_table[i].room_index, &cand_vtx1, &cand_vtx2, &cand_vtx3);
+                    lightGetTriVertexCoords(fixture_gfx, j + 1, light_fixture_table[i].room_index, &cand_vtx1, &cand_vtx2, &cand_vtx3);
  
                     if (lightIsCoordNearDarkenedVertex(&cand_vtx1, light_fixture_table[i].room_index) != 0)
                     {
@@ -588,7 +588,7 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
  
                     if (darken_tri4 != 0)
                     {
-                        darken_triangle_in_room(fixture_gfx, j + 1, light_fixture_table[i].room_index);
+                        lightDarkenTri(fixture_gfx, j + 1, light_fixture_table[i].room_index);
                     }
                 }
             }
@@ -605,7 +605,7 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
  * the room index to 0 is a way to indicate the slot is free. Then texLoadFromGdl() refills slots
  * for that room via first-fit, so a reloaded room may land in entirely different slots than before.
  */
-void clear_light_fixturetable_in_room(s32 room_index)
+void lightFixtureClearRoom(s32 room_index)
 {
     s32 i;
 

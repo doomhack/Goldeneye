@@ -851,46 +851,46 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
                 case DEB_MARGTOP: // marg top
     #ifdef DEBUG
                     osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgTimesAddViewRelatedMaybe(0, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(1, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
-                                 bgTimesAddViewRelatedMaybe(2, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(3, 1.0, 0));
+                                 bgDebugAdjustViewEdge(0, 1.0, 0),
+                                 bgDebugAdjustViewEdge(1, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
+                                 bgDebugAdjustViewEdge(2, 1.0, 0),
+                                 bgDebugAdjustViewEdge(3, 1.0, 0));
                     break;
     #endif
                 case DEB_MARGBOT: // marg bot
     #ifdef DEBUG
                     osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgTimesAddViewRelatedMaybe(0, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(1, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(2, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(3, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0));
+                                 bgDebugAdjustViewEdge(0, 1.0, 0),
+                                 bgDebugAdjustViewEdge(1, 1.0, 0),
+                                 bgDebugAdjustViewEdge(2, 1.0, 0),
+                                 bgDebugAdjustViewEdge(3, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0));
                     break;
     #endif
                 case DEB_MARGLEFT: // marg left
     #ifdef DEBUG
                     osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgTimesAddViewRelatedMaybe(0, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
-                                 bgTimesAddViewRelatedMaybe(1, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(2, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(3, 1.0, 0));
+                                 bgDebugAdjustViewEdge(0, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
+                                 bgDebugAdjustViewEdge(1, 1.0, 0),
+                                 bgDebugAdjustViewEdge(2, 1.0, 0),
+                                 bgDebugAdjustViewEdge(3, 1.0, 0));
                     break;
     #endif
                 case DEB_MARGRIGHT: // marg right
     #ifdef DEBUG
                     osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgTimesAddViewRelatedMaybe(0, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(1, 1.0, 0),
-                                 bgTimesAddViewRelatedMaybe(2, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
-                                 bgTimesAddViewRelatedMaybe(3, 1.0, 0));
+                                 bgDebugAdjustViewEdge(0, 1.0, 0),
+                                 bgDebugAdjustViewEdge(1, 1.0, 0),
+                                 bgDebugAdjustViewEdge(2, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
+                                 bgDebugAdjustViewEdge(3, 1.0, 0));
                     break;
     #endif
                 case DEB_MARGRESET: // marg reset
     #ifdef DEBUG
                     osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgTimesAddViewRelatedMaybe(0, 0.0, 0),
-                                 bgTimesAddViewRelatedMaybe(1, 0.0, 0),
-                                 bgTimesAddViewRelatedMaybe(2, 0.0, 0),
-                                 bgTimesAddViewRelatedMaybe(3, 0.0, 0));
+                                 bgDebugAdjustViewEdge(0, 0.0, 0),
+                                 bgDebugAdjustViewEdge(1, 0.0, 0),
+                                 bgDebugAdjustViewEdge(2, 0.0, 0),
+                                 bgDebugAdjustViewEdge(3, 0.0, 0));
                     break;
     #endif
                     break;

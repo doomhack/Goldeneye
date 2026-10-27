@@ -2837,7 +2837,7 @@ s32 chrPathIsOffscreen(ChrRecord *self, coord3d *arg1, StandTile *tile)
     {
         for (i=0; i<tile_something; i++)
         {
-            if (getROOMID_isRendered(sp48[i]) != 0)
+            if (bgRoomIsVisible(sp48[i]) != 0)
             {
                 return 0;
             }
@@ -9796,7 +9796,7 @@ bool chrPadRoomIsVisible(ChrRecord *self, s32 padnum)
 
     if (padstan)
     {
-        return getROOMID_isRendered(stanGetTileRoom(padstan));
+        return bgRoomIsVisible(stanGetTileRoom(padstan));
     }
 
     return FALSE;
@@ -10689,7 +10689,7 @@ s32 chrIsPosOffScreen(coord3d *arg0, StandTile *tile)
 
     offscreen = TRUE;
 
-    if (getROOMID_isRendered(stanGetTileRoom(tile)) && fogPositionIsVisibleThroughFog(arg0, 0.0f))
+    if (bgRoomIsVisible(stanGetTileRoom(tile)) && fogPositionIsVisibleThroughFog(arg0, 0.0f))
     {
         if (bgGet2dBboxByRoomId(stanGetTileRoom(tile), &box))
         {
