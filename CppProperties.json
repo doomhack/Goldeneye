@@ -25,7 +25,6 @@
             "OUTCODE=u",
             "LANG_US",
             "REFRESH_NTSC",
-            "LEFTOVERDEBUG",
             "BUGFIX_R0"
             /* MIPS target defs below */,
             "_MIPS_FPSET=16",
@@ -83,7 +82,6 @@
             "OUTCODE=u",
             "LANG_US",
             "REFRESH_NTSC",
-            "LEFTOVERDEBUG",
             "BUGFIX_R0"
             /* MIPS target defs below */,
             "_MIPS_FPSET=16",
