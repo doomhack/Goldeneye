@@ -24,8 +24,10 @@ cd "$ROOT"
 WORK=$(mktemp -d)
 trap 'git worktree remove --force "$WORK/base" >/dev/null 2>&1; rm -rf "$WORK"' EXIT
 export SOURCE_DATE_EPOCH=0
-# The build date only lives in compiletime.c; rebuild it so the fixed date takes effect.
-find build/$CODE -name compiletime.o -delete 2>/dev/null || true
+# Rebuild the files that use __DATE__ so the fixed date takes effect. Touch them rather than
+# deleting their objects: the Makefile marks every target .SECONDARY, so make doesn't rebuild
+# a missing object while the ROM is newer than its source.
+grep -rl --include='*.c' __DATE__ src | xargs -r touch
 
 echo "Building $VERSION ROM for this tree..."
 make -s -j"$(nproc)" VERSION=$VERSION >"$WORK/new.log" 2>&1 ||
