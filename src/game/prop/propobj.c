@@ -2321,7 +2321,7 @@ void objUpdateThrowKnifeSound(ObjectRecord *obj)
         slot = obj->projectile->soundSlot;
         sfxindex = randomGetNext() % 3;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
         if ((s32)obj->projectile->lastSfxTimer < g_GlobalTimer - 6) {
 #else
         if ((s32)obj->projectile->lastSfxTimer < g_GlobalTimer - 5) 
@@ -13390,7 +13390,7 @@ s32 propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox)
 f32 chrobjFogVisRangeRelated(PropRecord *prop, f32 size)
 {
     f32 ret;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     struct NearFogRecord *nfd;
 #else
     struct NearFogRecordF *nfd;

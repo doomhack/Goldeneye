@@ -40,7 +40,7 @@ void *fileLoadToAddr(s32 index, FileLoadMode loadMethod, void *ptrdata, s32 byte
 void *fileLoadByNameToAddr(char *filename, FileLoadMode loadMethod, u8 *ptrdata, s32 size);
 void *fileLoadByNameToPool(char *filename, FileLoadMode loadMethod, s32 size, u8 bank);
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 void *fileLoadToAddr2(int index, FileLoadMode param_2, u8 *ptrdata, int size);
 void *fileLoadToPool2(s32 index, FileLoadMode param_2, s32 size, u8 bank);
 #endif

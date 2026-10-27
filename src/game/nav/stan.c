@@ -102,7 +102,7 @@ s32 g_StanDebugRegion = 0;
 //D:80040FB4
 s32 g_StanLineLog = 0;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 
 s32 D_80040FB8[] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -1161,7 +1161,7 @@ bool stanSegmentsIntersect(f32 start1X, f32 start1Z, f32 end1X, f32 end1Z, f32 s
 }
 
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 stanSegmentsCross(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
                       f32 arg4, f32 arg5, f32 arg6, f32 arg7, s32 arg8) {
     f32 a_x;

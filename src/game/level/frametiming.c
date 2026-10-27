@@ -96,7 +96,7 @@ void frameWaitForNext(void) //maybe WaitForTick
 
 
 void frameSetMinFrames(s32 arg0) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     g_FrameMinFrames = arg0;
     #endif
 }

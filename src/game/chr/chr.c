@@ -1941,7 +1941,7 @@ f32 chrGetFlinchAmount(ChrRecord *chr)
 {
     f32 temp_f2;
     f32 phi_f2;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     f32 rise = 10.0f;
     f32 fall = 20.0f;
 #else

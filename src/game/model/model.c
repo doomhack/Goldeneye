@@ -447,7 +447,7 @@ void modelSetVtxAllocator(s32 param_1) {
 }
 
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 // called after a debug print during failed model operation possible "exit()" function in debug
 void modelDebugBreak(void)
 {
@@ -554,7 +554,7 @@ Mtxf *modelFindNodeMtx(struct Model *model, struct ModelNode *node, s32 arg2) {
 // PD: model0001a60c
 Mtxf *modelGetRootMtx(Model *objinst)
 {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
     if (!objinst)
     {
         osSyncPrintf("getsubmatrix: no objinst!\n");
@@ -676,7 +676,7 @@ union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
 
 void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#MATCH - however OPCODE 3 needs defining
 {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
     if (!objinst)
     {
         osSyncPrintf("getpartoffset: no objinst!");
@@ -735,7 +735,7 @@ void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#M
 
 void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
 {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     if (!model) {
         osSyncPrintf("setpartoffset: no objinst!");
         modelDebugBreak();
@@ -800,7 +800,7 @@ void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
 
 void modelGetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 {
-    #if defined(LEFTOVERDEBUG )
+    #if defined(VERSION_US )
     if (!objinst)
     {
         osSyncPrintf("getsuboffset: no objinst!");
@@ -821,7 +821,7 @@ void modelGetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 
 void modelSetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 {
-    #if defined(LEFTOVERDEBUG )
+    #if defined(VERSION_US )
     if (!objinst)
     {
         osSyncPrintf("setsuboffset: no objinst!");
@@ -847,7 +847,7 @@ f32 modelGetRootRotY(Model *objinst)
 {
     ModelNode *root;
 
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
     if(0)
     {
         // removed
@@ -900,7 +900,7 @@ f32 modelGetRootRotY(Model *objinst)
 void modelSetRootRotY(Model *model, f32 angle)
 {
     ModelNode* node;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     if (!model)
     {
         osSyncPrintf("setsubroty: no objinst!");
@@ -966,7 +966,7 @@ f32 modelGetNodeRadius(Model *model, ModelNode *node)
     ModelNode *temp_a1;
     s32        temp_t7;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     if (!model)
     {
         osSyncPrintf("getjointsize: no objinst!\n");
@@ -1046,7 +1046,7 @@ f32 modelGetNodeRadius(Model *model, ModelNode *node)
 */
 f32 modelGetRadius(Model *arg0)
 {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
     if (arg0 == NULL)
     {
         osSyncPrintf("getinstsize: no objinst!\n");
@@ -1331,7 +1331,7 @@ void modelCalcPosition(Model *arg0)
 {
     struct ModelNode *root;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     if (arg0 == NULL)
     {
         osSyncPrintf("subcalcpos: no objanim!\n");
@@ -2454,7 +2454,7 @@ void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
 
 void modelCalcMatricesNoAnim(ModelRenderData* arg0, Model* arg1)
 {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     if (arg1 == NULL)
     {
         osSyncPrintf("instcalcmatrices: no objinst!\n");
@@ -2485,7 +2485,7 @@ void modelCalcMatricesNoAnim(ModelRenderData* arg0, Model* arg1)
 */
 void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
 {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     if (arg1 == NULL)
     {
         osSyncPrintf("subcalcmatrices: no objanim!\n");
@@ -2507,7 +2507,7 @@ void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
 
     if (arg1->anim != NULL)
     {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
         if ((arg1->attachedto != NULL) && (arg1->attachedto_objinst == NULL))
         {
             osSyncPrintf("subcalcmatrices: no attach for objinst!\n");
@@ -4762,7 +4762,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
                 case MODELNODE_CHILD_VTX:
                     {
                         struct ModelRoData_Child_Vtx* child_vtx = ((struct ModelRoData_Child_Vtx*)entry_04);
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
                         if (g_ModelVtxAllocator == NULL)
                         {
                             osSyncPrintf("dotube: no vtx allocator!\n");
@@ -4826,7 +4826,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
                                     vtx_10_2 = vtx_10 + 1;
                                     if (swap_order != 0)
                                     {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
                                         if (vtx_10->coord.AsArray);
 #endif
                                         vtx1->coord.AsArray[0] = vtx_10_2->coord.AsArray[0];
@@ -5010,7 +5010,7 @@ void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode
         sp90.f[1] = rodata->Offset.f[1];
         sp90.f[2] = rodata->Offset.f[2];
 
-#if defined (LEFTOVERDEBUG)
+#if defined (VERSION_US)
         if (g_ModelVtxAllocator == NULL) {
             osSyncPrintf("dogfnegx: no vtx allocator!\n");
             modelDebugBreak();
@@ -5085,7 +5085,7 @@ void modelSetShadowAlpha(s32 arg0)
 }
 
 
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 //D:80054A94
 const char aDoshadowNoVtxAllocator[] = "doshadow: no vtx allocator!\n";
 #endif
@@ -5158,7 +5158,7 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
         sizey *= (300.0f - height) / 200.0f;
     }
 
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
     if (g_ModelVtxAllocator == NULL)
     {
         if (1);
@@ -5302,7 +5302,7 @@ void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
 void modelRender(ModelRenderData *mrData, Model *mdl)
 {
     ModelNode *root = mdl->obj->RootNode;
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
 
     if (mrData->gdl == NULL)
     {
@@ -6242,7 +6242,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
 
 void modelCalculateRwDataLen(struct ModelFileHeader *objheader)
 {
-  #if defined(LEFTOVERDEBUG)
+  #if defined(VERSION_US)
     objheader->isLoaded = 1;
   #endif
     objheader->numRecords = modelCalculateRwDataIndexes(objheader->RootNode);

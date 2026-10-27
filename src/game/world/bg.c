@@ -4291,7 +4291,7 @@ void bgDetermineVisibleRooms(void)
     f32 screenbounds[4];
     s32 var_s0;
     s32 temp_a0;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     s32 sp44;
 #endif
     s32 temp_v1;
@@ -4320,7 +4320,7 @@ void bgDetermineVisibleRooms(void)
     
     D_80044858 = (s32) (D_80044858 + 1) % 10;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     dword_CODE_bss_8007FF98 = 0;
 #else
     *(s32 *) &g_BgRoomsDrawn[120] = 0;
@@ -4366,7 +4366,7 @@ void bgDetermineVisibleRooms(void)
         {
             if ((g_BgCurrentRoom == g_BgPortals[var_s0].connectedRoom1) || (g_BgCurrentRoom == g_BgPortals[var_s0].connectedRoom2)) 
             {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
                 bgQueuePortalTraversal(0, g_BgCurrentRoom, var_s0, 1, screenbounds);
 #else
                 bgQueuePortalTraversal(g_BgCurrentRoom, var_s0, 1, screenbounds);
@@ -4374,7 +4374,7 @@ void bgDetermineVisibleRooms(void)
             }
         }
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
         sp44 = 0;
 
         while (bgProcessNextQueuedPortal(&sp44) != 0) 

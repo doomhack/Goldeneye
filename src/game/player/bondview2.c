@@ -296,7 +296,7 @@ s32 startpadcount;
 //CODE.bss:80079C6C
 s32 dword_CODE_bss_80079C6C;
 
-#if defined LEFTOVERDEBUG
+#if defined VERSION_US
 //CODE.bss:80079C70
 /***/
 char stringbuffer_top[0x2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
@@ -11098,7 +11098,7 @@ void hudmsgTopShow(char* mess)
 
     index = (upper_text_buffer_index + display_upper_text_window) % 2;
     s_CoopTopTextPlayer[index] = playerGetCurrentNum();
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     strncpy(stringbuffer_top[index], mess, (BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1));
     display_upper_text_window += 1;
     stringbuffer_top[index][(BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH-1)] = 0;
@@ -11171,7 +11171,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
     {
         if (upper_text_window_timer >= 0)
         {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
             if (stringbuffer_top[upper_text_buffer_index][0] != '\0')
 #else
             if (g_HudmsgTopText[upper_text_buffer_index][0] != '\0')
@@ -11183,7 +11183,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     gdl = textSetupDraw(gdl);
                     msg.textwidth = 0;
                     msg.textheight = 0;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
                     textMeasure(&msg.textheight, &msg.textwidth, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, 0);
 #else
                     textMeasure(&msg.textheight, &msg.textwidth, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, 0);
@@ -11216,7 +11216,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     if (g_TextJapanese != 0)
                     {
                         sw.screenwidth = viGetX();
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
                         gdl = textRenderOutlined(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
 #else
                         gdl = textRenderOutlined(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
@@ -11225,7 +11225,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     else
                     {
                         sw.screenwidth = viGetX();
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
                         gdl = textRender(gdl, &msg.x, &msg.y, stringbuffer_top[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
 #else
                         gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);

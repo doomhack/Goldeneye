@@ -586,7 +586,7 @@ void bheadInit(void)
     ModelRenderData renderData;
     Mtxf identityMatrix;
 
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
     if ((s32) player_gait_object_header.numRecords >= 0x1F)
     {
         modelDebugBreak();

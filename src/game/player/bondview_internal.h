@@ -49,7 +49,7 @@ extern s32 dword_CODE_bss_jp80079CEC[5];
 extern PadRecord *g_Startpad[16];
 extern s32 startpadcount;
 extern s32 dword_CODE_bss_80079C6C;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 extern char stringbuffer_top[2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
 #endif
 extern StandTilePoint *dword_CODE_bss_80079DA0;

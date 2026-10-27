@@ -5,7 +5,7 @@
 #include <fr.h>
 
     #define osSyncPrintf(...)
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 
 // data
 //D:80036BA0
@@ -230,7 +230,7 @@ s32 debug_joy2detailedit_flag = 0;
 s32 debug_explosioninfo_flag = 0;
 #endif
 
-#if !defined(LEFTOVERDEBUG)
+#if !defined(VERSION_US)
 /**
  * The .data debug_VisCVG_flag needs to be at address 0x800320b4, which means
  * there needs to be another .data word. Probably one of the above values,
@@ -242,7 +242,7 @@ s32 eu_D_800320b0 = 0;
 //D:80036FA8
 s32 debug_VisCVG_flag = 0;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 //D:80036FAC
 s32 debug_007_unlock_flag = 0;
 //D:80036FB0
@@ -265,7 +265,7 @@ s32 g_DebugManPos = 0;
 //D:80036FCC
 s32 debug_fast_bond_flag = 0;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 //D:80036FD0
 s32 debug_all_obj_complete_flag = 0 ;
 //D:80036FD4
@@ -310,12 +310,12 @@ coord3d player_pos_x = {0};
 */
 void debugmenuUpdate(void)
 {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
     debmenuSetMenu(&mcm_strings, &g_DebugMenuPositions, &g_DebugMenuOffsets);
     #endif
 }
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 /*
 * Address: 0x7f0904c4
 */
@@ -327,7 +327,7 @@ void debmenuHandleMoveView(void)
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 /*
 * Address: 0x7f090508
 */
@@ -339,7 +339,7 @@ void debmenuHandleStanView(void)
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 /*
 * Address: 0x7f09054c
 */
@@ -380,7 +380,7 @@ void Function_823E7680(void)
 
 */
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 /*
 * Address: 0x7f090590
 */
@@ -389,7 +389,7 @@ void removed_do_debug_profile_flag_false(void) {
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 /*
 * Address: 0x7f090598
 */
@@ -402,7 +402,7 @@ void removed_do_debug_profile_flag_true(void) {
 
 
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 /**
  * Address 0x7F0905A0 NTSC
 */
@@ -878,7 +878,7 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
 
 
 s32 get_debug_render_raster(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_render_raster;
 #else
     return 2;
@@ -886,7 +886,7 @@ s32 get_debug_render_raster(void) {
 }
 
 s32 get_debug_freeze_processing(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_freeze_processing;
 #else
     return 2;
@@ -894,7 +894,7 @@ s32 get_debug_freeze_processing(void) {
 }
 
 s32 getDebugMode(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return g_DebugMode;
 #else
     return 2;
@@ -902,13 +902,13 @@ s32 getDebugMode(void) {
 }
 
 void setDebugMode(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     g_DebugMode = g_DebugHighlightedOption;
 #endif
 }
 
 s32 get_memusage_display_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return memusage_display_flag;
 #else
     return 0;
@@ -916,7 +916,7 @@ s32 get_memusage_display_flag(void) {
 }
 
 s32 get_debug_do_draw_bg(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_do_draw_bg;
 #else
     return 1;
@@ -924,7 +924,7 @@ s32 get_debug_do_draw_bg(void) {
 }
 
 s32 get_debug_do_draw_obj(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_do_draw_obj;
 #else
     return 1;
@@ -932,7 +932,7 @@ s32 get_debug_do_draw_obj(void) {
 }
 
 s32 get_debug_stanhit_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_stanhit_flag;
 #else
     return 0;
@@ -940,7 +940,7 @@ s32 get_debug_stanhit_flag(void) {
 }
 
 s32 get_debug_stanregion_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_stanregion_flag;
 #else
     return 0;
@@ -948,7 +948,7 @@ s32 get_debug_stanregion_flag(void) {
 }
 
 s32 get_debug_stan_problems_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_stan_problems_flag;
 #else
     return 0;
@@ -956,7 +956,7 @@ s32 get_debug_stan_problems_flag(void) {
 }
 
 s32 get_debug_man_pos_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_man_pos_flag;
 #else
     return 0;
@@ -964,7 +964,7 @@ s32 get_debug_man_pos_flag(void) {
 }
 
 s32 get_debug_testingmanpos_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return g_DebugManPos;
 #else
     return 0;
@@ -972,13 +972,13 @@ s32 get_debug_testingmanpos_flag(void) {
 }
 
 void set_debug_testingmanpos_flag(s32 flag) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     g_DebugManPos = flag;
 #endif
 }
 
 s32 get_debug_joy2skyedit_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_joy2skyedit_flag;
 #else
     return 0;
@@ -986,7 +986,7 @@ s32 get_debug_joy2skyedit_flag(void) {
 }
 
 s32 get_debug_joy2hitsedit_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_joy2hitsedit_flag;
 #else
     return 0;
@@ -994,7 +994,7 @@ s32 get_debug_joy2hitsedit_flag(void) {
 }
 
 s32 get_debug_joy2detailedit_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_joy2detailedit_flag;
 #else
     return 0;
@@ -1002,7 +1002,7 @@ s32 get_debug_joy2detailedit_flag(void) {
 }
 
 s32 get_debug_explosioninfo_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_explosioninfo_flag;
 #else
     return 0;
@@ -1010,7 +1010,7 @@ s32 get_debug_explosioninfo_flag(void) {
 }
 
 s32 debugIsRoomStateDebugEnabled(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_prroomloads_flag;
 #else
     return 0;
@@ -1029,7 +1029,7 @@ void set_debug_VisCVG_flag(s32 flag) {
 
 
 s32 get_debug_007_unlock_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_007_unlock_flag;
 #else
     return 0;
@@ -1037,7 +1037,7 @@ s32 get_debug_007_unlock_flag(void) {
 }
 
 s32 get_debug_enable_agent_levels_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_enable_agent_levels_flag;
 #else
     return 0;
@@ -1045,7 +1045,7 @@ s32 get_debug_enable_agent_levels_flag(void) {
 }
 
 s32 get_debug_enable_all_levels_flag(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return debug_enable_all_levels_flag;
 #else
     return 0;
@@ -1056,7 +1056,7 @@ s32 get_debug_enable_all_levels_flag(void) {
 
 
 
-#if !defined(LEFTOVERDEBUG)
+#if !defined(VERSION_US)
 s32 get_debug_chrnum_flag(void) {
     return 0;
 }
@@ -1096,49 +1096,49 @@ void func_7F0904F8(s32 arg0)
 #endif
 
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 get_debug_fast_bond_flag(void) {
     return debug_fast_bond_flag;
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 void set_debug_fast_bond_flag(s32 flag) {
     debug_fast_bond_flag = flag;
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 get_debug_all_obj_complete_flag(void) {
     return debug_all_obj_complete_flag;
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 get_debug_portal_flag(void) {
     return debug_portal_flag;
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 get_debug_chrnum_flag(void) {
     return debug_chrnum_flag;
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 get_debug_gunwatchpos_flag(void) {
     return debug_gunwatchpos_flags;
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32  get_debug_profile_flag(void) {
     return debug_profile_flag;
 }
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 get_debug_taskgrab_val(void) {
     return debug_enable_taskgrab_flag;
 }

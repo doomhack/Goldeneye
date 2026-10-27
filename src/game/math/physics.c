@@ -19,7 +19,7 @@ void physRandomTumble(Mtxf *mtx)
 {
     coord3d angles;
     angles = g_ZeroCoord;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     angles.x = RANDOMFRAC() * M_TAU_F * 0.03125f - 0.09817477f;
     angles.y = RANDOMFRAC() * M_TAU_F * 0.03125f - 0.09817477f;
     angles.z = RANDOMFRAC() * M_TAU_F * 0.03125f - 0.09817477f;

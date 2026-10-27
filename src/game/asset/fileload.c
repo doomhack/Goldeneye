@@ -158,7 +158,7 @@ void fileLoadPartByName(u8 *name, u8 *dst, s32 offset, s32 len)
     }
 }
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 void *fileLoadToPool2(s32 index, FileLoadMode mode, s32 size, u8 pool)
 {
     return fileLoadToPool(index, mode, size, pool);

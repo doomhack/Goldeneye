@@ -4,7 +4,7 @@
 #include "game/gfx/dyn.h"
 
 
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 
 // This is a 128 x 21 sprite of characers in greyscale at one byte per pixel.
 // Each character is 4 x 7 pixels. There's 3 rows with 32 characters per row.
@@ -125,7 +125,7 @@ u32 g_DebugMenuPercentage = 0xFF; // Static?
 /**
  * Removed
  */
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 u32 debmenu7000AD80(s32 arg0, s32 arg1) {
     // Removed
     return 0;
@@ -135,7 +135,7 @@ u32 debmenu7000AD80(s32 arg0, s32 arg1) {
 /**
  * Removed
  */
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 u32 debmenu7000AD90(s32 arg0, s32 arg1) {
     // Removed
     return 0;
@@ -145,7 +145,7 @@ u32 debmenu7000AD90(s32 arg0, s32 arg1) {
 /**
  * Removed
  */
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 void debmenu7000ADA0(void) {
     // Removed
 }
@@ -159,12 +159,12 @@ void debmenuInit(void) {
 }
 
 void debmenuRefresh(void) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     debmenuResetBuffer();
     #endif
 }
 
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 void debmenuWriteCharAtPos(s32 x, s32 y, unsigned char c) {
     s32 i;
     for (i = 0; i < 32; i++) {
@@ -184,14 +184,14 @@ end:
 #endif
 
 void debmenuResetPosition(void) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     g_DebugMenuTextCurrentX = g_DebugMenuTextStartX;
     g_DebugMenuTextCurrentY = g_DebugMenuTextStartY;
     #endif
 }
 
 void debmenuResetBuffer(void) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     s32 x;
     s32 y;
     for (y = 0; y < 35; y++) {
@@ -209,7 +209,7 @@ void debmenuResetBuffer(void) {
  * Removed.
  * Called from debmenu7000AF98
  */
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 void debmenu7000AF84(s32 x1, s32 y1, s32 x2, s32 y2) {
     // Removed
 }
@@ -218,7 +218,7 @@ void debmenu7000AF84(s32 x1, s32 y1, s32 x2, s32 y2) {
 
 void debmenu7000AF98(s32 height)
 {
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
     s32 x;
     s32 y;
 
@@ -247,7 +247,7 @@ void debmenu7000AF98(s32 height)
 * Address: 0x7000b040
 */
 void debmenuSetPos(s32 x, s32 y) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     x += g_DebugMenuTextStartX;
     y += g_DebugMenuTextStartY;
     g_DebugMenuTextCurrentX = x;
@@ -256,19 +256,19 @@ void debmenuSetPos(s32 x, s32 y) {
 }
 
 void debmenuSetFgColour(s32 r, s32 g, s32 b, s32 a) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     g_DebugMenuPrimitiveColor.words.w1 = ((r << 24) | (g << 16) | (b << 8) | (255 - a));
     #endif
 }
 
 void debmenuSetEnvColor(s32 r, s32 g, s32 b, s32 a) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     g_DebugMenuEnvironmentColor.words.w1 = ((r << 24) | (g << 16) | (b << 8) | (255 - a));
     #endif
 }
 
 void debmenuWriteChar(unsigned char c) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     s32 width = ((viGetX() - 13) / 4);
     s32 height = ((viGetY() - 10) / 7);
     if ((c == '\0') || ((c >= ' ') && (c <= '~'))) {
@@ -287,14 +287,14 @@ void debmenuWriteChar(unsigned char c) {
 
 void debmenuSetPositionAndWriteChar(s32 x, s32 y, unsigned char c)
 {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     debmenuSetPos(x, y);
     debmenuWriteChar(c);
     #endif
 }
 
 void debmenuPrintString(const unsigned char *str) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     while (*str != '\0') {
         debmenuWriteChar(*str++);
     }
@@ -302,7 +302,7 @@ void debmenuPrintString(const unsigned char *str) {
 }
 
 void debmenuSetPositionAndWriteString(s32 x, s32 y, const unsigned char *str) {
-    #ifdef LEFTOVERDEBUG
+    #ifdef VERSION_US
     debmenuSetPos(x, y);
     while (*str != '\0') {
         debmenuWriteChar(*str++);
@@ -316,7 +316,7 @@ void debmenuSetPositionAndWriteString(s32 x, s32 y, const unsigned char *str) {
 */
 Gfx *debmenuDraw(Gfx *gdl)
 {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 
 	s32 y;
     s32 x;
@@ -442,7 +442,7 @@ Gfx *debmenuDraw(Gfx *gdl)
 		}
 	}
 
-#endif // defined(LEFTOVERDEBUG)
+#endif // defined(VERSION_US)
 
     return gdl;
 }

@@ -11,7 +11,7 @@ typedef struct {
 void debmenuInit(void);
 void debmenuRefresh(void);
 void debmenuResetBuffer(void);
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 void debmenu7000AF84(s32 x1, s32 y1, s32 x2, s32 y2);
 #endif
 void debmenuSetPos(s32 x, s32 y);
@@ -20,7 +20,7 @@ void debmenuSetEnvColor(s32 r, s32 g, s32 b, s32 a);
 void debmenuPrintString(const unsigned char *str);
 Gfx *debmenuDraw(Gfx *gdl);
 
-#ifdef LEFTOVERDEBUG
+#ifdef VERSION_US
 void debmenuWriteCharAtPos(s32 x, s32 y, unsigned char c);
 #endif
 

@@ -20,7 +20,7 @@
 #define VICLOCK 60
 #endif
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 s32 gSpeedGraphMarkerFlags[3];
 Gfx gSpeedGraphDisplayLists[2][266];
 s32 gSpeedGraphDisplayListIndex;
@@ -34,7 +34,7 @@ typedef struct {
     u32 osCount;
 } SpeedGraphMarker;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 SpeedGraphMarker gSpeedGraphMarkers[3][32];
 s32 gSpeedGraphMarkerIndices[3];
 s32 gSpeedGraphMarkerNextIndices[3];
@@ -50,7 +50,7 @@ typedef struct {
     s32 height;
 } SpeedGraphColorSettings;
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 SpeedGraphColorSettings gSpeedGraphColorSettings[5] = {
     {0x00000000, 0x00000000, 0x00000002, 0x00000000},
     {0x00000001, 0x00000000, 0x00000002, 0x00000000},
@@ -83,7 +83,7 @@ void speedgraphMarkerCommit(void);
  */
 void speedgraphInit(void)
 {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
     s32 i;
 
     gSPEndDisplayList(gSpeedGraphDisplayLists[0]);
@@ -105,7 +105,7 @@ void speedgraphInit(void)
  * @brief Updates the speed graph marker indices and current OS counter value.
  */
 void speedgraphMarkerUpdate(void) {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
     s32 i;
 
     g_speedGraphCurrentOsCount = osGetCount();
@@ -122,7 +122,7 @@ void speedgraphMarkerUpdate(void) {
  * @brief Commits the current speed graph marker states.
  */
 void speedgraphMarkerCommit(void) {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
     s32 i;
 
     g_speedGraphLastOsCount = g_speedGraphCurrentOsCount;
@@ -134,7 +134,7 @@ void speedgraphMarkerCommit(void) {
     #endif
 }
 
-#if !defined(LEFTOVERDEBUG)
+#if !defined(VERSION_US)
 /**
  * @brief Renders the speed graph based on the collected marker data.
  * EU is a dummy function.
@@ -151,7 +151,7 @@ void speedgraphRenderGraph(void)
  */
 void speedgraphMarkerHandler(s32 arg0)
 {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     s32 index;
     s32 markerFlag;
     OSIntMask mask;
@@ -200,7 +200,7 @@ void speedgraphMarkerHandler(s32 arg0)
  */
 Gfx *speedgraphDisplayMetrics(Gfx *gdl)
 {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     u32 *counters;
     u32 localCountAccumulator = g_speedGraphCountAccumulator;
     s32 *pmaxSeenCount = &g_speedGraphMaxSeenCount;
@@ -283,7 +283,7 @@ Gfx *speedgraphDisplayMetrics(Gfx *gdl)
 }
 
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 /**
  * @brief Renders the speed graph based on the collected marker data.
  */

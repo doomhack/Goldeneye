@@ -3,7 +3,7 @@
 
 #include <ultra64.h>
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 #define G_TOKEN_STRING_LEN 160
 #else
 #define G_TOKEN_STRING_LEN 15

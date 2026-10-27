@@ -2233,7 +2233,7 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     }
 
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     guPerspective(sp114, &perspNorm, sp60, 1.33333337f, 10.0f, 10000.0f, 1.0f);
 #else
     guPerspective(sp114, &perspNorm, sp60, 1.2838470f, 10.0f, 10000.0f, 1.0f);
@@ -2258,7 +2258,7 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     gdl = textSetupDraw(gunDrawWatchAmmoDisplay(gdl));
 
     sp8C = 0x60;
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     sp88 = 0xA0;
 #else
     sp88 = 0xBC;
@@ -2266,7 +2266,7 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     textMeasure(&sp84, &sp80, text, sp78, sp7C, 0);
     gdl = textRender(gdl, &sp8C, &sp88, text, sp78, sp7C, 0xFF00B0, sp80, sp84, 0, 0);
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     sp88 = 0xAA;
 #else
     sp88 = 0xC6;

@@ -1,6 +1,6 @@
 #include <ultra64.h>
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 // data
 //D:80036B70
 s32 g_DMenuSelectedOption = 0;
@@ -32,7 +32,7 @@ D:80036B9C                     .word 0
 #endif
 
 
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 void nullsub_32(void) {
     return;
 }
@@ -43,7 +43,7 @@ void nullsub_32(void) {
 * Address: 0x7f08fe08
 */
 void debmenuSetScaleIndex(s32 param_1) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     g_DMenuScaleIndex = param_1;
 #endif
 }
@@ -54,7 +54,7 @@ void debmenuSetScaleIndex(s32 param_1) {
 */
 void debmenuSetMenu(char **labels, s32 (*positions)[2], s32 *offsets)
 {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
 	s32 numgroups;
 
 	g_DMenuCurLabels = labels;
@@ -73,7 +73,7 @@ void debmenuSetMenu(char **labels, s32 (*positions)[2], s32 *offsets)
 */
 Gfx *debugmenuRender(Gfx *gdl)
 {
-    #if defined (LEFTOVERDEBUG)
+    #if defined (VERSION_US)
 	s32 i;
 	s32 xscale = g_DMenuXScales[g_DMenuScaleIndex];
 	s32 yscale = g_DMenuYScales[g_DMenuScaleIndex];
@@ -98,7 +98,7 @@ Gfx *debugmenuRender(Gfx *gdl)
 */
 void sub_GAME_7F09000C(int a0,int a1,int a2)
 {
-    #if defined (LEFTOVERDEBUG)
+    #if defined (VERSION_US)
 	s32 i;
 	s32 xscale = g_DMenuXScales[g_DMenuScaleIndex];
 	s32 yscale = g_DMenuYScales[g_DMenuScaleIndex];
@@ -123,7 +123,7 @@ void sub_GAME_7F09000C(int a0,int a1,int a2)
 * Address: 0x7f0901b0
 */
 s32 get_highlighted_debug_option(void) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     return g_DMenuSelectedOption;
 #else
     return 0;
@@ -134,7 +134,7 @@ s32 get_highlighted_debug_option(void) {
 * Address: 0x7f0901bc
 */
 void set_highlighted_debug_option(s32 value) {
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
     g_DMenuSelectedOption = value;
 #endif
 }
@@ -144,7 +144,7 @@ void set_highlighted_debug_option(s32 value) {
 */
 void gotoAboveDebugOption(void)
 {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
 	s32 i;
 
 	g_DMenuSelectedOption--;
@@ -172,7 +172,7 @@ void gotoAboveDebugOption(void)
 */
 void gotoBelowDebugOption(void)
 {
-    #if defined(LEFTOVERDEBUG)
+    #if defined(VERSION_US)
 	s32 i;
 
 	g_DMenuSelectedOption++;
@@ -201,7 +201,7 @@ void gotoBelowDebugOption(void)
 /*
 * Address: 0x7f0902c0
 */
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 void gotoRightDebugOption(void)
 {
 	s32 i;
@@ -256,7 +256,7 @@ void gotoRightDebugOption(void)
 /*
 * Address: 0x7f09039c
 */
-#if defined(LEFTOVERDEBUG)
+#if defined(VERSION_US)
 void gotoLeftDebugOption(void)
 {
 	s32 i;
