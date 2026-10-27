@@ -36,28 +36,11 @@
 s32 g_MaxShards;
 //CODE.bss:8007A164
 s_shattered_window_piece* g_Shards;
-//CODE.bss:8007A168
-u32 dword_CODE_bss_8007A168;
-//CODE.bss:8007A16C
-u32 dword_CODE_bss_8007A16C;
-
 
 
 // data
 //D:80040940
 s32 g_NextShardNum = 0;
-u32 D_80040944 = 0;
-u32 D_80040948 = 0;
-u32 D_8004094C = 0;
-u32 D_80040950 = 0;
-u32 D_80040954 = 0;
-u32 D_80040958 = 0;
-u32 D_8004095C = 0;
-
-
-
-
-
 
 
 // rodata
@@ -65,7 +48,6 @@ void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *za
 {
     f32      len;
     f32      angle;
-    f32      rand_range;
     s32      step;
     s32      xcount;
     coord3d  shardpos;
@@ -99,13 +81,10 @@ void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *za
     ynorm.z *= 1.0f / len;
     ymin *= len;
     ymax *= len;
-    if (&ymax) {}
-    if (&xnorm) {}
     angle    = mathAtan2(zaxis->x, zaxis->z);
     arg8     = xmax - xmin;
     arg9     = ymax - ymin;
     new_var3 = &ynorm;
-    if (xmin) {}
     shard_size = sqrtf((0, (arg8 * arg9) / (g_MaxShards / 2)));
     step       = (s32)shard_size;
     new_var    = step;
@@ -118,7 +97,6 @@ void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *za
     ycount = (s32)(arg9 / ((f32)new_var));
     if (ycount > 0)
     {
-        f32 rand_min;
         do
         {
             if (TRUE)

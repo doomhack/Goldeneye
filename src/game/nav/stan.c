@@ -91,10 +91,6 @@ struct StandTile * g_StanTiles = NULL;
 s32 g_StanFirstTileAddr = 0;
 //D:80040F60
 struct StandTile* g_StanTilesEnd = NULL;
-//D:80040F64
-s32 g_StanNameBuffers[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-//D:80040FAC
-s32 g_StanNameBufferIndex = 0;
 //D:80040FB0
 s32 g_StanDebugRegion = 0;
 //D:80040FB4
@@ -121,9 +117,6 @@ s32 D_80040FB8[] = {
 s32 g_StanSavedCollHasLine =  0;
 
 
-// rodata
-//D:800585A0
-const char aCDCC[] = "%c%d%c%c";
 //D:800585BC
 const char aStanlinelog[] = "-stanlinelog";
 
@@ -140,65 +133,6 @@ s32 stanGetLocusCount(struct StandTileLocusCallbackRecord *arg0);
 bool stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 distToPointA, f32 distToPointB, f32 *yThreshold);
 
 // end forward declarations
-
-// maybe getstanroomID and returns a string
-char *stanGetTileName(StandTile *tile)
-{
-    char *buffer;
-    s32 nextidx;
-    s32 type;
-    s32 letter;
-    s32 digit_raw;
-    s32 masked_number;
-    s32 idpart1;
-    u8 idpart2;
-    s32 idx;
-    
-    idx = g_StanNameBufferIndex;
-    buffer = (char *)g_StanNameBuffers + (idx * 9);
-    
-    idpart1 = *((u16 *) tile);
-    digit_raw = ((u8 *) tile)[2];
-    idpart2 = digit_raw;
-    
-    letter = idpart2 >> 3;
-    idx = (idx + 1) & 7;
-    masked_number = idpart1 & 0x7fff;
-    type = (idpart1 >> 15) & 1;
-    letter &= 0x1f;
-    nextidx = idx;
-    digit_raw = idpart2 & 7;
-    
-    if (digit_raw)
-    {
-        idpart1 = *((u16 *) tile);
-    }
-    
-    g_StanNameBufferIndex = nextidx;
-    
-    if (!digit_raw)
-    {
-        if (digit_raw && digit_raw);
-        
-        idpart1 = 0;
-    }
-    else 
-    {
-        idpart1 = digit_raw + '0';
-    }
-    
-    sprintf(buffer, aCDCC, type + 'p', masked_number, letter + 'a', idpart1);
-    
-    return buffer;
-}
-
-
-//stanChecksf
-u32 stanCheckTilePtr(s32 arg0) 
-{
-    return 0;
-}
-
 
 
 /**
@@ -447,9 +381,6 @@ void stanLoadFile(struct StanPrefixRecord *file)
     /*
      * Matching artifacts.
      */
-    if (prefix);
-    if (prefix);
-    if (prefix);
 
     g_StanTiles = (StandTile *)(((u8 *)file->ptr_firstroom) - 0x80);
 
@@ -460,93 +391,6 @@ void stanLoadFile(struct StanPrefixRecord *file)
 
     stanBuildRoomData();
     stanSetLevelScale(1.0f);
-}
-
-
-
-/**
- * Address: 7F0AF638
- * 
- * Unreferenced
- * 
- * Somewhere in this function a loop is checked for overflow
- * if (i < param4)
- * {
- *     printf("stanFillin: Stack overflow %d>%d",local_20,uStack);
- * }
- */
-s32 stanFillin(StandTile *starttile, u8 targetbit, StandTile **stack) // Canonical function name
-{
-    StandTile *tile;
-    StandTile *linkedtile;
-    StandTilePoint *point;
-    u16 *tmp;
-    s32 pointcount;
-    s32 link;
-    s32 result;
-    s32 count;
-    s32 i;
-    s32 stackcount;
-
-    count = 0;
-    stack[0] = starttile;
-    stackcount = 1;
-
-    for (stack += stackcount; stackcount != 0;)
-    {
-        tile = stack[-1];
-        stackcount--;
-        stack--;
-        i = 0;
-
-        if (targetbit != (((*((u16 *) tile)) >> 15) & 1))
-        {
-            tmp = (u16 *) tile;
-            *tmp ^= 0x8000;
-            result = stanTileHasZeroArea(tile);
-            point = (StandTilePoint *) tile;
-
-            if (stackcount);
-            
-            if (result == 0)
-            {
-                count++;
-            }
-
-            pointcount = ((&tile->tail)->half >> 12) & 0xf;
-
-            if (pointcount > 0)
-            {
-                do
-                {
-                    link = point[1].link;
-                    i++;
-
-                    if (stackcount);
-                    
-                    if ((link >> 4) != 0)
-                    {
-                        linkedtile = (StandTile *) (((u8 *) g_StanTiles) + (((0, link)) << 3));
-
-                        if (targetbit != (((*((u16 *) linkedtile)) >> 15) & 1))
-                        {
-                            *stack = linkedtile;
-                            pointcount = (tile->tail.half >> 12) & 0xf;
-                            stackcount++;
-                            stack++;
-                        }
-                    }
-
-                    point++;
-
-                    if (starttile);
-                }
-                while (i < pointcount);
-            }
-        }
-    }
-
-    return count;
 }
 
 
@@ -579,46 +423,6 @@ bool stanTileHasZeroArea(StandTile *tile)
 }
 
 
-/**
- * Address: 7F0AF808
- * 
- * Unreferenced.
- */
-StandTile *stanFindFloorTileBelowY(f32 x, f32 maxY, f32 z, f32 radius)
-{
-    StandTile *tileStack[2];
-    StandTile *tile;
-    s32 temp;
-
-    tile = g_StanFile->ptr_firstroom;
-
-    while (*(u32 *)tile != 0)
-    {
-        tileStack[0] = tile;
-
-        if (stanTileHasZeroArea(tile) == 0)
-        {
-            if (stanIsInsideTriWorld(tile, x, z))
-            {
-                if (stanCircleLegal(tileStack, x, z, radius))
-                {
-                    if (tileStack[0] == tile)
-                    {
-                        if (stanGetPositionYValue(tile, x, z) < maxY)
-                        {
-                            return tile;
-                        }
-                    }
-                }
-            }
-        }
-
-        temp = tile->tail.hdrTail.pointCount;
-        tile = (StandTile *)((u8 *)tile + g_StanTileSizes[temp & 0xf]);
-    }
-
-    return NULL;
-}
 void stanGetTileMidPoint(StandTile *tile, coord3d *out)
 {
     u16 tail;
@@ -628,7 +432,6 @@ void stanGetTileMidPoint(StandTile *tile, coord3d *out)
     StandTilePoint *pointA;
     StandTilePoint *pointB;
     unsigned int new_var2;
-    StandTilePoint *pointC;
     s16 *new_var3;
 
     tail = (indexC = tile->tail.half);
@@ -653,8 +456,6 @@ void stanGetPointInsideCorner(StandTile *tile, s32 tripleIndex /*canonically c *
 
     pntIndex = (tile->tail.half >> (8 - (tripleIndex * 4))) & 0xf;
     
-    if (1);
-    if (&midPoint);
     
     out->x = ((f32) tile->points[pntIndex].x) * g_StanInvScale;
     out->y = ((f32) tile->points[pntIndex].y) * g_StanInvScale;
@@ -706,7 +507,6 @@ StandTile *stanFindNearestLegalPos(f32 *x, f32 *y, f32 *z, f32 arg3)
     midpointIndex = 3;
     bestDist = M_U32_MAX_VALUE_F;
 
-    if (&original);
 
     tile = g_StanFile->ptr_firstroom;
 
@@ -733,9 +533,6 @@ StandTile *stanFindNearestLegalPos(f32 *x, f32 *y, f32 *z, f32 arg3)
 
                         if (stanCircleLegal(stack, candidate.x, candidate.z, arg3) < 0)
                         {
-                            if (x);
-                            if (y);
-                            if (z);
 
                             dist = stanDistSquared(&candidate, &original);
 
@@ -780,7 +577,6 @@ f32 stanEdgeDist(StandTile *tile,s32 index,f32 p_x,f32 p_z)
     //   though it seems much more likely that the variables were used in the else clause.
     struct StandTilePoint* currPnt;
     struct StandTilePoint* nextPnt;
-    f32 UNUSED;
 
 
     // Omiting the '& 0xF' is equivalent, but keeping it is necessary to match.
@@ -826,9 +622,7 @@ f32 stanTriEdgeDist(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
     f32 dz;
     f32 crossProduct;
     s32 end3index;
-    s32 currPntI;
     s32 nextPntI;
-    s32 tail;
 
 
     nextPntI = 2;
@@ -858,15 +652,6 @@ f32 stanTriEdgeDist(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
 }
 
 
-f32 stanEdgeDistWorld(StandTile *tile, int index,f32 x,f32 z)
-{
-  f32 disp;
-
-  disp = stanEdgeDist(tile, index, x * g_StanScale, z * g_StanScale);
-  return disp * g_StanInvScale;
-}
-
-
 f32 stanTriEdgeDistWorld(StandTile *tile,s32 start3index,f32 p_x,f32 p_z)
 {
   f32 disp;
@@ -878,44 +663,10 @@ f32 stanTriEdgeDistWorld(StandTile *tile,s32 start3index,f32 p_x,f32 p_z)
 
 f32 stanPointDist(StandTile *tile,int pntI,f32 p_x,f32 p_z)
 {
-  f32 len;
 
   p_x -= (f32)tile->points[pntI].x;
   p_z -= (f32)tile->points[pntI].z;
   return sqrtf(p_x * p_x + p_z * p_z);
-}
-
-
-/**
- * Unreferenced.
- */
-f32 stanPointDistWorld(StandTile *tile, s32 pntI, f32 p_x, f32 p_z)
-{
-    p_x *= g_StanScale;
-    p_z *= g_StanScale;
-
-    p_x -= tile->points[pntI].x;
-    p_z -= tile->points[pntI].z;
-
-    return sqrtf((p_x * p_x) + (p_z * p_z)) * g_StanInvScale;
-}
-
-
-/**
- * Address: 7F0B0140
- * 
- * Unreferenced.
- */
-f32 stanPointDot2D(StandTile *tile, s32 index, f32 x, f32 z)
-{
-    StandTilePoint *point;
-
-    point = &tile->points[index];
-
-    x *= g_StanScale;
-    z *= g_StanScale;
-
-    return (((f32)point->z * z) + (x * (f32)point->x)) * g_StanInvScale;
 }
 
 
@@ -974,26 +725,6 @@ bool stanPointProjectsOntoTileEdge(StandTile *tile, s32 edgeIndex, f32 p_x, f32 
 }
 
 
-// Determines if inside (presumably - it effectively does an && of the checks on signs of cross products)
-//   based on the 3 edges. So probably only for triangular tiles.
-s32 stanIsInsideTri(StandTile *tile, f32 p_x, f32 p_z)
-{
-    f32 disp;
-    s32 i;
-
-    for (i = 0; i != 3; i++)
-    {
-        disp = stanTriEdgeDist(tile,i,p_x,p_z);
-        if (disp < 0) {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-
-
 s32 stanIsInsideTriWorld(StandTile *tile, f32 p_x, f32 p_z)
 {
     f32 disp;
@@ -1020,10 +751,8 @@ f32 stanTriEdgeDist2(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
     f32 temp_f2;
     f32 temp_f14;
     s32 var_a0;
-    s32 padding;
 
     f32 tempf;
-    s32 extra_padding[2];
 
 
     var_a0 = (start3index != 2) ? start3index + 1 : 0;
@@ -1046,8 +775,6 @@ f32 stanTriEdgeDist2(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
 }
 
 
-
-
 bool stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z)
 {
     f32 unk;
@@ -1068,7 +795,6 @@ bool stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z)
 
     return TRUE;
 }
-
 
 
 // A->B ACWS returns 1, CWS (including opposite) returns -1.
@@ -1112,8 +838,6 @@ int stanCrossSign(f32 a_x,f32 a_z,f32 b_x,f32 b_z)
  */
 bool stanSegmentsIntersect(f32 start1X, f32 start1Z, f32 end1X, f32 end1Z, f32 start2X, f32 start2Z, f32 end2X, f32 end2Z)
 {
-    s32 unused1;
-    s32 unused2;
     f32 start1RelX;
     f32 start1RelZ;
     f32 seg1Dx;
@@ -1147,13 +871,8 @@ s32 stanSegmentsCross(f32 arg0, f32 arg1, f32 arg2, f32 arg3,
     f32 c_z;
 
     s32 val1;
-    s32 unused4;
     s32 rc;
-    s32 unused5;
-    s32 unused6;
     s32 val2;
-    s32 unused7;
-    s32 unused8;
     s32 tmp;
 
     rc = 1;
@@ -1379,15 +1098,6 @@ void stanLineRoomsCallback(StandTile *tile, StandTile *unused, struct StandTileW
 }
 
 
-
-/*
-* Address: 0x7f0b0cec
-*/
-void stanLineRoomsCallback2(StandTile *tile, StandTile *unused, struct StandTileWalkCallbackRecord *data) {
-    stanLineRoomsCallback(tile, unused, data);
-}
-
-
 /**
  * Builds a list of room IDs between a start position and a destination position.
  * Only used for objects on set paths e.g. patrolling guards.
@@ -1472,7 +1182,6 @@ s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f3
     struct coord2d sp12C;
     s32 loop_flag;
     s32 sp124; // sp124
-    s32 padding;
     s32 spD0[0x14]; //spD0
     s32 spCC; // spCC
     s32 next;
@@ -1512,7 +1221,6 @@ s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f3
 
     if (retval == 0)
     {
-        s32 padding[2];
 
         point_index = (g_StanHitEdge + 1) % (s32)((g_StanHitTile->tail.half >> 0xC) & 0xF);
         g_StanSavedCollHasLine = 1;
@@ -1651,7 +1359,6 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
     coord2d lineStart;
     coord2d lineEnd;
     struct coord2d *tmp;
-    s32 pad;
     coord2d edgeStart;
     coord2d edgeEnd;
     s32 i;
@@ -1692,8 +1399,6 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
 
         propIndexPtr = g_RoomPropsFound;
 
-        // Fake but needed for matching.
-        if (polygon);
 
         if (*propIndexPtr >= 0)
         {
@@ -1755,7 +1460,6 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
  */
 f32 stanGetSignedPointLineDistance(f32 a_x, f32 a_z, f32 b_x, f32 b_z, f32 p_x, f32 p_z)
 {
-    u32 stack[8];
     f32 result; //d
 
     result = sqrtf((b_x - a_x) * (b_x - a_x) + (b_z - a_z) * (b_z - a_z));
@@ -1835,8 +1539,6 @@ s32 stanTestVolume(StandTile **arg0, f32 arg1, f32 arg2, f32 arg3, s32 cdtypes, 
     f32 sp94;
     f32 sp90;
 
-    s32 padding1;
-    s32 padding2;
 
     sp108 = (arg6 <= arg5);
 
@@ -1936,23 +1638,11 @@ s32 stanTestVolume(StandTile **arg0, f32 arg1, f32 arg2, f32 arg3, s32 cdtypes, 
 }
 
 
-
 //stanResetHits
 void stanResetHits(void) {
     g_StanHitTile = 0;
     g_StanHitEdge = 0;
     g_StanSavedCollHasLine = 0;
-}
-
-StandTile *stanGetCircleHitTile(void)
-{
-    return g_StanHitTile;
-}
-
-s32 stanGetCircleHitEdge(void)
-{
-
-    return g_StanHitEdge;
 }
 
 
@@ -2033,7 +1723,6 @@ StanCollisionResult stanWalkCircle(StandTile **startTile, f32 x, f32 z, f32 radi
                 {
                     i = cat;
                     pointINext = pointINext + 1;
-                    if (i);
 
                     nextPointI = pointINext;
                     nextPointI %= (tile->tail.half >> 12) & 0xf;
@@ -2090,14 +1779,11 @@ StanCollisionResult stanWalkCircle(StandTile **startTile, f32 x, f32 z, f32 radi
 
     if (callbackC != NULL)
     {
-        if (visitedCount);
         callbackC(tileStack, cat, record);
     }
 
     return STAN_COLLISION_NONE;
 }
-
-
 
 
 s32 stanCircleLegal(StandTile **tileStack, f32 target_x, f32 target_z, f32 unknown) {
@@ -2573,7 +2259,6 @@ nextpoint:
             while (stackindex < loc.lastnumtiles);
         }
 
-        if (predicate || tileStartAddr);
 
         // We only continue if we made progress with this iteration
         if (seenCount != loc.lastnumtiles)
@@ -2624,15 +2309,12 @@ bool stanGetCollisionEdge(coord3d *pntA, coord3d *pntB)
 }
 
 
-
 void stanSetLevelScale(f32 ls)
 {
     g_StanScale = ls;
     g_StanInvScale = (1.0f / ls);
     return;
 }
-
-
 
 
 /**
@@ -2696,72 +2378,6 @@ void stanGetTileColour(StandTile *tile, f32 p_x, f32 p_z, u8 *rtn)
 }
 
 
-/**
- * Address: 7F0B2C74
- */
-void stanGetTileHeaderCYBounds(StandTile *tile, f32 *out)
-{
-    f32 y0;
-    f32 y1;
-    f32 y2;
-    f32 min;
-    f32 max;
-
-     /*
-     * This seems like a bug.
-     * The function is structured like it wants the min/max Y of the
-     * three packed indices headerC/headerD/headerE, but
-     * all three reads use headerC: (tail >> 8) & 0xf.
-     * 
-     * Ultimately the function call chain leads nowhere so this is
-     * dead code and the bug doesn't matter.
-     */
-    y0 = (f32)tile->points[(tile->tail.half >> 8) & 0xf].y;
-    y1 = (f32)tile->points[(tile->tail.half >> 8) & 0xf].y;
-    y2 = (f32)tile->points[(tile->tail.half >> 8) & 0xf].y;
-
-    min = y1;
-
-    if (y0 < y1)
-    {
-        min = y0;
-    }
-
-    if (y2 < min)
-    {
-        min = y2;
-    }
-
-    max = y0;
-
-    if (y0 < y1)
-    {
-        max = y1;
-    }
-
-    if (max < y2)
-    {
-        max = y2;
-    }
-
-    out[0] = min * g_StanInvScale;
-    out[1] = max * g_StanInvScale;
-}
-
-
-/**
- * Address: 7F0B2D14
- */
-f32 stanGetTileHeaderCMinY(StandTile *tile) {
-    f32 vs[2];
-
-    stanGetTileHeaderCYBounds(tile, vs);
-    return vs[0];
-}
-
-
-
-
  /**
  * Get 24bit id stanIdHi from id string
  * @param stanIdHi: 1bit Type, 15bit Integer ID.
@@ -2772,7 +2388,6 @@ void stanPackId(char *id, u16 *stanIdHi, u8 *stanIdLo)
 {
     u32   bitsnumber; // sp3c
     char *str_end;    // sp38
-    s32   y;          // sp34
     s32   bitsletter; // sp30
     s32   bitsfile;   // sp2c
     s32   bitssubtri; // sp28
@@ -2866,13 +2481,6 @@ struct StandTilePoint *stanMatchTileName(char *id)
 }
 
 
-
-
-void stanResolveTileName(StandTilePoint** arg0) {
-    *arg0 = stanMatchTileName(*arg0);
-}
-
-
 void stanDetermineEOF(struct StanPrefixRecord *file /* canonically r */, s32 origBase, u8 *newBase)
 {
     s32 delta;
@@ -2908,8 +2516,6 @@ void stanDetermineEOF(struct StanPrefixRecord *file /* canonically r */, s32 ori
         {
             g_StanTilesEnd = tile;
 
-            // Fake but required for matching.
-            if (tile->tail.half);
             
             tile = (StandTile *)((s32)tile
                 + (tileSizes = newBase)[(tile->tail.half >> 0xc) & 0xf]);
@@ -2934,25 +2540,6 @@ s32 stanGetTileRoom(StandTile *tile)
 
 
 //incorrect here so that both this and bgGetRoomValue match
-extern s32 bgGetRoomValue(u8 arg0) ;
-
-s32 stanGetTileRoomValue(StandTile *tile)
-{
-    // u8 -> s32 -> u8 causes the odd asm
-
-    s32 room = tile->room;
-
-    return bgGetRoomValue(room);
-}
-
-/**
- * Address: 7F0B3004
- * 
- * Unused.
- */
-f32 stanGetTileHeaderCMinYWrapper(StandTile *tile) {
-    return stanGetTileHeaderCMinY(tile);
-}
 
 Gfx * stanDebugDrawTile(Gfx *ptrdl, StandTilePoint *tile_point, u32 RGBAColor) {
     return ptrdl;
@@ -2960,18 +2547,6 @@ Gfx * stanDebugDrawTile(Gfx *ptrdl, StandTilePoint *tile_point, u32 RGBAColor) {
 
 Gfx * stanDebugBeginDraw(Gfx *arg0) {
     return arg0;
-}
-
-
-/**
- * Unreferenced.
- */
-s32 stanTestLineFromTile(StandTile *tile, StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, f32 unkHeight, f32 unkA)
-{
-    // Fake but needed for matching.
-    if (pTile);
-
-    return stanTestLineUnobstructed(pTile, p_x, p_z, dest_x, dest_z, cdtypes, unkHeight, unkA, 0.0f, 1.0f);
 }
 
 

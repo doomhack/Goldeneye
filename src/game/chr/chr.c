@@ -151,7 +151,6 @@ ModelRenderData D_8002CCBC         = {NULL,
                                       {0, 0, 0, 0},
                                       CULLMODE_BOTH};
 
-s32 D_8002CCFC = 0; // Unused.
 u32 num_bodies = 0;
 u32 num_male_heads = 0;
 u32 num_female_heads = 0;
@@ -535,7 +534,6 @@ struct StruckAnim flinch_gun[] = {
     { PTR_ANIM_death_forward_face_down, 1, 15.0, 0.5, 0, -1.0, -1.0 },
     {0, 0, -1.0, 0.5, 0, -1.0, -1.0}
 };
-
 
 
 struct explosion_death_animation D_8002E648[] = {
@@ -1194,29 +1192,6 @@ void dynAllocateVerticesDiscard(int param_1)
 }
 
 
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F01F574.
- */
-f32 chrGetGroundYUnused(PropRecord *arg0)
-{
-    if (arg0->stan != 0)
-    {
-        if (stanCircleLegal(&arg0->stan, arg0->pos.x, arg0->pos.z, 1.0f) < 0)
-        {
-            return stanGetPositionYValue(arg0->stan, arg0->pos.x, arg0->pos.z);
-        }
-
-        return 0.0f;
-    }
-
-    return 0.0f;
-}
-
-
 void chrSetMoving(ChrRecord *self, bool unset)
 {
     if (unset)
@@ -1259,7 +1234,6 @@ StandTile *chrMoveWithCollision(ChrRecord *guard, StandTile *stan, coord3d *src,
         {
             if (updateLastMoveOk)
             {
-                if (&newpos);
                 guard->invalidmove = 0;
                 guard->lastmoveok60 = g_GlobalTimer;
             }
@@ -1293,7 +1267,6 @@ StandTile *chrMoveWithCollision(ChrRecord *guard, StandTile *stan, coord3d *src,
             newpos.x = (dir.x * tmp) + src->x;
             newpos.z = (dir.z * tmp) + src->z;
 
-            if (&dir);
 
             tile = stan;
         }
@@ -1572,26 +1545,9 @@ void chrSetMaxDamage(ChrRecord *chr, f32 maxdamage)
 }
 
 
-f32 chrGetMaxDamage(ChrRecord *chr)
-{
-    return chr->maxdamage;
-}
-
-
 void chrAddHealth(ChrRecord *chr, f32 health)
 {
     chr->damage -= (health * file007Health());
-}
-
-
-f32 chrGetArmor(ChrRecord *chr)
-{
-    if (chr->damage < 0)
-    {
-        return -chr->damage;
-    }
-
-    return 0;
 }
 
 
@@ -1735,7 +1691,6 @@ PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg
 PropRecord * chrAllocate( Model * arg0, coord3d * arg1, f32 arg2,  StandTile * arg3, s32 arg4)
 {
     PropRecord * ret;
-    s32 phi_a0;
 
     ret = propAllocate();
 
@@ -1873,7 +1828,6 @@ void chrUpdateAimProperties( ChrRecord *self)
  */
 void chrSetHiddenToRandom(ChrRecord *self)
 {
-    ChrRecord *temp_a0;
     u32 rand;
 
     if ((s32) self->flinchcnt < 0)
@@ -2094,7 +2048,6 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 
     if (chr->flinchcnt >= 0)
     {
-        if (0);
 
         if ((bodypart == CHR_RENDERPART_RIGHT_ARM) || (bodypart == CHR_RENDERPART_LEFT_ARM))
         {
@@ -2606,9 +2559,7 @@ after_position_update:
                 Mtxf mtx;
                 Mtxf tmp;
                 HATTYPE hat;
-                s32 unusedv;
                 struct headHat *entry;
-                volatile s32 changed;
                 s32 headindex;
 
                 pos = D_8002CCAC;
@@ -2695,7 +2646,6 @@ after_position_update:
         if (chr->hidden & CHRHIDDEN_DROP_HELD_ITEMS)
         {
             PropRecord *dropprop = prop->child;
-            PropRecord *unusedprop;
 
             while (dropprop != NULL)
             {
@@ -2741,42 +2691,6 @@ void chrDropItems(ChrRecord *self)
 }
 
 
-
-/**
- * Unreferenced.
- *
- * Sets gBloodColour 3 bytes from paramter.
- *
- * @param colour: rgba_u8.
- *
- * Address 0x7F021BB4.
- */
-void chrSetgBloodColour(rgba_u8 *colour)
-{
-    gBloodColour.r = colour->r;
-    gBloodColour.g = colour->g;
-    gBloodColour.b = colour->b;
-}
-
-
-/**
- * Unreferenced.
- *
- * Gets gBloodColour 3 bytes and sets them into parameter.
- *
- * @param colour: rgba_u8.
- *
- * Address 0x7F021BD8.
- */
-void chrGetgBloodColour(rgba_u8 *colour)
-{
-    colour->r = gBloodColour.r;
-    colour->g = gBloodColour.g;
-    colour->b = gBloodColour.b;
-}
-
-
-
 /**
  * Address 0x7F021BFC.
 */
@@ -2788,7 +2702,6 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
     s32 spBC; // 188
     s32 spB8; // 184
     s32 chrfadealpha; // 180
-    rgba_u8 temp_v1_2;
     ModelRenderData mrData; // 112
     struct view4f sp60; // -?? 96
     struct rgba_s32 chrShade;
@@ -3022,7 +2935,6 @@ void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos
 void chrCreateBloodStain(Model *model, s32 arg1, ModelNode *root, struct coord3d *pos)
 {
     s32 sp_pos[3];
-    s32 unused_stack_pad[1];
     s32 bestdist;
     ModelNode *bestnode;
     s32 bestindex;
@@ -3035,7 +2947,6 @@ void chrCreateBloodStain(Model *model, s32 arg1, ModelNode *root, struct coord3d
     ModelNode *rwdata;
     Vertex *vtx;
     Vertex *newvertices;
-    s32 i;
     s32 n;
     s32 paintval;
     s32 relatedindex;
@@ -3281,7 +3192,6 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
     f32 size;
     s32 i;
     coord3d diff;
-    f64 pad;
 
     chr = prop->chr;
 
@@ -3364,8 +3274,6 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
         mtx4RotateVecInPlace(submatrix, &viewdir);
         nodemtx = modelFindNodeMtx(hitmodel, hitnode, 0);
 
-        // Leave for matching
-        if (&diff);
 
         diff.x = nodemtx->m[3][0] - shotdata->viewOrigin.x;
         diff.y = nodemtx->m[3][1] - shotdata->viewOrigin.y;
@@ -3530,11 +3438,6 @@ void chrRemovedUnused(f32 arg0)
 }
 
 
-
-
-
-
-
 /**
  * Iterates all guards and checks if the noise is within the hearing scale distance.
  *
@@ -3671,7 +3574,6 @@ void chrUpdateCollisionBounds(PropRecord *prop, rect4f **polygon, s32 *edges, f3
  */
 void chrGetChrWidthHeight(PropRecord *arg0, f32 *width, f32 *height, f32 *always_20)
 {
-    void *temp_v0;
 
     ChrRecord *c = arg0->chr;
 

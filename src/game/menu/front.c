@@ -107,12 +107,8 @@ f32 cast_camera_height;
 f32 cast_camera_height_start;
 //CODE.bss:800695C0
 f32 cast_camera_height_end;
-//CODE.bss:800695C4
-f32 flt_CODE_bss_800695C4; // unused
 //CODE.bss:800695C8
 struct coord3d cast_target_smoothed;
-//CODE.bss:800695D4
-f32 flt_CODE_bss_800695D4; // unused
 //CODE.bss:800695D8
 struct coord3d cast_target_accumulator;
 
@@ -122,12 +118,8 @@ bool cast_camera_reset;
 //CODE.bss:800695E8
 struct coord3d cast_rootpos_smoothed;
 
-//CODE.bss:800695F4
-f32 flt_CODE_bss_800695F4;
 //CODE.bss:800695F8
 struct coord3d cast_rootvel_smoothed;
-//CODE.bss:80069604
-f32 flt_CODE_bss_80069604;
 
 //CODE.bss:80069608
 struct coord3d cast_rootvel_accumulator;
@@ -142,8 +134,6 @@ f32 g_NintendoLogoSpin;
 */
 f32 g_NintendoLogoScale;
 
-//CODE.bss:8006961C
-f32 flt_CODE_bss_8006961C;
 //CODE.bss:80069620
 coord3d g_FrontFolderScreenPos[MAX_FOLDER_COUNT];
 
@@ -229,9 +219,6 @@ s32 g_Front007HlHealth;
 s32 g_Front007HlDamage;
 //CODE.bss:800697A0
 s32 g_Front007HlAccuracy;
-
-//CODE.bss:800697A4
-s32 dword_CODE_bss_800697A4;
 
 //CODE.bss:800697A8
 s32 g_MpHandicap[MAX_PLAYER_COUNT];
@@ -340,11 +327,6 @@ f32 g_Front007Reaction = 0.0f;
 f32 g_Front007Health = 1.0f;
 f32 g_Front007Damage = 1.0f;
 f32 g_Front007Accuracy = 1.0f;
-
-/* 0x8002A9B0 */ rgba_u8 textglowR = { 160, 0, 0, 0 };
-/* 0x8002A9B4 */ rgba_u8 textglowG = { 150, 0, 0, 0 };
-/* 0x8002A9B8 */ rgba_u8 textglowB = { 40, 0, 0, 0 };
-/* 0x8002A9BC */ rgba_u8 textglowA = { 140, 0, 0, 0 };
 
 struct coord3d legalpage_pos = {0.0f, 0.0f, 0.0f};
 
@@ -927,11 +909,6 @@ ModelRenderData cast_renderdata_default = { NULL,
 
 struct coord3d cast_camera_offset = { 0.0f, 40.0f, 25.0f }; // vec in frontCastRender is initialized to this, but then gets overwritten before it's read, so these values don't have any effect.
 
-u32 D_8002BAE8 = 0; // unused
-u32 D_8002BAEC = 1; // unused
-
-u16 color_palette_entries_50_percent[] = {1, 0x1F, 0x3C1, 0x3DF, 0x7801, 0x781F, 0x7BC1, 0x7BDF};
-
 
 // forward declarations
 
@@ -1129,8 +1106,6 @@ int frontGetFavWeaponText(int player,int hand) {
 }
 
 
-
-
 void frontMoveCursor(void) {
     s8 stickx = joyGetStickX(PLAYER_1);
     s8 sticky = -joyGetStickY(PLAYER_1);
@@ -1207,13 +1182,11 @@ void frontMoveCursor(void) {
 }
 
 
-
 Gfx *frontDrawCursor(Gfx *DL)
 {
     f32 xypos[2];
     f32 halfedxy[2];
     sImageTableEntry *image;
-    s32 unused;
     s32 option;
 
     option = g_FrontFolderIcon;
@@ -1383,7 +1356,6 @@ u32 frontCheckCursorOnNextTab(void)
 }
 
 
-
 //********************************************************************************************************
 //BEGIN MENU SECTIONS
 //********************************************************************************************************
@@ -1393,7 +1365,6 @@ u32 frontCheckCursorOnNextTab(void)
 //********************************************************************************************************
 void frontLegalEnter(void)
 {
-    s32 padding;
     struct coord3d pos;
 
     musicTrack1Stop();
@@ -1480,10 +1451,8 @@ Gfx *frontLegalRender(Gfx *DL)
 {
     struct legal_screen_text *legal_text_end;
     struct ModelRenderData renderdata;
-    Mtxf *temp;
     Mtxf lookatmtx;
     s32 i;
-    u8 *txt;
     Mtxf tmpmtx;
     struct legal_screen_text *legal_text_ptr;
 
@@ -1537,12 +1506,6 @@ void frontResetTimer(void) {
     g_FrontTimer = 0;
 }
 
-void frontNullStub(void) {
-    // (function likely stub)
-}
-
-
-
 
 //********************************************************************************************************
 //SWITCH SCREEN
@@ -1569,9 +1532,6 @@ Gfx * frontBlankRender(Gfx * DL)
 }
 
 
-
-
-
 //********************************************************************************************************
 //NINTENDO LOGO
 //********************************************************************************************************
@@ -1593,14 +1553,10 @@ void frontNintendoEnter(void)
 }
 
 
-
-
 void frontNintendoLeave(void)
 {
     modelFreeSlot(g_FrontLogoModel);
 }
-
-
 
 
 void frontNintendoTick(void)
@@ -1642,7 +1598,6 @@ void frontNintendoTick(void)
 Gfx *frontNintendoRender(Gfx *DL)
 {
     ModelRenderData ninlogo;
-    s32 padding;
     s32 ambiantlight;
     Mtxf ninlogoMtxf;
     s32 i;
@@ -1730,27 +1685,15 @@ Gfx *frontNintendoRender(Gfx *DL)
     for (i=0; i<g_FrontLogoModel->obj->numMatrices; i++)
     {
         Mtxf tmpMtxf;
-        s32 padding2;
 
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
         mtx4Copy(&((s8*)g_FrontLogoModel->render_pos)[i*0x40], &tmpMtxf);
         mtxF2L(&tmpMtxf, &((Mtxf*)g_FrontLogoModel->render_pos)[i]);
 
-        if(i);
     }
 
     return DL;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 //********************************************************************************************************
@@ -1795,15 +1738,6 @@ Gfx * frontRareRender(Gfx * DL) {
 }
 
 
-
-
-
-
-
-
-
-
-
 //********************************************************************************************************
 //GUNBARREL
 //********************************************************************************************************
@@ -1841,8 +1775,6 @@ Gfx * frontGunbarrelRender(Gfx * DL) {
 }
 
 
-
-
 //********************************************************************************************************
 //GOLDENEYE LOGO
 //********************************************************************************************************
@@ -1859,9 +1791,6 @@ void frontLogoEnter(void)
     modelSetScale(g_FrontLogoModel, 1.0f);
     modelSetRootPosition(g_FrontLogoModel, &pos);
 }
-
-
-
 
 
 void frontLogoLeave(void) {
@@ -1909,11 +1838,9 @@ void frontLogoTick(void)
 }
 
 
-
 Gfx *frontLogoRender(Gfx *DL)
 {
     ModelRenderData gelogo;
-    s32 padding[2];
     Mtxf logoMatrix;
     s32 i;
     LookAt * logoLookAt;
@@ -1956,18 +1883,15 @@ Gfx *frontLogoRender(Gfx *DL)
     for (i=0; i<g_FrontLogoModel->obj->numMatrices; i++)
     {
         Mtxf tempMtxf;
-        s32 padding2;
 
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
         mtx4Copy(&((s8*)g_FrontLogoModel->render_pos)[i*0x40], &tempMtxf);
         mtxF2L(&tempMtxf, &((Mtxf*)g_FrontLogoModel->render_pos)[i]);
 
-        if(i);
     }
 
     return DL;
 }
-
 
 
 void frontHideAllSwitches(Model *arg0)
@@ -2020,9 +1944,6 @@ void frontSelectBondPicture(Model *objinstance, u32 bondID)
 }
 
 
-
-
-
 /**
  * Address 0x7F00B8AC NTSC
 */
@@ -2066,8 +1987,6 @@ void frontLoadFolders(void)
 }
 
 
-
-
 void frontFreeFolders(void)
 {
     s32 i;
@@ -2080,7 +1999,6 @@ void frontFreeFolders(void)
         g_FrontFolderModels[i] = NULL;
     }
 }
-
 
 
 //********************************************************************************************************
@@ -2118,7 +2036,6 @@ void frontFileSelectEnter(void)
 }
 
 
-
 void frontFileSelectLeave(void)
 {
     if ((g_FrontNextMenu == MENU_LEGAL_SCREEN) || (g_FrontEnterMenu == MENU_LEGAL_SCREEN))
@@ -2126,7 +2043,6 @@ void frontFileSelectLeave(void)
         frontFreeFolders();
     }
 }
-
 
 
 s32 frontGetChapterStart(s32 briefing)
@@ -2474,7 +2390,6 @@ Gfx *frontFileSelectRender(Gfx *DL)
     {
         char difficultytext[4]; // spD0
         char missiontext[18];   // spBC: "Mission <chapter>.<part>\n"
-        s32 padding3;
         struct coord3d * folderworldpos;
 
         folderworldpos = &g_FrontFolderScreenPos[foldernum];
@@ -2862,7 +2777,6 @@ void frontModeSelectTick(void)
 // Address 0x7F00D5E8 NTSC
 Gfx *frontSetupMenuBackground(Gfx *DL)
 {
-    s32 padding;
     f32 temp_f0;
     f32 temp_f2;
     ModelRenderData sp10C;
@@ -2910,7 +2824,6 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
 
     return DL;
 }
-
 
 
 /**
@@ -2974,8 +2887,6 @@ static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, char *number, u8 *textstring, 
 
     return DL;
 }
-
-
 
 
 Gfx* frontModeSelectRender(Gfx* DL)
@@ -3358,9 +3269,6 @@ s32 frontIsMissionCompleted(int stage, DIFFICULTY difficulty)
 }
 
 
-
-
-
 s32 frontGetHighestDifficulty(s32 arg0)
 {
     s32 num;
@@ -3438,7 +3346,6 @@ void frontMissionSelectTick(void)
     s32 var_s1;
     struct ModelRoData_DisplayList_CollisionRecord *temp_s4;
     ModelNode *mnode;
-    s32 padding;
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -3500,7 +3407,6 @@ void frontMissionSelectTick(void)
                 break;
             }
 
-            if (1);
         }
 
         for ( ; var_s4 >= 0; var_s4--)
@@ -3619,17 +3525,14 @@ Gfx *frontMissionSelectRender(Gfx *DL)
 {
     s32 i;
     s32 spD8;
-    s32 padding[3];
     s32 spC8;
     s32 spC4;
     s32 temp_s0;
     s32 var_s5;
-    s32 padding2[5];
     u8 sp90[24];
     s32 sp8C;
     s32 sp88;
     s32 temp_v0_3;
-    u8 *var_v0;
     s32 var_s3;
 
     DL = viSetFillColor(DL, 0, 0, 0);
@@ -3699,7 +3602,6 @@ Gfx *frontMissionSelectRender(Gfx *DL)
     DL = frontDrawCursor(DL);
     return DL;
 }
-
 
 
 //********************************************************************************************************
@@ -3854,9 +3756,6 @@ void frontSetDifficultyCursor(int difficulty)
 }
 
 
-
-
-
 /**
  * See notes below. Assume this is not in original codebase.
 */
@@ -3874,7 +3773,6 @@ Gfx *frontDifficultyRender(Gfx *DL)
 {
     u8 *text_sp3180;
     s32 unlockedDifficulty; // sp3176
-    u8 *text_sp3172;
     s32 x;    // sp3168
     s32 y;    // sp3164 (sp164 + 3000)
 
@@ -4720,8 +4618,6 @@ void frontSetMpScenario(MPSCENARIOS scenarioid)
 }
 
 
-
-
 // Address 0x7F010608 NTSC
 void frontSetMpPlayerCount(s32 numplayers)
 {
@@ -4811,9 +4707,6 @@ void frontMpOptionsLeave(void)
 {
     return;
 }
-
-
-
 
 
 static s32 g_MpHlDisplay = FALSE;
@@ -5448,7 +5341,6 @@ void frontMpCharEnter(void)
 }
 
 
-
 //********************************************************************************************************
 //MULTIPLAYER CHARACTER SELECT
 //********************************************************************************************************
@@ -5463,9 +5355,7 @@ void frontMpCharLeave(void)
 void frontMpCharTick(void)
 {
     s32 numplayers;
-    s32 padding;
     s32 ready_players;
-    s32 padding2;
     s32 i;
     s32 temp_v1_3;
 
@@ -5581,7 +5471,6 @@ void frontMpCharTick(void)
 }
 
 
-
 s32 frontGetPortraitAlpha(s32 arg0, s32 arg1, s32 arg2)
 {
     if ((arg1 >= arg0) || (arg0 >= arg2))
@@ -5609,7 +5498,6 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg
     Mtx* spD4;
     Mtx* spD0;
     Vertex* spCC;
-    s32 padding[26];
     u32 var_s2;
     u32 var_s3;
     s32 sp58;
@@ -5618,7 +5506,6 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg
     s32 var_v0;
     s32 selected_photo;
     s32 vtx_index;
-    struct MP_selectable_chars *mpc;
     struct sImageTableEntry *simage;
     s32 j;
     s32 i;
@@ -5735,8 +5622,6 @@ Gfx *frontMpCharRender(Gfx *DL)
     s32 panel_top;   
     s32 panel_width; // Width of the character portrait panel (1 panel per player)
     s32 grid_offset; // Distance between the portrait panels
-    s32 stackpad;
-    s32 stackpad2;
     s32 portrait_y_base;
     s32 select_char_height;
     s32 select_char_width;
@@ -5943,7 +5828,6 @@ void frontMpHandicapTick(void)
 }
 
 
-
 // Address 0x7F01317C NTSC
 Gfx * frontMpHandicapRender(Gfx *DL)
 {
@@ -6038,7 +5922,6 @@ Gfx * frontMpHandicapRender(Gfx *DL)
 }
 
 
-
 //********************************************************************************************************
 //MULTIPLAYER CONTROL OPTIONS
 //********************************************************************************************************
@@ -6063,10 +5946,6 @@ void frontMpControlsEnter(void)
 void frontMpControlsLeave(void) {
     return;
 }
-
-
-
-
 
 
 // Address 0x7F013608 NTSC
@@ -6194,7 +6073,6 @@ void frontMpControlsTick(void)
 }
 
 
-
 // Address 0x7F013980 NTSC
 Gfx * frontMpControlsRender(Gfx *DL)
 {
@@ -6289,7 +6167,6 @@ Gfx * frontMpControlsRender(Gfx *DL)
 }
 
 
-
 //********************************************************************************************************
 //MULTIPLAYER STAGE SELECT
 //********************************************************************************************************
@@ -6308,7 +6185,6 @@ void frontMpStageEnter(void)
 void frontMpStageLeave(void) {
 return;
 }
-
 
 
 void frontMpStageTick(void)
@@ -6408,15 +6284,12 @@ void frontMpStageTick(void)
 // Address 0x7F014050 NTSC
 Gfx * frontMpStageRender(Gfx *DL)
 {
-    s32 padding5;
     s32 sp130;
     s32 sp12C;
     s32 sp128;
     s32 sp124;
-    s32 padding2[7];
     struct coord2d sp100;
     struct coord2d spF8;
-    s32 padding4[3];
     s32 i_3;
     s32 i_2;
     s32 i_1;
@@ -6427,7 +6300,6 @@ Gfx * frontMpStageRender(Gfx *DL)
     struct sImageTableEntry *simage;
     s32 count;
     s32 count_2;
-    s32 padding;
     s32 spB4;
 
 
@@ -6514,10 +6386,7 @@ Gfx * frontMpStageRender(Gfx *DL)
     {
         s32 i_4;
         s32 sp9C;
-        s32 padding6;
-        s32 padding7;
         s32 sp90;
-        s32 padding8;
 
         sp90 = 0x97;
 
@@ -6567,8 +6436,6 @@ Gfx * frontMpStageRender(Gfx *DL)
 }
 
 
-
-
 MPSCENARIOS frontGetMpScenario(void)
 {
   return g_MpScenario;
@@ -6591,10 +6458,6 @@ void frontMpScenarioEnter(void)
 void frontMpScenarioLeave(void) {
     return;
 }
-
-
-
-
 
 
 // Address 0x7F0147B8 NTSC
@@ -6691,9 +6554,6 @@ void frontMpScenarioTick(void)
 // Address 0x7F014A48 NTSC
 Gfx * frontMpScenarioRender(Gfx *DL)
 {
-    s32 padding1;
-    s32 padding2;
-    s32 padding3;
     s32 x; // sp88
     s32 y; // sp84
     s32 i;
@@ -6749,8 +6609,6 @@ Gfx * frontMpScenarioRender(Gfx *DL)
 }
 
 
-
-
 s32 frontGetMpTeam(int player)
 {
   return g_playerPlayerData[player].have_token_or_goldengun;
@@ -6760,7 +6618,6 @@ void frontSetMpTeam(int player,s32 flag)
 {
   g_playerPlayerData[player].have_token_or_goldengun = flag;
 }
-
 
 
 //********************************************************************************************************
@@ -6927,8 +6784,6 @@ Gfx *frontMpTeamsRender(Gfx *DL)
     s32 numPlayers;
     s32 playerIndex;
     s32 layoutOffset;
-    s32 titleY;
-    s32 rectRightScaled;
     s32 useFirstTeam;
     s32 centerX;
     s32 rowTop;
@@ -6938,7 +6793,6 @@ Gfx *frontMpTeamsRender(Gfx *DL)
     s32 titleWidth;
     s32 titleX;
     s32 titleYPos;
-    s32 padding1;
     s32 textHeight;
     s32 textWidth;
     s32 textX;
@@ -7027,7 +6881,6 @@ Gfx *frontMpTeamsRender(Gfx *DL)
 
 void frontSetBriefingPage(WATCH_BRIEFING_PAGE page)
 {
-    short new_var;
 
     // could be a dev typo
     if (g_FrontBriefingPage = page)
@@ -7179,8 +7032,6 @@ void frontBriefingTick(void)
         frontSetMissionCursor(g_FrontMissions[g_FrontMission].mission_num);
     }
 }
-
-
 
 
 // Address 0x7F015A08 NTSC
@@ -7368,7 +7219,6 @@ Gfx *frontBriefingRender(Gfx *DL)
 }
 
 
-
 //********************************************************************************************************
 //RUN STAGE
 //********************************************************************************************************
@@ -7468,11 +7318,6 @@ void frontDebriefTick(void)
         frontSetMissionCursor(g_FrontMissions[g_FrontMission].mission_num);
     }
 }
-
-
-
-
-
 
 
 s32 frontIsMissionSuccess(void)
@@ -7602,11 +7447,6 @@ void frontStatsEnter(void)
 void frontStatsLeave(void) {
     return;
 }
-
-
-
-
-
 
 
 void frontStatsTick()
@@ -7846,7 +7686,6 @@ Gfx *frontStatsRender(Gfx *DL)
     s32 targettime;
     s32 difficulty;
     f32 hitPct;
-
 
 
     DL = viSetFillColor(DL, 0,0,0);
@@ -8202,12 +8041,10 @@ void frontCheatTick(void)
 }
 
 
-
 // Address 0x7F017F5C NTSC
 // Address 0x7F017EB8 PAL
 Gfx * frontCheatRender(Gfx *DL)
 {
-    s32 padding;
     s32 strID;
     s32 var_fp;
     s32 sp88;
@@ -8215,7 +8052,6 @@ Gfx * frontCheatRender(Gfx *DL)
     s32 sp80;
     s32 sp7C;
     u8 *temp_v0;
-    s32 var_s5;
 
     DL = viSetFillColor(DL,0,0,0);
     DL = viFillScreen(DL);
@@ -8376,7 +8212,6 @@ void frontCastEnter(void)
     ModelFileHeader *bodyHeader;
     ModelFileHeader *headHeader;
     ModelFileHeader *weaponHeader;
-    s32 padding;
     bool flip;
     s32 cameraPreset;
     struct intro_random_rifles rifles;
@@ -8445,7 +8280,6 @@ void frontCastEnter(void)
     allocSize = 0x19000; 
     bufferRemaining = 0x18160; 
 
-    if (1);
 
     bufferRemaining = bufferRemaining + allocSize; 
 
@@ -8684,8 +8518,6 @@ Gfx *frontCastRender(Gfx *DL)
     Light *light;
     Mtxf mtx;
     ModelRenderData renderdata = cast_renderdata_default;
-    s32 pad1A4;
-    s32 pad1A0;
     Mtxf mtx2;
     s32 x;
     s32 y;
@@ -8697,10 +8529,7 @@ Gfx *frontCastRender(Gfx *DL)
     char *text;
     coord3d vec = cast_camera_offset;
     coord3d suboffset;
-    s32 pad120;
-    s32 pad124;
     Mtx lookatmtx;
-    s32 padDC;
  
     if (g_FrontTimer < 0 || g_FrontTimer >= CAST_INTRO_LEN)
     {
@@ -8972,15 +8801,8 @@ void frontSetMenu(MENU menu, s32 reload)
 }
 
 
-MENU frontGetMenu(void)
-{
-  return g_FrontMenu;
-}
-
-
 void frontTick(void)
 {
-    s32 var_v0;
 
     if (g_FrontMenu == MENU_SWITCH_SCREENS)
     {

@@ -22,10 +22,7 @@
 // bss
 s32 g_SkyStageNum;
 
-s32 dword_CODE_bss_80079E94;
 Mtxf dword_CODE_bss_80079E98;
-u32 dword_CODE_bss_80079ED8;
-
 
 
 /*
@@ -59,7 +56,6 @@ bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
     f32 sp2c;
     f32 f12_2;
     f32 sp24;
-    u32 stack[2];
 
     if (f12 > 1.0f)
     {
@@ -108,7 +104,6 @@ bool skyIsCornerInWater(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
     f32 sp2c;
     f32 f12_2;
     f32 sp24;
-    u32 stack[2];
 
     if (f12 > 1.0f)
     {
@@ -186,7 +181,6 @@ void skyChooseCloudVtxColour(SkyRelated18 *arg0, f32 arg1)
     f32 r = fogGetCurrentEnvironmentp()->Red;
     f32 g = fogGetCurrentEnvironmentp()->Green;
     f32 b = fogGetCurrentEnvironmentp()->Blue;
-    u32 unused;
 
     arg0->r = r + fogGetCurrentEnvironmentp()->CloudRed   * (1.0f - r / 255.0f) * (1.0f - arg1);
     arg0->g = g + fogGetCurrentEnvironmentp()->CloudGreen * (1.0f - g / 255.0f) * (1.0f - arg1);
@@ -203,7 +197,6 @@ void skyChooseWaterVtxColour(SkyRelated18 *arg0, f32 arg1)
     f32 r = fogGetCurrentEnvironmentp()->Red;
     f32 g = fogGetCurrentEnvironmentp()->Green;
     f32 b = fogGetCurrentEnvironmentp()->Blue;
-    u32 unused;
 
     arg0->r = r + fogGetCurrentEnvironmentp()->WaterRed   * (1.0f - r / 255.0f) * (1.0f - arg1);
     arg0->g = g + fogGetCurrentEnvironmentp()->WaterGreen * (1.0f - g / 255.0f) * (1.0f - arg1);
@@ -306,7 +299,6 @@ Gfx *skyRender(Gfx *gdl)
     f32 sp548;
     s32 s1;
     s32 j;
-    s32 k;
     s32 sp538;
     s32 sp534;
     s32 sp530;
@@ -355,7 +347,6 @@ Gfx *skyRender(Gfx *gdl)
 
     gdl = viSetFillColor(gdl, env->Red, env->Green, env->Blue);
 
-    if (&sp6a4);
 
     skyGetWorldPosFromScreenPos(0.0f, 0.0f, &sp6a4);
     skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, 0.0f, &sp698);
@@ -812,7 +803,6 @@ Gfx *skyRender(Gfx *gdl)
         Mtxf sp38c;
         SkyRelated38 sp274[5];
         s32 i;
-        s32 unused[3];
 
         mtx4Mult(camGetProjectionMtxf(), camGetWorldToScreenMtxf(), &sp3cc);
         guScaleF(dword_CODE_bss_80079E98.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
@@ -1281,7 +1271,6 @@ Gfx *skyRender(Gfx *gdl)
 
     texSelect(&gdl, &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->SkyImageId], 1, 0, 2);
 
-    if (1);
 
     gDPSetEnvColor(gdl++, fogGetCurrentEnvironmentp()->Red, fogGetCurrentEnvironmentp()->Green, fogGetCurrentEnvironmentp()->Blue, 0xff);
     gDPSetCombineLERP(gdl++,
@@ -1293,7 +1282,6 @@ Gfx *skyRender(Gfx *gdl)
         Mtxf sp1ac;
         SkyRelated38 sp94[5];
         s32 i;
-        s32 stack[2];
 
         mtx4Mult(camGetProjectionMtxf(), camGetWorldToScreenMtxf(), &sp1ec);
         guScaleF(dword_CODE_bss_80079E98.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
@@ -1482,14 +1470,8 @@ Gfx *skyRenderTri(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38
     f32 sp424[1];
     f32 sp420[1];
 
-    f32 sp41c;
-    f32 sp418;
-    f32 sp414;
     f32 sp410;
-    f32 sp40c;
     f32 sp408;
-    f32 sp404;
-    f32 sp400;
 
     f32 sp3fc[1];
     f32 sp3f8[1];
@@ -1558,10 +1540,8 @@ Gfx *skyRenderTri(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38
     f32 sp208[1];
     f32 sp204[1];
     f32 sp200[1];
-    u32 stack[4];
     f32 sp1d0[8];
     f32 sp1b0[8];
-    u32 stack2;
     f32 sp1a8[1];
     f32 sp1a4[1];
     f32 sp1a0[1];
@@ -1569,7 +1549,6 @@ Gfx *skyRenderTri(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated38
     SkyRelated38 *swap2;
     SkyRelated38 *swap3;
     f32 sp190[1];
-    u32 stack3;
 
     if (skyVerticesAreTheSame(arg1, arg2) || skyVerticesAreTheSame(arg2, arg3) || skyVerticesAreTheSame(arg3, arg1))
     {
@@ -1952,7 +1931,6 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
     SkyRelated38 *sp4c8;
     SkyRelated38 *sp4c4;
     s32 i;
-    u32 stack;
     f32 sp4b8;
     f32 sp4b4;
     f32 sp4b0;
@@ -1979,10 +1957,7 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
     SkyRelated38 *swap2;
     SkyRelated38 *swap3;
     f32 sp454[1];
-    u32 stack07;
     f32 sp44c[1];
-    u32 stack08;
-    u32 stack09;
     f32 sp440[1];
     f32 sp43c[1];
     f32 sp438[1];
@@ -2048,29 +2023,15 @@ Gfx *skyRenderFull(Gfx *gdl, SkyRelated38 *arg1, SkyRelated38 *arg2, SkyRelated3
     f32 sp294[8];
     f32 sp274[8];
     f32 sp254[8];
-    u32 stack10;
-    u32 stack11;
-    u32 stack12;
-    u32 stack13;
-    u32 stack00;
     f32 sp23c[1];
     f32 sp238[1];
     f32 sp234[1];
     f32 sp214[8];
     f32 sp1f4[8];
-    u32 stack03;
-    u32 stack04;
-    u32 stack05;
-    u32 stack06;
-    u32 stack15;
     f32 sp1dc[1];
     f32 sp1d8[1];
     f32 sp1d4[1];
-    u32 stack01;
-    u32 stack02;
-    u32 stack14;
     f32 sp1c4[1];
-    u32 stack16;
 
     if (skyVerticesAreTheSame(arg1, arg2)
             || skyVerticesAreTheSame(arg2, arg3)

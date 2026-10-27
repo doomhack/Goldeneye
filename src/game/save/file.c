@@ -518,9 +518,6 @@ void fileValidateSaves(void)
 
             fileGenerateCRC(&g_Saves[i].completion_bitflags, &g_Saves[i + 1], &crc); // do checksum on save data
 
-            if (1){} // Hack to shift registers
-            if (1){} // or something like if (FINAL){}
-
             if ((crc[0] != g_Saves[i].chksum1) ||
                 (crc[1] != g_Saves[i].chksum2))
             {
@@ -1034,26 +1031,6 @@ void fileSetSelectedBondTofolder(s32 folder, s32 bond)
 }
 
 /**
- *
- *
- * @param unused
- */
-void fileUnused1(u32 unused)
-{
-    return;
-}
-
-/**
- *
- *
- * @param unused
- */
-void fileUnused2(u32 unused)
-{
-    return;
-}
-
-/**
  * Delete save at foldernum
  *
  * @param foldernum
@@ -1080,29 +1057,6 @@ void fileDeleteSaveForFolder(s32 foldernum)
                 fileSetSelectedBondTofolder(foldernum, foldernum);
                 fileWriteSave(save);
             }
-        }
-    }
-}
-
-/**
- *
- *
- * Resetting times??
- * @param folder
- */
-void fileInitializeAllTimes(u32 folder)
-{
-    save_data *save;
-    LEVEL_SOLO_SEQUENCE levelid;
-    DIFFICULTY difficulty;
-
-    save = fileGetSaveForFoldernum(folder);
-
-    for (levelid = SP_LEVEL_DAM; levelid < SP_LEVEL_MAX; levelid++)
-    {
-        for(difficulty = DIFFICULTY_AGENT; difficulty < DIFFICULTY_007; difficulty++)
-        {
-            fileCheckSaveStageDifficultyTime(save, levelid, difficulty, 99999999);
         }
     }
 }
@@ -1296,7 +1250,6 @@ s32 fileGetFolderControlType(u32 folder)
 void fileLoadSettingsForFolder(u32 folder)
 {
     save_data *save;
-    u16 padding;
     u16 options;
 
     save = fileGetSaveForFoldernum(folder);
@@ -1720,7 +1673,6 @@ void fileCopyCurrentSave(struct save_data *savefile)
 {
     fileCopySave(g_FrontFolder, savefile);
 }
-
 
 
 //this feels fake, generated with a permuter session i forgot was running

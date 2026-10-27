@@ -96,8 +96,6 @@ struct D_800243E4_s {
     struct ALSoundState_s *g_sndPlayerSoundStatePtr;
 };
 
-s32 g_sndUnused800243E0 = 0;
-
 // // TODO: is this struct really the answer?
 struct D_800243E4_s D_800243E4 = { {NULL, NULL}, NULL};
 
@@ -128,12 +126,9 @@ void sndRemoveEvents(ALEventQueue *evtq, ALSoundState *state, u16 eventType);
 s32 sndCountAllocList(s16 *allocListCount, s16 *freeListCount);
 ALSoundState *sndSetupSound(struct ALBankAlt_s *soundBank, ALSound* sound);
 void sndUnlinkClearSound(ALSoundState *state);
-void sndSetPriority(ALSoundState *state, u8 priority);
 u8 sndGetPlayingState(ALSoundState *state);
 void sndDeactivateAllSfxByFlag(u8 flag);
 void sndDeactivateAllSfxByFlag_1(void);
-void sndDeactivateAllSfxByFlag_11(void);
-void sndDeactivateAllSfxByFlag_3(void);
 u16 sndGetSfxSlotFirstNaturalVolume(void);
 void sndApplyVolumeAllSfxSlot(u16 arg0);
 void sndSetScalerApplyVolumeAllSfxSlot(f32 arg0);
@@ -244,7 +239,6 @@ ALMicroTime sndPlayerVoiceHandler(void *node)
 
 void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
     ALVoiceConfig config;
-    ALVoice *voice;  // dead but load-bearing. Do not remove.
     s32 delta;
     s32 limitReached;
     ALSndpEvent spAC;
@@ -287,7 +281,6 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
 
         switch (event->common.type) {
             case AL_SNDP_PLAY_EVT:
-                if (1) {} // fake to get s5/s6 swapped
                 if (soundState->playingState != SOUND_STATE_INIT && soundState->playingState != SOUND_STATE_WAIT_VOICE) {
                     return;
                 }
@@ -762,18 +755,6 @@ void sndUnlinkClearSound(ALSoundState *state)
 }
 
 /**
- * 99D8    70008DD8
- * Sets priority of ALSoundState.
- */
-void sndSetPriority(ALSoundState *state, u8 priority)
-{
-    if (state != NULL)
-    {
-        state->priority = priority;
-    }
-}
-
-/**
  * 99F0    70008DF0
  * Gets Playing State if a state is available
  * @param state: the state to check
@@ -824,7 +805,6 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
     // declaration order matters:
 
     s16 eventSoundIndex;       // 110(sp)
-    s16 unused_sp6c;           // 108(sp)
     ALMicroTime playSfxDelta;  // 104(sp)
     ALMicroTime deltaLoop; // 100(sp)
 
@@ -834,7 +814,6 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
     eventSoundIndex = 0;
     deltaTotal = 0;
 
-    if(0); // debug?
 
     if (g_sndBootswitchSound)
     {
@@ -985,24 +964,6 @@ void sndDeactivateAllSfxByFlag_1(void)
 }
 
 /**
- * 9D44    70009144
- *     redirect to 7000906C: A0=11
- */
-void sndDeactivateAllSfxByFlag_11(void)
-{
-    sndDeactivateAllSfxByFlag(0x11);
-}
-
-/**
- * 9D64    70009164
- *     redirect to 7000906C: A0=3
- */
-void sndDeactivateAllSfxByFlag_3(void)
-{
-    sndDeactivateAllSfxByFlag(3);
-}
-
-/**
  * 9D84    70009184
  * Calls alEvtqPostEvent with the method parameters and delta=0.
  *
@@ -1070,7 +1031,6 @@ u16 sndGetSfxSlotNaturalVolume(u8 sfxIndex)
 void sndSetSfxSlotVolume(u8 sfxIndex, u16 volume)
 {
     // Not sure if these are debug leftovers, or is the type `ALSndpEvent` wrong?
-    u32 unused[2];
 
     ALSndpEvent evt;
     ALSoundState *item;

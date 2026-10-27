@@ -37,7 +37,6 @@
 */
 void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSegments, s32 isArmour, f32 HealthValue)
 {
-	s32 unused;
     s32 i;
     s32 pairIndex;
     f32 angleRadians;
@@ -383,18 +382,11 @@ struct WatchVertex *watchMakeRectVerts(struct WatchVertex *vtx, s32 startx, s32 
     j = 0;
     xval = startx + horizontal_offset;
 
-    if (i);
-    if (j);
-    if (vtx);
-    if (width);
-    if (height);
 
     for (i = 0; i < 2; i++, xval += width)
     {
         startz ^= 0;
     
-        if (vertical_offset);
-        if (height);
 
         for (j = 0, zval = startz + vertical_offset; j < 2; j++, zval += height)
         {

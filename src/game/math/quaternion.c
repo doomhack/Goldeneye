@@ -4,24 +4,6 @@
 
 #define HALF2RAD(x) (x * (M_PI_F / 32768.0f))
 
-void quatFromAnglesU16(vec3u angles, quatf q)
-{
-    f32 cosX = cosf(HALF2RAD(angles[0]) * 0.5f);
-    f32 sinX = sinf(HALF2RAD(angles[0]) * 0.5f);
-    f32 cosY = cosf(HALF2RAD(angles[1]) * 0.5f);
-    f32 sinY = sinf(HALF2RAD(angles[1]) * 0.5f);
-    f32 cosZ = cosf(HALF2RAD(angles[2]) * 0.5f);
-    f32 sinZ = sinf(HALF2RAD(angles[2]) * 0.5f);
-    f32 cosXCosY = cosX * cosY;
-    f32 cosXSinY = cosX * sinY;
-    f32 sinXCosY = sinX * cosY;
-    f32 sinXSinY = sinX * sinY;
-    q[0] = ((cosXCosY * cosZ) + (sinXSinY * sinZ));
-    q[1] = ((sinXCosY * cosZ) - (cosXSinY * sinZ));
-    q[2] = ((cosXSinY * cosZ) + (sinXCosY * sinZ));
-    q[3] = ((cosXCosY * sinZ) - (sinXSinY * cosZ));
-}
-
 void quatFromAngles(vec3f angles, quatf q)
 {
     f32 cosX = cosf(angles[0] * 0.5f);
@@ -38,30 +20,6 @@ void quatFromAngles(vec3f angles, quatf q)
     q[1] = (sinXCosY * cosZ) - (cosXSinY * sinZ);
     q[2] = (cosXSinY * cosZ) + (sinXCosY * sinZ);
     q[3] = (cosXCosY * sinZ) - (sinXSinY * cosZ);
-}
-
-void quatFromXRotation(f32 angle, quatf q)
-{
-    q[0] = cosf(angle * 0.5f);
-    q[1] = sinf(angle * 0.5f);
-    q[2] = 0.0f;
-    q[3] = 0.0f;
-}
-
-void quatFromYRotation(f32 angle, quatf q)
-{
-    q[0] = cosf(angle * 0.5f);
-    q[1] = 0.0f;
-    q[2] = sinf(angle * 0.5f);
-    q[3] = 0.0f;
-}
-
-void quatFromZRotation(f32 angle, quatf q)
-{
-    q[0] = cosf(angle * 0.5f);
-    q[1] = 0.0f;
-    q[2] = 0.0f;
-    q[3] = sinf(angle * 0.5f);
 }
 
 void quatToMtx4(quatf q, mat44f matrix)
@@ -95,41 +53,6 @@ void quatToMtx4(quatf q, mat44f matrix)
     matrix[1][3] = 0.0f;
     matrix[2][3] = 0.0f;
     matrix[3][3] = 1.0f;
-}
-
-void quatFromMtx4(mat44f matrix, quatf q)
-{
-    f32 root;
-    f32 halfInvRoot;
-    f32 trace = matrix[0][0] + matrix[1][1] + matrix[2][2] + 1.0f;
-    if (0.0f < trace) {
-        root = sqrtf(trace);
-        halfInvRoot = 0.5f / root;
-        q[0] = root * 0.5f;
-        q[1] = (matrix[1][2] - matrix[2][1]) * halfInvRoot;
-        q[2] = (matrix[2][0] - matrix[0][2]) * halfInvRoot;
-        q[3] = (matrix[0][1] - matrix[1][0]) * halfInvRoot;
-    } else {
-        s32 i;
-        s32 j;
-        s32 indices[3] = {1,2,0};
-        s32 k;
-        i = 0;
-        if (matrix[0][0] < matrix[1][1]) {
-            i = 1;
-        }
-        if (matrix[i][i] < matrix[2][2]) {
-            i = 2;
-        }
-        j = indices[i];
-        k = indices[j];
-        root = sqrtf(matrix[i][i] - matrix[j][j] - matrix[k][k] + 1.0f);
-        halfInvRoot = 0.5f / root;
-        q[i + 1] = root * 0.5f;
-        q[    0] = (matrix[j][k] - matrix[k][j]) * halfInvRoot;
-        q[j + 1] = (matrix[i][j] + matrix[j][i]) * halfInvRoot;
-        q[k + 1] = (matrix[i][k] + matrix[k][i]) * halfInvRoot;
-    }
 }
 
 void quatToMtx4WithTranslation(vec3f position, quatf rotation, mat44f matrix)
@@ -231,16 +154,6 @@ void quatMult(quatf lhs, quatf rhs, quatf result)
     result[1] = (lhs[0] * rhs[1]) + (rhs[0] * lhs[1]) + (lhs[2] * rhs[3]) - (lhs[3] * rhs[2]);
     result[2] = (lhs[0] * rhs[2]) + (rhs[0] * lhs[2]) + (lhs[3] * rhs[1]) - (lhs[1] * rhs[3]);
     result[3] = (lhs[0] * rhs[3]) + (rhs[0] * lhs[3]) + (lhs[1] * rhs[2]) - (lhs[2] * rhs[1]);
-}
-
-void quatMultInPlace(quatf lhs, quatf rhs)
-{
-    quatf result;
-    quatMult(lhs, rhs, result);
-    rhs[0] = result[0];
-    rhs[1] = result[1];
-    rhs[2] = result[2];
-    rhs[3] = result[3];
 }
 
 void quatLog(quatf q, quatf result)

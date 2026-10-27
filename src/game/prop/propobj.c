@@ -741,24 +741,9 @@ void objChangeShading(ObjectRecord* obj, coord3d* pos, Mtxf* matrix, StandTile* 
 }
 
 
-// Unreferenced function (unused)
-void objPlaceOnFloor(ObjectRecord* obj, coord3d* pos, Mtxf* matrix, StandTile* stan)
-{
-    u32 a; // Adds 4 bytes to the stack so it matches. Could be anything 4 bytes long.
-    struct ModelRoData_BoundingBoxRecord *modelunk = chrobjGetBboxFromObjFile(obj->model->obj);
-
-    pos->y = stanGetPositionYValue(stan, pos->x, pos->z) + 4.0f;
-    pos->y = pos->y - bboxRotatedMinY(modelunk, matrix);
-
-    objChangeShading(obj, pos, matrix, stan);
-    chrobjCollisionRelated(obj);
-}
-
-
 //moveToPad
 void objPlaceAtPad(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix, StandTile *stan, struct coord3d *pos2)
 {
-    int padd[1];
     ModelRoData_BoundingBoxRecord *modelBoundingBox;
     f32 xmax;
     f32 ymin;
@@ -1168,8 +1153,6 @@ bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *ray
     s32 numedges;
     f32 ymax;
     f32 ymin;
-    s32 pad;
-    s32 pad2;
     s32 i;
     f32 bestfrac;
     coord2d edgeStart2d;
@@ -1391,8 +1374,6 @@ bool projectileTestObjectCollisionRecursive(ObjectRecord *obj, coord3d *worldRay
 }
 
 
-
-
 bool projectileTestChr(ChrRecord *chr, coord3d *arg1, coord3d *arg2, f32 arg3, coord3d *arg4, coord3d *arg5, coord3d *arg6, coord3d *arg7, f32 *arg8) {
     f32 instSize;
     f32 dx;
@@ -1401,7 +1382,6 @@ bool projectileTestChr(ChrRecord *chr, coord3d *arg1, coord3d *arg2, f32 arg3, c
     f32 planeDist;
     f32 *new_var2;
     f32 hitDist;
-    f32 pad;
     s32 bodyPart;
     Model *model;
     ModelNode *node;
@@ -1465,7 +1445,6 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
     PropRecord *iterprop;
     PropRecord *playerstank;
     ObjectRecord *obj;
-    s32 unused;
 
     result = FALSE;
     found_collision = FALSE;
@@ -1662,8 +1641,6 @@ bg_loop:
     {
         scale = bgGetLevelScaleInv();
 
-        // Keep this for matching.
-        if (roomPtr && roomPtr && roomPtr);
 
         hit.hitpos.x *= scale;
         hit.hitpos.y *= scale;
@@ -1716,7 +1693,6 @@ after_bg_loop:
 
         dist = sqrtf((diff.z * diff.z) + ((diff.x * diff.x) + (diff.y * diff.y)));
 
-        if (&diff);
 
         if (0.1f < dist)
         {
@@ -1864,7 +1840,6 @@ s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *
     coord2d edgeEnd;
     coord2d dir2d;
     f32 *new_var;
-    s32 pad;
 
     prop = obj->prop;
     stan = prop->stan;
@@ -2116,9 +2091,6 @@ void chrobjApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 accel, 
 }
 
 
-
-
-
 /**
  * Address 0x7F04310C.
 */
@@ -2163,7 +2135,6 @@ void objSettle(ObjectRecord *obj, coord3d *arg1)
     f32 invlen;
     f32 tmp;
     f32 modelscale;
-    s32 pad;
     f32 angle;
     Projectile *projectile;
 
@@ -2390,8 +2361,6 @@ ModelRenderData D_80030B34 = {NULL,
                                       {0, 0, 0, 0},
                                       {0, 0, 0, 0},
                                       CULLMODE_BOTH};
-
-
 
 
 //[80030B74	00	Bond]
@@ -3146,7 +3115,6 @@ void mtxAlignToNormal(coord3d *arg0, Mtxf *arg1)
     f32 sp104;
     f32 a;
     f32 b;
-    f32 stack;
     f32 spf4;
     f32 spf0;
     Mtxf spb0;
@@ -3334,7 +3302,6 @@ s32 propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
 }
 
 
-
 /**
  * US address 7F043D70.
  * JP address 7F044074.
@@ -3509,7 +3476,6 @@ void chrobjWeaponTick(struct PropRecord* prop)
         }
     }
 }
-
 
 
 void objDropRecursively(PropRecord *prop)
@@ -3734,10 +3700,6 @@ s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct 
 
     return 1;
 }
-
-
-
-
 
 
 /**
@@ -4243,8 +4205,6 @@ s32 objTick(struct PropRecord *prop)
 	s32 bounceCondition;
 	struct Projectile *projectile;
 	s32 projectileStopped;
-	struct coord3d pad5F8;
-	struct coord3d pad5EC;
 	f32 temp_f0_13;
 	s32 cctvSeesPlayer;
 	s32 cctvWatch;
@@ -4272,7 +4232,6 @@ s32 objTick(struct PropRecord *prop)
 	struct coord3d sp53C;
 	struct coord3d sp530;
 #if defined(VERSION_EU)
-	u32 jp_stack_pad[1];
 #endif
 	s32 temp_v0_32;
 	s32 *temp_a1_6;
@@ -4327,7 +4286,6 @@ s32 objTick(struct PropRecord *prop)
 	struct StandTile *temp_s2;
 	struct coord3d sp450;
 	struct StandTile *nextTile;
-	f32 temp_f14_2;
 	struct coord3d forwardDir;
 	f32 previousYaw;
 	f32 sp434;
@@ -4340,18 +4298,14 @@ s32 objTick(struct PropRecord *prop)
 	struct CCTVRecord * bottom_pad;
 	Mtxf *objectMatrix;
 	Mtxf *projectileMatrix;
-	u32 pad3E4[3];
 	Mtxf tempMatrix2;
-	u32 pad3A0;
 	struct DoorRecord *sp39C;
-	u32 render_pad398;
 	f32 sp394;
 	Mtxf *sp390;
 	s32 sp38C;
 	Mtxf * render_pad388;
 	f32 sp384;
 	f32 sp380;
-	u32 tempMatrix_head[3];
 	struct CCTVRecord *sp370;
 	struct DoorRecord * pad36C;
 	struct coord3d sp360;
@@ -4365,7 +4319,6 @@ s32 objTick(struct PropRecord *prop)
 	Mtxf *sp2FC;
 	s32 sp2F8;
 	struct AircraftRecord * render_pad2F4;
-	u32 pad2EC[2];
 	Mtxf sp2AC;
 	Mtxf sp26C;
 	struct TintedGlassRecord * pad268;
@@ -4408,7 +4361,6 @@ s32 objTick(struct PropRecord *prop)
 	struct StandTile *sp108;
 	s32 sp104;
 	struct PropRecord *sp100;
-	struct beam *beam;
 	s32 var_s2_5;
 	Mtxf spB8;
     
@@ -4786,7 +4738,6 @@ s32 objTick(struct PropRecord *prop)
 					}
 					else
 					{
-						if (Rocket && Rocket && Rocket);
 					}
 
 					if ((hitGround) || (moveResult == 0))
@@ -5305,7 +5256,6 @@ s32 objTick(struct PropRecord *prop)
 				targetPitch = poAGun->unk98;
 				if (distanceToPlayer <= poAGun->aimdist)
 				{
-					if (sp4A0);
 					playerYaw = mathAtan2(playerDirVec.f[2], playerDirVec.f[0]);
 					playerPitch = mathAtan2(playerDirVec.f[1], horizontalDist);
 					if ((obj->flags & PROPFLAG_NO_AMMO) || (obj->flags & PROPFLAG_INMOTION))
@@ -6052,7 +6002,6 @@ s32 objTick(struct PropRecord *prop)
 			}
 			else if (obj->type == PROPDEF_COLLECTABLE)
 			{
-				Mtxf *temp_a1_4;
 				sp2F8 = 1;
 
 				if (sp2F8 < model->obj->numMatrices)
@@ -6325,7 +6274,6 @@ s32 objTick(struct PropRecord *prop)
 			struct beam *beam_local;
 			f32 beam_ydiff;
 			f32 beam_collisionTile;
-			u32 beam_pad[2];
 
 			sp13C = 0;
 			sp138 = 0;
@@ -6957,7 +6905,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
             }
         }
 
-        if (screen->rot == (1.0f / 1024.0f));
 
         // Increment X scale
         if (screen->xscaleinc > 0.0f) 
@@ -7074,7 +7021,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
 
             if (tconfig != NULL) 
             {
-                u32 stack[11];
                 f32 xfrac1;
                 f32 yfrac1;
                 f32 xfrac2;
@@ -7088,11 +7034,8 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
                 xfrac2 = xfrac1;
                 yfrac2 = yfrac1;
 
-                if (xfrac1 || 1);
-                if (yfrac1 || 1);
 
                 tmp1 = 1.5707964f;
-                if (tmp1 == tmp1);
 
                 if (screen->rot != 0.0f) 
                 {
@@ -7101,9 +7044,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
                     cosrot *= rotscale;
                     sinrot = sinf(screen->rot);
 
-                    if (rotscale == rotscale);
-                    if (sinrot == sinrot);
-                    if (sinrot == sinrot);
 
                     xfrac1 *= cosrot;
                     sinrot *= rotscale;
@@ -7114,7 +7054,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
 
                 tmp1 = xfrac1 * yfrac1 * xfrac2;
 
-                if (tmp1 * yfrac2);
 
                 vertices[0].s = tconfig->width  * (screen->xmid + xfrac1) * 32.0f;
                 vertices[0].t = tconfig->height * (screen->ymid + yfrac1) * 32.0f;
@@ -7194,15 +7133,12 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 arg2)
         PropRecord *child;
         Gfx *gdl;
         s32 mN;
-        s32 m0;
         ObjectRecord *o;
         DoorRecord *door;
-        s32 pad[4];
         s32 recolor;
         s32 v;
         ModelNode *node;
         Gfx *g3;
-        Gfx *g;
         Gfx *g2;
         bool destroyed;
         union ModelRwData **rwdataSlot;
@@ -7414,7 +7350,6 @@ Gfx *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 arg2)
 {
     struct rgba_f32 spB0;
     s32 spAC;
-    s32 spA8;
     ModelRenderData mrData;
     struct view4f sp58;
     struct rgba_s32 sp48;
@@ -8233,7 +8168,6 @@ void objFall(ObjectRecord *obj, s32 playernum)
 
         coord3d rot = {0, 0, 0};
         Projectile *projectile = NULL;
-        s32 unused;
 
         objEnsureProjectile(obj->prop);
 
@@ -8386,8 +8320,6 @@ void objExplode(ObjectRecord *obj, coord3d *target_pos, s32 playernum)
             {
                 return;
             }
-            if (tailprop && tailprop);
-            if(1);
         }
 
         obj->runtime_bitflags |= RUNTIMEBITFLAG_00010000;
@@ -8434,7 +8366,6 @@ void objExplode(ObjectRecord *obj, coord3d *target_pos, s32 playernum)
     if (shots >= 12)
     {
         obj->runtime_bitflags |= RUNTIMEBITFLAG_00001000;
-        if(1);
         obj->flags &= ~RUNTIMEBITFLAG_00000100;
     }
 }
@@ -8455,12 +8386,10 @@ bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *
     Vertex *pt0;
     Vertex *pt1;
     s32 result[1];
-    s32 padB[3];
     s32 idx[3];
     s32 padC;
     BoundVec bboxMin;
     BoundVec bboxMax;
-    s32 padD[3];
     coord3d zero;
     f32 bestDist;
     f32 dx;
@@ -8496,7 +8425,6 @@ bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *
 
             cmdStart = gdl2;
 
-            if (0);
 
             gdl = gdl2;
             gdl2 = 0;
@@ -8944,7 +8872,6 @@ void doorShatterGlass(DoorRecord *door)
 void objBreakCCTVGlass(ObjectRecord *obj)
 {
     PropRecord *prop;
-    s32 unused[2];
     union ModelRoData *rodata;
     Mtxf *node_mtx;
     Mtxf glassNodeWorldMtx;
@@ -8995,36 +8922,6 @@ void objDetonateRecursive(PropRecord *prop, f32 damage, struct coord3d *pos, s32
         }
 
         objApplyDamage(prop->obj, damage, pos, arg3, owner);
-    }
-}
-
-
-
-
-
-bool objIsDestroyable(PropDefHeaderRecord *obj)//#MATCH
-{
-    switch (obj->type)
-    {
-        case PROPDEF_DOOR:
-        case PROPDEF_PROP:
-        case PROPDEF_ALARM:
-        case PROPDEF_CCTV:
-        case PROPDEF_MONITOR:
-        case PROPDEF_MULTI_MONITOR:
-        case PROPDEF_RACK:
-        case PROPDEF_AUTOGUN:
-        case PROPDEF_GAS_RELEASING:
-        case PROPDEF_VEHICHLE:
-        case PROPDEF_AIRCRAFT:
-        case PROPDEF_UNK41:
-        case PROPDEF_GLASS:
-        case PROPDEF_SAFE:
-        case PROPDEF_TANK:
-        case PROPDEF_TINTED_GLASS:
-            return TRUE;
-        default:
-            return FALSE;
     }
 }
 
@@ -9117,7 +9014,6 @@ void objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS itemnu
     s32 startslot;
     s32 slot;
     AmmoCrateRecord *crate;
-    PropRecord *nextchild;
     ObjectRecord tmpobj;
     
     /**
@@ -9404,10 +9300,8 @@ void objTestShotHit(PropRecord *prop, struct ShotData *hitinfo)
     HitThing hit;
     s32 mtxindex;
     coord3d pos;
-    s8 g[4];
     ModelNode *hitnode;
 
-    if (hit.hitpos.z);
 
     if (((obj->runtime_bitflags & RUNTIMEBITFLAG_00001000) == FALSE) && (prop->flags & PROPFLAG_ONSCREEN))
     {
@@ -9862,9 +9756,6 @@ void pickupAppendPickedUp(u8 *buffer,u8 * param2,u8 * param3)
   strcat(buffer,str);
   return;
 }
-
-
-
 
 
 void pickupAppendAmmoAmount(u8 *buffer, AMMOTYPE ammotype,u32 amount)
@@ -10448,9 +10339,6 @@ void pickupShowWeaponText(ITEM_IDS weaponid)
 }
 
 
-
-
-
 // Perfect Dark propobj.c: s32 propPickupByPlayer(struct prop *prop, bool showhudmsg)
 TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 {
@@ -11001,11 +10889,9 @@ TICKOP objTickPlayer(struct PropRecord* prop)
         f32 temp_f12;
         f32 temp_f2;
 #if defined(VERSION_US)
-        s32 var_v0;
 #endif
         struct PropRecord* temp_v0_5;
 #if defined(VERSION_EU)
-        s32 pad;
 #endif
         s32 pickup;
 
@@ -11159,7 +11045,6 @@ PropRecord *hatApplyToChr(HatRecord *hat, ChrRecord *chr, ModelFileHeader *filed
 
 void hatLoadAndApplyToChr(HatRecord *hat, PropRecord *arg1)
 {
-    s32 unused;
     s32 obj_idx;
     obj_idx = (u32) hat->obj;
     modelLoad(obj_idx);
@@ -11364,12 +11249,6 @@ WeaponObjRecord* weaponCreate(bool musthaveprop, bool musthavemodel, ModelFileHe
 }
 
 
-void weaponCreateUnused(void)
-{
-    weaponCreate(FALSE, FALSE, NULL);
-}
-
-
 HatRecord *hatCreate(bool musthaveprop, bool musthavemodel, ModelFileHeader *modeldef)
 {
 	s32 i;
@@ -11472,12 +11351,6 @@ HatRecord *hatCreate(bool musthaveprop, bool musthavemodel, ModelFileHeader *mod
 }
 
 
-HatRecord* hatCreateUnused(void)
-{
-    return hatCreate(0, 0, NULL);
-}
-
-
 AmmoCrateRecord *ammocrateAllocate(void)
 {
     s32 i;
@@ -11559,8 +11432,6 @@ KeyRecord *keyFindInProp(s32 ID, PropRecord *prop) //#MATCH
     }
     return NULL;
 }
-
-
 
 
 /**
@@ -11772,7 +11643,6 @@ PropRecord *chrInitHeldWeapon(WeaponObjRecord *weapon, ChrRecord *chr, ModelFile
 
 		modelSetScale(weapon->model, weapon->model->scale * scale);
         chrEquipWeapon(weapon, chr);
-        if (weapon->model);
 	}
 
 	return prop;
@@ -11781,7 +11651,6 @@ PropRecord *chrInitHeldWeapon(WeaponObjRecord *weapon, ChrRecord *chr, ModelFile
 
 void chrLoadHeldWeapon(WeaponObjRecord *weapon, ChrRecord *chr)
 {
-	u32 stack;
 	s32 modelnum = weapon->obj;
 
 	modelLoad(modelnum);
@@ -12039,7 +11908,6 @@ void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
     Model *heldModel;
     ModelRenderData renderData;
     Model *chrModel;
-    u32 pad; // stack alignment for matching
     Mtxf rotationMtx;
 
     chr = ((ChrRenderContext *)renderContext)->chr;
@@ -12097,8 +11965,6 @@ TICKOP weaponTickPlayer(struct PropRecord* arg0)
 }
 
 
-
-
 /*
 * Address: 0x7f052574
 */
@@ -12122,36 +11988,6 @@ void weaponSetGunfireVisible(PropRecord *prop, s32 firing)
         }
     }
 }
-
-
-
-/*
-* Address: 0x7f052604
-*/
-s32 weaponIsGunfireVisible(PropRecord *prop)
-{
-    ObjectRecord *obj = prop->obj;
-    Model *model = obj->model;
-    ModelNode *node;
-
-    if (model && model->obj->Skeleton == &skeleton_prop_weapon) {
-        node = model->obj->Switches[0];
-        if (node) {
-            struct ModelRwData_GunfireRecord *rwdata = modelGetNodeRwData(model, node);
-            return rwdata->visible;
-        }
-
-        node = model->obj->Switches[2];
-        if (node) {
-            struct ModelRwData_BSPRecord *rwdata = modelGetNodeRwData(model, node);
-            return rwdata->visible;
-        }
-    }
-
-    return FALSE;
-}
-
-
 
 
 /*
@@ -12205,9 +12041,6 @@ HATTYPE hatGetModel(PropRecord *prop) //#MATCH
         }
     }
 }
-
-
-
 
 
 /**
@@ -12307,7 +12140,6 @@ void doorGetMtx(DoorRecord *door, Mtxf *rhs)
 }
 
 
-
 /**
  * NTSC address 0x7F052B00.
 */
@@ -12400,7 +12232,6 @@ void doorBuildClippedVertices(DoorRecord *inDoor)
     ModelNode *mdlDLCNode;
     struct ModelRoData_DisplayList_CollisionRecord *src;
     DoorRecord *door;
-    s32 k;
     s16 cutoff;
     s32 i;
     s32 j;
@@ -12451,7 +12282,6 @@ void doorBuildClippedVertices(DoorRecord *inDoor)
                     *d1 = *n1;
                     *d2 = *n2;
                     *d3 = *n3;
-                    if (1);
                 }
 
                 // Rebuild the S/T coords for vertically sliding doors to mask the door's resizing.
@@ -12723,8 +12553,6 @@ void doorStopSounds(DoorRecord *door) //#MATCH
 }
 
 
-
-
 void doorPlayOpenSound0(DoorRecord *door) {
     ALSoundState *soundState = NULL;
     ALSoundState *pendingState = NULL;
@@ -12850,10 +12678,6 @@ void doorPlayOpenSound0(DoorRecord *door) {
 }
 
 
-
-
-
-
 void doorPlayOpenSound1(DoorRecord *door) {
     ALSoundState *soundState = NULL;
     ALSoundState *pendingState = NULL;
@@ -12964,9 +12788,6 @@ void doorPlayOpenSound1(DoorRecord *door) {
 }
 
 
-
-
-
 void doorPlayCloseSound0(DoorRecord *door) {
     ALSoundState *soundState = NULL;
 
@@ -13012,7 +12833,6 @@ void doorPlayCloseSound0(DoorRecord *door) {
         break;
     }
 
-    if (door); // Fix for recomp not matching
 
     if (soundState != NULL)
     {
@@ -13021,9 +12841,6 @@ void doorPlayCloseSound0(DoorRecord *door) {
 
     doorUpdateSoundVolume(door);
 }
-
-
-
 
 
 void doorPlayCloseSound1(DoorRecord *door)
@@ -13087,7 +12904,6 @@ void doorPlayCloseSound1(DoorRecord *door)
         break;
     }
 
-    if (door); // Fix for recomp not matching
 
     if (soundState != NULL) {
         chrobjSndCreatePostEventDefault(soundState, &door->prop->pos);
@@ -13462,7 +13278,6 @@ s32 doorUpdateDisplacement(DoorRecord* door)
 }
 
 
-
 /**
  * NTSC address 0x7F054FB4.
 */
@@ -13596,7 +13411,6 @@ void doorGetAnglesToPlayer(DoorRecord *door, f32 *arg1, f32 *arg2, s32 altcoords
     f32 anglediff;
     PropRecord *playerprop;
     BoundPadRecord *pad;
-    coord3d backImpactPuffCount;
     coord3d normal;
     f32 xmin;
     f32 xmax;
@@ -13694,8 +13508,6 @@ void doorGetAnglesToPlayer(DoorRecord *door, f32 *arg1, f32 *arg2, s32 altcoords
 
         anglediff2 = angle - playerangle;
 
-        if (normal.x);
-        if (xmax);
 
         if (angle < playerangle)
         {
@@ -13789,7 +13601,6 @@ bool doorTestForInteract(PropRecord *prop)
     BoundPadRecord *boundpads;
     u8 rooms1[32];
     u8 rooms2[32];
-    s32 unused[2];
 
     checkmore = TRUE;
     door = prop->door;
@@ -13948,7 +13759,6 @@ void doorsChooseSwingDirection(PropRecord *chrprop, DoorRecord *door)
 
 TICKOP propdoorInteract(PropRecord* doorprop)
 {
-    s32 unused;
     s32 sp28;
     PropRecord* playerprop;
     DoorRecord* door;
@@ -14213,7 +14023,6 @@ Gfx *countdownTimerRender(Gfx *DL)
     s32 secs;
     s32 ms;
     s32 valign_offset;
-    s32 unused;
     f32 time;
 
     if (clock_drawn_flag == 0) {

@@ -764,7 +764,6 @@ Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_colo
     s32 textY;
     s32 textwidth;
     s32 textheight;
-    s32 unused;
     u16 *text;
     s16 viX;
     s32 viY;
@@ -1050,7 +1049,6 @@ Gfx *mpMenuRender(Gfx *gdl)
     s32 player_count;
     s32 x;
     s32 y;
-    s32 k;
     s32 textwidth;
     s32 textheight;
     s32 m;
@@ -1376,8 +1374,6 @@ Gfx *mpMenuRender(Gfx *gdl)
                 }
             }
 
-            // Keep colour live through this branch to reproduce the original register allocation.
-            if (colour);
         }
         else if (g_CurrentPlayer->mpmenumode == MENU_KILLS)
         {

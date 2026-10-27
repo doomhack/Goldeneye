@@ -43,7 +43,6 @@ typedef struct ModelGroupMtxBuildArg {
 void modelSetAnimFrame2WithChrStuff(struct Model *model, f32 framea, f32 frameb, f32 frame2a, f32 frame2b);
 
 
-
 struct AnimModelSlot *g_AnimModelSlots;
 struct ModelSlot *g_ModelSlots;
 
@@ -51,8 +50,6 @@ struct ModelSlot *g_ModelSlots;
 s32 g_MaxAnimModelSlots = 0;
 s32 g_MaxModelSlots = 0;
 s32 g_ModelIsLvResetting = 0;
-u32 D_8003607C = 0;
-u32 D_80036080 = 0;
 s32 g_ModelLodDisabled = 0;
 f32 g_ModelLodScale = 1.0;
 struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices) = NULL;
@@ -100,58 +97,6 @@ coord3d D_80036244 = { 0 };
 u32 g_ModelAnimMergingEnabled = 1;
 coord3d D_80036254 = { 0 };
 
-u32 D_80036260 = 0;
-u32 D_80036264 = 0;
-u32 D_80036268 = 0x10;
-u32 D_8003626C = 1;
-u32 D_80036270 = 0x1000;
-u32 D_80036274 = 0xD;
-u32 D_80036278 = 1;
-u32 D_8003627C = 0x1000;
-u32 D_80036280 = 0xD;
-u32 D_80036284 = 9;
-u32 D_80036288 = 0x800;
-u32 D_8003628C = 0xC;
-u32 D_80036290 = 9;
-u32 D_80036294 = 0x800;
-u32 D_80036298 = 0xC;
-u32 D_8003629C = 0x19;
-u32 D_800362A0 = 0x800;
-u32 D_800362A4 = 0xC;
-u32 D_800362A8 = 0x19;
-u32 D_800362AC = 0x800;
-u32 D_800362B0 = 0xC;
-u32 D_800362B4 = 0x29;
-u32 D_800362B8 = 0x800;
-u32 D_800362BC = 0xC;
-u32 D_800362C0 = 0x29;
-u32 D_800362C4 = 0x800;
-u32 D_800362C8 = 0xC;
-u32 D_800362CC = 0x39;
-u32 D_800362D0 = 0x800;
-u32 D_800362D4 = 0xC;
-u32 D_800362D8 = 0x39;
-u32 D_800362DC = 0x800;
-u32 D_800362E0 = 0xC;
-u32 D_800362E4 = 0x49;
-u32 D_800362E8 = 0x800;
-u32 D_800362EC = 0xC;
-u32 D_800362F0 = 0x49;
-u32 D_800362F4 = 0x800;
-u32 D_800362F8 = 0xC;
-u32 D_800362FC = 0x59;
-u32 D_80036300 = 0x1000;
-u32 D_80036304 = 0xD;
-u32 D_80036308 = 0x59;
-u32 D_8003630C = 0x1000;
-u32 D_80036310 = 0xD;
-u32 D_80036314 = 0x61;
-u32 D_80036318 = 0;
-u32 D_8003631C[] = {
-  0x10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
 Vertex D_800363E0 = {
     { 0, 0, 0 },
     0,
@@ -163,7 +108,6 @@ Vertex D_800363E0 = {
 };
 
 u32 g_ModelShadowAlpha = 0x50;
-u32 D_800363F4 = 0;
 Vtx D_800363F8 = {
     {
         { 0, 0, 0 },
@@ -232,7 +176,6 @@ void modelmgrAllocateModelSlots(s32 numobjs)
 */
 void modelmgrAllocateAnimModelSlots(s32 numanimated)
 {
-    s32 temp_t6;
     s32 i;
 
     g_MaxAnimModelSlots = numanimated + ANIM_MODEL_SPARE_SLOTS;
@@ -432,21 +375,9 @@ void modelSetLodScale(f32 param_1) {
 }
 
 
-void modelCopyMtx4s32(Vew4s32 *src, Vew4s32 *dst) {
-    s32 i, j;
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
-            dst[i].v[j] = src[i].v[j];
-        }
-    }
-}
-
-
 void modelSetVtxAllocator(s32 param_1) {
   g_ModelVtxAllocator = param_1;
 }
-
-
 
 
 /**
@@ -494,7 +425,6 @@ void modelGetDirToCamera(Model* model, coord3d* coord)
 // PD: model0001a524
 s32 modelFindNodeMtxIndex(ModelNode *node, s32 arg1)
 {
-    s32 index;
     union ModelRoData *rodata1;
     union ModelRoData *rodata2;
     union ModelRoData *rodata3;
@@ -546,26 +476,6 @@ Mtxf *modelFindNodeMtx(struct Model *model, struct ModelNode *node, s32 arg2) {
 Mtxf *modelGetRootMtx(Model *objinst)
 {
     return modelFindNodeMtx(objinst, objinst->obj->RootNode, 0);
-}
-
-
-// unreferenced
-void modelGetRootMtxPosition(Model* model, coord3d* pos)
-{
-    Mtxf* mtx;
-
-    mtx = modelGetRootMtx(model);
-    if (mtx != NULL)
-    {
-        pos->f[0] = (f32) mtx->m[3][0];
-        pos->f[1] = (f32) mtx->m[3][1];
-        pos->f[2] = (f32) mtx->m[3][2];
-        return;
-    }
-
-    pos->f[0] = 0.0f;
-    pos->f[1] = 0.0f;
-    pos->f[2] = 0.0f;
 }
 
 
@@ -650,7 +560,6 @@ union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
 
     return &data[index];
 }
-
 
 
 void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#MATCH - however OPCODE 3 needs defining
@@ -756,15 +665,10 @@ void modelGetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 }
 
 
-
-
 void modelSetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 {
     modelSetNodePosition(objinst, objinst->obj->RootNode, offset);
 }
-
-
-
 
 
 /**
@@ -831,9 +735,6 @@ void modelSetAnimTranslationScale(Model* model, f32 scale)
 
 f32 modelGetNodeRadius(Model *model, ModelNode *node)
 {
-    Model     *temp_a2;
-    ModelNode *temp_a1;
-    s32        temp_t7;
 
 
     if (node)
@@ -911,7 +812,6 @@ f32 modelGetRadius(Model *arg0)
 
     return arg0->obj->BoundingVolumeRadius * arg0->scale;
 }
-
 
 
 // PD: model0001af98
@@ -1376,19 +1276,15 @@ void modelCalcJointMtxFromQuat(ModelRenderData *arg0, Model *arg1, ModelNode *ar
     s32 spA4;
     ModelRoData_GroupRecord *spA0;
     Mtxf *sp9C;
-    s32 _gap98;
     Mtxf sp58;
     s32 sp54;
     s32 sp50;
     s32 sp4C;
     RenderPosView *sp48;
-    s32 sp44;
     s32 *new_var;
-    s32 sp40;
     quatf sp2C;
     Mtxf *sp28;
     f32 sp24;
-    s32 _gap20;
     s32 sp1C;
 
     spA4 = arg2->Opcode;
@@ -1471,7 +1367,6 @@ u32 animReadAngleBits(u8 *bitstream, u8 width, u32 bitOffset)
     remainingbits = width;
     value *= bitOffset / 8;
 
-    if(1);
 
     remainingbits = width;
     bitstream += bitOffset / 8;
@@ -1675,7 +1570,6 @@ void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, Mode
 
     if ((opcode & 0x100) || m0)
     {
-        if (matrixPtr);
 
         if (angle < M_PI_F)
         {
@@ -2398,14 +2292,6 @@ f32 modelGetAbsAnimSpeed(Model *model)
     return speed;
 }
 
-/**
- * Unused Function
- * Unreferenced
-*/
-f32 modelGetEffectiveAnimSpeed(Model *model) {
-    return modelGetAnimSpeed(model) * model->playspeed;
-}
-
 
 s32 modelConstrainOrWrapAnimFrame(s32 frame, ModelAnimation *anim, f32 endframe)
 {
@@ -2482,7 +2368,6 @@ void modelCopyAnimForMerge(Model *model, f32 timemerge)
 void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame, f32 speed, f32 arg5)
 {
     s32 hadNoAnim = !model->anim;
-    s32 padding;
     s32 type;
 
     if (model->anim2 != NULL) {
@@ -2635,23 +2520,6 @@ typedef struct ModelCopyBc {
 } ModelCopyBc;
 
 
-/**
- * Unreferenced.
- * 
- * The function copies the Model data through anim_translation_scale (0x00-0xbb),
- * then restores the destination's base/resource fields (0x00-0x1f).
- * Maybe some kind of old/abandoned anim copy function.
- */
-void modelCopyAnimState(Model *src, Model *dst)
-{
-    ModelCopyHead tmp;
-
-    tmp = *(ModelCopyHead *)dst;
-    *(ModelCopyBc *)dst = *(ModelCopyBc *)src;
-    *(ModelCopyHead *)dst = tmp;
-}
-
-
 void modelSetAnimLooping(Model *model, f32 loopframe, f32 loopmerge) {
     model->animlooping = 1;
     model->animloopframe = loopframe;
@@ -2673,13 +2541,6 @@ void modelSetAnimFlipFunction(Model *model, void *callback) {
     model->animflipfunc = callback;
 }
 
-
-/**
- * Unused Function
-*/
-void modelSetUnk9c(Model *model, s32 arg1) {
-    model->unk9c = arg1;
-}
 
 void modelSetAnimSpeed(Model *model, f32 anim_speed, f32 startframe) {
 
@@ -3300,7 +3161,6 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
                     }
                 }
 
-                if (frame2);
 
                 frame2 += playspeed * model->speed2;
             }
@@ -3310,7 +3170,6 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
                 animlast = model->anim->numFrames - 1;
                 endframe = model->endframe;
 
-                if (endframe);
 
                 if (speed >= 0.0f) 
                 {
@@ -4388,7 +4247,6 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
     struct ModelRoData_Child *c_entry2;
     Vertex *vtx2;
     u8 *entry2_04;
-    s32 unused1;
     bool swap_order;
     struct ModelRoData_TubeRecord *rodata;
     struct ModelRoData_Child *c_entry;
@@ -4402,9 +4260,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
     Vertex *vtx1;
     struct ModelRwData_TubeRecord *rwdata2;
     u8 *entry_04;
-    s32 unused2;
     s32 renderpos_index2;
-    s32 unused3;
 
     rodata = &node->Data->Tube;
     rwdata = &modelGetNodeRwData(model, node)->Tube;
@@ -4640,7 +4496,6 @@ void modelRenderNodeOp11(s32 param_1,struct Model *param_2,struct ModelNode *par
 // PD: modelRenderNodeChrGunfire
 void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
-    u32 unused[3];
     f32 negspc0;
     ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
@@ -4786,7 +4641,6 @@ void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode
         gSPSetGeometryMode(renderdata->gdl++, G_CULL_BACK);
         gSPMatrix(renderdata->gdl++, osVirtualToPhysical(mtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
         gSPVertex(renderdata->gdl++, osVirtualToPhysical(vertices), 4, 0);
-        if (1);
         gSP2Triangles(renderdata->gdl++, 0, 1, 2, 0, 2, 3, 0, 0);
     }
 }
@@ -4796,7 +4650,6 @@ void modelSetShadowAlpha(s32 arg0)
 {
     g_ModelShadowAlpha = arg0;
 }
-
 
 
 void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
@@ -4925,7 +4778,6 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
 }
 
 
-
 void modelRenderNodeOp17(Gfx *param_1,struct Model *param_2, struct ModelNode *param_3)
 {
     return;
@@ -5023,15 +4875,6 @@ void modelRender(ModelRenderData *mrData, Model *mdl)
 }
 
 
-// unreferenced
-void modelCalcAndRender(ModelRenderData* arg0, Model* arg1)
-{
-    modelCalcPosition(arg1);
-    modelCalcMatrices(arg0, arg1);
-    modelRender((s32) arg0, arg1);
-}
-
-
 /**
  * Address: 7F0747D0
  * 
@@ -5045,18 +4888,15 @@ bool modelTestRayIntersectsTransformedBBox(ModelRoData_BoundingBoxRecord *bbox, 
     f32 xthingx;
     f32 xthingy;
     f32 xthingz;
-    u32 stack1[1];
     f32 xpmin;
     f32 xpmax;
     f32 xsum1;
     f32 xsum2;
     f32 xsum3;
     f32 negL2;
-    f32 pmin;
     f32 ythingx;
     f32 ythingy;
     f32 ythingz;
-    f32 pmax;
     f32 ypmin;
     f32 ypmax;
     f32 ysum1;
@@ -5073,7 +4913,6 @@ bool modelTestRayIntersectsTransformedBBox(ModelRoData_BoundingBoxRecord *bbox, 
     f32 zthingx;
     f32 zthingy;
     f32 zthingz;
-    u32 stack3[1];
     f32 zpmin;
     f32 zpmax;
     f32 zsum1;
@@ -5497,16 +5336,6 @@ u32 modelFindRayHitNext(Model *model, coord3d *arg1, coord3d *arg2, ModelNode **
 
 
 /**
- * Unreferenced
- */
-u32 *modelFindRayHit(void *arg0, f32 *arg1, f32 *arg2, ModelNode **nodeptr)
-{
-    *nodeptr = NULL;
-    return modelFindRayHitNext(arg0, arg1, arg2, nodeptr);
-}
-
-
-/**
  * Address 7F0754BC.
  * Copy animation from ROM to RAM
 */
@@ -5787,21 +5616,11 @@ void modelFilePromotePointers(ModelFileHeader *header, s32 vma, u32 addr) {
     modelPromoteNodeOffsetsToPointers(header->RootNode, vma, addr);
 }
 
-/**
- * unreferenced
- * Address 7F075B08.
-*/
-void REMOVED_sub_GAME_7F075B08(s32 param_1,s32 param_2,s32 param_3,s32 param_4)
-{
-    return;
-}
-
 
 s32 modelCalculateRwDataIndexes(ModelNode *basenode)
 {
     u16 len = 0;
     ModelNode *node = basenode;
-    union ModelRoData *rodata;
 
     while (node)
     {

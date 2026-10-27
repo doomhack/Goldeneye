@@ -65,7 +65,6 @@ void chrStartSurprised           (ChrRecord *self);
 void chrActorLookFlustered                  (ChrRecord *self);
 void chrActorThrowWeaponSurrender           (ChrRecord *self);
 void chrActorFadeAway                       (ChrRecord *self);
-void chrStaggerToWall        (ChrRecord *self);
 void chrAttackSetEndFrame                 (ChrRecord *self);
 f32 chrGetAngleToTarget                 (ChrRecord *self, s32 arg1, s32 arg2);
 f32 chrGetAngleToPos            (ChrRecord *self, coord3d *arg1);
@@ -169,7 +168,6 @@ void chrUpdateAimendbackShoulders           (ChrRecord *, void *, s32, s32, f32)
 
 
 // end forward declarations
-
 
 
 /**
@@ -287,7 +285,6 @@ f32 chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max)
 }
 
 
-
 /**
  * @param self: guard
  * @param scale: scale factor
@@ -301,8 +298,6 @@ s32 chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale)
     ret = (s32)(file007Reaction() * (f32)(100 - ret)) + ret;
     return ((100 - ret) * scale) / 100;
 }
-
-
 
 
 /**
@@ -319,8 +314,6 @@ f32 chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max)
     ret = (file007Reaction() * (100.0f - ret)) + ret;
     return ((ret * (max - min)) / 100.0f) + min;
 }
-
-
 
 
 /**
@@ -361,7 +354,6 @@ void chrStand(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F023E14.
  * PD: func0f02ed28
@@ -373,8 +365,6 @@ void chrStandImmediateCheckWall(ChrRecord *self, f32 arg1)
 }
 
 
-
-
 /**
  * Address 0x7F023E48.
  * PD: chrStop
@@ -384,9 +374,6 @@ void chrStandCheckWall(ChrRecord *self)
     chrStand(self);
     self->act_stand.checkfacingwall = 1;
 }
-
-
-
 
 
 /**
@@ -420,7 +407,6 @@ void chrKneelChooseAnimation(ChrRecord *self)
     self->actiontype = ACT_KNEEL;
     self->sleep = 0;
 }
-
 
 
 /**
@@ -470,7 +456,6 @@ void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 
 }
 
 
-
 /**
  * Extend left hand = ACT_STARTALARM.
  *
@@ -502,7 +487,6 @@ void chrStartAlarmChooseAnimation(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F024238.
  * 
@@ -528,8 +512,6 @@ void chrThrowGrenade(ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startf
 
     modelSetAnimEndFrame(self->model, 193.0f);
 }
-
-
 
 
 /**
@@ -561,8 +543,6 @@ void chrSpotChooseAnimation(ChrRecord *self, f32 arg1)
 }
 
 
-
-
 /**
  * Address 0x7F024418.
  */
@@ -589,7 +569,6 @@ void chrActorShuffleFeet(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F0244AC.
  */
@@ -601,7 +580,6 @@ void chrStartSurprised(ChrRecord *self)
     modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_surrendering_armed], randomGetNext() & 1, 0.0f, chrGetGuard007SpeedRating(self, 0.35f, 0.56f), 16.0f);
     modelSetAnimEndFrame(self->model, 7.0f);
 }
-
 
 
 /**
@@ -633,8 +611,6 @@ void chrActorLookFlustered(ChrRecord *self)
         modelSetAnimEndFrame(self->model, chrGetGuard007SpeedRating(self, 96.0f, 8.0f));
     }
 }
-
-
 
 
 /**
@@ -686,7 +662,6 @@ void chrActorThrowWeaponSurrender(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F0247B8.
  */
@@ -700,7 +675,6 @@ void chrActorFadeAway(ChrRecord *self)
         self->sleep = 0;
     }
 }
-
 
 
 /**
@@ -772,7 +746,6 @@ void chrSidestep(ChrRecord *self, GUNHAND side)
 }
 
 
-
 /**
  * chrHopToSide
  * Address 0x7F024A84.
@@ -839,7 +812,6 @@ void chrJumpOut(ChrRecord *self, GUNHAND side)
 }
 
 
-
 /**
  *  // run to coord
  * Address 0x7F024CF8 (not EU).
@@ -850,7 +822,6 @@ void chrRunToPos(ChrRecord *self, coord3d *arg1)
 {
     f32 dx;
     f32 dz;
-    s32 unused;
     f32 sq;
     PropRecord *left;
     PropRecord *right;
@@ -915,21 +886,6 @@ void chrRunToPos(ChrRecord *self, coord3d *arg1)
 }
 
 
-
-// unused / unreferenced
-void chrStaggerToWall(ChrRecord *self)
-{
-    chrStopFiring(self);
-    self->actiontype = ACT_TEST;
-    self->sleep = 0;
-    modelSetAnimation(self->model, (struct ModelAnimation*)&ptr_animation_table->data[(s32)&ANIM_DATA_death_stagger_back_to_wall], 0, 10.0f, 0.5f, 16.0f);
-    modelSetAnimLooping(self->model, 10.0f, 16.0f);
-    modelSetAnimEndFrame(self->model, 40.0f);
-}
-
-
-
-
 /**
  * Called from chrTryModifyAttack, where action type is ACT_ATTACK.
  *
@@ -978,7 +934,6 @@ void chrAttackSetEndFrame(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F0250BC.
  */
@@ -1010,7 +965,6 @@ f32 chrGetAngleToTarget(ChrRecord *self, s32 arg1, s32 arg2)
 }
 
 
-
  /**
   * @param self:
   * @param arg1: address of array of firing animations (example: ptr_pistol_firing_animation_groups)
@@ -1034,8 +988,6 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
     s32 phi_s7;
     s32 next_anim;
     struct weapon_firing_animation_table *panim_float; // 128
-    s32 unused;
-    s32 unused2;
     s32 phi_s6;
     f32 dist;
     s32 anim_index;
@@ -1179,7 +1131,6 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
 }
 
 
-
 /**
  * Address 0x7F025560.
 */
@@ -1248,7 +1199,6 @@ void chrAttackStand(ChrRecord *self, s32 attack_type, s32 arg2)
 
     chrInitActAttack(self, animation_pointer, last_arg2, &sp, attack_type, arg2, 1);
 }
-
 
 
 /**
@@ -1339,7 +1289,6 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
     PropRecord *right;
     PropRecord *right2;
     s32 phi_v1;
-    u32 unused = 1;
 
     left = chrGetEquippedWeaponProp(chr, GUNLEFT);
     right = chrGetEquippedWeaponProp(chr, GUNRIGHT);
@@ -1514,7 +1463,6 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
     PropRecord *left_2; // any
     s32 sp7C; // 124
     s32 sp78; // 120
-    ChrRecord *sp70; // any
     ChrRecord *temp_v1_2; // 112
     PropRecord *right; // any
     point2d sp64; // 100
@@ -1710,7 +1658,6 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
 }
 
 
-
 /**
  * Line-line intersection, where arg0 and arg1 are two points on line1, and arg2 and arg3 are a point and a direction of line2.
  * 3d coord/vector are passed as arguments, but only the 2d (x,z) values are used to find the intersection.
@@ -1772,7 +1719,6 @@ void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line
         result->f[2] = line1_p1->f[2];
     }
 }
-
 
 
 /**
@@ -1904,7 +1850,6 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
     u8 *sp80 = NULL; // ?
     struct ChrHitReaction *something_ani = NULL; // ?
     f32 fa;
-    f32 fb;
     f32 f_under; // 112(sp)
     f32 f_over; // 108(sp)
     f32 ft;
@@ -2340,7 +2285,6 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
 {
     s32 hattype;                     //sp78
     PropRecord *myprop = self->prop; //sp60
-    s32 padd;
 
     // Counter-op: the guard player's shots pass through other guards.
     if (isPlayer && counterOpIsGuardPlayer(playerGetCurrentNum()) && (myprop->type != PROP_TYPE_VIEWER))
@@ -2588,8 +2532,6 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
 }
 
 
-
-
 /**
  * Address 0x7F027804.
 */
@@ -2777,7 +2719,6 @@ f32 waypointDistSqXz(coord3d *arg0, waypoint *arg1)
 }
 
 
-
 /**
  * Address 0x7F027CD4.
 */
@@ -2812,8 +2753,6 @@ waypoint *waypointFindNearPos(coord3d *arg0, StandTile *arg1)
 
     return ret;
 }
-
-
 
 
 /**
@@ -2851,7 +2790,6 @@ s32 chrPathIsOffscreen(ChrRecord *self, coord3d *arg1, StandTile *tile)
 }
 
 
-
 /**
  * Address 0x7F027E70.
 */
@@ -2859,8 +2797,6 @@ s32 chrPathToPadIsOffscreen(ChrRecord *self, PadRecord *arg1)
 {
     return chrPathIsOffscreen(self, &arg1->pos, arg1->stan);
 }
-
-
 
 
 /**
@@ -2971,9 +2907,6 @@ f32 chrGetRunAnimSpeed(ChrRecord *self)
 }
 
 
-
-
-
 /**
  * Address 0x7F028144.
 */
@@ -3004,7 +2937,6 @@ s32 chrGoPosCalculateBaseTtl(ChrRecord *self)
 
     return (s32) ((dx + dz) / (chrGetRunAnimSpeed(self) * sp18));
 }
-
 
 
 /**
@@ -3062,7 +2994,6 @@ void chrGoPosConsiderRestart(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02828C.
  * PD: chrGoPosInitExpensive
@@ -3086,7 +3017,6 @@ void chrGoPosResetMagic(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F0282E0.
  * PD: chrGoPosAdvanceWaypoint
@@ -3108,7 +3038,6 @@ void chrActGoposIncCurIndex(ChrRecord *self)
 
     chrGoPosResetMagic(self);
 }
-
 
 
 /**
@@ -3290,9 +3219,6 @@ void chrGoPosTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d 
      * Three unused stack variables.
     */
     PropRecord *self_prop;
-    s32 unused1;
-    s32 unused2;
-    s32 unused3;
     u8 curindex;
     waypoint *pta;
     PadRecord *pad;
@@ -3443,7 +3369,6 @@ void chrGetMovementTarget(ChrRecord *self, coord3d *arg1)
 }
 
 
-
 /**
  * @param self:
  * @param arg1: sprinting animation when 2, running animation when 1, otherwise walking animation
@@ -3536,7 +3461,6 @@ void chrGoPosChooseAnimationEx(ChrRecord *self, s32 arg1, s32 arg2)
 }
 
 
-
 /**
  * Address 0x7F028DA0.
 */
@@ -3544,8 +3468,6 @@ void chrGoPosChooseAnimation( ChrRecord *self)
 {
     chrGoPosChooseAnimationEx(self, self->act_ubytes.padding[45], c_item_entries[self->bodynum].isMale);
 }
-
-
 
 
 /**
@@ -3617,8 +3539,6 @@ s32 chrGoToPos(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed)
 }
 
 
-
-
 /**
  * Address 0x7F028FAC.
 */
@@ -3679,7 +3599,6 @@ void chrStartPatrol(ChrRecord *self, struct patrol_path *path)
     s32 count = 0;
     PadRecord *new_var;
     waypoint *pta;
-    StandTile *stan;
     s32 *dataptr;
     f32 dx;
     f32 dz;
@@ -3700,7 +3619,6 @@ void chrStartPatrol(ChrRecord *self, struct patrol_path *path)
 
                 if (((dx * dx) + (dz * dz)) < 10000.0f)
                 {
-                    if (((pad->pos.f) && (pad->pos.f)) && (pad->pos.f));
                     
                     next_step = count;
                     break;
@@ -3751,7 +3669,6 @@ void chrRecordSawTarget(ChrRecord *self)
   self->seen_bond_time = g_GlobalTimer;
   return;
 }
-
 
 
 /**
@@ -3820,8 +3737,6 @@ s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *arg1, StandTile *arg2)
 }
 
 
-
-
 /**
  * Address 0x7F0294BC.
 */
@@ -3858,8 +3773,6 @@ bool chrCanSeeBond(ChrRecord *self)
 }
 
 
-
-
 /**
  * Address 0x7F0295D0.
 */
@@ -3883,7 +3796,6 @@ bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan)
 
     return pass;
 }
-
 
 
 /**
@@ -3911,8 +3823,6 @@ s32 chrCanSeePos(ChrRecord *self, coord3d *arg1, StandTile *arg2)
 
     return 0;
 }
-
-
 
 
 /**
@@ -3953,8 +3863,6 @@ s32 chrHasLineOfSightToPlayer(ChrRecord *self)
 
     return ret;
 }
-
-
 
 
 /**
@@ -4018,8 +3926,6 @@ s32 propCanWalkLine(PropRecord *arg0, coord3d *arg1, coord3d *arg2)
 }
 
 
-
-
 /**
  * Addres 0x7F029A94.
 */
@@ -4033,37 +3939,6 @@ s32 propCanWalkInDir(PropRecord *arg0, coord3d *arg1, f32 arg2)
 
     return propCanWalkLine(arg0, &sp1C, arg1);
 }
-
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F029AF0.
-*/
-s32 propCanWalkTowardUnused(PropRecord *arg0, coord3d *arg1)
-{
-    coord3d sp24;
-    f32 temp_f2;
-
-    sp24.f[0] = arg1->f[0] - arg0->pos.f[0];
-    sp24.f[1] = 0.0f;
-    sp24.f[2] = arg1->f[2] - arg0->pos.f[2];
-
-    if ((sp24.f[0] == 0.0f) && (sp24.f[2] == 0.0f))
-    {
-        return 1;
-    }
-
-    temp_f2 = 1.0f / sqrtf(SQR(sp24.f[0]) + SQR(sp24.f[2]));
-
-    sp24.f[0] *= temp_f2;
-    sp24.f[2] *= temp_f2;
-
-    return propCanWalkLine(arg0, arg1, &sp24);
-}
-
-
 
 
 /**
@@ -4082,8 +3957,6 @@ void chrSetTargetToPlayer(ChrRecord *self)
     self->lastknowntargetpos.f[2] = temp_v0->pos.f[2];
     self->targetTile = temp_v0->stan;
 }
-
-
 
 
 /**
@@ -4133,8 +4006,6 @@ bool chrHasStoppedOrPatroling(ChrRecord *self) //chrHasStoppedOrPatroling
 }
 
 
-
-
 /**
  * Address 0x7F029D70.
 */
@@ -4149,7 +4020,6 @@ bool chrCheckTargetInSight(ChrRecord *self)
     f32         atn;
     f32         radChangeToFaceBond;
     bool        pass;
-    u32         rt;
     s32         distance;
 
     myprop               = self->prop;
@@ -4232,7 +4102,6 @@ bool chrCheckTargetInSight(ChrRecord *self)
 }
 
 
-
 /**
  * get vector to run on
  * @param self:
@@ -4274,8 +4143,6 @@ void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, vec3d *vec)
 }
 
 
-
-
 /**
  * @see chrIsClear
  * Address 0x7F02A0EC.
@@ -4295,8 +4162,6 @@ s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
 
     return propCanWalkLine(prop, &sp1C, &sp28);
 }
-
-
 
 
 /**
@@ -4327,8 +4192,6 @@ void chrGetSideDir(ChrRecord *self, s32 arg1, coord3d *arg2)
 }
 
 
-
-
 /**
  * @see chrIsClearLow
  *
@@ -4351,8 +4214,6 @@ s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance)
 }
 
 
-
-
 bool chrIsNotDeadOrShot(ChrRecord *self)
 {
     s8 currentaction = self->actiontype;
@@ -4367,14 +4228,12 @@ bool chrIsNotDeadOrShot(ChrRecord *self)
 }
 
 
-
 bool chrIsDead(ChrRecord *self)
 {
     s8 currentaction = self->actiontype;
 
     return ((currentaction == ACT_DIE) || (currentaction == ACT_DEAD));
 }
-
 
 
 /**
@@ -4384,9 +4243,7 @@ bool chrTrySidestep(ChrRecord *self)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
-    int pad1; //needed for stack size - check debug rom
     f32 myRadDirection;
-    int pad2; //needed for stack size
     f32 myRadDirectionToBond;
     f32 radChangeToFaceBond;
     GUNHAND HopOtherDirection; //needed for stack size
@@ -4432,7 +4289,6 @@ bool chrTrySidestep(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02A428.
 */
@@ -4440,9 +4296,7 @@ bool chrTryJumpOut(ChrRecord *self)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
-    int pad1; //needed for stack size - check debug rom
     f32 myRadDirection;
-    int pad2; //needed for stack size
     f32 myRadDirectionToBond;
     f32 radChangeToFaceBond;
     GUNHAND HopOtherDirection; //needed for stack size
@@ -4489,7 +4343,6 @@ bool chrTryJumpOut(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02A588.
 */
@@ -4534,7 +4387,6 @@ bool chrTryRunSideways(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02A704.
 */
@@ -4570,7 +4422,6 @@ bool chrTryAttackWalk(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02A7F8.
 */
@@ -4604,7 +4455,6 @@ bool chrTryAttackRun(ChrRecord *self)
 
     return FALSE;
 }
-
 
 
 /**
@@ -4658,7 +4508,6 @@ bool chrTryAttackRoll(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02AA1C.
 */
@@ -4675,8 +4524,6 @@ bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b)
 }
 
 
-
-
 /**
  * Address 0x7F02AA88.
 */
@@ -4691,7 +4538,6 @@ bool chrTryAttackKneel(ChrRecord *self, s32 targettype, s32 targetid)
 
     return FALSE;
 }
-
 
 
 /**
@@ -4736,7 +4582,6 @@ bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid)
 
     return FALSE;
 }
-
 
 
 /**
@@ -4790,7 +4635,6 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 }
 
 
-
 /**
  * Address 0x7F02AD54.
 */
@@ -4806,26 +4650,21 @@ bool chrTryStartPatrol(ChrRecord *self, s32 pathid)
 }
 
 
-
 /**
  * Address 0x7F02AD98.
 */
 void chrTickStand(ChrRecord *self)
 {
     s32 i;             // any
-    f32 aaa;
-    s32 bbb;
     PropRecord *left;  // 160
     PropRecord *right; // 156
     s32 index;         // any
-    s32 ccc;
     f32 sp74[8];       // 116
     f32 subroty;       // 112
     f32 temp_f0;       // 108
     f32 subrotyarg2;   // any
     s32 j;             // any
     s32 sp44[8];       // 68
-    s32 z; // required to push $f0 below
 
     if (self->sleep > 0)
     {
@@ -5028,7 +4867,6 @@ void chrTickStand(ChrRecord *self)
 }
 
 
-
 void chrTickKneel(ChrRecord *actor) {
     actor->sleep = 0;
 }
@@ -5041,7 +4879,6 @@ void chrTickKneel(ChrRecord *actor) {
 */
 void chrTickAnim(ChrRecord *self)
 {
-    s32 unused[1];
 
     if (self->act_init.padding[1] == 0)
     {
@@ -5072,7 +4909,6 @@ void chrTickAnim(ChrRecord *self)
         self->sleep = (randomGetNext() % 5U) + 0xE;
     }
 }
-
 
 
 /**
@@ -5107,7 +4943,6 @@ void chrTickSurrender(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02B774.
 */
@@ -5131,8 +4966,6 @@ void chrTickDead(ChrRecord *self)
 
     self->act_init.padding[0] = 0;
 }
-
-
 
 
 /**
@@ -5209,8 +5042,6 @@ void chrAlertOthersOfInjury(ChrRecord *self, s32 flag)
 }
 
 
-
-
 /**
  * Address 0x7F02B9A4.
 */
@@ -5278,8 +5109,6 @@ void chrTickDie(ChrRecord *self)
 }
 
 
-
-
 /**
  * Address 0x7F02BC80.
 */
@@ -5305,7 +5134,6 @@ void chrTickArgh(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02BD20.
 */
@@ -5324,8 +5152,6 @@ void chrTickPreArgh(ChrRecord *self)
         chrReactToHit(self, &sp30, self->act_preargh.unk038, self->act_preargh.unk03c, self->act_preargh.unk040);
     }
 }
-
-
 
 
 /**
@@ -5366,8 +5192,6 @@ void chrTickJumpout(ChrRecord *self)
 }
 
 
-
-
 /**
  * @see chrTickSidestep
  * @see chrTickJumpout
@@ -5384,7 +5208,6 @@ void chrTickTest(ChrRecord *self)
         chrStand(self);
     }
 }
-
 
 
 /**
@@ -5411,7 +5234,6 @@ void chrTickStartAlarm(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02BF24.
 */
@@ -5435,7 +5257,6 @@ void chrTickSurprised(ChrRecord *self)
         }
     }
 }
-
 
 
 void chrPlayGunfireSound(ChrRecord *self, s32 arg1, s32 arg2)
@@ -5565,8 +5386,6 @@ f32 chrGetSubrotySideback(ChrRecord *self)
 }
 
 
-
-
 /**
  * Address 0x7F02C27C.
 */
@@ -5584,7 +5403,6 @@ f32 chrGetAimUpAngle(ChrRecord *self)
 }
 
 
-
 /**
  * Address 0x7F02C2B0.
 */
@@ -5594,7 +5412,6 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
     f32 sp28; //sp40
     f32 dist;
     f32 roty;
-    s32 unused[1];
     f32 temp_f14;
 
     if (arg1 != 2)
@@ -5674,8 +5491,6 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
 }
 
 
-
-
 /**
  * @param self:
  * @param arg1:
@@ -5696,7 +5511,6 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
     f32 dy; // sp332
     f32 dz; // sp328
     f32 dxdydz_square; // sp324
-    Model *self_model;
     PropRecord *self_prop; // sp316
     s32 seen_bond_flag; // sp312
     coord3d *current_player_pos; //sp308
@@ -5995,8 +5809,6 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
 }
 
 
-
-
 /**
  * Calculates and sets chr aimendrshoulder, aimendlshoulder, and aimendback.
  * rshoulder defaults to 0.0f, lshoulder defaults to @param next.
@@ -6069,9 +5881,6 @@ void chrUpdateAimendbackShoulders(ChrRecord *self, void *arg1, s32 same, s32 swa
 }
 
 
-
-
-
 /**
  * Address 0x7F02D0F8.
 */
@@ -6083,7 +5892,6 @@ void chrResetAimend(ChrRecord *self)
     self->aimendback = 0.0f;
     self->aimendsideback = 0.0f;
 }
-
 
 
 /**
@@ -6100,27 +5908,6 @@ void chrSetFiring(ChrRecord *self, s32 hand, s32 firing)
     {
         weaponSetGunfireVisible(prop, firing);
     }
-}
-
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F02D148.
-*/
-s32 chrIsGunfireVisibleUnused(ChrRecord *self, s32 hand)
-{
-    PropRecord *prop;
-
-    prop = chrGetEquippedWeaponProp(self, hand);
-
-    if (prop != NULL)
-    {
-        return weaponIsGunfireVisible(prop);
-    }
-
-    return 0;
 }
 
 
@@ -6168,8 +5955,6 @@ void chrSetHandFiring(ChrRecord *self, s32 hand, s32 arg2)
 }
 
 
-
-
 /**
  * Address 0x7F02D244.
 */
@@ -6199,7 +5984,6 @@ f32 chrGetAimLimitAngle(f32 sqdist)
 }
 
 
-
 /**
  * @param arg0:
  * @param arg1: out parameter. bool. Whether or not self has correct line of site to hit player.
@@ -6223,7 +6007,6 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
     PropRecord *self_prop;
     f32 t2; // sp48
     f32 phi_f2_4; // sp44
-    s32 padding; // unused
     s32 phi_v1;
 
     player_prop = currentPlayerGetProp();
@@ -6386,7 +6169,6 @@ s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *arg2)
 }
 
 
-
 /**
  * Address 0x7F02D734.
 */
@@ -6430,8 +6212,6 @@ void chrFireHand(ChrRecord *self, s32 hand)
     Mtxf sp9C;
     Mtxf sp5C; // 92
     s32 sp44;
-    s32 unused;
-    f32 sp4C;
 
     self_prop = self->prop;
     weapon_prop = chrGetEquippedWeaponProp(self, hand);
@@ -7278,7 +7058,6 @@ void chrTickAttackRoll(ChrRecord *self)
     s32 sp38; // 56
     f32 phi_f2_2; // 52
     struct modeldata_root *temp_v0_2;
-    struct weapon_firing_animation_table *temp_v0;
 
     if (self->act_attackroll.unk35 != 0)
     {
@@ -8079,44 +7858,6 @@ s32 chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord
 
 
 /**
- * Unreferenced.
- *
- * Address 0x7F0305E0.
-*/
-s32 chrCanWalkViaPointWithinUnused(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, f32 arg5, s32 cdtypes)
-{
-    StandTile *sp4C;
-    s32 sp48;
-    f32 sp44;
-    f32 sp40;
-    f32 sp3C;
-    StandTile *sp38;
-
-    sp4C = arg2;
-    sp48 = 0;
-
-    chrGetChrWidthHeight(self->prop, &sp3C, &sp44, &sp40);
-    chrSetMoving(self, 0);
-
-    if (stanTestLineUnobstructed(&sp4C, arg1->x, arg1->f[2], arg3->x, arg3->f[2], cdtypes, sp44, sp40, 0.0f, 1.0f))
-    {
-        sp38 = sp4C;
-
-        if (stanTestLineUnobstructed(&sp38, arg3->x, arg3->f[2], arg4->x, arg4->f[2], cdtypes, sp44, sp40, 0.0f, 1.0f)
-            && chrCanWalkLineWithin(self, arg1, arg2, arg3, arg5, cdtypes)
-            && chrCanWalkLineWithin(self, arg3, sp4C, arg4, arg5, cdtypes))
-        {
-            sp48 = 1;
-        }
-    }
-
-    chrSetMoving(self, 1);
-
-    return sp48;
-}
-
-
-/**
  * Subtract arg0 from arg1. Take the determinate of the result and arg2.
  * If determinate is not greater than zero, then swap arg0 and arg1.
  *
@@ -8620,7 +8361,6 @@ s32 chrNavTryObstacle(
 */
 void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata *arg3)
 {
-    s32 spF0;
     coord3d sp100; // 260
     coord3d spF4; // 244
     s32 i; // 240
@@ -8628,8 +8368,6 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
     f32 spE8; // 232
     f32 spE4; // 228
     struct ObjectRecord *obj;
-    f32 spC4;
-    f32 spB4;
     f32 atan_pos2_a; // 212
     f32 atan_pos3_a;
     PropRecord *self_prop;
@@ -8642,11 +8380,8 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
     f32 atan_pos3_c;
     s32 max;
     f32 atan_pos;
-    s32 temp_t1;
     s32 cdtypes;
     PropRecord *phi_s3;
-    s32 stack_01;
-    s32 stack_02;
 
     self_prop = self->prop;
     cdtypes = CDTYPE_OBJS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_DOORSLOCKEDTOAI;
@@ -9011,7 +8746,6 @@ void chrTickGoPos(ChrRecord *self)
     StandTile *sp54;
     PadRecord *pad; // 80
     s32 phi_v1; // 76
-    s32 unused[4]; // maybe used by the nested if statements ?
 
     self_prop = self->prop;
     sp74 = 0;
@@ -9174,7 +8908,6 @@ void chrTickGoPos(ChrRecord *self)
 void chrTickPatrol(ChrRecord *self)
 {
     PropRecord *self_prop;
-    s32 unused_1;
     s32 sp34;
     PadRecord *temp_v0;
 
@@ -10380,9 +10113,6 @@ s32 waypointIsWithin90DegreesOfPosAngle(waypoint *arg0, coord3d *arg1, f32 angle
 */
 s32 waypointFindInQuadrant(coord3d *bondpos, StandTile *stan, f32 rot, u8 quadrant)
 {
-    s32 padnum_2;
-    s32 temp_s1;
-    s32 temp_s1_2;
     waypoint *waypoint;
     s32 path_id;
     s32 neighbor_index;

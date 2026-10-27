@@ -10,8 +10,6 @@ extern OSMesgQueue gfxFrameMsgQ;
 extern OSMesg gfxFrameMsgBuf[32];
 extern OSMesgQueue *sched_cmdQ;
 
-extern u32 piStatusReg;
-extern u32 piDomAddr;
 
 typedef struct
 {

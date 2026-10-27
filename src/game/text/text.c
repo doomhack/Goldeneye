@@ -17,8 +17,6 @@
 #define M_COLOR_B(x) (u8)(x >> 0x08)
 #define M_COLOR_A(x) (u8)(x >> 0x00)
 
-// data
-s32 g_TextUnused = 0; // Unused
 s32 g_TextSpacing = 0;
 s32 g_TextOrientation = 0;
 s32 g_TextWordWrap = 0;
@@ -176,8 +174,6 @@ Gfx * textRenderRect(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry, u32 color)
 Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct fontchar *prevchar,
 		struct font *font, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight, s32 yOffset)
 {
-    s32 stack;
-    s32 stack2;
 	s32 kerningOffset;
     s32 drawY;
 
@@ -290,9 +286,6 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
 	s32 savedy;
     s32 prevchar;
     s32 stack = 1;
-    s32 stack2;
-    s32 stack3;
-    s32 stack4;
     //s32 stack5;
     
     savedx = *x;
@@ -590,7 +583,6 @@ void textWrap(s32 wrapwidth, char *src, char *dst, struct fontchar *chars, struc
 	s32 more = 1;
 	s32 v1;
 	s32 i;
-	u32 stack;
 	char curword[32];
 
     while (more == 1) {
@@ -703,16 +695,6 @@ void textWrap(s32 wrapwidth, char *src, char *dst, struct fontchar *chars, struc
 
         src++;
     }
-}
-
-// Unreferenced
-void textUnused(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
-
-}
-
-// Unreferenced
-u32 textIdentity(u32 param_1,u32 param_2){
-  return param_1;
 }
 
 

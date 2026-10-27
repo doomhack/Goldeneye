@@ -160,8 +160,6 @@ void record_player_input_as_packet(struct contsample *arg0, s32 arg1, s32 arg2)
     s32 var_t2;
     struct ramrom_blockbuf *temp_v0;
     s32 temp_s0;
-    u8 t1;
-    s32 others0;
 
     temp_t5 = ALIGN16_a((s32)&ramrom_data_target[0x1f8]);
     temp_t1 = ptr_active_demofile->size_cmds;
@@ -224,7 +222,6 @@ void record_player_input_as_packet(struct contsample *arg0, s32 arg1, s32 arg2)
 // Address 0x7F0C0080 NTSC.
 s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
 {
-    s32 padding[2];
     s32 var_a3;
     s32 var_a0;
     struct ramrom_blockbuf *temp_v0;
@@ -322,7 +319,6 @@ void iterate_ramrom_entries_handle_camera_out(void)
 
     // BUG? Does this need to be adjusted for PAL?
     temp_v1 = ptr_active_demofile->totaltime_ms - 0x3C;
-    if(0);
     if ((g_GlobalTimer >= temp_v1) && ((g_GlobalTimer - g_ClockTimer) < temp_v1))
     {
         ramromFadeToTitle();

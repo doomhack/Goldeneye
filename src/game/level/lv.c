@@ -67,10 +67,6 @@
 // bss
 //CODE.bss:8008C260
 u32 *ptr_font_DL;
-//CODE.bss:8008C264
-s32 dword_CODE_bss_8008C264;
-s32 dword_CODE_bss_8008C268;
-s32 dword_CODE_bss_8008C26C;
 //CODE.bss:8008C270
 char ramrom_data_target[0x380];
 //CODE.bss:8008C5F0
@@ -184,9 +180,6 @@ s32 g_DebugHitTexNum = 0xFFFFFFFF;
 
 //D:800483C8
 struct LvlMpUnknown *g_DebugDetailEdit = NULL;
-
-// unused address padding
-s16 D_800483E6 = 0;
 
 
 extern u8* _fontdlSegmentRomStart NO_SDATA;
@@ -437,12 +430,10 @@ void lvStageLoad(s32 stage)
 }
 
 
-
 s32 lvGetCurrentStage(void)
 {
     return g_CurrentStageToLoad;
 }
-
 
 
 static u32 s_FpsLastCount;
@@ -562,7 +553,6 @@ Gfx* lvRender(Gfx* DL)
             DL = viSetupCurrentPlayerView(DL);
 
 
-
             DL = camSetupFrame(DL);
 
             DL = viSetupScreensForNumPlayers(DL);
@@ -581,9 +571,6 @@ Gfx* lvRender(Gfx* DL)
 
             propsTickPickups();
             DL = bgLevelRender(DL);
-
-
-
 
 
             if (tokenFind(1, "-stanshow_"))
@@ -1108,7 +1095,6 @@ void lvTick(void)
 }
 
 
-
 /**
  * Moves the current player from their controller and runs their multiplayer menu.
  *
@@ -1121,7 +1107,6 @@ void lvTick(void)
 void lvPlayerTick(void)
 {
     s8 local_player_number;
-    s32 padding;
     f32 temp_f0;
     f32 temp_f2;
 
@@ -1144,7 +1129,6 @@ void lvPlayerTick(void)
             {
                 gunEquip(GUNRIGHT, ITEM_TOKEN);
 
-                if(1);
 
                 if (g_CurrentPlayer->hands[GUNRIGHT].weapon_action_state == GUN_ANIM_STATE_FIRE)
                 {
@@ -1177,9 +1161,6 @@ void lvPlayerTick(void)
         return;
     }
 }
-
-
-
 
 
 void lvStageUnload(void)
@@ -1263,24 +1244,6 @@ f32 lvGetMissionTimeSec(void)
 f32 lvGetSystemPowerTimeSec(void)
 {
     return g_SystemPowerTimeSec;
-}
-
-
-/**
- * Unreferenced.
- */
-f32 lvGetStageTimeSec(void)
-{
-    return g_StageTimeSec;
-}
-
-
-/**
- * Unreferenced.
- */
-f32 lvGetPowerOnTimeSec(void)
-{
-    return g_PowerOnTimeSec;
 }
 
 

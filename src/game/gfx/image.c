@@ -161,7 +161,6 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
     u8 *start;
     s32 numcolours;
     s32 j;
-    s32 unused;
     u8 scratch2[0x800];
     u8 scratch[0x2100];
     u16 palette[0x100];
@@ -286,7 +285,6 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
 
                 start = end;
                 end += imagebytesout;
-                if (1);
             }
 
             texSwapAltRowBytes(start, tmpwidth, tmpheight, format);
@@ -299,7 +297,6 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
 
     for (i = 0; i < numcolours; i++)
     {
-        if ((!totalbytesout) && (!totalbytesout));
         dst[totalbytesout + 0] = palette[i] >> 8;
         dst[totalbytesout + 1] = palette[i] & 0xff;
         totalbytesout += 2;
@@ -912,7 +909,6 @@ s32 texInflateNonZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct tex
             case TEXCOMPMETHOD_HUFFMANPERHCHANNEL:
                 for (j = 0; j < g_TexFormatNumChannels[format]; j++)
                 {
-                    if (1);
                     texInflateHuffman(&scratch[width * height * j], width * height, g_TexFormatChannelSizes[format]);
                 }
 
@@ -1811,7 +1807,6 @@ s32 texChannelsToPixels(u8 *src, s32 width, s32 height, u8 *dst, s32 format)
         case TEXFORMAT_IA8:
             for (y = 0; y < height; y++)
             {
-                if ((width + 7) & 0xff8);
 
                 for (x = 0; x < width; x++)
                 {
@@ -1841,7 +1836,6 @@ s32 texChannelsToPixels(u8 *src, s32 width, s32 height, u8 *dst, s32 format)
         case TEXFORMAT_IA4:
             for (y = 0; y < height; y++)
             {
-                if ((width + 15) & 0xff0);
 
                 for (x = 0; x < width; x += 2)
                 {
@@ -2113,7 +2107,6 @@ s32 texInflateLookupFromBuffer(u8 *src, s32 width, s32 height, u8 *dst, u8 *look
         case TEXFORMAT_I8:
             for (y = 0; y < height; y++)
             {
-                if ((width + 7) & 0xff8);
 
                 for (x = 0; x < width; x++)
                 {
@@ -2290,7 +2283,6 @@ struct tex *texFindInPool(s32 texturenum, struct texpool *arg1)
 {
     struct tex *end;
     struct tex *cur;
-    s32 i;
 
     if (arg1 == NULL)
     {
@@ -2400,8 +2392,6 @@ void texLoad(s32 *updateword, struct texpool *pool)
     {
         alignedcompbuffer = (u8 *) (((u32)compbuffer + 0xF) >> 4 << 4);
 
-        if (alignedcompbuffer);
-        if (tex);
 
         osWritebackDCacheAll();
         osInvalDCache(alignedcompbuffer, DCACHE_SIZE);

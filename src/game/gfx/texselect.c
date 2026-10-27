@@ -352,7 +352,6 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
         
 		u8 format;
 		u8 depth;
-        s32 stack_padding;
 		s32 lutmode;
 		s32 depth2;
 		s32 lrs;

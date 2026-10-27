@@ -13,87 +13,6 @@
 #include "random.h"
 
 
-/**
- * Unreferenced.
- */
-waypoint *waypointFindNearestToPos(coord3d *pos, s32 arg1)
-{
-    waypoint *head;
-    PadRecord *pad;
-    f32 sqrdist;
-    f32 compare;
-    waypoint *node;
-    waypoint *ret;
-
-    head = g_CurrentSetup.pathwaypoints;
-    ret = NULL;
-
-    if (head)
-    {
-        node = head;
-        compare = -1.0f;
-        while (node->padID >= 0)
-        {
-            pad = &g_CurrentSetup.pads[node->padID];
-            sqrdist = ((pos->z - pad->pos.z) * (pos->z - pad->pos.z))
-                    + ((pos->x - pad->pos.x) * (pos->x - pad->pos.x));
-
-            if ((compare < 0.0f) || (sqrdist < compare))
-            {
-                compare = sqrdist;
-                ret = node;
-            }
-
-            node++;
-        }
-    }
-
-    return ret;
-}
-
-
-/**
- * Unreferenced.
- */
-waypoint* waypointRefineNearestToPos(coord3d* pos, s32 arg1, waypoint* arg2)
-{
-    PadRecord* pad;
-    f32 sqrdist2;
-    f32 sqrdist;
-    s32* neighbor;
-    waypoint* node;
-    waypoint* ret;
-    waypoint* waypoints;
-
-    neighbor = arg2->neighbours;
-    ret = arg2;
-
-    if (neighbor != NULL)
-    {
-        pad = &g_CurrentSetup.pads[arg2->padID];
-        sqrdist = ((pos->z - pad->pos.z) * (pos->z - pad->pos.z))
-                + ((pos->x - pad->pos.x) * (pos->x - pad->pos.x));
-        waypoints = g_CurrentSetup.pathwaypoints;
-
-        while (*neighbor >= 0)
-        {
-            node = &waypoints[*neighbor];
-            pad = &g_CurrentSetup.pads[node->padID];
-            sqrdist2 = ((pos->z - pad->pos.z) * (pos->z - pad->pos.z))
-                     + ((pos->x - pad->pos.x) * (pos->x - pad->pos.x));
-
-            if (sqrdist2 < sqrdist)
-            {
-                sqrdist = sqrdist2;
-                ret = node;
-            }
-            neighbor++;
-        }
-    }
-    return ret;
-}
-
-
 waygroup *waygroupFindByDist(s32 *groupnums, s32 value)
 {
     waygroup *groups = g_CurrentSetup.waypointgroups;
@@ -186,7 +105,6 @@ bool waygroupsFloodDist(struct waygroup *from, struct waygroup *to, struct waygr
 
 bool waygroupsMarkRoute(waygroup *from, waygroup *to, waygroup *groups)
 {
-    u32 stack[2];
     bool result = waygroupsFloodDist(from, to, groups, 0);
 
     if (result)
@@ -205,40 +123,6 @@ bool waygroupsMarkRoute(waygroup *from, waygroup *to, waygroup *groups)
     }
 
     return result;
-}
-
-
-/**
- * Unreferenced.
- */
-s32 waygroupFindRoute(waygroup* from, waygroup* to, waygroup** arr, s32 arrlen)
-{
-    waygroup **arrptr = arr;
-    waygroup *curfrom;
-    s32 i;
-
-    if (arrlen >= 2 && g_CurrentSetup.waypointgroups && waygroupsMarkRoute(from, to, g_CurrentSetup.waypointgroups) != 0)
-    {
-        *arr = from;
-        arrptr++;
-
-        curfrom = from;
-        arrlen += 9999;
-        i = 10001;
-
-        while (i <= to->dist && i < arrlen)
-        {
-            curfrom = waygroupFindByDist(curfrom->neighbours, i);
-            *arrptr = curfrom;
-            arrptr++;
-            i++;
-        }
-    }
-
-    *arrptr = NULL;
-    arrptr++;
-
-    return arrptr - arr;
 }
 
 
@@ -389,7 +273,6 @@ void waygroupFindLinkPoints(waygroup *groupa, waygroup *groupb, waypoint **point
     waypoint *points = g_CurrentSetup.pathwaypoints;
     waygroup *groups = g_CurrentSetup.waypointgroups;
     s32 *groupapointnums = groupa->waypoints;
-    s32 stack;
 
     while (*groupapointnums >= 0)
     {
@@ -574,7 +457,6 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
         waygroup *groupa = &g_CurrentSetup.waypointgroups[pointa->groupNum];
         waygroup *groupb = &g_CurrentSetup.waypointgroups[pointb->groupNum];
         waypoint *result;
-        s32 stack;
 
         if (groupa == groupb)
         {
@@ -648,7 +530,6 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 }
 
 
-
 /**
  * Checks the level's path graph at load and hangs if it is broken. Ryan spent a few minutes looking at this and left some notes about what this function does:
  *
@@ -675,9 +556,6 @@ void waypointsValidate(void)
     waypoints = setup->pathwaypoints;
     groups = setup->waypointgroups;
 
-    if (groups);
-    if (groups);
-    if (groups);
 
     if (waypoints != NULL)
     {
@@ -742,7 +620,6 @@ void waypointsValidate(void)
         s32 disconnected;
         waypoint *floodWaypoint;
         s32 floodWaypointNum;
-        s32 assignmentMemberOffset;
         s32 memberIndex;
         waypoint *assignmentWaypoint;
         s32 assignmentGroupIndex;
@@ -850,8 +727,6 @@ void waypointsValidate(void)
                     {
                         waypointIndex = 0;
 
-                        if (assignmentGroupCursor);
-                        if (assignmentGroupCursor);
 
                         member = floodGroup->waypoints;
 
@@ -921,7 +796,6 @@ void waypointsValidate(void)
                         {
                             floodWaypoint->dist = 0;
 
-                            if (((currentWaypoint) && (currentWaypoint)) && (currentWaypoint));
                         }
 
                         memberIndex++;

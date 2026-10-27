@@ -91,7 +91,6 @@
 #define MAXMESSAGELEN 100
 
 
-
 #if defined(VERSION_US)
     #define BONDVIEW_2ND_FONTTABLE(_param) copy_2ndfonttable
     #define BONDVIEW_1ST_FONTTABLE(_param) copy_1stfonttable
@@ -180,13 +179,6 @@ coord3d g_CamFrustumRightNormal;
 f32 g_CamFrustumRightOffset;
 f32 g_CamFrustumNearOffset;
 
-f32 flt_CODE_bss_80079984; // unused
-f32 flt_CODE_bss_80079988; // unused
-f32 flt_CODE_bss_8007998C; // unused
-
-// data
-//D:80036420
-s32 D_80036420 = 0;
 
 /**
  * When set, will increment each tick until reaching a threshold value (4).
@@ -492,8 +484,6 @@ ModelRenderData D_8003683C = {NULL,
 
 //D:8003687C
 coord3d ZeroCoordWatchPos = {0};
-//D:80036888
-s32 D_80036888 = 0; // unused/padding
 //D:8003688C
 coord3d ZeroCoordSpawnPos = {0};
 //D:80036898
@@ -544,13 +534,6 @@ struct firing_anim_struct firing_animation_groups[][6] = {
      {&D_80030660[8], 0, 0.5, 0.0, -1.0},
      {crouched_doubles_firing_animation_group1, 0, 0.1, 37.0, 47.0}}
  };
-
-//D:80036AB8
-s32 D_80036AB8 = 2;
-//D:80036AC0
-f32 D_80036AC0 = 1.0;
-//D:80036AC4
-f32 D_80036AC4 = 0.1;
 
 // forward declarations
 
@@ -621,13 +604,6 @@ Gfx *hudmsgTopRender(Gfx *gdl);
 Gfx *hudRenderCredits(Gfx *gdl);
 Gfx *watchRender(Gfx *gdl);
 Gfx *hudRenderHealthBars(Gfx *gdl);
-
-// end forward declarations
-
-void nullsub_75(void)
-{
-    return;
-}
 
 
 void camSetScreenSize(f32 width, f32 height)
@@ -720,13 +696,6 @@ void camScreenToViewDir(coord2d *in, coord3d *out, f32 length)
 }
 
 
-void camScreenDeltaToView(coord3d *in, f32 value, coord3d *out)
-{
-    out->y = ((in->y * value) * g_CurrentPlayer->c_scaley);
-    out->x = ((in->x * value) * g_CurrentPlayer->c_scalex);
-}
-
-
 void camViewToScreen(coord3d *in, coord2d *out)
 {
     f32 inv_z = (1.0f / in->z);
@@ -760,44 +729,8 @@ void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out)
 }
 
 
-void camScreenToViewDirWithFov(coord3d *in, coord3d *out, f32 value1, f32 angle, f32 value2)
-{
-    f32 var1;
-    f32 x;
-    f32 y;
-    f32 z;
-    f32 var2 = sinf(mDegToHalfRad(angle)) / (cosf(mDegToHalfRad(angle)) * g_CurrentPlayer->c_halfheight);
-    f32 var3 = (var2 * value2 * g_CurrentPlayer->c_halfheight) / g_CurrentPlayer->c_halfwidth;
-    y = (g_CurrentPlayer->c_halfheight - (in->y - g_CurrentPlayer->c_screentop)) * var2;
-    x = ((in->x - g_CurrentPlayer->c_screenleft) - g_CurrentPlayer->c_halfwidth) * var3;
-    z = -1.0f;
-    var1 = value1 / sqrtf((x * x) + (y * y) + (z * z));
-    out->x = (x * var1);
-    out->y = (y * var1);
-    out->z = (-1.0f * var1);
-}
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F078258.
- */
-void camViewToScreenWithFov(coord3d *in, coord3d *out, f32 angle, f32 value)
-{
-    f32 var1 = (cosf(mDegToHalfRad(angle)) * g_CurrentPlayer->c_halfheight) / (sinf(mDegToHalfRad(angle)) * in->f[2]);
-    f32 var2 = (var1 * g_CurrentPlayer->c_halfwidth) / (value * g_CurrentPlayer->c_halfheight);
-
-    out->f[1] = (in->f[1] * var1) + (g_CurrentPlayer->c_screentop + g_CurrentPlayer->c_halfheight);
-    out->f[0] = (g_CurrentPlayer->c_screenleft + g_CurrentPlayer->c_halfwidth) - (in->f[0] * var2);
-}
-
 void camSetWorldToViewScaledMtx(Mtx *matrix) {
     g_CurrentPlayer->field_10C4 = matrix;
-}
-
-Mtx *camGetWorldToViewScaledMtx(void) {
-    return g_CurrentPlayer->field_10C4;
 }
 
 void camSetWorldToViewMtx(Mtx *matrix) {
@@ -889,18 +822,6 @@ void camSetProjectionMtxf(Mtxf *matrix) {
 
 Mtxf *camGetProjectionMtxf(void) {
     return g_CurrentPlayer->projmatrixf;
-}
-
-Mtxf *camGetPrevWorldToScreenMtxf(void) {
-    return g_CurrentPlayer->field_10E8;
-}
-
-void camSetField10D0(s32 arg0) {
-    g_CurrentPlayer->field_10D0 = arg0;
-}
-
-s32 camGetField10D0(void) {
-    return g_CurrentPlayer->field_10D0;
 }
 
 void camSetViewToWorldMtxf(Mtxf *matrix) {
@@ -995,11 +916,6 @@ f32 camGetLodScaleZ(void)
     return g_CurrentPlayer->c_lodscalez;
 }
 
-u32 camGetLodScaleZU32(void)
-{
-    return g_CurrentPlayer->c_lodscalezu32;
-}
-
 f32 camGetScreenWidth(void)
 {
     return g_CurrentPlayer->c_screenwidth;
@@ -1020,47 +936,9 @@ f32 camGetScreenTop(void)
     return g_CurrentPlayer->c_screentop;
 }
 
-f32 camGetPerspFovY(void)
-{
-    return g_CurrentPlayer->c_perspfovy;
-}
-
 f32 camGetPerspAspect(void)
 {
     return g_CurrentPlayer->c_perspaspect;
-}
-
-void camGetTopNorm(coord3d *out)
-{
-    out->x = (g_CurrentPlayer->c_cameratopnorm).x;
-    out->y = (g_CurrentPlayer->c_cameratopnorm).y;
-    out->z = (g_CurrentPlayer->c_cameratopnorm).z;
-}
-
-void camGetTopNormFlipY(coord3d *out)
-{
-    out->x = (g_CurrentPlayer->c_cameratopnorm).x;
-    out->y = -(g_CurrentPlayer->c_cameratopnorm).y;
-    out->z = (g_CurrentPlayer->c_cameratopnorm).z;
-}
-
-void camGetLeftNorm(coord3d *out)
-{
-    out->x = (g_CurrentPlayer->c_cameraleftnorm).x;
-    out->y = (g_CurrentPlayer->c_cameraleftnorm).y;
-    out->z = (g_CurrentPlayer->c_cameraleftnorm).z;
-}
-
-void camGetLeftNormFlipX(coord3d *out)
-{
-    out->x = -(g_CurrentPlayer->c_cameraleftnorm).x;
-    out->y = (g_CurrentPlayer->c_cameraleftnorm).y;
-    out->z = (g_CurrentPlayer->c_cameraleftnorm).z;
-}
-
-f32 camGetPerspNear(void)
-{
-    return g_CurrentPlayer->c_perspnear;
 }
 
 
@@ -1123,76 +1001,6 @@ void camUpdateFrustumPlanes()
     g_CamFrustumNearOffset = (g_CurrentPlayer->viewtoworldmtxf->m[2][0] * g_CurrentPlayer->viewtoworldmtxf->m[3][0])
                            + (g_CurrentPlayer->viewtoworldmtxf->m[2][1] * g_CurrentPlayer->viewtoworldmtxf->m[3][1])
                            + (g_CurrentPlayer->viewtoworldmtxf->m[2][2] * g_CurrentPlayer->viewtoworldmtxf->m[3][2]);
-}
-
-
-/**
- * Address: 7F078950
- *
- * Unreferenced.
- */
-void camGetFrustumTopPlane(coord3d *normal, f32 *offset)
-{
-    normal->x = g_CamFrustumTopNormal.x;
-    normal->y = g_CamFrustumTopNormal.y;
-    normal->z = g_CamFrustumTopNormal.z;
-    *offset = g_CamFrustumTopOffset;
-}
-
-
-/**
- * Address: 7F078980
- *
- * Unreferenced.
- */
-void camGetFrustumBottomPlane(coord3d *normal, f32 *offset)
-{
-    normal->x = g_CamFrustumBottomNormal.x;
-    normal->y = g_CamFrustumBottomNormal.y;
-    normal->z = g_CamFrustumBottomNormal.z;
-    *offset = g_CamFrustumBottomOffset;
-}
-
-
-/**
- * Address: 7F0789B0
- *
- * Unreferenced.
- */
-void camGetFrustumLeftPlane(coord3d *normal, f32 *offset)
-{
-    normal->x = g_CamFrustumLeftNormal.x;
-    normal->y = g_CamFrustumLeftNormal.y;
-    normal->z = g_CamFrustumLeftNormal.z;
-    *offset = g_CamFrustumLeftOffset;
-}
-
-
-/**
- * Address: 7F0789E0
- *
- * Unreferenced.
- */
-void camGetFrustumRightPlane(coord3d *normal, f32 *offset)
-{
-    normal->x = g_CamFrustumRightNormal.x;
-    normal->y = g_CamFrustumRightNormal.y;
-    normal->z = g_CamFrustumRightNormal.z;
-    *offset = g_CamFrustumRightOffset;
-}
-
-
-/**
- * Address: 7F078A10
- *
- * Unreferenced.
- */
-void camGetFrustumNearPlane(coord3d *normal, f32 *offset)
-{
-    normal->x = g_CurrentPlayer->viewtoworldmtxf->m[2][0];
-    normal->y = g_CurrentPlayer->viewtoworldmtxf->m[2][1];
-    normal->z = g_CurrentPlayer->viewtoworldmtxf->m[2][2];
-    *offset = g_CamFrustumNearOffset;
 }
 
 

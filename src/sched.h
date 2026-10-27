@@ -72,10 +72,7 @@ extern OSViMode g_ViModes[2];
 extern OSViMode *g_ViModePtrs[2];
 extern s32 dword_CODE_bss_8005DBE8[2];
 
-void activate_stderr(u32 flag);
-void enable_stderr(u32 flag);
 void permit_stderr(u32 flag);
-void setUserCompareValue(u32 value);
 void CheckDisplayErrorBuffer(u32 *buffer);
 void CheckDisplayErrorBufferEvery16Frames(u32 framecount);
 void osCreateLog(void);
@@ -91,7 +88,6 @@ void __scAppendList(OSSched *sc, OSScTask *t);
 void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp);
 void osCreateScheduler(OSSched *s, void *stack, u8 mode, u32 numFields);
 void osScAddClient(OSSched *s, OSScClient *c, OSMesgQueue *msgQ, OSScClient *next);
-void osScRemoveClient(OSSched *s, OSScClient *c);
 OSMesgQueue *osScGetCmdQ(OSSched *s);
 
 

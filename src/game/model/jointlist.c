@@ -577,7 +577,6 @@ JointListEntry *jointListSortByDepth(JointListEntry *modelhit)
             {
                 last = last->next;
 
-                if (next);
             }
             while (last->next != NULL);
         }

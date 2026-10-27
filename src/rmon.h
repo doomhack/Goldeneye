@@ -8,7 +8,6 @@
 
 void rmonMain(void);
 s32 rmonGetToken(void);
-s32 rmonStatus(void);
 void osSyncPrintf(const char *fmt, ...);
 
 #endif

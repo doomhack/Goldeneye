@@ -275,7 +275,6 @@ static s32 inflateCodes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
     struct huft *t;    /* pointer to table entry */
     u32 ml;        /* masks for bl and bd bits */
     u32 md;
-    s32 padding;
     register u32 k;    /* number of bits in bit buffer */
     register u32 b;    /* bit buffer */
 

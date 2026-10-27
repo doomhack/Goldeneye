@@ -82,7 +82,6 @@ s32 g_TitleTimer;
 // data
 u32 g_TitleMtxIndex = 0;
 u8 g_TitleStage = 0x3;
-u32 D_8002A7D8 = 0;
 
 struct FolderSelectColour g_FolderGradientBlack = { 0x00, 0x00, 0x00 };
 struct FolderSelectColour g_FolderGradientWhite = { 0xFF, 0xFF, 0xFF };
@@ -205,9 +204,7 @@ Gfx *titleRenderBondModel(Gfx *gdl, s32 count, Mtxf *matrix)
     #define BOND_EYE_ANIM_SPEEDUP 212
     #define BOND_EYE_FIRE_SHOT 230
 #endif
-    u32 pad;
     ModelRenderData renderData;
-    u32 pad2[2];
     JointListEntry *entry;
     bool playedShot;
     s32 i;
@@ -749,7 +746,6 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
     f32 bottomRed;
     f32 bottomGreen;
     f32 bottomBlue;
-    f32 temp_f14_2; // unused
     s32 i;
 
     topRed = topColour->red;
@@ -799,52 +795,6 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
     D_8002BB08 = topBlue;
     D_8002BB04 = topGreen;
     D_8002BB00 = topRed;
-
-    return gdl;
-}
-
-
-/**
- * Unreferenced.
- */
-Gfx *titleRenderImageLines(Gfx *gdl, u8 *image, s32 arg2)
-{
-    static f32 D_8002BB2C = 0;
-    static f32 D_8002BB28 = 0;
-    static f32 D_8002BB24 = 0;
-    static f32 D_8002BB20 = 0;
-    static f32 D_8002BB1C = 0;
-    static f32 D_8002BB18 = 0;
-    s32 i;
-    s32 xOffset;
-
-    i = 0;
-    xOffset = 0;
-    D_8002BB2C = arg2;
-    D_8002BB28 = arg2;
-    D_8002BB24 = arg2;
-    D_8002BB20 = arg2;
-    D_8002BB1C = arg2;
-    D_8002BB18 = arg2;
-
-    while ((i + 1) < 218)
-    {
-        gDPLoadTextureBlock(gdl++, image, G_IM_FMT_RGBA, G_IM_SIZ_16b, 320, 1, 0, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK,G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
-
-        gDPSetPrimColor(gdl++, 0, 0, D_8002BB2C + (((D_8002BB20 - arg2) * i) / 217.0f), D_8002BB28 + (((D_8002BB1C - arg2) * i) / 217.0f), D_8002BB24 + (((D_8002BB18 - arg2) * i) / 217.0f), 0xff);
-
-        if (xOffset < 0)
-        {
-            gSPTextureRectangle(gdl++, 0, (i + 12) << 2, (320 << 2) - 1, ((i + 13) << 2) - 1, G_TX_RENDERTILE, (-xOffset) << 5, 0, 1 << 10, 1 << 10);
-        }
-        else
-        {
-            gSPTextureRectangle(gdl++, xOffset << 2, (i + 12) << 2, (320 << 2) - 1, ((i + 13) << 2) - 1, G_TX_RENDERTILE, 0, 0, 1 << 10, 1 << 10);
-        }
-
-        i++;
-        image += 0x280;
-    }
 
     return gdl;
 }

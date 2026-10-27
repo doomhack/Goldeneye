@@ -39,11 +39,6 @@
 
 #define ADD_LOW_AND_HI_16_MOD(x32, add16) ((TO_U16_M(TO_U16_B((x32) >> 16) + (add16)) << 16) | TO_U16_M(TO_U16_A(x32) + (add16)))
 
-/**
- * Address 80023240.
- */
-u32 g_unused80023240 = 0;
-
 #if defined(VERSION_EU)
 struct VideoSettings_s g_ViDataArray[NUM_VIDEO_SETTINGS] =
 {
@@ -154,8 +149,6 @@ u32 g_viOriginalVstart0;
  * EU .bss 0x80053E58
  */
 u32 g_viOriginalVstart1;
-
-s32 g_unused8006088C;
 
 /**
  * Address 80028480.
@@ -290,7 +283,6 @@ void video_related_8(void)
         {
             case MD_BLACK:
             {
-                if (D_800232C0);
 
                 osViSetYScale(1.0f);
                 osViBlack(TRUE);
@@ -363,10 +355,6 @@ void video_related_8(void)
 
     yScaleMax = YSCALE_MAX;
 
-    if (1);
-    if (1);
-    if (1);
-    if (1);
 
     g_ViXScales[nextMode] = calculatedXScale;
     g_ViYScales[nextMode] = calculatedYScale;
@@ -521,16 +509,11 @@ void video_related_8(void)
     calculatedYScale = ((f32)g_ViBackData->y) / ((f32)g_ViBackData->bufy);
 
     if (g_ViBackData->mode == 0) { calculatedYScale = 1.0f; } modeIndex = D_800232C0;
-    if (1);
-    if (1);
-    if (1);
-    if (1);
     new_var = 0xffff;
 
     g_ViXScales[modeIndex] = calculatedXScale;
     g_ViYScales[modeIndex] = calculatedYScale;
 
-    if (g_ViBackData);
     if (g_ViBackData->mode == 1)
     {
         g_ViModePtrs[modeIndex] = &g_viOriginalVideoMode;
@@ -626,16 +609,6 @@ void viShake(f32 intensity)
     g_ViShakeTimer = 10;
 }
 
-void viRecvMesg(int count)
-{
-    do
-    {
-        osRecvMesg(&vi_c_debug_MQ, NULL, 1);
-        count--;
-    }
-    while (count > 0);
-}
-
 void viSetVideoMode(s32 m)
 {
     //if (m < 0) {
@@ -653,11 +626,6 @@ void viSetVideoMode(s32 m)
 u8 *viGetFrameBuf2(void)
 {
     return g_ViBackData->framebuf;
-}
-
-u8 *viGetFrameBuf1(void)
-{
-    return g_ViFrontData->framebuf;
 }
 
 void viSetFrameBuf2(u8 *buf)
@@ -837,21 +805,6 @@ void viSetScaleX(s32 scalex)
     g_ViBackData->scalex = scalex;
 }
 
-s32 viGetScaleX(void)
-{
-    return g_ViBackData->scalex;
-}
-
-s16 viGetBufX(void)
-{
-    return g_ViBackData->bufx;
-}
-
-s16 viGetBufY(void)
-{
-    return g_ViBackData->bufy;
-}
-
 void viSetXY(s16 x, s16 y)
 {
     g_ViBackData->x = x;
@@ -925,14 +878,6 @@ void viSetAspect(f32 aspect)
 f32 viGetFovY(void)
 {
     return g_ViBackData->fovy;
-}
-
-void viSetFov(f32 fovx, f32 fovy)
-{
-    g_ViBackData->fovy = fovy;
-    g_ViBackData->aspect = (f32) (fovx / fovy);
-    camSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
-    camUpdateScale();
 }
 
 void viSetZRange(f32 near, f32 far)

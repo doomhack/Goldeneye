@@ -131,7 +131,6 @@ void vtxstoreReset(void)
 void vtxstoreFixRefs(s32 find, s32 replacement) {
     PropRecord* var_s1;
     ChrRecord* var_v0;
-    Model* temp_a0;
     s32* temp_v0_2;
     ModelNode* var_a1;
     ModelFileHeader* var_v1;
@@ -182,11 +181,9 @@ void vtxstoreFixRefs(s32 find, s32 replacement) {
 */
 void vtxstoreTick(void)
 {
-    s16 temp_s2;
     s16 var_fp;
     s16 var_s2;
     s32 stop;
-    s32 var_a1;
     s32 var_s6;
 
     var_s6 = 0;
@@ -298,8 +295,6 @@ s32 vtxstoreAllocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
     if (var_a2 < var_v0) {
         return 0;
     }
-    // FAKE
-    if (var_v0) {}
     if (var_v1_2 == 1) {
         var_t4 = 0;
         temp_t2 = var_t0[var_a1].numVtx;
@@ -365,8 +360,6 @@ void vtxstoreFree(Vertex* arg0) {
     while (stop == 0) {
         if (var_a3[var_a1].vertices == arg0) {
             stop = 1;
-            // FAKE
-            if (var_a3[var_a1].refs);
             var_a3[var_a1].refs--;
             if (var_a3[var_a1].refs == 0) {
                 *var_t2 += var_a3[var_a1].numVtx;
