@@ -1,3 +1,8 @@
+/**
+ * The multiplayer pause menu: the per-player screen opened with Start in a multiplayer game
+ * (pause, kills, losses, awards, exit), the end-of-game awards, and the multiplayer pause
+ * and game-over state (g_MpPaused, g_MpStopPlay, g_MpGameOver). See docs/subsystems/menu.md.
+ */
 #include <ultra64.h>
 #include <music.h>
 #include <bondgame.h>

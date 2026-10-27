@@ -48,7 +48,7 @@
 #include "game/text/textrelated.h"
 #include "game/chr/chrai.h"
 #include "game/model/model.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/menu/mpmenu.h"
 #include "joy.h"
 #include "game/math/matrix.h"

@@ -57,7 +57,7 @@
       build/OUTCODE/src/game/prop/glass.o (.bss);
       build/OUTCODE/src/game/hud/healthbar.o (.bss);
       build/OUTCODE/src/game/hud/sparks.o (.bss);
-      build/OUTCODE/src/game/menu/options.o (.bss);
+      build/OUTCODE/src/game/menu/watchmenu.o (.bss);
       build/OUTCODE/src/game/text/textrelated.o (.bss);
       build/OUTCODE/src/game/nav/stan.o (.bss);
       build/OUTCODE/src/game/world/bg.o (.bss);

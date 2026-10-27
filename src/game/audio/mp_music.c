@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <music.h>
 #include "game/audio/music_0D2720.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/audio/mp_music.h"
 #include "game/level/lv.h"
 

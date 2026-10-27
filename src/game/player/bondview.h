@@ -5,7 +5,7 @@
 #include <bondtypes.h>
 #include "game/chr/chr.h"
 #include "game/math/matrix.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/gfx/image.h"
 
 typedef struct invitem_weap

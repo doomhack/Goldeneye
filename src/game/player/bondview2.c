@@ -15,7 +15,7 @@
 #include <music.h>
 #include <snd.h>
 #include <str.h>
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
 #include "game/world/roommtx.h"

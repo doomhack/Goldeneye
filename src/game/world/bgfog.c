@@ -14,7 +14,7 @@
 #include "game/player/bondview.h"
 #include "game/world/bgfog.h"
 #include "game/player/player.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include <limits.h>
 
 /**

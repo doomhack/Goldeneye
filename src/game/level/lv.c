@@ -44,7 +44,7 @@
 #include "game/hud/sparks.h"
 #include "game/gfx/imagebank.h"
 #include "game/text/textrelated.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "sched.h"
 #include "game/menu/cheat.h"
 #include "game/world/bg.h"

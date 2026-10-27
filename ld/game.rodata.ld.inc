@@ -58,7 +58,7 @@
       build/OUTCODE/src/game/prop/glass.o (.rodata);
       build/OUTCODE/src/game/hud/healthbar.o (.rodata);
       build/OUTCODE/src/game/hud/sparks.o (.rodata);
-      build/OUTCODE/src/game/menu/options.o (.rodata);
+      build/OUTCODE/src/game/menu/watchmenu.o (.rodata);
       build/OUTCODE/src/game/text/textrelated.o (.rodata);
       build/OUTCODE/src/game/nav/stan.o (.rodata);
       build/OUTCODE/src/game/world/bg.o (.rodata);

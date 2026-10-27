@@ -3,7 +3,7 @@
 #include "game/debug/debugmenu_handler.h"
 #include "joy.h"
 #include "game/player/player.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/save/file.h"
 #include "game/save/file2.h"
 #include "game/menu/front.h"

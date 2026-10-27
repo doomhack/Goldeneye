@@ -1,3 +1,10 @@
+/**
+ * The watch menu: the pages Bond's watch shows when the game is paused in solo and co-op
+ * (mission status and abort, inventory, controls, options, briefing), how the controller
+ * moves through them (watchMenuTick and the per-page watchMenu*Tick), and how each page is
+ * drawn (watchMenuRender). Also the per-player settings the options pages change
+ * (options*), which are kept in the player struct. See docs/subsystems/menu.md.
+ */
 #include <ultra64.h>
 #include <bondconstants.h>
 #include <boss.h>
@@ -6,7 +13,7 @@
 #include <os_extension.h>
 #include <snd.h>
 #include <random.h>
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/player/bondview.h"
 #include "game/gfx/dyn.h"
 #include "game/save/file.h"

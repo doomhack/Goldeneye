@@ -56,7 +56,7 @@
       build/OUTCODE/src/game/prop/glass.o (.data);
       build/OUTCODE/src/game/hud/healthbar.o (.data);
       build/OUTCODE/src/game/hud/sparks.o (.data);
-      build/OUTCODE/src/game/menu/options.o (.data);
+      build/OUTCODE/src/game/menu/watchmenu.o (.data);
       build/OUTCODE/src/game/text/textrelated.o (.data);
       build/OUTCODE/src/game/nav/stan.o (.data);
       build/OUTCODE/src/game/world/bg.o (.data);
