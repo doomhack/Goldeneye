@@ -146,6 +146,16 @@ Added for this fork, at the end of `bondview2.c`:
 * `bondview.c` is mostly camera code plus the player globals, and `bondview2.c` is most of
   the player. The names come from the decomp; splitting `bondview2.c` by topic (watch,
   HUD messages, tank, co-op) is left for later.
-* Many fields of `struct player` are still `field_XXX`. `field_488` is the player's
-  collision record (`struct collision434`): its position is the real player position.
+* `player->bond` (`struct PlayerBond`) is Bond's body: its tile, position and look
+  vectors. Its position is the real player position; `bondDie` is a copy taken at death
+  for the death replay.
+* The player struct holds two whole models: `watchModel` (the arm and watch, whose
+  animation frame is the watch open/close time) and `model` (the head bob animation), each
+  followed by its node rwdata. It also holds the watch's display lists (`watchArmorGdl`,
+  `watchTabsGdl` and so on), built once when the watch opens.
+* Camera smoothing: `sumGround`/`manGround` ease the feet onto the ground when stepping
+  or falling, `sumCrouch`/`crouchHeight` give the dip after landing, and
+  `dampEyeSum`/`dampEye` ease the eye position. All use the same damped-sum pattern:
+  `sum = sum * damp + value; smoothed = sum * (1 - damp)`.
+* The unused `field_XXX` padding that is left in `struct player` is removed in a later step.
 * `getMissiontimer` is now `lvGetMissionTime60`; on PAL it converts 50 Hz ticks to 60 Hz.

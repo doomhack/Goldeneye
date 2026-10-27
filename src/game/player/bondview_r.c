@@ -148,11 +148,11 @@ void playerApplyIntro(void)
 
 
 #if defined(VERSION_EU)
-#define FIELD_6C_FACTOR 0.20039999485f
-#define FIELD_3B8_FACTOR 0.118799984455f
+#define GROUND_DAMP_INV 0.20039999485f
+#define EYE_DAMP_INV 0.118799984455f
 #else
-#define FIELD_6C_FACTOR 0.170000016689f
-#define FIELD_3B8_FACTOR 0.100000023842f
+#define GROUND_DAMP_INV 0.170000016689f
+#define EYE_DAMP_INV 0.100000023842f
 #endif
 
     // declarations
@@ -464,9 +464,9 @@ void playerApplyIntro(void)
         starting_weapon[GUNRIGHT] = ITEM_FIST;
     }
 
-    g_CurrentPlayer->field_78 = FLOAT_INIT;
-    g_CurrentPlayer->field_7C = -0.0001f;
-    g_CurrentPlayer->field_80 = FLOAT_INIT;
+    g_CurrentPlayer->deltaPos.x = FLOAT_INIT;
+    g_CurrentPlayer->deltaPos.y = -0.0001f;
+    g_CurrentPlayer->deltaPos.z = FLOAT_INIT;
 
     if (startpadcount > 0)
     {
@@ -488,7 +488,7 @@ void playerApplyIntro(void)
 
         stan_height = playerGetFloorY(start_stan, start_pos.f[0], start_pos.f[2]);
         start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
-        g_CurrentPlayer->field_70 = stan_height;
+        g_CurrentPlayer->manGround = stan_height;
         start_look_angle = M_TAU_F - mathAtan2(g_Startpad[rand_pad_index]->look.f[0], g_Startpad[rand_pad_index]->look.f[2]);
 
         if (g_CoopMode && (playerGetCurrentNum() > 0))
@@ -496,7 +496,7 @@ void playerApplyIntro(void)
             coopFindPartnerSpawn(&start_pos, &start_stan, start_look_angle);
             stan_height = playerGetFloorY(start_stan, start_pos.f[0], start_pos.f[2]);
             start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
-            g_CurrentPlayer->field_70 = stan_height;
+            g_CurrentPlayer->manGround = stan_height;
         }
     }
     else
@@ -504,22 +504,22 @@ void playerApplyIntro(void)
         start_stan = stanFindNearestLegalPos(&start_pos.f[0], &start_pos.f[1], &start_pos.f[2], 30.0f);
         stan_height = playerGetFloorY(start_stan, start_pos.f[0], start_pos.f[2]);
         start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
-        g_CurrentPlayer->field_70 = stan_height;
+        g_CurrentPlayer->manGround = stan_height;
     }
 
     g_CurrentPlayer->vv_theta = (start_look_angle * 360.0f) / M_TAU_F;
     g_CurrentPlayer->stanHeight = stan_height;
-    g_CurrentPlayer->field_6C = stan_height / FIELD_6C_FACTOR;
-    playerResetCollision(&g_CurrentPlayer->field_488, &start_pos, start_stan);
+    g_CurrentPlayer->sumGround = stan_height / GROUND_DAMP_INV;
+    playerResetCollision(&g_CurrentPlayer->bond, &start_pos, start_stan);
 
     // Players' collision bounds are otherwise only set when they first move.
     // A co-op partner's body is created right next to player 1 and tests
     // against them, which read uninitialised floats (an FPU exception on
     // hardware and accurate emulators).
     playerUpdateCollisionBounds();
-    g_CurrentPlayer->field_488.theta_transform.f[0] = -sinf(start_look_angle);
-    g_CurrentPlayer->field_488.theta_transform.f[1] = FLOAT_INIT;
-    g_CurrentPlayer->field_488.theta_transform.f[2] = cosf(start_look_angle);
+    g_CurrentPlayer->bond.theta_transform.f[0] = -sinf(start_look_angle);
+    g_CurrentPlayer->bond.theta_transform.f[1] = FLOAT_INIT;
+    g_CurrentPlayer->bond.theta_transform.f[2] = cosf(start_look_angle);
     playerSetWorldScale(g_PlayerWorldScale);
     hudmsgResetIntroText();
     hudmsgTopReset();
@@ -540,9 +540,9 @@ void playerApplyIntro(void)
 
     propActivate(g_CurrentPlayer->prop);
     propEnable(g_CurrentPlayer->prop);
-    g_CurrentPlayer->field_3B8.f[0] = (g_CurrentPlayer->field_488.pos.f[0] / FIELD_3B8_FACTOR);
-    g_CurrentPlayer->field_3B8.f[1] = (g_CurrentPlayer->field_488.pos.f[1] / FIELD_3B8_FACTOR);
-    g_CurrentPlayer->field_3B8.f[2] = (g_CurrentPlayer->field_488.pos.f[2] / FIELD_3B8_FACTOR);
+    g_CurrentPlayer->dampEyeSum.f[0] = (g_CurrentPlayer->bond.pos.f[0] / EYE_DAMP_INV);
+    g_CurrentPlayer->dampEyeSum.f[1] = (g_CurrentPlayer->bond.pos.f[1] / EYE_DAMP_INV);
+    g_CurrentPlayer->dampEyeSum.f[2] = (g_CurrentPlayer->bond.pos.f[2] / EYE_DAMP_INV);
 
     if (!isMpGame())
     {

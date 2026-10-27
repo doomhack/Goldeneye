@@ -29,7 +29,7 @@ PLAYER_ID array_PLAYER_IDs[4];
 
 /* Define default values that are different between EU and the rest for playerInit */
 #ifdef VERSION_EU
-#define DEFAULT_FIELD_3B8_Z     8.417509f
+#define DEFAULT_DAMP_EYE_SUM_Z     8.417509f
 #define DEFAULT_HEADDAMP        0.9166f
 #define DEFAULT_HEADLOOKSUM_VAL 11.990406f
 #define DEFAULT_VIEWPORT_V_VAL  0x220
@@ -38,7 +38,7 @@ PLAYER_ID array_PLAYER_IDs[4];
 #define DEFAULT_SCREENYMAXF     (f32)SCREEN_HEIGHT
 #define DEFAULT_ASPECT          ASPECT_RATIO
 #elif defined(VERSION_US)
-#define DEFAULT_FIELD_3B8_Z     9.999998f
+#define DEFAULT_DAMP_EYE_SUM_Z     9.999998f
 #define DEFAULT_HEADDAMP        0.93f
 #define DEFAULT_HEADLOOKSUM_VAL 14.285716f
 #define DEFAULT_VIEWPORT_V_VAL  0x1E0
@@ -351,28 +351,26 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->current_room_pos.x = 0.0f;
     g_playerPointers[player_num]->current_room_pos.y = 0.0f;
     g_playerPointers[player_num]->current_room_pos.z = 0.0f;
-    g_playerPointers[player_num]->field_6C = 0.0f;
-    g_playerPointers[player_num]->field_70 = 0.0f;
+    g_playerPointers[player_num]->sumGround = 0.0f;
+    g_playerPointers[player_num]->manGround = 0.0f;
     g_playerPointers[player_num]->stanHeight = 0.0f;
-    g_playerPointers[player_num]->field_78 = 0.0f;
-    g_playerPointers[player_num]->field_7C = 0.0f;
-    g_playerPointers[player_num]->field_80 = 0.0f;
-    g_playerPointers[player_num]->field_84 = 0.0f;
-    g_playerPointers[player_num]->field_88 = 0.0f;
-    g_playerPointers[player_num]->field_8C = 0;
+    g_playerPointers[player_num]->deltaPos.x = 0.0f;
+    g_playerPointers[player_num]->deltaPos.y = 0.0f;
+    g_playerPointers[player_num]->deltaPos.z = 0.0f;
+    g_playerPointers[player_num]->sumCrouch = 0.0f;
+    g_playerPointers[player_num]->crouchHeight = 0.0f;
+    g_playerPointers[player_num]->crouchTime240 = 0;
     g_playerPointers[player_num]->vertical_bounce_adjust = 0.0f;
-    g_playerPointers[player_num]->field_94 = 0;
-    g_playerPointers[player_num]->field_98 = 0.0f;
     g_playerPointers[player_num]->swaytarget = 0.0f;
     g_playerPointers[player_num]->swayoffset0 = 0.0f;
     g_playerPointers[player_num]->swayoffset2 = 0.0f;
     g_playerPointers[player_num]->crouchpos = CROUCH_STAND;
     g_playerPointers[player_num]->autocrouchpos = CROUCH_STAND;
     g_playerPointers[player_num]->ducking_height_offset = 0.0f;
-    g_playerPointers[player_num]->field_A4 = 0.0f;
+    g_playerPointers[player_num]->crouchSpeed = 0.0f;
     g_playerPointers[player_num]->prop = NULL;
-    g_playerPointers[player_num]->field_AC = 1;
-    g_playerPointers[player_num]->field_D0 = 0;
+    g_playerPointers[player_num]->perimEnabled = 1;
+    g_playerPointers[player_num]->activatePressed = 0;
     g_playerPointers[player_num]->bodyModel = NULL;
     g_playerPointers[player_num]->bonddead = FALSE;
     g_playerPointers[player_num]->bondhealth = 1.0f;
@@ -425,21 +423,20 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->bondfadefracold = 0.0f;
     g_playerPointers[player_num]->bondfadefracnew = 0.0f;
     g_playerPointers[player_num]->bondbreathing = 0.0f;
-    g_playerPointers[player_num]->field_1A0 = 0;
     g_playerPointers[player_num]->watch_pause_time = 0;
     g_playerPointers[player_num]->timer_1C4 = 0;
     g_playerPointers[player_num]->watch_animation_state = WATCH_ANIMATION_0x0;
     g_playerPointers[player_num]->outside_watch_menu = TRUE;
     g_playerPointers[player_num]->open_close_solo_watch_menu = FALSE;
-    g_playerPointers[player_num]->field_1D4 = 0.0f;
-    g_playerPointers[player_num]->field_1D8 = 0.0f;
-    g_playerPointers[player_num]->pause_watch_position = -25;
-    g_playerPointers[player_num]->field_1E0 = 0.0f;
-    g_playerPointers[player_num]->field_1E4 = 1.0f;
-    g_playerPointers[player_num]->field_1E8 = 0.0f;
-    g_playerPointers[player_num]->field_1EC = 0.0f;
-    g_playerPointers[player_num]->field_1F0 = 0.0f;
-    g_playerPointers[player_num]->field_1F4 = 1.0f;
+    g_playerPointers[player_num]->watchPos.x = 0.0f;
+    g_playerPointers[player_num]->watchPos.y = 0.0f;
+    g_playerPointers[player_num]->watchPos.z = -25;
+    g_playerPointers[player_num]->watchLook.x = 0.0f;
+    g_playerPointers[player_num]->watchLook.y = 1.0f;
+    g_playerPointers[player_num]->watchLook.z = 0.0f;
+    g_playerPointers[player_num]->watchUp.x = 0.0f;
+    g_playerPointers[player_num]->watchUp.y = 0.0f;
+    g_playerPointers[player_num]->watchUp.z = 1.0f;
     g_playerPointers[player_num]->pausing_flag = FALSE;
     g_playerPointers[player_num]->pause_starting_angle = 0.0f;
     g_playerPointers[player_num]->pause_saved_verta = 0.0f;
@@ -447,17 +444,17 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->pause_transition_time = 0.0f;
     g_playerPointers[player_num]->pause_transition_duration = 0.0f;
     g_playerPointers[player_num]->pause_state = 0;
-    g_playerPointers[player_num]->field_21C = 1;
+    g_playerPointers[player_num]->watchSfxPending = 1;
     g_playerPointers[player_num]->step_in_view_watch_animation = 0;
     g_playerPointers[player_num]->pause_animation_counter = 0.0f;
     g_playerPointers[player_num]->buttons_pressed = 0;
     g_playerPointers[player_num]->prev_buttons_pressed = 0;
-    g_playerPointers[player_num]->field_3B8.x = 0.0f;
-    g_playerPointers[player_num]->field_3B8.y = 0.0f;
-    g_playerPointers[player_num]->field_3B8.z = DEFAULT_FIELD_3B8_Z;
-    g_playerPointers[player_num]->field_3C4 = 0.0f;
-    g_playerPointers[player_num]->field_3C8 = 0.0f;
-    g_playerPointers[player_num]->field_3CC = 1.0f;
+    g_playerPointers[player_num]->dampEyeSum.x = 0.0f;
+    g_playerPointers[player_num]->dampEyeSum.y = 0.0f;
+    g_playerPointers[player_num]->dampEyeSum.z = DEFAULT_DAMP_EYE_SUM_Z;
+    g_playerPointers[player_num]->dampEye.x = 0.0f;
+    g_playerPointers[player_num]->dampEye.y = 0.0f;
+    g_playerPointers[player_num]->dampEye.z = 1.0f;
     g_playerPointers[player_num]->colourscreenred = 0xFF;
     g_playerPointers[player_num]->colourscreengreen = 0xFF;
     g_playerPointers[player_num]->colourscreenblue = 0xFF;
@@ -476,7 +473,6 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->startnewbonddie = TRUE;
     g_playerPointers[player_num]->redbloodfinished = FALSE;
     g_playerPointers[player_num]->deathanimfinished = FALSE;
-    g_playerPointers[player_num]->field_42c = 2;
     g_playerPointers[player_num]->controldef = CONTROLLER_CONFIG_HONEY;
     g_playerPointers[player_num]->resetheadpos = TRUE;
     g_playerPointers[player_num]->resetheadrot = TRUE;
@@ -542,16 +538,16 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->viewy = 0x64;
     g_playerPointers[player_num]->viewleft = 0;
     g_playerPointers[player_num]->viewtop = 0;
-    g_playerPointers[player_num]->hand_invisible[GUNRIGHT] = 0;
-    g_playerPointers[player_num]->hand_invisible[GUNLEFT] = 0;
-    g_playerPointers[player_num]->hand_item[GUNRIGHT] = ITEM_UNARMED;
-    g_playerPointers[player_num]->hand_item[GUNLEFT] = ITEM_UNARMED;
-    g_playerPointers[player_num]->field_2A44[GUNRIGHT] = -1;
-    g_playerPointers[player_num]->field_2A44[GUNLEFT] = -1;
-    g_playerPointers[player_num]->lock_hand_model[GUNRIGHT] = FALSE;
-    g_playerPointers[player_num]->lock_hand_model[GUNLEFT] = FALSE;
-    g_playerPointers[player_num]->ptr_hand_weapon_buffer[GUNRIGHT] = NULL;
-    g_playerPointers[player_num]->ptr_hand_weapon_buffer[GUNLEFT] = NULL;
+    g_playerPointers[player_num]->handModelState[GUNRIGHT] = 0;
+    g_playerPointers[player_num]->handModelState[GUNLEFT] = 0;
+    g_playerPointers[player_num]->handModelItem[GUNRIGHT] = ITEM_UNARMED;
+    g_playerPointers[player_num]->handModelItem[GUNLEFT] = ITEM_UNARMED;
+    g_playerPointers[player_num]->handModelNextItem[GUNRIGHT] = -1;
+    g_playerPointers[player_num]->handModelNextItem[GUNLEFT] = -1;
+    g_playerPointers[player_num]->handModelLocked[GUNRIGHT] = FALSE;
+    g_playerPointers[player_num]->handModelLocked[GUNLEFT] = FALSE;
+    g_playerPointers[player_num]->handModelBuffer[GUNRIGHT] = NULL;
+    g_playerPointers[player_num]->handModelBuffer[GUNLEFT] = NULL;
 
     g_playerPointers[player_num]->hands[GUNRIGHT] = default_hand;
     g_playerPointers[player_num]->hands[GUNLEFT] = default_hand;
@@ -574,14 +570,11 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->crosshair_x_pos = 0.0f;
     g_playerPointers[player_num]->crosshair_y_pos = 0.0f;
     g_playerPointers[player_num]->guncrossdamp = 0.9f;
-    g_playerPointers[player_num]->field_FFC.x = 0.0f;
-    g_playerPointers[player_num]->field_FFC.y = 0.0f;
+    g_playerPointers[player_num]->gunAimScreenPos.x = 0.0f;
+    g_playerPointers[player_num]->gunAimScreenPos.y = 0.0f;
     g_playerPointers[player_num]->gun_azimuth_angle = 0.0f;
     g_playerPointers[player_num]->gun_azimuth_turning = 0.0f;
     g_playerPointers[player_num]->gunaimdamp = 0.9f;
-    g_playerPointers[player_num]->field_1010.x = 0.0f;
-    g_playerPointers[player_num]->field_1010.y = -M_PI_F;
-    g_playerPointers[player_num]->field_1010.z = 0.0f;
     g_playerPointers[player_num]->last_z_trigger_timer = 0;
     g_playerPointers[player_num]->copiedgoldeneye = FALSE;
     g_playerPointers[player_num]->gunammooff = FALSE;
@@ -589,8 +582,8 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->syncchange = 0.0f;
     g_playerPointers[player_num]->synccount = 0.0f;
     g_playerPointers[player_num]->syncoffset = 0;
-    g_playerPointers[player_num]->field_107C = 0.0f;
-    g_playerPointers[player_num]->field_1080 = 0.0f;
+    g_playerPointers[player_num]->cycleSum = 0.0f;
+    g_playerPointers[player_num]->gunAmpSum = 0.0f;
     g_playerPointers[player_num]->sniper_zoom = 60.0f;
     g_playerPointers[player_num]->camera_zoom = 60.0f;
     g_playerPointers[player_num]->curRoomIndex = -1;
@@ -607,17 +600,16 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->c_scaley = 1.0f;
     g_playerPointers[player_num]->c_recipscalex = 1.0f;
     g_playerPointers[player_num]->c_recipscaley = 1.0f;
-    g_playerPointers[player_num]->field_10C4 = NULL;
-    g_playerPointers[player_num]->field_10C8 = NULL;
-    g_playerPointers[player_num]->field_10CC = NULL;
-    g_playerPointers[player_num]->field_10D0 = 0;
+    g_playerPointers[player_num]->worldToViewScaledMtx = NULL;
+    g_playerPointers[player_num]->worldToViewMtx = NULL;
+    g_playerPointers[player_num]->worldToScreenMtxf = NULL;
     g_playerPointers[player_num]->viewtoworldmtxf = NULL;
     g_playerPointers[player_num]->projmatrix = NULL;
     g_playerPointers[player_num]->projmatrixf = NULL;
-    g_playerPointers[player_num]->field_10E0 = 0;
-    g_playerPointers[player_num]->field_10E4 = 0;
-    g_playerPointers[player_num]->field_10E8 = NULL;
-    g_playerPointers[player_num]->field_10EC = NULL;
+    g_playerPointers[player_num]->projViewMtx = NULL;
+    g_playerPointers[player_num]->lookAt = NULL;
+    g_playerPointers[player_num]->prevWorldToScreenMtxf = NULL;
+    g_playerPointers[player_num]->prevViewToWorldMtxf = NULL;
     g_playerPointers[player_num]->c_scalelod60 = 1.0f;
     g_playerPointers[player_num]->c_scalelod = 1.0f;
     g_playerPointers[player_num]->c_lodscalez = 1.0f;
@@ -646,24 +638,24 @@ void playerInit(s32 player_num)
     one = 1;
     g_playerPointers[player_num]->equipcuritem = ITEM_UNARMED;
     g_playerPointers[player_num]->textoverrides = NULL;
-    g_playerPointers[player_num]->field_1280 = 0.0f;
+    g_playerPointers[player_num]->bodyStrafeTurn = 0.0f;
     g_playerPointers[player_num]->players_cur_animation = 0;
-    g_playerPointers[player_num]->field_1288 = 0.0f;
+    g_playerPointers[player_num]->bodyAnimSpeed = 0.0f;
     g_playerPointers[player_num]->cheatBondInvincible = FALSE;
     g_playerPointers[player_num]->healthdamagetype = 7;
     g_playerPointers[player_num]->eyeheight = 1.0f;
-    g_playerPointers[player_num]->field_29C0 = 0.0f;
+    g_playerPointers[player_num]->lookDownDrop = 0.0f;
     g_playerPointers[player_num]->mpmenuon = FALSE;
     g_playerPointers[player_num]->damagetype = 7;
     g_playerPointers[player_num]->deathcount = 0;
-    g_playerPointers[player_num]->field_29E0 = random_byte++;
+    g_playerPointers[player_num]->spawnPadSeed = random_byte++;
     g_playerPointers[player_num]->last_kill_time[0] = -1;
     g_playerPointers[player_num]->last_kill_time[1] = -1;
     g_playerPointers[player_num]->last_kill_time[2] = -1;
     g_playerPointers[player_num]->last_kill_time[3] = -1;
     g_playerPointers[player_num]->healthdisplaytime = 0;
-    g_playerPointers[player_num]->field_2A30 = 0;
-    g_playerPointers[player_num]->field_2A34 = 0;
+    g_playerPointers[player_num]->bodyHandPosTick[0] = 0;
+    g_playerPointers[player_num]->bodyHandPosTick[1] = 0;
     g_playerPointers[player_num]->cur_item_weapon_getname = ITEM_FIST;
     g_playerPointers[player_num]->actual_health = 1.0f;
     g_playerPointers[player_num]->actual_armor = 1.0f;
@@ -672,8 +664,6 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->cur_player_control_type_2 = 0.0f; //CONTROLLER_CONFIG_HONEY
     g_playerPointers[player_num]->neg_vspacing_for_control_type_entry = 0;
     g_playerPointers[player_num]->has_set_control_type_data = one;
-    g_playerPointers[player_num]->field_2A6C = 0;
-    g_playerPointers[player_num]->field_2A70 = NULL;
 
     g_VisibleToGuardsFlag = TRUE;
     g_PlayerCollisionOn = TRUE;
@@ -873,21 +863,21 @@ void playerInitHands(void)
     s32 i;
 
 
-    g_CurrentPlayer->ptr_hand_weapon_buffer[GUNRIGHT] = mempAlloc(size_item_buffer[0], MEMPOOL_STAGE);
+    g_CurrentPlayer->handModelBuffer[GUNRIGHT] = mempAlloc(size_item_buffer[0], MEMPOOL_STAGE);
 
     if (!isMpGame())
     {
-        g_CurrentPlayer->ptr_hand_weapon_buffer[GUNLEFT] = mempAlloc(size_item_buffer[1], MEMPOOL_STAGE);
+        g_CurrentPlayer->handModelBuffer[GUNLEFT] = mempAlloc(size_item_buffer[1], MEMPOOL_STAGE);
     }
 
-    g_CurrentPlayer->hand_invisible[GUNRIGHT] = 0;
-    g_CurrentPlayer->hand_invisible[GUNLEFT] = 0;
-    g_CurrentPlayer->hand_item[GUNRIGHT] = ITEM_UNARMED;
-    g_CurrentPlayer->hand_item[GUNLEFT] = ITEM_UNARMED;
-    g_CurrentPlayer->field_2A44[GUNRIGHT] = -1;
-    g_CurrentPlayer->field_2A44[GUNLEFT] = -1;
-    g_CurrentPlayer->lock_hand_model[GUNRIGHT] = 0;
-    g_CurrentPlayer->lock_hand_model[GUNLEFT] = 0;
+    g_CurrentPlayer->handModelState[GUNRIGHT] = 0;
+    g_CurrentPlayer->handModelState[GUNLEFT] = 0;
+    g_CurrentPlayer->handModelItem[GUNRIGHT] = ITEM_UNARMED;
+    g_CurrentPlayer->handModelItem[GUNLEFT] = ITEM_UNARMED;
+    g_CurrentPlayer->handModelNextItem[GUNRIGHT] = -1;
+    g_CurrentPlayer->handModelNextItem[GUNLEFT] = -1;
+    g_CurrentPlayer->handModelLocked[GUNRIGHT] = 0;
+    g_CurrentPlayer->handModelLocked[GUNLEFT] = 0;
 
     g_CurrentPlayer->hands[0] = s_DefaultHand;
     g_CurrentPlayer->hands[1] = s_DefaultHand;
@@ -925,22 +915,19 @@ void playerInitHands(void)
     g_CurrentPlayer->crosshair_x_pos = 0.0f;
     g_CurrentPlayer->crosshair_y_pos = 0.0f;
     g_CurrentPlayer->guncrossdamp = 0.9f;
-    g_CurrentPlayer->field_FFC.f[0] = 0.0f;
-    g_CurrentPlayer->field_FFC.f[1] = 0.0f;
+    g_CurrentPlayer->gunAimScreenPos.f[0] = 0.0f;
+    g_CurrentPlayer->gunAimScreenPos.f[1] = 0.0f;
     g_CurrentPlayer->gun_azimuth_angle = 0.0f;
     g_CurrentPlayer->gun_azimuth_turning = 0.0f;
     g_CurrentPlayer->gunaimdamp = 0.9f;
-    g_CurrentPlayer->field_1010.f[0] = 0.0f;
-    g_CurrentPlayer->field_1010.f[1] = -3.1415927f;
-    g_CurrentPlayer->field_1010.f[2] = 0.0f;
     g_CurrentPlayer->copiedgoldeneye = FALSE;
     g_CurrentPlayer->magnetattracttime = -1;
     g_CurrentPlayer->gunsync = 0.0f;
     g_CurrentPlayer->syncchange = 0.0f;
     g_CurrentPlayer->synccount = 0.0f;
     g_CurrentPlayer->syncoffset = 0;
-    g_CurrentPlayer->field_107C = 0.0f;
-    g_CurrentPlayer->field_1080 = 0.0f;
+    g_CurrentPlayer->cycleSum = 0.0f;
+    g_CurrentPlayer->gunAmpSum = 0.0f;
     gunCalcBlend(GUNRIGHT);
     gunCalcBlend(GUNRIGHT);
     gunCalcBlend(GUNRIGHT);

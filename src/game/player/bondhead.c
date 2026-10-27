@@ -50,7 +50,7 @@ void bheadSetdamp(f32 headdamp);
 
 void bheadFlipAnimation()
 {
-    g_CurrentPlayer->animFlipFlag = !g_CurrentPlayer->animFlipFlag;
+    g_CurrentPlayer->model.flip = !g_CurrentPlayer->model.flip;
 }
 
 void bheadUpdateIdleRoll()
@@ -402,7 +402,7 @@ void bheadAdjustAnimation(f32 speed)
 
                 if (g_CurrentPlayer->headanim >= 0)
                 {
-                    startframe = (g_CurrentPlayer->field_5C0 - g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].loopframe)
+                    startframe = (g_CurrentPlayer->model.frame - g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].loopframe)
                         / (g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].endframe - g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].loopframe);
 
                     startframe = g_BondMoveAnimationSetup[i].loopframe + ((g_BondMoveAnimationSetup[i].endframe - g_BondMoveAnimationSetup[i].loopframe) * startframe);
@@ -412,7 +412,7 @@ void bheadAdjustAnimation(f32 speed)
                     &g_CurrentPlayer->model,
                     // match hack: addu address backwards
                     (struct ModelAnimation *) ((s32)g_BondMoveAnimationSetup[i].anim_id + (s32)&g_AnimTable->data),
-                    (s32) g_CurrentPlayer->animFlipFlag,
+                    (s32) g_CurrentPlayer->model.flip,
                     startframe,
                     0.5f,
                     12.0f);
@@ -543,7 +543,7 @@ void bheadInit(void)
     Mtxf identityMatrix;
 
 
-    animInit(&g_CurrentPlayer->model, &player_gait_object_header, &g_CurrentPlayer->field_654);
+    animInit(&g_CurrentPlayer->model, &player_gait_object_header, g_CurrentPlayer->modelRwData);
     modelSetScale(&g_CurrentPlayer->model, IDO_POINT_ONE);
 
 #if defined (BUGFIX_R1)

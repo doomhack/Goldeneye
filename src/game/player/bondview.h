@@ -30,7 +30,7 @@ typedef struct invitem_dual
  *
  * sizeof == 84 (0x54)
  */
-struct collision434 {
+struct PlayerBond {
 
     /**
      * Offset 0x00.
@@ -201,9 +201,9 @@ struct hand
   s32 firedrocket;
   Mtxf gunmtx_camspace;
   // offset 0xad8
-  Mtxf throw_item_pos_related;
+  Mtxf gunWorldMtx;
   // offset 0xb18
-  Mtxf throw_item_pos_related_prev;
+  Mtxf prevGunWorldMtx;
   coord3d muzzlePos; // world position of the muzzle flash
   f32 muzzleDepth; // its distance in front of the camera
   s32 gunmodel[8]; /* the first-person gun model: a Model without the animation part */
@@ -292,61 +292,15 @@ struct player
    * Offset 0x0050.
    */
   coord3d current_room_pos;
+  f32 sumGround; /* damped sum of manGround, to smooth the eye height over steps */
+  f32 manGround; /* Y of Bond's feet, eased towards stanHeight when falling or climbing */
 
-  /**
-   * Used as parameter to gbi macro.
-   * Offset 0x005c.
-   */
-  s32 field_5C;
+  /* 0x0074 0x800c67d4 */ f32 stanHeight; /* Y of the ground under Bond */
 
-  /* 0x0060 */ s32 field_60;
-  /* 0x0064 */ s32 field_64;
-  /* 0x0068 */ s32 field_68;
-
-  /**
-   * Collision / clipping related.
-   * Related to y offset.
-   * Offset 0x006c.
-   */
-  /* 0x006c */ f32 field_6C;
-
-  /**
-   * Collision / clipping related.
-   * Seems to hold save value as stanHeight.
-   * Offset 0x0070.
-   */
-  /* 0x0070 */ f32 field_70;
-
-  /* 0x0074 0x800c67d4 */ f32 stanHeight;
-
-  /* 0x0078 */ f32 field_78;
-
-  /**
-   * Collision / clipping related.
-   * Used when descending down stairs/ramp.
-   * Offset 0x007c.
-   */
-  /* 0x007c */ f32 field_7C;
-
-  /* 0x0080 */ f32 field_80;
-
-  /**
-   * Collision / clipping related.
-   * Offset 0x0084.
-   */
-  /* 0x0084 */ f32 field_84;
-
-  /**
-   * Collision / clipping related.
-   * Offset 0x0088.
-   */
-  /* 0x0088 */ f32 field_88;
-
-  /**
-   * Collision / clipping related.
-   * Offset 0x008c.
-   */
-  /* 0x008c */ s32 field_8C;
+  coord3d deltaPos; /* movement this frame; only y is used, the fall speed (negative when falling) */
+  f32 sumCrouch; /* damped sum of vertical_bounce_adjust */
+  f32 crouchHeight; /* how far the view dips after landing (negative) */
+  s32 crouchTime240; /* frames left holding the landing dip */
 
   /**
    * Collision / clipping related.
@@ -356,8 +310,6 @@ struct player
    * Offset 0x0090.
    */
   /* 0x0090 */ f32 vertical_bounce_adjust;
-  /* 0x0094 */ s32 field_94;
-  /* 0x0098 */ f32 field_98;
 
   /**
    * Flag: 0, 1, 2
@@ -368,21 +320,16 @@ struct player
    * Varies from 0.0f to -100.0f
    * /
   /* 0x00a0 */ f32 ducking_height_offset; // canonical "crouchoffset" ?
-
-  /**
-   * Crouch related, only used while moving up or down into or
-   * out of crouch position.
-  */
-  /* 0x00a4 */ f32 field_A4;
+  f32 crouchSpeed; /* speed of the crouch transition */
   /* 0x00a8 */ PropRecord* prop;
-  /* 0x00ac */ s32 field_AC;
+  /* 0x00ac */ s32 perimEnabled; /* other props collide with Bond */
 
   /**
    * Offset 0x00b0.
    */
   struct rect4f collision_bounds;
 
-  /* 0x00d0 */ s32 field_D0;
+  /* 0x00d0 */ s32 activatePressed; /* B was pressed this frame and not used to enter the tank */
 
   /**
    * bodyModel is the third person model - it's seen by the other players in MP, and
@@ -571,7 +518,6 @@ struct player
   // offset 0x19c
   f32 bondbreathing;
 
-  s32 field_1A0;
   s32 field_1A4;
   s32 field_1A8;
   s32 field_1AC;
@@ -596,15 +542,10 @@ struct player
   */
   s32 outside_watch_menu;
   s32 open_close_solo_watch_menu;
-  f32 field_1D4;
-  f32 field_1D8;
-  f32 pause_watch_position;
-  f32 field_1E0;
-  f32 field_1E4;
-  f32 field_1E8;
-  f32 field_1EC;
-  f32 field_1F0;
-  f32 field_1F4;
+  /* where the watch is held when looking at it (constant: in front of Bond, facing up) */
+  coord3d watchPos;
+  coord3d watchLook;
+  coord3d watchUp;
   s32 field_1F8;
   s32 field_1FC;
   /**
@@ -628,7 +569,7 @@ struct player
    * 3 = Paused.
    */
   s32 pause_state; // 0x218
-  s32 field_21C;
+  s32 watchSfxPending; /* the watch-on sound still has to play */
   s32 step_in_view_watch_animation;
   f32 pause_animation_counter;
 
@@ -643,109 +584,9 @@ struct player
    */
   f32 pause_watch_related_scaled;
 
-  s32 something_with_watch_object_instance;
+  Model watchModel; /* the first-person watch and arm; its frame is the open/close animation time */
+  u32 watchModelRwData[50];
 
-  s32 field_234;
-  s32 field_238;
-  s32 field_23C;
-  s32 field_240;
-  f32 watch_scale_destination;
-  s32 field_248;
-  s32 field_24C;
-  s32 field_250;
-  s32 field_254;
-
-  /**
-   * Some kind of adjustment applied before scaling to set pause_watch_related_scaled.
-   * Offset 0x0258.
-   */
-  f32 pause_watch_related_adjust;
-  s32 field_25C;
-  s32 field_260;
-  s32 field_264;
-  s32 field_268;
-  s32 field_26C;
-  s32 field_270;
-  s32 field_274;
-  s32 field_278;
-  s32 field_27C;
-  s32 field_280;
-  s32 field_284;
-  s32 field_288;
-  s32 field_28C;
-  s32 field_290;
-  s32 field_294;
-  s32 field_298;
-  s32 field_29C;
-  s32 field_2A0;
-  s32 field_2A4;
-  s32 field_2A8;
-  s32 field_2AC;
-  s32 field_2B0;
-  s32 field_2B4;
-  s32 field_2B8;
-  s32 field_2BC;
-  s32 field_2C0;
-  s32 field_2C4;
-  s32 field_2C8;
-  s32 field_2CC;
-  s32 field_2D0;
-  s32 field_2D4;
-  s32 field_2D8;
-  s32 field_2DC;
-  s32 field_2E0;
-  s32 field_2E4;
-  s32 field_2E8;
-  s32 field_2EC;
-  s32 field_2F0;
-  s32 field_2F4;
-  s32 field_2F8;
-  s32 field_2FC;
-  s32 field_300;
-  s32 field_304;
-  s32 field_308;
-  s32 field_30C;
-  s32 field_310;
-  s32 field_314;
-  s32 field_318;
-  s32 field_31C;
-  s32 field_320;
-  s32 field_324;
-  s32 field_328;
-  s32 field_32C;
-  s32 field_330;
-  s32 field_334;
-  s32 field_338;
-  s32 field_33C;
-  s32 field_340;
-  s32 field_344;
-  s32 field_348;
-  s32 field_34C;
-  s32 field_350;
-  s32 field_354;
-  s32 field_358;
-  s32 field_35C;
-  s32 field_360;
-  s32 field_364;
-  s32 field_368;
-  s32 field_36C;
-  s32 field_370;
-  s32 field_374;
-  s32 field_378;
-  s32 field_37C;
-  s32 field_380;
-  s32 field_384;
-  s32 field_388;
-  s32 field_38C;
-  s32 field_390;
-  s32 field_394;
-  s32 field_398;
-  s32 field_39C;
-  s32 field_3A0;
-  s32 field_3A4;
-  s32 field_3A8;
-  s32 field_3AC;
-  s32 field_3B0;
 
   /**
    * Copy of buttons pressed.
@@ -753,11 +594,8 @@ struct player
   u16 buttons_pressed;
   u16 prev_buttons_pressed;
 
-  struct coord3d field_3B8;
-
-  f32 field_3C4;
-  f32 field_3C8;
-  f32 field_3CC;
+  coord3d dampEyeSum; /* damped sum of bond.pos */
+  coord3d dampEye; /* smoothed eye offset, eases the camera when moving */
 
   /**
    * Canonical names from here up through deathanimfinished.
@@ -803,11 +641,10 @@ struct player
    * Offset 0x428.
    */
   s32 deathanimfinished;
-  s32 field_42c; 
   s32 controldef; //0x430 canonical name
 
-  struct collision434 previous_collision_info; // canonical "periminfo" ?
-  struct collision434 field_488;
+  struct PlayerBond bondDie; /* bond saved at death, restored for the death replay */
+  struct PlayerBond bond; /* Bond's body: tile, position and look vectors */
 
   /**
    * Canonical names from here up to standcnt.
@@ -850,89 +687,8 @@ struct player
 
   // offset 0x594
   s32 standcnt;
-  Model *model;
-  s32 field_59C;
-  s32 field_5A0;
-  s32 field_5A4;
-  s32 field_5A8;
-  s32 field_5AC;
-  s32 field_5B0;
-  s32 field_5B4;
-  s32 field_5B8;
-  s8 animFlipFlag;
-  s8 field_5BD;
-  s8 field_5BE;
-  s8 field_5BF;
-
-  f32 field_5C0;
-
-  s32 field_5C4;
-  s32 field_5C8;
-  s32 field_5CC;
-  s32 field_5D0;
-  s32 field_5D4;
-  s32 field_5D8;
-  s32 field_5DC;
-  s32 field_5E0;
-  s32 field_5E4;
-  s32 field_5E8;
-  s32 field_5EC;
-  s32 field_5F0;
-  s32 field_5F4;
-  s32 field_5F8;
-  s32 field_5FC;
-  s32 field_600;
-  s32 field_604;
-  s32 field_608;
-  s32 field_60C;
-  s32 field_610;
-  s32 field_614;
-  s32 field_618;
-  s32 field_61C;
-  s32 field_620;
-  s32 field_624;
-  s32 field_628;
-  s32 field_62C;
-  s32 field_630;
-  s32 field_634;
-  s32 field_638;
-  s32 field_63C;
-  s32 field_640;
-  s32 field_644;
-  s32 field_648;
-  s32 field_64C;
-  s32 field_650;
-  s32 field_654;
-  s32 field_658;
-  s32 field_65C;
-  s32 field_660;
-  s32 field_664;
-  s32 field_668;
-  s32 field_66C;
-  s32 field_670;
-  s32 field_674;
-  s32 field_678;
-  s32 field_67C;
-  s32 field_680;
-  s32 field_684;
-  s32 field_688;
-  s32 field_68C;
-  s32 field_690;
-  s32 field_694;
-  s32 field_698;
-  s32 field_69C;
-  s32 field_6A0;
-  s32 field_6A4;
-  s32 field_6A8;
-  s32 field_6AC;
-  s32 field_6B0;
-  s32 field_6B4;
-  s32 field_6B8;
-  s32 field_6BC;
-  s32 field_6C0;
-  s32 field_6C4;
-  s32 field_6C8;
-  s32 field_6CC;
+  Model model; /* Bond's head bob animation */
+  u32 modelRwData[31];
 
   Mtxf bondheadmatrices[4];
 
@@ -958,16 +714,16 @@ struct player
    */
   s16 viewtop;
 
-  s32 hand_invisible[2]; /* 0x7f8*/
-  ITEM_IDS hand_item[2]; /* 0x800 */
-  ModelFileHeader *ptr_hand_weapon_buffer[2]; /* 0x808 */
+  s32 handModelState[2]; /* 1 loaded, -1 load pending (counts down) */
+  ITEM_IDS handModelItem[2];
+  u8 *handModelBuffer[2];
 
   /**
    * Offset 0x810.
    */
-  ModelFileHeader copy_of_body_obj_header[2];
+  ModelFileHeader handModelHeader[2];
 
-  struct texpool item_related[2]; /* 0x850 */
+  struct texpool handModelTexPool[2];
 
   /**
    * Offset 0x870.
@@ -1008,11 +764,10 @@ struct player
   f32 crosshair_x_pos;
   f32 crosshair_y_pos;
   f32 guncrossdamp; // canonical name
-  coord2d field_FFC;
+  coord2d gunAimScreenPos; /* where the gun points on screen */
   f32 gun_azimuth_angle;
   f32 gun_azimuth_turning;
   f32 gunaimdamp; // canonical name
-  coord3d field_1010;
   Mtxf field_101C;
   s32 last_z_trigger_timer;
   s32 copiedgoldeneye; // canonical name
@@ -1022,8 +777,8 @@ struct player
   f32 syncchange; // canonical name
   f32 synccount; // canonical name
   s32 syncoffset; // canonical name
-  f32 field_107C;
-  f32 field_1080;
+  f32 cycleSum; /* damped breathing, sways the gun */
+  f32 gunAmpSum; /* damped gunposamplitude */
   f32 sniper_zoom;
   f32 camera_zoom;
   s32 curRoomIndex;
@@ -1093,10 +848,9 @@ struct player
   f32 c_recipscalex;
   f32 c_recipscaley;
 
-  Mtx* field_10C4;
-  Mtx* field_10C8;
-  Mtxf* field_10CC;
-  s32 field_10D0; // ptr
+  Mtx *worldToViewScaledMtx;
+  Mtx *worldToViewMtx;
+  Mtxf *worldToScreenMtxf;
 
   /**
    * Offset 0x10d4.
@@ -1104,10 +858,10 @@ struct player
   Mtxf* viewtoworldmtxf;
   Mtx* projmatrix;
   Mtxf* projmatrixf;
-  s32 field_10E0; // ptr
-  s32 field_10E4; // ptr
-  Mtxf* field_10E8;
-  Mtxf* field_10EC;
+  Mtx *projViewMtx;
+  LookAt *lookAt;
+  Mtxf *prevWorldToScreenMtxf;
+  Mtxf *prevViewToWorldMtxf;
   f32 c_scalelod60; // canonical name
   f32 c_scalelod; // canonical name
   f32 c_lodscalez; // canonical name
@@ -1163,9 +917,9 @@ struct player
   f32 swaytarget;
   f32 swayoffset0;
   f32 swayoffset2;
-  f32 field_1280;
+  f32 bodyStrafeTurn; /* multiplayer body: turn while strafing, -90 to 90 */
   s32 players_cur_animation;
-  f32 field_1288;
+  f32 bodyAnimSpeed; /* multiplayer body: speed of the current animation */
 
   /**
    * This buffers button presses.
@@ -1188,1034 +942,18 @@ struct player
   /**
    * Offset 0x1878
   */
-  struct WatchRectangle buffer_for_watch_greenbackdrop_vertices[WATCH_NUMBER_SCREENS];
+  struct WatchRectangle watchTabsVtx[WATCH_NUMBER_SCREENS];
 
   /**
    * Watch static, not "static vertices".
    * Offset 0x19b8.
   */
-  struct WatchRectangle buffer_for_watch_static_vertices[1];
+  struct WatchRectangle watchStaticVtx[1];
+  Gfx watchArmorGdl[230];
+  Gfx watchHealthGdl[230];
+  Gfx watchTabsGdl[WATCH_NUMBER_SCREENS * 8];
+  Gfx watchStaticGdl[4];
 
-  /**
-   * Offset 0x19f8
-  */
-  s32 watch_body_armor_bar_gdl; // used in watch
-
-  s32 field_19FC;
-  s32 field_1A00;
-  s32 field_1A04;
-  s32 field_1A08;
-  s32 field_1A0C;
-  s32 field_1A10;
-  s32 field_1A14;
-  s32 field_1A18;
-  s32 field_1A1C;
-  s32 field_1A20;
-  s32 field_1A24;
-  s32 field_1A28;
-  s32 field_1A2C;
-  s32 field_1A30;
-  s32 field_1A34;
-  s32 field_1A38;
-  s32 field_1A3C;
-  s32 field_1A40;
-  s32 field_1A44;
-  s32 field_1A48;
-  s32 field_1A4C;
-  s32 field_1A50;
-  s32 field_1A54;
-  s32 field_1A58;
-  s32 field_1A5C;
-  s32 field_1A60;
-  s32 field_1A64;
-  s32 field_1A68;
-  s32 field_1A6C;
-  s32 field_1A70;
-  s32 field_1A74;
-  s32 field_1A78;
-  s32 field_1A7C;
-  s32 field_1A80;
-  s32 field_1A84;
-  s32 field_1A88;
-  s32 field_1A8C;
-  s32 field_1A90;
-  s32 field_1A94;
-  s32 field_1A98;
-  s32 field_1A9C;
-  s32 field_1AA0;
-  s32 field_1AA4;
-  s32 field_1AA8;
-  s32 field_1AAC;
-  s32 field_1AB0;
-  s32 field_1AB4;
-  s32 field_1AB8;
-  s32 field_1ABC;
-  s32 field_1AC0;
-  s32 field_1AC4;
-  s32 field_1AC8;
-  s32 field_1ACC;
-  s32 field_1AD0;
-  s32 field_1AD4;
-  s32 field_1AD8;
-  s32 field_1ADC;
-  s32 field_1AE0;
-  s32 field_1AE4;
-  s32 field_1AE8;
-  s32 field_1AEC;
-  s32 field_1AF0;
-  s32 field_1AF4;
-  s32 field_1AF8;
-  s32 field_1AFC;
-  s32 field_1B00;
-  s32 field_1B04;
-  s32 field_1B08;
-  s32 field_1B0C;
-  s32 field_1B10;
-  s32 field_1B14;
-  s32 field_1B18;
-  s32 field_1B1C;
-  s32 field_1B20;
-  s32 field_1B24;
-  s32 field_1B28;
-  s32 field_1B2C;
-  s32 field_1B30;
-  s32 field_1B34;
-  s32 field_1B38;
-  s32 field_1B3C;
-  s32 field_1B40;
-  s32 field_1B44;
-  s32 field_1B48;
-  s32 field_1B4C;
-  s32 field_1B50;
-  s32 field_1B54;
-  s32 field_1B58;
-  s32 field_1B5C;
-  s32 field_1B60;
-  s32 field_1B64;
-  s32 field_1B68;
-  s32 field_1B6C;
-  s32 field_1B70;
-  s32 field_1B74;
-  s32 field_1B78;
-  s32 field_1B7C;
-  s32 field_1B80;
-  s32 field_1B84;
-  s32 field_1B88;
-  s32 field_1B8C;
-  s32 field_1B90;
-  s32 field_1B94;
-  s32 field_1B98;
-  s32 field_1B9C;
-  s32 field_1BA0;
-  s32 field_1BA4;
-  s32 field_1BA8;
-  s32 field_1BAC;
-  s32 field_1BB0;
-  s32 field_1BB4;
-  s32 field_1BB8;
-  s32 field_1BBC;
-  s32 field_1BC0;
-  s32 field_1BC4;
-  s32 field_1BC8;
-  s32 field_1BCC;
-  s32 field_1BD0;
-  s32 field_1BD4;
-  s32 field_1BD8;
-  s32 field_1BDC;
-  s32 field_1BE0;
-  s32 field_1BE4;
-  s32 field_1BE8;
-  s32 field_1BEC;
-  s32 field_1BF0;
-  s32 field_1BF4;
-  s32 field_1BF8;
-  s32 field_1BFC;
-  s32 field_1C00;
-  s32 field_1C04;
-  s32 field_1C08;
-  s32 field_1C0C;
-  s32 field_1C10;
-  s32 field_1C14;
-  s32 field_1C18;
-  s32 field_1C1C;
-  s32 field_1C20;
-  s32 field_1C24;
-  s32 field_1C28;
-  s32 field_1C2C;
-  s32 field_1C30;
-  s32 field_1C34;
-  s32 field_1C38;
-  s32 field_1C3C;
-  s32 field_1C40;
-  s32 field_1C44;
-  s32 field_1C48;
-  s32 field_1C4C;
-  s32 field_1C50;
-  s32 field_1C54;
-  s32 field_1C58;
-  s32 field_1C5C;
-  s32 field_1C60;
-  s32 field_1C64;
-  s32 field_1C68;
-  s32 field_1C6C;
-  s32 field_1C70;
-  s32 field_1C74;
-  s32 field_1C78;
-  s32 field_1C7C;
-  s32 field_1C80;
-  s32 field_1C84;
-  s32 field_1C88;
-  s32 field_1C8C;
-  s32 field_1C90;
-  s32 field_1C94;
-  s32 field_1C98;
-  s32 field_1C9C;
-  s32 field_1CA0;
-  s32 field_1CA4;
-  s32 field_1CA8;
-  s32 field_1CAC;
-  s32 field_1CB0;
-  s32 field_1CB4;
-  s32 field_1CB8;
-  s32 field_1CBC;
-  s32 field_1CC0;
-  s32 field_1CC4;
-  s32 field_1CC8;
-  s32 field_1CCC;
-  s32 field_1CD0;
-  s32 field_1CD4;
-  s32 field_1CD8;
-  s32 field_1CDC;
-  s32 field_1CE0;
-  s32 field_1CE4;
-  s32 field_1CE8;
-  s32 field_1CEC;
-  s32 field_1CF0;
-  s32 field_1CF4;
-  s32 field_1CF8;
-  s32 field_1CFC;
-  s32 field_1D00;
-  s32 field_1D04;
-  s32 field_1D08;
-  s32 field_1D0C;
-  s32 field_1D10;
-  s32 field_1D14;
-  s32 field_1D18;
-  s32 field_1D1C;
-  s32 field_1D20;
-  s32 field_1D24;
-  s32 field_1D28;
-  s32 field_1D2C;
-  s32 field_1D30;
-  s32 field_1D34;
-  s32 field_1D38;
-  s32 field_1D3C;
-  s32 field_1D40;
-  s32 field_1D44;
-  s32 field_1D48;
-  s32 field_1D4C;
-  s32 field_1D50;
-  s32 field_1D54;
-  s32 field_1D58;
-  s32 field_1D5C;
-  s32 field_1D60;
-  s32 field_1D64;
-  s32 field_1D68;
-  s32 field_1D6C;
-  s32 field_1D70;
-  s32 field_1D74;
-  s32 field_1D78;
-  s32 field_1D7C;
-  s32 field_1D80;
-  s32 field_1D84;
-  s32 field_1D88;
-  s32 field_1D8C;
-  s32 field_1D90;
-  s32 field_1D94;
-  s32 field_1D98;
-  s32 field_1D9C;
-  s32 field_1DA0;
-  s32 field_1DA4;
-  s32 field_1DA8;
-  s32 field_1DAC;
-  s32 field_1DB0;
-  s32 field_1DB4;
-  s32 field_1DB8;
-  s32 field_1DBC;
-  s32 field_1DC0;
-  s32 field_1DC4;
-  s32 field_1DC8;
-  s32 field_1DCC;
-  s32 field_1DD0;
-  s32 field_1DD4;
-  s32 field_1DD8;
-  s32 field_1DDC;
-  s32 field_1DE0;
-  s32 field_1DE4;
-  s32 field_1DE8;
-  s32 field_1DEC;
-  s32 field_1DF0;
-  s32 field_1DF4;
-  s32 field_1DF8;
-  s32 field_1DFC;
-  s32 field_1E00;
-  s32 field_1E04;
-  s32 field_1E08;
-  s32 field_1E0C;
-  s32 field_1E10;
-  s32 field_1E14;
-  s32 field_1E18;
-  s32 field_1E1C;
-  s32 field_1E20;
-  s32 field_1E24;
-  s32 field_1E28;
-  s32 field_1E2C;
-  s32 field_1E30;
-  s32 field_1E34;
-  s32 field_1E38;
-  s32 field_1E3C;
-  s32 field_1E40;
-  s32 field_1E44;
-  s32 field_1E48;
-  s32 field_1E4C;
-  s32 field_1E50;
-  s32 field_1E54;
-  s32 field_1E58;
-  s32 field_1E5C;
-  s32 field_1E60;
-  s32 field_1E64;
-  s32 field_1E68;
-  s32 field_1E6C;
-  s32 field_1E70;
-  s32 field_1E74;
-  s32 field_1E78;
-  s32 field_1E7C;
-  s32 field_1E80;
-  s32 field_1E84;
-  s32 field_1E88;
-  s32 field_1E8C;
-  s32 field_1E90;
-  s32 field_1E94;
-  s32 field_1E98;
-  s32 field_1E9C;
-  s32 field_1EA0;
-  s32 field_1EA4;
-  s32 field_1EA8;
-  s32 field_1EAC;
-  s32 field_1EB0;
-  s32 field_1EB4;
-  s32 field_1EB8;
-  s32 field_1EBC;
-  s32 field_1EC0;
-  s32 field_1EC4;
-  s32 field_1EC8;
-  s32 field_1ECC;
-  s32 field_1ED0;
-  s32 field_1ED4;
-  s32 field_1ED8;
-  s32 field_1EDC;
-  s32 field_1EE0;
-  s32 field_1EE4;
-  s32 field_1EE8;
-  s32 field_1EEC;
-  s32 field_1EF0;
-  s32 field_1EF4;
-  s32 field_1EF8;
-  s32 field_1EFC;
-  s32 field_1F00;
-  s32 field_1F04;
-  s32 field_1F08;
-  s32 field_1F0C;
-  s32 field_1F10;
-  s32 field_1F14;
-  s32 field_1F18;
-  s32 field_1F1C;
-  s32 field_1F20;
-  s32 field_1F24;
-  s32 field_1F28;
-  s32 field_1F2C;
-  s32 field_1F30;
-  s32 field_1F34;
-  s32 field_1F38;
-  s32 field_1F3C;
-  s32 field_1F40;
-  s32 field_1F44;
-  s32 field_1F48;
-  s32 field_1F4C;
-  s32 field_1F50;
-  s32 field_1F54;
-  s32 field_1F58;
-  s32 field_1F5C;
-  s32 field_1F60;
-  s32 field_1F64;
-  s32 field_1F68;
-  s32 field_1F6C;
-  s32 field_1F70;
-  s32 field_1F74;
-  s32 field_1F78;
-  s32 field_1F7C;
-  s32 field_1F80;
-  s32 field_1F84;
-  s32 field_1F88;
-  s32 field_1F8C;
-  s32 field_1F90;
-  s32 field_1F94;
-  s32 field_1F98;
-  s32 field_1F9C;
-  s32 field_1FA0;
-  s32 field_1FA4;
-  s32 field_1FA8;
-  s32 field_1FAC;
-  s32 field_1FB0;
-  s32 field_1FB4;
-  s32 field_1FB8;
-  s32 field_1FBC;
-  s32 field_1FC0;
-  s32 field_1FC4;
-  s32 field_1FC8;
-  s32 field_1FCC;
-  s32 field_1FD0;
-  s32 field_1FD4;
-  s32 field_1FD8;
-  s32 field_1FDC;
-  s32 field_1FE0;
-  s32 field_1FE4;
-  s32 field_1FE8;
-  s32 field_1FEC;
-  s32 field_1FF0;
-  s32 field_1FF4;
-  s32 field_1FF8;
-  s32 field_1FFC;
-  s32 field_2000;
-  s32 field_2004;
-  s32 field_2008;
-  s32 field_200C;
-  s32 field_2010;
-  s32 field_2014;
-  s32 field_2018;
-  s32 field_201C;
-  s32 field_2020;
-  s32 field_2024;
-  s32 field_2028;
-  s32 field_202C;
-  s32 field_2030;
-  s32 field_2034;
-  s32 field_2038;
-  s32 field_203C;
-  s32 field_2040;
-  s32 field_2044;
-  s32 field_2048;
-  s32 field_204C;
-  s32 field_2050;
-  s32 field_2054;
-  s32 field_2058;
-  s32 field_205C;
-  s32 field_2060;
-  s32 field_2064;
-  s32 field_2068;
-  s32 field_206C;
-  s32 field_2070;
-  s32 field_2074;
-  s32 field_2078;
-  s32 field_207C;
-  s32 field_2080;
-  s32 field_2084;
-  s32 field_2088;
-  s32 field_208C;
-  s32 field_2090;
-  s32 field_2094;
-  s32 field_2098;
-  s32 field_209C;
-  s32 field_20A0;
-  s32 field_20A4;
-  s32 field_20A8;
-  s32 field_20AC;
-  s32 field_20B0;
-  s32 field_20B4;
-  s32 field_20B8;
-  s32 field_20BC;
-  s32 field_20C0;
-  s32 field_20C4;
-  s32 field_20C8;
-  s32 field_20CC;
-  s32 field_20D0;
-  s32 field_20D4;
-  s32 field_20D8;
-  s32 field_20DC;
-  s32 field_20E0;
-  s32 field_20E4;
-  s32 field_20E8;
-  s32 field_20EC;
-  s32 field_20F0;
-  s32 field_20F4;
-  s32 field_20F8;
-  s32 field_20FC;
-  s32 field_2100;
-  s32 field_2104;
-  s32 field_2108;
-  s32 field_210C;
-  s32 field_2110;
-  s32 field_2114;
-  s32 field_2118;
-  s32 field_211C;
-  s32 field_2120;
-  s32 field_2124;
-
-  /**
-   * Offset 0x2128
-  */
-  s32 watch_health_bar_gdl; // used in watch
-
-  s32 field_212C;
-  s32 field_2130;
-  s32 field_2134;
-  s32 field_2138;
-  s32 field_213C;
-  s32 field_2140;
-  s32 field_2144;
-  s32 field_2148;
-  s32 field_214C;
-  s32 field_2150;
-  s32 field_2154;
-  s32 field_2158;
-  s32 field_215C;
-  s32 field_2160;
-  s32 field_2164;
-  s32 field_2168;
-  s32 field_216C;
-  s32 field_2170;
-  s32 field_2174;
-  s32 field_2178;
-  s32 field_217C;
-  s32 field_2180;
-  s32 field_2184;
-  s32 field_2188;
-  s32 field_218C;
-  s32 field_2190;
-  s32 field_2194;
-  s32 field_2198;
-  s32 field_219C;
-  s32 field_21A0;
-  s32 field_21A4;
-  s32 field_21A8;
-  s32 field_21AC;
-  s32 field_21B0;
-  s32 field_21B4;
-  s32 field_21B8;
-  s32 field_21BC;
-  s32 field_21C0;
-  s32 field_21C4;
-  s32 field_21C8;
-  s32 field_21CC;
-  s32 field_21D0;
-  s32 field_21D4;
-  s32 field_21D8;
-  s32 field_21DC;
-  s32 field_21E0;
-  s32 field_21E4;
-  s32 field_21E8;
-  s32 field_21EC;
-  s32 field_21F0;
-  s32 field_21F4;
-  s32 field_21F8;
-  s32 field_21FC;
-  s32 field_2200;
-  s32 field_2204;
-  s32 field_2208;
-  s32 field_220C;
-  s32 field_2210;
-  s32 field_2214;
-  s32 field_2218;
-  s32 field_221C;
-  s32 field_2220;
-  s32 field_2224;
-  s32 field_2228;
-  s32 field_222C;
-  s32 field_2230;
-  s32 field_2234;
-  s32 field_2238;
-  s32 field_223C;
-  s32 field_2240;
-  s32 field_2244;
-  s32 field_2248;
-  s32 field_224C;
-  s32 field_2250;
-  s32 field_2254;
-  s32 field_2258;
-  s32 field_225C;
-  s32 field_2260;
-  s32 field_2264;
-  s32 field_2268;
-  s32 field_226C;
-  s32 field_2270;
-  s32 field_2274;
-  s32 field_2278;
-  s32 field_227C;
-  s32 field_2280;
-  s32 field_2284;
-  s32 field_2288;
-  s32 field_228C;
-  s32 field_2290;
-  s32 field_2294;
-  s32 field_2298;
-  s32 field_229C;
-  s32 field_22A0;
-  s32 field_22A4;
-  s32 field_22A8;
-  s32 field_22AC;
-  s32 field_22B0;
-  s32 field_22B4;
-  s32 field_22B8;
-  s32 field_22BC;
-  s32 field_22C0;
-  s32 field_22C4;
-  s32 field_22C8;
-  s32 field_22CC;
-  s32 field_22D0;
-  s32 field_22D4;
-  s32 field_22D8;
-  s32 field_22DC;
-  s32 field_22E0;
-  s32 field_22E4;
-  s32 field_22E8;
-  s32 field_22EC;
-  s32 field_22F0;
-  s32 field_22F4;
-  s32 field_22F8;
-  s32 field_22FC;
-  s32 field_2300;
-  s32 field_2304;
-  s32 field_2308;
-  s32 field_230C;
-  s32 field_2310;
-  s32 field_2314;
-  s32 field_2318;
-  s32 field_231C;
-  s32 field_2320;
-  s32 field_2324;
-  s32 field_2328;
-  s32 field_232C;
-  s32 field_2330;
-  s32 field_2334;
-  s32 field_2338;
-  s32 field_233C;
-  s32 field_2340;
-  s32 field_2344;
-  s32 field_2348;
-  s32 field_234C;
-  s32 field_2350;
-  s32 field_2354;
-  s32 field_2358;
-  s32 field_235C;
-  s32 field_2360;
-  s32 field_2364;
-  s32 field_2368;
-  s32 field_236C;
-  s32 field_2370;
-  s32 field_2374;
-  s32 field_2378;
-  s32 field_237C;
-  s32 field_2380;
-  s32 field_2384;
-  s32 field_2388;
-  s32 field_238C;
-  s32 field_2390;
-  s32 field_2394;
-  s32 field_2398;
-  s32 field_239C;
-  s32 field_23A0;
-  s32 field_23A4;
-  s32 field_23A8;
-  s32 field_23AC;
-  s32 field_23B0;
-  s32 field_23B4;
-  s32 field_23B8;
-  s32 field_23BC;
-  s32 field_23C0;
-  s32 field_23C4;
-  s32 field_23C8;
-  s32 field_23CC;
-  s32 field_23D0;
-  s32 field_23D4;
-  s32 field_23D8;
-  s32 field_23DC;
-  s32 field_23E0;
-  s32 field_23E4;
-  s32 field_23E8;
-  s32 field_23EC;
-  s32 field_23F0;
-  s32 field_23F4;
-  s32 field_23F8;
-  s32 field_23FC;
-  s32 field_2400;
-  s32 field_2404;
-  s32 field_2408;
-  s32 field_240C;
-  s32 field_2410;
-  s32 field_2414;
-  s32 field_2418;
-  s32 field_241C;
-  s32 field_2420;
-  s32 field_2424;
-  s32 field_2428;
-  s32 field_242C;
-  s32 field_2430;
-  s32 field_2434;
-  s32 field_2438;
-  s32 field_243C;
-  s32 field_2440;
-  s32 field_2444;
-  s32 field_2448;
-  s32 field_244C;
-  s32 field_2450;
-  s32 field_2454;
-  s32 field_2458;
-  s32 field_245C;
-  s32 field_2460;
-  s32 field_2464;
-  s32 field_2468;
-  s32 field_246C;
-  s32 field_2470;
-  s32 field_2474;
-  s32 field_2478;
-  s32 field_247C;
-  s32 field_2480;
-  s32 field_2484;
-  s32 field_2488;
-  s32 field_248C;
-  s32 field_2490;
-  s32 field_2494;
-  s32 field_2498;
-  s32 field_249C;
-  s32 field_24A0;
-  s32 field_24A4;
-  s32 field_24A8;
-  s32 field_24AC;
-  s32 field_24B0;
-  s32 field_24B4;
-  s32 field_24B8;
-  s32 field_24BC;
-  s32 field_24C0;
-  s32 field_24C4;
-  s32 field_24C8;
-  s32 field_24CC;
-  s32 field_24D0;
-  s32 field_24D4;
-  s32 field_24D8;
-  s32 field_24DC;
-  s32 field_24E0;
-  s32 field_24E4;
-  s32 field_24E8;
-  s32 field_24EC;
-  s32 field_24F0;
-  s32 field_24F4;
-  s32 field_24F8;
-  s32 field_24FC;
-  s32 field_2500;
-  s32 field_2504;
-  s32 field_2508;
-  s32 field_250C;
-  s32 field_2510;
-  s32 field_2514;
-  s32 field_2518;
-  s32 field_251C;
-  s32 field_2520;
-  s32 field_2524;
-  s32 field_2528;
-  s32 field_252C;
-  s32 field_2530;
-  s32 field_2534;
-  s32 field_2538;
-  s32 field_253C;
-  s32 field_2540;
-  s32 field_2544;
-  s32 field_2548;
-  s32 field_254C;
-  s32 field_2550;
-  s32 field_2554;
-  s32 field_2558;
-  s32 field_255C;
-  s32 field_2560;
-  s32 field_2564;
-  s32 field_2568;
-  s32 field_256C;
-  s32 field_2570;
-  s32 field_2574;
-  s32 field_2578;
-  s32 field_257C;
-  s32 field_2580;
-  s32 field_2584;
-  s32 field_2588;
-  s32 field_258C;
-  s32 field_2590;
-  s32 field_2594;
-  s32 field_2598;
-  s32 field_259C;
-  s32 field_25A0;
-  s32 field_25A4;
-  s32 field_25A8;
-  s32 field_25AC;
-  s32 field_25B0;
-  s32 field_25B4;
-  s32 field_25B8;
-  s32 field_25BC;
-  s32 field_25C0;
-  s32 field_25C4;
-  s32 field_25C8;
-  s32 field_25CC;
-  s32 field_25D0;
-  s32 field_25D4;
-  s32 field_25D8;
-  s32 field_25DC;
-  s32 field_25E0;
-  s32 field_25E4;
-  s32 field_25E8;
-  s32 field_25EC;
-  s32 field_25F0;
-  s32 field_25F4;
-  s32 field_25F8;
-  s32 field_25FC;
-  s32 field_2600;
-  s32 field_2604;
-  s32 field_2608;
-  s32 field_260C;
-  s32 field_2610;
-  s32 field_2614;
-  s32 field_2618;
-  s32 field_261C;
-  s32 field_2620;
-  s32 field_2624;
-  s32 field_2628;
-  s32 field_262C;
-  s32 field_2630;
-  s32 field_2634;
-  s32 field_2638;
-  s32 field_263C;
-  s32 field_2640;
-  s32 field_2644;
-  s32 field_2648;
-  s32 field_264C;
-  s32 field_2650;
-  s32 field_2654;
-  s32 field_2658;
-  s32 field_265C;
-  s32 field_2660;
-  s32 field_2664;
-  s32 field_2668;
-  s32 field_266C;
-  s32 field_2670;
-  s32 field_2674;
-  s32 field_2678;
-  s32 field_267C;
-  s32 field_2680;
-  s32 field_2684;
-  s32 field_2688;
-  s32 field_268C;
-  s32 field_2690;
-  s32 field_2694;
-  s32 field_2698;
-  s32 field_269C;
-  s32 field_26A0;
-  s32 field_26A4;
-  s32 field_26A8;
-  s32 field_26AC;
-  s32 field_26B0;
-  s32 field_26B4;
-  s32 field_26B8;
-  s32 field_26BC;
-  s32 field_26C0;
-  s32 field_26C4;
-  s32 field_26C8;
-  s32 field_26CC;
-  s32 field_26D0;
-  s32 field_26D4;
-  s32 field_26D8;
-  s32 field_26DC;
-  s32 field_26E0;
-  s32 field_26E4;
-  s32 field_26E8;
-  s32 field_26EC;
-  s32 field_26F0;
-  s32 field_26F4;
-  s32 field_26F8;
-  s32 field_26FC;
-  s32 field_2700;
-  s32 field_2704;
-  s32 field_2708;
-  s32 field_270C;
-  s32 field_2710;
-  s32 field_2714;
-  s32 field_2718;
-  s32 field_271C;
-  s32 field_2720;
-  s32 field_2724;
-  s32 field_2728;
-  s32 field_272C;
-  s32 field_2730;
-  s32 field_2734;
-  s32 field_2738;
-  s32 field_273C;
-  s32 field_2740;
-  s32 field_2744;
-  s32 field_2748;
-  s32 field_274C;
-  s32 field_2750;
-  s32 field_2754;
-  s32 field_2758;
-  s32 field_275C;
-  s32 field_2760;
-  s32 field_2764;
-  s32 field_2768;
-  s32 field_276C;
-  s32 field_2770;
-  s32 field_2774;
-  s32 field_2778;
-  s32 field_277C;
-  s32 field_2780;
-  s32 field_2784;
-  s32 field_2788;
-  s32 field_278C;
-  s32 field_2790;
-  s32 field_2794;
-  s32 field_2798;
-  s32 field_279C;
-  s32 field_27A0;
-  s32 field_27A4;
-  s32 field_27A8;
-  s32 field_27AC;
-  s32 field_27B0;
-  s32 field_27B4;
-  s32 field_27B8;
-  s32 field_27BC;
-  s32 field_27C0;
-  s32 field_27C4;
-  s32 field_27C8;
-  s32 field_27CC;
-  s32 field_27D0;
-  s32 field_27D4;
-  s32 field_27D8;
-  s32 field_27DC;
-  s32 field_27E0;
-  s32 field_27E4;
-  s32 field_27E8;
-  s32 field_27EC;
-  s32 field_27F0;
-  s32 field_27F4;
-  s32 field_27F8;
-  s32 field_27FC;
-  s32 field_2800;
-  s32 field_2804;
-  s32 field_2808;
-  s32 field_280C;
-  s32 field_2810;
-  s32 field_2814;
-  s32 field_2818;
-  s32 field_281C;
-  s32 field_2820;
-  s32 field_2824;
-  s32 field_2828;
-  s32 field_282C;
-  s32 field_2830;
-  s32 field_2834;
-  s32 field_2838;
-  s32 field_283C;
-  s32 field_2840;
-  s32 field_2844;
-  s32 field_2848;
-  s32 field_284C;
-  s32 field_2850;
-  s32 field_2854;
-
-  /**
-   * Offset 0x2858
-  */
-  Gfx buffer_for_watch_greenbackdrop_DL[WATCH_NUMBER_SCREENS];
-
-  s32 field_2880;
-  s32 field_2884;
-  s32 field_2888;
-  s32 field_288C;
-  s32 field_2890;
-  s32 field_2894;
-  s32 field_2898;
-  s32 field_289C;
-  s32 field_28A0;
-  s32 field_28A4;
-  s32 field_28A8;
-  s32 field_28AC;
-  s32 field_28B0;
-  s32 field_28B4;
-  s32 field_28B8;
-  s32 field_28BC;
-  s32 field_28C0;
-  s32 field_28C4;
-  s32 field_28C8;
-  s32 field_28CC;
-  s32 field_28D0;
-  s32 field_28D4;
-  s32 field_28D8;
-  s32 field_28DC;
-  s32 field_28E0;
-  s32 field_28E4;
-  s32 field_28E8;
-  s32 field_28EC;
-  s32 field_28F0;
-  s32 field_28F4;
-  s32 field_28F8;
-  s32 field_28FC;
-  s32 field_2900;
-  s32 field_2904;
-  s32 field_2908;
-  s32 field_290C;
-  s32 field_2910;
-  s32 field_2914;
-  s32 field_2918;
-  s32 field_291C;
-  s32 field_2920;
-  s32 field_2924;
-  s32 field_2928;
-  s32 field_292C;
-  s32 field_2930;
-  s32 field_2934;
-  s32 field_2938;
-  s32 field_293C;
-  s32 field_2940;
-  s32 field_2944;
-  s32 field_2948;
-  s32 field_294C;
-  s32 field_2950;
-  s32 field_2954;
-  s32 field_2958;
-  s32 field_295C;
-  s32 field_2960;
-  s32 field_2964;
-  s32 field_2968;
-  s32 field_296C;
-  s32 field_2970;
-  s32 field_2974;
-  s32 field_2978;
-  s32 field_297C;
-  s32 field_2980;
-  s32 field_2984;
-  s32 field_2988;
-  s32 field_298C;
-  s32 field_2990;
-  s32 field_2994;
-
-  /**
-   * Watch static, not "static DL".
-   * Offset 0x2998
-  */
-  Gfx buffer_for_watch_static_DL[1];
-
-  s32 field_29A0;
-  s32 field_29A4;
-  s32 field_29A8;
-  s32 field_29AC;
-  s32 field_29B0;
-  s32 field_29B4;
-
-  // Alt field_29C0 ?? Used in EU.
   s32 healthdamagetype; // canonical name
 
   /**
@@ -2223,7 +961,7 @@ struct player
    * Offset 0x29bc.
    */
   f32 eyeheight;
-  f32 field_29C0;
+  f32 lookDownDrop; /* lowers the eye when looking down; 15, falls to 0 when dead */
 
   s32 mpmenuon;           // 29C4 canonincal name
   s32 mpmenumode;         // 29C8 canonincal name
@@ -2232,7 +970,7 @@ struct player
   s32 damagetype;         // 29D4 canonincal name
   s32 deathcount;         // 29D8 canonincal name
   s32 num_suicides;       // 29DC
-  s32 field_29E0;         // 29E0
+  s32 spawnPadSeed; /* counts up to pick the next multiplayer spawn pad */
   s32 last_kill_time[4];  // 29E4
 
   /**
@@ -2251,36 +989,23 @@ struct player
    * Offset 0x2a04.
    */
   s16 registeredroom;
-  f32 field_2A08;
-  f32 field_2A0C;
+  f32 bodyAimPitch; /* multiplayer body: aim angles towards the crosshair target */
+  f32 bodyAimYaw;
   s32 ptr_text_first_mp_award;
   s32 ptr_text_second_mp_award;
-  coord3d field_2A18[2];
-  s32 field_2A30;
-  s32 field_2A34;
+  coord3d bodyHandPos[2]; /* multiplayer body: where each gun is, beams start there */
+  s32 bodyHandPosTick[2]; /* g_LvTickCount when bodyHandPos was last found */
   s32 cur_item_weapon_getname;
   /* 0x2a3c */ f32 actual_health;
   /* 0x2a40 */ f32 actual_armor;
-  ITEM_IDS field_2A44[2];
+  ITEM_IDS handModelNextItem[2]; /* gun model to load next, -1 for none */
   f32 speedgo;
-  s32 lock_hand_model[2];
+  s32 handModelLocked[2];
   s32 cur_player_control_type_0;
   s32 cur_player_control_type_1;             //0x2a5c
   f32 cur_player_control_type_2;             //0x2a60
   s32 neg_vspacing_for_control_type_entry;   //0x2a64
   u32 has_set_control_type_data;             //0x2a68
-  /**
-   * Collision / clipping related.
-   * Related to 0ffset 0x2a70.
-   * Offset 0x2a6c.
-   */
-  s32 field_2A6C;
-
-  /**
-   * Collision / clipping related.
-   * Offset 0x2a70
-   */
-  struct StandTile *field_2A70;
 
   s32 field_2A74;
   s32 field_2A78;
@@ -2691,8 +1416,13 @@ f32 bondviewGetPlayerYawRadians(void);
 Mtxf *camGetWorldToScreenMtxf(void);
 void camScreenToViewDir(struct coord2d *in, coord3d *out, f32 value);
 void mtxsF2L(RenderPosView *arg0, s32 arg1);
-s32 camGetLookAt(void);
-s32 camGetProjViewMtx(void);
+LookAt *camGetLookAt(void);
+Mtx *camGetProjViewMtx(void);
+void camSetProjViewMtx(Mtx *matrix);
+void camSetLookAt(LookAt *lookat);
+void camSetWorldToViewMtx(Mtx *matrix);
+void camSetWorldToViewScaledMtx(Mtx *matrix);
+Mtx *camGetWorldToViewMtx(void);
 Mtx *camGetProjectionMtx(void);
 Gfx *playerRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2);
 f32 camGetLodScaleZ(void);
@@ -2709,7 +1439,7 @@ f32 watchGetOpenFrac(void);
 struct coord3d *playerGetPrevPos(void);
 struct PropRecord *playerGetTank(void);
 s32 playerChooseSpawnPad(void);
-void playerResetCollision(struct collision434* arg0, struct coord3d *arg1, struct StandTile *arg2);
+void playerResetCollision(struct PlayerBond* arg0, struct coord3d *arg1, struct StandTile *arg2);
 void playerSetWorldScale(f32);
 void hudmsgTopReset(void);
 Mtxf *camGetProjectionMtxf(void);
