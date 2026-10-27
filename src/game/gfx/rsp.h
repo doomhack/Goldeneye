@@ -18,7 +18,7 @@ struct GfxInfo_s {
     u32 unk5C;
 };
 void rspAllocateBuffers(void);
-void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, s32 arg2, OSMesg rspReplyMsg);
+void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, s32 unused, OSMesg rspReplyMsg);
 
 extern struct GfxInfo_s *g_gfxTaskSettingsList;
 

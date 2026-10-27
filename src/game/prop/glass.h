@@ -56,7 +56,7 @@ void glassInitShards(void);
 void glassResetShards(void);
 void glassTickShards(void);
 
-Gfx * glassRenderShards(Gfx *arg0);
+Gfx * glassRenderShards(Gfx *gdl);
 void glassCreateShard(coord3d * pos, f32 rotX, f32 shard_size);
 
 #endif

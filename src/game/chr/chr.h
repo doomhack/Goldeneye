@@ -250,18 +250,18 @@ f32         chrsGetAnimRate(void);
 void        chrsSetAnimRate(f32);
 PropRecord *chrInit(PropRecord *, Model *, coord3d *, f32 arg2, StandTile * arg3, struct AIListRecord *arg4);
 PropRecord *chrAllocate(struct Model * arg0, coord3d * arg1, f32 arg2, StandTile * arg3, s32 arg4);
-void        chrSetHiddenToRandom(ChrRecord *arg0);
+void        chrSetHiddenToRandom(ChrRecord *self);
 void        chrRemovedUnused(f32 arg0);
-void        chrCheckGuardsHeardSound(f32 arg0);
+void        chrCheckGuardsHeardSound(f32 noise);
 ChrRecord  *chrFindByLiteralId(s32 index);
-PropRecord *chrGetEquippedWeaponProp(ChrRecord *arg0, GUNHAND arg1);
-PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *ChrRecord, GUNHAND arg1);
-void        chrUpdateCollisionBounds(PropRecord *arg0, struct rect4f **arg1, s32 *arg2, f32 *y_out, f32 *ground);
+PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand);
+PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *ChrRecord, GUNHAND hand);
+void        chrUpdateCollisionBounds(PropRecord *prop, struct rect4f **polygon, s32 *edges, f32 *y_out, f32 *ground);
 void        chrGetChrWidthHeight(PropRecord *arg0, f32 *width, f32 *height, f32 *always_20);
 f32         chrGetChrGround(PropRecord *arg0);
-void        chrDropItems(struct ChrRecord *arg0);
+void        chrDropItems(struct ChrRecord *self);
 s32         chrsGetNumSlots(void);
-Gfx        *chrRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2);
+Gfx        *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
 
 void        chrAddHealth(ChrRecord *chr, f32 health);
 void        chrSetMaxDamage(ChrRecord *chr, f32 maxdamage);
@@ -271,7 +271,7 @@ void        chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit);
 
 //tentative signature
 s32         chrRootMoveCallback(Model *, coord3d *, coord3d *, f32 *);
-void        chrCreateBloodStain(Model *arg0, s32 arg1, ModelNode *arg2, struct coord3d *arg3);
+void        chrCreateBloodStain(Model *model, s32 arg1, ModelNode *root, struct coord3d *pos);
 void        chrTestHit(PropRecord *prop, ShotData *shotdata);
 
 #ifdef BUGFIX_R1

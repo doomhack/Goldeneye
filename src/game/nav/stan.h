@@ -82,7 +82,7 @@ s32 stanGetRoomsBetween(StandTile *tile, f32 start_x, f32 start_z, StandTile **d
 s32 stanLineRooms(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z, s32 *roomBuffer, s32 *rtnCountSize, s32 maxBufSize);
 s32 stanTestVolume(StandTile **, f32 posX, f32 posY, f32 radius, s32 cdtypes, f32 float1, f32 float2);
 s32 stanGetTileRoom(StandTile* tile);
-PropRecord *stanLineFindDoor(StandTile *arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4, s32 arg5);
+PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, f32 end_z, s32 cdtypes);
 void stanGetTileColour(StandTile *tile, f32 p_x, f32 p_z, u8 *rtn);
 s32 stanCircleGetSpecial(struct StandTile **arg0, f32 arg1, f32 arg2, f32 arg3, struct StandTileLocusCallbackRecord *arg4);
 s32 stanLocusIsCrouch(struct StandTileLocusCallbackRecord *arg0);

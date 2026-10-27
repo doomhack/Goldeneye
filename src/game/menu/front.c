@@ -828,7 +828,7 @@ Gfx *frontCastRender(Gfx *DL);
 void frontHideAllSwitches(Model *arg0);
 void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode);
 void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level);
-Gfx *frontDrawAlignedText(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u8 *arg5, s32 arg6, s32 arg7);
+Gfx *frontDrawAlignedText(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u8 *text, s32 arg6, s32 arg7);
 void frontSetModeCursor(int mode);
 void frontSetDifficultyCursor(int difficulty);
 

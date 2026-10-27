@@ -122,7 +122,7 @@ u32 fileGetSaveFlagSlot(save_data *folder)
  * Resets save flag 0x18
  *
  * @param folder
- * @param arg1
+ * @param slot
  */
 void fileResetSaveFlagSlot(save_data *folder, s32 slot)
 {
@@ -324,7 +324,7 @@ bool fileGetSaveStageCompletedForDifficulty(save_data *folder, LEVEL_SOLO_SEQUEN
  * @param folder
  * @param levelid
  * @param difficulty
- * @param arg4
+ * @param newtime
  */
 void fileCheckSaveStageDifficultyTime(save_data *folder, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty, s32 newtime)
 {
@@ -1074,11 +1074,11 @@ void fileCopyFolderToFirstFree(s32 foldernum)
                     if ((s32)other < MAX_FOLDER_COUNT)
                     {
                         save_data new_save = BLANKSAVEDATA;
-                        save_data *temp_s2 = fileGetSaveForFoldernum(other);
+                        save_data *dest = fileGetSaveForFoldernum(other);
                         new_save = *save;
                         fileSetSaveFoldernum(&new_save, other);
                         fileSetSelectedBondTofolder(other, fileGetBondForFolder(foldernum));
-                        fileOverwriteSaveSlotWithNewSave(temp_s2, &new_save);
+                        fileOverwriteSaveSlotWithNewSave(dest, &new_save);
                     }
                 }
             }

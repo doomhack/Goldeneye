@@ -8,6 +8,6 @@
 
 #define NUM_TEXTURES  0xBB9U
 
-void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg3, u32 ulst);
+void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s32 zbufferMode, u32 ulst);
 
 #endif

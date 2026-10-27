@@ -195,7 +195,7 @@ void rspAllocateBuffers(void)
  * createGfxTask from n64devkit\ultra\usr\src\pr\demos_old\simple\gfx.c
  * gfxTaskStart from n64devkit\ultra\usr\src\pr\demos_old\nnsample2\graphic.c
  */
-void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, s32 arg2, OSMesg rspReplyMsg)
+void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, s32 unused, OSMesg rspReplyMsg)
 {
     OSScTask *sctask;
     OSTask *task;

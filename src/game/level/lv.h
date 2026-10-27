@@ -39,16 +39,16 @@ extern f32 g_GlobalTimerDeltaRaw;
 
 void lvInit(void);
 Gfx * lvRender(Gfx *);
-void lvSetDifficulty(DIFFICULTY arg0);
+void lvSetDifficulty(DIFFICULTY difficulty);
 void lvTick(void);
 void lvPlayerTick(void);
 void lvStageUnload(void);
 DIFFICULTY lvGetDifficulty(void);
 void lvStageLoad(s32 stage);
 
-void lvSetMpTimeLimit(s32 arg0);
-void lvSetMpPointLimit(s32 arg0);
-void lvSetControlsLocked(s32 arg0);
+void lvSetMpTimeLimit(s32 time);
+void lvSetMpPointLimit(s32 points);
+void lvSetControlsLocked(s32 locked);
 s32 lvGetControlsLocked(void);
 void lvApplyDifficulty(void);
 s32 lvGetCurrentStage(void);

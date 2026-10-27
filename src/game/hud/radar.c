@@ -29,15 +29,15 @@ Gfx *radarRender(Gfx *DL)
     PropRecord *other_player_prop;
     PropRecord *player_prop;
 
-    f32 temp_f20;
-    f32 temp_f22;
-    s32 temp_f24;
-    f32 temp_f28;
-    f32 temp_f2;
+    f32 dx;
+    f32 dz;
+    s32 radius;
+    f32 angle;
+    f32 dist;
     s32 dl_color_2;
     s32 loop_start_left;
     s32 loop_start_top;
-    f32 temp_f16;
+    f32 range;
 
 #if defined(VERSION_EU)
     #define RADAR_TOP_OFFSET 0x1d
@@ -127,20 +127,20 @@ Gfx *radarRender(Gfx *DL)
         {
             if (g_playerPointers[i]->bonddead == FALSE)
             {
-                f32 tt1;
+                f32 scale;
                 other_player_prop = g_playerPointers[i]->prop;
                 player_prop = g_CurrentPlayer->prop;
 
-                temp_f20 = other_player_prop->pos.f[0] - player_prop->pos.f[0];
-                temp_f22 = other_player_prop->pos.f[2] - player_prop->pos.f[2];
+                dx = other_player_prop->pos.f[0] - player_prop->pos.f[0];
+                dz = other_player_prop->pos.f[2] - player_prop->pos.f[2];
                 
-                temp_f28 = ((mathAtan2(temp_f20, temp_f22) * 180.0f) / M_PI_F) + g_CurrentPlayer->vv_theta + 180.0f;
+                angle = ((mathAtan2(dx, dz) * 180.0f) / M_PI_F) + g_CurrentPlayer->vv_theta + 180.0f;
                 
-                temp_f24 = 16;
-                temp_f16 = 4000;
+                radius = 16;
+                range = 4000;
 
-                tt1 = (temp_f24 / temp_f16);
-                temp_f2 = sqrtf((temp_f20 * temp_f20) + (temp_f22 * temp_f22)) * tt1;
+                scale = (radius / range);
+                dist = sqrtf((dx * dx) + (dz * dz)) * scale;
             
                 if ((current_scenario == SCENARIO_2v2)
                     || (current_scenario == SCENARIO_3v1)
@@ -148,7 +148,7 @@ Gfx *radarRender(Gfx *DL)
                     || (current_scenario == SCENARIO_TLD)
                     || (current_scenario == SCENARIO_MWTGG))
                 {
-                    if (temp_f2 < temp_f24)
+                    if (dist < radius)
                     {
                         if (g_playerPlayerData[i].have_token_or_goldengun == 0)
                         {
@@ -161,7 +161,7 @@ Gfx *radarRender(Gfx *DL)
                     }
                     else
                     {
-                        temp_f2 = temp_f24;
+                        dist = radius;
                         if (g_playerPlayerData[i].have_token_or_goldengun == 0)
                         {
                             dl_color_2 = 0xFF000060;
@@ -175,19 +175,19 @@ Gfx *radarRender(Gfx *DL)
                 else
                 {
                     dl_color_2 = 0xFFFF0060;
-                    if (temp_f2 < temp_f24)
+                    if (dist < radius)
                     {
                         dl_color_2 = 0xFFFF00A0;
                     }
                     else
                     {
-                        temp_f2 = temp_f24;
+                        dist = radius;
                     }
                 }
 
                 // 0.017453292f = DegToRad(1)
-                loop_start_left = (s32) (sinf(temp_f28 * 0.017453292f) * temp_f2) + start_left;
-                loop_start_top = (s32) (cosf(temp_f28 * 0.017453292f) * temp_f2 * RADAR_VERT_SCALE) + start_top;
+                loop_start_left = (s32) (sinf(angle * 0.017453292f) * dist) + start_left;
+                loop_start_top = (s32) (cosf(angle * 0.017453292f) * dist * RADAR_VERT_SCALE) + start_top;
                 
                 DL = textRenderRect(DL, loop_start_left - 2, loop_start_top - 2, loop_start_left + 2, loop_start_top + 2, 0x40);
                 DL = textRenderRect(DL, loop_start_left - 1, loop_start_top - 1, loop_start_left + 1, loop_start_top + 1, dl_color_2);

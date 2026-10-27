@@ -188,7 +188,7 @@ f32 fogGetScaledFarFogIntensitySquared(void);
 void fogLoadLevelEnvironment(s32 level_id, s32 arg1);
 void fogReloadCurrentEnvironment(void);
 s32 fogPositionIsVisibleThroughFog(coord3d *pos, f32 range);
-Gfx *fogSetRenderFogColor(Gfx *arg0, s32 arg1);
+Gfx *fogSetRenderFogColor(Gfx *gdl, s32 arg1);
 Gfx *fogRenderClearFogMode(Gfx *gdl);
 s32 fogGetPropDistColor(PropRecord *prop, struct rgba_f32 *color);
 void fogSwitchToSolosky2(f32 arg0);

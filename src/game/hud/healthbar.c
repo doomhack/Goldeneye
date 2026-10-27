@@ -26,14 +26,13 @@
 #if defined(VERSION_US)
 /*
   Render Health Bars
-  AI Comment: This function populates a radial array of HUD elements (HealthSegments) with position and color data
+  Populates a radial array of HUD elements (HealthSegments) with position and color data
   based on a damage value (HealthValue) and a display mode (isArmour). It loops through 23 segments, calculating their
   screen-space coordinates and visual properties using trigonometric functions.
   @healthSegments : A pointer to an Array of 46 vertices.
   @isArmour : Armour/Health if positive/negative
   @numsegments : Not Used
   @HealthValue : amount of health/armour 0-10
-  @Address: 7F0A2F30
 */
 void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSegments, s32 isArmour, f32 HealthValue)
 {
@@ -120,39 +119,39 @@ void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSeg
 #if !defined(VERSION_US)
 void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSegments, s32 isArmour, f32 HealthValue)
 {
-	s32 new_var2;
-	f32 new_var;
+	s32 segment;
+	f32 over5;
 	s32 pairIndex;
 	s32 i;
-	s16 temp_s1;
-	s32 sp80;
-	f32 temp_f18;
-	f32 temp_f4;
-	f32 sp74;
+	s16 coord;
+	s32 angleOffset;
+	f32 angleDeg;
+	f32 cosScaled;
+	f32 sign;
 	f32 angleRadians;
 	HealthValue *= 8.0f;
-	sp80 = 0;
+	angleOffset = 0;
 
 	for (i = 0; i < 23; i++)
 	{
-		temp_f18 = (f32) ((s32) (142.5 - ((f64) sp80)));
-		angleRadians = ((temp_f18 * M_PI_F) * ((f32) 2)) / 360.0f;
+		angleDeg = (f32) ((s32) (142.5 - ((f64) angleOffset)));
+		angleRadians = ((angleDeg * M_PI_F) * ((f32) 2)) / 360.0f;
 		for (pairIndex = 0; pairIndex < 2; pairIndex++)
 		{
-	        sp74 = (f32) isArmour;
-			temp_s1 = (s16) ((s32) (((((sinf(angleRadians) * 4.0f) * 130.0f) * ((f32) (6 - pairIndex))) / 5.0f) * sp74));
-			temp_f4 = cosf(angleRadians) * 4.0f;
-			HealthSegments->pos.x = temp_s1 + 1;
+	        sign = (f32) isArmour;
+			coord = (s16) ((s32) (((((sinf(angleRadians) * 4.0f) * 130.0f) * ((f32) (6 - pairIndex))) / 5.0f) * sign));
+			cosScaled = cosf(angleRadians) * 4.0f;
+			HealthSegments->pos.x = coord + 1;
 			HealthSegments->pos.y = 0;
 			HealthSegments->normal.x = 0;
 			HealthSegments->normal.y = 0;
-			new_var = HealthValue - 5.0f;
+			over5 = HealthValue - 5.0f;
 			HealthSegments->normal.z = 0;
 			HealthSegments->colour.r = 0xFF;
 			HealthSegments->colour.g = 0xFF;
-			temp_s1 = ((temp_f4 * 130.0f) * ((f32) (6 - pairIndex))) / 5;
+			coord = ((cosScaled * 130.0f) * ((f32) (6 - pairIndex))) / 5;
 			HealthSegments->colour.b = 0xFF;
-			HealthSegments->pos.z = (s16) (-((s32) temp_s1));
+			HealthSegments->pos.z = (s16) (-((s32) coord));
 			if (isArmour > 0)
 			{
 				HealthSegments->colour.r = (s8) ((s32) (96.0f - (cosf(angleRadians) * 96.0f)));
@@ -187,8 +186,8 @@ void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSeg
 				}
 				else
 				{
-					new_var2 = i;
-					if (((((s32) ((new_var * 4.0f) + 0.5f)) + 9) >= new_var2) && (((((s32) (HealthValue - 5.0f)) * 2) + 8) < new_var2))
+					segment = i;
+					if (((((s32) ((over5 * 4.0f) + 0.5f)) + 9) >= segment) && (((((s32) (HealthValue - 5.0f)) * 2) + 8) < segment))
 					{
 						HealthSegments->colour.a = (s8) (((s32) ((HealthValue - ((f32) ((s32) HealthValue))) * 207.0f)) + 0x30);
 					}
@@ -200,7 +199,7 @@ void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSeg
 			}
 			HealthSegments += 1;
 		}
-		sp80 += 5;
+		angleOffset += 5;
 	}
 }
 #endif
@@ -241,14 +240,14 @@ Gfx *hudRenderGaugeBar(Gfx *gdl, uintptr_t vtxaddr, s32 numvertices)
 }
 
 
-void watchMakeArcVerts(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 arg3)
+void watchMakeArcVerts(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 addCentre)
 {
     f32 angle;
     s32 i;
     s16 sinval;
     s16 cosval;
 
-    if (arg3)
+    if (addCentre)
     {
         vtx->coord1.x = 1;
         vtx->coord1.y = 0;
@@ -403,9 +402,9 @@ struct WatchVertex *watchMakeRectVerts(struct WatchVertex *vtx, s32 startx, s32 
 }
 
 
-Gfx *watchRenderQuad(Gfx *gdl, s32 *arg1)
+Gfx *watchRenderQuad(Gfx *gdl, s32 *vtx)
 {
-    gSPVertex(gdl++, arg1, 4, 0);
+    gSPVertex(gdl++, vtx, 4, 0);
 
     // gfxdis can't parse this, but maybe?: gSPModifyVertex(gdl++, 16, 0, 0x2110);
     // manual specification:

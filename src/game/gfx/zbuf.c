@@ -68,8 +68,8 @@ void zbufSetBuffer(s32 buffer, s32 width, s32 height) {
 
 
 Gfx *zbufInit(Gfx *gdl) {
-    s32 phi_a3;
-    s32 test;
+    s32 offset;
+    s32 addr;
     if (g_Zbuf == 0) {
         zbufAllocate();
     }
@@ -77,14 +77,14 @@ Gfx *zbufInit(Gfx *gdl) {
         g_ZbufWidth = VI_SX(SCREEN_WIDTH);
     }
     if (!(playerGetCurrentNum() < 2) || ((getViewCount() == 2) && !coopSplitSideBySide() && (coopPlayerPerson(playerGetCurrentNum()) == 1))) {
-        phi_a3 = g_ZbufWidth * SCREEN_HEIGHT;
+        offset = g_ZbufWidth * SCREEN_HEIGHT;
     } else {
-        phi_a3 = 0;
+        offset = 0;
     }
-    test = (g_Zbuf - phi_a3);
-    test = test & ~0x3F;
+    addr = (g_Zbuf - offset);
+    addr = addr & ~0x3F;
     gDPPipeSync(gdl++);
-    gDPSetDepthImage(gdl++, test);
+    gDPSetDepthImage(gdl++, addr);
     return gdl;
 }
 

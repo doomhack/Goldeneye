@@ -51,131 +51,131 @@ s32 texMaskBits(int number)
 }
 
 
-s32 texLoadBlockDxt4b(s32 arg0)
+s32 texLoadBlockDxt4b(s32 width)
 {
-    f32 temp_f0;
-    s32 temp_f10;
+    f32 dxt;
+    s32 whole;
 
-    temp_f0 = 32768.0f / ((((s32) (arg0 + 15)) / 16) * 16);
-    temp_f10 = temp_f0;
+    dxt = 32768.0f / ((((s32) (width + 15)) / 16) * 16);
+    whole = dxt;
 
-    return (temp_f10 & 0xFFFFFFFF)
-         + ((s32) ((temp_f0 - temp_f10) + 0.999999f));
+    return (whole & 0xFFFFFFFF)
+         + ((s32) ((dxt - whole) + 0.999999f));
 }
 
 
-s32 texLoadBlockDxt8b(s32 arg0)
+s32 texLoadBlockDxt8b(s32 width)
 {
-    f32 temp_f0;
-    s32 temp_f10;
+    f32 dxt;
+    s32 whole;
 
-    temp_f0 = 16384.0f / ((((s32) (arg0 + 7)) / 8) * 8);
-    temp_f10 = temp_f0;
+    dxt = 16384.0f / ((((s32) (width + 7)) / 8) * 8);
+    whole = dxt;
 
-    return (temp_f10 & 0xFFFFFFFF)
-         + ((s32) ((temp_f0 - temp_f10) + 0.999999f));
+    return (whole & 0xFFFFFFFF)
+         + ((s32) ((dxt - whole) + 0.999999f));
 }
 
 
-s32 texLoadBlockDxt16b(s32 arg0)
+s32 texLoadBlockDxt16b(s32 width)
 {
-    f32 temp_f0;
-    s32 temp_f10;
+    f32 dxt;
+    s32 whole;
 
-    temp_f0 = 8192.0f / ((((s32) (arg0 + 3)) / 4) * 4);
-    temp_f10 = temp_f0;
+    dxt = 8192.0f / ((((s32) (width + 3)) / 4) * 4);
+    whole = dxt;
 
-    return (temp_f10 & 0xFFFFFFFF)
-         + ((s32) ((temp_f0 - temp_f10) + 0.999999f));
+    return (whole & 0xFFFFFFFF)
+         + ((s32) ((dxt - whole) + 0.999999f));
 }
 
 
-s32 texLoadBlockDxt32b(s32 arg0)
+s32 texLoadBlockDxt32b(s32 width)
 {
-    f32 temp_f0;
-    s32 temp_f10;
+    f32 dxt;
+    s32 whole;
 
-    temp_f0 = 4096.0f / ((((s32) (arg0 + 3)) / 4) * 4);
-    temp_f10 = temp_f0;
+    dxt = 4096.0f / ((((s32) (width + 3)) / 4) * 4);
+    whole = dxt;
 
-    return (temp_f10 & 0xFFFFFFFF)
-         + ((s32) ((temp_f0 - temp_f10) + 0.999999f));
+    return (whole & 0xFFFFFFFF)
+         + ((s32) ((dxt - whole) + 0.999999f));
 }
 
 
-s32 texLoadBlockTexels4b(s32 arg0, s32 arg1, s32 arg2)
+s32 texLoadBlockTexels4b(s32 width, s32 height, s32 numlods)
 {
     s32 ret;
     ret = 0;
 
-    if (arg2 <= 0) { arg2 = 1; }
+    if (numlods <= 0) { numlods = 1; }
 
-    while (arg2 > 0)
+    while (numlods > 0)
     {
-        ret += ((arg0 + 15) / 16) * 4 * arg1;
-        arg2--;
-        if (arg0 >= 2) { arg0 >>= 1; }
-        if (arg1 >= 2) { arg1 >>= 1; }
+        ret += ((width + 15) / 16) * 4 * height;
+        numlods--;
+        if (width >= 2) { width >>= 1; }
+        if (height >= 2) { height >>= 1; }
     }
     return ret;
 }
 
 
-s32 texLoadBlockTexels8b(s32 arg0, s32 arg1, s32 arg2)
+s32 texLoadBlockTexels8b(s32 width, s32 height, s32 numlods)
 {
     s32 ret;
     ret = 0;
 
-    if (arg2 <= 0) { arg2 = 1; }
+    if (numlods <= 0) { numlods = 1; }
 
-    while (arg2 > 0)
+    while (numlods > 0)
     {
-        ret += ((arg0 + 7) / 8) * 4 * arg1;
-        arg2--;
-        if (arg0 >= 2) { arg0 >>= 1; }
-        if (arg1 >= 2) { arg1 >>= 1; }
+        ret += ((width + 7) / 8) * 4 * height;
+        numlods--;
+        if (width >= 2) { width >>= 1; }
+        if (height >= 2) { height >>= 1; }
     }
     return ret;
 }
 
 
-s32 texLoadBlockTexels16b(s32 arg0, s32 arg1, s32 arg2)
+s32 texLoadBlockTexels16b(s32 width, s32 height, s32 numlods)
 {
     s32 ret;
     ret = 0;
 
-    if (arg2 <= 0) { arg2 = 1; }
+    if (numlods <= 0) { numlods = 1; }
 
-    while (arg2 > 0)
+    while (numlods > 0)
     {
-        ret += ((arg0 + 3) / 4) * 4 * arg1;
-        arg2--;
-        if (arg0 >= 2) { arg0 >>= 1; }
-        if (arg1 >= 2) { arg1 >>= 1; }
+        ret += ((width + 3) / 4) * 4 * height;
+        numlods--;
+        if (width >= 2) { width >>= 1; }
+        if (height >= 2) { height >>= 1; }
     }
     return ret;
 }
 
 
-s32 texLoadBlockTexels32b(s32 arg0, s32 arg1, s32 arg2)
+s32 texLoadBlockTexels32b(s32 width, s32 height, s32 numlods)
 {
     s32 ret;
     ret = 0;
 
-    if (arg2 <= 0) { arg2 = 1; }
+    if (numlods <= 0) { numlods = 1; }
 
-    while (arg2 > 0)
+    while (numlods > 0)
     {
-        ret += ((arg0 + 3) / 4) * 4 * arg1;
-        arg2--;
-        if (arg0 >= 2) { arg0 >>= 1; }
-        if (arg1 >= 2) { arg1 >>= 1; }
+        ret += ((width + 3) / 4) * 4 * height;
+        numlods--;
+        if (width >= 2) { width >>= 1; }
+        if (height >= 2) { height >>= 1; }
     }
     return ret;
 }
 
 
-void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
+void texSetRenderMode(Gfx **gdlptr, s32 blendMode, s32 numcycles, s32 zbufferMode)
 {
     Gfx *gdl = *gdlptr;
 
@@ -184,7 +184,7 @@ void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
         gDPPipeSync(gdl++);
         gDPSetCycleType(gdl++, G_CYC_1CYCLE);
 
-        switch (arg1)
+        switch (blendMode)
         {
             default:
             case 1:
@@ -251,7 +251,7 @@ void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
         gDPPipeSync(gdl++);
         gDPSetCycleType(gdl++, G_CYC_2CYCLE);
 
-        switch (arg1)
+        switch (blendMode)
         {
             default:
             case 1:
@@ -321,7 +321,7 @@ void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
 /**
  * Perfect Dark texSelect.
 */
-void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg3, u32 ulst)
+void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s32 zbufferMode, u32 ulst)
 {    
 	Gfx *gdl;
     struct tex *tex;
@@ -331,11 +331,11 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
 
     if (tconfig == NULL)
     {
-        texSetRenderMode(&gdl, arg2, 1, arg3);
+        texSetRenderMode(&gdl, blendMode, 1, zbufferMode);
 
-        if (arg3 >= 2)
+        if (zbufferMode >= 2)
         {
-            gSPTextureL(gdl++, 0xffff, 0xffff, 0, arg3, G_TX_RENDERTILE, G_ON);
+            gSPTextureL(gdl++, 0xffff, 0xffff, 0, zbufferMode, G_TX_RENDERTILE, G_ON);
         }
         else
         {
@@ -354,10 +354,10 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
 		s32 lutmode;
 		s32 depth2;
 		s32 lrs;
-        s32 sp138;
+        s32 dxt;
 		s32 line;
             
-        u16* aa;
+        u16* imgheader;
 
         tex = NULL;
         
@@ -369,8 +369,8 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
             texLoad((s32 *)tconfig, NULL);
         }
 
-        aa = PHYS_TO_K0(tconfig->index);
-        tex = texFindInPool((aa)[-4], NULL);
+        imgheader = PHYS_TO_K0(tconfig->index);
+        tex = texFindInPool((imgheader)[-4], NULL);
 
         if (tconfig->level == 0)
         {
@@ -393,34 +393,34 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
                 case G_IM_SIZ_32b:
                     depth2 = G_IM_SIZ_32b;
                     lrs = texLoadBlockTexels32b(width, height, 1) - 1;
-                    sp138 = texLoadBlockDxt32b(width);
+                    dxt = texLoadBlockDxt32b(width);
                     line = (s32) (width + 3) >> 2;
                     break;
                 case G_IM_SIZ_16b:
                     depth2 = G_IM_SIZ_16b;
                     lrs = texLoadBlockTexels16b(width, height, 1) - 1;
-                    sp138 = texLoadBlockDxt16b(width);
+                    dxt = texLoadBlockDxt16b(width);
                     line = (s32) (width + 3) >> 2;
                     break;
                 case G_IM_SIZ_8b:
                     depth2 = G_IM_SIZ_16b;
                     lrs = texLoadBlockTexels8b(width, height, 1) - 1;
-                    sp138 = texLoadBlockDxt8b(width);
+                    dxt = texLoadBlockDxt8b(width);
                     line = (s32) (width + 7) >> 3;
                     break;
                 case G_IM_SIZ_4b:
                     depth2 = G_IM_SIZ_16b;
                     lrs = texLoadBlockTexels4b(width, height, 1) - 1;
-                    sp138 = texLoadBlockDxt4b(width);
+                    dxt = texLoadBlockDxt4b(width);
                     line = (s32) (width + 0xF) >> 4;
                     break;
             }
 
-            texSetRenderMode(&gdl, arg2, 1, arg3);
+            texSetRenderMode(&gdl, blendMode, 1, zbufferMode);
 
-            if (arg3 >= 2)
+            if (zbufferMode >= 2)
             {
-                gSPTextureL(gdl++, 0xffff, 0xffff, 0, arg3, G_TX_RENDERTILE, G_ON);
+                gSPTextureL(gdl++, 0xffff, 0xffff, 0, zbufferMode, G_TX_RENDERTILE, G_ON);
             }
             else
             {
@@ -465,23 +465,23 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
 
             gDPLoadSync(gdl++);
 
-            gDPLoadBlock(gdl++, G_TX_LOADTILE, 0, 0, lrs, sp138);
+            gDPLoadBlock(gdl++, G_TX_LOADTILE, 0, 0, lrs, dxt);
             
             gDPPipeSync(gdl++);
 
             if (format == G_IM_FMT_CI)
             {
-                u32 a3 = lrs + 1;
-				u32 t0 = (0x3ff - tex->lastColour) < a3 ? (0x3ff - tex->lastColour) : 0;
+                u32 tlutCount = lrs + 1;
+				u32 tlutStart = (0x3ff - tex->lastColour) < tlutCount ? (0x3ff - tex->lastColour) : 0;
 
-				a3 -= t0;
+				tlutCount -= tlutStart;
                 
                 gDPSetTile(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_4b, 0, 0x0100, G_TX_LOADTILE, 0,
                     G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD,
                     G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
                 gDPLoadSync(gdl++);
 
-                gDPLoadTLUT07(gdl++, a3, t0, tex->lastColour + a3, t0);
+                gDPLoadTLUT07(gdl++, tlutCount, tlutStart, tex->lastColour + tlutCount, tlutStart);
                 gDPPipeSync(gdl++);
 
                 gDPSetTextureLUT(gdl++, lutmode);
@@ -499,7 +499,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
         }
         else
         {
-            s32 tmem; // spd0
+            s32 tmem;
 			s32 lod;
 			u8 format;
 			u8 depth;
@@ -552,11 +552,11 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
                 }
             }
 
-            texSetRenderMode(&gdl, arg2, 2, arg3);
+            texSetRenderMode(&gdl, blendMode, 2, zbufferMode);
 
-            if (arg3 >= 2)
+            if (zbufferMode >= 2)
             {
-                gSPTextureL(gdl++, 0xffff, 0xffff, lod - 1, arg3, G_TX_RENDERTILE, G_ON);
+                gSPTextureL(gdl++, 0xffff, 0xffff, lod - 1, zbufferMode, G_TX_RENDERTILE, G_ON);
             }
             else
             {
@@ -565,7 +565,6 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
 
             gDPSetTextureLOD(gdl++, G_TL_LOD);
 
-            // line 417
             switch (format)
             {
                 case G_IM_FMT_RGBA:
@@ -606,19 +605,19 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
 
             gDPPipeSync(gdl++);
 
-            if (format == 2)
+            if (format == G_IM_FMT_CI)
             {
-                u32 a2 = lrs + 1;
-				u32 a3 = (0x3ff - tex->lastColour) < a2 ? (0x3ff - tex->lastColour) : 0;
+                u32 tlutCount = lrs + 1;
+				u32 tlutStart = (0x3ff - tex->lastColour) < tlutCount ? (0x3ff - tex->lastColour) : 0;
 
-				a2 -= a3;
+				tlutCount -= tlutStart;
                 
                 gDPSetTile(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_4b, 0, 0x0100, G_TX_LOADTILE, 0,
                     G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD,
                     G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
                 gDPLoadSync(gdl++);
 
-                gDPLoadTLUT07(gdl++, a2, a3, tex->lastColour + a2, a3);
+                gDPLoadTLUT07(gdl++, tlutCount, tlutStart, tex->lastColour + tlutCount, tlutStart);
                 gDPPipeSync(gdl++);
 
                 gDPSetTextureLUT(gdl++, lutmode);

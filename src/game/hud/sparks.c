@@ -64,7 +64,7 @@ void sparksReset(void)
 }
 
 
-void sparkInit(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3, s16 arg4)
+void sparkInit(s_bullet_spark *spark, coord3d *pos, s32 type, f32 size, s16 room)
 {
     f32 angle;
 
@@ -73,27 +73,27 @@ void sparkInit(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3, s16 arg
     angle *= M_TAU_F;
 
     spark->age = 0;
-    spark->room = arg4;
+    spark->room = room;
 
-    if (arg2 == 4)
+    if (type == 4)
     {
         spark->lifetime = 1;
         spark->frameRate = 1.0f;
         spark->images = g_ImageFlare2;
     }
-    else if (arg2 == 1)
+    else if (type == 1)
     {
         spark->lifetime = 11;
         spark->frameRate = 0.5f;
         spark->images = g_ImagesExplosionSmoke;
     }
-    else if (arg2 == 3)
+    else if (type == 3)
     {
         spark->lifetime = 9;
         spark->frameRate = 0.5f;
         spark->images = g_ImagesScatteredExplosions;
     }
-    else if (arg2 == 6)
+    else if (type == 6)
     {
         spark->lifetime = 100;
         spark->frameRate = 0.0f;
@@ -106,25 +106,25 @@ void sparkInit(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3, s16 arg
         spark->images = g_ImagesExplosionSmoke;
     }
 
-    spark->r = g_SparkColors[arg2].r;
-    spark->g = g_SparkColors[arg2].g;
-    spark->b = g_SparkColors[arg2].b;
-    spark->a = g_SparkColors[arg2].a;
+    spark->r = g_SparkColors[type].r;
+    spark->g = g_SparkColors[type].g;
+    spark->b = g_SparkColors[type].b;
+    spark->a = g_SparkColors[type].a;
 
-    spark->pos.x = arg1->x;
-    spark->pos.y = arg1->y;
-    spark->pos.z = arg1->z;
+    spark->pos.x = pos->x;
+    spark->pos.y = pos->y;
+    spark->pos.z = pos->z;
 
-    arg3 *= 1.0f + ((f32)randomGetNext() * (1.0f / M_U32_MAX_VALUE_F) * 0.25f);
-    arg3 *= M_SQRT2_F;
-    spark->size = arg3;
+    size *= 1.0f + ((f32)randomGetNext() * (1.0f / M_U32_MAX_VALUE_F) * 0.25f);
+    size *= M_SQRT2_F;
+    spark->size = size;
 
-    spark->sizeCos = cosf(angle) * arg3;
-    spark->sizeSin = sinf(angle) * arg3;
+    spark->sizeCos = cosf(angle) * size;
+    spark->sizeSin = sinf(angle) * size;
 }
 
 
-s_bullet_spark *sparkCreate(coord3d *arg0, s32 arg1, f32 arg2, s16 arg3)
+s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room)
 {
     s_bullet_spark *ptr;
 
@@ -132,7 +132,7 @@ s_bullet_spark *sparkCreate(coord3d *arg0, s32 arg1, f32 arg2, s16 arg3)
     {
         if (ptr->lifetime == 0)
         {
-            sparkInit(ptr, arg0, arg1, arg2, arg3);
+            sparkInit(ptr, pos, type, size, room);
             return ptr;
         }
     }
@@ -294,7 +294,7 @@ void movingSparksReset(void)
 
 
 #ifndef VERSION_EU
-s_moving_bullet_spark *movingSparkCreate(coord3d *arg0, coord3d *velocity, s32 arg2, f32 arg3, f32 arg4, s16 arg5)
+s_moving_bullet_spark *movingSparkCreate(coord3d *pos, coord3d *velocity, s32 type, f32 size, f32 minY, s16 room)
 {
     s_moving_bullet_spark *ptr;
 
@@ -302,12 +302,12 @@ s_moving_bullet_spark *movingSparkCreate(coord3d *arg0, coord3d *velocity, s32 a
     {
         if (ptr->spark.lifetime == 0)
         {
-            sparkInit(&ptr->spark, arg0, arg2, arg3, arg5);
+            sparkInit(&ptr->spark, pos, type, size, room);
 
             ptr->velocity.x = velocity->x;
             ptr->velocity.y = velocity->y;
             ptr->velocity.z = velocity->z;
-            ptr->minY = arg4;
+            ptr->minY = minY;
 
             return ptr;
         }
@@ -356,16 +356,16 @@ void movingSparksTick(void)
     }
 }
 #else
-void movingSparksTick(Gfx *arg0, s32 zbufferMode)
+void movingSparksTick(Gfx *gdl, s32 zbufferMode)
 {
-    sparksRender(arg0, zbufferMode);
+    sparksRender(gdl, zbufferMode);
 }
 #endif
 
 
 #ifndef VERSION_EU
 
-void movingSparksRender(Gfx *arg0, s32 zbufferMode)
+void movingSparksRender(Gfx *gdl, s32 zbufferMode)
 {
     s32 max_index;
     s_moving_bullet_spark *ptr;
@@ -374,7 +374,7 @@ void movingSparksRender(Gfx *arg0, s32 zbufferMode)
 
     for (ptr = &g_MovingSparks[0]; ptr < (&g_MovingSparks[max_index]); ptr++)
     {
-        sparkRender(&ptr->spark, arg0, zbufferMode);
+        sparkRender(&ptr->spark, gdl, zbufferMode);
     }
 
 }
@@ -397,10 +397,10 @@ void sparksTickAll(void)
 }
 
 
-void sparksRenderAll(Gfx *arg0, s32 zbufferMode)
+void sparksRenderAll(Gfx *gdl, s32 zbufferMode)
 {
-    sparksRender(arg0, zbufferMode);
-    movingSparksRender(arg0, zbufferMode);
+    sparksRender(gdl, zbufferMode);
+    movingSparksRender(gdl, zbufferMode);
 }
 
 

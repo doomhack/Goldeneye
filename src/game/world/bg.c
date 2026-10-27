@@ -239,14 +239,14 @@ s32 g_BgLoadAllRooms = 1;
 
 void bgUnloadAllRooms(void);
 Gfx *bgScissorAndRenderRooms(Gfx *arg0);
-Gfx *bgRenderVisibleRooms(Gfx *arg0);
+Gfx *bgRenderVisibleRooms(Gfx *gdl);
 s32 bgCheckIfRoomModelNeedsLoad(s32 roomID);
 void bgLoadRoomModelData(s32 room);
 void bgBuildRoomVtxBounds(s32 roomID);
 Gfx *bgRenderRoomPrimary(Gfx *gdl, s32 room_index);
 Gfx *bgRenderRoomSecondary(Gfx *gdl, s32 room_index);
 
-Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4);
+Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 left, s32 top, s32 width, s32 height);
 
 bool bgIsRoomOnScreen(s32 roomID, struct rectbbox *screenbox);
 s32 bgAddVisibleRoom(s32 curroom, s32 unk1, bbox2d *screensize, s32 next);

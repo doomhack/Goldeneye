@@ -117,44 +117,44 @@ void vtxstoreReset(void)
 *  and replace it with the `replacement` address.
 */
 void vtxstoreFixRefs(s32 find, s32 replacement) {
-    PropRecord* var_s1;
-    ChrRecord* var_v0;
-    s32* temp_v0_2;
-    ModelNode* var_a1;
-    ModelFileHeader* var_v1;
+    PropRecord* prop;
+    ChrRecord* chr;
+    s32* rwdata;
+    ModelNode* node;
+    ModelFileHeader* header;
     s32 val;
 
-    var_s1 = propsGetActiveTail();
-    while (var_s1 != NULL) {
-        if (var_s1->type == 1) {
-            var_v0 = var_s1->chr;
-            var_v1 = ((Model*)var_v0->chrflags)->obj;
-            var_a1 = var_v1->RootNode;
-            while (var_a1 != NULL) {
-                val = var_a1->Opcode & 0xFF;
+    prop = propsGetActiveTail();
+    while (prop != NULL) {
+        if (prop->type == 1) {
+            chr = prop->chr;
+            header = ((Model*)chr->chrflags)->obj;
+            node = header->RootNode;
+            while (node != NULL) {
+                val = node->Opcode & 0xFF;
                 if (val == 0x18) {
-                    temp_v0_2 = modelGetNodeRwData((Model *)var_v0->chrflags, var_a1);
-                    if (find == *temp_v0_2) {
-                        *temp_v0_2 = replacement;
+                    rwdata = modelGetNodeRwData((Model *)chr->chrflags, node);
+                    if (find == *rwdata) {
+                        *rwdata = replacement;
                     }
                     break;
                 } else {
-                    if (var_a1->Child != NULL) {
-                        var_a1 = var_a1->Child;
+                    if (node->Child != NULL) {
+                        node = node->Child;
                     } else {
-                        while (var_a1 != NULL) {
-                            if (var_a1->Next != NULL) {
-                                var_a1 = var_a1->Next;
+                        while (node != NULL) {
+                            if (node->Next != NULL) {
+                                node = node->Next;
                                 break;
                             }
-                            var_a1 = var_a1->Parent;
+                            node = node->Parent;
                         }
                     }
                 }
             }
         }
 
-        var_s1 = var_s1->prev;
+        prop = prop->prev;
     }
 }
 
@@ -168,58 +168,58 @@ void vtxstoreFixRefs(s32 find, s32 replacement) {
 */
 void vtxstoreTick(void)
 {
-    s16 var_fp;
-    s16 var_s2;
+    s16 i;
+    s16 j;
     s32 stop;
-    s32 var_s6;
+    s32 merged;
 
-    var_s6 = 0;
+    merged = 0;
 
     if (g_VtxstoreObjFreeVtx < ((s32)g_VtxstoreObjNumVtx >> 2))
     {
-        for (var_fp = 0; var_fp < g_VtxstoreObjNumBatches - 1; var_fp++) {
-            if (g_VtxstoreObjBatches[var_fp].refs > 0)
+        for (i = 0; i < g_VtxstoreObjNumBatches - 1; i++) {
+            if (g_VtxstoreObjBatches[i].refs > 0)
             {
-                for (var_s2 = var_fp + 1; var_s2 < g_VtxstoreObjNumBatches; var_s2++) {
-                    if ((g_VtxstoreObjBatches[var_s2].refs > 0) &&
-                        (g_VtxstoreObjBatches[var_fp].modeldef == g_VtxstoreObjBatches[var_s2].modeldef) &&
-                        (g_VtxstoreObjBatches[var_fp].destroyedLevel == g_VtxstoreObjBatches[var_s2].destroyedLevel))
+                for (j = i + 1; j < g_VtxstoreObjNumBatches; j++) {
+                    if ((g_VtxstoreObjBatches[j].refs > 0) &&
+                        (g_VtxstoreObjBatches[i].modeldef == g_VtxstoreObjBatches[j].modeldef) &&
+                        (g_VtxstoreObjBatches[i].destroyedLevel == g_VtxstoreObjBatches[j].destroyedLevel))
                     {
-                        vtxstoreFixRefs((s32)g_VtxstoreObjBatches[var_s2].vertices, (s32)g_VtxstoreObjBatches[var_fp].vertices);
-                        var_s6 = 1;
+                        vtxstoreFixRefs((s32)g_VtxstoreObjBatches[j].vertices, (s32)g_VtxstoreObjBatches[i].vertices);
+                        merged = 1;
 
-                        g_VtxstoreObjBatches[var_fp].refs += g_VtxstoreObjBatches[var_s2].refs;
-                        g_VtxstoreObjBatches[var_s2].refs = 0;
+                        g_VtxstoreObjBatches[i].refs += g_VtxstoreObjBatches[j].refs;
+                        g_VtxstoreObjBatches[j].refs = 0;
                         
-                        g_VtxstoreObjFreeVtx += g_VtxstoreObjBatches[var_s2].numVtx;
+                        g_VtxstoreObjFreeVtx += g_VtxstoreObjBatches[j].numVtx;
                     }
                 }
             }
         }
     }
 
-    if (var_s6 != 0) {
+    if (merged != 0) {
         stop  = 0;
-        var_fp = 0;
+        i = 0;
 
         while (stop == 0) {
-            var_s2 = g_VtxstoreObjBatches[var_fp].next;
+            j = g_VtxstoreObjBatches[i].next;
 
-            if (var_s2 >= 0) {
-                if (g_VtxstoreObjBatches[var_fp].refs == 0) {
-                    if (g_VtxstoreObjBatches[var_s2].refs == 0) {
-                        g_VtxstoreObjBatches[var_fp].numVtx += g_VtxstoreObjBatches[var_s2].numVtx;
-                        g_VtxstoreObjBatches[var_s2].refs = -1;
-                        var_s2 = g_VtxstoreObjBatches[var_s2].next;
-                        g_VtxstoreObjBatches[var_fp].next = var_s2;
+            if (j >= 0) {
+                if (g_VtxstoreObjBatches[i].refs == 0) {
+                    if (g_VtxstoreObjBatches[j].refs == 0) {
+                        g_VtxstoreObjBatches[i].numVtx += g_VtxstoreObjBatches[j].numVtx;
+                        g_VtxstoreObjBatches[j].refs = -1;
+                        j = g_VtxstoreObjBatches[j].next;
+                        g_VtxstoreObjBatches[i].next = j;
 
-                        if (var_s2 >= 0) {
-                            g_VtxstoreObjBatches[var_s2].prev = var_fp;
+                        if (j >= 0) {
+                            g_VtxstoreObjBatches[j].prev = i;
                         }
                         continue;
                     }
                 }
-                var_fp = var_s2;
+                i = j;
             } else {
                 stop = 1;
             }
@@ -236,81 +236,81 @@ void vtxstoreTick(void)
 * PD name: vtxstoreAllocate
 * Description: Allocation for batches within the storage space
 */
-s32 vtxstoreAllocate(s32 arg0, s32 type, s32 arg2, s32 arg3) 
+s32 vtxstoreAllocate(s32 numVtx, s32 type, s32 modeldef, s32 destroyedLevel) 
 {
-    s16* var_t3;
-    s16 temp_t2;
-    s32 var_a1;
-    s32 var_a2;
-    s32 var_t4;
-    s32 var_v0;
-    s32 var_v1;
-    s16 var_v1_2;
-    struct VtxstoreBatch* var_t0;
+    s16* freeVtx;
+    s16 batchVtx;
+    s32 index;
+    s32 numBatches;
+    s32 split;
+    s32 steps;
+    s32 spare;
+    s16 result;
+    struct VtxstoreBatch* batches;
 
     switch (type) {
         case VTXSTORE_CHR:
-            var_t0 = g_VtxstoreChrBatches;
-            var_t3 = &g_VtxstoreChrFreeVtx;
-            var_a2 = (s16)g_VtxstoreChrNumBatches;
+            batches = g_VtxstoreChrBatches;
+            freeVtx = &g_VtxstoreChrFreeVtx;
+            numBatches = (s16)g_VtxstoreChrNumBatches;
             break;
         case VTXSTORE_OBJ:
-            var_t0 = g_VtxstoreObjBatches;
-            var_t3 = &g_VtxstoreObjFreeVtx;
-            var_a2 = (s16)g_VtxstoreObjNumBatches;
+            batches = g_VtxstoreObjBatches;
+            freeVtx = &g_VtxstoreObjFreeVtx;
+            numBatches = (s16)g_VtxstoreObjNumBatches;
             break;
         default:
             return 0;
     }
 
-    var_v1_2 = 0;
-    var_v0 = 0;
-    var_a1 = 0;
+    result = 0;
+    steps = 0;
+    index = 0;
     
     do {
-        if ((var_t0[var_a1].refs == 0) && (var_t0[var_a1].numVtx >= arg0)) {
-            var_v1_2 = 1;
+        if ((batches[index].refs == 0) && (batches[index].numVtx >= numVtx)) {
+            result = 1;
         } else {
-            var_a1 = var_t0[var_a1].next;
-            var_v0 += 1;
-            if ((var_a1 == -1) || (var_a2 < var_v0)) {
-                var_v1_2 = (s16)-1;
+            index = batches[index].next;
+            steps += 1;
+            if ((index == -1) || (numBatches < steps)) {
+                result = (s16)-1;
             }
         }
-    } while (var_v1_2 == 0);
-    if (var_a2 < var_v0) {
+    } while (result == 0);
+    if (numBatches < steps) {
         return 0;
     }
-    if (var_v1_2 == 1) {
-        var_t4 = 0;
-        temp_t2 = var_t0[var_a1].numVtx;
-        var_t0[var_a1].modeldef = arg2;
-        var_t0[var_a1].destroyedLevel = arg3;
-        var_t0[var_a1].refs++;
-        if (temp_t2 != arg0) {
-            for (var_v1 = 0; var_v1 < var_a2; var_v1++) {
-                if (var_t0[var_v1].refs == -1) {
-                    var_t0[var_a1].numVtx = arg0;
-                    var_t0[var_v1].vertices = var_t0[var_a1].vertices + arg0;
-                    var_t0[var_v1].numVtx = temp_t2 - arg0;
-                    var_t0[var_v1].refs = 0;
-                    var_t0[var_v1].prev = var_a1;
-                    var_t4 = 1;
-                    var_t0[var_v1].next = var_t0[var_a1].next;
-                    if (var_t0[var_a1].next >= 0) {
-                        var_t0[var_t0[var_a1].next].prev = var_v1;
+    if (result == 1) {
+        split = 0;
+        batchVtx = batches[index].numVtx;
+        batches[index].modeldef = modeldef;
+        batches[index].destroyedLevel = destroyedLevel;
+        batches[index].refs++;
+        if (batchVtx != numVtx) {
+            for (spare = 0; spare < numBatches; spare++) {
+                if (batches[spare].refs == -1) {
+                    batches[index].numVtx = numVtx;
+                    batches[spare].vertices = batches[index].vertices + numVtx;
+                    batches[spare].numVtx = batchVtx - numVtx;
+                    batches[spare].refs = 0;
+                    batches[spare].prev = index;
+                    split = 1;
+                    batches[spare].next = batches[index].next;
+                    if (batches[index].next >= 0) {
+                        batches[batches[index].next].prev = spare;
                     }
-                    var_t0[var_a1].next = var_v1;
+                    batches[index].next = spare;
                     break;
                 }
             }
         }
-        if (var_t4 != 0) {
-            *var_t3 -= arg0;
+        if (split != 0) {
+            *freeVtx -= numVtx;
         } else {
-            *var_t3 -= temp_t2;
+            *freeVtx -= batchVtx;
         }
-        return (s32)var_t0[var_a1].vertices;
+        return (s32)batches[index].vertices;
     }
     return 0;
 }
@@ -320,67 +320,67 @@ s32 vtxstoreAllocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
 * PD name: vtxstore_free (likely)
 * Description: Either deforming a vertex or frees a vertex (deallocation)
 */
-void vtxstoreFree(Vertex* arg0) {
-    s16* var_t2;
-    struct VtxstoreBatch* var_a3;
-    s16 var_a1;
+void vtxstoreFree(Vertex* vertices) {
+    s16* freeVtx;
+    struct VtxstoreBatch* batches;
+    s16 index;
     s32 stop;
-    s32 var_v1;
+    s32 other;
 
-    if ((arg0 >= g_VtxstoreChrVtx) &&
-        (arg0 <= g_VtxstoreChrVtx + (g_VtxstoreChrNumVtx - 1))) {
-        var_a3 = g_VtxstoreChrBatches;
-        var_t2 = &g_VtxstoreChrFreeVtx;
-    } else if ((arg0 >= g_VtxstoreObjVtx) &&
-               (arg0 <= g_VtxstoreObjVtx + (g_VtxstoreObjNumVtx - 1))) {
-        var_a3 = g_VtxstoreObjBatches;
-        var_t2 = &g_VtxstoreObjFreeVtx;
+    if ((vertices >= g_VtxstoreChrVtx) &&
+        (vertices <= g_VtxstoreChrVtx + (g_VtxstoreChrNumVtx - 1))) {
+        batches = g_VtxstoreChrBatches;
+        freeVtx = &g_VtxstoreChrFreeVtx;
+    } else if ((vertices >= g_VtxstoreObjVtx) &&
+               (vertices <= g_VtxstoreObjVtx + (g_VtxstoreObjNumVtx - 1))) {
+        batches = g_VtxstoreObjBatches;
+        freeVtx = &g_VtxstoreObjFreeVtx;
     } else {
         return;
     }
 
-    var_a1 = 0;
+    index = 0;
     stop = 0;
 
     while (stop == 0) {
-        if (var_a3[var_a1].vertices == arg0) {
+        if (batches[index].vertices == vertices) {
             stop = 1;
-            var_a3[var_a1].refs--;
-            if (var_a3[var_a1].refs == 0) {
-                *var_t2 += var_a3[var_a1].numVtx;
+            batches[index].refs--;
+            if (batches[index].refs == 0) {
+                *freeVtx += batches[index].numVtx;
 
                 // Merge with next free block
-                var_v1 = var_a3[var_a1].next;
-                if (var_v1 >= 0) {
-                    if (var_a3[var_v1].refs == 0) {
-                        var_a3[var_a1].numVtx += var_a3[var_v1].numVtx;
-                        var_a3[var_a1].next = var_a3[var_v1].next;
-                        var_a3[var_v1].refs = -1;
-                        var_v1 = var_a3[var_a1].next;
-                        if (var_v1 >= 0) {
-                            var_a3[var_v1].prev = var_a1;
+                other = batches[index].next;
+                if (other >= 0) {
+                    if (batches[other].refs == 0) {
+                        batches[index].numVtx += batches[other].numVtx;
+                        batches[index].next = batches[other].next;
+                        batches[other].refs = -1;
+                        other = batches[index].next;
+                        if (other >= 0) {
+                            batches[other].prev = index;
                         }
                     }
                 }
 
                 // Merge with prev free block
-                var_v1 = var_a3[var_a1].prev;
-                if (var_v1 >= 0) {
-                    if (var_a3[var_v1].refs == 0) {
-                        var_a3[var_v1].numVtx += var_a3[var_a1].numVtx;
-                        var_a3[var_v1].next = var_a3[var_a1].next;
-                        var_a3[var_a1].refs = -1;
-                        var_a1 = var_v1;
-                        var_v1 = var_a3[var_a1].next;
-                        if (var_v1 >= 0) {
-                            var_a3[var_v1].prev = var_a1;
+                other = batches[index].prev;
+                if (other >= 0) {
+                    if (batches[other].refs == 0) {
+                        batches[other].numVtx += batches[index].numVtx;
+                        batches[other].next = batches[index].next;
+                        batches[index].refs = -1;
+                        index = other;
+                        other = batches[index].next;
+                        if (other >= 0) {
+                            batches[other].prev = index;
                         }
                     }
                 }
             }
         } else {
-            var_a1 = var_a3[var_a1].next;
-            if (var_a1 == -1) {
+            index = batches[index].next;
+            if (index == -1) {
                 stop = 1;
             }
         }

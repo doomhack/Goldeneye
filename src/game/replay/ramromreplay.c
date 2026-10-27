@@ -83,8 +83,8 @@ s32 g_ramromRecordFlag = 0;
 
 
 void ramromFadeToTitle(void);
-s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1);
-void record_player_input_as_packet(struct contsample *arg0, s32 arg1, s32 arg2);
+s32 ramrom_replay_handler(struct contsample *samples, s32 index);
+void record_player_input_as_packet(struct contsample *samples, s32 lastread, s32 lastwrite);
 void copy_current_ingame_registers_before_ramrom_playback(ramromfilestructure *state);
 void copy_recorded_ramrom_registers_to_proper_place_ingame(ramromfilestructure *state);
 
@@ -134,109 +134,109 @@ void finalize_ramrom_on_hw(void)
 }
 
 
-void record_player_input_as_packet(struct contsample *arg0, s32 arg1, s32 arg2)
+void record_player_input_as_packet(struct contsample *samples, s32 lastread, s32 lastwrite)
 {
-    s32 temp_t5;
-    s32 temp_t1;
-    s32 var_a0;
-    s32 var_a2;
-    u8 var_a3;
-    s32 var_t2;
-    struct ramrom_blockbuf *temp_v0;
-    s32 temp_s0;
+    s32 bufaddr;
+    s32 numcontrollers;
+    s32 cont;
+    s32 sample;
+    u8 checksum;
+    s32 count;
+    struct ramrom_blockbuf *entry;
+    s32 size;
 
-    temp_t5 = ALIGN16_a((s32)&ramrom_data_target[0x1f8]);
-    temp_t1 = g_DemoFile->size_cmds;
+    bufaddr = ALIGN16_a((s32)&ramrom_data_target[0x1f8]);
+    numcontrollers = g_DemoFile->size_cmds;
 
-    var_t2 = 0;
-    var_a3 = 0;
+    count = 0;
+    checksum = 0;
     
-    ramrom_blkbuf_2 = (struct ramrom_seed *)temp_t5;
+    ramrom_blkbuf_2 = (struct ramrom_seed *)bufaddr;
     ramrom_blkbuf_3 = (struct ramrom_blockbuf *)(ramrom_blkbuf_2 + 1);
 
     // loop structure based on: void joyConsumeSamples(struct contdata *contdata)
-    if (arg1 != arg2)
+    if (lastread != lastwrite)
     {
-        var_a2 = (s32) (arg1 + 1) % CONTSAMPLE_LEN;
+        sample = (s32) (lastread + 1) % CONTSAMPLE_LEN;
         while (1)
         {
-            for (var_a0 = 0; var_a0 < temp_t1; var_a0++)
+            for (cont = 0; cont < numcontrollers; cont++)
             {
-                temp_v0 = ramrom_blkbuf_3 + (var_t2 * temp_t1) + var_a0;
+                entry = ramrom_blkbuf_3 + (count * numcontrollers) + cont;
 
-                temp_v0->stick_x = arg0->pads[var_a2*4 + var_a0].stick_x;
-                temp_v0->stick_y = arg0->pads[var_a2*4 + var_a0].stick_y;
-                temp_v0->button_low = arg0->pads[var_a2*4 + var_a0].button & 0xFF;
-                temp_v0->button_high = arg0->pads[var_a2*4 + var_a0].button >> 8;
+                entry->stick_x = samples->pads[sample*4 + cont].stick_x;
+                entry->stick_y = samples->pads[sample*4 + cont].stick_y;
+                entry->button_low = samples->pads[sample*4 + cont].button & 0xFF;
+                entry->button_high = samples->pads[sample*4 + cont].button >> 8;
     
-                var_a3 += (u8) (
-                    (u8)temp_v0->stick_x
-                    + (u8)temp_v0->stick_y
-                    + temp_v0->button_low
-                    + temp_v0->button_high);
+                checksum += (u8) (
+                    (u8)entry->stick_x
+                    + (u8)entry->stick_y
+                    + entry->button_low
+                    + entry->button_high);
             }
-            var_t2++;
+            count++;
 
-            if (var_a2 == arg2)
+            if (sample == lastwrite)
             {
                 break;
             }
 
-            var_a2 = (s32) (var_a2 + 1) % CONTSAMPLE_LEN;
+            sample = (s32) (sample + 1) % CONTSAMPLE_LEN;
         }
     }
         
-    ramrom_blkbuf_2->count = var_t2;
+    ramrom_blkbuf_2->count = count;
     ramrom_blkbuf_2->speedframes = g_FrameDelta;
     ramrom_blkbuf_2->randseed = g_randomSeed;
     
-    var_a3 += (u8) ((u8)ramrom_blkbuf_2->speedframes + (u8)ramrom_blkbuf_2->count + ramrom_blkbuf_2->randseed);
-    ramrom_blkbuf_2->check = var_a3;
+    checksum += (u8) ((u8)ramrom_blkbuf_2->speedframes + (u8)ramrom_blkbuf_2->count + ramrom_blkbuf_2->randseed);
+    ramrom_blkbuf_2->check = checksum;
 
-    temp_s0 = (temp_t1 * 4 * var_t2) + sizeof(s32);
+    size = (numcontrollers * 4 * count) + sizeof(s32);
 
-    romWrite((void *) ramrom_blkbuf_2, address_demo_loaded, ALIGN16_a(temp_s0));
+    romWrite((void *) ramrom_blkbuf_2, address_demo_loaded, ALIGN16_a(size));
 
-    address_demo_loaded += align_addr_even(temp_s0 + 1);
+    address_demo_loaded += align_addr_even(size + 1);
 }
 
 
 
 
-s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
+s32 ramrom_replay_handler(struct contsample *samples, s32 index)
 {
-    s32 var_a3;
-    s32 var_a0;
-    struct ramrom_blockbuf *temp_v0;
-    u8 var_t0;
-    s32 temp_a2;
-    s32 temp_t2;
+    s32 frame;
+    s32 cont;
+    struct ramrom_blockbuf *entry;
+    u8 checksum;
+    s32 numcontrollers;
+    s32 count;
 
-    var_t0 = 0;
-    temp_a2 = (s32) g_DemoFile->size_cmds;
-    temp_t2 = ramrom_blkbuf_2->count;
+    checksum = 0;
+    numcontrollers = (s32) g_DemoFile->size_cmds;
+    count = ramrom_blkbuf_2->count;
 
-    for (var_a3 = 0; var_a3 < temp_t2; var_a3++)
+    for (frame = 0; frame < count; frame++)
     {
-        arg1 = (s32) (arg1 + 1) % CONTSAMPLE_LEN;
+        index = (s32) (index + 1) % CONTSAMPLE_LEN;
 
-        for (var_a0 = 0; var_a0 < MAXCONTROLLERS; var_a0++)
+        for (cont = 0; cont < MAXCONTROLLERS; cont++)
         {
-            if (var_a0 < temp_a2)
+            if (cont < numcontrollers)
             {
-                temp_v0 = ramrom_blkbuf_3 + (var_a3 * temp_a2) + var_a0;
+                entry = ramrom_blkbuf_3 + (frame * numcontrollers) + cont;
 
-                arg0->pads[arg1 * 4 + var_a0].stick_x = temp_v0->stick_x;
-                arg0->pads[arg1 * 4 + var_a0].stick_y = temp_v0->stick_y;
-                arg0->pads[arg1 * 4 + var_a0].button = (temp_v0->button_high << 8) | temp_v0->button_low;
+                samples->pads[index * 4 + cont].stick_x = entry->stick_x;
+                samples->pads[index * 4 + cont].stick_y = entry->stick_y;
+                samples->pads[index * 4 + cont].button = (entry->button_high << 8) | entry->button_low;
 
-                var_t0 += (u8)((u8)temp_v0->stick_x + (u8)temp_v0->stick_y + temp_v0->button_low + temp_v0->button_high);
+                checksum += (u8)((u8)entry->stick_x + (u8)entry->stick_y + entry->button_low + entry->button_high);
             }
             else
             {
-                arg0->pads[arg1 * 4 + var_a0].stick_x = 0;
-                arg0->pads[arg1 * 4 + var_a0].stick_y = 0;
-                arg0->pads[arg1 * 4 + var_a0].button = 0;
+                samples->pads[index * 4 + cont].stick_x = 0;
+                samples->pads[index * 4 + cont].stick_y = 0;
+                samples->pads[index * 4 + cont].button = 0;
             }
         }
     }
@@ -248,8 +248,8 @@ s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
         ramromFadeToTitle();
     }
 
-    var_t0 += (u8)((u8)ramrom_blkbuf_2->speedframes + (u8)ramrom_blkbuf_2->count + ramrom_blkbuf_2->randseed);
-    if (ramrom_blkbuf_2->check != var_t0)
+    checksum += (u8)((u8)ramrom_blkbuf_2->speedframes + (u8)ramrom_blkbuf_2->count + ramrom_blkbuf_2->randseed);
+    if (ramrom_blkbuf_2->check != checksum)
     {
         g_TestDemoDesynced = TRUE;
         ramromFadeToTitle();
@@ -265,20 +265,20 @@ s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
     
     joySetContDataIndex(1);
 
-    return arg1;
+    return index;
 }
 
 
 
 void iterate_ramrom_entries_handle_camera_out(void)
 {
-    s32 temp_v1;
-    s32 var_a3;
+    s32 endtime;
+    s32 count;
     
     ramrom_blkbuf_2 = romCopyUnaligned(ramrom_data_target + 0x1F8, address_demo_loaded, sizeof(struct ramrom_seed));
 
-    var_a3 = ramrom_blkbuf_2->count;
-    if (var_a3 > 0)
+    count = ramrom_blkbuf_2->count;
+    if (count > 0)
     {
         ramrom_blkbuf_3 = romCopyUnaligned(
             ramrom_data_target + 0x21E,
@@ -286,8 +286,8 @@ void iterate_ramrom_entries_handle_camera_out(void)
             g_DemoFile->size_cmds * sizeof(struct ramrom_blockbuf) * ramrom_blkbuf_2->count);
     }
 
-    var_a3 = ramrom_blkbuf_2->count;
-    if (var_a3 == 0 && ramrom_blkbuf_2->speedframes == 0)
+    count = ramrom_blkbuf_2->count;
+    if (count == 0 && ramrom_blkbuf_2->speedframes == 0)
     {
         ramromFadeToTitle();
     }
@@ -300,8 +300,8 @@ void iterate_ramrom_entries_handle_camera_out(void)
     frameAdvance(ramrom_blkbuf_2->speedframes);
 
     // BUG? Does this need to be adjusted for PAL?
-    temp_v1 = g_DemoFile->totaltime_ms - 0x3C;
-    if ((g_GlobalTimer >= temp_v1) && ((g_GlobalTimer - g_ClockTimer) < temp_v1))
+    endtime = g_DemoFile->totaltime_ms - 0x3C;
+    if ((g_GlobalTimer >= endtime) && ((g_GlobalTimer - g_ClockTimer) < endtime))
     {
         ramromFadeToTitle();
     }
@@ -365,13 +365,13 @@ void copy_recorded_ramrom_registers_to_proper_place_ingame(ramromfilestructure *
     frontSetMpTeam(3, state->mp_flags[3]);
 }
 
-void test_if_recording_demos_this_stage_load(enum LEVELID arg0, enum DIFFICULTY arg1)
+void test_if_recording_demos_this_stage_load(enum LEVELID stage, enum DIFFICULTY difficulty)
 {
     if (g_ramromRecordFlag != 0)
     {
         g_DemoFile = (ramromfilestructure *) ALIGN16_a((s32)ramrom_data_target);
-        g_DemoFile->stagenum = arg0;
-        g_DemoFile->difficulty = arg1;
+        g_DemoFile->stagenum = stage;
+        g_DemoFile->difficulty = difficulty;
         g_DemoFile->size_cmds = joyGetControllerCount();
         g_DemoFile->slotnum = record_slot_num;
         fileCopyCurrentSave(&g_DemoFile->savefile);
@@ -458,11 +458,11 @@ void stop_demo_playback(void)
 void select_ramrom_to_play(void)
 {
     s32 i;
-    s32 temp_v0;
+    s32 highestunlocked;
 
-    temp_v0 = fileGetHighestStageUnlockedAnyFolder();
+    highestunlocked = fileGetHighestStageUnlockedAnyFolder();
 
-    for (i = 0; ramrom_table[i].fdata != NULL && temp_v0 >= ramrom_table[i].locked; i++)
+    for (i = 0; ramrom_table[i].fdata != NULL && highestunlocked >= ramrom_table[i].locked; i++)
     {}
 
     if (g_TestForceDemo >= 0 && g_TestForceDemo < i)

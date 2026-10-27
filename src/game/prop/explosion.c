@@ -223,8 +223,8 @@ Vtx g_BulletImpactDefaultVertex = {0, 0, 0, 0, 0, 0, 0x0, 0x0, 0x0, 0xDC };
 void explosionInitFlyingParticles(coord3d *spawnpos, f32 spawn_rand_scale, f32 spawn_horiz_drift_scale, f32 spawn_vert_drift_scale, f32 spawn_tex_scale);
 s32 explosionRoundFloat(f32 arg0);
 void explosionSetBulletImpactAlpha(s32 arg0);
-void explosionInflictDamage(PropRecord *arg0, f32 arg1, f32 arg2);
-void explosionInflictDamage(struct PropRecord *arg0, f32 arg1, f32 arg2);
+void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range);
+void explosionInflictDamage(struct PropRecord *arg0, f32 horiz_range, f32 vert_range);
 void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room);
 Gfx *explosionRenderPart(struct ExplosionPart *arg0, Gfx *gdl, struct coord3d *coord);
 

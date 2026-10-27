@@ -55,16 +55,16 @@ MUSICSTATE levelMusicGetState(void)
 
 
 
-void levelMusicSetState(MUSICSTATE arg0)
+void levelMusicSetState(MUSICSTATE state)
 {
     s32 old_mission_state = g_LevelMusicState;
 
-    g_LevelMusicState = arg0;
+    g_LevelMusicState = state;
 
     switch (old_mission_state)
     {
         case MUSICSTATE_SILENT:
-        switch (arg0)
+        switch (state)
         {
 
             case MUSICSTATE_SILENT:
@@ -97,7 +97,7 @@ void levelMusicSetState(MUSICSTATE arg0)
         }
 
         case MUSICSTATE_LEVEL:
-        switch (arg0)
+        switch (state)
         {
             case MUSICSTATE_SILENT:
                 musicTrack1Stop();
@@ -129,7 +129,7 @@ void levelMusicSetState(MUSICSTATE arg0)
         }
 
         case MUSICSTATE_XTRACK:
-        switch (arg0)
+        switch (state)
         {
             case MUSICSTATE_SILENT:
                 musicTrack1Stop();
@@ -156,7 +156,7 @@ void levelMusicSetState(MUSICSTATE arg0)
         }
 
         case MUSICSTATE_WATCH:
-        switch (arg0)
+        switch (state)
         {
             case MUSICSTATE_SILENT:
                 musicTrack1Stop();
@@ -190,7 +190,7 @@ void levelMusicSetState(MUSICSTATE arg0)
         }
 
         case MUSICSTATE_LEVEL_AMBIENT:
-        switch (arg0)
+        switch (state)
         {
             case MUSICSTATE_SILENT:
                 musicTrack1Stop();
@@ -221,7 +221,7 @@ void levelMusicSetState(MUSICSTATE arg0)
         }
 
         case MUSICSTATE_XTRACK_AMBIENT:
-        switch (arg0)
+        switch (state)
         {
             case MUSICSTATE_SILENT:
                 musicTrack1Stop();
@@ -249,7 +249,7 @@ void levelMusicSetState(MUSICSTATE arg0)
         }
 
         case MUSICSTATE_MP_DEATH:
-        switch (arg0)
+        switch (state)
         {
             case MUSICSTATE_SILENT:
                 musicTrack1Stop();
@@ -367,9 +367,9 @@ void levelMusicResetSlots(void)
 void levelMusicTick(void)
 {
     s32 i;
-    s32 var_t2;
+    s32 wantXTrack;
 
-    var_t2 = 0;
+    wantXTrack = 0;
 
     for (i=0; i<4; i++)
     {
@@ -399,7 +399,7 @@ void levelMusicTick(void)
                 {
                     if ((g_LevelMusicSlotActive[i]) || (g_LevelMusicSlotLinger[i]))
                     {
-                        var_t2 = 1;
+                        wantXTrack = 1;
                     }
                 }
                 else
@@ -414,12 +414,12 @@ void levelMusicTick(void)
     {
         if ((levelMusicGetState() == MUSICSTATE_XTRACK) || (levelMusicGetState() == MUSICSTATE_XTRACK_AMBIENT))
         {
-            if (var_t2 == 0)
+            if (wantXTrack == 0)
             {
                 levelMusicEndXTrack();
             }
         }
-        else if (var_t2 != 0)
+        else if (wantXTrack != 0)
         {
             levelMusicStartXTrack();
         }
@@ -546,13 +546,13 @@ s16 g_LevelMusicRandom[] = {
 
 /**
 */
-s32 levelMusicGetTrack(s32 arg0)
+s32 levelMusicGetTrack(s32 stage)
 {
     s32 index;
     
     for (index = 0; g_LevelMusic[index].stage_id != 0; index++)
     {
-        if (g_LevelMusic[index].stage_id == arg0)
+        if (g_LevelMusic[index].stage_id == stage)
         {
             s32 count;
             s32 result;

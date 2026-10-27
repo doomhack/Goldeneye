@@ -29,9 +29,9 @@ extern u32 g_TitleMtxIndex;
 Gfx *titleRenderFolderMenuBackground(Gfx *gdl, s32 xOffset, struct FolderSelectColour *topColour, struct FolderSelectColour *bottomColour);
 void titleAllocMatrices(void);
 
-Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 x, struct FolderSelectColour* arg3, struct FolderSelectColour* arg4);
+Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 x, struct FolderSelectColour* topColour, struct FolderSelectColour* bottomColour);
 
-Gfx *titleMakeBarrelHoleGfx(Gfx *arg0, Vtx *arg1, s32 arg2);
+Gfx *titleMakeBarrelHoleGfx(Gfx *gdl, Vtx *vertexList, s32 numVertices);
 void titleMakeBarrelHoleVerts(Vtx_t *vtx, s32 numSteps);
 
 #endif
