@@ -620,7 +620,7 @@ Gfx* lvRender(Gfx* DL)
 
 #if defined(VERSION_EU)
             movingSparksTick(&DL, ZBUF_SURFACE);
-#else /* VERSION_US, VERSION_JP, unspecified */
+#else
             sparksRenderAll(&DL, ZBUF_SURFACE);
 #endif
             DL = glassRenderShards(DL);
@@ -628,15 +628,11 @@ Gfx* lvRender(Gfx* DL)
 
             if (
 
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 cheatIsActive(CHEAT_INFINITE_AMMO) != 0
                 && (
                     (gunGetWeapon(GUNRIGHT) != ITEM_WATCHLASER)
                     || (g_CurrentPlayer->trigger_down == 0)
                 )
-#else /* VERSION_US */
-                cheatIsActive(CHEAT_INFINITE_AMMO) != 0
-#endif
                 )
             {
                 ammoGiveMaxAll();
@@ -1220,12 +1216,10 @@ void lvStageUnload(void)
 
 void lvSetControlsLocked(s32 arg0)
 {
-    #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if ((arg0 != 0) && (g_ControlsLockedFlag == 0))
     {
         joyRumblePakStop();
     }
-    #endif
 
     g_ControlsLockedFlag = arg0;
 }

@@ -150,37 +150,6 @@ u8 m_StandardGuard[] = {
     return to List set by SetReturnAiList - If not set will crash
  */
 u8 m_IdleAnimations[] = {
-#if 0
-    IFNewRandomGreaterThan(50, lblNext) /* generate annd compare random seed to see which animation to play */
-    PlayAnimation(ANIM_yawning, 0, 193, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblNext)
-        IFRandomGreaterThan(100, lblNext)
-        PlayAnimation(ANIM_swatting_flies, 0, 294, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblNext)
-        IFRandomGreaterThan(150, lblNext)
-        PlayAnimation(ANIM_scratching_leg, 0, 183, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblNext)
-        IFRandomGreaterThan(200, lblNext)
-        PlayAnimation(ANIM_scratching_butt, 0, 123, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblNext)
-        IFRandomGreaterThan(250, lblNext)
-        PlayAnimation(ANIM_adjusting_crotch, 0, 56, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblNext)
-        PlayAnimation(ANIM_sneeze, 0, 137, ANIM_IDLE_POSE_WHEN_COMPLETE | ANIM_PLAY_SFX, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblDone)
-#else
     /* what SWITCH() expanded to: random 0-50 yawn, 51-100 swat flies, ... 251+ sneeze */
     SetNewRandom()
         IFRandomGreaterThan(50, lblNext)
@@ -212,7 +181,6 @@ u8 m_IdleAnimations[] = {
         GotoNext(lblDone)
 
     Label(lblDone)
-#endif
     Return()
     EndList()
 };
@@ -225,26 +193,6 @@ u8 m_IdleAnimations[] = {
     return to List set by SetReturnAiList - If not set will crash
  */
 u8 m_BashKeyboard[] = {
-    #if 0
-    IFNewRandomGreaterThan(60, lblNext)
-    PlayAnimation(ANIM_keyboard_right_hand1, 0, 69, 0x00, ANIM_DEFAULT_INTERPOLATION)
-    GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblNext)
-        IFRandomGreaterThan(120, lblNext)
-        PlayAnimation(ANIM_keyboard_right_hand2, 0, 74, 0x00, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblNext)
-        IFRandomGreaterThan(180, lblNext)
-        PlayAnimation(ANIM_keyboard_left_hand, 0, 79, 0x00, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-
-    Label(lblNext)
-        PlayAnimation(ANIM_keyboard_right_hand_tapping, 0, 89, 0x00, ANIM_DEFAULT_INTERPOLATION)
-        GotoNext(lblDone) /* jump to end, we're done */
-    Label(lblDone)
-        #endif
     SetNewRandom()
         IFRandomGreaterThan(60, lblNext)
         PlayAnimation(ANIM_keyboard_right_hand1, 0, 69, 0x00, ANIM_DEFAULT_INTERPOLATION)
@@ -310,38 +258,6 @@ u8 m_SimpleGuardDeaf[] = {
     return to List set by SetReturnAiList - If not set will crash
  */
 u8 m_AttackBond[] = {
-    #if 0 //Doesnt work any simpler
-    IFMyFlags2Has(FLAGS2_DONT_POINT_AT_BOND, lblNext) /* if guard already pointed at bond */
-    /*ELSE*/
-        IFNewRandomGreaterThan(32, lblNext)           /* 12.5% chance of pointing to bond */
-        PointAtBond()
-        SetMyFlags2(FLAGS2_DONT_POINT_AT_BOND)        /* don't point again, thank you object permanence */
-        Return()                                      /* guard pointed at bond, return to list */
-
-    Label(lblNext)
-        SetMyFlags2(FLAGS2_DONT_POINT_AT_BOND)        /* I am awayer of Bond, set flag so we don't point at bond */
-        SWITCH(/*SetNewRandom()*/EMPTY,
-               IFRandomGreaterThan,127,
-                    IFNewRandomGreaterThan(127, lblKneel)
-                    TRYFireAtBond(lblDone)
-                    Label(lblKneel)
-                       TRYFireAtBondKneeling,
-               IFNewRandomGreaterThan, 64,
-                   TRYFiringRun,
-               IFNewRandomGreaterThan,50,
-                   TRYFiringWalk,                     /* infinite ammo death sentence ;) */
-               IFNewRandomGreaterThan,25,
-                   TRYSideRunning,
-               IFNewRandomGreaterThan,10,
-                   TRYSidestepping,
-               IFNewRandomGreaterThan,10,
-                   TRYSideHopping,
-               /*DEFAULT*/,,
-                   TRYFiringRoll,
-               ,,
-                   TRYThrowingGrenade                 /* attempt to throw grenade, depends on chr->grenadeprob value */
-           )
-    #else
     IFMyFlags2Has(FLAGS2_DONT_POINT_AT_BOND, lblNext) /* if guard already pointed at bond */
     IFNewRandomGreaterThan(32, lblNext)               /* 12.5% chance of pointing to bond */
     PointAtBond()
@@ -384,7 +300,6 @@ u8 m_AttackBond[] = {
         TRYFireAtBondKneeling(lblDone)
 
     Label(lblDone)                                    /* guard did the thing, now go back home */
-#endif
 
     Return()
     EndList()
@@ -605,39 +520,6 @@ u8 m_RunToBondPersistent[] = {
 
     /*DO*/
     Label(lblMaybeThrowGrenade)
-        #if 0
-            IFNewRandomGreaterThan(10, lblNext)
-            TRYThrowingGrenade(lblDone) /* depends on chr->grenadeprob value */
-
-        Label(lblNext)
-            IFRandomGreaterThan(50, lblNext)
-            TRYSidestepping(lblDone)
-
-        Label(lblNext)
-            IFRandomGreaterThan(60, lblNext)
-            TRYFiringRoll(lblDone)
-
-        Label(lblNext)
-            IFRandomGreaterThan(80, lblNext)
-            TRYFiringRoll(lblDone)
-
-        Label(lblNext)
-            IFRandomGreaterThan(100, lblNext)
-            TRYFiringWalk(lblDone)
-
-        Label(lblNext)
-            IFRandomGreaterThan(150, lblNext)
-            TRYFiringRun(lblDone)
-
-        Label(lblNext)
-            IFRandomGreaterThan(200, lblNext)
-            TRYFireAtBond(lblDone)
-
-        Label(lblNext)
-            TRYFireAtBondKneeling(lblDone)
-
-        Label(lblDone)
-        #else
             SetNewRandom()
             IFRandomGreaterThan(10, lblNext)
             TRYThrowingGrenade(lblDone)
@@ -670,7 +552,6 @@ u8 m_RunToBondPersistent[] = {
             TRYFireAtBondKneeling(lblDone)
 
         Label(lblDone)
-        #endif
             IFICouldSeeBond(lblNext)
             GotoNext(lblRunning)
 

@@ -2782,9 +2782,6 @@ void stanPackId(char *id, u16 *stanIdHi, u8 *stanIdLo)
 
     if (var1 < 0 || var1 > 1) // is p or q the first char (q never used?)
     {
-        #ifdef ENABLE_LOG
-            osSyncPrintf("stanPackId(): Bad letter chr \'%c\' in \"%s\"\n", id[0], id);
-        #endif
     }
     else
     {
@@ -2793,17 +2790,11 @@ void stanPackId(char *id, u16 *stanIdHi, u8 *stanIdLo)
 
         if (id == str_end - 1)
         {
-            #ifdef ENABLE_LOG
-                osSyncPrintf("stanPackId(): Bad integer in \"%s\"\n", id);
-            #endif
         }
         else if (bitsnumber <= 32767)
         {
             if (str_end[0] - 'a' < 0 || str_end[0] - 'a' >= 26)
             {
-                #ifdef ENABLE_LOG
-                    osSyncPrintf("stanPackId(): Bad file chr \'%c\' in \"%s\"\n", str_end[0], id);
-                #endif
             }
             else
             {
@@ -2819,9 +2810,6 @@ void stanPackId(char *id, u16 *stanIdHi, u8 *stanIdLo)
 
                 if (bitssubtri < 0 || bitssubtri >= 8)
                 {
-                    #ifdef ENABLE_LOG
-                        osSyncPrintf("stanPackId(): Bad subtri chr \'%c\' in \"%s\"\n", str_end[1], id);
-                    #endif
                 }
                 else
                 {
@@ -2833,18 +2821,12 @@ void stanPackId(char *id, u16 *stanIdHi, u8 *stanIdLo)
                     }
                     else
                     {
-                        #ifdef ENABLE_LOG
-                            osSyncPrintf("stanPackId(): Stan id too long \"%s\"\n", id);
-                        #endif
                     }
                 }
             }
         }
         else
         {
-            #ifdef ENABLE_LOG
-                osSyncPrintf("stanPackId(): Integer %d out of range in \"%s\"\n", bitsnumber, id);
-            #endif
         }
     }
     *stanIdHi = -1;
@@ -2884,26 +2866,6 @@ struct StandTilePoint *stanMatchTileName(char *id)
 }
 
 
-#ifdef XBLADEBUG
-StandTile RemovedDebugFunctionOrXBLAUnique_7F0B2EFC()
-{
-    lVar1 = param_2;
-    local_10 = *(stanPrefix + 4);
-    cStack00000017 = param_1;
-    sStack0000001e = param_2;
-    while( true ) {
-    if (*local_10 == 0) {
-        return NULL;
-    }
-    cVar2 = sStack0000001e;
-    if ((*local_10 == sStack0000001e) && (cVar2 = cStack00000017, *(local_10 + 2) == cStack00000017)
-        ) break;
-    local_10 = Function_8238ED08(local_10,lVar1,in_r5,in_r6,in_r7,in_r8,in_r9,cVar2,
-                                    in_stack_ffffffab,in_stack_ffffffaf,in_stack_ffffffb4);
-    }
-    return local_10;
-}
-#endif
 
 
 void stanResolveTileName(StandTilePoint** arg0) {

@@ -2686,65 +2686,10 @@ typedef union
         PropRecord *prop;  /*0x10*/
         Model      *model; /*0x14*/
                            // mtx realrot;
-#if 0
-        void *runtime_MATRIX0; /*0x18*/
-        void *runtime_MATRIX1; /*0x1c*/
-        void *runtime_MATRIX2; /*0x20*/
-        void *runtime_MATRIX3; /*0x14*/
-        void *runtime_MATRIX4; /*0x28*/
-        void *runtime_MATRIX5; /*0x2c*/
-        void *runtime_MATRIX6; /*0x30*/
-        void *runtime_MATRIX7; /*0x34*/
-        void *runtime_MATRIX8; /*0x38*/
-        void *runtime_MATRIX9; /*0x3c*/
-        void *runtime_MATRIXA; /*0x40*/
-        void *runtime_MATRIXB; /*0x44*/
-        void *runtime_MATRIXC; /*0x48*/
-        void *runtime_MATRIXD; /*0x4c*/
-        void *runtime_MATRIXE; /*0x50*/
-        void *runtime_MATRIXF; /*0x54*/
-#endif
         Mtxf    mtx;         /* Hopefully this is 16 words long*/
         coord3d runtime_pos; /*0x58 - 0x60*/
         union
         {
-            #if 0
-            /*This union is a test but is less efficient than doing binary compare by hand eg runtimebitflags && REMOVED*/
-            struct
-            {
-                bool _80000000     : 1;
-                bool _40000000     : 1;
-                bool _20000000     : 1;
-                bool _10000000     : 1;
-                bool _08000000     : 1;
-                bool _04000000     : 1;
-                bool _02000000     : 1;
-                bool _01000000     : 1;
-                bool _00800000     : 1;
-                bool _00400000     : 1;
-                bool _00200000     : 1;
-                bool _00100000     : 1;
-                bool _00080000     : 1;
-                s32  owner         : 2; /*Owner 2bit (0-3)*/
-                bool _00010000     : 1;
-                bool _00008000     : 1;
-                bool isActivated   : 1; /* activated*/
-                bool _00002000     : 1;
-                bool _00001000     : 1;
-                bool _00000800     : 1;
-                bool _00000400     : 1;
-                bool isDestroyed   : 1; /* only set with disabled or destroyed doors    */
-                bool hasBeenOpened : 1;
-                bool isDeposited   : 1; /* depositted (thrown)  */
-                bool _00000040     : 1;
-                bool _00000020     : 1;
-                bool _00000010     : 1;
-                bool _00000008     : 1;
-                bool remove        : 1; /* removes object when set   */
-                bool _00000002     : 1;
-                bool _00000001     : 1;
-            } runtime_bitflag;
-            #endif
             /*0x64*
                 10000000
                 00060000    owner (0-3); used to attribute kills to players

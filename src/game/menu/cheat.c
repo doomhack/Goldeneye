@@ -1284,9 +1284,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_2X_ROCKET_LAUNCHER:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 invAddItem(ITEM_ROCKETLAUNCH);
-#endif
                 invAddDualItem(ITEM_ROCKETLAUNCH, ITEM_ROCKETLAUNCH);
                 ammoGive(AMMO_ROCKETS, ammoGetMax(AMMO_ROCKETS));
                 return;
@@ -1296,9 +1294,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_2X_GRENADE_LAUNCHER:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 invAddItem(ITEM_GRENADELAUNCH);
-#endif
                 invAddDualItem(ITEM_GRENADELAUNCH, ITEM_GRENADELAUNCH);
                 ammoGive(AMMO_GRENADEROUND, ammoGetMax(AMMO_GRENADEROUND));
                 return;
@@ -1308,9 +1304,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_2X_RCP90:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 invAddItem(ITEM_FNP90);
-#endif
                 invAddDualItem(ITEM_FNP90, ITEM_FNP90);
                 ammoGive(AMMO_9MM, ammoGetMax(AMMO_9MM));
                 return;
@@ -1320,9 +1314,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_2X_THROWING_KNIFE:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 invAddItem(ITEM_THROWKNIFE);
-#endif
                 invAddDualItem(ITEM_THROWKNIFE, ITEM_THROWKNIFE);
                 ammoGive(AMMO_KNIFE, ammoGetMax(AMMO_KNIFE));
                 return;
@@ -1332,9 +1324,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_2X_HUNTING_KNIFE:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 invAddItem(ITEM_KNIFE);
-#endif
                 invAddDualItem(ITEM_KNIFE, ITEM_KNIFE);
                 return;
             }
@@ -1343,9 +1333,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_2X_LASER:
             if (player_count == 1)
             {
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 invAddItem(ITEM_LASER);
-#endif
                 invAddDualItem(ITEM_LASER, ITEM_LASER);
                 return;
             }

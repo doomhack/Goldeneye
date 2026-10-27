@@ -18,9 +18,6 @@ void reset_counter_rand_body_head(void)
     {
         num_bodies++;
     }
-#ifdef ISGOLDFINGER
-    return; //return early as we have a new function for heads
-#endif
     num_male_heads = 0;
     while (random_male_heads[num_male_heads] >= 0)
     {

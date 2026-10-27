@@ -540,14 +540,12 @@ void playerLoadBody(void)
             {
                 modelFileLoadToPool(bodyheader, c_item_entries[body].filename);
             }
-#if !defined(VERSION_US) || defined(BACKPORT_R1)
             if (c_item_entries[body].hasHead)
             {
                 head       = -1;
                 headheader = NULL;
             }
             else
-#endif
             {
                 headheader = c_item_entries[head].header;
 
@@ -567,10 +565,8 @@ void playerLoadBody(void)
         self->chrflags |= CHRFLAG_INIT;
         modelSetRootPosition((*pp)->bodyModel, &(*pp)->prop->pos);
         modelSetRootRotY(g_CurrentPlayer->bodyModel, yaw);
-#if !defined(VERSION_US) || defined(BACKPORT_R1)
         self->headnum = head;
         self->bodynum = body;
-#endif
         prop = weaponGetChrModel(item);
 
         if (prop >= 0)
@@ -1434,17 +1430,10 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
         arg6->f[1] = g_CurrentPlayer->field_488.pos.f[1] + (g_MpSwirlDistance * 0.08f);
         arg6->f[2] = g_CurrentPlayer->field_488.pos.f[2];
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
         if (((playerGetShuffledIndex(playerGetCurrentNum()) + 1) == getPlayerCount()) && (g_MpSwirlDistance < 5.0f))
         {
             g_CameraAfterCinema = CAMERAMODE_INTRO;
         }
-#else
-        if (g_MpSwirlDistance < 5.0f)
-        {
-            g_CameraAfterCinema = CAMERAMODE_INTRO;
-        }
-#endif
     }
     else if (g_CameraMode == CAMERAMODE_SWIRL)
     {
@@ -6371,12 +6360,10 @@ void playerTickDamageAndHealth(void)
             }
 
 // Ensure we don't read out of bounds of the g_DamageTypes array.
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
             if (g_CurrentPlayer->damagetype < 0)
             {
                 g_CurrentPlayer->damagetype = 0;
             }
-#endif
         }
 
 #ifdef VERSION_US
@@ -6476,12 +6463,10 @@ void playerTickDamageAndHealth(void)
                 g_CurrentPlayer->healthdamagetype = 7;
             }
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
             if (g_CurrentPlayer->healthdamagetype < 0)
             {
                 g_CurrentPlayer->healthdamagetype = 0;
             }
-#endif
         }
 
         if (!g_CurrentPlayer->bonddead)
@@ -7812,12 +7797,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                         if (sp6C->actiontype == ACT_DIE)
                         {
-#if defined(VERSION_US) && !defined(BACKPORT_R1)
-                            if ((sp6C->chrflags & CHRFLAG_01000000) == 0)
-#endif
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
                             if ((sp6C->chrflags & CHRFLAG_01000000) == 0 && lvGetControlsLocked() == 0)
-#endif
                             {
                                 sp6C->chrflags |= CHRFLAG_01000000;
                                 if ((g_LvTickCount % 3) < 2)
@@ -10410,14 +10390,9 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
                                 sp28 = 1;
                             }
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
                             playerDropInventory();
-#endif
                             if (sp2C != playerid)
                             {
-#if defined(VERSION_US) && !defined(BACKPORT_R1)
-                                playerDropInventory();
-#endif
                                 statsAddDeath();
                             }
 
@@ -10474,14 +10449,10 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 
 #undef ZERO_7F08991C
 
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
                 if (!lvGetControlsLocked())
                 {
                     sndPlaySfx(g_musicSfxBufferPtr, BOND_GET_HIT1_SFX, 0);
                 }
-#else
-                sndPlaySfx(g_musicSfxBufferPtr, BOND_GET_HIT1_SFX, 0);
-#endif
             }
         }
     }

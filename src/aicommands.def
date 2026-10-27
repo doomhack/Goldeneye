@@ -85,22 +85,6 @@
 #ifndef __GNUC__
 #include <CPPLib.h>
 #endif
-#if 0
-#ifndef _AI_CMD
-    #define _SYNHILITE
-    #include <bondgame.h>
-    #include "game/chr/chrai.h"
-    #include "game/chr2.h"
-    void aiExecute2(void *Entityp, s32 EntityType)    {    u8 *sp7B0;    u8 *sp7AC;    u32 Offset;    ChrRecord *ChrEntityp = 0;    VehichleRecord *VehichleEntityp;    VehichleRecord *AircraftEntityp;    u8 *AiListp;   u8 *CurrentCommandp = AiListp + Offset;   switch (CurrentCommandp[0]){case 0:
-    #define _AI_CMD(CODE)
-    #define _AI_DEBUG(CODE)
-    #define _AI_CMD_POLYMORPH(PRE, NAME, CMD_PARAMS_POST, POLY_PARAMS)
-    #define BYTE()
-    #define DBYTE()
-    #define TBYTE()
-    #define QBYTE()
-#endif
-#endif
 /*
 //#Useful Regex:
 /(^\*.{78,78}?)(.*)(\*$)/  $1$3  regex for long comments trimming
@@ -121,30 +105,6 @@
 //==============================================================================
 //## GOTO NEXT
 //==============================================================================
-#if 0 /*//BUG All-in-One command failed on description inclusion during loop (newlines)*/
-_AI_CMD(GONEXT,
-    /*******************************************************************************
-    * Skips a22ll commands between this command and LABEL then continues
-    * executing after found LABEL
-    ********************************************************************************
-    * @param     LABEL: 8bit Integer/enum ID of label to Go To
-    * @return    Nothing, Move Execution to Next Label with ID LABEL or End
-    * @exception Does Not search from beginning
-    *******************************************************************************/,
-    (BYTE(LABEL)),
-    {  /*Match*/
-        AIRecord1 *ai = AiListp + Offset;
-        Offset        = aiFindLabel(AiListp, Offset, ai->val);
-        break;
-    },
-    (
-        (BREAK(ID), (id, 2)),
-        (BREAK1(ID), (id, 2)),
-        (
-            CON(ID), (ID,4),(, (SLEEP(), SLEEP3))),
-        (ANO(ID), (ID,6), (SLEEP()))
-    ))
-#endif
 
 /* #define CMDNAME GOTO_NEXT */
 #define CMDNAME GotoNext
@@ -11878,9 +11838,6 @@ _AI_CMD_POLYMORPH( , PROP_DROP_FROM_ATTACHMENT, (OBJECT_TAG),
 #undef CODE
 
 /* this allows syntax highlighter to work even on compile */
- #ifdef _SYNHILITE
-;   }    }
-#endif
 //UNDEF CMDS
 
 #undef _AI_CMD

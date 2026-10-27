@@ -211,11 +211,6 @@
 #        define IS_PAREN(...)       IS_PROBE(IS_PAREN_PROBE __VA_ARGS__)
 #        define IS_PAREN_PROBE(...) PROBE(~) __VA_ARGS__
 
-#ifdef EXPAND_EXAMPLES
-    //IS PAREN
-    IS_PAREN((S)) // IS...((s)) Expands to 1
-    IS_PAREN(xxx) // IS...(xxx) Expands to 0
-#endif
 
 /**
  * Detects if arg or macro is defined as nothing.
@@ -269,15 +264,6 @@
 #define _NOT__  PROBE(~) /*NULL*/
 
 
-#ifdef EXPAND_EXAMPLES
-    //NOT
-    NOT(1)                 // not 1
-    NOT(0)                 // not 0
-    NOT()                  // not
-    NOT(NOT(IS_PAREN(()))) // not !1
-    NOT(NOT(0))            // not !0
-    NOT(NOT())             // not !
-#endif
 
 /**
  * Macro version of C's famous "cast to bool" operator (i.e. !!) which takes
@@ -431,12 +417,6 @@ IF_VA(NOT(IS_EMPTY(A)))/*
 #    define SECOND(a, b,...) EXPAND(DEFER(SECOND_PRE_VA)(TRY_EXPAND(a), b))
 
 
-#ifdef EXPAND_EXAMPLES
-// POP ARG (THIS, IS, a, TEST, hy)
-    POP_ARG(THIS, IS, a, TEST, hy)
-// push arg test (this, is, a, test, with, a , is, so, is, a, test, with, a , is, so, is, a, test, with, a , is, so, is, a, test, with, a , is, so)
-    PUSH_ARG(test, (this, is, a, test, with, a2 , is2, so, is3, a3, test2, with2, a3 , is4, so4, is5, a4, test3, with3, a6 , is6, so5, is7, a7, test4, with5, a8 , is8, so8))
-#endif
 
 /**
  * Logical OR. Simply performs a lookup.
@@ -499,19 +479,7 @@ IF_VA(NOT(IS_EMPTY(A)))/*
 #define _IF_0_ELSE(a) TRY_EXPAND(a)
 
 
-#ifdef EXPAND_EXAMPLES
-    //if else 220
-    IF_ELSE(220)((it was, non - zero))(it was zero) // Expands to "it was, non Zero"
-    //if 06
-    IF(06)(NONZERO)
-#endif
 
-#if 0
-/*
- * When
- */
-#define WHEN(c) IF(c)(EVAL1)(EAT)
-#endif
 /**
  * Macro which checks if it has any arguments. Returns '0' if there are no
  * arguments, '1' otherwise.
@@ -534,78 +502,10 @@ for_each(v.begin(), v.end(), [](int &number)
  */
 #define foreach(var, collection) for (var = *collection; var; var++)
 
-#ifdef EXPAND_EXAMPLES
-//do I have args?
-//yes
-HAS_ARGS(a, b, c)
-HAS_ARGS((a, b, c))
-//no
-HAS_ARGS()
-HAS_ARGS(())
-HAS_ARGS((      ())) //this one has too many parens
-#endif
-#if 0
-#    define test() Im expanded
-        DEFER8(test)() EVAL1(EVAL4(DEFER4(test)()))
-
-#    define RECURSE(X) FIRST X DEFER(_RECURSE)()(POP_ARG X)
-#    define _RECURSE() RECURSE
-    // RECURSE
-    EVAL16(RECURSE((this, is, a, test, WITH, MANY, ARGS)))
-#endif
 #    define ELEVENTH_ARGUMENT(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, ...) a11
 #    define COUNTPARAMS(...)                                                     IF_ELSE(IS_PAREN(__VA_ARGS__))(_COUNTPARAMS __VA_ARGS__)(ELEVENTH_ARGUMENT(dummy, ##__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0))
 #    define _COUNTPARAMS(...)                                                    ELEVENTH_ARGUMENT(dummy, ##__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 
-#ifdef EXPAND_EXAMPLES
-    // COUNTPARAMS - IT WORKS!!!, THIS WILL BE GREAT FOR AI
-    //0
-    COUNTPARAMS(())
-    //1
-    COUNTPARAMS((A))
-    // 2
-    COUNTPARAMS((A, B))
-    // 3
-    COUNTPARAMS((A, B, C))
-    // 4
-    COUNTPARAMS((A, B, C, D))
-    // 5
-    COUNTPARAMS((A, B, C, D, E))
-    // 6
-    COUNTPARAMS((A, B, C, D, E, F))
-    // 7
-    COUNTPARAMS((A, B, C, D, E, F, G))
-    // 8
-    COUNTPARAMS((A, B, C, D, E, F, G, H))
-    // 9
-    COUNTPARAMS((A, B, C, D, E, F, G, H, I))
-
-#endif
-#if 0
-#define LIST_TO_TUPLE(list) \
-    IF_ELSE(IS_PAREN(list))\
-    (\
-        EVAL16((LIST_TO_TUPLE_INNER(SECOND list, FIRST list)))\
-    )\
-    (\
-        list\
-    )
-
-#define LIST_TO_TUPLE_INNER(list, listb)        \
-    IF_ELSE(HAS_ARGS(list))      \
-    (\
-        EXPAND(DEFER4(_LIST_TO_TUPLE_INNER)()(TRY_EXPAND((POP_ARG list)), PUSH_ARG(FIRST list, listb)))\
-    )\
-    (\
-        0 listb\
-    )
-#define _LIST_TO_TUPLE_INNER() LIST_TO_TUPLE_INNER
-// list to tuple
-LIST_TO_TUPLE((this, (is, (a, (li8st, (lots, (of, (test, (another, )))))))))
-//SINGLE
-LIST_TO_TUPLE((this,(is)))
-
-#endif
 
 #define REPEAT(count, macro, a)                        \
     IF_ELSE(DEC(count))                                \
@@ -613,11 +513,6 @@ LIST_TO_TUPLE((this,(is)))
         /* Do nothing, just terminate */) DEFER(macro)(DEC(count), a)
 
 #define REPEAT_INDIRECT() REPEAT
-#ifdef EXPAND_EXAMPLES
-// An example of repeat 9
-#    define M(i, _) i
-        EVAL16(REPEAT(9, M, ~)) // 0 1 2 3 4 5 6 7 8
-#endif
 
 #define WHILE(pred, op, a) \
     IF(pred(a))            \

@@ -247,18 +247,11 @@
 #define AI_LIST_OBJ_START 0x1000
 
 // Print Helpful Compile-time error messages
-#if defined(__INTELLISENSE__)
-#    define AI_ERR_SUB (GAILIST_DEAD_AI)
-#    define AI_ERR_NOTSUB (GAILIST_DEAD_AI)
-#    define AI_ERR_NOTCHR (GAILIST_DEAD_AI)
-#    define AI_ERR_NO_THIS 1
-#else
 #    define AI_ERR_SUB (('E','R','R','O','R',':',' ','A','I','_','L','I','S','T',' ','I','S',' ','A',' ','S','U','B','R','O','U','T','I','N','E',' ','O','R',' ','N','O','T',' ','F','O','R',' ','C','H','R'), 1)
 #    define AI_ERR_NOTSUB (('E','R','R','O','R',':',' ','A','I','_','L','I','S','T',' ','N','O','T',' ','A',' ','S','U','B','R','O','U','T','I','N','E',' ','O','R',' ','N','O','T',' ','F','O','R',' ','C','H','R'), 1)
 #    define AI_ERR_NOTCHR (('E','R','R','O','R',':',' ','A','I','_','L','I','S','T',' ','N','O','T',' ','F','O','R',' ','C','H','R'), 1)
 #    define AI_ERR_NO_THIS ((('E','R','R','O','R',':',' ','C','a','n','n','o','t',' ','C','a','l','l',' ','A','I','_','L','I','S','T',' ','w','i','t','h','o','u','t',' ','d','e','f','i','n','i','n','g',' ','T','H','I','S',' ','f','o','r',' ','r','e','t','u','r','n'),1))\
 
-#endif
 
 
 /*=============================================================================
@@ -872,7 +865,6 @@ IF_VA(NOT(IS_EMPTY(CASE_VAL0)))(IF_VA(NOT(IS_EMPTY(CASE_VAL1)))(BREAK(FAIL_LBL) 
 
 #include "aicommands2.h"
 
-#if 1
 
 
 /*=============================================================================
@@ -4515,7 +4507,6 @@ IF_VA(NOT(IS_EMPTY(CASE_VAL0)))(IF_VA(NOT(IS_EMPTY(CASE_VAL1)))(BREAK(FAIL_LBL) 
         object_rocket_launch_ID, \
         object_tag,
 
-#endif
 #endif
 
 

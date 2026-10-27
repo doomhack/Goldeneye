@@ -586,9 +586,6 @@ void amHandleDoneMessage(AudioInfo *info)
     if (!samplesLeft && !(*b))
     {
         // debug printf from audioMgr demo
-#ifdef ENABLE_LOG
-      osSyncPrintf("audio: ai out of samples\n");
-#endif
         g_FirstTime = 0;
     }
 }
@@ -769,9 +766,6 @@ void amClearDmaBuffers(void)
    {
        if (osRecvMesg(&g_DmaMessageQueue, (OSMesg *)&osmesg, OS_MESG_NOBLOCK) == -1)
        {
-#ifdef ENABLE_LOG
-	        osSyncPrintf("Dma not done\n");
-#endif
        }
 
    }

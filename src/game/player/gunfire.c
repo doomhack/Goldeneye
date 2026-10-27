@@ -2244,9 +2244,7 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
         return;
     }
 
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
-#endif
 
     sound_state = gunGetFreeSfxState();
     if (sound_state != NULL)
@@ -2308,9 +2306,6 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
             }
         }
     }
-#ifdef ENABLE_LOG
-    osSyncPrintf("Shot prop:  %S\n", HIT_TYPE_ToString[g_Textures[texture_index].hitSound]);
-#endif
 }
 
 
@@ -2319,9 +2314,7 @@ void shotPlayGlassSound(coord3d* pos)
     ALSoundState* sound;
     ALLink* link;
 
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
-#endif
 
     sound = gunGetFreeSfxState();
 
@@ -2353,9 +2346,7 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index)
 
     g_DebugHitTexNum = texture_index;
 
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
-#endif
 
     sound_state = gunGetFreeSfxState();
     if (sound_state != NULL)
@@ -2405,9 +2396,7 @@ void shotPlayWhizzSound(ITEM_IDS item)
 {
     struct EarWhistleSounds copied;
 
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }
-#endif
     if ((item != ITEM_LASER) && (item != ITEM_WATCHLASER))
     {
         copied = ear_whistle_sounds;
@@ -3107,11 +3096,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             handptr->field_88C = 0;
 
             if ((!isMpGame())
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
                 || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0))
-#else
-                || (mpIsPaused() == 0)
-#endif
                )
             {
                 sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, EMPTY_GUN_FIRE_SFX, NULL);
@@ -3439,9 +3424,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
                 && (gunHandModelIsEmpty(hand) != 0)
                 && (g_PlayerInvincible == FALSE)
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
                 && (g_CurrentPlayer->bonddead == 0)
-#endif
                )
             {
                 switch (var_s1)
@@ -3556,15 +3539,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     if (handptr->weapon_action_state == GUN_ANIM_STATE_RELOAD_SWAP)
     {
         if ((handptr->field_88C == 0)
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
             && (g_ClockTimer > 0)
-#endif
             && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
             && (gunHandModelIsEmpty(hand) != 0)
             && (g_PlayerInvincible == FALSE)
-#if defined(VERSION_EU) || defined(BACKPORT_R1)
             && (g_CurrentPlayer->bonddead == 0)
-#endif
            )
         {
             switch (var_s1)
@@ -5443,11 +5422,7 @@ void casingTick(CasingRecord* casing)
 
     if (casing->pos.y < casing->floor_y_pos)
     {
-#if defined(BUGFIX_R1) || defined(BACKPORT_R1)
         if (g_CasingSfxState == 0 && (g_ClockTimer > 0))
-#else
-        if (g_CasingSfxState == 0)
-#endif
         {
             if ((g_CurrentPlayer->hands[0].weapon_action_state != GUN_ANIM_STATE_FIRE) && (g_CurrentPlayer->hands[1].weapon_action_state != GUN_ANIM_STATE_FIRE))
             {

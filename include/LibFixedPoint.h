@@ -271,53 +271,5 @@
 
 
 
-#if 0 
-/**
- * Example Showing all Fixed Types and a comparison to Float.
- * Result: Use Fixed for Storage and float for runtime.
- */
-void Example()
-{
-#define fixed_fmt_y unsigned char, 3, 1
-    fixed(fixed_fmt_y) y;           // 1bytes
-
-#define fixed_fmt_z short, 13, 2
-    fixed(fixed_fmt_z) z;           // 2bytes
-
-#define fixed_fmt_Result short, 14, 2
-    fixed(fixed_fmt_Result) Result; // 2bytes
-
-    float Comparitor;               // 4bytes
-    Comparitor = 6.5;               //                         1 Instructions
-
-    z.full = Float2Fixed(z, 7.3);
-    printf("\n Zfull = %d", z.full);          // 29            1 Instructions
-    printf("\n Zint = %d", z.part.integer);   // 7             3 Instructions
-    printf("\n Zfrac = %d", z.part.fraction); // 1             5 Instructions
-    printf("\n Zfixedfulldec = %d.%u",
-        z.part.integer,
-        GetFixedFraction(z));                    // 7, 25   41 Instructions
-    printf("\n ZFixed2Float = %g", Fixed2Float(z)); // 7.25     7 Instructions
-
-    y.full = 4;
-    printf("\n y = %g", Fixed2Float(y)); // 2
-
-    Result.full = FixedMultiplication(z, y); //                 9 Instructions
-    printf("\n Result = %g", Fixed2Float(Result)); // 14.5
-
-    Result.full = FixedDivision(z, y); //                       9 Instructions
-    printf("\n Result = %g", Fixed2Float(Result)); // 3.5
-
-    Result.full = FixedSubtraction(z, y); //                    6 Instructions
-    printf("\n Result = %g", Fixed2Float(Result)); // 5.25
-
-    Result.full = FixedAddition(z, y); //                       6 Instructions
-    printf("\n Result = %g", Fixed2Float(Result)); // 9.25
-
-    printf("\n Comparison = %g", Comparitor); // 6.5            3 Instructions
-    Comparitor *= 2.6; //                                       4 Instructions
-    printf("\n Comparison = %g", Comparitor); // 16.9
-}
-#endif
 #pragma endregion
 #endif
