@@ -12,6 +12,8 @@
 #include "game/chr/chraction.h"
 #include "game/prop/explosion.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/save/file.h"
 #include "game/world/bgfog.h"
 #include "include/limits.h"
@@ -28,7 +30,7 @@
 #include "game/mission/objective_status.h"
 #include "game/math/quaternion.h"
 #include "game/gfx/imagebank.h"
-#include "game/hud/bondwalk2.h"
+#include "game/gfx/texrect.h"
 #include "game/gfx/texselect.h"
 #include "game/player/player.h"
 #include "game/level/lv.h"
@@ -5797,7 +5799,7 @@ Gfx *hudDrawImage(Gfx *gdl, struct sImageTableEntry *tconfig, f32 x, f32 y, f32 
     gDPFillRectangle(gdl++, VI_SX(((s32)(xy[0] - halfed[0])) - 1), ((s32)(xy[1] - halfed[1])) - 1, VI_SX(((s32)(xy[0] + halfed[0])) + 1), ((s32)(xy[1] + halfed[1])) + 1);
  
     texSelect(&gdl, tconfig, (arg7 != 0) ? (2) : (1), 0, 0);
-    display_image_at_position(&gdl, xy, halfed, tconfig->width, tconfig->height, 0, 0, 1, red, green, blue, alpha, 0 < tconfig->level, 0);
+    texRectDrawImage(&gdl, xy, halfed, tconfig->width, tconfig->height, 0, 0, 1, red, green, blue, alpha, 0 < tconfig->level, 0);
  
     gDPPipeSync(gdl++);
     gDPSetColorDither(gdl++, G_CD_BAYER);
@@ -6191,7 +6193,7 @@ void gunDrawSight(s32 *gdl) {
 #ifdef VERSION_EU
         halfedxy[1] = halfedxy[1] * g_GunSightAspectRatio;
 #endif
-        display_image_at_position(&sp54, &xypos, &halfedxy, 0x20, 0x20, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0x6E, (g_ImageCrosshair->level > 0), 0);
+        texRectDrawImage(&sp54, &xypos, &halfedxy, 0x20, 0x20, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0x6E, (g_ImageCrosshair->level > 0), 0);
         *gdl = sp54;
     }
 }
@@ -7032,7 +7034,7 @@ void shotFireBullet(s32 hand)
 
             if (createSpark)
             {
-                bullet_spark_create(finalpos, 1, 26.0f, bestroom);
+                sparkCreate(finalpos, 1, 26.0f, bestroom);
             }
         }
     }

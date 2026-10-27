@@ -9,7 +9,7 @@
 #include <fr.h>
 #include <macro.h>
 #include <rom.h>
-#include "game/hud/blood_animation.h"
+#include "game/hud/blood.h"
 #include "bondtypes.h"
 #include "game/chr/chr.h"
 #include "game/chr/body.h"
@@ -117,7 +117,7 @@ Gfx *manipulateGunbarrelAndLogoMatrices(Gfx *gdl)
     guTranslate(&matrixBufferGunbarrel1[D_8002A7D0], titleTransitionX, titleTransitionY, -5.0f);
     gSPDisplayList(gdl++, &dlBasicGeometry);
 
-    gdl = sub_GAME_7F01C1A4(clear_framebuffer_black(gdl));
+    gdl = gunbarrelSetupDraw(screenClearBlack(gdl));
 
     gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
     gDPSetPrimColor(gdl++, 0, 0, 0xE6, 0xE6, 0xE6, 0x00);
@@ -135,7 +135,7 @@ Gfx *insert_sight_backdrop_eye_intro(Gfx *gdl)
     gSPDisplayList(gdl++, &dlBasicGeometry);
     gSPDisplayList(gdl++, &dlFastPipelineSetup);
 
-    gdl = sub_GAME_7F01C1A4(gdl);
+    gdl = gunbarrelSetupDraw(gdl);
 
     gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferGunbarrel1[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
     gSPDisplayList(gdl++, OS_K0_TO_PHYSICAL(gunbarrelgfxListPointer));
@@ -166,7 +166,7 @@ Gfx *insert_sniper_sight_eye_intro(Gfx *gdl)
 
     gSPDisplayList(gdl++, &dlBasicGeometry);
 
-    gdl = clear_framebuffer_black(gdl);
+    gdl = screenClearBlack(gdl);
 
     gDPSetCombineMode(gdl++, G_CC_MODULATEI_PRIM, G_CC_MODULATEI_PRIM);
 
@@ -176,7 +176,7 @@ Gfx *insert_sniper_sight_eye_intro(Gfx *gdl)
 
 Gfx *sub_GAME_7F007E70(Gfx *gdl, u32 alpha)
 {
-    gdl = sub_GAME_7F01C1A4(gdl);
+    gdl = gunbarrelSetupDraw(gdl);
 
     gDPSetRenderMode(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
     gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
@@ -327,7 +327,7 @@ extern u8 *D_02005FF0 NO_SDATA;
 Gfx *load_display_rare_logo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     cameraPosition1[2] = arg3;
     gSPDisplayList(gdl++, &dlBasicGeometry);
-    gdl = clear_framebuffer_black(gdl);
+    gdl = screenClearBlack(gdl);
     {
         u16 perspNorm;
         guPerspective(&matrixBufferRareLogo0[D_8002A7D0], &perspNorm, 60.0f, (320.0f / 240.0f), 100.0f, 5000.0f, 1.0f);
@@ -604,11 +604,11 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
     case 1:
         #if defined(LEFTOVERDEBUG)
         gSPDisplayList(gdl++, &dlBasicGeometry);
-        gdl = clear_framebuffer_black(gdl++);
-        gdl = clear_framebuffer_black(gdl++);
-        gdl = clear_framebuffer_black(gdl++);
-        gdl = clear_framebuffer_black(gdl++);
-        gdl = clear_framebuffer_black(gdl++);
+        gdl = screenClearBlack(gdl++);
+        gdl = screenClearBlack(gdl++);
+        gdl = screenClearBlack(gdl++);
+        gdl = screenClearBlack(gdl++);
+        gdl = screenClearBlack(gdl++);
         #endif
         gdl = insert_sniper_sight_eye_intro(gdl++);
         gdl = insert_sight_backdrop_eye_intro(gdl++);
@@ -630,7 +630,7 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
         intro_eye_counter--;
         if (intro_eye_counter < 0) {
             gunbarrel_mode++;
-            die_blood_image_routine(0);
+            bloodNextFrame(0);
             intro_state_blood_animation = 0;
             intro_eye_counter = 1;
         }
@@ -639,13 +639,13 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
     case 3:
         intro_eye_counter--;
         if (intro_eye_counter == 0) {
-            intro_state_blood_animation = die_blood_image_routine(1);
+            intro_state_blood_animation = bloodNextFrame(1);
             intro_eye_counter = 2;
         }
         gdl = insert_sniper_sight_eye_intro(gdl);
         gdl = insert_sight_backdrop_eye_intro(gdl);
         gdl = insert_bond_eye_intro(gdl);
-        gdl = gunbarrelBloodOverlayDL(gdl);
+        gdl = bloodRenderGunbarrel(gdl);
         if (intro_state_blood_animation != 0) {
             gunbarrel_mode++;
             word_CODE_bss_80069584 = 0;
@@ -661,7 +661,7 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
         gdl = insert_sniper_sight_eye_intro(gdl);
         gdl = insert_sight_backdrop_eye_intro(gdl);
         gdl = insert_bond_eye_intro(gdl);
-        gdl = sub_GAME_7F01CA18(gdl);
+        gdl = bloodRenderRedFill(gdl);
         if (intro_eye_counter >= INTRO_EYE_COUNTER_CASE_4)
         {
             intro_eye_counter = 0;
@@ -675,7 +675,7 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
         gdl = insert_sniper_sight_eye_intro(gdl);
         gdl = insert_sight_backdrop_eye_intro(gdl);
         gdl = insert_bond_eye_intro(gdl);
-        gdl = sub_GAME_7F01CA18(gdl);
+        gdl = bloodRenderRedFill(gdl);
         
         intro_eye_counter += INTRO_EYE_COUNTER_CASE_5_ADD;
         
@@ -688,7 +688,7 @@ Gfx *renderGunbarrelEyeIntroSequence (Gfx *gdl) {
 
     case 6:
         gSPDisplayList(gdl++, &dlBasicGeometry);
-        gdl = clear_framebuffer_black(gdl);
+        gdl = screenClearBlack(gdl);
         if (intro_eye_counter++ >= INTRO_EYE_COUNTER_CASE_6) {
             intro_eye_counter = 0;
             gunbarrel_mode++;

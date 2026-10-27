@@ -9,6 +9,8 @@
 #include <limits.h>
 #include <music.h>
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"

@@ -1,15 +1,24 @@
+/**
+ * The death blood animation. g_BloodAnimData holds every frame, compressed; bloodNextFrame
+ * decodes the next one into an 80x96 greyscale image, smooths it and packs it to 4 bits,
+ * and bloodRender draws it over the view as a red, see-through texture. The gun barrel
+ * intro uses the same frames (bloodRenderGunbarrel).
+ *
+ * screenClearBlack and gunbarrelSetupDraw are general helpers the menus also use.
+ */
+
 #include <ultra64.h>
 #include <fr.h>
 #include "game/gfx/dyn.h"
 #include "game/menu/title.h"
-#include "game/hud/blood_decrypt.h"
+#include "game/hud/blood.h"
 #include "game/player/player.h"
 #include <PR/os.h>
 
 #define BLOOD_IMG_WIDTH 80
 #define BLOOD_IMG_HEIGHT 96
 
-u8 die_blood_image_1[] = {
+u8 g_BloodAnimData[] = {
    0x00, 0x20, 0x03, 0x05, 0x04, 0x02, 0x60, 0x21, 0x22, 0x01, 0xE0, 0xE0, 0xE0, 0xE0,
    0xE0, 0xE0, 0xE0, 0x60, 0x03, 0x24, 0x02, 0xA0, 0x02, 0xC0, 0x01, 0x22, 0x00, 0x03,
    0x06, 0x07, 0x06, 0x04, 0x20, 0x01, 0x02, 0x23, 0x24, 0x03, 0x02, 0x80, 0x21, 0xE0,
@@ -194,12 +203,12 @@ u8 die_blood_image_1[] = {
 };
 
 // The original marked the end of the data with a separate zero byte defined
-// after the array (die_blood_image_end). Once the compiler stops keeping the
+// after the array (g_BloodAnimDataEnd). Once the compiler stops keeping the
 // two together the decoder runs past the end and overwrites memory, so use
 // the array's own end.
-#define die_blood_image_end die_blood_image_1[sizeof(die_blood_image_1)]
+#define g_BloodAnimDataEnd g_BloodAnimData[sizeof(g_BloodAnimData)]
 
-Gfx *clear_framebuffer_black(Gfx *gdl) 
+Gfx *screenClearBlack(Gfx *gdl) 
 {
    gDPSetCycleType(gdl++, G_CYC_FILL);
    gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, VI_SX(viGetX()), osVirtualToPhysical(viGetFrameBuf2()));
@@ -209,7 +218,7 @@ Gfx *clear_framebuffer_black(Gfx *gdl)
    return gdl;
 }
 
-Gfx *sub_GAME_7F01C1A4(Gfx *gdl) {
+Gfx *gunbarrelSetupDraw(Gfx *gdl) {
    gSPMatrix(gdl++, osVirtualToPhysical(matrixBufferGunbarrel0), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
    gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferRareLogo2[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
    gDPPipeSync(gdl++);
@@ -220,14 +229,14 @@ Gfx *sub_GAME_7F01C1A4(Gfx *gdl) {
    return gdl;
 }
 
-s32 die_blood_image_routine(s32 arg0) {
+s32 bloodNextFrame(s32 arg0) {
    s8 sp37;
    u8* temp_v0_2;
 
    if (arg0 == 0) {
-      g_CurrentPlayer->bloodImgCur = die_blood_image_1;
+      g_CurrentPlayer->bloodImgCur = g_BloodAnimData;
    } else if (arg0 == 1) {
-      if (g_CurrentPlayer->bloodImgNxt < &die_blood_image_end) {
+      if (g_CurrentPlayer->bloodImgNxt < &g_BloodAnimDataEnd) {
          g_CurrentPlayer->bloodImgCur = g_CurrentPlayer->bloodImgNxt;
       }
    }
@@ -235,20 +244,20 @@ s32 die_blood_image_routine(s32 arg0) {
    g_CurrentPlayer->bloodImgIdx = (1 - g_CurrentPlayer->bloodImgIdx);
    g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx] = dynAllocate(BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT);
    temp_v0_2 = dynAllocate(BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT);
-   g_CurrentPlayer->bloodImgNxt = decrypt_bleeding_animation_data(g_CurrentPlayer->bloodImgCur, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, temp_v0_2, &sp37);
+   g_CurrentPlayer->bloodImgNxt = bloodDecodeFrame(g_CurrentPlayer->bloodImgCur, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, temp_v0_2, &sp37);
    bloodImgTranspose(temp_v0_2, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
-   sub_GAME_7F01D02C(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
-   sub_GAME_7F01CEEC(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
-   sub_GAME_7F01CC94(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
+   bloodSmoothDownRight(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
+   bloodSmoothUpLeft(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
+   bloodPack4Bit(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
 
-   return (g_CurrentPlayer->bloodImgNxt >= &die_blood_image_end);
+   return (g_CurrentPlayer->bloodImgNxt >= &g_BloodAnimDataEnd);
 }
 
-Gfx *gunbarrelBloodOverlayDL(Gfx *gdl) {
+Gfx *bloodRenderGunbarrel(Gfx *gdl) {
    gDPSetTextureLUT(gdl++, G_TT_NONE);
    gDPSetTextureFilter(gdl++, G_TF_BILERP); 
 
-   gdl = sub_GAME_7F01C1A4(gdl);
+   gdl = gunbarrelSetupDraw(gdl);
 
    gSPTexture(gdl++, 0x8000, 0x8000, 0, G_TX_RENDERTILE, G_ON);
    gDPSetRenderMode(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
@@ -262,7 +271,7 @@ Gfx *gunbarrelBloodOverlayDL(Gfx *gdl) {
    return gdl;
 }
 
-Gfx *gameplayBloodOverlayDL(Gfx *gdl) {
+Gfx *bloodRender(Gfx *gdl) {
    gDPSetTextureLUT(gdl++, G_TT_NONE);
    gDPSetTextureFilter(gdl++, G_TF_BILERP);
    gDPSetCycleType(gdl++, G_CYC_1CYCLE);
@@ -282,8 +291,8 @@ Gfx *gameplayBloodOverlayDL(Gfx *gdl) {
    return gdl;
 }
 
-Gfx *sub_GAME_7F01CA18(Gfx *gdl) {
-	gdl = sub_GAME_7F01C1A4(gdl);
+Gfx *bloodRenderRedFill(Gfx *gdl) {
+	gdl = gunbarrelSetupDraw(gdl);
 
 	gDPSetRenderMode(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
 	gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
@@ -293,3 +302,203 @@ Gfx *sub_GAME_7F01CA18(Gfx *gdl) {
 
    return gdl;
 }
+
+
+// address 0x7F01CAE0 NTSC
+u8 *bloodDecodeFrame(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 *arg4)
+{
+    u8 var_a2;
+    u8 var_a3;
+    u8 temp_v0;
+    u8 var_v1;
+    u8 next;
+
+    temp_v0 = *arg0++;
+    *arg4 = temp_v0;
+
+    do
+    {
+        s32 unused;
+        var_v1 = *arg0++;
+        unused = var_v1;
+        
+        var_a2 = 0xFF;
+
+        if (var_v1 == 0xFF)
+        {
+            var_a3 = 0;
+            for (var_v1 = *arg0++; var_v1 != 0xFF; var_a2 ^= 0xff, var_v1 = *arg0++ )
+            {
+                var_a3 += var_v1;
+
+                while (var_v1-- > 0)
+                {
+                    *arg3++ = var_a2;
+                }
+            }
+            
+            while (var_a3++ < arg1)
+            {
+                *arg3++ = var_a2;
+            }
+            
+            arg2--;
+        }
+        else
+        {
+            var_a3 = temp_v0 + (var_v1 & 0x1f);
+            var_v1 = (var_v1 >> 5) + 1;
+            arg2 -= var_v1;
+            
+            do
+            {
+                var_a2 = var_a3;
+                while (var_a2-- > 0)
+                {
+                    *arg3++ = 0xff;
+                }
+                
+                var_a2 = arg1 - var_a3;
+                while (var_a2-- > 0)
+                {
+                    *arg3++ = 0;
+                }
+            } while (--var_v1 > 0);
+        }
+    } while (arg2 > 0);
+    
+    return arg0;
+}
+
+
+void bloodPack4Bit(u8* arg0, u16 arg1, u8* arg2)
+{
+    while (arg1-- > 0)
+    {
+        *arg2++ = (arg0[0] & 0xF0) | (arg0[1] >> 4);
+        arg0 += 2;
+    }
+}
+
+
+// Address 0x7F01CCEC NTSC
+void bloodBoxBlur(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 arg4)
+{
+    s16 i;
+    s16 j;
+
+    u32 var_t0;
+    u32 var_t1;
+    
+    s16 var_t5;
+
+    s16 var_s4;
+
+    u8 tempt9;
+
+    for (i = 0; i < arg2; i++)
+    {
+        for (j = 0; j < arg1; j++)
+        {
+            var_t0 = 0;
+            var_t1 = 0;
+            
+            var_t5 = ((i - arg4) < 0) ? 0 : (i - arg4);
+
+            while ((((arg2 - 1) < (i + arg4)) ? (arg2 - 1) : (i + arg4)) >= var_t5)
+            {
+                var_s4 = ((j - arg4) < 0) ? 0 : (j - arg4);
+                
+                while ((((arg1 - 1) < (j + arg4)) ? (arg1 - 1) : (j + arg4)) >= var_s4)
+                {
+                    var_t1 += arg0[var_s4 + (var_t5 * arg1)];
+                    
+                    var_s4 += 1;
+                    var_t0 += 1;
+                }
+
+                var_t5 += 1;
+            }
+
+            tempt9  = (u8) ((u32) ((var_t0 >> 1) + var_t1) / var_t0);
+            arg3[j + (i * arg1)] = tempt9;
+        }
+    }
+}
+
+
+// Averages 4 pixel data, ending on "second" row.
+// Address 0x7F01CEEC NTSC
+void bloodSmoothUpLeft(u8 *arg0, s32 arg1, u8 *arg2)
+{
+    s32 i;
+    s32 j;
+
+    arg0 += 0x61;
+    arg2 += 0x61;
+
+    for (i = 1; i < arg1 - 1; i++, arg2 += 2, arg0 += 2) {
+        for (j = 1; j < 0x5f; j++, arg2++, arg0++) {
+            *arg2 = (arg0[-1] + arg0[0] + arg0[-0x61] + arg0[-0x60] + 2) >> 2;
+        }
+    }
+}
+
+
+// Averages 4 pixel data, ending on "first" row.
+// Address 0x7F01D02C NTSC
+void bloodSmoothDownRight(u8 *arg0, s32 arg1, u8 *arg2)
+{
+    s32 i;
+    s32 j;
+
+    arg0 += 0x61;
+    arg2 += 0x61;
+
+    for (i = 1; i < arg1 - 1; i++, arg2 += 2, arg0 += 2) {
+        for (j = 1; j < 0x5f; j++, arg2++, arg0++) {
+            *arg2 = (arg0[1] + arg0[0] + arg0[0x61] + arg0[0x60] + 2) >> 2;
+        }
+    }
+}
+
+
+/**
+ * Address: 7F01D16C
+ * 
+ * Converts the decoded blood frame from column-major to row-major order.
+ */
+void bloodImgTranspose(u8 *src, s32 srcwidth, s32 srcheight, u8 *dst)
+{
+    s32 pixelcount;
+    u32 rowend;
+    u32 var_t2;
+    u8 *var_t0;
+    u8 *var_v1;
+    u32 t1;
+
+    pixelcount = srcwidth * srcheight;
+    var_v1 = src;
+    var_t0 = dst;
+    t1 = src + pixelcount;
+    var_t2 = src + srcwidth;
+
+    do
+    {
+        rowend = var_t2;
+
+        do
+        {
+            *var_t0 = *var_v1++;
+            var_t2 += 1;
+            var_t0 += srcheight;
+            
+        } while ((u32) var_v1 < rowend);
+
+        var_t0 = (var_t0 - (pixelcount)) + 1;
+        
+    } while ((u32) var_v1 < (u32) t1);
+}
+
+
+u8 *sub_GAME_7F01D1C0(u8 *arg0, s32 arg1, s32 arg2, u8 *arg3);

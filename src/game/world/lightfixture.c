@@ -62,6 +62,8 @@
 #include "game/world/lightfixture.h"
 #include "game/world/bg.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include <bondconstants.h>
 #include <assets/image_externs.h>
 #include <PR/gbi.h>

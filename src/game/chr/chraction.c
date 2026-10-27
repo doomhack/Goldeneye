@@ -26,6 +26,8 @@
 #include "game/save/file.h"
 #include "game/menu/front.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "game/prop/setup.h"
@@ -6703,7 +6705,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                         {
                             if (sp254 != 0)
                             {
-                                bullet_spark_create(&sp258, 1, 26.0f, (s16) sp254->room);
+                                sparkCreate(&sp258, 1, 26.0f, (s16) sp254->room);
                             }
 
                             if (g_StanHitProp != NULL)

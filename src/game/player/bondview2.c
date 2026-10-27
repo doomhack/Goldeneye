@@ -19,7 +19,7 @@
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
 #include "game/world/roommtx.h"
-#include "game/hud/blood_animation.h"
+#include "game/hud/blood.h"
 #include "game/player/bondhead.h"
 #include "game/player/bondinv.h"
 #include "game/player/bondview.h"
@@ -34,6 +34,8 @@
 #include "game/level/frametiming.h"
 #include "game/menu/front.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "game/text/language.h"
@@ -4003,10 +4005,10 @@ void watchTrigger(s32 arg0)
             watchZoomToDefault();
 
             hudMakeDamageSegments(&g_CurrentPlayer->armor_display_values, 23*2, 1, currentPlayerGetArmor());
-            buildGaugeBarDL(&g_CurrentPlayer->watch_body_armor_bar_gdl, OS_K0_TO_PHYSICAL(&g_CurrentPlayer->armor_display_values), 0x2E);
+            hudRenderGaugeBar(&g_CurrentPlayer->watch_body_armor_bar_gdl, OS_K0_TO_PHYSICAL(&g_CurrentPlayer->armor_display_values), 0x2E);
 
             hudMakeDamageSegments(&g_CurrentPlayer->health_display_values, 23*2, -1, currentPlayerGetHealth());
-            buildGaugeBarDL(&g_CurrentPlayer->watch_health_bar_gdl, OS_K0_TO_PHYSICAL(&g_CurrentPlayer->health_display_values), 0x2E);
+            hudRenderGaugeBar(&g_CurrentPlayer->watch_health_bar_gdl, OS_K0_TO_PHYSICAL(&g_CurrentPlayer->health_display_values), 0x2E);
 
             sub_GAME_7F0A69A8();
 
@@ -4022,8 +4024,8 @@ void watchTrigger(s32 arg0)
             {
                 // Note: colors are set here but overwritten in watch.c set_page_rectangle_colors
                 ptr_copy = ptr_a;
-                ptr_a = setup_watch_rectangles(ptr_a, i, 0, 0x64, 0x14, -0x12B, 0x136);
-                ptr_b = sub_GAME_7F0A3B40(ptr_b, OS_K0_TO_PHYSICAL(ptr_copy));
+                ptr_a = watchMakeRectVerts(ptr_a, i, 0, 0x64, 0x14, -0x12B, 0x136);
+                ptr_b = watchRenderQuad(ptr_b, OS_K0_TO_PHYSICAL(ptr_copy));
             }
 
             gSPEndDisplayList(ptr_b);
@@ -4039,8 +4041,8 @@ void watchTrigger(s32 arg0)
             ptr_b = g_CurrentPlayer->buffer_for_watch_static_DL; // Gfx
 
             ptr_copy = &g_CurrentPlayer->buffer_for_watch_static_vertices->vtx[0];
-            next = setup_watch_rectangles(ptr_a, 0, 0, 0x398, 0x14, -0x1CC, 0);
-            ptr_b = sub_GAME_7F0A3B40(ptr_b, OS_K0_TO_PHYSICAL(ptr_copy));
+            next = watchMakeRectVerts(ptr_a, 0, 0, 0x398, 0x14, -0x1CC, 0);
+            ptr_b = watchRenderQuad(ptr_b, OS_K0_TO_PHYSICAL(ptr_copy));
 
             gSPEndDisplayList(ptr_b);
             /**
@@ -8484,21 +8486,21 @@ Gfx *camSetupFrame(Gfx *gdl)
     {
         if (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)
         {
-            gdl = clear_framebuffer_black(gdl);
-            gdl = clear_framebuffer_black(gdl);
-            gdl = clear_framebuffer_black(gdl);
-            gdl = clear_framebuffer_black(gdl);
+            gdl = screenClearBlack(gdl);
+            gdl = screenClearBlack(gdl);
+            gdl = screenClearBlack(gdl);
+            gdl = screenClearBlack(gdl);
         }
         else if (cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN)
         {
-            gdl = clear_framebuffer_black(gdl);
-            gdl = clear_framebuffer_black(gdl);
-            gdl = clear_framebuffer_black(gdl);
+            gdl = screenClearBlack(gdl);
+            gdl = screenClearBlack(gdl);
+            gdl = screenClearBlack(gdl);
         }
         else
         {
-            gdl = clear_framebuffer_black(gdl);
-            gdl = clear_framebuffer_black(gdl);
+            gdl = screenClearBlack(gdl);
+            gdl = screenClearBlack(gdl);
         }
     }
 #endif
@@ -8854,11 +8856,11 @@ Gfx *hudRenderHealthBars(Gfx *gdl)
 
     //Set up armor bars.
     hudMakeDamageSegments(&g_CurrentPlayer->armor_display_values[0].items[0], 0x2e, 1, g_CurrentPlayer->apparentarmour);
-    buildGaugeBarDL((Gfx *)&g_CurrentPlayer->watch_body_armor_bar_gdl, OS_PHYSICAL_TO_K0(&g_CurrentPlayer->armor_display_values[0].items[0]), 0x2e);
+    hudRenderGaugeBar((Gfx *)&g_CurrentPlayer->watch_body_armor_bar_gdl, OS_PHYSICAL_TO_K0(&g_CurrentPlayer->armor_display_values[0].items[0]), 0x2e);
 
     // Set up health bars.
     hudMakeDamageSegments(&g_CurrentPlayer->health_display_values[0].items[0], 0x2e, -1, g_CurrentPlayer->apparenthealth);
-    buildGaugeBarDL((Gfx *)&g_CurrentPlayer->watch_health_bar_gdl, OS_PHYSICAL_TO_K0(&g_CurrentPlayer->health_display_values[0].items[0]), 0x2e);
+    hudRenderGaugeBar((Gfx *)&g_CurrentPlayer->watch_health_bar_gdl, OS_PHYSICAL_TO_K0(&g_CurrentPlayer->health_display_values[0].items[0]), 0x2e);
 
     // Create an orthographic render state for the gauge.
     lookatmtx = dynAllocateMatrix();
@@ -10122,7 +10124,7 @@ Gfx *hudRender(Gfx *gdl)
             }
             if (doblood)
             {
-                die_blood_image_routine(0);
+                bloodNextFrame(0);
                 if (coopPartnerAlive())
                 {
                     // Co-op: the partner plays on, so keep the music and
@@ -10159,11 +10161,11 @@ Gfx *hudRender(Gfx *gdl)
                     {
                         doblood = 2;
                     }
-                    if (die_blood_image_routine(doblood))
+                    if (bloodNextFrame(doblood))
                     {
                         g_CurrentPlayer->redbloodfinished = TRUE;
                     }
-                    gdl = gameplayBloodOverlayDL(gdl);
+                    gdl = bloodRender(gdl);
                 }
             }
         }
@@ -10236,7 +10238,7 @@ Gfx *hudRender(Gfx *gdl)
     gunDrawSight(&gdl);
     gdl = hudRenderAmmo(gdl);
     gdl = countdownTimerRender(gdl);
-    gdl = display_red_blue_on_radar(gdl);
+    gdl = radarRender(gdl);
     return currentPlayerDrawFade(gdl);
 }
 

@@ -27,6 +27,8 @@
 #include "game/gfx/dyn.h"
 #include "game/gfx/vtxstore.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/save/file2.h"
 #include "game/prop/propobj.h"
 #include "game/prop/explosion.h"
@@ -3155,13 +3157,13 @@ void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos
 
             mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &sp3c);
 
-            bullet_spark_create(&sp3c, entry->backImpactPuffCount, entry->backImpactPuffSize, prop->stan->room);
+            sparkCreate(&sp3c, entry->backImpactPuffCount, entry->backImpactPuffSize, prop->stan->room);
         }
     }
 
     if (entry->impactPuffCount) 
     {
-        bullet_spark_create(pos, entry->impactPuffCount, entry->impactPuffSize, prop->stan->room);
+        sparkCreate(pos, entry->impactPuffCount, entry->impactPuffSize, prop->stan->room);
     }
 }
 

@@ -42,6 +42,8 @@
 #include "game/prop/explosion.h"
 #include "fr.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/player/gun.h"
 #include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
@@ -6534,7 +6536,7 @@ s32 objTick(struct PropRecord *prop)
 					{
 						if (sp10C != NULL)
 						{
-							bullet_spark_create(&sp110, 1, 26.0f, (s16) sp10C->room);
+							sparkCreate(&sp110, 1, 26.0f, (s16) sp10C->room);
 						}
 
 						shotPlayHitSound(14, &sp110, -1);
@@ -9621,7 +9623,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
         gunSetTracerTarget(&pos);
     }
 
-    bullet_spark_create(&pos, 1, 26.0f, rootprop->stan->room);
+    sparkCreate(&pos, 1, 26.0f, rootprop->stan->room);
 
     if ((objIsHealthy(obj) && objIsMortal(obj)) && (hit->countsAsPenetration != 0))
     {

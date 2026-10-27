@@ -15,6 +15,8 @@
 #include "game/player/player.h"
 #include "game/text/textrelated.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/level/frametiming.h"
 #include "assets/obseg/text/LoptionE.h"
 
@@ -286,7 +288,7 @@ Gfx *draw_background_health_and_armor_transitioning(Gfx *gdl, Mtx *param_2);
 Gfx *draw_background_health_and_armor(Gfx *gdl, Mtx *arg1, s32 zoom_squish);
 void game_option_select_value(u32 *param_1, u32 param_2);
 void watch_adjust_volume_slider(u16* arg0);
-Gfx *sub_GAME_7F0A3B40(Gfx *gdl, s32 *arg1);
+Gfx *watchRenderQuad(Gfx *gdl, s32 *arg1);
 void update_volume_slider_verts(struct WatchVertex *verts, f32 fill_amount, s32 transition_width);
 void sub_GAME_7F0A9684(s8 contpadnum, s32 *counter, f32 *value, f32 *step);
 Gfx *display_text_buttons_dual_control(Gfx *gdl);
@@ -1884,8 +1886,8 @@ Gfx *draw_background_health_and_armor(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
      * End health bar zoom section
     */
 
-    sub_GAME_7F0A33F8(sp44, WATCH_BACKGROUND_VERTEX_COUNT, 0.92f, 0);
-    draw_watch_background(sp3C, OS_PHYSICAL_TO_K0(sp44), WATCH_BACKGROUND_VERTEX_COUNT, 0);
+    watchMakeArcVerts(sp44, WATCH_BACKGROUND_VERTEX_COUNT, 0.92f, 0);
+    watchRenderBackground(sp3C, OS_PHYSICAL_TO_K0(sp44), WATCH_BACKGROUND_VERTEX_COUNT, 0);
 
     gDPPipeSync(gdl++);
     gDPSetRenderMode(gdl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
@@ -1899,15 +1901,15 @@ Gfx *draw_background_health_and_armor(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
     */
     if (g_WatchBackgroundGreen < 0xE0)
     {
-        sub_GAME_7F0A33F8(sp48, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 0);
-        draw_watch_background(sp40, OS_PHYSICAL_TO_K0(sp48), WATCH_BACKGROUND_VERTEX_COUNT, 0);
+        watchMakeArcVerts(sp48, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 0);
+        watchRenderBackground(sp40, OS_PHYSICAL_TO_K0(sp48), WATCH_BACKGROUND_VERTEX_COUNT, 0);
 
         gDPSetRenderMode(gdl++, G_RM_AA_PCL_SURF, G_RM_AA_PCL_SURF2);
     }
     else
     {
-        sub_GAME_7F0A33F8(sp48, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 1);
-        draw_watch_background(sp40, OS_PHYSICAL_TO_K0(sp48), WATCH_BACKGROUND_VERTEX_COUNT, 1);
+        watchMakeArcVerts(sp48, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 1);
+        watchRenderBackground(sp40, OS_PHYSICAL_TO_K0(sp48), WATCH_BACKGROUND_VERTEX_COUNT, 1);
 
         gDPSetRenderMode(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
     }
@@ -2772,14 +2774,14 @@ Gfx *draw_fx_volume_slider(Gfx *gdl)
     cmd = gdl++;
     gDPSetRenderMode(cmd, G_RM_XLU_SURF, G_RM_XLU_SURF2);
 
-    gdl = sub_GAME_7F0A3B40(gdl, OS_K0_TO_PHYSICAL(vtx1));
-    vtx = setup_watch_rectangles(vtx1, 0, 0, 600, 20, -299, -205);
+    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx1));
+    vtx = watchMakeRectVerts(vtx1, 0, 0, 600, 20, -299, -205);
 
-    gdl = sub_GAME_7F0A3B40(gdl, OS_K0_TO_PHYSICAL(vtx));
-    vtx = setup_watch_rectangles(vtx, 0, 0, 600, 20, -299, -205);
+    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx));
+    vtx = watchMakeRectVerts(vtx, 0, 0, 600, 20, -299, -205);
 
-    gdl = sub_GAME_7F0A3B40(gdl, OS_K0_TO_PHYSICAL(vtx));
-    setup_watch_rectangles(vtx, 0, 0, 600, 20, -299, -205);
+    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx));
+    watchMakeRectVerts(vtx, 0, 0, 600, 20, -299, -205);
 
     update_volume_slider_verts(vtx1, fvolume, 30);
 
@@ -2823,15 +2825,15 @@ Gfx *draw_music_volume_slider(Gfx *gdl)
     cmd = gdl++;
     gDPSetRenderMode(cmd, G_RM_XLU_SURF, G_RM_XLU_SURF2);
 
-    gdl = sub_GAME_7F0A3B40(gdl, OS_K0_TO_PHYSICAL(vtx1));
-    vtx = setup_watch_rectangles(vtx1, 0, 0, 600, 20, -299, -275);
+    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx1));
+    vtx = watchMakeRectVerts(vtx1, 0, 0, 600, 20, -299, -275);
 
 
-    gdl = sub_GAME_7F0A3B40(gdl, OS_K0_TO_PHYSICAL(vtx));
-    vtx = setup_watch_rectangles(vtx, 0, 0, 600, 20, -299, -275);
+    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx));
+    vtx = watchMakeRectVerts(vtx, 0, 0, 600, 20, -299, -275);
 
-    gdl = sub_GAME_7F0A3B40(gdl, OS_K0_TO_PHYSICAL(vtx));
-    setup_watch_rectangles(vtx, 0, 0, 600, 20, -299, -275);
+    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx));
+    watchMakeRectVerts(vtx, 0, 0, 600, 20, -299, -275);
 
     update_volume_slider_verts(vtx1, fvolume, 30);
 

@@ -28,9 +28,9 @@
 #include "game/mission/objective_status.h"
 #include "game/player/player.h"
 #include "game/text/textrelated.h"
-#include "game/hud/blood_animation.h"
+#include "game/hud/blood.h"
 #include "game/gfx/texselect.h"
-#include "game/hud/bondwalk2.h"
+#include "game/gfx/texrect.h"
 #include "game/save/file2.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
@@ -1246,7 +1246,7 @@ Gfx *frontDrawCursor(Gfx *DL)
     halfedxy[0] = image->width * 0.5f;
     halfedxy[1] = image->height * 0.5f;
 
-    display_image_at_position(&DL, &xypos, &halfedxy, image->width, image->height, 0, 0, 1, 255, 255, 255, 220, (image->level > 0), 0);
+    texRectDrawImage(&DL, &xypos, &halfedxy, image->width, image->height, 0, 0, 1, 255, 255, 255, 220, (image->level > 0), 0);
 
     return DL;
 }
@@ -1510,7 +1510,7 @@ Gfx *constructor_menu00_legalscreen(Gfx *DL)
 
     renderdata = legalscreen_MRD;
     
-    DL = clear_framebuffer_black(DL);
+    DL = screenClearBlack(DL);
     
     /* the original reads through legal_text_ptr before it is set; the result is always 0 */
     mtx4LoadLookAt(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -1586,7 +1586,7 @@ void interface_menu17_switchscreens(void)
 
 Gfx * constructor_menu17_switchscreens(Gfx * DL)
 {
-    return clear_framebuffer_black(DL);
+    return screenClearBlack(DL);
 }
 
 
@@ -1670,7 +1670,7 @@ Gfx *constructor_menu01_nintendo(Gfx *DL)
 
     ninlogo = nintendologo_MRD;
 
-    DL = clear_framebuffer_black(DL);
+    DL = screenClearBlack(DL);
 
     // Lights macro? These need to be on one line.
     gSPNumLights(DL++, 1); \
@@ -2475,7 +2475,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
      * The background image doesn't fully cover the screen so it's necessary to clear the back framebuffer to opaque black.
      * This creates the impression of the folder menu having a black border.
      */ 
-    DL = clear_framebuffer_black(DL);
+    DL = screenClearBlack(DL);
 
     gDPSetCombineLERP(DL++, TEXEL0, PRIMITIVE, ENV_ALPHA, PRIMITIVE, 0, 0, 0, PRIMITIVE, TEXEL0, PRIMITIVE, ENV_ALPHA, PRIMITIVE, 0, 0, 0, PRIMITIVE);
     gDPSetEnvColor(DL++, 0xFF, 0xFF, 0xFF, 0x14);
@@ -2676,7 +2676,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         copyhalfsize.f[1] = (f32) (g_ImagesMainFolder + IMG_COPY)->height * 0.5f;
 
         texSelect(&DL, g_ImagesMainFolder, 4, 0, 0);
-        display_image_at_position(&DL, &copypos.f[0], &copyhalfsize.f[0], g_ImagesMainFolder->width, g_ImagesMainFolder->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) g_ImagesMainFolder->level > 0, 0);
+        texRectDrawImage(&DL, &copypos.f[0], &copyhalfsize.f[0], g_ImagesMainFolder->width, g_ImagesMainFolder->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) g_ImagesMainFolder->level > 0, 0);
 
         folder_option_COPY_bound.left = copypos.f[0] - copyhalfsize.f[0];
         folder_option_COPY_bound.up = copypos.f[1] - copyhalfsize.f[1];
@@ -2689,7 +2689,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         erasehalfsize.f[1] = (g_ImagesMainFolder + IMG_DEL)->height * 0.5f;
 
         texSelect(&DL, g_ImagesMainFolder + IMG_DEL, 4, 0, 0);
-        display_image_at_position(&DL, &erasepos.f[0], &erasehalfsize.f[0], (g_ImagesMainFolder + IMG_DEL)->width, (g_ImagesMainFolder + IMG_DEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_DEL)->level > 0, 0);
+        texRectDrawImage(&DL, &erasepos.f[0], &erasehalfsize.f[0], (g_ImagesMainFolder + IMG_DEL)->width, (g_ImagesMainFolder + IMG_DEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_DEL)->level > 0, 0);
 
         folder_option_ERASE_bound.left = (f32) (erasepos.f[0] - erasehalfsize.f[0]);
         folder_option_ERASE_bound.up = (f32) (erasepos.f[1] - erasehalfsize.f[1]);
@@ -2702,7 +2702,7 @@ Gfx *constructor_menu05_fileselect(Gfx *DL)
         selecthalfsize.f[1] = (g_ImagesMainFolder + IMG_SEL)->height * 0.5f;
 
         texSelect(&DL, g_ImagesMainFolder + IMG_SEL, 4, 0, 0);
-        display_image_at_position(&DL, &selectpos.f[0], &selecthalfsize.f[0], (g_ImagesMainFolder + IMG_SEL)->width, (g_ImagesMainFolder + IMG_SEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_SEL)->level > 0, 0);
+        texRectDrawImage(&DL, &selectpos.f[0], &selecthalfsize.f[0], (g_ImagesMainFolder + IMG_SEL)->width, (g_ImagesMainFolder + IMG_SEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_SEL)->level > 0, 0);
     }
 
     if (folder_selected_for_deletion < 0)
@@ -4077,7 +4077,7 @@ Gfx *constructor_menu08_difficulty(Gfx *DL)
             halfedxy[1] = image->height * 0.5f;
 
             texSelect(&DL, image, 4, 0, 0);
-            display_image_at_position(&DL, &xypos, &halfedxy, image->width, image->height, 0, 0, 1, 0xB4, 0, 0, 0xFF, image->level > 0, 0);
+            texRectDrawImage(&DL, &xypos, &halfedxy, image->width, image->height, 0, 0, 1, 0xB4, 0, 0, 0xFF, image->level > 0, 0);
         }
     }
 
@@ -6536,9 +6536,9 @@ Gfx * constructor_menu12_mpstage(Gfx *DL)
 
     for (i_2 = 0; i_2 < 3; i_2++)
     {
-        display_image_at_position(&DL, &sp100.f[0], &spF8.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
+        texRectDrawImage(&DL, &sp100.f[0], &spF8.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
         sp100.f[1] += 60.0f;
-        display_image_at_position(&DL, &sp100.f[0], &spF8.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
+        texRectDrawImage(&DL, &sp100.f[0], &spF8.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
         sp100.f[1] -= 60.0f;
         sp100.f[1] += 70.0f;
     }
@@ -6567,15 +6567,15 @@ Gfx * constructor_menu12_mpstage(Gfx *DL)
                     gDPSetFogColor(DL++, 0xff, 0xff, 0xff, 0x0a);
                     gDPSetRenderMode(DL++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
 
-                    display_image_at_position(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, simage->level > 0, 1);
+                    texRectDrawImage(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, simage->level > 0, 1);
                 }
                 else if (check_if_mp_stage_unlocked(count) != 0)
                 {
-                    display_image_at_position(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0x6E, 0x6E, 0x6E, 0xFF, simage->level > 0, 0);
+                    texRectDrawImage(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0x6E, 0x6E, 0x6E, 0xFF, simage->level > 0, 0);
                 }
                 else
                 {
-                    display_image_at_position(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0xF, 0xF, 0xF, 0xFF, simage->level > 0, 0);
+                    texRectDrawImage(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0xF, 0xF, 0xF, 0xFF, simage->level > 0, 0);
                 }
             }
 
@@ -8405,7 +8405,7 @@ Gfx *constructor_menu16_nocontrollers(Gfx *DL)
     if ((conConnected & 2)) {
         numContCon++;
     }
-    DL = microcode_constructor(clear_framebuffer_black(DL));
+    DL = microcode_constructor(screenClearBlack(DL));
 
 
     if ((numContCon == 0) || (numContCon == 1) || (numContCon == 2) || (numContCon == 3)) {
