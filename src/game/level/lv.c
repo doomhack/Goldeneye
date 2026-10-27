@@ -44,8 +44,6 @@
 #include "game/world/initunk_007290.h"
 #include "game/menu/initcheattext.h"
 #include "game/nav/waypoint.h"
-#include "game/player/ejectedcartridges.h"
-#include "game/player/inititemslots.h"
 #include "game/player/bondview.h"
 #include "game/player/bondview_r.h"
 #include "game/gfx/zbuf.h"

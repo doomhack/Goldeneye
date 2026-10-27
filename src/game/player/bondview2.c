@@ -3583,13 +3583,13 @@ void watchTick(void)
 
             if (g_CurrentPlayer->watch_pause_time == 1)
             {
-                gunStartDraw(GUNLEFT, ITEM_SUIT_LF_HAND);
+                gunStartWatchSwap(GUNLEFT, ITEM_SUIT_LF_HAND);
             }
             else if (g_CurrentPlayer->watch_pause_time == 2)
             {
                 if (sp34)
                 {
-                    gunStartDraw(GUNRIGHT, ITEM_UNARMED);
+                    gunStartWatchSwap(GUNRIGHT, ITEM_UNARMED);
                 }
             }
             else
@@ -3749,7 +3749,7 @@ void watchTick(void)
                 watchZoomOnExit();
                 if (sp34)
                 {
-                    gunStartDraw(GUNRIGHT, ITEM_UNARMED);
+                    gunStartWatchSwap(GUNRIGHT, ITEM_UNARMED);
                 }
                 else
                 {
@@ -3813,14 +3813,14 @@ void watchTick(void)
 
                 if ((gunGetShownWeapon(GUNLEFT) != gunGetWeapon(GUNLEFT)) && (gunHandModelIsEmpty(GUNLEFT) != ITEM_UNARMED))
                 {
-                    gunStartDraw(GUNLEFT, gunGetWeapon(GUNLEFT));
+                    gunStartWatchSwap(GUNLEFT, gunGetWeapon(GUNLEFT));
                 }
 
                 if (sp3c)
                 {
                     if ((gunGetShownWeapon(GUNRIGHT) != gunGetWeapon(GUNRIGHT)) && (gunHandModelIsEmpty(GUNRIGHT) != ITEM_UNARMED))
                     {
-                        gunStartDraw(GUNRIGHT, gunGetWeapon(GUNRIGHT));
+                        gunStartWatchSwap(GUNRIGHT, gunGetWeapon(GUNRIGHT));
                     }
                 }
             }

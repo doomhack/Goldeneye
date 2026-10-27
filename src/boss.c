@@ -41,6 +41,7 @@
 #include "game/nav/stan.h"
 #include "game/text/textrelated.h"
 #include "game/player/player.h"
+#include "game/player/gun.h"
 #include "game/player/bondhead.h"
 #include "game/level/frametiming.h"
 #include "PR/R4300.h"

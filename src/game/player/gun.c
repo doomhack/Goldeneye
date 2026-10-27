@@ -1,3 +1,9 @@
+/**
+ * The hands and their guns: which weapon each hand holds, loading its first-person
+ * model, switching and cycling weapons, reloading, zoom, weapon stat lookups
+ * (weaponGet*), sway, and launching thrown and fired projectiles. The gunDeb* functions
+ * are a debug keyframe editor. See docs/subsystems/weapons.md.
+ */
 #include <ultra64.h>
 #include "include/limits.h"
 #include <bondconstants.h>
@@ -127,6 +133,7 @@ CartridgeModelFileRecord ejected_cartridge[] = {
 
 //D:80033924
 #include <assets/obseg/gun/gunModelFileRecord.inc.c>
+#include <PR/libaudio.h>
 
 //D:80034C9C
 u32 g_GunDebApplyKeyframe = 0;
@@ -1128,7 +1135,7 @@ ITEM_IDS gunGetWeapon(GUNHAND hand) {
     return g_CurrentPlayer->hands[hand].weaponnum;
 }
 
-void gunStartDraw(GUNHAND hand, s32 next_weapon) {
+void gunStartWatchSwap(GUNHAND hand, s32 next_weapon) {
 	g_CurrentPlayer->hands[hand].weapon_current_animation = 0xE;
 	g_CurrentPlayer->hands[hand].weapon_next_weapon = next_weapon;
 }
@@ -2417,3 +2424,34 @@ const char aSD[] = "%s: %d\n";
 const char g_GunDeathCountFormat[] = "%s %d %s\n";
 const char aSD_0[] = "%s: %d\n";
 
+
+//uncomment when actor is worked on
+//#include "chr.h"
+extern s32 dynAllocateVerticesDiscard NO_SDATA;
+
+void gunsInitAnimGroups(void) {
+    modelSetVtxAllocator(&dynAllocateVerticesDiscard);
+    initWeaponAnimGroups();
+}
+
+
+// Address 0x7F007980 NTSC.
+// Address 0x7F007900 PAL.
+void gunsStopSounds(void)
+{
+    int i;
+    int j;
+
+    for (i = 0; i < getPlayerCount(); i++)
+    {
+        for (j = 0; j < 2; j++)
+        {
+            struct hand *hand = &g_playerPointers[i]->hands[j];
+            
+            if (hand->audioHandle != NULL && sndGetPlayingState(hand->audioHandle))
+            {
+                sndDeactivate(hand->audioHandle);
+            }
+        }
+    }
+}

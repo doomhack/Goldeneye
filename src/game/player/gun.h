@@ -363,7 +363,7 @@ s32 statsGetHits(SHOT_REGISTER shot_register);
 void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle);
 
 ITEM_IDS gunGetShownWeapon(GUNHAND hand);
-void gunStartDraw(GUNHAND hand, s32 next_weapon);
+void gunStartWatchSwap(GUNHAND hand, s32 next_weapon);
 void gunClearWatchMenuWeapon(GUNHAND hand);
 void gunUpdateCrosshairSwivel(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed);
 s32 weaponGetHeldAmmo(ITEM_IDS weapon);
@@ -395,5 +395,9 @@ Gfx *hudRenderAmmo(Gfx *gdl);
 
 void        shotFireHands(void);
 void        shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, s32 unk44, Model *model, bool countsAsPenetration, s32 blocksFurtherHits);
+
+void gunsInitAnimGroups(void);
+void gunsStopSounds(void);
+void casingsLoadModels(void);
 
 #endif

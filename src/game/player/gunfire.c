@@ -1,3 +1,9 @@
+/**
+ * The hands each frame: the hand state machine (gunTickHandState), placing and drawing
+ * the gun models, beams and tracers, hit sounds, the crosshair and aim, ejected casings,
+ * ammo, the ammo HUD and sight, per-player stats, and firing shots into the world
+ * (shotFireHands). See docs/subsystems/weapons.md.
+ */
 #include <ultra64.h>
 #include <assert.h>
 #include <bondaicommands.h>
@@ -48,6 +54,7 @@
 #include "game/nav/stan.h"
 #include "gbi_extension.h"
 #include "game/math/interp.h"
+#include "bondtypes.h"
 
 
 #ifdef REFRESH_PAL
@@ -7373,4 +7380,38 @@ void shotFireHands(void)
 {
     shotFireHand(GUNRIGHT);
     shotFireHand(GUNLEFT);
+}
+
+
+// Copied from another file. Might need code reorganization to prevent the use of extra externs.
+extern ALSoundState* g_CasingSfxState;
+extern ALSoundState* g_UnusedSfxState;
+extern ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
+
+extern u32 g_GunDebApplyKeyframe;
+extern u32 g_gunDebKeyframeIndex;
+
+extern CartridgeModelFileRecord ejected_cartridge[] ;
+
+void casingsLoadModels(void) 
+{
+    s32 i = 0;
+
+    g_CasingSfxState = NULL;
+
+    while (i < NUM_IMPACT_SFX_STATES)
+    {
+        g_ImpactSfxStates[i] = NULL;
+        i++;
+    }
+
+    i = 0;
+    g_GunDebApplyKeyframe = 0;
+    g_gunDebKeyframeIndex = 0;
+
+    while (ejected_cartridge[i].header != 0) 
+    {
+        modelFileLoadToPool(ejected_cartridge[i].header, ejected_cartridge[i].text);
+        i++;
+    }
 }

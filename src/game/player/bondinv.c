@@ -1,3 +1,8 @@
+/**
+ * The inventory: a circular sorted list of weapons, dual weapon pairs and picked-up
+ * props, cycling through it, keys, text overrides for picked-up objects, and the item
+ * lookups the watch's inventory page uses. See docs/subsystems/weapons.md.
+ */
 #include <ultra64.h>
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
@@ -9,6 +14,7 @@
 #include "game/player/gun.h"
 #include "game/level/lv.h"
 #include <bondtypes.h>
+#include <memp.h>
 
 void invReset(void)
 {
@@ -1602,4 +1608,21 @@ s32 invGetWeaponOfChoice(s32 *weapon1, s32 *weapon2)
             *weapon2 = g_CurrentPlayer->gunheldarr[i].weapon2;
         }
     }
+}
+
+
+void invResetHeldTimes(void) {
+    s32 i;
+  
+    g_CurrentPlayer->equipallguns = FALSE;
+    
+    for (i = 0; i != 10; i++) {
+        g_CurrentPlayer->gunheldarr[i].totaltime = -1;
+    }
+}
+
+void invAllocate(s32 additionalentries) {
+  g_CurrentPlayer->equipmaxitems = additionalentries + 0x1e;
+    g_CurrentPlayer->p_itemcur     = mempAlloc((g_CurrentPlayer->equipmaxitems * 0x14 + 0xfU | 0xf) ^ 0xf, MEMPOOL_STAGE);
+  invReset();
 }

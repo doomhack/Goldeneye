@@ -30,4 +30,7 @@ s32 invItemAvailableForHand(ITEM_IDS right, ITEM_IDS left);
 s32 invItemAvailable(ITEM_IDS weaponid);
 void invAddTextOverride(textoverride *override);
 
+void invResetHeldTimes(void);
+void invAllocate(s32 additionalentries);
+
 #endif
