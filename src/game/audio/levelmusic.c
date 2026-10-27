@@ -545,7 +545,6 @@ s16 g_LevelMusicRandom[] = {
 
 
 /**
- * NTSC address 0x7F0D2720.
 */
 s32 levelMusicGetTrack(s32 arg0)
 {

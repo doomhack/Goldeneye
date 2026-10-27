@@ -394,7 +394,7 @@ void bheadAdjustAnimation(f32 speed)
 
     for (i=0; i<2; i++)
     {
-        if (speed <= g_BondMoveAnimationSetup[i].unk14 * g_BondMoveAnimationSetup[i].speedMultiplier)
+        if (speed <= g_BondMoveAnimationSetup[i].maxSpeed * g_BondMoveAnimationSetup[i].speedMultiplier)
         {
             if (i != g_CurrentPlayer->headanim)
             {

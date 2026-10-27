@@ -24,29 +24,29 @@ struct image_sound
     s16 thing2_len;
 };
 
-typedef struct s_bss_8008D148
+typedef struct TexTileState
 {
     s32 inuse;
-    s32 unk_4;
-    s32 unk_8;
-    s32 unk_C;
-    s32 unk_10;
-    s32 unk_14;
-    s32 unk_18;
-    s32 unk_1C;
-    s32 unk_20;
-    s32 unk_24;
-    s32 unk_28;
-} s_bss_8008D148;
+    s32 format;
+    s32 depth;
+    s32 line;
+    s32 tmem;
+    s32 smode;
+    s32 tmode;
+    s32 masks;
+    s32 maskt;
+    s32 shifts;
+    s32 shiftt;
+} TexTileState;
 
-typedef struct s_bss_8008D2A8
+typedef struct TexTileSize
 {
     s32 inuse;
-    s32 unk_4;
-    s32 unk_8;
-    s32 unk_C;
-    s32 unk_10;
-} s_bss_8008D2A8;
+    s32 uls;
+    s32 ult;
+    s32 lrs;
+    s32 lrt;
+} TexTileSize;
 
 
 extern struct image_sound *g_HitTypeSounds[];

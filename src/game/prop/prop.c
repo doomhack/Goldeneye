@@ -813,7 +813,7 @@ void propsTickOnce(void)
             if (obj->type == PROPDEF_AUTOGUN)
             {
                 autogun = prop->obj;
-                beamTick((BeamRecord *) ((AutogunRecord *) autogun)->beam);
+                beamTick(((AutogunRecord *) autogun)->beam);
             }
         }
         else if (prop->type == PROP_TYPE_EXPLOSION)
@@ -1818,7 +1818,7 @@ void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius)
         if (obj != NULL
             && obj->runtime_bitflags & 0x80
             && obj->projectile->flags & PROJECTILEFLAG_00000008) {
-            src = obj->projectile->unkCC;
+            src = obj->projectile->rooms;
         } else {
             src = prop->rooms;
         }
@@ -1980,7 +1980,6 @@ void propsDefragRoomProps(void)
 
 
 /**
- * NTSC address 0x7F03E6A0.
 */
 void switchActivateLinkedDoors(PropRecord *prop)
 {
@@ -2586,7 +2585,6 @@ void modelGetXYExtents(Model *model, f32 *arg1, f32 *arg2, f32 *arg3, f32 *arg4)
 
 
 /**
- * NTSC address 0x7F03F948.
  * Project rectangle corners to screen
 */
 void projectRectCornersTo2D(struct coord3d *center, struct coord2d *arg1, struct coord2d *arg2, struct coord2d *arg3, struct coord2d *arg4)

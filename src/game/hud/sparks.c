@@ -57,7 +57,7 @@ void sparksReset(void)
 
     for (i = start_index; (i < BULLET_SPARKS_MAX) ^ 0; i++)
     {
-        g_Sparks[i].unk0C = 0;
+        g_Sparks[i].images = 0;
         g_Sparks[i].lifetime = 0;
         g_Sparks[i].age = 0;
     }
@@ -73,54 +73,54 @@ void sparkInit(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3, s16 arg
     angle *= M_TAU_F;
 
     spark->age = 0;
-    spark->unk06 = arg4;
+    spark->room = arg4;
 
     if (arg2 == 4)
     {
         spark->lifetime = 1;
-        spark->unk08 = 1.0f;
-        spark->unk0C = g_ImageFlare2;
+        spark->frameRate = 1.0f;
+        spark->images = g_ImageFlare2;
     }
     else if (arg2 == 1)
     {
         spark->lifetime = 11;
-        spark->unk08 = 0.5f;
-        spark->unk0C = g_ImagesExplosionSmoke;
+        spark->frameRate = 0.5f;
+        spark->images = g_ImagesExplosionSmoke;
     }
     else if (arg2 == 3)
     {
         spark->lifetime = 9;
-        spark->unk08 = 0.5f;
-        spark->unk0C = g_ImagesScatteredExplosions;
+        spark->frameRate = 0.5f;
+        spark->images = g_ImagesScatteredExplosions;
     }
     else if (arg2 == 6)
     {
         spark->lifetime = 100;
-        spark->unk08 = 0.0f;
-        spark->unk0C = g_ImageFlare2;
+        spark->frameRate = 0.0f;
+        spark->images = g_ImageFlare2;
     }
     else
     {
         spark->lifetime = 11;
-        spark->unk08 = 0.5f;
-        spark->unk0C = g_ImagesExplosionSmoke;
+        spark->frameRate = 0.5f;
+        spark->images = g_ImagesExplosionSmoke;
     }
 
-    spark->unk28 = g_SparkColors[arg2].r;
-    spark->unk29 = g_SparkColors[arg2].g;
-    spark->unk2A = g_SparkColors[arg2].b;
-    spark->unk2B = g_SparkColors[arg2].a;
+    spark->r = g_SparkColors[arg2].r;
+    spark->g = g_SparkColors[arg2].g;
+    spark->b = g_SparkColors[arg2].b;
+    spark->a = g_SparkColors[arg2].a;
 
-    spark->unk10 = arg1->x;
-    spark->unk14 = arg1->y;
-    spark->unk18 = arg1->z;
+    spark->pos.x = arg1->x;
+    spark->pos.y = arg1->y;
+    spark->pos.z = arg1->z;
 
     arg3 *= 1.0f + ((f32)randomGetNext() * (1.0f / M_U32_MAX_VALUE_F) * 0.25f);
     arg3 *= M_SQRT2_F;
-    spark->unk24 = arg3;
+    spark->size = arg3;
 
-    spark->unk1c = cosf(angle) * arg3;
-    spark->unk20 = sinf(angle) * arg3;
+    spark->sizeCos = cosf(angle) * arg3;
+    spark->sizeSin = sinf(angle) * arg3;
 }
 
 
@@ -188,7 +188,7 @@ void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
         return;
     }
     
-    if (!camIsPosInScreen((coord3d *) (&thing->unk10), *((f32 *) (&thing->unk24))))
+    if (!camIsPosInScreen((coord3d *) (&thing->pos.x), *((f32 *) (&thing->size))))
     {
         return;
     }
@@ -197,30 +197,30 @@ void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
     mtx = camGetViewToWorldMtxf();
     gdl = *((Gfx **) gdlarg);
     vertices = dynAllocateVertices(4);
-    room = thing->unk06;
+    room = thing->room;
     roompos = roomGetPos(room);
     vtx.v.cn[0] = ((u8 *) thing)[0x28];
     vtx.v.cn[1] = ((u8 *) thing)[0x29];
     vtx.v.cn[2] = ((u8 *) thing)[0x2a];
     vtx.v.cn[3] = ((u8 *) thing)[0x2b];
-    frame = (s32) (((f32) thing->age) * (*(&thing->unk08)));
+    frame = (s32) (((f32) thing->age) * (*(&thing->frameRate)));
     
-    x = *((f32 *) (&thing->unk10));
-    y = *((f32 *) (&thing->unk14));
-    z = *((f32 *) (&thing->unk18));
+    x = *((f32 *) (&thing->pos.x));
+    y = *((f32 *) (&thing->pos.y));
+    z = *((f32 *) (&thing->pos.z));
     
-    s0[0] = mtx->m[0][0] * thing->unk1c;
-    s0[1] = mtx->m[0][1] * thing->unk1c;
-    s0[2] = mtx->m[0][2] * thing->unk1c;
-    s1[0] = mtx->m[0][0] * thing->unk20;
-    s1[1] = mtx->m[0][1] * thing->unk20;
-    s1[2] = mtx->m[0][2] * thing->unk20;
-    s2[0] = mtx->m[1][0] * thing->unk1c;
-    s2[1] = mtx->m[1][1] * thing->unk1c;
-    s2[2] = mtx->m[1][2] * thing->unk1c;
-    s3[0] = mtx->m[1][0] * thing->unk20;
-    s3[1] = mtx->m[1][1] * thing->unk20;
-    s3[2] = mtx->m[1][2] * thing->unk20;
+    s0[0] = mtx->m[0][0] * thing->sizeCos;
+    s0[1] = mtx->m[0][1] * thing->sizeCos;
+    s0[2] = mtx->m[0][2] * thing->sizeCos;
+    s1[0] = mtx->m[0][0] * thing->sizeSin;
+    s1[1] = mtx->m[0][1] * thing->sizeSin;
+    s1[2] = mtx->m[0][2] * thing->sizeSin;
+    s2[0] = mtx->m[1][0] * thing->sizeCos;
+    s2[1] = mtx->m[1][1] * thing->sizeCos;
+    s2[2] = mtx->m[1][2] * thing->sizeCos;
+    s3[0] = mtx->m[1][0] * thing->sizeSin;
+    s3[1] = mtx->m[1][1] * thing->sizeSin;
+    s3[2] = mtx->m[1][2] * thing->sizeSin;
 
     vertices[0] = vtx;
     vertices[1] = vtx;
@@ -231,7 +231,7 @@ void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
     vertices[0].v.ob[2] = (((z - s0[2]) - s3[2]) * bgGetLevelScale()) - roompos->f[2];
 
 
-    vertices[0].v.tc[0] = ((struct sImageTableEntry *) (((u8 *) thing->unk0C) + (frame * 12)))->width << 5;
+    vertices[0].v.tc[0] = ((struct sImageTableEntry *) (((u8 *) thing->images) + (frame * 12)))->width << 5;
     vertices[0].v.tc[1] = 0;
     vertices[1].v.ob[0] = (((x + s1[0]) - s2[0]) * bgGetLevelScale()) - roompos->f[0];
     vertices[1].v.ob[1] = (((y + s1[1]) - s2[1]) * bgGetLevelScale()) - roompos->f[1];
@@ -242,17 +242,17 @@ void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
     vertices[2].v.ob[1] = (((y + s0[1]) + s3[1]) * bgGetLevelScale()) - roompos->f[1];
     vertices[2].v.ob[2] = (((z + s0[2]) + s3[2]) * bgGetLevelScale()) - roompos->f[2];
     vertices[2].v.tc[0] = 0;
-    vertices[2].v.tc[1] = ((struct sImageTableEntry *) (((u8 *) thing->unk0C) + (frame * 12)))->height << 5;
+    vertices[2].v.tc[1] = ((struct sImageTableEntry *) (((u8 *) thing->images) + (frame * 12)))->height << 5;
     vertices[3].v.ob[0] = (((x - s1[0]) + s2[0]) * bgGetLevelScale()) - roompos->f[0];
     vertices[3].v.ob[1] = (((y - s1[1]) + s2[1]) * bgGetLevelScale()) - roompos->f[1];
     vertices[3].v.ob[2] = (((z - s1[2]) + s2[2]) * bgGetLevelScale()) - roompos->f[2];
-    vertices[3].v.tc[0] = ((struct sImageTableEntry *) (((u8 *) thing->unk0C) + (frame * 12)))->width << 5;
-    vertices[3].v.tc[1] = ((struct sImageTableEntry *) (((u8 *) thing->unk0C) + (frame * 12)))->height << 5;
+    vertices[3].v.tc[0] = ((struct sImageTableEntry *) (((u8 *) thing->images) + (frame * 12)))->width << 5;
+    vertices[3].v.tc[1] = ((struct sImageTableEntry *) (((u8 *) thing->images) + (frame * 12)))->height << 5;
     
     gSPSetGeometryMode(gdl++, G_CULL_BACK);
     gSPMatrix(gdl++, osVirtualToPhysical((void *) camGetProjViewMtx()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
     gdl = roomMtxLoad(gdl, room);
-    texSelect(&gdl, (struct sImageTableEntry *) (((u8 *) thing->unk0C) + (frame * 12)), 4, zbufferMode, 2);
+    texSelect(&gdl, (struct sImageTableEntry *) (((u8 *) thing->images) + (frame * 12)), 4, zbufferMode, 2);
     gSPVertex(gdl++, osVirtualToPhysical(vertices), 4, 0);
     gSP2Triangles(gdl++, 0, 1, 2, 0, 0, 2, 3, 0);
     gSPMatrix(gdl++, osVirtualToPhysical(camGetProjectionMtx()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
@@ -282,7 +282,7 @@ void movingSparksReset(void)
 
     for (ptr = &g_MovingSparks[0]; ptr < &g_MovingSparks[BULLET_MOVING_SPARKS_MAX]; ptr++)
     {
-        ptr->unk00.lifetime = 0;
+        ptr->spark.lifetime = 0;
     }
 }
 #else
@@ -300,14 +300,14 @@ s_moving_bullet_spark *movingSparkCreate(coord3d *arg0, coord3d *velocity, s32 a
 
     for (ptr = &g_MovingSparks[0]; ptr < &g_MovingSparks[BULLET_MOVING_SPARKS_MAX]; ptr++)
     {
-        if (ptr->unk00.lifetime == 0)
+        if (ptr->spark.lifetime == 0)
         {
-            sparkInit(&ptr->unk00, arg0, arg2, arg3, arg5);
+            sparkInit(&ptr->spark, arg0, arg2, arg3, arg5);
 
             ptr->velocity.x = velocity->x;
             ptr->velocity.y = velocity->y;
             ptr->velocity.z = velocity->z;
-            ptr->unk38 = arg4;
+            ptr->minY = arg4;
 
             return ptr;
         }
@@ -333,22 +333,22 @@ void movingSparksTick(void)
 
     while (ptr < end)
     {
-        if (ptr->unk00.lifetime > 0)
+        if (ptr->spark.lifetime > 0)
         {
-            ptr->unk00.age += g_ClockTimer;
-            if (ptr->unk00.age >= 0)
+            ptr->spark.age += g_ClockTimer;
+            if (ptr->spark.age >= 0)
             {
-                if (ptr->unk00.lifetime > ptr->unk00.age)
+                if (ptr->spark.lifetime > ptr->spark.age)
                 {
-                    physMoveWithGravity(&ptr->unk00.unk10, &ptr->velocity, g_GlobalTimerDelta);
-                    if (ptr->unk00.unk14 < ptr->unk38)
+                    physMoveWithGravity(&ptr->spark.pos.x, &ptr->velocity, g_GlobalTimerDelta);
+                    if (ptr->spark.pos.y < ptr->minY)
                     {
-                        ptr->unk00.lifetime = 0;
+                        ptr->spark.lifetime = 0;
                     }
                 }
                 else
                 {
-                    ptr->unk00.lifetime = 0;
+                    ptr->spark.lifetime = 0;
                 }
             }
         }
@@ -374,7 +374,7 @@ void movingSparksRender(Gfx *arg0, s32 zbufferMode)
 
     for (ptr = &g_MovingSparks[0]; ptr < (&g_MovingSparks[max_index]); ptr++)
     {
-        sparkRender(&ptr->unk00, arg0, zbufferMode);
+        sparkRender(&ptr->spark, arg0, zbufferMode);
     }
 
 }

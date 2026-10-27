@@ -128,7 +128,7 @@ darkened vertices is kept so a room reloaded later is darkened again.
 * `bgPortalIsVertical` is about the portal's plane: a doorway is vertical.
 * `bgGetLevelUnknownFloatScaled`, `bgAddVisibleRoomGroup` and `bgApplyPrimaryFogLUTEntries`
   are never called.
-* `g_BgRoomInfo[].field_35` is set when the visibility commands preload a room, and keeps
+* `g_BgRoomInfo[].requested` is set when the visibility commands preload a room, and keeps
   the room loaded for the rest of the level.
 * `roomMtxSetOriginRoom` sets `curRoomIndex` on the player, which is the origin room for
   the room matrices, not necessarily the room the player is standing in.

@@ -944,67 +944,67 @@ struct anim_group_info* ptr_crouched_doubles_firing_animation_groups[] = {
 
 struct weapon_firing_animation_table g_ChrFireAnims[] = {
     // sizeof(struct weapon_firing_animation_table) = 0x48 = 72.
-    // address 0xD_80030078. Index 0, = g_ChrFireAnims + 0.
+    // index 0
     { PTR_ANIM_fire_roll_left, 76.0, 0.0, 0.0, 20.0, -1.0, 98.0, 161.0, -1.0, -1.0, 93.0, 161.0, 0.87266463, -0.52359879, 0.69813174, -0.69813174, 1.7, 2.0 },
 
-    // address 0x800300C0. Index 1, = g_ChrFireAnims + 72.
+    // index 1
     { PTR_ANIM_fire_roll_right1, 58.0, 0.0, 0.0, 10.0, -1.0, 77.0, 104.0, -1.0, -1.0, 72.0, 104.0, 0.87266463, -0.34906587, 0.61086529, -0.69813174, 1.55, 1.5 },
 
-    // address 0x80030108. Index 2, = g_ChrFireAnims + 144.
+    // index 2
     { PTR_ANIM_fire_roll_left_fast, 61.0, 0.0, 0.0, 10.0, -1.0, 83.0, 128.0, -1.0, -1.0, 78.0, 128.0, 0.87266463, -0.52359879, 0.87266463, -0.52359879, 1.2, 1.3 },
 
-    // address 0x80030150. Index 3, = g_ChrFireAnims + 216.
+    // index 3
     { PTR_ANIM_fire_roll_right2, 63.0, 0.0, 0.0, 10.0, -1.0, 73.0, 114.0, -1.0, -1.0, 68.0, 114.0, 0.87266463, -0.52359879, 0.61086529, -0.61086529, 1.65, 1.5 },
 
-    // address 0x80030198. Index 4, = g_ChrFireAnims + 288.
+    // index 4
     { PTR_ANIM_fire_roll_left, 76.0, 0.0, 0.0, 20.0, 76.0, 98.0, 161.0, -1.0, -1.0, 93.0, 161.0, 0.87266463, -0.52359879, 0.69813174, -0.69813174, 1.7, 2.0 },
 
-    // address 0x800301E0. Index 5, = g_ChrFireAnims + 360.
+    // index 5
     { PTR_ANIM_fire_roll_right1, 58.0, 0.0, 0.0, 10.0, 63.0, 77.0, 104.0, -1.0, -1.0, 72.0, 104.0, 0.87266463, -0.34906587, 0.61086529, -0.69813174, 1.55, 1.5 },
 
-    // address 0x80030228. Index 6, = g_ChrFireAnims + 432.
+    // index 6
     { PTR_ANIM_fire_roll_left_fast, 61.0, 0.0, 0.0, 10.0, 56.0, 83.0, 128.0, -1.0, -1.0, 78.0, 128.0, 0.87266463, -0.52359879, 0.87266463, -0.52359879, 1.2, 1.3 },
 
-    // address 0x80030270. Index 7, = g_ChrFireAnims + 504.
+    // index 7
     { PTR_ANIM_fire_roll_right2, 63.0, 0.0, 0.0, 10.0, 50.0, 73.0, 114.0, -1.0, -1.0, 68.0, 114.0, 0.87266463, -0.52359879, 0.61086529, -0.61086529, 1.65, 1.5 },
 
-    // address 0x800302B8. Index 8, = g_ChrFireAnims + 576.
+    // index 8
     { PTR_ANIM_fire_hip_one_handed_weapon_slow, 0.0, 0.0, 0.0, 7.0, 64.0, 19.0, 51.0, 24.0, 46.0, 14.0, 58.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
 
-    // address 0x80030300. Index 9, = g_ChrFireAnims + 648.
+    // index 9
     { PTR_ANIM_fire_standing_left_one_handed_weapon_fast, 0.0, 0.0, 1.5707964, 14.0, 76.0, 26.0, 31.0, 31.0, 38.0, 15.0, 49.0, 0.87266463, -0.69813174, 0.52359879, -1.0471976, 0.0, 0.0 },
 
-    // address 0x80030348. Index 10, = g_ChrFireAnims + 720.
+    // index 10
     { PTR_ANIM_fire_kneel_forward_one_handed_weapon_fast, 26.0, 0.0, 0.0, 25.0, 89.0, 41.0, 63.0, 41.0, 51.0, 21.0, 80.0, 0.87266463, -0.69813174, 0.34906587, -1.134464, 0.0, 0.0 },
 
-    // address 0x80030390. Index 11, = g_ChrFireAnims + 792.
+    // index 11
     { PTR_ANIM_fire_kneel_left_one_handed_weapon_fast, 18.0, 0.0, 1.5707964, 11.0, 78.0, 33.0, 52.0, 35.0, 45.0, 15.0, 66.0, 0.87266463, -0.087266468, 0.69813174, -0.78539819, 1.5, 1.0 },
 
-    // address 0x800303D8. Index 12, = g_ChrFireAnims + 864.
+    // index 12
     { PTR_ANIM_fire_standing_dual_wield, 26.0, 0.0, 0.0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
 
-    // address 0x80030420. Index 13, = g_ChrFireAnims + 936.
+    // index 13
     { PTR_ANIM_fire_standing_dual_wield_left, 26.0, 0.0, 1.5707964, 9.0, 112.0, 38.0, 87.0, -1.0, -1.0, 19.0, 98.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
 
-    // address 0x80030468. Index 14, = g_ChrFireAnims + 1008.
+    // index 14
     { PTR_ANIM_fire_kneel_dual_wield, 22.0, 0.0, 0.0, 10.0, 11.0, 34.0, 87.0, -1.0, -1.0, 17.0, 104.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
 
-    // address 0x800304B0. Index 15, = g_ChrFireAnims + 1080.
+    // index 15
     { PTR_ANIM_fire_kneel_dual_wield_left, 28.0, 0.0, 1.5707964, 15.0, 108.0, 34.0, 73.0, -1.0, -1.0, 17.0, 93.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
 
-    // address 0x800304F8. Index 16, = g_ChrFireAnims + 1152.
+    // index 16
     { PTR_ANIM_fire_standing_dual_wield, 26.0, 0.0, 0.0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
 
-    // address 0x80030540. Index 17, = g_ChrFireAnims + 1224.
+    // index 17
     { PTR_ANIM_fire_standing_dual_wield_hands_crossed_left, 25.0, 0.0, 1.5707964, 10.0, 112.0, 32.0, 86.0, -1.0, -1.0, 19.0, 97.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
 
-    // address 0x80030588. Index 18, = g_ChrFireAnims + 1296.
+    // index 18
     { PTR_ANIM_fire_kneel_dual_wield_hands_crossed, 25.0, 0.0, 0.0, 9.0, 92.0, 33.0, 62.0, -1.0, -1.0, 18.0, 69.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
 
-    // address 0x800305D0. Index 19, = g_ChrFireAnims + 1368.
+    // index 19
     { PTR_ANIM_fire_kneel_dual_wield_hands_crossed_left, 19.0, 0.0, 1.5707964, 3.0, 95.0, 30.0, 64.0, -1.0, -1.0, 14.0, 71.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 1.5, 1.0 },
 
-    // address 0x80030618. Index 20, = g_ChrFireAnims + 1440.
+    // index 20
     {0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
@@ -1381,7 +1381,7 @@ s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
                 chr->manground = chr->ground;
                 chr->sumground = chr->ground / GROUND_SMOOTH_FACTOR;
 
-                rwdata->Header.unk34.y = rwdata->Header.unk24.y;
+                rwdata->Header.framePos.y = rwdata->Header.nextPos.y;
             }
             else
             {
@@ -1531,7 +1531,7 @@ PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg
     var_s0->bodynum = 0;
     var_s0->prop = arg0;
     var_s0->model = arg1;
-    var_s0->field_20 = NULL;
+    var_s0->jointList = NULL;
     var_s0->numarghs = 0;
     var_s0->lastwalk60 = 0;
     var_s0->invalidmove = 0;
@@ -1557,12 +1557,12 @@ PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg
     var_s0->shadecol.rgba[2] = var_s0->nextcol.rgba[2];
     var_s0->shadecol.rgba[3] = var_s0->nextcol.rgba[3];
     var_s0->fadealpha = 0xFF;
-    var_s0->field_160[0].ptr_SEbuffer1 = NULL;
-    var_s0->field_160[0].ptr_SEbuffer2 = NULL;
-    var_s0->field_160[1].ptr_SEbuffer1 = NULL;
-    var_s0->field_160[1].ptr_SEbuffer2 = NULL;
-    var_s0->field_178[0] = 0;
-    var_s0->field_178[1] = 0;
+    var_s0->gunSounds[0].ptr_SEbuffer1 = NULL;
+    var_s0->gunSounds[0].ptr_SEbuffer2 = NULL;
+    var_s0->gunSounds[1].ptr_SEbuffer1 = NULL;
+    var_s0->gunSounds[1].ptr_SEbuffer2 = NULL;
+    var_s0->nextGunSoundTime[0] = 0;
+    var_s0->nextGunSoundTime[1] = 0;
     var_s0->chrflags = CHRFLAG_INIT;
     var_s0->hidden = CHRHIDDEN_NONE;
     var_s0->sumground = 0.0f;
@@ -1588,8 +1588,8 @@ PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg
     var_s0->chrseeshot = -1;
     var_s0->chrseedie = -1;
     var_s0->chrpreset1 = -1;
-    var_s0->beams[0].unk00 = -1;
-    var_s0->beams[1].unk00 = -1;
+    var_s0->beams[0].age = -1;
+    var_s0->beams[1].age = -1;
     var_s0->firecount[0] = 0;
     var_s0->firecount[1] = 0;
     var_s0->grenadeprob = 0;
@@ -1647,17 +1647,17 @@ void chrFreeResources(PropRecord *prop)
     chr = prop->chr;
     model = chr->model;
 
-    if (chr->field_160[0].ptr_SEbuffer1 != NULL && sndGetPlayingState(chr->field_160[0].ptr_SEbuffer1) != 0) {
-        sndDeactivate(chr->field_160[0].ptr_SEbuffer1);
+    if (chr->gunSounds[0].ptr_SEbuffer1 != NULL && sndGetPlayingState(chr->gunSounds[0].ptr_SEbuffer1) != 0) {
+        sndDeactivate(chr->gunSounds[0].ptr_SEbuffer1);
     }
-    if (chr->field_160[0].ptr_SEbuffer2 != NULL && sndGetPlayingState(chr->field_160[0].ptr_SEbuffer2) != 0) {
-        sndDeactivate(chr->field_160[0].ptr_SEbuffer2);
+    if (chr->gunSounds[0].ptr_SEbuffer2 != NULL && sndGetPlayingState(chr->gunSounds[0].ptr_SEbuffer2) != 0) {
+        sndDeactivate(chr->gunSounds[0].ptr_SEbuffer2);
     }
-    if (chr->field_160[1].ptr_SEbuffer1 != NULL && sndGetPlayingState(chr->field_160[1].ptr_SEbuffer1) != 0) {
-        sndDeactivate(chr->field_160[1].ptr_SEbuffer1);
+    if (chr->gunSounds[1].ptr_SEbuffer1 != NULL && sndGetPlayingState(chr->gunSounds[1].ptr_SEbuffer1) != 0) {
+        sndDeactivate(chr->gunSounds[1].ptr_SEbuffer1);
     }
-    if (chr->field_160[1].ptr_SEbuffer2 != NULL && sndGetPlayingState(chr->field_160[1].ptr_SEbuffer2) != 0) {
-        sndDeactivate(chr->field_160[1].ptr_SEbuffer2);
+    if (chr->gunSounds[1].ptr_SEbuffer2 != NULL && sndGetPlayingState(chr->gunSounds[1].ptr_SEbuffer2) != 0) {
+        sndDeactivate(chr->gunSounds[1].ptr_SEbuffer2);
     }
 
     modelResetDeformedVertices(model);
@@ -1680,8 +1680,8 @@ void chrFreeResources(PropRecord *prop)
     chr->model = NULL;
     chr->chrnum = -1;
 
-    if (chr->field_20 != NULL) {
-        jointListFree(chr->field_20);
+    if (chr->jointList != NULL) {
+        jointListFree(chr->jointList);
     }
 }
 
@@ -2262,7 +2262,7 @@ s32 chrTick(PropRecord *prop)
         {
             headSwitchVisible = 1;
 
-            if (((chr->actiontype == ACT_ANIM) && (chr->act_anim.unk02c == 0)) && (chr->act_anim.noTranslate != 0))
+            if (((chr->actiontype == ACT_ANIM) && (chr->act_anim.alwaysAnimate == 0)) && (chr->act_anim.noTranslate != 0))
             {
                 if (!coopRepeat)
                 {
@@ -2312,12 +2312,12 @@ s32 chrTick(PropRecord *prop)
                     }
                     else if (chr->actiontype == ACT_GOPOS)
                     {
-                        chr->act_gopos.unk9c = g_GlobalTimer;
+                        chr->act_gopos.magicCheck60 = g_GlobalTimer;
                     }
                 }
             }
         }
-        else if ((chr->actiontype == ACT_ANIM) && (chr->act_anim.unk02c == 0))
+        else if ((chr->actiontype == ACT_ANIM) && (chr->act_anim.alwaysAnimate == 0))
         {
             headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
 
@@ -2387,10 +2387,10 @@ after_position_update:
         chrUpdateAimProperties(chr);
     }
 
-    if (chr->field_20 != NULL)
+    if (chr->jointList != NULL)
     {
-        jointListFree(chr->field_20);
-        chr->field_20 = NULL;
+        jointListFree(chr->jointList);
+        chr->jointList = NULL;
     }
 
     if (headSwitchVisible)
@@ -2446,10 +2446,10 @@ after_position_update:
 
         prop->zDepth = modelGetRootDepth(model);
 
-        chr->field_20 = jointListAddModel(NULL, model);
+        chr->jointList = jointListAddModel(NULL, model);
 
-        chrRenderHeldWeapon(prop, GUNRIGHT, (Gfx **)(&chr->field_20));
-        chrRenderHeldWeapon(prop, GUNLEFT, (Gfx **)(&chr->field_20));
+        chrRenderHeldWeapon(prop, GUNRIGHT, (Gfx **)(&chr->jointList));
+        chrRenderHeldWeapon(prop, GUNLEFT, (Gfx **)(&chr->jointList));
 
         if (chr->handle_positiondata_hat != NULL)
         {
@@ -2511,7 +2511,7 @@ after_position_update:
 
             if ((!(chr->hidden & CHRHIDDEN_DROP_HELD_ITEMS)) || (!(hatobj->runtime_bitflags & RUNTIMEBITFLAG_00000080)))
             {
-                chr->field_20 = jointListAddModel(chr->field_20, hatmodel);
+                chr->jointList = jointListAddModel(chr->jointList, hatmodel);
             }
         }
 
@@ -2529,8 +2529,8 @@ after_position_update:
             }
         }
 
-        jointListCalcDepths(chr->field_20);
-        chr->field_20 = jointListSortByDepth(chr->field_20);
+        jointListCalcDepths(chr->jointList);
+        chr->jointList = jointListSortByDepth(chr->jointList);
     }
     else
     {
@@ -2736,7 +2736,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
             }
 
             g_playerPerm->time_other_players_on_screen += 1;
-            jointListDraw(&mrData, chr->field_20);
+            jointListDraw(&mrData, chr->jointList);
 
             gdl = mrData.gdl;
 
@@ -2779,8 +2779,8 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
     if (withalpha != 0)
     {
-        jointListFree(chr->field_20);
-        chr->field_20 = NULL;
+        jointListFree(chr->jointList);
+        chr->jointList = NULL;
     }
 
     return gdl;
@@ -3153,7 +3153,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
 
     if (hitpart != HIT_NULL_PART)
     {
-        entry = chr->field_20;
+        entry = chr->jointList;
         hitpart = jointListFindHit(&entry, &shotdata->viewOrigin, &shotdata->viewDir, &hitmodel, &hitnode);
 
         while ((hitpart == HIT_GUN) || (hitpart == HIT_HAT))

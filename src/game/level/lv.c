@@ -125,14 +125,10 @@ f32 g_PowerOnTimeSec = 0;
 /**
  * Debug variable, seems to track whether user input has changed since
  * the last time the method was entered.
- *
- * Addres 0x800483C0.
  */
 s32 g_LvDrawWorld = 1;
 
-s32 g_DebugHitTexNum = 0xFFFFFFFF;
 
-struct LvlMpUnknown *g_DebugDetailEdit = NULL;
 
 
 extern u8* _fontdlSegmentRomStart NO_SDATA;

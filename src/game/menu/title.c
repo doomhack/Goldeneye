@@ -754,58 +754,29 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
 }
 
 
-void titleMakeBarrelHoleVerts(struct s_display_list_something *var_s0, s32 arg1)
+/* Vertices of the gun barrel hole: a fan of points around a half circle, mirrored to make
+ * the full circle, shaded darker towards the top. */
+void titleMakeBarrelHoleVerts(Vtx_t *vtx, s32 numSteps)
 {
     s16 cosval;
-    f32 temp_f20;
+    f32 angle;
     s16 sinval;
-    s32 var_s2;
+    s32 step;
+    u8 shade;
 
-    for (var_s2 = 0; var_s2 <= arg1; var_s2 += 2)
+    for (step = 0; step <= numSteps; step += 2)
     {
-        temp_f20 = ((f32) var_s2 * 3.1415927f) / (f32) arg1;
+        angle = ((f32) step * 3.1415927f) / (f32) numSteps;
 
-        sinval = sinf(temp_f20) * 64.0f;
-        cosval = cosf(temp_f20) * -64.0f;
-        
-        var_s0->unk0 = sinval;
-        var_s0->unk2 = cosval;
-        
-        var_s0->unk4 = 0;
-        var_s0->unk6 = 0;
-        var_s0->unk8 = 0;
-        var_s0->unkA = 0;
-        var_s0->unkC = 0xff;
-        var_s0->unkD = 0xff;
-        var_s0->unkE = 0xff;
+        sinval = sinf(angle) * 64.0f;
+        cosval = cosf(angle) * -64.0f;
+        shade = (s8) (u32) (143.0f - (cosf(angle) * -111.0f));
 
-        
-        var_s0->unkC = (s8) (u32) (143.0f - (cosf(temp_f20) * -111.0f));
-        var_s0->unkD = (s8) (u32) (143.0f - (cosf(temp_f20) * -111.0f));
-        var_s0->unkE = (s8) (u32) (143.0f - (cosf(temp_f20) * -111.0f));
-        var_s0->unkF = 0;
+        *vtx++ = (Vtx_t){ .ob = { sinval, cosval, 0 }, .cn = { shade, shade, shade, 0 } };
 
-        var_s0++;
-
-        if ((var_s2 != 0) && (var_s2 < arg1))
+        if ((step != 0) && (step < numSteps))
         {
-            var_s0->unk0 = -sinval;
-            var_s0->unk2 = cosval;
-            
-            var_s0->unk4 = 0;
-            var_s0->unk6 = 0;
-            var_s0->unk8 = 0;
-            var_s0->unkA = 0;
-            var_s0->unkC = 0xff;
-            var_s0->unkD = 0xff;
-            var_s0->unkE = 0xff;
-
-            var_s0->unkC = (s8) (u32) (143.0f - (cosf(temp_f20) * -111.0f));
-            var_s0->unkD = (s8) (u32) (143.0f - (cosf(temp_f20) * -111.0f));
-            var_s0->unkE = (s8) (u32) (143.0f - (cosf(temp_f20) * -111.0f));
-            var_s0->unkF = 0;
-            
-            var_s0++;
+            *vtx++ = (Vtx_t){ .ob = { -sinval, cosval, 0 }, .cn = { shade, shade, shade, 0 } };
         }
     }
 }

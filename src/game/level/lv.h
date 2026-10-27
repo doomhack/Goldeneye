@@ -23,25 +23,6 @@
 #define DEFAULT_007_SOLO_AMMO_MULTIPLIER DEFAULT_00_AGENT_SOLO_AMMO_MULTIPLIER
 #define DEFAULT_007_AI_REACTION_SPEED DEFAULT_00_AGENT_AI_REACTION_SPEED
 
-struct LvlMpUnknown {
-    union {
-        struct {
-            u8 unk_0;
-            u8 unk_1;
-            u8 unk_2;
-            u8 unk_3;
-        };
-        struct {
-            u32 unk_0_0 : 8;
-            u32 unk_1_3 : 3;
-            u32 unk_1_0 : 3;
-        };
-        u32 word;
-    };
-};
-
-extern s32 g_DebugHitTexNum;
-extern struct LvlMpUnknown *g_DebugDetailEdit;
 
 extern s32 g_ClockTimer;
 extern s32 g_GlobalTimer;

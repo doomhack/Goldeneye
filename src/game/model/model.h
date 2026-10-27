@@ -7,10 +7,11 @@
 #include "game/gfx/image.h"
 #include "game/model/anim.h"
 
-struct bondstruct_unk_op07_related {
-    s32 unk00;
-    s32 unk04;
-    s32 unk0C;
+/* One row per 1/64 turn of pitch towards the camera: which of the tube's view entries to use for each yaw */
+struct TubeAngleRow {
+    s32 first; // first view entry of this row
+    s32 round; // added to the 16-bit yaw before shifting
+    s32 shift; // yaw >> shift = entry within the row
 };
 
 struct AnimModelSlot {
@@ -90,7 +91,7 @@ extern u32 g_ModelShadowAlpha;
 
 extern struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices);
 extern void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx);
-extern struct bondstruct_unk_op07_related g_ModelTubeAngleTable[];
+extern struct TubeAngleRow g_ModelTubeAngleTable[];
 extern Vertex g_ModelGunfireVtxTemplate;
 extern Vtx g_ModelShadowVtxTemplate;
 

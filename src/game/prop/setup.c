@@ -89,7 +89,6 @@ s32 setupCountPropdefs(PROPDEF_TYPE type)
 /**
  * perfect dark padGetCentre (pad.c)
  *
- * NTSC address 0x7F001BD4.
 */
 void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *arg1)
 {
@@ -134,7 +133,6 @@ void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *arg1)
 }
 
 /**
- * NTSC address 0x7F001D9C.
 */
 void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
 {
@@ -476,8 +474,6 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
 }
 
 /**
- * NTSC address 0x7F002738.
- * PAL address 0x7F002738.
 */
 void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
 {
@@ -611,7 +607,6 @@ void setupKey(s32 arg0, ObjectRecord* key, s32 cmdindex)
 
 
 /**
- * NTSC address 0x7F002A3C.
 */
 void setupCctv(s32 arg0, CCTVRecord *arg1, s32 cmdindex)
 {
@@ -641,7 +636,7 @@ void setupCctv(s32 arg0, CCTVRecord *arg1, s32 cmdindex)
 
         mtx4RotateVecInPlace(&arg1->mtx, &sp44);
 
-        sp3C = &arg1->unk84;
+        sp3C = &arg1->headMtx;
 
         sp44.f[0] += arg1->prop->pos.f[0];
         sp44.f[1] += arg1->prop->pos.f[1];
@@ -653,16 +648,16 @@ void setupCctv(s32 arg0, CCTVRecord *arg1, s32 cmdindex)
         if (arg1->convert_to_f32 == 0)
         {
             arg1->convert_to_f32 = 1;
-            arg1->unkCC = (*(s32*)&arg1->unkCC * M_TAU_F) / 65536.0f;
-            arg1->unkD0 = (*(s32*)&arg1->unkD0 * M_TAU_F) / 65536.0f;
-            arg1->unkDC = (*(s32*)&arg1->unkDC * M_TAU_F) / 65536.0f;
-            arg1->unkE8 = *(s32*)&arg1->unkE8;
+            arg1->sweepYaw1 = (*(s32*)&arg1->sweepYaw1 * M_TAU_F) / 65536.0f;
+            arg1->sweepYaw2 = (*(s32*)&arg1->sweepYaw2 * M_TAU_F) / 65536.0f;
+            arg1->maxYawSpeed = (*(s32*)&arg1->maxYawSpeed * M_TAU_F) / 65536.0f;
+            arg1->viewDist = *(s32*)&arg1->viewDist;
         }
 
-        arg1->unkD4 = 0;
-        arg1->unkD8 = 0.0f;
-        arg1->unkC8 = arg1->unkCC;
-        arg1->unkC4 = mathAtan2(sp44.f[0] - sp50->pos.f[0], sp44.f[2] - sp50->pos.f[2]);
+        arg1->towardsYaw1 = 0;
+        arg1->yawSpeed = 0.0f;
+        arg1->yaw = arg1->sweepYaw1;
+        arg1->baseYaw = mathAtan2(sp44.f[0] - sp50->pos.f[0], sp44.f[2] - sp50->pos.f[2]);
         arg1->timer = 0;
     }
 }
@@ -676,30 +671,30 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
 #ifdef VERSION_EU
     autogun->speed = ((*((s32 *) (&autogun->speed))) * 7.5398226f) / 65536.0f;
     autogun->aimdist = ((*((s32 *) (&autogun->aimdist))) * 100.0f) / 65536.0f;
-    autogun->unk88 = ((*((s32 *) (&autogun->unk88))) * M_TAU_F) / 65536.0f;
-    autogun->unk8C = ((*((s32 *) (&autogun->unk8C))) * M_TAU_F) / 65536.0f;
+    autogun->maxYaw = ((*((s32 *) (&autogun->maxYaw))) * M_TAU_F) / 65536.0f;
+    autogun->minYaw = ((*((s32 *) (&autogun->minYaw))) * M_TAU_F) / 65536.0f;
 #endif
 
-    autogun->unkAC = 0;
-    autogun->unkB8 = -1;
-    autogun->unkBC = -1;
-    autogun->unkC0 = -1;
-    autogun->unkC4 = 0;
-    autogun->unkC8 = 0;
-    autogun->unk90 = 0.0f;
-    autogun->unk94 = 0.0f;
-    autogun->rot_related = 0.0f;
-    autogun->unk9C = 0.0f;
-    autogun->unkA0 = 0.0f;
-    autogun->unk98 = 0.0f;
-    autogun->unkB0 = 0.0f;
-    autogun->unkB4 = 0.0f;
+    autogun->numShots = 0;
+    autogun->lastSeenTime = -1;
+    autogun->onTargetTime = -1;
+    autogun->nextSoundTime = -1;
+    autogun->fireSound1 = 0;
+    autogun->fireSound2 = 0;
+    autogun->yaw = 0.0f;
+    autogun->yawSpeed = 0.0f;
+    autogun->homeYaw = 0.0f;
+    autogun->pitch = 0.0f;
+    autogun->pitchSpeed = 0.0f;
+    autogun->homePitch = 0.0f;
+    autogun->barrelSpinSpeed = 0.0f;
+    autogun->barrelSpinAngle = 0.0f;
 
 #ifndef VERSION_EU
     autogun->speed = ((*((s32 *) (&autogun->speed))) * M_TAU_F) / 65536.0f;
     autogun->aimdist = ((*((s32 *) (&autogun->aimdist))) * 100.0f) / 65536.0f;
-    autogun->unk88 = ((*((s32 *) (&autogun->unk88))) * M_TAU_F) / 65536.0f;
-    autogun->unk8C = ((*((s32 *) (&autogun->unk8C))) * M_TAU_F) / 65536.0f;
+    autogun->maxYaw = ((*((s32 *) (&autogun->maxYaw))) * M_TAU_F) / 65536.0f;
+    autogun->minYaw = ((*((s32 *) (&autogun->minYaw))) * M_TAU_F) / 65536.0f;
 #endif
 
     beam          = mempAlloc(0x30U, MEMPOOL_STAGE);
@@ -707,7 +702,7 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
     *beam = -1;
 
     autogun->is_active = FALSE;
-    autogun->unkD4 = 0.0f;
+    autogun->damageAccum = 0.0f;
 
     if (autogun->padID >= 0)
     {
@@ -732,8 +727,8 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
         ydiff = pad->pos.y - prop->pos.y;
         zdiff = pad->pos.z - prop->pos.z;
 
-        autogun->rot_related = mathAtan2(xdiff, zdiff);
-        autogun->unk98 = mathAtan2(ydiff, sqrtf((xdiff * xdiff) + (zdiff * zdiff)));
+        autogun->homeYaw = mathAtan2(xdiff, zdiff);
+        autogun->homePitch = mathAtan2(ydiff, sqrtf((xdiff * xdiff) + (zdiff * zdiff)));
     }
 }
 
@@ -1537,7 +1532,7 @@ void setupCreateProps(enum LEVELID stageId)
                                     up.z -= 10.0f * pad3d->up.z;
 
                                     ((struct TintedGlassRecord *) phead)->portalnum = bgFindPortalOnSegment(&up, &up2);
-                                    ((struct TintedGlassRecord *) phead)->unk90 = (*((s32 *) (&((struct TintedGlassRecord *) phead)->unk90))) / M_U16_MAX_VALUE_F;
+                                    ((struct TintedGlassRecord *) phead)->minOpacity = (*((s32 *) (&((struct TintedGlassRecord *) phead)->minOpacity))) / M_U16_MAX_VALUE_F;
                                 }
                             }
                             setupObject(stageId, (struct ObjectRecord *) phead, pdefIndex);
@@ -1606,9 +1601,9 @@ void setupCreateProps(enum LEVELID stageId)
 
                             pdef_tank->stan_y = stan_y;
 #ifdef VERSION_EU
-                            pdef_tank->unkD0 = stan_y / 0.2004f; // EU-tuned constant
+                            pdef_tank->smoothYSum = stan_y / 0.2004f; // EU-tuned constant
 #else
-                            pdef_tank->unkD0 = stan_y / 0.17000002f;
+                            pdef_tank->smoothYSum = stan_y / 0.17000002f;
 #endif
                         }
                         break;
@@ -1623,7 +1618,7 @@ void setupCreateProps(enum LEVELID stageId)
                             {
                                 if (pdef_veh->model->obj->Switches[5] != NULL)
                                 {
-                                    modelGetNodeRwData(pdef_veh->model, pdef_veh->model->obj->Switches[5])->Raw.unk00 = (pdef_veh->flags & 0x10000000) == 0;
+                                    modelGetNodeRwData(pdef_veh->model, pdef_veh->model->obj->Switches[5])->Switch.visible = (pdef_veh->flags & 0x10000000) == 0;
                                 }
                             }
 

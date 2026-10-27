@@ -169,16 +169,12 @@ void chrUpdateAimendbackShoulders           (ChrRecord *, void *, s32, s32, f32)
 // end forward declarations
 
 
-/**
- * dont think this is right, shouldnt it check for gun flags not chr?
- */
+/* arg0 is a held weapon's prop */
 u32 weaponIsOneHanded(PropRecord *arg0)
 {
     if (arg0 != NULL)
     {
-        ChrRecord *v = (ChrRecord*)arg0->voidp;
-
-        return weaponHasFlag(v->act_bytes.padding[84], WEAPONSTATBITFLAG_ONLY_1_HANDED);
+        return weaponHasFlag(arg0->weapon->weaponnum, WEAPONSTATBITFLAG_ONLY_1_HANDED);
     }
 
     return 0U;
@@ -422,7 +418,7 @@ void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 
     self->chrflags &= ~CHRFLAG_02000000;
     self->actiontype = ACT_ANIM;
 
-    self->act_anim.unk02c = (bitfield & ANIM_UNKNOWN) != 0;
+    self->act_anim.alwaysAnimate = (bitfield & ANIM_UNKNOWN) != 0;
     self->act_anim.holdLastFrame = (bitfield & ANIM_LOOP_HOLD_LAST_FRAME) != 0;
     self->act_anim.playSfx       = (bitfield & ANIM_PLAY_SFX) != 0;
     self->act_anim.idleOnEnd     = (bitfield & ANIM_IDLE_POSE_WHEN_COMPLETE) != 0;
@@ -636,7 +632,7 @@ void chrActorFadeAway(ChrRecord *self)
     {
         chrStopFiring(self);
         self->actiontype = ACT_DEAD;
-        self->act_dead.allowfade = -1;
+        self->act_dead.fadeTime = -1;
         self->sleep = 0;
     }
 }
@@ -869,7 +865,7 @@ void chrAttackSetEndFrame(ChrRecord *self)
             modelSetAnimEndFrame(model, f->shoot_start_frame);
         }
     }
-    else if (self->act_attack.unk36 != 0)
+    else if (self->act_attack.doRecoil != 0)
     {
         if (f->recoil_start_frame >= 0.0f)
         {
@@ -1024,54 +1020,54 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
         }
     }
 
-    self->act_attack.unk30 = 1;
+    self->act_attack.turning = 1;
     self->act_attack.animfloats = panim_float;
-    self->act_attack.unk31 = 0;
-    self->act_attack.unk32 = (u32)randomGetNext() & 1U;
-    self->act_attack.unk38[1] = arg3->p[1];
-    self->act_attack.unk38[0] = arg3->p[0];
-    self->act_attack.unk3a[1] = sp60.p[1];
-    self->act_attack.unk3a[0] = sp60.p[0];
-    self->act_attack.unk3c[1] = sp58.p[1];
-    self->act_attack.unk3c[0] = sp58.p[0];
-    self->act_attack.unk36 = phi_s6;
-    self->act_attack.unk37 = phi_s7;
-    self->act_attack.unk40 = 0;
-    self->act_attack.unk33 = 0;
+    self->act_attack.fired = 0;
+    self->act_attack.nextGun = (u32)randomGetNext() & 1U;
+    self->act_attack.hasGun[1] = arg3->p[1];
+    self->act_attack.hasGun[0] = arg3->p[0];
+    self->act_attack.singleShot[1] = sp60.p[1];
+    self->act_attack.singleShot[0] = sp60.p[0];
+    self->act_attack.isLauncher[1] = sp58.p[1];
+    self->act_attack.isLauncher[0] = sp58.p[0];
+    self->act_attack.doRecoil = phi_s6;
+    self->act_attack.doOneBurst = phi_s7;
+    self->act_attack.numWaitTicks = 0;
+    self->act_attack.numShots = 0;
 
     if ((sp58.p[1] != 0) || (sp58.p[0] != 0))
     {
         if ((sp58.p[1] != 0) && (sp58.p[0] != 0))
         {
-            self->act_attack.unk34 = 2;
+            self->act_attack.maxShots = 2;
         }
         else
         {
-            self->act_attack.unk34 = 1;
+            self->act_attack.maxShots = 1;
         }
     }
     else
     {
         if ((attack_type & 0x80) != 0)
         {
-            self->act_attack.unk34 = 1;
+            self->act_attack.maxShots = 1;
         }
         else
         {
-            self->act_attack.unk34 = (randomGetNext() & 3) + 2;
+            self->act_attack.maxShots = (randomGetNext() & 3) + 2;
         }
 
         if ((arg3->p[0] != 0) && (arg3->p[1] != 0))
         {
-            self->act_attack.unk34 += (randomGetNext() & 3) + 2;
+            self->act_attack.maxShots += (randomGetNext() & 3) + 2;
         }
     }
 
     self->act_attack.attacktype = attack_type;
     self->act_attack.entityid = arg5;
-    self->act_attack.unk54 = arg6;
+    self->act_attack.standing = arg6;
     self->act_attack.type_of_motion = 0;
-    self->act_attack.unk44 = 0;
+    self->act_attack.lastFire60 = 0;
     self->act_attack.attack_time = 0;
     self->sleep = 0;
 
@@ -1383,16 +1379,16 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
     #else
     chr->act_attackwalk.clock_timer34 = ((u32) randomGetNext() % (u32) (s32) (400.0f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
     #endif
-    chr->act_attackwalk.unk038 = 0;
+    chr->act_attackwalk.facedTarget = 0;
     chr->act_attackwalk.animfloats = panim_float;
     chr->act_attackwalk.timer40 = 0;
-    chr->act_attackwalk.unk044 = (u32)randomGetNext() & 1U;
-    chr->act_attackwalk.unk48[1] = (s8) sp70.p[1];
-    chr->act_attackwalk.unk48[0] = (s8) sp70.p[0];
-    chr->act_attackwalk.unk4a[1] = (s8) sp68.p[1];
-    chr->act_attackwalk.unk4a[0] = (s8) sp68.p[0];
-    chr->act_attackwalk.unk4C[1] = (s8) sp60.p[1];
-    chr->act_attackwalk.unk4C[0] = (s8) sp60.p[0];
+    chr->act_attackwalk.nextGun = (u32)randomGetNext() & 1U;
+    chr->act_attackwalk.hasGun[1] = (s8) sp70.p[1];
+    chr->act_attackwalk.hasGun[0] = (s8) sp70.p[0];
+    chr->act_attackwalk.singleShot[1] = (s8) sp68.p[1];
+    chr->act_attackwalk.singleShot[0] = (s8) sp68.p[0];
+    chr->act_attackwalk.isLauncher[1] = (s8) sp60.p[1];
+    chr->act_attackwalk.isLauncher[0] = (s8) sp60.p[0];
     chr->sleep = 0;
     chr->act_attackwalk.speed = 0.0f;
 
@@ -1529,39 +1525,39 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
 
     chr->actiontype = ACT_ATTACKROLL;
     chr->act_attackroll.animfloats = panim_float;
-    chr->act_attackroll.unk31 = 0;
-    chr->act_attackroll.unk32 = (u32)randomGetNext() & (u32)1;
-    chr->act_attackroll.unk38[1] = sp64.p[1];
-    chr->act_attackroll.unk38[0] = sp64.p[0];
-    chr->act_attackroll.unk3a[1] = sp54.p[1];
-    chr->act_attackroll.unk3a[0] = sp54.p[0];
-    chr->act_attackroll.unk3c[1] = sp4C.p[1];
-    chr->act_attackroll.unk3c[0] = sp4C.p[0];
-    chr->act_attackroll.unk36 = phi_s3;
-    chr->act_attackroll.unk37 = sp5C;
-    chr->act_attackroll.unk35 = sp78;
-    chr->act_attackroll.unk40 = 0;
-    chr->act_attackroll.unk33 = 0;
-    chr->act_attackroll.unk30 = 1;
+    chr->act_attackroll.fired = 0;
+    chr->act_attackroll.nextGun = (u32)randomGetNext() & (u32)1;
+    chr->act_attackroll.hasGun[1] = sp64.p[1];
+    chr->act_attackroll.hasGun[0] = sp64.p[0];
+    chr->act_attackroll.singleShot[1] = sp54.p[1];
+    chr->act_attackroll.singleShot[0] = sp54.p[0];
+    chr->act_attackroll.isLauncher[1] = sp4C.p[1];
+    chr->act_attackroll.isLauncher[0] = sp4C.p[0];
+    chr->act_attackroll.doRecoil = phi_s3;
+    chr->act_attackroll.doOneBurst = sp5C;
+    chr->act_attackroll.oneHanded = sp78;
+    chr->act_attackroll.numWaitTicks = 0;
+    chr->act_attackroll.numShots = 0;
+    chr->act_attackroll.turning = 1;
 
     if ((sp4C.p[1] != 0) || (sp4C.p[0] != 0))
     {
         if ((sp4C.p[1] != 0) && (sp4C.p[0] != 0))
         {
-            chr->act_attackroll.unk34 = 2;
+            chr->act_attackroll.maxShots = 2;
         }
         else
         {
-            chr->act_attackroll.unk34 = (s8) 1U;
+            chr->act_attackroll.maxShots = (s8) 1U;
         }
     }
     else
     {
-        chr->act_attackroll.unk34 = (s32)((u32)randomGetNext() & 3U) + 2;
+        chr->act_attackroll.maxShots = (s32)((u32)randomGetNext() & 3U) + 2;
 
         if ((sp64.p[0] != 0) && (sp64.p[1] != 0))
         {
-            chr->act_attackroll.unk34 += (s32)((u32)randomGetNext() & 3U) + 2;
+            chr->act_attackroll.maxShots += (s32)((u32)randomGetNext() & 3U) + 2;
         }
     }
 
@@ -1569,7 +1565,7 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
     chr->act_attackroll.unk4c[1] = 0;
     chr->act_attackroll.unk54[0] = 1;
     chr->act_attackroll.unk54[1] = 0;
-    chr->act_attackroll.unk44 = 0;
+    chr->act_attackroll.lastFire60 = 0;
     chr->act_attackroll.attack_time = 0;
     chr->sleep = 0;
 
@@ -1798,7 +1794,7 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
 
     if ((self->prop->type != PROP_TYPE_VIEWER) || (getPlayerCount() < 2))
     {
-        flag1 = (self->actiontype == ACT_ARGH) && (g_GlobalTimer == self->act_argh.unk30);
+        flag1 = (self->actiontype == ACT_ARGH) && (g_GlobalTimer == self->act_argh.lastHit60);
 
         for (i=0; g_HitReactionTable[i].hitpart != -1; i++)
         {
@@ -1932,7 +1928,7 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
                 chrStopFiring(self);
                 self->actiontype = ACT_ARGH;
                 self->act_argh.notifychrindex = 0;
-                self->act_argh.unk30 = g_GlobalTimer;
+                self->act_argh.lastHit60 = g_GlobalTimer;
                 self->sleep = 0;
 
                 if ((randomGetNext() & 1) != 0)
@@ -2005,7 +2001,7 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
 
                     self->actiontype = ACT_ARGH;
                     self->act_argh.notifychrindex = 0;
-                    self->act_argh.unk30 = g_GlobalTimer;
+                    self->act_argh.lastHit60 = g_GlobalTimer;
                     self->sleep = 0;
 
                     modelSetAnimationWithMerge(model, struck_ani->struck_anim, struck_ani->flip, 0.0f, struck_ani->speed, 16.0f, ff);
@@ -2056,7 +2052,7 @@ s32 chrGetHitInterruptFrame(ChrRecord *self, f32 *result)
 
     if (self->actiontype == ACT_ATTACKROLL)
     {
-        if (self->act_attackroll.unk35 != 0)
+        if (self->act_attackroll.oneHanded != 0)
         {
             if (
                 (self->act_attackroll.animfloats == &g_ChrFireAnims[4])
@@ -2064,9 +2060,9 @@ s32 chrGetHitInterruptFrame(ChrRecord *self, f32 *result)
                 || (self->act_attackroll.animfloats == &g_ChrFireAnims[6])
                 || (self->act_attackroll.animfloats == &g_ChrFireAnims[7]))
             {
-                out_val = self->act_attackroll.animfloats->unk04 - 8.0f;
+                out_val = self->act_attackroll.animfloats->turnEndFrame - 8.0f;
 
-                if (self->act_attackroll.animfloats->end_frame < self->act_attackroll.animfloats->unk04)
+                if (self->act_attackroll.animfloats->end_frame < self->act_attackroll.animfloats->turnEndFrame)
                 {
                     out_val = self->act_attackroll.animfloats->end_frame;
                 }
@@ -2080,7 +2076,7 @@ s32 chrGetHitInterruptFrame(ChrRecord *self, f32 *result)
         }
         else
         {
-            out_val = self->act_attackroll.animfloats->unk04 - 8.0f;
+            out_val = self->act_attackroll.animfloats->turnEndFrame - 8.0f;
             if (modelGetAnimFrame(self->model) < out_val)
             {
                 *result = out_val;
@@ -2322,7 +2318,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
                 (self->actiontype != ACT_PATROL) &&
                 (self->actiontype != ACT_SURRENDER) &&
                 (self->actiontype != ACT_ANIM) &&
-                ((self->actiontype != ACT_GOPOS) || self->act_gopos.unk59))
+                ((self->actiontype != ACT_GOPOS) || self->act_gopos.speedMode))
             {
                 // Punching and pistol whipping is less effective from the front
                 if ((angle < DegToRad(60.0)) || (angle > DegToRad(300.0)))
@@ -2440,9 +2436,9 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
                 self->act_preargh.pos.x  = vector->x;
                 self->act_preargh.pos.y  = vector->y;
                 self->act_preargh.pos.z  = vector->z;
-                self->act_preargh.unk038 = angle;
-                self->act_preargh.unk03c = hitpart;
-                self->act_preargh.unk040 = weaponid;
+                self->act_preargh.angle = angle;
+                self->act_preargh.hitpart = hitpart;
+                self->act_preargh.weaponid = weaponid;
                 self->sleep              = 0;
             }
             else
@@ -2842,7 +2838,7 @@ s32 chrGoPosCalculateBaseTtl(ChrRecord *self)
 
 void chrGoPosClearRestartTtl(ChrRecord *self)
 {
-    self->act_gopos.unk5a = 0;
+    self->act_gopos.restartTtl = 0;
 }
 
 
@@ -2858,7 +2854,7 @@ void chrGoPosConsiderRestart(ChrRecord *self)
 
     if (self->act_gopos.waydata.mode != WAYMODE_MAGIC)
     {
-        temp_v0 = self->act_gopos.unk5a;
+        temp_v0 = self->act_gopos.restartTtl;
 
         if (temp_v0 == 0)
         {
@@ -2873,7 +2869,7 @@ void chrGoPosConsiderRestart(ChrRecord *self)
                 temp_a1 = (u16)-1;
             }
 
-            self->act_gopos.unk5a = (s16)temp_a1;
+            self->act_gopos.restartTtl = (s16)temp_a1;
 
             return;
         }
@@ -2882,12 +2878,12 @@ void chrGoPosConsiderRestart(ChrRecord *self)
 
         if (temp_v1 >= temp_v0)
         {
-            chrGoToPos(self, &self->act_gopos.targetpos, self->act_gopos.target, self->act_gopos.unk59);
+            chrGoToPos(self, &self->act_gopos.targetpos, self->act_gopos.target, self->act_gopos.speedMode);
 
             return;
         }
 
-        self->act_gopos.unk5a = (u16) (temp_v0 - temp_v1);
+        self->act_gopos.restartTtl = (u16) (temp_v0 - temp_v1);
     }
 }
 
@@ -2903,8 +2899,8 @@ void chrGoPosResetMagic(ChrRecord *self)
     chrGoPosGetCurWaypointInfo(self, (coord3d *) &sp1C, &sp18);
 
     self->act_gopos.waydata.mode = 0;
-    self->act_gopos.waydata.unk01 = 0;
-    self->act_gopos.waydata.unk02 = 0;
+    self->act_gopos.waydata.iter = 0;
+    self->act_gopos.waydata.gotPos = 0;
 
     self->act_gopos.waydata.pos.f[0] = sp1C.f[0];
     self->act_gopos.waydata.pos.f[1] = sp1C.f[1];
@@ -3038,8 +3034,8 @@ void chrSetNextActPatrolStepPadPos(ChrRecord *self)
 
     temp_v0 = chrGetNextPatrolStepPad(self);
     self->act_patrol.waydata.mode = 0;
-    self->act_patrol.waydata.unk01 = 0;
-    self->act_patrol.waydata.unk02 = 0;
+    self->act_patrol.waydata.iter = 0;
+    self->act_patrol.waydata.gotPos = 0;
     self->act_patrol.waydata.pos.f[0] = temp_v0->pos.f[0];
     self->act_patrol.waydata.pos.f[1] = temp_v0->pos.f[1];
     self->act_patrol.waydata.pos.f[2] = temp_v0->pos.f[2];
@@ -3169,7 +3165,7 @@ void chrGoPosTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d 
             }
             else
             {
-                self->act_gopos.unk9c = g_GlobalTimer;
+                self->act_gopos.magicCheck60 = g_GlobalTimer;
                 chrGoPosResetMagic(self);
             }
         }
@@ -3339,7 +3335,7 @@ void chrGoPosChooseAnimationEx(ChrRecord *self, s32 arg1, s32 arg2)
 
 void chrGoPosChooseAnimation( ChrRecord *self)
 {
-    chrGoPosChooseAnimationEx(self, self->act_ubytes.padding[45], c_item_entries[self->bodynum].isMale);
+    chrGoPosChooseAnimationEx(self, self->act_gopos.speedMode, c_item_entries[self->bodynum].isMale);
 }
 
 
@@ -3356,7 +3352,7 @@ s32 chrGoToPos(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed)
 
     prop = self->prop;
 
-    phi_v0 = (self->actiontype == ACT_GOPOS) && (self->act_gopos.unk59 == (u8)speed);
+    phi_v0 = (self->actiontype == ACT_GOPOS) && (self->act_gopos.speedMode == (u8)speed);
 
     prop_waypoint = waypointFindNearPos(&prop->pos, prop->stan);
     target_waypoint = waypointFindNearPos(arg1, stan);
@@ -3376,11 +3372,11 @@ s32 chrGoToPos(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed)
         self->act_gopos.target = stan;
         self->act_gopos.target_path = target_waypoint;
         self->act_gopos.curindex = 0;
-        self->act_gopos.unk59 = speed;
+        self->act_gopos.speedMode = speed;
         self->act_gopos.speed = 0.0f;
         self->act_gopos.waydata.age = (s32) (randomGetNext() % 100U);
-        self->act_gopos.waydata.unk03 = 0;
-        self->act_gopos.unk9c = -1;
+        self->act_gopos.waydata.gotPosCopy = 0;
+        self->act_gopos.magicCheck60 = -1;
 
         for (i=0; i<MAX_CHRWAYPOINTS; i++)
         {
@@ -3506,8 +3502,8 @@ void chrStartPatrol(ChrRecord *self, struct patrol_path *path)
     self->act_patrol.nextstep = next_step;
     self->act_patrol.forward = 1;
     self->act_patrol.waydata.age = randomGetNext() % 0x64U;
-    self->act_patrol.waydata.unk03 = 0;
-    self->act_init.padding[0x13] = -1;
+    self->act_patrol.waydata.gotPosCopy = 0;
+    self->act_patrol.lastvisible60 = -1;
     self->act_patrol.speed = 0.0f;
 
     chrSetNextActPatrolStepPadPos(self);
@@ -3773,7 +3769,6 @@ s32 propCanWalkLine(PropRecord *arg0, coord3d *arg1, coord3d *arg2)
 
 
 /**
- * Addres 0x7F029A94.
 */
 s32 propCanWalkInDir(PropRecord *arg0, coord3d *arg1, f32 arg2)
 {
@@ -4667,7 +4662,7 @@ void chrTickKneel(ChrRecord *actor) {
 void chrTickAnim(ChrRecord *self)
 {
 
-    if (self->act_init.padding[1] == 0)
+    if (self->act_anim.holdLastFrame == 0)
     {
         f32 sp20 = modelGetAnimFrame(self->model);
 
@@ -4691,7 +4686,7 @@ void chrTickAnim(ChrRecord *self)
         self->chrflags |= CHRFLAG_02000000;
     }
 
-    if (((s32) self->sleep <= 0) && (self->act_init.padding[3] != 0))
+    if (((s32) self->sleep <= 0) && (self->act_anim.idleOnEnd != 0))
     {
         self->sleep = (randomGetNext() % 5U) + 0xE;
     }
@@ -4729,23 +4724,23 @@ void chrTickSurrender(ChrRecord *self)
 
 void chrTickDead(ChrRecord *self)
 {
-    if (self->act_init.padding[0] >= 0)
+    if (self->act_dead.fadeTime >= 0)
     {
-        self->act_init.padding[0] += g_ClockTimer;
+        self->act_dead.fadeTime += g_ClockTimer;
 
-        if (self->act_init.padding[0] >= CHRLV_TICK_DEAD_CHECK)
+        if (self->act_dead.fadeTime >= CHRLV_TICK_DEAD_CHECK)
         {
             self->hidden |= CHRHIDDEN_REMOVE;
         }
         else
         {
-            self->fadealpha = (u8) ((s32) ((CHRLV_TICK_DEAD_CHECK - self->act_init.padding[0]) * 0xFF) / CHRLV_TICK_DEAD_CHECK);
+            self->fadealpha = (u8) ((s32) ((CHRLV_TICK_DEAD_CHECK - self->act_dead.fadeTime) * 0xFF) / CHRLV_TICK_DEAD_CHECK);
         }
 
         return;
     }
 
-    self->act_init.padding[0] = 0;
+    self->act_dead.fadeTime = 0;
 }
 
 
@@ -4772,11 +4767,11 @@ void chrAlertOthersOfInjury(ChrRecord *self, s32 flag)
     */
     if (self->actiontype == ACT_ARGH)
     {
-        i = self->act_init.padding[0];
+        i = self->act_argh.notifychrindex;
     }
     else if (self->actiontype == ACT_DIE)
     {
-        i = self->act_init.padding[0];
+        i = self->act_die.notifychrindex;
     }
 
     for (; i < numguards && alert_count < 4; i++)
@@ -4812,11 +4807,11 @@ void chrAlertOthersOfInjury(ChrRecord *self, s32 flag)
 
     if (self->actiontype == ACT_ARGH)
     {
-        self->act_init.padding[0] = i;
+        self->act_argh.notifychrindex = i;
     }
     else if (self->actiontype == ACT_DIE)
     {
-        self->act_init.padding[0] = i;
+        self->act_die.notifychrindex = i;
     }
 }
 
@@ -4919,7 +4914,7 @@ void chrTickPreArgh(ChrRecord *self)
         sp30.f[0] = self->act_preargh.pos.f[0];
         sp30.f[1] = self->act_preargh.pos.f[1];
         sp30.f[2] = self->act_preargh.pos.f[2];
-        chrReactToHit(self, &sp30, self->act_preargh.unk038, self->act_preargh.unk03c, self->act_preargh.unk040);
+        chrReactToHit(self, &sp30, self->act_preargh.angle, self->act_preargh.hitpart, self->act_preargh.weaponid);
     }
 }
 
@@ -5038,7 +5033,7 @@ void chrPlayGunfireSound(ChrRecord *self, s32 arg1, s32 arg2)
     {
         if (sp33 > 0)
         {
-            if (((self->hidden & 0x80) == 0) && (self->field_178[arg1] < g_GlobalTimer))
+            if (((self->hidden & 0x80) == 0) && (self->nextGunSoundTime[arg1] < g_GlobalTimer))
             {
                 phi_a1 = 1;
             }
@@ -5051,19 +5046,19 @@ void chrPlayGunfireSound(ChrRecord *self, s32 arg1, s32 arg2)
 
     if (phi_a1 != 0)
     {
-        if (self->field_160[arg1].ptr_SEbuffer1 != NULL)
+        if (self->gunSounds[arg1].ptr_SEbuffer1 != NULL)
         {
-            if (sndGetPlayingState(self->field_160[arg1].ptr_SEbuffer1) != 0)
+            if (sndGetPlayingState(self->gunSounds[arg1].ptr_SEbuffer1) != 0)
             {
-                sndDeactivate(self->field_160[arg1].ptr_SEbuffer1);
+                sndDeactivate(self->gunSounds[arg1].ptr_SEbuffer1);
             }
         }
 
-        if (self->field_160[arg1].ptr_SEbuffer2 != NULL)
+        if (self->gunSounds[arg1].ptr_SEbuffer2 != NULL)
         {
-            if (sndGetPlayingState(self->field_160[arg1].ptr_SEbuffer2) != 0)
+            if (sndGetPlayingState(self->gunSounds[arg1].ptr_SEbuffer2) != 0)
             {
-                sndDeactivate(self->field_160[arg1].ptr_SEbuffer2);
+                sndDeactivate(self->gunSounds[arg1].ptr_SEbuffer2);
             }
         }
 
@@ -5071,20 +5066,20 @@ void chrPlayGunfireSound(ChrRecord *self, s32 arg1, s32 arg2)
         {
             phi_a2 = NULL;
 
-            if (self->field_160[arg1].ptr_SEbuffer1 == NULL)
+            if (self->gunSounds[arg1].ptr_SEbuffer1 == NULL)
             {
-                phi_a2 = (ALSoundState **) (&self->field_160[arg1].ptr_SEbuffer1);
+                phi_a2 = (ALSoundState **) (&self->gunSounds[arg1].ptr_SEbuffer1);
             }
-            else if (self->field_160[arg1].ptr_SEbuffer2 == NULL)
+            else if (self->gunSounds[arg1].ptr_SEbuffer2 == NULL)
             {
-                phi_a2 = (ALSoundState **) (&self->field_160[arg1].ptr_SEbuffer2);
+                phi_a2 = (ALSoundState **) (&self->gunSounds[arg1].ptr_SEbuffer2);
             }
 
             if (phi_a2 != NULL)
             {
                 sndPlaySfx(g_musicSfxBufferPtr, sp30, (ALSoundState *) phi_a2);
                 chrobjSndCreatePostEventDefault(*phi_a2, &self->prop->pos);
-                self->field_178[arg1] = ((0, g_GlobalTimer)) + ((s32) sp33);
+                self->nextGunSoundTime[arg1] = ((0, g_GlobalTimer)) + ((s32) sp33);
                 self->hidden |= 0x80;
             }
         }
@@ -5117,9 +5112,9 @@ f32 chrGetSubrotySideback(ChrRecord *self)
     }
     else if (self->actiontype == ACT_BONDMULTI)
     {
-        if (self->act_bondmulti.unk2c != NULL)
+        if (self->act_bondmulti.animfloats != NULL)
         {
-            phi_f12 = self->act_bondmulti.unk2c[3];
+            phi_f12 = self->act_bondmulti.animfloats->angle_offset;
         }
     }
 
@@ -5392,7 +5387,7 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
             Model *weapon_prop_model; // sp272
             coord3d sp104; // sp260
             PropRecord *weapon_prop;
-            struct modeldata_root *temp_v0_4;
+            ModelRwData_HeaderRecord *temp_v0_4;
             Mtxf spBC; // sp188
             f32 *spB8;  // sp184
             coord3d spAC; //sp172
@@ -5479,11 +5474,11 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
                 calc_aimendsideback = t1 - subroty + M_TAU_F;
             }
 
-            temp_v0_4 = (struct modeldata_root*)modelGetNodeRwData(self->model, self->model->obj->RootNode);
+            temp_v0_4 = &modelGetNodeRwData(self->model, self->model->obj->RootNode)->Header;
 
-            if (temp_v0_4->unk5c > 0.0f)
+            if (temp_v0_4->turnFrames > 0.0f)
             {
-                calc_aimendsideback = calc_aimendsideback - (temp_v0_4->unk5c * temp_v0_4->unk58);
+                calc_aimendsideback = calc_aimendsideback - (temp_v0_4->turnFrames * temp_v0_4->turnPerFrame);
 
                 if (calc_aimendsideback < 0.0f)
                 {
@@ -6090,15 +6085,15 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                     sp208->timer = -1;
                                     sp208->projectile->flags |= 0x20;
 
-                                    sp208->projectile->unkB0 = sp208->runtime_pos.y;
-                                    sp208->projectile->unkB4 = sp208->projectile->speed.f[1];
+                                    sp208->projectile->riseY = sp208->runtime_pos.y;
+                                    sp208->projectile->riseSpeed = sp208->projectile->speed.f[1];
 
                                   /*  sp208->projectile->unk10.x = sp1AC.f[0];
                                     sp208->projectile->unk10.y = sp1AC.f[1];
                                     sp208->projectile->unk10.z = sp1AC.f[2];*/
-                                    sp208->projectile->unk10.x = sp1AC.f[0];
-                                    sp208->projectile->unk10.y = sp1AC.f[1];
-                                    sp208->projectile->unk10.z = sp1AC.f[2];
+                                    sp208->projectile->accel.x = sp1AC.f[0];
+                                    sp208->projectile->accel.y = sp1AC.f[1];
+                                    sp208->projectile->accel.z = sp1AC.f[2];
 
                                     if (sp208->projectile->sounds[0] == NULL)
                                     {
@@ -6135,8 +6130,8 @@ void chrFireHand(ChrRecord *self, s32 hand)
 
                                 if (sp128->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                                 {
-                                    sp128->projectile->unk8C = 0.3f;
-                                    sp128->projectile->unk94 = 0.13333333f;
+                                    sp128->projectile->bounciness = 0.3f;
+                                    sp128->projectile->groundFriction = 0.13333333f;
 #ifdef REFRESH_PAL
                                     sp128->projectile->refreshrate = 50;
 #else
@@ -6308,7 +6303,7 @@ s32 chrAttackRollToKneel(ChrRecord *self)
     {
         model = self->model;
         sp24 = (s32) model->flip;
-        self->act_attackroll.unk30 = 2;
+        self->act_attackroll.turning = 2;
         self->act_attackroll.animfloats = &g_ChrFireAnims[1];
         self->sleep = 0;
 
@@ -6388,9 +6383,9 @@ void chrTickAttackCommon(ChrRecord *self)
 
     if (
 #ifdef REFRESH_PAL
-        (self->act_attack.attack_time < (self->act_attack.unk44 - 25))
+        (self->act_attack.attack_time < (self->act_attack.lastFire60 - 25))
 #else
-        (self->act_attack.attack_time < (self->act_attack.unk44 - 30))
+        (self->act_attack.attack_time < (self->act_attack.lastFire60 - 30))
 #endif
         && (self_model->anim2 == NULL))
     {
@@ -6399,7 +6394,7 @@ void chrTickAttackCommon(ChrRecord *self)
         {
             if (((self->act_attack.animfloats->recoil_end_frame < 0.0f)) || (phi_f20 < self->act_attack.animfloats->recoil_end_frame))
             {
-                if (self->act_attack.unk36 == 0)
+                if (self->act_attack.doRecoil == 0)
                 {
                     if (chrAttackRollToKneel(self) == 0)
                     {
@@ -6422,7 +6417,7 @@ void chrTickAttackCommon(ChrRecord *self)
                     chrAttackRollResumeAfterShot(self);
                 }
 
-                self->act_attack.unk33 = (s8) (self->act_attack.unk34 + 1);
+                self->act_attack.numShots = (s8) (self->act_attack.maxShots + 1);
                 phi_f20 = modelGetAnimFrame(self_model);
             }
         }
@@ -6430,7 +6425,7 @@ void chrTickAttackCommon(ChrRecord *self)
 
     if (modelGetAnimEndFrame(self_model) <= phi_f20)
     {
-        if ((self->act_attack.unk37 != 0) || (self->act_attack.unk34 < self->act_attack.unk33))
+        if ((self->act_attack.doOneBurst != 0) || (self->act_attack.maxShots < self->act_attack.numShots))
         {
             if (chrAttackRollToKneel(self) == 0)
             {
@@ -6444,16 +6439,16 @@ void chrTickAttackCommon(ChrRecord *self)
                 return;
             }
         }
-        else if (self->act_attack.unk33 == self->act_attack.unk34)
+        else if (self->act_attack.numShots == self->act_attack.maxShots)
         {
-            self->act_attack.unk33++;
+            self->act_attack.numShots++;
             chrAttackRollResumeAfterShot(self);
         }
-        else if (self->act_attack.unk31 != 0)
+        else if (self->act_attack.fired != 0)
         {
             temp_f0_6 = 0.5f;
 
-            if (self->act_attack.unk36 != 0)
+            if (self->act_attack.doRecoil != 0)
             {
                 if (self->act_attack.animfloats->recoil_start_frame > 0.0f)
                 {
@@ -6497,12 +6492,12 @@ void chrTickAttackCommon(ChrRecord *self)
                 temp_f0_6 = df * 0.5f * 0.0625f;
             }
 
-            if ((self->act_attack.unk3a[0] != 0) && (self->act_attack.unk3a[1] != 0))
+            if ((self->act_attack.singleShot[0] != 0) && (self->act_attack.singleShot[1] != 0))
             {
                 temp_f0_6 = 2.0f * temp_f0_6;
             }
 
-            self->act_attack.unk31 = 0;
+            self->act_attack.fired = 0;
 
             modelSetAnimation(self_model, modelGetAnim(self_model), (s32) self_model->flip, fp1, temp_f0_6, 8.0f);
             modelSetAnimEndFrame(self_model, fp2);
@@ -6514,7 +6509,7 @@ void chrTickAttackCommon(ChrRecord *self)
     if ((self->act_attack.attacktype & TARGET_DONTTURN) == 0)
     {
         fn40 = self->act_attack.animfloats->angle_offset;
-        fanon1 = self->act_attack.animfloats->unk04;
+        fanon1 = self->act_attack.animfloats->turnEndFrame;
 
         if ((self->act_attack.attacktype & TARGET_AIM_ONLY) != 0)
         {
@@ -6529,9 +6524,9 @@ void chrTickAttackCommon(ChrRecord *self)
             fn40 = M_TAU_F - fn40;
         }
 
-        self->act_attack.unk30 = chrSetSubroty(
+        self->act_attack.turning = chrSetSubroty(
             self,
-            (s32) self->act_attack.unk30,
+            (s32) self->act_attack.turning,
             fanon1,
             chrGetGuard007SpeedRating(self, 1.0f, 1.6f),
             fn40);
@@ -6539,7 +6534,7 @@ void chrTickAttackCommon(ChrRecord *self)
 
     if ((self->act_attack.animfloats->aim_start_frame < phi_f20) && (phi_f20 < self->act_attack.animfloats->aim_end_frame))
     {
-        chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.unk38[1], (s32) self->act_attack.unk38[0], 1.0f);
+        chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.hasGun[1], (s32) self->act_attack.hasGun[0], 1.0f);
     }
     else
     {
@@ -6548,14 +6543,14 @@ void chrTickAttackCommon(ChrRecord *self)
 
     for (i=0; i<2; i++)
     {
-        if (self->act_attack.unk38[i] != 0)
+        if (self->act_attack.hasGun[i] != 0)
         {
-            if (self->act_attack.unk3a[i] == 0)
+            if (self->act_attack.singleShot[i] == 0)
             {
                 if ((self->act_attack.animfloats->shoot_start_frame <= phi_f20) && (phi_f20 < self->act_attack.animfloats->shoot_end_frame))
                 {
                     chrSetHandFiring(self, i, 1);
-                    self->act_attack.unk44 = g_GlobalTimer;
+                    self->act_attack.lastFire60 = g_GlobalTimer;
 
                     if (self->actiontype == ACT_ATTACKROLL)
                     {
@@ -6568,9 +6563,9 @@ void chrTickAttackCommon(ChrRecord *self)
                         if (df < 30.0f)
                         {
 #ifdef REFRESH_PAL
-                            if ((s32) self->act_attack.unk40 >= (50 - ((s32) df * 2)))
+                            if ((s32) self->act_attack.numWaitTicks >= (50 - ((s32) df * 2)))
 #else
-                            if ((s32) self->act_attack.unk40 >= (60 - ((s32) df * 2)))
+                            if ((s32) self->act_attack.numWaitTicks >= (60 - ((s32) df * 2)))
 #endif
                             {
                                 modelSetAnimSpeed(self_model, 0.5f, 0.0f);
@@ -6578,7 +6573,7 @@ void chrTickAttackCommon(ChrRecord *self)
                             else
                             {
                                 modelSetAnimSpeed(self_model, 0.1f, 0.0f);
-                                self->act_attack.unk40 += g_ClockTimer;
+                                self->act_attack.numWaitTicks += g_ClockTimer;
                             }
                         }
                         else
@@ -6606,8 +6601,8 @@ void chrTickAttackCommon(ChrRecord *self)
                 }
             }
             else if (
-                (self->act_attack.unk31 == 0)
-                && ((i == self->act_attack.unk32) || (self->act_attack.unk3a[self->act_attack.unk32] == 0))
+                (self->act_attack.fired == 0)
+                && ((i == self->act_attack.nextGun) || (self->act_attack.singleShot[self->act_attack.nextGun] == 0))
                 && (
                     (
                         ( self->act_attack.animfloats->recoil_start_frame >= 0.0f)
@@ -6619,10 +6614,10 @@ void chrTickAttackCommon(ChrRecord *self)
                         && (self->act_attack.animfloats->shoot_start_frame <= phi_f20)
                     )))
             {
-                self->act_attack.unk31 = 1;
-                self->act_attack.unk32 = (s8) (1 - self->act_attack.unk32);
-                self->act_attack.unk33++;
-                self->act_attack.unk44 = g_GlobalTimer;
+                self->act_attack.fired = 1;
+                self->act_attack.nextGun = (s8) (1 - self->act_attack.nextGun);
+                self->act_attack.numShots++;
+                self->act_attack.lastFire60 = g_GlobalTimer;
 
                 chrSetHandFiring(self, i, 1);
             }
@@ -6695,7 +6690,7 @@ void chrTickAttack(ChrRecord *self)
 #endif
                 self->act_attack.attacktype &= ~TARGET_DONTTURN;
 
-                if (self->act_attack.unk54 != 0)
+                if (self->act_attack.standing != 0)
                 {
                     chrAttackStand(self, (s32) self->act_attack.attacktype, self->act_attack.entityid);
 
@@ -6715,7 +6710,7 @@ void chrTickAttack(ChrRecord *self)
     {
         if ((self->act_attack.attacktype & TARGET_DONTTURN) != 0)
         {
-            if (chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.unk38[1], (s32) self->act_attack.unk38[0], 0.2f) == 0)
+            if (chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.hasGun[1], (s32) self->act_attack.hasGun[0], 0.2f) == 0)
             {
                 self->act_attack.type_of_motion = 1;
             }
@@ -6726,13 +6721,13 @@ void chrTickAttack(ChrRecord *self)
         if (modelGetAnimEndFrame(self_model) <= temp_f0)
         {
             self->act_attack.attacktype |= TARGET_DONTTURN;
-            self->act_attack.unk30 = 2;
+            self->act_attack.turning = 2;
 
             return;
         }
     }
 
-    if (self->act_attack.unk36 == 0)
+    if (self->act_attack.doRecoil == 0)
     {
         if ((self->act_attack.animfloats->recoil_end_frame > 0.0f) && (temp_f0 <= self->act_attack.animfloats->recoil_end_frame))
         {
@@ -6746,7 +6741,7 @@ void chrTickAttack(ChrRecord *self)
                     chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
                     16.0f);
 
-                if (self->act_attack.unk37 != 0)
+                if (self->act_attack.doOneBurst != 0)
                 {
                     if (self->act_attack.animfloats->end_frame >= 0.0f)
                     {
@@ -6772,9 +6767,9 @@ void chrTickAttackRoll(ChrRecord *self)
     struct weapon_firing_animation_table *phi_v1; // 60
     s32 sp38; // 56
     f32 phi_f2_2; // 52
-    struct modeldata_root *temp_v0_2;
+    ModelRwData_HeaderRecord *temp_v0_2;
 
-    if (self->act_attackroll.unk35 != 0)
+    if (self->act_attackroll.oneHanded != 0)
     {
         temp_a0 = self->model;
         temp_f0 = modelGetAnimFrame(temp_a0);
@@ -6793,7 +6788,7 @@ void chrTickAttackRoll(ChrRecord *self)
 
                 phi_f2_2 = 16.0f;
 
-                if ((self->act_attackroll.unk38[1] != 0) && (self->act_attackroll.unk38[0] != 0))
+                if ((self->act_attackroll.hasGun[1] != 0) && (self->act_attackroll.hasGun[0] != 0))
                 {
                     if ((randomGetNext() & 1) == 0)
                     {
@@ -6854,13 +6849,13 @@ void chrTickAttackRoll(ChrRecord *self)
                     phi_f2_2 = 44.0f;
                 }
 
-                self->act_attackroll.unk30 = 2;
+                self->act_attackroll.turning = 2;
                 self->act_attackroll.animfloats = phi_v1;
                 self->sleep = 0;
 
                 modelSetAnimation(temp_a0, (void *) phi_v1->anim.anim, sp38, phi_v1->start_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), phi_f2_2);
 
-                if (self->act_attackroll.unk36 != 0)
+                if (self->act_attackroll.doRecoil != 0)
                 {
                     if (phi_v1->recoil_end_frame >= 0.0f)
                     {
@@ -6882,13 +6877,13 @@ void chrTickAttackRoll(ChrRecord *self)
 
                 if (self->act_attackroll.animfloats->angle_offset != 0.0f)
                 {
-                    temp_v0_2 = (struct modeldata_root *)modelGetNodeRwData(temp_a0, temp_a0->obj->RootNode);
-                    temp_v0_2->unk5c = phi_f2_2;
-                    temp_v0_2->unk58 = (-self->act_attackroll.animfloats->angle_offset / phi_f2_2);
+                    temp_v0_2 = &modelGetNodeRwData(temp_a0, temp_a0->obj->RootNode)->Header;
+                    temp_v0_2->turnFrames = phi_f2_2;
+                    temp_v0_2->turnPerFrame = (-self->act_attackroll.animfloats->angle_offset / phi_f2_2);
 
                     if (sp38 != GUNRIGHT)
                     {
-                        temp_v0_2->unk58 = -temp_v0_2->unk58;
+                        temp_v0_2->turnPerFrame = -temp_v0_2->turnPerFrame;
                     }
                 }
             }
@@ -6908,7 +6903,7 @@ void chrTickAttackRoll(ChrRecord *self)
                 || (self->act_attackroll.animfloats == &g_ChrFireAnims[18])
                 || (self->act_attackroll.animfloats == &g_ChrFireAnims[19])
             )
-            && (self->act_attackroll.unk36 == 0))
+            && (self->act_attackroll.doRecoil == 0))
         {
             if ((self->act_attackroll.animfloats->recoil_end_frame > 0.0f) && (temp_f0 <= self->act_attackroll.animfloats->recoil_end_frame))
             {
@@ -6916,7 +6911,7 @@ void chrTickAttackRoll(ChrRecord *self)
                 {
                     modelSetAnimation(temp_a0, modelGetAnim(temp_a0), (s32) temp_a0->flip, self->act_attackroll.animfloats->recoil_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
 
-                    if (self->act_attackroll.unk37 != 0)
+                    if (self->act_attackroll.doOneBurst != 0)
                     {
                         if (self->act_attackroll.animfloats->end_frame >= 0.0f)
                         {
@@ -7196,38 +7191,38 @@ void chrTickAttackWalk(ChrRecord *self)
 
     if (chrApplySpeed(self, &player_prop->pos, 0, &self->act_attackwalk.speed) != 0)
     {
-        self->act_attackwalk.unk038 = 1;
+        self->act_attackwalk.facedTarget = 1;
     }
 
     if (self->act_attackwalk.clock_timer30 >= CHRLV_ATTACKWALK_CLOCK_TIMER30_MIN)
     {
-        chrUpdateAimendsideback(self, self->act_attackwalk.animfloats, (s32) self->act_attackwalk.unk48[1], (s32) self->act_attackwalk.unk48[0], 1.0f);
+        chrUpdateAimendsideback(self, self->act_attackwalk.animfloats, (s32) self->act_attackwalk.hasGun[1], (s32) self->act_attackwalk.hasGun[0], 1.0f);
     }
     else
     {
         chrResetAimend(self);
     }
 
-    if (self->act_attackwalk.unk038 && !(self->act_attackwalk.clock_timer30 < CHRLV_ATTACKWALK_CLOCK_TIMER30_MAX))
+    if (self->act_attackwalk.facedTarget && !(self->act_attackwalk.clock_timer30 < CHRLV_ATTACKWALK_CLOCK_TIMER30_MAX))
     {
         for (i=0; i<2; i++)
         {
-            if (self->act_attackwalk.unk48[i])
+            if (self->act_attackwalk.hasGun[i])
             {
-                if (self->act_attackwalk.unk4a[i] == 0)
+                if (self->act_attackwalk.singleShot[i] == 0)
                 {
                     chrSetHandFiring(self, i, 1);
                 }
                 else
                 {
                     if ((self->act_attackwalk.timer40 < self->act_attackwalk.clock_timer30)
-                        && ((i == self->act_attackwalk.unk044) || (self->act_attackwalk.unk4a[self->act_attackwalk.unk044] == 0)))
+                        && ((i == self->act_attackwalk.nextGun) || (self->act_attackwalk.singleShot[self->act_attackwalk.nextGun] == 0)))
                     {
                         self->act_attackwalk.timer40 = self->act_attackwalk.clock_timer30;
 
-                        if (self->act_attackwalk.unk4a[1 - i])
+                        if (self->act_attackwalk.singleShot[1 - i])
                         {
-                            if (self->act_attackwalk.unk4C[i])
+                            if (self->act_attackwalk.isLauncher[i])
                             {
                                 self->act_attackwalk.timer40 += CHRLV_ATTACKWALK_TIMER40_A;
                             }
@@ -7236,7 +7231,7 @@ void chrTickAttackWalk(ChrRecord *self)
                                 self->act_attackwalk.timer40 += CHRLV_ATTACKWALK_TIMER40_B;
                             }
                         }
-                        else if (self->act_attackwalk.unk4C[i])
+                        else if (self->act_attackwalk.isLauncher[i])
                         {
                             self->act_attackwalk.timer40 += CHRLV_ATTACKWALK_TIMER40_C;
                         }
@@ -7245,7 +7240,7 @@ void chrTickAttackWalk(ChrRecord *self)
                             self->act_attackwalk.timer40 += CHRLV_ATTACKWALK_TIMER40_D;
                         }
 
-                        self->act_attackwalk.unk044 = 1 - self->act_attackwalk.unk044;
+                        self->act_attackwalk.nextGun = 1 - self->act_attackwalk.nextGun;
 
                         chrSetHandFiring(self, i, 1);
                     }
@@ -8003,7 +7998,7 @@ s32 chrNavTryObstacle(
     {
         if (set_copy != 0)
         {
-            arg7->unk03 = 1;
+            arg7->gotPosCopy = 1;
 
             arg7->pos_copy.f[0] = sp64.f[0];
             arg7->pos_copy.f[1] = sp64.f[1];
@@ -8011,7 +8006,7 @@ s32 chrNavTryObstacle(
         }
         else
         {
-            arg7->unk02 = 1;
+            arg7->gotPos = 1;
 
             arg7->pos.f[0] = sp64.f[0];
             arg7->pos.f[1] = sp64.f[1];
@@ -8076,7 +8071,7 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
 
             if (chrNavCanSeeNextPos(self, &self_prop->pos, self_prop->stan, &sp100, &arg3->pos2, &arg3->pos3, -(self->chrwidth), self->chrwidth, CDTYPE_PATHBLOCKER) != 0)
             {
-                arg3->unk02 = (u8) 1;
+                arg3->gotPos = (u8) 1;
                 arg3->pos.f[0] = sp100.f[0];
                 arg3->pos.f[1] = sp100.f[1];
                 arg3->pos.f[2] = sp100.f[2];
@@ -8087,12 +8082,12 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
                 if (arg3->mode == WAYMODE_0)
                 {
                     arg3->mode = (s8) WAYMODE_1;
-                    arg3->unk01 = 0;
+                    arg3->iter = 0;
                 }
                 else if (arg3->mode == WAYMODE_2)
                 {
                     arg3->mode = WAYMODE_3;
-                    arg3->unk01 = 0;
+                    arg3->iter = 0;
                 }
             }
         }
@@ -8110,8 +8105,8 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
             }
             else
             {
-                arg3->unk01 = arg3->unk01 + 1;
-                if (arg3->unk01 >= MAX_WAYMODE)
+                arg3->iter = arg3->iter + 1;
+                if (arg3->iter >= MAX_WAYMODE)
                 {
                     arg3->mode = WAYMODE_2;
                 }
@@ -8131,11 +8126,11 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
             }
             else
             {
-                arg3->unk01 = arg3->unk01 + 1;
-                if (arg3->unk01 >= MAX_WAYMODE)
+                arg3->iter = arg3->iter + 1;
+                if (arg3->iter >= MAX_WAYMODE)
                 {
-                    arg3->unk02 = 0;
-                    arg3->unk03 = (u8) (s8) arg3->unk02;
+                    arg3->gotPos = 0;
+                    arg3->gotPosCopy = (u8) (s8) arg3->gotPos;
                     arg3->pos_copy.f[0] =
                         arg3->pos.f[0] = arg1->f[0];
                     arg3->pos_copy.f[1] =
@@ -8150,7 +8145,7 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
         {
             if (chrNavCheckForObstacle(self, &self_prop->pos, self_prop->stan, &arg3->pos, &arg3->pos2, &arg3->pos3, -(self->chrwidth), self->chrwidth, cdtypes) != 0)
             {
-                arg3->unk03 = max;
+                arg3->gotPosCopy = max;
                 arg3->mode = WAYMODE_0;
                 arg3->pos_copy.f[0] = arg3->pos.f[0];
                 arg3->pos_copy.f[1] = arg3->pos.f[1];
@@ -8159,7 +8154,7 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
             else
             {
                 arg3->mode = WAYMODE_5;
-                arg3->unk01 = 0;
+                arg3->iter = 0;
             }
         }
         else if (arg3->mode == WAYMODE_5)
@@ -8291,16 +8286,16 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
                 }
             }
 
-            arg3->unk01 = arg3->unk01 + 1;
-            if (arg3->unk01 >= MAX_WAYMODE)
+            arg3->iter = arg3->iter + 1;
+            if (arg3->iter >= MAX_WAYMODE)
             {
-                arg3->unk03 = 0;
+                arg3->gotPosCopy = 0;
                 arg3->mode = WAYMODE_0;
             }
         }
     }
 
-    if (arg3->unk03 == 0)
+    if (arg3->gotPosCopy == 0)
     {
         arg3->pos_copy.f[0] = arg3->pos.f[0];
         arg3->pos_copy.f[1] = arg3->pos.f[1];
@@ -8373,9 +8368,9 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
     }
     else
     {
-        chrApplySpeed(self, &arg3->pos_copy, (s32) self->act_gopos.unk59, &self->act_gopos.speed);
+        chrApplySpeed(self, &arg3->pos_copy, (s32) self->act_gopos.speedMode, &self->act_gopos.speed);
 
-        if (self->act_gopos.unk59 == 2)
+        if (self->act_gopos.speedMode == 2)
         {
             if (self->act_gopos.speed != 0.0f)
             {
@@ -8390,7 +8385,7 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
                 modelSetAnimSpeed(self->model, 0.5f, 0.0f);
             }
         }
-        else if (self->act_gopos.unk59 == 1)
+        else if (self->act_gopos.speedMode == 1)
         {
             if (self->act_gopos.speed != 0.0f)
             {
@@ -8426,12 +8421,12 @@ void chrTickGoPos(ChrRecord *self)
 
     if (self->lastmoveok60 < (g_GlobalTimer - CHRLV_LASTMOVEOK60_CHECK))
     {
-        chrGoToPos(self, &self->act_gopos.targetpos, self->act_gopos.target, (s32) self->act_gopos.unk59);
+        chrGoToPos(self, &self->act_gopos.targetpos, self->act_gopos.target, (s32) self->act_gopos.speedMode);
     }
 
     chrGoPosConsiderRestart(self);
 
-    if ((self->act_gopos.waydata.mode != WAYMODE_MAGIC) && ((self->act_gopos.unk9c + CHRLV_DEFAULT_TIMER) < g_GlobalTimer))
+    if ((self->act_gopos.waydata.mode != WAYMODE_MAGIC) && ((self->act_gopos.magicCheck60 + CHRLV_DEFAULT_TIMER) < g_GlobalTimer))
     {
         chrGoPosGetCurWaypointInfo(self, &sp68, &sp64);
 
@@ -8457,7 +8452,7 @@ void chrTickGoPos(ChrRecord *self)
             && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrPathIsOffscreen(self, &sp58, sp54) == 0)))
         {
             chrGoPosResetMagic(self);
-            self->act_gopos.unk9c = g_GlobalTimer;
+            self->act_gopos.magicCheck60 = g_GlobalTimer;
 
             return;
         }

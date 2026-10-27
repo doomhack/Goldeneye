@@ -26,7 +26,7 @@ typedef struct smallSave
 {
     int chksum1;
     int chksum2;
-    u8 unk[24];
+    u8 data[24];
 } smallSave;
 
 extern save_data g_Saves[6];
