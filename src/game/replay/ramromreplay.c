@@ -50,9 +50,6 @@ extern u32* ramrom_Frigate_1;
 extern u32* ramrom_Frigate_2;
 extern u32* ramrom_Train;
 
-extern u64 g_randomSeed NO_SDATA;
-extern u64 g_chrObjRandomSeed NO_SDATA;
-
 struct ramrom_struct ramrom_table[] = {
     {&ramrom_Dam_1, 0},
     {&ramrom_Dam_2, 0},

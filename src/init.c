@@ -4,7 +4,7 @@
 #include <PR/os_internal.h>
 #include <PR/rcp.h>
 #include <bondgame.h>
-#include "boot.h"
+#include "inflate/inflate.h"
 #include "sched.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "init.h"
@@ -48,7 +48,7 @@ void mainproc(void *args);
 
 /**
  * 1110	70000510
- * init - The real main entry point, called from boot.s
+ * init - The real main entry point, called from _start.s
  * Deflates the compressed data segment
  * Loads the game code into RAM
  * Then starts the main thread
@@ -71,11 +71,11 @@ void init(void)
     s32 *stack_pointer;
     u8 *dataziprom;
 
-    csegmentSegmentVaddrStart = get_csegmentSegmentStart();
-    cdataSegmentRomStart = get_cdataSegmentRomStart();
-    cdataSegmentRomSize = (u8 *) get_cdataSegmentRomEnd() - cdataSegmentRomStart;
-    inflateSegmentRomStart = get_inflateSegmentRomStart();
-    inflateromSize = (u8 *) get_inflateSegmentRomEnd() - inflateSegmentRomStart;
+    csegmentSegmentVaddrStart = (u8 *) &_csegmentSegmentStart;
+    cdataSegmentRomStart = (u8 *) &_cdataSegmentRomStart;
+    cdataSegmentRomSize = (u8 *) &_cdataSegmentRomEnd - cdataSegmentRomStart;
+    inflateSegmentRomStart = (u8 *) &_inflateSegmentRomStart;
+    inflateromSize = (u8 *) &_inflateSegmentRomEnd - inflateSegmentRomStart;
     copylen = cdataSegmentRomSize + inflateromSize;
     datazipram = (u8 *) (RZIPLOADADDR - cdataSegmentRomSize);
     dataziprom = csegmentSegmentVaddrStart;
@@ -85,7 +85,7 @@ void init(void)
         datazipram[j] = dataziprom[j];
     }
 
-    decompress_result = jump_decompressfile(datazipram, csegmentSegmentVaddrStart, RZIPBUFADDR);
+    decompress_result = decompress_entry(datazipram, csegmentSegmentVaddrStart, (struct huft *) RZIPBUFADDR);
 
     // Load all game code into RAM at its link address. It used to be paged in
     // 8KB at a time through the TLB; with the Expansion Pak it simply stays resident.
