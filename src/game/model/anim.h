@@ -21,17 +21,17 @@ struct animation_table_data {
 /**
  * Data holder for animations.
  */
-extern struct animation_table_data* ptr_animation_table;
+extern struct animation_table_data* g_AnimTable;
 
 /**
- * Contains offsets into ptr_animation_table for player and guard animations.
+ * Contains offsets into g_AnimTable for player and guard animations.
  * The index of each value corresponds to `enum ANIMATION`.
  * The value corresponds to (e.g. index=0) PTR_ANIM_idle (same as ANIM_DATA_idle)
 */
 extern s32 animation_table_ptrs1[];
 
 /**
- * Contains offsets into ptr_animation_table for object/vehicle animations.
+ * Contains offsets into g_AnimTable for object/vehicle animations.
  * The index of each value corresponds to `enum AIRCRAFT_ANIMATION`.
  * The value corresponds to (e.g. index=0) PTR_ANIM_helicopter_cradle (same as ANIM_DATA_helicopter_cradle)
 */
@@ -46,7 +46,7 @@ struct bondstruct_unk_animation_related {
 
 extern struct bondstruct_unk_animation_related *g_AnimFrameBuffer;
 
-void animInitFrameBuffer(struct bondstruct_unk_animation_related *animBuffer, OSMesgQueue *mq, s32 unused);
+void animInitFrameBuffer(struct bondstruct_unk_animation_related *animBuffer);
 void animResolveTable(s32 **table);
 void animLoadTable(void);
 

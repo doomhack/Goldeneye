@@ -67,9 +67,6 @@ Gfx *dynGetMasterDisplayList(void) {
     return (Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex];
 }
 
-/**
- * Address: 7F0BD6C4
- */
 Vtx *dynAllocateVertices(s32 count) 
 {
     void *ptr = g_GfxMemPos;
@@ -84,9 +81,6 @@ Mtx *dynAllocateMatrix(void)
 	return ptr;
 }
 
-/**
- * Address: 7F0BD6F8
- */
 Light *dynAllocateLights(s32 count)
 {
     void *ptr = g_GfxMemPos;

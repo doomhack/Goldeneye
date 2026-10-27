@@ -90,16 +90,12 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
     return model;
 }
 
-//sub_GAME_7F0234A8
 Model *bodyCreateModelNew(int body,int head,ModelFileHeader *body_header, ModelFileHeader *head_header,int sunglasses)
 {
   return bodyCreateModel(body,head,body_header,head_header,sunglasses,0x0);
 }
 
 
-/**
- * Address 0x7F0234D0.
- */
 Model * bodyCreateModelWithFlags(s32 body, s32 head, u32 bitflags)
 {
     ModelFileHeader *body_header;
@@ -134,7 +130,6 @@ s32 bodyGetRandom(void)
 }
 
 /**
- * Address 0x7F0235AC.
  * Get a Random Male Head Only
  * @param id: Integer Index of body
  * @return an integer ID of a head to use

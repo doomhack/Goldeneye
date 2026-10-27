@@ -28,25 +28,15 @@ struct VtxstoreBatch {
 };
 
 // bss
-//CODE.bss:8007A0D0
 s32 g_VtxstoreChrNumVtx; // item count for g_VtxstoreChrVtx
-//CODE.bss:8007A0D4
 s32 g_VtxstoreChrNumBatches; // item count for g_VtxstoreChrBatches
-//CODE.bss:8007A0D8
 s32 g_VtxstoreObjNumVtx; // item count for g_VtxstoreObjVtx
-//CODE.bss:8007A0DC
 s32 g_VtxstoreObjNumBatches; // item count for g_VtxstoreObjBatches
-//CODE.bss:8007A0E0
 Vertex* g_VtxstoreChrVtx; // array ( uses g_VtxstoreChrNumVtx as alloc count, item size 0x10 )
-//CODE.bss:8007A0E4
 Vertex* g_VtxstoreObjVtx; // array ( uses g_VtxstoreObjNumVtx as alloc count, item size 0x10 )
-//CODE.bss:8007A0E8
 struct VtxstoreBatch* g_VtxstoreChrBatches; // array ( uses g_VtxstoreChrNumBatches as alloc count, item size 0x14 )
-//CODE.bss:8007A0EC
 struct VtxstoreBatch* g_VtxstoreObjBatches; // array ( uses g_VtxstoreObjNumBatches as alloc count, item size 0x14 )
-//CODE.bss:8007A0F0
 s16 g_VtxstoreChrFreeVtx;
-//CODE.bss:8007A0F2
 s16 g_VtxstoreObjFreeVtx;
 
 /*
@@ -121,8 +111,6 @@ void vtxstoreReset(void)
 
 
 /*
-* Address: 0x7F09BAC4
-*
 * PD name: vtxstore_fix_refs
 * PD description:
 *  Search all props and their model data for references to the `find` address
@@ -175,7 +163,6 @@ void vtxstoreFixRefs(s32 find, s32 replacement) {
 
 
 /*
-* Address: 7F09BBBC
 * PD name: vtxstore_tick
 * Description: Merge duplicate batches. May free memory.
 */
@@ -246,7 +233,6 @@ void vtxstoreTick(void)
 
 
 /*
-* Address: 7F09BE4C
 * PD name: vtxstoreAllocate
 * Description: Allocation for batches within the storage space
 */
@@ -331,7 +317,6 @@ s32 vtxstoreAllocate(s32 arg0, s32 type, s32 arg2, s32 arg3)
 
 
 /*
-* Address: 7F09C044
 * PD name: vtxstore_free (likely)
 * Description: Either deforming a vertex or frees a vertex (deallocation)
 */

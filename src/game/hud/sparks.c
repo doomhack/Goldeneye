@@ -24,7 +24,6 @@
 #define BULLET_SPARKS_MAX 20
 #define BULLET_MOVING_SPARKS_MAX 50
 
-//D:80040960
 struct rgba_u8 g_SparkColors[8] = {
     { 0xFF, 0xFF, 0xFF, 0xFF },
     { 0xFF, 0xFF, 0xC8, 0xFF },
@@ -40,20 +39,15 @@ Vtx g_SparkVtxTemplate = {0};
 
 // something explosion related
 // size of each item is 0x2c (see sparkCreate)
-//CODE.bss:8007A170
 s_bullet_spark g_Sparks[BULLET_SPARKS_MAX];
 
 #ifndef VERSION_EU
 
-//CODE.bss:8007A4E0
 s_moving_bullet_spark g_MovingSparks[BULLET_MOVING_SPARKS_MAX];
 
 #endif
 
 
-/**
- * Address: 7F0A3BD8
- */
 void sparksReset(void)
 {
     s32 i;
@@ -70,9 +64,6 @@ void sparksReset(void)
 }
 
 
-/**
- * Address: 7F0A3C08
- */
 void sparkInit(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3, s16 arg4)
 {
     f32 angle;
@@ -133,9 +124,6 @@ void sparkInit(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3, s16 arg
 }
 
 
-/**
- * Address: 7F0A3E1C
- */
 s_bullet_spark *sparkCreate(coord3d *arg0, s32 arg1, f32 arg2, s16 arg3)
 {
     s_bullet_spark *ptr;
@@ -153,9 +141,6 @@ s_bullet_spark *sparkCreate(coord3d *arg0, s32 arg1, f32 arg2, s16 arg3)
 }
 
 
-/**
- * Address: 7F0A3EA0
- */
 void sparksTick(void)
 {
     s_bullet_spark *thing = &g_Sparks[0]; \
@@ -176,9 +161,6 @@ void sparksTick(void)
 }
 
 
-/**
- * Address: 7F0A3F04
- */
 void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
 {
     Vtx vtx;
@@ -278,9 +260,6 @@ void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
 }
 
 
-/**
- * Address: 7F0A4528
- */
 void sparksRender(Gfx *gdl, s32 zbufferMode)
 {
 
@@ -294,9 +273,6 @@ void sparksRender(Gfx *gdl, s32 zbufferMode)
 }
 
 
-/**
- * Address: 7F0A45D8
- */
 #ifndef VERSION_EU
 void movingSparksReset(void)
 {
@@ -317,9 +293,6 @@ void movingSparksReset(void)
 #endif
 
 
-/**
- * Address: 7F0A4600
- */
 #ifndef VERSION_EU
 s_moving_bullet_spark *movingSparkCreate(coord3d *arg0, coord3d *velocity, s32 arg2, f32 arg3, f32 arg4, s16 arg5)
 {
@@ -350,9 +323,6 @@ void movingSparkCreate(void)
 #endif
 
 
-/**
- * Address: 7F0A46A0
- */
 #ifndef VERSION_EU
 void movingSparksTick(void)
 {
@@ -393,9 +363,6 @@ void movingSparksTick(Gfx *arg0, s32 zbufferMode)
 #endif
 
 
-/**
- * Address: 7F0A4768
- */
 #ifndef VERSION_EU
 
 void movingSparksRender(Gfx *arg0, s32 zbufferMode)
@@ -413,9 +380,6 @@ void movingSparksRender(Gfx *arg0, s32 zbufferMode)
 }
 
 
-/**
- * Address: 7F0A47D4
- */
 void sparksResetAll(void)
 {
     sparksReset();
@@ -433,9 +397,6 @@ void sparksTickAll(void)
 }
 
 
-/**
- * Address: 7F0A4824
- */
 void sparksRenderAll(Gfx *arg0, s32 zbufferMode)
 {
     sparksRender(arg0, zbufferMode);

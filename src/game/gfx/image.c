@@ -29,7 +29,6 @@
 #define TEX_ALPHA_WEIGHT 961
 
 // bss
-//8008C720
 // The original declared the four fields as separate globals and took the address of the first,
 // so it only worked while the compiler kept them together in source order.
 struct texpool g_TexSharedPool;
@@ -37,15 +36,11 @@ struct texpool g_TexSharedPool;
 u8 *g_TexBitsPos;
 u32 g_TexBitsBuffer;
 s32 g_TexBitsCount;
-//8008C730
 struct texcacheitem g_TexCacheItems[150];
-//8008D090
 s32 g_TexCacheCount;
-//8008D094
 s32 g_TexNumToLoad;
 
 // data
-//D:80049170
 u32 g_TexSharedPoolSize = 0x6DDD0;
 
 //D:80049178 #1	#bytes in pixel data for image
@@ -112,7 +107,6 @@ s32 g_TexFormatLutModes[] = {
 #define IMAGE(NAME, SZ, HS, HT, F3, F4, F5, F6) \
     {HS, HT, SZ, F3, F4, F5, F6 },
 
-//D:80049300
 //need way to calculate size at compile time from external data
 struct image_entry g_Textures[] = {
     #include <assets/images.def>

@@ -169,30 +169,30 @@
 #define ROCKET_INITIAL_GRAVITY_MODIFIER  0.27777779f
 #define PROP_PROJECTILE_GRAVITY_MODIFIER 0.27777779f
 
-/* 0x80030AC8 */ s32 alarm_timer = 0;
-/* 0x80030ACC */ s32 *ptr_alarm_sfx = 0;
-/* 0x80030AD0 */ f32 toxic_gas_sound_timer = 0.0;
-/* 0x80030AD4 */ s32 activate_gas_sound_timer = FALSE;
-/* 0x80030AD8 */ coord3d gasLeakSource = { 0.0f, 0.0f, 0.0f };
-/* 0x80030ADC */ s32 D_80030ADC = 0;
-/* 0x80030AE0 */ f32 gasLeakTimer = 0.0f;
-/* 0x80030AE4 */ ALSoundState *ptr_gas_sound = NULL;
-/* 0x80030AE8 */ s32 clock_drawn_flag = 1;
-/* 0x80030AEC */ s32 clock_enable = 0;
-/* 0x80030AF0 */ f32 clock_time = 0;
-/* 0x80030AF4 */ s32 g_RemoteMineOwnerTriggerFlag = 0;
-/* 0x80030AF8 */ s32 g_NextWeaponSlot = 0; // numbers between 0 and 30
-/* 0x80030AFC */ s32 g_NextHatSlot = 0;
-/* 0x80030B00 */ ObjectRecord *g_LevelLoadPropSwitch = NULL;
-/* 0x80030B04 */ LockDoorRecord *g_LevelLoadPropLockDoor = NULL;
-/* 0x80030B08 */ ObjectRecord *g_LevelLoadPropSafeItem = NULL;
-/* 0x80030B0C */ struct PropRecord * D_80030B0C = NULL;
-/* 0x80030B10 */ s32 bodypartshot = 0xFFFFFFFF;
-/* 0x80030B14 */ f32 F_80030B14 = 1.0;
-/* 0x80030B18 */ f32 F_80030B18 = 1.0;
-/* 0x80030B1C */ f32 g_AutogunPendingDamageTick = 1.0;
-/* 0x80030B20 */ f32 g_AutogunDamageScalar = 1.0;
-/* 0x80030B24 */ f32 F_80030B24 = 1.0;
+s32 alarm_timer = 0;
+s32 *g_AlarmSound = 0;
+f32 toxic_gas_sound_timer = 0.0;
+s32 activate_gas_sound_timer = FALSE;
+coord3d gasLeakSource = { 0.0f, 0.0f, 0.0f };
+s32 g_GasLastCoughTime = 0;
+f32 gasLeakTimer = 0.0f;
+ALSoundState *g_GasSound = NULL;
+s32 clock_drawn_flag = 1;
+s32 clock_enable = 0;
+f32 clock_time = 0;
+s32 g_RemoteMineOwnerTriggerFlag = 0;
+s32 g_NextWeaponSlot = 0; // numbers between 0 and 30
+s32 g_NextHatSlot = 0;
+ObjectRecord *g_LevelLoadPropSwitch = NULL;
+LockDoorRecord *g_LevelLoadPropLockDoor = NULL;
+ObjectRecord *g_LevelLoadPropSafeItem = NULL;
+struct PropRecord * g_ProjectileHitProp = NULL;
+s32 bodypartshot = 0xFFFFFFFF;
+f32 g_CctvAlarmTimeScale = 1.0;
+f32 g_CctvDamageScale = 1.0;
+f32 g_AutogunPendingDamageTick = 1.0;
+f32 g_AutogunDamageScalar = 1.0;
+f32 g_AutogunDamageScale = 1.0;
 
 /*
 * Set on level load.
@@ -544,9 +544,6 @@ void objGetTileShading(PropRecord *prop, u8 col[4])
 }
 
 
-/*
- * Address: 0x7F0402B4
-*/
 void doorGetTileShading(PropRecord *prop, rgba_u8 *color)
 {
     struct DoorRecord *door = prop->door;
@@ -574,9 +571,6 @@ void objUpdateShading(rgba_u8 *dest, rgba_u8 *src)
 }
 
 
-/*
- * Address: 0x7F040384
-*/
 void shadingLerp(rgba_s32* dest, s32 enable, rgba_f32* src)
 {
     if (enable == 1)
@@ -593,9 +587,6 @@ void shadingLerp(rgba_s32* dest, s32 enable, rgba_f32* src)
 }
 
 
-/**
- * Address 0x7F040484.
-*/
 void chrobjCollisionRelated(ObjectRecord *obj)
 {
     struct ModelRoData_BoundingBoxRecord *bbox;
@@ -1025,9 +1016,6 @@ float objGetWidth(struct ObjectRecord * obj)
 }
 
 
-/**
- * Address: 7F041074
- */
 bool projectileTestPropBoundingSphere(coord3d *zeropos, coord3d *pos, coord3d *vec, f32 scale)
 {
     vec3d vector;
@@ -1052,9 +1040,6 @@ bool projectileTestPropBoundingSphere(coord3d *zeropos, coord3d *pos, coord3d *v
 }
 
 
-/**
- * Address: 7F041160
- */
 bool projectileLineTestModel(ObjectRecord *obj, coord3d *modelRayOrigin, coord3d *modelRayDir, coord3d *hitPos, coord3d *hitNormal, Model **hitModel, ModelNode **hitNode)
 {
     bool found;
@@ -1225,10 +1210,10 @@ bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *ray
                         hitNormal->z = 1.0f;
                     }
 
-                    D_80030B0C = prop;
+                    g_ProjectileHitProp = prop;
                     bodypartshot = HIT_NULL_PART;
                     g_CurrentProjectileModel = NULL;
-                    dword_CODE_bss_80075B74 = NULL;
+                    g_ProjectileHitNode = NULL;
                     return TRUE;
                 }
             }
@@ -1239,8 +1224,6 @@ bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *ray
 
 
 /**
- * Address: 7F0417DC
- *
  * Test a single object for collision between the object and a projectile.
  * If there is a collision, update hit parameters with collision data.
  * @return TRUE if the object and projectile collide, FALSE otherwise.
@@ -1307,8 +1290,6 @@ bool projectileTestObjectCollision(ObjectRecord *obj, coord3d *worldRayOrigin, c
 
 
 /**
- * Address: 7F0419E4
- *
  * Tests an object and its on screen child hierarchy for projectile collision.
  * If a closer hit is found, updates the caller's hit collision data.
  * @returns TRUE if this object or one of its recursive children produced a closer hit, FALSE otherwise.
@@ -1341,10 +1322,10 @@ bool projectileTestObjectCollisionRecursive(ObjectRecord *obj, coord3d *worldRay
             bestHitNormal->y = hitNormal.y;
             bestHitNormal->z = hitNormal.z;
 
-            D_80030B0C = obj->prop;
+            g_ProjectileHitProp = obj->prop;
             bodypartshot = -1;
             g_CurrentProjectileModel = hitModel;
-            dword_CODE_bss_80075B74 = hitNode;
+            g_ProjectileHitNode = hitNode;
 
             found = TRUE;
         }
@@ -1417,10 +1398,10 @@ bool projectileTestChr(ChrRecord *chr, coord3d *arg1, coord3d *arg2, f32 arg3, c
                 } else {
                     arg7->z = 1.0f;
                 }
-                D_80030B0C = prop;
+                g_ProjectileHitProp = prop;
                 bodypartshot = bodyPart;
                 g_CurrentProjectileModel = model;
-                dword_CODE_bss_80075B74 = node;
+                g_ProjectileHitNode = node;
                 return 1;
             }
         }
@@ -1557,13 +1538,13 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
     {
         result = TRUE;
 
-        flt_CODE_bss_80075B78.x = sp98.x;
-        flt_CODE_bss_80075B78.y = sp98.y;
-        flt_CODE_bss_80075B78.z = sp98.z;
+        g_ProjectileHitPos.x = sp98.x;
+        g_ProjectileHitPos.y = sp98.y;
+        g_ProjectileHitPos.z = sp98.z;
 
-        flt_CODE_bss_80075B88.x = sp7c.x;
-        flt_CODE_bss_80075B88.y = sp7c.y;
-        flt_CODE_bss_80075B88.z = sp7c.z;
+        g_ProjectileHitNormal.x = sp7c.x;
+        g_ProjectileHitNormal.y = sp7c.y;
+        g_ProjectileHitNormal.z = sp7c.z;
 
     }
 
@@ -1597,7 +1578,7 @@ s32 projectileMove(struct ObjectRecord *arg0, coord3d *arg1, coord3d *arg2, coor
     prop = arg0->prop;
     tile = prop->stan;
     result = 1;
-    D_80030B0C = NULL;
+    g_ProjectileHitProp = NULL;
     obj = arg0;
     hitpos = arg2;
 
@@ -1816,9 +1797,6 @@ end:
 }
 
 
-/**
- * Address: 7F042A0C
- */
 s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *arg2, coord3d *arg3, s32 arg4)
 {
     PropRecord *prop;
@@ -1843,7 +1821,7 @@ s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *
     stan = prop->stan;
     width = objGetWidth(obj);
     result = 1;
-    D_80030B0C = NULL;
+    g_ProjectileHitProp = NULL;
 
     // Early return if target position and object's current position are the same.
     if (((targetpos->f[0] == prop->pos.f[0]) && (targetpos->f[1] == prop->pos.f[1])) && (targetpos->f[2] == prop->pos.f[2]))
@@ -2089,9 +2067,6 @@ void chrobjApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 accel, 
 }
 
 
-/**
- * Address 0x7F04310C.
-*/
 void chrobjCallsApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 accel, f32 decel, f32 maxSpeed)
 {
     if (maxFrac - *openPosition < -M_PI_F)
@@ -2118,8 +2093,6 @@ void chrobjCallsApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 ac
 
 
 /**
- * Address: 7F0431E4
- *
  * This function handles an object's transition from the bouncing state to the rest state.
  */
 void objSettle(ObjectRecord *obj, coord3d *arg1)
@@ -2269,8 +2242,6 @@ void objSettle(ObjectRecord *obj, coord3d *arg1)
 
 
 /**
- * Address: 7F043650
- * 
  * Plays and maintains the sound of the whoosh of a throwing knife spinning through the air.
  */
 void objUpdateThrowKnifeSound(ObjectRecord *obj) 
@@ -2343,22 +2314,6 @@ void objUpdateThrowKnifeSound(ObjectRecord *obj)
 }
 
 
-ModelRenderData D_80030B34 = {NULL,
-                                      TRUE,
-                                      0x00000003,
-                                      NULL,
-                                      NULL,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      0,
-                                      {0, 0, 0, 0},
-                                      {0, 0, 0, 0},
-                                      CULLMODE_BOTH};
 
 
 //[80030B74	00	Bond]
@@ -3077,28 +3032,6 @@ u32 monAnim35Taser[] = {
      MONLOOP()
 };
 
-/**
- * Address 0x80031FD0.
-*/
-ModelRenderData D_80031FD0 = {  NULL,
-                                TRUE,
-                                0x00000003,
-                                NULL,
-
-                                NULL,
-                                0,
-                                0,
-                                0,
-
-                                0,
-                                0,
-                                0,
-                                0,
-
-                                0,
-                                {0,0,0,0},
-                                {0,0,0,0},
-                                CULLMODE_BOTH};
 
 void mtxAlignToNormal(coord3d *arg0, Mtxf *arg1)
 {
@@ -3568,7 +3501,6 @@ void objTickAttached(PropRecord* prop)
 
 
 /**
- * Address: 7F044414
  * Description: Separating Axis Theorem
  *
  * Return true if both blocks are not intersecting on the X/Z plane.
@@ -3706,8 +3638,6 @@ s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct 
  * @param collision_radius: Collision radius of point to test.
  * @param polygon: Convex polygon.
  * @param edges: Number of edges to test in polygon.
- *
- * Address 0x7F044718.
 */
 s32 chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius, struct rect4f *polygon, s32 edges)
 {
@@ -3856,9 +3786,6 @@ s32 vehicleFindBlockingProp(struct PropRecord *argProp)
 }
 
 
-/**
- * Address: 7F044B38
- */
 s32 vehicleAlignToFloor(ObjectRecord *obj)
 {
     Model *model;
@@ -4375,7 +4302,7 @@ s32 objTick(struct PropRecord *prop)
      */
 	if (objMovedThisFrame > tickop)
 	{
-		previousOpenPosition -= (modelGetNodeRadius(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[0];
+		previousOpenPosition -= (modelGetNodeRadius(g_CurrentProjectileModel, g_ProjectileHitNode) * 0.5f) * g_ProjectileHitNormal.f[0];
 	}
 
 	previousOpenPosition = 0.0f;
@@ -4582,7 +4509,7 @@ s32 objTick(struct PropRecord *prop)
 
 				objMovedThisFrame = 1;
 
-				if ((moveResult == 2) && (((temp_v1_11 = (struct coord3d *) D_80030B0C) == NULL) || ((((struct PropRecord *) temp_v1_11)->type != PROP_TYPE_CHR) && (((struct PropRecord *) temp_v1_11)->type != PROP_TYPE_VIEWER))))
+				if ((moveResult == 2) && (((temp_v1_11 = (struct coord3d *) g_ProjectileHitProp) == NULL) || ((((struct PropRecord *) temp_v1_11)->type != PROP_TYPE_CHR) && (((struct PropRecord *) temp_v1_11)->type != PROP_TYPE_VIEWER))))
 				{
 					sp548 = 0;
 					if ((temp_v1_11 != NULL) && ((temp_v0_31 = ((struct PropRecord *) temp_v1_11)->obj)->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE))
@@ -4603,10 +4530,10 @@ s32 objTick(struct PropRecord *prop)
 						chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, ATTACH_MINE_SFX, NULL), &prop->pos);
 						objectivesCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
 						objPlaceOnSurface(obj, &collisionPoint, prop->stan, &collisionNormal);
-						if (D_80030B0C != NULL)
+						if (g_ProjectileHitProp != NULL)
 						{
 							temp_s2 = prop->stan;
-							if (objEmbed(prop, D_80030B0C, g_CurrentProjectileModel, dword_CODE_bss_80075B74) != 0)
+							if (objEmbed(prop, g_ProjectileHitProp, g_CurrentProjectileModel, g_ProjectileHitNode) != 0)
 							{
 								prop->stan = temp_s2;
 								tickop = TICKOP_CHANGEDLIST;
@@ -4618,7 +4545,7 @@ s32 objTick(struct PropRecord *prop)
 
 				if (projectileStopped == 0)
 				{
-					playerProp2 = D_80030B0C;
+					playerProp2 = g_ProjectileHitProp;
 
 					if ((playerProp2 != NULL) && (obj->type == PROPDEF_COLLECTABLE))
 					{
@@ -4628,11 +4555,11 @@ s32 objTick(struct PropRecord *prop)
 						{
 							if ((playerProp2->type == PROP_TYPE_CHR) || (((playerProp2->type == PROP_TYPE_VIEWER) && (playerProp2->obj != NULL)) && (playerGetIndexForProp(playerProp2) != playerGetCurrentNum())))
 							{
-								playerProp2 = D_80030B0C;
+								playerProp2 = g_ProjectileHitProp;
 								temp_v0_40 = obj->projectile;
 								temp_s0_13 = (struct coord3d *) playerProp2->chr;
 
-								if ((((temp_v0_40->flags & PROJECTILEFLAG_AIRBORNE) && (((s32) temp_v0_40->unk90) <= 0)) && (obj->runtime_bitflags & RUNTIMEBITFLAG_THROWING_KNIFE_RELATED)) && (chrTakeShot((struct ChrRecord *) temp_s0_13, bodypartshot, &flt_CODE_bss_80075B78, ((struct WeaponObjRecord *) obj)->weaponnum, 1) != 0))
+								if ((((temp_v0_40->flags & PROJECTILEFLAG_AIRBORNE) && (((s32) temp_v0_40->unk90) <= 0)) && (obj->runtime_bitflags & RUNTIMEBITFLAG_THROWING_KNIFE_RELATED)) && (chrTakeShot((struct ChrRecord *) temp_s0_13, bodypartshot, &g_ProjectileHitPos, ((struct WeaponObjRecord *) obj)->weaponnum, 1) != 0))
 								{
 									projectileStopped = 1;
 
@@ -4651,11 +4578,11 @@ s32 objTick(struct PropRecord *prop)
 									}
 
 									Rocket->unk90 += 1;
-									shotPlayHitPropSound(((struct WeaponObjRecord *) obj)->weaponnum, D_80030B0C, -1);
+									shotPlayHitPropSound(((struct WeaponObjRecord *) obj)->weaponnum, g_ProjectileHitProp, -1);
 
-									if (((D_80030B0C->flags & PROPFLAG_ONSCREEN) && (bodypartshot != HIT_GUN)) && (bodypartshot != HIT_HAT))
+									if (((g_ProjectileHitProp->flags & PROPFLAG_ONSCREEN) && (bodypartshot != HIT_GUN)) && (bodypartshot != HIT_HAT))
 									{
-										playerProp2 = (struct PropRecord *) modelFindNodeMtx(g_CurrentProjectileModel, dword_CODE_bss_80075B74, 0);
+										playerProp2 = (struct PropRecord *) modelFindNodeMtx(g_CurrentProjectileModel, g_ProjectileHitNode, 0);
 
 										bloodStainPos.f[0] = collisionPoint.f[0];
 										bloodStainPos.f[1] = collisionPoint.f[1];
@@ -4667,13 +4594,13 @@ s32 objTick(struct PropRecord *prop)
 										bloodStainPos.f[1] += (bloodStainPos.f[1] - ((Mtxf *) playerProp2)->m[3][1]) * 0.5f;
 										bloodStainPos.f[2] += (bloodStainPos.f[2] - ((Mtxf *) playerProp2)->m[3][2]) * 0.5f;
 
-										bloodStainPos.f[0] -= (modelGetNodeRadius(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[0];
-										bloodStainPos.f[1] -= (modelGetNodeRadius(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[1];
-										bloodStainPos.f[2] -= (modelGetNodeRadius(g_CurrentProjectileModel, dword_CODE_bss_80075B74) * 0.5f) * flt_CODE_bss_80075B88.f[2];
+										bloodStainPos.f[0] -= (modelGetNodeRadius(g_CurrentProjectileModel, g_ProjectileHitNode) * 0.5f) * g_ProjectileHitNormal.f[0];
+										bloodStainPos.f[1] -= (modelGetNodeRadius(g_CurrentProjectileModel, g_ProjectileHitNode) * 0.5f) * g_ProjectileHitNormal.f[1];
+										bloodStainPos.f[2] -= (modelGetNodeRadius(g_CurrentProjectileModel, g_ProjectileHitNode) * 0.5f) * g_ProjectileHitNormal.f[2];
     
 										mtx4InvertRigid((Mtxf *) playerProp2, &inverseNodeMatrix);
 										mtx4TransformVecInPlace(&inverseNodeMatrix, &bloodStainPos);
-										chrCreateBloodStain(g_CurrentProjectileModel, bodypartshot, dword_CODE_bss_80075B74, &bloodStainPos);
+										chrCreateBloodStain(g_CurrentProjectileModel, bodypartshot, g_ProjectileHitNode, &bloodStainPos);
 									}
 								}
 							}
@@ -5137,7 +5064,7 @@ s32 objTick(struct PropRecord *prop)
 			if (cctvSawPlayer)
 			{
 				bottom_pad->timer += g_ClockTimer;
-				if (bottom_pad->timer >= ((s32) (CCTV_ALARM_FRAMES * F_80030B14)))
+				if (bottom_pad->timer >= ((s32) (CCTV_ALARM_FRAMES * g_CctvAlarmTimeScale)))
 				{
 					alarmActivate();
 					bottom_pad->timer = 0;
@@ -6128,7 +6055,7 @@ s32 objTick(struct PropRecord *prop)
 
 				if (aircraft_render->model->anim != NULL)
 				{
-					sp1B0 = D_80030B34;
+					sp1B0 = (ModelRenderData){NULL, TRUE, 3};
 					sp1B0.basemtx = camGetWorldToScreenMtxf();
 					sp1B0.mtxlist = &mtxs[0];
 					modelCalcMatrices(&sp1B0, aircraft_render->model);
@@ -6511,8 +6438,6 @@ s32 objTick(struct PropRecord *prop)
 
 
 /**
- * Address: 7F049B58
- *
  * Draws tracers for characters other than the player, and draws tracers for drone guns as well.
  */
 Gfx *weaponRenderTracers(Gfx *gdl)
@@ -7340,9 +7265,6 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 arg2)
 }
 
 
-/**
- * Address 0x7F04B150.
-*/
 
 Gfx *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 arg2)
 {
@@ -7360,7 +7282,7 @@ Gfx *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 arg2)
 
     obj = prop->obj;
 
-    mrData = D_80031FD0;
+    mrData = (ModelRenderData){NULL, TRUE, 3};
 
     objAlpha = 0xFF;
     spAC = fogGetPropDistColor(prop, &spB0);
@@ -7545,7 +7467,6 @@ typedef struct Word4 { u32 w0; u32 w1; u32 w2; u32 w3; } Word4;
 /*
 *   objDeform - Deform an object due to it being destroyed.
 *   PD has a very similar function of the same name
-*   Address: 7F04B610
 */
 void objDeform(ObjectRecord *obj, E_EXPLOSIONTYPE explosiontype)
 {
@@ -8369,12 +8290,6 @@ void objExplode(ObjectRecord *obj, coord3d *target_pos, s32 playernum)
 }
 
 
-BoundVec D_8003204C = {0x7FFF, 0x7FFF, 0x7FFF};
-BoundVec D_80032058 = {-0x8000, -0x8000, -0x8000};
-coord3d  D_80032064 = {0, 0, 0};
-BoundVec D_80032070 = {0x7FFF, 0x7FFF, 0x7FFF};
-BoundVec D_8003207C = {-0x8000, -0x8000, -0x8000};
-coord3d  D_80032088 = {0, 0, 0};
 
 
 bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *gdl2, Vertex *vertices, struct HitThing *hitthing)
@@ -8442,8 +8357,8 @@ bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *
 
         if (op == (s8)G_TRI1)
         {
-            bboxMin = D_8003204C;
-            bboxMax = D_80032058;
+            bboxMin = (BoundVec){0x7FFF, 0x7FFF, 0x7FFF};
+            bboxMax = (BoundVec){-0x8000, -0x8000, -0x8000};
 
             idx[0] = ((u8 *) gdl)[5] / 10;
             idx[1] = ((u8 *) gdl)[6] / 10;
@@ -8482,7 +8397,7 @@ bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *
 
             if (bgTestRayIntersectsBbox(arg0, arg2, (s32 *) (&bboxMin), (s32 *) (&bboxMax)))
             {
-                zero = D_80032064;
+                zero = (coord3d){0};
                 pt0 = vtxbase; pt0 += idx[0]; pt1 = vtxbase; pt1 += idx[1]; pt2 = vtxbase; pt2 += idx[2];
 
                 if (intersectRayTriangle(pt0, pt1, pt2, &zero, arg0, arg1, arg2, &hitbuf))
@@ -8542,8 +8457,8 @@ bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *
             s2 = 0;
             do
             {
-                bboxMin2 = D_80032070;
-                bboxMax2 = D_8003207C;
+                bboxMin2 = (BoundVec){0x7FFF, 0x7FFF, 0x7FFF};
+                bboxMax2 = (BoundVec){-0x8000, -0x8000, -0x8000};
 
                 if (s2 == 0)
                 {
@@ -8603,7 +8518,7 @@ bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *
 
                 if (bgTestRayIntersectsBbox(arg0, arg2, (s32 *) (&bboxMin2), (s32 *) (&bboxMax2)))
                 {
-                    zero2 = D_80032088;
+                    zero2 = (coord3d){0};
                     pt0 = vtxbase; pt0 += idx2[0]; pt1 = vtxbase; pt1 += idx2[1]; pt2 = vtxbase; pt2 += idx2[2];
 
                     if (intersectRayTriangle(pt0, pt1, pt2, &zero2, arg0, arg1, arg2, &hitbuf))
@@ -8839,9 +8754,6 @@ void glassShatter(ObjectRecord* obj)
 }
 
 
-/**
- * Address: 7F04DD68
- */
 void doorShatterGlass(DoorRecord *door)
 {
     PropRecord *prop;
@@ -8864,9 +8776,6 @@ void doorShatterGlass(DoorRecord *door)
 }
 
 
-/**
- * Address: 7F04DE18
- */
 void objBreakCCTVGlass(ObjectRecord *obj)
 {
     PropRecord *prop;
@@ -8895,9 +8804,6 @@ void objBreakCCTVGlass(ObjectRecord *obj)
 }
 
 
-/**
- * Address 0x7F04DEFC.
-*/
 void objDetonateRecursive(PropRecord *prop, f32 damage, struct coord3d *pos, s32 arg3, s32 owner)
 {
     PropRecord *node;
@@ -8962,9 +8868,6 @@ bool objIsMortal(ObjectRecord* obj)
 }
 
 
-/**
- * Address 0x7F04E0CC.
-*/
 void chrobjMaybeDetonateObjectIfFlags(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS item, s32 owner)
 {
     if ((obj->flags2 & 0x4000) == 0)
@@ -9284,9 +9187,6 @@ apply_damage:
  * }
  */
 
-/**
- * Address: 7F04E720
- */
 void objTestShotHit(PropRecord *prop, struct ShotData *hitinfo)
 {
     ObjectRecord *obj = prop->obj;
@@ -9408,9 +9308,6 @@ void objTestShot(PropRecord* prop, struct ShotData* shotdata)
 }
 
 
-/**
- * Address: 7F04EA68
- */
 void objHit(ShotData *shotdata, BulletHit *hit)
 {
     ObjectRecord *obj;
@@ -9515,7 +9412,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
         // On Agent player shots to drone guns do 2x normal damage.
         if (obj->type == PROPDEF_AUTOGUN)
         {
-            damage *= F_80030B24;
+            damage *= g_AutogunDamageScale;
         }
         // Shots to CCTV camera glass do 100x normal damage.
         else if (obj->type == PROPDEF_CCTV)
@@ -9529,7 +9426,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
                 }
             }
 
-            damage *= F_80030B18;
+            damage *= g_CctvDamageScale;
         }
 
         chrobjMaybeDetonateObjectIfFlags(obj, damage, &pos, shotdata->weapon, playerGetCurrentNum());
@@ -10932,9 +10829,6 @@ TICKOP objTickPlayer(struct PropRecord* prop)
 }
 
 
-/*
-* Address: 7F050D30
-*/
 bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *arg1, struct coord2d *arg2, struct coord2d *arg3)
 {
     if (prop->flags & PROPFLAG_ONSCREEN)
@@ -11494,9 +11388,6 @@ void proxmineRemove(WeaponObjRecord* proxy)
     }
 }
 
-/*
-* Address: 0x7f051bcc
-*/
 void proxminesDetonateNear(coord3d* pos)
 {
     s32 i;
@@ -11695,8 +11586,6 @@ WeaponObjRecord blank_08_object_preset_1 = {
 
 
 /**
- * Address: 7F05206C
- *
  * @param modelnum: index into PitemZ_entries, which is enum PROP
  * @param weaponid: object_weapon.gun_pickup value
  */
@@ -11874,29 +11763,10 @@ PropRecord *chrGiveWeapon(ChrRecord *self, s32 PropID, ITEM_IDS ItemID, s32 flag
 /**
  * Must remain immediately above chrRenderHeldWeapon for matching.
 */
-ModelRenderData D_800322A4 = {
-    0,
-    1,
-    3,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    {0, 0, 0, 0},
-    {0, 0, 0, 0},
-    0
-};
 
 
 /**
  * Render the weapon(s) characters are holding including the muzzle flash.
- * Address: 0x7f0523f8
  */
 void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
 {
@@ -11920,7 +11790,7 @@ void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
             if ((s32)(weaponObj->flags2 << 12) >= 0) 
             {
                 heldModel = weaponObj->model;
-                renderData = D_800322A4;
+                renderData = (ModelRenderData){NULL, TRUE, 3};
 
                 chrModel = chr->model;
                 prop->flags |= PROPFLAG_ONSCREEN;
@@ -11954,18 +11824,12 @@ void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
 }
 
 
-/*
-* Address: 0x7f052554
-*/
 TICKOP weaponTickPlayer(struct PropRecord* arg0)
 {
     return objTickPlayer(arg0);
 }
 
 
-/*
-* Address: 0x7f052574
-*/
 void weaponSetGunfireVisible(PropRecord *prop, s32 firing)
 {
     ObjectRecord *obj = prop->obj;
@@ -11990,7 +11854,6 @@ void weaponSetGunfireVisible(PropRecord *prop, s32 firing)
 
 /*
 * Alternative name: getHatType
-* Address: 0x7f052684
 */
 HATTYPE hatGetModel(PropRecord *prop) //#MATCH
 {
@@ -12217,8 +12080,6 @@ void doorUpdateBbox(DoorRecord *door)
 
 
 /**
- * Address: 7F052D8C
- * 
  * This function physically resizes sliding doors with DOORFLAG_CLIP_TO_BBOX as they move.
  * When the door is opening, it shrinks. When the door is closing, it expands.
  * This prevents z-fighting if the door's face is parallel with the suface it's sliding into.
@@ -13042,7 +12903,6 @@ bool doorIsClosed(DoorRecord *door)
 }
 
 /*
-* Address: 7F054A64
 * Description: Computes the 2D bounding box for every room the prop is in
 *              so it can be used for scissors. Returns true when the prop
 *              has at least one room bounding box.
@@ -13099,9 +12959,6 @@ s32 propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox)
 }
 
 
-/**
- * Address 0x7F054B80.
-*/
 f32 chrobjFogVisRangeRelated(PropRecord *prop, f32 size)
 {
     f32 ret;
@@ -13171,9 +13028,6 @@ bool posIsBeforeFogEnd(coord3d *coord, f32 arg1)
 }
 
 
-/**
- * Address: 7F054D6C
- */
 bool posIsOnScreen(PropRecord *prop, coord3d *pos, f32 arg2, bool arg3)
 {
     s32 room_ids[8];
@@ -13850,8 +13704,8 @@ void alarmActivate(void)
 
 void alarmStopSound(void)
 {
-    if ((ptr_alarm_sfx != 0) && (sndGetPlayingState(ptr_alarm_sfx) != AL_STOPPED)) {
-        sndDeactivate(ptr_alarm_sfx);
+    if ((g_AlarmSound != 0) && (sndGetPlayingState(g_AlarmSound) != AL_STOPPED)) {
+        sndDeactivate(g_AlarmSound);
     }
     return;
 }
@@ -13891,8 +13745,8 @@ void gasStart(coord3d *source) //#MATCH
 
 void gasStopSound(void)
 {
-    if ((ptr_gas_sound != NULL) && (sndGetPlayingState(ptr_gas_sound) != AL_STOPPED)) {
-        sndDeactivate(ptr_gas_sound);
+    if ((g_GasSound != NULL) && (sndGetPlayingState(g_GasSound) != AL_STOPPED)) {
+        sndDeactivate(g_GasSound);
     }
     return;
 }
@@ -13923,12 +13777,12 @@ void gasTick(void)
         if (gasDoesDamageFlag == 0) { return; }
 
 #ifdef VERSION_EU
-        if (D_80030ADC < (g_GlobalTimer - 0xBB))
+        if (g_GasLastCoughTime < (g_GlobalTimer - 0xBB))
 #else
-        if (D_80030ADC < (g_GlobalTimer - 0xE1))
+        if (g_GasLastCoughTime < (g_GlobalTimer - 0xE1))
 #endif
         {
-            D_80030ADC = g_GlobalTimer;
+            g_GasLastCoughTime = g_GlobalTimer;
             if (toxic_gas_sound_timer >= 600.0f)
             {
                 sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, COUGH_SFX, NULL);
@@ -13942,20 +13796,20 @@ void gasTick(void)
         if (gasLeakTimer < gasTimeToFullOpacity)
         {
             gasLeakTimer = gasLeakTimer + g_GlobalTimerDelta;
-            if ((ptr_gas_sound == NULL) && (lvGetControlsLocked() == 0))
+            if ((g_GasSound == NULL) && (lvGetControlsLocked() == 0))
             {
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, GAS_HISS_SFX, (ALSoundState* ) &ptr_gas_sound);
+                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, GAS_HISS_SFX, (ALSoundState* ) &g_GasSound);
             }
-            if (ptr_gas_sound != NULL)
+            if (g_GasSound != NULL)
             {
-                chrobjSndCreatePostEventDefault(ptr_gas_sound, &gasLeakSource);
+                chrobjSndCreatePostEventDefault(g_GasSound, &gasLeakSource);
             }
         }
         else
         {
-            if ((ptr_gas_sound != NULL) && (sndGetPlayingState(ptr_gas_sound) != 0))
+            if ((g_GasSound != NULL) && (sndGetPlayingState(g_GasSound) != 0))
             {
-                sndDeactivate(ptr_gas_sound);
+                sndDeactivate(g_GasSound);
             }
         }
     }
@@ -14004,7 +13858,7 @@ void countdownTimerTick(void)
     }
 }
 
-const char D_80052A44[] = ":\n";
+const char g_CountdownColon[] = ":\n";
 
 /*
     Renders the on-screen countdown timer
@@ -14047,14 +13901,14 @@ Gfx *countdownTimerRender(Gfx *DL)
         DL = gunDrawHudInteger(DL, mins % 10, 0x8A, HUDHALIGN_MIDDLE, ( viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
         // :
-        DL = gunDrawHudString(DL, &D_80052A44, 0x93, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
+        DL = gunDrawHudString(DL, &g_CountdownColon, 0x93, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
         // Seconds
         DL = gunDrawHudInteger(DL, (secs % 60) / 10, 0x9C, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
         DL = gunDrawHudInteger(DL, secs % 10, 0xA4, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
         // :
-        DL = gunDrawHudString(DL, &D_80052A44, 0xAD, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
+        DL = gunDrawHudString(DL, &g_CountdownColon, 0xAD, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
         // Milliseconds
         DL = gunDrawHudInteger(DL, (ms % 100) / 10, 0xB6, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
@@ -14071,9 +13925,9 @@ void alarmGasTimerTick(void)
 {
     if (alarmIsActive() != 0)
     {
-        if ((ptr_alarm_sfx == 0) && (lvGetControlsLocked() == 0))
+        if ((g_AlarmSound == 0) && (lvGetControlsLocked() == 0))
         {
-            sndPlaySfx(g_musicSfxBufferPtr, ALARM3_SFX, &ptr_alarm_sfx);
+            sndPlaySfx(g_musicSfxBufferPtr, ALARM3_SFX, &g_AlarmSound);
         }
 
         alarm_timer = alarm_timer + g_ClockTimer;

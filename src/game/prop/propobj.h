@@ -23,21 +23,21 @@
 
 #endif
 
-extern f32 F_80030B14;
-extern f32 F_80030B18;
+extern f32 g_CctvAlarmTimeScale;
+extern f32 g_CctvDamageScale;
 extern f32 g_AutogunPendingDamageTick;
 extern f32 g_AutogunDamageScalar;
-extern f32 F_80030B24;
+extern f32 g_AutogunDamageScale;
 extern f32 g_SoloAmmoMultiplier;
 
 extern s32 alarm_timer;
-extern s32 *ptr_alarm_sfx;
+extern s32 *g_AlarmSound;
 extern f32 toxic_gas_sound_timer;
 extern s32 activate_gas_sound_timer;
 extern coord3d gasLeakSource;
-extern s32 D_80030ADC;
+extern s32 g_GasLastCoughTime;
 extern f32 gasLeakTimer;
-extern ALSoundState *ptr_gas_sound;
+extern ALSoundState *g_GasSound;
 extern s32 clock_drawn_flag;
 extern s32 clock_enable;
 extern f32 clock_time;
@@ -47,13 +47,13 @@ extern s32 g_NextHatSlot;
 extern ObjectRecord *g_LevelLoadPropSwitch;
 extern LockDoorRecord *g_LevelLoadPropLockDoor;
 extern ObjectRecord *g_LevelLoadPropSafeItem;
-extern struct PropRecord *D_80030B0C;
+extern struct PropRecord *g_ProjectileHitProp;
 extern s32 bodypartshot;
 extern f32 g_AutogunPendingDamageTick;
 extern f32 g_AutogunDamageScalar;
 extern f32 g_SoloAmmoMultiplier;
 extern struct Model *g_CurrentProjectileModel;
-extern struct ModelNode *dword_CODE_bss_80075B74;
+extern struct ModelNode *g_ProjectileHitNode;
 
 #if defined(VERSION_EU)
 extern ExplosionDetailsRecordEuList object_explosion_details;

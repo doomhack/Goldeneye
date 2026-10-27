@@ -94,11 +94,4 @@ void frameWaitForNext(void) //maybe WaitForTick
 }
 
 
-#ifdef VERSION_EU
-void eu_sub_7f0c00a4(void)
-{
-  
-}
-#endif
-
 

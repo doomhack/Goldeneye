@@ -47,11 +47,10 @@ extern s32 g_ClockTimer;
 extern s32 g_GlobalTimer;
 extern f32 g_GlobalTimerDelta;
 extern s32 g_LvTickCount;
-extern u32 *ptr_font_DL;
+extern u32 *g_FontDl;
 extern char ramrom_data_target[0x380];
 extern s32 record_slot_num;
 extern u8 * address_demo_loaded;
-extern s32 dword_CODE_bss_8008C5F8;
 
 #if defined(BUGFIX_R1)
 extern f32 g_GlobalTimerDeltaRaw;

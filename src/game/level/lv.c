@@ -65,47 +65,28 @@
 #include "game/chr/chr.h"
 
 // bss
-//CODE.bss:8008C260
-u32 *ptr_font_DL;
-//CODE.bss:8008C270
+u32 *g_FontDl;
 char ramrom_data_target[0x380];
-//CODE.bss:8008C5F0
 s32 record_slot_num;
-//CODE.bss:8008C5F4
 u8 * address_demo_loaded;
-//CODE.bss:8008C5F8
-s32 dword_CODE_bss_8008C5F8;
 
 
 // data
-//D:80048364
 s32 g_CurrentStageToLoad = 0;
-//D:80048368
-f32 D_80048368 = 1.0;
-//D:80048370
 s32 g_ControlsLockedFlag = 0;
-//D:80048374
 s32 g_ClockTimer = 0;
 
 
 #if defined (BUGFIX_R1)
 // addresses updated, per build\ge007.j.map
-// 800483a8
 f32 g_GlobalTimerDeltaRaw = 0;
-// 800483ac
 s32 g_GlobalTimer = 0;
-// 800483b0
 s32 g_LvTickCount = 0;
-// 800483b4
 f32 g_GlobalTimerDelta = 0;
 #else
-//D:80048378
 f32 g_GlobalTimerDelta = 0;
-//D:8004837C
 s32 g_GlobalTimer = 0;
-//D:80048380
 s32 g_LvTickCount = 0;
-//D:80048384
 #endif
 /*
 * Selected difficulty mode.
@@ -113,57 +94,31 @@ s32 g_LvTickCount = 0;
 */
 s32 g_SelectedDifficulty = DIFFICULTY_AGENT;
 
-//D:80048388
 s32 g_LvIdle = 0;
-//D:8004838C
 s32 g_LvIdleTime = 0;
-//D:80048390
 s32 g_LvTimeSinceInput = 0;
-//D:80048394
 s32 g_MissionTime = 0;
 
-/**
- * Address 0x80048398.
- */
 s32 g_MpTime = 0x8CA0;
 
-/**
- * Address 0x8004839C.
- */
 s32 g_MpPoint = 0xA;
 
-/**
- * Address 0x800483A0.
- */
 ALSoundState * g_MpSoundStateRelated = NULL;
 
-/**
- * Address 0x800483A4.
- */
 f32 g_MissionTimeSec = 0.0;
 
-//D:800483A8
 s32 g_SystemPowerTime = 0;
 
-/**
- * Address 0x800483AC.
- */
 f32 g_SystemPowerTimeSec = 0.0;
 
-//D:800483B0
 s32 g_StageTime = 0;
 
-/**
- * Address 0x800483B4.
- */
 f32 g_StageTimeSec = 0;
 
-//D:800483B8
 s32 g_PowerOnTime = 0;
 
 /**
  * Power on time in seconds.
- * Address 0x800483BC.
  */
 f32 g_PowerOnTimeSec = 0;
 
@@ -175,10 +130,8 @@ f32 g_PowerOnTimeSec = 0;
  */
 s32 g_LvDrawWorld = 1;
 
-//D:800483C4
 s32 g_DebugHitTexNum = 0xFFFFFFFF;
 
-//D:800483C8
 struct LvlMpUnknown *g_DebugDetailEdit = NULL;
 
 
@@ -206,8 +159,8 @@ void lvInit(void)
     s32 size;
 
     size = (s32)&_fontdlSegmentRomEnd - (s32)&_fontdlSegmentRomStart;
-    ptr_font_DL = mempAlloc(size, MEMPOOL_PERMANENT);
-    romCopy(ptr_font_DL, &_fontdlSegmentRomStart, size);
+    g_FontDl = mempAlloc(size, MEMPOOL_PERMANENT);
+    romCopy(g_FontDl, &_fontdlSegmentRomStart, size);
 }
 
 /**
@@ -425,7 +378,6 @@ void lvStageLoad(s32 stage)
     
     zbufDeallocate();
     viSetVideoMode(MD_NORMAL);
-    D_80048368 = 1.0f;
     lvSetControlsLocked(0);
 }
 
@@ -513,7 +465,7 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
 Gfx* lvRender(Gfx* DL)
 {
     gSPSegment(DL++, SPSEGMENT_PHYSICAL, NULL);
-    gSPSegment(DL++, SPSEGMENT_UNKNOWN, osVirtualToPhysical(ptr_font_DL));
+    gSPSegment(DL++, SPSEGMENT_UNKNOWN, osVirtualToPhysical(g_FontDl));
 
     gSPDisplayList(DL++, &dlFastPipelineSetup);
     gSPDisplayList(DL++, &dlZBufferGeometry);
@@ -687,8 +639,6 @@ Gfx* lvRender(Gfx* DL)
 /**
  * Sets the modifier values for the level being loaded.
  * This covers the enemy accuracy, reaction speed, and similar values.
- *
- * address 0x7F0BE8D0
  */
 void lvApplyDifficulty(void)
 {
@@ -706,11 +656,11 @@ void lvApplyDifficulty(void)
             damageMultiplier = (((armorDiff - 0.125f) * 0.5f) / 0.47500002f) + 0.5f;
         }
 
-        F_80030B14 = 2.0f;
-        F_80030B18 = 2.0f;
+        g_CctvAlarmTimeScale = 2.0f;
+        g_CctvDamageScale = 2.0f;
         g_AutogunPendingDamageTick = (0.5f * damageMultiplier);
         g_AutogunDamageScalar = (0.5f * damageMultiplier);
-        F_80030B24 = 2.0f;
+        g_AutogunDamageScale = 2.0f;
         g_AiAccuracyModifier = DEFAULT_AGENT_AI_ACCURACY_MODIFIER;
         g_AiDamageModifier = (DEFAULT_AGENT_AI_DAMAGE_MODIFIER * damageMultiplier);
         g_AiHealthModifier = 2.0f;
@@ -721,11 +671,11 @@ void lvApplyDifficulty(void)
     }
     else if (g_SelectedDifficulty == DIFFICULTY_SECRET)
     {
-        F_80030B14 = 1.0f;
-        F_80030B18 = 1.0f;
+        g_CctvAlarmTimeScale = 1.0f;
+        g_CctvDamageScale = 1.0f;
         g_AutogunPendingDamageTick = 0.75f;
         g_AutogunDamageScalar = 0.75f;
-        F_80030B24 = 1.0f;
+        g_AutogunDamageScale = 1.0f;
         g_AiAccuracyModifier = DEFAULT_SECRET_AGENT_AI_ACCURACY_MODIFIER;
         g_AiDamageModifier = DEFAULT_SECRET_AGENT_AI_DAMAGE_MODIFIER;
         g_AiHealthModifier = 1.0f;
@@ -738,11 +688,11 @@ void lvApplyDifficulty(void)
     }
     else if (g_SelectedDifficulty == DIFFICULTY_00)
     {
-        F_80030B14 = 1.0f;
-        F_80030B18 = 1.0f;
+        g_CctvAlarmTimeScale = 1.0f;
+        g_CctvDamageScale = 1.0f;
         g_AutogunPendingDamageTick = 1.0f;
         g_AutogunDamageScalar = 1.0f;
-        F_80030B24 = 1.0f;
+        g_AutogunDamageScale = 1.0f;
         g_AiAccuracyModifier = DEFAULT_00_AGENT_AI_ACCURACY_MODIFIER;
         g_AiDamageModifier = DEFAULT_00_AGENT_AI_DAMAGE_MODIFIER;
         g_AiHealthModifier = 1.0f;
@@ -755,11 +705,11 @@ void lvApplyDifficulty(void)
     }
     else if (g_SelectedDifficulty == DIFFICULTY_007)
     {
-        F_80030B14 = 1.0f;
-        F_80030B18 = 1.0f;
+        g_CctvAlarmTimeScale = 1.0f;
+        g_CctvDamageScale = 1.0f;
         g_AutogunPendingDamageTick = 1.0f;
         g_AutogunDamageScalar = 1.0f;
-        F_80030B24 = 1.0f;
+        g_AutogunDamageScale = 1.0f;
         g_AiAccuracyModifier = DEFAULT_007_AI_ACCURACY_MODIFIER;
         g_AiDamageModifier = DEFAULT_007_AI_DAMAGE_MODIFIER;
         g_AiHealthModifier = 1.0f;

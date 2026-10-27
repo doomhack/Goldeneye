@@ -152,7 +152,6 @@ OSScMsg g_bossGfxDoneMsg = { OS_SC_DONE_MSG };
 extern struct player *g_CurrentPlayer;
 
 /**
- * 6930    70005D30
  *     ??? - uses "-level_", "-m" strings
  */
 
@@ -293,7 +292,6 @@ void bossInitMainthreadData(void)
 }
 
 /**
- * 6C1C    7000601C
  *     loads primary resources and starts main program loop
  *     this is infinite.  Loops unconditionally: JAL 70006060
  */
@@ -309,7 +307,6 @@ void bossEntry(void) {
 /**
  * Main program loop.
  *
- * 6C60    70006060
  *
  * Seems to have been based on devkit example at one point,
  * n64devkit\ultra\usr\src\pr\demos_old\simple\simple.c
@@ -573,9 +570,6 @@ void bossMainloop(void)
 
                             pendingGfx++;
                             memaSingleDefragPass();
-#ifdef VERSION_EU
-                            eu_sub_7f0c00a4();
-#endif
                             toggleFlag ^= 1;
 
                             g_PerfCpuSum += osGetCount() - cpuFrameStart;
@@ -616,7 +610,6 @@ void bossMainloop(void)
 
 
 /**
- * 7530    70006930
  *     run title [0x5A->loaded stage#]; fry AT
  *     redirect to 70006950: A0=0x5A
  */
@@ -625,7 +618,6 @@ void bossRunTitleStage(void) {
 }
 
 /**
- * 7550    70006950
  *     A0->loaded stage# [800242FC]; fry AT
  *     0x5A jumps to folder select
  *     0x5B
@@ -636,7 +628,6 @@ void bossSetLoadedStage(LEVELID stage){
 }
 
 /**
- * 755C    7000695C
  *     V0= stage# [800241A8]
  */
 LEVELID bossGetStageNum() {
@@ -644,7 +635,6 @@ LEVELID bossGetStageNum() {
 }
 
 /**
- * 7568    70006968
  *     return to title screen from stage
  */
 void bossReturnTitleStage(void) {

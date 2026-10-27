@@ -15,28 +15,18 @@
 
 
 // bss
-//CODE.bss:80069920
-//CODE.bss:80069980
-//CODE.bss:800699E0
-//CODE.bss:80069A40
-//CODE.bss:80069AA0
-//CODE.bss:80069B00
 save_data g_Saves[SAVESLOTMAX];
 
-//CODE.bss:80069B60
 /**
  * The chr whose model is currently being built. Has to stay here to preserve ROM layout.
  */
 ChrRecord *g_CurModelChr;
 
 //data
-//D:8002C510
 s32 g_SaveBond[] = {BOND_BROSNAN,BOND_BROSNAN,BOND_BROSNAN,BOND_BROSNAN};
 
 
 /**
- *
- *
  * @return s32
  */
 s32 fileGamePakProbe(void)
@@ -46,7 +36,6 @@ s32 fileGamePakProbe(void)
 
 /**
  * Resets the RamRom replay folder save
- *
  */
 void fileResetRamRomSave(void)
 {
@@ -56,8 +45,6 @@ void fileResetRamRomSave(void)
 }
 
 /**
- *
- *
  * @param save
  */
 void fileWriteSmallSave(smallSave *save)
@@ -70,8 +57,6 @@ void fileWriteSmallSave(smallSave *save)
 }
 
 /**
- *
- *
  * @param save
  */
 void fileWriteSave(save_data *save)
@@ -375,8 +360,6 @@ bool fileGetIsCheatUnlocked(save_data *save, s32 cheat)
 }
 
 /**
- *
- *
  * @param save
  * @param cheat
  */
@@ -714,8 +697,6 @@ STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE l
 }
 
 /**
- *
- *
  * @param save1
  * @param save2
  */
@@ -748,8 +729,6 @@ void fileOverwriteSaveSlotWithNewSave(save_data *save1, save_data *save2)
 }
 
 /**
- *
- *
  * @param foldernum
  * @param stage
  * @param difficulty
@@ -788,8 +767,6 @@ void fileUnlockStageInFolderAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE stag
 }
 
 /**
- *
- *
  * @param foldernum
  * @param cheat
  */
@@ -1216,8 +1193,6 @@ static void fileSetCurrentPlayerOptions(u16 options)
 }
 
 /**
- *
- *
  * @param save
  */
 void fileSaveSettingsForFolder(save_data *save)

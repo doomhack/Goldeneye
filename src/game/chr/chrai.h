@@ -204,7 +204,6 @@ extern u32 monRandEffectChanceEARTHTEXT[];
 extern u32 monRandEffectChanceTARGETEARTH[];
 extern u32 monRandEffectChanceGALAXY3[];
 extern u32 monRandChanceScrollOrZoomRandRGBN[];
-extern u32 D_80031B10[];
 extern u32 monRandChanceScrollOrZoomRed[];
 extern u32 monRandChanceScrollOrZoomGreen[];
 extern u32 monRandChanceScrollOrZoomBlue[];
@@ -233,8 +232,8 @@ extern struct HatRecord                   g_HatSlots[];
 extern struct AmmoCrateRecord             g_AmmoCrates[];
 extern struct Projectile                  g_Projectiles[];
 extern struct Embedment                   g_Embedments[];
-extern struct coord3d                     flt_CODE_bss_80075B78;
-extern struct coord3d                     flt_CODE_bss_80075B88;
+extern struct coord3d                     g_ProjectileHitPos;
+extern struct coord3d                     g_ProjectileHitNormal;
 
 
 extern MonitorRecord g_MonitorAnimController;

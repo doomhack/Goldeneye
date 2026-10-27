@@ -20,9 +20,6 @@ MemoryPool m_mempPools[MEMPOOL_COUNT];
 
 /** Set once the stage pool has filled up and allocations have moved to the permanent pool. */
 s32 m_mempOverflowed = 0;
-s32 D_80024408 = 0;
-s32 D_8002440C = 0;
-s32 D_80024410 = 0;
 
 /**
  * Each size goes to the pool after the one named: the "ml" size sizes MEMPOOL_STAGE and

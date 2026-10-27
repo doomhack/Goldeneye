@@ -194,9 +194,6 @@ typedef struct WeaponStats
      */
     f32 ForceOfImpact;
 
-    /**
-     * 
-     */
     u32 BitFlags;
 } WeaponStats;
 
@@ -309,7 +306,7 @@ u32 weaponHasFlag(ITEM_IDS item, u32 mask);
 
 void gunUpdateAndFireBothHands(void);
 
-f32 sub_GAME_7F0649AC(s32 param_1);
+f32 gunGetReloadDipDepth(s32 param_1);
 
 f32 gunGetDualOffset(GUNHAND hand);
 

@@ -304,7 +304,6 @@ Gfx *bloodRenderRedFill(Gfx *gdl) {
 }
 
 
-// address 0x7F01CAE0 NTSC
 u8 *bloodDecodeFrame(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 *arg4)
 {
     u8 var_a2;
@@ -381,7 +380,6 @@ void bloodPack4Bit(u8* arg0, u16 arg1, u8* arg2)
 
 
 // Averages 4 pixel data, ending on "second" row.
-// Address 0x7F01CEEC NTSC
 void bloodSmoothUpLeft(u8 *arg0, s32 arg1, u8 *arg2)
 {
     s32 i;
@@ -399,7 +397,6 @@ void bloodSmoothUpLeft(u8 *arg0, s32 arg1, u8 *arg2)
 
 
 // Averages 4 pixel data, ending on "first" row.
-// Address 0x7F01D02C NTSC
 void bloodSmoothDownRight(u8 *arg0, s32 arg1, u8 *arg2)
 {
     s32 i;
@@ -417,8 +414,6 @@ void bloodSmoothDownRight(u8 *arg0, s32 arg1, u8 *arg2)
 
 
 /**
- * Address: 7F01D16C
- * 
  * Converts the decoded blood frame from column-major to row-major order.
  */
 void bloodImgTranspose(u8 *src, s32 srcwidth, s32 srcheight, u8 *dst)

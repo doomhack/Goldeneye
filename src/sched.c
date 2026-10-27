@@ -59,7 +59,6 @@ u32 userCompareValue = 45000000;
 u32 currentcount = 0;
 u32 dp_busy = 0;
 u32 dpCount = 0;
-//800230b0
 s32 g_schedViCurrentFrameBuffer = 0;
 f32 g_ViXScales[NUM_VIDEO_FRAME_BUFFERS] = {1.0, 1.0};
 f32 g_ViYScales[NUM_VIDEO_FRAME_BUFFERS] = {1.0, 1.0};
@@ -76,7 +75,6 @@ OSViMode g_ViModes[NUM_VIDEO_FRAME_BUFFERS];
 OSViMode *g_ViModePtrs[NUM_VIDEO_FRAME_BUFFERS];
 
 /**
- * 1588	70000988
  * A0-> stderr.permitted	[8002309C]; fry AT
  */
 void permit_stderr(u32 flag)
@@ -85,7 +83,6 @@ void permit_stderr(u32 flag)
 }
 
 /**
- * 15A0	700009A0
  * test to display stderr and update Count
  */
 void CheckDisplayErrorBuffer(u32 *buffer)
@@ -98,7 +95,6 @@ void CheckDisplayErrorBuffer(u32 *buffer)
 }
 
 /**
- * Address 0x700009F8.
  * test to display stderr every 16th frame
  */
 void CheckDisplayErrorBufferEvery16Frames(u32 framecount)
@@ -118,7 +114,6 @@ void CheckDisplayErrorBufferEvery16Frames(u32 framecount)
 
 /**
  * Not 100% on name, came from osInitialize's call to function
- * 1688	70000A88
  * store current Count to 800230A4
  */
 void osCreateLog(void)
@@ -171,7 +166,6 @@ void osScAddClient(OSSched *sc, OSScClient *c, OSMesgQueue *msgQ, OSScClient *ne
 
 
 /**
- * 18F8	70000CF8
  * V0= A0+78
  */
 OSMesgQueue *osScGetCmdQ(OSSched *sc)
@@ -180,7 +174,6 @@ OSMesgQueue *osScGetCmdQ(OSSched *sc)
 }
 
 /**
- * 1900	70000D00
  * Based on libultra\sched\sched.c. In particular, unlike the other scheduler methods,
  * the arg is actually void* instead of OSSched *sc.
  */
@@ -448,9 +441,6 @@ void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp)
     }
 }
 
-/**
- * 2160	70001560
- */
 
 void __scYield(OSSched *sc) 
 {
@@ -464,7 +454,6 @@ void __scYield(OSSched *sc)
 
 
 /**
- * 219C	7000159C
  * ???
  *	uses TLB pointers at 80028400
  *	7000167C	3

@@ -19,67 +19,37 @@ s32 g_ImageBankOffset;
 s32 *g_ImageBank;
 //8008D0B8;
 struct sImageTableEntry *g_ImageGeneric;
-//8008D0BC
 struct sImageTableEntry *g_ImagesImpact;
-//8008D0C0
 struct sImageTableEntry *g_ImagesExplosionSmoke;
-//8008D0C4
 struct sImageTableEntry *g_ImagesScatteredExplosions;
-//8008D0C8
 struct sImageTableEntry *g_ImageFlare1;
-//8008D0CC
 struct sImageTableEntry *g_ImageFlare2;
-//8008D0D0
 struct sImageTableEntry *g_ImageFlare3;
-//8008D0D4
 struct sImageTableEntry *g_ImageFlare4;
-//8008D0D8
 struct sImageTableEntry *g_ImageFlare5;
-//8008D0DC
 struct sImageTableEntry *g_ImageAmmo9mm;
-//8008D0E0
 struct sImageTableEntry *g_ImageAmmoRifle;
-//8008D0E4
 struct sImageTableEntry *g_ImageAmmoShotgun;
-//8008D0E8
 struct sImageTableEntry *g_ImageAmmoKnife;
-//8008D0EC
 struct sImageTableEntry *g_ImageAmmoGrenadeLauncher;
-//8008D0F0
 struct sImageTableEntry *g_ImageAmmoRocket;
-//8008D0F4
 struct sImageTableEntry *g_ImageAmmoMine;
-//8008D0F8
 struct sImageTableEntry *g_ImageAmmoGrenade;
-//8008D0FC
 struct sImageTableEntry *g_ImageAmmoMagnum;
-//8008D100
 struct sImageTableEntry *g_ImageAmmoGoldenGun;
-//8008D104
 struct sImageTableEntry *g_ImageAmmoRemoteMine;
-//8008D108
 struct sImageTableEntry *g_ImageAmmoTimedMine;
-//8008D10C
 struct sImageTableEntry *g_ImageAmmoProxMine;
-//8008D110
 struct sImageTableEntry *g_ImageAmmoTank;
 //8008D114;
 struct sImageTableEntry *g_ImageCrosshair;
-//8008D118
 struct sImageTableEntry *g_ImageCrosshairBeta;
-//8008D11C
 struct sImageTableEntry *g_ImageGlassOverlay;
-//8008D120
 struct sImageTableEntry *g_ImagesMonitor;
-//8008D124
 struct sImageTableEntry *g_ImagesSkyWater;
-//8008D128
 struct sImageTableEntry *g_ImagesMainFolder;
-//8008D12C
 struct sImageTableEntry *g_ImagesMpRadar;
-//8008D130
 struct sImageTableEntry *g_ImagesMpCharSelect;
-//8008D134
 struct sImageTableEntry *g_ImagesMpStageSelect;
 
 

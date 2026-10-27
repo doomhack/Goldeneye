@@ -81,54 +81,39 @@ struct music_struct_b {
 /**
  * Current playing track. Sometimes compared to zero to check
  * if there is any currently playing music.
- * Address 0x80024334.
  */
 s32 g_musicXTrack1CurrentTrackNum = 0;
 
-/**
- * Address 0x80024338.
- */
 u16 g_musicXTrack1Volume = VOLUME_MAX;
 
 /**
  * Current playing track. Sometimes compared to zero to check
  * if there is any currently playing music.
- * Address 0x8002433C.
  */
 s32 g_musicXTrack2CurrentTrackNum = 0;
 
-/**
- * Address 0x80024340.
- */
 u16 g_musicXTrack2Volume = VOLUME_MAX;
 
 /**
  * Current playing track. Sometimes compared to zero to check
  * if there is any currently playing music.
- * Address 0x80024344.
  */
 s32 g_musicXTrack3CurrentTrackNum = 0;
 
-/**
- * Address 0x80024348.
- */
 u16 g_musicXTrack3Volume = VOLUME_MAX;
 
 /**
  * Current fade in/out state.
- * Address 0x8002434c.
  */
 s32 g_musicXTrack1Fade = MUSIC_FADESTATE_UNSET;
 
 /**
  * Current fade in/out state.
- * Address 0x80024350.
  */
 s32 g_musicXTrack2Fade = MUSIC_FADESTATE_UNSET;
 
 /**
  * Current fade in/out state.
- * Address 0x80024354.
  */
 s32 g_musicXTrack3Fade = MUSIC_FADESTATE_UNSET;
 
@@ -595,7 +580,6 @@ static u8 sMusicHuftBuffer[0x2100];
 #    define MUSIC_HLIST ((struct huft *)sMusicHuftBuffer)
 
 /**
- * 75F0	700069F0
  * Patch the file so that offsets are pointers.
  * This is a copy of alSeqFileNew from n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\bnkf.c
  */
@@ -613,7 +597,6 @@ void musicSeqFileNew(RareALSeqBankFile *file, u8 *base)
 }
 
 /**
- * 7630	70006A30
  *     loads sound and music banks into memory segment 6
  * 
  * Seems to be roughly based on auSeqPlayerInit in n64devkit\ultra\usr\src\pr\demos_old\nnsample2\audio.c
@@ -771,7 +754,6 @@ void musicSeqPlayerInit(void)
 }
 
 /**
- * 7A7C	70006E7C
  * If sound boot flag is set, nothing happens.
  * If current track number is set, will call the stop playing method.
  * Does not change g_musicXTrack1Fade, but will update current track number.
@@ -830,7 +812,6 @@ void musicTrack1Play(s32 track)
 }
 
 /**
- * 7BD0	70006FD0
  * If sound boot flag is is set, nothing happens.
  * Updates internal variables to stopped state, regardless of current state.
  * If there's a current track set, and the cseq player is "doing something", 
@@ -859,7 +840,6 @@ void musicTrack1Stop(void)
 }
 
 /**
- * 7C30	70007030
  *     V0= [80024338]
  */
 u16 musicTrack1GetVolume(void)
@@ -868,7 +848,6 @@ u16 musicTrack1GetVolume(void)
 }
 
 /**
- * 7C3C	7000703C
  * Sets the global variable storing the current volume.
  * This is scaled by the default volume for the specific song (e.g., M_INTRO)
  * and the cseq player volume is set to that value.
@@ -890,7 +869,6 @@ void musicTrack1ApplySeqpVol(u16 volume)
 }
 
 /**
- * 7CF8	700070F8
  * Updates internal variables to fadeout state, if not already fading out.
  * Starting/stopping output of audio is not directly managed here.
  * Sets g_musicXTrack1Fade to MUSIC_FADESTATE_UNSET.
@@ -910,7 +888,6 @@ void musicTrack1FadeOut(f32 fadeTime)
 }
 
 /**
- * 7D68	70007168
  * Updates internal variables to fadein state, if not already fading in.
  * Calls alCSPPlay on cseq player. 
  * Sets g_musicXTrack1Fade to MUSIC_FADESTATE_FADE_IN.
@@ -942,7 +919,6 @@ void musicTrack1FadeIn(f32 fadeTime, u16 volume)
 }
 
 /**
- * 7E04	70007204
  * If sound boot flag is is set, nothing happens.
  * If current track number is set, will call the stop playing method.
  * Does not change g_musicXTrack2Fade, but will update current track number.
@@ -1001,7 +977,6 @@ void musicTrack2Play(s32 track)
 }
 
 /**
- * 7F58	70007358
  * If sound boot flag is is set, nothing happens.
  * Updates internal variables to stopped state, regardless of current state.
  * If there's a current track set, and the cseq player is "doing something", 
@@ -1030,7 +1005,6 @@ void musicTrack2Stop(void)
 }
 
 /**
- * 7FB8	700073B8
  *     V0= [80024340]
  */
 u16 musicTrack2GetVolume(void)
@@ -1039,8 +1013,6 @@ u16 musicTrack2GetVolume(void)
 }
 
 /**
- * 7FC4	700073C4
- * 
  * Sets the global variable storing the current volume.
  * This is scaled by the default volume for the specific song (e.g., M_INTRO)
  * and the cseq player volume is set to that value.
@@ -1061,7 +1033,6 @@ void musicTrack2ApplySeqpVol(u16 volume)
 }
 
 /**
- * 8080	70007480
  * Updates internal variables to fadeout state, if not already fading out.
  * Starting/stopping output of audio is not directly managed here.
  * Sets g_musicXTrack1Fade to MUSIC_FADESTATE_UNSET.
@@ -1081,7 +1052,6 @@ void musicTrack2FadeOut(f32 fadeTime)
 }
 
 /**
- * 818C	7000758C
  * If sound boot flag is is set, nothing happens.
  * If current track number is set, will call the stop playing method.
  * Does not change g_musicXTrack3Fade, but will update current track number.
@@ -1140,7 +1110,6 @@ void musicTrack3Play(s32 track)
 }
 
 /**
- * 82E0	700076E0
 * If sound boot flag is is set, nothing happens.
  * Updates internal variables to stopped state, regardless of current state.
  * If there's a current track set, and the cseq player is "doing something", 
@@ -1169,7 +1138,6 @@ void musicTrack3Stop(void)
 }
 
 /**
- * 8340	70007740
  *     V0= 7FFF [80024348]
  */
 u16 musicTrack3GetVolume(void)
@@ -1178,8 +1146,6 @@ u16 musicTrack3GetVolume(void)
 }
 
 /**
- * 834C	7000774C
- * 
  * Sets the global variable storing the current volume.
  * This is scaled by the default volume for the specific song (e.g., M_INTRO)
  * and the cseq player volume is set to that value.
@@ -1200,7 +1166,6 @@ void musicTrack3ApplySeqpVol(u16 volume)
 }
 
 /**
- * 8408	70007808
  * Updates internal variables to fadeout state, if not already fading out.
  * Starting/stopping output of audio is not directly managed here.
  * Sets g_musicXTrack1Fade to MUSIC_FADESTATE_UNSET.
@@ -1220,7 +1185,6 @@ void musicTrack3FadeOut(f32 fadeTime)
 }
 
 /**
- * 8478	70007878
  * Updates internal variables to fadein state, if not already fading in.
  * Calls alCSPPlay on cseq player. 
  * Sets g_musicXTrack1Fade to MUSIC_FADESTATE_FADE_IN.
@@ -1252,7 +1216,6 @@ void musicTrack3FadeIn(f32 fadeTime, u16 volume)
 }
 
 /**
- * 8514	70007914
  * Called by the scheduler to fade between music sources (e.g., level music -> watch pause music).
  */
 void musicFadeTick(void)

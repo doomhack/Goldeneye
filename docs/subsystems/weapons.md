@@ -80,5 +80,5 @@ own (see [props](props.md)).
 * The `itemGetWatchPos*` names follow the item table's fields (`watch_pos_x`...), which
   the decomp named before anyone checked which axis each one is.
 * `ammoGiveMaxAll` is the infinite ammo cheat, called every frame while it is on.
-* Two unnamed functions in `gun.c`, `sub_GAME_7F05E978` and `sub_GAME_7F05EA94`, show or
+* Two unnamed functions in `gun.c`, `gunSetFirstPersonPartsVisible` and `gunSetHeldItemVisible`, show or
   hide groups of switch nodes on a gun model; which parts they are is still unknown.

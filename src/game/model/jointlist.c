@@ -143,9 +143,6 @@ void jointListFree(JointListEntry *entry)
 #define OP16_POS_Y_VOL(data) (((volatile ModelNode_Op16Record *)(data))->pos.f[1])
 #define OP16_POS_Z_VOL(data) (((volatile ModelNode_Op16Record *)(data))->pos.f[2])
 
-/**
- * Address: 7F06B29C
- */
 void jointListCalcDepths(JointListEntry *arg0)
 {
     JointListEntry *entry;
@@ -554,9 +551,6 @@ void jointListCalcDepths(JointListEntry *arg0)
 #undef OP16_POS_Z_VOL
 
 
-/**
- * Address: 7F06BB28
- */
 JointListEntry *jointListSortByDepth(JointListEntry *modelhit)
 {
     JointListEntry stacknodes[2];
@@ -982,7 +976,6 @@ walk_node:
 
 
 /**
- * Address: 0x7F06C010
 * https://decomp.me/scratch/IDiXU
  * #MATCH! Unlikley match, not sure why we are setting the root node to the last node.
  
@@ -1003,8 +996,6 @@ f32 jointListFindHit(ModelFileHeader *head, s32 unused, s32 unused2, s32 *arg3, 
 
 
 /**
- * Address: 7F06C010
- * 
  * Update: decompiling jointListFindHitNext revealed that the first argument for this function is a JointListEntry.
  * The previous function matched because both ModelNode and JointListEntry happen to have a normal 32 bit field at offset 0x0c.
  */

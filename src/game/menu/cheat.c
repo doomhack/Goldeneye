@@ -36,7 +36,6 @@ bool g_CheatShowPos = FALSE;
 
 #pragma region ButtonCodes
 
-//D:8003F430
 u16 mBtnCheatExtraMPChars[] = {
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG |          U_CBUTTONS ,
@@ -50,7 +49,6 @@ u16 mBtnCheatExtraMPChars[] = {
     L_TRIG |          D_JPAD
 };
 
-//D:8003F444
 u16 mBtnCheatInvincibility[] = {
     L_TRIG |          D_JPAD,
              R_TRIG | R_CBUTTONS ,
@@ -64,7 +62,6 @@ u16 mBtnCheatInvincibility[] = {
     L_TRIG | R_TRIG | R_CBUTTONS
 };
 
-//D:8003F458
 u16 mBtnCheatAllGuns[] = {
     L_TRIG | R_TRIG | D_JPAD,
     L_TRIG |          L_CBUTTONS ,
@@ -78,7 +75,6 @@ u16 mBtnCheatAllGuns[] = {
     L_TRIG |          L_CBUTTONS
 
 };
-//D:8003F46C
 u16 mBtnCheatMaxAmmo[] = {
     L_TRIG | R_TRIG | R_CBUTTONS  ,
              R_TRIG | U_JPAD,
@@ -92,7 +88,6 @@ u16 mBtnCheatMaxAmmo[] = {
              R_TRIG | L_JPAD
 
 };
-//D:8003F480
 u16 mBtnCheatInvalid[] = {
     L_TRIG |          U_JPAD,
              R_TRIG | R_CBUTTONS ,
@@ -106,7 +101,6 @@ u16 mBtnCheatInvalid[] = {
     L_TRIG | R_TRIG | D_JPAD
 
 };
-//D:8003F494
 u16 mBtnCheatDeactivateInvincibilityMulti[] = {
              R_TRIG | R_JPAD,
     L_TRIG |          L_JPAD,
@@ -119,7 +113,6 @@ u16 mBtnCheatDeactivateInvincibilityMulti[] = {
     L_TRIG |          D_JPAD,
     L_TRIG |          U_CBUTTONS
 };
-//D:8003F4A8
 u16 mBtnCheatLineMode[] = {
              R_TRIG | D_CBUTTONS ,
     L_TRIG | R_TRIG | D_JPAD,
@@ -133,7 +126,6 @@ u16 mBtnCheatLineMode[] = {
              R_TRIG | U_CBUTTONS
 
 };
-//D:8003F4BC
 u16 mBtnCheatInvisibility[] = {
              R_TRIG | L_CBUTTONS ,
     L_TRIG | R_TRIG | U_CBUTTONS  ,
@@ -146,7 +138,6 @@ u16 mBtnCheatInvisibility[] = {
     L_TRIG | R_TRIG | L_JPAD,
              R_TRIG | R_JPAD
 };
-//D:8003F4D0
 u16 mBtnCheatBondPhase[] = {
     L_TRIG |          U_CBUTTONS ,
     L_TRIG | R_TRIG | L_CBUTTONS  ,
@@ -159,7 +150,6 @@ u16 mBtnCheatBondPhase[] = {
     L_TRIG |          U_JPAD,
     L_TRIG | R_TRIG | D_CBUTTONS
 };
-//D:8003F4E4
 u16 mBtnCheatDam[] = {
     L_TRIG | R_TRIG | U_CBUTTONS  ,
              R_TRIG | L_JPAD,
@@ -172,7 +162,6 @@ u16 mBtnCheatDam[] = {
     L_TRIG | R_TRIG | R_JPAD,
              R_TRIG | D_CBUTTONS
 };
-//D:8003F4F8
 u16 mBtnCheatFacility[] = {
     L_TRIG | R_TRIG | U_CBUTTONS  ,
              R_TRIG | L_CBUTTONS ,
@@ -185,7 +174,6 @@ u16 mBtnCheatFacility[] = {
     L_TRIG | R_TRIG | U_CBUTTONS  ,
     L_TRIG |          R_JPAD
 };
-//D:8003F50C
 u16 mBtnCheatRunway[] = {
     L_TRIG | R_TRIG | L_JPAD,
              R_TRIG | L_JPAD,
@@ -198,7 +186,6 @@ u16 mBtnCheatRunway[] = {
     L_TRIG |          D_JPAD,
              R_TRIG | L_CBUTTONS
 };
-//D:8003F520
 u16 mBtnCheatSurface[] = {
              R_TRIG | L_CBUTTONS ,
     L_TRIG | R_TRIG | U_CBUTTONS  ,
@@ -211,7 +198,6 @@ u16 mBtnCheatSurface[] = {
     L_TRIG |          R_CBUTTONS ,
     L_TRIG | R_TRIG | D_JPAD,
 };
-//D:8003F534
 u16 mBtnCheatBunker[] = {
     L_TRIG |          D_CBUTTONS ,
              R_TRIG | R_JPAD,
@@ -224,7 +210,6 @@ u16 mBtnCheatBunker[] = {
              R_TRIG | R_CBUTTONS ,
     L_TRIG |          U_JPAD,
 };
-//D:8003F548
 u16 mBtnCheatSilo[] = {
     L_TRIG |          U_JPAD,
              R_TRIG | D_CBUTTONS ,
@@ -237,7 +222,6 @@ u16 mBtnCheatSilo[] = {
              R_TRIG | R_JPAD,
              R_TRIG | R_CBUTTONS
 };
-//D:8003F55C
 u16 mBtnCheatFrigate[] = {
              R_TRIG | U_CBUTTONS ,
     L_TRIG |          D_JPAD,
@@ -250,7 +234,6 @@ u16 mBtnCheatFrigate[] = {
     L_TRIG | R_TRIG | D_CBUTTONS  ,
              R_TRIG | U_JPAD
 };
-//D:8003F570
 u16 mBtnCheatSurface2[] = {
     L_TRIG |          D_CBUTTONS ,
     L_TRIG | R_TRIG | R_CBUTTONS  ,
@@ -263,7 +246,6 @@ u16 mBtnCheatSurface2[] = {
     L_TRIG | R_TRIG | D_JPAD,
     L_TRIG |          R_CBUTTONS
 };
-//D:8003F584
 u16 mBtnCheatBunker2[] = {
     L_TRIG |          D_JPAD,
              R_TRIG | D_JPAD,
@@ -276,7 +258,6 @@ u16 mBtnCheatBunker2[] = {
     L_TRIG |          L_JPAD,
     L_TRIG |          D_CBUTTONS
 };
-//D:8003F598
 u16 mBtnCheatStatue[] = {
     L_TRIG | R_TRIG | D_CBUTTONS  ,
     L_TRIG | R_TRIG | D_CBUTTONS  ,
@@ -289,7 +270,6 @@ u16 mBtnCheatStatue[] = {
              R_TRIG | D_CBUTTONS ,
              R_TRIG | R_JPAD
 };
-//D:8003F5AC
 u16 mBtnCheatArchives[] = {
              R_TRIG | L_JPAD,
     L_TRIG | R_TRIG | U_JPAD,
@@ -302,7 +282,6 @@ u16 mBtnCheatArchives[] = {
     L_TRIG |          U_JPAD,
              R_TRIG | D_CBUTTONS
 };
-//D:8003F5C0
 u16 mBtnCheatStreets[] = {
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG |          R_CBUTTONS ,
@@ -315,7 +294,6 @@ u16 mBtnCheatStreets[] = {
              R_TRIG | U_CBUTTONS ,
     L_TRIG |          D_JPAD
 };
-//D:8003F5D4
 u16 mBtnCheatDepot[] = {
     L_TRIG |          D_JPAD,
     L_TRIG |          D_JPAD,
@@ -328,7 +306,6 @@ u16 mBtnCheatDepot[] = {
     L_TRIG |          R_CBUTTONS ,
     L_TRIG |          U_JPAD
 };
-//D:8003F5E8
 u16 mBtnCheatTrain[] = {
              R_TRIG | L_JPAD,
              R_TRIG | D_CBUTTONS ,
@@ -341,7 +318,6 @@ u16 mBtnCheatTrain[] = {
     L_TRIG |          U_JPAD,
     L_TRIG |          U_CBUTTONS
 };
-//D:8003F5FC
 u16 mBtnCheatJungle[] = {
              R_TRIG | D_CBUTTONS ,
              R_TRIG | L_JPAD,
@@ -354,7 +330,6 @@ u16 mBtnCheatJungle[] = {
              R_TRIG | U_CBUTTONS ,
     L_TRIG | R_TRIG | L_JPAD
 };
-//D:8003F610
 u16 mBtnCheatControl[] = {
     L_TRIG |          D_CBUTTONS ,
              R_TRIG | D_JPAD,
@@ -367,7 +342,6 @@ u16 mBtnCheatControl[] = {
              R_TRIG | L_JPAD,
     L_TRIG | R_TRIG | U_CBUTTONS
 };
-//D:8003F624
 u16 mBtnCheatCaverns[] = {
     L_TRIG |          D_JPAD,
              R_TRIG | D_CBUTTONS ,
@@ -380,7 +354,6 @@ u16 mBtnCheatCaverns[] = {
     L_TRIG |          U_JPAD,
              R_TRIG | L_CBUTTONS
 };
-//D:8003F638
 u16 mBtnCheatCradle[] = {
     L_TRIG | R_TRIG | U_CBUTTONS  ,
     L_TRIG |          L_JPAD,
@@ -393,7 +366,6 @@ u16 mBtnCheatCradle[] = {
     L_TRIG |          L_CBUTTONS ,
              R_TRIG | R_JPAD
 };
-//D:8003F64C
 u16 mBtnCheatAztek[] = {
              R_TRIG | D_CBUTTONS ,
              R_TRIG | L_JPAD,
@@ -406,7 +378,6 @@ u16 mBtnCheatAztek[] = {
     L_TRIG | R_TRIG | R_JPAD,
     L_TRIG |          L_CBUTTONS
 };
-//D:8003F660
 u16 mBtnCheatEgypt[] = {
     L_TRIG | R_TRIG | U_JPAD,
     L_TRIG | R_TRIG | R_CBUTTONS  ,
@@ -423,7 +394,6 @@ u16 mBtnCheatEgypt[] = {
     L_TRIG | R_TRIG | A_BUTTON,
     L_TRIG | R_TRIG | B_BUTTON
 };
-//D:8003F67C
 u16 mBtnCheatPaintballMod[] = {
     L_TRIG |          U_JPAD,
                       U_CBUTTONS,
@@ -436,7 +406,6 @@ u16 mBtnCheatPaintballMod[] = {
     L_TRIG | R_TRIG | U_JPAD,
     L_TRIG |          D_CBUTTONS
 };
-//D:8003F690
 u16 mBtnCheatInvincible2[] = {
              R_TRIG | L_JPAD,
     L_TRIG |          D_JPAD,
@@ -449,7 +418,6 @@ u16 mBtnCheatInvincible2[] = {
     L_TRIG | R_TRIG | R_JPAD,
     L_TRIG |          L_CBUTTONS
 };
-//D:8003F6A4
 u16 mBtnCheatDKMode[] = {
     L_TRIG | R_TRIG | U_JPAD,
                       R_CBUTTONS,
@@ -462,7 +430,6 @@ u16 mBtnCheatDKMode[] = {
     L_TRIG | R_TRIG | D_JPAD,
     L_TRIG | R_TRIG | L_CBUTTONS
 };
-//D:8003F6B8
 u16 mBtnCheat2xGL[] = {
              R_TRIG | D_JPAD,
              R_TRIG | U_JPAD,
@@ -475,7 +442,6 @@ u16 mBtnCheat2xGL[] = {
                       U_JPAD,
              R_TRIG | D_CBUTTONS
 };
-//D:8003F6CC
 u16 mBtnCheat2xRL[] = {
              R_TRIG | R_JPAD,
     L_TRIG |          U_JPAD,
@@ -488,7 +454,6 @@ u16 mBtnCheat2xRL[] = {
              R_TRIG | D_JPAD,
              R_TRIG | L_CBUTTONS
 };
-//D:8003F6E0
 u16 mBtnCheatTurboMode[] = {
     L_TRIG |          D_JPAD,
     L_TRIG |          D_CBUTTONS ,
@@ -501,7 +466,6 @@ u16 mBtnCheatTurboMode[] = {
              R_TRIG | D_JPAD,
     L_TRIG |          R_JPAD
 };
-//D:8003F6F4
 u16 mBtnCheatNoRadar[] = {
              R_TRIG | U_JPAD,
                       D_CBUTTONS,
@@ -514,7 +478,6 @@ u16 mBtnCheatNoRadar[] = {
              R_TRIG | L_JPAD,
              R_TRIG | R_JPAD
 };
-//D:8003F708
 u16 mBtnCheatTinyBond[] = {
     L_TRIG | R_TRIG | D_JPAD,
              R_TRIG | D_JPAD,
@@ -527,7 +490,6 @@ u16 mBtnCheatTinyBond[] = {
              R_TRIG | D_CBUTTONS ,
              R_TRIG | R_JPAD
 };
-//D:8003F71C
 u16 mBtnCheat2xTKnives[] = {
              R_TRIG | L_CBUTTONS ,
     L_TRIG |          L_JPAD,
@@ -540,7 +502,6 @@ u16 mBtnCheat2xTKnives[] = {
              R_TRIG | L_JPAD,
              R_TRIG | L_CBUTTONS
 };
-//D:8003F730
 u16 mBtnCheatFastAnimation[] = {
     L_TRIG |          D_CBUTTONS ,
     L_TRIG |          L_CBUTTONS ,
@@ -553,7 +514,6 @@ u16 mBtnCheatFastAnimation[] = {
              R_TRIG | L_CBUTTONS ,
     L_TRIG |          L_JPAD
 };
-//D:8003F744
 u16 mBtnCheatBondInvisible[] = {
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG | R_TRIG | D_CBUTTONS  ,
@@ -566,7 +526,6 @@ u16 mBtnCheatBondInvisible[] = {
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG |          D_JPAD
 };
-//D:8003F758
 u16 mBtnCheatEnemyRL[] = {
     L_TRIG | R_TRIG | D_CBUTTONS  ,
                       L_CBUTTONS,
@@ -579,7 +538,6 @@ u16 mBtnCheatEnemyRL[] = {
              R_TRIG | U_JPAD,
     L_TRIG |          U_JPAD
 };
-//D:8003F76C
 u16 mBtnCheatSlowAnimation[] = {
     L_TRIG | R_TRIG | L_JPAD,
     L_TRIG | R_TRIG | L_JPAD,
@@ -592,7 +550,6 @@ u16 mBtnCheatSlowAnimation[] = {
                       L_CBUTTONS,
                       U_CBUTTONS
 };
-//D:8003F780
 u16 mBtnCheatSilverPPK[] = {
     L_TRIG |          L_JPAD,
     L_TRIG | R_TRIG | U_JPAD,
@@ -605,7 +562,6 @@ u16 mBtnCheatSilverPPK[] = {
     L_TRIG | R_TRIG | R_JPAD,
     L_TRIG | R_TRIG | L_JPAD
 };
-//D:8003F794
 u16 mBtnCheat2xHKnives[] = {
              R_TRIG | D_CBUTTONS ,
     L_TRIG |          R_JPAD,
@@ -618,7 +574,6 @@ u16 mBtnCheat2xHKnives[] = {
     L_TRIG |          R_JPAD,
     L_TRIG |          L_CBUTTONS
 };
-//D:8003F7A8
 u16 mBtnCheatInfinitAmmo[] = {
     L_TRIG |          L_CBUTTONS ,
     L_TRIG | R_TRIG | R_JPAD,
@@ -631,7 +586,6 @@ u16 mBtnCheatInfinitAmmo[] = {
     L_TRIG |          U_JPAD,
                       R_CBUTTONS
 };
-//D:8003F7BC
 u16 mBtnCheat2xFNP90[] = {
                       U_JPAD,
                       R_JPAD,
@@ -644,7 +598,6 @@ u16 mBtnCheat2xFNP90[] = {
                       U_CBUTTONS,
     L_TRIG | R_TRIG | D_JPAD
 };
-//D:8003F7D0
 u16 mBtnCheatGoldPPK[] = {
     L_TRIG | R_TRIG | R_JPAD,
     L_TRIG | R_TRIG | D_JPAD,
@@ -657,7 +610,6 @@ u16 mBtnCheatGoldPPK[] = {
                       D_JPAD,
     L_TRIG |          D_CBUTTONS
 };
-//D:8003F7E4
 u16 mBtnCheat2xLaser[] = {
     L_TRIG |          R_JPAD,
     L_TRIG | R_TRIG | L_CBUTTONS  ,
@@ -670,7 +622,6 @@ u16 mBtnCheat2xLaser[] = {
              R_TRIG | R_JPAD,
     L_TRIG | R_TRIG | U_JPAD
 };
-//D:8003F7F8
 u16 mBtnCheatUnlockAllGuns[] = {
                       D_JPAD,
                       L_JPAD,
@@ -685,9 +636,6 @@ u16 mBtnCheatUnlockAllGuns[] = {
 };
 #pragma endregion
 
-/**
- * Address 0x8003F80C.
- */
 CheatInfo g_CheatInfo[] = {
     {          CHEAT_EXTRA_MP_CHARS,  0xA, 0, 0, mBtnCheatExtraMPChars,                                                        0, 0,  /* 0x31 */                     CHEAT_MASK_GLOBAL | CHEAT_MASK_SHOW_TEXT | CHEAT_MASK_MENUS},
     {           CHEAT_INVINCIBILITY,  0xA, 0, 0, mBtnCheatInvincibility,       getStringID(LMISC, MISC_STR_00_INVINCIBLE       ), 0,  /* 0x06 */                                                         CHEAT_MASK_MPGAME | CHEAT_MASK_SPGAME},
@@ -787,9 +735,6 @@ void cheatSetDkMode(CHEAT_ID cheat_id);
 
 
 
-/**
- * Address 0x7F091740.
- */
 s32 cheatCountBits(u16 bits)
 {
     s32 count;
@@ -809,9 +754,6 @@ s32 cheatCountBits(u16 bits)
 
 
 
-/**
- * Address 0x7F09177C.
- */
 void cheatCheckInput(void)
 {
     CheatInfo *cheatInfo = &g_CheatInfo[0];
@@ -875,9 +817,6 @@ void cheatCheckInput(void)
 
 
 
-/**
- * Address 0x7F09193C.
- */
 void cheatTick(void)
 {
     u16 currentButtons;
@@ -921,8 +860,6 @@ void cheatTick(void)
 
 /**
  * true if param is CHEAT_ENEMY_ROCKETS
- *
- * Address 7F091A5C.
  */
 bool cheatIsEnemyRockets(CHEAT_ID id)
 {
@@ -939,8 +876,6 @@ bool cheatIsEnemyRockets(CHEAT_ID id)
 
 /**
  * true if param is MP cheat
- *
- * Address 0x7F091A78.
  */
 bool cheatIsMpCheat(CHEAT_ID cheat_id)
 {
@@ -955,9 +890,6 @@ bool cheatIsMpCheat(CHEAT_ID cheat_id)
 
 
 
-/**
- * Address 0x7F091AAC.
- */
 void cheatActivate(CHEAT_ID cheatindex)
 {
     u32 cheat_mask;
@@ -1601,9 +1533,6 @@ void cheatTurnOff(CHEAT_ID cheat_id)
 
 
 
-/**
- * Address 0x7F0926C0.
- */
 void cheatTurnAllOff(void)
 {
     s32 numplayers;
@@ -1634,9 +1563,6 @@ void cheatTurnAllOff(void)
 
 
 
-/**
- * Address 0x7F092774.
- */
 char *cheatGetName(CHEAT_ID cheat_id)
 {
     u16 strID;
@@ -1653,9 +1579,6 @@ char *cheatGetName(CHEAT_ID cheat_id)
 
 
 
-/**
- * Address 0x7F0927BC.
- */
 bool cheatIsActive(CHEAT_ID cheat)
 {
     return ((bool) (u8) g_CheatPlayerMask[cheat] >> playerGetCurrentNum()) & 1;
@@ -1664,9 +1587,6 @@ bool cheatIsActive(CHEAT_ID cheat)
 
 
 
-/**
- * Address 0x7F0927F4.
- */
 void cheatSetDkMode(CHEAT_ID cheat_id)
 {
     s32 numslots;

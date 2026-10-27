@@ -207,8 +207,6 @@ void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSeg
 
 
 /**
- * Address: 7F0A3330
- *
  * Creates the display list for HUD and watch health and armor bars.
  */
 Gfx *hudRenderGaugeBar(Gfx *gdl, uintptr_t vtxaddr, s32 numvertices)
@@ -243,9 +241,6 @@ Gfx *hudRenderGaugeBar(Gfx *gdl, uintptr_t vtxaddr, s32 numvertices)
 }
 
 
-/**
- * Address: 7F0A33F8
- */
 void watchMakeArcVerts(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 arg3)
 {
     f32 angle;
@@ -312,9 +307,6 @@ void watchMakeArcVerts(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 arg
 }
 
 
-/**
- * Address: 7F0A3978
- */
 Gfx *watchRenderBackground(Gfx *gdl, struct WatchVertex *watch_verts, s32 unused_arg2, s32 drawFan)
 {
     s8 i;

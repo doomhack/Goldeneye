@@ -184,7 +184,7 @@ extern struct unk_portalstruct table_for_portals[PORTMAX];
 extern s32 g_MaxNumRooms;
 extern f32 g_BgLevelScaleInv;
 
-extern bg_room_data * ptr_bgdata_room_fileposition_list;
+extern bg_room_data * g_BgRoomFiles;
 extern s_room_info g_BgRoomInfo[];
 extern Gfx *ptrDynamic_CC_RM_LUT[];
 extern Gfx DL_LUT_PRIMARY_ADDFOG[];

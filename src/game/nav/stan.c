@@ -27,45 +27,31 @@ void stanGetTileMidPoint(StandTile *tile, coord3d *out);
 
 // bss
 struct StanPrefixRecord {
-    //CODE.bss:8007B120
     s32 stanfile;
-    //CODE.bss:8007B124
     StandTile *ptr_firstroom;    // read as offset 4, hence the struct
 };
 
 struct StanPrefixRecord *g_StanFile;
 
-//CODE.bss:8007B128
 StandTile *g_StanRoomFirstTile[139];
-//CODE.bss:8007B358 //stan list array
 StanRoomBounds g_StanRoomBounds[139];
-//CODE.bss:8007B9DC
 s32 g_StanNumRooms; //region?
 
 // All relating to a saved collision, but not one struct
-//CODE.bss:8007B9E4
 StandTile *g_StanHitTile;
-//CODE.bss:8007B9E8
 s32 g_StanHitEdge;
-//CODE.bss:8007B9F0
 struct coord2d g_StanHitLineA;
-//CODE.bss:8007B9F8
 struct coord2d g_StanHitLineB;
-//CODE.bss:8007BA00
 f32 g_StanHitFrac;
 
-//CODE.bss:8007BA04
 PropRecord * g_StanHitProp;
 
-//CODE.bss:8007BA0C
 StandTile * g_StanLadderTile;
-//CODE.bss:8007BA10
 StandTile *g_StanFillStack[352];
 
 
 // data
 
-//D:80040F30
 // Indexed by StandTile.mid.headerMid.special.
 u8 g_StanTileSpecialFlags[] = {
     0x8D, 0x86, 0x04, 0xC5,
@@ -75,49 +61,22 @@ u8 g_StanTileSpecialFlags[] = {
 };
 
 
-//D:80040F44
 f32 g_StanScale = 1.0;
-//D:80040F48
 f32 g_StanInvScale = 1.0;
-//D:80040F4C
 u8 g_StanTileSizes[] = {
     0x20,0x20,0x20,0x20,
     0x28,0x30,0x38,0x40,
     0x48,0x50,0x58,0x00
 };
-//D:80040F58
 struct StandTile * g_StanTiles = NULL;
-//D:80040F5C
 s32 g_StanFirstTileAddr = 0;
-//D:80040F60
 struct StandTile* g_StanTilesEnd = NULL;
-//D:80040FB0
 s32 g_StanDebugRegion = 0;
-//D:80040FB4
 s32 g_StanLineLog = 0;
 
-#if defined(VERSION_US)
-
-s32 D_80040FB8[] = {
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0
-};
-#endif
-//D:800413BC
 s32 g_StanSavedCollHasLine =  0;
 
 
-//D:800585BC
 const char aStanlinelog[] = "-stanlinelog";
 
 // forward declarations
@@ -135,9 +94,6 @@ bool stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 dis
 // end forward declarations
 
 
-/**
- * Address: 7F0AF038
- */
 void stanBuildRoomData(void)
 {
     StandTile *tile;
@@ -193,8 +149,6 @@ void stanBuildRoomData(void)
 
 
 /**
- * Address: 7F0AF20C
- * 
  * Finds the highest stan file beneath pos. If a tile is found, yRtn is set to the tile
  * height beneath pos.
  * @returns NULL if no suitable tile is found.
@@ -395,8 +349,6 @@ void stanLoadFile(struct StanPrefixRecord *file)
 
 
 /**
- * Address: 7F0AF760
- * 
  * Returns true if x/z coords from the three point indices out of tile->tail.half are colinear i.e. the triangle has zero horizontal area.
  */
 bool stanTileHasZeroArea(StandTile *tile)
@@ -470,9 +422,6 @@ void stanGetPointInsideCorner(StandTile *tile, s32 tripleIndex /*canonically c *
 }
 
 
-/*
-* Address: 0x7F0AFB1C
- */
 f32 stanDistSquared(coord3d *p,coord3d *q)
 {
     // Should be a coord3d or vec3d, but they used an array which
@@ -671,8 +620,6 @@ f32 stanPointDist(StandTile *tile,int pntI,f32 p_x,f32 p_z)
 
 
 /**
- * Address: 7F0B0198
- * 
  * Returns true if the perpendicular projection of the X/Z point onto the
  * tile edge's infinite line falls between the edge endpoints.
  *
@@ -742,9 +689,6 @@ s32 stanIsInsideTriWorld(StandTile *tile, f32 p_x, f32 p_z)
 }
 
 
-/*
-* Address: 0x7F0B0400
-*/
 f32 stanTriEdgeDist2(StandTile *tile, s32 start3index, f32 p_x, f32 p_z)
 {
     f32 temp_f0;
@@ -827,8 +771,6 @@ int stanCrossSign(f32 a_x,f32 a_z,f32 b_x,f32 b_z)
 
 
 /**
- * Address: 7F0B0688
- * 
  * Test if two 2D line segments intersect.
  * 
  * Segment 1 runs from start1 -> end1. Segment 2 runs from start2 -> end2.
@@ -1048,7 +990,6 @@ bool stanWalkLine(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
 
 /**
  * Name: stanWalkLineNoCallback
- * Address 0x7F0B0BE4.
 */
 s32 stanWalkLineNoCallback(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z)
 {
@@ -1058,7 +999,6 @@ s32 stanWalkLineNoCallback(StandTile **tileStack, f32 start_x, f32 start_z, f32 
 
 /**
  * Name: walkTilesBetweenPoints_NotingRooms
- * Address 0x7F0B0BE4.
 */
 s32 stanLineRooms(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z, s32 *roomBuffer, s32 *rtnCountSize, s32 maxBufSize)
 {
@@ -1452,8 +1392,6 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
 
 
 /**
- * Address: 7F0B16C4
- * 
  * Computes the signed perpendicular distance from point P to the infinite
  * line that goes through point A and point B.
  * The sign indicates which side of the line the point is on.
@@ -1481,8 +1419,6 @@ f32 stanDist2d(f32 o_x,f32 o_z,f32 p_x,f32 p_z)
 
 
 /**
- * Address: 7F0B17E4
- * 
  * Tests whether a point P's perpendicular projection onto the infinite line
  * going through points A and B falls inside the finite edge segment.
  */
@@ -1792,8 +1728,6 @@ s32 stanCircleLegal(StandTile **tileStack, f32 target_x, f32 target_z, f32 unkno
 
 
 /**
- * Address: 7F0B2110
- * 
  * Callback for stan locus traversal.
  * 
  * Adds the current tile's room ID to the caller-provided room list if it
@@ -1851,9 +1785,6 @@ s32 stanCircleRoomsHitCallback(StandTile **tileStack, s32 stackHeight, struct St
 }
 
 
-/**
- * Address: 7F0B21B0
- */
 s32 stanCircleRooms(StandTile **tileStack, f32 target_x, f32 target_z, f32 radius, s32 *rooms, s32 *count_rtn, s32 bufMax)
 {
     struct StandTileLocusCallbackRecord data;
@@ -1878,9 +1809,6 @@ s32 stanCircleRooms(StandTile **tileStack, f32 target_x, f32 target_z, f32 radiu
 }
 
 
-/**
- * Address 0x7F0B2244.
-*/
 s32 stanCircleCrouchCallback(StandTile *arg0, struct StandTileLocusCallbackRecord *arg1)
 {
     s32 val = arg0->mid.half >> 0xC;
@@ -1893,9 +1821,6 @@ s32 stanCircleCrouchCallback(StandTile *arg0, struct StandTileLocusCallbackRecor
 }
 
 
-/**
- * Address: 7F0B2274
- */
 s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, s32 arg2, s32 arg3, s32 arg4, s32 *outFlags)
 {
     u16 link;
@@ -1927,9 +1852,6 @@ s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, s32 arg2, s32 arg3, 
 }
 
 
-/**
- * Address 0x7F0B2314.
-*/
 s32 stanCircleGetSpecial(StandTile **arg0, f32 arg1, f32 arg2, f32 arg3, struct StandTileLocusCallbackRecord *arg4)
 {
     s32 i;
@@ -1972,9 +1894,6 @@ s32 stanGetLocusCount(struct StandTileLocusCallbackRecord *arg0)
 }
 
 
-/**
- * Address: 7F0B23AC
- */
 void stanGetTileOrderedPointWorldPos(StandTile *tile, s32 pointnum, coord3d *out)
 {
     StandTilePoint *point;
@@ -2081,8 +2000,6 @@ void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, coord3d
 
 
 /**
- * Address: 7F0B260C
- * 
  * Callback function.
  * 
  * For a given edge, return true if the edge is vertically above yThreshold.
@@ -2319,8 +2236,6 @@ void stanSetLevelScale(f32 ls)
 
 /**
  * Calculates y value on a tile, according to (x,z) position.
- *
- * Address 0x7F0B2970.
  */
 f32 stanGetPositionYValue(StandTile *tile, f32 p_x, f32 p_z)
 {
@@ -2550,9 +2465,6 @@ Gfx * stanDebugBeginDraw(Gfx *arg0) {
 }
 
 
-/*
-* Address: 0x7f0b3200
-*/
 f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, coord2d *end2)
 {
     f32 deltaX = start2->f[1] - end2->f[1];
@@ -2576,9 +2488,6 @@ f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, co
 }
 
 
-/*
-* Address: 0x7F0B32D8
-*/
 f32 stanPointLineDist(struct coord3d *point3D, coord2d *lineStart, coord2d *lineEnd)
 {
     f32 projectedDistance;
@@ -2616,9 +2525,6 @@ f32 stanPointLineDist(struct coord3d *point3D, coord2d *lineStart, coord2d *line
 }
 
 
-/*
-* Address: 0x7f0b33dc
-*/
 f32 stanRaySegmentFrac(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd, coord2d *direction)
 {
     f32 directionLength ;

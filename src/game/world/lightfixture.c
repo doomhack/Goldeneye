@@ -82,10 +82,8 @@ s16 current_light_fixture_room;
  */
 struct s_darkened_light darkened_light_table[DARKENED_LIGHT_TABLE_MAX];
 
-s32 dword_CODE_bss_80083318; // unused
 s32 cur_entry_darkened_light_table = 0;
 
-s32 D_80046034[] = {0, 0, 0, 0, 0, 0, 0}; // unused
 
 
 void lightFixtureInitTables(void)
@@ -404,7 +402,6 @@ s32 lightIsCoordNearDarkenedVertex(coord16 * coord, s32 room_index)
  * room_index == entry->room_index
  * gfx >= entry->ptr_start_pertinent_DL
  * gfx <  entry->ptr_end_pertinent_DL
- * 
  */
 void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
 {

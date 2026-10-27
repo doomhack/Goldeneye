@@ -18,9 +18,6 @@
 #endif
 
 // bss
-/**
- * EU .bss 8007DC90
-*/
 u8 g_RoomMtxAge[AMT300];
 
 s32 g_RoomMtxRoom[AMT300]; //mtxbufferroom
@@ -31,8 +28,6 @@ Mtx g_RoomMtxs[AMT300];
 /**
  * Initialize room and player-related data structures.
  * Sets all rooms and players to an initial state.
- *
- * Address: 0x7F0BC530
  */
 void roomMtxInit(void)
 {
@@ -62,8 +57,6 @@ void roomMtxInit(void)
 
 /**
  * Set the player's room field.
- *
- * Address: 0x7F0BC624
  */
 void roomMtxSetOriginRoom(s32 roomIndex) {
   g_CurrentPlayer->curRoomIndex = roomIndex;
@@ -72,8 +65,6 @@ void roomMtxSetOriginRoom(s32 roomIndex) {
 
 /**
  * Assigns a room index to a specific room ID.
- *
- * Address: 0x7F0BC634
  */
 void roomMtxAssign(int mtx,int room)
 {
@@ -85,8 +76,6 @@ void roomMtxAssign(int mtx,int room)
 
 /**
  * Removes the room index assignment for a specific room ID.
- *
- * Address: 0x7F0BC660
  */
 void roomMtxUnassign(int mtx,int room)
 {
@@ -98,8 +87,6 @@ void roomMtxUnassign(int mtx,int room)
 
 /**
  * Resets a room's state to its initial condition.
- *
- * Address: 0x7F0BC690
  */
 void roomMtxFree(int roomIndex)
 {
@@ -114,8 +101,6 @@ void roomMtxFree(int roomIndex)
 /**
  * Finds and returns the first available room index.
  * Returns 0 if no available room is found.
- *
- * Address: 0x7F0BC6F0
  */
 s32 roomMtxFindFree(void)
 {
@@ -198,9 +183,9 @@ s32 roomMtxGet(s32 room)
     roomTransformMatrix.m[2][2] = g_BgLevelScaleInv;
 
     // room translation to position it relative to the player
-    roomTransformMatrix.m[3][0] = (ptr_bgdata_room_fileposition_list[room].pos.f[0] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[0];
-    roomTransformMatrix.m[3][1] = (ptr_bgdata_room_fileposition_list[room].pos.f[1] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[1];
-    roomTransformMatrix.m[3][2] = (ptr_bgdata_room_fileposition_list[room].pos.f[2] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[2];
+    roomTransformMatrix.m[3][0] = (g_BgRoomFiles[room].pos.f[0] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[0];
+    roomTransformMatrix.m[3][1] = (g_BgRoomFiles[room].pos.f[1] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[1];
+    roomTransformMatrix.m[3][2] = (g_BgRoomFiles[room].pos.f[2] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[2];
 
     mtxF2L(&roomTransformMatrix, &g_RoomMtxs[mtx]);
 
@@ -210,8 +195,6 @@ s32 roomMtxGet(s32 room)
 
 /**
  * Updates the display list with the room matrix for a specific room roomID.
- *
- * Address: 0x7F0BC9C4
  */
 Gfx * roomMtxLoad(Gfx *gdl,int roomID)
 {
@@ -225,24 +208,20 @@ Gfx * roomMtxLoad(Gfx *gdl,int roomID)
 
 /**
  * Returns the position of a room by its roomID.
- *
- * Address: 0x7f0bca14
  */
 struct coord3d* roomGetPos(s32 roomID)
 {
-    return &ptr_bgdata_room_fileposition_list[roomID].pos;
+    return &g_BgRoomFiles[roomID].pos;
 }
 
 
 /**
  * Retrieves and scales the position of a room by its roomID.
- *
- * Address: 0x7F0BCA34
  */
 void roomGetWorldPos(s32 roomID, coord3d *scaledPos)
 {
-    scaledPos->x = ptr_bgdata_room_fileposition_list[roomID].pos.x * g_BgLevelScaleInv;
-    scaledPos->y = ptr_bgdata_room_fileposition_list[roomID].pos.y * g_BgLevelScaleInv;
-    scaledPos->z = ptr_bgdata_room_fileposition_list[roomID].pos.z * g_BgLevelScaleInv;
+    scaledPos->x = g_BgRoomFiles[roomID].pos.x * g_BgLevelScaleInv;
+    scaledPos->y = g_BgRoomFiles[roomID].pos.y * g_BgLevelScaleInv;
+    scaledPos->z = g_BgRoomFiles[roomID].pos.z * g_BgLevelScaleInv;
 }
 

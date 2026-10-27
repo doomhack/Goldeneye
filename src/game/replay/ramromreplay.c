@@ -11,7 +11,6 @@
 #include "joy.h"
 #include "game/level/frametiming.h"
 #include "game/replay/testhooks.h"
-//D:800483F0
 
 struct ramrom_struct
 {
@@ -68,25 +67,15 @@ struct ramrom_struct ramrom_table[] = {
     {0,0}
 };
 
-//D:80048468
-ramromfilestructure* ptr_active_demofile = 0;
-//D:8004846C
+ramromfilestructure* g_DemoFile = 0;
 struct ramrom_seed * ramrom_blkbuf_2 = NULL;
-//D:80048470
 struct ramrom_blockbuf * ramrom_blkbuf_3 = NULL;
-//D:80048474
 s32 is_ramrom_flag = 0;
-//D:80048478
 s32 ramrom_demo_related_3 = 0;
-//D:8004847C
 s32 g_ramromPlayBackFlag = 0;
-//D:80048480
 s32 recording_ramrom_flag = 0;
-//D:80048484
 s32 ramrom_demo_related_6 = 0;
-//D:80048488
 s32 g_ramromRecordFlag = 0;
-//D:8004848C
 //                     .align 4
 
 
@@ -101,7 +90,7 @@ void copy_recorded_ramrom_registers_to_proper_place_ingame(ramromfilestructure *
 
 
 void clear_ramrom_block_buffer_heading_ptrs(void) {
-    ptr_active_demofile = 0;
+    g_DemoFile = 0;
     ramrom_blkbuf_2 = 0;
     ramrom_blkbuf_3 = 0;
 }
@@ -122,7 +111,6 @@ s32 frontRunStageTick(void) {
 }
 
 
-// Address 0x7F0BFCB0 NTSC.
 void finalize_ramrom_on_hw(void)
 {
     u8 buffer[0x28];
@@ -139,14 +127,13 @@ void finalize_ramrom_on_hw(void)
 
     a1 = INDY_RAMROM_DEMO_POINTER;
 
-    ptr_active_demofile = romCopyUnaligned(ramrom_data_target, a1, 0xf0);
-    ptr_active_demofile->totaltime_ms = g_GlobalTimer - g_ClockTimer;
-    ptr_active_demofile->filesize = (s32)address_demo_loaded - (s32)a1;
-    romWrite(ptr_active_demofile, a1, 0xf0);
+    g_DemoFile = romCopyUnaligned(ramrom_data_target, a1, 0xf0);
+    g_DemoFile->totaltime_ms = g_GlobalTimer - g_ClockTimer;
+    g_DemoFile->filesize = (s32)address_demo_loaded - (s32)a1;
+    romWrite(g_DemoFile, a1, 0xf0);
 }
 
 
-// Address 0x7F0BFE5C NTSC
 void record_player_input_as_packet(struct contsample *arg0, s32 arg1, s32 arg2)
 {
     s32 temp_t5;
@@ -159,7 +146,7 @@ void record_player_input_as_packet(struct contsample *arg0, s32 arg1, s32 arg2)
     s32 temp_s0;
 
     temp_t5 = ALIGN16_a((s32)&ramrom_data_target[0x1f8]);
-    temp_t1 = ptr_active_demofile->size_cmds;
+    temp_t1 = g_DemoFile->size_cmds;
 
     var_t2 = 0;
     var_a3 = 0;
@@ -216,7 +203,6 @@ void record_player_input_as_packet(struct contsample *arg0, s32 arg1, s32 arg2)
 
 
 
-// Address 0x7F0C0080 NTSC.
 s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
 {
     s32 var_a3;
@@ -227,7 +213,7 @@ s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
     s32 temp_t2;
 
     var_t0 = 0;
-    temp_a2 = (s32) ptr_active_demofile->size_cmds;
+    temp_a2 = (s32) g_DemoFile->size_cmds;
     temp_t2 = ramrom_blkbuf_2->count;
 
     for (var_a3 = 0; var_a3 < temp_t2; var_a3++)
@@ -284,7 +270,6 @@ s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
 
 
 
-// Address 0x7F0C0268 NTSC.
 void iterate_ramrom_entries_handle_camera_out(void)
 {
     s32 temp_v1;
@@ -298,7 +283,7 @@ void iterate_ramrom_entries_handle_camera_out(void)
         ramrom_blkbuf_3 = romCopyUnaligned(
             ramrom_data_target + 0x21E,
             address_demo_loaded + 4,
-            ptr_active_demofile->size_cmds * sizeof(struct ramrom_blockbuf) * ramrom_blkbuf_2->count);
+            g_DemoFile->size_cmds * sizeof(struct ramrom_blockbuf) * ramrom_blkbuf_2->count);
     }
 
     var_a3 = ramrom_blkbuf_2->count;
@@ -309,13 +294,13 @@ void iterate_ramrom_entries_handle_camera_out(void)
     else
     {
         // 5 is ??
-        address_demo_loaded += align_addr_even((ptr_active_demofile->size_cmds * sizeof(struct ramrom_blockbuf) * ramrom_blkbuf_2->count) + 5);
+        address_demo_loaded += align_addr_even((g_DemoFile->size_cmds * sizeof(struct ramrom_blockbuf) * ramrom_blkbuf_2->count) + 5);
     }
 
     frameAdvance(ramrom_blkbuf_2->speedframes);
 
     // BUG? Does this need to be adjusted for PAL?
-    temp_v1 = ptr_active_demofile->totaltime_ms - 0x3C;
+    temp_v1 = g_DemoFile->totaltime_ms - 0x3C;
     if ((g_GlobalTimer >= temp_v1) && ((g_GlobalTimer - g_ClockTimer) < temp_v1))
     {
         ramromFadeToTitle();
@@ -380,24 +365,22 @@ void copy_recorded_ramrom_registers_to_proper_place_ingame(ramromfilestructure *
     frontSetMpTeam(3, state->mp_flags[3]);
 }
 
-// Address 0x7F0C0640 NTSC
 void test_if_recording_demos_this_stage_load(enum LEVELID arg0, enum DIFFICULTY arg1)
 {
     if (g_ramromRecordFlag != 0)
     {
-        ptr_active_demofile = (ramromfilestructure *) ALIGN16_a((s32)ramrom_data_target);
-        dword_CODE_bss_8008C5F8 = 0;
-        ptr_active_demofile->stagenum = arg0;
-        ptr_active_demofile->difficulty = arg1;
-        ptr_active_demofile->size_cmds = joyGetControllerCount();
-        ptr_active_demofile->slotnum = record_slot_num;
-        fileCopyCurrentSave(&ptr_active_demofile->savefile);
-        copy_current_ingame_registers_before_ramrom_playback(ptr_active_demofile);
+        g_DemoFile = (ramromfilestructure *) ALIGN16_a((s32)ramrom_data_target);
+        g_DemoFile->stagenum = arg0;
+        g_DemoFile->difficulty = arg1;
+        g_DemoFile->size_cmds = joyGetControllerCount();
+        g_DemoFile->slotnum = record_slot_num;
+        fileCopyCurrentSave(&g_DemoFile->savefile);
+        copy_current_ingame_registers_before_ramrom_playback(g_DemoFile);
         recording_ramrom_flag = 1;
         ramrom_demo_related_6 = 1;
         joySetRecordFunc(record_player_input_as_packet);
         address_demo_loaded = INDY_RAMROM_DEMO_POINTER;
-        romWrite(ptr_active_demofile, address_demo_loaded, 0xF0U);
+        romWrite(g_DemoFile, address_demo_loaded, 0xF0U);
         address_demo_loaded += sizeof(struct ramromfilestructure);
         g_ramromRecordFlag = 0;
         
@@ -406,15 +389,14 @@ void test_if_recording_demos_this_stage_load(enum LEVELID arg0, enum DIFFICULTY 
     
     if (g_ramromPlayBackFlag != 0)
     {
-        dword_CODE_bss_8008C5F8 = 0;
-        fileSetDifficulty(ptr_active_demofile->difficulty);
-        fileSetSoloStage(ptr_active_demofile->stagenum);
-        fileUseDemoSave(&ptr_active_demofile->savefile);
+        fileSetDifficulty(g_DemoFile->difficulty);
+        fileSetSoloStage(g_DemoFile->stagenum);
+        fileUseDemoSave(&g_DemoFile->savefile);
         copy_current_ingame_registers_before_ramrom_playback((ramromfilestructure *) (ramrom_data_target + 0x110));
-        copy_recorded_ramrom_registers_to_proper_place_ingame(ptr_active_demofile);
+        copy_recorded_ramrom_registers_to_proper_place_ingame(g_DemoFile);
         is_ramrom_flag = 1;
         ramrom_demo_related_3 = 1;
-        joySetPlaybackFunc(ramrom_replay_handler, ptr_active_demofile->size_cmds);
+        joySetPlaybackFunc(ramrom_replay_handler, g_DemoFile->size_cmds);
         joySetContDataIndex(1);
         g_ramromPlayBackFlag = 0;
     }
@@ -438,11 +420,11 @@ void stop_recording_ramrom(void)
 void replay_recorded_ramrom_at_address(ramromfilestructure *demofile)
 {
     address_demo_loaded = demofile;
-    ptr_active_demofile = romCopyUnaligned(&ramrom_data_target, address_demo_loaded, sizeof(struct ramromfilestructure));
+    g_DemoFile = romCopyUnaligned(&ramrom_data_target, address_demo_loaded, sizeof(struct ramromfilestructure));
     address_demo_loaded += sizeof(ramromfilestructure);
     g_ramromPlayBackFlag = 1;
-    fileSetSoloStage(ptr_active_demofile->stagenum);
-    fileSetDifficulty(ptr_active_demofile->difficulty);
+    fileSetSoloStage(g_DemoFile->stagenum);
+    fileSetDifficulty(g_DemoFile->difficulty);
     frontSetMenu(MENU_RUN_STAGE,1);
 }
 
@@ -473,7 +455,6 @@ void stop_demo_playback(void)
 
 
 
-// Address 0x7F0C0970 NTSC.
 void select_ramrom_to_play(void)
 {
     s32 i;
@@ -501,7 +482,7 @@ u32 check_ramrom_flags(void)
 {
     if ((get_is_ramrom_flag() != 0) || (get_recording_ramrom_flag() != 0))
     {
-        return ptr_active_demofile->slotnum;
+        return g_DemoFile->slotnum;
 
     }
     return 0;

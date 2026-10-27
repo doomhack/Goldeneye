@@ -2297,7 +2297,6 @@ typedef union
      */
     typedef struct BeamRecord
     {
-        /***/
         s8      unk00;
         s8      item_id; // type ITEM_IDS
         char    unk02;

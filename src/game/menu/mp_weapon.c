@@ -7,7 +7,6 @@
 #include "game/menu/mp_weapon.h"
 #include "assets/obseg/text/LmpweaponsE.h"
 // data
-//D:80048670
 struct s_mp_weapon_set mp_weapon_set_slaps[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_UNARMED, PROP_CHRTT33, 1.0, AMMO_9MM, 0, 1),
@@ -20,7 +19,6 @@ struct s_mp_weapon_set mp_weapon_set_slaps[] =
     INLINE_S_MP_WEAPON_SET(ITEM_UNARMED, PROP_CHRTT33, 1.0, AMMO_9MM, 0, 1)
 };
 
-//D:80048730
 struct s_mp_weapon_set mp_weapon_set_pistols[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_TT33, PROP_CHRTT33, 1.0, AMMO_9MM, 0x32, 1),
@@ -33,7 +31,6 @@ struct s_mp_weapon_set mp_weapon_set_pistols[] =
     INLINE_S_MP_WEAPON_SET(ITEM_RUGER, PROP_CHRRUGER, 1.0, AMMO_MAGNUM, 0x32, 1)
 };
 
-//D:800487F0
 struct s_mp_weapon_set mp_weapon_set_knife[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_THROWKNIFE, PROP_CHRTHROWKNIFE, 1.0, AMMO_KNIFE, 0xA, 0),
@@ -46,7 +43,6 @@ struct s_mp_weapon_set mp_weapon_set_knife[] =
     INLINE_S_MP_WEAPON_SET(ITEM_THROWKNIFE, PROP_CHRTHROWKNIFE, 1.0, AMMO_KNIFE, 0xA, 0)
 };
 
-//D:800488B0
 struct s_mp_weapon_set mp_weapon_set_auto[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_WPPKSIL, PROP_CHRWPPKSIL, 1.0, AMMO_9MM, 0x32, 1),
@@ -59,7 +55,6 @@ struct s_mp_weapon_set mp_weapon_set_auto[] =
     INLINE_S_MP_WEAPON_SET(ITEM_MP5K, PROP_CHRMP5K, 1.0, AMMO_9MM, 0x64, 1)
 };
 
-//D:80048970
 struct s_mp_weapon_set mp_weapon_set_power[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_TT33, PROP_CHRTT33, 3.0, AMMO_9MM, 0x32, 1),
@@ -72,7 +67,6 @@ struct s_mp_weapon_set mp_weapon_set_power[] =
     INLINE_S_MP_WEAPON_SET(ITEM_AUTOSHOT, PROP_CHRAUTOSHOT, 1.0, AMMO_SHOTGUN, 0x1E, 1)
 };
 
-//D:80048A30
 struct s_mp_weapon_set mp_weapon_set_sniper[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_TT33, PROP_CHRTT33, 3.0, AMMO_9MM, 0x32, 1),
@@ -85,7 +79,6 @@ struct s_mp_weapon_set mp_weapon_set_sniper[] =
     INLINE_S_MP_WEAPON_SET(ITEM_SNIPERRIFLE, PROP_CHRSNIPERRIFLE, 1.0, AMMO_RIFLE, 0x32, 1)
 };
 
-//D:80048AF0
 struct s_mp_weapon_set mp_weapon_set_grenade[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_TT33, PROP_CHRTT33, 3.0, AMMO_9MM, 0x32, 1),
@@ -98,7 +91,6 @@ struct s_mp_weapon_set mp_weapon_set_grenade[] =
     INLINE_S_MP_WEAPON_SET(ITEM_GRENADE, PROP_CHRGRENADE, 1.5, AMMO_GRENADE, 5, 0)
 };
 
-//D:80048BB0
 struct s_mp_weapon_set mp_weapon_set_remote_m[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_WPPK, PROP_CHRWPPK, 3.0, AMMO_9MM, 0x32, 1),
@@ -117,7 +109,6 @@ struct s_mp_weapon_set mp_weapon_set_remote_m[] =
 };
 
 
-//D:80048C70
 struct s_mp_weapon_set mp_weapon_set_glaunch[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_TT33, PROP_CHRTT33, 3.0, AMMO_9MM, 0x32, 1),
@@ -130,7 +121,6 @@ struct s_mp_weapon_set mp_weapon_set_glaunch[] =
     INLINE_S_MP_WEAPON_SET(ITEM_GRENADELAUNCH, PROP_CHRGRENADELAUNCH, 1.0, AMMO_GRENADEROUND, 6, 1)
 };
 
-//D:80048D30
 struct s_mp_weapon_set mp_weapon_set_timed_m[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_WPPK, PROP_CHRWPPK, 3.0, AMMO_9MM, 0x32, 1),
@@ -148,7 +138,6 @@ struct s_mp_weapon_set mp_weapon_set_timed_m[] =
     INLINE_S_MP_WEAPON_SET(ITEM_TIMEDMINE, PROP_CHRTIMEDMINE, 1.5, AMMO_TIMEDMINE, 5, 0)
 };
 
-//D:80048DF0 
 struct s_mp_weapon_set mp_weapon_set_prox_m[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_WPPK, PROP_CHRWPPK, 3.0, AMMO_9MM, 0x32, 1),
@@ -161,7 +150,6 @@ struct s_mp_weapon_set mp_weapon_set_prox_m[] =
     INLINE_S_MP_WEAPON_SET(ITEM_PROXIMITYMINE, PROP_CHRPROXIMITYMINE, 1.5, AMMO_PROXMINE, 5, 0)
 };
 
-//D:80048EB0
 struct s_mp_weapon_set mp_weapon_set_rockets[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_TT33, PROP_CHRTT33, 3.0, AMMO_9MM, 0x32, 1),
@@ -174,7 +162,6 @@ struct s_mp_weapon_set mp_weapon_set_rockets[] =
     INLINE_S_MP_WEAPON_SET(ITEM_ROCKETLAUNCH, PROP_CHRROCKETLAUNCH, 1.5, AMMO_ROCKETS, 6, 1)
 };
 
-//D:80048F70
 struct s_mp_weapon_set mp_weapon_set_lasers[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_TT33, PROP_CHRTT33, 3.0, AMMO_9MM, 0x32, 1),
@@ -187,7 +174,6 @@ struct s_mp_weapon_set mp_weapon_set_lasers[] =
     INLINE_S_MP_WEAPON_SET(ITEM_LASER, PROP_CHRLASER, 1.5, AMMO_NONE, 0, 1)
 };
 
-//D:80049030
 struct s_mp_weapon_set mp_weapon_set_golden[] = 
 {
     INLINE_S_MP_WEAPON_SET(ITEM_TT33, PROP_CHRTT33, 3.0, AMMO_9MM, 0x32, 1),
@@ -200,7 +186,6 @@ struct s_mp_weapon_set mp_weapon_set_golden[] =
     INLINE_S_MP_WEAPON_SET(ITEM_GOLDENGUN, PROP_CHRGOLDEN, 1.5, AMMO_GGUN, 0xA, 1)
 };
 
-//D:800490F0
 struct s_mp_weapon_set_text g_MpWeaponSets[] = 
 {
     {getStringID(LMPWEAPONS, MPWEAPON_STR_00_SLAPPERSONLY), mp_weapon_set_slaps},

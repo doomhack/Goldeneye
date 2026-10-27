@@ -32,7 +32,7 @@ void reset_counter_rand_body_head(void)
 }
 
 
-u32 sub_GAME_7F0001F0(void *ani, int aniid, int param_3) {
+u32 animSumRootTurn(void *ani, int aniid, int param_3) {
     u16 asStack8[4];
     u16 result = 0;
 
@@ -44,7 +44,7 @@ u32 sub_GAME_7F0001F0(void *ani, int aniid, int param_3) {
 }
 
 
-s32 sub_GAME_7F000290(ModelAnimation *anim, s32 startframe, s32 endframe)
+s32 animSumRootForward(ModelAnimation *anim, s32 startframe, s32 endframe)
 {
     s32 sum;
     s16 out[3];
@@ -68,8 +68,6 @@ s32 sub_GAME_7F000290(ModelAnimation *anim, s32 startframe, s32 endframe)
 
 
 /**
- * Address: 7F00032C
- * 
  * pd is raceInitAnimGroup
  * 
  * Initializes a null-terminated table of weapon firing animation configs.
@@ -105,9 +103,9 @@ s32 initResolveAnimGroupTable(struct weapon_firing_animation_table *animconfig)
 
         do
         {
-            config->anim.anim = (struct ModelAnimation *)(((0, animoffset)) + ((s32)ptr_animation_table));
+            config->anim.anim = (struct ModelAnimation *)(((0, animoffset)) + ((s32)g_AnimTable));
             endframe = mathFloorToInt(config->unk04);
-            angle16 = sub_GAME_7F0001F0(config->anim.anim, 0, endframe) & 0xffff;
+            angle16 = animSumRootTurn(config->anim.anim, 0, endframe) & 0xffff;
             duration = config->unk04;
 
             if (duration > 0.0f)
@@ -138,9 +136,6 @@ s32 initResolveAnimGroupTable(struct weapon_firing_animation_table *animconfig)
 
 
 //pd is raceInitAnimGroups
-/**
- * Address: 7F00046C
- */
 void initResolveAnimGroups(struct anim_group_info **groups)
 {
     s32 i;
@@ -156,8 +151,6 @@ void initResolveAnimGroups(struct anim_group_info **groups)
 
 
 /**
- * Address: 7F0004D0
- * 
  * Resolves each entry's anim offset into an absolute ModelAnimation*.
  * @returns the entry count.
  */
@@ -170,7 +163,7 @@ s32 initResolveAnimTable(struct StruckAnim *entries)
 
     count = 0;
     entry = entries;
-    ptr_animation_table_addr = (struct StruckAnim *)(&ptr_animation_table);
+    ptr_animation_table_addr = (struct StruckAnim *)(&g_AnimTable);
 
 
     if (entry->struck_anim != 0)
@@ -181,7 +174,7 @@ s32 initResolveAnimTable(struct StruckAnim *entries)
             entries = ptr_animation_table_addr;
             count++;
             entry++;
-            ptr_animation_table_addr = (struct StruckAnim *)(&ptr_animation_table);
+            ptr_animation_table_addr = (struct StruckAnim *)(&g_AnimTable);
             entry[-1].struck_anim = (ModelAnimation *)((*((s32 *)entries)) + (0, address));
         }
         while (entry->struck_anim != 0);
@@ -192,14 +185,14 @@ s32 initResolveAnimTable(struct StruckAnim *entries)
 
 
 #define ANIM_PTR(anim) \
-    ((ModelAnimation *)((s32)&anim + ((s32)ptr_animation_table)))
+    ((ModelAnimation *)((s32)&anim + ((s32)g_AnimTable)))
 
 #define ANIM_FRAC(anim) \
-    ((((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->numFrames - 1)) * 0.10000001f) / \
+    ((((f32)animSumRootForward(ANIM_PTR(anim), 0, ANIM_PTR(anim)->numFrames - 1)) * 0.10000001f) / \
         ((f32)((u32)ANIM_PTR(anim)->numFrames)))
 
 #define ANIM_FRAC_MUL_FIRST(anim) \
-    ((0.10000001f * ((f32)sub_GAME_7F000290(ANIM_PTR(anim), 0, ANIM_PTR(anim)->numFrames - 1))) / \
+    ((0.10000001f * ((f32)animSumRootForward(ANIM_PTR(anim), 0, ANIM_PTR(anim)->numFrames - 1))) / \
         ((f32)((u32)ANIM_PTR(anim)->numFrames)))
 
 void initWeaponAnimGroups(void)
@@ -237,18 +230,18 @@ void initWeaponAnimGroups(void)
     initResolveAnimGroups(ptr_crouched_pistol_firing_animation_groups);
     initResolveAnimGroups(ptr_crouched_doubles_firing_animation_groups);
 
-    initResolveAnimGroupTable(D_80030078);
-    initResolveAnimGroupTable(D_80030660);
+    initResolveAnimGroupTable(g_ChrFireAnims);
+    initResolveAnimGroupTable(g_ChrMoveFireAnims);
 
-    D_80030984 = ANIM_FRAC(ANIM_DATA_walking);
-    D_80030988 = ANIM_FRAC(ANIM_DATA_running);
-    D_8003098C = ANIM_FRAC(ANIM_DATA_sprinting);
-    D_80030990 = ANIM_FRAC(ANIM_DATA_walking_unarmed);
-    D_80030994 = ANIM_FRAC(ANIM_DATA_running_one_handed_weapon);
-    D_80030998 = ANIM_FRAC(ANIM_DATA_sprinting_one_handed_weapon);
-    D_8003099C = ANIM_FRAC(ANIM_DATA_walking_female);
-    D_800309A0 = ANIM_FRAC_MUL_FIRST(ANIM_DATA_running_female);
-    D_800309A4 = ANIM_FRAC(ANIM_DATA_sprinting_one_handed_weapon);
+    g_ChrSpeedWalk = ANIM_FRAC(ANIM_DATA_walking);
+    g_ChrSpeedRun = ANIM_FRAC(ANIM_DATA_running);
+    g_ChrSpeedSprint = ANIM_FRAC(ANIM_DATA_sprinting);
+    g_ChrSpeedWalkUnarmed = ANIM_FRAC(ANIM_DATA_walking_unarmed);
+    g_ChrSpeedRunOneHanded = ANIM_FRAC(ANIM_DATA_running_one_handed_weapon);
+    g_ChrSpeedSprintOneHanded = ANIM_FRAC(ANIM_DATA_sprinting_one_handed_weapon);
+    g_ChrSpeedWalkFemale = ANIM_FRAC(ANIM_DATA_walking_female);
+    g_ChrSpeedRunFemale = ANIM_FRAC_MUL_FIRST(ANIM_DATA_running_female);
+    g_ChrSpeedSprintOneHanded2 = ANIM_FRAC(ANIM_DATA_sprinting_one_handed_weapon);
 }
 
 #undef ANIM_PTR
@@ -256,9 +249,6 @@ void initWeaponAnimGroups(void)
 #undef ANIM_FRAC_MUL_FIRST
 
 
-/**
- * Address: 7F000980
- */
 void casingsInit(void) 
 {
     initCasingPool();
@@ -266,8 +256,6 @@ void casingsInit(void)
 
 
 /**
- * Address: 7F0009A0
- * 
  * Sets the header field of every g_Casings entry to NULL.
  */
 void initCasingPool(void) 

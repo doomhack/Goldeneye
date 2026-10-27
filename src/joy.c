@@ -551,8 +551,8 @@ s8 joyGetStickX(s8 contpadnum)
 
     return g_ContDataPtr->samples[g_ContDataPtr->curlast].pads[contpadnum].stick_x;
 }
-//duplicate?
-s8 joy7000C174(s8 contpadnum)
+/** The stick as it was at the start of the frame's samples, to spot it crossing a threshold. */
+s8 joyGetPrevStickX(s8 contpadnum)
 {
     contpadnum = joyMapPad(contpadnum);
 
@@ -578,7 +578,8 @@ s8 joyGetStickY(s8 contpadnum)
     return g_ContDataPtr->samples[g_ContDataPtr->curlast].pads[contpadnum].stick_y;
 }
 
-s8 joy7000C284(s8 contpadnum)
+/** As joyGetPrevStickX, for the Y axis. */
+s8 joyGetPrevStickY(s8 contpadnum)
 {
     contpadnum = joyMapPad(contpadnum);
 

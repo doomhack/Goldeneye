@@ -532,7 +532,6 @@ struct player
    * 0: crosshair shown on screen
    * 1: crosshair hidden
    * Only applies in level, when in control of bond.
-   * Address 0x800c6884
   */
   /* 0x0124 */ s32 insightaimmode;
   /* 0x0128 */ s32 autoyaimenabled;
@@ -630,7 +629,6 @@ struct player
   /**
    * Current pause time.
    * Resets after every new pause.
-   * Address 0x800c6920
   */
   s32 watch_pause_time;
 
@@ -641,7 +639,6 @@ struct player
    * 1 = level is active
    * 0 = game is paused
    * Changes to zero only after fully entering watch.
-   * Address 0x800c692c
   */
   s32 outside_watch_menu;
   s32 open_close_solo_watch_menu;
@@ -798,7 +795,6 @@ struct player
 
   /**
    * Copy of buttons pressed.
-   * Address 0x800C6B17
   */
   u16 buttons_pressed;
   u16 prev_buttons_pressed;
@@ -2408,113 +2404,65 @@ struct move_bond_temp_struct {
     s32 unk04;
 };
 
-//D:80036424
 extern s32 g_bondviewForceDisarm;
-//D:80036428
 extern s32 resolution;
-//D:8003642C
 extern s32 cameraBufferToggle;
-//D:80036430
 extern s32 cameraFrameCounter1;
-//D:80036434
 extern s32 cameraFrameCounter2;
-//D:80036438
-extern s32 camera_80036438;
-//D:8003643C
+extern s32 g_CreditsScrollFrame;
 extern s32 credits_state;
-//D:80036440
 extern CreditsEntry *credits_pointer;
-//D:80036444
 extern s32 g_SurroundBondWithExplosionsFlag;
-//D:80036448
 extern s32 g_PlayerIsInTank;
-//D:8003644C
 extern struct PropRecord *g_WorldTankProp;
 
-//D:80036450
 extern struct PropRecord *g_PlayerTankProp;
 
 /**
  * Related to g_PlayerTankProp.
- * Address 0x80036454.
  */
 extern f32 g_PlayerTankYOffset;
 
-//D:80036458
 extern ALSoundState * g_TankSfxState[2];
 
-//D:80036460
 extern f32 g_TankTurnSpeed;
-//D:80036464
 extern f32 g_TankOrientationAngle;
-//D:80036468
 extern f32 tank_turret_unused_angle;
-//D:8003646C
 extern f32 g_TankTurretVerticalAngle;
-//D:80036470
 extern f32 g_TankTurretVerticalAngleRelated;
-//D:80036474
 extern f32 g_TankTurretOrientationAngleRad;
-//D:80036478
 extern f32 g_TankTurretOrientationAngleDeg;
-//D:8003647C
 extern f32 tank_turret_turn_speed;
-//D:80036480
 extern s32 g_BondCanEnterTank;
-//D:80036484
 extern f32 g_TankTurretAngle;
-//D:80036488
 extern f32 g_TankTurretTurn;
-//D:8003648C
 extern s32 g_ExplodeTankOnDeathFlag;
-//D:80036490
 extern s32 g_TankDamagePenaltyTicks;
-//D:80036494
 extern enum CAMERAMODE g_CameraMode;
-//D:80036498
 extern enum CAMERAMODE g_CameraAfterCinema;
-//D:8003649C
 extern s32 camera_fade_active;
-//D:800364A0
 extern s32 stop_time_flag;
-//D:800364A4
 extern f32 camera_transition_timer;
-//D:800364A8
 extern s32 intro_camera_index;
-//D:800364AC
 extern struct SetupIntroSwirl *g_IntroSwirl;
-//D:800364B0
 extern s32 is_timer_active;
-//D:800364B4
 /**
  * Used to make the player invincible upon level completion.
  * This is separate from the invincibility cheat, stored in cheatBondInvincible.
  */
 extern bool g_PlayerInvincible;
-//D:800364B8
 extern struct SetupIntroCamera* g_CurrentSetupIntroCamera;
-//D:800364BC
 extern s32 g_SetupIntroCameraCount;
-//D:800364C0
-extern struct SetupIntroCamera *ptr_random06cam_entry;
-//D:800364C4
+extern struct SetupIntroCamera *g_IntroCamera;
 extern s32 g_VisibleToGuardsFlag;
-//D:800364C8
 extern s32 g_PlayerCollisionOn;
-//D:800364CC
 extern f32 g_CamPosScale;
-//D:800364D0
 extern f32 g_PlayerWorldScale;
-//D:800364D4
 extern f32 g_PlayerWorldScaleInv;
-//D:800364D8
 extern s32 g_bondviewBondDeathAnimations[];
 
-//D:8003650C
 extern s32 g_bondviewBondDeathAnimationsCount;
-//D:80036510
 extern enum CAMERAMODE camera_mode;
-//D:80036514
 extern s32 g_IntroAnimationIndex;
 /*
 D:80036518     stage_intro_anim_table:struct_4 <0x5744, 95.0, -1.0, 0.02>
@@ -2546,9 +2494,6 @@ D:80036620                     .byte 0x44
 D:80036621                     .byte 0x7A, 0, 0
 D:80036624                     .word 0xFFFFFF00, 0xFFFFFF00, 0x4FFFFFF
 */
-//D:80036630
-extern u32 D_80036630;
-//D:80036634
 extern struct DamageType g_DamageTypes[];
 /*
 D:80036638                     .byte 0
@@ -2621,26 +2566,14 @@ extern struct coord3d g_DefaultFrozenPlayerPos2;
 extern struct coord3d g_DefaultFrozenPlayerOffset;
 extern struct coord3d g_DefaultFrozenMoveOffset;
 
-//D:80036830
-//D:8003683C
-extern ModelRenderData D_8003683C;
-//D:8003687C
 extern coord3d ZeroCoordWatchPos;
-//D:8003688C
 extern coord3d ZeroCoordSpawnPos;
-//D:80036898
 extern s32 status_bar_text_buffer_index;
-//D:8003689C
 extern s32 display_statusbar;
-//D:800368A0
 extern s32 copy_1stfonttable;
-//D:800368A4
 extern s32 copy_2ndfonttable;
-//D:800368A8
 extern s32 upper_text_buffer_index;
-//D:800368AC
 extern s32 display_upper_text_window;
-//D:800368B0
 extern s32 upper_text_window_timer;
 extern s32 g_UpperTextDisplayFlag;
 /*
@@ -2670,10 +2603,6 @@ D:80036A7C                     firing_anim_struct <stru_D_800308A0, 0, 0.5, 0.0,
 D:80036A90                     firing_anim_struct <stru_D_800308A0, 0, 0.5, 0.0, -1.0>
 D:80036AA4                     firing_anim_struct <crouched_doubles_firing_animation_group1, 0, 0.1, 37.0, 47.0>
 */
-//D:80036AB8
-//D:80036ABC
-//D:80036AC0
-//D:80036AC4
 
 extern s32 startpadcount;
 extern vec3d g_ForceBondMoveOffset;
@@ -2691,11 +2620,7 @@ extern f32 watch_transition_time;
 extern ITEM_IDS starting_weapon[2];
 extern PadRecord *g_Startpad[];
 extern s32 startpadcount;
-extern StandTilePoint *dword_CODE_bss_80079DA0;
-extern StandTilePoint *dword_CODE_bss_80079DA4;
 
-#define BSS_80079DA8_LENGTH 8
-extern s32 dword_CODE_bss_80079DA8[];
 
 
 PropRecord* currentPlayerGetProp(void);

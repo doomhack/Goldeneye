@@ -47,7 +47,6 @@ void mainproc(void *args);
 
 
 /**
- * 1110	70000510
  * init - The real main entry point, called from _start.s
  * Deflates the compressed data segment
  * Loads the game code into RAM
@@ -124,7 +123,6 @@ void init(void)
 
 
 /**
- * 12F0	700006F0
  * setSPToEnd - set stack pointer to end of stack
  * @param stack
  * @param size
@@ -136,7 +134,6 @@ void *setSPToEnd(u8 *stack, u32 size)
 }
 
 /**
- * 1318	70000718
  * idleproc - infinite loop
  * @param arg doesn't matter as this is infinite loop
  */
@@ -146,7 +143,6 @@ void idleproc(void *arg)
 }
 
 /**
- * 1338	70000738
  * idleCreateThread - creates an empty thread;
  */
 void idleCreateThread(void)
@@ -156,7 +152,6 @@ void idleCreateThread(void)
 }
 
 /**
- * 1390	70000790
  * rmonCreateThread - remote communication thread
  * rmonMain now forcably returns INDI_NOT_DETECTED (1)
  */
@@ -167,7 +162,6 @@ void rmonCreateThread(void)
 }
 
 /**
- * 13EC	700007EC
  * schedulerInitThread - create scheduler thread based on TV type
  */
 void schedulerInitThread(void)
@@ -187,7 +181,6 @@ void schedulerInitThread(void)
 }
 
 /**
- * 149C	7000089C
  * mainproc - main game setup and loop
  * calls command line parser, debug console setup, etc.
  * @param args

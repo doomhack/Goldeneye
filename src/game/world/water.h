@@ -5,7 +5,6 @@
 
 
 extern f32 g_SkyCloudOffset;
-extern struct hand D_8003FDA0;
 
 extern f32 g_WaterScrollS;
 extern f32 g_WaterScrollT;

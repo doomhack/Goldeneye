@@ -25,9 +25,6 @@
 #include "game/model/chrobjdata.h"
 
 
-/**
- * Address 0x80036AD0.
-*/
 struct init_bond_anim_unk g_BondMoveAnimationSetup[2] = {
     // address 0x80036AD0 = g_BondMoveAnimationSetup + 0
     {PTR_ANIM_bond_eye_walk, 9.5f, 27.0f, 0.0f, 0.0f, 1.5f},
@@ -166,24 +163,12 @@ void bheadSetdamp(f32 headdamp)
 }
 
 
-/**
- * Address 0x80036B00.
-*/
 coord3d initialHeadPosition = { 0.0f, 0.0f, 0.0f };
 
-/**
- * Address 0x80036B0C.
-*/
 coord3d headLookDirection = { 0.0f, 0.0f, 1.0f };
 
-/**
- * Address 0x80036B18.
-*/
 coord3d headUpDirection = { 0.0f, 1.0f, 0.0f };
 
-/**
- * Address 0x80036B24.
-*/
 ModelRenderData headModelRenderData = {NULL,
                               TRUE,
                               0x00000003,
@@ -200,10 +185,6 @@ ModelRenderData headModelRenderData = {NULL,
                               {0, 0, 0, 0},
                               {0, 0, 0, 0},
                               CULLMODE_BOTH};
-/**
- * Address 0x80036B64.
-*/
-coord3d D_80036B64 = { 0.0f, 0.0f, 0.0f };
 
 
 
@@ -257,7 +238,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
     }
 
     renderData = headModelRenderData;
-    offset = D_80036B64;
+    offset = (coord3d){0};
 
     isMergable = modelIsAnimMergingEnabled();
 
@@ -399,7 +380,6 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
 
 
 
- // 0x7F08E8BC.
 /**
  * Adjusts Bond's head animation based on movement speed.
  *
@@ -431,7 +411,7 @@ void bheadAdjustAnimation(f32 speed)
                 modelSetAnimation(
                     &g_CurrentPlayer->model,
                     // match hack: addu address backwards
-                    (struct ModelAnimation *) ((s32)g_BondMoveAnimationSetup[i].anim_id + (s32)&ptr_animation_table->data),
+                    (struct ModelAnimation *) ((s32)g_BondMoveAnimationSetup[i].anim_id + (s32)&g_AnimTable->data),
                     (s32) g_CurrentPlayer->animFlipFlag,
                     startframe,
                     0.5f,
@@ -452,7 +432,6 @@ void bheadAdjustAnimation(f32 speed)
 }
 
 
-// 0x7F08EA48
 /**
  * Starts a new death animation for Bond's head.
  * 
@@ -467,7 +446,6 @@ void bheadStartDeathAnimation(struct ModelAnimation *animnum, s32 flip, f32 fsta
     g_CurrentPlayer->headanim = -1;
 }
 
-// 0x7F08EAB8
 /**
  * Sets the speed of the current head animation.
  * 
@@ -509,26 +487,6 @@ f32 bheadGetBreathingValue(void)
 
 
 //data
-ModelRenderData D_8002A790 = {
-    NULL,
-    TRUE,
-    0x00000003,
-    NULL,
-
-    NULL,
-    0,
-    0,
-    0,
-
-    0,
-    0,
-    0,
-    0,
-
-    0,
-    {0,0,0,0},
-    {0,0,0,0},
-    CULLMODE_BOTH};
 
 // forward declarations
 
@@ -545,8 +503,6 @@ void bheadSumRootMotion(void *anim, s32 arg1, s32 arg2, s32 *arg3);
  * @param arg1:
  * @param arg2:
  * @param arg3: unknown type.
- *
- * Address 0x7F0062C0.
 */
 void bheadSumRootMotion(void *anim, s32 arg1, s32 arg2, s32 *arg3)
 {
@@ -650,7 +606,7 @@ void bheadInit(void)
     {
         bheadSumRootMotion(
             // match hack: addu address calculated backwards
-            (void*)((s32)g_BondMoveAnimationSetup[i].anim_id + (s32)&ptr_animation_table->data),
+            (void*)((s32)g_BondMoveAnimationSetup[i].anim_id + (s32)&g_AnimTable->data),
             (s32)g_BondMoveAnimationSetup[i].loopframe,
             (s32)g_BondMoveAnimationSetup[i].endframe,
             &spD0);
@@ -658,9 +614,9 @@ void bheadInit(void)
         g_BondMoveAnimationSetup[i].speedMultiplier = (f32) (((f32) spD0[2] * IDO_POINT_ONE) / (g_BondMoveAnimationSetup[i].endframe - g_BondMoveAnimationSetup[i].loopframe));
     }
 
-    renderData = D_8002A790;
+    renderData = (ModelRenderData){NULL, TRUE, 3};
 
-    modelSetAnimation(&g_CurrentPlayer->model, (struct ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_idle], 0, 0.0f, 0.5f, 0.0f);
+    modelSetAnimation(&g_CurrentPlayer->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_idle], 0, 0.0f, 0.5f, 0.0f);
 
     modelCalcPosition(&g_CurrentPlayer->model);
     mtx4LoadIdentity(&identityMatrix);
@@ -678,7 +634,7 @@ void bheadInit(void)
     modelSetAnimation(
         &g_CurrentPlayer->model,
         // match hack: addu address calculated backwards
-        (struct ModelAnimation *) ((s32)g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].anim_id + (s32)&ptr_animation_table->data),
+        (struct ModelAnimation *) ((s32)g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].anim_id + (s32)&g_AnimTable->data),
         0,
         g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].loopframe,
         0.5f,
