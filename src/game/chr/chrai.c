@@ -26,7 +26,7 @@
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
 #include "game/nav/stan.h"
@@ -4368,7 +4368,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_CameraSwitch:
                 {
                     AiCameraSwitchRecord *ai  = AiListp + Offset;
-                    TagObjectRecord      *tag = sub_GAME_7F057080(ai->OBJECT_TAG);
+                    TagObjectRecord      *tag = tagFind(ai->OBJECT_TAG);
                     if (tag)
                     {
                         int TagIndex = tagGetCommandIndex(tag); // get index
@@ -4776,8 +4776,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFObjectiveAllCompleted:
                 {
                     AiIFObjectiveAllCompletedRecord *ai = AiListp + Offset;
-                    // bool a = objectiveIsAllComplete();
-                    if (objectiveIsAllComplete())
+                    // bool a = objectivesAllComplete();
+                    if (objectivesAllComplete())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }

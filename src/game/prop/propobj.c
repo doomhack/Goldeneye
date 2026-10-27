@@ -55,7 +55,7 @@
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "game/player/player.h"
 #include "game/math/quaternion.h"
 #include "random.h"
@@ -4714,7 +4714,7 @@ s32 objTick(struct PropRecord *prop)
 						}
 
 						chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, ATTACH_MINE_SFX, NULL), &prop->pos);
-						objectivestatusCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
+						objectivesCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
 						objPlaceOnSurface(obj, &collisionPoint, prop->stan, &collisionNormal);
 						if (D_80030B0C != NULL)
 						{
@@ -5083,7 +5083,7 @@ s32 objTick(struct PropRecord *prop)
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
 					if (obj->type == PROPDEF_COLLECTABLE)
 					{
-						objectivestatusCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
+						objectivesCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
 					}
 #endif
 				}

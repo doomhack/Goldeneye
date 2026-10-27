@@ -6,7 +6,6 @@
       build/OUTCODE/src/game/mission/objective.o (.bss);
       build/OUTCODE/src/game/player/bondview_r.o (.bss);
       build/OUTCODE/src/game/menu/initcheattext.o (.bss);
-      build/OUTCODE/src/game/mission/cleanup_objectives.o (.bss);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.bss);
       build/OUTCODE/src/game/menu/title.o (.bss);
       build/OUTCODE/src/game/menu/front.o (.bss);
@@ -22,7 +21,6 @@
       build/OUTCODE/src/game/chr/chrai.o (.bss);
       build/OUTCODE/src/game/prop/prop.o (.bss);
       build/OUTCODE/src/game/prop/propobj.o (.bss);
-      build/OUTCODE/src/game/mission/objective_status.o (.bss);
       build/OUTCODE/src/game/math/physics.o (.bss);
       build/OUTCODE/src/game/math/math_sincos.o (.bss);
       build/OUTCODE/src/game/math/matrix.o (.bss);

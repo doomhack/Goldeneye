@@ -54,7 +54,7 @@
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "game/nav/stan.h"
 #include "game/gfx/tex.h"
 

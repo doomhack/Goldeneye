@@ -1,14 +1,39 @@
 #ifndef _OBJECTIVE_H_
 #define _OBJECTIVE_H_
 #include <ultra64.h>
+#include <bondtypes.h>
 
-void something_with_stage_objectives(void);
+extern struct objective_entry * g_Objectives[OBJECTIVES_MAX];
+extern  OBJECTIVESTATUS g_ObjectiveStatuses[OBJECTIVES_MAX]; //This is an array of 10 OBJECTIVESTATUS,
 
-void set_parent_cur_tag_entry(struct TagObjectRecord *arg0);
-void setup_briefing_text_entry_parent(struct setup_objective_text *arg0);
-void set_parent_cur_obj_enter_room(struct criteria_roomentered *arg0);
-void set_parent_cur_obj_deposited_in_room(struct criteria_deposit *arg0);
-void set_parent_cur_obj_photograph(struct criteria_picture *arg0);
-void add_ptr_to_objective(struct objective_entry* objective);
+extern u32 *g_Tags;
+extern struct watchMenuObjectiveText *g_BriefingTexts;
+extern struct criteria_roomentered *g_RoomEnteredCriteria;
+extern struct criteria_deposit *g_DepositCriteria;
+extern struct criteria_picture *g_PictureCriteria;
+
+extern s32 g_ObjectiveLastIndex;
+extern s32 g_ObjectiveStatusDisplayDisabled;
+
+void             objectivesCheckPicture(void);
+bool             objectivesAllComplete(void);
+TagObjectRecord *tagFind(s32 TagID);
+s32              objectiveGetCount(void);
+ObjectRecord *   objFindByTagId(s32 TagID);
+OBJECTIVESTATUS  objectiveCheckStatus(s32 objectiveNum);
+void objectivesCheckDeposit(s32 weaponnum, s32 roomid);
+void objectivesTickStatusMessages(void);
+void objectivesDisableStatusDisplay(void);
+
+void objectivesFinish(void);
+
+void objectivesReset(void);
+
+void tagAdd(struct TagObjectRecord *arg0);
+void briefingTextAdd(struct setup_objective_text *arg0);
+void objectiveAddRoomEntered(struct criteria_roomentered *arg0);
+void objectiveAddDeposit(struct criteria_deposit *arg0);
+void objectiveAddPicture(struct criteria_picture *arg0);
+void objectiveAdd(struct objective_entry* objective);
 
 #endif

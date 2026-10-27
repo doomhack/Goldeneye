@@ -10211,7 +10211,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord * ai = AiListp + Offset;
-        TagObjectRecord *tag = sub_GAME_7F057080(ai->val[0]);
+        TagObjectRecord *tag = tagFind(ai->val[0]);
         if (tag)
         {
             int TagIndex = tagGetCommandIndex(tag);
@@ -11409,7 +11409,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (objectiveIsAllComplete())
+        if (objectivesAllComplete())
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }

@@ -6,7 +6,6 @@
       build/OUTCODE/src/game/mission/objective.o (.data);
       build/OUTCODE/src/game/player/bondview_r.o (.data);
       build/OUTCODE/src/game/menu/initcheattext.o (.data);
-      build/OUTCODE/src/game/mission/cleanup_objectives.o (.data);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.data);
       build/OUTCODE/src/game/menu/title.o (.data);
       build/OUTCODE/src/game/menu/front.o (.data);
@@ -22,7 +21,6 @@
       build/OUTCODE/src/game/chr/chrai.o (.data);
       build/OUTCODE/src/game/prop/prop.o (.data);
       build/OUTCODE/src/game/prop/propobj.o (.data);
-      build/OUTCODE/src/game/mission/objective_status.o (.data);
       build/OUTCODE/src/game/math/physics.o (.data);
       build/OUTCODE/src/game/math/math_sincos.o (.data);
       build/OUTCODE/src/game/math/matrix.o (.data);

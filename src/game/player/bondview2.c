@@ -49,7 +49,7 @@
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "os_extension.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
@@ -2939,7 +2939,7 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
     // player enters (Depot's train) don't count.
     if ((g_CurrentPlayer->field_488.current_tile_ptr != NULL) && !counterOpIsGuardPlayer(playerGetCurrentNum()))
     {
-        objectivestatusCheckRoomEntered(g_CurrentPlayer->field_488.current_tile_ptr->room);
+        objectivesCheckRoomEntered(g_CurrentPlayer->field_488.current_tile_ptr->room);
     }
 }
 
@@ -10109,7 +10109,7 @@ Gfx *hudRender(Gfx *gdl)
 
     if (!isMpGame())
     {
-        display_objective_status_text_on_status_change();
+        objectivesTickStatusMessages();
     }
 
     if (g_CurrentPlayer->bonddead != 0)

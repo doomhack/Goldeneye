@@ -14,7 +14,7 @@
 #include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
 #include "game/math/trig.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "game/player/player.h"
 #include "random.h"
 

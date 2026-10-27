@@ -4,7 +4,7 @@
 #include "boss.h"
 #include "game/chr/chr.h"
 #include "game/level/lv.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "game/player/player.h"
 #include "game/replay/testhooks.h"
 
@@ -102,8 +102,8 @@ void testhooksEndFrame(void)
 
     for (i = 0; i < OBJECTIVES_MAX; i++)
     {
-        exact = hashWord(exact, objectiveStatuses[i]);
-        coarse = hashWord(coarse, objectiveStatuses[i]);
+        exact = hashWord(exact, g_ObjectiveStatuses[i]);
+        coarse = hashWord(coarse, g_ObjectiveStatuses[i]);
     }
 
     entry = g_TestStateLog[g_TestStateLogCount % TEST_STATE_LOG_LEN];

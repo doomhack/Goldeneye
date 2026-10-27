@@ -16,7 +16,7 @@
 #include "game/player/gun.h"
 #include "game/model/chrobjdata.h"
 #include "game/prop/propobj.h"
-#include "game/mission/objective_status.h"
+#include "game/mission/objective.h"
 #include "game/math/quaternion.h"
 #include "game/gfx/imagebank.h"
 #include "game/gfx/texrect.h"
