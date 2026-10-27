@@ -10,6 +10,7 @@ handed to the RSP. What is drawn (rooms, models, the HUD) lives in `world/`, `mo
 | `src/game/gfx/dyn.c` | The double-buffered display list and vertex memory for each frame |
 | `src/game/gfx/rsp.c` | Starting the RSP graphics task |
 | `src/game/gfx/zbuf.c` | The z-buffer |
+| `src/game/gfx/texrect.c` | Drawing a textured rectangle on screen (`texRectDrawImage`), flipped or rotated; was `hud/bondwalk2.c` |
 | `src/game/gfx/image.c` | Loading and decompressing textures, texture pools |
 | `src/game/gfx/imagebank.c` | The global image bank (ammo icons, crosshair, smoke, flares) |
 | `src/game/gfx/tex.c` | Rewriting a model's display list to load its textures; surface sound tables |

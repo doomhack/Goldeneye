@@ -42,6 +42,8 @@
 #include "game/prop/explosion.h"
 #include "fr.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/player/gun.h"
 #include "game/gfx/imagebank.h"
 #include "game/level/lv.h"

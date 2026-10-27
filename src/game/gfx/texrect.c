@@ -1,3 +1,8 @@
+/**
+ * Drawing a textured rectangle on screen, optionally flipped or rotated
+ * (texRectDrawImage). Used for HUD images such as the sight and front-end pictures.
+ */
+
 #include <ultra64.h>
 #include <fr.h>
 

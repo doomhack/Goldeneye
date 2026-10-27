@@ -15,6 +15,8 @@
 #include "game/player/player.h"
 #include "game/text/textrelated.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/level/frametiming.h"
 #include "assets/obseg/text/LoptionE.h"
 

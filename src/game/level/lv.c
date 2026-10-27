@@ -41,6 +41,8 @@
 #include "game/model/model.h"
 #include "game/gfx/image.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/gfx/imagebank.h"
 #include "game/text/textrelated.h"
 #include "game/menu/options.h"

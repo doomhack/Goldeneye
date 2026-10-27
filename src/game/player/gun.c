@@ -19,7 +19,7 @@
 #include "game/mission/objective_status.h"
 #include "game/math/quaternion.h"
 #include "game/gfx/imagebank.h"
-#include "game/hud/bondwalk2.h"
+#include "game/gfx/texrect.h"
 #include "game/gfx/texselect.h"
 #include "game/player/player.h"
 #include "game/level/lv.h"

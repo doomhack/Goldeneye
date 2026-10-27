@@ -1,3 +1,8 @@
+/**
+ * The multiplayer radar in the corner of each view: the player's own dot and a dot for
+ * each other player, placed by direction and distance.
+ */
+
 #include <ultra64.h>
 #include "game/math/trig.h"
 #include "game/text/textrelated.h"

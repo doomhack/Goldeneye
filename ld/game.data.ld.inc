@@ -12,8 +12,7 @@
       build/OUTCODE/src/game/menu/front.o (.data);
       build/OUTCODE/src/game/menu/title2.o (.data);
       build/OUTCODE/src/game/menu/title3.o (.data);
-      build/OUTCODE/src/game/hud/blood_animation.o (.data);
-      build/OUTCODE/src/game/hud/blood_decrypt.o (.data);
+      build/OUTCODE/src/game/hud/blood.o (.data);
       build/OUTCODE/src/game/debug/sub_GAME_7F01D1C0.o (.data);
       build/OUTCODE/src/game/save/file.o (.data);
       build/OUTCODE/src/game/save/file2.o (.data);
@@ -33,7 +32,7 @@
       build/OUTCODE/src/game/math/round.o (.data);
       build/OUTCODE/src/game/player/gun.o (.data);
       build/OUTCODE/src/game/player/gun_rodata.o (.data);
-      build/OUTCODE/src/game/hud/bondwalk2.o (.data);
+      build/OUTCODE/src/game/gfx/texrect.o (.data);
       build/OUTCODE/src/game/model/jointlist.o (.data);
       build/OUTCODE/src/game/model/model.o (.data);
       build/OUTCODE/src/game/model/modelfile.o (.data);
@@ -61,7 +60,8 @@
       build/OUTCODE/src/game/gfx/vtxstore.o (.data);
       build/OUTCODE/src/game/prop/explosion.o (.data);
       build/OUTCODE/src/game/prop/glass.o (.data);
-      build/OUTCODE/src/game/hud/glass2.o (.data);
+      build/OUTCODE/src/game/hud/healthbar.o (.data);
+      build/OUTCODE/src/game/hud/sparks.o (.data);
       build/OUTCODE/src/game/menu/options.o (.data);
       build/OUTCODE/src/game/text/textrelated.o (.data);
       build/OUTCODE/src/game/nav/stan.o (.data);

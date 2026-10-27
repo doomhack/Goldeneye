@@ -1,5 +1,5 @@
-#ifndef _BONDWALK2_H_
-#define _BONDWALK2_H_
+#ifndef _TEXRECT_H_
+#define _TEXRECT_H_
 #include <ultra64.h>
 #include "game/player/bondview.h"
 

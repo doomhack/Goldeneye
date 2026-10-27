@@ -9,7 +9,7 @@
 #include <fr.h>
 #include <macro.h>
 #include <rom.h>
-#include "game/hud/blood_animation.h"
+#include "game/hud/blood.h"
 #include "bondtypes.h"
 #include "game/chr/chr.h"
 #include "game/chr/body.h"

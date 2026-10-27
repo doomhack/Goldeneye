@@ -27,6 +27,8 @@
 #include "game/gfx/dyn.h"
 #include "game/gfx/vtxstore.h"
 #include "game/prop/glass.h"
+#include "game/hud/healthbar.h"
+#include "game/hud/sparks.h"
 #include "game/save/file2.h"
 #include "game/prop/propobj.h"
 #include "game/prop/explosion.h"
