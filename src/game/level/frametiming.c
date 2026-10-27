@@ -1,3 +1,9 @@
+/**
+ * The frame timer. frameWaitForNext waits until at least g_FrameMinFrames video frames
+ * have passed since the last game frame, using the CPU counter, then frameAdvance records
+ * how many it was in g_FrameDelta (1 at full speed). lv.c turns that into g_ClockTimer.
+ */
+
 #include <ultra64.h>
 #include "game/level/frametiming.h"
 

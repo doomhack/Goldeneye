@@ -8,7 +8,7 @@
 #include "deb.h"
 #include "debugmenu.h"
 #include "game/gfx/dyn.h"
-#include "game/level/game_debug.h"
+#include "game/level/game.h"
 #include "game/save/file.h"
 #include "game/save/file2.h"
 #include "game/debug/indy_comms.h"

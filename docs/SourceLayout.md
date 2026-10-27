@@ -16,7 +16,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 
 | Folder | What it does | Main files |
 | --- | --- | --- |
-| `level/` | Level lifetime: stage load, the per-frame tick and render (`lv.c`), frame timing, one-time game init | `lv.c`, `frametiming.c`, `initgamedata.c` |
+| `level/` | Level lifetime: stage load, the per-frame tick and render, the game timers (`lv.c`), frame timing (`frametiming.c`), one-time game init (`game.c`). See [subsystems/level.md](subsystems/level.md) | `lv.c`, `frametiming.c`, `game.c` |
 | `menu/` | Front end and in-game menus: title sequence, folder and mission select, the watch (pause) menu and per-player options, multiplayer setup, cheats | `front.c`, `options.c`, `mpmenu.c`, `title*.c`, `cheat.c` |
 | `save/` | EEPROM save files and 007 mode settings | `file.c`, `file2.c`, `crc.c` |
 | `player/` | Bond: the player list (`player.c`), camera helpers and player globals (`bondview.c`), movement, collision, camera modes, the watch, HUD and health (`bondview2.c`), level start (`bondview_r.c`), head bob (`bondhead.c`); inventory, guns and firing (`bondinv.c`, `gun.c`, `gunfire.c`). See [subsystems/player.md](subsystems/player.md) and [subsystems/weapons.md](subsystems/weapons.md) | `player.c`, `bondview.c`, `bondview2.c`, `bondinv.c`, `gun.c`, `gunfire.c` |
@@ -58,4 +58,3 @@ that subsystem's main file.
 | `player/bondview2.c` | Most of the player: movement, camera modes, the watch, health, the HUD, co-op and counter-op |
 | `audio/mp_music.c` | The mission state (playing, cutscene, ended) and the music slots, used in solo too |
 | `debug/deb_loadallmodels.c` | Debug model loading, but also `init_obj_register_difficulty_vals`, which guard setup calls on every level |
-| `level/game_debug.c` | `gameInit`, the game's one-time setup, not debug code |

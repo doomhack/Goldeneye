@@ -1,8 +1,5 @@
-      build/OUTCODE/src/game/level/initgamedata.o (.bss);
       build/OUTCODE/src/game/model/initactorpropstuff.o (.bss);
-      build/OUTCODE/src/game/level/initnull_0009D0.o (.bss);
       build/OUTCODE/src/game/model/anim.o (.bss);
-      build/OUTCODE/src/game/level/initnull_000BC0.o (.bss);
       build/OUTCODE/src/game/menu/initmenus.o (.bss);
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.bss);
       build/OUTCODE/src/game/prop/setup.o (.bss);
@@ -11,7 +8,6 @@
       build/OUTCODE/src/game/menu/initcheattext.o (.bss);
       build/OUTCODE/src/game/mission/cleanup_objectives.o (.bss);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.bss);
-      build/OUTCODE/src/game/level/null_007970.o (.bss);
       build/OUTCODE/src/game/menu/title.o (.bss);
       build/OUTCODE/src/game/menu/front.o (.bss);
       build/OUTCODE/src/game/menu/title2.o (.bss);
@@ -92,8 +88,7 @@
       build/OUTCODE/src/game/gfx/rsp.o (.bss);
       build/OUTCODE/src/game/debug/indy_comms.o (.bss);
       build/OUTCODE/src/game/debug/indy_commands.o (.bss);
-      build/OUTCODE/src/game/level/game_debug.o (.bss);
-      build/OUTCODE/src/game/level/compiletime.o (.bss);
+      build/OUTCODE/src/game/level/game.o (.bss);
       build/OUTCODE/src/game/debug/speedgraphrenderer.o (.bss);
       build/OUTCODE/src/game/gfx/zbuf.o (.bss);
       build/OUTCODE/src/game/audio/music_0D2720.o (.bss);

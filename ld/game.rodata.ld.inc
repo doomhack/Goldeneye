@@ -1,8 +1,5 @@
-      build/OUTCODE/src/game/level/initgamedata.o (.rodata);
       build/OUTCODE/src/game/model/initactorpropstuff.o (.rodata);
-      build/OUTCODE/src/game/level/initnull_0009D0.o (.rodata);
       build/OUTCODE/src/game/model/anim.o (.rodata);
-      build/OUTCODE/src/game/level/initnull_000BC0.o (.rodata);
       build/OUTCODE/src/game/menu/initmenus.o (.rodata);
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.rodata);
       build/OUTCODE/src/game/prop/setup.o (.rodata);
@@ -11,7 +8,6 @@
       build/OUTCODE/src/game/menu/initcheattext.o (.rodata);
       build/OUTCODE/src/game/mission/cleanup_objectives.o (.rodata);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.rodata);
-      build/OUTCODE/src/game/level/null_007970.o (.rodata);
       build/OUTCODE/src/game/menu/title.o (.rodata);
       build/OUTCODE/src/game/menu/front.o (.rodata);
       build/OUTCODE/src/game/menu/title2.o (.rodata);
@@ -93,8 +89,7 @@
       build/OUTCODE/src/game/gfx/rsp.o (.rodata);
       build/OUTCODE/src/game/debug/indy_comms.o (.rodata);
       build/OUTCODE/src/game/debug/indy_commands.o (.rodata);
-      build/OUTCODE/src/game/level/game_debug.o (.rodata);
-      build/OUTCODE/src/game/level/compiletime.o (.rodata);
+      build/OUTCODE/src/game/level/game.o (.rodata);
       build/OUTCODE/src/game/debug/speedgraphrenderer.o (.rodata);
       build/OUTCODE/src/game/gfx/zbuf.o (.rodata);
       build/OUTCODE/src/game/audio/music_0D2720.o (.rodata);

@@ -1,3 +1,17 @@
+/**
+ * The level: one stage from load to unload, inside the main loop in boss.c.
+ *
+ * lvStageLoad loads the stage. Each frame the main loop calls lvTick (the parts that run
+ * once: the clock, multiplayer rules, things that move unseen), lvPlayerTick for each view
+ * (the player's input and movement), then lvRender, which for each view sets the camera,
+ * finds the visible rooms, ticks and draws the props, fires the guns and draws the HUD.
+ * lvStageUnload frees it all again.
+ *
+ * Also here: the game timers (g_ClockTimer is how far the game moves this frame, 0 while
+ * paused), difficulty, the multiplayer time and point limits, the level music and the fps
+ * counter. See docs/subsystems/level.md.
+ */
+
 #include <ultra64.h>
 #include <math.h>
 #include <os_extension.h>
@@ -1794,3 +1808,6 @@ f32 lvGetPowerOnTimeSec(void)
 }
 
 
+void cleanup_REMOVED_(void){
+
+}

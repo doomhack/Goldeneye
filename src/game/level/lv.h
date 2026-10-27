@@ -79,4 +79,6 @@ s32        lvGetDrawWorld(void);
 f32        lvGetMissionTimeSec(void);
 f32        lvGetSystemPowerTimeSec(void);
 
+void cleanup_REMOVED_(void);
+
 #endif

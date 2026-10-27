@@ -1,6 +1,37 @@
+/**
+ * The game's one-time setup: gameInit and gameInitData (the menu state at power on), and
+ * the menu memory pool (MEMPOOL_ME) helpers. Also the build date and two empty init
+ * functions left from code Rare removed.
+ */
+
 #include <ultra64.h>
+#include <deb.h>
+#include "game/asset/fileload.h"
+#include <memp.h>
+#include "game/level/game.h"
 #include "game/menu/front.h"
 #include <bondconstants.h>
+
+// data
+//D:8004EAE0
+s32 D_8004EAE0[] = {0, 0, 0, 0};
+
+void gameInit(void) {
+    debTryAdd(&D_8004EAE0, "game_c_debug");
+}
+
+void gameResetMePool(void) {
+    fileForgetMePool();
+    mempResetPool(MEMPOOL_ME);
+    fileForgetPool(MEMPOOL_ME);
+}
+
+void gameCloseMePool(void) {
+    mempClosePool(MEMPOOL_ME);
+    fileForgetPool(MEMPOOL_ME);
+}
+
+
  /**
   * gameInitData
   *
@@ -40,3 +71,16 @@ void gameInitData(void) {
 }
 
 
+char *gameGetCompileTime(void) {
+    return __DATE__" " __TIME__;
+}
+
+
+void null_init_main_2(void) {
+    return;
+}
+
+
+void null_init_main_3(void) {
+    return;
+}
