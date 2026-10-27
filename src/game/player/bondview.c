@@ -16,7 +16,7 @@
 #include <str.h>
 #include "game/menu/options.h"
 #include "game/world/bg.h"
-#include "game/world/bgroomtrans.h"
+#include "game/world/roommtx.h"
 #include "game/hud/blood_animation.h"
 #include "game/player/bondhead.h"
 #include "game/player/bondinv.h"

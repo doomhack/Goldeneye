@@ -8,7 +8,6 @@
       build/OUTCODE/src/game/prop/setup.o (.bss);
       build/OUTCODE/src/game/mission/objective.o (.bss);
       build/OUTCODE/src/game/player/bondview_r.o (.bss);
-      build/OUTCODE/src/game/world/initunk_007290.o (.bss);
       build/OUTCODE/src/game/menu/initcheattext.o (.bss);
       build/OUTCODE/src/game/mission/cleanup_objectives.o (.bss);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.bss);
@@ -59,7 +58,7 @@
       build/OUTCODE/src/game/model/cobjdata.o (.bss);
       build/OUTCODE/src/game/menu/cheat.o (.bss);
       build/OUTCODE/src/game/math/line_tri_intersect.o (.bss);
-      build/OUTCODE/src/game/world/unk_092E50.o (.bss);
+      build/OUTCODE/src/game/world/water.o (.bss);
       build/OUTCODE/src/game/world/sky.o (.bss);
       build/OUTCODE/src/game/player/player.o (.bss);
       build/OUTCODE/src/game/save/crc.o (.bss);
@@ -72,11 +71,9 @@
       build/OUTCODE/src/game/text/textrelated.o (.bss);
       build/OUTCODE/src/game/nav/stan.o (.bss);
       build/OUTCODE/src/game/world/bg.o (.bss);
-      build/OUTCODE/src/game/world/bg_portal_table.o (.bss);
-      build/OUTCODE/src/game/world/bgapply.o (.bss);
       build/OUTCODE/src/game/world/bgfog.o (.bss);
       build/OUTCODE/src/game/world/lightfixture.o (.bss);
-      build/OUTCODE/src/game/world/bgroomtrans.o (.bss);
+      build/OUTCODE/src/game/world/roommtx.o (.bss);
       build/OUTCODE/src/game/asset/fileload.o (.bss);
       build/OUTCODE/src/game/gfx/dyn.o (.bss);
       build/OUTCODE/src/game/level/lv.o (.bss);

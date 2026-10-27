@@ -2201,7 +2201,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFMyRoomIsOnScreenRecord *ai = AiListp + Offset;
 
-                    if (getROOMID_isRendered(stanGetTileRoom(ChrEntityp->prop->stan))) // embedded func to match, must be s32 not u8
+                    if (bgRoomIsVisible(stanGetTileRoom(ChrEntityp->prop->stan))) // embedded func to match, must be s32 not u8
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }

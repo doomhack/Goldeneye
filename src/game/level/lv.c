@@ -41,7 +41,6 @@
 #include "game/chr/chr.h"
 #include "game/chr/body.h"
 #include "game/prop/setup.h"
-#include "game/world/initunk_007290.h"
 #include "game/menu/initcheattext.h"
 #include "game/nav/waypoint.h"
 #include "game/player/bondview.h"
@@ -51,8 +50,8 @@
 #include "game/player/gun.h"
 #include "game/debug/debug_camera.h"
 #include "game/audio/mp_music.h"
-#include "game/world/bgroomtrans.h"
-#include "game/world/unk_092E50.h"
+#include "game/world/roommtx.h"
+#include "game/world/water.h"
 #include "game/level/frametiming.h"
 #include "game/chr/chr.h"
 
@@ -395,7 +394,7 @@ void lvlStageLoad(s32 stage)
             }
         }
 
-        load_bg_file(g_CurrentStageToLoad);
+        bgLoad(g_CurrentStageToLoad);
         skySetStageNum(g_CurrentStageToLoad);
 
         // HACK: This method call is wrong. The function takes one argument, but the asm calls it without
@@ -476,7 +475,7 @@ void lvlStageLoad(s32 stage)
     setupCreateProps(stage);
     explosionsInit();
     glassInitShards();
-    sub_GAME_7F007290();
+    waterReset();
     initCheatTextBuffer();
 
     if (g_CurrentStageToLoad == LEVELID_TITLE)
@@ -636,14 +635,14 @@ Gfx *lvlPortalDebug7F0BDF10(Gfx *gdl)
         if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) |
             joyGetButtonsPressedThisFrame(PLAYER_2, D_JPAD))
         {
-            sub_GAME_7F0B9A7C(g_DebugPortalIndex);
+            bgPortalThicknessDec(g_DebugPortalIndex);
             portalDebugStateChanged = TRUE;
         }
 
         if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD) |
             joyGetButtonsPressedThisFrame(PLAYER_2, U_JPAD))
         {
-            sub_GAME_7F0B9A2C(g_DebugPortalIndex);
+            bgPortalThicknessInc(g_DebugPortalIndex);
             portalDebugStateChanged = TRUE;
         }
     }
@@ -790,7 +789,7 @@ Gfx* lvlRender(Gfx* DL)
 
             DL = viSetupScreensForNumPlayers(DL);
             DL = skyRender(DL);
-            bgRoomVisibilityRelated();
+            bgFindVisibleRooms();
             propsTickPerPlayer();
             propsSortOnscreen();
             autoaimUpdateTarget();
@@ -1362,8 +1361,8 @@ void lvlManageMpGame(void)
     {
         vtxstoreTick();
         lvlSetMultipliersForDifficulty();
-        updateRoomStatusFlags();
-        sub_GAME_7F092E50();
+        roomMtxTick();
+        waterTick();
         skyTick();
 #ifdef VERSION_EU
         bullet_moving_spark_create();
@@ -1719,7 +1718,7 @@ void lvlUnloadStageTextData(void)
     cleanupSFXRelated();
     gunsStopSounds();
     set_missionstate_zero();
-    cleanup_rooms();
+    bgReset();
 }
 
 

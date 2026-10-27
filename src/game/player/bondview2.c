@@ -18,7 +18,7 @@
 #include "game/menu/options.h"
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
-#include "game/world/bgroomtrans.h"
+#include "game/world/roommtx.h"
 #include "game/hud/blood_animation.h"
 #include "game/player/bondhead.h"
 #include "game/player/bondinv.h"
@@ -8347,11 +8347,11 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
  */
 void camSetRoomOrigin(s32 arg0)
 {
-    getRoomPositionScaledByIndex(arg0, &g_CurrentPlayer->current_model_pos);
-    g_CurrentPlayer->current_room_pos.f[0] = g_CurrentPlayer->current_model_pos.f[0] * get_room_data_float1();
-    g_CurrentPlayer->current_room_pos.f[1] = g_CurrentPlayer->current_model_pos.f[1] * get_room_data_float1();
-    g_CurrentPlayer->current_room_pos.f[2] = g_CurrentPlayer->current_model_pos.f[2] * get_room_data_float1();
-    setPlayerRoomField(arg0);
+    roomGetWorldPos(arg0, &g_CurrentPlayer->current_model_pos);
+    g_CurrentPlayer->current_room_pos.f[0] = g_CurrentPlayer->current_model_pos.f[0] * bgGetLevelScale();
+    g_CurrentPlayer->current_room_pos.f[1] = g_CurrentPlayer->current_model_pos.f[1] * bgGetLevelScale();
+    g_CurrentPlayer->current_room_pos.f[2] = g_CurrentPlayer->current_model_pos.f[2] * bgGetLevelScale();
+    roomMtxSetOriginRoom(arg0);
 }
 
 

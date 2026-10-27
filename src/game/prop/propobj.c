@@ -1677,7 +1677,7 @@ s32 projectileMove(struct ObjectRecord *arg0, coord3d *arg1, coord3d *arg2, coor
 bg_loop:
     if (bgTestBulletHitBackground(&arg0->runtime_pos, &endpos, *roomPtr, &hit))
     {
-        scale = get_room_data_float2();
+        scale = bgGetLevelScaleInv();
 
         // Keep this for matching.
         if (roomPtr && roomPtr && roomPtr);
@@ -13506,7 +13506,7 @@ bool posIsOnScreen(PropRecord *prop, coord3d *pos, f32 arg2, bool arg3)
 
     while (roomnum >= 0)
     {
-        if (getROOMID_isRendered(roomnum) != 0)
+        if (bgRoomIsVisible(roomnum) != 0)
         {
             if (fogPositionIsVisibleThroughFog(pos, arg2) && (!arg3 || posIsBeforeFogEnd(pos, arg2)))
             {

@@ -25,7 +25,7 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 | `prop/` | Props: the prop pool and per-frame tick and draw loops, level setup, doors, weapons on the floor, vehicles, explosions, glass, alarms. See [subsystems/props.md](subsystems/props.md) | `prop.c`, `setup.c`, `propobj.c`, `explosion.c`, `glass.c` |
 | `nav/` | Where things can stand and walk: floor tiles (`stan.c`) and the waypoint graph guards path along. See [subsystems/nav.md](subsystems/nav.md) | `stan.c`, `waypoint.c` |
 | `mission/` | Objectives and briefings | `objective.c`, `objective_status.c` |
-| `world/` | The level geometry: rooms and portals (`bg.c`), fog, sky, light fixtures | `bg.c`, `bgfog.c`, `sky.c` |
+| `world/` | The level geometry: rooms and portals, visibility and drawing the rooms (`bg.c`), the room matrix cache (`roommtx.c`), fog (`bgfog.c`), sky (`sky.c`), water (`water.c`), light fixtures (`lightfixture.c`). See [subsystems/world.md](subsystems/world.md) | `bg.c`, `bgfog.c`, `sky.c` |
 | `model/` | Model files, skeletons, animation, joint lists and the model slots. `cobjdata.c`, `gobjdata.c` and `pobjdata.c` hold the tables of character, gun and prop model files. See [subsystems/models.md](subsystems/models.md) | `model.c`, `anim.c`, `jointlist.c`, `modelfile.c` |
 | `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, per-instance vertex copies. See [subsystems/rendering.md](subsystems/rendering.md) | `image.c`, `tex.c`, `texselect.c`, `dyn.c`, `rsp.c`, `zbuf.c`, `vtxstore.c` |
 | `text/` | Text rendering and language banks | `textrelated.c`, `language.c` |
@@ -54,8 +54,6 @@ that subsystem's main file.
 | `hud/bondwalk2.c` | Drawing a textured rectangle on screen |
 | `model/initactorpropstuff.c` | Weapon animation groups and ejected casings |
 | `gfx/tex.c` | Also the surface sound and bullet impact tables |
-| `world/unk_092E50.c` | Sky cloud and mipmap display lists |
-| `world/initunk_007290.c` | Resets three floats used by `unk_092E50.c` |
 | `player/bondview.c` | The camera helpers (`cam*`) and the player globals, not Bond's view as a whole |
 | `player/bondview2.c` | Most of the player: movement, camera modes, the watch, health, the HUD, co-op and counter-op |
 | `audio/mp_music.c` | The mission state (playing, cutscene, ended) and the music slots, used in solo too |

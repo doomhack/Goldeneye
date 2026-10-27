@@ -1,20 +1,26 @@
+/**
+ * Animated water: waterTick scrolls the two layers of the water texture and pulses their
+ * blend each frame, and waterSetupGdl sets the render state sky.c draws the water plane
+ * with.
+ */
+
 #include <ultra64.h>
 #include "game/player/bondview.h"
 #include "game/level/lv.h"
-#include "game/world/unk_092E50.h"
+#include "game/world/water.h"
 
 // bss
 //CODE.bss:80079E80
-f32 flt_CODE_bss_80079E80;
+f32 g_WaterScrollS;
 //CODE.bss:80079E84
-f32 flt_CODE_bss_80079E84;
+f32 g_WaterScrollT;
 //CODE.bss:80079E88
-f32 flt_CODE_bss_80079E88;
+f32 g_WaterBlendPhase;
 
 
 // data
 //D:8003FCC0
-Gfx MipMap2C_Something_Setup[] = {
+Gfx g_WaterGdl[] = {
     gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_4b, 4, 0, 0, 0, G_TX_WRAP, 6, 0, G_TX_WRAP, 6, 0),
     gsDPSetTile(G_IM_FMT_I, G_IM_SIZ_4b, 4, 0, 1, 0, G_TX_WRAP, 6, 0, G_TX_WRAP, 6, 0),
     gsDPSetTileSize(0, 2, 2, 0, 0),
@@ -31,7 +37,7 @@ Gfx MipMap2C_Something_Setup[] = {
 };
 
 //D:8003FD28
-Gfx MipMap2C_Something2_Setup[] = {
+Gfx g_WaterGdlCi[] = {
     gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 2, 0, 0, 0, G_TX_WRAP, 5, 0, G_TX_WRAP, 5, 0),
     gsDPSetTile(G_IM_FMT_CI, G_IM_SIZ_8b, 2, 0, 1, 0, G_TX_WRAP, 5, 0, G_TX_WRAP, 5, 0),
     gsDPSetTileSize(0, 2, 2, 0, 0),
@@ -216,7 +222,7 @@ u64 D_80040148[] = { 0, 0, 0 }; // Unused.
 
 
 // Water animation controller.
-void sub_GAME_7F092E50(void)
+void waterTick(void)
 {
 #ifdef VERSION_EU
     f32 delta = g_GlobalTimerDelta;
@@ -224,62 +230,62 @@ void sub_GAME_7F092E50(void)
     f32 delta = g_ClockTimer;
 #endif
 
-    flt_CODE_bss_80079E80 += delta * 0.25f;
+    g_WaterScrollS += delta * 0.25f;
 
-    if (flt_CODE_bss_80079E80 >= 256.0f)
+    if (g_WaterScrollS >= 256.0f)
     {
-        flt_CODE_bss_80079E80 -= 256.0f;
+        g_WaterScrollS -= 256.0f;
     }
 
-    if (flt_CODE_bss_80079E80 < 0.0f)
+    if (g_WaterScrollS < 0.0f)
     {
-        flt_CODE_bss_80079E80 += 256.0f;
+        g_WaterScrollS += 256.0f;
     }
 
-    flt_CODE_bss_80079E84 += delta * 0.1f;
+    g_WaterScrollT += delta * 0.1f;
 
-    if (flt_CODE_bss_80079E84 >= 256.0f)
+    if (g_WaterScrollT >= 256.0f)
     {
-        flt_CODE_bss_80079E84 -= 256.0f;
+        g_WaterScrollT -= 256.0f;
     }
 
-    if (flt_CODE_bss_80079E84 < 0.0f)
+    if (g_WaterScrollT < 0.0f)
     {
-        flt_CODE_bss_80079E84 += 256.0f;
+        g_WaterScrollT += 256.0f;
     }
 
-    flt_CODE_bss_80079E88 += delta * 0.04f;
+    g_WaterBlendPhase += delta * 0.04f;
 
     // 6.2831802f is not quite equal to M_TAU_F. Leave as literal value here.
-    if (flt_CODE_bss_80079E88 >= 6.2831802f)
+    if (g_WaterBlendPhase >= 6.2831802f)
     {
-        flt_CODE_bss_80079E88 -= 6.2831802f;
+        g_WaterBlendPhase -= 6.2831802f;
     }
 
-    if (flt_CODE_bss_80079E88 < 0.0f)
+    if (g_WaterBlendPhase < 0.0f)
     {
-        flt_CODE_bss_80079E88 += 6.2831802f;
+        g_WaterBlendPhase += 6.2831802f;
     }
     
-    MipMap2C_Something_Setup[2].loadtile.sl = flt_CODE_bss_80079E80;
-    MipMap2C_Something_Setup[2].loadtile.tl = flt_CODE_bss_80079E84;
-    MipMap2C_Something_Setup[3].loadtile.sl = ((s32)flt_CODE_bss_80079E80 + 90) & 0xFF;
-    MipMap2C_Something_Setup[3].loadtile.tl = ((s32)flt_CODE_bss_80079E84 + 150) & 0xFF;
-    ((u32 *) MipMap2C_Something_Setup)[8] = (((u32 *) MipMap2C_Something_Setup)[8] & ~0xFF) | (u32) ((sinf(flt_CODE_bss_80079E88) * 127.0f) + 128.0f);
+    g_WaterGdl[2].loadtile.sl = g_WaterScrollS;
+    g_WaterGdl[2].loadtile.tl = g_WaterScrollT;
+    g_WaterGdl[3].loadtile.sl = ((s32)g_WaterScrollS + 90) & 0xFF;
+    g_WaterGdl[3].loadtile.tl = ((s32)g_WaterScrollT + 150) & 0xFF;
+    ((u32 *) g_WaterGdl)[8] = (((u32 *) g_WaterGdl)[8] & ~0xFF) | (u32) ((sinf(g_WaterBlendPhase) * 127.0f) + 128.0f);
 
-    MipMap2C_Something2_Setup[2].loadtile.sl = flt_CODE_bss_80079E80;
-    MipMap2C_Something2_Setup[2].loadtile.tl = flt_CODE_bss_80079E84;
-    MipMap2C_Something2_Setup[3].loadtile.sl = ((s32)flt_CODE_bss_80079E80 + 90) & 0xFF;
-    MipMap2C_Something2_Setup[3].loadtile.tl = ((s32)flt_CODE_bss_80079E84 + 150) & 0xFF;
-    ((u32 *) MipMap2C_Something2_Setup)[8] = (((u32 *) MipMap2C_Something_Setup)[8] & ~0xFF) | (u32) ((sinf(flt_CODE_bss_80079E88) * 127.0f) + 128.0f);
+    g_WaterGdlCi[2].loadtile.sl = g_WaterScrollS;
+    g_WaterGdlCi[2].loadtile.tl = g_WaterScrollT;
+    g_WaterGdlCi[3].loadtile.sl = ((s32)g_WaterScrollS + 90) & 0xFF;
+    g_WaterGdlCi[3].loadtile.tl = ((s32)g_WaterScrollT + 150) & 0xFF;
+    ((u32 *) g_WaterGdlCi)[8] = (((u32 *) g_WaterGdl)[8] & ~0xFF) | (u32) ((sinf(g_WaterBlendPhase) * 127.0f) + 128.0f);
 }
 
 
-Gfx* sub_GAME_7F09343C(Gfx *gdl, s32 arg1)
+Gfx* waterSetupGdl(Gfx *gdl, s32 arg1)
 {
     if (arg1 != 0)
     {
-        gSPDisplayList(gdl++, MipMap2C_Something_Setup);
+        gSPDisplayList(gdl++, g_WaterGdl);
     }
     else
     {
@@ -287,7 +293,7 @@ Gfx* sub_GAME_7F09343C(Gfx *gdl, s32 arg1)
         gDPSetTile(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 4, 0, 1, 0, 0, 5, 0, 0, 5, 0);
         gDPSetTileSize(gdl++, 0, 0, 0, 0, 0);
         gDPSetTileSize(gdl++, 1, 90, 150, 0, 0);
-        gDPSetPrimColor(gdl++, 0, (sinf(flt_CODE_bss_80079E88) * 127.0f + 128.0f), 0xFF, 0xFF, 0xFF, 0xFF);
+        gDPSetPrimColor(gdl++, 0, (sinf(g_WaterBlendPhase) * 127.0f + 128.0f), 0xFF, 0xFF, 0xFF, 0xFF);
         gDPSetTextureDetail(gdl++, G_TD_CLAMP);
         gDPSetTextureFilter(gdl++, G_TF_BILERP);
         gDPSetCombineLERP(gdl++, TEXEL1, TEXEL0, PRIM_LOD_FRAC, TEXEL0, TEXEL1, TEXEL0, PRIM_LOD_FRAC, TEXEL0, COMBINED, 0, SHADE, 0, COMBINED, 0, SHADE, 0);
@@ -300,11 +306,11 @@ Gfx* sub_GAME_7F09343C(Gfx *gdl, s32 arg1)
 }
 
 
-Gfx* sub_GAME_7F09365C(Gfx *gdl, s32 arg1)
+Gfx* waterSetupGdlCi(Gfx *gdl, s32 arg1)
 {
     if (arg1 != 0)
     {
-        gSPDisplayList(gdl++, MipMap2C_Something2_Setup);
+        gSPDisplayList(gdl++, g_WaterGdlCi);
     }
     else
     {
@@ -312,7 +318,7 @@ Gfx* sub_GAME_7F09365C(Gfx *gdl, s32 arg1)
         gDPSetTile(gdl++, G_IM_FMT_CI, G_IM_SIZ_8b, 2, 0, 1, 0, 0, 5, 0, 0, 5, 0);
         gDPSetTileSize(gdl++, 0, 0, 0, 0, 0);
         gDPSetTileSize(gdl++, 1, 90, 150, 0, 0);
-        gDPSetPrimColor(gdl++, 0, (sinf(flt_CODE_bss_80079E88) * 127.0f + 128.0f), 0xFF, 0xFF, 0xFF, 0xFF);
+        gDPSetPrimColor(gdl++, 0, (sinf(g_WaterBlendPhase) * 127.0f + 128.0f), 0xFF, 0xFF, 0xFF, 0xFF);
         gDPSetTextureDetail(gdl++, G_TD_CLAMP);
         gDPSetTextureFilter(gdl++, G_TF_BILERP);
         gDPSetCombineLERP(gdl++, TEXEL1, TEXEL0, PRIM_LOD_FRAC, TEXEL0, TEXEL1, TEXEL0, PRIM_LOD_FRAC, TEXEL0, COMBINED, 0, SHADE, 0, COMBINED, 0, SHADE, 0); /* expands to FC272C04 1F1093FF */
@@ -323,4 +329,13 @@ Gfx* sub_GAME_7F09365C(Gfx *gdl, s32 arg1)
     }
 
     return gdl;
+}
+
+
+void waterReset(void)
+{
+  g_WaterScrollS = 0.0f;
+  g_WaterScrollT = 0.0f;
+  g_WaterBlendPhase = 0.0f;
+  return;
 }
