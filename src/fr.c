@@ -845,14 +845,14 @@ void viSetUseZBuf(s32 usezbuf)
 void viSetFovY(f32 fovy)
 {
     g_ViBackData->fovy = fovy;
-    camSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
+    camSetPerspective(g_ViBackData->fovy, g_ViBackData->aspect);
     camUpdateScale();
 }
 
 void viSetAspect(f32 aspect)
 {
     g_ViBackData->aspect = aspect;
-    camSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
+    camSetPerspective(g_ViBackData->fovy, g_ViBackData->aspect);
     camUpdateScale();
 }
 
@@ -865,7 +865,7 @@ void viSetZRange(f32 near, f32 far)
 {
     g_ViBackData->znear = near;
     g_ViBackData->zfar = far;
-    camSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
+    camSetPerspective(g_ViBackData->fovy, g_ViBackData->aspect);
     camUpdateScale();
 }
 

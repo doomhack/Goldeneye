@@ -242,7 +242,6 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
 
     isMergable = modelIsAnimMergingEnabled();
 
-    g_CurrentPlayer->resetheadtick = FALSE;
 
     modelSetAnimMergingEnabled(0);
     modelTickAnim(&g_CurrentPlayer->model, g_ClockTimer, 1);
@@ -579,7 +578,6 @@ void bheadInit(void)
     g_CurrentPlayer->headupsum.f[2] = 0.0f;
     g_CurrentPlayer->resetheadpos = TRUE;
     g_CurrentPlayer->resetheadrot = TRUE;
-    g_CurrentPlayer->resetheadtick = TRUE;
     g_CurrentPlayer->headbodyoffset.f[0] = 0.0f;
     g_CurrentPlayer->headbodyoffset.f[1] = 0.0f;
     g_CurrentPlayer->headbodyoffset.f[2] = 0.0f;

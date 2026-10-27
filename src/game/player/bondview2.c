@@ -3104,7 +3104,6 @@ void watchStartRaise(f32 arg0)
     }
 
     g_CurrentPlayer->step_in_view_watch_animation = 1;
-    g_CurrentPlayer->pause_watch_related = arg0;
 }
 
 
@@ -3120,7 +3119,6 @@ void watchStartLower(f32 arg0)
     }
 
     g_CurrentPlayer->step_in_view_watch_animation = 2;
-    g_CurrentPlayer->pause_watch_related = arg0;
 }
 
 
@@ -4590,7 +4588,6 @@ void playerUpdateVertaTheta(void)
     }
 
     g_CurrentPlayer->vv_cosverta = cosf(g_CurrentPlayer->vv_verta360 * DegToRad1Fact(1));
-    g_CurrentPlayer->vv_sinverta = sinf(g_CurrentPlayer->vv_verta360 * DegToRad1Fact(1));
 
     g_CurrentPlayer->bond.theta_transform.f[0] = -g_CurrentPlayer->vv_sintheta;
     g_CurrentPlayer->bond.theta_transform.f[1] = 0;
@@ -5964,8 +5961,6 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
     if (g_CurrentPlayer->controldef == CONTROLLER_CONFIG_HONEY)
     {
-        gunSetAimType(0);
-
         if (moveData.canAutoAim
             && currentPlayerGetXAutoAimEnabledRedirect()
             && g_CurrentPlayer->autoaim_target_x
@@ -5994,7 +5989,6 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     }
     else if (g_CurrentPlayer->controldef == CONTROLLER_CONFIG_KISSY)
     {
-        gunSetAimType(0);
         gunUpdateCrosshairManual(((f32) moveData.controlStickXRaw * 0.65f) / 80.0f, ((f32) moveData.controlStickYRaw * 0.65f) / 80.0f);
     }
 }
@@ -7919,9 +7913,6 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 void camSetRoomOrigin(s32 arg0)
 {
     roomGetWorldPos(arg0, &g_CurrentPlayer->current_model_pos);
-    g_CurrentPlayer->current_room_pos.f[0] = g_CurrentPlayer->current_model_pos.f[0] * bgGetLevelScale();
-    g_CurrentPlayer->current_room_pos.f[1] = g_CurrentPlayer->current_model_pos.f[1] * bgGetLevelScale();
-    g_CurrentPlayer->current_room_pos.f[2] = g_CurrentPlayer->current_model_pos.f[2] * bgGetLevelScale();
     roomMtxSetOriginRoom(arg0);
 }
 
@@ -7946,7 +7937,6 @@ void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
     Mtxf *projmtx;
     Mtxf sp60;
     Mtx *worldtoview;
-    Mtx *worldtoviewscaled;
     Mtxf *worldtoscreen;
     Mtxf *viewtoworld;
     s32 j;
@@ -7956,7 +7946,6 @@ void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
     camSetRoomOrigin(i);
 
     worldtoview = dynAllocateMatrix();
-    worldtoviewscaled = dynAllocateMatrix();
     worldtoscreen = (Mtxf *) dynAllocateMatrix();
     viewtoworld = (Mtxf *) dynAllocateMatrix();
 
@@ -8019,10 +8008,8 @@ void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
 
     mtx4ScaleRows012(scale, spC4.m[0]);
     guMtxF2L((f32 (*)[4]) &spC4, worldtoview);
-    mtxUnpackFixed((s32 *) worldtoview, (s32 *) worldtoviewscaled);
 
     camSetWorldToViewMtx(worldtoview);
-    camSetWorldToViewScaledMtx(worldtoviewscaled);
     camSetWorldToScreenMtxf(worldtoscreen);
     camSetViewToWorldMtxf(viewtoworld);
 

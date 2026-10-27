@@ -373,7 +373,6 @@ void gunZoomOut(f32 zoom);
 f32 gunGetZoomFov(void);
 void gunCycleForward(void);
 void gunCycleBackward(void);
-void gunSetAimType(s32 param_1);
 void gunUpdateCrosshairManual(f32 turn_x, f32 turn_y);
 void gunTickGameplay(s32 arg0);
 u8 weaponGetPenetration(ITEM_IDS item);

@@ -132,7 +132,6 @@ struct hand
    * Time holding weapon
   */
   s32 weapon_hold_time;
-  s32 prevTrigger; // weapon_hold_time last frame
   s32 triggerReleased;
   s32 stateFrames; // frames in weapon_action_state
   s32 stateTime; // time in weapon_action_state, in 60 Hz ticks
@@ -177,12 +176,10 @@ struct hand
   coord3d blendup[4];
   s32 curblendpos;
   f32 dampt;
-  f32 blendscale;
   f32 blendscale1;
   s32 sideflag;
   f32 weapon_theta_displacement;
   f32 weapon_verta_displacement;
-  s32 field_A24;
   f32 gunofs2_x;
   f32 gunofs2_y;
   f32 gunofs2_z;
@@ -253,49 +250,24 @@ struct player
 {
   s32 cameramode; // canonical name
 
-  /**
-   * Offset 0x0004.
-   */
   coord3d pos; // canonical "memcampos" ?
 
-  /**
-   * Offset 0x0010.
-   */
   coord3d pos2;
 
-  /**
-   * Offset 0x001c.
-   */
   coord3d offset;
 
-  /**
-   * Offset 0x0028.
-   */
   coord3d pos3;
 
-  /**
-   * Offset 0x0034.
-   */
   StandTile *cameratile;
 
-  /**
-   * Offset 0x0038.
-   */
   coord3d current_model_pos;
 
-  /**
-   * Offset 0x0044.
-   */
   coord3d previous_model_pos;
 
-  /**
-   * Offset 0x0050.
-   */
-  coord3d current_room_pos;
   f32 sumGround; /* damped sum of manGround, to smooth the eye height over steps */
   f32 manGround; /* Y of Bond's feet, eased towards stanHeight when falling or climbing */
 
-  /* 0x0074 0x800c67d4 */ f32 stanHeight; /* Y of the ground under Bond */
+  f32 stanHeight; /* Y of the ground under Bond */
 
   coord3d deltaPos; /* movement this frame; only y is used, the fall speed (negative when falling) */
   f32 sumCrouch; /* damped sum of vertical_bounce_adjust */
@@ -307,43 +279,39 @@ struct player
    * When Bond falls off a ladder or similar, will "overshoot" vertical default.
    * Current offset is stored in this field.
    *
-   * Offset 0x0090.
    */
-  /* 0x0090 */ f32 vertical_bounce_adjust;
+  f32 vertical_bounce_adjust;
 
   /**
    * Flag: 0, 1, 2
   */
-  /* 0x009c */ s32 crouchpos; // canonical name
+  s32 crouchpos; // canonical name
 
   /**
    * Varies from 0.0f to -100.0f
-   * /
-  /* 0x00a0 */ f32 ducking_height_offset; // canonical "crouchoffset" ?
-  f32 crouchSpeed; /* speed of the crouch transition */
-  /* 0x00a8 */ PropRecord* prop;
-  /* 0x00ac */ s32 perimEnabled; /* other props collide with Bond */
-
-  /**
-   * Offset 0x00b0.
    */
+  f32 ducking_height_offset; // canonical "crouchoffset" ?
+  f32 crouchSpeed; /* speed of the crouch transition */
+  PropRecord* prop;
+  s32 perimEnabled; /* other props collide with Bond */
+
   struct rect4f collision_bounds;
 
-  /* 0x00d0 */ s32 activatePressed; /* B was pressed this frame and not used to enter the tank */
+  s32 activatePressed; /* B was pressed this frame and not used to enter the tank */
 
   /**
    * bodyModel is the third person model - it's seen by the other players in MP, and
    * during intro/outros/death scenes in SP.
    */
-  /* 0x00d4 */ struct Model *bodyModel; //canonically bondsub
+  struct Model *bodyModel; //canonically bondsub
   
-  /* 0x00d8 */ s32 bonddead; // canonical name
-  /* 0x00dc */ f32 bondhealth; // canonical name
-  /* 0x00e0 */ f32 bondarmour;
-  /* 0x00e4 */ f32 oldhealth; // canonical name
-  /* 0x00e8 */ f32 oldarmour; // canonical name
-  /* 0x00ec */ f32 apparenthealth; // canonical name
-  /* 0x00f0 */ f32 apparentarmour; // canonical name
+  s32 bonddead; // canonical name
+  f32 bondhealth; // canonical name
+  f32 bondarmour;
+  f32 oldhealth; // canonical name
+  f32 oldarmour; // canonical name
+  f32 apparenthealth; // canonical name
+  f32 apparentarmour; // canonical name
 
 #if defined (VERSION_EU)
 
@@ -354,7 +322,6 @@ struct player
     * - disable shoot and B press interact
     * Otherwise,
     * - undo the above.
-    * 0x00f4
     **/
     f32 damageshowtime;
 
@@ -363,69 +330,51 @@ struct player
      * - Show health and body armor overlay if Bond isn't dead.
      * Otherwise,
      * - undo the above.
-     * 0x00f8
      **/
     f32 healthshowtime;
 #else
-  /* See comments above. 0x00f4 */ s32 damageshowtime; // canonical name
-  /* See comments above. 0x00f8 */ s32 healthshowtime; // canonical name
+  s32 damageshowtime; // canonical name
+  s32 healthshowtime; // canonical name
 #endif
-
-
-  /* 0x00fc */ s32 healthshowmode; // canonical name
-  /* 0x0100 */ s32 field_100; // unused
 
   /**
   * The field names from this point up to bondbreathing are canonical names
   * with the exceptions of autoaim_target_y and autoaim_target_x.
   */
 
-  /* 0x0104 */ bool docentreupdown;
-
-  /**
-   * Assigned to 0 but never read.
-   * Probably "lastupdown60" based on this list: https://gist.github.com/kholdfuzion/ec713f2c0a36fbfbd4f71568073f47bc
-   * 0x0108
-   */
-  s32 lastupdown60;
+  bool docentreupdown;
 
   /**
    * When the player is doing manual pitch inputs, this is set to true so
    * the automatic look ahead pitch adjust is interrupted.
-   * 0x010c
    */
   bool prevupdown;
 
   /**
   * If the player is moving forward quickly, and has made a manual pitch adjustment, suppress
   * the automatic look ahead pitch adjusting until the player has slowed down.
-  * 0x0110
   */
   bool movecentrerelease;
 
   /**
    * If enabled, test the tiles ahead of the player for the look ahead functionality.
    * This is always enabled.
-   * 0x0114
    */
   bool lookaheadcentreenabled;
 
   /**
    * Look Ahead Setting in the watch menu.
-   * 0x0118
    */
   bool automovecentreenabled;
 
   /**
    * Always false.
-   * 0x011c
    */
   bool fastmovecentreenabled;
 
   /**
    * True when Look Ahead is enabled and the player is giving strong
    * forwards or backwards input.
-   * 0x0120
    */
   bool automovecentre;
 
@@ -434,97 +383,72 @@ struct player
    * 1: crosshair hidden
    * Only applies in level, when in control of bond.
   */
-  /* 0x0124 */ s32 insightaimmode;
-  /* 0x0128 */ s32 autoyaimenabled;
-  /* 0x012c */ f32 autoaimy;
-  /* 0x0130 */ struct PropRecord *autoaim_target_y;
-  /* 0x0134 */ s32 autoyaimtime60;
-  /* 0x0138 */ s32 autoxaimenabled;
-  /* 0x013c */ f32 autoaimx;
-  /* 0x0140 */ struct PropRecord *autoaim_target_x;
-  /* 0x0144 */ s32 autoxaimtime60;
+  s32 insightaimmode;
+  s32 autoyaimenabled;
+  f32 autoaimy;
+  struct PropRecord *autoaim_target_y;
+  s32 autoyaimtime60;
+  s32 autoxaimenabled;
+  f32 autoaimx;
+  struct PropRecord *autoaim_target_x;
+  s32 autoxaimtime60;
 
-  /* 0x0148 */ f32 vv_theta;
-  /* 0x014c */ f32 speedtheta;
+  f32 vv_theta;
+  f32 speedtheta;
 
   /**
    * Computed value from vv_theta, used to calculate boost direction.
-   * 0x0150
    **/
   f32 vv_costheta;
 
   /**
    * Computed value from vv_theta, used to calculate boost direction.
-   * 0x0154
    **/
   f32 vv_sintheta;
 
   /**
    * Vertical look angle.
-   * 0x0158
    **/
   f32 vv_verta;
 
   /**
    * Vertical look angle. Computed value from vv_verta, should always be between 0 and 360 degrees.
-   * 0x015c
    **/
   f32 vv_verta360;
 
-  /* 0x0160 */ f32 speedverta;
+  f32 speedverta;
 
   /**
    * Computed value from vv_verta360, but otherwise unused?
-   * 0x0164
    **/
   f32 vv_cosverta;
 
-  /**
-   * Computed value from vv_verta360, but otherwise unused?
-   * 0x0168
-   **/
-  f32 vv_sinverta;
-
-  /* 0x016c */ f32 speedsideways;
-  /* 0x0170 */ f32 speedstrafe;
-  /* 0x0174 */ f32 speedforwards;
+  f32 speedsideways;
+  f32 speedstrafe;
+  f32 speedforwards;
 
   /**
    * Normal run speed: 1.0
    * After 3 seconds of running: 1.35.
-   * Address 0x80c68d8
   */
-  /* 0x0178 */ f32 speedboost;
+  f32 speedboost;
 
   /**
    * How long Bond has been running
   */
-  /* 0x017c */ s32 speedmaxtime60;
+  s32 speedmaxtime60;
 
-  coord3d bondshotspeed; //0x180
+  coord3d bondshotspeed;
 
-  // offset 0x18c
   f32 bondfadetime60;
 
-  // offset 0x190
   f32 bondfadetimemax60;
 
-  // offset 0x194
   f32 bondfadefracold;
 
-  // offset 0x198
   f32 bondfadefracnew;
 
-  // offset 0x19c
   f32 bondbreathing;
-
-  s32 field_1A4;
-  s32 field_1A8;
-  s32 field_1AC;
-  s32 field_1B0;
-  s32 field_1B4;
-  s32 field_1B8;
-  s32 field_1BC;
 
   /**
    * Current pause time.
@@ -532,8 +456,8 @@ struct player
   */
   s32 watch_pause_time;
 
-  /* 0x01c4 */ s32 timer_1C4;
-  /* 0x01c8 */ s32 watch_animation_state;
+  s32 timer_1C4;
+  s32 watch_animation_state;
 
   /**
    * 1 = level is active
@@ -546,20 +470,17 @@ struct player
   coord3d watchPos;
   coord3d watchLook;
   coord3d watchUp;
-  s32 field_1F8;
-  s32 field_1FC;
   /**
    * Pausing flag.
    * 0 = level is active
    * 1 = begin pause animation. Set as soon as moving arm begins, cleared when moving arm ends.
-   * 0x800C6960
   */
-  s32 pausing_flag; // 0x200
-  f32 pause_starting_angle; // 0x204
-  f32 pause_saved_verta; // 0x208, camera pitch to restore after pause
-  f32 pause_target_verta; // 0x20c
-  f32 pause_transition_time; // 0x210, elapsed time
-  f32 pause_transition_duration; // 0x214, max/duration
+  s32 pausing_flag;
+  f32 pause_starting_angle;
+  f32 pause_saved_verta; // camera pitch to restore after pause
+  f32 pause_target_verta;
+  f32 pause_transition_time; // elapsed time
+  f32 pause_transition_duration; // max/duration
 
   /**
    * Pausing states.
@@ -568,25 +489,18 @@ struct player
    * 2 = Leaving pause.
    * 3 = Paused.
    */
-  s32 pause_state; // 0x218
+  s32 pause_state;
   s32 watchSfxPending; /* the watch-on sound still has to play */
   s32 step_in_view_watch_animation;
   f32 pause_animation_counter;
 
   /**
-   * Offset 0x0228.
-   */
-  f32 pause_watch_related;
-
-  /**
    * Looks to be same as pause_watch_related, but adjusted by scale factor.
-   * Offset 0x022c.
    */
   f32 pause_watch_related_scaled;
 
   Model watchModel; /* the first-person watch and arm; its frame is the open/close animation time */
   u32 watchModelRwData[50];
-
 
   /**
    * Copy of buttons pressed.
@@ -606,9 +520,6 @@ struct player
   f32 colourscreenfrac;
   f32 colourfadetime60;
 
-  /**
-   * Offset 0x3e4.
-   */
   f32 colourfadetimemax60;
   s32 colourfaderedold;
   s32 colourfaderednew;
@@ -621,27 +532,24 @@ struct player
 
   /*
   * Something with position, like previous x position.
-  * Offset 0x408.
   */
   coord3d bondprevpos;
 
-  f32 thetadie; //0x414
-  f32 vertadie; //0x418
-  s32 bondtype; //0x41c
-  s32 startnewbonddie; //0x420
+  f32 thetadie;
+  f32 vertadie;
+  s32 bondtype;
+  s32 startnewbonddie;
 
   /**
    * Multiplayer related.
-   * Offset 0x424.
    */
   s32 redbloodfinished;
 
   /**
    * Multiplayer related.
-   * Offset 0x428.
    */
   s32 deathanimfinished;
-  s32 controldef; //0x430 canonical name
+  s32 controldef; // canonical name
 
   struct PlayerBond bondDie; /* bond saved at death, restored for the death replay */
   struct PlayerBond bond; /* Bond's body: tile, position and look vectors */
@@ -652,15 +560,14 @@ struct player
 
   s32 resetheadpos; // bool
   s32 resetheadrot; // bool
-  s32 resetheadtick; // bool 0x4e4
 
   s32 headanim; // index into array of pointers. Pointers are for animations.
 
   // has NTSC<->PAL difference, but not (5/6)
   f32 headdamp;
-  s32 headwalkingtime60; //0x4f0
-  f32 headamplitude; //0x4f4
-  f32 sideamplitude; //0x4f8
+  s32 headwalkingtime60;
+  f32 headamplitude;
+  f32 sideamplitude;
   coord3d headpos;
   vec3d headlook;
 
@@ -672,20 +579,17 @@ struct player
 
   // headupsum[1] has NTSC->PAL conversion rate (5/6)
   vec3d headupsum;
-  coord3d headbodyoffset; //0x544
+  coord3d headbodyoffset;
   f32 standheight; // old name stationary_ground_offset
 
   // f32[4] ?? or 2 x f32[2] ??
-  coord3d standbodyoffset; //0x554
-  f32 standfrac; //0x560
+  coord3d standbodyoffset;
+  f32 standfrac;
 
-  // offset 0x564
   vec3d standlook[2];
 
-  // offset 0x57C
   vec3d standup[2];
 
-  // offset 0x594
   s32 standcnt;
   Model model; /* Bond's head bob animation */
   u32 modelRwData[31];
@@ -694,50 +598,30 @@ struct player
 
   Vp viewports[2];
 
-  /**
-   * Offset 0x7f0.
-   */
   s16 viewx;
 
-  /**
-   * Offset 0x7f2.
-   */
   s16 viewy;
 
-  /**
-   * Offset 0x7f4.
-   */
   s16 viewleft;
 
-  /**
-   * Offset 0x7f6.
-   */
   s16 viewtop;
 
   s32 handModelState[2]; /* 1 loaded, -1 load pending (counts down) */
   ITEM_IDS handModelItem[2];
   u8 *handModelBuffer[2];
 
-  /**
-   * Offset 0x810.
-   */
   ModelFileHeader handModelHeader[2];
 
   struct texpool handModelTexPool[2];
 
-  /**
-   * Offset 0x870.
-   */
   struct hand hands[2];
   f32 gunposamplitude; // canonical name
-  f32 gunxamplitude; // canonical name
 
   // Whether the trigger was released this frame.
   s32 trigger_released;
 
   /**
    * Whether player is currently holding the trigger button.
-   * Offset 0xfcc.
    */
   s32 trigger_down;
 
@@ -753,12 +637,8 @@ struct player
 
   s32 resetshadecol; // canonical name
 
-  // unused. Name comes from XBLA debug.
-  s32 aimtype;
-
   /**
    * Crosshair or bullet angle related.
-   * Offset 0xfe8.
   */
   coord2d crosshair_angle;
   f32 crosshair_x_pos;
@@ -768,11 +648,9 @@ struct player
   f32 gun_azimuth_angle;
   f32 gun_azimuth_turning;
   f32 gunaimdamp; // canonical name
-  Mtxf field_101C;
   s32 last_z_trigger_timer;
   s32 copiedgoldeneye; // canonical name
   s32 gunammooff; // canonical name
-  s32 field_1068;
   f32 gunsync; // canonical name
   f32 syncchange; // canonical name
   f32 synccount; // canonical name
@@ -787,91 +665,41 @@ struct player
    * Canonical names from here up through c_recipscaley.
    */
 
-  /**
-   * Offset 0x1090.
-   */
   f32 c_screenwidth;
 
-  /**
-   * Offset 0x1094.
-   */
   f32 c_screenheight;
 
-  /**
-   * Offset 0x1098.
-   */
   f32 c_screenleft;
 
-  /**
-   * Offset 0x109c.
-   */
   f32 c_screentop;
 
-  /**
-   * Offset 0x10a0.
-   */
-  f32 c_perspnear;
-
-  /**
-   * Offset 0x10a4.
-   */
   f32 c_perspfovy;
 
-  /**
-   * Offset 0x10a8.
-   */
   f32 c_perspaspect;
 
-  /**
-   * Offset 0x10ac.
-   */
   f32 c_halfwidth;
 
-  /**
-   * Offset 0x10b0.
-   */
   f32 c_halfheight;
 
-  /**
-   * Offset 0x10b4.
-   */
   f32 c_scalex;
 
-  /**
-   * Offset 0x10b8.
-   */
   f32 c_scaley;
 
-  /**
-   * Offset 0x10bc.
-   */
   f32 c_recipscalex;
   f32 c_recipscaley;
-
-  Mtx *worldToViewScaledMtx;
   Mtx *worldToViewMtx;
   Mtxf *worldToScreenMtxf;
 
-  /**
-   * Offset 0x10d4.
-   */
   Mtxf* viewtoworldmtxf;
   Mtx* projmatrix;
   Mtxf* projmatrixf;
   Mtx *projViewMtx;
   LookAt *lookAt;
-  Mtxf *prevWorldToScreenMtxf;
   Mtxf *prevViewToWorldMtxf;
   f32 c_scalelod60; // canonical name
   f32 c_scalelod; // canonical name
   f32 c_lodscalez; // canonical name
-  u32 c_lodscalezu32; // canonical name
-  coord3d c_cameratopnorm; // canonical name
-  coord3d c_cameraleftnorm; // canonical name
 
-  /**
-   * Offset 0x1118.
-   */
   struct bbox2d screensize;
 
   /**
@@ -879,10 +707,8 @@ struct player
    * 0x2: no crosshair
    * 0x0: cross hair shown on screen.
    *
-   * Offset 0x1128.
    */
   s32 gunsightmode;
-  s32 field_112C;
   s32 ammoheldarr[30]; // canonical name
   u8 *bloodImgCur;
   u8 *bloodImgNxt;
@@ -925,28 +751,19 @@ struct player
    * This buffers button presses.
    * L_TRIGGER and R_TRIGGER do not add entry by themselves.
    * Entry seems to be added only on other button presses.
-   * Offset 0x128c.
    */
   u16 cheatInputBuffer[20]; // canonically "buthist"
 
-  /**
-   * Offset 0x12b4.
-   */
-  /* 0x12B4 */ u8 cheatInputBufferIndex; // canonically "buthistindex"
-  /* 0x12B5 */ u8 cheatInputCount; // canonically "buthistlen"
-  /* 0x12B6 */ u8 cheatBondInvincible; // canonically "bondinvincible"
-  /* 0x12B7 */ u8 field_12B7;
-  /* 0x12B8 */ struct damage_display_parent armor_display_values[23];
-  /* 0x1598 */ struct damage_display_parent health_display_values[23];
+  u8 cheatInputBufferIndex; // canonically "buthistindex"
+  u8 cheatInputCount; // canonically "buthistlen"
+  u8 cheatBondInvincible; // canonically "bondinvincible"
+  struct damage_display_parent armor_display_values[23];
+  struct damage_display_parent health_display_values[23];
 
-  /**
-   * Offset 0x1878
-  */
   struct WatchRectangle watchTabsVtx[WATCH_NUMBER_SCREENS];
 
   /**
    * Watch static, not "static vertices".
-   * Offset 0x19b8.
   */
   struct WatchRectangle watchStaticVtx[1];
   Gfx watchArmorGdl[230];
@@ -958,7 +775,6 @@ struct player
 
   /**
    * Related to player perspective.
-   * Offset 0x29bc.
    */
   f32 eyeheight;
   f32 lookDownDrop; /* lowers the eye when looking down; 15, falls to 0 when dead */
@@ -975,7 +791,6 @@ struct player
 
   /**
    * Holds mission offset timer value.
-   * Offset 0x29f4.
    */
   s32 lifestarttime60; // canonical name
 
@@ -986,7 +801,6 @@ struct player
   /**
    * Current tile pointer -> room.
    *
-   * Offset 0x2a04.
    */
   s16 registeredroom;
   f32 bodyAimPitch; /* multiplayer body: aim angles towards the crosshair target */
@@ -996,20 +810,16 @@ struct player
   coord3d bodyHandPos[2]; /* multiplayer body: where each gun is, beams start there */
   s32 bodyHandPosTick[2]; /* g_LvTickCount when bodyHandPos was last found */
   s32 cur_item_weapon_getname;
-  /* 0x2a3c */ f32 actual_health;
-  /* 0x2a40 */ f32 actual_armor;
+  f32 actual_health;
+  f32 actual_armor;
   ITEM_IDS handModelNextItem[2]; /* gun model to load next, -1 for none */
   f32 speedgo;
   s32 handModelLocked[2];
   s32 cur_player_control_type_0;
-  s32 cur_player_control_type_1;             //0x2a5c
-  f32 cur_player_control_type_2;             //0x2a60
-  s32 neg_vspacing_for_control_type_entry;   //0x2a64
-  u32 has_set_control_type_data;             //0x2a68
-
-  s32 field_2A74;
-  s32 field_2A78;
-  s32 field_2A7C;
+  s32 cur_player_control_type_1;
+  f32 cur_player_control_type_2;
+  s32 neg_vspacing_for_control_type_entry;
+  u32 has_set_control_type_data;
 };
 
 struct firing_anim_struct {
@@ -1312,7 +1122,7 @@ bool currentPlayerGetIsAiming(void);
 void camSetScreenSize(f32 width, f32 height);
 void camUpdateScale(void);
 void camSetScreenPosition(f32 left, f32 top);
-void camSetPerspective(f32 near, f32 fovy, f32 aspect);
+void camSetPerspective(f32 fovy, f32 aspect);
 
 f32 camGetScreenWidth(void);
 f32 camGetScreenHeight(void);
@@ -1421,7 +1231,6 @@ Mtx *camGetProjViewMtx(void);
 void camSetProjViewMtx(Mtx *matrix);
 void camSetLookAt(LookAt *lookat);
 void camSetWorldToViewMtx(Mtx *matrix);
-void camSetWorldToViewScaledMtx(Mtx *matrix);
 Mtx *camGetWorldToViewMtx(void);
 Mtx *camGetProjectionMtx(void);
 Gfx *playerRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2);
