@@ -547,12 +547,6 @@ void bossMainloop(void)
             {
                 case (OS_SC_RETRACE_MSG):
                 {
-#ifdef DEBUG
-    /* debug logging from simple.c, I think this requires #include <ultralog.h>
-    * //    if (logging)
-    * //        osLogEvent(log, LOG_RETRACE, 1, pendingGfx);
-    */
-#endif
 
                     mainTickElapsed = (u32) (osGetCount() - g_FrameStartCount);
                     if (mainTickElapsed < MAIN_LOOP_TICK_INTERVAL)

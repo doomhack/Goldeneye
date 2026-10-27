@@ -549,14 +549,6 @@ u32 gunDebGetApplyKeyframe(void)
 // Address: ~ 7F05C538
 void nullsub_73(void)
 {
-#ifdef DEBUG
-    osSyncPrintf("\t{");
-    osSyncPrintf("0");
-    osSyncPrintf(",{%ff,%ff,%ff}", DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos.x, DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos.y, DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos.z);
-    osSyncPrintf(",{%ff,%ff,%ff}", DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot.x, DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot.y, DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot.z);
-    osSyncPrintf(",0.5f,20.0f");
-    osSyncPrintf("},\n");
-#endif
     return;
 }
 
@@ -2004,10 +1996,6 @@ void gunThrowObject(s32 hand)
         case ITEM_PLASTIQUE:
             new_prop_type = PROP_CHRPLASTIQUE;
             break;
-#ifdef DEBUG
-        default:
-            assertmsg2(current_weapon = PROP_CHRREMOTEMINE, "throwmineremote - Not a mine!");
-#endif
 
         }
 

@@ -149,12 +149,6 @@ void *mempAlloc(u32 bytes, u8 poolId)
     MemoryPool *pool = (MemoryPool *)(((u8 **)m_mempPools) + ((poolId * 2) << 1));
     u8 *allocation = pool->pos;
 
-#ifdef DEBUG
-    if ((poolId < 0) || (4 < poolId))
-    {
-        osSyncPrintf("mempAlloc from invalid heap %d!", poolId);
-    }
-#endif
 
     if (pool->pos == NULL)
     {

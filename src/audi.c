@@ -777,12 +777,6 @@ void amClearDmaBuffers(void)
 #endif
        }
 
-#ifdef DEBUG
-    /* debug logging from audioMgr.c, I think this requires #include <ultralog.h>
-    * //    if (logging)
-    * //        osLogEvent(log, 17, 2, osmesg->devAddr, osmesg->size);
-    */
-#endif
    }
 
     dmaPtr = g_DmaState.firstUsed;

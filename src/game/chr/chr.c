@@ -2409,9 +2409,6 @@ s32 chrTick(PropRecord *prop)
             {
                 tickamount = 1;
             }
-#ifdef DEBUG
-            osSyncPrintf("anim=%d frame=%f backy=%f\n", g_ChrDebugAnimIndex, chr->model->animframe1, (chr->aimendlshoulder * 360.0) / 6.283185);
-#endif
         }
     }
 
@@ -2473,9 +2470,6 @@ s32 chrTick(PropRecord *prop)
 
                 if (headSwitchVisible)
                 {
-#ifdef DEBUG
-                    osSyncPrintf("\nVISIBLE MAGIC MODE!!!!\n\n");
-#endif
 
                     modelGetRootPosition(model, &chr->prevpos);
                     modelCalcPosition(model);

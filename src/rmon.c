@@ -23,12 +23,7 @@ void rmonMain(void) {
  * returns true if this if rmon is disabled
  */
 s32 rmonGetToken(void) {
-    #if defined(DEBUG)
-        //flesh out sending a token from pc app
-        return FALSE;
-    #else
         return TRUE;
-    #endif
 }
 
 /**
@@ -37,11 +32,7 @@ s32 rmonGetToken(void) {
  * returns the status of rmon
  */
 s32 rmonStatus(void) {
-    #ifdef DEBUG
-        //removed
-    #else
         return -1;
-    #endif
 
 }
 
@@ -77,9 +68,6 @@ void osReadHost(void * buffer, u32 size)
  * unknown function
  */
 void rmon7000CEC8(void) {
-    #ifdef DEBUG
-        //removed
-    #endif
 }
 
 /**
@@ -88,9 +76,6 @@ void rmon7000CEC8(void) {
  * unknown function
  */
 void rmon7000CED0(void) {
-    #ifdef DEBUG
-        //removed
-    #endif
 }
 
 /**
@@ -99,9 +84,6 @@ void rmon7000CED0(void) {
  * unknown function
  */
 void rmon7000CED8(void) {
-    #ifdef DEBUG
-        //removed
-    #endif
 }
 
 

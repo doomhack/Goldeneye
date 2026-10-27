@@ -438,9 +438,6 @@ void playerApplyIntro(void)
 
                 default:
                 {
-                    #ifdef DEBUG
-                        ossyncprintf("unknown bondstart type %d!\n",intro_record->type);
-                    #endif
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroEmpty));
                 }
                 break;
@@ -488,9 +485,6 @@ void playerApplyIntro(void)
             rand_pad_index = 0;
         }
 
-#ifdef DEBUG
-        assert(g_Startpad[rand_pad_index]->stan); //              (".\\ported\\bondview_r.cpp",0x171,"Assertion failed: g_Startpad[sp]->stan");
-#endif
 
         start_pos.f[0] = g_Startpad[rand_pad_index]->pos.f[0];
         start_pos.f[2] = g_Startpad[rand_pad_index]->pos.f[2];

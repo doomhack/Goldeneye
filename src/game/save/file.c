@@ -253,9 +253,6 @@ s32 fileGetSaveStageDifficultyTime(save_data* save, LEVEL_SOLO_SEQUENCE levelid,
                 break;
             default:
                 time = 0; // shouldnt reach
-#if DEBUG
-                osSyncPrintf("file.c: SHOULDN\'T GET HERE EVER [1]\n");
-#endif
         }
 
         return time;
@@ -317,9 +314,6 @@ void fileSetDifficultyStageTime(save_data *save, LEVEL_SOLO_SEQUENCE levelid, DI
                 save->times[index + 1] |= newtime & 0xfff;
                 break;
             default:
-#if DEBUG
-                osSyncPrintf("file.c: SHOULDN\'T GET HERE EVER [2]\n");
-#endif
                 break;
         }
     }
@@ -1698,9 +1692,6 @@ void fileRecordMissionEnd(void)
 void fileLoadCurrentSettings(int stage)
 {
     if(stage){
-        #ifdef DEBUG
-
-        #endif
     }
     fileLoadSettingsForFolder(g_FrontFolder);
 }

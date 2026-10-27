@@ -85,9 +85,6 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
     {
         model = modelmgrInstantiateModelWithAnim(bodyHeader);
     }
-    #ifdef DEBUG
-    assert(chrsub->inst.savesize>=bodyobj->savesize); //bodyHeader = chrsub, model = bodyobj
-    #endif
 #ifdef XBLADEBUG
     #error fix XBLADEBUG
   //

@@ -4,9 +4,7 @@
 #include <boss.h>
 #include <fr.h>
 
-#ifndef DEBUG
     #define osSyncPrintf(...)
-#endif
 #if defined(LEFTOVERDEBUG)
 
 // data
@@ -849,50 +847,10 @@ s32 debug_menu_processor(s8 stick_h, s8 stick_v, u16 button_held, u16 button_pre
             switch (get_highlighted_debug_option()) // switch 2; jump table: jpt_80055830
             {
                 case DEB_MARGTOP: // marg top
-    #ifdef DEBUG
-                    osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgDebugAdjustViewEdge(0, 1.0, 0),
-                                 bgDebugAdjustViewEdge(1, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
-                                 bgDebugAdjustViewEdge(2, 1.0, 0),
-                                 bgDebugAdjustViewEdge(3, 1.0, 0));
-                    break;
-    #endif
                 case DEB_MARGBOT: // marg bot
-    #ifdef DEBUG
-                    osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgDebugAdjustViewEdge(0, 1.0, 0),
-                                 bgDebugAdjustViewEdge(1, 1.0, 0),
-                                 bgDebugAdjustViewEdge(2, 1.0, 0),
-                                 bgDebugAdjustViewEdge(3, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0));
-                    break;
-    #endif
                 case DEB_MARGLEFT: // marg left
-    #ifdef DEBUG
-                    osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgDebugAdjustViewEdge(0, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
-                                 bgDebugAdjustViewEdge(1, 1.0, 0),
-                                 bgDebugAdjustViewEdge(2, 1.0, 0),
-                                 bgDebugAdjustViewEdge(3, 1.0, 0));
-                    break;
-    #endif
                 case DEB_MARGRIGHT: // marg right
-    #ifdef DEBUG
-                    osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgDebugAdjustViewEdge(0, 1.0, 0),
-                                 bgDebugAdjustViewEdge(1, 1.0, 0),
-                                 bgDebugAdjustViewEdge(2, 1.0, (((button_pressed & R_CBUTTONS) >> 5 & 1 ^ 1) - ((button_pressed & L_CBUTTONS) >> 5 & 1 ^ 1)) * 4.0),
-                                 bgDebugAdjustViewEdge(3, 1.0, 0));
-                    break;
-    #endif
                 case DEB_MARGRESET: // marg reset
-    #ifdef DEBUG
-                    osSyncPrintf("Margins: %5.2f.0F %5.2f.0F %5.2f.0F %5.2f.0F\n",
-                                 bgDebugAdjustViewEdge(0, 0.0, 0),
-                                 bgDebugAdjustViewEdge(1, 0.0, 0),
-                                 bgDebugAdjustViewEdge(2, 0.0, 0),
-                                 bgDebugAdjustViewEdge(3, 0.0, 0));
-                    break;
-    #endif
                     break;
             }
         }

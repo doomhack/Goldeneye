@@ -2119,45 +2119,30 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
     g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.ob[2] = explosionRoundFloat((spA0.f[2] - (sp9C * spBC)) - (sp98 * spB0));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.tc[0] = 0;
     g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.tc[1] = g_ImagesImpact[impact_type].height << 5;
-#ifdef DEBUG
-    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NextImpact].vertex_list[0].v.ob));
-#endif
 
     g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.ob[0] = explosionRoundFloat((spA0.f[0] - (sp9C * spC4)) + (sp98 * spB8));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.ob[1] = explosionRoundFloat((spA0.f[1] - zero) + (sp98 * spB4));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.ob[2] = explosionRoundFloat((spA0.f[2] - (sp9C * spBC)) + (sp98 * spB0));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.tc[0] = 0;
     g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.tc[1] = 0;
-#ifdef DEBUG
-    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NextImpact].vertex_list[1].v.ob));
-#endif
 
     g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.ob[0] = explosionRoundFloat(spA0.f[0] + (sp9C * spC4) + (sp98 * spB8));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.ob[1] = explosionRoundFloat(spA0.f[1] + zero + (sp98 * spB4));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.ob[2] = explosionRoundFloat(spA0.f[2] + (sp9C * spBC) + (sp98 * spB0));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.tc[0] = g_ImagesImpact[impact_type].width << 5;
     g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.tc[1] = 0;
-#ifdef DEBUG
-    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NextImpact].vertex_list[2].v.ob));
-#endif
 
     g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.ob[0] = explosionRoundFloat((spA0.f[0] + (sp9C * spC4)) - (sp98 * spB8));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.ob[1] = explosionRoundFloat((spA0.f[1] + zero) - (sp98 * spB4));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.ob[2] = explosionRoundFloat((spA0.f[2] + (sp9C * spBC)) - (sp98 * spB0));
     g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.tc[0] = g_ImagesImpact[impact_type].width << 5;
     g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.tc[1] = g_ImagesImpact[impact_type].height << 5;
-#ifdef DEBUG
-    assert(IsBadVec3d((vec3d *)g_BulletImpactBuffer[g_NextImpact].vertex_list[3].v.ob));
-#endif
 
     for (i = 0; i < 4; i++)
     {
         switch (sp50->apptype)
         {
             default:
-#ifdef DEBUG
-                osSyncPrintf("Wallhit colour %d not implemented, substituting black\n", sp50->apptype);
-#endif
                 var_s0 = 0;
             break;
 

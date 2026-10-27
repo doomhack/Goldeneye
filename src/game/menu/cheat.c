@@ -1435,9 +1435,6 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         default:
-            #ifdef DEBUG
-            osSyncPrintf("Dodgy Cheat Number\n");
-            #endif
             return;
     }
 }
@@ -1614,9 +1611,6 @@ void cheatTurnOff(CHEAT_ID cheat_id)
         case CHEAT_UNLOCK_EGYPT:
 
         default:
-#ifdef DEBUG
-            osSyncPrintf("Dodgy Cheat Number\n");
-#endif
 
         break;
     }
@@ -1729,22 +1723,6 @@ void cheatSetDkMode(CHEAT_ID cheat_id)
 #endif
     }
 }
-#ifdef DEBUG
-void cheatResetText()
-{
-    int i;
-    for (i = 0; i < CHEAT_MAX; i++)
-    {
-        g_CheatPlayerMask[i] = 0;
-    }
-}
-
-void cheatResetPlayerDisplay()
-{
-    g_CurrentPlayer->count_of_something     = 0;
-    g_CurrentPlayer->can_display_cheat_text = 0;
-}
-#endif
 
 
 void cheatResetPlayerMasks(void) {

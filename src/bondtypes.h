@@ -1375,9 +1375,6 @@ typedef union
             ModelJoint *Joints;
             short       SkeletonSize;
             short       pad2;
-#ifdef DEBUG
-            char      **JointNames;
-#endif
         } ModelSkeleton;
 
         typedef struct ModelFileHeader
@@ -1392,9 +1389,6 @@ typedef union
             s16                numRecords;           // 14 used in runtime for number of records
             s16                numtextures;          // 16 Number of textures in table
             ModelFileTextures *Textures;             // 18 offset to texture table
-#ifdef DEBUG
-            char             **SwitchNames;
-#endif
 #if defined(VERSION_EU)
 #else
             s32                isLoaded;
@@ -1406,9 +1400,6 @@ typedef union
             ModelFileHeader *header;
             char            *filename;
             float            scale;
-#ifdef DEBUG
-            bool             isLoaded;
-#endif
         } ItemModelFileRecord;
 
         typedef struct ChrModelFileRecord
@@ -1421,9 +1412,6 @@ typedef union
             u8               hasHead;
             u8               pad1;
             u8               pad2;
-#ifdef DEBUG
-            char           **SwitchNames;
-#endif
         } ChrModelFileRecord;
         /*
         typedef struct GunModelFileRecord

@@ -304,9 +304,6 @@ void playerInit(s32 player_num)
     s32 i;
     struct hand default_hand;
     s32 one;
-#ifdef DEBUG
-    assert(players[num]==NULL); //according to assert, this file name is "player.c"
-#endif
     default_hand = D_8003FDA0;
 #if defined(VERSION_US)
     g_playerPointers[player_num] = mempAlloc(0x2A80U, MEMPOOL_STAGE);
@@ -314,9 +311,6 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num] = mempAlloc(0x2A70U, MEMPOOL_STAGE);
 #endif
 
-#ifdef DEBUG
-    assert(players[num]!=NULL);
-#endif
 
     g_playerPointers[player_num]->cameramode = 0;
     g_playerPointers[player_num]->pos.x = 0.0f;
@@ -672,11 +666,6 @@ void playerInit(s32 player_num)
 
 void playerSetCurrent(s32 playernum)
 {
-#ifdef DEBUG
-    assert(num>=0);
-    assert(num<4);
-    assert(players[num]!=NULL); //player.c
-#endif
 
     player_num = playernum;
     g_CurrentPlayer = g_playerPointers[playernum];

@@ -375,9 +375,6 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
                         }
                         default:
                         {
-#    ifdef DEBUG
-                            osSyncPrintf("unknown goal propdef %d\n", objective->type);
-#    endif
                             break;
                         }
                     }

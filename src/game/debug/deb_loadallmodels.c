@@ -10,9 +10,7 @@
 #include "memp.h"
 #include <macro.h>
 
-#ifndef DEBUG
     #define osSyncPrintf(...)
-#endif
 
 //i belong in a header, probably to another file
 

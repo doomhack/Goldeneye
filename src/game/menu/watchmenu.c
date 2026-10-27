@@ -2230,11 +2230,6 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
         if (joyGetButtons(0, 0x10) != 0) {
              gitem->watch_pos_z *= 1.0204082f;
         }
-#ifdef DEBUG
-
-            osSyncPrintf("gun watch pos x=%f[CL,CR] y=%f[CD,CU] z=%f[TL,TR] ", gitem->watch_pos_x, gitem->watch_pos_y, gitem->watch_pos_z);
-
-#endif
     }
 
 
@@ -2416,13 +2411,6 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
                 gitem->equip_watch_z *= 1.0204082f;
             }
 
-#if defined(VERSION_US) && defined(DEBUG)
-            osSyncPrintf(
-                "gun list pos x=%f[CL,CR] y=%f[CD,CU] z=%f[TL,TR] ",
-                gitem->equip_watch_x,
-                gitem->equip_watch_y,
-                gitem->equip_watch_z);
-#endif
         }
 
         guPerspective(sp924, &perspNorm, sp894, WATCH_PERSPECTIVE_ASPECT, 10.0f, 10000.0f, 1.0f);

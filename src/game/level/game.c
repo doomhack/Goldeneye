@@ -62,12 +62,6 @@ void gameInitData(void) {
     g_CastModel = NULL;
     g_CastWeaponModel = NULL;
     g_CastFull = FALSE;
-#ifdef DEBUG
-    bodyLoad(BODY_Brosnan_Tuxedo, "char");
-    bodyLoad(BODY_Male_Pierce_Bond_Tuxedo, "head");
-    LoadItemModel(PROP_GOLDENEYELOGO);
-    LoadItemModel(PROP_LEGALPAGE);
-#endif
 }
 
 

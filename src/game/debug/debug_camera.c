@@ -7,9 +7,7 @@
 #include "math.h"
 #include "fr.h"
 
-#ifndef DEBUG
     #define osSyncPrintf(...)
-#endif
 
 // bss
 //CODE.bss:80079E20

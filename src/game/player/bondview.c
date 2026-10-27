@@ -1368,9 +1368,6 @@ s32 playerChooseSpawnPad(void)
     player_num = playerGetCurrentNum();
     player_count = getPlayerCount();
     enemy_nearby = TRUE;
-#ifdef DEBUG
-    osSyncPrintf("choosing a start pad for player %d\n", player_num);
-#endif
 
     // loop pads until no enemy is within 1000 units
     for (attempt_num = 0; enemy_nearby && (attempt_num < startpadcount);)
@@ -1379,9 +1376,6 @@ s32 playerChooseSpawnPad(void)
         enemy_nearby = FALSE;
         g_CurrentPlayer->field_29E0++;
         pad_index = ( g_CurrentPlayer->field_29E0) % (startpadcount);
-#ifdef DEBUG
-        osSyncPrintf("testing pad %d\n", pad_index);
-#endif
 
         for (player_index = 0; player_index < player_count; player_index++)
         {
@@ -1392,9 +1386,6 @@ s32 playerChooseSpawnPad(void)
             player_prop = g_playerPointers[player_index]->prop;
             if (player_prop == 0)
             {
-#ifdef DEBUG
-                osSyncPrintf("Player %d has no prop\n", player_index);
-#endif
                 continue;
             }
 
@@ -1403,16 +1394,10 @@ s32 playerChooseSpawnPad(void)
             diff_x = player_prop->pos.x - pad->pos.x;
             diff_z = player_prop->pos.z - pad->pos.z;
             dist = sqrtf((diff_x * diff_x) + (diff_z * diff_z));
-#ifdef DEBUG
-            osSyncPrintf("Distance from player %d (%f, %f)->(%f, %f)= %f\n", player_index, pad->pos.x, pad->pos.z, player_prop->pos.x, player_prop->pos.z, dist);
-#endif
 
             // if pad is within 1000, don't pick it
             if (dist < 1000)
             {
-#ifdef DEBUG
-                osSyncPrintf("Too close to player %d (closer than 10m)\n", player_index);
-#endif
                 enemy_nearby = TRUE;
             }
         }
@@ -1427,9 +1412,6 @@ s32 playerChooseSpawnPad(void)
         enemy_nearby = FALSE;
         g_CurrentPlayer->field_29E0++;
         pad_index = ((s32) g_CurrentPlayer->field_29E0) % ((s32) startpadcount);
-#ifdef DEBUG
-        osSyncPrintf("testing pad %d (second try)\n", pad_index);
-#endif
 
         for (player_index = 0; player_index < player_count; player_index++)
         {
@@ -1440,9 +1422,6 @@ s32 playerChooseSpawnPad(void)
             player_prop = g_playerPointers[player_index]->prop;
             if (player_prop == 0)
             {
-#ifdef DEBUG
-                osSyncPrintf("Player %d has no prop\n", player_index);
-#endif
                 continue;
             }
 
@@ -1452,15 +1431,9 @@ s32 playerChooseSpawnPad(void)
             diff_z = player_prop->pos.z - pad->pos.z;
             dist = sqrtf((diff_x * diff_x) + (diff_z * diff_z));
 
-#ifdef DEBUG
-            osSyncPrintf("Distance from player %d (%f, %f)->(%f, %f)= %f\n", player_index, pad->pos.x, pad->pos.z, player_prop->pos.x, player_prop->pos.z, dist);
-#endif
             // if pad is within 100, don't pick it
             if (dist < 100.f)
             {
-#ifdef DEBUG
-                osSyncPrintf("Too close to player %d (closer than 1m)\n", player_index);
-#endif
                 enemy_nearby = TRUE;
             }
         }
@@ -1469,9 +1442,6 @@ s32 playerChooseSpawnPad(void)
     // if we searched through all pads and failed to find a safe one, just pick one at random
     if (enemy_nearby)
     {
-#ifdef DEBUG
-        osSyncPrintf("**** No decent start pad found for player %d - picking a random one ****\n", player_index);
-#endif
         pad_index = (randomGetNext() % (startpadcount));
     }
 

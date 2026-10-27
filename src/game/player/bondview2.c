@@ -1077,9 +1077,6 @@ void playerSetCameraMode(s32 arg0)
         {
             if (camera_mode == 0)
             {
-#ifdef DEBUG
-                osSyncPrintf("mute\n");
-#endif
 
                 musicTrack1Play(M_INTROSWOOSH);
                 sndSetScalerApplyVolumeAllSfxSlot(0.5f);
@@ -1928,9 +1925,6 @@ void tankGetCollisionBounds(struct rect4f *tank_collision_bounds, struct coord3d
     f32 sp34;
     struct ModelRoData_BoundingBoxRecord *bbox;
 
-    #ifdef DEBUG
-    assert(bondonprop2); // canonically g_PlayerTankProp is bondonprop2 - presumably because it was also motorbike code
-#endif
 
     sp4C = g_PlayerTankProp->obj;
 
@@ -7341,10 +7335,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             // Divide by zero check.
             if (g_GlobalTimerDelta == 0)
             {
-                #if DEBUG
-                    // unknown what went here.
-                    modelDebugBreak();
-                #endif
             }
 #endif
 
@@ -7791,9 +7781,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             g_CurrentPlayer->field_488.collision_position.f[2],
             spE4.f[0],
             spE4.f[2]);
-        #ifdef DEBUG
-        assert(stanlineret); // #7362
-        #endif
 
         sp140_tank_as_TankRecord->stan_y = stanGetPositionYValue(sp138_tank_as_ObjectRecord->prop->stan, spE4.f[0], spE4.f[2]);
 
@@ -8936,9 +8923,6 @@ void mpRespawnPlayer(void)
         var_v1 = 0;
     }
 
-    #ifdef DEBUG
-    assert(g_Startpad[var_v1]->stan);
-    #endif
 
     start_pos.x = g_Startpad[var_v1]->pos.x;
     start_pos.z = g_Startpad[var_v1]->pos.z;
@@ -9027,9 +9011,6 @@ void mpRespawnPlayer(void)
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroEmpty));
                     break;
             }
-    #ifdef DEBUG
-            ossyncprintf("unknown bondstart type %d!\n", var_v0_2);
-    #endif
         }
     }
 
@@ -10919,18 +10900,10 @@ void hudmsgBottomShow(char *string, s32 font, s32 arg2)
 }
 
 #else
-#ifdef DEBUG
-void hudmsgBottomShow(char *mess, void *font)
-#else
 void hudmsgBottomShow(char *mess)
-#endif
 {
     s32 abs_index;
     s32 index;
-    #ifdef DEBUG
-        assert(font);
-        assert(strlen(mess)<=MAXMESSAGELEN);
-    #endif
     if (getPlayerCount() == 1)
     {
         if (display_statusbar < 5)
@@ -11121,9 +11094,6 @@ static s8 s_CoopTopTextPlayer[2];
 void hudmsgTopShow(char* mess)
 {
     s32 index;
-    #ifdef DEBUG
-        assert(strlen(mess)<=MAXTALKMESSLEN);
-    #endif
     if (display_upper_text_window >= 2) { return; }
 
     index = (upper_text_buffer_index + display_upper_text_window) % 2;
@@ -11792,9 +11762,6 @@ clear_and_return:
  */
 Gfx * bondviewRemoved7F08BCB8(Gfx *arg0)
 {
-    #ifdef DEBUG
-    // removed
-    #endif
 
     return arg0;
 }

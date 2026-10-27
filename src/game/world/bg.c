@@ -642,9 +642,6 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
     for (i = b_min; i <= b_max; i++)
     {
-    #ifdef DEBUG
-        notdone = g_BgNumberOfRoomsDrawn;
-    #endif
         for (j = 0; j < g_BgNumberOfRoomsDrawn; j++)
         {
             if (i == g_BgRoomsDrawn[j].unk1)
@@ -691,14 +688,8 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
                 if (1);
             }
-    #ifdef DEBUG
-            notdone--;
-    #endif
         }
     }
-    #ifdef DEBUG
-    assert(notdone == 0);
-    #endif
  
     gdl = bgScissorCurrentPlayerViewDefault(fogRenderClearFogMode(gdl));
     gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
@@ -714,9 +705,6 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
     for (i = b_max; i >= b_min; i--)
     {
-    #ifdef DEBUG
-        notdone = g_BgNumberOfRoomsDrawn;
-    #endif
  
         for (j = 0; j < g_BgNumberOfRoomsDrawn; j++)
         {
@@ -753,14 +741,8 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
                 if (1);
             }
-    #ifdef DEBUG
-            notdone--;
-    #endif
         }
     }
-    #ifdef DEBUG
-    assert(notdone == 0);
-    #endif
  
     return gdl;
 }
@@ -2223,9 +2205,6 @@ s32 bgGetPortalIndex(s32 portalID)
             return i;
         }
     }
-    #ifdef DEBUG
-    osSyncPrintf("bg: bgPortalIndexFromPtr(): No portal found for %08x ",portalID);
-    #endif
     return 0;
 }
 
@@ -3609,9 +3588,6 @@ void bgQueuePortalTraversal(s32 arg0, s32 arg1, s32 portalnum, s32 depth, f32 *a
     }
     if (g_BgPortalQueueWriteIndex == g_BgPortalQueueReadIndex)
     {
-            #ifdef DEBUG
-            osSyncPrintf("bg: pstackat: Overflow ");
-            #endif
         g_BgPortalQueueWriteIndex--;
     }
 }
@@ -3691,9 +3667,6 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, b
  
     if (depth >= 101)
     {
-#ifdef DEBUG
-        osSyncPrintf("bg: << Deep\n");
-#endif
         return;
     }
  
@@ -3709,10 +3682,6 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, b
  
     if (depth);
  
-#ifdef DEBUG
-    assert(portalnum < PORTMAX);
-    osSyncPrintf("bg: << bgPortalDescend: Inside out portal '%s' ", bgDebPrintPORTALID(portalnum));
-#endif
 
     if (g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_DISABLED)
     {
@@ -3832,9 +3801,6 @@ s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s3
  
     if (depth >= 101)
     {
-#ifdef DEBUG
-        osSyncPrintf("bg: << Deep\n");
-#endif
         return value;
     }
  
@@ -3850,10 +3816,6 @@ s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s3
  
     if (depth);
  
-#ifdef DEBUG
-    assert(portalnum < PORTMAX);
-    osSyncPrintf("bg: << bgPortalDescend: Inside out portal '%s' ", bgDebPrintPORTALID(portalnum));
-#endif
  
     if (g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_DISABLED)
     {
@@ -4316,9 +4278,6 @@ void *bgRunVisCommands(s32 *pc)
     }
 
     bgStackGetNthValueFromEnd(0);
-    #ifdef DEBUG
-    assert( pc->type==RS_STOP)
-    #endif
 
     return bgParseVisCommands(pc, 1);
 }
@@ -4735,12 +4694,6 @@ void bgRoomCalcBB(s32 room) // canonical name
                 ptr_bgdata_room_fileposition_list[room].pos.f[j] = (g_StanRoomBounds[room].min[j] + g_StanRoomBounds[room].max[j]) / 2;
             }
         }
-#ifdef DEBUG
-        else
-        {
-            osSyncPrintf("bg: bgRoomCalcBB: ROOM%d has no gfx, and no stans! Can\'t make bb & roomoffset ", room);
-        }
-#endif
 
         return;
     }
@@ -5081,9 +5034,6 @@ void bgOrderPortal(s32 portalnum) // canonical name
     bgGetPortalPlane(portalnum, &metric);
 
     if (metric.max - metric.min < 0.1f) {
-#ifdef DEBUG
-        osSyncPrintf("bg: bgOrderPortal: Portal '%s' not planar by %5.2f\n", bgDebPrintPORTALID(portalnum), metric.max - metric.min);
-#endif
     }
 
     tmp2 = metric.normal.f[2];
@@ -5127,9 +5077,7 @@ s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *arg2, coord3d *arg3)
     s32 i;
     s32 portalIndex = -1;
 
-    #ifndef DEBUG
         #define osSyncPrintf(...)
-    #endif
 
     for (i = 0; g_BgPortals[i].offset_portal != NULL; i++)
     {
@@ -5166,9 +5114,6 @@ s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *arg2, coord3d *arg3)
  */
 void bgToggleDataPortalsContrlBytes1Bit1(s32 portal, s32 toggle)
 {
-    #ifdef DEBUG
-    assert(portal<PORTMAX);
-    #endif
     g_BgPortals[portal].controlbytes1 = (g_BgPortals[portal].controlbytes1 | 1) ^ (toggle != 0);
 }
 
@@ -5183,27 +5128,6 @@ void bgToggleDataPortalsContrlBytes1Bit1(s32 portal, s32 toggle)
  */
 s32 bgDebugRemoved7F0B9DE4(s32 arg0, s32 arg1, s32 arg2)
 {
-#if DEBUG
-    // removed
-    /*
- if (arg2 == NULL)
- {
-     arg2 = {0};
- }
- *arg0          = *arg1 + *arg2;
- arg0[1]        = arg1[1] + arg2[1];
- arg0[2]        = arg1[2] + arg2[2];
- *(arg0 + 3)    = 0;
- arg0[4]        = 0.0;
- arg0[5]        = 0.0;
- *(arg0 + 6)    = (param_4 & 0xcf00cf40) >> 0x18;
- *(arg0 + 0x19) = 0;
- *(arg0 + 0x1a) = (param_4 & 0xcf00cf40) >> 8;
- *(arg0 + 0x1b) = 0x40;
-
- */
-
-#endif
 
     return arg0;
 }
@@ -5219,9 +5143,6 @@ s32 bgDebugRemoved7F0B9DE4(s32 arg0, s32 arg1, s32 arg2)
  */
 void bgRemoved7F0B9DF4(s32 arg0)
 {
-#if DEBUG
-    // removed
-#endif
 
     return;
 }
@@ -5233,9 +5154,6 @@ void bgRemoved7F0B9DF4(s32 arg0)
  */
 void bgRemoved7F0B9DFC(s32 p)
 {
-#if DEBUG
-        osSyncPrintf("bg: Error: Multiple portals intersect line; \'%s\' dropped ", bgDebPrintPORTALID(p));
-#endif
 
     return;
 }
@@ -5259,18 +5177,12 @@ s32 bgFindPortalOnSegment(coord3d *arg0, coord3d *arg1)
             if (thisthing < 0)
             {
                 thisthing = -thisthing;
-#if DEBUG
-                osSyncPrintf("bg: Portal \'%s\' briefly considered for window\n", bgDebPrintPORTALID(i));
-#endif
             }
 
             if (thisthing < bestthing)
             {
                 if (count)
                 {
-#if DEBUG
-                    osSyncPrintf("bg: Portal \'%s\' briefly considered for window\n", bgDebPrintPORTALID(i));
-#endif
                 }
                 if (i);
                 bestportalnum = i;

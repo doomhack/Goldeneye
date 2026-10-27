@@ -553,9 +553,6 @@ s8 joyGetStickX(s8 contpadnum)
     contpadnum = joyMapPad(contpadnum);
 
     //this assert is on ALL stick functions below
-#ifdef DEBUG
-    assert(contpadnum > 0); //j
-#endif
 
     if ((g_ContDataPtr->playbackcontcount < 0) && ((g_ConnectedControllers >> contpadnum & 1) == 0))
     {

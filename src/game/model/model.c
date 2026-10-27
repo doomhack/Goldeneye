@@ -372,9 +372,6 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
 
         requiredRwdatalen = modelFileHeader->numRecords;
 
-#ifdef DEBUG
-        if (modelFileHeader->numRecords > 140) osSyncPrintf("WARNING: increase OISAVESIZE to %d!\n", *(modelFileHeader->numRecords));
-#endif
 
         if (requiredRwdatalen > 0) 
         {
@@ -412,9 +409,6 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
 void modelAttachHead(Model *model, ModelNode *node,  ModelFileHeader *head)
 {
     modelAttachPart(model,model->obj,node,head);
-#ifdef DEBUG
-    if (model->numRecords > 140 && g_ModelLodScale == 0) osSyncPrintf("WARNING: increase OASAVESIZE to %d!\n", *(model + 0x14));
-#endif
 
     modelInitRwData(model,head->RootNode);
 }
@@ -2934,10 +2928,6 @@ void modelSetAnimEndFrame(Model *model, f32 endframe) {
     } else {
         model->endframe = -1.0f;
     }
-#ifdef DEBUG
-    // not too sure why debug wants to call this - must have some significance when most debug has been stripped from this file in XBLA
-    modelSetAnimFrame(model, (int)model->animframe1);
-#endif
 }
 
 void modelSetAnimFlipFunction(Model *model, void *callback) {

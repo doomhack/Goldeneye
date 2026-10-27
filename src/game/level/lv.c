@@ -328,9 +328,6 @@ void lvStageLoad(s32 stage)
     // top of the method. Maybe a debug log about which level is loaded.
     if(0)
     {
-        #ifdef DEBUG
-        // removed
-        #endif
     }
 
     g_LvDrawWorld = 1;

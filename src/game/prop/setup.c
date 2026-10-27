@@ -221,12 +221,6 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
             modelSetScale(arg1->model, arg1->model->scale * sp78);
             propReparent(var_v0, sp6C->prop);
         }
-        #ifdef DEBUG
-        else
-        {
-            osSyncPrintf("domakedefaultobj: no chr number %d for obj number %d!\n",arg1->pad,cmdindex + 1);
-        }
-        #endif
     }
     else
     {
@@ -284,9 +278,6 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
                     if (!(arg1->flags & PROPFLAG_ONSCREEN) && !(arg1->flags & PROPFLAG_00001000))
                     {
                         // removed
-                        #ifdef DEBUG
-                            osSyncPrintf("object number %d not positioned correctly!\n",cmdindex + 1);
-                        #endif
                     }
                 }
             }
@@ -455,9 +446,6 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
 
                     if ((sp58 <= 0.000001f) || (sp54 <= 0.000001f) || (sp50 <= 0.000001f))
                     {
-                        #ifdef DEBUG
-                        osSyncPrintf("Scale warning: object number %d has a small scale: %f,%f,%f\n",cmdindex +1, sp58,sp54,sp50);
-                        #endif
                         sp50 = 1.0f;
                         sp54 = 1.0f;
                         sp58 = 1.0f;
@@ -487,12 +475,6 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
             propActivate(sp60);
             propEnable(sp60);
         }
-        #ifdef DEBUG
-        else
-        {
-            osSyncPrintf("domakedefaultobj: prop obj number %d not reset!\n",cmdindex + 1);
-        }
-        #endif
     }
 }
 
@@ -554,12 +536,6 @@ void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
             weaponLoadProjectileModels((s8)weapon->weaponnum);
             chrSetupHeldWeapon(weapon, chr);
         }
-        #ifdef DEBUG
-        else
-        {
-            osSyncPrintf("domakeweaponobj: no chr number %d for obj number %d!\n",weapon->pad, cmdindex + 1);
-        }
-        #endif
     }
     else
     {
@@ -626,12 +602,6 @@ void setupHat(s32 arg0, ObjectRecord* hat, s32 cmdindex)
         if (chr && chr->prop && chr->model) {
             hatAssignToChr(hat, chr);
         }
-        #ifdef DEBUG
-        else
-        {
-            osSyncPrintf("domakehatobj: no chr number %d for obj number %d!\n",hat->pad, cmdindex + 1);
-        }
-        #endif
     } else {
         setupObject(arg0, hat, cmdindex);
     }
@@ -1024,12 +994,6 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
                 pad->bbox.xmin *= g_DoorScale;
                 pad->bbox.xmax *= g_DoorScale;
             }
- #ifdef DEBUG
-            else
-            {
-                osSyncPrintf("volume for door object number %d did not have depth changed!\n",arg2 + 1);
-            }
-            #endif
         }
         else
         {
@@ -1065,9 +1029,6 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 
         if ((xscale <= 0.000001f) || (yscale <= 0.000001f) || (zscale <= 0.000001f))
         {
-            #ifdef DEBUG
-            osSyncPrintf("Scale warning: door object number %d has a small scale: %f,%f,%f\n",arg2 +1, xscale,yscale,zscale);
-            #endif
             xscale =
                 yscale =
                 zscale = 1.0f;
@@ -1094,9 +1055,6 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 
                 if (!(door->flags & 0x1000)) // prop flag PROPFLAG_00001000 "Absolute Position"
                 {
-                    #ifdef DEBUG
-                    osSyncPrintf("door object number %d not positioned correctly!\n",arg2 +1);
-                    #endif
 
                 }
             }
@@ -1144,12 +1102,6 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
             {
                 doorDeactivatePortal(door);
             }
-            #ifdef DEBUG
-            else
-            {
-                osSyncPrintf("No portal for door object number %d ",arg2 + 1);
-            }
-            #endif
         }
 
         prop->rooms[0] = prop->stan->room;
@@ -1177,18 +1129,9 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
             {
                 if (!prop->stan->room)
                 {
-                    #ifdef DEBUG
-                        osSyncPrintf("3 rooms for door object number %d\n",arg2 + 1);
-                    #endif
                 }
 
             }
-            #ifdef DEBUG
-            else
-            {
-                osSyncPrintf("No 2nd room for door object number %d\n",arg2 + 1);
-            }
-            #endif
         }
 
         if (door->model != NULL)
@@ -1219,9 +1162,6 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
     else
     {
         door->prop = NULL;
-        #ifdef DEBUG
-            osSyncPrintf("proplvreset: prop door object number %d not reset!\n",arg2 + 1);
-        #endif
     }
 
 }
@@ -1373,21 +1313,7 @@ void setupCreateProps(enum LEVELID stageId)
                 pad->pos.f[1] *= roompos_1;
                 pad->pos.f[2] *= roompos_1;
         
-#ifdef DEBUG
-                {
-                    s32 sret = stanResolvePadTile(pad, pad->plink, &pad->stan);
-                    if (sret == 0)
-                    {
-                        osSyncPrintf("pad number %d has no stan! (%s)\n", (s32)(pad - g_CurrentSetup.pads), pad->plink);
-                    }
-                    else if (sret == 2)
-                    {
-                        osSyncPrintf("pad number %d changed stan from %s to %s\n", (s32)(pad - g_CurrentSetup.pads), pad->plink, GetStanName(pad->stan));
-                    }
-                }
-#else
                 stanResolvePadTile(pad, pad->plink, &pad->stan);
-#endif
 
                 if (1);
             }
@@ -1418,21 +1344,7 @@ void setupCreateProps(enum LEVELID stageId)
                 vol->bbox.zmin *= roompos_2;
                 vol->bbox.zmax *= roompos_2;
 
-#ifdef DEBUG
-                {
-                    s32 sret = stanResolvePadTile((struct PadRecord *) vol, vol->plink, &vol->stan);
-                    if (sret == 0)
-                    {
-                        osSyncPrintf("vol number %d has no stan! (%s)\n", (s32)(vol - g_CurrentSetup.boundpads), vol->plink);
-                    }
-                    else if (sret == 2)
-                    {
-                        osSyncPrintf("vol number %d changed stan from %s to %s\n", (s32)(vol - g_CurrentSetup.boundpads), vol->plink, GetStanName(vol->stan));
-                    }
-                }
-#else
                 stanResolvePadTile((struct PadRecord *) vol, vol->plink, &vol->stan);
-#endif
 
                 if (1);
             }
@@ -1545,12 +1457,6 @@ void setupCreateProps(enum LEVELID stageId)
                         {
                             chr->grenadeprob = prob;
                         }
-#ifdef DEBUG
-                        else
-                        {
-                            osSyncPrintf("grenade prob: no chr number %d for obj number %d! ", pdef_guarda->GrenadeProb, pdefIndex + 1);
-                        }
-#endif
                         break;
                     }
                     case PROPDEF_GUARD:
@@ -1884,13 +1790,6 @@ void setupCreateProps(enum LEVELID stageId)
                                 propReparent(pdef_obj->prop, inobj->prop);
                             }
 
-#ifdef DEBUG
-                            //possibly wrong place
-                            else
-                            {
-                                osSyncPrintf("inobj link not found for object number %d\n", pdefIndex + 1);
-                            }
-#endif
 
                         }
                         break;
@@ -1907,16 +1806,6 @@ void setupCreateProps(enum LEVELID stageId)
                             {
                                 propweaponSetDual(guna, gunb);
                             }
-#ifdef DEBUG
-                            else
-                            {
-                                osSyncPrintf("link type wrong for doublegun object number %d\n", pdefIndex + 1);
-                            }
-                        }
-                        else
-                        {
-                            osSyncPrintf("link not found for doublegun object number %d\n", pdefIndex + 1);
-#endif
 
                         }
 
@@ -1944,12 +1833,6 @@ void setupCreateProps(enum LEVELID stageId)
                             doorA->runtime_bitflags |= RUNTIMEBITFLAG_00000001; // linked door
                         }
 
-#ifdef DEBUG
-                        else
-                        {
-                            osSyncPrintf("doorlink object number %d not initialised\n", pdefIndex + 1);
-                        }
-#endif
 
                         break;
                     }
@@ -1980,12 +1863,6 @@ void setupCreateProps(enum LEVELID stageId)
                             safe_item->flags2 |= PROPFLAG2_LINKEDTOSAFE;
                             door->flags2 |= PROPFLAG2_LINKEDTOSAFE;
                         }
-#ifdef DEBUG
-                        else
-                        {
-                            osSyncPrintf("safelink object number %d not initialised\n", pdefIndex + 1);
-                        }
-#endif
                         break;
                     }
                     case PROPDEF_LOCK_DOOR:
@@ -2011,12 +1888,6 @@ void setupCreateProps(enum LEVELID stageId)
                             setupLinkLockDoor(pdef_lock_door);
                             door->runtime_bitflags |= RUNTIMEBITFLAG_PADLOCKEDDOOR;
                         }
-#ifdef DEBUG
-                        else
-                        {
-                            osSyncPrintf("doorlock object number %d not initialised\n", pdefIndex + 1);
-                        }
-#endif
                         break;
                     }
                 }
@@ -2310,17 +2181,11 @@ s32 getposstan(struct coord3d *pos, StandTile *stan, f32 radius, struct coord3d 
 
     if (stan == 0)
     {
-#ifdef DEBUG
-        osSyncPrintf("getposstan: no stan!\n");
-#endif
         return 0;
     }
 
     if ((radius > 0.0f) && (stanTestVolume(stanReturn, posReturn->f[0], posReturn->f[2], radius, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, 0.0f, 1.0f) >= 0))
     {
-#ifdef DEBUG
-        osSyncPrintf("getposstan: circle not legal!\n");
-#endif
         return 0;
     }
 
@@ -2427,9 +2292,6 @@ s32 sizepropdef(PropDefHeaderRecord *pdef)
         case PROPDEF_CAMERAPOS:
             return 7;//return sizeof(GlassRecord) / 4;
         default:
-            #ifdef DEBUG
-            osSyncPrintf("sizepropdef: unknown prop def type %d!!\n",pdef->type);
-            #endif
             return sizeof(PropDefHeaderRecord) / 4;;
     }
     #else
@@ -2524,9 +2386,6 @@ s32 sizepropdef(PropDefHeaderRecord *pdef)
         case PROPDEF_CAMERAPOS:
             return sizeof(CutsceneRecord) / 4;
         default:
-#ifdef DEBUG
-            osSyncPrintf("sizepropdef: unknown prop def type %d!!\n", pdef->type);
-#endif
             return sizeof(PropDefHeaderRecord) / 4;
     }
     #endif
@@ -2904,10 +2763,4 @@ void setupGuard(s32 stageid, GuardRecord *arg1, s32 arg2)
             }
         }
     }
-    #ifdef DEBUG
-    else
-    {
-    osSyncPrintf("chr not reset! (prop num=%d chr num=%d stan=%s) ",arg2 + 1, arg1->chrnum, GetStanName(pad->stan));
-    }
-    #endif
 }

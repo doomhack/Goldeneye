@@ -11,9 +11,6 @@ s32 indycommInit(void) {
 }
 
 void indycomm_removed(void) {
-    #ifdef DEBUG
-        //removed
-    #endif
 }
 
 void indycommHostinit(void) {

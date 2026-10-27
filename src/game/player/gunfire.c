@@ -623,16 +623,6 @@ void gunUpdateAndFire(GUNHAND handnum)
         }
 
         modelCalculateRwDataLen(mdlhdr);
-#ifdef DEBUG
-        /** 
-         * The model's runtime data is written into hand->modeldatas, which is a
-         * fixed run of 32 words (modeldatas .. field_C04, ending at volley).
-         */
-        if (mdlhdr->numRecords >= 32)
-        {
-                osSyncPrintf("Increase GUNSAVESIZE to %d!!! ", mdlhdr->numRecords);
-        }
-#endif
         model = (Model *) (&hand->field_B68);
 
         if (mdlhdr->Switches);
@@ -2323,9 +2313,6 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
             }
         }
     }
-#ifdef DEBUG
-    osSyncPrintf("Shot prop: hittype %d\n", g_Textures[texture_index].hitSound);
-#endif
 #ifdef ENABLE_LOG
     osSyncPrintf("Shot prop:  %S\n", HIT_TYPE_ToString[g_Textures[texture_index].hitSound]);
 #endif
@@ -6942,9 +6929,6 @@ void shotFireBullet(s32 hand)
     {
         if (shotdata.hits[k].prop != 0)
         {
-#ifdef DEBUG
-        assert(!IsBadVec3d((vec3d *)&shotdata.hits[k].hit.hitpos));
-#endif
             if ((shotdata.hits[k].prop->type == PROP_TYPE_CHR) || (shotdata.hits[k].prop->type == PROP_TYPE_VIEWER))
             {
                 chrHandleBulletHit(&shotdata, &shotdata.hits[k]);
