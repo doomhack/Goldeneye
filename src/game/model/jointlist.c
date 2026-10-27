@@ -649,28 +649,10 @@ void jointListDraw(ModelRenderData *data, JointListEntry *entry)
     Gfx *gdl;
     s32 opcode;
 
-    if (data->gdl == NULL)
-    {
-        osSyncPrintf("drawjointlist: no gfxlist!\n");
-        modelDebugBreak();
-    }
-
     while (entry != NULL)
     {
         root = entry->rootnode;
         node = root;
-
-        if (entry->model->obj == NULL)
-        {
-            osSyncPrintf("drawjointlist: no object! (0x%X)\n", entry->model);
-            modelDebugBreak();
-        }
-
-        if (!entry->model->obj->isLoaded)
-        {
-            osSyncPrintf("drawjointlist: object not initialised! (0x%X)\n", entry->model->obj);
-            modelDebugBreak();
-        }
 
         if (data->unk18 != 0)
         {

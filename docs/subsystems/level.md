@@ -8,7 +8,7 @@ of this is `bossMainloop`, in `src/boss.c`.
 | --- | --- |
 | `src/game/level/lv.c` | The level: loading (`lvStageLoad`), the per-frame tick (`lvTick`, `lvPlayerTick`), drawing (`lvRender`), unloading (`lvStageUnload`), the game timers, difficulty, the multiplayer time and point limits, level music, the fps counter |
 | `src/game/level/frametiming.c` | The frame timer: waiting for the next frame (`frameWaitForNext`) and counting how many video frames each game frame took (`g_FrameDelta`) |
-| `src/game/level/game.c` | The game's one-time setup (`gameInit`, `gameInitData`: the menu state on power-on), resetting and closing the menu memory pool, the build date |
+| `src/game/level/game.c` | The game's one-time setup (`gameInitData`: the menu state on power-on), resetting and closing the menu memory pool, the build date |
 
 ## The main loop
 

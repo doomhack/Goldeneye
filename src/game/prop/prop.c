@@ -2114,11 +2114,6 @@ void propsDefragRoomProps(void)
 }
 
 
-void roomBlocksDebug(void)
-{
-
-}
-
 /**
  * NTSC address 0x7F03E6A0.
 */

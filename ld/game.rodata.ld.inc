@@ -1,13 +1,11 @@
       build/OUTCODE/src/game/model/initactorpropstuff.o (.rodata);
       build/OUTCODE/src/game/model/anim.o (.rodata);
-      build/OUTCODE/src/game/debug/deb_loadallmodels.o (.rodata);
       build/OUTCODE/src/game/prop/setup.o (.rodata);
       build/OUTCODE/src/game/mission/objective.o (.rodata);
       build/OUTCODE/src/game/player/bondview_r.o (.rodata);
       build/OUTCODE/src/game/menu/title.o (.rodata);
       build/OUTCODE/src/game/menu/front.o (.rodata);
       build/OUTCODE/src/game/hud/blood.o (.rodata);
-      build/OUTCODE/src/game/debug/sub_GAME_7F01D1C0.o (.rodata);
       build/OUTCODE/src/game/save/file.o (.rodata);
       build/OUTCODE/src/game/chr/chr.o (.rodata);
       build/OUTCODE/src/game/chr/body.o (.rodata);
@@ -36,9 +34,6 @@
       build/OUTCODE/src/game/player/bondinv.o (.rodata);
       build/OUTCODE/src/game/player/bondhead.o (.rodata);
       build/OUTCODE/src/game/nav/waypoint.o (.rodata);
-      build/OUTCODE/src/game/debug/debugmenu_08FE00.o (.rodata);
-      build/OUTCODE/src/game/debug/debugmenu_handler.o (.rodata);
-      build/OUTCODE/src/game/debug/debug_camera.o (.rodata);
       build/OUTCODE/src/game/chr/chraidata.o (.rodata);
       build/OUTCODE/src/game/model/pobjdata.o (.rodata);
       build/OUTCODE/src/game/model/gobjdata.o (.rodata);
@@ -78,10 +73,7 @@
       build/OUTCODE/src/game/gfx/tex.o (.rodata);
       build/OUTCODE/src/game/asset/rzip.o (.rodata);
       build/OUTCODE/src/game/gfx/rsp.o (.rodata);
-      build/OUTCODE/src/game/debug/indy_comms.o (.rodata);
-      build/OUTCODE/src/game/debug/indy_commands.o (.rodata);
       build/OUTCODE/src/game/level/game.o (.rodata);
-      build/OUTCODE/src/game/debug/speedgraphrenderer.o (.rodata);
       build/OUTCODE/src/game/gfx/zbuf.o (.rodata);
 #ifndef VERSION_EU
 #endif

@@ -42,7 +42,6 @@
 #include "game/model/modelfile.h"
 #include "game/gfx/image.h"
 #include "game/gfx/tex.h"
-#include "game/debug/debugmenu_handler.h"
 #include "fr.h"
 #include "assets/obseg/text/LgunE.h"
 #include "game/text/text.h"
@@ -2231,10 +2230,6 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
 
     g_DebugHitTexNum = texture_index;
 
-    if (get_debug_joy2hitsedit_flag() == 0)
-    {
-        get_debug_joy2detailedit_flag();
-    }
 
     if ((item == ITEM_REMOTEMINE)
         || (item == ITEM_PROXIMITYMINE)
@@ -2357,7 +2352,6 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index)
     rnd2 = randomGetNext();
 
     g_DebugHitTexNum = texture_index;
-    get_debug_joy2hitsedit_flag();
 
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
     if (g_ClockTimer <= 0) { return; }

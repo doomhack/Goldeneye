@@ -14,16 +14,6 @@
 #include "game/model/modelfile.h"
 #include "game/model/model.h"
 
-s32 bodyLoad(s32 model)
-{
-    if (c_item_entries[model].header->RootNode == 0)
-    {
-        modelFileLoadToPool(c_item_entries[model].header, c_item_entries[model].filename);
-        return 1;
-    }
-    return 0;
-}
-
 // # This file is chrlv.c
 
 /**

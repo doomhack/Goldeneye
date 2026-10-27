@@ -261,8 +261,6 @@ extern s16 metal_ricochet_SFX[3];
 extern struct explosion_anim_group_info explosion_animation_table[];
 extern struct explosion_death_animation D_8002E648[];
 
-void        chrDebugSetStep(s32 param_1);
-void        chrDebugSetAnimOverride(s32 param_1);
 void        chrFreeResources(PropRecord* prop);
 void        chrDetectRooms(ChrRecord *);
 void        chrSetMoving(ChrRecord *guard,s32 param_2);
@@ -272,9 +270,6 @@ PropRecord *chrInit(PropRecord *, Model *, coord3d *, f32 arg2, StandTile * arg3
 PropRecord *chrAllocate(struct Model * arg0, coord3d * arg1, f32 arg2, StandTile * arg3, s32 arg4);
 void        chrSetHiddenToRandom(ChrRecord *arg0);
 void        chrRemovedUnused(f32 arg0);
-void        chrDebugPrevAnim(void);
-void        chrDebugNextAnim(void);
-void        chrDebugTogglePause(void);
 void        chrCheckGuardsHeardSound(f32 arg0);
 ChrRecord  *chrFindByLiteralId(s32 index);
 PropRecord *chrGetEquippedWeaponProp(ChrRecord *arg0, GUNHAND arg1);
@@ -302,6 +297,7 @@ bool chrCanUseDKModeScaling(s32 bodynum, s32 headnum);
 #endif
 
 void chrsInit(void);
+void bgChrsInit(void);
 void chrsAllocateSlots(s32 count);
 void chrsFreeAll(void);
 

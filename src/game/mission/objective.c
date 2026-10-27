@@ -396,10 +396,6 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
         } // if objheader
     }     //objnum < 10
 
-    if (get_debug_all_obj_complete_flag())
-    {
-        status = OBJECTIVESTATUS_COMPLETE;
-    }
     return status;
 }
 

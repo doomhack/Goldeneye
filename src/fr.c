@@ -7,7 +7,6 @@
 #include "sched.h"
 #include "game/gfx/rsp.h"
 #include <PR/os.h>
-#include "game/debug/indy_comms.h"
 #include "game/player/bondview.h"
 #include "game/gfx/zbuf.h"
 #include "game/gfx/dyn.h"
@@ -105,13 +104,6 @@ u32 g_ViUnblackTimer = 3;
  * should correlate to g_schedViCurrentFrameBuffer
  */
 s32 D_800232C0 = 0;
-
-#if defined(VERSION_US)
-s32 g_indyJpg16BitGrabnum = 1;
-s32 g_indyJpg32BitGrabnum = 1;
-s32 g_indyRgb16BitGrabnum = 1;
-s32 g_indyRgb32BitGrabnum = 1;
-#endif
 
 f32 g_viProjectionMatrixF[4][4];
 Mtx *g_viProjectionMatrix;
@@ -658,16 +650,6 @@ void viSetVideoMode(s32 m)
     g_ViBackData->scalex = 1;
 }
 
-void viSetColorMode16Bit(void)
-{
-    g_viColorOutputMode = COLORMODE_16BIT;
-}
-
-void viSetColorMode32Bit(void)
-{
-    g_viColorOutputMode = COLORMODE_32BIT;
-}
-
 u8 *viGetFrameBuf2(void)
 {
     return g_ViBackData->framebuf;
@@ -841,26 +823,6 @@ Gfx *viSetupScreensForNumPlayers(Gfx *gdl)
     return gdl;
 }
 
-void viSet800232A0(s32 arg0)
-{
-    D_800232A0 = arg0;
-}
-
-s32 viGet800232A0(void)
-{
-    return D_800232A0;
-}
-
-void viSetHorizontalOffset(s32 arg0)
-{
-    g_viHorizontalOffset = arg0;
-}
-
-s32 viGetHorizontalOffset(void)
-{
-    return g_viHorizontalOffset;
-}
-
 void viSetBuf(s16 x, s16 y)
 {
     g_ViBackData->bufx = x;
@@ -999,166 +961,4 @@ Gfx *viSetFillColor(Gfx *gdl, s32 r, s32 g, s32 b)
     }
 
     return gdl;
-}
-
-/**
- * 5358	70004758
- *     image capture routine, jpeg 16bit colour
- */
-void indyGrabJpg16bit(void)
-{
-#ifdef VERSION_US
-    s32 *pgrabnum = &g_indyJpg16BitGrabnum;
-    char buffer[250];
-    s32 filesize;
-
-    while (1)
-    {
-        sprintf(buffer, "grab.%d.jpeg", *pgrabnum);
-        if (indycommHostCheckFileExists((u8*)&buffer, &filesize) == 0)
-        {
-            break;
-        }
-
-        *pgrabnum = *pgrabnum + 1;
-    }
-
-    sprintf(buffer, "grab.%d.temp.uix", *pgrabnum);
-    indycommHostSendDump((u8*)&buffer, (u8*)g_ViBackData->framebuf, (viGetX() * viGetY() * 2));
-
-    sprintf(buffer, "uix2pix grab.%d.temp.uix", *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "fromalias grab.%d.temp.pix grab.%d.temp.rgb", *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "imgcopy -fjfif grab.%d.temp.rgb grab.%d.jpeg", *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "rm grab.%d.temp.uix grab.%d.temp.pix grab.%d.temp.rgb", *pgrabnum, *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "imgview grab.%d.jpeg", *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-#endif
-}
-
-/**
- * 54D4	700048D4
- *     image capture routine, jpeg 32bit colour
- */
-void indyGrabJpg32bit(void)
-{
-    #if defined(VERSION_US)
-    s32 *pgrabnum = &g_indyJpg32BitGrabnum;
-    char buffer[250];
-    s32 filesize;
-
-    while (1)
-    {
-        sprintf(buffer, "grab.%d.jpeg", *pgrabnum);
-        if (indycommHostCheckFileExists((u8*)&buffer, &filesize) == 0)
-        {
-            break;
-        }
-
-        *pgrabnum = *pgrabnum + 1;
-    }
-
-    sprintf(buffer, "grab.%d.temp.Uix", *pgrabnum);
-    indycommHostSendDump((u8*)&buffer, (u8*)&cfb_16, (viGetX() * viGetY() * 4));
-
-    sprintf(buffer, "Uix2pix -xs%d grab.%d.temp.Uix", viGetX(), *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "fromalias grab.%d.temp.pix grab.%d.temp.rgb", *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "imgcopy -fjfif grab.%d.temp.rgb grab.%d.jpeg", *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "rm grab.%d.temp.Uix grab.%d.temp.pix grab.%d.temp.rgb", *pgrabnum, *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "imgview grab.%d.jpeg", *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-    #endif
-}
-
-/**
- * 5660	70004A60
- *     image capture routine, rgb 16bit colour
- */
-void indyGrabRgb16bit(void)
-{
-    #if defined(VERSION_US)
-    s32 *pgrabnum = &g_indyRgb16BitGrabnum;
-    char buffer[250];
-    s32 filesize;
-
-    while (1)
-    {
-        sprintf(buffer, "grab.%d.rgb", *pgrabnum);
-        if (indycommHostCheckFileExists((u8*)&buffer, &filesize) == 0)
-        {
-            break;
-        }
-
-        *pgrabnum = *pgrabnum + 1;
-    }
-
-    sprintf(buffer, "grab.%d.temp.uix", *pgrabnum);
-    indycommHostSendDump((u8*)&buffer, (u8*)g_ViBackData->framebuf, (viGetX() * viGetY() * 2));
-
-    sprintf(buffer, "uix2pix grab.%d.temp.uix", *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "fromalias grab.%d.temp.pix grab.%d.rgb", *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "rm grab.%d.temp.uix grab.%d.temp.pix", *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "imgview grab.%d.rgb", *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-#endif
-}
-
-/**
- * 57B4	70004BB4
- *     image capture routine, rgb 32bit colour
- */
-void indyGrabRgb32bit(void)
-{
-    #if defined(VERSION_US)
-    s32 *pgrabnum = &g_indyRgb32BitGrabnum;
-    char buffer[250];
-    s32 filesize;
-
-    while (1)
-    {
-        sprintf(buffer, "grab.%d.rgb", *pgrabnum);
-        if (indycommHostCheckFileExists((u8*)&buffer, &filesize) == 0)
-        {
-            break;
-        }
-
-        *pgrabnum = *pgrabnum + 1;
-    }
-
-    sprintf(buffer, "grab.%d.temp.Uix", *pgrabnum);
-    indycommHostSendDump((u8*)&buffer, (u8*)&cfb_16, (viGetX() * viGetY() * 4));
-
-    sprintf(buffer, "Uix2pix -xs%d grab.%d.temp.Uix", viGetX(), *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "fromalias grab.%d.temp.pix grab.%d.rgb", *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "rm grab.%d.temp.Uix grab.%d.temp.pix", *pgrabnum, *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-
-    sprintf(buffer, "imgview grab.%d.rgb", *pgrabnum);
-    indycommHostSendCmd((u8*)&buffer);
-    #endif
 }

@@ -2673,7 +2673,6 @@ D:80036AA4                     firing_anim_struct <crouched_doubles_firing_anima
 //D:80036AB8
 extern s32 D_80036AB8;
 //D:80036ABC
-extern s32 D_80036ABC;
 //D:80036AC0
 extern f32 D_80036AC0;
 //D:80036AC4
@@ -2722,9 +2721,9 @@ f32 camGetScreenLeft(void);
 f32 camGetScreenTop(void);
 f32 camGetPerspFovY(void);
 f32 camGetPerspAspect(void);
-
 void currentPlayerSetXAutoAimEnabled(bool enabled);
 bool currentPlayerGetXAutoAimEnabled(void);
+
 bool currentPlayerGetXAutoAimEnabledRedirect(void);
 void currentPlayerSetYAutoAimEnabled(s32 enabled);
 bool currentPlayerGetYAutoAimEnabled(void);
@@ -2758,9 +2757,7 @@ void hudmsgSetFonts(s32 arg0, s32 arg1);
 
 Gfx * camSetupFrame(Gfx *arg0);
 s32 playerPressedActivate(void);
-Gfx* stanDebugRenderTiles(Gfx *arg0);
 Gfx * hudRender(Gfx *arg0);
-Gfx * bondviewRemoved7F08BCB8(Gfx *arg0);
 bool camIsPosInScreen(coord3d *vec_scale, f32 norm_scale);
 bool camIsPosInScreenBox(coord3d *, f32, struct bbox2d *);
 s32 lvGetMissionTime60(void);

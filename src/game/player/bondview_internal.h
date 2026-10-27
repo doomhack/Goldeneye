@@ -49,18 +49,10 @@ extern s32 dword_CODE_bss_jp80079CEC[5];
 extern PadRecord *g_Startpad[16];
 extern s32 startpadcount;
 extern s32 dword_CODE_bss_80079C6C;
-#if defined(VERSION_US)
-extern char stringbuffer_top[2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
-#endif
 extern StandTilePoint *dword_CODE_bss_80079DA0;
 extern StandTilePoint *dword_CODE_bss_80079DA4;
 extern s32 dword_CODE_bss_80079DA8[BSS_80079DA8_LENGTH];
-#ifndef VERSION_EU
-extern char g_HudmsgTopText[0x3c];
-#else
 extern char g_HudmsgTopText[2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
-extern char dword_CODE_bss_80079EF6[0x3c];
-#endif
 extern f32 g_MpSwirlRotateSpeed;
 extern f32 g_MpSwirlAngleDegrees;
 extern f32 g_MpSwirlForwardSpeed;
@@ -142,7 +134,6 @@ extern DirectionLabels g_DebugCompassLabels;
 extern s32 g_PlayerTickCount;
 extern struct firing_anim_struct firing_animation_groups[][6];
 extern s32 D_80036AB8;
-extern s32 D_80036ABC;
 extern f32 D_80036AC0;
 extern f32 D_80036AC4;
 void playerUpdateRooms(struct player *player);

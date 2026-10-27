@@ -225,8 +225,6 @@ void viSetViewSize(s16 x, s16 y);
 void viSetViewPosition(s16 left, s16 top);
 void viInitBuffers(void);
 void viVsyncRelated(void);
-void viSetHorizontalOffset(s32 arg0);
-s32 viGetHorizontalOffset(void);
 void video_related_8(void);
 void viSetBuf(s16 x, s16 y);
 void viSetXY(s16 x, s16 y);
@@ -236,14 +234,8 @@ Gfx *viSetFillColor(Gfx *gdl, s32 r, s32 g, s32 b);
 Gfx *viFillScreen(Gfx *gdl);
 Gfx *viSetupScreensForNumPlayers(Gfx *gdl);
 
-void indyGrabJpg16bit(void);
-void indyGrabJpg32bit(void);
-void indyGrabRgb16bit(void);
-void indyGrabRgb32bit(void);
 
 void viSetVideoMode(s32 m);
-s32 viGet800232A0(void);
-void viSet800232A0(s32 arg0);
 
 Gfx *viClearZBufCurrentPlayer(Gfx *gdl);
 Gfx *viSetupCurrentPlayerView(Gfx *gdl);

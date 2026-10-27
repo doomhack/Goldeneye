@@ -380,75 +380,6 @@ void watchMenuReset(int stage)
 }
 
 
-void watchMenuDebugNudge(void)
-{
-    if (10 < joyGetStickX(WATCH_PAD))
-    {
-        D_80040B50 = D_80040B50 + 1;
-    }
-    if (joyGetStickX(WATCH_PAD) < -10)
-    {
-        D_80040B50 = D_80040B50 + -1;
-    }
-    if (10 < joyGetStickY(WATCH_PAD))
-    {
-        D_80040B54 = D_80040B54 + -1;
-    }
-    if (joyGetStickY(WATCH_PAD) < -10)
-    {
-        D_80040B54 = D_80040B54 + 1;
-    }
-}
-
-
-Gfx * watchMenuDebugNudgeGfx(Gfx *DL)
-{
-    if (10 < joyGetStickX(WATCH_PAD))
-    {
-        D_80040B48 += 1;
-    }
-
-    if (joyGetStickX(WATCH_PAD) < -10)
-    {
-        D_80040B48 -= 1;
-    }
-
-    if (10 < joyGetStickY(WATCH_PAD))
-    {
-        D_80040B4C -= 1;
-    }
-
-    if (joyGetStickY(WATCH_PAD) < -10)
-    {
-        D_80040B4C += 1;
-    }
-
-    gDPSetRenderMode(DL++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
-    gDPSetCombineMode(DL++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
-    gDPSetPrimColor(DL++, 0, 0, 0xFF, 0x00, 0x00, 0xFF);
-    gDPFillRectangle(DL++, VI_SX(D_80040B48), D_80040B4C, VI_SX(D_80040B48+1), D_80040B4C+1);
-
-    {
-        u8 buffer [0x12];
-        struct font * pFontFile;
-        struct fontchar * pFontChars;
-        s32 y;
-        s32 x;
-
-        pFontFile = g_FontBankGothic;
-        pFontChars = g_FontBankGothicChars;
-        sprintf(buffer,"%d, %d\n",D_80040B48,D_80040B4C);
-
-        DL = textSetupDraw(DL++);
-
-        textMeasure(&x, &y, buffer, pFontChars, pFontFile, 0);
-        DL = textRender(DL, &D_80040B48, &D_80040B4C, buffer, pFontChars, pFontFile, 0xff0000ff, y, x, 0, 0);
-        // HACK: what is this: ((s32*)pFontChars)[0x224]
-        D_80040B4C = (D_80040B4C - ((s32*)pFontChars)[0x224]) + 1;
-    }
-
-    return DL;
-}
 
 
 u32 optionsIsDualControlStyle(void)
@@ -803,16 +734,13 @@ void watchMenuStatusTick(void)
         goto_watch_screen_index_4 = FALSE;
         goto_watch_screen_index_1 = FALSE;
 
-        if (get_debug_gunwatchpos_flag() == 0)
+        if (joyGetButtonsPressedThisFrame(WATCH_PAD, L_TRIG|L_CBUTTONS))
         {
-            if (joyGetButtonsPressedThisFrame(WATCH_PAD, L_TRIG|L_CBUTTONS))
-            {
-                goto_watch_screen_index_4 = TRUE;
-            }
-            if (joyGetButtonsPressedThisFrame(WATCH_PAD, R_TRIG|R_CBUTTONS))
-            {
-                goto_watch_screen_index_1 = TRUE;
-            }
+            goto_watch_screen_index_4 = TRUE;
+        }
+        if (joyGetButtonsPressedThisFrame(WATCH_PAD, R_TRIG|R_CBUTTONS))
+        {
+            goto_watch_screen_index_1 = TRUE;
         }
 
 
@@ -863,16 +791,13 @@ void watchMenuInventoryTick(void)
         goto_watch_screen_index_0 = FALSE;
         goto_watch_screen_index_2 = FALSE;
 
-        if (get_debug_gunwatchpos_flag() == FALSE)
+        if (joyGetButtonsPressedThisFrame(WATCH_PAD, L_TRIG|L_CBUTTONS))
         {
-            if (joyGetButtonsPressedThisFrame(WATCH_PAD, L_TRIG|L_CBUTTONS))
-            {
-                goto_watch_screen_index_0 = TRUE;
-            }
-            if (joyGetButtonsPressedThisFrame(WATCH_PAD, R_TRIG|R_CBUTTONS))
-            {
-                goto_watch_screen_index_2 = TRUE;
-            }
+            goto_watch_screen_index_0 = TRUE;
+        }
+        if (joyGetButtonsPressedThisFrame(WATCH_PAD, R_TRIG|R_CBUTTONS))
+        {
+            goto_watch_screen_index_2 = TRUE;
         }
 
         if ((joyGetButtonsPressedThisFrame(WATCH_PAD, L_JPAD)) || (watchMenuStickPushedLeft()))
@@ -1165,49 +1090,46 @@ void watchMenuInventoryListTick(void)
 
     count = invCountItems();
 
-    if (!get_debug_gunwatchpos_flag())
-    {
-        if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_JPAD | U_CBUTTONS) || joyGetStickY(WATCH_PAD) >= 0x47)
-        {
-            if (((s32) g_WatchMenuInvCursor > 0) && !g_WatchMenuSelected)
+            if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_JPAD | U_CBUTTONS) || joyGetStickY(WATCH_PAD) >= 0x47)
             {
-                g_WatchMenuInvCursor -= 1.0f;
+                if (((s32) g_WatchMenuInvCursor > 0) && !g_WatchMenuSelected)
+                {
+                    g_WatchMenuInvCursor -= 1.0f;
+                }
             }
-        }
-        else
-        {
-            if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_JPAD | D_CBUTTONS) || joyGetStickY(WATCH_PAD) < -0x46)
+            else
             {
-                goto down_body;
+                if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_JPAD | D_CBUTTONS) || joyGetStickY(WATCH_PAD) < -0x46)
+                {
+                    goto down_body;
+                }
+
+                goto after_updown;
+
+    down_body:
+                if (((s32) g_WatchMenuInvCursor < count - 1) && !g_WatchMenuSelected)
+                {
+                    g_WatchMenuInvCursor += 1.0f;
+                }
+
+    after_updown:
+                ;
             }
 
-            goto after_updown;
-
-down_body:
-            if (((s32) g_WatchMenuInvCursor < count - 1) && !g_WatchMenuSelected)
+            if (joyGetButtons(WATCH_PAD, U_JPAD | U_CBUTTONS))
             {
-                g_WatchMenuInvCursor += 1.0f;
+                if (((s32) g_WatchMenuInvCursor > 0) && !g_WatchMenuSelected)
+                {
+                    g_WatchMenuInvCursor -= 0.1f;
+                }
             }
-
-after_updown:
-            ;
-        }
-
-        if (joyGetButtons(WATCH_PAD, U_JPAD | U_CBUTTONS))
-        {
-            if (((s32) g_WatchMenuInvCursor > 0) && !g_WatchMenuSelected)
+            else if (joyGetButtons(WATCH_PAD, D_JPAD | D_CBUTTONS))
             {
-                g_WatchMenuInvCursor -= 0.1f;
+                if (((s32) g_WatchMenuInvCursor < count - 1) && !g_WatchMenuSelected)
+                {
+                    g_WatchMenuInvCursor += 0.1f;
+                }
             }
-        }
-        else if (joyGetButtons(WATCH_PAD, D_JPAD | D_CBUTTONS))
-        {
-            if (((s32) g_WatchMenuInvCursor < count - 1) && !g_WatchMenuSelected)
-            {
-                g_WatchMenuInvCursor += 0.1f;
-            }
-        }
-    }
 
     if (joyGetStickY(WATCH_PAD) >= 0x1f
         && joyGetStickY(WATCH_PAD) < 0x46
@@ -1297,36 +1219,33 @@ after_updown:
 
 void watchMenuScrollList(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s32 *arg5, s32 arg6, s32 arg7, s32 arg8)
 {
-    if (!get_debug_gunwatchpos_flag())
+    if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_JPAD | U_CBUTTONS) || joyGetStickY(WATCH_PAD) >= 0x47)
     {
-        if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_JPAD | U_CBUTTONS) || joyGetStickY(WATCH_PAD) >= 0x47)
+        if ((s32)*arg0 > 0 && arg7)
         {
-            if ((s32)*arg0 > 0 && arg7)
-            {
-                *arg0 -= 1.0f;
-            }
+            *arg0 -= 1.0f;
         }
-        else if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_JPAD | D_CBUTTONS) || joyGetStickY(WATCH_PAD) < -0x46)
+    }
+    else if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_JPAD | D_CBUTTONS) || joyGetStickY(WATCH_PAD) < -0x46)
+    {
+        if ((s32)*arg0 < arg2 - 1 && arg7)
         {
-            if ((s32)*arg0 < arg2 - 1 && arg7)
-            {
-                *arg0 += 1.0f;
-            }
+            *arg0 += 1.0f;
         }
+    }
 
-        if (joyGetButtons(WATCH_PAD, U_JPAD | U_CBUTTONS))
+    if (joyGetButtons(WATCH_PAD, U_JPAD | U_CBUTTONS))
+    {
+        if ((s32)*arg0 > 0 && arg7)
         {
-            if ((s32)*arg0 > 0 && arg7)
-            {
-                *arg0 -= 0.1f;
-            }
+            *arg0 -= 0.1f;
         }
-        else if (joyGetButtons(WATCH_PAD, D_JPAD | D_CBUTTONS))
+    }
+    else if (joyGetButtons(WATCH_PAD, D_JPAD | D_CBUTTONS))
+    {
+        if ((s32)*arg0 < arg2 - 1 && arg7)
         {
-            if ((s32)*arg0 < arg2 - 1 && arg7)
-            {
-                *arg0 += 0.1f;
-            }
+            *arg0 += 0.1f;
         }
     }
 
@@ -2204,33 +2123,6 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     text = invGetWatchTitle1ForIndex(temp_v0);
     text2 = invGetWatchTitle2ForIndex(temp_v0);
 
-    if (get_debug_gunwatchpos_flag() != 0) {
-        gitem = &gitem_structs[gunGetWeapon(0)];
-
-        if (joyGetButtons(0, 2) != 0) {
-           gitem->watch_pos_y -= 2.0f;
-        }
-
-        if (joyGetButtons(0, 1) != 0) {
-            gitem->watch_pos_y += 2.0f;
-        }
-
-        if (joyGetButtons(0, 4) != 0) {
-           gitem->watch_pos_x += 2.0f;
-        }
-
-        if (joyGetButtons(0, 8) != 0) {
-            gitem->watch_pos_x -= 2.0f;
-        }
-
-        if (joyGetButtons(0, 0x20) != 0) {
-            gitem->watch_pos_z *= 0.98000002f;
-        }
-
-        if (joyGetButtons(0, 0x10) != 0) {
-             gitem->watch_pos_z *= 1.0204082f;
-        }
-    }
 
 
 #if defined(VERSION_US)
@@ -2377,41 +2269,6 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
         sp880 = invGetWatchRotXForIndex(g_WatchMenuItem);
         sp87C = invGetWatchRotYForIndex(g_WatchMenuItem);
 
-        if (get_debug_gunwatchpos_flag() != 0)
-        {
-            gitem = &gitem_structs[gunGetWeapon(0)];
-
-            if (joyGetButtons(0, L_CBUTTONS) != 0)
-            {
-                gitem->equip_watch_x -= 2.0f;
-            }
-
-            if (joyGetButtons(0, R_CBUTTONS) != 0)
-            {
-                gitem->equip_watch_x += 2.0f;
-            }
-
-            if (joyGetButtons(0, D_CBUTTONS) != 0)
-            {
-                gitem->equip_watch_y += 2.0f;
-            }
-
-            if (joyGetButtons(0, U_CBUTTONS) != 0)
-            {
-                gitem->equip_watch_y -= 2.0f;
-            }
-
-            if (joyGetButtons(0, L_TRIG) != 0)
-            {
-                gitem->equip_watch_z *= 0.98000002f;
-            }
-
-            if (joyGetButtons(0, R_TRIG) != 0)
-            {
-                gitem->equip_watch_z *= 1.0204082f;
-            }
-
-        }
 
         guPerspective(sp924, &perspNorm, sp894, WATCH_PERSPECTIVE_ASPECT, 10.0f, 10000.0f, 1.0f);
 

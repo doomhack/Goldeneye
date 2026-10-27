@@ -25,7 +25,6 @@
 #include "game/chr/body.h"
 #include "game/chr/chraction.h"
 #include "game/chr/chrai.h"
-#include "game/debug/debugmenu_handler.h"
 #include "game/prop/explosion.h"
 #include "game/save/file.h"
 #include "game/level/frametiming.h"
@@ -548,8 +547,6 @@ struct firing_anim_struct firing_animation_groups[][6] = {
 
 //D:80036AB8
 s32 D_80036AB8 = 2;
-//D:80036ABC
-s32 D_80036ABC = 0xFFFFFFFF;
 //D:80036AC0
 f32 D_80036AC0 = 1.0;
 //D:80036AC4

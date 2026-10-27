@@ -208,7 +208,6 @@ void modelRenderNodeOp11(s32 param_1,struct Model *param_2,struct ModelNode *par
 void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode *node);
 void modelSetShadowAlpha(s32 arg0);
 void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode *node);
-void modelRenderNodeBbox(s32 param_1,struct Model *param_2,struct ModelNode *param_3);
 void modelRenderNodeOp17(Gfx *param_1,struct Model *param_2, struct ModelNode *param_3);
 void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node);
 void modelRender(ModelRenderData *arg0, struct Model *);
@@ -225,10 +224,6 @@ void modelAttachPart(Model *pmodel, ModelFileHeader *pmodeldef, ModelNode *pnode
 void modelIterateDisplayLists(ModelFileHeader *fileheader, ModelNode **nodeptr, Gfx **gdlptr);
 void modelNodeReplaceGdl(u32 arg0, ModelNode *node, Gfx *find, Gfx *replacement);
 bool modelTestRayIntersectsTransformedBBox(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord3d *pos, coord3d *dir);
-
-#ifndef VERSION_EU
-void modelDebugBreak(void);
-#endif
 
 #endif
 

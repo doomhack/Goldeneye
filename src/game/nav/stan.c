@@ -15,7 +15,6 @@
 
 #include <ultra64.h>
 //#include <bondtypes.h>
-#include <deb.h>
 #include "game/nav/stan.h"
 #include "game/world/bg.h"
 #include "game/chr/chrai.h"
@@ -75,7 +74,6 @@ u8 g_StanTileSpecialFlags[] = {
     0x00, 0x00, 0x00, 0x00
 };
 
-s32 g_StanDebug = 0;
 
 //D:80040F44
 f32 g_StanScale = 1.0;
@@ -121,23 +119,11 @@ s32 D_80040FB8[] = {
 #endif
 //D:800413BC
 s32 g_StanSavedCollHasLine =  0;
-//D:800413C0
-f32 g_StanDebugThrottleAcc =  0.0;
-//D:800413C4
-f32 g_StanDebugThrottleRate =  0.0;
-//D:800413C8
-s32 g_StanDebugThrottleFrame =  1;
-//D:800413CC
-s32 g_StanDebugFrame =  1;
-//D:800413D0
-s32 g_StanDebugThrottleOff[] =  {0, 0, 0, 0, 0, 0, 0, 0};
 
 
 // rodata
 //D:800585A0
 const char aCDCC[] = "%c%d%c%c";
-//D:800585AC
-const char aStan_c_debug[] = "stan_c_debug";
 //D:800585BC
 const char aStanlinelog[] = "-stanlinelog";
 
@@ -213,11 +199,6 @@ u32 stanCheckTilePtr(s32 arg0)
     return 0;
 }
 
-
-void stanInit(void) 
-{
-    debTryAdd(&g_StanDebug, &aStan_c_debug); //"stan_c_debug");
-}
 
 
 /**
@@ -481,12 +462,6 @@ void stanLoadFile(struct StanPrefixRecord *file)
     stanSetLevelScale(1.0f);
 }
 
-
-//stanRegion()
-void stanDebugStepRegion(s32 arg0)
-{
-    return;
-}
 
 
 /**
@@ -2785,17 +2760,6 @@ f32 stanGetTileHeaderCMinY(StandTile *tile) {
 }
 
 
-void stanDebugView(s8 joyX, s8 joyY, u16 joyBtns) {
-    return;
-}
-
-
-/**
- * Address: 7F0B2D48
- */
-Gfx * stanRenderDebugStanView(Gfx *arg0) {
-    return arg0;
-}
 
 
  /**
@@ -3033,38 +2997,6 @@ Gfx * stanDebugDrawTile(Gfx *ptrdl, StandTilePoint *tile_point, u32 RGBAColor) {
 }
 
 Gfx * stanDebugBeginDraw(Gfx *arg0) {
-    return arg0;
-}
-
-Gfx * stanDebugDrawProblems(Gfx * arg0) {
-    return arg0;
-}
-
-s32 stanDebugThrottle(void) {
-    s32 sp1C;
-    f32 temp_f0;
-
-    sp1C = 0;
-    if (((dynGetFreeGfx() < 0x1000) || (dynGetFreeVtx() < 0x1000)) && (*g_StanDebugThrottleOff == 0)) {
-        g_StanDebugThrottleAcc = 0.0f;
-        g_StanDebugThrottleRate = 0.0f;
-        g_StanDebugThrottleFrame = g_StanDebugFrame;
-        *g_StanDebugThrottleOff = 1;
-    }
-    if (*g_StanDebugThrottleOff == 0) {
-        g_StanDebugThrottleAcc += g_StanDebugThrottleRate;
-        temp_f0 = g_StanDebugThrottleAcc;
-        if (temp_f0 > 1.0f) {
-            sp1C = 1;
-            g_StanDebugThrottleAcc = temp_f0 - 1.0f;
-        }
-    }
-    g_StanDebugFrame += 1;
-    return sp1C;
-}
-
-Gfx * stanDebugDrawRegion(Gfx *arg0, s32 arg1)
-{
     return arg0;
 }
 

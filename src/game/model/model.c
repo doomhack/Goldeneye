@@ -447,15 +447,6 @@ void modelSetVtxAllocator(s32 param_1) {
 }
 
 
-#if defined(VERSION_US)
-// called after a debug print during failed model operation possible "exit()" function in debug
-void modelDebugBreak(void)
-{
-    // dump something 8 bytes long?
-
-    return;
-}
-#endif
 
 
 /**
@@ -554,18 +545,6 @@ Mtxf *modelFindNodeMtx(struct Model *model, struct ModelNode *node, s32 arg2) {
 // PD: model0001a60c
 Mtxf *modelGetRootMtx(Model *objinst)
 {
-    #if defined(VERSION_US)
-    if (!objinst)
-    {
-        osSyncPrintf("getsubmatrix: no objinst!\n");
-        modelDebugBreak();
-    }
-    if (!objinst->obj)
-    {
-        osSyncPrintf("getsubmatrix: objinst has no object!\n");
-        modelDebugBreak();
-    }
-    #endif
     return modelFindNodeMtx(objinst, objinst->obj->RootNode, 0);
 }
 
@@ -676,18 +655,6 @@ union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
 
 void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#MATCH - however OPCODE 3 needs defining
 {
-    #if defined(VERSION_US)
-    if (!objinst)
-    {
-        osSyncPrintf("getpartoffset: no objinst!");
-        modelDebugBreak();
-    }
-    if (!part)
-    {
-        osSyncPrintf("getpartoffset: no partdesc!");
-        modelDebugBreak();
-    }
-    #endif
     switch (part->Opcode & 0xFF)
     {
         case MODELNODE_OPCODE_HEADER:
@@ -735,21 +702,6 @@ void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#M
 
 void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
 {
-#if defined(VERSION_US)
-    if (!model) {
-        osSyncPrintf("setpartoffset: no objinst!");
-        modelDebugBreak();
-    }
-
-    if (!node) {
-        osSyncPrintf("setpartoffset: no partdesc!");
-        modelDebugBreak();
-    }
-    else
-    {
-        // huh?
-    }
-#endif
     switch (node->Opcode & 0xff)
     {
         case MODELNODE_OPCODE_HEADER:
@@ -800,19 +752,6 @@ void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
 
 void modelGetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 {
-    #if defined(VERSION_US )
-    if (!objinst)
-    {
-        osSyncPrintf("getsuboffset: no objinst!");
-        modelDebugBreak();
-    }
-
-    if (!objinst->obj)
-    {
-        osSyncPrintf("getsuboffset: objinst has no object!");
-        modelDebugBreak();
-    }
-    #endif
     modelGetNodePosition(objinst, objinst->obj->RootNode, offset);
 }
 
@@ -821,18 +760,6 @@ void modelGetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 
 void modelSetRootPosition(Model *objinst, coord3d *offset) //#MATCH
 {
-    #if defined(VERSION_US )
-    if (!objinst)
-    {
-        osSyncPrintf("setsuboffset: no objinst!");
-        modelDebugBreak();
-    }
-    if (!objinst->obj)
-    {
-        osSyncPrintf("setsuboffset: objinst has no object!");
-        modelDebugBreak();
-    }
-    #endif
     modelSetNodePosition(objinst, objinst->obj->RootNode, offset);
 }
 
@@ -847,45 +774,6 @@ f32 modelGetRootRotY(Model *objinst)
 {
     ModelNode *root;
 
-    #if defined(VERSION_US)
-    if(0)
-    {
-        // removed
-    }
-
-    if (objinst == NULL)
-    {
-        osSyncPrintf("getsubroty: no objinst!");
-        modelDebugBreak();
-    }
-
-    if(0)
-    {
-        // removed
-    }
-
-    if (objinst->obj == NULL)
-    {
-        osSyncPrintf("getsubroty: objinst has no object!");
-        modelDebugBreak();
-    }
-
-    if(0)
-    {
-        // removed
-    }
-
-    if (objinst->obj->RootNode == NULL)
-    {
-        osSyncPrintf("getsubroty: objinst has no root part!");
-        modelDebugBreak();
-    }
-
-    if(0)
-    {
-        // removed
-    }
-    #endif
 
     root = objinst->obj->RootNode;
     if ((root->Opcode & 0xFF) == MODELNODE_OPCODE_HEADER)
@@ -900,25 +788,6 @@ f32 modelGetRootRotY(Model *objinst)
 void modelSetRootRotY(Model *model, f32 angle)
 {
     ModelNode* node;
-#if defined(VERSION_US)
-    if (!model)
-    {
-        osSyncPrintf("setsubroty: no objinst!");
-        modelDebugBreak();
-    }
-
-    if (!model->obj) //< needs to be v1 not a1
-    {
-        osSyncPrintf("setsubroty: objinst has no object!");
-        modelDebugBreak();
-    }
-
-    if (!model->obj->RootNode)
-    {
-        osSyncPrintf("setsubroty: objinst has no root part!");
-        modelDebugBreak();
-    }
-#endif
     node = model->obj->RootNode;
     if ((node->Opcode & 0xff) == MODELNODE_OPCODE_HEADER)
     {
@@ -966,13 +835,6 @@ f32 modelGetNodeRadius(Model *model, ModelNode *node)
     ModelNode *temp_a1;
     s32        temp_t7;
 
-#if defined(VERSION_US)
-    if (!model)
-    {
-        osSyncPrintf("getjointsize: no objinst!\n");
-        modelDebugBreak();
-    }
-#endif
 
     if (node)
     {
@@ -1046,19 +908,6 @@ f32 modelGetNodeRadius(Model *model, ModelNode *node)
 */
 f32 modelGetRadius(Model *arg0)
 {
-    #if defined(VERSION_US)
-    if (arg0 == NULL)
-    {
-        osSyncPrintf("getinstsize: no objinst!\n");
-        modelDebugBreak();
-    }
-
-    if (arg0->obj == NULL)
-    {
-        osSyncPrintf("getinstsize: no objdesc!\n");
-        modelDebugBreak();
-    }
-    #endif
 
     return arg0->obj->BoundingVolumeRadius * arg0->scale;
 }
@@ -1331,19 +1180,6 @@ void modelCalcPosition(Model *arg0)
 {
     struct ModelNode *root;
 
-#if defined(VERSION_US)
-    if (arg0 == NULL)
-    {
-        osSyncPrintf("subcalcpos: no objanim!\n");
-        modelDebugBreak();
-    }
-
-    if (arg0->obj == 0)
-    {
-        osSyncPrintf("subcalcpos: no objdesc!\n");
-        modelDebugBreak();
-    }
-#endif
 
     root = arg0->obj->RootNode;
     if ((root != NULL) && ((root->Opcode & 0xFF) == 1))
@@ -2454,25 +2290,6 @@ void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
 
 void modelCalcMatricesNoAnim(ModelRenderData* arg0, Model* arg1)
 {
-#if defined(VERSION_US)
-    if (arg1 == NULL)
-    {
-        osSyncPrintf("instcalcmatrices: no objinst!\n");
-        modelDebugBreak();
-    }
-
-    if (arg0->basemtx == NULL)
-    {
-        osSyncPrintf("instcalcmatrices: no basemtx!\n");
-        modelDebugBreak();
-    }
-
-    if (arg0->mtxlist == NULL)
-    {
-        osSyncPrintf("instcalcmatrices: no mtxlist!\n");
-        modelDebugBreak();
-    }
-#endif
     arg1->render_pos = (RenderPosView* ) arg0->mtxlist;
     arg0->mtxlist += arg1->obj->numMatrices;
     modelUpdateMatrices((ModelRenderData* ) arg0, arg1);
@@ -2485,87 +2302,9 @@ void modelCalcMatricesNoAnim(ModelRenderData* arg0, Model* arg1)
 */
 void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
 {
-#if defined(VERSION_US)
-    if (arg1 == NULL)
-    {
-        osSyncPrintf("subcalcmatrices: no objanim!\n");
-        modelDebugBreak();
-    }
-
-    if (arg0->basemtx == NULL)
-    {
-        osSyncPrintf("subcalcmatrices: no basemtx!\n");
-        modelDebugBreak();
-    }
-
-    if (arg0->mtxlist == NULL)
-    {
-        osSyncPrintf("subcalcmatrices: no mtxlist!\n");
-        modelDebugBreak();
-    }
-#endif
 
     if (arg1->anim != NULL)
     {
-#if defined(VERSION_US)
-        if ((arg1->attachedto != NULL) && (arg1->attachedto_objinst == NULL))
-        {
-            osSyncPrintf("subcalcmatrices: no attach for objinst!\n");
-            modelDebugBreak();
-        }
-
-        if (((s32) arg1->framea < 0) || ((s32) arg1->framea >= (s32) arg1->anim->numFrames))
-        {
-            osSyncPrintf("subcalcmatrices: framea out of range!\n");
-            modelDebugBreak();
-        }
-
-        if (((s32) arg1->frameb < 0) || ((s32) arg1->frameb >= (s32) arg1->anim->numFrames))
-        {
-            osSyncPrintf("subcalcmatrices: frameb out of range!\n");
-            modelDebugBreak();
-        }
-
-        if ((arg1->mergeWeight == 0) || ((arg1->mergeWeight != 0) && (arg1->anim2 != NULL)))
-        {
-            //
-        }
-        else
-        {
-            osSyncPrintf("subcalcmatrices: no anim2!\n");
-            modelDebugBreak();
-        }
-
-        if (
-            (arg1->anim2 != NULL)
-            && (
-                (arg1->anim2 == NULL)
-                || (arg1->frame2a < 0)
-                || ((s32) arg1->frame2a >= (s32) arg1->anim2->numFrames)
-                )
-            )
-        {
-            osSyncPrintf("subcalcmatrices: frame2a out of range!\n");
-            modelDebugBreak();
-        }
-
-        if (
-            (arg1->anim2 == NULL)
-            || (
-                (arg1->anim2 != NULL)
-                 && (arg1->frame2b >= 0)
-                 && ((s32) arg1->frame2b < (s32) arg1->anim2->numFrames)
-                )
-            )
-        {
-            //
-        }
-        else
-        {
-            osSyncPrintf("subcalcmatrices: frame2b out of range!\n");
-            modelDebugBreak();
-        }
-#endif
 
         arg1->frameaData = animLoadFrame(arg1->anim, arg1->framea, arg1->obj->Skeleton);
 
@@ -4567,16 +4306,6 @@ void modelRenderNodeRotTex(ModelRenderData *renderdata, ModelNode *node)
 
             src = (Vertex *) rodata->Vertices;
 
-#ifndef VERSION_EU
-            if (g_ModelVtxAllocator != NULL)
-            {
-            }
-            else
-            {
-                osSyncPrintf("dorottex: no vtx allocator!\n");
-                modelDebugBreak();
-            }
-#endif
             dst = g_ModelVtxAllocator(rodata->numVertices * 4);
 
             gSPSegment(renderdata->gdl++, SPSEGMENT_MODEL_VTX, osVirtualToPhysical(dst));
@@ -4762,13 +4491,6 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
                 case MODELNODE_CHILD_VTX:
                     {
                         struct ModelRoData_Child_Vtx* child_vtx = ((struct ModelRoData_Child_Vtx*)entry_04);
-#if defined(VERSION_US)
-                        if (g_ModelVtxAllocator == NULL)
-                        {
-                            osSyncPrintf("dotube: no vtx allocator!\n");
-                            modelDebugBreak();
-                        }
-#endif
                         vtx1 = g_ModelVtxAllocator(2);
                         vtx2 = &vtx1[1];
 
@@ -4826,9 +4548,6 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
                                     vtx_10_2 = vtx_10 + 1;
                                     if (swap_order != 0)
                                     {
-#if defined(VERSION_US)
-                                        if (vtx_10->coord.AsArray);
-#endif
                                         vtx1->coord.AsArray[0] = vtx_10_2->coord.AsArray[0];
                                         vtx1->coord.AsArray[1] = vtx_10_2->coord.AsArray[1];
                                         vtx1->coord.AsArray[2] = vtx_10_2->coord.AsArray[2];
@@ -5010,12 +4729,6 @@ void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode
         sp90.f[1] = rodata->Offset.f[1];
         sp90.f[2] = rodata->Offset.f[2];
 
-#if defined (VERSION_US)
-        if (g_ModelVtxAllocator == NULL) {
-            osSyncPrintf("dogfnegx: no vtx allocator!\n");
-            modelDebugBreak();
-        }
-#endif
 
         vertices = g_ModelVtxAllocator(4);
 
@@ -5085,10 +4798,6 @@ void modelSetShadowAlpha(s32 arg0)
 }
 
 
-#ifdef VERSION_US
-//D:80054A94
-const char aDoshadowNoVtxAllocator[] = "doshadow: no vtx allocator!\n";
-#endif
 
 void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
@@ -5158,14 +4867,6 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
         sizey *= (300.0f - height) / 200.0f;
     }
 
-#ifdef VERSION_US
-    if (g_ModelVtxAllocator == NULL)
-    {
-        if (1);
-        osSyncPrintf(aDoshadowNoVtxAllocator);
-        modelDebugBreak();
-    }
-#endif
 
     vtx = (Vtx *) g_ModelVtxAllocator(4);
 
@@ -5224,11 +4925,6 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
 }
 
 
-void modelRenderNodeBbox(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
-{
-    return;
-}
-
 
 void modelRenderNodeOp17(Gfx *param_1,struct Model *param_2, struct ModelNode *param_3)
 {
@@ -5261,7 +4957,6 @@ void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
         modelRenderNodeShadow(data, model, node);
         return;
     case MODELNODE_OPCODE_BBOX:
-        modelRenderNodeBbox(data, model, node);
         return;
     case MODELNODE_OPCODE_OP17:
         modelRenderNodeOp17(data, model, node);
@@ -5302,23 +4997,6 @@ void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
 void modelRender(ModelRenderData *mrData, Model *mdl)
 {
     ModelNode *root = mdl->obj->RootNode;
-    #if defined(VERSION_US)
-
-    if (mrData->gdl == NULL)
-    {
-        osSyncPrintf("subdraw: no gfxlist!\n");
-        modelDebugBreak();
-    }
-
-    if (mdl->obj->isLoaded)
-    {
-    }
-    else
-    {
-        osSyncPrintf("subdraw: object not initialised! (0x%X)\n", (u32)mdl->obj);
-        modelDebugBreak();
-    }
-    #endif
     gSPSegment(mrData->gdl++, 3, osVirtualToPhysical(mdl->render_pos));
 
     while (root != NULL)
@@ -6242,9 +5920,6 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
 
 void modelCalculateRwDataLen(struct ModelFileHeader *objheader)
 {
-  #if defined(VERSION_US)
-    objheader->isLoaded = 1;
-  #endif
     objheader->numRecords = modelCalculateRwDataIndexes(objheader->RootNode);
 }
 

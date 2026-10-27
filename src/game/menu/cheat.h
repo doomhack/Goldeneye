@@ -98,6 +98,11 @@ typedef struct  {
 
 extern u8 g_CheatPlayerMask[0x4C];
 
+/* Cheats that are a plain switch read elsewhere. */
+extern bool g_CheatLineMode;   /* draw the screen's coverage values: edges as lines */
+extern bool g_CheatTurboMode;  /* Bond runs fast */
+extern bool g_CheatShowPos;    /* print Bond's room, position and heading */
+
 //public Functions
 bool cheatIsEnemyRockets(CHEAT_ID cheatindex);
 void cheatActivate(CHEAT_ID cheatindex);

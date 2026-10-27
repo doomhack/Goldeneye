@@ -1,13 +1,11 @@
       build/OUTCODE/src/game/model/initactorpropstuff.o (.data);
       build/OUTCODE/src/game/model/anim.o (.data);
-      build/OUTCODE/src/game/debug/deb_loadallmodels.o (.data);
       build/OUTCODE/src/game/prop/setup.o (.data);
       build/OUTCODE/src/game/mission/objective.o (.data);
       build/OUTCODE/src/game/player/bondview_r.o (.data);
       build/OUTCODE/src/game/menu/title.o (.data);
       build/OUTCODE/src/game/menu/front.o (.data);
       build/OUTCODE/src/game/hud/blood.o (.data);
-      build/OUTCODE/src/game/debug/sub_GAME_7F01D1C0.o (.data);
       build/OUTCODE/src/game/save/file.o (.data);
       build/OUTCODE/src/game/chr/chr.o (.data);
       build/OUTCODE/src/game/chr/body.o (.data);
@@ -34,9 +32,6 @@
       build/OUTCODE/src/game/player/bondinv.o (.data);
       build/OUTCODE/src/game/player/bondhead.o (.data);
       build/OUTCODE/src/game/nav/waypoint.o (.data);
-      build/OUTCODE/src/game/debug/debugmenu_08FE00.o (.data);
-      build/OUTCODE/src/game/debug/debugmenu_handler.o (.data);
-      build/OUTCODE/src/game/debug/debug_camera.o (.data);
       build/OUTCODE/src/game/chr/chraidata.o (.data);
       build/OUTCODE/src/game/model/pobjdata.o (.data);
       build/OUTCODE/src/game/model/gobjdata.o (.data);
@@ -76,10 +71,7 @@
       build/OUTCODE/src/game/gfx/tex.o (.data);
       build/OUTCODE/src/game/asset/rzip.o (.data);
       build/OUTCODE/src/game/gfx/rsp.o (.data);
-      build/OUTCODE/src/game/debug/indy_comms.o (.data);
-      build/OUTCODE/src/game/debug/indy_commands.o (.data);
       build/OUTCODE/src/game/level/game.o (.data);
-      build/OUTCODE/src/game/debug/speedgraphrenderer.o (.data);
       build/OUTCODE/src/game/gfx/zbuf.o (.data);
 #ifndef VERSION_EU
 #endif

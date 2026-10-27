@@ -3407,7 +3407,7 @@ s32 frontGetHighestDifficulty(s32 arg0)
     if (g_FrontMissions[frontFindMissionEntry(arg0)].stage_id >= 0)
     {
         num = DIFFICULTY_00;
-        if (fileIs007ModeUnlocked(g_FrontFolder) || get_debug_007_unlock_flag())
+        if (fileIs007ModeUnlocked(g_FrontFolder))
         {
             num = DIFFICULTY_007;
         }

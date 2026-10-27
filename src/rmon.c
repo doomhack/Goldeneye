@@ -38,28 +38,6 @@ s32 rmonStatus(void) {
 
 
 
-/**
- * Removed
- * reimpliment osWriteHost
- * target rmon and usb
-*/
-void osWriteHost(void * buffer, u32 size)
-{
-    if (buffer);
-	if (size);
-}
-
-
-/**
- * Removed
- * reimpliment osReadHost
- * target rmon and usb
-*/
-void osReadHost(void * buffer, u32 size)
-{
-    if (buffer);
-	if (size);
-}
 
 
 /**

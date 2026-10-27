@@ -17,7 +17,6 @@
 #include <os_extension.h>
 #include <PR/libaudio.h>
 #include <assets/font_dl.h>
-#include <deb.h>
 #include <memp.h>
 #include <music.h>
 #include <fr.h>
@@ -26,7 +25,6 @@
 #include <random.h>
 #include <joy.h>
 #include <token.h>
-#include "game/debug/debugmenu_handler.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
 #include "game/menu/front.h"
@@ -61,7 +59,6 @@
 #include "game/gfx/zbuf.h"
 #include "game/nav/stan.h"
 #include "game/player/gun.h"
-#include "game/debug/debug_camera.h"
 #include "game/world/roommtx.h"
 #include "game/world/water.h"
 #include "game/level/frametiming.h"
@@ -85,14 +82,10 @@ s32 dword_CODE_bss_8008C5F8;
 
 
 // data
-//D:80048360
-s32 lvl_c_debug_notice_list = 0;
 //D:80048364
 s32 g_CurrentStageToLoad = 0;
 //D:80048368
 f32 D_80048368 = 1.0;
-//D:8004836C
-s32 g_LvMusicTrack = 0;
 //D:80048370
 s32 g_ControlsLockedFlag = 0;
 //D:80048374
@@ -192,39 +185,6 @@ s32 g_DebugHitTexNum = 0xFFFFFFFF;
 //D:800483C8
 struct LvlMpUnknown *g_DebugDetailEdit = NULL;
 
-/**
-* Debug variable, something to do with portals.
-* Address 0x800483CC.
-*/
-s32 g_DebugPortalIndex = 0;
-
-/**
- * Input buffer used in debug portal method.
- * Address 0x800483D0.
- */
-s32 g_DebugPortalsInputBuffer = 0;
-s32 g_DebugPortalsInputBuffer1 = 0;
-s32 g_DebugPortalsInputBuffer2 = 0;
-s32 g_DebugPortalsInputBuffer3 = 0;
-s32 g_DebugPortalsInputBuffer4 = 0;
-
-extern s32 g_DebugPortalsInputBufferSource1;
-extern s32 g_DebugPortalsInputBufferSource2;
-extern s32 g_DebugPortalsInputBufferSource3;
-extern s32 g_DebugPortalsInputBufferSource4;
-
-#pragma weak g_DebugPortalsInputBufferSource1 = g_DebugPortalsInputBuffer1
-#pragma weak g_DebugPortalsInputBufferSource2 = g_DebugPortalsInputBuffer2
-#pragma weak g_DebugPortalsInputBufferSource3 = g_DebugPortalsInputBuffer3
-#pragma weak g_DebugPortalsInputBufferSource4 = g_DebugPortalsInputBuffer4
-
-/**
- * Something debug related in the MP manage method.
- * Index to play sound effect.
- * Address 0x800483E4.
- */
-s16 g_DebugMpGameSoundFxIndex = 0;
-
 // unused address padding
 s16 D_800483E6 = 0;
 
@@ -235,7 +195,6 @@ extern u8* _fontdlSegmentRomEnd NO_SDATA;
 
 // forward declarations
 
-Gfx * lvPortalDebugRender(Gfx * arg0);
 
 // end forward declarations
 
@@ -253,58 +212,9 @@ void lvInit(void)
 {
     s32 size;
 
-    debTryAdd(&lvl_c_debug_notice_list, "lv_c_debug");
     size = (s32)&_fontdlSegmentRomEnd - (s32)&_fontdlSegmentRomStart;
-    lvl_c_debug_notice_list = 1;
     ptr_font_DL = mempAlloc(size, MEMPOOL_PERMANENT);
     romCopy(ptr_font_DL, &_fontdlSegmentRomStart, size);
-}
-
-/**
- * Unreferenced.
- */
-void lvPlayRandomMusic(void)
-{
-    g_LvMusicTrack = randomGetNext() % 0x3dU + M_INTRO;
-    musicTrack1Play(g_LvMusicTrack);
-}
-
-void lvPlayMusic(MUSIC_TRACKS track)
-{
-    g_LvMusicTrack = track;
-    musicTrack1Play(g_LvMusicTrack);
-}
-
-void lvPlaySoloDeathMusic(void)
-{
-    g_LvMusicTrack = (g_LvMusicTrack + M_SHORT_SOLO_DEATH) % NUM_MUSIC_TRACKS;
-
-    if (g_LvMusicTrack == M_NONE)
-    {
-        g_LvMusicTrack = M_SHORT_SOLO_DEATH;
-    }
-
-    musicTrack1Play(g_LvMusicTrack);
-}
-
-void lvPlayEndThemeMusic(void)
-{
-    g_LvMusicTrack = (g_LvMusicTrack + M_END_SOMETHING) % NUM_MUSIC_TRACKS;
-
-    if (g_LvMusicTrack == M_NONE)
-    {
-        g_LvMusicTrack = M_END_SOMETHING;
-    }
-
-    musicTrack1Play(g_LvMusicTrack);
-}
-
-/**
- * Unreferenced.
- */
-void lvPlayStageMusic(void)
-{
-    lvPlayMusic(levelMusicGetTrack(g_CurrentStageToLoad));
 }
 
 /**
@@ -534,136 +444,6 @@ s32 lvGetCurrentStage(void)
 }
 
 
- /**
- * Address: 7F0BDF10
- * 
- * Debug method. Something to do with portals. Button press
- * on controller 1 and 2 are used for control flow.
- */
-Gfx *lvPortalDebugRender(Gfx *gdl)
-{
-    s32 temp_v1;
-    bool portalDebugStateChanged; // This value has no observable use in the final assembly but the variable definitely existed in the orignal code.
-    s32 *selectedPortal = &g_DebugPortalIndex;
-
-    portalDebugStateChanged = FALSE;
-
-    if (gdl)
-    {
-        gdl = bgDebugRemoved7F0B9DE4(gdl, g_DebugPortalIndex, -1);
-
-        g_DebugPortalsInputBuffer = g_DebugPortalsInputBufferSource1;
-        g_DebugPortalsInputBuffer1 = g_DebugPortalsInputBufferSource2;
-        temp_v1 = g_DebugPortalsInputBufferSource4;
-        g_DebugPortalsInputBuffer2 = g_DebugPortalsInputBufferSource3;
-        g_DebugPortalsInputBuffer3 = temp_v1;
-
-        temp_v1 = joyGetButtons(PLAYER_1, A_BUTTON) | joyGetButtons(PLAYER_2, A_BUTTON);
-
-        if ((temp_v1 == g_DebugPortalsInputBuffer3) == FALSE)
-        {
-            g_LvDrawWorld ^= 1;
-        }
-
-        if ((g_DebugPortalsInputBuffer1 == g_DebugPortalsInputBuffer) == FALSE)
-        {
-            g_LvDrawWorld ^= 1;
-        }
-
-        g_DebugPortalsInputBuffer4 = temp_v1;
-
-        bgRemoved7F0B9DF4(temp_v1 ? g_DebugPortalIndex : -1);
-
-        return gdl;
-    }
-
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD) |
-        joyGetButtonsPressedThisFrame(PLAYER_2, L_JPAD))
-    {
-        g_DebugPortalIndex = *selectedPortal - 1;
-
-        if (portalDebugStateChanged = TRUE, *selectedPortal < 0)
-        {
-            g_DebugPortalIndex = 0;
-        }
-    }
-
-    if (joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD) |
-        joyGetButtonsPressedThisFrame(PLAYER_2, R_JPAD))
-    {
-        g_DebugPortalIndex = *selectedPortal + 1;
-        portalDebugStateChanged = TRUE;
-    }
-
-    if ((joyGetButtons(PLAYER_1, R_TRIG) | joyGetButtons(PLAYER_2, R_TRIG)) &&
-        (joyGetButtons(PLAYER_1, L_TRIG) | joyGetButtons(PLAYER_2, L_TRIG)))
-    {
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD))
-        {
-            bgSwapConnectedRooms(*selectedPortal);
-        }
-    }
-    else if (joyGetButtons(PLAYER_1, R_TRIG) | joyGetButtons(PLAYER_2, R_TRIG))
-    {
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) |
-             joyGetButtonsPressedThisFrame(PLAYER_2, D_JPAD)) &&
-            (bgGetDataPortalsControlBytes1Bit1(g_DebugPortalIndex) == 0))
-        {
-            bgToggleDataPortalsContrlBytes1Bit1(g_DebugPortalIndex, 0);
-            portalDebugStateChanged = TRUE;
-        }
-
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD) |
-             joyGetButtonsPressedThisFrame(PLAYER_2, U_JPAD)) &&
-            (bgGetDataPortalsControlBytes1Bit1(g_DebugPortalIndex) != 0))
-        {
-            bgToggleDataPortalsContrlBytes1Bit1(g_DebugPortalIndex, 1);
-            portalDebugStateChanged = TRUE;
-        }
-    }
-    else if (joyGetButtons(PLAYER_1, L_TRIG) | joyGetButtons(PLAYER_2, L_TRIG))
-    {
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) |
-             joyGetButtonsPressedThisFrame(PLAYER_2, D_JPAD)) &&
-            bgGetDataPortalsControlBytes1Bit2(g_DebugPortalIndex))
-        {
-            bgClearDataPortalsControlBytes1Low2Bits(g_DebugPortalIndex);
-            portalDebugStateChanged = TRUE;
-        }
-
-        if ((joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD) |
-             joyGetButtonsPressedThisFrame(PLAYER_2, U_JPAD)) &&
-            (bgGetDataPortalsControlBytes1Bit2(g_DebugPortalIndex) == 0))
-        {
-            bgSetDataPortalsControlBytes1Bit2(g_DebugPortalIndex);
-            portalDebugStateChanged = TRUE;
-        }
-    }
-    else
-    {
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) |
-            joyGetButtonsPressedThisFrame(PLAYER_2, D_JPAD))
-        {
-            bgPortalThicknessDec(g_DebugPortalIndex);
-            portalDebugStateChanged = TRUE;
-        }
-
-        if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD) |
-            joyGetButtonsPressedThisFrame(PLAYER_2, U_JPAD))
-        {
-            bgPortalThicknessInc(g_DebugPortalIndex);
-            portalDebugStateChanged = TRUE;
-        }
-    }
-
-    if (portalDebugStateChanged)
-    {
-        // Removed
-    }
-
-    return NULL;
-}
-
 
 static u32 s_FpsLastCount;
 static s32 s_FpsFrames;
@@ -781,20 +561,9 @@ Gfx* lvRender(Gfx* DL)
             DL = viClearZBufCurrentPlayer(DL);
             DL = viSetupCurrentPlayerView(DL);
 
-            if (get_debug_render_raster() == DEB_MOVE_VIEW)
-            {
-                DL = sub_GAME_7F091580(DL);
-            }
 
-            if (get_debug_render_raster() == DEB_STAN_VIEW)
-            {
-                DL = stanRenderDebugStanView(DL);
-            }
 
-            if (get_debug_render_raster() == DEB_BOND_VIEW)
-            {
-                DL = camSetupFrame(DL);
-            }
+            DL = camSetupFrame(DL);
 
             DL = viSetupScreensForNumPlayers(DL);
             DL = skyRender(DL);
@@ -813,27 +582,9 @@ Gfx* lvRender(Gfx* DL)
             propsTickPickups();
             DL = bgLevelRender(DL);
 
-            if (get_debug_portal_flag())
-            {
-                DL = lvPortalDebugRender(DL);
-            }
 
-            if (get_debug_stan_problems_flag())
-            {
-                DL = stanDebugDrawProblems(DL);
-            }
 
-            if (get_debug_stanhit_flag())
-            {
-                DL = stanDebugBeginDraw(DL);
-                DL = stanDebugRenderTiles(DL);
-            }
 
-            if (get_debug_stanregion_flag())
-            {
-                DL = stanDebugBeginDraw(DL);
-                DL = stanDebugDrawRegion(DL, -0x7FC0);
-            }
 
             if (tokenFind(1, "-stanshow_"))
             {
@@ -865,7 +616,6 @@ Gfx* lvRender(Gfx* DL)
                 }
             }
 
-            chrDebugSetAnimOverride(getDebugMode() == DEB_SELANIM);
             DL = weaponRenderTracers(DL);
 
 #if defined(VERSION_EU)
@@ -892,14 +642,7 @@ Gfx* lvRender(Gfx* DL)
                 ammoGiveMaxAll();
             }
 
-            if (get_debug_render_raster() == DEB_BOND_VIEW)
-            {
-                DL = hudRender(DL);
-            }
-            else
-            {
-                DL = bondviewRemoved7F08BCB8(DL);
-            }
+            DL = hudRender(DL);
 
             DL = mpMenuRender(DL);
             coopTankEndPlayer(FALSE);
@@ -1391,202 +1134,13 @@ void lvTick(void)
         propsTickOnce();
         levelMusicTick();
         langTick();
-
-        if ((get_debug_joy2detailedit_flag() != 0) && (g_DebugDetailEdit == 0))
-        {
-            s32 i;
-            g_DebugDetailEdit = (struct LvlMpUnknown *)mempAlloc(0x3000, MEMPOOL_STAGE);
-            if (g_DebugDetailEdit != 0)
-            {
-                for (i=0; i<3000; i++)
-                {
-                    g_DebugDetailEdit[i].unk_0 = 0xff;
-                    g_DebugDetailEdit[i].unk_1 = (g_DebugDetailEdit[i].unk_1 & 0xFF1F) | 0x20;
-                    g_DebugDetailEdit[i].unk_1 = (g_DebugDetailEdit[i].unk_1 & 0xFFE3) | 4;
-                }
-            }
-        }
-
-        if (get_debug_portal_flag() != 0)
-        {
-            lvPortalDebugRender(0);
-        }
-
-        switch (getDebugMode())
-        {
-            case 4:
-            {
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
-                {
-                    stanDebugStepRegion(-1);
-                    stanDebugView(0, 0, 0);
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS))
-                {
-                    stanDebugStepRegion(1);
-                    stanDebugView(0, 0, 0);
-                }
-            }
-            break;
-
-            case 8:
-            {
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS))
-                {
-                    chrDebugPrevAnim();
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS))
-                {
-                    chrDebugNextAnim();
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, L_TRIG))
-                {
-                    chrDebugTogglePause();
-                }
-
-                chrDebugSetStep(joyGetButtons(PLAYER_1, R_TRIG) != 0);
-            }
-            break;
-        }
-
-    }
-    {
-        struct ALBank * sfx;
-        s16 sound_index;
-        s16 *sound_index_ptr;
-        switch (getDebugMode())
-        {
-            case 0x38:
-            {
-                s32 sp30;
-                s32 sp2C;
-                sp30 = viGetHorizontalOffset();
-                sp2C = viGet800232A0();
-                if (joyGetButtons(PLAYER_1, D_CBUTTONS))
-                {
-                    sp2C += 1;
-                }
-                if (joyGetButtons(PLAYER_1, U_CBUTTONS))
-                {
-                    sp2C += -1;
-                }
-                if (joyGetButtons(PLAYER_1, R_CBUTTONS))
-                {
-                    sp30 += 1;
-                }
-                if (joyGetButtons(PLAYER_1, L_CBUTTONS))
-                {
-                    sp30 += -1;
-                }
-                viSetHorizontalOffset(sp30);
-                viSet800232A0(sp2C);
-            }
-            break;
-
-            case 0xc:
-            {
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, (L_JPAD | L_CBUTTONS)))
-                {
-                    lvPlayEndThemeMusic();
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, (R_JPAD | R_CBUTTONS)))
-                {
-                    lvPlaySoloDeathMusic();
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD))
-                {
-                    musicTrack1Stop();
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
-                {
-                    musicTrack1SaveCurrentVolumeAsTrackDefault();
-                }
-            }
-            break;
-            case 0xd:
-            {
-#ifdef VERSION_US
-                sound_index_ptr = &g_DebugMpGameSoundFxIndex;
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, (D_JPAD | L_JPAD | L_TRIG | L_CBUTTONS)))
-                {
-                    sound_index = g_DebugMpGameSoundFxIndex - 1;\
-                    sfx = g_musicSfxBufferPtr;\
-                    *sound_index_ptr = sound_index;
-                    sndPlaySfx(sfx, sound_index, NULL);
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, (U_JPAD | R_JPAD | R_TRIG | R_CBUTTONS)))
-                {
-                    sound_index = g_DebugMpGameSoundFxIndex + 1;\
-                    sfx = g_musicSfxBufferPtr;\
-                    *sound_index_ptr = sound_index;
-                    sndPlaySfx(sfx, sound_index, NULL);
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS))
-                {
-                    sndDeactivateAllSfxByFlag_1();
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS))
-                {
-                    sound_index = g_DebugMpGameSoundFxIndex;\
-                    sfx = g_musicSfxBufferPtr;
-                    sndPlaySfx(sfx, sound_index, NULL);
-                }
-#else
-                sound_index_ptr = &g_DebugMpGameSoundFxIndex;
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, (D_JPAD | L_JPAD | L_TRIG | L_CBUTTONS)))
-                {
-                    sound_index = g_DebugMpGameSoundFxIndex - 1;\
-                    sfx = g_musicSfxBufferPtr;\
-                    *sound_index_ptr = sound_index;
-                    sndPlaySfx(sfx, sound_index, NULL);
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, (U_JPAD | R_JPAD | R_TRIG | R_CBUTTONS)))
-                {
-                    sound_index = g_DebugMpGameSoundFxIndex + 1;\
-                    sfx = g_musicSfxBufferPtr;\
-                    *sound_index_ptr = sound_index;
-                    sndPlaySfx(sfx, sound_index, NULL);
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, D_CBUTTONS))
-                {
-                    sndDeactivateAllSfxByFlag_1();
-                }
-
-                if (joyGetButtonsPressedThisFrame(PLAYER_1, U_CBUTTONS))
-                {
-                    sound_index = g_DebugMpGameSoundFxIndex;\
-                    sfx = g_musicSfxBufferPtr;
-                    sndPlaySfx(sfx, sound_index, NULL);
-                }
-#endif
-            }
-            break;
-
-            default:
-            break;
-        }
     }
 }
 
 
 
 /**
- * Assumes a debug mode is present, and handles debug edit intro, debug stan edit, debug bond "view."
- * By default, the DEB_BOND_VIEW path is chosen without debug info.
- * This updates the player viewport(s), and handles player movement.
+ * Moves the current player from their controller and runs their multiplayer menu.
  *
  * Multiplayer:
  * Updates distance_traveled and possibly (depending on the scenario) have_token_or_goldengun.
@@ -1604,49 +1158,8 @@ void lvPlayerTick(void)
     local_player_number = playerGetCurrentNum();
     cheatTick();
 
-    switch (get_debug_freeze_processing())
-    {
-        case 0:
-        {
-            if ((getDebugMode() == DEB_MOVE_VIEW) || ((getDebugMode() == DEB_INTRO_EDIT) && (D_80036ABC < 0)))
-            {
-                debugFreeCamera(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
-            }
-            else
-            {
-                debugFreeCamera(joyGetStickX(local_player_number), joyGetStickY(local_player_number), 0);
-            }
-        }
-        break;
-
-        case 1:
-        {
-            if (getDebugMode() == DEB_STAN_VIEW)
-            {
-                stanDebugView(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
-            }
-            else
-            {
-                stanDebugView(joyGetStickX(local_player_number), joyGetStickY(local_player_number), 0);
-            }
-        }
-        break;
-
-        case 2:
-        {
-            if (getDebugMode() == DEB_BOND_VIEW)
-            {
-                playerUpdate(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
-            }
-            else
-            {
-                playerUpdate(joyGetStickX(local_player_number), joyGetStickY(local_player_number), 0);
-            }
-
-            mpMenuTick();
-        }
-        break;
-    }
+    playerUpdate(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
+    mpMenuTick();
 
     temp_f0 = g_CurrentPlayer->prop->pos.x - g_CurrentPlayer->bondprevpos.x;
     temp_f2 = g_CurrentPlayer->prop->pos.z - g_CurrentPlayer->bondprevpos.z;

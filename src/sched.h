@@ -80,7 +80,6 @@ void CheckDisplayErrorBuffer(u32 *buffer);
 void CheckDisplayErrorBufferEvery16Frames(u32 framecount);
 void osCreateLog(void);
 void __scMain(void *arg);
-u32 *get_counters(void);
 
 extern volatile u32 g_PerfGfxStart;
 extern volatile u32 g_PerfRspSum;

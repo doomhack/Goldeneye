@@ -648,46 +648,6 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 }
 
 
-/**
- * Unreferenced
- */
-void waypointDebugTestRandomRoute(void)
-{
-    waypoint* waypoints;
-    s32 count;
-    waypoint* entry;
-    waypoint* from;
-    waypoint* to;
-    waypoint** arr_entry;
-    u32 unused[0x30];
-
-    waypoints = g_CurrentSetup.pathwaypoints;
-
-    if (waypoints != NULL)
-    {
-        waypoint *arr;
-        count = 0;
-        entry = waypoints;
-
-        while (entry->padID >= 0)
-        {
-            entry++;
-            count++;
-        }
-
-        from = &waypoints[randomGetNext() % count];
-        to = &waypoints[randomGetNext() % count];
-
-
-        if (waypointFindRoute(from, to, &arr, 0x32) != 0)
-        {
-            for (arr_entry = &arr; *arr_entry; arr_entry++)
-            {
-            }
-        }
-    }
-}
-
 
 /**
  * Checks the level's path graph at load and hangs if it is broken. Ryan spent a few minutes looking at this and left some notes about what this function does:
