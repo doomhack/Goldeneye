@@ -1,7 +1,7 @@
 #include <ultra64.h>
 #include <music.h>
 #include "game/audio/music_0D2720.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/audio/mp_music.h"
 #include "game/level/lv.h"
 
@@ -35,12 +35,12 @@ s32 mission_state = MISSION_STATE_0;
 
 u16 sub_GAME_7F0C0BF0(void)
 {
-    return get_mTrack2Vol();
+    return optionsGetMusicVolume();
 }
 
 u16 sub_GAME_7F0C0C10(void)
 {
-    return call_sndGetSfxSlotFirstNaturalVolume();
+    return optionsGetFxVolume();
 }
 
 

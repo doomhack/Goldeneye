@@ -29,19 +29,19 @@ struct AwardMetrics {
 	s32 shortest_inning;              // 0x34
 };
 
-extern s32 g_stopPlayFlag;
-extern s32 g_gameOverFlag;
+extern s32 g_MpStopPlay;
+extern s32 g_MpGameOver;
 
-void mpwatchUnpauseGame(void);
-Gfx *display_text_for_playerdata_on_MP_menu(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_color);
+void mpMenuUnpause(void);
+Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_color);
 
-s32 checkGamePaused(void);
+s32 mpIsPaused(void);
 
-void mpCalculateAwards(bool gameoverdelay);
-s32 get_points_for_mp_player(s32 arg0);
-void mpwatchSetStopPlayFlag(void);
-Gfx * mp_watch_menu_display(Gfx *arg0);
-s32 disablePlayerActionsWhenPausedOrInMpMenu(void);
-s32 mpwatchShouldDisplayGauges(void);
+void mpMenuCalculateAwards(bool gameoverdelay);
+s32 mpGetPlayerPoints(s32 arg0);
+void mpMenuStopPlay(void);
+Gfx * mpMenuRender(Gfx *arg0);
+s32 mpMenuCanPlayerAct(void);
+s32 mpMenuShowGauges(void);
 
 #endif

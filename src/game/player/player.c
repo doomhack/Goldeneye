@@ -12,7 +12,7 @@
 #include "game/world/water.h"
 #include "game/player/bondview.h"
 #include "game/level/lv.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "bondtypes.h"
 #include "bondconstants.h"
 #include "game/player/gun.h"
@@ -275,7 +275,7 @@ s32 getViewCount(void)
  */
 s32 coopSplitSideBySide(void)
 {
-    return (getViewCount() == 2) && !get_split_stacked_setting();
+    return (getViewCount() == 2) && !optionsGetSplitStacked();
 }
 
 /**

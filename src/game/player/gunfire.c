@@ -48,7 +48,7 @@
 #include "game/text/textrelated.h"
 #include "game/chr/chrai.h"
 #include "game/model/model.h"
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/menu/mpmenu.h"
 #include "joy.h"
 #include "game/math/matrix.h"
@@ -497,7 +497,7 @@ void gunUpdateAndFire(GUNHAND handnum)
         gunofs.y += g_CurrentPlayer->ducking_height_offset / (-100.0f);
         gunofs.z += (3.0f * g_CurrentPlayer->ducking_height_offset) / (-100.0f);
 
-        if ((item == ITEM_ROCKETLAUNCH) && (((cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN) || (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)) || (get_screen_ratio() == SCREEN_RATIO_16_9)))
+        if ((item == ITEM_ROCKETLAUNCH) && (((optionsGetScreenSize() == SCREEN_SIZE_WIDESCREEN) || (optionsGetScreenSize() == SCREEN_SIZE_CINEMA)) || (optionsGetScreenRatio() == SCREEN_RATIO_16_9)))
         {
             gunofs.y -= 3.0f;
         }
@@ -2956,7 +2956,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             case ITEM_PITONGUN:
                 if (handptr->field_88C == 0)
                 {
-                    if ((!isMpGame()) || ((checkGamePaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
+                    if ((!isMpGame()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
                     {
                         handptr->field_87D = 1;
                     }
@@ -2988,7 +2988,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 {
                     if (((s32) handptr->field_88C % weaponGetFireRate(var_s1)) == 0)
                     {
-                        if ((!isMpGame()) || ((checkGamePaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
+                        if ((!isMpGame()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
                         {
                             handptr->field_87D = 1;
                         }
@@ -3047,7 +3047,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 {
                     joyRumblePakStart(playerGetCurrentNum(), 0.1f);
 
-                    if (cur_player_get_control_type() >= 4)
+                    if (optionsGetControlStyle() >= 4)
                     {
                         joyRumblePakStart(playerGetCurrentNum() + getPlayerCount(), 0.1f);
                     }
@@ -3075,7 +3075,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                     sp1B4 = 1;
                 }
 
-                if ((!isMpGame()) || ((checkGamePaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
+                if ((!isMpGame()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
                 {
                     if (sp1B4 != 0)
                     {
@@ -3127,9 +3127,9 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
             if ((!isMpGame())
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
-                || ((checkGamePaused() == 0) && (g_CurrentPlayer->mpmenuon == 0))
+                || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0))
 #else
-                || (checkGamePaused() == 0)
+                || (mpIsPaused() == 0)
 #endif
                )
             {
@@ -6187,7 +6187,7 @@ void gunDrawSight(s32 *gdl) {
         halfedxy[0] = 16.0f;
         halfedxy[1] = 16.0f;
 
-        if (get_screen_ratio() == SCREEN_RATIO_16_9) {
+        if (optionsGetScreenRatio() == SCREEN_RATIO_16_9) {
             halfedxy[0] = halfedxy[0] * 0.75f;
         }
 #ifdef VERSION_EU

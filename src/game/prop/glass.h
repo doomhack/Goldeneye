@@ -52,11 +52,6 @@ extern s32 g_MaxShards;
 extern s_shattered_window_piece* g_Shards;
 extern s32 g_NextShardNum;
 
-extern u32 D_80040990;
-extern u32 watch_screen_index;
-extern u32 controller_options_index;
-extern u32 game_options_index;
-
 void sub_GAME_7F0A47FC(void);
 void glassInitShards(void);
 void glassResetShards(void);

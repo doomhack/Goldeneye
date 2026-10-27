@@ -1,3 +1,8 @@
+/**
+ * The multiplayer pause menu: the per-player screen opened with Start in a multiplayer game
+ * (pause, kills, losses, awards, exit), the end-of-game awards, and the multiplayer pause
+ * and game-over state (g_MpPaused, g_MpStopPlay, g_MpGameOver). See docs/subsystems/menu.md.
+ */
 #include <ultra64.h>
 #include <music.h>
 #include <bondgame.h>
@@ -25,20 +30,20 @@
 #endif
 
 // bss
-s32 g_stopPlayFlag;
+s32 g_MpStopPlay;
 
 /**
- * g_gameOverFlag has two meanings. One is the standard true/false for whether the game is over.
+ * g_MpGameOver has two meanings. One is the standard true/false for whether the game is over.
  * The other is as a timer. Values >= 2 mean a countdown is still running.
  */
-s32 g_gameOverFlag;
+s32 g_MpGameOver;
 
-s32 chevron_glow;
-s32 chevron_glow_timer;
-s32 alt_gameover_msg;
-s32 alt_gameover_msg_timer;
-s32 g_pausedFlag;
-s32 who_paused;
+s32 g_MpMenuChevronGlow;
+s32 g_MpMenuChevronTimer;
+s32 g_MpMenuAltGameOverMsg;
+s32 g_MpMenuAltGameOverTimer;
+s32 g_MpPaused;
+s32 g_MpPausedBy;
 
 // data
 u16 g_AwardNames[] = {
@@ -48,7 +53,7 @@ u16 g_AwardNames[] = {
 };
 
 
-s32 mpwatchMenuCanGoRight(void) 
+s32 mpMenuCanGoRight(void) 
 {
     switch(g_CurrentPlayer->mpmenumode)
     {
@@ -62,14 +67,14 @@ s32 mpwatchMenuCanGoRight(void)
         case MENU_FINISHED:
             return 0;
         case MENU_SCORES:
-            return g_gameOverFlag ? 0 : 1;
+            return g_MpGameOver ? 0 : 1;
         default:
             return 0;
     }
 }
 
 
-s32 mpwatchMenuCanGoLeft(void) 
+s32 mpMenuCanGoLeft(void) 
 {
     switch(g_CurrentPlayer->mpmenumode)
     {
@@ -83,7 +88,7 @@ s32 mpwatchMenuCanGoLeft(void)
         case MENU_FINISHED:
             return 0;
         case MENU_LOSSES:
-            return g_gameOverFlag ? 1 : 0;
+            return g_MpGameOver ? 1 : 0;
         default:
 #ifdef DEBUG
             // kill the process
@@ -94,7 +99,7 @@ s32 mpwatchMenuCanGoLeft(void)
 }
 
 
-s32 mpwatchIsPlayerPressingRight(s32 player)
+s32 mpMenuPressedRight(s32 player)
 {
     s32 iVar3 = joyGetStickXInRange(player, -2, 1);
 
@@ -106,7 +111,7 @@ s32 mpwatchIsPlayerPressingRight(s32 player)
     return 0;
 }
 
-s32 mpwatchIsPlayerPressingLeft(s32 player)
+s32 mpMenuPressedLeft(s32 player)
 {
     s32 iVar3 = joyGetStickXInRange(player, -2, 1);
 
@@ -119,24 +124,24 @@ s32 mpwatchIsPlayerPressingLeft(s32 player)
 }
 
 
-void mpwatchPlayBeep(void)
+void mpMenuBeep(void)
 {
     sndPlaySfx(g_musicSfxBufferPtr, CAMERA_BEEP1_SFX, 0);
 }
 
 
-void mpwatchUnpauseGame(void)
+void mpMenuUnpause(void)
 {
-    g_stopPlayFlag = 0;
-    g_gameOverFlag = 0;
-    g_pausedFlag = 0;
+    g_MpStopPlay = 0;
+    g_MpGameOver = 0;
+    g_MpPaused = 0;
 }
 
 
 /**
  * Returns the index (0-3) of the player with the highest value.
  */
-s32 mpFindMaxInt(s32 numplayers, s32 value0, s32 value1, s32 value2, s32 value3)
+s32 mpMenuFindMaxInt(s32 numplayers, s32 value0, s32 value1, s32 value2, s32 value3)
 {
     s32 aux;
     s32 result;
@@ -176,7 +181,7 @@ s32 mpFindMaxInt(s32 numplayers, s32 value0, s32 value1, s32 value2, s32 value3)
 /**
  * Returns the index (0-3) of the player with the lowest value.
  */
-s32 mpFindMinInt(s32 numplayers, s32 value0, s32 value1, s32 value2, s32 value3)
+s32 mpMenuFindMinInt(s32 numplayers, s32 value0, s32 value1, s32 value2, s32 value3)
 {
     s32 aux;
     s32 result;
@@ -219,7 +224,7 @@ s32 mpFindMinInt(s32 numplayers, s32 value0, s32 value1, s32 value2, s32 value3)
  * @bug: aux is s32 so each time it's set to one of the values, the decimal portion gets truncated.
  * The first comparison is safe from this since it doesn't use aux, but the rest are impacted.
  */
-s32 mpFindMaxFloat(s32 numplayers, f32 value0, f32 value1, f32 value2, f32 value3)
+s32 mpMenuFindMaxFloat(s32 numplayers, f32 value0, f32 value1, f32 value2, f32 value3)
 {
     s32 aux;
     s32 result;
@@ -261,7 +266,7 @@ s32 mpFindMaxFloat(s32 numplayers, f32 value0, f32 value1, f32 value2, f32 value
  * 
  * Also suffers from the same bug as the above function.
  */
-s32 mpFindMinFloat(s32 numplayers, f32 value0, f32 value1, f32 value2, f32 value3)
+s32 mpMenuFindMinFloat(s32 numplayers, f32 value0, f32 value1, f32 value2, f32 value3)
 {
     s32 aux;
     s32 result;
@@ -298,21 +303,21 @@ s32 mpFindMinFloat(s32 numplayers, f32 value0, f32 value1, f32 value2, f32 value
 }
 
 
-void pauseAndLockControls(void) 
+void mpMenuPause(void) 
 {
     lvSetControlsLocked(1);
-    g_pausedFlag = TRUE;
+    g_MpPaused = TRUE;
 }
 
 
-bool disablePlayerActionsWhenPausedOrInMpMenu(void)
+bool mpMenuCanPlayerAct(void)
 {
     if (!isMpGame())
     {
         return TRUE;
     }
 
-    if (g_stopPlayFlag)
+    if (g_MpStopPlay)
     {
         return FALSE;
     }
@@ -326,14 +331,14 @@ bool disablePlayerActionsWhenPausedOrInMpMenu(void)
 }
 
 
-void mpwatchSetStopPlayFlag(void)
+void mpMenuStopPlay(void)
 {
-    g_stopPlayFlag = TRUE;
+    g_MpStopPlay = TRUE;
 }
 
 
 
-void mpCalculateAwards(bool gameoverdelay)
+void mpMenuCalculateAwards(bool gameoverdelay)
 {
     s32 player_count;
     s32 i;
@@ -355,24 +360,24 @@ void mpCalculateAwards(bool gameoverdelay)
     g_musicXTrack1Fade = 0;
     musicTrack1Play(M_INTROSWOOSH);
 
-    pauseAndLockControls();
+    mpMenuPause();
 
     if (gameoverdelay != 0)
     {
-        g_gameOverFlag = (PAL ? 250 : 300);
+        g_MpGameOver = (PAL ? 250 : 300);
     }
     else
     {
-        g_gameOverFlag = 1;
+        g_MpGameOver = 1;
     }
 
-    alt_gameover_msg = 1;
+    g_MpMenuAltGameOverMsg = 1;
 
     // Possible copy/paste error: these are the timer values for the chevron glow
-    alt_gameover_msg_timer =  (PAL ? 16 : 20);
+    g_MpMenuAltGameOverTimer =  (PAL ? 16 : 20);
 
-    chevron_glow = 0;
-    chevron_glow_timer = 0;
+    g_MpMenuChevronGlow = 0;
+    g_MpMenuChevronTimer = 0;
 
     prev_player_num = playerGetCurrentNum();
 
@@ -422,86 +427,86 @@ void mpCalculateAwards(bool gameoverdelay)
     playerSetCurrent(prev_player_num);
 
     // Choose which players are eligible for which awards
-    i = mpFindMaxInt(player_count, metrics[0].num_suicides, metrics[1].num_suicides, metrics[2].num_suicides, metrics[3].num_suicides);
+    i = mpMenuFindMaxInt(player_count, metrics[0].num_suicides, metrics[1].num_suicides, metrics[2].num_suicides, metrics[3].num_suicides);
 
     if (metrics[i].num_suicides > 0)
     {
         metrics[i].awards |= AWARD_MOSTSUICIDAL;
     }
 
-    i = mpFindMinInt(player_count, metrics[0].num_shots, metrics[1].num_shots, metrics[2].num_shots, metrics[3].num_shots);
+    i = mpMenuFindMinInt(player_count, metrics[0].num_shots, metrics[1].num_shots, metrics[2].num_shots, metrics[3].num_shots);
 
     if (metrics[i].num_shots < 100)
     {
         metrics[i].awards |= AWARD_WHONEEDSAMMO;
     }
 
-    i = mpFindMinFloat(player_count, metrics[0].body_armor_pickups, metrics[1].body_armor_pickups, metrics[2].body_armor_pickups, metrics[3].body_armor_pickups);
+    i = mpMenuFindMinFloat(player_count, metrics[0].body_armor_pickups, metrics[1].body_armor_pickups, metrics[2].body_armor_pickups, metrics[3].body_armor_pickups);
 
     if (metrics[i].body_armor_pickups <= 2.0f)
     {
         metrics[i].awards |= AWARD_WHERESTHEARMOUR;
     }
 
-    i = mpFindMaxFloat(player_count, metrics[0].body_armor_pickups, metrics[1].body_armor_pickups, metrics[2].body_armor_pickups, metrics[3].body_armor_pickups);
+    i = mpMenuFindMaxFloat(player_count, metrics[0].body_armor_pickups, metrics[1].body_armor_pickups, metrics[2].body_armor_pickups, metrics[3].body_armor_pickups);
 
     if (metrics[i].body_armor_pickups > 6.0f)
     {
         metrics[i].awards |= AWARD_ACNEGATIVE10;
     }
 
-    i = mpFindMaxInt(player_count, metrics[0].num_headshots, metrics[1].num_headshots, metrics[2].num_headshots, metrics[3].num_headshots);
+    i = mpMenuFindMaxInt(player_count, metrics[0].num_headshots, metrics[1].num_headshots, metrics[2].num_headshots, metrics[3].num_headshots);
 
     if (metrics[i].num_headshots > 0)
     {
         metrics[i].awards |= AWARD_MARKSMANSHIP;
     }
 
-    i = mpFindMaxFloat(player_count, metrics[0].ks_ratio, metrics[1].ks_ratio, metrics[2].ks_ratio, metrics[3].ks_ratio);
+    i = mpMenuFindMaxFloat(player_count, metrics[0].ks_ratio, metrics[1].ks_ratio, metrics[2].ks_ratio, metrics[3].ks_ratio);
 
     if (metrics[i].ks_ratio > 0.0f)
     {
         metrics[i].awards |= AWARD_MOSTPROFESSIONAL;
     }
 
-    i = mpFindMaxFloat(player_count, metrics[0].kd_ratio, metrics[1].kd_ratio, metrics[2].kd_ratio, metrics[3].kd_ratio);
+    i = mpMenuFindMaxFloat(player_count, metrics[0].kd_ratio, metrics[1].kd_ratio, metrics[2].kd_ratio, metrics[3].kd_ratio);
 
     if (metrics[i].kd_ratio > 0.0f)
     {
         metrics[i].awards |= AWARD_MOSTDEADLY;
     }
 
-    i = mpFindMinFloat(player_count, metrics[0].kd_ratio, metrics[1].kd_ratio, metrics[2].kd_ratio, metrics[3].kd_ratio);
+    i = mpMenuFindMinFloat(player_count, metrics[0].kd_ratio, metrics[1].kd_ratio, metrics[2].kd_ratio, metrics[3].kd_ratio);
     metrics[i].awards |= AWARD_MOSTHARMLESS;
 
-    i = mpFindMinInt(player_count, metrics[0].time_other_players_on_screen, metrics[1].time_other_players_on_screen, metrics[2].time_other_players_on_screen, metrics[3].time_other_players_on_screen);
+    i = mpMenuFindMinInt(player_count, metrics[0].time_other_players_on_screen, metrics[1].time_other_players_on_screen, metrics[2].time_other_players_on_screen, metrics[3].time_other_players_on_screen);
     metrics[i].awards |= AWARD_MOSTCOWARDLY;
 
-    i = mpFindMaxFloat(player_count, metrics[0].avg_km_per_hour, metrics[1].avg_km_per_hour, metrics[2].avg_km_per_hour, metrics[3].avg_km_per_hour);
+    i = mpMenuFindMaxFloat(player_count, metrics[0].avg_km_per_hour, metrics[1].avg_km_per_hour, metrics[2].avg_km_per_hour, metrics[3].avg_km_per_hour);
 
     if (metrics[i].avg_km_per_hour > 10.0f)
     {
         metrics[i].awards |= AWARD_MOSTFRANTIC;
     }
 
-    i = mpFindMinInt(player_count, metrics[0].damage_to_backside, metrics[1].damage_to_backside, metrics[2].damage_to_backside, metrics[3].damage_to_backside);
+    i = mpMenuFindMinInt(player_count, metrics[0].damage_to_backside, metrics[1].damage_to_backside, metrics[2].damage_to_backside, metrics[3].damage_to_backside);
     metrics[i].awards |= AWARD_MOSTHONORABLE;
 
-    i = mpFindMaxInt(player_count, metrics[0].damage_to_backside, metrics[1].damage_to_backside, metrics[2].damage_to_backside, metrics[3].damage_to_backside);
+    i = mpMenuFindMaxInt(player_count, metrics[0].damage_to_backside, metrics[1].damage_to_backside, metrics[2].damage_to_backside, metrics[3].damage_to_backside);
 
     if (metrics[i].damage_to_backside > 0 && (metrics[i].awards & AWARD_MOSTHONORABLE) == 0)
     {
         metrics[i].awards |= AWARD_MOSTDISHONORABLE;
     }
 
-    i = mpFindMaxInt(player_count, metrics[0].longest_inning, metrics[1].longest_inning, metrics[2].longest_inning, metrics[3].longest_inning);
+    i = mpMenuFindMaxInt(player_count, metrics[0].longest_inning, metrics[1].longest_inning, metrics[2].longest_inning, metrics[3].longest_inning);
 
     if (metrics[i].longest_inning > 0)
     {
         metrics[i].awards |= AWARD_LONGESTINNINGS;
     }
 
-    i = mpFindMinInt(player_count, metrics[0].shortest_inning, metrics[1].shortest_inning, metrics[2].shortest_inning, metrics[3].shortest_inning);
+    i = mpMenuFindMinInt(player_count, metrics[0].shortest_inning, metrics[1].shortest_inning, metrics[2].shortest_inning, metrics[3].shortest_inning);
 
     if (metrics[i].shortest_inning > 0)
     {
@@ -571,7 +576,7 @@ void mpCalculateAwards(bool gameoverdelay)
 }
 
 
-void mpwatchMenuTick(void)
+void mpMenuTick(void)
 {
     s32 player_num;
     s32 player_count;
@@ -583,46 +588,46 @@ void mpwatchMenuTick(void)
     player_count = getPlayerCount();
     x_centered = joyGetStickXInRange(player_num, -2, 1);
 
-    // The player in shuffled position 0 drives down g_gameOverFlag which is both a flag and a timer.
-    if (!playerGetShuffledIndex(player_num) && (g_gameOverFlag >= 2))
+    // The player in shuffled position 0 drives down g_MpGameOver which is both a flag and a timer.
+    if (!playerGetShuffledIndex(player_num) && (g_MpGameOver >= 2))
     {
-        g_gameOverFlag -= g_FrameDelta;
+        g_MpGameOver -= g_FrameDelta;
 
-        if (g_gameOverFlag <= 0) 
+        if (g_MpGameOver <= 0) 
         { 
-            g_gameOverFlag = 1;
+            g_MpGameOver = 1;
         }
     }
 
     if (isMpGame())
     {
         // If a player has their pause menu up when they die and the game isn't over, turn their menu off. 
-        if ((g_CurrentPlayer->bonddead) && (!g_gameOverFlag))
+        if ((g_CurrentPlayer->bonddead) && (!g_MpGameOver))
         {
             g_CurrentPlayer->mpmenuon = FALSE;
             g_CurrentPlayer->healthdisplaytime = 0;
             return;
         }
 
-        if (g_gameOverFlag < 2)
+        if (g_MpGameOver < 2)
         {
             if (playerGetShuffledIndex(player_num) == 0)
             {
-                chevron_glow_timer += g_FrameDelta;
-                alt_gameover_msg_timer += g_FrameDelta;
+                g_MpMenuChevronTimer += g_FrameDelta;
+                g_MpMenuAltGameOverTimer += g_FrameDelta;
 
                 // Toggle chevron glow
-                if (chevron_glow_timer >= (PAL ? 16 : 20))
+                if (g_MpMenuChevronTimer >= (PAL ? 16 : 20))
                 {
-                    chevron_glow_timer -= (PAL ? 16 : 20);
-                    chevron_glow = !chevron_glow;
+                    g_MpMenuChevronTimer -= (PAL ? 16 : 20);
+                    g_MpMenuChevronGlow = !g_MpMenuChevronGlow;
                 }
 
                 // Flip between "GAME OVER" and "START TO EXIT" text.
-                if (alt_gameover_msg_timer >= (PAL ? 100 : 120))
+                if (g_MpMenuAltGameOverTimer >= (PAL ? 100 : 120))
                 {
-                    alt_gameover_msg_timer -= (PAL ? 100: 120);
-                    alt_gameover_msg = !alt_gameover_msg;
+                    g_MpMenuAltGameOverTimer -= (PAL ? 100: 120);
+                    g_MpMenuAltGameOverMsg = !g_MpMenuAltGameOverMsg;
                 }
             }
 
@@ -638,38 +643,38 @@ void mpwatchMenuTick(void)
 
             if (g_CurrentPlayer->mpmenuon != FALSE)
             {
-                if (mpwatchIsPlayerPressingRight(player_num) && mpwatchMenuCanGoRight())
+                if (mpMenuPressedRight(player_num) && mpMenuCanGoRight())
                 {
-                    mpwatchPlayBeep();
+                    mpMenuBeep();
                     g_CurrentPlayer->mpmenumode++;
                 }
-                else if (mpwatchIsPlayerPressingLeft(player_num) && mpwatchMenuCanGoLeft())
+                else if (mpMenuPressedLeft(player_num) && mpMenuCanGoLeft())
                 {
-                    mpwatchPlayBeep();
+                    mpMenuBeep();
                     g_CurrentPlayer->mpmenumode--;
                 }
-                else if (mpwatchIsPlayerPressingRight(player_num) && (g_CurrentPlayer->mpmenumode == MENU_EXIT_CONFIRM))
+                else if (mpMenuPressedRight(player_num) && (g_CurrentPlayer->mpmenumode == MENU_EXIT_CONFIRM))
                 {
-                    mpwatchPlayBeep();
+                    mpMenuBeep();
                     g_CurrentPlayer->mpquitconfirm = 1;
                 }
-                else if (mpwatchIsPlayerPressingLeft(player_num) && (g_CurrentPlayer->mpmenumode == MENU_EXIT_CONFIRM))
+                else if (mpMenuPressedLeft(player_num) && (g_CurrentPlayer->mpmenumode == MENU_EXIT_CONFIRM))
                 {
-                    mpwatchPlayBeep();
+                    mpMenuBeep();
                     g_CurrentPlayer->mpquitconfirm = 0;
                 }
                 else if (joyGetButtonsPressedThisFrame(player_num, A_BUTTON) && (g_CurrentPlayer->mpmenumode == MENU_PAUSE))
                 {
-                    mpwatchPlayBeep();
-                    if (!g_pausedFlag)
+                    mpMenuBeep();
+                    if (!g_MpPaused)
                     {
-                        g_pausedFlag = 1;
-                        who_paused = playerGetCurrentNum();
+                        g_MpPaused = 1;
+                        g_MpPausedBy = playerGetCurrentNum();
                         lvSetControlsLocked(1);
                     }
-                    else if (playerGetCurrentNum() == who_paused)
+                    else if (playerGetCurrentNum() == g_MpPausedBy)
                     {
-                        g_pausedFlag = 0;
+                        g_MpPaused = 0;
                         lvSetControlsLocked(0);
                     }
                 }
@@ -677,16 +682,16 @@ void mpwatchMenuTick(void)
                 {
                     if (joyGetButtonsPressedThisFrame(player_num, B_BUTTON))
                     {
-                        mpwatchPlayBeep();
+                        mpMenuBeep();
                         g_CurrentPlayer->mpmenuon = TRUE;
                         g_CurrentPlayer->mpmenumode = MENU_SCORES;
                     }
                 }
                 else if (((joyGetButtonsPressedThisFrame(player_num, A_BUTTON | START_BUTTON)) && ((((g_CurrentPlayer->mpmenumode != MENU_EXIT)) && (g_CurrentPlayer->mpmenumode != MENU_EXIT_CONFIRM)) || ((g_CurrentPlayer->mpmenumode == MENU_EXIT_CONFIRM) && (g_CurrentPlayer->mpquitconfirm != 1)))) || (joyGetButtonsPressedThisFrame(player_num, B_BUTTON)))
                 {
-                    mpwatchPlayBeep();
+                    mpMenuBeep();
 
-                    if (g_gameOverFlag)
+                    if (g_MpGameOver)
                     {
                         menu_count = 0;
                         g_CurrentPlayer->mpmenumode = MENU_FINISHED;
@@ -709,16 +714,16 @@ void mpwatchMenuTick(void)
                         g_CurrentPlayer->mpmenuon = FALSE;
                         g_CurrentPlayer->healthdisplaytime = (PAL ? 50 : 60);
 
-                        if (playerGetCurrentNum() == who_paused)
+                        if (playerGetCurrentNum() == g_MpPausedBy)
                         {
-                            g_pausedFlag = 0;
+                            g_MpPaused = 0;
                             lvSetControlsLocked(0);
                         }
                     }
                 }
                 else if ((joyGetButtonsPressedThisFrame(player_num, A_BUTTON | START_BUTTON)) && (g_CurrentPlayer->mpmenumode == MENU_EXIT))
                 {
-                    mpwatchPlayBeep();
+                    mpMenuBeep();
                     g_CurrentPlayer->mpmenumode = MENU_EXIT_CONFIRM;
                     g_CurrentPlayer->mpquitconfirm = 0;
                 }
@@ -726,10 +731,10 @@ void mpwatchMenuTick(void)
                 {
                     if ((g_CurrentPlayer->mpmenumode == MENU_EXIT_CONFIRM) && (g_CurrentPlayer->mpquitconfirm == 1))
                     {
-                        mpwatchPlayBeep();
+                        mpMenuBeep();
                         g_CurrentPlayer->mpmenuon = FALSE;
                         g_CurrentPlayer->healthdisplaytime = 0;
-                        mpCalculateAwards(FALSE);
+                        mpMenuCalculateAwards(FALSE);
                     }
                 }
 
@@ -745,7 +750,7 @@ void mpwatchMenuTick(void)
 
             if (joyGetButtonsPressedThisFrame(player_num, START_BUTTON))
             {
-                mpwatchPlayBeep();
+                mpMenuBeep();
                 g_CurrentPlayer->mpmenuon = TRUE;
                 g_CurrentPlayer->mpmenumode = MENU_SCORES;
                 g_CurrentPlayer->mpjoywascentre = 1;
@@ -757,7 +762,7 @@ void mpwatchMenuTick(void)
 }
 
 
-Gfx *display_text_for_playerdata_on_MP_menu(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_color) {
+Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_color) {
 
     s32 textX;
     s32 textY;
@@ -827,7 +832,7 @@ const char ascii_pnum_KILLS[] = "%s%d %s";
 const char ascii_pnum_LOSSES[] = "%s%d %s";
 
 
-s32 get_points_for_mp_player(s32 playernum)
+s32 mpGetPlayerPoints(s32 playernum)
 {
     s32 team_or_token;
     s32 player_count;
@@ -900,7 +905,7 @@ s32 get_points_for_mp_player(s32 playernum)
 }
 
 
-void write_playerrank_to_buffer(char *buffer, s32 playernum)
+void mpMenuFormatRank(char *buffer, s32 playernum)
 {
     s32 scenario;
     s32 count;
@@ -915,7 +920,7 @@ void write_playerrank_to_buffer(char *buffer, s32 playernum)
 
     for (i = 0; i < count; i++)
     {
-        scores[i] = get_points_for_mp_player(i);
+        scores[i] = mpGetPlayerPoints(i);
         players[i] = i;
     }
 
@@ -985,7 +990,7 @@ void write_playerrank_to_buffer(char *buffer, s32 playernum)
 }
 
 
-s32 mpwatchShouldDisplayRank(s32 param_1)
+s32 mpMenuShowRank(s32 param_1)
 {
     switch(frontGetMpScenario())
     {
@@ -1007,7 +1012,7 @@ s32 mpwatchShouldDisplayRank(s32 param_1)
     }
 }
 
-s32 mpwatchShouldDisplayScore(s32 param_1)
+s32 mpMenuShowScore(s32 param_1)
 {
     switch(frontGetMpScenario())
     {
@@ -1049,7 +1054,7 @@ s32 mpwatchShouldDisplayScore(s32 param_1)
  * @param gdl display list to append to
  * @return the advanced display list pointer
  */
-Gfx *mp_watch_menu_display(Gfx *gdl)
+Gfx *mpMenuRender(Gfx *gdl)
 {
     s32 curplayernum;
     s32 player_count;
@@ -1113,13 +1118,13 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
             case MENU_LOSSES:
             case MENU_KILLS:
             case MENU_SCORES:
-                if (!g_gameOverFlag)
+                if (!g_MpGameOver)
                 {
                     text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_15_PLAY)); /* PLAY */
                 }
                 else
                 {
-                    if (alt_gameover_msg)
+                    if (g_MpMenuAltGameOverMsg)
                     {
                         text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_16_GAMEOVER)); /* GAME OVER */
                     }
@@ -1133,10 +1138,10 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                 text = (char *) ascii_MP_watch_menu_BLANK;
                 break;
             case MENU_PAUSE:
-                if (g_pausedFlag)
+                if (g_MpPaused)
                 {
                     text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_18_PAUSED)); /* PAUSED */
-                    if (playerGetCurrentNum() == who_paused)
+                    if (playerGetCurrentNum() == g_MpPausedBy)
                     {
                         self_paused = 1;
                     }
@@ -1170,7 +1175,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
             gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
         }
  
-        if (mpwatchMenuCanGoLeft())
+        if (mpMenuCanGoLeft())
         {
             viewleft = viGetViewLeft();
     
@@ -1178,16 +1183,16 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
              *  Colour is reused to store a pixel offset here. Efforts to introduce a new variable to store the offset resulted in stack problem I could not solve,
              *  so it's possible Rare really did reuse one variable for this. Perhaps it was not named "colour" but something more generic like "tmp."
              */ 
-            colour = g_gameOverFlag ? 10 : 0, x = ((viewleft + two_player_x_offset) - colour) + 40;
+            colour = g_MpGameOver ? 10 : 0, x = ((viewleft + two_player_x_offset) - colour) + 40;
     
-            if (g_gameOverFlag)
+            if (g_MpGameOver)
             {
                 x -= 8;
             }
  
             y = viGetViewTop() + (22 + MPMENU_YOFF);
  
-            if (!chevron_glow)
+            if (!g_MpMenuChevronGlow)
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
@@ -1201,21 +1206,21 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
             }
         }
  
-        if (mpwatchMenuCanGoRight())
+        if (mpMenuCanGoRight())
         {
             viewleft = viGetViewLeft();
 
             // Colour is again used to store a pixel offset.
-            colour = g_gameOverFlag ? 10 : 0, x = ((colour + 112) + viewleft) + two_player_x_offset;
+            colour = g_MpGameOver ? 10 : 0, x = ((colour + 112) + viewleft) + two_player_x_offset;
  
-            if (g_gameOverFlag)
+            if (g_MpGameOver)
             {
                 x += 8;
             }
  
             y = viGetViewTop() + (22 + MPMENU_YOFF);
  
-            if (!chevron_glow)
+            if (!g_MpMenuChevronGlow)
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
@@ -1237,22 +1242,22 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
  
                 do
                 {
-                    scores[i] = get_points_for_mp_player(i);
+                    scores[i] = mpGetPlayerPoints(i);
                     i++;
                 }
                 while (i != player_count);
             }
  
-            fav_x_offset = (g_gameOverFlag == 0); 
+            fav_x_offset = (g_MpGameOver == 0); 
  
             if (fav_x_offset) 
             { 
-                fav_x_offset = (g_stopPlayFlag == 0); 
+                fav_x_offset = (g_MpStopPlay == 0); 
             }
  
-            if (mpwatchShouldDisplayRank(fav_x_offset))
+            if (mpMenuShowRank(fav_x_offset))
             {
-                write_playerrank_to_buffer(rankbuffer, curplayernum);
+                mpMenuFormatRank(rankbuffer, curplayernum);
                 textMeasure(&textheight, &textwidth, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0);
  
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
@@ -1262,14 +1267,14 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                 gdl = textRender(gdl, &x, &y, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
 
-            fav_x_offset = (g_gameOverFlag == 0); 
+            fav_x_offset = (g_MpGameOver == 0); 
  
             if (fav_x_offset) 
             { 
-                fav_x_offset = (g_stopPlayFlag == 0); 
+                fav_x_offset = (g_MpStopPlay == 0); 
             }
  
-            if (mpwatchShouldDisplayScore(fav_x_offset))
+            if (mpMenuShowScore(fav_x_offset))
             {
                 scenario = frontGetMpScenario();
                 text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_1B_SCORES)); /* SCORES */
@@ -1317,13 +1322,13 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                         colour = q;
                     }
  
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 80, x2 + (70 + MPMENU_YOFF), scores[0], colour);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 80, x2 + (70 + MPMENU_YOFF), scores[0], colour);
                     viewleft = viGetViewLeft();
                     x2 = viGetViewTop();
 
                     curplayernum == 1 ? (colour = current_colour) : (q = g_playerPlayerData[1].have_token_or_goldengun == g_playerPlayerData[curplayernum].have_token_or_goldengun ? same_team_colour : other_team_colour, colour = q);
 
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 80, x2 + (86 + MPMENU_YOFF), scores[1], colour);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 80, x2 + (86 + MPMENU_YOFF), scores[1], colour);
                 }
                 else
                 {
@@ -1340,7 +1345,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                         colour = q;
                     }
  
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 64, x2 + (70 + MPMENU_YOFF), scores[0], colour);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 64, x2 + (70 + MPMENU_YOFF), scores[0], colour);
                     viewleft = viGetViewLeft();
                     x2 = viGetViewTop();
  
@@ -1354,7 +1359,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                         colour = q;
                     }
  
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 96, x2 + (70 + MPMENU_YOFF), scores[1], colour);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 96, x2 + (70 + MPMENU_YOFF), scores[1], colour);
                     viewleft = viGetViewLeft();
                     x2 = viGetViewTop();
  
@@ -1368,7 +1373,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                         colour = q;
                     }
  
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 64, x2 + (86 + MPMENU_YOFF), scores[2], colour);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 64, x2 + (86 + MPMENU_YOFF), scores[2], colour);
  
                     if (player_count == 4)
                     {
@@ -1376,7 +1381,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                         x2 = viGetViewTop();
 
                         curplayernum == 3 ? (colour = current_colour) : (q = g_playerPlayerData[3].have_token_or_goldengun == g_playerPlayerData[curplayernum].have_token_or_goldengun ? same_team_colour : other_team_colour, colour = q);
-                        gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 96, x2 + (86 + MPMENU_YOFF), scores[3], colour);
+                        gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 96, x2 + (86 + MPMENU_YOFF), scores[3], colour);
                     }
                 }
             }
@@ -1386,16 +1391,16 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
         }
         else if (g_CurrentPlayer->mpmenumode == MENU_KILLS)
         {
-            fav_x_offset = (g_gameOverFlag == 0); 
+            fav_x_offset = (g_MpGameOver == 0); 
 
             if (fav_x_offset) 
             { 
-                fav_x_offset = (g_stopPlayFlag == 0); 
+                fav_x_offset = (g_MpStopPlay == 0); 
             } 
 
-            if (mpwatchShouldDisplayRank(fav_x_offset))
+            if (mpMenuShowRank(fav_x_offset))
             {
-                write_playerrank_to_buffer(rankbuffer, curplayernum);
+                mpMenuFormatRank(rankbuffer, curplayernum);
                 textMeasure(&textheight, &textwidth, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0);
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (textheight >> 1)) + (37 + MPMENU_YOFF);
@@ -1421,12 +1426,12 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                 if (curplayernum != 0)
                 {
                     viewleft = viGetViewLeft(); h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 80, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[0], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 80, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[0], GREEN_NORMAL);
                 }
                 if (curplayernum != 1)
                 {
                     viewleft = viGetViewLeft(); h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 80, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[1], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 80, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[1], GREEN_NORMAL);
                 }
             }
             else
@@ -1434,37 +1439,37 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                 if (curplayernum != 0)
                 {
                     viewleft = viGetViewLeft(); h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 64, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[0], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 64, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[0], GREEN_NORMAL);
                 }
                 if (curplayernum != 1)
                 {
                     viewleft = viGetViewLeft(); h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 96, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[1], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 96, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[1], GREEN_NORMAL);
                 }
                 if (curplayernum != 2)
                 {
                     viewleft = viGetViewLeft(); h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 64, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[2], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 64, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[2], GREEN_NORMAL);
                 }
                 if ((player_count == 4) && (curplayernum != 3))
                 {
                     viewleft = viGetViewLeft(); h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 96, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[3], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 96, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[curplayernum].kill_counts[3], GREEN_NORMAL);
                 }
             }
         }
         else if (g_CurrentPlayer->mpmenumode == MENU_LOSSES)
         {
-            fav_x_offset = (g_gameOverFlag == 0); 
+            fav_x_offset = (g_MpGameOver == 0); 
 
             if (fav_x_offset) 
             { 
-                fav_x_offset = (g_stopPlayFlag == 0); 
+                fav_x_offset = (g_MpStopPlay == 0); 
             } 
 
-            if (mpwatchShouldDisplayRank(fav_x_offset))
+            if (mpMenuShowRank(fav_x_offset))
             {
-                write_playerrank_to_buffer(rankbuffer, curplayernum);
+                mpMenuFormatRank(rankbuffer, curplayernum);
                 textMeasure(&textheight, &textwidth, rankbuffer, ptrFontBankGothicChars, ptrFontBankGothic, 0);
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (textheight >> 1)) + (37 + MPMENU_YOFF);
@@ -1492,25 +1497,25 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 80, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[0].kill_counts[curplayernum], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 80, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[0].kill_counts[curplayernum], GREEN_NORMAL);
                 }
                 else if (g_playerPlayerData[0].kill_counts[0] > 0)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 80, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[0].kill_counts[curplayernum], RED_HIGHLIGHT);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 80, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[0].kill_counts[curplayernum], RED_HIGHLIGHT);
                 }
                 if (curplayernum != 1)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 80, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[1].kill_counts[curplayernum], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 80, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[1].kill_counts[curplayernum], GREEN_NORMAL);
                 }
                 else if (g_playerPlayerData[1].kill_counts[1] > 0)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 80, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[1].kill_counts[curplayernum], RED_HIGHLIGHT);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 80, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[1].kill_counts[curplayernum], RED_HIGHLIGHT);
                 }
             }
             else
@@ -1519,39 +1524,39 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 64, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[0].kill_counts[curplayernum], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 64, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[0].kill_counts[curplayernum], GREEN_NORMAL);
                 }
                 else if (g_playerPlayerData[0].kill_counts[0] > 0)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 64, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[0].kill_counts[curplayernum], RED_HIGHLIGHT);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 64, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[0].kill_counts[curplayernum], RED_HIGHLIGHT);
                 }
 
                 if (curplayernum != 1)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 96, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[1].kill_counts[curplayernum], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 96, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[1].kill_counts[curplayernum], GREEN_NORMAL);
                 }
                 else if (g_playerPlayerData[1].kill_counts[1] > 0)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 96, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[1].kill_counts[curplayernum], RED_HIGHLIGHT);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 96, h1 + (70 + MPMENU_YOFF), g_playerPlayerData[1].kill_counts[curplayernum], RED_HIGHLIGHT);
                 }
 
                 if (curplayernum != 2)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 64, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[2].kill_counts[curplayernum], GREEN_NORMAL);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 64, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[2].kill_counts[curplayernum], GREEN_NORMAL);
                 }
                 else if (g_playerPlayerData[2].kill_counts[2] > 0)
                 {
                     viewleft = viGetViewLeft(); 
                     h1 = viGetViewTop();
-                    gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 64, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[2].kill_counts[curplayernum], RED_HIGHLIGHT);
+                    gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 64, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[2].kill_counts[curplayernum], RED_HIGHLIGHT);
                 }
 
                 if (player_count == 4)
@@ -1560,13 +1565,13 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                     {
                         viewleft = viGetViewLeft(); 
                         h1 = viGetViewTop();
-                        gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 96, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[3].kill_counts[curplayernum], GREEN_NORMAL);
+                        gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 96, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[3].kill_counts[curplayernum], GREEN_NORMAL);
                     }
                     else if (g_playerPlayerData[3].kill_counts[3] > 0)
                     {
                         viewleft = viGetViewLeft(); 
                         h1 = viGetViewTop();
-                        gdl = display_text_for_playerdata_on_MP_menu(gdl, (viewleft + two_player_x_offset) + 96, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[3].kill_counts[curplayernum], RED_HIGHLIGHT);
+                        gdl = mpMenuRenderNumber(gdl, (viewleft + two_player_x_offset) + 96, h1 + (86 + MPMENU_YOFF), g_playerPlayerData[3].kill_counts[curplayernum], RED_HIGHLIGHT);
                     }
                 }
             }
@@ -1676,7 +1681,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
         }
         gdl = combiner_bayer_lod_perspective(gdl);
     }
-    else if (((((g_CurrentPlayer->bonddead) && (g_CurrentPlayer->deathanimfinished)) && (g_CurrentPlayer->redbloodfinished)) && (!g_stopPlayFlag)) && (!g_gameOverFlag)
+    else if (((((g_CurrentPlayer->bonddead) && (g_CurrentPlayer->deathanimfinished)) && (g_CurrentPlayer->redbloodfinished)) && (!g_MpStopPlay)) && (!g_MpGameOver)
         && (!g_CoopMode || coopPartnerCanRevive())) // co-op: no respawn once both are dead, or the partner is too weak
     {
         total_kills_against_current = 0;
@@ -1720,13 +1725,13 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
 }
 
 
-s32 mpwatchShouldDisplayGauges(void)
+s32 mpMenuShowGauges(void)
 {
-    return g_gameOverFlag ? FALSE : (g_CurrentPlayer->mpmenuon | (g_CurrentPlayer->healthdisplaytime > 0));
+    return g_MpGameOver ? FALSE : (g_CurrentPlayer->mpmenuon | (g_CurrentPlayer->healthdisplaytime > 0));
 }
 
 
-s32 checkGamePaused(void) 
+s32 mpIsPaused(void) 
 {
-    return g_pausedFlag;
+    return g_MpPaused;
 }

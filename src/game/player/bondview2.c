@@ -15,7 +15,7 @@
 #include <music.h>
 #include <snd.h>
 #include <str.h>
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
 #include "game/world/roommtx.h"
@@ -3940,7 +3940,7 @@ void watchTick(void)
     if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5)
     {
         lvSetControlsLocked(TRUE);
-        sub_GAME_7F0A6A80();
+        watchMenuTick();
     }
     else if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0xc)
     {
@@ -4010,7 +4010,7 @@ void watchTrigger(s32 arg0)
             hudMakeDamageSegments(&g_CurrentPlayer->health_display_values, 23*2, -1, currentPlayerGetHealth());
             hudRenderGaugeBar(&g_CurrentPlayer->watch_health_bar_gdl, OS_K0_TO_PHYSICAL(&g_CurrentPlayer->health_display_values), 0x2E);
 
-            sub_GAME_7F0A69A8();
+            watchMenuOpen();
 
             /**
              * This section is for rendering the selected screen rectangles.
@@ -4022,7 +4022,7 @@ void watchTrigger(s32 arg0)
                 i<(WATCH_NUMBER_SCREENS * WATCH_SCREEN_SELECT_RECTANGLE_HSTEP);
                 i+=WATCH_SCREEN_SELECT_RECTANGLE_HSTEP)
             {
-                // Note: colors are set here but overwritten in watch.c set_page_rectangle_colors
+                // Note: colors are set here but overwritten in watch.c watchMenuSetTabColours
                 ptr_copy = ptr_a;
                 ptr_a = watchMakeRectVerts(ptr_a, i, 0, 0x64, 0x14, -0x12B, 0x136);
                 ptr_b = watchRenderQuad(ptr_b, OS_K0_TO_PHYSICAL(ptr_copy));
@@ -4110,7 +4110,7 @@ void watchTrigger(s32 arg0)
             g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x4;
             g_CurrentPlayer->watch_pause_time = 0;
             g_CurrentPlayer->timer_1C4 = 0;
-            sub_GAME_7F0A69A8();
+            watchMenuOpen();
         }
     }
     else if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x7)
@@ -4120,7 +4120,7 @@ void watchTrigger(s32 arg0)
             g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x3;
             g_CurrentPlayer->watch_pause_time = 0;
             g_CurrentPlayer->timer_1C4 = 0;
-            sub_GAME_7F0A69A8();
+            watchMenuOpen();
         }
     }
     else if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x8)
@@ -4130,7 +4130,7 @@ void watchTrigger(s32 arg0)
             g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0xb;
             g_CurrentPlayer->watch_pause_time = 0;
             g_CurrentPlayer->timer_1C4 = 0;
-            sub_GAME_7F0A69A8();
+            watchMenuOpen();
         }
     }
     else if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x9)
@@ -5054,7 +5054,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     moveData.rLeanRight = 0;
     moveData.detonating = 0;
     moveData.canAutoAim = 0;
-    moveData.invertPitch = get_cur_player_look_vertical_inverted() == 0;
+    moveData.invertPitch = optionsGetLookInverted() == 0;
     moveData.disableLookAhead = 0;
 
     if (stick_x < -5) {
@@ -5116,13 +5116,13 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         && (
             !isMpGame()
             || (
-                g_stopPlayFlag == 0
-                && g_gameOverFlag == 0)))
+                g_MpStopPlay == 0
+                && g_MpGameOver == 0)))
     {
-        if (cur_player_get_control_type() == CONTROLLER_CONFIG_DOMINO /* 2.3 */
-            || cur_player_get_control_type() == CONTROLLER_CONFIG_GOODHEAD /* 2.4 */
-            || cur_player_get_control_type() == CONTROLLER_CONFIG_GALORE /* 2.2 */
-            || cur_player_get_control_type() == CONTROLLER_CONFIG_PLENTY /* 2.1 */
+        if (optionsGetControlStyle() == CONTROLLER_CONFIG_DOMINO /* 2.3 */
+            || optionsGetControlStyle() == CONTROLLER_CONFIG_GOODHEAD /* 2.4 */
+            || optionsGetControlStyle() == CONTROLLER_CONFIG_GALORE /* 2.2 */
+            || optionsGetControlStyle() == CONTROLLER_CONFIG_PLENTY /* 2.1 */
             )
         {
             player_joyGetStickX = joyGetStickX(playerGetCurrentNum() + getPlayerCount());
@@ -5158,7 +5158,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             }
 
             /* 2.1 and 2.3 */
-            if (cur_player_get_control_type() == CONTROLLER_CONFIG_PLENTY || (cur_player_get_control_type() == CONTROLLER_CONFIG_DOMINO))
+            if (optionsGetControlStyle() == CONTROLLER_CONFIG_PLENTY || (optionsGetControlStyle() == CONTROLLER_CONFIG_DOMINO))
             {
                 moveData.analogStrafe = adjustedStickX;
                 moveData.analogPitch = tmpc2sticky;
@@ -5178,7 +5178,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             }
 
             /* 2.1 and 2.2 */
-            if (cur_player_get_control_type() == CONTROLLER_CONFIG_PLENTY || cur_player_get_control_type() == CONTROLLER_CONFIG_GALORE)
+            if (optionsGetControlStyle() == CONTROLLER_CONFIG_PLENTY || optionsGetControlStyle() == CONTROLLER_CONFIG_GALORE)
             {
                 sp104 = (player_joyGetButtons & Z_TRIG) != 0;
                 sp100 = ((player_joyGetButtons & ~copy_prev_buttons_pressed) & Z_TRIG) != 0;
@@ -5193,9 +5193,9 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 sp108 = ((player_joyGetButtons & ~copy_prev_buttons_pressed) & Z_TRIG) != 0;
             }
 
-            if (lvGetControlsLocked() == 0 && disablePlayerActionsWhenPausedOrInMpMenu())
+            if (lvGetControlsLocked() == 0 && mpMenuCanPlayerAct())
             {
-                if (cur_player_get_aim_control() == 0)
+                if (optionsGetAimControl() == 0)
                 {
                     g_CurrentPlayer->insightaimmode = sp104;
                 }
@@ -5378,8 +5378,8 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         else
         {
             /* 1.3 and 1.4 */
-            if (cur_player_get_control_type() == CONTROLLER_CONFIG_KISSY
-                || cur_player_get_control_type() == CONTROLLER_CONFIG_GOODNIGHT)
+            if (optionsGetControlStyle() == CONTROLLER_CONFIG_KISSY
+                || optionsGetControlStyle() == CONTROLLER_CONFIG_GOODNIGHT)
             {
                 shootButtons = A_BUTTON;
                 aimButtons = Z_TRIG;
@@ -5394,9 +5394,9 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
             if (lvGetControlsLocked() == 0)
             {
-                if (disablePlayerActionsWhenPausedOrInMpMenu())
+                if (mpMenuCanPlayerAct())
                 {
-                    if (cur_player_get_aim_control() == 0)
+                    if (optionsGetAimControl() == 0)
                     {
                         g_CurrentPlayer->insightaimmode = (buttons & aimButtons) != 0;
                     }
@@ -5411,8 +5411,8 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     moveData.canManualAim = g_CurrentPlayer->insightaimmode;
 
                     /* 1.2 and 1.4 */
-                    if (cur_player_get_control_type() == CONTROLLER_CONFIG_SOLITARE
-                        || cur_player_get_control_type() == CONTROLLER_CONFIG_GOODNIGHT)
+                    if (optionsGetControlStyle() == CONTROLLER_CONFIG_SOLITARE
+                        || optionsGetControlStyle() == CONTROLLER_CONFIG_GOODNIGHT)
                     {
                         if ((buttons & (L_JPAD | L_CBUTTONS)) != 0)
                         {
@@ -5634,7 +5634,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 && ((buttons & invButtons) == 0);
 
             /* 1.2 and 1.4 */
-            if (cur_player_get_control_type() == CONTROLLER_CONFIG_SOLITARE || cur_player_get_control_type() == CONTROLLER_CONFIG_GOODNIGHT)
+            if (optionsGetControlStyle() == CONTROLLER_CONFIG_SOLITARE || optionsGetControlStyle() == CONTROLLER_CONFIG_GOODNIGHT)
             {
                 moveData.disableLookAhead = 1;
             }
@@ -7998,12 +7998,12 @@ s16 playerGetViewportWidth(void)
         return SCREEN_WIDTH_440;
     }
 
-    if (cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN)
+    if (optionsGetScreenSize() == SCREEN_SIZE_WIDESCREEN)
     {
         return VIEWPORT_WIDTH_WIDESCREEN;
     }
 
-    if (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)
+    if (optionsGetScreenSize() == SCREEN_SIZE_CINEMA)
     {
         return VIEWPORT_WIDTH_CINEMA;
     }
@@ -8043,11 +8043,11 @@ s16 playerGetViewportHeight(void)
 
     if (cameraBufferToggle != 0)
     {
-        if (cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN)
+        if (optionsGetScreenSize() == SCREEN_SIZE_WIDESCREEN)
         {
             return VIEWPORT_HEIGHT_WIDESCREEN;
         }
-        else if (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)
+        else if (optionsGetScreenSize() == SCREEN_SIZE_CINEMA)
         {
             return VIEWPORT_HEIGHT_CINEMA;
         }
@@ -8057,12 +8057,12 @@ s16 playerGetViewportHeight(void)
         }
     }
 
-    if (cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN)
+    if (optionsGetScreenSize() == SCREEN_SIZE_WIDESCREEN)
     {
         t = watchGetAnimFrac();
         return (s16) ((s32) (WIDESCREEN_SCALE_FACTOR * t) + VIEWPORT_OFFSET_HEIGHT_WIDESCREEN);
     }
-    else if (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)
+    else if (optionsGetScreenSize() == SCREEN_SIZE_CINEMA)
     {
         t = watchGetAnimFrac();
         return (s16) ((s32) (CINEMA_SCALE_FACTOR * t) + VIEWPORT_OFFSET_HEIGHT_CINEMA);
@@ -8112,11 +8112,11 @@ s16 playerGetViewportTop(void)
 
     if (cameraBufferToggle != 0)
     {
-        if (cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN)
+        if (optionsGetScreenSize() == SCREEN_SIZE_WIDESCREEN)
         {
             return VIEWPORT_ULY_CAM_WIDESCREEN;
         }
-        else if (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)
+        else if (optionsGetScreenSize() == SCREEN_SIZE_CINEMA)
         {
             return VIEWPORT_ULY_CAM_CINEMA;
         }
@@ -8126,12 +8126,12 @@ s16 playerGetViewportTop(void)
         }
     }
 
-    if (cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN)
+    if (optionsGetScreenSize() == SCREEN_SIZE_WIDESCREEN)
     {
         t = watchGetAnimFrac();
         return (s16) ((s32) (WIDESCREEN_ULY_SCALE_FACTOR * t) + VIEWPORT_ULY_WIDESCREEN_OFFSET);
     }
-    else if (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)
+    else if (optionsGetScreenSize() == SCREEN_SIZE_CINEMA)
     {
         t = watchGetAnimFrac();
         return (s16) ((s32) (CINEMA_ULY_SCALE_FACTOR * t) + VIEWPORT_ULY_CINEMA_OFFSET);
@@ -8205,7 +8205,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
     }
 
 #ifdef VERSION_EU
-    if (get_screen_ratio() == SCREEN_RATIO_16_9)
+    if (optionsGetScreenRatio() == SCREEN_RATIO_16_9)
     {
         faspect = ((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT;
     }
@@ -8224,7 +8224,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 
 #else
 
-    if (get_screen_ratio() == SCREEN_RATIO_16_9)
+    if (optionsGetScreenRatio() == SCREEN_RATIO_16_9)
     {
         playerSetAspect(((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT);
         viSetAspect(((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT);
@@ -8241,19 +8241,19 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
     viSetXY(viGetFrameWidth(), viGetFrameHeight());
     viSetBuf(viGetFrameWidth(), viGetFrameHeight());
     // Hi-res doubles the physical width only; game logic stays 320 wide.
-    viSetScaleX((get_hires_setting() && (cameraBufferToggle == 0)) ? VI_MAX_SCALEX : 1);
+    viSetScaleX((optionsGetHiRes() && (cameraBufferToggle == 0)) ? VI_MAX_SCALEX : 1);
     viSetViewSize(playerGetViewportWidth(), playerGetViewportHeight());
     viSetViewPosition(playerGetViewportLeft(), playerGetViewportTop());
     currentPlayerTickColourFade();
     currentPlayerTickChrFade();
-    currentPlayerSetYAutoAimEnabled(cur_player_get_autoaim());
-    currentPlayerSetXAutoAimEnabled(cur_player_get_autoaim());
-    currentPlayerSetLookAheadSetting(cur_player_get_lookahead());
-    gunSetGunAmmoVisible(GUNAMMOREASON_OPTION, cur_player_get_ammo_onscreen_setting());
+    currentPlayerSetYAutoAimEnabled(optionsGetAutoAim());
+    currentPlayerSetXAutoAimEnabled(optionsGetAutoAim());
+    currentPlayerSetLookAheadSetting(optionsGetLookAhead());
+    gunSetGunAmmoVisible(GUNAMMOREASON_OPTION, optionsGetAmmoOnScreen());
 
     gunSetSightVisible(
         GUNSIGHTREASON_1,
-        (!isMpGame() && cur_player_get_sight_onscreen_control())
+        (!isMpGame() && optionsGetSightOnScreen())
             || (isMpGame() && g_playerPerm->sight)
     );
 
@@ -8484,14 +8484,14 @@ Gfx *camSetupFrame(Gfx *gdl)
 #if defined(VERSION_EU)
     if (bossGetStageNum() == LEVELID_CUBA)
     {
-        if (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)
+        if (optionsGetScreenSize() == SCREEN_SIZE_CINEMA)
         {
             gdl = screenClearBlack(gdl);
             gdl = screenClearBlack(gdl);
             gdl = screenClearBlack(gdl);
             gdl = screenClearBlack(gdl);
         }
-        else if (cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN)
+        else if (optionsGetScreenSize() == SCREEN_SIZE_WIDESCREEN)
         {
             gdl = screenClearBlack(gdl);
             gdl = screenClearBlack(gdl);
@@ -8831,7 +8831,7 @@ Gfx *watchRender(Gfx *gdl)
         mtxPushUnitWorldScale();
         mtxF2L(&handmtx, finalmtx);
         mtxPopWorldScale();
-        gdl = draw_watch_current_page(gdl, finalmtx, (g_CurrentPlayer->watch_animation_state == 5) || (g_CurrentPlayer->watch_animation_state == 12));
+        gdl = watchMenuRender(gdl, finalmtx, (g_CurrentPlayer->watch_animation_state == 5) || (g_CurrentPlayer->watch_animation_state == 12));
         mtxPushUnitWorldScale();
         mtxsF2L(g_CurrentPlayer->field_23C, objheader->numMatrices);
         mtxPopWorldScale();
@@ -10094,7 +10094,7 @@ Gfx *hudRender(Gfx *gdl)
     {
         gdl = hudRenderHealthBars(gdl);
     }
-    else if (mpwatchShouldDisplayGauges())
+    else if (mpMenuShowGauges())
     {
         gdl = hudRenderHealthBars(gdl);
         if (g_CurrentPlayer->healthdisplaytime > 0)
@@ -10400,7 +10400,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
         hudMakeDamageSegments(g_CurrentPlayer->health_display_values, 0x2E, -1, currentPlayerGetHealth());
     }
 
-    if (!isMpGame() || (g_stopPlayFlag == 0 && g_gameOverFlag == 0))
+    if (!isMpGame() || (g_MpStopPlay == 0 && g_MpGameOver == 0))
     {
         if (g_PlayerIsInTank == 1)
         {
@@ -10410,7 +10410,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
         if (g_CurrentPlayer->bonddead == FALSE && g_CurrentPlayer->cheatBondInvincible == FALSE)
         {
             joyRumblePakStart(playerGetCurrentNum(), 0.25);
-            if (cur_player_get_control_type() >= 4)
+            if (optionsGetControlStyle() >= 4)
             {
                 // rumble second controller in 2.x
                 joyRumblePakStart(playerGetCurrentNum() + getPlayerCount(), 0.25);

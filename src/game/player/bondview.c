@@ -14,7 +14,7 @@
 #include <music.h>
 #include <snd.h>
 #include <str.h>
-#include "game/menu/options.h"
+#include "game/menu/watchmenu.h"
 #include "game/world/bg.h"
 #include "game/world/roommtx.h"
 #include "game/hud/blood.h"
@@ -1496,7 +1496,7 @@ void playerResetLife(void)
     if (isMpGame() || (g_CoopMode && (person > 0)))
     {
         g_CurrentPlayer->controldef = frontGetMpControlStyle(person);
-        cur_player_set_control_type(frontGetMpControlStyle(person));
+        optionsSetControlStyle(frontGetMpControlStyle(person));
 
         if (person == PLAYER_2)
         {
@@ -1506,7 +1506,7 @@ void playerResetLife(void)
     }
     else if (g_CoopMode && (playerGetCurrentNum() > 0))
     {
-        cur_player_set_control_type(fileGetFolderControlType(g_FrontFolder));
+        optionsSetControlStyle(fileGetFolderControlType(g_FrontFolder));
     }
 
     g_CurrentPlayer->current_model_pos.f[0] = 0.0f;
