@@ -452,7 +452,7 @@ void objectivesTickStatusMessages(void)
         if (g_ObjectiveStatuses[i] != status) {
             g_ObjectiveStatuses[i] = status;
             if (objectiveGetDifficulty(i) <= lvGetDifficulty()) {
-                if (j_text_trigger != 0)
+                if (g_TextJapanese != 0)
                 {
                     sprintf(&buffer, "%s \x80%c ", langGet(getStringID(LMISC, MISC_STR_2C_OBJECTIVE)), availableindex + 0x1A);
                 }

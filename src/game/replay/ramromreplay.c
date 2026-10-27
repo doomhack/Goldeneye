@@ -442,7 +442,7 @@ void test_if_recording_demos_this_stage_load(enum LEVELID arg0, enum DIFFICULTY 
         ptr_active_demofile->difficulty = arg1;
         ptr_active_demofile->size_cmds = joyGetControllerCount();
         ptr_active_demofile->slotnum = record_slot_num;
-        sub_GAME_7F01D61C(&ptr_active_demofile->savefile);
+        fileCopyCurrentSave(&ptr_active_demofile->savefile);
         copy_current_ingame_registers_before_ramrom_playback(ptr_active_demofile);
         recording_ramrom_flag = 1;
         ramrom_demo_related_6 = 1;
@@ -458,9 +458,9 @@ void test_if_recording_demos_this_stage_load(enum LEVELID arg0, enum DIFFICULTY 
     if (g_ramromPlayBackFlag != 0)
     {
         dword_CODE_bss_8008C5F8 = 0;
-        set_selected_difficulty(ptr_active_demofile->difficulty);
-        set_solo_and_ptr_briefing(ptr_active_demofile->stagenum);
-        set_selected_foldernum_and_copy_demo_eeprom(&ptr_active_demofile->savefile);
+        fileSetDifficulty(ptr_active_demofile->difficulty);
+        fileSetSoloStage(ptr_active_demofile->stagenum);
+        fileUseDemoSave(&ptr_active_demofile->savefile);
         copy_current_ingame_registers_before_ramrom_playback((ramromfilestructure *) (ramrom_data_target + 0x110));
         copy_recorded_ramrom_registers_to_proper_place_ingame(ptr_active_demofile);
         is_ramrom_flag = 1;
@@ -498,8 +498,8 @@ void replay_recorded_ramrom_at_address(ramromfilestructure *demofile)
     ptr_active_demofile = romCopyUnaligned(&ramrom_data_target, address_demo_loaded, sizeof(struct ramromfilestructure));
     address_demo_loaded += sizeof(ramromfilestructure);
     g_ramromPlayBackFlag = 1;
-    set_solo_and_ptr_briefing(ptr_active_demofile->stagenum);
-    set_selected_difficulty(ptr_active_demofile->difficulty);
+    fileSetSoloStage(ptr_active_demofile->stagenum);
+    fileSetDifficulty(ptr_active_demofile->difficulty);
     frontSetMenu(MENU_RUN_STAGE,1);
 }
 

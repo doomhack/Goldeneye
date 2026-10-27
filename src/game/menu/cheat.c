@@ -1331,7 +1331,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             if (player_count == 1)
             {
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
-                if (j_text_trigger)
+                if (g_TextJapanese)
                 {
                     invAddItem(ITEM_ROCKETLAUNCH);
                     invAddItem(ITEM_SNIPERRIFLE);

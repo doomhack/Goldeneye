@@ -13,21 +13,21 @@
 #define M_COLOR_A(x) (u8)(x >> 0x00)
 
 // data
-s32 D_80040E80 = 0; // Unused
-s32 text_spacing = 0;
-s32 text_orientation = 0;
-s32 text_wordwrap = 0;
-s32 overlap_correction = -1;
-s32 text_bilevel_filter = FALSE;
-s32 text_x = 0;
-s32 text_y = 0;
-s32 text_s = 0;
-s32 text_t = 0;
+s32 g_TextUnused = 0; // Unused
+s32 g_TextSpacing = 0;
+s32 g_TextOrientation = 0;
+s32 g_TextWordWrap = 0;
+s32 g_TextOverlapCorrection = -1;
+s32 g_TextBilevelFilter = FALSE;
+s32 g_TextX = 0;
+s32 g_TextY = 0;
+s32 g_TextS = 0;
+s32 g_TextT = 0;
 s32 g_JpnTextTlutNeedsLoad = 0;
-struct font * ptrFontBankGothic = NULL;
-struct fontchar * ptrFontBankGothicChars = NULL;
-struct font * ptrFontZurichBold = NULL;
-struct fontchar * ptrFontZurichBoldChars = NULL;
+struct font * g_FontBankGothic = NULL;
+struct fontchar * g_FontBankGothicChars = NULL;
+struct font * g_FontZurich = NULL;
+struct fontchar * g_FontZurichChars = NULL;
 
 u16 g_JpnTextPalette0[16] = {
     0x0000, 0x5555, 0xaaaa, 0xffff,
@@ -71,20 +71,20 @@ void textInit(void /*, char* asset */)
     #endif
 }
 
-void setTextSpacingInverted(s32 spacing) {
-    text_spacing = -spacing;
+void textSetSpacing(s32 spacing) {
+    g_TextSpacing = -spacing;
 }
 
-void setTextOrientation(s32 orientation) {
-    text_orientation = orientation;
+void textSetOrientation(s32 orientation) {
+    g_TextOrientation = orientation;
 }
 
-void setTextWordWrap(s32 flag) {
-    text_wordwrap = flag;
+void textSetWordWrap(s32 flag) {
+    g_TextWordWrap = flag;
 }
 
-void setTextOverlapCorrection(s32 flag) {
-    overlap_correction = flag;
+void textSetOverlapCorrection(s32 flag) {
+    g_TextOverlapCorrection = flag;
 }
 
 extern u8 _fontbankgothicSegmentEnd NO_SDATA;
@@ -94,45 +94,45 @@ extern u8 _fontzurichboldSegmentRomStart NO_SDATA;
 extern u8 _fontzurichboldSegmentStart NO_SDATA;
 extern u8 _fontbankgothicSegmentStart NO_SDATA;
 
-void load_font_tables(void)
+void textLoadFonts(void)
 {
     u32 len;
 	s32 i;
     
-    text_spacing = 0;
-    text_orientation = 0;
-    text_wordwrap = 0;
-    overlap_correction = -1;
-    text_bilevel_filter = 0;
-    text_x = 0;
-    text_y = 0;
-    text_s = 0;
-    text_t = 0;
+    g_TextSpacing = 0;
+    g_TextOrientation = 0;
+    g_TextWordWrap = 0;
+    g_TextOverlapCorrection = -1;
+    g_TextBilevelFilter = 0;
+    g_TextX = 0;
+    g_TextY = 0;
+    g_TextS = 0;
+    g_TextT = 0;
 
     len = (romptr_t)&_fontbankgothicSegmentEnd - (romptr_t)&_fontbankgothicSegmentStart;
-	ptrFontBankGothic = (struct font *)mempAlloc(len, MEMPOOL_STAGE);
-	ptrFontBankGothicChars = ptrFontBankGothic->chars;
+	g_FontBankGothic = (struct font *)mempAlloc(len, MEMPOOL_STAGE);
+	g_FontBankGothicChars = g_FontBankGothic->chars;
 
-	romCopy(ptrFontBankGothic, (void *) &_fontbankgothicSegmentRomStart, len);
+	romCopy(g_FontBankGothic, (void *) &_fontbankgothicSegmentRomStart, len);
 
     // Convert pointers
 	for (i = 0; i < 94; i++) {
-		ptrFontBankGothicChars[i].pixeldata += (uintptr_t)ptrFontBankGothic;
+		g_FontBankGothicChars[i].pixeldata += (uintptr_t)g_FontBankGothic;
 	}
 
     len = (romptr_t)&_fontzurichboldSegmentEnd - (romptr_t)&_fontzurichboldSegmentStart;
-	ptrFontZurichBold = (struct font *)mempAlloc(len, MEMPOOL_STAGE);
-	ptrFontZurichBoldChars = ptrFontZurichBold->chars;
+	g_FontZurich = (struct font *)mempAlloc(len, MEMPOOL_STAGE);
+	g_FontZurichChars = g_FontZurich->chars;
 
-	romCopy(ptrFontZurichBold, (void *) &_fontzurichboldSegmentRomStart, len);
+	romCopy(g_FontZurich, (void *) &_fontzurichboldSegmentRomStart, len);
 
     // Convert pointers
 	for (i = 0; i < 94; i++) {
-		ptrFontZurichBoldChars[i].pixeldata += (uintptr_t)ptrFontZurichBold;
+		g_FontZurichChars[i].pixeldata += (uintptr_t)g_FontZurich;
 	}
 }
 
-Gfx *microcode_constructor(Gfx *gdl) //fontGfxSetup
+Gfx *textSetupDraw(Gfx *gdl) //fontGfxSetup
 {
 	gDPPipeSync(gdl++);
 	gDPSetCycleType(gdl++, G_CYC_1CYCLE);
@@ -147,7 +147,7 @@ Gfx *microcode_constructor(Gfx *gdl) //fontGfxSetup
 	gDPSetTextureConvert(gdl++, G_TC_FILT);
 	gDPSetTextureLUT(gdl++, G_TT_NONE);
 
-	if (text_bilevel_filter) {
+	if (g_TextBilevelFilter) {
 		gDPSetTextureFilter(gdl++, G_TF_AVERAGE);
 	} else {
 		gDPSetTextureFilter(gdl++, G_TF_BILERP);
@@ -156,7 +156,7 @@ Gfx *microcode_constructor(Gfx *gdl) //fontGfxSetup
 	return gdl;
 }
 
-Gfx *combiner_bayer_lod_perspective(Gfx *gdl)
+Gfx *textEndDraw(Gfx *gdl)
 {
 	gDPPipeSync(gdl++);
 	gDPSetColorDither(gdl++, G_CD_BAYER);
@@ -166,7 +166,7 @@ Gfx *combiner_bayer_lod_perspective(Gfx *gdl)
 	return gdl;
 }
 
-Gfx* draw_blackbox_to_screen(Gfx *glist, s32 *ulx, s32 *uly, s32 *lrx, s32 *lry)
+Gfx* textRenderBlackBox(Gfx *glist, s32 *ulx, s32 *uly, s32 *lrx, s32 *lry)
 {
     gDPSetRenderMode(glist++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
     gDPSetCombineMode(glist++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
@@ -178,7 +178,7 @@ Gfx* draw_blackbox_to_screen(Gfx *glist, s32 *ulx, s32 *uly, s32 *lrx, s32 *lry)
     return glist;
 }
 
-Gfx * microcode_constructor_related_to_menus(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry, u32 color)
+Gfx * textRenderRect(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry, u32 color)
 {
     u32 r = (u8)(color >> 0x18);
     u32 g = (u8)(color >> 0x10);
@@ -204,10 +204,10 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
     s32 drawY;
 
 	drawY = *y + yOffset;
-	kerningOffset = font->kerning[prevchar->kerningindex * 13 + curchar->kerningindex] + text_spacing;
+	kerningOffset = font->kerning[prevchar->kerningindex * 13 + curchar->kerningindex] + g_TextSpacing;
     *x -= (kerningOffset - 1);
 
-    if (text_orientation || (*x > 0 && *x <= viGetX() && drawY + curchar->baseline <= viGetY()))
+    if (g_TextOrientation || (*x > 0 && *x <= viGetX() && drawY + curchar->baseline <= viGetY()))
     {
         if (clipX + clipWidth >= *x
 				&& clipY + clipHeight >= curchar->baseline + drawY
@@ -274,19 +274,19 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
                 {
 					if (curchar->baseline + drawY + curchar->height <= clipY + clipHeight)
                     {
-                        if (text_orientation)
+                        if (g_TextOrientation)
                         {
                             // E5000000 --------:
                             // B4000000 --------:
                             // B3000000 0400FC00:
                             gSPTextureRectangleFlip(gdl++,
-                                /* xl */ VI_SX((((drawY - curchar->baseline) - curchar->height) * 4) + text_y),
-                                /* yl */ ((*x * 4) + text_x),
-                                /* xh */ VI_SX(((drawY - curchar->baseline) * 4) + text_y),
-                                /* yh */ ((*x + curchar->width) * 4) + text_x ,
+                                /* xl */ VI_SX((((drawY - curchar->baseline) - curchar->height) * 4) + g_TextY),
+                                /* yl */ ((*x * 4) + g_TextX),
+                                /* xh */ VI_SX(((drawY - curchar->baseline) * 4) + g_TextY),
+                                /* yh */ ((*x + curchar->width) * 4) + g_TextX ,
                                 /* tile */  G_TX_RENDERTILE,
-                                /* s */ text_t,
-                                /* t */ ((curchar->height - 1) << 5) + text_s,
+                                /* s */ g_TextT,
+                                /* t */ ((curchar->height - 1) << 5) + g_TextS,
                                 /* dsdx */ 0x400,
                                 /* dsdy */ (u16)-(0x400 / g_ViBackData->scalex));
                         }
@@ -296,13 +296,13 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
                             // B4000000 --------:
                             // B3000000 04000400:
                             gSPTextureRectangle(gdl++,
-                                /* xl */ VI_SX((*x * 4) + text_x),
-                                /* yl */ ((drawY + curchar->baseline) * 4) + text_y,
-                                /* xh */ VI_SX(((*x + curchar->width) * 4) + text_x),
-                                /* yh */ ((curchar->baseline + drawY + curchar->height) * 4) + text_y,
+                                /* xl */ VI_SX((*x * 4) + g_TextX),
+                                /* yl */ ((drawY + curchar->baseline) * 4) + g_TextY,
+                                /* xh */ VI_SX(((*x + curchar->width) * 4) + g_TextX),
+                                /* yh */ ((curchar->baseline + drawY + curchar->height) * 4) + g_TextY,
                                 /* tile */  G_TX_RENDERTILE,
-                                /* s */ text_s,
-                                /* t */ text_t,
+                                /* s */ g_TextS,
+                                /* t */ g_TextT,
                                 /* dsdx */ (0x400 / g_ViBackData->scalex),
                                 /* dsdy */ 0x400);
                         }
@@ -314,13 +314,13 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
                         // B4000000 --------:
                         // B3000000 04000400:
                         gSPTextureRectangle(gdl++,
-                            /* xl */ VI_SX((*x * 4) + text_x),
-                            /* yl */ ((drawY + curchar->baseline) * 4) + text_y,
-                            /* xh */ VI_SX(((*x + curchar->width) * 4) + text_x),
-                            /* yh */ clipY + clipHeight + text_y,
+                            /* xl */ VI_SX((*x * 4) + g_TextX),
+                            /* yl */ ((drawY + curchar->baseline) * 4) + g_TextY,
+                            /* xh */ VI_SX(((*x + curchar->width) * 4) + g_TextX),
+                            /* yh */ clipY + clipHeight + g_TextY,
                             /* tile */  G_TX_RENDERTILE,
-                            /* s */ text_s,
-                            /* t */ text_t,
+                            /* s */ g_TextS,
+                            /* t */ g_TextT,
                             /* dsdx */ (0x400 / g_ViBackData->scalex),
                             /* dsdy */ 0x400);
                     }
@@ -333,13 +333,13 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
                         // B4000000 --------:
                         // B3000000 04000400:
                         gSPTextureRectangle(gdl++,
-                            /* xl */ VI_SX((*x * 4) + text_x),
-                            /* yl */ (clipY * 4) + text_y,
-                            /* xh */ VI_SX(((*x + curchar->width) * 4) + text_x),
-                            /* yh */ ((curchar->baseline + drawY + curchar->height) * 4) + text_y,
+                            /* xl */ VI_SX((*x * 4) + g_TextX),
+                            /* yl */ (clipY * 4) + g_TextY,
+                            /* xh */ VI_SX(((*x + curchar->width) * 4) + g_TextX),
+                            /* yh */ ((curchar->baseline + drawY + curchar->height) * 4) + g_TextY,
                             /* tile */  G_TX_RENDERTILE,
-                            /* s */ text_s,
-                            /* t */ (((clipY - drawY) - curchar->baseline) << 5) + text_t,
+                            /* s */ g_TextS,
+                            /* t */ (((clipY - drawY) - curchar->baseline) << 5) + g_TextT,
                             /* dsdx */ (0x400 / g_ViBackData->scalex),
                             /* dsdy */ 0x400);
                     }
@@ -378,7 +378,7 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
 		lineheight = chars['['].height + chars['['].baseline;
 	}
 
-	if (j_text_trigger != 0 && lineheight < 14) {
+	if (g_TextJapanese != 0 && lineheight < 14) {
 		lineheight = 14;
 	}
 
@@ -394,9 +394,9 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
 		} else if (*text == '\n') {
 			prevchar = 'H';
 
-            if ((overlap_correction >= 0) && (savedx == *x))
+            if ((g_TextOverlapCorrection >= 0) && (savedx == *x))
             {
-                *y += overlap_correction;
+                *y += g_TextOverlapCorrection;
             }
             else
             {
@@ -457,7 +457,7 @@ Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar,
 
     drawY = *y + yOffset;
 
-    kerningOffset = font->kerning[prevchar->kerningindex * 13 + curchar->kerningindex] + text_spacing;
+    kerningOffset = font->kerning[prevchar->kerningindex * 13 + curchar->kerningindex] + g_TextSpacing;
     *x -= (kerningOffset - 1);
 
     if (*x > 0
@@ -533,7 +533,7 @@ Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 cli
         {
             if (clipY + clipHeight >= curchar->baseline + y + curchar->height) // Check if the glyph's bottom is above the clip bottom.
             {
-                if (text_orientation) // Check if vertical text. Not sure if ever used for outlined text?
+                if (g_TextOrientation) // Check if vertical text. Not sure if ever used for outlined text?
                 {
                     gSPTextureRectangleFlip(gdl++, 
                         /* xl */ VI_SX(((y - curchar->baseline) - curchar->height) << 2), 
@@ -619,7 +619,7 @@ Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y,
 		lineheight = chars['['].height + chars['['].baseline;
 	}
 
-	if (j_text_trigger != 0 && lineheight < 14) {
+	if (g_TextJapanese != 0 && lineheight < 14) {
 		lineheight = 14;
 	}
     
@@ -687,7 +687,7 @@ void textMeasure(s32 *textheight, s32 *textwidth, char *text, struct fontchar *f
 		lineheight = font1['['].baseline + font1['['].height;
     }
     
-    if ((j_text_trigger) && (lineheight < 14))
+    if ((g_TextJapanese) && (lineheight < 14))
     {
         lineheight = 14;
     }
@@ -718,7 +718,7 @@ void textMeasure(s32 *textheight, s32 *textwidth, char *text, struct fontchar *f
         else if (*text < 0x80)
         {
             // Normal single-byte character
-            tmp = font2->kerning[font1[prevchar - 0x21].kerningindex * 13 + font1[*text - 0x21].kerningindex] + text_spacing - 1;
+            tmp = font2->kerning[font1[prevchar - 0x21].kerningindex * 13 + font1[*text - 0x21].kerningindex] + g_TextSpacing - 1;
             *textwidth = font1[*text - 0x21].width + *textwidth - tmp;
 
             prevchar = *text;
@@ -727,14 +727,14 @@ void textMeasure(s32 *textheight, s32 *textwidth, char *text, struct fontchar *f
         else if (*text < 0xC0)
         {
             // Multi-byte character
-            tmp = font2->kerning[0] + text_spacing - 1;
+            tmp = font2->kerning[0] + g_TextSpacing - 1;
             *textwidth = *textwidth - tmp + 11;
             text += 2;
         }
         else
         {
             // Multi-byte character
-            tmp = font2->kerning[0] + text_spacing - 1;
+            tmp = font2->kerning[0] + g_TextSpacing - 1;
             *textwidth = *textwidth - tmp + 15;
             text += 2;
         }
@@ -803,7 +803,7 @@ void textWrap(s32 wrapwidth, char *src, char *dst, struct fontchar *chars, struc
 				*dst = '\n';
 				dst++;
 
-				for (i = 0; i < text_wordwrap; i++) {
+				for (i = 0; i < g_TextWordWrap; i++) {
 					*dst = ' ';
 					dst++;
 				}
@@ -829,13 +829,13 @@ void textWrap(s32 wrapwidth, char *src, char *dst, struct fontchar *chars, struc
 				*dst = '\n';
 				dst++;
 
-				for (i = 0; i < text_wordwrap; i++)
+				for (i = 0; i < g_TextWordWrap; i++)
                 {
 					*dst = ' ';
 					dst++;
 				}
 
-				curlinewidth = text_wordwrap * SPACE_WIDTH + wordwidth;
+				curlinewidth = g_TextWordWrap * SPACE_WIDTH + wordwidth;
 			}
 
 			curlinewidth += SPACE_WIDTH;
@@ -859,7 +859,7 @@ void textWrap(s32 wrapwidth, char *src, char *dst, struct fontchar *chars, struc
 				*dst = '\n';
 				dst++;
 
-				for (i = 0; i < text_wordwrap; i++) {
+				for (i = 0; i < g_TextWordWrap; i++) {
 					*dst = ' ';
 					dst++;
 				}
@@ -880,12 +880,12 @@ void textWrap(s32 wrapwidth, char *src, char *dst, struct fontchar *chars, struc
 }
 
 // Unreferenced
-void sub_GAME_7F0AEF0C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+void textUnused(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
 
 }
 
 // Unreferenced
-u32 sub_GAME_7F0AEF20(u32 param_1,u32 param_2){
+u32 textIdentity(u32 param_1,u32 param_2){
   return param_1;
 }
 

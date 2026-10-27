@@ -3,7 +3,7 @@
 #include <PR/libaudio.h>
 #include "game/player/bondview.h"
 
-void cleanupSFXRelated(void) {
+void levelStopTankSfx(void) {
     if (g_TankSfxState[0] != 0)
     {
         if (sndGetPlayingState(g_TankSfxState[0]) != AL_STOPPED)

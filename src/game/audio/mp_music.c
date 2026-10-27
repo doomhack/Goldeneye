@@ -13,285 +13,285 @@
 
 // bss
 //CODE.bss:8008C600
-s32 stageMusicID;
+s32 g_LevelMusicStage;
 //CODE.bss:8008C604
-s32 dword_CODE_bss_8008C604;
+s32 g_LevelMusicPausedState;
 
 //CODE.bss:8008C608
-s32 music_slot_active_0[4];
+s32 g_LevelMusicSlotActive[4];
 
 //CODE.bss:8008C618
-s32 music_slot_minutes_0[4];
+s32 g_LevelMusicSlotLinger[4];
 
 //CODE.bss:8008C628
-s32 music_slot_seconds_0[4];
+s32 g_LevelMusicSlotTotal[4];
 
 
 // data
 //D:800484C0
-s32 mission_state = MISSION_STATE_0;
+s32 g_LevelMusicState = MUSICSTATE_SILENT;
 
 
 
-u16 sub_GAME_7F0C0BF0(void)
+u16 levelMusicGetVolume(void)
 {
     return optionsGetMusicVolume();
 }
 
-u16 sub_GAME_7F0C0C10(void)
+u16 levelMusicGetFxVolume(void)
 {
     return optionsGetFxVolume();
 }
 
 
-MISSION_STATE_ID get_mission_state(void)
+MUSICSTATE levelMusicGetState(void)
 {
-    return mission_state;
+    return g_LevelMusicState;
 }
 
 
 
-void set_missionstate(MISSION_STATE_ID arg0)
+void levelMusicSetState(MUSICSTATE arg0)
 {
-    s32 old_mission_state = mission_state;
+    s32 old_mission_state = g_LevelMusicState;
 
-    mission_state = arg0;
+    g_LevelMusicState = arg0;
 
     switch (old_mission_state)
     {
-        case MISSION_STATE_0:
+        case MUSICSTATE_SILENT:
         switch (arg0)
         {
 #if defined(VERSION_US) && !defined(BACKPORT_R1)
-            case MISSION_STATE_0:
+            case MUSICSTATE_SILENT:
                 return;
-            case MISSION_STATE_1:
-                musicTrack1ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_LEVEL:
+                musicTrack1ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack1Fade = 0;
-                musicTrack1Play(getmusictrack_or_randomtrack(stageMusicID));
+                musicTrack1Play(levelMusicGetTrack(g_LevelMusicStage));
                 return;
-            case MISSION_STATE_2:
+            case MUSICSTATE_XTRACK:
                 break;
-            case MISSION_STATE_3:
+            case MUSICSTATE_WATCH:
                 break;
-            case MISSION_STATE_4: // switch 2
-                musicTrack1ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_LEVEL_AMBIENT: // switch 2
+                musicTrack1ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack1Fade = 0;
-                musicTrack1Play(getmusictrack_or_randomtrack(stageMusicID));
-                musicTrack3ApplySeqpVol(sub_GAME_7F0C0C10());
+                musicTrack1Play(levelMusicGetTrack(g_LevelMusicStage));
+                musicTrack3ApplySeqpVol(levelMusicGetFxVolume());
                 g_musicXTrack3Fade = 0;
-                musicTrack3Play(musicGetBgTrackForStage(stageMusicID));
+                musicTrack3Play(levelMusicGetAmbientTrack(g_LevelMusicStage));
                 return;
-            case MISSION_STATE_5:
+            case MUSICSTATE_XTRACK_AMBIENT:
                 break;
-            case MISSION_STATE_6:
+            case MUSICSTATE_MP_DEATH:
                 break;
 #endif
 
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
-            case MISSION_STATE_0:
+            case MUSICSTATE_SILENT:
                 musicTrack1Stop();
                 musicTrack2Stop();
                 musicTrack3Stop();
                 return;
-            case MISSION_STATE_1: // switch 2
-                musicTrack1ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_LEVEL: // switch 2
+                musicTrack1ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack1Fade = 0;
-                musicTrack1Play(getmusictrack_or_randomtrack(stageMusicID));
+                musicTrack1Play(levelMusicGetTrack(g_LevelMusicStage));
                 return;
-            case MISSION_STATE_2:
+            case MUSICSTATE_XTRACK:
                 break;
-            case MISSION_STATE_3:
+            case MUSICSTATE_WATCH:
                 break;
-            case MISSION_STATE_4:
-                musicTrack1ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_LEVEL_AMBIENT:
+                musicTrack1ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack1Fade = 0;
-                musicTrack1Play(getmusictrack_or_randomtrack(stageMusicID));
-                musicTrack3ApplySeqpVol(sub_GAME_7F0C0C10());
+                musicTrack1Play(levelMusicGetTrack(g_LevelMusicStage));
+                musicTrack3ApplySeqpVol(levelMusicGetFxVolume());
                 g_musicXTrack3Fade = 0;
-                musicTrack3Play(musicGetBgTrackForStage(stageMusicID));
+                musicTrack3Play(levelMusicGetAmbientTrack(g_LevelMusicStage));
                 return;
                 break;
-            case MISSION_STATE_5:
+            case MUSICSTATE_XTRACK_AMBIENT:
                 break;
-            case MISSION_STATE_6:
+            case MUSICSTATE_MP_DEATH:
                 break;
 #endif
         }
 
-        case MISSION_STATE_1:
+        case MUSICSTATE_LEVEL:
         switch (arg0)
         {
-            case MISSION_STATE_0:
+            case MUSICSTATE_SILENT:
                 musicTrack1Stop();
                 musicTrack2Stop();
                 musicTrack3Stop();
                 return;
-            case MISSION_STATE_1:
+            case MUSICSTATE_LEVEL:
                 break;
-            case MISSION_STATE_2:
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_XTRACK:
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
-                musicTrack2Play(musicGetXTrackForStage(stageMusicID));
+                musicTrack2Play(levelMusicGetXTrack(g_LevelMusicStage));
                 musicTrack1FadeOut(0.5f);
                 return;
-            case MISSION_STATE_3:
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_WATCH:
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
                 musicTrack2Play(0x18);
                 musicTrack1FadeOut(0.5f);
                 return;
-            case MISSION_STATE_5:
+            case MUSICSTATE_XTRACK_AMBIENT:
                 break;
-            case MISSION_STATE_6:
+            case MUSICSTATE_MP_DEATH:
                 musicTrack1FadeOut(0.02f);
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
                 musicTrack2Play(0x3A);
                 return;
         }
 
-        case MISSION_STATE_2:
+        case MUSICSTATE_XTRACK:
         switch (arg0)
         {
-            case MISSION_STATE_0:
+            case MUSICSTATE_SILENT:
                 musicTrack1Stop();
                 musicTrack2Stop();
                 musicTrack3Stop();
                 return;
-            case MISSION_STATE_1:
-                musicTrack1FadeIn(0.5f, sub_GAME_7F0C0BF0());
+            case MUSICSTATE_LEVEL:
+                musicTrack1FadeIn(0.5f, levelMusicGetVolume());
                 musicTrack2FadeOut(0.5f);
                 return;
-            case MISSION_STATE_2:
+            case MUSICSTATE_XTRACK:
                 return;
-            case MISSION_STATE_3:
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_WATCH:
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
                 musicTrack2Play(0x18);
                 return;
-            case MISSION_STATE_4:
+            case MUSICSTATE_LEVEL_AMBIENT:
                 break;
-            case MISSION_STATE_5:
+            case MUSICSTATE_XTRACK_AMBIENT:
                 break;
-            case MISSION_STATE_6:
+            case MUSICSTATE_MP_DEATH:
                 break;
         }
 
-        case MISSION_STATE_3:
+        case MUSICSTATE_WATCH:
         switch (arg0)
         {
-            case MISSION_STATE_0:
+            case MUSICSTATE_SILENT:
                 musicTrack1Stop();
                 musicTrack2Stop();
                 musicTrack3Stop();
                 return;
-            case MISSION_STATE_1:
-                musicTrack1FadeIn(1.0f, sub_GAME_7F0C0BF0());
+            case MUSICSTATE_LEVEL:
+                musicTrack1FadeIn(1.0f, levelMusicGetVolume());
                 musicTrack2FadeOut(1.0f);
                 return;
-            case MISSION_STATE_2:
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_XTRACK:
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
-                musicTrack2Play(musicGetXTrackForStage(stageMusicID));
+                musicTrack2Play(levelMusicGetXTrack(g_LevelMusicStage));
                 return;
-            case MISSION_STATE_3:
+            case MUSICSTATE_WATCH:
                 break;
-            case MISSION_STATE_4:
-                musicTrack1FadeIn(1.0f, sub_GAME_7F0C0BF0());
-                musicTrack3FadeIn(1.0f, sub_GAME_7F0C0C10());
+            case MUSICSTATE_LEVEL_AMBIENT:
+                musicTrack1FadeIn(1.0f, levelMusicGetVolume());
+                musicTrack3FadeIn(1.0f, levelMusicGetFxVolume());
                 musicTrack2FadeOut(1.0f);
                 return;
-            case MISSION_STATE_5:
-                musicTrack3FadeIn(1.0f, sub_GAME_7F0C0C10());
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_XTRACK_AMBIENT:
+                musicTrack3FadeIn(1.0f, levelMusicGetFxVolume());
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
-                musicTrack2Play(musicGetXTrackForStage(stageMusicID));
+                musicTrack2Play(levelMusicGetXTrack(g_LevelMusicStage));
                 return;
-            case MISSION_STATE_6:
+            case MUSICSTATE_MP_DEATH:
                 break;
         }
 
-        case MISSION_STATE_4:
+        case MUSICSTATE_LEVEL_AMBIENT:
         switch (arg0)
         {
-            case MISSION_STATE_0:
+            case MUSICSTATE_SILENT:
                 musicTrack1Stop();
                 musicTrack2Stop();
                 musicTrack3Stop();
                 return;
-            case MISSION_STATE_1:
+            case MUSICSTATE_LEVEL:
                 break;
-            case MISSION_STATE_2:
+            case MUSICSTATE_XTRACK:
                 break;
-            case MISSION_STATE_3:
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_WATCH:
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
                 musicTrack2Play(0x18);
                 musicTrack1FadeOut(0.5f);
                 musicTrack3FadeOut(0.5f);
                 return;
-            case MISSION_STATE_4:
+            case MUSICSTATE_LEVEL_AMBIENT:
                 break;
-            case MISSION_STATE_5:
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_XTRACK_AMBIENT:
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
-                musicTrack2Play(musicGetXTrackForStage(stageMusicID));
+                musicTrack2Play(levelMusicGetXTrack(g_LevelMusicStage));
                 musicTrack1FadeOut(0.5f);
                 return;
-            case MISSION_STATE_6:
+            case MUSICSTATE_MP_DEATH:
                 break;
         }
 
-        case MISSION_STATE_5:
+        case MUSICSTATE_XTRACK_AMBIENT:
         switch (arg0)
         {
-            case MISSION_STATE_0:
+            case MUSICSTATE_SILENT:
                 musicTrack1Stop();
                 musicTrack2Stop();
                 musicTrack3Stop();
                 return;
-            case MISSION_STATE_1:
+            case MUSICSTATE_LEVEL:
                 break;
-            case MISSION_STATE_2:
+            case MUSICSTATE_XTRACK:
                 break;
-            case MISSION_STATE_3:
-                musicTrack2ApplySeqpVol(sub_GAME_7F0C0BF0());
+            case MUSICSTATE_WATCH:
+                musicTrack2ApplySeqpVol(levelMusicGetVolume());
                 g_musicXTrack2Fade = 0;
                 musicTrack2Play(0x18);
                 musicTrack3FadeOut(0.5f);
                 return;
-            case MISSION_STATE_4:
-                musicTrack1FadeIn(0.5f, sub_GAME_7F0C0BF0());
+            case MUSICSTATE_LEVEL_AMBIENT:
+                musicTrack1FadeIn(0.5f, levelMusicGetVolume());
                 musicTrack2FadeOut(0.5f);
                 return;
-            case MISSION_STATE_5:
+            case MUSICSTATE_XTRACK_AMBIENT:
                 break;
-            case MISSION_STATE_6:
+            case MUSICSTATE_MP_DEATH:
                 break;
         }
 
-        case MISSION_STATE_6:
+        case MUSICSTATE_MP_DEATH:
         switch (arg0)
         {
-            case MISSION_STATE_0:
+            case MUSICSTATE_SILENT:
                 musicTrack1Stop();
                 musicTrack2Stop();
                 musicTrack3Stop();
                 return;
-            case MISSION_STATE_1:
-                musicTrack1FadeIn(2.0f, sub_GAME_7F0C0BF0());
+            case MUSICSTATE_LEVEL:
+                musicTrack1FadeIn(2.0f, levelMusicGetVolume());
                 musicTrack2FadeOut(2.0f);
                 return;
-            case MISSION_STATE_2:
+            case MUSICSTATE_XTRACK:
                 break;
-            case MISSION_STATE_3:
+            case MUSICSTATE_WATCH:
                 break;
-            case MISSION_STATE_4:
+            case MUSICSTATE_LEVEL_AMBIENT:
                 break;
-            case MISSION_STATE_5:
+            case MUSICSTATE_XTRACK_AMBIENT:
                 break;
-            case MISSION_STATE_6:
+            case MUSICSTATE_MP_DEATH:
                 g_musicXTrack2Fade = 0;
                 musicTrack2Play(0x3A);
                 return;
@@ -313,75 +313,75 @@ void set_missionstate(MISSION_STATE_ID arg0)
 
 
 
-void sub_GAME_7F0C11FC(s32 stagenum)
+void levelMusicStart(s32 stagenum)
 {
     musicTrack1Stop();
     musicTrack2Stop();
     musicTrack3Stop();
-    mission_state = MISSION_STATE_0;
-    stageMusicID = stagenum;
+    g_LevelMusicState = MUSICSTATE_SILENT;
+    g_LevelMusicStage = stagenum;
 
-    if (musicGetBgTrackForStage(stageMusicID) < 0)
+    if (levelMusicGetAmbientTrack(g_LevelMusicStage) < 0)
     {
-        set_missionstate(MISSION_STATE_1);
+        levelMusicSetState(MUSICSTATE_LEVEL);
     }
     else
     {
-        set_missionstate(MISSION_STATE_4);
+        levelMusicSetState(MUSICSTATE_LEVEL_AMBIENT);
     }
 
     return;
 }
 
-void set_missionstate_zero(void)
+void levelMusicStop(void)
 {
-    set_missionstate(MISSION_STATE_0);
+    levelMusicSetState(MUSICSTATE_SILENT);
 }
 
-void sub_GAME_7F0C1288(void)
+void levelMusicStartXTrack(void)
 {
-    if (musicGetBgTrackForStage(stageMusicID) < 0)
+    if (levelMusicGetAmbientTrack(g_LevelMusicStage) < 0)
     {
-        set_missionstate(MISSION_STATE_2);
+        levelMusicSetState(MUSICSTATE_XTRACK);
     }
     else
     {
-        set_missionstate(MISSION_STATE_5);
+        levelMusicSetState(MUSICSTATE_XTRACK_AMBIENT);
     }
 }
 
-void sub_GAME_7F0C12CC(void)
+void levelMusicEndXTrack(void)
 {
-    if (musicGetBgTrackForStage(stageMusicID) < 0)
+    if (levelMusicGetAmbientTrack(g_LevelMusicStage) < 0)
     {
-        set_missionstate(MISSION_STATE_1);
+        levelMusicSetState(MUSICSTATE_LEVEL);
     }
     else
     {
-        set_missionstate(MISSION_STATE_4);
+        levelMusicSetState(MUSICSTATE_LEVEL_AMBIENT);
     }
 }
 
-void sub_GAME_7F0C1310(void)
+void levelMusicPause(void)
 {
-    dword_CODE_bss_8008C604 = mission_state;
-    set_missionstate(MISSION_STATE_3);
+    g_LevelMusicPausedState = g_LevelMusicState;
+    levelMusicSetState(MUSICSTATE_WATCH);
 }
 
-void sub_GAME_7F0C1340(void)
+void levelMusicResume(void)
 {
-    set_missionstate(dword_CODE_bss_8008C604);
+    levelMusicSetState(g_LevelMusicPausedState);
 }
 
-void sub_GAME_7F0C1364(void)
+void levelMusicResetSlots(void)
 {
     s32 i;
 
     for (i=0; i<4; i++)
     {
-        music_slot_active_0[i] = 0;
-        music_slot_minutes_0[i] = 0;
-        music_slot_seconds_0[i] = 0;
+        g_LevelMusicSlotActive[i] = 0;
+        g_LevelMusicSlotLinger[i] = 0;
+        g_LevelMusicSlotTotal[i] = 0;
     }
 }
 
@@ -390,7 +390,7 @@ void sub_GAME_7F0C1364(void)
 
 
 
-void reset_all_music_slots(void)
+void levelMusicTick(void)
 {
     s32 i;
     s32 var_t2;
@@ -399,38 +399,38 @@ void reset_all_music_slots(void)
 
     for (i=0; i<4; i++)
     {
-        if (music_slot_active_0[i] || music_slot_minutes_0[i] > 0)
+        if (g_LevelMusicSlotActive[i] || g_LevelMusicSlotLinger[i] > 0)
         {
-            if (music_slot_minutes_0[i] >= g_ClockTimer)
+            if (g_LevelMusicSlotLinger[i] >= g_ClockTimer)
             {
-                music_slot_minutes_0[i] -= g_ClockTimer;
+                g_LevelMusicSlotLinger[i] -= g_ClockTimer;
             }
             else
             {
-                music_slot_minutes_0[i] = 0;
+                g_LevelMusicSlotLinger[i] = 0;
             }
 
-            if (music_slot_seconds_0[i])
+            if (g_LevelMusicSlotTotal[i])
             {
-                if (music_slot_seconds_0[i] >= g_ClockTimer)
+                if (g_LevelMusicSlotTotal[i] >= g_ClockTimer)
                 {
-                    music_slot_seconds_0[i] -= g_ClockTimer;
+                    g_LevelMusicSlotTotal[i] -= g_ClockTimer;
                 }
                 else
                 {
-                    music_slot_seconds_0[i] = 0;
+                    g_LevelMusicSlotTotal[i] = 0;
                 }
 
-                if (music_slot_seconds_0[i])
+                if (g_LevelMusicSlotTotal[i])
                 {
-                    if ((music_slot_active_0[i]) || (music_slot_minutes_0[i]))
+                    if ((g_LevelMusicSlotActive[i]) || (g_LevelMusicSlotLinger[i]))
                     {
                         var_t2 = 1;
                     }
                 }
                 else
                 {
-                    music_slot_active_0[i] = 0;
+                    g_LevelMusicSlotActive[i] = 0;
                 }
             }
         }
@@ -438,16 +438,16 @@ void reset_all_music_slots(void)
 
     if (g_ClockTimer != 0)
     {
-        if ((get_mission_state() == MISSION_STATE_2) || (get_mission_state() == MISSION_STATE_5))
+        if ((levelMusicGetState() == MUSICSTATE_XTRACK) || (levelMusicGetState() == MUSICSTATE_XTRACK_AMBIENT))
         {
             if (var_t2 == 0)
             {
-                sub_GAME_7F0C12CC();
+                levelMusicEndXTrack();
             }
         }
         else if (var_t2 != 0)
         {
-            sub_GAME_7F0C1288();
+            levelMusicStartXTrack();
         }
     }
 
@@ -457,31 +457,31 @@ void reset_all_music_slots(void)
 
 
 
-void musicPlaySlot(s32 slot, s32 min, s32 sec)
+void levelMusicSlotStart(s32 slot, s32 min, s32 sec)
 {
-    if ((music_slot_active_0)[slot] == FALSE)
+    if ((g_LevelMusicSlotActive)[slot] == FALSE)
     {
-        (music_slot_active_0)[slot] = TRUE;
-        (music_slot_minutes_0)[slot] = min * MP_MUSIC_FRAMERATE;
-        (music_slot_seconds_0)[slot] = sec * MP_MUSIC_FRAMERATE;
+        (g_LevelMusicSlotActive)[slot] = TRUE;
+        (g_LevelMusicSlotLinger)[slot] = min * MP_MUSIC_FRAMERATE;
+        (g_LevelMusicSlotTotal)[slot] = sec * MP_MUSIC_FRAMERATE;
     }
 }
 
-void musicStopSlot(s32 slot)
+void levelMusicSlotStop(s32 slot)
 {
     s32 i;
 
     if (-1 < slot)
     {
-        (music_slot_active_0)[slot] = 0;
+        (g_LevelMusicSlotActive)[slot] = 0;
         return;
     }
 
     for (i=0; i<4; i++)
     {
-        music_slot_active_0[i] = 0;
-        music_slot_minutes_0[i] = 0;
-        music_slot_seconds_0[i] = 0;
+        g_LevelMusicSlotActive[i] = 0;
+        g_LevelMusicSlotLinger[i] = 0;
+        g_LevelMusicSlotTotal[i] = 0;
     }
 }
 

@@ -4817,7 +4817,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiMusicPlaySlotRecord *ai = AiListp + Offset;
                     Offset += sizeof(AiMusicPlaySlotRecord);
-                    musicPlaySlot(ai->MUSIC_SLOT, ai->SECONDS_STOPPED_DURATION, ai->SECONDS_TOTAL_DURATION);
+                    levelMusicSlotStart(ai->MUSIC_SLOT, ai->SECONDS_STOPPED_DURATION, ai->SECONDS_TOTAL_DURATION);
     #ifdef ENABLE_LOG
                     osSyncPrintf("ai: enery tune on (%d, %d, %d)\n", ai->MUSIC_SLOT, ai->SECONDS_STOPPED_DURATION, ai->SECONDS_TOTAL_DURATION);
     #endif
@@ -4827,7 +4827,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiMusicStopSlotRecord *ai = AiListp + Offset;
                     Offset += sizeof(AiMusicStopSlotRecord);
-                    musicStopSlot(ai->MUSIC_SLOT);
+                    levelMusicSlotStop(ai->MUSIC_SLOT);
     #ifdef ENABLE_LOG
                     osSyncPrintf("ai: enery tune off (%d)\n", ai->MUSIC_SLOT);
     #endif

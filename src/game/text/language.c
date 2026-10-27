@@ -18,7 +18,7 @@ struct  jpncacheitem *g_JpnCacheCacheItems;
 /**
  * EU .data 80041150
 */
-s32 j_text_trigger = 0;
+s32 g_TextJapanese = 0;
 
 
 #if defined(LANG_US)
@@ -122,7 +122,7 @@ void *LnameX_lookuptable[45][2] = {
 #endif
 
 // cannonically gettextloadnum
-LEVELID langGetLangBankIndexFromStagenum(LEVELID level)
+LEVELID langGetBankForStage(LEVELID level)
 {
     LEVELID return_id;
 
@@ -226,7 +226,7 @@ LEVELID langGetLangBankIndexFromStagenum(LEVELID level)
 void langInit(void) {
     s32 i;
 
-    if (j_text_trigger) {
+    if (g_TextJapanese) {
         g_JpnCharCachePixels = mempAlloc(0x2E80, MEMPOOL_PERMANENT);
         g_JpnCacheCacheItems = mempAlloc(0x100, MEMPOOL_PERMANENT);
         for(i = 0;i != 124;i++) {
@@ -238,13 +238,13 @@ void langInit(void) {
 	for (i = 0; i < 45; i++) {
 		g_LangBanks[i] = 0;
 	}
-    g_LangBanks[LGUN] = fileLoadByNameToPool(LnameX_lookuptable[LGUN][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LTITLE] = fileLoadByNameToPool(LnameX_lookuptable[LTITLE][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMPMENU] = fileLoadByNameToPool(LnameX_lookuptable[LMPMENU][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LPROPOBJ] = fileLoadByNameToPool(LnameX_lookuptable[LPROPOBJ][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMPWEAPONS] = fileLoadByNameToPool(LnameX_lookuptable[LMPWEAPONS][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LOPTIONS] = fileLoadByNameToPool(LnameX_lookuptable[LOPTIONS][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMISC] = fileLoadByNameToPool(LnameX_lookuptable[LMISC][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LGUN] = fileLoadByNameToPool(LnameX_lookuptable[LGUN][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LTITLE] = fileLoadByNameToPool(LnameX_lookuptable[LTITLE][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMPMENU] = fileLoadByNameToPool(LnameX_lookuptable[LMPMENU][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LPROPOBJ] = fileLoadByNameToPool(LnameX_lookuptable[LPROPOBJ][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMPWEAPONS] = fileLoadByNameToPool(LnameX_lookuptable[LMPWEAPONS][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LOPTIONS] = fileLoadByNameToPool(LnameX_lookuptable[LOPTIONS][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LMISC] = fileLoadByNameToPool(LnameX_lookuptable[LMISC][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
 }
 
 
@@ -253,7 +253,7 @@ void langTick(void)
 {
     s32 i;
 
-    if (j_text_trigger)
+    if (g_TextJapanese)
     {
         for (i = 0; i < 0x7c; i++)
         {
@@ -349,13 +349,13 @@ struct jpncharpixels *langGetJpnCharPixels(s32 codepoint)
 
 void langLoadToAddr(u32 id)
 {
-    g_LangBanks[id] = fileLoadByNameToPool(LnameX_lookuptable[id][j_text_trigger], FILELOAD_TRIM, 0x100, MEMPOOL_STAGE);
+    g_LangBanks[id] = fileLoadByNameToPool(LnameX_lookuptable[id][g_TextJapanese], FILELOAD_TRIM, 0x100, MEMPOOL_STAGE);
 }
 
 
 void langLoadToBank(int id,u8 *target,int size)
 {
-    g_LangBanks[id] = fileLoadByNameToAddr(LnameX_lookuptable[id][j_text_trigger], FILELOAD_TRIM, target, size);
+    g_LangBanks[id] = fileLoadByNameToAddr(LnameX_lookuptable[id][g_TextJapanese], FILELOAD_TRIM, target, size);
 }
 
 

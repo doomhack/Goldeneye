@@ -3,7 +3,7 @@
 #include "game/save/file2.h"
 #include "game/menu/front.h"
 
-f32 get_007_reaction_speed(void)
+f32 file007Reaction(void)
 {
     if (lvGetDifficulty() == DIFFICULTY_007) {
         return g_Front007Reaction;
@@ -11,7 +11,7 @@ f32 get_007_reaction_speed(void)
     return 0.f;
 }
 
-f32 get_007_health_mod(void)
+f32 file007Health(void)
 {
     if (lvGetDifficulty() == DIFFICULTY_007) {
         return g_Front007Health;
@@ -19,7 +19,7 @@ f32 get_007_health_mod(void)
     return 1.f;
 }
 
-f32 get_007_damage_mod(void)
+f32 file007Damage(void)
 {
     if (lvGetDifficulty() == DIFFICULTY_007) {
         return g_Front007Damage;
@@ -27,7 +27,7 @@ f32 get_007_damage_mod(void)
     return 1.f;
 }
 
-f32 get_007_accuracy_mod(void)
+f32 file007Accuracy(void)
 {
     if (lvGetDifficulty() == DIFFICULTY_007) {
         return g_Front007Accuracy;
@@ -35,7 +35,7 @@ f32 get_007_accuracy_mod(void)
     return 1.f;
 }
 
-void end_of_mission_briefing(void)
+void fileRecordMissionEnd(void)
 {
     s16 var1;
 
@@ -58,7 +58,7 @@ void end_of_mission_briefing(void)
     }
 }
 
-void fileLoadSaveSettingsForSelectedFolder(int stage)
+void fileLoadCurrentSettings(int stage)
 {
     if(stage){
         #ifdef DEBUG
@@ -68,7 +68,7 @@ void fileLoadSaveSettingsForSelectedFolder(int stage)
     fileLoadSettingsForFolder(g_FrontFolder);
 }
 
-void deleteCurrentSelectedFolder(void)
+void fileClearCurrentFolder(void)
 {
   fileClearSavefileForFolder(g_FrontFolder);
 }
@@ -88,7 +88,7 @@ void fileSetCurrentFolder(u32 foldernum)
   g_FrontFolder = foldernum;
 }
 
-void set_selected_difficulty(DIFFICULTY difficulty)
+void fileSetDifficulty(DIFFICULTY difficulty)
 {
     switch(difficulty)
     {
@@ -108,14 +108,14 @@ void set_selected_difficulty(DIFFICULTY difficulty)
     }
 }
 
-void set_solo_and_ptr_briefing(LEVELID stage)
+void fileSetSoloStage(LEVELID stage)
 {
     g_FrontGameMode = GAMEMODE_SOLO;
     g_FrontStage = stage;
     g_FrontMission = frontFindMissionEntry(stage);
 }
 
-void sub_GAME_7F01D61C(struct save_data *savefile)
+void fileCopyCurrentSave(struct save_data *savefile)
 {
     fileCopySave(g_FrontFolder, savefile);
 }
@@ -123,7 +123,7 @@ void sub_GAME_7F01D61C(struct save_data *savefile)
 
 
 //this feels fake, generated with a permuter session i forgot was running
-void set_selected_foldernum_and_copy_demo_eeprom(struct save_data *eeprom)
+void fileUseDemoSave(struct save_data *eeprom)
 {
   int new_var;
   long long new_var2;
@@ -135,7 +135,7 @@ void set_selected_foldernum_and_copy_demo_eeprom(struct save_data *eeprom)
 }
 
 
-void store_favorite_weapon_current_player(u32 right,u32 left)
+void fileSetFavWeapon(u32 right,u32 left)
 {
   u32 playerNum;
 

@@ -305,7 +305,7 @@ void lvPlayEndThemeMusic(void)
  */
 void lvPlayStageMusic(void)
 {
-    lvPlayMusic(getmusictrack_or_randomtrack(g_CurrentStageToLoad));
+    lvPlayMusic(levelMusicGetTrack(g_CurrentStageToLoad));
 }
 
 /**
@@ -365,7 +365,7 @@ void lvStageLoad(s32 stage)
     musicTrack1ApplySeqpVol(VOLUME_MAX);
     musicTrack2ApplySeqpVol(VOLUME_MAX);
     musicTrack3ApplySeqpVol(VOLUME_MAX);
-    sub_GAME_7F0C1364();
+    levelMusicResetSlots();
     modelmgrSetLevelResetting(TRUE);
     texInitSharedPool();
 #ifdef VERSION_EU
@@ -374,7 +374,7 @@ void lvStageLoad(s32 stage)
     sparksResetAll();
 #endif
     imageBankLoad();
-    load_font_tables();
+    textLoadFonts();
 
     /* If title screen, initialize screen and folder setup.
     * Otherwise:
@@ -414,7 +414,7 @@ void lvStageLoad(s32 stage)
         // any arguments here.
         watchMenuReset();
 
-        sub_GAME_7F0C11FC(stage);
+        levelMusicStart(stage);
 
         for (i=0; i<4; i++)
         {
@@ -723,15 +723,15 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
 
     width = 0;
     height = 0;
-    textMeasure(&height, &width, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
+    textMeasure(&height, &width, text, g_FontBankGothicChars, g_FontBankGothic, 0);
 
     x = viGetX() - width - 0x14;
     y = 0x10;
 
-    DL = microcode_constructor(DL);
-    DL = microcode_constructor_related_to_menus(DL, x - 2, y - 1, x + width + 2, y + height + 1, 0x64);
-    DL = textRender(DL, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, -1, viGetX(), viGetY(), 0, 0);
-    DL = combiner_bayer_lod_perspective(DL);
+    DL = textSetupDraw(DL);
+    DL = textRenderRect(DL, x - 2, y - 1, x + width + 2, y + height + 1, 0x64);
+    DL = textRender(DL, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, -1, viGetX(), viGetY(), 0, 0);
+    DL = textEndDraw(DL);
 
     return DL;
 }
@@ -1010,7 +1010,7 @@ void lvApplyDifficulty(void)
         g_SpExplosionDamageMult = 0.75f;
 
 #if defined(BUGFIX_R1)
-        if (j_text_trigger)
+        if (g_TextJapanese)
         {
             difficulty = 1.1f;
         }
@@ -1039,7 +1039,7 @@ void lvApplyDifficulty(void)
         g_SpExplosionDamageMult = 1.0f;
 
 #if defined(BUGFIX_R1)
-        if (j_text_trigger)
+        if (g_TextJapanese)
         {
             difficulty = 0.75f;
         }
@@ -1126,7 +1126,7 @@ void lvTick(void)
 
     if ((isMpGame()) && (g_CurrentStageToLoad != LEVELID_TITLE))
     {
-        if (get_mission_state() == MISSION_STATE_6)
+        if (levelMusicGetState() == MUSICSTATE_MP_DEATH)
         {
             s32 i;
             s32 mp_alive_count;
@@ -1149,7 +1149,7 @@ void lvTick(void)
 
             if ((mp_alive_count > 0) && (mp_alive_count == mp_player_field424_count))
             {
-                set_missionstate(MISSION_STATE_1);
+                levelMusicSetState(MUSICSTATE_LEVEL);
             }
         }
 
@@ -1393,7 +1393,7 @@ void lvTick(void)
         }
 
         propsTickOnce();
-        reset_all_music_slots();
+        levelMusicTick();
         langTick();
 
         if ((get_debug_joy2detailedit_flag() != 0) && (g_DebugDetailEdit == 0))
@@ -1715,7 +1715,7 @@ void lvStageUnload(void)
 
     if (g_CurrentStageToLoad != LEVELID_TITLE)
     {
-        langClearBank(langGetLangBankIndexFromStagenum(g_CurrentStageToLoad));
+        langClearBank(langGetBankForStage(g_CurrentStageToLoad));
         playersStoreFavouriteWeapons();
     }
 
@@ -1728,9 +1728,9 @@ void lvStageUnload(void)
     alarmsReset();
     setupFreeProps(g_CurrentStageToLoad);
     objectivesFinish();
-    cleanupSFXRelated();
+    levelStopTankSfx();
     gunsStopSounds();
-    set_missionstate_zero();
+    levelMusicStop();
     bgReset();
 }
 

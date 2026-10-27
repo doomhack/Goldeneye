@@ -10214,7 +10214,7 @@ void pickupPlayWeaponSound(ITEM_IDS weapontype)
 void pickupBuildAmmoText(u8 *finaltext, AMMOTYPE ammotype, u32 quantity)
 {
     *finaltext = 0;
-    if (j_text_trigger != 0)
+    if (g_TextJapanese != 0)
     {
         pickupAppendAmmoType(finaltext,ammotype,quantity);
         if (!viewIsHalfWidth())
@@ -10389,7 +10389,7 @@ void pickupBuildWeaponText(u8 *finalstring, ITEM_IDS itemtype)
        (the original left the caller's stack buffer uninitialised) */
     finalstring[0] = '\0';
 
-    if (j_text_trigger != 0)
+    if (g_TextJapanese != 0)
     {
           strcpy(finalstring,"");
           if (viewIsHalfWidth())
@@ -10537,7 +10537,7 @@ void pickupBuildWeaponText(u8 *finalstring, ITEM_IDS itemtype)
             break;
     }
 
-    if ((j_text_trigger != 0) && (!morethan2players))
+    if ((g_TextJapanese != 0) && (!morethan2players))
     {
         if (finalstring[strlen(finalstring) - 1] == '\n')
         {
@@ -14366,7 +14366,7 @@ Gfx *countdownTimerRender(Gfx *DL)
         secs = (s32) mathFloor(time / 60.0f) - (mins * 60);
         ms = ((s32) mathFloor((time * 100.0f) / 60.0f) - (mins * 6000)) - (secs * 100);
 
-        DL = microcode_constructor(DL);
+        DL = textSetupDraw(DL);
 
         #if defined(VERSION_US)
             valign_offset = 18;
@@ -14392,7 +14392,7 @@ Gfx *countdownTimerRender(Gfx *DL)
         DL = gunDrawHudInteger(DL, (ms % 100) / 10, 0xB6, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
         DL = gunDrawHudInteger(DL, ms % 10, 0xBE, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
-        DL = combiner_bayer_lod_perspective(DL);
+        DL = textEndDraw(DL);
     }
 
     return DL;

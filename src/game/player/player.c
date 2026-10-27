@@ -1201,7 +1201,7 @@ void playersStoreFavouriteWeapons(void) {
     for (player = 0; player < player_count; player++) {
         playerSetCurrent(player);
         invGetWeaponOfChoice(&right_hand, &left_hand);
-        store_favorite_weapon_current_player(right_hand, left_hand);
+        fileSetFavWeapon(right_hand, left_hand);
     }
 
     playerSetCurrent(current_player);

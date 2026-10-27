@@ -12,7 +12,7 @@ struct music_setup
 
 // data
 //D:8004EB10
-struct music_setup music_setup_entries[] = {
+struct music_setup g_LevelMusic[] = {
     { LEVELID_BUNKER1,   M_BUNKER1,      0xFFFF,   M_BUNKER1X },
     { LEVELID_SILO,      M_SILO,         0xFFFF,   M_SILOX },
     { LEVELID_STATUE,    M_STATUE,       0xFFFF,   M_STATUEPART },
@@ -40,7 +40,7 @@ struct music_setup music_setup_entries[] = {
 };
 
 //D:8004EBD0
-s16 random_tracks[] = {
+s16 g_LevelMusicRandom[] = {
     M_TRAIN,
     M_DEPOT,
     M_MPTHEME,
@@ -91,30 +91,30 @@ s16 random_tracks[] = {
 /**
  * NTSC address 0x7F0D2720.
 */
-s32 getmusictrack_or_randomtrack(s32 arg0)
+s32 levelMusicGetTrack(s32 arg0)
 {
     s32 index;
     
-    for (index = 0; music_setup_entries[index].stage_id != 0; index++)
+    for (index = 0; g_LevelMusic[index].stage_id != 0; index++)
     {
-        if (music_setup_entries[index].stage_id == arg0)
+        if (g_LevelMusic[index].stage_id == arg0)
         {
             s32 count;
             s32 result;
             
-            if (music_setup_entries[index].main_music == -1)
+            if (g_LevelMusic[index].main_music == -1)
             {
                 count = 0;
-                while (random_tracks[count] != M_NONE)
+                while (g_LevelMusicRandom[count] != M_NONE)
                 {
                     count++;
                 }
 
-                result = random_tracks[randomGetNext() % count];
+                result = g_LevelMusicRandom[randomGetNext() % count];
                 return result;
             }
 
-            result = music_setup_entries[index].main_music;
+            result = g_LevelMusic[index].main_music;
             return result;
         }
     }
@@ -126,12 +126,12 @@ s32 getmusictrack_or_randomtrack(s32 arg0)
         
         count = 0;
         
-        while (random_tracks[count] != M_NONE)
+        while (g_LevelMusicRandom[count] != M_NONE)
         {
             count++;
         }
     
-        result = random_tracks[randomGetNext() % count];
+        result = g_LevelMusicRandom[randomGetNext() % count];
         return result;
     }
 }
@@ -140,14 +140,14 @@ s32 getmusictrack_or_randomtrack(s32 arg0)
 
 
 
-s32 musicGetBgTrackForStage(s32 stageID)
+s32 levelMusicGetAmbientTrack(s32 stageID)
 {
     s32 i;
-    for (i=0; music_setup_entries[i].stage_id!=0; i++)
+    for (i=0; g_LevelMusic[i].stage_id!=0; i++)
     {
-        if (stageID == music_setup_entries[i].stage_id) 
+        if (stageID == g_LevelMusic[i].stage_id) 
         {
-            return music_setup_entries[i].bg_sound;
+            return g_LevelMusic[i].bg_sound;
         }
     }
 
@@ -155,14 +155,14 @@ s32 musicGetBgTrackForStage(s32 stageID)
 }
 
 
-s32 musicGetXTrackForStage(s32 stageID)
+s32 levelMusicGetXTrack(s32 stageID)
 {
     s32 i;
-    for (i=0; music_setup_entries[i].stage_id!=0; i++)
+    for (i=0; g_LevelMusic[i].stage_id!=0; i++)
     {
-        if (stageID == music_setup_entries[i].stage_id) 
+        if (stageID == g_LevelMusic[i].stage_id) 
         {
-            return music_setup_entries[i].xtrack;
+            return g_LevelMusic[i].xtrack;
         }
     }
 

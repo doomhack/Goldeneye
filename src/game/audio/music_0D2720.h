@@ -2,8 +2,8 @@
 #define _MUSIC_0D2720_H_
 #include <ultra64.h>
 
-s32 musicGetBgTrackForStage(s32 stageID);
-s32 musicGetXTrackForStage(s32 stageID);
-s32 getmusictrack_or_randomtrack(s32 arg0);
+s32 levelMusicGetAmbientTrack(s32 stageID);
+s32 levelMusicGetXTrack(s32 stageID);
+s32 levelMusicGetTrack(s32 arg0);
 
 #endif

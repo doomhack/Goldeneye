@@ -17,7 +17,7 @@
 //CODE.bss:80069A40
 //CODE.bss:80069AA0
 //CODE.bss:80069B00
-save_data saves[SAVESLOTMAX];
+save_data g_Saves[SAVESLOTMAX];
 
 //CODE.bss:80069B60
 /**
@@ -28,9 +28,9 @@ ChrRecord *g_CurModelChr;
 //data
 //D:8002C510
 #ifdef ALL_BONDS
-s32 save_selected_bond[] = {BOND_BROSNAN,BOND_CONNERY,BOND_DALTON,BOND_MOORE};
+s32 g_SaveBond[] = {BOND_BROSNAN,BOND_CONNERY,BOND_DALTON,BOND_MOORE};
 #else
-s32 save_selected_bond[] = {BOND_BROSNAN,BOND_BROSNAN,BOND_BROSNAN,BOND_BROSNAN};
+s32 g_SaveBond[] = {BOND_BROSNAN,BOND_BROSNAN,BOND_BROSNAN,BOND_BROSNAN};
 #endif
 
 
@@ -52,7 +52,7 @@ void fileResetRamRomSave(void)
 {
     save_data new_save = BLANKSAVEDATA;
 
-    saves[SAVESLOTRAMROM] = new_save;
+    g_Saves[SAVESLOTRAMROM] = new_save;
 }
 
 /**
@@ -76,12 +76,12 @@ void fileWriteSmallSave(smallSave *save)
  */
 void fileWriteSave(save_data *save)
 {
-    if (save >= &saves[SAVESLOT1] && save < &saves[SAVESLOTRAMROM])
+    if (save >= &g_Saves[SAVESLOT1] && save < &g_Saves[SAVESLOTRAMROM])
     {
         if ( fileGamePakProbe())
         {
             fileGenerateCRC(&save->completion_bitflags, save + 1, save);
-            joyGamePakLongWrite((((u32)((save - &saves[SAVESLOT1]) * 0x60) >> 3) + 4), save, sizeof(save_data)); // 0x60 = sizeof(save_data) be sure to manually update if save changes
+            joyGamePakLongWrite((((u32)((save - &g_Saves[SAVESLOT1]) * 0x60) >> 3) + 4), save, sizeof(save_data)); // 0x60 = sizeof(save_data) be sure to manually update if save changes
         }
     }
 }
@@ -416,16 +416,16 @@ save_data * fileGetSaveForFoldernum(u32 folder)
 
     for (i = SAVESLOT1; i < SAVESLOTRAMROM; i++)
     {
-        if ( fileGetSaveFlagDoReset(&saves[i]) == FALSE &&
-                fileGetSaveFolder(&saves[i]) == folder)
+        if ( fileGetSaveFlagDoReset(&g_Saves[i]) == FALSE &&
+                fileGetSaveFolder(&g_Saves[i]) == folder)
         {
-            return &saves[i];
+            return &g_Saves[i];
         }
     }
 
     if (folder == RAMROM_FOLDERNUM)
     {
-        return &saves[SAVESLOTRAMROM];
+        return &g_Saves[SAVESLOTRAMROM];
     }
 
     return NULL;
@@ -436,13 +436,13 @@ save_data * fileGetSaveForFoldernum(u32 folder)
  *
  * @return s32
  */
-s32 fileGetSaveFlagDoReset_any_folder(void)
+s32 fileAnyFolderNeedsReset(void)
 {
     s32 i;
 
     for(i = SAVESLOT1; i < SAVESLOTRAMROM; i++)
     {
-        if ( fileGetSaveFlagDoReset(&saves[i]))
+        if ( fileGetSaveFlagDoReset(&g_Saves[i]))
         {
             return i;
         }
@@ -461,17 +461,17 @@ void fileBuildWriteNewSave(u32 folder)
 {
     s32 folder_with_flag;
 
-    folder_with_flag = fileGetSaveFlagDoReset_any_folder();
+    folder_with_flag = fileAnyFolderNeedsReset();
 
     if (folder_with_flag >= 0)
     {
         save_data new_save = BLANKSAVEDATA;
-        saves[folder_with_flag] = new_save;
+        g_Saves[folder_with_flag] = new_save;
 
-        fileSetSaveFoldernum(&saves[folder_with_flag], folder);
-        fileSetSaveFlagDoReset(&saves[folder_with_flag], FALSE);
-        fileSetSelectedBond(&saves[folder_with_flag], folder);
-        fileWriteSave(&saves[folder_with_flag]);
+        fileSetSaveFoldernum(&g_Saves[folder_with_flag], folder);
+        fileSetSaveFlagDoReset(&g_Saves[folder_with_flag], FALSE);
+        fileSetSelectedBond(&g_Saves[folder_with_flag], folder);
+        fileWriteSave(&g_Saves[folder_with_flag]);
     }
 }
 
@@ -516,26 +516,26 @@ void fileValidateSaves(void)
         fileCoopLoadPartnerSettings(&joyChecksum);
 
         // Block read 5 saves starting at address 4th byte (? bug: address must be multiple of 8 - return is -1)
-        joyGamePakLongRead(4, &saves, sizeof(save_data) * 5);
+        joyGamePakLongRead(4, &g_Saves, sizeof(save_data) * 5);
 
         for (i = SAVESLOT1; i != SAVESLOTRAMROM; i++) //only != matches
         {
             bool checksumOK2 = TRUE;
 
-            fileGenerateCRC(&saves[i].completion_bitflags, &saves[i + 1], &crc); // do checksum on save data
+            fileGenerateCRC(&g_Saves[i].completion_bitflags, &g_Saves[i + 1], &crc); // do checksum on save data
 
             if (1){} // Hack to shift registers
             if (1){} // or something like if (FINAL){}
 
-            if ((crc[0] != saves[i].chksum1) ||
-                (crc[1] != saves[i].chksum2))
+            if ((crc[0] != g_Saves[i].chksum1) ||
+                (crc[1] != g_Saves[i].chksum2))
             {
                 checksumOK2 = FALSE;
             }
 
             if (!checksumOK2)
             {
-                fileResetSave(&saves[i]);
+                fileResetSave(&g_Saves[i]);
             }
         }
 
@@ -550,27 +550,27 @@ void fileValidateSaves(void)
             for (j = SAVESLOT1; j < SAVESLOTRAMROM; j++)
             {
                 // if save = folder and SAVEFLAG_DORESET set
-                if (!fileGetSaveFlagDoReset(&saves[j]) &&
-                    fileGetSaveFolder(&saves[j]) == i)
+                if (!fileGetSaveFlagDoReset(&g_Saves[j]) &&
+                    fileGetSaveFolder(&g_Saves[j]) == i)
                 {
                     if (jif < SAVESLOT1) // on first SAVEFLAG_DORESET do this
                     {
                         jif = j;
-                        slot = fileGetSaveFlagSlot(&saves[j]);
+                        slot = fileGetSaveFlagSlot(&g_Saves[j]);
                     }
                     else
                     {
-                        slot_2 = fileGetSaveFlagSlot(&saves[j]);
+                        slot_2 = fileGetSaveFlagSlot(&g_Saves[j]);
 
                         if (slot_2 == (slot + 1) % 4)
                         {
-                            fileResetSave(&saves[jif]);
+                            fileResetSave(&g_Saves[jif]);
                             jif = j;
                             slot = slot_2;
                         }
                         else
                         {
-                            fileResetSave(&saves[j]);
+                            fileResetSave(&g_Saves[j]);
                         }
                     }
                 }
@@ -589,7 +589,7 @@ void fileValidateSaves(void)
 
             if (save)
             {
-                save_selected_bond[i] = fileGetSelectedBond(save);
+                g_SaveBond[i] = fileGetSelectedBond(save);
             }
         }
     }
@@ -745,20 +745,20 @@ void fileOverwriteSaveSlotWithNewSave(save_data *save1, save_data *save2)
     s32 slot;
 
     slot = 0;
-    folder_with_flag = fileGetSaveFlagDoReset_any_folder();
+    folder_with_flag = fileAnyFolderNeedsReset();
 
     if (folder_with_flag >= 0)
     {
-        saves[folder_with_flag] = *save2;
+        g_Saves[folder_with_flag] = *save2;
 
         if (save1)
         {
             slot = (s32)( fileGetSaveFlagSlot(save1) + 1) % 4;
         }
 
-        fileSetSaveFlagDoReset(&saves[folder_with_flag], FALSE);
-        fileResetSaveFlagSlot(&saves[folder_with_flag], slot);
-        fileWriteSave(&saves[folder_with_flag]);
+        fileSetSaveFlagDoReset(&g_Saves[folder_with_flag], FALSE);
+        fileResetSaveFlagSlot(&g_Saves[folder_with_flag], slot);
+        fileWriteSave(&g_Saves[folder_with_flag]);
 
         if (save1)
         {
@@ -988,7 +988,7 @@ bool fileIsCradleCompletedAnyFolder(void)
  *
  * @return bool
  */
-bool check_aztec_completed_any_folder_secret_00(void)
+bool fileIsAztecCompletedOnSecretOr00AnyFolder(void)
 {
     s32 folder;
 
@@ -1035,7 +1035,7 @@ u8 fileGetBondForFolder(u32 folder)
     //likely code based on behavior
     if ((folder >= FOLDER1) && (folder < MAX_FOLDER_COUNT))
     {
-        return save_selected_bond[folder];
+        return g_SaveBond[folder];
     }
 #endif
 
@@ -1055,9 +1055,9 @@ void fileSetSelectedBondTofolder(s32 folder, s32 bond)
         return;
     }
 #ifdef ALL_BONDS
-    save_selected_bond[folder] = bond;
+    g_SaveBond[folder] = bond;
 #else
-    save_selected_bond[folder] = BOND_BROSNAN;
+    g_SaveBond[folder] = BOND_BROSNAN;
 #endif
 }
 
@@ -1066,7 +1066,7 @@ void fileSetSelectedBondTofolder(s32 folder, s32 bond)
  *
  * @param unused
  */
-void sub_GAME_7F01EBF4(u32 unused)
+void fileUnused1(u32 unused)
 {
     return;
 }
@@ -1076,7 +1076,7 @@ void sub_GAME_7F01EBF4(u32 unused)
  *
  * @param unused
  */
-void sub_GAME_7F01EBFC(u32 unused)
+void fileUnused2(u32 unused)
 {
     return;
 }
@@ -1549,9 +1549,9 @@ void fileUpdateSelectedBondInSave(s32 folder)
             fileSetSaveFoldernum(&new_save, folder);
         }
 
-        if (save_selected_bond[folder] != fileGetSelectedBond(&new_save))
+        if (g_SaveBond[folder] != fileGetSelectedBond(&new_save))
         {
-            fileSetSelectedBond(&new_save, save_selected_bond[folder]);
+            fileSetSelectedBond(&new_save, g_SaveBond[folder]);
             fileOverwriteSaveSlotWithNewSave(save, &new_save);
         }
     }
@@ -1589,7 +1589,7 @@ void fileCopyDemoSaveToRamRomSave(u32 folder, save_data *save)
 {
     if (folder == RAMROM_FOLDERNUM)
     {
-        saves[SAVESLOTRAMROM] = *save;
+        g_Saves[SAVESLOTRAMROM] = *save;
     }
 }
 

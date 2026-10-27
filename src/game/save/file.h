@@ -28,24 +28,24 @@ typedef struct smallSave
     u8 unk[24];
 } smallSave;
 
-extern save_data saves[6];
+extern save_data g_Saves[6];
 
-extern s32 save_selected_bond[];
+extern s32 g_SaveBond[];
 
-f32 get_007_reaction_speed(void);
-f32 get_007_health_mod(void);
-f32 get_007_damage_mod(void);
-f32 get_007_accuracy_mod(void);
-void end_of_mission_briefing(void);
-void fileLoadSaveSettingsForSelectedFolder(int stage);
-void deleteCurrentSelectedFolder(void);
+f32 file007Reaction(void);
+f32 file007Health(void);
+f32 file007Damage(void);
+f32 file007Accuracy(void);
+void fileRecordMissionEnd(void);
+void fileLoadCurrentSettings(int stage);
+void fileClearCurrentFolder(void);
 void fileUpdateBondInCurrentFolder(void);
 s32 fileGetBondForCurrentFolder(void);
 void fileSetCurrentFolder(u32 foldernum);
-void set_selected_difficulty(DIFFICULTY difficulty);
-void set_solo_and_ptr_briefing(LEVELID stage);
-void sub_GAME_7F01D61C(struct save_data *savefile);
-void set_selected_foldernum_and_copy_demo_eeprom(struct save_data *eeprom);
-void store_favorite_weapon_current_player(u32 right,u32 left);
+void fileSetDifficulty(DIFFICULTY difficulty);
+void fileSetSoloStage(LEVELID stage);
+void fileCopyCurrentSave(struct save_data *savefile);
+void fileUseDemoSave(struct save_data *eeprom);
+void fileSetFavWeapon(u32 right,u32 left);
 
 #endif

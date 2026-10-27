@@ -75,7 +75,7 @@ void mempInitPools(s32 areaStart, s32 areaSize)
     if (poolSizes.me == 0)
     {
         poolSizes.mf = 0;
-        poolSizes.me = ((j_text_trigger ? 308 : 296) * 1024);
+        poolSizes.me = ((g_TextJapanese ? 308 : 296) * 1024);
         poolSizes.ml = areaSize - poolSizes.me;
     }
 

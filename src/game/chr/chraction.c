@@ -282,7 +282,7 @@ f32 chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max)
     f32 ret;
 
     ret = (f32) self->speedrating;
-    ret = (get_007_reaction_speed() * (100.0f - ret)) + ret;
+    ret = (file007Reaction() * (100.0f - ret)) + ret;
     return ((ret * (max - min)) / 100.0f) + min;
 }
 
@@ -298,7 +298,7 @@ s32 chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale)
     s32 ret;
 
     ret = (s32) self->speedrating;
-    ret = (s32)(get_007_reaction_speed() * (f32)(100 - ret)) + ret;
+    ret = (s32)(file007Reaction() * (f32)(100 - ret)) + ret;
     return ((100 - ret) * scale) / 100;
 }
 
@@ -316,7 +316,7 @@ f32 chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max)
     f32 ret;
 
     ret = (f32) self->arghrating;
-    ret = (get_007_reaction_speed() * (100.0f - ret)) + ret;
+    ret = (file007Reaction() * (100.0f - ret)) + ret;
     return ((ret * (max - min)) / 100.0f) + min;
 }
 
@@ -2326,7 +2326,7 @@ f32 counterOpPlayerDamage(s32 shooter, f32 damage, s32 weaponid)
 {
     if (counterOpIsGuardPlayer(shooter))
     {
-        return 0.125f * weaponGetDamage(weaponid) * g_AiDamageModifier * get_007_damage_mod();
+        return 0.125f * weaponGetDamage(weaponid) * g_AiDamageModifier * file007Damage();
     }
 
     return damage / counterOpGetGuardHealth();
@@ -6294,13 +6294,13 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
             }
         }
 
-        if (get_007_accuracy_mod() <= 1.0f)
+        if (file007Accuracy() <= 1.0f)
         {
-            phi_f2_4 *= get_007_accuracy_mod();
+            phi_f2_4 *= file007Accuracy();
         }
         else
         {
-            phi_f2_4 *= (9.0f / (10.001f - get_007_accuracy_mod()));
+            phi_f2_4 *= (9.0f / (10.001f - file007Accuracy()));
         }
 
         phi_f2_4 *= g_AiAccuracyModifier;
@@ -6319,7 +6319,7 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
 
         if (self->shotbondsum >= 1.0f)
         {
-            t2 = (0.125f * weaponGetDamage(item) * g_AiDamageModifier) * get_007_damage_mod();
+            t2 = (0.125f * weaponGetDamage(item) * g_AiDamageModifier) * file007Damage();
 
             if ((item == ITEM_SHOTGUN) || (item == ITEM_AUTOSHOT))
             {

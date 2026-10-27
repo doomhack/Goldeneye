@@ -68,7 +68,7 @@ s32 tokenReadIo(void)
         g_sndBootswitchSound = TRUE;
     }
     if (tokenFind(1, "-j") != NULL) {
-        j_text_trigger = TRUE;
+        g_TextJapanese = TRUE;
     }
     return debug;
 }
