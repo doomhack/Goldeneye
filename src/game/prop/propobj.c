@@ -1505,7 +1505,7 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
 
                     if (iterprop->type == PROP_TYPE_VIEWER)
                     {
-                        if (!g_playerPointers[playerGetIndexForProp(iterprop)]->field_AC || (cdtypes & CDTYPE_PLAYERS) == 0)
+                        if (!g_playerPointers[playerGetIndexForProp(iterprop)]->perimEnabled || (cdtypes & CDTYPE_PLAYERS) == 0)
                         {
                             continue;
                         }
@@ -1523,7 +1523,7 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
                         found_collision = TRUE;
                     }
                 }
-                else if (iterprop->type == PROP_TYPE_VIEWER && g_playerPointers[playerGetIndexForProp(iterprop)]->field_AC)
+                else if (iterprop->type == PROP_TYPE_VIEWER && g_playerPointers[playerGetIndexForProp(iterprop)]->perimEnabled)
                 {
                     if (projectileTestPropPolygon(iterprop, worldRayStart, worldRayEnd, &sp98, outHitPos, outHitNormal, &spa8))
                     {
@@ -7071,8 +7071,7 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 arg2)
 
         if (destroyed)
         {
-            destroyed = camGetProjViewMtx();
-            destroyed = destroyed != 0;
+            destroyed = camGetProjViewMtx() != NULL;
         }
 
         gdl = mrData->gdl;
@@ -13278,9 +13277,9 @@ void doorGetAnglesToPlayer(DoorRecord *door, f32 *arg1, f32 *arg2, s32 altcoords
     playerprop = currentPlayerGetProp();
 
     if (1) { scale = 1.0f; }
-    playerpos.f[0] = (((g_CurrentPlayer->field_488.theta_transform.x * 30.0f) * scale) * 0.75f) + playerprop->pos.x;
+    playerpos.f[0] = (((g_CurrentPlayer->bond.theta_transform.x * 30.0f) * scale) * 0.75f) + playerprop->pos.x;
     playerpos.f[1] = playerprop->pos.y;
-    playerpos.f[2] = (((g_CurrentPlayer->field_488.theta_transform.z * 30.0f) * scale) * 0.75f) + playerprop->pos.z;
+    playerpos.f[2] = (((g_CurrentPlayer->bond.theta_transform.z * 30.0f) * scale) * 0.75f) + playerprop->pos.z;
 
     if (altcoordsystem != 0)
     {

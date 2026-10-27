@@ -588,26 +588,26 @@ void gunCalcBlend(enum GUNHAND handnum)
 
 s32 gunHandModelIsEmpty(enum GUNHAND arg0)
 {
-    return g_CurrentPlayer->hand_invisible[arg0] > 0
-        || (g_CurrentPlayer->hand_item[arg0] == 0 && g_CurrentPlayer->field_2A44[arg0] < 0);
+    return g_CurrentPlayer->handModelState[arg0] > 0
+        || (g_CurrentPlayer->handModelItem[arg0] == 0 && g_CurrentPlayer->handModelNextItem[arg0] < 0);
 }
 
 
 s32 gunGetHandModelItem(GUNHAND hand)
 {
-    return g_CurrentPlayer->hand_item[hand];
+    return g_CurrentPlayer->handModelItem[hand];
 }
 
 
 ModelFileHeader *gunGetHandModelHeader(GUNHAND hand)
 {
-    return &g_CurrentPlayer->copy_of_body_obj_header[hand];
+    return &g_CurrentPlayer->handModelHeader[hand];
 }
 
 
 u8 * gunGetHandModelBuffer(GUNHAND hand)
 {
-    return g_CurrentPlayer->ptr_hand_weapon_buffer[hand];
+    return g_CurrentPlayer->handModelBuffer[hand];
 }
 
 
@@ -619,35 +619,35 @@ u32 gunGetHandModelBufferSize(s32 hand)
 
 void gunClearHandModel(GUNHAND hand)
 {
-  g_CurrentPlayer->hand_invisible[hand] = 0;
-  g_CurrentPlayer->hand_item[hand] = ITEM_UNARMED;
-  g_CurrentPlayer->field_2A44[hand] = -1;
-  g_CurrentPlayer->lock_hand_model[hand] = 1;
+  g_CurrentPlayer->handModelState[hand] = 0;
+  g_CurrentPlayer->handModelItem[hand] = ITEM_UNARMED;
+  g_CurrentPlayer->handModelNextItem[hand] = -1;
+  g_CurrentPlayer->handModelLocked[hand] = 1;
   return;
 }
 
 
 void gunSetHandModel(GUNHAND hand, ITEM_IDS item)
 {
-    if (g_CurrentPlayer->lock_hand_model[hand]) { return; }
+    if (g_CurrentPlayer->handModelLocked[hand]) { return; }
 
-    if (g_CurrentPlayer->hand_invisible[hand] >= 0)
+    if (g_CurrentPlayer->handModelState[hand] >= 0)
     {
-        if (item != g_CurrentPlayer->hand_item[hand])
+        if (item != g_CurrentPlayer->handModelItem[hand])
         {
-            g_CurrentPlayer->hand_invisible[hand] = -1;
-            g_CurrentPlayer->field_2A44[hand] = item;
+            g_CurrentPlayer->handModelState[hand] = -1;
+            g_CurrentPlayer->handModelNextItem[hand] = item;
         }
         return;
     }
 
-    if (item != g_CurrentPlayer->hand_item[hand])
+    if (item != g_CurrentPlayer->handModelItem[hand])
     {
-        g_CurrentPlayer->field_2A44[hand] = item;
+        g_CurrentPlayer->handModelNextItem[hand] = item;
         return;
     }
 
-    g_CurrentPlayer->hand_invisible[hand] = 1;
+    g_CurrentPlayer->handModelState[hand] = 1;
 }
 
 
@@ -685,11 +685,11 @@ void gunLoadHandModel(GUNHAND hand)
     u8              *buffer_weapon;
     enum ITEM_IDS    item;
 
-    if ((g_CurrentPlayer->hand_invisible[hand] < 0) && (g_CurrentPlayer->lock_hand_model[hand] == 0))
+    if ((g_CurrentPlayer->handModelState[hand] < 0) && (g_CurrentPlayer->handModelLocked[hand] == 0))
     {
-        if ((g_CurrentPlayer->hand_invisible[hand] < -2) || (g_CurrentPlayer->hand_item[hand] == ITEM_UNARMED))
+        if ((g_CurrentPlayer->handModelState[hand] < -2) || (g_CurrentPlayer->handModelItem[hand] == ITEM_UNARMED))
         {
-            item             = g_CurrentPlayer->field_2A44[hand];
+            item             = g_CurrentPlayer->handModelNextItem[hand];
             ptr_item_text    = (s8 *)gunGetModelFileName(item);
             ptr_weapon_model = get_ptr_weapon_model_header_line(item);
 
@@ -698,32 +698,32 @@ void gunLoadHandModel(GUNHAND hand)
                 buffer_weapon      = gunGetHandModelBuffer(hand);
                 size_buffer_weapon = gunGetHandModelBufferSize(hand);
 
-                g_CurrentPlayer->copy_of_body_obj_header[hand] = *ptr_weapon_model;
+                g_CurrentPlayer->handModelHeader[hand] = *ptr_weapon_model;
 
                 if (item == ITEM_SUIT_LF_HAND)
                 {
-                    texInitPool(&g_CurrentPlayer->item_related[hand], buffer_weapon + 0xBD70, size_buffer_weapon + 0xFFFF4290);
-                    modelFileLoad(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, 0xBD70, &g_CurrentPlayer->item_related[hand]);
+                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + 0xBD70, size_buffer_weapon + 0xFFFF4290);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], (u8 *)ptr_item_text, buffer_weapon, 0xBD70, &g_CurrentPlayer->handModelTexPool[hand]);
                 }
                 else if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
                 {
-                    texInitPool(&g_CurrentPlayer->item_related[hand], buffer_weapon + 0xAFD0, size_buffer_weapon + 0xFFFF5030);
-                    modelFileLoad(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, 0xAFD0, &g_CurrentPlayer->item_related[hand]);
+                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + 0xAFD0, size_buffer_weapon + 0xFFFF5030);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], (u8 *)ptr_item_text, buffer_weapon, 0xAFD0, &g_CurrentPlayer->handModelTexPool[hand]);
                 }
                 else
                 {
-                    texInitPool(&g_CurrentPlayer->item_related[hand], &buffer_weapon[g_GunModelBufferOffset[hand]], size_buffer_weapon - g_GunModelBufferOffset[hand]);
-                    modelFileLoad(&g_CurrentPlayer->copy_of_body_obj_header[hand], (u8 *)ptr_item_text, buffer_weapon, g_GunModelBufferOffset[hand], &g_CurrentPlayer->item_related[hand]);
+                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], &buffer_weapon[g_GunModelBufferOffset[hand]], size_buffer_weapon - g_GunModelBufferOffset[hand]);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], (u8 *)ptr_item_text, buffer_weapon, g_GunModelBufferOffset[hand], &g_CurrentPlayer->handModelTexPool[hand]);
                 }
             }
 
-            g_CurrentPlayer->hand_invisible[hand] = 1;
-            g_CurrentPlayer->hand_item[hand]      = item;
-            g_CurrentPlayer->field_2A44[hand]     = -1;
+            g_CurrentPlayer->handModelState[hand] = 1;
+            g_CurrentPlayer->handModelItem[hand]      = item;
+            g_CurrentPlayer->handModelNextItem[hand]     = -1;
         }
         else
         {
-            g_CurrentPlayer->hand_invisible[hand]--;
+            g_CurrentPlayer->handModelState[hand]--;
         }
     }
 }
@@ -1129,10 +1129,10 @@ void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-        g_CurrentPlayer->field_1080 = (g_CurrentPlayer->field_1080 * (PAL ? 0.9403f : 0.95f)) + g_CurrentPlayer->gunposamplitude;
+        g_CurrentPlayer->gunAmpSum = (g_CurrentPlayer->gunAmpSum * (PAL ? 0.9403f : 0.95f)) + g_CurrentPlayer->gunposamplitude;
     }
 
-    g_CurrentPlayer->gunposamplitude = g_CurrentPlayer->field_1080 * (PAL ? 0.059700012f : 0.050000012f);
+    g_CurrentPlayer->gunposamplitude = g_CurrentPlayer->gunAmpSum * (PAL ? 0.059700012f : 0.050000012f);
 
     minbreathing = 0.016666668f * sp50;
     if (breathing < minbreathing)
@@ -1142,10 +1142,10 @@ void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-        g_CurrentPlayer->field_107C = (g_CurrentPlayer->field_107C * (PAL ? 0.9403f : 0.95f)) + breathing;
+        g_CurrentPlayer->cycleSum = (g_CurrentPlayer->cycleSum * (PAL ? 0.9403f : 0.95f)) + breathing;
     }
 
-    breathing = g_CurrentPlayer->field_107C * (PAL ? 0.059700012f : 0.050000012f);
+    breathing = g_CurrentPlayer->cycleSum * (PAL ? 0.059700012f : 0.050000012f);
 
     sp4c = breathing * g_GlobalTimerDelta;
     dampt[0] = g_CurrentPlayer->hands[0].dampt + sp4c;
@@ -1515,12 +1515,12 @@ void gunThrowGrenade(s32 hand)
         throw_speed_vec.f[2] = ((player_prop->pos.f[2] - bondprevpos->f[2]) / g_GlobalTimerDelta) + throw_speed_vec.f[2];
     }
 
-    spE0.f[0] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][0];
-    spE0.f[1] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][1];
-    spE0.f[2] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][2];
+    spE0.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
+    spE0.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
+    spE0.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
 
     mtx4LoadIdentity(&spA0_a);
-    mtx4Copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &sp40_f);
     sp40_f.m[3][0] = 0.0f;
     sp40_f.m[3][1] = 0.0f;
     sp40_f.m[3][2] = 0.0f;
@@ -1600,14 +1600,14 @@ void gunThrowKnife(s32 hand)
         throw_speed_vec.f[2] = ((player_prop->pos.f[2] - bondprevpos->f[2]) / g_GlobalTimerDelta) + throw_speed_vec.f[2];
     }
 
-    spE0.f[0] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][0];
-    spE0.f[1] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][1];
-    spE0.f[2] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][2];
+    spE0.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
+    spE0.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
+    spE0.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
 
     mtx4LoadZRotation(4.712389f, &spA0_a);
     mtx4LoadXRotation(M_PI_F, &sp40_f);
     mtx4MultInPlace(&sp40_f, &spA0_a);
-    mtx4Copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &sp40_f);
 
     sp40_f.m[3][0] = 0.0f;
     sp40_f.m[3][1] = 0.0f;
@@ -1694,12 +1694,12 @@ void gunThrowObject(s32 hand)
         throw_speed_vec.f[2] = ((player_prop->pos.f[2] - bondprevpos->f[2]) / g_GlobalTimerDelta) + throw_speed_vec.f[2];
     }
 
-    spE0.f[0] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][0];
-    spE0.f[1] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][1];
-    spE0.f[2] = g_CurrentPlayer->hands[hand].throw_item_pos_related.m[3][2];
+    spE0.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
+    spE0.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
+    spE0.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
 
     mtx4LoadIdentity(&spA0_a);
-    mtx4Copy(&g_CurrentPlayer->hands[hand].throw_item_pos_related, &sp40_f);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &sp40_f);
     sp40_f.m[3][0] = 0.0f;
     sp40_f.m[3][1] = 0.0f;
     sp40_f.m[3][2] = 0.0f;
@@ -1869,7 +1869,7 @@ void gunSpawnGLGrenade(s32 handnum)
         launchvel.z += (playerprop->pos.z - prevplayerpos->z) / g_GlobalTimerDelta;
     }
 
-    mtx4Copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &launchmtx);
+    mtx4Copy(&g_CurrentPlayer->hands[handnum].gunWorldMtx, &launchmtx);
 
     launchmtx.m[3][0] = 0.0f;
     launchmtx.m[3][1] = 0.0f;
@@ -1926,7 +1926,7 @@ void gunUpdateAttachedRocket(s32 handIndex)
     prop = currentPlayerGetProp();
     rocketModel = attachedRocket->model;
 
-    mtx4Copy(&entry->throw_item_pos_related, &worldMtx);
+    mtx4Copy(&entry->gunWorldMtx, &worldMtx);
 
     worldMtx.m[3][0] = 0.0f;
     worldMtx.m[3][1] = 0.0f;
@@ -2088,7 +2088,7 @@ void gunFireTankShell(s32 handnum)
         }
     }
 
-    mtx4Copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &shellmtx);
+    mtx4Copy(&g_CurrentPlayer->hands[handnum].gunWorldMtx, &shellmtx);
 
     shellmtx.m[3][0] = 0.0f;
     shellmtx.m[3][1] = 0.0f;

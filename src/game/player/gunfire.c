@@ -249,7 +249,7 @@ void gunFireTankShell(s32 handnum)
         }
     }
 
-    mtx4Copy(&g_CurrentPlayer->hands[handnum].throw_item_pos_related, &shellmtx);
+    mtx4Copy(&g_CurrentPlayer->hands[handnum].gunWorldMtx, &shellmtx);
 
     shellmtx.m[3][0] = 0.0f;
     shellmtx.m[3][1] = 0.0f;
@@ -504,15 +504,15 @@ void gunUpdateAndFire(GUNHAND handnum)
         gunofs.z += 0.3f - ((rndf * (1.0f / M_U32_MAX_VALUE_F)) * 0.6f);
     }
 
-    gunofs.x += (((g_CurrentPlayer->field_FFC.x - camGetScreenLeft()) - (camGetScreenWidth() * 0.5f)) * itemstats->PlayZ) / (camGetScreenWidth() * 0.5f);
+    gunofs.x += (((g_CurrentPlayer->gunAimScreenPos.x - camGetScreenLeft()) - (camGetScreenWidth() * 0.5f)) * itemstats->PlayZ) / (camGetScreenWidth() * 0.5f);
 
-    if ((g_CurrentPlayer->field_FFC.y - camGetScreenTop()) > (camGetScreenHeight() * 0.5f))
+    if ((g_CurrentPlayer->gunAimScreenPos.y - camGetScreenTop()) > (camGetScreenHeight() * 0.5f))
     {
-        gunofs.y -= (((g_CurrentPlayer->field_FFC.y - camGetScreenTop()) - (camGetScreenHeight() * 0.5f)) * itemstats->PlayY) / (camGetScreenHeight() * 0.5f);
+        gunofs.y -= (((g_CurrentPlayer->gunAimScreenPos.y - camGetScreenTop()) - (camGetScreenHeight() * 0.5f)) * itemstats->PlayY) / (camGetScreenHeight() * 0.5f);
     }
     else
     {
-        gunofs.y -= (((g_CurrentPlayer->field_FFC.y - camGetScreenTop()) - (camGetScreenHeight() * 0.5f)) * itemstats->PlayX) / (camGetScreenHeight() * 0.5f);
+        gunofs.y -= (((g_CurrentPlayer->gunAimScreenPos.y - camGetScreenTop()) - (camGetScreenHeight() * 0.5f)) * itemstats->PlayX) / (camGetScreenHeight() * 0.5f);
     }
 
     gunDebApplyKeyframe();
@@ -565,8 +565,8 @@ void gunUpdateAndFire(GUNHAND handnum)
     mtx4Copy(&rotmtx, &gunmtx);
     mtx4SetTranslation(&gunofs, &gunmtx);
     mtx4Copy(&gunmtx, &hand->gunmtx_camspace);
-    mtx4Copy(&hand->throw_item_pos_related, &hand->throw_item_pos_related_prev);
-    mtx4MultAffine(camGetViewToWorldMtxf(), &hand->gunmtx_camspace, &hand->throw_item_pos_related);
+    mtx4Copy(&hand->gunWorldMtx, &hand->prevGunWorldMtx);
+    mtx4MultAffine(camGetViewToWorldMtxf(), &hand->gunmtx_camspace, &hand->gunWorldMtx);
     hand->handVisible = 1;
 
     if (((((((get_ptr_weapon_model_header_line(item) == 0) || (weaponHasFlag(item, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)) || (weaponHasFlag(item, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0)) 
@@ -582,7 +582,7 @@ void gunUpdateAndFire(GUNHAND handnum)
 
     if (hand->handVisible != 0)
     {
-        mdlhdr = &g_CurrentPlayer->copy_of_body_obj_header[handnum];
+        mdlhdr = &g_CurrentPlayer->handModelHeader[handnum];
         rwmtx = (Mtxf *) dynAllocate(mdlhdr->numMatrices * ((s32) (sizeof(Mtxf))));
         j = 0;
 
@@ -795,9 +795,9 @@ void gunUpdateAndFire(GUNHAND handnum)
         }
         else
         {
-            hand->muzzlePos.x = hand->throw_item_pos_related.m[3][0];
-            hand->muzzlePos.y = hand->throw_item_pos_related.m[3][1];
-            hand->muzzlePos.z = hand->throw_item_pos_related.m[3][2];
+            hand->muzzlePos.x = hand->gunWorldMtx.m[3][0];
+            hand->muzzlePos.y = hand->gunWorldMtx.m[3][1];
+            hand->muzzlePos.z = hand->gunWorldMtx.m[3][2];
             hand->muzzleDepth = -hand->gunmtx_camspace.m[3][2];
         }
 
@@ -1125,9 +1125,9 @@ void gunCreateBeamForHand(enum GUNHAND hand)
 
     chr = g_CurrentPlayer->prop->chr;
 
-    diff1_x = hand_ptr->item_related.x - g_CurrentPlayer->field_2A18[hand].x;
-    diff1_y = hand_ptr->item_related.y - g_CurrentPlayer->field_2A18[hand].y;
-    diff1_z = hand_ptr->item_related.z - g_CurrentPlayer->field_2A18[hand].z;
+    diff1_x = hand_ptr->item_related.x - g_CurrentPlayer->bodyHandPos[hand].x;
+    diff1_y = hand_ptr->item_related.y - g_CurrentPlayer->bodyHandPos[hand].y;
+    diff1_z = hand_ptr->item_related.z - g_CurrentPlayer->bodyHandPos[hand].z;
     guNormalize(&diff1_x, &diff1_y, &diff1_z);
 
     diff2_x = hand_ptr->item_related.x - hand_ptr->muzzlePos.x;
@@ -1145,7 +1145,7 @@ void gunCreateBeamForHand(enum GUNHAND hand)
         return; 
     }
 
-    beamCreate(&chr->beams[hand], gunGetWeapon(hand), &g_CurrentPlayer->field_2A18[hand], &hand_ptr->item_related);
+    beamCreate(&chr->beams[hand], gunGetWeapon(hand), &g_CurrentPlayer->bodyHandPos[hand], &hand_ptr->item_related);
 }
 
 
@@ -1598,7 +1598,7 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
         return gdl;
     }
 
-    bodymodel = &g_CurrentPlayer->copy_of_body_obj_header[GUNRIGHT];
+    bodymodel = &g_CurrentPlayer->handModelHeader[GUNRIGHT];
 
     if (!get_ptr_weapon_model_header_line(itemid))
     {
@@ -1832,7 +1832,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
         return gdl;
     }
 
-    objheader = g_CurrentPlayer->copy_of_body_obj_header;
+    objheader = g_CurrentPlayer->handModelHeader;
     matrices = dynAllocate(objheader->numMatrices * (sizeof(Mtxf)));
     modelCalculateRwDataLen(objheader);
 
@@ -4535,13 +4535,13 @@ void gunUpdateCrosshair(f32 turn_x, f32 turn_y, f32 guncrossdamp, f32 gunaimdamp
         g_CurrentPlayer->gun_azimuth_turning = (g_CurrentPlayer->gun_azimuth_turning * gunaimdamp) + turn_y;
     }
 
-    g_CurrentPlayer->field_FFC.x = (g_CurrentPlayer->gun_azimuth_angle * (1.0f - gunaimdamp) * screen_width * 0.5f) + (screen_width * 0.5f);
-    g_CurrentPlayer->field_FFC.y = (g_CurrentPlayer->gun_azimuth_turning * (1.0f - gunaimdamp) * screen_height * 0.5f) + (screen_height * 0.5f);
+    g_CurrentPlayer->gunAimScreenPos.x = (g_CurrentPlayer->gun_azimuth_angle * (1.0f - gunaimdamp) * screen_width * 0.5f) + (screen_width * 0.5f);
+    g_CurrentPlayer->gunAimScreenPos.y = (g_CurrentPlayer->gun_azimuth_turning * (1.0f - gunaimdamp) * screen_height * 0.5f) + (screen_height * 0.5f);
 
-    g_CurrentPlayer->field_FFC.x += camGetScreenLeft();
-    g_CurrentPlayer->field_FFC.y += camGetScreenTop();
+    g_CurrentPlayer->gunAimScreenPos.x += camGetScreenLeft();
+    g_CurrentPlayer->gunAimScreenPos.y += camGetScreenTop();
 
-    camScreenToViewDir(&g_CurrentPlayer->field_FFC, &coords, 1000.0f);
+    camScreenToViewDir(&g_CurrentPlayer->gunAimScreenPos, &coords, 1000.0f);
     gunSetAimPos(&coords);
 }
 
@@ -4690,19 +4690,6 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
 #endif
 
 
-#if VERSION_EU
-#define THROWMTX_OFFSET      0xAD0
-#define THROWPOS_OFFSET      0xB00
-#define THROWPOS_PREV_OFFSET 0xB40
-#else
-#define THROWMTX_OFFSET      0xAD8
-#define THROWPOS_OFFSET      0xB08
-#define THROWPOS_PREV_OFFSET 0xB48
-#endif
- 
-#define THROWMTX     ((Mtxf *) ((u8 *) g_CurrentPlayer + handoffset + THROWMTX_OFFSET))
-#define THROWPOS(k)  (((f32 *) ((u8 *) g_CurrentPlayer + handoffset + THROWPOS_OFFSET))[k])
-#define THROWPREV(k) (((f32 *) ((u8 *) g_CurrentPlayer + handoffset + THROWPOS_PREV_OFFSET))[k])
  
 extern const f32 g_CasingSwitchScale;
 extern const f32 g_PistolCasingHorizontalSpeed;
@@ -4753,7 +4740,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #ifndef VERSION_EU
     s32 randlimit;
 #endif
-    s32 handoffset;
+    struct hand *hand;
     u32 randval;
 #if VERSION_EU
 #endif
@@ -4767,8 +4754,8 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         return;
     }
  
-    handoffset = handnum * sizeof(struct hand);
-    switch0 = g_CurrentPlayer->copy_of_body_obj_header[handnum].Switches[0];
+    hand = &g_CurrentPlayer->hands[handnum];
+    switch0 = g_CurrentPlayer->handModelHeader[handnum].Switches[0];
  
     if (switch0 != NULL)
     {
@@ -4779,11 +4766,11 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         switchpos.z = switchdata->z * g_CasingSwitchScale;
  
         mtx4LoadTranslation(&switchpos, &mtx);
-        mtx4MultInPlace(THROWMTX, &mtx);
+        mtx4MultInPlace(&hand->gunWorldMtx, &mtx);
     }
     else
     {
-        mtx4Copy(THROWMTX, &mtx);
+        mtx4Copy(&hand->gunWorldMtx, &mtx);
     }
  
     casing = casingCreate(cartridge_header, &mtx);
@@ -4806,7 +4793,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         casing->vel.y = ((rand * 2.5f) * 0.0625f) + 2.5f;
         casing->vel.z = frac * 0.0f;
  
-        mtx4RotateVecInPlace(THROWMTX, &casing->vel);
+        mtx4RotateVecInPlace(&hand->gunWorldMtx, &casing->vel);
  
         rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
         rot.x = (((rand + rand) * g_PistolCasingRotationScaleX) * newvely) - g_PistolCasingRotationOffsetX;
@@ -4847,9 +4834,9 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         // Keep the 0 + 1 for matching.
         if (g_ClockTimer >= (0 + 1))
         {
-            casing->vel.x += (THROWPOS(0) - THROWPREV(0)) / g_GlobalTimerDelta;
-            casing->vel.y += (THROWPOS(1) - THROWPREV(1)) / g_GlobalTimerDelta;
-            casing->vel.z += (THROWPOS(2) - THROWPREV(2)) / g_GlobalTimerDelta;
+            casing->vel.x += (hand->gunWorldMtx.m[3][0] - hand->prevGunWorldMtx.m[3][0]) / g_GlobalTimerDelta;
+            casing->vel.y += (hand->gunWorldMtx.m[3][1] - hand->prevGunWorldMtx.m[3][1]) / g_GlobalTimerDelta;
+            casing->vel.z += (hand->gunWorldMtx.m[3][2] - hand->prevGunWorldMtx.m[3][2]) / g_GlobalTimerDelta;
         }
     }
     else
@@ -4861,7 +4848,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         casing->vel.y = ((rand * g_RifleCasingVerticalSpeed) * 0.125f) + g_RifleCasingVerticalSpeed;
         casing->vel.z = 0.0f;
  
-        mtx4RotateVecInPlace(THROWMTX, &casing->vel);
+        mtx4RotateVecInPlace(&hand->gunWorldMtx, &casing->vel);
  
         rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
         rot.x = (((rand + rand) * g_RifleCasingRotationScaleX) * 0.0625f) - g_RifleCasingRotationOffsetX;
@@ -4898,9 +4885,9 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
         if (g_ClockTimer > 0)
         {
-            casing->vel.x += (THROWPOS(0) - THROWPREV(0)) / g_GlobalTimerDelta;
-            casing->vel.y += (THROWPOS(1) - THROWPREV(1)) / g_GlobalTimerDelta;
-            casing->vel.z += (THROWPOS(2) - THROWPREV(2)) / g_GlobalTimerDelta;
+            casing->vel.x += (hand->gunWorldMtx.m[3][0] - hand->prevGunWorldMtx.m[3][0]) / g_GlobalTimerDelta;
+            casing->vel.y += (hand->gunWorldMtx.m[3][1] - hand->prevGunWorldMtx.m[3][1]) / g_GlobalTimerDelta;
+            casing->vel.z += (hand->gunWorldMtx.m[3][2] - hand->prevGunWorldMtx.m[3][2]) / g_GlobalTimerDelta;
         }
     }
  
@@ -5055,7 +5042,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #ifndef VERSION_EU
     s32 randlimit;
 #endif
-    s32 handoffset;
+    struct hand *hand;
     u32 randval;
 #if VERSION_EU
     s32 pad[2];
@@ -5070,8 +5057,8 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         return;
     }
  
-    handoffset = handnum * sizeof(struct hand);
-    switch0 = g_CurrentPlayer->copy_of_body_obj_header[handnum].Switches[0];
+    hand = &g_CurrentPlayer->hands[handnum];
+    switch0 = g_CurrentPlayer->handModelHeader[handnum].Switches[0];
  
     if (switch0 != NULL)
     {
@@ -5082,11 +5069,11 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         switchpos.z = switchdata->z * g_CasingSwitchScale;
  
         mtx4LoadTranslation(&switchpos, &mtx);
-        mtx4MultInPlace(THROWMTX, &mtx);
+        mtx4MultInPlace(&hand->gunWorldMtx, &mtx);
     }
     else
     {
-        mtx4Copy(THROWMTX, &mtx);
+        mtx4Copy(&hand->gunWorldMtx, &mtx);
     }
  
     casing = casingCreate(cartridge_header, &mtx);
@@ -5109,7 +5096,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         casing->vel.y = ((rand * 2.5f) * 0.0625f) + 2.5f;
         casing->vel.z = frac * 0.0f;
  
-        mtx4RotateVecInPlace(THROWMTX, &casing->vel);
+        mtx4RotateVecInPlace(&hand->gunWorldMtx, &casing->vel);
  
         rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
         rot.x = (((rand + rand) * g_PistolCasingRotationScaleX) * newvely) - g_PistolCasingRotationOffsetX;
@@ -5150,9 +5137,9 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         // Keep the 0 + 1 for matching.
         if (g_ClockTimer >= (0 + 1))
         {
-            casing->vel.x += (THROWPOS(0) - THROWPREV(0)) / g_GlobalTimerDelta;
-            casing->vel.y += (THROWPOS(1) - THROWPREV(1)) / g_GlobalTimerDelta;
-            casing->vel.z += (THROWPOS(2) - THROWPREV(2)) / g_GlobalTimerDelta;
+            casing->vel.x += (hand->gunWorldMtx.m[3][0] - hand->prevGunWorldMtx.m[3][0]) / g_GlobalTimerDelta;
+            casing->vel.y += (hand->gunWorldMtx.m[3][1] - hand->prevGunWorldMtx.m[3][1]) / g_GlobalTimerDelta;
+            casing->vel.z += (hand->gunWorldMtx.m[3][2] - hand->prevGunWorldMtx.m[3][2]) / g_GlobalTimerDelta;
         }
     }
     else
@@ -5164,7 +5151,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         casing->vel.y = ((rand * g_RifleCasingVerticalSpeed) * 0.125f) + g_RifleCasingVerticalSpeed;
         casing->vel.z = 0.0f;
  
-        mtx4RotateVecInPlace(THROWMTX, &casing->vel);
+        mtx4RotateVecInPlace(&hand->gunWorldMtx, &casing->vel);
  
         rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
         rot.x = (((rand + rand) * g_RifleCasingRotationScaleX) * 0.0625f) - g_RifleCasingRotationOffsetX;
@@ -5201,9 +5188,9 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
         if (g_ClockTimer > 0)
         {
-            casing->vel.x += (THROWPOS(0) - THROWPREV(0)) / g_GlobalTimerDelta;
-            casing->vel.y += (THROWPOS(1) - THROWPREV(1)) / g_GlobalTimerDelta;
-            casing->vel.z += (THROWPOS(2) - THROWPREV(2)) / g_GlobalTimerDelta;
+            casing->vel.x += (hand->gunWorldMtx.m[3][0] - hand->prevGunWorldMtx.m[3][0]) / g_GlobalTimerDelta;
+            casing->vel.y += (hand->gunWorldMtx.m[3][1] - hand->prevGunWorldMtx.m[3][1]) / g_GlobalTimerDelta;
+            casing->vel.z += (hand->gunWorldMtx.m[3][2] - hand->prevGunWorldMtx.m[3][2]) / g_GlobalTimerDelta;
         }
     }
  

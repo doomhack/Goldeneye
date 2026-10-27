@@ -128,10 +128,10 @@
     #define THREE_SECOND_TICKS 150
     #define PLAYER_TICKEXPLODE_FACTOR 12
 
-    #define CLIPPING_CLOCK_FACTOR 0.765100002289f
-    #define CLIPPING_FIELD88_FACTOR 0.234899997711f
-    #define CLIPPING_FIELD8C_VALUE 12
-    #define CLIPPING_FIELD90_VALUE -5.625f
+    #define CROUCH_DAMP 0.765100002289f
+    #define CROUCH_DAMP_INV 0.234899997711f
+    #define LANDING_DIP_FRAMES 12
+    #define CROUCH_FALL_STEP -5.625f
 #else
     #define TANKUPDATEROTATION_SCALE 0.92f
     #define TANKTURRETVERTICALANGLERELATED_SCALE 0.94f
@@ -148,10 +148,10 @@
     #define THREE_SECOND_TICKS 180
     #define PLAYER_TICKEXPLODE_FACTOR 15
 
-    #define CLIPPING_CLOCK_FACTOR 0.8f
-    #define CLIPPING_FIELD88_FACTOR 0.19999999f
-    #define CLIPPING_FIELD8C_VALUE 15
-    #define CLIPPING_FIELD90_VALUE -4.5f
+    #define CROUCH_DAMP 0.8f
+    #define CROUCH_DAMP_INV 0.19999999f
+    #define LANDING_DIP_FRAMES 15
+    #define CROUCH_FALL_STEP -4.5f
 #endif
 
 #define FULL_CROUCH_OFFSET -100.0f
@@ -634,15 +634,15 @@ void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out)
 
 
 void camSetWorldToViewScaledMtx(Mtx *matrix) {
-    g_CurrentPlayer->field_10C4 = matrix;
+    g_CurrentPlayer->worldToViewScaledMtx = matrix;
 }
 
 void camSetWorldToViewMtx(Mtx *matrix) {
-    g_CurrentPlayer->field_10C8 = matrix;
+    g_CurrentPlayer->worldToViewMtx = matrix;
 }
 
 Mtx *camGetWorldToViewMtx(void) {
-    return g_CurrentPlayer->field_10C8;
+    return g_CurrentPlayer->worldToViewMtx;
 }
 
 void camSetProjectionMtx(Mtx *matrix) {
@@ -653,12 +653,12 @@ Mtx *camGetProjectionMtx(void) {
     return g_CurrentPlayer->projmatrix;
 }
 
-void camSetProjViewMtx(s32 arg0) {
-    g_CurrentPlayer->field_10E0 = arg0;
+void camSetProjViewMtx(Mtx *matrix) {
+    g_CurrentPlayer->projViewMtx = matrix;
 }
 
-s32 camGetProjViewMtx(void) {
-    return g_CurrentPlayer->field_10E0;
+Mtx *camGetProjViewMtx(void) {
+    return g_CurrentPlayer->projViewMtx;
 }
 
 /*
@@ -690,8 +690,8 @@ static s32 coopCurrentPlayerIndex(void)
 }
 
 void *camSetWorldToScreenMtxf(Mtxf *matrix) {
-    g_CurrentPlayer->field_10E8 = g_CurrentPlayer->field_10CC;
-    g_CurrentPlayer->field_10CC = matrix;
+    g_CurrentPlayer->prevWorldToScreenMtxf = g_CurrentPlayer->worldToScreenMtxf;
+    g_CurrentPlayer->worldToScreenMtxf = matrix;
 
     if (g_CoopMode)
     {
@@ -717,7 +717,7 @@ Mtxf *camGetWorldToScreenMtxf(void) {
         }
     }
 
-    return g_CurrentPlayer->field_10CC;
+    return g_CurrentPlayer->worldToScreenMtxf;
 }
 
 void camSetProjectionMtxf(Mtxf *matrix) {
@@ -729,7 +729,7 @@ Mtxf *camGetProjectionMtxf(void) {
 }
 
 void camSetViewToWorldMtxf(Mtxf *matrix) {
-    g_CurrentPlayer->field_10EC = g_CurrentPlayer->viewtoworldmtxf;
+    g_CurrentPlayer->prevViewToWorldMtxf = g_CurrentPlayer->viewtoworldmtxf;
     g_CurrentPlayer->viewtoworldmtxf = matrix;
 }
 
@@ -778,9 +778,9 @@ void coopViewsEnd(s32 lastplayer)
     {
         struct player *player = g_playerPointers[i];
 
-        if ((player != NULL) && (player->field_10CC != NULL) && (s_CoopWorldToScreenFrame[i] == s_CoopFrame))
+        if ((player != NULL) && (player->worldToScreenMtxf != NULL) && (s_CoopWorldToScreenFrame[i] == s_CoopFrame))
         {
-            mtx4Copy(player->field_10CC, &s_CoopWorldToScreen[i]);
+            mtx4Copy(player->worldToScreenMtxf, &s_CoopWorldToScreen[i]);
             s_CoopWorldToScreenSaved[i] = TRUE;
         }
     }
@@ -792,7 +792,7 @@ void coopViewsEnd(s32 lastplayer)
  * world space.
  *
  * Co-op: chrs think during the first view of a frame, when the other
- * players' cameras haven't moved yet, so their field_10EC is two frames old
+ * players' cameras haven't moved yet, so their prevViewToWorldMtxf is two frames old
  * and points into display memory that is being reused (a crash on hardware
  * once it holds bad floats). A gun's matrices are only kept as on screen when
  * the last view drawn showed it, so that view's matrix is the right one.
@@ -803,16 +803,16 @@ Mtxf *camGetPrevViewToWorldMtxf(void) {
         return &s_CoopPrevViewToWorld;
     }
 
-    return g_CurrentPlayer->field_10EC;
+    return g_CurrentPlayer->prevViewToWorldMtxf;
 }
 
-void camSetLookAt(s32 arg0) {
-    g_CurrentPlayer->field_10E4 = arg0;
+void camSetLookAt(LookAt *lookat) {
+    g_CurrentPlayer->lookAt = lookat;
 }
 
-s32 camGetLookAt(void)
+LookAt *camGetLookAt(void)
 {
-    return g_CurrentPlayer->field_10E4;
+    return g_CurrentPlayer->lookAt;
 }
 
 f32 camGetLodScaleZ(void)
@@ -1079,8 +1079,8 @@ s32 playerChooseSpawnPad(void)
     {
         attempt_num++;
         enemy_nearby = FALSE;
-        g_CurrentPlayer->field_29E0++;
-        pad_index = ( g_CurrentPlayer->field_29E0) % (startpadcount);
+        g_CurrentPlayer->spawnPadSeed++;
+        pad_index = ( g_CurrentPlayer->spawnPadSeed) % (startpadcount);
 
         for (player_index = 0; player_index < player_count; player_index++)
         {
@@ -1115,8 +1115,8 @@ s32 playerChooseSpawnPad(void)
     {
         attempt_num++;
         enemy_nearby = FALSE;
-        g_CurrentPlayer->field_29E0++;
-        pad_index = ((s32) g_CurrentPlayer->field_29E0) % ((s32) startpadcount);
+        g_CurrentPlayer->spawnPadSeed++;
+        pad_index = ((s32) g_CurrentPlayer->spawnPadSeed) % ((s32) startpadcount);
 
         for (player_index = 0; player_index < player_count; player_index++)
         {
@@ -1206,24 +1206,22 @@ void playerResetLife(void)
     g_CurrentPlayer->pos3.f[1] = 0.0f;
     g_CurrentPlayer->pos3.f[2] = 0.0f;
     g_CurrentPlayer->cameratile = 0;
-    g_CurrentPlayer->field_3C4 = 0.0f;
-    g_CurrentPlayer->field_3C8 = 0.0f;
-    g_CurrentPlayer->field_3CC = 1.0f;
-    g_CurrentPlayer->field_84 = 0.0f;
-    g_CurrentPlayer->field_88 = 0.0f;
-    g_CurrentPlayer->field_8C = 0;
+    g_CurrentPlayer->dampEye.x = 0.0f;
+    g_CurrentPlayer->dampEye.y = 0.0f;
+    g_CurrentPlayer->dampEye.z = 1.0f;
+    g_CurrentPlayer->sumCrouch = 0.0f;
+    g_CurrentPlayer->crouchHeight = 0.0f;
+    g_CurrentPlayer->crouchTime240 = 0;
     g_CurrentPlayer->vertical_bounce_adjust = 0.0f;
-    g_CurrentPlayer->field_94 = 0;
-    g_CurrentPlayer->field_98 = 0.0f;
     g_CurrentPlayer->swaytarget = 0.0f;
     g_CurrentPlayer->swayoffset0 = 0.0f;
     g_CurrentPlayer->swayoffset2 = 0.0f;
     g_CurrentPlayer->crouchpos = CROUCH_STAND;
     g_CurrentPlayer->autocrouchpos = CROUCH_STAND;
     g_CurrentPlayer->ducking_height_offset = 0.0f;
-    g_CurrentPlayer->field_A4 = 0.0f;
-    g_CurrentPlayer->field_AC = 1;
-    g_CurrentPlayer->field_D0 = 0;
+    g_CurrentPlayer->crouchSpeed = 0.0f;
+    g_CurrentPlayer->perimEnabled = 1;
+    g_CurrentPlayer->activatePressed = 0;
     g_CurrentPlayer->bonddead = 0;
     g_CurrentPlayer->bondhealth = 1.0f;
     g_CurrentPlayer->bondarmour = 0.0f;
@@ -1238,7 +1236,6 @@ void playerResetLife(void)
     g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x0;
     g_CurrentPlayer->outside_watch_menu = TRUE;
     g_CurrentPlayer->open_close_solo_watch_menu = FALSE;
-    g_CurrentPlayer->field_1A0 = 0;
     g_CurrentPlayer->bondbreathing = 0.0f;
     g_CurrentPlayer->speedtheta = 0.0f;
     g_CurrentPlayer->vv_costheta = 1.0f;
@@ -1296,7 +1293,6 @@ void playerResetLife(void)
     g_CurrentPlayer->bondfadetimemax60 = -1.0f;
     g_CurrentPlayer->bondfadefracold = 0.0f;
     g_CurrentPlayer->bondfadefracnew = 0.0f;
-    g_CurrentPlayer->field_42c = 2;
     g_CurrentPlayer->controldef = CONTROLLER_CONFIG_HONEY;
     g_CurrentPlayer->pause_starting_angle = 0.0f;
     g_CurrentPlayer->pause_saved_verta = 0.0f;
@@ -1309,12 +1305,10 @@ void playerResetLife(void)
     g_CurrentPlayer->pausing_flag = FALSE;
     g_CurrentPlayer->buttons_pressed = (u16)0;
     g_CurrentPlayer->prev_buttons_pressed = (u16)0;
-    g_CurrentPlayer->field_29C0 = 15.0f;
+    g_CurrentPlayer->lookDownDrop = 15.0f;
     g_CurrentPlayer->registeredroom = -1;
-    g_CurrentPlayer->field_2A08 = 0.0f;
-    g_CurrentPlayer->field_2A0C = 0.0f;
-    g_CurrentPlayer->field_2A6C = 0;
-    g_CurrentPlayer->field_2A70 = 0;
+    g_CurrentPlayer->bodyAimPitch = 0.0f;
+    g_CurrentPlayer->bodyAimYaw = 0.0f;
 }
 
 
