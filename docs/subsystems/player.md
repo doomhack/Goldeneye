@@ -148,6 +148,4 @@ Added for this fork, at the end of `bondview2.c`:
   HUD messages, tank, co-op) is left for later.
 * Many fields of `struct player` are still `field_XXX`. `field_488` is the player's
   collision record (`struct collision434`): its position is the real player position.
-* `camSetupFrame` and `hudRender` are called under `get_debug_render_raster() ==
-  DEB_BOND_VIEW` in `lv.c`. That is the normal mode, not a debug one.
 * `getMissiontimer` is now `lvGetMissionTime60`; on PAL it converts 50 Hz ticks to 60 Hz.

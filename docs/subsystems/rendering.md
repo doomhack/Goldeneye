@@ -27,7 +27,7 @@ handed to the RSP. What is drawn (rooms, models, the HUD) lives in `world/`, `mo
    frame while the RSP draws this one.
 
 Both buffers are sized per level by the `-mgfx` and `-mvtx` tokens in boss.c, doubled in
-co-op. There is no overflow check; `g_ShowMemBarsFlag` draws bars showing how full they are.
+co-op. There is no overflow check.
 
 ## Textures
 

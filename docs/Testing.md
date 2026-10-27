@@ -99,3 +99,14 @@ relinks, and runs a test command until it finds the object whose bad version fai
 
 The build compiles with `-w`. This rechecks every C file with `-Wall -Wextra` and prints
 warning counts per file and per kind, to track the cleanup.
+
+## Dead code: `tools/compare/deadcode.py [VERSION]`
+
+Lists every function and variable in `src/` that nothing can reach from the boot code. It
+rebuilds the sources at `-O0` with one section per function into a scratch folder and lets
+`ld --gc-sections` say what it would throw away (the ROM build is untouched). Run it before
+and after a deletion: anything new on the list was only used by what you deleted.
+
+It answers "is this reachable", not "is this safe to delete": a call to a dead function can
+still sit inside live code (for example in a branch that never runs), so delete the call
+sites by hand and rebuild, rather than deleting every line that names the function.

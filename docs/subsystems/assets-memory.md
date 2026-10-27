@@ -91,11 +91,8 @@ Textures and music are compressed the same way and call `rzipInflate` directly.
 * **Unprototyped calls.** `fileload.c` calls `romCopy` with an extra argument and without
   its prototype, and `bg.c` calls several functions here without prototypes. Phase 3
   (C23) makes those errors and fixes them.
-* **`fileGetIndex` and missing files.** A name that isn't in the table is looked up on the
-  development kit's host PC, which always fails on a console, but uses up a table slot
-  each time.
-* **The host PC ("Indy") paths.** A file with no ROM address would be loaded from the
-  development kit's host. That code can't run on a console and goes in Phase 2.
+* **`fileGetIndex` and missing files.** A name that isn't in the table gives index 0.
+  (Rare's version then asked the development kit's host PC for the file; that code is gone.)
 * **Matching leftovers.** Several functions here still contain statements that only
   existed to make the decomp compile to the original bytes (`if (1);`, unused locals,
   `mempAlloc`'s odd pointer arithmetic). Phase 2 removes them.

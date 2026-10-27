@@ -39,8 +39,8 @@ point limits, awards and the end of the game), applies the difficulty
 matrices, water, sky, sparks, casings, glass, explosion particles, `propsTickOnce`), and
 the level music.
 
-`lvPlayerTick` runs for each view: normally `playerUpdate` (see [player](player.md)), or
-the debug free camera or floor tile viewer. It also adds up the distance the player
+`lvPlayerTick` runs for each view: `playerUpdate` (see [player](player.md)) and the
+multiplayer menu. It also adds up the distance the player
 walked and handles the flag and golden gun in multiplayer.
 
 `lvRender` draws each view in a shuffled order (`playerGetShuffled`):
