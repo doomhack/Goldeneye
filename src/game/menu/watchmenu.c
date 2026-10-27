@@ -20,7 +20,7 @@
 #include "game/menu/front.h"
 #include "game/text/language.h"
 #include "game/player/player.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"

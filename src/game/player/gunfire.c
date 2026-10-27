@@ -45,7 +45,7 @@
 #include "game/debug/debugmenu_handler.h"
 #include "fr.h"
 #include "assets/obseg/text/LgunE.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/chr/chrai.h"
 #include "game/model/model.h"
 #include "game/menu/watchmenu.h"

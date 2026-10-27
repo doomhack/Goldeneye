@@ -1,6 +1,11 @@
+/**
+ * Drawing text: the two fonts (Bank Gothic and Zurich Bold), and measuring, wrapping and
+ * drawing strings glyph by glyph (textRender, textRenderOutlined, textMeasure, textWrap).
+ * See docs/subsystems/text.md.
+ */
 #include <ultra64.h>
 #include <memp.h>
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "bondtypes.h"
 #include "game/text/language.h"
 #include <fr.h>

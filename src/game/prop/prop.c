@@ -48,7 +48,7 @@
 #include "game/math/trig.h"
 #include "game/math/round.h"
 #include "game/model/model.h"
-#include "game/audio/mp_music.h"
+#include "game/audio/levelmusic.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
 #include "game/model/model.h"

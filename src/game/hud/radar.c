@@ -5,7 +5,7 @@
 
 #include <ultra64.h>
 #include "game/math/trig.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/menu/front.h"
 #include "fr.h"
 #include "game/player/player.h"

@@ -11,7 +11,7 @@
 #include <boss.h>
 #include <joy.h>
 #include <random.h>
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include "game/level/frametiming.h"
 #include "game/player/player.h"
 #include "game/menu/mpmenu.h"
@@ -19,7 +19,7 @@
 #include "game/menu/front.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
-#include "game/audio/mp_music.h"
+#include "game/audio/levelmusic.h"
 #include "game/save/file.h"
 #include "assets/obseg/text/LmpmenuE.h"
 

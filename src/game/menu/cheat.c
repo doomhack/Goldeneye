@@ -15,7 +15,7 @@
 #include "game/menu/cheat.h"
 #include "game/chr/chr.h"
 #include "game/debug/debugmenu_handler.h"
-#include "game/save/file2.h"
+#include "game/save/file.h"
 #include "game/menu/front.h"
 #include "game/player/gun.h"
 #include "game/text/language.h"

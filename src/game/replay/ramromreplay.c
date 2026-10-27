@@ -8,7 +8,6 @@
 #include <rom.h>
 #include <macro.h>
 #include "game/save/file.h"
-#include "game/save/file2.h"
 #include <random.h>
 #include "joy.h"
 #include "game/level/frametiming.h"

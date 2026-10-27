@@ -1,5 +1,5 @@
-#ifndef _MP_MUSIC_H_
-#define _MP_MUSIC_H_
+#ifndef _LEVELMUSIC_H_
+#define _LEVELMUSIC_H_
 #include <ultra64.h>
 
 #include <bondconstants.h>
@@ -13,5 +13,9 @@ void             levelMusicSlotStop(s32 slot);
 void             levelMusicSlotStart(s32 slot, s32 min, s32 sec);
 void levelMusicResume(void);
 u16 levelMusicGetVolume(void);
+s32 levelMusicGetAmbientTrack(s32 stageID);
+s32 levelMusicGetXTrack(s32 stageID);
+s32 levelMusicGetTrack(s32 arg0);
+void levelStopTankSfx(void);
 
 #endif

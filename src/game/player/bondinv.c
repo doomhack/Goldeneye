@@ -7,7 +7,7 @@
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/player/player.h"
-#include "game/text/textrelated.h"
+#include "game/text/text.h"
 #include <bondconstants.h>
 #include "game/text/language.h"
 #include "game/player/bondinv.h"

@@ -1,3 +1,7 @@
+/**
+ * The language banks: the text files every string lives in, loaded at boot or with each
+ * level, and looking a string up by id (langGet). See docs/subsystems/text.md.
+ */
 #include <ultra64.h>
 #include <bondgame.h>
 #include <memp.h>
