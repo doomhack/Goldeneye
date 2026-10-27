@@ -974,37 +974,18 @@ void frontSetDifficultyCursor(int difficulty);
 
 Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, s8 *text, s32 second_font_table, s32 first_font_table, s32 arg6, s32 view_x, s32 view_y, s32 arg9, s32 arga)
 {
-    if (g_TextJapanese != 0)
-    {
-        gdl = textRenderOutlined(
-            gdl,
-            x,
-            y,
-            text,
-            second_font_table,
-            first_font_table,
-            arg6,
-            (textglowR.r << 0x18) | (textglowG.r << 0x10) | (textglowB.r << 8) | textglowA.r,
-            view_x,
-            view_y,
-            arg9,
-            arga);
-    }
-    else
-    {
-        gdl = textRender(
-            gdl,
-            x,
-            y,
-            text,
-            second_font_table,
-            first_font_table,
-            arg6,
-            view_x,
-            view_y,
-            arg9,
-            arga);
-    }
+    gdl = textRender(
+        gdl,
+        x,
+        y,
+        text,
+        second_font_table,
+        first_font_table,
+        arg6,
+        view_x,
+        view_y,
+        arg9,
+        arga);
 
     return gdl;
 }
@@ -2551,7 +2532,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
             langp = langGet(getStringID(LTITLE, TITLE_STR_25_CONFIRM)); /* confirm */
 
             folderx = mathFloor(folderpos2d.f[0]);
-            textpos.p[1] = (((g_TextJapanese != 0) ? 0x17 : -1) + (s32) folderx) - 1;
+            textpos.p[1] = (s32) folderx - 2;
             textpos.p[0] = (s32) mathFloor(folderpos2d.f[1]) + 0x32;
 
             if (g_FrontFolderEraseChoice != 0)
@@ -3635,16 +3616,7 @@ void frontMissionSelectTick(void)
     {
         frontSetMenu(MENU_DIFFICULTY, 0);
 
-#if defined(VERSION_EU)
-        if (g_TextJapanese != 0)
-        {
-            frontSetDifficultyCursor(0);
-        }
-        else
-#endif
-        {
-            frontSetDifficultyCursor(frontGetHighestDifficulty(g_FrontMissions[g_FrontMission].mission_num));
-        }
+        frontSetDifficultyCursor(frontGetHighestDifficulty(g_FrontMissions[g_FrontMission].mission_num));
     }
     else if (g_FrontTabPrevSelected != 0)
     {
@@ -3710,15 +3682,12 @@ Gfx *frontMissionSelectRender(Gfx *DL)
                     strcpy(sp90, langGet(g_FrontMissions[temp_s0].folder_text_preset));
                 }
 
-                if (g_TextJapanese == 0)
+                temp_v0_3 = strlen(sp90) - 1;
+                for (; temp_v0_3 >= 0; temp_v0_3--)
                 {
-                    temp_v0_3 = strlen(sp90) - 1;
-                    for (; temp_v0_3 >= 0; temp_v0_3--)
+                    if (sp90[temp_v0_3] >= 'a')
                     {
-                        if (sp90[temp_v0_3] >= 'a')
-                        {
-                            sp90[temp_v0_3] -= 0x20;
-                        }
+                        sp90[temp_v0_3] -= 0x20;
                     }
                 }
 
@@ -3979,7 +3948,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
     {
         DL = textRenderRect(
             DL,
-            0x7E - (g_TextJapanese ? 0x32 : 0),
+            0x7E,
             (g_FrontDifficultyHighlight * 0x1E) + 0xB2,
             0xF0,
             (g_FrontDifficultyHighlight * 0x1E) + 0xC3,
@@ -3994,33 +3963,12 @@ Gfx *frontDifficultyRender(Gfx *DL)
     {
         if (i == 0 || unlockedDifficulty >= i)
         {
-            if (g_TextJapanese)
-            {
-                switch (i)
-                {
-                    case 0:
-                        text_sp160 = langGet(getStringID(LTITLE, TITLE_STR_265_1DOT)); // "1.\n"
-                        break;
-                    case 1:
-                        text_sp160 = langGet(getStringID(LTITLE, TITLE_STR_266_2DOT)); // "2.\n"
-                        break;
-                    case 2:
-                        text_sp160 = langGet(getStringID(LTITLE, TITLE_STR_267_3DOT)); // "3.\n"
-                        break;
-                    case 3:
-                        text_sp160 = langGet(getStringID(LTITLE, TITLE_STR_268_4DOT)); // "4.\n"
-                        break;
-                }
-            }
-            else
-            {
-                sprintf(&stagename_struct, "%d.\n", i + 1);
-                text_sp160 = &stagename_struct;
-            }
+            sprintf(&stagename_struct, "%d.\n", i + 1);
+            text_sp160 = &stagename_struct;
 
             textMeasure(&sp98, &sp9C, text_sp160, g_FontZurichChars, g_FontZurich, 0);
 
-            x = 0x82 - (g_TextJapanese ? (sp9C - 0xA) : 0);
+            x = 0x82;
             y = (i * 0x1E) + 0xB4;
             DL = frontPrintText(DL, &x, &y, text_sp160, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
@@ -8410,16 +8358,7 @@ Gfx *frontNoControllerRender(Gfx *DL)
     textMeasure(&y2, &x2, text, g_FontZurichChars, g_FontZurich, 0);
     x = 0xDC - (x2 >> 1);
     y = 0x99 - (y2 >> 1);
-#ifdef BUGFIX_R1
-    if (g_TextJapanese) {
-        DL = textRenderOutlined(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, 0x8000FF, viGetX(), viGetY(), 0, 0);
-    }
-    else {
-#endif
-        DL = textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
-#ifdef BUGFIX_R1
-    }
-#endif
+    DL = textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
 
 
     if ((numContCon == 0) || (numContCon == 1) || (numContCon == 2) || (numContCon == 3)) {
@@ -8428,16 +8367,7 @@ Gfx *frontNoControllerRender(Gfx *DL)
     textMeasure(&y2, &x2, text, g_FontZurichChars, g_FontZurich, 0);
     x = 0xDC - (x2 >> 1);
     y = 0xB1 - (y2 >> 1);
-#ifdef BUGFIX_R1
-    if (g_TextJapanese) {
-        DL = textRenderOutlined(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, 0x8000FF, viGetX(), viGetY(), 0, 0);
-    }
-    else {
-#endif
-        DL = textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
-#ifdef BUGFIX_R1
-    }
-#endif
+    DL = textRender(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, -1, viGetX(), viGetY(), 0, 0);
 
     return DL;
 }

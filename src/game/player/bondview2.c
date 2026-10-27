@@ -10988,9 +10988,6 @@ Gfx* hudmsgBottomRender(Gfx* arg0)
             else
             {
                 view_top = viGetViewTop()
-#if defined(VERSION_EU)
-                         + (((g_TextJapanese != 0) && (playerGetCurrentNum() < 2)) ? 8 : 0)
-#endif
                          + BONDVIEW_VIEW_TOP_OFFSET_3;
             }
 
@@ -11141,16 +11138,8 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     sw.screenwidth = viGetX();
                     gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
 #else
-                    if (g_TextJapanese != 0)
-                    {
-                        sw.screenwidth = viGetX();
-                        gdl = textRenderOutlined(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, 0x646464FF, sw.screenwidth, viGetY(), 0, 0);
-                    }
-                    else
-                    {
-                        sw.screenwidth = viGetX();
-                        gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
-                    }
+                    sw.screenwidth = viGetX();
+                    gdl = textRender(gdl, &msg.x, &msg.y, g_HudmsgTopText[upper_text_buffer_index], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
 #endif
                     gdl = textEndDraw(gdl);
                     goto end;

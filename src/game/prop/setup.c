@@ -1525,11 +1525,7 @@ void setupCreateProps(enum LEVELID stageId)
                     case PROPDEF_ARMOUR:
                     {
                         struct BodyArmourRecord *pdef_ba = (struct BodyArmourRecord *) phead;
-#ifndef VERSION_US
-                        if (withobjs && (((pdef_ba->flags2 & flags) == 0) || g_TextJapanese)) // JP: armour setup also proceeds when g_TextJapanese is set
-#else
                         if (withobjs && ((pdef_ba->flags2 & flags) == 0))
-#endif
                         {
                             pdef_ba->initialamount = (*((s32 *) (&pdef_ba->initialamount))) / M_U16_MAX_VALUE_F;
                             pdef_ba->amount = pdef_ba->initialamount;

@@ -28,31 +28,10 @@ s32 g_TextX = 0;
 s32 g_TextY = 0;
 s32 g_TextS = 0;
 s32 g_TextT = 0;
-s32 g_JpnTextTlutNeedsLoad = 0;
 struct font * g_FontBankGothic = NULL;
 struct fontchar * g_FontBankGothicChars = NULL;
 struct font * g_FontZurich = NULL;
 struct fontchar * g_FontZurichChars = NULL;
-
-u16 g_JpnTextPalette0[16] = {
-    0x0000, 0x5555, 0xaaaa, 0xffff,
-    0x0000, 0x5555, 0xaaaa, 0xffff,
-    0x0000, 0x5555, 0xaaaa, 0xffff,
-    0x0000, 0x5555, 0xaaaa, 0xffff
-};
-
-u16 g_JpnTextPalette1[16] = {
-    0x0000, 0x0000, 0x0000, 0x0000,
-    0x5555, 0x5555, 0x5555, 0x5555,
-    0xAAAA, 0xAAAA, 0xAAAA, 0xAAAA,
-    0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF
-};
-
-// D_80040EFC
-struct fontchar g_JpnGlyphDefaults = {0, 0, 12, 11};
-
-// D_80040F14
-struct fontchar g_JpnGlyphDefaultsOutlined = {0, 0, 12, 11};
 
 // forward declarations
 
@@ -213,59 +192,8 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
 				&& *x >= clipX
 				&& curchar->baseline + drawY + curchar->height >= clipY)
         {
-            if (curchar->index < 0x80)
-            {
-                gDPSetTextureLUT(gdl++, G_TT_NONE);
-
-                /*
-                gDPSetTextureImage(gdl++, G_IM_FMT_I, G_IM_SIZ_16b, 1, curchar->pixeldata);
-                gDPSetTile(gdl++, G_IM_FMT_I, G_IM_SIZ_16b, 0, 0x0000, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-                gDPLoadSync(gdl++);
-                gDPLoadBlock(gdl++, G_TX_LOADTILE, 0, 0, (curchar->unkc * curchar->height), 0);
-                gDPPipeSync(gdl++);                
-                gDPSetTile(gdl++,G_IM_FMT_I,G_IM_SIZ_8b,0,0,G_TX_RENDERTILE,0,G_TX_NOMIRROR | G_TX_WRAP,G_TX_NOMASK,G_TX_NOLOD,G_TX_NOMIRROR | G_TX_WRAP,G_TX_NOMASK,G_TX_NOLOD);
-                gDPSetTileSize(gdl++, G_TX_RENDERTILE, 0, 0, (curchar->unkc - 1) << 2, (curchar->height - 1) << 2);
-                */
-                gDPLoadTextureBlock(gdl++, curchar->pixeldata, G_IM_FMT_I, G_IM_SIZ_8b, ((curchar->width + 7) & 0xF8), curchar->height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, 0, 0);
-            }
-            else
-            {
-                gDPPipeSync(gdl++);
-                gDPSetTextureLUT(gdl++, G_TT_IA16);
-
-                if (g_JpnTextTlutNeedsLoad)
-                {
-                    g_JpnTextTlutNeedsLoad = 0;
-                    
-                    // FD100000 --------: gDPSetTextureImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, osVirtualToPhysical(D_80040EBC));
-                    // E8000000 00000000: gDPTileSync(gdl++);
-                    // F5000100 07000000: gDPSetTile(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_4b, 0, 0x0100, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-                    // E6000000 00000000: gDPLoadSync(gdl++);
-                    // F0000000 0703C000: gDPLoadTLUTCmd(gdl++, G_TX_LOADTILE, 15);
-                    // E7000000 00000000: gDPPipeSync(gdl++);
-                    gDPLoadTLUT_pal16(gdl++, 0, osVirtualToPhysical(g_JpnTextPalette0));
-
-                    gDPLoadTLUT_pal16(gdl++, 1, osVirtualToPhysical(&g_JpnTextPalette1));
-                }
-
-                // FD500000 00000000: gDPSetTextureImage(gdl++, G_IM_FMT_CI, G_IM_SIZ_16b, 1, 0x00000000);
-                // F5500000 07000000: gDPSetTile(gdl++, G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0x0000, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-                // E6000000 00000000: gDPLoadSync(gdl++);
-                // F3000000 07000000: gDPLoadBlock(gdl++, G_TX_LOADTILE, 0, 0, 0, 0);
-                // E7000000 00000000: gDPPipeSync(gdl++);
-                // F5400200 00080000: gDPSetTile(gdl++, G_IM_FMT_CI, G_IM_SIZ_4b, 1, 0x0000, G_TX_RENDERTILE, 0, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-                // F2000000 0003C000: gDPSetTileSize(gdl++, G_TX_RENDERTILE, 0, 0, qu102(15), 0);
-                //
-                // is this a call to gDPLoadTextureBlock ???
-                
-                gDPSetTextureImage(gdl++, G_IM_FMT_CI, G_IM_SIZ_16b, 1,  osVirtualToPhysical((void *) curchar->pixeldata));
-                gDPSetTile(gdl++, G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0x0000, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-                gDPLoadSync(gdl++);
-                gDPLoadBlock(gdl++, G_TX_LOADTILE, 0, 0, (curchar->height << 2) - 1, 0x800);
-                gDPPipeSync(gdl++);
-                gDPSetTile(gdl++, G_IM_FMT_CI, G_IM_SIZ_4b, 1, 0x0000, G_TX_RENDERTILE, (curchar->index & 1), G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOLOD, 2, 0, 0);
-                gDPSetTileSize(gdl++, G_TX_RENDERTILE, 0, 0, 0x3c, (curchar->height - 1) << 2);
-            }
+            gDPSetTextureLUT(gdl++, G_TT_NONE);
+            gDPLoadTextureBlock(gdl++, curchar->pixeldata, G_IM_FMT_I, G_IM_SIZ_8b, ((curchar->width + 7) & 0xF8), curchar->height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, 0, 0);
 
             if ((*x + curchar->width) <= clipX + clipWidth)
             {
@@ -367,18 +295,12 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
     s32 stack4;
     //s32 stack5;
     
-    g_JpnTextTlutNeedsLoad = 1;
-
     savedx = *x;
 	savedy = *y;
     prevchar = 'H';
 
 	if (lineheight == 0) {
 		lineheight = chars['['].height + chars['['].baseline;
-	}
-
-	if (g_TextJapanese != 0 && lineheight < 14) {
-		lineheight = 14;
 	}
 
     stack = colour; // ????????????
@@ -409,30 +331,8 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
 			prevchar = *text;
 			text++;
 		} else {
-			u16 codepoint = ((*text & 0x7f) << 7) | (text[1] & 0x7f);
-			struct fontchar sp74 = g_JpnGlyphDefaults;
-
-			if (codepoint & 0x2000) {
-				sp74.width = 15;
-				sp74.height = 16;
-			}
-
-            // perfect dark: 0x3c8
-#if defined(VERSION_EU)
-            if ((codepoint & 0x1fff) >= 0x3c8)
-#else
-			if ((codepoint & 0x1fff) >= 0x3c7)
-#endif
-            {
-				codepoint = 2;
-			}
-
-			sp74.index = codepoint + 0x80;
-			sp74.pixeldata = (void *)langGetJpnCharPixels(codepoint);
-
-			gdl = textRenderGlyph(gdl, x, y, &sp74, &sp74, font, savedx, savedy, width, height, yOffset);
-
-			text += 2;
+			// Not in the font.
+			text++;
 		}
 	}
     return gdl;
@@ -466,28 +366,8 @@ Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar,
             && drawY + curchar->baseline <= clipY + clipHeight
             && *x >= clipX
             && drawY + curchar->baseline + curchar->height >= clipY) {
-        if (curchar->index < 0x80) {
-            gDPSetTextureLUT(gdl++, G_TT_NONE);
-            gDPLoadTextureBlock(gdl++, curchar->pixeldata, G_IM_FMT_I, G_IM_SIZ_8b, ((curchar->width + 7) & 0xF8), curchar->height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, 0, 0);
-        } else {
-            gDPPipeSync(gdl++);
-            gDPSetTextureLUT(gdl++, G_TT_IA16);
-
-            if (g_JpnTextTlutNeedsLoad) {
-                g_JpnTextTlutNeedsLoad = 0;
-
-                gDPLoadTLUT_pal16(gdl++, 0, osVirtualToPhysical(&g_JpnTextPalette0));
-                gDPLoadTLUT_pal16(gdl++, 1, osVirtualToPhysical(&g_JpnTextPalette1));
-            }
-
-            gDPSetTextureImage(gdl++, G_IM_FMT_CI, G_IM_SIZ_16b, 1,  osVirtualToPhysical((void *) curchar->pixeldata));
-            gDPSetTile(gdl++, G_IM_FMT_CI, G_IM_SIZ_16b, 0, 0x0000, G_TX_LOADTILE, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-            gDPLoadSync(gdl++);
-            gDPLoadBlock(gdl++, G_TX_LOADTILE, 0, 0, (curchar->height << 2) - 1, 0x800);
-            gDPPipeSync(gdl++);
-            gDPSetTile(gdl++, G_IM_FMT_CI, G_IM_SIZ_4b, 1, 0x0000, G_TX_RENDERTILE, (curchar->index & 1), G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOLOD, 2, 0, 0);
-            gDPSetTileSize(gdl++, G_TX_RENDERTILE, 0, 0, 0x3c, (curchar->height - 1) << 2);
-        }
+        gDPSetTextureLUT(gdl++, G_TT_NONE);
+        gDPLoadTextureBlock(gdl++, curchar->pixeldata, G_IM_FMT_I, G_IM_SIZ_8b, ((curchar->width + 7) & 0xF8), curchar->height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, 0, 0);
 
         /**
          * Render outlines.
@@ -595,21 +475,16 @@ Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 cli
 /**
  * Draw strings of text with an outline.
  * Used for ammo counter, bottom left HUD messages, countdown timers.
- * Also used for rendering outlines on folder menu text in JP version.
  */
 Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y, 
                     char *text, struct fontchar *chars, struct font *font, 
                     u32 colour, u32 colour2, s32 width, s32 height, 
                     s32 yOffset, s32 lineheight)
 {
-    u16 codepoint;
 	s32 savedy;
     s32 savedx;
-    struct fontchar sp74;
     s32 prevchar;
     
-    g_JpnTextTlutNeedsLoad = 1;
-
     savedx = *x;
 	savedy = *y;
     prevchar = 'H';
@@ -618,10 +493,6 @@ Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y,
 		lineheight = chars['['].height + chars['['].baseline;
 	}
 
-	if (g_TextJapanese != 0 && lineheight < 14) {
-		lineheight = 14;
-	}
-    
     while (*text != '\0')
     {
 		if (*text == ' ') {
@@ -639,30 +510,8 @@ Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y,
 			prevchar = *text;
 			text++;
 		} else {
-            codepoint = ((*text & 0x7f) << 7) | (text[1] & 0x7f);
-            sp74 = g_JpnGlyphDefaultsOutlined;
-
-			if (codepoint & 0x2000) {
-				sp74.width = 15;
-				sp74.height = 16;
-			}
-
-#if defined(VERSION_EU)
-            if ((codepoint & 0x1fff) >= 0x3c8)
-#else
-			if ((codepoint & 0x1fff) >= 0x3c7)
-#endif
-            {
-				codepoint = 2;
-			}
-
-			sp74.index = codepoint + 0x80;
-			sp74.pixeldata = (void *)langGetJpnCharPixels(codepoint);
-
-            // Render Japanese characters with outline.
-            gdl = textRenderGlyphOutlined(gdl, x, y, &sp74, &sp74, font, savedx, savedy, colour, colour2, width, height, yOffset);
-
-			text += 2;
+			// Not in the font.
+			text++;
 		}
 	}
 
@@ -686,11 +535,6 @@ void textMeasure(s32 *textheight, s32 *textwidth, char *text, struct fontchar *f
 		lineheight = font1['['].baseline + font1['['].height;
     }
     
-    if ((g_TextJapanese) && (lineheight < 14))
-    {
-        lineheight = 14;
-    }
-
     while (*text != '\0')
     {
         if (*text == ' ')
@@ -723,19 +567,10 @@ void textMeasure(s32 *textheight, s32 *textwidth, char *text, struct fontchar *f
             prevchar = *text;
             text++;
         }
-        else if (*text < 0xC0)
-        {
-            // Multi-byte character
-            tmp = font2->kerning[0] + g_TextSpacing - 1;
-            *textwidth = *textwidth - tmp + 11;
-            text += 2;
-        }
         else
         {
-            // Multi-byte character
-            tmp = font2->kerning[0] + g_TextSpacing - 1;
-            *textwidth = *textwidth - tmp + 15;
-            text += 2;
+            // Not in the font.
+            text++;
         }
     };
     
@@ -771,14 +606,6 @@ void textWrap(s32 wrapwidth, char *src, char *dst, struct fontchar *chars, struc
 			v1 += chars[*src - 0x21].width;
 			src++;
 			wordlen++;
-
-            if (curword[wordlen - 1] >= 0x80)
-            {
-                curword[wordlen] = *src;
-                v1 += chars[*src - 0x21].width;
-                src++;
-                wordlen++;
-            }
         }
         
         // Null terminate the word

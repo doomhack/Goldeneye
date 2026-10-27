@@ -1955,42 +1955,6 @@ f32 chrGetFlinchAmount(ChrRecord *chr)
 }
 
 
-#ifdef BUGFIX_R1
-bool chrCanUseDKModeScaling(s32 bodynum, s32 headnum)
-{
-    if (g_TextJapanese == FALSE)
-    {
-        return TRUE;
-    }
-
-    if ((bodynum != BODY_Boris) &&
-        (bodynum != BODY_Ourumov) &&
-        (bodynum != BODY_Trevelyan_Janus) &&
-        (bodynum != BODY_Trevelyan_006) &&
-        (bodynum != BODY_Valentin_) &&
-        (bodynum != BODY_Xenia) &&
-        (bodynum != BODY_Baron_Samedi) &&
-        (bodynum != BODY_Jaws) &&
-        (bodynum != BODY_Mayday) &&
-        (bodynum != BODY_Oddjob) &&
-        (bodynum != BODY_Natalya_Skirt) &&
-        (bodynum != BODY_Natalya_Jungle_Fatigues) &&
-
-        (headnum != BODY_Male_Pierce_Bond_1) &&
-        (headnum != BODY_Male_Pierce_Bond_2) &&
-        (headnum != BODY_Male_Pierce_Bond_3) &&
-        (headnum != BODY_Male_Pierce_Bond_Parka) &&
-        (headnum != BODY_Male_Pierce_Bond_Tuxedo) &&
-        (headnum != BODY_Male_Mishkin))
-    {
-        return TRUE;
-    }
-
-    return FALSE;
-}
-#endif
-
-
 #define PI_OVER_3 1.0471976f
 #define FIVEPI_OVER_18 0.87266463f
 
@@ -2019,20 +1983,15 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 #ifdef BUGFIX_R1
     if (cheatIsActive(CHEAT_DK_MODE))
     {
-        chr = g_CurModelChr;
-
-        if (chrCanUseDKModeScaling(chr->bodynum, chr->headnum))
+        if (bodypart == CHR_RENDERPART_HEAD)
         {
-            if (bodypart == CHR_RENDERPART_HEAD)
+            scale = 4.0f;
+        }
+        else if ((bodypart == CHR_RENDERPART_LEFT_ARM) || (bodypart == CHR_RENDERPART_RIGHT_ARM))
+        {
+            if (!(g_CurModelChr->chrflags & CHRFLAG_08000000))
             {
-                scale = 4.0f;
-            }
-            else if ((bodypart == CHR_RENDERPART_LEFT_ARM) || (bodypart == CHR_RENDERPART_RIGHT_ARM))
-            {
-                if (!(g_CurModelChr->chrflags & CHRFLAG_08000000))
-                {
-                    scale = 2.5f;
-                }
+                scale = 2.5f;
             }
         }
     }
@@ -2572,17 +2531,14 @@ after_position_update:
         chr->chrflags |= CHRFLAG_HAS_BEEN_ON_SCREEN;
 
 #ifdef BUGFIX_R1
-    if (cheatIsActive(12))
+    if (cheatIsActive(CHEAT_DK_MODE))
     {
-        if (chrCanUseDKModeScaling(chr->bodynum, chr->headnum))
-        {
-            modelSetLodScale(0.3125f);
+        modelSetLodScale(0.3125f);
 
-            if (chr->chrflags & CHRFLAG_10000000)
-            {
-                chr->chrflags &= ~CHRFLAG_10000000;
-                modelSetScale(chr->model, chr->model->scale / 0.8f);
-            }
+        if (chr->chrflags & CHRFLAG_10000000)
+        {
+            chr->chrflags &= ~CHRFLAG_10000000;
+            modelSetScale(chr->model, chr->model->scale / 0.8f);
         }
     }
 #else

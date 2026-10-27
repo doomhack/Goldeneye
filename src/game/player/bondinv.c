@@ -262,14 +262,7 @@ s32 invItemAvailable(ITEM_IDS weaponid)
 {
     if (((g_CurrentPlayer->equipallguns) && (weaponid != ITEM_UNARMED) && (weaponid < ITEM_BOMBCASE)))
     {
-#ifdef BUGFIX_R1
-        if ((!g_TextJapanese || (weaponid != ITEM_KNIFE)))
-        {
-            return TRUE;
-        }
-#else
         return TRUE;
-#endif
     }
     return invHasItem(weaponid);
 }
@@ -296,8 +289,7 @@ s32 invItemAvailableForHand(ITEM_IDS right, ITEM_IDS left)
             right < ITEM_BOMBCASE &&
             right == left &&
             !isMpGame() &&
-            weaponHasFlag(right, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) &&
-            (g_TextJapanese == FALSE || (right != ITEM_KNIFE)))
+            weaponHasFlag(right, WEAPONSTATBITFLAG_CAN_DUAL_WIELD))
         {
             return TRUE;
         }
@@ -323,14 +315,7 @@ int invAddItem(ITEM_IDS item)
 
         if ((g_CurrentPlayer->equipallguns) && (item < ITEM_BOMBCASE))
         {
-#ifdef BUGFIX_R1
-            if ((!g_TextJapanese || (item != ITEM_KNIFE)))
-            {
-                return FALSE;
-            }
-#else
             return FALSE;
-#endif
         }
         return TRUE;
     }
@@ -568,11 +553,7 @@ void invCycleForward(s32 *nextright, s32 *nextleft, s32 requireammo)
     {
         s32 candidate = *nextright;
 
-        if (!isMpGame() && weaponHasFlag(*nextright, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (*nextleft < *nextright) && (requireammo == FALSE || weaponHasAmmo(*nextright)) && (weapon1 != *nextright || *nextright < weapon2)
-#ifdef BUGFIX_R1
-            && (!g_TextJapanese || *nextright != ITEM_KNIFE)
-#endif
-        )
+        if (!isMpGame() && weaponHasFlag(*nextright, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (*nextleft < *nextright) && (requireammo == FALSE || weaponHasAmmo(*nextright)) && (weapon1 != *nextright || *nextright < weapon2))
         {
             weapon1 = *nextright;
             weapon2 = *nextright;
@@ -591,11 +572,7 @@ void invCycleForward(s32 *nextright, s32 *nextleft, s32 requireammo)
                         candidate = (candidate + 1) % ITEM_BOMBCASE;
                     }
 
-                    if ((requireammo == FALSE || weaponHasAmmo(candidate))
-#ifdef BUGFIX_R1
-                        && (!g_TextJapanese || candidate != ITEM_KNIFE)
-#endif
-                    )
+                    if ((requireammo == FALSE || weaponHasAmmo(candidate)))
                     {
                         weapon1 = candidate;
                         weapon2 = ITEM_UNARMED;
@@ -678,11 +655,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
         {
             if (candidate == weapon1)
             {
-                if (!isMpGame() && weaponHasFlag(candidate, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (requireammo == FALSE || weaponHasAmmo(candidate)) && (candidate != *nextright || candidate < *nextleft) && (weapon2 < candidate)
-#ifdef BUGFIX_R1
-                    && (!g_TextJapanese || candidate != ITEM_KNIFE)
-#endif
-                )
+                if (!isMpGame() && weaponHasFlag(candidate, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (requireammo == FALSE || weaponHasAmmo(candidate)) && (candidate != *nextright || candidate < *nextleft) && (weapon2 < candidate))
                 {
                     weapon1 = candidate;
                     weapon2 = candidate;
@@ -691,11 +664,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
                 break;
             }
             else if (
-                (requireammo == FALSE || weaponHasAmmo(candidate))
-#ifdef BUGFIX_R1
-                && (!g_TextJapanese || candidate != ITEM_KNIFE)
-#endif
-            )
+                (requireammo == FALSE || weaponHasAmmo(candidate)))
             {
                 if (!isMpGame() && weaponHasFlag(candidate, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (candidate != *nextright || candidate < *nextleft))
                 {
@@ -897,11 +866,7 @@ s32 invCountItems(void)
 
     if (g_CurrentPlayer->equipallguns)
     {
-#ifdef BUGFIX_R1
-        numitems = (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS);
-#else
         numitems = ITEM_TANKSHELLS;
-#endif
     }
 
     item = g_CurrentPlayer->ptr_inventory_first_in_cycle;
@@ -954,20 +919,12 @@ InvItem *invGetItemByIndex(s32 index)
 
     if (g_CurrentPlayer->equipallguns)
     {
-#ifdef BUGFIX_R1
-        if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
-#else
         if (index < ITEM_TANKSHELLS)
-#endif
         {
             return NULL;
         }
 
-#ifdef BUGFIX_R1
-        index = index - (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS);
-#else
         index = index - ITEM_TANKSHELLS;
-#endif
     }
 
     item = g_CurrentPlayer->ptr_inventory_first_in_cycle;
@@ -1089,22 +1046,10 @@ s32 invGetWeaponForIndex(s32 index)
     {
         if (g_CurrentPlayer->equipallguns)
         {
-#ifdef BUGFIX_R1
-            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
-            {
-                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
-                {
-                    return index + 2;
-                }
-
-                return index + 1;
-            }
-#else
             if (index < ITEM_TANKSHELLS)
             {
                 return index + 1;
             }
-#endif
         }
     }
 
@@ -1163,22 +1108,10 @@ u16 *invGetNameByIndex(s32 index)
     {
         if (g_CurrentPlayer->equipallguns)
         {
-#ifdef BUGFIX_R1
-            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
-            {
-                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
-                {
-                    return itemGetWatchText(index + 2);
-                }
-
-                return itemGetWatchText(index + 1);
-            }
-#else
             if (index < ITEM_TANKSHELLS)
             {
                 return itemGetWatchText(index + 1);
             }
-#endif
         }
     }
 
@@ -1228,22 +1161,10 @@ u16 *invGetLongNameByIndex(s32 index)
     {
         if (g_CurrentPlayer->equipallguns)
         {
-#ifdef BUGFIX_R1
-            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
-            {
-                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
-                {
-                    return itemGetChoiceText(index + 2);
-                }
-
-                return itemGetChoiceText(index + 1);
-            }
-#else
             if (index < ITEM_TANKSHELLS)
             {
                 return itemGetChoiceText(index + 1);
             }
-#endif
         }
     }
 
@@ -1314,22 +1235,10 @@ u16 *invGetWatchTitle1ForIndex(s32 index)
     {
         if (g_CurrentPlayer->equipallguns)
         {
-#ifdef BUGFIX_R1
-            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
-            {
-                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
-                {
-                    return itemGetWatchTitle1(index + 2);
-                }
-
-                return itemGetWatchTitle1(index + 1);
-            }
-#else
             if (index < ITEM_TANKSHELLS)
             {
                 return itemGetWatchTitle1(index + 1);
             }
-#endif
         }
     }
 
@@ -1374,22 +1283,10 @@ u16 *invGetWatchTitle2ForIndex(s32 index)
     {
         if (g_CurrentPlayer->equipallguns)
         {
-#ifdef BUGFIX_R1
-            if (index < (g_TextJapanese ? ITEM_TASER : ITEM_TANKSHELLS))
-            {
-                if (g_TextJapanese && ((index + 1) >= ITEM_KNIFE))
-                {
-                    return itemGetWatchTitle2(index + 2);
-                }
-
-                return itemGetWatchTitle2(index + 1);
-            }
-#else
             if (index < ITEM_TANKSHELLS)
             {
                 return itemGetWatchTitle2(index + 1);
             }
-#endif
         }
     }
 

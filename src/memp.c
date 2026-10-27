@@ -1,6 +1,5 @@
 #include <ultra64.h>
 #include "memp.h"
-#include "game/text/language.h"
 
 /**
  * memp: the pool allocator, which provides almost all of the game's memory.
@@ -42,7 +41,7 @@ long int strtol(const char *str, char **endptr, int base);
 /**
  * Splits the area from `areaStart` into pools. The sizes come from the "-mf", "-ml" and
  * "-me" command-line tokens. With "-me0", which boss.c always sets, the permanent pool gets
- * 296 KB (308 KB for Japanese text) and the stage pool the rest.
+ * 296 KB and the stage pool the rest.
  */
 void mempInitPools(s32 areaStart, s32 areaSize)
 {
@@ -68,7 +67,7 @@ void mempInitPools(s32 areaStart, s32 areaSize)
     if (poolSizes.me == 0)
     {
         poolSizes.mf = 0;
-        poolSizes.me = ((g_TextJapanese ? 308 : 296) * 1024);
+        poolSizes.me = 296 * 1024;
         poolSizes.ml = areaSize - poolSizes.me;
     }
 

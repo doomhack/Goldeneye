@@ -445,14 +445,7 @@ void objectivesTickStatusMessages(void)
         if (g_ObjectiveStatuses[i] != status) {
             g_ObjectiveStatuses[i] = status;
             if (objectiveGetDifficulty(i) <= lvGetDifficulty()) {
-                if (g_TextJapanese != 0)
-                {
-                    sprintf(&buffer, "%s \x80%c ", langGet(getStringID(LMISC, MISC_STR_2C_OBJECTIVE)), availableindex + 0x1A);
-                }
-                else
-                {
-                    sprintf(&buffer, "%s %c: ", langGet(getStringID(LMISC, MISC_STR_2C_OBJECTIVE)), availableindex + 0x61);
-                }
+                sprintf(&buffer, "%s %c: ", langGet(getStringID(LMISC, MISC_STR_2C_OBJECTIVE)), availableindex + 'a');
                 if (status == OBJECTIVESTATUS_COMPLETE)
                 {
                     strcat(&buffer, langGet(getStringID(LMISC, MISC_STR_2D_COMPLETED_LF)));
