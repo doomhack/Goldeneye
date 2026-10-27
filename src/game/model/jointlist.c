@@ -143,16 +143,16 @@ void jointListFree(JointListEntry *entry)
 #define OP16_POS_Y_VOL(data) (((volatile ModelNode_Op16Record *)(data))->pos.f[1])
 #define OP16_POS_Z_VOL(data) (((volatile ModelNode_Op16Record *)(data))->pos.f[2])
 
-void jointListCalcDepths(JointListEntry *arg0)
+void jointListCalcDepths(JointListEntry *entry)
 {
-    JointListEntry *entry;
+    JointListEntry *first;
     JointListEntry *special;
 
-    entry = arg0;
+    first = entry;
     special = NULL;
 
-    while (arg0 != NULL) {
-        ModelNode *node = arg0->rootnode;
+    while (entry != NULL) {
+        ModelNode *node = entry->rootnode;
         u16 opcode = node->Opcode;
 
         switch (opcode & 0xFF)
@@ -166,18 +166,18 @@ void jointListCalcDepths(JointListEntry *arg0)
                 data = node->Data;
                 othernode = data->Header.FirstGroupNode;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
 
                 if (othernode != NULL)
                 {
                     Mtxf *othermtx;
 
-                    othermtx = modelFindNodeMtx(arg0->model, othernode, 0);
-                    arg0->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
+                    othermtx = modelFindNodeMtx(entry->model, othernode, 0);
+                    entry->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
                 }
                 else
                 {
-                    arg0->sortvalue = -mtx->m[3][2];
+                    entry->sortvalue = -mtx->m[3][2];
                 }
                 break;
             }
@@ -191,18 +191,18 @@ void jointListCalcDepths(JointListEntry *arg0)
                 data = node->Data;
                 othernode = data->Group.ChildGroupNode;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
 
                 if (othernode != NULL)
                 {
                     Mtxf *othermtx;
 
-                    othermtx = modelFindNodeMtx(arg0->model, othernode, 0);
-                    arg0->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
+                    othermtx = modelFindNodeMtx(entry->model, othernode, 0);
+                    entry->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
                 }
                 else
                 {
-                    arg0->sortvalue = -mtx->m[3][2];
+                    entry->sortvalue = -mtx->m[3][2];
                 }
                 break;
             }
@@ -216,18 +216,18 @@ void jointListCalcDepths(JointListEntry *arg0)
                 data = node->Data;
                 othernode = data->Group.ChildGroupNode;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
 
                 if (othernode != NULL)
                 {
                     Mtxf *othermtx;
 
-                    othermtx = modelFindNodeMtx(arg0->model, othernode, 0);
-                    arg0->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
+                    othermtx = modelFindNodeMtx(entry->model, othernode, 0);
+                    entry->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
                 }
                 else
                 {
-                    arg0->sortvalue = -mtx->m[3][2];
+                    entry->sortvalue = -mtx->m[3][2];
                 }
                 break;
             }
@@ -236,8 +236,8 @@ void jointListCalcDepths(JointListEntry *arg0)
             {
                 Mtxf *mtx;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
-                arg0->sortvalue = -mtx->m[3][2];
+                mtx = modelFindNodeMtx(entry->model, node, 0);
+                entry->sortvalue = -mtx->m[3][2];
                 break;
             }
 
@@ -246,10 +246,10 @@ void jointListCalcDepths(JointListEntry *arg0)
                 Mtxf *mtx;
                 f32 *data;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
                 data = (f32 *)node->Data;
 
-                arg0->sortvalue = -(data[0] * mtx->m[0][2]
+                entry->sortvalue = -(data[0] * mtx->m[0][2]
                                 + data[1] * mtx->m[1][2]
                                 + data[2] * mtx->m[2][2]
                                 + mtx->m[3][2]);
@@ -263,7 +263,7 @@ void jointListCalcDepths(JointListEntry *arg0)
                 f32 sortvalue1;
                 f32 sortvalue2;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
                 interlinkage = &node->Data->Interlinkage;
 
                 sortvalue1 = -(interlinkage->pos.x * mtx->m[0][2]
@@ -278,11 +278,11 @@ void jointListCalcDepths(JointListEntry *arg0)
 
                 if (sortvalue1 < sortvalue2)
                 {
-                    arg0->sortvalue = sortvalue1;
+                    entry->sortvalue = sortvalue1;
                 }
                 else
                 {
-                    arg0->sortvalue = sortvalue2;
+                    entry->sortvalue = sortvalue2;
                 }
                 break;
             }
@@ -292,15 +292,15 @@ void jointListCalcDepths(JointListEntry *arg0)
                 Mtxf *mtx;
                 f32 *data;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
                 data = (f32 *)node->Data;
 
-                arg0->sortvalue = -(data[0] * mtx->m[0][2]
+                entry->sortvalue = -(data[0] * mtx->m[0][2]
                                 + data[1] * mtx->m[1][2]
                                 + data[2] * mtx->m[2][2]
                                 + mtx->m[3][2]);
 
-                special = arg0;
+                special = entry;
                 break;
             }
 
@@ -309,10 +309,10 @@ void jointListCalcDepths(JointListEntry *arg0)
                 Mtxf *mtx;
                 ModelRoData_Op11Record *op11;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
                 op11 = &node->Data->Op11;
 
-                arg0->sortvalue = -(op11->pos.x * mtx->m[0][2]
+                entry->sortvalue = -(op11->pos.x * mtx->m[0][2]
                                 + op11->pos.y * mtx->m[1][2]
                                 + op11->pos.z * mtx->m[2][2]
                                 + mtx->m[3][2]);
@@ -324,10 +324,10 @@ void jointListCalcDepths(JointListEntry *arg0)
                 Mtxf *mtx;
                 f32 *data;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
                 data = (f32 *)node->Data;
 
-                arg0->sortvalue = -(data[0] * mtx->m[0][2]
+                entry->sortvalue = -(data[0] * mtx->m[0][2]
                                 + data[1] * mtx->m[1][2]
                                 + data[2] * mtx->m[2][2]
                                 + mtx->m[3][2]);
@@ -340,12 +340,12 @@ void jointListCalcDepths(JointListEntry *arg0)
                 ModelRoData_ShadowRecord *shadow;
                 union ModelRwData *rwdata;
 
-                mtx = modelFindNodeMtx(arg0->model, node, 0);
+                mtx = modelFindNodeMtx(entry->model, node, 0);
                 shadow = &node->Data->Shadow;
 
-                rwdata = modelGetNodeRwData(arg0->model, shadow->HeaderNode);
+                rwdata = modelGetNodeRwData(entry->model, shadow->HeaderNode);
 
-                arg0->sortvalue = -(shadow->pos.x * mtx->m[0][2]
+                entry->sortvalue = -(shadow->pos.x * mtx->m[0][2]
                                 + (rwdata->Header.ground - rwdata->Header.pos.y) * mtx->m[1][2]
                                 + shadow->pos.y * mtx->m[2][2]
                                 + mtx->m[3][2]);
@@ -353,7 +353,7 @@ void jointListCalcDepths(JointListEntry *arg0)
             }
         }
 
-        arg0 = arg0->next;
+        entry = entry->next;
     }
 
     if (special != NULL)
@@ -399,7 +399,7 @@ void jointListCalcDepths(JointListEntry *arg0)
 
 
             mtx = modelFindNodeMtx(model, specialnode, 0);
-            scan = entry;
+            scan = first;
 
             while (scan != NULL)
             {
@@ -976,28 +976,8 @@ walk_node:
 
 
 /**
-* https://decomp.me/scratch/IDiXU
- * #MATCH! Unlikley match, not sure why we are setting the root node to the last node.
- 
-f32 jointListFindHit(ModelFileHeader *head, s32 unused, s32 unused2, s32 *arg3, s32 *arg4)
-{
-    ModelNode *lastnode = head->RootNode;
-
-    while (lastnode->Next != NULL)
-    {
-        lastnode = lastnode->Next;
-    }
-
-    head->RootNode = lastnode;
-    *arg3          = 0;
-    *arg4          = 0;
-    return jointListFindHitNext(head, unused, unused2, arg3, arg4);
-}*/
-
-
-/**
- * Update: decompiling jointListFindHitNext revealed that the first argument for this function is a JointListEntry.
- * The previous function matched because both ModelNode and JointListEntry happen to have a normal 32 bit field at offset 0x0c.
+ * Starts a ray hit search: moves *entryptr to the last joint list entry, clears the
+ * outputs, then lets jointListFindHitNext walk the list backwards.
  */
 s32 jointListFindHit(JointListEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode)
 {

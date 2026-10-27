@@ -56,22 +56,22 @@ void waygroupsSetUnvisitedDist(s32 *groupnums, s32 value)
 
 
 /**
- * Iterate the given groups and find any with a dist matching arg1.
+ * Iterate the given groups and find any with a dist matching dist.
  * For all groups that match, iterate their neighbouring groups and set their
- * dist to arg1 + 1, but only if their they have no existing dist value.
+ * dist to dist + 1, but only if their they have no existing dist value.
  *
  * Return true if any matched.
  */
-bool waygroupsPropagateDist(struct waygroup *group, s32 arg1)
+bool waygroupsPropagateDist(struct waygroup *group, s32 dist)
 {
     bool result = FALSE;
 
     while (group->neighbours)
     {
-        if (group->dist == arg1)
+        if (group->dist == dist)
         {
             result = TRUE;
-            waygroupsSetUnvisitedDist(group->neighbours, arg1 + 1);
+            waygroupsSetUnvisitedDist(group->neighbours, dist + 1);
         }
 
         group++;
@@ -81,7 +81,7 @@ bool waygroupsPropagateDist(struct waygroup *group, s32 arg1)
 }
 
 
-bool waygroupsFloodDist(struct waygroup *from, struct waygroup *to, struct waygroup *groups, s32 arg3)
+bool waygroupsFloodDist(struct waygroup *from, struct waygroup *to, struct waygroup *groups, s32 all)
 {
     bool result = TRUE;
     struct waygroup *group;
@@ -94,7 +94,7 @@ bool waygroupsFloodDist(struct waygroup *from, struct waygroup *to, struct waygr
 
     from->dist = 0;
 
-    for (i = 0; (arg3 || to->dist < 0) && result; i++)
+    for (i = 0; (all || to->dist < 0) && result; i++)
     {
         result = waygroupsPropagateDist(groups, i);
     }
@@ -126,7 +126,7 @@ bool waygroupsMarkRoute(waygroup *from, waygroup *to, waygroup *groups)
 }
 
 
-waypoint *waypointFindByDist(s32 *pointnums, s32 arg1, s32 groupnum)
+waypoint *waypointFindByDist(s32 *pointnums, s32 dist, s32 groupnum)
 {
     waypoint *points = g_CurrentSetup.pathwaypoints;
 
@@ -134,7 +134,7 @@ waypoint *waypointFindByDist(s32 *pointnums, s32 arg1, s32 groupnum)
     {
         waypoint *point = &points[*pointnums];
 
-        if (point->groupNum == groupnum && point->dist == arg1)
+        if (point->groupNum == groupnum && point->dist == dist)
         {
             return point;
         }
@@ -164,7 +164,7 @@ void waypointsSetUnvisitedDist(s32 *pointnums, s32 value, s32 groupnum)
 }
 
 
-bool waypointsPropagateDist(s32 *pointnums, s32 arg1, s32 groupnum)
+bool waypointsPropagateDist(s32 *pointnums, s32 dist, s32 groupnum)
 {
     bool result = FALSE;
     waypoint *points = g_CurrentSetup.pathwaypoints;
@@ -173,10 +173,10 @@ bool waypointsPropagateDist(s32 *pointnums, s32 arg1, s32 groupnum)
     {
         waypoint *point = &points[*pointnums];
 
-        if (arg1 == point->dist && point->neighbours)
+        if (dist == point->dist && point->neighbours)
         {
             result = TRUE;
-            waypointsSetUnvisitedDist(point->neighbours, arg1 + 1, groupnum);
+            waypointsSetUnvisitedDist(point->neighbours, dist + 1, groupnum);
         }
 
         pointnums++;
@@ -186,7 +186,7 @@ bool waypointsPropagateDist(s32 *pointnums, s32 arg1, s32 groupnum)
 }
 
 
-void waypointsFloodDist(waypoint *from, waypoint *to, s32 arg2)
+void waypointsFloodDist(waypoint *from, waypoint *to, s32 all)
 {
     waygroup *groups = g_CurrentSetup.waypointgroups;
     waypoint *points = g_CurrentSetup.pathwaypoints;
@@ -206,7 +206,7 @@ void waypointsFloodDist(waypoint *from, waypoint *to, s32 arg2)
 
     more = TRUE;
 
-    for (i = 0; (arg2 || to->dist < 0) && more; i++)
+    for (i = 0; (all || to->dist < 0) && more; i++)
     {
         more = waypointsPropagateDist(groups[from->groupNum].waypoints, i, from->groupNum);
     }
@@ -383,7 +383,7 @@ waypoint *waypointFindRandomByDist(s32 *pointnums, s32 dist)
 	// then checking the upper portion before the lower portion. Both loops
 	// have the same logic so this seems unusual, but there is reason to do
 	// this if they want the returned waypoint to be any random waypoint that
-	// meets the arg1 criteria, with equal weighting.
+	// meets the dist criteria, with equal weighting.
 
 	randomindex = randomGetNext() % len;
 
@@ -487,18 +487,18 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 
                 if (tmpgroup)
                 {
-                    waypoint *sp48;
-                    waypoint *sp44;
+                    waypoint *exitPoint;
+                    waypoint *entryPoint;
                     waypoint *arr[3];
 
-                    waygroupFindLinkPoints(groupa, tmpgroup, &sp48, &sp44);
+                    waygroupFindLinkPoints(groupa, tmpgroup, &exitPoint, &entryPoint);
 
-                    if (sp48 == pointa)
+                    if (exitPoint == pointa)
                     {
-                        return sp44;
+                        return entryPoint;
                     }
 
-                    if (waypointFindRouteInGroup(pointa, sp48, arr, 3) >= 3)
+                    if (waypointFindRouteInGroup(pointa, exitPoint, arr, 3) >= 3)
                     {
                         return arr[1];
                     }
@@ -509,11 +509,11 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 
                     if (tmpgroup)
                     {
-                        waypoint *sp30;
-                        waypoint *sp2c;
+                        waypoint *exitPoint;
+                        waypoint *entryPoint;
 
-                        waygroupFindLinkPoints(groupa, tmpgroup, &sp30, &sp2c);
-                        waypointsFloodDist(sp30, pointa, 1);
+                        waygroupFindLinkPoints(groupa, tmpgroup, &exitPoint, &entryPoint);
+                        waypointsFloodDist(exitPoint, pointa, 1);
                         result = waypointFindByDist(pointa->neighbours, pointa->dist + 1, pointa->groupNum);
 
                         if (result)
@@ -533,7 +533,7 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 /**
  * Checks the level's path graph at load and hangs if it is broken. Ryan spent a few minutes looking at this and left some notes about what this function does:
  *
- * var_s6 is an "error" variable. If set anywhere, the function goes into an infinite loop at the end.
+ * It keeps an error flag. If set anywhere, the function goes into an infinite loop at the end.
  * The first outer loop appears to be verifying that the waypoints don't list themselves as their own neighbour.
  * The second outer loop appears to do the same but for waygroups. It also calls waygroupFindLinkPoints, which is a more simple version of PD's waypointFindSegmentIntoGroup, so it's likely verifying that there is a waypoint path between this group and each neighbour.
  * The third outer loop is iterating waygroups, then iterating each group's waypoints, and assigning each waypoint's groupNum if it's less than 0. If a value is stored and it's wrong, the error variable is set.

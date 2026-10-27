@@ -1650,16 +1650,15 @@ void fileCopyCurrentSave(struct save_data *savefile)
 }
 
 
-//this feels fake, generated with a permuter session i forgot was running
+/**
+ * Switches to the ramrom demo's own save folder, after copying the demo's save into it.
+ * The current folder is kept in g_FrontFolderSaved so it can be restored afterwards.
+ */
 void fileUseDemoSave(struct save_data *eeprom)
 {
-  int new_var;
-  long long new_var2;
-  new_var2 = (long long) 0x64;
-  new_var = new_var2;
-  g_FrontFolderSaved = (s32) g_FrontFolder;
-  g_FrontFolder = new_var;
-  fileCopyDemoSaveToRamRomSave(new_var, eeprom);
+    g_FrontFolderSaved = g_FrontFolder;
+    g_FrontFolder = RAMROM_FOLDERNUM;
+    fileCopyDemoSaveToRamRomSave(RAMROM_FOLDERNUM, eeprom);
 }
 
 

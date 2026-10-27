@@ -404,7 +404,7 @@ void modelGetDirToCamera(Model* model, coord3d* coord)
 
 
 // PD: model0001a524
-s32 modelFindNodeMtxIndex(ModelNode *node, s32 arg1)
+s32 modelFindNodeMtxIndex(ModelNode *node, s32 which)
 {
     union ModelRoData *rodata1;
     union ModelRoData *rodata2;
@@ -421,11 +421,11 @@ s32 modelFindNodeMtxIndex(ModelNode *node, s32 arg1)
 
             case MODELNODE_OPCODE_GROUP:
                 rodata2 = node->Data;
-                return rodata2->Group.MatrixIDs[arg1 == 0x200 ? 2 : (arg1 == 0x100 ? 1 : 0)];
+                return rodata2->Group.MatrixIDs[which == 0x200 ? 2 : (which == 0x100 ? 1 : 0)];
 
             case MODELNODE_OPCODE_OP03:
                 rodata3 = node->Data;
-                return rodata3->Group.MatrixIDs[arg1 == 0x200 ? 2 : (arg1 == 0x100 ? 1 : 0)];
+                return rodata3->Group.MatrixIDs[which == 0x200 ? 2 : (which == 0x100 ? 1 : 0)];
 
             case MODELNODE_OPCODE_GROUPSIMPLE:
                 rodata4 = node->Data;
@@ -441,8 +441,8 @@ s32 modelFindNodeMtxIndex(ModelNode *node, s32 arg1)
 
 
 // PD: model0001a5cc
-Mtxf *modelFindNodeMtx(struct Model *model, struct ModelNode *node, s32 arg2) {
-    s32 index = modelFindNodeMtxIndex(node, arg2);
+Mtxf *modelFindNodeMtx(struct Model *model, struct ModelNode *node, s32 which) {
+    s32 index = modelFindNodeMtxIndex(node, which);
 
     if (index >= 0) {
         return &model->render_pos[index].pos;
@@ -779,10 +779,10 @@ f32 modelGetNodeRadius(Model *model, ModelNode *node)
 /**
  * PD: model0001af80
 */
-f32 modelGetRadius(Model *arg0)
+f32 modelGetRadius(Model *model)
 {
 
-    return arg0->obj->BoundingVolumeRadius * arg0->scale;
+    return model->obj->BoundingVolumeRadius * model->scale;
 }
 
 
@@ -797,51 +797,50 @@ void modelLerp3(vec3d *v, vec3d *w, float frac)
 
 
 // PD: model0001afe8
-f32 modelLerpAngle(f32 arg0, f32 angle, f32 mult)
+f32 modelLerpAngle(f32 from, f32 to, f32 mult)
 {
-    f32 value = angle - arg0;
+    f32 delta = to - from;
 
-    if (angle < arg0)
+    if (to < from)
     {
-        value += M_TAU_F;
+        delta += M_TAU_F;
     }
 
-    if (value < M_PI_F)
+    if (delta < M_PI_F)
     {
-        arg0 += value * mult;
+        from += delta * mult;
 
-        if (arg0 >= M_TAU_F)
+        if (from >= M_TAU_F)
         {
-            arg0 -= M_TAU_F;
+            from -= M_TAU_F;
         }
     }
     else
     {
-        arg0 -= (M_TAU_F - value) * mult;
+        from -= (M_TAU_F - delta) * mult;
 
-        if (arg0 < 0)
+        if (from < 0)
         {
-            arg0 += M_TAU_F;
+            from += M_TAU_F;
         }
     }
 
-    return arg0;
+    return from;
 }
 
 
 // PD: model0001b07c
-void modelLerpAngles3(coord3d *arg0, coord3d *arg1, f32 mult)
+void modelLerpAngles3(coord3d *dst, coord3d *target, f32 mult)
 {
-    arg0->x = modelLerpAngle(arg0->x, arg1->x, mult);
-    arg0->y = modelLerpAngle(arg0->y, arg1->y, mult);
-    arg0->z = modelLerpAngle(arg0->z, arg1->z, mult);
+    dst->x = modelLerpAngle(dst->x, target->x, mult);
+    dst->y = modelLerpAngle(dst->y, target->y, mult);
+    dst->z = modelLerpAngle(dst->z, target->z, mult);
 }
 
 
 u16 animReadChannel(ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
 {
     u32 result;
-    u32 new_var2;
     u32 oldResult;
     struct ModelAnimBitField *desc;
     u8 *byteptr;
@@ -892,12 +891,12 @@ u16 animReadChannel(ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
 
             if (result & mask)
             {
-                result = ((new_var2 = oldResult) | (((1 << (16 - bitsRemaining)) - 1) << bitsRemaining)) & 0xffff;
+                result = (oldResult | (((1 << (16 - bitsRemaining)) - 1) << bitsRemaining)) & 0xffff;
             }
         }
     }
 
-    result = desc->valueOffset + ((0, result));
+    result = desc->valueOffset + result;
     return result;
 }
 
@@ -958,8 +957,8 @@ f32 animReadRootMotion(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAni
 void modelCalcRootPosition(Model *model, ModelNode *modelNode)
 {
     union ModelRwData *rw;
-    coord3d sp38;
-    coord3d sp2c;
+    coord3d pos;
+    coord3d newpos;
     f32 y;
 
     rw = modelGetNodeRwData(model, modelNode);
@@ -969,16 +968,16 @@ void modelCalcRootPosition(Model *model, ModelNode *modelNode)
         return;
     }
 
-    sp38.x = rw->Header.framePos.x;
-    sp38.y = rw->Header.framePos.y;
-    sp38.z = rw->Header.framePos.z;
+    pos.x = rw->Header.framePos.x;
+    pos.y = rw->Header.framePos.y;
+    pos.z = rw->Header.framePos.z;
     rw->Header.yrot = rw->Header.frameYrot;
 
     if (model->frameFrac != 0.0f)
     {
         if (rw->Header.nextValid != 0)
         {
-            modelLerp3(&sp38, &rw->Header.nextPos, model->frameFrac);
+            modelLerp3(&pos, &rw->Header.nextPos, model->frameFrac);
 
             // Weird do while loop but needed for matching.
             do
@@ -1000,54 +999,54 @@ void modelCalcRootPosition(Model *model, ModelNode *modelNode)
                 y += (rw->Header.anim2NextPos.y - y) * model->frame2Frac;
             }
 
-            sp38.y += (y - sp38.y) * model->mergeWeight;
+            pos.y += (y - pos.y) * model->mergeWeight;
         }
     }
 
-    sp2c.x = sp38.x;
-    sp2c.y = sp38.y;
-    sp2c.z = sp38.z;
+    newpos.x = pos.x;
+    newpos.y = pos.y;
+    newpos.z = pos.z;
 
-    if (model->rootMoveCallback && !((s32 (*)(Model *, coord3d *, coord3d *, f32 *)) model->rootMoveCallback)(model, &rw->Header.pos, &sp2c, &rw->Header.ground))
+    if (model->rootMoveCallback && !((s32 (*)(Model *, coord3d *, coord3d *, f32 *)) model->rootMoveCallback)(model, &rw->Header.pos, &newpos, &rw->Header.ground))
     {
         return;
     }
 
-    sp38.x = sp2c.x - sp38.x;
-    sp38.z = sp2c.z - sp38.z;
+    pos.x = newpos.x - pos.x;
+    pos.z = newpos.z - pos.z;
 
-    rw->Header.pos.x = sp2c.x;
-    rw->Header.pos.y = ((f32) sp2c.y) + rw->Header.ground;
-    rw->Header.pos.z = sp2c.z;
+    rw->Header.pos.x = newpos.x;
+    rw->Header.pos.y = ((f32) newpos.y) + rw->Header.ground;
+    rw->Header.pos.z = newpos.z;
 
-    rw->Header.framePos.x += sp38.x;
-    rw->Header.framePos.z += sp38.z;
+    rw->Header.framePos.x += pos.x;
+    rw->Header.framePos.z += pos.z;
 
     if (rw->Header.nextValid != 0)
     {
-        rw->Header.nextPos.x += sp38.x;
-        rw->Header.nextPos.z += sp38.z;
+        rw->Header.nextPos.x += pos.x;
+        rw->Header.nextPos.z += pos.z;
     }
 
     if (rw->Header.anim2NextValid != 0)
     {
-        rw->Header.anim2FramePos.x += sp38.x;
-        rw->Header.anim2FramePos.z += sp38.z;
-        rw->Header.anim2NextPos.x += sp38.x;
-        rw->Header.anim2NextPos.z += sp38.z;
+        rw->Header.anim2FramePos.x += pos.x;
+        rw->Header.anim2FramePos.z += pos.z;
+        rw->Header.anim2NextPos.x += pos.x;
+        rw->Header.anim2NextPos.z += pos.z;
     }
 }
 
 
-void modelCalcPosition(Model *arg0)
+void modelCalcPosition(Model *model)
 {
     struct ModelNode *root;
 
 
-    root = arg0->obj->RootNode;
+    root = model->obj->RootNode;
     if ((root != NULL) && ((root->Opcode & 0xFF) == 1))
     {
-        modelCalcRootPosition(arg0, root);
+        modelCalcRootPosition(model, root);
     }
 }
 
@@ -1057,49 +1056,49 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
     union ModelRwData* rwdata;
     f32 scale;
     f32* pos;
-    f32 unk14;
-    Mtxf* var_a3;
-    s32 modeltype;
+    f32 yrot;
+    Mtxf* parent;
+    s32 mtxindex;
     RenderPosView* renderpos;
-    Mtxf sp20;
+    Mtxf tmp;
 
     rodata = node->Data;
     rwdata = modelGetNodeRwData(model, node);
 
     scale = model->scale;
     pos = &rwdata->Header.pos.x;
-    unk14 = rwdata->Header.yrot;
-    modeltype = rodata->Header.MatrixIndex;
-    renderpos = &model->render_pos[modeltype];
+    yrot = rwdata->Header.yrot;
+    mtxindex = rodata->Header.MatrixIndex;
+    renderpos = &model->render_pos[mtxindex];
 
     if (node->Parent != NULL)
     {
-        var_a3 = modelFindNodeMtx(model, node->Parent, 0);
+        parent = modelFindNodeMtx(model, node->Parent, 0);
     }
     else
     {
-        var_a3 = renderdata->basemtx;
+        parent = renderdata->basemtx;
     }
 
     if (rwdata->Header.yrotBlend != 0.0f)
     {
-        unk14 = modelLerpAngle(unk14, rwdata->Header.yrotBlendTarget, rwdata->Header.yrotBlend);
+        yrot = modelLerpAngle(yrot, rwdata->Header.yrotBlendTarget, rwdata->Header.yrotBlend);
     }
 
-    if (var_a3 != NULL)
+    if (parent != NULL)
     {
-        mtx4LoadYRotationWithTranslation(pos, unk14, &sp20);
+        mtx4LoadYRotationWithTranslation(pos, yrot, &tmp);
 
         if (scale != 1.0f)
         {
-            mtx4Scale3x3(scale, sp20.m[0]);
+            mtx4Scale3x3(scale, tmp.m[0]);
         }
 
-        mtx4MultAffine(var_a3, &sp20, &renderpos->pos);
+        mtx4MultAffine(parent, &tmp, &renderpos->pos);
         return;
     }
 
-    mtx4LoadYRotationWithTranslation(pos, unk14, &renderpos->pos);
+    mtx4LoadYRotationWithTranslation(pos, yrot, &renderpos->pos);
 
     if (scale != 1.0f)
     {
@@ -1231,84 +1230,82 @@ void modelCalcJointMtxFromAngles(Mtxf **parentMtx, Model *model, ModelGroupMtxBu
 }
 
 
-void modelCalcJointMtxFromQuat(ModelRenderData *arg0, Model *arg1, ModelNode *arg2, quatf arg3)
+void modelCalcJointMtxFromQuat(ModelRenderData *renderdata, Model *model, ModelNode *node, quatf rot)
 {
-    s32 spA4;
-    ModelRoData_GroupRecord *spA0;
-    Mtxf *sp9C;
-    Mtxf sp58;
-    s32 sp54;
-    s32 sp50;
-    s32 sp4C;
-    RenderPosView *sp48;
-    s32 *new_var;
-    quatf sp2C;
-    Mtxf *sp28;
-    f32 sp24;
-    s32 sp1C;
+    s32 flags = node->Opcode;
+    ModelRoData_GroupRecord *group = (ModelRoData_GroupRecord *)node->Data;
+    s32 matrix0 = group->MatrixID0;
+    s32 matrix1 = group->MatrixID1;
+    s32 matrix2 = group->MatrixID2;
+    RenderPosView *render_pos = model->render_pos;
+    Mtxf *parent;
+    Mtxf tmp;
+    quatf halfrot;
+    Mtxf *dst;
+    f32 angle;
 
-    spA4 = arg2->Opcode;
-    spA0 = (ModelRoData_GroupRecord *)arg2->Data;
-    sp54 = spA0->MatrixID0;
-    sp50 = spA0->MatrixID1;
-    sp4C = spA0->MatrixID2;
-    new_var = &sp1C;
-    sp48 = arg1->render_pos;
-    sp1C = (s32)arg2->Parent;
-
-    if (*new_var != 0) {
-        sp9C = arg0->basemtx;
-        sp9C = modelFindNodeMtx(arg1, (ModelNode *)sp1C, 0);
+    if (node->Parent != NULL) {
+        parent = modelFindNodeMtx(model, node->Parent, 0);
     } else {
-        sp9C = arg0->basemtx;
+        parent = renderdata->basemtx;
     }
 
-    if (sp9C != 0) {
-        quatToMtx4WithTranslation(&spA0->Origin, arg3, &sp58);
-        sp1C = (s32)&sp48[sp54];
-        mtx4MultAffine(sp9C, &sp58, (Mtxf *)sp1C);
+    if (parent != NULL) {
+        Mtxf *matrix0_mtx = &render_pos[matrix0].pos;
+
+        quatToMtx4WithTranslation(group->Origin.f, rot, tmp.m);
+        mtx4MultAffine(parent, &tmp, matrix0_mtx);
+
         if (g_ModelJointPositionedFunc != NULL) {
-            ((void (*)(s32, s32, s32)) g_ModelJointPositionedFunc)(sp54, sp1C, sp1C);
+            g_ModelJointPositionedFunc(matrix0, matrix0_mtx);
         }
     } else {
-        quatToMtx4WithTranslation(&spA0->Origin, arg3, (Mtxf *)&sp48[sp54]);
+        quatToMtx4WithTranslation(group->Origin.f, rot, render_pos[matrix0].pos.m);
     }
 
-    if (spA4 & 0x100) {
-        quatSlerpFromIdentity(arg3, 0.5f, sp2C);
-        if (sp9C != 0) {
-            quatToMtx4WithTranslation(&spA0->Origin, sp2C, &sp58);
-            mtx4MultAffine(sp9C, &sp58, (Mtxf *)&sp48[sp50]);
+    if (flags & MODELGROUP_MTX_HAS_MATRIX1) {
+        quatSlerpFromIdentity(rot, 0.5f, halfrot);
+
+        if (parent != NULL) {
+            quatToMtx4WithTranslation(group->Origin.f, halfrot, tmp.m);
+            mtx4MultAffine(parent, &tmp, &render_pos[matrix1].pos);
         } else {
-            quatToMtx4WithTranslation(&spA0->Origin, sp2C, (Mtxf *)&sp48[sp50]);
+            quatToMtx4WithTranslation(group->Origin.f, halfrot, render_pos[matrix1].pos.m);
         }
     }
 
-    if (spA4 & 0x200) {
-        if (sp9C != 0) {
-            sp28 = &sp58;
+    if (flags & MODELGROUP_MTX_HAS_MATRIX2) {
+        if (parent != NULL) {
+            dst = &tmp;
         } else {
-            sp28 = (Mtxf *)&sp48[sp4C];
+            dst = &render_pos[matrix2].pos;
         }
-        sp24 = 2.0f * mathAcos(*arg3);
-        if (sp24 < 3.1415927f) {
-            sp24 = sp24 * 0.5f;
+
+        angle = 2.0f * mathAcos(rot[0]);
+
+        if (angle < M_PI_F) {
+            angle = angle * 0.5f;
         } else {
-            sp24 = 6.2831855f - ((6.2831855f - sp24) * 0.5f);
+            angle = M_TAU_F - ((M_TAU_F - angle) * 0.5f);
         }
-        mtx4LoadYRotation(sp24, sp28);
-        if (sp24 >= 3.1415927f) {
-            sp24 = 6.2831855f - sp24;
+
+        mtx4LoadYRotation(angle, dst);
+
+        if (angle >= M_PI_F) {
+            angle = M_TAU_F - angle;
         }
-        if (sp24 < 0.890118f) {
-            sp24 = modelGetBendStretchScale(sp24);
+
+        if (angle < 0.890118f) {
+            angle = modelGetBendStretchScale(angle);
         } else {
-            sp24 = 1.5f;
+            angle = 1.5f;
         }
-        mtx4ScaleRow2(sp24, (f32 *)sp28);
-        mtx4SetTranslation(&spA0->Origin, sp28);
-        if (sp9C != 0) {
-            mtx4MultAffine(sp9C, sp28, (Mtxf *)&sp48[sp4C]);
+
+        mtx4ScaleRow2(angle, (f32 *)dst);
+        mtx4SetTranslation(&group->Origin, dst);
+
+        if (parent != NULL) {
+            mtx4MultAffine(parent, dst, &render_pos[matrix2].pos);
         }
     }
 }
@@ -1411,7 +1408,7 @@ void animReadJointRotation(s32 jointnum, s32 flip, ModelSkeleton *skeleton, Mode
 }
 
 
-void modelCalcJointMtx(ModelRenderData *arg0, Model *model, ModelNode *node)
+void modelCalcJointMtx(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
     union
     {
@@ -1460,11 +1457,11 @@ void modelCalcJointMtx(ModelRenderData *arg0, Model *model, ModelNode *node)
         quatFromAngles(&rot3, q2);
         quatMakeShortestPath(q1, q2);
         quatSlerp(q1, q2, model->mergeWeight, result);
-        modelCalcJointMtxFromQuat(arg0, model, node, result);
+        modelCalcJointMtxFromQuat(renderdata, model, node, result);
     }
     else
     {
-        modelCalcJointMtxFromAngles(arg0, model, node, &rot1);
+        modelCalcJointMtxFromAngles(renderdata, model, node, &rot1);
     }
 }
 
@@ -1649,27 +1646,27 @@ void modelCalcYJointMtx(ModelRenderData *renderData, Model *model, ModelNode *no
 }
 
 
-void modelCalcOffsetMtx(ModelRenderData* arg0, Model *model, ModelNode *node)
+void modelCalcOffsetMtx(ModelRenderData* renderdata, Model *model, ModelNode *node)
 {
     union ModelRoData *rodata = node->Data;
-    Mtxf *sp68;
-    Mtxf sp28;
+    Mtxf *parent;
+    Mtxf tmp;
     s32 mtxindex = rodata->GroupSimple.Group1;
     RenderPosView *matrices = model->render_pos;
 
     if (node->Parent)
     {
-        sp68 = modelFindNodeMtx(model, node->Parent, 0);
+        parent = modelFindNodeMtx(model, node->Parent, 0);
     }
     else
     {
-        sp68 = arg0->basemtx;
+        parent = renderdata->basemtx;
     }
 
-    if (sp68)
+    if (parent)
     {
-        mtx4LoadTranslation(&rodata->GroupSimple.Origin, &sp28);
-        mtx4MultAffine(sp68, &sp28, &matrices[mtxindex]);
+        mtx4LoadTranslation(&rodata->GroupSimple.Origin, &tmp);
+        mtx4MultAffine(parent, &tmp, &matrices[mtxindex]);
     }
     else
     {
@@ -1840,45 +1837,45 @@ void modelUpdateReorderRelations(Model *model, ModelNode *node)
     union ModelRoData *rodata = node->Data;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
     Mtxf *mtx = modelFindNodeMtx(model, node, 0);
-    coord3d sp38;
-    coord3d sp2c;
-    f32 tmp;
+    coord3d normal;
+    coord3d point;
+    f32 dot;
 
     if (rodata->BSP.reserved == 0)
     {
-        sp38.x = rodata->BSP.Vector.f[0];
-        sp38.y = rodata->BSP.Vector.f[1];
-        sp38.z = rodata->BSP.Vector.f[2];
-        mtx4RotateVecInPlace(mtx, sp38.f);
+        normal.x = rodata->BSP.Vector.f[0];
+        normal.y = rodata->BSP.Vector.f[1];
+        normal.z = rodata->BSP.Vector.f[2];
+        mtx4RotateVecInPlace(mtx, normal.f);
     }
     else if (rodata->BSP.reserved == 2)
     {
-        sp38.x = mtx->m[1][0] * rodata->BSP.Vector.f[1];
-        sp38.y = mtx->m[1][1] * rodata->BSP.Vector.f[1];
-        sp38.z = mtx->m[1][2] * rodata->BSP.Vector.f[1];
+        normal.x = mtx->m[1][0] * rodata->BSP.Vector.f[1];
+        normal.y = mtx->m[1][1] * rodata->BSP.Vector.f[1];
+        normal.z = mtx->m[1][2] * rodata->BSP.Vector.f[1];
     }
     else if (rodata->BSP.reserved == 3)
     {
-        sp38.x = mtx->m[2][0] * rodata->BSP.Vector.f[2];
-        sp38.y = mtx->m[2][1] * rodata->BSP.Vector.f[2];
-        sp38.z = mtx->m[2][2] * rodata->BSP.Vector.f[2];
+        normal.x = mtx->m[2][0] * rodata->BSP.Vector.f[2];
+        normal.y = mtx->m[2][1] * rodata->BSP.Vector.f[2];
+        normal.z = mtx->m[2][2] * rodata->BSP.Vector.f[2];
     }
     else if (rodata->BSP.reserved == 1)
     {
-        sp38.x = mtx->m[0][0] * rodata->BSP.Vector.f[0];
-        sp38.y = mtx->m[0][1] * rodata->BSP.Vector.f[0];
-        sp38.z = mtx->m[0][2] * rodata->BSP.Vector.f[0];
+        normal.x = mtx->m[0][0] * rodata->BSP.Vector.f[0];
+        normal.y = mtx->m[0][1] * rodata->BSP.Vector.f[0];
+        normal.z = mtx->m[0][2] * rodata->BSP.Vector.f[0];
     }
 
-    sp2c.x = rodata->BSP.Point.f[0];
-    sp2c.y = rodata->BSP.Point.f[1];
-    sp2c.z = rodata->BSP.Point.f[2];
+    point.x = rodata->BSP.Point.f[0];
+    point.y = rodata->BSP.Point.f[1];
+    point.z = rodata->BSP.Point.f[2];
 
-    mtx4TransformVecInPlace(mtx, &sp2c);
+    mtx4TransformVecInPlace(mtx, &point);
 
-    tmp = sp38.f[0] * sp2c.f[0] + sp38.f[1] * sp2c.f[1] + sp38.f[2] * sp2c.f[2];
+    dot = normal.f[0] * point.f[0] + normal.f[1] * point.f[1] + normal.f[2] * point.f[2];
 
-    if (tmp < 0)
+    if (dot < 0)
     {
         rwdata->BSP.visible = TRUE;
     }
@@ -2052,7 +2049,7 @@ void modelUpdateNodeRelations(Model *model)
 }
 
 
-void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
+void modelUpdateMatrices(ModelRenderData *renderdata, Model *model)
 {
     ModelNode *node = model->obj->RootNode;
 
@@ -2063,19 +2060,19 @@ void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
         switch (type)
         {
             case MODELNODE_OPCODE_HEADER:
-                modelCalcRootMtx(arg0, model, node);
+                modelCalcRootMtx(renderdata, model, node);
                 break;
 
             case MODELNODE_OPCODE_GROUP:
-                modelCalcJointMtx(arg0, model, node);
+                modelCalcJointMtx(renderdata, model, node);
                 break;
 
             case MODELNODE_OPCODE_OP03:
-                modelCalcYJointMtx(arg0, model, node);
+                modelCalcYJointMtx(renderdata, model, node);
                 break;
 
             case MODELNODE_OPCODE_GROUPSIMPLE:
-                modelCalcOffsetMtx(arg0, model, node);
+                modelCalcOffsetMtx(renderdata, model, node);
                 break;
 
             case MODELNODE_OPCODE_LOD:
@@ -2124,11 +2121,11 @@ void modelUpdateMatrices(ModelRenderData *arg0, Model *model)
 }
 
 
-void modelCalcMatricesNoAnim(ModelRenderData* arg0, Model* arg1)
+void modelCalcMatricesNoAnim(ModelRenderData* renderdata, Model* model)
 {
-    arg1->render_pos = (RenderPosView* ) arg0->mtxlist;
-    arg0->mtxlist += arg1->obj->numMatrices;
-    modelUpdateMatrices((ModelRenderData* ) arg0, arg1);
+    model->render_pos = (RenderPosView* ) renderdata->mtxlist;
+    renderdata->mtxlist += model->obj->numMatrices;
+    modelUpdateMatrices((ModelRenderData* ) renderdata, model);
 }
 
 
@@ -2136,33 +2133,33 @@ void modelCalcMatricesNoAnim(ModelRenderData* arg0, Model* arg1)
  * Address 0x7F06F2F8 (VERSION_US, VERSION_JP)
  * Address 0x7F06F670 (VERSION_EU)
 */
-void modelCalcMatrices(ModelRenderData *arg0, struct Model *arg1)
+void modelCalcMatrices(ModelRenderData *renderdata, struct Model *model)
 {
 
-    if (arg1->anim != NULL)
+    if (model->anim != NULL)
     {
 
-        arg1->frameaData = animLoadFrame(arg1->anim, arg1->framea, arg1->obj->Skeleton);
+        model->frameaData = animLoadFrame(model->anim, model->framea, model->obj->Skeleton);
 
-        if (arg1->frameFrac != 0.0f)
+        if (model->frameFrac != 0.0f)
         {
-            arg1->framebData = animLoadFrame(arg1->anim, arg1->frameb, arg1->obj->Skeleton);
+            model->framebData = animLoadFrame(model->anim, model->frameb, model->obj->Skeleton);
         }
 
-        if (arg1->anim2 != NULL)
+        if (model->anim2 != NULL)
         {
-            arg1->frame2aData = animLoadFrame(arg1->anim2, arg1->frame2a, arg1->obj->Skeleton);
+            model->frame2aData = animLoadFrame(model->anim2, model->frame2a, model->obj->Skeleton);
 
-            if (arg1->frame2Frac != 0.0f)
+            if (model->frame2Frac != 0.0f)
             {
-                arg1->frame2bData = animLoadFrame(arg1->anim2, arg1->frame2b, arg1->obj->Skeleton);
+                model->frame2bData = animLoadFrame(model->anim2, model->frame2b, model->obj->Skeleton);
             }
         }
 
         animResetFrameBuffer();
     }
 
-    modelCalcMatricesNoAnim(arg0, arg1);
+    modelCalcMatricesNoAnim(renderdata, model);
 }
 
 struct ModelAnimation * modelGetAnim(struct Model* model) {
@@ -2300,13 +2297,13 @@ void modelCopyAnimForMerge(Model *model, f32 timemerge)
 }
 
 
-void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame, f32 speed, f32 arg5)
+void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame, f32 speed, f32 merge)
 {
     s32 hadNoAnim = !model->anim;
     s32 type;
 
     if (model->anim2 != NULL) {
-        model->mergeTime = arg5;
+        model->mergeTime = merge;
         model->mergeElapsed = 0.0f;
         model->mergeWeight = 1.0f;
     } else {
@@ -2329,7 +2326,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
     if (type == MODELNODE_OPCODE_HEADER) {
         ModelRoData_HeaderRecord *rodata = &model->obj->RootNode->Data->Header;
         ModelRwData_HeaderRecord *rwdata = modelGetNodeRwData(model, model->obj->RootNode);
-        f32 temp_f14;
+        f32 prevYrot;
         f32 sinAngle;
         f32 scale;
         f32 cosAngle;
@@ -2402,13 +2399,13 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
             rwdata->framePos.f[1] = (rwdata->pos.f[1] - rwdata->ground) - (y - (rwdata->pos.f[1] - rwdata->ground)) * model->frameFrac / (1.0f - model->frameFrac);
             rwdata->framePos.f[2] = rwdata->nextPos.f[2] - z;
 
-            temp_f14 = rwdata->yrot - angleDelta;
+            prevYrot = rwdata->yrot - angleDelta;
 
-            if (temp_f14 < 0.0f) {
-                temp_f14 += M_TAU_F;
+            if (prevYrot < 0.0f) {
+                prevYrot += M_TAU_F;
             }
 
-            rwdata->frameYrot = modelLerpAngle(rwdata->yrot, temp_f14, model->frameFrac);
+            rwdata->frameYrot = modelLerpAngle(rwdata->yrot, prevYrot, model->frameFrac);
 
             if (rwdata->yrotBlend == 0.0f) {
                 rwdata->nextYrot = rwdata->frameYrot + angleDelta;
@@ -2492,29 +2489,28 @@ void modelSetAnimSpeed(Model *model, f32 anim_speed, f32 startframe) {
 }
 
 /**
- * @param arg0:
- * @param arg1:
- * @param arg2: must be non-zero.
-*/
-void modelSetAnimSpeedToReachFrame(Model *model, f32 arg1, f32 arg2)
+ * Picks a speed that reaches targetframe in duration ticks (which must be non-zero),
+ * wrapping around the end of the animation if needed.
+ */
+void modelSetAnimSpeedToReachFrame(Model *model, f32 targetframe, f32 duration)
 {
-    f32 temp_f0;
-    f32 phi_f2;
+    f32 frame;
+    f32 dist;
     f32 t;
 
-    temp_f0 = model->frame;
+    frame = model->frame;
 
-    if (temp_f0 <= arg1)
+    if (frame <= targetframe)
     {
-        phi_f2 = arg1 - temp_f0;
+        dist = targetframe - frame;
     }
     else
     {
-        phi_f2 = ( (f32)model->anim->numFrames - temp_f0) + arg1;
+        dist = ( (f32)model->anim->numFrames - frame) + targetframe;
     }
 
-    t = model->speed + ((2.0f * phi_f2) / arg2);
-    modelSetAnimSpeed(model, t, arg2);
+    t = model->speed + ((2.0f * dist) / duration);
+    modelSetAnimSpeed(model, t, duration);
 }
 
 void modelSetAnimPlaySpeed(Model *model, f32 g_ChrAnimRate, f32 startframe) {
@@ -2530,8 +2526,8 @@ void modelSetAnimPlaySpeed(Model *model, f32 g_ChrAnimRate, f32 startframe) {
 }
 
 
-void modelSetRootMoveCallback(Model *model, s32 arg1) {
-    model->rootMoveCallback = arg1;
+void modelSetRootMoveCallback(Model *model, s32 callback) {
+    model->rootMoveCallback = callback;
 }
 
 
@@ -2608,9 +2604,9 @@ void modelSetAnimFrame2(Model* model, f32 frame1, f32 frame2)
 }
 
 
-void modelSetAnimMergingEnabled(s32 arg0)
+void modelSetAnimMergingEnabled(s32 enabled)
 {
-    g_ModelAnimMergingEnabled = arg0;
+    g_ModelAnimMergingEnabled = enabled;
 }
 
 
@@ -2632,15 +2628,15 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
     s32 curframe;
     f32 speed;
     coord3d pos;
-    f32 anglecur;
+    f32 frameangle;
     f32 cosangle;
     s32 vb;
     s32 endframe;
-    coord3d pos34;
+    coord3d framepos;
     s32 forward;
-    coord3d pos24;
-    f32 angle20;
-    s32 flag;
+    coord3d nextpos;
+    f32 nextangle;
+    s32 nextvalid;
     f32 angledelta;
     f32 sinangle;
     f32 speed2;
@@ -2666,15 +2662,15 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
             scale = modelptr->scale * modelptr->anim_translation_scale;
             pos = (coord3d){0};
 
-            pos34.f[0] = header->framePos.x;
-            pos34.f[1] = header->framePos.y;
-            pos34.f[2] = header->framePos.z;
-            anglecur = header->frameYrot;
-            pos24.f[0] = header->nextPos.x;
-            pos24.f[1] = header->nextPos.y;
-            pos24.f[2] = header->nextPos.z;
-            angle20 = header->nextYrot;
-            flag = header->nextValid;
+            framepos.f[0] = header->framePos.x;
+            framepos.f[1] = header->framePos.y;
+            framepos.f[2] = header->framePos.z;
+            frameangle = header->frameYrot;
+            nextpos.f[0] = header->nextPos.x;
+            nextpos.f[1] = header->nextPos.y;
+            nextpos.f[2] = header->nextPos.z;
+            nextangle = header->nextYrot;
+            nextvalid = header->nextValid;
 
             speed = modelptr->speed;
 
@@ -2728,15 +2724,15 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                 framenum = modelConstrainOrWrapAnimFrame(curframe, modelptr->anim, modelptr->endframe);
                 modelptr->framea = framenum;
 
-                if (flag)
+                if (nextvalid)
                 {
-                    pos34.f[0] = pos24.f[0];
-                    pos34.f[1] = pos24.f[1];
-                    pos34.f[2] = pos24.f[2];
+                    framepos.f[0] = nextpos.f[0];
+                    framepos.f[1] = nextpos.f[1];
+                    framepos.f[2] = nextpos.f[2];
 
                     if (header->yrotBlend == 0.0f)
                     {
-                        anglecur = angle20;
+                        frameangle = nextangle;
                     }
                 }
                 else
@@ -2764,17 +2760,17 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                     cosangle = cosf(header->yrot);
                     sinangle = sinf(header->yrot);
 
-                    pos34.f[0] += (pos.x * cosangle) + (pos.z * sinangle);
-                    pos34.f[1] = pos.y;
-                    pos34.f[2] += (-pos.x * sinangle) + (pos.z * cosangle);
+                    framepos.f[0] += (pos.x * cosangle) + (pos.z * sinangle);
+                    framepos.f[1] = pos.y;
+                    framepos.f[2] += (-pos.x * sinangle) + (pos.z * cosangle);
 
                     if (header->yrotBlend == 0.0f)
                     {
-                        anglecur += angledelta;
+                        frameangle += angledelta;
 
-                        if (M_TAU_F <= anglecur)
+                        if (M_TAU_F <= frameangle)
                         {
-                            anglecur -= M_TAU_F;
+                            frameangle -= M_TAU_F;
                         }
                     }
                 }
@@ -2794,7 +2790,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                 if (modelptr->frameb != modelptr->framea)
                 {
                     angledelta = animReadRootMotion(jointnum, modelptr->flip, skeleton, modelptr->anim, framenum, &pos);
-                    flag = 1;
+                    nextvalid = 1;
 
                     if (scale != 1.0f)
                     {
@@ -2819,8 +2815,8 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                     if (g_ModelAnimMergingEnabled && modelptr->anim2 != NULL)
                     {
-                        pos24.f[0] = (pos.z * sinangle) + (pos.x * cosangle);
-                        pos24.f[2] = (pos.z * cosangle) + (-pos.x * sinangle);
+                        nextpos.f[0] = (pos.z * sinangle) + (pos.x * cosangle);
+                        nextpos.f[2] = (pos.z * cosangle) + (-pos.x * sinangle);
 
                         if (0.0f < speed)
                         {
@@ -2836,24 +2832,24 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                             v[0] = ((header->anim2NextPos.x - header->anim2FramePos.x) * speed2) / speed;
                             v[2] = ((header->anim2NextPos.z - header->anim2FramePos.z) * speed2) / speed;
 
-                            pos24.f[0] += (v[0] - pos24.f[0]) * t;
-                            pos24.f[2] += (v[2] - pos24.f[2]) * t;
+                            nextpos.f[0] += (v[0] - nextpos.f[0]) * t;
+                            nextpos.f[2] += (v[2] - nextpos.f[2]) * t;
                         }
                         else
                         {
-                            pos24.f[0] += (header->anim2NextPos.x - header->anim2FramePos.x) * modelptr->mergeWeight;
-                            pos24.f[2] += (header->anim2NextPos.z - header->anim2FramePos.z) * modelptr->mergeWeight;
+                            nextpos.f[0] += (header->anim2NextPos.x - header->anim2FramePos.x) * modelptr->mergeWeight;
+                            nextpos.f[2] += (header->anim2NextPos.z - header->anim2FramePos.z) * modelptr->mergeWeight;
                         }
 
-                        pos24.f[0] += pos34.f[0];
-                        pos24.f[2] += pos34.f[2];
-                        pos24.f[1] = pos.y;
+                        nextpos.f[0] += framepos.f[0];
+                        nextpos.f[2] += framepos.f[2];
+                        nextpos.f[1] = pos.y;
                     }
                     else
                     {
-                        pos24.f[0] = (pos34.f[0] + (pos.f[0] * cosangle)) + (pos.f[2] * sinangle);
-                        pos24.f[1] = pos.f[1];
-                        pos24.f[2] = (pos34.f[2] - (pos.f[0] * sinangle)) + (pos.f[2] * cosangle);
+                        nextpos.f[0] = (framepos.f[0] + (pos.f[0] * cosangle)) + (pos.f[2] * sinangle);
+                        nextpos.f[1] = pos.f[1];
+                        nextpos.f[2] = (framepos.f[2] - (pos.f[0] * sinangle)) + (pos.f[2] * cosangle);
                     }
 
                     if (0.0f < header->turnFrames)
@@ -2887,24 +2883,24 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                     if (header->yrotBlend == 0.0f)
                     {
-                        angle20 = anglecur + angledelta;
+                        nextangle = frameangle + angledelta;
 
-                        if (M_TAU_F <= angle20)
+                        if (M_TAU_F <= nextangle)
                         {
-                            angle20 -= M_TAU_F;
+                            nextangle -= M_TAU_F;
                         }
                     }
                 }
             }
 
-            header->framePos.x = pos34.f[0];
-            header->framePos.y = pos34.f[1];
-            header->framePos.z = pos34.f[2];
-            header->frameYrot = anglecur;
-            header->nextPos.x = pos24.f[0];
-            header->nextPos.y = pos24.f[1];
-            header->nextPos.z = pos24.f[2];
-            header->nextYrot = angle20;
+            header->framePos.x = framepos.f[0];
+            header->framePos.y = framepos.f[1];
+            header->framePos.z = framepos.f[2];
+            header->frameYrot = frameangle;
+            header->nextPos.x = nextpos.f[0];
+            header->nextPos.y = nextpos.f[1];
+            header->nextPos.z = nextpos.f[2];
+            header->nextYrot = nextangle;
 
             va = modelptr->framea;
             vb = modelptr->frameb;
@@ -3811,9 +3807,9 @@ void modelApplyCullMode(ModelRenderData *renderdata)
 }
 
 
-void modelRenderNodeGundl(ModelRenderData* renderdata, ModelNode* arg1)
+void modelRenderNodeGundl(ModelRenderData* renderdata, ModelNode* node)
 {
-    ModelRoData_DisplayListRecord* rodata = &arg1->Data->DisplayList;
+    ModelRoData_DisplayListRecord* rodata = &node->Data->DisplayList;
 
     if (renderdata->skipDraw == 0)
     {
@@ -4149,9 +4145,9 @@ void modelRenderNodeRotTex(ModelRenderData *renderdata, ModelNode *node)
 }
 
 
-void modelSelectTexture(ModelRenderData *renderdata, struct sImageTableEntry *tconfig, s32 arg2)
+void modelSelectTexture(ModelRenderData *renderdata, struct sImageTableEntry *tconfig, s32 blendMode)
 {
-    texSelect(&renderdata->gdl, tconfig, arg2, renderdata->zbufferenabled, 2);
+    texSelect(&renderdata->gdl, tconfig, blendMode, renderdata->zbufferenabled, 2);
 }
 
 
@@ -4423,29 +4419,29 @@ void modelRenderNodeOp11(s32 param_1,struct Model *param_2,struct ModelNode *par
 // PD: modelRenderNodeChrGunfire
 void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
-    f32 negspc0;
+    f32 negUpX;
     ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
     sImageTableEntry *tconfig;
-    f32 spf0;
-    f32 spec;
-    coord3d spe0;
-    f32 spdc;
-    f32 spd8;
-    f32 spd4;
-    f32 spd0;
-    f32 spcc;
-    f32 spc8;
-    f32 spc4;
-    f32 spc0;
-    f32 spbc;
-    f32 negspcc;
-    f32 negspc8;
+    f32 yaw;
+    f32 pitch;
+    coord3d dir;
+    f32 cosYaw;
+    f32 sinYaw;
+    f32 cosPitch;
+    f32 sinPitch;
+    f32 rightX;
+    f32 rightZ;
+    f32 upY;
+    f32 upX;
+    f32 upZ;
+    f32 negRightX;
+    f32 negRightZ;
     f32 scale;
     Mtxf *mtx;
     f32 tmp;
-    coord3d sp9c;
-    coord3d sp90;
+    coord3d size;
+    coord3d base;
     Vertex vtxtemplate = g_ModelGunfireVtxTemplate;
     Vertex *vertices;
     f32 distance;
@@ -4455,61 +4451,61 @@ void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode
         s32 index = modelFindNodeMtxIndex(node, 0);
         mtx = &model->render_pos[index].pos;
 
-        spe0.x = -(rodata->Offset.f[0] * mtx->m[0][0] + rodata->Offset.f[1] * mtx->m[1][0] + rodata->Offset.f[2] * mtx->m[2][0] + mtx->m[3][0]);
-        spe0.y = -(rodata->Offset.f[0] * mtx->m[0][1] + rodata->Offset.f[1] * mtx->m[1][1] + rodata->Offset.f[2] * mtx->m[2][1] + mtx->m[3][1]);
-        spe0.z = -(rodata->Offset.f[0] * mtx->m[0][2] + rodata->Offset.f[1] * mtx->m[1][2] + rodata->Offset.f[2] * mtx->m[2][2] + mtx->m[3][2]);
+        dir.x = -(rodata->Offset.f[0] * mtx->m[0][0] + rodata->Offset.f[1] * mtx->m[1][0] + rodata->Offset.f[2] * mtx->m[2][0] + mtx->m[3][0]);
+        dir.y = -(rodata->Offset.f[0] * mtx->m[0][1] + rodata->Offset.f[1] * mtx->m[1][1] + rodata->Offset.f[2] * mtx->m[2][1] + mtx->m[3][1]);
+        dir.z = -(rodata->Offset.f[0] * mtx->m[0][2] + rodata->Offset.f[1] * mtx->m[1][2] + rodata->Offset.f[2] * mtx->m[2][2] + mtx->m[3][2]);
 
-        distance = sqrtf(spe0.f[0] * spe0.f[0] + spe0.f[1] * spe0.f[1] + spe0.f[2] * spe0.f[2]);
+        distance = sqrtf(dir.f[0] * dir.f[0] + dir.f[1] * dir.f[1] + dir.f[2] * dir.f[2]);
 
         if (distance > 0)
         {
             f32 tmp = 1 / (model->scale * distance);
-            spe0.f[0] *= tmp;
-            spe0.f[1] *= tmp;
-            spe0.f[2] *= tmp;
+            dir.f[0] *= tmp;
+            dir.f[1] *= tmp;
+            dir.f[2] *= tmp;
         }
         else
         {
-            spe0.f[0] = 0;
-            spe0.f[1] = 0;
-            spe0.f[2] = 1 / model->scale;
+            dir.f[0] = 0;
+            dir.f[1] = 0;
+            dir.f[2] = 1 / model->scale;
         }
 
-        spec = mathAcos(spe0.f[0] * mtx->m[1][0] + spe0.f[1] * mtx->m[1][1] + spe0.f[2] * mtx->m[1][2]);
-        spf0 = mathAcos(-(spe0.f[0] * mtx->m[2][0] + spe0.f[1] * mtx->m[2][1] + spe0.f[2] * mtx->m[2][2]) / sinf(spec));
+        pitch = mathAcos(dir.f[0] * mtx->m[1][0] + dir.f[1] * mtx->m[1][1] + dir.f[2] * mtx->m[1][2]);
+        yaw = mathAcos(-(dir.f[0] * mtx->m[2][0] + dir.f[1] * mtx->m[2][1] + dir.f[2] * mtx->m[2][2]) / sinf(pitch));
 
-        tmp = -(spe0.f[0] * mtx->m[0][0] + spe0.f[1] * mtx->m[0][1] + spe0.f[2] * mtx->m[0][2]);
+        tmp = -(dir.f[0] * mtx->m[0][0] + dir.f[1] * mtx->m[0][1] + dir.f[2] * mtx->m[0][2]);
 
         if (tmp < 0)
         {
-            spf0 = M_TAU_F - spf0;
+            yaw = M_TAU_F - yaw;
         }
 
-        spdc = cosf(spf0);
-        spd8 = sinf(spf0);
-        spd4 = cosf(spec);
-        spd0 = sinf(spec);
+        cosYaw = cosf(yaw);
+        sinYaw = sinf(yaw);
+        cosPitch = cosf(pitch);
+        sinPitch = sinf(pitch);
 
         scale = 0.75f + (randomGetNext() % 128) * (1.0f / 256.0f); // 0.75 to 1.25
 
-        sp9c.f[0] = rodata->Size.f[0] * scale;
-        sp9c.f[1] = rodata->Size.f[1] * scale;
-        sp9c.f[2] = rodata->Size.f[2] * scale;
+        size.f[0] = rodata->Size.f[0] * scale;
+        size.f[1] = rodata->Size.f[1] * scale;
+        size.f[2] = rodata->Size.f[2] * scale;
 
-        spcc = sp9c.f[0] * spdc * 0.5f;
-        spc8 = sp9c.f[2] * spd8 * 0.5f;
-        spc4 = sp9c.f[1] * spd0 * 0.5f;
+        rightX = size.f[0] * cosYaw * 0.5f;
+        rightZ = size.f[2] * sinYaw * 0.5f;
+        upY = size.f[1] * sinPitch * 0.5f;
 
-        spc0 = sp9c.f[0] * spd4 * spd8 * 0.5f;
-        spbc = sp9c.f[2] * spd4 * spdc * 0.5f;
+        upX = size.f[0] * cosPitch * sinYaw * 0.5f;
+        upZ = size.f[2] * cosPitch * cosYaw * 0.5f;
 
-        negspcc = -spcc;
-        negspc8 = -spc8;
-        negspc0 = -spc0;
+        negRightX = -rightX;
+        negRightZ = -rightZ;
+        negUpX = -upX;
 
-        sp90.f[0] = rodata->Offset.f[0] - sp9c.f[0] * 0.5f;
-        sp90.f[1] = rodata->Offset.f[1];
-        sp90.f[2] = rodata->Offset.f[2];
+        base.f[0] = rodata->Offset.f[0] - size.f[0] * 0.5f;
+        base.f[1] = rodata->Offset.f[1];
+        base.f[2] = rodata->Offset.f[2];
 
 
         vertices = g_ModelVtxAllocator(4);
@@ -4519,44 +4515,44 @@ void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode
         vertices[2] = vtxtemplate;
         vertices[3] = vtxtemplate;
 
-        vertices[0].coord.x = sp90.f[0] + negspcc + negspc0;
-        vertices[0].coord.y = sp90.f[1] - spc4;
-        vertices[0].coord.z = sp90.f[2] - negspc8 + -spbc;
-        vertices[1].coord.x = sp90.f[0] + negspcc - negspc0;
-        vertices[1].coord.y = sp90.f[1] + spc4;
-        vertices[1].coord.z = sp90.f[2] - negspc8 - -spbc;
-        vertices[2].coord.x = sp90.f[0] - negspcc - negspc0;
-        vertices[2].coord.y = sp90.f[1] + spc4;
-        vertices[2].coord.z = sp90.f[2] + negspc8 - -spbc;
-        vertices[3].coord.x = sp90.f[0] - negspcc + negspc0;
-        vertices[3].coord.y = sp90.f[1] - spc4;
-        vertices[3].coord.z = sp90.f[2] + negspc8 + -spbc;
+        vertices[0].coord.x = base.f[0] + negRightX + negUpX;
+        vertices[0].coord.y = base.f[1] - upY;
+        vertices[0].coord.z = base.f[2] - negRightZ + -upZ;
+        vertices[1].coord.x = base.f[0] + negRightX - negUpX;
+        vertices[1].coord.y = base.f[1] + upY;
+        vertices[1].coord.z = base.f[2] - negRightZ - -upZ;
+        vertices[2].coord.x = base.f[0] - negRightX - negUpX;
+        vertices[2].coord.y = base.f[1] + upY;
+        vertices[2].coord.z = base.f[2] + negRightZ - -upZ;
+        vertices[3].coord.x = base.f[0] - negRightX + negUpX;
+        vertices[3].coord.y = base.f[1] - upY;
+        vertices[3].coord.z = base.f[2] + negRightZ + -upZ;
 
         gSPSegment(renderdata->gdl++, SPSEGMENT_MODEL_COL1, osVirtualToPhysical(rodata->BaseAddr));
 
         if (rodata->Image)
         {
             s32 centre;
-            u16 sp62;
-            s32 sp5c;
-            s32 sp58;
+            u16 texAngle;
+            s32 texCos;
+            s32 texSin;
 
             tconfig = rodata->Image;
 
-            sp62 = (randomGetNext() * 1024) & 0xffff;
-            sp5c = (coss(sp62) * tconfig->width * 0xb5) >> 18;
-            sp58 = (sins(sp62) * tconfig->width * 0xb5) >> 18;
+            texAngle = (randomGetNext() * 1024) & 0xffff;
+            texCos = (coss(texAngle) * tconfig->width * 0xb5) >> 18;
+            texSin = (sins(texAngle) * tconfig->width * 0xb5) >> 18;
 
             centre = tconfig->width << 4;
 
-            vertices[0].s = centre - sp5c;
-            vertices[0].t = centre - sp58;
-            vertices[1].s = centre + sp58;
-            vertices[1].t = centre - sp5c;
-            vertices[2].s = centre + sp5c;
-            vertices[2].t = centre + sp58;
-            vertices[3].s = centre - sp58;
-            vertices[3].t = centre + sp5c;
+            vertices[0].s = centre - texCos;
+            vertices[0].t = centre - texSin;
+            vertices[1].s = centre + texSin;
+            vertices[1].t = centre - texCos;
+            vertices[2].s = centre + texCos;
+            vertices[2].t = centre + texSin;
+            vertices[3].s = centre - texSin;
+            vertices[3].t = centre + texCos;
 
             modelSelectTexture(renderdata, tconfig, 4);
         }
@@ -4573,9 +4569,9 @@ void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode
 }
 
 
-void modelSetShadowAlpha(s32 arg0)
+void modelSetShadowAlpha(s32 alpha)
 {
-    g_ModelShadowAlpha = arg0;
+    g_ModelShadowAlpha = alpha;
 }
 
 
@@ -5167,7 +5163,7 @@ s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypo
 }
 
 
-u32 modelFindRayHitNext(Model *model, coord3d *arg1, coord3d *arg2, ModelNode **nodeptr)
+u32 modelFindRayHitNext(Model *model, coord3d *raypos, coord3d *raydir, ModelNode **nodeptr)
 {
     ModelNode *node;
     s32 descend;
@@ -5213,7 +5209,7 @@ u32 modelFindRayHitNext(Model *model, coord3d *arg1, coord3d *arg2, ModelNode **
             */
             switch (opcode - 1) {
             case MODELNODE_OPCODE_BBOX - 1:
-                if (modelTestRayIntersectsNodeBBox(model, node, arg1, arg2) != 0) {
+                if (modelTestRayIntersectsNodeBBox(model, node, raypos, raydir) != 0) {
                     *nodeptr = node;
                     return *(u32 *)node->Data;
                 }
@@ -5221,7 +5217,7 @@ u32 modelFindRayHitNext(Model *model, coord3d *arg1, coord3d *arg2, ModelNode **
                 break;
 
             case MODELNODE_OPCODE_OP17 - 1:
-                if (modelTestRayIntersectsNodeOp17(model, node, arg1, arg2) != 0) {
+                if (modelTestRayIntersectsNodeOp17(model, node, raypos, raydir) != 0) {
                     *nodeptr = node;
                     return *(u32 *)node->Data;
                 }
@@ -5966,7 +5962,7 @@ void modelIterateDisplayLists(ModelFileHeader *fileheader, ModelNode **nodeptr, 
 }
 
 
-void modelNodeReplaceGdl(u32 arg0, ModelNode *node, Gfx *find, Gfx *replacement)
+void modelNodeReplaceGdl(u32 unused, ModelNode *node, Gfx *find, Gfx *replacement)
 {
     union ModelRoData *rodata;
     u32 type = node->Opcode & 0xff;

@@ -39,6 +39,12 @@ Struct fields need `tools/renamefield.py TYPE OLD NEW [...]` instead, because na
 run it: it builds US and PAL, and renames each use the compiler reports as "TYPE has no
 member named OLD", until there are none left.
 
+Locals and parameters need `tools/renamelocal.py list.txt`, because names like `sp34` or
+`arg0` repeat in every function. The list names a file (`@ src/game/gfx/tex.c`) and then
+one function per line (`texWriteTile: arg2=smode sp50=explicitLods`); each rename only
+touches that function, and is refused when the new name is already used there. Afterwards
+`tools/syncprotos.py` copies the new parameter names into the prototypes.
+
 ## Comparing code: `tools/compare/compare.sh [BASE] [VERSION]`
 
 Builds the C objects of `BASE` (default `HEAD`) in a temporary worktree and compares every

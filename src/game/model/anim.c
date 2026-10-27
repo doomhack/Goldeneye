@@ -231,23 +231,23 @@ struct ModelAnimation *animation_table_ptrs2[] = {
 
 extern u32 _animation_entriesSegmentRomStart[];
 
-void animResolveTable(s32** arg0)
+void animResolveTable(s32** table)
 {
-    s32** var_v0;
+    s32** entry;
 
-    var_v0 = arg0;
-    while (*var_v0 != 0) {
-        if (*var_v0 != (s32*)1) {
-            *var_v0 = (s32)((s32)*var_v0 + (s32)(&g_AnimTable->data));
-            ((ModelAnimation *)*var_v0)->bitDescriptors = (void *)((s32)((ModelAnimation *)*var_v0)->bitDescriptors + (s32)&g_AnimTable->data);
-            ((ModelAnimation *)*var_v0)->bitStream = (void *)((s32)((ModelAnimation *)*var_v0)->bitStream + (s32)&g_AnimTable->data);
+    entry = table;
+    while (*entry != 0) {
+        if (*entry != (s32*)1) {
+            *entry = (s32)((s32)*entry + (s32)(&g_AnimTable->data));
+            ((ModelAnimation *)*entry)->bitDescriptors = (void *)((s32)((ModelAnimation *)*entry)->bitDescriptors + (s32)&g_AnimTable->data);
+            ((ModelAnimation *)*entry)->bitStream = (void *)((s32)((ModelAnimation *)*entry)->bitStream + (s32)&g_AnimTable->data);
         }
-        var_v0++;
+        entry++;
     }
 
-    for (var_v0 = arg0; *var_v0 != 0; var_v0++) {
-        if (*var_v0 != (s32*)1) {
-            **var_v0 += (s32)&_animation_entriesSegmentRomStart;
+    for (entry = table; *entry != 0; entry++) {
+        if (*entry != (s32*)1) {
+            **entry += (s32)&_animation_entriesSegmentRomStart;
         }
     }
 }
