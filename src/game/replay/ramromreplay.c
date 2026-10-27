@@ -2,7 +2,7 @@
 #include <ultra64.h>
 #include "game/debug/debugmenu_handler.h"
 #include "game/level/lv.h"
-#include "game/menu/initcheattext.h"
+#include "game/menu/cheat.h"
 #include "game/menu/front.h"
 #include "game/replay/ramromreplay.h"
 #include <rom.h>

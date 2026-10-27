@@ -1,3 +1,7 @@
+/**
+ * The multiplayer weapon sets ("Pistols", "Rockets"...): the weapons, models and ammo each
+ * set puts in a level, and which set is picked. See docs/subsystems/menu.md.
+ */
 #include <ultra64.h>
 #include <bondconstants.h>
 #include "game/menu/mp_weapon.h"

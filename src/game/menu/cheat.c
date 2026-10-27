@@ -1,3 +1,8 @@
+/**
+ * Cheats: the button sequences typed in during a game or on the menus (cheatTick,
+ * cheatCheckInput), the table of every cheat (g_CheatInfo), and what turning each one on
+ * or off does (cheatTurnOn, cheatTurnOff). See docs/subsystems/menu.md.
+ */
 #include <os_extension.h>
 #include <ultra64.h>
 #include <bondgame.h>
@@ -1740,3 +1745,21 @@ void cheatResetPlayerDisplay()
     g_CurrentPlayer->can_display_cheat_text = 0;
 }
 #endif
+
+
+void cheatResetPlayerMasks(void) {
+    int i;
+    
+    for(i=0;i<75;i++)
+    {
+        g_CheatPlayerMask[i] = 0;
+    }
+
+}
+
+
+void cheatResetInput(void)
+{
+  g_CurrentPlayer->cheatInputBufferIndex = 0;
+  g_CurrentPlayer->cheatInputCount = 0;
+}

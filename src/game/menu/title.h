@@ -1,5 +1,8 @@
 #ifndef _INTRO_LOGOS_H_
 #define _INTRO_LOGOS_H_
+#include "bondtypes.h"
+#include "include/PR/gbi.h"
+#include "ultra64.h"
 #include <ultra64.h>
 
 extern s32 g_TitleBarrelVerts;
@@ -25,5 +28,10 @@ extern u32 g_TitleMtxIndex;
 
 Gfx *titleRenderFolderMenuBackground(Gfx *gdl, s32 xOffset, struct FolderSelectColour *topColour, struct FolderSelectColour *bottomColour);
 void titleAllocMatrices(void);
+
+Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 x, struct FolderSelectColour* arg3, struct FolderSelectColour* arg4);
+
+Gfx *titleMakeBarrelHoleGfx(Gfx *arg0, Vtx *arg1, s32 arg2);
+void titleMakeBarrelHoleVerts(struct s_display_list_something *var_s0, s32 arg1);
 
 #endif

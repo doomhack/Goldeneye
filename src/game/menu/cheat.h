@@ -1,6 +1,7 @@
 #ifndef _CHEAT_BUTTONS_H_
 #define _CHEAT_BUTTONS_H_
 #include <ultra64.h>
+#include <bondtypes.h>
 
 // This shows up a lot but not quite sure what it represents.
 #define CHEAT_INPUT_BUFFER_SIZE    20
@@ -105,5 +106,8 @@ bool cheatIsActive(CHEAT_ID cheatindex);
 bool cheatIsMpCheat(CHEAT_ID cheatindex);
 void cheatTurnAllOff(void);
 char *cheatGetName(CHEAT_ID cheatindex);
+
+void cheatResetInput(void);
+void cheatResetPlayerMasks(void);
 
 #endif

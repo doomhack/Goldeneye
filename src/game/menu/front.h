@@ -351,4 +351,6 @@ void frontUnlockAllMpChars(void);
 u8 frontGetMpCharGender(int player);
 s32 frontFindMissionEntry(s32 arg0);
 
+void frontInit(void);
+
 #endif

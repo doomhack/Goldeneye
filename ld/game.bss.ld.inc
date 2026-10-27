@@ -1,16 +1,12 @@
       build/OUTCODE/src/game/model/initactorpropstuff.o (.bss);
       build/OUTCODE/src/game/model/anim.o (.bss);
-      build/OUTCODE/src/game/menu/initmenus.o (.bss);
       build/OUTCODE/src/game/debug/deb_loadallmodels.o (.bss);
       build/OUTCODE/src/game/prop/setup.o (.bss);
       build/OUTCODE/src/game/mission/objective.o (.bss);
       build/OUTCODE/src/game/player/bondview_r.o (.bss);
-      build/OUTCODE/src/game/menu/initcheattext.o (.bss);
       build/OUTCODE/src/game/audio/cleanupSFXRelated.o (.bss);
       build/OUTCODE/src/game/menu/title.o (.bss);
       build/OUTCODE/src/game/menu/front.o (.bss);
-      build/OUTCODE/src/game/menu/title2.o (.bss);
-      build/OUTCODE/src/game/menu/title3.o (.bss);
       build/OUTCODE/src/game/hud/blood.o (.bss);
       build/OUTCODE/src/game/debug/sub_GAME_7F01D1C0.o (.bss);
       build/OUTCODE/src/game/save/file.o (.bss);
