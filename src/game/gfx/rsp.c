@@ -35,11 +35,6 @@ s32 g_gfxRdpOutputBufferEnd = 0;
 s32 g_gfxRdpOutputBufferStart = 0;
 
 /**
- * Address 8004E9EC.
- */
-s32 g_unused8004E9EC = 0;
-
-/**
  * Address 8004E9F0.
  */
 struct GfxInfo_s g_gfxTaskSettings[2] = 
@@ -231,7 +226,6 @@ void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, s32 arg2, OSMesg rspReplyMsg)
     // u64 pointers, cast to x32 to avoid (sra _,_,0x3)
     task->t.ucode_boot_size = ((s32)rspbootTextEnd - (s32)rspbootTextStart);
 
-    if (rspbootTextStart);
     
     // task>type = M_GFXTASK, set in bss constructor
     // task->flags = OS_TASK_DP_WAIT, set in bss constructor

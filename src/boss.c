@@ -228,7 +228,6 @@ void bossInitMainthreadData(void)
     OSTimer bosstimer;
     OSMesgQueue bossmq;
     u32 start;
-    u32 unused;
     s32 i;
 
     bossCheckExpansionPak();
@@ -345,7 +344,6 @@ void bossMainloop(void)
     Gfx *firstGdl;
     u32 nowCount;
     s32 i;
-    s32 count;
     struct player *localPlayer;
     s32 localSelectedNumPlayers;
     u32 pendingGfx = 0;
@@ -354,7 +352,6 @@ void bossMainloop(void)
     s32 mainTickElapsed;
     s32 rspReplyMsg;
 
-    u32 unused_stackpadding_[56];
 
     // end declarations
 
@@ -484,16 +481,12 @@ void bossMainloop(void)
         viInitBuffers();
         frameWaitForNext();
 
-        if(1); // regalloc
-        if(1);
 
         while (osRecvMesg(&gfxFrameMsgQ, (OSMesg *)&localGfxFrameMsg, OS_MESG_NOBLOCK) == 0)
         {
            // empty
         }
 
-        if(1); // regalloc
-        if(1);
 
         while (g_MainStageNum < 0 || pendingGfx != 0)
         {
@@ -586,7 +579,6 @@ void bossMainloop(void)
                             toggleFlag ^= 1;
 
                             g_PerfCpuSum += osGetCount() - cpuFrameStart;
-                            if(1);
                         }
                     }
                 }
@@ -608,7 +600,6 @@ void bossMainloop(void)
         fileForgetPool(MEMPOOL_STAGE);
 
 #if defined(VERSION_EU)
-        if(1);
 #endif
 
         g_StageNum = g_MainStageNum;

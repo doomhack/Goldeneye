@@ -60,7 +60,6 @@ void playersResetHandicaps(void)
 {
   float value  = 1.0f;
 
-  if (0) { }
 
   g_playerPlayerData[PLAYER_1].player_perspective_height = value;
   g_playerPlayerData[PLAYER_1].handicap = value;
@@ -709,10 +708,6 @@ void playerSetFovY(f32 fovy) {
 
 void playerSetAspect(f32 aspect) {
     g_CurrentPlayer->aspect = aspect;
-}
-
-f32 playerGetFovY(void) {
-    return g_CurrentPlayer->fovy;
 }
 
 

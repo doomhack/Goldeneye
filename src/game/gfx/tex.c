@@ -405,7 +405,6 @@ Gfx *texWriteTileFromDefinition(Gfx *gdl, struct tex *tex, s32 offset, s32 shift
     s32 sp88;
     s32 sp84;
     s32 line;
-    u32 stack[4];
     s32 uls;
     s32 ult;
     s32 lrs;
@@ -552,7 +551,6 @@ Gfx *texWriteTileLods(Gfx *gdl, struct tex *tex, s32 smode, s32 tmode, s32 offse
     s32 uls;
     bool hasExplicitLods;
     s32 end;
-    s32 pad;
     s32 size;
     s32 pad2;
 
@@ -775,7 +773,6 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
     s32         shifts;
     s32         shiftt;
     s32         min;
-    s32         pad;
     s32         writeTexFlag = TRUE;
     s32         lightPending = FALSE;
     Gfx        *in           = src;
@@ -847,7 +844,6 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                             {
                                 do
                                 {
-                                    if (TRUE) {}
                                 } while (FALSE);
 
                                 g_DebugDetailEdit[texnum].unk_0_0 = min;

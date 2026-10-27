@@ -2671,12 +2671,9 @@ D:80036A90                     firing_anim_struct <stru_D_800308A0, 0, 0.5, 0.0,
 D:80036AA4                     firing_anim_struct <crouched_doubles_firing_animation_group1, 0, 0.1, 37.0, 47.0>
 */
 //D:80036AB8
-extern s32 D_80036AB8;
 //D:80036ABC
 //D:80036AC0
-extern f32 D_80036AC0;
 //D:80036AC4
-extern f32 D_80036AC4;
 
 extern s32 startpadcount;
 extern vec3d g_ForceBondMoveOffset;
@@ -2701,8 +2698,6 @@ extern StandTilePoint *dword_CODE_bss_80079DA4;
 extern s32 dword_CODE_bss_80079DA8[];
 
 
-
-
 PropRecord* currentPlayerGetProp(void);
 
 f32 currentPlayerGetHealth(void);
@@ -2719,7 +2714,6 @@ f32 camGetScreenWidth(void);
 f32 camGetScreenHeight(void);
 f32 camGetScreenLeft(void);
 f32 camGetScreenTop(void);
-f32 camGetPerspFovY(void);
 f32 camGetPerspAspect(void);
 void currentPlayerSetXAutoAimEnabled(bool enabled);
 bool currentPlayerGetXAutoAimEnabled(void);

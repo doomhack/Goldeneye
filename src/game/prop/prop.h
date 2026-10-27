@@ -41,7 +41,6 @@ void               propsDefragRoomProps(void);
 void               propGetRoomIds(PropRecord *self, s32 *roomids);
 void               propFree(PropRecord *prop);
 void               propDisable(PropRecord *prop);
-f32                bboxGetXmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
 f32                bboxGetYmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
 f32                bboxGetYmax(ModelRoData_BoundingBoxRecord *modelBoundingBox);
 f32                bboxGetZmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);

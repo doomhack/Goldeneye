@@ -122,22 +122,10 @@ void modelFileLoad(struct ModelFileHeader *objheader, u8 *name, u8* dst, s32 siz
 }
 
 
-
-
 void modelFileLoadToPool(struct ModelFileHeader *header,char *name)
 {
    modelFileLoad(header,name,0,0,0);
    return;
 }
-
-
-void modelFileLoadToAddr(struct ModelFileHeader *header,int *recallstring,int *targetloc,int sizeleft)
-{
-   modelFileLoad(header,recallstring,targetloc,sizeleft,0);
-   return;
-}
-
-
-
 
 

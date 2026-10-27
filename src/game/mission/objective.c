@@ -31,8 +31,6 @@ void objectivesReset(void)
 {
     s32 i;
 
-    OBJECTIVESTATUS *start;
-    OBJECTIVESTATUS *end;
 
     if (bossGetStageNum() != LEVELID_TITLE)
     {
@@ -221,7 +219,6 @@ s32 objectiveGetCount(void)
 
 u8 * objectiveGetText(int objectiveIndex)
 {
-    u8 *textptr;
     
     if ((objectiveIndex < 10) && (g_Objectives[objectiveIndex] != 0)) {
         return langGet(g_Objectives[objectiveIndex]->text);
@@ -576,7 +573,6 @@ void objectivesCheckPicture(void)
     struct coord2d sp7C;
     struct coord2d sp74;
     struct rectbbox sp64;
-    s32 padding2[2];
     struct criteria_picture *criteria;
 
     criteria = g_PictureCriteria;

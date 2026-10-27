@@ -178,37 +178,6 @@ u16 mathAcosFixed(s16 cosine)
     return (u16)angle;
 }
 
-/**
- * asin in fixed point: the sine is scaled so 1.0 is 0x7FFF, the result so pi/2 is 0x7FFF.
- */
-s16 mathAsinFixed(s16 sine)
-{
-    s32 acosAngle;
-    s32 angle;
-
-    if (sine >= 0)
-    {
-        angle = sine;
-    }
-    else
-    {
-        angle = -sine;
-    }
-
-    acosAngle = acosFixedFromTable(angle);
-
-    if (sine >= 0)
-    {
-        angle = 0x7FFF - acosAngle;
-    }
-    else
-    {
-        angle = acosAngle - 0x8000;
-    }
-
-    return (s16)angle;
-}
-
 /** acos in radians, through the fixed-point table. Inputs outside [-1, 1] are clamped. */
 f32 mathAcos(f32 cosine)
 {
@@ -230,23 +199,3 @@ f32 mathAcos(f32 cosine)
     return (mathAcosFixed(cosineFixed) * M_PI_F) / 65535.0f;
 }
 
-/** asin in radians, through the fixed-point table. Inputs outside [-1, 1] are clamped. */
-f32 mathAsin(f32 sine)
-{
-    s16 sineFixed;
-
-    if (1.0f <= sine)
-    {
-        sineFixed = 0x7FFF;
-    }
-    else if (sine <= -1.0f)
-    {
-        sineFixed = -0x7FFF;
-    }
-    else
-    {
-        sineFixed = (sine * 32767.0f);
-    }
-
-    return (mathAsinFixed(sineFixed) * M_PI_F) / 65535.0f;
-}

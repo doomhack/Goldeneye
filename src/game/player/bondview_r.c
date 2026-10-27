@@ -174,7 +174,6 @@ void playerApplyIntro(void)
     struct SetupIntroSwirl *intro_swirl;
     struct SetupIntroWatch *intro_watch;
     struct SetupIntroCredits *intro_credits;
-    s32 padding[5];
 
     // Co-op: this runs once per player and resets the intro camera state,
     // which player 1's run has already set up for the intro.
@@ -305,7 +304,6 @@ void playerApplyIntro(void)
                         {
                             starting_weapon[GUNRIGHT] = intro_item->item_right;
 
-                            if(intro_item->item_left);
 
                             set_starting_weapon = 1;
 
@@ -412,7 +410,6 @@ void playerApplyIntro(void)
                         watch_time_0 += ((intro_watch->hours % 12) * (60*60*60));
                     }
 
-                    if (watch_time_0);
 
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroWatch));
                 }

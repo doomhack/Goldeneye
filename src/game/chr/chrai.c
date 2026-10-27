@@ -720,7 +720,6 @@ s32 ailistGetId(AIRecord *AIList, bool *isGlobalAIList)
 s32 aiFindLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
 {
     s32   listID;
-    char *debAIListTypeString;
     bool  isGlobalAIList;
 
     for (;;)

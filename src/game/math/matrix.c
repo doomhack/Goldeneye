@@ -189,30 +189,6 @@ void mtx4MultAffine(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
     result->m[3][3] = 1.0f;
 }
 
-/**
- * mtx4Mult for when `persp` is a perspective matrix (only the diagonal, m[3][2] and
- * m[2][3] set), skipping the zero terms.
- */
-void mtx4MultPerspective(Mtxf *persp, Mtxf *mtx, Mtxf *result)
-{
-    result->m[0][0] = (persp->m[0][0] * mtx->m[0][0]);
-    result->m[1][0] = (persp->m[0][0] * mtx->m[1][0]);
-    result->m[2][0] = (persp->m[0][0] * mtx->m[2][0]);
-    result->m[3][0] = (persp->m[0][0] * mtx->m[3][0]);
-    result->m[0][1] = (persp->m[1][1] * mtx->m[0][1]);
-    result->m[1][1] = (persp->m[1][1] * mtx->m[1][1]);
-    result->m[2][1] = (persp->m[1][1] * mtx->m[2][1]);
-    result->m[3][1] = (persp->m[1][1] * mtx->m[3][1]);
-    result->m[0][2] = (persp->m[2][2] * mtx->m[0][2]);
-    result->m[1][2] = (persp->m[2][2] * mtx->m[1][2]);
-    result->m[2][2] = (persp->m[2][2] * mtx->m[2][2]);
-    result->m[3][2] = (persp->m[2][2] * mtx->m[3][2]) + persp->m[3][2];
-    result->m[0][3] = (persp->m[2][3] * mtx->m[0][2]);
-    result->m[1][3] = (persp->m[2][3] * mtx->m[1][2]);
-    result->m[2][3] = (persp->m[2][3] * mtx->m[2][2]);
-    result->m[3][3] = (persp->m[2][3] * mtx->m[3][2]);
-}
-
 /** Applies only the rotation and scale part of a matrix to a vector. */
 void mtx4RotateVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
 {
@@ -559,41 +535,6 @@ void mtxL2F(Mtxf *src, Mtxf *dst) {
     }
 }
 
-/** Unused: like mtxF2L but one value per word, without the world scale. */
-void mtxF2LUnpacked(Mtxf *src, Mtx* dst) {
-    s32 i, j;
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
-            dst->m[i][j] = src->m[i][j] * M_U16_MAX_VALUE_F;
-        }
-    }
-}
-
-/** Unused: the inverse of mtxF2LUnpacked. */
-void mtxL2FUnpacked(Mtx* src, Mtxf *dst) {
-    s32 i, j;
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
-            dst->m[i][j] = src->m[i][j] / M_U16_MAX_VALUE_F;
-        }
-    }
-}
-
-/** Converts 16 s15.16 values, one per word, into the N64 Mtx layout. Unused. */
-void mtxPackFixed(Mtx *src, Mtx *dst) {
-    u32 *srcwords = (u32 *) src;
-    u32 *dstwords = (u32 *) dst;
-    s32 i;
-
-    for (i = 0; i < 8; i++) {
-        u32 word1 = srcwords[i << 1];
-        u32 word2 = srcwords[(i << 1) + 1];
-
-        dstwords[i + 0] = (word1 & 0xffff0000) | (word2 >> 16);
-        dstwords[i + 8] = (word1 << 16) | (word2 & 0xffff);
-    }
-}
-
 
 /** Converts an N64 Mtx into 16 s15.16 values, one per word. */
 void mtxUnpackFixed(Mtx *src, Mtx *dst) {
@@ -748,35 +689,6 @@ u32 mtxCalcPerspNorm(f32 near, f32 far)
     return result;
 }
 
-/**
- * A perspective projection, like libultra's guPerspectiveF but with `fovy` in radians and
- * an extra `scale`. Writes the matching perspNorm to depthScale if it isn't NULL.
- */
-void mtx4LoadPerspective(Mtxf *matrix, u16* depthScale, f32 fovy, f32 aspect, f32 near, f32 far, f32 scale)
-{
-    f32 temp = cosf(fovy * 0.5f) / sinf(fovy * 0.5f);
-    scale *= M_U16_MAX_VALUE_F;
-    matrix->m[0][0] = ((temp / aspect) * scale);
-    matrix->m[1][1] = (temp * scale);
-    matrix->m[1][0] = 0.0f;
-    matrix->m[2][0] = 0.0f;
-    matrix->m[3][0] = 0.0f;
-    matrix->m[0][1] = 0.0f;
-    matrix->m[2][1] = 0.0f;
-    matrix->m[3][1] = 0.0f;
-    matrix->m[0][2] = 0.0f;
-    matrix->m[1][2] = 0.0f;
-    matrix->m[2][2] = (((near + far) / (near - far)) * scale);
-    matrix->m[3][2] = ((((near + near) * far) / (near - far)) * scale);
-    matrix->m[2][3] = -scale;
-    matrix->m[0][3] = 0.0f;
-    matrix->m[1][3] = 0.0f;
-    matrix->m[3][3] = 0.0f;
-    if (depthScale != 0) {
-        *depthScale = mtxCalcPerspNorm(near, far);
-    }
-}
-
 /** Like libultra's guAlignF, with the angle in radians. */
 void mtx4LoadAlign(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z) 
 {
@@ -827,13 +739,6 @@ void mtx4LoadAlignViaGu(Mtxf *matrix, f32 angle, f32 x, f32 y, f32 z)
     guAlignF(matrix->m, angle, x, y, z);
 }
 
-// DEBUG prints a 4x4 matrix
-/** Prints a matrix in debug builds. */
-void mtx4Print(Mtxf *matrix)
-{
-    return;
-}
-
 /** The inverse of a pure rotation matrix (its transpose), dropping any translation. */
 void mtx4TransposeRotation(Mtxf *rotation, Mtxf *transpose) 
 {
@@ -853,30 +758,6 @@ void mtx4TransposeRotation(Mtxf *rotation, Mtxf *transpose)
     transpose->m[1][3] = 0.0f;
     transpose->m[2][3] = 0.0f;
     transpose->m[3][3] = 1.0f;
-}
-
-/** The inverse of a rotation with a uniform scale, dropping any translation. */
-void mtx4InvertRotation(Mtxf *matrix, Mtxf *result) {
-    f32 norm = ((matrix->m[0][0] * matrix->m[0][0]) +
-                (matrix->m[1][0] * matrix->m[1][0]) +
-                (matrix->m[2][0] * matrix->m[2][0]));
-    norm = 1.0f / norm;
-    result->m[0][0] = (matrix->m[0][0] * norm);
-    result->m[0][1] = (matrix->m[1][0] * norm);
-    result->m[0][2] = (matrix->m[2][0] * norm);
-    result->m[1][0] = (matrix->m[0][1] * norm);
-    result->m[1][1] = (matrix->m[1][1] * norm);
-    result->m[1][2] = (matrix->m[2][1] * norm);
-    result->m[2][0] = (matrix->m[0][2] * norm);
-    result->m[2][1] = (matrix->m[1][2] * norm);
-    result->m[2][2] = (matrix->m[2][2] * norm);
-    result->m[3][0] = 0.0f;
-    result->m[3][1] = 0.0f;
-    result->m[3][2] = 0.0f;
-    result->m[0][3] = 0.0f;
-    result->m[1][3] = 0.0f;
-    result->m[2][3] = 0.0f;
-    result->m[3][3] = 1.0f;
 }
 
 /** The inverse of a rotation with a uniform scale and a translation. */
@@ -935,89 +816,3 @@ void mtx4InvertAffine(Mtxf *matrix, Mtxf *result)
 }
 
 
-/** The inverse of any invertible matrix, through the adjugate. */
-void mtx4Invert(Mtxf *matrix, Mtxf *result) {
-    s32 i, j;
-    f32 invDet;
-    mtx4Adjugate(matrix, result);
-    invDet = 1.0f / mtx4Determinant(matrix);
-    for (i = 0; i < 4; i++) {
-        for (j = 0; j < 4; j++) {
-            result->m[i][j] *= invDet;
-        }
-    }
-}
-
-/** The adjugate (transposed cofactor) matrix. */
-void mtx4Adjugate(Mtxf *matrix, Mtxf *result)
-{
-    f32 mtx00, mtx10, mtx20, mtx30;
-    f32 mtx04, mtx14, mtx24, mtx34;
-    f32 mtx08, mtx18, mtx28, mtx38;
-    f32 mtx0c, mtx1c, mtx2c, mtx3c;
-
-    mtx00 = matrix->m[0][0]; mtx04 = matrix->m[0][1];
-    mtx08 = matrix->m[0][2]; mtx0c = matrix->m[0][3];
-    mtx10 = matrix->m[1][0]; mtx14 = matrix->m[1][1];
-    mtx18 = matrix->m[1][2]; mtx1c = matrix->m[1][3];
-    mtx20 = matrix->m[2][0]; mtx24 = matrix->m[2][1];
-    mtx28 = matrix->m[2][2]; mtx2c = matrix->m[2][3];
-    mtx30 = matrix->m[3][0]; mtx34 = matrix->m[3][1];
-    mtx38 = matrix->m[3][2]; mtx3c = matrix->m[3][3];
-
-    result->m[0][0] =  mtx3Determinant(mtx14, mtx24, mtx34, mtx18, mtx28, mtx38, mtx1c, mtx2c, mtx3c);
-    result->m[1][0] = -mtx3Determinant(mtx10, mtx20, mtx30, mtx18, mtx28, mtx38, mtx1c, mtx2c, mtx3c);
-    result->m[2][0] =  mtx3Determinant(mtx10, mtx20, mtx30, mtx14, mtx24, mtx34, mtx1c, mtx2c, mtx3c);
-    result->m[3][0] = -mtx3Determinant(mtx10, mtx20, mtx30, mtx14, mtx24, mtx34, mtx18, mtx28, mtx38);
-    result->m[0][1] = -mtx3Determinant(mtx04, mtx24, mtx34, mtx08, mtx28, mtx38, mtx0c, mtx2c, mtx3c);
-    result->m[1][1] =  mtx3Determinant(mtx00, mtx20, mtx30, mtx08, mtx28, mtx38, mtx0c, mtx2c, mtx3c);
-    result->m[2][1] = -mtx3Determinant(mtx00, mtx20, mtx30, mtx04, mtx24, mtx34, mtx0c, mtx2c, mtx3c);
-    result->m[3][1] =  mtx3Determinant(mtx00, mtx20, mtx30, mtx04, mtx24, mtx34, mtx08, mtx28, mtx38);
-    result->m[0][2] =  mtx3Determinant(mtx04, mtx14, mtx34, mtx08, mtx18, mtx38, mtx0c, mtx1c, mtx3c);
-    result->m[1][2] = -mtx3Determinant(mtx00, mtx10, mtx30, mtx08, mtx18, mtx38, mtx0c, mtx1c, mtx3c);
-    result->m[2][2] =  mtx3Determinant(mtx00, mtx10, mtx30, mtx04, mtx14, mtx34, mtx0c, mtx1c, mtx3c);
-    result->m[3][2] = -mtx3Determinant(mtx00, mtx10, mtx30, mtx04, mtx14, mtx34, mtx08, mtx18, mtx38);
-    result->m[0][3] = -mtx3Determinant(mtx04, mtx14, mtx24, mtx08, mtx18, mtx28, mtx0c, mtx1c, mtx2c);
-    result->m[1][3] =  mtx3Determinant(mtx00, mtx10, mtx20, mtx08, mtx18, mtx28, mtx0c, mtx1c, mtx2c);
-    result->m[2][3] = -mtx3Determinant(mtx00, mtx10, mtx20, mtx04, mtx14, mtx24, mtx0c, mtx1c, mtx2c);
-    result->m[3][3] =  mtx3Determinant(mtx00, mtx10, mtx20, mtx04, mtx14, mtx24, mtx08, mtx18, mtx28);
-}
-
-/** Determinants, by cofactor expansion. The 3x3 and 2x2 versions take their values column by column. */
-f32 mtx4Determinant(Mtxf *matrix)
-{
-    f32 minor3;
-    f32 m00, m10, m20, m30;
-    f32 m01, m11, m21, m31;
-    f32 m02, m12, m22, m32;
-    f32 m03, m13, m23, m33;
-    f32 minor0;
-    f32 minor1;
-    f32 minor2;
-
-    m00 = matrix->m[0][0]; m01 = matrix->m[0][1];
-    m02 = matrix->m[0][2]; m03 = matrix->m[0][3];
-    m10 = matrix->m[1][0]; m11 = matrix->m[1][1];
-    m12 = matrix->m[1][2]; m13 = matrix->m[1][3];
-    m20 = matrix->m[2][0]; m21 = matrix->m[2][1];
-    m22 = matrix->m[2][2]; m23 = matrix->m[2][3];
-    m30 = matrix->m[3][0]; m31 = matrix->m[3][1];
-    m32 = matrix->m[3][2]; m33 = matrix->m[3][3];
-
-    minor2 = mtx3Determinant(m10, m20, m30, m11, m21, m31, m13, m23, m33);
-    minor1 = mtx3Determinant(m10, m20, m30, m12, m22, m32, m13, m23, m33);
-    minor0 = mtx3Determinant(m11, m21, m31, m12, m22, m32, m13, m23, m33);
-
-    minor3 = mtx3Determinant(m10, m20, m30, m11, m21, m31, m12, m22, m32);
-
-    return (m00 * minor0 - m01 * minor1 + m02 * minor2) - minor3 * m03;
-}
-
-f32 mtx3Determinant(f32 a, f32 d, f32 g, f32 b, f32 e, f32 h, f32 c, f32 f, f32 i) {
-    f32 determinant = (a * mtx2Determinant(e, h, f, i)) - (b * mtx2Determinant(d, g, f, i)) + (c * mtx2Determinant(d, g, e, h));
-    return determinant;
-}
-
-f32 mtx2Determinant(f32 a, f32 c, f32 b, f32 d) {
-     return (a * d) - (c * b);
-}

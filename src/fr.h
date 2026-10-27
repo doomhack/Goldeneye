@@ -229,7 +229,6 @@ void video_related_8(void);
 void viSetBuf(s16 x, s16 y);
 void viSetXY(s16 x, s16 y);
 void viSetScaleX(s32 scalex);
-s32 viGetScaleX(void);
 Gfx *viSetFillColor(Gfx *gdl, s32 r, s32 g, s32 b);
 Gfx *viFillScreen(Gfx *gdl);
 Gfx *viSetupScreensForNumPlayers(Gfx *gdl);

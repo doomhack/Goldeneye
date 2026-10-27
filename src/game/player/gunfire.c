@@ -100,7 +100,6 @@ extern struct PunchSounds punch_sounds;
 extern struct BulletFleshSounds bullet_flesh_sounds;
 extern struct LaserRichochetSounds laser_ricochet_sounds;
 extern struct RicochetSoundsLarge ricochet_sounds_large;
-extern struct EarWhistleSounds ear_whistle_sounds;
 extern struct sfx2 watchlaser_fire_sounds;
 extern struct sfx3 knife_throw_sounds;
 extern u32 D_80032458;
@@ -203,7 +202,6 @@ void gunFireTankShell(s32 handnum)
     {
         tankprop = playerGetTank();
 
-        if (1);
 
         if ((tankprop != NULL) && (tankprop->flags & TANK_RUN_STATE_RUNNING)) 
         {
@@ -241,7 +239,6 @@ void gunFireTankShell(s32 handnum)
             spawnpos.z = playerprop->pos.z;
         }
 
-        if ((g_CurrentPlayer && g_CurrentPlayer));
 
         explosionStartShake();
     } 
@@ -254,7 +251,6 @@ void gunFireTankShell(s32 handnum)
         spawnpos.y = hand->field_B58.y;
         spawnpos.z = hand->field_B58.z;
 
-        if (1);
 
         unscaledvelocity.x = aimdir.x * D_80053DDC;
         unscaledvelocity.y = aimdir.y * D_80053DDC;
@@ -361,7 +357,6 @@ void gunUpdateAndFire(GUNHAND handnum)
     coord3d taserrot;
     coord3d fistrot;
     f32 *cylinderdata;
-    u8 stackpad1[4];
     ModelNode **hammerdata;
     Model *model;
     coord3d flashpos;
@@ -375,7 +370,6 @@ void gunUpdateAndFire(GUNHAND handnum)
     f32 *sw7data;
     s32 sw7mtxidx;
     s32 shellidx;
-    u8 stackpad2[4];
 
     flashvisptr = NULL;
     flashdata = NULL;
@@ -624,7 +618,6 @@ void gunUpdateAndFire(GUNHAND handnum)
         modelCalculateRwDataLen(mdlhdr);
         model = (Model *) (&hand->field_B68);
 
-        if (mdlhdr->Switches);
 
         modelInit(model, mdlhdr, (s32 *) (&hand->modeldatas));
         sub_GAME_7F05E978(model, 1);
@@ -633,7 +626,6 @@ void gunUpdateAndFire(GUNHAND handnum)
 
         if (node != NULL)
         {
-            if (&node->Data->Switch);
 
             flashvisptr = ((s32 *) (&hand->modeldatas)) + node->Data->Switch.RwDataIndex;
         }
@@ -1121,7 +1113,6 @@ void beamCreate(struct BeamRecord *arg0, ITEM_IDS item, coord3d *arg2, coord3d *
 
 void gunCreateBeamForHand(enum GUNHAND hand)
 {
-    coord3d *field_2A18;
     Mtxf *player_matrix;
     struct hand *hand_ptr;
     f32 val;
@@ -1181,14 +1172,12 @@ void gunCreateBeamForHand(enum GUNHAND hand)
 
 Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 arg2)
 {
-    f32 posz;
     Mtx *mtx;
     Mtxf mtxf;
     Vtx templatevtx;
     coord3d pos;
     coord3d *playerpos;
     f32 radius;
-    f32 pad_after_radius[2];
     f32 startoffset;
     coord3d up;
     coord3d right;
@@ -1615,7 +1604,6 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
     ModelRenderData renderdata = D_80035D00;
     ModelHeader model;
     u8 spb8[0x80];
-    s32 padb4;
     Mtxf sp74;
     Mtxf *matrices;
     union ModelRwData *rwdata;
@@ -1702,7 +1690,6 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
     {
         coord3d *pos;
         s32 index;
-        u8 pad[8];
 
         pos = (coord3d *) bodymodel->Switches[7]->Data;
         index = modelFindNodeMtxIndex(bodymodel->Switches[7], 0);
@@ -1797,19 +1784,6 @@ earlyreturn:
 }
 
 
-void sub_GAME_7F0634D8(s32 arg0, s32 arg1, s32 arg2, s32 arg3)
-{
-    watchRenderItem(arg0, arg1, arg2, arg3, -256);
-}
-
-
-// Unreferenced
-void sub_GAME_7F0634FC(s32 arg0, s32 arg1, s32 arg2)
-{
-    sub_GAME_7F0634D8(arg0, arg1, arg2, 0xFF);
-}
-
-
 void sub_GAME_7F06351C(struct coord3d* arg0, Mtxf* arg1, Mtxf* arg2, Mtxf* arg3, struct coord3d* arg4, Mtxf* arg5, Mtxf* arg6)
 {
     Mtxf sp20;
@@ -1832,11 +1806,8 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     ModelRenderData renderdata;
     struct ModelHeader modelstack;
     s32 i;
-    s32 j;
-    s32 offset;
     f32 angle;
     u32 rwdata[26];
-    u32 pad2;
     Mtxf sp41c;
     Mtxf sp3dc;
     struct ModelFileHeader* objheader;
@@ -1889,7 +1860,6 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     matrices = dynAllocate(objheader->numMatrices * (sizeof(Mtxf)));
     modelCalculateRwDataLen(objheader);
 
-    if (objheader);
 
     modelInit(&modelstack, objheader, rwdata);
     modelstack.render_pos = (RenderPosView*) matrices;
@@ -2392,19 +2362,6 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index)
 }
 
 
-void shotPlayWhizzSound(ITEM_IDS item)
-{
-    struct EarWhistleSounds copied;
-
-    if (g_ClockTimer <= 0) { return; }
-    if ((item != ITEM_LASER) && (item != ITEM_WATCHLASER))
-    {
-        copied = ear_whistle_sounds;
-        sndPlaySfx((struct ALBankAlt_s*) g_musicSfxBufferPtr, copied.arr[randomGetNext() % 5], 0);
-    }
-}
-
-
 f32 sub_GAME_7F0649AC(s32 param_1)
 {
   f32 fVar1;
@@ -2417,7 +2374,6 @@ f32 sub_GAME_7F0649AC(s32 param_1)
 }
 
 
-
 void gunReload(enum GUNHAND hand)
 {
     struct hand* hand_ptr;
@@ -2425,7 +2381,6 @@ void gunReload(enum GUNHAND hand)
     s32 ammo_in_magazine;
     s32 ammo_in_hands;
     WeaponStats* item_stats;
-    s32 magsize;
     s32 ammo_total;
 
     hand_ptr = &g_CurrentPlayer->hands[hand];
@@ -2509,34 +2464,23 @@ void gunReload(enum GUNHAND hand)
 void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 {
 #if defined(VERSION_US)
-    s32 stack1;
-    s32 stack2;
     s32 sp1C4;
-    s32 stack3;
     struct hand *sp1BC;
-    s32 stack4;
     s32 sp1B4;
     struct sfx2 sp1B0;
-    s32 stack5;
     struct WeaponStats *weapon_stats;
     s32 sp1A4;
     s32 sp1A0;
     f32 sp19C;
     f32 sp198;
-    s32 stack7;
     f32 sp190;
     f32 sp18C;
     s32 sp188;
     f32 sp184;
-    s32 stack8;
-    s32 stack9;
     s32 sp178;
     f32 sp174;
-    s32 stack10;
-    s32 stack11;
     Mtxf sp12C;
     f32 sp128;
-    s32 stack12;
     Mtxf spE4;
     f32 tempf;
     struct hand *handptr;
@@ -2557,19 +2501,12 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 un_f32_num = 0.0f;
     f32 un_f32_div_1 = 16.0f;
     f32 un_f32_div_2 = 23.0f;
-    s32 stack14;
-    s32 stack15;
 #endif
 #if defined(VERSION_EU)
-    s32 stack1;
-    s32 stack2;
     s32 sp1C4;
-    s32 stack3;
     struct hand *sp1BC;
-    s32 stack4;
     s32 sp1B4;
     struct sfx2 sp1B0;
-    s32 stack5;
     struct WeaponStats *weapon_stats;
     s32 sp1A4;
     s32 sp1A0;
@@ -2578,22 +2515,15 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 stat_3;
     s32 stat_4;
     f32 sp198;
-    s32 stack14;
     f32 sp190;
     f32 sp18C;
     s32 sp188;
     f32 sp184;
-    s32 stack7;
-    s32 stack8;
     s32 sp178;
     f32 sp174;
-    s32 stack9;
-    s32 stack10;
     Mtxf sp12C;
     f32 sp128;
-    s32 stack11;
     Mtxf spE4;
-    s32 stack12;
     f32 tempf;
     Mtxf sp9C;
     f32 sp98;
@@ -2613,7 +2543,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 un_f32_num = 0.0f;
     f32 un_f32_div_1 = 13.0f;
     f32 un_f32_div_2 = 19.0f;
-    s32 stack15;
 #endif
 
     handptr = &g_CurrentPlayer->hands[hand];
@@ -4280,12 +4209,10 @@ void gunTickNoise(void)
 {
     enum ITEM_IDS weapon_id_right;
     enum ITEM_IDS weapon_id_left;
-    s32 unused2;
     f32 noise_reduction;
     WeaponStats *item_right_stats;
     WeaponStats *item_left_stats;
     f32 noise_reduction_max;
-    s32 unused;
 
     weapon_id_right = gunGetWeapon(GUNRIGHT);
     weapon_id_left = gunGetWeapon(GUNLEFT);
@@ -4531,7 +4458,6 @@ void gunTickGameplay(s32 triggerOn)
 
     invIncrementHeldTime(gunGetWeapon(GUNRIGHT), gunGetWeapon(GUNLEFT));
 
-    if(1);
 
     if (g_CurrentPlayer->magnetattracttime >= 0)
     {
@@ -4716,44 +4642,6 @@ void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle) {
 }
 
 
-void gunCentreCrosshair(void)
-{
-    coord3d coord;
-    f32 tmp;
-
-    tmp = camGetScreenLeft() + (camGetScreenWidth() * 0.5f);
-    g_CurrentPlayer->crosshair_angle.x = tmp;
-    g_CurrentPlayer->field_FFC.x = tmp;
-
-    tmp = camGetScreenTop() + (camGetScreenHeight() * 0.5f);
-    g_CurrentPlayer->crosshair_angle.y = tmp;
-    g_CurrentPlayer->field_FFC.y = tmp;
-
-    camScreenToViewDir((coord2d *) &g_CurrentPlayer->field_FFC, &coord, 1000.0f);
-    gunSetAimPos(&coord);
-}
-
-
-void gunSetAimDir(coord3d * coord)
-{
-    coord3d tmp;
-
-    g_CurrentPlayer->field_1010.x = coord->x;
-    g_CurrentPlayer->field_1010.y = coord->y;
-    g_CurrentPlayer->field_1010.z = coord->z;
-    mtx4LoadRotation(coord->f, &g_CurrentPlayer->field_101C);
-
-    tmp.x = g_CurrentPlayer->field_101C.m[2][0] * 1000.0f;
-    tmp.y = g_CurrentPlayer->field_101C.m[2][1] * 1000.0f;
-    tmp.z = g_CurrentPlayer->field_101C.m[2][2] * 1000.0f;
-    camViewToScreen(&tmp, (coord3d* ) &g_CurrentPlayer->crosshair_angle);
-
-    g_CurrentPlayer->field_FFC.x = g_CurrentPlayer->crosshair_angle.x;
-    g_CurrentPlayer->field_FFC.y = g_CurrentPlayer->crosshair_angle.y;
-
-    gunSetAimPos(&tmp);
-}
-
 extern const f32 g_GunScreenAspectRatio;
 
 
@@ -4778,7 +4666,6 @@ void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
 {
     coord2d crosspos;
-    s32 unused;
     f32 inaccuracy;
     f32 scaledspread;
     f32 randfactor;
@@ -4917,7 +4804,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
     Mtxf rotmtx;
 #endif
     f32 rand;
-    s32 new_var; /* dead but declared on EU — still reserves its frame slot */
     f32 frac;
 #if VERSION_EU
     s32 randlimit;
@@ -4930,7 +4816,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
     s32 handoffset;
     u32 randval;
 #if VERSION_EU
-    s32 pad[2];
 #endif
  
     weaponid = gunGetWeapon(handnum);
@@ -4995,7 +4880,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
         mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
-        if (handoffset);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -5051,7 +4935,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
         mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
-        if (handoffset);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -5081,10 +4964,8 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         }
     }
  
-    if (handoffset);
 }
 #endif
-
 
 
 /* ===== merged from gun2.c ===== */
@@ -5124,7 +5005,6 @@ void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2)
 {
     coord2d crosspos;
-    s32 unused;
     f32 inaccuracy;
     f32 scaledspread;
     f32 randfactor;
@@ -5312,7 +5192,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
         mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
-        if (handoffset);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -5368,7 +5247,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
         mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
-        if (handoffset);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -5398,7 +5276,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         }
     }
  
-    if (handoffset);
 }
 #endif
 
@@ -5413,7 +5290,6 @@ void casingTick(CasingRecord* casing)
     f32 new_val_y;
     f32 delta;
     s32 i;
-    struct player* current_player;
 
     delta = g_GlobalTimerDelta;
     new_val_y = casing->vel.y - (delta * g_CasingGravity);
@@ -5588,7 +5464,6 @@ void gunSetGunAmmoVisible(s32 reason, bool enable) {
 }
 
 
-
 void ammoGive(s32 ammo_type, s32 ammo_amount) {
     enum ITEM_IDS weapon_id;
     s32 max_ammo;
@@ -5616,8 +5491,6 @@ void ammoGive(s32 ammo_type, s32 ammo_amount) {
 }
 
 
-
-
 s32 ammoGetHeld(AMMOTYPE ammotype) {
     return g_CurrentPlayer->ammoheldarr[ammotype];
 }
@@ -5638,13 +5511,10 @@ s32 ammoGetTotal(AMMOTYPE ammotype) {
 }
 
 
-
 s32 ammoGetMax(s32 arg0)
 {
     return ammo_related[arg0].MaxAmmo;
 }
-
-
 
 
 void ammoGiveMaxAll(void)
@@ -5658,11 +5528,9 @@ void ammoGiveMaxAll(void)
 }
 
 
-
 s32 gunGetMagazineAmmo(GUNHAND hand) {
     return g_CurrentPlayer->hands[hand].weapon_ammo_in_magazine;
 }
-
 
 
 s32 gunGetHeldAmmo(enum GUNHAND hand)
@@ -5689,7 +5557,6 @@ s32 gunGetHeldAmmo(enum GUNHAND hand)
 
     return ammo_count;
 }
-
 
 
 s32 weaponGetAmmoType(ITEM_IDS weapon) {
@@ -6037,7 +5904,6 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
     s32 magammo;
     u32 imageoffset;
     s32 textwidth;
-    s32 pad;
 
     offhanditem = gunGetWeapon(1);
     item = gunGetWeapon(0);
@@ -6187,7 +6053,6 @@ void statsAddKill(void)
     s32 time_since_kill;
     s32 recent_kill_count;
     s32 mission_time;
-    s32 unused; // needed this variable to match
 
     g_playerPerm->kill_count += 1;
     g_CurrentPlayer->kills_this_life += 1;
@@ -6244,17 +6109,12 @@ void statsAddKill(void)
 }
 
 
-
 s32 statsGetKills(void) {
     return g_playerPerm->kill_count;
 }
 
 void statsAddGoldenGunKill(void){
     g_playerPerm->killed_gg_owner_count++;
-}
-
-s32 statsGetGoldenGunKills(void) {
-    return g_playerPerm->killed_gg_owner_count;
 }
 
 
@@ -6280,10 +6140,6 @@ void statsAddDeath(void)
     }
 }
 
-
-s32 statsGetDeaths(void) {
-    return g_CurrentPlayer->deathcount;
-}
 
 void statsAddSuicide(void) {
     char buffer[256];
@@ -6340,10 +6196,6 @@ void statsAddSuicide(void) {
             g_playerPerm->most_killed_one_time = recent_kill_count;
         }
     }
-}
-
-s32 statsGetSuicides(void) {
-    return g_CurrentPlayer->num_suicides;
 }
 
 /*
@@ -6420,38 +6272,6 @@ s32 shotRayHitsRoomBbox(s32 room, coord3d* start, coord3d* dir)
         }
     }
     return FALSE;
-}
-
-
-/**
- * Address: 7F03AA44
- *
- * Unreferenced
- *
- * This takes a list of rooms and flags the ones that do *not* intersect a ray.
- */
-void shotSkipRoomsOffRay(s32 arg0, coord3d *from, coord3d *to, u8 *rooms)
-{
-    coord3d start;
-    coord3d dir;
-    f32 scale;
-    s32 i;
-
-    scale = bgGetLevelScale() * bgGetLevelVisibilityScale();
-
-    dir.x = to->x - from->x;
-    dir.y = to->y - from->y;
-    dir.z = to->z - from->z;
-
-    start.x = from->x * scale;
-    start.y = from->y * scale;
-    start.z = from->z * scale;
-
-    for (i = 1; i < bgGetMaxNumRooms(); i++) {
-        if (!rooms[i] && shotRayHitsRoomBbox(i, &start, &dir) == 0) {
-            rooms[i] = 1;
-        }
-    }
 }
 
 
@@ -6541,7 +6361,6 @@ s32 shotFindBgHitInVisibleRooms(coord3d *from, coord3d *to, coord3d *dir, coord3
         }
         while (roomptr < end);
 
-        if (rooms);
     }
 
     return bestroom;
@@ -6562,7 +6381,6 @@ s32 shotFindBgHitInVisibleRooms(coord3d *from, coord3d *to, coord3d *dir, coord3
 s32 shotFindBgHitInConnectedRooms(s32 startroom, coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *hit)
 {
     u8 rooms[256];
-    s32 pad;
     s32 neighbours[100];
     s32 numneighbours;
     s32 i;
@@ -6786,7 +6604,6 @@ void shotFireBullet(s32 hand)
         new_var++;
         new_var--;
 
-        if (new_var == new_var);
 
         stanResetHits();
 
@@ -7002,7 +6819,6 @@ void shotFireBullet(s32 hand)
  */
 void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, s32 unk44, Model *model, bool countsAsPenetration, s32 blocksFurtherHits)
 {
-    s32 pad;
     s32 i;
     s32 furthestindex;
     f32 prevfurthest;
@@ -7238,7 +7054,6 @@ void shotPunch(s32 hand, s32 item_id)
             hitpart = HIT_GENERALHALF;
         }
 
-        if (g_musicSfxBufferPtr && g_musicSfxBufferPtr);
 
         gunGetShotDir(&from, &vector, hand);
         mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &vector);
@@ -7340,7 +7155,6 @@ void shotFireHands(void)
 
 // Copied from another file. Might need code reorganization to prevent the use of extra externs.
 extern ALSoundState* g_CasingSfxState;
-extern ALSoundState* g_UnusedSfxState;
 extern ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
 
 extern u32 g_GunDebApplyKeyframe;

@@ -48,7 +48,6 @@ void __scHandleRSP(OSSched *sc);
 void __scHandleRDP(OSSched *sc);
 void __scMain(void *arg);
 
-u32 stderr_unused = 0;
 u32 stderr_enabled = 0;
 u32 stderr_active = 0;
 u32 stderr_permitted = 0;
@@ -77,39 +76,12 @@ OSViMode g_ViModes[NUM_VIDEO_FRAME_BUFFERS];
 OSViMode *g_ViModePtrs[NUM_VIDEO_FRAME_BUFFERS];
 
 /**
- * 1570	70000970
- * A0-> stderr.activated	[80023098]; fry AT
- */
-void activate_stderr(u32 flag)
-{
-	stderr_active = flag;
-}
-
-/**
- * 157C	7000097C
- * A0-> stderr.enable		[80023094]; fry AT
- */
-void enable_stderr(u32 flag)
-{
-	stderr_enabled = flag;
-}
-
-/**
  * 1588	70000988
  * A0-> stderr.permitted	[8002309C]; fry AT
  */
 void permit_stderr(u32 flag)
 {
 	stderr_permitted = flag;
-}
-
-/**
- * 1594	70000994
- * A0-> user.Compare		[800230A0]; fry AT
- */
-void setUserCompareValue(u32 value)
-{
-	userCompareValue = value;
 }
 
 /**
@@ -193,35 +165,6 @@ void osScAddClient(OSSched *sc, OSScClient *c, OSMesgQueue *msgQ, OSScClient *ne
     c[1].next = next;
     c->next = sc->clientList;
     sc->clientList = c;
-
-    osSetIntMask(mask);
-}
-
-
-/**
- * 1870	70000C70
- */
-void osScRemoveClient(OSSched *sc, OSScClient *c)
-{
-    OSScClient *client = sc->clientList; 
-    OSScClient *prev   = 0;
-    OSIntMask  mask;
-
-    mask = osSetIntMask(OS_IM_NONE);
-    
-    while (client != 0) 
-    {
-        if (client == c) 
-        {
-	        if(prev)
-		        prev->next = c->next;
-	        else
-		        sc->clientList = c->next;
-                break;
-        }
-        prev   = client;
-        client = client->next;
-    }
 
     osSetIntMask(mask);
 }

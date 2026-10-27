@@ -76,9 +76,3 @@ void physApplyTumble(Mtxf *mtx, Mtxf *tumble, s32 ticks)
     }
 }
 
-/** Unused: moves and rotates a thrown object on by `ticks`. */
-void physStep(f32 *pos, f32 *velocity, Mtxf *mtx, Mtxf *tumble, s32 ticks)
-{
-    physMoveWithGravity(pos, velocity, (f32) ticks);
-    physApplyTumble(mtx, tumble, ticks);
-}

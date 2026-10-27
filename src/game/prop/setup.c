@@ -138,7 +138,6 @@ void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *arg1)
 */
 void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
 {
-    s32 padding;
     s32 spF0;
     f32 var_f0;
     struct coord3d spE0;
@@ -155,11 +154,9 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
     ModelRoData_BoundingBoxRecord *temp_v0_3;
     struct PadRecord *sp64;
     struct PropRecord *sp60;
-    s32 padding2;
     f32 sp58;
     f32 sp54;
     f32 sp50;
-    s32 padding3;
     f32 sp48;
 
     spF0 = arg1->obj;
@@ -484,7 +481,6 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
 */
 void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
 {
-    s32 padding;
     bool hastoken;
     ChrRecord* chr;
     bool giveweapon;
@@ -715,7 +711,6 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
 
     if (autogun->padID >= 0)
     {
-        s32 stack1;
         f32 xdiff;
         f32 ydiff;
         f32 zdiff;
@@ -724,7 +719,6 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
 
         if (autogun->padID < 0x2710)
         {
-            if (1);
             pad = &g_CurrentSetup.pads[autogun->padID];
         }
         else
@@ -754,7 +748,6 @@ void setupHangingMonitors(s32 arg0, ObjectRecord* rack, s32 cmdindex)
 void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
 {
     MonitorRecord *record;
-    s32 unused;
     s32 modelnum;
     ObjectRecord *owner;
     PropRecord *prop;
@@ -843,7 +836,6 @@ void padGetRoomsEitherSide(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, st
 {
     StandTile *sp4C;
     struct coord3d normal;
-    s32 padding;
     struct coord3d center;
     StandTile *sp2C;
     f32 scale;
@@ -877,7 +869,6 @@ void padGetRoomsEitherSide(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, st
 
     stanWalkLineNoCallback(&sp4C, center.f[0], center.f[2], arg3->f[0], arg3->f[2]);
 
-    if (1);
 
     *arg1 = (s32) sp4C->room;
     sp4C = sp2C;
@@ -888,7 +879,6 @@ void padGetRoomsEitherSide(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, st
 
     stanWalkLineNoCallback(&sp4C, center.f[0], center.f[2], arg4->f[0], arg4->f[2]);
 
-    if (1);
 
     *arg2 = (s32) sp4C->room;
 
@@ -908,7 +898,6 @@ extern f32 g_DoorScale;
 */
 void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 {
-    s32 padding; // no sp
     s32 modelnum;
     struct BoundPadRecord *pad;
     StandTile *sp1C8_stan;
@@ -938,7 +927,6 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
     f32 zscale;
     f32 scale;
     //StandTile *stan;
-    u8 *padding2;
 
     modelnum = door->obj;
 
@@ -1315,7 +1303,6 @@ void setupCreateProps(enum LEVELID stageId)
         
                 stanResolvePadTile(pad, pad->plink, &pad->stan);
 
-                if (1);
             }
         }
 
@@ -1331,7 +1318,6 @@ void setupCreateProps(enum LEVELID stageId)
                 /** Ugly matching hack. 
                 *   TODO: investigate if there's a way to get rid of this.
                 */
-                if ((((u32) local_stage) ^ 0) + ((u32)vol->plink));
 
                 vol->plink = (void *) (((u32) local_stage) + ((u32)vol->plink));
                 vol->pos.f[0] *= roompos_2;
@@ -1346,7 +1332,6 @@ void setupCreateProps(enum LEVELID stageId)
 
                 stanResolvePadTile((struct PadRecord *) vol, vol->plink, &vol->stan);
 
-                if (1);
             }
         }
 
@@ -1360,8 +1345,6 @@ void setupCreateProps(enum LEVELID stageId)
 
         if (g_CurrentSetup.boundpadnames)
         {
-            // Required for matching.
-            if (g_CurrentSetup.ailists && g_CurrentSetup.ailists);
 
             for (i1 = 0; g_CurrentSetup.boundpadnames[i1].p; i1++)
             {
@@ -1585,7 +1568,6 @@ void setupCreateProps(enum LEVELID stageId)
                             struct s_mp_weapon_set *mpweapon = &mpWeaponSetGetItems()[lastmpweaponnum];
                             
                             ammoqty = mpweapon->ammoamount;
-                            if (mpweapon->ammotype);
                             pdef_macr->slots[mpweapon->ammotype - 1].quantity = ammoqty;
                         }
 
@@ -1609,9 +1591,7 @@ void setupCreateProps(enum LEVELID stageId)
                             struct TankRecord *pdef_tank = (struct TankRecord *) phead;
                             struct PropRecord *tank_prop;
 
-                            s32 padding;
                             f32 stan_y = 0.0f;
-                            s32 paddinggg[4];
 
                             weaponLoadProjectileModels(ITEM_TANKSHELLS);
                             setupObject(stageId, (struct ObjectRecord *) pdef_tank, pdefIndex);
@@ -1914,12 +1894,10 @@ void setupCreateProps(enum LEVELID stageId)
 }
 
 
-
 MonitorRecord g_InitialMonitorAnimController = {&monAnim00Bond, 0, 0xFFFF, 0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1.0, 0.0};
 struct object_animation_controller g_InitialUnknownAnimController = {&monAnim34, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0};
 struct object_animation_controller g_InitialTaserAnimController = {&monAnim35Taser, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0};
 
-f32 unused_8002a3bc = 0.0f;
 f32 g_DoorScale = 1.0f;
 
 // forward declarations
@@ -2292,8 +2270,6 @@ s32 sizepropdef(PropDefHeaderRecord *pdef)
 }
 
 
-
-
 /*
  *Return Item by Setup index
  *Setup Array is most likley PropDefHeaderRecord since size was 4
@@ -2318,8 +2294,6 @@ ObjectRecord *setupGetPtrToCommandByIndex(s32 index) //#MATCH
 
     return NULL;
 }
-
-
 
 
 /**
@@ -2349,7 +2323,6 @@ s32 tagGetCommandIndex(struct ObjectRecord *tag)
 }
 
 
-
 /**
  * Address 0x7F056BA8.
 */
@@ -2377,7 +2350,6 @@ s32 setupGetCommandIndexByProp(struct PropRecord *prop)
 }
 
 
-
 s32 modelLoad(s32 modelid)
 {
     if (PitemZ_entries[modelid].header->RootNode == NULL)
@@ -2388,8 +2360,6 @@ s32 modelLoad(s32 modelid)
     }
     return FALSE;
 }
-
-
 
 
 /**
@@ -2467,7 +2437,6 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 
     propAddToRooms(temp_s1);
 }
-
 
 
 /**

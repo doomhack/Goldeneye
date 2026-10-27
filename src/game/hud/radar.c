@@ -20,7 +20,6 @@
 
 Gfx *radarRender(Gfx *DL)
 {
-    s32 padding[4];
     s32 player_count;
     s32 cur_playernum;
     enum MPSCENARIOS current_scenario;

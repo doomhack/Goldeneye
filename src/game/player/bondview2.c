@@ -95,7 +95,6 @@
 #define MAXMESSAGELEN 100
 
 
-
 #if defined(VERSION_US)
     #define BONDVIEW_2ND_FONTTABLE(_param) copy_2ndfonttable
     #define BONDVIEW_1ST_FONTTABLE(_param) copy_1stfonttable
@@ -186,8 +185,6 @@ s32 g_CoopForceMovePlayer = 0;
 s32 g_SurroundBondWithExplosionsTicks;
 //CODE.bss:800799A0
 s32 g_PlayerTickExplodeCreatePosition;
-//CODE.bss:800799A4
-s32 dword_CODE_bss_800799A4; // unused
 
 //CODE.bss:800799A8
 struct coord3d g_TankModelPositionOffset;
@@ -223,14 +220,10 @@ f32 g_TankEnterBondHorizAngleDeg;
 */
 f32 g_TankEnterBondVertAngleDeg;
 
-//CODE.bss:800799CC
-f32 flt_CODE_bss_800799CC; // unused/padding
 
 //CODE.bss:800799D0
 struct coord3d g_EnterTankCoord;
 
-//CODE.bss:800799DC
-f32 flt_CODE_bss_800799DC; // unused/padding
 
 //CODE.bss:800799E0
 ITEM_IDS starting_weapon[2];
@@ -293,8 +286,6 @@ PadRecord *g_Startpad[0x10];
 
 //CODE.bss:80079C68
 s32 startpadcount;
-//CODE.bss:80079C6C
-s32 dword_CODE_bss_80079C6C;
 
 //CODE.bss:80079DA0
 /**
@@ -341,7 +332,6 @@ void playerLoadBody(void)
     ITEM_IDS                    item;
     s32                         body;
     s32                         head;
-    struct ItemModelFileRecord *unusedpitem;
     Model                      *model;
 
     yaw = bondviewGetPlayerYawRadians();
@@ -511,7 +501,6 @@ void playerLoadBody(void)
                 cursor      = ALIGN64_V3(cursor + sizeof(ModelFileHeader) + 0x3f);
                 *headheader = *c_item_entries[head].header;
 
-                if(1);
 
                 modelFileLoad(headheader, (u8 *)c_item_entries[head].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
                 cursor = ALIGN64_V3(fileGetLoadedSizeByName((u8 *)c_item_entries[head].filename) + cursor + 0x3f);
@@ -755,7 +744,6 @@ s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, co
 
                     frac -= 0.25f;
 
-                    if (pos);
                 }
             }
 
@@ -858,8 +846,6 @@ static s32 coopPartnerHasWatchOut(void)
 // Address 0x7F07A9B8 NTSC.
 void playerSetCameraMode(s32 arg0)
 {
-    s32 padding;
-    s32 padding2;
 
     if (g_CoopMode && coopIsCinemaCameraMode(arg0))
     {
@@ -1292,8 +1278,6 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
     f32 sp38;
     s32 i2;
     f32 sp30 = 0.0f;
-    s32 padding2;
-    f32 zero = 0.0f;
     void *p;
     struct PadRecord *setupPad;
 
@@ -1680,26 +1664,9 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
 }
 
 
-//begin bondmove.c per pd
-
-void sub_GAME_7F07C540(s32 arg0)
-{
-    g_CurrentPlayer->field_42c = arg0;
-}
-
-
 void currentPlayerSetLookAheadSetting(bool enabled)
 {
     g_CurrentPlayer->automovecentreenabled = enabled;
-}
-
-
-/**
- * Unreferenced
- */
-bool currentPlayerGetLookAheadSetting(void)
-{
-    return g_CurrentPlayer->automovecentreenabled;
 }
 
 
@@ -1958,7 +1925,6 @@ s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s3
 s32 tankTestCollision(struct coord3d *collision_position, StandTile *arg1, f32 tank_orientation_angle, struct coord3d *arg3, struct coord3d *arg4)
 {
     StandTile *spBC;
-    s32 stack_padding;
     struct rect4f tank_collision_bounds;
     s32 sp94;
     f32 temp_f0;
@@ -2044,8 +2010,6 @@ s32 tankTestCollision(struct coord3d *collision_position, StandTile *arg1, f32 t
 }
 
 
-
-
 /**
  * Address 0x7F07CDA8.
 */
@@ -2055,16 +2019,12 @@ s32 tankTestCollisionAt(struct coord3d *collision_position, StandTile *arg1, f32
 }
 
 
-
-
-
 /**
  * Address 0x7F07CDD4.
 */
 s32 tankTryMoveTo(struct coord3d *arg0, f32 arg1, StandTile **arg2)
 {
     StandTile *sp3C;
-    s32 unused_padding[2];
 
     sp3C = g_CurrentPlayer->field_488.current_tile_ptr;
 
@@ -2088,9 +2048,6 @@ s32 tankTryMoveTo(struct coord3d *arg0, f32 arg1, StandTile **arg2)
 
     return 0;
 }
-
-
-
 
 
 /**
@@ -2181,10 +2138,6 @@ bool playerIsInTank(void)
 }
 
 
-
-
-
-
 struct PropRecord *playerGetTank(void)
 {
     if (g_PlayerIsInTank == 1)
@@ -2194,9 +2147,6 @@ struct PropRecord *playerGetTank(void)
 
     return 0;
 }
-
-
-
 
 
 /**
@@ -2224,24 +2174,6 @@ void tankGetTurretDir(coord3d *arg0)
     arg0->f[1] = sinf(g_TankTurretVerticalAngle);
     arg0->f[2] = cosf(f) * cosf(g_TankTurretVerticalAngle);
 }
-
-
-
-
-
-
-/**
- * Unreferenced.
- *
- * Returns global variable g_TankTurretVerticalAngle, which is in radians.
- *
- * Address 0x7F07CF80.
- */
-f32 tankGetTurretPitch(void)
-{
-    return g_TankTurretVerticalAngle;
-}
-
 
 
 #define COOP_OVERLAP_CLEAR_DIST 70.0f
@@ -2289,7 +2221,6 @@ s32 playerTestMove(struct coord3d *arg0, StandTile **stan)
     f32 collision_radius;
     s32 sp7C;
     struct TankRecord *tank;
-    s32 stack_padding[11];
     struct StandTileLocusCallbackRecord sp3C;
 
     sp94 = 0;
@@ -2396,7 +2327,6 @@ block_20:
 
     return sp94;
 }
-
 
 
 /**
@@ -2515,8 +2445,6 @@ s32 playerTryMoveFraction(
 }
 
 
-
-
 /**
  * This is a fallback method used when playerTryMoveSimple fails.
  * Instead of moving to the full coordinate specified by `next_pos`, it will
@@ -2575,7 +2503,6 @@ s32 playerTryMoveAlongEdge(struct coord3d *prior_next_pos, struct coord3d *colli
 
     return -1;
 }
-
 
 
 /**
@@ -2678,21 +2605,6 @@ s32 playerTryMoveRoundCorner(struct coord3d *prior_next_pos, struct coord3d *col
 
     return 0;
 }
-
-
-/**
- * Unreferenced.
- *
- * Bitwise convert 32bit int to float.
- *
- * Address 0x7F07D954.
- */
-f32 bondviewBitconvertIntToFloat(s32 arg0)
-{
-    return *(f32*)&arg0;
-}
-
-
 
 
 struct dummy_struct {
@@ -2853,7 +2765,6 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
             g_CurrentPlayer->field_488.collision_position.f[0],
             g_CurrentPlayer->field_488.collision_position.f[2]) == 0)
     {
-        if(1);
 
         stan = g_CurrentPlayer->field_488.current_tile_ptr;
 
@@ -2866,7 +2777,6 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
                 // maybe: if (( stan->points[i+1].link >> 4) != 0)
                 if (( ((struct StandTilePoint*)stan) [i+1].link >> 4) != 0)
                 {
-                    if(1);
                     phi_a0_3++;
                 }
             }
@@ -2890,7 +2800,6 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
                 }
             }
 
-            if(1);
 
             if (stanIsNearlyInsideTri(
                 stan,
@@ -3110,24 +3019,6 @@ void watchUpdatePauseTilt(void) {
 }
 
 
-f32 watchGetPauseTiltFrac(void) {
-
-    // Entering pause
-    if (g_CurrentPlayer->pause_state == 1) {
-        return g_CurrentPlayer->pause_transition_time / g_CurrentPlayer->pause_transition_duration;
-    }
-    // Leaving pause
-    if (g_CurrentPlayer->pause_state == 2) {
-        return 1.0f - (g_CurrentPlayer->pause_transition_time / g_CurrentPlayer->pause_transition_duration);
-    }
-    // Fully paused
-    if (g_CurrentPlayer->pause_state == 3) {
-        return 1.0f;
-    }
-    // Unpaused
-    return 0.0f;
-}
-
 void watchStartZoom(f32 final,f32 time)
 {
   g_CurrentPlayer->zoomintime = 0.00000000;
@@ -3208,7 +3099,6 @@ void watchZoomOnOpen(void)
 }
 
 
-
 /**
  * Address 0x7F07E594.
  */
@@ -3229,7 +3119,6 @@ void watchZoomOnExit(void)
 
     watchStartZoom(60.0f, f);
 }
-
 
 
 s32 watchIsZooming(void)
@@ -3287,8 +3176,6 @@ void watchUpdateZoom(void)
 }
 
 
-
-
 /**
  * Address 0x7F07E740.
  */
@@ -3313,9 +3200,6 @@ f32 watchGetOpenFrac(void)
 }
 
 
-
-
-
 void watchInitHandModel(void) {
     ModelFileHeader *itemheader;
 
@@ -3326,9 +3210,6 @@ void watchInitHandModel(void) {
     modelSetAnimation((Model *)((u8 *)g_CurrentPlayer + 0x230), (ModelAnimation *)&ptr_animation_table->data[(s32)&ANIM_DATA_bond_watch], 0, 0.0f, 0.5f * watch_transition_time, 0.0f);
     *(s32 *)((u8 *)g_CurrentPlayer + 0x220) = 0;
 }
-
-
-
 
 
 /**
@@ -3350,8 +3231,6 @@ void watchStartRaise(f32 arg0)
 }
 
 
-
-
 /**
  * Address 0x7F07E910.
  */
@@ -3369,9 +3248,6 @@ void watchStartLower(f32 arg0)
     g_CurrentPlayer->step_in_view_watch_animation = 2;
     g_CurrentPlayer->pause_watch_related = arg0;
 }
-
-
-
 
 
 /**
@@ -3407,10 +3283,6 @@ void watchStepAnim(void)
 }
 
 
-
-
-
-
 /**
  * Address 0x7F07EA78.
  */
@@ -3430,18 +3302,9 @@ f32 watchGetAnimFrac(void)
 }
 
 
-
-
 void playerSetOutsideWatchMenu(s32 arg0) {
     g_CurrentPlayer->outside_watch_menu = arg0;
 }
-
-s32 playerGetOutsideWatchMenu(void) {
-    return g_CurrentPlayer->outside_watch_menu;
-}
-
-
-
 
 
 void pauseStopSounds(void)
@@ -3491,13 +3354,9 @@ void pauseStopSounds(void)
                 }
             }
 
-            if(1);
         }
     }
 }
-
-
-
 
 
 /**
@@ -4276,7 +4135,6 @@ void playerUpdateSpeedVerta(f32 value)
 }
 
 
-
 /**
  * US address 7F080228.
  * Duplicate of playerScaleLookSpeedVerta.
@@ -4577,7 +4435,6 @@ f32 playerGetFloorY(StandTile *arg0, f32 arg1, f32 arg2)
 }
 
 
-
 /**
  * US Address 0x7F080DF8.
  * EU Address 0x7F080E9C.
@@ -4585,7 +4442,6 @@ f32 playerGetFloorY(StandTile *arg0, f32 arg1, f32 arg2)
 void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
 {
     s32 i; // sp6c
-    f32 unused;
     f32 sp64;
     StandTile *stan; //sp60
     f32 collision_radius; //sp5c
@@ -4597,7 +4453,6 @@ void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
     f32 ftemp2;
     f32 sp40;
 
-    if (1);
 
     if (g_PlayerIsInTank == 1)
     {
@@ -4775,9 +4630,6 @@ void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
 }
 
 
-
-
-
 /**
  * Address 0x7F081478 (NTSC).
  * Address 0x7F08151C (PAL).
@@ -4879,9 +4731,6 @@ void playerUpdatePosFromCollision(void)
 }
 
 
-
-
-
 /**
  * Fixes vv_verta within -90 and +90.
  * Updates vv_costheta, vv_sintheta, vv_verta360, vv_cosverta, vv_sinverta, field_488.theta_transform.
@@ -4975,10 +4824,8 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     f32 ftemp_nostack_spB8;
     struct coord3d spAC;
     struct coord3d spA0;
-    s32 stack_padding_sp9C; // unused
     f32 ftemp_nostack_sp98;
     f32 ftemp_nostack_sp94;
-    f32 ftemp_nostack_sp90; // unused
     f32 ftemp_nostack_sp8C;
     f32 ftemp_nostack_sp88;
     f32 ftemp_nostack_sp84;
@@ -6685,10 +6532,8 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     */
     if (g_PlayerIsInTank == 1)
     {
-        f32 ftemp2;
         struct coord3d check_collision_p1;
         struct coord3d check_collision_p2;
-        f32 stack_padding_1;
         s32 i_1;
         f32 curTankAngleRad;
         f32 tankChangeInAngle;
@@ -6723,7 +6568,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         else
         {
             f32 sp1E4; //x
-            s32 stack_padding_1; //x
             f32 sp1FC; //x
             f32 sp324;
             f32 sp320;
@@ -6922,7 +6766,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             struct TankRecord *temp_tank;
             struct coord3d tank_move_offset;
             Mtxf sp2B4;
-            f32 stack_padding_4;
 
             temp_tank = (struct TankRecord *)g_PlayerTankProp->obj;
 
@@ -6934,7 +6777,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             mtx4RotateVecInPlace(&sp2B4, &tank_move_offset);
             tankUpdateTurretOffset();
 
-            if (0) { }
 
             tank_move_offset.f[1] = 0.0f;
             tank_move_offset.f[0] = g_TankModelPositionOffset.f[0] - tank_move_offset.f[0];
@@ -6993,7 +6835,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     // Add basic block to declare local variables at the correct stack position.
     {
         f32 sp2AC;
-        f32 stack_padding_15;
 
         sp2AC = 0.0f;
         if (currentPlayerGetCrouchPos() == CROUCH_SQUAT)
@@ -7040,7 +6881,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         struct coord3d sp25C;
         f32 sp258;
         f32 sp254;
-        s32 stack_padding_14;
         s32 i_3;
         f32 ftemp_5;
         f32 tank_engine_utilization_percent;
@@ -7321,23 +7161,15 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         f32 dist;
         f32 ftemp_col_x;
         f32 ftemp_col_z;
-        f32 stack_padding_12;
         f32 start_collision_pos_x;
         f32 start_collision_pos_z;
         struct StandTile *sp200;
-        f32 stack_padding_2;
-        s32 stack_padding_11;
         f32 speedforwards;
         f32 ftemp_11;
         f32 speedsideways;
         f32 speedtheta;
-        f32 stack_padding_25;
-        f32 stack_padding_5;
-        s32 stack_padding_6;
         f32 sp164;
         f32 sp2B0;
-        f32 stack_padding_3;
-        f32 stack_padding_111;
         f32 ftemp_26;
         f32 nd; // canonical name
         f32 ftemp_7;
@@ -7704,10 +7536,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         struct ModelNode_BoundingBoxRecord *sp130;
         Mtxf spF0;
         struct coord3d spE4;
-        s32 stack_padding_13;
         s32 i_4;
-        s32 stemp;
-        void *stack_padding_8;
         struct rect4f spB4_tank_collision_bounds;
         // roomids
         s32 sp94[8];
@@ -7785,7 +7614,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     s32 sp7C;
                     struct coord3d sp70;
                     struct ChrRecord *sp6C;
-                    f32 stack_padding_28;
 
                     sp7C = 1;
                     sp6C = prop->chr;
@@ -7960,8 +7788,6 @@ s16 playerGetViewportLeft(void)
 }
 
 
-
-
 /**
  * Address 0x7F086D24.
  */
@@ -8006,7 +7832,6 @@ s16 playerGetViewportHeight(void)
         return VIEWPORT_HEIGHT_DEFAULT;
     }
 }
-
 
 
 /**
@@ -8192,7 +8017,6 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
     );
 
 #if defined(VERSION_EU)
-    if (1);
 #endif
 
     if ((g_CameraMode == CAMERAMODE_NONE) || ((g_CameraMode == CAMERAMODE_FP) && (is_timer_active != 0)) || (g_CameraMode == CAMERAMODE_FADE_TO_TITLE))
@@ -8410,7 +8234,6 @@ Gfx *camSetupFrame(Gfx *gdl)
     coord3d zeropos;
     f32 vec_y;
     f32 horizontal_len;
-    struct player *player;
     f32 angle;
     f32 vertical_rot;
     f32 ft4;
@@ -8505,7 +8328,6 @@ Gfx *camSetupFrame(Gfx *gdl)
 
 void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex)
 {
-    s32 pad;
     s32 local;
     ModelNode **switches;
     ModelNode **base;
@@ -8514,13 +8336,11 @@ void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex)
     s32 *rwdata;
     s32 index;
     s32 visible;
-    s32 pad2;
 
     local = fileGetBondForCurrentFolder();
     switches = header->Switches;
     offset = switchindex << 2;
 
-    if (1);
 
     // byte-indexed on purpose: offset = switchindex * 4. &switches[i] won't match.
     base = (ModelNode **) (((u8 *) switches) + offset);
@@ -8837,11 +8657,9 @@ void mpRespawnPlayer(void)
     coord3d start_pos = ZeroCoordSpawnPos;
     f32 start_look_angle;
     s32 start_stan;
-    s32 pad;
     f32 stan_height;
     s32 var_v0;
     s32 var_v1;
-    u32 var_v0_2;
     struct SetupIntroEmpty* intro_record;
 
     intro_record = g_CurrentSetup.intro;
@@ -10171,10 +9989,6 @@ Gfx *hudRender(Gfx *gdl)
 }
 
 
-
-
-
-
 void playerSetWorldScale(f32 arg0)
 {
     f32 scalar;
@@ -10275,17 +10089,6 @@ void playerDie(void)
 
 
 /**
- * Unreferenced.
- *
- * Address 0x7F0898E8.
- */
-s32 sub_GAME_7F0898E8(void)
-{
-    return (s32) ((joyGetStickY(0) * 8) + 0x280) / 0xA0;
-}
-
-
-/**
  * @param damage_amount: damage amount
  * @param vectorx: damage source x coordinate
  * @param vectorz: damage source y coordinate
@@ -10300,7 +10103,6 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
     f32 damage_dealt = g_playerPerm->handicap * damage_amount;
     s32 cur_player_num;
     f32 angle;
-    s32 padding;
     s32 sp2C;
     s32 sp28;
 
@@ -10414,7 +10216,6 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 
                             playerSetCurrent(sp2C);
 
-                            if(1);
 
                             g_playerPlayerData[playerid].kill_counts[sp2C]++;
                         }
@@ -10545,10 +10346,6 @@ s32 playerGetVisibleToGuards(void)
 }
 
 
-
-
-
-
 /**
  * Address 0x7F089F98.
  */
@@ -10563,8 +10360,6 @@ u8 playerGetRoom(void)
 }
 
 
-
-
 /**
  * Address 0x7F089FD4.
  */
@@ -10577,7 +10372,6 @@ coord3d *playerGetPos(void)
 
     return &g_CurrentPlayer->field_488.pos;
 }
-
 
 
 coord3d * playerGetPos3(void)
@@ -10621,9 +10415,6 @@ void playerSetMoving(PropRecord *prop, s32 flag)
 }
 
 
-
-
-
 /**
  * Address 0x7F08A0B0.
  */
@@ -10653,8 +10444,6 @@ void playerGetPropBounds(PropRecord *arg0, struct rect4f **field_B0, s32 *arg2, 
 }
 
 
-
-
 /**
  * Address 0x7F08A19C.
  */
@@ -10679,9 +10468,6 @@ void playerUpdateCollisionBounds(void)
 }
 
 
-
-
-
 /**
  * @param arg0: prop
  * @param width: out parameter, will be set to field_488.collision_radius
@@ -10701,9 +10487,6 @@ void playerGetCollisionSize(PropRecord* arg0, f32 *collision_radius, f32 *height
 }
 
 
-
-
-
 /**
  * Address 0x7F08A2EC.
  */
@@ -10719,9 +10502,6 @@ f32 currentPlayerGetArmor(void)
 }
 
 
-
-
-
 /**
  * Address 0x7F08A30C.
  */
@@ -10730,9 +10510,6 @@ void currentPlayerAddArmor(f32 arg0)
     g_playerPerm->body_armor_pickups += arg0;
     g_CurrentPlayer->bondarmour = arg0;
 }
-
-
-
 
 
 /**
@@ -10752,14 +10529,10 @@ void hudmsgResetIntroText(void)
 }
 
 
-
 void hudmsgsSetOn(s32 flag)
 {
     g_CurrentPlayer->hudmessoff &= ~flag;
 }
-
-
-
 
 
 /**
@@ -11060,7 +10833,6 @@ Gfx *hudmsgTopRender(Gfx *gdl)
     s32 debug_y;
     f32 theta_x;
     s32 debug_boxbottom;
-    s32 pad;
     s32 *roomid;
     s32 debug_angle;
     DirectionLabels directions;
@@ -11637,7 +11409,6 @@ clear_and_return:
 }
 
 
-
 /**
  * Address 0x7F08BCC0.
  */
@@ -11652,9 +11423,6 @@ Gfx *playerRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2)
 }
 
 
-
-
-
 /**
  * Address 0x7F08BCF4.
  */
@@ -11663,24 +11431,6 @@ Gfx* camLoadWorldToViewMtx(Gfx* gdl)
     gSPMatrix(gdl++, g_CurrentPlayer->field_5C, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     return gdl;
 }
-
-
-
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F08BD18.
- */
-void bondviewTransformPosToViewMatrix(RenderPosView *arg0)
-{
-    Mtxf sp18;
-
-    mtx4Copy(&arg0->pos, (Mtxf *) &sp18);
-    mtxF2L((Mtxf *) &sp18, &arg0->view);
-}
-
 
 
 /**
@@ -11707,47 +11457,6 @@ void mtxsF2L(RenderPosView * arg0, s32 arg1)
         i++;
         rpv_entry++;
     } while (i != arg1);
-}
-
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F08BDC4.
- */
-void sub_GAME_7F08BDC4(Mtxf *arg0)
-{
-    Mtxf sp20;
-
-    mtx4Copy(arg0, (Mtxf *) &sp20);
-    sp20.m[3][0] -= g_CurrentPlayer->previous_model_pos.f[0];
-    sp20.m[3][1] -= g_CurrentPlayer->previous_model_pos.f[1];
-    sp20.m[3][2] -= g_CurrentPlayer->previous_model_pos.f[2];
-    mtxF2L((Mtxf *) &sp20, arg0);
-}
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F08BE2C.
- */
-void sub_GAME_7F08BE2C(Mtxf *matrices, s32 count)
-{
-    Mtxf copy;
-    s32 i;
-
-    for (i = 0; i < count; i++)
-    {
-        mtx4Copy((Mtxf *)((uintptr_t)matrices + i * sizeof(Mtxf)), &copy);
-
-        copy.m[3][0] -= g_CurrentPlayer->previous_model_pos.x;
-        copy.m[3][1] -= g_CurrentPlayer->previous_model_pos.y;
-        copy.m[3][2] -= g_CurrentPlayer->previous_model_pos.z;
-
-        mtxF2L(&copy, matrices + i);
-    }
 }
 
 

@@ -172,7 +172,6 @@ s32 initResolveAnimTable(struct StruckAnim *entries)
     entry = entries;
     ptr_animation_table_addr = (struct StruckAnim *)(&ptr_animation_table);
 
-    if (1);
 
     if (entry->struck_anim != 0)
     {

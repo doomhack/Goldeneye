@@ -248,7 +248,6 @@ void *memaAlloc(u32 amount) {
 	u32 bestdiff;
 	struct MemaSpace *best;
 
-    if(1);
 
 	curr = &m_memaHeap.spaces[0];
 	bestdiff = 0xffffffff;
@@ -325,8 +324,6 @@ s32 memaGrow(u32 addr, u32 amount)
     short      __unused_4;
     short      __unused_5;
 
-    if (addr) {}
-    if (__unused_1) {}
 
     curr     = &m_memaHeap.spaces[0];
     new_addr = addr;
@@ -335,21 +332,16 @@ s32 memaGrow(u32 addr, u32 amount)
     while (curr->addr != -1)
     {
         __unused_1 = __unused_2;
-        if (__unused_1) {}
 
         __unused_3 = __unused_2 + 1;
-        if ((double)__unused_3) {}
 
         if (curr->addr == new_addr && curr->size >= amount)
         {
             goto found;
         }
 
-        if (__unused_3) {}
         __unused_4 = new_addr + 2;
-        if ((double)__unused_4) {}
         __unused_5 = new_addr + 3;
-        if ((double)__unused_5) {}
 
         curr++;
     }
@@ -376,54 +368,6 @@ void memaFree(void *addr, s32 size)
 	memaMarkFree((uintptr_t) addr, size);
 }
 
-
-/** Empty; it was presumably a debug check of the free-space list. */
-void memaCheckSpaces(void)
-{
-    s32 i;
-    struct MemaSpace *curr;
-
-    for (i=0; i<MEMA_SLOTS - 1; i++)
-    {
-        curr = &m_memaHeap.spaces[i];
-
-        if (curr->addr)
-        {
-            // removed
-        }
-    }
-}
-
-
-/**
- * How fragmented the free space is: the share of it that is not in the biggest free block.
- * Unused.
- */
-f32 memaGetFragmentation(void) {
-    u32 tot = 0;
-    u32 max = 0;
-    MemaSpace *curr = &m_memaHeap.spaces[0];
-    while (curr->addr != -1) {
-        tot += curr->size;
-        if (max < curr->size) {
-            max = curr->size;
-        }
-        curr++;
-    }
-    if (tot == 0) {
-        return 0.0f;
-    }
-    return ((f32)(tot - max) / tot);
-}
-
-/** Calls `func` with the end address of each free block. Unused. */
-void memaForEachSpace(void (*func)(u32, MemaSpace*)) {
-    MemaSpace *curr = &m_memaHeap.spaces[0];
-    while (curr->addr != -1) {
-        func((curr->addr + curr->size), curr);
-        curr++;
-    }
-}
 
 /**
  * Find and return the largest amount of contiguous free space in the pool.
@@ -471,24 +415,6 @@ s32 memaRealloc(s32 addr, u32 oldsize, u32 newsize)
             return 1;
         }
 	}
-
-    /**
-     * Hack: the following few `if` statements are probably not what was originally
-     * here, but it shifts the temp registers enough to generate a match.
-     * https://decomp.me/scratch/RoPAF 99.62%
-    */
-
-    if (addr + 1) {}
-    else if (addr + 2) {}
-    else if (addr + 3) {}
-
-    if (oldsize + 1) {}
-    else if (oldsize + 2) {}
-    else if (oldsize + 3) {}
-
-    if (newsize + 1) {}
-    else if (newsize + 2) {}
-    else if (newsize + 3) {}
 
     if ((oldsize > newsize))
     {

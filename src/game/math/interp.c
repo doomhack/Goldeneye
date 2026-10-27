@@ -17,35 +17,6 @@ void interpLerp3(coord3d *from, coord3d *to, f32 fraction, coord3d *result)
 }
 
 /**
- * Catmull-Rom interpolation of a single value: the curve goes from p1 to p2, and p0 and
- * p3 shape it. Unused.
- */
-f32 interpCatmullRom(f32 p0, f32 p1, f32 p2, f32 p3, f32 fraction)
-{
-    f32 cube;
-    f32 square;
-    f32 total;
-    f32 weight;
-
-    square = fraction * fraction;
-    cube   = square * fraction;
-
-    weight = square - ((fraction + cube) * 0.5f);
-    total  = p0 * weight;
-
-    weight = ((1.5f * cube) - (2.5f * square)) + 1.0f;
-    total += p1 * weight;
-
-    weight = (-1.5f * cube) + (2.0f * square) + (0.5f * fraction);
-    total += p2 * weight;
-
-    weight = (cube - square) * 0.5f;
-    total += p3 * weight;
-
-    return total;
-}
-
-/**
  * Catmull-Rom interpolation of a point: the curve goes from p1 to p2, and p0 and p3 shape
  * it.
  *
@@ -101,18 +72,3 @@ void interpCardinal3(coord3d *prev, coord3d *start, coord3d *end, coord3d *next,
     result->f[2] = (((weightPrev * prev->f[2]) + (weightStart * start->f[2])) + (weightEnd * end->f[2])) + (((cube - square) * tangentScale) * next->f[2]);
 }
 
-/**
- * Cubic Hermite interpolation of a single value, given the value and its rate of change
- * at each end. Unused.
- */
-f32 interpHermite(f32 start, f32 end, f32 startTangent, f32 endTangent, f32 fraction)
-{
-    f32 cube;
-    f32 weightStart;
-    f32 square;
-
-    square = fraction * fraction;
-    cube = square * fraction;
-    weightStart = ((2.0f * cube) - (3.0f * square)) + 1.0f;
-    return (start * weightStart) + (end * (1.0f - weightStart)) + (startTangent * ((cube - (2.0f * square)) + fraction)) + (endTangent * (cube - square));
-}

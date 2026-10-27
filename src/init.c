@@ -35,15 +35,6 @@
 #define RZIPBUFADDR 0x80340000
 
 
-/**
- * These 3 values (likely more as u32 piDeviceType = DEVICE_TYPE_CART could be 4x u8)
- * piDeviceType is completely unused but the most logical value here
- * piStatusReg, and piDomAddr are explicitly stored as 32bit values
-*/
-u32 piDeviceType = DEVICE_TYPE_CART;
-u32 piStatusReg = PI_CLR_INTR;
-u32 piDomAddr = PI_DOM1_ADDR2;
-
 OSThread rmonThread;
 OSThread idleThread;
 OSThread mainThread;
@@ -53,7 +44,6 @@ OSMesg gfxFrameMsgBuf[32];
 OSMesgQueue *sched_cmdQ;
 
 void mainproc(void *args);
-
 
 
 /**
@@ -96,7 +86,6 @@ void init(void)
     }
 
     decompress_result = jump_decompressfile(datazipram, csegmentSegmentVaddrStart, RZIPBUFADDR);
-    if (decompress_result);
 
     // Load all game code into RAM at its link address. It used to be paged in
     // 8KB at a time through the TLB; with the Expansion Pak it simply stays resident.
@@ -134,7 +123,6 @@ void init(void)
 }
 
 
-
 /**
  * 12F0	700006F0
  * setSPToEnd - set stack pointer to end of stack
@@ -145,17 +133,6 @@ void init(void)
 void *setSPToEnd(u8 *stack, u32 size)
 {
     return stack + size - 8;
-}
-
-/**
- * 12FC	700006FC
- * piStatusRegReset - set PI status register to trigger a reset
- * This is unused and is leftover from Indy debug,
- */
-void piStatusRegReset(void)
-{
-    piStatusReg = PI_SET_RESET;
-    piDomAddr = PI_DOM1_ADDR2;
 }
 
 /**

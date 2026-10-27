@@ -111,6 +111,14 @@ It answers "is this reachable", not "is this safe to delete": a call to a dead f
 still sit inside live code (for example in a branch that never runs), so delete the call
 sites by hand and rebuild, rather than deleting every line that names the function.
 
+Two more traps:
+
+* Run it for both `US` and `EU` and only delete what is dead in both: code behind
+  `#ifdef VERSION_EU` is invisible to the US run, and the other way round.
+* A `const` variable whose value the compiler can see is folded into its users even at
+  `-O0`, so it shows up as dead data although the source still reads it. Check for
+  remaining references before deleting data.
+
 ## Flag branches: `tools/compare/foldflags.py FILE...`
 
 Removes `#if` branches that come out the same way in the US and the PAL build: `#if 0`

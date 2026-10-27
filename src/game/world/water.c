@@ -53,11 +53,7 @@ Gfx g_WaterGdlCi[] = {
     gsSPEndDisplayList()
 };
 
-//End Dl means this gfx list cannot go any further. perhaps below is a vtx array?
-
-u32 D_8003FD90 = 0;
 f32 g_SkyCloudOffset = 0;
-f32 D_8003FD98[] = { 0, 0 };
 
 struct hand D_8003FDA0 = {
     0, /* weaponnum */
@@ -216,9 +212,6 @@ struct hand D_8003FDA0 = {
     0, /* volley */
     { {0,0,0} }, /* item_related */
 };
-
-
-u64 D_80040148[] = { 0, 0, 0 }; // Unused.
 
 
 // Water animation controller.

@@ -162,11 +162,6 @@ void *mempAlloc(u32 bytes, u8 poolId)
              * stripped, but it still perturbs register allocation. These
              * statements fill t1/t3/t4 so the registers match.
              */
-            if (m_mempOverflowed);
-            if (&D_8002440C == &D_80024408);
-            if (m_mempOverflowed);
-            if (&D_80024410 == &D_80024408);
-            if (!m_mempOverflowed);
 
             m_mempOverflowed = TRUE;
 
@@ -180,7 +175,6 @@ void *mempAlloc(u32 bytes, u8 poolId)
     pool->pos += bytes;
     pool->prevpos = allocation;
 
-    if (m_mempOverflowed);
 
     return allocation;
 }
@@ -250,11 +244,6 @@ s32 mempGetFreeBytes(u8 pool) {
     }
 
     return m_mempPools[pool].end - m_mempPools[pool].pos;
-}
-
-/** Allocates with the pool in the bottom three bits and the size in the rest. Unused. */
-u32 mempAllocPacked(u32 sizeAndPool) {
-    return mempAlloc((sizeAndPool >> 3), (sizeAndPool & 7));
 }
 
 /** Frees everything in a pool (and opens it, if it was closed). */

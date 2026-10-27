@@ -21,7 +21,6 @@ const char *g_Tokens[10] = {0};
 // them in g_Tokens.
 unsigned char *tokenSplit(unsigned char *str)
 {
-    unsigned char c;
     g_Tokens[0] = "";
     g_TokenCount = 1;
     while ((s32)*str) {

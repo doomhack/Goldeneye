@@ -33,7 +33,6 @@ u32 g_FrameStartCount = 0;
 s32 g_FrameMinFrames = 1; //usually 1
 
 
-
 /**
  * Stores the current OS count in the two global variables.
  */
@@ -95,19 +94,11 @@ void frameWaitForNext(void) //maybe WaitForTick
 }
 
 
-void frameSetMinFrames(s32 arg0) {
-    #ifdef VERSION_US
-    g_FrameMinFrames = arg0;
-    #endif
-}
-
 #ifdef VERSION_EU
 void eu_sub_7f0c00a4(void)
 {
   
 }
 #endif
-
-
 
 

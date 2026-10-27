@@ -51,26 +51,6 @@ s_moving_bullet_spark g_MovingSparks[BULLET_MOVING_SPARKS_MAX];
 #endif
 
 
-// unreferenced
-void sparkGetColor(s32 arg0, struct rgba_u8 *arg1)
-{
-    arg1->r = g_SparkColors[arg0].r;
-    arg1->g = g_SparkColors[arg0].g;
-    arg1->b = g_SparkColors[arg0].b;
-    arg1->a = g_SparkColors[arg0].a;
-}
-
-
-// unreferenced
-void sparkSetColor(s32 arg0, struct rgba_u8 *arg1)
-{
-    g_SparkColors[arg0].r = arg1->r;
-    g_SparkColors[arg0].g = arg1->g;
-    g_SparkColors[arg0].b = arg1->b;
-    g_SparkColors[arg0].a = arg1->a;
-}
-
-
 /**
  * Address: 7F0A3BD8
  */
@@ -268,8 +248,6 @@ void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
     vertices[0].v.ob[1] = (((y - s0[1]) - s3[1]) * bgGetLevelScale()) - roompos->f[1];
     vertices[0].v.ob[2] = (((z - s0[2]) - s3[2]) * bgGetLevelScale()) - roompos->f[2];
 
-    // Matching hack.
-    if ((roompos->f && roompos->f));
 
     vertices[0].v.tc[0] = ((struct sImageTableEntry *) (((u8 *) thing->unk0C) + (frame * 12)))->width << 5;
     vertices[0].v.tc[1] = 0;
@@ -313,23 +291,6 @@ void sparksRender(Gfx *gdl, s32 zbufferMode)
     {
         sparkRender(thing, gdl, zbufferMode);
     }
-}
-
-
-/**
- * Address: 7F0A4594
- */
-f32 sparkGetDepth(s_bullet_spark* spark)
-{
-    coord3d tempVec;
-
-    tempVec.x = spark->unk10;
-    tempVec.y = spark->unk14;
-    tempVec.z = spark->unk18;
-
-    mtx4TransformVecInPlace(camGetWorldToScreenMtxf(), &tempVec);
-
-    return -tempVec.z;
 }
 
 

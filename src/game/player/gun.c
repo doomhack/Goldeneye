@@ -49,7 +49,6 @@
 
 // bss
 ALSoundState *g_CasingSfxState;
-ALSoundState* g_UnusedSfxState; // Unused, type assumed from surrounding variables.
 ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
 
 CasingRecord g_Casings[20];
@@ -116,7 +115,6 @@ u32 size_item_buffer[] = {0x14820, 0x14820};
 
 //D:80032464
 u32 D_80032464[] ={0x7530, 0x7530};
-
 
 
 //D:8003246C
@@ -364,9 +362,6 @@ coord3d D_80035C70 = {6.2536321f, 6.2592888f, 0.204238f};
 coord3d D_80035C7C = {0.25044999f, 0.90482301f, 0.28716999f};
 coord3d D_80035C88 = {1.715736f, 0.37460899f, 0.92193699f};
 
-//D:80035C94
-f32 D_80035C94 = 0;
-
 
 //D:80035C98
 Vtx D_80035C98 = {0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff };
@@ -426,15 +421,6 @@ struct RicochetSoundsLarge ricochet_sounds_large = {
     RICO_4_A_SFX,      RICO_4_B_SFX,      RICO_4_B_SFX,      RICO_4_C_SFX,
     RICO_5_A_SFX,      RICO_5_B_SFX,      RICO_5_C_SFX,      RICO_5_D_SFX,
     RICO_6_HBBA_A_SFX, RICO_6_HBBA_B_SFX, RICO_6_HBBA_C_SFX, RICO_6_HBBA_D_SFX
-};
-
-//D:80035E84
-struct EarWhistleSounds ear_whistle_sounds = {
-    RICO_EAR_WHISTLE1_SFX,
-    RICO_EAR_WHISTLE2_SFX,
-    RICO_EAR_WHISTLE3_SFX,
-    RICO_EAR_WHISTLE4_SFX,
-    RICO_EAR_WHISTLE5_SFX
 };
 
 //D:80035E90
@@ -532,18 +518,6 @@ void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 #define DEB_KEYFRAMES sniperMeleeKeyframes2
 
 
-
-
-// Unreferenced debPrintKeyframe
-// Address: ~ 7F05C538
-void nullsub_73(void)
-{
-    return;
-}
-
-
-
-
 void gunDebApplyKeyframe(void)
 {
     if (!g_GunDebApplyKeyframe) { return; }
@@ -553,7 +527,6 @@ void gunDebApplyKeyframe(void)
     mtx4SetTranslation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
     g_GunDebApplyKeyframe = 0;
 }
-
 
 
 /**
@@ -644,10 +617,6 @@ WeaponStats *weaponGetStats(ITEM_IDS item)
     }
     return &default_weaponstats; /* no model, return defaults */
 }
-
-
-
-
 
 
 void gunCalcBlend(enum GUNHAND handnum)
@@ -844,35 +813,6 @@ void gunLoadHandModel(GUNHAND hand)
 }
 
 
-// Called by unused functions.
-ITEM_IDS invStepItem(ITEM_IDS item, s32 arg1)
-{
-    while (arg1 > 0)
-    {
-        do
-        {
-            item = (item + 1) % ITEM_BOMBCASE;
-        } while (invItemAvailable(item) == 0);
-        arg1--;
-    }
-
-    while (arg1 < 0)
-    {
-        do
-        {
-            item--;
-            if (item < 0)
-            {
-                item = 0x20 - (-(item + 1) % ITEM_BOMBCASE);
-            }
-        } while (invItemAvailable(item) == 0);
-        arg1++;
-    }
-
-    return item;
-}
-
-
 ITEM_IDS gunGetNextWeapon(GUNHAND hand, s32 direction)
 {
 	if (g_CurrentPlayer->hands[hand].weapon_action_state == GUN_ANIM_STATE_SWITCH_LOWER) 
@@ -931,20 +871,6 @@ void gunRequestHandWeaponChange(enum GUNHAND hand, s32 nextWeapon, s32 cycleDire
         g_CurrentPlayer->hands[hand].weapon_animation_trigger = 1;
         g_CurrentPlayer->hands[hand].field_8B8 = cycleDirection;
     }
-}
-
-
-// Unused
-void gunSwitchToNext(GUNHAND hand)
-{
-    gunRequestHandWeaponChange(hand, invStepItem(gunGetNextWeapon(hand, 0), 1), 0);
-}
-
-
-// Unused
-void gunSwitchToPrev(GUNHAND hand)
-{
-    gunRequestHandWeaponChange(hand, invStepItem(gunGetNextWeapon(hand, 0), -1), 0);
 }
 
 
@@ -1255,10 +1181,8 @@ void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
 {
     f32 dampt[2];
     s32 i;
-    u32 unused[2];
     f32 sp50 = arg2;
     f32 sp4c;
-    u32 stack2;
     f32 minbreathing;
 
     if (sp50 < 0.0f) { sp50 = -sp50; }
@@ -1572,20 +1496,14 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
     PropRecord *playerprop;
     coord3d pos;
     StandTile *tile;
-    u32 pad_c[2];
     f32 yhi;
     f32 ylo;
     s32 usedfallback;
     f32 stanheight;
     u8 rooms[2];
-    s32 pad_rooms;
-    u8 pad_a[0x4c];
     s32 sp54;
     s32 sp50;
-    s32 pad_sp;
 
-    // fake
-    if (obj->prop);
     if (obj->prop == NULL) {
         return;
     }
@@ -1651,14 +1569,12 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
 */
 void gunThrowGrenade(s32 hand)
 {
-    s32 padding;
     Mtxf spFC;
     struct coord3d throw_speed_vec;
     f32 base_velocity;
     struct coord3d spE0;
     Mtxf spA0_a;
     struct WeaponObjRecord *wor;
-    s32 new_prop_type;
     s32 sp94; // sp148
     struct coord3d base_speed_vec; // sp136
     struct PropRecord* player_prop; // sp132
@@ -1666,7 +1582,6 @@ void gunThrowGrenade(s32 hand)
     Mtxf sp40_f;
     ALSoundState *sfx_state;
     s32 current_weapon;
-    s32 unused;
 
     wor = NULL;
     base_velocity = 16.666666f;
@@ -1748,8 +1663,6 @@ void gunThrowKnife(s32 hand)
     f32 base_velocity;
     struct coord3d spE0;
     Mtxf spA0_a;
-    s32 padding;
-    s32 new_prop_type;
     s32 sp94;
     struct coord3d base_speed_vec;
     Mtxf sp40_f;
@@ -1817,9 +1730,6 @@ void gunThrowKnife(s32 hand)
 }
 
 
-
-
-
 /**
  * Address 0x7F05F358 (NTSC)
  * Address 0x7F05F810 (PAL)
@@ -1832,7 +1742,6 @@ void gunThrowObject(s32 hand)
     }
 */
 
-    s32 padding;
     Mtxf unk_mtxf;
     struct coord3d throw_speed_vec;
     f32 base_velocity;
@@ -1847,7 +1756,6 @@ void gunThrowObject(s32 hand)
     Mtxf sp40_f;
     ALSoundState *sfx_state;
     s32 current_weapon;
-    s32 unused;
 
     wor = NULL;
     base_velocity = 16.666666f;
@@ -2027,7 +1935,6 @@ void gunSpawnGLGrenade(s32 handnum)
     struct hand *hand;
     Mtxf identitymtx;
     coord3d launchvel;
-    s32 pad;
     Mtxf launchmtx;
     coord3d aimpos;
     coord3d aimdir;
@@ -2215,7 +2122,6 @@ void gunFireTankShell(s32 handnum)
     {
         tankprop = playerGetTank();
 
-        if (1);
 
         if ((tankprop != NULL) && (tankprop->flags & TANK_RUN_STATE_RUNNING)) 
         {
@@ -2253,7 +2159,6 @@ void gunFireTankShell(s32 handnum)
             spawnpos.z = playerprop->pos.z;
         }
 
-        if ((g_CurrentPlayer && g_CurrentPlayer));
 
         explosionStartShake();
     } 
@@ -2266,7 +2171,6 @@ void gunFireTankShell(s32 handnum)
         spawnpos.y = hand->field_B58.y;
         spawnpos.z = hand->field_B58.z;
 
-        if (1);
 
         unscaledvelocity.x = aimdir.x * D_80053DDC;
         unscaledvelocity.y = aimdir.y * D_80053DDC;

@@ -7,6 +7,5 @@
 void modelFileLoadTextures(ModelFileHeader *header, u8 *name, u8 *dst, struct texpool *texpool);
 void modelFileLoad(struct ModelFileHeader *header, u8 *name, u8 *dst, s32 size, struct texpool *texpool);
 void modelFileLoadToPool(ModelFileHeader *header, char *name);
-void modelFileLoadToAddr(ModelFileHeader *header, int *name, int *dst, int size);
 
 #endif

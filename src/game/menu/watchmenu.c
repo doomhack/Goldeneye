@@ -66,7 +66,6 @@
 Mtx gfx_background_8007B0A0;
 Mtx gfx_background_8007B0E0;
 
-u32 D_80040990 = 0;
 u32 g_WatchMenuPage = 0;
 u32 g_WatchMenuControlRow = 0;
 u32 g_WatchMenuOptionsRow = 0;
@@ -286,7 +285,6 @@ const char D_80058454[];
 
 void watchMenuSetTabColours(s32 g_WatchMenuPage, struct WatchVertex *vertices);
 Gfx *watchMenuRenderStatus(Gfx *gdl, Mtx *param_2);
-Gfx *watchMenuRenderInventoryOld(Gfx *gdl, Mtx *param_2);
 Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2);
 Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *param_2);
 Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *param_2);
@@ -302,13 +300,6 @@ Gfx *watchMenuRenderDualControlLabels(Gfx *gdl);
 Gfx *watchMenuRenderControlLabels(Gfx *gdl);
 
 // end forward declarations
-
-
-
-void watchMenuNull(void)
-{
-
-}
 
 
 void watchMenuReset(int stage)
@@ -374,8 +365,6 @@ void watchMenuReset(int stage)
     fileLoadCurrentSettings(stage);
     g_FrontMissionAborted = FALSE;
 }
-
-
 
 
 u32 optionsIsDualControlStyle(void)
@@ -682,12 +671,6 @@ u32 watchMenuStickYWasActive(void)
 }
 
 
-void watchMenuStickYReset(void) 
-{
-    g_WatchMenuStickYActive = 0;
-}
-
-
 s32 watchMenuStickTappedUp(void)
 {
     return watchMenuStickNudgedUp() && !watchMenuStickYWasActive();
@@ -819,30 +802,6 @@ void watchMenuInventoryTick(void)
         {
             g_WatchMenuPage = WATCH_INDEX_CONTROL_OPTIONS;
             watchMenuStickXUsed();
-            watchMenuPageBeep();
-            watchStartZoom(WATCHZOOM3, 15.0f);
-        }
-    }
-}
-
-
-void watchMenuUnusedTick(void) {
-
-    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, L_CBUTTONS|L_TRIG|L_JPAD)) || (watchMenuStickPushedLeft()))
-    {
-        if (g_WatchMenuSelected == 0)
-        {
-            g_WatchMenuPage = WATCH_INDEX_INVENTORY;
-            watchMenuStickXUsed();
-            return;
-        }
-    }
-    if ((joyGetButtonsPressedThisFrame(WATCH_PAD, R_CBUTTONS|R_TRIG|R_JPAD)) || (watchMenuStickPushedRight()))
-    {
-        if (g_WatchMenuSelected == 0)
-        {
-            g_WatchMenuPage = WATCH_INDEX_CONTROL_OPTIONS;
-            watchMenuResetControlRow();
             watchMenuPageBeep();
             watchStartZoom(WATCHZOOM3, 15.0f);
         }
@@ -1644,7 +1603,6 @@ void watchMenuTick(void)
 }
 
 
-
 Gfx *watchMenuSetupDraw(Gfx *DL)
 {
     gSPSetGeometryMode(DL++, G_CULL_BACK);
@@ -1713,7 +1671,6 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
     Gfx *sp40;
     Gfx *sp3C;
 
-    s32 stack_pad[6];
 
     f32 scale;
 
@@ -2032,8 +1989,6 @@ Gfx *watchMenuRenderVersion(Gfx *gdl)
 }
 
 
-
-
 #ifndef _BONDWALK_H_
 #define _BONDWALK_H_
 typedef struct GunModelFileRecord {
@@ -2078,7 +2033,6 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     f32 roty;
     s8* text;
     s8* text2;
-    struct GunModelFileRecord *gitem;
 
     sp114 = dynAllocateMatrix();
     sp84 = 0;
@@ -2097,7 +2051,6 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     roty = invGetWatchRotYForIndex(temp_v0);
     text = invGetWatchTitle1ForIndex(temp_v0);
     text2 = invGetWatchTitle2ForIndex(temp_v0);
-
 
 
 #if defined(VERSION_US)
@@ -2227,7 +2180,6 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
     f32 sp880;
     f32 sp87C;
     s32 temp_s0_3;
-    GunModelFileRecord *gitem;
     s32 x1;
     s32 y1;
 
@@ -2379,73 +2331,6 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
 }
 
 
-Gfx *watchMenuRenderInventoryOld(Gfx *gdl, Mtx *param_2) {
-    s32 temp_1;
-    s32 sp70;
-    s32 sp6C;
-    s32 sp64,sp68; //unused?
-
-    s32 sp60;
-    s32 sp5C;
-    s32 sp58;
-    s32 sp54;
-    s32 pFontFile;
-    s32 pFontChars;
-
-    u16 *long_name;
-    s32 temp_2;
-
-    sp58 = 0;
-    sp54 = 0;
-
-    pFontFile = g_FontBankGothic;
-    pFontChars = g_FontBankGothicChars;
-
-    long_name = invGetLongNameByIndex(g_WatchMenuItem);
-    gdl = watchMenuRenderBackground(gdl, param_2, 0);
-
-    if (watchIsZooming() != 1)
-    {
-        temp_1 = g_WatchMenuEquipDelay;
-        if (temp_1 > 0)
-        {
-            g_WatchMenuEquipDelay = temp_1 - 1;
-        }
-
-        watchMenuInventoryListTick();
-        gdl = textSetupDraw(gdl);
-
-        textMeasure(&sp58, &sp54, long_name, pFontChars, pFontFile, 0);
-
-        sp70 = ((s32) (0xAA - sp54) / 2) + 0x4B;
-        temp_2 = sp70;
-
-        sp6C = 0x1E;
-        gdl = textRenderRect(gdl, temp_2, 0x1E, sp60, sp5C, 0x800050);
-
-        if (g_WatchMenuInvSettled)
-        {
-            watchMenuEquipSelected();
-            if (g_WatchMenuEquipDelay == 0)
-            {
-                gdl = textRender(gdl, &sp70, &sp6C, long_name, pFontChars, pFontFile, 0xA0FFA0F0, sp54, 0x64, 0, 0);
-            }
-            else
-            {
-                gdl = textRenderOutlined(gdl, &sp70, &sp6C, long_name, pFontChars, pFontFile, -1, 0x7000A0, sp54 + 1, 0x64, 0, 0);
-            }
-        }
-        else
-        {
-            gdl = textRender(gdl, &sp70, &sp6C, long_name, pFontChars, pFontFile, 0xAA00B0, sp54, 0x64, 0, 0);
-        }
-
-    }
-
-    return gdl;
-}
-
-
 /**
  * Address: 7F0A8D40
  */
@@ -2529,7 +2414,6 @@ void watchMenuMakeSliderVerts(struct WatchVertex *verts, f32 fill_amount, s32 tr
 }
 
 
-
 /**
  * Address: 7F0A8ED0
  */
@@ -2596,7 +2480,6 @@ Gfx *watchMenuRenderFxVolume(Gfx *gdl)
 
     sndApplyVolumeAllSfxSlot(volume);
 
-    if (1);
 
     cmd = gdl++;
     gDPSetRenderMode(cmd, G_RM_XLU_SURF, G_RM_XLU_SURF2);
@@ -2647,7 +2530,6 @@ Gfx *watchMenuRenderMusicVolume(Gfx *gdl)
     fvolume = (f32)(u32)volume / 32767.0f;
     optionsSetMusicVolume(volume);
 
-    if(1);
 
     cmd = gdl++;
     gDPSetRenderMode(cmd, G_RM_XLU_SURF, G_RM_XLU_SURF2);
@@ -2764,21 +2646,6 @@ f32 watchMenuApproach(f32 param_1, f32 param_2, f32 param_3)
 }
 
 
-s32 watchMenuControllerIsLevel(void) {
-
-    if ((g_WatchControllerSpinAngle < 0.1f) &&
-        (g_WatchControllerSpinAngle > -0.1f) &&
-        (g_WatchControllerPitch < 0.1f) &&
-        (g_WatchControllerPitch > -0.1f))
-    {
-
-        return 1;
-
-    }
-    return 0;
-}
-
-
 void watchMenuSpinController(s8 contpadnum, s32 *counter, f32 *value, f32 *step)
 {
     s32 count;
@@ -2826,7 +2693,6 @@ counter_done:
  */
 Gfx *watchMenuRenderControlStyles(Gfx *gdl)
 {
-    char pad[12];
     char text[2000];
     s32 x;
     s32 y;
@@ -2836,7 +2702,6 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
     s32 textwidth;
     struct font *font;
     struct fontchar *chars;
-    s32 tmp;
     u8 *selectedtext;
 
     font = g_FontBankGothic;
@@ -2855,7 +2720,6 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
             strcat(text, langGet(*stringids));
             i++;
             stringids += 10;
-            if (i);
         }
         while (i < g_WatchMenuControlStyleCount);
     }
@@ -2913,21 +2777,11 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl)
     }
  
     {
-        char strA[] = "(A)\n";
-        char strB[] = "(B)\n";
-        char strZ[] = "(Z)\n";
-        char strL[] = "(L)\n";
-        char strR[] = "(R)\n";
-        char strC[] = "(C)\n";
-        char strPlus[] = "(+)\n";
-        char strS[] = "(S)\n";
-        char str3D[] = "(3D)\n";
         u8 *ctext;
         u8 *dpadtext;
         s32 buttons;
         s32 showmovesight;
         volatile unsigned int y;
-        u8 pad[8];
  
         showmovesight = 0;
         gdl = textSetupDraw(gdl);
@@ -3279,7 +3133,6 @@ Gfx *watchMenuRenderController(Gfx *gdl)
 
         watchTable = &table1;
 
-        if (1);
 
         mtx4LoadLookAt(&lookat1, eye, 2500.0f, 32.0f, eye, 0.0f, 32.0f, 0.0f, 0.0f, -1.0f);
     }
@@ -3385,11 +3238,6 @@ void watchMenuResetOptionsRow(void) {
 
 void watchMenuResetAbort(void) {
     g_WatchMenuAbortAsk = 0;
-}
-
-
-u32 watchMenuIdentity(u32 uParm1) {
-    return uParm1;
 }
 
 
@@ -3819,14 +3667,6 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
 
     if (watchIsZooming() != 1)
     {
-        /**
-         * spDAC, spDA4, spD68 are unused.
-         * Maybe vestigial tables for formatting the briefings.
-         */
-        s32 spDAC[15] = {0x34, 0x2f, 0x2d, 0x2a, 0x28, 0x25, 0x25, 0x28, 0x2a, 0x2d, 0x2f, 0x34, 0x37, 0x40, -1};
-        s32 spDA4[2] = {0x4b, -1};
-        s32 spD68[15] = {0x10e, 0x113, 0x116, 0x119, 0x11a, 0x11b, 0x11b, 0x11a, 0x119, 0x116, 0x113, 0x10e, 0x108, 0xfe, -1};
-
         s32 boxLeft;
         s32 boxTop;
         s32 boxRight;
@@ -3914,7 +3754,6 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
                 s32 j;
                 char *objectiveText;
                 s32 visibleObjectiveIndex;
-                s32 pad;
                 char *objectiveLetterPtr;
 
                 lineCount = 1;

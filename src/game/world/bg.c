@@ -191,7 +191,6 @@ u8 D_800443C4[PORTMAX] = {
 };
 
 
-
 //D:8004448C
 struct levelentry levelinfotable[] = {
 /*  levelID;            bg_seg_filename;        bg_stan_filename;      levelscale;  visibility; unknownfloat;*/
@@ -272,7 +271,6 @@ Lights1 GlobalLight = gdSPDefLights1(
 );
 
 
-
 //D:80044858
 s32 D_80044858 = 0;
 //D:8004485C
@@ -344,8 +342,6 @@ void bgMarkSpecialPortals(void) {
     u8 *ptr;
     u8 *end;
     u8 portal;
-    u8 cur;
-    u32 masked;
 
     ptr = (u8 *)specialportalarray;
     /* the original relies on g_BgCurrentRoom being the next variable in .data */
@@ -370,62 +366,6 @@ void bgMarkSpecialPortals(void) {
 
         ptr++;
     } while ((u32)ptr < (u32)end);
-}
-
-
-/*
-* Unused function
-* Address: 7F0B38B4
-*/
-void bgAddVisibleRoomGroup(s32 arg0, u8 *arg1) {
-
-    u8 *s0;
-    u8 *entry_start;
-    s32 v0;
-    s32 v1;
-
-    s0 = arg1;
-    v0 = *arg1;
-    v1 = arg0 & 0xff;
-
-    do {
-        entry_start = s0;
-
-        do {
-            if (v1 == v0) goto found;
-            v0 = *(s0 + 1);
-            s0++;
-        } while (v0 != 0);
-
-        do { s0++; } while (*s0 != 0);
-        s0++;
-        goto next_entry;
-
-found:
-        s0 = entry_start;
-        for (v0 = *entry_start; ; ) {
-            if (bgIsRoomOnScreen(v0 ^ 0, &g_CurrentPlayer->screensize)) {
-                bgAddVisibleRoom(*s0, 0, &g_CurrentPlayer->screensize, 1);
-            }
-            v0 = *(s0 + 1);
-            s0++;
-            if (v0 == 0) break;
-        }
-        s0++;
-        v0 = *s0;
-        do {
-            if (bgIsRoomOnScreen(v0 ^ 0, &g_CurrentPlayer->screensize)) {
-                bgAddVisibleRoom(*s0, 0, &g_CurrentPlayer->screensize, 1);
-            }
-            v0 = *(s0 + 1);
-            s0++;
-        } while (v0 != 0);
-        return;
-
-next_entry:
-        v0 = *s0;
-    } while (v0 != 0);
-
 }
 
 
@@ -504,38 +444,9 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
     g_BgNumberOfRoomsDrawn = i + 1;
 #endif
 
-    if (g_BgNumberOfRoomsDrawn) {}
 
     return 0;
 #endif
-}
-
-
-/*
-* Unused function
-* Address: ?
-*/
-void bgZeroPortalsToRoom(s32 roomnum)
-{
-  g_BgRoomInfo[roomnum].portal_visit_count = 0;
-}
-
-
-/*
-* Unused function
-* Address: 7F0B3B20
-*/
-s32 bgFindFirstPortalVisitedRoom(void)
-{
-    s32 i;
-
-    for (i=0;i<MAXROOMCOUNT;i++)
-    {
-        if (g_BgRoomInfo[i].portal_visit_count) {
-            return i;
-        };
-    }
-    return -1;
 }
 
 
@@ -613,7 +524,6 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
     s32 b_max;
     s32 b_min;
 #endif
-    s32 notdone;
 #ifdef VERSION_EU
     b_max = 0;
     b_min = 32767;
@@ -672,7 +582,6 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                     gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 2);
                 }
  
-                if (1);
             }
         }
     }
@@ -686,8 +595,6 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
         gdl = explosionCallRenderBulletImpactOnProp(gdl);
     }
  
-    if (g_BgNumberOfRoomsDrawn);
-    if (g_BgRoomsDrawn);
  
     for (i = b_max; i >= b_min; i--)
     {
@@ -719,7 +626,6 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                     gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 1);
                 }
  
-                if (1);
             }
         }
     }
@@ -811,7 +717,6 @@ void bgLoad(LEVEL_INDEX levelid)
     ptr_bg_data = (s32)header;
     fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) ptr_bg_data, 0, 0x40);
 
-    if (((levelid && ptr_bg_data) && levelentry_index));
 
     ptr_bgdata_offsets = ptr_bg_data;
     ptr_bgdata_room_fileposition_list = (bg_room_data *) BG_SEG_TO_PTR(ptr_bg_data, ((s32 *)ptr_bg_data)[1]);
@@ -857,7 +762,6 @@ void bgLoad(LEVEL_INDEX levelid)
  
         g_BgPortals = (bg_portal_data_entry *) BG_SEG_TO_PTR(data, ((s32 *)ptr_bgdata_offsets)[2]);
 
-        if (1);
 
         if (((s32 *)ptr_bgdata_offsets)[3] == 0)
         {
@@ -1011,12 +915,6 @@ f32 bgGetLevelScale(void){
 }
 
 
-f32 bgGetLevelUnknownFloatScaled(void)
-{
-    return levelinfotable[levelentry_index].unknownfloat / levelinfotable[levelentry_index].levelscale;
-}
-
-
 //sub_GAME_7F0B4878
 f32 bgGetLevelVisibilityScale(void) {
     return mCurrentLevelVisibilityScale;
@@ -1028,17 +926,13 @@ extern void bgRoomsTickUnload(void);
 
 void bgFindVisibleRooms(void)
 {
-    bg_portal_data_entry *portal;
-    bg_portal_entry *next;
     coord3d *pos;
     coord3d *pos3;
-    u8 *portalflags;
     s32 room;
     s32 portalnum;
     s32 lastportal;
     s32 depth;
     s32 maxdepth;
-    s32 offset;
     s32 cammode;
 
     lastportal = -1;
@@ -1074,8 +968,6 @@ void bgFindVisibleRooms(void)
     pos = playerGetPos();
     pos3 = playerGetPos3();
 
-    // FAKE
-    if (1) {}
 
     for (depth = 0, maxdepth = 11; depth != maxdepth; depth++) {
         for (portalnum = 0; g_BgPortals[portalnum].offset_portal != NULL; portalnum++) {
@@ -1104,7 +996,6 @@ void bgFindVisibleRooms(void)
     g_BgCurrentRoom = room;
     bgDetermineVisibleRooms();
 }
-
 
 
 void bgAddToRoomSet(u8* set, u8 newElement) {
@@ -1253,19 +1144,6 @@ Gfx *bgLevelRender(Gfx *arg0)
 }
 
 
-
-
-
-f32 bgGetRoomValue(s32 arg0)
-{
-	return g_BgRoomValues[arg0 + 1];
-}
-
-
-
-
-
-
 /**
  * Calls @see bgScissorCurrentPlayerView with default current player values.
  * Address 0x7F0B4FB4.
@@ -1281,9 +1159,6 @@ Gfx* bgScissorCurrentPlayerViewDefault(Gfx* arg0)
 }
 
 
-
-
-
 /**
  * Same as @see bgScissorCurrentPlayerView, but accepts float parameters.
  * Address 0x7F0B4FF4.
@@ -1297,9 +1172,6 @@ Gfx* bgScissorCurrentPlayerViewF(Gfx* arg0, f32 arg1, f32 arg2, f32 arg3, f32 ar
         mathCeilToInt(arg3),
         mathCeilToInt(arg4));
 }
-
-
-
 
 
 /**
@@ -1354,32 +1226,6 @@ void bgResetPortalTable(void)
     {
         table_for_portals[i].unk0 = -1;
     }
-}
-
-
-/**
- * Unreferenced.
- *
- * Loosely checks that arg1 surrounds arg0. Requires points be ordered according to min/max.
- *
- * Address 0x7F0B519C.
- */
-s32 bgRectIsInside(struct bbox2d *arg0, struct bbox2d *arg1)
-{
-    if (arg1->min.x <= arg0->min.x)
-    {
-        if (arg0->min.x <= arg1->max.x)
-        {
-            if (arg1->min.y <= arg0->min.y)
-            {
-                if (arg0->min.y <= arg1->max.y)
-                {
-                    return 1;
-                }
-            }
-        }
-    }
-    return 0;
 }
 
 
@@ -1493,7 +1339,6 @@ bool bgIsRoomOnScreen(s32 roomID, struct rectbbox *screenbox)
 bool bgProjectRoomCoordToScreen(coord3d* src, coord3d* dst)
 {
     Mtxf* temp_a0;
-    s32 var_v0;
 
     temp_a0 = camGetWorldToScreenMtxf();
     dst->x = src->x * g_BgLevelScaleInv;
@@ -1698,35 +1543,6 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
 
 
 /**
- * Unreferenced.
- *
- * Address 0x7F0B5B14.
- */
-Gfx *bgFillRectangle(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry)
-{
-    gDPFillRectangle(gdl++, VI_SX(ulx), uly, VI_SX(lrx + 1), lry + 1);
-    return gdl;
-}
-
-
-/**
- * Unreferenced.
- */
-void bgFillRectangleWithSides(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry)
-{
-    bgFillRectangle(
-        bgFillRectangle(
-            bgFillRectangle(
-                bgFillRectangle(gdl,
-                ulx, uly, lrx, uly), /* full rectangle */
-                lrx, uly, lrx, lry), /* right side */
-                ulx, lry, lrx, lry), /* bottom */
-                ulx, uly, ulx, lry); /* top */
-}
-
-
-
-/**
  * Determines if two rectangles overlap, adjusting first argument to be the intersection.
  *
  * Returns 0 if no intersection (or edge equality), 1 otherwise.
@@ -1773,7 +1589,6 @@ void bbox2dCopy(struct bbox2d *a, struct bbox2d *b)
     (a->max).x = (b->max).x;
     (a->max).y = (b->max).y;
 }
-
 
 
 /**
@@ -1869,12 +1684,6 @@ f32 D_80044900 = 0;
 coord3d D_80044904 = {3.4028235e38f, 3.4028235e38f, 3.4028235e38f};
 //D:80044910
 coord3d D_80044910 = {-3.4028235e38f, -3.4028235e38f, -3.4028235e38f};
-//D:8004491C
-u32 D_8004491C = 0;
-//D:80044920
-u32 D_80044920 = 0;
-//D:80044924
-u32 D_80044924 = 0;
 
 #if defined(VERSION_EU)
 s32 eu_cdata_0x1f1c0 = 0;
@@ -2132,15 +1941,6 @@ u8 bgRoomIsVisible(s32 roomID)
 }
 
 
-/*
- * Return butflags1 (confirmed u8)
- */
-u8 bgRoomIsNextToVisible(s32 roomID)
-{
-    return g_BgRoomInfo[roomID].room_neighbor_to_rendered;
-}
-
-
 s32 bgGetPortalIndex(s32 portalID)
 {
     s32 i;
@@ -2154,7 +1954,6 @@ s32 bgGetPortalIndex(s32 portalID)
     }
     return 0;
 }
-
 
 
 u32 bgDecompress(u8* source, u8 *target)
@@ -2698,7 +2497,6 @@ void bgBuildRoomVtxBounds(s32 roomID)
 
     points = memaAlloc(ALIGN16(numpoints * sizeof(RoomVtxBatchBounds)));
 
-    if (ALIGN16(numpoints * sizeof(RoomVtxBatchBounds))) {}
 
     if (points == NULL)
     {
@@ -2803,7 +2601,6 @@ bool bgTestRayIntersectsBbox(coord3d *origin, coord3d *dir, s32 *bbox_min, s32 *
 {
     coord3d bbox_min_f;
     coord3d bbox_max_f;
-    u32 stack[4];
     f32 f0;
     f32 f0_2;
     f32 f2;
@@ -2976,7 +2773,6 @@ bool bgTestRayIntersectionInRoom(coord3d *from, coord3d *to, coord3d *dir, RoomV
     s32 vtxoff;
     BoundVec bboxMin;
     BoundVec bboxMax;
-    s32 *p;
     s32 i;
     s32 s2;
     s32 texnum;
@@ -3044,7 +2840,6 @@ bool bgTestRayIntersectionInRoom(coord3d *from, coord3d *to, coord3d *dir, RoomV
                         bboxMax.y = v->coord.y;
                     }
 
-                    if (roomnum);
 
                     if (v->coord.z < bboxMin.z)
                     {
@@ -3105,7 +2900,6 @@ bool bgTestRayIntersectionInRoom(coord3d *from, coord3d *to, coord3d *dir, RoomV
                             score = dist - 4;
                         }
 
-                        if (dist);
 
                         // Texture 0x4FD is used for the light shafts that come through windows in Archives.
                         if ((score < bestScore) && (texnum != 0x4FD))
@@ -3243,7 +3037,6 @@ bool bgTestRayIntersectionInRoom(coord3d *from, coord3d *to, coord3d *dir, RoomV
                                     score = dist - 4;
                                 }
 
-                                if ((score || dist));
 
                                 if ((score < bestScore) && (texnum != 0x4FD))
                                 {
@@ -3598,7 +3391,6 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, b
         return;
     }
  
-    if (depth);
  
 
     if (g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_DISABLED)
@@ -3608,7 +3400,6 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, b
  
     i = (s32) &D_800442FC[portalnum];
 
-    if (i);
  
     playerpos = playerGetPos();
     bgGetPortalPlane(portalnum, &metric);
@@ -3732,7 +3523,6 @@ s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s3
         return value;
     }
  
-    if (depth);
  
  
     if (g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_DISABLED)
@@ -3742,7 +3532,6 @@ s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s3
  
     i = (s32) &D_800442FC[portalnum];
 
-    if (i);
  
     playerpos = playerGetPos();
     bgGetPortalPlane(portalnum, &metric);
@@ -4249,7 +4038,6 @@ void bgDetermineVisibleRooms(void)
     bgResetPortalTable();
     bgRunVisCommands(g_BgVisCommands);
 
-    if (1);
 
     /**
      * If the level is Cradle, or has no portals, skip the portal occlusion culling algorithm. Just add every room in the player's
@@ -4300,7 +4088,6 @@ void bgDetermineVisibleRooms(void)
             // empty
         }
 
-        if (1);
 #else
         while (bgProcessNextQueuedPortal() != 0) 
         {
@@ -4348,52 +4135,6 @@ Gfx *bgScissorAndRenderRooms(Gfx *arg0)
     }
 
     return bgScissorCurrentPlayerViewDefault(bgRenderVisibleRooms(arg0));
-}
-
-
-/**
- * Unreferenced.
- */
-s32 bgGetRoomPortals(s32 room, s32 *portalnums, s32 max)
-{
-    bg_portal_data_entry *base;
-    bg_portal_data_entry *portal;
-    s32 count;
-    s32 i;
-    s32 offset;
-
-    count = 0;
-    i = 0;
-    base = g_BgPortals;
-
-    if (room);
-
-    if (base->offset_portal != NULL)
-    {
-        offset = 0;
-        portal = base;
-
-        do
-        {
-            if ((room == portal->connectedRoom1) || (room == portal->connectedRoom2))
-            {
-                portalnums[count] = i;
-                count++;
-            }
-
-            if (count >= max)
-            {
-                return count;
-            }
-
-            offset += 8;
-            i++;
-            portal = (bg_portal_data_entry *) (((u8 *) g_BgPortals) + offset);
-        }
-        while (portal->offset_portal != NULL);
-    }
-
-    return count;
 }
 
 
@@ -4449,7 +4190,6 @@ s32 bgGetConnectedRooms(s32 roomIndex, s32* list, s32 max)
                 return len;
             }
 end:
-            if (1);
         }
     }
 
@@ -4484,10 +4224,6 @@ bool bgRoomsSharePortal(s32 room1, s32 room2)
     }
     return FALSE;
 }
-
-
-
-
 
 
 /**
@@ -4680,7 +4416,6 @@ void bgGrowRoomBoundsToPortals(s32 roomID)
         }
     }
 
-    if (numupdated);
 }
 
 
@@ -4737,7 +4472,6 @@ void bgGetPortalPlane(s32 portalnum, f32 *out)
     out[3] = min;
     out[4] = max;
 
-    if (dot);
 }
 
 
@@ -4749,7 +4483,6 @@ void bgGetPortalPlane(s32 portalnum, f32 *out)
 s32 bgPortalIsVertical(s32 arg0)
 {
     struct PortalMetric metric;
-    s32 padding;
 
     bgGetPortalPlane(arg0, &metric);
 
@@ -4779,27 +4512,6 @@ f32 bgGetPortalThickness(s32 portalnum)
 
     return result;
 }
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F0B9A14.
- */
-u8 bgGetDataPortalsControlBytes2(s32 p)
-{
-    return g_BgPortals[p].controlbytes2;
-}
-
-
-
-
-
-
-
-
-
-
 
 
 /** Swaps the two rooms a portal connects. */
@@ -4863,7 +4575,6 @@ void bgOrderPortal(s32 portalnum) // canonical name
         }
     }
 
-    if (swapped);
 }
 
 
@@ -4900,10 +4611,6 @@ s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *arg2, coord3d *arg3)
 }
 
 
-
-
-
-
 /**
  * Toggles control bytes 1 lowest bit, based on toggle parameter.
  *
@@ -4915,23 +4622,6 @@ s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *arg2, coord3d *arg3)
 void bgToggleDataPortalsContrlBytes1Bit1(s32 portal, s32 toggle)
 {
     g_BgPortals[portal].controlbytes1 = (g_BgPortals[portal].controlbytes1 | 1) ^ (toggle != 0);
-}
-
-
-
-
-
-
-
-/**
- * Unreferenced.
- *
- * Address 0x7F0B9DFC.
- */
-void bgRemoved7F0B9DFC(s32 p)
-{
-
-    return;
 }
 
 
@@ -4960,7 +4650,6 @@ s32 bgFindPortalOnSegment(coord3d *arg0, coord3d *arg1)
                 if (count)
                 {
                 }
-                if (i);
                 bestportalnum = i;
                 bestthing = thisthing;
                 count++;
@@ -4977,7 +4666,6 @@ s32 bgSegmentCrossesPortal(s32 portalnum, coord3d *pos1, coord3d *pos2)
     f32 value1;
     f32 value2;
     coord3d diff;
-    s32 padding;
     s32 next;
     f32 tmp;
     coord3d edge;
@@ -5084,7 +4772,6 @@ void bgFindRoomsInBbox(coord3d *bbmin, coord3d *bbmax, s32 *room_list, s32 *coun
     s32 i;
     s32 j;
     s32 k;
-    s32 pad;
     s32 saved_count;
     coord3d portal_min;
     coord3d portal_max;
@@ -5142,7 +4829,6 @@ void bgFindRoomsInBbox(coord3d *bbmin, coord3d *bbmax, s32 *room_list, s32 *coun
                             portal_pts = g_BgPortals[portal_idx].offset_portal;
                         }
  
-                        if (portal_pts->numPoints);
                     }
                     
                 if (bgIsBboxOverlapping(&portal_min, &portal_max, &scaled_bbmin, &scaled_bbmax))
@@ -5200,44 +4886,6 @@ next_portal:
         saved_count = cur_count;
     }
     *count = cur_count;
-}
-
-
-/**
- * Scan the Gfx commands in the half-open range [start, end) and replace any
- * commands that match the first entry of a pair in the primary fog LUT
- * (DL_LUT_PRIMARY_ADDFOG). For each matching pair the command is replaced by
- * the LUT's second entry.
- *
- * This is used to patch display lists to add the "primary" fog variants.
- *
- * Parameters:
- *   start - pointer to first Gfx in the range to scan
- *   end   - pointer one-past-last Gfx in the range
- */
-void bgApplyPrimaryFogLUTEntries(Gfx *start, Gfx *end)
-{
-    Gfx *curGfx;
-    Gfx *lutPair;
-
-    curGfx = start;
-
-    while (curGfx < end)
-    {
-         /* DL_LUT_PRIMARY_ADDFOG is an array of (match,replacement) Gfx pairs,
-        terminated by an entry with words.w0 == 0. Each pair occupies two
-        Gfx entries, so we step by 2. */
-        for (lutPair = DL_LUT_PRIMARY_ADDFOG; lutPair->words.w0 != 0; lutPair += 2)
-        {
-            if ((lutPair->words.w0 == curGfx->words.w0) && (lutPair->words.w1 == curGfx->words.w1))
-            {
-                /* Replace current command with the LUT's replacement (the second entry). */
-                *curGfx = *(lutPair+1);
-            }
-        }
-
-        curGfx++;
-    }
 }
 
 

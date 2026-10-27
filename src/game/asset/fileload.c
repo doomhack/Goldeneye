@@ -42,7 +42,6 @@ void fileLoadFromRom(u8 *dst, s32 bufferSize, FileEntry *entry, FileInfo *info)
 {
     u8 *compressed;
     u8  huftBuf[0x2100];
-    s32 unused;
 
     if (bufferSize == 0)
     {
@@ -81,7 +80,6 @@ void fileInit(void)
         m_fileInfo[i].loadedSize = 0;
         m_fileInfo[i].allocatedSize = 0;
 
-        if (size);
     }
 }
 
@@ -134,7 +132,6 @@ void *fileLoadByNameToAddr(char *name, FileLoadMode mode, u8 *dst, s32 size)
 void *fileLoadToPool(s32 index, FileLoadMode mode, s32 size, u8 pool)
 {
     FileInfo *info = &m_fileInfo[index];
-    s32       unused;
     void     *data = NULL;
 
     if (mode == FILELOAD_KEEP_SPARE || mode == FILELOAD_TRIM || mode == FILELOAD_TRIM_2)
@@ -285,39 +282,3 @@ s32 fileGetIndex(char *name)
     return 0;
 }
 
-void removed_handle_filetable_entry(u32 index)
-{
-    return;
-}
-
-void removed_loop_handle_filetable_entries(void)
-{
-    int i;
-
-    for (i = 1; (i < m_fileCount); i++)
-    {
-        removed_handle_filetable_entry(i);
-    }
-}
-
-void removed_loop_filetableentries(void)
-{
-    int i;
-
-    for (i = 1; (i < m_fileCount); i++)
-    {
-        ;
-    }
-}
-
-void sub_GAME_7F0BD410(void)
-{
-    s32 i;
-
-    for (i = 1; i < m_fileCount; i++)
-    {
-        if (m_fileInfo[i].loadedSize)
-        {
-        }
-    }
-}

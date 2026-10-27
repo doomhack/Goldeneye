@@ -143,9 +143,6 @@ typedef struct AudioInfo_s {
     OSScTask task;
 } AudioInfo;
 
-// unknown purpose
-u32 D_800230F0 = 0;
-
 u32 g_AudioFrameCount = 0;
 
 u32 g_NextDMa = 0;
@@ -178,9 +175,6 @@ s32 CUSTOM_FX_PARAMS_N[CUSTOM_FX_SECTION_COUNT * CUSTOM_FX_SECTION_SIZE + 2] = {
 };
 
 s32 g_FirstTime = 1;
-
-/*bss needs fixing */
-s32 dword_CODE_bss_8005E4B0[2];
 
 /**
  * Address 8005E4B8.
@@ -229,11 +223,6 @@ OSTime g_StartTime;
  * Stores the time after primary processing is done.
  */
 OSTime g_EndTime;
-
-/**
- * Unknown / unused
- */
-char dword_CODE_bss_8005E4E8[0x30];
 
 /**
  * Address 8005e518.

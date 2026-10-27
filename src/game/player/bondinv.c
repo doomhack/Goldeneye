@@ -1123,59 +1123,6 @@ u16 *invGetNameByIndex(s32 index)
     return itemGetWatchText(weaponnum);
 }
 
-u16 *invGetLongNameByIndex(s32 index)
-{
-    InvItem      *item      = invGetItemByIndex(index);
-    ITEM_IDS      weaponnum = 0;
-    textoverride *override;
-
-    if (item)
-    {
-        if (item->type == INV_ITEM_PROP)
-        {
-            PropRecord *prop = item->type_inv_item.type_prop.prop;
-            override         = invGetOverrideForObj(prop->obj);
-
-            if (override)
-            {
-                if (override->longtext)
-                {
-                    return langGet(override->longtext);
-                }
-
-                weaponnum = override->weapon;
-            }
-        }
-        else if (item->type == INV_ITEM_WEAPON)
-        {
-            weaponnum = item->type_inv_item.type_weap.weapon;
-            override  = invGetOverrideForWeapon(weaponnum);
-
-            if (override && override->longtext)
-            {
-                return langGet(override->longtext);
-            }
-        }
-    }
-    else
-    {
-        if (g_CurrentPlayer->equipallguns)
-        {
-            if (index < ITEM_TANKSHELLS)
-            {
-                return itemGetChoiceText(index + 1);
-            }
-        }
-    }
-
-    if (item && invCounterOpPillName(weaponnum))
-    {
-        return (u16 *)invCounterOpPillName(weaponnum);
-    }
-
-    return itemGetChoiceText(weaponnum);
-}
-
 extern f32 itemGetEquipFov(s32 item);
 f32 invGetEquipFovForIndex(int index)
 {

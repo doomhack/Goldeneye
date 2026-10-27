@@ -919,7 +919,6 @@ Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
 */
 Gfx *explosionRenderPart(struct ExplosionPart *arg0, Gfx *gdl, struct coord3d *coord)
 {
-    s32 padding1;
     f32 f2;
 
     Vtx spA0;
@@ -1563,7 +1562,6 @@ void explosionInitFlyingParticles(coord3d *spawnpos, f32 spawn_rand_scale, f32 s
         g_FlyingParticlesBuffer[g_NextParticle].vertex_list[3].v.ob[2] = (s16) ((s32) ((((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 0.75f) + 0.75f) * spawn_tex_scale));
     }
 
-    if (1) {}
 
     unk08_upper = (randomGetNext() & 3) << 8;
     unk0A_upper = (randomGetNext() & 3) << 8;
@@ -2176,15 +2174,12 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
 */
 Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2)
 {
-    s32 padding1;
-    s32 padding2;
 
     s32 i; // var_s4
     s32 sp50;
     struct Scorch *sp4C;
     s32 sp48;
     union RenderPosView *render_pos;
-    s32 padding3;
 
     s16 var_s5;
     s32 impact_type;

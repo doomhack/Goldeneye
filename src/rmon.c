@@ -26,45 +26,6 @@ s32 rmonGetToken(void) {
         return TRUE;
 }
 
-/**
- * REMOVED
- * rmonStatus
- * returns the status of rmon
- */
-s32 rmonStatus(void) {
-        return -1;
-
-}
-
-
-
-
-
-/**
- * Removed
- * rmon7000CEC8
- * unknown function
- */
-void rmon7000CEC8(void) {
-}
-
-/**
- * Removed
- * rmon7000CED0
- * unknown function
- */
-void rmon7000CED0(void) {
-}
-
-/**
- * Removed
- * rmon7000CED8
- * unknown function
- */
-void rmon7000CED8(void) {
-}
-
-
 
 /**
  * Removed

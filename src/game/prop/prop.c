@@ -107,8 +107,6 @@ s32 g_OnScreenPropCount;
 
 //CODE.bss:80071DF8
 PropRecord *g_InteractProp;
-//CODE.bss:80071DFC
-u32 dword_CODE_bss_80071DFC;
 //CODE.bss:80071E00
 WeaponObjRecord* proxy_mine_table[30];
 
@@ -148,23 +146,13 @@ struct Model *g_CurrentProjectileModel;
 struct ModelNode * dword_CODE_bss_80075B74;
 //CODE.bss:80075B78
 coord3d flt_CODE_bss_80075B78;
-//CODE.bss:80075B84
-f32 flt_CODE_bss_80075B84;
 //CODE.bss:80075B88
 coord3d flt_CODE_bss_80075B88;
-//CODE.bss:80075B94
-f32 flt_CODE_bss_80075B94;
 
 /**
  * Address 0x80075B98.
 */
 MonitorRecord g_MonitorAnimController;
-
-/**
- * Unused / unreferenced (from padding / align?)
- * Address 0x80075C0C.
-*/
-s32 bss_80075C0C;
 
 /**
  * Address 0x80075C10.
@@ -173,21 +161,9 @@ struct object_animation_controller g_UnknownAnimController;
 
 /**
  * Unused / unreferenced (from padding / align?)
- * Address 0x80075C84.
-*/
-s32 bss_80075C84;
-
-/**
- * Unused / unreferenced (from padding / align?)
  * Address 0x80075C88.
 */
 struct object_animation_controller g_TaserAnimController;
-
-/**
- * Address 0x80075CFC.
-*/
-s32 bss_80075CFC;
-
 
 
 //CODE.bss:80075D00 - 80075D24
@@ -281,7 +257,6 @@ void propEnable(PropRecord *prop)
 {
     prop->flags |= PROPFLAG_ENABLED;
 }
-
 
 
 void propDisable(PropRecord *prop)
@@ -482,13 +457,9 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
     s32 flag;
     PropRecord **pp;
     PropRecord *prop;
-    s32 i;
     s32* rp;
-    s32 unused2;
     // propGetRoomIds() writes up to PROPRECORD_STAN_ROOM_LEN ids plus a -1 terminator; other callers use 8
     s32 sp48[8];
-    s32 unused3;
-    s32 unused4;
 
     if (bossGetStageNum() == LEVELID_CUBA)
     {
@@ -639,7 +610,6 @@ void propExecuteTickOperation(PropRecord *prop, TICKOP op)
 PropRecord *propFindForInteract(void)
 {
     PropRecord **ptr;
-    s32 i;
     bool checkmore = TRUE;
 
     g_InteractProp = NULL;
@@ -725,7 +695,6 @@ s32 propIsFarFromPlayers(PropRecord* prop)
 {
     PropRecord* player_prop;
     coord3d pos_diff;
-    s32 uninitialized; // needed for match
     s32 rc;
     s32 i;
     s32 player_count;
@@ -1112,9 +1081,6 @@ void propGetCollisionPolygon(PropRecord *prop, struct rect4f **polygon, s32 *edg
 }
 
 
-
-
-
 /**
  * Same as @see propGetCollisionPolygon, but throws away arg3 and arg4.
  *
@@ -1131,9 +1097,6 @@ void propGetCollisionPolygon2d(PropRecord *prop, struct rect4f **polygon, s32 *e
 
     propGetCollisionPolygon(prop, polygon, edges, &sp24, &sp20);
 }
-
-
-
 
 
 /**
@@ -1207,9 +1170,6 @@ s32 polygonContainsPoint(coord3d *point, struct rect4f *polygon, s32 edges)
 }
 
 
-
-
-
 /**
  * @param arg0: prop
  * @param collision_radius: out parameter, will be set to character width or player collision radius.
@@ -1236,8 +1196,6 @@ void propGetCollisionRadius(PropRecord *arg0, f32 *collision_radius, f32 *height
 }
 
 
-
-
 /**
  * Address 0x7F03CFE8.
 */
@@ -1257,10 +1215,6 @@ f32 propGetGroundY(PropRecord *arg0)
 }
 
 
-
-
-
-
 void propSetMoving(PropRecord *prop, bool unset) //#MATCH
 {
     if (prop->type == PROP_TYPE_CHR)
@@ -1276,7 +1230,6 @@ void propSetMoving(PropRecord *prop, bool unset) //#MATCH
         objSetMoving(prop, unset);
     }
 }
-
 
 
 /**
@@ -1570,8 +1523,6 @@ void autoaimUpdateTarget(void)
 
     if (best_prop != NULL)
     {
-        // Fake but needed for matching.
-        if (best_screen_aim.x > 1.0f);
 
         playerUpdateAutoAimY(best_prop, ((best_screen_aim.y - camGetScreenTop()) / (camGetScreenHeight() * 0.5f)) - 1.0f);
 
@@ -1670,7 +1621,6 @@ s32 propIsOfCdType(PropRecord* prop, s32 cdtypes) {
 }
 
 
-
 /* I think the arguments are lists of roomids but I'm not certain. This function checks if any item in the two lists match */
 s32 roomListsOverlap(s32* roomids1, s32* roomids2)
 {
@@ -1724,7 +1674,6 @@ s32 roomBlockAddProp(s16 propnum, s32 block)
 }
 
 
-
 /*
 * Address: 0x7F03DCB8
 * canonical name newblockforroom
@@ -1761,8 +1710,6 @@ s32 roomBlockAllocate(s32 room, s32 prevblock)
     }
     return -1;
 }
-
-
 
 
 /*
@@ -1803,8 +1750,6 @@ void propAddToRoom(PropRecord *prop, s16 room)
         }
     }
 }
-
-
 
 
 /*
@@ -1871,7 +1816,6 @@ void propRemoveFromRoom(PropRecord* prop, s16 room) {
 }
 
 
-
 void propUpdateRooms(PropRecord* p)
 {
     if (p->type == PROP_TYPE_CHR)
@@ -1882,7 +1826,6 @@ void propUpdateRooms(PropRecord* p)
         setupUpdateObjectRoomPosition((ObjectRecord* ) p->obj);
     }
 }
-
 
 
 // Duplicate of the below function with a small extension.
@@ -1905,8 +1848,6 @@ void propRemoveFromRooms(PropRecord *prop)
         prop->rooms[0] = -1; //hide room
     }
 }
-
-
 
 
 void propAddToRooms(PropRecord *prop)
@@ -1991,7 +1932,6 @@ void roomGetProps(s32 *rooms)
     s16 *writeptr = g_RoomPropsFound;
     s32 room;
     s32 i;
-    s32 j;
 
     room = *rooms;
 
@@ -2140,7 +2080,6 @@ void switchActivateLinkedDoors(PropRecord *prop)
 }
 
 
-
 bool doorIsPadlockFree(DoorRecord* door)
 {
     if (door->runtime_bitflags & RUNTIMEBITFLAG_PADLOCKEDDOOR)
@@ -2172,7 +2111,6 @@ bool objCanPickupFromSafe(ObjectRecord *obj)
 
         while (link)
         {
-            ObjectRecord *loopobj = link->item;
 
             if (obj == link->item && link->door && link->door->prop)
             {
@@ -2190,17 +2128,6 @@ bool objCanPickupFromSafe(ObjectRecord *obj)
 }
 
 
-void objUnusedGetFloorY(ObjectRecord* arg0)
-{
-    PropRecord* prop = arg0->prop;
-    stanGetPositionYValue(prop->stan, prop->pos.x, prop->pos.z);
-}
-
-f32 bboxGetXmin(ModelRoData_BoundingBoxRecord *modelBoundingBox)
-{
-    return modelBoundingBox->Bounds.xmin;
-}
-
 f32 bboxGetYmin(ModelRoData_BoundingBoxRecord *modelBoundingBox)
 {
     return modelBoundingBox->Bounds.ymin;
@@ -2214,11 +2141,6 @@ f32 bboxGetZmin(ModelRoData_BoundingBoxRecord *modelBoundingBox)
 {
     return modelBoundingBox->Bounds.zmin;
 }
-
-
-
-
-
 
 
 /**
@@ -2261,8 +2183,6 @@ f32 bboxRotatedMinX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-
-
 /**
  * Address 0x7F03E91C.
 */
@@ -2301,8 +2221,6 @@ f32 bboxRotatedMaxX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 
     return phi_f2;
 }
-
-
 
 
 /**
@@ -2345,7 +2263,6 @@ f32 bboxRotatedMinY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-
 /**
  * Address 0x7F03EA5C.
 */
@@ -2384,7 +2301,6 @@ f32 bboxRotatedMaxY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 
     return phi_f2;
 }
-
 
 
 /**
@@ -2427,7 +2343,6 @@ f32 bboxRotatedMinZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-
 /**
  * Address 0x7F03EB9C.
 */
@@ -2468,47 +2383,9 @@ f32 bboxRotatedMaxZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
 }
 
 
-
-
-/**
- * Unreferenced.
- * 0x7F03EC3C.
-*/
-void bboxGetCornerTowardZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1, struct coord3d *arg2)
-{
-    if (arg1->m[0][2] <= 0.0f)
-    {
-        arg2->f[0] = bbox->Bounds.xmin;
-    }
-    else
-    {
-        arg2->f[0] = bbox->Bounds.xmax;
-    }
-
-    if (arg1->m[1][2] <= 0.0f)
-    {
-        arg2->f[1] = bbox->Bounds.ymin;
-    }
-    else
-    {
-        arg2->f[1] = bbox->Bounds.ymax;
-    }
-
-    if (arg1->m[2][2] <= 0.0f)
-    {
-        arg2->f[2] = bbox->Bounds.zmin;
-    }
-    else
-    {
-        arg2->f[2] = bbox->Bounds.zmax;
-    }
-}
-
-
 void boxGetHull2d(f32 x1, f32 x2, f32 y1, f32 y2, f32 z1, f32 z2, Mtxf *m, struct rect4f *poly, struct collision_data *collision)
 {
     f64 pts[8][2];
-    f64 pad[1];
     s32 i;
     s32 lim;
     s32 minxi = 0;
@@ -2841,8 +2718,6 @@ void projectRectCornersTo2D(struct coord3d *center, struct coord2d *arg1, struct
 }
 
 
-
-
 /*
 * Address: 0x7F03FA44
 */
@@ -2868,11 +2743,8 @@ ObjectRecord *objFindAtPad(s32 PadId) {
 }
 
 
-
-
 ObjectRecord * objFindAtPos(struct coord3d *pos, s32 RoomID)
 {
-    s32 unused;
     rect4f * polygon;
     s32 edges;
     PropRecord * prop;

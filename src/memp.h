@@ -60,7 +60,6 @@ void mempSetPoolSizes(s32 sizes[8]);
 void *mempAlloc(u32 bytes, u8 pool);
 MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newSize, u8 pool);
 s32 mempGetFreeBytes(u8 pool);
-u32 mempAllocPacked(u32 sizeAndPool);
 void mempResetPool(u8 pool);
 void mempClosePool(u8 pool);
 

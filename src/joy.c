@@ -8,7 +8,6 @@
 #define JOY_CLAMP_OFFSET      60
 
 
-
 struct contdata {
     /* 0x000 */ struct contsample samples[CONTSAMPLE_LEN];
     /* 0x1E0 */ s32 curlast;
@@ -425,7 +424,6 @@ void joyPoll(void)
     s8 i_s8;
     s32 i;
     s32 index;
-    s32 padding[2];
 
     // Check if there are any disable requests
     if (osRecvMesg(&g_ContDisablePollSendMessageQueue, &msg, 0) == 0)
@@ -508,11 +506,6 @@ void joyPoll(void)
                         || g_ContBadReadsButtons[i] != 0
                         || g_ContBadReadsButtonsPressed[i] != 0)
                 {
-                    // These empty checks are required for matching.
-                    if (g_ContBadReadsStickX[i]);
-                    if (g_ContBadReadsStickY[i]);
-                    if (g_ContBadReadsButtons[i]);
-                    if (g_ContBadReadsButtonsPressed[i]);
 
                     g_ContBadReadsStickX[i] = 0;
                     g_ContBadReadsStickY[i] = 0;
@@ -624,24 +617,6 @@ u16 joyGetButtonsPressedThisFrame(s8 contpadnum, u16 mask)
     return g_ContDataPtr->buttonspressed[contpadnum] & mask;
 }
 
-void joy7000C430(s8 *bytes, u16 bitfield)
-{
-    s32 i;
-    for (i = 15; i >= 0; i--)
-    {
-        *bytes++ = (((((bitfield >> i) & 1) > 0) * 17) + 32);
-    }
-}
-
-void joy7000C470(void)
-{
-    s32 i = 0;
-    for (i = 0; i < joyGetControllerCount(); i++)
-    {
-        // Removed
-    }
-}
-
 /**
  * Reads controller joystick x value. JOY_CLAMP_OFFSET is first
  * added to the raw value, then it is clamped between JOY_CLAMP_MIN
@@ -703,66 +678,6 @@ s32 joyGetStickYInRange(s8 contpadnum, s32 rangemin, s32 rangemax)
 }
 
 /**
- * Reads controller joystick x value. JOY_CLAMP_OFFSET is first
- * added to the raw value, then it is clamped between JOY_CLAMP_MIN
- * and JOY_CLAMP_MAX. The value is then normalized against supplied range parameters.
- *
- * @param contpadnum controller to read.
- * @param rangemin min value of range to normalize against.
- * @param rangemax max value of range to normalize against.
- *
- * @return returns normalized value between range, as a float.
- */
-f32 joyGetStickXInRangef(s8 contpadnum, f32 rangemin, f32 rangemax)
-{
-    f32 range;
-    s32 stick_x = joyGetStickX(contpadnum) + JOY_CLAMP_OFFSET;
-
-    if (stick_x > JOY_CLAMP_MAX)
-    {
-        stick_x = JOY_CLAMP_MAX;
-    }
-
-    if (stick_x < JOY_CLAMP_MIN)
-    {
-        stick_x = JOY_CLAMP_MIN;
-    }
-
-    range = (rangemax - rangemin);
-    return (((stick_x / JOY_CLAMP_MAX_F) * range) + rangemin);
-}
-
-/**
- * Reads controller joystick y value. JOY_CLAMP_OFFSET is first
- * added to the raw value, then it is clamped between JOY_CLAMP_MIN
- * and JOY_CLAMP_MAX. The value is then normalized against supplied range parameters.
- *
- * @param contpadnum controller to read.
- * @param rangemin min value of range to normalize against.
- * @param rangemax max value of range to normalize against.
- *
- * @return returns normalized value between range, as a float.
- */
-f32 joyGetStickYInRangef(s8 contpadnum, f32 rangemin, f32 rangemax)
-{
-    f32 range;
-    s32 stick_y = joyGetStickY(contpadnum) + JOY_CLAMP_OFFSET;
-
-    if (stick_y > JOY_CLAMP_MAX)
-    {
-        stick_y = JOY_CLAMP_MAX;
-    }
-
-    if (stick_y < JOY_CLAMP_MIN)
-    {
-        stick_y = JOY_CLAMP_MIN;
-    }
-
-    range = (rangemax - rangemin);
-    return (((stick_y / JOY_CLAMP_MAX_F) * range) + rangemin);
-}
-
-/**
  * Disables os message polling.
  */
 void joyDisablePoll(void)
@@ -793,28 +708,6 @@ s32 joyGamePakProbe(void)
     joyEnablePoll();
 
     return type;
-}
-
-s32 joyGamePakRead(u8 address, u8 *buffer)
-{
-    s32 ret;
-
-    joyDisablePoll();
-    ret = osEepromRead(&g_ContInputMessageQueue, address, buffer);
-    joyEnablePoll();
-
-    return ret;
-}
-
-s32 joyGamePakWrite(u8 address, u8 *buffer)
-{
-    s32 ret;
-
-    joyDisablePoll();
-    ret = osEepromWrite(&g_ContInputMessageQueue, address, buffer);
-    joyEnablePoll();
-
-    return ret;
 }
 
 s32 joyGamePakLongRead(u8 address, u8 *buffer, s32 nbytes)
@@ -873,7 +766,3 @@ void joySetContDataIndex(s32 index)
     g_ContDataPtr = &g_ContData[index];
 }
 
-s32 joyGetContDataIndex(void)
-{
-    return (g_ContDataPtr - g_ContData);
-}

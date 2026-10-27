@@ -311,7 +311,6 @@ u8 *bloodDecodeFrame(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 *arg4)
     u8 var_a3;
     u8 temp_v0;
     u8 var_v1;
-    u8 next;
 
     temp_v0 = *arg0++;
     *arg4 = temp_v0;
@@ -377,52 +376,6 @@ void bloodPack4Bit(u8* arg0, u16 arg1, u8* arg2)
     {
         *arg2++ = (arg0[0] & 0xF0) | (arg0[1] >> 4);
         arg0 += 2;
-    }
-}
-
-
-// Address 0x7F01CCEC NTSC
-void bloodBoxBlur(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 arg4)
-{
-    s16 i;
-    s16 j;
-
-    u32 var_t0;
-    u32 var_t1;
-    
-    s16 var_t5;
-
-    s16 var_s4;
-
-    u8 tempt9;
-
-    for (i = 0; i < arg2; i++)
-    {
-        for (j = 0; j < arg1; j++)
-        {
-            var_t0 = 0;
-            var_t1 = 0;
-            
-            var_t5 = ((i - arg4) < 0) ? 0 : (i - arg4);
-
-            while ((((arg2 - 1) < (i + arg4)) ? (arg2 - 1) : (i + arg4)) >= var_t5)
-            {
-                var_s4 = ((j - arg4) < 0) ? 0 : (j - arg4);
-                
-                while ((((arg1 - 1) < (j + arg4)) ? (arg1 - 1) : (j + arg4)) >= var_s4)
-                {
-                    var_t1 += arg0[var_s4 + (var_t5 * arg1)];
-                    
-                    var_s4 += 1;
-                    var_t0 += 1;
-                }
-
-                var_t5 += 1;
-            }
-
-            tempt9  = (u8) ((u32) ((var_t0 >> 1) + var_t1) / var_t0);
-            arg3[j + (i * arg1)] = tempt9;
-        }
     }
 }
 

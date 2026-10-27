@@ -58,11 +58,6 @@ void gameInitData(void) {
 }
 
 
-char *gameGetCompileTime(void) {
-    return __DATE__" " __TIME__;
-}
-
-
 void null_init_main_2(void) {
     return;
 }
