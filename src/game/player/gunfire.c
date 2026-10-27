@@ -104,7 +104,7 @@ extern Weapon1PTransformKeyframe taserRaiseKeyframes[];
 extern struct ModelSkeleton skeleton_gun_kf7;
 
 void gunCreateBeamForHand(enum GUNHAND hand);
-void gunGetShotDir(coord3d *arg0, coord3d *arg1, enum GUNHAND arg2);
+void gunGetShotDir(coord3d *arg0, coord3d *result, enum GUNHAND arg2);
 void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *arg2, coord3d *velocity, Mtxf *arg4);
 s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
 void gunAnalyzeGEKey(void);

@@ -55,16 +55,16 @@ void objectivesReset(void)
     g_PictureCriteria = NULL;
 }
 
-void tagAdd(struct TagObjectRecord *arg0)
+void tagAdd(struct TagObjectRecord *tag)
 {
-    arg0->NextTag = g_Tags;
-    g_Tags = arg0;
+    tag->NextTag = g_Tags;
+    g_Tags = tag;
 }
 
-void briefingTextAdd(struct setup_objective_text *arg0)
+void briefingTextAdd(struct setup_objective_text *text)
 {
-    arg0->next = g_BriefingTexts;
-    g_BriefingTexts = arg0;
+    text->next = g_BriefingTexts;
+    g_BriefingTexts = text;
 }
 
 
@@ -78,23 +78,23 @@ void objectiveAdd(struct objective_entry* objective)
     }
 }
 
-void objectiveAddRoomEntered(struct criteria_roomentered *arg0)
+void objectiveAddRoomEntered(struct criteria_roomentered *criteria)
 {
-    arg0->next = g_RoomEnteredCriteria;
-    g_RoomEnteredCriteria = arg0;
+    criteria->next = g_RoomEnteredCriteria;
+    g_RoomEnteredCriteria = criteria;
 }
 
-void objectiveAddDeposit(struct criteria_deposit *arg0)
+void objectiveAddDeposit(struct criteria_deposit *criteria)
 {
-    arg0->next = g_DepositCriteria;
-    g_DepositCriteria = arg0;
+    criteria->next = g_DepositCriteria;
+    g_DepositCriteria = criteria;
 }
 
 
-void objectiveAddPicture(struct criteria_picture *arg0)
+void objectiveAddPicture(struct criteria_picture *criteria)
 {
-    arg0->next = g_PictureCriteria;
-    g_PictureCriteria = arg0;
+    criteria->next = g_PictureCriteria;
+    g_PictureCriteria = criteria;
 }
 
 
@@ -480,33 +480,33 @@ void objectivesTickStatusMessages(void)
 */
 void objectivesCheckRoomEntered(s32 roomid)
 {
-    struct criteria_roomentered *var_v0;
+    struct criteria_roomentered *criteria;
     struct PadRecord* setupPad;
     struct StandTile *stan;
     
-    var_v0 = g_RoomEnteredCriteria;
-    while (var_v0 != NULL)
+    criteria = g_RoomEnteredCriteria;
+    while (criteria != NULL)
     {
-        if (var_v0->status == 0)
+        if (criteria->status == 0)
         {
-            if (isNotBoundPad(var_v0->pad))
+            if (isNotBoundPad(criteria->pad))
             {
-                setupPad = &g_CurrentSetup.pads[var_v0->pad];
+                setupPad = &g_CurrentSetup.pads[criteria->pad];
             }
             else
             {
-                setupPad = (struct PadRecord*)&g_CurrentSetup.boundpads[getBoundPadNum((s32)var_v0->pad)];
+                setupPad = (struct PadRecord*)&g_CurrentSetup.boundpads[getBoundPadNum((s32)criteria->pad)];
             }
 
             stan = setupPad->stan;
 
             if ((stan != NULL) && (roomid == stan->room))
             {
-                var_v0->status = 1;
+                criteria->status = 1;
             }
         }
 
-        var_v0 = var_v0->next;
+        criteria = criteria->next;
     }
 }
 
@@ -554,10 +554,10 @@ void objectivesCheckPicture(void)
 {
     ObjectRecord *target_object;
     PropRecord *target_prop;
-    struct coord3d sp84;
-    struct coord2d sp7C;
-    struct coord2d sp74;
-    struct rectbbox sp64;
+    struct coord3d viewPos;
+    struct coord2d xExtent;
+    struct coord2d yExtent;
+    struct rectbbox screenRect;
     struct criteria_picture *criteria;
 
     criteria = g_PictureCriteria;
@@ -575,19 +575,19 @@ void objectivesCheckPicture(void)
                     && (target_prop->flags & PROPFLAG_ONSCREEN)
                     && (target_prop->zDepth >= 0.0f) // draw/render distance
                     && (objIsHealthy(target_object) != 0)
-                    && (objGetOnscreenRenderBounds(target_object->prop, &sp84, &sp7C, &sp74) != 0))
+                    && (objGetOnscreenRenderBounds(target_object->prop, &viewPos, &xExtent, &yExtent) != 0))
                 {
-                    projectRectCornersTo2D(&sp84, &sp7C, &sp74, &sp64.right, &sp64.left);
+                    projectRectCornersTo2D(&viewPos, &xExtent, &yExtent, &screenRect.right, &screenRect.left);
                     
-                    if (camGetScreenLeft() < sp64.right)
+                    if (camGetScreenLeft() < screenRect.right)
                     {
-                        if ((sp64.right < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenLeft() < sp64.left))
+                        if ((screenRect.right < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenLeft() < screenRect.left))
                         {
-                            if ((sp64.left < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenTop() < sp64.down))
+                            if ((screenRect.left < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenTop() < screenRect.down))
                             {
-                                if ((sp64.down < (camGetScreenTop() + camGetScreenHeight())) && (camGetScreenTop() < sp64.up))
+                                if ((screenRect.down < (camGetScreenTop() + camGetScreenHeight())) && (camGetScreenTop() < screenRect.up))
                                 {
-                                    if (sp64.up < (camGetScreenTop() + camGetScreenHeight()))
+                                    if (screenRect.up < (camGetScreenTop() + camGetScreenHeight()))
                                     {
                                         criteria->flag = 1;
                                     }

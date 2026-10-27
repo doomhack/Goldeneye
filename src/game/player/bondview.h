@@ -1150,11 +1150,11 @@ void playerResetLife(void);
 void playerStartNewLife(void);
 
 
-void playerUpdate(s8 arg0, s8 arg1, u16 arg2);
+void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 
 #if defined(BUGFIX_R1)
 #define HUDMESSAGEBOTTOM hudmsgBottomShowText
-void hudmsgBottomShow(char *string, s32 arg1, s32 arg2);
+void hudmsgBottomShow(char *string, s32 font, s32 arg2);
 void hudmsgBottomShowText(char *string);
 #else
 // VERSION_US
@@ -1163,9 +1163,9 @@ void hudmsgBottomShow(char *string);
 void hudmsgSetFonts(s32 arg0, s32 arg1);
 #endif
 
-Gfx * camSetupFrame(Gfx *arg0);
+Gfx * camSetupFrame(Gfx *gdl);
 s32 playerPressedActivate(void);
-Gfx * hudRender(Gfx *arg0);
+Gfx * hudRender(Gfx *gdl);
 bool camIsPosInScreen(coord3d *vec_scale, f32 norm_scale);
 bool camIsPosInScreenBox(coord3d *, f32, struct bbox2d *);
 s32 lvGetMissionTime60(void);
@@ -1200,7 +1200,7 @@ void currentPlayerSetFadeColour(s32 r, s32 g, s32 b, f32 frac);
 void currentPlayerSetFadeFrac(f32 maxfadetime, f32 frac);
 f32 playerGetStanHeight(struct player *player);
 void playerTakeDamage(f32, f32, f32, s32, s32);
-void playerTakeDamageFromAngle(f32 arg0, f32 rad, s32 arg2, s32 arg3);
+void playerTakeDamageFromAngle(f32 damage_amount, f32 rad, s32 playerid, s32 affects_armor);
 int playerIsShowingDamage(void);
 int playerIsShowingHealth(void);
 u8 playerGetRoom(void);
@@ -1213,7 +1213,7 @@ void hudmsgsSetOn(s32 flag);
 void hudmsgsSetOff(s32 flags);
 Gfx* camLoadWorldToViewMtx(Gfx* gdl);
 Mtxf *camGetViewToWorldMtxf(void);
-void camMtxsToRoomSpace(Mtxf *arg0, s32 arg1);
+void camMtxsToRoomSpace(Mtxf *matrices, s32 count);
 void currentPlayerStartChrFade(f32 duration60, f32 targetfrac);
 s32 playerGetVisibleToGuards(void);
 u8 playerGetInvincible(void);
@@ -1248,7 +1248,7 @@ f32 watchGetOpenFrac(void);
 struct coord3d *playerGetPrevPos(void);
 struct PropRecord *playerGetTank(void);
 s32 playerChooseSpawnPad(void);
-void playerResetCollision(struct PlayerBond* arg0, struct coord3d *arg1, struct StandTile *arg2);
+void playerResetCollision(struct PlayerBond* col, struct coord3d *pos, struct StandTile *stan);
 void playerSetWorldScale(f32);
 void hudmsgTopReset(void);
 Mtxf *camGetProjectionMtxf(void);

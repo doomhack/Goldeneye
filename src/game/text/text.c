@@ -335,9 +335,9 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
  * Draw individual characters with an outline.
  */
 Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, 
-                       /*sp70*/ struct fontchar *prevchar, struct font *font, s32 clipX, s32 clipY, 
-                       /*sp80*/u32 textColour, u32 outlineColour, s32 clipWidth, s32 clipHeight, 
-                       /*sp90*/ s32 yOffset)
+                       struct fontchar *prevchar, struct font *font, s32 clipX, s32 clipY, 
+                       u32 textColour, u32 outlineColour, s32 clipWidth, s32 clipHeight, 
+                       s32 yOffset)
 {
     s32 offsetX;
     s32 offsetY;

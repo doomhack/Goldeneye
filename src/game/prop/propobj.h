@@ -65,7 +65,7 @@ extern ExplosionDetailsRecord object_explosion_details[];
  * @param arg0: Prop for tank
  * @param arg1: maybe flags
  */
-void                 objSetMoving(struct PropRecord *arg0, s32 arg1);
+void                 objSetMoving(struct PropRecord *prop, s32 arg1);
 
 void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop);
 
@@ -81,23 +81,23 @@ void                 weaponSetGunfireVisible(PropRecord *prop, s32 firing);
 s32                  sndVolumeForPosDefault(coord3d *pos); //getVolume?
 ObjectRecord        *weaponCreateFromModel(PROP modelnum, s32 weaponid);
 void                 objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS, s32 playernum);
-void                 chrobjMaybeDetonateObjectIfFlags(ObjectRecord *arg0, f32 arg1, coord3d *arg2, ITEM_IDS item, s32 arg4);
+void                 chrobjMaybeDetonateObjectIfFlags(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS item, s32 owner);
 void                 objEnsureProjectile(PropRecord *);
 void                 projectileSetSticky(PropRecord *);
 void                 chrobjCollisionRelated(ObjectRecord *);
 void                 objChangeShading(ObjectRecord *, coord3d *, Mtxf *, StandTile *);
-s32                  projectileTestPropBoundingSphere(coord3d *arg0, coord3d *arg1, coord3d *arg2, f32 arg3);
-void                 objGetCollisionBounds(PropRecord *arg0, struct rect4f **arg1, s32 *arg2, f32 *arg3, f32 *arg4);
+s32                  projectileTestPropBoundingSphere(coord3d *zeropos, coord3d *pos, coord3d *vec, f32 scale);
+void                 objGetCollisionBounds(PropRecord *prop, struct rect4f **polygon, s32 *edges, f32 *top, f32 *bottom);
 void                 doorActivate(DoorRecord *door, DOORSTATE State);
 bool                 posIsInFrontOfDoor(PropRecord *prop, DoorRecord *door);
-void                 doorsChooseSwingDirection(PropRecord *arg0, DoorRecord *arg1);
-Gfx                 *chrobjRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2);
+void                 doorsChooseSwingDirection(PropRecord *chrprop, DoorRecord *door);
+Gfx                 *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 arg2);
 
 f32                  chrobjFogVisRangeRelated(PropRecord *prop, f32 size);
 s32                  propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox);
 
 // note: rgba to rgb
-void                 shadingLerp(rgba_s32 *arg0, s32 arg1, rgba_f32 *arg2);
+void                 shadingLerp(rgba_s32 *dest, s32 enable, rgba_f32 *src);
 void                 remoteMinesDetonate(void);
 
 void                 objDetach(PropRecord *prop);
@@ -136,21 +136,21 @@ Embedment           *embedmentAllocate(void);
 void                 objDetach(PropRecord *prop);
 void                 objUpdateThrowKnifeSound(ObjectRecord *obj);
 s32                  chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct rect4f *arg2, s32 arg3);
-s32                  chrobjTestPointPolygonCollision(struct coord3d *arg0, f32 arg1, struct rect4f *arg2, s32 arg3);
-void                 objDetonateRecursive(PropRecord *arg0, f32 arg1, struct coord3d *arg2, s32 arg3, s32 owner);
+s32                  chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius, struct rect4f *polygon, s32 edges);
+void                 objDetonateRecursive(PropRecord *prop, f32 damage, struct coord3d *pos, s32 arg3, s32 owner);
 struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *arg0);
 void                 alarmStopSound(void);
 void                 alarmsReset(void);
-bool                 padBoundsContainPoint(coord3d* pos, f32 arg1, BoundPadRecord *boundpads);
+bool                 padBoundsContainPoint(coord3d* pos, f32 radius, BoundPadRecord *boundpads);
 void                 glassCreateShards(f32*, f32*, f32*, f32*, f32, f32, f32, f32, f32, f32);
 void                 modelGetXYExtents(Model *model, f32 *arg1, f32 *arg2, f32 *arg3, f32 *arg4);
-s32                  vehicleFindBlockingProp(struct PropRecord *arg0);
+s32                  vehicleFindBlockingProp(struct PropRecord *argProp);
 PropRecord*          weaponInitWithModelDef(struct ObjectRecord* arg0, ModelFileHeader* arg1);
 void                 chrSetupHeldWeapon(WeaponObjRecord* arg0, ChrRecord* arg1);
 void                 playerDropInventory(void);
 void                 objsFreeDeformedVertices(void);
 f32                  bondviewGetPlayerPitchRadians(void);
-TICKOP               objTickPlayer(struct PropRecord* arg0);
+TICKOP               objTickPlayer(struct PropRecord* prop);
 TICKOP               weaponTickPlayer(struct PropRecord* arg0);
 void                 doorShatterGlass(DoorRecord *door);
 bool                 posIsOnScreen(PropRecord *prop, coord3d *pos, f32 arg2, bool arg3);

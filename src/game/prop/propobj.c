@@ -217,10 +217,10 @@ void chrobjSndCreatePostEvent(ALSoundState *state, coord3d *pos, f32 low, f32 hi
 void proxmineRemove(WeaponObjRecord* proxy);
 void proxmineAdd(WeaponObjRecord* proxy);
 s32 objMove(struct ObjectRecord *arg0, f32 *arg1, struct coord3d *arg2, struct coord3d *arg3, s32 arg4, s32 arg5);
-s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *arg1, coord3d *arg2, coord3d *arg3, s32 arg4);
+s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *arg2, coord3d *arg3, s32 arg4);
 s32 projectileMove(struct ObjectRecord *arg0, coord3d *arg1, coord3d *arg2, coord3d *arg3, s32 arg4, s32 arg5);
-void objSettle(struct ObjectRecord *arg0, struct coord3d *arg1);
-void doorsUpdatePositions(struct DoorRecord *arg0);
+void objSettle(struct ObjectRecord *obj, struct coord3d *arg1);
+void doorsUpdatePositions(struct DoorRecord *door);
 void doorGetMtx(DoorRecord *door, Mtxf *rhs);
 void objBreakCCTVGlass(ObjectRecord *obj);
 void monitorSetImage(MonitorRecord *mon, void *unk88);

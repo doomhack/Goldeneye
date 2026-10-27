@@ -229,13 +229,13 @@ Gfx *gunbarrelSetupDraw(Gfx *gdl) {
    return gdl;
 }
 
-s32 bloodNextFrame(s32 arg0) {
-   s8 sp37;
-   u8* temp_v0_2;
+s32 bloodNextFrame(s32 mode) {
+   s8 edge;
+   u8* decoded;
 
-   if (arg0 == 0) {
+   if (mode == 0) {
       g_CurrentPlayer->bloodImgCur = g_BloodAnimData;
-   } else if (arg0 == 1) {
+   } else if (mode == 1) {
       if (g_CurrentPlayer->bloodImgNxt < &g_BloodAnimDataEnd) {
          g_CurrentPlayer->bloodImgCur = g_CurrentPlayer->bloodImgNxt;
       }
@@ -243,9 +243,9 @@ s32 bloodNextFrame(s32 arg0) {
 
    g_CurrentPlayer->bloodImgIdx = (1 - g_CurrentPlayer->bloodImgIdx);
    g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx] = dynAllocate(BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT);
-   temp_v0_2 = dynAllocate(BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT);
-   g_CurrentPlayer->bloodImgNxt = bloodDecodeFrame(g_CurrentPlayer->bloodImgCur, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, temp_v0_2, &sp37);
-   bloodImgTranspose(temp_v0_2, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
+   decoded = dynAllocate(BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT);
+   g_CurrentPlayer->bloodImgNxt = bloodDecodeFrame(g_CurrentPlayer->bloodImgCur, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, decoded, &edge);
+   bloodImgTranspose(decoded, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
    bloodSmoothDownRight(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
    bloodSmoothUpLeft(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
    bloodPack4Bit(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
@@ -304,110 +304,110 @@ Gfx *bloodRenderRedFill(Gfx *gdl) {
 }
 
 
-u8 *bloodDecodeFrame(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 *arg4)
+u8 *bloodDecodeFrame(u8 *src, u8 width, u8 height, u8 *dst, u8 *edgeOut)
 {
-    u8 var_a2;
-    u8 var_a3;
-    u8 temp_v0;
-    u8 var_v1;
+    u8 value;
+    u8 filled;
+    u8 edge;
+    u8 run;
 
-    temp_v0 = *arg0++;
-    *arg4 = temp_v0;
+    edge = *src++;
+    *edgeOut = edge;
 
     do
     {
         s32 unused;
-        var_v1 = *arg0++;
-        unused = var_v1;
+        run = *src++;
+        unused = run;
         
-        var_a2 = 0xFF;
+        value = 0xFF;
 
-        if (var_v1 == 0xFF)
+        if (run == 0xFF)
         {
-            var_a3 = 0;
-            for (var_v1 = *arg0++; var_v1 != 0xFF; var_a2 ^= 0xff, var_v1 = *arg0++ )
+            filled = 0;
+            for (run = *src++; run != 0xFF; value ^= 0xff, run = *src++ )
             {
-                var_a3 += var_v1;
+                filled += run;
 
-                while (var_v1-- > 0)
+                while (run-- > 0)
                 {
-                    *arg3++ = var_a2;
+                    *dst++ = value;
                 }
             }
             
-            while (var_a3++ < arg1)
+            while (filled++ < width)
             {
-                *arg3++ = var_a2;
+                *dst++ = value;
             }
             
-            arg2--;
+            height--;
         }
         else
         {
-            var_a3 = temp_v0 + (var_v1 & 0x1f);
-            var_v1 = (var_v1 >> 5) + 1;
-            arg2 -= var_v1;
+            filled = edge + (run & 0x1f);
+            run = (run >> 5) + 1;
+            height -= run;
             
             do
             {
-                var_a2 = var_a3;
-                while (var_a2-- > 0)
+                value = filled;
+                while (value-- > 0)
                 {
-                    *arg3++ = 0xff;
+                    *dst++ = 0xff;
                 }
                 
-                var_a2 = arg1 - var_a3;
-                while (var_a2-- > 0)
+                value = width - filled;
+                while (value-- > 0)
                 {
-                    *arg3++ = 0;
+                    *dst++ = 0;
                 }
-            } while (--var_v1 > 0);
+            } while (--run > 0);
         }
-    } while (arg2 > 0);
+    } while (height > 0);
     
-    return arg0;
+    return src;
 }
 
 
-void bloodPack4Bit(u8* arg0, u16 arg1, u8* arg2)
+void bloodPack4Bit(u8* src, u16 count, u8* dst)
 {
-    while (arg1-- > 0)
+    while (count-- > 0)
     {
-        *arg2++ = (arg0[0] & 0xF0) | (arg0[1] >> 4);
-        arg0 += 2;
+        *dst++ = (src[0] & 0xF0) | (src[1] >> 4);
+        src += 2;
     }
 }
 
 
 // Averages 4 pixel data, ending on "second" row.
-void bloodSmoothUpLeft(u8 *arg0, s32 arg1, u8 *arg2)
+void bloodSmoothUpLeft(u8 *src, s32 height, u8 *dst)
 {
     s32 i;
     s32 j;
 
-    arg0 += 0x61;
-    arg2 += 0x61;
+    src += 0x61;
+    dst += 0x61;
 
-    for (i = 1; i < arg1 - 1; i++, arg2 += 2, arg0 += 2) {
-        for (j = 1; j < 0x5f; j++, arg2++, arg0++) {
-            *arg2 = (arg0[-1] + arg0[0] + arg0[-0x61] + arg0[-0x60] + 2) >> 2;
+    for (i = 1; i < height - 1; i++, dst += 2, src += 2) {
+        for (j = 1; j < 0x5f; j++, dst++, src++) {
+            *dst = (src[-1] + src[0] + src[-0x61] + src[-0x60] + 2) >> 2;
         }
     }
 }
 
 
 // Averages 4 pixel data, ending on "first" row.
-void bloodSmoothDownRight(u8 *arg0, s32 arg1, u8 *arg2)
+void bloodSmoothDownRight(u8 *src, s32 height, u8 *dst)
 {
     s32 i;
     s32 j;
 
-    arg0 += 0x61;
-    arg2 += 0x61;
+    src += 0x61;
+    dst += 0x61;
 
-    for (i = 1; i < arg1 - 1; i++, arg2 += 2, arg0 += 2) {
-        for (j = 1; j < 0x5f; j++, arg2++, arg0++) {
-            *arg2 = (arg0[1] + arg0[0] + arg0[0x61] + arg0[0x60] + 2) >> 2;
+    for (i = 1; i < height - 1; i++, dst += 2, src += 2) {
+        for (j = 1; j < 0x5f; j++, dst++, src++) {
+            *dst = (src[1] + src[0] + src[0x61] + src[0x60] + 2) >> 2;
         }
     }
 }
@@ -420,32 +420,32 @@ void bloodImgTranspose(u8 *src, s32 srcwidth, s32 srcheight, u8 *dst)
 {
     s32 pixelcount;
     u32 rowend;
-    u32 var_t2;
-    u8 *var_t0;
-    u8 *var_v1;
-    u32 t1;
+    u32 nextRowEnd;
+    u8 *out;
+    u8 *in;
+    u32 end;
 
     pixelcount = srcwidth * srcheight;
-    var_v1 = src;
-    var_t0 = dst;
-    t1 = src + pixelcount;
-    var_t2 = src + srcwidth;
+    in = src;
+    out = dst;
+    end = src + pixelcount;
+    nextRowEnd = src + srcwidth;
 
     do
     {
-        rowend = var_t2;
+        rowend = nextRowEnd;
 
         do
         {
-            *var_t0 = *var_v1++;
-            var_t2 += 1;
-            var_t0 += srcheight;
+            *out = *in++;
+            nextRowEnd += 1;
+            out += srcheight;
             
-        } while ((u32) var_v1 < rowend);
+        } while ((u32) in < rowend);
 
-        var_t0 = (var_t0 - (pixelcount)) + 1;
+        out = (out - (pixelcount)) + 1;
         
-    } while ((u32) var_v1 < (u32) t1);
+    } while ((u32) in < (u32) end);
 }
 
 

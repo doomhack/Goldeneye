@@ -139,7 +139,7 @@ struct coord2d g_DefaultAutoAimCoord = { 0 };
 
 // forward declarations
 
-Gfx *propRender(Gfx *arg0, PropRecord *arg1, s32 withalpha);
+Gfx *propRender(Gfx *gdl, PropRecord *prop, s32 withalpha);
 void shotFireHand(s32 hand);
 void shotFireBullet(s32);
 void shotPunch(s32 hand, s32 item_id);

@@ -145,9 +145,9 @@ s32 lvGetDrawWorld(void)
     return g_LvDrawWorld;
 }
 
-void lvSetDrawWorld(s32 arg0)
+void lvSetDrawWorld(s32 enable)
 {
-    g_LvDrawWorld = arg0;
+    g_LvDrawWorld = enable;
 }
 
 void lvInit(void)
@@ -799,16 +799,16 @@ void lvTick(void)
 
         if (g_MpTime > 0)
         {
-            s32 current_time;
-            s32 sp180;
+            s32 oldtime;
+            s32 newtime;
             s32 i;
-            current_time = g_MissionTime;
-            sp180 = g_ClockTimer + g_MissionTime;
+            oldtime = g_MissionTime;
+            newtime = g_ClockTimer + g_MissionTime;
 
 #ifdef VERSION_EU
-            if ((g_MissionTime < (g_MpTime - 0xBB8)) && (sp180 >= (g_MpTime - 0xBB8)))
+            if ((g_MissionTime < (g_MpTime - 0xBB8)) && (newtime >= (g_MpTime - 0xBB8)))
 #else
-            if ((g_MissionTime < (g_MpTime - 0xE10)) && (sp180 >= (g_MpTime - 0xE10)))
+            if ((g_MissionTime < (g_MpTime - 0xE10)) && (newtime >= (g_MpTime - 0xE10)))
 #endif
             {
                 for (i = 0; i < getPlayerCount(); i++)
@@ -824,9 +824,9 @@ void lvTick(void)
 
             // sound alarm when game is about to end (10 seconds before end)
 #ifdef VERSION_EU
-            if ((sp180 >= (g_MpTime - 0x1F4)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
+            if ((newtime >= (g_MpTime - 0x1F4)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
 #else
-            if ((sp180 >= (g_MpTime - 0x258)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
+            if ((newtime >= (g_MpTime - 0x258)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
 #endif
             {
                 sndPlaySfx(g_musicSfxBufferPtr, ALARM1_SFX, &g_MpSoundStateRelated);
@@ -841,7 +841,7 @@ void lvTick(void)
                 }
             }
 
-            if ((current_time < g_MpTime) && (sp180 >= g_MpTime))
+            if ((oldtime < g_MpTime) && (newtime >= g_MpTime))
             {
                 mpMenuCalculateAwards(FALSE);
             }
@@ -850,16 +850,16 @@ void lvTick(void)
         // when playing with a kill limit, g_MpPoint is not zero
         if ((g_MpPoint > 0) && (g_ClockTimer != 0))
         {
-            s32 var_player_count1;
+            s32 playercount;
             s32 i;
             s32 mp_player_currently_in_dying_animation;
             s32 mp_players_over_point_limit;
 
-            var_player_count1 = getPlayerCount();
+            playercount = getPlayerCount();
             mp_player_currently_in_dying_animation = 0;
             mp_players_over_point_limit = 0;
 
-            for (i = 0; i < var_player_count1; i++)
+            for (i = 0; i < playercount; i++)
             {
                 if (g_playerPointers[i]->bonddead != FALSE &&
                     (g_playerPointers[i]->redbloodfinished == FALSE || g_playerPointers[i]->deathanimfinished == FALSE || g_playerPointers[i]->colourfadetimemax60 >= 0.0f))
@@ -1053,8 +1053,8 @@ void lvTick(void)
 void lvPlayerTick(void)
 {
     s8 local_player_number;
-    f32 temp_f0;
-    f32 temp_f2;
+    f32 dx;
+    f32 dz;
 
     local_player_number = playerGetCurrentNum();
     cheatTick();
@@ -1062,10 +1062,10 @@ void lvPlayerTick(void)
     playerUpdate(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
     mpMenuTick();
 
-    temp_f0 = g_CurrentPlayer->prop->pos.x - g_CurrentPlayer->bondprevpos.x;
-    temp_f2 = g_CurrentPlayer->prop->pos.z - g_CurrentPlayer->bondprevpos.z;
+    dx = g_CurrentPlayer->prop->pos.x - g_CurrentPlayer->bondprevpos.x;
+    dz = g_CurrentPlayer->prop->pos.z - g_CurrentPlayer->bondprevpos.z;
 
-    g_playerPerm->distance_traveled += sqrtf((temp_f0 * temp_f0) + (temp_f2 * temp_f2));
+    g_playerPerm->distance_traveled += sqrtf((dx * dx) + (dz * dz));
 
     if (frontGetMpScenario() == SCENARIO_TLD)
     {
@@ -1141,14 +1141,14 @@ void lvStageUnload(void)
 }
 
 
-void lvSetControlsLocked(s32 arg0)
+void lvSetControlsLocked(s32 locked)
 {
-    if ((arg0 != 0) && (g_ControlsLockedFlag == 0))
+    if ((locked != 0) && (g_ControlsLockedFlag == 0))
     {
         joyRumblePakStop();
     }
 
-    g_ControlsLockedFlag = arg0;
+    g_ControlsLockedFlag = locked;
 }
 
 
@@ -1164,20 +1164,20 @@ DIFFICULTY lvGetDifficulty(void)
 }
 
 
-void lvSetDifficulty(DIFFICULTY arg0)
+void lvSetDifficulty(DIFFICULTY difficulty)
 {
-    g_SelectedDifficulty = arg0;
+    g_SelectedDifficulty = difficulty;
 }
 
-void lvSetMpTimeLimit(s32 arg0)
+void lvSetMpTimeLimit(s32 time)
 {
-    g_MpTime = arg0;
+    g_MpTime = time;
 }
 
 
-void lvSetMpPointLimit(s32 arg0)
+void lvSetMpPointLimit(s32 points)
 {
-    g_MpPoint = arg0;
+    g_MpPoint = points;
 }
 
 

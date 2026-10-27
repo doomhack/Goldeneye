@@ -57,7 +57,7 @@
 
 // forward declarations
 
-void chrUpdateAimProperties( ChrRecord *arg0);
+void chrUpdateAimProperties( ChrRecord *self);
 void chrUpdateAnim( ChrRecord *chr, s32 tickamount);
 f32  file007Health(void);
 

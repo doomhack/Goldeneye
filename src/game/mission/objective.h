@@ -29,11 +29,11 @@ void objectivesFinish(void);
 
 void objectivesReset(void);
 
-void tagAdd(struct TagObjectRecord *arg0);
-void briefingTextAdd(struct setup_objective_text *arg0);
-void objectiveAddRoomEntered(struct criteria_roomentered *arg0);
-void objectiveAddDeposit(struct criteria_deposit *arg0);
-void objectiveAddPicture(struct criteria_picture *arg0);
+void tagAdd(struct TagObjectRecord *tag);
+void briefingTextAdd(struct setup_objective_text *text);
+void objectiveAddRoomEntered(struct criteria_roomentered *criteria);
+void objectiveAddDeposit(struct criteria_deposit *criteria);
+void objectiveAddPicture(struct criteria_picture *criteria);
 void objectiveAdd(struct objective_entry* objective);
 
 #endif

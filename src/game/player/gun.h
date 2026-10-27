@@ -337,9 +337,9 @@ u8 weaponGetSoundRate(ITEM_IDS item);
 
 void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_index);
 void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index);
-void gunLaunchProjectile(ObjectRecord *arg0, coord3d *arg1,  StandTile *arg2, Mtxf *arg3, coord3d *arg4, Mtxf *arg5,  PropRecord *owner);
+void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos,  StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *arg5,  PropRecord *owner);
 void beamCreate(struct BeamRecord *arg0, ITEM_IDS item, coord3d *arg2, coord3d *arg3);
-void gunGetAimRay(coord3d *arg0, coord3d *arg1);
+void gunGetAimRay(coord3d *zeropos, coord3d *vec);
 
 void statsAddHit(ITEM_IDS item, SHOT_REGISTER shot_register);
 s8 gunGetFiringStatus(GUNHAND hand);
@@ -353,7 +353,7 @@ void gunFreeRocket(enum GUNHAND hand);
 void gunSetTracerTarget(coord3d* pos);
 
 void gunCalcBlend(enum GUNHAND handnum);
-void gunUpdateSway(f32 arg0, f32 arg1, f32 speed_verta, f32 speed_theta);
+void gunUpdateSway(f32 breathing, f32 arg1, f32 speed_verta, f32 speed_theta);
 void gunSetPullback(f32 param_1);
 
 s32 statsGetHits(SHOT_REGISTER shot_register);
@@ -374,13 +374,13 @@ f32 gunGetZoomFov(void);
 void gunCycleForward(void);
 void gunCycleBackward(void);
 void gunUpdateCrosshairManual(f32 turn_x, f32 turn_y);
-void gunTickGameplay(s32 arg0);
+void gunTickGameplay(s32 triggerOn);
 u8 weaponGetPenetration(ITEM_IDS item);
 void shotPlayGlassSound(coord3d* pos);
 
 Gfx *gunDrawHudString(Gfx *gdl, s8 *text, s32 x, s32 halign, s32 y, s32 valign, bool outline);
 Gfx *gunDrawHudInteger(Gfx *gdl, s32 value, s32 x, s32 halign, s32 y, s32 valign, bool outline);
-void beamTick(BeamRecord* arg0);
+void beamTick(BeamRecord* beam);
 Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions* buttonpositions, s8* contpadnum);
 Gfx *watchRenderControllerOpaque(Gfx *gdl, Mtxf *basemtx, bool animatebuttons, WatchContButtonPositions *buttonpositions, s8 *contpadnum);
 

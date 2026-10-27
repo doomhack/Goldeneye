@@ -38,9 +38,9 @@ Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_colo
 s32 mpIsPaused(void);
 
 void mpMenuCalculateAwards(bool gameoverdelay);
-s32 mpGetPlayerPoints(s32 arg0);
+s32 mpGetPlayerPoints(s32 playernum);
 void mpMenuStopPlay(void);
-Gfx * mpMenuRender(Gfx *arg0);
+Gfx * mpMenuRender(Gfx *gdl);
 s32 mpMenuCanPlayerAct(void);
 s32 mpMenuShowGauges(void);
 

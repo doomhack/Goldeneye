@@ -29,10 +29,10 @@ typedef struct s_moving_bullet_spark
 #endif
 
 extern Vtx g_SparkVtxTemplate;
-s_bullet_spark *sparkCreate(coord3d *arg0, s32 arg1, f32 arg2, s16 arg3);
-void sparkInit(s_bullet_spark *arg0, coord3d *arg1, s32 arg2, f32 arg3, s16 arg4);
-void sparksRender(Gfx *arg0, s32 zbufferMode);
-void sparksRenderAll(Gfx *arg0, s32 zbufferMode);
+s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room);
+void sparkInit(s_bullet_spark *spark, coord3d *pos, s32 type, f32 size, s16 room);
+void sparksRender(Gfx *gdl, s32 zbufferMode);
+void sparksRenderAll(Gfx *gdl, s32 zbufferMode);
 void sparksResetAll(void);
 void sparksTick(void);
 void sparksTickAll(void);

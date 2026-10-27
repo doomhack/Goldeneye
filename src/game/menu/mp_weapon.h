@@ -75,7 +75,7 @@ extern struct s_mp_weapon_set mp_weapon_set_golden[];
 void mpWeaponSetNext(void);
 u16* mpWeaponSetGetName(void);
 struct s_mp_weapon_set* mpWeaponSetGetItems(void);
-void mpWeaponSetSelect(s32 arg0);
+void mpWeaponSetSelect(s32 setNUM);
 s32 mpWeaponSetGetIndex(void);
 
 #endif

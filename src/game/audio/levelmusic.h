@@ -6,7 +6,7 @@
 
 void             levelMusicResetSlots(void);
 void             levelMusicStart(s32 stagenum);
-void             levelMusicSetState(MUSICSTATE arg0);
+void             levelMusicSetState(MUSICSTATE state);
 MUSICSTATE levelMusicGetState(void);
 void             levelMusicTick(void);
 void             levelMusicSlotStop(s32 slot);
@@ -15,7 +15,7 @@ void levelMusicResume(void);
 u16 levelMusicGetVolume(void);
 s32 levelMusicGetAmbientTrack(s32 stageID);
 s32 levelMusicGetXTrack(s32 stageID);
-s32 levelMusicGetTrack(s32 arg0);
+s32 levelMusicGetTrack(s32 stage);
 void levelStopTankSfx(void);
 
 #endif

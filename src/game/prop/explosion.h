@@ -160,14 +160,14 @@ extern s32 g_NextImpact;
 
 
 s32 explosionSmokeTick(PropRecord *arg0);
-Gfx * explosionRenderFlyingParticles(Gfx *arg0);
+Gfx * explosionRenderFlyingParticles(Gfx *gdl);
 Gfx * explosionCallRenderBulletImpactOnProp(Gfx *arg0);
 Gfx *explosionRenderScorchBuffer(Gfx *arg0);
 Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha);
-Gfx *explosionRenderPropSmoke(PropRecord *arg0, Gfx *arg1, s32 withalpha);
+Gfx *explosionRenderPropSmoke(PropRecord *arg0, Gfx *gdl, s32 withalpha);
 
 
-Gfx *explosionRenderBulletImpactOnProp(Gfx *arg0, PropRecord *arg1, s32 arg2);
+Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2);
 
 void explosionCreateSmoke(coord3d *pos, StandTile *stan, s16 smoke_type, u8 *rooms, s32 flags);
 void explosionUpdateFlyingParticles(void);
