@@ -3152,15 +3152,15 @@ static void frontCoopSetupStep(s32 row, s32 step)
             break;
 
         case COOP_SETUP_ROW_SPLIT:
-            set_split_stacked_setting(!get_split_stacked_setting());
+            optionsSetSplitStacked(!optionsGetSplitStacked());
             break;
 
         case COOP_SETUP_ROW_HIRES:
-            set_hires_setting(!get_hires_setting());
+            optionsSetHiRes(!optionsGetHiRes());
             break;
 
         case COOP_SETUP_ROW_DRAWDIST:
-            set_draw_near_setting(!get_draw_near_setting());
+            optionsSetDrawNear(!optionsGetDrawNear());
             break;
     }
 }
@@ -3353,13 +3353,13 @@ Gfx *frontCoopSetupRender(Gfx *DL)
                 text = (u8 *)langGet(g_MpControlStyles[g_MpControlStyle[PLAYER_2]].text_preset);
                 break;
             case COOP_SETUP_ROW_SPLIT:
-                text = (u8 *)(get_split_stacked_setting() ? "Stacked\n" : "Side by Side\n");
+                text = (u8 *)(optionsGetSplitStacked() ? "Stacked\n" : "Side by Side\n");
                 break;
             case COOP_SETUP_ROW_HIRES:
-                text = (u8 *)(get_hires_setting() ? "On\n" : "Off\n");
+                text = (u8 *)(optionsGetHiRes() ? "On\n" : "Off\n");
                 break;
             case COOP_SETUP_ROW_DRAWDIST:
-                text = (u8 *)(get_draw_near_setting() ? "Near\n" : "Full\n");
+                text = (u8 *)(optionsGetDrawNear() ? "Near\n" : "Full\n");
                 break;
         }
 
@@ -4910,18 +4910,18 @@ static void frontMpStepDisplaySetting(void)
 {
     if (g_MpPlayerCount != 2)
     {
-        set_hires_setting(!get_hires_setting());
+        optionsSetHiRes(!optionsGetHiRes());
         return;
     }
 
-    if (!get_split_stacked_setting())
+    if (!optionsGetSplitStacked())
     {
-        set_split_stacked_setting(TRUE);
+        optionsSetSplitStacked(TRUE);
         return;
     }
 
-    set_split_stacked_setting(FALSE);
-    set_hires_setting(!get_hires_setting());
+    optionsSetSplitStacked(FALSE);
+    optionsSetHiRes(!optionsGetHiRes());
 }
 
 // Address 0x7F010848 NTSC
@@ -5403,15 +5403,15 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   DL = frontPrintText(DL,&x,&y,text,ptrFontZurichBoldChars,ptrFontZurichBold,0xff,viGetX(),viGetY(),0,0);
 
   if (g_MpPlayerCount == 2) {
-    if (get_split_stacked_setting()) {
-      text = (u8 *)(get_hires_setting() ? "Stacked, Hi-Res\n" : "Stacked\n");
+    if (optionsGetSplitStacked()) {
+      text = (u8 *)(optionsGetHiRes() ? "Stacked, Hi-Res\n" : "Stacked\n");
     }
     else {
-      text = (u8 *)(get_hires_setting() ? "Side by Side, Hi-Res\n" : "Side by Side\n");
+      text = (u8 *)(optionsGetHiRes() ? "Side by Side, Hi-Res\n" : "Side by Side\n");
     }
   }
   else {
-    text = (u8 *)(get_hires_setting() ? "Hi-Res\n" : "Normal\n");
+    text = (u8 *)(optionsGetHiRes() ? "Hi-Res\n" : "Normal\n");
   }
   x = 0xa0;
   y = 0x12d;
@@ -7348,7 +7348,7 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
                 DL = frontPrintText(DL, &sp8C, &sp88, (s8*)text, ptrFontZurichBoldChars, ptrFontZurichBold, var_s2, viGetX(), viGetY(), 0, 0);
             }
 
-            var_fp += sub_GAME_7F0AC0E8(arg2);
+            var_fp += textCountLines(arg2);
             sp98++;
         }
     }

@@ -362,7 +362,7 @@ Gfx *watchRenderBackground(Gfx *gdl, struct WatchVertex *watch_verts, s32 unused
 /**
  * Setup watch rectangles in the usual manner.
  * This is called to setup the screen select rectangles, but note
- * that the colors are overwritten in set_page_rectangle_colors.
+ * that the colors are overwritten in watchMenuSetTabColours.
  * Also used to initialize watch static.
  * @param vtx: Pointer to first vertex in a {@code struct WatchRectangle}.
  * @param startx:

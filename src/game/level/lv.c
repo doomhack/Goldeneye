@@ -412,7 +412,7 @@ void lvStageLoad(s32 stage)
 
         // HACK: This method call is wrong. The function takes one argument, but the asm calls it without
         // any arguments here.
-        init_watch_at_start_of_stage();
+        watchMenuReset();
 
         sub_GAME_7F0C11FC(stage);
 
@@ -476,7 +476,7 @@ void lvStageLoad(s32 stage)
     }
 
     objectivesReset();
-    mpwatchUnpauseGame();
+    mpMenuUnpause();
     vtxstoreReset();
     jointListInit();
     modelmgrResetSlotCounts();
@@ -905,7 +905,7 @@ Gfx* lvRender(Gfx* DL)
                 DL = bondviewRemoved7F08BCB8(DL);
             }
 
-            DL = mp_watch_menu_display(DL);
+            DL = mpMenuRender(DL);
             coopTankEndPlayer(FALSE);
         }
 
@@ -953,7 +953,7 @@ Gfx* lvRender(Gfx* DL)
         gDPPipeSync(DL++);
     }
 
-    if ((g_CurrentStageToLoad != LEVELID_TITLE) && get_fps_setting())
+    if ((g_CurrentStageToLoad != LEVELID_TITLE) && optionsGetShowFps())
     {
         DL = lvRenderFpsCounter(DL);
     }
@@ -1088,7 +1088,7 @@ void lvTick(void)
     {
         g_ClockTimer = 0;
     }
-    else if (checkGamePaused() != 0)
+    else if (mpIsPaused() != 0)
     {
         g_ClockTimer = 0;
     }
@@ -1199,7 +1199,7 @@ void lvTick(void)
 
             if ((current_time < g_MpTime) && (sp180 >= g_MpTime))
             {
-                mpCalculateAwards(FALSE);
+                mpMenuCalculateAwards(FALSE);
             }
         }
 
@@ -1223,7 +1223,7 @@ void lvTick(void)
                     mp_player_currently_in_dying_animation++;
                 }
 
-                if (get_points_for_mp_player(i) >= g_MpPoint)
+                if (mpGetPlayerPoints(i) >= g_MpPoint)
                 {
                     // counts players over kill limit
                     mp_players_over_point_limit++;
@@ -1235,12 +1235,12 @@ void lvTick(void)
                 if (mp_player_currently_in_dying_animation == 0)
                 {
                     // end game after dying players are finished dying
-                    mpCalculateAwards(FALSE);
+                    mpMenuCalculateAwards(FALSE);
                 }
                 else
                 {
                     // this will cause the game to freeze players, to stop them from moving once game ended
-                    mpwatchSetStopPlayFlag();
+                    mpMenuStopPlay();
                 }
             }
         }
@@ -1295,11 +1295,11 @@ void lvTick(void)
 
             if (fully_dead_total >= player_count - 1)
             {
-                mpCalculateAwards(FALSE);
+                mpMenuCalculateAwards(FALSE);
             }
             else if (killed_total >= player_count - 1)
             {
-                mpwatchSetStopPlayFlag();
+                mpMenuStopPlay();
             }
         } // end YOLT
 
@@ -1647,7 +1647,7 @@ void lvPlayerTick(void)
                 playerUpdate(joyGetStickX(local_player_number), joyGetStickY(local_player_number), 0);
             }
 
-            mpwatchMenuTick();
+            mpMenuTick();
         }
         break;
     }

@@ -275,7 +275,7 @@ s32 getViewCount(void)
  */
 s32 coopSplitSideBySide(void)
 {
-    return (getViewCount() == 2) && !get_split_stacked_setting();
+    return (getViewCount() == 2) && !optionsGetSplitStacked();
 }
 
 /**

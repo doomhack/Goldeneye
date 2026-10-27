@@ -333,7 +333,7 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *arg0)
     s_FogLastEnvironment = arg0;
     farfog = arg0->Visibility.FarFog;
 
-    if (g_CoopMode && get_draw_near_setting())
+    if (g_CoopMode && optionsGetDrawNear())
     {
         farfog *= COOP_NEAR_DRAW_SCALE;
     }

@@ -1194,71 +1194,71 @@ static u16 fileGetCurrentPlayerOptions(void)
 
     bits = 0;
 
-    if (get_cur_player_look_vertical_inverted())
+    if (optionsGetLookInverted())
     {
         bits = OPTION_INVERTLOOK;
     }
 
-    if (cur_player_get_autoaim())
+    if (optionsGetAutoAim())
     {
         bits |= OPTION_AUTOAIM;
     }
 
-    if (cur_player_get_aim_control())
+    if (optionsGetAimControl())
     {
         bits |= OPTION_AIMCONTROL;
     }
 
-    if (cur_player_get_sight_onscreen_control())
+    if (optionsGetSightOnScreen())
     {
         bits |= OPTION_SIGHTONSCREEN;
     }
 
-    if (cur_player_get_lookahead())
+    if (optionsGetLookAhead())
     {
         bits |= OPTION_LOOKAHEAD;
     }
 
-    if (cur_player_get_ammo_onscreen_setting())
+    if (optionsGetAmmoOnScreen())
     {
         bits |= OPTION_DISPLAYAMMO;
     }
 
-    if (cur_player_get_screen_setting() == SCREEN_SIZE_WIDESCREEN)
+    if (optionsGetScreenSize() == SCREEN_SIZE_WIDESCREEN)
     {
         bits |= OPTION_SCREENWIDE;
     }
-    else if (cur_player_get_screen_setting() == SCREEN_SIZE_CINEMA)
+    else if (optionsGetScreenSize() == SCREEN_SIZE_CINEMA)
     {
         bits |= OPTION_SCREENCINEMA;
     }
 
-    if (get_screen_ratio() != SCREEN_RATIO_NORMAL)
+    if (optionsGetScreenRatio() != SCREEN_RATIO_NORMAL)
     {
         bits |= OPTION_SCREENRATIO;
     }
 
-    if (get_hires_setting())
+    if (optionsGetHiRes())
     {
         bits |= OPTION_HIRES;
     }
 
-    if (!get_split_stacked_setting())
+    if (!optionsGetSplitStacked())
     {
         bits |= OPTION_SPLITSIDE;
     }
 
-    if (get_fps_setting())
+    if (optionsGetShowFps())
     {
         bits |= OPTION_FPS;
     }
 
-    if (get_draw_near_setting())
+    if (optionsGetDrawNear())
     {
         bits |= OPTION_DRAWNEAR;
     }
 
-    temp = ((u16) (cur_player_get_control_type() << 8)) & OPTION_CONTROLTYPE;
+    temp = ((u16) (optionsGetControlStyle() << 8)) & OPTION_CONTROLTYPE;
     return bits | temp;
 }
 
@@ -1268,24 +1268,24 @@ static u16 fileGetCurrentPlayerOptions(void)
  */
 static void fileSetCurrentPlayerOptions(u16 options)
 {
-    set_cur_player_look_vertical_inverted((options & OPTION_INVERTLOOK) != FALSE);
-    cur_player_set_autoaim((options & OPTION_AUTOAIM) != FALSE);
-    cur_player_set_aim_control((options & OPTION_AIMCONTROL) != FALSE);
-    cur_player_set_sight_onscreen_control((options & OPTION_SIGHTONSCREEN) != FALSE);
-    cur_player_set_lookahead((options & OPTION_LOOKAHEAD) != FALSE);
-    cur_player_set_ammo_onscreen_setting((options & OPTION_DISPLAYAMMO) != FALSE);
+    optionsSetLookInverted((options & OPTION_INVERTLOOK) != FALSE);
+    optionsSetAutoAim((options & OPTION_AUTOAIM) != FALSE);
+    optionsSetAimControl((options & OPTION_AIMCONTROL) != FALSE);
+    optionsSetSightOnScreen((options & OPTION_SIGHTONSCREEN) != FALSE);
+    optionsSetLookAhead((options & OPTION_LOOKAHEAD) != FALSE);
+    optionsSetAmmoOnScreen((options & OPTION_DISPLAYAMMO) != FALSE);
 
     if (options & OPTION_SCREENCINEMA)
     {
-        cur_player_set_screen_setting(SCREEN_SIZE_CINEMA);
+        optionsSetScreenSize(SCREEN_SIZE_CINEMA);
     }
     else if (options & OPTION_SCREENWIDE)
     {
-        cur_player_set_screen_setting(SCREEN_SIZE_WIDESCREEN);
+        optionsSetScreenSize(SCREEN_SIZE_WIDESCREEN);
     }
     else
     {
-        cur_player_set_screen_setting(SCREEN_SIZE_FULLSCREEN);
+        optionsSetScreenSize(SCREEN_SIZE_FULLSCREEN);
     }
 }
 
@@ -1296,8 +1296,8 @@ static void fileSetCurrentPlayerOptions(u16 options)
  */
 void fileSaveSettingsForFolder(save_data *save)
 {
-    save->music_vol = get_mTrack2Vol() >> 7;
-    save->sfx_vol = (call_sndGetSfxSlotFirstNaturalVolume() >> 7);
+    save->music_vol = optionsGetMusicVolume() >> 7;
+    save->sfx_vol = (optionsGetFxVolume() >> 7);
     save->options = fileGetCurrentPlayerOptions();
 }
 
@@ -1330,26 +1330,26 @@ void fileLoadSettingsForFolder(u32 folder)
     save = fileGetSaveForFoldernum(folder);
     if (save)
     {
-        set_mTrack2Vol((save->music_vol << 7) | (save->music_vol >> 1));
-        sub_GAME_7F0A91A0((save->sfx_vol << 7) | (save->sfx_vol >> 1));
+        optionsSetMusicVolume((save->music_vol << 7) | (save->music_vol >> 1));
+        optionsSetFxVolume((save->sfx_vol << 7) | (save->sfx_vol >> 1));
 
         options = save->options;
 
         if (!isMpGame())
         {
-            cur_player_set_control_type(((s32) (options & OPTION_CONTROLTYPE) >> 8) & 0xFFFF);
+            optionsSetControlStyle(((s32) (options & OPTION_CONTROLTYPE) >> 8) & 0xFFFF);
         }
         else
         {
-            cur_player_set_control_type(CONTROLLER_CONFIG_HONEY);
+            optionsSetControlStyle(CONTROLLER_CONFIG_HONEY);
         }
 
         fileSetCurrentPlayerOptions(options);
-        set_screen_ratio((options & OPTION_SCREENRATIO) != FALSE);
-        set_hires_setting((options & OPTION_HIRES) != FALSE);
-        set_split_stacked_setting((options & OPTION_SPLITSIDE) == FALSE);
-        set_fps_setting((options & OPTION_FPS) != FALSE);
-        set_draw_near_setting((options & OPTION_DRAWNEAR) != FALSE);
+        optionsSetScreenRatio((options & OPTION_SCREENRATIO) != FALSE);
+        optionsSetHiRes((options & OPTION_HIRES) != FALSE);
+        optionsSetSplitStacked((options & OPTION_SPLITSIDE) == FALSE);
+        optionsSetShowFps((options & OPTION_FPS) != FALSE);
+        optionsSetDrawNear((options & OPTION_DRAWNEAR) != FALSE);
     }
 }
 
@@ -1434,7 +1434,7 @@ void fileCoopStorePartnerOptions(void)
 {
     s_CoopPartnerOptions = fileGetCurrentPlayerOptions();
     s_CoopPartnerOptionsSet = TRUE;
-    g_MpControlStyle[PLAYER_2] = cur_player_get_control_type();
+    g_MpControlStyle[PLAYER_2] = optionsGetControlStyle();
     fileCoopSavePartnerSettings();
 }
 
@@ -1469,17 +1469,17 @@ void fileSaveDisplaySettingsForFolder(s32 folder)
             return;
         }
 
-        if (get_hires_setting())
+        if (optionsGetHiRes())
         {
             bits |= OPTION_HIRES;
         }
 
-        if (!get_split_stacked_setting())
+        if (!optionsGetSplitStacked())
         {
             bits |= OPTION_SPLITSIDE;
         }
 
-        if (get_draw_near_setting())
+        if (optionsGetDrawNear())
         {
             bits |= OPTION_DRAWNEAR;
         }

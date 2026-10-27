@@ -122,54 +122,54 @@ struct game_options {
     u32 current_value;
 };
 
-extern struct game_options game_options_entries[];
+extern struct game_options g_Options[];
 
-void reset_controller_options_index(void);
+void watchMenuResetControlRow(void);
 
-void reset_game_options_index(void);
+void watchMenuResetOptionsRow(void);
 
-void zero_D_800409A4(void);
+void watchMenuResetAbort(void);
 
-f32 watchWrapAroundPI(f32 arg0);
+f32 watchMenuWrapAngle(f32 arg0);
 
-f32 sub_GAME_7F0A95C4(f32 param_1, f32 param_2, f32 param_3);
+f32 watchMenuApproach(f32 param_1, f32 param_2, f32 param_3);
 
-SCREEN_RATIO_OPTION get_screen_ratio(void);
+SCREEN_RATIO_OPTION optionsGetScreenRatio(void);
 
-void set_screen_ratio(SCREEN_RATIO_OPTION ratio_option);
-u32 get_hires_setting(void);
-void set_hires_setting(u32 enabled);
-u32 get_split_stacked_setting(void);
-void set_split_stacked_setting(u32 stacked);
-u32 get_fps_setting(void);
-void set_fps_setting(u32 enabled);
-u32 get_draw_near_setting(void);
-void set_draw_near_setting(u32 near);
+void optionsSetScreenRatio(SCREEN_RATIO_OPTION ratio_option);
+u32 optionsGetHiRes(void);
+void optionsSetHiRes(u32 enabled);
+u32 optionsGetSplitStacked(void);
+void optionsSetSplitStacked(u32 stacked);
+u32 optionsGetShowFps(void);
+void optionsSetShowFps(u32 enabled);
+u32 optionsGetDrawNear(void);
+void optionsSetDrawNear(u32 near);
 void optionsCoopUsePlayer(s32 player);
 void optionsCoopCopyFromPlayer1(void);
 
-s32 cur_player_get_autoaim(void);
-u32 cur_player_get_lookahead(void);
-void cur_player_set_autoaim(u32 param_1);
-int cur_player_get_control_type(void);
-u32 cur_player_get_sight_onscreen_control(void);
-u32 cur_player_get_ammo_onscreen_setting(void);
-u32 cur_player_get_aim_control(void);
-u32 cur_player_get_screen_setting(void);
-u16 call_sndGetSfxSlotFirstNaturalVolume(void);
-u32 get_cur_player_look_vertical_inverted(void);
-u16 get_mTrack2Vol(void);
-void set_mTrack2Vol(u16 param_1);
-void sub_GAME_7F0A91A0(u16 arg0);
-void cur_player_set_control_type(int type);
+s32 optionsGetAutoAim(void);
+u32 optionsGetLookAhead(void);
+void optionsSetAutoAim(u32 param_1);
+int optionsGetControlStyle(void);
+u32 optionsGetSightOnScreen(void);
+u32 optionsGetAmmoOnScreen(void);
+u32 optionsGetAimControl(void);
+u32 optionsGetScreenSize(void);
+u16 optionsGetFxVolume(void);
+u32 optionsGetLookInverted(void);
+u16 optionsGetMusicVolume(void);
+void optionsSetMusicVolume(u16 param_1);
+void optionsSetFxVolume(u16 arg0);
+void optionsSetControlStyle(int type);
 
 // Do not declare a public prototype for this method. lvStageLoad is expecting
 // this to be defined with no arguments, but the actual method is defined with
 // one argument.
-//void init_watch_at_start_of_stage(int a);
+//void watchMenuReset(int a);
 
-Gfx *draw_watch_current_page(Gfx *gdl, Mtx *arg1, s32 watch_transitioning);
-void sub_GAME_7F0A69A8(void);
+Gfx *watchMenuRender(Gfx *gdl, Mtx *arg1, s32 watch_transitioning);
+void watchMenuOpen(void);
 
 #endif
 
