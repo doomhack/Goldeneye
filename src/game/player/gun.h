@@ -306,7 +306,7 @@ u32 weaponHasFlag(ITEM_IDS item, u32 mask);
 
 void gunUpdateAndFireBothHands(void);
 
-f32 gunGetReloadDipDepth(s32 param_1);
+f32 gunGetReloadDipDepth(s32 item);
 
 f32 gunGetDualOffset(GUNHAND hand);
 

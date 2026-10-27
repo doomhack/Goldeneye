@@ -985,7 +985,7 @@ void mpMenuFormatRank(char *buffer, s32 playernum)
 }
 
 
-s32 mpMenuShowRank(s32 param_1)
+s32 mpMenuShowRank(s32 isWinner)
 {
     switch(frontGetMpScenario())
     {
@@ -998,13 +998,13 @@ s32 mpMenuShowRank(s32 param_1)
         case SCENARIO_2v1:
             return 1;
         case SCENARIO_YOLT:
-            return param_1 ? 0 : 1;
+            return isWinner ? 0 : 1;
         default:
         do {} while (1);
     }
 }
 
-s32 mpMenuShowScore(s32 param_1)
+s32 mpMenuShowScore(s32 unused)
 {
     switch(frontGetMpScenario())
     {

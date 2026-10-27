@@ -16,7 +16,7 @@ struct s_darkened_light {
     u16 vtx_index;
 };
 
-void lightFixtureEntryEnd(Gfx *param_1);
+void lightFixtureEntryEnd(Gfx *DL);
 bool lightIsLightTexture(s32 imageID);
 void lightFixtureEntryBegin(Gfx *DL);
 

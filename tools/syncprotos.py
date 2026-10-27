@@ -4,14 +4,14 @@
   tools/syncprotos.py [DIR...]     (default: src/game)
 
 Only prototype parameters still named like decompiler output (arg0, sp34, temp_v0, var_a1,
-phi_s0) are changed, and only when the definition's parameter has a real name. Types are
-left alone. Prototypes are looked for in every .c and .h file under the directories.
+phi_s0, param_1) are changed, and only when the definition's parameter has a real name.
+Types are left alone. Prototypes are looked for in every .c and .h file under the directories.
 """
 import os
 import re
 import sys
 
-DECOMP = re.compile(r'^(sp[0-9A-F][0-9A-Fa-f]*|temp_\w+|arg\d+|var_\w+|phi_\w+)$')
+DECOMP = re.compile(r'^(sp[0-9A-F][0-9A-Fa-f]*|sp[0-9a-f]*[0-9][0-9a-f]*|temp_\w+|arg\d+|var_\w+|phi_\w+|param_\d+|new_var\d*)$')
 DEF = re.compile(r'^[A-Za-z_][\w \t\*]*?\b(\w+)\s*\(([^;{]*?)\)\s*\{', re.M | re.S)
 PROTO = re.compile(r'^([ \t]*[A-Za-z_][\w \t\*]*?\b)(\w+)(\s*\()([^;{()]*(?:\([^()]*\)[^;{()]*)*)(\)\s*;)', re.M | re.S)
 

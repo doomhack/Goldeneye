@@ -351,19 +351,19 @@ void modelFreeAnimSlot(Model *objinstance)
 }
 
 
-void modelSetLodDisabled(s32 param_1) {
-  g_ModelLodDisabled = param_1;
+void modelSetLodDisabled(s32 disabled) {
+  g_ModelLodDisabled = disabled;
 }
 
 
 // PD: modelSetLodScale
-void modelSetLodScale(f32 param_1) {
-  g_ModelLodScale = param_1;
+void modelSetLodScale(f32 scale) {
+  g_ModelLodScale = scale;
 }
 
 
-void modelSetVtxAllocator(s32 param_1) {
-  g_ModelVtxAllocator = param_1;
+void modelSetVtxAllocator(Vertex *(*allocator)(s32 numvertices)) {
+  g_ModelVtxAllocator = allocator;
 }
 
 
@@ -4059,7 +4059,7 @@ void modelRenderNodeDl(ModelRenderData *renderdata, Model *model, ModelNode *nod
 }
 
 
-void modelRenderNodeOp20(ModelRenderData *param_1, struct Model *param_2, struct ModelNode *param_3)
+void modelRenderNodeOp20(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
     return;
 }
@@ -4151,7 +4151,7 @@ void modelSelectTexture(ModelRenderData *renderdata, struct sImageTableEntry *tc
 }
 
 
-void modelRenderNodeOp05(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
+void modelRenderNodeOp05(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
     return;
 }
@@ -4404,13 +4404,13 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
 }
 
 
-void modelRenderNodeOp06(s32 param_1,struct Model *param_2, struct ModelNode *param_3)
+void modelRenderNodeOp06(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
     return;
 }
 
 
-void modelRenderNodeOp11(s32 param_1,struct Model *param_2,struct ModelNode *param_3)
+void modelRenderNodeOp11(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
     return;
 }
@@ -4701,7 +4701,7 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
 }
 
 
-void modelRenderNodeOp17(Gfx *param_1,struct Model *param_2, struct ModelNode *param_3)
+void modelRenderNodeOp17(ModelRenderData *renderdata, Model *model, ModelNode *node)
 {
     return;
 }

@@ -130,9 +130,9 @@ void watchMenuResetOptionsRow(void);
 
 void watchMenuResetAbort(void);
 
-f32 watchMenuWrapAngle(f32 arg0);
+f32 watchMenuWrapAngle(f32 angle);
 
-f32 watchMenuApproach(f32 param_1, f32 param_2, f32 param_3);
+f32 watchMenuApproach(f32 value, f32 target, f32 divisor);
 
 SCREEN_RATIO_OPTION optionsGetScreenRatio(void);
 
@@ -150,7 +150,7 @@ void optionsCoopCopyFromPlayer1(void);
 
 s32 optionsGetAutoAim(void);
 u32 optionsGetLookAhead(void);
-void optionsSetAutoAim(u32 param_1);
+void optionsSetAutoAim(u32 value);
 int optionsGetControlStyle(void);
 u32 optionsGetSightOnScreen(void);
 u32 optionsGetAmmoOnScreen(void);
@@ -159,8 +159,8 @@ u32 optionsGetScreenSize(void);
 u16 optionsGetFxVolume(void);
 u32 optionsGetLookInverted(void);
 u16 optionsGetMusicVolume(void);
-void optionsSetMusicVolume(u16 param_1);
-void optionsSetFxVolume(u16 arg0);
+void optionsSetMusicVolume(u16 volume);
+void optionsSetFxVolume(u16 volume);
 void optionsSetControlStyle(int type);
 
 // Do not declare a public prototype for this method. lvStageLoad is expecting
@@ -168,7 +168,7 @@ void optionsSetControlStyle(int type);
 // one argument.
 //void watchMenuReset(int a);
 
-Gfx *watchMenuRender(Gfx *gdl, Mtx *arg1, s32 watch_transitioning);
+Gfx *watchMenuRender(Gfx *gdl, Mtx *mtx, s32 watch_transitioning);
 void watchMenuOpen(void);
 
 #endif
