@@ -118,7 +118,7 @@
 #if defined(VERSION_EU)
     #define TANKUPDATEROTATION_SCALE 0.904799997807f
     #define TANKTURRETVERTICALANGLERELATED_SCALE 0.928399980068f
-    #define TANK_UNKD0_SCALE 0.79960000515f
+    #define TANK_Y_SMOOTHING 0.79960000515f
     #define CHR_OBJ_ACCEL_SPEED_FACTOR 0.6f
     #define CHR_OBJ_MAXSPEED 6.0f
     #define MAX_SPEED_FACTOR 0.8f
@@ -139,7 +139,7 @@
 #else
     #define TANKUPDATEROTATION_SCALE 0.92f
     #define TANKTURRETVERTICALANGLERELATED_SCALE 0.94f
-    #define TANK_UNKD0_SCALE 0.83f
+    #define TANK_Y_SMOOTHING 0.83f
     #define CHR_OBJ_ACCEL_SPEED_FACTOR 0.5f
     #define CHR_OBJ_MAXSPEED 5.0f
     #define MAX_SPEED_FACTOR 0.8f
@@ -1268,15 +1268,15 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
             g_CameraAfterCinema = CAMERAMODE_INTRO;
         }
 
-        pos->f[0] = g_IntroCamera->unk04.fval;
-        pos->f[1] = g_IntroCamera->unk08.fval;
-        pos->f[2] = g_IntroCamera->unk0C.fval;
+        pos->f[0] = g_IntroCamera->x.fval;
+        pos->f[1] = g_IntroCamera->y.fval;
+        pos->f[2] = g_IntroCamera->z.fval;
 
-        pos2->f[0] = pos->f[0] + (cosf(g_IntroCamera->unk14.fval) * sinf(g_IntroCamera->unk10.fval));
-        pos2->f[1] = pos->f[1] + sinf(g_IntroCamera->unk14.fval);
-        pos2->f[2] = pos->f[2] - (cosf(g_IntroCamera->unk14.fval) * cosf(g_IntroCamera->unk10.fval));
+        pos2->f[0] = pos->f[0] + (cosf(g_IntroCamera->pitch.fval) * sinf(g_IntroCamera->yaw.fval));
+        pos2->f[1] = pos->f[1] + sinf(g_IntroCamera->pitch.fval);
+        pos2->f[2] = pos->f[2] - (cosf(g_IntroCamera->pitch.fval) * cosf(g_IntroCamera->yaw.fval));
 
-        p = &g_CurrentSetup.pads[g_IntroCamera->unk18];
+        p = &g_CurrentSetup.pads[g_IntroCamera->pad];
         setupPad = p;
         *stan = setupPad->stan;
 
@@ -1362,26 +1362,26 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
     {
         camera_transition_timer += g_GlobalTimerDelta;
 
-        while (g_IntroSwirl[intro_camera_index].unk18.fval <= camera_transition_timer)
+        while (g_IntroSwirl[intro_camera_index].duration.fval <= camera_transition_timer)
         {
-            if (!(g_IntroSwirl[intro_camera_index + 3].unk04 & 1))
+            if (!(g_IntroSwirl[intro_camera_index + 3].bitflags & 1))
             {
-                camera_transition_timer -= g_IntroSwirl[intro_camera_index].unk18.fval;
+                camera_transition_timer -= g_IntroSwirl[intro_camera_index].duration.fval;
                 intro_camera_index++;
             }
             else
             {
-                camera_transition_timer = g_IntroSwirl[intro_camera_index].unk18.fval;
+                camera_transition_timer = g_IntroSwirl[intro_camera_index].duration.fval;
                 g_CameraAfterCinema = CAMERAMODE_INTRO;
                 break;
             }
         }
 
-        sp30 += (g_IntroSwirl[intro_camera_index].unk18.fval - camera_transition_timer);
+        sp30 += (g_IntroSwirl[intro_camera_index].duration.fval - camera_transition_timer);
 
-        for (i = intro_camera_index + 1; !(g_IntroSwirl[i+2].unk04 & 1); i++)
+        for (i = intro_camera_index + 1; !(g_IntroSwirl[i+2].bitflags & 1); i++)
         {
-            sp30 += g_IntroSwirl[i].unk18.fval;
+            sp30 += g_IntroSwirl[i].duration.fval;
         }
 
         // Fade player body from opaque to transparent just before the player takes control.
@@ -1419,9 +1419,9 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, st
 
         playerCalcIntroSwirlCamera(intro_camera_index, camera_transition_timer, pos, pos2);
 
-        if (g_IntroSwirl[intro_camera_index].unk1C >= 0)
+        if (g_IntroSwirl[intro_camera_index].pad >= 0)
         {
-            p = &g_CurrentSetup.pads[g_IntroSwirl[intro_camera_index].unk1C];
+            p = &g_CurrentSetup.pads[g_IntroSwirl[intro_camera_index].pad];
             setupPad = p;
             *stan = setupPad->stan;
 
@@ -4319,14 +4319,14 @@ void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
             g_CurrentPlayer->field_488.collision_position.f[0],
             g_CurrentPlayer->field_488.collision_position.f[2]);
 
-        g_CurrentPlayer->field_6C = g_CurrentPlayer->field_70 / (1.0f - TANK_UNKD0_SCALE);
+        g_CurrentPlayer->field_6C = g_CurrentPlayer->field_70 / (1.0f - TANK_Y_SMOOTHING);
 
         for (i=0; i<g_ClockTimer; i++)
         {
-            g_CurrentPlayer->field_6C = (g_CurrentPlayer->field_6C * TANK_UNKD0_SCALE) + g_CurrentPlayer->stanHeight;
+            g_CurrentPlayer->field_6C = (g_CurrentPlayer->field_6C * TANK_Y_SMOOTHING) + g_CurrentPlayer->stanHeight;
         }
 
-        g_CurrentPlayer->field_70 = g_CurrentPlayer->field_6C * (1.0f - TANK_UNKD0_SCALE);
+        g_CurrentPlayer->field_70 = g_CurrentPlayer->field_6C * (1.0f - TANK_Y_SMOOTHING);
     }
     else
     {
@@ -4381,16 +4381,16 @@ void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
 
         if ((g_CurrentPlayer->field_7C >= 0.0f) || (g_CurrentPlayer->field_70 < g_CurrentPlayer->stanHeight))
         {
-            g_CurrentPlayer->field_6C = g_CurrentPlayer->field_70 / (1.0f - TANK_UNKD0_SCALE);
+            g_CurrentPlayer->field_6C = g_CurrentPlayer->field_70 / (1.0f - TANK_Y_SMOOTHING);
 
             for (i=0; i<g_ClockTimer; i++)
             {
-                g_CurrentPlayer->field_6C = (g_CurrentPlayer->field_6C * TANK_UNKD0_SCALE) + g_CurrentPlayer->stanHeight;
+                g_CurrentPlayer->field_6C = (g_CurrentPlayer->field_6C * TANK_Y_SMOOTHING) + g_CurrentPlayer->stanHeight;
             }
 
             if (g_CurrentPlayer->field_70 < g_CurrentPlayer->stanHeight)
             {
-                g_CurrentPlayer->field_70 = g_CurrentPlayer->field_6C * (1.0f - TANK_UNKD0_SCALE);
+                g_CurrentPlayer->field_70 = g_CurrentPlayer->field_6C * (1.0f - TANK_Y_SMOOTHING);
             }
         }
 
@@ -5318,14 +5318,14 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         if (g_PlayerIsInTank == 1)
         {
             spF4 = (struct TankRecord *)g_PlayerTankProp->obj;
-            spF4->unkD8 = weaponGetHeldAmmo(ITEM_TANKSHELLS);
+            spF4->storedShells = weaponGetHeldAmmo(ITEM_TANKSHELLS);
 
             weaponGiveAmmo(ITEM_TANKSHELLS, 0);
             invRemoveItemByID(ITEM_TANKSHELLS);
 
             if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
             {
-                spF4->unkD8 += gunGetMagazineAmmo(GUNRIGHT);
+                spF4->storedShells += gunGetMagazineAmmo(GUNRIGHT);
                 gunSwitchWhenEmpty();
             }
 
@@ -5353,8 +5353,8 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             spEC = (struct TankRecord *)g_PlayerTankProp->obj;
 
             invAddItem(ITEM_TANKSHELLS);
-            weaponGiveAmmo(ITEM_TANKSHELLS, spEC->unkD8);
-            spEC->unkD8 = 0;
+            weaponGiveAmmo(ITEM_TANKSHELLS, spEC->storedShells);
+            spEC->storedShells = 0;
             g_TankTurretVerticalAngle = spEC->turret_vertical_angle;
             g_TankTurretVerticalAngleRelated = g_TankTurretVerticalAngle / TANK_VERT_ANGLE_FACTOR;
             g_TankTurretAngle = spEC->turret_orientation_angle;
@@ -6071,7 +6071,7 @@ void playerTickDamageAndHealth(void)
 
 #ifdef VERSION_US
         if (
-            (g_DamageTypes[g_CurrentPlayer->damagetype].field_0x8 >= g_CurrentPlayer->damageshowtime)
+            (g_DamageTypes[g_CurrentPlayer->damagetype].fadeEndFrame >= g_CurrentPlayer->damageshowtime)
             || (g_DamageTypes[g_CurrentPlayer->damagetype].flashEndFrame >= g_CurrentPlayer->damageshowtime))
         {
             if (!g_CurrentPlayer->bonddead)
@@ -6079,7 +6079,7 @@ void playerTickDamageAndHealth(void)
 #else
         if (!g_CurrentPlayer->bonddead
             && (
-                (g_DamageTypes[g_CurrentPlayer->damagetype].field_0x8 >= g_CurrentPlayer->damageshowtime)
+                (g_DamageTypes[g_CurrentPlayer->damagetype].fadeEndFrame >= g_CurrentPlayer->damageshowtime)
                 || (g_DamageTypes[g_CurrentPlayer->damagetype].flashEndFrame >= g_CurrentPlayer->damageshowtime)))
         {
 #endif
@@ -7435,10 +7435,10 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         for (i_4=0; i_4<g_ClockTimer; i_4++)
         {
-            sp140_tank_as_TankRecord->unkD0 = (sp140_tank_as_TankRecord->unkD0 * TANK_UNKD0_SCALE) + sp140_tank_as_TankRecord->stan_y;
+            sp140_tank_as_TankRecord->smoothYSum = (sp140_tank_as_TankRecord->smoothYSum * TANK_Y_SMOOTHING) + sp140_tank_as_TankRecord->stan_y;
         }
 
-        ftemp_12 = (sp140_tank_as_TankRecord->unkD0 * (1.0f - TANK_UNKD0_SCALE));
+        ftemp_12 = (sp140_tank_as_TankRecord->smoothYSum * (1.0f - TANK_Y_SMOOTHING));
         spE4.f[1] = ftemp_12
             - (bboxGetYmin(sp130) * sp138_tank_as_ObjectRecord->model->scale)
             + 4.0f;
@@ -8582,7 +8582,7 @@ void mpRespawnPlayer(void)
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroSpawn));
                     break;
                 case 1: // INTROTYPE_ITEM
-                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback) {
+                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->demoSlot) {
                         if ( ((struct SetupIntroItem*)intro_record)->item_left >= 0) {
                             invAddDualItem(((struct SetupIntroItem*)intro_record)->item_right, ((struct SetupIntroItem*)intro_record)->item_left);
                         } else {
@@ -8592,7 +8592,7 @@ void mpRespawnPlayer(void)
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroItem));
                     break;
                 case 2: // INTROTYPE_AMMO
-                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback) {
+                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->demoSlot) {
                         ammoGive(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
                     }
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroAmmo));
@@ -8687,7 +8687,7 @@ static void coopGiveStartingLoadout(void)
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroSpawn));
                     break;
                 case 1: // INTROTYPE_ITEM
-                    if (check_ramrom_flags() == ((struct SetupIntroItem*)intro_record)->is_demo_playback)
+                    if (check_ramrom_flags() == ((struct SetupIntroItem*)intro_record)->demoSlot)
                     {
                         if (((struct SetupIntroItem*)intro_record)->item_left >= 0)
                         {
@@ -8701,7 +8701,7 @@ static void coopGiveStartingLoadout(void)
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroItem));
                     break;
                 case 2: // INTROTYPE_AMMO
-                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback)
+                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->demoSlot)
                     {
                         ammoGive(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
                     }
@@ -11153,10 +11153,10 @@ join_768:
  
     chr->chrflags |= CHRFLAG_INIT;
     chr->actiontype = ACT_BONDMULTI;
-    chr->act_bondmulti.unk2c = (f32 *) firingtable;
+    chr->act_bondmulti.animfloats = firingtable;
  
-    chrSetFiring(chr, GUNRIGHT, ppointers[index]->hands[GUNRIGHT].field_87D);
-    chrSetFiring(chr, GUNLEFT, ppointers[index]->hands[GUNLEFT].field_87D);
+    chrSetFiring(chr, GUNRIGHT, ppointers[index]->hands[GUNRIGHT].firing);
+    chrSetFiring(chr, GUNLEFT, ppointers[index]->hands[GUNLEFT].firing);
  
     tailret = chrTick(prop);
  
@@ -11168,9 +11168,9 @@ join_768:
         }
         else if ((&ppointers[index]->field_2A30)[i] < (g_LvTickCount - 1))
         {
-            ppointers[index]->field_2A18[i].x = ppointers[index]->hands[i].field_B58.x;
-            ppointers[index]->field_2A18[i].y = ppointers[index]->hands[i].field_B58.y;
-            ppointers[index]->field_2A18[i].z = ppointers[index]->hands[i].field_B58.z;
+            ppointers[index]->field_2A18[i].x = ppointers[index]->hands[i].muzzlePos.x;
+            ppointers[index]->field_2A18[i].y = ppointers[index]->hands[i].muzzlePos.y;
+            ppointers[index]->field_2A18[i].z = ppointers[index]->hands[i].muzzlePos.z;
         }
     }
  

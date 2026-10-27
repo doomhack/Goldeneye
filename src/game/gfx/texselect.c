@@ -320,7 +320,6 @@ void texSetRenderMode(Gfx **gdlptr, s32 arg1, s32 numcycles, s32 zbufferMode)
 
 /**
  * Perfect Dark texSelect.
- * NTSC address 0x7F076D68.
 */
 void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg3, u32 ulst)
 {    
@@ -473,7 +472,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
             if (format == G_IM_FMT_CI)
             {
                 u32 a3 = lrs + 1;
-				u32 t0 = (0x3ff - tex->unk0a) < a3 ? (0x3ff - tex->unk0a) : 0;
+				u32 t0 = (0x3ff - tex->lastColour) < a3 ? (0x3ff - tex->lastColour) : 0;
 
 				a3 -= t0;
                 
@@ -482,7 +481,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
                     G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
                 gDPLoadSync(gdl++);
 
-                gDPLoadTLUT07(gdl++, a3, t0, tex->unk0a + a3, t0);
+                gDPLoadTLUT07(gdl++, a3, t0, tex->lastColour + a3, t0);
                 gDPPipeSync(gdl++);
 
                 gDPSetTextureLUT(gdl++, lutmode);
@@ -610,7 +609,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
             if (format == 2)
             {
                 u32 a2 = lrs + 1;
-				u32 a3 = (0x3ff - tex->unk0a) < a2 ? (0x3ff - tex->unk0a) : 0;
+				u32 a3 = (0x3ff - tex->lastColour) < a2 ? (0x3ff - tex->lastColour) : 0;
 
 				a2 -= a3;
                 
@@ -619,7 +618,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 arg2, s32 arg
                     G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
                 gDPLoadSync(gdl++);
 
-                gDPLoadTLUT07(gdl++, a2, a3, tex->unk0a + a2, a3);
+                gDPLoadTLUT07(gdl++, a2, a3, tex->lastColour + a2, a3);
                 gDPPipeSync(gdl++);
 
                 gDPSetTextureLUT(gdl++, lutmode);

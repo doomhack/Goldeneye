@@ -208,7 +208,7 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 arg2, s32 forcenumimages, struct texpoo
         {
             arg4->rightpos->width = width;
             arg4->rightpos->height = height;
-            arg4->rightpos->unk0a = numcolours - 1;
+            arg4->rightpos->lastColour = numcolours - 1;
             arg4->rightpos->gbiformat = g_TexFormatGbiMappings[format];
             arg4->rightpos->depth = g_TexFormatDepths[format];
             arg4->rightpos->lutmodeindex = g_TexFormatLutModes[format] >> G_MDSFT_TEXTLUT;

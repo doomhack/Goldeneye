@@ -440,9 +440,9 @@ void gunDebApplyKeyframe(void)
 {
     if (!g_GunDebApplyKeyframe) { return; }
 
-    g_CurrentPlayer->hands[0].field_92C = 1;
-    mtx4LoadRotation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
-    mtx4SetTranslation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos, (Mtxf *)&g_CurrentPlayer->hands[0].field_8EC);
+    g_CurrentPlayer->hands[0].useAnimMtx = 1;
+    mtx4LoadRotation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].rot, (Mtxf *)&g_CurrentPlayer->hands[0].animMtx);
+    mtx4SetTranslation(&DEB_KEYFRAMES[g_gunDebKeyframeIndex].pos, (Mtxf *)&g_CurrentPlayer->hands[0].animMtx);
     g_GunDebApplyKeyframe = 0;
 }
 
@@ -734,8 +734,8 @@ ITEM_IDS gunGetNextWeapon(GUNHAND hand, s32 direction)
 	if (g_CurrentPlayer->hands[hand].weapon_action_state == GUN_ANIM_STATE_SWITCH_LOWER) 
     {
 		if (
-			(direction < 0 && (g_CurrentPlayer->hands[hand].field_8B8 > 0)) ||
-			(direction > 0 && (g_CurrentPlayer->hands[hand].field_8B8 < 0)) ) 
+			(direction < 0 && (g_CurrentPlayer->hands[hand].cycleDirection > 0)) ||
+			(direction > 0 && (g_CurrentPlayer->hands[hand].cycleDirection < 0)) ) 
         {
 			return gunGetWeapon(hand);
 		}
@@ -759,19 +759,19 @@ void gunRequestHandWeaponChange(enum GUNHAND hand, s32 nextWeapon, s32 cycleDire
 {
     if ((g_CurrentPlayer->hands[hand].weapon_action_state == GUN_ANIM_STATE_SWITCH_LOWER) || (g_CurrentPlayer->hands[hand].weapon_action_state == GUN_ANIM_STATE_SWITCH_SWAP))
     {
-        g_CurrentPlayer->hands[hand].field_8B0 = g_CurrentPlayer->hands[hand].field_890;
+        g_CurrentPlayer->hands[hand].switchTime = g_CurrentPlayer->hands[hand].stateTime;
 
 #ifdef VERSION_EU
         if (getPlayerCount() == 1) {
-            g_CurrentPlayer->hands[hand].field_8B0 += 0xE;
+            g_CurrentPlayer->hands[hand].switchTime += 0xE;
         } else {
-            g_CurrentPlayer->hands[hand].field_8B0 += 0xA;
+            g_CurrentPlayer->hands[hand].switchTime += 0xA;
         }
 #else
         if (getPlayerCount() == 1) {
-            g_CurrentPlayer->hands[hand].field_8B0 += 0x11;
+            g_CurrentPlayer->hands[hand].switchTime += 0x11;
         } else {
-            g_CurrentPlayer->hands[hand].field_8B0 += 0xD;
+            g_CurrentPlayer->hands[hand].switchTime += 0xD;
         }
 #endif
     }
@@ -785,7 +785,7 @@ void gunRequestHandWeaponChange(enum GUNHAND hand, s32 nextWeapon, s32 cycleDire
 
         g_CurrentPlayer->hands[hand].weapon_next_weapon = nextWeapon;
         g_CurrentPlayer->hands[hand].weapon_animation_trigger = 1;
-        g_CurrentPlayer->hands[hand].field_8B8 = cycleDirection;
+        g_CurrentPlayer->hands[hand].cycleDirection = cycleDirection;
     }
 }
 
@@ -957,8 +957,8 @@ void gunUnequip(enum GUNHAND hand, enum ITEM_IDS weapid)
     gunFreeRocket(hand);
     g_CurrentPlayer->hands[hand].weaponnum = weapid;
     g_CurrentPlayer->hands[hand].weapon_ammo_in_magazine = 0;
-    g_CurrentPlayer->hands[hand].field_A4C = 0;
-    g_CurrentPlayer->hands[hand].field_A50 = 0;
+    g_CurrentPlayer->hands[hand].nextSoundTime = 0;
+    g_CurrentPlayer->hands[hand].lastSoundTime = 0;
     invDetermineEquippedItem();
 }
 
@@ -968,7 +968,7 @@ s8 gunGetFiringStatus(GUNHAND hand) {
 }
 
 f32 gunGetDualOffset(GUNHAND hand) {
-	return g_CurrentPlayer->hands[hand].field_A34;
+	return g_CurrentPlayer->hands[hand].dualOffset;
 }
 
 /**
@@ -1232,30 +1232,30 @@ void gunTickHingeAngle(enum GUNHAND hand, s32 arg1)
 {
     if (arg1 != 0)
     {
-        if (g_CurrentPlayer->hands[hand].field_A84 < gunGetMaxHingeAngle(hand))
+        if (g_CurrentPlayer->hands[hand].hingeAngle < gunGetMaxHingeAngle(hand))
         {
-            g_CurrentPlayer->hands[hand].field_A84 += (0.029088823f * g_GlobalTimerDelta);
+            g_CurrentPlayer->hands[hand].hingeAngle += (0.029088823f * g_GlobalTimerDelta);
         }
-        if (g_CurrentPlayer->hands[hand].field_A84 > gunGetMaxHingeAngle(hand)) {
-            g_CurrentPlayer->hands[hand].field_A84 = gunGetMaxHingeAngle(hand);
+        if (g_CurrentPlayer->hands[hand].hingeAngle > gunGetMaxHingeAngle(hand)) {
+            g_CurrentPlayer->hands[hand].hingeAngle = gunGetMaxHingeAngle(hand);
         }
     }
     else
     {
-        if (g_CurrentPlayer->hands[hand].field_A84 > 0.0f)
+        if (g_CurrentPlayer->hands[hand].hingeAngle > 0.0f)
         {
-            g_CurrentPlayer->hands[hand].field_A84 -= (0.017453294f * g_GlobalTimerDelta);
+            g_CurrentPlayer->hands[hand].hingeAngle -= (0.017453294f * g_GlobalTimerDelta);
         }
-        if (g_CurrentPlayer->hands[hand].field_A84 < 0.0f)
+        if (g_CurrentPlayer->hands[hand].hingeAngle < 0.0f)
         {
-            g_CurrentPlayer->hands[hand].field_A84 = 0.0f;
+            g_CurrentPlayer->hands[hand].hingeAngle = 0.0f;
         }
     }
 }
 
 
 void gunStartBoltRecoil(GUNHAND hand) {
-	g_CurrentPlayer->hands[hand].field_A8C = 1;
+	g_CurrentPlayer->hands[hand].boltRecoiling = 1;
 }
 
 
@@ -1265,28 +1265,28 @@ void gunTickBoltRecoil(GUNHAND hand)
 
     recoil_back = weaponGetStats(gunGetShownWeapon(hand))->BoltRecoilBack;
 
-    if (g_CurrentPlayer->hands[hand].field_A8C != 0)
+    if (g_CurrentPlayer->hands[hand].boltRecoiling != 0)
     {
-        if (g_CurrentPlayer->hands[hand].field_A88 < recoil_back)
+        if (g_CurrentPlayer->hands[hand].boltRecoil < recoil_back)
         {
-            g_CurrentPlayer->hands[hand].field_A88 = (g_CurrentPlayer->hands[hand].field_A88 + (recoil_back * 0.25f * g_GlobalTimerDelta));
+            g_CurrentPlayer->hands[hand].boltRecoil = (g_CurrentPlayer->hands[hand].boltRecoil + (recoil_back * 0.25f * g_GlobalTimerDelta));
 
         }
-        if (recoil_back <= g_CurrentPlayer->hands[hand].field_A88) {
-            g_CurrentPlayer->hands[hand].field_A88 = recoil_back;
-            g_CurrentPlayer->hands[hand].field_A8C = 0;
+        if (recoil_back <= g_CurrentPlayer->hands[hand].boltRecoil) {
+            g_CurrentPlayer->hands[hand].boltRecoil = recoil_back;
+            g_CurrentPlayer->hands[hand].boltRecoiling = 0;
         }
     }
     else if (g_CurrentPlayer->hands[hand].weapon_ammo_in_magazine > 0)
     {
-        if (g_CurrentPlayer->hands[hand].field_A88 > 0.0f)
+        if (g_CurrentPlayer->hands[hand].boltRecoil > 0.0f)
         {
-            g_CurrentPlayer->hands[hand].field_A88 = (g_CurrentPlayer->hands[hand].field_A88 - (recoil_back * 0.16666667f * g_GlobalTimerDelta));
+            g_CurrentPlayer->hands[hand].boltRecoil = (g_CurrentPlayer->hands[hand].boltRecoil - (recoil_back * 0.16666667f * g_GlobalTimerDelta));
 
         }
-        if (g_CurrentPlayer->hands[hand].field_A88 < 0.0f)
+        if (g_CurrentPlayer->hands[hand].boltRecoil < 0.0f)
         {
-            g_CurrentPlayer->hands[hand].field_A88 = 0.0f;
+            g_CurrentPlayer->hands[hand].boltRecoil = 0.0f;
         }
     }
 }
@@ -1390,7 +1390,7 @@ void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf 
             obj->projectile->speed.f[1] = velocity->f[1];
             obj->projectile->speed.f[2] = velocity->f[2];
             obj->projectile->obj = obj;
-            obj->projectile->unkE8 = g_LvTickCount;
+            obj->projectile->launchTick = g_LvTickCount;
         }
     }
 }
@@ -1460,15 +1460,15 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
     if (obj->runtime_bitflags & 0x80) {
         if (usedfallback) {
             obj->projectile->flags |= PROJECTILEFLAG_00000100;
-            ((coord3d *)&obj->projectile->unkd4)->x = targetpos->x;
-            ((coord3d *)&obj->projectile->unkd4)->y = targetpos->y;
-            ((coord3d *)&obj->projectile->unkd4)->z = targetpos->z;
+            obj->projectile->targetPos.x = targetpos->x;
+            obj->projectile->targetPos.y = targetpos->y;
+            obj->projectile->targetPos.z = targetpos->z;
         }
 
         rooms[0] = playerGetRoom();
         rooms[1] = 0xff;
 
-        bgFindRoomsAlongSegment(playerGetPos3(), &pos, rooms, obj->projectile->unkCC, &sp54, &sp50, 0x14);
+        bgFindRoomsAlongSegment(playerGetPos3(), &pos, rooms, obj->projectile->rooms, &sp54, &sp50, 0x14);
     }
 }
 
@@ -1546,8 +1546,8 @@ void gunThrowGrenade(s32 hand)
         {
             wor->projectile->flags = (s32) (wor->projectile->flags | 2);
 
-            wor->projectile->unk8C = 0.3f;
-            wor->projectile->unk94 = 0.13333333f;
+            wor->projectile->bounciness = 0.3f;
+            wor->projectile->groundFriction = 0.13333333f;
             wor->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
 
             sfx_state = sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GRENADE_THROW_SFX, NULL);
@@ -1629,7 +1629,7 @@ void gunThrowKnife(s32 hand)
         {
             wor->projectile->flags = (s32) (wor->projectile->flags | 2);
 
-            wor->projectile->unk8C = 0.1f;
+            wor->projectile->bounciness = 0.1f;
             wor->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
 
             wor->runtime_bitflags |= RUNTIMEBITFLAG_THROWING_KNIFE_RELATED;
@@ -1820,7 +1820,7 @@ void gunThrowObject(s32 hand)
         {
             wor->projectile->flags = (s32) (wor->projectile->flags | 2);
 
-            wor->projectile->unk8C = 0.1f;
+            wor->projectile->bounciness = 0.1f;
             wor->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
 
             sfx_state = sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GRENADE_THROW_SFX, NULL);
@@ -1883,12 +1883,12 @@ void gunSpawnGLGrenade(s32 handnum)
         grenadeobj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
         grenadeobj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
-        gunLaunchProjectileFromPlayer(grenadeobj, &hand->field_B58, &launchmtx, &launchvel, (s32 *)&identitymtx);
+        gunLaunchProjectileFromPlayer(grenadeobj, &hand->muzzlePos, &launchmtx, &launchvel, (s32 *)&identitymtx);
 
         if (grenadeobj->runtime_bitflags & RUNTIMEBITFLAG_00000080)
         {
-            grenadeobj->projectile->unk8C = g_GLGrenadeLaunchUnk8C;
-            grenadeobj->projectile->unk94 = g_GLGrenadeLaunchUnk94;
+            grenadeobj->projectile->bounciness = g_GLGrenadeLaunchUnk8C;
+            grenadeobj->projectile->groundFriction = g_GLGrenadeLaunchUnk94;
             grenadeobj->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
         }
     }
@@ -1901,11 +1901,11 @@ void gunSpawnGLGrenade(s32 handnum)
 void gunUpdateAttachedRocket(s32 handIndex)
 {
     struct hand *entry;
-    AttachedObj *attachedRocket;
+    ObjectRecord *attachedRocket;
     Model *rocketModel;
     Mtxf worldMtx;
     PropRecord *prop;
-    AttachmentChild *attachmentChild;
+    PropRecord *rocketProp;
 
     entry = &g_CurrentPlayer->hands[handIndex];
 
@@ -1916,9 +1916,9 @@ void gunUpdateAttachedRocket(s32 handIndex)
         return;
     }
 
-    attachmentChild = attachedRocket->child;
+    rocketProp = attachedRocket->prop;
 
-    if (attachmentChild == NULL)
+    if (rocketProp == NULL)
     {
         return;
     }
@@ -1934,19 +1934,19 @@ void gunUpdateAttachedRocket(s32 handIndex)
 
     mtx4ScaleRows012(attachedRocket->model->scale, (f32 *)&worldMtx);
 
-    objChangeShading(attachedRocket, &entry->field_B58, &worldMtx, prop->stan);
+    objChangeShading(attachedRocket, &entry->muzzlePos, &worldMtx, prop->stan);
     chrobjCollisionRelated(attachedRocket);
 
     rocketModel->render_pos = dynAllocate((s32)rocketModel->obj->numMatrices << 6);
 
-    mtx4Copy(&attachedRocket->transform, &worldMtx);
-    mtx4SetTranslation((Mtxf *)&attachedRocket->position, &worldMtx);
+    mtx4Copy(&attachedRocket->mtx, &worldMtx);
+    mtx4SetTranslation((Mtxf *)&attachedRocket->runtime_pos, &worldMtx);
 
     mtx4MultAffine(camGetWorldToScreenMtxf(), &worldMtx, rocketModel->render_pos);
     modelUpdateRelationsQuick(rocketModel, rocketModel->obj->RootNode);
 
-    attachmentChild->flags1 |= 2;
-    attachmentChild->unk18 = -rocketModel->render_pos->pos.m[3][2];
+    rocketProp->flags |= 2;
+    rocketProp->zDepth = -rocketModel->render_pos->pos.m[3][2];
 }
 
 
@@ -2067,9 +2067,9 @@ void gunFireTankShell(s32 handnum)
         gunGetShotDir(&screenpos, &aimdir, handnum);
         mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
 
-        spawnpos.x = hand->field_B58.x;
-        spawnpos.y = hand->field_B58.y;
-        spawnpos.z = hand->field_B58.z;
+        spawnpos.x = hand->muzzlePos.x;
+        spawnpos.y = hand->muzzlePos.y;
+        spawnpos.z = hand->muzzlePos.z;
 
 
         unscaledvelocity.x = aimdir.x * g_ThrowVelocityScale;
@@ -2122,11 +2122,11 @@ void gunFireTankShell(s32 handnum)
         if (weaponid != ITEM_TANKSHELLS)
         {
             obj->projectile->flags |= PROJECTILEFLAG_00000020;
-            obj->projectile->unkB0 = obj->runtime_pos.y;
-            obj->projectile->unkB4 = obj->projectile->speed.y;
-            obj->projectile->unk10.x = unscaledvelocity.x;
-            obj->projectile->unk10.y = unscaledvelocity.y;
-            obj->projectile->unk10.z = unscaledvelocity.z;
+            obj->projectile->riseY = obj->runtime_pos.y;
+            obj->projectile->riseSpeed = obj->projectile->speed.y;
+            obj->projectile->accel.x = unscaledvelocity.x;
+            obj->projectile->accel.y = unscaledvelocity.y;
+            obj->projectile->accel.z = unscaledvelocity.z;
             obj->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
 
             if (obj->projectile->sounds[0] == NULL)

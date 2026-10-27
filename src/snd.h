@@ -91,7 +91,7 @@ typedef struct ALSoundState_s {
     s8 unk37;
 
     // counter of some kind
-    s32 unk38;
+    s32 retries; // frames left to wait for a free voice
 
     // offset 0x3c = 60
     // pan - 0 = left, 127 = right
@@ -110,7 +110,7 @@ typedef struct ALSoundState_s {
     // 0x20 = related to detune
     // 0x40 = ?
     // 0x80 = ?
-    u8 unk3e;
+    u8 flags;
     /*
       AL_STOPPED
       AL_PLAYING

@@ -65,7 +65,7 @@ struct weapon_firing_animation_table
         struct ModelAnimation *anim;
     } anim;
     
-    f32 unk04;
+    f32 turnEndFrame; // the turn at the start of the animation ends here
     f32 turn_angle_per_frame;
     f32 angle_offset;
 

@@ -287,18 +287,18 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
 
                 limitReached = sndp->maxSounds <= g_sndAllocatedVoicesCount;
 
-                if (!limitReached || (soundState->unk3e & SOUND_FLAG_RETRIGGER)) {
+                if (!limitReached || (soundState->flags & SOUND_FLAG_RETRIGGER)) {
                     // for retriggered sounds, ignore the limit
                     isVoiceAllocated = alSynAllocVoice(sndp->drvr, &soundState->voice, &config);
                 }
 
                 if (!isVoiceAllocated) {
                     // No free voices available, wait for another sound to stop.
-                    if ((soundState->unk3e & (SOUND_FLAG_RETRIGGER | SOUND_FLAG_LOOPED)) || soundState->unk38 > 0) {
+                    if ((soundState->flags & (SOUND_FLAG_RETRIGGER | SOUND_FLAG_LOOPED)) || soundState->retries > 0) {
                         // Retry on the next frame.
                         // For looped and retriggered sounds, keep retrying on each frame.
                         soundState->playingState = SOUND_STATE_WAIT_VOICE;
-                        soundState->unk38--;
+                        soundState->retries--;
                         alEvtqPostEvent(&sndp->evtq, (ALEvent *) event, DELTA_33_MS);
                     } else {
                         // Not a looped or retriggered sound, and all retries have been exhausted.
@@ -307,7 +307,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                             ALSoundState *iterState = (ALSoundState *) g_sndStates.used.prev;
 
                             do {
-                                if (!(iterState->unk3e & 0x12) && (iterState->unk3e & 0x4) &&
+                                if (!(iterState->flags & 0x12) && (iterState->flags & 0x4) &&
                                     iterState->playingState != SOUND_STATE_PREEMPT) {
                                     // Found a lower-priority sound; it can be preempted
                                     ALSndpEvent interruptEvent;
@@ -324,7 +324,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
 
                             if (!limitReached) {
                                 // Retry the sound that was preempted.
-                                soundState->unk38 = 2;
+                                soundState->retries = 2;
                                 alEvtqPostEvent(&sndp->evtq, (ALEvent *) event, DELTA_1_MS + 1);
                             } else {
                                 // No lower-priority sound to preempt, so stop the sound.
@@ -343,7 +343,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                 }
 
                 // Set volume
-                soundState->unk3e |= SOUND_FLAG_PLAYING;
+                soundState->flags |= SOUND_FLAG_PLAYING;
                 alSynStartVoice(sndp->drvr, &soundState->voice, sound->wavetable);
                 soundState->playingState = SOUND_STATE_PLAYING;
                 g_sndAllocatedVoicesCount++;
@@ -388,7 +388,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                 // The purpose of checking for a looped sound seems unclear.
                 // Does it imply that a composite sound can't contain looped simple sounds?
                 // It seems logical, but the check may still be redundant.
-                if (event->common.type != AL_SNDP_UNKNOWN_12_EVT || (soundState->unk3e & SOUND_FLAG_LOOPED)) {
+                if (event->common.type != AL_SNDP_UNKNOWN_12_EVT || (soundState->flags & SOUND_FLAG_LOOPED)) {
                     switch (soundState->playingState) {
                         case SOUND_STATE_PLAYING:
                             sndRemoveEvents(&sndp->evtq, soundState, AL_SNDP_DECAY_EVT);
@@ -424,7 +424,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                 soundState->pitch_2c = event->pitch.pitch;
                 if (soundState->playingState == SOUND_STATE_PLAYING) {
                     alSynSetPitch(sndp->drvr, &soundState->voice, soundState->pitch_2c * soundState->pitch_28);
-                    if (soundState->unk3e & SOUND_FLAG_PITCH_SLIDE) {
+                    if (soundState->flags & SOUND_FLAG_PITCH_SLIDE) {
                         sndCreatePitchEvent(soundState);
                     }
                 }
@@ -466,7 +466,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                  * The voice has theoretically reached its attack velocity,
                  * set up callback for release envelope - except for a looped sound
                  */
-                if (!(soundState->unk3e & SOUND_FLAG_LOOPED)) {
+                if (!(soundState->flags & SOUND_FLAG_LOOPED)) {
                     volume = MAX(
                         0, g_sndSfxSlotVolume[SOUND_PARAM_GROUP(keyMap)] *
                                    (sound->envelope->decayVolume * soundState->vol * sound->sampleVolume / 16129) /
@@ -480,7 +480,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                     alEvtqPostEvent(&sndp->evtq, (ALEvent *) &spAC, delta);
 
                     // Start applying the pitch slide only when the decay phase is reached.
-                    if (soundState->unk3e & SOUND_FLAG_PITCH_SLIDE) {
+                    if (soundState->flags & SOUND_FLAG_PITCH_SLIDE) {
                         sndCreatePitchEvent(soundState);
                     }
                 }
@@ -489,7 +489,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                 sndDisposeSound(soundState);
                 break;
             case AL_SNDP_PLAY_SFX_EVT:
-                if (soundState->unk3e & SOUND_FLAG_RETRIGGER) {
+                if (soundState->flags & SOUND_FLAG_RETRIGGER) {
                     sndPlaySfx(event->playSfx.soundBank, event->playSfx.soundIndex, soundState->state);
                 }
                 break;
@@ -502,7 +502,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                                                       AL_SNDP_END_EVT | AL_SNDP_PLAY_SFX_EVT);
 
         if (soundState != NULL && !isEventForSingleSound) {
-            lastInSequence = soundState->unk3e & SOUND_FLAG_FINAL_IN_SEQUENCE;
+            lastInSequence = soundState->flags & SOUND_FLAG_FINAL_IN_SEQUENCE;
         }
 
     } while (!lastInSequence && soundState != NULL && !isEventForSingleSound);
@@ -511,7 +511,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
 
 void sndDisposeSound(ALSoundState *state)
 {
-    if (state->unk3e & 4)
+    if (state->flags & 4)
     {
         alSynStopVoice(g_sndPlayerPtr->drvr, &state->voice);
         alSynFreeVoice(g_sndPlayerPtr->drvr, &state->voice);
@@ -662,13 +662,13 @@ ALSoundState *sndSetupSound(struct ALBankAlt_s *soundBank, ALSound* sound)
         state->priority = decayTimeFlag + 0x40;
 
         state->playingState = AL_UNKOWN_5;
-        state->unk38 = 2;
+        state->retries = 2;
         state->sound = sound;
         state->pitch_2c = 1.0f;
-        state->unk3e = (keymap->keyMax & (u8)0xf0);
+        state->flags = (keymap->keyMax & (u8)0xf0);
         state->state = NULL;
 
-        if ((state->unk3e & 0x20) != 0)
+        if ((state->flags & 0x20) != 0)
         {
             state->pitch_28 = alCents2Ratio(((keymap->keyBase * 100) + DEFAULT_SETUP_PITCH_SHIFT));
         }
@@ -679,7 +679,7 @@ ALSoundState *sndSetupSound(struct ALBankAlt_s *soundBank, ALSound* sound)
 
         if (decayTimeFlag)
         {
-            state->unk3e |= 2;
+            state->flags |= 2;
         }
 
         state->fxMix = (u8)AL_DEFAULT_FXMIX;
@@ -722,7 +722,7 @@ void sndUnlinkClearSound(ALSoundState *state)
         g_sndStates.free = state;
     }
 
-    if ((state->unk3e & 4) != 0)
+    if ((state->flags & 4) != 0)
     {
         g_sndAllocatedVoicesCount--;
     }
@@ -826,9 +826,9 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
             playEvent.common.state = newState;
             deltaLoop = sound->keyMap->velocityMax * DELTA_33_MS;
 
-            if (newState->unk3e & 0x10)
+            if (newState->flags & 0x10)
             {
-                newState->unk3e &= (~(s16)(0x10));
+                newState->flags &= (~(s16)(0x10));
                 alEvtqPostEvent(&g_sndPlayerPtr->evtq, (ALEvent *)&playEvent, deltaTotal + 1);
                 playSfxDelta = deltaLoop + 1;
                 eventSoundIndex = soundIndex;
@@ -859,14 +859,14 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
 
     if (nextState != NULL)
     {
-        nextState->unk3e |= 0x1;
+        nextState->flags |= 0x1;
         nextState->state = pendingState;
 
         if (eventSoundIndex != 0)
         {
             ALSndpEvent playSfxEvent;
 
-            nextState->unk3e |= 0x10;
+            nextState->flags |= 0x10;
 
             playSfxEvent.playSfx.type = AL_SNDP_PLAY_SFX_EVT;
             playSfxEvent.playSfx.state = nextState;
@@ -898,7 +898,7 @@ void sndDeactivate(ALSoundState *state)
 
     if (state != NULL)
     {
-        state->unk3e = (s8) (state->unk3e & (~(s16)(0x10)));
+        state->flags = (s8) (state->flags & (~(s16)(0x10)));
 
         alEvtqPostEvent(&g_sndPlayerPtr->evtq, (ALEvent *)&evt, 0);
     }
@@ -924,9 +924,9 @@ void sndDeactivateAllSfxByFlag(u8 flag)
         evt.common.type = AL_SNDP_DEACTIVATE_EVT;
         evt.common.state = item;
 
-        if ((item->unk3e & flag) == flag)
+        if ((item->flags & flag) == flag)
         {
-            item->unk3e = (s8) (item->unk3e & (~(s16)(0x10)));
+            item->flags = (s8) (item->flags & (~(s16)(0x10)));
             alEvtqPostEvent(&g_sndPlayerPtr->evtq, (ALEvent *)&evt, 0);
         }
 

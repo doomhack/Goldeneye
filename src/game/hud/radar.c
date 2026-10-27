@@ -14,8 +14,6 @@
 
 
 /**
- * NTSC address 0x7F0C6090.
- * PAL address 0x7F0C55A0.
 */
 
 Gfx *radarRender(Gfx *DL)

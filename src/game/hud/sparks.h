@@ -6,27 +6,25 @@
 typedef struct s_bullet_spark {
     s32 age;
     s16 lifetime;
-    s16 unk06;
-    f32 unk08;
-    void* unk0C;
-    f32 unk10;
-    f32 unk14;
-    f32 unk18;
-    f32 unk1c;
-    f32 unk20;
-    f32 unk24;
-    u8 unk28;
-    u8 unk29;
-    u8 unk2A;
-    u8 unk2B;
+    s16 room;
+    f32 frameRate; // animation frames per tick
+    void* images;
+    coord3d pos;
+    f32 sizeCos; // size * cos(angle): rotates the quad
+    f32 sizeSin;
+    f32 size;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
 } s_bullet_spark;
 
 #ifndef VERSION_EU
 typedef struct s_moving_bullet_spark
 {
-    s_bullet_spark unk00;
+    s_bullet_spark spark;
     coord3d velocity;
-    f32 unk38;
+    f32 minY; // the spark dies when it falls below this
 } s_moving_bullet_spark;
 #endif
 

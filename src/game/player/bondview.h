@@ -124,42 +124,36 @@ struct hand
 
   s8 weapon_firing_status;
 
-  s8 field_87D;
-  s8 field_87E;
-  s8 field_87F;
+  s8 firing; // makes the multiplayer body's gun fire too
+  s8 heldItemVisible; // hidden while a grenade or mine is being thrown
+  s8 handVisible;
 
   /**
    * Time holding weapon
   */
   s32 weapon_hold_time;
-  s32 field_884;
-  s32 field_888;
-  s32 field_88C;
-  s32 field_890;
+  s32 prevTrigger; // weapon_hold_time last frame
+  s32 triggerReleased;
+  s32 stateFrames; // frames in weapon_action_state
+  s32 stateTime; // time in weapon_action_state, in 60 Hz ticks
   s32 weapon_action_state;
   s32 weapon_current_animation;
   s32 weapon_ammo_in_magazine;
-  s32 field_8A0;
+  s32 numShots; // EU: the moonraker laser overheats after 200
   s32 numvisibleshells;
-  s32 field_8A8;
+  s32 recoilReturnTime;
   s32 weapon_next_weapon;
-  s32 field_8B0;
+  s32 switchTime; // when a weapon change was asked for again mid-switch
   s32 weapon_animation_trigger;
-  s32 field_8B8;
-  f32 field_8BC;
-  f32 field_8C0;
-  f32 field_8C4;
-  f32 field_8C8;
-  f32 field_8CC;
-  f32 field_8D0;
-  f32 field_8D4;
-  f32 field_8D8;
-  f32 field_8DC;
-  f32 field_8E0;
-  f32 field_8E4;
-  f32 field_8E8;
-  Mtxf field_8EC;
-  s32 field_92C;
+  s32 cycleDirection;
+  coord3d recoilFromPos; // recoil kick: the gun moves and tilts from "from" to "to"
+  f32 recoilFromAngle;
+  coord3d recoilToPos;
+  f32 recoilToAngle;
+  coord3d recoilPos;
+  f32 recoilAngle;
+  Mtxf animMtx; // recoil or throw keyframe transform of the gun
+  s32 useAnimMtx;
   f32 sway_pos_x;
   f32 sway_pos_y;
   f32 sway_pos_z;
@@ -192,68 +186,28 @@ struct hand
   f32 gunofs2_x;
   f32 gunofs2_y;
   f32 gunofs2_z;
-  f32 field_A34;
-  f32 field_A38;
-  f32 field_A3C;
-  f32 field_A40;
+  f32 dualOffset; // 0..2: slides the guns apart when dual wielding
+  coord3d aimPos;
   ALSoundState * audioHandle;
-  s32 field_A48;
-  s32 field_A4C;
-  s32 field_A50;
+  ALSoundState *audioHandle2;
+  s32 nextSoundTime;
+  s32 lastSoundTime;
   BeamRecord weapon_beam;
   f32 noise;
-  f32 field_A84;
-  f32 field_A88;
-  s32 field_A8C;
-  AttachedObj* rocket;
+  f32 hingeAngle;
+  f32 boltRecoil;
+  s32 boltRecoiling;
+  struct ObjectRecord *rocket;
   s32 firedrocket;
   Mtxf gunmtx_camspace;
   // offset 0xad8
   Mtxf throw_item_pos_related;
   // offset 0xb18
   Mtxf throw_item_pos_related_prev;
-  coord3d field_B58;
-  f32 field_B64;
-  s32 field_B68;
-  s32 field_B6C;
-  s32 field_B70;
-  Mtxf *mtxlist;
-  s32 field_B78;
-  s32 field_B7C;
-  s32 field_B80;
-  s32 field_B84;
-  s32 modeldatas;
-  s32 field_B8C;
-  s32 field_B90;
-  s32 field_B94;
-  s32 field_B98;
-  s32 field_B9C;
-  s32 field_BA0;
-  s32 field_BA4;
-  s32 field_BA8;
-  s32 field_BAC;
-  s32 field_BB0;
-  s32 field_BB4;
-  s32 field_BB8;
-  s32 field_BBC;
-  s32 field_BC0;
-  s32 field_BC4;
-  s32 field_BC8;
-  s32 field_BCC;
-  s32 field_BD0;
-  s32 field_BD4;
-  s32 field_BD8;
-  s32 field_BDC;
-  s32 field_BE0;
-  s32 field_BE4;
-  s32 field_BE8;
-  s32 field_BEC;
-  s32 field_BF0;
-  s32 field_BF4;
-  s32 field_BF8;
-  s32 field_BFC;
-  s32 field_C00;
-  s32 field_C04;
+  coord3d muzzlePos; // world position of the muzzle flash
+  f32 muzzleDepth; // its distance in front of the camera
+  s32 gunmodel[8]; /* the first-person gun model: a Model without the animation part */
+  s32 gunmodelRwData[32]; /* its node rwdata */
   s32 volley;  // Number of bullets discharged in a row. For pistols, it's always 1 even if the fire button is held.
   coord3d item_related;
 };
@@ -2351,10 +2305,10 @@ struct struct_4 {
 #ifdef BUGFIX_R0
 typedef struct DamageType
 {
-    u32 field_0x0;
-    u32 field_0x4;
-    s32 field_0x8;
-    f32 field_0xC;
+    u32 fadeStartFrame; // a second fade; only its end frame is used
+    u32 fadeFullFrame;
+    s32 fadeEndFrame;
+    f32 fadeMax;
     s32 flashStartFrame;
     u32 flashFullFrame;
     s32 flashEndFrame;
@@ -2366,10 +2320,10 @@ typedef struct DamageType
 #else
 typedef struct DamageType
 {
-    f32 field_0x0;
-    f32 field_0x4;
-    f32 field_0x8;
-    f32 field_0xC;
+    f32 fadeStartFrame;
+    f32 fadeFullFrame;
+    f32 fadeEndFrame;
+    f32 fadeMax;
     f32 flashStartFrame;
     f32 flashFullFrame;
     f32 flashEndFrame;

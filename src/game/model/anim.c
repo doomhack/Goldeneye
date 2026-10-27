@@ -231,15 +231,6 @@ struct ModelAnimation *animation_table_ptrs2[] = {
 
 extern u32 _animation_entriesSegmentRomStart[];
 
-struct anim_entry
-{
-    s32 unk00;
-    s32 unk04;
-    s32 unk08;
-    s32 unk0C;
-    s32 unk10;
-};
-
 void animResolveTable(s32** arg0)
 {
     s32** var_v0;
@@ -248,8 +239,8 @@ void animResolveTable(s32** arg0)
     while (*var_v0 != 0) {
         if (*var_v0 != (s32*)1) {
             *var_v0 = (s32)((s32)*var_v0 + (s32)(&g_AnimTable->data));
-            ((struct anim_entry *)*var_v0)->unk08 += (s32)&g_AnimTable->data;
-            ((struct anim_entry *)*var_v0)->unk10 += (s32)&g_AnimTable->data;
+            ((ModelAnimation *)*var_v0)->bitDescriptors = (void *)((s32)((ModelAnimation *)*var_v0)->bitDescriptors + (s32)&g_AnimTable->data);
+            ((ModelAnimation *)*var_v0)->bitStream = (void *)((s32)((ModelAnimation *)*var_v0)->bitStream + (s32)&g_AnimTable->data);
         }
         var_v0++;
     }

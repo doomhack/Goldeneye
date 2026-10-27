@@ -54,7 +54,7 @@ s32 g_ModelLodDisabled = 0;
 f32 g_ModelLodScale = 1.0;
 struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices) = NULL;
 void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx) = NULL;
-struct bondstruct_unk_op07_related g_ModelTubeAngleTable[32] = {
+struct TubeAngleRow g_ModelTubeAngleTable[32] = {
     { 0, 0, 0x10 },
     { 1, 0x1000, 0xD },
     { 1, 0x1000, 0xD },
@@ -137,7 +137,6 @@ void modelmgrSetLevelResetting(bool resetting)
 //this may be a file split
 
 /**
- * NTSC address 0x7F005540.
 */
 void modelmgrAllocateModelSlots(s32 numobjs)
 {
@@ -165,7 +164,6 @@ void modelmgrAllocateModelSlots(s32 numobjs)
 
 
 /**
- * NTSC address 0x7F005540.
 */
 void modelmgrAllocateAnimModelSlots(s32 numanimated)
 {
@@ -550,7 +548,7 @@ void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#M
     {
         case MODELNODE_OPCODE_HEADER:
         {
-            struct modeldata_root *root = modelGetNodeRwData(objinst, part);
+            ModelRwData_HeaderRecord *root = modelGetNodeRwData(objinst, part);
             offset->x                   = root->pos.x;
             offset->y                   = root->pos.y;
             offset->z                   = root->pos.z;
@@ -607,10 +605,10 @@ void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
                 rwdata->pos.y = pos->y;
                 rwdata->pos.z = pos->z;
 
-                rwdata->unk24.x += diff[0].x; rwdata->unk24.z += diff[0].z;
-                rwdata->unk34.x += diff[0].x; rwdata->unk34.z += diff[0].z;
-                rwdata->unk40.x += diff[0].x; rwdata->unk40.z += diff[0].z;
-                rwdata->unk4c.x += diff[0].x; rwdata->unk4c.z += diff[0].z;
+                rwdata->nextPos.x += diff[0].x; rwdata->nextPos.z += diff[0].z;
+                rwdata->framePos.x += diff[0].x; rwdata->framePos.z += diff[0].z;
+                rwdata->anim2NextPos.x += diff[0].x; rwdata->anim2NextPos.z += diff[0].z;
+                rwdata->anim2FramePos.x += diff[0].x; rwdata->anim2FramePos.z += diff[0].z;
             }
             break;
         case MODELNODE_OPCODE_GROUP:
@@ -661,7 +659,7 @@ f32 modelGetRootRotY(Model *objinst)
     root = objinst->obj->RootNode;
     if ((root->Opcode & 0xFF) == MODELNODE_OPCODE_HEADER)
     {
-        return ((struct modeldata_root *)modelGetNodeRwData(objinst, root))->subroty;
+        return modelGetNodeRwData(objinst, root)->Header.yrot;
     }
 
     return 0.0f;
@@ -675,19 +673,19 @@ void modelSetRootRotY(Model *model, f32 angle)
     if ((node->Opcode & 0xff) == MODELNODE_OPCODE_HEADER)
     {
         ModelRwData_HeaderRecord *rwdata = modelGetNodeRwData(model, node);
-        f32 diff = angle - rwdata->unk14;
+        f32 diff = angle - rwdata->yrot;
 
         if (diff < 0) { diff += M_TAU_F; }
 
-        rwdata->unk30 += diff;
+        rwdata->frameYrot += diff;
 
-        if (rwdata->unk30 >= M_TAU_F) { rwdata->unk30 -= M_TAU_F; }
+        if (rwdata->frameYrot >= M_TAU_F) { rwdata->frameYrot -= M_TAU_F; }
 
-        rwdata->unk20 += diff;
+        rwdata->nextYrot += diff;
 
-        if (rwdata->unk20 >= M_TAU_F) { rwdata->unk20 -= M_TAU_F; }
+        if (rwdata->nextYrot >= M_TAU_F) { rwdata->nextYrot -= M_TAU_F; }
 
-        rwdata->unk14 = angle;
+        rwdata->yrot = angle;
     }
 }
 
@@ -968,26 +966,26 @@ void modelCalcRootPosition(Model *model, ModelNode *modelNode)
 
     rw = modelGetNodeRwData(model, modelNode);
 
-    if (rw->Header.unk00 != 0)
+    if (rw->Header.frozen != 0)
     {
         return;
     }
 
-    sp38.x = rw->Header.unk34.x;
-    sp38.y = rw->Header.unk34.y;
-    sp38.z = rw->Header.unk34.z;
-    rw->Header.unk14 = rw->Header.unk30;
+    sp38.x = rw->Header.framePos.x;
+    sp38.y = rw->Header.framePos.y;
+    sp38.z = rw->Header.framePos.z;
+    rw->Header.yrot = rw->Header.frameYrot;
 
     if (model->frameFrac != 0.0f)
     {
-        if (rw->Header.unk01 != 0)
+        if (rw->Header.nextValid != 0)
         {
-            modelLerp3(&sp38, &rw->Header.unk24, model->frameFrac);
+            modelLerp3(&sp38, &rw->Header.nextPos, model->frameFrac);
 
             // Weird do while loop but needed for matching.
             do
             {
-                rw->Header.unk14 = modelLerpAngle(rw->Header.unk30, rw->Header.unk20, model->frameFrac);
+                rw->Header.yrot = modelLerpAngle(rw->Header.frameYrot, rw->Header.nextYrot, model->frameFrac);
             }
             while (model->rootMoveCallback * 0);
         }
@@ -995,13 +993,13 @@ void modelCalcRootPosition(Model *model, ModelNode *modelNode)
 
     if ((model->anim2 != 0) || (model->mergeWeight != 0.0f))
     {
-        if (rw->Header.unk02 != 0)
+        if (rw->Header.anim2NextValid != 0)
         {
-            y = rw->Header.unk4c.y;
+            y = rw->Header.anim2FramePos.y;
 
             if (model->frame2Frac != 0.0f)
             {
-                y += (rw->Header.unk40.y - y) * model->frame2Frac;
+                y += (rw->Header.anim2NextPos.y - y) * model->frame2Frac;
             }
 
             sp38.y += (y - sp38.y) * model->mergeWeight;
@@ -1024,21 +1022,21 @@ void modelCalcRootPosition(Model *model, ModelNode *modelNode)
     rw->Header.pos.y = ((f32) sp2c.y) + rw->Header.ground;
     rw->Header.pos.z = sp2c.z;
 
-    rw->Header.unk34.x += sp38.x;
-    rw->Header.unk34.z += sp38.z;
+    rw->Header.framePos.x += sp38.x;
+    rw->Header.framePos.z += sp38.z;
 
-    if (rw->Header.unk01 != 0)
+    if (rw->Header.nextValid != 0)
     {
-        rw->Header.unk24.x += sp38.x;
-        rw->Header.unk24.z += sp38.z;
+        rw->Header.nextPos.x += sp38.x;
+        rw->Header.nextPos.z += sp38.z;
     }
 
-    if (rw->Header.unk02 != 0)
+    if (rw->Header.anim2NextValid != 0)
     {
-        rw->Header.unk4c.x += sp38.x;
-        rw->Header.unk4c.z += sp38.z;
-        rw->Header.unk40.x += sp38.x;
-        rw->Header.unk40.z += sp38.z;
+        rw->Header.anim2FramePos.x += sp38.x;
+        rw->Header.anim2FramePos.z += sp38.z;
+        rw->Header.anim2NextPos.x += sp38.x;
+        rw->Header.anim2NextPos.z += sp38.z;
     }
 }
 
@@ -1072,7 +1070,7 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
 
     scale = model->scale;
     pos = &rwdata->Header.pos.x;
-    unk14 = rwdata->Header.unk14;
+    unk14 = rwdata->Header.yrot;
     modeltype = rodata->Header.MatrixIndex;
     renderpos = &model->render_pos[modeltype];
 
@@ -1085,9 +1083,9 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
         var_a3 = renderdata->basemtx;
     }
 
-    if (rwdata->Header.unk18 != 0.0f)
+    if (rwdata->Header.yrotBlend != 0.0f)
     {
-        unk14 = modelLerpAngle(unk14, rwdata->Header.unk1c, rwdata->Header.unk18);
+        unk14 = modelLerpAngle(unk14, rwdata->Header.yrotBlendTarget, rwdata->Header.yrotBlend);
     }
 
     if (var_a3 != NULL)
@@ -1922,10 +1920,10 @@ void modelUpdateTubeIndex(Model *model, ModelNode *node)
     index1 = (theta * 64.0f) / M_TAU_F;
 
     index2 = (s32) ((ratio * M_U16_MAX_VALUE_F) / M_TAU_F);
-    index2 += g_ModelTubeAngleTable[index1].unk04;
-    index2 = index2 >> g_ModelTubeAngleTable[index1].unk0C;
+    index2 += g_ModelTubeAngleTable[index1].round;
+    index2 = index2 >> g_ModelTubeAngleTable[index1].shift;
 
-    index3 = index2 + g_ModelTubeAngleTable[index1].unk00;
+    index3 = index2 + g_ModelTubeAngleTable[index1].first;
 
     rwdata->Tube.index = rodata->Tube.Data[index3];
 }
@@ -2262,7 +2260,7 @@ void modelCopyAnimForMerge(Model *model, f32 timemerge)
 {
     ModelAnimation *anim;
     ModelNode *root;
-    struct modeldata_root *rwdata;
+    ModelRwData_HeaderRecord *rwdata;
     s32 opcode; 
 
     if (0.0f < timemerge) {
@@ -2286,14 +2284,14 @@ void modelCopyAnimForMerge(Model *model, f32 timemerge)
             model->endframe2 = model->endframe;
 
             if (opcode == MODELNODE_OPCODE_HEADER) {
-                rwdata = (struct modeldata_root *)modelGetNodeRwData(model, root);
-                rwdata->unk02 = 1;
-                rwdata->unk4c.x = rwdata->unk34.x;
-                rwdata->unk4c.y = rwdata->unk34.y;
-                rwdata->unk4c.z = rwdata->unk34.z;
-                rwdata->unk40.x = rwdata->unk24.x;
-                rwdata->unk40.y = rwdata->unk24.y;
-                rwdata->unk40.z = rwdata->unk24.z;
+                rwdata = &modelGetNodeRwData(model, root)->Header;
+                rwdata->anim2NextValid = 1;
+                rwdata->anim2FramePos.x = rwdata->framePos.x;
+                rwdata->anim2FramePos.y = rwdata->framePos.y;
+                rwdata->anim2FramePos.z = rwdata->framePos.z;
+                rwdata->anim2NextPos.x = rwdata->nextPos.x;
+                rwdata->anim2NextPos.y = rwdata->nextPos.y;
+                rwdata->anim2NextPos.z = rwdata->nextPos.z;
             }
 
             return;
@@ -2357,34 +2355,34 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
             pos.f[2] *= scale;
         }
 
-        cosAngle = cosf(rwdata->unk14);
-        sinAngle = sinf(rwdata->unk14);
+        cosAngle = cosf(rwdata->yrot);
+        sinAngle = sinf(rwdata->yrot);
         scale = model->frameFrac;
 
         if (model->frameFrac == 0.0f) {
-            rwdata->unk34.x = rwdata->pos.f[0];
-            rwdata->unk34.y = rwdata->pos.f[1] - rwdata->ground;
-            rwdata->unk34.z = rwdata->pos.f[2];
+            rwdata->framePos.x = rwdata->pos.f[0];
+            rwdata->framePos.y = rwdata->pos.f[1] - rwdata->ground;
+            rwdata->framePos.z = rwdata->pos.f[2];
 
-            rwdata->unk30 = rwdata->unk14;
+            rwdata->frameYrot = rwdata->yrot;
 
-            tmppos[1].x = rwdata->unk34.f[0] + (pos.f[0] * cosAngle) + (pos.f[2] * sinAngle);
+            tmppos[1].x = rwdata->framePos.f[0] + (pos.f[0] * cosAngle) + (pos.f[2] * sinAngle);
             tmppos[1].y = pos.f[1];
-            tmppos[1].z = rwdata->unk34.f[2] - (pos.f[0] * sinAngle) + (pos.f[2] * cosAngle);
+            tmppos[1].z = rwdata->framePos.f[2] - (pos.f[0] * sinAngle) + (pos.f[2] * cosAngle);
 
-            rwdata->unk24.x = tmppos[1].f[0];
-            rwdata->unk24.y = tmppos[1].f[1];
-            rwdata->unk24.z = tmppos[1].f[2];
+            rwdata->nextPos.x = tmppos[1].f[0];
+            rwdata->nextPos.y = tmppos[1].f[1];
+            rwdata->nextPos.z = tmppos[1].f[2];
 
-            if (rwdata->unk18 == 0.0f) {
-                rwdata->unk20 = rwdata->unk30 + angleDelta;
+            if (rwdata->yrotBlend == 0.0f) {
+                rwdata->nextYrot = rwdata->frameYrot + angleDelta;
 
-                if (rwdata->unk20 >= M_TAU_F) {
-                    rwdata->unk20 -= M_TAU_F;
+                if (rwdata->nextYrot >= M_TAU_F) {
+                    rwdata->nextYrot -= M_TAU_F;
                 }
             }
 
-            rwdata->unk01 = 1;
+            rwdata->nextValid = 1;
         } else {
             f32 x;
             f32 y;
@@ -2398,35 +2396,35 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
             tmppos[0].y = y;
             tmppos[0].z = rwdata->pos.f[2] + z * (1.0f - model->frameFrac);
 
-            rwdata->unk24.x = tmppos[0].x;
-            rwdata->unk24.y = tmppos[0].y;
-            rwdata->unk24.z = tmppos[0].z;
+            rwdata->nextPos.x = tmppos[0].x;
+            rwdata->nextPos.y = tmppos[0].y;
+            rwdata->nextPos.z = tmppos[0].z;
 
-            rwdata->unk34.f[0] = rwdata->unk24.f[0] - x;
-            rwdata->unk34.f[1] = (rwdata->pos.f[1] - rwdata->ground) - (y - (rwdata->pos.f[1] - rwdata->ground)) * model->frameFrac / (1.0f - model->frameFrac);
-            rwdata->unk34.f[2] = rwdata->unk24.f[2] - z;
+            rwdata->framePos.f[0] = rwdata->nextPos.f[0] - x;
+            rwdata->framePos.f[1] = (rwdata->pos.f[1] - rwdata->ground) - (y - (rwdata->pos.f[1] - rwdata->ground)) * model->frameFrac / (1.0f - model->frameFrac);
+            rwdata->framePos.f[2] = rwdata->nextPos.f[2] - z;
 
-            temp_f14 = rwdata->unk14 - angleDelta;
+            temp_f14 = rwdata->yrot - angleDelta;
 
             if (temp_f14 < 0.0f) {
                 temp_f14 += M_TAU_F;
             }
 
-            rwdata->unk30 = modelLerpAngle(rwdata->unk14, temp_f14, model->frameFrac);
+            rwdata->frameYrot = modelLerpAngle(rwdata->yrot, temp_f14, model->frameFrac);
 
-            if (rwdata->unk18 == 0.0f) {
-                rwdata->unk20 = rwdata->unk30 + angleDelta;
+            if (rwdata->yrotBlend == 0.0f) {
+                rwdata->nextYrot = rwdata->frameYrot + angleDelta;
 
-                if (rwdata->unk20 >= M_TAU_F) {
-                    rwdata->unk20 -= M_TAU_F;
+                if (rwdata->nextYrot >= M_TAU_F) {
+                    rwdata->nextYrot -= M_TAU_F;
                 }
             }
 
-            rwdata->unk01 = 1;
+            rwdata->nextValid = 1;
         }
 
         if (hadNoAnim) {
-            rwdata->unk34.y = rwdata->unk24.y;
+            rwdata->framePos.y = rwdata->nextPos.y;
         }
     }
 }
@@ -2663,22 +2661,22 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
         node = (ModelNode *) root->Data;
         header = (ModelRwData_HeaderRecord *) modelGetNodeRwData(modelptr, root);
 
-        if (header->unk00 == 0)
+        if (header->frozen == 0)
         {
             jointnum = node->Opcode;
             skeleton = modelptr->obj->Skeleton;
             scale = modelptr->scale * modelptr->anim_translation_scale;
             pos = (coord3d){0};
 
-            pos34.f[0] = header->unk34.x;
-            pos34.f[1] = header->unk34.y;
-            pos34.f[2] = header->unk34.z;
-            anglecur = header->unk30;
-            pos24.f[0] = header->unk24.x;
-            pos24.f[1] = header->unk24.y;
-            pos24.f[2] = header->unk24.z;
-            angle20 = header->unk20;
-            flag = header->unk01;
+            pos34.f[0] = header->framePos.x;
+            pos34.f[1] = header->framePos.y;
+            pos34.f[2] = header->framePos.z;
+            anglecur = header->frameYrot;
+            pos24.f[0] = header->nextPos.x;
+            pos24.f[1] = header->nextPos.y;
+            pos24.f[2] = header->nextPos.z;
+            angle20 = header->nextYrot;
+            flag = header->nextValid;
 
             speed = modelptr->speed;
 
@@ -2738,7 +2736,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                     pos34.f[1] = pos24.f[1];
                     pos34.f[2] = pos24.f[2];
 
-                    if (header->unk18 == 0.0f)
+                    if (header->yrotBlend == 0.0f)
                     {
                         anglecur = angle20;
                     }
@@ -2765,14 +2763,14 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         }
                     }
 
-                    cosangle = cosf(header->unk14);
-                    sinangle = sinf(header->unk14);
+                    cosangle = cosf(header->yrot);
+                    sinangle = sinf(header->yrot);
 
                     pos34.f[0] += (pos.x * cosangle) + (pos.z * sinangle);
                     pos34.f[1] = pos.y;
                     pos34.f[2] += (-pos.x * sinangle) + (pos.z * cosangle);
 
-                    if (header->unk18 == 0.0f)
+                    if (header->yrotBlend == 0.0f)
                     {
                         anglecur += angledelta;
 
@@ -2818,8 +2816,8 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         }
                     }
 
-                    cosangle = cosf(header->unk30);
-                    sinangle = sinf(header->unk30);
+                    cosangle = cosf(header->frameYrot);
+                    sinangle = sinf(header->frameYrot);
 
                     if (g_ModelAnimMergingEnabled && modelptr->anim2 != NULL)
                     {
@@ -2837,16 +2835,16 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                             t = (modelptr->mergeWeight + t) * 0.5f;
 
-                            v[0] = ((header->unk40.x - header->unk4c.x) * speed2) / speed;
-                            v[2] = ((header->unk40.z - header->unk4c.z) * speed2) / speed;
+                            v[0] = ((header->anim2NextPos.x - header->anim2FramePos.x) * speed2) / speed;
+                            v[2] = ((header->anim2NextPos.z - header->anim2FramePos.z) * speed2) / speed;
 
                             pos24.f[0] += (v[0] - pos24.f[0]) * t;
                             pos24.f[2] += (v[2] - pos24.f[2]) * t;
                         }
                         else
                         {
-                            pos24.f[0] += (header->unk40.x - header->unk4c.x) * modelptr->mergeWeight;
-                            pos24.f[2] += (header->unk40.z - header->unk4c.z) * modelptr->mergeWeight;
+                            pos24.f[0] += (header->anim2NextPos.x - header->anim2FramePos.x) * modelptr->mergeWeight;
+                            pos24.f[2] += (header->anim2NextPos.z - header->anim2FramePos.z) * modelptr->mergeWeight;
                         }
 
                         pos24.f[0] += pos34.f[0];
@@ -2860,23 +2858,23 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         pos24.f[2] = (pos34.f[2] - (pos.f[0] * sinangle)) + (pos.f[2] * cosangle);
                     }
 
-                    if (0.0f < header->unk5c)
+                    if (0.0f < header->turnFrames)
                     {
                         if (0.0f < speed)
                         {
                             inv = 1.0f / speed;
 
-                            if (header->unk5c < inv)
+                            if (header->turnFrames < inv)
                             {
-                                inv = header->unk5c;
-                                header->unk5c = 0.0f;
+                                inv = header->turnFrames;
+                                header->turnFrames = 0.0f;
                             }
                             else
                             {
-                                header->unk5c -= inv;
+                                header->turnFrames -= inv;
                             }
 
-                            angledelta += header->unk58 * inv;
+                            angledelta += header->turnPerFrame * inv;
 
                             if (angledelta < 0.0f)
                             {
@@ -2889,7 +2887,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         }
                     }
 
-                    if (header->unk18 == 0.0f)
+                    if (header->yrotBlend == 0.0f)
                     {
                         angle20 = anglecur + angledelta;
 
@@ -2901,14 +2899,14 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                 }
             }
 
-            header->unk34.x = pos34.f[0];
-            header->unk34.y = pos34.f[1];
-            header->unk34.z = pos34.f[2];
-            header->unk30 = anglecur;
-            header->unk24.x = pos24.f[0];
-            header->unk24.y = pos24.f[1];
-            header->unk24.z = pos24.f[2];
-            header->unk20 = angle20;
+            header->framePos.x = pos34.f[0];
+            header->framePos.y = pos34.f[1];
+            header->framePos.z = pos34.f[2];
+            header->frameYrot = anglecur;
+            header->nextPos.x = pos24.f[0];
+            header->nextPos.y = pos24.f[1];
+            header->nextPos.z = pos24.f[2];
+            header->nextYrot = angle20;
 
             va = modelptr->framea;
             vb = modelptr->frameb;
@@ -2936,13 +2934,13 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
 
                 if ((forward && (curframe < end2)) || (!forward && (end2 < curframe)))
                 {
-                    if (header->unk02)
+                    if (header->anim2NextValid)
                     {
-                        header->unk4c.y = header->unk40.y;
+                        header->anim2FramePos.y = header->anim2NextPos.y;
                     }
                     else
                     {
-                        header->unk4c.y = header->unk34.y;
+                        header->anim2FramePos.y = header->framePos.y;
                     }
 
                     modelptr->frame2a = modelConstrainOrWrapAnimFrame(end2, modelptr->anim2, modelptr->endframe2);
@@ -2956,8 +2954,8 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
                         pos.y *= scale;
                     }
 
-                    header->unk40.y = pos.y;
-                    header->unk02 = 1;
+                    header->anim2NextPos.y = pos.y;
+                    header->anim2NextValid = 1;
                 }
 
                 if (forward)
@@ -2973,7 +2971,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
             }
             else
             {
-                header->unk02 = 0;
+                header->anim2NextValid = 0;
             }
         }
         else
@@ -3819,7 +3817,7 @@ void modelRenderNodeGundl(ModelRenderData* renderdata, ModelNode* arg1)
 {
     ModelRoData_DisplayListRecord* rodata = &arg1->Data->DisplayList;
 
-    if (renderdata->unk18 == 0)
+    if (renderdata->skipDraw == 0)
     {
         if ((renderdata->flags & 1) && rodata->Primary)
         {
@@ -3999,7 +3997,7 @@ void modelRenderNodeDl(ModelRenderData *renderdata, Model *model, ModelNode *nod
 {
     union ModelRoData *rodata = node->Data;
 
-    if (!renderdata->unk18)
+    if (!renderdata->skipDraw)
     {
         if (renderdata->flags & 1)
         {
@@ -4083,7 +4081,7 @@ void modelRenderNodeOp20(ModelRenderData *param_1, struct Model *param_2, struct
  */
 void modelRenderNodeRotTex(ModelRenderData *renderdata, ModelNode *node)
 {
-    if (renderdata->unk18 == 0 && (renderdata->flags & 2))
+    if (renderdata->skipDraw == 0 && (renderdata->flags & 2))
     {
 
         ModelRoData_DisplayListPrimaryRecord *rodata = &node->Data->DisplayListPrimary;
@@ -4196,13 +4194,13 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
     rodata = &node->Data->Tube;
     rwdata = &modelGetNodeRwData(model, node)->Tube;
 
-    if (rodata->unk00 != NULL)
+    if (rodata->prevTube != NULL)
     {
-        node_from_07 = rodata->unk00;
+        node_from_07 = rodata->prevTube;
     }
     else
     {
-        node_from_07 = rodata->unk04;
+        node_from_07 = rodata->nextTube;
     }
 
     rodata2 = &node_from_07->Data->Tube;
@@ -4217,7 +4215,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
         rw_index2 = rwdata2->index;
         c_entry = &rodata->Children[rw_index];
 
-        if (rodata->unk00 != NULL)
+        if (rodata->prevTube != NULL)
         {
             rw_index_sel = rw_index2;
             rw_index_sel2 = rw_index;
@@ -4227,7 +4225,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
         {
             rw_index_sel = rw_index;
             rw_index_sel2 = rw_index2;
-            renderpos_index = modelFindNodeMtxIndex(rodata->unk04, 0x200);
+            renderpos_index = modelFindNodeMtxIndex(rodata->nextTube, 0x200);
         }
 
         render_pos = &model->render_pos[renderpos_index];
@@ -4267,7 +4265,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
             c_entry_index = rw_index_sel;
         }
 
-        entry_04 = c_entry->unk04;
+        entry_04 = c_entry->entries;
 
         gSPSegment(renderdata->gdl++, SPSEGMENT_MODEL_COL1, osVirtualToPhysical(rodata->BaseAddr));
 
@@ -4284,10 +4282,10 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
                         *vtx1 = rodata->Vertices[child_vtx->VtxIndex];
                         *vtx2 = rodata->Vertices[child_vtx->VtxIndex+1];
 
-                        if (rodata->unk04 != NULL)
+                        if (rodata->nextTube != NULL)
                         {
                             c_entry2 = &rodata->Children[c_entry_index];
-                            entry2_04 = c_entry2->unk04;
+                            entry2_04 = c_entry2->entries;
 
                             for (c_entry2_count = c_entry2->NumEntries; c_entry2_count > 0; c_entry2_count--)
                             {
@@ -4324,7 +4322,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
                         else
                         {
                             c_entry2 = &rodata2->Children[c_entry_index];
-                            entry2_04 = c_entry2->unk04;
+                            entry2_04 = c_entry2->entries;
 
                             for (c_entry2_count = c_entry2->NumEntries; c_entry2_count > 0; c_entry2_count--)
                             {
@@ -4376,7 +4374,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
                         gSPMatrix(renderdata->gdl++, osVirtualToPhysical(render_pos), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
                         gSPVertex(renderdata->gdl++, osVirtualToPhysical(vtx1), 2, 0);
                         gSPMatrix(renderdata->gdl++, osVirtualToPhysical(render_pos2), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-                        gSPVertex(renderdata->gdl++, osVirtualToPhysical(&rodata->Vertices[child_vtx->VtxIndex] + 2), (u32)(child_vtx->unk01 - 2), 2);
+                        gSPVertex(renderdata->gdl++, osVirtualToPhysical(&rodata->Vertices[child_vtx->VtxIndex] + 2), (u32)(child_vtx->numVtx - 2), 2);
 
                         entry_04 += sizeof(struct ModelRoData_Child_Vtx);
 
@@ -5398,7 +5396,7 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
                     PROMOTE(rodata->Images);
                     for (i = 0; i < rodata->NumChildren; i++)
                     {
-                        PROMOTE(rodata->Children[i].unk04);
+                        PROMOTE(rodata->Children[i].entries);
                     }
 
                     rodata->BaseAddr = (void *)fileramaddr;
@@ -5408,8 +5406,8 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
             case MODELNODE_OPCODE_TUBE:
                 {
                     ModelRoData_TubeRecord* rodata = &node->Data->Tube;
-                    PROMOTE(rodata->unk00);
-                    PROMOTE(rodata->unk04);
+                    PROMOTE(rodata->prevTube);
+                    PROMOTE(rodata->nextTube);
 
                     // shared with op05
                     PROMOTE(rodata->Children);
@@ -5417,7 +5415,7 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
                     PROMOTE(rodata->Images);
                     for (i = 0; i < rodata->NumChildren; i++)
                     {
-                        PROMOTE(rodata->Children[i].unk04);
+                        PROMOTE(rodata->Children[i].entries);
                     }
 
                     rodata->BaseAddr = (void *)fileramaddr;
@@ -5464,7 +5462,7 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
             case MODELNODE_OPCODE_OP11:
                 {
                     ModelRoData_Op11Record* rodata = &node->Data->Op11;
-                    PROMOTE(rodata->unk0c[15]);
+                    PROMOTE(rodata->raw[15]);
                     rodata->BaseAddr = (void *)fileramaddr;
                     break;
                 }
@@ -5671,33 +5669,33 @@ void modelInitRwData(Model *model, ModelNode *startnode)
                 {
                     ModelRwData_HeaderRecord* rwdata = &modelGetNodeRwData(model, node)->Header;
 
-                    rwdata->unk00 = 0;
+                    rwdata->frozen = 0;
                     rwdata->ground = 0;
                     rwdata->pos.x = 0;
                     rwdata->pos.y = 0;
                     rwdata->pos.z = 0;
-                    rwdata->unk14 = 0;
-                    rwdata->unk18 = 0;
-                    rwdata->unk1c = 0;
+                    rwdata->yrot = 0;
+                    rwdata->yrotBlend = 0;
+                    rwdata->yrotBlendTarget = 0;
 
-                    rwdata->unk01 = 0;
-                    rwdata->unk34.x = 0;
-                    rwdata->unk34.y = 0;
-                    rwdata->unk34.z = 0;
-                    rwdata->unk30 = 0;
-                    rwdata->unk24.x = 0;
-                    rwdata->unk24.y = 0;
-                    rwdata->unk24.z = 0;
-                    rwdata->unk20 = 0;
+                    rwdata->nextValid = 0;
+                    rwdata->framePos.x = 0;
+                    rwdata->framePos.y = 0;
+                    rwdata->framePos.z = 0;
+                    rwdata->frameYrot = 0;
+                    rwdata->nextPos.x = 0;
+                    rwdata->nextPos.y = 0;
+                    rwdata->nextPos.z = 0;
+                    rwdata->nextYrot = 0;
 
-                    rwdata->unk02 = 0;
-                    rwdata->unk4c.x = 0;
-                    rwdata->unk4c.y = 0;
-                    rwdata->unk4c.z = 0;
-                    rwdata->unk40.x = 0;
-                    rwdata->unk40.y = 0;
-                    rwdata->unk40.z = 0;
-                    rwdata->unk5c = 0;
+                    rwdata->anim2NextValid = 0;
+                    rwdata->anim2FramePos.x = 0;
+                    rwdata->anim2FramePos.y = 0;
+                    rwdata->anim2FramePos.z = 0;
+                    rwdata->anim2NextPos.x = 0;
+                    rwdata->anim2NextPos.y = 0;
+                    rwdata->anim2NextPos.z = 0;
+                    rwdata->turnFrames = 0;
                     break;
                 }
 

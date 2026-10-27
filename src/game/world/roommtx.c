@@ -120,7 +120,6 @@ s32 roomMtxFindFree(void)
 /**
  * Updates the status flags for rooms, resetting those that are inactive.
  *
- * NTSC address 0x7F0BC7D4.
  */
 void roomMtxTick(void)
 {
@@ -146,7 +145,6 @@ void roomMtxTick(void)
 /**
  * Manages room index allocation and matrix setup for a given room.
  *
- * NTSC address 0x7F0BC85C.
  */
 s32 roomMtxGet(s32 room)
 {

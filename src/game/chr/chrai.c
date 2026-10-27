@@ -4736,9 +4736,9 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             obj->projectile->speed.x = 0;
                             obj->projectile->speed.y = 0.016666666f; // step height?
                             obj->projectile->speed.z = 0;
-                            obj->projectile->unk10.x = 0;
-                            obj->projectile->unk10.y = 0.29166666f; // direction to move?
-                            obj->projectile->unk10.z = 0;
+                            obj->projectile->accel.x = 0;
+                            obj->projectile->accel.y = 0.29166666f; // direction to move?
+                            obj->projectile->accel.z = 0;
                         }
                     }
                     Offset += sizeof(AiObjectRocketLaunchRecord);

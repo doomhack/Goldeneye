@@ -47,11 +47,11 @@ typedef struct GlobalVisCommand {
     s32 arg;
 } GlobalVisCommand;
 
-typedef struct Unk80081600 {
-    bbox2d unk0;
-    s32 unk10;
+typedef struct BgVisState {
+    bbox2d box;
+    s32 stopExec; // set by VISOP_DONT_EXEC_COMMANDS_EVEN_ON_RETURN
     s32 unk14;
-} Unk80081600;
+} BgVisState;
 
 enum GlobalVisOpcode {
     GlobalVisOpcode_SIGNED_ENUM = -1,
@@ -81,7 +81,7 @@ enum GlobalVisOpcode {
     VISOP_ENDIF = 0x5c
 };
 
-extern struct unk_portalstruct table_for_portals[PORTMAX];
+extern PortalCache g_BgPortalCache[PORTMAX];
 extern s32 g_BgHeader;
 extern s32 *g_BgVisCommands;
 extern f32 *g_BgRoomValues;
@@ -317,8 +317,8 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
     for (i = 0; i < g_BgNumberOfRoomsDrawn; i++)
     {
         if (curroom == g_BgRoomsDrawn[i].roomid) {
-            if (g_BgRoomsDrawn[i].unk1 < unk1) {
-                g_BgRoomsDrawn[i].unk1 = unk1;
+            if (g_BgRoomsDrawn[i].depth < unk1) {
+                g_BgRoomsDrawn[i].depth = unk1;
             }
             bgRectOutersect(screensize,&g_BgRoomsDrawn[i].bbox);
             temp = g_BgRoomsDrawn[i].next;
@@ -338,7 +338,7 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
         i = 0x77;
     }
     g_BgRoomsDrawn[i].roomid = curroom;
-    g_BgRoomsDrawn[i].unk1 = unk1;
+    g_BgRoomsDrawn[i].depth = unk1;
     g_BgRoomsDrawn[i].bbox.min.x = screensize->min.x;
     g_BgRoomsDrawn[i].bbox.min.y = screensize->min.y;
     g_BgRoomsDrawn[i].bbox.max.x = screensize->max.x;
@@ -359,7 +359,7 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
     }
 #endif
     g_BgRoomsDrawn[i].roomid = curroom;
-    g_BgRoomsDrawn[i].unk1 = unk1;
+    g_BgRoomsDrawn[i].depth = unk1;
     g_BgRoomsDrawn[i].bbox.min.x = screensize->min.x;
     g_BgRoomsDrawn[i].bbox.min.y = screensize->min.y;
     g_BgRoomsDrawn[i].bbox.max.x = screensize->max.x;
@@ -455,14 +455,14 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
     for (j = 0; j < g_BgNumberOfRoomsDrawn; j++)
     {
-        if (b_max < g_BgRoomsDrawn[j].unk1)
+        if (b_max < g_BgRoomsDrawn[j].depth)
         {
-            b_max = g_BgRoomsDrawn[j].unk1;
+            b_max = g_BgRoomsDrawn[j].depth;
         }
  
-        if (g_BgRoomsDrawn[j].unk1 < b_min)
+        if (g_BgRoomsDrawn[j].depth < b_min)
         {
-            b_min=g_BgRoomsDrawn[j].unk1;
+            b_min=g_BgRoomsDrawn[j].depth;
         }
     }
  
@@ -470,7 +470,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
     {
         for (j = 0; j < g_BgNumberOfRoomsDrawn; j++)
         {
-            if (i == g_BgRoomsDrawn[j].unk1)
+            if (i == g_BgRoomsDrawn[j].depth)
             {
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
@@ -522,7 +522,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
         for (j = 0; j < g_BgNumberOfRoomsDrawn; j++)
         {
-            if (i == g_BgRoomsDrawn[j].unk1)
+            if (i == g_BgRoomsDrawn[j].depth)
             {
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogSetRenderFogColor(
@@ -707,7 +707,7 @@ void bgLoad(LEVEL_INDEX levelid)
         for (i = 1; i < g_MaxNumRooms; i++)
         {
             g_BgRoomInfo[i].model_bin_loaded = 0;
-            g_BgRoomInfo[i].field_35 = 0;
+            g_BgRoomInfo[i].requested = 0;
  
             if (g_BgRoomFiles[i].pPriMappingBin != (NULL))
             {
@@ -1119,7 +1119,7 @@ void bgResetPortalTable(void)
 
     for (i = 0; i < PORTMAX; i++) 
     {
-        table_for_portals[i].unk0 = -1;
+        g_BgPortalCache[i].count = -1;
     }
 }
 
@@ -1328,7 +1328,7 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
     s32 onscreencount;
     s32 i;
 
-    cache = &table_for_portals[portalnum];
+    cache = &g_BgPortalCache[portalnum];
 
     if (cache->count >= 0)
     {
@@ -1959,7 +1959,7 @@ s32 bgLoadRoomSecondaryGdl(s32 roomnum, u8 *dst, s32 allocsize)
 
 s32 bgCheckIfRoomModelNeedsLoad(s32 roomID)
 {
-    g_BgRoomInfo[roomID].field_35 = 1;
+    g_BgRoomInfo[roomID].requested = 1;
     if (g_BgRoomInfo[roomID].model_bin_loaded == 0)
     {
         bgLoadRoomModelData(roomID);
@@ -2183,7 +2183,7 @@ void bgRoomsTickUnload(void)
 
     for(i = 1; i < g_MaxNumRooms; i++)
     {
-        if (g_BgRoomInfo[i].field_35 == 0)
+        if (g_BgRoomInfo[i].requested == 0)
         {
             if (g_BgRoomInfo[i].model_bin_loaded == 4)
             {
@@ -3469,7 +3469,7 @@ s32 bgStackGetNthValueFromEnd(s32 n)
 
 GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
 {
-    static Unk80081600 portalBox;
+    static BgVisState portalBox;
 
     GlobalVisCommand  *ret;
     s32                value;
@@ -3477,7 +3477,7 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
     bbox2d             sp58;
     u8                 preload_ok = TRUE;
 
-    portalBox.unk10 = FALSE;
+    portalBox.stopExec = FALSE;
 
     if (cmd == NULL)
     {
@@ -3564,10 +3564,10 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
             case VISOP_FORCE_VISIBLE:
                 if (execute)
                 {
-                    portalBox.unk0.f[0][0] = g_CurrentPlayer->screensize.f[0][0];
-                    portalBox.unk0.f[0][1] = g_CurrentPlayer->screensize.f[0][1];
-                    portalBox.unk0.f[1][0] = g_CurrentPlayer->screensize.f[1][0];
-                    portalBox.unk0.f[1][1] = g_CurrentPlayer->screensize.f[1][1];
+                    portalBox.box.f[0][0] = g_CurrentPlayer->screensize.f[0][0];
+                    portalBox.box.f[0][1] = g_CurrentPlayer->screensize.f[0][1];
+                    portalBox.box.f[1][0] = g_CurrentPlayer->screensize.f[1][0];
+                    portalBox.box.f[1][1] = g_CurrentPlayer->screensize.f[1][1];
 
                     current_visibility = FALSE;
                 }
@@ -3578,11 +3578,11 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
             case VISOP_MATCH_PORTAL_VIS:
                 if (execute)
                 {
-                    if (bgGetPortalScreenBox(cmd[1].arg, &portalBox.unk0) == 0)
+                    if (bgGetPortalScreenBox(cmd[1].arg, &portalBox.box) == 0)
                     {
                         current_visibility = TRUE;
                     }
-                    else if (bgRectIntersect(&portalBox.unk0, &g_CurrentPlayer->screensize) == 0)
+                    else if (bgRectIntersect(&portalBox.box, &g_CurrentPlayer->screensize) == 0)
                     {
                         current_visibility = TRUE;
                     }
@@ -3602,12 +3602,12 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
                     {
                         if (current_visibility)
                         {
-                            bbox2dCopy(&portalBox.unk0, &sp68);
+                            bbox2dCopy(&portalBox.box, &sp68);
                             current_visibility = FALSE;
                         }
                         else
                         {
-                            bgRectOutersect(&portalBox.unk0, &sp68);
+                            bgRectOutersect(&portalBox.box, &sp68);
                         }
                     }
                 }
@@ -3626,7 +3626,7 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
                     {
                         current_visibility = TRUE;
                     }
-                    else if (!bgRectIntersect(&portalBox.unk0, &sp58))
+                    else if (!bgRectIntersect(&portalBox.box, &sp58))
                     {
                         current_visibility = TRUE;
                     }
@@ -3638,9 +3638,9 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
             case VISOP_ADD_VISIBLE_ROOM:
                 if (execute && !current_visibility)
                 {
-                    if (bgIsRoomOnScreen(cmd[1].arg, (struct rectbbox *)&portalBox.unk0))
+                    if (bgIsRoomOnScreen(cmd[1].arg, (struct rectbbox *)&portalBox.box))
                     {
-                        bgAddVisibleRoom(cmd[1].arg, 0, &portalBox.unk0, 0);
+                        bgAddVisibleRoom(cmd[1].arg, 0, &portalBox.box, 0);
 
                         list_visible_rooms_in_cur_global_vis_packet[num_visible_rooms_in_cur_global_vis_packet] = cmd[1].arg;
 
@@ -3724,7 +3724,7 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
 
             case VISOP_ENDIF_CONTINUE_EXEC:
                 cmd += cmd->length;
-                portalBox.unk10 = FALSE;
+                portalBox.stopExec = FALSE;
                 return cmd;
 
             case VISOP_DONT_EXEC_COMMANDS_EVEN_ON_RETURN:
@@ -3733,7 +3733,7 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
                 if (execute)
                 {
                     execute                       = FALSE;
-                    portalBox.unk10 = TRUE;
+                    portalBox.stopExec = TRUE;
                 }
                 else
                 {
@@ -3748,7 +3748,7 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
                 ret = bgParseVisCommands(cmd + cmd->length, value & execute);
                 cmd = ret;
 
-                if (!portalBox.unk10)
+                if (!portalBox.stopExec)
                 {
                     continue;
                 }
@@ -3771,7 +3771,7 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
     }
 }
 
-struct unk_portalstruct table_for_portals[PORTMAX];
+PortalCache g_BgPortalCache[PORTMAX];
 
 #define RS_STOP 0
 
@@ -3917,7 +3917,7 @@ Gfx *bgScissorAndRenderRooms(Gfx *arg0)
             {
                 // speculation in discord: unk1 is probably draw order or similar,
                 // this is a hack to draw the lake first.
-                g_BgRoomsDrawn[i].unk1 = 0;
+                g_BgRoomsDrawn[i].depth = 0;
                 break;
             }
         }

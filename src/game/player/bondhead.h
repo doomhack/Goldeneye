@@ -11,7 +11,7 @@ struct init_bond_anim_unk {
     f32 speedMultiplier;
 
     f32 unk10;
-    f32 unk14;
+    f32 maxSpeed; // the animation is used up to this speed
 };
 
 extern struct init_bond_anim_unk g_BondMoveAnimationSetup[];

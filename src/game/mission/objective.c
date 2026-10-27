@@ -25,7 +25,6 @@
 /*
  * Clears Objectives and states.
  *
- * NTSC address 0x7F004EC0.
  */
 void objectivesReset(void)
 {
@@ -550,7 +549,6 @@ void objectivesCheckDeposit(s32 weaponnum, s32 roomid)
 
 
 /**
- * NTSC address 0x7F057898.
 */
 void objectivesCheckPicture(void)
 {
@@ -613,7 +611,7 @@ void objectivesFinish(void)
 
     for (i = 0; i < OBJECTIVES_MAX; i++)
     {
-        if (g_Objectives[i] != NULL && (g_Objectives[i]->unkD & 1) && g_ObjectiveStatuses[i] != OBJECTIVESTATUS_FAILED)
+        if (g_Objectives[i] != NULL && (g_Objectives[i]->flags & 1) && g_ObjectiveStatuses[i] != OBJECTIVESTATUS_FAILED)
         {
             g_ObjectiveStatuses[i] = OBJECTIVESTATUS_COMPLETE;
         }

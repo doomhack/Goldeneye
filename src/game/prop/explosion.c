@@ -300,8 +300,8 @@ explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_
 
             sp40->explosion_type = explosion_type;
             sp40->age = 0;
-            sp40->unk3CA = -1;
-            sp40->unk3CD = (u8) arg4;
+            sp40->nextDamageAge = -1;
+            sp40->makeScorch = (u8) arg4;
             sp40->prop = sp30;
             sp40->source = arg0;
             sp40->player = (s8) player;
@@ -451,7 +451,7 @@ void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range)
     temp_s2 = arg0->explosion;
     temp_s6 = &g_ExplosionTypes[temp_s2->explosion_type];
 
-    if (temp_s2->age >= temp_s2->unk3CA)
+    if (temp_s2->age >= temp_s2->nextDamageAge)
     {
         propGetRoomIds(arg0, &spE0[0]);
         roomGetProps(&spE0[0]);
@@ -631,7 +631,7 @@ void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range)
             }
         }
 
-        temp_s2->unk3CA = temp_s2->age + (temp_s6->duration >> 2);
+        temp_s2->nextDamageAge = temp_s2->age + (temp_s6->duration >> 2);
     }
 }
 
@@ -642,7 +642,6 @@ void explosionInflictDamage(PropRecord *arg0, f32 horiz_range, f32 vert_range)
 /***
  * see Perfect Dark u32 explosionTick(struct prop *prop)
  *
- * NTSC address 0x7F09CEE8.
 */
 s32 explosionTick(PropRecord* arg0)
 {
@@ -777,7 +776,7 @@ s32 explosionTick(PropRecord* arg0)
             }
         }
 
-        if ((exp->age == ((s16) explosiontype->duration >> 1)) && (exp->unk3CD != 0))
+        if ((exp->age == ((s16) explosiontype->duration >> 1)) && (exp->makeScorch != 0))
         {
             explosionScorchTick(&exp->pos, explosiontype->explosion_size * 4.0f, exp->room);
         }
@@ -822,7 +821,6 @@ u8 explosionPropTick(PropRecord* prop)
 /***
  * Perfect Dark Gfx *explosionRender(struct prop *prop, Gfx *gdl, bool xlupass)
  *
- * NTSC address 0x7F09D5A0.
 */
 Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
@@ -900,7 +898,6 @@ Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
 /***
  * Perfect Dark Gfx *explosionRenderPart(struct explosion *exp, struct explosionpart *part, Gfx *gdl, struct coord *coord, s32 arg4)
  *
- * NTSC address 0x7F09D82C.
 */
 Gfx *explosionRenderPart(struct ExplosionPart *arg0, Gfx *gdl, struct coord3d *coord)
 {
@@ -1022,7 +1019,6 @@ Gfx *explosionRenderPart(struct ExplosionPart *arg0, Gfx *gdl, struct coord3d *c
 /***
  * Perfect Dark Gfx *smokeRenderPart(struct smoke *smoke, struct smokepart *part, Gfx *gdl, struct coord *coord, f32 size)
  *
- * NTSC address 0x7F09DDA4.
 */
 Gfx *explosionSmokeRenderPart(struct Smoke *smoke, struct SmokePart *smoke_part, Gfx *gdl, struct coord3d *arg3)
 {
@@ -1246,7 +1242,6 @@ void explosionCreateSmoke(coord3d *pos, StandTile *stan, s16 smoke_type, u8 *roo
 /***
  * Perfect Dark u32 smokeTick(struct prop *prop)
  *
- * NTSC address 0x7F09E8AC.
 */
 s32 explosionSmokeTick(PropRecord *arg0)
 {
@@ -1435,7 +1430,6 @@ u8 smokePropTick(PropRecord* prop)
 extern Gfx globalDL_0x000 NO_SDATA;
 
 /***
- * NTSC address 0x7F09F03C.
 */
 Gfx *explosionRenderPropSmoke(PropRecord *arg0, Gfx *gdl, s32 withalpha)
 {
@@ -1515,7 +1509,7 @@ void explosionInitFlyingParticles(coord3d *spawnpos, f32 spawn_rand_scale, f32 s
     rand2 = ((((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX)) * 1.12f) - 0.12f;
     rand3 = (2.0f * (((f32) randomGetNext()) * (1.0f / (f32)UINT_MAX))) - 1.0f;
 
-    g_FlyingParticlesBuffer[g_NextParticle].unk00 = 1;
+    g_FlyingParticlesBuffer[g_NextParticle].age = 1;
 
     g_FlyingParticlesBuffer[g_NextParticle].position.f[0] = spawnpos->f[0] + (spawn_rand_scale * rand1);
     g_FlyingParticlesBuffer[g_NextParticle].position.f[1] = spawnpos->f[1] + (spawn_rand_scale * rand2);
@@ -1635,9 +1629,9 @@ void explosionUpdateFlyingParticles(void)
 
     for (i = 0; i < g_MaxParticles; i++)
     {
-        if (g_FlyingParticlesBuffer[i].unk00 > 0)
+        if (g_FlyingParticlesBuffer[i].age > 0)
         {
-            g_FlyingParticlesBuffer[i].unk00 += (s32) scalar;
+            g_FlyingParticlesBuffer[i].age += (s32) scalar;
 
             g_FlyingParticlesBuffer[i].rotation.f[0] += g_FlyingParticlesBuffer[i].rotation_drift.f[0] * scalar;
             g_FlyingParticlesBuffer[i].rotation.f[1] += g_FlyingParticlesBuffer[i].rotation_drift.f[1] * scalar;
@@ -1659,15 +1653,15 @@ void explosionUpdateFlyingParticles(void)
             }
 
             // handles particles life time
-            if ((g_FlyingParticlesBuffer[i].unk00 >= 0x65) && (!(randomGetNext() & 0x1F) || (g_FlyingParticlesBuffer[i].unk00 == 0x12C)))
+            if ((g_FlyingParticlesBuffer[i].age >= 0x65) && (!(randomGetNext() & 0x1F) || (g_FlyingParticlesBuffer[i].age == 0x12C)))
             {
-                g_FlyingParticlesBuffer[i].unk00 = 0;
+                g_FlyingParticlesBuffer[i].age = 0;
             }
 
             // position-related. deletes particles that are too low or too high.
             if ((g_FlyingParticlesBuffer[i].position.f[1] < -30000.0f) || (g_FlyingParticlesBuffer[i].position.f[1] > 30000.0f))
             {
-                g_FlyingParticlesBuffer[i].unk00 = 0;
+                g_FlyingParticlesBuffer[i].age = 0;
             }
         }
     }
@@ -1677,7 +1671,6 @@ void explosionUpdateFlyingParticles(void)
 extern Gfx globalDL_0xa50 NO_SDATA;
 
 /***
- * NTSC address 0x7F0A0034.
 */
 Gfx *explosionRenderFlyingParticles(Gfx *gdl)
 {
@@ -1696,7 +1689,7 @@ Gfx *explosionRenderFlyingParticles(Gfx *gdl)
         // HACK: regalloc has instructions backwards.
         particles = (struct FlyingParticles *)(u32)g_FlyingParticlesBuffer + i;
 
-        if (particles->unk00 > 0)
+        if (particles->age > 0)
         {
             mtx4LoadRotationAndTranslation(&particles->position, &particles->rotation, &sp80);
             mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), &sp80);
@@ -1725,7 +1718,6 @@ Gfx *explosionRenderFlyingParticles(Gfx *gdl)
 
 
 /***
- * NTSC address 0x7F0A027C.
 */
 void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room)
 {
@@ -1912,7 +1904,7 @@ void explosionClearBulletImpactRoom(PropRecord* arg0)
     s32 i;
     for (i = 0; i < BULLET_IMPACT_BUFFER_LEN; i++)
     {
-        if ((arg0 == g_BulletImpactBuffer[i].prop) && (g_ImpactTypes[g_BulletImpactBuffer[i].impact_type].unk1 == 2))
+        if ((arg0 == g_BulletImpactBuffer[i].prop) && (g_ImpactTypes[g_BulletImpactBuffer[i].impact_type].renderMode == 2))
         {
             g_BulletImpactBuffer[i].room = -1;
         }
@@ -1942,7 +1934,6 @@ void explosionSetBulletImpactAlpha(s32 arg0)
 
 
 /***
- * NTSC address 0x7F0A108C.
 */
 void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 impact_type, s16 room, PropRecord *prop, s8 model_render_pos_index, s8 room_clear_flag)
 {
@@ -2042,7 +2033,7 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
         sp9C /= sp88;
         sp98 /= temp_f6;
 
-        if ((sp50->unk2 < 2) && (sp50->unk1 == 2))
+        if ((sp50->zbufferMode < 2) && (sp50->renderMode == 2))
         {
             temp_s0->state |= PROPSTATE_2;
         }
@@ -2149,14 +2140,13 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 
 /***
  * Perfect Dark Gfx *smokeRender(struct prop *prop, Gfx *gdl, bool xlupass)
  *
- * NTSC address 0x7F0A1A94.
 */
 Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2)
 {
 
     s32 i; // var_s4
     s32 sp50;
-    struct Scorch *sp4C;
+    ObjectRecord *obj;
     s32 sp48;
     union RenderPosView *render_pos;
 
@@ -2166,12 +2156,12 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2)
 
     var_s5 = -1;
     sp50 = 0;
-    sp4C = NULL;
+    obj = NULL;
     sp48 = -1;
 
     if (arg1 != NULL)
     {
-        sp4C = arg1->scorch;
+        obj = arg1->obj;
     }
 
     gSPClearGeometryMode(gdl++, G_CULL_BOTH);
@@ -2189,11 +2179,11 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2)
 
                     if (arg2)
                     {
-                        var_v0 = g_ImpactTypes[impact_type].unk2 < 2 && g_ImpactTypes[impact_type].unk1 == 2;
+                        var_v0 = g_ImpactTypes[impact_type].zbufferMode < 2 && g_ImpactTypes[impact_type].renderMode == 2;
                     }
                     else
                     {
-                        var_v0 = (g_ImpactTypes[impact_type].unk2 >= 2) || g_ImpactTypes[impact_type].unk1 != 2;
+                        var_v0 = (g_ImpactTypes[impact_type].zbufferMode >= 2) || g_ImpactTypes[impact_type].renderMode != 2;
                     }
 
                     if (var_v0)
@@ -2204,7 +2194,7 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2)
                         {
                             if (var_s5 != g_BulletImpactBuffer[i].model_render_pos_index)
                             {
-                                render_pos = &sp4C->model->render_pos[g_BulletImpactBuffer[i].model_render_pos_index];
+                                render_pos = &obj->model->render_pos[g_BulletImpactBuffer[i].model_render_pos_index];
                                 var_s5 = g_BulletImpactBuffer[i].model_render_pos_index;
                                 gSPMatrix(gdl++, osVirtualToPhysical(render_pos), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
                             }
@@ -2220,7 +2210,7 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2)
 
                         if (sp48 != impact_type)
                         {
-                            texSelect(&gdl, &g_ImagesImpact[impact_type], g_ImpactTypes[impact_type].unk1, g_ImpactTypes[impact_type].unk2, 2U);
+                            texSelect(&gdl, &g_ImagesImpact[impact_type], g_ImpactTypes[impact_type].renderMode, g_ImpactTypes[impact_type].zbufferMode, 2U);
                             sp48 = impact_type;
                         }
 
@@ -2234,7 +2224,7 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2)
 
     if ((arg1 != NULL) && (sp50 == 0))
     {
-        sp4C->unk02 &= ~(1 << arg2);
+        obj->state &= ~(1 << arg2);
     }
 
     gDPSetColorDither(gdl++, G_CD_BAYER);
@@ -2319,7 +2309,7 @@ void explosionsInit(void)
 
     for (i=0; i<g_MaxParticles; i++)
     {
-        g_FlyingParticlesBuffer[i].unk00 = 0;
+        g_FlyingParticlesBuffer[i].age = 0;
     }
 }
 

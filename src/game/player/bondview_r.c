@@ -269,7 +269,7 @@ void playerApplyIntro(void)
                 case INTROTYPE_SPAWN:
                 {
                     if (g_CurrentSetup.pads != NULL
-                        && (check_ramrom_flags() == ((struct SetupIntroSpawn*)intro_record)->is_demo_playback))
+                        && (check_ramrom_flags() == ((struct SetupIntroSpawn*)intro_record)->demoSlot))
                     {
                         g_Startpad[startpadcount] = &g_CurrentSetup.pads[((struct SetupIntroSpawn*)intro_record)->index];
                         startpadcount++;
@@ -283,7 +283,7 @@ void playerApplyIntro(void)
                 {
                     intro_item = (struct SetupIntroItem*)intro_record;
 
-                    if (check_ramrom_flags() == intro_item->is_demo_playback)
+                    if (check_ramrom_flags() == intro_item->demoSlot)
                     {
                         weaponLoadProjectileModels(intro_item->item_right);
 
@@ -317,7 +317,7 @@ void playerApplyIntro(void)
 
                 case INTROTYPE_AMMO:
                 {
-                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->is_demo_playback)
+                    if (check_ramrom_flags() == ((struct SetupIntroAmmo*)intro_record)->demoSlot)
                     {
                         ammoGive(((struct SetupIntroAmmo*)intro_record)->ammo_type, ((struct SetupIntroAmmo*)intro_record)->ammo_amount);
                     }
@@ -338,11 +338,11 @@ void playerApplyIntro(void)
                     // Converted in place, so only on the first player's run.
                     if (playerGetCurrentNum() == 0)
                     {
-                        intro_swirl->unk08.fval = intro_swirl->unk08.ival / M_U16_MAX_VALUE_F;
-                        intro_swirl->unk0C.fval = intro_swirl->unk0C.ival / M_U16_MAX_VALUE_F;
-                        intro_swirl->unk10.fval = intro_swirl->unk10.ival / M_U16_MAX_VALUE_F;
-                        intro_swirl->unk14.fval = intro_swirl->unk14.ival / M_U16_MAX_VALUE_F;
-                        intro_swirl->unk18.fval = intro_swirl->unk18.ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->offsetfromBond[0].fval = intro_swirl->offsetfromBond[0].ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->offsetfromBond[1].fval = intro_swirl->offsetfromBond[1].ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->offsetfromBond[2].fval = intro_swirl->offsetfromBond[2].ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->scale.fval = intro_swirl->scale.ival / M_U16_MAX_VALUE_F;
+                        intro_swirl->duration.fval = intro_swirl->duration.ival / M_U16_MAX_VALUE_F;
                     }
 
                     intro_record = (struct SetupIntroEmpty*)((s32)intro_record + sizeof(struct SetupIntroSwirl));
@@ -373,11 +373,11 @@ void playerApplyIntro(void)
                         g_CurrentSetupIntroCamera = (struct SetupIntroCamera*)intro_record;
                         g_SetupIntroCameraCount = g_SetupIntroCameraCount + 1;
 
-                        ((struct SetupIntroCamera*)intro_record)->unk04.fval = ((struct SetupIntroCamera*)intro_record)->unk04.ival / 100.0f;
-                        ((struct SetupIntroCamera*)intro_record)->unk08.fval = ((struct SetupIntroCamera*)intro_record)->unk08.ival / 100.0f;
-                        ((struct SetupIntroCamera*)intro_record)->unk0C.fval = ((struct SetupIntroCamera*)intro_record)->unk0C.ival / 100.0f;
-                        ((struct SetupIntroCamera*)intro_record)->unk10.fval = ((struct SetupIntroCamera*)intro_record)->unk10.ival / M_U16_MAX_VALUE_F;
-                        ((struct SetupIntroCamera*)intro_record)->unk14.fval = ((struct SetupIntroCamera*)intro_record)->unk14.ival / M_U16_MAX_VALUE_F;
+                        ((struct SetupIntroCamera*)intro_record)->x.fval = ((struct SetupIntroCamera*)intro_record)->x.ival / 100.0f;
+                        ((struct SetupIntroCamera*)intro_record)->y.fval = ((struct SetupIntroCamera*)intro_record)->y.ival / 100.0f;
+                        ((struct SetupIntroCamera*)intro_record)->z.fval = ((struct SetupIntroCamera*)intro_record)->z.ival / 100.0f;
+                        ((struct SetupIntroCamera*)intro_record)->yaw.fval = ((struct SetupIntroCamera*)intro_record)->yaw.ival / M_U16_MAX_VALUE_F;
+                        ((struct SetupIntroCamera*)intro_record)->pitch.fval = ((struct SetupIntroCamera*)intro_record)->pitch.ival / M_U16_MAX_VALUE_F;
 
                         ((struct SetupIntroCamera*)intro_record)->lang1c.lang_ptr = langGet(((struct SetupIntroCamera*)intro_record)->lang1c.lang_index[1]);
 
@@ -417,7 +417,7 @@ void playerApplyIntro(void)
                     intro_credits = (struct SetupIntroCredits*)intro_record;
 
                     // hack: bad address math
-                    credits = (CreditsEntry*)((s32)g_ptrStageSetupFile + (s32)intro_credits->unk04);
+                    credits = (CreditsEntry*)((s32)g_ptrStageSetupFile + (s32)intro_credits->offset);
                     credits_pointer = credits;
 
                     // what is the point of this?

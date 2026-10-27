@@ -58,8 +58,8 @@ typedef struct s_impacttype {
     f32 width;
     f32 height;
     u8 apptype;
-    u8 unk1;
-    u8 unk2;
+    u8 renderMode; // texSetRenderMode blend mode
+    u8 zbufferMode;
 } s_impacttype;
 
 struct ExplosionPart
@@ -76,10 +76,10 @@ struct Explosion {
     PropRecord *source; // maybe source prop (e.g., crate)
     struct ExplosionPart parts[EXPLOSION_PARTS_LEN];
     s16 age; // some kind of current tick + total elapsed?
-    s16 unk3CA; // total elapsed? Or "next tick" age?
+    s16 nextDamageAge; // damage is dealt every duration/4 frames
 
     s8 explosion_type;
-    s8 unk3CD;
+    s8 makeScorch;
     s8 player;
     s8 unk3CF;
 
@@ -131,7 +131,7 @@ struct BulletImpact {
 };
 
 struct FlyingParticles {
-    s32 unk00;
+    s32 age; // 0 = free
 
     struct coord3d position; // 0x04
     struct coord3d rotation; // 0x10

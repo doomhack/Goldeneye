@@ -23,8 +23,14 @@ The player has two hands, `GUNRIGHT` and `GUNLEFT`, each a `struct hand` in
 * a requested next state (`weapon_current_animation`): `gunEquip` asks for
   `GUN_ANIM_STATE_SWITCH_LOWER`, `gunTryReload` for `RELOAD_START`, `gunStartWatchSwap`
   for `WATCH_LOWER`;
+* how long it has been in that state (`stateTime` in 60 Hz ticks, `stateFrames` in
+  frames);
 * the rounds in the magazine (`weapon_ammo_in_magazine`), sway, recoil and the gun's
-  position on screen.
+  position on screen. A recoil kick blends the gun from `recoilFromPos`/`recoilFromAngle`
+  to `recoilToPos`/`recoilToAngle`; keyframed moves (throws, slashes) write `animMtx`
+  directly. Either sets `useAnimMtx` for that frame;
+* the gun model itself (`gunmodel`, a `Model` without the animation part, with its node
+  data in `gunmodelRwData`) and where its muzzle flash is (`muzzlePos`).
 
 Each hand's gun model is loaded on demand into a buffer of its own (`gunLoadHandModel`).
 `gunSetHandModel` asks for a new model, which is swapped in when the gun is lowered.

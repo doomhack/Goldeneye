@@ -647,7 +647,7 @@ void jointListDraw(ModelRenderData *data, JointListEntry *entry)
         root = entry->rootnode;
         node = root;
 
-        if (data->unk18 != 0)
+        if (data->skipDraw != 0)
         {
             if (entry->sortvalue < modelGetNodeRadius(entry->model, root))
             {
@@ -756,7 +756,7 @@ void jointListDraw(ModelRenderData *data, JointListEntry *entry)
         root = entry->rootnode;
         node = root;
 
-        if (data->unk18 != 0)
+        if (data->skipDraw != 0)
         {
             if (entry->sortvalue < modelGetNodeRadius(entry->model, root))
             {

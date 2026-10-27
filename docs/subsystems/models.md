@@ -91,6 +91,14 @@ into the frame for normal play and another for mirrored play (`flip`, used to pl
 right-handed animation left-handed); mirroring also negates the Y and Z angles. The root's
 motion is read separately (`animReadRootMotion16`).
 
+The root's rwdata (`ModelRwData_HeaderRecord`) holds the root motion between two animation
+frames: `framePos`/`frameYrot` at the current frame and `nextPos`/`nextYrot` at the next
+one (`nextValid` says the next frame has been read), and `modelCalcRootPosition` blends
+them by `frameFrac` into `pos` and `yrot`. While an animation is being merged out,
+`anim2FramePos`/`anim2NextPos` (valid when `anim2NextValid`) carry its height so the merge
+doesn't jump. The attack roll adds a turn of `turnPerFrame` for `turnFrames` frames.
+`frozen` and `yrotBlend` are never set.
+
 Playback state lives in the `Model`:
 
 * `frame` and `frameFrac`: the current frame and how far towards the next one it is. The two
@@ -107,7 +115,7 @@ Playback state lives in the `Model`:
 
 ## Joint lists
 
-Each character keeps a list of the joints of its body, head and hat (`chr->field_20`):
+Each character keeps a list of the joints of its body, held guns and hat (`chr->jointList`):
 one entry per positioning node (header, joints, simple groups and so on). `jointListCalcDepths` and `jointListSortByDepth` sort it by
 distance from the camera. `jointListDraw` draws a character joint by joint from the back
 to the front, each joint drawing its own nodes but not its child joints, and

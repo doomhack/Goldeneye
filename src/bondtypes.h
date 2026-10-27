@@ -659,7 +659,7 @@ typedef union
 
         Mtxf   *mtxlist;        /*0x10*/ // Canonical name. See modelCalcMatricesNoAnim in model.c.
         u32     unk14;          /*0x14*/
-        u32     unk18;          /*0x18*/
+        u32     skipDraw; // never set: walk the nodes without emitting display lists
         u32     unk1c;          /*0x1c*/
 
         u32     unk20;          /*0x20*/
@@ -811,13 +811,13 @@ typedef union
             u8   NumEntries; /*0x00*/
             u8   unk01;      /*0x01*/
             u16  unk02;      /*0x02*/
-            u8  *unk04;      /*0x04*/
+            u8  *entries; // vertex and triangle commands
         } ModelRoData_Child;
 
         typedef struct ModelRoData_Child_Vtx
         {
             u8  Type;     /*0x00*/
-            u8  unk01;    /*0x01*/
+            u8  numVtx;    /*0x01*/
             u16 VtxIndex; /*0x02*/
         } ModelRoData_Child_Vtx;
 
@@ -869,22 +869,22 @@ typedef union
 
         typedef struct ModelRwData_HeaderRecord
         {
-            s8 unk00;
-            s8 unk01;
-            s8 unk02;
+            s8 frozen; // never set: when non-zero the root ignores animation motion
+            s8 nextValid; // nextPos/nextYrot hold the next anim frame
+            s8 anim2NextValid; // anim2NextPos holds the merge animation's next frame
             f32 ground;
             coord3d pos;
-            f32 unk14; // angle
-            f32 unk18;
-            f32 unk1c;
-            f32 unk20; // angle
-            coord3d unk24;
-            f32 unk30; // angle
-            coord3d unk34;
-            coord3d unk40; // "2" version of unk24
-            coord3d unk4c; // "2" version of unk34
-            f32 unk58;
-            f32 unk5c;
+            f32 yrot; // current heading, between frameYrot and nextYrot
+            f32 yrotBlend; // never set: blends yrot towards yrotBlendTarget
+            f32 yrotBlendTarget;
+            f32 nextYrot; // heading at the next anim frame
+            coord3d nextPos; // root position at the next anim frame (y without ground)
+            f32 frameYrot; // heading at the current anim frame
+            coord3d framePos; // root position at the current anim frame (y without ground)
+            coord3d anim2NextPos; // nextPos of the animation being merged out
+            coord3d anim2FramePos; // framePos of the animation being merged out
+            f32 turnPerFrame; // extra turn added each anim frame (attack roll)
+            f32 turnFrames; // frames of extra turn left
         } ModelRwData_HeaderRecord;
 
         /**
@@ -990,8 +990,8 @@ typedef union
          */
         typedef struct ModelRoData_TubeRecord
         {
-            struct ModelNode* unk00;     /*0x00*/
-            struct ModelNode* unk04;     /*0x04*/
+            struct ModelNode* prevTube; // set on the far end of a tube: the end it joins
+            struct ModelNode* nextTube; // set on the near end of a tube: the end it joins
 
             // shares this structure with op05
             s32                       NumChildren; /*0x08*/
@@ -1068,7 +1068,7 @@ typedef union
         {
             union {
                 coord3d pos;       /* 0x00 */
-                u32 unk0c[16];     /* 0x00 */
+                u32 raw[16];     /* 0x00 */
             };
 
             f32 BoundingVolumeRadius; /* 0x40 */
@@ -1293,11 +1293,6 @@ typedef union
         } ModelRwData_DisplayList_CollisionRecord;
 
         // placeholder struct when need to access offset but don't know type.
-        struct ModelRwData_Raw
-        {
-            s32 unk00;
-        };
-
     #pragma endregion Model Node OpCode Definitions
 
     /*
@@ -1342,7 +1337,6 @@ typedef union
         struct ModelRwData_SwitchRecord Switch;
         struct ModelRwData_HeadPlaceholderRecord HeadPlaceholder;
         struct ModelRwData_DisplayList_CollisionRecord DisplayListCollisions;
-        struct ModelRwData_Raw Raw;
     };
 
 
@@ -1435,32 +1429,6 @@ typedef union
             char            *FileName;
         };
         */
-        /*
-         * Model Root Runtime Data (pos, heading, height etc)
-         */
-        struct modeldata_root
-        {                    // type 0x01
-            u16     unk00;   /*0*/
-            u8      unk02;   /*2*/
-            f32     ground;  /*4*/
-            coord3d pos;     //8, 12, 16 - this is the right poition for this, but no idea what this node actually is (used in modelGetNodeRwData)
-            f32     subroty; //14 angle - this also happens to fit best for modelGetRootRotY
-            f32     unk18;   /*18*/
-            u32     unk1c;   /*1c*/
-            f32     unk20;   //20 angle
-            coord3d unk24;
-            f32     unk30; // angle copy of 20
-            coord3d unk34;
-            coord3d unk40; // "2" version of unk24
-            coord3d unk4c; // "2" version of unk34
-            f32     unk58;
-            f32     unk5c;
-        };
-
-        /**
-         * I beleve that "datas" is actually " struct modeldata_root" and that
-         * unk1c is the model node data array
-         */
         typedef struct Model
         {
             s16                unk00;      /*0x00*/   // objInit() indicates that unk00 is a s16...
@@ -1743,21 +1711,21 @@ typedef union
         s8      mode; /*0x00 */
 
         // next mode?
-        s8      unk01; /*0x01 */
+        s8      iter; // obstacle tries so far
 
         /**
          * Related to pos field.
          * Set/unset flag?
          * Offset 0x2.
         */
-        s8      unk02;
+        s8      gotPos;
 
         /**
          * Related to pos_copy field.
          * Set/unset flag?
          * Offset 0x3.
         */
-        s8      unk03;
+        s8      gotPosCopy;
 
         coord3d pos; /*0x04 */
 
@@ -1786,10 +1754,6 @@ typedef union
 
 #pragma region ACT_TYPES
 
-    struct act_init
-    {
-        int padding[30];
-    };
 
     struct act_stand
     {
@@ -1811,7 +1775,7 @@ typedef union
 
     struct act_anim
     {
-        u32 unk02c;     /*0x2c*/
+        u32 alwaysAnimate; // ANIM_UNKNOWN; when clear the guard only animates while on screen
         u32 holdLastFrame;      /*0x30*/
         u32 playSfx;     /*0x34*/
         u32 idleOnEnd;     /*0x38*/
@@ -1842,7 +1806,7 @@ typedef union
 
     struct act_dead
     {
-        bool allowfade;      /*0x2c*/
+        bool fadeTime; // -1 = never fades; counts up until the body is removed
         bool allowreap;      /*0x30*/
         s32  reaptimer;      /*0x34*/
         s32  fadetimer;      /*0x38*/
@@ -1852,15 +1816,15 @@ typedef union
     struct act_argh
     {
         s32 notifychrindex; /*0x2c*/
-        s32 unk30;
+        s32 lastHit60; // g_GlobalTimer when last hit
     };
 
     struct act_preargh
     {
         coord3d pos;    /*0x2c vec*/
-        f32     unk038; /*0x38 relshotangle*/
-        s32     unk03c; /*0x3c hitpart*/
-        s32     unk040; /*0x40 weaponid*/
+        f32     angle; /*0x38 relshotangle*/
+        s32     hitpart; /*0x3c hitpart*/
+        s32     weaponid; /*0x40 weaponid*/
         u32     unk044; /*0x44*/
     };
 
@@ -1868,30 +1832,30 @@ typedef union
     {
         struct weapon_firing_animation_table *animfloats; /*0x2c*/
 
-        s8                                    unk30; /*0x30*/
-        s8                                    unk31;
-        s8                                    unk32; /*0x32*/
-        s8                                    unk33; /*0x33*/
+        s8                                    turning; // TURNSTATE: 1 turning to the target, 2 done
+        s8                                    fired;
+        s8                                    nextGun; // hand to fire next
+        s8                                    numShots; /*0x33*/
 
-        s8                                    unk34; /*0x34*/
+        s8                                    maxShots; /*0x34*/
         s8                                    unk35; /*0x35*/
-        s8                                    unk36; /*0x36*/
-        s8                                    unk37;
+        s8                                    doRecoil; /*0x36*/
+        s8                                    doOneBurst;
 
-        s8                                    unk38[2]; /*0x38*/
-        s8                                    unk3a[2];
+        s8                                    hasGun[2]; // per hand
+        s8                                    singleShot[2]; // per hand: gun fires once per trigger pull
 
-        s8                                    unk3c[2]; /*0x3c*/
+        s8                                    isLauncher[2]; // per hand: rocket or grenade launcher
         s8                                    unk3e;
         s8                                    unk3f;
 
-        u32                                   unk40; /*0x40*/
+        u32                                   numWaitTicks; /*0x40*/
 
         /**
          * Related to attack_time, maybe previous attack time?
          * Offset 0x44.
          */
-        s32                                   unk44;
+        s32                                   lastFire60; // g_GlobalTimer at the last shot
 
         /**
          * Offset 0x48.
@@ -1904,7 +1868,7 @@ typedef union
          */
         u32                                   attacktype;
         u32                                   entityid; /*0x50*/
-        u32                                   unk54;    /*0x54*/
+        u32                                   standing;    /*0x54*/
 
         s32                                   type_of_motion; /*0x58 reaim*/
         u32                                   unk5C;
@@ -1930,16 +1894,16 @@ typedef union
         u32                                   unk02c;        /*0x2c*/
         s32                                   clock_timer30; /*0x30*/
         s32                                   clock_timer34; /*0x34*/
-        u32                                   unk038;        /*0x38*/
+        u32                                   facedTarget;        /*0x38*/
         struct weapon_firing_animation_table *animfloats;    /*0x3c*/
         s32                                   timer40;       /*0x40*/
 
-        s32                                   unk044; /*0x44*/
+        s32                                   nextGun; /*0x44*/
 
-        s8                                    unk48[2]; /*0x48*/
-        s8                                    unk4a[2]; /*0x48*/
+        s8                                    hasGun[2]; /*0x48*/
+        s8                                    singleShot[2]; /*0x48*/
 
-        s8                                    unk4C[2]; /*0x4c*/
+        s8                                    isLauncher[2]; /*0x4c*/
         u8                                    flip;     /*0x4e*/
         s8                                    unk4f;
 
@@ -1969,30 +1933,30 @@ typedef union
     {
         struct weapon_firing_animation_table *animfloats; /*0x2c*/
 
-        s8                                    unk30; /*0x30*/
-        s8                                    unk31;
-        s8                                    unk32; /*0x32*/
-        s8                                    unk33; /*0x33*/
+        s8                                    turning; /*0x30*/
+        s8                                    fired;
+        s8                                    nextGun; /*0x32*/
+        s8                                    numShots; /*0x33*/
 
-        s8                                    unk34; /*0x34*/
-        s8                                    unk35; /*0x35*/
-        s8                                    unk36; /*0x36*/
-        s8                                    unk37;
+        s8                                    maxShots; /*0x34*/
+        s8                                    oneHanded; // one-handed roll animation
+        s8                                    doRecoil; /*0x36*/
+        s8                                    doOneBurst;
 
-        s8                                    unk38[2]; /*0x38*/
-        s8                                    unk3a[2];
+        s8                                    hasGun[2]; /*0x38*/
+        s8                                    singleShot[2];
 
-        s8                                    unk3c[2]; /*0x3c*/
+        s8                                    isLauncher[2]; /*0x3c*/
         s8                                    unk3e;
         s8                                    unk3f;
 
-        u32                                   unk40; /*0x40*/
+        u32                                   numWaitTicks; /*0x40*/
 
         /**
          * Related to attack_time, maybe previous attack time?
          * Offset 0x44.
          */
-        s32                                   unk44;
+        s32                                   lastFire60;
 
         /**
          * Offset 0x48.
@@ -2100,16 +2064,16 @@ typedef union
         // recalculated, the array replaced with a new one and index set to 0.
         /* player offset 0x58 */
         u8             curindex;
-        u8             unk59; // guess: room
+        u8             speedMode; // GOPOS speed: walk, run or sprint
 
         // g_ClockTimer related
-        u16            unk5a;
+        u16            restartTtl; // frames before the route is worked out again
 
         // offset 0x5c
         struct waydata waydata;
 
         // last update time?
-        s32            unk9c;
+        s32            magicCheck60; // g_GlobalTimer when off-screen "magic" movement was last checked
 
         /**
          * Offset 0x9a.
@@ -2208,7 +2172,7 @@ typedef union
 
     struct act_bondmulti
     {
-        f32 *unk2c; // probably pointer to animation data, similar to weapon_firing_animation_table
+        struct weapon_firing_animation_table *animfloats;
 
         s32  unk30;
         s32  unk34;
@@ -2223,15 +2187,7 @@ typedef union
         int padding[30];
     };
 
-    struct act_bytes
-    {
-        s8 padding[120];
-    };
 
-    struct act_ubytes
-    {
-        u8 padding[120];
-    };
 #pragma endregion ACT_TYPES
 
 #pragma region Prop, Chr and Definition Records
@@ -2295,24 +2251,17 @@ typedef union
      * 
      * sizeof = 0x2c = 44 bytes.
      */
+    /* A bullet tracer: a streak flying from a gun along dir */
     typedef struct BeamRecord
     {
-        s8      unk00;
-        s8      item_id; // type ITEM_IDS
-        char    unk02;
-        char    unk03;
-
-        coord3d pos;
-
-        /**
-     * Offset 0x10
-    */
-        struct coord3d delta;
-        f32     unk1c;
-
-        f32     unk20;
-        f32     unk24;
-        f32     unk28;
+        s8      age;       // -1 = unused
+        s8      weaponnum;
+        coord3d from;
+        coord3d dir;
+        f32     maxdist;   // where the shot hit
+        f32     speed;
+        f32     length;
+        f32     dist;      // how far the head has flown
     } BeamRecord;
 
 
@@ -2363,12 +2312,11 @@ typedef union
         CHRFLAG         chrflags;                    /* 0x0014 */
         PropRecord     *prop;                        /* 0x0018 */
         Model          *model;                       /* 0x001C */
-        JointListEntry  *field_20;                    /* 0x0020 */
+        JointListEntry  *jointList; // models drawn for the guard: body, held guns, hat
         f32             chrwidth;                    /* 0x0024 */
         f32             chrheight;                   /* 0x0028 */
         union
         {
-            struct act_init         act_init;
             struct act_stand        act_stand;
             struct act_kneel        act_kneel;
             struct act_anim         act_anim;
@@ -2395,8 +2343,6 @@ typedef union
             struct act_bonddie      act_bonddie;
             struct act_bondmulti    act_bondmulti;
             struct act_null         act_null;
-            struct act_bytes        act_bytes;
-            struct act_ubytes       act_ubytes;
         };
         f32     sumground;          /*0xA4*/
         f32     manground;          /*0xA8*/
@@ -2467,8 +2413,8 @@ typedef union
         struct { /* 0x0168 */
             ALSoundState *ptr_SEbuffer1;
             ALSoundState *ptr_SEbuffer2;
-        } field_160[2];
-        s32            field_178[2];  // 0x178-17c
+        } gunSounds[2]; // two firing sounds per hand
+        s32            nextGunSoundTime[2]; // per hand
 
         /* 0x0180 */
         /**
@@ -2506,47 +2452,35 @@ typedef union
     typedef struct Projectile {
         u32 flags;
         coord3d speed;
-        coord3d unk10;
+        coord3d accel; // added to the rocket's rise speed each frame
 
-        f32 unk1C;
-        Mtxf mtx; // 0x20-0x5c
-
-        f32 unk60;
-        f32 unk64;
-
-        f32 unk68[4];
-        f32 unk78[4];
-
-        struct PropRecord* ownerprop; // 0x88
-        f32 unk8C;
-
-        u32 unk90;
-        f32 unk94;
-        struct ALSoundState* sounds[2]; // 0x98
-
-        u32 lastSfxTimer; // 0xa0
-        u32 soundSlot; // 0xa4
-        u32 unkA8;
-        u32 unkAC;
-
-        f32 unkB0; // runtime y position?
-        f32 unkB4; // previous pos.y?
-        DROPTYPE droptype; // 0xB8
-        s32 refreshrate; // 0xBC;
-
-        f32 unkC0;
-        f32 unkC4;
-        f32 unkC8;
-
-        u8 unkCC[8]; // array of rooms
-
-        f32 unkd4; // probably struct coord3d
-        u32 unkD8;
-        u32 unkDC;
-
-        u32 age; //0xE0
-        struct ObjectRecord* obj; // 0xE4;
-        s32 unkE8;
+        f32 riseTime; // rockets: frames spent rising, up to ROCKET_INITIAL_GRAVITY_MODIFIER
+        Mtxf mtx;
+        f32 rotFrac; // 0..1 from startRot to restRot
+        f32 rotSpeed; // rotFrac added per frame
+        f32 startRot[4]; // quaternion when thrown
+        f32 restRot[4]; // quaternion lying flat
+        struct PropRecord* ownerprop;
+        f32 bounciness; // vertical speed kept on a bounce
+        u32 numBounces;
+        f32 groundFriction; // horizontal slowdown per frame once landed
+        struct ALSoundState* sounds[2];
+        u32 lastSfxTimer;
+        u32 soundSlot;
+        u32 airTime; // frames airborne
+        u32 lastHitSoundTick; // g_LvTickCount of the last hit-the-wall sound
+        f32 riseY; // rockets: height the rocket rises towards
+        f32 riseSpeed;
+        DROPTYPE droptype;
+        s32 refreshrate;
+        f32 scaleX; // model scale along each axis
+        f32 scaleY;
+        f32 scaleZ;
+        u8 rooms[8]; // rooms the projectile is in, 0xff terminated
+        coord3d targetPos; // where a launched projectile heads first
+        u32 age;
+        struct ObjectRecord* obj;
+        s32 launchTick; // g_LvTickCount at launch; the oldest projectile is reused first
     } Projectile;
 
     typedef struct Embedment {
@@ -2554,23 +2488,6 @@ typedef union
         /*0x004*/ Mtxf matrix;
         /*0x044*/ struct Projectile *projectile;
     } Embedment;
-
-    // Not exactly sure where this belongs or if it may even already have an existing struct
-    typedef struct AttachmentChild {
-        u8 pad00[0x01];
-        u8 flags1;        // 0x01
-        u8 pad02[0x16];
-        f32 unk18;        // 0x18
-    } AttachmentChild;
-
-    // Not exactly sure where this belongs or if it may even already have an existing struct
-    typedef struct AttachedObj {
-        u8 pad00[0x10];
-        AttachmentChild *child;   // 0x10
-        Model *model;             // 0x14
-        Mtxf transform;           // 0x18
-        coord3d position;         // 0x58
-    } AttachedObj;
 
     /**
      * Object (Prop Definition) Record holds common data such as pad and health.
@@ -2834,14 +2751,7 @@ typedef union
          */
         u32                doorOpenSound;
 
-        /**
-         * Max fraction open, aka max displacement.
-         * Offset 0xa8.
-         */
-        f32                frac;
-
-        f32                unkac; /*0xac*/
-        f32                unkb0; /*0xb0*/
+        coord3d            slideDir; /* sliding doors move openPosition along this */
 
         /**
          * Current distance travelled, aka displacement percent.
@@ -2862,7 +2772,7 @@ typedef union
          */
         s8                 openstate;
 
-        s8                 unkbd; /*0xbd*/
+        s8                 numHits; // non-penetrating shots taken; glass doors shatter at 3
 
         // something related to rendering
         s16                calculatedopacity;      /*0xbe*/
@@ -2877,7 +2787,7 @@ typedef union
         */
         struct DoorRecord *linkedDoor;
 
-        Vertex*            unkcc; /*0xcc*/
+        Vertex*            clipVtx; // copy of the vertices for DOORFLAG_CLIP_TO_BBOX
 
         struct ModelRoData_BoundingBoxRecord bbox;
 
@@ -2967,75 +2877,33 @@ typedef union
             New_PropDefHeaderRecord(5), 0, pad + 0 \
         }
 
-    struct beam {
-        /*0x00*/ s8 age;
-        /*0x01*/ s8 weaponnum;
-        /*0x04*/ struct coord3d from;
-        /*0x10*/ struct coord3d dir;
-        /*0x1c*/ f32 maxdist;
-        /*0x20*/ f32 speed;
-        /*0x24*/ f32 mindist;
-        /*0x28*/ f32 dist;
-    };
-
     typedef struct AutogunRecord
     {
         inherits ObjectRecord;
-        s32 padID; // 0x80
+        s32 padID;
 
-        // Units seem to be radians.
-        f32 rot_related; // 0x84
-
-        // Units seem to be radians.
-        f32 unk88;
-
-        // yzero or limit related. Units might be radians.
-        f32 unk8C;
-
-        // Units seem to be radians. Changes when active/firing.
-        f32 unk90;
-
-        // changes when active/firing
-        f32 unk94;
-        f32 unk98;
-
-        // changes when active/firing
-        f32 unk9C;
-
-        // Units seem to be radians. Changes when active/firing
-        f32 unkA0;
-
-        // How fast the gun turns. Runway default is around 0.01f.
-        f32 speed; // 0xA4
-
-        /**
-         * Distance before deactivating.
-         * Default (on Runway at least): 7500.0f
-         * Offset 0xa0.
-        */
-        f32 aimdist; // 0xA8
-        s32 unkAC;
-
-        // changes when active/firing
-        f32 unkB0;
-
-        // changes when active/firing
-        f32 unkB4;
-        s32 unkB8;
-        s32 unkBC;
-        s32  unkC0;
-        ALSoundState *unkC4;
-        ALSoundState *unkC8;
-        struct beam *beam;
-
-        /**
-         * Offset 0xd0.
-         * Used in objTick, setting to zero won't disable.
-        */
-        s32 is_active; // 0xD0
-
-        // changes when active/firing
-        f32 unkD4;
+        /* Angles are radians (the setup file stores 16-bit angles, converted at load) */
+        f32 homeYaw;   // rest yaw; idle drone guns pick random ones
+        f32 maxYaw;    // turn limits either side of homeYaw
+        f32 minYaw;
+        f32 yaw;
+        f32 yawSpeed;
+        f32 homePitch;
+        f32 pitch;
+        f32 pitchSpeed;
+        f32 speed;     // how fast the gun turns; Runway's is about 0.01
+        f32 aimdist;   // range; Runway's is 7500
+        s32 numShots;  // alternates the barrels
+        f32 barrelSpinSpeed;
+        f32 barrelSpinAngle;
+        s32 lastSeenTime;  // g_GlobalTimer when the target was last in sight, or -1
+        s32 onTargetTime;  // g_GlobalTimer when it was last aimed right at the target
+        s32 nextSoundTime;
+        ALSoundState *fireSound1;
+        ALSoundState *fireSound2;
+        BeamRecord *beam;
+        s32 is_active;
+        f32 damageAccum;   // damage is dealt each time this reaches 1
     } AutogunRecord;
 
     // PROPDEF_CCTV (6)
@@ -3043,21 +2911,18 @@ typedef union
     {
         inherits ObjectRecord;
         s32      lookpad;
-        Mtxf     unk84;
-        f32 unkC4;
-        f32 unkC8;
-        f32 unkCC;
-
-        f32 unkD0;
-        s32 unkD4;
-        f32 unkD8;
-        f32 unkDC;
-
-        s32 timer; // 0xe0
+        Mtxf     headMtx; // camera head, facing along baseYaw
+        f32 baseYaw;
+        f32 yaw; // sweep angle relative to baseYaw
+        f32 sweepYaw1; // sweep ends (setup stores 16-bit angles)
+        f32 sweepYaw2;
+        s32 towardsYaw1; // which sweep end it's turning to
+        f32 yawSpeed;
+        f32 maxYawSpeed;
+        s32 timer;
         s32 convert_to_f32;
-        f32 unkE8;
+        f32 viewDist; // 0 = unlimited (setup stores an integer)
         s32 unkEC;
-
         s32 unkF0;
         s32 unkF4;
         s32 unkF8;
@@ -3617,9 +3482,9 @@ typedef union
         s32 is_firing_tank;
         f32 turret_vertical_angle;
         f32 turret_orientation_angle;
-        f32 unkD0;
+        f32 smoothYSum; // running sum that smooths the ground height
         f32 stan_y;
-        s32 unkD8; // ammo related
+        s32 storedShells; // shells left in the tank when Bond gets out
         f32 tank_orientation_angle;
     } TankRecord;
     #define New_TankRecord(pad)                     \
@@ -3649,7 +3514,7 @@ typedef union
         s32      CullDist;
         s32      calculatedopacity;
         s32      portalnum;
-        f32      unk90;
+        f32      minOpacity; // opacity up close, 0..1 (setup stores 16-bit)
     } TintedGlassRecord;
     #define New_TintedGlassRecord(pad)              \
         {                                           \
@@ -3663,13 +3528,6 @@ typedef union
 #pragma endregion //Propdefs
 
 #pragma region Intro
-#define MemberRename(from, to) \
-    union                      \
-    {                          \
-        from;                  \
-        to;                    \
-    }
-
     typedef union fs15_16
     {
         f32 fval;
@@ -3705,7 +3563,7 @@ typedef struct SetupIntroSpawn
 {
     s32 type;
     s32 index;                                        // pad
-    MemberRename(s32 is_demo_playback, s32 demoSlot); // demoindex, perhaps called during demo
+    s32 demoSlot;
 } SetupIntroSpawn;
 
 /**
@@ -3717,7 +3575,7 @@ struct SetupIntroItem
     s32 type;
     s32 item_right;
     s32 item_left;
-    MemberRename(s32 is_demo_playback, s32 demoSlot); // demoindex, perhaps called during demo
+    s32 demoSlot;
 };
 
 /**
@@ -3729,7 +3587,7 @@ struct SetupIntroAmmo
     s32 type;
     s32 ammo_type;
     s32 ammo_amount;
-    MemberRename(s32 is_demo_playback, s32 demoSlot); // demoindex, perhaps called during demo
+    s32 demoSlot;
 };
 
 /**
@@ -3739,11 +3597,11 @@ struct SetupIntroAmmo
 struct SetupIntroSwirl
 {
     s32 type;
-    MemberRename(s32 unk04, s32 bitflags);               // bitflags
-    MemberRename(struct {fs15_16 unk08; fs15_16 unk0C; fs15_16 unk10; }, fs15_16 offsetfromBond[3]); // offset from Bond in cm
-    MemberRename(fs15_16 unk14, fs15_16 scale);          // splinescale
-    MemberRename(fs15_16 unk18, fs15_16 duration);       // duration
-    MemberRename(s32 unk1C, s32 pad);                    // lookAt
+    s32     bitflags;          // 1: last swirl point, 2: offset turns with Bond
+    fs15_16 offsetfromBond[3]; // cm (setup stores 16.16)
+    fs15_16 scale;             // spline scale
+    fs15_16 duration;          // frames
+    s32     pad;               // pad to look at, or -1
 };
 
 /**
@@ -3773,13 +3631,12 @@ struct SetupIntroCuff
 typedef struct SetupIntroCamera
 {
     s32 type;
-    MemberRename(struct {
-        fs15_16 unk04;
-        fs15_16 unk08;
-        fs15_16 unk0C; }, fs15_16 coords[3]); // co-ordinates in cm scale
-    fs15_16 unk10;                               // yaw in radians
-    fs15_16 unk14;                               // pitch in radians
-    s32     unk18;                               // pad
+    fs15_16 x;     // cm (setup stores 1/100 cm)
+    fs15_16 y;
+    fs15_16 z;
+    fs15_16 yaw;   // radians (setup stores 16-bit)
+    fs15_16 pitch;
+    s32     pad;
     union
     {
         u16   lang_index[2];
@@ -3834,7 +3691,7 @@ typedef struct CreditsEntry_s
 struct SetupIntroCredits
 {
     s32 type;
-    s32 unk04;
+    s32 offset; // of the credits list in the setup file
 };
 #define CharArrayFrom32(input) ((input) & 0xFF000000) >> 24, ((input) & 0x00FF0000) >> 16, ((input) & 0x0000FF00) >> 8, (input) & 0x000000FF
 #define CharArrayFrom16(input) ((input) & 0xFF00) >> 8, (input) & 0x00FF
@@ -3871,7 +3728,7 @@ struct objective_entry
     u16                      reserved;   // 8
     u16                      text;       // a
     u16                      unkC;       // c
-    u8                       unkD;       // d
+    u8                       flags; // bit 0: completed at mission end unless failed
     s8                       difficulty; // f
 };
 #pragma endregion Objectives
@@ -3896,36 +3753,36 @@ typedef struct sImageTableEntry
 
 #pragma region Player
 
-typedef struct SkyRelated38
+typedef struct SkyScreenVtx
 {
-    f32 unk00; /*0x00*/
-    f32 unk04; /*0x04*/
-    f32 unk08; /*0x08*/
-    f32 unk0c; /*0x0c*/
+    f32 clipX; // position after the view-projection matrix
+    f32 clipY; /*0x04*/
+    f32 clipZ; /*0x08*/
+    f32 clipW; /*0x0c*/
     f32 r;     /*0x10*/
     f32 g;     /*0x14*/
     f32 b;     /*0x18*/
     f32 a;     /*0x1c*/
-    f32 unk20; /*0x20*/
-    f32 unk24; /*0x24*/
-    f32 unk28; /*0x28*/
-    f32 unk2c; /*0x2c*/
-    f32 unk30; /*0x30*/
-    f32 unk34; /*0x34*/
-} SkyRelated38;
+    f32 s; /*0x20*/
+    f32 t; /*0x24*/
+    f32 screenX; // quarter pixels
+    f32 screenY; // quarter pixels
+    f32 screenZ; /*0x30*/
+    f32 invW; /*0x34*/
+} SkyScreenVtx;
 
-typedef struct SkyRelated18
+typedef struct SkyVtx
 {
-    f32 unk00; /*0x00*/
-    f32 unk04; /*0x04*/
-    f32 unk08; /*0x08*/
-    f32 unk0c; /*0x0c*/
-    f32 unk10; /*0x10*/
+    f32 x; /*0x00*/
+    f32 y; /*0x04*/
+    f32 z; /*0x08*/
+    f32 s; /*0x0c*/
+    f32 t; /*0x10*/
     u8  r;     /*0x14*/
     u8  g;     /*0x15*/
     u8  b;     /*0x16*/
     u8  a;     /*0x17*/
-} SkyRelated18;
+} SkyVtx;
 
 #pragma endregion Player
 
@@ -4133,20 +3990,6 @@ struct damage_display_parent {
 };
 
 // is this the same as damage_display_val ?
-struct s_display_list_something
-{
-    s16 unk0;
-    s16 unk2;
-    s16 unk4;
-    s16 unk6;
-    s16 unk8;
-    s16 unkA;
-    u8 unkC;
-    u8 unkD;
-    u8 unkE;
-    u8 unkF;
-};
-
 struct fontchar {
     s32 index;
     s32 baseline;

@@ -51,7 +51,7 @@ void fileWriteSmallSave(smallSave *save)
 {
     if (fileGamePakProbe())
     {
-        fileGenerateCRC(&save->unk[0], &save->unk[24], save);
+        fileGenerateCRC(&save->data[0], &save->data[24], save);
         joyGamePakLongWrite(0, save, sizeof(smallSave));
     }
 }
@@ -468,12 +468,12 @@ void fileValidateSaves(void)
         joyGamePakLongRead(0, &joyChecksum, sizeof(smallSave));
 
         // if customised file dont assume crc is ok
-        if (joyChecksum.unk[0] != SAVEFLAGS_SET(FOLDER3, SAVESLOT1, BOND_CONNERY, FALSE))
+        if (joyChecksum.data[0] != SAVEFLAGS_SET(FOLDER3, SAVESLOT1, BOND_CONNERY, FALSE))
         {
             checksumOK = FALSE;
         }
 
-        fileGenerateCRC(&joyChecksum.unk[0], &joyChecksum.unk[24], &crc); //do checksum on 24 bytes of save data
+        fileGenerateCRC(&joyChecksum.data[0], &joyChecksum.data[24], &crc); //do checksum on 24 bytes of save data
 
         temp = &joyChecksum;
 
@@ -1273,11 +1273,11 @@ void fileCoopLoadPartnerSettings(smallSave *header)
     s_SaveHeader = *header;
     s_SaveHeaderValid = TRUE;
 
-    if (header->unk[1] == PARTNER_SAVE_MAGIC)
+    if (header->data[1] == PARTNER_SAVE_MAGIC)
     {
-        s_CoopPartnerOptions = (header->unk[2] << 8) | header->unk[3];
+        s_CoopPartnerOptions = (header->data[2] << 8) | header->data[3];
         s_CoopPartnerOptionsSet = TRUE;
-        s_CoopPartnerChar = header->unk[4];
+        s_CoopPartnerChar = header->data[4];
         g_MpControlStyle[PLAYER_2] = (s_CoopPartnerOptions & OPTION_CONTROLTYPE) >> 8;
     }
 }
@@ -1301,18 +1301,18 @@ void fileCoopSavePartnerSettings(void)
 
     options = (options & ~OPTION_CONTROLTYPE) | ((g_MpControlStyle[PLAYER_2] << 8) & OPTION_CONTROLTYPE);
 
-    if ((s_SaveHeader.unk[1] == PARTNER_SAVE_MAGIC)
-        && (s_SaveHeader.unk[2] == (options >> 8))
-        && (s_SaveHeader.unk[3] == (options & 0xFF))
-        && (s_SaveHeader.unk[4] == s_CoopPartnerChar))
+    if ((s_SaveHeader.data[1] == PARTNER_SAVE_MAGIC)
+        && (s_SaveHeader.data[2] == (options >> 8))
+        && (s_SaveHeader.data[3] == (options & 0xFF))
+        && (s_SaveHeader.data[4] == s_CoopPartnerChar))
     {
         return;
     }
 
-    s_SaveHeader.unk[1] = PARTNER_SAVE_MAGIC;
-    s_SaveHeader.unk[2] = options >> 8;
-    s_SaveHeader.unk[3] = options & 0xFF;
-    s_SaveHeader.unk[4] = s_CoopPartnerChar;
+    s_SaveHeader.data[1] = PARTNER_SAVE_MAGIC;
+    s_SaveHeader.data[2] = options >> 8;
+    s_SaveHeader.data[3] = options & 0xFF;
+    s_SaveHeader.data[4] = s_CoopPartnerChar;
     fileWriteSmallSave(&s_SaveHeader);
 }
 

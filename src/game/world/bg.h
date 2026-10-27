@@ -88,7 +88,7 @@ typedef struct s_room_info {
     s16 field_32;                           // 0x32
 
     u8 room_loaded_mask;                    // 0x34
-    u8 field_35;                            // 0x35
+    u8 requested; // set once the room's model has been asked for; such rooms are never unloaded
     s16 mtxIndex;                           // 0x36
 
     coord3d minbounds;                      // 0x38
@@ -101,8 +101,7 @@ typedef struct s_bound_info
     //eu is 0x18 total len
     u8 roomid;
     u8 pad1;
-    // could be draw order?
-    s16 unk1;
+    s16 depth; // portal depth the room was reached at; rooms draw in depth order
     u8 next;
     u8 pad2[3];
     struct bbox2d bbox;
@@ -110,8 +109,7 @@ typedef struct s_bound_info
     #else
     //us is 0x1C total len
     s32 roomid;
-    // could be draw order?
-    s32 unk1;
+    s32 depth;
     struct bbox2d bbox;
     void* next;
     #endif
@@ -149,15 +147,6 @@ typedef struct s_specialportal
     u8 portallist[];
 } s_specialportal;
 
-typedef struct unk_portalstruct
-{
-    s32 unk0;
-    s32 unk4;
-    s32 unk8;
-    s32 unkC;
-    s32 unk10;
-} unk_portalstruct;
-
 typedef struct PortalCache {
     s32 count;
     bbox2d bbox;
@@ -180,7 +169,7 @@ typedef struct bg_queued_portal_entry {
 } bg_queued_portal_entry;
 
 extern bg_portal_data_entry *g_BgPortals;
-extern struct unk_portalstruct table_for_portals[PORTMAX];
+extern PortalCache g_BgPortalCache[PORTMAX];
 extern s32 g_MaxNumRooms;
 extern f32 g_BgLevelScaleInv;
 

@@ -17,8 +17,8 @@
 #include "game/gfx/tex.h"
 
 s32 g_TexLutMode;
-s_bss_8008D148 g_TexTileStates[8]; //[0x160]; //8 entries of 0x2c ea
-s_bss_8008D2A8 g_TexTileSizes[8]; //[0xA0]; //8 entries of 0x14 ea
+TexTileState g_TexTileStates[8]; /* last gDPSetTile per tile, to skip redundant commands */
+TexTileSize g_TexTileSizes[8];   /* last gDPSetTileSize per tile */
 
 u16 default_hit_sfx[] = {HIT_BULLET_STONE1_SFX, HIT_BULLET_STONE2_SFX};
 u8 default_impact_types[] = {0x7, 0x0, 0x0, 0x0};
@@ -133,25 +133,25 @@ s32 texTrySetTileState(s32 tile, s32 format, s32 depth, s32 line, s32 tmem, s32 
     s32 retval;
 
     retval = 0;
-    if ((g_TexTileStates[tile].inuse == 0) || (format != g_TexTileStates[tile].unk_4) || 
-     (depth != g_TexTileStates[tile].unk_8) || (line != g_TexTileStates[tile].unk_C) || 
-     (tmem != g_TexTileStates[tile].unk_10) || (smode != g_TexTileStates[tile].unk_14) || 
-     (tmode != g_TexTileStates[tile].unk_18) || (masks != g_TexTileStates[tile].unk_1C) || 
-     (maskt != g_TexTileStates[tile].unk_20) || (shifts != g_TexTileStates[tile].unk_24) || 
-     (shiftt != g_TexTileStates[tile].unk_28))
+    if ((g_TexTileStates[tile].inuse == 0) || (format != g_TexTileStates[tile].format) || 
+     (depth != g_TexTileStates[tile].depth) || (line != g_TexTileStates[tile].line) || 
+     (tmem != g_TexTileStates[tile].tmem) || (smode != g_TexTileStates[tile].smode) || 
+     (tmode != g_TexTileStates[tile].tmode) || (masks != g_TexTileStates[tile].masks) || 
+     (maskt != g_TexTileStates[tile].maskt) || (shifts != g_TexTileStates[tile].shifts) || 
+     (shiftt != g_TexTileStates[tile].shiftt))
     {
         retval = 1;
         g_TexTileStates[tile].inuse = 1;
-        g_TexTileStates[tile].unk_4 = format;
-        g_TexTileStates[tile].unk_8 = depth;
-        g_TexTileStates[tile].unk_C = line;
-        g_TexTileStates[tile].unk_10 = tmem;
-        g_TexTileStates[tile].unk_14 = smode;
-        g_TexTileStates[tile].unk_18 = tmode;
-        g_TexTileStates[tile].unk_1C = masks;
-        g_TexTileStates[tile].unk_20 = maskt;
-        g_TexTileStates[tile].unk_24 = shifts;
-        g_TexTileStates[tile].unk_28 = shiftt;
+        g_TexTileStates[tile].format = format;
+        g_TexTileStates[tile].depth = depth;
+        g_TexTileStates[tile].line = line;
+        g_TexTileStates[tile].tmem = tmem;
+        g_TexTileStates[tile].smode = smode;
+        g_TexTileStates[tile].tmode = tmode;
+        g_TexTileStates[tile].masks = masks;
+        g_TexTileStates[tile].maskt = maskt;
+        g_TexTileStates[tile].shifts = shifts;
+        g_TexTileStates[tile].shiftt = shiftt;
 
     }
     return retval;
@@ -163,15 +163,15 @@ s32 texTrySetTileSize(s32 tile, s32 uls, s32 ult, s32 lrs, s32 lrt)
     s32 retval;
 
     retval = 0;
-    if ((((g_TexTileSizes[tile].inuse == 0) || (uls != g_TexTileSizes[tile].unk_4)) || (ult != g_TexTileSizes[tile].unk_8)) ||
-       ((lrs != g_TexTileSizes[tile].unk_C || (lrt != g_TexTileSizes[tile].unk_10))))
+    if ((((g_TexTileSizes[tile].inuse == 0) || (uls != g_TexTileSizes[tile].uls)) || (ult != g_TexTileSizes[tile].ult)) ||
+       ((lrs != g_TexTileSizes[tile].lrs || (lrt != g_TexTileSizes[tile].lrt))))
     {
         retval = 1;
         g_TexTileSizes[tile].inuse = 1;
-        g_TexTileSizes[tile].unk_4 = uls;
-        g_TexTileSizes[tile].unk_8 = ult;
-        g_TexTileSizes[tile].unk_C = lrs;
-        g_TexTileSizes[tile].unk_10 = lrt;
+        g_TexTileSizes[tile].uls = uls;
+        g_TexTileSizes[tile].ult = ult;
+        g_TexTileSizes[tile].lrs = lrs;
+        g_TexTileSizes[tile].lrt = lrt;
     }
     return retval;
 }
@@ -472,9 +472,9 @@ Gfx *texWriteLoadToTmemAddr(Gfx *gdl, struct tex *tex, s32 tmemoffset)
 
 		uls = len;
 
-		if ((u32)(0x3ff - tex->unk0a) < uls)
+		if ((u32)(0x3ff - tex->lastColour) < uls)
 		{
-			ult = 0x3ff - tex->unk0a;
+			ult = 0x3ff - tex->lastColour;
 		}
 		else
 		{
@@ -489,7 +489,7 @@ Gfx *texWriteLoadToTmemAddr(Gfx *gdl, struct tex *tex, s32 tmemoffset)
 		}
         
 		gDPLoadSync(gdl++);
-		gDPLoadTLUT07(gdl++, uls, ult, tex->unk0a + uls, ult);
+		gDPLoadTLUT07(gdl++, uls, ult, tex->lastColour + uls, ult);
 		gDPPipeSync(gdl++);
 	}
 
@@ -592,9 +592,9 @@ Gfx *texWriteLoadToTmemZero(Gfx *gdl, struct tex *tex)
 		gDPPipeSync(gdl++);
 
 		uls = len;
-		if ((u32)(0x3ff - tex->unk0a) < uls)
+		if ((u32)(0x3ff - tex->lastColour) < uls)
 		{
-			ult = 0x3ff - tex->unk0a;
+			ult = 0x3ff - tex->lastColour;
 		}
 		else
 		{
@@ -606,7 +606,7 @@ Gfx *texWriteLoadToTmemZero(Gfx *gdl, struct tex *tex)
 			gDPSetTile(gdl++, 0, 0, 1, 0x100, 7, 0, 0, 0, 0, 0, 0, 0);
 		}
 		gDPLoadSync(gdl++);
-		gDPLoadTLUT07(gdl++, uls, ult, tex->unk0a + uls, ult);
+		gDPLoadTLUT07(gdl++, uls, ult, tex->lastColour + uls, ult);
 		gDPPipeSync(gdl++);
 	}
 
@@ -724,7 +724,6 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
     struct tex *tex;
     Gfx        *saved = NULL;
     s32         count;
-    s32         valid = FALSE;
     s32         texnum2;
     s32         syncEmitted = FALSE;
     s32         smode;
@@ -766,22 +765,6 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
 
                 texnum = in->words.w1 & 0xfff;
 
-                if ((texnum == g_DebugHitTexNum) && (g_DebugDetailEdit != NULL))
-                {
-                    if (g_DebugDetailEdit[texnum].unk_0_0 < 0xffU)
-                    {
-                        valid = TRUE;
-                    }
-                    else
-                    {
-                        valid = FALSE;
-                    }
-                }
-                else
-                {
-                    valid = FALSE;
-                }
-
                 texLoadFromTextureNum(texnum, texpool);
                 tex = texFindInPool(texnum, texpool);
 
@@ -800,37 +783,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                             shifts = (in->words.w0 >> 14) & 0xf;
                             shiftt = (in->words.w0 >> 10) & 0xf;
 
-                            if ((g_DebugDetailEdit != NULL) && (g_DebugDetailEdit[texnum].unk_0_0 == 0xff))
-                            {
-                                do
-                                {
-                                } while (FALSE);
-
-                                g_DebugDetailEdit[texnum].unk_0_0 = min;
-                                g_DebugDetailEdit[texnum].unk_1_3 = 15 - shifts;
-                                g_DebugDetailEdit[texnum].unk_1_0 = 15 - shiftt;
-                            }
-
-                            if (valid)
-                            {
-                                out = texHandleType0(
-                                    out,
-                                    tex,
-                                    smode,
-                                    tmode,
-                                    offset,
-                                    15 - g_DebugDetailEdit[texnum].unk_1_3,
-                                    15 - g_DebugDetailEdit[texnum].unk_1_0,
-                                    g_DebugDetailEdit[texnum].unk_0_0);
-
-                                gDPSetCycleType(out++, G_CYC_2CYCLE);
-                                gDPSetTextureLOD(out++, G_TL_LOD);
-                                gDPSetTextureDetail(out++, G_TD_DETAIL);
-                            }
-                            else
-                            {
-                                out = texHandleType0(out, tex, smode, tmode, offset, shifts, shiftt, min);
-                            }
+                            out = texHandleType0(out, tex, smode, tmode, offset, shifts, shiftt, min);
                             break;
 
                         case TEXTURETYPE_DETAIL:
@@ -861,26 +814,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                             tmode  = (in->words.w0 >> 20) & 3;
                             offset = (in->words.w0 >> 18) & 3;
 
-                            if (valid)
-                            {
-                                out = texHandleType0(
-                                    out,
-                                    tex,
-                                    smode,
-                                    tmode,
-                                    offset,
-                                    15 - g_DebugDetailEdit[texnum].unk_1_3,
-                                    15 - g_DebugDetailEdit[texnum].unk_1_0,
-                                    g_DebugDetailEdit[texnum].unk_0_0);
-
-                                gDPSetCycleType(out++, G_CYC_2CYCLE);
-                                gDPSetTextureLOD(out++, G_TL_LOD);
-                                gDPSetTextureDetail(out++, G_TD_DETAIL);
-                            }
-                            else
-                            {
-                                out = texHandleType2(out, tex, smode, tmode, offset);
-                            }
+                            out = texHandleType2(out, tex, smode, tmode, offset);
                             break;
 
                         case TEXTURETYPE_TILE:
@@ -946,21 +880,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
                 break;
 
             case 0xba:
-                if (valid)
-                {
-                    if ((((*(((s8 *)in) + 2)) == 17) || ((*(((s8 *)in) + 2)) == 20)) || ((*(((s8 *)in) + 2)) == 16))
-                    {
-                        in++;
-                    }
-                    else
-                    {
-                        *(out++) = *(in++);
-                    }
-                }
-                else
-                {
-                    *(out++) = *(in++);
-                }
+                *(out++) = *(in++);
                 break;
 
             default:
@@ -981,7 +901,6 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool)
 
 
 /***
- * NTSC address 0x7F0CE794.
 */
 void texCopyGdls(Gfx *arg0, Gfx *arg1, s32 arg2)
 {
