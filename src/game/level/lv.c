@@ -370,9 +370,9 @@ void lvStageLoad(s32 stage)
     modelmgrSetLevelResetting(TRUE);
     texInitSharedPool();
 #ifdef VERSION_EU
-    bullet_moving_sparks_reset();
+    movingSparksReset();
 #else
-    bullet_sparks_reset_all();
+    sparksResetAll();
 #endif
     imageBankLoad();
     load_font_tables();
@@ -874,9 +874,9 @@ Gfx* lvRender(Gfx* DL)
             DL = weaponRenderTracers(DL);
 
 #if defined(VERSION_EU)
-            bullet_moving_sparks_update(&DL, ZBUF_SURFACE);
+            movingSparksTick(&DL, ZBUF_SURFACE);
 #else /* VERSION_US, VERSION_JP, unspecified */
-            bullet_sparks_render_all(&DL, ZBUF_SURFACE);
+            sparksRenderAll(&DL, ZBUF_SURFACE);
 #endif
             DL = glassRenderShards(DL);
             DL = explosionRenderFlyingParticles(DL);
@@ -1379,9 +1379,9 @@ void lvTick(void)
         waterTick();
         skyTick();
 #ifdef VERSION_EU
-        bullet_moving_spark_create();
+        movingSparkCreate();
 #else
-        bullet_sparks_update_all();
+        sparksTickAll();
 #endif
         casingsTick();
         glassTickShards();

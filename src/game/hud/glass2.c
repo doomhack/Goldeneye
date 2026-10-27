@@ -18,7 +18,7 @@
 #define GAUGE_BAR_VERTEX_PAIR_STRIDE (2 * sizeof(struct WatchVertex))
 
 //D:80040960
-struct rgba_u8 g_BulletSparkColors[8] = {
+struct rgba_u8 g_SparkColors[8] = {
     { 0xFF, 0xFF, 0xFF, 0xFF },
     { 0xFF, 0xFF, 0xC8, 0xFF },
     { 0xFF, 0x00, 0x00, 0xFF },
@@ -28,18 +28,18 @@ struct rgba_u8 g_BulletSparkColors[8] = {
     { 0 },
     { 0 }
 };
-Vtx D_80040980 = {0};
+Vtx g_SparkVtxTemplate = {0};
 
 
 // something explosion related
-// size of each item is 0x2c (see bullet_spark_create)
+// size of each item is 0x2c (see sparkCreate)
 //CODE.bss:8007A170
-s_bullet_spark g_BulletSparkArray[BULLET_SPARKS_MAX];
+s_bullet_spark g_Sparks[BULLET_SPARKS_MAX];
 
 #ifndef VERSION_EU
 
 //CODE.bss:8007A4E0
-s_moving_bullet_spark g_MovingBulletSparkArray[BULLET_MOVING_SPARKS_MAX];
+s_moving_bullet_spark g_MovingSparks[BULLET_MOVING_SPARKS_MAX];
 
 #endif
 
@@ -233,7 +233,7 @@ void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSeg
  *
  * Creates the display list for HUD and watch health and armor bars.
  */
-Gfx *buildGaugeBarDL(Gfx *gdl, uintptr_t vtxaddr, s32 numvertices)
+Gfx *hudRenderGaugeBar(Gfx *gdl, uintptr_t vtxaddr, s32 numvertices)
 {
     s8 i;
 
@@ -268,7 +268,7 @@ Gfx *buildGaugeBarDL(Gfx *gdl, uintptr_t vtxaddr, s32 numvertices)
 /**
  * Address: 7F0A33F8
  */
-void sub_GAME_7F0A33F8(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 arg3)
+void watchMakeArcVerts(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 arg3)
 {
     f32 angle;
     s32 i;
@@ -337,7 +337,7 @@ void sub_GAME_7F0A33F8(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 arg
 /**
  * Address: 7F0A3978
  */
-Gfx *draw_watch_background(Gfx *gdl, struct WatchVertex *watch_verts, s32 unused_arg2, s32 drawFan)
+Gfx *watchRenderBackground(Gfx *gdl, struct WatchVertex *watch_verts, s32 unused_arg2, s32 drawFan)
 {
     s8 i;
     struct WatchVertex *orig;
@@ -393,7 +393,7 @@ Gfx *draw_watch_background(Gfx *gdl, struct WatchVertex *watch_verts, s32 unused
  * @param horizontal_offset:
  * @param vertical_offset:
 */
-struct WatchVertex *setup_watch_rectangles(struct WatchVertex *vtx, s32 startx, s32 startz, s32 width, s32 height, s32 horizontal_offset, s32 vertical_offset)
+struct WatchVertex *watchMakeRectVerts(struct WatchVertex *vtx, s32 startx, s32 startz, s32 width, s32 height, s32 horizontal_offset, s32 vertical_offset)
 {
     s32 i;
     s32 j;
@@ -440,7 +440,7 @@ struct WatchVertex *setup_watch_rectangles(struct WatchVertex *vtx, s32 startx, 
 }
 
 
-Gfx *sub_GAME_7F0A3B40(Gfx *gdl, s32 *arg1)
+Gfx *watchRenderQuad(Gfx *gdl, s32 *arg1)
 {
     gSPVertex(gdl++, arg1, 4, 0);
 
@@ -457,29 +457,29 @@ Gfx *sub_GAME_7F0A3B40(Gfx *gdl, s32 *arg1)
 
 
 // unreferenced
-void unused_7F0A3B70(s32 arg0, struct rgba_u8 *arg1)
+void sparkGetColor(s32 arg0, struct rgba_u8 *arg1)
 {
-    arg1->r = g_BulletSparkColors[arg0].r;
-    arg1->g = g_BulletSparkColors[arg0].g;
-    arg1->b = g_BulletSparkColors[arg0].b;
-    arg1->a = g_BulletSparkColors[arg0].a;
+    arg1->r = g_SparkColors[arg0].r;
+    arg1->g = g_SparkColors[arg0].g;
+    arg1->b = g_SparkColors[arg0].b;
+    arg1->a = g_SparkColors[arg0].a;
 }
 
 
 // unreferenced
-void unused_7F0A3BA4(s32 arg0, struct rgba_u8 *arg1)
+void sparkSetColor(s32 arg0, struct rgba_u8 *arg1)
 {
-    g_BulletSparkColors[arg0].r = arg1->r;
-    g_BulletSparkColors[arg0].g = arg1->g;
-    g_BulletSparkColors[arg0].b = arg1->b;
-    g_BulletSparkColors[arg0].a = arg1->a;
+    g_SparkColors[arg0].r = arg1->r;
+    g_SparkColors[arg0].g = arg1->g;
+    g_SparkColors[arg0].b = arg1->b;
+    g_SparkColors[arg0].a = arg1->a;
 }
 
 
 /**
  * Address: 7F0A3BD8
  */
-void bullet_sparks_reset(void)
+void sparksReset(void)
 {
     s32 i;
     s32 start_index;
@@ -488,9 +488,9 @@ void bullet_sparks_reset(void)
 
     for (i = start_index; (i < BULLET_SPARKS_MAX) ^ 0; i++)
     {
-        g_BulletSparkArray[i].unk0C = 0;
-        g_BulletSparkArray[i].lifetime = 0;
-        g_BulletSparkArray[i].age = 0;
+        g_Sparks[i].unk0C = 0;
+        g_Sparks[i].lifetime = 0;
+        g_Sparks[i].age = 0;
     }
 }
 
@@ -498,7 +498,7 @@ void bullet_sparks_reset(void)
 /**
  * Address: 7F0A3C08
  */
-void bullet_sparks_init(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3, s16 arg4)
+void sparkInit(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3, s16 arg4)
 {
     f32 angle;
 
@@ -540,10 +540,10 @@ void bullet_sparks_init(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3
         spark->unk0C = g_ImagesExplosionSmoke;
     }
 
-    spark->unk28 = g_BulletSparkColors[arg2].r;
-    spark->unk29 = g_BulletSparkColors[arg2].g;
-    spark->unk2A = g_BulletSparkColors[arg2].b;
-    spark->unk2B = g_BulletSparkColors[arg2].a;
+    spark->unk28 = g_SparkColors[arg2].r;
+    spark->unk29 = g_SparkColors[arg2].g;
+    spark->unk2A = g_SparkColors[arg2].b;
+    spark->unk2B = g_SparkColors[arg2].a;
 
     spark->unk10 = arg1->x;
     spark->unk14 = arg1->y;
@@ -561,15 +561,15 @@ void bullet_sparks_init(s_bullet_spark *spark, coord3d *arg1, s32 arg2, f32 arg3
 /**
  * Address: 7F0A3E1C
  */
-s_bullet_spark *bullet_spark_create(coord3d *arg0, s32 arg1, f32 arg2, s16 arg3)
+s_bullet_spark *sparkCreate(coord3d *arg0, s32 arg1, f32 arg2, s16 arg3)
 {
     s_bullet_spark *ptr;
 
-    for (ptr = &g_BulletSparkArray[0]; ptr < &g_BulletSparkArray[BULLET_SPARKS_MAX]; ptr++)
+    for (ptr = &g_Sparks[0]; ptr < &g_Sparks[BULLET_SPARKS_MAX]; ptr++)
     {
         if (ptr->lifetime == 0)
         {
-            bullet_sparks_init(ptr, arg0, arg1, arg2, arg3);
+            sparkInit(ptr, arg0, arg1, arg2, arg3);
             return ptr;
         }
     }
@@ -581,10 +581,10 @@ s_bullet_spark *bullet_spark_create(coord3d *arg0, s32 arg1, f32 arg2, s16 arg3)
 /**
  * Address: 7F0A3EA0
  */
-void bullet_sparks_update(void)
+void sparksTick(void)
 {
-    s_bullet_spark *thing = &g_BulletSparkArray[0]; \
-    s_bullet_spark *end = g_BulletSparkArray + BULLET_SPARKS_MAX;
+    s_bullet_spark *thing = &g_Sparks[0]; \
+    s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
 
     for (; thing < end; thing++)
     {
@@ -604,7 +604,7 @@ void bullet_sparks_update(void)
 /**
  * Address: 7F0A3F04
  */
-void bullet_spark_render(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
+void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
 {
     Vtx vtx;
     Mtxf *mtx;
@@ -636,7 +636,7 @@ void bullet_spark_render(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
         return;
     }
 
-    vtx = D_80040980;
+    vtx = g_SparkVtxTemplate;
     mtx = camGetViewToWorldMtxf();
     gdl = *((Gfx **) gdlarg);
     vertices = dynAllocateVertices(4);
@@ -708,15 +708,15 @@ void bullet_spark_render(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
 /**
  * Address: 7F0A4528
  */
-void bullet_sparks_render(Gfx *gdl, s32 zbufferMode)
+void sparksRender(Gfx *gdl, s32 zbufferMode)
 {
 
-    s_bullet_spark *thing = &g_BulletSparkArray[0]; \
-    s_bullet_spark *end = g_BulletSparkArray + BULLET_SPARKS_MAX;
+    s_bullet_spark *thing = &g_Sparks[0]; \
+    s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
 
     for (; (thing < end); thing++)
     {
-        bullet_spark_render(thing, gdl, zbufferMode);
+        sparkRender(thing, gdl, zbufferMode);
     }
 }
 
@@ -724,7 +724,7 @@ void bullet_sparks_render(Gfx *gdl, s32 zbufferMode)
 /**
  * Address: 7F0A4594
  */
-f32 bullet_spark_get_depth(s_bullet_spark* spark)
+f32 sparkGetDepth(s_bullet_spark* spark)
 {
     coord3d tempVec;
 
@@ -742,21 +742,21 @@ f32 bullet_spark_get_depth(s_bullet_spark* spark)
  * Address: 7F0A45D8
  */
 #ifndef VERSION_EU
-void bullet_moving_sparks_reset(void)
+void movingSparksReset(void)
 {
     s_moving_bullet_spark *ptr;
 
-    ptr = g_MovingBulletSparkArray;
+    ptr = g_MovingSparks;
 
-    for (ptr = &g_MovingBulletSparkArray[0]; ptr < &g_MovingBulletSparkArray[BULLET_MOVING_SPARKS_MAX]; ptr++)
+    for (ptr = &g_MovingSparks[0]; ptr < &g_MovingSparks[BULLET_MOVING_SPARKS_MAX]; ptr++)
     {
         ptr->unk00.lifetime = 0;
     }
 }
 #else
-void bullet_moving_sparks_reset(void)
+void movingSparksReset(void)
 {
-    bullet_sparks_reset();
+    sparksReset();
 }
 #endif
 
@@ -765,15 +765,15 @@ void bullet_moving_sparks_reset(void)
  * Address: 7F0A4600
  */
 #ifndef VERSION_EU
-s_moving_bullet_spark *bullet_moving_spark_create(coord3d *arg0, coord3d *velocity, s32 arg2, f32 arg3, f32 arg4, s16 arg5)
+s_moving_bullet_spark *movingSparkCreate(coord3d *arg0, coord3d *velocity, s32 arg2, f32 arg3, f32 arg4, s16 arg5)
 {
     s_moving_bullet_spark *ptr;
 
-    for (ptr = &g_MovingBulletSparkArray[0]; ptr < &g_MovingBulletSparkArray[BULLET_MOVING_SPARKS_MAX]; ptr++)
+    for (ptr = &g_MovingSparks[0]; ptr < &g_MovingSparks[BULLET_MOVING_SPARKS_MAX]; ptr++)
     {
         if (ptr->unk00.lifetime == 0)
         {
-            bullet_sparks_init(&ptr->unk00, arg0, arg2, arg3, arg5);
+            sparkInit(&ptr->unk00, arg0, arg2, arg3, arg5);
 
             ptr->velocity.x = velocity->x;
             ptr->velocity.y = velocity->y;
@@ -787,9 +787,9 @@ s_moving_bullet_spark *bullet_moving_spark_create(coord3d *arg0, coord3d *veloci
     return NULL;
 }
 #else
-void bullet_moving_spark_create(void)
+void movingSparkCreate(void)
 {
-    bullet_sparks_update();
+    sparksTick();
 }
 #endif
 
@@ -798,12 +798,12 @@ void bullet_moving_spark_create(void)
  * Address: 7F0A46A0
  */
 #ifndef VERSION_EU
-void bullet_moving_sparks_update(void)
+void movingSparksTick(void)
 {
     s_moving_bullet_spark *ptr;
     s_moving_bullet_spark *end;
 
-    ptr = &g_MovingBulletSparkArray[0]; end = &g_MovingBulletSparkArray[BULLET_MOVING_SPARKS_MAX];
+    ptr = &g_MovingSparks[0]; end = &g_MovingSparks[BULLET_MOVING_SPARKS_MAX];
 
     while (ptr < end)
     {
@@ -830,9 +830,9 @@ void bullet_moving_sparks_update(void)
     }
 }
 #else
-void bullet_moving_sparks_update(Gfx *arg0, s32 zbufferMode)
+void movingSparksTick(Gfx *arg0, s32 zbufferMode)
 {
-    bullet_sparks_render(arg0, zbufferMode);
+    sparksRender(arg0, zbufferMode);
 }
 #endif
 
@@ -842,16 +842,16 @@ void bullet_moving_sparks_update(Gfx *arg0, s32 zbufferMode)
  */
 #ifndef VERSION_EU
 
-void bullet_moving_sparks_render_all(Gfx *arg0, s32 zbufferMode)
+void movingSparksRender(Gfx *arg0, s32 zbufferMode)
 {
     s32 max_index;
     s_moving_bullet_spark *ptr;
 
     max_index = BULLET_MOVING_SPARKS_MAX;
 
-    for (ptr = &g_MovingBulletSparkArray[0]; ptr < (&g_MovingBulletSparkArray[max_index]); ptr++)
+    for (ptr = &g_MovingSparks[0]; ptr < (&g_MovingSparks[max_index]); ptr++)
     {
-        bullet_spark_render(&ptr->unk00, arg0, zbufferMode);
+        sparkRender(&ptr->unk00, arg0, zbufferMode);
     }
 
 }
@@ -860,30 +860,30 @@ void bullet_moving_sparks_render_all(Gfx *arg0, s32 zbufferMode)
 /**
  * Address: 7F0A47D4
  */
-void bullet_sparks_reset_all(void)
+void sparksResetAll(void)
 {
-    bullet_sparks_reset();
-    bullet_moving_sparks_reset();
+    sparksReset();
+    movingSparksReset();
 }
 
 
-void bullet_sparks_update_all(void)
+void sparksTickAll(void)
 {
-    bullet_sparks_update();
+    sparksTick();
 
     // responsible for updating bullet sparks and dust clouds that spawn when shooting at other players
     // these are 2D and always facing the camera
-    bullet_moving_sparks_update();
+    movingSparksTick();
 }
 
 
 /**
  * Address: 7F0A4824
  */
-void bullet_sparks_render_all(Gfx *arg0, s32 zbufferMode)
+void sparksRenderAll(Gfx *arg0, s32 zbufferMode)
 {
-    bullet_sparks_render(arg0, zbufferMode);
-    bullet_moving_sparks_render_all(arg0, zbufferMode);
+    sparksRender(arg0, zbufferMode);
+    movingSparksRender(arg0, zbufferMode);
 }
 
 

@@ -1,7 +1,7 @@
 #include "game/hud/blood_decrypt.h"
 
 // address 0x7F01CAE0 NTSC
-u8 *decrypt_bleeding_animation_data(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 *arg4)
+u8 *bloodDecodeFrame(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 *arg4)
 {
     u8 var_a2;
     u8 var_a3;
@@ -67,7 +67,7 @@ u8 *decrypt_bleeding_animation_data(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 *ar
 }
 
 
-void sub_GAME_7F01CC94(u8* arg0, u16 arg1, u8* arg2)
+void bloodPack4Bit(u8* arg0, u16 arg1, u8* arg2)
 {
     while (arg1-- > 0)
     {
@@ -78,7 +78,7 @@ void sub_GAME_7F01CC94(u8* arg0, u16 arg1, u8* arg2)
 
 
 // Address 0x7F01CCEC NTSC
-void sub_GAME_7F01CCEC(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 arg4)
+void bloodBoxBlur(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 arg4)
 {
     s16 i;
     s16 j;
@@ -125,7 +125,7 @@ void sub_GAME_7F01CCEC(u8 *arg0, u8 arg1, u8 arg2, u8 *arg3, u8 arg4)
 
 // Averages 4 pixel data, ending on "second" row.
 // Address 0x7F01CEEC NTSC
-void sub_GAME_7F01CEEC(u8 *arg0, s32 arg1, u8 *arg2)
+void bloodSmoothUpLeft(u8 *arg0, s32 arg1, u8 *arg2)
 {
     s32 i;
     s32 j;
@@ -143,7 +143,7 @@ void sub_GAME_7F01CEEC(u8 *arg0, s32 arg1, u8 *arg2)
 
 // Averages 4 pixel data, ending on "first" row.
 // Address 0x7F01D02C NTSC
-void sub_GAME_7F01D02C(u8 *arg0, s32 arg1, u8 *arg2)
+void bloodSmoothDownRight(u8 *arg0, s32 arg1, u8 *arg2)
 {
     s32 i;
     s32 j;

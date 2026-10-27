@@ -3,12 +3,12 @@
 
 #include <ultra64.h>
 
-Gfx *clear_framebuffer_black(Gfx *gdl);
-Gfx *sub_GAME_7F01C1A4(Gfx *gdl);
-s32 die_blood_image_routine(s32 arg0);
-Gfx *gunbarrelBloodOverlayDL(Gfx *gdl);
-Gfx *sub_GAME_7F01CA18(Gfx *gdl);
-Gfx *gameplayBloodOverlayDL(Gfx *gdl);
+Gfx *screenClearBlack(Gfx *gdl);
+Gfx *gunbarrelSetupDraw(Gfx *gdl);
+s32 bloodNextFrame(s32 arg0);
+Gfx *bloodRenderGunbarrel(Gfx *gdl);
+Gfx *bloodRenderRedFill(Gfx *gdl);
+Gfx *bloodRender(Gfx *gdl);
 
 #endif
 

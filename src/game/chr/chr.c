@@ -3155,13 +3155,13 @@ void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos
 
             mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &sp3c);
 
-            bullet_spark_create(&sp3c, entry->backImpactPuffCount, entry->backImpactPuffSize, prop->stan->room);
+            sparkCreate(&sp3c, entry->backImpactPuffCount, entry->backImpactPuffSize, prop->stan->room);
         }
     }
 
     if (entry->impactPuffCount) 
     {
-        bullet_spark_create(pos, entry->impactPuffCount, entry->impactPuffSize, prop->stan->room);
+        sparkCreate(pos, entry->impactPuffCount, entry->impactPuffSize, prop->stan->room);
     }
 }
 

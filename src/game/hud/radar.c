@@ -13,7 +13,7 @@
  * PAL address 0x7F0C55A0.
 */
 
-Gfx *display_red_blue_on_radar(Gfx *DL)
+Gfx *radarRender(Gfx *DL)
 {
     s32 padding[4];
     s32 player_count;

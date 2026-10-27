@@ -9,7 +9,7 @@
 #define BLOOD_IMG_WIDTH 80
 #define BLOOD_IMG_HEIGHT 96
 
-u8 die_blood_image_1[] = {
+u8 g_BloodAnimData[] = {
    0x00, 0x20, 0x03, 0x05, 0x04, 0x02, 0x60, 0x21, 0x22, 0x01, 0xE0, 0xE0, 0xE0, 0xE0,
    0xE0, 0xE0, 0xE0, 0x60, 0x03, 0x24, 0x02, 0xA0, 0x02, 0xC0, 0x01, 0x22, 0x00, 0x03,
    0x06, 0x07, 0x06, 0x04, 0x20, 0x01, 0x02, 0x23, 0x24, 0x03, 0x02, 0x80, 0x21, 0xE0,
@@ -194,12 +194,12 @@ u8 die_blood_image_1[] = {
 };
 
 // The original marked the end of the data with a separate zero byte defined
-// after the array (die_blood_image_end). Once the compiler stops keeping the
+// after the array (g_BloodAnimDataEnd). Once the compiler stops keeping the
 // two together the decoder runs past the end and overwrites memory, so use
 // the array's own end.
-#define die_blood_image_end die_blood_image_1[sizeof(die_blood_image_1)]
+#define g_BloodAnimDataEnd g_BloodAnimData[sizeof(g_BloodAnimData)]
 
-Gfx *clear_framebuffer_black(Gfx *gdl) 
+Gfx *screenClearBlack(Gfx *gdl) 
 {
    gDPSetCycleType(gdl++, G_CYC_FILL);
    gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, VI_SX(viGetX()), osVirtualToPhysical(viGetFrameBuf2()));
@@ -209,7 +209,7 @@ Gfx *clear_framebuffer_black(Gfx *gdl)
    return gdl;
 }
 
-Gfx *sub_GAME_7F01C1A4(Gfx *gdl) {
+Gfx *gunbarrelSetupDraw(Gfx *gdl) {
    gSPMatrix(gdl++, osVirtualToPhysical(matrixBufferGunbarrel0), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
    gSPMatrix(gdl++, osVirtualToPhysical(&matrixBufferRareLogo2[D_8002A7D0]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
    gDPPipeSync(gdl++);
@@ -220,14 +220,14 @@ Gfx *sub_GAME_7F01C1A4(Gfx *gdl) {
    return gdl;
 }
 
-s32 die_blood_image_routine(s32 arg0) {
+s32 bloodNextFrame(s32 arg0) {
    s8 sp37;
    u8* temp_v0_2;
 
    if (arg0 == 0) {
-      g_CurrentPlayer->bloodImgCur = die_blood_image_1;
+      g_CurrentPlayer->bloodImgCur = g_BloodAnimData;
    } else if (arg0 == 1) {
-      if (g_CurrentPlayer->bloodImgNxt < &die_blood_image_end) {
+      if (g_CurrentPlayer->bloodImgNxt < &g_BloodAnimDataEnd) {
          g_CurrentPlayer->bloodImgCur = g_CurrentPlayer->bloodImgNxt;
       }
    }
@@ -235,20 +235,20 @@ s32 die_blood_image_routine(s32 arg0) {
    g_CurrentPlayer->bloodImgIdx = (1 - g_CurrentPlayer->bloodImgIdx);
    g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx] = dynAllocate(BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT);
    temp_v0_2 = dynAllocate(BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT);
-   g_CurrentPlayer->bloodImgNxt = decrypt_bleeding_animation_data(g_CurrentPlayer->bloodImgCur, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, temp_v0_2, &sp37);
+   g_CurrentPlayer->bloodImgNxt = bloodDecodeFrame(g_CurrentPlayer->bloodImgCur, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, temp_v0_2, &sp37);
    bloodImgTranspose(temp_v0_2, BLOOD_IMG_WIDTH, BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
-   sub_GAME_7F01D02C(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
-   sub_GAME_7F01CEEC(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
-   sub_GAME_7F01CC94(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
+   bloodSmoothDownRight(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
+   bloodSmoothUpLeft(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
+   bloodPack4Bit(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx], BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT, g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]);
 
-   return (g_CurrentPlayer->bloodImgNxt >= &die_blood_image_end);
+   return (g_CurrentPlayer->bloodImgNxt >= &g_BloodAnimDataEnd);
 }
 
-Gfx *gunbarrelBloodOverlayDL(Gfx *gdl) {
+Gfx *bloodRenderGunbarrel(Gfx *gdl) {
    gDPSetTextureLUT(gdl++, G_TT_NONE);
    gDPSetTextureFilter(gdl++, G_TF_BILERP); 
 
-   gdl = sub_GAME_7F01C1A4(gdl);
+   gdl = gunbarrelSetupDraw(gdl);
 
    gSPTexture(gdl++, 0x8000, 0x8000, 0, G_TX_RENDERTILE, G_ON);
    gDPSetRenderMode(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
@@ -262,7 +262,7 @@ Gfx *gunbarrelBloodOverlayDL(Gfx *gdl) {
    return gdl;
 }
 
-Gfx *gameplayBloodOverlayDL(Gfx *gdl) {
+Gfx *bloodRender(Gfx *gdl) {
    gDPSetTextureLUT(gdl++, G_TT_NONE);
    gDPSetTextureFilter(gdl++, G_TF_BILERP);
    gDPSetCycleType(gdl++, G_CYC_1CYCLE);
@@ -282,8 +282,8 @@ Gfx *gameplayBloodOverlayDL(Gfx *gdl) {
    return gdl;
 }
 
-Gfx *sub_GAME_7F01CA18(Gfx *gdl) {
-	gdl = sub_GAME_7F01C1A4(gdl);
+Gfx *bloodRenderRedFill(Gfx *gdl) {
+	gdl = gunbarrelSetupDraw(gdl);
 
 	gDPSetRenderMode(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
 	gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);

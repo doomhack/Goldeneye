@@ -6703,7 +6703,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                         {
                             if (sp254 != 0)
                             {
-                                bullet_spark_create(&sp258, 1, 26.0f, (s16) sp254->room);
+                                sparkCreate(&sp258, 1, 26.0f, (s16) sp254->room);
                             }
 
                             if (g_StanHitProp != NULL)
