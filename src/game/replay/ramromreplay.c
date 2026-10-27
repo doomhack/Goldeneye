@@ -2,7 +2,7 @@
 #include <ultra64.h>
 #include "game/debug/debugmenu_handler.h"
 #include "game/level/lv.h"
-#include "game/menu/initcheattext.h"
+#include "game/menu/cheat.h"
 #include "game/menu/front.h"
 #include "game/replay/ramromreplay.h"
 #include <rom.h>
@@ -122,7 +122,7 @@ s32 get_recording_ramrom_flag(void) {
 }
 
 
-s32 interface_menu0B_runstage(void) {
+s32 frontRunStageTick(void) {
     return g_ramromPlayBackFlag;
 }
 
@@ -324,7 +324,7 @@ s32 ramrom_replay_handler(struct contsample *arg0, s32 arg1)
     if (joyGetButtonsPressedThisFrame(0, 0xFFFFU) != 0)
     {
         ramromFadeToTitle();
-        prev_keypresses = TRUE;
+        g_FrontSkipIntro = TRUE;
     }
     
     joySetContDataIndex(1);
@@ -377,58 +377,58 @@ void copy_current_ingame_registers_before_ramrom_playback(ramromfilestructure *s
 {
     state->randomseed = g_randomSeed;
     state->randomizer = g_chrObjRandomSeed;
-    state->mode = gamemode;
-    state->numplayers = selected_num_players;
-    state->scenario = scenario;
-    state->mpstage_sel = MP_stage_selected;
-    state->gamelength = game_length;
-    state->mp_weapon_set = getMPWeaponSet();
-    state->mp_char[0] = player_char[0];
-    state->mp_char[1] = player_char[1];
-    state->mp_char[2] = player_char[2];
-    state->mp_char[3] = player_char[3];
-    state->mp_handi[0] = player_handicap[0];
-    state->mp_handi[1] = player_handicap[1];
-    state->mp_handi[2] = player_handicap[2];
-    state->mp_handi[3] = player_handicap[3];
-    state->mp_contstyle[0] = controlstyle_player[0];
-    state->mp_contstyle[1] = controlstyle_player[1];
-    state->mp_contstyle[2] = controlstyle_player[2];
-    state->mp_contstyle[3] = controlstyle_player[3];
-    state->aim_option = aim_sight_adjustment;
-    state->mp_flags[0] = get_players_team_or_scenario_item_flag(0);
-    state->mp_flags[1] = get_players_team_or_scenario_item_flag(1);
-    state->mp_flags[2] = get_players_team_or_scenario_item_flag(2);
-    state->mp_flags[3] = get_players_team_or_scenario_item_flag(3);
+    state->mode = g_FrontGameMode;
+    state->numplayers = g_MpPlayerCount;
+    state->scenario = g_MpScenario;
+    state->mpstage_sel = g_MpStage;
+    state->gamelength = g_MpGameLength;
+    state->weaponSet = mpWeaponSetGetIndex();
+    state->mp_char[0] = g_MpChar[0];
+    state->mp_char[1] = g_MpChar[1];
+    state->mp_char[2] = g_MpChar[2];
+    state->mp_char[3] = g_MpChar[3];
+    state->mp_handi[0] = g_MpHandicap[0];
+    state->mp_handi[1] = g_MpHandicap[1];
+    state->mp_handi[2] = g_MpHandicap[2];
+    state->mp_handi[3] = g_MpHandicap[3];
+    state->mp_contstyle[0] = g_MpControlStyle[0];
+    state->mp_contstyle[1] = g_MpControlStyle[1];
+    state->mp_contstyle[2] = g_MpControlStyle[2];
+    state->mp_contstyle[3] = g_MpControlStyle[3];
+    state->aim_option = g_MpAimSetting;
+    state->mp_flags[0] = frontGetMpTeam(0);
+    state->mp_flags[1] = frontGetMpTeam(1);
+    state->mp_flags[2] = frontGetMpTeam(2);
+    state->mp_flags[3] = frontGetMpTeam(3);
 }
 
 void copy_recorded_ramrom_registers_to_proper_place_ingame(ramromfilestructure *state)
 {
     g_randomSeed = state->randomseed;
     g_chrObjRandomSeed = state->randomizer;
-    gamemode = state->mode;
-    selected_num_players = state->numplayers;
-    scenario = state->scenario;
-    MP_stage_selected = state->mpstage_sel;
-    game_length = state->gamelength;
-    setMPWeaponSet(state->mp_weapon_set);
-    player_char[0] = state->mp_char[0];
-    player_char[1] = state->mp_char[1];
-    player_char[2] = state->mp_char[2];
-    player_char[3] = state->mp_char[3];
-    player_handicap[0] = state->mp_handi[0];
-    player_handicap[1] = state->mp_handi[1];
-    player_handicap[2] = state->mp_handi[2];
-    player_handicap[3] = state->mp_handi[3];
-    controlstyle_player[0] = state->mp_contstyle[0];
-    controlstyle_player[1] = state->mp_contstyle[1];
-    controlstyle_player[2] = state->mp_contstyle[2];
-    controlstyle_player[3] = state->mp_contstyle[3];
-    aim_sight_adjustment = state->aim_option;
-    set_players_team_or_scenario_item_flag(0, state->mp_flags[0]);
-    set_players_team_or_scenario_item_flag(1, state->mp_flags[1]);
-    set_players_team_or_scenario_item_flag(2, state->mp_flags[2]);
-    set_players_team_or_scenario_item_flag(3, state->mp_flags[3]);
+    g_FrontGameMode = state->mode;
+    g_MpPlayerCount = state->numplayers;
+    g_MpScenario = state->scenario;
+    g_MpStage = state->mpstage_sel;
+    g_MpGameLength = state->gamelength;
+    mpWeaponSetSelect(state->weaponSet);
+    g_MpChar[0] = state->mp_char[0];
+    g_MpChar[1] = state->mp_char[1];
+    g_MpChar[2] = state->mp_char[2];
+    g_MpChar[3] = state->mp_char[3];
+    g_MpHandicap[0] = state->mp_handi[0];
+    g_MpHandicap[1] = state->mp_handi[1];
+    g_MpHandicap[2] = state->mp_handi[2];
+    g_MpHandicap[3] = state->mp_handi[3];
+    g_MpControlStyle[0] = state->mp_contstyle[0];
+    g_MpControlStyle[1] = state->mp_contstyle[1];
+    g_MpControlStyle[2] = state->mp_contstyle[2];
+    g_MpControlStyle[3] = state->mp_contstyle[3];
+    g_MpAimSetting = state->aim_option;
+    frontSetMpTeam(0, state->mp_flags[0]);
+    frontSetMpTeam(1, state->mp_flags[1]);
+    frontSetMpTeam(2, state->mp_flags[2]);
+    frontSetMpTeam(3, state->mp_flags[3]);
 }
 
 // Address 0x7F0C0640 NTSC
@@ -500,7 +500,7 @@ void replay_recorded_ramrom_at_address(ramromfilestructure *demofile)
     g_ramromPlayBackFlag = 1;
     set_solo_and_ptr_briefing(ptr_active_demofile->stagenum);
     set_selected_difficulty(ptr_active_demofile->difficulty);
-    frontChangeMenu(MENU_RUN_STAGE,1);
+    frontSetMenu(MENU_RUN_STAGE,1);
 }
 
 void replay_recorded_ramrom_from_indy(void)

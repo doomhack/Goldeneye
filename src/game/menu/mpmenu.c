@@ -395,7 +395,7 @@ void mpCalculateAwards(bool gameoverdelay)
         metrics[i].num_deaths = 0;
         metrics[i].num_suicides = 0;
 
-        for (j = 0; j < get_selected_num_players(); j++)
+        for (j = 0; j < frontGetPlayerCount(); j++)
         {
             metrics[i].num_deaths += g_playerPlayerData[j].kill_counts[i];
             if (i == j)
@@ -842,7 +842,7 @@ s32 get_points_for_mp_player(s32 playernum)
 
     points = 0;
 
-    switch (get_scenario())
+    switch (frontGetMpScenario())
     {
         case SCENARIO_NORMAL:
         case SCENARIO_MWTGG:
@@ -910,7 +910,7 @@ void write_playerrank_to_buffer(char *buffer, s32 playernum)
     s32 i;
     s32 j;
 
-    scenario = get_scenario();
+    scenario = frontGetMpScenario();
     count = getPlayerCount();
 
     for (i = 0; i < count; i++)
@@ -987,7 +987,7 @@ void write_playerrank_to_buffer(char *buffer, s32 playernum)
 
 s32 mpwatchShouldDisplayRank(s32 param_1)
 {
-    switch(get_scenario())
+    switch(frontGetMpScenario())
     {
         case SCENARIO_NORMAL:
         case SCENARIO_TLD:
@@ -1001,7 +1001,7 @@ s32 mpwatchShouldDisplayRank(s32 param_1)
             return param_1 ? 0 : 1;
         default:
 #ifdef DEBUG
-            osSyncPrintf("Invalid scenario %d!", get_scenario());
+            osSyncPrintf("Invalid scenario %d!", frontGetMpScenario());
 #endif
         do {} while (1);
     }
@@ -1009,7 +1009,7 @@ s32 mpwatchShouldDisplayRank(s32 param_1)
 
 s32 mpwatchShouldDisplayScore(s32 param_1)
 {
-    switch(get_scenario())
+    switch(frontGetMpScenario())
     {
         case SCENARIO_NORMAL:
         case SCENARIO_MWTGG:
@@ -1025,7 +1025,7 @@ s32 mpwatchShouldDisplayScore(s32 param_1)
         break;
         default:
 #ifdef DEBUG
-            osSyncPrintf("Invalid scenario %d!", get_scenario());
+            osSyncPrintf("Invalid scenario %d!", frontGetMpScenario());
 #endif
             do {} while (1);
     }
@@ -1271,7 +1271,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
  
             if (mpwatchShouldDisplayScore(fav_x_offset))
             {
-                scenario = get_scenario();
+                scenario = frontGetMpScenario();
                 text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_1B_SCORES)); /* SCORES */
                 textMeasure(&textheight, &textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
@@ -1593,7 +1593,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
             y = (viGetViewTop() - (fav_textheight >> 1)) + (37 + MPMENU_YOFF);
             viewleft = viGetX(); h1 = viGetY();
             gdl = textRender(gdl, &x, &y, text, ptrFontBankGothicChars, ptrFontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
-            text = frontGetPlayersFavoriteWeaponInHand(curplayernum, 0);
+            text = frontGetFavWeaponText(curplayernum, 0);
             textMeasure(&fav_textheight, &fav_textwidth, text, ptrFontBankGothicChars, ptrFontBankGothic, 0);
             x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
             x2 = viGetViewTop();
@@ -1686,7 +1686,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
             total_kills_against_current += g_playerPlayerData[m].kill_counts[curplayernum];
         }
  
-        if ((get_scenario() != SCENARIO_YOLT) || (total_kills_against_current < 2))
+        if ((frontGetMpScenario() != SCENARIO_YOLT) || (total_kills_against_current < 2))
         {
             gdl = bgScissorCurrentPlayerViewDefault(gdl);
             gdl = microcode_constructor(gdl);

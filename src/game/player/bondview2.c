@@ -498,8 +498,8 @@ void playerLoadBody(void)
         }
         else
         {
-            head = get_player_mp_char_head(playerGetCurrentNum());
-            body = get_player_mp_char_body(playerGetCurrentNum());
+            head = frontGetMpCharHead(playerGetCurrentNum());
+            body = frontGetMpCharBody(playerGetCurrentNum());
         }
 
         if (g_CameraMode == CAMERAMODE_SWIRL)
@@ -6302,7 +6302,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
     canCycleWeapons = 1;
 
-    if ((isMpGame()) && (get_scenario() == 2) && (invHasFlagToken()))
+    if ((isMpGame()) && (frontGetMpScenario() == 2) && (invHasFlagToken()))
     {
         canCycleWeapons = 0;
     }
@@ -10210,7 +10210,7 @@ Gfx *hudRender(Gfx *gdl)
                     }
                     else
                     {
-                        scenario = get_scenario();
+                        scenario = frontGetMpScenario();
                         cur      = playerGetCurrentNum();
                         count    = getPlayerCount();
                         total    = 0;
@@ -10330,7 +10330,7 @@ void playerDie(void)
         // In co-op the mission carries on while the partner is alive.
         if (!coopPartnerAlive())
         {
-            g_isBondKIA = 1;
+            g_FrontBondKilled = 1;
         }
 
         g_CurrentPlayer->bonddead = 1;
@@ -10417,7 +10417,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
             }
         }
 
-        if (isMpGame() && get_scenario() == SCENARIO_LTK)
+        if (isMpGame() && frontGetMpScenario() == SCENARIO_LTK)
         {
             // the damage dealt is always equivalent to how much health and armor the player has
             // the result of this is to always kill the player regardless of how much damage he can sustain
@@ -10475,7 +10475,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
                             sp2C = playerGetCurrentNum();
                             sp28 = 0;
 
-                            if (get_scenario() == 3 && invHasGoldenGun())
+                            if (frontGetMpScenario() == 3 && invHasGoldenGun())
                             {
                                 sp28 = 1;
                             }

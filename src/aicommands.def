@@ -11728,7 +11728,7 @@ _AI_CMD(
 
 _AI_CMD(
     {
-        g_isBondKIA = TRUE;
+        g_FrontBondKilled = TRUE;
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })

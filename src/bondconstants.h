@@ -1141,7 +1141,7 @@ char *AIRCRAFT_ANIMATION_ToString[] = {
 #endif
 
 /*
-values need to be verified against cheat.c : void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat)
+values need to be verified against cheat.c : void cheatTurnOn(CHEAT_ID cheat)
 */
 typedef enum CHEAT_IDS
 {

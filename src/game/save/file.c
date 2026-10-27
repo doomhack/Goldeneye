@@ -6,7 +6,7 @@
 f32 get_007_reaction_speed(void)
 {
     if (lvGetDifficulty() == DIFFICULTY_007) {
-        return slider_007_mode_reaction;
+        return g_Front007Reaction;
     }
     return 0.f;
 }
@@ -14,7 +14,7 @@ f32 get_007_reaction_speed(void)
 f32 get_007_health_mod(void)
 {
     if (lvGetDifficulty() == DIFFICULTY_007) {
-        return slider_007_mode_health;
+        return g_Front007Health;
     }
     return 1.f;
 }
@@ -22,7 +22,7 @@ f32 get_007_health_mod(void)
 f32 get_007_damage_mod(void)
 {
     if (lvGetDifficulty() == DIFFICULTY_007) {
-        return slider_007_mode_damage;
+        return g_Front007Damage;
     }
     return 1.f;
 }
@@ -30,7 +30,7 @@ f32 get_007_damage_mod(void)
 f32 get_007_accuracy_mod(void)
 {
     if (lvGetDifficulty() == DIFFICULTY_007) {
-        return slider_007_mode_accuracy;
+        return g_Front007Accuracy;
     }
     return 1.f;
 }
@@ -39,15 +39,15 @@ void end_of_mission_briefing(void)
 {
     s16 var1;
 
-    if ((-1 < briefingpage) && selected_difficulty != DIFFICULTY_007 && g_AppendCheatSinglePlayer == FALSE)
+    if ((-1 < g_FrontMission) && g_FrontDifficulty != DIFFICULTY_007 && g_AppendCheatSinglePlayer == FALSE)
     {
-        var1 = solo_target_time_array[mission_folder_setup_entries[briefingpage].mission_num][selected_difficulty];
-        fileUnlockStageInFolderAtDifficulty(selected_folder_num, mission_folder_setup_entries[briefingpage].mission_num, selected_difficulty, lvGetMissionTime60() / 0x3c);
+        var1 = g_FrontTargetTimes[g_FrontMissions[g_FrontMission].mission_num][g_FrontDifficulty];
+        fileUnlockStageInFolderAtDifficulty(g_FrontFolder, g_FrontMissions[g_FrontMission].mission_num, g_FrontDifficulty, lvGetMissionTime60() / 0x3c);
         if ((lvGetMissionTime60() / GAME_TICKRATE) <= var1)
         {
-            if (!fileGetIsCheatUnlocked(fileGetSaveForFoldernum(selected_folder_num), mission_folder_setup_entries[briefingpage].mission_num))
+            if (!fileGetIsCheatUnlocked(fileGetSaveForFoldernum(g_FrontFolder), g_FrontMissions[g_FrontMission].mission_num))
             {
-                fileSaveFolderUnlockCheat(selected_folder_num, mission_folder_setup_entries[briefingpage].mission_num);
+                fileSaveFolderUnlockCheat(g_FrontFolder, g_FrontMissions[g_FrontMission].mission_num);
                 g_NewCheatUnlocked = TRUE;
                 return;
             }
@@ -65,27 +65,27 @@ void fileLoadSaveSettingsForSelectedFolder(int stage)
 
         #endif
     }
-    fileLoadSettingsForFolder(selected_folder_num);
+    fileLoadSettingsForFolder(g_FrontFolder);
 }
 
 void deleteCurrentSelectedFolder(void)
 {
-  fileClearSavefileForFolder(selected_folder_num);
+  fileClearSavefileForFolder(g_FrontFolder);
 }
 
 void fileUpdateBondInCurrentFolder(void)
 {
-  fileUpdateSelectedBondInSave(selected_folder_num);
+  fileUpdateSelectedBondInSave(g_FrontFolder);
 }
 
 s32 fileGetBondForCurrentFolder(void)
 {
-  return fileGetBondForFolder(selected_folder_num);
+  return fileGetBondForFolder(g_FrontFolder);
 }
 
 void fileSetCurrentFolder(u32 foldernum)
 {
-  selected_folder_num = foldernum;
+  g_FrontFolder = foldernum;
 }
 
 void set_selected_difficulty(DIFFICULTY difficulty)
@@ -94,30 +94,30 @@ void set_selected_difficulty(DIFFICULTY difficulty)
     {
     case DIFFICULTY_AGENT:
     default:
-        selected_difficulty = DIFFICULTY_AGENT;
+        g_FrontDifficulty = DIFFICULTY_AGENT;
         return;
     case DIFFICULTY_SECRET:
-        selected_difficulty = DIFFICULTY_SECRET;
+        g_FrontDifficulty = DIFFICULTY_SECRET;
         return;
     case DIFFICULTY_00:
-        selected_difficulty = DIFFICULTY_00;
+        g_FrontDifficulty = DIFFICULTY_00;
         return;
     case DIFFICULTY_007:
-        selected_difficulty = DIFFICULTY_007;
+        g_FrontDifficulty = DIFFICULTY_007;
         return;
     }
 }
 
 void set_solo_and_ptr_briefing(LEVELID stage)
 {
-    gamemode = GAMEMODE_SOLO;
-    selected_stage = stage;
-    briefingpage = pull_and_display_text_for_folder_a0(stage);
+    g_FrontGameMode = GAMEMODE_SOLO;
+    g_FrontStage = stage;
+    g_FrontMission = frontFindMissionEntry(stage);
 }
 
 void sub_GAME_7F01D61C(struct save_data *savefile)
 {
-    fileCopySave(selected_folder_num, savefile);
+    fileCopySave(g_FrontFolder, savefile);
 }
 
 
@@ -129,8 +129,8 @@ void set_selected_foldernum_and_copy_demo_eeprom(struct save_data *eeprom)
   long long new_var2;
   new_var2 = (long long) 0x64;
   new_var = new_var2;
-  selected_folder_num_copy = (s32) selected_folder_num;
-  selected_folder_num = new_var;
+  g_FrontFolderSaved = (s32) g_FrontFolder;
+  g_FrontFolder = new_var;
   fileCopyDemoSaveToRamRomSave(new_var, eeprom);
 }
 
@@ -140,7 +140,7 @@ void store_favorite_weapon_current_player(u32 right,u32 left)
   u32 playerNum;
 
   playerNum = playerGetCurrentNum();
-  array_favweapon[playerNum][GUNRIGHT] = right;
-  array_favweapon[playerNum][GUNLEFT] = left;
+  g_MpFavWeapon[playerNum][GUNRIGHT] = right;
+  g_MpFavWeapon[playerNum][GUNLEFT] = left;
 }
 

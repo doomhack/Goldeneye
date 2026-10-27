@@ -11094,7 +11094,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
         } 
         else if (isMpGame()) 
         {
-            sp58 = get_scenario();
+            sp58 = frontGetMpScenario();
 
             if ((sp58 == 2) && (invHasFlagToken() != 0)) 
             {

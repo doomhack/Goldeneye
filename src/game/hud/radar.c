@@ -54,7 +54,7 @@ Gfx *radarRender(Gfx *DL)
     #define RADAR_VERT_SCALE 1.0f
 #endif
     
-    current_scenario = get_scenario();
+    current_scenario = frontGetMpScenario();
     cur_playernum = playerGetCurrentNum();
     player_count = getPlayerCount();
     

@@ -1,3 +1,7 @@
+/**
+ * The multiplayer weapon sets ("Pistols", "Rockets"...): the weapons, models and ammo each
+ * set puts in a level, and which set is picked. See docs/subsystems/menu.md.
+ */
 #include <ultra64.h>
 #include <bondconstants.h>
 #include "game/menu/mp_weapon.h"
@@ -197,7 +201,7 @@ struct s_mp_weapon_set mp_weapon_set_golden[] =
 };
 
 //D:800490F0
-struct s_mp_weapon_set_text mp_weapon_set_text_table[] = 
+struct s_mp_weapon_set_text g_MpWeaponSets[] = 
 {
     {getStringID(LMPWEAPONS, MPWEAPON_STR_00_SLAPPERSONLY), mp_weapon_set_slaps},
     {getStringID(LMPWEAPONS, MPWEAPON_STR_01_PISTOLS), mp_weapon_set_pistols},
@@ -215,35 +219,35 @@ struct s_mp_weapon_set_text mp_weapon_set_text_table[] =
     {getStringID(LMPWEAPONS, MPWEAPON_STR_0C_GOLDENGUN), mp_weapon_set_golden}
 };
 
-s32 mp_weapon_set = 0xB;
+s32 g_MpWeaponSet = 0xB;
 
 
-//increment mp_weapon_set by 1, capping at 0xE
-void incrementMPWeaponSet(void)
+//increment g_MpWeaponSet by 1, capping at 0xE
+void mpWeaponSetNext(void)
 {
-    mp_weapon_set = (mp_weapon_set + 1) % 0xe;
+    g_MpWeaponSet = (g_MpWeaponSet + 1) % 0xe;
 }
 
-//return pointer to selected mp_weapon_set textID
-u16* getPtrMPWeaponSetTextID(void)
+//return pointer to selected g_MpWeaponSet textID
+u16* mpWeaponSetGetName(void)
 {
-    return &mp_weapon_set_text_table[mp_weapon_set].textID;
+    return &g_MpWeaponSets[g_MpWeaponSet].textID;
 }
 
-//return pointer to selected mp_weapon_set data
-struct s_mp_weapon_set* getPtrMPWeaponSetData(void)
+//return pointer to selected g_MpWeaponSet data
+struct s_mp_weapon_set* mpWeaponSetGetItems(void)
 {
-    return mp_weapon_set_text_table[mp_weapon_set].weapon_set;
+    return g_MpWeaponSets[g_MpWeaponSet].weapon_set;
 }
 
 //set mp weapon set
-void setMPWeaponSet(s32 setNUM)
+void mpWeaponSetSelect(s32 setNUM)
 {
-    mp_weapon_set = setNUM;
+    g_MpWeaponSet = setNUM;
 }
 
 //return mp weapon set
-s32 getMPWeaponSet(void)
+s32 mpWeaponSetGetIndex(void)
 {
-    return mp_weapon_set;
+    return g_MpWeaponSet;
 }

@@ -1,3 +1,8 @@
+/**
+ * Cheats: the button sequences typed in during a game or on the menus (cheatTick,
+ * cheatCheckInput), the table of every cheat (g_CheatInfo), and what turning each one on
+ * or off does (cheatTurnOn, cheatTurnOff). See docs/subsystems/menu.md.
+ */
 #include <os_extension.h>
 #include <ultra64.h>
 #include <bondgame.h>
@@ -25,7 +30,7 @@
 // bss
 
 
-u8 g_CheatPlayerTextRelated[CHEAT_INVALID + 1];
+u8 g_CheatPlayerMask[CHEAT_INVALID + 1];
 
 #pragma region ButtonCodes
 
@@ -768,12 +773,12 @@ CheatInfo g_CheatInfo[] = {
 // forward declarations
 // Private Functions?
 
-s32 cheatButtonCountBitsSet(u16 bits);
-void cheatTryActivateFromInputBuffer(void);
-void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat);
-void cheatButtonHandleCheatsTurnedOff(CHEAT_ID cheat_id);
-bool cheatCheckIfMPCheat(CHEAT_ID cheat_id);
-void cheatButtonSetDkMode(CHEAT_ID cheat_id);
+s32 cheatCountBits(u16 bits);
+void cheatCheckInput(void);
+void cheatTurnOn(CHEAT_ID cheat);
+void cheatTurnOff(CHEAT_ID cheat_id);
+bool cheatIsMpCheat(CHEAT_ID cheat_id);
+void cheatSetDkMode(CHEAT_ID cheat_id);
 
 // end forward declarations
 
@@ -783,7 +788,7 @@ void cheatButtonSetDkMode(CHEAT_ID cheat_id);
 /**
  * Address 0x7F091740.
  */
-s32 cheatButtonCountBitsSet(u16 bits)
+s32 cheatCountBits(u16 bits)
 {
     s32 count;
 
@@ -805,7 +810,7 @@ s32 cheatButtonCountBitsSet(u16 bits)
 /**
  * Address 0x7F09177C.
  */
-void cheatTryActivateFromInputBuffer(void)
+void cheatCheckInput(void)
 {
     CheatInfo *cheatInfo = &g_CheatInfo[0];
     s32 applicableMask;
@@ -854,11 +859,11 @@ void cheatTryActivateFromInputBuffer(void)
 
                     if (!cheatIsActive((s32) cheatInfo->cheat_id) || ((cheatInfo->maskfield & CHEAT_MASK_SHOW_TEXT) != 0))
                     {
-                        cheatButtonHandleCheatsTurnedOn(cheatInfo->cheat_id);
+                        cheatTurnOn(cheatInfo->cheat_id);
                     }
                     else
                     {
-                        cheatButtonHandleCheatsTurnedOff(cheatInfo->cheat_id);
+                        cheatTurnOff(cheatInfo->cheat_id);
                     }
                 }
             }
@@ -871,7 +876,7 @@ void cheatTryActivateFromInputBuffer(void)
 /**
  * Address 0x7F09193C.
  */
-void cheat_buttons_mp_related(void)
+void cheatTick(void)
 {
     u16 currentButtons;
     u16 buttonsPressedThisFrame;
@@ -890,7 +895,7 @@ void cheat_buttons_mp_related(void)
     if (buttonsPressedThisFrame != 0)
     {
         // Only allow single button combos (excluding triggers)
-        if ((cheatButtonCountBitsSet(buttonsPressedThisFrame) == 1) && ((cheatButtonCountBitsSet(currentButtons) == 1)))
+        if ((cheatCountBits(buttonsPressedThisFrame) == 1) && ((cheatCountBits(currentButtons) == 1)))
         {
             // Store the cheat input in the buffer
             g_CurrentPlayer->cheatInputBuffer[g_CurrentPlayer->cheatInputBufferIndex] = buttonsPressedThisFrame | triggerButtons;
@@ -907,7 +912,7 @@ void cheat_buttons_mp_related(void)
         }
     }
 
-    cheatTryActivateFromInputBuffer();
+    cheatCheckInput();
 }
 
 
@@ -935,7 +940,7 @@ bool cheatIsEnemyRockets(CHEAT_ID id)
  *
  * Address 0x7F091A78.
  */
-bool cheatCheckIfMPCheat(CHEAT_ID cheat_id)
+bool cheatIsMpCheat(CHEAT_ID cheat_id)
 {
     if ((g_CheatInfo[cheat_id - 1].maskfield & CHEAT_MASK_MPGAME) == CHEAT_MASK_MPGAME)
     {
@@ -951,7 +956,7 @@ bool cheatCheckIfMPCheat(CHEAT_ID cheat_id)
 /**
  * Address 0x7F091AAC.
  */
-void cheatButtonTurnOnCheatForPlayers(CHEAT_ID cheatindex)
+void cheatActivate(CHEAT_ID cheatindex)
 {
     u32 cheat_mask;
     s32 starting_player_number;
@@ -964,7 +969,7 @@ void cheatButtonTurnOnCheatForPlayers(CHEAT_ID cheatindex)
 
     if (numplayers == 1)
     {
-        cheatButtonHandleCheatsTurnedOn(cheatindex);
+        cheatTurnOn(cheatindex);
     }
     else
     {
@@ -972,14 +977,14 @@ void cheatButtonTurnOnCheatForPlayers(CHEAT_ID cheatindex)
         {
             if (cheat_mask & CHEAT_MASK_GLOBAL)
             {
-                cheatButtonHandleCheatsTurnedOn(cheatindex);
+                cheatTurnOn(cheatindex);
             }
             else
             {
                 for(i=0; i<numplayers; i++)
                 {
                     playerSetCurrent(i);
-                    cheatButtonHandleCheatsTurnedOn(cheatindex);
+                    cheatTurnOn(cheatindex);
                 }
 
                 playerSetCurrent(starting_player_number);
@@ -997,7 +1002,7 @@ void cheatButtonTurnOnCheatForPlayers(CHEAT_ID cheatindex)
  * Address 0x7F092644 (VERSION_JP)
  * Address 0x7F090FE4 (VERSION_EU)
  */
-void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
+void cheatTurnOn(CHEAT_ID cheat_id)
 {
     s32 mask;
     s32 current_player_number;
@@ -1011,18 +1016,18 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
     {
         if ((mask & CHEAT_MASK_GLOBAL) == 0)
         {
-            g_CheatPlayerTextRelated[cheat_id] |= (1 << current_player_number);
+            g_CheatPlayerMask[cheat_id] |= (1 << current_player_number);
         }
         else
         {
-            g_CheatPlayerTextRelated[cheat_id] = (1 << player_count) - 1;
+            g_CheatPlayerMask[cheat_id] = (1 << player_count) - 1;
         }
     }
 
     switch (cheat_id)
     {
         case CHEAT_EXTRA_MP_CHARS:
-            unlock_all_mp_chars();
+            frontUnlockAllMpChars();
             return;
 
         case CHEAT_INVINCIBILITY:
@@ -1127,7 +1132,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
 
         case CHEAT_DK_MODE:
             HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_17_DKMODEON_LF)));
-            cheatButtonSetDkMode(TRUE);
+            cheatSetDkMode(TRUE);
             return;
 
         case CHEAT_EXTRA_WEAPONS:
@@ -1375,9 +1380,9 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
         case CHEAT_UNLOCK_ALLGUNS:
             {
                 s32 val = cheat_id - CHEAT_UNLOCK_PAINTBALL;
-                if ((selected_folder_num >= 0) && (selected_folder_num < 4))
+                if ((g_FrontFolder >= 0) && (g_FrontFolder < 4))
                 {
-                    fileSaveFolderUnlockCheat(selected_folder_num, val);
+                    fileSaveFolderUnlockCheat(g_FrontFolder, val);
                     sndPlaySfx(g_musicSfxBufferPtr, CAMERA_BEEP1_SFX, 0);
                     return;
                 }
@@ -1408,13 +1413,13 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
                 s32 max = cheat_id - CHEAT_UNLOCK_DAM;
                 s32 stagenum;
                 s32 unlock_count;
-                if (selected_folder_num >= 0 && selected_folder_num < 4)
+                if (g_FrontFolder >= 0 && g_FrontFolder < 4)
                 {
                     unlock_count = 0;
                     stagenum = 0;
                     for (; stagenum < max; stagenum++)
                     {
-                        if (fileIsStageUnlockedAtDifficulty(selected_folder_num, stagenum, DIFFICULTY_AGENT) == 3)
+                        if (fileIsStageUnlockedAtDifficulty(g_FrontFolder, stagenum, DIFFICULTY_AGENT) == 3)
                         {
                             unlock_count++;
                         }
@@ -1422,7 +1427,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
 
                     if (max - 1 == (unlock_count))
                     {
-                        fileUnlockStageInFolderAtDifficulty(selected_folder_num, max - 1, DIFFICULTY_AGENT, 0x5F5E0FF);
+                        fileUnlockStageInFolderAtDifficulty(g_FrontFolder, max - 1, DIFFICULTY_AGENT, 0x5F5E0FF);
                         sndPlaySfx(g_musicSfxBufferPtr, CAMERA_BEEP1_SFX, 0);
                     }
                 }
@@ -1442,7 +1447,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
 /**
  * Address 0x7F092438 (all versions)
  */
-void cheatButtonHandleCheatsTurnedOff(CHEAT_ID cheat_id)
+void cheatTurnOff(CHEAT_ID cheat_id)
 {
     s32 mask;
     s32 current_player_number;
@@ -1456,11 +1461,11 @@ void cheatButtonHandleCheatsTurnedOff(CHEAT_ID cheat_id)
     {
         if ((mask & CHEAT_MASK_GLOBAL) == 0)
         {
-            g_CheatPlayerTextRelated[cheat_id] &= ~(1 << current_player_number);
+            g_CheatPlayerMask[cheat_id] &= ~(1 << current_player_number);
         }
         else
         {
-            g_CheatPlayerTextRelated[cheat_id] = 0;
+            g_CheatPlayerMask[cheat_id] = 0;
         }
     }
 
@@ -1503,7 +1508,7 @@ void cheatButtonHandleCheatsTurnedOff(CHEAT_ID cheat_id)
 
         case CHEAT_DK_MODE:
             HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_23_DKMODEOFF_LF)));
-            cheatButtonSetDkMode(FALSE);
+            cheatSetDkMode(FALSE);
             return;
 
         case CHEAT_TINY_BOND:
@@ -1624,7 +1629,7 @@ void cheatButtonHandleCheatsTurnedOff(CHEAT_ID cheat_id)
 /**
  * Address 0x7F0926C0.
  */
-void cheatDisableAllCheats(void)
+void cheatTurnAllOff(void)
 {
     s32 numplayers;
     s32 starting_player_number;
@@ -1642,7 +1647,7 @@ void cheatDisableAllCheats(void)
         {
             if ((g_CheatInfo[j - 1].maskfield & CHEAT_MASK_TOGGLE) && (cheatIsActive(j)))
             {
-                cheatButtonHandleCheatsTurnedOff(j);
+                cheatTurnOff(j);
             }
         }
     }
@@ -1657,7 +1662,7 @@ void cheatDisableAllCheats(void)
 /**
  * Address 0x7F092774.
  */
-char *cheatGetMenuTextPointer(CHEAT_ID cheat_id)
+char *cheatGetName(CHEAT_ID cheat_id)
 {
     u16 strID;
 
@@ -1678,7 +1683,7 @@ char *cheatGetMenuTextPointer(CHEAT_ID cheat_id)
  */
 bool cheatIsActive(CHEAT_ID cheat)
 {
-    return ((bool) (u8) g_CheatPlayerTextRelated[cheat] >> playerGetCurrentNum()) & 1;
+    return ((bool) (u8) g_CheatPlayerMask[cheat] >> playerGetCurrentNum()) & 1;
 }
 
 
@@ -1687,7 +1692,7 @@ bool cheatIsActive(CHEAT_ID cheat)
 /**
  * Address 0x7F0927F4.
  */
-void cheatButtonSetDkMode(CHEAT_ID cheat_id)
+void cheatSetDkMode(CHEAT_ID cheat_id)
 {
     s32 numslots;
     s32 i;
@@ -1730,7 +1735,7 @@ void cheatResetText()
     int i;
     for (i = 0; i < CHEAT_MAX; i++)
     {
-        g_CheatPlayerTextRelated[i] = 0;
+        g_CheatPlayerMask[i] = 0;
     }
 }
 
@@ -1740,3 +1745,21 @@ void cheatResetPlayerDisplay()
     g_CurrentPlayer->can_display_cheat_text = 0;
 }
 #endif
+
+
+void cheatResetPlayerMasks(void) {
+    int i;
+    
+    for(i=0;i<75;i++)
+    {
+        g_CheatPlayerMask[i] = 0;
+    }
+
+}
+
+
+void cheatResetInput(void)
+{
+  g_CurrentPlayer->cheatInputBufferIndex = 0;
+  g_CurrentPlayer->cheatInputCount = 0;
+}

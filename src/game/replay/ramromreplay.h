@@ -23,7 +23,7 @@ typedef struct ramromfilestructure {
     u32 scenario;
     u32 mpstage_sel;
     u32 gamelength;
-    u32 mp_weapon_set;
+    u32 weaponSet;
     u32 mp_char[4];
     u32 mp_handi[4];
     u32 mp_contstyle[4];

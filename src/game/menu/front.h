@@ -167,188 +167,190 @@ extern struct coord3d cast_rootvel_smoothed;
 extern struct coord3d cast_rootvel_accumulator;
 
 //CODE.bss:80069614
-extern f32 ninLogoRotRate;
+extern f32 g_NintendoLogoSpin;
 //CODE.bss:80069618
-extern f32 ninLogoScale;
+extern f32 g_NintendoLogoScale;
 //CODE.bss:80069620
-extern coord3d folderpositions_camspace[MAX_FOLDER_COUNT];
+extern coord3d g_FrontFolderScreenPos[MAX_FOLDER_COUNT];
 
 //CODE.bss:80069650
-extern u8 cheat_available[];
+extern u8 g_CheatAvailable[];
 
 //CODE.bss:800696A0
 extern u8 g_CheatActivated[];
 
 
 //CODE.bss:800696F0
-extern s32 array_favweapon[4][2];
+extern s32 g_MpFavWeapon[4][2];
 //CODE.bss:80069710
-extern s32 mp_char_cur_select_player[4];
+extern s32 g_MpCharCursor[4];
 
 //CODE.bss:80069720
-extern s32 mp_char_prev_select_player[4];
+extern s32 g_MpCharPrevCursor[4];
 
 //CODE.bss:80069730
-extern s32 mp_char_select_scroll_offset[4];
+extern s32 g_MpCharScroll[4];
 
 //CODE.bss:80069740
-extern s32 player_has_selected_char[];
+extern s32 g_MpCharChosen[];
 //CODE.bss:80069750
-extern s32 size_mp_select_image_player[];
+extern s32 g_MpCharPortraitSize[];
 //CODE.bss:80069760
-extern s32 player_handicap[];
+extern s32 g_MpHandicap[];
 //CODE.bss:80069770
-extern char* g_textPtrTAB1;
+extern char* g_FrontTabStartText;
 //CODE.bss:80069774
-extern char* g_textPtrTAB2;
+extern char* g_FrontTabNextText;
 //CODE.bss:80069778
-extern char* g_textPtrTAB3;
+extern char* g_FrontTabPrevText;
 //CODE.bss:8006977C
-extern s32 current_mp_stage_highlighted;
+extern s32 g_MpStageCursor;
 //CODE.bss:80069780
-extern s32 dword_CODE_bss_80069780;
+extern s32 g_MpScenarioCursor;
 //CODE.bss:80069784
-extern s32 mission_difficulty_highlighted;
+extern s32 g_FrontDifficultyHighlight;
 //CODE.bss:80069788
-extern s32 teamsize;
+extern s32 g_MpTeamsCursor;
 //CODE.bss:80069790
 extern s32 g_NewCheatUnlocked;
 //CODE.bss:80069794
-extern s32 highlight_enemy_reaction;
+extern s32 g_Front007HlReaction;
 //CODE.bss:80069798
-extern s32 highlight_enemy_health;
+extern s32 g_Front007HlHealth;
 //CODE.bss:8006979C
-extern s32 highlight_enemy_damage;
+extern s32 g_Front007HlDamage;
 //CODE.bss:800697A0
-extern s32 highlight_enemy_accuracy;
+extern s32 g_Front007HlAccuracy;
 
 //CODE.bss:800697A4                     .align 3
 
 //CODE.bss:800697A8
-extern s32 player_handicap[];
+extern s32 g_MpHandicap[];
 //CODE.bss:800697B8
-extern s32 controlstyle_player[];
+extern s32 g_MpControlStyle[];
 
 
 //CODE.bss:800697C8
-extern s32 highlight_players;
+extern s32 g_MpHlPlayers;
 //CODE.bss:800697CC
-extern s32 highlight_scenario;
+extern s32 g_MpHlScenario;
 //CODE.bss:800697D0
-extern s32 highlight_gameselect;
+extern s32 g_MpHlStage;
 //CODE.bss:800697D4
-extern s32 highlight_gamelength;
+extern s32 g_MpHlLength;
 //CODE.bss:800697D8
-extern s32 highlight_character;
+extern s32 g_MpHlChar;
 //CODE.bss:800697DC
-extern s32 highlight_weaponselect;
+extern s32 g_MpHlWeapons;
 //CODE.bss:800697E0
-extern s32 highlight_health;
+extern s32 g_MpHlHandicap;
 //CODE.bss:800697E4
-extern s32 highlight_controlstyle;
+extern s32 g_MpHlControls;
 //CODE.bss:800697E8
-extern s32 highlight_aimadjustment;
+extern s32 g_MpHlAim;
 //CODE.bss:800697EC                     .align 4
 /*
 CODE.bss:800697F0     dword_CODE_bss_800697F0:.space 0x130
 */
 
-extern MENU current_menu;
-extern MENU menu_update;
-extern MENU maybe_prev_menu;
-extern s32 g_MenuTimer;
-extern s32 tab_start_selected;
-extern s32 tab_next_selected;
-extern s32 tab_prev_selected;
-extern s32 tab_start_highlight;
-extern s32 tab_next_highlight;
-extern s32 tab_prev_highlight;
+extern MENU g_FrontMenu;
+extern MENU g_FrontNextMenu;
+extern MENU g_FrontEnterMenu;
+extern s32 g_FrontTimer;
+extern s32 g_FrontTabStartSelected;
+extern s32 g_FrontTabNextSelected;
+extern s32 g_FrontTabPrevSelected;
+extern s32 g_FrontTabStartHighlight;
+extern s32 g_FrontTabNextHighlight;
+extern s32 g_FrontTabPrevHighlight;
 
 extern f32 tab2_first_x_coord;
 extern f32 tab1_max_x_coord;
 extern f32 tab2_bottom_y_coord;
 
-extern s32 selected_folder_num;
-extern s32 selected_folder_num_copy;
-extern GAMEMODE gamemode;
-extern s32 selected_stage;
-extern s32 briefingpage;
-extern DIFFICULTY selected_difficulty;
+extern s32 g_FrontFolder;
+extern s32 g_FrontFolderSaved;
+extern GAMEMODE g_FrontGameMode;
+extern s32 g_FrontStage;
+extern s32 g_FrontMission;
+extern DIFFICULTY g_FrontDifficulty;
 extern s32 g_AppendCheatSinglePlayer;
 extern s32 g_AppendCheatMultiPlayer;
-extern f32 cursor_h_pos;
-extern f32 cursor_v_pos;
-extern s32 final_menu_briefing_page;
-extern s32 current_menu_briefing_page;
-extern s32 folder_selection_screen_option_icon;
-extern s32 folder_selected_for_deletion;
-extern s32 folder_selected_for_deletion_choice;
-extern s32 mission_failed_or_aborted;
-extern s32 g_isBondKIA;
-extern s32 is_first_time_on_legal_screen;
-extern s32 is_first_time_on_main_menu;
-extern s32 prev_keypresses;
+extern f32 g_FrontCursorX;
+extern f32 g_FrontCursorY;
+extern s32 g_FrontBriefingLastPage;
+extern s32 g_FrontBriefingPage;
+extern s32 g_FrontFolderIcon;
+extern s32 g_FrontFolderErase;
+extern s32 g_FrontFolderEraseChoice;
+extern s32 g_FrontMissionAborted;
+extern s32 g_FrontBondKilled;
+extern s32 g_FrontFirstLegal;
+extern s32 g_FrontFirstBoot;
+extern s32 g_FrontSkipIntro;
 extern s32 dword_ge_logo_bool;
-extern s32 maybe_is_in_menu;
-extern s32 screen_size;
-extern s32 spectrum_related_flag;
-extern s32 is_emulating_spectrum;
-extern s32 is_cheat_menu_available;
-extern u8 * ptr_logo_and_walletbond_DL;
-extern s32 ptr_menu_videobuffer;
-extern  Model * walletinst[];
-extern Lights1 gelogolight;
-extern Lights1 ninlogolight;
+extern s32 g_FrontStartMusic;
+extern s32 g_FrontScreenSize;
+extern s32 g_FrontHiResPending;
+extern s32 g_FrontLowResPending;
+extern s32 g_CheatMenuAvailable;
+extern u8 * g_FrontModelBuffer;
+extern s32 g_FrontFrameBuffer;
+extern  Model * g_FrontFolderModels[];
+extern Lights1 g_FrontLogoLight;
+extern Lights1 g_FrontNintendoLight;
 
-extern f32 slider_007_mode_reaction;
-extern f32 slider_007_mode_health;
-extern f32 slider_007_mode_accuracy;
-extern f32 slider_007_mode_damage;
+extern f32 g_Front007Reaction;
+extern f32 g_Front007Health;
+extern f32 g_Front007Accuracy;
+extern f32 g_Front007Damage;
 
 
-extern struct mission_folder_setup mission_folder_setup_entries[];
+extern struct mission_folder_setup g_FrontMissions[];
 
-extern s32 selected_num_players;
-extern s32 player_char[];
-extern s32 MP_stage_selected;
-extern s32 game_length;
-extern s32 aim_sight_adjustment;
-extern s32 scenario;
-extern s32 unlock_stage_select;
-extern s32 unlock_game_length;
-extern s32 unlock_chars;
-extern s32 unlock_weapon_select;
-extern s32 unlock_handicap;
-extern s32 unlock_control_style;
-extern s32 unlock_aim_sight;
-extern s16 solo_target_time_array[20][3];
+extern s32 g_MpPlayerCount;
+extern s32 g_MpChar[];
+extern s32 g_MpStage;
+extern s32 g_MpGameLength;
+extern s32 g_MpAimSetting;
+extern s32 g_MpScenario;
+extern s32 g_MpCanPickStage;
+extern s32 g_MpCanPickLength;
+extern s32 g_MpCanPickChar;
+extern s32 g_MpCanPickWeapons;
+extern s32 g_MpCanPickHandicap;
+extern s32 g_MpCanPickControls;
+extern s32 g_MpCanPickAim;
+extern s16 g_FrontTargetTimes[20][3];
 
-extern s32 intro_character_index;
-extern u32 randomly_selected_intro_animation;
-extern u32 intro_animation_count;
-extern struct Model *cast_model;
-extern struct Model *cast_model_weapon;
-extern u32 full_actor_intro;
+extern s32 g_CastIndex;
+extern u32 g_CastAnim;
+extern u32 g_CastAnimCount;
+extern struct Model *g_CastModel;
+extern struct Model *g_CastWeaponModel;
+extern u32 g_CastFull;
 
-void frontChangeMenu(MENU menu, s32 reload);
-s32 get_selected_num_players(void);
+void frontSetMenu(MENU menu, s32 reload);
+s32 frontGetPlayerCount(void);
 void frontCoopResetPartnerOutfit(void);
 s32 frontCoopPartnerIsBond(void);
 s32 frontCoopGetPartnerCuff(s32 player1cuff);
 u16 frontCoopGetPartnerHead(void);
 u16 frontCoopGetPartnerBody(void);
-void do_extended_cast_display(bool doExtended);
-MPSCENARIOS get_scenario(void);
-f32 get_player_mp_handicap(int player);
-f32 get_player_mp_char_height(int player);
-s32 get_mp_timelimit(void);
-s32 get_mp_pointlimit(void);
-void reset_mp_options_for_scenario(MPSCENARIOS scenarioid);
-void copy_aim_settings_to_playerdata(void);
-void menu_init(void);
-Gfx * menu_jump_constructor_handler(Gfx *DL);
-void unlock_all_mp_chars(void);
-u8 get_player_mp_char_gender(int player);
-s32 pull_and_display_text_for_folder_a0(s32 arg0);
+void frontSetFullCast(bool doExtended);
+MPSCENARIOS frontGetMpScenario(void);
+f32 frontGetMpHandicap(int player);
+f32 frontGetMpCharHeight(int player);
+s32 frontGetMpTimeLimit(void);
+s32 frontGetMpPointLimit(void);
+void frontSetMpScenario(MPSCENARIOS scenarioid);
+void frontApplyMpAimSettings(void);
+void frontTick(void);
+Gfx * frontRender(Gfx *DL);
+void frontUnlockAllMpChars(void);
+u8 frontGetMpCharGender(int player);
+s32 frontFindMissionEntry(s32 arg0);
+
+void frontInit(void);
 
 #endif

@@ -841,7 +841,7 @@ extern f32             g_OrbitCamHeight;
 extern f32             g_OrbitCamTargetHeight;
 // CODE.bss:80079A14
 extern s32             g_OrbitCamPad;
-extern bool            g_isBondKIA;
+extern bool            g_FrontBondKilled;
 // end forward
 
 /**
@@ -4869,7 +4869,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_BondKilledInAction:
                 {
-                    g_isBondKIA = TRUE;
+                    g_FrontBondKilled = TRUE;
                     Offset += sizeof(AiBondKilledInActionRecord);
                     break;
                 }
