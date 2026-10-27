@@ -7530,7 +7530,7 @@ void chrTickBondDieRemoved(ChrRecord *self)
 }
 
 
-#if defined(REFRESH_NTSC)
+#if !defined(REFRESH_PAL)
 /* NTSC */
 #define MAX_SPEED_A 0.2991993f
 #define ACCEL_A 0.014959966f

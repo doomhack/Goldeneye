@@ -137,10 +137,8 @@ char *LlenE[] = {
  "IN NINTENDOVISION\n",
  "Produced by Rare\n",
  "Presented by Nintendo\n",
- #if defined(LANG_US) || defined(LANG_EU)
  "JAMES BOND WILL RETURN\n",
   0,
   0
- #endif
 
 };

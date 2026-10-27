@@ -13,7 +13,7 @@
 s32 g_LangBanks[45];
 
 
-#if defined(LANG_US)
+#if defined(VERSION_US)
 
 // The text bank file for each language bank id.
 char *g_LangFileNames[45] = {
@@ -66,7 +66,7 @@ char *g_LangFileNames[45] = {
 
 #endif
 
-#if defined(LANG_EU)
+#if defined(VERSION_EU)
 // The text bank file for each language bank id.
 char *g_LangFileNames[45] = {
     NULL,            /* Null (unused) */

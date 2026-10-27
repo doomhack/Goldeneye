@@ -23,8 +23,6 @@
             "VERSION_US",
             "TARGET_N64",
             "OUTCODE=u",
-            "LANG_US",
-            "REFRESH_NTSC",
             "BUGFIX_R0"
             /* MIPS target defs below */,
             "_MIPS_FPSET=16",
@@ -80,8 +78,6 @@
             "VERSION_US",
             "TARGET_N64",
             "OUTCODE=u",
-            "LANG_US",
-            "REFRESH_NTSC",
             "BUGFIX_R0"
             /* MIPS target defs below */,
             "_MIPS_FPSET=16",

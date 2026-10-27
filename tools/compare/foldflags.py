@@ -16,8 +16,8 @@ check it with tools/compare/romcmp.sh.
 """
 import re, sys
 
-US = {'VERSION_US', 'LANG_US', 'REFRESH_NTSC', 'BUGFIX_R0', 'BACKPORT_R1', 'TARGET_N64'}
-EU = {'VERSION_EU', 'LANG_EU', 'REFRESH_PAL', 'BUGFIX_R1', 'BUGFIX_R2', 'TARGET_N64'}
+US = {'VERSION_US', 'BUGFIX_R0', 'BACKPORT_R1', 'TARGET_N64'}
+EU = {'VERSION_EU', 'REFRESH_PAL', 'BUGFIX_R1', 'BUGFIX_R2', 'TARGET_N64'}
 # Defined by no build: leftovers from other decomps, editors and debug tools.
 NEVER = {'ENABLE_LOG', 'XBLADEBUG', 'EXPAND_EXAMPLES', 'ALL_BONDS', 'ISGOLDFINGER', 'XBLA',
          'USECMDBUILDER', 'IS_PD', 'IS_NSNA', 'USERDB', 'USEEXPANSION', '__INTELLISENSE__',
