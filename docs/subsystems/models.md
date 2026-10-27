@@ -52,12 +52,15 @@ A `Model` is one instance of a file: a pointer to the file, a scale, the animati
 and per-node runtime data (`rwdata`), such as a switch's on/off flag or a joint's matrix
 index. Each node type that needs rwdata gets a slice of it, found by `modelGetNodeRwData`.
 
-Instances come from slots allocated per level (`prop.c` calls `modelmgrAllocateModelSlots`
-and `modelmgrAllocateAnimModelSlots` with counts from the setup file): plain slots for
-props, bigger ones with animation state for characters and animated objects. A slot is
-reused when the next model's rwdata fits (`modelmgrCanSlotFitRwdata`). The slot structs
-in `model.h` (`ModelSlot`, `AnimModelSlot`) are overlays the size of a `Model` and still
-have their decomp field names.
+A `Model` starts with a `ModelBase` (file, rwdata, matrices, scale, attachment), embedded
+as an anonymous member so its fields read as the model's own; the rest is the animation
+state. Models that never animate are only a `ModelBase`: never touch `anim` or later
+fields on them. They are still passed around as `Model *`.
+
+Instances come from slots allocated per level (`setup.c` calls `modelmgrAllocateModelSlots`
+and `modelmgrAllocateAnimModelSlots` with counts from the setup file): `g_ModelSlots`
+(`ModelBase`) for props, `g_AnimModelSlots` (`Model`) for characters and animated objects.
+A slot is reused when the next model's rwdata fits (`modelmgrCanSlotFitRwdata`).
 
 ## Each frame
 

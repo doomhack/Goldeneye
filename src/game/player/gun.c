@@ -395,18 +395,6 @@ u16 g_AmmoRelatedPad[] = { 0, 0, 0, 0, };
 
 extern struct ModelSkeleton skeleton_gun_kf7;
 
-typedef struct ModelHeader {
-            s16                unk00;
-            s16                Type;
-            struct ChrRecord  *chr;
-            ModelFileHeader   *obj;
-            RenderPosView     *render_pos;
-            union ModelRwData **datas;
-            f32               scale;
-            struct Model     *attachedto;
-            ModelNode        *attachedto_objinst;
-} ModelHeader;
-
 
 // forward declarations
 

@@ -2738,7 +2738,7 @@ bool bgTestRayIntersectionInRoom(coord3d *from, coord3d *to, coord3d *dir, RoomV
                             hitthing->vtx2 = &vtxbase[idx[2]];
                             hitthing->texturenum = texnum;
                             hitthing->tricmd = gdl;
-                            hitthing->unk28 = 0;
+                            hitthing->triNum = 0;
                         }
                     }
                 }
@@ -2874,7 +2874,7 @@ bool bgTestRayIntersectionInRoom(coord3d *from, coord3d *to, coord3d *dir, RoomV
                                     hitthing->vtx2 = &vtxbase[idx2[2]];
                                     hitthing->texturenum = texnum;
                                     hitthing->tricmd = gdl;
-                                    hitthing->unk28 = s2 + 1;
+                                    hitthing->triNum = s2 + 1;
                                 }
                             }
                         }
@@ -2908,7 +2908,7 @@ struct HitThingSub {
 
     Gfx *tricmd;        // 0x24 - display-list command associated with hit triangle
 
-    s16 unk28;          // 0x28
+    s16 triNum;         // 0x28
     s16 texturenum;     // 0x2a
 };
 
@@ -2991,7 +2991,7 @@ bool bgTestBulletHitBackground(coord3d *from, coord3d *to, s32 roomnum, struct H
             hit->vtx2 = tmp.vtx2;
             hit->texturenum = tmp.texturenum;
             hit->tricmd = tmp.tricmd;
-            hit->unk28 = tmp.unk28;
+            hit->triNum = tmp.triNum;
         }
     }
 
