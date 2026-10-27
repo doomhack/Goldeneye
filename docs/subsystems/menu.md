@@ -1,9 +1,9 @@
 # Menus
 
-Everything the player picks from before a mission starts: the logos and intro, the file
+Everything the player picks from: before a mission (the logos and intro, the file
 folders, mission and difficulty select, the briefing, the debrief, multiplayer setup and
-the cheat menu. The in-game watch menu (`options.c`) and the multiplayer pause menu
-(`mpmenu.c`) are in the same folder but will be mapped in a later step.
+the cheat menu) and during one (the watch menu in solo and co-op, the pause menu in
+multiplayer).
 
 | File | What it holds |
 | --- | --- |
@@ -11,6 +11,8 @@ the cheat menu. The in-game watch menu (`options.c`) and the multiplayer pause m
 | `src/game/menu/title.c` | The intro: Rare logo, gun barrel, Bond shooting at the camera (`title*`), and the gradient behind the folder screens |
 | `src/game/menu/cheat.c` | Cheat codes typed with the buttons, the table of every cheat (`g_CheatInfo`), and what turning each one on or off does |
 | `src/game/menu/mp_weapon.c` | The multiplayer weapon sets and which one is picked (`mpWeaponSet*`) |
+| `src/game/menu/watchmenu.c` | The watch menu's pages (`watchMenu*`) and the settings they change (`options*`, `g_Options`) |
+| `src/game/menu/mpmenu.c` | The multiplayer pause menu, end-of-game awards, and the multiplayer pause state (`mpMenu*`, `g_MpPaused`) |
 
 ## How the front end runs
 
@@ -99,6 +101,46 @@ Cheats won by beating target times are listed in the cheat menu (`g_CheatMenuLis
 `frontIsCheatUnlocked`) and switched on there (`g_CheatActivated`); `lvTick` turns them on
 in the first frame of a mission (`cheatActivate`).
 
+## The watch menu
+
+In solo and co-op, Start raises Bond's watch (the animation is in [player](player.md)).
+`watchMenuOpen` resets the menu when the watch comes up, `watchMenuTick` reads the
+controller while it is fully up, and `watchMenuRender` draws the current page onto the
+watch face. Left and right move between five pages (`g_WatchMenuPage`); each has its own
+Tick and Render:
+
+| Page | Tick / Render | What it does |
+| --- | --- | --- |
+| Mission status | `watchMenuStatusTick` / `watchMenuRenderStatus` | objectives, the held weapon, and abort mission (asks to confirm, `g_WatchMenuAbortAsk`) |
+| Inventory | `watchMenuInventoryTick` / `watchMenuRenderInventory` | a scrolling list of what Bond carries; A equips it (`watchMenuEquipSelected`) |
+| Control | `watchMenuControlTick` / `watchMenuRenderControl` | the control styles, on a spinning 3D controller; dual styles need two controllers |
+| Options | `watchMenuOptionsTick` / `watchMenuRenderOptions` | music and effects volume sliders, then a row per entry in `g_Options` |
+| Briefing | `watchMenuBriefingTick` / `watchMenuRenderBriefing` | background, M, Q, Moneypenny and objectives pages |
+
+A row is picked with A (`g_WatchMenuSelected`) and then changed with left and right. The
+stick is read through small helpers that only fire once per push (`watchMenuStickPushed*`,
+`watchMenuStickTapped*`). Changing page beeps and sometimes flashes static
+(`watchMenuStatic`).
+
+`g_Options` holds the settings: look up/down, auto-aim, aim control, sight and ammo on
+screen, look ahead, screen size, ratio, hi-res, split screen, fps counter and draw
+distance, read through `optionsGet*`. The control style is kept per player in the player
+struct. In co-op, `optionsCoopUsePlayer` (called when the current player changes) swaps
+the first seven settings so each player has their own; the rest are shared. The save file
+stores the settings with each folder (see `file2.c`).
+
+## The multiplayer pause menu
+
+In multiplayer each player has their own menu, opened with Start (`g_CurrentPlayer->
+mpmenumode`): pause, kills, losses, scores, exit (with a confirm), and the awards at the
+end of a game. `mpMenuTick` runs from `lvTick`, `mpMenuRender` from `lvRender`.
+
+Pausing stops the game for everyone: `mpMenuPause` sets `g_MpPaused` and locks the
+controls, and only the player who paused (`g_MpPausedBy`) can unpause. `g_MpStopPlay` and
+`g_MpGameOver` are set when the time or score limit is reached; `mpMenuCanPlayerAct` says
+whether the current player can still move and shoot. `mpMenuCalculateAwards` works out the
+end-of-game awards ("most deadly", "longest innings"...) from each player's stats.
+
 ## Traps
 
 * `menu_update` and `maybe_prev_menu` were the old names of `g_FrontNextMenu` and
@@ -114,3 +156,10 @@ in the first frame of a mission (`cheatActivate`).
 * `titleRenderRareLogo` only clears the screen: the Rare logo itself isn't drawn there.
 * `g_CheatPlayerMask` is written when a cheat is turned on but never read.
 * `cheatResetText` and `cheatResetPlayerDisplay` are debug-only and never built.
+* `watchMenuReset` is defined with a stage argument but `lvStageLoad` calls it with none,
+  so it has no prototype in `watchmenu.h`.
+* `watchMenuDebugNudge`, `watchMenuDebugNudgeGfx`, `watchMenuUnusedTick`,
+  `watchMenuRenderInventoryOld`, `watchMenuRenderNothing`, `watchMenuIdentity` and
+  `watchMenuNull` are leftovers from development.
+* `g_Options` entries are indexed by `PLAYER_OPTION_*`, but the watch's options rows are
+  numbered by `GAME_OPTIONS_INDEX_*`, which starts with the two volume sliders.

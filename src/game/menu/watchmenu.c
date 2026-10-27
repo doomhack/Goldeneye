@@ -604,7 +604,7 @@ void optionsSetDrawNear(u32 near)
 /**
  * Co-op: g_Options holds the current player's own options (look,
  * aim, sight, ammo, screen size). playerSetCurrent swaps them in, so the watch
- * and the cur_player_* getters see that player's values. Ratio, hi-res,
+ * and the options* getters see that player's values. Ratio, hi-res,
  * split screen and the fps counter are shared.
  */
 #define COOP_PLAYER_OPTION_COUNT (PLAYER_OPTION_SCREEN + 1)
