@@ -1,8 +1,7 @@
       build/OUTCODE/src/aspboot.o (.rodata);
-      build/OUTCODE/src/boot.o (.rodata);
       build/OUTCODE/src/init.o (.rodata);
       build/OUTCODE/src/sched.o (.rodata);
-      build/OUTCODE/src/osMapTLB.o (.rodata);
+      build/OUTCODE/src/libultra/os/maptlbrdb.o (.rodata);
 #ifdef VERSION_EU
       build/OUTCODE/src/libultrare/io/vimgr.o (.rodata);
       build/OUTCODE/src/libultrare/io/pimgr.o (.rodata);
@@ -12,7 +11,6 @@
       build/OUTCODE/src/crash.o (.rodata);
       /*deb_print may be part of fault per pd beta (.rodata);*/
       /*build/OUTCODE/src/deb_print.o (.rodata);*/
-      build/OUTCODE/src/getra.o (.rodata);
       build/OUTCODE/src/rom.o (.rodata);
       build/OUTCODE/src/boss.o (.rodata);
       build/OUTCODE/src/dbgscreen.o (.rodata);

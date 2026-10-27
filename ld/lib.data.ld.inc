@@ -1,7 +1,6 @@
-      build/OUTCODE/src/boot.o (.data);
       build/OUTCODE/src/init.o (.data);
       build/OUTCODE/src/sched.o (.data);
-      build/OUTCODE/src/osMapTLB.o (.data);
+      build/OUTCODE/src/libultra/os/maptlbrdb.o (.data);
 #ifdef VERSION_EU
       build/OUTCODE/src/libultrare/io/vimgr.o (.data);
       build/OUTCODE/src/libultrare/io/pimgr.o (.data);
@@ -11,7 +10,6 @@
       build/OUTCODE/src/crash.o (.data);
       /*deb_print may be part of fault per pd beta (.data);*/
       /*build/OUTCODE/src/deb_print.o (.data);*/
-      build/OUTCODE/src/getra.o (.data);
       build/OUTCODE/src/rom.o (.data);
       build/OUTCODE/src/boss.o (.data);
       build/OUTCODE/src/dbgscreen.o (.data);

@@ -237,8 +237,6 @@ void doorUpdateSoundVolume(DoorRecord *door);
 
 // End forward declarations.
 
-u32 chrObjRandomGetNext(void);
-
 /* PD: projectileFree (similar but not the same structure) */
 void projectileFree(Projectile* projectile)
 {

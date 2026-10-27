@@ -8,8 +8,7 @@ trig, rounding, curves, and a little physics. It has no state apart from the wor
 | --- | --- |
 | `matrix.c` | 4x4 float matrices (`Mtxf`): building, multiplying, inverting, and converting to the N64's fixed-point `Mtx` |
 | `quaternion.c` | Quaternions for animation: conversion to and from matrices, slerp and splines |
-| `trig.c` | `mathAtan2`, `mathAcos`, `mathAsin` and their 16-bit fixed-point versions |
-| `math_sincos.s` | `sinf` and `cosf`, still in assembly |
+| `trig.c` | `sinf` and `cosf` (single precision, replacing the C library's), `mathAtan2`, `mathAcos`, `mathAsin` and their 16-bit fixed-point versions |
 | `round.c` | `mathFloor`, `mathCeil` and their `...ToInt` versions |
 | `interp.c` | Linear and cubic interpolation between points |
 | `physics.c` | Gravity, and the random launch and tumble of thrown objects |

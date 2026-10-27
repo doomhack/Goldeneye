@@ -14,7 +14,6 @@
       build/OUTCODE/src/game/prop/prop.o (.data);
       build/OUTCODE/src/game/prop/propobj.o (.data);
       build/OUTCODE/src/game/math/physics.o (.data);
-      build/OUTCODE/src/game/math/math_sincos.o (.data);
       build/OUTCODE/src/game/math/matrix.o (.data);
       build/OUTCODE/src/game/math/trig.o (.data);
       build/OUTCODE/src/game/math/interp.o (.data);
@@ -42,7 +41,6 @@
       build/OUTCODE/src/game/world/water.o (.data);
       build/OUTCODE/src/game/world/sky.o (.data);
       build/OUTCODE/src/game/player/player.o (.data);
-      build/OUTCODE/src/game/chr/chrObjRandom.o (.data);
       build/OUTCODE/src/game/gfx/vtxstore.o (.data);
       build/OUTCODE/src/game/prop/explosion.o (.data);
       build/OUTCODE/src/game/prop/glass.o (.data);

@@ -8,6 +8,9 @@
 .section .text, "ax"
 
 .text
+# libultra: maps TLB entry 0 to 0xC0000000 for the development kit's debug port (rdb).
+# Called once by osInitialize. Writing TLB registers needs CP0 instructions, so this stays
+# in assembly like the rest of libultra's TLB code.
 glabel osMapTLBRdb
 /* 002380 70001780 40085000 */  mfc0  $t0, $10
 /* 002384 70001784 24090000 */  li    $t1, 0

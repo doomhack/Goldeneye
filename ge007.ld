@@ -42,7 +42,7 @@ SECTIONS
 
 
 
-   /* 0x80000400, 0x80000450 */
+   /* _start.s, at 0x80000400 where the boot code jumps to */
    BEGIN_SEG(start, _bootSegmentRomEnd, 0x80000400)
    {
       build/OUTCODE/src/_start.o (.text);

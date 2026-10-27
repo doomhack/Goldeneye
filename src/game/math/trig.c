@@ -1,5 +1,5 @@
 /**
- * Inverse trigonometry: atan2, asin and acos.
+ * Trigonometry: sin and cos, and the inverse functions atan2, asin and acos.
  *
  * These are Rare's own versions, not the C library's, and they differ from it:
  *  - mathAtan2 returns an angle in [0, 2pi), not (-pi, pi].
@@ -9,7 +9,8 @@
  * The fixed-point versions take a sine or cosine scaled so that 1.0 is 0x7FFF, and return
  * an angle scaled so that pi is 0x10000.
  *
- * sinf and cosf are in math_sincos.s.
+ * sinf and cosf replace the C library's: they are single precision throughout, which is
+ * accurate to about 1e-7 for the angles the game uses.
  */
 #include <ultra64.h>
 #include <math.h>
@@ -199,3 +200,71 @@ f32 mathAcos(f32 cosine)
     return (mathAcosFixed(cosineFixed) * M_PI_F) / 65535.0f;
 }
 
+
+/* Coefficients of the odd polynomial for sin(x) on [-pi/2, pi/2]: x + c3 x^3 + ... + c9 x^9 */
+#define SIN_C3 -0x1.55554cp-3f  /* -0.16666660 */
+#define SIN_C5 0x1.110ed4p-7f   /* 0.0083330665 */
+#define SIN_C7 -0x1.9f6ffep-13f /* -0.00019809602 */
+#define SIN_C9 0x1.5dbdf0p-19f  /* 0.0000026057805 */
+
+#define ONE_OVER_PI 0x1.45f306p-2f /* 0.31830987 */
+#define PI_HI 0x1.921fb6p+1f       /* pi rounded to a float */
+#define PI_LO 0x1.110b46p-25f      /* meant to be the rest of pi, but it is not (that is -8.7e-8) */
+
+/* Slightly below pi/2 as a float (0x1.921fb6p+0): cosf has always used this one. */
+#define HALF_PI_LOW 0x1.921fb4p+0f
+
+static f32 sinPolynomial(f32 x)
+{
+    f32 xsq = x * x;
+    f32 poly = ((SIN_C9 * xsq + SIN_C7) * xsq + SIN_C5) * xsq + SIN_C3;
+
+    return poly * xsq * x + x;
+}
+
+/** Rounds to the nearest integer, ties to even (the FPU's rounding mode). */
+static s32 roundToNearest(f32 value)
+{
+    s32 result;
+
+    __asm__("round.w.s %1, %1\n\tmfc1 %0, %1" : "=r"(result), "+f"(value));
+    return result;
+}
+
+f32 sinf(f32 x)
+{
+    union
+    {
+        f32 f;
+        s32 i;
+    } bits = {x};
+    /* The exponent with the top mantissa bit below it: each step is half a power of two. */
+    s32 magnitude = (bits.i >> 22) & 0x1FF;
+    s32 halfTurns;
+    f32 result;
+
+    if (magnitude < 0xFF)
+    {
+        /* |x| < 1.5: no reduction needed, and below 2^-12 sin(x) is x as a float. */
+        return magnitude < 0xE6 ? x : sinPolynomial(x);
+    }
+
+    if (magnitude >= 0x136)
+    {
+        /* |x| >= 2^28: too big to reduce */
+        return 0.0f;
+    }
+
+    /* Reduce to [-pi/2, pi/2]: sin(x - n pi) is sin(x), negated when n is odd. */
+    halfTurns = roundToNearest(x * ONE_OVER_PI);
+    x -= PI_HI * (f32) halfTurns;
+    x -= PI_LO * (f32) halfTurns;
+    result = sinPolynomial(x);
+
+    return (halfTurns & 1) ? -result : result;
+}
+
+f32 cosf(f32 x)
+{
+    return sinf(x + HALF_PI_LOW);
+}

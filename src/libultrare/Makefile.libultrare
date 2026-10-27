@@ -244,6 +244,7 @@ LIBULTRA_OS_S_FILES := \
     interrupt \
     invaldcache \
     invalicache \
+    maptlbrdb \
     kdebugserver \
     parameters \
     probetlb \

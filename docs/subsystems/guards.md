@@ -10,7 +10,9 @@ character is a "chr", and its record is a `ChrRecord`.
 | `src/game/chr/chrai.c` | The AI script interpreter (`ai`) and the AI sound slots. The commands themselves are in `src/aicommands.def` |
 | `src/game/chr/chraidata.c` | The global AI scripts, shared by every level |
 | `src/game/chr/body.c` | Bodies and heads: loading them and building a chr's model, random heads |
-| `src/game/chr/chrObjRandom.s` | A 64-bit random number generator, still in assembly |
+
+The random numbers that dent shot objects (`chrObjRandomGetNext`) are a second stream of
+the game's generator, in `src/random.c`.
 
 Guards are created at level load by `setupGuard` in `prop/setup.c`.
 

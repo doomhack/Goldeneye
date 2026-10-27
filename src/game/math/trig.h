@@ -8,8 +8,8 @@ f32 mathAtan2(f32 y, f32 x);
 f32 mathAcos(f32 cosine);
 u16 mathAcosFixed(s16 cosine);
 
-/* In math_sincos.s. */
-extern float cosf(float);
-extern float sinf(float);
+/* Replace the C library's sinf and cosf, see trig.c. */
+f32 sinf(f32 x);
+f32 cosf(f32 x);
 
 #endif

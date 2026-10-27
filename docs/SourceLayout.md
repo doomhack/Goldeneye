@@ -27,6 +27,18 @@ that differs between them sits behind these flags, which the Makefile sets:
 
 A PAL fix that both builds take is plain code with no flag around it.
 
+## Assembly
+
+All the game's own code is C. What is still assembly is code that cannot be C:
+
+| File | Why |
+| --- | --- |
+| `src/rom_header.s` | The cartridge header: data, not code |
+| `src/bootcode.s` | Nintendo's boot code (IPL3), which the console checksums |
+| `src/_start.s` | The entry point: clears .bss and sets up `$gp` and the stack before any C can run, then jumps to `init()` |
+| `src/rspboot.s`, `src/gspboot.s`, `src/aspboot.s`, `rsp/` | Microcode for the RSP, a different processor |
+| `src/libultra`, `src/libultrare` | Nintendo's SDK, kept as it is: CP0, cache and TLB instructions and its own maths |
+
 ## Folders, from the top of the frame down
 
 | Folder | What it does | Main files |
