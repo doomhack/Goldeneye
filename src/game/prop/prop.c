@@ -792,8 +792,8 @@ void propsTickOnce(void)
             chr = prop->chr;
 
             // Update NPC bullet tracers.
-            gunAdvanceBeamTimer(&chr->beams[0]);
-            gunAdvanceBeamTimer(&chr->beams[1]);
+            beamTick(&chr->beams[0]);
+            beamTick(&chr->beams[1]);
         }
         else if (((prop->type == PROP_TYPE_OBJ) || (prop->type == PROP_TYPE_WEAPON)) || (prop->type == PROP_TYPE_DOOR))
         {
@@ -901,7 +901,7 @@ void propsTickOnce(void)
             if (obj->type == PROPDEF_AUTOGUN)
             {
                 autogun = prop->obj;
-                gunAdvanceBeamTimer((BeamRecord *) ((AutogunRecord *) autogun)->beam);
+                beamTick((BeamRecord *) ((AutogunRecord *) autogun)->beam);
             }
         }
         else if (prop->type == PROP_TYPE_EXPLOSION)
@@ -918,9 +918,9 @@ void propsTickOnce(void)
             {
                 s32 playernum;
                 playernum = playerGetIndexForProp(prop);
-                gunAdvanceBeamTimer(&g_playerPointers[playernum]->hands[0].weapon_beam);
+                beamTick(&g_playerPointers[playernum]->hands[0].weapon_beam);
                 playernum = playerGetIndexForProp(prop);
-                gunAdvanceBeamTimer(&g_playerPointers[playernum]->hands[1].weapon_beam);
+                beamTick(&g_playerPointers[playernum]->hands[1].weapon_beam);
 
                 // Update MP character bullet tracers.
                 if (prop->chr != NULL)
@@ -928,8 +928,8 @@ void propsTickOnce(void)
                     if (getPlayerCount() >= 2)
                     {
                         chr = prop->chr;
-                        gunAdvanceBeamTimer(&chr->beams[0]);
-                        gunAdvanceBeamTimer(&chr->beams[1]);
+                        beamTick(&chr->beams[0]);
+                        beamTick(&chr->beams[1]);
                     }
                 }
             }
@@ -1390,7 +1390,7 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
     if (screen_bottom_edge[1] >= autoaim_top && autoaim_bottom >= screen_top_edge[1])
     {
         passes_horizontal_check = FALSE;
-        get_bullet_angle(&crosshair_x, &crosshair_y);
+        gunGetCrosshairPos(&crosshair_x, &crosshair_y);
         screen_left_edge[0] = mathFloor(screen_left_edge[0]);
         screen_right_edge[0] = mathCeil(screen_right_edge[0]);
 

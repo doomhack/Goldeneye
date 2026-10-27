@@ -386,11 +386,11 @@ void mpCalculateAwards(bool gameoverdelay)
         g_CurrentPlayer->ptr_text_first_mp_award = 0;
         g_CurrentPlayer->ptr_text_second_mp_award = 0;
 
-        bondinvGetWeaponOfChoice(&weapon_choice_1, &weapon_choice_2);
+        invGetWeaponOfChoice(&weapon_choice_1, &weapon_choice_2);
         store_favorite_weapon_current_player((u32) weapon_choice_1, (u32) weapon_choice_2);
 
-        metrics[i].num_shots = get_curplayer_shot_register(SHOT_REGISTER_TOTAL);
-        metrics[i].num_headshots = get_curplayer_shot_register(SHOT_REGISTER_HEAD);
+        metrics[i].num_shots = statsGetHits(SHOT_REGISTER_TOTAL);
+        metrics[i].num_headshots = statsGetHits(SHOT_REGISTER_HEAD);
         metrics[i].num_kills = 0;
         metrics[i].num_deaths = 0;
         metrics[i].num_suicides = 0;

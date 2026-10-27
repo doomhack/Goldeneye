@@ -177,8 +177,8 @@ void debugFreeCamera(s8 joyX, s8 joyY, u16 joyBtns)
     debugCameraStateCounter++;
     if (debugCameraStateCounter == 1)
     {
-        remove_item_in_hand(GUNRIGHT);
-        remove_item_in_hand(GUNLEFT);
+        gunClearHandModel(GUNRIGHT);
+        gunClearHandModel(GUNLEFT);
 
         return;
     }

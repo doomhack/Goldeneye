@@ -216,7 +216,7 @@ OBJECTIVESTATUS get_status_of_objective(s32 objectiveNum) //#MATCH
                             {
                                 currentstatus = OBJECTIVESTATUS_FAILED;
                             }
-                            else if (!bondinvAnyPlayerHasPropInInv(obj->prop))
+                            else if (!invAnyPlayerHasProp(obj->prop))
                             {
                                 currentstatus = OBJECTIVESTATUS_INCOMPLETE;
                             }
@@ -225,7 +225,7 @@ OBJECTIVESTATUS get_status_of_objective(s32 objectiveNum) //#MATCH
                         case PROPDEF_OBJECTIVE_DEPOSIT_OBJECT:
                         {
                             ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
-                            if (obj && obj->prop && bondinvAnyPlayerHasPropInInv(obj->prop))
+                            if (obj && obj->prop && invAnyPlayerHasProp(obj->prop))
                             {
                                 currentstatus = OBJECTIVESTATUS_INCOMPLETE;
                             }
@@ -265,7 +265,7 @@ OBJECTIVESTATUS get_status_of_objective(s32 objectiveNum) //#MATCH
                         }
                         case PROPDEF_OBJECTIVE_COPY_ITEM:
                         {
-                            if (!get_keyanalyzer_flag())
+                            if (!playerHasCopiedGEKey())
                             {
                                 currentstatus = OBJECTIVESTATUS_INCOMPLETE;
                             }

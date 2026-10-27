@@ -800,8 +800,8 @@ Gfx* lvlRender(Gfx* DL)
 
             if (playerPressedActivate() && playerInteract())
             {
-                attempt_reload_item_in_hand(GUNRIGHT);
-                attempt_reload_item_in_hand(GUNLEFT);
+                gunTryReload(GUNRIGHT);
+                gunTryReload(GUNLEFT);
             }
 
             propsTickPickups();
@@ -875,7 +875,7 @@ Gfx* lvlRender(Gfx* DL)
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
                 cheatIsActive(CHEAT_INFINITE_AMMO) != 0
                 && (
-                    (getCurrentPlayerWeaponId(GUNRIGHT) != ITEM_WATCHLASER)
+                    (gunGetWeapon(GUNRIGHT) != ITEM_WATCHLASER)
                     || (g_CurrentPlayer->trigger_down == 0)
                 )
 #else /* VERSION_US */
@@ -883,7 +883,7 @@ Gfx* lvlRender(Gfx* DL)
 #endif
                 )
             {
-                set_max_ammo_for_cur_player();
+                ammoGiveMaxAll();
             }
 
             if (get_debug_render_raster() == DEB_BOND_VIEW)
@@ -1372,7 +1372,7 @@ void lvlManageMpGame(void)
 #else
         bullet_sparks_update_all();
 #endif
-        update_bullet_casings();
+        casingsTick();
         glassTickShards();
         explosionUpdateFlyingParticles();
 
@@ -1649,11 +1649,11 @@ void lvlViewMoveTick(void)
 
     if (get_scenario() == SCENARIO_TLD)
     {
-        if (bondinvIsAliveWithFlag())
+        if (invHasFlagToken())
         {
-            if (getCurrentPlayerWeaponId(GUNRIGHT) != ITEM_TOKEN)
+            if (gunGetWeapon(GUNRIGHT) != ITEM_TOKEN)
             {
-                currentPlayerEquipWeaponWrapper(GUNRIGHT, ITEM_TOKEN);
+                gunEquip(GUNRIGHT, ITEM_TOKEN);
 
                 if(1);
 
@@ -1676,7 +1676,7 @@ void lvlViewMoveTick(void)
 
     if (get_scenario() == SCENARIO_MWTGG)
     {
-        if (bondinvHasGoldenGun())
+        if (invHasGoldenGun())
         {
             g_playerPerm->have_token_or_goldengun = 1;
         }

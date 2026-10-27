@@ -3579,7 +3579,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     gunSetTracerTarget(&nearhitpos);
 
     // Make a fleshy impact sound.
-    recall_joy2_hits_edit_detail_edit_flag(shot->weapon, bhit->prop, -1);
+    shotPlayHitPropSound(shot->weapon, bhit->prop, -1);
 
     chrCreateHitPuffs(bhit->prop, bhit->hitpart, &hitpos, &nearhitpos);
 
@@ -3611,7 +3611,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
                         propobjSetDropped(prop, 1);
                         chr->hidden |= 1;
 
-                        objApplyDamage(prop->obj, gunItemGetDestructionAmount(shot->weapon), &hitpos, shot->weapon, playerGetCurrentNum());
+                        objApplyDamage(prop->obj, weaponGetDamage(shot->weapon), &hitpos, shot->weapon, playerGetCurrentNum());
                     // Create a bullet hole on the character's held weapon.
                     } else {
                         if (bhit->hit.texturenum < 0) {
@@ -3806,7 +3806,7 @@ PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *self, GUNHAND hand)
     {
         WeaponObjRecord *wep = gunprop->weapon;
 
-        if (bondwalkItemCheckBitflags(wep->weaponnum, WEAPONSTATBITFLAG_HOLD_AS_GUN) == 0)
+        if (weaponHasFlag(wep->weaponnum, WEAPONSTATBITFLAG_HOLD_AS_GUN) == 0)
         {
             gunprop = NULL;
         }

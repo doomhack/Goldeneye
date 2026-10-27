@@ -4578,7 +4578,7 @@ s32 objTick(struct PropRecord *prop)
 				}
 
                 /*
-                * Fragile code: PROJECTILEFLAG_00000100 is only set by gunInitProjectileFromPlayer()
+                * Fragile code: PROJECTILEFLAG_00000100 is only set by gunLaunchProjectileFromPlayer()
                 * whose callers always pass a PROPDEF_COLLECTABLE WeaponObjRecord.
                 * Therefore weaponObj is initialized above on every valid path reaching this point.
                 * But if this flag is ever used with another object type, the NULL check
@@ -4762,7 +4762,7 @@ s32 objTick(struct PropRecord *prop)
 									}
 
 									Rocket->unk90 += 1;
-									recall_joy2_hits_edit_detail_edit_flag(((struct WeaponObjRecord *) obj)->weaponnum, D_80030B0C, -1);
+									shotPlayHitPropSound(((struct WeaponObjRecord *) obj)->weaponnum, D_80030B0C, -1);
 
 									if (((D_80030B0C->flags & PROPFLAG_ONSCREEN) && (bodypartshot != HIT_GUN)) && (bodypartshot != HIT_HAT))
 									{
@@ -6515,7 +6515,7 @@ s32 objTick(struct PropRecord *prop)
 							autogun->unkD4 += var_f2_7;
 							if (autogun->unkD4 >= 1.0f)
 							{
-								playerTakeDamageFromAngle((gunItemGetDestructionAmount(14) * 0.125f) * g_AutogunDamageScalar, autogun->unk90, -1, 1);
+								playerTakeDamageFromAngle((weaponGetDamage(14) * 0.125f) * g_AutogunDamageScalar, autogun->unk90, -1, 1);
 								autogun->unkD4 = 0.0f;
 								if (playerIsShowingDamage() != 0)
 								{
@@ -6537,14 +6537,14 @@ s32 objTick(struct PropRecord *prop)
 							bullet_spark_create(&sp110, 1, 26.0f, (s16) sp10C->room);
 						}
 
-						recall_joy2_hits_edit_flag(14, &sp110, -1);
+						shotPlayHitSound(14, &sp110, -1);
 					}
 					else
 					{
 						sp110.f[0] = sp100->pos.f[0];
 						sp110.f[1] = sp100->pos.f[1];
 						sp110.f[2] = sp100->pos.f[2];
-						recall_joy2_hits_edit_detail_edit_flag(14, sp100, -1);
+						shotPlayHitPropSound(14, sp100, -1);
 					}
 
 					if (sp104 != 0)
@@ -6660,8 +6660,8 @@ Gfx *weaponRenderTracers(Gfx *gdl)
             if (type_chr == type)
             {
                 chr = prop->chr;
-                gdl = sub_GAME_7F061E18(gdl, &chr->beams[0], one);
-                gdl = sub_GAME_7F061E18(gdl, &chr->beams[1], one);
+                gdl = beamRender(gdl, &chr->beams[0], one);
+                gdl = beamRender(gdl, &chr->beams[1], one);
             }
             else if (one == type)
             {
@@ -6669,7 +6669,7 @@ Gfx *weaponRenderTracers(Gfx *gdl)
                 match = obj_type_0d == obj->type;
                 if (match)
                 {
-                    gdl = sub_GAME_7F061E18(gdl, (BeamRecord *)((AutogunRecord *)obj)->beam, one);
+                    gdl = beamRender(gdl, (BeamRecord *)((AutogunRecord *)obj)->beam, one);
                 }
             }
             else if (type_viewer == type)
@@ -6680,8 +6680,8 @@ Gfx *weaponRenderTracers(Gfx *gdl)
                     if (playerGetCurrentNum() != playernum)
                     {
                         chr2 = prop->chr;
-                        gdl = sub_GAME_7F061E18(gdl, &chr2->beams[0], one);
-                        gdl = sub_GAME_7F061E18(gdl, &chr2->beams[1], one);
+                        gdl = beamRender(gdl, &chr2->beams[0], one);
+                        gdl = beamRender(gdl, &chr2->beams[1], one);
                     }
                 }
             }
@@ -9625,16 +9625,16 @@ void objHit(ShotData *shotdata, BulletHit *hit)
 
     if ((objIsHealthy(obj) && objIsMortal(obj)) && (hit->countsAsPenetration != 0))
     {
-        inc_curplayer_hitcount_with_weapon(shotdata->weapon, SHOT_REGISTER_OBJECT);
+        statsAddHit(shotdata->weapon, SHOT_REGISTER_OBJECT);
     }
 
     if (hit->countsAsPenetration == 0)
     {
-        sub_GAME_7F064720(&hit->prop->pos);
+        shotPlayGlassSound(&hit->prop->pos);
     }
     else
     {
-        recall_joy2_hits_edit_detail_edit_flag(shotdata->weapon, hit->prop, hit->hit.texturenum);
+        shotPlayHitPropSound(shotdata->weapon, hit->prop, hit->hit.texturenum);
     }
 
     if (shotdata->weapon != ITEM_WATCHLASER)
@@ -9690,7 +9690,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
     {
         f32 damage;
 
-        damage = gunItemGetDestructionAmount(shotdata->weapon);
+        damage = weaponGetDamage(shotdata->weapon);
 
         // On Agent player shots to drone guns do 2x normal damage.
         if (obj->type == PROPDEF_AUTOGUN)
@@ -10250,12 +10250,12 @@ void pickupAddAmmo(AMMOTYPE ammotype,int amount,int doplaysound,int dodisplaytex
 
     if (0 < amount)
     {
-        curammo = check_cur_player_ammo_amount_in_inventory(ammotype);
-        maxammo = get_max_ammo_for_type(ammotype);
+        curammo = ammoGetHeld(ammotype);
+        maxammo = ammoGetMax(ammotype);
         if (curammo < maxammo)
         {
-            curammo = check_cur_player_ammo_amount_in_inventory(ammotype);
-            give_cur_player_ammo(ammotype,curammo + amount);
+            curammo = ammoGetHeld(ammotype);
+            ammoGive(ammotype,curammo + amount);
 #if defined(BUGFIX_R1) || defined(BACKPORT_R1)
         }
 #endif
@@ -10271,48 +10271,48 @@ void pickupAddAmmo(AMMOTYPE ammotype,int amount,int doplaysound,int dodisplaytex
 
             if (ammotype == AMMO_GRENADE)
             {
-                bondinvAddInvItem(ITEM_GRENADE);
+                invAddItem(ITEM_GRENADE);
             }
             else if (ammotype == AMMO_REMOTEMINE)
             {
-                bondinvAddInvItem(ITEM_REMOTEMINE);
-                bondinvAddInvItem(ITEM_TRIGGER);
+                invAddItem(ITEM_REMOTEMINE);
+                invAddItem(ITEM_TRIGGER);
             }
             else if (ammotype == AMMO_PROXMINE)
             {
-                bondinvAddInvItem(ITEM_PROXIMITYMINE);
+                invAddItem(ITEM_PROXIMITYMINE);
             }
             else if (ammotype == AMMO_TIMEDMINE)
             {
-                bondinvAddInvItem(ITEM_TIMEDMINE);
+                invAddItem(ITEM_TIMEDMINE);
             }
             else if (ammotype == AMMO_KNIFE)
             {
-                bondinvAddInvItem(ITEM_THROWKNIFE);
+                invAddItem(ITEM_THROWKNIFE);
             }
             else if (ammotype == AMMO_BOMBCASE)
             {
-                bondinvAddInvItem(ITEM_BOMBCASE);
+                invAddItem(ITEM_BOMBCASE);
             }
             else if (ammotype == AMMO_BUG)
             {
-                bondinvAddInvItem(ITEM_BUG);
+                invAddItem(ITEM_BUG);
             }
             else if (ammotype == AMMO_MICRO_CAMERA)
             {
-                bondinvAddInvItem(ITEM_MICROCAMERA);
+                invAddItem(ITEM_MICROCAMERA);
             }
             else if (ammotype == AMMO_GEKEY)
             {
-                bondinvAddInvItem(ITEM_GOLDENEYEKEY);
+                invAddItem(ITEM_GOLDENEYEKEY);
             }
             else if (ammotype == AMMO_TOKEN)
             {
-                bondinvAddInvItem(ITEM_TOKEN);
+                invAddItem(ITEM_TOKEN);
             }
             else if (ammotype == AMMO_PLASTIQUE)
             {
-                bondinvAddInvItem(ITEM_PLASTIQUE);
+                invAddItem(ITEM_PLASTIQUE);
             }
 #if !defined(BUGFIX_R1) && !defined(BACKPORT_R1)
         }
@@ -10349,7 +10349,7 @@ s32 pickupAmmoFromWeapon(WeaponObjRecord *weapon)
     s32 ammotype;
     s32 qty;
 
-    ammotype = get_ammo_type_for_weapon(weapon->weaponnum);
+    ammotype = weaponGetAmmoType(weapon->weaponnum);
     qty = 1;
 
     if (weapon->flags & PROPFLAG_NO_AMMO)
@@ -10419,7 +10419,7 @@ void pickupBuildWeaponText(u8 *finalstring, ITEM_IDS itemtype)
         case ITEM_ROCKETROUND:
         case ITEM_GRENADEROUND :
         case ITEM_TOKEN:
-            pickupBuildAmmoText(finalstring,get_ammo_type_for_weapon(itemtype),1);
+            pickupBuildAmmoText(finalstring,weaponGetAmmoType(itemtype),1);
             return;
         case ITEM_KNIFE:
             //a hunting knife.
@@ -10591,7 +10591,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
             if (showstring)
             {
-                char *text = bondinvGetActivatedTextObject(obj);
+                char *text = invGetActivatedTextObject(obj);
 
                 if (text == NULL)
                 {
@@ -10673,23 +10673,23 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
             if (wep->weaponnum == ITEM_REMOTEMINE)
             {
-                bondinvAddInvItem(ITEM_TRIGGER);
+                invAddItem(ITEM_TRIGGER);
             }
             else if (wep->weaponnum == ITEM_TOKEN)
             {
-                currentPlayerEquipWeaponWrapper(GUNRIGHT, ITEM_TOKEN);
+                gunEquip(GUNRIGHT, ITEM_TOKEN);
             }
 
             if (obj->runtime_bitflags & RUNTIMEBITFLAG_DESTROYED)
             {
                 if (wep->weaponnum < ITEM_BOMBCASE)
                 {
-                    bondinvAddWeaponByProp(prop);
+                    invAddWeaponByProp(prop);
                 }
 
                 if (showstring)
                 {
-                    char *text = bondinvGetActivatedTextObject(obj);
+                    char *text = invGetActivatedTextObject(obj);
 
                     if (text)
                     {
@@ -10711,14 +10711,14 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
             }
             else
             {
-                if (bondinvAddWeaponByProp(prop) != 0)
+                if (invAddWeaponByProp(prop) != 0)
                 {
                     collected = 1;
                 }
 
                 if (showstring)
                 {
-                    char *text = bondinvGetActivatedTextWeapon(wep->weaponnum);
+                    char *text = invGetActivatedTextWeapon(wep->weaponnum);
 
                     if (text)
                     {
@@ -10739,7 +10739,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                 op = TICKOP_FREE;
             }
 
-            ammo_type = get_ammo_type_for_weapon(wep->weaponnum);
+            ammo_type = weaponGetAmmoType(wep->weaponnum);
 
             if (ammo_type)
             {
@@ -10747,11 +10747,11 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
                 if (pickupqty > 0)
                 {
-                    if (check_cur_player_ammo_amount_in_inventory(ammo_type) < get_max_ammo_for_type(ammo_type))
+                    if (ammoGetHeld(ammo_type) < ammoGetMax(ammo_type))
                     {
-                        s32 heldqty = check_cur_player_ammo_amount_in_inventory(ammo_type);
+                        s32 heldqty = ammoGetHeld(ammo_type);
 
-                        give_cur_player_ammo(ammo_type, heldqty + pickupqty);
+                        ammoGive(ammo_type, heldqty + pickupqty);
 
                         if ((collected == 0) && showstring)
                         {
@@ -10771,7 +10771,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
             if (showstring)
             {
-                char *text = bondinvGetActivatedTextObject(obj);
+                char *text = invGetActivatedTextObject(obj);
 
                 if (text == NULL)
                 {
@@ -10844,7 +10844,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
             if (showstring)
             {
-                char *text = bondinvGetActivatedTextObject(obj);
+                char *text = invGetActivatedTextObject(obj);
                 if (text == NULL)
                 {
                     text = langGet(getStringID(LPROPOBJ, PROPOBJ_STR_3F_PICKEDUPSOMETHING)); // "Picked up something.\n",
@@ -10872,7 +10872,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 
     if (op != TICKOP_NONE)
     {
-        bondinvAddPropToInv(prop);
+        invAddProp(prop);
 
         return TICKOP_GIVETOPLAYER;
     }
@@ -10886,12 +10886,12 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 // which couldn't be brought from decomp.me
 
 extern bool objCanPickupFromSafe(ObjectRecord *obj);
-extern s32 bondinvHasInvItem(ITEM_IDS weapon);
-extern s32 get_ammo_type_for_weapon(ITEM_IDS weapon);
-extern s32 get_max_ammo_for_weapon(ITEM_IDS weapon);
-extern s32 get_ammo_count_for_weapon(ITEM_IDS weapon);
-extern bool bondinvHasDualWeapon(ITEM_IDS right, ITEM_IDS left);
-extern s32 check_cur_player_ammo_amount_in_inventory(AMMOTYPE type);
+extern s32 invHasItem(ITEM_IDS weapon);
+extern s32 weaponGetAmmoType(ITEM_IDS weapon);
+extern s32 weaponGetMaxAmmo(ITEM_IDS weapon);
+extern s32 weaponGetHeldAmmo(ITEM_IDS weapon);
+extern bool invHasDualWeapon(ITEM_IDS right, ITEM_IDS left);
+extern s32 ammoGetHeld(AMMOTYPE type);
 
 TICKOP objTickPlayer(struct PropRecord* prop)
 {
@@ -10963,11 +10963,11 @@ TICKOP objTickPlayer(struct PropRecord* prop)
             return TICKOP_NONE;
         }
 
-        if (bondinvHasInvItem(weaponObj->weaponnum) != 0) 
+        if (invHasItem(weaponObj->weaponnum) != 0) 
         {
-            if (get_ammo_type_for_weapon(weaponObj->weaponnum) != 0) 
+            if (weaponGetAmmoType(weaponObj->weaponnum) != 0) 
             {
-                if (get_ammo_count_for_weapon(weaponObj->weaponnum) >= get_max_ammo_for_weapon(weaponObj->weaponnum)) 
+                if (weaponGetHeldAmmo(weaponObj->weaponnum) >= weaponGetMaxAmmo(weaponObj->weaponnum)) 
                 {
                     if ((weaponObj->dualweapon != NULL) || (weaponObj->LinkedWeaponType >= 0)) 
                     {
@@ -10991,7 +10991,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
                             obj_2 = weaponObj->weaponnum;
                         }
 
-                        if (bondinvHasDualWeapon(obj_2, var_a1) != 0) 
+                        if (invHasDualWeapon(obj_2, var_a1) != 0) 
                         {
                             return TICKOP_NONE;
                         }
@@ -11011,19 +11011,19 @@ TICKOP objTickPlayer(struct PropRecord* prop)
         ammoCrateObj = (AmmoCrateRecord*)prop->obj;
 
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
-        if (check_cur_player_ammo_amount_in_inventory(ammoCrateObj->ammoType) >= get_max_ammo_for_type(ammoCrateObj->ammoType)
+        if (ammoGetHeld(ammoCrateObj->ammoType) >= ammoGetMax(ammoCrateObj->ammoType)
             && !(
-                ((ammoCrateObj->ammoType == AMMO_GRENADE) && (!bondinvHasInvItem(ITEM_GRENADE)))
-                || ((ammoCrateObj->ammoType == AMMO_REMOTEMINE) && (!bondinvHasInvItem(ITEM_REMOTEMINE)))
-                || ((ammoCrateObj->ammoType == AMMO_PROXMINE) && (!bondinvHasInvItem(ITEM_PROXIMITYMINE)))
-                || ((ammoCrateObj->ammoType == AMMO_TIMEDMINE) && (!bondinvHasInvItem(ITEM_TIMEDMINE)))
-                || ((ammoCrateObj->ammoType == AMMO_KNIFE) && (!bondinvHasInvItem(ITEM_THROWKNIFE)))
+                ((ammoCrateObj->ammoType == AMMO_GRENADE) && (!invHasItem(ITEM_GRENADE)))
+                || ((ammoCrateObj->ammoType == AMMO_REMOTEMINE) && (!invHasItem(ITEM_REMOTEMINE)))
+                || ((ammoCrateObj->ammoType == AMMO_PROXMINE) && (!invHasItem(ITEM_PROXIMITYMINE)))
+                || ((ammoCrateObj->ammoType == AMMO_TIMEDMINE) && (!invHasItem(ITEM_TIMEDMINE)))
+                || ((ammoCrateObj->ammoType == AMMO_KNIFE) && (!invHasItem(ITEM_THROWKNIFE)))
             )
         ) {
             return TICKOP_NONE;
         }
 #else
-        if (check_cur_player_ammo_amount_in_inventory(ammoCrateObj->ammoType) >= get_max_ammo_for_type(ammoCrateObj->ammoType)) {
+        if (ammoGetHeld(ammoCrateObj->ammoType) >= ammoGetMax(ammoCrateObj->ammoType)) {
             return TICKOP_NONE;
         }
 #endif
@@ -11053,17 +11053,17 @@ TICKOP objTickPlayer(struct PropRecord* prop)
             }
 
             if (multiAmmoCrateObj->slots[i].quantity > 0) {
-                if (check_cur_player_ammo_amount_in_inventory(sp64) < get_max_ammo_for_type(sp64)) {
+                if (ammoGetHeld(sp64) < ammoGetMax(sp64)) {
                     sp6C = 0;
                     break;
                 }
 
 #if defined(VERSION_EU) || defined(BACKPORT_R1)
-                if (((sp64 == AMMO_GRENADE) && (!bondinvHasInvItem(ITEM_GRENADE)))
-                    || ((sp64 == AMMO_REMOTEMINE) && (!bondinvHasInvItem(ITEM_REMOTEMINE)))
-                    || ((sp64 == AMMO_PROXMINE) && (!bondinvHasInvItem(ITEM_PROXIMITYMINE)))
-                    || ((sp64 == AMMO_TIMEDMINE) && (!bondinvHasInvItem(ITEM_TIMEDMINE)))
-                    || ((sp64 == AMMO_KNIFE) && (!bondinvHasInvItem(ITEM_THROWKNIFE))))
+                if (((sp64 == AMMO_GRENADE) && (!invHasItem(ITEM_GRENADE)))
+                    || ((sp64 == AMMO_REMOTEMINE) && (!invHasItem(ITEM_REMOTEMINE)))
+                    || ((sp64 == AMMO_PROXMINE) && (!invHasItem(ITEM_PROXIMITYMINE)))
+                    || ((sp64 == AMMO_TIMEDMINE) && (!invHasItem(ITEM_TIMEDMINE)))
+                    || ((sp64 == AMMO_KNIFE) && (!invHasItem(ITEM_THROWKNIFE))))
                 {
                     sp6C = 0;
                     break;
@@ -11094,11 +11094,11 @@ TICKOP objTickPlayer(struct PropRecord* prop)
         {
             sp58 = get_scenario();
 
-            if ((sp58 == 2) && (bondinvIsAliveWithFlag() != 0)) 
+            if ((sp58 == 2) && (invHasFlagToken() != 0)) 
             {
                 ignore = 1;
             } 
-            else if ((sp58 == 3) && (bondinvHasGoldenGun() != 0)) 
+            else if ((sp58 == 3) && (invHasGoldenGun() != 0)) 
             {
                 ignore = 1;
             }
@@ -14093,7 +14093,7 @@ TICKOP propdoorInteract(PropRecord* doorprop)
     {
         sp28 = 1;
     }
-    else if (bondinvCheckHasKeyFlags(door->keyflags) != 0)
+    else if (invCheckHasKeyFlags(door->keyflags) != 0)
     {
         sp28 = 1;
     }
@@ -14130,7 +14130,7 @@ TICKOP propdoorInteract(PropRecord* doorprop)
     {
         if (!(door->flags2 & PROPFLAG2_00000004))
         {
-            txt = bondinvGetTextbyObj((ObjectRecord*)door);
+            txt = invGetOverrideForObj((ObjectRecord*)door);
             if ((txt != NULL) && (txt->pickuptext != 0))
             {
 #ifdef VERSION_US
@@ -14483,7 +14483,7 @@ void playerDropInventory(void)
     {
         propid = weaponGetChrModel(item);
 
-        if ((propid >= 0) && (bondinvHasInvItem(item) != 0))
+        if ((propid >= 0) && (invHasItem(item) != 0))
         {
             prop = chrGiveWeaponEx(playerchr, propid, item, 0x20000000, NULL, NULL);
 

@@ -4451,7 +4451,7 @@ _AI_CMD(
     {
         AIRecord *    ai  = AiListp + Offset;
         ObjectRecord *obj = objFindByTagId(ai->val[0]);
-        if (obj && obj->prop && bondinvHasPropInInv(obj->prop))
+        if (obj && obj->prop && invHasProp(obj->prop))
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
@@ -4606,7 +4606,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (ai->val[0] == getCurrentPlayerWeaponId(GUNRIGHT) || ai->val[0] == getCurrentPlayerWeaponId(GUNLEFT))
+        if (ai->val[0] == gunGetWeapon(GUNRIGHT) || ai->val[0] == gunGetWeapon(GUNLEFT))
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }
@@ -10820,7 +10820,7 @@ _AI_CMD_POLYMORPH(,
 _AI_CMD(
     {
         AIRecord * ai = AiListp + Offset;
-        if (currentPlayerGetAmmoCount((s8) ai->val[0]) < (s8) ai->val[1])
+        if (ammoGetTotal((s8) ai->val[0]) < (s8) ai->val[1])
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
@@ -10859,8 +10859,8 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord * ai = AiListp + Offset;
-        currentPlayerEquipWeaponWrapper(GUNRIGHT, (s8) ai->val[0]);
-        currentPlayerEquipWeaponWrapper(GUNLEFT, 0);
+        gunEquip(GUNRIGHT, (s8) ai->val[0]);
+        gunEquip(GUNLEFT, 0);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -10893,8 +10893,8 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord * ai = AiListp + Offset;
-        currentPlayerUnEquipWeaponWrapper(GUNRIGHT, (s8) ai->val[0]);
-        currentPlayerUnEquipWeaponWrapper(GUNLEFT, 0);
+        gunUnequip(GUNRIGHT, (s8) ai->val[0]);
+        gunUnequip(GUNLEFT, 0);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -11235,8 +11235,8 @@ _AI_CMD(
 
 _AI_CMD(
     {
-        remove_item_in_hand(GUNRIGHT);
-        remove_item_in_hand(GUNLEFT);
+        gunClearHandModel(GUNRIGHT);
+        gunClearHandModel(GUNLEFT);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -11646,7 +11646,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (ai->val[0] < get_civilian_casualties())
+        if (ai->val[0] < statsGetCivilianKills())
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[1]);
         }

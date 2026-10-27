@@ -924,8 +924,8 @@ static s32 coopAiCommandMode(u8 cmd)
     return COOP_AI_ONE;
 }
 
-extern s32 get_ammo_type_for_weapon(ITEM_IDS weapon);
-extern int bondinvHasInvItem(ITEM_IDS item);
+extern s32 weaponGetAmmoType(ITEM_IDS weapon);
+extern int invHasItem(ITEM_IDS item);
 
 /**
  * Co-op: TRUE if any player can still use an item, i.e. carries it with
@@ -936,7 +936,7 @@ extern int bondinvHasInvItem(ITEM_IDS item);
 static s32 coopAnyPlayerStillHasItem(ITEM_IDS item)
 {
     s32 prevplayer = playerGetCurrentNum();
-    s32 ammotype = get_ammo_type_for_weapon(item);
+    s32 ammotype = weaponGetAmmoType(item);
     s32 found = FALSE;
     s32 i;
 
@@ -944,7 +944,7 @@ static s32 coopAnyPlayerStillHasItem(ITEM_IDS item)
     {
         playerSetCurrent(i);
 
-        if (bondinvHasInvItem(item) && ((ammotype == AMMO_NONE) || (currentPlayerGetAmmoCount(ammotype) > 0)))
+        if (invHasItem(item) && ((ammotype == AMMO_NONE) || (ammoGetTotal(ammotype) > 0)))
         {
             found = TRUE;
         }
@@ -2479,7 +2479,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFBondCollectedObjectRecord *ai  = AiListp + Offset;
                     ObjectRecord                  *obj = objFindByTagId(ai->OBJECT_TAG);
-                    if (obj && obj->prop && bondinvHasPropInInv(obj->prop))
+                    if (obj && obj->prop && invHasProp(obj->prop))
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2549,7 +2549,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFBondHasItemEquipped:
                 {
                     AiIFBondHasItemEquippedRecord *ai = AiListp + Offset;
-                    if (ai->ITEM_NUM == getCurrentPlayerWeaponId(GUNRIGHT) || ai->ITEM_NUM == getCurrentPlayerWeaponId(GUNLEFT)) // order matters
+                    if (ai->ITEM_NUM == gunGetWeapon(GUNRIGHT) || ai->ITEM_NUM == gunGetWeapon(GUNLEFT)) // order matters
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -4617,7 +4617,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFBondItemTotalAmmoLessThan:
                 {
                     AiIFBondItemTotalAmmoLessThanRecord *ai = AiListp + Offset;
-                    if (currentPlayerGetAmmoCount(ai->ITEM_NUM) < ai->AMMO_TOTAL)
+                    if (ammoGetTotal(ai->ITEM_NUM) < ai->AMMO_TOTAL)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -4630,16 +4630,16 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_BondEquipItem:
                 {
                     AiBondEquipItemRecord *ai = AiListp + Offset;
-                    currentPlayerEquipWeaponWrapper(GUNRIGHT, ai->ITEM_NUM);
-                    currentPlayerEquipWeaponWrapper(GUNLEFT, 0);
+                    gunEquip(GUNRIGHT, ai->ITEM_NUM);
+                    gunEquip(GUNLEFT, 0);
                     Offset += sizeof(AiBondEquipItemRecord);
                     break;
                 }
                 case AI_BondEquipItemCinema:
                 {
                     AiBondEquipItemCinemaRecord *ai = AiListp + Offset;
-                    currentPlayerUnEquipWeaponWrapper(GUNRIGHT, ai->ITEM_NUM);
-                    currentPlayerUnEquipWeaponWrapper(GUNLEFT, 0);
+                    gunUnequip(GUNRIGHT, ai->ITEM_NUM);
+                    gunUnequip(GUNLEFT, 0);
                     Offset += sizeof(AiBondEquipItemCinemaRecord);
                     break;
                 }
@@ -4722,8 +4722,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_BondHideWeapons:
                 {
                     /*"remove guntype %d\n" */
-                    remove_item_in_hand(GUNRIGHT);
-                    remove_item_in_hand(GUNLEFT);
+                    gunClearHandModel(GUNRIGHT);
+                    gunClearHandModel(GUNLEFT);
                     Offset += sizeof(AiBondHideWeaponsRecord);
                     break;
                 }
@@ -4842,7 +4842,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFKilledCiviliansGreaterThan:
                 {
                     AiIFKilledCiviliansGreaterThanRecord *ai = AiListp + Offset;
-                    if (ai->CIVILIANS_KILLED < get_civilian_casualties())
+                    if (ai->CIVILIANS_KILLED < statsGetCivilianKills())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }

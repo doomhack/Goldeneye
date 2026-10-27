@@ -1154,7 +1154,7 @@ void game_options_inventory_navigation(void)
     s32 item_line_height;
     s32 selected_item_line_height;
 
-    count = bondinvCountTotalItemsInInv();
+    count = invCountItems();
 
     if (!get_debug_gunwatchpos_flag())
     {
@@ -1540,7 +1540,7 @@ void sub_GAME_7F0A69A8(void)
     mission_brief_index = BRIEF_INDEX_OBJECTIVES;
     D_800409C8 = 0.999f;
     D_800409CC = 0.9999f;
-    bondinvDetermineEquippedItem();
+    invDetermineEquippedItem();
 }
 
 
@@ -2148,12 +2148,12 @@ typedef struct GunModelFileRecord {
 #endif
 extern GunModelFileRecord gitem_structs[];
 /* forward declarations so the compiler uses f32 calling convention ($f0) */
-extern f32 bondinvGetVposWatchForIndex(s32 index);
-extern f32 bondinvGetHposWatchForIndex(s32 index);
-extern f32 bondinvGetDepthWatchForIndex(s32 index);
-extern f32 bondinvGetDifferent45AngleForIndex(s32 index);
-extern f32 bondinvGetXrotWatchForIndex(s32 index);
-extern f32 bondinvGetYrotWatchForIndex(s32 index);
+extern f32 invGetWatchPosXForIndex(s32 index);
+extern f32 invGetWatchPosYForIndex(s32 index);
+extern f32 invGetWatchPosZForIndex(s32 index);
+extern f32 invGetWatchFovForIndex(s32 index);
+extern f32 invGetWatchRotXForIndex(s32 index);
+extern f32 invGetWatchRotYForIndex(s32 index);
 Gfx* draw_current_hand_item_and_ammo(Gfx* gdl) {
     Mtx* sp114;
     u16 perspNorm;
@@ -2184,19 +2184,19 @@ Gfx* draw_current_hand_item_and_ammo(Gfx* gdl) {
     sp7C = ptrFontBankGothic;
     sp78 = ptrFontBankGothicChars;
 
-    temp_v0 = bondinvGetCurEquippedItem();
-    sp70 = bondinvGetTextbyInvIndex(temp_v0);
-    sp6C = bondinvGetVposWatchForIndex(temp_v0);
-    sp68 = bondinvGetHposWatchForIndex(temp_v0);
-    sp64 = bondinvGetDepthWatchForIndex(temp_v0);
-    sp60 = bondinvGetDifferent45AngleForIndex(temp_v0);
-    rotx = bondinvGetXrotWatchForIndex(temp_v0);
-    roty = bondinvGetYrotWatchForIndex(temp_v0);
-    text = bondinvGetFirstTitlebyIndex(temp_v0);
-    text2 = bondinvGetSecondTitlebyIndex(temp_v0);
+    temp_v0 = invGetCurEquippedItem();
+    sp70 = invGetWeaponForIndex(temp_v0);
+    sp6C = invGetWatchPosXForIndex(temp_v0);
+    sp68 = invGetWatchPosYForIndex(temp_v0);
+    sp64 = invGetWatchPosZForIndex(temp_v0);
+    sp60 = invGetWatchFovForIndex(temp_v0);
+    rotx = invGetWatchRotXForIndex(temp_v0);
+    roty = invGetWatchRotYForIndex(temp_v0);
+    text = invGetWatchTitle1ForIndex(temp_v0);
+    text2 = invGetWatchTitle2ForIndex(temp_v0);
 
     if (get_debug_gunwatchpos_flag() != 0) {
-        gitem = &gitem_structs[getCurrentPlayerWeaponId(0)];
+        gitem = &gitem_structs[gunGetWeapon(0)];
 
         if (joyGetButtons(0, 2) != 0) {
            gitem->watch_pos_y -= 2.0f;
@@ -2246,9 +2246,9 @@ Gfx* draw_current_hand_item_and_ammo(Gfx* gdl) {
     gdl = sub_GAME_7F0A6EE8(gdl);
 
     if (g_WatchBackgroundGreen < 0xE0) {
-        gdl = set_enviro_fog_for_items_in_solo_watch_menu(gdl, sp70, &matrix2, g_WatchBackgroundGreen + 1, 0x64DC6428);
+        gdl = watchRenderItem(gdl, sp70, &matrix2, g_WatchBackgroundGreen + 1, 0x64DC6428);
     } else {
-        gdl = set_enviro_fog_for_items_in_solo_watch_menu(gdl, sp70, &matrix2, 0xFF, 0x64DC6428);
+        gdl = watchRenderItem(gdl, sp70, &matrix2, 0xFF, 0x64DC6428);
     }
 
     gdl = microcode_constructor(gunDrawWatchAmmoDisplay(gdl));
@@ -2301,15 +2301,15 @@ void sub_GAME_7F0A8378(void)
             return;
         }
 
-        if (getCurrentPlayerWeaponId(0) == bondinvGetTextbyInvIndex(g_curWatchItemIndex))
+        if (gunGetWeapon(0) == invGetWeaponForIndex(g_curWatchItemIndex))
         {
             return;
         }
     }
 
-    currentPlayerUnEquipWeaponWrapper(0, bondinvGetTextbyInvIndex(g_curWatchItemIndex));
-    currentPlayerUnEquipWeaponWrapper(1, 0);
-    bondinvSetCurEquippedItem(g_curWatchItemIndex);
+    gunUnequip(0, invGetWeaponForIndex(g_curWatchItemIndex));
+    gunUnequip(1, 0);
+    invSetCurEquippedItem(g_curWatchItemIndex);
     D_800409C4 = 10;
     sndPlaySfx(g_musicSfxBufferPtr, CAMERA_BEEP1_SFX, 0);
 }
@@ -2331,13 +2331,13 @@ typedef struct GunModelFileRecord {
 #endif
 extern GunModelFileRecord gitem_structs[];
 /* forward declarations so the compiler uses f32 calling convention ($f0) */
-extern f32 bondinvGet45AngleForIndex(s32 index);
-extern f32 bondinvGetHoffsetForIndex(s32 index);
-extern f32 bondinvGetVoffsetForIndex(s32 index);
-extern f32 bondinvGetDepthForIndex(s32 index);
-extern f32 bondinvGetXrotWatchForIndex(s32 index);
-extern f32 bondinvGetYrotWatchForIndex(s32 index);
-extern u16 *bondinvGetNameByIndex(s32 index);
+extern f32 invGetEquipFovForIndex(s32 index);
+extern f32 invGetEquipPosXForIndex(s32 index);
+extern f32 invGetEquipPosYForIndex(s32 index);
+extern f32 invGetEquipPosZForIndex(s32 index);
+extern f32 invGetWatchRotXForIndex(s32 index);
+extern f32 invGetWatchRotYForIndex(s32 index);
+extern u16 *invGetNameByIndex(s32 index);
 
 
 Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
@@ -2365,17 +2365,17 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
     if (watchIsZooming() != 1)
     {
         sp924 = dynAllocateMatrix();
-        sp894 = bondinvGet45AngleForIndex(g_curWatchItemIndex);
-        sp890 = bondinvGetHoffsetForIndex(g_curWatchItemIndex);
-        sp88C = bondinvGetVoffsetForIndex(g_curWatchItemIndex);
-        sp888 = bondinvGetDepthForIndex(g_curWatchItemIndex);
-        sp884 = bondinvGetTextbyInvIndex(g_curWatchItemIndex);
-        sp880 = bondinvGetXrotWatchForIndex(g_curWatchItemIndex);
-        sp87C = bondinvGetYrotWatchForIndex(g_curWatchItemIndex);
+        sp894 = invGetEquipFovForIndex(g_curWatchItemIndex);
+        sp890 = invGetEquipPosXForIndex(g_curWatchItemIndex);
+        sp88C = invGetEquipPosYForIndex(g_curWatchItemIndex);
+        sp888 = invGetEquipPosZForIndex(g_curWatchItemIndex);
+        sp884 = invGetWeaponForIndex(g_curWatchItemIndex);
+        sp880 = invGetWatchRotXForIndex(g_curWatchItemIndex);
+        sp87C = invGetWatchRotYForIndex(g_curWatchItemIndex);
 
         if (get_debug_gunwatchpos_flag() != 0)
         {
-            gitem = &gitem_structs[getCurrentPlayerWeaponId(0)];
+            gitem = &gitem_structs[gunGetWeapon(0)];
 
             if (joyGetButtons(0, L_CBUTTONS) != 0)
             {
@@ -2433,7 +2433,7 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
 
         mtx4MultInPlace(&sp8A0, &sp8E0);
 
-        gdl = set_enviro_fog_for_items_in_solo_watch_menu(sub_GAME_7F0A6EE8(gdl), sp884, &sp8E0, 0x40, 0xA0FFA03C);
+        gdl = watchRenderItem(sub_GAME_7F0A6EE8(gdl), sp884, &sp8E0, 0x40, 0xA0FFA03C);
 
         {
             s32 i;
@@ -2471,9 +2471,9 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
             pFontChars2 = ptrFontBankGothicChars;
 #endif
 
-            for (i = 0; i < bondinvCountTotalItemsInInv(); i++)
+            for (i = 0; i < invCountItems(); i++)
             {
-                char *name = bondinvGetNameByIndex(i);
+                char *name = invGetNameByIndex(i);
 
                 strcat(string_builder_allocation, name);
             }
@@ -2513,7 +2513,7 @@ Gfx *draw_watch_inventory_page(Gfx *gdl, Mtx *param_2)
 
                 pFontFile = ptrFontBankGothic;
                 pFontChars = ptrFontBankGothicChars;
-                invItemName = bondinvGetNameByIndex(g_curWatchItemIndex);
+                invItemName = invGetNameByIndex(g_curWatchItemIndex);
 
                 sprintf(formattedString, "%d, %d\n%d %f\n", watch_inventory_text_y, watch_inventory_text_target_y, g_curWatchItemIndex, (f64) watch_inventory_cursor_pos);
 
@@ -2572,7 +2572,7 @@ Gfx *unused_draw_watch_inventory_page(Gfx *gdl, Mtx *param_2) {
     pFontFile = ptrFontBankGothic;
     pFontChars = ptrFontBankGothicChars;
 
-    long_name = bondinvGetLongNameByIndex(g_curWatchItemIndex);
+    long_name = invGetLongNameByIndex(g_curWatchItemIndex);
     gdl = draw_background_health_and_armor(gdl, param_2, 0);
 
     if (watchIsZooming() != 1)

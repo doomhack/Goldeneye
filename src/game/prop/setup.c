@@ -1816,7 +1816,7 @@ void setupCreateProps(enum LEVELID stageId)
                             targetobj->runtime_bitflags |= RUNTIMEBITFLAG_DESTROYED;
                         }
 
-                        bondinvAddTextOverride((struct textoverride *) pdef_ren);
+                        invAddTextOverride((struct textoverride *) pdef_ren);
                         break;
                     }
                     case PROPDEF_WATCH_MENU_OBJECTIVE_TEXT:
