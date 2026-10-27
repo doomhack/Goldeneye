@@ -41,8 +41,6 @@ typedef struct MemaSpace {
  * using loop counters (eg. a typical i < numspaces loop).
  */
 struct MemaHeap {
-    u32 unk000;
-    u32 unk004;
     struct MemaSpace start;
     struct MemaSpace spaces[MEMA_SLOTS - 1];
 	struct MemaSpace end1;
@@ -205,8 +203,6 @@ void memaReset(void *heapaddr, u32 heapsize)
 {
    struct MemaSpace *space;
 
-    m_memaHeap.unk000 = 0;
-    m_memaHeap.unk004 = 0;
 
 	m_memaHeap.start.addr = 0;
 	m_memaHeap.start.size = 0;

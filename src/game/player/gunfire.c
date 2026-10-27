@@ -103,18 +103,6 @@ extern Weapon1PTransformKeyframe taserFireKeyFrames[];
 extern Weapon1PTransformKeyframe taserRaiseKeyframes[];
 extern struct ModelSkeleton skeleton_gun_kf7;
 
-typedef struct ModelHeader {
-    s16 unk00;
-    s16 Type;
-    struct ChrRecord *chr;
-    ModelFileHeader *obj;
-    RenderPosView *render_pos;
-    union ModelRwData **datas;
-    f32 scale;
-    struct Model *attachedto;
-    ModelNode *attachedto_objinst;
-} ModelHeader;
-
 void gunCreateBeamForHand(enum GUNHAND hand);
 void gunGetShotDir(coord3d *arg0, coord3d *arg1, enum GUNHAND arg2);
 void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *arg2, coord3d *velocity, Mtxf *arg4);
@@ -616,7 +604,7 @@ void gunUpdateAndFire(GUNHAND handnum)
             flashdata = (f32 *) mdlhdr->Switches[3]->Data;
         }
 
-        ((Model *)&hand->gunmodel)->render_pos = (RenderPosView *)rwmtx;
+        hand->gunmodel.render_pos = (RenderPosView *)rwmtx;
 
         if ((weaponHasFlag(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) && (handnum == GUNLEFT))
         {
@@ -1492,11 +1480,11 @@ void gunRenderHands(Gfx **gdlptr)
  
         gSPPerspNormalize(gdl++, mtxCalcPerspNorm(0.0f, 300.0f));
  
-        if ((*(Model *)&handptr->gunmodel).obj->numSwitches >= 0x11 && (*(Model *)&handptr->gunmodel).obj->Switches[16] != NULL)
+        if (handptr->gunmodel.obj->numSwitches >= 0x11 && handptr->gunmodel.obj->Switches[16] != NULL)
         {
             union ModelRwData *rwdata;
-            model = (Model *)&handptr->gunmodel;
-            rwdata = modelGetNodeRwData(model, (*(Model *)&handptr->gunmodel).obj->Switches[17]);
+            model = (Model *) &handptr->gunmodel;
+            rwdata = modelGetNodeRwData(model, handptr->gunmodel.obj->Switches[17]);
  
             if (rwdata != NULL) 
             {
@@ -1506,11 +1494,11 @@ void gunRenderHands(Gfx **gdlptr)
             if (item == ITEM_ROCKETLAUNCH) 
             {
                 monitorSetImage(&g_UnknownAnimController, g_ImageCrosshair);
-                gdl = monitorTickAnimation(model, (*(Model *)&handptr->gunmodel).obj->Switches[16], &g_UnknownAnimController, gdl, 0, 4);
+                gdl = monitorTickAnimation(model, handptr->gunmodel.obj->Switches[16], &g_UnknownAnimController, gdl, 0, 4);
             } 
             else 
             {
-                gdl = monitorTickAnimation(model, (*(Model *)&handptr->gunmodel).obj->Switches[16], &g_TaserAnimController, gdl, 0, 1);
+                gdl = monitorTickAnimation(model, handptr->gunmodel.obj->Switches[16], &g_TaserAnimController, gdl, 0, 1);
             }
         }
  
@@ -1551,7 +1539,7 @@ void gunRenderHands(Gfx **gdlptr)
             }
         }
  
-        modelRender(&renderdata, (Model *)&handptr->gunmodel);
+        modelRender(&renderdata, (Model *) &handptr->gunmodel);
         gdl = renderdata.gdl;
  
         if (weaponHasFlag(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) 
@@ -1559,7 +1547,7 @@ void gunRenderHands(Gfx **gdlptr)
             gSPClearGeometryMode(gdl++, G_CULL_BOTH);
         }
  
-        mtxsF2L((*(Model *)&handptr->gunmodel).render_pos, (*(Model *)&handptr->gunmodel).obj->numMatrices);
+        mtxsF2L(handptr->gunmodel.render_pos, handptr->gunmodel.obj->numMatrices);
         mtxPopWorldScale();
  
         gSPPerspNormalize(gdl++, viGetPerspNorm());
@@ -1577,7 +1565,7 @@ void gunRenderHands(Gfx **gdlptr)
 Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
 {
     ModelRenderData renderdata = {NULL, TRUE, 3};
-    ModelHeader model;
+    ModelBase model;
     u8 spb8[0x80];
     Mtxf sp74;
     Mtxf *matrices;
@@ -1618,7 +1606,7 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
     }
 
     i = 0;
-    ((Model *) &model)->render_pos = matrices;
+    model.render_pos = matrices;
     modelCalculateRwDataLen(bodymodel);
     modelInit((Model *) &model, bodymodel, spb8);
     gunSetFirstPersonPartsVisible((Model *) &model, 0);
@@ -1743,8 +1731,8 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4)
     {
         do
         {
-            mtx4Copy((Mtxf *) (((u8 *) ((Model *) &model)->render_pos) + j), &sp74);
-            mtxF2L(&sp74, (Mtxf *) ((i << 6) + (u8 *) ((Model *) &model)->render_pos));
+            mtx4Copy((Mtxf *) (((u8 *) model.render_pos) + j), &sp74);
+            mtxF2L(&sp74, (Mtxf *) ((i << 6) + (u8 *) model.render_pos));
             i++;
             j += 0x40;
         }
@@ -1780,7 +1768,7 @@ void watchControllerButtonMtx(struct coord3d *base, Mtxf *m1, Mtxf *m2, Mtxf *m3
 Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions* buttonpositions, s8* contpadnum)
 {
     ModelRenderData renderdata;
-    struct ModelHeader modelstack;
+    ModelBase modelstack;
     s32 i;
     f32 angle;
     u32 rwdata[26];
@@ -1837,7 +1825,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     modelCalculateRwDataLen(objheader);
 
 
-    modelInit(&modelstack, objheader, rwdata);
+    modelInit((Model *) &modelstack, objheader, rwdata);
     modelstack.render_pos = (RenderPosView*) matrices;
     mtx4Copy(basemtx, &matrices[0]);
     
@@ -5254,24 +5242,12 @@ void casingsTick(void)
     }
 }
 
-typedef struct ModelHead {
-    s16 unk00;
-    s16 rwdatalen;
-    void *chr;
-    ModelFileHeader *obj;
-    RenderPosView *render_pos;
-    union ModelRwData **datas;
-    f32 scale;
-    Model *attachedto;
-    ModelNode *attachedto_objinst;
-} ModelHead;
-
 void casingRender(CasingRecord *casing, Gfx **gdl)
 {
     Gfx             *savedgdl = *gdl;
     ModelFileHeader *model_header = casing->header;
     RenderPosView   *model_matrices = dynAllocate(model_header->numMatrices * sizeof(RenderPosView));
-    ModelHead        model;
+    ModelBase        model;
     ModelRenderData  render_data = g_DefaultCasingModelRenderData;
     Mtxf             casing_model_mtx;
     s32              axis_offset;
@@ -6402,7 +6378,7 @@ s32 shotFindBgHit(s32 unused, coord3d *from, coord3d *to, coord3d *dir, coord3d 
 
                             besthit->texturenum = hit.texturenum;
                             besthit->tricmd = hit.tricmd;
-                            besthit->unk28 = hit.unk28;
+                            besthit->triNum = hit.triNum;
                         }
                     }
                 }
@@ -6665,7 +6641,7 @@ void shotFireBullet(s32 hand)
 
                 if (lightIsLightTexture(bghit.texturenum))
                 {
-                    lightFixtureBreak(bghit.tricmd, bghit.unk28, bestroom);
+                    lightFixtureBreak(bghit.tricmd, bghit.triNum, bestroom);
                 }
             }
 
@@ -6712,7 +6688,7 @@ void shotFireBullet(s32 hand)
  * Hitscans gather candidate hits along the bullet path. This function records each candidate hit into shotdata
  * and enforces pentration limits and removes hits that should be blocked by closer objects.
  */
-void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, s32 unk44, Model *model, bool countsAsPenetration, s32 blocksFurtherHits)
+void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, ModelNode *bboxnode, Model *model, bool countsAsPenetration, s32 blocksFurtherHits)
 {
     s32 i;
     s32 furthestindex;
@@ -6819,7 +6795,7 @@ void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpa
             shotdata->hits[i].node = node;
             shotdata->hits[i].hit = *hitthing;
             shotdata->hits[i].room = room;
-            shotdata->hits[i].unk44 = unk44;
+            shotdata->hits[i].bboxNode = bboxnode;
             shotdata->hits[i].model = model;
             shotdata->hits[i].countsAsPenetration = countsAsPenetration;
             break;

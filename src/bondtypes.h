@@ -1429,82 +1429,84 @@ typedef union
             char            *FileName;
         };
         */
-        typedef struct Model
+        /**
+         * The part of a model every model has. Models without animation are just this
+         * (the g_ModelSlots pool, the first-person gun); Model adds the animation state.
+         */
+        typedef struct ModelBase
         {
-            s16                unk00;      /*0x00*/   // objInit() indicates that unk00 is a s16...
-            s16                rwdatalen;  /*0x01*/
+            s16                rwdatalen;  /* length of datas in words, -1 if not from a slot */
 
-            struct ChrRecord  *chr;   /*0x04*/
-            ModelFileHeader   *obj;   /*0x08 GE Name confirmed*/
+            struct ChrRecord  *chr;
+            ModelFileHeader   *obj;
 
             /**
              * List of length model->obj->numMatrices dynamically allocated.
             */
-            RenderPosView     *render_pos; /*0x0c*/
-            union ModelRwData **datas; // array of pointers to modeldata structs /*0x10*/
+            RenderPosView     *render_pos;
+            union ModelRwData **datas; // array of pointers to modeldata structs
 
-            f32               scale;              /*0x14*/
-            struct Model     *attachedto;         /*0x18*/
-            ModelNode        *attachedto_objinst; /*0x1c*/
+            f32               scale;
+            struct Model     *attachedto;
+            ModelNode        *attachedto_objinst;
+        } ModelBase;
+
+        typedef struct Model
+        {
+            struct ModelBase; /* its fields are Model's own (-fms-extensions) */
 
             // need `struct anim` definition from AI branch.
-            ModelAnimation   *anim; /*0x20*/
+            ModelAnimation   *anim;
 
             s8                flip;       /* play the animation mirrored */
             s8                flip2;
-            s8                animlooping; /*0x26*/
+            s8                animlooping;
             s8                unk27;
 
-            f32               frame;      /*0x28 current frame, with fraction */
+            f32               frame;      /* current frame, with fraction */
             f32               frameFrac;  /* how far between framea and frameb */
 
             /**
              * Animation framea (per debug message)
-             * Offset 0x30.
             */
             s16               framea;
 
             /**
              * Animation frameb (per debug message)
-             * Offset 0x32.
             */
             s16               frameb;
             s32               frameaData; /* framea's joint rotations, loaded from ROM */
             s32               framebData;
             f32               endframe;
 
-            f32               speed; /*0x40*/
-            f32               newspeed; /*0x44*/
-            f32               oldspeed; /*0x48*/
-            f32               timespeed; /*0x4C*/
-            f32               elapsespeed; /*0x50*/
+            f32               speed;
+            f32               newspeed;
+            f32               oldspeed;
+            f32               timespeed;
+            f32               elapsespeed;
 
             ModelAnimation   *anim2;
 
-            f32               frame2;     /* 0x58*/
+            f32               frame2;
             f32               frame2Frac;
 
             /**
              * Animation frame2a (per debug message)
-             * Offset 0x60.
             */
             s16               frame2a;
 
             /**
              * Animation frame2b (per debug message)
-             * Offset 0x62.
             */
             s16               frame2b;
 
             s32               frame2aData;
             s32               frame2bData;
             f32               endframe2;
-            // 0x70
             f32               speed2;
             f32               newspeed2;
             f32               oldspeed2;
             f32               timespeed2;
-            // 0x80
             f32               elapsespeed2;
 
             /**
@@ -1514,17 +1516,13 @@ typedef union
 
             f32               mergeTime;
             f32               mergeElapsed;
-            // 0x90
-            f32               animloopframe; /*0x90*/
-            f32               animloopmerge; /*0x94*/
-            s32               animflipfunc; /*0x98*/
-            s32               unk9c;
-            // 0xa0
+            f32               animloopframe;
+            f32               animloopmerge;
+            s32               animflipfunc;
             s32               rootMoveCallback; /* can veto or adjust root motion, see modelCalcRootPosition */
             f32               playspeed; // used by ACT_STAND in chrlv
             f32               newplayspeed;
             f32               oldplayspeed;
-            // 0xb0
             f32               timeplayspeed;
             f32               elapseplayspeed;
             f32               anim_translation_scale; // used by ACT_ANIM in chrlv
@@ -1577,7 +1575,7 @@ typedef union
 
         Gfx *tricmd;        // 0x24 - display-list command associated with hit triangle
 
-        s16 unk28;          // 0x28
+        s16 triNum;         // 0x28 - which triangle of tricmd was hit: 1 or 2 (gSP2Triangles)
         s16 texturenum;     // 0x2a
 
         s16 tileformat;     // 0x2c
@@ -1591,7 +1589,7 @@ typedef union
         struct ModelNode *node;     // 0x0c
         HitThing hit;               // 0x10, size 0x30
         s32 room;                   // 0x40
-        struct ModelNode *unk44;    // 0x44
+        struct ModelNode *bboxNode; // 0x44 - bounding box node of the model part that was hit
         struct Model *model;        // 0x48
         s32 countsAsPenetration;    // 0x4c
     } BulletHit;

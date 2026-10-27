@@ -43,8 +43,8 @@ typedef struct ModelGroupMtxBuildArg {
 void modelSetAnimFrame2WithChrStuff(struct Model *model, f32 framea, f32 frameb, f32 frame2a, f32 frame2b);
 
 
-struct AnimModelSlot *g_AnimModelSlots;
-struct ModelSlot *g_ModelSlots;
+Model *g_AnimModelSlots;
+ModelBase *g_ModelSlots;
 
 
 s32 g_MaxAnimModelSlots = 0;
@@ -144,7 +144,7 @@ void modelmgrAllocateModelSlots(s32 numobjs)
 
     g_MaxModelSlots = numobjs + MODEL_SPARE_SLOTS;
     
-    g_ModelSlots = mempAlloc(g_MaxModelSlots * sizeof(struct ModelSlot), MEMPOOL_STAGE);
+    g_ModelSlots = mempAlloc(g_MaxModelSlots * sizeof(ModelBase), MEMPOOL_STAGE);
 
     for (i = 0; i < g_MaxModelSlots; i++)
     {
@@ -171,9 +171,7 @@ void modelmgrAllocateAnimModelSlots(s32 numanimated)
 
     g_MaxAnimModelSlots = numanimated + ANIM_MODEL_SPARE_SLOTS;
 
-    // mips2c says: g_AnimModelSlots = mempAlloc(temp_t6 * 0xC0, 4);
-    // however, the pointer is incremented by 0xbc in the loop below.
-    g_AnimModelSlots = mempAlloc(g_MaxAnimModelSlots * (4 + sizeof(struct AnimModelSlot)), MEMPOOL_STAGE);
+    g_AnimModelSlots = mempAlloc(g_MaxAnimModelSlots * sizeof(Model), MEMPOOL_STAGE);
 
     for (i = 0; i < g_MaxAnimModelSlots; i++)
     {
@@ -201,7 +199,7 @@ bool modelmgrCanSlotFitRwdata(Model *modelslot, ModelFileHeader *modeldef)
 
 
 /**
- * Allocates 0x20 bytes for a new model without animations.
+ * Takes a free slot for a model without animation (just a ModelBase).
  * Models that need animations use modelmgrInstantiateModelWithAnim.
  */
 Model *modelmgrInstantiateModel(ModelFileHeader *header)
@@ -229,7 +227,7 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
 
         if (model == NULL) 
         {
-            model = mempAlloc(0x20, MEMPOOL_STAGE);
+            model = mempAlloc(sizeof(ModelBase), MEMPOOL_STAGE);
         }
 
         if (header->numRecords > 0) 
@@ -257,7 +255,7 @@ Model *modelmgrInstantiateModel(ModelFileHeader *header)
     if (model != NULL) 
     {
         modelInit(model, header, rwdata);
-        ((struct ModelSlot *)model)->rwdatalen = rwdatalen;
+        model->rwdatalen = rwdatalen;
     }
 
     return model;
@@ -271,7 +269,7 @@ void modelFreeSlot(Model* model)
 
 
 /**
- * Allocates 0xc0 bytes for a new model to allow enough memory for animations.
+ * Takes a free slot for a model with animation.
  */
 Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
 {
@@ -292,14 +290,14 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
         {
             if (g_AnimModelSlots[i].obj == 0)
             {
-                newModel = (Model *)&g_AnimModelSlots[i];
+                newModel = &g_AnimModelSlots[i];
                 break;
             }
         }
 
         if (newModel == NULL) 
         {
-            newModel = mempAlloc(0xc0, MEMPOOL_STAGE);
+            newModel = mempAlloc(sizeof(Model), MEMPOOL_STAGE);
         }
 
         requiredRwdatalen = modelFileHeader->numRecords;
@@ -320,7 +318,7 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
         {
             if ((g_AnimModelSlots[i2].obj == 0) && ((requiredRwdatalen <= 0) || ((g_AnimModelSlots[i2].datas != NULL) &&(g_AnimModelSlots[i2].rwdatalen >= requiredRwdatalen)))) 
             {
-                newModel = (Model *)&g_AnimModelSlots[i2];
+                newModel = &g_AnimModelSlots[i2];
                 rwdatas = g_AnimModelSlots[i2].datas;
                 rwdatalen = g_AnimModelSlots[i2].rwdatalen;
                 break;
@@ -5823,7 +5821,6 @@ void animInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data)
     objinst->anim2 = NULL;
     objinst->animlooping = 0;
     objinst->animflipfunc = 0;
-    objinst->unk9c = 0;
     objinst->rootMoveCallback = 0;
     objinst->frameFrac = 0.0f;
     objinst->timespeed = 0.0f;

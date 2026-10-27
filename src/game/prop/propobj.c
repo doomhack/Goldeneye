@@ -658,7 +658,6 @@ PropRecord* objInit(ObjectRecord* obj, ModelFileHeader* model_header, PropRecord
         obj->nextcol.a = 0;
 
         obj->maxdamage = 0.0f;
-        *((s16*)&obj->model->unk00) = -1;
         obj->model->chr = NULL;
         modelSetScale(obj->model, PitemZ_entries[obj->obj].scale);
         prop->type = 1;
@@ -8444,7 +8443,7 @@ bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *
                         hitthing->vtx2 = &vtxbase[idx[2]];
                         hitthing->texturenum = texnum;
                         hitthing->tricmd = gdl;
-                        hitthing->unk28 = 0;
+                        hitthing->triNum = 0;
                         result[0] = 1;
                     }
                 }
@@ -8565,7 +8564,7 @@ bool bgTestHitOnObj(coord3d *arg0, coord3d *arg1, coord3d *arg2, Gfx *gdl, Gfx *
                             hitthing->vtx2 = &vtxbase[idx2[2]];
                             hitthing->texturenum = texnum;
                             hitthing->tricmd = gdl;
-                            hitthing->unk28 = s2 + 1;
+                            hitthing->triNum = s2 + 1;
                             result[0] = 1;
                         }
                     }
@@ -9393,7 +9392,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
 
             thing2_index = randomGetNext() % impact_sounds->thing2_len;
 
-            if (((obj->model->obj->Skeleton == &skeleton_door) && (hit->unk44 == obj->model->obj->Switches[3])) || ((obj->model->obj->Skeleton == &skeleton_cctv) && (hit->unk44 == obj->model->obj->Switches[1])))
+            if (((obj->model->obj->Skeleton == &skeleton_door) && (hit->bboxNode == obj->model->obj->Switches[3])) || ((obj->model->obj->Skeleton == &skeleton_cctv) && (hit->bboxNode == obj->model->obj->Switches[1])))
             {
                 room_clear_flag = 1;
             }
@@ -9417,7 +9416,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
         {
             if (obj->model->obj->Skeleton == &skeleton_cctv)
             {
-                if (hit->unk44 == obj->model->obj->Switches[1])
+                if (hit->bboxNode == obj->model->obj->Switches[1])
                 {
                     damage *= 100.0f;
                     objBreakCCTVGlass(obj);

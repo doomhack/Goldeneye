@@ -1513,7 +1513,6 @@ PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg
 
     modelSetRootMoveCallback(arg1, (s32) chrRootMoveCallback);
 
-    arg1->unk00 = 0xA;
     arg1->chr = var_s0;
 
     modelSetRootPosition(arg1, arg2);
