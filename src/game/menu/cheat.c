@@ -878,8 +878,8 @@ void cheat_buttons_mp_related(void)
     u16 triggerButtons;
 
     // Get current and newly pressed buttons for this frame
-    currentButtons = joyGetButtons(get_cur_playernum(), ANY_BUTTON);
-    buttonsPressedThisFrame = joyGetButtonsPressedThisFrame(get_cur_playernum(), ANY_BUTTON);
+    currentButtons = joyGetButtons(playerGetCurrentNum(), ANY_BUTTON);
+    buttonsPressedThisFrame = joyGetButtonsPressedThisFrame(playerGetCurrentNum(), ANY_BUTTON);
 
     // Seperately check triggers
     triggerButtons = (currentButtons & (L_TRIG | R_TRIG));
@@ -959,7 +959,7 @@ void cheatButtonTurnOnCheatForPlayers(CHEAT_ID cheatindex)
     s32 i;
 
     cheat_mask = g_CheatInfo[cheatindex - 1].maskfield;
-    starting_player_number = get_cur_playernum();
+    starting_player_number = playerGetCurrentNum();
     numplayers = getPlayerCount();
 
     if (numplayers == 1)
@@ -978,11 +978,11 @@ void cheatButtonTurnOnCheatForPlayers(CHEAT_ID cheatindex)
             {
                 for(i=0; i<numplayers; i++)
                 {
-                    set_cur_player(i);
+                    playerSetCurrent(i);
                     cheatButtonHandleCheatsTurnedOn(cheatindex);
                 }
 
-                set_cur_player(starting_player_number);
+                playerSetCurrent(starting_player_number);
             }
         }
     }
@@ -1004,7 +1004,7 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
     s32 player_count;
 
     mask = g_CheatInfo[cheat_id - 1].maskfield;
-    current_player_number = get_cur_playernum();
+    current_player_number = playerGetCurrentNum();
     player_count = getPlayerCount();
 
     if ((mask & CHEAT_MASK_SHOW_TEXT) == 0)
@@ -1026,10 +1026,10 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_INVINCIBILITY:
-            if (!get_bondata_invincible_flag())
+            if (!playerGetInvincible())
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_0F_INVINCIBILITYON_LF)));
-                set_bondata_invincible_flag(TRUE);
+                playerSetInvincible(TRUE);
                 return;
             }
             return;
@@ -1059,15 +1059,15 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
                     {
                         if (i != current_player_number)
                         {
-                            set_cur_player(i);
-                            if (get_bondata_invincible_flag())
+                            playerSetCurrent(i);
+                            if (playerGetInvincible())
                             {
-                                set_bondata_invincible_flag(FALSE);
+                                playerSetInvincible(FALSE);
                                 flag = TRUE;
                             }
                         }
 
-                        set_cur_player(current_player_number);
+                        playerSetCurrent(current_player_number);
                     }
 
                     if (flag)
@@ -1110,10 +1110,10 @@ void cheatButtonHandleCheatsTurnedOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_INVISIBILITY:
-            if (bondviewGetVisibleToGuardsFlag())
+            if (playerGetVisibleToGuards())
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_14_INVISIBILITYON_LF)));
-                bondviewSetVisibleToGuardsFlag(FALSE);
+                playerSetVisibleToGuards(FALSE);
                 return;
             }
             return;
@@ -1449,7 +1449,7 @@ void cheatButtonHandleCheatsTurnedOff(CHEAT_ID cheat_id)
     s32 player_count;
 
     mask = g_CheatInfo[cheat_id - 1].maskfield;
-    current_player_number = get_cur_playernum();
+    current_player_number = playerGetCurrentNum();
     player_count = getPlayerCount();
 
     if ((mask & CHEAT_MASK_SHOW_TEXT) == 0)
@@ -1467,10 +1467,10 @@ void cheatButtonHandleCheatsTurnedOff(CHEAT_ID cheat_id)
     switch (cheat_id)
     {
         case CHEAT_INVINCIBILITY:
-            if (get_bondata_invincible_flag())
+            if (playerGetInvincible())
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_1E_INVINCIBILITYOFF_LF)));
-                set_bondata_invincible_flag(FALSE);
+                playerSetInvincible(FALSE);
                 return;
             }
             return;
@@ -1489,10 +1489,10 @@ void cheatButtonHandleCheatsTurnedOff(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_INVISIBILITY:
-            if (!bondviewGetVisibleToGuardsFlag())
+            if (!playerGetVisibleToGuards())
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_20_INVISIBILITYOFF_LF)));
-                bondviewSetVisibleToGuardsFlag(TRUE);
+                playerSetVisibleToGuards(TRUE);
                 return;
             }
             return;
@@ -1632,11 +1632,11 @@ void cheatDisableAllCheats(void)
     s32 j;
 
     numplayers = getPlayerCount();
-    starting_player_number = get_cur_playernum();
+    starting_player_number = playerGetCurrentNum();
 
     for (i=0; i<numplayers; i++)
     {
-        set_cur_player(i);
+        playerSetCurrent(i);
 
         for (j=1; j<CHEAT_INVALID; j++)
         {
@@ -1647,7 +1647,7 @@ void cheatDisableAllCheats(void)
         }
     }
 
-    set_cur_player(starting_player_number);
+    playerSetCurrent(starting_player_number);
 }
 
 
@@ -1678,7 +1678,7 @@ char *cheatGetMenuTextPointer(CHEAT_ID cheat_id)
  */
 bool cheatIsActive(CHEAT_ID cheat)
 {
-    return ((bool) (u8) g_CheatPlayerTextRelated[cheat] >> get_cur_playernum()) & 1;
+    return ((bool) (u8) g_CheatPlayerTextRelated[cheat] >> playerGetCurrentNum()) & 1;
 }
 
 

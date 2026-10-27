@@ -510,9 +510,9 @@ void replay_recorded_ramrom_from_indy(void)
 
 void ramromFadeToTitle(void)
 {
-    if (bondviewGetCameraMode() != CAMERAMODE_FADE_TO_TITLE)
+    if (playerGetCameraMode() != CAMERAMODE_FADE_TO_TITLE)
     {
-        bondviewSetCameraMode(CAMERAMODE_FADE_TO_TITLE);
+        playerSetCameraMode(CAMERAMODE_FADE_TO_TITLE);
     }
 }
 

@@ -1,3 +1,8 @@
+/**
+ * Level start for a player: playerApplyIntro reads the intro section of the setup file
+ * (spawn pad, starting weapons and ammo, intro cameras). Also co-op spawn points and
+ * loading projectile models. See docs/subsystems/player.md.
+ */
 #include <ultra64.h>
 #include <memp.h>
 #include <bondconstants.h>
@@ -99,7 +104,7 @@ void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle)
 {
     f32 fwd_x = -sinf(look_angle);
     f32 fwd_z = cosf(look_angle);
-    f32 floor_y = bondviewYPositionRelated(*stan, pos->f[0], pos->f[2]);
+    f32 floor_y = playerGetFloorY(*stan, pos->f[0], pos->f[2]);
     s32 i;
 
     for (i = 0; i < (s32)(sizeof(coopSpawnOffsets) / sizeof(coopSpawnOffsets[0])); i++)
@@ -123,7 +128,7 @@ void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle)
             continue;
         }
 
-        y = bondviewYPositionRelated(tile, x, z);
+        y = playerGetFloorY(tile, x, z);
 
         if ((y - floor_y > COOP_SPAWN_MAXSTEP) || (floor_y - y > COOP_SPAWN_MAXSTEP))
         {
@@ -139,7 +144,7 @@ void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle)
     g_CoopPlayersOverlap = TRUE;
 }
 
-void bondviewLoadSetupIntroSection(void)
+void playerApplyIntro(void)
 {
 
 #define FLOAT_INIT 0
@@ -173,7 +178,7 @@ void bondviewLoadSetupIntroSection(void)
 
     // Co-op: this runs once per player and resets the intro camera state,
     // which player 1's run has already set up for the intro.
-    s32 coopPartner = g_CoopMode && (get_cur_playernum() > 0);
+    s32 coopPartner = g_CoopMode && (playerGetCurrentNum() > 0);
     __typeof__(g_CameraMode) saved_cameramode = g_CameraMode;
     __typeof__(g_CameraAfterCinema) saved_aftercinema = g_CameraAfterCinema;
     __typeof__(camera_transition_timer) saved_transition_timer = camera_transition_timer;
@@ -187,7 +192,7 @@ void bondviewLoadSetupIntroSection(void)
 
     start_pos = default_start_position;
 
-    if (get_cur_playernum() == 0)
+    if (playerGetCurrentNum() == 0)
     {
         g_CoopPlayersOverlap = FALSE;
     }
@@ -336,7 +341,7 @@ void bondviewLoadSetupIntroSection(void)
                     }
 
                     // Converted in place, so only on the first player's run.
-                    if (get_cur_playernum() == 0)
+                    if (playerGetCurrentNum() == 0)
                     {
                         intro_swirl->unk08.fval = intro_swirl->unk08.ival / M_U16_MAX_VALUE_F;
                         intro_swirl->unk0C.fval = intro_swirl->unk0C.ival / M_U16_MAX_VALUE_F;
@@ -367,7 +372,7 @@ void bondviewLoadSetupIntroSection(void)
 
                 case INTROTYPE_CAMERA:
                 {
-                    if (get_cur_playernum() == 0)
+                    if (playerGetCurrentNum() == 0)
                     {
                         ((struct SetupIntroCamera*)intro_record)->prev = g_CurrentSetupIntroCamera;
                         g_CurrentSetupIntroCamera = (struct SetupIntroCamera*)intro_record;
@@ -476,7 +481,7 @@ void bondviewLoadSetupIntroSection(void)
     {
         if ((isMpGame()) && (startpadcount > 0))
         {
-            rand_pad_index = bondviewGetRandomSpawnPadIndex();
+            rand_pad_index = playerChooseSpawnPad();
         }
         else
         {
@@ -493,15 +498,15 @@ void bondviewLoadSetupIntroSection(void)
 
         start_stan = g_Startpad[rand_pad_index]->stan;
 
-        stan_height = bondviewYPositionRelated(start_stan, start_pos.f[0], start_pos.f[2]);
+        stan_height = playerGetFloorY(start_stan, start_pos.f[0], start_pos.f[2]);
         start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
         g_CurrentPlayer->field_70 = stan_height;
         start_look_angle = M_TAU_F - mathAtan2(g_Startpad[rand_pad_index]->look.f[0], g_Startpad[rand_pad_index]->look.f[2]);
 
-        if (g_CoopMode && (get_cur_playernum() > 0))
+        if (g_CoopMode && (playerGetCurrentNum() > 0))
         {
             coopFindPartnerSpawn(&start_pos, &start_stan, start_look_angle);
-            stan_height = bondviewYPositionRelated(start_stan, start_pos.f[0], start_pos.f[2]);
+            stan_height = playerGetFloorY(start_stan, start_pos.f[0], start_pos.f[2]);
             start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
             g_CurrentPlayer->field_70 = stan_height;
         }
@@ -509,7 +514,7 @@ void bondviewLoadSetupIntroSection(void)
     else
     {
         start_stan = stanFindNearestLegalPos(&start_pos.f[0], &start_pos.f[1], &start_pos.f[2], 30.0f);
-        stan_height = bondviewYPositionRelated(start_stan, start_pos.f[0], start_pos.f[2]);
+        stan_height = playerGetFloorY(start_stan, start_pos.f[0], start_pos.f[2]);
         start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
         g_CurrentPlayer->field_70 = stan_height;
     }
@@ -517,17 +522,17 @@ void bondviewLoadSetupIntroSection(void)
     g_CurrentPlayer->vv_theta = (start_look_angle * 360.0f) / M_TAU_F;
     g_CurrentPlayer->stanHeight = stan_height;
     g_CurrentPlayer->field_6C = stan_height / FIELD_6C_FACTOR;
-    change_player_pos_to_target(&g_CurrentPlayer->field_488, &start_pos, start_stan);
+    playerResetCollision(&g_CurrentPlayer->field_488, &start_pos, start_stan);
 
     // Players' collision bounds are otherwise only set when they first move.
     // A co-op partner's body is created right next to player 1 and tests
     // against them, which read uninitialised floats (an FPU exception on
     // hardware and accurate emulators).
-    bondviewUpdatePlayerCollisionBounds();
+    playerUpdateCollisionBounds();
     g_CurrentPlayer->field_488.theta_transform.f[0] = -sinf(start_look_angle);
     g_CurrentPlayer->field_488.theta_transform.f[1] = FLOAT_INIT;
     g_CurrentPlayer->field_488.theta_transform.f[2] = cosf(start_look_angle);
-    sub_GAME_7F089718(D_800364D0);
+    playerSetWorldScale(g_PlayerWorldScale);
     dword_CODE_bss_80079DA0 = 0;
 
 
@@ -537,8 +542,8 @@ void bondviewLoadSetupIntroSection(void)
         dword_CODE_bss_80079DA8[i] = 0;
     }
 
-    bondviewResetIntroCameraMessageDialogs();
-    bondviewResetUpperTextDisplay();
+    hudmsgResetIntroText();
+    hudmsgTopReset();
     g_CurrentPlayer->prop = propAllocate();
     g_CurrentPlayer->prop->obj = NULL;
     g_CurrentPlayer->prop->type = PROP_TYPE_VIEWER;
@@ -565,7 +570,7 @@ void bondviewLoadSetupIntroSection(void)
         // Co-op: the intro plays once, full-screen from player 1's view.
         if (!coopPartner)
         {
-            bondviewSetCameraMode(CAMERAMODE_INTRO);
+            playerSetCameraMode(CAMERAMODE_INTRO);
         }
         else
         {
@@ -581,7 +586,7 @@ void bondviewLoadSetupIntroSection(void)
     }
     else
     {
-        bondviewSetCameraMode(CAMERAMODE_MP);
+        playerSetCameraMode(CAMERAMODE_MP);
     }
 
     g_bondviewBondDeathAnimationsCount = 0;

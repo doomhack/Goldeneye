@@ -50,7 +50,7 @@ Gfx *display_red_blue_on_radar(Gfx *DL)
 #endif
     
     current_scenario = get_scenario();
-    cur_playernum = get_cur_playernum();
+    cur_playernum = playerGetCurrentNum();
     player_count = getPlayerCount();
     
     if (!isMpGame())

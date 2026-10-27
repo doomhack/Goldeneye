@@ -1,3 +1,9 @@
+/**
+ * The player list. g_playerPointers holds every player and g_CurrentPlayer the one being
+ * worked on (playerSetCurrent). Also allocating each player (playerInit), the shuffled
+ * draw order, per-player screen size and field of view, and setting up the hands at
+ * level start (playerInitHands). See docs/subsystems/player.md.
+ */
 #include <ultra64.h>
 #include <memp.h>
 #include <fr.h>
@@ -7,6 +13,9 @@
 #include "game/player/bondview.h"
 #include "game/level/lv.h"
 #include "game/menu/options.h"
+#include "bondtypes.h"
+#include "bondconstants.h"
+#include "game/player/gun.h"
 
 struct player *g_playerPointers[4];
 struct player_data g_playerPlayerData[4];
@@ -24,7 +33,7 @@ PLAYER_ID array_PLAYER_IDs[4];
 //s32 dword_CODE_bss_8007A0C8;
 //s32 dword_CODE_bss_8007A0CC;
 
-/* Define default values that are different between EU and the rest for initBONDdataforPlayer */
+/* Define default values that are different between EU and the rest for playerInit */
 #ifdef VERSION_EU
 #define DEFAULT_FIELD_3B8_Z     8.417509f
 #define DEFAULT_HEADDAMP        0.9166f
@@ -47,7 +56,7 @@ PLAYER_ID array_PLAYER_IDs[4];
 
 //newfile per EU
 
-void default_player_perspective_and_height(void)
+void playersResetHandicaps(void)
 {
   float value  = 1.0f;
 
@@ -63,7 +72,7 @@ void default_player_perspective_and_height(void)
   g_playerPlayerData[PLAYER_4].handicap = value;
 }
 
-void reset_play_data_ptrs(void)
+void playersReset(void)
 {
     g_playerPointers[PLAYER_1] = NULL;
     g_playerPointers[PLAYER_2] = NULL;
@@ -79,7 +88,7 @@ void reset_play_data_ptrs(void)
     array_PLAYER_IDs[PLAYER_4] = 3;
 }
 
-void init_player_data_ptrs_construct_viewports(s32 playercount)
+void playersInit(s32 playercount)
 {
     s32 i;
 
@@ -92,15 +101,15 @@ void init_player_data_ptrs_construct_viewports(s32 playercount)
     {
         for (i = 0; i < playercount; i++)
         {
-            initBONDdataforPlayer(i);
+            playerInit(i);
         }
-        set_cur_player(PLAYER_1);
+        playerSetCurrent(PLAYER_1);
         return;
     }
-    initBONDdataforPlayer(PLAYER_1);
-    set_cur_player(PLAYER_1);
-    set_cur_player_screen_size(viGetViewWidth(), viGetViewHeight());
-    set_cur_player_viewport_size(viGetViewLeft(), viGetViewTop());
+    playerInit(PLAYER_1);
+    playerSetCurrent(PLAYER_1);
+    playerSetScreenSize(viGetViewWidth(), viGetViewHeight());
+    playerSetViewportPos(viGetViewLeft(), viGetViewTop());
 }
 
 /**
@@ -150,7 +159,7 @@ s32 g_CoopPlayersOverlap = FALSE;
 
 /**
  * Co-op: the player whose view fills the screen on its own this frame, or
- * -1 while every player's view is shown (see bondviewCoopUpdateSoloView).
+ * -1 while every player's view is shown (see coopUpdateSoloView).
  * g_CoopSoloViewIsCinema is set when that is a cutscene, intro or final
  * death replay rather than a player's watch.
  */
@@ -179,7 +188,7 @@ s32 isMpGame(void)
 s32 coopPartnerCanRevive(void)
 {
     s32 count = getPlayerCount();
-    s32 cur = get_cur_playernum();
+    s32 cur = playerGetCurrentNum();
     s32 i;
 
     if (!g_CoopMode)
@@ -215,13 +224,13 @@ s32 g_CoopLastActivator = 0;
 
 void coopNoteActivator(void)
 {
-    g_CoopLastActivator = get_cur_playernum();
+    g_CoopLastActivator = playerGetCurrentNum();
 }
 
 s32 coopPartnerAlive(void)
 {
     s32 count = getPlayerCount();
-    s32 cur = get_cur_playernum();
+    s32 cur = playerGetCurrentNum();
     s32 i;
 
     if (!g_CoopMode)
@@ -290,7 +299,7 @@ s32 getPlayerCount(void)
     return count;
 }
 
-void initBONDdataforPlayer(s32 player_num)
+void playerInit(s32 player_num)
 {
     s32 i;
     struct hand default_hand;
@@ -388,7 +397,7 @@ void initBONDdataforPlayer(s32 player_num)
     g_playerPointers[player_num]->vv_verta = -4.0f;
     // @bug
     // -229.1831 degrees = -4 radians
-    // This doesn't matter, because bondviewApplyVertaTheta overwrites vv_verta360 with the value from vv_verta
+    // This doesn't matter, because playerUpdateVertaTheta overwrites vv_verta360 with the value from vv_verta
     g_playerPointers[player_num]->vv_verta360 = -229.1831f;
     g_playerPointers[player_num]->speedverta = 0.0f;
     g_playerPointers[player_num]->vv_cosverta = 1.0f;
@@ -657,11 +666,11 @@ void initBONDdataforPlayer(s32 player_num)
     g_playerPointers[player_num]->field_2A70 = NULL;
 
     g_VisibleToGuardsFlag = TRUE;
-    obj_collision_flag = TRUE;
+    g_PlayerCollisionOn = TRUE;
 }
 
 
-void set_cur_player(s32 playernum)
+void playerSetCurrent(s32 playernum)
 {
 #ifdef DEBUG
     assert(num>=0);
@@ -677,11 +686,11 @@ void set_cur_player(s32 playernum)
 }
 
 
-s32 get_cur_playernum(void) {
+s32 playerGetCurrentNum(void) {
     return player_num;
 }
 
-s32 getPlayerPointerIndex(PropRecord* prop)
+s32 playerGetIndexForProp(PropRecord* prop)
 {
     s32 i;
 
@@ -695,7 +704,7 @@ s32 getPlayerPointerIndex(PropRecord* prop)
 }
 
 
-void set_cur_player_screen_size(u32 width, u32 height) {
+void playerSetScreenSize(u32 width, u32 height) {
     #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
@@ -703,7 +712,7 @@ void set_cur_player_screen_size(u32 width, u32 height) {
   g_CurrentPlayer->viewy = height;
 }
 
-void set_cur_player_viewport_size(u32 ulx, u32 uly) {
+void playerSetViewportPos(u32 ulx, u32 uly) {
         #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
@@ -711,21 +720,21 @@ void set_cur_player_viewport_size(u32 ulx, u32 uly) {
   g_CurrentPlayer->viewtop = uly;
 }
 
-void set_cur_player_fovy(f32 fovy) {
+void playerSetFovY(f32 fovy) {
     #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
     g_CurrentPlayer->fovy = fovy;
 }
 
-void set_cur_player_aspect(f32 aspect) {
+void playerSetAspect(f32 aspect) {
     #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
     g_CurrentPlayer->aspect = aspect;
 }
 
-f32 get_cur_player_fovy(void) {
+f32 playerGetFovY(void) {
     #ifdef XBLADEBUG
        assert(currentplayer);
     #endif
@@ -733,7 +742,7 @@ f32 get_cur_player_fovy(void) {
 }
 
 
-PROP getPropForHeldItem(ITEM_IDS arg0)
+PROP weaponGetChrModel(ITEM_IDS arg0)
 {
     PROP ret = -1;
     switch (arg0)
@@ -773,12 +782,12 @@ PROP getPropForHeldItem(ITEM_IDS arg0)
 }
 
 
-void sub_GAME_7F09B368(enum GUNHAND hand)
+void playerBodyRemoveGun(enum GUNHAND hand)
 {
-    chrSetWeaponFlag4(g_CurrentPlayer->prop->chr, hand);
+    chrRemoveHeldWeapon(g_CurrentPlayer->prop->chr, hand);
 }
 
-void sub_GAME_7F09B398(enum GUNHAND hand)
+void playerBodyGiveGun(enum GUNHAND hand)
 {
     ChrRecord *chr;
     enum ITEM_IDS wepid;
@@ -790,7 +799,7 @@ void sub_GAME_7F09B398(enum GUNHAND hand)
     if (chr->weapons_held[hand] == NULL)
     {
         wepid = getCurrentPlayerWeaponId(hand);
-        prop = getPropForHeldItem(wepid);
+        prop = weaponGetChrModel(wepid);
         if (prop >= 0)
         {
             flags = ((hand * 4) == 0)
@@ -801,7 +810,7 @@ void sub_GAME_7F09B398(enum GUNHAND hand)
     }
 }
 
-void shuffle_player_ids(void) {
+void playersShuffleOrder(void) {
     s32 i;
     u32 random;
     PLAYER_ID temp;
@@ -833,7 +842,7 @@ void shuffle_player_ids(void) {
     }
 }
 
-s32 get_player_position_in_shuffled(s32 current_player_num) {
+s32 playerGetShuffledIndex(s32 current_player_num) {
     s32 i;
     s32 position = 0;
 
@@ -854,7 +863,7 @@ s32 get_player_position_in_shuffled(s32 current_player_num) {
     return position;
 }
 
-s32 get_nth_player_from_shuffled(PLAYER_ID id)
+s32 playerGetShuffled(PLAYER_ID id)
 {
     s32 i;
 
@@ -868,4 +877,332 @@ s32 get_nth_player_from_shuffled(PLAYER_ID id)
     }
 
     return 0;
+}
+
+
+#ifdef REFRESH_PAL
+#define VALUENAME 16.750415802f
+#else
+#define VALUENAME 19.999996
+#endif
+
+struct hand hand_data_dummy = {
+    0, // ITEM_IDS weaponnum;
+    0xFFFFFFFF, // ITEM_IDS weaponnum_watchmenu;
+    0, // ITEM_IDS previous_weapon;
+ 
+    0, // s8 weapon_firing_status;
+ 
+    0, // s8 field_87D;
+    0x1, // s8 field_87E;
+    0, // s8 field_87F;
+ 
+    0, // s32 weapon_hold_time;
+    0, // s32 field_884;
+    0, // s32 field_888;
+    0, // s32 field_88C;
+    0, // s32 field_890;
+    0, // s32 weapon_action_state;
+    0, // s32 weapon_current_animation;
+    0, // s32 weapon_ammo_in_magazine;
+    0, // s32 field_8A0;
+    0, // s32 numvisibleshells;
+    0, // s32 field_8A8;
+    0, // s32 weapon_next_weapon;
+    0, // s32 field_8B0;
+    0, // s32 weapon_animation_trigger;
+    0, // s32 field_8B8;
+    0, // s32 field_8BC;
+    0, // s32 field_8C0;
+    0, // s32 field_8C4;
+    0, // s32 field_8C8;
+    0, // s32 field_8CC;
+    0, // s32 field_8D0;
+    0, // s32 field_8D4;
+    0, // s32 field_8D8;
+    0, // s32 field_8DC;
+    0, // s32 field_8E0;
+    0, // s32 field_8E4;
+    0, // s32 field_8E8;
+ 
+    // Mtxf field_8EC;
+    1.0f,0,0,0,
+    0,1.0f,0,0,
+    0,0,1.0f,0,
+    0,0,0,1.0f,
+ 
+    0, // s32 field_92C;
+    0, // f32 sway_pos_x;
+    0, // f32 sway_pos_y;
+    0, // f32 sway_pos_z;
+    0, // f32 sway_look_x;
+    0, // f32 sway_look_y;
+    -1.0f, // f32 sway_look_z;
+    0, // f32 sway_up_x;
+    1.0f, // f32 sway_up_y;
+    0, // f32 sway_up_z;
+    0, // f32 spring_pos_x;
+    0, // f32 spring_pos_y;
+    0, // f32 spring_pos_z;
+    0, // f32 spring_look_x;
+    0, // f32 spring_look_y;
+    -VALUENAME, // f32 spring_look_z;
+    0, // f32 spring_up_x;
+    VALUENAME, // f32 spring_up_y;
+    0, // f32 spring_up_z;
+ 
+    // coord3d blendpos[4];
+    0,0,0,
+    0,0,0,
+    0,0,0,
+    0,0,0,
+ 
+    // coord3d blendlook[4];
+    0,0,-1.0f,
+    0,0,-1.0f,
+    0,0,-1.0f,
+    0,0,-1.0f,
+ 
+    // coord3d blendup[4];
+    0,1.0f,0,
+    0,1.0f,0,
+    0,1.0f,0,
+    0,1.0f,0,
+ 
+    0, // s32 curblendpos;
+    0, // f32 dampt;
+    1.0f, // f32 blendscale;
+    1.0f, // f32 blendscale1;
+    0, // s32 sideflag;
+    0, // f32 weapon_theta_displacement;
+    0, // f32 weapon_verta_displacement;
+    0, // s32 field_A24;
+    0, // f32 gunofs2_x;
+    0, // f32 gunofs2_y;
+    0, // f32 gunofs2_z;
+    0, // f32 field_A34;
+    0, // f32 field_A38;
+    0, // f32 field_A3C;
+    1000.0f, // f32 field_A40;
+    NULL, // ALSoundState * audioHandle;
+    0, // s32 field_A48;
+    0, // s32 field_A4C;
+    0, // s32 field_A50;
+ 
+    // // struct BeamRecord {
+    {
+        0xff, //     s8      unk00;
+        0, //     s8      item_id; // type ITEM_IDS
+        0, //     char    unk02;
+        0, //     char    unk03;
+ 
+        //     coord3d pos;
+        0,0,0,
+ 
+        //     /**
+        //     * Offset 0x10
+        //     */
+        //     struct coord3d delta;
+        0,0,0,
+ 
+        0, //     f32     unk1c;
+ 
+        0, //     f32     unk20;
+        0, //     f32     unk24;
+        0 //     f32     unk28;
+    },
+    // // }
+ 
+    0, // f32 noise;
+    0, // f32 field_A84;
+    0, // f32 field_A88;
+    0, // s32 field_A8C;
+    NULL, // ObjectRecord* rocket;
+    0, // s32 firedrocket;
+    0, // gunmtx_camspace.m[0][0];
+    0, // gunmtx_camspace.m[0][1];
+    0, // gunmtx_camspace.m[0][2];
+    0, // gunmtx_camspace.m[0][3];
+    0, // gunmtx_camspace.m[1][0];
+    0, // gunmtx_camspace.m[1][1];
+    0, // gunmtx_camspace.m[1][2];
+    0, // gunmtx_camspace.m[1][3];
+    0, // gunmtx_camspace.m[2][0];
+    0, // gunmtx_camspace.m[2][1];
+    0, // gunmtx_camspace.m[2][2];
+    0, // gunmtx_camspace.m[2][3];
+    0, // gunmtx_camspace.m[3][0];
+    0, // gunmtx_camspace.m[3][1];
+    0, // gunmtx_camspace.m[3][2];
+    0, // gunmtx_camspace.m[3][3];
+ 
+    // offset 0xad8
+    // Mtxf throw_item_pos_related;
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+ 
+    // offset 0xb18
+    // Mtxf throw_item_pos_related_prev;
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,0,
+ 
+    // coord3d field_B58;
+    0,0,0,
+ 
+    0, // f32 field_B64;
+    0, // s32 field_B68;
+    0, // s32 field_B6C;
+    0, // s32 field_B70;
+    0, // Mtxf * mtxlist;
+    0, // s32 field_B78;
+    0, // s32 field_B7C;
+    0, // s32 field_B80;
+    0, // s32 field_B84;
+    0, // s32 modeldatas;
+    0, // s32 field_B8C;
+    0, // s32 field_B90;
+    0, // s32 field_B94;
+    0, // s32 field_B98;
+    0, // s32 field_B9C;
+    0, // s32 field_BA0;
+    0, // s32 field_BA4;
+    0, // s32 field_BA8;
+    0, // s32 field_BAC;
+    0, // s32 field_BB0;
+    0, // s32 field_BB4;
+    0, // s32 field_BB8;
+    0, // s32 field_BBC;
+    0, // s32 field_BC0;
+    0, // s32 field_BC4;
+    0, // s32 field_BC8;
+    0, // s32 field_BCC;
+    0, // s32 field_BD0;
+    0, // s32 field_BD4;
+    0, // s32 field_BD8;
+    0, // s32 field_BDC;
+    0, // s32 field_BE0;
+    0, // s32 field_BE4;
+    0, // s32 field_BE8;
+    0, // s32 field_BEC;
+    0, // s32 field_BF0;
+    0, // s32 field_BF4;
+    0, // s32 field_BF8;
+    0, // s32 field_BFC;
+    0, // s32 field_C00;
+    0, // s32 field_C04;
+    0, // s32 volley;  // Number of bullets discharged in a row. For pistols, it's always 1 even if the fire button is held.
+    // coord3d item_related;
+    0,0,0
+};
+
+
+void playerInitHands(void)
+{
+    s32 i;
+    struct hand sp24;
+
+    sp24 = hand_data_dummy;
+
+    g_CurrentPlayer->ptr_hand_weapon_buffer[GUNRIGHT] = mempAlloc(size_item_buffer[0], MEMPOOL_STAGE);
+
+    if (!isMpGame())
+    {
+        g_CurrentPlayer->ptr_hand_weapon_buffer[GUNLEFT] = mempAlloc(size_item_buffer[1], MEMPOOL_STAGE);
+    }
+
+    g_CurrentPlayer->hand_invisible[GUNRIGHT] = 0;
+    g_CurrentPlayer->hand_invisible[GUNLEFT] = 0;
+    g_CurrentPlayer->hand_item[GUNRIGHT] = ITEM_UNARMED;
+    g_CurrentPlayer->hand_item[GUNLEFT] = ITEM_UNARMED;
+    g_CurrentPlayer->field_2A44[GUNRIGHT] = -1;
+    g_CurrentPlayer->field_2A44[GUNLEFT] = -1;
+    g_CurrentPlayer->lock_hand_model[GUNRIGHT] = 0;
+    g_CurrentPlayer->lock_hand_model[GUNLEFT] = 0;
+
+    g_CurrentPlayer->hands[0] = sp24;
+    g_CurrentPlayer->hands[1] = sp24;
+
+    for (i=0; i<30; i++)
+    {
+        g_CurrentPlayer->ammoheldarr[i] = 0;
+    }
+
+    for (i=0; i<7; i++)
+    {
+        g_playerPerm->shot_count[i] = 0;
+    }
+
+    g_playerPerm->killed_civilians = 0;
+    g_playerPerm->kill_count = 0;
+    g_playerPerm->killed_gg_owner_count = 0;
+    g_CurrentPlayer->deathcount = 0;
+    g_CurrentPlayer->num_suicides = 0;
+    g_CurrentPlayer->gunposamplitude = 1.0f;
+    g_CurrentPlayer->gunxamplitude = 1.0f;
+    g_CurrentPlayer->trigger_released = 0;
+    g_CurrentPlayer->trigger_down = 0;
+    g_CurrentPlayer->prev_trigger_down = 0;
+    g_CurrentPlayer->z_trigger_timer = 0;
+    g_CurrentPlayer->current_trigger_hand = 0;
+    g_CurrentPlayer->tileColor.rgba[0] = 0xFF;
+    g_CurrentPlayer->tileColor.rgba[1] = 0xFF;
+    g_CurrentPlayer->tileColor.rgba[2] = 0xFF;
+    g_CurrentPlayer->tileColor.rgba[3] = 0;
+    g_CurrentPlayer->resetshadecol = TRUE;
+    g_CurrentPlayer->aimtype = 0;
+    g_CurrentPlayer->crosshair_angle.f[0] = 0.0f;
+    g_CurrentPlayer->crosshair_angle.f[1] = 0.0f;
+    g_CurrentPlayer->crosshair_x_pos = 0.0f;
+    g_CurrentPlayer->crosshair_y_pos = 0.0f;
+    g_CurrentPlayer->guncrossdamp = 0.9f;
+    g_CurrentPlayer->field_FFC.f[0] = 0.0f;
+    g_CurrentPlayer->field_FFC.f[1] = 0.0f;
+    g_CurrentPlayer->gun_azimuth_angle = 0.0f;
+    g_CurrentPlayer->gun_azimuth_turning = 0.0f;
+    g_CurrentPlayer->gunaimdamp = 0.9f;
+    g_CurrentPlayer->field_1010.f[0] = 0.0f;
+    g_CurrentPlayer->field_1010.f[1] = -3.1415927f;
+    g_CurrentPlayer->field_1010.f[2] = 0.0f;
+    g_CurrentPlayer->copiedgoldeneye = FALSE;
+    g_CurrentPlayer->magnetattracttime = -1;
+    g_CurrentPlayer->gunsync = 0.0f;
+    g_CurrentPlayer->syncchange = 0.0f;
+    g_CurrentPlayer->synccount = 0.0f;
+    g_CurrentPlayer->syncoffset = 0;
+    g_CurrentPlayer->field_107C = 0.0f;
+    g_CurrentPlayer->field_1080 = 0.0f;
+    bgunCalculateBlend(GUNRIGHT);
+    bgunCalculateBlend(GUNRIGHT);
+    bgunCalculateBlend(GUNRIGHT);
+    bgunCalculateBlend(GUNLEFT);
+    bgunCalculateBlend(GUNLEFT);
+    bgunCalculateBlend(GUNLEFT);
+    g_CurrentPlayer->gunammooff = FALSE;
+    g_CurrentPlayer->gunsightmode = 2; //GUNSIGHTREASON_AIMING
+    g_CurrentPlayer->sniper_zoom = sniperrifle_stats.Zoom;
+    g_CurrentPlayer->camera_zoom = camera_stats.Zoom;
+}
+
+
+void playersStoreFavouriteWeapons(void) {
+    int right_hand;
+    int left_hand;
+    int player_count;
+    int current_player;
+    int player;
+
+    player_count = getPlayerCount();
+    current_player = playerGetCurrentNum();
+
+    for (player = 0; player < player_count; player++) {
+        playerSetCurrent(player);
+        bondinvGetWeaponOfChoice(&right_hand, &left_hand);
+        store_favorite_weapon_current_player(right_hand, left_hand);
+    }
+
+    playerSetCurrent(current_player);
 }

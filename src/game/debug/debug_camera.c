@@ -172,7 +172,7 @@ void debugFreeCamera(s8 joyX, s8 joyY, u16 joyBtns)
 
     previousButtons = joyBtns;
 
-    set_cur_player_fovy(FOV_Y_F);
+    playerSetFovY(FOV_Y_F);
 
     debugCameraStateCounter++;
     if (debugCameraStateCounter == 1)
@@ -185,7 +185,7 @@ void debugFreeCamera(s8 joyX, s8 joyY, u16 joyBtns)
 
     if (debugCameraStateCounter == 4)
     {
-        solo_char_load();
+        playerLoadBody();
     }
 }
 
@@ -202,7 +202,7 @@ coord3d debugCameraPreviousPosition = {0.0f,0.0f,0.0f};
 * Address: 0x7F091580
 */
 Gfx * sub_GAME_7F091580(Gfx * arg0) {
-    bondviewUpdateCameraMatrices(&debugCameraPosition, &debugCameraForward, &debugCameraUp);
+    camUpdateMatrices(&debugCameraPosition, &debugCameraForward, &debugCameraUp);
     return arg0;
 }
 
@@ -228,7 +228,7 @@ void setDebugCameraScale(float scale)
 */
 void initializeDebugCameraPosition(void)
 {
-    coord3d *pos = bondviewGetCurrentPlayersPosition();
+    coord3d *pos = playerGetPos();
     f32      r   = M_TAU_F - bondviewGetPlayerYawRadians();
     f32      x   = ((debugCameraPosition.x - pos->x) * cosf(r)) + ((debugCameraPosition.x - pos->x) * sinf(r));
     f32      y   = debugCameraPosition.y - pos->y;
@@ -260,7 +260,7 @@ void updateDebugCameraWorldPosition(void)
 */
 void resetDebugCameraToPlayerPosition(void)
 {
-    coord3d *pos = bondviewGetCurrentPlayersPosition();
+    coord3d *pos = playerGetPos();
     debugCameraPosition.x = pos->x;
     debugCameraPosition.y = pos->y;
     debugCameraPosition.z = pos->z;

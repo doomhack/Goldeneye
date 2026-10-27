@@ -468,7 +468,7 @@ Gfx *propRender(Gfx * gdl, PropRecord *prop, s32 withalpha)
     }
     else if (type == PROP_TYPE_VIEWER)
     {
-        gdl = bondviewRenderProp(prop, gdl, withalpha);
+        gdl = playerRenderProp(prop, gdl, withalpha);
     }
 
     return gdl;
@@ -632,7 +632,7 @@ void propExecuteTickOperation(PropRecord *prop, TICKOP op)
         propDisable(prop);
         objDetach(prop);
         objFreeEmbedmentOrProjectile(prop);
-        propReparent(prop, getCurrentPlayerProp());
+        propReparent(prop, currentPlayerGetProp());
     }
 }
 
@@ -917,9 +917,9 @@ void propsTickOnce(void)
             if (prop->type == PROP_TYPE_VIEWER)
             {
                 s32 playernum;
-                playernum = getPlayerPointerIndex(prop);
+                playernum = playerGetIndexForProp(prop);
                 gunAdvanceBeamTimer(&g_playerPointers[playernum]->hands[0].weapon_beam);
-                playernum = getPlayerPointerIndex(prop);
+                playernum = playerGetIndexForProp(prop);
                 gunAdvanceBeamTimer(&g_playerPointers[playernum]->hands[1].weapon_beam);
 
                 // Update MP character bullet tracers.
@@ -1030,7 +1030,7 @@ void propsTickPerPlayer(void)
 		prop = propprev;
     }
 
-    if (get_player_position_in_shuffled(get_cur_playernum()) == 0)
+    if (playerGetShuffledIndex(playerGetCurrentNum()) == 0)
     {
         alarmGasTimerTick();
         aiSoundsTick();
@@ -1096,7 +1096,7 @@ void propGetCollisionPolygon(PropRecord *prop, struct rect4f **polygon, s32 *edg
     }
     else if (prop->type == PROP_TYPE_VIEWER)
     {
-        bondviewGetPropHeightRelatedValues(prop, polygon, edges, top, bottom);
+        playerGetPropBounds(prop, polygon, edges, top, bottom);
     }
     else if (prop->type == PROP_TYPE_WEAPON)
     {
@@ -1235,7 +1235,7 @@ void propGetCollisionRadius(PropRecord *arg0, f32 *collision_radius, f32 *height
 
     if (arg0->type == PROP_TYPE_VIEWER)
     {
-        bondviewGetCollisionRadius(arg0, collision_radius, height, arg3);
+        playerGetCollisionSize(arg0, collision_radius, height, arg3);
         return;
     }
 
@@ -1257,7 +1257,7 @@ f32 propGetGroundY(PropRecord *arg0)
 
     if (arg0->type == PROP_TYPE_VIEWER)
     {
-        return bondviewGetPlayerStanHeight(g_playerPointers[getPlayerPointerIndex(arg0)]);
+        return playerGetStanHeight(g_playerPointers[playerGetIndexForProp(arg0)]);
     }
 
     return 0.0f;
@@ -1276,7 +1276,7 @@ void propSetMoving(PropRecord *prop, bool unset) //#MATCH
     }
     else if (prop->type == PROP_TYPE_VIEWER)
     {
-        bondviewUpdateGuardTankFlagsRelated(prop, unset);
+        playerSetMoving(prop, unset);
     }
     else if ((prop->type == PROP_TYPE_OBJ) || (prop->type == PROP_TYPE_DOOR) || (prop->type == PROP_TYPE_WEAPON))
     {
@@ -1295,7 +1295,7 @@ void propsTickPickups(void)
     PropRecord *propprev;
     bool isCollected = FALSE;
 
-    if (!isBondInTank() && !g_PlayerInvincible)
+    if (!playerIsInTank() && !g_PlayerInvincible)
     {
         //for each prop in setup
         for (prop = propsGetActiveTail(); prop != NULL; prop = propprev)
@@ -1362,30 +1362,30 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
      * Define a central auto-aim acceptance region.
      * The sweet spot is 65% vertically in favor of the top of the screen and 50% horizontally.
      */
-    autoaim_top = getPlayer_c_screentop() + getPlayer_c_screenheight() * 0.175f;
-    autoaim_bottom = getPlayer_c_screentop() + getPlayer_c_screenheight() * 0.825f;
-    autoaim_left = getPlayer_c_screenleft() + getPlayer_c_screenwidth() * 0.25f;
-    autoaim_right = getPlayer_c_screenleft() + getPlayer_c_screenwidth() * 0.75f;
+    autoaim_top = camGetScreenTop() + camGetScreenHeight() * 0.175f;
+    autoaim_bottom = camGetScreenTop() + camGetScreenHeight() * 0.825f;
+    autoaim_left = camGetScreenLeft() + camGetScreenWidth() * 0.25f;
+    autoaim_right = camGetScreenLeft() + camGetScreenWidth() * 0.75f;
 
     score = -2.0f;
 
-    transform3Dto2DCoords(aimpos, (coord3d*)aim_screen);
+    camViewToScreen(aimpos, (coord3d*)aim_screen);
     testpos.x = world_xbounds[0];
     testpos.y = aimpos->y;
     testpos.z = aimpos->z;
-    transform3Dto2DCoords(&testpos, (coord3d*)screen_left_edge);
+    camViewToScreen(&testpos, (coord3d*)screen_left_edge);
     testpos.x = world_xbounds[1];
     testpos.y = aimpos->y;
     testpos.z = aimpos->z;
-    transform3Dto2DCoords(&testpos, (coord3d*)screen_right_edge);
+    camViewToScreen(&testpos, (coord3d*)screen_right_edge);
     testpos.x = aimpos->x;
     testpos.y = world_ybounds[1];
     testpos.z = aimpos->z;
-    transform3Dto2DCoords(&testpos, (coord3d*)screen_top_edge);
+    camViewToScreen(&testpos, (coord3d*)screen_top_edge);
     testpos.x = aimpos->x;
     testpos.y = world_ybounds[0];
     testpos.z = aimpos->z;
-    transform3Dto2DCoords(&testpos, (coord3d*)screen_bottom_edge);
+    camViewToScreen(&testpos, (coord3d*)screen_bottom_edge);
 
     if (screen_bottom_edge[1] >= autoaim_top && autoaim_bottom >= screen_top_edge[1])
     {
@@ -1405,8 +1405,8 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
                     horizontal_tolerance = horizontal_tolerance * difficulty;
                 }
 
-                passes_horizontal_check = getPlayer_c_screenleft() + 0.5f * getPlayer_c_screenwidth() >= (screen_left_edge[0] + screen_right_edge[0]) * 0.5f - horizontal_tolerance
-                    && getPlayer_c_screenleft() + 0.5f * getPlayer_c_screenwidth() <= (screen_left_edge[0] + screen_right_edge[0]) * 0.5f + horizontal_tolerance
+                passes_horizontal_check = camGetScreenLeft() + 0.5f * camGetScreenWidth() >= (screen_left_edge[0] + screen_right_edge[0]) * 0.5f - horizontal_tolerance
+                    && camGetScreenLeft() + 0.5f * camGetScreenWidth() <= (screen_left_edge[0] + screen_right_edge[0]) * 0.5f + horizontal_tolerance
                     && autoaim_left <= aim_screen[0]
                     && autoaim_right >= aim_screen[0];
             }
@@ -1418,10 +1418,10 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
 
         if (passes_horizontal_check)
         {
-            playerprop = getCurrentPlayerProp();
+            playerprop = currentPlayerGetProp();
             line_stan = playerprop->stan;
-            player_los_height = bondviewGetPlayerDuckingHeightRelated(g_CurrentPlayer);
-            bondviewUpdateGuardTankFlagsRelated(playerprop, FALSE);
+            player_los_height = playerGetEyeHeight(g_CurrentPlayer);
+            playerSetMoving(playerprop, FALSE);
 
             // Can auto-aim see the target?
             if ((stanTestLineUnobstructed(&line_stan, playerprop->pos.f[0], playerprop->pos.f[2], targetprop->pos.f[0], targetprop->pos.f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER, player_los_height, player_los_height, 0.0f, 1.0f) != 0))
@@ -1460,24 +1460,24 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
                     /** If the screen's center x-coord overlaps the target's horizontal span, give it the best possible score of 1.0.
                      *  If this happens, this function's caller, autoaimUpdateTarget, treats this as the winning prop and stops searching.
                      */
-                    if (getPlayer_c_screenleft() + 0.5f * getPlayer_c_screenwidth() >= screen_left_edge[0] && getPlayer_c_screenleft() + 0.5f * getPlayer_c_screenwidth() <= screen_right_edge[0])
+                    if (camGetScreenLeft() + 0.5f * camGetScreenWidth() >= screen_left_edge[0] && camGetScreenLeft() + 0.5f * camGetScreenWidth() <= screen_right_edge[0])
                     {
                         score = 1.0f;
                     }
                     // If the target is towards the left side of the screen, penalize it based on how far towards the left.
-                    else if (getPlayer_c_screenleft() + 0.5f * getPlayer_c_screenwidth() >= screen_left_edge[0])
+                    else if (camGetScreenLeft() + 0.5f * camGetScreenWidth() >= screen_left_edge[0])
                     {
-                        score = 1.0f - ((getPlayer_c_screenleft() + 0.5f * getPlayer_c_screenwidth()) - screen_right_edge[0]) / horizontal_tolerance;
+                        score = 1.0f - ((camGetScreenLeft() + 0.5f * camGetScreenWidth()) - screen_right_edge[0]) / horizontal_tolerance;
                     }
                     // If the target is towards the right side of the screen, penalize it based on how far towards the right.
                     else
                     {
-                        score = 1.0f - (screen_left_edge[0] - (getPlayer_c_screenleft() + 0.5f * getPlayer_c_screenwidth())) / horizontal_tolerance;
+                        score = 1.0f - (screen_left_edge[0] - (camGetScreenLeft() + 0.5f * camGetScreenWidth())) / horizontal_tolerance;
                     }
                 }
             }
 
-            bondviewUpdateGuardTankFlagsRelated(playerprop, TRUE);
+            playerSetMoving(playerprop, TRUE);
         }
     }
 
@@ -1524,7 +1524,7 @@ void autoaimUpdateTarget(void)
             if ((candidate_prop->type != PROP_TYPE_CHR)
                     && ((candidate_prop->type != PROP_TYPE_VIEWER)
                         || (candidate_prop->obj == NULL)
-                        || (getPlayerPointerIndex(candidate_prop) == get_cur_playernum())))
+                        || (playerGetIndexForProp(candidate_prop) == playerGetCurrentNum())))
             {
                 continue;
             }
@@ -1537,7 +1537,7 @@ void autoaimUpdateTarget(void)
                 continue;
             }
 
-            if (counterOpIsGuardPlayer(get_cur_playernum()) && (candidate_prop->type != PROP_TYPE_VIEWER))
+            if (counterOpIsGuardPlayer(playerGetCurrentNum()) && (candidate_prop->type != PROP_TYPE_VIEWER))
             {
                 continue;
             }
@@ -1580,17 +1580,17 @@ void autoaimUpdateTarget(void)
         // Fake but needed for matching.
         if (best_screen_aim.x > 1.0f);
 
-        bondviewUpdateYAutoAimTime(best_prop, ((best_screen_aim.y - getPlayer_c_screentop()) / (getPlayer_c_screenheight() * 0.5f)) - 1.0f);
+        playerUpdateAutoAimY(best_prop, ((best_screen_aim.y - camGetScreenTop()) / (camGetScreenHeight() * 0.5f)) - 1.0f);
 
         if (currentPlayerGetXAutoAimEnabledRedirect() != FALSE)
         {
-            bondviewUpdateXAutoAimTime(best_prop, ((best_screen_aim.x - getPlayer_c_screenleft()) / (getPlayer_c_screenwidth() * 0.5f)) - 1.0f);
+            playerUpdateAutoAimX(best_prop, ((best_screen_aim.x - camGetScreenLeft()) / (camGetScreenWidth() * 0.5f)) - 1.0f);
         }
     }
     else
     {
-        bondviewUpdateYAutoAimTime(NULL, 0.0f);
-        bondviewUpdateXAutoAimTime(NULL, 0.0f);
+        playerUpdateAutoAimY(NULL, 0.0f);
+        playerUpdateAutoAimX(NULL, 0.0f);
     }
 }
 
@@ -2861,25 +2861,25 @@ void projectRectCornersTo2D(struct coord3d *center, struct coord2d *arg1, struct
     sp24.f[0] = arg1->f[0];
     sp24.f[1] = center->f[1];
     sp24.f[2] = center->f[2];
-    transform3Dto2DCoords(&sp24, &tout);
+    camViewToScreen(&sp24, &tout);
     arg3->f[0] = tout.f[0];
 
     sp24.f[0] = arg1->f[1];
     sp24.f[1] = center->f[1];
     sp24.f[2] = center->f[2];
-    transform3Dto2DCoords(&sp24, &tout);
+    camViewToScreen(&sp24, &tout);
     arg4->f[0] = tout.f[0];
 
     sp24.f[0] = center->f[0];
     sp24.f[1] = arg2->f[1];
     sp24.f[2] = center->f[2];
-    transform3Dto2DCoords(&sp24, &tout);
+    camViewToScreen(&sp24, &tout);
     arg3->f[1] = tout.f[1];
 
     sp24.f[0] = center->f[0];
     sp24.f[1] = arg2->f[0];
     sp24.f[2] = center->f[2];
-    transform3Dto2DCoords(&sp24, &tout);
+    camViewToScreen(&sp24, &tout);
     arg4->f[1] = tout.f[1];
 }
 

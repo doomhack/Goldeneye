@@ -1502,7 +1502,7 @@ void setupCreateProps(enum LEVELID stageId)
 
         for (i8 = 0; i8 < getPlayerCount(); i8++)
         {
-            set_cur_player(i8);
+            playerSetCurrent(i8);
             alloc_additional_item_slots(setupCountPropdefs(PROPDEF_LINK));
         }
 

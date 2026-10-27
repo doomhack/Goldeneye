@@ -2236,7 +2236,7 @@ void chrPlayHurtSound(ChrRecord *self)
 
     if (prop->type == PROP_TYPE_VIEWER)
     {
-        if (g_playerPointers[getPlayerPointerIndex(prop)]->bonddead != FALSE)
+        if (g_playerPointers[playerGetIndexForProp(prop)]->bonddead != FALSE)
         {
             return;
         }
@@ -2254,7 +2254,7 @@ void chrPlayHurtSound(ChrRecord *self)
         }
         else
         {
-            if (get_player_mp_char_gender(getPlayerPointerIndex(self->prop)) != FEMALE)
+            if (get_player_mp_char_gender(playerGetIndexForProp(self->prop)) != FEMALE)
             {
                 male = TRUE;
             }
@@ -2313,7 +2313,7 @@ coord3d D_80030A44 = {0, 0, 0};
 
 /**
  * Counter-op: damage one player's shot does to the other, in the units of
- * record_damage_kills (a player's full health is 1).
+ * playerTakeDamage (a player's full health is 1).
  *
  * The guard player is as tough as the guard they took over: Bond's shot,
  * with its body part and difficulty multipliers already in damage, is
@@ -2341,7 +2341,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
     s32 padd;
 
     // Counter-op: the guard player's shots pass through other guards.
-    if (isPlayer && counterOpIsGuardPlayer(get_cur_playernum()) && (myprop->type != PROP_TYPE_VIEWER))
+    if (isPlayer && counterOpIsGuardPlayer(playerGetCurrentNum()) && (myprop->type != PROP_TYPE_VIEWER))
     {
         return FALSE;
     }
@@ -2501,7 +2501,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
         }
         else if (self->prop->type == PROP_TYPE_VIEWER)
         {
-            playerNum = get_cur_playernum();
+            playerNum = playerGetCurrentNum();
 
             if (g_CounterOpMode)
             {
@@ -2512,7 +2512,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
                 damageToCause *= 0.125f;
             }
 
-            set_cur_player(getPlayerPointerIndex(self->prop));
+            playerSetCurrent(playerGetIndexForProp(self->prop));
 
             if (g_CounterOpMode && counterOpIsGuardPlayer(playerNum))
             {
@@ -2520,17 +2520,17 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
                 // this shot took.
                 f32 before = g_CurrentPlayer->bondhealth + g_CurrentPlayer->bondarmour;
 
-                record_damage_kills(damageToCause, vector->x, vector->z, playerNum, 1);
+                playerTakeDamage(damageToCause, vector->x, vector->z, playerNum, 1);
                 f32 after = g_CurrentPlayer->bondhealth + g_CurrentPlayer->bondarmour;
 
                 counterOpNoteDamageToBond((before - ((after > 0.0f) ? after : 0.0f)) * 100.0f);
             }
             else
             {
-                record_damage_kills(damageToCause, vector->x, vector->z, playerNum, 1);
+                playerTakeDamage(damageToCause, vector->x, vector->z, playerNum, 1);
             }
 
-            set_cur_player(playerNum);
+            playerSetCurrent(playerNum);
         }
         else
         {
@@ -3789,9 +3789,9 @@ s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *arg1, StandTile *arg2)
 
         if ((flags & 1) != 0)
         {
-            bondviewUpdateGuardTankFlagsRelated(g_CurrentPlayer->prop, 0);
+            playerSetMoving(g_CurrentPlayer->prop, 0);
 
-            if (bondviewGetVisibleToGuardsFlag() != 0)
+            if (playerGetVisibleToGuards() != 0)
             {
                 if ((stanTestLineUnobstructed(&stan, arg1->x, arg1->f[2], sp3C->x, sp3C->f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, arg1->f[1], arg1->f[1], sp3C->f[1], sp3C->f[1]) != 0) && (stan == sp40))
                 {
@@ -3800,7 +3800,7 @@ s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *arg1, StandTile *arg2)
                 }
             }
 
-            bondviewUpdateGuardTankFlagsRelated(g_CurrentPlayer->prop, 1);
+            playerSetMoving(g_CurrentPlayer->prop, 1);
         }
         else if ((flags & 4) != 0)
         {
@@ -3837,14 +3837,14 @@ bool chrCanSeeBond(ChrRecord *self)
     StandTile *mystan;
     f32 myheight;
 
-    if (bondviewGetVisibleToGuardsFlag())
+    if (playerGetVisibleToGuards())
     {
         myprop   = self->prop;
-        bondprop = getCurrentPlayerProp();
+        bondprop = currentPlayerGetProp();
         myheight = self->chrheight - 20.0f;
 
         chrSetMoving(self, FALSE);
-        bondviewUpdateGuardTankFlagsRelated(g_CurrentPlayer->prop, 0);
+        playerSetMoving(g_CurrentPlayer->prop, 0);
 
         mystan = myprop->stan;
 
@@ -3855,7 +3855,7 @@ bool chrCanSeeBond(ChrRecord *self)
         }
 
         chrSetMoving(self, TRUE);
-        bondviewUpdateGuardTankFlagsRelated(g_CurrentPlayer->prop, 1);
+        playerSetMoving(g_CurrentPlayer->prop, 1);
     }
 
     return pass;
@@ -3930,10 +3930,10 @@ s32 chrHasLineOfSightToPlayer(ChrRecord *self)
     s32 ret;
 
     sp3C = self->prop;
-    bond_prop = getCurrentPlayerProp();
+    bond_prop = currentPlayerGetProp();
     ret = 0;
 
-    bondviewUpdateGuardTankFlagsRelated(g_CurrentPlayer->prop, 0);
+    playerSetMoving(g_CurrentPlayer->prop, 0);
 
     bond_stan = bond_prop->stan;
 
@@ -3953,7 +3953,7 @@ s32 chrHasLineOfSightToPlayer(ChrRecord *self)
         ret = 1;
     }
 
-    bondviewUpdateGuardTankFlagsRelated(g_CurrentPlayer->prop, 1);
+    playerSetMoving(g_CurrentPlayer->prop, 1);
 
     return ret;
 }
@@ -4079,7 +4079,7 @@ void chrSetTargetToPlayer(ChrRecord *self)
 {
     PropRecord *temp_v0;
 
-    temp_v0 = getCurrentPlayerProp();
+    temp_v0 = currentPlayerGetProp();
     self->lastseetarget60 = g_GlobalTimer;
     self->lastknowntargetpos.f[0] = temp_v0->pos.f[0];
     self->lastknowntargetpos.f[1] = temp_v0->pos.f[1];
@@ -4099,7 +4099,7 @@ void chrAlertGuardToPlayerPosition(ChrRecord *self)
 {
     PropRecord *temp_v0;
 
-    temp_v0 = getCurrentPlayerProp();
+    temp_v0 = currentPlayerGetProp();
     self->hidden |= CHRHIDDEN_ALERT_GUARD_RELATED;
     self->lastheartarget60 = g_GlobalTimer;
     self->lastknowntargetpos.f[0] = temp_v0->pos.x;
@@ -4157,7 +4157,7 @@ bool chrCheckTargetInSight(ChrRecord *self)
     s32         distance;
 
     myprop               = self->prop;
-    bondprop             = getCurrentPlayerProp();
+    bondprop             = currentPlayerGetProp();
     myRadDirection       = modelGetRootRotY(self->model);
     //Note: x and z get swapped
     vec.z                = bondprop->pos.x - myprop->pos.x;
@@ -4254,7 +4254,7 @@ void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, vec3d *vec)
     PropRecord *player_prop;
 
     prop = self->prop;
-    player_prop = getCurrentPlayerProp();
+    player_prop = currentPlayerGetProp();
     dx = player_prop->pos.f[0] - prop->pos.f[0];
     dz = player_prop->pos.f[2] - prop->pos.f[2];
 
@@ -4400,7 +4400,7 @@ bool chrTrySidestep(ChrRecord *self)
     if (chrIsNotDeadOrShot(self))
     {
         myprop                = self->prop;
-        bondprop              = getCurrentPlayerProp();
+        bondprop              = currentPlayerGetProp();
         myRadDirection        = modelGetRootRotY(self->model);
         myRadDirectionToBond  = mathAtan2(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
         radChangeToFaceBond   = myRadDirectionToBond - myRadDirection;
@@ -4456,7 +4456,7 @@ bool chrTryJumpOut(ChrRecord *self)
     if (chrIsNotDeadOrShot(self))
     {
         myprop                = self->prop;
-        bondprop              = getCurrentPlayerProp();
+        bondprop              = currentPlayerGetProp();
         myRadDirection        = modelGetRootRotY(self->model);
         myRadDirectionToBond  = mathAtan2(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
         radChangeToFaceBond   = myRadDirectionToBond - myRadDirection;
@@ -4550,7 +4550,7 @@ bool chrTryAttackWalk(ChrRecord *self)
     if (chrIsNotDeadOrShot(self))
     {
         myprop   = self->prop;
-        bondprop = getCurrentPlayerProp();
+        bondprop = currentPlayerGetProp();
 
         if (
             (chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT) || chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))
@@ -4586,7 +4586,7 @@ bool chrTryAttackRun(ChrRecord *self)
     if (chrIsNotDeadOrShot(self))
     {
         myprop   = self->prop;
-        bondprop = getCurrentPlayerProp();
+        bondprop = currentPlayerGetProp();
 
         if (
             (chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT) || chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))
@@ -4628,7 +4628,7 @@ bool chrTryAttackRoll(ChrRecord *self)
     if (chrIsNotDeadOrShot(self))
     {
         myprop   = self->prop;
-        bondprop = getCurrentPlayerProp();
+        bondprop = currentPlayerGetProp();
 
         if (chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT) || chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))
         {
@@ -5630,7 +5630,7 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
         else
         {
             PropRecord* p;
-            p = getCurrentPlayerProp();
+            p = currentPlayerGetProp();
             dist = chrGetAngleToPos(self, &p->pos);
         }
 
@@ -5737,7 +5737,7 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
 
     if ((attack_type & TARGET_FRONT_OF_CHR) == 0)
     {
-        player_prop = getCurrentPlayerProp();
+        player_prop = currentPlayerGetProp();
         self_prop = self->prop;
         current_player_pos = &player_prop->pos;
 
@@ -5765,7 +5765,7 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
 
         if (attack_type & TARGET_BOND > 0)
         {
-            ducking_height = bondviewGetPlayerDuckingHeightRelated(g_CurrentPlayer);
+            ducking_height = playerGetEyeHeight(g_CurrentPlayer);
             if ((self->chrflags & CHRSTART_FORCENOBLOOD) != 0)
             {
                 if (((dx * dx) + (dy * dy) + (dz * dz)) < 160000.0f)
@@ -5879,7 +5879,7 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
                     spB8 = weapon_prop_model->obj->Switches[0]->Data;
                     mtxL2F(temp_a0, &spBC);
 
-                    mtx4MultAffineInPlace(currentPlayerGetMatrix10EC(), &spBC);
+                    mtx4MultAffineInPlace(camGetPrevViewToWorldMtxf(), &spBC);
 
                     spAC.f[0] = spB8[0];
                     spAC.f[1] = spB8[1];
@@ -5897,7 +5897,7 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
                 {
                     temp_a0 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[1], 0);
                     mtxL2F(temp_a0, &sp68);
-                    mtx4MultAffineInPlace(currentPlayerGetMatrix10EC(), &sp68);
+                    mtx4MultAffineInPlace(camGetPrevViewToWorldMtxf(), &sp68);
                     sp104.f[0] = sp68.m[3][0];
                     sp104.f[1] = sp68.m[3][1];
                     sp104.f[2] = sp68.m[3][2];
@@ -6236,7 +6236,7 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
     s32 padding; // unused
     s32 phi_v1;
 
-    player_prop = getCurrentPlayerProp();
+    player_prop = currentPlayerGetProp();
     self_prop = self->prop;
 
     dx = player_prop->pos.f[0] - self_prop->pos.f[0];
@@ -6265,7 +6265,7 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
     *arg1 = phi_v1;
     *arg2 = 0;
 
-    if ((bondviewGetIfCurrentPlayerDamageShowTime() == 0) && (phi_v1 != 0))
+    if ((playerIsShowingDamage() == 0) && (phi_v1 != 0))
     {
         temp_f0_3 = sqrtf(dxdydz_square);
 
@@ -6324,11 +6324,11 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
                 t2 *= 3.0f;
             }
 
-            bondviewCallRecordDamageKills(t2, subroty, -1, 1);
+            playerTakeDamageFromAngle(t2, subroty, -1, 1);
 
             self->shotbondsum = 0.0f;
 
-            if (bondviewGetIfCurrentPlayerDamageShowTime() != 0)
+            if (playerIsShowingDamage() != 0)
             {
                 *arg2 = 1;
             }
@@ -6373,7 +6373,7 @@ s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *arg2)
                 arg2->f[1] = spB8[1];
                 arg2->f[2] = spB8[2];
 
-                mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), temp_a0, &sp74);
+                mtx4MultAffine(camGetViewToWorldMtxf(), temp_a0, &sp74);
                 mtx4TransformVecInPlace(&sp74, arg2);
 
                 ret = 1;
@@ -6381,7 +6381,7 @@ s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *arg2)
             else if (weapon_prop_model->obj->Switches[1])
             {
                 temp_a0_2 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[1], 0);
-                mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), temp_a0_2, &sp68);
+                mtx4MultAffine(camGetViewToWorldMtxf(), temp_a0_2, &sp68);
 
                 arg2->f[0] = sp68.m[3][0];
                 arg2->f[1] = sp68.m[3][1];
@@ -6451,7 +6451,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
         sp27C = 0;
         sp278 = 0;
         prop_selfchr = weapon_prop->chr;
-        player_prop = getCurrentPlayerProp();
+        player_prop = currentPlayerGetProp();
         phi_v1 = 1;
 
         if (self->actiontype == ACT_ATTACK)
@@ -6724,7 +6724,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                         gunItemGetDestructionAmount(prop_selfchr->act_attack.attack_item),
                                         &sp258,
                                         prop_selfchr->act_attack.attack_item,
-                                        get_cur_playernum());
+                                        playerGetCurrentNum());
                                 }
                             }
                             else
@@ -7691,7 +7691,7 @@ void chrTickAttackWalk(ChrRecord *self)
 
     self_model = self->model;
     self_prop = self->prop;
-    player_prop = getCurrentPlayerProp();
+    player_prop = currentPlayerGetProp();
     self->act_attackwalk.clock_timer30 += g_ClockTimer;
     self->lastwalk60 = g_GlobalTimer;
 
@@ -9285,7 +9285,7 @@ static s32 coopChrTrySwitchToCloserPlayer(ChrRecord *self, s32 target)
             continue;
         }
 
-        set_cur_player(i);
+        playerSetCurrent(i);
 
         if (chrCanSeeBond(self))
         {
@@ -9307,7 +9307,7 @@ static s32 coopChrTrySwitchToCloserPlayer(ChrRecord *self, s32 target)
  */
 void coopChrShotByCurrentPlayer(ChrRecord *self)
 {
-    s32 player = get_cur_playernum();
+    s32 player = playerGetCurrentNum();
 
     if (!g_CoopMode || g_CounterOpMode || (self->prop == NULL) || (self->prop->type != PROP_TYPE_CHR) || (self->targetplayer == player)
         || g_CurrentPlayer->bonddead)
@@ -9351,7 +9351,7 @@ static void coopChrSelectTarget(ChrRecord *self)
     // acts for that player.
     if ((self->prop != NULL) && (self->prop->type == PROP_TYPE_VIEWER))
     {
-        target = getPlayerPointerIndex(self->prop);
+        target = playerGetIndexForProp(self->prop);
 
         if (target < 0)
         {
@@ -9423,7 +9423,7 @@ static void coopChrSelectTarget(ChrRecord *self)
     }
 
     self->targetplayer = target;
-    set_cur_player(target);
+    playerSetCurrent(target);
 }
 
 static void chrActionTickBody(ChrRecord *self);
@@ -9446,10 +9446,10 @@ void chrActionTick(ChrRecord *self)
         return;
     }
 
-    prevplayer = get_cur_playernum();
+    prevplayer = playerGetCurrentNum();
     coopChrSelectTarget(self);
     chrActionTickBody(self);
-    set_cur_player(prevplayer);
+    playerSetCurrent(prevplayer);
 }
 
 static void chrActionTickBody(ChrRecord *self)
@@ -9646,7 +9646,7 @@ f32 chrGetAngleToPos(ChrRecord *self, coord3d *pos)
 */
 f32 chrGetAngleToBond(ChrRecord *self)
 {
-    return chrGetAngleToPos(self, &getCurrentPlayerProp()->pos);
+    return chrGetAngleToPos(self, &currentPlayerGetProp()->pos);
 }
 
 
@@ -9698,7 +9698,7 @@ coord3d *chrGetChrOrPresetLocation(ChrRecord *self, s32 flags, s32 lookup_id, St
         return &preset_pad->pos;
     }
 
-    player_prop = getCurrentPlayerProp();
+    player_prop = currentPlayerGetProp();
     *stan = (StandTile *) player_prop->stan;
 
     return &player_prop->pos;
@@ -9712,7 +9712,7 @@ f32 chrGetAngleFromBond(ChrRecord *self)
 {
     f32 radBondHeading   = bondviewGetPlayerYawRadians();
     PropRecord *myprop   = self->prop;
-    PropRecord *bondprop = getCurrentPlayerProp();
+    PropRecord *bondprop = currentPlayerGetProp();
     f32 anglebetween     = mathAtan2(myprop->pos.x - bondprop->pos.x, myprop->pos.z - bondprop->pos.z);
     f32 radFromBond      = anglebetween - radBondHeading;
 
@@ -9737,7 +9737,7 @@ f32 chrGetDistanceToBond(ChrRecord *guardData)
     float zDiff;
 
     guardPosData = guardData->prop;
-    playerPosData = getCurrentPlayerProp();
+    playerPosData = currentPlayerGetProp();
     xDiff = playerPosData->pos.x - guardPosData->pos.x;
     yDiff = playerPosData->pos.y - guardPosData->pos.y;
     zDiff = playerPosData->pos.z - guardPosData->pos.z;
@@ -9919,7 +9919,7 @@ f32 chrGetDistanceFromBondToPad(ChrRecord *self, s32 padid)
     PropRecord *bondprop;
     PadRecord *pad;
 
-    bondprop = getCurrentPlayerProp();
+    bondprop = currentPlayerGetProp();
     padid    = chrResolvePadId(self, padid);
 
     if (isNotBoundPad(padid))
@@ -10150,7 +10150,7 @@ bool chrGoToBond(ChrRecord *self, SPEED speed)
 
     if (chrIsNotDeadOrShot(self) && (g_SeenBondRecentlyGuardCount < 10))
     {
-        bondprop = getCurrentPlayerProp();
+        bondprop = currentPlayerGetProp();
 
         if (chrGoToPos(self, &bondprop->pos, bondprop->stan, speed))
         {
@@ -10468,7 +10468,7 @@ bool chrSetPadPresetToWaypointInTargetQuadrant(ChrRecord *self, u8 quadrant)
     if ((quadrant == QUADRANT_2NDWPTOTARGET) || (quadrant == QUADRANT_20))
     {
         myprop               = self->prop;
-        bondprop             = getCurrentPlayerProp();
+        bondprop             = currentPlayerGetProp();
         myclosestwaypoint    = waypointFindNearPos(&myprop->pos, myprop->stan);
         bondsclosestwaypoint = waypointFindNearPos(&bondprop->pos, bondprop->stan);
 
@@ -10526,7 +10526,7 @@ bool chrSetPadPresetToWaypointInQuadrant(ChrRecord *self, u8 padnum)
     }
 
     sp1C           = bondviewGetPlayerYawRadians();
-    bondprop       = getCurrentPlayerProp();
+    bondprop       = currentPlayerGetProp();
     bondnearestpad = waypointFindInQuadrant(&bondprop->pos, bondprop->stan, sp1C, padnum);
 
     if (bondnearestpad >= 0)
@@ -10652,7 +10652,7 @@ s32 chrIsTargetNearlyInSight(ChrRecord *self)
     coord3d sp48;
     coord3d sp3C;
 
-    player_prop = getCurrentPlayerProp();
+    player_prop = currentPlayerGetProp();
     self_prop   = self->prop;
     stan        = self_prop->stan;
 
@@ -10891,7 +10891,7 @@ bool chrPlayerIsInPadRoom(ChrRecord *self, s32 padnum)
     PropRecord *bondprop;
     PadRecord  *pad;
 
-    bondprop = getCurrentPlayerProp();
+    bondprop = currentPlayerGetProp();
     padnum   = chrResolvePadId(self, padnum);
 
     if (isNotBoundPad(padnum))

@@ -19,6 +19,7 @@
 #include "game/menu/front.h"
 #include "game/player/bondinv.h"
 #include "game/player/player.h"
+#include "game/player/bondhead.h"
 #include "game/prop/propobj.h"
 #include "game/prop/explosion.h"
 #include "game/chr/chrai.h"
@@ -45,10 +46,8 @@
 #include "game/nav/waypoint.h"
 #include "game/player/ejectedcartridges.h"
 #include "game/player/inititemslots.h"
-#include "game/player/initBondDATA.h"
 #include "game/player/bondview.h"
 #include "game/player/bondview_r.h"
-#include "game/player/initBondDATAdefaults.h"
 #include "game/gfx/zbuf.h"
 #include "game/nav/stan.h"
 #include "game/player/gun.h"
@@ -496,17 +495,17 @@ void lvlStageLoad(s32 stage)
 
         for (s0 = 0; s0 < getPlayerCount(); s0++)
         {
-            set_cur_player(s0);
+            playerSetCurrent(s0);
             reinit_gunheld_totaltime();
-            init_player_BONDdata_stats();
-            init_player_BONDdata();
-            bondviewLoadSetupIntroSection();
-            bondviewPlayerBeginLife();
-            sets_a_bunch_of_BONDdata_values_to_default();
+            playerInitHands();
+            playerResetLife();
+            playerApplyIntro();
+            playerStartNewLife();
+            bheadInit();
             disableOnscreenCheatText();
         }
 
-        set_cur_player(0);
+        playerSetCurrent(0);
     }
 
     /**
@@ -765,7 +764,7 @@ Gfx* lvlRender(Gfx* DL)
 
         for(i = 0; i < pcount; i++)
         {
-            set_cur_player(get_nth_player_from_shuffled(i));
+            playerSetCurrent(playerGetShuffled(i));
             coopTankBeginPlayer();
 
             viSetViewSize(g_CurrentPlayer->viewx, g_CurrentPlayer->viewy);
@@ -788,7 +787,7 @@ Gfx* lvlRender(Gfx* DL)
 
             if (get_debug_render_raster() == DEB_BOND_VIEW)
             {
-                DL = bondviewRenderDebugBondView(DL);
+                DL = camSetupFrame(DL);
             }
 
             DL = viSetupScreensForNumPlayers(DL);
@@ -799,7 +798,7 @@ Gfx* lvlRender(Gfx* DL)
             autoaimUpdateTarget();
             shotFireHands();
 
-            if (bond_pressed_reload_activate() && playerInteract())
+            if (playerPressedActivate() && playerInteract())
             {
                 attempt_reload_item_in_hand(GUNRIGHT);
                 attempt_reload_item_in_hand(GUNLEFT);
@@ -821,7 +820,7 @@ Gfx* lvlRender(Gfx* DL)
             if (get_debug_stanhit_flag())
             {
                 DL = stanDebugBeginDraw(DL);
-                DL = write_stan_tiles_in_yellow(DL);
+                DL = stanDebugRenderTiles(DL);
             }
 
             if (get_debug_stanregion_flag())
@@ -889,7 +888,7 @@ Gfx* lvlRender(Gfx* DL)
 
             if (get_debug_render_raster() == DEB_BOND_VIEW)
             {
-                DL = maybe_mp_interface(DL);
+                DL = hudRender(DL);
             }
             else
             {
@@ -902,7 +901,7 @@ Gfx* lvlRender(Gfx* DL)
 
         if (g_CoopMode && (pcount > 0))
         {
-            coopViewsEnd(get_nth_player_from_shuffled(pcount - 1));
+            coopViewsEnd(playerGetShuffled(pcount - 1));
         }
     }
 
@@ -1160,7 +1159,7 @@ void lvlManageMpGame(void)
             {
                 for (i = 0; i < getPlayerCount(); i++)
                 {
-                    set_cur_player(i);
+                    playerSetCurrent(i);
 #ifdef VERSION_US
                     HUDMESSAGEBOTTOM("One minute left");
 #else
@@ -1380,7 +1379,7 @@ void lvlManageMpGame(void)
         // Co-op (first step): guards and level scripts only deal with player 1.
         if (g_CoopMode)
         {
-            set_cur_player(0);
+            playerSetCurrent(0);
         }
 
         propsTickOnce();
@@ -1596,7 +1595,7 @@ void lvlViewMoveTick(void)
     f32 temp_f0;
     f32 temp_f2;
 
-    local_player_number = get_cur_playernum();
+    local_player_number = playerGetCurrentNum();
     cheat_buttons_mp_related();
 
     switch (get_debug_freeze_processing())
@@ -1631,11 +1630,11 @@ void lvlViewMoveTick(void)
         {
             if (getDebugMode() == DEB_BOND_VIEW)
             {
-                bondviewMovePlayerUpdateViewport(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
+                playerUpdate(joyGetStickX(local_player_number), joyGetStickY(local_player_number), joyGetButtons(local_player_number, ANY_BUTTON));
             }
             else
             {
-                bondviewMovePlayerUpdateViewport(joyGetStickX(local_player_number), joyGetStickY(local_player_number), 0);
+                playerUpdate(joyGetStickX(local_player_number), joyGetStickY(local_player_number), 0);
             }
 
             mpwatchMenuTick();
@@ -1707,7 +1706,7 @@ void lvlUnloadStageTextData(void)
     if (g_CurrentStageToLoad != LEVELID_TITLE)
     {
         langClearBank(langGetLangBankIndexFromStagenum(g_CurrentStageToLoad));
-        set_favorite_weapon_for_every_player();
+        playersStoreFavouriteWeapons();
     }
 
     cheatDisableAllCheats();

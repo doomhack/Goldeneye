@@ -142,7 +142,7 @@ void sub_GAME_7F0649D8(enum GUNHAND hand);
 void sub_GAME_7F068508(GUNHAND handnum, f32 floor_y_pos);
 Vtx *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
-void divide3DCoordinates(coord3d *in, f32 divisor, coord3d *out);
+void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 
 #if !defined(VERSION_EU)
 void sub_GAME_7F05FB00(enum GUNHAND hand)
@@ -185,26 +185,26 @@ void gunFireTankShell(s32 handnum)
 
     hand = &g_CurrentPlayer->hands[handnum];
 
-    playerprop = getCurrentPlayerProp();
-    prevplayerpos = getCurrentPlayerPrevPos();
+    playerprop = currentPlayerGetProp();
+    prevplayerpos = playerGetPrevPos();
     weaponid = getCurrentPlayerWeaponId(handnum);
 
     mtx4LoadIdentity(&identitymtx);
 
     if (weaponid == ITEM_TANKSHELLS) 
     {
-        tankprop = get_ptr_for_players_tank();
+        tankprop = playerGetTank();
 
         if (1);
 
         if ((tankprop != NULL) && (tankprop->flags & TANK_RUN_STATE_RUNNING)) 
         {
-            bondviewSet3dCoord7F07CEB0(&aimdir);
+            tankGetTurretDir(&aimdir);
         } 
         else 
         {
             sub_GAME_7F068190(&screenpos, &aimdir);
-            mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &aimdir);
+            mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
         }
 
         velocity.x = aimdir.x * g_TankShellSpeed;
@@ -224,7 +224,7 @@ void gunFireTankShell(s32 handnum)
             spawnpos.y = tankobj->model->render_pos[4].pos.m[3][1];
             spawnpos.z = tankobj->model->render_pos[4].pos.m[3][2];
 
-            mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &spawnpos);
+            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &spawnpos);
         } 
         else 
         {
@@ -240,7 +240,7 @@ void gunFireTankShell(s32 handnum)
     else 
     {
         bullet_path_from_screen_center(&screenpos, &aimdir, handnum);
-        mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &aimdir);
+        mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
 
         spawnpos.x = hand->field_B58.x;
         spawnpos.y = hand->field_B58.y;
@@ -287,7 +287,7 @@ void gunFireTankShell(s32 handnum)
 
     obj->timer = -1;
     obj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
-    obj->runtime_bitflags |= get_cur_playernum() << RUNTIMEBITSHIFT_OWNER;
+    obj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
     gunInitProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, (s32 *) &identitymtx);
 
@@ -521,15 +521,15 @@ void gunUpdateAndFire(GUNHAND handnum)
         gunofs.z += 0.3f - ((rndf * (1.0f / M_U32_MAX_VALUE_F)) * 0.6f);
     }
 
-    gunofs.x += (((g_CurrentPlayer->field_FFC.x - getPlayer_c_screenleft()) - (getPlayer_c_screenwidth() * 0.5f)) * itemstats->PlayZ) / (getPlayer_c_screenwidth() * 0.5f);
+    gunofs.x += (((g_CurrentPlayer->field_FFC.x - camGetScreenLeft()) - (camGetScreenWidth() * 0.5f)) * itemstats->PlayZ) / (camGetScreenWidth() * 0.5f);
 
-    if ((g_CurrentPlayer->field_FFC.y - getPlayer_c_screentop()) > (getPlayer_c_screenheight() * 0.5f))
+    if ((g_CurrentPlayer->field_FFC.y - camGetScreenTop()) > (camGetScreenHeight() * 0.5f))
     {
-        gunofs.y -= (((g_CurrentPlayer->field_FFC.y - getPlayer_c_screentop()) - (getPlayer_c_screenheight() * 0.5f)) * itemstats->PlayY) / (getPlayer_c_screenheight() * 0.5f);
+        gunofs.y -= (((g_CurrentPlayer->field_FFC.y - camGetScreenTop()) - (camGetScreenHeight() * 0.5f)) * itemstats->PlayY) / (camGetScreenHeight() * 0.5f);
     }
     else
     {
-        gunofs.y -= (((g_CurrentPlayer->field_FFC.y - getPlayer_c_screentop()) - (getPlayer_c_screenheight() * 0.5f)) * itemstats->PlayX) / (getPlayer_c_screenheight() * 0.5f);
+        gunofs.y -= (((g_CurrentPlayer->field_FFC.y - camGetScreenTop()) - (camGetScreenHeight() * 0.5f)) * itemstats->PlayX) / (camGetScreenHeight() * 0.5f);
     }
 
     sub_GAME_7F05C614();
@@ -583,7 +583,7 @@ void gunUpdateAndFire(GUNHAND handnum)
     mtx4SetTranslation(&gunofs, &gunmtx);
     mtx4Copy(&gunmtx, &hand->gunmtx_camspace);
     mtx4Copy(&hand->throw_item_pos_related, &hand->throw_item_pos_related_prev);
-    mtx4MultAffine(currentPlayerGetViewToWorldMtxf(), &hand->gunmtx_camspace, &hand->throw_item_pos_related);
+    mtx4MultAffine(camGetViewToWorldMtxf(), &hand->gunmtx_camspace, &hand->throw_item_pos_related);
     hand->field_87F = 1;
 
     if (((((((get_ptr_weapon_model_header_line(item) == 0) || (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_SHOW_FIRST_PERSON) == 0)) || (bondwalkItemCheckBitflags(item, WEAPONSTATBITFLAG_HIDE_FIRST_PERSON_HAND) != 0)) 
@@ -770,7 +770,7 @@ void gunUpdateAndFire(GUNHAND handnum)
             hand->field_B58.x = flashmtx.m[3][0];
             hand->field_B58.y = flashmtx.m[3][1];
             hand->field_B58.z = flashmtx.m[3][2];
-            mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &hand->field_B58);
+            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &hand->field_B58);
             hand->field_B64 = -flashmtx.m[3][2];
 
             if (hand->field_87D != 0)
@@ -854,7 +854,7 @@ void gunUpdateAndFire(GUNHAND handnum)
 
         if (mdlhdr->numSwitches >= 0x1E)
         {
-            bondviewSelectCuff(model, mdlhdr, 0x1D);
+            playerSelectCuff(model, mdlhdr, 0x1D);
         }
 
         node = mdlhdr->Switches[7];
@@ -946,7 +946,7 @@ void gunUpdateAndFire(GUNHAND handnum)
 
     if (hand->weapon_firing_status != 0)
     {
-        sub_GAME_7F068508(handnum, bondviewGetPlayerStanHeight(g_CurrentPlayer));
+        sub_GAME_7F068508(handnum, playerGetStanHeight(g_CurrentPlayer));
 
         if (item == ITEM_GRENADELAUNCH)
         {
@@ -1214,7 +1214,7 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
     if (flash->unk00 >= 0)
     {
         templatevtx = D_80035C98;
-        playerpos = bondviewGetCurrentPlayersPosition();
+        playerpos = playerGetPos();
         startoffset = flash->unk28;
         dist = flash->unk24;
         flareoffset = D_80035CA8;
@@ -1333,7 +1333,7 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
             divin[0] = divin[1] = radius / 10.0f;
 
             dist_to_start = -tmp.f[2];
-            divide3DCoordinates((coord3d *)divin, dist_to_start, &divout);
+            camViewDeltaToScreen((coord3d *)divin, dist_to_start, &divout);
 
             if (divout.f[0] < 2.0f)
             {
@@ -1342,7 +1342,7 @@ Gfx *sub_GAME_7F061E18(Gfx *gdl, BeamRecord *flash, s32 arg2)
                 tmp.f[2] *= divout.f[0] * 0.5f;
             }
 
-            mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &tmp);
+            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &tmp);
 
             tmp.f[0] -= pos.f[0];
             tmp.f[1] -= pos.f[1];
@@ -1525,7 +1525,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
         if (item == ITEM_GOLDENGUN || item == ITEM_RUGER || item == ITEM_KNIFE || item == ITEM_THROWKNIFE || item == ITEM_SILVERWPPK || item == ITEM_GOLDWPPK) 
         {
             gSPSetLights1(gdl++, g_WeaponEnvmapLight);
-            gSPLookAt(gdl++, sub_GAME_7F078474());
+            gSPLookAt(gdl++, camGetLookAt());
         }
  
         gSPPerspNormalize(gdl++, mtxCalcPerspNorm(0.0f, 300.0f));
@@ -1567,7 +1567,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
             model = handptr->rocket->model;
  
             modelRender(&renderdata, model);
-            bondviewTransformManyPosToViewMatrix(model->render_pos, model->obj->numMatrices);
+            mtxsF2L(model->render_pos, model->obj->numMatrices);
  
             if (handptr->firedrocket != 0) 
             {
@@ -1597,7 +1597,7 @@ void gunRenderFirstPersonGunModels(Gfx **gdlptr)
             gSPClearGeometryMode(gdl++, G_CULL_BOTH);
         }
  
-        bondviewTransformManyPosToViewMatrix((*(Model *)&handptr->field_B68).render_pos, (*(Model *)&handptr->field_B68).obj->numMatrices);
+        mtxsF2L((*(Model *)&handptr->field_B68).render_pos, (*(Model *)&handptr->field_B68).obj->numMatrices);
         mtxPopWorldScale();
  
         gSPPerspNormalize(gdl++, viGetPerspNorm());
@@ -1743,7 +1743,7 @@ Gfx *set_enviro_fog_for_items_in_solo_watch_menu(Gfx *gdl, ITEM_IDS itemid, Mtxf
     if ((((((itemid == ITEM_GOLDENGUN) || (itemid == ITEM_RUGER)) || (itemid == ITEM_KNIFE)) || (itemid == ITEM_THROWKNIFE)) || (itemid == ITEM_SILVERWPPK)) || (itemid == ITEM_GOLDWPPK))
     {
         gSPSetLights1(gdl++, g_WeaponEnvmapLight);
-        gSPLookAt(gdl++, sub_GAME_7F078474());
+        gSPLookAt(gdl++, camGetLookAt());
     }
 
     if (bodymodel->numSwitches >= 17)
@@ -3036,11 +3036,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             {
                 if (var_s1 != ITEM_CAMERA)
                 {
-                    joyRumblePakStart(get_cur_playernum(), 0.1f);
+                    joyRumblePakStart(playerGetCurrentNum(), 0.1f);
 
                     if (cur_player_get_control_type() >= 4)
                     {
-                        joyRumblePakStart(get_cur_playernum() + getPlayerCount(), 0.1f);
+                        joyRumblePakStart(playerGetCurrentNum() + getPlayerCount(), 0.1f);
                     }
                 }
 
@@ -3344,7 +3344,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
             if (getPlayerCount() >= 2)
             {
-                sub_GAME_7F09B368(hand);
+                playerBodyRemoveGun(hand);
             }
 
             sub_GAME_7F05FB00(hand);
@@ -3438,7 +3438,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             if (getPlayerCount() >= 2)
             {
-                sub_GAME_7F09B398(hand);
+                playerBodyGiveGun(hand);
             }
 
             sub_GAME_7F0649D8(hand);
@@ -3767,7 +3767,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             if (getPlayerCount() >= 2)
             {
-                sub_GAME_7F09B398(hand);
+                playerBodyGiveGun(hand);
             }
             sub_GAME_7F0649D8(hand);
             g_CurrentPlayer->trigger_released = 0;
@@ -4551,12 +4551,12 @@ void gunTickGameplay(s32 triggerOn)
 
     if (g_CurrentPlayer->resetshadecol)
     {
-        objGetTileShading(getCurrentPlayerProp(), (struct rgba_u8 *) &g_CurrentPlayer->tileColor);
+        objGetTileShading(currentPlayerGetProp(), (struct rgba_u8 *) &g_CurrentPlayer->tileColor);
         g_CurrentPlayer->resetshadecol = FALSE;
     }
     else
     {
-        objGetTileShading(getCurrentPlayerProp(), &weapon_color);
+        objGetTileShading(currentPlayerGetProp(), &weapon_color);
         objUpdateShading(&g_CurrentPlayer->tileColor, &weapon_color);
     }
 
@@ -4635,8 +4635,8 @@ void caclulate_gun_crosshair_position_rotation(f32 turn_x, f32 turn_y, f32 guncr
     f32 screen_height;
     coord3d coords;
 
-    screen_width = getPlayer_c_screenwidth();
-    screen_height = getPlayer_c_screenheight();
+    screen_width = camGetScreenWidth();
+    screen_height = camGetScreenHeight();
 
     if (guncrossdamp != g_CurrentPlayer->guncrossdamp)
     {
@@ -4679,8 +4679,8 @@ void caclulate_gun_crosshair_position_rotation(f32 turn_x, f32 turn_y, f32 guncr
         g_CurrentPlayer->crosshair_angle.f[1] = (screen_height - 4.0f);
     }
 
-    g_CurrentPlayer->crosshair_angle.f[0] += getPlayer_c_screenleft();
-    g_CurrentPlayer->crosshair_angle.f[1] += getPlayer_c_screentop();
+    g_CurrentPlayer->crosshair_angle.f[0] += camGetScreenLeft();
+    g_CurrentPlayer->crosshair_angle.f[1] += camGetScreenTop();
 
     for (i = 0; i < g_ClockTimer; i++)
     {
@@ -4691,10 +4691,10 @@ void caclulate_gun_crosshair_position_rotation(f32 turn_x, f32 turn_y, f32 guncr
     g_CurrentPlayer->field_FFC.x = (g_CurrentPlayer->gun_azimuth_angle * (1.0f - gunaimdamp) * screen_width * 0.5f) + (screen_width * 0.5f);
     g_CurrentPlayer->field_FFC.y = (g_CurrentPlayer->gun_azimuth_turning * (1.0f - gunaimdamp) * screen_height * 0.5f) + (screen_height * 0.5f);
 
-    g_CurrentPlayer->field_FFC.x += getPlayer_c_screenleft();
-    g_CurrentPlayer->field_FFC.y += getPlayer_c_screentop();
+    g_CurrentPlayer->field_FFC.x += camGetScreenLeft();
+    g_CurrentPlayer->field_FFC.y += camGetScreenTop();
 
-    transformAndNormalizeByLength2Dto3D(&g_CurrentPlayer->field_FFC, &coords, 1000.0f);
+    camScreenToViewDir(&g_CurrentPlayer->field_FFC, &coords, 1000.0f);
     sub_GAME_7F067AB4(&coords);
 }
 
@@ -4752,15 +4752,15 @@ void sub_GAME_7F06802C(void)
     coord3d coord;
     f32 tmp;
 
-    tmp = getPlayer_c_screenleft() + (getPlayer_c_screenwidth() * 0.5f);
+    tmp = camGetScreenLeft() + (camGetScreenWidth() * 0.5f);
     g_CurrentPlayer->crosshair_angle.x = tmp;
     g_CurrentPlayer->field_FFC.x = tmp;
 
-    tmp = getPlayer_c_screentop() + (getPlayer_c_screenheight() * 0.5f);
+    tmp = camGetScreenTop() + (camGetScreenHeight() * 0.5f);
     g_CurrentPlayer->crosshair_angle.y = tmp;
     g_CurrentPlayer->field_FFC.y = tmp;
 
-    transformAndNormalizeByLength2Dto3D((coord2d *) &g_CurrentPlayer->field_FFC, &coord, 1000.0f);
+    camScreenToViewDir((coord2d *) &g_CurrentPlayer->field_FFC, &coord, 1000.0f);
     sub_GAME_7F067AB4(&coord);
 }
 
@@ -4777,7 +4777,7 @@ void sub_GAME_7F0680D4(coord3d * coord)
     tmp.x = g_CurrentPlayer->field_101C.m[2][0] * 1000.0f;
     tmp.y = g_CurrentPlayer->field_101C.m[2][1] * 1000.0f;
     tmp.z = g_CurrentPlayer->field_101C.m[2][2] * 1000.0f;
-    transform3Dto2DCoords(&tmp, (coord3d* ) &g_CurrentPlayer->crosshair_angle);
+    camViewToScreen(&tmp, (coord3d* ) &g_CurrentPlayer->crosshair_angle);
 
     g_CurrentPlayer->field_FFC.x = g_CurrentPlayer->crosshair_angle.x;
     g_CurrentPlayer->field_FFC.y = g_CurrentPlayer->crosshair_angle.y;
@@ -4798,7 +4798,7 @@ void sub_GAME_7F068190(coord3d *zeropos, coord3d *vec)
     zeropos->y = 0.0f;
     zeropos->z = 0.0f;
 
-    transformAndNormalizeByLength2Dto3D(&g_CurrentPlayer->crosshair_angle, vec, 1.0f);
+    camScreenToViewDir(&g_CurrentPlayer->crosshair_angle, vec, 1.0f);
 }
 
 
@@ -4824,11 +4824,11 @@ void bullet_path_from_screen_center(coord3d* arg0, coord3d* result, enum GUNHAND
     scaledspread = (120.0f * inaccuracy) / viGetFovY();
 
     randfactor = (RANDOMFRAC() - 0.5f) * RANDOMFRAC();
-    crosspos.x = g_CurrentPlayer->crosshair_angle.f[0] + randfactor * scaledspread * getPlayer_c_screenwidth() * g_GunScreenAspectRatio
-        / (getPlayer_c_perspaspect() * 320.0f);
+    crosspos.x = g_CurrentPlayer->crosshair_angle.f[0] + randfactor * scaledspread * camGetScreenWidth() * g_GunScreenAspectRatio
+        / (camGetPerspAspect() * 320.0f);
 
     randfactor = (RANDOMFRAC() - 0.5f) * RANDOMFRAC();
-    crosspos.y =  g_CurrentPlayer->crosshair_angle.f[1] + randfactor * scaledspread * getPlayer_c_screenheight()
+    crosspos.y =  g_CurrentPlayer->crosshair_angle.f[1] + randfactor * scaledspread * camGetScreenHeight()
         / (PAL ? (f32)(SCREEN_HEIGHT_272) : (f32)(SCREEN_HEIGHT_240));
 
     arg0->x = 0.0f;
@@ -4837,7 +4837,7 @@ void bullet_path_from_screen_center(coord3d* arg0, coord3d* result, enum GUNHAND
 
     // Result is a normalized vector describing the path the bullet will follow
     // Can be used to compute x,y,z displacement off the center of the screen if done for a projectile
-    transformAndNormalizeByLength2Dto3D(&crosspos, result, 1.0f);
+    camScreenToViewDir(&crosspos, result, 1.0f);
 }
 
 
@@ -5144,7 +5144,7 @@ void sub_GAME_7F068190(coord3d *zeropos, coord3d *vec)
     zeropos->y = 0.0f;
     zeropos->z = 0.0f;
 
-    transformAndNormalizeByLength2Dto3D(&g_CurrentPlayer->crosshair_angle, vec, 1.0f);
+    camScreenToViewDir(&g_CurrentPlayer->crosshair_angle, vec, 1.0f);
 }
 
 
@@ -5170,11 +5170,11 @@ void bullet_path_from_screen_center(coord3d* arg0, coord3d* result, enum GUNHAND
     scaledspread = (120.0f * inaccuracy) / viGetFovY();
 
     randfactor = (RANDOMFRAC() - 0.5f) * RANDOMFRAC();
-    crosspos.x = g_CurrentPlayer->crosshair_angle.f[0] + randfactor * scaledspread * getPlayer_c_screenwidth() * g_GunScreenAspectRatio
-        / (getPlayer_c_perspaspect() * 320.0f);
+    crosspos.x = g_CurrentPlayer->crosshair_angle.f[0] + randfactor * scaledspread * camGetScreenWidth() * g_GunScreenAspectRatio
+        / (camGetPerspAspect() * 320.0f);
 
     randfactor = (RANDOMFRAC() - 0.5f) * RANDOMFRAC();
-    crosspos.y =  g_CurrentPlayer->crosshair_angle.f[1] + randfactor * scaledspread * getPlayer_c_screenheight()
+    crosspos.y =  g_CurrentPlayer->crosshair_angle.f[1] + randfactor * scaledspread * camGetScreenHeight()
         / (PAL ? (f32)(SCREEN_HEIGHT_272) : (f32)(SCREEN_HEIGHT_240));
 
     arg0->x = 0.0f;
@@ -5183,7 +5183,7 @@ void bullet_path_from_screen_center(coord3d* arg0, coord3d* result, enum GUNHAND
 
     // Result is a normalized vector describing the path the bullet will follow
     // Can be used to compute x,y,z displacement off the center of the screen if done for a projectile
-    transformAndNormalizeByLength2Dto3D(&crosspos, result, 1.0f);
+    camScreenToViewDir(&crosspos, result, 1.0f);
 }
 
 
@@ -5588,7 +5588,7 @@ void sub_GAME_7F068EC4(CasingRecord *casing, Gfx **gdl)
 
         *gdl = render_data.gdl;
 
-        bondviewTransformManyPosToViewMatrix(model_matrices, model_header->numMatrices);
+        mtxsF2L(model_matrices, model_header->numMatrices);
     }
 }
 
@@ -5911,7 +5911,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
                 leftx = 59;
                 rightx = 59;
             }
-            else if (coopPlayerPerson(get_cur_playernum()) & 1)
+            else if (coopPlayerPerson(playerGetCurrentNum()) & 1)
             {
                 leftx = 43;
                 rightx = 127;
@@ -5937,7 +5937,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
                     if (imageoffset_r != 0)
                     {
                         imageoffset_r += g_ImageBankOffset;
-                        gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset_r, (getPlayer_c_screenleft() + getPlayer_c_screenwidth()) - (f32)rightx, -1.0f,
+                        gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset_r, (camGetScreenLeft() + camGetScreenWidth()) - (f32)rightx, -1.0f,
 #if defined(VERSION_EU)
                             (viGetViewTop() + viGetViewHeight()) - 30, 0,
 #else
@@ -6003,7 +6003,7 @@ Gfx *generate_ammo_total_microcode(Gfx *gdl)
                     if (imageoffset_l != 0)
                     {
                         imageoffset_l += g_ImageBankOffset;
-                        gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset_l, getPlayer_c_screenleft() + (f32)leftx, -1.0f,
+                        gdl = set_rgba_redirect_generate_microcode(gdl, (u8 *)imageoffset_l, camGetScreenLeft() + (f32)leftx, -1.0f,
 #if defined(VERSION_EU)
                             (viGetViewTop() + viGetViewHeight()) - 30, 1,
 #else
@@ -6229,13 +6229,13 @@ void increment_num_kills_display_text_in_MP(void)
 
     if (!isMpGame()) { return; }
 
-    mission_time = getMissiontimer();
+    mission_time = lvGetMissionTime60();
     sprintf(&buffer, aSD, langGet(getStringID(LGUN, GUN_STR_DA_KILLCOUNT)), g_playerPerm->kill_count); // "kill count"
 
 #if defined(VERSION_US)
     hudmsgBottomShow(&buffer);
 #elif defined(VERSION_EU)
-    jp_hudmsgBottomShow(&buffer);
+    hudmsgBottomShowText(&buffer);
 #endif
 
     if (g_playerPerm->kill_count >= 2)
@@ -6308,7 +6308,7 @@ void increment_num_deaths(void)
             sprintf(buffer, g_GunDeathCountFormat, langGet(getStringID(LGUN, GUN_STR_DC_DIED)), g_CurrentPlayer->deathcount, langGet(getStringID(LGUN, GUN_STR_DD_TIMES))); //died times
         }
 #if defined(VERSION_EU)
-		jp_hudmsgBottomShow(buffer);
+		hudmsgBottomShowText(buffer);
 #else
 		hudmsgBottomShow(buffer);
 #endif
@@ -6329,12 +6329,12 @@ void increment_num_suicides_display_MP(void) {
     g_CurrentPlayer->num_suicides += 1;
     if (isMpGame()) {
 
-        currentTime = getMissiontimer();
+        currentTime = lvGetMissionTime60();
 
         sprintf(&buffer, &aSD_0, langGet(getStringID(LGUN, GUN_STR_DE_SUICIDECOUNT)), g_CurrentPlayer->num_suicides); // "suicide count"
 
 #if defined(VERSION_EU)
-		jp_hudmsgBottomShow(&buffer);
+		hudmsgBottomShowText(&buffer);
 #else
 		hudmsgBottomShow(&buffer);
 #endif
@@ -6783,7 +6783,7 @@ void shotFireBullet(s32 hand)
     hittile = 0;
     gotbghit = 0;
     bestroom = 0;
-    playerprop = getCurrentPlayerProp();
+    playerprop = currentPlayerGetProp();
     fromtile = playerprop->stan;
     numhits = 0;
     bullet_path_from_screen_center(&shotdata.viewOrigin, &shotdata.viewDir, hand);
@@ -6801,13 +6801,13 @@ void shotFireBullet(s32 hand)
     shotdata.gunpos.y = shotdata.viewOrigin.y;
     shotdata.gunpos.z = shotdata.viewOrigin.z;
 
-    mtx4TransformVecInPlace(currentPlayerGetViewToWorldMtxf(), &shotdata.gunpos);
+    mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &shotdata.gunpos);
 
     shotdata.dir.x = shotdata.viewDir.x;
     shotdata.dir.y = shotdata.viewDir.y;
     shotdata.dir.z = shotdata.viewDir.z;
 
-    mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &shotdata.dir);
+    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &shotdata.dir);
 
     dest.x = (shotdata.dir.x * M_U16_MAX_VALUE_F) + shotdata.gunpos.x;
     dest.y = (shotdata.dir.y * M_U16_MAX_VALUE_F) + shotdata.gunpos.y;
@@ -6816,7 +6816,7 @@ void shotFireBullet(s32 hand)
     if (stanWalkLineNoCallback(&fromtile, playerprop->pos.x, playerprop->pos.z, shotdata.gunpos.x, shotdata.gunpos.z))
     {
         distscale = get_room_data_float1() * bgGetLevelVisibilityScale();
-        playerpos = bondviewGetCurrentPlayersPosition();
+        playerpos = playerGetPos();
 
         new_var++;
         new_var--;
@@ -6862,11 +6862,11 @@ void shotFireBullet(s32 hand)
         {
             if (g_BgPortals[0].offset_portal != 0)
             {
-                bestroom = shotFindBgHitInConnectedRooms(stanGetTileRoom(getCurrentPlayerProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
+                bestroom = shotFindBgHitInConnectedRooms(stanGetTileRoom(currentPlayerGetProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
             }
             else
             {
-                bestroom = shotFindBgHit(stanGetTileRoom(getCurrentPlayerProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
+                bestroom = shotFindBgHit(stanGetTileRoom(currentPlayerGetProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
             }
         }
 
@@ -6918,7 +6918,7 @@ void shotFireBullet(s32 hand)
 
         if (prop != 0)
         {
-            if ((prop->type == PROP_TYPE_CHR) || (((prop->type == PROP_TYPE_VIEWER) && (prop->chr != 0)) && (getPlayerPointerIndex(prop) != get_cur_playernum())))
+            if ((prop->type == PROP_TYPE_CHR) || (((prop->type == PROP_TYPE_VIEWER) && (prop->chr != 0)) && (playerGetIndexForProp(prop) != playerGetCurrentNum())))
             {
                 chrTestHit(prop, &shotdata);
             }
@@ -7013,7 +7013,7 @@ void shotFireBullet(s32 hand)
                 {
                     rooms[0] = bestroom;
                     rooms[1] = 255;
-                    explosionCreate(0, finalpos, hittile, 1, 0, get_cur_playernum(), rooms, 0);
+                    explosionCreate(0, finalpos, hittile, 1, 0, playerGetCurrentNum(), rooms, 0);
                 }
             }
 
@@ -7176,8 +7176,8 @@ void shotPunch(s32 hand, s32 item_id)
     f32 reach;
 
     hit = 0;
-    playerprop = getCurrentPlayerProp();
-    ducking = bondviewGetPlayerDuckingHeightRelated(g_CurrentPlayer);
+    playerprop = currentPlayerGetProp();
+    ducking = playerGetEyeHeight(g_CurrentPlayer);
 
     for (propptr = g_LastOnScreenProp - 1; propptr >= g_OnScreenPropList; propptr--)
     {
@@ -7205,7 +7205,7 @@ void shotPunch(s32 hand, s32 item_id)
                 continue;
             }
 
-            if (getPlayerPointerIndex(prop) == get_cur_playernum())
+            if (playerGetIndexForProp(prop) == playerGetCurrentNum())
             {
                 continue;
             }
@@ -7279,7 +7279,7 @@ void shotPunch(s32 hand, s32 item_id)
         if (g_musicSfxBufferPtr && g_musicSfxBufferPtr);
 
         bullet_path_from_screen_center(&from, &vector, hand);
-        mtx4RotateVecInPlace(currentPlayerGetViewToWorldMtxf(), &vector);
+        mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &vector);
 
         if (chrTakeShot(chr, hitpart, &vector, item_id, 1))
         {

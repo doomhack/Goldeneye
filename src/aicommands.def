@@ -10010,7 +10010,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord * ai = AiListp + Offset;
-        if (isBondInTank() == TRUE)
+        if (playerIsInTank() == TRUE)
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }
@@ -10220,8 +10220,8 @@ _AI_CMD(
                 CutsceneRecord *cdef = setupGetPtrToCommandByIndex(tag->OffsetToObj + TagIndex);
                 g_CameraLookAtBondPad = NULL;
                 gBondViewCutscene = cdef;
-                dword_CODE_bss_80079A18 = CharArrayTo16(ai->val,1);
-                dword_CODE_bss_80079A1C = CharArrayTo16(ai->val,3);
+                g_CutsceneCamLookAtBond = CharArrayTo16(ai->val,1);
+                g_CutsceneCamUnusedFlag = CharArrayTo16(ai->val,3);
                 set_camera_mode(CAMERAMODE_POSEND);
             }
         }
@@ -10262,7 +10262,7 @@ _AI_CMD(
     {
         AIRecord * ai = AiListp + Offset;
         f32       bondpos = (s16) CharArrayTo16(ai->val,0);
-        if (getCurrentPlayerProp()->pos.y < bondpos)
+        if (currentPlayerGetProp()->pos.y < bondpos)
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[2]);
         }
@@ -10317,7 +10317,7 @@ _AI_CMD(
         }
         if (!(ai->val & PLAYERFLAG_LOCKCONTROLS))
         {
-            bondviewSetUpperTextDisplayFlag(PLAYERFLAG_NOCONTROL);
+            hudmsgTopSetFlag(PLAYERFLAG_NOCONTROL);
         }
         if (!(ai->val & PLAYERFLAG_NOTIMER))
         {
@@ -10359,7 +10359,7 @@ _AI_CMD(
         gunSetSightVisible(GUNSIGHTREASON_NOCONTROL, TRUE);
         gunSetGunAmmoVisible(GUNAMMOREASON_NOCONTROL, TRUE);
         hudmsgsSetOn(PLAYERFLAG_NOCONTROL);
-        bondviewClearUpperTextDisplayFlag(2);
+        hudmsgTopClearFlag(2);
         countdownTimerSetVisible(16, TRUE);
         is_timer_active = TRUE;
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -10725,7 +10725,7 @@ _AI_CMD(
         ChrRecord *chr = chrFindById(ChrEntityp, ai->val[0]);
         if (chr)
         {
-            chrSetWeaponFlag4(chr, ai->val[1]);
+            chrRemoveHeldWeapon(chr, ai->val[1]);
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
@@ -11296,12 +11296,12 @@ _AI_CMD(
         start                   = CharArrayTo16(ai->val, 10);
         g_CameraLookAtBondPad = NULL;
         gBondViewCutscene       = NULL;
-        flt_CODE_bss_80079A00   = (start * M_TAU_F) / M_U16_MAX_VALUE_F; /*unit direction 0 - 1 (increments are 0.000001)*/
-        flt_CODE_bss_80079A04   = (speed60 * M_TAU_F) / M_U16_MAX_VALUE_F; /*how many increments per frame*/
-        flt_CODE_bss_80079A08   = camDististance;
-        flt_CODE_bss_80079A0C   = camHeight;
-        flt_CODE_bss_80079A10   = targetHeight;
-        dword_CODE_bss_80079A14 = padnum;
+        g_OrbitCamAngle   = (start * M_TAU_F) / M_U16_MAX_VALUE_F; /*unit direction 0 - 1 (increments are 0.000001)*/
+        g_OrbitCamSpeed   = (speed60 * M_TAU_F) / M_U16_MAX_VALUE_F; /*how many increments per frame*/
+        g_OrbitCamDist   = camDististance;
+        g_OrbitCamHeight   = camHeight;
+        g_OrbitCamTargetHeight   = targetHeight;
+        g_OrbitCamPad = padnum;
         set_camera_mode(CAMERAMODE_POSEND);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
@@ -11610,7 +11610,7 @@ _AI_CMD(
 
 _AI_CMD(
     {
-        SurroundWithExplosions(0);
+        playerSurroundWithExplosions(0);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })

@@ -42,8 +42,8 @@ void end_of_mission_briefing(void)
     if ((-1 < briefingpage) && selected_difficulty != DIFFICULTY_007 && g_AppendCheatSinglePlayer == FALSE)
     {
         var1 = solo_target_time_array[mission_folder_setup_entries[briefingpage].mission_num][selected_difficulty];
-        fileUnlockStageInFolderAtDifficulty(selected_folder_num, mission_folder_setup_entries[briefingpage].mission_num, selected_difficulty, getMissiontimer() / 0x3c);
-        if ((getMissiontimer() / GAME_TICKRATE) <= var1)
+        fileUnlockStageInFolderAtDifficulty(selected_folder_num, mission_folder_setup_entries[briefingpage].mission_num, selected_difficulty, lvGetMissionTime60() / 0x3c);
+        if ((lvGetMissionTime60() / GAME_TICKRATE) <= var1)
         {
             if (!fileGetIsCheatUnlocked(fileGetSaveForFoldernum(selected_folder_num), mission_folder_setup_entries[briefingpage].mission_num))
             {
@@ -139,7 +139,7 @@ void store_favorite_weapon_current_player(u32 right,u32 left)
 {
   u32 playerNum;
 
-  playerNum = get_cur_playernum();
+  playerNum = playerGetCurrentNum();
   array_favweapon[playerNum][GUNRIGHT] = right;
   array_favweapon[playerNum][GUNLEFT] = left;
 }

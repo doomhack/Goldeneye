@@ -715,8 +715,8 @@ Gfx *viSetupCurrentPlayerView(Gfx *gdl)
     gSPPerspNormalize(gdl++, g_viPerspNorm);
 
     // Store the float and non-float projection matrices so we can recall them later instead of having to rebuild them.
-    currentPlayerSetProjectionMatrix(g_viProjectionMatrix);
-    currentPlayerSetProjectionMatrixF(g_viProjectionMatrixF);
+    camSetProjectionMtx(g_viProjectionMatrix);
+    camSetProjectionMtxf(g_viProjectionMatrixF);
 
     // Normal rendering mode is a 16-bit RGBA image.
     if (g_viColorOutputMode != COLORMODE_32BIT)
@@ -796,7 +796,7 @@ Gfx *viSetupScreensForNumPlayers(Gfx *gdl)
 
     if (viGetViewTop() > 0)
     {
-        if (get_player_position_in_shuffled(get_cur_playernum()) == 0)
+        if (playerGetShuffledIndex(playerGetCurrentNum()) == 0)
         {
             gDPFillRectangle(gdl++, 0, 0, VI_SX_INCL(viGetX() - 1), (viGetViewTop() - 1));
             gDPPipeSync(gdl++);
@@ -813,7 +813,7 @@ Gfx *viSetupScreensForNumPlayers(Gfx *gdl)
     }
     else
     {
-        if (get_player_position_in_shuffled(get_cur_playernum()) == 0)
+        if (playerGetShuffledIndex(playerGetCurrentNum()) == 0)
         {
             if ((viGetViewTop() + viGetViewHeight() + viGetViewHeight()) < viGetY())
             {
@@ -910,8 +910,8 @@ void viSetViewSize(s16 x, s16 y)
 {
     g_ViBackData->viewx = x;
     g_ViBackData->viewy = y;
-    currentPlayerSetScreenSize(g_ViBackData->viewx, g_ViBackData->viewy);
-    currentPlayerSetCameraScale();
+    camSetScreenSize(g_ViBackData->viewx, g_ViBackData->viewy);
+    camUpdateScale();
 }
 
 s16 viGetViewWidth(void)
@@ -928,7 +928,7 @@ void viSetViewPosition(s16 left, s16 top)
 {
     g_ViBackData->viewleft = left;
     g_ViBackData->viewtop = top;
-    currentPlayerSetScreenPosition(g_ViBackData->viewleft, g_ViBackData->viewtop);
+    camSetScreenPosition(g_ViBackData->viewleft, g_ViBackData->viewtop);
 }
 
 s16 viGetViewLeft(void)
@@ -949,15 +949,15 @@ void viSetUseZBuf(s32 usezbuf)
 void viSetFovY(f32 fovy)
 {
     g_ViBackData->fovy = fovy;
-    currentPlayerSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
-    currentPlayerSetCameraScale();
+    camSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
+    camUpdateScale();
 }
 
 void viSetAspect(f32 aspect)
 {
     g_ViBackData->aspect = aspect;
-    currentPlayerSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
-    currentPlayerSetCameraScale();
+    camSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
+    camUpdateScale();
 }
 
 f32 viGetFovY(void)
@@ -969,16 +969,16 @@ void viSetFov(f32 fovx, f32 fovy)
 {
     g_ViBackData->fovy = fovy;
     g_ViBackData->aspect = (f32) (fovx / fovy);
-    currentPlayerSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
-    currentPlayerSetCameraScale();
+    camSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
+    camUpdateScale();
 }
 
 void viSetZRange(f32 near, f32 far)
 {
     g_ViBackData->znear = near;
     g_ViBackData->zfar = far;
-    currentPlayerSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
-    currentPlayerSetCameraScale();
+    camSetPerspective(g_ViBackData->znear, g_ViBackData->fovy, g_ViBackData->aspect);
+    camUpdateScale();
 }
 
 void viGetZRange(f32 *zrange)

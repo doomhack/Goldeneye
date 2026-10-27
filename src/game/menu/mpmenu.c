@@ -346,7 +346,7 @@ void mpCalculateAwards(bool gameoverdelay)
     struct AwardMetrics metrics[4];
 
     player_count = getPlayerCount();
-    duration = getMissiontimer();
+    duration = lvGetMissionTime60();
 
     sndDeactivateAllSfxByFlag_1();
     set_missionstate(MISSION_STATE_0);
@@ -374,12 +374,12 @@ void mpCalculateAwards(bool gameoverdelay)
     chevron_glow = 0;
     chevron_glow_timer = 0;
 
-    prev_player_num = get_cur_playernum();
+    prev_player_num = playerGetCurrentNum();
 
     for (i = 0; i < player_count; i++)
     {
 
-        set_cur_player(i);
+        playerSetCurrent(i);
 
         g_CurrentPlayer->mpmenuon = TRUE;
         g_CurrentPlayer->mpmenumode = MENU_SCORES;
@@ -419,7 +419,7 @@ void mpCalculateAwards(bool gameoverdelay)
         metrics[i].shortest_inning = g_playerPlayerData[i].shortest_inning;
     }
 
-    set_cur_player(prev_player_num);
+    playerSetCurrent(prev_player_num);
 
     // Choose which players are eligible for which awards
     i = mpFindMaxInt(player_count, metrics[0].num_suicides, metrics[1].num_suicides, metrics[2].num_suicides, metrics[3].num_suicides);
@@ -579,12 +579,12 @@ void mpwatchMenuTick(void)
     s32 menu_count;
     s32 i;
 
-    player_num = get_cur_playernum();
+    player_num = playerGetCurrentNum();
     player_count = getPlayerCount();
     x_centered = joyGetStickXInRange(player_num, -2, 1);
 
     // The player in shuffled position 0 drives down g_gameOverFlag which is both a flag and a timer.
-    if (!get_player_position_in_shuffled(player_num) && (g_gameOverFlag >= 2))
+    if (!playerGetShuffledIndex(player_num) && (g_gameOverFlag >= 2))
     {
         g_gameOverFlag -= speedgraphframes;
 
@@ -606,7 +606,7 @@ void mpwatchMenuTick(void)
 
         if (g_gameOverFlag < 2)
         {
-            if (get_player_position_in_shuffled(player_num) == 0)
+            if (playerGetShuffledIndex(player_num) == 0)
             {
                 chevron_glow_timer += speedgraphframes;
                 alt_gameover_msg_timer += speedgraphframes;
@@ -631,9 +631,9 @@ void mpwatchMenuTick(void)
                 g_playerPerm->most_killed_one_life = g_CurrentPlayer->kills_this_life;
             }
 
-            if (g_playerPerm->longest_inning < (getMissiontimer() - g_CurrentPlayer->lifestarttime60))
+            if (g_playerPerm->longest_inning < (lvGetMissionTime60() - g_CurrentPlayer->lifestarttime60))
             {
-                g_playerPerm->longest_inning = getMissiontimer() - g_CurrentPlayer->lifestarttime60;
+                g_playerPerm->longest_inning = lvGetMissionTime60() - g_CurrentPlayer->lifestarttime60;
             }
 
             if (g_CurrentPlayer->mpmenuon != FALSE)
@@ -664,10 +664,10 @@ void mpwatchMenuTick(void)
                     if (!g_pausedFlag)
                     {
                         g_pausedFlag = 1;
-                        who_paused = get_cur_playernum();
+                        who_paused = playerGetCurrentNum();
                         lvlSetControlsLockedFlag(1);
                     }
-                    else if (get_cur_playernum() == who_paused)
+                    else if (playerGetCurrentNum() == who_paused)
                     {
                         g_pausedFlag = 0;
                         lvlSetControlsLockedFlag(0);
@@ -709,7 +709,7 @@ void mpwatchMenuTick(void)
                         g_CurrentPlayer->mpmenuon = FALSE;
                         g_CurrentPlayer->healthdisplaytime = (PAL ? 50 : 60);
 
-                        if (get_cur_playernum() == who_paused)
+                        if (playerGetCurrentNum() == who_paused)
                         {
                             g_pausedFlag = 0;
                             lvlSetControlsLockedFlag(0);
@@ -1085,7 +1085,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
     s32 colour;
     s32 q;
  
-    curplayernum = get_cur_playernum();
+    curplayernum = playerGetCurrentNum();
     player_count = getPlayerCount();
     self_paused = 0;
  
@@ -1136,7 +1136,7 @@ Gfx *mp_watch_menu_display(Gfx *gdl)
                 if (g_pausedFlag)
                 {
                     text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_18_PAUSED)); /* PAUSED */
-                    if (get_cur_playernum() == who_paused)
+                    if (playerGetCurrentNum() == who_paused)
                     {
                         self_paused = 1;
                     }

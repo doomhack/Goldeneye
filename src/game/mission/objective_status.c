@@ -379,27 +379,27 @@ void display_objective_status_text_on_status_change(void)
                 if (g_CoopMode)
                 {
                     // Co-op: show it on every player's screen.
-                    s32 prevplayer = get_cur_playernum();
+                    s32 prevplayer = playerGetCurrentNum();
                     s32 p;
 
                     for (p = 0; p < getPlayerCount(); p++)
                     {
-                        set_cur_player(p);
+                        playerSetCurrent(p);
 #ifdef VERSION_US
                         hudmsgBottomShow(&buffer);
 #else
-                        jp_hudmsgBottomShow(&buffer);
+                        hudmsgBottomShowText(&buffer);
 #endif
                     }
 
-                    set_cur_player(prevplayer);
+                    playerSetCurrent(prevplayer);
                 }
                 else
                 {
 #ifdef VERSION_US
                     hudmsgBottomShow(&buffer);
 #else
-                    jp_hudmsgBottomShow(&buffer);
+                    hudmsgBottomShowText(&buffer);
 #endif
                 }
             }
@@ -522,15 +522,15 @@ void objectiveTakePictureHandler(void)
                 {
                     projectRectCornersTo2D(&sp84, &sp7C, &sp74, &sp64.right, &sp64.left);
                     
-                    if (getPlayer_c_screenleft() < sp64.right)
+                    if (camGetScreenLeft() < sp64.right)
                     {
-                        if ((sp64.right < (getPlayer_c_screenleft() + getPlayer_c_screenwidth())) && (getPlayer_c_screenleft() < sp64.left))
+                        if ((sp64.right < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenLeft() < sp64.left))
                         {
-                            if ((sp64.left < (getPlayer_c_screenleft() + getPlayer_c_screenwidth())) && (getPlayer_c_screentop() < sp64.down))
+                            if ((sp64.left < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenTop() < sp64.down))
                             {
-                                if ((sp64.down < (getPlayer_c_screentop() + getPlayer_c_screenheight())) && (getPlayer_c_screentop() < sp64.up))
+                                if ((sp64.down < (camGetScreenTop() + camGetScreenHeight())) && (camGetScreenTop() < sp64.up))
                                 {
-                                    if (sp64.up < (getPlayer_c_screentop() + getPlayer_c_screenheight()))
+                                    if (sp64.up < (camGetScreenTop() + camGetScreenHeight()))
                                     {
                                         criteria->flag = 1;
                                     }

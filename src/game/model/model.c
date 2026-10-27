@@ -2018,7 +2018,7 @@ void modelUpdateDistanceRelations(Model* model, ModelNode* node)
     }
     else
     {
-        distance = -mtx->m[3][2] * getPlayer_c_lodscalez();
+        distance = -mtx->m[3][2] * camGetLodScaleZ();
 
         if (g_ModelLodScale != 1)
         {

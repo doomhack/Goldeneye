@@ -89,11 +89,11 @@ extern s32 random_byte;
 extern PLAYER_ID array_PLAYER_IDs[4];
 
 
-void reset_play_data_ptrs(void);
-void init_player_data_ptrs_construct_viewports(int playercount);
-void shuffle_player_ids(void);
-s32 get_nth_player_from_shuffled(PLAYER_ID id);
-void set_cur_player(s32 playernum);
+void playersReset(void);
+void playersInit(int playercount);
+void playersShuffleOrder(void);
+s32 playerGetShuffled(PLAYER_ID id);
+void playerSetCurrent(s32 playernum);
 s32 getPlayerCount(void);
 s32 getViewCount(void);
 s32 coopSplitSideBySide(void);
@@ -113,21 +113,24 @@ s32 counterOpIsGuardPlayer(s32 player);
 extern s32 g_CoopPlayersOverlap;
 extern s32 g_CoopSoloView;
 extern s32 g_CoopSoloViewIsCinema;
-void set_cur_player_screen_size(u32 width, u32 height);
-void set_cur_player_viewport_size(u32 ulx, u32 uly);
+void playerSetScreenSize(u32 width, u32 height);
+void playerSetViewportPos(u32 ulx, u32 uly);
 
 
-s32 get_cur_playernum(void);
+s32 playerGetCurrentNum(void);
 #ifdef __GNUC__
 /* Inlined at call sites; player.c still provides the real function */
-extern inline __attribute__((gnu_inline)) s32 get_cur_playernum(void) { return player_num; }
+extern inline __attribute__((gnu_inline)) s32 playerGetCurrentNum(void) { return player_num; }
 #endif
-void set_cur_player_fovy(f32 fovy);
-s32 getPlayerPointerIndex( PropRecord* prop);
-void set_cur_player_aspect(f32 aspect);
-void initBONDdataforPlayer(s32 player_num);
-s32 get_player_position_in_shuffled(s32 current_player_num);
-void sub_GAME_7F09B368(enum GUNHAND hand);
-void sub_GAME_7F09B398(enum GUNHAND hand);
+void playerSetFovY(f32 fovy);
+s32 playerGetIndexForProp( PropRecord* prop);
+void playerSetAspect(f32 aspect);
+void playerInit(s32 player_num);
+s32 playerGetShuffledIndex(s32 current_player_num);
+void playerBodyRemoveGun(enum GUNHAND hand);
+void playerBodyGiveGun(enum GUNHAND hand);
+
+void playerInitHands(void);
+void playersStoreFavouriteWeapons(void);
 
 #endif

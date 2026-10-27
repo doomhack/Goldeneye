@@ -41,6 +41,7 @@
 #include "game/nav/stan.h"
 #include "game/text/textrelated.h"
 #include "game/player/player.h"
+#include "game/player/bondhead.h"
 #include "game/level/frametiming.h"
 #include "PR/R4300.h"
 
@@ -294,7 +295,7 @@ void bossInitMainthreadData(void)
     bossInit();
     textInit();
     debmenuInit();
-    default_player_perspective_and_height();
+    playersResetHandicaps();
     store_osgetcount();
     speedgraphInit();
     explosionInitScaleMtx();
@@ -304,7 +305,7 @@ void bossInitMainthreadData(void)
     init_weapon_animation_groups_maybe();
     reset_counter_rand_body_head();
     null_init_main_3();
-    init_player_gait_object();
+    bheadInitGaitModel();
     initGameData();
     fileResetRamRomSave();
     clear_ramrom_block_buffer_heading_ptrs();
@@ -506,7 +507,7 @@ void bossMainloop(void)
         g_JoySwapPads = g_CounterOpMode && (g_CounterOpBondPad != 0) && (g_StageNum != LEVELID_TITLE);
 
         memaReset(mempAlloc(g_CurentMaMallocValue, MEMPOOL_STAGE), g_CurentMaMallocValue);
-        reset_play_data_ptrs();
+        playersReset();
 
         localSelectedNumPlayers = 0;
         if (g_StageNum != LEVELID_TITLE)
@@ -518,7 +519,7 @@ void bossMainloop(void)
             }
         }
 
-        init_player_data_ptrs_construct_viewports(localSelectedNumPlayers);
+        playersInit(localSelectedNumPlayers);
         dynInitMemory();
         joyCheckStatusThreadSafe();
         lvlStageLoad(g_StageNum);
@@ -591,14 +592,14 @@ void bossMainloop(void)
 			                }
 
                             lvlManageMpGame();
-                            bondviewCoopUpdateSoloView();
-                            shuffle_player_ids();
+                            coopUpdateSoloView();
+                            playersShuffleOrder();
 
                             if (g_StageNum != LEVELID_TITLE)
                             {
                                 for (i = 0; i < getViewCount(); i++)
                                 {
-                                    set_cur_player(get_nth_player_from_shuffled(i));
+                                    playerSetCurrent(playerGetShuffled(i));
 
                                     localPlayer = g_CurrentPlayer;
                                     viSetViewSize(localPlayer->viewx, localPlayer->viewy);
