@@ -610,7 +610,7 @@ void bheadInit(void)
         g_BondMoveAnimationSetup[i].speedMultiplier = (f32) (((f32) motion[2] * IDO_POINT_ONE) / (g_BondMoveAnimationSetup[i].endframe - g_BondMoveAnimationSetup[i].loopframe));
     }
 
-    renderData = (ModelRenderData){NULL, TRUE, 3};
+    renderData = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
     modelSetAnimation(&g_CurrentPlayer->model, ANIM(idle), 0, 0.0f, 0.5f, 0.0f);
 

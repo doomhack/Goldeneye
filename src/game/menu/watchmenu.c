@@ -76,7 +76,7 @@ Mtx g_WatchZoomScaleMtx;
 
 u32 g_WatchMenuPage = 0;
 u32 g_WatchMenuControlRow = 0;
-u32 g_WatchMenuOptionsRow = 0;
+s32 g_WatchMenuOptionsRow = 0;
 // data
 s32 g_WatchMenuBriefPage = BRIEF_INDEX_OBJECTIVES;
 s32 g_WatchMenuAbortAsk = 0;
@@ -1063,7 +1063,7 @@ void watchMenuInventoryListTick(void)
     }
     else if (g_WatchMenuInvTextY < g_WatchMenuInvTextTargetY)
     {
-        g_WatchMenuInvTextY = (g_WatchMenuInvTextY + ((g_WatchMenuInvTextTargetY - g_WatchMenuInvTextY) / 3)) + ((0, 1));
+        g_WatchMenuInvTextY = (g_WatchMenuInvTextY + ((g_WatchMenuInvTextTargetY - g_WatchMenuInvTextY) / 3)) + 1;
         g_WatchMenuInvSettled = FALSE;
     }
     else
@@ -1939,8 +1939,8 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     f32 fov;
     f32 rotx;
     f32 roty;
-    s8* text;
-    s8* text2;
+    char* text;
+    char* text2;
 
     persp = dynAllocateMatrix();
     height = 0;
@@ -2586,7 +2586,7 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
     s32 textwidth;
     struct font *font;
     struct fontchar *chars;
-    u8 *selectedtext;
+    char *selectedtext;
 
     font = g_FontBankGothic;
     chars = g_FontBankGothicChars;
@@ -2646,8 +2646,8 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
  
 Gfx *watchMenuRenderControlLabels(Gfx *gdl)
 {
-    u8 *dirtext1;
-    u8 *dirtext2;
+    char *dirtext1;
+    char *dirtext2;
  
     if (g_Options[0].current_value == 1)
     {
@@ -2661,8 +2661,8 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl)
     }
  
     {
-        u8 *ctext;
-        u8 *dpadtext;
+        char *ctext;
+        char *dpadtext;
         s32 buttons;
         s32 showmovesight;
         volatile unsigned int y;
@@ -3485,7 +3485,7 @@ Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *mtx) {
 }
 
 
-int textCountLines(u8 *arg) {
+int textCountLines(char *arg) {
     u8 cVar1;
     int count;
 
@@ -3506,9 +3506,9 @@ int textCountLines(u8 *arg) {
 }
 
 
-u8 *textLastLine(u8 *arg)
+char *textLastLine(char *arg)
 {
-    u8 *ret;
+    char *ret;
 
     ret = arg;
 

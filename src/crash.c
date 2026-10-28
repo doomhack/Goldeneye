@@ -212,9 +212,7 @@ void crashMain(void *data)
 {
     OSMesg msg = 0;
     static OSThread *curr;
-    static OSThread *last;
     osSetEventMesg(OS_EVENT_FAULT, &g_faultMesgQ, (OSMesg)MSG_FAULT);
-    last = 0;
 
     // Wake twice a second: a fault message also wakes us straight away
     osSetTimer(&g_crashTimer, OS_USEC_TO_CYCLES(500000), OS_USEC_TO_CYCLES(500000), &g_faultMesgQ, (OSMesg)MSG_WATCHDOG);
@@ -270,7 +268,7 @@ void crashPutChar(s32 x, s32 y, unsigned char c)
         c = '\0';
     }
     // is printable char? if not replace with "?"
-    if ((c > '\0') && (c < ' ') || (c > '~'))
+    if (((c > '\0') && (c < ' ')) || (c > '~'))
     {
         c = '?';
     }

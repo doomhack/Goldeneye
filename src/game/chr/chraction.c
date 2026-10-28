@@ -1261,8 +1261,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
             }
             else
             {
-                // bug/mistake/typo.
-                hasGun.p[0] = hasGun.p[0] = 1;
+                hasGun.p[0] = 1;
             }
         }
         else if (variant == 1)
@@ -3400,7 +3399,7 @@ void chrPatrolChooseAnimation(ChrRecord *self)
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
 
-    if (((left != NULL) && (right != NULL)) || ((left == NULL)) && (right == NULL))
+    if (((left != NULL) && (right != NULL)) || ((left == NULL) && (right == NULL)))
     {
         flag = 0;
         ani_arg = randomGetNext() & 1;
@@ -4026,7 +4025,7 @@ bool chrIsNotDeadOrShot(ChrRecord *self)
     s8 currentaction = self->actiontype;
 
     if ((currentaction == ACT_DIE) || (currentaction == ACT_DEAD) || (currentaction == ACT_PREARGH)
-        || (currentaction == ACT_ARGH) && !(self->chrflags & CHRFLAG_00000200))
+        || ((currentaction == ACT_ARGH) && !(self->chrflags & CHRFLAG_00000200)))
     {
         return FALSE;
     }
@@ -5293,7 +5292,7 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
             seen_bond_flag = 1;
         }
 
-        if (attack_type & TARGET_BOND > 0)
+        if (attack_type & TARGET_BOND)
         {
             ducking_height = playerGetEyeHeight(g_CurrentPlayer);
             if ((self->chrflags & CHRSTART_FORCENOBLOOD) != 0)
@@ -8905,6 +8904,9 @@ static void chrActionTickBody(ChrRecord *self)
                     break;
                 case ACT_BONDDIE:
                     chrTickBondDieRemoved(self);
+                    break;
+
+                default:
                     break;
             }
 

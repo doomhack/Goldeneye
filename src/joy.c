@@ -251,9 +251,9 @@ void joyCheckStatus(void)
             && (g_ContStatus[i].type & (CONT_ABSOLUTE | CONT_RELATIVE))
             && !(g_ContStatus[i].errno))
         {
-            // This seems like a typo in the original, doing a bitwise AND
-            // between a logical test on the left and a bitshift on the right.
-            if ((!(g_ControllerStates) & (1 << i)) || (g_ContRumblePakInitState[i] < RUMBLEPAKINITSTATE_READY))
+            // Rare's code had !(g_ControllerStates) & (1 << i), which only
+            // ever tested controller 1.
+            if (!(g_ControllerStates & (1 << i)) || (g_ContRumblePakInitState[i] < RUMBLEPAKINITSTATE_READY))
             {
                 joyRumblePakInit(i);
             }

@@ -973,12 +973,7 @@ void modelCalcRootPosition(Model *model, ModelNode *modelNode)
         {
             modelLerp3(&pos, &rw->Header.nextPos, model->frameFrac);
 
-            // Weird do while loop but needed for matching.
-            do
-            {
-                rw->Header.yrot = modelLerpAngle(rw->Header.frameYrot, rw->Header.nextYrot, model->frameFrac);
-            }
-            while (model->rootMoveCallback * 0);
+            rw->Header.yrot = modelLerpAngle(rw->Header.frameYrot, rw->Header.nextYrot, model->frameFrac);
         }
     }
 
@@ -1472,7 +1467,7 @@ void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, Mode
 
     if (node->Parent != NULL)
     {
-        mtx = modelFindNodeMtx(model, ((0, node))->Parent, 0);
+        mtx = modelFindNodeMtx(model, node->Parent, 0);
     }
     else
     {
@@ -1906,7 +1901,6 @@ void modelUpdateTubeIndex(Model *model, ModelNode *node)
 void modelUpdateRelationsQuick(Model *model, ModelNode *parent)
 {
     ModelNode *node = parent->Child;
-    ModelNode **unused_parent;
 
     while (node)
     {
@@ -1949,7 +1943,6 @@ void modelUpdateRelationsQuick(Model *model, ModelNode *parent)
         }
         else
         {
-            unused_parent = &parent;
             while (node)
             {
                 if (node == parent->Parent)
@@ -5126,7 +5119,7 @@ s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypo
     if (0.0f < projectionScalar)
     {
         directionDotProduct = (rayData->data.dir.f[0] * rayData->data.dir.f[0]) + (rayData->data.dir.f[1] * rayData->data.dir.f[1]) + (rayData->data.dir.f[2] * rayData->data.dir.f[2]);
-        centerDistanceSq = (rayData->data.rel.f[0] * rayData->data.rel.f[0]) + (rayData->data.rel.f[1] * rayData->data.rel.f[1]) + (0, rayData->data.rel.f[2] * rayData->data.rel.f[2]);
+        centerDistanceSq = (rayData->data.rel.f[0] * rayData->data.rel.f[0]) + (rayData->data.rel.f[1] * rayData->data.rel.f[1]) + (rayData->data.rel.f[2] * rayData->data.rel.f[2]);
 
         if (((centerDistanceSq - rayData->data.radiusSq) * directionDotProduct) <= (projectionScalar * projectionScalar))
         {

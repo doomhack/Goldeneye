@@ -472,7 +472,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s3
             if (format == G_IM_FMT_CI)
             {
                 u32 tlutCount = lrs + 1;
-				u32 tlutStart = (0x3ff - tex->lastColour) < tlutCount ? (0x3ff - tex->lastColour) : 0;
+				u32 tlutStart = (0x3ffU - tex->lastColour) < tlutCount ? (0x3ffU - tex->lastColour) : 0;
 
 				tlutCount -= tlutStart;
                 
@@ -608,7 +608,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s3
             if (format == G_IM_FMT_CI)
             {
                 u32 tlutCount = lrs + 1;
-				u32 tlutStart = (0x3ff - tex->lastColour) < tlutCount ? (0x3ff - tex->lastColour) : 0;
+				u32 tlutStart = (0x3ffU - tex->lastColour) < tlutCount ? (0x3ffU - tex->lastColour) : 0;
 
 				tlutCount -= tlutStart;
                 

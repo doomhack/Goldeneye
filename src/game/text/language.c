@@ -117,9 +117,9 @@ char *g_LangFileNames[45] = {
 #endif
 
 // cannonically gettextloadnum
-LEVELID langGetBankForStage(LEVELID level)
+TEXTBANK_LEVEL_INDEX langGetBankForStage(LEVELID level)
 {
-    LEVELID return_id;
+    TEXTBANK_LEVEL_INDEX return_id;
 
     switch(level)
     {

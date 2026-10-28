@@ -2298,7 +2298,6 @@ void bgBuildRoomVtxBounds(s32 roomID)
     Vtx *vertices;
     RoomVtxBatchBounds *points;
     s32 numpoints;
-    RoomVtxBatchBounds *point;
     s32 i;
     s32 numvertices;
     Vtx *vtx;
@@ -2342,7 +2341,6 @@ void bgBuildRoomVtxBounds(s32 roomID)
     {
         if (gdl[cmdindex].dma.cmd == G_VTX)
         {
-            point = &points[numpoints];
 
             points[numpoints].gdlindex = cmdindex;
 
@@ -4353,30 +4351,24 @@ void bgOrderPortal(s32 portalnum) // canonical name
 
 s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *start, coord3d *end)
 {
-    s32 bFoundPortal = FALSE;
     s32 i;
     s32 portalIndex = -1;
 
-        #define osSyncPrintf(...)
 
     for (i = 0; g_BgPortals[i].offset_portal != NULL; i++)
     {
         if (((g_BgPortals[i].connectedRoom1 == room1) && (g_BgPortals[i].connectedRoom2 == room2)) ||
             ((g_BgPortals[i].connectedRoom1 == room2) && (g_BgPortals[i].connectedRoom2 == room1)))
         {
-            bFoundPortal = TRUE;
             if (bgSegmentCrossesPortal(i, start, end) != 0)
             {
-                if (portalIndex >= 0) osSyncPrintf("bg: bgGetPortalBetweenRooms(): Multiple portals join room \'%s\' and \'%s\'\ n", bgDebPrintROOMID(room1), bgDebPrintROOMID(room2));
                 portalIndex = i;
             }
         }
     }
 
-    if (portalIndex == -1 && !bFoundPortal) osSyncPrintf("bg: bgGetPortalBetweenRooms(): No portal joins room \'%s\' and \'%s\'\n", bgDebPrintROOMID(room1), bgDebPrintROOMID(room2));
 
     return portalIndex;
-    #undef osSyncPrintf
 }
 
 

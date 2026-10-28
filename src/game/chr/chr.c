@@ -2177,7 +2177,7 @@ s32 chrTick(PropRecord *prop)
     s32 tickamount;
     s32 coopRepeat;
 
-    renderdata = (ModelRenderData){NULL, TRUE, 3};
+    renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
     chr = prop->chr;
     model = chr->model;
     headVisible = 1;
@@ -2663,7 +2663,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
     {
         if (chrfadealpha > 0)
         {
-            mrData = (ModelRenderData){NULL, TRUE, 3};
+            mrData = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
 
             shadowAlpha = 0x50;

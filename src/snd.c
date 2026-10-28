@@ -145,7 +145,7 @@ void sndNewPlayerInit(ALSeqpSfxConfig *sfxSeqpConfig)
     u8 *ptr;
     struct ALSoundState_s *sState;
     ALEvent evt;
-    u32 i;
+    s32 i;
 
     /*
      * Init member variables

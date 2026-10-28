@@ -8,7 +8,7 @@ void langLoadToAddr(u32 id);
 void langInit(void);
 char *langGet(s32 slotID);
 void langLoadToBank(int id, u8 *target, int size);
-LEVELID langGetBankForStage(LEVELID level);
+TEXTBANK_LEVEL_INDEX langGetBankForStage(LEVELID level);
 
 void langClearBank(s32 textBank);
 

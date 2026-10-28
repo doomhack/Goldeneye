@@ -96,7 +96,7 @@ LEVEL_SOLO_SEQUENCE fileGetHighestStageUnlockedAnyFolder(void);
 
 void fileResetRamRomSave(void);
 void fileCopyFolderToFirstFree(s32 foldernum);
-save_data * fileGetSaveForFoldernum(u32 folder);
+save_data * fileGetSaveForFoldernum(s32 folder);
 s32 fileGetSaveStageDifficultyTime(save_data* save, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty);
 s32 fileIs007ModeUnlocked(u32 folder);
 bool fileIsAztecCompletedOnSecretOr00ForFolder(s32 folder);

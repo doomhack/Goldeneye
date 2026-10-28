@@ -352,10 +352,9 @@ OSScTask *__scTaskReady(OSScTask *t)
 
 s32 __scTaskComplete(OSSched *sc, OSScTask *t)
 {
-    int rv;
     static int firsttime = 1;
     if ((t->state & OS_SC_RCP_MASK) == 0) {
-        rv = osSendMesg(t->msgQ, t->msg, OS_MESG_BLOCK);
+        osSendMesg(t->msgQ, t->msg, OS_MESG_BLOCK);
         if (t->list.t.type == M_GFXTASK) {
             if ((t->flags & OS_SC_SWAPBUFFER) && (t->flags & OS_SC_LAST_TASK)){
                 if (firsttime) {
@@ -406,7 +405,6 @@ void __scAppendList(OSSched *sc, OSScTask *t)
 
 void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp)
 {
-    int rv;
     if (sp)
     {
         if (sp->list.t.type == M_AUDTASK)
@@ -435,7 +433,7 @@ void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp)
     }
     if (dp && (dp != sp))
     {
-        rv = osDpSetNextBuffer(dp->list.t.output_buff, *dp->list.t.output_buff_size);
+        osDpSetNextBuffer(dp->list.t.output_buff, *dp->list.t.output_buff_size);
 
         dp_busy = 1;
         dpCount = 0;

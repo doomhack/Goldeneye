@@ -17,7 +17,7 @@ typedef struct
         u32 u32;
         u16 u16;
     } value;
-    /* 08 */ u8 *buff;
+    /* 08 */ char *buff;
     /* 0c */ s32 n0;
     /* 10 */ s32 num_leading_zeros;
     /* 14 */ s32 part2_len;

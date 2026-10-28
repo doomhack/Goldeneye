@@ -64,10 +64,9 @@ char *proutSyncPrintf(char *str, const char *buf, size_t n)
 void osSyncPrintf(const char *fmt, ...)
 {
 
-    int     ans;
     va_list args;
     va_start(args, fmt);
-    ans = _Printf(proutSyncPrintf, NULL, fmt, args);
+    _Printf(proutSyncPrintf, NULL, fmt, args);
     va_end(args);
 
 }

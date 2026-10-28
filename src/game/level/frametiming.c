@@ -79,7 +79,7 @@ void frameAdvance(s32 deltaFrames)
  */
 void frameWaitForNext(void) //maybe WaitForTick
 {
-  u32 nextFrameTime; //next frame time?
+  s32 nextFrameTime; //next frame time?
   
   do {
     #ifdef REFRESH_PAL

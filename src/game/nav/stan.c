@@ -162,7 +162,6 @@ StandTile *stanFindTileBelowPos(coord3d *pos, u8 *rooms, f32 *yRtn)
     StandTile *tile;
     s16 scaledShort[3];
     coord3d *midPointPtr;
-    u8 *tileSizes;
     StandTile *tileStack;
     StandTile *bestTile;
     f32 maxY;
@@ -198,7 +197,6 @@ StandTile *stanFindTileBelowPos(coord3d *pos, u8 *rooms, f32 *yRtn)
     scaledShort[1] = scaled[1];
     scaledShort[2] = scaled[2];
 
-    tileSizes = g_StanTileSizes;
     midPointPtr = &midPoint;
     room = 0; \
     if (g_StanNumRooms > 0) \
@@ -2075,8 +2073,7 @@ StandTile *stanFillSearch(StandTile *starttile, tilePredicate_t predicate) // st
                         // This assignment is logically redundant but needed for matching.
                         tileStartAddr = &g_StanTiles;
 
-                        // Keep this expression as written. Simplifying it to "link << 3" changes register usage.
-                        linkedtile = (StandTile *)(((u8 *)(*tileStartAddr)) + (link << ((0, 3))));
+                        linkedtile = (StandTile *)(((u8 *)(*tileStartAddr)) + (link << 3));
 
                         // A zero high portion indicates that there is no valid linked tile to visit.
                         if ((link >> 4) != 0)
@@ -2274,8 +2271,6 @@ void stanPackId(const char *id, u16 *stanIdHi, u8 *stanIdLo)
             else
             {
                 bitsfile = str_end[0] - 'a';
-                if (1)
-                    ;
                 bitssubtri = str_end[1];
 
                 if (bitssubtri != 0 && bitssubtri != '0')
@@ -2338,7 +2333,6 @@ void stanDetermineEOF(struct StanPrefixRecord *file /* canonically r */, s32 ori
     s32 delta;
     void **roomPtr;
     StandTile *tile;
-    u8 *tileSizes;
     
     delta = ((s32) newBase) - origBase;
     g_StanFile = file;
@@ -2347,7 +2341,6 @@ void stanDetermineEOF(struct StanPrefixRecord *file /* canonically r */, s32 ori
     g_StanTiles = (StandTile *)(((s32)file->ptr_firstroom + delta) - 0x80);
     g_StanFirstTileAddr = (s32)file->ptr_firstroom + delta;
     
-    newBase = g_StanTileSizes;
     roomPtr = (void **)&file->ptr_firstroom;
     
     if (file->ptr_firstroom != NULL)
@@ -2360,17 +2353,14 @@ void stanDetermineEOF(struct StanPrefixRecord *file /* canonically r */, s32 ori
         while (*roomPtr != NULL);
     }
     
-    tile = (StandTile *) (roomPtr + ((0, 1)));
+    tile = (StandTile *) (roomPtr + 1);
     
     if ((*(s32 *) tile) != 0)
     {
         do
         {
             g_StanTilesEnd = tile;
-
-            
-            tile = (StandTile *)((s32)tile
-                + (tileSizes = newBase)[(tile->tail.half >> 0xc) & 0xf]);
+            tile = (StandTile *)((u8 *)tile + g_StanTileSizes[(tile->tail.half >> 0xc) & 0xf]);
         } 
         while (*(s32 *) tile != 0);
     }

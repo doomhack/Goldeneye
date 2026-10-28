@@ -743,6 +743,9 @@ PROP weaponGetChrModel(ITEM_IDS item)
         case ITEM_TOKEN:         ret = PROP_FLAG;             break;
         case ITEM_UNARMED:       break;
         case ITEM_TASER:         break;
+
+        default:
+            break;
     }
     return ret;
 }

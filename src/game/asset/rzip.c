@@ -120,7 +120,7 @@ static s32 huftBuild(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *
 
 	k = j;                        /* minimum code length */
 
-	if (l < j) {
+	if (l < (s32)j) {
 		l = j;
 	}
 
@@ -132,7 +132,7 @@ static s32 huftBuild(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *
 
 	g = i;                        /* maximum code length */
 
-	if (l > i) {
+	if (l > (s32)i) {
 		l = i;
 	}
 
@@ -186,7 +186,7 @@ static s32 huftBuild(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *
 				w += l;                 /* previous table always l bits */
 
 				/* compute minimum size table less than or equal to l bits */
-				z = (z = g - w) > l ? l : z;  /* upper limit on table size */
+				z = (z = g - w) > (u32)l ? (u32)l : z;  /* upper limit on table size */
 
 				if ((f = 1 << (j = k - w)) > a + 1) {   /* try a k-w bit table */
 				                          /* too few codes for k-w bit table */
@@ -502,7 +502,7 @@ static s32 inflateFixed(void)
 
 static s32 inflateDynamic(void)
 {
-	s32 i;                /* temporary variables */
+	u32 i;                /* temporary variables */
 	u32 j;
 	u32 l;           /* last length */
 	u32 m;           /* mask for bit lengths table */
@@ -557,7 +557,7 @@ static s32 inflateDynamic(void)
 	i = l = 0;
 
 	while (i < n) {
-		NEEDBITS(bl)
+		NEEDBITS((u32)bl)
 		j = (td = tl + (b & m))->b;
 		DUMPBITS(j)
 

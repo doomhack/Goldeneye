@@ -718,7 +718,6 @@ s32 ailistGetId(AIRecord *AIList, bool *isGlobalAIList)
  */
 s32 aiFindLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
 {
-    s32   listID;
     bool  isGlobalAIList;
 
     for (;;)
@@ -734,7 +733,7 @@ s32 aiFindLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
         else if (AIList[Offset].cmd == AI_EndList)
         {
             // restart ai list PC if next label not found - causes infinite loop outside of debug
-            listID = ailistGetId(AIList, &isGlobalAIList);
+            ailistGetId(AIList, &isGlobalAIList);
             return 0;
         }
 
@@ -2799,7 +2798,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR)
                     {
                         DoorRecord *door = (DoorRecord *)obj;
-                        s32         bits = ai->LOCK_FLAG;
+                        u32         bits = ai->LOCK_FLAG;
                         if ((door->keyflags & bits) == bits)
                         {
                             pass = TRUE;
@@ -3355,7 +3354,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFObjectiveBitfieldHas:
                 {
                     AiIFObjectiveBitfieldHasRecord *ai    = (AiIFObjectiveBitfieldHasRecord *)(AiListp + Offset);
-                    s32                             flags = ntohl(ai->BITS);
+                    u32                             flags = ntohl(ai->BITS);
                     if (chrHasStageFlag(ChrEntityp, flags)) /* PD && ai->val[4] == 1) || (!chrHasStageFlag(ChrEntityp, flags) && ai->val[4] == 0  * */
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
@@ -3462,7 +3461,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFObjectFlagsHas:
                 {
                     AiIFObjectFlagsHasRecord *ai    = (AiIFObjectFlagsHasRecord *)(AiListp + Offset);
-                    s32                       flags = ntohl(ai->BITS);
+                    u32                       flags = ntohl(ai->BITS);
                     ObjectRecord             *obj   = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop && (obj->flags & flags) == flags)
                     {
@@ -3477,7 +3476,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_SetObjectFlags2:
                 {
                     AiSetObjectFlags2Record *ai    = (AiSetObjectFlags2Record *)(AiListp + Offset);
-                    s32                      flags = ntohl(ai->BITS);
+                    u32                      flags = ntohl(ai->BITS);
                     ObjectRecord            *obj   = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop)
                     {
@@ -3489,7 +3488,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_UnsetObjectFlags2:
                 {
                     AiUnsetObjectFlags2Record *ai    = (AiUnsetObjectFlags2Record *)(AiListp + Offset);
-                    s32                        flags = ntohl(ai->BITS);
+                    u32                        flags = ntohl(ai->BITS);
                     ObjectRecord              *obj   = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop)
                     {
@@ -3501,7 +3500,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFObjectFlags2Has:
                 {
                     AiIFObjectFlags2HasRecord *ai    = (AiIFObjectFlags2HasRecord *)(AiListp + Offset);
-                    s32                        flags = ntohl(ai->BITFIELD);
+                    u32                        flags = ntohl(ai->BITFIELD);
                     ObjectRecord              *obj   = objFindByTagId(ai->OBJECT_TAG);
                     if (obj && obj->prop && ((obj->flags2 & flags) == flags))
                     {

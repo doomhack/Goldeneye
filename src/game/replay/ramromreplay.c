@@ -480,7 +480,7 @@ void select_ramrom_to_play(void)
 
 
 
-u32 check_ramrom_flags(void)
+s32 check_ramrom_flags(void)
 {
     if ((get_is_ramrom_flag() != 0) || (get_recording_ramrom_flag() != 0))
     {

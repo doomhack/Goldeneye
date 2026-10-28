@@ -20,7 +20,7 @@ const char *g_Tokens[10] = {0};
 
 // Splits a string into tokens delimited by spaces and stores 
 // them in g_Tokens.
-unsigned char *tokenSplit(unsigned char *str)
+char *tokenSplit(char *str)
 {
     g_Tokens[0] = "";
     g_TokenCount = 1;
@@ -39,7 +39,7 @@ unsigned char *tokenSplit(unsigned char *str)
 // Sets a new token string.
 void tokenSetString(const char *str) {
     strcpy((char *)g_TokenString, str);
-    tokenSplit((unsigned char *)g_TokenString);
+    tokenSplit((char *)g_TokenString);
 }
 
 // Reads a new token string from the PI device at address 0xFFB000. Also handles the 
@@ -59,7 +59,7 @@ s32 tokenReadIo(void)
             address += sizeof(u32);
         }
     }
-    tokenSplit((unsigned char *)g_TokenString);
+    tokenSplit((char *)g_TokenString);
     if (tokenFind(1, "-d") != NULL) {
         debug = TRUE;
     }

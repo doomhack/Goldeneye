@@ -276,7 +276,6 @@ void playerLoadBody(void)
     s32                         size0;
     s32                         size1;
     s32                         helddst;
-    WeaponObjRecord             weapon;
     struct player             **pp;
     s32                         prop;
     ITEM_IDS                    item;
@@ -292,7 +291,6 @@ void playerLoadBody(void)
         cursor     = 0;
         size0      = gunGetHandModelBufferSize(GUNRIGHT);
         size1      = gunGetHandModelBufferSize(GUNLEFT);
-        weapon     = dummy_08_pp7_obj[0];
         item       = gunGetShownWeapon(GUNRIGHT);
         body       = BODY_Formal_Wear;
         head       = HEAD_Male_Brosnan_Default;
@@ -441,8 +439,8 @@ void playerLoadBody(void)
             texInitPool(&pool, weaponbuf1, size1);
             bodyheader  = gunGetHandModelHeader(GUNRIGHT);
             *bodyheader = *c_item_entries[body].header;
-            modelFileLoad(bodyheader, (u8 *)c_item_entries[body].filename, weaponbuf0, size0, &pool);
-            cursor = fileGetLoadedSizeByName((u8 *)c_item_entries[body].filename);
+            modelFileLoad(bodyheader, c_item_entries[body].filename, weaponbuf0, size0, &pool);
+            cursor = fileGetLoadedSizeByName(c_item_entries[body].filename);
 
             do
             {
@@ -452,8 +450,8 @@ void playerLoadBody(void)
                 *headheader = *c_item_entries[head].header;
 
 
-                modelFileLoad(headheader, (u8 *)c_item_entries[head].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
-                cursor = ALIGN64_V3(fileGetLoadedSizeByName((u8 *)c_item_entries[head].filename) + cursor + 0x3f);
+                modelFileLoad(headheader, c_item_entries[head].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
+                cursor = ALIGN64_V3(fileGetLoadedSizeByName(c_item_entries[head].filename) + cursor + 0x3f);
                 model  = (Model *)(weaponbuf0 + cursor);
                 cursor = ALIGN64_V3(cursor + 0xfb);
                 modelCalculateRwDataLen(bodyheader);
@@ -517,8 +515,8 @@ void playerLoadBody(void)
                 cursor       = ALIGN64_V3(cursor + 0xc7);
                 pitemheader  = gunGetHandModelHeader(GUNLEFT);
                 *pitemheader = *PitemZ_entries[prop].header;
-                modelFileLoad(pitemheader, (u8 *)PitemZ_entries[prop].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
-                fileGetLoadedSizeByName((u8 *)PitemZ_entries[prop].filename);
+                modelFileLoad(pitemheader, PitemZ_entries[prop].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
+                fileGetLoadedSizeByName(PitemZ_entries[prop].filename);
                 modelCalculateRwDataLen(pitemheader);
             }
             else
@@ -3665,7 +3663,6 @@ void watchTrigger(s32 instant)
 {
     struct WatchVertex *ptr_a;
     Gfx *ptr_b;
-    struct WatchVertex *next;
     struct WatchVertex *ptr_copy;
     s32 i;
 
@@ -3736,7 +3733,7 @@ void watchTrigger(s32 instant)
             ptr_b = g_CurrentPlayer->watchStaticGdl;
 
             ptr_copy = &g_CurrentPlayer->watchStaticVtx->vtx[0];
-            next = watchMakeRectVerts(ptr_a, 0, 0, 0x398, 0x14, -0x1CC, 0);
+            watchMakeRectVerts(ptr_a, 0, 0, 0x398, 0x14, -0x1CC, 0);
             ptr_b = watchRenderQuad(ptr_b, ptr_copy);
 
             gSPEndDisplayList(ptr_b);
@@ -7349,7 +7346,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         coord2d tankBounds[4];
         // roomids
         s32 rooms[8];
-        s32 stanlineret;
         s16 *lookup_index;
 
         tankRec = ((struct TankRecord *)g_PlayerTankProp->obj);
@@ -7377,7 +7373,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         tankObj->prop->stan = g_CurrentPlayer->bond.current_tile_ptr;
 
-        stanlineret = stanWalkLineNoCallback(
+        stanWalkLineNoCallback(
             &tankObj->prop->stan,
             g_CurrentPlayer->bond.collision_position.f[0],
             g_CurrentPlayer->bond.collision_position.f[2],
@@ -8246,7 +8242,7 @@ Gfx *watchRender(Gfx *gdl)
         goto end;
     }
  
-    renderdata = (ModelRenderData){NULL, TRUE, 3};
+    renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
     watchpos = ZeroCoordWatchPos;
     objheader = gunGetHandModelHeader(GUNLEFT);
     nodepos = (f32 *) objheader->Switches[3];
@@ -10423,7 +10419,7 @@ Gfx* hudmsgBottomRender(Gfx* gdl)
             gdl = textSetupDraw(gdl);
             view_left_offset = 0;
             view_top_offset = 0;
-            textMeasure(&view_top_offset, &view_left_offset ,(u8* ) stringbuffer_lowerleft[status_bar_text_buffer_index], BONDVIEW_2ND_FONTTABLE(status_bar_text_buffer_index), BONDVIEW_1ST_FONTTABLE(status_bar_text_buffer_index), 0);
+            textMeasure(&view_top_offset, &view_left_offset ,stringbuffer_lowerleft[status_bar_text_buffer_index], BONDVIEW_2ND_FONTTABLE(status_bar_text_buffer_index), BONDVIEW_1ST_FONTTABLE(status_bar_text_buffer_index), 0);
 
             if (!viewIsHalfWidth())
             {
@@ -10783,7 +10779,7 @@ s32 playerTick(PropRecord *prop)
      */
     if (g_PlayerTickCount >= 2)
     {
-        local8c = ((0, ppointers[index]))->bodyAimPitch;
+        local8c = ppointers[index]->bodyAimPitch;
         local88 = ppointers[index]->bodyAimYaw;
  
         if (ppointers[index]->bonddead != FALSE)

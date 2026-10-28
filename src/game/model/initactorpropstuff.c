@@ -104,7 +104,7 @@ s32 initResolveAnimGroupTable(struct weapon_firing_animation_table *animconfig)
 
         do
         {
-            config->anim.anim = (struct ModelAnimation *)(((0, animoffset)) + ((s32)g_AnimTable));
+            config->anim.anim = (struct ModelAnimation *)(animoffset + (s32)g_AnimTable);
             endframe = mathFloorToInt(config->turnEndFrame);
             angle16 = animSumRootTurn(config->anim.anim, 0, endframe) & 0xffff;
             duration = config->turnEndFrame;

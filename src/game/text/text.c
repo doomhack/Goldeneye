@@ -286,7 +286,6 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
     s32 savedx;
 	s32 savedy;
     s32 prevchar;
-    s32 stack = 1;
     //s32 stack5;
     
     savedx = *x;
@@ -297,7 +296,6 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
 		lineheight = chars['['].height + chars['['].baseline;
 	}
 
-    stack = colour; // ????????????
     gDPSetPrimColor(gdl++, 0, 0, M_COLOR_R(colour), M_COLOR_G(colour), M_COLOR_B(colour), M_COLOR_A(colour));
     
     while (*text != '\0')
@@ -440,7 +438,7 @@ Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 cli
                     /* xl */ VI_SX(x << 2), 
                     /* yl */ (y + curchar->baseline) << 2, 
                     /* xh */ VI_SX((x + curchar->width) << 2), 
-                    /* yh */ (clipY + clipHeight << 2), 
+                    /* yh */ ((clipY + clipHeight) << 2), 
                     /* tile */ G_TX_RENDERTILE, 
                     /* s */ 0, 
                     /* t */ 0, 

@@ -163,10 +163,10 @@ ObjectRecord *objFindByTagId(s32 TagID) //#MATCH
 
 
 
-u8 * briefingGetText(WATCH_BRIEFING_PAGE page)
+char *briefingGetText(WATCH_BRIEFING_PAGE page)
 {
     struct watchMenuObjectiveText * curentry;
-    u8 * textptr;
+    char * textptr;
 
     textptr = NULL;
 

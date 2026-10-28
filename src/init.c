@@ -69,7 +69,6 @@ void init(void)
 
     u8 *datazipram;
     u32 gameSegmentSize;
-    u32 decompress_result;
     u32 copylen;
     s32 *stack_pointer;
     u8 *dataziprom;
@@ -88,7 +87,7 @@ void init(void)
         datazipram[j] = dataziprom[j];
     }
 
-    decompress_result = decompress_entry(datazipram, csegmentSegmentVaddrStart, (struct huft *) RZIPBUFADDR);
+    decompress_entry(datazipram, csegmentSegmentVaddrStart, (struct huft *) RZIPBUFADDR);
 
     // Load all game code into RAM at its link address. It used to be paged in
     // 8KB at a time through the TLB; with the Expansion Pak it simply stays resident.

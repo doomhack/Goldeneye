@@ -149,7 +149,7 @@ struct memallocstring memallocstringtable[] = {
 
 s32 g_MainStageNum = LEVELID_NONE;
 
-OSScMsg g_bossGfxDoneMsg = { OS_SC_DONE_MSG };
+OSScMsg g_bossGfxDoneMsg = { .type = OS_SC_DONE_MSG };
 
 
 // extern declarations
@@ -349,8 +349,7 @@ void bossMainloop(void)
     s32 localSelectedNumPlayers;
     u32 pendingGfx = 0;
     u32 cpuFrameStart = 0;
-    s32 freeGfx;
-    s32 mainTickElapsed;
+    u32 mainTickElapsed;
     s32 rspReplyMsg;
 
 
@@ -498,7 +497,7 @@ void bossMainloop(void)
                 case (OS_SC_RETRACE_MSG):
                 {
 
-                    mainTickElapsed = (u32) (osGetCount() - g_FrameStartCount);
+                    mainTickElapsed = (osGetCount() - g_FrameStartCount);
                     if (mainTickElapsed < MAIN_LOOP_TICK_INTERVAL)
                     {
                         // nothing to do.
@@ -565,7 +564,6 @@ void bossMainloop(void)
                             gDPFullSync(gdl++); // 0xe9000000, 0x00000000
                             gSPEndDisplayList(gdl++); // 0xb8000000, 0x00000000
 
-                            freeGfx = dynGetFreeGfx(gdl);
                             dynSwapBuffers();
                             viUpdateMode();
 
@@ -603,11 +601,6 @@ void bossMainloop(void)
         g_StageNum = g_MainStageNum;
         g_MainStageNum = LEVELID_NONE;
     }
-
-    // if(gdl) also works here.
-    if (!gdl)
-        // removed ... or ido?
-    ;
 
     gameCloseMePool();
 }

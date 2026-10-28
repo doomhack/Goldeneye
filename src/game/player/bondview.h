@@ -204,7 +204,7 @@ struct hand
   coord3d muzzlePos; // world position of the muzzle flash
   f32 muzzleDepth; // its distance in front of the camera
   ModelBase gunmodel; /* the first-person gun model */
-  s32 gunmodelRwData[32]; /* its node rwdata */
+  u32 gunmodelRwData[32]; /* its node rwdata */
   s32 volley;  // Number of bullets discharged in a row. For pistols, it's always 1 even if the fire button is held.
   coord3d item_related;
 };

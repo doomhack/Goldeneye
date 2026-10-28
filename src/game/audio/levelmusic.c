@@ -94,6 +94,9 @@ void levelMusicSetState(MUSICSTATE state)
                 break;
             case MUSICSTATE_MP_DEATH:
                 break;
+
+            default:
+                break;
         }
 
         case MUSICSTATE_LEVEL:
@@ -126,6 +129,9 @@ void levelMusicSetState(MUSICSTATE state)
                 g_musicXTrack2Fade = 0;
                 musicTrack2Play(0x3A);
                 return;
+
+            default:
+                break;
         }
 
         case MUSICSTATE_XTRACK:
@@ -152,6 +158,9 @@ void levelMusicSetState(MUSICSTATE state)
             case MUSICSTATE_XTRACK_AMBIENT:
                 break;
             case MUSICSTATE_MP_DEATH:
+                break;
+
+            default:
                 break;
         }
 
@@ -187,6 +196,9 @@ void levelMusicSetState(MUSICSTATE state)
                 return;
             case MUSICSTATE_MP_DEATH:
                 break;
+
+            default:
+                break;
         }
 
         case MUSICSTATE_LEVEL_AMBIENT:
@@ -218,6 +230,9 @@ void levelMusicSetState(MUSICSTATE state)
                 return;
             case MUSICSTATE_MP_DEATH:
                 break;
+
+            default:
+                break;
         }
 
         case MUSICSTATE_XTRACK_AMBIENT:
@@ -246,6 +261,9 @@ void levelMusicSetState(MUSICSTATE state)
                 break;
             case MUSICSTATE_MP_DEATH:
                 break;
+
+            default:
+                break;
         }
 
         case MUSICSTATE_MP_DEATH:
@@ -272,6 +290,9 @@ void levelMusicSetState(MUSICSTATE state)
                 g_musicXTrack2Fade = 0;
                 musicTrack2Play(0x3A);
                 return;
+
+            default:
+                break;
         }
 
         default:

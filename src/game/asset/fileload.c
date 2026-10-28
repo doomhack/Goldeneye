@@ -91,7 +91,7 @@ void fileInit(void)
  * compressed on its own), so the level code reads them in parts this way. Hangs if the
  * range goes past the end of the file.
  */
-void fileLoadPartByName(u8 *name, u8 *dst, s32 offset, s32 len)
+void fileLoadPartByName(char *name, u8 *dst, u32 offset, u32 len)
 {
     s32 index;
     FileEntry *entry;
@@ -229,7 +229,7 @@ void fileSetSize(s32 index, u8 *data, u32 size, s32 shrinkAllocation)
     }
 }
 
-s32 fileGetLoadedSizeByName(u8 *name)
+s32 fileGetLoadedSizeByName(char *name)
 {
     int index;
 

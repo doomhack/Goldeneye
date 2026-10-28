@@ -4,8 +4,8 @@
 #include <bondtypes.h>
 #include "game/gfx/image.h"
 
-void modelFileLoadTextures(ModelFileHeader *header, u8 *name, u8 *dst, struct texpool *texpool);
-void modelFileLoad(struct ModelFileHeader *header, u8 *name, u8 *dst, s32 size, struct texpool *texpool);
+void modelFileLoadTextures(ModelFileHeader *header, char *name, u8 *dst, struct texpool *texpool);
+void modelFileLoad(struct ModelFileHeader *header, char *name, u8 *dst, s32 size, struct texpool *texpool);
 void modelFileLoadToPool(ModelFileHeader *header, char *name);
 
 #endif

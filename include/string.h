@@ -3,7 +3,7 @@
 #include <PR/ultratypes.h>
 
 extern void *memcpy(void *, const void *, size_t);
-extern unsigned char *strchr(const unsigned char *, int);
-extern size_t strlen(const unsigned char *);
+extern char *strchr(const char *, int);
+extern size_t strlen(const char *);
 
 #endif

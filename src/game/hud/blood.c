@@ -230,7 +230,7 @@ Gfx *gunbarrelSetupDraw(Gfx *gdl) {
 }
 
 s32 bloodNextFrame(s32 mode) {
-   s8 edge;
+   u8 edge;
    u8* decoded;
 
    if (mode == 0) {
@@ -316,9 +316,7 @@ u8 *bloodDecodeFrame(u8 *src, u8 width, u8 height, u8 *dst, u8 *edgeOut)
 
     do
     {
-        s32 unused;
         run = *src++;
-        unused = run;
         
         value = 0xFF;
 

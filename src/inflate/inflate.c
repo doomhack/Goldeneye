@@ -120,7 +120,7 @@ s32 huft_build(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *m)
 
 	k = j;                        /* minimum code length */
 
-	if (l < j) {
+	if (l < (s32)j) {
 		l = j;
 	}
 
@@ -132,7 +132,7 @@ s32 huft_build(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *m)
 
 	g = i;                        /* maximum code length */
 
-	if (l > i) {
+	if (l > (s32)i) {
 		l = i;
 	}
 
@@ -186,7 +186,7 @@ s32 huft_build(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *m)
 				w += l;                 /* previous table always l bits */
 
 				/* compute minimum size table less than or equal to l bits */
-				z = (z = g - w) > l ? l : z;  /* upper limit on table size */
+				z = (z = g - w) > (u32)l ? (u32)l : z;  /* upper limit on table size */
 
 				if ((f = 1 << (j = k - w)) > a + 1) {   /* try a k-w bit table */
 				                          /* too few codes for k-w bit table */
@@ -283,7 +283,7 @@ s32 inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
 	md = mask_bits[bd];
 
 	for (;;) {                    /* do until end of block */
-		NEEDBITS(bl)
+		NEEDBITS((u32)bl)
 		if ((e = (t = tl + (b & ml))->e) > 16) {
 			do {
 				DUMPBITS(t->b)
@@ -307,7 +307,7 @@ s32 inflate_codes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
 			DUMPBITS(e);
 
 			/* decode distance of block to copy */
-			NEEDBITS(bd)
+			NEEDBITS((u32)bd)
 			if ((e = (t = td + (b & md))->e) > 16) {
 				do {
 					DUMPBITS(t->b)
@@ -426,7 +426,7 @@ s32 inflate_fixed(void)
 
 s32 inflate_dynamic(void)
 {
-	s32 i;                /* temporary variables */
+	u32 i;                /* temporary variables */
 	u32 j;
 	u32 l;           /* last length */
 	u32 m;           /* mask for bit lengths table */
@@ -479,7 +479,7 @@ s32 inflate_dynamic(void)
 	i = l = 0;
 
 	while (i < n) {
-		NEEDBITS(bl)
+		NEEDBITS((u32)bl)
 		j = (td = tl + (b & m))->b;
 		DUMPBITS(j)
 
