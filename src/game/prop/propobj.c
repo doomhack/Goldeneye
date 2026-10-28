@@ -1036,7 +1036,7 @@ bool projectileTestPropBoundingSphere(coord3d *zeropos, coord3d *pos, coord3d *v
 
 bool projectileLineTestModel(ObjectRecord *obj, coord3d *modelRayOrigin, coord3d *modelRayDir, coord3d *hitPos, coord3d *hitNormal, Model **hitModel, ModelNode **hitNode)
 {
-    bool found;
+    s32 found;
     Mtxf *mtx;
     ModelNode *node;
     struct HitThing hitthing;
