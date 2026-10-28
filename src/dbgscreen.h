@@ -7,5 +7,6 @@ extern volatile u32 g_DbgFrameCounter;
 
 void dbgShowFault(OSThread *t);
 void dbgShowHang(u32 seconds);
+[[noreturn]] void dbgFatal(const char *message, u32 value);
 
 #endif

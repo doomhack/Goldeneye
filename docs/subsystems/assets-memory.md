@@ -18,32 +18,58 @@ All RAM from the end of the game's code and data (`_heapSegmentStart`) to the to
 8 MB is split into pools. A pool is a stack: `mempAlloc` takes the next bytes, nothing is
 freed on its own, and `mempResetPool` empties the whole pool at once.
 
-Only two pools are ever used:
+There are two pools:
 
 | Pool | Size | Lifetime |
 | --- | --- | --- |
-| `MEMPOOL_STAGE` | everything else (about 5.7 MB) | emptied each time a level or the title screen loads |
-| `MEMPOOL_PERMANENT` | 296 KB | filled once at boot (menu text, for example) |
+| `MEMPOOL_STAGE` | everything else (about 5.8 MB) | emptied each time a level or the title screen loads |
+| `MEMPOOL_PERMANENT` | 296 KB (`MEMP_PERMANENT_SIZE`), at the top of RAM | filled once at boot (menu text, music buffers) |
 
-The other `MEMPOOL_` values are leftovers and are always empty. The sizes come from
-command-line tokens: `-ml` sizes the stage pool and `-me` the permanent pool (each size goes
-to the pool *after* the one its name suggests), and boss.c always sets `-ml0 -me0`, which
-means "permanent gets 296 KB, stage gets the rest".
+`mempResizeLast` can grow or shrink only the most recent allocation in a pool. Between
+levels boss.c closes the stage pool (`mempClosePool`), so anything that allocates from it
+then is caught.
 
-There is no error handling. A full or closed pool hangs the game, with one exception: when
-the stage pool is full, `mempAlloc` takes the memory from the permanent pool instead.
-`mempResizeLast` can grow or shrink only the most recent allocation in a pool.
+A level uses about 2 MB of the stage pool and boot about 110 KB of the permanent pool
+(measured over the 14 demos), so there is plenty of headroom. Running out, or allocating
+from a closed pool, stops the game with a `FATAL ERROR` screen (`dbgFatal`) naming the
+problem and showing a rough backtrace. (Rare's version hung instead, and when the stage
+pool was full it quietly took the memory from the permanent pool, where it was never freed
+again.)
+
+## Memory budgets
+
+Each level has a `LevelMemBudget` in boss.c's `m_bossMemBudgets` table: the sizes, in KB,
+of its display list and vertex buffers (dyn.c), its shared texture pool (image.c) and
+mema's room heap. Two-player and co-op games use the level's `_MP` entry when it has one,
+and levels that aren't listed use `LEVELID_DEFAULT`'s. boss.c looks the budget up as each
+level loads and leaves it in `g_LevelMemBudget`. Co-op doubles the gfx and vertex buffers
+and the room heap, and adds 512 KB of textures.
+
+(Rare passed these sizes around as text: a "command line" per level such as
+`-mgfx70 -mvtx50 -mt625 -ma275`, parsed with `tokenFind`. That command line could also come
+from the development kit, with debug switches such as `-level_`, `-hard` and `-nochr`; on a
+cartridge it was always empty. Both are gone.)
 
 ## The room heap (mema)
 
-mema is a classic free-list heap: `memaAlloc` and `memaFree`. Its heap is one allocation in
-the stage pool, sized by the level's `-ma` token in boss.c (150 to 400 KB, doubled in co-op
-because two players see more rooms at once). Only `world/bg.c` uses it, for the geometry of
-rooms as they come into view and are dropped again.
+mema is a small heap with real frees: `memaAlloc`, `memaFree` and `memaRealloc`. Its heap
+is one allocation in the stage pool, sized by the level's memory budget (100 to 400 KB,
+doubled in co-op because two players see more rooms at once). Only `world/bg.c` uses it,
+for the geometry of rooms as they come into view and are dropped again.
 
-It tracks free space, not allocations: an array of (address, size) entries, one per free
-block. So `memaFree` needs the caller to pass the size. When the array gets fragmented,
-`memaDefrag` sorts and merges neighbouring entries; the data itself never moves.
+It tracks free space, not allocations: a list of up to 508 free ranges, sorted by address.
+So `memaFree` needs the caller to pass the size. A freed range is merged with its
+neighbours straight away, so the list never holds two ranges that touch. `memaAlloc` takes
+the smallest range that fits (best fit). Every size is rounded up to 16 bytes, so every
+allocation is 16-byte aligned, as DMA wants.
+
+`bgLoadRoomModelData` allocates `memaGetLongestFree()` bytes for a room it hasn't loaded
+before (its size isn't known yet), loads it, then shrinks the allocation with
+`memaRealloc`.
+
+If the heap gets so fragmented that a free needs a 509th range, mema gives up the smallest
+range until the next level, rather than overflow. Freeing memory that is already free (or
+with a size that overlaps free space) stops the game with a fatal error.
 
 ## ROM access
 
@@ -88,11 +114,8 @@ Textures and music are compressed the same way and call `rzipInflate` directly.
 
 * **`fileload` vs `save/file.c`.** The save code also uses a `file` prefix, for save
   files. That gets renamed with the save subsystem.
-* **Unprototyped calls.** `fileload.c` calls `romCopy` with an extra argument and without
-  its prototype, and `bg.c` calls several functions here without prototypes. Phase 3
-  (C23) makes those errors and fixes them.
 * **`fileGetIndex` and missing files.** A name that isn't in the table gives index 0.
   (Rare's version then asked the development kit's host PC for the file; that code is gone.)
-* **Matching leftovers.** Several functions here still contain statements that only
-  existed to make the decomp compile to the original bytes (`if (1);`, unused locals,
-  `mempAlloc`'s odd pointer arithmetic). Phase 2 removes them.
+* **Matching leftovers.** Several functions in fileload.c still contain statements that
+  only existed to make the decomp compile to the original bytes. They go when the asset
+  loading is rewritten.

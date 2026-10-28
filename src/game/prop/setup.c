@@ -40,7 +40,6 @@
 #include "game/prop/setup.h"
 #include "game/nav/stan.h"
 #include "game/model/model.h"
-#include "token.h"
 #include "game/chr/body.h"
 #include "game/level/lv.h"
 #include "game/menu/cheat.h"
@@ -1153,11 +1152,6 @@ void setupDoor(struct DoorRecord *door, s32 cmdindex)
 void setupCreateProps(enum LEVELID stageId)
 {
     ItemModelFileRecord *pitem;
-    s32 withchrs;
-    s32 withobjs;
-
-    withchrs = (((void *) tokenFind(1, "-nochr")) == NULL) && (((void *) tokenFind(1, "-noprop")) == NULL);
-    withobjs = (((void *) tokenFind(1, "-noobj")) == NULL) && (((void *) tokenFind(1, "-noprop")) == NULL);
 
     g_DoorScale = 1.0f;
 
@@ -1348,42 +1342,32 @@ void setupCreateProps(enum LEVELID stageId)
 
         // PD rejoins here
 
-        if (withchrs)
-        {
-            chrsAllocateSlots(setupCountPropdefs(PROPDEF_GUARD));
-            numAnimatedObjects += setupCountPropdefs(PROPDEF_GUARD);
-            numObjects += setupCountPropdefs(PROPDEF_COLLECTABLE);
-            numObjects += setupCountPropdefs(PROPDEF_KEY);
-            numObjects += setupCountPropdefs(PROPDEF_HAT);
-        }
-        else
-        {
-            chrsAllocateSlots(0); // chrmgrConfigure
-        }
+        chrsAllocateSlots(setupCountPropdefs(PROPDEF_GUARD));
+        numAnimatedObjects += setupCountPropdefs(PROPDEF_GUARD);
+        numObjects += setupCountPropdefs(PROPDEF_COLLECTABLE);
+        numObjects += setupCountPropdefs(PROPDEF_KEY);
+        numObjects += setupCountPropdefs(PROPDEF_HAT);
 
-        if (withobjs)
-        {
-            // load std props for all stages
-            numObjects += setupCountPropdefs(PROPDEF_DOOR);
-            numObjects += setupCountPropdefs(PROPDEF_CCTV);
-            numObjects += setupCountPropdefs(PROPDEF_AUTOGUN);
-            numObjects += setupCountPropdefs(PROPDEF_RACK);
-            numObjects += setupCountPropdefs(PROPDEF_MONITOR);
-            numObjects += setupCountPropdefs(PROPDEF_MULTI_MONITOR);
-            numObjects += setupCountPropdefs(PROPDEF_ARMOUR);
-            numObjects += setupCountPropdefs(PROPDEF_PROP);
-            numObjects += setupCountPropdefs(PROPDEF_GLASS);
-            numObjects += setupCountPropdefs(PROPDEF_TINTED_GLASS);
-            numObjects += setupCountPropdefs(PROPDEF_SAFE);
-            numObjects += setupCountPropdefs(PROPDEF_UNK41);
-            numObjects += setupCountPropdefs(PROPDEF_GAS_RELEASING);
-            numObjects += setupCountPropdefs(PROPDEF_ALARM);
-            numObjects += setupCountPropdefs(PROPDEF_MAGAZINE);
-            numObjects += setupCountPropdefs(PROPDEF_AMMO);
-            numObjects += setupCountPropdefs(PROPDEF_VEHICHLE);
-            numObjects += setupCountPropdefs(PROPDEF_TANK);
-            numAnimatedObjects += setupCountPropdefs(PROPDEF_AIRCRAFT);
-        }
+        // load std props for all stages
+        numObjects += setupCountPropdefs(PROPDEF_DOOR);
+        numObjects += setupCountPropdefs(PROPDEF_CCTV);
+        numObjects += setupCountPropdefs(PROPDEF_AUTOGUN);
+        numObjects += setupCountPropdefs(PROPDEF_RACK);
+        numObjects += setupCountPropdefs(PROPDEF_MONITOR);
+        numObjects += setupCountPropdefs(PROPDEF_MULTI_MONITOR);
+        numObjects += setupCountPropdefs(PROPDEF_ARMOUR);
+        numObjects += setupCountPropdefs(PROPDEF_PROP);
+        numObjects += setupCountPropdefs(PROPDEF_GLASS);
+        numObjects += setupCountPropdefs(PROPDEF_TINTED_GLASS);
+        numObjects += setupCountPropdefs(PROPDEF_SAFE);
+        numObjects += setupCountPropdefs(PROPDEF_UNK41);
+        numObjects += setupCountPropdefs(PROPDEF_GAS_RELEASING);
+        numObjects += setupCountPropdefs(PROPDEF_ALARM);
+        numObjects += setupCountPropdefs(PROPDEF_MAGAZINE);
+        numObjects += setupCountPropdefs(PROPDEF_AMMO);
+        numObjects += setupCountPropdefs(PROPDEF_VEHICHLE);
+        numObjects += setupCountPropdefs(PROPDEF_TANK);
+        numAnimatedObjects += setupCountPropdefs(PROPDEF_AIRCRAFT);
 
         modelmgrAllocateModelSlots(numObjects);
         modelmgrAllocateAnimModelSlots(numAnimatedObjects);
@@ -1437,13 +1421,10 @@ void setupCreateProps(enum LEVELID stageId)
                         break;
                     }
                     case PROPDEF_GUARD:
-                        if (withchrs)
-                        {
-                            setupGuard((struct GuardRecord *) phead);
-                        }
+                        setupGuard((struct GuardRecord *) phead);
                         break;
                     case PROPDEF_DOOR:
-                        if (withobjs && (!(((struct DoorRecord *) phead)->flags2 & flags)))
+                        if (!(((struct DoorRecord *) phead)->flags2 & flags))
                         {
                             setupDoor((struct DoorRecord *) phead, pdefIndex);
                         }
@@ -1452,49 +1433,49 @@ void setupCreateProps(enum LEVELID stageId)
                         g_DoorScale = ((struct GlobalDoorScaleRecord *) phead)->Scale / M_U16_MAX_VALUE_F;
                         break;
                     case PROPDEF_COLLECTABLE:
-                        if (withchrs && (!(((struct WeaponObjRecord *) phead)->flags2 & flags)))
+                        if (!(((struct WeaponObjRecord *) phead)->flags2 & flags))
                         {
                             setupWeapon((struct WeaponObjRecord *) phead);
                         }
                         break;
                     case PROPDEF_KEY:
-                        if (withchrs && (!(((struct KeyRecord *) phead)->flags2 & flags)))
+                        if (!(((struct KeyRecord *) phead)->flags2 & flags))
                         {
                             setupKey((struct ObjectRecord *) phead);
                         }
                         break;
                     case PROPDEF_HAT:
-                        if (withchrs && (!(((struct ObjectRecord *) phead)->flags2 & flags)))
+                        if (!(((struct ObjectRecord *) phead)->flags2 & flags))
                         {
                             setupHat((HatRecord *) phead);
                         }
                         break;
                     case PROPDEF_CCTV:
-                        if (withobjs && (!(((struct CCTVRecord *) phead)->flags2 & flags)))
+                        if (!(((struct CCTVRecord *) phead)->flags2 & flags))
                         {
                             setupCctv((struct CCTVRecord *) phead);
                         }
                         break;
                     case PROPDEF_AUTOGUN:
-                        if (withobjs && (!(((struct AutogunRecord *) phead)->flags2 & flags)))
+                        if (!(((struct AutogunRecord *) phead)->flags2 & flags))
                         {
                             setupAutogun((struct AutogunRecord *) phead);
                         }
                         break;
                     case PROPDEF_RACK:
-                        if (withobjs && (!(((struct ObjectRecord *) phead)->flags2 & flags)))
+                        if (!(((struct ObjectRecord *) phead)->flags2 & flags))
                         {
                             setupHangingMonitors((struct ObjectRecord *) phead);
                         }
                         break;
                     case PROPDEF_MONITOR:
-                        if (withobjs && (!(((struct MonitorObjRecord *) phead)->flags2 & flags)))
+                        if (!(((struct MonitorObjRecord *) phead)->flags2 & flags))
                         {
                             setupSingleMonitor((struct MonitorObjRecord *) phead, pdefIndex);
                         }
                         break;
                     case PROPDEF_MULTI_MONITOR:
-                        if (withobjs && (!(((struct MultiMonitorObjRecord *) phead)->flags2 & flags)))
+                        if (!(((struct MultiMonitorObjRecord *) phead)->flags2 & flags))
                         {
                             setupMultiMonitor((struct MultiMonitorObjRecord *) phead);
                         }
@@ -1502,7 +1483,7 @@ void setupCreateProps(enum LEVELID stageId)
                     case PROPDEF_ARMOUR:
                     {
                         struct BodyArmourRecord *pdef_ba = (struct BodyArmourRecord *) phead;
-                        if (withobjs && ((pdef_ba->flags2 & flags) == 0))
+                        if ((pdef_ba->flags2 & flags) == 0)
                         {
                             pdef_ba->initialamount = (*((s32 *) (&pdef_ba->initialamount))) / M_U16_MAX_VALUE_F;
                             pdef_ba->amount = pdef_ba->initialamount;
@@ -1512,7 +1493,7 @@ void setupCreateProps(enum LEVELID stageId)
                     }
                     case PROPDEF_TINTED_GLASS:
                     {
-                        if (withobjs && (!(((struct TintedGlassRecord *) phead)->flags2 & flags)))
+                        if (!(((struct TintedGlassRecord *) phead)->flags2 & flags))
                         {
                             if (((struct TintedGlassRecord *) phead)->flags & PROPFLAG_GLASS_HASPORTAL)
                             {
@@ -1546,7 +1527,7 @@ void setupCreateProps(enum LEVELID stageId)
                     case PROPDEF_UNK41:
                     case PROPDEF_GLASS:
                     case PROPDEF_SAFE:
-                        if (withobjs && (!(((ObjectRecord *) phead)->flags2 & flags)))
+                        if (!(((ObjectRecord *) phead)->flags2 & flags))
                         {
                             setupObject((struct ObjectRecord *) phead);
                         }
@@ -1565,7 +1546,7 @@ void setupCreateProps(enum LEVELID stageId)
                             pdef_macr->slots[mpweapon->ammotype - 1].quantity = ammoqty;
                         }
 
-                        if (((ammoqty > 0) && withobjs) && (!(pdef_macr->flags2 & flags)))
+                        if ((ammoqty > 0) && (!(pdef_macr->flags2 & flags)))
                         {
                             for (i9 = 0; i9 < AMMOTYPE_GLOBAL_MAX; i9++)
                             {
@@ -1580,7 +1561,7 @@ void setupCreateProps(enum LEVELID stageId)
                         break;
                     }
                     case PROPDEF_TANK:
-                        if (withobjs && (!(((struct TankRecord *) phead)->flags2 & flags)))
+                        if (!(((struct TankRecord *) phead)->flags2 & flags))
                         {
                             struct TankRecord *pdef_tank = (struct TankRecord *) phead;
                             struct PropRecord *tank_prop;
@@ -1608,7 +1589,7 @@ void setupCreateProps(enum LEVELID stageId)
                         }
                         break;
                     case PROPDEF_VEHICHLE:
-                        if (withobjs && (!(((struct VehichleRecord *) phead)->flags2 & flags)))
+                        if (!(((struct VehichleRecord *) phead)->flags2 & flags))
                         {
                             struct VehichleRecord *pdef_veh = (struct VehichleRecord *) phead;
 
@@ -1638,7 +1619,7 @@ void setupCreateProps(enum LEVELID stageId)
                         }
                         break;
                     case PROPDEF_AIRCRAFT:
-                        if (withobjs && (!(((struct AircraftRecord *) phead)->flags2 & flags)))
+                        if (!(((struct AircraftRecord *) phead)->flags2 & flags))
                         {
                             struct AircraftRecord *pdef_air = (struct AircraftRecord *) phead;
 
@@ -2103,7 +2084,6 @@ void setupFreeProps(void)
                 case PROPDEF_LOCK_DOOR:
                 case PROPDEF_SAFE_ITEM:
                 case PROPDEF_CAMERAPOS:
-                
                     break;
                 
             }

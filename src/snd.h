@@ -187,7 +187,6 @@ u16 sndGetSfxSlotFirstNaturalVolume(void);
 void sndApplyVolumeAllSfxSlot(u16 volume);
 void sndSetScalerApplyVolumeAllSfxSlot(f32 volumeScale);
 
-extern s8 g_sndBootswitchSound;
 
 
 #endif

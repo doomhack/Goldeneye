@@ -18,7 +18,6 @@
       build/OUTCODE/src/memp.o (.bss);
       build/OUTCODE/src/mema.o (.bss);
       build/OUTCODE/src/random.o (.bss);
-      build/OUTCODE/src/token.o (.bss);
       build/OUTCODE/src/str.o (.bss);
       build/OUTCODE/src/sprintf.o (.bss);
       build/OUTCODE/src/pi.o (.bss);

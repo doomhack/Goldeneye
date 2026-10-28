@@ -3,11 +3,17 @@
 #include <ultra64.h>
 #include <bondgame.h>
 
-struct memallocstring
+/** How much memory a level gets for each of its buffers, in KB. */
+typedef struct LevelMemBudget
 {
-  s32 id;
-  void *string;
-};
+    LEVELID level;
+    u16 gfxKB;      /* each display list buffer (dyn.c), per view */
+    u16 vtxKB;      /* each vertex buffer (dyn.c), per view */
+    u16 textureKB;  /* the shared texture pool (image.c) */
+    u16 roomHeapKB; /* mema's heap, for room geometry */
+} LevelMemBudget;
+
+extern const LevelMemBudget *g_LevelMemBudget;
 
 LEVELID bossGetStageNum(void);
 void bossSetLoadedStage(LEVELID stage);

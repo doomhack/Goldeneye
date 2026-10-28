@@ -74,8 +74,6 @@ extern s32 g_StanNumRooms;
 void stanLineRoomsCallback( StandTile *tile,  StandTile *unused,  struct StandTileWalkCallbackRecord *data);
 void stanSetLevelScale(f32 ls);
 void stanResetHits(void);
-Gfx * stanDebugBeginDraw(Gfx *gdl);
-Gfx *stanDebugDrawTile(Gfx *ptrdl);
 s32 stanWalkLineNoCallback(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z);
 bool stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z);
 f32 stanGetPositionYValue(StandTile* tile, f32 p_x, f32 p_z);

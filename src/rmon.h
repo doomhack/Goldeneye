@@ -7,7 +7,6 @@
 #define _RMON_H_
 
 void rmonMain(void *arg);
-s32 rmonGetToken(void);
 void osSyncPrintf(const char *fmt, ...);
 
 #endif

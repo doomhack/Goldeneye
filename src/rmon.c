@@ -18,14 +18,6 @@ Purpose: This is the main loop of the rmon debugger. It is mostly a protocol
 void rmonMain([[maybe_unused]] void *arg) {
 }
 
-/**
- * rmonGetToken
- * returns true if this if rmon is disabled
- */
-s32 rmonGetToken(void) {
-        return TRUE;
-}
-
 
 /**
  * Removed

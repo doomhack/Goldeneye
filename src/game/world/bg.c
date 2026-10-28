@@ -1985,12 +1985,6 @@ s32 bgCheckIfRoomModelNeedsLoad(s32 roomID)
 */
 void bgLoadRoomModelData(s32 roomID)
 {
-    /*
-     * Keep this prototype visible here for IDO codegen.
-     * Without it, the memaRealloc call below schedules a2 too early.
-     */
-    s32 memaRealloc(s32 addr, u32 oldsize, u32 newsize);
-
     s32 allocsize;
     s32 used;
     s32 result;
@@ -2076,7 +2070,7 @@ void bgLoadRoomModelData(s32 roomID)
     // If wasted space is detected, shrink allocated memory block.
     if (allocsize != ((used + 0x20) & ~0xf))
     {
-        memaRealloc((s32)data, allocsize, ((used + 0x20) & ~0xf));
+        memaRealloc(data, allocsize, ((used + 0x20) & ~0xf));
     }
 
     // Same branches, only the LUT parameter changes

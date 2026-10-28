@@ -1,6 +1,5 @@
 /**
- * The game's one-time setup: gameInitData (the menu state at power on), and
- * the menu memory pool (MEMPOOL_ME) helpers. Also the build date and two empty init
+ * The game's one-time setup: gameInitData (the menu state at power on). Also the build date and two empty init
  * functions left from code Rare removed.
  */
 
@@ -12,17 +11,6 @@
 #include <bondconstants.h>
 
 // data
-
-void gameResetMePool(void) {
-    fileForgetMePool();
-    mempResetPool(MEMPOOL_ME);
-    fileForgetPool(MEMPOOL_ME);
-}
-
-void gameCloseMePool(void) {
-    mempClosePool(MEMPOOL_ME);
-    fileForgetPool(MEMPOOL_ME);
-}
 
 
  /**

@@ -23,7 +23,6 @@
 #include "assert.h"
 #include "limits.h"
 #include "str.h"
-#include "token.h"
 
 void stanGetTileMidPoint(StandTile *tile, coord3d *out);
 
@@ -79,7 +78,6 @@ s32 g_StanLineLog = 0;
 s32 g_StanSavedCollHasLine =  0;
 
 
-const char aStanlinelog[] = "-stanlinelog";
 
 // forward declarations
 
@@ -327,11 +325,6 @@ void stanLoadFile(struct StanPrefixRecord *file)
     g_StanDebugRegion = 1;
     g_StanFile = file;
     g_StanTiles = (StandTile *)(((u8 *)file->ptr_firstroom) - 0x80);
-
-    if (tokenFind(1, aStanlinelog))
-    {
-        g_StanLineLog = 1;
-    }
 
     stanBuildRoomData();
     stanSetLevelScale(1.0f);
@@ -2374,16 +2367,6 @@ s32 stanGetTileRoom(StandTile *tile)
     return tile->room;
 }
 
-
-//incorrect here so that both this and bgGetRoomValue match
-
-Gfx *stanDebugDrawTile(Gfx *ptrdl) {
-    return ptrdl;
-}
-
-Gfx * stanDebugBeginDraw(Gfx *gdl) {
-    return gdl;
-}
 
 
 f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, coord2d *end2)
