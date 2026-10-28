@@ -12,7 +12,7 @@ extern f32 g_WaterBlendPhase;
 
 void waterReset(void);
 void waterTick(void);
-Gfx* waterSetupGdl(Gfx *gdl, s32 arg1);
-Gfx* waterSetupGdlCi(Gfx *gdl, s32 arg1);
+Gfx* waterSetupGdl(Gfx *gdl, s32 usePrebuiltDl);
+Gfx* waterSetupGdlCi(Gfx *gdl, s32 usePrebuiltDl);
 
 #endif
