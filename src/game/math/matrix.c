@@ -46,8 +46,8 @@ void mtx3Copy(f32 src[3][3], f32 dst[3][3])
 void mtx3MultInPlace(f32 lhs[3][3], f32 rhs[3][3])
 {
     f32 result[3][3];
-    mtx3Mult(lhs, rhs, &result);
-    mtx3Copy(&result, rhs);
+    mtx3Mult(lhs, rhs, result);
+    mtx3Copy(result, rhs);
 }
 #endif
 

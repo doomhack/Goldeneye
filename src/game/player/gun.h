@@ -314,7 +314,7 @@ char *itemGetWatchText(ITEM_IDS item);
 
 s32 weaponHasAmmo(ITEM_IDS item);
 
-void gunDrawSight(s32 *gdl);
+void gunDrawSight(Gfx **gdl);
 
 WeaponStats *weaponGetStats(ITEM_IDS item);
 

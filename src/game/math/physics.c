@@ -58,11 +58,11 @@ void physFall(f32 *height, f32 *speed, f32 ticks)
 }
 
 /** Moves a position and velocity on by `ticks`: straight sideways, falling vertically. */
-void physMoveWithGravity(f32 *pos, f32 *velocity, f32 ticks)
+void physMoveWithGravity(coord3d *pos, coord3d *velocity, f32 ticks)
 {
-    physFall(pos + 1, velocity + 1, ticks);
-    pos[0] += (ticks * velocity[0]);
-    pos[2] += (ticks * velocity[2]);
+    physFall(&pos->y, &velocity->y, ticks);
+    pos->x += ticks * velocity->x;
+    pos->z += ticks * velocity->z;
 }
 
 /** Applies a per-tick rotation `ticks` times. */

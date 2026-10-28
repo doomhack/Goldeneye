@@ -79,7 +79,7 @@ void                 chrobjSndCreatePostEventDefault(ALSoundState *, coord3d *);
 void                 alarmActivate(void);
 void                 weaponSetGunfireVisible(PropRecord *prop, s32 firing);
 s32                  sndVolumeForPosDefault(coord3d *pos); //getVolume?
-ObjectRecord        *weaponCreateFromModel(PROP modelnum, s32 weaponid);
+WeaponObjRecord     *weaponCreateFromModel(PROP modelnum, s32 weaponid);
 void                 objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS, s32 playernum);
 void                 chrobjMaybeDetonateObjectIfFlags(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS item, s32 owner);
 void                 objEnsureProjectile(PropRecord *);

@@ -237,8 +237,8 @@ extern struct coord3d                     g_ProjectileHitNormal;
 
 
 extern MonitorRecord g_MonitorAnimController;
-extern struct object_animation_controller g_UnknownAnimController;
-extern struct object_animation_controller g_TaserAnimController;
+extern MonitorRecord g_UnknownAnimController;
+extern MonitorRecord g_TaserAnimController;
 
 extern stagesetup                        *g_ptrStageSetupFile;
 extern char *setup_text_pointers[];

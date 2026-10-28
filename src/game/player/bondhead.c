@@ -259,7 +259,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
     g_CurrentPlayer->headbodyoffset.f[1] = g_CurrentPlayer->standbodyoffset.y;
     g_CurrentPlayer->headbodyoffset.f[2] = g_CurrentPlayer->standbodyoffset.z;
 
-    modelGetRootPosition(&g_CurrentPlayer->model, (struct float3 *) &offset);
+    modelGetRootPosition(&g_CurrentPlayer->model, &offset);
 
     offset.f[0] -= g_CurrentPlayer->bondheadmatrices[0].m[3][0];
     offset.f[2] -= g_CurrentPlayer->bondheadmatrices[0].m[3][2];
@@ -353,8 +353,8 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
         // result = x vector plus ((y - x vector) * scaler)
         // lookvel = ...
         interpLerp3(
-            &g_CurrentPlayer->standlook[g_CurrentPlayer->standcnt].f[0],
-            &g_CurrentPlayer->standlook[1 - g_CurrentPlayer->standcnt].f[0],
+            &g_CurrentPlayer->standlook[g_CurrentPlayer->standcnt],
+            &g_CurrentPlayer->standlook[1 - g_CurrentPlayer->standcnt],
             g_CurrentPlayer->standfrac,
             &lookvel);
 
@@ -364,8 +364,8 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
         // result = x vector plus ((y - x vector) * scaler)
         // upvel = ...
         interpLerp3(
-            &g_CurrentPlayer->standup[g_CurrentPlayer->standcnt].f[0],
-            &g_CurrentPlayer->standup[1 - g_CurrentPlayer->standcnt].f[0],
+            &g_CurrentPlayer->standup[g_CurrentPlayer->standcnt],
+            &g_CurrentPlayer->standup[1 - g_CurrentPlayer->standcnt],
             g_CurrentPlayer->standfrac,
             &upvel);
 
@@ -505,8 +505,7 @@ void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum);
 */
 void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum)
 {
-    // todo: is this a struct? see: animReadRootMotion16
-    s16 motion[6];
+    coord16 motion;
 
     sum[0] = 0;
     sum[1] = 0;
@@ -514,10 +513,10 @@ void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum)
 
     for (; startframe<endframe; startframe++)
     {
-        animReadRootMotion16(0, 0, &skeleton_guard, anim, startframe, &motion[2]);
-        sum[0] += motion[2];
-        sum[1] += motion[3];
-        sum[2] += motion[4];
+        animReadRootMotion16(0, 0, &skeleton_guard, anim, startframe, &motion);
+        sum[0] += motion.x;
+        sum[1] += motion.y;
+        sum[2] += motion.z;
     }
 }
 
@@ -603,11 +602,10 @@ void bheadInit(void)
     for (i=0; i<2; i++)
     {
         bheadSumRootMotion(
-            // match hack: addu address calculated backwards
-            (void*)((s32)g_BondMoveAnimationSetup[i].anim_id + (s32)&g_AnimTable->data),
+            ANIM_AT(g_BondMoveAnimationSetup[i].anim_id),
             (s32)g_BondMoveAnimationSetup[i].loopframe,
             (s32)g_BondMoveAnimationSetup[i].endframe,
-            &motion);
+            motion);
 
         g_BondMoveAnimationSetup[i].speedMultiplier = (f32) (((f32) motion[2] * IDO_POINT_ONE) / (g_BondMoveAnimationSetup[i].endframe - g_BondMoveAnimationSetup[i].loopframe));
     }
@@ -647,6 +645,6 @@ void bheadInit(void)
 
 
 void bheadInitGaitModel(void) {
-  player_gait_object_header.RootNode = (int)&player_gait_hdr;
+  player_gait_object_header.RootNode = &player_gait_hdr;
   return;
 }

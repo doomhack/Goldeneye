@@ -268,7 +268,7 @@ void gunFireTankShell(s32 handnum)
     obj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
     obj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
-    gunLaunchProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, (s32 *) &identitymtx);
+    gunLaunchProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, &identitymtx);
 
     if (obj->runtime_bitflags & RUNTIMEBITFLAG_00000080)
     {
@@ -1556,8 +1556,8 @@ void gunRenderHands(Gfx **gdlptr)
 Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour)
 {
     ModelRenderData renderdata = {NULL, TRUE, 3};
-    ModelBase model;
-    u8 rwbuf[0x80];
+    Model model = {};
+    u32 rwbuf[0x80 / sizeof(u32)];
     Mtxf tmp;
     Mtxf *matrices;
     union ModelRwData *rwdata;
@@ -1597,15 +1597,15 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour
     }
 
     i = 0;
-    model.render_pos = matrices;
+    model.render_pos = (RenderPosView *)matrices;
     modelCalculateRwDataLen(bodymodel);
-    modelInit((Model *) &model, bodymodel, rwbuf);
-    gunSetFirstPersonPartsVisible((Model *) &model, 0);
-    gunSetHeldItemVisible((Model *) &model, 1);
+    modelInit(&model, bodymodel, rwbuf);
+    gunSetFirstPersonPartsVisible(&model, 0);
+    gunSetHeldItemVisible(&model, 1);
 
     if (bodymodel->Switches[1] != NULL)
     {
-        rwdata = modelGetNodeRwData((Model *) &model, bodymodel->Switches[1]);
+        rwdata = modelGetNodeRwData(&model, bodymodel->Switches[1]);
 
         if (rwdata != 0)
         {
@@ -1657,7 +1657,7 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour
         {
             if ((*((ModelNode **) ((((u8 *) bodymodel->Switches) + j) + 0x48))) != NULL)
             {
-                rwdata = modelGetNodeRwData((Model *) &model, *((ModelNode **) ((((u8 *) bodymodel->Switches) + j) + 0x48)));
+                rwdata = modelGetNodeRwData(&model, *((ModelNode **) ((((u8 *) bodymodel->Switches) + j) + 0x48)));
 
                 if (rwdata != NULL)
                 {
@@ -1667,7 +1667,7 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour
 
             if ((*((ModelNode **) ((((u8 *) bodymodel->Switches) + j) + 0x5c))) != NULL)
             {
-                rwdata = modelGetNodeRwData((Model *) &model, *((ModelNode **) ((((u8 *) bodymodel->Switches) + j) + 0x5c)));
+                rwdata = modelGetNodeRwData(&model, *((ModelNode **) ((((u8 *) bodymodel->Switches) + j) + 0x5c)));
 
                 if (rwdata != NULL)
                 {
@@ -1677,7 +1677,7 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour
         }
     }
 
-    modelUpdateNodeRelations((Model *) &model);
+    modelUpdateNodeRelations(&model);
 
     if ((((((itemid == ITEM_GOLDENGUN) || (itemid == ITEM_RUGER)) || (itemid == ITEM_KNIFE)) || (itemid == ITEM_THROWKNIFE)) || (itemid == ITEM_SILVERWPPK)) || (itemid == ITEM_GOLDWPPK))
     {
@@ -1689,7 +1689,7 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour
     {
         if (bodymodel->Switches[16] != NULL)
         {
-            rwdata = modelGetNodeRwData((Model *) &model, bodymodel->Switches[17]);
+            rwdata = modelGetNodeRwData(&model, bodymodel->Switches[17]);
 
             if (rwdata != 0)
             {
@@ -1713,7 +1713,7 @@ Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour
     }
 
     renderdata.zbufferenabled = FALSE;
-    modelRender(&renderdata, (Model *) &model);
+    modelRender(&renderdata, &model);
     gdl = renderdata.gdl;
     mtxPushUnitWorldScale();
     j = 0;
@@ -1759,7 +1759,7 @@ void watchControllerButtonMtx(struct coord3d *base, Mtxf *m1, Mtxf *m2, Mtxf *m3
 Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions* buttonpositions, s8* contpadnum)
 {
     ModelRenderData renderdata;
-    ModelBase modelstack;
+    Model modelstack = {};
     s32 i;
     f32 angle;
     u32 rwdata[26];
@@ -1815,13 +1815,13 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     modelCalculateRwDataLen(objheader);
 
 
-    modelInit((Model *) &modelstack, objheader, rwdata);
+    modelInit(&modelstack, objheader, rwdata);
     modelstack.render_pos = (RenderPosView*) matrices;
     mtx4Copy(basemtx, &matrices[0]);
     
     for (i = 1; i < 13; i++)
     {
-        position = objheader->Switches[i]->Data;
+        position = &objheader->Switches[i]->Data->Group.Origin;
 
         // Update joy stick position and rotation.
         if (i == 2)
@@ -1862,7 +1862,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
     for (i = 0; i < objheader->numMatrices; i++)
     {
-        mtx4Copy((u32)modelstack.render_pos + i * sizeof(Mtxf), &nodeMtx);
+        mtx4Copy(&modelstack.render_pos[i].pos, &nodeMtx);
         mtxF2L(&nodeMtx, &modelstack.render_pos[i].pos);
     }
 
@@ -1874,7 +1874,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
         if (node)
         {
-            *((s32*) modelGetNodeRwData(&modelstack, node)) = 0;
+            modelGetNodeRwData(&modelstack, node)->Switch.visible = 0;
         }
 
         matrices = dynAllocate(objheader->numMatrices * (sizeof(Mtxf)));
@@ -2096,7 +2096,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 
         for (i = 0; i < objheader->numMatrices; i++)
         {
-            mtx4Copy((u32)modelstack.render_pos + i * sizeof(Mtxf), &nodeMtx);
+            mtx4Copy(&modelstack.render_pos[i].pos, &nodeMtx);
             mtxF2L(&nodeMtx, &modelstack.render_pos[i].pos);
         }
 
@@ -4628,7 +4628,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
         entry->pos.y = mtx->m[3][1];
         entry->pos.z = mtx->m[3][2];
 #if VERSION_EU
-        mtx4ToMtx3(mtx, entry->rot_mtx);
+        mtx4ToMtx3(mtx->m, entry->rot_mtx);
 #else
         entry->rot_mtx.m[0][0] = mtx->m[0][0];
         entry->rot_mtx.m[0][1] = mtx->m[0][1];
@@ -4774,7 +4774,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
+        mtx4ToMtx3(rotmtx.m, casing->rot_velocity_mtx);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -4829,7 +4829,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
+        mtx4ToMtx3(rotmtx.m, casing->rot_velocity_mtx);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -4945,7 +4945,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
         entry->pos.y = mtx->m[3][1];
         entry->pos.z = mtx->m[3][2];
 #if VERSION_EU
-        mtx4ToMtx3(mtx, entry->rot_mtx);
+        mtx4ToMtx3(mtx->m, entry->rot_mtx);
 #else
         entry->rot_mtx.m[0][0] = mtx->m[0][0];
         entry->rot_mtx.m[0][1] = mtx->m[0][1];
@@ -5077,7 +5077,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
+        mtx4ToMtx3(rotmtx.m, casing->rot_velocity_mtx);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -5132,7 +5132,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, casing->rot_velocity_mtx);
+        mtx4ToMtx3(rotmtx.m, casing->rot_velocity_mtx);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -5234,7 +5234,7 @@ void casingRender(CasingRecord *casing, Gfx **gdl)
     Gfx             *savedgdl = *gdl;
     ModelFileHeader *model_header = casing->header;
     RenderPosView   *model_matrices = dynAllocate(model_header->numMatrices * sizeof(RenderPosView));
-    ModelBase        model;
+    Model            model = {};
     ModelRenderData  render_data = g_DefaultCasingModelRenderData;
     Mtxf             casing_model_mtx;
     s32              axis_offset;
@@ -5244,7 +5244,7 @@ void casingRender(CasingRecord *casing, Gfx **gdl)
     u8              *matrix_axis_ptr;
 
     modelCalculateRwDataLen(model_header);
-    modelInit((Model *)&model, model_header, NULL);
+    modelInit(&model, model_header, NULL);
 
     model.render_pos = model_matrices;
 
@@ -5299,7 +5299,7 @@ void casingRender(CasingRecord *casing, Gfx **gdl)
              (g_CurrentPlayer->tileColor.g << 16)) |
             (g_CurrentPlayer->tileColor.b << 8);
 
-        modelRender(&render_data, (Model *)&model);
+        modelRender(&render_data, &model);
 
         *gdl = render_data.gdl;
 
@@ -5642,7 +5642,7 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                     if (imageoffset_r != 0)
                     {
                         imageoffset_r += g_ImageBankOffset;
-                        gdl = hudDrawImageDefault(gdl, (u8 *)imageoffset_r, (camGetScreenLeft() + camGetScreenWidth()) - (f32)rightx, -1.0f,
+                        gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset_r, (camGetScreenLeft() + camGetScreenWidth()) - (f32)rightx, -1.0f,
 #if defined(VERSION_EU)
                             (viGetViewTop() + viGetViewHeight()) - 30, 0,
 #else
@@ -5708,7 +5708,7 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                     if (imageoffset_l != 0)
                     {
                         imageoffset_l += g_ImageBankOffset;
-                        gdl = hudDrawImageDefault(gdl, (u8 *)imageoffset_l, camGetScreenLeft() + (f32)leftx, -1.0f,
+                        gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset_l, camGetScreenLeft() + (f32)leftx, -1.0f,
 #if defined(VERSION_EU)
                             (viGetViewTop() + viGetViewHeight()) - 30, 1,
 #else
@@ -5798,9 +5798,9 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
 
                 // Draw the ammo icon
 #if defined(VERSION_EU)
-                gdl = hudDrawImageDefault(gdl, (u8 *)imageoffset, 200.0f, 208.0f, (viGetViewTop() + viGetViewHeight()) - 30, 0, ammo_related[ammotype].IconYOffset, 1);
+                gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset, 200.0f, 208.0f, (viGetViewTop() + viGetViewHeight()) - 30, 0, ammo_related[ammotype].IconYOffset, 1);
 #else
-                gdl = hudDrawImageDefault(gdl, (u8 *)imageoffset, 200.0f, 180.0f, (viGetViewTop() + viGetViewHeight()) - 20, 0, ammo_related[ammotype].IconYOffset, 1);
+                gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset, 200.0f, 180.0f, (viGetViewTop() + viGetViewHeight()) - 20, 0, ammo_related[ammotype].IconYOffset, 1);
 #endif
 
                 textwidth = ((u8 *)imageoffset)[4];
@@ -5864,9 +5864,9 @@ void gunSetSightVisible(s32 reason, bool visible)
 }
 
 
-void gunDrawSight(s32 *gdl) {
+void gunDrawSight(Gfx **gdl) {
 
-    s32 dl;
+    Gfx *dl;
     f32 xypos[2];
     f32 halfedxy[2];
 
@@ -5885,7 +5885,7 @@ void gunDrawSight(s32 *gdl) {
 #ifdef VERSION_EU
         halfedxy[1] = halfedxy[1] * g_GunSightAspectRatio;
 #endif
-        texRectDrawImage(&dl, &xypos, &halfedxy, 0x20, 0x20, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0x6E, (g_ImageCrosshair->level > 0), 0);
+        texRectDrawImage(&dl, xypos, halfedxy, 0x20, 0x20, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0x6E, (g_ImageCrosshair->level > 0), 0);
         *gdl = dl;
     }
 }
@@ -5919,7 +5919,7 @@ s32 statsGetCivilianKills(void)
 
 void statsAddKill(void)
 {
-    s8 buffer[256];
+    char buffer[256];
     s32 time_since_kill;
     s32 recent_kill_count;
     s32 mission_time;
@@ -5930,12 +5930,12 @@ void statsAddKill(void)
     if (!isMpGame()) { return; }
 
     mission_time = lvGetMissionTime60();
-    sprintf(&buffer, aSD, langGet(getStringID(LGUN, GUN_STR_DA_KILLCOUNT)), g_playerPerm->kill_count); // "kill count"
+    sprintf(buffer, aSD, langGet(getStringID(LGUN, GUN_STR_DA_KILLCOUNT)), g_playerPerm->kill_count); // "kill count"
 
 #if defined(VERSION_US)
-    hudmsgBottomShow(&buffer);
+    hudmsgBottomShow(buffer);
 #elif defined(VERSION_EU)
-    hudmsgBottomShowText(&buffer);
+    hudmsgBottomShowText(buffer);
 #endif
 
     if (g_playerPerm->kill_count >= 2)
@@ -6022,12 +6022,12 @@ void statsAddSuicide(void) {
 
         currentTime = lvGetMissionTime60();
 
-        sprintf(&buffer, &aSD_0, langGet(getStringID(LGUN, GUN_STR_DE_SUICIDECOUNT)), g_CurrentPlayer->num_suicides); // "suicide count"
+        sprintf(buffer, aSD_0, langGet(getStringID(LGUN, GUN_STR_DE_SUICIDECOUNT)), g_CurrentPlayer->num_suicides); // "suicide count"
 
 #if defined(VERSION_EU)
-		hudmsgBottomShowText(&buffer);
+		hudmsgBottomShowText(buffer);
 #else
-		hudmsgBottomShow(&buffer);
+		hudmsgBottomShow(buffer);
 #endif
 
         if (g_playerPerm->kill_count >= 2) {

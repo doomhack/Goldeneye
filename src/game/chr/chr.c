@@ -1123,9 +1123,9 @@ s32 chrsGetNumSlots(void)
 }
 
 
-void dynAllocateVerticesDiscard(int count)
+Vertex *dynAllocateVerticesDiscard(s32 count)
 {
-  dynAllocate(count << 4);
+  return dynAllocate(count * sizeof(Vertex));
 }
 
 

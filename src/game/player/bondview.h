@@ -757,8 +757,8 @@ struct player
   u8 cheatInputBufferIndex; // canonically "buthistindex"
   u8 cheatInputCount; // canonically "buthistlen"
   u8 cheatBondInvincible; // canonically "bondinvincible"
-  struct damage_display_parent armor_display_values[23];
-  struct damage_display_parent health_display_values[23];
+  struct damage_display_val armor_display_values[46]; // watch gauge vertices
+  struct damage_display_val health_display_values[46];
 
   struct WatchRectangle watchTabsVtx[WATCH_NUMBER_SCREENS];
 
@@ -888,11 +888,6 @@ typedef struct Weapon1PTransformKeyframe {
 } Weapon1PTransformKeyframe;
 
 // placeholder while matching
-struct move_bond_temp_struct {
-    s32 unk00;
-    s32 unk04;
-};
-
 extern s32 g_bondviewForceDisarm;
 extern s32 resolution;
 extern s32 cameraBufferToggle;

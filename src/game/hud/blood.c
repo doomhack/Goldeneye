@@ -419,11 +419,11 @@ void bloodSmoothDownRight(u8 *src, s32 height, u8 *dst)
 void bloodImgTranspose(u8 *src, s32 srcwidth, s32 srcheight, u8 *dst)
 {
     s32 pixelcount;
-    u32 rowend;
-    u32 nextRowEnd;
+    u8 *rowend;
+    u8 *nextRowEnd;
     u8 *out;
     u8 *in;
-    u32 end;
+    u8 *end;
 
     pixelcount = srcwidth * srcheight;
     in = src;
@@ -441,11 +441,11 @@ void bloodImgTranspose(u8 *src, s32 srcwidth, s32 srcheight, u8 *dst)
             nextRowEnd += 1;
             out += srcheight;
             
-        } while ((u32) in < rowend);
+        } while (in < rowend);
 
         out = (out - (pixelcount)) + 1;
         
-    } while ((u32) in < (u32) end);
+    } while (in < end);
 }
 
 
