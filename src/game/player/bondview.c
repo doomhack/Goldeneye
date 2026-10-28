@@ -426,7 +426,7 @@ struct firing_anim_struct firing_animation_groups[][6] = {
      {&g_ChrMoveFireAnims[1], 0, 0.5, 0.0, -1.0},
      {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
      {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
-     {crouched_rifle_firing_animation_groupA, 0, 0.1, 45.0, 55.0}},
+     {&crouched_rifle_firing_animation_group1[1], 0, 0.1, 45.0, 55.0}},
     {{NULL, 0x8194, 0.25, 0.0, -1.0},
      {NULL, 0x8204, 0.5, 0.0, -1.0},
      {NULL, 0x777C, 0.5, 0.0, -1.0},

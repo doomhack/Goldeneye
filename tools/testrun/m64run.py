@@ -136,6 +136,11 @@ def main():
                          'OUTDIR/state.txt: timer exact coarse, one line per game frame')
     ap.add_argument('--demo', type=int, metavar='N',
                     help='play attract-mode demo N (0-13) and stop when it ends (needs --map)')
+    ap.add_argument('--dumpram', action='store_true',
+                    help='save RDRAM to OUTDIR/end-ram.bin when the run ends')
+    ap.add_argument('--readwatch', action='append', default=[], metavar='START:END',
+                    help='log every CPU read or write of the virtual address range START..END (hex, '
+                         'END exclusive) to OUTDIR/access.txt; runs the slow interpreter')
     ap.add_argument('--stall', type=float, default=20,
                     help='seconds without a new frame before the run counts as hung')
     args = ap.parse_args()
@@ -188,7 +193,9 @@ def main():
             core.ConfigSetParameter(handle, name.encode(), kind, C.byref(v))
 
     config_set('Core', 'ScreenshotPath', M64TYPE_STRING, shotdir)
-    config_set('Core', 'R4300Emulator', M64TYPE_INT, 2)
+    config_set('Core', 'R4300Emulator', M64TYPE_INT, 0 if args.readwatch else 2)
+    if args.readwatch:
+        config_set('Core', 'EnableDebugger', M64TYPE_BOOL, 1)
     config_set('Core', 'OnScreenDisplay', M64TYPE_BOOL, 0)
     config_set('Video-General', 'Fullscreen', M64TYPE_BOOL, 0)
     config_set('Video-General', 'ScreenWidth', M64TYPE_INT, 640)
@@ -222,6 +229,34 @@ def main():
     core.DebugMemGetPointer.restype = C.c_void_p
 
     watch_log = open(os.path.join(args.outdir, 'watch.txt'), 'w') if watch_addr is not None else None
+
+    # Memory breakpoints: the core pauses on each access and calls dbg_update, which notes
+    # the access and lets it run on.
+    class Breakpoint(C.Structure):
+        _fields_ = [('address', C.c_uint32), ('endaddr', C.c_uint32), ('flags', C.c_uint)]
+
+    accesses = {}
+
+    def dbg_init():
+        for item in args.readwatch:
+            start, end = (int(x, 16) & 0x1fffffff for x in item.split(':'))  # breakpoints take physical addresses
+            bkp = Breakpoint(start, end - 1, 0x01 | 0x02 | 0x04)  # enabled, read, write
+            core.DebugBreakpointCommand(2, 0, C.byref(bkp))  # M64P_BKP_CMD_ADD_STRUCT
+        core.DebugSetRunState(2)  # M64P_DBG_RUNSTATE_RUNNING
+
+    def dbg_update(pc):
+        flags, accessed = C.c_uint32(), C.c_uint32()
+        core.DebugBreakpointTriggeredBy(C.byref(flags), C.byref(accessed))
+        key = (pc, accessed.value, 'write' if flags.value & 0x04 else 'read')
+        if key not in accesses:
+            accesses[key] = progress['frame']
+        core.DebugSetRunState(2)
+        core.DebugStep()
+
+    dbg_callbacks = (C.CFUNCTYPE(None)(dbg_init), C.CFUNCTYPE(None, C.c_uint)(dbg_update),
+                     C.CFUNCTYPE(None)(lambda: None))
+    if args.readwatch:
+        core.DebugSetCallbacks(*dbg_callbacks)
     last = [None]
     rdram = [None]
 
@@ -290,6 +325,13 @@ def main():
     core.CoreDoCommand(M64CMD_SET_FRAME_CALLBACK, 0, frame_cb)
     threading.Thread(target=watchdog, daemon=True).start()
     core.CoreDoCommand(M64CMD_EXECUTE, 0, None)
+    if args.dumpram and result.get('status') != 'hung':
+        ram = C.string_at(core.DebugMemGetPointer(M64P_DBG_PTR_RDRAM), 8 << 20)
+        open(os.path.join(args.outdir, 'end-ram.bin'), 'wb').write(ram)
+    if args.readwatch:
+        with open(os.path.join(args.outdir, 'access.txt'), 'w') as f:
+            for (pc, address, kind), frame in sorted(accesses.items(), key=lambda kv: kv[1]):
+                f.write(f'frame {frame} pc {pc:08x} {kind} {address:08x}\n')
     if watch_log:
         watch_log.close()
     if state_log:
