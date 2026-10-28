@@ -177,15 +177,15 @@ struct ALBankAlt_s
 
 // end Alternate defintion for ALInstrument
 
-void sndNewPlayerInit(ALSeqpSfxConfig *arg0);
+void sndNewPlayerInit(ALSeqpSfxConfig *sfxSeqpConfig);
 u8 sndGetPlayingState(ALSoundState *state);
 void sndDeactivate(ALSoundState *state);
 void sndDeactivateAllSfxByFlag_1(void);
-void sndCreatePostEvent(ALSoundState *state, s16 eventType, s32 arg2);
+void sndCreatePostEvent(ALSoundState *state, s16 eventType, s32 data);
 ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundState *pendingState);
 u16 sndGetSfxSlotFirstNaturalVolume(void);
-void sndApplyVolumeAllSfxSlot(u16 arg0);
-void sndSetScalerApplyVolumeAllSfxSlot(f32 arg0);
+void sndApplyVolumeAllSfxSlot(u16 volume);
+void sndSetScalerApplyVolumeAllSfxSlot(f32 volumeScale);
 
 extern s8 g_sndBootswitchSound;
 

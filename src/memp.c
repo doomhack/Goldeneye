@@ -33,7 +33,7 @@ struct MempPoolSizes m_mempDefaultSizes = {
     0,                 0
 };
 
-const char *tokenFind(s32 arg0, const char *arg1);
+const char *tokenFind(s32 index, const char *token);
 long int strtol(const char *str, char **endptr, int base);
 /**
  * Splits the area from `areaStart` into pools. The sizes come from the "-mf", "-ml" and

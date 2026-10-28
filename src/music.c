@@ -69,15 +69,6 @@
 #define MUSIC_CONFIG_USE_SFX_BANK         1
 #define MUSIC_CONFIG_USE_INSTRUMENT_BANK  1
 
-// TODO: what is this?
-// This is only used when playing a file (loading from ROM),
-// but the only thing used is the seqData pointer, the large array
-// seems unused.
-struct music_struct_b {
-    u8 data[8438];
-    u8 *seqData;
-};
-
 /**
  * Current playing track. Sometimes compared to zero to check
  * if there is any currently playing music.
@@ -604,22 +595,22 @@ void musicSeqFileNew(RareALSeqBankFile *file, u8 *base)
 void musicSeqPlayerInit(void)
 {
     // guess at struct.
-    ALSeqpSfxConfig sfxSeqpConfig; // sp 216-228
-    ALBankFile *sfxBank; // sp 212
+    ALSeqpSfxConfig sfxSeqpConfig;
+    ALBankFile *sfxBank;
     u32 ui;
-    ALBankFile *instrumentBank; // sp 204
+    ALBankFile *instrumentBank;
 
     // This type/cast is not correct, but this is how it matches.
     s32 tblSegmentRomStartAddress = (s32)&_musicsampletblSegmentRomStart; // ??
 
-    ALSynConfig synconfig; // sp 164-192
-    ALSeqpConfig track1SeqpConfig; // sp 136-160
-    ALSeqpConfig track2SeqpConfig; // sp 108-132
-    ALSeqpConfig track3SeqpConfig; // sp 80-104
+    ALSynConfig synconfig;
+    ALSeqpConfig track1SeqpConfig;
+    ALSeqpConfig track2SeqpConfig;
+    ALSeqpConfig track3SeqpConfig;
     u8 *mempAddress;
     u8 *p;
-    u32 tblSegmentSize; // sp 64
-    u32 size; // sp56;
+    u32 tblSegmentSize;
+    u32 size;
     
     if (g_sndBootswitchSound)
     {
@@ -767,10 +758,10 @@ void musicSeqPlayerInit(void)
 void musicTrack1Play(s32 track)
 {
     u32 trackSizeBytes;
-    struct music_struct_b thing;
-    u8 *temp_a0;
+    u8 *seqData;
+    u8 *compressed;
     void *romAddress;
-    u32 t3;
+    u32 bufferSize;
 
     if (g_sndBootswitchSound)
     {
@@ -797,13 +788,15 @@ void musicTrack1Play(s32 track)
         return;
     }
 
-    t3 = ALIGN16_a(g_musicTrackLength[g_musicXTrack1CurrentTrackNum]) + ALIGN16_a(NUM_MUSIC_TRACKS);
+    bufferSize = ALIGN16_a(g_musicTrackLength[g_musicXTrack1CurrentTrackNum]) + ALIGN16_a(NUM_MUSIC_TRACKS);
     trackSizeBytes = ALIGN16_a(g_musicTrackCompressedLength[g_musicXTrack1CurrentTrackNum]);
-    thing.seqData = g_musicXTrack1SeqData;
-    temp_a0 = (u8*)((t3 + (s32)thing.seqData) - trackSizeBytes);
+    seqData = g_musicXTrack1SeqData;
 
-    romCopy(temp_a0, romAddress, trackSizeBytes);
-    rzipInflate(temp_a0, thing.seqData, MUSIC_HLIST);
+    // Load the compressed track at the end of the buffer so it can be inflated in place
+    compressed = seqData + bufferSize - trackSizeBytes;
+
+    romCopy(compressed, romAddress, trackSizeBytes);
+    rzipInflate(compressed, seqData, MUSIC_HLIST);
 
     alCSeqNew(&g_musicXTrack1Seq, g_musicXTrack1SeqData);
     alCSPSetSeq(g_musicXTrack1SeqPlayer, &g_musicXTrack1Seq);
@@ -932,10 +925,10 @@ void musicTrack1FadeIn(f32 fadeTime, u16 volume)
 void musicTrack2Play(s32 track)
 {
     u32 trackSizeBytes;
-    struct music_struct_b thing;
-    u8 *temp_a0;
+    u8 *seqData;
+    u8 *compressed;
     void *romAddress;
-    u32 t3;
+    u32 bufferSize;
 
     if (g_sndBootswitchSound)
     {
@@ -962,13 +955,15 @@ void musicTrack2Play(s32 track)
         return;
     }
 
-    t3 = ALIGN16_a(g_musicTrackLength[g_musicXTrack2CurrentTrackNum]) + ALIGN16_a(NUM_MUSIC_TRACKS);
+    bufferSize = ALIGN16_a(g_musicTrackLength[g_musicXTrack2CurrentTrackNum]) + ALIGN16_a(NUM_MUSIC_TRACKS);
     trackSizeBytes = ALIGN16_a(g_musicTrackCompressedLength[g_musicXTrack2CurrentTrackNum]);
-    thing.seqData = g_musicXTrack2SeqData;
-    temp_a0 = (u8*)((t3 + (s32)thing.seqData) - trackSizeBytes);
+    seqData = g_musicXTrack2SeqData;
 
-    romCopy(temp_a0, romAddress, trackSizeBytes);
-    rzipInflate(temp_a0, thing.seqData, MUSIC_HLIST);
+    // Load the compressed track at the end of the buffer so it can be inflated in place
+    compressed = seqData + bufferSize - trackSizeBytes;
+
+    romCopy(compressed, romAddress, trackSizeBytes);
+    rzipInflate(compressed, seqData, MUSIC_HLIST);
 
     alCSeqNew(&g_musicXTrack2Seq, g_musicXTrack2SeqData);
     alCSPSetSeq(g_musicXTrack2SeqPlayer, &g_musicXTrack2Seq);
@@ -1065,10 +1060,10 @@ void musicTrack2FadeOut(f32 fadeTime)
 void musicTrack3Play(s32 track)
 {
     u32 trackSizeBytes;
-    struct music_struct_b thing;
-    u8 *temp_a0;
+    u8 *seqData;
+    u8 *compressed;
     void *romAddress;
-    u32 t3;
+    u32 bufferSize;
 
     if (g_sndBootswitchSound)
     {
@@ -1095,13 +1090,15 @@ void musicTrack3Play(s32 track)
         return;
     }
 
-    t3 = ALIGN16_a(g_musicTrackLength[g_musicXTrack3CurrentTrackNum]) + ALIGN16_a(NUM_MUSIC_TRACKS);
+    bufferSize = ALIGN16_a(g_musicTrackLength[g_musicXTrack3CurrentTrackNum]) + ALIGN16_a(NUM_MUSIC_TRACKS);
     trackSizeBytes = ALIGN16_a(g_musicTrackCompressedLength[g_musicXTrack3CurrentTrackNum]);
-    thing.seqData = g_musicXTrack3SeqData;
-    temp_a0 = (u8*)((t3 + (s32)thing.seqData) - trackSizeBytes);
+    seqData = g_musicXTrack3SeqData;
 
-    romCopy(temp_a0, romAddress, trackSizeBytes);
-    rzipInflate(temp_a0, thing.seqData, MUSIC_HLIST);
+    // Load the compressed track at the end of the buffer so it can be inflated in place
+    compressed = seqData + bufferSize - trackSizeBytes;
+
+    romCopy(compressed, romAddress, trackSizeBytes);
+    rzipInflate(compressed, seqData, MUSIC_HLIST);
 
     alCSeqNew(&g_musicXTrack3Seq, g_musicXTrack3SeqData);
     alCSPSetSeq(g_musicXTrack3SeqPlayer, &g_musicXTrack3Seq);

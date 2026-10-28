@@ -62,8 +62,8 @@ extern ExplosionDetailsRecord object_explosion_details[];
 #endif
 
 /**
- * @param arg0: Prop for tank
- * @param arg1: maybe flags
+ * @param prop: Prop for tank
+ * @param moving: whether the tank is moving
  */
 void                 objSetMoving(struct PropRecord *prop, s32 moving);
 

@@ -16,7 +16,7 @@ typedef struct regDesc_t
 
 
 void crashInit(void);
-void crashMain(void* arg0);
+void crashMain(void* data);
 
 void crashAppendChar(unsigned char c);
 void crashScroll(s32 numlines);

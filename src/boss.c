@@ -333,11 +333,11 @@ void bossMainloop(void)
 
     s32 done;
     const unsigned char *tokenFindLevel;
-    GFXMsg *localGfxFrameMsg; // sp 468
-    OSScMsg localGfxDoneMsg; // sp 436
+    GFXMsg *localGfxFrameMsg;
+    OSScMsg localGfxDoneMsg;
     s32 stringIndex;
-    s32 toggleFlag; // sp 428
-    Gfx *gdl; // sp424
+    s32 toggleFlag;
+    Gfx *gdl;
     Gfx *firstGdl;
     u32 nowCount;
     s32 i;
@@ -563,7 +563,7 @@ void bossMainloop(void)
 
                             freeGfx = dynGetFreeGfx(gdl);
                             dynSwapBuffers();
-                            video_related_8();
+                            viUpdateMode();
 
                             rspReplyMsg = (s32)(&localGfxDoneMsg);
                             rspGfxTaskStart(firstGdl, gdl, 0, (s32*)rspReplyMsg);
