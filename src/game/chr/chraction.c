@@ -46,65 +46,65 @@
 
 // forward declarations
 
-u32 weaponIsOneHanded            (PropRecord *arg0);
+u32 weaponIsOneHanded            (PropRecord *weaponprop);
 void chrStandChooseAnimation                (ChrRecord *self, f32 duration);
 f32 chrGetGuard007SpeedRating               (ChrRecord *self, f32 min, f32 max);
 s32 chrGetGuard007SpeedRatingInt            (ChrRecord *self, s32 scale);
 f32 chrGetGuard007ArghRating                (ChrRecord *self, f32 min, f32 max);
 void chrStand            (ChrRecord *self);
-void chrStandImmediateCheckWall        (ChrRecord *self, f32 arg1);
+void chrStandImmediateCheckWall        (ChrRecord *self, f32 mergetime);
 void chrStandCheckWall    (ChrRecord *self);
 void chrKneelChooseAnimation                  (ChrRecord *self);
 void chrStartAnim            (ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60);
 void chrStartAlarmChooseAnimation             (ChrRecord *self);
 void chrThrowGrenade                        (ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startframe);
-void chrSpotChooseAnimation            (ChrRecord *self, f32 arg1);
+void chrSpotChooseAnimation            (ChrRecord *self, f32 mergetime);
 void chrActorShuffleFeet                    (ChrRecord *self);
 void chrStartSurprised           (ChrRecord *self);
 void chrActorLookFlustered                  (ChrRecord *self);
 void chrActorThrowWeaponSurrender           (ChrRecord *self);
 void chrActorFadeAway                       (ChrRecord *self);
 void chrAttackSetEndFrame                 (ChrRecord *self);
-f32 chrGetAngleToTarget                 (ChrRecord *self, s32 arg1, s32 arg2);
+f32 chrGetAngleToTarget                 (ChrRecord *self, s32 attack_type, s32 entityid);
 f32 chrGetAngleToPos            (ChrRecord *self, coord3d *pos);
-f32 chrGetClearDistInDir              (PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtypes, f32 unkHeight, f32 unkA);
-f32 chrGetClearDistInDirDefault      (PropRecord *arg0, f32 arg1, f32 arg2);
-void chrReactToHit                    (ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_id, ITEM_IDS item);
+f32 chrGetClearDistInDir              (PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 unkHeight, f32 unkA);
+f32 chrGetClearDistInDirDefault      (PropRecord *prop, f32 angle, f32 maxdist);
+void chrReactToHit                    (ChrRecord *self, coord3d *dir, f32 angle, s32 req_animation_id, ITEM_IDS item);
 s32 chrGetHitInterruptFrame       (ChrRecord *self, f32 *result);
-s32 chrPathIsOffscreen                      (ChrRecord *self, coord3d *arg1, StandTile *tile);
+s32 chrPathIsOffscreen                      (ChrRecord *self, coord3d *pos, StandTile *tile);
 f32 chrGetRunAnimSpeed           (ChrRecord *self);
 void chrGoPosGetCurWaypointInfo                     (ChrRecord *self, coord3d *target_point, StandTile **target_stan);
 s32 chrGoPosCalculateBaseTtl                (ChrRecord *self);
 waypoint *waypointFindOnTile           (StandTile* tile);
 s32 waypointIsOnTile     (StandTile* tile);
-f32 waypointDistSqXz                     (coord3d *arg0, waypoint *arg1);
-waypoint *waypointFindNearPos                (coord3d *arg0, StandTile *arg1);
-s32 chrPathToPadIsOffscreen                   (ChrRecord *self, PadRecord *arg1);
-void chrAttackStand                        (ChrRecord *self, s32 attack_type, s32 arg2);
+f32 waypointDistSqXz                     (coord3d *pos, waypoint *wp);
+waypoint *waypointFindNearPos                (coord3d *pos, StandTile *starttile);
+s32 chrPathToPadIsOffscreen                   (ChrRecord *self, PadRecord *pad);
+void chrAttackStand                        (ChrRecord *self, s32 attack_type, s32 entityid);
 coord3d *chrGetChrOrPresetLocation          (ChrRecord *self, s32 flags, s32 lookup_id, StandTile **stan);
 void chrStopFiring                            (ChrRecord *self);
 void chrGoPosClearRestartTtl                        (ChrRecord *self);
-s32 chrGoToPos                     (ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed);
+s32 chrGoToPos                     (ChrRecord *self, coord3d *pos, StandTile *stan, SPEED speed);
 void chrGoPosConsiderRestart                   (ChrRecord *self);
 void chrGoPosResetMagic         (ChrRecord *self);
 void chrActGoposIncCurIndex                 (ChrRecord *self);
 void chrGoPosChooseAnimation   (ChrRecord *self);
-void chrGoPosChooseAnimationEx                       (ChrRecord *self, s32 arg1, s32 arg2);
-void chrSetGoposSegDistTotal                (ChrRecord *self, struct waydata *arg1, coord3d *arg2);
+void chrGoPosChooseAnimationEx                       (ChrRecord *self, s32 speed, s32 isMale);
+void chrSetGoposSegDistTotal                (ChrRecord *self, struct waydata *way, coord3d *pos);
 void chrAlertOthersOfInjury              (ChrRecord *, s32);
-s32 propCanWalkInDir                         (PropRecord *arg0, coord3d *arg1, f32 arg2);
+s32 propCanWalkInDir                         (PropRecord *prop, coord3d *dir, f32 dist);
 void chrTickSurrender                       (ChrRecord *self);
 void chrPatrolChooseAnimation             (ChrRecord *self);
 void chrRecordSawTarget                     (ChrRecord *guardData);
-s32 chrCheckCanSeeTarget                (ChrRecord *self, coord3d *arg1, StandTile *arg2);
-s32 chrCanSeePos                        (ChrRecord *self, coord3d *arg1, StandTile *arg2);
+s32 chrCheckCanSeeTarget                (ChrRecord *self, coord3d *pos, StandTile *tile);
+s32 chrCanSeePos                        (ChrRecord *self, coord3d *pos, StandTile *tile);
 s32 chrHasLineOfSightToPlayer            (ChrRecord *self);
-s32 propCanWalkLine       (PropRecord *arg0, coord3d *arg1, coord3d *arg2);
+s32 propCanWalkLine       (PropRecord *prop, coord3d *dest, coord3d *dir);
 void chrSetTargetToPlayer                   (ChrRecord *self);
 void coopChrShotByCurrentPlayer               (ChrRecord *self);
 s32 chrSawTargetRecently                      (ChrRecord *);
 s32 chrCheckTargetInSight                     (ChrRecord *self);
-void chrGetSideDir                    (ChrRecord *self, s32 arg1, coord3d *arg2);
+void chrGetSideDir                    (ChrRecord *self, s32 side, coord3d *dir);
 s32 chrIsNotDeadOrShot                        (ChrRecord *chr);
 void chrTickAnim                            (ChrRecord *self);
 void chrTickDead                            (ChrRecord *self);
@@ -115,34 +115,34 @@ void chrTickJumpout                         (ChrRecord *self);
 void chrTickTest                            (ChrRecord *self);
 void chrTickStartAlarm                      (ChrRecord *self);
 void chrTickSurprised                       (ChrRecord *self);
-void chrPlayGunfireSound                        (ChrRecord *self, s32 arg1, s32 arg2);
-s32 chrSetSubroty                           (ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4);
-s32 chrUpdateAimendsideback                 (ChrRecord *self, struct weapon_firing_animation_table *arg1, s32 arg2, s32 arg3, f32 arg4);
+void chrPlayGunfireSound                        (ChrRecord *self, s32 hand, s32 ratelimit);
+s32 chrSetSubroty                           (ChrRecord *self, s32 state, f32 endframe, f32 speed, f32 angleoffset);
+s32 chrUpdateAimendsideback                 (ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 inaccuracy);
 void chrResetAimend                         (ChrRecord *self);
-void chrSetHandFiring                 (ChrRecord *self, s32 hand, s32 arg2);
-void chrUpdateShotbondsum                   (ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item);
+void chrSetHandFiring                 (ChrRecord *self, s32 hand, s32 firing);
+void chrUpdateShotbondsum                   (ChrRecord *self, s32 *inSight, s32 *hitBond, ITEM_IDS item);
 f32 chrGetAimUpAngle                         (ChrRecord *self);
 void chrFireHand                   (ChrRecord *self, s32 hand);
 s32 chrAttackRollToKneel   (ChrRecord *self);
 void chrAttackRollResumeAfterShot  (ChrRecord *self);
-void chrAttackKneel                        (ChrRecord *self, s32 attack_type, s32 arg2);
+void chrAttackKneel                        (ChrRecord *self, s32 attack_type, s32 entityid);
 void chrTickAttack                          (ChrRecord *self);
 void chrTickAttackCommon                    (ChrRecord *);
 void chrInitActAttackWalk                   (ChrRecord *chr, s32);
-void chrRunToPos                        (ChrRecord *self, coord3d *arg1);
+void chrRunToPos                        (ChrRecord *self, coord3d *pos);
 void chrTickThrowGrenade                    (ChrRecord *self);
 void chrTickBondIntro                       (ChrRecord *self);
 void chrTickBondDieRemoved                  (ChrRecord *self);
-s32 chrApplySpeed                           (ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr);
+s32 chrApplySpeed                           (ChrRecord *self, coord3d *target, s32 speed, f32 *speedPtr);
 void chrTickAttackWalk                      (ChrRecord *self);
 void chrTickRunPos                          (ChrRecord *self);
-s32 chrCanWalkLine                         (ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, StandTile * arg4, s32 cdtypes);
-s32 chrCanWalkLineWithin                         (ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, f32 arg4, s32 cdtypes);
-s32 chrCanWalkViaPoint                         (ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *arg3, coord3d *bondpos, StandTile *bondstan, s32 cdtypes);
-void orderPointsBySide           (coord3d *arg0, coord3d *arg1, coord3d *arg2);
-s32 chrNavCanSeeNextPos                         (ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes);
-s32 chrNavCheckForObstacle                         (ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes);
-void chrGoPosTickMagic                     (ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d *arg3, StandTile *arg4);
+s32 chrCanWalkLine                         (ChrRecord *self, coord3d *point, StandTile *tile, coord3d *dest, StandTile * desttile, s32 cdtypes);
+s32 chrCanWalkLineWithin                         (ChrRecord *self, coord3d *point, StandTile *tile, coord3d *dest, f32 halfwidth, s32 cdtypes);
+s32 chrCanWalkViaPoint                         (ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *viapoint, coord3d *bondpos, StandTile *bondstan, s32 cdtypes);
+void orderPointsBySide           (coord3d *a, coord3d *b, coord3d *dir);
+s32 chrNavCanSeeNextPos                         (ChrRecord *self, coord3d *from, StandTile *fromtile, coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes);
+s32 chrNavCheckForObstacle                         (ChrRecord *self, coord3d *from, StandTile *fromtile, coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes);
+void chrGoPosTickMagic                     (ChrRecord *self, struct waydata *way, f32 speed, coord3d *pos, StandTile *tile);
 void chrNavTick                          (ChrRecord *, coord3d *, StandTile *, struct waydata *);
 void chrTickGoPos                           (ChrRecord *self);
 void chrSetNextActPatrolStepPadPos          (ChrRecord *self);
@@ -150,31 +150,28 @@ void chrAdvancePatrolStep                   (ChrRecord *self);
 void chrTickPatrol                          (ChrRecord *self);
 f32 chrGetAngleToPos            (ChrRecord *self, coord3d *pos);
 s32 chrResolveId                              (ChrRecord *self, s32 id);
-s32 waypointIsWithin90DegreesOfPosAngle                         (waypoint *arg0, coord3d *arg1, f32 angle);
+s32 waypointIsWithin90DegreesOfPosAngle                         (waypoint *wp, coord3d *pos, f32 angle);
 s32 waypointFindInQuadrant              (coord3d *bondpos, StandTile *stan, f32 rot, u8 quadrant);
-s32 chrIsPosOffScreen                         (coord3d *arg0, StandTile *tile);
+s32 chrIsPosOffScreen                         (coord3d *pos, StandTile *tile);
 PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, coord3d *pos, StandTile *stan, f32 angle, AIListRecord *ailist, s32 spawnflags);
-void chrInitActAttack                       (ChrRecord *self, struct anim_group_info ** arg1, s32 arg2, point2d *arg3, s32 attack_type, s32 arg5, s32 arg6);
+void chrInitActAttack                       (ChrRecord *self, struct anim_group_info ** animgroups, s32 flip, point2d *hasGun, s32 attack_type, s32 entityid, s32 standing);
 s32 chrPatrolCalculateStep                  (ChrRecord *self, bool *forward, s32 numsteps);
 bool chrIsPosClearOfObjectBounds            (coord3d *pos, StandTile *stan);
-s32 chrNavTryObstacle                         (ChrRecord *self,coord3d *arg1,s32 arg2,coord3d *arg3,f32 arg4,s32 arg5,coord3d *arg6,struct waydata *arg7,f32 arg8,s32 cdtypes,s32 set_copy);
+s32 chrNavTryObstacle                         (ChrRecord *self, coord3d *corner, s32 left, coord3d *othercorner, f32 clearance, s32 checktarget, coord3d *target, struct waydata *way, f32 overshoot, s32 cdtypes, s32 set_copy);
 void chrTickStand                           (ChrRecord *self);
 PadRecord * chrGetPatrolStepPad             (ChrRecord *self, s32 numsteps);
 
-// unknown type for arg1, reads offsets 0x30,0x34,0x40,0x44
-// arg2 is only used to compare to zero, either flag or pointer
-void chrUpdateAimendbackShoulders           (ChrRecord *, void *, s32, s32, f32);
 
 
 // end forward declarations
 
 
-/* arg0 is a held weapon's prop */
-u32 weaponIsOneHanded(PropRecord *arg0)
+/* weaponprop is a held weapon's prop */
+u32 weaponIsOneHanded(PropRecord *weaponprop)
 {
-    if (arg0 != NULL)
+    if (weaponprop != NULL)
     {
-        return weaponHasFlag(arg0->weapon->weaponnum, WEAPONSTATBITFLAG_ONLY_1_HANDED);
+        return weaponHasFlag(weaponprop->weapon->weaponnum, WEAPONSTATBITFLAG_ONLY_1_HANDED);
     }
 
     return 0U;
@@ -342,9 +339,9 @@ void chrStand(ChrRecord *self)
 /**
  * PD: func0f02ed28
  */
-void chrStandImmediateCheckWall(ChrRecord *self, f32 arg1)
+void chrStandImmediateCheckWall(ChrRecord *self, f32 mergetime)
 {
-    chrStandImmediate(self, arg1);
+    chrStandImmediate(self, mergetime);
     self->act_stand.checkfacingwall = 1;
 }
 
@@ -394,16 +391,16 @@ void chrKneelChooseAnimation(ChrRecord *self)
 void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60)
 {
     f32 startframef = (f32)startframe;
-    f32 phi_f0;
+    f32 speed;
 
-    phi_f0 = 0.5f;
+    speed = 0.5f;
     if ((bitfield & ANIM_REVERSE_LOOPING_ANIMATION) != 0)
     {
-        phi_f0 = -0.5f;
+        speed = -0.5f;
     }
 
     chrStopFiring(self);
-    modelSetAnimation(self->model, (void *)animation_table_ptrs1[animID], (bitfield & ANIM_MIRROR) != 0, startframef, phi_f0, (f32)interpol_time60);
+    modelSetAnimation(self->model, (void *)animation_table_ptrs1[animID], (bitfield & ANIM_MIRROR) != 0, startframef, speed, (f32)interpol_time60);
 
     if (endframe >= 0)
     {
@@ -489,39 +486,39 @@ void chrThrowGrenade(ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startf
 }
 
 
-void chrSpotChooseAnimation(ChrRecord *self, f32 arg1)
+void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime)
 {
     PropRecord *left;
     PropRecord *right;
-    s32 sp2C;
+    s32 flip;
     f32 objarg4;
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
 
-    sp2C = 0;
+    flip = 0;
     if ((left != NULL) && (right == NULL))
     {
-        sp2C = 1;
+        flip = 1;
     }
     else if (((left != NULL) && (right != NULL)) || ((left == NULL) && (right == NULL)))
     {
-        sp2C = randomGetNext() & 1;
+        flip = randomGetNext() & 1;
     }
 
     objarg4 = chrGetGuard007SpeedRating(self, 0.6f, 0.96000004f); // 0.96000004 is different from 0.96
-    modelSetAnimation(self->model, (void*)&g_AnimTable->data[(s32)&ANIM_DATA_spotting_bond], sp2C, 10.0f, objarg4, arg1);
+    modelSetAnimation(self->model, (void*)&g_AnimTable->data[(s32)&ANIM_DATA_spotting_bond], flip, 10.0f, objarg4, mergetime);
     modelSetAnimEndFrame(self->model, 52.0f);
 }
 
 
 void chrActorShuffleFeet(ChrRecord *self)
 {
-    f32 temp_f0;
+    f32 angle;
 
-    temp_f0 = chrGetAngleToBond(self);
+    angle = chrGetAngleToBond(self);
 
-    if ((temp_f0 < 0.17453294f) || (temp_f0 > 6.1086526f))
+    if ((angle < 0.17453294f) || (angle > 6.1086526f))
     {
         chrSpotChooseAnimation(self, 16.0f);
         chrStopFiring(self);
@@ -553,9 +550,9 @@ void chrStartSurprised(ChrRecord *self)
  */
 void chrActorLookFlustered(ChrRecord *self)
 {
-    u32 sp2C;
+    u32 choice;
 
-    sp2C = randomGetNext() % 3U;
+    choice = randomGetNext() % 3U;
 
     chrStopFiring(self);
 
@@ -563,11 +560,11 @@ void chrActorLookFlustered(ChrRecord *self)
     self->sleep = 0;
     modelSetAnimation(self->model, (struct ModelAnimation*)&g_AnimTable->data[(s32)&ANIM_DATA_look_around], randomGetNext() & 1, 17.0f, 0.6f, 16.0f);
 
-    if (sp2C == 0)
+    if (choice == 0)
     {
         modelSetAnimEndFrame(self->model, chrGetGuard007SpeedRating(self, 38.0f, 8.0f));
     }
-    else if (sp2C == 1)
+    else if (choice == 1)
     {
         modelSetAnimEndFrame(self->model, chrGetGuard007SpeedRating(self, 66.0f, 8.0f));
     }
@@ -646,25 +643,25 @@ void chrSidestep(ChrRecord *self, GUNHAND side)
 {
     PropRecord *left;
     PropRecord *right;
-    s32 sp2C;
-    s32 phi_v1;
+    s32 flip;
+    s32 variant;
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
-    sp2C = 0;
-    phi_v1 = 0;
+    flip = 0;
+    variant = 0;
 
     if ((left != NULL) && (right != NULL))
     {
-        sp2C = randomGetNext() & 1;
-        phi_v1 = randomGetNext() & 1;
+        flip = randomGetNext() & 1;
+        variant = randomGetNext() & 1;
     }
     else if (weaponIsOneHanded(left) == 0)
     {
         if ((weaponIsOneHanded(right) == 0) && ((left != NULL) || (right != NULL)))
         {
-            sp2C = left != 0;
-            phi_v1 = randomGetNext() & 1;
+            flip = left != 0;
+            variant = randomGetNext() & 1;
         }
     }
 
@@ -673,7 +670,7 @@ void chrSidestep(ChrRecord *self, GUNHAND side)
     self->actiontype = ACT_SIDESTEP;
     self->sleep = 0;
 
-    if (phi_v1 == 0)
+    if (variant == 0)
     {
         if (side != GUNRIGHT)
         {
@@ -689,16 +686,16 @@ void chrSidestep(ChrRecord *self, GUNHAND side)
         return;
     }
 
-    if (((side != GUNRIGHT) && (sp2C == 0)) ||
-        ((side == GUNRIGHT) && (sp2C != 0)))
+    if (((side != GUNRIGHT) && (flip == 0)) ||
+        ((side == GUNRIGHT) && (flip != 0)))
     {
-        modelSetAnimation(self->model, (void*)&g_AnimTable->data[(s32)&ANIM_DATA_slide_left], sp2C, 5.0f, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
+        modelSetAnimation(self->model, (void*)&g_AnimTable->data[(s32)&ANIM_DATA_slide_left], flip, 5.0f, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
         modelSetAnimEndFrame(self->model, 34.0f);
 
     }
     else
     {
-        modelSetAnimation(self->model, (void*)&g_AnimTable->data[(s32)&ANIM_DATA_slide_right], sp2C, 5.0f, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
+        modelSetAnimation(self->model, (void*)&g_AnimTable->data[(s32)&ANIM_DATA_slide_right], flip, 5.0f, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
         modelSetAnimEndFrame(self->model, 32.0f);
     }
 
@@ -777,61 +774,61 @@ void chrJumpOut(ChrRecord *self, GUNHAND side)
  * Address 0x7F024CE0 (VERSION_EU).
  * PD: chrJumpOutChooseAnimation (has a few things in common)
  */
-void chrRunToPos(ChrRecord *self, coord3d *arg1)
+void chrRunToPos(ChrRecord *self, coord3d *pos)
 {
     f32 dx;
     f32 dz;
     f32 sq;
     PropRecord *left;
     PropRecord *right;
-    s32 sp2C;
-    s32 phi_a2;
+    s32 straight;
+    s32 flip;
 
-    dx = self->prop->pos.f[0] - arg1->f[0];
-    dz = self->prop->pos.f[2] - arg1->f[2];
+    dx = self->prop->pos.f[0] - pos->f[0];
+    dz = self->prop->pos.f[2] - pos->f[2];
     sq = sqrtf((dx * dx) + (dz * dz));
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
 
-    sp2C = 1;
+    straight = 1;
 
     if (((left != NULL) && (right != NULL)) || ((left == NULL) && (right == NULL)))
     {
-        sp2C = 0;
-        phi_a2 = randomGetNext() & 1;
+        straight = 0;
+        flip = randomGetNext() & 1;
     }
     else
     {
         if ((weaponIsOneHanded(left)) || (weaponIsOneHanded(right)))
         {
-            sp2C = 0;
-            phi_a2 = left != 0;
+            straight = 0;
+            flip = left != 0;
         }
         else
         {
-            phi_a2 = left != 0;
+            flip = left != 0;
         }
     }
 
     chrStopFiring(self);
 
     self->actiontype = ACT_RUNPOS;
-    self->act_runpos.pos.f[0] = arg1->f[0];
-    self->act_runpos.pos.f[1] = arg1->f[1];
-    self->act_runpos.pos.f[2] = arg1->f[2];
+    self->act_runpos.pos.f[0] = pos->f[0];
+    self->act_runpos.pos.f[1] = pos->f[1];
+    self->act_runpos.pos.f[2] = pos->f[2];
     self->sleep = 0;
     self->act_runpos.turnspeed = 0;
     self->act_runpos.neardist = 30.0f;
 
-    if (sp2C)
+    if (straight)
     {
 #ifdef VERSION_EU
         self->act_runpos.eta60 = (s32) (((sq / (g_ChrSpeedRun * 0.5f)) * 50.0f) / 60.0f);
 #else
         self->act_runpos.eta60 = (s32) (sq / (g_ChrSpeedRun * 0.5f));
 #endif
-        modelSetAnimation(self->model, (struct ModelAnimation*)&g_AnimTable->data[(s32)&ANIM_DATA_running], phi_a2, 0, 0.5f, 16.0f);
+        modelSetAnimation(self->model, (struct ModelAnimation*)&g_AnimTable->data[(s32)&ANIM_DATA_running], flip, 0, 0.5f, 16.0f);
     }
     else
     {
@@ -840,7 +837,7 @@ void chrRunToPos(ChrRecord *self, coord3d *arg1)
 #else
         self->act_runpos.eta60 = (s32) (sq / (g_ChrSpeedRunOneHanded * 0.5f));
 #endif
-        modelSetAnimation(self->model, (struct ModelAnimation*)&g_AnimTable->data[(s32)&ANIM_DATA_running_one_handed_weapon], phi_a2, 0, 0.5f, 16.0f);
+        modelSetAnimation(self->model, (struct ModelAnimation*)&g_AnimTable->data[(s32)&ANIM_DATA_running_one_handed_weapon], flip, 0, 0.5f, 16.0f);
     }
 }
 
@@ -891,19 +888,19 @@ void chrAttackSetEndFrame(ChrRecord *self)
 }
 
 
-f32 chrGetAngleToTarget(ChrRecord *self, s32 arg1, s32 arg2)
+f32 chrGetAngleToTarget(ChrRecord *self, s32 attack_type, s32 entityid)
 {
     f32 ret;
     StandTile *out_unused;
 
-    if ((arg1 & 2) != 0)
+    if ((attack_type & 2) != 0)
     {
         return 0.0f;
     }
 
-    if ((arg1 & 0x10) != 0)
+    if ((attack_type & 0x10) != 0)
     {
-        ret = ((f32) arg2 * M_TAU_F) / M_U16_MAX_VALUE_F;
+        ret = ((f32) entityid * M_TAU_F) / M_U16_MAX_VALUE_F;
 
         ret -= modelGetRootRotY(self->model);
 
@@ -915,7 +912,7 @@ f32 chrGetAngleToTarget(ChrRecord *self, s32 arg1, s32 arg2)
         return ret;
     }
 
-    return chrGetAngleToPos(self, chrGetChrOrPresetLocation(self, arg1, arg2, &out_unused));
+    return chrGetAngleToPos(self, chrGetChrOrPresetLocation(self, attack_type, entityid, &out_unused));
 }
 
 
@@ -928,7 +925,7 @@ f32 chrGetAngleToTarget(ChrRecord *self, s32 arg1, s32 arg2)
   * @param arg5: chrGetAngleToTarget arg2
   * @param arg6: set self->act_attack.unk54 to this
   */
-void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, point2d *arg3, s32 attack_type, s32 arg5, s32 arg6)
+void chrInitActAttack(ChrRecord *self, struct anim_group_info **animgroups, s32 flip, point2d *hasGun, s32 attack_type, s32 entityid, s32 standing)
 {
     /**
      * Two unused stack variables, I tried to use them with the animation table
@@ -937,27 +934,27 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
 
     //
     Model *self_model; // 140
-    s32 phi_s7;
+    s32 oneBurst;
     s32 next_anim;
     struct weapon_firing_animation_table *panim_float; // 128
-    s32 phi_s6;
+    s32 recoil;
     f32 dist;
     s32 anim_index;
-    ChrRecord *temp_chr;
-    point2d sp60; // 96
-    point2d sp58; // 88
+    WeaponObjRecord *weapon;
+    point2d singleShot; // 96
+    point2d isLauncher; // 88
     s32 i;
 
     self_model = self->model;
-    sp60 = (point2d){0};
-    sp58 = (point2d){0};
+    singleShot = (point2d){0};
+    isLauncher = (point2d){0};
     self->actiontype = ACT_ATTACK;
-    phi_s6 = 1;
-    phi_s7 = 0;
+    recoil = 1;
+    oneBurst = 0;
 
-    dist = chrGetAngleToTarget(self, attack_type, arg5);
+    dist = chrGetAngleToTarget(self, attack_type, entityid);
 
-    if (arg2 != 0)
+    if (flip != 0)
     {
         anim_index = (s32) ((((M_TAU_F - dist) * 32.0f) / M_TAU_F) + 0.5f);
     }
@@ -971,51 +968,51 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
         anim_index = 0;
     }
 
-    next_anim = (u32)randomGetNext() % (u32)arg1[anim_index]->len;
+    next_anim = (u32)randomGetNext() % (u32)animgroups[anim_index]->len;
 
     // I can't get a `li t0,72` without explicit multiply, but
     // it seems array dereference would be more correct here?
     // Something like:
-    //     &arg1[anim_index]->table[next_anim]
-    //     arg1[anim_index]->table + next_anim
+    //     &animgroups[anim_index]->table[next_anim]
+    //     animgroups[anim_index]->table + next_anim
     panim_float = (struct weapon_firing_animation_table *)(
-            (s32)arg1[anim_index]->table + (s32)((s32)next_anim * (s32)sizeof(struct weapon_firing_animation_table))
+            (s32)animgroups[anim_index]->table + (s32)((s32)next_anim * (s32)sizeof(struct weapon_firing_animation_table))
         );
 
     if ((self->chrflags & CHRSTART_FORCENOBLOOD)
         && ((s32)panim_float->anim.anim == (s32)&g_AnimTable->data[(s32)&ANIM_DATA_fire_hip]))
     {
         // should be:
-        //     panim_float = &arg1[anim_index]->table[(next_anim + 1) % len]
-        // where `len = arg1[anim_index]->len`
+        //     panim_float = &animgroups[anim_index]->table[(next_anim + 1) % len]
+        // where `len = animgroups[anim_index]->len`
         panim_float = (struct weapon_firing_animation_table *)(
-            (s32)arg1[anim_index]->table + (s32)(((next_anim + 1) % arg1[anim_index]->len) * (s32)sizeof(struct weapon_firing_animation_table))
+            (s32)animgroups[anim_index]->table + (s32)(((next_anim + 1) % animgroups[anim_index]->len) * (s32)sizeof(struct weapon_firing_animation_table))
         );
     }
 
     for (i=0; i<2; i++)
     {
-        if (arg3->p[i] != 0)
+        if (hasGun->p[i] != 0)
         {
-            temp_chr = chrGetEquippedWeaponProp(self, i)->chr;
+            weapon = chrGetEquippedWeaponProp(self, i)->weapon;
 
-            if (weaponGetFireRate((s32) temp_chr->act_attack.attack_item) < 0)
+            if (weaponGetFireRate(weapon->weaponnum) < 0)
             {
-                sp60.p[i] = 1;
-                if ((s32)temp_chr->act_attack.attack_item == ITEM_LASER)
+                singleShot.p[i] = 1;
+                if (weapon->weaponnum == ITEM_LASER)
                 {
-                    phi_s6 = 0;
+                    recoil = 0;
                 }
             }
             else
             {
-                phi_s6 = 0;
-                phi_s7 = 1;
+                recoil = 0;
+                oneBurst = 1;
             }
 
-            if (((s32)temp_chr->act_attack.attack_item == ITEM_ROCKETLAUNCH) || ((s32)temp_chr->act_attack.attack_item == ITEM_GRENADELAUNCH))
+            if ((weapon->weaponnum == ITEM_ROCKETLAUNCH) || (weapon->weaponnum == ITEM_GRENADELAUNCH))
             {
-                sp58.p[i] = 1;
+                isLauncher.p[i] = 1;
             }
         }
     }
@@ -1024,20 +1021,20 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
     self->act_attack.animfloats = panim_float;
     self->act_attack.fired = 0;
     self->act_attack.nextGun = (u32)randomGetNext() & 1U;
-    self->act_attack.hasGun[1] = arg3->p[1];
-    self->act_attack.hasGun[0] = arg3->p[0];
-    self->act_attack.singleShot[1] = sp60.p[1];
-    self->act_attack.singleShot[0] = sp60.p[0];
-    self->act_attack.isLauncher[1] = sp58.p[1];
-    self->act_attack.isLauncher[0] = sp58.p[0];
-    self->act_attack.doRecoil = phi_s6;
-    self->act_attack.doOneBurst = phi_s7;
+    self->act_attack.hasGun[1] = hasGun->p[1];
+    self->act_attack.hasGun[0] = hasGun->p[0];
+    self->act_attack.singleShot[1] = singleShot.p[1];
+    self->act_attack.singleShot[0] = singleShot.p[0];
+    self->act_attack.isLauncher[1] = isLauncher.p[1];
+    self->act_attack.isLauncher[0] = isLauncher.p[0];
+    self->act_attack.doRecoil = recoil;
+    self->act_attack.doOneBurst = oneBurst;
     self->act_attack.numWaitTicks = 0;
     self->act_attack.numShots = 0;
 
-    if ((sp58.p[1] != 0) || (sp58.p[0] != 0))
+    if ((isLauncher.p[1] != 0) || (isLauncher.p[0] != 0))
     {
-        if ((sp58.p[1] != 0) && (sp58.p[0] != 0))
+        if ((isLauncher.p[1] != 0) && (isLauncher.p[0] != 0))
         {
             self->act_attack.maxShots = 2;
         }
@@ -1057,15 +1054,15 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
             self->act_attack.maxShots = (randomGetNext() & 3) + 2;
         }
 
-        if ((arg3->p[0] != 0) && (arg3->p[1] != 0))
+        if ((hasGun->p[0] != 0) && (hasGun->p[1] != 0))
         {
             self->act_attack.maxShots += (randomGetNext() & 3) + 2;
         }
     }
 
     self->act_attack.attacktype = attack_type;
-    self->act_attack.entityid = arg5;
-    self->act_attack.standing = arg6;
+    self->act_attack.entityid = entityid;
+    self->act_attack.standing = standing;
     self->act_attack.type_of_motion = 0;
     self->act_attack.lastFire60 = 0;
     self->act_attack.attack_time = 0;
@@ -1074,7 +1071,7 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
     modelSetAnimation(
         self_model,
         (struct ModelAnimation *) panim_float->anim.anim,
-        arg2,
+        flip,
         panim_float->start_frame,
         chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
         16.0f);
@@ -1083,11 +1080,11 @@ void chrInitActAttack(ChrRecord *self, struct anim_group_info **arg1, s32 arg2, 
 }
 
 
-void chrAttackStand(ChrRecord *self, s32 attack_type, s32 arg2)
+void chrAttackStand(ChrRecord *self, s32 attack_type, s32 entityid)
 {
     PropRecord *left;
     PropRecord *right;
-    s32 last_arg2;
+    s32 flip;
     struct anim_group_info **animation_pointer;
     point2d sp;
     PropRecord * left2;
@@ -1105,13 +1102,13 @@ void chrAttackStand(ChrRecord *self, s32 attack_type, s32 arg2)
 
         if ((left2 != NULL) && (right2 != NULL))
         {
-            last_arg2 = (u32)randomGetNext() & (u32)1;
+            flip = (u32)randomGetNext() & (u32)1;
 
             if (((u32)randomGetNext() % 3U) == 0)
             {
                 animation_pointer = (struct anim_group_info **)ptr_pistol_firing_animation_groups;
-                sp.p[GUNLEFT] = last_arg2;
-                sp.p[GUNRIGHT] = !last_arg2;
+                sp.p[GUNLEFT] = flip;
+                sp.p[GUNRIGHT] = !flip;
             }
             else
             {
@@ -1122,39 +1119,39 @@ void chrAttackStand(ChrRecord *self, s32 attack_type, s32 arg2)
         }
         else
         {
-            last_arg2 = right2 == 0;
+            flip = right2 == 0;
             animation_pointer = (struct anim_group_info **)ptr_pistol_firing_animation_groups;
-            sp.p[GUNLEFT] = last_arg2;
-            sp.p[GUNRIGHT] = !last_arg2;
+            sp.p[GUNLEFT] = flip;
+            sp.p[GUNRIGHT] = !flip;
         }
     }
     else
     {
         if ((weaponIsOneHanded(left) != 0) || (weaponIsOneHanded(right) != 0))
         {
-            last_arg2 = left != 0;
+            flip = left != 0;
             animation_pointer = (struct anim_group_info **)ptr_pistol_firing_animation_groups;
-            sp.p[GUNLEFT] = last_arg2;
-            sp.p[GUNRIGHT] = !last_arg2;
+            sp.p[GUNLEFT] = flip;
+            sp.p[GUNRIGHT] = !flip;
         }
         else
         {
-            last_arg2 = left != 0;
+            flip = left != 0;
             animation_pointer = (struct anim_group_info **)ptr_rifle_firing_animation_groups;
-            sp.p[GUNLEFT] = last_arg2;
-            sp.p[GUNRIGHT] = !last_arg2;
+            sp.p[GUNLEFT] = flip;
+            sp.p[GUNRIGHT] = !flip;
         }
     }
 
-    chrInitActAttack(self, animation_pointer, last_arg2, &sp, attack_type, arg2, 1);
+    chrInitActAttack(self, animation_pointer, flip, &sp, attack_type, entityid, 1);
 }
 
 
-void chrAttackKneel(ChrRecord *self, s32 attack_type, s32 arg2)
+void chrAttackKneel(ChrRecord *self, s32 attack_type, s32 entityid)
 {
     PropRecord *left;
     PropRecord *right;
-    s32 last_arg2;
+    s32 flip;
     struct anim_group_info **animation_pointer;
     point2d sp;
     PropRecord * left2;
@@ -1172,13 +1169,13 @@ void chrAttackKneel(ChrRecord *self, s32 attack_type, s32 arg2)
 
         if ((left2 != NULL) && (right2 != NULL))
         {
-            last_arg2 = (u32)randomGetNext() & (u32)1;
+            flip = (u32)randomGetNext() & (u32)1;
 
             if (((u32)randomGetNext() % 3U) == 0)
             {
                 animation_pointer = (struct anim_group_info **)ptr_crouched_pistol_firing_animation_groups;
-                sp.p[GUNLEFT] = last_arg2;
-                sp.p[GUNRIGHT] = !last_arg2;
+                sp.p[GUNLEFT] = flip;
+                sp.p[GUNRIGHT] = !flip;
             }
             else
             {
@@ -1189,79 +1186,79 @@ void chrAttackKneel(ChrRecord *self, s32 attack_type, s32 arg2)
         }
         else
         {
-            last_arg2 = right2 == 0;
+            flip = right2 == 0;
             animation_pointer = (struct anim_group_info **)ptr_crouched_pistol_firing_animation_groups;
-            sp.p[GUNLEFT] = last_arg2;
-            sp.p[GUNRIGHT] = !last_arg2;
+            sp.p[GUNLEFT] = flip;
+            sp.p[GUNRIGHT] = !flip;
         }
     }
     else
     {
         if ((weaponIsOneHanded(left) != 0) || (weaponIsOneHanded(right) != 0))
         {
-            last_arg2 = left != 0;
+            flip = left != 0;
             animation_pointer = (struct anim_group_info **)ptr_crouched_pistol_firing_animation_groups;
-            sp.p[GUNLEFT] = last_arg2;
-            sp.p[GUNRIGHT] = !last_arg2;
+            sp.p[GUNLEFT] = flip;
+            sp.p[GUNRIGHT] = !flip;
         }
         else
         {
-            last_arg2 = left != 0;
+            flip = left != 0;
             animation_pointer = (struct anim_group_info **)ptr_crouched_rifle_firing_animation_groups;
-            sp.p[GUNLEFT] = last_arg2;
-            sp.p[GUNRIGHT] = !last_arg2;
+            sp.p[GUNLEFT] = flip;
+            sp.p[GUNRIGHT] = !flip;
         }
     }
 
-    chrInitActAttack(self, animation_pointer, last_arg2, &sp, attack_type, arg2, 0);
+    chrInitActAttack(self, animation_pointer, flip, &sp, attack_type, entityid, 0);
 }
 
 
 /**
  * // run forward shooting
 */
-void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
+void chrInitActAttackWalk(ChrRecord *chr, s32 run)
 {
     struct weapon_firing_animation_table *panim_float; // 132
     s32 i; //
-    ChrRecord *tmp_chr; //
-    s32 sp78; // 120
-    point2d sp70; // 112
-    point2d sp68; // 104
-    point2d sp60; // 96
+    WeaponObjRecord *weapon;
+    s32 flip; // 120
+    point2d hasGun; // 112
+    point2d singleShot; // 104
+    point2d isLauncher; // 96
     PropRecord *left;
     PropRecord *left2;
     PropRecord *right;
     PropRecord *right2;
-    s32 phi_v1;
+    s32 variant;
 
     left = chrGetEquippedWeaponProp(chr, GUNLEFT);
     right = chrGetEquippedWeaponProp(chr, GUNRIGHT);
 
-    sp70 = (point2d){0};
-    sp68 = (point2d){0};
-    sp60 = (point2d){0};
+    hasGun = (point2d){0};
+    singleShot = (point2d){0};
+    isLauncher = (point2d){0};
 
     if ((left != NULL) && (right != NULL))
     {
         left2 = chrGetEquippedWeaponPropWithCheck(chr, GUNLEFT);
         right2 = chrGetEquippedWeaponPropWithCheck(chr, GUNRIGHT);
 
-        phi_v1 = 0U;
+        variant = 0U;
 
         if ((left2 != NULL) && (right2 != NULL))
         {
-            sp78 = (u32)randomGetNext() & 1U;
-            phi_v1 = (u32)randomGetNext() % 3U;
+            flip = (u32)randomGetNext() & 1U;
+            variant = (u32)randomGetNext() % 3U;
         }
         else
         {
-            sp78 = right2 == 0;
+            flip = right2 == 0;
         }
 
-        if (phi_v1 == 0)
+        if (variant == 0)
         {
-            if (arg1 != 0)
+            if (run != 0)
             {
                 panim_float = &g_ChrMoveFireAnims[3];
             }
@@ -1270,19 +1267,19 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
                 panim_float = &g_ChrMoveFireAnims[2];
             }
 
-            if (sp78)
+            if (flip)
             {
-                sp70.p[1] = 1;
+                hasGun.p[1] = 1;
             }
             else
             {
                 // bug/mistake/typo.
-                sp70.p[0] = sp70.p[0] = 1;
+                hasGun.p[0] = hasGun.p[0] = 1;
             }
         }
-        else if (phi_v1 == 1)
+        else if (variant == 1)
         {
-            if (arg1 != 0)
+            if (run != 0)
             {
                 panim_float = &g_ChrMoveFireAnims[5];
             }
@@ -1291,12 +1288,12 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
                 panim_float = &g_ChrMoveFireAnims[4];
             }
 
-            sp70.p[1] = 1;
-            sp70.p[0] = 1;
+            hasGun.p[1] = 1;
+            hasGun.p[0] = 1;
         }
         else
         {
-            if (arg1 != 0)
+            if (run != 0)
             {
                 panim_float = &g_ChrMoveFireAnims[7];
             }
@@ -1305,15 +1302,15 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
                 panim_float = &g_ChrMoveFireAnims[6];
             }
 
-            sp70.p[1] = 1;
-            sp70.p[0] = 1;
+            hasGun.p[1] = 1;
+            hasGun.p[0] = 1;
         }
     }
     else if (weaponIsOneHanded(left) || weaponIsOneHanded(right))
     {
-        sp78 = (s32)left != 0;
+        flip = (s32)left != 0;
 
-        if (arg1)
+        if (run)
         {
             panim_float = &g_ChrMoveFireAnims[3];
         }
@@ -1322,20 +1319,20 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
             panim_float = &g_ChrMoveFireAnims[2];
         }
 
-        if (sp78)
+        if (flip)
         {
-            sp70.p[1] = 1;
+            hasGun.p[1] = 1;
         }
         else
         {
-            sp70.p[0] = 1;
+            hasGun.p[0] = 1;
         }
     }
     else
     {
-        sp78 = (s32)left != 0;
+        flip = (s32)left != 0;
 
-        if (arg1)
+        if (run)
         {
             panim_float = &g_ChrMoveFireAnims[1];
         }
@@ -1344,30 +1341,30 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
             panim_float = &g_ChrMoveFireAnims[0];
         }
 
-        if (sp78)
+        if (flip)
         {
-            sp70.p[1] = 1;
+            hasGun.p[1] = 1;
         }
         else
         {
-            sp70.p[0] = 1;
+            hasGun.p[0] = 1;
         }
     }
 
     for (i=0; i<2; i++)
     {
-        if (sp70.p[i])
+        if (hasGun.p[i])
         {
-            tmp_chr = chrGetEquippedWeaponProp(chr, i)->chr;
+            weapon = chrGetEquippedWeaponProp(chr, i)->weapon;
 
-            if (weaponGetFireRate((s32) tmp_chr->act_attackwalk.attack_item) < 0)
+            if (weaponGetFireRate(weapon->weaponnum) < 0)
             {
-                sp68.p[i] = 1;
+                singleShot.p[i] = 1;
             }
 
-            if ((tmp_chr->act_attackwalk.attack_item == ITEM_ROCKETLAUNCH) || (tmp_chr->act_attackwalk.attack_item == ITEM_GRENADELAUNCH))
+            if ((weapon->weaponnum == ITEM_ROCKETLAUNCH) || (weapon->weaponnum == ITEM_GRENADELAUNCH))
             {
-                sp60.p[i] = 1;
+                isLauncher.p[i] = 1;
             }
         }
     }
@@ -1383,16 +1380,16 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 arg1)
     chr->act_attackwalk.animfloats = panim_float;
     chr->act_attackwalk.timer40 = 0;
     chr->act_attackwalk.nextGun = (u32)randomGetNext() & 1U;
-    chr->act_attackwalk.hasGun[1] = (s8) sp70.p[1];
-    chr->act_attackwalk.hasGun[0] = (s8) sp70.p[0];
-    chr->act_attackwalk.singleShot[1] = (s8) sp68.p[1];
-    chr->act_attackwalk.singleShot[0] = (s8) sp68.p[0];
-    chr->act_attackwalk.isLauncher[1] = (s8) sp60.p[1];
-    chr->act_attackwalk.isLauncher[0] = (s8) sp60.p[0];
+    chr->act_attackwalk.hasGun[1] = (s8) hasGun.p[1];
+    chr->act_attackwalk.hasGun[0] = (s8) hasGun.p[0];
+    chr->act_attackwalk.singleShot[1] = (s8) singleShot.p[1];
+    chr->act_attackwalk.singleShot[0] = (s8) singleShot.p[0];
+    chr->act_attackwalk.isLauncher[1] = (s8) isLauncher.p[1];
+    chr->act_attackwalk.isLauncher[0] = (s8) isLauncher.p[0];
     chr->sleep = 0;
     chr->act_attackwalk.speed = 0.0f;
 
-    modelSetAnimation(chr->model, (struct ModelAnimation *) panim_float->anim.anim, sp78, panim_float->start_frame, 0.5f, 16.0f);
+    modelSetAnimation(chr->model, (struct ModelAnimation *) panim_float->anim.anim, flip, panim_float->start_frame, 0.5f, 16.0f);
 }
 
 
@@ -1405,27 +1402,27 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
     struct weapon_firing_animation_table *panim_float; // 136
     PropRecord *left; // any
     PropRecord *left_2; // any
-    s32 sp7C; // 124
-    s32 sp78; // 120
-    ChrRecord *temp_v1_2; // 112
+    s32 flip; // 124
+    s32 oneHanded; // 120
+    WeaponObjRecord *weapon;
     PropRecord *right; // any
-    point2d sp64; // 100
+    point2d hasGun; // 100
     PropRecord *right_2; // any
-    s32 sp5C; // 92
-    point2d sp54; // 84
-    point2d sp4C; // 76
-    s8 phi_s3; // 72
+    s32 oneBurst; // 92
+    point2d singleShot; // 84
+    point2d isLauncher; // 76
+    s8 recoil; // 72
     s32 i; // 68
 
     self_model = chr->model;
     left = chrGetEquippedWeaponProp(chr, GUNLEFT);
     right = chrGetEquippedWeaponProp(chr, GUNRIGHT);
-    sp78 = 0;
-    sp64 = (point2d){0};
-    sp5C = 0;
-    sp54 = (point2d){0};
-    sp4C = (point2d){0};
-    phi_s3 = 1;
+    oneHanded = 0;
+    hasGun = (point2d){0};
+    oneBurst = 0;
+    singleShot = (point2d){0};
+    isLauncher = (point2d){0};
+    recoil = 1;
 
     if ((left != NULL) && (right != NULL))
     {
@@ -1434,44 +1431,44 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
 
         if ((left_2 != NULL) && (right_2 != NULL))
         {
-            sp7C = (u32)randomGetNext() & 1U;
-            sp78 = 1;
+            flip = (u32)randomGetNext() & 1U;
+            oneHanded = 1;
 
             if (((u32)randomGetNext() % 3U) == 0)
             {
-                sp64.p[1] = sp7C;
-                sp64.p[0] = sp7C == 0;
+                hasGun.p[1] = flip;
+                hasGun.p[0] = flip == 0;
             }
             else
             {
-                sp64.p[1] = 1;
-                sp64.p[0] = 1;
+                hasGun.p[1] = 1;
+                hasGun.p[0] = 1;
             }
         }
         else
         {
-            sp7C = (s32)right_2 == 0;
-            sp78 = 1;
-            sp64.p[1] = sp7C;
-            sp64.p[0] = sp7C == 0;
+            flip = (s32)right_2 == 0;
+            oneHanded = 1;
+            hasGun.p[1] = flip;
+            hasGun.p[0] = flip == 0;
         }
     }
     else if (weaponIsOneHanded(left) || weaponIsOneHanded(right))
     {
-        sp7C = (s32)left != 0;
-        sp78 = 1;
-        sp64.p[1] = sp7C;
-        sp64.p[0] = sp7C == 0;
+        flip = (s32)left != 0;
+        oneHanded = 1;
+        hasGun.p[1] = flip;
+        hasGun.p[0] = flip == 0;
     }
     else
     {
-        sp7C = (s32)left != 0;
-        sp64.p[1] = sp7C;
-        sp64.p[0] = sp7C == 0;
+        flip = (s32)left != 0;
+        hasGun.p[1] = flip;
+        hasGun.p[0] = flip == 0;
     }
 
-    if (((side != GUNRIGHT) && (sp7C == 0)) ||
-        ((side == GUNRIGHT) && (sp7C != 0)))
+    if (((side != GUNRIGHT) && (flip == 0)) ||
+        ((side == GUNRIGHT) && (flip != 0)))
     {
         if ((u32)randomGetNext() & 1U)
         {
@@ -1491,34 +1488,34 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
         panim_float = &g_ChrFireAnims[3];
     }
 
-    if (sp78 != 0)
+    if (oneHanded != 0)
     {
         panim_float += 4;
     }
 
     for (i=0; i<2; i++)
     {
-        if (sp64.p[i] != 0)
+        if (hasGun.p[i] != 0)
         {
-            temp_v1_2 = chrGetEquippedWeaponProp(chr, i)->chr;
+            weapon = chrGetEquippedWeaponProp(chr, i)->weapon;
 
-            if (weaponGetFireRate((s32) temp_v1_2->act_attackroll.attack_item) < 0)
+            if (weaponGetFireRate(weapon->weaponnum) < 0)
             {
-                sp54.p[i] = 1;
-                if (temp_v1_2->act_attackroll.attack_item == ITEM_LASER)
+                singleShot.p[i] = 1;
+                if (weapon->weaponnum == ITEM_LASER)
                 {
-                    phi_s3 = 0;
+                    recoil = 0;
                 }
             }
             else
             {
-                phi_s3 = 0;
-                sp5C = 1;
+                recoil = 0;
+                oneBurst = 1;
             }
 
-            if ((temp_v1_2->act_attackroll.attack_item == ITEM_ROCKETLAUNCH) || (temp_v1_2->act_attackroll.attack_item == ITEM_GRENADELAUNCH))
+            if ((weapon->weaponnum == ITEM_ROCKETLAUNCH) || (weapon->weaponnum == ITEM_GRENADELAUNCH))
             {
-                sp4C.p[i] = 1;
+                isLauncher.p[i] = 1;
             }
         }
     }
@@ -1527,22 +1524,22 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
     chr->act_attackroll.animfloats = panim_float;
     chr->act_attackroll.fired = 0;
     chr->act_attackroll.nextGun = (u32)randomGetNext() & (u32)1;
-    chr->act_attackroll.hasGun[1] = sp64.p[1];
-    chr->act_attackroll.hasGun[0] = sp64.p[0];
-    chr->act_attackroll.singleShot[1] = sp54.p[1];
-    chr->act_attackroll.singleShot[0] = sp54.p[0];
-    chr->act_attackroll.isLauncher[1] = sp4C.p[1];
-    chr->act_attackroll.isLauncher[0] = sp4C.p[0];
-    chr->act_attackroll.doRecoil = phi_s3;
-    chr->act_attackroll.doOneBurst = sp5C;
-    chr->act_attackroll.oneHanded = sp78;
+    chr->act_attackroll.hasGun[1] = hasGun.p[1];
+    chr->act_attackroll.hasGun[0] = hasGun.p[0];
+    chr->act_attackroll.singleShot[1] = singleShot.p[1];
+    chr->act_attackroll.singleShot[0] = singleShot.p[0];
+    chr->act_attackroll.isLauncher[1] = isLauncher.p[1];
+    chr->act_attackroll.isLauncher[0] = isLauncher.p[0];
+    chr->act_attackroll.doRecoil = recoil;
+    chr->act_attackroll.doOneBurst = oneBurst;
+    chr->act_attackroll.oneHanded = oneHanded;
     chr->act_attackroll.numWaitTicks = 0;
     chr->act_attackroll.numShots = 0;
     chr->act_attackroll.turning = 1;
 
-    if ((sp4C.p[1] != 0) || (sp4C.p[0] != 0))
+    if ((isLauncher.p[1] != 0) || (isLauncher.p[0] != 0))
     {
-        if ((sp4C.p[1] != 0) && (sp4C.p[0] != 0))
+        if ((isLauncher.p[1] != 0) && (isLauncher.p[0] != 0))
         {
             chr->act_attackroll.maxShots = 2;
         }
@@ -1555,7 +1552,7 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
     {
         chr->act_attackroll.maxShots = (s32)((u32)randomGetNext() & 3U) + 2;
 
-        if ((sp64.p[0] != 0) && (sp64.p[1] != 0))
+        if ((hasGun.p[0] != 0) && (hasGun.p[1] != 0))
         {
             chr->act_attackroll.maxShots += (s32)((u32)randomGetNext() & 3U) + 2;
         }
@@ -1572,14 +1569,14 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
     modelSetAnimation(
         self_model,
         (struct ModelAnimation *) panim_float->anim.anim,
-        sp7C,
+        flip,
         panim_float->start_frame,
         chrGetGuard007SpeedRating(chr, 0.5f, 0.8f),
         16.0f);
 
-    if (sp78 == 0)
+    if (oneHanded == 0)
     {
-        if (phi_s3 != 0)
+        if (recoil != 0)
         {
             if (panim_float->recoil_end_frame >= 0.0f)
             {
@@ -1676,11 +1673,11 @@ void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line
  */
 void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result)
 {
-    coord3d sp2C;
-    coord3d sp20;
+    coord3d edgeStart;
+    coord3d edgeEnd;
 
-    stanGetCollisionEdge(&sp2C, &sp20);
-    chrLineLineIntersection(&sp2C, &sp20, line2_p3, dir, result);
+    stanGetCollisionEdge(&edgeStart, &edgeEnd);
+    chrLineLineIntersection(&edgeStart, &edgeEnd, line2_p3, dir, result);
 }
 
 
@@ -1689,56 +1686,56 @@ void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result
  * @param arg1:
  * @param result: out parameter, contains result.
  */
-void chrStanPointPointIntersection(coord3d *arg0, coord3d *arg1, coord3d *result)
+void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result)
 {
-    coord3d sp2C;
-    coord3d sp20;
+    coord3d edgeStart;
+    coord3d edgeEnd;
     f32 v;
 
-    stanGetCollisionEdge(&sp2C, &sp20);
+    stanGetCollisionEdge(&edgeStart, &edgeEnd);
 
     // see comments in chrLineLineIntersection
 
-    v = ((arg1->f[0] * (sp2C.f[2] - arg0->f[2])) - (arg1->f[2] * (sp2C.f[0] - arg0->f[0])))
-        / ((arg1->f[2] * (sp20.f[0] - sp2C.f[0])) - (arg1->f[0] * (sp20.f[2] - sp2C.f[2])));
+    v = ((dir->f[0] * (edgeStart.f[2] - pos->f[2])) - (dir->f[2] * (edgeStart.f[0] - pos->f[0])))
+        / ((dir->f[2] * (edgeEnd.f[0] - edgeStart.f[0])) - (dir->f[0] * (edgeEnd.f[2] - edgeStart.f[2])));
 
-    result->f[0] = sp2C.f[0] + ((sp20.f[0] - sp2C.f[0]) * v);
-    result->f[1] = sp2C.f[1] + ((sp20.f[1] - sp2C.f[1]) * v);
-    result->f[2] = sp2C.f[2] + ((sp20.f[2] - sp2C.f[2]) * v);
+    result->f[0] = edgeStart.f[0] + ((edgeEnd.f[0] - edgeStart.f[0]) * v);
+    result->f[1] = edgeStart.f[1] + ((edgeEnd.f[1] - edgeStart.f[1]) * v);
+    result->f[2] = edgeStart.f[2] + ((edgeEnd.f[2] - edgeStart.f[2]) * v);
 }
 
 
-f32 chrGetClearDistInDir(PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtypes, f32 unkHeight, f32 unkA)
+f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 unkHeight, f32 unkA)
 {
-    coord3d sp5C; // sp92
-    f32 dest_x; // sp88
-    f32 dest_z; // sp84
-    StandTile *stan; // sp80
-    ChrRecord *chr; // sp76
+    coord3d dir;
+    f32 dest_x;
+    f32 dest_z;
+    StandTile *stan;
+    ChrRecord *chr;
     f32 ret;
-    coord3d sp3C;
+    coord3d hitpos;
 
-    stan = arg0->stan;
-    chr = arg0->chr;
+    stan = prop->stan;
+    chr = prop->chr;
 
-    sp5C.f[0] = sinf(arg1);
-    sp5C.f[1] = 0.0f;
-    sp5C.f[2] = cosf(arg1);
-    dest_x = arg0->pos.f[0] + (sp5C.f[0] * arg2);
-    dest_z = arg0->pos.f[2] + (sp5C.f[2] * arg2);
+    dir.f[0] = sinf(angle);
+    dir.f[1] = 0.0f;
+    dir.f[2] = cosf(angle);
+    dest_x = prop->pos.f[0] + (dir.f[0] * maxdist);
+    dest_z = prop->pos.f[2] + (dir.f[2] * maxdist);
 
     chrSetMoving(chr, 0);
     stanResetHits();
 
-    if (stanTestLineUnobstructed(&stan, arg0->pos.f[0], arg0->pos.f[2], dest_x, dest_z, cdtypes, unkHeight, unkA, 0.0f, 1.0f) != 0)
+    if (stanTestLineUnobstructed(&stan, prop->pos.f[0], prop->pos.f[2], dest_x, dest_z, cdtypes, unkHeight, unkA, 0.0f, 1.0f) != 0)
     {
-        ret = arg2;
+        ret = maxdist;
     }
     else
     {
-        chrStanLineDirIntersection(&arg0->pos, &sp5C, &sp3C);
-        dest_x = sp3C.f[0] - arg0->pos.f[0];
-        dest_z = sp3C.f[2] - arg0->pos.f[2];
+        chrStanLineDirIntersection(&prop->pos, &dir, &hitpos);
+        dest_x = hitpos.f[0] - prop->pos.f[0];
+        dest_z = hitpos.f[2] - prop->pos.f[2];
         ret = sqrtf((dest_x * dest_x) + (dest_z * dest_z));
     }
 
@@ -1748,14 +1745,14 @@ f32 chrGetClearDistInDir(PropRecord *arg0, f32 arg1, f32 arg2, s32 cdtypes, f32 
 }
 
 
-f32 chrGetClearDistInDirDefault(PropRecord *arg0, f32 arg1, f32 arg2)
+f32 chrGetClearDistInDirDefault(PropRecord *prop, f32 angle, f32 maxdist)
 {
-    f32 sp2C;
-    f32 sp28;
-    f32 sp24;
+    f32 height;
+    f32 always20;
+    f32 width;
 
-    chrGetChrWidthHeight(arg0, &sp24, &sp2C, &sp28);
-    return chrGetClearDistInDir(arg0, arg1, arg2, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, sp2C, sp28);
+    chrGetChrWidthHeight(prop, &width, &height, &always20);
+    return chrGetClearDistInDir(prop, angle, maxdist, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, height, always20);
 }
 
 
@@ -1766,7 +1763,7 @@ f32 chrGetClearDistInDirDefault(PropRecord *arg0, f32 arg1, f32 arg2)
  * @param req_animation_id: Lookup by id property in g_HitReactionTable
  * @param item: argument to weaponGetImpactForce
  */
-void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_id, ITEM_IDS item)
+void chrReactToHit(ChrRecord *self, coord3d *dir, f32 angle, s32 req_animation_id, ITEM_IDS item)
 {
     // stack offset in decimal
 
@@ -1777,7 +1774,7 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
     f32 impact_force; // ?
     s32 animation_something_index; // 136
     s32 flag1; // 132
-    u8 *sp80 = NULL; // ?
+    u8 *anim = NULL; // ?
     struct ChrHitReaction *something_ani = NULL; // ?
     f32 fa;
     f32 f_under; // 112(sp)
@@ -1808,7 +1805,7 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
 
         if (self->damage >= self->maxdamage)
         {
-            if (((arg2 < 1.5707964f) || (arg2 > 4.712389f)) && ((randomGetNext() % (u32)0x14) == 0))
+            if (((angle < 1.5707964f) || (angle > 4.712389f)) && ((randomGetNext() % (u32)0x14) == 0))
             {
                 ft = modelGetRootRotY(model) + M_PI_F;
 
@@ -1905,9 +1902,9 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
                     {
                         self->act_die.elapseextra = 0.0f;
                         self->act_die.timeextra = ((impact_force * 90.0f) / 6.0f);
-                        self->act_die.extraspeed.f[0] = (arg1->f[0] * impact_force);
-                        self->act_die.extraspeed.f[1] = (arg1->f[1] * impact_force);
-                        self->act_die.extraspeed.f[2] = (arg1->f[2] * impact_force);
+                        self->act_die.extraspeed.f[0] = (dir->f[0] * impact_force);
+                        self->act_die.extraspeed.f[1] = (dir->f[1] * impact_force);
+                        self->act_die.extraspeed.f[2] = (dir->f[2] * impact_force);
                     }
                 }
             }
@@ -1922,9 +1919,9 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
         }
         else
         {
-            if ((req_animation_id == 7) && (arg2 > 2.3561945f) && (arg2 < 3.926991f) && ((u32) (randomGetNext() % (u32)5) < 2U))
+            if ((req_animation_id == 7) && (angle > 2.3561945f) && (angle < 3.926991f) && ((u32) (randomGetNext() % (u32)5) < 2U))
             {
-                u32 sp54 = randomGetNext() % (u32)5;
+                u32 choice = randomGetNext() % (u32)5;
                 chrStopFiring(self);
                 self->actiontype = ACT_ARGH;
                 self->act_argh.notifychrindex = 0;
@@ -1933,38 +1930,38 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
 
                 if ((randomGetNext() & 1) != 0)
                 {
-                    sp80 = &g_AnimTable->data[(s32)&ANIM_DATA_hit_butt_long];
-                    modelSetAnimationWithMerge(model, sp80, randomGetNext() & 1, 10.f, 0.5f, 16.0f, flag1 == 0);
+                    anim = &g_AnimTable->data[(s32)&ANIM_DATA_hit_butt_long];
+                    modelSetAnimationWithMerge(model, anim, randomGetNext() & 1, 10.f, 0.5f, 16.0f, flag1 == 0);
 
-                    if (sp54 < 2U)
+                    if (choice < 2U)
                     {
                         modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, 34.0f, 8.0f));
                     }
-                    else if (sp54 < 4U)
+                    else if (choice < 4U)
                     {
                         modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, 71.0f, 8.0f));
                     }
                     else
                     {
-                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, (f32) (((u16*)sp80)[2] - 1), 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, (f32) (((u16*)anim)[2] - 1), 8.0f));
                     }
                 }
                 else
                 {
-                    sp80 = &g_AnimTable->data[(s32)&ANIM_DATA_hit_butt_short];
-                    modelSetAnimationWithMerge(model, sp80, randomGetNext() & 1, 0.0f, 0.5f, 16.0f, flag1 == 0);
+                    anim = &g_AnimTable->data[(s32)&ANIM_DATA_hit_butt_short];
+                    modelSetAnimationWithMerge(model, anim, randomGetNext() & 1, 0.0f, 0.5f, 16.0f, flag1 == 0);
 
-                    if (sp54 < 2U)
+                    if (choice < 2U)
                     {
                         modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, 37.0f, 8.0f));
                     }
-                    else if (sp54 < 4U)
+                    else if (choice < 4U)
                     {
                         modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, 70.0f, 8.0f));
                     }
                     else
                     {
-                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, (f32) (((u16*)sp80)[2] - 1), 8.0f));
+                        modelSetAnimEndFrame(model, chrGetGuard007ArghRating(self, (f32) (((u16*)anim)[2] - 1), 8.0f));
                     }
                 }
 
@@ -1975,8 +1972,8 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
             {
                 if ((g_HitReactionTable[animation_something_index].flinchAnims != NULL) && (g_HitReactionTable[animation_something_index].flinchAnimCount > 0))
                 {
-                    PropRecord *temp_left = chrGetEquippedWeaponProp(self, GUNLEFT);
-                    PropRecord *temp_right = chrGetEquippedWeaponProp(self, GUNRIGHT);
+                    PropRecord *leftprop = chrGetEquippedWeaponProp(self, GUNLEFT);
+                    PropRecord *rightprop = chrGetEquippedWeaponProp(self, GUNRIGHT);
                     s32 tr;
                     struct StruckAnim *struck_ani;
                     s32 ff = flag1 == 0;
@@ -1984,11 +1981,11 @@ void chrReactToHit(ChrRecord *self, coord3d *arg1, f32 arg2, s32 req_animation_i
                     another_flag = 1;
                     something_ani = &g_HitReactionTable[animation_something_index];
 
-                    if (((s32)&g_HitReactionTable[9] == (s32)something_ani) && (temp_left != NULL))
+                    if (((s32)&g_HitReactionTable[9] == (s32)something_ani) && (leftprop != NULL))
                     {
                         animation_something_index = 10;
                     }
-                    else if (((s32)&g_HitReactionTable[12] == (s32)something_ani) && (temp_right != NULL))
+                    else if (((s32)&g_HitReactionTable[12] == (s32)something_ani) && (rightprop != NULL))
                     {
                         animation_something_index = 13;
                     }
@@ -2203,8 +2200,8 @@ f32 counterOpPlayerDamage(s32 shooter, f32 damage, s32 weaponid)
 
 bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bool isPlayer)
 {
-    s32 hattype;                     //sp78
-    PropRecord *myprop = self->prop; //sp60
+    s32 hattype;
+    PropRecord *myprop = self->prop;
 
     // Counter-op: the guard player's shots pass through other guards.
     if (isPlayer && counterOpIsGuardPlayer(playerGetCurrentNum()) && (myprop->type != PROP_TYPE_VIEWER))
@@ -2410,7 +2407,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
 
             if (self->damage < 0.0f)
             {
-                f32 endframe = -1.0f; //sp34
+                f32 endframe = -1.0f;
                 if (!chrGetHitInterruptFrame(self, &endframe))
                 {
                     chrSetHiddenToRandom(self);
@@ -2422,7 +2419,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
         if (hitpart != HIT_HAT)
         {
             // Cancel current animation and prepare for argh
-            f32 endframe2 = -1.0f; //sp30
+            f32 endframe2 = -1.0f;
             chrPlayHurtSound(self);
 
             if (chrGetHitInterruptFrame(self, &endframe2)) //chrIsAnimPreventingArgh
@@ -2452,17 +2449,17 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
 }
 
 
-s32 chrExplosionDamage(ChrRecord *self, coord3d *arg1, f32 damage, s32 arg3)
+s32 chrExplosionDamage(ChrRecord *self, coord3d *pos, f32 damage, s32 playsound)
 {
     Model *self_model; // 84
     PropRecord *self_prop; // 80
     f32 subroty; // 76
     f32 atan; // 72
     f32 norm; // any
-    s32 sp40; // 64
-    f32 phi_f12; // any
-    struct explosion_death_animation *sp38; // 56
-    coord3d sp2C; // 44
+    s32 dirindex; // 64
+    f32 relangle; // any
+    struct explosion_death_animation *deathanim; // 56
+    coord3d push; // 44
     s32 t;
 
     self_model = self->model;
@@ -2489,69 +2486,69 @@ s32 chrExplosionDamage(ChrRecord *self, coord3d *arg1, f32 damage, s32 arg3)
 
         subroty = modelGetRootRotY(self_model);
 
-        atan = mathAtan2(self_prop->pos.f[0] - arg1->f[0], self_prop->pos.f[2] - arg1->f[2]);
+        atan = mathAtan2(self_prop->pos.f[0] - pos->f[0], self_prop->pos.f[2] - pos->f[2]);
 
-        sp2C.f[0] = self_prop->pos.f[0] - arg1->f[0];
-        sp2C.f[1] = self_prop->pos.f[1] - arg1->f[1];
-        sp2C.f[2] = self_prop->pos.f[2] - arg1->f[2];
+        push.f[0] = self_prop->pos.f[0] - pos->f[0];
+        push.f[1] = self_prop->pos.f[1] - pos->f[1];
+        push.f[2] = self_prop->pos.f[2] - pos->f[2];
 
         // avoid divide by zero
-        if ((sp2C.f[0] == 0.0f) && (sp2C.f[1] == 0.0f) && (sp2C.f[2] == 0.0f))
+        if ((push.f[0] == 0.0f) && (push.f[1] == 0.0f) && (push.f[2] == 0.0f))
         {
-            sp2C.f[2] = 1.0f;
+            push.f[2] = 1.0f;
         }
 
-        norm = (5.0f * damage) / sqrtf(((sp2C.f[0] * sp2C.f[0]) + (sp2C.f[1] * sp2C.f[1])) + (sp2C.f[2] * sp2C.f[2]));
-        phi_f12 = atan - subroty;
+        norm = (5.0f * damage) / sqrtf(((push.f[0] * push.f[0]) + (push.f[1] * push.f[1])) + (push.f[2] * push.f[2]));
+        relangle = atan - subroty;
 
-        sp2C.f[0] *= norm;
-        sp2C.f[1] *= norm;
-        sp2C.f[2] *= norm;
+        push.f[0] *= norm;
+        push.f[1] *= norm;
+        push.f[2] *= norm;
 
-        self->fallspeed.f[0] = sp2C.f[0];
-        self->fallspeed.f[1] = sp2C.f[1];
-        self->fallspeed.f[2] = sp2C.f[2];
+        self->fallspeed.f[0] = push.f[0];
+        self->fallspeed.f[1] = push.f[1];
+        self->fallspeed.f[2] = push.f[2];
 
         if (atan < subroty)
         {
-            phi_f12 += M_TAU_F;
+            relangle += M_TAU_F;
         }
 
-        sp40 = (s32) (((phi_f12 * 8.0f) / M_TAU_F) + 0.5f);
+        dirindex = (s32) (((relangle * 8.0f) / M_TAU_F) + 0.5f);
 
-        if (sp40 >= EXPLOSION_ANIMATION_TABLE_LEN)
+        if (dirindex >= EXPLOSION_ANIMATION_TABLE_LEN)
         {
-            sp40 = 0;
+            dirindex = 0;
         }
 
-        t = (u32)randomGetNext() % (u32) explosion_animation_table[sp40].count;
-        sp38 = &g_ExplosionDeathAnims[
-            explosion_animation_table[sp40].table[t]
+        t = (u32)randomGetNext() % (u32) explosion_animation_table[dirindex].count;
+        deathanim = &g_ExplosionDeathAnims[
+            explosion_animation_table[dirindex].table[t]
             ];
 
         chrStopFiring(self);
 
         self->actiontype = ACT_DIE;
         self->act_die.notifychrindex = 0;
-        self->act_die.thudframe1 = sp38->anonymous_5;
+        self->act_die.thudframe1 = deathanim->anonymous_5;
         self->sleep = 0;
         self->act_die.thudframe2 = -1.0f;
         self->act_die.timeextra = 0.0f;
 
         modelSetAnimation(
             self_model,
-            (struct ModelAnimation *) ((s32)sp38->anonymous_0 + (s32)&g_AnimTable->data),
-            sp38->anonymous_1,
-            sp38->anonymous_3,
-            sp38->anonymous_2,
+            (struct ModelAnimation *) ((s32)deathanim->anonymous_0 + (s32)&g_AnimTable->data),
+            deathanim->anonymous_1,
+            deathanim->anonymous_3,
+            deathanim->anonymous_2,
             8.0f);
 
-        if (sp38->anonymous_6 >= 0.0f)
+        if (deathanim->anonymous_6 >= 0.0f)
         {
-            modelSetAnimEndFrame(self_model, sp38->anonymous_6);
+            modelSetAnimEndFrame(self_model, deathanim->anonymous_6);
         }
 
-        if (arg3 != 0)
+        if (playsound != 0)
         {
             chrPlayHurtSound(self);
         }
@@ -2596,8 +2593,8 @@ waypoint *waypointFindOnTile(StandTile *tile)
     if (head != NULL) {
         wp = head;
         while (wp->padID >= 0) {
-            PadRecord* var_v0 = &g_CurrentSetup.pads[wp->padID];
-            if (tile == var_v0->stan) {
+            PadRecord* pad = &g_CurrentSetup.pads[wp->padID];
+            if (tile == pad->stan) {
                 return wp;
             }
             wp++;
@@ -2618,41 +2615,41 @@ s32 waypointIsOnTile(StandTile* tile)
  * 100% match, unsure of argument types.
  * Addresss 0x7F027C84.
 */
-f32 waypointDistSqXz(coord3d *arg0, waypoint *arg1)
+f32 waypointDistSqXz(coord3d *pos, waypoint *wp)
 {
-    f32 temp_f12;
-    f32 temp_f2;
-    PadRecord *temp_v0;
+    f32 dz;
+    f32 dx;
+    PadRecord *pad;
 
-    temp_v0 = &g_CurrentSetup.pads[arg1->padID];
-    temp_f2 = temp_v0->pos.f[0] - arg0->f[0];
-    temp_f12 = temp_v0->pos.f[2] - arg0->f[2];
-    return (temp_f2 * temp_f2) + (temp_f12 * temp_f12);
+    pad = &g_CurrentSetup.pads[wp->padID];
+    dx = pad->pos.f[0] - pos->f[0];
+    dz = pad->pos.f[2] - pos->f[2];
+    return (dx * dx) + (dz * dz);
 }
 
 
-waypoint *waypointFindNearPos(coord3d *arg0, StandTile *arg1)
+waypoint *waypointFindNearPos(coord3d *pos, StandTile *starttile)
 {
     StandTile *tile = NULL;
-    f32 temp_f20;
+    f32 bestdist;
     waypoint *ret = NULL;
     waypoint *wayp = NULL;
     s32 *n = NULL;
 
-    tile = stanFillSearch(arg1, waypointIsOnTile);
+    tile = stanFillSearch(starttile, waypointIsOnTile);
     if (tile != NULL)
     {
         ret = waypointFindOnTile(tile);
 
         if (ret != NULL)
         {
-            temp_f20 = waypointDistSqXz(arg0, ret);
+            bestdist = waypointDistSqXz(pos, ret);
 
             for (n = ret->neighbours; *n >= 0; n++)
             {
                 wayp = &g_CurrentSetup.pathwaypoints[*n];
 
-                if (waypointDistSqXz(arg0, wayp) < temp_f20)
+                if (waypointDistSqXz(pos, wayp) < bestdist)
                 {
                     ret = wayp;
                 }
@@ -2664,24 +2661,24 @@ waypoint *waypointFindNearPos(coord3d *arg0, StandTile *arg1)
 }
 
 
-s32 chrPathIsOffscreen(ChrRecord *self, coord3d *arg1, StandTile *tile)
+s32 chrPathIsOffscreen(ChrRecord *self, coord3d *pos, StandTile *tile)
 {
 
-#define BUFFER_SIZE_7F027DB0 0x14
+#define MAX_PATH_ROOMS 0x14
 
-    s32 sp48[BUFFER_SIZE_7F027DB0];
+    s32 rooms[MAX_PATH_ROOMS];
     PropRecord *prop;
     s32 tile_something;
     s32 i;
 
     prop = self->prop;
-    tile_something = stanGetRoomsBetween(prop->stan, prop->pos.x, prop->pos.f[2], &tile, arg1->f[0], arg1->f[2], &sp48[0], BUFFER_SIZE_7F027DB0);
+    tile_something = stanGetRoomsBetween(prop->stan, prop->pos.x, prop->pos.f[2], &tile, pos->f[0], pos->f[2], &rooms[0], MAX_PATH_ROOMS);
 
-    if (tile_something > 0 && tile_something < BUFFER_SIZE_7F027DB0)
+    if (tile_something > 0 && tile_something < MAX_PATH_ROOMS)
     {
         for (i=0; i<tile_something; i++)
         {
-            if (bgRoomIsVisible(sp48[i]) != 0)
+            if (bgRoomIsVisible(rooms[i]) != 0)
             {
                 return 0;
             }
@@ -2696,33 +2693,33 @@ s32 chrPathIsOffscreen(ChrRecord *self, coord3d *arg1, StandTile *tile)
 }
 
 
-s32 chrPathToPadIsOffscreen(ChrRecord *self, PadRecord *arg1)
+s32 chrPathToPadIsOffscreen(ChrRecord *self, PadRecord *pad)
 {
-    return chrPathIsOffscreen(self, &arg1->pos, arg1->stan);
+    return chrPathIsOffscreen(self, &pad->pos, pad->stan);
 }
 
 
 /**
  * PD: chrGoPosInitMagic
 */
-void chrSetGoposSegDistTotal(ChrRecord *self, struct waydata *arg1, coord3d *arg2)
+void chrSetGoposSegDistTotal(ChrRecord *self, struct waydata *way, coord3d *pos)
 {
     PropRecord *prop;
     f32 dx;
     f32 dz;
-    f32 sp18;
+    f32 angle;
 
     prop = self->prop;
-    dx = arg2->f[0] - prop->pos.f[0];
-    dz = arg2->f[2] - prop->pos.f[2];
+    dx = pos->f[0] - prop->pos.f[0];
+    dz = pos->f[2] - prop->pos.f[2];
 
-    sp18 = mathAtan2(dx, dz);
+    angle = mathAtan2(dx, dz);
 
-    arg1->mode = 6;
-    arg1->segdistdone = 0.0f;
-    arg1->segdisttotal = sqrtf((dx * dx) + (dz * dz));
+    way->mode = 6;
+    way->segdistdone = 0.0f;
+    way->segdisttotal = sqrtf((dx * dx) + (dz * dz));
 
-    modelSetRootRotY(self->model, sp18);
+    modelSetRootRotY(self->model, angle);
 }
 
 
@@ -2811,16 +2808,16 @@ s32 chrGoPosCalculateBaseTtl(ChrRecord *self)
 {
     f32 dx;
     f32 dz;
-    PropRecord *temp_v0;
-    coord3d sp20; // sp32
-    StandTile *sp1C; // 28
-    f32 sp18; // 24
+    PropRecord *prop;
+    coord3d waypos;
+    StandTile *waytile; // 28
+    f32 animspeed; // 24
 
-    sp18 = modelGetAbsAnimSpeed(self->model);
-    chrGoPosGetCurWaypointInfo(self, &sp20, &sp1C);
-    temp_v0 = self->prop;
-    dx = sp20.f[0] - temp_v0->pos.f[0];
-    dz = sp20.f[2] - temp_v0->pos.f[2];
+    animspeed = modelGetAbsAnimSpeed(self->model);
+    chrGoPosGetCurWaypointInfo(self, &waypos, &waytile);
+    prop = self->prop;
+    dx = waypos.f[0] - prop->pos.f[0];
+    dz = waypos.f[2] - prop->pos.f[2];
 
     if (dx < 0.0f)
     {
@@ -2832,7 +2829,7 @@ s32 chrGoPosCalculateBaseTtl(ChrRecord *self)
         dz = -dz;
     }
 
-    return (s32) ((dx + dz) / (chrGetRunAnimSpeed(self) * sp18));
+    return (s32) ((dx + dz) / (chrGetRunAnimSpeed(self) * animspeed));
 }
 
 
@@ -2848,42 +2845,42 @@ void chrGoPosClearRestartTtl(ChrRecord *self)
 */
 void chrGoPosConsiderRestart(ChrRecord *self)
 {
-    s32 temp_a1;
-    s32 temp_v0;
-    s32 temp_v1;
+    s32 newttl;
+    s32 ttl;
+    s32 elapsed;
 
     if (self->act_gopos.waydata.mode != WAYMODE_MAGIC)
     {
-        temp_v0 = self->act_gopos.restartTtl;
+        ttl = self->act_gopos.restartTtl;
 
-        if (temp_v0 == 0)
+        if (ttl == 0)
         {
 #ifndef REFRESH_PAL
-            temp_a1 = (chrGoPosCalculateBaseTtl(self) * 2) + 300;
+            newttl = (chrGoPosCalculateBaseTtl(self) * 2) + 300;
 #else
-            temp_a1 = ((chrGoPosCalculateBaseTtl(self) * 100) + 15000) / 60;
+            newttl = ((chrGoPosCalculateBaseTtl(self) * 100) + 15000) / 60;
 #endif
 
-            if (temp_a1 >= 0x10000)
+            if (newttl >= 0x10000)
             {
-                temp_a1 = (u16)-1;
+                newttl = (u16)-1;
             }
 
-            self->act_gopos.restartTtl = (s16)temp_a1;
+            self->act_gopos.restartTtl = (s16)newttl;
 
             return;
         }
 
-        temp_v1 = (u16)g_ClockTimer;
+        elapsed = (u16)g_ClockTimer;
 
-        if (temp_v1 >= temp_v0)
+        if (elapsed >= ttl)
         {
             chrGoToPos(self, &self->act_gopos.targetpos, self->act_gopos.target, self->act_gopos.speedMode);
 
             return;
         }
 
-        self->act_gopos.restartTtl = (u16) (temp_v0 - temp_v1);
+        self->act_gopos.restartTtl = (u16) (ttl - elapsed);
     }
 }
 
@@ -2893,18 +2890,18 @@ void chrGoPosConsiderRestart(ChrRecord *self)
 */
 void chrGoPosResetMagic(ChrRecord *self)
 {
-    coord3d sp1C;
-    StandTile *sp18;
+    coord3d waypos;
+    StandTile *waytile;
 
-    chrGoPosGetCurWaypointInfo(self, (coord3d *) &sp1C, &sp18);
+    chrGoPosGetCurWaypointInfo(self, (coord3d *) &waypos, &waytile);
 
     self->act_gopos.waydata.mode = 0;
     self->act_gopos.waydata.iter = 0;
     self->act_gopos.waydata.gotPos = 0;
 
-    self->act_gopos.waydata.pos.f[0] = sp1C.f[0];
-    self->act_gopos.waydata.pos.f[1] = sp1C.f[1];
-    self->act_gopos.waydata.pos.f[2] = sp1C.f[2];
+    self->act_gopos.waydata.pos.f[0] = waypos.f[0];
+    self->act_gopos.waydata.pos.f[1] = waypos.f[1];
+    self->act_gopos.waydata.pos.f[2] = waypos.f[2];
 
     chrGoPosClearRestartTtl(self);
 }
@@ -3030,15 +3027,15 @@ PadRecord * chrGetNextPatrolStepPad(ChrRecord *self)
 
 void chrSetNextActPatrolStepPadPos(ChrRecord *self)
 {
-    PadRecord *temp_v0;
+    PadRecord *pad;
 
-    temp_v0 = chrGetNextPatrolStepPad(self);
+    pad = chrGetNextPatrolStepPad(self);
     self->act_patrol.waydata.mode = 0;
     self->act_patrol.waydata.iter = 0;
     self->act_patrol.waydata.gotPos = 0;
-    self->act_patrol.waydata.pos.f[0] = temp_v0->pos.f[0];
-    self->act_patrol.waydata.pos.f[1] = temp_v0->pos.f[1];
-    self->act_patrol.waydata.pos.f[2] = temp_v0->pos.f[2];
+    self->act_patrol.waydata.pos.f[0] = pad->pos.f[0];
+    self->act_patrol.waydata.pos.f[1] = pad->pos.f[1];
+    self->act_patrol.waydata.pos.f[2] = pad->pos.f[2];
 }
 
 
@@ -3088,7 +3085,7 @@ bool chrIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan)
 /**
  * contrast with @see chrNavTick
 */
-void chrGoPosTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d *arg3, StandTile *arg4)
+void chrGoPosTickMagic(ChrRecord *self, struct waydata *way, f32 speed, coord3d *pos, StandTile *tile)
 {
     /**
      * Three unused stack variables.
@@ -3097,36 +3094,36 @@ void chrGoPosTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d 
     u8 curindex;
     waypoint *pta;
     PadRecord *pad;
-    coord3d sp40;
-    StandTile *sp3C;
+    coord3d waypos;
+    StandTile *waytile;
 
     self->invalidmove = 0;
     self->lastmoveok60 = g_GlobalTimer;
-    arg1->segdistdone += arg2 * modelGetAbsAnimSpeed(self->model) * g_GlobalTimerDelta;
+    way->segdistdone += speed * modelGetAbsAnimSpeed(self->model) * g_GlobalTimerDelta;
 
-    if (arg1->segdisttotal <= arg1->segdistdone)
+    if (way->segdisttotal <= way->segdistdone)
     {
         chrSetMoving(self, 0);
 
         if (
-            (stanTestVolume(&arg4, arg3->f[0], arg3->f[2], self->chrwidth, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, 0.0f, 1.0f) < 0)
-            && chrIsPosClearOfObjectBounds(arg3, arg4))
+            (stanTestVolume(&tile, pos->f[0], pos->f[2], self->chrwidth, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, 0.0f, 1.0f) < 0)
+            && chrIsPosClearOfObjectBounds(pos, tile))
         {
             self_prop = self->prop;
-            self_prop->stan = arg4;
-            self_prop->pos.f[0] = arg3->f[0];
-            self_prop->pos.f[1] = arg3->f[1];
-            self_prop->pos.f[2] = arg3->f[2];
+            self_prop->stan = tile;
+            self_prop->pos.f[0] = pos->f[0];
+            self_prop->pos.f[1] = pos->f[1];
+            self_prop->pos.f[2] = pos->f[2];
             self->chrflags |= CHRFLAG_INIT;
 
-            modelSetRootPosition(self->model, arg3);
+            modelSetRootPosition(self->model, pos);
             chrRootMoveCallback(self->model, &self_prop->pos, &self_prop->pos, &self->ground);
             chrDetectRooms(self);
 
             if (self->actiontype == ACT_PATROL)
             {
                 chrAdvancePatrolStep(self);
-                chrSetGoposSegDistTotal(self, arg1, chrGetNextPatrolStepPad(self));
+                chrSetGoposSegDistTotal(self, way, chrGetNextPatrolStepPad(self));
             }
             else if (self->actiontype == ACT_GOPOS)
             {
@@ -3149,14 +3146,14 @@ void chrGoPosTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d 
                 else
                 {
                     chrActGoposIncCurIndex(self);
-                    chrGoPosGetCurWaypointInfo(self, &sp40, &sp3C);
-                    chrSetGoposSegDistTotal(self, arg1, &sp40);
+                    chrGoPosGetCurWaypointInfo(self, &waypos, &waytile);
+                    chrSetGoposSegDistTotal(self, way, &waypos);
                 }
             }
         }
         else
         {
-            arg1->segdistdone = arg1->segdisttotal;
+            way->segdistdone = way->segdisttotal;
 
             if (self->actiontype == ACT_PATROL)
             {
@@ -3186,11 +3183,11 @@ void chrGoPosTickMagic(ChrRecord *self, struct waydata *arg1, f32 arg2, coord3d 
  *
  * PD: chrCalculatePosition.
 */
-void chrGetMovementTarget(ChrRecord *self, coord3d *arg1)
+void chrGetMovementTarget(ChrRecord *self, coord3d *target)
 {
     PadRecord *pad;
     f32 percent;
-    coord3d sp2C; // 44
+    coord3d waypos; // 44
     StandTile *stan;
 
     if ((self->actiontype == ACT_PATROL) && (self->act_patrol.waydata.mode == WAYMODE_MAGIC))
@@ -3199,47 +3196,47 @@ void chrGetMovementTarget(ChrRecord *self, coord3d *arg1)
 
         if (self->act_patrol.waydata.segdisttotal <= self->act_patrol.waydata.segdistdone)
         {
-            arg1->f[0] = pad->pos.f[0];
-            arg1->f[1] = pad->pos.f[1];
-            arg1->f[2] = pad->pos.f[2];
+            target->f[0] = pad->pos.f[0];
+            target->f[1] = pad->pos.f[1];
+            target->f[2] = pad->pos.f[2];
 
             return;
         }
 
         percent = self->act_patrol.waydata.segdistdone / self->act_patrol.waydata.segdisttotal;
 
-        arg1->f[0] = self->prop->pos.f[0] + ((pad->pos.f[0] - self->prop->pos.f[0]) * percent);
-        arg1->f[1] = self->prop->pos.f[1] + ((pad->pos.f[1] - self->prop->pos.f[1]) * percent);
-        arg1->f[2] = self->prop->pos.f[2] + ((pad->pos.f[2] - self->prop->pos.f[2]) * percent);
+        target->f[0] = self->prop->pos.f[0] + ((pad->pos.f[0] - self->prop->pos.f[0]) * percent);
+        target->f[1] = self->prop->pos.f[1] + ((pad->pos.f[1] - self->prop->pos.f[1]) * percent);
+        target->f[2] = self->prop->pos.f[2] + ((pad->pos.f[2] - self->prop->pos.f[2]) * percent);
 
         return;
     }
 
     if ((self->actiontype == ACT_GOPOS) && (self->act_gopos.waydata.mode == WAYMODE_MAGIC))
     {
-        chrGoPosGetCurWaypointInfo(self, &sp2C, &stan);
+        chrGoPosGetCurWaypointInfo(self, &waypos, &stan);
 
         if (self->act_gopos.waydata.segdisttotal <= self->act_gopos.waydata.segdistdone)
         {
-            arg1->f[0] = sp2C.f[0];
-            arg1->f[1] = sp2C.f[1];
-            arg1->f[2] = sp2C.f[2];
+            target->f[0] = waypos.f[0];
+            target->f[1] = waypos.f[1];
+            target->f[2] = waypos.f[2];
 
             return;
         }
 
         percent = self->act_gopos.waydata.segdistdone / self->act_gopos.waydata.segdisttotal;
 
-        arg1->f[0] = self->prop->pos.f[0] + ((sp2C.f[0] - self->prop->pos.f[0]) * percent);
-        arg1->f[1] = self->prop->pos.f[1] + ((sp2C.f[1] - self->prop->pos.f[1]) * percent);
-        arg1->f[2] = self->prop->pos.f[2] + ((sp2C.f[2] - self->prop->pos.f[2]) * percent);
+        target->f[0] = self->prop->pos.f[0] + ((waypos.f[0] - self->prop->pos.f[0]) * percent);
+        target->f[1] = self->prop->pos.f[1] + ((waypos.f[1] - self->prop->pos.f[1]) * percent);
+        target->f[2] = self->prop->pos.f[2] + ((waypos.f[2] - self->prop->pos.f[2]) * percent);
 
         return;
     }
 
-    arg1->f[0] = self->prop->pos.f[0];
-    arg1->f[1] = self->prop->pos.f[1];
-    arg1->f[2] = self->prop->pos.f[2];
+    target->f[0] = self->prop->pos.f[0];
+    target->f[1] = self->prop->pos.f[1];
+    target->f[2] = self->prop->pos.f[2];
 }
 
 
@@ -3248,7 +3245,7 @@ void chrGetMovementTarget(ChrRecord *self, coord3d *arg1)
  * @param arg1: sprinting animation when 2, running animation when 1, otherwise walking animation
  * @param arg2:
 */
-void chrGoPosChooseAnimationEx(ChrRecord *self, s32 arg1, s32 arg2)
+void chrGoPosChooseAnimationEx(ChrRecord *self, s32 speed, s32 isMale)
 {
     PropRecord *left;
     PropRecord *right;
@@ -3282,11 +3279,11 @@ void chrGoPosChooseAnimationEx(ChrRecord *self, s32 arg1, s32 arg2)
 
     if (flag != 0)
     {
-        if (arg1 == 2)
+        if (speed == 2)
         {
             modelSetAnimation(self->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_sprinting], ani_arg, 0.0f, 0.5f, 16.0f);
         }
-        else if (arg1 == 1)
+        else if (speed == 1)
         {
             modelSetAnimation(self->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_running], ani_arg, 0.0f, 0.5f, 16.0f);
         }
@@ -3298,13 +3295,13 @@ void chrGoPosChooseAnimationEx(ChrRecord *self, s32 arg1, s32 arg2)
         return;
     }
 
-    if (arg2)
+    if (isMale)
     {
-        if (arg1 == 2)
+        if (speed == 2)
         {
             modelSetAnimation(self->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_sprinting_one_handed_weapon], ani_arg, 0.0f, 0.5f, 16.0f);
         }
-        else if (arg1 == 1)
+        else if (speed == 1)
         {
             modelSetAnimation(self->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_running_one_handed_weapon], ani_arg, 0.0f, 0.5f, 16.0f);
         }
@@ -3316,11 +3313,11 @@ void chrGoPosChooseAnimationEx(ChrRecord *self, s32 arg1, s32 arg2)
         return;
     }
 
-    if (arg1 == 2)
+    if (speed == 2)
     {
         modelSetAnimation(self->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_sprinting_one_handed_weapon], ani_arg, 0.0f, 0.5f, 16.0f);
     }
-    else if (arg1 == 1)
+    else if (speed == 1)
     {
         modelSetAnimation(self->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_running_female], ani_arg, 0.0f, 0.5f, 16.0f);
     }
@@ -3339,36 +3336,36 @@ void chrGoPosChooseAnimation( ChrRecord *self)
 }
 
 
-s32 chrGoToPos(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed)
+s32 chrGoToPos(ChrRecord *self, coord3d *pos, StandTile *stan, SPEED speed)
 {
-    PropRecord *prop; //sp 100
-    waypoint *prop_waypoint; // sp96
-    waypoint *target_waypoint; // sp92
-    waypoint *sp44[MAX_CHRWAYPOINTS];
+    PropRecord *prop;
+    waypoint *prop_waypoint;
+    waypoint *target_waypoint;
+    waypoint *route[MAX_CHRWAYPOINTS];
     s32 i;
-    coord3d sp34;
-    StandTile *sp30;
-    s32 phi_v0;
+    coord3d waypos;
+    StandTile *waytile;
+    s32 samespeed;
 
     prop = self->prop;
 
-    phi_v0 = (self->actiontype == ACT_GOPOS) && (self->act_gopos.speedMode == (u8)speed);
+    samespeed = (self->actiontype == ACT_GOPOS) && (self->act_gopos.speedMode == (u8)speed);
 
     prop_waypoint = waypointFindNearPos(&prop->pos, prop->stan);
-    target_waypoint = waypointFindNearPos(arg1, stan);
+    target_waypoint = waypointFindNearPos(pos, stan);
 
     if ((prop_waypoint != NULL)
         && (target_waypoint != NULL)
-        && !(waypointFindRoute(prop_waypoint, target_waypoint, (waypoint **)&sp44, MAX_CHRWAYPOINTS) < 2)
+        && !(waypointFindRoute(prop_waypoint, target_waypoint, (waypoint **)&route, MAX_CHRWAYPOINTS) < 2)
     )
     {
         chrStopFiring(self);
 
         self->actiontype = ACT_GOPOS;
 
-        self->act_gopos.targetpos.f[0] = arg1->f[0];
-        self->act_gopos.targetpos.f[1] = arg1->f[1];
-        self->act_gopos.targetpos.f[2] = arg1->f[2];
+        self->act_gopos.targetpos.f[0] = pos->f[0];
+        self->act_gopos.targetpos.f[1] = pos->f[1];
+        self->act_gopos.targetpos.f[2] = pos->f[2];
         self->act_gopos.target = stan;
         self->act_gopos.target_path = target_waypoint;
         self->act_gopos.curindex = 0;
@@ -3380,22 +3377,22 @@ s32 chrGoToPos(ChrRecord *self, coord3d *arg1, StandTile *stan, SPEED speed)
 
         for (i=0; i<MAX_CHRWAYPOINTS; i++)
         {
-            self->act_gopos.waypoints[i] = sp44[i];
+            self->act_gopos.waypoints[i] = route[i];
         }
 
         chrGoPosResetMagic(self);
         self->sleep = 0;
 
-        if (phi_v0 == 0)
+        if (samespeed == 0)
         {
             chrGoPosChooseAnimation(self);
         }
 
-        chrGoPosGetCurWaypointInfo(self, &sp34, &sp30);
+        chrGoPosGetCurWaypointInfo(self, &waypos, &waytile);
 
-        if (((prop->flags & 2) == 0) && (chrPathIsOffscreen(self, &sp34, sp30) != 0))
+        if (((prop->flags & 2) == 0) && (chrPathIsOffscreen(self, &waypos, waytile) != 0))
         {
-            chrSetGoposSegDistTotal(self, &self->act_gopos.waydata, &sp34);
+            chrSetGoposSegDistTotal(self, &self->act_gopos.waydata, &waypos);
         }
 
         return 1;
@@ -3457,7 +3454,6 @@ void chrStartPatrol(ChrRecord *self, struct patrol_path *path)
     s32 next_step = -1;
     PropRecord *prop = self->prop;
     s32 count = 0;
-    PadRecord *new_var;
     waypoint *pta;
     s32 *dataptr;
     f32 dx;
@@ -3469,8 +3465,7 @@ void chrStartPatrol(ChrRecord *self, struct patrol_path *path)
         {
             dataptr = &path->data[count];
             pta = &g_CurrentSetup.pathwaypoints[*dataptr];
-            new_var = &g_CurrentSetup.pads[pta->padID];
-            pad = new_var;
+            pad = &g_CurrentSetup.pads[pta->padID];
 
             if ((pad->stan != NULL) && (pad->stan == prop->stan))
             {
@@ -3531,13 +3526,13 @@ void chrRecordSawTarget(ChrRecord *self)
 }
 
 
-s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *arg1, StandTile *arg2)
+s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *pos, StandTile *tile)
 {
     s32 ret;
     s32 flags;
     StandTile *stan;
-    StandTile *sp40;
-    coord3d *sp3C;
+    StandTile *targettile;
+    coord3d *targetpos;
 
     ret = 0;
     flags = TARGET_BOND;
@@ -3553,8 +3548,8 @@ s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *arg1, StandTile *arg2)
     }
     else
     {
-        stan = arg2;
-        sp3C = chrGetChrOrPresetLocation(self, flags, self->act_attack.entityid, &sp40);
+        stan = tile;
+        targetpos = chrGetChrOrPresetLocation(self, flags, self->act_attack.entityid, &targettile);
         chrSetMoving(self, 0);
 
         if ((flags & 1) != 0)
@@ -3563,7 +3558,7 @@ s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *arg1, StandTile *arg2)
 
             if (playerGetVisibleToGuards() != 0)
             {
-                if ((stanTestLineUnobstructed(&stan, arg1->x, arg1->f[2], sp3C->x, sp3C->f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, arg1->f[1], arg1->f[1], sp3C->f[1], sp3C->f[1]) != 0) && (stan == sp40))
+                if ((stanTestLineUnobstructed(&stan, pos->x, pos->f[2], targetpos->x, targetpos->f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, pos->f[1], pos->f[1], targetpos->f[1], targetpos->f[1]) != 0) && (stan == targettile))
                 {
                     chrRecordSawTarget(self);
                     ret = 1;
@@ -3574,14 +3569,14 @@ s32 chrCheckCanSeeTarget(ChrRecord *self, coord3d *arg1, StandTile *arg2)
         }
         else if ((flags & 4) != 0)
         {
-            if ((stanTestLineUnobstructed(&stan, arg1->x, arg1->f[2], sp3C->x, sp3C->f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, arg1->f[1], arg1->f[1], sp3C->f[1], sp3C->f[1]) != 0) && (stan == sp40))
+            if ((stanTestLineUnobstructed(&stan, pos->x, pos->f[2], targetpos->x, targetpos->f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, pos->f[1], pos->f[1], targetpos->f[1], targetpos->f[1]) != 0) && (stan == targettile))
             {
                 ret = 1;
             }
         }
         else if ((flags & 8) != 0)
         {
-            if ((stanTestLineUnobstructed(&stan, arg1->x, arg1->f[2], sp3C->x, sp3C->f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, arg1->f[1], arg1->f[1], sp3C->f[1], sp3C->f[1]) != 0) && (stan == sp40))
+            if ((stanTestLineUnobstructed(&stan, pos->x, pos->f[2], targetpos->x, targetpos->f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, pos->f[1], pos->f[1], targetpos->f[1], targetpos->f[1]) != 0) && (stan == targettile))
             {
                 ret = 1;
             }
@@ -3649,14 +3644,14 @@ bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan)
 }
 
 
-s32 chrCanSeePos(ChrRecord *self, coord3d *arg1, StandTile *arg2)
+s32 chrCanSeePos(ChrRecord *self, coord3d *pos, StandTile *tile)
 {
     f32 atan;
     f32 roty;
     f32 df;
 
     roty = modelGetRootRotY(self->model);
-    atan = mathAtan2(arg1->f[0] - self->prop->pos.f[0], arg1->f[2] - self->prop->pos.f[2]);
+    atan = mathAtan2(pos->f[0] - self->prop->pos.f[0], pos->f[2] - self->prop->pos.f[2]);
     df = atan - roty;
 
     if (atan < roty)
@@ -3666,7 +3661,7 @@ s32 chrCanSeePos(ChrRecord *self, coord3d *arg1, StandTile *arg2)
     // if NOT in rear left quadrant?
     if ((df < DegToRad(100)) || (df > DegToRad(260)))
     {
-        return chrHasLineOfSightToPos(self, arg1, arg2);
+        return chrHasLineOfSightToPos(self, pos, tile);
     }
 
     return 0;
@@ -3675,12 +3670,12 @@ s32 chrCanSeePos(ChrRecord *self, coord3d *arg1, StandTile *arg2)
 
 s32 chrHasLineOfSightToPlayer(ChrRecord *self)
 {
-    PropRecord *sp3C;
+    PropRecord *prop;
     PropRecord *bond_prop;
     StandTile *bond_stan;
     s32 ret;
 
-    sp3C = self->prop;
+    prop = self->prop;
     bond_prop = currentPlayerGetProp();
     ret = 0;
 
@@ -3692,14 +3687,14 @@ s32 chrHasLineOfSightToPlayer(ChrRecord *self)
             &bond_stan,
             bond_prop->pos.f[0],
             bond_prop->pos.f[2],
-            sp3C->pos.f[0],
-            sp3C->pos.f[2],
+            prop->pos.f[0],
+            prop->pos.f[2],
             0x13,
             bond_prop->pos.f[1],
             bond_prop->pos.f[1],
             0.0f,
             1.0f) != 0)
-        && (bond_stan == sp3C->stan))
+        && (bond_stan == prop->stan))
     {
         ret = 1;
     }
@@ -3710,59 +3705,59 @@ s32 chrHasLineOfSightToPlayer(ChrRecord *self)
 }
 
 
-s32 propCanWalkLine(PropRecord *arg0, coord3d *arg1, coord3d *arg2)
+s32 propCanWalkLine(PropRecord *prop, coord3d *dest, coord3d *dir)
 {
-    ChrRecord *sp7C;
-    f32 sp78;
-    f32 sp74;
-    f32 sp70;
-    f32 sp6C;
+    ChrRecord *chr;
+    f32 startX;
+    f32 startZ;
+    f32 endX;
+    f32 endZ;
     StandTile *stan;
     f32 chrx;
     f32 chrz;
-    s32 ret; // sp92
-    f32 sp58; // sp88
-    f32 sp54; // sp84
-    f32 sp50; // sp80
+    s32 ret;
+    f32 height;
+    f32 always20;
+    f32 width;
 
-    sp7C = arg0->chr;
-    chrx = arg2->f[0] * sp7C->chrwidth * 1.2f;
-    chrz = arg2->f[2] * sp7C->chrwidth * 1.2f;
+    chr = prop->chr;
+    chrx = dir->f[0] * chr->chrwidth * 1.2f;
+    chrz = dir->f[2] * chr->chrwidth * 1.2f;
     ret = 0;
 
-    chrGetChrWidthHeight(arg0, &sp50, &sp58, &sp54);
-    chrSetMoving(sp7C, 0);
+    chrGetChrWidthHeight(prop, &width, &height, &always20);
+    chrSetMoving(chr, 0);
 
-    sp78 = arg0->pos.f[0] + chrz;
-    sp74 = arg0->pos.f[2] - chrx;
-    sp70 = arg1->f[0] + chrz + chrx;
-    sp6C = (arg1->f[2] - chrx) + chrz;
+    startX = prop->pos.f[0] + chrz;
+    startZ = prop->pos.f[2] - chrx;
+    endX = dest->f[0] + chrz + chrx;
+    endZ = (dest->f[2] - chrx) + chrz;
 
-    stan = arg0->stan;
+    stan = prop->stan;
 
     if (
-        (stanTestLineUnobstructed(&stan, arg0->pos.f[0], arg0->pos.f[2], sp78, sp74, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER , sp58, sp54, 0.0f, 1.0f) != 0)
-        && (stanTestLineUnobstructed(&stan, sp78, sp74, sp70, sp6C, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER , sp58, sp54, 0.0f, 1.0f) != 0)
+        (stanTestLineUnobstructed(&stan, prop->pos.f[0], prop->pos.f[2], startX, startZ, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER , height, always20, 0.0f, 1.0f) != 0)
+        && (stanTestLineUnobstructed(&stan, startX, startZ, endX, endZ, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER , height, always20, 0.0f, 1.0f) != 0)
         )
     {
-        sp78 = arg0->pos.f[0] - chrz;
-        sp74 = arg0->pos.f[2] + chrx;
-        sp70 = (arg1->f[0] - chrz) + chrx;
-        sp6C = arg1->f[2] + chrx + chrz;
+        startX = prop->pos.f[0] - chrz;
+        startZ = prop->pos.f[2] + chrx;
+        endX = (dest->f[0] - chrz) + chrx;
+        endZ = dest->f[2] + chrx + chrz;
 
         // why is this getting set again?
-        stan = arg0->stan;
+        stan = prop->stan;
 
         if (
-            (stanTestLineUnobstructed(&stan, arg0->pos.f[0], arg0->pos.f[2], sp78, sp74, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER , sp58, sp54, 0.0f, 1.0f) != 0)
-            && (stanTestLineUnobstructed(&stan, sp78, sp74, sp70, sp6C, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER , sp58, sp54, 0.0f, 1.0f) != 0)
+            (stanTestLineUnobstructed(&stan, prop->pos.f[0], prop->pos.f[2], startX, startZ, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER , height, always20, 0.0f, 1.0f) != 0)
+            && (stanTestLineUnobstructed(&stan, startX, startZ, endX, endZ, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER , height, always20, 0.0f, 1.0f) != 0)
             )
         {
             ret = 1;
         }
     }
 
-    chrSetMoving(sp7C, 1);
+    chrSetMoving(chr, 1);
 
     return ret;
 }
@@ -3770,15 +3765,15 @@ s32 propCanWalkLine(PropRecord *arg0, coord3d *arg1, coord3d *arg2)
 
 /**
 */
-s32 propCanWalkInDir(PropRecord *arg0, coord3d *arg1, f32 arg2)
+s32 propCanWalkInDir(PropRecord *prop, coord3d *dir, f32 dist)
 {
-    coord3d sp1C;
+    coord3d dest;
 
-    sp1C.f[0] = arg0->pos.f[0] + (arg1->f[0] * arg2);
-    sp1C.f[1] = arg0->pos.f[1];
-    sp1C.f[2] = arg0->pos.f[2] + (arg1->f[2] * arg2);
+    dest.f[0] = prop->pos.f[0] + (dir->f[0] * dist);
+    dest.f[1] = prop->pos.f[1];
+    dest.f[2] = prop->pos.f[2] + (dir->f[2] * dist);
 
-    return propCanWalkLine(arg0, &sp1C, arg1);
+    return propCanWalkLine(prop, &dest, dir);
 }
 
 
@@ -3787,14 +3782,14 @@ s32 propCanWalkInDir(PropRecord *arg0, coord3d *arg1, f32 arg2)
 */
 void chrSetTargetToPlayer(ChrRecord *self)
 {
-    PropRecord *temp_v0;
+    PropRecord *playerprop;
 
-    temp_v0 = currentPlayerGetProp();
+    playerprop = currentPlayerGetProp();
     self->lastseetarget60 = g_GlobalTimer;
-    self->lastknowntargetpos.f[0] = temp_v0->pos.f[0];
-    self->lastknowntargetpos.f[1] = temp_v0->pos.f[1];
-    self->lastknowntargetpos.f[2] = temp_v0->pos.f[2];
-    self->targetTile = temp_v0->stan;
+    self->lastknowntargetpos.f[0] = playerprop->pos.f[0];
+    self->lastknowntargetpos.f[1] = playerprop->pos.f[1];
+    self->lastknowntargetpos.f[2] = playerprop->pos.f[2];
+    self->targetTile = playerprop->stan;
 }
 
 
@@ -3803,15 +3798,15 @@ void chrSetTargetToPlayer(ChrRecord *self)
  */
 void chrAlertGuardToPlayerPosition(ChrRecord *self)
 {
-    PropRecord *temp_v0;
+    PropRecord *playerprop;
 
-    temp_v0 = currentPlayerGetProp();
+    playerprop = currentPlayerGetProp();
     self->hidden |= CHRHIDDEN_ALERT_GUARD_RELATED;
     self->lastheartarget60 = g_GlobalTimer;
-    self->lastknowntargetpos.f[0] = temp_v0->pos.x;
-    self->lastknowntargetpos.f[1] = temp_v0->pos.y;
-    self->lastknowntargetpos.f[2] = temp_v0->pos.z;
-    self->targetTile = temp_v0->stan;
+    self->lastknowntargetpos.f[0] = playerprop->pos.x;
+    self->lastknowntargetpos.f[1] = playerprop->pos.y;
+    self->lastknowntargetpos.f[2] = playerprop->pos.z;
+    self->targetTile = playerprop->stan;
 }
 
 
@@ -3978,17 +3973,17 @@ void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, vec3d *vec)
 s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
-    coord3d sp28;
-    coord3d sp1C;
+    coord3d dir;
+    coord3d dest;
 
     prop = self->prop;
-    chrNormDistanceToPlayer(self, side, &sp28);
+    chrNormDistanceToPlayer(self, side, &dir);
 
-    sp1C.f[0] = prop->pos.f[0] + (sp28.f[0] * distance);
-    sp1C.f[1] = prop->pos.f[1];
-    sp1C.f[2] = prop->pos.f[2] + (sp28.f[2] * distance);
+    dest.f[0] = prop->pos.f[0] + (dir.f[0] * distance);
+    dest.f[1] = prop->pos.f[1];
+    dest.f[2] = prop->pos.f[2] + (dir.f[2] * distance);
 
-    return propCanWalkLine(prop, &sp1C, &sp28);
+    return propCanWalkLine(prop, &dest, &dir);
 }
 
 
@@ -3997,23 +3992,23 @@ s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
  * @param arg1: flag. If set result is (cos, -sin), otherwise (-cos, sin).
  * @param arg2: out parameter, contains coordinate result.
 */
-void chrGetSideDir(ChrRecord *self, s32 arg1, coord3d *arg2)
+void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir)
 {
-    f32 temp_f12;
+    f32 angle;
 
-    temp_f12 = modelGetRootRotY(self->model);
+    angle = modelGetRootRotY(self->model);
 
-    if (arg1 != 0)
+    if (side != 0)
     {
-        arg2->f[0] = cosf(temp_f12);
-        arg2->f[1] = 0.0f;
-        arg2->f[2] = -sinf(temp_f12);
+        dir->f[0] = cosf(angle);
+        dir->f[1] = 0.0f;
+        dir->f[2] = -sinf(angle);
     }
     else
     {
-        arg2->f[0] = -cosf(temp_f12);
-        arg2->f[1] = 0.0f;
-        arg2->f[2] = sinf(temp_f12);
+        dir->f[0] = -cosf(angle);
+        dir->f[1] = 0.0f;
+        dir->f[2] = sinf(angle);
     }
 }
 
@@ -4024,17 +4019,17 @@ void chrGetSideDir(ChrRecord *self, s32 arg1, coord3d *arg2)
 s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
-    coord3d sp28;
-    coord3d sp1C;
+    coord3d dir;
+    coord3d dest;
 
     prop = self->prop;
-    chrGetSideDir(self, side, &sp28);
+    chrGetSideDir(self, side, &dir);
 
-    sp1C.f[0] = prop->pos.f[0] + (sp28.f[0] * distance);
-    sp1C.f[1] = prop->pos.f[1];
-    sp1C.f[2] = prop->pos.f[2] + (sp28.f[2] * distance);
+    dest.f[0] = prop->pos.f[0] + (dir.f[0] * distance);
+    dest.f[1] = prop->pos.f[1];
+    dest.f[2] = prop->pos.f[2] + (dir.f[2] * distance);
 
-    return propCanWalkLine(prop, &sp1C, &sp28);
+    return propCanWalkLine(prop, &dest, &dir);
 }
 
 
@@ -4381,9 +4376,9 @@ bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid)
 bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 {
     PadRecord *pad;
-    StandTile *stan2; //sp38
+    StandTile *stan2;
     coord3d region;
-    StandTile *stan; //sp28 - wow, deliberate duplicate...
+    StandTile *stan;
 
     if ((padid >= 0) && chrIsNotDeadOrShot(self) && (g_SeenBondRecentlyGuardCount < 10))
     {
@@ -4444,12 +4439,12 @@ void chrTickStand(ChrRecord *self)
     PropRecord *left;  // 160
     PropRecord *right; // 156
     s32 index;         // any
-    f32 sp74[8];       // 116
+    f32 cleardist[8];       // 116
     f32 subroty;       // 112
-    f32 temp_f0;       // 108
+    f32 angle;       // 108
     f32 subrotyarg2;   // any
     s32 j;             // any
-    s32 sp44[8];       // 68
+    s32 order[8];       // 68
 
     if (self->sleep > 0)
     {
@@ -4490,8 +4485,8 @@ void chrTickStand(ChrRecord *self)
         }
         else
         {
-            temp_f0 = chrGetAngleToTarget(self, self->act_stand.face_entitytype, self->act_stand.face_entityid);
-            if ((temp_f0 > 0.34906587f) && (temp_f0 < 5.9341197f))
+            angle = chrGetAngleToTarget(self, self->act_stand.face_entitytype, self->act_stand.face_entityid);
+            if ((angle > 0.34906587f) && (angle < 5.9341197f))
             {
                 left = chrGetEquippedWeaponProp(self, 1);
                 right = chrGetEquippedWeaponProp(self, 0);
@@ -4562,22 +4557,22 @@ void chrTickStand(ChrRecord *self)
         {
             subroty = modelGetRootRotY(self->model);
 
-            temp_f0 = subroty;
+            angle = subroty;
             for (i = 0; i < 8; i++)
             {
-                temp_f0 += DegToRad(45);
+                angle += DegToRad(45);
 
-                if (temp_f0 >= M_TAU_F)
+                if (angle >= M_TAU_F)
                 {
-                    temp_f0 -= M_TAU_F;
+                    angle -= M_TAU_F;
                 }
 
-                sp74[i] = chrGetClearDistInDir(self->prop, temp_f0, 1000.0f, 0, 0.0f, 1.0f);
+                cleardist[i] = chrGetClearDistInDir(self->prop, angle, 1000.0f, 0, 0.0f, 1.0f);
             }
 
             for (i = 0; i < 8; i++)
             {
-                sp44[i] = i;
+                order[i] = i;
             }
 
             /**
@@ -4589,29 +4584,29 @@ void chrTickStand(ChrRecord *self)
 
                 for (j = i + 1; j < 8; j++)
                 {
-                    if (sp74[sp44[j]] < sp74[sp44[index]])
+                    if (cleardist[order[j]] < cleardist[order[index]])
                     {
                         index = j;
                     }
                 }
 
-                j = sp44[i];
-                sp44[i] = sp44[index];
-                sp44[index] = j;
+                j = order[i];
+                order[i] = order[index];
+                order[index] = j;
             }
 
             index = -1;
-            if (sp74[0] < 490.0f)
+            if (cleardist[0] < 490.0f)
             {
-                if (sp74[sp44[4]] < 200.0f)
+                if (cleardist[order[4]] < 200.0f)
                 {
                     index = 7;
                 }
-                else if ((sp44[0] == 0) || (sp44[1] == 0) || (sp44[2] == 0))
+                else if ((order[0] == 0) || (order[1] == 0) || (order[2] == 0))
                 {
-                    if (((sp44[3] == 4) || (sp44[4] == 4)) && ((randomGetNext() % 3U) == 0))
+                    if (((order[3] == 4) || (order[4] == 4)) && ((randomGetNext() % 3U) == 0))
                     {
-                        if (sp44[3] == 4)
+                        if (order[3] == 4)
                         {
                             index = 3;
                         }
@@ -4625,7 +4620,7 @@ void chrTickStand(ChrRecord *self)
                         index = 5 + (randomGetNext() % 3U);
                     }
                 }
-                else if (((sp44[0] == 1) || (sp44[0] == 7)) && (sp44[5] != 0) && (sp44[6] != 0) && (sp44[7] != 0))
+                else if (((order[0] == 1) || (order[0] == 7)) && (order[5] != 0) && (order[6] != 0) && (order[7] != 0))
                 {
                     index = 5 + (randomGetNext() % 3U);
                 }
@@ -4633,15 +4628,15 @@ void chrTickStand(ChrRecord *self)
 
             if (index >= 0)
             {
-                i = sp44[index];
-                temp_f0 = ((f32)i * M_TAU_F * 0.125f) + subroty;
+                i = order[index];
+                angle = ((f32)i * M_TAU_F * 0.125f) + subroty;
 
-                if (temp_f0 >= M_TAU_F)
+                if (angle >= M_TAU_F)
                 {
-                    temp_f0 -= M_TAU_F;
+                    angle -= M_TAU_F;
                 }
 
-                chrTryStop(self, 0x10, (s32) ((temp_f0 * M_U16_MAX_VALUE_F) / M_TAU_F));
+                chrTryStop(self, 0x10, (s32) ((angle * M_U16_MAX_VALUE_F) / M_TAU_F));
             }
             else
             {
@@ -4664,9 +4659,9 @@ void chrTickAnim(ChrRecord *self)
 
     if (self->act_anim.holdLastFrame == 0)
     {
-        f32 sp20 = modelGetAnimFrame(self->model);
+        f32 frame = modelGetAnimFrame(self->model);
 
-        if (modelGetAnimEndFrame(self->model) <= sp20)
+        if (modelGetAnimEndFrame(self->model) <= frame)
         {
             chrStand(self);
         }
@@ -4705,14 +4700,14 @@ void chrTickSurrender(ChrRecord *self)
         if (((s32)modelGetAnim(model) == (s32)&g_AnimTable->data[(s32)&ANIM_DATA_surrendering_armed_drop_weapon])
             && (modelGetAnimFrame(model) >= 80.0f))
         {
-            coord3d sp30 = {0};
+            coord3d dir = {0};
 
             f32 t = modelGetRootRotY(model);
 
-            sp30.f[0] = -sinf(t);
-            sp30.f[2] = -cosf(t);
+            dir.f[0] = -sinf(t);
+            dir.f[2] = -cosf(t);
 
-            if (propCanWalkInDir(self->prop, &sp30, 20.0f) == 0)
+            if (propCanWalkInDir(self->prop, &dir, 20.0f) == 0)
             {
                 modelSetAnimation(self->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_surrendering_armed], randomGetNext() & 1, 30.0f, 0.5f, 16.0f);
                 modelSetAnimLooping(self->model, 30.0f, 16.0f);
@@ -4905,16 +4900,16 @@ void chrTickArgh(ChrRecord *self)
 void chrTickPreArgh(ChrRecord *self)
 {
     Model *model;
-    coord3d sp30;
+    coord3d dir;
 
     model = self->model;
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
-        sp30.f[0] = self->act_preargh.pos.f[0];
-        sp30.f[1] = self->act_preargh.pos.f[1];
-        sp30.f[2] = self->act_preargh.pos.f[2];
-        chrReactToHit(self, &sp30, self->act_preargh.angle, self->act_preargh.hitpart, self->act_preargh.weaponid);
+        dir.f[0] = self->act_preargh.pos.f[0];
+        dir.f[1] = self->act_preargh.pos.f[1];
+        dir.f[2] = self->act_preargh.pos.f[2];
+        chrReactToHit(self, &dir, self->act_preargh.angle, self->act_preargh.hitpart, self->act_preargh.weaponid);
     }
 }
 
@@ -5013,73 +5008,73 @@ void chrTickSurprised(ChrRecord *self)
 }
 
 
-void chrPlayGunfireSound(ChrRecord *self, s32 arg1, s32 arg2)
+void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
 {
     PropRecord *prop;
-    ChrRecord *temp_v1;
-    s32 phi_a1;
-    u8 sp33;
-    s16 sp30;
-    ALSoundState **phi_a2;
+    WeaponObjRecord *weapon;
+    s32 play;
+    u8 soundrate;
+    s16 soundid;
+    ALSoundState **slot;
 
-    prop = chrGetEquippedWeaponProp(self, arg1);
-    temp_v1 = prop->chr;
-    phi_a1 = 0;
+    prop = chrGetEquippedWeaponProp(self, hand);
+    weapon = prop->weapon;
+    play = 0;
 
-    sp33 = weaponGetSoundRate((s32) temp_v1->act_attack.attack_item);
-    sp30 = weaponGetSound((s32) temp_v1->act_attack.attack_item);
+    soundrate = weaponGetSoundRate(weapon->weaponnum);
+    soundid = weaponGetSound(weapon->weaponnum);
 
-    if (arg2 != 0)
+    if (ratelimit != 0)
     {
-        if (sp33 > 0)
+        if (soundrate > 0)
         {
-            if (((self->hidden & 0x80) == 0) && (self->nextGunSoundTime[arg1] < g_GlobalTimer))
+            if (((self->hidden & 0x80) == 0) && (self->nextGunSoundTime[hand] < g_GlobalTimer))
             {
-                phi_a1 = 1;
+                play = 1;
             }
         }
         else
         {
-            phi_a1 = 1;
+            play = 1;
         }
     }
 
-    if (phi_a1 != 0)
+    if (play != 0)
     {
-        if (self->gunSounds[arg1].ptr_SEbuffer1 != NULL)
+        if (self->gunSounds[hand].ptr_SEbuffer1 != NULL)
         {
-            if (sndGetPlayingState(self->gunSounds[arg1].ptr_SEbuffer1) != 0)
+            if (sndGetPlayingState(self->gunSounds[hand].ptr_SEbuffer1) != 0)
             {
-                sndDeactivate(self->gunSounds[arg1].ptr_SEbuffer1);
+                sndDeactivate(self->gunSounds[hand].ptr_SEbuffer1);
             }
         }
 
-        if (self->gunSounds[arg1].ptr_SEbuffer2 != NULL)
+        if (self->gunSounds[hand].ptr_SEbuffer2 != NULL)
         {
-            if (sndGetPlayingState(self->gunSounds[arg1].ptr_SEbuffer2) != 0)
+            if (sndGetPlayingState(self->gunSounds[hand].ptr_SEbuffer2) != 0)
             {
-                sndDeactivate(self->gunSounds[arg1].ptr_SEbuffer2);
+                sndDeactivate(self->gunSounds[hand].ptr_SEbuffer2);
             }
         }
 
-        if (((u16) sp30) != 0)
+        if (((u16) soundid) != 0)
         {
-            phi_a2 = NULL;
+            slot = NULL;
 
-            if (self->gunSounds[arg1].ptr_SEbuffer1 == NULL)
+            if (self->gunSounds[hand].ptr_SEbuffer1 == NULL)
             {
-                phi_a2 = (ALSoundState **) (&self->gunSounds[arg1].ptr_SEbuffer1);
+                slot = (ALSoundState **) (&self->gunSounds[hand].ptr_SEbuffer1);
             }
-            else if (self->gunSounds[arg1].ptr_SEbuffer2 == NULL)
+            else if (self->gunSounds[hand].ptr_SEbuffer2 == NULL)
             {
-                phi_a2 = (ALSoundState **) (&self->gunSounds[arg1].ptr_SEbuffer2);
+                slot = (ALSoundState **) (&self->gunSounds[hand].ptr_SEbuffer2);
             }
 
-            if (phi_a2 != NULL)
+            if (slot != NULL)
             {
-                sndPlaySfx(g_musicSfxBufferPtr, sp30, (ALSoundState *) phi_a2);
-                chrobjSndCreatePostEventDefault(*phi_a2, &self->prop->pos);
-                self->nextGunSoundTime[arg1] = ((0, g_GlobalTimer)) + ((s32) sp33);
+                sndPlaySfx(g_musicSfxBufferPtr, soundid, (ALSoundState *) slot);
+                chrobjSndCreatePostEventDefault(*slot, &self->prop->pos);
+                self->nextGunSoundTime[hand] = g_GlobalTimer + soundrate;
                 self->hidden |= 0x80;
             }
         }
@@ -5090,12 +5085,12 @@ void chrPlayGunfireSound(ChrRecord *self, s32 arg1, s32 arg2)
 f32 chrGetSubrotySideback(ChrRecord *self)
 {
     Model *model;
-    f32 phi_f12;
+    f32 offset;
     f32 ret;
 
     model = self->model;
     ret = modelGetRootRotY(model) + self->aimsideback;
-    phi_f12 = 0.0f;
+    offset = 0.0f;
 
     if (ret >= M_TAU_F)
     {
@@ -5108,24 +5103,24 @@ f32 chrGetSubrotySideback(ChrRecord *self)
 
     if ((self->actiontype == ACT_ATTACK) || (self->actiontype == ACT_ATTACKROLL))
     {
-        phi_f12 = self->act_attack.animfloats->angle_offset;
+        offset = self->act_attack.animfloats->angle_offset;
     }
     else if (self->actiontype == ACT_BONDMULTI)
     {
         if (self->act_bondmulti.animfloats != NULL)
         {
-            phi_f12 = self->act_bondmulti.animfloats->angle_offset;
+            offset = self->act_bondmulti.animfloats->angle_offset;
         }
     }
 
-    if (phi_f12 != 0.0f)
+    if (offset != 0.0f)
     {
         if (self->model->flip != GUNRIGHT)
         {
-            phi_f12 = M_TAU_F - phi_f12;
+            offset = M_TAU_F - offset;
         }
 
-        ret = ret + phi_f12;
+        ret = ret + offset;
 
         if (ret >= M_TAU_F)
         {
@@ -5139,36 +5134,36 @@ f32 chrGetSubrotySideback(ChrRecord *self)
 
 f32 chrGetAimUpAngle(ChrRecord *self)
 {
-    f32 temp_f2;
+    f32 angle;
 
-    temp_f2 = self->aimuprshoulder + self->aimupback;
-    if (temp_f2 < 0.0f)
+    angle = self->aimuprshoulder + self->aimupback;
+    if (angle < 0.0f)
     {
-        temp_f2 = temp_f2 + M_TAU_F;
+        angle = angle + M_TAU_F;
     }
 
-    return temp_f2;
+    return angle;
 }
 
 
-s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
+s32 chrSetSubroty(ChrRecord *self, s32 state, f32 endframe, f32 speed, f32 angleoffset)
 {
     Model *model;
-    f32 sp28; //sp40
+    f32 frame;
     f32 dist;
     f32 roty;
-    f32 temp_f14;
+    f32 step;
 
-    if (arg1 != 2)
+    if (state != 2)
     {
         model = self->model;
-        sp28 = modelGetAnimFrame(model);
+        frame = modelGetAnimFrame(model);
         roty = modelGetRootRotY(model);
 
 #if defined(BUGFIX_R1)
-        temp_f14 = 0.06283186f * arg3 * g_GlobalTimerDeltaRaw * model->playspeed;
+        step = 0.06283186f * speed * g_GlobalTimerDeltaRaw * model->playspeed;
 #else
-        temp_f14 = 0.06283186f * arg3 * g_GlobalTimerDelta * model->playspeed;
+        step = 0.06283186f * speed * g_GlobalTimerDelta * model->playspeed;
 #endif
 
         if (self->actiontype == ACT_ATTACK)
@@ -5186,14 +5181,14 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
             dist = chrGetAngleToPos(self, &p->pos);
         }
 
-        dist = dist - arg4;
+        dist = dist - angleoffset;
 
         if (dist < 0.0f)
         {
             dist = dist + M_TAU_F;
         }
 
-        if ((dist < temp_f14) || ((M_TAU_F - temp_f14) < dist))
+        if ((dist < step) || ((M_TAU_F - step) < dist))
         {
             roty += dist;
             if (roty >= M_TAU_F)
@@ -5202,11 +5197,11 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
             }
 
             modelSetRootRotY(model, roty);
-            arg1 = 3;
+            state = 3;
         }
         else if (dist < M_PI_F)
         {
-            roty += temp_f14;
+            roty += step;
             if (roty >= M_TAU_F)
             {
                 roty -= M_TAU_F;
@@ -5216,7 +5211,7 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
         }
         else
         {
-            roty -= temp_f14;
+            roty -= step;
 
             if (roty < 0.0f)
             {
@@ -5226,13 +5221,13 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
             modelSetRootRotY(model, roty);
         }
 
-        if (arg2 <= sp28)
+        if (endframe <= frame)
         {
-            arg1 = 2;
+            state = 2;
         }
     }
 
-    return arg1;
+    return state;
 }
 
 
@@ -5243,30 +5238,30 @@ s32 chrSetSubroty(ChrRecord *self, s32 arg1, f32 arg2, f32 arg3, f32 arg4)
  * @param arg3:
  * @param arg4:
 */
-s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_table *arg1, s32 arg2, s32 arg3, f32 arg4)
+s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 inaccuracy)
 {
-    f32 sp164; // sp356
-    f32 calc_aimendsideback; // sp352
-    u32 attack_type; // sp348
-    s32 entity_id; // sp344
-    s32 ret; // sp340
-    f32 dx; // sp336
-    f32 dy; // sp332
-    f32 dz; // sp328
-    f32 dxdydz_square; // sp324
-    PropRecord *self_prop; // sp316
-    s32 seen_bond_flag; // sp312
-    coord3d *current_player_pos; //sp308
-    f32 ducking_height; // sp304
-    StandTile *pstan; // sp300
-    coord3d sp120; // sp288
+    f32 aimup;
+    f32 calc_aimendsideback;
+    u32 attack_type;
+    s32 entity_id;
+    s32 ret;
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 dxdydz_square;
+    PropRecord *self_prop;
+    s32 seen_bond_flag;
+    coord3d *current_player_pos;
+    f32 ducking_height;
+    StandTile *pstan;
+    coord3d rootpos;
     PropRecord *player_prop;
-    f32 subroty; // sp280
+    f32 subroty;
 
     /////////////////////
 
     ret = 1;
-    sp164 = 0.0f;
+    aimup = 0.0f;
     attack_type = TARGET_BOND;
     entity_id = 0;
     calc_aimendsideback = 0.0f;
@@ -5319,84 +5314,84 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
                 {
                     if (self_prop->pos.f[1] < (current_player_pos->f[1] - (2.0f * ducking_height)))
                     {
-                        dy -= ducking_height * (0.55f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * arg4));
+                        dy -= ducking_height * (0.55f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
                     }
                     else if ((current_player_pos->f[1] - (ducking_height * 0.5f)) < self_prop->pos.f[1])
                     {
-                        dy -= ducking_height * (0.15f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * arg4));
+                        dy -= ducking_height * (0.15f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
                     }
                     else
                     {
-                        dy = (((f32) (u32)randomGetNext() * (1.0f / UINT_MAX) * 0.1f * arg4) + 1.0f) * 40.0f;
+                        dy = (((f32) (u32)randomGetNext() * (1.0f / UINT_MAX) * 0.1f * inaccuracy) + 1.0f) * 40.0f;
                     }
                 }
                 else
                 {
-                    dy += ducking_height * (0.025f - (0.05f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * arg4));
+                    dy += ducking_height * (0.025f - (0.05f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
                 }
             }
             else if (((dx * dx) + (dy * dy) + (dz * dz)) > 1000000.0f)
             {
                 if (((u32)randomGetNext() % 3U) == 0)
                 {
-                    dy += ducking_height * (0.05f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * arg4));
+                    dy += ducking_height * (0.05f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
                 }
                 else
                 {
-                    dy -= ducking_height * (0.05f + (0.55f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * arg4));
+                    dy -= ducking_height * (0.05f + (0.55f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
                 }
             }
             else
             {
                 if (self_prop->pos.f[1] < (current_player_pos->f[1] - ducking_height))
                 {
-                    dy -= ducking_height * (0.55f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * arg4));
+                    dy -= ducking_height * (0.55f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
                 }
                 else if ((current_player_pos->f[1] - (ducking_height * 0.5f)) < self_prop->pos.f[1])
                 {
-                    dy -= ducking_height * (0.15f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * arg4));
+                    dy -= ducking_height * (0.15f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
                 }
                 else
                 {
-                    dy = (((f32) (u32)randomGetNext() * (1.0f / UINT_MAX) * 0.1f * arg4) - 0.05f) * ducking_height;
+                    dy = (((f32) (u32)randomGetNext() * (1.0f / UINT_MAX) * 0.1f * inaccuracy) - 0.05f) * ducking_height;
                 }
             }
         }
         else
         {
-            modelGetRootPosition(self->model, &sp120);
+            modelGetRootPosition(self->model, &rootpos);
             current_player_pos = chrGetChrOrPresetLocation(self, attack_type, entity_id, &pstan);
-            dx = current_player_pos->f[0] - sp120.f[0];
-            dy = current_player_pos->f[1] - sp120.f[1];
-            dz = current_player_pos->f[2] - sp120.f[2];
+            dx = current_player_pos->f[0] - rootpos.f[0];
+            dy = current_player_pos->f[1] - rootpos.f[1];
+            dz = current_player_pos->f[2] - rootpos.f[2];
         }
 
         if ((attack_type & 0x100) == 0)
         {
             f32 sr = sqrtf((dx * dx) + (dz * dz));
-            sp164 = mathAtan2(dy, sr);
+            aimup = mathAtan2(dy, sr);
 
-            if (sp164 >= M_PI_F)
+            if (aimup >= M_PI_F)
             {
-                sp164 = sp164 - M_TAU_F;
+                aimup = aimup - M_TAU_F;
             }
         }
 
         if (seen_bond_flag)
         {
-            Model *weapon_prop_model; // sp272
-            coord3d sp104; // sp260
+            Model *weapon_prop_model;
+            coord3d gunpos;
             PropRecord *weapon_prop;
-            ModelRwData_HeaderRecord *temp_v0_4;
-            Mtxf spBC; // sp188
-            f32 *spB8;  // sp184
-            coord3d spAC; //sp172
-            s32 intersect_flag; // sp140
-            Mtxf sp68;
-            coord3d sp5C; // sp92
-            coord3d sp50; // sp80
-            coord3d sp44; // sp68
-            Mtxf *temp_a0;
+            ModelRwData_HeaderRecord *rootrw;
+            Mtxf gunmtx;
+            f32 *muzzle;
+            coord3d muzzlepos;
+            s32 intersect_flag;
+            Mtxf handmtx;
+            coord3d closest;
+            coord3d facing;
+            coord3d side; // handmtx
+            Mtxf *nodemtx;
             struct ObjectRecord *obj;
             f32 t1;
 
@@ -5404,7 +5399,7 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
 
             subroty = chrGetSubrotySideback(self);
 
-            if (arg3)
+            if (rightgun)
             {
                 weapon_prop = chrGetEquippedWeaponProp(self, GUNRIGHT);
             }
@@ -5422,47 +5417,47 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
 
                 if (weapon_prop_model->obj->Switches[0])
                 {
-                    temp_a0 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[0], 0);
-                    spB8 = weapon_prop_model->obj->Switches[0]->Data;
-                    mtxL2F(temp_a0, &spBC);
+                    nodemtx = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[0], 0);
+                    muzzle = weapon_prop_model->obj->Switches[0]->Data;
+                    mtxL2F(nodemtx, &gunmtx);
 
-                    mtx4MultAffineInPlace(camGetPrevViewToWorldMtxf(), &spBC);
+                    mtx4MultAffineInPlace(camGetPrevViewToWorldMtxf(), &gunmtx);
 
-                    spAC.f[0] = spB8[0];
-                    spAC.f[1] = spB8[1];
-                    spAC.f[2] = spB8[2];
+                    muzzlepos.f[0] = muzzle[0];
+                    muzzlepos.f[1] = muzzle[1];
+                    muzzlepos.f[2] = muzzle[2];
 
-                    mtx4TransformVecInPlace(&spBC, &spAC);
+                    mtx4TransformVecInPlace(&gunmtx, &muzzlepos);
 
-                    sp104.f[0] = spAC.f[0];
-                    sp104.f[1] = spAC.f[1];
-                    sp104.f[2] = spAC.f[2];
+                    gunpos.f[0] = muzzlepos.f[0];
+                    gunpos.f[1] = muzzlepos.f[1];
+                    gunpos.f[2] = muzzlepos.f[2];
 
                     intersect_flag = 1;
                 }
                 else if (weapon_prop_model->obj->Switches[1])
                 {
-                    temp_a0 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[1], 0);
-                    mtxL2F(temp_a0, &sp68);
-                    mtx4MultAffineInPlace(camGetPrevViewToWorldMtxf(), &sp68);
-                    sp104.f[0] = sp68.m[3][0];
-                    sp104.f[1] = sp68.m[3][1];
-                    sp104.f[2] = sp68.m[3][2];
+                    nodemtx = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[1], 0);
+                    mtxL2F(nodemtx, &handmtx);
+                    mtx4MultAffineInPlace(camGetPrevViewToWorldMtxf(), &handmtx);
+                    gunpos.f[0] = handmtx.m[3][0];
+                    gunpos.f[1] = handmtx.m[3][1];
+                    gunpos.f[2] = handmtx.m[3][2];
 
                     intersect_flag = 1;
                 }
 
                 if (intersect_flag != 0)
                 {
-                    sp50.f[0] = sinf(subroty);
-                    sp50.f[1] = 0.0f;
-                    sp50.f[2] = cosf(subroty);
-                    sp44.f[0] = self_prop->pos.f[0] - dz;
-                    sp44.f[1] = self_prop->pos.f[1];
-                    sp44.f[2] = self_prop->pos.f[2] + dx;
-                    chrLineLineIntersection(&self_prop->pos, &sp44, &sp104, &sp50, &sp5C);
-                    dx = current_player_pos->f[0] - sp5C.f[0];
-                    dz = current_player_pos->f[2] - sp5C.f[2];
+                    facing.f[0] = sinf(subroty);
+                    facing.f[1] = 0.0f;
+                    facing.f[2] = cosf(subroty);
+                    side.f[0] = self_prop->pos.f[0] - dz;
+                    side.f[1] = self_prop->pos.f[1];
+                    side.f[2] = self_prop->pos.f[2] + dx;
+                    chrLineLineIntersection(&self_prop->pos, &side, &gunpos, &facing, &closest);
+                    dx = current_player_pos->f[0] - closest.f[0];
+                    dz = current_player_pos->f[2] - closest.f[2];
                 }
             }
 
@@ -5474,11 +5469,11 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
                 calc_aimendsideback = t1 - subroty + M_TAU_F;
             }
 
-            temp_v0_4 = &modelGetNodeRwData(self->model, self->model->obj->RootNode)->Header;
+            rootrw = &modelGetNodeRwData(self->model, self->model->obj->RootNode)->Header;
 
-            if (temp_v0_4->turnFrames > 0.0f)
+            if (rootrw->turnFrames > 0.0f)
             {
-                calc_aimendsideback = calc_aimendsideback - (temp_v0_4->turnFrames * temp_v0_4->turnPerFrame);
+                calc_aimendsideback = calc_aimendsideback - (rootrw->turnFrames * rootrw->turnPerFrame);
 
                 if (calc_aimendsideback < 0.0f)
                 {
@@ -5517,34 +5512,34 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
 
             if (self->model->flip != GUNRIGHT)
             {
-                if (calc_aimendsideback < -arg1->max_left)
+                if (calc_aimendsideback < -anim->max_left)
                 {
-                    calc_aimendsideback = -arg1->max_left;
+                    calc_aimendsideback = -anim->max_left;
                     ret = 0;
                 }
-                else if (-arg1->max_right < calc_aimendsideback)
+                else if (-anim->max_right < calc_aimendsideback)
                 {
-                    calc_aimendsideback = -arg1->max_right;
+                    calc_aimendsideback = -anim->max_right;
                     ret = 0;
                 }
             }
             else
             {
-                if (arg1->max_left < calc_aimendsideback)
+                if (anim->max_left < calc_aimendsideback)
                 {
-                    calc_aimendsideback = arg1->max_left;
+                    calc_aimendsideback = anim->max_left;
                     ret = 0;
                 }
-                else if (calc_aimendsideback < arg1->max_right)
+                else if (calc_aimendsideback < anim->max_right)
                 {
-                    calc_aimendsideback = arg1->max_right;
+                    calc_aimendsideback = anim->max_right;
                     ret = 0;
                 }
             }
         }
     }
 
-    chrUpdateAimendbackShoulders(self, arg1, arg2, arg3, sp164);
+    chrUpdateAimendbackShoulders(self, anim, leftgun, rightgun, aimup);
     self->aimendsideback = calc_aimendsideback;
     self->aimendcount = 0xA;
 
@@ -5565,7 +5560,7 @@ s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_tabl
  *     @param same is set they will both be set to lshoulder value.
  * @param next: Starting aimendlshoulder value.
 */
-void chrUpdateAimendbackShoulders(ChrRecord *self, void *arg1, s32 same, s32 swap, f32 next)
+void chrUpdateAimendbackShoulders(ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 next)
 {
     f32 next_lshoulder;
     f32 next_rshoulder;
@@ -5575,35 +5570,35 @@ void chrUpdateAimendbackShoulders(ChrRecord *self, void *arg1, s32 same, s32 swa
     next_aimendback = 0.0f;
     next_lshoulder = next;
 
-    if (arg1 != NULL)
+    if (anim != NULL)
     {
-        if (((f32*)arg1)[12] < next)
+        if (anim->max_up < next)
         {
-            next_aimendback = next - ((f32*)arg1)[12];
-            next_lshoulder = ((f32*)arg1)[12];
+            next_aimendback = next - anim->max_up;
+            next_lshoulder = anim->max_up;
         }
 
-        else if (next < ((f32*)arg1)[13])
+        else if (next < anim->max_down)
         {
-            next_aimendback = next - ((f32*)arg1)[13];
-            next_lshoulder = ((f32*)arg1)[13];
+            next_aimendback = next - anim->max_down;
+            next_lshoulder = anim->max_down;
         }
 
         if (next_lshoulder > 0.0f)
         {
-            next_rshoulder = ((f32*)arg1)[16] * next_lshoulder;
+            next_rshoulder = anim->free_arm_frac_up * next_lshoulder;
         }
         else
         {
-            next_rshoulder = ((f32*)arg1)[17] * next_lshoulder;
+            next_rshoulder = anim->free_arm_frac_down * next_lshoulder;
         }
     }
 
-    if (swap != 0)
+    if (rightgun != 0)
     {
         self->aimendrshoulder = next_lshoulder;
 
-        if (same != 0)
+        if (leftgun != 0)
         {
             self->aimendlshoulder = next_lshoulder;
         }
@@ -5659,9 +5654,9 @@ void chrStopFiring(ChrRecord *self)
 }
 
 
-void chrSetHandFiring(ChrRecord *self, s32 hand, s32 arg2)
+void chrSetHandFiring(ChrRecord *self, s32 hand, s32 firing)
 {
-    if (arg2 != 0)
+    if (firing != 0)
     {
         if (hand == GUNLEFT)
         {
@@ -5674,14 +5669,14 @@ void chrSetHandFiring(ChrRecord *self, s32 hand, s32 arg2)
     }
     else if (hand == GUNLEFT)
     {
-        self->hidden &= ~CHRHIDDEN_FIRE_WEAPON_LEFT; // CHRHIDDEN_FIRE_WEAPON_LEFT
+        self->hidden &= ~CHRHIDDEN_FIRE_WEAPON_LEFT;
     }
     else
     {
-        self->hidden &= ~CHRHIDDEN_FIRE_WEAPON_RIGHT; // CHRHIDDEN_FIRE_WEAPON_RIGHT
+        self->hidden &= ~CHRHIDDEN_FIRE_WEAPON_RIGHT;
     }
 
-    if (arg2 == 0)
+    if (firing == 0)
     {
         chrSetFiring(self, hand, FALSE);
     }
@@ -5720,22 +5715,22 @@ f32 chrGetAimLimitAngle(f32 sqdist)
  * @param arg2: out parameter. bool. True if damage done, false otherwise.
  * @param item: weapon doing damage
 */
-void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
+void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, ITEM_IDS item)
 {
     f32 limit_angle;
     f32 dxdydz_square;
-    f32 dx; // sp84
-    f32 dy; // sp80
-    f32 dz; // sp76
-    f32 atan; // sp72
-    f32 subroty; // sp68
-    f32 phi_f2; // sp64
+    f32 dx;
+    f32 dy;
+    f32 dz;
+    f32 atan;
+    f32 subroty;
+    f32 relangle;
     PropRecord *player_prop;
-    f32 temp_f0_3;
+    f32 dist;
     PropRecord *self_prop;
-    f32 t2; // sp48
-    f32 phi_f2_4; // sp44
-    s32 phi_v1;
+    f32 t2;
+    f32 increment;
+    s32 insight;
 
     player_prop = currentPlayerGetProp();
     self_prop = self->prop;
@@ -5746,75 +5741,75 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
 
     atan = mathAtan2(dx, dz);
     subroty = chrGetSubrotySideback(self);
-    phi_f2 = atan - subroty;
+    relangle = atan - subroty;
     dxdydz_square = (dx * dx) + (dy * dy) + (dz * dz);
 
     limit_angle = chrGetAimLimitAngle(dxdydz_square);
 
-    if (phi_f2 < 0.0f)
+    if (relangle < 0.0f)
     {
-        phi_f2 += M_TAU_F;
+        relangle += M_TAU_F;
     }
 
-    phi_v1 = (phi_f2 < limit_angle);
+    insight = (relangle < limit_angle);
 
-    if ((phi_f2 < limit_angle) == 0)
+    if ((relangle < limit_angle) == 0)
     {
-        phi_v1 = ((M_TAU_F - limit_angle) < phi_f2);
+        insight = ((M_TAU_F - limit_angle) < relangle);
     }
 
-    *arg1 = phi_v1;
-    *arg2 = 0;
+    *inSight = insight;
+    *hitBond = 0;
 
-    if ((playerIsShowingDamage() == 0) && (phi_v1 != 0))
+    if ((playerIsShowingDamage() == 0) && (insight != 0))
     {
-        temp_f0_3 = sqrtf(dxdydz_square);
+        dist = sqrtf(dxdydz_square);
 
-        phi_f2_4 = 0.16f * g_GlobalTimerDelta;
+        increment = 0.16f * g_GlobalTimerDelta;
 
-        if (temp_f0_3 > 300.0f)
+        if (dist > 300.0f)
         {
-            phi_f2_4 *= (300.0f / temp_f0_3);
+            increment *= (300.0f / dist);
         }
 
         if ((s32) self->accuracyrating > 0)
         {
-            phi_f2_4 *= (1.0f + ((f32) self->accuracyrating / 10.0f));
+            increment *= (1.0f + ((f32) self->accuracyrating / 10.0f));
         }
         else if ((s32) self->accuracyrating < 0)
         {
             if ((s32) self->accuracyrating < -0x63)
             {
-                phi_f2_4 = 0.0f;
+                increment = 0.0f;
             }
             else
             {
-                phi_f2_4 *= ((f32) (self->accuracyrating + 0x64) / 100.0f);
+                increment *= ((f32) (self->accuracyrating + 0x64) / 100.0f);
             }
         }
 
         if (file007Accuracy() <= 1.0f)
         {
-            phi_f2_4 *= file007Accuracy();
+            increment *= file007Accuracy();
         }
         else
         {
-            phi_f2_4 *= (9.0f / (10.001f - file007Accuracy()));
+            increment *= (9.0f / (10.001f - file007Accuracy()));
         }
 
-        phi_f2_4 *= g_AiAccuracyModifier;
+        increment *= g_AiAccuracyModifier;
 
         if (weaponGetFireRate(item) <= 0)
         {
-            phi_f2_4 *= 2.0f;
+            increment *= 2.0f;
         }
 
         if ((item == ITEM_SHOTGUN) || (item == ITEM_AUTOSHOT))
         {
-            phi_f2_4 *= 2.0f;
+            increment *= 2.0f;
         }
 
-        self->shotbondsum += phi_f2_4;
+        self->shotbondsum += increment;
 
         if (self->shotbondsum >= 1.0f)
         {
@@ -5831,7 +5826,7 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
 
             if (playerIsShowingDamage() != 0)
             {
-                *arg2 = 1;
+                *hitBond = 1;
             }
         }
     }
@@ -5841,17 +5836,17 @@ void chrUpdateShotbondsum(ChrRecord *self, s32 *arg1, s32 *arg2, ITEM_IDS item)
 /**
  * Slight modification of a part of @see chrUpdateAimendsideback.
 */
-s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *arg2)
+s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *pos)
 {
     struct ObjectRecord *obj;
     PropRecord *weapon_prop;
-    Model *weapon_prop_model; // sp188
+    Model *weapon_prop_model;
     s32 ret;
-    Mtxf *temp_a0; // sp180
-    Mtxf sp74;
-    f32 *spB8;
-    Mtxf *temp_a0_2; // sp108
-    Mtxf sp68; // sp44
+    Mtxf *nodemtx;
+    Mtxf worldmtx;
+    f32 *muzzle;
+    Mtxf *nodemtx2;
+    Mtxf worldmtx2;
 
     weapon_prop = chrGetEquippedWeaponProp(self, hand);
     ret = 0;
@@ -5865,26 +5860,26 @@ s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *arg2)
         {
             if (weapon_prop_model->obj->Switches[0])
             {
-                temp_a0 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[0], 0);
-                spB8 = weapon_prop_model->obj->Switches[0]->Data;
+                nodemtx = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[0], 0);
+                muzzle = weapon_prop_model->obj->Switches[0]->Data;
 
-                arg2->f[0] = spB8[0];
-                arg2->f[1] = spB8[1];
-                arg2->f[2] = spB8[2];
+                pos->f[0] = muzzle[0];
+                pos->f[1] = muzzle[1];
+                pos->f[2] = muzzle[2];
 
-                mtx4MultAffine(camGetViewToWorldMtxf(), temp_a0, &sp74);
-                mtx4TransformVecInPlace(&sp74, arg2);
+                mtx4MultAffine(camGetViewToWorldMtxf(), nodemtx, &worldmtx);
+                mtx4TransformVecInPlace(&worldmtx, pos);
 
                 ret = 1;
             }
             else if (weapon_prop_model->obj->Switches[1])
             {
-                temp_a0_2 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[1], 0);
-                mtx4MultAffine(camGetViewToWorldMtxf(), temp_a0_2, &sp68);
+                nodemtx2 = modelFindNodeMtx(weapon_prop_model, weapon_prop_model->obj->Switches[1], 0);
+                mtx4MultAffine(camGetViewToWorldMtxf(), nodemtx2, &worldmtx2);
 
-                arg2->f[0] = sp68.m[3][0];
-                arg2->f[1] = sp68.m[3][1];
-                arg2->f[2] = sp68.m[3][2];
+                pos->f[0] = worldmtx2.m[3][0];
+                pos->f[1] = worldmtx2.m[3][1];
+                pos->f[2] = worldmtx2.m[3][2];
 
                 ret = 1;
             }
@@ -5898,267 +5893,264 @@ s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *arg2)
 void chrFireHand(ChrRecord *self, s32 hand)
 {
     PropRecord *self_prop; // 644
-    s32 phi_a2; // ?
-    s32 sp27C; // stack 636
-    s32 sp278;
-    ChrRecord *prop_selfchr; // 628
+    s32 ratelimit; // ?
+    s32 firing; // stack 636
+    s32 betweenShots;
+    WeaponObjRecord *weapon;
     PropRecord *player_prop; // 624
-    s32 phi_v1; // ?
-    s32 sp268; // 616
-    s32 sp264; // 612
-    coord3d sp258; // 600
-    StandTile *sp254; // 596
+    s32 attacktype; // ?
+    s32 shoot; // 616
+    s32 tracer; // 612
+    coord3d hitpos; // 600
+    StandTile *hittile; // 596
     f32 subroty; // 592
-    f32 sp24C; // 588
-    coord3d sp240; // 576
+    f32 aimup; // 588
+    coord3d gunpos; // 576
     StandTile *self_stan; // 572
-    StandTile *sp238; // 568
-    s32 sp234; // 564
-    s32 sp230; // 560
-    s32 sp22C; // 556
-    coord3d sp220;
-    s32 sp21C;
+    StandTile *guntile; // 568
+    s32 inSight; // 564
+    s32 hitBond; // 560
+    s32 showHit; // 556
+    coord3d shotdir;
+    s32 canSeeTarget;
     f32 dy;
     f32 dz;
     f32 dx;
-    f32 sp20C; // 524
-    struct WeaponObjRecord *sp208;
-    Mtxf sp1C8;
-    coord3d sp1BC;  // 444
+    f32 shotDistSq; // 524
+    struct WeaponObjRecord *rocket;
+    Mtxf rocketMtx;
+    coord3d rocketSpeed;  // 444
     PropRecord *weapon_prop;
-    coord3d sp1AC; // 428
-    Mtxf sp16C;
-    Mtxf sp12C;
-    struct WeaponObjRecord *sp128; // 296
-    Mtxf spE8;
-    coord3d spDC; // 220
-    Mtxf sp9C;
-    Mtxf sp5C; // 92
-    s32 sp44;
+    coord3d rocketAccel; // 428
+    Mtxf rocketRot;
+    Mtxf rocketYRot;
+    struct WeaponObjRecord *grenade; // 296
+    Mtxf grenadeMtx;
+    coord3d grenadeSpeed; // 220
+    Mtxf grenadeRot;
+    Mtxf grenadeYRot; // 92
+    s32 needsSight;
 
     self_prop = self->prop;
     weapon_prop = chrGetEquippedWeaponProp(self, hand);
 
     if (weapon_prop != NULL)
     {
-        sp27C = 0;
-        sp278 = 0;
-        prop_selfchr = weapon_prop->chr;
+        firing = 0;
+        betweenShots = 0;
+        weapon = weapon_prop->weapon;
         player_prop = currentPlayerGetProp();
-        phi_v1 = 1;
+        attacktype = 1;
 
         if (self->actiontype == ACT_ATTACK)
         {
-            phi_v1 = self->act_attack.attacktype;
+            attacktype = self->act_attack.attacktype;
         }
 
-        sp44 = phi_v1 & 1;
+        needsSight = attacktype & 1;
 
         if (
-            (sp44 == 0)
+            (needsSight == 0)
             || (self->seen_bond_time >= (g_GlobalTimer - CHRLV_SEEN_RECENT_CHECK))
-            || (weaponGetFireRate(prop_selfchr->act_attack.attack_item) < 0))
+            || (weaponGetFireRate(weapon->weaponnum) < 0))
         {
-            sp268 = 0;
-            sp264 = 0;
+            shoot = 0;
+            tracer = 0;
 
             self->firecount[hand]++;
 
-            if (weaponGetFireRate(prop_selfchr->act_attack.attack_item) < 0)
+            if (weaponGetFireRate(weapon->weaponnum) < 0)
             {
-                sp268 = 1;
-                sp264 = 1;
+                shoot = 1;
+                tracer = 1;
             }
-            else if (((s32) self->firecount[hand] % weaponGetFireRate(prop_selfchr->act_attack.attack_item)) == 0)
+            else if (((s32) self->firecount[hand] % weaponGetFireRate(weapon->weaponnum)) == 0)
             {
-                sp268 = 1;
+                shoot = 1;
 
-                if ((((s32) self->firecount[hand] % (s32) (weaponGetFireRate(prop_selfchr->act_attack.attack_item) * 2)) == 0)
-                    || (prop_selfchr->act_attack.attack_item == ITEM_LASER))
+                if ((((s32) self->firecount[hand] % (s32) (weaponGetFireRate(weapon->weaponnum) * 2)) == 0)
+                    || (weapon->weaponnum == ITEM_LASER))
                 {
-                    sp264 = 1;
+                    tracer = 1;
                 }
             }
             else
             {
-                sp278 = 1;
+                betweenShots = 1;
             }
 
-            if (sp268 != 0)
+            if (shoot != 0)
             {
-                sp254 = NULL;
+                hittile = NULL;
                 subroty = chrGetSubrotySideback(self);
-                sp24C = chrGetAimUpAngle(self);
+                aimup = chrGetAimUpAngle(self);
                 self_stan = self_prop->stan;
-                sp27C = 1;
+                firing = 1;
 
-                if (chrGetHandPos(self, hand, (coord3d *) &sp240) == 0)
+                if (chrGetHandPos(self, hand, (coord3d *) &gunpos) == 0)
                 {
-                    sp240.f[0] = self_prop->pos.f[0];
-                    sp240.f[1] = self_prop->pos.f[1] + 30.0f;
-                    sp240.f[2] = self_prop->pos.f[2];
+                    gunpos.f[0] = self_prop->pos.f[0];
+                    gunpos.f[1] = self_prop->pos.f[1] + 30.0f;
+                    gunpos.f[2] = self_prop->pos.f[2];
 
                     if (hand == 1)
                     {
-                        sp240.f[0] += cosf(subroty) * 10.0f;
-                        sp240.f[2] += -sinf(subroty) * 10.0f;
+                        gunpos.f[0] += cosf(subroty) * 10.0f;
+                        gunpos.f[2] += -sinf(subroty) * 10.0f;
                     }
                     else
                     {
-                        sp240.f[0] += -cosf(subroty) * 10.0f;
-                        sp240.f[2] += sinf(subroty) * 10.0f;
+                        gunpos.f[0] += -cosf(subroty) * 10.0f;
+                        gunpos.f[2] += sinf(subroty) * 10.0f;
                     }
                 }
 
-                if (stanTestLineUnobstructed(&self_stan, self_prop->pos.x, self_prop->pos.f[2], sp240.f[0], sp240.f[2], CDTYPE_DOORS, sp240.f[1] - self->ground, sp240.f[1] - self->ground, 0.0f, 1.0f) != 0)
+                if (stanTestLineUnobstructed(&self_stan, self_prop->pos.x, self_prop->pos.f[2], gunpos.f[0], gunpos.f[2], CDTYPE_DOORS, gunpos.f[1] - self->ground, gunpos.f[1] - self->ground, 0.0f, 1.0f) != 0)
                 {
-                    sp238 = self_stan;
+                    guntile = self_stan;
                 }
                 else
                 {
                     self->firecount[hand]--;
-                    sp27C = 0;
+                    firing = 0;
                 }
 
-                if (sp27C != 0)
+                if (firing != 0)
                 {
-                    sp234 = 0;
-                    sp230 = 0;
-                    sp22C = 1;
+                    inSight = 0;
+                    hitBond = 0;
+                    showHit = 1;
 
-                    sp21C = chrCheckCanSeeTarget(self, &sp240, sp238);
+                    canSeeTarget = chrCheckCanSeeTarget(self, &gunpos, guntile);
 
-                    sp220.f[0] = cosf(sp24C) * sinf(subroty);
-                    sp220.f[1] = sinf(sp24C);
-                    sp220.f[2] = cosf(sp24C) * cosf(subroty);
+                    shotdir.f[0] = cosf(aimup) * sinf(subroty);
+                    shotdir.f[1] = sinf(aimup);
+                    shotdir.f[2] = cosf(aimup) * cosf(subroty);
 
-                    sp258.f[0] = sp240.f[0] + (sp220.f[0] * M_U16_MAX_VALUE_F);
-                    sp258.f[1] = sp240.f[1] + (sp220.f[1] * M_U16_MAX_VALUE_F);
-                    sp258.f[2] = sp240.f[2] + (sp220.f[2] * M_U16_MAX_VALUE_F);
+                    hitpos.f[0] = gunpos.f[0] + (shotdir.f[0] * M_U16_MAX_VALUE_F);
+                    hitpos.f[1] = gunpos.f[1] + (shotdir.f[1] * M_U16_MAX_VALUE_F);
+                    hitpos.f[2] = gunpos.f[2] + (shotdir.f[2] * M_U16_MAX_VALUE_F);
 
                     chrSetMoving(self, 0);
                     stanResetHits();
-                    self_stan = sp238;
+                    self_stan = guntile;
 
-                    if (stanTestLineUnobstructed(&self_stan, sp240.f[0], sp240.f[2], sp258.f[0], sp258.f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, sp240.f[1], sp240.f[1], sp258.f[1], sp258.f[1]) == 0)
+                    if (stanTestLineUnobstructed(&self_stan, gunpos.f[0], gunpos.f[2], hitpos.f[0], hitpos.f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, gunpos.f[1], gunpos.f[1], hitpos.f[1], hitpos.f[1]) == 0)
                     {
-                        chrStanLineDirIntersection(&sp240, &sp220, &sp258);
-                        sp254 = self_stan;
-                        sp258.f[0] -= 26.0f * sp220.f[0];
-                        sp258.f[1] -= 26.0f * sp220.f[1];
-                        sp258.f[2] -= 26.0f * sp220.f[2];
+                        chrStanLineDirIntersection(&gunpos, &shotdir, &hitpos);
+                        hittile = self_stan;
+                        hitpos.f[0] -= 26.0f * shotdir.f[0];
+                        hitpos.f[1] -= 26.0f * shotdir.f[1];
+                        hitpos.f[2] -= 26.0f * shotdir.f[2];
                     }
 
                     chrSetMoving(self, 1);
 
-                    dx = sp258.f[0] - sp240.f[0];
-                    dy = sp258.f[1] - sp240.f[1];
-                    dz = sp258.f[2] - sp240.f[2];
+                    dx = hitpos.f[0] - gunpos.f[0];
+                    dy = hitpos.f[1] - gunpos.f[1];
+                    dz = hitpos.f[2] - gunpos.f[2];
 
-                    sp20C = (dx * dx) + (dy * dy) + (dz * dz);
+                    shotDistSq = (dx * dx) + (dy * dy) + (dz * dz);
 
-                    if (prop_selfchr->act_attack.attack_item == ITEM_ROCKETLAUNCH)
+                    if (weapon->weaponnum == ITEM_ROCKETLAUNCH)
                     {
                         if (((dx * dx) + (dy * dy) + (dz * dz)) > 160000.0f)
                         {
-                            sp208 = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRROCKET, 0x56);
-                            if (sp208 != NULL)
+                            rocket = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRROCKET, 0x56);
+                            if (rocket != NULL)
                             {
-                                mtx4LoadIdentity(&sp1C8);
-                                mtx4LoadXRotation(sp24C, &sp16C);
-                                mtx4LoadYRotation(subroty, &sp12C);
-                                mtx4MultAffineInPlace(&sp12C, &sp16C);
+                                mtx4LoadIdentity(&rocketMtx);
+                                mtx4LoadXRotation(aimup, &rocketRot);
+                                mtx4LoadYRotation(subroty, &rocketYRot);
+                                mtx4MultAffineInPlace(&rocketYRot, &rocketRot);
 
-                                sp1AC.f[0] = sp220.f[0] * 1.111111f;
-                                sp1AC.f[1] = sp220.f[1] * 1.111111f;
-                                sp1AC.f[2] = sp220.f[2] * 1.111111f;
+                                rocketAccel.f[0] = shotdir.f[0] * 1.111111f;
+                                rocketAccel.f[1] = shotdir.f[1] * 1.111111f;
+                                rocketAccel.f[2] = shotdir.f[2] * 1.111111f;
 
-                                sp1BC.f[0] = sp1AC.f[0] * g_GlobalTimerDelta;
-                                sp1BC.f[1] = sp1AC.f[1] * g_GlobalTimerDelta;
-                                sp1BC.f[2] = sp1AC.f[2] * g_GlobalTimerDelta;
+                                rocketSpeed.f[0] = rocketAccel.f[0] * g_GlobalTimerDelta;
+                                rocketSpeed.f[1] = rocketAccel.f[1] * g_GlobalTimerDelta;
+                                rocketSpeed.f[2] = rocketAccel.f[2] * g_GlobalTimerDelta;
 
-                                gunLaunchProjectile((ObjectRecord *)sp208, &sp240, sp238, &sp16C, &sp1BC, &sp1C8, self_prop);
+                                gunLaunchProjectile((ObjectRecord *)rocket, &gunpos, guntile, &rocketRot, &rocketSpeed, &rocketMtx, self_prop);
 
-                                if (sp208->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
+                                if (rocket->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                                 {
-                                    sp208->projectile->flags |= 0x80;
-                                    sp208->timer = -1;
-                                    sp208->projectile->flags |= 0x20;
+                                    rocket->projectile->flags |= 0x80;
+                                    rocket->timer = -1;
+                                    rocket->projectile->flags |= 0x20;
 
-                                    sp208->projectile->riseY = sp208->runtime_pos.y;
-                                    sp208->projectile->riseSpeed = sp208->projectile->speed.f[1];
+                                    rocket->projectile->riseY = rocket->runtime_pos.y;
+                                    rocket->projectile->riseSpeed = rocket->projectile->speed.f[1];
 
-                                  /*  sp208->projectile->unk10.x = sp1AC.f[0];
-                                    sp208->projectile->unk10.y = sp1AC.f[1];
-                                    sp208->projectile->unk10.z = sp1AC.f[2];*/
-                                    sp208->projectile->accel.x = sp1AC.f[0];
-                                    sp208->projectile->accel.y = sp1AC.f[1];
-                                    sp208->projectile->accel.z = sp1AC.f[2];
+                                    rocket->projectile->accel.x = rocketAccel.f[0];
+                                    rocket->projectile->accel.y = rocketAccel.f[1];
+                                    rocket->projectile->accel.z = rocketAccel.f[2];
 
-                                    if (sp208->projectile->sounds[0] == NULL)
+                                    if (rocket->projectile->sounds[0] == NULL)
                                     {
-                                        sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, ROCKET_LAUNCH_SFX, (ALSoundState *)&sp208->projectile->sounds[0]);
+                                        sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, ROCKET_LAUNCH_SFX, (ALSoundState *)&rocket->projectile->sounds[0]);
                                     }
-                                    else if (sp208->projectile->sounds[1] == NULL)
+                                    else if (rocket->projectile->sounds[1] == NULL)
                                     {
-                                        sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, ROCKET_LAUNCH_SFX, (ALSoundState *)&sp208->projectile->sounds[1]);
+                                        sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, ROCKET_LAUNCH_SFX, (ALSoundState *)&rocket->projectile->sounds[1]);
                                     }
                                 }
                             }
                         }
                         else
                         {
-                            sp27C = 0;
+                            firing = 0;
                         }
                     }
-                    else if (prop_selfchr->act_attack.attack_item == ITEM_GRENADELAUNCH)
+                    else if (weapon->weaponnum == ITEM_GRENADELAUNCH)
                     {
                         if (((dx * dx) + (dy * dy) + (dz * dz)) > 160000.0f)
                         {
-                            sp128 = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRGRENADEROUND, 0x57);
-                            if (sp128 != NULL)
+                            grenade = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRGRENADEROUND, 0x57);
+                            if (grenade != NULL)
                             {
-                                mtx4LoadIdentity(&spE8);
-                                spDC.f[0] = sp220.f[0] * 33.333332f;
-                                spDC.f[1] = sp220.f[1] * 33.333332f;
-                                spDC.f[2] = sp220.f[2] * 33.333332f;
-                                mtx4LoadXRotation(sp24C, &sp9C);
-                                mtx4LoadYRotation(subroty, &sp5C);
-                                mtx4MultAffineInPlace(&sp5C, &sp9C);
-                                sp128->timer = CHRLV_DEFAULT_TIMER;
-                                gunLaunchProjectile((ObjectRecord *) sp128, &sp240, sp238, &sp9C, &spDC, &spE8, self_prop);
+                                mtx4LoadIdentity(&grenadeMtx);
+                                grenadeSpeed.f[0] = shotdir.f[0] * 33.333332f;
+                                grenadeSpeed.f[1] = shotdir.f[1] * 33.333332f;
+                                grenadeSpeed.f[2] = shotdir.f[2] * 33.333332f;
+                                mtx4LoadXRotation(aimup, &grenadeRot);
+                                mtx4LoadYRotation(subroty, &grenadeYRot);
+                                mtx4MultAffineInPlace(&grenadeYRot, &grenadeRot);
+                                grenade->timer = CHRLV_DEFAULT_TIMER;
+                                gunLaunchProjectile((ObjectRecord *) grenade, &gunpos, guntile, &grenadeRot, &grenadeSpeed, &grenadeMtx, self_prop);
 
-                                if (sp128->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
+                                if (grenade->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                                 {
-                                    sp128->projectile->bounciness = 0.3f;
-                                    sp128->projectile->groundFriction = 0.13333333f;
+                                    grenade->projectile->bounciness = 0.3f;
+                                    grenade->projectile->groundFriction = 0.13333333f;
 #ifdef REFRESH_PAL
-                                    sp128->projectile->refreshrate = 50;
+                                    grenade->projectile->refreshrate = 50;
 #else
-                                    sp128->projectile->refreshrate = 60;
+                                    grenade->projectile->refreshrate = 60;
 #endif
                                 }
                             }
                         }
                         else
                         {
-                            sp27C = 0;
+                            firing = 0;
                         }
                     }
                     else
                     {
-                        if ((sp44 != 0) && (sp21C != 0))
+                        if ((needsSight != 0) && (canSeeTarget != 0))
                         {
-                            dx = (player_prop->pos.f[0] - sp240.f[0]) - (sp220.f[0] * 15.0f);
-                            dy = (player_prop->pos.f[1] - sp240.f[1]) - (sp220.f[1] * 15.0f);
-                            dz = (player_prop->pos.f[2] - sp240.f[2]) - (sp220.f[2] * 15.0f);
+                            dx = (player_prop->pos.f[0] - gunpos.f[0]) - (shotdir.f[0] * 15.0f);
+                            dy = (player_prop->pos.f[1] - gunpos.f[1]) - (shotdir.f[1] * 15.0f);
+                            dz = (player_prop->pos.f[2] - gunpos.f[2]) - (shotdir.f[2] * 15.0f);
 
-                            if (((dx * dx) + (dy * dy) + (dz * dz)) <= sp20C)
+                            if (((dx * dx) + (dy * dy) + (dz * dz)) <= shotDistSq)
                             {
-                                chrUpdateShotbondsum(self, &sp234, &sp230, prop_selfchr->act_attack.attack_item);
-                                sp22C = sp230 == 0;
+                                chrUpdateShotbondsum(self, &inSight, &hitBond, weapon->weaponnum);
+                                showHit = hitBond == 0;
 
-                                if ((sp234 != 0) && ((self->actiontype == ACT_ATTACK) || (self->actiontype == ACT_ATTACKROLL)))
+                                if ((inSight != 0) && ((self->actiontype == ACT_ATTACK) || (self->actiontype == ACT_ATTACKROLL)))
                                 {
                                     self->act_attack.attack_time = g_GlobalTimer;
                                 }
@@ -6172,13 +6164,13 @@ void chrFireHand(ChrRecord *self, s32 hand)
                             }
                         }
 
-                        if (sp230 != 0)
+                        if (hitBond != 0)
                         {
-                            sp258.f[0] = player_prop->pos.f[0];
-                            sp258.f[1] = player_prop->pos.f[1];
-                            sp258.f[2] = player_prop->pos.f[2];
-                            sp254 = player_prop->stan;
-                            shotPlayHitPropSound(prop_selfchr->act_attack.attack_item, &player_prop->type, -1);
+                            hitpos.f[0] = player_prop->pos.f[0];
+                            hitpos.f[1] = player_prop->pos.f[1];
+                            hitpos.f[2] = player_prop->pos.f[2];
+                            hittile = player_prop->stan;
+                            shotPlayHitPropSound(weapon->weaponnum, &player_prop->type, -1);
                         }
                         else
                         {
@@ -6186,49 +6178,49 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                     (g_StanHitProp == NULL)
                                     || ((g_StanHitProp->type != PROP_TYPE_CHR) && (g_StanHitProp->type != PROP_TYPE_VIEWER))
                                 )
-                                && (sp20C < 10000.0f))
+                                && (shotDistSq < 10000.0f))
                             {
-                                sp22C = 0;
+                                showHit = 0;
                             }
                         }
 
-                        if (sp22C != 0)
+                        if (showHit != 0)
                         {
-                            if (sp254 != 0)
+                            if (hittile != 0)
                             {
-                                sparkCreate(&sp258, 1, 26.0f, (s16) sp254->room);
+                                sparkCreate(&hitpos, 1, 26.0f, (s16) hittile->room);
                             }
 
                             if (g_StanHitProp != NULL)
                             {
-                                shotPlayHitPropSound(prop_selfchr->act_attack.attack_item, &g_StanHitProp->type, -1);
+                                shotPlayHitPropSound(weapon->weaponnum, &g_StanHitProp->type, -1);
 
                                 if (g_StanHitProp->type == PROP_TYPE_CHR)
                                 {
                                     if ((self->chrflags & CHRFLAG_CAN_SHOOT_CHRS) != 0)
                                     {
-                                        chrTakeShot(g_StanHitProp->chr, 0xF, &sp220, prop_selfchr->act_attack.attack_item, 0);
+                                        chrTakeShot(g_StanHitProp->chr, 0xF, &shotdir, weapon->weaponnum, 0);
                                     }
                                 }
                                 else if ((g_StanHitProp->type == PROP_TYPE_OBJ) || (g_StanHitProp->type == PROP_TYPE_WEAPON))
                                 {
                                     chrobjMaybeDetonateObjectIfFlags(
                                         g_StanHitProp->obj,
-                                        weaponGetDamage(prop_selfchr->act_attack.attack_item),
-                                        &sp258,
-                                        prop_selfchr->act_attack.attack_item,
+                                        weaponGetDamage(weapon->weaponnum),
+                                        &hitpos,
+                                        weapon->weaponnum,
                                         playerGetCurrentNum());
                                 }
                             }
                             else
                             {
-                                shotPlayHitSound(prop_selfchr->act_attack.attack_item, &sp258, -1);
+                                shotPlayHitSound(weapon->weaponnum, &hitpos, -1);
                             }
                         }
 
-                        if (sp264 != 0)
+                        if (tracer != 0)
                         {
-                            switch (prop_selfchr->act_attack.attack_item)
+                            switch (weapon->weaponnum)
                             {
                                 case ITEM_WPPK:
                                 case ITEM_WPPKSIL:
@@ -6246,29 +6238,29 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                 case ITEM_SILVERWPPK:
                                 case ITEM_GOLDWPPK:
                                 case ITEM_LASER:
-                                    sp264 = 1;
+                                    tracer = 1;
                                     break;
 
                                 default:
-                                    sp264 = 0;
+                                    tracer = 0;
                                     break;
                             }
                         }
 
-                        if (sp264 != 0)
+                        if (tracer != 0)
                         {
-                            beamCreate(&self->beams[hand], prop_selfchr->act_attack.attack_item, &sp240, &sp258);
+                            beamCreate(&self->beams[hand], weapon->weaponnum, &gunpos, &hitpos);
                         }
                     }
                 }
             }
 
-            phi_a2 = (sp27C != 0) || (sp278 != 0);
+            ratelimit = (firing != 0) || (betweenShots != 0);
 
-            chrPlayGunfireSound(self, hand, phi_a2);
+            chrPlayGunfireSound(self, hand, ratelimit);
         }
 
-        chrSetFiring(self, hand, sp27C);
+        chrSetFiring(self, hand, firing);
     }
 }
 
@@ -6297,12 +6289,12 @@ s32 chrAttackRollToKneel(ChrRecord *self)
 {
     Model *model;
     struct weapon_firing_animation_table *p;
-    s32 sp24;
+    s32 flip;
 
     if ((self->act_attackroll.animfloats == &g_ChrFireAnims[2]) || (self->act_attackroll.animfloats == &g_ChrFireAnims[3]))
     {
         model = self->model;
-        sp24 = (s32) model->flip;
+        flip = (s32) model->flip;
         self->act_attackroll.turning = 2;
         self->act_attackroll.animfloats = &g_ChrFireAnims[1];
         self->sleep = 0;
@@ -6312,7 +6304,7 @@ s32 chrAttackRollToKneel(ChrRecord *self)
         modelSetAnimation(
             model,
             (void *) p->anim.anim,
-            sp24,
+            flip,
             p->shoot_end_frame,
             chrGetGuard007SpeedRating(self, 0.7f, 1.12f),
             22.0f);
@@ -6371,15 +6363,15 @@ void chrTickAttackCommon(ChrRecord *self)
     s32 i;
     Model *self_model;
     f32 df;
-    f32 temp_f0_6;
+    f32 speed;
     f32 fp1; // 92
-    f32 phi_f20;
+    f32 frame;
     f32 fp2;
     f32 fn40; // 80
     f32 fanon1; // 76
 
     self_model = self->model;
-    phi_f20 = modelGetAnimFrame(self_model);
+    frame = modelGetAnimFrame(self_model);
 
     if (
 #ifdef REFRESH_PAL
@@ -6389,10 +6381,10 @@ void chrTickAttackCommon(ChrRecord *self)
 #endif
         && (self_model->anim2 == NULL))
     {
-        if (((self->act_attack.animfloats->shoot_start_frame + 10.0f) < phi_f20)
-            && (phi_f20 < self->act_attack.animfloats->shoot_end_frame))
+        if (((self->act_attack.animfloats->shoot_start_frame + 10.0f) < frame)
+            && (frame < self->act_attack.animfloats->shoot_end_frame))
         {
-            if (((self->act_attack.animfloats->recoil_end_frame < 0.0f)) || (phi_f20 < self->act_attack.animfloats->recoil_end_frame))
+            if (((self->act_attack.animfloats->recoil_end_frame < 0.0f)) || (frame < self->act_attack.animfloats->recoil_end_frame))
             {
                 if (self->act_attack.doRecoil == 0)
                 {
@@ -6418,12 +6410,12 @@ void chrTickAttackCommon(ChrRecord *self)
                 }
 
                 self->act_attack.numShots = (s8) (self->act_attack.maxShots + 1);
-                phi_f20 = modelGetAnimFrame(self_model);
+                frame = modelGetAnimFrame(self_model);
             }
         }
     }
 
-    if (modelGetAnimEndFrame(self_model) <= phi_f20)
+    if (modelGetAnimEndFrame(self_model) <= frame)
     {
         if ((self->act_attack.doOneBurst != 0) || (self->act_attack.maxShots < self->act_attack.numShots))
         {
@@ -6446,7 +6438,7 @@ void chrTickAttackCommon(ChrRecord *self)
         }
         else if (self->act_attack.fired != 0)
         {
-            temp_f0_6 = 0.5f;
+            speed = 0.5f;
 
             if (self->act_attack.doRecoil != 0)
             {
@@ -6485,25 +6477,25 @@ void chrTickAttackCommon(ChrRecord *self)
             df = fp2 - fp1;
             if (df < 12.0f)
             {
-                temp_f0_6 = (df * 0.5f) / 12.0f;
+                speed = (df * 0.5f) / 12.0f;
             }
             else if (df > 16.0f)
             {
-                temp_f0_6 = df * 0.5f * 0.0625f;
+                speed = df * 0.5f * 0.0625f;
             }
 
             if ((self->act_attack.singleShot[0] != 0) && (self->act_attack.singleShot[1] != 0))
             {
-                temp_f0_6 = 2.0f * temp_f0_6;
+                speed = 2.0f * speed;
             }
 
             self->act_attack.fired = 0;
 
-            modelSetAnimation(self_model, modelGetAnim(self_model), (s32) self_model->flip, fp1, temp_f0_6, 8.0f);
+            modelSetAnimation(self_model, modelGetAnim(self_model), (s32) self_model->flip, fp1, speed, 8.0f);
             modelSetAnimEndFrame(self_model, fp2);
         }
 
-        phi_f20 = modelGetAnimFrame(self_model);
+        frame = modelGetAnimFrame(self_model);
     }
 
     if ((self->act_attack.attacktype & TARGET_DONTTURN) == 0)
@@ -6532,7 +6524,7 @@ void chrTickAttackCommon(ChrRecord *self)
             fn40);
     }
 
-    if ((self->act_attack.animfloats->aim_start_frame < phi_f20) && (phi_f20 < self->act_attack.animfloats->aim_end_frame))
+    if ((self->act_attack.animfloats->aim_start_frame < frame) && (frame < self->act_attack.animfloats->aim_end_frame))
     {
         chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.hasGun[1], (s32) self->act_attack.hasGun[0], 1.0f);
     }
@@ -6547,7 +6539,7 @@ void chrTickAttackCommon(ChrRecord *self)
         {
             if (self->act_attack.singleShot[i] == 0)
             {
-                if ((self->act_attack.animfloats->shoot_start_frame <= phi_f20) && (phi_f20 < self->act_attack.animfloats->shoot_end_frame))
+                if ((self->act_attack.animfloats->shoot_start_frame <= frame) && (frame < self->act_attack.animfloats->shoot_end_frame))
                 {
                     chrSetHandFiring(self, i, 1);
                     self->act_attack.lastFire60 = g_GlobalTimer;
@@ -6606,12 +6598,12 @@ void chrTickAttackCommon(ChrRecord *self)
                 && (
                     (
                         ( self->act_attack.animfloats->recoil_start_frame >= 0.0f)
-                        && (self->act_attack.animfloats->recoil_start_frame <= phi_f20)
-                        && (phi_f20 <= self->act_attack.animfloats->recoil_end_frame))
+                        && (self->act_attack.animfloats->recoil_start_frame <= frame)
+                        && (frame <= self->act_attack.animfloats->recoil_end_frame))
                     ||
                     (
                         (self->act_attack.animfloats->recoil_start_frame < 0.0f)
-                        && (self->act_attack.animfloats->shoot_start_frame <= phi_f20)
+                        && (self->act_attack.animfloats->shoot_start_frame <= frame)
                     )))
             {
                 self->act_attack.fired = 1;
@@ -6641,11 +6633,11 @@ void chrTickAttackCommon(ChrRecord *self)
 void chrTickAttack(ChrRecord *self)
 {
     Model *self_model;
-    f32 temp_f0;
-    f32 phi_f2;
+    f32 frame;
+    f32 endframe;
 
     self_model = self->model;
-    temp_f0 = modelGetAnimFrame(self_model);
+    frame = modelGetAnimFrame(self_model);
 
     if (self->act_attack.type_of_motion)
     {
@@ -6653,18 +6645,18 @@ void chrTickAttack(ChrRecord *self)
         {
             if (self->act_attack.animfloats->recoil_end_frame >= 0.0f)
             {
-                phi_f2 = self->act_attack.animfloats->recoil_end_frame;
+                endframe = self->act_attack.animfloats->recoil_end_frame;
             }
             else
             {
-                phi_f2 = self->act_attack.animfloats->shoot_end_frame;
+                endframe = self->act_attack.animfloats->shoot_end_frame;
             }
 
             modelSetAnimation(
                 self_model,
                 modelGetAnim(self_model),
                 (s32) self_model->flip,
-                phi_f2,
+                endframe,
                 chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
                 16.0f);
 
@@ -6681,7 +6673,7 @@ void chrTickAttack(ChrRecord *self)
 
         if (self->act_attack.type_of_motion == 2)
         {
-            if (modelGetAnimEndFrame(self_model) <= temp_f0)
+            if (modelGetAnimEndFrame(self_model) <= frame)
             {
 #if defined(VERSION_US)
                 self->act_attack.attacktype |= TARGET_AIM_ONLY;
@@ -6718,7 +6710,7 @@ void chrTickAttack(ChrRecord *self)
             return;
         }
 
-        if (modelGetAnimEndFrame(self_model) <= temp_f0)
+        if (modelGetAnimEndFrame(self_model) <= frame)
         {
             self->act_attack.attacktype |= TARGET_DONTTURN;
             self->act_attack.turning = 2;
@@ -6729,9 +6721,9 @@ void chrTickAttack(ChrRecord *self)
 
     if (self->act_attack.doRecoil == 0)
     {
-        if ((self->act_attack.animfloats->recoil_end_frame > 0.0f) && (temp_f0 <= self->act_attack.animfloats->recoil_end_frame))
+        if ((self->act_attack.animfloats->recoil_end_frame > 0.0f) && (frame <= self->act_attack.animfloats->recoil_end_frame))
         {
-            if (modelGetAnimEndFrame(self_model) <= temp_f0)
+            if (modelGetAnimEndFrame(self_model) <= frame)
             {
                 modelSetAnimation(
                     self_model,
@@ -6762,17 +6754,17 @@ void chrTickAttack(ChrRecord *self)
 
 void chrTickAttackRoll(ChrRecord *self)
 {
-    Model *temp_a0; // 68
-    f32 temp_f0;
-    struct weapon_firing_animation_table *phi_v1; // 60
-    s32 sp38; // 56
-    f32 phi_f2_2; // 52
-    ModelRwData_HeaderRecord *temp_v0_2;
+    Model *model; // 68
+    f32 frame;
+    struct weapon_firing_animation_table *nextanim; // 60
+    s32 flip; // 56
+    f32 turnframes; // 52
+    ModelRwData_HeaderRecord *rootrw;
 
     if (self->act_attackroll.oneHanded != 0)
     {
-        temp_a0 = self->model;
-        temp_f0 = modelGetAnimFrame(temp_a0);
+        model = self->model;
+        frame = modelGetAnimFrame(model);
 
         if (
             (self->act_attackroll.animfloats == &g_ChrFireAnims[4])
@@ -6781,109 +6773,109 @@ void chrTickAttackRoll(ChrRecord *self)
             || (self->act_attackroll.animfloats == &g_ChrFireAnims[7])
         )
         {
-            if (self->act_attackroll.animfloats->end_frame <= temp_f0)
+            if (self->act_attackroll.animfloats->end_frame <= frame)
             {
-                sp38 = (s32) temp_a0->flip;
-                phi_v1 = &self->act_attackroll.animfloats[4];
+                flip = (s32) model->flip;
+                nextanim = &self->act_attackroll.animfloats[4];
 
-                phi_f2_2 = 16.0f;
+                turnframes = 16.0f;
 
                 if ((self->act_attackroll.hasGun[1] != 0) && (self->act_attackroll.hasGun[0] != 0))
                 {
                     if ((randomGetNext() & 1) == 0)
                     {
-                        phi_v1 = &phi_v1[4];
+                        nextanim = &nextanim[4];
                     }
                     else
                     {
-                        phi_v1 = &phi_v1[8];
+                        nextanim = &nextanim[8];
                     }
                 }
 
-                if (phi_v1 == &g_ChrFireAnims[8])
+                if (nextanim == &g_ChrFireAnims[8])
                 {
-                    phi_f2_2 = 24.0f;
+                    turnframes = 24.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[9])
+                else if (nextanim == &g_ChrFireAnims[9])
                 {
-                    phi_f2_2 = 24.0f;
+                    turnframes = 24.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[10])
+                else if (nextanim == &g_ChrFireAnims[10])
                 {
-                    phi_f2_2 = 32.0f;
+                    turnframes = 32.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[11])
+                else if (nextanim == &g_ChrFireAnims[11])
                 {
-                    phi_f2_2 = 44.0f;
+                    turnframes = 44.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[12])
+                else if (nextanim == &g_ChrFireAnims[12])
                 {
-                    phi_f2_2 = 24.0f;
+                    turnframes = 24.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[13])
+                else if (nextanim == &g_ChrFireAnims[13])
                 {
-                    phi_f2_2 = 34.0f;
+                    turnframes = 34.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[14])
+                else if (nextanim == &g_ChrFireAnims[14])
                 {
-                    phi_f2_2 = 32.0f;
+                    turnframes = 32.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[15])
+                else if (nextanim == &g_ChrFireAnims[15])
                 {
-                    phi_f2_2 = 44.0f;
+                    turnframes = 44.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[16])
+                else if (nextanim == &g_ChrFireAnims[16])
                 {
-                    phi_f2_2 = 24.0f;
+                    turnframes = 24.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[17])
+                else if (nextanim == &g_ChrFireAnims[17])
                 {
-                    phi_f2_2 = 34.0f;
+                    turnframes = 34.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[18])
+                else if (nextanim == &g_ChrFireAnims[18])
                 {
-                    phi_f2_2 = 32.0f;
+                    turnframes = 32.0f;
                 }
-                else if (phi_v1 == &g_ChrFireAnims[19])
+                else if (nextanim == &g_ChrFireAnims[19])
                 {
-                    phi_f2_2 = 44.0f;
+                    turnframes = 44.0f;
                 }
 
                 self->act_attackroll.turning = 2;
-                self->act_attackroll.animfloats = phi_v1;
+                self->act_attackroll.animfloats = nextanim;
                 self->sleep = 0;
 
-                modelSetAnimation(temp_a0, (void *) phi_v1->anim.anim, sp38, phi_v1->start_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), phi_f2_2);
+                modelSetAnimation(model, (void *) nextanim->anim.anim, flip, nextanim->start_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), turnframes);
 
                 if (self->act_attackroll.doRecoil != 0)
                 {
-                    if (phi_v1->recoil_end_frame >= 0.0f)
+                    if (nextanim->recoil_end_frame >= 0.0f)
                     {
-                        modelSetAnimEndFrame(temp_a0, phi_v1->recoil_end_frame);
+                        modelSetAnimEndFrame(model, nextanim->recoil_end_frame);
                     }
                     else
                     {
-                        modelSetAnimEndFrame(temp_a0, phi_v1->shoot_end_frame);
+                        modelSetAnimEndFrame(model, nextanim->shoot_end_frame);
                     }
                 }
-                else if (phi_v1->recoil_start_frame >= 0.0f)
+                else if (nextanim->recoil_start_frame >= 0.0f)
                 {
-                    modelSetAnimEndFrame(temp_a0, phi_v1->recoil_start_frame);
+                    modelSetAnimEndFrame(model, nextanim->recoil_start_frame);
                 }
-                else if (phi_v1->end_frame >= 0.0f)
+                else if (nextanim->end_frame >= 0.0f)
                 {
-                    modelSetAnimEndFrame(temp_a0, phi_v1->end_frame);
+                    modelSetAnimEndFrame(model, nextanim->end_frame);
                 }
 
                 if (self->act_attackroll.animfloats->angle_offset != 0.0f)
                 {
-                    temp_v0_2 = &modelGetNodeRwData(temp_a0, temp_a0->obj->RootNode)->Header;
-                    temp_v0_2->turnFrames = phi_f2_2;
-                    temp_v0_2->turnPerFrame = (-self->act_attackroll.animfloats->angle_offset / phi_f2_2);
+                    rootrw = &modelGetNodeRwData(model, model->obj->RootNode)->Header;
+                    rootrw->turnFrames = turnframes;
+                    rootrw->turnPerFrame = (-self->act_attackroll.animfloats->angle_offset / turnframes);
 
-                    if (sp38 != GUNRIGHT)
+                    if (flip != GUNRIGHT)
                     {
-                        temp_v0_2->turnPerFrame = -temp_v0_2->turnPerFrame;
+                        rootrw->turnPerFrame = -rootrw->turnPerFrame;
                     }
                 }
             }
@@ -6905,22 +6897,22 @@ void chrTickAttackRoll(ChrRecord *self)
             )
             && (self->act_attackroll.doRecoil == 0))
         {
-            if ((self->act_attackroll.animfloats->recoil_end_frame > 0.0f) && (temp_f0 <= self->act_attackroll.animfloats->recoil_end_frame))
+            if ((self->act_attackroll.animfloats->recoil_end_frame > 0.0f) && (frame <= self->act_attackroll.animfloats->recoil_end_frame))
             {
-                if (modelGetAnimEndFrame(temp_a0) <= temp_f0)
+                if (modelGetAnimEndFrame(model) <= frame)
                 {
-                    modelSetAnimation(temp_a0, modelGetAnim(temp_a0), (s32) temp_a0->flip, self->act_attackroll.animfloats->recoil_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+                    modelSetAnimation(model, modelGetAnim(model), (s32) model->flip, self->act_attackroll.animfloats->recoil_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
 
                     if (self->act_attackroll.doOneBurst != 0)
                     {
                         if (self->act_attackroll.animfloats->end_frame >= 0.0f)
                         {
-                            modelSetAnimEndFrame(temp_a0, self->act_attackroll.animfloats->end_frame);
+                            modelSetAnimEndFrame(model, self->act_attackroll.animfloats->end_frame);
                         }
                     }
                     else
                     {
-                        modelSetAnimEndFrame(temp_a0, self->act_attackroll.animfloats->shoot_end_frame);
+                        modelSetAnimEndFrame(model, self->act_attackroll.animfloats->shoot_end_frame);
                     }
                 }
             }
@@ -6933,28 +6925,28 @@ void chrTickAttackRoll(ChrRecord *self)
 void chrTickThrowGrenade(ChrRecord *self)
 {
     Model *self_model;
-    f32 temp_f2;
+    f32 frame;
     s32 gunhand;
     PropRecord *held_prop;
 
     self_model = self->model;
-    temp_f2 = modelGetAnimFrame(self_model);
+    frame = modelGetAnimFrame(self_model);
     gunhand = (self_model->flip != GUNRIGHT) ? GUNLEFT : GUNRIGHT;
     held_prop = chrGetEquippedWeaponProp(self, gunhand);
 
-    if ((temp_f2 >= 20.0f) && (held_prop != NULL))
+    if ((frame >= 20.0f) && (held_prop != NULL))
     {
         struct ObjectRecord *obj = held_prop->obj;
         obj->runtime_bitflags &= ~0x800;
     }
 
-    if ((temp_f2 >= 61.0f) && (held_prop != NULL))
+    if ((frame >= 61.0f) && (held_prop != NULL))
     {
         struct WeaponObjRecord *weap = held_prop->weapon;
         weap->timer = CHRLV_DEFAULT_TIMER;
     }
 
-    if ((temp_f2 >= 119.0f) && (held_prop != NULL))
+    if ((frame >= 119.0f) && (held_prop != NULL))
     {
         propobjSetDropped(self->weapons_held[gunhand], 3);
         self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
@@ -6967,7 +6959,7 @@ void chrTickThrowGrenade(ChrRecord *self)
         return;
     }
 
-    if ((temp_f2 >= 87.0f) && (temp_f2 <= 110.0f))
+    if ((frame >= 87.0f) && (frame <= 110.0f))
     {
         chrSetSubroty(self, 1, 110.0f, chrGetGuard007SpeedRating(self, 1.0f, 1.6f), 0.0f);
     }
@@ -6977,12 +6969,12 @@ void chrTickThrowGrenade(ChrRecord *self)
 void chrTickBondIntro(ChrRecord *self)
 {
     Model *self_model;
-    f32 sp28;
+    f32 frame;
 
     self_model = self->model;
-    sp28 = modelGetAnimFrame(self_model);
+    frame = modelGetAnimFrame(self_model);
 
-    if ((sp28 < 86.0f) && (modelGetAnimEndFrame(self_model) <= sp28))
+    if ((frame < 86.0f) && (modelGetAnimEndFrame(self_model) <= frame))
     {
         modelSetAnimation(
             self_model,
@@ -6997,7 +6989,7 @@ void chrTickBondIntro(ChrRecord *self)
         return;
     }
 
-    if (modelGetAnimEndFrame(self_model) <= sp28)
+    if (modelGetAnimEndFrame(self_model) <= frame)
     {
         chrStand(self);
     }
@@ -7042,7 +7034,7 @@ void chrTickBondDieRemoved(ChrRecord *self)
 #define ACCEL_C 0.0117809725925326f
 #endif
 
-s32 chrApplySpeed(ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr)
+s32 chrApplySpeed(ChrRecord *self, coord3d *target, s32 speed, f32 *speedPtr)
 {
     f32 maxSpeed;
     Model *self_model; // 72
@@ -7050,42 +7042,42 @@ s32 chrApplySpeed(ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr)
     f32 accel;
     f32 maxFrac; // 60
     f32 openPosition; // 56
-    f32 phi_f2;
+    f32 angle;
     f32 f0f0;
     f32 dx;
     f32 dz;
-    s32 sp24;
+    s32 arrived;
 
     self_prop = self->prop;
     self_model = self->model;
 
-    dx = arg1->f[0] - self_prop->pos.f[0];
-    dz = arg1->f[2] - self_prop->pos.f[2];
+    dx = target->f[0] - self_prop->pos.f[0];
+    dz = target->f[2] - self_prop->pos.f[2];
 
     maxFrac = mathAtan2(dx, dz);
     openPosition = modelGetRootRotY(self_model);
 
-    sp24 = 0;
-    phi_f2 = maxFrac - openPosition;
+    arrived = 0;
+    angle = maxFrac - openPosition;
 
     if (maxFrac < openPosition)
     {
-        phi_f2 = phi_f2 + M_TAU_F;
+        angle = angle + M_TAU_F;
     }
 
-    f0f0 = phi_f2;
+    f0f0 = angle;
 
-    if (phi_f2 > M_PI_F)
+    if (angle > M_PI_F)
     {
-        f0f0 = M_TAU_F - phi_f2;
+        f0f0 = M_TAU_F - angle;
     }
 
-    if (arg2 == 2)
+    if (speed == 2)
     {
         maxSpeed = MAX_SPEED_A;
         accel = ACCEL_A;
     }
-    else if (arg2 == 1)
+    else if (speed == 1)
     {
         if (f0f0 < 0.3926991f)
         {
@@ -7135,12 +7127,12 @@ s32 chrApplySpeed(ChrRecord *self, coord3d *arg1, s32 arg2, f32 *speedPtr)
     if (openPosition == maxFrac)
     {
         *speedPtr = 0.0f;
-        sp24 = 1;
+        arrived = 1;
     }
 
     modelSetRootRotY(self_model, openPosition);
 
-    return sp24;
+    return arrived;
 }
 
 
@@ -7148,8 +7140,8 @@ void chrTickAttackWalk(ChrRecord *self)
 {
     Model *self_model;
     PropRecord *player_prop;
-    f32 temp_f0;
-    f32 temp_f2;
+    f32 dx;
+    f32 dz;
     PropRecord *self_prop;
     s32 i;
 
@@ -7179,9 +7171,9 @@ void chrTickAttackWalk(ChrRecord *self)
         return;
     }
 
-    temp_f0 = player_prop->pos.f[0] - self_prop->pos.f[0];
-    temp_f2 = player_prop->pos.f[2] - self_prop->pos.f[2];
-    if ((temp_f0 < 300.0f) && (temp_f0 > -300.0f) && (temp_f2 < 300.0f) && (temp_f2 > -300.0f))
+    dx = player_prop->pos.f[0] - self_prop->pos.f[0];
+    dz = player_prop->pos.f[2] - self_prop->pos.f[2];
+    if ((dx < 300.0f) && (dx > -300.0f) && (dz < 300.0f) && (dz > -300.0f))
     {
         chrSetTargetToPlayer(self);
         chrStandCheckWall(self);
@@ -7270,28 +7262,28 @@ void chrTickAttackWalk(ChrRecord *self)
  * @param arg0: point in 3d
  * @param arg0: scalar value
 */
-s32 rayPassesNearPoint2d(coord3d *arg0, coord3d *arg1, coord3d *arg2, f32 arg3)
+s32 rayPassesNearPoint2d(coord3d *origin, coord3d *dir, coord3d *point, f32 range)
 {
     coord3d dd;
-    f32 temp_f14;
+    f32 along;
 
-    dd.f[0] = arg2->f[0] - arg0->f[0];
-    dd.f[2] = arg2->f[2] - arg0->f[2];
+    dd.f[0] = point->f[0] - origin->f[0];
+    dd.f[2] = point->f[2] - origin->f[2];
 
-    if ((arg1->f[0] == 0.0f) && (arg1->f[2] == 0.0f))
+    if ((dir->f[0] == 0.0f) && (dir->f[2] == 0.0f))
     {
-        return ((dd.f[0] * dd.f[0]) + (dd.f[2] * dd.f[2])) <= (arg3 * arg3);
+        return ((dd.f[0] * dd.f[0]) + (dd.f[2] * dd.f[2])) <= (range * range);
     }
 
-    temp_f14 = (arg1->f[0] * dd.f[0]) + (arg1->f[2] * dd.f[2]);
+    along = (dir->f[0] * dd.f[0]) + (dir->f[2] * dd.f[2]);
 
-    if (temp_f14 > 0.0f)
+    if (along > 0.0f)
     {
-        f32 tf14_2 = temp_f14 * temp_f14;
-        f32 f2 = (arg1->f[0] * arg1->f[0]) + (arg1->f[2] * arg1->f[2]);
+        f32 alongSq = along * along;
+        f32 dirLenSq = (dir->f[0] * dir->f[0]) + (dir->f[2] * dir->f[2]);
         f32 f3 = (dd.f[0] * dd.f[0]) + (dd.f[2] * dd.f[2]);
 
-        if ((f2 * (f3 - (arg3 * arg3))) <= tf14_2)
+        if ((dirLenSq * (f3 - (range * range))) <= alongSq)
         {
             return 1;
         }
@@ -7314,7 +7306,7 @@ s32 rayPassesNearPoint2d(coord3d *arg0, coord3d *arg1, coord3d *arg2, f32 arg3)
 */
 s32 chrIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *targetpos, f32 range)
 {
-    coord3d sp34;
+    coord3d dir;
 
     if ((prevpos->f[0] <= targetpos->f[0] - range) && (curpos->f[0] <= targetpos->f[0] - range))
     {
@@ -7336,11 +7328,11 @@ s32 chrIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *targ
         return 0;
     }
 
-    sp34.f[0] = curpos->f[0] - prevpos->f[0];
-    sp34.f[1] = 0.0f;
-    sp34.f[2] = curpos->f[2] - prevpos->f[2];
+    dir.f[0] = curpos->f[0] - prevpos->f[0];
+    dir.f[1] = 0.0f;
+    dir.f[2] = curpos->f[2] - prevpos->f[2];
 
-    return rayPassesNearPoint2d(prevpos, &sp34, targetpos, range);
+    return rayPassesNearPoint2d(prevpos, &dir, targetpos, range);
 }
 
 
@@ -7348,7 +7340,7 @@ void chrTickRunPos(ChrRecord *self)
 {
     PropRecord *self_prop;
     Model *self_model;
-    f32 phi_f2; // 52
+    f32 frame; // 52
 
     self_prop = self->prop;
     self_model = self->model;
@@ -7368,28 +7360,28 @@ void chrTickRunPos(ChrRecord *self)
         // Maybe had debug side effects, otherwise this doesn't do anything.
         modelGetAnim(self_model);
 
-        phi_f2 = modelGetAnimFrame(self_model) - offset;
+        frame = modelGetAnimFrame(self_model) - offset;
 
-        if (phi_f2 < 0.0f)
+        if (frame < 0.0f)
         {
-            phi_f2 += (f32)modelGetAnim(self_model)->numFrames;
+            frame += (f32)modelGetAnim(self_model)->numFrames;
         }
 
-        if (((f32)modelGetAnim(self_model)->numFrames * 0.5f) < phi_f2)
+        if (((f32)modelGetAnim(self_model)->numFrames * 0.5f) < frame)
         {
-            phi_f2 = (f32)modelGetAnim(self_model)->numFrames - offset;
-            modelSetAnimSpeedToReachFrame(self_model, phi_f2, 16.0f);
+            frame = (f32)modelGetAnim(self_model)->numFrames - offset;
+            modelSetAnimSpeedToReachFrame(self_model, frame, 16.0f);
         }
         else
         {
-            phi_f2 = ((f32)modelGetAnim(self_model)->numFrames * 0.5f) - offset;
+            frame = ((f32)modelGetAnim(self_model)->numFrames * 0.5f) - offset;
 
-            if (phi_f2 < 0)
+            if (frame < 0)
             {
-                phi_f2 += (f32)modelGetAnim(self_model)->numFrames;
+                frame += (f32)modelGetAnim(self_model)->numFrames;
             }
 
-            modelSetAnimSpeedToReachFrame(self_model, phi_f2, 16.0f);
+            modelSetAnimSpeedToReachFrame(self_model, frame, 16.0f);
         }
 
         chrStandCheckWall(self);
@@ -7405,63 +7397,63 @@ void chrTickRunPos(ChrRecord *self)
     }
     else
     {
-        f32 sp2C;
+        f32 speed;
 
-        sp2C = g_ChrSpeedRun;
+        speed = g_ChrSpeedRun;
 
         if ((s32)modelGetAnim(self_model) == (s32)&g_AnimTable->data[(s32)&ANIM_DATA_running_one_handed_weapon])
         {
-            sp2C = g_ChrSpeedRunOneHanded;
+            speed = g_ChrSpeedRunOneHanded;
         }
 
-        self->act_runpos.neardist += sp2C * g_GlobalTimerDelta * modelGetAbsAnimSpeed(self_model);
+        self->act_runpos.neardist += speed * g_GlobalTimerDelta * modelGetAbsAnimSpeed(self_model);
     }
 }
 
 
-s32 chrCanWalkLine(ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, StandTile * arg4, s32 cdtypes)
+s32 chrCanWalkLine(ChrRecord *self, coord3d *point, StandTile *tile, coord3d *dest, StandTile * desttile, s32 cdtypes)
 {
-    StandTile *sp44;
-    s32 sp40;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
+    StandTile *curtile;
+    s32 ok;
+    f32 height;
+    f32 always20;
+    f32 width;
 
-    sp44 = arg2;
-    sp40 = 0;
+    curtile = tile;
+    ok = 0;
 
-    chrGetChrWidthHeight(self->prop, &sp34, &sp3C, &sp38);
+    chrGetChrWidthHeight(self->prop, &width, &height, &always20);
 
     chrSetMoving(self, 0);
 
     if (
-        stanTestLineUnobstructed(&sp44, point->f[0], point->f[2], dest->f[0], dest->f[2], cdtypes, sp3C, sp38, 0.0f, 1.0f)
-        && ((arg4 == NULL) || (sp44 == arg4)))
+        stanTestLineUnobstructed(&curtile, point->f[0], point->f[2], dest->f[0], dest->f[2], cdtypes, height, always20, 0.0f, 1.0f)
+        && ((desttile == NULL) || (curtile == desttile)))
     {
-        sp40 = 1;
+        ok = 1;
     }
 
     chrSetMoving(self, 1);
 
-    return sp40;
+    return ok;
 }
 
 
-s32 chrCanWalkLineWithin(ChrRecord *self, coord3d *point, StandTile *arg2, coord3d *dest, f32 arg4, s32 cdtypes)
+s32 chrCanWalkLineWithin(ChrRecord *self, coord3d *point, StandTile *tile, coord3d *dest, f32 halfwidth, s32 cdtypes)
 {
     StandTile *pstan;
     coord3d dd;
-    f32 temp_f20;
-    f32 temp_f22;
+    f32 offsetX;
+    f32 offsetZ;
     f32 norm;
     s32 ret; // 104
-    f32 sp64;
-    f32 sp60;
-    f32 sp5C;
+    f32 height;
+    f32 always20;
+    f32 width;
 
     ret = 0;
 
-    chrGetChrWidthHeight(self->prop, &sp5C, &sp64, &sp60);
+    chrGetChrWidthHeight(self->prop, &width, &height, &always20);
 
     dd.f[0] = dest->f[0] - point->f[0];
     dd.f[1] = 0.0f;
@@ -7479,20 +7471,20 @@ s32 chrCanWalkLineWithin(ChrRecord *self, coord3d *point, StandTile *arg2, coord
         dd.f[0] *= norm;
         dd.f[2] *= norm;
 
-        temp_f20 = arg4 * dd.f[0];
-        temp_f22 = arg4 * dd.f[2];
+        offsetX = halfwidth * dd.f[0];
+        offsetZ = halfwidth * dd.f[2];
 
         chrSetMoving(self, 0);
 
-        pstan = arg2;
+        pstan = tile;
 
-        if (stanTestLineUnobstructed(&pstan, point->f[0], point->f[2], point->f[0] + temp_f22, point->f[2] - temp_f20, cdtypes, sp64, sp60, 0.0f, 1.0f)
-            && stanTestLineUnobstructed(&pstan, point->f[0] + temp_f22, point->f[2] - temp_f20, dest->f[0] + temp_f22, dest->f[2] - temp_f20, cdtypes, sp64, sp60, 0.0f, 1.0f))
+        if (stanTestLineUnobstructed(&pstan, point->f[0], point->f[2], point->f[0] + offsetZ, point->f[2] - offsetX, cdtypes, height, always20, 0.0f, 1.0f)
+            && stanTestLineUnobstructed(&pstan, point->f[0] + offsetZ, point->f[2] - offsetX, dest->f[0] + offsetZ, dest->f[2] - offsetX, cdtypes, height, always20, 0.0f, 1.0f))
         {
-            pstan = arg2;
+            pstan = tile;
 
-            if (stanTestLineUnobstructed(&pstan, point->f[0], point->f[2], point->f[0] - temp_f22, point->f[2] + temp_f20, cdtypes, sp64, sp60, 0.0f, 1.0f)
-                && stanTestLineUnobstructed(&pstan, point->f[0] - temp_f22, point->f[2] + temp_f20, dest->f[0] - temp_f22, dest->f[2] + temp_f20, cdtypes, sp64, sp60, 0.0f, 1.0f))
+            if (stanTestLineUnobstructed(&pstan, point->f[0], point->f[2], point->f[0] - offsetZ, point->f[2] + offsetX, cdtypes, height, always20, 0.0f, 1.0f)
+                && stanTestLineUnobstructed(&pstan, point->f[0] - offsetZ, point->f[2] + offsetX, dest->f[0] - offsetZ, dest->f[2] + offsetX, cdtypes, height, always20, 0.0f, 1.0f))
             {
                 ret = 1;
             }
@@ -7505,27 +7497,27 @@ s32 chrCanWalkLineWithin(ChrRecord *self, coord3d *point, StandTile *arg2, coord
 }
 
 
-s32 chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *arg3, coord3d *bondpos, StandTile *bondstan, s32 cdtypes)
+s32 chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *viapoint, coord3d *bondpos, StandTile *bondstan, s32 cdtypes)
 {
-    StandTile *sp44;
+    StandTile *tile;
     bool pass;
-    f32 sp3C;
-    f32 sp38;
-    f32 sp34;
-    StandTile *sp30;
+    f32 height;
+    f32 always20;
+    f32 width;
+    StandTile *viatile;
 
-    sp44 = mystan; // duplicate var? needed?
+    tile = mystan;
     pass = FALSE;
 
-    chrGetChrWidthHeight(self->prop, &sp34, &sp3C, &sp38);
+    chrGetChrWidthHeight(self->prop, &width, &height, &always20);
     chrSetMoving(self, 0);
 
-    if (stanTestLineUnobstructed(&sp44, mypos->x, mypos->z, arg3->x, arg3->z, cdtypes, sp3C, sp38, 0.0f, 1.0f))
+    if (stanTestLineUnobstructed(&tile, mypos->x, mypos->z, viapoint->x, viapoint->z, cdtypes, height, always20, 0.0f, 1.0f))
     {
-        sp30 = sp44; // duplicate var? needed?
+        viatile = tile;
 
-        if (stanTestLineUnobstructed(&sp30, arg3->x, arg3->z, bondpos->x, bondpos->z, cdtypes, sp3C, sp38, 0.0f, 1.0f)
-            && ((bondstan == NULL) || (sp30 == bondstan)))
+        if (stanTestLineUnobstructed(&viatile, viapoint->x, viapoint->z, bondpos->x, bondpos->z, cdtypes, height, always20, 0.0f, 1.0f)
+            && ((bondstan == NULL) || (viatile == bondstan)))
         {
             pass = TRUE;
         }
@@ -7541,32 +7533,32 @@ s32 chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord
  * Subtract arg0 from arg1. Take the determinate of the result and arg2.
  * If determinate is not greater than zero, then swap arg0 and arg1.
 */
-void orderPointsBySide(coord3d *arg0, coord3d *arg1, coord3d *arg2)
+void orderPointsBySide(coord3d *a, coord3d *b, coord3d *dir)
 {
-    coord3d spock;
-    coord3d kirk;
+    coord3d ab;
+    coord3d perp;
 
-    spock.f[0] = arg1->f[0] - arg0->f[0];
-    spock.f[1] = arg1->f[1] - arg0->f[1];
-    spock.f[2] = arg1->f[2] - arg0->f[2];
+    ab.f[0] = b->f[0] - a->f[0];
+    ab.f[1] = b->f[1] - a->f[1];
+    ab.f[2] = b->f[2] - a->f[2];
 
-    kirk.f[0] = -arg2->f[2];
-    kirk.f[1] = 0.0f;
-    kirk.f[2] = arg2->f[0];
+    perp.f[0] = -dir->f[2];
+    perp.f[1] = 0.0f;
+    perp.f[2] = dir->f[0];
 
-    if (!(((kirk.f[0] * spock.f[0]) + (kirk.f[2] * spock.f[2])) > 0.0f))
+    if (!(((perp.f[0] * ab.f[0]) + (perp.f[2] * ab.f[2])) > 0.0f))
     {
-        spock.f[0] = arg0->f[0];
-        spock.f[1] = arg0->f[1];
-        spock.f[2] = arg0->f[2];
+        ab.f[0] = a->f[0];
+        ab.f[1] = a->f[1];
+        ab.f[2] = a->f[2];
 
-        arg0->f[0] = arg1->f[0];
-        arg0->f[1] = arg1->f[1];
-        arg0->f[2] = arg1->f[2];
+        a->f[0] = b->f[0];
+        a->f[1] = b->f[1];
+        a->f[2] = b->f[2];
 
-        arg1->f[0] = spock.f[0];
-        arg1->f[1] = spock.f[1];
-        arg1->f[2] = spock.f[2];
+        b->f[0] = ab.f[0];
+        b->f[1] = ab.f[1];
+        b->f[2] = ab.f[2];
     }
 }
 
@@ -7574,443 +7566,443 @@ void orderPointsBySide(coord3d *arg0, coord3d *arg1, coord3d *arg2)
 /**
  * Very similar to @see chrNavCheckForObstacle .
 */
-s32 chrNavCanSeeNextPos(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes)
+s32 chrNavCanSeeNextPos(ChrRecord *self, coord3d *from, StandTile *fromtile, coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes)
 {
-    StandTile *spAC;
-    coord3d spA0;
-    f32 sp9C; // 156
-    f32 sp98; // 152
-    f32 sp94; // 148
-    f32 sp90; // 144
+    StandTile *tile;
+    coord3d dir;
+    f32 nearX; // 156
+    f32 nearZ; // 152
+    f32 farX; // 148
+    f32 farZ; // 144
     f32 norm;
-    s32 sp88; // 136
-    s32 sp84; // 132
-    coord3d sp78;
-    coord3d sp6C;
-    coord3d sp60;
-    coord3d sp54;
-    s32 sp50;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
+    s32 leftBlocked; // 136
+    s32 rightBlocked; // 132
+    coord3d leftEdgeStart;
+    coord3d leftEdgeEnd;
+    coord3d rightEdgeStart;
+    coord3d rightEdgeEnd;
+    s32 ok;
+    f32 height;
+    f32 always20;
+    f32 chrw;
 
-    sp88 = 0;
-    sp84 = 0;
-    sp50 = 0;
+    leftBlocked = 0;
+    rightBlocked = 0;
+    ok = 0;
 
-    chrGetChrWidthHeight(self->prop, &sp44, &sp4C, &sp48);
+    chrGetChrWidthHeight(self->prop, &chrw, &height, &always20);
 
-    spA0.f[0] = arg3->f[0] - arg1->f[0];
-    spA0.f[1] = 0.0f;
-    spA0.f[2] = arg3->f[2] - arg1->f[2];
+    dir.f[0] = to->f[0] - from->f[0];
+    dir.f[1] = 0.0f;
+    dir.f[2] = to->f[2] - from->f[2];
 
-    if ((spA0.f[0] == 0.0f) && (spA0.f[2] == 0.0f))
+    if ((dir.f[0] == 0.0f) && (dir.f[2] == 0.0f))
     {
         return 1;
     }
 
-    norm = (spA0.f[0] * spA0.f[0]) + (spA0.f[2] * spA0.f[2]);
+    norm = (dir.f[0] * dir.f[0]) + (dir.f[2] * dir.f[2]);
     norm = 1.0f / sqrtf(norm);
 
-    spA0.f[0] *= norm;
-    spA0.f[2] *= norm;
+    dir.f[0] *= norm;
+    dir.f[2] *= norm;
 
-    sp9C = 0.95f * (arg7 * spA0.f[0]);
-    sp98 = 0.95f * (arg7 * spA0.f[2]);
+    nearX = 0.95f * (width * dir.f[0]);
+    nearZ = 0.95f * (width * dir.f[2]);
 
-    sp94 = 1.2f * (arg7 * spA0.f[0]);
-    sp90 = 1.2f * (arg7 * spA0.f[2]);
+    farX = 1.2f * (width * dir.f[0]);
+    farZ = 1.2f * (width * dir.f[2]);
 
     chrSetMoving(self, 0);
     stanResetHits();
 
-    spAC = arg2;
+    tile = fromtile;
 
     if ((stanTestLineUnobstructed(
-        &spAC,
-        arg1->f[0],
-        arg1->f[2],
-        arg1->f[0] + sp98,
-        arg1->f[2] - sp9C,
+        &tile,
+        from->f[0],
+        from->f[2],
+        from->f[0] + nearZ,
+        from->f[2] - nearX,
         cdtypes,
-        sp4C,
-        sp48,
+        height,
+        always20,
         0.0f,
         1.0f) == 0)
         || (stanTestLineUnobstructed(
-            &spAC,
-            arg1->f[0] + sp98,
-            arg1->f[2] - sp9C,
-            (arg3->f[0] + sp90) + (spA0.f[0] * arg6),
-            (arg3->f[2] - sp94) + (spA0.f[2] * arg6),
+            &tile,
+            from->f[0] + nearZ,
+            from->f[2] - nearX,
+            (to->f[0] + farZ) + (dir.f[0] * overshoot),
+            (to->f[2] - farX) + (dir.f[2] * overshoot),
             cdtypes,
-            sp4C,
-            sp48,
+            height,
+            always20,
             0.0f,
             1.0f) == 0))
     {
-        sp88 = 1;
+        leftBlocked = 1;
 
-        stanGetCollisionEdge(&sp78, &sp6C);
-        orderPointsBySide(&sp78, &sp6C, &spA0);
+        stanGetCollisionEdge(&leftEdgeStart, &leftEdgeEnd);
+        orderPointsBySide(&leftEdgeStart, &leftEdgeEnd, &dir);
     }
 
-    spAC = arg2;
+    tile = fromtile;
 
     if ((stanTestLineUnobstructed(
-        &spAC,
-        arg1->f[0],
-        arg1->f[2],
-        arg1->f[0] - sp98,
-        arg1->f[2] + sp9C,
+        &tile,
+        from->f[0],
+        from->f[2],
+        from->f[0] - nearZ,
+        from->f[2] + nearX,
         cdtypes,
-        sp4C,
-        sp48,
+        height,
+        always20,
         0.0f,
         1.0f) == 0)
         || (stanTestLineUnobstructed(
-            &spAC,
-            arg1->f[0] - sp98,
-            arg1->f[2] + sp9C,
-            (arg3->f[0] - sp90) + (spA0.f[0] * arg6),
-            (arg3->f[2] + sp94) + (spA0.f[2] * arg6),
+            &tile,
+            from->f[0] - nearZ,
+            from->f[2] + nearX,
+            (to->f[0] - farZ) + (dir.f[0] * overshoot),
+            (to->f[2] + farX) + (dir.f[2] * overshoot),
             cdtypes,
-            sp4C,
-            sp48,
+            height,
+            always20,
             0.0f,
             1.0f) == 0))
     {
-        sp84 = 1;
+        rightBlocked = 1;
 
-        stanGetCollisionEdge(&sp60, &sp54);
-        orderPointsBySide(&sp60, &sp54, &spA0);
+        stanGetCollisionEdge(&rightEdgeStart, &rightEdgeEnd);
+        orderPointsBySide(&rightEdgeStart, &rightEdgeEnd, &dir);
     }
 
-    if ((sp88 != 0) && (sp84 != 0))
+    if ((leftBlocked != 0) && (rightBlocked != 0))
     {
-        orderPointsBySide(&sp78, &sp60, &spA0);
-        orderPointsBySide(&sp6C, &sp54, &spA0);
+        orderPointsBySide(&leftEdgeStart, &rightEdgeStart, &dir);
+        orderPointsBySide(&leftEdgeEnd, &rightEdgeEnd, &dir);
 
-        arg4->f[0] = sp78.f[0];
-        arg4->f[1] = sp78.f[1];
-        arg4->f[2] = sp78.f[2];
+        edgeStart->f[0] = leftEdgeStart.f[0];
+        edgeStart->f[1] = leftEdgeStart.f[1];
+        edgeStart->f[2] = leftEdgeStart.f[2];
 
-        arg5->f[0] = sp54.f[0];
-        arg5->f[1] = sp54.f[1];
-        arg5->f[2] = sp54.f[2];
+        edgeEnd->f[0] = rightEdgeEnd.f[0];
+        edgeEnd->f[1] = rightEdgeEnd.f[1];
+        edgeEnd->f[2] = rightEdgeEnd.f[2];
     }
-    else if (sp88 != 0)
+    else if (leftBlocked != 0)
     {
-        arg4->f[0] = sp78.f[0];
-        arg4->f[1] = sp78.f[1];
-        arg4->f[2] = sp78.f[2];
+        edgeStart->f[0] = leftEdgeStart.f[0];
+        edgeStart->f[1] = leftEdgeStart.f[1];
+        edgeStart->f[2] = leftEdgeStart.f[2];
 
-        arg5->f[0] = sp6C.f[0];
-        arg5->f[1] = sp6C.f[1];
-        arg5->f[2] = sp6C.f[2];
+        edgeEnd->f[0] = leftEdgeEnd.f[0];
+        edgeEnd->f[1] = leftEdgeEnd.f[1];
+        edgeEnd->f[2] = leftEdgeEnd.f[2];
     }
-    else if (sp84 != 0)
+    else if (rightBlocked != 0)
     {
-        arg4->f[0] = sp60.f[0];
-        arg4->f[1] = sp60.f[1];
-        arg4->f[2] = sp60.f[2];
+        edgeStart->f[0] = rightEdgeStart.f[0];
+        edgeStart->f[1] = rightEdgeStart.f[1];
+        edgeStart->f[2] = rightEdgeStart.f[2];
 
-        arg5->f[0] = sp54.f[0];
-        arg5->f[1] = sp54.f[1];
-        arg5->f[2] = sp54.f[2];
+        edgeEnd->f[0] = rightEdgeEnd.f[0];
+        edgeEnd->f[1] = rightEdgeEnd.f[1];
+        edgeEnd->f[2] = rightEdgeEnd.f[2];
     }
     else
     {
-        spAC = arg2;
+        tile = fromtile;
 
-        if (stanTestLineUnobstructed(&spAC, arg1->f[0], arg1->f[2], arg3->f[0], arg3->f[2], cdtypes, sp4C, sp48, 0.0f, 1.0f)
-            && stanTestVolume(&spAC, arg3->f[0], arg3->f[2], arg7, cdtypes, sp4C, sp48) < 0)
+        if (stanTestLineUnobstructed(&tile, from->f[0], from->f[2], to->f[0], to->f[2], cdtypes, height, always20, 0.0f, 1.0f)
+            && stanTestVolume(&tile, to->f[0], to->f[2], width, cdtypes, height, always20) < 0)
         {
-            sp50 = 1;
+            ok = 1;
         }
         else
         {
-            stanGetCollisionEdge(arg4, arg5);
-            orderPointsBySide(arg4, arg5, &spA0);
+            stanGetCollisionEdge(edgeStart, edgeEnd);
+            orderPointsBySide(edgeStart, edgeEnd, &dir);
         }
     }
 
     chrSetMoving(self, 1);
 
-    return sp50;
+    return ok;
 }
 
 
 /**
  * Very similar to @see chrNavCanSeeNextPos .
 */
-s32 chrNavCheckForObstacle(ChrRecord *self, coord3d *arg1, StandTile *arg2, coord3d *arg3, coord3d *arg4, coord3d *arg5, f32 arg6, f32 arg7, s32 cdtypes)
+s32 chrNavCheckForObstacle(ChrRecord *self, coord3d *from, StandTile *fromtile, coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes)
 {
-    StandTile *spAC;
-    coord3d spA0;
-    f32 sp9C; // 164
-    f32 sp98; // 160
-    f32 sp94; // 156
-    f32 sp90; // 152
+    StandTile *tile;
+    coord3d dir;
+    f32 nearX; // 164
+    f32 nearZ; // 160
+    f32 farX; // 156
+    f32 farZ; // 152
     f32 norm;
-    s32 sp88; // 144
-    s32 sp84; // 140
-    coord3d sp78; // x
-    coord3d sp6C;
-    coord3d sp60;
-    coord3d sp54;
-    s32 sp50;
+    s32 leftBlocked; // 144
+    s32 rightBlocked; // 140
+    coord3d leftEdgeStart; // x
+    coord3d leftEdgeEnd;
+    coord3d rightEdgeStart;
+    coord3d rightEdgeEnd;
+    s32 ok;
     f32 stanval1;
     f32 stanval2;
-    f32 sp4C;
-    f32 sp48;
-    f32 sp44;
+    f32 height;
+    f32 always20;
+    f32 chrw;
 
-    sp88 = 0;
-    sp84 = 0;
-    sp50 = 0;
+    leftBlocked = 0;
+    rightBlocked = 0;
+    ok = 0;
 
-    chrGetChrWidthHeight(self->prop, &sp44, &sp4C, &sp48);
+    chrGetChrWidthHeight(self->prop, &chrw, &height, &always20);
 
-    spA0.f[0] = arg3->f[0] - arg1->f[0];
-    spA0.f[1] = 0.0f;
-    spA0.f[2] = arg3->f[2] - arg1->f[2];
+    dir.f[0] = to->f[0] - from->f[0];
+    dir.f[1] = 0.0f;
+    dir.f[2] = to->f[2] - from->f[2];
 
-    if ((spA0.f[0] == 0.0f) && (spA0.f[2] == 0.0f))
+    if ((dir.f[0] == 0.0f) && (dir.f[2] == 0.0f))
     {
         return 1;
     }
 
-    norm = (spA0.f[0] * spA0.f[0]) + (spA0.f[2] * spA0.f[2]);
+    norm = (dir.f[0] * dir.f[0]) + (dir.f[2] * dir.f[2]);
     norm = 1.0f / sqrtf(norm);
 
-    spA0.f[0] *= norm;
-    spA0.f[2] *= norm;
+    dir.f[0] *= norm;
+    dir.f[2] *= norm;
 
-    sp9C = 0.95f * (arg7 * spA0.f[0]);
-    sp98 = 0.95f * (arg7 * spA0.f[2]);
+    nearX = 0.95f * (width * dir.f[0]);
+    nearZ = 0.95f * (width * dir.f[2]);
 
-    sp94 = 1.2f * (arg7 * spA0.f[0]);
-    sp90 = 1.2f * (arg7 * spA0.f[2]);
+    farX = 1.2f * (width * dir.f[0]);
+    farZ = 1.2f * (width * dir.f[2]);
 
     chrSetMoving(self, 0);
     stanResetHits();
 
-    spAC = arg2;
+    tile = fromtile;
 
     if ((stanTestLineUnobstructed(
-        &spAC,
-        arg1->f[0],
-        arg1->f[2],
-        arg1->f[0] + sp98,
-        arg1->f[2] - sp9C,
+        &tile,
+        from->f[0],
+        from->f[2],
+        from->f[0] + nearZ,
+        from->f[2] - nearX,
         cdtypes,
-        sp4C,
-        sp48,
+        height,
+        always20,
         0.0f,
         1.0f) == 0)
         || (stanTestLineUnobstructed(
-            &spAC,
-            arg1->f[0] + sp98,
-            arg1->f[2] - sp9C,
-            (arg3->f[0] + sp90) + (spA0.f[0] * arg6),
-            (arg3->f[2] - sp94) + (spA0.f[2] * arg6),
+            &tile,
+            from->f[0] + nearZ,
+            from->f[2] - nearX,
+            (to->f[0] + farZ) + (dir.f[0] * overshoot),
+            (to->f[2] - farX) + (dir.f[2] * overshoot),
             cdtypes,
-            sp4C,
-            sp48,
+            height,
+            always20,
             0.0f,
             1.0f) == 0))
     {
-        sp88 = 1;
+        leftBlocked = 1;
 
-        stanGetCollisionEdge(&sp78, &sp6C);
-        orderPointsBySide(&sp78, &sp6C, &spA0);
+        stanGetCollisionEdge(&leftEdgeStart, &leftEdgeEnd);
+        orderPointsBySide(&leftEdgeStart, &leftEdgeEnd, &dir);
 
         stanval1 = g_StanHitFrac;
     }
 
-    spAC = arg2;
+    tile = fromtile;
 
     if ((stanTestLineUnobstructed(
-        &spAC,
-        arg1->f[0],
-        arg1->f[2],
-        arg1->f[0] - sp98,
-        arg1->f[2] + sp9C,
+        &tile,
+        from->f[0],
+        from->f[2],
+        from->f[0] - nearZ,
+        from->f[2] + nearX,
         cdtypes,
-        sp4C,
-        sp48,
+        height,
+        always20,
         0.0f,
         1.0f) == 0)
         || (stanTestLineUnobstructed(
-            &spAC,
-            arg1->f[0] - sp98,
-            arg1->f[2] + sp9C,
-            (arg3->f[0] - sp90) + (spA0.f[0] * arg6),
-            (arg3->f[2] + sp94) + (spA0.f[2] * arg6),
+            &tile,
+            from->f[0] - nearZ,
+            from->f[2] + nearX,
+            (to->f[0] - farZ) + (dir.f[0] * overshoot),
+            (to->f[2] + farX) + (dir.f[2] * overshoot),
             cdtypes,
-            sp4C,
-            sp48,
+            height,
+            always20,
             0.0f,
             1.0f) == 0))
     {
-        sp84 = 1;
+        rightBlocked = 1;
 
-        stanGetCollisionEdge(&sp60, &sp54);
-        orderPointsBySide(&sp60, &sp54, &spA0);
+        stanGetCollisionEdge(&rightEdgeStart, &rightEdgeEnd);
+        orderPointsBySide(&rightEdgeStart, &rightEdgeEnd, &dir);
 
         stanval2 = g_StanHitFrac;
     }
 
-    if ((sp88 != 0) && (sp84 != 0))
+    if ((leftBlocked != 0) && (rightBlocked != 0))
     {
         if (stanval1 < stanval2)
         {
-            arg4->f[0] = sp78.f[0];
-            arg4->f[1] = sp78.f[1];
-            arg4->f[2] = sp78.f[2];
+            edgeStart->f[0] = leftEdgeStart.f[0];
+            edgeStart->f[1] = leftEdgeStart.f[1];
+            edgeStart->f[2] = leftEdgeStart.f[2];
 
-            arg5->f[0] = sp6C.f[0];
-            arg5->f[1] = sp6C.f[1];
-            arg5->f[2] = sp6C.f[2];
+            edgeEnd->f[0] = leftEdgeEnd.f[0];
+            edgeEnd->f[1] = leftEdgeEnd.f[1];
+            edgeEnd->f[2] = leftEdgeEnd.f[2];
         }
         else
         {
-            arg4->f[0] = sp60.f[0];
-            arg4->f[1] = sp60.f[1];
-            arg4->f[2] = sp60.f[2];
+            edgeStart->f[0] = rightEdgeStart.f[0];
+            edgeStart->f[1] = rightEdgeStart.f[1];
+            edgeStart->f[2] = rightEdgeStart.f[2];
 
-            arg5->f[0] = sp54.f[0];
-            arg5->f[1] = sp54.f[1];
-            arg5->f[2] = sp54.f[2];
+            edgeEnd->f[0] = rightEdgeEnd.f[0];
+            edgeEnd->f[1] = rightEdgeEnd.f[1];
+            edgeEnd->f[2] = rightEdgeEnd.f[2];
         }
     }
-    else if (sp88 != 0)
+    else if (leftBlocked != 0)
     {
-        arg4->f[0] = sp78.f[0];
-        arg4->f[1] = sp78.f[1];
-        arg4->f[2] = sp78.f[2];
+        edgeStart->f[0] = leftEdgeStart.f[0];
+        edgeStart->f[1] = leftEdgeStart.f[1];
+        edgeStart->f[2] = leftEdgeStart.f[2];
 
-        arg5->f[0] = sp6C.f[0];
-        arg5->f[1] = sp6C.f[1];
-        arg5->f[2] = sp6C.f[2];
+        edgeEnd->f[0] = leftEdgeEnd.f[0];
+        edgeEnd->f[1] = leftEdgeEnd.f[1];
+        edgeEnd->f[2] = leftEdgeEnd.f[2];
     }
-    else if (sp84 != 0)
+    else if (rightBlocked != 0)
     {
-        arg4->f[0] = sp60.f[0];
-        arg4->f[1] = sp60.f[1];
-        arg4->f[2] = sp60.f[2];
+        edgeStart->f[0] = rightEdgeStart.f[0];
+        edgeStart->f[1] = rightEdgeStart.f[1];
+        edgeStart->f[2] = rightEdgeStart.f[2];
 
-        arg5->f[0] = sp54.f[0];
-        arg5->f[1] = sp54.f[1];
-        arg5->f[2] = sp54.f[2];
+        edgeEnd->f[0] = rightEdgeEnd.f[0];
+        edgeEnd->f[1] = rightEdgeEnd.f[1];
+        edgeEnd->f[2] = rightEdgeEnd.f[2];
     }
     else
     {
-        spAC = arg2;
+        tile = fromtile;
 
-        if (stanTestLineUnobstructed(&spAC, arg1->f[0], arg1->f[2], arg3->f[0], arg3->f[2], cdtypes, sp4C, sp48, 0.0f, 1.0f)
-            && stanTestVolume(&spAC, arg3->f[0], arg3->f[2], arg7, cdtypes, sp4C, sp48) < 0)
+        if (stanTestLineUnobstructed(&tile, from->f[0], from->f[2], to->f[0], to->f[2], cdtypes, height, always20, 0.0f, 1.0f)
+            && stanTestVolume(&tile, to->f[0], to->f[2], width, cdtypes, height, always20) < 0)
         {
-            sp50 = 1;
+            ok = 1;
         }
         else
         {
-            stanGetCollisionEdge(arg4, arg5);
-            orderPointsBySide(arg4, arg5, &spA0);
+            stanGetCollisionEdge(edgeStart, edgeEnd);
+            orderPointsBySide(edgeStart, edgeEnd, &dir);
         }
     }
 
     chrSetMoving(self, 1);
 
-    return sp50;
+    return ok;
 }
 
 
 s32 chrNavTryObstacle(
     ChrRecord *self,
-    coord3d *arg1,
-    s32 arg2,
-    coord3d *arg3,
-    f32 arg4,
-    s32 arg5,
-    coord3d *arg6,
-    struct waydata *arg7,
-    f32 arg8,
+    coord3d *corner,
+    s32 left,
+    coord3d *othercorner,
+    f32 clearance,
+    s32 checktarget,
+    coord3d *target,
+    struct waydata *way,
+    f32 overshoot,
     s32 cdtypes,
     s32 set_copy)
 {
     PropRecord *self_prop; // -- 124
     coord3d dd; // -- 112
-    coord3d sp64; // -- 100
+    coord3d pos; // -- 100
     f32 norm; // -- 96
-    f32 phi_f12; // 92
-    coord3d sp50; // 80
-    coord3d *sp4C; // 76
-    coord3d *sp48; // 72
+    f32 angle; // 92
+    coord3d offset; // 80
+    coord3d *edgeStart; // 76
+    coord3d *edgeEnd; // 72
 
     self_prop = self->prop;
 
-    if (arg2 != 0)
+    if (left != 0)
     {
-        sp4C = arg1;
-        sp48 = arg3;
+        edgeStart = corner;
+        edgeEnd = othercorner;
     }
     else
     {
-        sp4C = arg3;
-        sp48 = arg1;
+        edgeStart = othercorner;
+        edgeEnd = corner;
     }
 
-    dd.f[0] = arg1->f[0] - self_prop->pos.f[0];
+    dd.f[0] = corner->f[0] - self_prop->pos.f[0];
     dd.f[1] = 0.0f;
-    dd.f[2] = arg1->f[2] - self_prop->pos.f[2];
+    dd.f[2] = corner->f[2] - self_prop->pos.f[2];
 
     norm = 1.0f / sqrtf((dd.f[0] * dd.f[0]) + (dd.f[2] * dd.f[2]));
 
-    dd.f[0] *= arg4 * norm;
-    dd.f[2] *= arg4 * norm;
+    dd.f[0] *= clearance * norm;
+    dd.f[2] *= clearance * norm;
 
-    if (arg4 * norm > 1.0f)
+    if (clearance * norm > 1.0f)
     {
-        phi_f12 = DegToRad(45);
+        angle = DegToRad(45);
     }
     else
     {
-        phi_f12 = mathAcos(arg4 * norm);
+        angle = mathAcos(clearance * norm);
     }
 
-    if ((arg2 == 0) && (phi_f12 != 0.0f))
+    if ((left == 0) && (angle != 0.0f))
     {
-        phi_f12 = M_TAU_F - phi_f12;
+        angle = M_TAU_F - angle;
     }
 
-    sp50.f[0] = (-cosf(phi_f12) * dd.f[0]) + (sinf(phi_f12) * dd.f[2]);
-    sp50.f[1] = 0.0f;
-    sp50.f[2] = (-sinf(phi_f12) * dd.f[0]) - (cosf(phi_f12) * dd.f[2]);
+    offset.f[0] = (-cosf(angle) * dd.f[0]) + (sinf(angle) * dd.f[2]);
+    offset.f[1] = 0.0f;
+    offset.f[2] = (-sinf(angle) * dd.f[0]) - (cosf(angle) * dd.f[2]);
 
-    sp64.f[0] = arg1->f[0] + sp50.f[0];
-    sp64.f[1] = arg1->f[1];
-    sp64.f[2] = arg1->f[2] + sp50.f[2];
+    pos.f[0] = corner->f[0] + offset.f[0];
+    pos.f[1] = corner->f[1];
+    pos.f[2] = corner->f[2] + offset.f[2];
 
-    if (chrNavCanSeeNextPos(self, &self_prop->pos, self_prop->stan, &sp64, sp4C, sp48, arg8, self->chrwidth, cdtypes)
-        && ((arg5 == 0) || chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &sp64, arg6, NULL, cdtypes)))
+    if (chrNavCanSeeNextPos(self, &self_prop->pos, self_prop->stan, &pos, edgeStart, edgeEnd, overshoot, self->chrwidth, cdtypes)
+        && ((checktarget == 0) || chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &pos, target, NULL, cdtypes)))
     {
         if (set_copy != 0)
         {
-            arg7->gotPosCopy = 1;
+            way->gotPosCopy = 1;
 
-            arg7->pos_copy.f[0] = sp64.f[0];
-            arg7->pos_copy.f[1] = sp64.f[1];
-            arg7->pos_copy.f[2] = sp64.f[2];
+            way->pos_copy.f[0] = pos.f[0];
+            way->pos_copy.f[1] = pos.f[1];
+            way->pos_copy.f[2] = pos.f[2];
         }
         else
         {
-            arg7->gotPos = 1;
+            way->gotPos = 1;
 
-            arg7->pos.f[0] = sp64.f[0];
-            arg7->pos.f[1] = sp64.f[1];
-            arg7->pos.f[2] = sp64.f[2];
+            way->pos.f[0] = pos.f[0];
+            way->pos.f[1] = pos.f[1];
+            way->pos.f[2] = pos.f[2];
         }
 
         return 1;
@@ -8029,14 +8021,12 @@ s32 chrNavTryObstacle(
  * @see chrTickGoPos
  * contrast with @see chrGoPosTickMagic
 */
-void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata *arg3)
+void chrNavTick(ChrRecord *self, coord3d *target, StandTile *targettile, struct waydata *way)
 {
-    coord3d sp100; // 260
-    coord3d spF4; // 244
+    coord3d targetpos; // 260
+    coord3d othercorner; // 244
     s32 i; // 240
-    f32 spe0;
-    f32 spE8; // 232
-    f32 spE4; // 228
+    f32 clearance; // 232
     struct ObjectRecord *obj;
     f32 atan_pos2_a; // 212
     f32 atan_pos3_a;
@@ -8051,7 +8041,7 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
     s32 max;
     f32 atan_pos;
     s32 cdtypes;
-    PropRecord *phi_s3;
+    PropRecord *door;
 
     self_prop = self->prop;
     cdtypes = CDTYPE_OBJS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_DOORSLOCKEDTOAI;
@@ -8063,107 +8053,107 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
     max=1;
     for (i=0; i<1; i++)
     {
-        if ((arg3->mode == WAYMODE_0) || (arg3->mode == WAYMODE_2))
+        if ((way->mode == WAYMODE_0) || (way->mode == WAYMODE_2))
         {
-            sp100.f[0] = arg1->f[0];
-            sp100.f[1] = arg1->f[1];
-            sp100.f[2] = arg1->f[2];
+            targetpos.f[0] = target->f[0];
+            targetpos.f[1] = target->f[1];
+            targetpos.f[2] = target->f[2];
 
-            if (chrNavCanSeeNextPos(self, &self_prop->pos, self_prop->stan, &sp100, &arg3->pos2, &arg3->pos3, -(self->chrwidth), self->chrwidth, CDTYPE_PATHBLOCKER) != 0)
+            if (chrNavCanSeeNextPos(self, &self_prop->pos, self_prop->stan, &targetpos, &way->pos2, &way->pos3, -(self->chrwidth), self->chrwidth, CDTYPE_PATHBLOCKER) != 0)
             {
-                arg3->gotPos = (u8) 1;
-                arg3->pos.f[0] = sp100.f[0];
-                arg3->pos.f[1] = sp100.f[1];
-                arg3->pos.f[2] = sp100.f[2];
-                arg3->mode = WAYMODE_4;
+                way->gotPos = (u8) 1;
+                way->pos.f[0] = targetpos.f[0];
+                way->pos.f[1] = targetpos.f[1];
+                way->pos.f[2] = targetpos.f[2];
+                way->mode = WAYMODE_4;
             }
             else
             {
-                if (arg3->mode == WAYMODE_0)
+                if (way->mode == WAYMODE_0)
                 {
-                    arg3->mode = (s8) WAYMODE_1;
-                    arg3->iter = 0;
+                    way->mode = (s8) WAYMODE_1;
+                    way->iter = 0;
                 }
-                else if (arg3->mode == WAYMODE_2)
+                else if (way->mode == WAYMODE_2)
                 {
-                    arg3->mode = WAYMODE_3;
-                    arg3->iter = 0;
+                    way->mode = WAYMODE_3;
+                    way->iter = 0;
                 }
             }
         }
-        else if (arg3->mode == WAYMODE_1)
+        else if (way->mode == WAYMODE_1)
         {
-            spE8 = self->chrwidth * 1.2f * 1.05f;
+            clearance = self->chrwidth * 1.2f * 1.05f;
 
-            if (chrNavTryObstacle(self, &arg3->pos2, 1, &spF4, spE8, 1, arg1, arg3, 0.0f, 0x10, 0) != 0)
+            if (chrNavTryObstacle(self, &way->pos2, 1, &othercorner, clearance, 1, target, way, 0.0f, 0x10, 0) != 0)
             {
-                arg3->mode = WAYMODE_4;
+                way->mode = WAYMODE_4;
             }
-            else if (chrNavTryObstacle(self, &arg3->pos3, 0, &spF4, spE8, 1, arg1, arg3, 0.0f, 0x10, 0) != 0)
+            else if (chrNavTryObstacle(self, &way->pos3, 0, &othercorner, clearance, 1, target, way, 0.0f, 0x10, 0) != 0)
             {
-                arg3->mode = WAYMODE_4;
+                way->mode = WAYMODE_4;
             }
             else
             {
-                arg3->iter = arg3->iter + 1;
-                if (arg3->iter >= MAX_WAYMODE)
+                way->iter = way->iter + 1;
+                if (way->iter >= MAX_WAYMODE)
                 {
-                    arg3->mode = WAYMODE_2;
+                    way->mode = WAYMODE_2;
                 }
             }
         }
-        else if (arg3->mode == WAYMODE_3)
+        else if (way->mode == WAYMODE_3)
         {
-            spE4 = self->chrwidth * 1.2f * 1.05f;
+            clearance = self->chrwidth * 1.2f * 1.05f;
 
-            if (chrNavTryObstacle(self, &arg3->pos2, 1, &spF4, spE4, 0, NULL, arg3, 0.0f, 0x10, 0) != 0)
+            if (chrNavTryObstacle(self, &way->pos2, 1, &othercorner, clearance, 0, NULL, way, 0.0f, 0x10, 0) != 0)
             {
-                arg3->mode = WAYMODE_4;
+                way->mode = WAYMODE_4;
             }
-            else if (chrNavTryObstacle(self, &arg3->pos3, 0, &spF4, spE4, 0, NULL, arg3, 0.0f, 0x10, 0) != 0)
+            else if (chrNavTryObstacle(self, &way->pos3, 0, &othercorner, clearance, 0, NULL, way, 0.0f, 0x10, 0) != 0)
             {
-                arg3->mode = WAYMODE_4;
+                way->mode = WAYMODE_4;
             }
             else
             {
-                arg3->iter = arg3->iter + 1;
-                if (arg3->iter >= MAX_WAYMODE)
+                way->iter = way->iter + 1;
+                if (way->iter >= MAX_WAYMODE)
                 {
-                    arg3->gotPos = 0;
-                    arg3->gotPosCopy = (u8) (s8) arg3->gotPos;
-                    arg3->pos_copy.f[0] =
-                        arg3->pos.f[0] = arg1->f[0];
-                    arg3->pos_copy.f[1] =
-                        arg3->pos.f[1] = arg1->f[1];
-                    arg3->pos_copy.f[2] =
-                        arg3->pos.f[2] = arg1->f[2];
-                    arg3->mode = WAYMODE_0;
+                    way->gotPos = 0;
+                    way->gotPosCopy = (u8) (s8) way->gotPos;
+                    way->pos_copy.f[0] =
+                        way->pos.f[0] = target->f[0];
+                    way->pos_copy.f[1] =
+                        way->pos.f[1] = target->f[1];
+                    way->pos_copy.f[2] =
+                        way->pos.f[2] = target->f[2];
+                    way->mode = WAYMODE_0;
                 }
             }
         }
-        else if (arg3->mode == WAYMODE_4)
+        else if (way->mode == WAYMODE_4)
         {
-            if (chrNavCheckForObstacle(self, &self_prop->pos, self_prop->stan, &arg3->pos, &arg3->pos2, &arg3->pos3, -(self->chrwidth), self->chrwidth, cdtypes) != 0)
+            if (chrNavCheckForObstacle(self, &self_prop->pos, self_prop->stan, &way->pos, &way->pos2, &way->pos3, -(self->chrwidth), self->chrwidth, cdtypes) != 0)
             {
-                arg3->gotPosCopy = max;
-                arg3->mode = WAYMODE_0;
-                arg3->pos_copy.f[0] = arg3->pos.f[0];
-                arg3->pos_copy.f[1] = arg3->pos.f[1];
-                arg3->pos_copy.f[2] = arg3->pos.f[2];
+                way->gotPosCopy = max;
+                way->mode = WAYMODE_0;
+                way->pos_copy.f[0] = way->pos.f[0];
+                way->pos_copy.f[1] = way->pos.f[1];
+                way->pos_copy.f[2] = way->pos.f[2];
             }
             else
             {
-                arg3->mode = WAYMODE_5;
-                arg3->iter = 0;
+                way->mode = WAYMODE_5;
+                way->iter = 0;
             }
         }
-        else if (arg3->mode == WAYMODE_5)
+        else if (way->mode == WAYMODE_5)
         {
-            spe0 = self->chrwidth * 1.2f * 1.05f;
+            clearance = self->chrwidth * 1.2f * 1.05f;
 
-            atan_pos =       mathAtan2( arg3->pos.f[0] - self_prop->pos.f[0],  arg3->pos.f[2] - self_prop->pos.f[2]);
-            atan_pos2_a = atan_pos - mathAtan2(arg3->pos2.f[0] - self_prop->pos.f[0], arg3->pos2.f[2] - self_prop->pos.f[2]);
-            atan_pos3_a = atan_pos - mathAtan2(arg3->pos3.f[0] - self_prop->pos.f[0], arg3->pos3.f[2] - self_prop->pos.f[2]);
+            atan_pos =       mathAtan2( way->pos.f[0] - self_prop->pos.f[0],  way->pos.f[2] - self_prop->pos.f[2]);
+            atan_pos2_a = atan_pos - mathAtan2(way->pos2.f[0] - self_prop->pos.f[0], way->pos2.f[2] - self_prop->pos.f[2]);
+            atan_pos3_a = atan_pos - mathAtan2(way->pos3.f[0] - self_prop->pos.f[0], way->pos3.f[2] - self_prop->pos.f[2]);
 
             if (atan_pos2_a < 0.0f)
             {
@@ -8197,15 +8187,15 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
 
             if (atan_pos2_a < atan_pos3_a)
             {
-                if (chrNavTryObstacle(self, &arg3->pos2, 1, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0)
+                if (chrNavTryObstacle(self, &way->pos2, 1, &othercorner, clearance, 0, NULL, way, clearance * 1.1f, cdtypes, 1) != 0)
                 {
-                    arg3->mode = WAYMODE_0;
+                    way->mode = WAYMODE_0;
                     break;
                 }
                 else
                 {
-                    atan_pos2_b = atan_pos - mathAtan2(arg3->pos2.f[0] - self_prop->pos.f[0], arg3->pos2.f[2] - self_prop->pos.f[2]);
-                    atan_pos3_b = atan_pos - mathAtan2(spF4.f[0] - self_prop->pos.f[0], spF4.f[2] - self_prop->pos.f[2]);
+                    atan_pos2_b = atan_pos - mathAtan2(way->pos2.f[0] - self_prop->pos.f[0], way->pos2.f[2] - self_prop->pos.f[2]);
+                    atan_pos3_b = atan_pos - mathAtan2(othercorner.f[0] - self_prop->pos.f[0], othercorner.f[2] - self_prop->pos.f[2]);
 
                     if (atan_pos2_b < 0.0f)
                     {
@@ -8233,24 +8223,24 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
                         atan_pos3_b = -atan_pos3_b;
                     }
 
-                    if ((atan_pos3_b < atan_pos2_b) && (chrNavTryObstacle(self, &spF4, 0, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0))
+                    if ((atan_pos3_b < atan_pos2_b) && (chrNavTryObstacle(self, &othercorner, 0, &othercorner, clearance, 0, NULL, way, clearance * 1.1f, cdtypes, 1) != 0))
                     {
-                        arg3->mode = WAYMODE_0;
+                        way->mode = WAYMODE_0;
                         break;
                     }
                 }
             }
             else
             {
-                if (chrNavTryObstacle(self,  &arg3->pos3, 0, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0)
+                if (chrNavTryObstacle(self,  &way->pos3, 0, &othercorner, clearance, 0, NULL, way, clearance * 1.1f, cdtypes, 1) != 0)
                 {
-                    arg3->mode = WAYMODE_0;
+                    way->mode = WAYMODE_0;
                     break;
                 }
                 else
                 {
-                    atan_pos2_c = atan_pos - mathAtan2(arg3->pos3.f[0] - self_prop->pos.f[0], arg3->pos3.f[2] - self_prop->pos.f[2]);
-                    atan_pos3_c = atan_pos - mathAtan2(spF4.f[0] - self_prop->pos.f[0], spF4.f[2] - self_prop->pos.f[2]);
+                    atan_pos2_c = atan_pos - mathAtan2(way->pos3.f[0] - self_prop->pos.f[0], way->pos3.f[2] - self_prop->pos.f[2]);
+                    atan_pos3_c = atan_pos - mathAtan2(othercorner.f[0] - self_prop->pos.f[0], othercorner.f[2] - self_prop->pos.f[2]);
 
                     if (atan_pos2_c < 0.0f)
                     {
@@ -8278,48 +8268,48 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
                         atan_pos3_c = -atan_pos3_c;
                     }
 
-                    if ((atan_pos3_c < atan_pos2_c) && (chrNavTryObstacle(self, &spF4, 1, &spF4, spe0, 0, NULL, arg3, spe0 * 1.1f, cdtypes, 1) != 0))
+                    if ((atan_pos3_c < atan_pos2_c) && (chrNavTryObstacle(self, &othercorner, 1, &othercorner, clearance, 0, NULL, way, clearance * 1.1f, cdtypes, 1) != 0))
                     {
-                        arg3->mode = WAYMODE_0;
+                        way->mode = WAYMODE_0;
                         break;
                     }
                 }
             }
 
-            arg3->iter = arg3->iter + 1;
-            if (arg3->iter >= MAX_WAYMODE)
+            way->iter = way->iter + 1;
+            if (way->iter >= MAX_WAYMODE)
             {
-                arg3->gotPosCopy = 0;
-                arg3->mode = WAYMODE_0;
+                way->gotPosCopy = 0;
+                way->mode = WAYMODE_0;
             }
         }
     }
 
-    if (arg3->gotPosCopy == 0)
+    if (way->gotPosCopy == 0)
     {
-        arg3->pos_copy.f[0] = arg3->pos.f[0];
-        arg3->pos_copy.f[1] = arg3->pos.f[1];
-        arg3->pos_copy.f[2] = arg3->pos.f[2];
+        way->pos_copy.f[0] = way->pos.f[0];
+        way->pos_copy.f[1] = way->pos.f[1];
+        way->pos_copy.f[2] = way->pos.f[2];
     }
 
-    if (((s32) arg3->age % 10) == 0)
+    if (((s32) way->age % 10) == 0)
     {
-        phi_s3 = stanLineFindDoor(self_prop->stan, self_prop->pos.f[0], self_prop->pos.f[2], arg3->pos_copy.f[0], arg3->pos_copy.f[2], 0x5000);
+        door = stanLineFindDoor(self_prop->stan, self_prop->pos.f[0], self_prop->pos.f[2], way->pos_copy.f[0], way->pos_copy.f[2], 0x5000);
 
-        if (phi_s3 != NULL)
+        if (door != NULL)
         {
-            obj = phi_s3->obj;
+            obj = door->obj;
             if (!(obj->flags2 & PROPFLAG_DOOR_OPENTOFRONT))
             {
-                dx = phi_s3->pos.f[0] - self_prop->pos.f[0];
-                dy = phi_s3->pos.f[1] - self_prop->pos.f[1];
-                dz = phi_s3->pos.f[2] - self_prop->pos.f[2];
+                dx = door->pos.f[0] - self_prop->pos.f[0];
+                dy = door->pos.f[1] - self_prop->pos.f[1];
+                dz = door->pos.f[2] - self_prop->pos.f[2];
 
                 if (((dx * dx) + (dy * dy) + (dz  * dz )) < 40000.0f)
                 {
                     chrGoPosClearRestartTtl(self);
-                    doorsChooseSwingDirection(self_prop, phi_s3->door);
-                    doorActivate(phi_s3->door, 1);
+                    doorsChooseSwingDirection(self_prop, door->door);
+                    doorActivate(door->door, 1);
 
                     if (((self->hidden & CHRHIDDEN_OFFSCREEN_PATROL) == 0)
                         && (modelGetAnim(self->model) != (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_idle_unarmed])
@@ -8331,16 +8321,16 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
                 }
                 else
                 {
-                    phi_s3 = NULL;
+                    door = NULL;
                 }
             }
             else
             {
-                phi_s3 = NULL;
+                door = NULL;
             }
         }
 
-        if ((phi_s3 == NULL) || ((self->hidden & CHRHIDDEN_OFFSCREEN_PATROL) != 0))
+        if ((door == NULL) || ((self->hidden & CHRHIDDEN_OFFSCREEN_PATROL) != 0))
         {
             if ((modelGetAnim(self->model) == (struct ModelAnimation *)((s32)&ANIM_DATA_idle_unarmed + (s32)&g_AnimTable->data))
                 || (modelGetAnim(self->model) == (struct ModelAnimation *)((s32)&ANIM_DATA_idle + (s32)&g_AnimTable->data)))
@@ -8355,7 +8345,7 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
                 }
             }
 
-            if (phi_s3 == NULL)
+            if (door == NULL)
             {
                 self->hidden &= ~(CHRHIDDEN_OFFSCREEN_PATROL);
             }
@@ -8364,11 +8354,11 @@ void chrNavTick(ChrRecord *self, coord3d *arg1, StandTile *arg2, struct waydata 
 
     if (self->actiontype == ACT_PATROL)
     {
-        chrApplySpeed(self, &arg3->pos_copy, 0, &self->act_patrol.speed);
+        chrApplySpeed(self, &way->pos_copy, 0, &self->act_patrol.speed);
     }
     else
     {
-        chrApplySpeed(self, &arg3->pos_copy, (s32) self->act_gopos.speedMode, &self->act_gopos.speed);
+        chrApplySpeed(self, &way->pos_copy, (s32) self->act_gopos.speedMode, &self->act_gopos.speed);
 
         if (self->act_gopos.speedMode == 2)
         {
@@ -8406,16 +8396,16 @@ void chrTickGoPos(ChrRecord *self)
     coord3d *wp_pos;
     StandTile *wp_stan;
     PropRecord *self_prop;
-    s32 sp74;
-    coord3d sp68;
-    StandTile *sp64;
-    coord3d sp58;
-    StandTile *sp54;
+    s32 restarted;
+    coord3d waypos;
+    StandTile *waytile;
+    coord3d waypos2;
+    StandTile *waytile2;
     PadRecord *pad; // 80
-    s32 phi_v1; // 76
+    s32 arrived; // 76
 
     self_prop = self->prop;
-    sp74 = 0;
+    restarted = 0;
     self->act_gopos.waydata.age += 1;
     self->lastwalk60 = g_GlobalTimer;
 
@@ -8428,12 +8418,12 @@ void chrTickGoPos(ChrRecord *self)
 
     if ((self->act_gopos.waydata.mode != WAYMODE_MAGIC) && ((self->act_gopos.magicCheck60 + CHRLV_DEFAULT_TIMER) < g_GlobalTimer))
     {
-        chrGoPosGetCurWaypointInfo(self, &sp68, &sp64);
+        chrGoPosGetCurWaypointInfo(self, &waypos, &waytile);
 
-        if (chrPathIsOffscreen(self, &sp68, sp64))
+        if (chrPathIsOffscreen(self, &waypos, waytile))
         {
-            sp74 = 1;
-            chrSetGoposSegDistTotal(self, &self->act_gopos.waydata, &sp68);
+            restarted = 1;
+            chrSetGoposSegDistTotal(self, &self->act_gopos.waydata, &waypos);
         }
     }
 
@@ -8446,10 +8436,10 @@ void chrTickGoPos(ChrRecord *self)
 
     if (self->act_gopos.waydata.mode == WAYMODE_MAGIC)
     {
-        chrGoPosGetCurWaypointInfo(self, &sp58, &sp54);
+        chrGoPosGetCurWaypointInfo(self, &waypos2, &waytile2);
 
-        if ((sp74 == 0)
-            && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrPathIsOffscreen(self, &sp58, sp54) == 0)))
+        if ((restarted == 0)
+            && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrPathIsOffscreen(self, &waypos2, waytile2) == 0)))
         {
             chrGoPosResetMagic(self);
             self->act_gopos.magicCheck60 = g_GlobalTimer;
@@ -8457,13 +8447,13 @@ void chrTickGoPos(ChrRecord *self)
             return;
         }
 
-        chrGoPosTickMagic(self, &self->act_gopos.waydata, chrGetRunAnimSpeed(self), &sp58, sp54);
+        chrGoPosTickMagic(self, &self->act_gopos.waydata, chrGetRunAnimSpeed(self), &waypos2, waytile2);
 
         return;
     }
 
 
-    phi_v1 = 0;
+    arrived = 0;
 
     wp = self->act_gopos.waypoints[self->act_gopos.curindex];
 
@@ -8471,7 +8461,7 @@ void chrTickGoPos(ChrRecord *self)
     {
         if (chrIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &g_CurrentSetup.pads[wp->padID].pos, 30.0f) != 0)
         {
-            phi_v1 = 1;
+            arrived = 1;
         }
     }
     else
@@ -8484,7 +8474,7 @@ void chrTickGoPos(ChrRecord *self)
         }
     }
 
-    if (phi_v1 != 0)
+    if (arrived != 0)
     {
         chrActGoposIncCurIndex(self);
     }
@@ -8572,34 +8562,34 @@ void chrTickGoPos(ChrRecord *self)
 void chrTickPatrol(ChrRecord *self)
 {
     PropRecord *self_prop;
-    s32 sp34;
-    PadRecord *temp_v0;
+    s32 restarted;
+    PadRecord *pad;
 
     self_prop = self->prop;
-    temp_v0 = (PadRecord *) chrGetNextPatrolStepPad(self);
-    sp34 = 0;
+    pad = (PadRecord *) chrGetNextPatrolStepPad(self);
+    restarted = 0;
     self->act_patrol.waydata.age += 1;
     self->lastwalk60 = g_GlobalTimer;
 
     if ((self->act_patrol.waydata.mode != WAYMODE_MAGIC)
         && ((self->act_patrol.lastvisible60 + CHRLV_DEFAULT_TIMER) < g_GlobalTimer)
-        && chrPathToPadIsOffscreen(self, temp_v0))
+        && chrPathToPadIsOffscreen(self, pad))
     {
-        sp34 = 1;
-        chrSetGoposSegDistTotal(self, &self->act_patrol.waydata, &temp_v0->pos);
+        restarted = 1;
+        chrSetGoposSegDistTotal(self, &self->act_patrol.waydata, &pad->pos);
     }
 
     if (self->act_patrol.waydata.mode == WAYMODE_MAGIC)
     {
-        if ((sp34 == 0)
-            && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrPathToPadIsOffscreen(self, temp_v0) == 0)))
+        if ((restarted == 0)
+            && ((self_prop->flags & PROPFLAG_ONSCREEN) || (chrPathToPadIsOffscreen(self, pad) == 0)))
         {
             self->act_patrol.lastvisible60 = g_GlobalTimer;
             chrSetNextActPatrolStepPadPos(self);
         }
         else
         {
-            chrGoPosTickMagic(self, &self->act_patrol.waydata, g_ChrSpeedWalk, &temp_v0->pos, temp_v0->stan);
+            chrGoPosTickMagic(self, &self->act_patrol.waydata, g_ChrSpeedWalk, &pad->pos, pad->stan);
         }
     }
     else
@@ -8609,13 +8599,13 @@ void chrTickPatrol(ChrRecord *self)
             // removed
         }
 
-        if (chrIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &temp_v0->pos, 30.0f))
+        if (chrIsArrivingLaterallyAtPos(&self->prevpos, &self_prop->pos, &pad->pos, 30.0f))
         {
             chrAdvancePatrolStep(self);
-            temp_v0 = (PadRecord *)chrGetNextPatrolStepPad(self);
+            pad = (PadRecord *)chrGetNextPatrolStepPad(self);
         }
 
-        chrNavTick(self, &temp_v0->pos, temp_v0->stan, &self->act_patrol.waydata);
+        chrNavTick(self, &pad->pos, pad->stan, &self->act_patrol.waydata);
     }
 }
 
@@ -9358,9 +9348,9 @@ bool chrHasFlags2ById(ChrRecord *self, s32 chrNum, u8 flags2)
 }
 
 
-void chrSetStageFlags(ChrRecord *self, s32 arg1)
+void chrSetStageFlags(ChrRecord *self, s32 flags)
 {
-    objectiveregisters1 |= arg1;
+    objectiveregisters1 |= flags;
 }
 
 
@@ -9625,22 +9615,22 @@ bool chrCanHearAlarm(ChrRecord *self)
 }
 
 
-s32 waypointIsWithin90DegreesOfPosAngle(waypoint *arg0, coord3d *arg1, f32 angle)
+s32 waypointIsWithin90DegreesOfPosAngle(waypoint *wp, coord3d *pos, f32 angle)
 {
-    f32 temp_f0;
+    f32 padangle;
     PadRecord *pad;
     f32 dx;
     f32 dz;
     f32 ff;
 
-    pad = &g_CurrentSetup.pads[arg0->padID];
-    dx = pad->pos.f[0] - arg1->f[0];
-    dz = pad->pos.f[2] - arg1->f[2];
+    pad = &g_CurrentSetup.pads[wp->padID];
+    dx = pad->pos.f[0] - pos->f[0];
+    dz = pad->pos.f[2] - pos->f[2];
 
-    temp_f0 = mathAtan2(dx, dz);
-    ff = angle - temp_f0;
+    padangle = mathAtan2(dx, dz);
+    ff = angle - padangle;
 
-    if (angle < temp_f0)
+    if (angle < padangle)
     {
         ff += M_TAU_F;
     }
@@ -9732,7 +9722,7 @@ bool chrSetPadPresetToWaypointInTargetQuadrant(ChrRecord *self, u8 quadrant)
     waypoint *myclosestwaypoint;
     waypoint *bondsclosestwaypoint;
 
-    waypoint *sp2C[PATH_FINDING_WP_LIMIT];
+    waypoint *route[PATH_FINDING_WP_LIMIT];
 
     if ((quadrant == QUADRANT_2NDWPTOTARGET) || (quadrant == QUADRANT_20))
     {
@@ -9745,9 +9735,9 @@ bool chrSetPadPresetToWaypointInTargetQuadrant(ChrRecord *self, u8 quadrant)
         {
             if (quadrant == QUADRANT_2NDWPTOTARGET)
             {
-                if (waypointFindRoute(myclosestwaypoint, bondsclosestwaypoint, (waypoint **)&sp2C, PATH_FINDING_WP_LIMIT) >= PATH_FINDING_WP_LIMIT)
+                if (waypointFindRoute(myclosestwaypoint, bondsclosestwaypoint, (waypoint **)&route, PATH_FINDING_WP_LIMIT) >= PATH_FINDING_WP_LIMIT)
                 {
-                    self->padpreset1 = sp2C[1]->padID;
+                    self->padpreset1 = route[1]->padID;
 
                     return TRUE;
                 }
@@ -9782,7 +9772,7 @@ bool chrSetPadPresetToWaypointInTargetQuadrant(ChrRecord *self, u8 quadrant)
 
 bool chrSetPadPresetToWaypointInQuadrant(ChrRecord *self, u8 padnum)
 {
-    f32 sp1C;
+    f32 yaw;
     s32 bondnearestpad;
     PropRecord *bondprop;
 
@@ -9791,9 +9781,9 @@ bool chrSetPadPresetToWaypointInQuadrant(ChrRecord *self, u8 padnum)
         return chrSetPadPresetToWaypointInTargetQuadrant(self, padnum);
     }
 
-    sp1C           = bondviewGetPlayerYawRadians();
+    yaw           = bondviewGetPlayerYawRadians();
     bondprop       = currentPlayerGetProp();
-    bondnearestpad = waypointFindInQuadrant(&bondprop->pos, bondprop->stan, sp1C, padnum);
+    bondnearestpad = waypointFindInQuadrant(&bondprop->pos, bondprop->stan, yaw, padnum);
 
     if (bondnearestpad >= 0)
     {
@@ -9899,8 +9889,8 @@ s32 chrIsTargetNearlyInSight(ChrRecord *self)
     PropRecord *player_prop;
     PropRecord *self_prop;
     StandTile *stan;
-    coord3d sp48;
-    coord3d sp3C;
+    coord3d edgeStart;
+    coord3d edgeEnd;
 
     player_prop = currentPlayerGetProp();
     self_prop   = self->prop;
@@ -9914,11 +9904,11 @@ s32 chrIsTargetNearlyInSight(ChrRecord *self)
     }
     else
     {
-        stanGetCollisionEdge(&sp48, &sp3C); //extreme edges of stan tile
+        stanGetCollisionEdge(&edgeStart, &edgeEnd); //extreme edges of stan tile
 
         if (
-            chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &sp48, &player_prop->pos, player_prop->stan, 0)
-            || chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &sp3C, &player_prop->pos, player_prop->stan, 0))
+            chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &edgeStart, &player_prop->pos, player_prop->stan, 0)
+            || chrCanWalkViaPoint(self, &self_prop->pos, self_prop->stan, &edgeEnd, &player_prop->pos, player_prop->stan, 0))
         {
             return TRUE;
         }
@@ -9931,22 +9921,22 @@ s32 chrIsTargetNearlyInSight(ChrRecord *self)
 /**
  * PD: chrIsPosOffScreen
 */
-s32 chrIsPosOffScreen(coord3d *arg0, StandTile *tile)
+s32 chrIsPosOffScreen(coord3d *pos, StandTile *tile)
 {
     bool offscreen;
     bbox2d box;
 
     offscreen = TRUE;
 
-    if (bgRoomIsVisible(stanGetTileRoom(tile)) && fogPositionIsVisibleThroughFog(arg0, 0.0f))
+    if (bgRoomIsVisible(stanGetTileRoom(tile)) && fogPositionIsVisibleThroughFog(pos, 0.0f))
     {
         if (bgGet2dBboxByRoomId(stanGetTileRoom(tile), &box))
         {
-            offscreen = camIsPosInScreenBox(arg0, 200.0f, &box) == 0;
+            offscreen = camIsPosInScreenBox(pos, 200.0f, &box) == 0;
         }
         else
         {
-            offscreen = camIsPosInScreen(arg0, 200.0f) == 0;
+            offscreen = camIsPosInScreen(pos, 200.0f) == 0;
         }
     }
 
@@ -9957,18 +9947,18 @@ s32 chrIsPosOffScreen(coord3d *arg0, StandTile *tile)
 /**
  * PD: chrAdjustPosForSpawn
 */
-bool chrAdjustPosForSpawn(coord3d *pos, StandTile **arg1, f32 facing, bool allowonscreen)
+bool chrAdjustPosForSpawn(coord3d *pos, StandTile **tile, f32 facing, bool allowonscreen)
 {
     coord3d testpos;
     StandTile *s;
     s32 i;
     StandTile **spp;
 
-    s = *arg1;
+    s = *tile;
     spp = &s;
 
     if ((stanTestVolume(spp, pos->f[0], pos->z, 20.0f, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, 0.0f, 1.0f) < 0) &&
-        (allowonscreen || chrIsPosOffScreen(pos, *arg1)))
+        (allowonscreen || chrIsPosOffScreen(pos, *tile)))
     {
         return TRUE;
     }
@@ -9979,13 +9969,13 @@ bool chrAdjustPosForSpawn(coord3d *pos, StandTile **arg1, f32 facing, bool allow
         testpos.f[1] = pos->f[1];
         testpos.f[2] = pos->f[2] + (cosf(facing) * 60.0f);
 
-        s = *arg1;
+        s = *tile;
 
         if (stanTestLineUnobstructed(spp, pos->f[0], pos->f[2], testpos.f[0], testpos.f[2], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER, 0.0f, 1.0f, 0.0f, 1.0f)
             && (stanTestVolume(spp, testpos.f[0], testpos.f[2], 20.0f, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, 0.0f, 1.0f) < 0)
             && (allowonscreen || chrIsPosOffScreen(&testpos, s)))
         {
-            *arg1 = s;
+            *tile = s;
 
             pos->f[0] = testpos.f[0]; //send back upstream
             pos->f[2] = testpos.f[2];

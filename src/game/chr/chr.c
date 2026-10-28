@@ -1122,9 +1122,9 @@ s32 chrsGetNumSlots(void)
 }
 
 
-void dynAllocateVerticesDiscard(int param_1)
+void dynAllocateVerticesDiscard(int count)
 {
-  dynAllocate(param_1 << 4);
+  dynAllocate(count << 4);
 }
 
 
@@ -1487,140 +1487,140 @@ void chrAddHealth(ChrRecord *chr, f32 health)
 }
 
 
-PropRecord *chrInit(PropRecord *arg0, Model *arg1, struct coord3d *arg2, f32 arg3, StandTile *arg4, struct AIListRecord *arg5)
+PropRecord *chrInit(PropRecord *prop, Model *model, struct coord3d *pos, f32 angle, StandTile *tile, struct AIListRecord *ailist)
 {
-    ChrRecord *var_s0;
-    s32 var_v0;
+    ChrRecord *chr;
+    s32 i;
 
-    var_s0 = NULL;
-    var_v0 = 0;
+    chr = NULL;
+    i = 0;
 
-    for (var_v0 = 0; var_v0 < g_NumChrSlots; var_v0++)
+    for (i = 0; i < g_NumChrSlots; i++)
     {
-        if (g_ChrSlots[var_v0].model == NULL)
+        if (g_ChrSlots[i].model == NULL)
         {
-            var_s0 = &g_ChrSlots[var_v0];
+            chr = &g_ChrSlots[i];
             break;
         }
     }
 
-    arg0->type = PROP_TYPE_CHR;
-    arg0->chr = var_s0;
-    arg0->pos.f[0] = arg2->f[0];
-    arg0->pos.f[1] = arg2->f[1];
-    arg0->pos.f[2] = arg2->f[2];
-    arg0->stan = arg4;
+    prop->type = PROP_TYPE_CHR;
+    prop->chr = chr;
+    prop->pos.f[0] = pos->f[0];
+    prop->pos.f[1] = pos->f[1];
+    prop->pos.f[2] = pos->f[2];
+    prop->stan = tile;
 
-    modelSetRootMoveCallback(arg1, (s32) chrRootMoveCallback);
+    modelSetRootMoveCallback(model, (s32) chrRootMoveCallback);
 
-    arg1->chr = var_s0;
+    model->chr = chr;
 
-    modelSetRootPosition(arg1, arg2);
-    modelSetRootRotY(arg1, arg3);
+    modelSetRootPosition(model, pos);
+    modelSetRootRotY(model, angle);
 
     #if defined(VERSION_EU)
-    modelSetAnimPlaySpeed(arg1, g_ChrAnimRate * 1.2f, 0.0f);
+    modelSetAnimPlaySpeed(model, g_ChrAnimRate * 1.2f, 0.0f);
     #else
-    modelSetAnimPlaySpeed(arg1, g_ChrAnimRate, 0.0f);
+    modelSetAnimPlaySpeed(model, g_ChrAnimRate, 0.0f);
     #endif
 
-    var_s0->chrnum = (s16) g_NextChrNum;
+    chr->chrnum = (s16) g_NextChrNum;
     g_NextChrNum += 1;
-    var_s0->headnum = 0;
-    var_s0->bodynum = 0;
-    var_s0->prop = arg0;
-    var_s0->model = arg1;
-    var_s0->jointList = NULL;
-    var_s0->numarghs = 0;
-    var_s0->lastwalk60 = 0;
-    var_s0->invalidmove = 0;
-    var_s0->lastmoveok60 = g_GlobalTimer;
-    var_s0->lastseetarget60 = 0;
-    var_s0->lastknowntargetpos.f[0] = 0.0f;
-    var_s0->lastknowntargetpos.f[1] = 0.0f;
-    var_s0->lastknowntargetpos.f[2] = 0.0f;
-    var_s0->targetTile = NULL;
-    var_s0->seen_bond_time = 0;
-    var_s0->lastheartarget60 = 0;
-    var_s0->numclosearghs = 0;
-    var_s0->shotbondsum = 0.0f;
-    var_s0->damage = 0.0f;
-    var_s0->visionrange = 250.0f;
-    var_s0->hearingscale = 1.0f;
+    chr->headnum = 0;
+    chr->bodynum = 0;
+    chr->prop = prop;
+    chr->model = model;
+    chr->jointList = NULL;
+    chr->numarghs = 0;
+    chr->lastwalk60 = 0;
+    chr->invalidmove = 0;
+    chr->lastmoveok60 = g_GlobalTimer;
+    chr->lastseetarget60 = 0;
+    chr->lastknowntargetpos.f[0] = 0.0f;
+    chr->lastknowntargetpos.f[1] = 0.0f;
+    chr->lastknowntargetpos.f[2] = 0.0f;
+    chr->targetTile = NULL;
+    chr->seen_bond_time = 0;
+    chr->lastheartarget60 = 0;
+    chr->numclosearghs = 0;
+    chr->shotbondsum = 0.0f;
+    chr->damage = 0.0f;
+    chr->visionrange = 250.0f;
+    chr->hearingscale = 1.0f;
 
-    var_s0->maxdamage = file007Health() * 4.0f;
-    objGetTileShading(arg0, &var_s0->nextcol);
+    chr->maxdamage = file007Health() * 4.0f;
+    objGetTileShading(prop, &chr->nextcol);
 
-    var_s0->shadecol.rgba[0] = var_s0->nextcol.rgba[0];
-    var_s0->shadecol.rgba[1] = var_s0->nextcol.rgba[1];
-    var_s0->shadecol.rgba[2] = var_s0->nextcol.rgba[2];
-    var_s0->shadecol.rgba[3] = var_s0->nextcol.rgba[3];
-    var_s0->fadealpha = 0xFF;
-    var_s0->gunSounds[0].ptr_SEbuffer1 = NULL;
-    var_s0->gunSounds[0].ptr_SEbuffer2 = NULL;
-    var_s0->gunSounds[1].ptr_SEbuffer1 = NULL;
-    var_s0->gunSounds[1].ptr_SEbuffer2 = NULL;
-    var_s0->nextGunSoundTime[0] = 0;
-    var_s0->nextGunSoundTime[1] = 0;
-    var_s0->chrflags = CHRFLAG_INIT;
-    var_s0->hidden = CHRHIDDEN_NONE;
-    var_s0->sumground = 0.0f;
-    var_s0->manground = 0.0f;
-    var_s0->ground = 0.0f;
-    var_s0->fallspeed.f[0] = 0.0f;
-    var_s0->fallspeed.f[1] = 0.0f;
-    var_s0->fallspeed.f[2] = 0.0f;
-    var_s0->prevpos.f[0] = arg2->f[0];
-    var_s0->prevpos.f[1] = arg2->f[1];
-    var_s0->prevpos.f[2] = arg2->f[2];
-    var_s0->actiontype = 0;
-    var_s0->sleep = 0;
-    var_s0->ailist = (AIRecord *) arg5;
-    var_s0->aioffset = 0;
-    var_s0->aireturnlist = -1;
-    var_s0->morale = 0;
-    var_s0->alertness = 0;
-    var_s0->flags2 = 0;
-    var_s0->random = 0;
-    var_s0->timer60 = 0;
-    var_s0->padpreset1 = -1;
-    var_s0->chrseeshot = -1;
-    var_s0->chrseedie = -1;
-    var_s0->chrpreset1 = -1;
-    var_s0->beams[0].age = -1;
-    var_s0->beams[1].age = -1;
-    var_s0->firecount[0] = 0;
-    var_s0->firecount[1] = 0;
-    var_s0->grenadeprob = 0;
-    var_s0->accuracyrating = 0;
-    var_s0->speedrating = 0;
-    var_s0->arghrating = 0;
-    var_s0->flinchcnt = -1;
-    var_s0->aimuplshoulder = 0.0f;
-    var_s0->aimuprshoulder = 0.0f;
-    var_s0->aimupback = 0.0f;
-    var_s0->aimsideback = 0.0f;
-    var_s0->aimendlshoulder = 0.0f;
-    var_s0->aimendrshoulder = 0.0f;
-    var_s0->aimendback = 0.0f;
-    var_s0->aimendsideback = 0.0f;
-    var_s0->aimendcount = 0;
-    var_s0->weapons_held[0] = NULL;
-    var_s0->weapons_held[1] = NULL;
-    var_s0->handle_positiondata_hat = NULL;
-    var_s0->targetplayer = 0;
-    var_s0->targetlock60 = 0;
-    var_s0->chrwidth = 20.0f;
-    var_s0->chrheight = 185.0f;
+    chr->shadecol.rgba[0] = chr->nextcol.rgba[0];
+    chr->shadecol.rgba[1] = chr->nextcol.rgba[1];
+    chr->shadecol.rgba[2] = chr->nextcol.rgba[2];
+    chr->shadecol.rgba[3] = chr->nextcol.rgba[3];
+    chr->fadealpha = 0xFF;
+    chr->gunSounds[0].ptr_SEbuffer1 = NULL;
+    chr->gunSounds[0].ptr_SEbuffer2 = NULL;
+    chr->gunSounds[1].ptr_SEbuffer1 = NULL;
+    chr->gunSounds[1].ptr_SEbuffer2 = NULL;
+    chr->nextGunSoundTime[0] = 0;
+    chr->nextGunSoundTime[1] = 0;
+    chr->chrflags = CHRFLAG_INIT;
+    chr->hidden = CHRHIDDEN_NONE;
+    chr->sumground = 0.0f;
+    chr->manground = 0.0f;
+    chr->ground = 0.0f;
+    chr->fallspeed.f[0] = 0.0f;
+    chr->fallspeed.f[1] = 0.0f;
+    chr->fallspeed.f[2] = 0.0f;
+    chr->prevpos.f[0] = pos->f[0];
+    chr->prevpos.f[1] = pos->f[1];
+    chr->prevpos.f[2] = pos->f[2];
+    chr->actiontype = 0;
+    chr->sleep = 0;
+    chr->ailist = (AIRecord *) ailist;
+    chr->aioffset = 0;
+    chr->aireturnlist = -1;
+    chr->morale = 0;
+    chr->alertness = 0;
+    chr->flags2 = 0;
+    chr->random = 0;
+    chr->timer60 = 0;
+    chr->padpreset1 = -1;
+    chr->chrseeshot = -1;
+    chr->chrseedie = -1;
+    chr->chrpreset1 = -1;
+    chr->beams[0].age = -1;
+    chr->beams[1].age = -1;
+    chr->firecount[0] = 0;
+    chr->firecount[1] = 0;
+    chr->grenadeprob = 0;
+    chr->accuracyrating = 0;
+    chr->speedrating = 0;
+    chr->arghrating = 0;
+    chr->flinchcnt = -1;
+    chr->aimuplshoulder = 0.0f;
+    chr->aimuprshoulder = 0.0f;
+    chr->aimupback = 0.0f;
+    chr->aimsideback = 0.0f;
+    chr->aimendlshoulder = 0.0f;
+    chr->aimendrshoulder = 0.0f;
+    chr->aimendback = 0.0f;
+    chr->aimendsideback = 0.0f;
+    chr->aimendcount = 0;
+    chr->weapons_held[0] = NULL;
+    chr->weapons_held[1] = NULL;
+    chr->handle_positiondata_hat = NULL;
+    chr->targetplayer = 0;
+    chr->targetlock60 = 0;
+    chr->chrwidth = 20.0f;
+    chr->chrheight = 185.0f;
 
-    chrRootMoveCallback(arg1, &arg0->pos, &arg0->pos, &var_s0->ground);
-    chrDetectRooms(var_s0);
+    chrRootMoveCallback(model, &prop->pos, &prop->pos, &chr->ground);
+    chrDetectRooms(chr);
 
-    return arg0;
+    return prop;
 }
 
 
-PropRecord * chrAllocate( Model * arg0, coord3d * arg1, f32 arg2,  StandTile * arg3, s32 arg4)
+PropRecord *chrAllocate(Model *model, coord3d *pos, f32 angle, StandTile *tile, s32 ailist)
 {
     PropRecord * ret;
 
@@ -1628,7 +1628,7 @@ PropRecord * chrAllocate( Model * arg0, coord3d * arg1, f32 arg2,  StandTile * a
 
     if (ret != 0)
     {
-        ret = chrInit(ret, arg0, arg1, arg2, arg3, arg4);
+        ret = chrInit(ret, model, pos, angle, tile, ailist);
     }
 
     return ret;
@@ -1689,11 +1689,11 @@ void chrFreeResources(PropRecord *prop)
  * Address 0x7F020540 (VERSION_US, VERSION_JP).
  * Address 0x7F0203B4 (VERSION_EU).
  */
-void chrsSetAnimRate(f32 arg0)
+void chrsSetAnimRate(f32 rate)
 {
     s32 i;
 
-    g_ChrAnimRate = arg0;
+    g_ChrAnimRate = rate;
 
     for (i=0; i<g_NumChrSlots; i++)
     {
@@ -1806,8 +1806,8 @@ void chrSetHiddenToRandom(ChrRecord *self)
  */
 f32 chrGetFlinchAmount(ChrRecord *chr)
 {
-    f32 temp_f2;
-    f32 phi_f2;
+    f32 count;
+    f32 amount;
 #if defined(VERSION_US)
     f32 rise = 10.0f;
     f32 fall = 20.0f;
@@ -1816,19 +1816,18 @@ f32 chrGetFlinchAmount(ChrRecord *chr)
     f32 fall = 16.0f;
 #endif
 
-    phi_f2 = chr->flinchcnt;
-    temp_f2 = (f32) phi_f2;
+    count = chr->flinchcnt;
 
-    if (temp_f2 < rise)
+    if (count < rise)
     {
-        phi_f2 = sinf(((temp_f2 * M_TAU_F) * 0.25f) / rise);
+        amount = sinf(((count * M_TAU_F) * 0.25f) / rise);
     }
     else
     {
-        phi_f2 = 1.0f - sinf((((temp_f2 - rise) * M_TAU_F) * 0.25f) / fall);
+        amount = 1.0f - sinf((((count - rise) * M_TAU_F) * 0.25f) / fall);
     }
 
-    return phi_f2;
+    return amount;
 }
 
 
@@ -2607,14 +2606,14 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     ChrRecord *chr;
     Model *chrmodel;
-    struct rgba_f32 spC0; // 192
-    s32 spBC; // 188
-    s32 spB8; // 184
+    struct rgba_f32 fogColour; // 192
+    s32 fogType; // 188
+    s32 renderFlags; // 184
     s32 chrfadealpha; // 180
     ModelRenderData mrData; // 112
-    struct view4f sp60; // -?? 96
+    struct view4f bbox; // -?? 96
     struct rgba_s32 chrShade;
-    s32 sp4C; // 76
+    s32 shadowAlpha; // 76
     PropRecord *prop_held_right; // 72
     PropRecord *prop_held_left; // 68
     PropRecord *prop_held_hat; // 64
@@ -2643,30 +2642,30 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
         }
         else
         {
-            spB8 = 3;
+            renderFlags = 3;
         }
     }
     else
     {
         if (withalpha == 0)
         {
-            spB8 = 1;
+            renderFlags = 1;
         }
         else
         {
-            spB8 = 2;
+            renderFlags = 2;
         }
     }
 
-    spBC = fogGetPropDistColor(prop, &spC0);
-    if (spBC != 0)
+    fogType = fogGetPropDistColor(prop, &fogColour);
+    if (fogType != 0)
     {
         if (chrfadealpha > 0)
         {
             mrData = (ModelRenderData){NULL, TRUE, 3};
 
 
-            sp4C = 0x50;
+            shadowAlpha = 0x50;
 
             prop_held_right = chr->weapons_held[GUNRIGHT];
             prop_held_left = chr->weapons_held[GUNLEFT];
@@ -2690,36 +2689,36 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
                 held_hat_obj = prop_held_hat->obj;
             }
 
-            if ((propGetRoomsBbox2d(prop, &sp60) > 0) && !(chr->chrflags & CHRFLAG_CULL_USING_HITBOX))
+            if ((propGetRoomsBbox2d(prop, &bbox) > 0) && !(chr->chrflags & CHRFLAG_CULL_USING_HITBOX))
             {
-                gdl = bgScissorCurrentPlayerViewF(gdl, sp60.left, sp60.top, sp60.width, sp60.height);
+                gdl = bgScissorCurrentPlayerViewF(gdl, bbox.left, bbox.top, bbox.width, bbox.height);
             }
             else
             {
                 gdl = bgScissorCurrentPlayerViewDefault(gdl);
             }
 
-            mrData.flags = spB8;
+            mrData.flags = renderFlags;
             mrData.zbufferenabled = TRUE;
             mrData.gdl = gdl;
 
             if ((chr->chrflags & CHRFLAG_NO_SHADOW) != 0)
             {
-                sp4C = 0;
+                shadowAlpha = 0;
             }
-            else if (spBC == 1)
+            else if (fogType == 1)
             {
-                sp4C = ((1.0f - spC0.a) * (f32)(sp4C));
+                shadowAlpha = ((1.0f - fogColour.a) * (f32)(shadowAlpha));
             }
 
-            modelSetShadowAlpha(sp4C);
+            modelSetShadowAlpha(shadowAlpha);
 
             chrShade.r = chr->shadecol.r;
             chrShade.g = chr->shadecol.g;
             chrShade.b = chr->shadecol.b;
             chrShade.a = chr->shadecol.a;
 
-            shadingLerp(&chrShade, spBC, &spC0);
+            shadingLerp(&chrShade, fogType, &fogColour);
 
             mrData.envcolour.word = ((gBloodColour.rgba[0] << 0x18) | (gBloodColour.rgba[1] << 0x10)) | (gBloodColour.rgba[2] << 0x08);
             mrData.fogcolour.word = (chrShade.rgba[0] << 0x18) | (chrShade.rgba[1] << 0x10) | (chrShade.rgba[2] << 0x08) | (chrShade.rgba[3] << 0x00);
@@ -2794,7 +2793,7 @@ void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos
 {
     s32 i;
     f32 scale;
-    coord3d sp3c;
+    coord3d puffPos;
     s32 index;
     struct ChrHitReaction *entry;
 
@@ -2824,13 +2823,13 @@ void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos
         {
             scale = (42.0f / sqrtf(vec->z * vec->z + (vec->x * vec->x + vec->y * vec->y))) + 1.0f;
 
-            sp3c.x = vec->x * scale;
-            sp3c.y = vec->y * scale;
-            sp3c.z = vec->z * scale;
+            puffPos.x = vec->x * scale;
+            puffPos.y = vec->y * scale;
+            puffPos.z = vec->z * scale;
 
-            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &sp3c);
+            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &puffPos);
 
-            sparkCreate(&sp3c, entry->backImpactPuffCount, entry->backImpactPuffSize, prop->stan->room);
+            sparkCreate(&puffPos, entry->backImpactPuffCount, entry->backImpactPuffSize, prop->stan->room);
         }
     }
 
@@ -2841,7 +2840,7 @@ void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos
 }
 
 
-void chrCreateBloodStain(Model *model, s32 arg1, ModelNode *root, struct coord3d *pos)
+void chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, struct coord3d *pos)
 {
     s32 sp_pos[3];
     s32 bestdist;
@@ -2976,12 +2975,12 @@ after_opcode:
     relatedindex = 0;
     paintval = (randomGetNext() % 50) + 20;
 
-    if (arg1 == 8)
+    if (hitpart == 8)
     {
         paintval += 100;
     }
 
-    if (arg1 == 0x0f)
+    if (hitpart == 0x0f)
     {
         paintval += 50;
     }
@@ -3334,10 +3333,6 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
 /**
  * Removed.
  */
-void chrRemovedUnused(f32 arg0)
-{
-    // removed
-}
 
 
 /**
@@ -3386,7 +3381,7 @@ ChrRecord* chrFindByLiteralId(s32 index)
 
 PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand)
 {
-    return self->weapons_held[hand]; //0x160
+    return self->weapons_held[hand];
 }
 
 
@@ -3461,10 +3456,10 @@ void chrUpdateCollisionBounds(PropRecord *prop, rect4f **polygon, s32 *edges, f3
  * @param height: out parameter, will be set to character height - 20
  * @param always_20: out parameter, will be set to 20
  */
-void chrGetChrWidthHeight(PropRecord *arg0, f32 *width, f32 *height, f32 *always_20)
+void chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *height, f32 *always_20)
 {
 
-    ChrRecord *c = arg0->chr;
+    ChrRecord *c = prop->chr;
 
     *width = c->chrwidth;
     *height = c->chrheight - 20.0f;
@@ -3472,9 +3467,9 @@ void chrGetChrWidthHeight(PropRecord *arg0, f32 *width, f32 *height, f32 *always
 }
 
 
-f32 chrGetChrGround(PropRecord *arg0)
+f32 chrGetChrGround(PropRecord *prop)
 {
-    ChrRecord *c = arg0->chr;
+    ChrRecord *c = prop->chr;
     return c->ground;
 }
 
@@ -3484,38 +3479,38 @@ f32 chrGetChrGround(PropRecord *arg0)
  *
  * US address 7F023194.
 */
-s32 chrGetOnscreenRenderBounds(PropRecord *arg0, struct coord3d *arg1, struct coord2d *arg2, struct coord2d *arg3)
+s32 chrGetOnscreenRenderBounds(PropRecord *prop, struct coord3d *pos, struct coord2d *xbounds, struct coord2d *ybounds)
 {
-    struct ChrRecord *temp_v1;
+    struct ChrRecord *chr;
 
-    temp_v1 = arg0->chr;
+    chr = prop->chr;
 
-    if (arg0->flags & PROPFLAG_ONSCREEN)
+    if (prop->flags & PROPFLAG_ONSCREEN)
     {
-        if ((temp_v1->actiontype != ACT_DIE) && (temp_v1->actiontype != ACT_DEAD) && !(temp_v1->chrflags & CHRFLAG_NO_AUTOAIM))
+        if ((chr->actiontype != ACT_DIE) && (chr->actiontype != ACT_DEAD) && !(chr->chrflags & CHRFLAG_NO_AUTOAIM))
         {
             struct Model *model;
             RenderPosView *model_render_pos_1;
             RenderPosView *model_render_pos_2;
 
-            model = temp_v1->model;
+            model = chr->model;
             model_render_pos_1 = &model->render_pos[0];
             model_render_pos_2 = &model->render_pos[1];
 
-            arg1->f[2] = model_render_pos_2->pos.m[3][2] + ((model_render_pos_1->pos.m[3][2] - model_render_pos_2->pos.m[3][2]) * 0.25f);
+            pos->f[2] = model_render_pos_2->pos.m[3][2] + ((model_render_pos_1->pos.m[3][2] - model_render_pos_2->pos.m[3][2]) * 0.25f);
 
-            if (arg1->f[2] < 0.0f)
+            if (pos->f[2] < 0.0f)
             {
-                arg1->f[0] = model_render_pos_2->pos.m[3][0] + ((model_render_pos_1->pos.m[3][0] - model_render_pos_2->pos.m[3][0]) * 0.25f);
-                arg1->f[1] = model_render_pos_2->pos.m[3][1] + ((model_render_pos_1->pos.m[3][1] - model_render_pos_2->pos.m[3][1]) * 0.25f);
+                pos->f[0] = model_render_pos_2->pos.m[3][0] + ((model_render_pos_1->pos.m[3][0] - model_render_pos_2->pos.m[3][0]) * 0.25f);
+                pos->f[1] = model_render_pos_2->pos.m[3][1] + ((model_render_pos_1->pos.m[3][1] - model_render_pos_2->pos.m[3][1]) * 0.25f);
 
-                arg3->y = 0.0f;
-                arg3->x = 0.0f;
+                ybounds->y = 0.0f;
+                ybounds->x = 0.0f;
 
-                arg2->x = 0.0f;
-                arg2->y = 0.0f;
+                xbounds->x = 0.0f;
+                xbounds->y = 0.0f;
 
-                modelGetXYExtents(model, &arg2->y, &arg2->x, &arg3->y, &arg3->x);
+                modelGetXYExtents(model, &xbounds->y, &xbounds->x, &ybounds->y, &ybounds->x);
 
                 return 1;
             }

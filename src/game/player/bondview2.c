@@ -9999,21 +9999,15 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
                     }
                 }
 
-#if defined(VERSION_EU)
-    #define ZERO_7F08991C 0.0f
-#else
-    #define ZERO_7F08991C 0
-#endif
-                if (g_CurrentPlayer->damageshowtime < ZERO_7F08991C)
+                if (g_CurrentPlayer->damageshowtime < 0)
                 {
                     g_CurrentPlayer->bondshotspeed.x = g_CurrentPlayer->bondshotspeed.x + 2.0f * vectorx;
                     g_CurrentPlayer->bondshotspeed.z = g_CurrentPlayer->bondshotspeed.z + 2.0f * vectorz;
                 }
 
-                g_CurrentPlayer->damageshowtime = ZERO_7F08991C;
-                g_CurrentPlayer->healthshowtime = ZERO_7F08991C;
+                g_CurrentPlayer->damageshowtime = 0;
+                g_CurrentPlayer->healthshowtime = 0;
 
-#undef ZERO_7F08991C
 
                 if (!lvGetControlsLocked())
                 {
