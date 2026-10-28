@@ -232,8 +232,8 @@ extern struct HatRecord                   g_HatSlots[];
 extern struct AmmoCrateRecord             g_AmmoCrates[];
 extern struct Projectile                  g_Projectiles[];
 extern struct Embedment                   g_Embedments[];
-extern struct coord3d                     g_ProjectileHitPos;
-extern struct coord3d                     g_ProjectileHitNormal;
+extern coord3d                     g_ProjectileHitPos;
+extern coord3d                     g_ProjectileHitNormal;
 
 
 extern MonitorRecord g_MonitorAnimController;

@@ -88,13 +88,13 @@ u32 g_ModelAnimMergingEnabled = 1;
 
 /* Template for the vertices of muzzle flashes: opaque white */
 Vertex g_ModelGunfireVtxTemplate = {
-    { 0, 0, 0 },
+    { {0, 0, 0} },
     0,
-    { 0, 0 },
+    { {0, 0} },
+    {{0xFF,
     0xFF,
     0xFF,
-    0xFF,
-    0xFF
+    0xFF}}
 };
 
 u32 g_ModelShadowAlpha = 0x50;
@@ -2111,20 +2111,20 @@ void modelCalcMatrices(ModelRenderData *renderdata, struct Model *model)
     if (model->anim != NULL)
     {
 
-        model->frameaData = animLoadFrame(model->anim, model->framea, model->obj->Skeleton);
+        model->frameaData = animLoadFrame(model->anim, model->framea);
 
         if (model->frameFrac != 0.0f)
         {
-            model->framebData = animLoadFrame(model->anim, model->frameb, model->obj->Skeleton);
+            model->framebData = animLoadFrame(model->anim, model->frameb);
         }
 
         if (model->anim2 != NULL)
         {
-            model->frame2aData = animLoadFrame(model->anim2, model->frame2a, model->obj->Skeleton);
+            model->frame2aData = animLoadFrame(model->anim2, model->frame2a);
 
             if (model->frame2Frac != 0.0f)
             {
-                model->frame2bData = animLoadFrame(model->anim2, model->frame2b, model->obj->Skeleton);
+                model->frame2bData = animLoadFrame(model->anim2, model->frame2b);
             }
         }
 
@@ -4031,10 +4031,6 @@ void modelRenderNodeDl(ModelRenderData *renderdata, Model *model, ModelNode *nod
 }
 
 
-void modelRenderNodeOp20(ModelRenderData *renderdata, Model *model, ModelNode *node)
-{
-    return;
-}
 
 
 /**
@@ -4123,10 +4119,6 @@ void modelSelectTexture(ModelRenderData *renderdata, struct sImageTableEntry *tc
 }
 
 
-void modelRenderNodeOp05(ModelRenderData *renderdata, Model *model, ModelNode *node)
-{
-    return;
-}
 
 
 void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* node)
@@ -4376,16 +4368,8 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
 }
 
 
-void modelRenderNodeOp06(ModelRenderData *renderdata, Model *model, ModelNode *node)
-{
-    return;
-}
 
 
-void modelRenderNodeOp11(ModelRenderData *renderdata, Model *model, ModelNode *node)
-{
-    return;
-}
 
 
 // PD: modelRenderNodeChrGunfire
@@ -4673,10 +4657,6 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
 }
 
 
-void modelRenderNodeOp17(ModelRenderData *renderdata, Model *model, ModelNode *node)
-{
-    return;
-}
 
 
 void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
@@ -4695,7 +4675,6 @@ void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
         modelApplyReorderRelations(model, node);
         return;
     case MODELNODE_OPCODE_OP11:
-        modelRenderNodeOp11(data, model, node);
         return;
     case MODELNODE_OPCODE_GUNFIRE:
         modelRenderNodeGunfire(data, model, node);
@@ -4706,7 +4685,6 @@ void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
     case MODELNODE_OPCODE_BBOX:
         return;
     case MODELNODE_OPCODE_OP17:
-        modelRenderNodeOp17(data, model, node);
         return;
     case MODELNODE_OPCODE_DL:
         modelRenderNodeGundl(data, node);
@@ -4715,19 +4693,16 @@ void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
         modelRenderNodeDl(data, model, node);
         return;
     case MODELNODE_OPCODE_OP20:
-        modelRenderNodeOp20(data, model, node);
         return;
     case MODELNODE_OPCODE_DLPRIMARY:
         modelRenderNodeRotTex(data, node);
         return;
     case MODELNODE_OPCODE_OP05:
-        modelRenderNodeOp05(data, model, node);
         return;
     case MODELNODE_OPCODE_TUBE:
         modelRenderNodeTube(data, model, node);
         return;
     case MODELNODE_OPCODE_OP06:
-        modelRenderNodeOp06(data,model,node);
         return;
     case MODELNODE_OPCODE_HEADER:
     case MODELNODE_OPCODE_GROUP:
@@ -5004,7 +4979,7 @@ s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypo
     
     hitData = (ModelRoData_Op17Record *) node->Data;
     nodeMtx = modelFindNodeMtx(model, node, 0);
-    rayData->data.rel = (coord3d){1.0f, 0.0f, 0.0f};
+    rayData->data.rel = (coord3d){{1.0f, 0.0f, 0.0f}};
     rayData->data.radiusSq = hitData->radiusSq;
     rayData->data.dir.f[0] = raydir->x;
     rayData->data.dir.f[1] = raydir->y;
@@ -5222,7 +5197,7 @@ u32 modelFindRayHitNext(Model *model, coord3d *raypos, coord3d *raydir, ModelNod
 /**
  * Copy animation from ROM to RAM
 */
-u8 *animLoadFrame(ModelAnimation *anim, s32 frame, ModelSkeleton *unused)
+u8 *animLoadFrame(ModelAnimation *anim, s32 frame)
 {
     u8 *ret = NULL;
     s32 frameSize = anim->frameBits >> 3;
@@ -5925,7 +5900,7 @@ void modelIterateDisplayLists(ModelFileHeader *fileheader, ModelNode **nodeptr, 
 }
 
 
-void modelNodeReplaceGdl(u32 unused, ModelNode *node, Gfx *find, Gfx *replacement)
+void modelNodeReplaceGdl(ModelNode *node, Gfx *find, Gfx *replacement)
 {
     union ModelRoData *rodata;
     u32 type = node->Opcode & 0xff;

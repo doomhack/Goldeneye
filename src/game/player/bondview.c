@@ -307,9 +307,9 @@ struct struct_4 stage_intro_anim_table[] = {
 f32 watch_transition_time = 0.90909088;
 
 WeaponObjRecord dummy_08_pp7_obj[] = {
-    0x0100,
+    {{{0x0100,
     0x00,
-    0x08,
+    0x08},
     PROP_CHRWPPK,
     0x4000,
     0x00000000,
@@ -317,26 +317,26 @@ WeaponObjRecord dummy_08_pp7_obj[] = {
     NULL,
     NULL,
     {
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
+        {{1.0f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 1.0f}}
     },
-    {0.0f, 0.0f, 0.0f},
+    {{0.0f, 0.0f, 0.0f}},
     {0x00000000},
     NULL,
-    NULL,
+    {NULL},
     0.0f,
     1000.0f,
-    {0xff, 0xff, 0xff, 0x00},
+    {{0xff, 0xff, 0xff, 0x00}},
+    {{0xff,
     0xff,
     0xff,
-    0xff,
-    0x00,
+    0x00}}},
     ITEM_WPPK,
     -1,
     -1,
-    NULL
+    NULL}
 };
 
 
@@ -370,33 +370,33 @@ struct HealthDisplayDuration g_HealthDisplayDurations[8] = {
 /**
  * US Address 0x800367F4.
 */
-struct coord3d g_DefaultMoveBondOffset = { 0 };
+coord3d g_DefaultMoveBondOffset = { 0 };
 
 /**
  * struct player property `pos` .
  * US address 80036800.
  */
-struct coord3d g_DefaultFrozenPlayerPos = { 0 };
+coord3d g_DefaultFrozenPlayerPos = { 0 };
 
 /**
  * struct player property `pos2`.
  * US address 8003680C.
  */
-struct coord3d g_DefaultFrozenPlayerPos2 = { 0, 0, 1.0f };
+coord3d g_DefaultFrozenPlayerPos2 = { {0, 0, 1.0f} };
 
 /**
  * struct player property `offset`.
  * US address 80036818.
  */
-struct coord3d g_DefaultFrozenPlayerOffset = { 0, 1.0f, 0 };
+coord3d g_DefaultFrozenPlayerOffset = { {0, 1.0f, 0} };
 
 /**
  * struct player property `offset`.
  * US address 80036824.
  */
-struct coord3d g_DefaultFrozenMoveOffset = { 0 };
+coord3d g_DefaultFrozenMoveOffset = { 0 };
 
-struct coord3d ZeroCoordShake = { 0 };
+coord3d ZeroCoordShake = { 0 };
 
 
 coord3d ZeroCoordWatchPos = {0};
@@ -463,7 +463,7 @@ s16 viGetFrameHeight(void);
 void playerAdvanceCameraMode(void);
 bool currentPlayerIsFadeComplete(void);
 s16 playerGetViewportLeft(void);
-void playerMoveFrozen(s8, s8, u16, u16);
+void playerMoveFrozen(u16, u16);
 void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 void camSetRoomOrigin(s32 room);
 void watchTrigger(s32 instant);
@@ -479,20 +479,20 @@ void pauseStopSounds(void);
 void watchTick(void);
 void playerUpdatePosFromCollision(void);
 void tankUpdateTurretOffset(void);
-s32 tankTestCollision(struct coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, struct coord3d *hitFrom, struct coord3d *hitTo);
-s32 tankTestCollisionAt(struct coord3d *collision_position, struct StandTile *tile, f32 tank_orientation_angle);
-s32 tankTryMoveTo(struct coord3d *pos, f32 angle, struct StandTile **outTile);
-s32 playerTestMove(struct coord3d *pos, struct StandTile **stan);
-s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, struct coord3d *coord_p, struct coord3d *coord_dest);
+s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, coord3d *hitFrom, coord3d *hitTo);
+s32 tankTestCollisionAt(coord3d *collision_position, struct StandTile *tile, f32 tank_orientation_angle);
+s32 tankTryMoveTo(coord3d *pos, f32 angle, struct StandTile **outTile);
+s32 playerTestMove(coord3d *pos, struct StandTile **stan);
+s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, coord3d *coord_p, coord3d *coord_dest);
 
-s32 playerTryMoveFraction(struct coord3d *next_pos, struct coord3d *collision1_pt0, struct coord3d *collision1_pt1, struct coord3d *collision2_pt0, struct coord3d *collision2_pt1);
-s32 playerTryMoveAlongEdge(struct coord3d *prior_next_pos, struct coord3d *collision_pt0, struct coord3d *collision_pt1);
-s32 playerTryMoveRoundCorner(struct coord3d *prior_next_pos, struct coord3d *collision_pt0, struct coord3d *collision_pt1);
+s32 playerTryMoveFraction(coord3d *next_pos, coord3d *collision1_pt0, coord3d *collision1_pt1, coord3d *collision2_pt0, coord3d *collision2_pt1);
+s32 playerTryMoveAlongEdge(coord3d *prior_next_pos, coord3d *collision_pt0, coord3d *collision_pt1);
+s32 playerTryMoveRoundCorner(coord3d *prior_next_pos, coord3d *collision_pt0, coord3d *collision_pt1);
 void playerUpdateVertaTheta(void);
 
 f32 bheadGetBreathingValue(void);
 void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways);
-void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot);
+void playerMoveWithCollision(coord3d *offset, s32 allow_scoot);
 f32 watchSetupPauseTilt(bool topause);
 void watchStartPauseTilt(f32 duration);
 void watchStartUnpauseTilt(f32 duration);
@@ -502,8 +502,8 @@ void playerSetLeanTarget(s32 value);
 void playerAdjustCrouch(s32 value);
 void playerUpdateSpeedSideways(s32 dir);
 void playerUpdateSpeedForwards(s32 dir);
-void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, struct coord3d *pos2, struct coord3d *offset, struct StandTile **stan, struct coord3d *lookat);
-void playerCalcIntroSwirlCamera(s32, f32, struct coord3d *, struct coord3d *);
+void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, coord3d *pos, coord3d *pos2, struct StandTile **stan, coord3d *lookat);
+void playerCalcIntroSwirlCamera(s32, f32, coord3d *, coord3d *);
 s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, coord3d *collision_pos, StandTile *tile, f32 camera_dist);
 Gfx* hudmsgBottomRender(Gfx* gdl);
 Gfx *hudmsgTopRender(Gfx *gdl);
@@ -657,7 +657,7 @@ static s32 coopCurrentPlayerIndex(void)
     return -1;
 }
 
-void *camSetWorldToScreenMtxf(Mtxf *matrix) {
+void camSetWorldToScreenMtxf(Mtxf *matrix) {
     g_CurrentPlayer->worldToScreenMtxf = matrix;
 
     if (g_CoopMode)

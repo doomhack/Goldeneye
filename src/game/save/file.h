@@ -72,7 +72,7 @@ void fileSetFavWeapon(u32 right,u32 left);
 
 extern ChrRecord *g_CurModelChr;
 
-u8 fileGetBondForFolder(u32 folder);
+u8 fileGetBondForFolder(void);
 void fileValidateSaves(void);
 bool fileGetIsCheatUnlocked(save_data *save, s32 cheat);
 STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty);

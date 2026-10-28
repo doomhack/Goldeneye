@@ -21,7 +21,7 @@ s32 osPfsInit(OSMesgQueue *queue, OSPfs *pfs, int channel)
     
     ERRCK(__osGetId(pfs));
 
-    ret = osPfsChecker(pfs);
+    ret = osPfsChecker();
     pfs->status |= PFS_INITIALIZED;
 
     return ret;

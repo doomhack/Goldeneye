@@ -19,7 +19,7 @@
 #pragma region Private Members
 
 /*private enum, only accessible from within this file */
-static enum lbl
+enum lbl
 {
     lbl_SIGNED_ENUM = -1,
     lblZero,

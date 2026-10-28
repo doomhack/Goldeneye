@@ -24,12 +24,12 @@ struct StanPrefixRecord;
 struct move_bond_collision {
     union {
         struct {
-            struct coord3d low0;
-            struct coord3d low1;
-            struct coord3d high0;
-            struct coord3d high1;
+            coord3d low0;
+            coord3d low1;
+            coord3d high0;
+            coord3d high1;
         };
-        struct coord3d corners[4];
+        coord3d corners[4];
     };
 };
 
@@ -75,7 +75,7 @@ void stanLineRoomsCallback( StandTile *tile,  StandTile *unused,  struct StandTi
 void stanSetLevelScale(f32 ls);
 void stanResetHits(void);
 Gfx * stanDebugBeginDraw(Gfx *gdl);
-Gfx *stanDebugDrawTile(Gfx *ptrdl, StandTile *tile, u32 RGBAColor);
+Gfx *stanDebugDrawTile(Gfx *ptrdl);
 s32 stanWalkLineNoCallback(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z);
 bool stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z);
 f32 stanGetPositionYValue(StandTile* tile, f32 p_x, f32 p_z);
@@ -91,7 +91,7 @@ s32 stanLineRooms(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
 s32 stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s32 cdtypes, f32 top, f32 bottom);
 s32 stanGetTileRoom(StandTile* tile);
 PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, f32 end_z, s32 cdtypes);
-void stanGetTileColour(StandTile *tile, f32 p_x, f32 p_z, u8 *rtn);
+void stanGetTileColour(StandTile *tile, u8 *rtn);
 s32 stanCircleGetSpecial(struct StandTile **tile, f32 x, f32 z, f32 radius, struct StandTileLocusCallbackRecord *records);
 s32 stanLocusIsCrouch(struct StandTileLocusCallbackRecord *record);
 s32 stanLocusIsLadder(struct StandTileLocusCallbackRecord *record);
@@ -106,7 +106,7 @@ s32 stanIsInsideTriWorld(struct StandTile *tile, f32 p_x, f32 p_z);
 s32 stanCircleRooms(StandTile **tileStack, f32 target_x, f32 target_z, f32 radius, s32 *rooms, s32 *count_rtn, s32 bufMax);
 StandTile *stanFindTileBelowPos(coord3d *pos, u8 *rooms, f32 *yRtn);
 f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, coord2d *end2);
-f32 stanPointLineDist(struct coord3d *point3D, coord2d *lineStart, coord2d *lineEnd);
+f32 stanPointLineDist(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd);
 f32 stanRaySegmentFrac(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd, coord2d *direction);
 s32 stanResolvePadTile(struct PadRecord *pad, char *tilename, struct StandTile **tile_stack);
 

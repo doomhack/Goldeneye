@@ -4,9 +4,9 @@
 
 void roomMtxSetOriginRoom(s32 roomIndex);
 void roomMtxTick(void);
-void roomGetWorldPos(s32 index, struct coord3d *scaledPos);
+void roomGetWorldPos(s32 index, coord3d *scaledPos);
 Gfx * roomMtxLoad(Gfx *DL, s32 index);
-struct coord3d* roomGetPos(s32 roomID);
+coord3d* roomGetPos(s32 roomID);
 
 void roomMtxInit(void);
 

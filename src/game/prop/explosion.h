@@ -83,7 +83,7 @@ struct Explosion {
     s8 player;
     s8 unk3CF;
 
-    struct coord3d pos;
+    coord3d pos;
     s16 room;
     s16 unk3DE;
 };
@@ -112,7 +112,7 @@ struct Scorch {
     u8 unk02;
     s8 unk03;
 
-    struct coord3d pos;
+    coord3d pos;
     f32 explosion_size;
     struct Model *model;
 
@@ -133,10 +133,10 @@ struct BulletImpact {
 struct FlyingParticles {
     s32 age; // 0 = free
 
-    struct coord3d position; // 0x04
-    struct coord3d rotation; // 0x10
-    struct coord3d position_drift; // 0x1c
-    struct coord3d rotation_drift; // 0x28
+    coord3d position; // 0x04
+    coord3d rotation; // 0x10
+    coord3d position_drift; // 0x1c
+    coord3d rotation_drift; // 0x28
 
     s32 unk34;
 
@@ -176,9 +176,9 @@ void explosionsReset(void);
 u8 smokePropTick(PropRecord* prop);
 u8 explosionPropTick(PropRecord* prop);
 void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* result);
-void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *normal, s16 impact_type, s16 room, PropRecord *prop, s8 model_render_pos_index, s8 room_clear_flag);
+void explosionCreateBulletImpact(coord3d *pos, coord3d *normal, s16 impact_type, s16 room, PropRecord *prop, s8 model_render_pos_index, s8 room_clear_flag);
 s32 explosionTick(PropRecord* explosionprop);
-s32 explosionCreate(PropRecord *source, struct coord3d *target_pos, StandTile *target_stan, s16 /* enum EXPLOSION_DEF */ explosion_type, s32 makeScorch, s32 player, u8 *rooms, s32 inAir);
+s32 explosionCreate(PropRecord *source, coord3d *target_pos, StandTile *target_stan, s16 /* enum EXPLOSION_DEF */ explosion_type, s32 makeScorch, s32 player, u8 *rooms, s32 inAir);
 
 void explosionInitScaleMtx(void);
 

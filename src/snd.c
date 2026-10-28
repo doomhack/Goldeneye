@@ -122,8 +122,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event);
 void sndDisposeSound(ALSoundState *state);
 void sndCreatePitchEvent(ALSoundState *state);
 void sndRemoveEvents(ALEventQueue *evtq, ALSoundState *state, u16 eventType);
-s32 sndCountAllocList(s16 *allocListCount, s16 *freeListCount);
-ALSoundState *sndSetupSound(struct ALBankAlt_s *soundBank, ALSound* sound);
+ALSoundState *sndSetupSound(ALSound* sound);
 void sndUnlinkClearSound(ALSoundState *state);
 u8 sndGetPlayingState(ALSoundState *state);
 void sndDeactivateAllSfxByFlag(u8 flag);
@@ -266,8 +265,6 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
         sound = soundState->sound;
 
         if (sound == NULL) {
-            s16 numFree, numAlloc;
-            sndCountAllocList(&numFree, &numAlloc);
             return;
         }
 
@@ -578,55 +575,12 @@ void sndRemoveEvents(ALEventQueue *evtq, ALSoundState *state, u16 eventType)
 }
 
 /**
- * Has similarities to
- * void alEvtqPrintEvtQueue(ALEventQueue *evtq)
- * from n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\event.c
- *
- * @param allocListCount Out param. Will contain the number of (next) nodes in the g_sndStates allocList.
- * @param freeListCount Out param. Will contain the number of (next) nodes in the g_sndStates freeList.
- * @return Number of (prev) nodes in the g_sndStates freeList.
- */
-s32 sndCountAllocList(s16 *allocListCount, s16 *freeListCount)
-{
-    u16 counter1;
-    u16 counter2;
-    u16 returnCounter;
-
-    ALEventQueue *evtq = (ALEventQueue *)&g_sndStates;
-
-    ALLink *freeListNodeForward = evtq->freeList.next;
-    ALLink *allocListNodeForward = evtq->allocList.next;
-    ALLink *freeListNodeBackward = evtq->freeList.prev;
-
-    for (counter1 = 0; freeListNodeForward != NULL; freeListNodeForward = freeListNodeForward->next)
-    {
-         counter1++;
-    }
-
-    for (counter2 = 0; allocListNodeForward != NULL; allocListNodeForward = allocListNodeForward->next)
-    {
-         counter2++;
-    }
-
-    for (returnCounter = 0; freeListNodeBackward != NULL; freeListNodeBackward = freeListNodeBackward->prev)
-    {
-         returnCounter++;
-    }
-
-    *allocListCount = (s16) counter2;
-    *freeListCount = (s16) counter1;
-
-    return returnCounter;
-}
-
-/**
  * initializes soundstate to sound from the free list (g_sndStates.free).
  *     accepts: A0=sound data offset?, A1=sample address?
  *
- * @param soundBank unused.
  * @param sound sound to use.
  */
-ALSoundState *sndSetupSound(struct ALBankAlt_s *soundBank, ALSound* sound)
+ALSoundState *sndSetupSound(ALSound* sound)
 {
     s32 decayTimeFlag;
     ALKeyMap *keymap = sound->keyMap;
@@ -814,7 +768,7 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
 
         sound = (soundBank->instArray[0]->soundArray[soundIndex]);
 
-        newState = sndSetupSound(soundBank, sound);
+        newState = sndSetupSound(sound);
 
         if (newState != NULL)
         {

@@ -6,9 +6,9 @@
 struct bg_header
 {
     u32 RESERVED;
-    struct room_data_table *roomdatatable;
-    struct portal_data_table *portaldatatable;
-    struct global_visibility_commands *globalviscommands;
+    struct room_data_table_entry *roomdatatable;
+    struct portal_data_table_entry *portaldatatable;
+    u32 *globalviscommands;
     u32 PADDING;
 };
 

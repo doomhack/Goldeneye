@@ -12,7 +12,7 @@
 #include "game/math/matrix.h"
 #include "game/math/physics.h"
 
-coord3d g_ZeroCoord = { 0, 0, 0 };
+coord3d g_ZeroCoord = { {0, 0, 0} };
 
 /** Loads a small random rotation, up to about 0.12 radians around each axis. */
 void physRandomTumble(Mtxf *mtx)

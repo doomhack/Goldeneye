@@ -293,7 +293,7 @@ OSMesg g_DmaMessageBuffer[AUDIO_DMA_QUEUE_SIZE];
 s32 amDmaCallback(s32 addr, s32 len, void* state);
 void amClearDmaBuffers(void);
 void amHandleFrameMessage(AudioInfo *info, AudioInfo *lastInfo);
-void amHandleDoneMessage(AudioInfo *info);
+void amHandleDoneMessage(void);
 void amMain(void* arg);
 ALDMAproc amDmaNew(DMAState** state);
 
@@ -393,7 +393,7 @@ void amStartAudioThread(void)
  *
  * @param arg unused.
  */
-void amMain(void* arg)
+void amMain([[maybe_unused]] void* arg)
 {
 	s32 count = 0;
 	s32 done = 0;
@@ -431,7 +431,7 @@ void amMain(void* arg)
 
 			osRecvMesg(&g_AudioManager.replyMessageQueue, (OSMesg *) &info, OS_MESG_BLOCK);
 
-			amHandleDoneMessage(info);
+			amHandleDoneMessage();
 			break;
 		case 5:
 			done = 1;
@@ -534,7 +534,7 @@ void amHandleFrameMessage(AudioInfo *info, AudioInfo *lastInfo)
  *
  * @param info Unused.
  */
-void amHandleDoneMessage(AudioInfo *info)
+void amHandleDoneMessage(void)
 {
     s32 samplesLeft;
     /*
@@ -582,7 +582,7 @@ void amHandleDoneMessage(AudioInfo *info)
  * @param state unused.
  * @return result from call to osVirtualToPhysical
  */
-s32 amDmaCallback(s32 addr, s32 len, void* state)
+s32 amDmaCallback(s32 addr, s32 len, [[maybe_unused]] void* state)
 {
     void *freeBuffer;
     s32 delta;

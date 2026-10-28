@@ -191,7 +191,7 @@ s32 g_CoopForceMovePlayer = 0;
 s32 g_SurroundBondWithExplosionsTicks;
 s32 g_PlayerTickExplodeCreatePosition;
 
-struct coord3d g_TankModelPositionOffset;
+coord3d g_TankModelPositionOffset;
 
 s32 g_TankEngineSfxVolume;
 
@@ -211,12 +211,12 @@ f32 g_TankEnterBondHorizAngleDeg;
 f32 g_TankEnterBondVertAngleDeg;
 
 
-struct coord3d g_EnterTankCoord;
+coord3d g_EnterTankCoord;
 
 
 ITEM_IDS starting_weapon[2];
 
-struct coord3d g_DeathCamPos;
+coord3d g_DeathCamPos;
 
 struct PropRecord* g_DeathCamProp;
 
@@ -906,9 +906,9 @@ void playerSetCameraMode(s32 mode)
     {
         f32 camdist;
         PropRecord *focusprop;
-        struct coord3d focuspos;
+        coord3d focuspos;
         StandTile *focustile;
-        struct coord3d collisionpos;
+        coord3d collisionpos;
         PropRecord *collisionprop;
         struct ChrRecord *chr;
 
@@ -1216,7 +1216,7 @@ void playerCalcIntroSwirlCamera(s32 index, f32 time, coord3d *pos, coord3d *look
  * JP address 7F07BB8C.
  * EU address 7F07B604.
 */
-void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, struct coord3d *pos, struct coord3d *pos2, struct coord3d *offset, StandTile **stan, struct coord3d *lookat)
+void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, coord3d *pos, coord3d *pos2, StandTile **stan, coord3d *lookat)
 {
     s32 i;
     f32 swirlangle;
@@ -1764,8 +1764,8 @@ void playerResetCollision(struct PlayerBond *col, coord3d *pos, StandTile *stan)
 */
 void tankUpdateTurretOffset(void) {
     struct ObjectRecord *obj;
-    struct coord3d *turretPos;
-    struct coord3d *bodyPos;
+    coord3d *turretPos;
+    coord3d *bodyPos;
     Mtxf rot;
     ModelNode **switches;
 
@@ -1775,8 +1775,8 @@ void tankUpdateTurretOffset(void) {
 
         /// TODO: Fix Model struct Data type.
         switches = obj->model->obj->Switches;
-        turretPos = (struct coord3d *)switches[2]->Data;
-        bodyPos = (struct coord3d *)switches[1]->Data;
+        turretPos = (coord3d *)switches[2]->Data;
+        bodyPos = (coord3d *)switches[1]->Data;
         mtx4LoadYRotation(M_TAU_F - g_TankTurretOrientationAngleRad, &rot);
         g_TankModelPositionOffset.f[0] = turretPos->f[0];
         g_TankModelPositionOffset.f[1] = turretPos->f[1];
@@ -1789,7 +1789,7 @@ void tankUpdateTurretOffset(void) {
 }
 
 
-void tankGetCollisionBounds(coord2d *tank_collision_bounds, struct coord3d *collision_position, f32 tank_orientation_angle)
+void tankGetCollisionBounds(coord2d *tank_collision_bounds, coord3d *collision_position, f32 tank_orientation_angle)
 {
     ObjectRecord *obj;
     f32 sinAngle;
@@ -1828,7 +1828,7 @@ void tankGetCollisionBounds(coord2d *tank_collision_bounds, struct coord3d *coll
 }
 
 
-s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, struct coord3d *coord_p, struct coord3d *coord_dest)
+s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, coord3d *coord_p, coord3d *coord_dest)
 {
     s32 ok;
 
@@ -1847,7 +1847,7 @@ s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s3
 }
 
 
-s32 tankTestCollision(struct coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, struct coord3d *hitFrom, struct coord3d *hitTo)
+s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, coord3d *hitFrom, coord3d *hitTo)
 {
     StandTile *tile;
     coord2d tank_collision_bounds[4];
@@ -1857,11 +1857,11 @@ s32 tankTestCollision(struct coord3d *collision_position, StandTile *starttile, 
     Model *model;
 
     ModelNode **switches;
-    struct coord3d *gunEnd;
-    struct coord3d *turretPos;
-    struct coord3d barrelEnd;
+    coord3d *gunEnd;
+    coord3d *turretPos;
+    coord3d barrelEnd;
     Mtxf rot;
-    struct coord3d *gunStart;
+    coord3d *gunStart;
 
     tile = starttile;
     ok = 0;
@@ -1935,13 +1935,13 @@ s32 tankTestCollision(struct coord3d *collision_position, StandTile *starttile, 
 }
 
 
-s32 tankTestCollisionAt(struct coord3d *collision_position, StandTile *tile, f32 tank_orientation_angle)
+s32 tankTestCollisionAt(coord3d *collision_position, StandTile *tile, f32 tank_orientation_angle)
 {
     return tankTestCollision(collision_position, tile, tank_orientation_angle, NULL, NULL);
 }
 
 
-s32 tankTryMoveTo(struct coord3d *pos, f32 angle, StandTile **outTile)
+s32 tankTryMoveTo(coord3d *pos, f32 angle, StandTile **outTile)
 {
     StandTile *tile;
 
@@ -2124,7 +2124,7 @@ static PropRecord *coopGetOverlappingPartner(void)
     return other;
 }
 
-s32 playerTestMove(struct coord3d *pos, StandTile **stan)
+s32 playerTestMove(coord3d *pos, StandTile **stan)
 {
     s32 ok;
     StandTile *tile;
@@ -2291,21 +2291,21 @@ s32 playerTryMoveSimple(coord3d *next_pos, coord3d *collision_pt0, coord3d *coll
  * Perfect Dark, see bondwalk.c bwalk0f0c47d0, bondbike.c bbike0f0d36d4.
 */
 s32 playerTryMoveFraction(
-    struct coord3d *next_pos,
-    struct coord3d *collision1_pt0,
-    struct coord3d *collision1_pt1,
-    struct coord3d *collision2_pt0,
-    struct coord3d *collision2_pt1)
+    coord3d *next_pos,
+    coord3d *collision1_pt0,
+    coord3d *collision1_pt1,
+    coord3d *collision2_pt0,
+    coord3d *collision2_pt1)
 {
     StandTile *stan;
     f32 height;
     f32 always_30;
-    struct coord3d try_next_pos;
-    struct coord3d delta_pos;
-    struct coord3d circle;
-    struct coord2d edgeStart;
-    struct coord2d edgeEnd;
-    struct coord2d delta;
+    coord3d try_next_pos;
+    coord3d delta_pos;
+    coord3d circle;
+    coord2d edgeStart;
+    coord2d edgeEnd;
+    coord2d delta;
     f32 frac;
     f32 collision_radius;
 
@@ -2370,12 +2370,12 @@ s32 playerTryMoveFraction(
  *
  * US address 7F07D4C0.
  */
-s32 playerTryMoveAlongEdge(struct coord3d *prior_next_pos, struct coord3d *collision_pt0, struct coord3d *collision_pt1)
+s32 playerTryMoveAlongEdge(coord3d *prior_next_pos, coord3d *collision_pt0, coord3d *collision_pt1)
 {
-    struct coord3d delta_pos;
+    coord3d delta_pos;
     f32 tempf;
-    struct coord3d norm_collision_edge;
-    struct coord3d try_next_pos;
+    coord3d norm_collision_edge;
+    coord3d try_next_pos;
     StandTile *stan;
 
     delta_pos.f[0] = prior_next_pos->f[0] - g_CurrentPlayer->bond.collision_position.f[0];
@@ -2433,11 +2433,11 @@ s32 playerTryMoveAlongEdge(struct coord3d *prior_next_pos, struct coord3d *colli
  *
  * Perfect Dark bwalk0f0c4a5c.
 */
-s32 playerTryMoveRoundCorner(struct coord3d *prior_next_pos, struct coord3d *collision_pt0, struct coord3d *collision_pt1)
+s32 playerTryMoveRoundCorner(coord3d *prior_next_pos, coord3d *collision_pt0, coord3d *collision_pt1)
 {
-    struct coord3d delta_pos;
-    struct coord3d offset;
-    struct coord3d try_next_pos;
+    coord3d delta_pos;
+    coord3d offset;
+    coord3d try_next_pos;
     f32 height;
     f32 always_30;
     f32 tempf;
@@ -2533,11 +2533,11 @@ struct dummy_struct {
  * US address 7F07D960.
  * JP address 7F07DA34 (maybe).
  */
-void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
+void playerMoveWithCollision(coord3d *offset, s32 allow_scoot)
 {
-    struct coord3d next_pos;
-    struct coord3d collision1_pt0;
-    struct coord3d collision1_pt1;
+    coord3d next_pos;
+    coord3d collision1_pt0;
+    coord3d collision1_pt1;
     coord2d *polygon;
     s32 edges;
     struct TankRecord *tank_objrecord;
@@ -2545,11 +2545,11 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
     f32 *farr5;
     f32 *farr6;
     f32 tankheight;
-    struct coord3d collision2_pt0;
-    struct coord3d collision2_pt1;
+    coord3d collision2_pt0;
+    coord3d collision2_pt1;
     StandTile *stan;
-    struct coord3d collision3_pt0;
-    struct coord3d collision3_pt1;
+    coord3d collision3_pt0;
+    coord3d collision3_pt1;
     s32 tile_count;
     s32 i;
     s32 pick;
@@ -3696,10 +3696,10 @@ void watchTrigger(s32 instant)
             watchInitPauseTilt();
             watchZoomToDefault();
 
-            hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 23*2, 1, currentPlayerGetArmor());
+            hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 1, currentPlayerGetArmor());
             hudRenderGaugeBar(g_CurrentPlayer->watchArmorGdl, g_CurrentPlayer->armor_display_values, 0x2E);
 
-            hudMakeDamageSegments(g_CurrentPlayer->health_display_values, 23*2, -1, currentPlayerGetHealth());
+            hudMakeDamageSegments(g_CurrentPlayer->health_display_values, -1, currentPlayerGetHealth());
             hudRenderGaugeBar(g_CurrentPlayer->watchHealthGdl, g_CurrentPlayer->health_display_values, 0x2E);
 
             watchMenuOpen();
@@ -4641,8 +4641,8 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     StandTile *tile;
     f32 groundDist;
     f32 limit;
-    struct coord3d lookPos;
-    struct coord3d size;
+    coord3d lookPos;
+    coord3d size;
     f32 fovScale;
     f32 pitchInput;
     f32 fovY;
@@ -5664,7 +5664,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             }
             else
             {
-                chrStanPointPointIntersection(&g_CurrentPlayer->bond.collision_position, &g_CurrentPlayer->bond.theta_transform, (struct coord3d *) &lookPos);
+                chrStanPointPointIntersection(&g_CurrentPlayer->bond.collision_position, &g_CurrentPlayer->bond.theta_transform, (coord3d *) &lookPos);
                 dx = lookPos.f[0] - g_CurrentPlayer->bond.collision_position.f[0];
                 dz = lookPos.f[2] - g_CurrentPlayer->bond.collision_position.f[2];
                 groundDist = sqrtf((dx * dx) + (dz * dz));
@@ -6181,7 +6181,7 @@ void playerTickExplode(void)
         && (g_PlayerInvincible == FALSE)
         && g_SurroundBondWithExplosionsTicks < g_GlobalTimer)
     {
-        struct coord3d pos;
+        coord3d pos;
 
         pos.f[0] = g_CurrentPlayer->prop->pos.f[0];
         pos.f[1] = g_CurrentPlayer->prop->pos.f[1];
@@ -6230,7 +6230,7 @@ void playerTickExplode(void)
  */
 void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 {
-    struct coord3d move_offset;
+    coord3d move_offset;
     f32 ftemp;
     f32 theta;
     f32 animSideways;
@@ -6347,14 +6347,14 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     */
     if (g_PlayerIsInTank == 1)
     {
-        struct coord3d check_collision_p1;
-        struct coord3d check_collision_p2;
+        coord3d check_collision_p1;
+        coord3d check_collision_p2;
         s32 step;
         f32 curTankAngleRad;
         f32 tankChangeInAngle;
         f32 savedTurretAngle;
-        struct coord3d tank_collision_pt1;
-        struct coord3d tank_collision_pt2;
+        coord3d tank_collision_pt1;
+        coord3d tank_collision_pt2;
         f32 tank_collision_dx;
         f32 tank_collision_dz;
 
@@ -6570,7 +6570,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         {
             // sp 0x300
             struct TankRecord *tankRec;
-            struct coord3d tank_move_offset;
+            coord3d tank_move_offset;
             Mtxf rot;
 
             tankRec = (struct TankRecord *)g_PlayerTankProp->obj;
@@ -6684,7 +6684,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         */
 
         Mtxf seatRot;
-        struct coord3d seatPos;
+        coord3d seatPos;
         f32 turretYawDeg;
         f32 pitch;
         s32 step;
@@ -7341,7 +7341,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         f32 smoothY;
         ModelRoData_BoundingBoxRecord *bbox;
         Mtxf tankMtx;
-        struct coord3d tankPos;
+        coord3d tankPos;
         s32 step;
         coord2d tankBounds[4];
         // roomids
@@ -7417,7 +7417,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     f32 ymin;
                     f32 radius;
                     s32 missed;
-                    struct coord3d explosionPos;
+                    coord3d explosionPos;
                     struct ChrRecord *hitChr;
 
                     missed = 1;
@@ -7486,14 +7486,14 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
  * US address 7F086990.
  * EU address 7F086AB0.
 */
-void playerMoveFrozen(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
+void playerMoveFrozen(u16 buttons, u16 oldbuttons)
 {
-    struct coord3d property_pos;
-    struct coord3d property_pos2;
-    struct coord3d property_offset;
-    struct coord3d offset;
+    coord3d property_pos;
+    coord3d property_pos2;
+    coord3d property_offset;
+    coord3d offset;
     struct StandTile *room_pointer_tile;
-    struct coord3d stan_walk_start;
+    coord3d stan_walk_start;
 
     property_pos = g_DefaultFrozenPlayerPos;
     property_pos2 = g_DefaultFrozenPlayerPos2;
@@ -7526,7 +7526,7 @@ void playerMoveFrozen(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         return;
     }
 
-    playerTickFrozenCamera(buttons, oldbuttons, &property_pos, &property_pos2, &property_offset, &room_pointer_tile, &stan_walk_start);
+    playerTickFrozenCamera(buttons, oldbuttons, &property_pos, &property_pos2, &room_pointer_tile, &stan_walk_start);
     playerSetCameraModeRaw(1);
     playerSetPosition(&property_pos, &property_pos2, &property_offset, room_pointer_tile, &stan_walk_start);
 }
@@ -7829,7 +7829,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
     }
     else
     {
-        playerMoveFrozen(stick_x, stick_y, buttons, (u16) g_CurrentPlayer->buttons_pressed);
+        playerMoveFrozen(buttons, (u16) g_CurrentPlayer->buttons_pressed);
     }
 
 #if defined(BUGFIX_R1)
@@ -8391,11 +8391,11 @@ Gfx *hudRenderHealthBars(Gfx *gdl)
     Mtxf lookatmtxf;
 
     //Set up armor bars.
-    hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 0x2e, 1, g_CurrentPlayer->apparentarmour);
+    hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 1, g_CurrentPlayer->apparentarmour);
     hudRenderGaugeBar(g_CurrentPlayer->watchArmorGdl, g_CurrentPlayer->armor_display_values, 0x2e);
 
     // Set up health bars.
-    hudMakeDamageSegments(g_CurrentPlayer->health_display_values, 0x2e, -1, g_CurrentPlayer->apparenthealth);
+    hudMakeDamageSegments(g_CurrentPlayer->health_display_values, -1, g_CurrentPlayer->apparenthealth);
     hudRenderGaugeBar(g_CurrentPlayer->watchHealthGdl, g_CurrentPlayer->health_display_values, 0x2e);
 
     // Create an orthographic render state for the gauge.
@@ -9876,8 +9876,8 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 
     if (g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0x0)
     {
-        hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 0x2E, 1, currentPlayerGetArmor());
-        hudMakeDamageSegments(g_CurrentPlayer->health_display_values, 0x2E, -1, currentPlayerGetHealth());
+        hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 1, currentPlayerGetArmor());
+        hudMakeDamageSegments(g_CurrentPlayer->health_display_values, -1, currentPlayerGetHealth());
     }
 
     if (!isMpGame() || (g_MpStopPlay == 0 && g_MpGameOver == 0))
@@ -10139,7 +10139,7 @@ coord3d * playerGetPos3(void)
     return &g_CurrentPlayer->bond.pos3;
 }
 
-struct coord3d *playerGetPrevPos(void)
+coord3d *playerGetPrevPos(void)
 {
     return &g_CurrentPlayer->bondprevpos;
 }

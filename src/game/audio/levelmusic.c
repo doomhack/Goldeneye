@@ -98,6 +98,7 @@ void levelMusicSetState(MUSICSTATE state)
             default:
                 break;
         }
+        [[fallthrough]]; // old state's switch didn't return: carry on as the next state
 
         case MUSICSTATE_LEVEL:
         switch (state)
@@ -133,6 +134,7 @@ void levelMusicSetState(MUSICSTATE state)
             default:
                 break;
         }
+        [[fallthrough]]; // old state's switch didn't return: carry on as the next state
 
         case MUSICSTATE_XTRACK:
         switch (state)
@@ -163,6 +165,7 @@ void levelMusicSetState(MUSICSTATE state)
             default:
                 break;
         }
+        [[fallthrough]]; // old state's switch didn't return: carry on as the next state
 
         case MUSICSTATE_WATCH:
         switch (state)
@@ -200,6 +203,7 @@ void levelMusicSetState(MUSICSTATE state)
             default:
                 break;
         }
+        [[fallthrough]]; // old state's switch didn't return: carry on as the next state
 
         case MUSICSTATE_LEVEL_AMBIENT:
         switch (state)
@@ -234,6 +238,7 @@ void levelMusicSetState(MUSICSTATE state)
             default:
                 break;
         }
+        [[fallthrough]]; // old state's switch didn't return: carry on as the next state
 
         case MUSICSTATE_XTRACK_AMBIENT:
         switch (state)
@@ -265,6 +270,7 @@ void levelMusicSetState(MUSICSTATE state)
             default:
                 break;
         }
+        [[fallthrough]]; // old state's switch didn't return: carry on as the next state
 
         case MUSICSTATE_MP_DEATH:
         switch (state)

@@ -83,16 +83,15 @@ s32 ammoGetHeld(AMMOTYPE ammotype);
 extern f32 g_TankShellSpeed;
 extern u32 watchControllerButtonBases[];
 extern GunModelFileRecord gitem_structs[];
-extern struct gun_trigger_state g_ZeroTriggerState;
 extern Lights1 g_WeaponEnvmapLight;
 extern ALSoundState *g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
-extern struct RicochetSoundsSmall ricochet_sounds_small;
-extern struct PunchSounds punch_sounds;
-extern struct BulletFleshSounds bullet_flesh_sounds;
-extern struct LaserRichochetSounds laser_ricochet_sounds;
-extern struct RicochetSoundsLarge ricochet_sounds_large;
-extern struct sfx2 watchlaser_fire_sounds;
-extern struct sfx3 knife_throw_sounds;
+extern u16 ricochet_sounds_small[20];
+extern u16 punch_sounds[3];
+extern u16 bullet_flesh_sounds[2];
+extern u16 laser_ricochet_sounds[2];
+extern u16 ricochet_sounds_large[36];
+extern u16 watchlaser_fire_sounds[2];
+extern u16 knife_throw_sounds[3];
 extern Weapon1PTransformKeyframe knifeSlashKeyframes1[];
 extern Weapon1PTransformKeyframe knifeSlashKeyframes2[];
 extern Weapon1PTransformKeyframe throwKnifeDrawBackKeyframes[];
@@ -311,7 +310,7 @@ void gunUpdateAndFire(GUNHAND handnum)
     Mtxf flash2mtx;
     Mtxf tmpmtx;
     ModelFileHeader *mdlhdr;
-    coord3d gunofs = {0.0f, 0.0f, 0.0f};
+    coord3d gunofs = {{0.0f, 0.0f, 0.0f}};
     Mtxf rotmtx;
     Mtxf aimmtx;
     struct hand *hand;
@@ -401,8 +400,8 @@ void gunUpdateAndFire(GUNHAND handnum)
      * Gun sway system. This moves the held weapons in figure-eight pattern which becomes bigger depending how fast the player is moving.
      */
     blendedpos = (coord3d){0};
-    blendedlook = (coord3d){0.0f, 0.0f, -1.0f};
-    blendedup = (coord3d){0.0f, 1.0f, 0.0f};
+    blendedlook = (coord3d){{0.0f, 0.0f, -1.0f}};
+    blendedup = (coord3d){{0.0f, 1.0f, 0.0f}};
 
     i = hand->curblendpos;
 
@@ -514,19 +513,19 @@ void gunUpdateAndFire(GUNHAND handnum)
 
     if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
     {
-            trigrot = (coord3d){6.2536321f, 6.2592888f, 0.204238f};
+            trigrot = (coord3d){{6.2536321f, 6.2592888f, 0.204238f}};
             mtx4LoadRotation(&trigrot, &tmpmtx);
             mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
     }
     else if (item == ITEM_TASER)
     {
-        taserrot = (coord3d){0.25044999f, 0.90482301f, 0.28716999f};
+        taserrot = (coord3d){{0.25044999f, 0.90482301f, 0.28716999f}};
         mtx4LoadRotation(&taserrot, &tmpmtx);
         mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
     }
     else if ((item == ITEM_FIST) && (g_CurrentPlayer->cur_item_weapon_getname == ITEM_SNIPERRIFLE))
     {
-        fistrot = (coord3d){1.715736f, 0.37460899f, 0.92193699f};
+        fistrot = (coord3d){{1.715736f, 0.37460899f, 0.92193699f}};
         mtx4LoadRotation(&fistrot, &tmpmtx);
         mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
         gunofs.x += -2.5f;
@@ -1161,7 +1160,7 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode)
 
     if (flash->age >= 0)
     {
-        templatevtx = (Vtx){0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff};
+        templatevtx = (Vtx){{{0, 0, 0}, 0, {0, 0}, {0xff, 0xff, 0xff, 0xff}}};
         playerpos = playerGetPos();
         startoffset = flash->dist;
         dist = flash->length;
@@ -1745,7 +1744,7 @@ earlyreturn:
  * The matrix for one button of the watch menu's controller model:
  * out = m5 * translate(pos) * m3 * m2 * m1 * translate(base).
  */
-void watchControllerButtonMtx(struct coord3d *base, Mtxf *m1, Mtxf *m2, Mtxf *m3, struct coord3d *pos, Mtxf *m5, Mtxf *out)
+void watchControllerButtonMtx(coord3d *base, Mtxf *m1, Mtxf *m2, Mtxf *m3, coord3d *pos, Mtxf *m5, Mtxf *out)
 {
     Mtxf translation;
 
@@ -1769,7 +1768,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     Mtxf nodeMtx;
     Mtxf rotMtx;
     struct ModelFileHeader* objheader;
-    struct coord3d* position;
+    coord3d* position;
     Mtxf* matrices;
     ModelNode* node;
     Mtxf buttonMtx;
@@ -1779,30 +1778,30 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     Mtxf tiltMtx;
     Mtxf viewMtx;
     Mtxf identityMtx;
-    struct coord3d coord_node2;
-    struct coord3d coord_node11_pos;
-    struct coord3d coord_node11_base;
-    struct coord3d coord_node4_pos;
-    struct coord3d coord_node4_base;
-    struct coord3d coord_node5_pos;
-    struct coord3d coord_node5_base;
-    struct coord3d coord_node6_pos;
-    struct coord3d coord_node6_base;
-    struct coord3d coord_node7_pos;
-    struct coord3d coord_node7_base;
-    struct coord3d coord_node9_pos;
-    struct coord3d coord_node9_base;
-    struct coord3d coord_node8_pos;
-    struct coord3d coord_node8_base;
-    struct coord3d coord_node10_pos;
-    struct coord3d coord_node10_base;
-    struct coord3d coord_node3_pos;
+    coord3d coord_node2;
+    coord3d coord_node11_pos;
+    coord3d coord_node11_base;
+    coord3d coord_node4_pos;
+    coord3d coord_node4_base;
+    coord3d coord_node5_pos;
+    coord3d coord_node5_base;
+    coord3d coord_node6_pos;
+    coord3d coord_node6_base;
+    coord3d coord_node7_pos;
+    coord3d coord_node7_base;
+    coord3d coord_node9_pos;
+    coord3d coord_node9_base;
+    coord3d coord_node8_pos;
+    coord3d coord_node8_base;
+    coord3d coord_node10_pos;
+    coord3d coord_node10_base;
+    coord3d coord_node3_pos;
     Mtxf stickMtx;
-    struct coord3d coord_node3_base;
-    struct coord3d coord_node1_pos;
-    struct coord3d coord_node1_base;
-    struct coord3d coord_node12_pos;
-    struct coord3d coord_node12_base;
+    coord3d coord_node3_base;
+    coord3d coord_node1_pos;
+    coord3d coord_node1_base;
+    coord3d coord_node12_pos;
+    coord3d coord_node12_base;
 
     renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
@@ -1908,7 +1907,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // R
             else if (i == 11)
             {
-                coord_node11_base = ((struct coord3d *)watchControllerButtonBases)[5];
+                coord_node11_base = ((coord3d *)watchControllerButtonBases)[5];
                 coord_node11_pos = buttonpositions->r;
 
                 if (joyGetButtons(*contpadnum, R_TRIG))
@@ -1923,7 +1922,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // C-Up
             else if (i == 4)
             {
-                coord_node4_base = ((struct coord3d *)watchControllerButtonBases)[6];
+                coord_node4_base = ((coord3d *)watchControllerButtonBases)[6];
                 coord_node4_pos = buttonpositions->cUp;
 
                 if (joyGetButtons(*contpadnum, U_CBUTTONS))
@@ -1938,7 +1937,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // C-Down
             else if (i == 5)
             {
-                coord_node5_base = ((struct coord3d *)watchControllerButtonBases)[7];
+                coord_node5_base = ((coord3d *)watchControllerButtonBases)[7];
                 coord_node5_pos = buttonpositions->cDown;
 
                 if (joyGetButtons(*contpadnum, D_CBUTTONS))
@@ -1953,7 +1952,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // C-Left
             else if (i == 6)
             {
-                coord_node6_base = ((struct coord3d *)watchControllerButtonBases)[8];
+                coord_node6_base = ((coord3d *)watchControllerButtonBases)[8];
                 coord_node6_pos = buttonpositions->cLeft;
 
                 if (joyGetButtons(*contpadnum, L_CBUTTONS))
@@ -1968,7 +1967,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // C-Right
             else if (i == 7)
             {
-                coord_node7_base = ((struct coord3d *)watchControllerButtonBases)[9];
+                coord_node7_base = ((coord3d *)watchControllerButtonBases)[9];
                 coord_node7_pos = buttonpositions->cRight;
 
                 if (joyGetButtons(*contpadnum, R_CBUTTONS))
@@ -1983,7 +1982,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // B
             else if (i == 9)
             {
-                coord_node9_base = ((struct coord3d *)watchControllerButtonBases)[10];
+                coord_node9_base = ((coord3d *)watchControllerButtonBases)[10];
                 coord_node9_pos = buttonpositions->b;
 
                 if (joyGetButtons(*contpadnum, B_BUTTON))
@@ -1998,7 +1997,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // A
             else if (i == 8)
             {
-                coord_node8_base = ((struct coord3d *)watchControllerButtonBases)[11];
+                coord_node8_base = ((coord3d *)watchControllerButtonBases)[11];
                 coord_node8_pos = buttonpositions->a;
 
                 if (joyGetButtons(*contpadnum, A_BUTTON))
@@ -2013,7 +2012,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // L
             else if (i == 10)
             {
-                coord_node10_base = ((struct coord3d *)watchControllerButtonBases)[12];
+                coord_node10_base = ((coord3d *)watchControllerButtonBases)[12];
                 coord_node10_pos = buttonpositions->l;
 
                 if (joyGetButtons(*contpadnum, L_TRIG))
@@ -2028,7 +2027,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // D-pad
             else if (i == 3)
             {
-                coord_node3_base = ((struct coord3d *)watchControllerButtonBases)[13];
+                coord_node3_base = ((coord3d *)watchControllerButtonBases)[13];
                 coord_node3_pos = buttonpositions->dPad;
                 mtx4LoadIdentity(&stickMtx);
 
@@ -2058,7 +2057,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // Start
             else if (i == 1)
             {
-                coord_node1_base = ((struct coord3d *)watchControllerButtonBases)[14];
+                coord_node1_base = ((coord3d *)watchControllerButtonBases)[14];
                 coord_node1_pos = buttonpositions->start;
 
                 if (joyGetButtons(*contpadnum, START_BUTTON))
@@ -2073,7 +2072,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
             // Z
             else if (i == 12)
             {
-                coord_node12_base = ((struct coord3d *)watchControllerButtonBases)[15];
+                coord_node12_base = ((coord3d *)watchControllerButtonBases)[15];
                 coord_node12_pos = buttonpositions->z;
 
                 if (joyGetButtons(*contpadnum, Z_TRIG))
@@ -2138,9 +2137,6 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
     u32 rnd1;
     u32 rnd2;
     ALSoundState **sound_state;
-    struct RicochetSoundsSmall ricochet_sounds_small_copy;
-    struct PunchSounds punch_sounds_copy;
-    struct BulletFleshSounds bullet_flesh_sounds_copy;
     u32 sfx_index;
 
     volume = sndVolumeForPosDefault(&prop->pos);
@@ -2176,8 +2172,7 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
             }
             else
             {
-                ricochet_sounds_small_copy = ricochet_sounds_small;
-                sndPlaySfx(g_musicSfxBufferPtr, ricochet_sounds_small_copy.arr[rnd1 % 20], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, ricochet_sounds_small[rnd1 % 20], sound_state);
             }
 
             if (*sound_state != NULL)
@@ -2193,13 +2188,11 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
             }
             else if (item == ITEM_FIST)
             {
-                punch_sounds_copy = punch_sounds;
-                sndPlaySfx(g_musicSfxBufferPtr, punch_sounds_copy.arr[rnd1 % 3], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, punch_sounds[rnd1 % 3], sound_state);
             }
             else
             {
-                bullet_flesh_sounds_copy = bullet_flesh_sounds;
-                sndPlaySfx(g_musicSfxBufferPtr, bullet_flesh_sounds_copy.arr[rnd1 % 2], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, bullet_flesh_sounds[rnd1 % 2], sound_state);
             }
 
             if (*sound_state != NULL) {
@@ -2253,8 +2246,6 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
     ALSoundState **sound_state;
     u32 rnd1;
     u32 rnd2;
-    struct LaserRichochetSounds laser_copied;
-    struct RicochetSoundsLarge rico_copied;
     u32 sfx_index;
     struct image_sound *img_sound;
 
@@ -2271,13 +2262,11 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
         {
             if (item == ITEM_LASER)
             {
-                laser_copied = laser_ricochet_sounds;
-                sndPlaySfx(g_musicSfxBufferPtr, laser_copied.arr[rnd1 % 2], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, laser_ricochet_sounds[rnd1 % 2], sound_state);
             }
             else
             {
-                rico_copied = ricochet_sounds_large;
-                sndPlaySfx(g_musicSfxBufferPtr, rico_copied.arr[rnd1 % 36], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, ricochet_sounds_large[rnd1 % 36], sound_state);
             }
         }
 
@@ -2405,7 +2394,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 ammoType;
     struct hand *other;
     s32 playSound;
-    struct sfx2 laserSounds;
     struct WeaponStats *weapon_stats;
     s32 recoilTicks;
     s32 settleTicks;
@@ -2429,7 +2417,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 watchRaiseAngle;
     f32 slashTime;
     enum ITEM_IDS weapon;
-    struct sfx3 knifeSounds;
     struct PropRecord *prop;
     Weapon1PTransformKeyframe *punchKeyframes;
     f32 recoilAngle;
@@ -2444,7 +2431,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 ammoType;
     struct hand *other;
     s32 playSound;
-    struct sfx2 laserSounds;
     struct WeaponStats *weapon_stats;
     s32 recoilTicks;
     s32 settleTicks;
@@ -2470,7 +2456,6 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 watchRaiseAngle;
     f32 slashTime;
     enum ITEM_IDS otherWeapon;
-    struct sfx3 knifeSounds;
     enum ITEM_IDS weapon;
     Weapon1PTransformKeyframe *punchKeyframes;
     struct PropRecord *prop;
@@ -2938,8 +2923,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
                     if (weapon == ITEM_WATCHLASER)
                     {
-                        laserSounds = watchlaser_fire_sounds;
-                        sndPlaySfx(g_musicSfxBufferPtr, laserSounds.half[randomGetNext() & 1], NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, watchlaser_fire_sounds[randomGetNext() & 1], NULL);
                     }
                 }
             }
@@ -3096,7 +3080,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 handptr->recoilPos.z = ((handptr->recoilToPos.z - handptr->recoilFromPos.z) * recoilFrac) + handptr->recoilFromPos.z;
 
                 mtx4LoadXRotation(recoilAngle, &handptr->animMtx);
-                mtx4SetTranslation((struct coord3d *)&handptr->recoilPos.x, &handptr->animMtx);
+                mtx4SetTranslation((coord3d *)&handptr->recoilPos.x, &handptr->animMtx);
             }
         }
     }
@@ -3128,7 +3112,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             handptr->recoilPos.z = ((handptr->recoilToPos.z - handptr->recoilFromPos.z) * returnFrac) + handptr->recoilFromPos.z;
 
             mtx4LoadXRotation(recoilAngle, &handptr->animMtx);
-            mtx4SetTranslation((struct coord3d *)&handptr->recoilPos.x, &handptr->animMtx);
+            mtx4SetTranslation((coord3d *)&handptr->recoilPos.x, &handptr->animMtx);
         }
         else
         {
@@ -3636,8 +3620,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 || (handptr->weapon_action_state == GUN_ANIM_STATE_KNIFE_SLASH2_BEGIN))
                 && (handptr->stateTime >= WHEN_11_FLD890_1))
         {
-            knifeSounds = knife_throw_sounds;
-            sndPlaySfx(g_musicSfxBufferPtr, knifeSounds.half[randomGetNext() % 3U], NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, knife_throw_sounds[randomGetNext() % 3U], NULL);
 
 
             if (handptr->weapon_action_state == GUN_ANIM_STATE_KNIFE_SLASH1_BEGIN)
@@ -4078,7 +4061,7 @@ f32 itemGetWatchRotY(ITEM_IDS item)
 }
 
 
-f32 itemGetWatchFov(s32 unk) {
+f32 itemGetWatchFov(void) {
   return 45.0f;
 }
 
@@ -4107,7 +4090,7 @@ char *itemGetChoiceText(ITEM_IDS item)
 }
 
 
-f32 itemGetEquipFov(s32 unk)
+f32 itemGetEquipFov(void)
 {
 	return 45.0f;
 }
@@ -4227,9 +4210,9 @@ void gunTickGameplay(s32 triggerOn)
     enum ITEM_IDS weapon_id_right;
     enum ITEM_IDS weapon_id_left;
     enum GUNHAND hand = GUNLEFT;
-    struct rgba_u8 weapon_color;
+    rgba_u8 weapon_color;
 
-    trigger_state = g_ZeroTriggerState;
+    trigger_state = (struct gun_trigger_state){};
 
     // Save previous trigger state.
     g_CurrentPlayer->prev_trigger_down = g_CurrentPlayer->trigger_down;
@@ -4705,7 +4688,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
     Mtxf rotmtx;
 #endif
     f32 rand;
-    f32 frac;
+    f32 frac = 0.0f;
 #if VERSION_EU
     s32 randlimit;
 #endif
@@ -5007,7 +4990,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #endif
     f32 rand;
     s32 limit;
-    f32 frac;
+    f32 frac = 0.0f;
 #if VERSION_EU
     s32 randlimit;
 #endif
@@ -6309,7 +6292,7 @@ s32 shotFindBgHitInConnectedRooms(s32 startroom, coord3d *from, coord3d *to, coo
  * This seems to be a brute force/fallback version of the function above, shotFindBgHitInConnectedRooms.
  * @return 0 if no bg hit in any unvisited room, otherwise the room number containing the closest bg hit.
  */
-s32 shotFindBgHit(s32 unused, coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *besthit)
+s32 shotFindBgHit(coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *besthit)
 {
     f32 dx;
     f32 dy;
@@ -6405,9 +6388,9 @@ void shotFireBullet(s32 hand)
     s32 gotbghit;
     coord3d visiblehitpos;
     s32 bestroom;
-    s32 besttexture;
+    s32 besttexture = 0;
     HitThing bghit;
-    f32 negz;
+    f32 negz = 0.0f;
     coord3d besthitpos;
     s32 pad;
     StandTile *fromtile;
@@ -6512,7 +6495,7 @@ void shotFireBullet(s32 hand)
             }
             else
             {
-                bestroom = shotFindBgHit(stanGetTileRoom(currentPlayerGetProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
+                bestroom = shotFindBgHit(playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
             }
         }
 

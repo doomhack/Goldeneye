@@ -155,8 +155,8 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, struc
     s32 totalbytesout;
     s32 format;
     bool writetocache;
-    s32 width;
-    s32 height;
+    s32 width = 0;
+    s32 height = 0;
     u8 *end;
     u8 *start;
     s32 numcolours;
@@ -318,7 +318,7 @@ s32 texAlignIndices(u8 *src, s32 width, s32 height, s32 format, u8 *dst)
     s32 x;
     s32 y;
     u8 *outptr;
-    s32 indicesperbyte;
+    s32 indicesperbyte = 0;
 
     outptr = dst;
 
@@ -829,13 +829,13 @@ s32 texInflateNonZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, st
     u32 stack;
     s32 i;
     s32 numimages;
-    s32 width;
-    s32 height;
+    s32 width = 0;
+    s32 height = 0;
     s32 compmethod;
     s32 j;
     s32 totalbytesout = 0;
     s32 imagebytesout;
-    s32 format;
+    s32 format = 0;
     s32 value;
     u8 *start;
     u8 *end;
@@ -1336,8 +1336,8 @@ void texInflateHuffman(u8 *dst, s32 numiterations, s32 chansize)
 	s32 sum;
 	u16 minfreq1;
 	u16 minfreq2;
-	s32 minindex1; // 5c
-	s32 minindex2; // 58
+	s32 minindex1 = 0; // 5c
+	s32 minindex2 = 0; // 58
 	s32  done = 0;
 
 	// Read the frequencies list
@@ -1986,8 +1986,8 @@ s32 texInflateLookupFromBuffer(u8 *src, s32 width, s32 height, u8 *dst, u8 *look
     s32 y;
     u32 *lookup32;
     u16 *lookup16;
-    u8 *src8;
-    u16 *src16;
+    u8 *src8 = NULL;
+    u16 *src16 = NULL;
     u32 *dst32;
     u16 *dst16;
     u8 *dst8;
@@ -2164,7 +2164,7 @@ void texSwapAltRowBytes(u8 *dst, s32 width, s32 height, s32 format)
 {
 	s32 x;
 	s32 y;
-	s32 alignedwidth;
+	s32 alignedwidth = 0;
 	u32 *row = (u32 *)dst;
 	s32 tmp;
 

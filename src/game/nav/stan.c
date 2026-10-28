@@ -42,8 +42,8 @@ s32 g_StanNumRooms; //region?
 // All relating to a saved collision, but not one struct
 StandTile *g_StanHitTile;
 s32 g_StanHitEdge;
-struct coord2d g_StanHitLineA;
-struct coord2d g_StanHitLineB;
+coord2d g_StanHitLineA;
+coord2d g_StanHitLineB;
 f32 g_StanHitFrac;
 
 PropRecord * g_StanHitProp;
@@ -886,7 +886,6 @@ bool stanWalkLine(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
     StandTile *nextTile;
     f32 lineNegDz;
     f32 lineDx;
-    s32 uninitialized;
     s32 edgeIndex;
     s32 crossings;
     s32 iterationCount;
@@ -910,7 +909,7 @@ bool stanWalkLine(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
     iterationCount = 0;
     lineDx = dest_x - start_x;
 
-    savedPointIndex = uninitialized;\
+    savedPointIndex = 0; // was left uninitialised: used if every crossing led back
     while (1)
     {
         crossings = 0;
@@ -940,11 +939,6 @@ bool stanWalkLine(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
                     {
                         savedPointIndex = edgeIndex;
                         nextTile = curPoint[1].link >> 4 != 0 ? linkedTile : NULL;
-                    }
-
-                    // Optimized away but required to allocate edgeIndex to the target register.
-                    if (edgeIndex && edgeIndex && edgeIndex)
-                    {
                     }
                 }
             }
@@ -1011,7 +1005,7 @@ s32 stanLineRooms(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f
 /*
 * Address: 0x0x7f0b0c98
 */
-void stanLineRoomsCallback(StandTile *tile, StandTile *unused, struct StandTileWalkCallbackRecord *data)
+void stanLineRoomsCallback(StandTile *tile, [[maybe_unused]] StandTile *unused, struct StandTileWalkCallbackRecord *data)
 {
     s32 newRoom;
 
@@ -1104,12 +1098,12 @@ s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f3
     struct PropRecord *prop;
     s32 retval;
     StandTile *tile;
-    struct coord2d from;
-    struct coord2d to;
+    coord2d from;
+    coord2d to;
     f32 hitFrac;
     s32 point_index;
-    struct coord2d edgeA;
-    struct coord2d edgeB;
+    coord2d edgeA;
+    coord2d edgeB;
     s32 blocked;
     s32 numrooms;
     s32 rooms[0x14];
@@ -1288,7 +1282,7 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
     PropRecord *prop;
     coord2d lineStart;
     coord2d lineEnd;
-    struct coord2d *tmp;
+    coord2d *tmp;
     coord2d edgeStart;
     coord2d edgeEnd;
     s32 i;
@@ -1769,7 +1763,7 @@ s32 stanLocusAddTileRoomIfNew(StandTile *tile, struct StandTileLocusCallbackReco
 }
 
 
-s32 stanCircleRoomsHitCallback(StandTile **tileStack, s32 stackHeight, struct StandTileLocusCallbackRecord* data) {
+s32 stanCircleRoomsHitCallback([[maybe_unused]] StandTile **tileStack, [[maybe_unused]] s32 stackHeight, struct StandTileLocusCallbackRecord* data) {
     data->nearEdgeCount += 1;
     return 1;
 }
@@ -1811,7 +1805,7 @@ s32 stanCircleCrouchCallback(StandTile *tile, struct StandTileLocusCallbackRecor
 }
 
 
-s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, f32 edgeDist, f32 pointDistA, f32 pointDistB, struct StandTileLocusCallbackRecord *record)
+s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, [[maybe_unused]] f32 edgeDist, [[maybe_unused]] f32 pointDistA, [[maybe_unused]] f32 pointDistB, struct StandTileLocusCallbackRecord *record)
 {
     u16 link;
     StandTile *target;
@@ -1973,7 +1967,7 @@ void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, struct 
  * 
  * For a given edge, return true if the edge is vertically above yThreshold.
  */
-s32 stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 distToPointA, f32 distToPointB, struct StandTileLocusCallbackRecord *record)
+s32 stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, [[maybe_unused]] f32 edgeDist, [[maybe_unused]] f32 distToPointA, [[maybe_unused]] f32 distToPointB, struct StandTileLocusCallbackRecord *record)
 {
     s32 pointCount = (tile->tail.half >> 12) & 0xf;
     s32 nextIndex = (edgeIndex + 1) % pointCount;
@@ -2224,7 +2218,7 @@ f32 stanGetPositionYValue(StandTile *tile, f32 p_x, f32 p_z)
 }
 
 
-void stanGetTileColour(StandTile *tile, f32 p_x, f32 p_z, u8 *rtn)
+void stanGetTileColour(StandTile *tile, u8 *rtn)
 {
     u8 B = (tile->mid.half >> 0x8) & 0xF;
     u8 C = (tile->mid.half >> 0x4) & 0xF;
@@ -2383,7 +2377,7 @@ s32 stanGetTileRoom(StandTile *tile)
 
 //incorrect here so that both this and bgGetRoomValue match
 
-Gfx *stanDebugDrawTile(Gfx *ptrdl, StandTile *tile, u32 RGBAColor) {
+Gfx *stanDebugDrawTile(Gfx *ptrdl) {
     return ptrdl;
 }
 
@@ -2415,7 +2409,7 @@ f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, co
 }
 
 
-f32 stanPointLineDist(struct coord3d *point3D, coord2d *lineStart, coord2d *lineEnd)
+f32 stanPointLineDist(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd)
 {
     f32 projectedDistance;
     f32 perpendicularDistance;
@@ -2589,7 +2583,7 @@ handlezero:
  */
 s32 stanResolvePadTile(struct PadRecord *pad, char *tilename, struct StandTile **tile_stack)
 {
-    struct coord3d coord;
+    coord3d coord;
    
     *tile_stack = stanMatchTileName(tilename);
     

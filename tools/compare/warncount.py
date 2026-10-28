@@ -42,10 +42,10 @@ def check(args, flags):
         if a == '-o':
             skip = True
             continue
-        if a in ('-w', '-MMD', '-MP'):
+        if a in ('-w', '-Werror', '-MMD', '-MP'):
             continue
         cmd.append(a)
-    cmd[1:1] = flags + ['-fsyntax-only']
+    cmd[1:1] = flags + ['-o', '/dev/null']
     return subprocess.run(cmd, capture_output=True, text=True).stderr
 
 

@@ -79,7 +79,7 @@ void modelFileLoadTextures(ModelFileHeader *objheader, char *name, u8 *dst, stru
                     size = (s32) ((((s32) (filedata + pcremaining)) - ((s32) objheader->Switches)) - (((u32) curgdl) & 0x00ffffff));
                 }
                 
-                modelNodeReplaceGdl((u32) objheader, curnode, curgdl, (Gfx *) replacementgdl);
+                modelNodeReplaceGdl(curnode, curgdl, (Gfx *) replacementgdl);
                 
                 replacementgdl += texLoadFromGdl( (Gfx *) ((((u8 *) objheader->Switches) + (((u32) curgdl) & 0x00ffffff)) + delta), size, (Gfx *) (((u8 *) objheader->Switches) + (replacementgdl & 0x00ffffff)), buffer);
             } 

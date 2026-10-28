@@ -210,10 +210,10 @@ s_impacttype g_ImpactTypes[] = {
 /* Unused. Kept after the explosion types in case anything reads past their end. */
 u32 g_ExplosionTypesPad = 0;
 
-Vtx g_ExplosionRenderPartDefaultVertex = {0, 0, 0, 0, 0, 0, 0xff, 0xff, 0xff, 0xff };
-Vtx g_SmokeRenderPartDefaultVertex = {0, 0, 0, 0, 0, 0, 0x0, 0x0, 0x0, 0x0 };
-Vtx g_ScorchDefaultVertex = {0, 0, 0, 0, 0, 0, 0x0, 0x0, 0x0, 0xDC };
-Vtx g_BulletImpactDefaultVertex = {0, 0, 0, 0, 0, 0, 0x0, 0x0, 0x0, 0xDC };
+Vtx g_ExplosionRenderPartDefaultVertex = {{{0, 0, 0}, 0, {0, 0}, {0xff, 0xff, 0xff, 0xff}} };
+Vtx g_SmokeRenderPartDefaultVertex = {{{0, 0, 0}, 0, {0, 0}, {0x0, 0x0, 0x0, 0x0}} };
+Vtx g_ScorchDefaultVertex = {{{0, 0, 0}, 0, {0, 0}, {0x0, 0x0, 0x0, 0xDC}} };
+Vtx g_BulletImpactDefaultVertex = {{{0, 0, 0}, 0, {0, 0}, {0x0, 0x0, 0x0, 0xDC}} };
 
 
 // rodata
@@ -225,8 +225,8 @@ s32 explosionRoundFloat(f32 value);
 void explosionSetBulletImpactAlpha(s32 index);
 void explosionInflictDamage(PropRecord *explosionprop, f32 horiz_range, f32 vert_range);
 void explosionInflictDamage(struct PropRecord *explosionprop, f32 horiz_range, f32 vert_range);
-void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room);
-Gfx *explosionRenderPart(struct ExplosionPart *part, Gfx *gdl, struct coord3d *coord);
+void explosionScorchTick(coord3d *pos, f32 explosion_size, s16 room);
+Gfx *explosionRenderPart(struct ExplosionPart *part, Gfx *gdl, coord3d *coord);
 
 /*** *************************************************************************************************************/
 
@@ -235,7 +235,7 @@ Gfx *explosionRenderPart(struct ExplosionPart *part, Gfx *gdl, struct coord3d *c
  * NTSC 0x7F09C250
 */
 s32
-explosionCreate(PropRecord *source, struct coord3d *target_pos, StandTile *target_stan, s16 explosion_type, s32 makeScorch, s32 player, u8 *rooms, s32 inAir)
+explosionCreate(PropRecord *source, coord3d *target_pos, StandTile *target_stan, s16 explosion_type, s32 makeScorch, s32 player, u8 *rooms, s32 inAir)
 {
     s_explosiontype *type;
     struct Explosion *exp;
@@ -659,8 +659,8 @@ s32 explosionTick(PropRecord* explosionprop)
 
     f32 lvupdate;
     s32 numparts;
-    struct coord3d bbmin;
-    struct coord3d bbmax;
+    coord3d bbmin;
+    coord3d bbmax;
 
 
     exp = explosionprop->explosion;
@@ -826,10 +826,10 @@ Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     s32 room;
     struct Explosion *exp;
-    struct coord3d *roompos;
+    coord3d *roompos;
     s32 frame;
 
-    struct bbox2d bbox;
+    bbox2d bbox;
 
     s32 maxframe;
 
@@ -899,17 +899,17 @@ Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha)
  * Perfect Dark Gfx *explosionRenderPart(struct explosion *exp, struct explosionpart *part, Gfx *gdl, struct coord *coord, s32 arg4)
  *
 */
-Gfx *explosionRenderPart(struct ExplosionPart *part, Gfx *gdl, struct coord3d *coord)
+Gfx *explosionRenderPart(struct ExplosionPart *part, Gfx *gdl, coord3d *coord)
 {
     f32 frac;
 
     Vtx template;
     Mtxf *camMtx;
-    struct coord3d *eyepos;
-    struct coord3d rightCos;
-    struct coord3d rightSin;
-    struct coord3d upCos;
-    struct coord3d upSin;
+    coord3d *eyepos;
+    coord3d rightCos;
+    coord3d rightSin;
+    coord3d upCos;
+    coord3d upSin;
 
     f32 dx;
     f32 dy;
@@ -1019,22 +1019,22 @@ Gfx *explosionRenderPart(struct ExplosionPart *part, Gfx *gdl, struct coord3d *c
  * Perfect Dark Gfx *smokeRenderPart(struct smoke *smoke, struct smokepart *part, Gfx *gdl, struct coord *coord, f32 size)
  *
 */
-Gfx *explosionSmokeRenderPart(struct Smoke *smoke, struct SmokePart *smoke_part, Gfx *gdl, struct coord3d *roompos)
+Gfx *explosionSmokeRenderPart(struct Smoke *smoke, struct SmokePart *smoke_part, Gfx *gdl, coord3d *roompos)
 {
     Vtx *vertices;
     Vtx template;
     Mtxf *mtx;
-    struct coord3d rightCos;
-    struct coord3d rightSin;
-    struct coord3d upCos;
-    struct coord3d upSin;
+    coord3d rightCos;
+    coord3d rightSin;
+    coord3d upCos;
+    coord3d upSin;
     f32 cosSize;
     f32 sinSize;
     f32 cx;
     f32 cy;
     f32 cz;
     u8 alpha;
-    struct coord3d *eyepos;
+    coord3d *eyepos;
     f32 dx;
     f32 dy;
     f32 dz;
@@ -1251,8 +1251,8 @@ s32 explosionSmokeTick(PropRecord *prop)
     f32 lvupdate;
     struct Smoke *smoke;
     struct SmokePart *part;
-    struct coord3d bbmin;
-	struct coord3d bbmax;
+    coord3d bbmin;
+	coord3d bbmax;
     f32 radius;
     s32 finished;
 
@@ -1434,8 +1434,8 @@ Gfx *explosionRenderPropSmoke(PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     struct Smoke *smoke;
     s32 i;
-    struct bbox2d bbox;
-    struct coord3d *roompos;
+    bbox2d bbox;
+    coord3d *roompos;
     s32 room;
 
 
@@ -1718,14 +1718,14 @@ Gfx *explosionRenderFlyingParticles(Gfx *gdl)
 
 /***
 */
-void explosionScorchTick(struct coord3d *pos, f32 explosion_size, s16 room)
+void explosionScorchTick(coord3d *pos, f32 explosion_size, s16 room)
 {
     Vtx template;
     f32 angle;
     f32 cosSize;
     f32 sinSize;
     u8 alpha;
-    struct coord3d *roompos;
+    coord3d *roompos;
     u32 shade;
 
     template = g_ScorchDefaultVertex;
@@ -1933,7 +1933,7 @@ void explosionSetBulletImpactAlpha(s32 index)
 
 /***
 */
-void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *normal, s16 impact_type, s16 room, PropRecord *prop, s8 model_render_pos_index, s8 room_clear_flag)
+void explosionCreateBulletImpact(coord3d *pos, coord3d *normal, s16 impact_type, s16 room, PropRecord *prop, s8 model_render_pos_index, s8 room_clear_flag)
 {
     Vtx template;
     f32 nx;
@@ -1943,13 +1943,13 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *normal, s1
     f32 hx;
     f32 hz;
     f32 rightX;
-    struct coord3d *roompos;
+    coord3d *roompos;
     f32 rightZ;
     f32 upX;
     f32 upY;
     f32 upZ;
     s32 shade;
-    struct coord3d centre;
+    coord3d centre;
     f32 halfw;
     f32 halfh;
     RenderPosView *renderpos;
@@ -1957,12 +1957,12 @@ void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *normal, s1
     f32 len;
     f32 rightlen;
     s32 i;
-    struct coord3d right;
-    struct coord3d up;
+    coord3d right;
+    coord3d up;
     s_impacttype *impact;
     u8 red;
-    u8 green;
-    u8 blue;
+    u8 green = 0;
+    u8 blue = 0;
 
     template = g_BulletImpactDefaultVertex;
 

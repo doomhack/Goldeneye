@@ -568,7 +568,7 @@ void bossMainloop(void)
                             viUpdateMode();
 
                             rspReplyMsg = (s32)(&localGfxDoneMsg);
-                            rspGfxTaskStart(firstGdl, gdl, 0, (s32*)rspReplyMsg);
+                            rspGfxTaskStart(firstGdl, gdl, (s32*)rspReplyMsg);
 
                             pendingGfx++;
                             memaSingleDefragPass();

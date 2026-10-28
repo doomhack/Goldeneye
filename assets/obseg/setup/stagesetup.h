@@ -10,7 +10,7 @@
 // typedef u16 PAD3D;
 
 
-// struct bbox
+// bbox
 // {
 //     float xmin;
 //     float xmax;
@@ -36,7 +36,7 @@
 //     coord3d look;
 //     char *plink;
 //     int unk;
-//     struct bbox bbox;
+//     bbox bbox;
 // };
 
 // struct s_pathTbl {

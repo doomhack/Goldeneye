@@ -1645,7 +1645,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiHitChrWithItemRecord *ai  = (AiHitChrWithItemRecord *)(AiListp + Offset);
                     ChrRecord              *chr = chrFindById(ChrEntityp, ai->CHR_NUM);
-                    vec3d                   vec = New_Vector();
+                    vec3d                   vec = {};
 
                     if (chr && chr->prop)
                     {
@@ -1665,7 +1665,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         PropRecord      *prop = chrGetEquippedWeaponPropWithCheck(chr1, GUNRIGHT);
                         WeaponObjRecord *weapon;
-                        vec3d            vec = New_Vector();
+                        vec3d            vec = {};
 
                         if (!prop) // not Right hand? try left
                         {
@@ -1769,7 +1769,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_TRYRunFromBond:
                 { // run from bond
                     AiTRYRunFromBondRecord *ai = (AiTRYRunFromBondRecord *)(AiListp + Offset);
-                    if (chrRemovedAiCommand27(ChrEntityp))
+                    if (chrRemovedAiCommand27())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -1821,7 +1821,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_TRYFindCover:
                 { // Find Cover
                     AiTRYFindCoverRecord *ai = (AiTRYFindCoverRecord *)(AiListp + Offset);
-                    if (chrRemovedAiCommand2B(ChrEntityp))
+                    if (chrRemovedAiCommand2B())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -1956,7 +1956,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFICanHearAlarm:
                 {
                     AiIFICanHearAlarmRecord *ai = (AiIFICanHearAlarmRecord *)(AiListp + Offset);
-                    if (chrCanHearAlarm(ChrEntityp))
+                    if (chrCanHearAlarm())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -3339,7 +3339,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiSetObjectiveBitfieldRecord *ai    = (AiSetObjectiveBitfieldRecord *)(AiListp + Offset);
                     s32                           flags = ntohl(ai->BITFIELD);
-                    chrSetStageFlags(ChrEntityp, flags);
+                    chrSetStageFlags(flags);
                     Offset += sizeof(AiSetObjectiveBitfieldRecord);
                     break;
                 }
@@ -3347,7 +3347,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiUnsetObjectiveBitfieldRecord *ai    = (AiUnsetObjectiveBitfieldRecord *)(AiListp + Offset);
                     s32                             flags = ntohl(ai->BITFIELD);
-                    chrUnsetStageFlags(ChrEntityp, flags);
+                    chrUnsetStageFlags(flags);
                     Offset += sizeof(AiUnsetObjectiveBitfieldRecord);
                     break;
                 }
@@ -3355,7 +3355,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFObjectiveBitfieldHasRecord *ai    = (AiIFObjectiveBitfieldHasRecord *)(AiListp + Offset);
                     u32                             flags = ntohl(ai->BITS);
-                    if (chrHasStageFlag(ChrEntityp, flags)) /* PD && ai->val[4] == 1) || (!chrHasStageFlag(ChrEntityp, flags) && ai->val[4] == 0  * */
+                    if (chrHasStageFlag(flags)) /* PD && ai->val[4] == 1) || (!chrHasStageFlag(flags) && ai->val[4] == 0  * */
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -3776,6 +3776,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                                     prop = chrGiveWeapon(ChrEntityp, PROP_CHRROCKETLAUNCH, ITEM_ROCKETLAUNCH, flags);
                                     //! Bug, No Break! relying on chrGiveWeapon checking weapon already given
+                                    [[fallthrough]];
                                 case ITEM_TIMEDMINE:
                                 case ITEM_PROXIMITYMINE:
                                 default:
@@ -4714,7 +4715,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_GasLeakAndFadeFog:
                 {
-                    coord3d emitPos = New_Coord3d();
+                    coord3d emitPos = {};
                     gasStart(&emitPos);
                     Offset += sizeof(AiGasLeakAndFadeFogRecord);
                     break;

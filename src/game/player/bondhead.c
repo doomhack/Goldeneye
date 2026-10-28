@@ -163,11 +163,11 @@ void bheadSetdamp(f32 headdamp)
 }
 
 
-coord3d initialHeadPosition = { 0.0f, 0.0f, 0.0f };
+coord3d initialHeadPosition = { {0.0f, 0.0f, 0.0f} };
 
-coord3d headLookDirection = { 0.0f, 0.0f, 1.0f };
+coord3d headLookDirection = { {0.0f, 0.0f, 1.0f} };
 
-coord3d headUpDirection = { 0.0f, 1.0f, 0.0f };
+coord3d headUpDirection = { {0.0f, 1.0f, 0.0f} };
 
 ModelRenderData headModelRenderData = {NULL,
                               TRUE,
@@ -182,8 +182,8 @@ ModelRenderData headModelRenderData = {NULL,
                               0,
                               0,
                               0,
-                              {0, 0, 0, 0},
-                              {0, 0, 0, 0},
+                              {{0, 0, 0, 0}},
+                              {{0, 0, 0, 0}},
                               CULLMODE_BOTH};
 
 

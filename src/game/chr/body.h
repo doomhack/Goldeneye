@@ -10,6 +10,6 @@ Model * bodyCreateModelWithFlags(s32 body, s32 head, u32 bitflags);
 s32 bodyGetRandom(void);
 s32 bodyChooseHead(s32 id);
 s32 bodyGetRandomHead(s32 id);
-void bodiesReset(u32 stagenum);
+void bodiesReset(void);
 
 #endif

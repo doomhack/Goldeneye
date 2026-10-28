@@ -48,7 +48,7 @@ s32 g_NextShardNum = 0;
  * along xaxis and yaxis (unnormalised: their lengths scale the extents); zmin and zmax
  * are the pane's thickness, which isn't used.
  */
-void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax, f32 zmin, f32 zmax)
+void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax)
 {
     f32 len;
     f32 angle;

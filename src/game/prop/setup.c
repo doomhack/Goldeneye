@@ -57,18 +57,18 @@ extern ItemModelFileRecord PitemZ_entries[341];
 // forward declarations
 
 s32 setupCountPropdefs(PROPDEF_TYPE type);
-void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *centre);
-void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex);
-void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex);
-void setupHat(s32 stageid, HatRecord *hat, s32 cmdindex);
-void setupKey(s32 stageid, ObjectRecord* key, s32 cmdindex);
-void setupCctv(s32 stageid, CCTVRecord *cctv, s32 cmdindex);
-void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex);
-void setupHangingMonitors(s32 stageid, ObjectRecord* rack, s32 cmdindex);
-void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex);
-void setupMultiMonitor(s32 stageID, MultiMonitorObjRecord* monitor, s32 cmdindex);
-void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, struct coord3d *pos1, struct coord3d *pos2);
-void setupDoor(s32 stageid, struct DoorRecord *door, s32 cmdindex);
+void padGetBboxCentre(struct BoundPadRecord *pad, coord3d *centre);
+void setupObject(ObjectRecord *obj);
+void setupWeapon(WeaponObjRecord* weapon);
+void setupHat(HatRecord *hat);
+void setupKey(ObjectRecord* key);
+void setupCctv(CCTVRecord *cctv);
+void setupAutogun(AutogunRecord *autogun);
+void setupHangingMonitors(ObjectRecord* rack);
+void setupSingleMonitor(MonitorObjRecord *monitor, s32 cmdindex);
+void setupMultiMonitor(MultiMonitorObjRecord* monitor);
+void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, coord3d *pos1, coord3d *pos2);
+void setupDoor(struct DoorRecord *door, s32 cmdindex);
 
 
 s32 setupCountPropdefs(PROPDEF_TYPE type)
@@ -95,11 +95,11 @@ s32 setupCountPropdefs(PROPDEF_TYPE type)
  * perfect dark padGetCentre (pad.c)
  *
 */
-void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *centre)
+void padGetBboxCentre(struct BoundPadRecord *pad, coord3d *centre)
 {
-    struct coord3d normal;
+    coord3d normal;
     f32 scale;
-    struct bbox bb;
+    bbox bb;
     f32 temp;
 
     bb.zmax = pad->bbox.xmin;
@@ -139,16 +139,16 @@ void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *centre)
 
 /**
 */
-void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex)
+void setupObject(ObjectRecord *obj)
 {
     s32 modelnum;
     f32 minscale;
-    struct coord3d floorpos;
+    coord3d floorpos;
     struct StandTile *floortile;
-    struct coord3d pos;
+    coord3d pos;
     StandTile *tile;
     Mtxf mtx;
-    struct coord3d centre;
+    coord3d centre;
     struct PropRecord *chrprop;
     f32 extrascale;
     s32 canRespawn;
@@ -480,7 +480,7 @@ void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex)
 
 /**
 */
-void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex)
+void setupWeapon(WeaponObjRecord* weapon)
 {
     ChrRecord* chr;
     bool giveweapon;
@@ -583,13 +583,13 @@ void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex)
         if ((weapon->weaponnum != ITEM_UNARMED) && giveweapon)
         {
             weaponLoadProjectileModels(weapon->weaponnum);
-            setupObject(stageid, (struct ObjectRecord*)weapon, cmdindex);
+            setupObject((struct ObjectRecord*)weapon);
         }
     }
 }
 
 //i should be object hat
-void setupHat(s32 stageid, HatRecord *hat, s32 cmdindex)
+void setupHat(HatRecord *hat)
 {
     if (hat->flags & PROPFLAG_ASSIGNEDTOCHR) {
         ChrRecord* chr = chrFindByLiteralId(hat->pad);
@@ -597,31 +597,31 @@ void setupHat(s32 stageid, HatRecord *hat, s32 cmdindex)
             hatAssignToChr(hat, chr);
         }
     } else {
-        setupObject(stageid, hat, cmdindex);
+        setupObject(hat);
     }
 }
 
 //i should be object key
-void setupKey(s32 stageid, ObjectRecord* key, s32 cmdindex)
+void setupKey(ObjectRecord* key)
 {
-    setupObject(stageid, key, cmdindex);
+    setupObject(key);
 }
 
 
 /**
 */
-void setupCctv(s32 stageid, CCTVRecord *cctv, s32 cmdindex)
+void setupCctv(CCTVRecord *cctv)
 {
-    struct coord3d *headoffset;
+    coord3d *headoffset;
     struct PadRecord *lookpad;
-    struct coord3d headpos;
+    coord3d headpos;
     Mtxf *headmtx;
 
-    setupObject(stageid, (struct ObjectRecord*)cctv, cmdindex);
+    setupObject((struct ObjectRecord*)cctv);
 
     if (cctv->lookpad >= 0)
     {
-        headoffset = (struct coord3d*)cctv->model->obj->Switches[0]->Data;
+        headoffset = (coord3d*)cctv->model->obj->Switches[0]->Data;
 
         if (isNotBoundPad(cctv->lookpad))
         {
@@ -664,11 +664,11 @@ void setupCctv(s32 stageid, CCTVRecord *cctv, s32 cmdindex)
     }
 }
 
-void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
+void setupAutogun(AutogunRecord *autogun)
 {
     BeamRecord *beam;
 
-    setupObject(stageID, (ObjectRecord *) autogun, cmdindex);
+    setupObject((ObjectRecord *) autogun);
 
 #ifdef VERSION_EU
     autogun->speed = ((*((s32 *) (&autogun->speed))) * 7.5398226f) / 65536.0f;
@@ -736,13 +736,13 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
 
 
 //i should be object rack
-void setupHangingMonitors(s32 stageid, ObjectRecord* rack, s32 cmdindex)
+void setupHangingMonitors(ObjectRecord* rack)
 {
-    setupObject(stageid, rack, cmdindex);
+    setupObject(rack);
 }
 
 
-void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
+void setupSingleMonitor(MonitorObjRecord *monitor, s32 cmdindex)
 {
     s32 modelnum;
     ObjectRecord *owner;
@@ -800,7 +800,7 @@ void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
     }
     else
     {
-        setupObject(stageID, (ObjectRecord*)monitor, cmdindex);
+        setupObject((ObjectRecord*)monitor);
     }
 
     if ((monitor->flags & PROPFLAG_MONITOR_RENDERPOSTBG) && monitor->prop)
@@ -810,7 +810,7 @@ void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
 }
 
 
-void setupMultiMonitor(s32 stageID, MultiMonitorObjRecord* monitor, s32 cmdindex)
+void setupMultiMonitor(MultiMonitorObjRecord* monitor)
 {
     monitor->Monitor[0] = g_MonitorAnimController;
     monitorSetImageByNum(&monitor->Monitor[0], monitor->ImageNums[0]);
@@ -824,14 +824,14 @@ void setupMultiMonitor(s32 stageID, MultiMonitorObjRecord* monitor, s32 cmdindex
     monitor->Monitor[3] = g_MonitorAnimController;
     monitorSetImageByNum(&monitor->Monitor[3], monitor->ImageNums[3]);
 
-    setupObject(stageID, monitor, cmdindex);
+    setupObject(monitor);
 }
 
-void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, struct coord3d *pos1, struct coord3d *pos2)
+void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, coord3d *pos1, coord3d *pos2)
 {
     StandTile *tile;
-    struct coord3d normal;
-    struct coord3d center;
+    coord3d normal;
+    coord3d center;
     StandTile *centretile;
     f32 scale;
 
@@ -890,32 +890,32 @@ extern f32 g_DoorScale;
  * PAL ADDRESS: 7F0033F0
  * Perfect Dark: void setupCreateDoor(struct doorobj *door, s32 cmdindex)
 */
-void setupDoor(s32 stageid, struct DoorRecord *door, s32 cmdindex)
+void setupDoor(struct DoorRecord *door, s32 cmdindex)
 {
     s32 modelnum;
     struct BoundPadRecord *pad;
     StandTile *floortile;
     PropRecord *prop;
-    struct coord3d floorpos;
+    coord3d floorpos;
     s32 portalnum;
     s32 room1;
     s32 room2;
-    struct coord3d side1;
-    struct coord3d side2;
+    coord3d side1;
+    coord3d side2;
     struct PortalMetric plane;
     struct ModelRoData_BoundingBoxRecord *modelbbox;
-    struct coord3d newpos;
+    coord3d newpos;
     StandTile *tile;
     Mtxf padmtx;
     f32 dist; // no sp
     ModelFileHeader *modelfile;
-    struct coord3d pos;                           /* compiler-managed */
+    coord3d pos;                           /* compiler-managed */
     StandTile *postile;
     Mtxf mtx;
-    struct coord3d centre;
+    coord3d centre;
     Mtxf rotz;
-    struct coord3d extent;
-    struct bbox bb2;
+    coord3d extent;
+    bbox bb2;
     f32 xscale;
     f32 yscale;
     f32 zscale;
@@ -1439,13 +1439,13 @@ void setupCreateProps(enum LEVELID stageId)
                     case PROPDEF_GUARD:
                         if (withchrs)
                         {
-                            setupGuard(stageId, (struct GuardRecord *) phead, pdefIndex);
+                            setupGuard((struct GuardRecord *) phead);
                         }
                         break;
                     case PROPDEF_DOOR:
                         if (withobjs && (!(((struct DoorRecord *) phead)->flags2 & flags)))
                         {
-                            setupDoor(stageId, (struct DoorRecord *) phead, pdefIndex);
+                            setupDoor((struct DoorRecord *) phead, pdefIndex);
                         }
                         break;
                     case PROPDEF_DOOR_SCALE:
@@ -1454,49 +1454,49 @@ void setupCreateProps(enum LEVELID stageId)
                     case PROPDEF_COLLECTABLE:
                         if (withchrs && (!(((struct WeaponObjRecord *) phead)->flags2 & flags)))
                         {
-                            setupWeapon(stageId, (struct WeaponObjRecord *) phead, pdefIndex);
+                            setupWeapon((struct WeaponObjRecord *) phead);
                         }
                         break;
                     case PROPDEF_KEY:
                         if (withchrs && (!(((struct KeyRecord *) phead)->flags2 & flags)))
                         {
-                            setupKey(stageId, (struct ObjectRecord *) phead, pdefIndex);
+                            setupKey((struct ObjectRecord *) phead);
                         }
                         break;
                     case PROPDEF_HAT:
                         if (withchrs && (!(((struct ObjectRecord *) phead)->flags2 & flags)))
                         {
-                            setupHat(stageId, (HatRecord *) phead, pdefIndex);
+                            setupHat((HatRecord *) phead);
                         }
                         break;
                     case PROPDEF_CCTV:
                         if (withobjs && (!(((struct CCTVRecord *) phead)->flags2 & flags)))
                         {
-                            setupCctv(stageId, (struct CCTVRecord *) phead, pdefIndex);
+                            setupCctv((struct CCTVRecord *) phead);
                         }
                         break;
                     case PROPDEF_AUTOGUN:
                         if (withobjs && (!(((struct AutogunRecord *) phead)->flags2 & flags)))
                         {
-                            setupAutogun(stageId, (struct AutogunRecord *) phead, pdefIndex);
+                            setupAutogun((struct AutogunRecord *) phead);
                         }
                         break;
                     case PROPDEF_RACK:
                         if (withobjs && (!(((struct ObjectRecord *) phead)->flags2 & flags)))
                         {
-                            setupHangingMonitors(stageId, (struct ObjectRecord *) phead, pdefIndex);
+                            setupHangingMonitors((struct ObjectRecord *) phead);
                         }
                         break;
                     case PROPDEF_MONITOR:
                         if (withobjs && (!(((struct MonitorObjRecord *) phead)->flags2 & flags)))
                         {
-                            setupSingleMonitor(stageId, (struct MonitorObjRecord *) phead, pdefIndex);
+                            setupSingleMonitor((struct MonitorObjRecord *) phead, pdefIndex);
                         }
                         break;
                     case PROPDEF_MULTI_MONITOR:
                         if (withobjs && (!(((struct MultiMonitorObjRecord *) phead)->flags2 & flags)))
                         {
-                            setupMultiMonitor(stageId, (struct MultiMonitorObjRecord *) phead, pdefIndex);
+                            setupMultiMonitor((struct MultiMonitorObjRecord *) phead);
                         }
                         break;
                     case PROPDEF_ARMOUR:
@@ -1506,7 +1506,7 @@ void setupCreateProps(enum LEVELID stageId)
                         {
                             pdef_ba->initialamount = (*((s32 *) (&pdef_ba->initialamount))) / M_U16_MAX_VALUE_F;
                             pdef_ba->amount = pdef_ba->initialamount;
-                            setupObject(stageId, (struct ObjectRecord *) phead, pdefIndex);
+                            setupObject((struct ObjectRecord *) phead);
                         }
                         break;
                     }
@@ -1518,8 +1518,8 @@ void setupCreateProps(enum LEVELID stageId)
                             {
                                 if (!(((struct TintedGlassRecord *) phead)->pad < 10000))
                                 {
-                                    struct coord3d up;
-                                    struct coord3d up2;
+                                    coord3d up;
+                                    coord3d up2;
                                     BoundPadRecord *pad3d;
 
                                     pad3d = &g_CurrentSetup.boundpads[((struct TintedGlassRecord *) phead)->pad - 10000];
@@ -1535,7 +1535,7 @@ void setupCreateProps(enum LEVELID stageId)
                                     ((struct TintedGlassRecord *) phead)->minOpacity = (*((s32 *) (&((struct TintedGlassRecord *) phead)->minOpacity))) / M_U16_MAX_VALUE_F;
                                 }
                             }
-                            setupObject(stageId, (struct ObjectRecord *) phead, pdefIndex);
+                            setupObject((struct ObjectRecord *) phead);
                         }
                         break;
                     }
@@ -1548,7 +1548,7 @@ void setupCreateProps(enum LEVELID stageId)
                     case PROPDEF_SAFE:
                         if (withobjs && (!(((ObjectRecord *) phead)->flags2 & flags)))
                         {
-                            setupObject(stageId, (struct ObjectRecord *) phead, pdefIndex);
+                            setupObject((struct ObjectRecord *) phead);
                         }
                         break;
                     case PROPDEF_AMMO:
@@ -1575,7 +1575,7 @@ void setupCreateProps(enum LEVELID stageId)
                                 }
                             }
 
-                            setupObject(stageId, (struct ObjectRecord *) pdef_macr, pdefIndex);
+                            setupObject((struct ObjectRecord *) pdef_macr);
                         }
                         break;
                     }
@@ -1588,7 +1588,7 @@ void setupCreateProps(enum LEVELID stageId)
                             f32 stan_y = 0.0f;
 
                             weaponLoadProjectileModels(ITEM_TANKSHELLS);
-                            setupObject(stageId, (struct ObjectRecord *) pdef_tank, pdefIndex);
+                            setupObject((struct ObjectRecord *) pdef_tank);
                             pdef_tank->turret_vertical_angle = 0.0f;
                             pdef_tank->turret_orientation_angle = 0.0f;
                             pdef_tank->tank_orientation_angle = M_TAU_F - mathAtan2(pdef_tank->mtx.m[2][0], pdef_tank->mtx.m[2][2]);
@@ -1612,7 +1612,7 @@ void setupCreateProps(enum LEVELID stageId)
                         {
                             struct VehichleRecord *pdef_veh = (struct VehichleRecord *) phead;
 
-                            setupObject(stageId, (struct ObjectRecord *) pdef_veh, pdefIndex);
+                            setupObject((struct ObjectRecord *) pdef_veh);
 
                             if (pdef_veh->model != NULL)
                             {
@@ -1642,7 +1642,7 @@ void setupCreateProps(enum LEVELID stageId)
                         {
                             struct AircraftRecord *pdef_air = (struct AircraftRecord *) phead;
 
-                            setupObject(stageId, (struct ObjectRecord *) pdef_air, pdefIndex);
+                            setupObject((struct ObjectRecord *) pdef_air);
                             pdef_air->speed           = 0.0f;
                             pdef_air->speedaim        = 0.0f;
                             pdef_air->rotoryrot       = 0.0f;
@@ -1665,7 +1665,7 @@ void setupCreateProps(enum LEVELID stageId)
                         struct ObjectRecord *taggedobj;
 
                         pdef_tag = (struct TagObjectRecord *) phead;
-                        taggedobj = setupCommandGetObject(stageId, pdefIndex + ((s32) pdef_tag->OffsetToObj));
+                        taggedobj = setupCommandGetObject(pdefIndex + ((s32) pdef_tag->OffsetToObj));
                         pdef_tag->TaggedObject = taggedobj;
 
                         if (taggedobj)
@@ -1683,7 +1683,7 @@ void setupCreateProps(enum LEVELID stageId)
 
                         pdef_ren = (struct RenameObjectRecord *) phead;
                         i3 = pdef_ren->TagID + pdefIndex;
-                        targetobj = setupCommandGetObject(stageId, i3);
+                        targetobj = setupCommandGetObject(i3);
                         pdef_ren->renobj = targetobj;
 
                         if (targetobj)
@@ -1751,7 +1751,7 @@ void setupCreateProps(enum LEVELID stageId)
                         if (pdef_obj->prop && (pdef_obj->flags & PROPFLAG_INSIDEANOTHEROBJ))
                         {
                             u32 offset = pdef_obj->pad;
-                            struct ObjectRecord *inobj = setupCommandGetObject(stageId, offset + pdefIndex);
+                            struct ObjectRecord *inobj = setupCommandGetObject(offset + pdefIndex);
 
                             if (inobj && inobj->prop)
                             {
@@ -1792,7 +1792,7 @@ void setupCreateProps(enum LEVELID stageId)
                         pdef_switch = (struct LinkRecord *) phead;
                         index1 = pdef_switch->Index1;
                         index2 = pdef_switch->Index2;
-                        doorA = (struct ObjectRecord *) setupCommandGetObject(stageId, pdefIndex + index1);
+                        doorA = (struct ObjectRecord *) setupCommandGetObject(pdefIndex + index1);
                         doorB = (struct ObjectRecord *) setupGetPtrToCommandByIndex(pdefIndex + index2);
 
                         if ((((doorA && doorA->prop) && doorB) && (doorB->type == PROPDEF_DOOR)) && doorB->prop)
@@ -1820,9 +1820,9 @@ void setupCreateProps(enum LEVELID stageId)
                         index1 = pdef_safe->Index1;
                         index2 = pdef_safe->Index2;
                         index3 = pdef_safe->Index3;
-                        safe_item = setupCommandGetObject(stageId, pdefIndex + index1);
-                        safe = (struct SafeRecord *) setupCommandGetObject(stageId, pdefIndex + index2);
-                        door = (struct DoorRecord *) setupCommandGetObject(stageId, pdefIndex + index3);
+                        safe_item = setupCommandGetObject(pdefIndex + index1);
+                        safe = (struct SafeRecord *) setupCommandGetObject(pdefIndex + index2);
+                        door = (struct DoorRecord *) setupCommandGetObject(pdefIndex + index3);
 
                         if (((((((safe_item && safe_item->prop) && safe) && safe->prop) && (safe->type == PROPDEF_SAFE)) && door) && door->prop) && (door->type == PROPDEF_DOOR))
                         {
@@ -1848,8 +1848,8 @@ void setupCreateProps(enum LEVELID stageId)
                         index1 = pdef_lock_door->Index1;
                         index2 = pdef_lock_door->Index2;
 
-                        door = (struct DoorRecord *) setupCommandGetObject(stageId, pdefIndex + index1);
-                        lock = setupCommandGetObject(stageId, pdefIndex + index2);
+                        door = (struct DoorRecord *) setupCommandGetObject(pdefIndex + index1);
+                        lock = setupCommandGetObject(pdefIndex + index2);
 
                         if ((((door && door->prop) && lock) && lock->prop) && (door->type == PROPDEF_DOOR))
                         {
@@ -2044,7 +2044,7 @@ void objSoundsStopAll(void) {
 }
 
 
-void setupFreeProps(s32 stage)
+void setupFreeProps(void)
 {
     u32 *obj = (u32 *)g_CurrentSetup.propDefs;
     
@@ -2116,7 +2116,7 @@ void setupFreeProps(s32 stage)
 /**
  * @brief getposstan
 */
-s32 getposstan(struct coord3d *pos, StandTile *stan, f32 radius, struct coord3d *posReturn, StandTile **stanReturn)
+s32 getposstan(coord3d *pos, StandTile *stan, f32 radius, coord3d *posReturn, StandTile **stanReturn)
 {
     posReturn->f[0] = pos->f[0];
     posReturn->f[1] = pos->f[1];
@@ -2330,8 +2330,8 @@ s32 modelLoad(s32 modelid)
 void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 {
     PropRecord *prop;
-    struct coord3d min;
-    struct coord3d max;
+    coord3d min;
+    coord3d max;
     struct ModelRoData_BoundingBoxRecord *bbox;
     f32 radius;
 
@@ -2401,7 +2401,7 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 }
 
 
-ObjectRecord *setupCommandGetObject(s32 stageID, s32 index)
+ObjectRecord *setupCommandGetObject(s32 index)
 {
      PropDefHeaderRecord *obj;
 
@@ -2523,12 +2523,12 @@ ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr,
 }
 
 
-void setupGuard(s32 stageid, GuardRecord *guard, s32 cmdindex)
+void setupGuard(GuardRecord *guard)
 {
     struct PadRecord *pad;
     struct ChrRecord *chr;
     struct StandTile *tile; // 84
-    struct coord3d pos; // 72
+    coord3d pos; // 72
     struct PropRecord *prop;
     struct ChrModelFileRecord *cmfr;
     f32 angle; // 60

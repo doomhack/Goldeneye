@@ -327,7 +327,7 @@ void lvStageLoad(s32 stage)
     propsResetLevelState();
     objSoundsInit();
     chrsInit();
-    bodiesReset(stage);
+    bodiesReset();
     setupCreateProps(stage);
     explosionsInit();
     glassInitShards();
@@ -522,7 +522,7 @@ Gfx* lvRender(Gfx* DL)
                 if (tile1)
                 {
                     DL = stanDebugBeginDraw(DL);
-                    DL = stanDebugDrawTile(DL, tile1, 0xFF0000FF);
+                    DL = stanDebugDrawTile(DL);
                 }
             }
 
@@ -532,7 +532,7 @@ Gfx* lvRender(Gfx* DL)
                 if (tile2)
                 {
                     DL = stanDebugBeginDraw(DL);
-                    DL = stanDebugDrawTile(DL, tile2, 0xFF00FF);
+                    DL = stanDebugDrawTile(DL);
                 }
             }
 
@@ -542,7 +542,7 @@ Gfx* lvRender(Gfx* DL)
                 if (tile3)
                 {
                     DL = stanDebugBeginDraw(DL);
-                    DL = stanDebugDrawTile(DL, tile3, 0xFFFF);
+                    DL = stanDebugDrawTile(DL);
                 }
             }
 
@@ -1119,7 +1119,7 @@ void lvStageUnload(void)
     glassResetShards();
     cleanup_REMOVED_();
     alarmsReset();
-    setupFreeProps(g_CurrentStageToLoad);
+    setupFreeProps();
     objectivesFinish();
     levelStopTankSfx();
     gunsStopSounds();

@@ -136,7 +136,7 @@ PropRecord *g_ActivePropsHead = 0;
 PropRecord *g_FreeProps = 0;
 
 f32 difficulty = 1.0;
-struct coord2d g_DefaultAutoAimCoord = { 0 };
+coord2d g_DefaultAutoAimCoord = { 0 };
 
 // forward declarations
 
@@ -765,7 +765,7 @@ void propsTickOnce(void)
                             obj->runtime_bitflags &= ~RUNTIMEBITFLAG_00000800;
                             cmdindex = setupGetCommandIndexByProp(prop);
                             pad = obj->pad;
-                            setupobj = setupCommandGetObject(lvGetCurrentStage(), cmdindex + pad);
+                            setupobj = setupCommandGetObject(cmdindex + pad);
 
                             if ((setupobj != NULL) && (setupobj->prop != NULL))
                             {
@@ -1235,7 +1235,7 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
     f32 autoaim_right;
     f32 score;
     bool passes_horizontal_check;
-    f32 horizontal_tolerance;
+    f32 horizontal_tolerance = 0.0f;
     PropRecord *playerprop;
     StandTile* line_stan;
     f32 player_los_height;
@@ -1375,14 +1375,14 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
 void autoaimUpdateTarget(void)
 {
     f32 best_score;
-    struct coord2d best_screen_aim; // Winning target's screen space aim point.
+    coord2d best_screen_aim; // Winning target's screen space aim point.
     f32 candidate_score;
     struct PropRecord **onscreen_prop_iter;
-    struct coord3d target_aimpos;
-    struct coord2d target_world_xbounds;
-    struct coord2d target_world_ybounds;
+    coord3d target_aimpos;
+    coord2d target_world_xbounds;
+    coord2d target_world_ybounds;
     struct PropRecord *candidate_prop;
-    struct coord2d candidate_screen_aim;
+    coord2d candidate_screen_aim;
     struct PropRecord *best_prop;
     struct ChrRecord *candidate_chr;
 
@@ -2588,10 +2588,10 @@ void modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin)
 /**
  * Project rectangle corners to screen
 */
-void projectRectCornersTo2D(struct coord3d *center, struct coord2d *xrange, struct coord2d *yrange, bbox2d *screen)
+void projectRectCornersTo2D(coord3d *center, coord2d *xrange, coord2d *yrange, bbox2d *screen)
 {
-    struct coord3d corner;
-    struct coord2d tout;
+    coord3d corner;
+    coord2d tout;
 
     corner.f[0] = xrange->f[0];
     corner.f[1] = center->f[1];
@@ -2641,7 +2641,7 @@ ObjectRecord *objFindAtPad(s32 PadId) {
 }
 
 
-ObjectRecord * objFindAtPos(struct coord3d *pos, s32 RoomID)
+ObjectRecord * objFindAtPos(coord3d *pos, s32 RoomID)
 {
     coord2d * polygon;
     s32 edges;

@@ -351,11 +351,11 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s3
         
 		u8 format;
 		u8 depth;
-		s32 lutmode;
-		s32 depth2;
-		s32 lrs;
-        s32 dxt;
-		s32 line;
+		s32 lutmode = 0;
+		s32 depth2 = 0;
+		s32 lrs = 0;
+        s32 dxt = 0;
+		s32 line = 0;
             
         u16* imgheader;
 
@@ -503,7 +503,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s3
 			s32 lod;
 			u8 format;
 			u8 depth;
-			s32 lutmode;
+			s32 lutmode = 0;
 			s32 depth2;
 			s32 lrs;
 
@@ -629,7 +629,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s3
     
             for (tile = 0; tile < lod; tile++)
             {
-                s32 line;
+                s32 line = 0;
 
                 if (tile > 0)
                 {

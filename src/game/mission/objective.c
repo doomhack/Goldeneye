@@ -277,7 +277,7 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
                         }
                         case PROPDEF_OBJECTIVE_COMPLETE_CONDITION:
                         {
-                            if (!chrHasStageFlag(NULL, objective->ObjRefID))
+                            if (!chrHasStageFlag(objective->ObjRefID))
                             {
                                 currentstatus = OBJECTIVESTATUS_INCOMPLETE;
                             }
@@ -285,7 +285,7 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
                         }
                         case PROPDEF_OBJECTIVE_FAIL_CONDITION:
                         {
-                            if (chrHasStageFlag(NULL, objective->ObjRefID))
+                            if (chrHasStageFlag(objective->ObjRefID))
                             {
                                 currentstatus = OBJECTIVESTATUS_FAILED;
                             }
@@ -422,7 +422,7 @@ void objectivesTickStatusMessages(void)
 
     if (g_ObjectiveStatusDisplayDisabled) { return; }
 
-    for (i = 0; i <= g_ObjectiveLastIndex; i++) {
+    for (i = 0; i <= g_ObjectiveLastIndex && i < OBJECTIVES_MAX; i++) {
         status = objectiveCheckStatus(i);
         if (g_ObjectiveStatuses[i] != status) {
             g_ObjectiveStatuses[i] = status;
@@ -559,9 +559,9 @@ void objectivesCheckPicture(void)
 {
     ObjectRecord *target_object;
     PropRecord *target_prop;
-    struct coord3d viewPos;
-    struct coord2d xExtent;
-    struct coord2d yExtent;
+    coord3d viewPos;
+    coord2d xExtent;
+    coord2d yExtent;
     bbox2d screenRect;
     struct criteria_picture *criteria;
 
