@@ -8,8 +8,8 @@
 void skySetStageNum(s32 stagenum);
 void skyTick(void);
 Gfx * skyRender(Gfx *gdl);
-void skyProjectVertex(SkyVtx *arg0, Mtxf *arg1, u16 arg2, f32 arg3, f32 arg4, SkyScreenVtx *arg5);
-Gfx *skyRenderTri(Gfx *gdl, SkyScreenVtx *arg1, SkyScreenVtx *arg2, SkyScreenVtx *arg3, f32 arg4, bool textured);
-Gfx *skyRenderFull(Gfx *gdl, SkyScreenVtx *arg1, SkyScreenVtx *arg2, SkyScreenVtx *arg3, SkyScreenVtx *arg4, f32 arg5);
+void skyProjectVertex(SkyVtx *vtx, Mtxf *mtx, u16 perspScale, f32 sScale, f32 tScale, SkyScreenVtx *out);
+Gfx *skyRenderTri(Gfx *gdl, SkyScreenVtx *v1, SkyScreenVtx *v2, SkyScreenVtx *v3, f32 perspScale, bool textured);
+Gfx *skyRenderFull(Gfx *gdl, SkyScreenVtx *v1, SkyScreenVtx *v2, SkyScreenVtx *v3, SkyScreenVtx *v4, f32 perspScale);
 
 #endif

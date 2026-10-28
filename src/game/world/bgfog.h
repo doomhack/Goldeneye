@@ -185,13 +185,13 @@ extern s32 g_FogSkyIsEnabled;
 
 struct CurrentEnvironmentRecord *fogGetCurrentEnvironmentp(void);
 f32 fogGetScaledFarFogIntensitySquared(void);
-void fogLoadLevelEnvironment(s32 level_id, s32 arg1);
+void fogLoadLevelEnvironment(s32 level_id, s32 introCamera);
 void fogReloadCurrentEnvironment(void);
 s32 fogPositionIsVisibleThroughFog(coord3d *pos, f32 range);
-Gfx *fogSetRenderFogColor(Gfx *gdl, s32 arg1);
+Gfx *fogSetRenderFogColor(Gfx *gdl, s32 xlupass);
 Gfx *fogRenderClearFogMode(Gfx *gdl);
 s32 fogGetPropDistColor(PropRecord *prop, struct rgba_f32 *color);
-void fogSwitchToSolosky2(f32 arg0);
+void fogSwitchToSolosky2(f32 frac);
 struct NearFogRecord *fogGetNearFogValuesP(void);
 
 #endif

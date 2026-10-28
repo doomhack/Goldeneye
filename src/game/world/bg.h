@@ -155,16 +155,16 @@ typedef struct PortalCache {
 typedef struct bg_queued_portal_entry {
 
     #if defined(VERSION_EU)
-    u8 arg0;           // 0x00
-    u8 roomnum;        // 0x01
-    s16 portalnum;     // 0x02
-    f32 sp4[4];        // 0x04
+    u8 roomnum;        // 0x00
+    u8 portalnum;      // 0x01
+    s16 depth;         // 0x02
+    bbox2d box;        // 0x04
     #else
-    s32 arg0;          // 0x00
+    s32 value;         // 0x00
     s32 roomnum;       // 0x04
     s32 portalnum;     // 0x08
-    s32 arg3;          // 0x0c
-    f32 sp10[4];       // 0x10
+    s32 depth;         // 0x0c
+    bbox2d box;        // 0x10
     #endif
 } bg_queued_portal_entry;
 
@@ -193,22 +193,22 @@ void bgLoad(LEVEL_INDEX stagenum);
 
 void bgToggleDataPortalsContrlBytes1Bit1(s32 index, s32 toggle);
 void bgFindVisibleRooms(void);
-Gfx* bgLevelRender(Gfx *arg0);
-Gfx *bgScissorCurrentPlayerView(Gfx *arg0, s32 left, s32 top, s32 width, s32 height);
-Gfx* bgScissorCurrentPlayerViewDefault(Gfx* arg0);
-Gfx* bgScissorCurrentPlayerViewF(Gfx* arg0, f32 arg1, f32 arg2, f32 arg3, f32 arg4);
+Gfx* bgLevelRender(Gfx *gdl);
+Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bottom);
+Gfx* bgScissorCurrentPlayerViewDefault(Gfx* gdl);
+Gfx* bgScissorCurrentPlayerViewF(Gfx* gdl, f32 left, f32 top, f32 right, f32 bottom);
 f32 bgGetLevelScale(void);
 u8 bgRoomIsVisible(int roomID);
 s32 bgGet2dBboxByRoomId(s32 room_id, struct bbox2d *result);
 f32 bgGetLevelVisibilityScale(void);
 void bgRectOutersect(struct bbox2d *a, struct bbox2d *b);
 f32 bgGetLevelScaleInv(void);
-s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, struct coord3d *arg2, struct coord3d *arg3);
+s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, struct coord3d *start, struct coord3d *end);
 void bgGetPortalPlane(s32 portalnum, f32 *out);
 void bgApplyDynamicCCRMLUT(Gfx *start, Gfx *end, enum CCRMLUT lutIndex);
 void bgFindRoomsInBbox(coord3d *, coord3d *, s32 *, s32 *, s32);
 void bgFindRoomsAlongSegment(coord3d *pos1, coord3d *pos2, u8 *initialRooms, u8 *outRoomSet, s32 *outRoomNums, s32 *outRoomNumsCount, s32 outRoomNumsMax);
-s32 bgFindPortalOnSegment(coord3d *arg0, coord3d *arg1);
+s32 bgFindPortalOnSegment(coord3d *start, coord3d *end);
 void bgRoomCalcBB(s32 room);
 
 #endif

@@ -110,9 +110,9 @@ void waterTick(void)
 }
 
 
-Gfx* waterSetupGdl(Gfx *gdl, s32 arg1)
+Gfx* waterSetupGdl(Gfx *gdl, s32 usePrebuiltDl)
 {
-    if (arg1 != 0)
+    if (usePrebuiltDl != 0)
     {
         gSPDisplayList(gdl++, g_WaterGdl);
     }
@@ -135,9 +135,9 @@ Gfx* waterSetupGdl(Gfx *gdl, s32 arg1)
 }
 
 
-Gfx* waterSetupGdlCi(Gfx *gdl, s32 arg1)
+Gfx* waterSetupGdlCi(Gfx *gdl, s32 usePrebuiltDl)
 {
-    if (arg1 != 0)
+    if (usePrebuiltDl != 0)
     {
         gSPDisplayList(gdl++, g_WaterGdlCi);
     }
