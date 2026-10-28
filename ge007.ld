@@ -210,6 +210,7 @@ SECTIONS
    {
 #include "ld/lib.bss.ld.inc"
 #include "ld/game.bss.ld.inc"
+      . = ALIGN(8); /* _start clears .bss 8 bytes at a time and stops when the count reaches 0 */
    }
    _bssSegmentEnd = ADDR(.bss) + SIZEOF(.bss);
    _bssSegmentSize = SIZEOF(.bss);

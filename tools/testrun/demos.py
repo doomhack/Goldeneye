@@ -13,6 +13,9 @@ Rare recorded it.
 'check' reports, per demo, the first game frame whose exact checksum (float bits) or
 coarse checksum (positions to whole units, health to 1%) differs from the baseline.
 A pure refactor should match exactly. Exits 0 when every demo matches.
+
+With DEMOS_DUMPRAM=1 in the environment each demo also saves its RAM at the end
+(end-ram.bin), for tools/testrun/shuffle.py check.
 """
 import concurrent.futures
 import json
@@ -32,6 +35,8 @@ def play(version, index, outdir):
     cmd = ['xvfb-run', '-a', '-s', '-screen 0 1024x768x24', sys.executable,
            os.path.join(HERE, 'm64run.py'), rom, '--frames', '20000', '--demo', str(index),
            '--map', mapfile, '--outdir', outdir]
+    if os.environ.get('DEMOS_DUMPRAM'):
+        cmd.append('--dumpram')
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=1800)
     try:
         return json.load(open(os.path.join(outdir, 'result.json')))

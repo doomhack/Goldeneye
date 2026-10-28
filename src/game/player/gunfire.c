@@ -6635,7 +6635,10 @@ void shotFireBullet(s32 hand)
             {
                 shotPlayHitSound(shotdata.weapon, finalpos, besttexture);
 
-                if (((0xf & ((u8 *) g_Textures)[besttexture * 8]) != 5) && ((((u8 *) g_Textures)[besttexture * 8] & 0xf) != 6))
+                // No impact puff on water (5) or snow (6). A shot that hit no background
+                // triangle has no texture (-1) and always gets one.
+                if (besttexture < 0
+                    || (g_Textures[besttexture].hitTexture != 5 && g_Textures[besttexture].hitTexture != 6))
                 {
                     rooms[0] = bestroom;
                     rooms[1] = 255;

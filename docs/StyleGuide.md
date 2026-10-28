@@ -193,6 +193,12 @@ defined behaviour here. Everything else ISO C leaves undefined stays undefined: 
 assumption it never happens, for example that a loop never runs past the end of an array or that a
 pointer that has been dereferenced is not NULL.
 
+Globals have no layout: GCC may place them in any order, and the linker may pad between them. Never
+treat neighbouring variables as one array or struct, index an array outside its bounds to reach
+the next one, or end a table without its terminator because the next variable happens to start
+with zeros. If data belongs together, make it one array or struct. `make SHUFFLE=<seed>` checks
+this (see docs/Testing.md).
+
 ## WARNINGS
 Game code (everything in `src/` except libultra) builds with `-Wall -Wextra -Werror`, so any warning
 stops the build. libultra and the generated asset data build with `-w`.

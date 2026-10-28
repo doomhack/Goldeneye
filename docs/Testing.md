@@ -81,6 +81,22 @@ the test runner switches them on, so tests run the same ROM that ships.
 On master at the start of the rewrite, 13 of the 14 demos play to the end in sync with Rare's
 recordings. Dam 2 desyncs after 87 frames.
 
+## Menus: `tools/testrun/menus.py`
+
+The demos start straight in a level, so they never show the front end. `menus.py` starts from
+power-on and presses its way through the title, file select, mode select, mission select (Dam),
+difficulty and briefing pages, into the level and through the watch menu's pages, taking a
+screenshot at each step.
+
+```
+tools/testrun/menus.py record u /tmp/menus-base   # on the commit you start from
+tools/testrun/menus.py check u /tmp/menus-base    # after your change
+```
+
+The front-end screens must match the baseline pixel for pixel (a diff image is saved for any that
+don't). The title sequence and the in-level shots vary from run to run with the emulator's timing,
+so `check` saves those side by side with the baseline for a person to look at.
+
 ## Running anything else: `tools/testrun/m64run.py`
 
 Runs a ROM headless in mupen64plus with scripted controller input, timed in frames:
@@ -96,10 +112,35 @@ log a RAM word every frame (`--map build/u/ge007.u.map --watch SYMBOL`) and poke
 counts as hung: it saves the screen the N64 is showing (usually the crash screen) to
 `hang-screen.png`, all of RDRAM to `hang-ram.bin`, and the CPU's PC to `result.json`.
 
+`--dumpram` saves RDRAM at the end of a run too (`end-ram.bin`). `--readwatch START:END` logs every
+CPU read and write of an address range (hex, END exclusive) to `access.txt` as `frame pc read|write
+address`: the way to find which code touches a variable. It runs the slow interpreter.
+
 ## Finding which file broke a build: `tools/testrun/objbisect.py`
 
 Given a good and a bad build of the same source tree, it mixes object files from the two,
 relinks, and runs a test command until it finds the object whose bad version fails.
+
+## Global layout: `make SHUFFLE=<seed>`
+
+GCC may place globals in any order, so the code must not depend on their layout: no reading one
+variable as the continuation of another, no running off the end of a table. A shuffle build checks
+this. It compiles the game code with one section per variable, and `tools/testrun/shuffle.py`
+rewrites the linker script so each object's variables come in a random order (from the seed),
+with a guard gap after each one. Gaps in loaded data are filled with `0xA5`; gaps in `.bss` start
+as zero.
+
+```
+make VERSION=US SHUFFLE=1            # in a clean tree: the objects differ from a normal build
+DEMOS_DUMPRAM=1 tools/testrun/demos.py check u /tmp/baseline
+tools/testrun/shuffle.py check build/u/ge007.u.elf /tmp/demos-XXXX/demo*/*-ram.bin
+tools/testrun/menus.py check u /tmp/menus-base
+```
+
+A demo or menu that plays differently means some code reads past a variable; `shuffle.py check`
+lists every guard gap that something wrote to. Try several seeds. To narrow a failure down,
+`SHUFFLE_ONLY=a.o,b.o` (parts of object paths) shuffles only those objects, and `m64run.py
+--readwatch` on a suspect gap names the code that reads it.
 
 ## Warning counts: `tools/compare/warncount.py`
 
