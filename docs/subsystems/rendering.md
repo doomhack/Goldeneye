@@ -26,8 +26,8 @@ handed to the RSP. What is drawn (rooms, models, the HUD) lives in `world/`, `mo
 4. `dynSwapBuffers` switches to the other half of both buffers, so the CPU builds the next
    frame while the RSP draws this one.
 
-Both buffers are sized per level by the `-mgfx` and `-mvtx` tokens in boss.c, doubled in
-co-op. There is no overflow check.
+Both buffers are sized per level by the level's memory budget in boss.c
+(`LevelMemBudget`), doubled in co-op. There is no overflow check.
 
 ## Textures
 
@@ -44,8 +44,8 @@ it.
 A pool (`struct texpool`) fills from both ends: the pixel data grows from the left, and a
 `struct tex` describing each texture (number, size, format, levels of detail) grows from the
 right. `texFindInPool` searches the right-hand list. The shared pool `g_TexSharedPool` is
-allocated each level by `texInitSharedPool`, sized by the `-mt` token (plus 512 KB in
-co-op); models can pass their own. When a pool is full, the texture points at the start of
+allocated each level by `texInitSharedPool`, sized by the level's memory budget (plus
+512 KB in co-op); models can pass their own. When a pool is full, the texture points at the start of
 the pool instead, which draws garbage rather than crashing.
 
 ### Compression

@@ -8,6 +8,7 @@ didn't break something by accident. Pick the cheapest check that fits the change
 | Renames, comments, moving files | `tools/compare/romcmp.sh` reports byte-identical ROMs | about 4 min |
 | Moving code between files, new headers, deleting dead code | `tools/compare/compare.sh` reports no changed functions | about 2 min |
 | Anything that changes generated code | `tools/testrun/demos.py check` matches the baseline | about 4 min |
+| Rewriting a leaf module (allocators, maths, decompression) | `tools/hosttest/run.sh`, plus the demos | seconds |
 | Intended behaviour change | Look at where the demo checksums diverge, then re-record the baseline | |
 | End of a milestone | ares, then a real N64 and an Analogue 3D | |
 
@@ -80,6 +81,22 @@ the test runner switches them on, so tests run the same ROM that ships.
 
 On master at the start of the rewrite, 13 of the 14 demos play to the end in sync with Rare's
 recordings. Dam 2 desyncs after 87 frames.
+
+## Host unit tests: `tools/hosttest/run.sh`
+
+Some modules don't touch the hardware at all, so they can be compiled for the PC and tested
+there, quickly and with the address and undefined-behaviour sanitisers on. `run.sh` builds each
+test with the host's own `cc` and runs it. A test includes the module's `.c` file directly, so it
+can check private state, and replaces anything hardware-specific with a stub
+(`tools/hosttest/include/ultra64.h` stands in for the N64 headers; `dbgFatal` jumps back to the
+test that expected the error).
+
+| Test | Covers |
+| --- | --- |
+| `memtest.c` | memp (pools, resizing, closed and full pools) and mema (best fit, merging, double frees, a full free list, and random alloc/free/resize runs checked against a byte map) |
+
+Demos can't tell whether a leaf function is right in the cases a level never hits; these tests
+can, so a leaf rewrite gets one.
 
 ## Menus: `tools/testrun/menus.py`
 

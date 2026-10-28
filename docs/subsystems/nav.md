@@ -87,5 +87,3 @@ to itself, groups that connect, every waypoint in a group) and hangs if it is br
 * The tile struct is packed by hand: `tail.half` holds the point count and the three
   triangle point indices as nibbles, and much of the code shifts them out directly.
 * `stanTriEdgeDist` and `stanTriEdgeDist2` are near duplicates.
-* `stanDebugBeginDraw` and `stanDebugDrawTile` are what's left of the tile debug drawing:
-  `lvRender` calls them for tiles named by `-stanshow_` tokens, which are never set.
