@@ -414,7 +414,7 @@ void bgResetPortalVisitCounts(void)
  * @param room_id: room id to search for.
  * @param result: Out parameter. Contains result 2d bbox.
 */
-s32 bgGet2dBboxByRoomId(s32 room_id, struct bbox2d *result)
+s32 bgGet2dBboxByRoomId(s32 room_id, bbox2d *result)
 {
     s32 i;
     for (i=0; i<g_BgNumberOfRoomsDrawn; i++)
@@ -497,8 +497,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                         g_BgRoomsDrawn[j].bbox.min.x,
                         g_BgRoomsDrawn[j].bbox.min.y,
                         g_BgRoomsDrawn[j].bbox.max.x,
-                        g_BgRoomsDrawn[j].bbox.max.y),
-                    0);
+                        g_BgRoomsDrawn[j].bbox.max.y));
  
                 if (lvGetDrawWorld())
                 {
@@ -541,8 +540,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                         g_BgRoomsDrawn[j].bbox.min.x,
                         g_BgRoomsDrawn[j].bbox.min.y,
                         g_BgRoomsDrawn[j].bbox.max.x,
-                        g_BgRoomsDrawn[j].bbox.max.y),
-                    1);
+                        g_BgRoomsDrawn[j].bbox.max.y));
  
                 if (lvGetDrawWorld())
                 {
@@ -1043,7 +1041,7 @@ Gfx *bgLevelRender(Gfx *gdl)
     }
     else
     {
-        gdl = fogRenderClearFogMode(bgScissorCurrentPlayerViewDefault(bgScissorAndRenderRooms(fogSetRenderFogColor(gdl, 0))));
+        gdl = fogRenderClearFogMode(bgScissorCurrentPlayerViewDefault(bgScissorAndRenderRooms(fogSetRenderFogColor(gdl))));
     }
 
     gSPMatrix(gdl++, g_viProjectionMatrix, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
@@ -1443,7 +1441,7 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
  *
  * Returns 0 if no intersection (or edge equality), 1 otherwise.
  */
-s32 bgRectIntersect(struct bbox2d *a, struct bbox2d *b)
+s32 bgRectIntersect(bbox2d *a, bbox2d *b)
 {
 	a->min.x = a->min.x > b->min.x ? a->min.x : b->min.x;
 	a->min.y = a->min.y > b->min.y ? a->min.y : b->min.y;
@@ -1465,7 +1463,7 @@ s32 bgRectIntersect(struct bbox2d *a, struct bbox2d *b)
 
 
 // Does a union. Increases the size of 'a' so it contains 'b'.
-void bgRectOutersect(struct bbox2d *a, struct bbox2d *b)
+void bgRectOutersect(bbox2d *a, bbox2d *b)
 {
     (a->min).x = ((a->min).x < (b->min).x) ? (a->min).x : (b->min).x;
     (a->min).y = ((a->min).y < (b->min).y) ? (a->min).y : (b->min).y;
@@ -1474,7 +1472,7 @@ void bgRectOutersect(struct bbox2d *a, struct bbox2d *b)
 }
 
 // Does a shallow copy of 'b' into 'a'. Equivalent to '*a = *b;'.
-void bbox2dCopy(struct bbox2d *a, struct bbox2d *b)
+void bbox2dCopy(bbox2d *a, bbox2d *b)
 {
     (a->min).x = (b->min).x;
     (a->min).y = (b->min).y;
@@ -1560,7 +1558,7 @@ f32 g_BgSegmentPortalDistance = 0;
 Gfx DL_LUT_UNKNOWN[] = {
     gsDPSetCombineMode(G_CC_TRILERP, G_CC_MODULATEIA2),
     gsDPSetCombineLERP(TEXEL1, 0, SCALE, 0,  TEXEL1, 0, PRIM_LOD_FRAC, 0,  0, 0, 0, COMBINED,  0, 0, 0, COMBINED),
-    0,0
+    {{0,0}}
 };
 
 //D:80044940 - Primary
@@ -1591,7 +1589,7 @@ Gfx DL_LUT_PRIMARY_ADDFOG[] = {
     //Z-Less OPA Terrain to Z-Less Fog OPA Terrain
     gsDPSetRenderMode(G_RM_PASS, G_RM_AA_OPA_TERR2),
     gsDPSetRenderMode(G_RM_FOG_SHADE_A, G_RM_AA_OPA_TERR2),
-    0x0, 0x0
+    {{0x0, 0x0}}
 };
 
 //D:800449C8 - Secondary
@@ -1632,8 +1630,8 @@ Gfx DL_LUT_SECONDARY_ADDFOG[] = {
     // This one is an oddball... its extra here AND is weird using Tile1 only for Alpha
     gsDPSetCombineLERP(TEXEL1, TEXEL0, LOD_FRACTION, TEXEL0,  1, 0, TEXEL1, 0,  COMBINED, 0, SHADE, 0,  COMBINED, 0, SHADE, 0),
     gsDPSetCombineLERP(TEXEL1, TEXEL0, LOD_FRACTION, TEXEL0,  1, 0, TEXEL1, 0,  COMBINED, 0, SHADE, 0,  COMBINED, 0, ENVIRONMENT, 0),
-    0x0,
-    0x0
+    {{0x0,
+    0x0}}
 };
 
 // Loaded once on first time entering level, only once ever
@@ -1659,7 +1657,7 @@ Gfx DL_LUT_PRIMARY[] = {
     gsDPSetCombineLERP(0, 0, 0, SHADE,  0, 0, 0, ENVIRONMENT,  0, 0, 0, COMBINED,  0, 0, 0, COMBINED),
     gsDPSetCombineLERP(0, 0, 0, SHADE,  0, 0, 0, SHADE,  0, 0, 0, SHADE,  0, 0, 0, SHADE),
     gsDPSetCombineLERP(0, 0, 0, SHADE,  0, 0, 0, ENVIRONMENT,  0, 0, 0, SHADE,  0, 0, 0, ENVIRONMENT),
-    0,0
+    {{0,0}}
 };
 
 // Loaded once on first time entering level, only once ever
@@ -1685,7 +1683,7 @@ Gfx DL_LUT_SECONDARY[] = {
     gsDPSetCombineLERP(0, 0, 0, SHADE,  0, 0, 0, ENVIRONMENT,  0, 0, 0, COMBINED,  0, 0, 0, COMBINED),
     gsDPSetCombineLERP(0, 0, 0, SHADE,  0, 0, 0, SHADE,  0, 0, 0, SHADE,  0, 0, 0, SHADE),
     gsDPSetCombineLERP(0, 0, 0, SHADE,  0, 0, 0, ENVIRONMENT,  0, 0, 0, SHADE,  0, 0, 0, ENVIRONMENT),
-    0,0
+    {{0,0}}
 };
 
 Gfx DL_LUT_BILLBOARD[] = {
@@ -1693,34 +1691,34 @@ Gfx DL_LUT_BILLBOARD[] = {
     gsDPSetRenderMode(G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2), gsDPSetRenderMode(G_RM_AA_ZB_TEX_EDGE, G_RM_AA_ZB_TEX_EDGE2),
     //Transparent Surface to Billboard
     gsDPSetRenderMode(G_RM_PASS, G_RM_AA_ZB_XLU_SURF2), gsDPSetRenderMode(G_RM_PASS, G_RM_AA_ZB_TEX_EDGE2),
-    0x0,0x0
+    {{0x0,0x0}}
 };
 
 //water
 Gfx DL_LUT_WATER[] = {
-    0xB900031D, 0x00552078, 0xB900031D, 0x00502078,
-    0xB900031D, 0x0C192078, 0xB900031D, 0x0C182078,
+    {{0xB900031D, 0x00552078}}, {{0xB900031D, 0x00502078}},
+    {{0xB900031D, 0x0C192078}}, {{0xB900031D, 0x0C182078}},
     /*
     //1 Cycle Opa to Particle
     gsDPSetRenderMode(RM_AA_ZB_OPA_SURF, RM_AA_ZB_OPA_SURF2), gDPSetRenderMode(G_RM_AA_ZB_PCL_SURF, G_RM_AA_ZB_PCL_SURF2),
     //2 cycle Opa to Particle
     gsDPSetRenderMode(G_RM_PASS, G_RM_AA_ZB_OPA_SURF2), gDPSetRenderMode(G_RM_PASS, G_RM_AA_ZB_PCL_SURF2),
     */
-    0x0, 0
+    {{0x0, 0}}
 };
 
 Gfx DL_LUT_CLOUD[] = {
     //Transparent to Cloud (Saves AA - Stops Jaggies from appearing behind BillBoard)
     gsDPSetRenderMode(G_RM_PASS, G_RM_AA_ZB_XLU_SURF2), gsDPSetRenderMode(G_RM_PASS, G_RM_ZB_CLD_SURF2),
-    0,0
+    {{0,0}}
 };
 
 //(Wallet Bond - Main Menu)
 Gfx DL_LUT_WALLETBOND[] = {
     gsDPSetCycleType(G_CYC_1CYCLE),
     gsDPSetCycleType(G_CYC_2CYCLE), //1Cycle --> 2Cycle
-    0xB900031D, 0x00502048,
-    0xB900031D, 0x08D02048,
+    {{0xB900031D, 0x00502048}},
+    {{0xB900031D, 0x08D02048}},
     gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE,  TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE),
     gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE,  0, 0, 0, COMBINED,  0, 0, 0, COMBINED),
     /*
@@ -1729,7 +1727,7 @@ Gfx DL_LUT_WALLETBOND[] = {
     gsDPSetRenderMode(G_RM_AA_PCL_SURF, G_RM_AA_PCL_SURF2), gDPSetRenderMode(AA_EN | IM_RD | CVG_DST_CLAMP | ALPHA_CVG_SEL | ZMODE_OPA | GBL_c1(G_BL_CLR_IN, G_BL_A_SHADE, G_BL_CLR_FOG, G_BL_1MA) | GBL_c2(G_BL_CLR_IN, G_BL_A_IN, G_BL_CLR_MEM, G_BL_1MA)),
     gsDPSetCombineMode(G_CC_MODULATERGBA, G_CC_PASS2), gDPSetCombineMode(G_CC_TRILERP, G_CC_MODULATERGBA2),
     */
-    0x0, 0
+    {{0x0, 0}}
 };
 
 Gfx DL_LUT_FIXFOGALPHA3[] = {
@@ -1761,7 +1759,7 @@ Gfx DL_LUT_FIXFOGALPHA3[] = {
     gsDPSetCombineLERP(TEXEL1, TEXEL0, LOD_FRACTION, TEXEL0,  1, 0, TEXEL1, 0,  COMBINED, 0, SCALE, 0,  COMBINED, 0, ENVIRONMENT, 0),
     gsDPSetCombineLERP(0, 0, 0, SHADE,  0, 0, 0, SHADE,  0, 0, 0, COMBINED,  0, 0, 0, COMBINED),
     gsDPSetCombineLERP(CENTER, 0, SCALE, 0,  0, 0, 0, ENVIRONMENT,  0, 0, 0, COMBINED,  0, 0, 0, COMBINED),
-    0,0
+    {{0,0}}
 };
 
 Gfx *ptrDynamic_CC_RM_LUT[] = {
@@ -4565,8 +4563,8 @@ void bgFindRoomsInBbox(coord3d *bbmin, coord3d *bbmax, s32 *room_list, s32 *coun
                         goto next_portal;
                     }
                     
-                    portal_min = (coord3d){MAXFLOAT, MAXFLOAT, MAXFLOAT};
-                    portal_max = (coord3d){-MAXFLOAT, -MAXFLOAT, -MAXFLOAT};
+                    portal_min = (coord3d){{MAXFLOAT, MAXFLOAT, MAXFLOAT}};
+                    portal_max = (coord3d){{-MAXFLOAT, -MAXFLOAT, -MAXFLOAT}};
                     portal_pts = g_BgPortals[portal_idx].offset_portal;
                     
                     for (j = 0; j < portal_pts->numPoints; j++)

@@ -138,15 +138,15 @@ extern f32 cast_camera_angle_end;
 extern f32 cast_camera_height;
 extern f32 cast_camera_height_start;
 extern f32 cast_camera_height_end;
-extern struct coord3d cast_target_smoothed;
-extern struct coord3d cast_target_accumulator;
+extern coord3d cast_target_smoothed;
+extern coord3d cast_target_accumulator;
 
 extern bool cast_camera_reset;
 
-extern struct coord3d cast_rootpos_smoothed;
+extern coord3d cast_rootpos_smoothed;
 
-extern struct coord3d cast_rootvel_smoothed;
-extern struct coord3d cast_rootvel_accumulator;
+extern coord3d cast_rootvel_smoothed;
+extern coord3d cast_rootvel_accumulator;
 
 extern f32 g_NintendoLogoSpin;
 extern f32 g_NintendoLogoScale;

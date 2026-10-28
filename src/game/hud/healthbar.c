@@ -34,7 +34,7 @@
   @numsegments : Not Used
   @HealthValue : amount of health/armour 0-10
 */
-void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSegments, s32 isArmour, f32 HealthValue)
+void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 isArmour, f32 HealthValue)
 {
     s32 i;
     s32 pairIndex;
@@ -117,7 +117,7 @@ void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSeg
 #endif
 
 #if !defined(VERSION_US)
-void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 numSegments, s32 isArmour, f32 HealthValue)
+void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 isArmour, f32 HealthValue)
 {
 	s32 segment;
 	f32 over5;
@@ -307,7 +307,7 @@ void watchMakeArcVerts(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 add
 }
 
 
-Gfx *watchRenderBackground(Gfx *gdl, struct WatchVertex *watch_verts, s32 unused_arg2, s32 drawFan)
+Gfx *watchRenderBackground(Gfx *gdl, struct WatchVertex *watch_verts, s32 drawFan)
 {
     s8 i;
     struct WatchVertex *orig;

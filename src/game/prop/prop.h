@@ -44,7 +44,7 @@ void               propDisable(PropRecord *prop);
 f32                bboxGetYmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
 f32                bboxGetYmax(ModelRoData_BoundingBoxRecord *modelBoundingBox);
 f32                bboxGetZmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
-ObjectRecord      *objFindAtPos(struct coord3d *pos, s32 RoomID);
+ObjectRecord      *objFindAtPos(coord3d *pos, s32 RoomID);
 void               propGetCollisionRadius(PropRecord *prop, f32 *collision_radius, f32 *height, f32 *ymin);
 f32                propGetGroundY(PropRecord *prop);
 f32                bboxRotatedMinX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
@@ -54,7 +54,7 @@ f32                bboxRotatedMaxY(struct ModelRoData_BoundingBoxRecord *bbox, M
 f32                bboxRotatedMinZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
 f32                bboxRotatedMaxZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
 s32                bboxGetHull2d(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord2d *hull);
-void               projectRectCornersTo2D(struct coord3d *center, struct coord2d *xrange, struct coord2d *yrange, bbox2d *screen);
+void               projectRectCornersTo2D(coord3d *center, coord2d *xrange, coord2d *yrange, bbox2d *screen);
 void               switchActivateLinkedDoors(PropRecord *prop);
 struct PropRecord *propFindForInteract(void);
 void        propExecuteTickOperation(PropRecord *prop, TICKOP op);

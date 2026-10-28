@@ -112,77 +112,62 @@ typedef union
 
     #pragma region colour
 
-    typedef struct rgba_u8
+    typedef union rgba_u8
     {
-        union
+        struct
         {
-            struct
-            {
-                u8 r;
-                u8 g;
-                u8 b;
-                u8 a;
-            };
-            u8  rgba[4];
-            u32 word; //added to match
+            u8 r;
+            u8 g;
+            u8 b;
+            u8 a;
         };
+        u8  rgba[4];
+        u32 word; //added to match
     } rgba_u8;
 
-    typedef struct rgba_16
+    typedef union rgba_16
     {
-        union
+        struct
         {
-            struct
-            {
-                u16 r : 5;
-                u16 g : 5;
-                u16 b : 5;
-                u16 a : 1;
-            };
-            u16 AsInteger;
+            u16 r : 5;
+            u16 g : 5;
+            u16 b : 5;
+            u16 a : 1;
         };
+        u16 AsInteger;
     } rgba_16;
 
-    typedef struct rgba_f32
+    typedef union rgba_f32
     {
-        union
+        struct
         {
-            struct
-            {
-                f32 r;
-                f32 g;
-                f32 b;
-                f32 a;
-            };
-            f32 rgba[4];
+            f32 r;
+            f32 g;
+            f32 b;
+            f32 a;
         };
+        f32 rgba[4];
     } rgba_f32;
-    typedef struct rgb_s32
+    typedef union rgb_s32
     {
-        union
+        struct
         {
-            struct
-            {
-                s32 r;
-                s32 g;
-                s32 b;
-            };
-            s32 rgb[3];
+            s32 r;
+            s32 g;
+            s32 b;
         };
+        s32 rgb[3];
     } rgb_s32;
-    typedef struct rgba_s32
+    typedef union rgba_s32
     {
-        union
+        struct
         {
-            struct
-            {
-                s32 r;
-                s32 g;
-                s32 b;
-                s32 a;
-            };
-            s32 rgba[4];
+            s32 r;
+            s32 g;
+            s32 b;
+            s32 a;
         };
+        s32 rgba[4];
     } rgba_s32;
 
     #pragma endregion
@@ -192,17 +177,14 @@ typedef union
      2D Co-ordinate.
      Use either Z OR Y not both
      */
-    typedef struct coord2d
+    typedef union coord2d
     {
-        union
+        struct
         {
-            struct
-            {
-                f32 x;
-                f32 y;
-            };
-            f32 f[2];
+            f32 x;
+            f32 y;
         };
+        f32 f[2];
     } coord2d;
 
     /**
@@ -215,77 +197,49 @@ typedef union
      2D Co-ordinate.
      Use either Z OR Y not both
      */
-    typedef struct point2d
+    typedef union point2d
     {
-        union
+        struct
         {
-            struct
-            {
-                s32 x;
-                s32 y;
-            };
-            s32 p[2];
+            s32 x;
+            s32 y;
         };
+        s32 p[2];
     } point2d;
 
-    typedef struct coord3d
+    typedef union coord3d
     {
-        union
+        struct
         {
-            struct
-            {
-                f32 x;
-                f32 y;
-                f32 z;
-            };
-            f32 f[3];
+            f32 x;
+            f32 y;
+            f32 z;
         };
+        f32 f[3];
     } coord3d;
-/* GCC needs every parameter supplied, so pad the list with empty arguments */
-#    define New_Coord3d(...) _New_Coord3d_PAD(__VA_ARGS__, , , )
-#    define _New_Coord3d_PAD(x, y, z, ...) _New_Coord3d3(x, y, z)
-#define _New_Coord3d3(x, y, z)            \
-    {                                   \
-        IF_ELSE(IS_EMPTY(x))            \
-        (0)(x),                         \
-            IF_ELSE(IS_EMPTY(y))(0)(y), \
-            IF_ELSE(IS_EMPTY(z))(0)(z)  \
-    }
     typedef coord3d vec3d; //canononical name
-/* GCC needs every parameter supplied, so pad the list with empty arguments */
-#    define New_Vector(...) _New_Vector_PAD(__VA_ARGS__, , , )
-#    define _New_Vector_PAD(x, y, z, ...) _New_Vector3(x, y, z)
-#define _New_Vector3(x, y, z)        \
-    {                              \
-        IF_ELSE(IS_EMPTY(x))(0)(x),\
-        IF_ELSE(IS_EMPTY(y))(0)(y),\
-        IF_ELSE(IS_EMPTY(z))(0)(z) \
-    }
 
     /**
      16bit Co-Ordinate used for Integer co-ordinates eg, pumping straight to RSP.
      */
-    typedef struct coord16
+    typedef union coord16
     {
-        union
+        struct
         {
-            struct
-            {
-                s16 x;
-                s16 y;
-                s16 z;
-            };
-            s16 AsArray[3];
+            s16 x;
+            s16 y;
+            s16 z;
         };
+        s16 AsArray[3];
     } coord16;
 
     #pragma endregion
 
     // Used for rendering watch menu
     struct WatchVertex {
-        struct coord16 coord1;
-        struct coord16 coord2;
-        struct rgba_u8 color;
+        coord16 coord1;
+        coord16 coord2;
+        rgba_u8 color;
     };
 
     // Buffer defined on player struct, used
@@ -301,73 +255,61 @@ typedef union
 
     #pragma region volumes and areas
 
-    typedef struct bbox2d
+    typedef union bbox2d
     {
-        union
+        struct
         {
-            struct
-            {
-                coord2d min;
-                coord2d max;
-            };
-            f32 f[2][2];
+            coord2d min;
+            coord2d max;
         };
+        f32 f[2][2];
     } bbox2d;
 
-    typedef struct bbox
+    typedef union bbox
     {
-        union
+        struct
         {
-            struct
-            {
-                float xmin;
-                float xmax;
-                float ymin;
-                float ymax;
-                float zmin;
-                float zmax;
-            };
-            struct
-            {
-                coord3d min;
-                coord3d max;
-            };
-            f32 f[3][2];
-            f32 AsArray[6];
+            float xmin;
+            float xmax;
+            float ymin;
+            float ymax;
+            float zmin;
+            float zmax;
         };
+        struct
+        {
+            coord3d min;
+            coord3d max;
+        };
+        f32 f[3][2];
+        f32 AsArray[6];
     } bbox;
 
-    typedef struct view4s32
+    typedef union view4s32
     {
-        union
+        struct
         {
-            struct
-            {
-                s32 left;
-                s32 top;
-                s32 width;
-                s32 height;
-            };
-            s32 v[4];
-            f32 f[4];
+            s32 left;
+            s32 top;
+            s32 width;
+            s32 height;
         };
-    }Vew4s32;
+        s32 v[4];
+        f32 f[4];
+    } view4s32;
 
-    typedef struct view4f
+    typedef union view4f
     {
-        union
+        struct
         {
-            struct
-            {
-                f32 left;
-                f32 top;
-                f32 width;
-                f32 height;
-            };
-            s32 v[4];
-            f32 f[4];
+            f32 left;
+            f32 top;
+            f32 width;
+            f32 height;
         };
-    }view4f;
+        s32 v[4];
+        f32 f[4];
+    } view4f;
 
 
     struct rectbbox
@@ -389,7 +331,7 @@ typedef union
      */
     typedef struct StandTilePoint
     {
-        inherits coord16; //points for tile
+        union coord16; //points for tile
         u16 link; //link to another tile
     } StandTilePoint;
     /*
@@ -527,7 +469,7 @@ typedef union
 
     typedef struct BetaStandFilePoint
     {
-        inherits coord3d;
+        union coord3d;
         u32 link;
     } BetaStandFilePoint;
 
@@ -1012,7 +954,7 @@ typedef union
         typedef struct ModelRoData_BoundingBoxRecord
         {
             u32         ModelNumber; /*0x0*/
-            struct bbox Bounds;      /*0x4*/
+            bbox Bounds;      /*0x4*/
         } ModelRoData_BoundingBoxRecord;
 
         /**
@@ -1506,15 +1448,10 @@ typedef union
             s16 Seed[6];
         } ExplosionDetailsRecord;
 
-        struct ExplosionDetailsRecordSeed
-        {
-            s16 seed[6];
-        };
-
         typedef struct ExplosionDetailsRecordEuList
         {
             u8                                typeids[344];
-            struct ExplosionDetailsRecordSeed seeds[105];
+            s16                               seeds[105][6];
         } ExplosionDetailsRecordEuList;
 #pragma endregion Explosion Stuff
 
@@ -3747,14 +3684,6 @@ typedef struct stagesetup
         ObjectRecord *Obj;       //20
     } sfxRecord;
 
-    struct sfx2 {
-        u16 half[2];
-    };
-
-    struct sfx3 {
-        u16 half[3];
-    };
-
 typedef struct object_standard {
     s16 scale;
     u8 state;
@@ -3884,7 +3813,7 @@ struct criteria_picture {
 };
 
 struct PortalMetric {
-    struct coord3d normal;
+    coord3d normal;
     f32 min;
     f32 max;
 };

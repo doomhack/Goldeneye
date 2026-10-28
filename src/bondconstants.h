@@ -2077,7 +2077,7 @@ typedef enum PORTALFLAGS
 
 #define SAVEFLAGS_SET(folder, slot, bond, reset) (((folder << 5) & 0xE0) | ((slot * 8) & 0x18) | ((bond << 1) & 0x6) | (reset & 1 ? SAVEFLAG_DORESET : 0))
 
-#define BLANKSAVEDATA {0, 0, SAVEFLAGS_SET(0,0,BOND_BROSNAN,1), 0x00, 0xFF, 0xFF, DEFAULT_OPTIONS, 0x00, 0x00, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+#define BLANKSAVEDATA {.completion_bitflags = SAVEFLAGS_SET(0,0,BOND_BROSNAN,1), .music_vol = 0xFF, .sfx_vol = 0xFF, .options = DEFAULT_OPTIONS}
 
 #define MAX_PLAYER_COUNT 4
 

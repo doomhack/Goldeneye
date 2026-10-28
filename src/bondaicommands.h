@@ -246,11 +246,14 @@
 #define AI_LIST_CHR_START 0x0401
 #define AI_LIST_OBJ_START 0x1000
 
-// Print Helpful Compile-time error messages
-#    define AI_ERR_SUB (('E','R','R','O','R',':',' ','A','I','_','L','I','S','T',' ','I','S',' ','A',' ','S','U','B','R','O','U','T','I','N','E',' ','O','R',' ','N','O','T',' ','F','O','R',' ','C','H','R'), 1)
-#    define AI_ERR_NOTSUB (('E','R','R','O','R',':',' ','A','I','_','L','I','S','T',' ','N','O','T',' ','A',' ','S','U','B','R','O','U','T','I','N','E',' ','O','R',' ','N','O','T',' ','F','O','R',' ','C','H','R'), 1)
-#    define AI_ERR_NOTCHR (('E','R','R','O','R',':',' ','A','I','_','L','I','S','T',' ','N','O','T',' ','F','O','R',' ','C','H','R'), 1)
-#    define AI_ERR_NO_THIS ((('E','R','R','O','R',':',' ','C','a','n','n','o','t',' ','C','a','l','l',' ','A','I','_','L','I','S','T',' ','w','i','t','h','o','u','t',' ','d','e','f','i','n','i','n','g',' ','T','H','I','S',' ','f','o','r',' ','r','e','t','u','r','n'),1))\
+// Sentinel AI list ids the AI command macros put in place of a list id that is the wrong kind
+// (a subroutine where a chr list is needed, or the other way round).
+#    define AI_ERR_SUB    1 // ERROR: AI_LIST is a subroutine or not for chr
+#    define AI_ERR_NOTSUB 1 // ERROR: AI_LIST not a subroutine or not for chr
+#    define AI_ERR_NOTCHR 1 // ERROR: AI_LIST not for chr
+// Using a "call and return" command without defining THIS names this undeclared identifier,
+// so the build stops with the reason in the error message.
+#    define AI_ERR_NO_THIS ERROR_cannot_call_AI_LIST_without_defining_THIS_for_return
 
 
 

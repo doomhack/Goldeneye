@@ -119,90 +119,90 @@ u32 g_gunDebKeyframeIndex = 0;
 
 /** Knife slash: the first of the two alternating swings. */
 Weapon1PTransformKeyframe knifeSlashKeyframes1[10] = {
-    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 8.0f },
-    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 8.0f },
-    { 0, { 6.0f, -1.5f, 0.0f }, { 5.641564f, 0.23511f, 0.13564f }, 0.5f, 8.0f },
-    { 0, { 12.5f, -3.5f, 0.0f }, { 6.042227f, 0.04475f, 0.555717f }, 0.5f, 8.0f },
-    { 0, { -10.0f, -11.0f, 0.0f }, { 1.241009f, 0.316988f, 1.086363f }, 0.5f, 8.0f },
-    { 0, { -14.0f, -15.0f, 0.0f }, { 1.830307f, 6.143663f, 1.274134f }, 0.5f, 10.0f },
-    { 0, { -1.0f, -9.0f, 0.0f }, { 0.384244f, 0.360323f, 0.105151f }, 0.5f, 10.0f },
-    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 20.0f },
-    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 20.0f },
-    { 1, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f }
+    { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 8.0f },
+    { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 8.0f },
+    { 0, { {6.0f, -1.5f, 0.0f} }, { {5.641564f, 0.23511f, 0.13564f} }, 0.5f, 8.0f },
+    { 0, { {12.5f, -3.5f, 0.0f} }, { {6.042227f, 0.04475f, 0.555717f} }, 0.5f, 8.0f },
+    { 0, { {-10.0f, -11.0f, 0.0f} }, { {1.241009f, 0.316988f, 1.086363f} }, 0.5f, 8.0f },
+    { 0, { {-14.0f, -15.0f, 0.0f} }, { {1.830307f, 6.143663f, 1.274134f} }, 0.5f, 10.0f },
+    { 0, { {-1.0f, -9.0f, 0.0f} }, { {0.384244f, 0.360323f, 0.105151f} }, 0.5f, 10.0f },
+    { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 20.0f },
+    { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 20.0f },
+    { 1, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.0f, 0.0f }
 };
 
 /** Knife slash: the second swing. */
 Weapon1PTransformKeyframe knifeSlashKeyframes2[10] = {
-    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 8.0f },
-    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 8.0f },
-    { 0, { -8.5f, -6.0f, 0.0f }, { 5.483035f, 5.834561f, 6.082734f }, 0.5f, 8.0f },
-    { 0, { -3.0f, -3.5f, 0.0f }, { 0.402412f, 5.729386f, 5.691899f }, 0.5f, 8.0f },
-    { 0, { -0.5f, -8.5f, 0.0f }, { 1.234298f, 5.731543f, 5.608871f }, 0.5f, 8.0f },
-    { 0, { 7.0f, -28.5f, -1.5f }, { 1.306924f, 5.695158f, 5.69583f }, 0.5f, 10.0f },
-    { 0, { -1.5f, -9.0f, 0.0f }, { 0.067808f, 6.259576f, 0.203519f }, 0.5f, 10.0f },
-    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 20.0f },
-    { 0, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.5f, 20.0f },
-    { 1, { 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f }, 0.0f, 0.0f }
+    { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 8.0f },
+    { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 8.0f },
+    { 0, { {-8.5f, -6.0f, 0.0f} }, { {5.483035f, 5.834561f, 6.082734f} }, 0.5f, 8.0f },
+    { 0, { {-3.0f, -3.5f, 0.0f} }, { {0.402412f, 5.729386f, 5.691899f} }, 0.5f, 8.0f },
+    { 0, { {-0.5f, -8.5f, 0.0f} }, { {1.234298f, 5.731543f, 5.608871f} }, 0.5f, 8.0f },
+    { 0, { {7.0f, -28.5f, -1.5f} }, { {1.306924f, 5.695158f, 5.69583f} }, 0.5f, 10.0f },
+    { 0, { {-1.5f, -9.0f, 0.0f} }, { {0.067808f, 6.259576f, 0.203519f} }, 0.5f, 10.0f },
+    { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 20.0f },
+    { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 20.0f },
+    { 1, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.0f, 0.0f }
 };
 
 /**
  * Throwing Knife animation for when Z is pressed/held down.
  */
 struct Weapon1PTransformKeyframe throwKnifeDrawBackKeyframes[6] = {
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 0.0f, 4.5f}, { 5.576369f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 0.0f, 20.5f}, { 5.26209f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 3.0f, 5.5f}, { 0.031375f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 0.0f, 4.5f}}, { {5.576369f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 0.0f, 20.5f}}, { {5.26209f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 3.0f, 5.5f}}, { {0.031375f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
  * Throwing Knife animation for when Z is released.
  */
 struct Weapon1PTransformKeyframe throwKnifeReleaseKeyframes[6] = {
-    { 0, { 0.0f, 0.0f, 4.5f}, { 5.576369f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 0.0f, 20.5f}, { 5.26209f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 3.0f, 5.5f}, { 0.031375f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, -20.0f, 18.0f}, { 0.785458f, 0.0f, 0.0f}, 0.5f, 20.0f},
-    { 0, { 0.0f, -20.0f, 18.0f}, { 0.785458f, 0.0f, 0.0f}, 0.5f, 20.0f},
-    { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    { 0, { {0.0f, 0.0f, 4.5f}}, { {5.576369f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 0.0f, 20.5f}}, { {5.26209f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 3.0f, 5.5f}}, { {0.031375f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, -20.0f, 18.0f}}, { {0.785458f, 0.0f, 0.0f}}, 0.5f, 20.0f},
+    { 0, { {0.0f, -20.0f, 18.0f}}, { {0.785458f, 0.0f, 0.0f}}, 0.5f, 20.0f},
+    { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
  * Keyframes for the Grenade which is strange since you cannot see it on screen. Perhaps the developers once intended to have a proper first person Grenade throwing animation?
  */
 struct Weapon1PTransformKeyframe grenadeThrowKeyframes[6] = {
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 4.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 4.0f},
-    { 0, { 10.0f, 12.5f, 17.5f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 4.0f},
-    { 0, { 10.0f, 34.5f, 25.5f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-    { 0, { 10.0f, 34.5f, 25.5f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-    { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
+    { 0, { {10.0f, 12.5f, 17.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
+    { 0, { {10.0f, 34.5f, 25.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+    { 0, { {10.0f, 34.5f, 25.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+    { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
  * Keyframes for the Timed Mine, but changing the durations has no effect.
  */
 struct Weapon1PTransformKeyframe timedMineThrowKeyframes[6] = {
-    { 0, { 10.0f, 34.5f, 25.5f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-    { 0, { 10.0f, 34.5f, 25.5f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-    { 0, { 10.0f, 12.5f, 17.5f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-    { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    { 0, { {10.0f, 34.5f, 25.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+    { 0, { {10.0f, 34.5f, 25.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+    { 0, { {10.0f, 12.5f, 17.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+    { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
  * Keyframes for the Proximity Mine. Changing the durations does effect the time it takes to throw the mine, although nothing is seen on screen.
  */
 struct Weapon1PTransformKeyframe proxMineThrowKeyframes[6] = {
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 4.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 4.0f},
-    { 0, { 0.0f, 0.0f, 4.5f}, { 5.576369f, 0.0f, 0.0f}, 0.5f, 4.0f},
-    { 0, { 0.0f, 0.0f, 20.5f}, { 5.26209f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 3.0f, 5.5f}, { 0.031375f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
+    { 0, { {0.0f, 0.0f, 4.5f}}, { {5.576369f, 0.0f, 0.0f}}, 0.5f, 4.0f},
+    { 0, { {0.0f, 0.0f, 20.5f}}, { {5.26209f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 3.0f, 5.5f}}, { {0.031375f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
@@ -210,103 +210,103 @@ struct Weapon1PTransformKeyframe proxMineThrowKeyframes[6] = {
  * but it does change the time it takes before you can throw another.
  */
 struct Weapon1PTransformKeyframe remoteMineThrowKeyframes[7] = {
-    { 0, { 0.0f, 0.0f, 4.5f}, { 5.576369f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 0.0f, 20.5f}, { 5.26209f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 3.0f, 5.5f}, { 0.031375f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, -20.0f, 18.0f}, { 0.785458f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 20.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 20.0f},
-    { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    { 0, { {0.0f, 0.0f, 4.5f}}, { {5.576369f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 0.0f, 20.5f}}, { {5.26209f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 3.0f, 5.5f}}, { {0.031375f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, -20.0f, 18.0f}}, { {0.785458f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 20.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 20.0f},
+    { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
  * Slapper attack when the hand starts at the right of the screen then chops downward and to the left.
  */
 Weapon1PTransformKeyframe fistMeleeKeyframes1[10] = {
-    { 0, {   0.0f,  0.0f, 0.0f }, {      0.0f,      0.0f,      0.0f }, 0.5f, 10.0f },
-    { 0, {   0.0f,  0.0f, 0.0f }, {      0.0f,      0.0f,      0.0f }, 0.5f, 10.0f },
-    { 0, {   6.0f, 23.0f, 0.0f }, {  5.91572f, 0.085832f, 0.219482f }, 0.5f, 10.0f },
-    { 0, {  18.0f, 35.0f, 9.5f }, { 4.998193f, 0.084203f, 0.268954f }, 0.5f, 10.0f },
-    { 0, { -20.0f, 25.5f, 4.0f }, { 0.126148f, 0.304284f, 0.548047f }, 0.5f, 10.0 },
-    { 0, { -28.0f, -4.0f, 2.0f }, { 0.506821f,  0.51473f, 0.484098f }, 0.5f,  1.0f },
-    { 0, { -28.0f, -4.0f, 2.0f }, { 0.506821f,  0.51473f, 0.484098f }, 0.5f,  1.0f },
-    { 0, {   0.0f,  0.0f, 0.0f }, {      0.0f,      0.0f,      0.0f }, 0.5f, 20.0f },
-    { 0, {   0.0f,  0.0f, 0.0f }, {      0.0f,      0.0f,      0.0f }, 0.5f, 20.0f },
-    { 1, {   0.0f,  0.0f, 0.0f }, {      0.0f,      0.0f,      0.0f }, 0.0f,  0.0f }
+    { 0, {   {0.0f,  0.0f, 0.0f} }, {      {0.0f,      0.0f,      0.0f} }, 0.5f, 10.0f },
+    { 0, {   {0.0f,  0.0f, 0.0f} }, {      {0.0f,      0.0f,      0.0f} }, 0.5f, 10.0f },
+    { 0, {   {6.0f, 23.0f, 0.0f} }, {  {5.91572f, 0.085832f, 0.219482f} }, 0.5f, 10.0f },
+    { 0, {  {18.0f, 35.0f, 9.5f} }, { {4.998193f, 0.084203f, 0.268954f} }, 0.5f, 10.0f },
+    { 0, { {-20.0f, 25.5f, 4.0f} }, { {0.126148f, 0.304284f, 0.548047f} }, 0.5f, 10.0 },
+    { 0, { {-28.0f, -4.0f, 2.0f} }, { {0.506821f,  0.51473f, 0.484098f} }, 0.5f,  1.0f },
+    { 0, { {-28.0f, -4.0f, 2.0f} }, { {0.506821f,  0.51473f, 0.484098f} }, 0.5f,  1.0f },
+    { 0, {   {0.0f,  0.0f, 0.0f} }, {      {0.0f,      0.0f,      0.0f} }, 0.5f, 20.0f },
+    { 0, {   {0.0f,  0.0f, 0.0f} }, {      {0.0f,      0.0f,      0.0f} }, 0.5f, 20.0f },
+    { 1, {   {0.0f,  0.0f, 0.0f} }, {      {0.0f,      0.0f,      0.0f} }, 0.0f,  0.0f }
 };
 
 /**
  * Slapper attack when the hand moves to the left of the screen then chops downward and to the right.
  */
 Weapon1PTransformKeyframe fistMeleeKeyframes2[10] = {
-       { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-       { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 10.0f},
-       { 0, { -6.0f, 23.0f, 0.0f}, { 5.08683f, 6.131295f, 5.534376f}, 0.5f, 10.0f},
-       { 0, { -18.0f, 35.0f, 9.5f}, { 4.880698f, 0.070396f, 5.53615f}, 0.5f, 10.0f},
-       { 0, { 8.0f, 25.5f, 4.0f}, { 0.107213f, 6.062361f, 5.404225f}, 0.5f, 10.0f},
-       { 0, { 28.0f, -4.0f, 2.0f}, { 0.107213f, 6.062361f, 5.404225f}, 0.5f, 1.0f},
-       { 0, { 28.0f, -4.0f, 2.0f}, { 0.107213f, 6.062361f, 5.404225f}, 0.5f, 1.0f},
-       { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 20.0f},
-       { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 20.0f},
-       { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+       { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+       { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
+       { 0, { {-6.0f, 23.0f, 0.0f}}, { {5.08683f, 6.131295f, 5.534376f}}, 0.5f, 10.0f},
+       { 0, { {-18.0f, 35.0f, 9.5f}}, { {4.880698f, 0.070396f, 5.53615f}}, 0.5f, 10.0f},
+       { 0, { {8.0f, 25.5f, 4.0f}}, { {0.107213f, 6.062361f, 5.404225f}}, 0.5f, 10.0f},
+       { 0, { {28.0f, -4.0f, 2.0f}}, { {0.107213f, 6.062361f, 5.404225f}}, 0.5f, 1.0f},
+       { 0, { {28.0f, -4.0f, 2.0f}}, { {0.107213f, 6.062361f, 5.404225f}}, 0.5f, 1.0f},
+       { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 20.0f},
+       { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 20.0f},
+       { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
  * Sniper swing right to left.
  */
 Weapon1PTransformKeyframe sniperMeleeKeyframes1[11] = {
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 9.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, {9.5f, -0.5f, 3.5f}, { 0.291053f, 5.584375f, 6.212358f}, 0.5f, 8.0f},
-    { 0, {18.0f, 7.5f, 3.5f}, { 0.439372f, 5.945201f, 5.993666f}, 0.5f, 8.0f},
-    { 0, {-9.0f, 8.5f, 5.5f}, { 0.704803f, 0.194459f, 6.168447f}, 0.5f, 7.0f},
-    { 0, {-29.0f, -5.5f, 5.5f}, { 2.281831f, 1.106353f, 1.489998f}, 0.5f, 7.0f},
-    { 0, {-57.5f, -27.5f, 5.5f}, { 2.281831f, 1.106353f, 1.489998f}, 0.5f, 7.0f},
-    { 0, {-19.5f, -20.0f, 5.5f}, { 1.22519f, 0.726087f, 1.210713f}, 0.5f, 15.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 20.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 20.0f},
-    { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 9.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, {{9.5f, -0.5f, 3.5f}}, { {0.291053f, 5.584375f, 6.212358f}}, 0.5f, 8.0f},
+    { 0, {{18.0f, 7.5f, 3.5f}}, { {0.439372f, 5.945201f, 5.993666f}}, 0.5f, 8.0f},
+    { 0, {{-9.0f, 8.5f, 5.5f}}, { {0.704803f, 0.194459f, 6.168447f}}, 0.5f, 7.0f},
+    { 0, {{-29.0f, -5.5f, 5.5f}}, { {2.281831f, 1.106353f, 1.489998f}}, 0.5f, 7.0f},
+    { 0, {{-57.5f, -27.5f, 5.5f}}, { {2.281831f, 1.106353f, 1.489998f}}, 0.5f, 7.0f},
+    { 0, {{-19.5f, -20.0f, 5.5f}}, { {1.22519f, 0.726087f, 1.210713f}}, 0.5f, 15.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 20.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 20.0f},
+    { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
  * Sniper swing left to right.
  */
 Weapon1PTransformKeyframe sniperMeleeKeyframes2[11] = {
-    { 0, {   0.0f,  0.0f,  0.0f }, {                 0.0f,                 0.0f,                 0.0f }, 0.5f,  9.0f },
-    { 0, {   0.0f,  0.0f,  0.0f }, {                 0.0f,                 0.0f,                 0.0f }, 0.5f,  8.0f },
-    { 0, { -15.5f,  0.5f, 15.0f }, {  0.9344959855079651f,  0.6256099939346313f,  0.2237969934940338f }, 0.5f,  8.0f },
-    { 0, { -23.0f,  2.0f, 12.0f }, {  1.8016400337219238f,  0.9494050145149231f,  0.6307389736175537f }, 0.5f,  8.0f },
-    { 0, { -18.0f, -0.5f,  4.0f }, {  0.8478249907493591f,  0.9247649908065796f, 0.07744300365447998f }, 0.5f,  7.0f },
-    { 0, {  10.5f,  5.0f,  2.5f }, { 0.22940599918365479f, 0.24570399522781372f, 0.09906300157308578f }, 0.5f,  7.0f },
-    { 0, {  18.0f,  5.0f,  2.5f }, { 0.03281300142407417f,    6.20933723449707f,  0.1350640058517456f }, 0.5f,  7.0f },
-    { 0, {   9.5f,  3.5f, -1.5f }, {   6.273238182067871f,   6.005795001983643f, 0.08971499651670456f }, 0.5f,  7.0f },
-    { 0, {   0.0f,  0.0f,  0.0f }, {                 0.0f,                 0.0f,                 0.0f }, 0.5f, 20.0f },
-    { 0, {   0.0f,  0.0f,  0.0f }, {                 0.0f,                 0.0f,                 0.0f }, 0.5f, 20.0f },
-    { 1, {   0.0f,  0.0f,  0.0f }, {                 0.0f,                 0.0f,                 0.0f }, 0.0f,  0.0f },
+    { 0, {   {0.0f,  0.0f,  0.0f} }, {                 {0.0f,                 0.0f,                 0.0f} }, 0.5f,  9.0f },
+    { 0, {   {0.0f,  0.0f,  0.0f} }, {                 {0.0f,                 0.0f,                 0.0f} }, 0.5f,  8.0f },
+    { 0, { {-15.5f,  0.5f, 15.0f} }, {  {0.9344959855079651f,  0.6256099939346313f,  0.2237969934940338f} }, 0.5f,  8.0f },
+    { 0, { {-23.0f,  2.0f, 12.0f} }, {  {1.8016400337219238f,  0.9494050145149231f,  0.6307389736175537f} }, 0.5f,  8.0f },
+    { 0, { {-18.0f, -0.5f,  4.0f} }, {  {0.8478249907493591f,  0.9247649908065796f, 0.07744300365447998f} }, 0.5f,  7.0f },
+    { 0, {  {10.5f,  5.0f,  2.5f} }, { {0.22940599918365479f, 0.24570399522781372f, 0.09906300157308578f} }, 0.5f,  7.0f },
+    { 0, {  {18.0f,  5.0f,  2.5f} }, { {0.03281300142407417f,    6.20933723449707f,  0.1350640058517456f} }, 0.5f,  7.0f },
+    { 0, {   {9.5f,  3.5f, -1.5f} }, {   {6.273238182067871f,   6.005795001983643f, 0.08971499651670456f} }, 0.5f,  7.0f },
+    { 0, {   {0.0f,  0.0f,  0.0f} }, {                 {0.0f,                 0.0f,                 0.0f} }, 0.5f, 20.0f },
+    { 0, {   {0.0f,  0.0f,  0.0f} }, {                 {0.0f,                 0.0f,                 0.0f} }, 0.5f, 20.0f },
+    { 1, {   {0.0f,  0.0f,  0.0f} }, {                 {0.0f,                 0.0f,                 0.0f} }, 0.0f,  0.0f },
 };
 
 /**
  * Animation when the Taser is lowering to fire position.
  */
 Weapon1PTransformKeyframe taserFireKeyFrames[6] = {
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    { 0, { 0.5f, -6.0f, -8.0f}, { 0.439468f, 0.278829f, 0.195178f}, 0.5f, 8.0f},
-    { 0, { -2.0f, -8.0f, -10.0f}, { 1.101655f, 0.460753f, 0.570961f}, 0.5f, 8.0f},
-    { 0, { -2.0f, -8.0f, -10.0f}, { 1.101655f, 0.460753f, 0.570961f}, 0.5f, 8.0f},
-    { 1, { 0.0f, 0.0f, 0.0f}, { 0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    { 0, { {0.5f, -6.0f, -8.0f}}, { {0.439468f, 0.278829f, 0.195178f}}, 0.5f, 8.0f},
+    { 0, { {-2.0f, -8.0f, -10.0f}}, { {1.101655f, 0.460753f, 0.570961f}}, 0.5f, 8.0f},
+    { 0, { {-2.0f, -8.0f, -10.0f}}, { {1.101655f, 0.460753f, 0.570961f}}, 0.5f, 8.0f},
+    { 1, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 /**
  * Animation once the Taser has fired and goes back to idle position.
  */
 Weapon1PTransformKeyframe taserRaiseKeyframes[6] = {
-    {0, { -2.0f, -8.0f, -10.0f}, {1.101655f, 0.460753f, 0.570961f}, 0.5f, 8.0f},
-    {0, { -2.0f, -8.0f, -10.0f}, {1.101655f, 0.460753f, 0.570961f}, 0.5f, 8.0f},
-    {0, { 0.5f, -6.0f, -8.0f}, {0.439468f, 0.278829f, 0.195178f}, 0.5f, 8.0f},
-    {0, { 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    {0, { 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.5f, 8.0f},
-    {1, { 0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f}, 0.0f, 0.0f}
+    {0, { {-2.0f, -8.0f, -10.0f}}, {{1.101655f, 0.460753f, 0.570961f}}, 0.5f, 8.0f},
+    {0, { {-2.0f, -8.0f, -10.0f}}, {{1.101655f, 0.460753f, 0.570961f}}, 0.5f, 8.0f},
+    {0, { {0.5f, -6.0f, -8.0f}}, {{0.439468f, 0.278829f, 0.195178f}}, 0.5f, 8.0f},
+    {0, { {0.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    {0, { {0.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
+    {1, { {0.0f, 0.0f, 0.0f}}, {{0.0f, 0.0f, 0.0f}}, 0.0f, 0.0f}
 };
 
 
@@ -320,7 +320,7 @@ u32 watchControllerButtonBases[] = {
 };
 
 //D:0x80035E04
-struct RicochetSoundsSmall ricochet_sounds_small = {
+u16 ricochet_sounds_small[20] = {
     RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
     RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
     RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
@@ -328,23 +328,23 @@ struct RicochetSoundsSmall ricochet_sounds_small = {
     RICO_6_HBBA_A_SFX, RICO_6_HBBA_B_SFX, RICO_6_HBBA_C_SFX, RICO_6_HBBA_D_SFX
 };
 
-struct PunchSounds punch_sounds = {
+u16 punch_sounds[3] = {
     PUNCH1_SFX,
     PUNCH2_SFX,
     PUNCH3_SFX
 };
 
-struct BulletFleshSounds bullet_flesh_sounds = {
+u16 bullet_flesh_sounds[2] = {
     HIT_BULLET_FLESH_SFX,
     HIT_BULLET_FLESH_SFX
 };
 
-struct LaserRichochetSounds laser_ricochet_sounds = {
+u16 laser_ricochet_sounds[2] = {
     RICO_LASER2_SFX,
     RICO_LASER3_SFX
 };
 
-struct RicochetSoundsLarge ricochet_sounds_large = {
+u16 ricochet_sounds_large[36] = {
 	RICO_12_GBU_A_SFX, RICO_12_GBU_B_SFX, RICO_12_GBU_C_SFX, RICO_12_GBU_D_SFX,
     RICO_6_TAJ_A_SFX,  RICO_6_TAJ_B_SFX,  RICO_6_TAJ_C_SFX,  RICO_6_TAJ_D_SFX,
     RICO_6_TAJ_A_SFX,  RICO_6_TAJ_B_SFX,  RICO_6_TAJ_C_SFX,  RICO_6_TAJ_D_SFX,
@@ -356,9 +356,8 @@ struct RicochetSoundsLarge ricochet_sounds_large = {
     RICO_6_HBBA_A_SFX, RICO_6_HBBA_B_SFX, RICO_6_HBBA_C_SFX, RICO_6_HBBA_D_SFX
 };
 
-struct sfx2 watchlaser_fire_sounds = { RICO_LASER2_SFX, RICO_LASER3_SFX };
-struct sfx3 knife_throw_sounds = { KNIFE_THROW1_SFX, KNIFE_THROW2_SFX, KNIFE_THROW3_SFX };
-struct gun_trigger_state g_ZeroTriggerState = { 0, 0 };
+u16 watchlaser_fire_sounds[2] = { RICO_LASER2_SFX, RICO_LASER3_SFX };
+u16 knife_throw_sounds[3] = { KNIFE_THROW1_SFX, KNIFE_THROW2_SFX, KNIFE_THROW3_SFX };
 ModelRenderData g_DefaultCasingModelRenderData = {.zbufferenabled = TRUE, .flags = 3};
 
 #define AMMO_RELATED_MAX 30
@@ -874,7 +873,7 @@ void gunSwitchWhenEmpty(void)
     gunRequestHandWeaponChange(GUNLEFT, dupeleft, 1);
 }
 
-s32 gunEquip(GUNHAND hand, s32 next_weapon) {
+void gunEquip(GUNHAND hand, s32 next_weapon) {
     g_CurrentPlayer->hands[hand].weapon_current_animation = 5;
     g_CurrentPlayer->hands[hand].weapon_next_weapon = next_weapon;
     g_CurrentPlayer->hands[hand].weapon_animation_trigger = 0;
@@ -1473,15 +1472,15 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
 void gunThrowGrenade(s32 hand)
 {
     Mtxf tumble;
-    struct coord3d throw_speed_vec;
+    coord3d throw_speed_vec;
     f32 base_velocity;
-    struct coord3d pos;
+    coord3d pos;
     Mtxf mtx;
     struct WeaponObjRecord *wor;
-    struct coord3d shotOrigin;
-    struct coord3d base_speed_vec;
+    coord3d shotOrigin;
+    coord3d base_speed_vec;
     struct PropRecord* player_prop;
-    struct coord3d *bondprevpos;
+    coord3d *bondprevpos;
     Mtxf handmtx;
     ALSoundState *sfx_state;
     s32 current_weapon;
@@ -1547,7 +1546,7 @@ void gunThrowGrenade(s32 hand)
 
             if (sfx_state != NULL)
             {
-                chrobjSndCreatePostEventDefault(sfx_state, (struct coord3d *) &wor->runtime_pos);
+                chrobjSndCreatePostEventDefault(sfx_state, (coord3d *) &wor->runtime_pos);
             }
         }
     }
@@ -1562,15 +1561,15 @@ void gunThrowKnife(s32 hand)
 {
     struct WeaponObjRecord *wor;
     Mtxf tumble;
-    struct coord3d throw_speed_vec;
+    coord3d throw_speed_vec;
     f32 base_velocity;
-    struct coord3d pos;
+    coord3d pos;
     Mtxf mtx;
-    struct coord3d shotOrigin;
-    struct coord3d base_speed_vec;
+    coord3d shotOrigin;
+    coord3d base_speed_vec;
     Mtxf handmtx;
     struct PropRecord* player_prop;
-    struct coord3d *bondprevpos;
+    coord3d *bondprevpos;
 
     wor = NULL;
     base_velocity = 25.0f;
@@ -1646,16 +1645,16 @@ void gunThrowObject(s32 hand)
 */
 
     Mtxf tumble;
-    struct coord3d throw_speed_vec;
+    coord3d throw_speed_vec;
     f32 base_velocity;
-    struct coord3d pos;
+    coord3d pos;
     Mtxf mtx;
     struct WeaponObjRecord *wor;
     s32 new_prop_type;
-    struct coord3d shotOrigin;
-    struct coord3d base_speed_vec;
+    coord3d shotOrigin;
+    coord3d base_speed_vec;
     struct PropRecord* player_prop;
-    struct coord3d *bondprevpos;
+    coord3d *bondprevpos;
     Mtxf handmtx;
     ALSoundState *sfx_state;
     s32 current_weapon;
@@ -1820,7 +1819,7 @@ void gunThrowObject(s32 hand)
 
             if (sfx_state != NULL)
             {
-                chrobjSndCreatePostEventDefault(sfx_state, (struct coord3d *) &wor->runtime_pos);
+                chrobjSndCreatePostEventDefault(sfx_state, (coord3d *) &wor->runtime_pos);
             }
         }
     }

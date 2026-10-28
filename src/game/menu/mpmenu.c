@@ -1009,7 +1009,7 @@ s32 mpMenuShowRank(s32 isWinner)
     }
 }
 
-s32 mpMenuShowScore(s32 unused)
+s32 mpMenuShowScore(void)
 {
     switch(frontGetMpScenario())
     {
@@ -1061,7 +1061,7 @@ Gfx *mpMenuRender(Gfx *gdl)
     s32 h2;
     char rankbuffer[4];
     s32 two_player_x_offset;
-    char *text;
+    char *text = NULL;
     s32 scores[4];
     s32 i;
     TEXTCOLORS current_colour;
@@ -1267,7 +1267,7 @@ Gfx *mpMenuRender(Gfx *gdl)
                 fav_x_offset = (g_MpStopPlay == 0); 
             }
  
-            if (mpMenuShowScore(fav_x_offset))
+            if (mpMenuShowScore())
             {
                 scenario = frontGetMpScenario();
                 text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_1B_SCORES)); /* SCORES */

@@ -104,13 +104,13 @@ typedef struct s_bound_info
     s16 depth; // portal depth the room was reached at; rooms draw in depth order
     u8 next;
     u8 pad2[3];
-    struct bbox2d bbox;
+    bbox2d bbox;
 
     #else
     //us is 0x1C total len
     s32 roomid;
     s32 depth;
-    struct bbox2d bbox;
+    bbox2d bbox;
     s32 next;
     #endif
 
@@ -200,11 +200,11 @@ Gfx* bgScissorCurrentPlayerViewDefault(Gfx* gdl);
 Gfx* bgScissorCurrentPlayerViewF(Gfx* gdl, f32 left, f32 top, f32 right, f32 bottom);
 f32 bgGetLevelScale(void);
 u8 bgRoomIsVisible(int roomID);
-s32 bgGet2dBboxByRoomId(s32 room_id, struct bbox2d *result);
+s32 bgGet2dBboxByRoomId(s32 room_id, bbox2d *result);
 f32 bgGetLevelVisibilityScale(void);
-void bgRectOutersect(struct bbox2d *a, struct bbox2d *b);
+void bgRectOutersect(bbox2d *a, bbox2d *b);
 f32 bgGetLevelScaleInv(void);
-s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, struct coord3d *start, struct coord3d *end);
+s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *start, coord3d *end);
 void bgGetPortalPlane(s32 portalnum, struct PortalMetric *metric);
 void bgApplyDynamicCCRMLUT(Gfx *start, Gfx *end, enum CCRMLUT lutIndex);
 void bgFindRoomsInBbox(coord3d *, coord3d *, s32 *, s32 *, s32);

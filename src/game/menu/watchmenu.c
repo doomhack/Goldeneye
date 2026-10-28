@@ -142,71 +142,71 @@ s32 g_WatchController2SpinCounter = 0;
 s32 g_WatchStaticScanlineY = 0;
 u16 g_OptionsMusicVolume = 0x7FFF;
 
-coord3d g_ControllerPos = {0.0f, 200.0f, -200.0f};
+coord3d g_ControllerPos = {{0.0f, 200.0f, -200.0f}};
 
 
 // 3D positions for the buttons at the sides of the screen for the 1x control styles.
 WatchContButtonPositions g_1ContButtonPositions[] = {{
+    {0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f,
-    0.0f,
-    -900.0f, 200.0f, -45.0f,     // Start
-    715.0f, 200.0f, 393.0f,      // Joy Stick
-    -875.0f, 200.0f, -210.0f,    // D-Pad
-    900.0f, 200.0f, -260.0f,     // C-Up
-    900.0f, 200.0f, -160.0f,     // C-Down
-    850.0f, 200.0f, -210.0f,     // C-Left
-    950.0f, 200.0f, -210.0f,     // C-Right
-    900.0f, 200.0f, 128.0f,      // A
-    900.0f, 200.0f, -45.0f,      // B
-    -820.0f, 200.0f, -389.0f,    // L
-    820.0f, 200.0f, -389.0f,     // R
-    -830.0f, 200.0f, 78.0f       // Z
+    0.0f},
+    {{-900.0f, 200.0f, -45.0f}},     // Start
+    {{715.0f, 200.0f, 393.0f}},      // Joy Stick
+    {{-875.0f, 200.0f, -210.0f}},    // D-Pad
+    {{900.0f, 200.0f, -260.0f}},     // C-Up
+    {{900.0f, 200.0f, -160.0f}},     // C-Down
+    {{850.0f, 200.0f, -210.0f}},     // C-Left
+    {{950.0f, 200.0f, -210.0f}},     // C-Right
+    {{900.0f, 200.0f, 128.0f}},      // A
+    {{900.0f, 200.0f, -45.0f}},      // B
+    {{-820.0f, 200.0f, -389.0f}},    // L
+    {{820.0f, 200.0f, -389.0f}},     // R
+    {{-830.0f, 200.0f, 78.0f}}       // Z
 }};
 
 // 3D positions for the buttons of the left controller for the 2x control styles.
 WatchContButtonPositions g_2ContLeftButtonPositions[] = {{
-    0.0f, 0.0f, 0.0f,
+    {0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 2000.0f, 0.0f,
-    2000.0f, 2000.0f, 0.0f,
-    2000.0f, -600.0f, 200.0f,
-    500.0f, 2000.0f, 0.0f,
-    2000.0f, 2000.0f, 0.0f,
-    2000.0f, 2000.0f, 0.0f,
-    2000.0f, 2000.0f, 0.0f,
-    2000.0f, 2000.0f, 0.0f,
-    2000.0f, -600.0f, 200.0f,
-    240.0f, -600.0f, 200.0f,
-    110.0f, 2000.0f, 0.0f,
-    2000.0f, 2000.0f, 0.0f,
-    2000.0f, -600.0f, 200.0f,
-    320.0f
+    2000.0f}, {{2000.0f, 0.0f,
+    2000.0f}}, {{-600.0f, 200.0f,
+    500.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{-600.0f, 200.0f,
+    240.0f}}, {{-600.0f, 200.0f,
+    110.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{-600.0f, 200.0f,
+    320.0f}}
 }};
 
 // 3D positions for the buttons of the right controller for the 2x control styles.
 WatchContButtonPositions g_2ContRightButtonPositions[] = {{
+    {0.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 0.0f,
-    0.0f, 0.0f, 0.0f, 0.0f,
-    2000.0f, 0.0f, 2000.0f, 2000.0f,
-    0.0f, 2000.0f, 600.0f, 200.0f,
-    500.0f, 2000.0f, 0.0f, 2000.0f,
-    2000.0f, 0.0f, 2000.0f, 2000.0f,
-    0.0f, 2000.0f, 2000.0f, 0.0f,
-    2000.0f, 2000.0f, 0.0f, 2000.0f,
-    600.0f, 200.0f, 240.0f, 600.0f,
-    200.0f, 110.0f, 2000.0f, 0.0f,
-    2000.0f, 2000.0f, 0.0f, 2000.0f,
-    600.0f, 200.0f, 320.0f
+    2000.0f, 0.0f, 2000.0f}, {{2000.0f,
+    0.0f, 2000.0f}}, {{600.0f, 200.0f,
+    500.0f}}, {{2000.0f, 0.0f, 2000.0f}},
+    {{2000.0f, 0.0f, 2000.0f}}, {{2000.0f,
+    0.0f, 2000.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{2000.0f, 0.0f, 2000.0f}},
+    {{600.0f, 200.0f, 240.0f}}, {{600.0f,
+    200.0f, 110.0f}}, {{2000.0f, 0.0f,
+    2000.0f}}, {{2000.0f, 0.0f, 2000.0f}},
+    {{600.0f, 200.0f, 320.0f}}
 }};
 
 const char g_ObjectiveLineEnd[];
@@ -1674,7 +1674,7 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish)
     */
 
     watchMakeArcVerts(outerVtx, WATCH_BACKGROUND_VERTEX_COUNT, 0.92f, 0);
-    watchRenderBackground(outerGdl, OS_PHYSICAL_TO_K0(outerVtx), WATCH_BACKGROUND_VERTEX_COUNT, 0);
+    watchRenderBackground(outerGdl, OS_PHYSICAL_TO_K0(outerVtx), 0);
 
     gDPPipeSync(gdl++);
     gDPSetRenderMode(gdl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
@@ -1689,14 +1689,14 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish)
     if (g_WatchBackgroundGreen < 0xE0)
     {
         watchMakeArcVerts(innerVtx, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 0);
-        watchRenderBackground(innerGdl, OS_PHYSICAL_TO_K0(innerVtx), WATCH_BACKGROUND_VERTEX_COUNT, 0);
+        watchRenderBackground(innerGdl, OS_PHYSICAL_TO_K0(innerVtx), 0);
 
         gDPSetRenderMode(gdl++, G_RM_AA_PCL_SURF, G_RM_AA_PCL_SURF2);
     }
     else
     {
         watchMakeArcVerts(innerVtx, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 1);
-        watchRenderBackground(innerGdl, OS_PHYSICAL_TO_K0(innerVtx), WATCH_BACKGROUND_VERTEX_COUNT, 1);
+        watchRenderBackground(innerGdl, OS_PHYSICAL_TO_K0(innerVtx), 1);
 
         gDPSetRenderMode(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
     }
@@ -1954,7 +1954,7 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     posX = invGetWatchPosXForIndex(index);
     posY = invGetWatchPosYForIndex(index);
     posZ = invGetWatchPosZForIndex(index);
-    fov = invGetWatchFovForIndex(index);
+    fov = invGetWatchFovForIndex();
     rotx = invGetWatchRotXForIndex(index);
     roty = invGetWatchRotYForIndex(index);
     text = invGetWatchTitle1ForIndex(index);
@@ -2089,7 +2089,7 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
     if (watchIsZooming() != 1)
     {
         persp = dynAllocateMatrix();
-        fov = invGetEquipFovForIndex(g_WatchMenuItem);
+        fov = invGetEquipFovForIndex();
         posX = invGetEquipPosXForIndex(g_WatchMenuItem);
         posY = invGetEquipPosYForIndex(g_WatchMenuItem);
         posZ = invGetEquipPosZForIndex(g_WatchMenuItem);
@@ -2661,8 +2661,8 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl)
     }
  
     {
-        char *ctext;
-        char *dpadtext;
+        char *ctext = NULL;
+        char *dpadtext = NULL;
         s32 buttons;
         s32 showmovesight;
         volatile unsigned int y;
@@ -3625,7 +3625,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
 #else
                 char objectiveBuffer[200] = "";
 #endif
-                u32 colour;
+                u32 colour = 0;
                 s32 i;
                 s32 j;
                 char *objectiveText;

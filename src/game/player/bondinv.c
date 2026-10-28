@@ -1124,10 +1124,10 @@ char *invGetNameByIndex(s32 index)
     return itemGetWatchText(weaponnum);
 }
 
-extern f32 itemGetEquipFov(s32 item);
-f32 invGetEquipFovForIndex(s32 index)
+extern f32 itemGetEquipFov(void);
+f32 invGetEquipFovForIndex(void)
 {
-    return itemGetEquipFov(invGetWeaponForIndex(index));
+    return itemGetEquipFov();
 }
 
 f32 invGetEquipPosXForIndex(s32 index)
@@ -1240,10 +1240,10 @@ char *invGetWatchTitle2ForIndex(s32 index)
 
     return itemGetWatchTitle2(weaponnum);
 }
-extern f32 itemGetWatchFov(s32 item);
-f32 invGetWatchFovForIndex(s32 index)
+extern f32 itemGetWatchFov(void);
+f32 invGetWatchFovForIndex(void)
 {
-    return itemGetWatchFov(invGetWeaponForIndex(index));
+    return itemGetWatchFov();
 }
 
 f32 invGetWatchPosXForIndex(s32 index)
@@ -1433,7 +1433,7 @@ void invIncrementHeldTime(s32 weapon1, s32 weapon2)
     }
 }
 
-s32 invGetWeaponOfChoice(s32 *weapon1, s32 *weapon2)
+void invGetWeaponOfChoice(s32 *weapon1, s32 *weapon2)
 {
     s32 mosttime = -1;
     s32 i;

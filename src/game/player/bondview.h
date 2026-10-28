@@ -51,7 +51,7 @@ struct PlayerBond {
      * f[2]: sideways component (cos theta) in radians.
      * Offset 0x10.
      */
-    struct coord3d theta_transform;
+    coord3d theta_transform;
 
     /**
      * Some kind of alternative to pos3 (in player struct).
@@ -77,12 +77,12 @@ struct PlayerBond {
      * locked facing the starting position.
      * Offset 0x38.
      */
-    struct coord3d applied_view;
+    coord3d applied_view;
 
     /**
      * Offset 0x44.
      */
-    struct coord3d applied_view2;
+    coord3d applied_view2;
 
     /**
      * Offset 0x50.
@@ -633,7 +633,7 @@ struct player
   // Which hand will fire when the Z trigger is pressed.
   s32 current_trigger_hand;
   
-  struct rgba_u8 tileColor;
+  rgba_u8 tileColor;
 
   s32 resetshadecol; // canonical name
 
@@ -700,7 +700,7 @@ struct player
   f32 c_scalelod; // canonical name
   f32 c_lodscalez; // canonical name
 
-  struct bbox2d screensize;
+  bbox2d screensize;
 
   /**
    * Used during level.
@@ -1045,10 +1045,10 @@ D:800367ED                     .byte 0, 0, 0x14
 D:800367F0                     .word 0x32
 */
 
-extern struct coord3d g_DefaultFrozenPlayerPos;
-extern struct coord3d g_DefaultFrozenPlayerPos2;
-extern struct coord3d g_DefaultFrozenPlayerOffset;
-extern struct coord3d g_DefaultFrozenMoveOffset;
+extern coord3d g_DefaultFrozenPlayerPos;
+extern coord3d g_DefaultFrozenPlayerPos2;
+extern coord3d g_DefaultFrozenPlayerOffset;
+extern coord3d g_DefaultFrozenMoveOffset;
 
 extern coord3d ZeroCoordWatchPos;
 extern coord3d ZeroCoordSpawnPos;
@@ -1135,7 +1135,7 @@ Gfx * camSetupFrame(Gfx *gdl);
 s32 playerPressedActivate(void);
 Gfx * hudRender(Gfx *gdl);
 bool camIsPosInScreen(coord3d *vec_scale, f32 norm_scale);
-bool camIsPosInScreenBox(coord3d *, f32, struct bbox2d *);
+bool camIsPosInScreenBox(coord3d *, f32, bbox2d *);
 s32 lvGetMissionTime60(void);
 void playerLoadBody(void);
 void playerUpdateAutoAimY(struct PropRecord *autoaim_target, f32 auto_aim_y);
@@ -1143,7 +1143,7 @@ void playerUpdateAutoAimX(struct PropRecord *autoaim_target, f32 auto_aim_x);
 void tankGetTurretDir(coord3d *dir);
 f32 playerGetFloorY(struct StandTile *tile, f32 x, f32 z);
 void playerUpdateCollisionBounds(void);
-void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle);
+void coopFindPartnerSpawn(coord3d *pos, StandTile **stan, f32 look_angle);
 void coopRespawnPlayer(void);
 void counterOpResetForStage(void);
 f32 counterOpGetGuardHealth(void);
@@ -1192,7 +1192,7 @@ void coopViewsBegin(void);
 void coopViewsEnd(s32 lastplayer);
 f32 bondviewGetPlayerYawRadians(void);
 Mtxf *camGetWorldToScreenMtxf(void);
-void camScreenToViewDir(struct coord2d *in, coord3d *out, f32 value);
+void camScreenToViewDir(coord2d *in, coord3d *out, f32 value);
 void mtxsF2L(RenderPosView *views, s32 count);
 LookAt *camGetLookAt(void);
 Mtx *camGetProjViewMtx(void);
@@ -1213,10 +1213,10 @@ void     hudmsgTopShow(char* string);
 void     playerSurroundWithExplosions(int delay);
 s32 watchIsZooming(void);
 f32 watchGetOpenFrac(void);
-struct coord3d *playerGetPrevPos(void);
+coord3d *playerGetPrevPos(void);
 struct PropRecord *playerGetTank(void);
 s32 playerChooseSpawnPad(void);
-void playerResetCollision(struct PlayerBond* col, struct coord3d *pos, struct StandTile *stan);
+void playerResetCollision(struct PlayerBond* col, coord3d *pos, struct StandTile *stan);
 void playerSetWorldScale(f32);
 void hudmsgTopReset(void);
 Mtxf *camGetProjectionMtxf(void);
@@ -1230,7 +1230,7 @@ void camSetProjectionMtx(Mtx *matrix);
 void camSetProjectionMtxf(Mtxf *matrix);
 void playerSetOutsideWatchMenu(s32 outside);
 void camSetViewToWorldMtxf(Mtxf *matrix);
-void *camSetWorldToScreenMtxf(Mtxf *matrix);
+void camSetWorldToScreenMtxf(Mtxf *matrix);
 void camUpdateFrustumPlanes();
 s32 currentPlayerGetCrouchPos(void);
 s32 playerGetCrouchPos(s32 playernum);

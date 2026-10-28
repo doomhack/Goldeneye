@@ -845,8 +845,8 @@ extern void		osSetTLBASID(s32);
 extern u32		 osVirtualToPhysical(void *);
 extern void *		 osPhysicalToVirtual(u32);
 
-#define	OS_K0_TO_PHYSICAL(x)	(u32)(((char *)(x)-0x80000000))
-#define	OS_K1_TO_PHYSICAL(x)	(u32)(((char *)(x)-0xa0000000))
+#define	OS_K0_TO_PHYSICAL(x)	(u32)(((uintptr_t)(x)-0x80000000))
+#define	OS_K1_TO_PHYSICAL(x)	(u32)(((uintptr_t)(x)-0xa0000000))
 
 #define	OS_PHYSICAL_TO_K0(x)	(void *)(((u32)(x)+0x80000000))
 #define	OS_PHYSICAL_TO_K1(x)	(void *)(((u32)(x)+0xa0000000))
@@ -921,7 +921,7 @@ extern s32 osPfsInitPak(OSMesgQueue *, OSPfs *, int);
 extern s32 osPfsRepairId(OSPfs *);
 extern s32 osPfsInit(OSMesgQueue *, OSPfs *, int);
 extern s32 osPfsReFormat(OSPfs *, OSMesgQueue *, int);
-extern s32 osPfsChecker(OSPfs *);
+extern s32 osPfsChecker(void);
 extern s32 osPfsAllocateFile(OSPfs *, u16, u32, u8 *, u8 *, int, s32 *);
 extern s32 osPfsFindFile(OSPfs *, u16, u32, u8 *, u8 *, s32 *);
 extern s32 osPfsDeleteFile(OSPfs *, u16, u32, u8 *, u8 *);

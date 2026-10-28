@@ -10,7 +10,7 @@
 #include "thread_config.h"
 
 s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP);
-s32 __scTaskComplete(OSSched *sc, OSScTask *t);
+s32 __scTaskComplete(OSScTask *t);
 
 /**
  * EU .data, offset from start of data_seg : 0x2300
@@ -307,7 +307,7 @@ void __scHandleRSP(OSSched *sc) {
         }
 
         t->state &= ~OS_SC_NEEDS_RSP;
-        __scTaskComplete(sc, t);
+        __scTaskComplete(t);
     }
     state = ((sc->curRSPTask == 0) << 1) | (sc->curRDPTask == 0);
     if (__scSchedule(sc, &sp, &dp, state) != state) {
@@ -326,7 +326,7 @@ void __scHandleRDP(OSSched *sc)
         t = sc->curRDPTask;
         sc->curRDPTask = NULL;
         t->state &= ~OS_SC_NEEDS_RDP;
-        __scTaskComplete(sc, t);
+        __scTaskComplete(t);
         state = ((sc->curRSPTask == 0) << 1) | (sc->curRDPTask == 0);
         if (__scSchedule(sc, &sp, &dp, state) != state) {
             __scExec(sc, sp, dp);
@@ -350,7 +350,7 @@ OSScTask *__scTaskReady(OSScTask *t)
     return 0;
 }
 
-s32 __scTaskComplete(OSSched *sc, OSScTask *t)
+s32 __scTaskComplete(OSScTask *t)
 {
     static int firsttime = 1;
     if ((t->state & OS_SC_RCP_MASK) == 0) {

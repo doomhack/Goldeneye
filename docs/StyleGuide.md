@@ -140,6 +140,10 @@ true/false values in locals, parameters, return values and new globals. Struct f
 true/false but must keep their 4-byte size (structs with fixed offsets or file layouts) use
 `bool32` from bondtypes.h. A value that can be anything other than 0 or 1 is not a `bool`.
 
+Small vector and colour types (`coord3d`, `coord2d`, `coord16`, `rgba_u8`, `bbox2d`...) are unions
+of a named-member struct and an array, so they are written without `struct`, and their initialisers
+take one extra pair of braces for the named members: `coord3d pos = {{1.0f, 2.0f, 3.0f}};`.
+
 Bond Types use the "typedef" keyword
 
 While typedefs are used to avoid typing "struct" and to help intellisense, they are not foolproof.
@@ -181,6 +185,17 @@ typedef struct CRecord
 ```
 
 
+
+## WARNINGS
+Game code (everything in `src/` except libultra) builds with `-Wall -Wextra -Werror`, so any warning
+stops the build. libultra and the generated asset data build with `-w`.
+- Brace every sub-struct and sub-array in an initialiser, or use designated initialisers
+  (`{.flags = 3}`). Use `{}` for an all-zero value.
+- A parameter a function never reads is removed. When the signature is fixed by a function
+  pointer type (thread entry points, callbacks), mark it `[[maybe_unused]]`.
+- A `case` that is meant to run on into the next one ends with `[[fallthrough]];`.
+- Initialise a local when some path can reach a use without setting it.
+- `tools/compare/warncount.py` lists warnings by kind and file.
 
 ## CONSTANTS
 ALL_CAPS_SNAKE_CASE for constants and enums e.g.

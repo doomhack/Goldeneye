@@ -55,7 +55,6 @@ typedef struct SkyBoxRecord
     u8 WaterGreen;
     u8 WaterBlue;
     u8 WaterConcavity;
-    u8 unknown;
 #else
     f32 CloudRepeat;
     s16 SkyImageId;
@@ -185,9 +184,9 @@ f32 fogGetScaledFarFogIntensitySquared(void);
 void fogLoadLevelEnvironment(s32 level_id, s32 introCamera);
 void fogReloadCurrentEnvironment(void);
 s32 fogPositionIsVisibleThroughFog(coord3d *pos, f32 range);
-Gfx *fogSetRenderFogColor(Gfx *gdl, s32 xlupass);
+Gfx *fogSetRenderFogColor(Gfx *gdl);
 Gfx *fogRenderClearFogMode(Gfx *gdl);
-s32 fogGetPropDistColor(PropRecord *prop, struct rgba_f32 *color);
+s32 fogGetPropDistColor(PropRecord *prop, rgba_f32 *color);
 void fogSwitchToSolosky2(f32 frac);
 NearFogValues *fogGetNearFogValuesP(void);
 

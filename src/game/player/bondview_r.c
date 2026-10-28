@@ -22,7 +22,7 @@
 #include "game/prop/setup.h"
 
 
-struct coord3d default_start_position = { 0 };
+coord3d default_start_position = { 0 };
 
 u32 weaponLoadProjectileModels(ITEM_IDS modelid)
 {
@@ -101,7 +101,7 @@ static const f32 coopSpawnOffsets[][2] = {
  * that can be walked to from the pad. If none fits (e.g. Facility's vent),
  * keep the pad position and let the players overlap until they move apart.
  */
-void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle)
+void coopFindPartnerSpawn(coord3d *pos, StandTile **stan, f32 look_angle)
 {
     f32 fwd_x = -sinf(look_angle);
     f32 fwd_z = cosf(look_angle);
@@ -161,7 +161,7 @@ void playerApplyIntro(void)
 
     // declarations
 
-    struct coord3d start_pos;
+    coord3d start_pos;
     f32 start_look_angle;
     StandTile *start_stan;
     struct SetupIntroEmpty *intro_record;

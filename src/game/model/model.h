@@ -126,17 +126,13 @@ void modelRenderNodeGundl(ModelRenderData* renderdata, ModelNode* node);
 void modelRenderNodeDl(ModelRenderData *renderdata, Model *model, ModelNode *node);
 void modelRenderNodeRotTex(ModelRenderData *renderdata, ModelNode *node);
 void modelSelectTexture(ModelRenderData *renderdata, struct sImageTableEntry *tconfig, s32 blendMode);
-void modelRenderNodeOp05(ModelRenderData *renderdata, Model *model, ModelNode *node);
 void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* node);
-void modelRenderNodeOp06(ModelRenderData *renderdata, Model *model, ModelNode *node);
-void modelRenderNodeOp11(ModelRenderData *renderdata, Model *model, ModelNode *node);
 void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode *node);
 void modelSetShadowAlpha(s32 alpha);
 void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode *node);
-void modelRenderNodeOp17(ModelRenderData *renderdata, Model *model, ModelNode *node);
 void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node);
 void modelRender(ModelRenderData *mrData, struct Model *);
-u8 *animLoadFrame(ModelAnimation *anim, s32 frame, ModelSkeleton *unused);
+u8 *animLoadFrame(ModelAnimation *anim, s32 frame);
 void animResetFrameBuffer(void);
 void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr);
 void modelFilePromotePointers(ModelFileHeader *header, s32 vma, void *addr);
@@ -147,7 +143,7 @@ void modelInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data)
 void animInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data);
 void modelAttachPart(Model *pmodel, ModelFileHeader *pmodeldef, ModelNode *pnode, ModelFileHeader *cmodeldef);
 void modelIterateDisplayLists(ModelFileHeader *fileheader, ModelNode **nodeptr, Gfx **gdlptr);
-void modelNodeReplaceGdl(u32 unused, ModelNode *node, Gfx *find, Gfx *replacement);
+void modelNodeReplaceGdl(ModelNode *node, Gfx *find, Gfx *replacement);
 bool modelTestRayIntersectsTransformedBBox(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord3d *pos, coord3d *dir);
 
 bool modelTestRayIntersectsNodeBBox(Model *model, ModelNode *node, coord3d *pos, coord3d *dir);

@@ -134,11 +134,9 @@ typedef struct WeaponStats
     /**
      * Recoil speed.
      */
-    struct {
-        union {
-            s32 RecoilSpeed;
-            s8 b44[4];
-        };        
+    union {
+        s32 RecoilSpeed;
+        s8 b44[4];
     };
 
     /**
@@ -255,30 +253,6 @@ typedef struct CartridgeModelFileRecord {
     char * text;
 } CartridgeModelFileRecord;
 
-struct RicochetSoundsSmall {
-    u16 arr[20];
-};
-
-struct PunchSounds {
-    u16 arr[3];
-};
-
-struct BulletFleshSounds {
-    u16 arr[2];
-};
-
-struct LaserRichochetSounds {
-    u16 arr[2];
-};
-
-struct RicochetSoundsLarge {
-    u16 arr[36];
-};
-
-struct EarWhistleSounds {
-    s16 arr[5];
-};
-
 extern CasingRecord g_Casings[20];
 extern u32 size_item_buffer[];
 extern WeaponStats sniperrifle_stats;
@@ -286,18 +260,18 @@ extern WeaponStats camera_stats;
 
 typedef struct WatchContButtonPositions {
     f32 words[19];
-    struct coord3d start;
-    struct coord3d joystick;
-    struct coord3d dPad;
-    struct coord3d cUp;
-    struct coord3d cDown;
-    struct coord3d cLeft;
-    struct coord3d cRight;
-    struct coord3d a;
-    struct coord3d b;
-    struct coord3d l;
-    struct coord3d r;
-    struct coord3d z;
+    coord3d start;
+    coord3d joystick;
+    coord3d dPad;
+    coord3d cUp;
+    coord3d cDown;
+    coord3d cLeft;
+    coord3d cRight;
+    coord3d a;
+    coord3d b;
+    coord3d l;
+    coord3d r;
+    coord3d z;
 } WatchContButtonPositions;
 
 f32 weaponGetImpactForce(ITEM_IDS item);
@@ -319,7 +293,7 @@ void gunDrawSight(Gfx **gdl);
 WeaponStats *weaponGetStats(ITEM_IDS item);
 
 ITEM_IDS gunGetWeapon(GUNHAND hand);
-s32 gunEquip(GUNHAND hand, s32 next_weapon);
+void gunEquip(GUNHAND hand, s32 next_weapon);
 void casingsTick(void);
 void gunTryReload(GUNHAND hand);
 void ammoGiveMaxAll(void);

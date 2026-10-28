@@ -26,7 +26,7 @@ struct GfxInfo_s g_gfxTaskSettings[2] =
 {
     {
         // next
-        NULL,
+        {NULL,
         
         // state
         0,
@@ -38,7 +38,7 @@ struct GfxInfo_s g_gfxTaskSettings[2] =
         NULL,
 
         // list.t.type
-        M_GFXTASK,
+        {{M_GFXTASK,
         
         // list.t.flags
         OS_TASK_DP_WAIT,
@@ -83,13 +83,13 @@ struct GfxInfo_s g_gfxTaskSettings[2] =
         NULL,
         
         // list.t.yield_data_size
-        0,
+        0}},
         
         // msgQ
         NULL, 
         
         // msg
-        NULL,
+        NULL},
         
         // cfb (pointer)
         0,
@@ -100,7 +100,7 @@ struct GfxInfo_s g_gfxTaskSettings[2] =
 
     {
         // next
-        NULL,
+        {NULL,
         
         // state
         0,
@@ -112,7 +112,7 @@ struct GfxInfo_s g_gfxTaskSettings[2] =
         NULL,
 
         // list.t.type
-        M_GFXTASK,
+        {{M_GFXTASK,
         
         // list.t.flags
         OS_TASK_DP_WAIT,
@@ -157,13 +157,13 @@ struct GfxInfo_s g_gfxTaskSettings[2] =
         NULL,
         
         // list.t.yield_data_size
-        0,
+        0}},
         
         // msgQ
         NULL, 
         
         // msg
-        NULL,
+        NULL},
         
         // cfb (pointer)
         0,
@@ -195,7 +195,7 @@ void rspAllocateBuffers(void)
  * createGfxTask from n64devkit\ultra\usr\src\pr\demos_old\simple\gfx.c
  * gfxTaskStart from n64devkit\ultra\usr\src\pr\demos_old\nnsample2\graphic.c
  */
-void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, s32 unused, OSMesg rspReplyMsg)
+void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg rspReplyMsg)
 {
     OSScTask *sctask;
     OSTask *task;

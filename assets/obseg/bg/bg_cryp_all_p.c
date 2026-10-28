@@ -1,7 +1,7 @@
 #include "bg_all_p.h"
 #include "bg_cryp_all_p.h"
 
-struct bg_header header = {0, &room_data_table, &portal_data_table, &global_visibility_commands, 0};
+struct bg_header header = {0, room_data_table, portal_data_table, global_visibility_commands, 0};
 
 struct room_data_table_entry room_data_table[] = {
     {0, 0, 0, 0.000000, 0.000000, 0.000000},

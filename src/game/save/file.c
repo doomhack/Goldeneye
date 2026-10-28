@@ -495,7 +495,7 @@ void fileValidateSaves(void)
         // bad checksum, create a new save and replace damaged one.
         if (!checksumOK)
         {
-            smallSave NewSave = {0, 0, SAVEFLAGS_SET(FOLDER3, SAVESLOT1, BOND_CONNERY, FALSE)};
+            smallSave NewSave = {0, 0, {SAVEFLAGS_SET(FOLDER3, SAVESLOT1, BOND_CONNERY, FALSE)}};
             joyChecksum = NewSave;
             fileWriteSmallSave(&joyChecksum);
         }
@@ -996,19 +996,18 @@ bool fileIsEgyptCompletedOn00AnyFolder(void)
  * @param folder
  * @return u8
  */
-u8 fileGetBondForFolder(u32 folder)
+u8 fileGetBondForFolder(void)
 {
 
     return BOND_BROSNAN;
 }
 
 /**
- * Set the selected bond to folder object
+ * Reset the folder's selected Bond to Brosnan (the only Bond).
  *
  * @param folder
- * @param bond
  */
-void fileSetSelectedBondTofolder(s32 folder, s32 bond)
+void fileSetSelectedBondTofolder(s32 folder)
 {
     if (folder < FOLDER1 || folder > FOLDER4)
     {
@@ -1041,7 +1040,7 @@ void fileDeleteSaveForFolder(s32 foldernum)
                 fileSetSaveFoldernum(save, foldernum);
                 fileSetSaveFlagDoReset(save, FALSE);
                 fileSetSelectedBond(save, foldernum);
-                fileSetSelectedBondTofolder(foldernum, foldernum);
+                fileSetSelectedBondTofolder(foldernum);
                 fileWriteSave(save);
             }
         }
@@ -1087,7 +1086,7 @@ void fileCopyFolderToFirstFree(s32 foldernum)
                         save_data *dest = fileGetSaveForFoldernum(other);
                         new_save = *save;
                         fileSetSaveFoldernum(&new_save, other);
-                        fileSetSelectedBondTofolder(other, fileGetBondForFolder(foldernum));
+                        fileSetSelectedBondTofolder(other);
                         fileOverwriteSaveSlotWithNewSave(dest, &new_save);
                     }
                 }
@@ -1617,7 +1616,7 @@ void fileUpdateBondInCurrentFolder(void)
 
 s32 fileGetBondForCurrentFolder(void)
 {
-  return fileGetBondForFolder(g_FrontFolder);
+  return fileGetBondForFolder();
 }
 
 void fileSetCurrentFolder(u32 foldernum)

@@ -105,16 +105,16 @@ f32 cast_camera_angle_end;
 f32 cast_camera_height;
 f32 cast_camera_height_start;
 f32 cast_camera_height_end;
-struct coord3d cast_target_smoothed;
-struct coord3d cast_target_accumulator;
+coord3d cast_target_smoothed;
+coord3d cast_target_accumulator;
 
 bool cast_camera_reset;
 
-struct coord3d cast_rootpos_smoothed;
+coord3d cast_rootpos_smoothed;
 
-struct coord3d cast_rootvel_smoothed;
+coord3d cast_rootvel_smoothed;
 
-struct coord3d cast_rootvel_accumulator;
+coord3d cast_rootvel_accumulator;
 
 
 f32 g_NintendoLogoSpin;
@@ -261,7 +261,7 @@ f32 g_Front007Health = 1.0f;
 f32 g_Front007Damage = 1.0f;
 f32 g_Front007Accuracy = 1.0f;
 
-struct coord3d legalpage_pos = {0.0f, 0.0f, 0.0f};
+coord3d legalpage_pos = {{0.0f, 0.0f, 0.0f}};
 
 struct legal_screen_text g_LegalTexts[] = {
     {220,  30, CENTER_ALIGN, CENTER_ALIGN, getStringID(LTITLE, TITLE_STR_07_TWY), 0}, //"TWYCROSS BOARD OF GAME CLASSIFICATION\n"
@@ -294,12 +294,12 @@ ModelRenderData legalscreen_MRD = {NULL,
                                     0,
 
                                     0,
-                                    {0, 0, 0, 0},
-                                    {0, 0, 0, 0},
+                                    {{0, 0, 0, 0}},
+                                    {{0, 0, 0, 0}},
                                     CULLMODE_BOTH};
 
 
-struct coord3d nintendologo_pos = {0};
+coord3d nintendologo_pos = {0};
 
 ModelRenderData       nintendologo_MRD = {NULL,
                                     TRUE,
@@ -317,12 +317,12 @@ ModelRenderData       nintendologo_MRD = {NULL,
                                     0,
 
                                     0,
-                                    {0, 0, 0, 0},
-                                    {0, 0, 0, 0},
+                                    {{0, 0, 0, 0}},
+                                    {{0, 0, 0, 0}},
                                     CULLMODE_BOTH};
 
 
-struct coord3d goldeneyelogo_pos = { 0 };
+coord3d goldeneyelogo_pos = { 0 };
 
 ModelRenderData       goldeneyelogo_MRD = {NULL,
                                     TRUE,
@@ -340,16 +340,16 @@ ModelRenderData       goldeneyelogo_MRD = {NULL,
                                     0,
 
                                     0,
-                                    {0, 0, 0, 0},
-                                    {0, 0, 0, 0},
+                                    {{0, 0, 0, 0}},
+                                    {{0, 0, 0, 0}},
                                     CULLMODE_BOTH};
 
 
-struct coord3d g_FrontFolderPos[] = {
-    {-900.0f, 800.0f, 0.0f},
-    {1800.0f, 800.0f, 0.0f},
-    {-1800.0f, -200.0f, 0.0f},
-    {900.0f, -200.0f, 0.0f}
+coord3d g_FrontFolderPos[] = {
+    {{-900.0f, 800.0f, 0.0f}},
+    {{1800.0f, 800.0f, 0.0f}},
+    {{-1800.0f, -200.0f, 0.0f}},
+    {{900.0f, -200.0f, 0.0f}}
 };
 
 struct rectbbox folder_option_COPY_bound = { 0 };
@@ -739,15 +739,10 @@ struct intro_animation g_CastAnims[] = {
     {0xFFFFFFFF, 0.0, 0.0, 0}
 };
 
-struct coord3d zeroCoord = { 0 };
+coord3d zeroCoord = { 0 };
 
 #define INTRO_RANDOM_RIFLE_LEN 6
-struct intro_random_rifles
-{
-    PROP props[INTRO_RANDOM_RIFLE_LEN];
-};
-
-struct intro_random_rifles g_CastRifles = {
+PROP g_CastRifles[INTRO_RANDOM_RIFLE_LEN] = {
     PROP_CHRKALASH,
     PROP_CHRM16,
     PROP_CHRFNP90,
@@ -756,13 +751,8 @@ struct intro_random_rifles g_CastRifles = {
     PROP_CHRSNIPERRIFLE
 };
 
-#define INTRO_RANDOM_PISTO_LEN 10
-struct intro_random_pistols
-{
-    PROP props[INTRO_RANDOM_PISTO_LEN];
-};
-
-struct intro_random_pistols g_CastPistols = {
+#define INTRO_RANDOM_PISTOL_LEN 10
+PROP g_CastPistols[INTRO_RANDOM_PISTOL_LEN] = {
     PROP_CHRWPPK,
     PROP_CHRWPPKSIL,
     PROP_CHRSKORPION,
@@ -775,9 +765,9 @@ struct intro_random_pistols g_CastPistols = {
     PROP_CHRGOLDEN
 };
 
-struct coord3d cast_camera_pos    = { 0.0f, 0.0f, 1.0f }; // campos in frontCastRender is set to this, but is then immediately overwritten, so the values here have no effect.
-struct coord3d cast_camera_target = { 0.0f, 0.0f, 0.0f };
-struct coord3d cast_camera_up     = { 0.0f, 1.0f, 0.0f }; // Display cast character up vector
+coord3d cast_camera_pos    = { {0.0f, 0.0f, 1.0f} }; // campos in frontCastRender is set to this, but is then immediately overwritten, so the values here have no effect.
+coord3d cast_camera_target = { {0.0f, 0.0f, 0.0f} };
+coord3d cast_camera_up     = { {0.0f, 1.0f, 0.0f} }; // Display cast character up vector
 
 ModelRenderData cast_renderdata_default = { NULL,
                                             TRUE,
@@ -795,12 +785,12 @@ ModelRenderData cast_renderdata_default = { NULL,
                                             0,
 
                                             0,
-                                           {0, 0, 0, 0},
-                                           {0, 0, 0, 0},
+                                           {{0, 0, 0, 0}},
+                                           {{0, 0, 0, 0}},
                                            CULLMODE_BOTH};
 
 
-struct coord3d cast_camera_offset = { 0.0f, 40.0f, 25.0f }; // vec in frontCastRender is initialized to this, but then gets overwritten before it's read, so these values don't have any effect.
+coord3d cast_camera_offset = { {0.0f, 40.0f, 25.0f} }; // vec in frontCastRender is initialized to this, but then gets overwritten before it's read, so these values don't have any effect.
 
 
 // forward declarations
@@ -1079,7 +1069,7 @@ Gfx *frontDrawCursor(Gfx *DL)
 {
     f32 xypos[2];
     f32 halfedxy[2];
-    sImageTableEntry *image;
+    sImageTableEntry *image = NULL;
     s32 option;
 
     option = g_FrontFolderIcon;
@@ -1258,7 +1248,7 @@ u32 frontCheckCursorOnNextTab(void)
 //********************************************************************************************************
 void frontLegalEnter(void)
 {
-    struct coord3d pos;
+    coord3d pos;
 
     musicTrack1Stop();
     g_FrontStartMusic = TRUE;
@@ -1430,7 +1420,7 @@ Gfx * frontBlankRender(Gfx * DL)
 //********************************************************************************************************
 void frontNintendoEnter(void)
 {
-    struct coord3d pos;
+    coord3d pos;
 
     g_FrontTimer = 0;
     pos = nintendologo_pos;
@@ -1592,7 +1582,7 @@ Gfx *frontNintendoRender(Gfx *DL)
 
 void frontRareEnter(void)
 {
-    titleLoadRareLogo(g_FrontModelBuffer, 0x78000);
+    titleLoadRareLogo(g_FrontModelBuffer);
     sndPlaySfx(g_musicSfxBufferPtr, RARELOGO_SFX, 0);
 }
 
@@ -1664,7 +1654,7 @@ Gfx * frontGunbarrelRender(Gfx * DL) {
 //********************************************************************************************************
 void frontLogoEnter(void)
 {
-    struct coord3d pos;
+    coord3d pos;
 
     g_FrontTimer = 0;
     pos = goldeneyelogo_pos;
@@ -1815,7 +1805,7 @@ void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode)
 //WALLETINIT
 //********************************************************************************************************
 
-void frontSelectBondPicture(Model *objinstance, u32 bondID)
+void frontSelectBondPicture(Model *objinstance)
 {
     frontSetSwitchVisible(objinstance,SW_BROSNAN,TRUE); //brosnan picture
     frontSetSwitchVisible(objinstance,SW_CONNERY,FALSE);
@@ -1944,7 +1934,7 @@ s32 frontGetChapterStart(s32 briefing)
 
 void frontSetCursorOnFolder(int index)
 {
-  struct coord2d local_8;
+  coord2d local_8;
 
   camViewToScreen(&g_FrontFolderScreenPos[index],&local_8);
   g_FrontCursorX = local_8.x + -1.0f;
@@ -1962,7 +1952,7 @@ void frontFileSelectTick(void)
     s32 foldernum;
     Mtxf lookatmtx;
     Mtxf walletmtx;
-    struct coord3d *folderpos;
+    coord3d *folderpos;
 
     /**
      *  Accumulate the menu timer if there's been no button inputs and no more than marginal stick input.
@@ -2000,7 +1990,7 @@ void frontFileSelectTick(void)
 
         frontHideAllSwitches(g_FrontFolderModels[walletnum]);
 
-        frontSelectBondPicture(g_FrontFolderModels[walletnum], fileGetBondForFolder(walletnum));
+        frontSelectBondPicture(g_FrontFolderModels[walletnum]);
         frontSetSwitchVisible(g_FrontFolderModels[walletnum], 0xE, 1);
         frontSetSwitchVisible(g_FrontFolderModels[walletnum], 0xD, 1);
     }
@@ -2210,11 +2200,11 @@ Gfx *frontFileSelectRender(Gfx *DL)
     s32 missionindex;                       // index of the mission (MISSION_PART) row in g_FrontMissions
     Mtxf mtx;
     f32 folderx;
-    struct point2d textpos;
-    struct point2d textsize;
+    point2d textpos;
+    point2d textsize;
     LEVEL_SOLO_SEQUENCE higheststage;
     DIFFICULTY highestdifficulty;
-    struct coord2d folderpos2d;             // folder position projected to screen space
+    coord2d folderpos2d;             // folder position projected to screen space
 
     topcolour = (struct FolderSelectColour){0x14, 0x14, 0x14};
     bottomcolour = (struct FolderSelectColour){0x32, 0x32, 0x32};
@@ -2263,7 +2253,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
     {
         char difficultytext[4];
         char missiontext[18];   // "Mission <chapter>.<part>\n"
-        struct coord3d * folderworldpos;
+        coord3d * folderworldpos;
 
         folderworldpos = &g_FrontFolderScreenPos[foldernum];
 
@@ -2380,12 +2370,12 @@ Gfx *frontFileSelectRender(Gfx *DL)
     {
         // The above for loops makes a lot of compiler temp variables on the stack,
         // These need to be declared sometime after the above for loop.
-        struct coord2d copypos;
-        struct coord2d copyhalfsize;
-        struct coord2d erasepos;
-        struct coord2d erasehalfsize;
-        struct coord2d selectpos;
-        struct coord2d selecthalfsize;
+        coord2d copypos;
+        coord2d copyhalfsize;
+        coord2d erasepos;
+        coord2d erasehalfsize;
+        coord2d selectpos;
+        coord2d selecthalfsize;
 
         textSetSpacing(0);
 
@@ -2520,7 +2510,7 @@ void frontModeSelectTick(void)
     viSetUseZBuf(FALSE);
 
     frontHideAllSwitches(g_FrontFolderModels[0]);
-    frontSelectBondPicture(g_FrontFolderModels[0], fileGetBondForFolder(g_FrontFolder));
+    frontSelectBondPicture(g_FrontFolderModels[0]);
     frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
     frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
     frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
@@ -6099,13 +6089,13 @@ Gfx * frontMpStageRender(Gfx *DL)
     s32 y;
     s32 height;
     s32 width;
-    struct coord2d bgPos;
-    struct coord2d bgSize;
+    coord2d bgPos;
+    coord2d bgSize;
     s32 i_3;
     s32 i_2;
     s32 i_1;
-    struct coord2d photoPos;
-    struct coord2d photoSize;
+    coord2d photoPos;
+    coord2d photoSize;
     s32 labelX;
     s32 colour;
     struct sImageTableEntry *simage;
@@ -6902,7 +6892,7 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
 
 Gfx *frontBriefingRender(Gfx *DL)
 {
-    char *text;
+    char *text = NULL;
     s32 x;
     s32 y;
     char buffer[3000];
@@ -7974,7 +7964,7 @@ void frontCastEnter(void)
     u8 *bufferPtr;
     s32 bufferRemaining;
     s32 allocSize;
-    struct coord3d subOffset;
+    coord3d subOffset;
     struct texpool texPool;
     enum BODIES body;
     enum HEADS head;
@@ -7984,8 +7974,6 @@ void frontCastEnter(void)
     ModelFileHeader *weaponHeader;
     bool flip;
     s32 cameraPreset;
-    struct intro_random_rifles rifles;
-    struct intro_random_pistols pistols;
     
     bufferPtr = g_FrontModelBuffer;
     subOffset = zeroCoord;
@@ -8081,13 +8069,11 @@ void frontCastEnter(void)
     {
         if (cameraPreset == INTRO_WEAPON_TYPE_RIFLE)
         {
-            rifles = g_CastRifles;
-            weaponProp = rifles.props[randomGetNext() % 6];
+            weaponProp = g_CastRifles[randomGetNext() % INTRO_RANDOM_RIFLE_LEN];
         }
         else
         {
-            pistols = g_CastPistols;
-            weaponProp = pistols.props[randomGetNext() % 10];
+            weaponProp = g_CastPistols[randomGetNext() % INTRO_RANDOM_PISTOL_LEN];
         }
 
         // Replace Cougar Magnum with PP7 if Cradle has not been completed on any folder.

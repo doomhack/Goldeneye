@@ -2,7 +2,7 @@
 #include "bg_dest_all_p.h"
 
 // Offset: 0x0
-struct bg_header header = {0, &room_data_table, &portal_data_table, &global_visibility_commands, 0};
+struct bg_header header = {0, room_data_table, portal_data_table, global_visibility_commands, 0};
 
 // Offset: 0x14
 struct room_data_table_entry room_data_table[] = {

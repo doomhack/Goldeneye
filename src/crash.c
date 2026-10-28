@@ -208,7 +208,7 @@ void crashInit(void)
  * @param data Unused.
  */
 extern OSThread *__osRunQueue;
-void crashMain(void *data)
+void crashMain([[maybe_unused]] void *data)
 {
     OSMesg msg = 0;
     static OSThread *curr;

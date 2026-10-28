@@ -163,7 +163,7 @@ s32 bodyGetRandomHead(s32 id)
 }
 
 
-void bodiesReset(u32 stagenum)
+void bodiesReset(void)
 {
     s32 i;
   

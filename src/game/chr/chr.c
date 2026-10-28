@@ -109,7 +109,7 @@ s32 g_NumChrSlots = 0;
 
 
 
-rgba_u8 gBloodColour = { 0x5a, 0, 0, 0};
+rgba_u8 gBloodColour = { {0x5a, 0, 0, 0}};
 
 
 
@@ -548,38 +548,38 @@ struct explosion_anim_group_info explosion_animation_table[EXPLOSION_ANIMATION_T
 };
 
 struct weapon_firing_animation_table rifle_firing_animation_group1[] = {
-    { PTR_ANIM_fire_standing_fast, 28.0, 0, 0, 0, -1.0, 23.0, 54.0, -1.0, -1.0, 18.0, 54.0, 0.87266463, -0.52359879, 1.0471976, -0.34906587, 1.6, 1.8 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_fast}, 28.0, 0, 0, 0, -1.0, 23.0, 54.0, -1.0, -1.0, 18.0, 54.0, 0.87266463, -0.52359879, 1.0471976, -0.34906587, 1.6, 1.8 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_rifle_firing_animation_group1 = { rifle_firing_animation_group1, -1 };
 
 struct weapon_firing_animation_table rifle_firing_animation_group2[] = {
-    { PTR_ANIM_fire_standing, 37.0, 0, 0, 0, -1.0, 30.0, 81.0, -1.0, -1.0, 25.0, 81.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 1.6, 1.75 },
-    { PTR_ANIM_fire_hip, 27.0, 0, 0, 0, -1.0, 22.0, 61.0, -1.0, -1.0, 17.0, 61.0, 0.87266463, -0.2617994, 0.69813174, -0.69813174, 2.0, 1.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing}, 37.0, 0, 0, 0, -1.0, 30.0, 81.0, -1.0, -1.0, 25.0, 81.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 1.6, 1.75 },
+    { {PTR_ANIM_fire_hip}, 27.0, 0, 0, 0, -1.0, 22.0, 61.0, -1.0, -1.0, 17.0, 61.0, 0.87266463, -0.2617994, 0.69813174, -0.69813174, 2.0, 1.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_rifle_firing_animation_group2 = { rifle_firing_animation_group2, -1 };
 
 struct weapon_firing_animation_table rifle_firing_animation_group5[] = {
-    { PTR_ANIM_fire_standing, 37.0, 0, 0, 0, -1.0, 30.0, 81.0, -1.0, -1.0, 25.0, 81.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 1.6, 1.75 },
-    { PTR_ANIM_fire_hip, 27.0, 0, 0, 0, -1.0, 22.0, 61.0, -1.0, -1.0, 17.0, 61.0, 0.87266463, -0.2617994, 0.69813174, -0.69813174, 2.0, 1.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing}, 37.0, 0, 0, 0, -1.0, 30.0, 81.0, -1.0, -1.0, 25.0, 81.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 1.6, 1.75 },
+    { {PTR_ANIM_fire_hip}, 27.0, 0, 0, 0, -1.0, 22.0, 61.0, -1.0, -1.0, 17.0, 61.0, 0.87266463, -0.2617994, 0.69813174, -0.69813174, 2.0, 1.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_rifle_firing_animation_group5 = { rifle_firing_animation_group5, -1 };
 
 struct weapon_firing_animation_table rifle_firing_animation_group3[] = {
-    { PTR_ANIM_fire_shoulder_left, 19.0, 0, 1.5707964, 0, -1.0, 19.0, 61.0, -1.0, -1.0, 14.0, 61.0, 0.87266463, -0.34906587, 0.43633232, -1.0471976, 2.5, 2.5 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_shoulder_left}, 19.0, 0, 1.5707964, 0, -1.0, 19.0, 61.0, -1.0, -1.0, 14.0, 61.0, 0.87266463, -0.34906587, 0.43633232, -1.0471976, 2.5, 2.5 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_rifle_firing_animation_group3 = { rifle_firing_animation_group3, -1 };
 
 struct weapon_firing_animation_table rifle_firing_animation_group4[] = {
-    { PTR_ANIM_fire_turn_right2, 27.0, 0, 0, 0, -1.0, 39.0, 74.0, -1.0, -1.0, 34.0, 74.0, 0.87266463, -0.69813174, 0.78539819, -0.69813174, 1.5, 1.5 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_turn_right2}, 27.0, 0, 0, 0, -1.0, 39.0, 74.0, -1.0, -1.0, 34.0, 74.0, 0.87266463, -0.69813174, 0.78539819, -0.69813174, 1.5, 1.5 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_rifle_firing_animation_group4 = { rifle_firing_animation_group4, -1 };
@@ -620,53 +620,53 @@ struct anim_group_info *ptr_rifle_firing_animation_groups[] = {
 };
 
 struct weapon_firing_animation_table pistol_firing_animation_group1[] = {
-    { PTR_ANIM_fire_standing_one_handed_weapon, 26.0, 0, 0, 12.0, 140.0, 58.0, 92.0, 60.0, 79.0, 20.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
-    { PTR_ANIM_fire_hip_one_handed_weapon_fast, 0.0, 0, 0, 17.0, 100.0, 25.0, 87.0, 30.0, 55.0, 20.0, 93.0, 0.87266463, -0.69813174, 0.69813174, -1.0471976, 0.0, 0.0 },
-    { PTR_ANIM_fire_hip_one_handed_weapon_slow, 0.0, 0, 0, 12.0, 64.0, 19.0, 51.0, 24.0, 46.0, 14.0, 58.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
-    { PTR_ANIM_fire_hip_forward_one_handed_weapon, 22.0, 0, 0, 4.0, 69.0, 22.0, 49.0, 22.0, 33.0, 8.0, 58.0, 0.87266463, -0.69813174, 0.43633232, -0.78539819, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_one_handed_weapon}, 26.0, 0, 0, 12.0, 140.0, 58.0, 92.0, 60.0, 79.0, 20.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
+    { {PTR_ANIM_fire_hip_one_handed_weapon_fast}, 0.0, 0, 0, 17.0, 100.0, 25.0, 87.0, 30.0, 55.0, 20.0, 93.0, 0.87266463, -0.69813174, 0.69813174, -1.0471976, 0.0, 0.0 },
+    { {PTR_ANIM_fire_hip_one_handed_weapon_slow}, 0.0, 0, 0, 12.0, 64.0, 19.0, 51.0, 24.0, 46.0, 14.0, 58.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_hip_forward_one_handed_weapon}, 22.0, 0, 0, 4.0, 69.0, 22.0, 49.0, 22.0, 33.0, 8.0, 58.0, 0.87266463, -0.69813174, 0.43633232, -0.78539819, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_pistol_firing_animation_group1 = { pistol_firing_animation_group1, -1 };
 
 struct weapon_firing_animation_table pistol_firing_animation_group2[] = {
-    { PTR_ANIM_fire_standing_one_handed_weapon, 26.0, 0, 0, 12.0, 140.0, 58.0, 92.0, 60.0, 79.0, 20.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
-    { PTR_ANIM_fire_hip_forward_one_handed_weapon, 22.0, 0, 0, 4.0, 69.0, 22.0, 49.0, 22.0, 33.0, 8.0, 58.0, 0.87266463, -0.69813174, 0.43633232, -0.78539819, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_one_handed_weapon}, 26.0, 0, 0, 12.0, 140.0, 58.0, 92.0, 60.0, 79.0, 20.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
+    { {PTR_ANIM_fire_hip_forward_one_handed_weapon}, 22.0, 0, 0, 4.0, 69.0, 22.0, 49.0, 22.0, 33.0, 8.0, 58.0, 0.87266463, -0.69813174, 0.43633232, -0.78539819, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_pistol_firing_animation_group2 = { pistol_firing_animation_group2, -1 };
 
 struct weapon_firing_animation_table pistol_firing_animation_group3[] = {
-    { PTR_ANIM_fire_standing_one_handed_weapon, 26.0, 0, 0, 12.0, 140.0, 58.0, 92.0, 60.0, 79.0, 20.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
-    { PTR_ANIM_fire_hip_forward_one_handed_weapon, 22.0, 0, 0, 4.0, 69.0, 22.0, 49.0, 22.0, 33.0, 8.0, 58.0, 0.87266463, -0.69813174, 0.43633232, -0.78539819, 0.0, 0.0 },
-    { PTR_ANIM_fire_standing_left_one_handed_weapon_slow, 0.0, 0, 1.5707964, 7.0, 130.0, 45.0, 93.0, 56.0, 73.0, 26.0, 107.0, 0.87266463, -0.69813174, 0.34906587, -0.52359879, 0.0, 0.0 },
-    { PTR_ANIM_fire_standing_left_one_handed_weapon_fast, 15.0, 0, 1.5707964, 5.0, 76.0, 20.0, 31.0, 31.0, 38.0, 15.0, 49.0, 0.87266463, -0.69813174, 0.52359879, -1.0471976, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_one_handed_weapon}, 26.0, 0, 0, 12.0, 140.0, 58.0, 92.0, 60.0, 79.0, 20.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
+    { {PTR_ANIM_fire_hip_forward_one_handed_weapon}, 22.0, 0, 0, 4.0, 69.0, 22.0, 49.0, 22.0, 33.0, 8.0, 58.0, 0.87266463, -0.69813174, 0.43633232, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_left_one_handed_weapon_slow}, 0.0, 0, 1.5707964, 7.0, 130.0, 45.0, 93.0, 56.0, 73.0, 26.0, 107.0, 0.87266463, -0.69813174, 0.34906587, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_left_one_handed_weapon_fast}, 15.0, 0, 1.5707964, 5.0, 76.0, 20.0, 31.0, 31.0, 38.0, 15.0, 49.0, 0.87266463, -0.69813174, 0.52359879, -1.0471976, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_pistol_firing_animation_group3 = { pistol_firing_animation_group3, -1 };
 
 struct weapon_firing_animation_table pistol_firing_animation_group6[] = {
-    { PTR_ANIM_fire_standing_one_handed_weapon, 26.0, 0, 0, 12.0, 140.0, 58.0, 92.0, 60.0, 79.0, 20.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
-    { PTR_ANIM_fire_hip_forward_one_handed_weapon, 22.0, 0, 0, 4.0, 69.0, 22.0, 49.0, 22.0, 33.0, 8.0, 58.0, 0.87266463, -0.69813174, 0.43633232, -0.78539819, 0.0, 0.0 },
-    { PTR_ANIM_fire_standing_right_one_handed_weapon, 0.0, 0, 4.712389, 7.0, 139.0, 54.0, 105.0, 61.0, 88.0, 26.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.61086529, 0.0, 0.0 },
-    { PTR_ANIM_fire_step_right_one_handed_weapon, 19.0, 0, 4.712389, 4.0, 79.0, 21.0, 50.0, 26.0, 42.0, 10.0, 64.0, 0.87266463, -0.69813174, 0.69813174, -0.61086529, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_one_handed_weapon}, 26.0, 0, 0, 12.0, 140.0, 58.0, 92.0, 60.0, 79.0, 20.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
+    { {PTR_ANIM_fire_hip_forward_one_handed_weapon}, 22.0, 0, 0, 4.0, 69.0, 22.0, 49.0, 22.0, 33.0, 8.0, 58.0, 0.87266463, -0.69813174, 0.43633232, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_right_one_handed_weapon}, 0.0, 0, 4.712389, 7.0, 139.0, 54.0, 105.0, 61.0, 88.0, 26.0, 120.0, 0.87266463, -0.69813174, 0.69813174, -0.61086529, 0.0, 0.0 },
+    { {PTR_ANIM_fire_step_right_one_handed_weapon}, 19.0, 0, 4.712389, 4.0, 79.0, 21.0, 50.0, 26.0, 42.0, 10.0, 64.0, 0.87266463, -0.69813174, 0.69813174, -0.61086529, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_pistol_firing_animation_group6 = { pistol_firing_animation_group6, -1 };
 
 struct weapon_firing_animation_table pistol_firing_animation_group4[] = {
-    { PTR_ANIM_fire_standing_left_one_handed_weapon_fast, 19.0, 0, 1.5707964, 5.0, 76.0, 20.0, 31.0, 31.0, 38.0, 15.0, 49.0, 0.87266463, -0.69813174, 0.52359879, -1.0471976, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_left_one_handed_weapon_fast}, 19.0, 0, 1.5707964, 5.0, 76.0, 20.0, 31.0, 31.0, 38.0, 15.0, 49.0, 0.87266463, -0.69813174, 0.52359879, -1.0471976, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_pistol_firing_animation_group4 = { pistol_firing_animation_group4, -1 };
 
 struct weapon_firing_animation_table pistol_firing_animation_group5[] = {
-    { PTR_ANIM_fire_step_right_one_handed_weapon, 19.0, 0, 4.712389, 4.0, 79.0, 21.0, 50.0, 26.0, 42.0, 10.0, 64.0, 0.87266463, -0.69813174, 0.69813174, -0.61086529, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_step_right_one_handed_weapon}, 19.0, 0, 4.712389, 4.0, 79.0, 21.0, 50.0, 26.0, 42.0, 10.0, 64.0, 0.87266463, -0.69813174, 0.69813174, -0.61086529, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_pistol_firing_animation_group5 = { pistol_firing_animation_group5, -1 };
@@ -707,24 +707,24 @@ struct anim_group_info *ptr_pistol_firing_animation_groups[] = {
 };
 
 struct weapon_firing_animation_table doubles_firing_animation_group1[] = {
-    { PTR_ANIM_fire_standing_dual_wield, 26.0, 0, 0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_dual_wield}, 26.0, 0, 0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_doubles_firing_animation_group1 = { doubles_firing_animation_group1, -1 };
 
 struct weapon_firing_animation_table doubles_firing_animation_group2[] = {
-    { PTR_ANIM_fire_standing_dual_wield_left, 26.0, 0, 1.5707964, 9.0, 112.0, 38.0, 87.0, -1.0, -1.0, 19.0, 98.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
-    { PTR_ANIM_fire_standing_dual_wield_hands_crossed_left, 25.0, 0, 1.5707964, 10.0, 112.0, 32.0, 86.0, -1.0, -1.0, 19.0, 97.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_dual_wield_left}, 26.0, 0, 1.5707964, 9.0, 112.0, 38.0, 87.0, -1.0, -1.0, 19.0, 98.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_dual_wield_hands_crossed_left}, 25.0, 0, 1.5707964, 10.0, 112.0, 32.0, 86.0, -1.0, -1.0, 19.0, 97.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_doubles_firing_animation_group2 = { doubles_firing_animation_group2, -1 };
 
 struct weapon_firing_animation_table doubles_firing_animation_group3[] = {
-    { PTR_ANIM_fire_standing_dual_wield_right, 39.0, 0, 4.712389, 22.0, 127.0, 44.0, 102.0, -1.0, -1.0, 28.0, 112.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
-    { PTR_ANIM_fire_standing_dual_wield_hands_crossed_right, 39.0, 0, 4.712389, 23.0, 130.0, 46.0, 100.0, -1.0, -1.0, 30.0, 110.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_standing_dual_wield_right}, 39.0, 0, 4.712389, 22.0, 127.0, 44.0, 102.0, -1.0, -1.0, 28.0, 112.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_dual_wield_hands_crossed_right}, 39.0, 0, 4.712389, 23.0, 130.0, 46.0, 100.0, -1.0, -1.0, 30.0, 110.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_doubles_firing_animation_group3 = { doubles_firing_animation_group3, -1 };
@@ -765,26 +765,26 @@ struct anim_group_info *ptr_doubles_firing_animation_groups[] = {
 };
 
 struct weapon_firing_animation_table crouched_rifle_firing_animation_group1[] = {
-    { PTR_ANIM_fire_kneel_right_leg, 27.0, 0, 0, 0, -1.0, 35.0, 75.0, -1.0, -1.0, 31.0, 75.0, 0.87266463, -0.69813174, 0.90757126, -0.69813174, 1.5, 1.5 },
+    { {PTR_ANIM_fire_kneel_right_leg}, 27.0, 0, 0, 0, -1.0, 35.0, 75.0, -1.0, -1.0, 31.0, 75.0, 0.87266463, -0.69813174, 0.90757126, -0.69813174, 1.5, 1.5 },
 };
 
 struct weapon_firing_animation_table crouched_rifle_firing_animation_groupA[] = {
-    { PTR_ANIM_fire_kneel_left_leg, 24.0, 0, 0, 0, -1.0, 46.0, 98.0, -1.0, -1.0, 41.0, 98.0, 0.87266463, -0.52359879, 1.134464, -0.69813174, 1.6, 1.6 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_left_leg}, 24.0, 0, 0, 0, -1.0, 46.0, 98.0, -1.0, -1.0, 41.0, 98.0, 0.87266463, -0.52359879, 1.134464, -0.69813174, 1.6, 1.6 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_rifle_firing_animation_group1 = { crouched_rifle_firing_animation_group1, -1 };
 
 struct weapon_firing_animation_table crouched_rifle_firing_animation_group2[] = {
-    { PTR_ANIM_fire_kneel_left, 26.0, 0, 0, 0, -1.0, 34.0, 87.0, -1.0, -1.0, 29.0, 87.0, 0.87266463, -0.52359879, 0.69813174, -0.95993108, 1.6, 2.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_left}, 26.0, 0, 0, 0, -1.0, 34.0, 87.0, -1.0, -1.0, 29.0, 87.0, 0.87266463, -0.52359879, 0.69813174, -0.95993108, 1.6, 2.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_rifle_firing_animation_group2 = { crouched_rifle_firing_animation_group2, -1 };
 
 struct weapon_firing_animation_table crouched_rifle_firing_animation_group3[] = {
-    { PTR_ANIM_fire_kneel_right, 28.0, 0, 0, 0, -1.0, 36.0, 88.0, -1.0, -1.0, 31.0, 88.0, 0.87266463, -0.69813174, 0.87266463, -0.43633232, 1.6, 1.5 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_right}, 28.0, 0, 0, 0, -1.0, 36.0, 88.0, -1.0, -1.0, 31.0, 88.0, 0.87266463, -0.69813174, 0.87266463, -0.43633232, 1.6, 1.5 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_rifle_firing_animation_group3 = { crouched_rifle_firing_animation_group3, -1 };
@@ -825,26 +825,26 @@ struct anim_group_info *ptr_crouched_rifle_firing_animation_groups[] = {
 };
 
 struct weapon_firing_animation_table crouched_pistol_firing_animation_group1[] = {
-    { PTR_ANIM_fire_kneel_forward_one_handed_weapon_slow, 25.0, 0, 0, 12.0, 132.0, 55.0, 87.0, 67.0, 87.0, 26.0, 111.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
-    { PTR_ANIM_fire_kneel_forward_one_handed_weapon_fast, 26.0, 0, 0, 8.0, 89.0, 31.0, 63.0, 41.0, 51.0, 21.0, 80.0, 0.87266463, -0.69813174, 0.34906587, -1.134464, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_forward_one_handed_weapon_slow}, 25.0, 0, 0, 12.0, 132.0, 55.0, 87.0, 67.0, 87.0, 26.0, 111.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_forward_one_handed_weapon_fast}, 26.0, 0, 0, 8.0, 89.0, 31.0, 63.0, 41.0, 51.0, 21.0, 80.0, 0.87266463, -0.69813174, 0.34906587, -1.134464, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_pistol_firing_animation_group1 = { crouched_pistol_firing_animation_group1, -1 };
 
 struct weapon_firing_animation_table crouched_pistol_firing_animation_group2[] = {
-    { PTR_ANIM_fire_kneel_left_one_handed_weapon_slow, 47.0, 0, 1.5707964, 7.0, 128.0, 33.0, 86.0,47.0, 74.0, 23.0, 106.0, 0.87266463, -0.52359879, 0.52359879, -0.78539819, 0.0, 0.0 },
-    { PTR_ANIM_fire_kneel_left_one_handed_weapon_fast, 18.0, 0, 1.5707964, 7.0, 78.0, 28.0, 52.0, 35.0, 45.0, 15.0, 66.0, 0.87266463, -0.087266468, 0.69813174, -0.78539819, 1.5, 1.0 },
-    { PTR_ANIM_fire_kneel_left_one_handed_weapon, 20.0, 0, 1.5707964, 13.0, 92.0, 37.0, 67.0, 42.0, 55.0, 25.0, 84.0, 0.87266463, -0.52359879, 0.34906587, -0.69813174, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_left_one_handed_weapon_slow}, 47.0, 0, 1.5707964, 7.0, 128.0, 33.0, 86.0,47.0, 74.0, 23.0, 106.0, 0.87266463, -0.52359879, 0.52359879, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_left_one_handed_weapon_fast}, 18.0, 0, 1.5707964, 7.0, 78.0, 28.0, 52.0, 35.0, 45.0, 15.0, 66.0, 0.87266463, -0.087266468, 0.69813174, -0.78539819, 1.5, 1.0 },
+    { {PTR_ANIM_fire_kneel_left_one_handed_weapon}, 20.0, 0, 1.5707964, 13.0, 92.0, 37.0, 67.0, 42.0, 55.0, 25.0, 84.0, 0.87266463, -0.52359879, 0.34906587, -0.69813174, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_pistol_firing_animation_group2 = { crouched_pistol_firing_animation_group2, -1 };
 
 struct weapon_firing_animation_table crouched_pistol_firing_animation_group3[] = {
-    { PTR_ANIM_fire_kneel_right_one_handed_weapon_slow, 28.0, 0, 4.712389, 15.0, 124.0, 38.0, 97.0, 60.0, 84.0, 20.0, 106.0, 0.87266463, -0.69813174, 0.52359879, -0.87266463, 0.0, 0.0 },
-    { PTR_ANIM_fire_kneel_right_one_handed_weapon_fast, 23.0, 0, 4.712389, 0, 85.0, 32.0, 38.0, 38.0, 60.0, 14.0, 71.0, 0.87266463, -0.69813174, 0.61086529, -0.95993108, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_right_one_handed_weapon_slow}, 28.0, 0, 4.712389, 15.0, 124.0, 38.0, 97.0, 60.0, 84.0, 20.0, 106.0, 0.87266463, -0.69813174, 0.52359879, -0.87266463, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_right_one_handed_weapon_fast}, 23.0, 0, 4.712389, 0, 85.0, 32.0, 38.0, 38.0, 60.0, 14.0, 71.0, 0.87266463, -0.69813174, 0.61086529, -0.95993108, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_pistol_firing_animation_group3 = { crouched_pistol_firing_animation_group3, -1 };
@@ -885,25 +885,25 @@ struct anim_group_info *ptr_crouched_pistol_firing_animation_groups[] = {
 };
 
 struct weapon_firing_animation_table crouched_doubles_firing_animation_group1[] = {
-    { PTR_ANIM_fire_kneel_dual_wield, 22.0, 0, 0, 10.0, 111.0, 34.0, 87.0, -1.0, -1.0, 17.0, 104.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
-    { PTR_ANIM_fire_kneel_dual_wield_hands_crossed, 25.0, 0, 0, 9.0, 92.0, 33.0, 62.0, -1.0, -1.0, 18.0, 69.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_dual_wield}, 22.0, 0, 0, 10.0, 111.0, 34.0, 87.0, -1.0, -1.0, 17.0, 104.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_dual_wield_hands_crossed}, 25.0, 0, 0, 9.0, 92.0, 33.0, 62.0, -1.0, -1.0, 18.0, 69.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_doubles_firing_animation_group1 = { crouched_doubles_firing_animation_group1, -1 };
 
 struct weapon_firing_animation_table crouched_doubles_firing_animation_group2[] = {
-    { PTR_ANIM_fire_kneel_dual_wield_left, 28.0, 0, 1.5707964, 15.0, 108.0, 34.0, 73.0, -1.0, -1.0, 17.0, 93.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
-    { PTR_ANIM_fire_kneel_dual_wield_hands_crossed_left, 19.0, 0, 1.5707964, 3.0, 95.0, 30.0, 64.0, -1.0, -1.0, 14.0, 71.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 1.5, 1.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_dual_wield_left}, 28.0, 0, 1.5707964, 15.0, 108.0, 34.0, 73.0, -1.0, -1.0, 17.0, 93.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_dual_wield_hands_crossed_left}, 19.0, 0, 1.5707964, 3.0, 95.0, 30.0, 64.0, -1.0, -1.0, 14.0, 71.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 1.5, 1.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_doubles_firing_animation_group2 = { crouched_doubles_firing_animation_group2, -1 };
 
 struct weapon_firing_animation_table crouched_doubles_firing_animation_group3[] = {
-    { PTR_ANIM_fire_kneel_dual_wield_right, 31.0, 0, 4.712389, 14.0, 111.0, 40.0, 83.0,-1.0, -1.0, 21.0, 94.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
-    { PTR_ANIM_fire_kneel_dual_wield_hands_crossed_right, 26.0, 0, 4.712389, 7.0, 89.0, 34.0, 60.0, -1.0, -1.0, 20.0, 68.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
-    {0, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    { {PTR_ANIM_fire_kneel_dual_wield_right}, 31.0, 0, 4.712389, 14.0, 111.0, 40.0, 83.0,-1.0, -1.0, 21.0, 94.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_dual_wield_hands_crossed_right}, 26.0, 0, 4.712389, 7.0, 89.0, 34.0, 60.0, -1.0, -1.0, 20.0, 68.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
+    {{0}, 0.0, 0, 0, 0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct anim_group_info ptr_crouched_doubles_firing_animation_group3 = { crouched_doubles_firing_animation_group3, -1 };
@@ -946,102 +946,102 @@ struct anim_group_info* ptr_crouched_doubles_firing_animation_groups[] = {
 struct weapon_firing_animation_table g_ChrFireAnims[] = {
     // sizeof(struct weapon_firing_animation_table) = 0x48 = 72.
     // index 0
-    { PTR_ANIM_fire_roll_left, 76.0, 0.0, 0.0, 20.0, -1.0, 98.0, 161.0, -1.0, -1.0, 93.0, 161.0, 0.87266463, -0.52359879, 0.69813174, -0.69813174, 1.7, 2.0 },
+    { {PTR_ANIM_fire_roll_left}, 76.0, 0.0, 0.0, 20.0, -1.0, 98.0, 161.0, -1.0, -1.0, 93.0, 161.0, 0.87266463, -0.52359879, 0.69813174, -0.69813174, 1.7, 2.0 },
 
     // index 1
-    { PTR_ANIM_fire_roll_right1, 58.0, 0.0, 0.0, 10.0, -1.0, 77.0, 104.0, -1.0, -1.0, 72.0, 104.0, 0.87266463, -0.34906587, 0.61086529, -0.69813174, 1.55, 1.5 },
+    { {PTR_ANIM_fire_roll_right1}, 58.0, 0.0, 0.0, 10.0, -1.0, 77.0, 104.0, -1.0, -1.0, 72.0, 104.0, 0.87266463, -0.34906587, 0.61086529, -0.69813174, 1.55, 1.5 },
 
     // index 2
-    { PTR_ANIM_fire_roll_left_fast, 61.0, 0.0, 0.0, 10.0, -1.0, 83.0, 128.0, -1.0, -1.0, 78.0, 128.0, 0.87266463, -0.52359879, 0.87266463, -0.52359879, 1.2, 1.3 },
+    { {PTR_ANIM_fire_roll_left_fast}, 61.0, 0.0, 0.0, 10.0, -1.0, 83.0, 128.0, -1.0, -1.0, 78.0, 128.0, 0.87266463, -0.52359879, 0.87266463, -0.52359879, 1.2, 1.3 },
 
     // index 3
-    { PTR_ANIM_fire_roll_right2, 63.0, 0.0, 0.0, 10.0, -1.0, 73.0, 114.0, -1.0, -1.0, 68.0, 114.0, 0.87266463, -0.52359879, 0.61086529, -0.61086529, 1.65, 1.5 },
+    { {PTR_ANIM_fire_roll_right2}, 63.0, 0.0, 0.0, 10.0, -1.0, 73.0, 114.0, -1.0, -1.0, 68.0, 114.0, 0.87266463, -0.52359879, 0.61086529, -0.61086529, 1.65, 1.5 },
 
     // index 4
-    { PTR_ANIM_fire_roll_left, 76.0, 0.0, 0.0, 20.0, 76.0, 98.0, 161.0, -1.0, -1.0, 93.0, 161.0, 0.87266463, -0.52359879, 0.69813174, -0.69813174, 1.7, 2.0 },
+    { {PTR_ANIM_fire_roll_left}, 76.0, 0.0, 0.0, 20.0, 76.0, 98.0, 161.0, -1.0, -1.0, 93.0, 161.0, 0.87266463, -0.52359879, 0.69813174, -0.69813174, 1.7, 2.0 },
 
     // index 5
-    { PTR_ANIM_fire_roll_right1, 58.0, 0.0, 0.0, 10.0, 63.0, 77.0, 104.0, -1.0, -1.0, 72.0, 104.0, 0.87266463, -0.34906587, 0.61086529, -0.69813174, 1.55, 1.5 },
+    { {PTR_ANIM_fire_roll_right1}, 58.0, 0.0, 0.0, 10.0, 63.0, 77.0, 104.0, -1.0, -1.0, 72.0, 104.0, 0.87266463, -0.34906587, 0.61086529, -0.69813174, 1.55, 1.5 },
 
     // index 6
-    { PTR_ANIM_fire_roll_left_fast, 61.0, 0.0, 0.0, 10.0, 56.0, 83.0, 128.0, -1.0, -1.0, 78.0, 128.0, 0.87266463, -0.52359879, 0.87266463, -0.52359879, 1.2, 1.3 },
+    { {PTR_ANIM_fire_roll_left_fast}, 61.0, 0.0, 0.0, 10.0, 56.0, 83.0, 128.0, -1.0, -1.0, 78.0, 128.0, 0.87266463, -0.52359879, 0.87266463, -0.52359879, 1.2, 1.3 },
 
     // index 7
-    { PTR_ANIM_fire_roll_right2, 63.0, 0.0, 0.0, 10.0, 50.0, 73.0, 114.0, -1.0, -1.0, 68.0, 114.0, 0.87266463, -0.52359879, 0.61086529, -0.61086529, 1.65, 1.5 },
+    { {PTR_ANIM_fire_roll_right2}, 63.0, 0.0, 0.0, 10.0, 50.0, 73.0, 114.0, -1.0, -1.0, 68.0, 114.0, 0.87266463, -0.52359879, 0.61086529, -0.61086529, 1.65, 1.5 },
 
     // index 8
-    { PTR_ANIM_fire_hip_one_handed_weapon_slow, 0.0, 0.0, 0.0, 7.0, 64.0, 19.0, 51.0, 24.0, 46.0, 14.0, 58.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_hip_one_handed_weapon_slow}, 0.0, 0.0, 0.0, 7.0, 64.0, 19.0, 51.0, 24.0, 46.0, 14.0, 58.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
 
     // index 9
-    { PTR_ANIM_fire_standing_left_one_handed_weapon_fast, 0.0, 0.0, 1.5707964, 14.0, 76.0, 26.0, 31.0, 31.0, 38.0, 15.0, 49.0, 0.87266463, -0.69813174, 0.52359879, -1.0471976, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_left_one_handed_weapon_fast}, 0.0, 0.0, 1.5707964, 14.0, 76.0, 26.0, 31.0, 31.0, 38.0, 15.0, 49.0, 0.87266463, -0.69813174, 0.52359879, -1.0471976, 0.0, 0.0 },
 
     // index 10
-    { PTR_ANIM_fire_kneel_forward_one_handed_weapon_fast, 26.0, 0.0, 0.0, 25.0, 89.0, 41.0, 63.0, 41.0, 51.0, 21.0, 80.0, 0.87266463, -0.69813174, 0.34906587, -1.134464, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_forward_one_handed_weapon_fast}, 26.0, 0.0, 0.0, 25.0, 89.0, 41.0, 63.0, 41.0, 51.0, 21.0, 80.0, 0.87266463, -0.69813174, 0.34906587, -1.134464, 0.0, 0.0 },
 
     // index 11
-    { PTR_ANIM_fire_kneel_left_one_handed_weapon_fast, 18.0, 0.0, 1.5707964, 11.0, 78.0, 33.0, 52.0, 35.0, 45.0, 15.0, 66.0, 0.87266463, -0.087266468, 0.69813174, -0.78539819, 1.5, 1.0 },
+    { {PTR_ANIM_fire_kneel_left_one_handed_weapon_fast}, 18.0, 0.0, 1.5707964, 11.0, 78.0, 33.0, 52.0, 35.0, 45.0, 15.0, 66.0, 0.87266463, -0.087266468, 0.69813174, -0.78539819, 1.5, 1.0 },
 
     // index 12
-    { PTR_ANIM_fire_standing_dual_wield, 26.0, 0.0, 0.0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_dual_wield}, 26.0, 0.0, 0.0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
 
     // index 13
-    { PTR_ANIM_fire_standing_dual_wield_left, 26.0, 0.0, 1.5707964, 9.0, 112.0, 38.0, 87.0, -1.0, -1.0, 19.0, 98.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_dual_wield_left}, 26.0, 0.0, 1.5707964, 9.0, 112.0, 38.0, 87.0, -1.0, -1.0, 19.0, 98.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
 
     // index 14
-    { PTR_ANIM_fire_kneel_dual_wield, 22.0, 0.0, 0.0, 10.0, 11.0, 34.0, 87.0, -1.0, -1.0, 17.0, 104.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_dual_wield}, 22.0, 0.0, 0.0, 10.0, 11.0, 34.0, 87.0, -1.0, -1.0, 17.0, 104.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
 
     // index 15
-    { PTR_ANIM_fire_kneel_dual_wield_left, 28.0, 0.0, 1.5707964, 15.0, 108.0, 34.0, 73.0, -1.0, -1.0, 17.0, 93.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_dual_wield_left}, 28.0, 0.0, 1.5707964, 15.0, 108.0, 34.0, 73.0, -1.0, -1.0, 17.0, 93.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 0.0, 0.0 },
 
     // index 16
-    { PTR_ANIM_fire_standing_dual_wield, 26.0, 0.0, 0.0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_dual_wield}, 26.0, 0.0, 0.0, 7.0, 92.0, 28.0, 68.0, -1.0, -1.0, 11.0, 73.0, 0.87266463, -0.69813174, 0.69813174, -0.69813174, 0.0, 0.0 },
 
     // index 17
-    { PTR_ANIM_fire_standing_dual_wield_hands_crossed_left, 25.0, 0.0, 1.5707964, 10.0, 112.0, 32.0, 86.0, -1.0, -1.0, 19.0, 97.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
+    { {PTR_ANIM_fire_standing_dual_wield_hands_crossed_left}, 25.0, 0.0, 1.5707964, 10.0, 112.0, 32.0, 86.0, -1.0, -1.0, 19.0, 97.0, 0.87266463, -0.69813174, 0.43633232, -0.43633232, 0.0, 0.0 },
 
     // index 18
-    { PTR_ANIM_fire_kneel_dual_wield_hands_crossed, 25.0, 0.0, 0.0, 9.0, 92.0, 33.0, 62.0, -1.0, -1.0, 18.0, 69.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
+    { {PTR_ANIM_fire_kneel_dual_wield_hands_crossed}, 25.0, 0.0, 0.0, 9.0, 92.0, 33.0, 62.0, -1.0, -1.0, 18.0, 69.0, 0.87266463, -0.69813174, 0.61086529, -0.78539819, 0.0, 0.0 },
 
     // index 19
-    { PTR_ANIM_fire_kneel_dual_wield_hands_crossed_left, 19.0, 0.0, 1.5707964, 3.0, 95.0, 30.0, 64.0, -1.0, -1.0, 14.0, 71.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 1.5, 1.0 },
+    { {PTR_ANIM_fire_kneel_dual_wield_hands_crossed_left}, 19.0, 0.0, 1.5707964, 3.0, 95.0, 30.0, 64.0, -1.0, -1.0, 14.0, 71.0, 0.87266463, -0.69813174, 0.52359879, -0.78539819, 1.5, 1.0 },
 
     // index 20
-    {0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    {{0}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 struct weapon_firing_animation_table g_ChrMoveFireAnims[] = {
     // address 0x80030660. Index 0, = g_ChrMoveFireAnims + 0.
-    { PTR_ANIM_fire_walking, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 1.4, 1.3 },
+    { {PTR_ANIM_fire_walking}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 1.4, 1.3 },
 
     // address 0x800306A8. Index 1, = g_ChrMoveFireAnims + 72.
-    { PTR_ANIM_fire_running, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 1.1, 1.2 },
+    { {PTR_ANIM_fire_running}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 1.1, 1.2 },
 
     // address 0x800306F0. Index 2, = g_ChrMoveFireAnims + 144.
-    { PTR_ANIM_aim_walking_one_handed_weapon, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_aim_walking_one_handed_weapon}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
     // address 0x80030738. Index 3, = g_ChrMoveFireAnims + 216.
-    { PTR_ANIM_aim_running_one_handed_weapon, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_aim_running_one_handed_weapon}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
     // address 0x80030780. Index 4, = g_ChrMoveFireAnims + 288.
-    { PTR_ANIM_fire_walking_dual_wield, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_fire_walking_dual_wield}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
     // address 0x800307C8. Index 5, = g_ChrMoveFireAnims + 360.
-    { PTR_ANIM_fire_running_dual_wield, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_fire_running_dual_wield}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
     // address 0x80030810. Index 6, = g_ChrMoveFireAnims + 432.
-    { PTR_ANIM_fire_walking_dual_wield_hands_crossed, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_fire_walking_dual_wield_hands_crossed}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
     // address 0x80030858. Index 7, = g_ChrMoveFireAnims + 504.
-    { PTR_ANIM_fire_running_dual_wield_hands_crossed, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_fire_running_dual_wield_hands_crossed}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
     // address 0x800308A0. Index 8, = g_ChrMoveFireAnims + 576.
-    { PTR_ANIM_aim_running_left_one_handed_weapon, 0.0, 0.0, 1.5707964, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_aim_running_left_one_handed_weapon}, 0.0, 0.0, 1.5707964, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
     // address 0x800308E8. Index 9, = g_ChrMoveFireAnims + 648.
-    { PTR_ANIM_aim_running_right_one_handed_weapon, 0.0, 0.0, 4.712389, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
+    { {PTR_ANIM_aim_running_right_one_handed_weapon}, 0.0, 0.0, 4.712389, 0.0, -1.0, 0.0, 0.0, -1.0, -1.0, 0.0, 0.0, 0.87266463, -0.52359879, 0.52359879, -0.52359879, 0.0, 0.0 },
 
     // address 0x80030930. Index 10, = g_ChrMoveFireAnims + 720.
-    {0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
+    {{0}, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
 };
 
 s32 objectiveregisters1 = 0;
@@ -1488,7 +1488,7 @@ void chrAddHealth(ChrRecord *chr, f32 health)
 }
 
 
-PropRecord *chrInit(PropRecord *prop, Model *model, struct coord3d *pos, f32 angle, StandTile *tile, AIRecord *ailist)
+PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, StandTile *tile, AIRecord *ailist)
 {
     ChrRecord *chr;
     s32 i;
@@ -2607,13 +2607,13 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     ChrRecord *chr;
     Model *chrmodel;
-    struct rgba_f32 fogColour; // 192
+    rgba_f32 fogColour; // 192
     s32 fogType; // 188
     s32 renderFlags; // 184
     s32 chrfadealpha; // 180
     ModelRenderData mrData; // 112
     bbox2d bbox;
-    struct rgba_s32 chrShade;
+    rgba_s32 chrShade;
     s32 shadowAlpha; // 76
     PropRecord *prop_held_right; // 72
     PropRecord *prop_held_left; // 68
@@ -2841,7 +2841,7 @@ void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos
 }
 
 
-void chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, struct coord3d *pos)
+void chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, coord3d *pos)
 {
     s32 sp_pos[3];
     s32 bestdist;
@@ -3480,7 +3480,7 @@ f32 chrGetChrGround(PropRecord *prop)
  *
  * US address 7F023194.
 */
-s32 chrGetOnscreenRenderBounds(PropRecord *prop, struct coord3d *pos, struct coord2d *xbounds, struct coord2d *ybounds)
+s32 chrGetOnscreenRenderBounds(PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds)
 {
     struct ChrRecord *chr;
 

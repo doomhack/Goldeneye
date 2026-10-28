@@ -13,7 +13,7 @@ WeaponStats fist_stats = {
 	SCALEVAL_KNIFE, //CrosshairSpeed
 	0.85000002, //AimLockSpeed
 	1.0, //Sway
-	0, //RecoilSpeed
+	{0}, //RecoilSpeed
 	0.0, //RecoilBack
 	0.0, //RecoilUp
 	0.0, //BoltRecoilBack

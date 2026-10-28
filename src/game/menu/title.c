@@ -69,7 +69,7 @@ struct FolderSelectColour g_FolderGradientWhite = { 0xFF, 0xFF, 0xFF };
 Model *g_TitleBondModel = NULL;
 Model *g_TitleGunModel = NULL;
 
-ModelRenderData gunbarrelRenderData = { NULL, TRUE, 3, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, {0, 0, 0, 0}, {0, 0, 0, 0}, CULLMODE_BOTH };
+ModelRenderData gunbarrelRenderData = { NULL, TRUE, 3, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, {{0, 0, 0, 0}}, {{0, 0, 0, 0}}, CULLMODE_BOTH };
 
 f32 gunbarrelPosition1[3] = {1758.2957f, 220.0f, 684.28143f};
 f32 gunbarrelPosition2[3] = {-0.97f, 0.0f, 0.24f};
@@ -297,7 +297,7 @@ extern Gfx *DL_RAREWARELOGO2 NO_SDATA;
 extern u8 *TEX_RAREWARELOGO1 NO_SDATA;
 extern u8 *TEX_RAREWARELOGO2 NO_SDATA;
 
-Gfx *titleRenderRareLogo(Gfx *gdl, s32 unused1, s32 unused2, s32 cameraZ, s32 brightness) {
+Gfx *titleRenderRareLogo(Gfx *gdl, s32 cameraZ, s32 brightness) {
     cameraPosition1[2] = cameraZ;
     gSPDisplayList(gdl++, &dlBasicGeometry);
     gdl = screenClearBlack(gdl);
@@ -347,7 +347,7 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 unused1, s32 unused2, s32 cameraZ, s32 br
 extern void *_rarewarelogoSegmentRomStart NO_SDATA;
 extern void *_rarewarelogoSegmentStart NO_SDATA;
 extern void *_rarewarelogoSegmentEnd NO_SDATA;
-void titleLoadRareLogo(u8 *address, s32 size) {
+void titleLoadRareLogo(u8 *address) {
     g_TitleStage = 0;
     g_TitleX = 880.0f;
     g_TitleRareLogoAngle = -40.0f;
@@ -391,7 +391,7 @@ Gfx *titleRenderRareIntro(Gfx *gdl)
         if (fadeOut < 0) {
             fadeOut = 0;
         }
-        gdl = titleRenderRareLogo(gdl, 403, 488, g_TitleX, (fadeIn * fadeOut) / 255);
+        gdl = titleRenderRareLogo(gdl, g_TitleX, (fadeIn * fadeOut) / 255);
         if (g_TitleCounter++ >= RAREWARE_LOGO_EYE_COUNT1) {
             if (g_TitleCounter >= RAREWARE_LOGO_EYE_COUNT2) {
                 g_TitleCounter = 0;
@@ -425,7 +425,7 @@ void titleLoadBackdrop(u8 **addr, s32 *size) {
 void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
 {
     struct ModelAnimation *animation;
-    struct coord3d rootpos;
+    coord3d rootpos;
     struct texpool texturePool;
     s32 size;
     s32 startframe;
@@ -453,7 +453,7 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     titleLoadBackdrop(&gfxBuffer, &bufferSize);
 
     // struct copy
-    rootpos = (struct coord3d){0};
+    rootpos = (coord3d){0};
     
     size = 0x12C00;
     

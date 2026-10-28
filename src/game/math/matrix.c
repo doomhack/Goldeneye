@@ -190,7 +190,7 @@ void mtx4MultAffine(Mtxf *lhs, Mtxf *rhs, Mtxf *result)
 }
 
 /** Applies only the rotation and scale part of a matrix to a vector. */
-void mtx4RotateVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
+void mtx4RotateVec(Mtxf *matrix, coord3d *vector, coord3d *result)
 {
     s32 i;
     for (i = 0; i < 3; i++)
@@ -199,9 +199,9 @@ void mtx4RotateVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
     }
 }
 
-void mtx4RotateVecInPlace(Mtxf *matrix, struct coord3d *vector)
+void mtx4RotateVecInPlace(Mtxf *matrix, coord3d *vector)
 {
-    struct coord3d result;
+    coord3d result;
     mtx4RotateVec(matrix, vector, &result);
     vector->f[0] = result.f[0];
     vector->f[1] = result.f[1];
@@ -209,7 +209,7 @@ void mtx4RotateVecInPlace(Mtxf *matrix, struct coord3d *vector)
 }
 
 /** Applies a matrix, translation included, to a point. */
-void mtx4TransformVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *result)
+void mtx4TransformVec(Mtxf *matrix, coord3d *vector, coord3d *result)
 {
     mtx4RotateVec(matrix, vector, result);
     result->f[0] += matrix->m[3][0];
@@ -217,7 +217,7 @@ void mtx4TransformVec(Mtxf *matrix, struct coord3d *vector, struct coord3d *resu
     result->f[2] += matrix->m[3][2];
 }
 
-void mtx4TransformVecInPlace(Mtxf *matrix, struct coord3d *vector)
+void mtx4TransformVecInPlace(Mtxf *matrix, coord3d *vector)
 {
     mtx4RotateVecInPlace(matrix, vector);
     vector->f[0] += matrix->m[3][0];
@@ -316,7 +316,7 @@ void mtx4LoadZRotation(f32 angle, Mtxf *matrix)
 }
 
 /** A rotation by the Euler angles in `angles` (radians), applied x first, then y, then z. */
-void mtx4LoadRotation(struct coord3d *angles, Mtxf *matrix)
+void mtx4LoadRotation(coord3d *angles, Mtxf *matrix)
 {
     f32 cosX       = cosf(angles->f[0]);
     f32 sinX       = sinf(angles->f[0]);
@@ -348,7 +348,7 @@ void mtx4LoadRotation(struct coord3d *angles, Mtxf *matrix)
 
 // https://stackoverflow.com/a/15029416
 /** The inverse of mtx4LoadRotation: the Euler angles of a rotation matrix. */
-void mtx4GetRotation(Mtxf *matrix, struct coord3d *angles)
+void mtx4GetRotation(Mtxf *matrix, coord3d *angles)
 {
     f32 norm;
     f32 sinXCosY = matrix->m[1][2];
@@ -368,21 +368,21 @@ void mtx4GetRotation(Mtxf *matrix, struct coord3d *angles)
     }
 }
 
-void mtx4LoadRotationAndTranslation(struct coord3d *position, struct coord3d * rotation, Mtxf *matrix)
+void mtx4LoadRotationAndTranslation(coord3d *position, coord3d * rotation, Mtxf *matrix)
 {
     mtx4LoadRotation(rotation, matrix);
     mtx4SetTranslation(position, matrix);
 }
 
 /** An identity matrix that moves to `position`. */
-void mtx4LoadTranslation(struct coord3d * position, Mtxf *matrix)
+void mtx4LoadTranslation(coord3d * position, Mtxf *matrix)
 {
     mtx4LoadIdentity(matrix);
     mtx4SetTranslation(position, matrix);
 }
 
 /** Replaces only the translation. */
-void mtx4SetTranslation(struct coord3d *position, Mtxf *matrix)
+void mtx4SetTranslation(coord3d *position, Mtxf *matrix)
 {
     matrix->m[3][0] = position->f[0];
     matrix->m[3][1] = position->f[1];

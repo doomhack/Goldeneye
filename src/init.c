@@ -140,7 +140,7 @@ void *setSPToEnd(u8 *stack, u32 size)
  * idleproc - infinite loop
  * @param arg doesn't matter as this is infinite loop
  */
-void idleproc(void *arg)
+void idleproc([[maybe_unused]] void *arg)
 {
     for (;;);
 }
@@ -188,7 +188,7 @@ void schedulerInitThread(void)
  * calls command line parser, debug console setup, etc.
  * @param args
  */
-void mainproc(void *args)
+void mainproc([[maybe_unused]] void *args)
 {
     idleCreateThread();
     viDebugRemoved();

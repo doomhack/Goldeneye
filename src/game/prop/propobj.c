@@ -180,7 +180,7 @@ s32 alarm_timer = 0;
 ALSoundState *g_AlarmSound = NULL;
 f32 toxic_gas_sound_timer = 0.0;
 s32 activate_gas_sound_timer = FALSE;
-coord3d gasLeakSource = { 0.0f, 0.0f, 0.0f };
+coord3d gasLeakSource = { {0.0f, 0.0f, 0.0f} };
 s32 g_GasLastCoughTime = 0;
 f32 gasLeakTimer = 0.0f;
 ALSoundState *g_GasSound = NULL;
@@ -224,10 +224,10 @@ bool chrobjSeparatingAxisTheorem(coord2d* rect1, s32 numvertices0, coord2d* rect
 void chrobjSndCreatePostEvent(ALSoundState *state, coord3d *pos, f32 low, f32 high);
 void proxmineRemove(WeaponObjRecord* proxy);
 void proxmineAdd(WeaponObjRecord* proxy);
-s32 objMove(struct ObjectRecord *obj, coord3d *targetpos, struct coord3d *hitpos, struct coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear);
-s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed);
+s32 objMove(struct ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear);
+s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal);
 s32 projectileMove(struct ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear);
-void objSettle(struct ObjectRecord *obj, struct coord3d *up);
+void objSettle(struct ObjectRecord *obj, coord3d *up);
 void doorsUpdatePositions(struct DoorRecord *door);
 void doorGetMtx(DoorRecord *door, Mtxf *rhs);
 void objBreakCCTVGlass(ObjectRecord *obj);
@@ -514,7 +514,7 @@ void objGetTileShading(PropRecord *prop, rgba_u8 *colour)
     s32 tmp2;
     s32 range;
 
-    stanGetTileColour(prop->stan, prop->pos.x, prop->pos.z, col);
+    stanGetTileColour(prop->stan, col);
 
     tmp = (col[0] * 79 + col[1] * 156 + col[2] * 21) >> 8;
     col[3] = (255 - tmp) * 0.75f;
@@ -739,7 +739,7 @@ void objChangeShading(ObjectRecord* obj, coord3d* pos, Mtxf* matrix, StandTile* 
 
 
 //moveToPad
-void objPlaceAtPad(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix, StandTile *stan, struct coord3d *pos2)
+void objPlaceAtPad(ObjectRecord *baseobj, coord3d *pos, Mtxf *matrix, StandTile *stan, coord3d *pos2)
 {
     ModelRoData_BoundingBoxRecord *modelBoundingBox;
     f32 xmax;
@@ -1793,7 +1793,7 @@ end:
 }
 
 
-s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed)
+s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal)
 {
     PropRecord *prop;
     StandTile *stan;
@@ -1806,7 +1806,7 @@ s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *
     f32 ymin;
     coord3d edgeA;
     coord3d edgeB;
-    coord3d partialpos;
+    coord3d partialpos = {};
     coord3d rayinfo;
     coord2d edgeStart;
     coord2d edgeEnd;
@@ -1953,14 +1953,14 @@ done:
 /**
  * US address 7F042EB4.
 */
-s32 objMove(struct ObjectRecord *obj, coord3d *targetpos, struct coord3d *hitpos, struct coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear)
+s32 objMove(struct ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear)
 {
     if ((obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) && (obj->projectile->flags & PROJECTILEFLAG_STICKY))
     {
         return projectileMove(obj, targetpos, hitpos, hitnormal, canEmbed, moveOnlyIfClear);
     }
 
-    return objTryMovePropWithCollision(obj, targetpos, hitpos, hitnormal, canEmbed);
+    return objTryMovePropWithCollision(obj, targetpos, hitpos, hitnormal);
 }
 
 
@@ -3163,7 +3163,7 @@ s32 propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
     s32 ret;
     struct PropRecord *parent;
     struct StandTile *stan;
-    struct coord3d pos;
+    coord3d pos;
     Mtxf *mtx;
 
     prop_obj = prop->obj;
@@ -3509,7 +3509,7 @@ bool chrobjSeparatingAxisTheorem(coord2d* rect1, s32 numvertices0, coord2d* rect
     s32 next;
     s32 i;
     f64 sum3;
-    f64 sum2;
+    f64 sum2 = 0.0;
     f64 sum1;
     coord3d tmp;
 
@@ -3586,7 +3586,7 @@ bool chrobjSeparatingAxisTheorem(coord2d* rect1, s32 numvertices0, coord2d* rect
 s32 chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
 {
     s32 i;
-    struct coord3d point;
+    coord3d point;
 
     for (i=0; i<edges1; i++)
     {
@@ -3633,7 +3633,7 @@ s32 chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 edges1, coord2d *p
  * @param polygon: Convex polygon.
  * @param edges: Number of edges to test in polygon.
 */
-s32 chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges)
+s32 chrobjTestPointPolygonCollision(coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges)
 {
     f32 lineDist;
     f32 dist1;
@@ -3641,7 +3641,7 @@ s32 chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius,
     f32 pz;
     f32 dist2;
     s32 i;
-    struct coord2d *next;
+    coord2d *next;
 
     px = point->f[0];
     pz = point->f[2];
@@ -4093,9 +4093,9 @@ s32 objTick(struct PropRecord *prop)
 
 	// Projectiles
 	struct Projectile *projectile;
-	struct WeaponObjRecord *weaponObj;
+	struct WeaponObjRecord *weaponObj = NULL;
 	struct WeaponObjRecord *airborneWeapon;
-	struct coord3d newpos;
+	coord3d newpos;
 	s32 objMovedThisFrame;
 	bool moveOnlyIfPathClear;
 	bool canEmbed;
@@ -4107,8 +4107,8 @@ s32 objTick(struct PropRecord *prop)
      */
 	s32 moveResult;
 
-	struct coord3d collisionPoint;
-	struct coord3d collisionNormal;
+	coord3d collisionPoint;
+	coord3d collisionNormal;
 	struct PropRecord *hitprop;
 	struct StandTile *savedStan;
 	struct ModelRoData_BoundingBoxRecord *projectileBBox;
@@ -4116,7 +4116,7 @@ s32 objTick(struct PropRecord *prop)
 	Mtxf *objectMatrix;
 	Mtxf *projectileMatrix;
 	f32 bboxBottomOffset;
-	struct coord3d previousXAxis; // snapshot of the object's local X axis before this tick's rotation
+	coord3d previousXAxis; // snapshot of the object's local X axis before this tick's rotation
 	s32 hitGround;
 	s32 bounceCondition;
 	s32 projectileStopped;
@@ -4130,8 +4130,8 @@ s32 objTick(struct PropRecord *prop)
 	f32 impulse;
 	f32 friction;
 	f32 rot[4];
-	struct coord3d smokepos;
-	struct coord3d bloodStainPos;
+	coord3d smokepos;
+	coord3d bloodStainPos;
 	Mtxf inverseNodeMatrix;
 	struct ALSoundState_s *sfx_state;
 
@@ -4165,14 +4165,14 @@ s32 objTick(struct PropRecord *prop)
 	f32 angleDelta;
 	f32 sweepTarget;
 	f32 newSpeed;
-	struct coord3d headpos;
+	coord3d headpos;
 
 	// Autoguns
 	struct AutogunRecord *autogun;
 	struct PropRecord *targetProp;
 	s32 coopTarget;
 	s32 coopPrevPlayer;
-	struct coord3d playerDirVec;
+	coord3d playerDirVec;
 	f32 horizontalDistSq;
 	f32 horizontalDist;
 	f32 distanceToPlayer;
@@ -4189,7 +4189,7 @@ s32 objTick(struct PropRecord *prop)
 	s32 seesPlayer;
 	s32 isTracking;
 	s32 hasLineOfSight;
-	struct coord3d gunpos;
+	coord3d gunpos;
 	f32 gunYaw;
 	f32 gunPitch;
 	s32 leftFlash;
@@ -4199,9 +4199,9 @@ s32 objTick(struct PropRecord *prop)
 	s32 hitWall;
 	struct StandTile *shotTile;
 	struct StandTile *hitTile;
-	struct coord3d shotFrom;
-	struct coord3d shotDir;
-	struct coord3d shotTo;
+	coord3d shotFrom;
+	coord3d shotDir;
+	coord3d shotTo;
 	Mtxf nodeWorldMtx;
 	f32 targetDistSq;
 	f32 targetDist;
@@ -4216,17 +4216,17 @@ s32 objTick(struct PropRecord *prop)
 	struct Model *aircraftModel;
 	struct PadRecord *pad;
 	waypoint *currentWaypoint;
-	struct coord3d *waypointPosition;
+	coord3d *waypointPosition;
 	struct StandTile *currentTile;
 	struct StandTile *previousTile;
-	struct coord3d previousPos;
-	struct coord3d forwardDir;
-	struct coord3d xminDir;
-	struct coord3d xmaxDir;
-	struct coord3d zminDir;
-	struct coord3d zmaxDir;
+	coord3d previousPos;
+	coord3d forwardDir;
+	coord3d xminDir;
+	coord3d xmaxDir;
+	coord3d zminDir;
+	coord3d zmaxDir;
 	struct ModelRoData_BoundingBoxRecord *bbox;
-	struct coord3d *axlePos;
+	coord3d *axlePos;
 	s32 canMove;
 	s32 engineVolume;
 	f32 targetYaw;
@@ -4235,10 +4235,10 @@ s32 objTick(struct PropRecord *prop)
 	f32 truckAngularVelocity;
 	f32 sideSlip;
 	f32 timeLeft;
-	struct coord3d *wheel1Pos;
-	struct coord3d *wheel2Pos;
-	struct coord3d *wheel3Pos;
-	struct coord3d *wheel4Pos;
+	coord3d *wheel1Pos;
+	coord3d *wheel2Pos;
+	coord3d *wheel3Pos;
+	coord3d *wheel4Pos;
 	struct ModelRoData_BoundingBoxRecord *wheelBbox;
 	f32 wheelDiameter;
 	f32 wheelbase;
@@ -4247,16 +4247,16 @@ s32 objTick(struct PropRecord *prop)
 	f32 sideOffset;
 	Mtxf wheelRollMtx;
 	Mtxf wheelSteerMtx;
-	struct coord3d *rotorPos;
+	coord3d *rotorPos;
 	ModelRenderData renderdata;
 	Mtxf rotorMtx;
 
 	// Tank
 	struct ModelNode **switches;
-	struct coord3d *turretPos;
-	struct coord3d *gunPos;
-	struct coord3d *gunTipPos;
-	struct coord3d *turretTopPos;
+	coord3d *turretPos;
+	coord3d *gunPos;
+	coord3d *gunTipPos;
+	coord3d *turretTopPos;
 	struct ModelRoData_BoundingBoxRecord *turretBbox;
 	f32 turretPitch;
 	f32 turretYaw;
@@ -4266,7 +4266,7 @@ s32 objTick(struct PropRecord *prop)
 	Mtxf objmtx;
 	Mtxf yawmtx;
 	Mtxf *nodemtx;
-	struct coord3d *nodepos;
+	coord3d *nodepos;
 	struct PropRecord *prev;
     
 	obj = prop->obj;
@@ -5710,12 +5710,12 @@ s32 objTick(struct PropRecord *prop)
 				lidmtx = &mtxs[1];
 				nodepos = &model->obj->Switches[1]->Data->Group.Origin;
 				mtx4LoadXRotation(lidAngle, lidmtx);
-				mtx4SetTranslation((struct coord3d *) nodepos, lidmtx);
+				mtx4SetTranslation((coord3d *) nodepos, lidmtx);
 				mtx4MultInPlace(mtxs, lidmtx);
 				lidmtx = &mtxs[2];
 				nodepos = &model->obj->Switches[2]->Data->Group.Origin;
 				mtx4LoadXRotation(M_TAU_F - lidAngle, lidmtx);
-				mtx4SetTranslation((struct coord3d *) nodepos, lidmtx);
+				mtx4SetTranslation((coord3d *) nodepos, lidmtx);
 				mtx4MultInPlace(mtxs, lidmtx);
 			}
 			else if (model->obj->Skeleton == (&skeleton_iris_door))
@@ -5768,7 +5768,7 @@ s32 objTick(struct PropRecord *prop)
 			{
 				cctv = (struct CCTVRecord *) prop->obj;
 				camYaw = cctv->yaw;
-				nodepos = (struct coord3d *) model->obj->Switches[0]->Data;
+				nodepos = (coord3d *) model->obj->Switches[0]->Data;
 
 				if (camYaw < 0.0f)
 				{
@@ -5809,7 +5809,7 @@ s32 objTick(struct PropRecord *prop)
 				mtx4SetTranslation(&gunpos, &mtxs[1]);
 				mtx4ScaleRows012(autogun->model->scale, &mtxs[1]);
 				mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), &mtxs[1]);
-				nodepos = (struct coord3d *) model->obj->Switches[2]->Data;
+				nodepos = (coord3d *) model->obj->Switches[2]->Data;
 				mtx4LoadZRotation(gunPitch, &mtxs[2]);
 				mtx4SetTranslation(nodepos, &mtxs[2]);
 				mtx4MultAffineInPlace(&mtxs[1], &mtxs[2]);
@@ -5817,7 +5817,7 @@ s32 objTick(struct PropRecord *prop)
 				if (model->obj->Switches[3] != NULL)
 				{
 					nodemtx = modelFindNodeMtx(model, model->obj->Switches[3], 0);
-					nodepos = (struct coord3d *) model->obj->Switches[3]->Data;
+					nodepos = (coord3d *) model->obj->Switches[3]->Data;
 					mtx4LoadXRotation(autogun->barrelSpinAngle, nodemtx);
 					mtx4SetTranslation(nodepos, nodemtx);
 					mtx4MultAffineInPlace(&mtxs[2], nodemtx);
@@ -5826,7 +5826,7 @@ s32 objTick(struct PropRecord *prop)
 				if (model->obj->Switches[4] != NULL)
 				{
 					nodemtx = modelFindNodeMtx(model, model->obj->Switches[4], 0);
-					nodepos = (struct coord3d *) model->obj->Switches[4]->Data;
+					nodepos = (coord3d *) model->obj->Switches[4]->Data;
 					mtx4LoadTranslation(nodepos, nodemtx);
 					mtx4MultAffineInPlace(&mtxs[2], nodemtx);
 				}
@@ -5834,7 +5834,7 @@ s32 objTick(struct PropRecord *prop)
 				if (model->obj->Switches[6] != NULL)
 				{
 					nodemtx = modelFindNodeMtx(model, model->obj->Switches[6], 0);
-					nodepos = (struct coord3d *) model->obj->Switches[6]->Data;
+					nodepos = (coord3d *) model->obj->Switches[6]->Data;
 					mtx4LoadXRotation(autogun->barrelSpinAngle, nodemtx);
 					mtx4SetTranslation(nodepos, nodemtx);
 					mtx4MultAffineInPlace(&mtxs[2], nodemtx);
@@ -5987,7 +5987,7 @@ s32 objTick(struct PropRecord *prop)
 
 				if (model->obj->Switches[3] != NULL)
 				{
-					nodepos = (struct coord3d *) model->obj->Switches[3]->Data;
+					nodepos = (coord3d *) model->obj->Switches[3]->Data;
 					nodemtx = modelFindNodeMtx(model, model->obj->Switches[3], 0);
 					mtx4LoadXRotation(aircraft->rotoryrot, &rotorMtx);
 					mtx4Copy(&rotorMtx, nodemtx);
@@ -5997,7 +5997,7 @@ s32 objTick(struct PropRecord *prop)
 
 				if (model->obj->Switches[4] != NULL)
 				{
-					nodepos = (struct coord3d *) model->obj->Switches[4]->Data;
+					nodepos = (coord3d *) model->obj->Switches[4]->Data;
 					nodemtx = modelFindNodeMtx(model, model->obj->Switches[4], 0);
 					mtx4LoadTranslation(nodepos, nodemtx);
 					mtx4MultAffineInPlace(&mtxs[1], nodemtx);
@@ -7164,11 +7164,11 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 xlupass)
 
 Gfx *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass)
 {
-    struct rgba_f32 fogcolour;
+    rgba_f32 fogcolour;
     s32 fogfrac;
     ModelRenderData mrData;
     bbox2d screenbox;
-    struct rgba_s32 shade;
+    rgba_s32 shade;
     s32 renderflags;
     ObjectRecord *obj;
     s32 objAlpha;
@@ -7417,11 +7417,11 @@ void objDeform(ObjectRecord *obj, E_EXPLOSIONTYPE explosiontype)
     {
         if (randomGetNext() & 1)
         {
-            deformseed = (u16) object_explosion_details.seeds[obj->obj].seed[explosiontype];
+            deformseed = (u16) object_explosion_details.seeds[obj->obj][explosiontype];
         }
         else
         {
-            deformseed = (u16) object_explosion_details.seeds[obj->obj].seed[explosiontype + 3];
+            deformseed = (u16) object_explosion_details.seeds[obj->obj][explosiontype + 3];
         }
     }
     else
@@ -7673,7 +7673,7 @@ void objDeform(ObjectRecord *obj, E_EXPLOSIONTYPE explosiontype)
 void objBounce(ObjectRecord *obj, coord3d *velocity)
 {
     coord3d dir;
-    coord3d rot = {0, 0, 0};
+    coord3d rot = {{0, 0, 0}};
     Projectile *projectile = NULL;
 
     objEnsureProjectile(obj->prop);
@@ -7813,7 +7813,7 @@ s32 objDrop(PropRecord *prop)
         {
             ChrRecord* chr = parent->chr;
             Model *chrmodel = chr->model;
-            coord3d rot = { 0.0f, 0.0f, 0.0f };
+            coord3d rot = { {0.0f, 0.0f, 0.0f} };
             f32 angle = modelGetRootRotY(chrmodel);
 
             projectile->speed.x = sinf(angle) * 1.6666666f;
@@ -7836,7 +7836,7 @@ s32 objDrop(PropRecord *prop)
         {
             ChrRecord* chr = parent->chr;
             Model *chrmodel = chr->model;
-            coord3d rot = { 0.0f, 0.0f, 0.0f };
+            coord3d rot = { {0.0f, 0.0f, 0.0f} };
             f32 angle = modelGetRootRotY(chrmodel);
 
             projectile->speed.x = sinf(angle) * 13.333333f;
@@ -7859,7 +7859,7 @@ s32 objDrop(PropRecord *prop)
         }
         else if (projectile->droptype == DROPTYPE_HAT)
         {
-            coord3d rot = { 0.0f, 0.0f, 0.0f };
+            coord3d rot = { {0.0f, 0.0f, 0.0f} };
             PropRecord *playerprop = currentPlayerGetProp();
             f32 x = parent->pos.x - playerprop->pos.x;
             f32 z = parent->pos.z - playerprop->pos.z;
@@ -7981,7 +7981,7 @@ void objFall(ObjectRecord *obj, s32 playernum)
             && (obj->runtime_bitflags & (RUNTIMEBITFLAG_EMBEDDED | RUNTIMEBITFLAG_HASPROJECTILE)) == 0)
     {
 
-        coord3d rot = {0, 0, 0};
+        coord3d rot = {{0, 0, 0}};
         Projectile *projectile = NULL;
 
         objEnsureProjectile(obj->prop);
@@ -8190,7 +8190,7 @@ void objExplode(ObjectRecord *obj, coord3d *target_pos, s32 playernum)
 
 bool bgTestHitOnObj(coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, Gfx *gdl, Gfx *gdl2, Vertex *vertices, struct HitThing *hitthing)
 {
-    Vertex *vtxbase;
+    Vertex *vtxbase = NULL;
     HitThing hitbuf;
     Vertex *pt0;
     Vertex *pt1;
@@ -8641,8 +8641,7 @@ void glassShatter(ObjectRecord* obj)
     glassCreateShards(&obj->runtime_pos,
         (coord3d *)obj->mtx.m[0], (coord3d *)obj->mtx.m[1], (coord3d *)obj->mtx.m[2],
         bbox->Bounds.xmin, bbox->Bounds.xmax,
-        bbox->Bounds.ymin, bbox->Bounds.ymax,
-        bbox->Bounds.zmin, bbox->Bounds.zmax);
+        bbox->Bounds.ymin, bbox->Bounds.ymax);
 
     obj->runtime_bitflags |= RUNTIMEBITFLAG_REMOVE;
     obj->state |= PROPSTATE_DESTROYED;
@@ -8663,7 +8662,7 @@ void doorShatterGlass(DoorRecord *door)
     bbox = (struct ModelRoData_BoundingBoxRecord *) model->obj->Switches[2]->Data;
 
     doorGetMtx(door, &mtx);
-    glassCreateShards((coord3d *)mtx.m[3], (coord3d *)mtx.m[0], (coord3d *)mtx.m[1], (coord3d *)mtx.m[2], bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax, bbox->Bounds.zmin, bbox->Bounds.zmax);
+    glassCreateShards((coord3d *)mtx.m[3], (coord3d *)mtx.m[0], (coord3d *)mtx.m[1], (coord3d *)mtx.m[2], bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax);
 
     explosionClearBulletImpactRoomByFlag(prop, 1);
 
@@ -8691,7 +8690,7 @@ void objBreakCCTVGlass(ObjectRecord *obj)
 
         mtx4MultAffine(camGetViewToWorldMtxf(), node_mtx, &glassNodeWorldMtx);
 
-        glassCreateShards((coord3d *)glassNodeWorldMtx.m[3], (coord3d *)glassNodeWorldMtx.m[0], (coord3d *)glassNodeWorldMtx.m[1], (coord3d *)glassNodeWorldMtx.m[2], ((f32 *)rodata)[1], ((f32 *)rodata)[2], ((f32 *)rodata)[3], ((f32 *)rodata)[4], ((f32 *)rodata)[5], ((f32 *)rodata)[6]);
+        glassCreateShards((coord3d *)glassNodeWorldMtx.m[3], (coord3d *)glassNodeWorldMtx.m[0], (coord3d *)glassNodeWorldMtx.m[1], (coord3d *)glassNodeWorldMtx.m[2], ((f32 *)rodata)[1], ((f32 *)rodata)[2], ((f32 *)rodata)[3], ((f32 *)rodata)[4]);
     }
 
     explosionClearBulletImpactRoomByFlag(prop, 1);
@@ -8700,7 +8699,7 @@ void objBreakCCTVGlass(ObjectRecord *obj)
 }
 
 
-void objDetonateRecursive(PropRecord *prop, f32 damage, struct coord3d *pos, s32 weaponnum, s32 owner)
+void objDetonateRecursive(PropRecord *prop, f32 damage, coord3d *pos, s32 weaponnum, s32 owner)
 {
     PropRecord *node;
     ObjectRecord *prop_obj;
@@ -8774,9 +8773,9 @@ void chrobjMaybeDetonateObjectIfFlags(ObjectRecord *obj, f32 damage, coord3d *po
 
 
 ObjectRecord blank_07_object = {
-    0x0100, //extrascale
+    {0x0100, //extrascale
     0x0, //state
-    0x07, //type
+    0x07}, //type
     0, //obj
     0xFFFF, //pad
     0x00000001, //flags
@@ -8784,19 +8783,19 @@ ObjectRecord blank_07_object = {
     NULL, //prop
     NULL, //model
     {
-       1.0f, 0.0f, 0.0f, 0.0f,
-       0.0f, 1.0f, 0.0f, 0.0f,
-       0.0f, 0.0f, 1.0f, 0.0f,
-       0.0f, 0.0f, 0.0f, 1.0f
+       {{1.0f, 0.0f, 0.0f, 0.0f},
+       {0.0f, 1.0f, 0.0f, 0.0f},
+       {0.0f, 0.0f, 1.0f, 0.0f},
+       {0.0f, 0.0f, 0.0f, 1.0f}}
     }, //mtx
-    {0.0, 0.0, 0.0},//runtime_pos
+    {{0.0, 0.0, 0.0}},//runtime_pos
     {0x00000000}, //runtime_bitflags
     NULL, //ptr_allocated_collisiondata_block
-    NULL, //projectile/embedment
+    {NULL}, //projectile/embedment
     0.0f, //maxdamage
     1000.0f, //damage
-    {0xFF, 0xFF, 0xFF, 0x00}, //shadecol
-    {0xFF, 0xFF, 0xFF, 0x00}, //nextcol
+    {{0xFF, 0xFF, 0xFF, 0x00}}, //shadecol
+    {{0xFF, 0xFF, 0xFF, 0x00}}, //nextcol
 };
 
 
@@ -10737,7 +10736,7 @@ TICKOP objTickPlayer(struct PropRecord* prop)
 }
 
 
-bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, struct coord2d *max, struct coord2d *min)
+bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, coord2d *max, coord2d *min)
 {
     if (prop->flags & PROPFLAG_ONSCREEN)
     {
@@ -10886,31 +10885,16 @@ PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags)
     if (hat && prop && model)
     {
         HatRecord tmp = {
-            0x0100, // extrascale
-            0x0,    // state
-            0x11,   // type
-            0,      // obj
-            0,      // pad
-            0x00004000, // flags
-            0,      // flags2
-            NULL,   // prop
-            NULL,   // model
-
-            { 1.0f, 0.0f, 0.0f, 0.0f,
-              0.0f, 1.0f, 0.0f, 0.0f,
-              0.0f, 0.0f, 1.0f, 0.0f,
-              0.0f, 0.0f, 0.0f, 1.0f
-            }, // mtx
-
-            { 0.0f, 0.0f, 0.0f }, // runtime_pos
-
-            { 0x00000000 }, // runtime_bitflags
-            NULL, // ptr_allocated_collisiondata_block
-            NULL, // projectile/embedment
-            0.0f, // maxdamage
-            1000.0f, // damage
-            { 0xFF, 0xFF, 0xFF, 0x00 }, // shadecol
-            { 0xFF, 0xFF, 0xFF, 0x00 }, // nextcol
+            .extrascale = 0x0100,
+            .type       = PROPDEF_HAT,
+            .flags      = 0x00004000,
+            .mtx        = {.m = {{1.0f, 0.0f, 0.0f, 0.0f},
+                                 {0.0f, 1.0f, 0.0f, 0.0f},
+                                 {0.0f, 0.0f, 1.0f, 0.0f},
+                                 {0.0f, 0.0f, 0.0f, 1.0f}}},
+            .damage     = 1000.0f,
+            .shadecol   = {{0xFF, 0xFF, 0xFF, 0x00}},
+            .nextcol    = {{0xFF, 0xFF, 0xFF, 0x00}},
         };
 
         *hat = tmp;
@@ -11457,9 +11441,9 @@ void chrSetupHeldWeapon(WeaponObjRecord* weapon, ChrRecord* chr)
 
 
 WeaponObjRecord blank_08_object_preset_1 = {
-    0x0100, //extrascale
+    {{0x0100, //extrascale
     0x0, //state
-    0x08, //type
+    0x08}, //type
     0, //obj
     1, //pad
     0x00000000, //flags
@@ -11467,19 +11451,19 @@ WeaponObjRecord blank_08_object_preset_1 = {
     NULL, // prop
     NULL, // model
     {
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
+        {{1.0f, 0.0f, 0.0f, 0.0f},
+        {0.0f, 1.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 1.0f}}
     }, //mtx
-    { 0.0, 0.0, 0.0 }, //runtime_pos
+    { {0.0, 0.0, 0.0} }, //runtime_pos
     {0x00000000 }, //runtime_bitflags
     NULL, //ptr_allocated_collisiondata_block
-    NULL, //projectile/embedment
+    {NULL}, //projectile/embedment
     0.0f, //maxdamage
     1000.0f,//damage
-    { 0xFF, 0xFF, 0xFF, 0x00 }, // shadecol
-    { 0xFF, 0xFF, 0xFF, 0x00 }, // nextcol
+    { {0xFF, 0xFF, 0xFF, 0x00} }, // shadecol
+    { {0xFF, 0xFF, 0xFF, 0x00} }}, // nextcol
     ITEM_UNARMED, //weaponnum
     -1, //LinkedWeaponType
     -1, //timer
@@ -11560,9 +11544,9 @@ void chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand) //#MATCH
 }
 
 WeaponObjRecord blank_08_object_preset_4001 = {
-    0x0100, //extrascale
+    {{0x0100, //extrascale
     0x0, //state
-    0x08, //type
+    0x08}, //type
     0, //obj
     0x4001, //pad
     0x00000000, //flags
@@ -11570,19 +11554,19 @@ WeaponObjRecord blank_08_object_preset_4001 = {
     NULL, //prop
     NULL, //model
     {
-       1.0f, 0.0f, 0.0f, 0.0f,
-       0.0f, 1.0f, 0.0f, 0.0f,
-       0.0f, 0.0f, 1.0f, 0.0f,
-       0.0f, 0.0f, 0.0f, 1.0f
+       {{1.0f, 0.0f, 0.0f, 0.0f},
+       {0.0f, 1.0f, 0.0f, 0.0f},
+       {0.0f, 0.0f, 1.0f, 0.0f},
+       {0.0f, 0.0f, 0.0f, 1.0f}}
     }, //mtx
-    {0.0, 0.0, 0.0},//runtime_pos
+    {{0.0, 0.0, 0.0}},//runtime_pos
     {0x00000000}, //runtime_bitflags
     NULL, //ptr_allocated_collisiondata_block
-    NULL, //projectile/embedment
+    {NULL}, //projectile/embedment
     0.0f, //maxdamage
     1000.0f, //damage
-    { 0xFF, 0xFF, 0xFF, 0x00 }, // shadecol
-    { 0xFF, 0xFF, 0xFF, 0x00 }, // nextcol
+    { {0xFF, 0xFF, 0xFF, 0x00} }, // shadecol
+    { {0xFF, 0xFF, 0xFF, 0x00} }}, // nextcol
     ITEM_UNARMED, //weaponnu
     -1, //LinkedWeaponType
     -1, //timer
@@ -11806,11 +11790,11 @@ HATTYPE hatGetModel(PropRecord *prop) //#MATCH
 void doorGetMtx(DoorRecord *door, Mtxf *rhs)
 {
     Mtxf lhs;
-    struct coord3d pivot;
-    struct coord3d offset;
+    coord3d pivot;
+    coord3d offset;
     BoundPadRecord* pad;
-    struct coord3d side;
-    struct coord3d pos;
+    coord3d side;
+    coord3d pos;
 
     if ((door->doorType == DOORTYPE_SWINGING) || (door->doorType == DOORTYPE_AZTECCHAIR))
     {

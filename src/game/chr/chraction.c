@@ -57,7 +57,7 @@ void chrStandCheckWall    (ChrRecord *self);
 void chrKneelChooseAnimation                  (ChrRecord *self);
 void chrStartAnim            (ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60);
 void chrStartAlarmChooseAnimation             (ChrRecord *self);
-void chrThrowGrenade                        (ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startframe);
+void chrThrowGrenade                        (ChrRecord *self, GUNHAND hand, s32 startframe);
 void chrSpotChooseAnimation            (ChrRecord *self, f32 mergetime);
 void chrActorShuffleFeet                    (ChrRecord *self);
 void chrStartSurprised           (ChrRecord *self);
@@ -132,7 +132,7 @@ void chrInitActAttackWalk                   (ChrRecord *chr, s32);
 void chrRunToPos                        (ChrRecord *self, coord3d *pos);
 void chrTickThrowGrenade                    (ChrRecord *self);
 void chrTickBondIntro                       (ChrRecord *self);
-void chrTickBondDieRemoved                  (ChrRecord *self);
+void chrTickBondDieRemoved                  (void);
 s32 chrApplySpeed                           (ChrRecord *self, coord3d *target, s32 speed, f32 *speedPtr);
 void chrTickAttackWalk                      (ChrRecord *self);
 void chrTickRunPos                          (ChrRecord *self);
@@ -143,7 +143,7 @@ void orderPointsBySide           (coord3d *a, coord3d *b, coord3d *dir);
 s32 chrNavCanSeeNextPos                         (ChrRecord *self, coord3d *from, StandTile *fromtile, coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes);
 s32 chrNavCheckForObstacle                         (ChrRecord *self, coord3d *from, StandTile *fromtile, coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes);
 void chrGoPosTickMagic                     (ChrRecord *self, struct waydata *way, f32 speed, coord3d *pos, StandTile *tile);
-void chrNavTick                          (ChrRecord *, coord3d *, StandTile *, struct waydata *);
+void chrNavTick                          (ChrRecord *, coord3d *, struct waydata *);
 void chrTickGoPos                           (ChrRecord *self);
 void chrSetNextActPatrolStepPadPos          (ChrRecord *self);
 void chrAdvancePatrolStep                   (ChrRecord *self);
@@ -466,7 +466,7 @@ void chrStartAlarmChooseAnimation(ChrRecord *self)
  * Play the grenade throw animation. Takes a PropRecord* as an argument but
  * does not use it.
  */
-void chrThrowGrenade(ChrRecord *self, PropRecord *prop, GUNHAND hand, s32 startframe)
+void chrThrowGrenade(ChrRecord *self, GUNHAND hand, s32 startframe)
 {
     chrStopFiring(self);
 
@@ -6983,7 +6983,7 @@ void chrTickBondIntro(ChrRecord *self)
 }
 
 
-void chrTickBondDieRemoved(ChrRecord *self)
+void chrTickBondDieRemoved(void)
 {
     // removed.
 }
@@ -8008,7 +8008,7 @@ s32 chrNavTryObstacle(
  * @see chrTickGoPos
  * contrast with @see chrGoPosTickMagic
 */
-void chrNavTick(ChrRecord *self, coord3d *target, StandTile *targettile, struct waydata *way)
+void chrNavTick(ChrRecord *self, coord3d *target, struct waydata *way)
 {
     coord3d targetpos; // 260
     coord3d othercorner; // 244
@@ -8542,7 +8542,7 @@ void chrTickGoPos(ChrRecord *self)
         wp_stan = self->act_gopos.target;
     }
 
-    chrNavTick(self, wp_pos, wp_stan, &self->act_gopos.waydata);
+    chrNavTick(self, wp_pos, &self->act_gopos.waydata);
 }
 
 
@@ -8592,7 +8592,7 @@ void chrTickPatrol(ChrRecord *self)
             pad = (PadRecord *)chrGetNextPatrolStepPad(self);
         }
 
-        chrNavTick(self, &pad->pos, pad->stan, &self->act_patrol.waydata);
+        chrNavTick(self, &pad->pos, &self->act_patrol.waydata);
     }
 }
 
@@ -8903,7 +8903,7 @@ static void chrActionTickBody(ChrRecord *self)
                     chrTickBondIntro(self);
                     break;
                 case ACT_BONDDIE:
-                    chrTickBondDieRemoved(self);
+                    chrTickBondDieRemoved();
                     break;
 
                 default:
@@ -9338,19 +9338,19 @@ bool chrHasFlags2ById(ChrRecord *self, s32 chrNum, u8 flags2)
 }
 
 
-void chrSetStageFlags(ChrRecord *self, s32 flags)
+void chrSetStageFlags(s32 flags)
 {
     objectiveregisters1 |= flags;
 }
 
 
-void chrUnsetStageFlags(ChrRecord *self, u32 flags)
+void chrUnsetStageFlags(u32 flags)
 {
     objectiveregisters1 = ~flags & objectiveregisters1; //shorthand does not match
 }
 
 
-bool chrHasStageFlag(ChrRecord *self, s32 flags)
+bool chrHasStageFlag(s32 flags)
 {
     return (objectiveregisters1 & flags) != 0;
 }
@@ -9593,7 +9593,7 @@ s32 chrTryStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u
 /**
  * PD: chrCanHearAlarm
 */
-bool chrCanHearAlarm(ChrRecord *self)
+bool chrCanHearAlarm(void)
 {
     /*
      possibly this was to be more advanced than simply
@@ -10124,13 +10124,13 @@ bool chrPlayerIsInPadRoom(ChrRecord *self, s32 padnum)
 }
 
 
-bool chrRemovedAiCommand27(ChrRecord *self)
+bool chrRemovedAiCommand27(void)
 {
     return FALSE;
 }
 
 
-bool chrRemovedAiCommand2B(ChrRecord *self)
+bool chrRemovedAiCommand2B(void)
 {
     return FALSE;
 }
@@ -10188,14 +10188,14 @@ bool chrTryThrowGrenade(ChrRecord *self)
 
         if (Right && (RightWep = Right->weapon, RightWep->weaponnum == ITEM_GRENADE))
         {
-            chrThrowGrenade(self, Right, GUNRIGHT, 0);
+            chrThrowGrenade(self, GUNRIGHT, 0);
 
             return TRUE;
         }
 
         if (Left && (LeftWep = Left->weapon, LeftWep->weaponnum == ITEM_GRENADE))
         {
-            chrThrowGrenade(self, Left, GUNLEFT, 0);
+            chrThrowGrenade(self, GUNLEFT, 0);
 
             return TRUE;
         }
@@ -10216,7 +10216,7 @@ bool chrTryThrowGrenade(ChrRecord *self)
                 NewGrenadeObj = NewGrenadeProp->weapon;
                 NewGrenadeObj->runtime_bitflags |= 0x800; //manual bitflags are more effecient
 
-                chrThrowGrenade(self, NewGrenadeProp, !Right ? GUNRIGHT : GUNLEFT, 1);
+                chrThrowGrenade(self, !Right ? GUNRIGHT : GUNLEFT, 1);
 
                 return TRUE;
             }

@@ -207,7 +207,7 @@ Gfx * roomMtxLoad(Gfx *gdl,int roomID)
 /**
  * Returns the position of a room by its roomID.
  */
-struct coord3d* roomGetPos(s32 roomID)
+coord3d* roomGetPos(s32 roomID)
 {
     return &g_BgRoomFiles[roomID].pos;
 }

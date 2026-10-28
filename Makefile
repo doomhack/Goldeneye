@@ -155,12 +155,19 @@ CC := $(TOOLCHAIN)gcc
 CC_BASEFLAGS := -nostdinc -isystem $(shell $(CC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 8 \
   -ffreestanding -fno-builtin -fno-common -fplan9-extensions -fno-strict-aliasing -fwrapv -funsigned-char -fno-toplevel-reorder \
   -fno-delete-null-pointer-checks -fno-isolate-erroneous-paths-dereference -fno-aggressive-loop-optimizations -fno-math-errno \
-  -fno-tree-loop-distribute-patterns -mno-check-zero-division -w -DTARGET_N64 -MMD -MP \
+  -fno-tree-loop-distribute-patterns -mno-check-zero-division -DTARGET_N64 -MMD -MP \
   -std=gnu23
 # Asset data (and the two boot-time blobs below) is copied out of the object byte for byte, so it
 # must keep every variable in .data, zeros and duplicate constants included, and stay off $gp.
 LAYOUT_CFLAGS := -G 0 -fno-zero-initialized-in-bss -fno-merge-constants
-CFLAGS := $(CC_BASEFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
+# The generated asset data (models, levels, setups) still puts arrays and integers into pointer
+# fields; it is data rather than code, so those GCC 14 errors stay warnings there.
+ASSET_CFLAGS := -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
+# Warnings: the game code (everything in src/ but libultra) builds with -Wall -Wextra and any
+# warning is an error. libultra is Nintendo's library and the assets are generated data, so
+# they build quietly (-w). See docs/StyleGuide.md.
+WARNFLAGS := -w
+CFLAGS = $(CC_BASEFLAGS) $(WARNFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
 
 LD := $(TOOLCHAIN)ld
 LD_SCRIPT := $(BUILD_DIR)/ge007.$(OUTCODE).ld
@@ -249,6 +256,10 @@ $(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
+# The more specific pattern wins, so libultra keeps the quiet default
+$(BUILD_DIR)/src/%.o: WARNFLAGS := -Wall -Wextra -Werror
+$(BUILD_DIR)/src/libultra/%.o $(BUILD_DIR)/src/libultrare/%.o: WARNFLAGS := -w
+
 #Build C files in src/
 # libultra's "memset" is an alias of bzero(ptr, len), so GCC's memset calls are redirected
 # to the real memset in src/gcc/libgcc_compat.c.
@@ -280,7 +291,7 @@ $(BUILD_DIR)/assets/obseg/%.o: assets/obseg/%.s $(OBSEG_RZ)
 	$(AS) $(ASFLAGS) -o $@ $<
 
 # Objects whose sections the linker script or the asset tools take as raw data
-$(BUILD_DIR)/assets/%.o: CFLAGS += $(LAYOUT_CFLAGS)
+$(BUILD_DIR)/assets/%.o: CFLAGS += $(LAYOUT_CFLAGS) $(ASSET_CFLAGS)
 $(BUILD_DIR)/src/c_data_filler.o $(RZOBJECTS): CFLAGS += $(LAYOUT_CFLAGS)
 
 #Build C files in assets/
