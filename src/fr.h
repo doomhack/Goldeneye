@@ -195,7 +195,7 @@ extern Mtx *g_viProjectionMatrix;
 /* SCREEN_HEIGHT #define changes based on version (PAL or NTSC) */
 extern u8 cfb_16[NUM_VIDEO_FRAME_BUFFERS][SCREEN_WIDTH * VI_MAX_SCALEX * SCREEN_HEIGHT * 2];
 
-void viShake(f32 param_1);
+void viShake(f32 intensity);
 
 void viInitVideoSettings(void);
 s16 viGetX(void);
@@ -225,7 +225,7 @@ void viSetViewSize(s16 x, s16 y);
 void viSetViewPosition(s16 left, s16 top);
 void viInitBuffers(void);
 void viVsyncRelated(void);
-void video_related_8(void);
+void viUpdateMode(void);
 void viSetBuf(s16 x, s16 y);
 void viSetXY(s16 x, s16 y);
 void viSetScaleX(s32 scalex);

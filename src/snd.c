@@ -62,9 +62,8 @@ typedef union ALSndpEvent_u {
     struct {
         s16 type;
         ALSoundState *state;
-        s32 val8;
-        s32 valc;
-    } unks32;
+        s32 data;
+    } generic;
 
     struct {
         s32 unk0;
@@ -130,10 +129,10 @@ u8 sndGetPlayingState(ALSoundState *state);
 void sndDeactivateAllSfxByFlag(u8 flag);
 void sndDeactivateAllSfxByFlag_1(void);
 u16 sndGetSfxSlotFirstNaturalVolume(void);
-void sndApplyVolumeAllSfxSlot(u16 arg0);
-void sndSetScalerApplyVolumeAllSfxSlot(f32 arg0);
-u16 sndGetSfxSlotNaturalVolume(u8 arg0);
-void sndSetSfxSlotVolume(u8 arg0, u16 arg1);
+void sndApplyVolumeAllSfxSlot(u16 volume);
+void sndSetScalerApplyVolumeAllSfxSlot(f32 volumeScale);
+u16 sndGetSfxSlotNaturalVolume(u8 sfxIndex);
+void sndSetSfxSlotVolume(u8 sfxIndex, u16 volume);
 
 // end forward declarations
 
@@ -237,7 +236,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
     ALVoiceConfig config;
     s32 delta;
     s32 limitReached;
-    ALSndpEvent spAC;
+    ALSndpEvent postEvent;
     ALSndpEvent nextStateEvent;
     ALSound *sound;
     ALKeyMap *keyMap;
@@ -373,9 +372,9 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                 alSynSetFXMix(sndp->drvr, &soundState->voice, fxMix);
 
                 // Queue the decay event
-                spAC.common.type = AL_SNDP_DECAY_EVT;
-                spAC.common.state = soundState;
-                alEvtqPostEvent(&sndp->evtq, (ALEvent *) &spAC,
+                postEvent.common.type = AL_SNDP_DECAY_EVT;
+                postEvent.common.state = soundState;
+                alEvtqPostEvent(&sndp->evtq, (ALEvent *) &postEvent,
                                 sound->envelope->attackTime / soundState->pitch_2c / soundState->pitch_28);
                 break;
             case AL_SNDP_STOP_EVT:
@@ -395,9 +394,9 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                             delta = sound->envelope->releaseTime / soundState->pitch_28 / soundState->pitch_2c;
                             alSynSetVol(sndp->drvr, &soundState->voice, 0, delta);
                             if (delta != 0) {
-                                spAC.common.type = AL_SNDP_END_EVT;
-                                spAC.common.state = soundState;
-                                alEvtqPostEvent(&sndp->evtq, (ALEvent *) &spAC, delta);
+                                postEvent.common.type = AL_SNDP_END_EVT;
+                                postEvent.common.state = soundState;
+                                alEvtqPostEvent(&sndp->evtq, (ALEvent *) &postEvent, delta);
                                 soundState->playingState = SOUND_STATE_STOPPING;
                             } else {
                                 sndDisposeSound(soundState);
@@ -475,9 +474,9 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                     delta = sound->envelope->decayTime / soundState->pitch_28 / soundState->pitch_2c;
                     alSynSetVol(sndp->drvr, &soundState->voice, volume, delta);
 
-                    spAC.common.type = AL_SNDP_STOP_EVT;
-                    spAC.common.state = soundState;
-                    alEvtqPostEvent(&sndp->evtq, (ALEvent *) &spAC, delta);
+                    postEvent.common.type = AL_SNDP_STOP_EVT;
+                    postEvent.common.state = soundState;
+                    alEvtqPostEvent(&sndp->evtq, (ALEvent *) &postEvent, delta);
 
                     // Start applying the pitch slide only when the decay phase is reached.
                     if (soundState->flags & SOUND_FLAG_PITCH_SLIDE) {
@@ -531,7 +530,7 @@ void sndCreatePitchEvent(ALSoundState *state)
     evt.pitch.type = AL_SNDP_PITCH_EVT;
 
     // TODO: surely there's a better way to match target, especially since there's already a union type used with f32 for pitch.
-    evt.unks32.val8 = *(s32*)&pitch;
+    evt.generic.data = *(s32*)&pitch;
 
     alEvtqPostEvent(&g_sndPlayerPtr->evtq, (ALEvent *)&evt, DELTA_33_MS);
 }
@@ -949,15 +948,15 @@ void sndDeactivateAllSfxByFlag_1(void)
  *
  * @param state sound state.
  * @param eventType type of event to post.
- * @param arg2 event data value (interpretation depends on eventType).
+ * @param data event data value (interpretation depends on eventType).
  */
-void sndCreatePostEvent(ALSoundState *state, s16 eventType, s32 arg2)
+void sndCreatePostEvent(ALSoundState *state, s16 eventType, s32 data)
 {
     ALSndpEvent evt;
 
     evt.common.type = eventType;
     evt.common.state = state;
-    evt.unks32.val8 = arg2;
+    evt.generic.data = data;
 
     if (state != NULL)
     {

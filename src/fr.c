@@ -53,12 +53,12 @@ struct VideoSettings_s g_ViDataArray[NUM_VIDEO_SETTINGS] =
 #endif
 
 /**
- * vimode hStart horizontal offset in video_related_8.
+ * vimode hStart horizontal offset in viUpdateMode.
  */
 s32 g_viHorizontalOffset = 0;
 
 /**
- * vimode vStart vertical offset in video_related_8.
+ * vimode vStart vertical offset in viUpdateMode.
  * (see g_ViShakeIntensity before changing the name)
  */
 s32 g_viVerticalOffset = 0;
@@ -246,7 +246,7 @@ void viVsyncRelated(void)
 
 
 #ifndef VERSION_EU
-void video_related_8(void)
+void viUpdateMode(void)
 {
     u32 packedStart;
     s32 registerValue;
@@ -434,12 +434,11 @@ void video_related_8(void)
 }
 #endif
 #ifdef VERSION_EU
-void video_related_8(void)
+void viUpdateMode(void)
 {
-    s32 new_var2;
+    s32 origStart;
     s32 registerValue;
     f32 calculatedYScale;
-    s32 new_var;
     f32 calculatedXScale;
     VideoSettings *settings;
     s32 modeIndex;
@@ -489,8 +488,12 @@ void video_related_8(void)
     calculatedXScale = ((f32)g_ViBackData->x) / ((f32)g_ViBackData->bufx);
     calculatedYScale = ((f32)g_ViBackData->y) / ((f32)g_ViBackData->bufy);
 
-    if (g_ViBackData->mode == 0) { calculatedYScale = 1.0f; } modeIndex = g_ViNextModeSlot;
-    new_var = 0xffff;
+    if (g_ViBackData->mode == 0)
+    {
+        calculatedYScale = 1.0f;
+    }
+
+    modeIndex = g_ViNextModeSlot;
 
     g_ViXScales[modeIndex] = calculatedXScale;
     g_ViYScales[modeIndex] = calculatedYScale;
@@ -518,25 +521,25 @@ void video_related_8(void)
         g_ViModes[modeIndex].fldRegs[0].origin = VI_SX(g_ViBackData->bufx) * 2;
         g_ViModes[modeIndex].fldRegs[1].origin = VI_SX(g_ViBackData->bufx) * 2;
 
-        new_var2 = g_ViModes[modeIndex].comRegs.hStart;
-        registerValue = (((((new_var2 >> 16) & 0xffff) + g_viHorizontalOffset) % 0xffff) << 16) |
-                        ((((u16)new_var2) + g_viHorizontalOffset) % 0xffff);
+        origStart = g_ViModes[modeIndex].comRegs.hStart;
+        registerValue = (((((origStart >> 16) & 0xffff) + g_viHorizontalOffset) % 0xffff) << 16) |
+                        ((((u16)origStart) + g_viHorizontalOffset) % 0xffff);
         g_ViModes[modeIndex].comRegs.hStart = registerValue;
         g_viOriginalHstart = registerValue;
 
-        new_var2 = g_ViModes[modeIndex].fldRegs[0].vStart;
+        origStart = g_ViModes[modeIndex].fldRegs[0].vStart;
         upperAdjust = (g_ViBackData->bufy == 330) ? (-14) : (0);
         registerValue =
-            ((((((g_ViBackData->bufy == 330) ? (14) : (0)) + ((u16)new_var2)) + g_viVerticalOffset) + 0x40) % new_var) |
-            ((((((new_var2 >> 16) & 0xffff) + g_viVerticalOffset) + upperAdjust) % new_var) << 16);
+            ((((((g_ViBackData->bufy == 330) ? (14) : (0)) + ((u16)origStart)) + g_viVerticalOffset) + 0x40) % 0xffff) |
+            ((((((origStart >> 16) & 0xffff) + g_viVerticalOffset) + upperAdjust) % 0xffff) << 16);
         g_ViModes[modeIndex].fldRegs[0].vStart = registerValue;
         g_viOriginalVstart0 = registerValue;
 
-        new_var2 = g_ViModes[modeIndex].fldRegs[1].vStart;
+        origStart = g_ViModes[modeIndex].fldRegs[1].vStart;
         upperAdjust = (g_ViBackData->bufy == 330) ? (-14) : (0);
         registerValue =
-            ((((((g_ViBackData->bufy == 330) ? (14) : (0)) + ((u16)new_var2)) + g_viVerticalOffset) + 0x40) % new_var) |
-            ((((((new_var2 >> 16) & 0xffff) + g_viVerticalOffset) + upperAdjust) % new_var) << 16);
+            ((((((g_ViBackData->bufy == 330) ? (14) : (0)) + ((u16)origStart)) + g_viVerticalOffset) + 0x40) % 0xffff) |
+            ((((((origStart >> 16) & 0xffff) + g_viVerticalOffset) + upperAdjust) % 0xffff) << 16);
         g_ViModes[modeIndex].fldRegs[1].vStart = registerValue;
         g_viOriginalVstart1 = registerValue;
 
@@ -550,7 +553,7 @@ void video_related_8(void)
     modeIndex = (modeIndex + 1) % 2;
     g_ViNextModeSlot = modeIndex;
 
-    if (g_viColorOutputMode != (g_viColorOutputMode * 0))
+    if (g_viColorOutputMode != 0)
     {
         ((struct GfxInfo_s *)g_gfxTaskSettingsList)->cfb = g_ViBackData->framebuf;
     }

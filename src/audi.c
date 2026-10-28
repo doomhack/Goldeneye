@@ -335,9 +335,9 @@ void amCreateAudioManager(ALSynConfig* alconf)
     if (alconf->fxType == AL_FX_CUSTOM)
     {
         /* IDO allows initialising an array from another array, GCC does not */
-        s32 sp48[CUSTOM_FX_SECTION_COUNT * CUSTOM_FX_SECTION_SIZE + 2];
-        bcopy(CUSTOM_FX_PARAMS_N, sp48, sizeof(sp48));
-        alconf->params = sp48;
+        s32 fxParams[CUSTOM_FX_SECTION_COUNT * CUSTOM_FX_SECTION_SIZE + 2];
+        bcopy(CUSTOM_FX_PARAMS_N, fxParams, sizeof(fxParams));
+        alconf->params = fxParams;
         alInit(&g_AudioManager.g, alconf);
     }
     else
@@ -470,7 +470,6 @@ void amHandleFrameMessage(AudioInfo *info, AudioInfo *lastInfo)
 {
     s16* outBuffer;
     Acmd *cmdlp;
-    s32 temp_v1;
 
     /* call once a frame, before doing alAudioFrame */
     amClearDmaBuffers();
@@ -487,11 +486,9 @@ void amHandleFrameMessage(AudioInfo *info, AudioInfo *lastInfo)
     /* divide by four, to convert bytes */
     /* to stereo 16 bit samples */
     info->frameSamples = (u16)(((g_FrameSize - (osAiGetLength() >> 2)) + 16 + EXTRA_SAMPLES) & ~0xf);
-    temp_v1 = g_MinFrameSize;
-
-    if ((s32)info->frameSamples < (s32)(s16)temp_v1)
+    if ((s32)info->frameSamples < (s16)g_MinFrameSize)
     {
-        info->frameSamples = (s16)temp_v1;
+        info->frameSamples = (s16)g_MinFrameSize;
     }
 
     cmdlp = (Acmd*)alAudioFrame(g_AudioManager.cmdList[g_CurrentAcmdList], &g_CommandLength, outBuffer, info->frameSamples);

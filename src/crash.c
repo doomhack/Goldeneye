@@ -188,7 +188,7 @@ u16 *g_DebugOutputVideoBuffer2 = NULL;
 
 // forward declarations
 
-void crashMain(void* arg0);
+void crashMain(void *data);
 
 void crashPrintDescription(u32 mask, char *label, struct regDesc_t *description);
 // end forward declarations
@@ -204,20 +204,14 @@ void crashInit(void)
 }
 
 /**
- * @param arg0 Unused.
+ * @param data Unused.
  */
 extern OSThread *__osRunQueue;
-void crashMain(void* arg0)
+void crashMain(void *data)
 {
     OSMesg msg = 0;
     static OSThread *curr;
     static OSThread *last;
-    /**
-     * Target generates 5 separate dereferences of g_faultedThreadPtr,
-     * only way I can get that to happen is with a pointer to a pointer.
-     */
-    //OSThread **ppfaultedThread = &g_faultedThreadPtr;
-
     osSetEventMesg(OS_EVENT_FAULT, &g_faultMesgQ, (OSMesg)MSG_FAULT);
     last = 0;
 
