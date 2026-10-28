@@ -275,7 +275,7 @@ void bossInitMainthreadData(void)
     }
 
     start = (u32) &_heapSegmentStart;
-    mempInitPools(start, PHYS_TO_K0(osMemSize) - start);
+    mempInitPools((u8 *)start, PHYS_TO_K0(osMemSize) - start);
     mempResetPool(MEMPOOL_PERMANENT);
     langInit();
     lvInit();

@@ -25,7 +25,7 @@ void romCreateMesgQueue(void)
 void romStartDma(void *target, void *source, u32 size)
 {
     osInvalDCache(target, size);
-    osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_READ, source, target, size, &m_romQueue);
+    osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_READ, (u32)source, target, size, &m_romQueue);
 }
 
 /** Waits for the DMA in progress to finish. */
@@ -94,26 +94,21 @@ void romCopy(void *target, void *source, u32 size)
  * into the 16-byte aligned address at or above `target`, and returns where the requested
  * data starts. The buffer needs about 17 bytes to spare.
  */
-s32 romCopyUnaligned(void *target, void *source, s32 length)
+void *romCopyUnaligned(void *target, void *source, s32 length)
 {
-    s32 target_offset;
-    s32 *target_aligned;
-    s32 *source_aligned;
-    s32 *source_offset;
+    u8 *source_aligned = (u8 *)align_addr_even((uintptr_t)source);
+    s32 offset = (u8 *)source - source_aligned;
+    u8 *target_aligned = (u8 *)ALIGN16_a((uintptr_t)target);
 
-    source_aligned = align_addr_even((s32)source);
-    source_offset = (s32)source - (s32)source_aligned;
-    target_aligned = ALIGN16_a((s32)target);
-    target_offset = source_offset;
-    romCopy(target_aligned, source_aligned, ALIGN16_a((s32)source_offset + length));
-    return ((s32)target_aligned + target_offset);
+    romCopy(target_aligned, source_aligned, ALIGN16_a(offset + length));
+    return target_aligned + offset;
 }
 
 /** Starts a DMA from RAM to the cartridge address space, after writing back the cache. */
 void romStartWrite(void *source, void *target, u32 size)
 {
     osWritebackDCache(source, size);
-    osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_WRITE, target, source, size, &m_romQueue);
+    osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_WRITE, (u32)target, source, size, &m_romQueue);
 }
 
 /** Writes to the cartridge address space and waits. Development kit only. */

@@ -8070,7 +8070,7 @@ void frontCastEnter(void)
 
     bufferRemaining = bufferRemaining + allocSize; 
 
-    zbufSetBuffer(ALIGN64_V2(bufferPtr + bufferRemaining), Z_BUFFER_4_3_WIDTH, Z_BUFFER_4_3_HEIGHT);
+    zbufSetBuffer((void *)ALIGN64_V2(bufferPtr + bufferRemaining), Z_BUFFER_4_3_WIDTH, Z_BUFFER_4_3_HEIGHT);
     texInitPool(&texPool, bufferPtr, allocSize);
 
     bufferRemaining -= allocSize;

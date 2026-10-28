@@ -108,7 +108,7 @@ static s32 dbgIsCodeAddress(u32 addr)
  */
 static void dbgStackScan(OSThread *t)
 {
-    u32 *sp = (u32 *) t->context.sp;
+    u32 *sp = (u32 *)(u32)t->context.sp;
     s32 found = 0;
     s32 i;
 

@@ -185,11 +185,11 @@ Vtx *lightFindVertexBaseForTri(Gfx *gfx, s32 room_index)
         gfx--; 
     }
 
-    ret = gfx->dma.addr;
+    ret = (Vtx *)gfx->dma.addr;
 
-    if (((s32) ret & 0xFF000000) == 0x0E000000) 
+    if (((uintptr_t)ret & 0xFF000000) == 0x0E000000)
     {
-        ret = (s32)g_BgRoomInfo[room_index].vertices + ((s32) ret & 0xFFFFFF);
+        ret = (Vtx *)((u8 *)g_BgRoomInfo[room_index].vertices + ((uintptr_t)ret & 0xFFFFFF));
     }
 
     return ret;

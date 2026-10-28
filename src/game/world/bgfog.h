@@ -6,24 +6,19 @@
 
 #if defined(VERSION_EU)
 
-// TODO: FIXME:
-// There's something terrible going on with NearFogRecord on EU
-// the function chrobjFogVisRangeRelated() treats it as a struct
-// with 3 floats, but declaring it as such makes the struct too big.
-// NearFogRecordF was created so we can cast it where applicable...
-// but it isn't an ideal fix.
-
+// PAL fog tables store the near fog distances as s16; fogLoadCurrentEnvironment
+// converts them to floats (NearFogValues) at runtime. US stores floats.
 typedef struct NearFogRecord {
     s16 NearFog;
     s16 MaxVisRange;
     s16 MaxObfuscationRange;
 } NearFogRecord;
 
-typedef struct NearFogRecordF {
+typedef struct NearFogValues {
     f32 NearFog;
     f32 MaxVisRange;
     f32 MaxObfuscationRange;
-} NearFogRecordF;
+} NearFogValues;
 
 #else
 
@@ -32,6 +27,8 @@ typedef struct NearFogRecord {
     f32 MaxVisRange;
     f32 MaxObfuscationRange;
 } NearFogRecord;
+
+typedef NearFogRecord NearFogValues;
 
 #endif
 
@@ -192,6 +189,6 @@ Gfx *fogSetRenderFogColor(Gfx *gdl, s32 xlupass);
 Gfx *fogRenderClearFogMode(Gfx *gdl);
 s32 fogGetPropDistColor(PropRecord *prop, struct rgba_f32 *color);
 void fogSwitchToSolosky2(f32 frac);
-struct NearFogRecord *fogGetNearFogValuesP(void);
+NearFogValues *fogGetNearFogValuesP(void);
 
 #endif

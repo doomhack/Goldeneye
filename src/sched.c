@@ -68,7 +68,7 @@ f32 g_ViYScales[NUM_VIDEO_FRAME_BUFFERS] = {1.0, 1.0};
 s32 g_ViChangeVideoModes[NUM_VIDEO_FRAME_BUFFERS] = {0, 0}; // boolean
 
 OSSched os_scheduler;
-OSScClient gfxClient[3];
+OSScClient gfxClient;
 u32 g_DisplayPerformanceCounters[4]; // clock, cmc, pipe, tmem
 
 /**
@@ -88,7 +88,7 @@ void permit_stderr(u32 flag)
 /**
  * test to display stderr and update Count
  */
-void CheckDisplayErrorBuffer(u32 *buffer)
+void CheckDisplayErrorBuffer(u16 *buffer)
 {
 	if ((stderr_permitted && stderr_active) || stderr_enabled )
     {
@@ -149,18 +149,18 @@ void osCreateScheduler (OSSched * sc, void * stack, u8 mode, u32 numFields)
     osSetEventMesg(OS_EVENT_PRENMI, &sc->interruptQ, (OSMesg)PRE_NMI_MSG);
     osViSetEvent(&sc->interruptQ, (OSMesg)VIDEO_MSG, numFields);
     osCreateLog();
-    osCreateThread(sc->thread, SCHED_THREAD_ID, &__scMain, sc, setSPToEnd(&sp_shed, sizeof(sp_shed)), SCHED_THREAD_PRIORITY);
+    osCreateThread(sc->thread, SCHED_THREAD_ID, &__scMain, sc, setSPToEnd(sp_shed, sizeof(sp_shed)), SCHED_THREAD_PRIORITY);
     osStartThread(sc->thread);
 }
 
-void osScAddClient(OSSched *sc, OSScClient *c, OSMesgQueue *msgQ, OSScClient *next)
+void osScAddClient(OSSched *sc, OSScClient *c, OSMesgQueue *msgQ, s32 halfRate)
 {
     OSIntMask mask;
 
     mask = osSetIntMask(OS_IM_NONE);
 
     c->msgQ = msgQ;
-    c[1].next = next;
+    c->halfRate = halfRate;
     c->next = sc->clientList;
     sc->clientList = c;
 
@@ -268,7 +268,7 @@ void __scHandleRetrace(OSSched *sc) {
             __scExec(sc, sp, dp);
     }
     for (client = sc->clientList; client != 0; client = client->next) {
-        if ((*((s32*)client + 2) == 0) || ((sc->frameCount & 1) == 0)) {
+        if (!client->halfRate || (sc->frameCount & 1) == 0) {
             osSendMesg(client->msgQ, (OSMesg) &sc->retraceMsg, OS_MESG_NOBLOCK);
         }
     }

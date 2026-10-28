@@ -19,7 +19,7 @@
 
 s32 g_FogSkyIsEnabled;
 
-NearFogRecord *g_NearFogValuesP;
+NearFogValues *g_NearFogValuesP;
 
 /**
  * Address 0x800825C8. Private struct to this file only
@@ -45,7 +45,7 @@ EnvironmentRecord * g_EnvironmentMainp;
 EnvironmentRecord * g_EnvironmentAltp;
 
 #if defined(VERSION_EU)
-struct NearFogRecordF eu_loadCurrentNearFog;
+NearFogValues eu_loadCurrentNearFog;
 #endif
 
 
@@ -256,7 +256,7 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *env)
     }
 
     viSetZRange(env->Visibility.BlendMultiplier, farfog);
-    viGetZRange(&zrange);
+    viGetZRange(zrange);
 
     visScale = bgGetLevelVisibilityScale();
     zrange[0] /= visScale;
@@ -565,7 +565,7 @@ s32 fogPositionIsVisibleThroughFog(coord3d *pos, f32 range)
 }
 
 
-NearFogRecord *fogGetNearFogValuesP(void)
+NearFogValues *fogGetNearFogValuesP(void)
 {
     return g_NearFogValuesP;
 }

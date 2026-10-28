@@ -40,7 +40,7 @@ long int strtol(const char *str, char **endptr, int base);
  * "-me" command-line tokens. With "-me0", which boss.c always sets, the permanent pool gets
  * 296 KB and the stage pool the rest.
  */
-void mempInitPools(s32 areaStart, s32 areaSize)
+void mempInitPools(u8 *areaStart, s32 areaSize)
 {
     MempPoolSizes poolSizes;
 
@@ -82,7 +82,7 @@ void mempSetPoolSizes(s32 poolSizes[MEMPOOL_COUNT+1])
     s32 poolEnds[MEMPOOL_COUNT] = {0};
     s32 areaLen;
     s32 totalSize;
-    s32 areaStart;
+    u8 *areaStart;
 
     // Put each size in its pool's slot. With "-ml0 -me0" (boss.c) this gives
     // {0, 0, 0, 0, areaSize - 296K, 0, 296K}.
@@ -193,7 +193,6 @@ MEMP_RESIZE_RESULT mempResizeLast(void *allocation, s32 newSize, u8 poolId)
         poolId = MEMPOOL_PERMANENT;
     }
 
-    allocation = (void *)(u64)allocation;
     pool = &m_mempPools[poolId];
 
     if (pool->pos == 0)

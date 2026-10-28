@@ -17,7 +17,7 @@
 //8008D0B0;
 s32 g_ImageBankOffset;
 //8008D0B4;
-s32 *g_ImageBank;
+void *g_ImageBank;
 //8008D0B8;
 struct sImageTableEntry *g_ImageGeneric;
 struct sImageTableEntry *g_ImagesImpact;
@@ -110,6 +110,27 @@ extern Gfx* globalDL_0x900 NO_SDATA;
 extern Gfx* globalDL_0x9a8 NO_SDATA;
 extern Gfx* globalDL_0xa50 NO_SDATA;
 
+// Display lists in the image bank whose textures are loaded up front
+static Gfx **const s_BankDisplayLists[] = {
+    &globalDL_0x000,
+    &globalDL_0x078,
+    &globalDL_0x120,
+    &globalDL_0x1c8,
+    &globalDL_0x270,
+    &globalDL_0x318,
+    &globalDL_0x3c0,
+    &globalDL_0x468,
+    &globalDL_0x510,
+    &globalDL_0x5b8,
+    &globalDL_0x660,
+    &globalDL_0x708,
+    &globalDL_0x7b0,
+    &globalDL_0x858,
+    &globalDL_0x900,
+    &globalDL_0x9a8,
+    &globalDL_0xa50,
+};
+
 void imageBankLoad(void)
 {
     u32 size;
@@ -117,7 +138,7 @@ void imageBankLoad(void)
 
     size = (u32)&_GlobalimagetableSegmentEnd - (u32)&_GlobalimagetableSegmentStart;
     g_ImageBank = mempAlloc(size + 0x1000, MEMPOOL_STAGE);
-    g_ImageBank = ((u32)g_ImageBank + 0xFFFU) & 0xFFFFF000;
+    g_ImageBank = (void *)(((uintptr_t)g_ImageBank + 0xFFF) & ~0xFFF);
 
     romCopy(g_ImageBank, &_GlobalimagetableSegmentRomStart, size);
 
@@ -155,33 +176,20 @@ void imageBankLoad(void)
     g_ImagesMpCharSelect = (void *) (g_ImageBankOffset + (u32)&s_mpcharselimages);
     g_ImagesMpStageSelect = (void *) (g_ImageBankOffset + (u32)&s_mpstageselimages);
 
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x000, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x078, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x120, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x1c8, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x270, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x318, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x3c0, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x468, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x510, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x5b8, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x660, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x708, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x7b0, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x858, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x900, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0x9a8, 0);
-    texLoadFromDisplayList(g_ImageBankOffset + (u32)&globalDL_0xa50, 0);
+    for (i = 0; i < ARRAYCOUNT(s_BankDisplayLists); i++)
+    {
+        texLoadFromDisplayList((Gfx *)(g_ImageBankOffset + (uintptr_t)s_BankDisplayLists[i]), 0);
+    }
 
-    texLoad(g_ImageGeneric, 0);
+    texLoad(&g_ImageGeneric->index, 0);
 
     for (i=0; i < 6; i++)
     {
-        texLoad(&g_ImagesExplosionSmoke[i], 0);
+        texLoad(&g_ImagesExplosionSmoke[i].index, 0);
     }
 
     for (i=0; i < 5; i++)
     {
-        texLoad(&g_ImagesScatteredExplosions[i], 0);
+        texLoad(&g_ImagesScatteredExplosions[i].index, 0);
     }
 }

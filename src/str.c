@@ -104,7 +104,7 @@ long int strtol(const char *str, char **endptr, int base) {
     if ((base < 0) || (base == 1) || (base > 36)) {
         base = 10;
     }
-    ptr = str;
+    ptr = (unsigned char *)str;
     while (isspace(*ptr)) { ptr++; };
     if ((int)*ptr) {
         if (*ptr == '-') {
@@ -167,7 +167,7 @@ long int strtol(const char *str, char **endptr, int base) {
         }
     }
     if (endptr != NULL) {
-        *endptr = str;
+        *endptr = (char *)str;
     }
     return 0;
 }

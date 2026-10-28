@@ -22,7 +22,7 @@ extern struct sImageTableEntry *g_ImageFlare3;
 extern struct sImageTableEntry *g_ImageFlare4;
 extern struct sImageTableEntry *g_ImageFlare5;
 
-extern s32 *g_ImageBank;
+extern void *g_ImageBank;
 extern s32 g_ImageBankOffset;
 
 void imageBankLoad(void);

@@ -36,20 +36,20 @@ struct ramrom_seed
 };
 
 //move me to better home
-extern u32* ramrom_Dam_1;
-extern u32* ramrom_Dam_2;
-extern u32* ramrom_Facility_1;
-extern u32* ramrom_Facility_2;
-extern u32* ramrom_Facility_3;
-extern u32* ramrom_Runway_1;
-extern u32* ramrom_Runway_2;
-extern u32* ramrom_BunkerI_1;
-extern u32* ramrom_BunkerI_2;
-extern u32* ramrom_Silo_1;
-extern u32* ramrom_Silo_2;
-extern u32* ramrom_Frigate_1;
-extern u32* ramrom_Frigate_2;
-extern u32* ramrom_Train;
+extern ramromfilestructure ramrom_Dam_1;
+extern ramromfilestructure ramrom_Dam_2;
+extern ramromfilestructure ramrom_Facility_1;
+extern ramromfilestructure ramrom_Facility_2;
+extern ramromfilestructure ramrom_Facility_3;
+extern ramromfilestructure ramrom_Runway_1;
+extern ramromfilestructure ramrom_Runway_2;
+extern ramromfilestructure ramrom_BunkerI_1;
+extern ramromfilestructure ramrom_BunkerI_2;
+extern ramromfilestructure ramrom_Silo_1;
+extern ramromfilestructure ramrom_Silo_2;
+extern ramromfilestructure ramrom_Frigate_1;
+extern ramromfilestructure ramrom_Frigate_2;
+extern ramromfilestructure ramrom_Train;
 
 struct ramrom_struct ramrom_table[] = {
     {&ramrom_Dam_1, 0},
@@ -119,7 +119,7 @@ void finalize_ramrom_on_hw(void)
     u8 *p;
     void *a1;
 
-    p = ALIGN16_a((s32)buffer);
+    p = (u8 *)ALIGN16_a((uintptr_t)buffer);
     p[0] = 0;
     p[1] = 0;
 
@@ -131,14 +131,14 @@ void finalize_ramrom_on_hw(void)
 
     g_DemoFile = romCopyUnaligned(ramrom_data_target, a1, 0xf0);
     g_DemoFile->totaltime_ms = g_GlobalTimer - g_ClockTimer;
-    g_DemoFile->filesize = (s32)address_demo_loaded - (s32)a1;
+    g_DemoFile->filesize = address_demo_loaded - (u8 *)a1;
     romWrite(g_DemoFile, a1, 0xf0);
 }
 
 
 void record_player_input_as_packet(struct contsample *samples, s32 lastread, s32 lastwrite)
 {
-    s32 bufaddr;
+    uintptr_t bufaddr;
     s32 numcontrollers;
     s32 cont;
     s32 sample;
@@ -147,7 +147,7 @@ void record_player_input_as_packet(struct contsample *samples, s32 lastread, s32
     struct ramrom_blockbuf *entry;
     s32 size;
 
-    bufaddr = ALIGN16_a((s32)&ramrom_data_target[0x1f8]);
+    bufaddr = ALIGN16_a((uintptr_t)&ramrom_data_target[0x1f8]);
     numcontrollers = g_DemoFile->size_cmds;
 
     count = 0;
@@ -421,8 +421,8 @@ void stop_recording_ramrom(void)
 
 void replay_recorded_ramrom_at_address(ramromfilestructure *demofile)
 {
-    address_demo_loaded = demofile;
-    g_DemoFile = romCopyUnaligned(&ramrom_data_target, address_demo_loaded, sizeof(struct ramromfilestructure));
+    address_demo_loaded = (u8 *)demofile;
+    g_DemoFile = romCopyUnaligned(ramrom_data_target, address_demo_loaded, sizeof(struct ramromfilestructure));
     address_demo_loaded += sizeof(ramromfilestructure);
     g_ramromPlayBackFlag = 1;
     fileSetSoloStage(g_DemoFile->stagenum);
@@ -447,7 +447,7 @@ void stop_demo_playback(void)
     }
     if (ramrom_demo_related_3 != 0)
     {
-        copy_recorded_ramrom_registers_to_proper_place_ingame(ramrom_data_target + 0x110);
+        copy_recorded_ramrom_registers_to_proper_place_ingame((ramromfilestructure *)(ramrom_data_target + 0x110));
         joySetPlaybackFunc(0, -1);
         joySetContDataIndex(0);
         ramrom_demo_related_3 = 0;

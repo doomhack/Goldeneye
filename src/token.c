@@ -38,8 +38,8 @@ unsigned char *tokenSplit(unsigned char *str)
 
 // Sets a new token string.
 void tokenSetString(const char *str) {
-    strcpy(g_TokenString, str);
-    tokenSplit(g_TokenString);
+    strcpy((char *)g_TokenString, str);
+    tokenSplit((unsigned char *)g_TokenString);
 }
 
 // Reads a new token string from the PI device at address 0xFFB000. Also handles the 
@@ -59,7 +59,7 @@ s32 tokenReadIo(void)
             address += sizeof(u32);
         }
     }
-    tokenSplit(g_TokenString);
+    tokenSplit((unsigned char *)g_TokenString);
     if (tokenFind(1, "-d") != NULL) {
         debug = TRUE;
     }

@@ -15,7 +15,7 @@
 #include <random.h>
 #include "game/level/lv.h"
 
-void fileGenerateCRC(u8 *addressA, u8 *addressB, save_data *retval);
+void fileGenerateCRC(u8 *addressA, u8 *addressB, s32 crc[2]);
 s32 fileIs007ModeUnlocked(u32 folder);
 
 
@@ -56,7 +56,11 @@ void fileWriteSmallSave(smallSave *save)
 {
     if (fileGamePakProbe())
     {
-        fileGenerateCRC(&save->data[0], &save->data[24], save);
+        s32 crc[2];
+
+        fileGenerateCRC(&save->data[0], &save->data[24], crc);
+        save->chksum1 = crc[0];
+        save->chksum2 = crc[1];
         joyGamePakLongWrite(0, save, sizeof(smallSave));
     }
 }
@@ -70,7 +74,11 @@ void fileWriteSave(save_data *save)
     {
         if ( fileGamePakProbe())
         {
-            fileGenerateCRC(&save->completion_bitflags, save + 1, save);
+            s32 crc[2];
+
+            fileGenerateCRC(&save->completion_bitflags, (u8 *)(save + 1), crc);
+            save->chksum1 = crc[0];
+            save->chksum2 = crc[1];
             joyGamePakLongWrite((((u32)((save - &g_Saves[SAVESLOT1]) * 0x60) >> 3) + 4), save, sizeof(save_data)); // 0x60 = sizeof(save_data) be sure to manually update if save changes
         }
     }
@@ -275,7 +283,7 @@ void fileSetDifficultyStageTime(save_data *save, LEVEL_SOLO_SEQUENCE levelid, DI
         switch(7 - (offset & 7)) //bitmask
         {
             case 7: //no offset 4 8 12 etc agent
-                save->times[index] &= 0xff00;
+                save->times[index] = 0;
                 save->times[index + 1] &= 0xff3f;
                 save->times[index] |= (newtime >> 2) & 0xff;
                 save->times[index + 1] |= (newtime << 6) & 0xc0;
@@ -294,7 +302,7 @@ void fileSetDifficultyStageTime(save_data *save, LEVEL_SOLO_SEQUENCE levelid, DI
                 break;
             case 1: //third offset 7 11 15 etc 007
                 save->times[index] &= 0xfffc;
-                save->times[index + 1] &= 0xff00;
+                save->times[index + 1] = 0;
                 save->times[index] |= ((newtime >> 8) & 3);
                 save->times[index + 1] |= newtime & 0xfff;
                 break;
@@ -463,7 +471,6 @@ void fileValidateSaves(void)
     smallSave joyChecksum;
     s32 crc[2];
     s32 i;
-    s32 *temp;
 
     if (fileGamePakProbe())
     {
@@ -478,11 +485,9 @@ void fileValidateSaves(void)
             checksumOK = FALSE;
         }
 
-        fileGenerateCRC(&joyChecksum.data[0], &joyChecksum.data[24], &crc); //do checksum on 24 bytes of save data
+        fileGenerateCRC(&joyChecksum.data[0], &joyChecksum.data[24], crc); //do checksum on 24 bytes of save data
 
-        temp = &joyChecksum;
-
-        if ((crc[0] != temp[0]) || (crc[1] != temp[1]))
+        if ((crc[0] != joyChecksum.chksum1) || (crc[1] != joyChecksum.chksum2))
         {
             checksumOK = FALSE;
         }
@@ -498,13 +503,13 @@ void fileValidateSaves(void)
         fileCoopLoadPartnerSettings(&joyChecksum);
 
         // Block read 5 saves starting at address 4th byte (? bug: address must be multiple of 8 - return is -1)
-        joyGamePakLongRead(4, &g_Saves, sizeof(save_data) * 5);
+        joyGamePakLongRead(4, g_Saves, sizeof(save_data) * 5);
 
         for (i = SAVESLOT1; i != SAVESLOTRAMROM; i++) //only != matches
         {
             bool checksumOK2 = TRUE;
 
-            fileGenerateCRC(&g_Saves[i].completion_bitflags, &g_Saves[i + 1], &crc); // do checksum on save data
+            fileGenerateCRC(&g_Saves[i].completion_bitflags, (u8 *)&g_Saves[i + 1], crc); // do checksum on save data
 
             if ((crc[0] != g_Saves[i].chksum1) ||
                 (crc[1] != g_Saves[i].chksum2))
@@ -1683,7 +1688,7 @@ void fileSetFavWeapon(u32 right,u32 left)
  * @param retval
  * @return * void
  */
-void fileGenerateCRC(u8 *addressA, u8 *addressB, save_data *retval)
+void fileGenerateCRC(u8 *addressA, u8 *addressB, s32 crc[2])
 {
     u8 *byte;
     s32 shift      = 0; // Shift value
@@ -1702,6 +1707,6 @@ void fileGenerateCRC(u8 *addressA, u8 *addressB, save_data *retval)
         polynormal += *byte << (shift & 0xF) ;
         checksum2 ^= randomGetNextFrom(&polynormal);
     }
-    retval->chksum1 = checksum1;
-    retval->chksum2 = checksum2;
+    crc[0] = checksum1;
+    crc[1] = checksum2;
 }

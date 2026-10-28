@@ -21,7 +21,7 @@ void viDebugRemoved(void) {
 
 void viInit(void)
 {
-    osCreateMesgQueue(&vi_c_debug_MQ, &vi_c_debug_MSG, 8);
+    osCreateMesgQueue(&vi_c_debug_MQ, vi_c_debug_MSG, 8);
 }
 
 

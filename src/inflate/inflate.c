@@ -615,7 +615,7 @@ u32 decompress_entry(void *src, void *dst, struct huft *hlist)
     inbuf = src;
     outbuf = dst;
     huftlist = hlist;
-    inbuf = (s32) (inbuf + 2);
+    inbuf += 2;
     wp = 0;
     inptr = 0;
     inflate();

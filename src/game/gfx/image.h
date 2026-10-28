@@ -77,7 +77,7 @@ extern u32 g_TexSharedPoolSize;
 extern u8 *g_TexBitsPos;
 extern s32 g_TexBitsCount;
 
-void texBitsInit(s32 pos);
+void texBitsInit(u8 *pos);
 u32 texBitsRead(s32 bitCount);
 void texResolveTableOffsets(void);
 void texInitSharedPool(void);
@@ -97,7 +97,7 @@ struct tex *texFindInPool(s32 texturenum, struct texpool *pool);
 s32 texFreeBytesInBuffer(struct texpool *pool);
 s32 texInflateNonZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, struct texpool *pool);
 s32 texInflateZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, struct texpool *pool);
-void texLoad(s32 *updateword, struct texpool *pool);
+void texLoad(u32 *updateword, struct texpool *pool);
 void texInitPool(struct texpool *pool, u8 *start, s32 len);
 void texLoadFromTextureNum(s32 texturenum, struct texpool *pool);
 void texLoadFromModelFileHeader(ModelFileHeader* header, struct texpool* pool);

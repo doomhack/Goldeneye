@@ -366,10 +366,10 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s3
         
         if ((u32) tconfig->index < NUM_TEXTURES)
         {
-            texLoad((s32 *)tconfig, NULL);
+            texLoad(&tconfig->index, NULL);
         }
 
-        imgheader = PHYS_TO_K0(tconfig->index);
+        imgheader = (u16 *)PHYS_TO_K0(tconfig->index);
         tex = texFindInPool((imgheader)[-4], NULL);
 
         if (tconfig->level == 0)
