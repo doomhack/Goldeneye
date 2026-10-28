@@ -657,7 +657,7 @@ s16 g_FrontTargetTimes[20][3] = {
 };
 
 s32 g_CheatMenuCount = 0;
-s32 g_CheatMenuCursor = 0; // 0x8002B5E0
+s32 g_CheatMenuCursor = 0;
 
 
 u32 g_CheatMenuToggle = 0;
@@ -800,7 +800,7 @@ struct coord3d cast_camera_offset = { 0.0f, 40.0f, 25.0f }; // vec in frontCastR
 
 Gfx* frontAddPreviousTabText(Gfx* DL);
 s32 frontIsMissionCompleted(int stage, DIFFICULTY difficulty);
-s32 frontGetHighestDifficulty(s32 arg0);
+s32 frontGetHighestDifficulty(s32 mission);
 Gfx *frontLegalRender(Gfx *DL);
 Gfx *frontNintendoRender(Gfx *DL);
 Gfx *frontRareRender(Gfx *DL);
@@ -825,30 +825,30 @@ Gfx *frontCheatRender(Gfx *DL);
 Gfx *frontNoControllerRender(Gfx *DL);
 Gfx *frontBlankRender(Gfx *DL);
 Gfx *frontCastRender(Gfx *DL);
-void frontHideAllSwitches(Model *arg0);
+void frontHideAllSwitches(Model *model);
 void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode);
 void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level);
-Gfx *frontDrawAlignedText(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u8 *text, s32 arg6, s32 arg7);
+Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, u8 *text, s32 chars, s32 font);
 void frontSetModeCursor(int mode);
 void frontSetDifficultyCursor(int difficulty);
 
 // end forward declarations.
 
 
-Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, s8 *text, s32 second_font_table, s32 first_font_table, s32 arg6, s32 view_x, s32 view_y, s32 arg9, s32 arga)
+Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, s8 *text, s32 chars, s32 font, s32 colour, s32 width, s32 height, s32 yOffset, s32 lineheight)
 {
     gdl = textRender(
         gdl,
         x,
         y,
         text,
-        second_font_table,
-        first_font_table,
-        arg6,
-        view_x,
-        view_y,
-        arg9,
-        arga);
+        chars,
+        font,
+        colour,
+        width,
+        height,
+        yOffset,
+        lineheight);
 
     return gdl;
 }
@@ -1316,20 +1316,20 @@ void frontLegalTick(void)
 /**
  * Render a string of standard text on the legal screen e.g. "TWYCROSS BOARD OF GAME CLASSIFICATION"
  */
-Gfx *frontDrawAlignedText(Gfx *dl, s32 arg1, s32 arg2, s32 halign, s32 valign, u8 *text, s32 arg6, s32 arg7)
+Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, u8 *text, s32 chars, s32 font)
 {
-    s32 sp4C;
-    s32 sp48;
+    s32 height;
+    s32 width;
     s32 x;
     s32 y;
 
-    sp48 = 0;
-    sp4C = 0;
-    textMeasure(&sp4C, &sp48, text, g_FontZurichChars, g_FontZurich, 0);
-    x = arg1 - ((s32) (halign * sp48) / 2);
-    y = arg2 - ((s32) (valign * sp4C) / 2);
+    width = 0;
+    height = 0;
+    textMeasure(&height, &width, text, g_FontZurichChars, g_FontZurich, 0);
+    x = x0 - ((s32) (halign * width) / 2);
+    y = y0 - ((s32) (valign * height) / 2);
 
-    return textRender(dl, &x, &y, text, arg6, arg7, -1, viGetX(), viGetY(), 0, 0);
+    return textRender(dl, &x, &y, text, chars, font, -1, viGetX(), viGetY(), 0, 0);
 }
 
 
@@ -1526,9 +1526,6 @@ Gfx *frontNintendoRender(Gfx *DL)
     g_NintendoLogoSpin += 0.017453292f;
 #endif
 
-    // Not sure if this is actually an `if` block, but the sp90 variable
-    // needs to be declared here for the stack to match.
-    if(1)
     {
         Mtxf tmpMtx;
 
@@ -1774,21 +1771,21 @@ Gfx *frontLogoRender(Gfx *DL)
 }
 
 
-void frontHideAllSwitches(Model *arg0)
+void frontHideAllSwitches(Model *model)
 {
     s32 i;
     ModelNode *mnode;
 
-    for (i = 0; i < arg0->obj->numSwitches; i++)
+    for (i = 0; i < model->obj->numSwitches; i++)
     {
-        mnode = arg0->obj->Switches[i];
+        mnode = model->obj->Switches[i];
 
         if (mnode != NULL && (mnode->Opcode & 0xff) == MODELNODE_OPCODE_SWITCH)
         {
             union ModelRwData *unmrd;
             struct ModelRwData_SwitchRecord *srecord;
 
-            unmrd = modelGetNodeRwData(arg0, mnode);
+            unmrd = modelGetNodeRwData(model, mnode);
             srecord = (struct ModelRwData_SwitchRecord *)unmrd;
             srecord->visible = 0;
         }
@@ -1852,13 +1849,13 @@ void frontLoadFolders(void)
         {
             struct ModelRoData_DisplayList_CollisionRecord *srecord;
             struct ModelNode *b;
-            Gfx *arg0;
+            Gfx *gdl;
 
             b = (struct ModelNode *)mnode;
             srecord = b->Data;
 
-            arg0 = (s32)srecord->BaseAddr + ((s32)srecord->Primary & 0xffffff);
-            bgApplyDynamicCCRMLUT(arg0, NULL, CCRMLUT_WALLETBOND);
+            gdl = (s32)srecord->BaseAddr + ((s32)srecord->Primary & 0xffffff);
+            bgApplyDynamicCCRMLUT(gdl, NULL, CCRMLUT_WALLETBOND);
         }
     }
 }
@@ -2194,8 +2191,7 @@ char* frontGetDifficultyName(s32 difficulty)
  * Render the file folder select screen. That includes the background texture, four 3D wallet models, the progress text written on them,
  * the crosshair cursor, and the "SELECT FILE", "Copy", and "Erase" text and icons.
  *
- * The declaration of difficultytext (spD0) is likely incorrect, if this function is modified
- * make sure to extend difficultytext to avoid overflow.
+ * difficultytext is only 4 bytes: make it bigger before writing anything longer into it.
  */
 Gfx *frontFileSelectRender(Gfx *DL)
 {
@@ -2261,8 +2257,8 @@ Gfx *frontFileSelectRender(Gfx *DL)
 
     for (foldernum = FOLDER1; foldernum < MAX_FOLDER_COUNT; foldernum++)
     {
-        char difficultytext[4]; // spD0
-        char missiontext[18];   // spBC: "Mission <chapter>.<part>\n"
+        char difficultytext[4];
+        char missiontext[18];   // "Mission <chapter>.<part>\n"
         struct coord3d * folderworldpos;
 
         folderworldpos = &g_FrontFolderScreenPos[foldernum];
@@ -2649,48 +2645,48 @@ void frontModeSelectTick(void)
 
 Gfx *frontSetupMenuBackground(Gfx *DL)
 {
-    f32 temp_f0;
-    f32 temp_f2;
-    ModelRenderData sp10C;
+    f32 camX;
+    f32 camY;
+    ModelRenderData renderdata;
     s32 i;
-    Mtxf spC8;
-    Mtxf sp88;
-    Mtxf sp48;
+    Mtxf viewMtx;
+    Mtxf folderMtx;
+    Mtxf tmp;
 
-    temp_f0 = g_FrontFolderPos[g_FrontFolder].f[0];
-    temp_f2 = g_FrontFolderPos[g_FrontFolder].f[1];
+    camX = g_FrontFolderPos[g_FrontFolder].f[0];
+    camY = g_FrontFolderPos[g_FrontFolder].f[1];
 
-    sp10C = (ModelRenderData){NULL, TRUE, 3};
+    renderdata = (ModelRenderData){NULL, TRUE, 3};
 
-    temp_f0 += g_FrontFolderCamOffsetX;
-    temp_f2 += g_FrontFolderCamOffsetY;
+    camX += g_FrontFolderCamOffsetX;
+    camY += g_FrontFolderCamOffsetY;
 
-    mtx4LoadLookAt(&spC8, temp_f0, temp_f2, 4000.0f + g_FrontFolderCamOffsetZ, temp_f0, temp_f2, 0.0f, 0.0f, 1.0f, 0.0f);
-    mtx4LoadTranslation(&g_FrontFolderPos[g_FrontFolder], &sp88);
-    mtx4ScaleRows012(0.25f, sp88.m[0]);
-    mtx4MultInPlace(&spC8, &sp88);
+    mtx4LoadLookAt(&viewMtx, camX, camY, 4000.0f + g_FrontFolderCamOffsetZ, camX, camY, 0.0f, 0.0f, 1.0f, 0.0f);
+    mtx4LoadTranslation(&g_FrontFolderPos[g_FrontFolder], &folderMtx);
+    mtx4ScaleRows012(0.25f, folderMtx.m[0]);
+    mtx4MultInPlace(&viewMtx, &folderMtx);
 
-    sp10C.basemtx = &sp88;
+    renderdata.basemtx = &folderMtx;
 
-    sp10C.mtxlist = dynAllocate(g_FrontFolderModels[0]->obj->numMatrices << 6);
+    renderdata.mtxlist = dynAllocate(g_FrontFolderModels[0]->obj->numMatrices << 6);
 
-    mtx4Copy(&sp88, sp10C.mtxlist);
+    mtx4Copy(&folderMtx, renderdata.mtxlist);
 
-    g_FrontFolderModels[0]->render_pos = (union RenderPosView*)sp10C.mtxlist;
+    g_FrontFolderModels[0]->render_pos = (union RenderPosView*)renderdata.mtxlist;
 
-    sp10C.flags = 3;
-    sp10C.zbufferenabled = FALSE;
-    sp10C.gdl = DL;
+    renderdata.flags = 3;
+    renderdata.zbufferenabled = FALSE;
+    renderdata.gdl = DL;
 
-    modelRender(&sp10C, g_FrontFolderModels[0]);
+    modelRender(&renderdata, g_FrontFolderModels[0]);
 
-    DL = sp10C.gdl;
+    DL = renderdata.gdl;
 
     for (i=0; i<g_FrontFolderModels[0]->obj->numMatrices; i++)
     {
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        mtx4Copy(&((s8*)g_FrontFolderModels[0]->render_pos)[i*0x40], &sp48);
-        mtxF2L(&sp48, &((Mtxf*)g_FrontFolderModels[0]->render_pos)[i]);
+        mtx4Copy(&((s8*)g_FrontFolderModels[0]->render_pos)[i*0x40], &tmp);
+        mtxF2L(&tmp, &((Mtxf*)g_FrontFolderModels[0]->render_pos)[i]);
     }
 
 
@@ -3112,13 +3108,13 @@ Gfx *frontCoopSetupRender(Gfx *DL)
 }
 
 
-s32 frontFindMissionEntry(s32 arg0)
+s32 frontFindMissionEntry(s32 mission)
 {
     int i;
 
     for (i=0; g_FrontMissions[i].folder_text_preset != 0 ; i++)
     {
-        if (arg0 == g_FrontMissions[i].mission_num)
+        if (mission == g_FrontMissions[i].mission_num)
         {
             return i;
         }
@@ -3141,13 +3137,13 @@ s32 frontIsMissionCompleted(int stage, DIFFICULTY difficulty)
 }
 
 
-s32 frontGetHighestDifficulty(s32 arg0)
+s32 frontGetHighestDifficulty(s32 mission)
 {
     s32 num;
     s32 difficulty;
-    s32 temp_v0;
+    s32 unlocked;
 
-    if (g_FrontMissions[frontFindMissionEntry(arg0)].stage_id >= 0)
+    if (g_FrontMissions[frontFindMissionEntry(mission)].stage_id >= 0)
     {
         num = DIFFICULTY_00;
         if (fileIs007ModeUnlocked(g_FrontFolder))
@@ -3157,15 +3153,15 @@ s32 frontGetHighestDifficulty(s32 arg0)
 
         for (difficulty=num; difficulty >= 0; difficulty--)
         {
-            temp_v0 = fileIsStageUnlockedAtDifficulty(g_FrontFolder, arg0, difficulty);
+            unlocked = fileIsStageUnlockedAtDifficulty(g_FrontFolder, mission, difficulty);
             if (g_AppendCheatSinglePlayer == 0)
             {
-                if (temp_v0 != DIFFICULTY_AGENT)
+                if (unlocked != DIFFICULTY_AGENT)
                 {
                     return difficulty;
                 }
             }
-            else if (temp_v0 == DIFFICULTY_007)
+            else if (unlocked == DIFFICULTY_007)
             {
                 return difficulty;
             }
@@ -3209,13 +3205,13 @@ void frontMissionSelectLeave(void)
 
 void frontMissionSelectTick(void)
 {
-    s32 var_s4;
-    s32 var_s2;
-    struct ModelRwData_DisplayList_CollisionRecord *temp_s1;
-    s32 temp_a0;
+    s32 column;
+    s32 row;
+    struct ModelRwData_DisplayList_CollisionRecord *rwdata;
+    s32 mission;
     s32 i;
-    s32 var_s1;
-    struct ModelRoData_DisplayList_CollisionRecord *temp_s4;
+    s32 scan;
+    struct ModelRoData_DisplayList_CollisionRecord *rodata;
     ModelNode *mnode;
 
     viSetFovY(FOV_Y_F);
@@ -3235,13 +3231,13 @@ void frontMissionSelectTick(void)
     }
     else
     {
-        for (var_s4 = 0; var_s4 < 5; )
+        for (column = 0; column < 5; )
         {
-            if (var_s4 < 4)
+            if (column < 4)
             {
-                if(!((g_FrontMissionCursorX[var_s4] + g_FrontMissionCursorX[var_s4+1]) * 0.5f > g_FrontCursorX))
+                if(!((g_FrontMissionCursorX[column] + g_FrontMissionCursorX[column+1]) * 0.5f > g_FrontCursorX))
                 {
-                    var_s4++;
+                    column++;
                     continue;
                 }
             }
@@ -3249,13 +3245,13 @@ void frontMissionSelectTick(void)
             break;
         }
 
-        for (var_s2 = 0; var_s2 < 4; )
+        for (row = 0; row < 4; )
         {
-            if (var_s2 < 3)
+            if (row < 3)
             {
-                if(!((g_FrontMissionCursorY[var_s2] + g_FrontMissionCursorY[var_s2+1]) * 0.5f > g_FrontCursorY))
+                if(!((g_FrontMissionCursorY[row] + g_FrontMissionCursorY[row+1]) * 0.5f > g_FrontCursorY))
                 {
-                    var_s2++;
+                    row++;
                     continue;
                 }
             }
@@ -3263,84 +3259,84 @@ void frontMissionSelectTick(void)
             break;
         }
 
-        for ( ; var_s2 > 0; var_s2--)
+        for ( ; row > 0; row--)
         {
-            for (var_s1 = 0; var_s1 < 5; var_s1++)
+            for (scan = 0; scan < 5; scan++)
             {
-                if (frontGetHighestDifficulty((var_s2 * 5) + var_s1) >= 0)
+                if (frontGetHighestDifficulty((row * 5) + scan) >= 0)
                 {
                     break;
                 }
             }
 
-            if (var_s1 < 5)
+            if (scan < 5)
             {
                 break;
             }
 
         }
 
-        for ( ; var_s4 >= 0; var_s4--)
+        for ( ; column >= 0; column--)
         {
-            if (frontGetHighestDifficulty((var_s2 * 5) + var_s4) >= 0)
+            if (frontGetHighestDifficulty((row * 5) + column) >= 0)
             {
                 break;
             }
         }
 
-        if (var_s4 < 0)
+        if (column < 0)
         {
-            for (var_s4 = 0; var_s4 < 5; var_s4++)
+            for (column = 0; column < 5; column++)
             {
-                if (frontGetHighestDifficulty((var_s2 * 5) + var_s4) >= 0)
+                if (frontGetHighestDifficulty((row * 5) + column) >= 0)
                 {
                     break;
                 }
             }
         }
 
-        g_FrontDifficultyHighlight = (var_s2 * 5) + var_s4;
+        g_FrontDifficultyHighlight = (row * 5) + column;
     }
 
     mnode = g_FrontFolderModels[0]->obj->Switches[0x15];
 
     if (mnode != NULL)
     {
-        temp_s4 = (struct ModelRoData_DisplayList_CollisionRecord *)mnode->Data;
+        rodata = (struct ModelRoData_DisplayList_CollisionRecord *)mnode->Data;
 
-        temp_s1 = (struct ModelRwData_DisplayList_CollisionRecord *)modelGetNodeRwData(g_FrontFolderModels[0], mnode);
-        temp_s1->Vertices = dynAllocateVertices(temp_s4->numVertices);
+        rwdata = (struct ModelRwData_DisplayList_CollisionRecord *)modelGetNodeRwData(g_FrontFolderModels[0], mnode);
+        rwdata->Vertices = dynAllocateVertices(rodata->numVertices);
 
-        for (i = 0; i < temp_s4->numVertices; i++)
+        for (i = 0; i < rodata->numVertices; i++)
         {
             // struct copy
-            temp_s1->Vertices[i] = temp_s4->Vertices[i];
+            rwdata->Vertices[i] = rodata->Vertices[i];
 
-            temp_a0 = i / 4;
+            mission = i / 4;
 
-            if (frontGetHighestDifficulty(temp_a0) >= 0)
+            if (frontGetHighestDifficulty(mission) >= 0)
             {
-                if (temp_a0 == g_FrontDifficultyHighlight)
+                if (mission == g_FrontDifficultyHighlight)
                 {
-                    temp_s1->Vertices[i].r = 0xff;
-                    temp_s1->Vertices[i].g = 0xff;
-                    temp_s1->Vertices[i].b = 0xff;
-                    temp_s1->Vertices[i].a = 0xf5;
+                    rwdata->Vertices[i].r = 0xff;
+                    rwdata->Vertices[i].g = 0xff;
+                    rwdata->Vertices[i].b = 0xff;
+                    rwdata->Vertices[i].a = 0xf5;
                 }
                 else
                 {
-                    temp_s1->Vertices[i].r = 0x6e;
-                    temp_s1->Vertices[i].g = 0x6e;
-                    temp_s1->Vertices[i].b = 0x6e;
-                    temp_s1->Vertices[i].a = 0xff;
+                    rwdata->Vertices[i].r = 0x6e;
+                    rwdata->Vertices[i].g = 0x6e;
+                    rwdata->Vertices[i].b = 0x6e;
+                    rwdata->Vertices[i].a = 0xff;
                 }
             }
             else
             {
-                temp_s1->Vertices[i].r = 0xf;
-                temp_s1->Vertices[i].g = 0xf;
-                temp_s1->Vertices[i].b = 0xf;
-                temp_s1->Vertices[i].a = 0xff;
+                rwdata->Vertices[i].r = 0xf;
+                rwdata->Vertices[i].g = 0xf;
+                rwdata->Vertices[i].b = 0xf;
+                rwdata->Vertices[i].a = 0xff;
             }
         }
     }
@@ -3394,16 +3390,16 @@ void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level)
 Gfx *frontMissionSelectRender(Gfx *DL)
 {
     s32 i;
-    s32 spD8;
-    s32 spC8;
-    s32 spC4;
-    s32 temp_s0;
-    s32 var_s5;
-    u8 sp90[24];
-    s32 sp8C;
-    s32 sp88;
-    s32 temp_v0_3;
-    s32 var_s3;
+    s32 column;
+    s32 height;
+    s32 width;
+    s32 entry;
+    s32 colour;
+    u8 label[24];
+    s32 x;
+    s32 y;
+    s32 c;
+    s32 mission;
 
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
@@ -3411,58 +3407,58 @@ Gfx *frontMissionSelectRender(Gfx *DL)
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
-    for (spD8 = 0; spD8 < 5; spD8++)
+    for (column = 0; column < 5; column++)
     {
-        var_s3 = spD8;
+        mission = column;
 
-        for (i = 0; i < 4 ; i++, var_s3 += 5)
+        for (i = 0; i < 4 ; i++, mission += 5)
         {
-            temp_s0 = frontFindMissionEntry(var_s3);
+            entry = frontFindMissionEntry(mission);
 
-            if (frontGetHighestDifficulty(var_s3) >= 0)
+            if (frontGetHighestDifficulty(mission) >= 0)
             {
-                var_s5 = 0x96969600;
+                colour = 0x96969600;
 
-                if (var_s3 == g_FrontDifficultyHighlight)
+                if (mission == g_FrontDifficultyHighlight)
                 {
-                    var_s5 = -0x100;
+                    colour = -0x100;
                 }
 
-                if (g_FrontMissions[temp_s0].icon_text_preset)
+                if (g_FrontMissions[entry].icon_text_preset)
                 {
-                    strcpy(sp90, langGet(g_FrontMissions[temp_s0].icon_text_preset));
+                    strcpy(label, langGet(g_FrontMissions[entry].icon_text_preset));
                 }
                 else
                 {
-                    strcpy(sp90, langGet(g_FrontMissions[temp_s0].folder_text_preset));
+                    strcpy(label, langGet(g_FrontMissions[entry].folder_text_preset));
                 }
 
-                temp_v0_3 = strlen(sp90) - 1;
-                for (; temp_v0_3 >= 0; temp_v0_3--)
+                c = strlen(label) - 1;
+                for (; c >= 0; c--)
                 {
-                    if (sp90[temp_v0_3] >= 'a')
+                    if (label[c] >= 'a')
                     {
-                        sp90[temp_v0_3] -= 0x20;
+                        label[c] -= 0x20;
                     }
                 }
 
-                strcat(sp90, "\n");
+                strcat(label, "\n");
 
-                spC4 = 0;
-                spC8 = 0;
+                width = 0;
+                height = 0;
 
-                textMeasure(&spC8, &spC4, sp90, g_FontBankGothicChars, g_FontBankGothic, 0);
+                textMeasure(&height, &width, label, g_FontBankGothicChars, g_FontBankGothic, 0);
 
-                sp8C = g_FrontMissionCursorX[spD8] - 0x1F;
-                sp88 = (g_FrontMissionCursorY[i] - spC8) + 0x1D;
+                x = g_FrontMissionCursorX[column] - 0x1F;
+                y = (g_FrontMissionCursorY[i] - height) + 0x1D;
 
-                DL = textRenderRect(DL, sp8C, sp88, sp8C + spC4, sp88 + spC8, 0);
-                DL = textRender(DL, &sp8C, &sp88, sp90, g_FontBankGothicChars, g_FontBankGothic, var_s5 | 0xFF, viGetX(), viGetY(), 0, 0);
+                DL = textRenderRect(DL, x, y, x + width, y + height, 0);
+                DL = textRender(DL, &x, &y, label, g_FontBankGothicChars, g_FontBankGothic, colour | 0xFF, viGetX(), viGetY(), 0, 0);
 
-                sp8C = g_FrontMissionCursorX[spD8] - 0x1F;
-                sp88 = (g_FrontMissionCursorY[i] - spC8) + 0x1D;
+                x = g_FrontMissionCursorX[column] - 0x1F;
+                y = (g_FrontMissionCursorY[i] - height) + 0x1D;
 
-                DL = textRender(DL, &sp8C, &sp88, sp90, g_FontBankGothicChars, g_FontBankGothic, var_s5 | 0x64, viGetX(), viGetY(), 0, 0);
+                DL = textRender(DL, &x, &y, label, g_FontBankGothicChars, g_FontBankGothic, colour | 0x64, viGetX(), viGetY(), 0, 0);
 
             }
         }
@@ -3631,17 +3627,17 @@ void frontSetDifficultyCursor(int difficulty)
 Gfx *frontDifficultyRender(Gfx *DL)
 {
     u8 *text_sp3180;
-    s32 unlockedDifficulty; // sp3176
-    s32 x;    // sp3168
-    s32 y;    // sp3164 (sp164 + 3000)
+    s32 unlockedDifficulty;
+    s32 x;
+    s32 y;
 
     char stagename[3000]; /* frontDrawMissionTitle's line buffer */
 
-    u8 *text_sp160; // sp ??
-    s32 sp9C;                         // sp156
-    s32 sp98;                         // sp152
-    f32 xypos[2];                     // sp144
-    f32 halfedxy[2];                  // sp136
+    u8 *text; // sp ??
+    s32 width;
+    s32 height;
+    f32 xypos[2];
+    f32 halfedxy[2];
     struct sImageTableEntry *image;   // sp ??
     s32 i;
 
@@ -3685,33 +3681,33 @@ Gfx *frontDifficultyRender(Gfx *DL)
         if (i == 0 || unlockedDifficulty >= i)
         {
             sprintf(stagename, "%d.\n", i + 1);
-            text_sp160 = (u8 *) stagename;
+            text = (u8 *) stagename;
 
-            textMeasure(&sp98, &sp9C, text_sp160, g_FontZurichChars, g_FontZurich, 0);
+            textMeasure(&height, &width, text, g_FontZurichChars, g_FontZurich, 0);
 
             x = 0x82;
             y = (i * 0x1E) + 0xB4;
-            DL = frontPrintText(DL, &x, &y, text_sp160, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
             switch (i)
             {
                 case 0:
-                    text_sp160 = langGet(getStringID(LTITLE, TITLE_STR_36_AGENT2)); // "Agent\n"
+                    text = langGet(getStringID(LTITLE, TITLE_STR_36_AGENT2)); // "Agent\n"
                     break;
                 case 1:
-                    text_sp160 = langGet(getStringID(LTITLE, TITLE_STR_37_SECRETAGENT2)); // "Secret Agent\n"
+                    text = langGet(getStringID(LTITLE, TITLE_STR_37_SECRETAGENT2)); // "Secret Agent\n"
                     break;
                 case 2:
-                    text_sp160 = langGet(getStringID(LTITLE, TITLE_STR_38_00AGENT2)); // "00 Agent\n"
+                    text = langGet(getStringID(LTITLE, TITLE_STR_38_00AGENT2)); // "00 Agent\n"
                     break;
                 case 3:
-                    text_sp160 = langGet(getStringID(LTITLE, TITLE_STR_39_0072)); // "007\n"
+                    text = langGet(getStringID(LTITLE, TITLE_STR_39_0072)); // "007\n"
                     break;
             }
 
             x = 0x96;
             y = (i * 0x1E) + 0xB4;
-            DL = frontPrintText(DL, &x, &y, text_sp160, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -3779,8 +3775,8 @@ void frontOptions007Leave(void)
 
 void frontOptions007Tick(void)
 {
-    f32 temp_x;
-    s32 temp_y;
+    f32 frac;
+    s32 cursorY;
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -3811,20 +3807,20 @@ void frontOptions007Tick(void)
         }
         else
         {
-            temp_y = (s32) g_FrontCursorY;
-            if (temp_y >= 0x107)
+            cursorY = (s32) g_FrontCursorY;
+            if (cursorY >= 0x107)
             {
                 g_Front007HlReaction = TRUE;
             }
-            else if (temp_y >= 0xE6)
+            else if (cursorY >= 0xE6)
             {
                 g_Front007HlAccuracy = TRUE;
             }
-            else if (temp_y >= 0xC5)
+            else if (cursorY >= 0xC5)
             {
                 g_Front007HlDamage = TRUE;
             }
-            else if (temp_y >= 0xA4)
+            else if (cursorY >= 0xA4)
             {
                 g_Front007HlHealth = TRUE;
             }
@@ -3864,33 +3860,33 @@ void frontOptions007Tick(void)
 
     if (joyGetButtons(PLAYER_1, Z_TRIG|A_BUTTON))
     {
-        temp_x = (g_FrontCursorX - 55.0f) / 300.0f;
+        frac = (g_FrontCursorX - 55.0f) / 300.0f;
 
-        if (temp_x > 1.0f)
+        if (frac > 1.0f)
         {
-            temp_x = 1.0f;
+            frac = 1.0f;
         }
 
-        if (temp_x < 0.0f)
+        if (frac < 0.0f)
         {
-            temp_x = 0.0f;
+            frac = 0.0f;
         }
 
         if (g_Front007HlReaction)
         {
-            g_Front007Reaction = temp_x;
+            g_Front007Reaction = frac;
         }
         else if (g_Front007HlHealth)
         {
-            g_Front007Health = (f32) (temp_x * temp_x * 10.0f);
+            g_Front007Health = (f32) (frac * frac * 10.0f);
         }
         else if (g_Front007HlDamage)
         {
-            g_Front007Damage = (f32) (temp_x * temp_x * 10.0f);
+            g_Front007Damage = (f32) (frac * frac * 10.0f);
         }
         else if (g_Front007HlAccuracy)
         {
-            g_Front007Accuracy = (f32) (temp_x * temp_x * 10.0f);
+            g_Front007Accuracy = (f32) (frac * frac * 10.0f);
         }
     }
 
@@ -4621,40 +4617,40 @@ void frontMpOptionsTick(void)
         }
         else
         {
-            s32 temp_f6 = g_FrontCursorY;
-            if (temp_f6 >= 0x12D)
+            s32 cursorY = g_FrontCursorY;
+            if (cursorY >= 0x12D)
             {
                 g_MpHlDisplay = 1;
             }
-            else if ((temp_f6 >= 0x119) && (g_MpCanPickAim))
+            else if ((cursorY >= 0x119) && (g_MpCanPickAim))
             {
                 g_MpHlAim = 1;
             }
-            else if ((temp_f6 >= 0x105) && (g_MpCanPickControls))
+            else if ((cursorY >= 0x105) && (g_MpCanPickControls))
             {
                 g_MpHlControls = 1;
             }
-            else if ((temp_f6 >= 0xF1) && (g_MpCanPickHandicap))
+            else if ((cursorY >= 0xF1) && (g_MpCanPickHandicap))
             {
                 g_MpHlHandicap = 1;
             }
-            else if ((temp_f6 >= 0xDD) && (g_MpCanPickChar))
+            else if ((cursorY >= 0xDD) && (g_MpCanPickChar))
             {
                 g_MpHlChar = 1;
             }
-            else if ((temp_f6 >= 0xC9) && (g_MpCanPickWeapons))
+            else if ((cursorY >= 0xC9) && (g_MpCanPickWeapons))
             {
                 g_MpHlWeapons = 1;
             }
-            else if ((temp_f6 >= 0xB5) && (g_MpCanPickLength))
+            else if ((cursorY >= 0xB5) && (g_MpCanPickLength))
             {
                 g_MpHlLength = 1;
             }
-            else if ((temp_f6 >= 0xA1) && (g_MpCanPickStage))
+            else if ((cursorY >= 0xA1) && (g_MpCanPickStage))
             {
                 g_MpHlStage = 1;
             }
-            else if (temp_f6 >= 0x8D)
+            else if (cursorY >= 0x8D)
             {
                 g_MpHlScenario = 1;
             }
@@ -4752,12 +4748,12 @@ void frontMpOptionsTick(void)
 
         if (g_MpStages[g_MpStage].stage_id < 0)
         {
-            s32 temp_hi;
+            s32 index;
             do
             {
-                temp_hi = randomGetNext() % (u32)(MP_STAGE_SELECTED_MAX - 1);
-                g_FrontStage = g_MpStages[1 + temp_hi].stage_id;
-            } while (frontIsMpStageAvailable(temp_hi + 1) == 0);
+                index = randomGetNext() % (u32)(MP_STAGE_SELECTED_MAX - 1);
+                g_FrontStage = g_MpStages[1 + index].stage_id;
+            } while (frontIsMpStageAvailable(index + 1) == 0);
         }
         else
         {
@@ -5187,7 +5183,7 @@ void frontMpCharTick(void)
     s32 numplayers;
     s32 ready_players;
     s32 i;
-    s32 temp_v1_3;
+    s32 scrollTarget;
 
     numplayers = frontGetPlayerCount();
     ready_players = 0;
@@ -5262,9 +5258,9 @@ void frontMpCharTick(void)
             }
         }
 
-        temp_v1_3 = (g_MpCharPrevCursor[i] * 0x54) + g_MpCharScroll[i];
+        scrollTarget = (g_MpCharPrevCursor[i] * 0x54) + g_MpCharScroll[i];
 
-        if (g_MpCharCursor[i] * 0x54 < temp_v1_3)
+        if (g_MpCharCursor[i] * 0x54 < scrollTarget)
         {
             g_MpCharScroll[i] -= 0xc;
             if (g_MpCharScroll[i] < 0)
@@ -5273,7 +5269,7 @@ void frontMpCharTick(void)
                 g_MpCharPrevCursor[i]--;
             }
         }
-        else if (temp_v1_3 < g_MpCharCursor[i] * 0x54)
+        else if (scrollTarget < g_MpCharCursor[i] * 0x54)
         {
             g_MpCharScroll[i] += 0xC;
             if (g_MpCharScroll[i] >= 0x54)
@@ -5301,139 +5297,139 @@ void frontMpCharTick(void)
 }
 
 
-s32 frontGetPortraitAlpha(s32 arg0, s32 arg1, s32 arg2)
+s32 frontGetPortraitAlpha(s32 x, s32 left, s32 right)
 {
-    if ((arg1 >= arg0) || (arg0 >= arg2))
+    if ((left >= x) || (x >= right))
     {
         return 0;
     }
 
-    if (arg0 < (arg1 + 0x28))
+    if (x < (left + 0x28))
     {
-        return 0xF - ((arg1 - arg0) * 6);
+        return 0xF - ((left - x) * 6);
     }
 
-    if ((arg2 - 0x28) < arg0)
+    if ((right - 0x28) < x)
     {
-        return 0xF - ((arg0 - arg2) * 6);
+        return 0xF - ((x - right) * 6);
     }
 
     return 0xFF;
 }
 
 
-Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, s32 arg6)
+Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 left, s32 right, s32 centreX, s32 y, s32 character, s32 size)
 {
-    Mtx* spD4;
-    Mtx* spD0;
-    Vertex* spCC;
-    u32 var_s2;
-    u32 var_s3;
-    s32 sp58;
-    s32 sp54;
-    s32 sp50;
-    s32 var_v0;
+    Mtx* proj;
+    Mtx* view;
+    Vertex* vertices;
+    u32 row;
+    u32 col;
+    s32 cellW;
+    s32 baseY;
+    s32 cellH;
+    s32 shade;
     s32 selected_photo;
     s32 vtx_index;
     struct sImageTableEntry *simage;
     s32 j;
     s32 i;
 
-    spD4 = dynAllocateMatrix();
-    spD0 = dynAllocateMatrix();
-    spCC = dynAllocateVertices(16);
+    proj = dynAllocateMatrix();
+    view = dynAllocateMatrix();
+    vertices = dynAllocateVertices(16);
     DL = textSetupDraw(DL);
 
-    guOrtho(spD4, 0.0f, 440.0f, 0.0f, 330.0f, 1.0f, 10.0f, 1.0f);
-    guRotate(spD0, 3.1415927f, 1.0f, 0.0f, 0.0f);
+    guOrtho(proj, 0.0f, 440.0f, 0.0f, 330.0f, 1.0f, 10.0f, 1.0f);
+    guRotate(view, 3.1415927f, 1.0f, 0.0f, 0.0f);
 
     vtx_index = 0;
 
     for (i = 0; i < 4; i++)
     {
-        sp58 = arg6 + 0x23;
-        sp54 = 0x14A - arg4;
-        sp50 = arg6 + 0x2a;
+        cellW = size + 0x23;
+        baseY = 0x14A - y;
+        cellH = size + 0x2a;
 
         for (j = 0; j < 4; j++)
         {
-            var_s3 = (j >= 2) ? j - 1 : j;
-            var_s2 = (i >= 2) ? i - 1 : i;
+            col = (j >= 2) ? j - 1 : j;
+            row = (i >= 2) ? i - 1 : i;
 
-            if ((frontIsMpCharTaken(arg5)) && (arg6 == 0))
+            if ((frontIsMpCharTaken(character)) && (size == 0))
             {
-                var_v0 = 0x6E;
+                shade = 0x6E;
             }
             else
             {
-                var_v0 = 0xFF;
+                shade = 0xFF;
             }
 
-            spCC[vtx_index].coord.AsArray[0] = ((var_s3 - 1) * sp58) + arg3;
-            spCC[vtx_index].coord.AsArray[1] = sp54 + ((var_s2 - 1) * sp50) + arg6;
-            spCC[vtx_index].coord.AsArray[2] = -5;
-            spCC[vtx_index].index = 0;
+            vertices[vtx_index].coord.AsArray[0] = ((col - 1) * cellW) + centreX;
+            vertices[vtx_index].coord.AsArray[1] = baseY + ((row - 1) * cellH) + size;
+            vertices[vtx_index].coord.AsArray[2] = -5;
+            vertices[vtx_index].index = 0;
 
             if (j & 1)
             {
-                spCC[vtx_index].s = 0x1000;
+                vertices[vtx_index].s = 0x1000;
             }
             else
             {
-                spCC[vtx_index].s = 0;
+                vertices[vtx_index].s = 0;
             }
 
             if (i & 1)
             {
-                spCC[vtx_index].t = 0x1000;
+                vertices[vtx_index].t = 0x1000;
             }
             else
             {
-                spCC[vtx_index].t = 0;
+                vertices[vtx_index].t = 0;
             }
 
-            spCC[vtx_index].r = var_v0;
-            spCC[vtx_index].g = var_v0;
-            spCC[vtx_index].b = var_v0;
+            vertices[vtx_index].r = shade;
+            vertices[vtx_index].g = shade;
+            vertices[vtx_index].b = shade;
 
-            if (arg6 == 0)
+            if (size == 0)
             {
-                spCC[vtx_index].a = frontGetPortraitAlpha(spCC[vtx_index].coord.AsArray[0], arg1, arg2);
+                vertices[vtx_index].a = frontGetPortraitAlpha(vertices[vtx_index].coord.AsArray[0], left, right);
             }
             else
             {
-                spCC[vtx_index].a = 0xFF;
+                vertices[vtx_index].a = 0xFF;
             }
 
             vtx_index++;
         }
     }
 
-    gSPMatrix(DL++, OS_PHYSICAL_TO_K0(spD4), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
-    gSPMatrix(DL++, OS_PHYSICAL_TO_K0(spD0), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gSPMatrix(DL++, OS_PHYSICAL_TO_K0(proj), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
+    gSPMatrix(DL++, OS_PHYSICAL_TO_K0(view), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
 
-    gSPVertex(DL++, spCC, 16, 0);
+    gSPVertex(DL++, vertices, 16, 0);
 
-    selected_photo = g_MpChars[arg5].select_photo * 4;
-    simage = &g_ImagesMpCharSelect[g_MpChars[arg5].select_photo * 4];
+    selected_photo = g_MpChars[character].select_photo * 4;
+    simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
     texSelect(&DL, simage + 2, 2, 0, 2);
     gSP1Triangle(DL++, 0, 1, 4, 0);
     gSP1Triangle(DL++, 4, 1, 5, 0);
 
-    selected_photo = g_MpChars[arg5].select_photo * 4;
-    simage = &g_ImagesMpCharSelect[g_MpChars[arg5].select_photo * 4];
+    selected_photo = g_MpChars[character].select_photo * 4;
+    simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
     texSelect(&DL, simage + 3, 2, 0, 2);
     gSP1Triangle(DL++, 2, 3, 6, 0);
     gSP1Triangle(DL++, 6, 3, 7, 0);
 
-    selected_photo = g_MpChars[arg5].select_photo * 4;
-    simage = &g_ImagesMpCharSelect[g_MpChars[arg5].select_photo * 4];
+    selected_photo = g_MpChars[character].select_photo * 4;
+    simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
     texSelect(&DL, simage + 0, 2, 0, 2);
     gSP1Triangle(DL++, 8, 9, 12, 0);
     gSP1Triangle(DL++, 12, 9, 13, 0);
 
-    selected_photo = g_MpChars[arg5].select_photo * 4;
-    simage = &g_ImagesMpCharSelect[g_MpChars[arg5].select_photo * 4];
+    selected_photo = g_MpChars[character].select_photo * 4;
+    simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
     texSelect(&DL, simage + 1, 2, 0, 2);
     gSP1Triangle(DL++, 10, 11, 14, 0);
     gSP1Triangle(DL++, 14, 11, 15, 0);
@@ -5585,18 +5581,18 @@ void frontMpHandicapLeave(void)
 
 void frontMpHandicapTick(void)
 {
-    s32 sp44;
+    s32 numplayers;
     s32 i;
-    s32 var_fp;
+    s32 numready;
 
-    sp44 = frontGetPlayerCount();
-    var_fp = 0;
+    numplayers = frontGetPlayerCount();
+    numready = 0;
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
     viSetUseZBuf(0);
 
-    for (i = 0; i < sp44; i++)
+    for (i = 0; i < numplayers; i++)
     {
         if (g_MpCharChosen[i] && joyGetButtonsPressedThisFrame(i, B_BUTTON))
         {
@@ -5640,7 +5636,7 @@ void frontMpHandicapTick(void)
 
         if (g_MpCharChosen[i] != 0)
         {
-            var_fp++;
+            numready++;
         }
     }
 
@@ -5649,7 +5645,7 @@ void frontMpHandicapTick(void)
     frontSetSwitchVisible(g_FrontFolderModels[0], SW_BLANK, 1);
     frontMoveCursor();
 
-    if (var_fp == sp44)
+    if (numready == numplayers)
     {
         frontSetMenu(MENU_MP_OPTIONS, 0);
     }
@@ -5658,28 +5654,28 @@ void frontMpHandicapTick(void)
 
 Gfx * frontMpHandicapRender(Gfx *DL)
 {
-    s32 spCC;
-    s32 i; // spE0
+    s32 numplayers;
+    s32 i;
     u8 *text;
-    s32 var_s3;
-    s32 var_s5;
-    s32 var_v1;
+    s32 panelX;
+    s32 panelW;
+    s32 offset;
     u8 *text2;
     s32 padding4;
     s32 padding1;
-    s32 var_s2;
-    s32 spA4;
-    s32 spA0;
-    s32 sp9C;
-    s32 sp98;
-    s32 padding2;
-    s32 sp90;
-    s32 sp8C;
-    s32 sp88;
-    s32 sp84;
-    s32 padding5;
+    s32 panelY;
+    s32 height1;
+    s32 width1;
+    s32 x1;
+    s32 y1;
+    s32 centreX;
+    s32 height2;
+    s32 width2;
+    s32 x2;
+    s32 y2;
+    s32 centreY;
 
-    spCC = frontGetPlayerCount();
+    numplayers = frontGetPlayerCount();
 
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
@@ -5687,59 +5683,59 @@ Gfx * frontMpHandicapRender(Gfx *DL)
     DL = textSetupDraw(DL);
     DL = textRenderRect(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
 
-    if (spCC >= 3)
+    if (numplayers >= 3)
     {
         DL = textRenderRect(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
     }
 
-    for (i = 0; i < spCC; i++)
+    for (i = 0; i < numplayers; i++)
     {
         padding4 = g_MpCharChosen[i];
         padding1 = g_MpHandicap[i];
 
-        var_s2 = 0;
+        panelY = 0;
 
-        if (spCC == 2)
+        if (numplayers == 2)
         {
-            var_s3 = 0x26;
-            var_s5 = 0x15E;
-            var_v1 = (i > 0) ? 0x8C : 0;
-            var_s2 = (var_v1) + 0x1E;
+            panelX = 0x26;
+            panelW = 0x15E;
+            offset = (i > 0) ? 0x8C : 0;
+            panelY = (offset) + 0x1E;
         }
         else
         {
-            var_s5 = 0xAF;
-            var_v1 = (i >= 2) ? 0x8C : 0;
-            var_s2 = (var_v1) + 0x1E;
-            var_v1 = (i & 1) ? 0xAF : 0;
-            var_s3 = (var_v1) + 0x26;
+            panelW = 0xAF;
+            offset = (i >= 2) ? 0x8C : 0;
+            panelY = (offset) + 0x1E;
+            offset = (i & 1) ? 0xAF : 0;
+            panelX = (offset) + 0x26;
         }
 
-        gDPSetScissor(DL++, G_SC_NON_INTERLACE, (var_s3 + 6), var_s2 + 5, (var_s3 + var_s5 - 6), (var_s2 + 0x8C - 5));
+        gDPSetScissor(DL++, G_SC_NON_INTERLACE, (panelX + 6), panelY + 5, (panelX + panelW - 6), (panelY + 0x8C - 5));
 
-        padding2 = ((var_s5 >> 1) + var_s3);
-        padding5 = var_s2 + 0x46;
+        centreX = ((panelW >> 1) + panelX);
+        centreY = panelY + 0x46;
 
         if (g_MpCharChosen[i] == 0)
         {
             text = langGet(getStringID(LTITLE, TITLE_STR_86_SELECTHANDICAP));
-            textMeasure(&spA4, &spA0, text, g_FontZurichChars, g_FontZurich, 0);
+            textMeasure(&height1, &width1, text, g_FontZurichChars, g_FontZurich, 0);
 
-            sp9C = padding2 - (spA0 >> 1);
-            sp98 = padding5 - (spA4 >> 1) - 0xf;
+            x1 = centreX - (width1 >> 1);
+            y1 = centreY - (height1 >> 1) - 0xf;
 
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &sp9C, &sp98, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x1, &y1, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         {
             text2 = langGet(g_MpHandicaps[g_MpHandicap[i]].text_preset);
-            textMeasure(&sp90, &sp8C, text2, g_FontZurichChars, g_FontZurich, 0);
-            sp88 = padding2 - (sp8C >> 1);
-            sp84 = padding5 - (sp90 >> 1) + 0xf;
+            textMeasure(&height2, &width2, text2, g_FontZurichChars, g_FontZurich, 0);
+            x2 = centreX - (width2 >> 1);
+            y2 = centreY - (height2 >> 1) + 0xf;
 
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &sp88, &sp84, (s8*)text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x2, &y2, (s8*)text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -5778,12 +5774,12 @@ void frontMpControlsLeave(void) {
 // Address 0x7F013648 NTSC-J
 void frontMpControlsTick(void)
 {
-    s32 sp44;
+    s32 numplayers;
     s32 i;
-    s32 var_fp;
+    s32 numready;
 
-    sp44 = frontGetPlayerCount();
-    var_fp = 0;
+    numplayers = frontGetPlayerCount();
+    numready = 0;
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
     viSetZRange(100.0f, 10000.0f);
@@ -5793,7 +5789,7 @@ void frontMpControlsTick(void)
     #define MAYBE_AND_JOYCOUNT_4 && joyGetControllerCount() == 4
 
 
-    for (i = 0; i < sp44; i++)
+    for (i = 0; i < numplayers; i++)
     {
         if (g_MpCharChosen[i] && joyGetButtonsPressedThisFrame(i, B_BUTTON))
         {
@@ -5810,13 +5806,13 @@ void frontMpControlsTick(void)
                 if (g_MpControlStyle[i] > CONTROLLER_CONFIG_HONEY)
                 {
                     // ... OR PLAYER_1 is 1.x OR g_MpControlStyle[i] is 1 + 2.x
-                    if ((sp44 != 2) || (i != PLAYER_2) MAYBE_OR_JOYCOUNT_NOT_4 || (g_MpControlStyle[PLAYER_1] < CONTROLLER_CONFIG_PLENTY) || (g_MpControlStyle[i] >= CONTROLLER_CONFIG_GALORE))
+                    if ((numplayers != 2) || (i != PLAYER_2) MAYBE_OR_JOYCOUNT_NOT_4 || (g_MpControlStyle[PLAYER_1] < CONTROLLER_CONFIG_PLENTY) || (g_MpControlStyle[i] >= CONTROLLER_CONFIG_GALORE))
                     {
                         g_MpControlStyle[i]--;
                     }
 
                     // ... AND PLAYER_1 is 1.x AND PLAYER_2 is 2.x
-                    if ((sp44 == 2) && (i == PLAYER_1) MAYBE_AND_JOYCOUNT_4 && (g_MpControlStyle[PLAYER_1] < CONTROLLER_CONFIG_PLENTY) && (g_MpControlStyle[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY))
+                    if ((numplayers == 2) && (i == PLAYER_1) MAYBE_AND_JOYCOUNT_4 && (g_MpControlStyle[PLAYER_1] < CONTROLLER_CONFIG_PLENTY) && (g_MpControlStyle[PLAYER_2] >= CONTROLLER_CONFIG_PLENTY))
                     {
                         // PLAYER_2 is 1.1
                         g_MpControlStyle[PLAYER_2] = CONTROLLER_CONFIG_HONEY;
@@ -5827,7 +5823,7 @@ void frontMpControlsTick(void)
             else if (joyGetButtonsPressedThisFrame(i, R_JPAD|R_CBUTTONS) || ((joyGetStickXInRange(i, -2, 1) > 0) && g_MpStickHeld[i] != 0))
             {
                 // ... g_MpControlStyle[i] is 2.x
-                if (((sp44 == 2) && (i == PLAYER_1) MAYBE_AND_JOYCOUNT_4) || g_MpControlStyle[i] >= CONTROLLER_CONFIG_PLENTY)
+                if (((numplayers == 2) && (i == PLAYER_1) MAYBE_AND_JOYCOUNT_4) || g_MpControlStyle[i] >= CONTROLLER_CONFIG_PLENTY)
                 {
                     // if g_MpControlStyle[i] < 2.4
                     if (g_MpControlStyle[i] < CONTROLLER_CONFIG_GOODHEAD)
@@ -5880,7 +5876,7 @@ void frontMpControlsTick(void)
 
         if (g_MpCharChosen[i] != 0)
         {
-            var_fp++;
+            numready++;
         }
     }
 
@@ -5889,7 +5885,7 @@ void frontMpControlsTick(void)
     frontSetSwitchVisible(g_FrontFolderModels[0], SW_BLANK, 1);
     frontMoveCursor();
 
-    if (var_fp == sp44)
+    if (numready == numplayers)
     {
         frontSetMenu(MENU_MP_OPTIONS, 0);
     }
@@ -5901,28 +5897,28 @@ void frontMpControlsTick(void)
 
 Gfx * frontMpControlsRender(Gfx *DL)
 {
-    s32 spCC;
-    s32 i; // spE0
+    s32 numplayers;
+    s32 i;
     u8 *text;
-    s32 var_s3;
-    s32 var_s5;
-    s32 var_v1;
+    s32 panelX;
+    s32 panelW;
+    s32 offset;
     u8 *text2;
     s32 padding4;
     s32 padding1;
-    s32 var_s2;
-    s32 spA4;
-    s32 spA0;
-    s32 sp9C;
-    s32 sp98;
-    s32 padding2;
-    s32 sp90;
-    s32 sp8C;
-    s32 sp88;
-    s32 sp84;
-    s32 padding5;
+    s32 panelY;
+    s32 height1;
+    s32 width1;
+    s32 x1;
+    s32 y1;
+    s32 centreX;
+    s32 height2;
+    s32 width2;
+    s32 x2;
+    s32 y2;
+    s32 centreY;
 
-    spCC = frontGetPlayerCount();
+    numplayers = frontGetPlayerCount();
 
     DL = viSetFillColor(DL, 0, 0, 0);
     DL = viFillScreen(DL);
@@ -5930,59 +5926,59 @@ Gfx * frontMpControlsRender(Gfx *DL)
     DL = textSetupDraw(DL);
     DL = textRenderRect(DL, 0x26, 0xA9, 0x184, 0xAB, 0x90);
 
-    if (spCC >= 3)
+    if (numplayers >= 3)
     {
         DL = textRenderRect(DL, 0xD4, 0x1E, 0xD6, 0x136, 0x80);
     }
 
-    for (i = 0; i < spCC; i++)
+    for (i = 0; i < numplayers; i++)
     {
         padding4 = g_MpCharChosen[i];
         padding1 = g_MpControlStyle[i];
 
-        var_s2 = 0;
+        panelY = 0;
 
-        if (spCC == 2)
+        if (numplayers == 2)
         {
-            var_s3 = 0x26;
-            var_s5 = 0x15E;
-            var_v1 = (i > 0) ? 0x8C : 0;
-            var_s2 = (var_v1) + 0x1E;
+            panelX = 0x26;
+            panelW = 0x15E;
+            offset = (i > 0) ? 0x8C : 0;
+            panelY = (offset) + 0x1E;
         }
         else
         {
-            var_s5 = 0xAF;
-            var_v1 = (i >= 2) ? 0x8C : 0;
-            var_s2 = (var_v1) + 0x1E;
-            var_v1 = (i & 1) ? 0xAF : 0;
-            var_s3 = (var_v1) + 0x26;
+            panelW = 0xAF;
+            offset = (i >= 2) ? 0x8C : 0;
+            panelY = (offset) + 0x1E;
+            offset = (i & 1) ? 0xAF : 0;
+            panelX = (offset) + 0x26;
         }
 
-        gDPSetScissor(DL++, G_SC_NON_INTERLACE, (var_s3 + 6), var_s2 + 5, (var_s3 + var_s5 - 6), (var_s2 + 0x8C - 5));
+        gDPSetScissor(DL++, G_SC_NON_INTERLACE, (panelX + 6), panelY + 5, (panelX + panelW - 6), (panelY + 0x8C - 5));
 
-        padding2 = ((var_s5 >> 1) + var_s3);
-        padding5 = var_s2 + 0x46;
+        centreX = ((panelW >> 1) + panelX);
+        centreY = panelY + 0x46;
 
         if (g_MpCharChosen[i] == 0)
         {
             text = langGet(getStringID(LTITLE, TITLE_STR_285_SELECTCONTROLSTYLE));
-            textMeasure(&spA4, &spA0, text, g_FontZurichChars, g_FontZurich, 0);
+            textMeasure(&height1, &width1, text, g_FontZurichChars, g_FontZurich, 0);
 
-            sp9C = padding2 - (spA0 >> 1);
-            sp98 = padding5 - (spA4 >> 1) - 0xf;
+            x1 = centreX - (width1 >> 1);
+            y1 = centreY - (height1 >> 1) - 0xf;
 
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &sp9C, &sp98, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x1, &y1, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         {
             text2 = langGet(g_MpControlStyles[g_MpControlStyle[i]].text_preset);
-            textMeasure(&sp90, &sp8C, text2, g_FontZurichChars, g_FontZurich, 0);
-            sp88 = padding2 - (sp8C >> 1);
-            sp84 = padding5 - (sp90 >> 1) + 0xf;
+            textMeasure(&height2, &width2, text2, g_FontZurichChars, g_FontZurich, 0);
+            x2 = centreX - (width2 >> 1);
+            y2 = centreY - (height2 >> 1) + 0xf;
 
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &sp88, &sp84, (s8*)text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x2, &y2, (s8*)text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -6108,23 +6104,23 @@ void frontMpStageTick(void)
 
 Gfx * frontMpStageRender(Gfx *DL)
 {
-    s32 sp130;
-    s32 sp12C;
-    s32 sp128;
-    s32 sp124;
-    struct coord2d sp100;
-    struct coord2d spF8;
+    s32 x;
+    s32 y;
+    s32 height;
+    s32 width;
+    struct coord2d bgPos;
+    struct coord2d bgSize;
     s32 i_3;
     s32 i_2;
     s32 i_1;
-    struct coord2d spD8;
-    struct coord2d spD0;
-    s32 var_s6;
-    s32 var_s2_2;
+    struct coord2d photoPos;
+    struct coord2d photoSize;
+    s32 labelX;
+    s32 colour;
     struct sImageTableEntry *simage;
     s32 count;
     s32 count_2;
-    s32 spB4;
+    s32 row;
 
 
     DL = viSetFillColor(DL, 0, 0, 0);
@@ -6144,29 +6140,29 @@ Gfx * frontMpStageRender(Gfx *DL)
     simage = g_ImagesMainFolder + 5;
     texSelect(&DL, simage, 1, 0, 2); // IMAGE_DOT
 
-    spF8.f[0] = 176.0f;
-    spF8.f[1] = 4.0f;
-    sp100.f[0] = spF8.f[0] + 37.0f;
-    sp100.f[1] = spF8.f[1] + 100.0f;
+    bgSize.f[0] = 176.0f;
+    bgSize.f[1] = 4.0f;
+    bgPos.f[0] = bgSize.f[0] + 37.0f;
+    bgPos.f[1] = bgSize.f[1] + 100.0f;
 
     for (i_2 = 0; i_2 < 3; i_2++)
     {
-        texRectDrawImage(&DL, &sp100.f[0], &spF8.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
-        sp100.f[1] += 60.0f;
-        texRectDrawImage(&DL, &sp100.f[0], &spF8.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
-        sp100.f[1] -= 60.0f;
-        sp100.f[1] += 70.0f;
+        texRectDrawImage(&DL, &bgPos.f[0], &bgSize.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
+        bgPos.f[1] += 60.0f;
+        texRectDrawImage(&DL, &bgPos.f[0], &bgSize.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
+        bgPos.f[1] -= 60.0f;
+        bgPos.f[1] += 70.0f;
     }
 
-    spD0.f[0] = 34.0f;
-    spD0.f[1] = 22.0f;
-    spD8.f[1] = spD0.f[1] + 108.0f + 4.0f;
+    photoSize.f[0] = 34.0f;
+    photoSize.f[1] = 22.0f;
+    photoPos.f[1] = photoSize.f[1] + 108.0f + 4.0f;
 
     count = 0;
 
-    for (spB4 = 0; spB4 != 3; spB4++)
+    for (row = 0; row != 3; row++)
     {
-        spD8.f[0] = 86.0f;
+        photoPos.f[0] = 86.0f;
 
         for (i_3 = 0; i_3 < 4; i_3++)
         {
@@ -6182,23 +6178,23 @@ Gfx * frontMpStageRender(Gfx *DL)
                     gDPSetFogColor(DL++, 0xff, 0xff, 0xff, 0x0a);
                     gDPSetRenderMode(DL++, G_RM_FOG_PRIM_A, G_RM_AA_OPA_SURF2);
 
-                    texRectDrawImage(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, simage->level > 0, 1);
+                    texRectDrawImage(&DL, &photoPos.f[0], &photoSize.f[0], 0x44, 0x2C, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, simage->level > 0, 1);
                 }
                 else if (frontIsMpStageAvailable(count) != 0)
                 {
-                    texRectDrawImage(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0x6E, 0x6E, 0x6E, 0xFF, simage->level > 0, 0);
+                    texRectDrawImage(&DL, &photoPos.f[0], &photoSize.f[0], 0x44, 0x2C, 0, 0, 1, 0x6E, 0x6E, 0x6E, 0xFF, simage->level > 0, 0);
                 }
                 else
                 {
-                    texRectDrawImage(&DL, &spD8.f[0], &spD0.f[0], 0x44, 0x2C, 0, 0, 1, 0xF, 0xF, 0xF, 0xFF, simage->level > 0, 0);
+                    texRectDrawImage(&DL, &photoPos.f[0], &photoSize.f[0], 0x44, 0x2C, 0, 0, 1, 0xF, 0xF, 0xF, 0xFF, simage->level > 0, 0);
                 }
             }
 
-            spD8.f[0] += 85.0f;
+            photoPos.f[0] += 85.0f;
             count++;
         }
 
-        spD8.f[1] += 70.0f;
+        photoPos.f[1] += 70.0f;
     }
 
     DL = textSetupDraw(DL);
@@ -6209,46 +6205,46 @@ Gfx * frontMpStageRender(Gfx *DL)
     if(1)
     {
         s32 i_4;
-        s32 sp9C;
-        s32 sp90;
+        s32 labelRow;
+        s32 labelY;
 
-        sp90 = 0x97;
+        labelY = 0x97;
 
-        for (sp9C = 0; sp9C != 3; sp9C++)
+        for (labelRow = 0; labelRow != 3; labelRow++)
         {
-            var_s6 = 0x56;
+            labelX = 0x56;
 
             for (i_4 = 0; i_4 < 4; i_4++)
             {
                 if (count_2 < 12 && frontIsMpStageAvailable(count_2))
                 {
-                    var_s2_2 = 0x96969600;
+                    colour = 0x96969600;
 
                     if (count_2 == g_MpStageCursor)
                     {
-                        var_s2_2 = -0x100;
+                        colour = -0x100;
                     }
 
-                    textMeasure(&sp128, &sp124, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, 0);
+                    textMeasure(&height, &width, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, 0);
 
-                    sp130 = var_s6 - 0x1F;
-                    sp12C = sp90 - sp128;
+                    x = labelX - 0x1F;
+                    y = labelY - height;
 
-                    DL = textRenderRect(DL, sp130, sp12C, sp130 + sp124, sp12C + sp128, 0);
+                    DL = textRenderRect(DL, x, y, x + width, y + height, 0);
 
-                    DL = textRender(DL, &sp130, &sp12C, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, var_s2_2 | 0xFF, viGetX(), viGetY(), 0, 0);
+                    DL = textRender(DL, &x, &y, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, colour | 0xFF, viGetX(), viGetY(), 0, 0);
 
-                    sp130 = var_s6 - 0x1F;
-                    sp12C = sp90 - sp128;
+                    x = labelX - 0x1F;
+                    y = labelY - height;
 
-                    DL = textRender(DL, &sp130, &sp12C, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, var_s2_2 | 0x64, viGetX(), viGetY(), 0, 0);
+                    DL = textRender(DL, &x, &y, langGet(g_MpStages[count_2].select_screen_text_preset), g_FontBankGothicChars, g_FontBankGothic, colour | 0x64, viGetX(), viGetY(), 0, 0);
                 }
 
-                var_s6 += 0x55;
+                labelX += 0x55;
                 count_2++;
             }
 
-            sp90 += 0x46;
+            labelY += 0x46;
         }
     }
 
@@ -6376,14 +6372,14 @@ void frontMpScenarioTick(void)
 
 Gfx * frontMpScenarioRender(Gfx *DL)
 {
-    s32 x; // sp88
-    s32 y; // sp84
+    s32 x;
+    s32 y;
     s32 i;
-    s32 sp7C;
-    s32 sp78;
+    s32 height;
+    s32 width;
 
     u8 *text;
-    s32 var_s3;
+    s32 colour;
 
 
     DL = viSetFillColor(DL,0,0,0);
@@ -6403,25 +6399,25 @@ Gfx * frontMpScenarioRender(Gfx *DL)
 
     for (i = 0; i < 8; i++)
     {
-        var_s3 = 0xff;
+        colour = 0xff;
 
         if (((s32) g_MpStagePlayerCounts[i].max < frontGetPlayerCount()) || (frontGetPlayerCount() < (s32) g_MpStagePlayerCounts[i].min))
         {
-            var_s3 = 0x70;
+            colour = 0x70;
         }
 
         text = langGet(g_MpStagePlayerCounts[i].stage);
 
-        textMeasure(&sp7C, &sp78, text, g_FontZurichChars, g_FontZurich, 0);
+        textMeasure(&height, &width, text, g_FontZurichChars, g_FontZurich, 0);
 
         x = 0x39;
         y = 0x83 + (i * 0x16);
         if ((i + 1) == g_MpScenarioCursor)
         {
-            DL = textRenderRect(DL, 0x37, y - 1, sp78 + 0x3C, y + 0xE, 0x32);
+            DL = textRenderRect(DL, 0x37, y - 1, width + 0x3C, y + 0xE, 0x32);
         }
 
-        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, var_s3, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, colour, viGetX(), viGetY(), 0, 0);
     }
 
     DL = frontAddPreviousTabText(DL);
@@ -6475,7 +6471,7 @@ void frontMpTeamsLeave(void)
 void frontMpTeamsTick(void)
 {
     s32 i;
-    s32 var_a1;
+    s32 team;
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -6567,27 +6563,27 @@ void frontMpTeamsTick(void)
 
                 if (i == 0 || i == g_MpTeamsCursor)
                 {
-                    var_a1 = 0;
+                    team = 0;
                 }
                 else
                 {
-                    var_a1 = 1;
+                    team = 1;
                 }
 
-                frontSetMpTeam(i, var_a1);
+                frontSetMpTeam(i, team);
             }
             else
             {
                 if (i != g_MpTeamsCursor)
                 {
-                    var_a1 = 0;
+                    team = 0;
                 }
                 else
                 {
-                    var_a1 = 1;
+                    team = 1;
                 }
 
-                frontSetMpTeam(i, var_a1);
+                frontSetMpTeam(i, team);
             }
         }
 
@@ -6710,32 +6706,14 @@ void frontSetBriefingPage(WATCH_BRIEFING_PAGE page)
 
 void frontLoadBriefing(void)
 {
-    Gfx *temp_s0;
-    s32 argg;
+    // The briefing file and the stage's text bank go after the folder models.
+    u8 *buffer = (u8 *)g_FrontModelBuffer + 4096 * 10;
+    s32 size = 0x200;
 
-    // what is this
-    temp_s0 = (s32)(g_FrontModelBuffer) + (s32)(4096*10);
+    g_FrontBriefing = fileLoadByNameToAddr(g_FrontMissions[g_FrontMission].briefing_name_ptr, FILELOAD_TRIM, buffer, size);
+    buffer += size;
 
-    // alright
-    argg = 0x200;
-    g_FrontBriefing = fileLoadByNameToAddr(g_FrontMissions[g_FrontMission].briefing_name_ptr, FILELOAD_TRIM, (u8 *) temp_s0, argg);
-
-    // what is this
-    temp_s0 += argg / 8;
-
-    // what is this
-    argg *= 879;
-
-    langLoadToBank(langGetBankForStage(g_FrontMissions[g_FrontMission].stage_id), (u8 *)temp_s0, argg);
-
-    // what is this
-    for (argg = 0; argg < OBJECTIVES_MAX; argg++)
-    {
-        if (g_FrontBriefing->objective[argg].textid == 0)
-        {
-            break;
-        }
-    }
+    langLoadToBank(langGetBankForStage(g_FrontMissions[g_FrontMission].stage_id), buffer, size * 879);
 }
 
 //********************************************************************************************************
@@ -6851,21 +6829,21 @@ void frontBriefingTick(void)
 }
 
 
-Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
+Gfx *frontDrawObjectives(Gfx *DL, s32 y, u8 *buffer, s32 showStatus)
 {
-    s32 i; // sp9C
-    s32 sp98;
-    s32 sp94;
-    s32 sp90;
-    s32 sp8C;
-    s32 sp88;
-    s32 var_s2;
-    s32 var_fp;
+    s32 i;
+    s32 index;
+    s32 lineheight;
+    s32 width;
+    s32 x;
+    s32 lineY;
+    s32 colour;
+    s32 lines;
     u8* text;
     s32 v1;
 
-    sp98 = 0;
-    var_fp = 0;
+    index = 0;
+    lines = 0;
     i = 0;
     v1 = 0;
 
@@ -6875,58 +6853,58 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
         {
             v1 = g_FrontBriefing->objective[i].textid;
             text = langGet(v1);
-            strcpy((u8*)arg2, "a.\n");
-            *arg2 = *arg2 + sp98;
+            strcpy((u8*)buffer, "a.\n");
+            *buffer = *buffer + index;
 
-            sp94 = 0;
-            sp90 = 0;
-            textMeasure(&sp94, &sp90, (u8*)arg2, g_FontZurichChars, g_FontZurich, 0);
+            lineheight = 0;
+            width = 0;
+            textMeasure(&lineheight, &width, (u8*)buffer, g_FontZurichChars, g_FontZurich, 0);
 
 
-            sp8C = 0x37;
-            sp88 = (sp94 * var_fp) + arg1 + (i*0);
-            DL = frontPrintText(DL, &sp8C, &sp88, (s8*)arg2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            x = 0x37;
+            lineY = (lineheight * lines) + y + (i*0);
+            DL = frontPrintText(DL, &x, &lineY, (s8*)buffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-            sp8C = 0x4B;
-            sp88 = (sp94 * var_fp) + arg1 + (i*0);
+            x = 0x4B;
+            lineY = (lineheight * lines) + y + (i*0);
 
-            if (arg3 != 0)
+            if (showStatus != 0)
             {
                 textSetWordWrap(2);
-                textWrap(0xDC, (s8*)text, (s8*)arg2, g_FontZurichChars, g_FontZurich);
+                textWrap(0xDC, (s8*)text, (s8*)buffer, g_FontZurichChars, g_FontZurich);
                 textSetWordWrap(0);
             }
             else
             {
-                textWrap(0x140, (s8*)text, (s8*)arg2, g_FontZurichChars, g_FontZurich);
+                textWrap(0x140, (s8*)text, (s8*)buffer, g_FontZurichChars, g_FontZurich);
             }
 
-            DL = frontPrintText(DL, &sp8C, &sp88, (s8*)arg2,  g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &lineY, (s8*)buffer,  g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-            if (arg3)
+            if (showStatus)
             {
                 switch (objectiveCheckStatus(i))
                 {
                     case 1:
                         text   = langGet(getStringID(LTITLE, TITLE_STR_91_COMPLETED));
-                        var_s2 = 0xFF;
+                        colour = 0xFF;
                         break;
                     default:
                     case 0:
                     case 2:
                         text   = langGet(getStringID(LTITLE, TITLE_STR_92_FAILED));
-                        var_s2 = 0x780000FF;
+                        colour = 0x780000FF;
                         break;
                 }
 
-                sp8C = 0x136;
-                sp88 = (sp94 * var_fp) + arg1 + (i*0);
+                x = 0x136;
+                lineY = (lineheight * lines) + y + (i*0);
 
-                DL = frontPrintText(DL, &sp8C, &sp88, (s8*)text, g_FontZurichChars, g_FontZurich, var_s2, viGetX(), viGetY(), 0, 0);
+                DL = frontPrintText(DL, &x, &lineY, (s8*)text, g_FontZurichChars, g_FontZurich, colour, viGetX(), viGetY(), 0, 0);
             }
 
-            var_fp += textCountLines(arg2);
-            sp98++;
+            lines += textCountLines(buffer);
+            index++;
         }
     }
 
@@ -6937,10 +6915,10 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 arg1, u8 *arg2, s32 arg3)
 
 Gfx *frontBriefingRender(Gfx *DL)
 {
-    u8 *spC0C;
-    s32 spC08;
-    s32 spC04;
-    char sp4C[3000];
+    u8 *text;
+    s32 x;
+    s32 y;
+    char buffer[3000];
 
     DL = viSetFillColor(DL,0,0,0);
     DL = viFillScreen(DL);
@@ -6951,65 +6929,65 @@ Gfx *frontBriefingRender(Gfx *DL)
     DL = frontSetupMenuBackground(DL);
 
     DL = textSetupDraw(DL);
-    DL = frontDrawMissionTitle(DL, sp4C);
+    DL = frontDrawMissionTitle(DL, buffer);
 
     switch (g_FrontBriefingPage)
     {
         case BRIEFING_TITLE:
-            spC0C = langGet(getStringID(LTITLE, TITLE_STR_93_PRIMARYOBJECTIVES ));
+            text = langGet(getStringID(LTITLE, TITLE_STR_93_PRIMARYOBJECTIVES ));
             break;
 
         case BRIEFING_OVERVIEW:
-            spC0C = langGet(getStringID(LTITLE, TITLE_STR_94_BACKGROUND));
+            text = langGet(getStringID(LTITLE, TITLE_STR_94_BACKGROUND));
             break;
 
         case BRIEFING_M:
-            spC0C = langGet(getStringID(LTITLE, TITLE_STR_95_MBRIEFING));
+            text = langGet(getStringID(LTITLE, TITLE_STR_95_MBRIEFING));
             break;
 
         case BRIEFING_Q:
-            spC0C = langGet(getStringID(LTITLE, TITLE_STR_96_QBRANCH));
+            text = langGet(getStringID(LTITLE, TITLE_STR_96_QBRANCH));
             break;
 
         case BRIEFING_MONEYPENNY:
-            spC0C = langGet(getStringID(LTITLE, TITLE_STR_97_MONEYPENNY));
+            text = langGet(getStringID(LTITLE, TITLE_STR_97_MONEYPENNY));
             break;
     }
 
-    spC08 = 0x37;
-    spC04 = 0x8F;
-    DL = frontPrintText(DL, &spC08, &spC04, (s8*)spC0C, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    x = 0x37;
+    y = 0x8F;
+    DL = frontPrintText(DL, &x, &y, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     if (g_FrontBriefingPage == BRIEFING_TITLE)
     {
-        DL = frontDrawObjectives(DL, 0xA7, sp4C, 0);
+        DL = frontDrawObjectives(DL, 0xA7, buffer, 0);
     }
     else
     {
         switch (g_FrontBriefingPage)
         {
             case BRIEFING_OVERVIEW:
-                spC0C = langGet(g_FrontBriefing->brief[0]);
+                text = langGet(g_FrontBriefing->brief[0]);
             break;
 
             case BRIEFING_M:
-                spC0C = langGet(g_FrontBriefing->brief[1]);
+                text = langGet(g_FrontBriefing->brief[1]);
             break;
 
             case BRIEFING_Q:
-                spC0C = langGet(g_FrontBriefing->brief[2]);
+                text = langGet(g_FrontBriefing->brief[2]);
             break;
 
             case BRIEFING_MONEYPENNY:
-                spC0C = langGet(g_FrontBriefing->brief[3]);
+                text = langGet(g_FrontBriefing->brief[3]);
             break;
         }
 
-        spC08 = 0x37;
-        spC04 = 0xA7;
-        textWrap(0x140, (s8*)spC0C, (s8*)sp4C, g_FontZurichChars, g_FontZurich);
+        x = 0x37;
+        y = 0xA7;
+        textWrap(0x140, (s8*)text, (s8*)buffer, g_FontZurichChars, g_FontZurich);
         textSetOverlapCorrection(8);
-        DL = frontPrintText(DL, &spC08, &spC04, (s8*)sp4C, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, (s8*)buffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         textSetOverlapCorrection(-1);
     }
 
@@ -7158,7 +7136,7 @@ Gfx * frontDebriefRender(Gfx *DL)
 
     char stagename[0xbb8];
     char *text;
-    s32 phi_v1;
+    s32 colour;
 
     s32 y2;
     s32 x2;
@@ -7190,28 +7168,28 @@ Gfx * frontDebriefRender(Gfx *DL)
     if (g_FrontBondKilled)
     {
         text = langGet(getStringID(LTITLE, TITLE_STR_100_KIA)); // KILLED IN ACTION*
-        phi_v1 = 0x78000000 | 0xFF;
+        colour = 0x78000000 | 0xFF;
     }
     else if (g_FrontMissionAborted)
     {
         text = langGet(getStringID(LTITLE, TITLE_STR_101_ABORTED)); // ABORTED*
-        phi_v1 = 0x78000000 | 0xFF;
+        colour = 0x78000000 | 0xFF;
     }
     else if (frontIsMissionSuccess())
     {
 
         text = langGet(getStringID(LTITLE, TITLE_STR_102_COMPLETED)); // Completed*
-        phi_v1 = 0xFF;
+        colour = 0xFF;
     }
     else
     {
         text = langGet(getStringID(LTITLE, TITLE_STR_103_FAILED)); // FAILED*
-        phi_v1 = 0x78000000 | 0xFF;
+        colour = 0x78000000 | 0xFF;
     }
 
     x = x2 + 0x37;
     y = 0xA7;
-    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, phi_v1, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, colour, viGetX(), viGetY(), 0, 0);
 
     // Counter-op: Bond wins by completing the mission, the guard player by
     // stopping him. Name the controller too, as either can be Bond.
@@ -7851,12 +7829,12 @@ void frontCheatTick(void)
 Gfx * frontCheatRender(Gfx *DL)
 {
     s32 strID;
-    s32 var_fp;
-    s32 sp88;
-    s32 sp84;
-    s32 sp80;
-    s32 sp7C;
-    u8 *temp_v0;
+    s32 i;
+    s32 x;
+    s32 y;
+    s32 height;
+    s32 width;
+    u8 *text;
 
     DL = viSetFillColor(DL,0,0,0);
     DL = viFillScreen(DL);
@@ -7868,55 +7846,55 @@ Gfx * frontCheatRender(Gfx *DL)
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
-    for (var_fp = 0; var_fp < ((g_CheatMenuCount >= 0xD) ? 0xC : g_CheatMenuCount); var_fp++)
+    for (i = 0; i < ((g_CheatMenuCount >= 0xD) ? 0xC : g_CheatMenuCount); i++)
     {
-        temp_v0 = cheatGetName(g_CheatMenuList[var_fp]);
-        textMeasure(&sp80, &sp7C, temp_v0, g_FontZurichChars, g_FontZurich, 0);
+        text = cheatGetName(g_CheatMenuList[i]);
+        textMeasure(&height, &width, text, g_FontZurichChars, g_FontZurich, 0);
 
-        sp88 = 0x37;
-        sp84 = (var_fp * 0x14) + 0x35;
-        if ((var_fp == g_CheatMenuCursor) && (frontCheckCursorOnPreviousTab() == 0))
+        x = 0x37;
+        y = (i * 0x14) + 0x35;
+        if ((i == g_CheatMenuCursor) && (frontCheckCursorOnPreviousTab() == 0))
         {
-            DL = textRenderRect(DL, sp88 - 2, sp84 - 1, sp88 + sp7C + 5, sp84 + 0xE, 0x32);
+            DL = textRenderRect(DL, x - 2, y - 1, x + width + 5, y + 0xE, 0x32);
         }
 
-        DL = frontPrintText(DL, &sp88, &sp84, temp_v0, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-        strID  = (g_CheatActivated[g_CheatMenuList[var_fp]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
-        temp_v0 = langGet(strID);
-        textMeasure(&sp80, &sp7C, temp_v0, g_FontZurichChars, g_FontZurich, 0);
+        strID  = (g_CheatActivated[g_CheatMenuList[i]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
+        text = langGet(strID);
+        textMeasure(&height, &width, text, g_FontZurichChars, g_FontZurich, 0);
 
-        sp88 = 0xB3;
-        sp84 = (var_fp * 0x14) + 0x35;
+        x = 0xB3;
+        y = (i * 0x14) + 0x35;
 
-        DL = frontPrintText(DL, &sp88, &sp84, temp_v0, g_FontZurichChars, g_FontZurich, (g_CheatActivated[g_CheatMenuList[var_fp]]) ? 0xA00000FF : 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, (g_CheatActivated[g_CheatMenuList[i]]) ? 0xA00000FF : 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
     if (g_CheatMenuCount >= 0xd)
     {
-        for (var_fp = 0; var_fp < (g_CheatMenuCount - 0xC); var_fp++)
+        for (i = 0; i < (g_CheatMenuCount - 0xC); i++)
         {
-            temp_v0 = cheatGetName(g_CheatMenuList[var_fp + 12]);
-            textMeasure(&sp80, &sp7C, temp_v0, g_FontZurichChars, g_FontZurich, 0);
+            text = cheatGetName(g_CheatMenuList[i + 12]);
+            textMeasure(&height, &width, text, g_FontZurichChars, g_FontZurich, 0);
 
-            sp88 = 0xDC;
-            sp84 = (var_fp * 0x14) + 0x35;
-            if ((var_fp + 0xc == g_CheatMenuCursor) && (frontCheckCursorOnPreviousTab() == 0))
+            x = 0xDC;
+            y = (i * 0x14) + 0x35;
+            if ((i + 0xc == g_CheatMenuCursor) && (frontCheckCursorOnPreviousTab() == 0))
             {
-                DL = textRenderRect(DL, sp88 - 2, sp84 - 1, sp88 + sp7C + 5, sp84 + 0xE, 0x32);
+                DL = textRenderRect(DL, x - 2, y - 1, x + width + 5, y + 0xE, 0x32);
             }
 
-            DL = frontPrintText(DL, &sp88, &sp84, temp_v0, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-            strID  = (g_CheatActivated[g_CheatMenuList[var_fp + 12]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
-            temp_v0 = langGet(strID);
-            textMeasure(&sp80, &sp7C, temp_v0, g_FontZurichChars, g_FontZurich, 0);
+            strID  = (g_CheatActivated[g_CheatMenuList[i + 12]]) ? getStringID(LTITLE, TITLE_STR_115_ON) : getStringID(LTITLE, TITLE_STR_116_OFF);
+            text = langGet(strID);
+            textMeasure(&height, &width, text, g_FontZurichChars, g_FontZurich, 0);
 
-            sp88 = 0x158;
-            sp84 = (var_fp * 0x14) + 0x35;
-            strID = (g_CheatActivated[g_CheatMenuList[var_fp + 12]]) ? 0xA00000FF : 0xFF;
+            x = 0x158;
+            y = (i * 0x14) + 0x35;
+            strID = (g_CheatActivated[g_CheatMenuList[i + 12]]) ? 0xA00000FF : 0xFF;
 
-            DL = frontPrintText(DL, &sp88, &sp84, temp_v0, g_FontZurichChars, g_FontZurich, strID, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, strID, viGetX(), viGetY(), 0, 0);
         }
     }
 

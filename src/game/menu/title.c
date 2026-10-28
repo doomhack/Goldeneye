@@ -251,18 +251,18 @@ Gfx *titleRenderBondModel(Gfx *gdl, s32 count, Mtxf *matrix)
 
     for (i = 0; i < g_TitleBondModel->obj->numMatrices; i++)
     {
-        Mtxf sp88;
+        Mtxf bondmtx;
 
-        mtx4Copy((Mtxf *) &((s8 *) g_TitleBondModel->render_pos)[i * sizeof(Mtxf)], &sp88);
-        mtxF2L(&sp88, &((Mtxf *) g_TitleBondModel->render_pos)[i]);
+        mtx4Copy((Mtxf *) &((s8 *) g_TitleBondModel->render_pos)[i * sizeof(Mtxf)], &bondmtx);
+        mtxF2L(&bondmtx, &((Mtxf *) g_TitleBondModel->render_pos)[i]);
     }
 
     for (i = 0; i < g_TitleGunModel->obj->numMatrices; i++)
     {
-        Mtxf sp48;
+        Mtxf gunmtx;
 
-        mtx4Copy((Mtxf *) &((s8 *) g_TitleGunModel->render_pos)[i * sizeof(Mtxf)], &sp48);
-        mtxF2L(&sp48, &((Mtxf *) g_TitleGunModel->render_pos)[i]);
+        mtx4Copy((Mtxf *) &((s8 *) g_TitleGunModel->render_pos)[i * sizeof(Mtxf)], &gunmtx);
+        mtxF2L(&gunmtx, &((Mtxf *) g_TitleGunModel->render_pos)[i]);
     }
 
     return renderData.gdl;
@@ -296,8 +296,8 @@ extern Gfx *DL_RAREWARELOGO2 NO_SDATA;
 extern u8 *TEX_RAREWARELOGO1 NO_SDATA;
 extern u8 *TEX_RAREWARELOGO2 NO_SDATA;
 
-Gfx *titleRenderRareLogo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
-    cameraPosition1[2] = arg3;
+Gfx *titleRenderRareLogo(Gfx *gdl, s32 unused1, s32 unused2, s32 cameraZ, s32 brightness) {
+    cameraPosition1[2] = cameraZ;
     gSPDisplayList(gdl++, &dlBasicGeometry);
     gdl = screenClearBlack(gdl);
     {
@@ -318,7 +318,7 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 #endif
     gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxRareLogo2[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
     gSPSetLights1(gdl++, gunbarrelLights);
-    gunbarrelLights.a.l.col[0] = gunbarrelLights.a.l.col[1] = gunbarrelLights.a.l.col[2] = gunbarrelLights.a.l.colc[0] = gunbarrelLights.a.l.colc[1] = gunbarrelLights.a.l.colc[2] = arg4;
+    gunbarrelLights.a.l.col[0] = gunbarrelLights.a.l.col[1] = gunbarrelLights.a.l.col[2] = gunbarrelLights.a.l.colc[0] = gunbarrelLights.a.l.colc[1] = gunbarrelLights.a.l.colc[2] = brightness;
     gDPPipeSync(gdl++);
     gDPPipeSync(gdl++);
     gDPSetCombineMode(gdl++, G_CC_MODULATEI, G_CC_MODULATEI);
@@ -332,11 +332,11 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     gDPPipeSync(gdl++);
     gSPTexture(gdl++, 0x0800, 0x0800, 0, G_TX_RENDERTILE, G_ON);
     gDPLoadTextureBlock(gdl++, &TEX_RAREWARELOGO1, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, (G_TX_NOMIRROR | G_TX_WRAP), (G_TX_NOMIRROR | G_TX_WRAP), 5, 5, G_TX_NOLOD, G_TX_NOLOD);
-    gDPSetPrimColor(gdl++, 0, 0, arg4, arg4, arg4, 0xFF);
+    gDPSetPrimColor(gdl++, 0, 0, brightness, brightness, brightness, 0xFF);
     gSPDisplayList(gdl++, &DL_RAREWARELOGO1);
     gSPDisplayList(gdl++, &DL_RAREWARETEXT);
     gDPLoadTextureBlock(gdl++, &TEX_RAREWARELOGO2, G_IM_FMT_RGBA, G_IM_SIZ_16b, 32, 32, 0, (G_TX_NOMIRROR | G_TX_WRAP), (G_TX_NOMIRROR | G_TX_WRAP), 5, 5, G_TX_NOLOD, G_TX_NOLOD);
-    gDPSetPrimColor(gdl++, 0, 0, ((arg4 * 0xF0) / 0xFF), ((arg4 * 0xD0) / 0xFF), ((arg4 * 0xF0) / 0xFF), 0xFF);
+    gDPSetPrimColor(gdl++, 0, 0, ((brightness * 0xF0) / 0xFF), ((brightness * 0xD0) / 0xFF), ((brightness * 0xF0) / 0xFF), 0xFF);
     gSPDisplayList(gdl++, &DL_RAREWARELOGO2);
 
     return gdl;
@@ -373,24 +373,24 @@ Gfx *titleRenderRareIntro(Gfx *gdl)
     g_TitleMtxIndex = (1 - g_TitleMtxIndex);
     gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(g_TitleRareLogoData));
     if ((g_TitleStage == 0) || (g_TitleStage == 1)) {
-        s32 var1;
-        s32 var2;
-        var1 = (g_TitleCounter * 255) / RAREWARE_LOGO_DEN;
-        if (var1 > 255) {
-            var1 = 255;
+        s32 fadeIn;
+        s32 fadeOut;
+        fadeIn = (g_TitleCounter * 255) / RAREWARE_LOGO_DEN;
+        if (fadeIn > 255) {
+            fadeIn = 255;
         }
-        if (var1 < 0) {
-            var1 = 0;
+        if (fadeIn < 0) {
+            fadeIn = 0;
         }
 
-        var2 = 255 - (((g_TitleCounter * 255) - RAREWARE_LOGO_SUB) / RAREWARE_LOGO_DEN);
-        if (var2 > 255) {
-            var2 = 255;
+        fadeOut = 255 - (((g_TitleCounter * 255) - RAREWARE_LOGO_SUB) / RAREWARE_LOGO_DEN);
+        if (fadeOut > 255) {
+            fadeOut = 255;
         }
-        if (var2 < 0) {
-            var2 = 0;
+        if (fadeOut < 0) {
+            fadeOut = 0;
         }
-        gdl = titleRenderRareLogo(gdl, 403, 488, g_TitleX, (var1 * var2) / 255);
+        gdl = titleRenderRareLogo(gdl, 403, 488, g_TitleX, (fadeIn * fadeOut) / 255);
         if (g_TitleCounter++ >= RAREWARE_LOGO_EYE_COUNT1) {
             if (g_TitleCounter >= RAREWARE_LOGO_EYE_COUNT2) {
                 g_TitleCounter = 0;
@@ -424,9 +424,9 @@ void titleLoadBackdrop(u8 **addr, s32 *size) {
 void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
 {
     struct ModelAnimation *animation;
-    struct coord3d sp50;
+    struct coord3d rootpos;
     struct texpool texturePool;
-    s32 temp_t9;
+    s32 size;
     s32 startframe;
     
     g_TitleStage = 2;
@@ -452,32 +452,32 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     titleLoadBackdrop((u8 **)&gfxBuffer, &bufferSize);
 
     // struct copy
-    sp50 = (struct coord3d){0};
+    rootpos = (struct coord3d){0};
     
-    temp_t9 = 0x12C00;
+    size = 0x12C00;
     
-    texInitPool(&texturePool, gfxBuffer, temp_t9);
+    texInitPool(&texturePool, gfxBuffer, size);
     
-    gfxBuffer += temp_t9;
-    bufferSize -= temp_t9;
+    gfxBuffer += size;
+    bufferSize -= size;
     
     modelFileLoad(c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Brosnan_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
     
-    temp_t9 = ((fileGetLoadedSizeByName(c_item_entries[BODY_Brosnan_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
-    bufferSize -= temp_t9;
-    gfxBuffer += temp_t9;
+    size = ((fileGetLoadedSizeByName(c_item_entries[BODY_Brosnan_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    bufferSize -= size;
+    gfxBuffer += size;
     
     modelFileLoad(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
     
-    temp_t9 = ((fileGetLoadedSizeByName(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
-    bufferSize -= temp_t9;
-    gfxBuffer += temp_t9;
+    size = ((fileGetLoadedSizeByName(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    bufferSize -= size;
+    gfxBuffer += size;
     
     g_TitleBondModel = bodyCreateModelNew(BODY_Brosnan_Tuxedo, BODY_Male_Pierce_Bond_Tuxedo, c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, 0);
 
     modelSetScale(g_TitleBondModel, 0.18779343f);
     modelSetAnimTranslationScale(g_TitleBondModel, 1.0f);
-    modelSetRootPosition(g_TitleBondModel, &sp50);
+    modelSetRootPosition(g_TitleBondModel, &rootpos);
     modelSetRootRotY(g_TitleBondModel, 0.0f);
 #if defined(VERSION_EU)
     #define S_7F008E80_ANIM_SPEED 0.6f
@@ -497,9 +497,9 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     modelSetAnimation(g_TitleBondModel, (struct ModelAnimation *) animation, 0, (f32) startframe, 0.91f, 0.0f);
     modelFileLoad(PitemZ_entries[PROP_CHRWPPK].header, PitemZ_entries[PROP_CHRWPPK].filename, gfxBuffer, bufferSize, &texturePool);
     
-    temp_t9 = ((fileGetLoadedSizeByName(PitemZ_entries[PROP_CHRWPPK].filename) + 0x3F) | 0x3F) ^ 0x3F;
-    bufferSize -= temp_t9;
-    gfxBuffer += temp_t9;
+    size = ((fileGetLoadedSizeByName(PitemZ_entries[PROP_CHRWPPK].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    bufferSize -= size;
+    gfxBuffer += size;
     
     modelCalculateRwDataLen(PitemZ_entries[191].header);
     

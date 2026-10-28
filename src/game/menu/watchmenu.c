@@ -213,14 +213,14 @@ const char g_ObjectiveLineEndGap2[];
 // forward declarations
 
 void watchMenuSetTabColours(s32 g_WatchMenuPage, struct WatchVertex *vertices);
-Gfx *watchMenuRenderStatus(Gfx *gdl, Mtx *param_2);
-Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2);
-Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *param_2);
-Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *param_2);
-Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2);
-Gfx *watchMenuRenderBackgroundZoom(Gfx *gdl, Mtx *param_2);
-Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish);
-void watchMenuOptionSet(u32 *param_1, u32 param_2);
+Gfx *watchMenuRenderStatus(Gfx *gdl, Mtx *mtx);
+Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx);
+Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *mtx);
+Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *mtx);
+Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx);
+Gfx *watchMenuRenderBackgroundZoom(Gfx *gdl, Mtx *mtx);
+Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish);
+void watchMenuOptionSet(u32 *option, u32 value);
 void watchMenuAdjustVolume(u16* outVolume);
 Gfx *watchRenderQuad(Gfx *gdl, s32 *vtx);
 void watchMenuMakeSliderVerts(struct WatchVertex *verts, f32 fill_amount, s32 transition_width);
@@ -320,9 +320,9 @@ u32 optionsGetLookInverted(void)
     return g_Options[PLAYER_OPTION_LOOK].current_value;
 }
 
-void optionsSetLookInverted(u32 param_1)
+void optionsSetLookInverted(u32 value)
 {
-    g_Options[PLAYER_OPTION_LOOK].current_value = param_1;
+    g_Options[PLAYER_OPTION_LOOK].current_value = value;
 }
 
 s32 optionsGetAutoAim(void)
@@ -330,9 +330,9 @@ s32 optionsGetAutoAim(void)
     return g_Options[PLAYER_OPTION_AUTOAIM].current_value;
 }
 
-void optionsSetAutoAim(u32 param_1)
+void optionsSetAutoAim(u32 value)
 {
-    g_Options[PLAYER_OPTION_AUTOAIM].current_value = param_1;
+    g_Options[PLAYER_OPTION_AUTOAIM].current_value = value;
 }
 
 u32 optionsGetLookAhead(void)
@@ -340,9 +340,9 @@ u32 optionsGetLookAhead(void)
     return g_Options[PLAYER_OPTION_LOOKAHEAD].current_value;
 }
 
-void optionsSetLookAhead(u32 param_1)
+void optionsSetLookAhead(u32 value)
 {
-    g_Options[PLAYER_OPTION_LOOKAHEAD].current_value = param_1;
+    g_Options[PLAYER_OPTION_LOOKAHEAD].current_value = value;
 }
 
 u32 optionsGetAimControl(void)
@@ -350,36 +350,36 @@ u32 optionsGetAimControl(void)
     return g_Options[PLAYER_OPTION_AIM].current_value;
 }
 
-void optionsSetAimControl(u32 param_1)
+void optionsSetAimControl(u32 value)
 {
-    g_Options[PLAYER_OPTION_AIM].current_value = param_1;
+    g_Options[PLAYER_OPTION_AIM].current_value = value;
 }
 
 u32 optionsGetSightOnScreen(void)
 {
     return g_Options[PLAYER_OPTION_SIGHT].current_value;
 }
-void optionsSetSightOnScreen(u32 param_1)
+void optionsSetSightOnScreen(u32 value)
 {
-    g_Options[PLAYER_OPTION_SIGHT].current_value = param_1;
+    g_Options[PLAYER_OPTION_SIGHT].current_value = value;
 }
 
 u32 optionsGetAmmoOnScreen(void)
 {
     return g_Options[PLAYER_OPTION_AMMODISPLAY].current_value;
 }
-void optionsSetAmmoOnScreen(u32 param_1)
+void optionsSetAmmoOnScreen(u32 value)
 {
-    g_Options[PLAYER_OPTION_AMMODISPLAY].current_value = param_1;
+    g_Options[PLAYER_OPTION_AMMODISPLAY].current_value = value;
 }
 
 u32 optionsGetScreenSize(void)
 {
     return g_Options[PLAYER_OPTION_SCREEN].current_value;
 }
-void optionsSetScreenSize(u32 param_1)
+void optionsSetScreenSize(u32 value)
 {
-    g_Options[PLAYER_OPTION_SCREEN].current_value = param_1;
+    g_Options[PLAYER_OPTION_SCREEN].current_value = value;
 }
 
 SCREEN_RATIO_OPTION optionsGetScreenRatio(void)
@@ -1080,54 +1080,54 @@ void watchMenuInventoryListTick(void)
 }
 
 
-void watchMenuScrollList(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s32 *arg5, s32 arg6, s32 arg7, s32 arg8)
+void watchMenuScrollList(f32 *pos, s32 *index, s32 count, s32 *curOffset, s32 *targetOffset, s32 *settled, s32 topIndex, s32 enabled, s32 rowHeight)
 {
     if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_JPAD | U_CBUTTONS) || joyGetStickY(WATCH_PAD) >= 0x47)
     {
-        if ((s32)*arg0 > 0 && arg7)
+        if ((s32)*pos > 0 && enabled)
         {
-            *arg0 -= 1.0f;
+            *pos -= 1.0f;
         }
     }
     else if (joyGetButtonsPressedThisFrame(WATCH_PAD, D_JPAD | D_CBUTTONS) || joyGetStickY(WATCH_PAD) < -0x46)
     {
-        if ((s32)*arg0 < arg2 - 1 && arg7)
+        if ((s32)*pos < count - 1 && enabled)
         {
-            *arg0 += 1.0f;
+            *pos += 1.0f;
         }
     }
 
     if (joyGetButtons(WATCH_PAD, U_JPAD | U_CBUTTONS))
     {
-        if ((s32)*arg0 > 0 && arg7)
+        if ((s32)*pos > 0 && enabled)
         {
-            *arg0 -= 0.1f;
+            *pos -= 0.1f;
         }
     }
     else if (joyGetButtons(WATCH_PAD, D_JPAD | D_CBUTTONS))
     {
-        if ((s32)*arg0 < arg2 - 1 && arg7)
+        if ((s32)*pos < count - 1 && enabled)
         {
-            *arg0 += 0.1f;
+            *pos += 0.1f;
         }
     }
 
-    if (joyGetStickY(WATCH_PAD) >= 0x1f && joyGetStickY(WATCH_PAD) < 0x46 && *arg1 > 0 && arg7)
+    if (joyGetStickY(WATCH_PAD) >= 0x1f && joyGetStickY(WATCH_PAD) < 0x46 && *index > 0 && enabled)
     {
-        *arg0 -= (f32)joyGetStickY(WATCH_PAD) / 300.0f;
+        *pos -= (f32)joyGetStickY(WATCH_PAD) / 300.0f;
     }
-    else if (joyGetStickY(WATCH_PAD) < -0x1e && joyGetStickY(WATCH_PAD) >= -0x45 && (s32)*arg0 < arg2 - 1 && arg7)
+    else if (joyGetStickY(WATCH_PAD) < -0x1e && joyGetStickY(WATCH_PAD) >= -0x45 && (s32)*pos < count - 1 && enabled)
     {
-        *arg0 -= (f32)joyGetStickY(WATCH_PAD) / 300.0f;
+        *pos -= (f32)joyGetStickY(WATCH_PAD) / 300.0f;
     }
 
-    if (watchMenuStickTappedUp() && *arg1 > 0 && arg7)
+    if (watchMenuStickTappedUp() && *index > 0 && enabled)
     {
-        *arg0 -= 1.0f;
+        *pos -= 1.0f;
     }
-    else if (watchMenuStickTappedDown() && *arg1 < arg2 - 1 && arg7)
+    else if (watchMenuStickTappedDown() && *index < count - 1 && enabled)
     {
-        *arg0 += 1.0f;
+        *pos += 1.0f;
     }
 
     if (watchMenuStickNudgedUp() || watchMenuStickNudgedDown())
@@ -1139,48 +1139,48 @@ void watchMenuScrollList(f32 *arg0, s32 *arg1, s32 arg2, s32 *arg3, s32 *arg4, s
         g_WatchMenuStickYActive = 0;
     }
 
-    if ((f32)arg2 - 0.5f < *arg0)
+    if ((f32)count - 0.5f < *pos)
     {
-        *arg0 = (f32)arg2 - 0.5f;
+        *pos = (f32)count - 0.5f;
     }
 
-    if (*arg0 < -0.5f)
+    if (*pos < -0.5f)
     {
-        *arg0 = -0.5f;
+        *pos = -0.5f;
     }
 
-    *arg1 = (s32)*arg0;
-    *arg4 = (arg6 * arg8) + (-*arg1 * arg8);
+    *index = (s32)*pos;
+    *targetOffset = (topIndex * rowHeight) + (-*index * rowHeight);
 
-    if (*arg4 < *arg3)
+    if (*targetOffset < *curOffset)
     {
-        *arg3 = (*arg3 - ((*arg3 - *arg4) / 3)) - 1;
-        *arg5 = 0;
+        *curOffset = (*curOffset - ((*curOffset - *targetOffset) / 3)) - 1;
+        *settled = 0;
     }
-    else if (*arg3 < *arg4)
+    else if (*curOffset < *targetOffset)
     {
-        *arg3 = (((*arg4 - *arg3) / 3) + *arg3) + 1;
-        *arg5 = 0;
+        *curOffset = (((*targetOffset - *curOffset) / 3) + *curOffset) + 1;
+        *settled = 0;
     }
     else
     {
-        *arg5 = 1;
+        *settled = 1;
     }
 
-    if ((f32)*arg1 + 0.55f < *arg0)
+    if ((f32)*index + 0.55f < *pos)
     {
         if (!joyGetButtons(WATCH_PAD, ANY_BUTTON))
         {
-            *arg0 -= 0.1f;
+            *pos -= 0.1f;
             return;
         }
     }
 
-    if (*arg0 <= (f32)*arg1 + 0.45f)
+    if (*pos <= (f32)*index + 0.45f)
     {
         if (!joyGetButtons(WATCH_PAD, ANY_BUTTON))
         {
-            *arg0 += 0.1f;
+            *pos += 0.1f;
         }
     }
 }
@@ -1337,26 +1337,26 @@ void watchMenuOpen(void)
  * Address 0x7F0A6A2C. (VERSION_US, VERSION_JP)
  * Address 0x7F0A5D78. (VERSION_EU)
 */
-f32 watchMenuWrapAngle(f32 arg0)
+f32 watchMenuWrapAngle(f32 angle)
 {
-    if (arg0 > M_PI_F)
+    if (angle > M_PI_F)
     {
-        arg0 = arg0 - M_TAU_F;
+        angle = angle - M_TAU_F;
     }
-    else if (arg0 < M_MINUS_PI_F)
+    else if (angle < M_MINUS_PI_F)
     {
-        arg0 = arg0 + M_TAU_F;
+        angle = angle + M_TAU_F;
     }
-    return arg0;
+    return angle;
 }
 
 
 extern f32 g_FrameDelta60;
 void watchMenuTick(void)
 {
-    u32 temp_1;
-    s32 temp_2;
-    s32 temp_3;
+    u32 threshold;
+    s32 statusTimer;
+    s32 redTimer;
     u32 random_value;
 
     if (joyGetButtonsPressedThisFrame(WATCH_PAD, START_BUTTON))
@@ -1396,12 +1396,12 @@ void watchMenuTick(void)
         }
     }
 
-    temp_2 = g_WatchStatusColourTimer;
-    if (temp_2 < 0)
+    statusTimer = g_WatchStatusColourTimer;
+    if (statusTimer < 0)
     {
         g_WatchStatusColour = g_WatchStatusColour + 0xFFF00000;
     }
-    g_WatchStatusColourTimer = temp_2 - 1;
+    g_WatchStatusColourTimer = statusTimer - 1;
 
     if (g_WatchStatusColour < 0x5F00A1U)
     {
@@ -1409,12 +1409,12 @@ void watchMenuTick(void)
         g_WatchStatusColourTimer = 0xF;
     }
 
-    temp_3 = g_WatchObjectiveRedTimer;
-    if (temp_3 < 0)
+    redTimer = g_WatchObjectiveRedTimer;
+    if (redTimer < 0)
     {
         g_WatchObjectiveRed = g_WatchObjectiveRed - 0x10;
     }
-    g_WatchObjectiveRedTimer = temp_3 - 1;
+    g_WatchObjectiveRedTimer = redTimer - 1;
 
     if (g_WatchObjectiveRed < 0x60U)
     {
@@ -1429,8 +1429,8 @@ void watchMenuTick(void)
 
     g_WatchInvSpinAngle = watchMenuWrapAngle(g_WatchInvSpinAngle);
 
-    temp_1 = g_WatchStaticChance << 0x10;
-    if (temp_1 < randomGetNext())
+    threshold = g_WatchStaticChance << 0x10;
+    if (threshold < randomGetNext())
     {
         watchMenuStatic();
     }
@@ -1568,27 +1568,27 @@ void watchMenuSetTabColours(s32 g_WatchMenuPage, struct WatchVertex *vertices)
 
 /**
  * @param gdl:
- * @param arg1: Something about watch view matrix.
+ * @param mtx: The watch's modelview matrix.
  * @param zoom_squish: When set, will "unfold" the interior watch watch area (green + bars)
  * based on view distance during pause animation. This is used when starting to pause and bring
  * the watch up, and exiting pause menu to resume game play. If this is disabled then
  * the interior area will always be the same size as the watch container.
 */
-Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
+Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish)
 {
     int i;
-    struct WatchVertex *sp48;
-    struct WatchVertex *sp44;
-    Gfx *sp40;
-    Gfx *sp3C;
+    struct WatchVertex *innerVtx;
+    struct WatchVertex *outerVtx;
+    Gfx *innerGdl;
+    Gfx *outerGdl;
 
 
     f32 scale;
 
-    sp48 = dynAllocateVertices(WATCH_BACKGROUND_VERTEX_COUNT);
-    sp44 = dynAllocateVertices(WATCH_BACKGROUND_VERTEX_COUNT);
-    sp40 = dynAllocate(0xF8);
-    sp3C = dynAllocate(0xF8);
+    innerVtx = dynAllocateVertices(WATCH_BACKGROUND_VERTEX_COUNT);
+    outerVtx = dynAllocateVertices(WATCH_BACKGROUND_VERTEX_COUNT);
+    innerGdl = dynAllocate(0xF8);
+    outerGdl = dynAllocate(0xF8);
 
     /**
      * It seems at this point in rendering the background watch arms (hour,minute,second)
@@ -1603,7 +1603,7 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
     gDPSetRenderMode(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
     gDPSetCombineMode(gdl++, G_CC_SHADE, G_CC_SHADE);
     gDPSetPrimColor(gdl++, 0, 0, 0xE6, 0xE6, 0xE6, 0x00);
-    gSPMatrix(gdl++, arg1, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gSPMatrix(gdl++, mtx, G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
     // end initial setup.
 
     scale = 1;
@@ -1669,14 +1669,14 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
      * End health bar zoom section
     */
 
-    watchMakeArcVerts(sp44, WATCH_BACKGROUND_VERTEX_COUNT, 0.92f, 0);
-    watchRenderBackground(sp3C, OS_PHYSICAL_TO_K0(sp44), WATCH_BACKGROUND_VERTEX_COUNT, 0);
+    watchMakeArcVerts(outerVtx, WATCH_BACKGROUND_VERTEX_COUNT, 0.92f, 0);
+    watchRenderBackground(outerGdl, OS_PHYSICAL_TO_K0(outerVtx), WATCH_BACKGROUND_VERTEX_COUNT, 0);
 
     gDPPipeSync(gdl++);
     gDPSetRenderMode(gdl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
     gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
     gDPSetPrimColor(gdl++, 0, 0, 0x00, 0xFF, 0x00, 0x00);
-    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(sp3C));
+    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(outerGdl));
     gDPPipeSync(gdl++);
 
     /**
@@ -1684,21 +1684,21 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
     */
     if (g_WatchBackgroundGreen < 0xE0)
     {
-        watchMakeArcVerts(sp48, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 0);
-        watchRenderBackground(sp40, OS_PHYSICAL_TO_K0(sp48), WATCH_BACKGROUND_VERTEX_COUNT, 0);
+        watchMakeArcVerts(innerVtx, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 0);
+        watchRenderBackground(innerGdl, OS_PHYSICAL_TO_K0(innerVtx), WATCH_BACKGROUND_VERTEX_COUNT, 0);
 
         gDPSetRenderMode(gdl++, G_RM_AA_PCL_SURF, G_RM_AA_PCL_SURF2);
     }
     else
     {
-        watchMakeArcVerts(sp48, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 1);
-        watchRenderBackground(sp40, OS_PHYSICAL_TO_K0(sp48), WATCH_BACKGROUND_VERTEX_COUNT, 1);
+        watchMakeArcVerts(innerVtx, WATCH_BACKGROUND_VERTEX_COUNT, 0.899999976158f, 1);
+        watchRenderBackground(innerGdl, OS_PHYSICAL_TO_K0(innerVtx), WATCH_BACKGROUND_VERTEX_COUNT, 1);
 
         gDPSetRenderMode(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
     }
 
     gDPSetCombineMode(gdl++, G_CC_SHADE, G_CC_SHADE);
-    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(sp40));
+    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(innerGdl));
     /**
      * // end green background area.
     */
@@ -1716,8 +1716,8 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
 
     for (i=0; i<WATCH_BACKGROUND_VERTEX_COUNT; i++)
     {
-        sp48[i].color.a = (s8)g_WatchBackgroundGreen;
-        sp44[i].color.a = (s8)g_WatchBackgroundGreen;
+        innerVtx[i].color.a = (s8)g_WatchBackgroundGreen;
+        outerVtx[i].color.a = (s8)g_WatchBackgroundGreen;
     }
 
     if (g_WatchBackgroundGreen < 0xE0)
@@ -1733,41 +1733,41 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *arg1, s32 zoom_squish)
 }
 
 
-Gfx *watchMenuRenderBackgroundZoom(Gfx *gdl, Mtx *param_2)
+Gfx *watchMenuRenderBackgroundZoom(Gfx *gdl, Mtx *mtx)
 {
-    return watchMenuRenderBackground(gdl, param_2, 1);
+    return watchMenuRenderBackground(gdl, mtx, 1);
 }
 
 
 Gfx *watchMenuRenderAbort(Gfx *gdl)
 {
-    s32 sp7C;
-    s32 sp78;
-    s32 sp74;
-    s32 sp70;
-    s32 sp6C;
-    s32 sp68;
-    s32 sp64;
-    s32 sp60;
+    s32 titleX;
+    s32 confirmX;
+    s32 cancelX;
+    s32 titleY;
+    s32 confirmY;
+    s32 cancelY;
+    s32 width;
+    s32 height;
 
     s32 pFontFile;
     s32 pFontChars;
-    s32 sp54;
-    s32 sp50;
-    s32 sp4C;
+    s32 titleText;
+    s32 confirmText;
+    s32 cancelText;
 
     pFontFile = g_FontBankGothic;
     pFontChars = g_FontBankGothicChars;
-    sp54 = langGet(getStringID(LOPTIONS, OPTION_STR_24_ABORT_LF)); //abort:
-    sp50 = langGet(getStringID(LOPTIONS, OPTION_STR_25_CONFIRM_LF)); //confirm
-    sp4C = langGet(getStringID(LOPTIONS, OPTION_STR_26_CANCEL_LF)); //cancel
-    sp7C = 0x51;
+    titleText = langGet(getStringID(LOPTIONS, OPTION_STR_24_ABORT_LF)); //abort:
+    confirmText = langGet(getStringID(LOPTIONS, OPTION_STR_25_CONFIRM_LF)); //confirm
+    cancelText = langGet(getStringID(LOPTIONS, OPTION_STR_26_CANCEL_LF)); //cancel
+    titleX = 0x51;
 
-    sp78 = 0xBD;
+    confirmX = 0xBD;
 
-    sp74 = 0x88;
+    cancelX = 0x88;
 
-    sp70 = sp6C = sp68 = (PAL ? 0x4E : 0x4C);
+    titleY = confirmY = cancelY = (PAL ? 0x4E : 0x4C);
 
     if (g_WatchMenuSelected != 0)
     {
@@ -1792,30 +1792,30 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
 
     if (g_WatchMenuSelected != 0)
     {
-        textMeasure(&sp60, &sp64, sp54, pFontChars, pFontFile, 0);
+        textMeasure(&height, &width, titleText, pFontChars, pFontFile, 0);
 
-        gdl = textRender(gdl, &sp7C, &sp70, sp54, pFontChars, pFontFile, 0xA0FFA0F0, sp64, sp60, 0, 0);
+        gdl = textRender(gdl, &titleX, &titleY, titleText, pFontChars, pFontFile, 0xA0FFA0F0, width, height, 0, 0);
 
         if (g_WatchMenuAbortAsk != 0)
         {
-            gdl = textRenderOutlined(gdl, &sp78, &sp6C, sp50, pFontChars, pFontFile, -1, 0x7000A0, viGetX(), viGetY(), 0, 0);
-            gdl = textRender(gdl, &sp74, &sp68, sp4C, pFontChars, pFontFile, 0xFF00B0, viGetX(), viGetY(), 0, 0);
+            gdl = textRenderOutlined(gdl, &confirmX, &confirmY, confirmText, pFontChars, pFontFile, -1, 0x7000A0, viGetX(), viGetY(), 0, 0);
+            gdl = textRender(gdl, &cancelX, &cancelY, cancelText, pFontChars, pFontFile, 0xFF00B0, viGetX(), viGetY(), 0, 0);
         }
         else
         {
             if (g_WatchMenuAbortAsk == 0)
             {
-                gdl = textRender(gdl, &sp78, &sp6C, sp50, pFontChars, pFontFile, 0xFF00B0, viGetX(), viGetY(), 0, 0);
-                gdl = textRenderOutlined(gdl, &sp74, &sp68, sp4C, pFontChars, pFontFile, -1, 0x7000A0, viGetX(), viGetY(), 0, 0);
+                gdl = textRender(gdl, &confirmX, &confirmY, confirmText, pFontChars, pFontFile, 0xFF00B0, viGetX(), viGetY(), 0, 0);
+                gdl = textRenderOutlined(gdl, &cancelX, &cancelY, cancelText, pFontChars, pFontFile, -1, 0x7000A0, viGetX(), viGetY(), 0, 0);
             }
         }
     }
     else
     {
-        textMeasure(&sp60, &sp64, sp54, pFontChars, pFontFile, 0);
-        gdl = textRender(gdl, &sp7C, &sp70, sp54, pFontChars, pFontFile, 0x800080, sp64, sp60, 0, 0);
-        gdl = textRender(gdl, &sp78, &sp6C, sp50, pFontChars, pFontFile, 0x800080, viGetX(), viGetY(), 0, 0);
-        gdl = textRender(gdl, &sp74, &sp68, sp4C, pFontChars, pFontFile, 0x800080, viGetX(), viGetY(), 0, 0);
+        textMeasure(&height, &width, titleText, pFontChars, pFontFile, 0);
+        gdl = textRender(gdl, &titleX, &titleY, titleText, pFontChars, pFontFile, 0x800080, width, height, 0, 0);
+        gdl = textRender(gdl, &confirmX, &confirmY, confirmText, pFontChars, pFontFile, 0x800080, viGetX(), viGetY(), 0, 0);
+        gdl = textRender(gdl, &cancelX, &cancelY, cancelText, pFontChars, pFontFile, 0x800080, viGetX(), viGetY(), 0, 0);
     }
 
     return gdl;
@@ -1826,13 +1826,13 @@ Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
 {
     s32 txtptr_1;
     s32 txtptr_2;
-    s32 sp64;
-    s32 sp60;
-    s32 sp5C;
-    s32 sp58;
+    s32 x;
+    s32 y;
+    s32 height;
+    s32 width;
     s32 pFontFile;
     s32 pFontChars;
-    s32 sp4C;
+    s32 colour;
     s32 joffset;
 
     txtptr_1 = langGet(getStringID(LOPTIONS, OPTION_STR_27_MISSIONSTATUS_LF)); //mission status:
@@ -1841,27 +1841,27 @@ Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
 
     if (objectivesAllComplete())
     {
-        sp4C = 0xFF00B0;
+        colour = 0xFF00B0;
         txtptr_2 = langGet(getStringID(LOPTIONS, OPTION_STR_28_COMPLETE_LF)); //complete
     }
     else
     {
-        sp4C = g_WatchStatusColour;
+        colour = g_WatchStatusColour;
         txtptr_2 = langGet(getStringID(LOPTIONS, OPTION_STR_29_INCOMPLETE_LF)); //incomplete
     }
 
     gdl = textSetupDraw(gdl);
-    textMeasure(&sp5C, &sp58, txtptr_1, pFontChars, pFontFile, 0);
-    sp64 = 0x51;
-    sp60 = YOFFSET_MISSIONSTATUS;
-    gdl = textRender(gdl, &sp64, &sp60, txtptr_1, pFontChars, pFontFile, 0xFF00B0, sp58, sp5C, 0, 0);
+    textMeasure(&height, &width, txtptr_1, pFontChars, pFontFile, 0);
+    x = 0x51;
+    y = YOFFSET_MISSIONSTATUS;
+    gdl = textRender(gdl, &x, &y, txtptr_1, pFontChars, pFontFile, 0xFF00B0, width, height, 0, 0);
 
     joffset = 0;
 
-    sp64 = sp64 + sp58 + joffset + 4;
-    sp60 = sp60 - sp5C;
-    textMeasure(&sp5C, &sp58, txtptr_2, pFontChars, pFontFile, 0);
-    gdl = textRender(gdl, &sp64, &sp60, txtptr_2, pFontChars, pFontFile, sp4C, sp58, sp5C, 0, 0);
+    x = x + width + joffset + 4;
+    y = y - height;
+    textMeasure(&height, &width, txtptr_2, pFontChars, pFontFile, 0);
+    gdl = textRender(gdl, &x, &y, txtptr_2, pFontChars, pFontFile, colour, width, height, 0, 0);
     gdl = watchMenuRenderAbort(gdl);
 
     return gdl;
@@ -1876,10 +1876,10 @@ Gfx *watchMenuRenderNothing(Gfx *gdl) {
 Gfx *watchMenuRenderVersion(Gfx *gdl)
 {
     s32 txtptr;
-    s32 sp50;
-    s32 sp4C;
-    s32 sp48;
-    s32 sp44;
+    s32 x;
+    s32 y;
+    s32 height;
+    s32 width;
     s32 pFontFile;
     s32 pFontChars;
     s32 joffset;
@@ -1887,15 +1887,15 @@ Gfx *watchMenuRenderVersion(Gfx *gdl)
     txtptr = langGet(getStringID(LOPTIONS, OPTION_STR_2B_QWATCHVERSION_LF)); //q watch v2.01 beta
 
     joffset = 0;
-    sp50 = joffset + 0x65;
-    sp4C = YOFFSET_7;
-    sp48 = 0;
-    sp44 = 0;
+    x = joffset + 0x65;
+    y = YOFFSET_7;
+    height = 0;
+    width = 0;
     pFontFile = g_FontBankGothic;
     pFontChars = g_FontBankGothicChars;
     gdl = textSetupDraw(gdl);
-    textMeasure(&sp48, &sp44, txtptr, pFontChars, pFontFile, 0);
-    gdl = textRender(gdl, &sp50, &sp4C, txtptr, pFontChars, pFontFile, 0xFF00B0, sp44, sp48, 0, 0);
+    textMeasure(&height, &width, txtptr, pFontChars, pFontFile, 0);
+    gdl = textRender(gdl, &x, &y, txtptr, pFontChars, pFontFile, 0xFF00B0, width, height, 0, 0);
     return gdl;
 }
 
@@ -1924,94 +1924,94 @@ extern f32 invGetWatchFovForIndex(s32 index);
 extern f32 invGetWatchRotXForIndex(s32 index);
 extern f32 invGetWatchRotYForIndex(s32 index);
 Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
-    Mtx* sp114;
+    Mtx* persp;
     u16 perspNorm;
     Mtxf matrix2;
     Mtxf matrix;
-    s32 sp8C;
-    s32 sp88;
-    s32 sp84;
-    s32 sp80;
-    s32 sp7C;
-    s32 sp78;
-    s32 temp_v0;
-    s32 sp70;
-    f32 sp6C;
-    f32 sp68;
-    f32 sp64;
-    f32 sp60;
+    s32 x;
+    s32 y;
+    s32 height;
+    s32 width;
+    s32 font;
+    s32 fontChars;
+    s32 index;
+    s32 weapon;
+    f32 posX;
+    f32 posY;
+    f32 posZ;
+    f32 fov;
     f32 rotx;
     f32 roty;
     s8* text;
     s8* text2;
 
-    sp114 = dynAllocateMatrix();
-    sp84 = 0;
-    sp80 = 0;
+    persp = dynAllocateMatrix();
+    height = 0;
+    width = 0;
 
-    sp7C = g_FontBankGothic;
-    sp78 = g_FontBankGothicChars;
+    font = g_FontBankGothic;
+    fontChars = g_FontBankGothicChars;
 
-    temp_v0 = invGetCurEquippedItem();
-    sp70 = invGetWeaponForIndex(temp_v0);
-    sp6C = invGetWatchPosXForIndex(temp_v0);
-    sp68 = invGetWatchPosYForIndex(temp_v0);
-    sp64 = invGetWatchPosZForIndex(temp_v0);
-    sp60 = invGetWatchFovForIndex(temp_v0);
-    rotx = invGetWatchRotXForIndex(temp_v0);
-    roty = invGetWatchRotYForIndex(temp_v0);
-    text = invGetWatchTitle1ForIndex(temp_v0);
-    text2 = invGetWatchTitle2ForIndex(temp_v0);
+    index = invGetCurEquippedItem();
+    weapon = invGetWeaponForIndex(index);
+    posX = invGetWatchPosXForIndex(index);
+    posY = invGetWatchPosYForIndex(index);
+    posZ = invGetWatchPosZForIndex(index);
+    fov = invGetWatchFovForIndex(index);
+    rotx = invGetWatchRotXForIndex(index);
+    roty = invGetWatchRotYForIndex(index);
+    text = invGetWatchTitle1ForIndex(index);
+    text2 = invGetWatchTitle2ForIndex(index);
 
 
 #if defined(VERSION_US)
-    guPerspective(sp114, &perspNorm, sp60, 1.33333337f, 10.0f, 10000.0f, 1.0f);
+    guPerspective(persp, &perspNorm, fov, 1.33333337f, 10.0f, 10000.0f, 1.0f);
 #else
-    guPerspective(sp114, &perspNorm, sp60, 1.2838470f, 10.0f, 10000.0f, 1.0f);
+    guPerspective(persp, &perspNorm, fov, 1.2838470f, 10.0f, 10000.0f, 1.0f);
 #endif
 
-    gSPMatrix(gdl++, osVirtualToPhysical(sp114), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+    gSPMatrix(gdl++, osVirtualToPhysical(persp), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
 
     mtx4LoadYRotation((roty * 6.2831855f) / 360.0f, &matrix2);
     mtx4LoadZRotation(6.2831855f - ((rotx * 6.2831855f) / 360.0f), &matrix);
     mtx4MultInPlace(&matrix, &matrix2);
-    mtx4LoadLookAt(&matrix, sp64, sp6C, sp68, 0.0f, sp6C, sp68, 0.0f, 1.0f, 0.0f);
+    mtx4LoadLookAt(&matrix, posZ, posX, posY, 0.0f, posX, posY, 0.0f, 1.0f, 0.0f);
     mtx4MultInPlace(&matrix, &matrix2);
 
     gdl = watchMenuSetupDraw(gdl);
 
     if (g_WatchBackgroundGreen < 0xE0) {
-        gdl = watchRenderItem(gdl, sp70, &matrix2, g_WatchBackgroundGreen + 1, 0x64DC6428);
+        gdl = watchRenderItem(gdl, weapon, &matrix2, g_WatchBackgroundGreen + 1, 0x64DC6428);
     } else {
-        gdl = watchRenderItem(gdl, sp70, &matrix2, 0xFF, 0x64DC6428);
+        gdl = watchRenderItem(gdl, weapon, &matrix2, 0xFF, 0x64DC6428);
     }
 
     gdl = textSetupDraw(gunDrawWatchAmmoDisplay(gdl));
 
-    sp8C = 0x60;
+    x = 0x60;
 #if defined(VERSION_US)
-    sp88 = 0xA0;
+    y = 0xA0;
 #else
-    sp88 = 0xBC;
+    y = 0xBC;
 #endif
-    textMeasure(&sp84, &sp80, text, sp78, sp7C, 0);
-    gdl = textRender(gdl, &sp8C, &sp88, text, sp78, sp7C, 0xFF00B0, sp80, sp84, 0, 0);
+    textMeasure(&height, &width, text, fontChars, font, 0);
+    gdl = textRender(gdl, &x, &y, text, fontChars, font, 0xFF00B0, width, height, 0, 0);
 
 #if defined(VERSION_US)
-    sp88 = 0xAA;
+    y = 0xAA;
 #else
-    sp88 = 0xC6;
+    y = 0xC6;
 #endif
-    textMeasure(&sp84, &sp80, text2, sp78, sp7C, 0);
-    gdl = textRender(gdl, &sp8C, &sp88, text2, sp78, sp7C, 0xFF00B0, sp80, sp84, 0, 0);
+    textMeasure(&height, &width, text2, fontChars, font, 0);
+    gdl = textRender(gdl, &x, &y, text2, fontChars, font, 0xFF00B0, width, height, 0, 0);
 
     return gdl;
 }
 
 
-Gfx *watchMenuRenderStatus(Gfx *gdl, Mtx *param_2)
+Gfx *watchMenuRenderStatus(Gfx *gdl, Mtx *mtx)
 {
-    gdl = watchMenuRenderBackground(gdl, param_2, 0);
+    gdl = watchMenuRenderBackground(gdl, mtx, 0);
 
     if (watchIsZooming() != 1)
     {
@@ -2075,57 +2075,57 @@ extern f32 invGetWatchRotYForIndex(s32 index);
 extern u16 *invGetNameByIndex(s32 index);
 
 
-Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
+Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
 {
-    Mtx *sp924;
+    Mtx *persp;
     u16 perspNorm;
-    Mtxf sp8E0;
-    Mtxf sp8A0;
-    f32 temp_cos;
-    f32 temp_sin;
-    f32 sp894;
-    f32 sp890;
-    f32 sp88C;
-    f32 sp888;
-    s32 sp884;
-    f32 sp880;
-    f32 sp87C;
-    s32 temp_s0_3;
+    Mtxf itemMtx;
+    Mtxf viewMtx;
+    f32 orbitX;
+    f32 orbitZ;
+    f32 fov;
+    f32 posX;
+    f32 posY;
+    f32 posZ;
+    s32 weapon;
+    f32 rotX;
+    f32 rotY;
+    s32 boxY;
     s32 x1;
     s32 y1;
 
-    gdl = watchMenuRenderBackground(gdl, param_2, 0);
+    gdl = watchMenuRenderBackground(gdl, mtx, 0);
 
     if (watchIsZooming() != 1)
     {
-        sp924 = dynAllocateMatrix();
-        sp894 = invGetEquipFovForIndex(g_WatchMenuItem);
-        sp890 = invGetEquipPosXForIndex(g_WatchMenuItem);
-        sp88C = invGetEquipPosYForIndex(g_WatchMenuItem);
-        sp888 = invGetEquipPosZForIndex(g_WatchMenuItem);
-        sp884 = invGetWeaponForIndex(g_WatchMenuItem);
-        sp880 = invGetWatchRotXForIndex(g_WatchMenuItem);
-        sp87C = invGetWatchRotYForIndex(g_WatchMenuItem);
+        persp = dynAllocateMatrix();
+        fov = invGetEquipFovForIndex(g_WatchMenuItem);
+        posX = invGetEquipPosXForIndex(g_WatchMenuItem);
+        posY = invGetEquipPosYForIndex(g_WatchMenuItem);
+        posZ = invGetEquipPosZForIndex(g_WatchMenuItem);
+        weapon = invGetWeaponForIndex(g_WatchMenuItem);
+        rotX = invGetWatchRotXForIndex(g_WatchMenuItem);
+        rotY = invGetWatchRotYForIndex(g_WatchMenuItem);
 
 
-        guPerspective(sp924, &perspNorm, sp894, WATCH_PERSPECTIVE_ASPECT, 10.0f, 10000.0f, 1.0f);
+        guPerspective(persp, &perspNorm, fov, WATCH_PERSPECTIVE_ASPECT, 10.0f, 10000.0f, 1.0f);
 
 #undef WATCH_INV_ASPECT_RATIO
 
-        gSPMatrix(gdl++, osVirtualToPhysical(sp924), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
+        gSPMatrix(gdl++, osVirtualToPhysical(persp), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
-        mtx4LoadYRotation((sp87C * M_TAU_F) / 360.0f, &sp8E0);
-        mtx4LoadZRotation(M_TAU_F - ((sp880 * M_TAU_F) / 360.0f), &sp8A0);
-        mtx4MultInPlace(&sp8A0, &sp8E0);
+        mtx4LoadYRotation((rotY * M_TAU_F) / 360.0f, &itemMtx);
+        mtx4LoadZRotation(M_TAU_F - ((rotX * M_TAU_F) / 360.0f), &viewMtx);
+        mtx4MultInPlace(&viewMtx, &itemMtx);
 
-        temp_cos = cosf(g_WatchInvSpinAngle) * sp888;
-        temp_sin = sinf(g_WatchInvSpinAngle) * sp888;
+        orbitX = cosf(g_WatchInvSpinAngle) * posZ;
+        orbitZ = sinf(g_WatchInvSpinAngle) * posZ;
 
-        mtx4LoadLookAt(&sp8A0, temp_cos, sp88C, temp_sin + sp890, 0.0f, sp88C, sp890, 0.0f, 1.0f, 0.0f);
+        mtx4LoadLookAt(&viewMtx, orbitX, posY, orbitZ + posX, 0.0f, posY, posX, 0.0f, 1.0f, 0.0f);
 
-        mtx4MultInPlace(&sp8A0, &sp8E0);
+        mtx4MultInPlace(&viewMtx, &itemMtx);
 
-        gdl = watchRenderItem(watchMenuSetupDraw(gdl), sp884, &sp8E0, 0x40, 0xA0FFA03C);
+        gdl = watchRenderItem(watchMenuSetupDraw(gdl), weapon, &itemMtx, 0x40, 0xA0FFA03C);
 
         {
             s32 i;
@@ -2180,8 +2180,8 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
             x1 = 0x4E;
             y1 = WATCH_INV_BASE_Y();
 
-            temp_s0_3 = 1;
-            temp_s0_3 = (LINEHEIGHT() * 2) + WATCH_INV_BASE_Y() + temp_s0_3;
+            boxY = 1;
+            boxY = (LINEHEIGHT() * 2) + WATCH_INV_BASE_Y() + boxY;
 
             gdl = textSetupDraw(gdl);
 
@@ -2191,7 +2191,7 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *param_2)
 
             gdl = textRender(gdl, &x1, &y1, string_builder_allocation, pFontChars2, pFontFile2, 0xAA00B0, textwidth + 1, LINEHEIGHT() * 5, g_WatchMenuInvTextY, LINEHEIGHT());
 
-            gdl = textRenderRect(gdl, 0x4B, temp_s0_3, textwidth + 0x52, (LINEHEIGHT() + temp_s0_3) - 2, 0x800050);
+            gdl = textRenderRect(gdl, 0x4B, boxY, textwidth + 0x52, (LINEHEIGHT() + boxY) - 2, 0x800050);
 
             {
 #if !defined(VERSION_EU)
@@ -2406,8 +2406,8 @@ u16 optionsGetFxVolume(void) {
 }
 
 
-void optionsSetFxVolume(u16 arg0) {
-    sndApplyVolumeAllSfxSlot(arg0);
+void optionsSetFxVolume(u16 volume) {
+    sndApplyVolumeAllSfxSlot(volume);
 }
 
 
@@ -2455,9 +2455,9 @@ u16 optionsGetMusicVolume(void)
 }
 
 
-void optionsSetMusicVolume(u16 param_1)
+void optionsSetMusicVolume(u16 volume)
 {
-    g_OptionsMusicVolume = param_1;
+    g_OptionsMusicVolume = volume;
     musicTrack2ApplySeqpVol(g_OptionsMusicVolume);
 }
 
@@ -2531,15 +2531,15 @@ Gfx *watchMenuRenderLabel(Gfx *gdl, s32 x, s32 y, char *text, u32 colour, s32 ou
 }
 
 
-f32 watchMenuApproach(f32 param_1, f32 param_2, f32 param_3)
+f32 watchMenuApproach(f32 value, f32 target, f32 divisor)
 {
-    if (param_1 < param_2) {
-        param_1 += (param_2 - param_1) / param_3;
-    } else if (param_2 < param_1) {
-        param_1 -= (param_1 - param_2) / param_3;
+    if (value < target) {
+        value += (target - value) / divisor;
+    } else if (target < value) {
+        value -= (value - target) / divisor;
     }
 
-    return param_1;
+    return value;
 }
 
 
@@ -3133,17 +3133,17 @@ void watchMenuResetAbort(void) {
 }
 
 
-Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *param_2) {
-    s32 phi_s1;
+Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *mtx) {
+    s32 colour;
     u16 *textptr;
-    s32 sp5C;
-    s32 sp58;
-    s32 sp54;
-    s32 sp50;
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
     s32 pFontFile;
     s32 pFontChars;
 
-    gdl = watchMenuRenderBackground(gdl, param_2, 0);
+    gdl = watchMenuRenderBackground(gdl, mtx, 0);
 
     if (watchIsZooming() != 1) {
 
@@ -3154,57 +3154,57 @@ Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *param_2) {
         gdl = textSetupDraw(gdl);
         textptr = langGet(getStringID(LOPTIONS, OPTION_STR_32_CONTROLSTYLE_LF)); //control style
 
-        sp5C = XOFFSET_1;
-        sp58 = 0x1A;
-        phi_s1 = 0xFF00B0;
+        x = XOFFSET_1;
+        y = 0x1A;
+        colour = 0xFF00B0;
         if (g_WatchMenuControlRow == CONTROLLER_OPTIONS_INDEX_STYLE)
         {
-            phi_s1 = 0xA0FFA0F0;
+            colour = 0xA0FFA0F0;
             if (g_WatchMenuSelected != 0)
             {
-                phi_s1 = -1;
+                colour = -1;
             }
         }
 
-        textMeasure(&sp50, &sp54, textptr, pFontChars, pFontFile, 0);
+        textMeasure(&height, &width, textptr, pFontChars, pFontFile, 0);
 
         if ((g_WatchMenuSelected != 0) && (g_WatchMenuControlRow == CONTROLLER_OPTIONS_INDEX_STYLE))
         {
-            gdl = textRenderOutlined(gdl, &sp5C, &sp58, textptr, pFontChars, pFontFile, phi_s1, 0x7000A0, sp54 + 1, sp50, 0, 0);
+            gdl = textRenderOutlined(gdl, &x, &y, textptr, pFontChars, pFontFile, colour, 0x7000A0, width + 1, height, 0, 0);
         } else
         {
-            gdl = textRender(gdl, &sp5C, &sp58, textptr, pFontChars, pFontFile, phi_s1, sp54, sp50, 0, 0);
+            gdl = textRender(gdl, &x, &y, textptr, pFontChars, pFontFile, colour, width, height, 0, 0);
         }
 
         gdl = watchMenuRenderControlStyles(gdl);
         textptr = langGet(getStringID(LOPTIONS, OPTION_STR_33_CONTROLLER_LF)); //controller;
 
-        phi_s1 = 0xFF00B0;
+        colour = 0xFF00B0;
 
         if (optionsIsDualControlStyle())
         {
             textptr = langGet(getStringID(LOPTIONS, OPTION_STR_34_CONTROLLERS_LF)); //controllers;
         }
-        sp5C = XOFFSET_1;
-        sp58 = 0x2B;
+        x = XOFFSET_1;
+        y = 0x2B;
 
         if (g_WatchMenuControlRow == CONTROLLER_OPTIONS_INDEX_INPUTS)
         {
-            phi_s1 = 0xA0FFA0F0;
+            colour = 0xA0FFA0F0;
             if (g_WatchMenuSelected != 0)
             {
-                phi_s1 = -1;
+                colour = -1;
             }
         }
 
-        textMeasure(&sp50, &sp54, textptr, pFontChars, pFontFile, 0);
+        textMeasure(&height, &width, textptr, pFontChars, pFontFile, 0);
 
         if ((g_WatchMenuSelected != 0) && (g_WatchMenuControlRow == CONTROLLER_OPTIONS_INDEX_INPUTS))
         {
-            gdl = textRenderOutlined(gdl, &sp5C, &sp58, textptr, pFontChars, pFontFile, phi_s1, 0x7000A0, sp54 + 1, sp50, 0, 0);
+            gdl = textRenderOutlined(gdl, &x, &y, textptr, pFontChars, pFontFile, colour, 0x7000A0, width + 1, height, 0, 0);
         } else
         {
-            gdl = textRender(gdl, &sp5C, &sp58, textptr, pFontChars, pFontFile, phi_s1, sp54, sp50, 0, 0);
+            gdl = textRender(gdl, &x, &y, textptr, pFontChars, pFontFile, colour, width, height, 0, 0);
         }
 
     }
@@ -3212,9 +3212,9 @@ Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *param_2) {
 }
 
 
-void watchMenuOptionSet(u32 *param_1, u32 param_2)
+void watchMenuOptionSet(u32 *option, u32 value)
 {
-    *param_1 = param_2;
+    *option = value;
     watchMenuStickXUsed();
     sndPlaySfx(g_musicSfxBufferPtr, OPTION_CHOOSE_SFX, NULL);
 }
@@ -3413,18 +3413,18 @@ Gfx *watchMenuRenderOptionRows(Gfx *gdl)
 }
 
 
-Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *param_2) {
-    s32 sp5C;
+Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *mtx) {
+    s32 colour;
     u16 *textptr;
-    s32 sp54;
-    s32 sp50;
-    s32 sp4C;
-    s32 sp48;
+    s32 x;
+    s32 y;
+    s32 width;
+    s32 height;
 
     s32 pFontFile;
     s32 pFontChars;
 
-    gdl = watchMenuRenderBackground(gdl, param_2, 0);
+    gdl = watchMenuRenderBackground(gdl, mtx, 0);
 
     if (watchIsZooming() != 1)
     {
@@ -3436,56 +3436,56 @@ Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *param_2) {
 
         textptr = langGet(getStringID(LOPTIONS, OPTION_STR_35_MUSIC_LF)); //music
 
-        sp54 = XOFFSET_1;
-        sp50 = YOFFSET_8;
+        x = XOFFSET_1;
+        y = YOFFSET_8;
 
-        sp5C = 0xFF00B0;
+        colour = 0xFF00B0;
 
         if (g_WatchMenuOptionsRow == 0)
         {
-            sp5C = 0xA0FFA0F0;
+            colour = 0xA0FFA0F0;
             if (g_WatchMenuSelected != 0)
             {
-                sp5C = -1;
+                colour = -1;
             }
         }
 
-        textMeasure(&sp48, &sp4C, textptr, pFontChars, pFontFile, 0);
+        textMeasure(&height, &width, textptr, pFontChars, pFontFile, 0);
 
         if ((g_WatchMenuSelected != 0) && (g_WatchMenuOptionsRow == 0))
         {
-            gdl = textRenderOutlined(gdl, &sp54, &sp50, textptr, pFontChars, pFontFile, sp5C, 0x7000A0, sp4C + 1, sp48, 0, 0);
+            gdl = textRenderOutlined(gdl, &x, &y, textptr, pFontChars, pFontFile, colour, 0x7000A0, width + 1, height, 0, 0);
         }
         else
         {
-            gdl = textRender(gdl, &sp54, &sp50, textptr, pFontChars, pFontFile, sp5C, sp4C, sp48, 0, 0);
+            gdl = textRender(gdl, &x, &y, textptr, pFontChars, pFontFile, colour, width, height, 0, 0);
         }
 
-        sp5C = 0xFF00B0;
+        colour = 0xFF00B0;
         textptr = langGet(getStringID(LOPTIONS, OPTION_STR_36_FX_LF)); //fx
 
-        sp54 = XOFFSET_1;
-        sp50 = YOFFSET_9;
+        x = XOFFSET_1;
+        y = YOFFSET_9;
 
 
         if (g_WatchMenuOptionsRow == 1)
         {
-            sp5C = 0xA0FFA0F0;
+            colour = 0xA0FFA0F0;
             if (g_WatchMenuSelected != 0)
             {
-                sp5C = -1;
+                colour = -1;
             }
         }
 
-        textMeasure(&sp48, &sp4C, textptr, pFontChars, pFontFile, 0);
+        textMeasure(&height, &width, textptr, pFontChars, pFontFile, 0);
 
         if ((g_WatchMenuSelected != 0) && (g_WatchMenuOptionsRow == 1))
         {
-            gdl = textRenderOutlined(gdl, &sp54, &sp50, textptr, pFontChars, pFontFile, sp5C, 0x7000A0, sp4C + 1, sp48, 0, 0);
+            gdl = textRenderOutlined(gdl, &x, &y, textptr, pFontChars, pFontFile, colour, 0x7000A0, width + 1, height, 0, 0);
         }
         else
         {
-            gdl = textRender(gdl, &sp54, &sp50, textptr, pFontChars, pFontFile, sp5C, sp4C, sp48, 0, 0);
+            gdl = textRender(gdl, &x, &y, textptr, pFontChars, pFontFile, colour, width, height, 0, 0);
         }
 
         gdl = watchMenuRenderOptionRows(gdl);
@@ -3547,9 +3547,9 @@ u8 *textLastLine(u8 *arg)
 
 
 
-Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *param_2)
+Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
 {
-    gdl = watchMenuRenderBackground(gdl, param_2, 0);
+    gdl = watchMenuRenderBackground(gdl, mtx, 0);
 
     if (watchIsZooming() != 1)
     {
@@ -3760,7 +3760,7 @@ const char g_ObjectiveLineEnd2[] = " \n";
 const char g_ObjectiveLineEndGap2[] = " \n\n";
 
 
-Gfx *watchMenuRender(Gfx *gdl, Mtx *arg1, s32 watch_transitioning)
+Gfx *watchMenuRender(Gfx *gdl, Mtx *mtx, s32 watch_transitioning)
 {
     watchMenuSetTabColours(g_WatchMenuPage, (struct WatchVertex *)g_CurrentPlayer->watchTabsVtx);
 
@@ -3778,26 +3778,26 @@ Gfx *watchMenuRender(Gfx *gdl, Mtx *arg1, s32 watch_transitioning)
         switch (g_WatchMenuPage)
         {
             case WATCH_INDEX_MISSION_STATUS:
-                gdl = watchMenuRenderStatus(gdl, arg1);
+                gdl = watchMenuRenderStatus(gdl, mtx);
                 break;
             case WATCH_INDEX_INVENTORY:
-                gdl = watchMenuRenderInventory(gdl, arg1);
+                gdl = watchMenuRenderInventory(gdl, mtx);
                 break;
             case WATCH_INDEX_CONTROL_OPTIONS:
-                gdl = watchMenuRenderControl(gdl, arg1);
+                gdl = watchMenuRenderControl(gdl, mtx);
                 break;
             case WATCH_INDEX_GAME_OPTIONS:
-                gdl = watchMenuRenderOptions(gdl, arg1);
+                gdl = watchMenuRenderOptions(gdl, mtx);
                 break;
             case WATCH_INDEX_MISSION_BRIEFING:
-                gdl = watchMenuRenderBriefing(gdl, arg1);
+                gdl = watchMenuRenderBriefing(gdl, mtx);
         }
     }
     else if (watch_transitioning == FALSE)
     {
         lvSetDrawWorld(1);
         playerSetOutsideWatchMenu(TRUE);
-        gdl = watchMenuRenderBackgroundZoom(gdl, arg1);
+        gdl = watchMenuRenderBackgroundZoom(gdl, mtx);
     }
 
     return gdl;

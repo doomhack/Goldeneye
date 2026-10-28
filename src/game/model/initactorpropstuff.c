@@ -32,11 +32,11 @@ void reset_counter_rand_body_head(void)
 }
 
 
-u32 animSumRootTurn(void *ani, int aniid, int param_3) {
+u32 animSumRootTurn(void *ani, int aniid, int endframe) {
     u16 asStack8[4];
     u16 result = 0;
 
-    while (aniid < param_3) {
+    while (aniid < endframe) {
         result += animReadRootMotion16(0, 0, &skeleton_guard, ani, aniid, asStack8);
         aniid++;
     }

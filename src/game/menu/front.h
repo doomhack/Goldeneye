@@ -290,7 +290,7 @@ void frontTick(void);
 Gfx * frontRender(Gfx *DL);
 void frontUnlockAllMpChars(void);
 u8 frontGetMpCharGender(int player);
-s32 frontFindMissionEntry(s32 arg0);
+s32 frontFindMissionEntry(s32 mission);
 
 void frontInit(void);
 
