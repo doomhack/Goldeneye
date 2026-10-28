@@ -248,17 +248,16 @@ void        chrDetectRooms(ChrRecord *);
 void        chrSetMoving(ChrRecord *guard,s32 unset);
 f32         chrsGetAnimRate(void);
 void        chrsSetAnimRate(f32);
-PropRecord *chrInit(PropRecord *, Model *, coord3d *, f32 arg2, StandTile * arg3, struct AIListRecord *arg4);
-PropRecord *chrAllocate(struct Model * arg0, coord3d * arg1, f32 arg2, StandTile * arg3, s32 arg4);
+PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, StandTile *tile, struct AIListRecord *ailist);
+PropRecord *chrAllocate(struct Model *model, coord3d *pos, f32 angle, StandTile *tile, s32 ailist);
 void        chrSetHiddenToRandom(ChrRecord *self);
-void        chrRemovedUnused(f32 arg0);
 void        chrCheckGuardsHeardSound(f32 noise);
 ChrRecord  *chrFindByLiteralId(s32 index);
 PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand);
 PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *ChrRecord, GUNHAND hand);
 void        chrUpdateCollisionBounds(PropRecord *prop, struct rect4f **polygon, s32 *edges, f32 *y_out, f32 *ground);
-void        chrGetChrWidthHeight(PropRecord *arg0, f32 *width, f32 *height, f32 *always_20);
-f32         chrGetChrGround(PropRecord *arg0);
+void        chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *height, f32 *always_20);
+f32         chrGetChrGround(PropRecord *prop);
 void        chrDropItems(struct ChrRecord *self);
 s32         chrsGetNumSlots(void);
 Gfx        *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
@@ -266,12 +265,12 @@ Gfx        *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
 void        chrAddHealth(ChrRecord *chr, f32 health);
 void        chrSetMaxDamage(ChrRecord *chr, f32 maxdamage);
 s32         propIsOfCdType(PropRecord* prop, s32 cdtypes);
-s32         chrGetOnscreenRenderBounds(PropRecord *arg0, struct coord3d *arg1, struct coord2d *arg2, struct coord2d *arg3);
+s32         chrGetOnscreenRenderBounds(PropRecord *prop, struct coord3d *pos, struct coord2d *xbounds, struct coord2d *ybounds);
 void        chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit);
 
 //tentative signature
 s32         chrRootMoveCallback(Model *, coord3d *, coord3d *, f32 *);
-void        chrCreateBloodStain(Model *model, s32 arg1, ModelNode *root, struct coord3d *pos);
+void        chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, struct coord3d *pos);
 void        chrTestHit(PropRecord *prop, ShotData *shotdata);
 
 #ifdef BUGFIX_R1

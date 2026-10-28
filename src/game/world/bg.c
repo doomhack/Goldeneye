@@ -642,7 +642,6 @@ void bgLoad(LEVEL_INDEX levelid)
  
     bgSetLevelScale(levelinfotable[levelentry_index].levelscale);
     stanSetLevelScale(levelinfotable[levelentry_index].levelscale);
-    chrRemovedUnused(levelinfotable[levelentry_index].levelscale);
  
     mCurrentLevelVisibilityScale = levelinfotable[levelentry_index].visibility;
  

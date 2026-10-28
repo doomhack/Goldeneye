@@ -480,12 +480,12 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     modelSetRootPosition(g_TitleBondModel, &rootpos);
     modelSetRootRotY(g_TitleBondModel, 0.0f);
 #if defined(VERSION_EU)
-    #define S_7F008E80_ANIM_SPEED 0.6f
+    #define TITLE_BOND_ANIM_SPEED 0.6f
 #else
-    #define S_7F008E80_ANIM_SPEED 0.5f
+    #define TITLE_BOND_ANIM_SPEED 0.5f
 #endif
-    modelSetAnimPlaySpeed(g_TitleBondModel, S_7F008E80_ANIM_SPEED, 0.0f);
-#undef S_7F008E80_ANIM_SPEED
+    modelSetAnimPlaySpeed(g_TitleBondModel, TITLE_BOND_ANIM_SPEED, 0.0f);
+#undef TITLE_BOND_ANIM_SPEED
     
     animation = (struct ModelAnimation*)((s32)g_AnimTable + (s32)&ANIM_DATA_bond_eye_walk);
     startframe = animation->numFrames - 0x44;

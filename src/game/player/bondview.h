@@ -1065,33 +1065,6 @@ extern s32 upper_text_buffer_index;
 extern s32 display_upper_text_window;
 extern s32 upper_text_window_timer;
 extern s32 g_UpperTextDisplayFlag;
-/*
-D:800368D8     firing_animation_groups:firing_anim_struct <pistol_firing_animation_group1, 0, 0.1, 79.0, 87.0>
-D:800368D8                                              # DATA XREF: sub_CODE_7F08B0F0+720o
-D:800368EC                     firing_anim_struct <stru_D_800306F0, 0, 0.5, 0.0, -1.0>
-D:80036900                     firing_anim_struct <stru_D_80030738, 0, 0.5, 0.0, -1.0>
-D:80036914                     firing_anim_struct <stru_D_800308A0, 0, 0.5, 0.0, -1.0>
-D:80036928                     firing_anim_struct <stru_D_800308E8, 0, 0.5, 0.0, -1.0>
-D:8003693C                     firing_anim_struct <crouched_pistol_firing_animation_group1, 0, 0.1, 56.0, 68.0>
-D:80036950                     firing_anim_struct <rifle_firing_animation_group1, 0, 0.050000001, 35.0, 40.0>
-D:80036964                     firing_anim_struct <stru_D_80030660, 0, 0.5, 0.0, -1.0>
-D:80036978                     firing_anim_struct <stru_D_800306A8, 0, 0.5, 0.0, -1.0>
-D:8003698C                     firing_anim_struct <stru_D_800308A0, 0, 0.5, 0.0, -1.0>
-D:800369A0                     firing_anim_struct <stru_D_800308E8, 0, 0.5, 0.0, -1.0>
-D:800369B4                     firing_anim_struct <stru_D_8002F7A8, 0, 0.1, 45.0, 55.0>
-D:800369C8                     firing_anim_struct <0, 0x8194, 0.25, 0.0, -1.0>
-D:800369DC                     firing_anim_struct <0, 0x8204, 0.5, 0.0, -1.0>
-D:800369F0                     firing_anim_struct <0, 0x777C, 0.5, 0.0, -1.0>
-D:80036A04                     firing_anim_struct <stru_D_800308A0, 0, 0.5, 0.0, -1.0>
-D:80036A18                     firing_anim_struct <stru_D_800308E8, 0, 0.5, 0.0, -1.0>
-D:80036A2C                     firing_anim_struct <0, 0x6C18, 0.050000001, 28.0, 29.0>
-D:80036A40                     firing_anim_struct <doubles_firing_animation_group1, 0, 0.1, 32.0, 42.0>
-D:80036A54                     firing_anim_struct <stru_D_80030780, 0, 0.5, 0.0, -1.0>
-D:80036A68                     firing_anim_struct <stru_D_800307C8, 0, 0.5, 0.0, -1.0>
-D:80036A7C                     firing_anim_struct <stru_D_800308A0, 0, 0.5, 0.0, -1.0>
-D:80036A90                     firing_anim_struct <stru_D_800308A0, 0, 0.5, 0.0, -1.0>
-D:80036AA4                     firing_anim_struct <crouched_doubles_firing_animation_group1, 0, 0.1, 37.0, 47.0>
-*/
 
 extern s32 startpadcount;
 extern vec3d g_ForceBondMoveOffset;
