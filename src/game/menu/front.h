@@ -141,7 +141,7 @@ extern f32 cast_camera_height_end;
 extern struct coord3d cast_target_smoothed;
 extern struct coord3d cast_target_accumulator;
 
-extern s32 cast_camera_reset;
+extern bool cast_camera_reset;
 
 extern struct coord3d cast_rootpos_smoothed;
 
@@ -164,7 +164,7 @@ extern s32 g_MpCharPrevCursor[4];
 
 extern s32 g_MpCharScroll[4];
 
-extern s32 g_MpCharChosen[];
+extern bool g_MpCharChosen[];
 extern s32 g_MpCharPortraitSize[];
 extern s32 g_MpHandicap[];
 extern char* g_FrontTabStartText;
@@ -226,7 +226,7 @@ extern s32 g_FrontFolderIcon;
 extern s32 g_FrontFolderErase;
 extern s32 g_FrontFolderEraseChoice;
 extern s32 g_FrontMissionAborted;
-extern s32 g_FrontBondKilled;
+extern bool g_FrontBondKilled;
 extern s32 g_FrontFirstLegal;
 extern s32 g_FrontFirstBoot;
 extern s32 g_FrontSkipIntro;

@@ -71,9 +71,10 @@ void stanResetHits(void);
 Gfx * stanDebugBeginDraw(Gfx *gdl);
 Gfx * stanDebugDrawTile(Gfx *ptrdl, StandTilePoint *tile_point, u32 RGBAColor);
 s32 stanWalkLineNoCallback(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z);
-s32 stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z);
+bool stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z);
 f32 stanGetPositionYValue(StandTile* tile, f32 p_x, f32 p_z);
-s32 stanGetCollisionEdge(coord3d *pntA, coord3d *pntB);
+bool stanGetCollisionEdge(coord3d *pntA, coord3d *pntB);
+bool stanTileHasZeroArea(StandTile *tile);
 s32 stanTestLocusEdgeAboveY(StandTile **tile, f32 target_x, f32 target_z, f32 radius, f32 yThreshold);
 s32 stanCircleLegal(StandTile** tileStack, f32 target_x, f32 target_z, f32 unknown);
 

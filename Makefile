@@ -151,14 +151,14 @@ CC := $(TOOLCHAIN)gcc
 # -mno-check-zero-division drops the trap GCC puts after every integer divide.
 # GCC 14 made several old-C diagnostics into errors (implicit declarations, int/pointer
 # mixing). The decomp code still has plenty of those, so keep them warnings for now; they
-# go as files are cleaned up. -std=gnu17 holds the language at C17 until the move to C23.
+# go as files are cleaned up. The language is C23 (GNU dialect): bool, true and false are keywords.
 GCC14_RELAX := -Wno-error=implicit-function-declaration -Wno-error=incompatible-pointer-types \
   -Wno-error=int-conversion -Wno-error=implicit-int -Wno-error=return-mismatch
 CC_BASEFLAGS := -nostdinc -isystem $(shell $(CC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 8 \
   -ffreestanding -fno-builtin -fno-common -fms-extensions -fno-strict-aliasing -fwrapv -funsigned-char -fno-toplevel-reorder \
   -fno-delete-null-pointer-checks -fno-isolate-erroneous-paths-dereference -fno-aggressive-loop-optimizations -fno-math-errno \
   -fno-tree-loop-distribute-patterns -mno-check-zero-division -w -DTARGET_N64 -MMD -MP \
-  -std=gnu17 $(GCC14_RELAX)
+  -std=gnu23 $(GCC14_RELAX)
 # Asset data (and the two boot-time blobs below) is copied out of the object byte for byte, so it
 # must keep every variable in .data, zeros and duplicate constants included, and stay off $gp.
 LAYOUT_CFLAGS := -G 0 -fno-zero-initialized-in-bss -fno-merge-constants

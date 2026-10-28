@@ -6,7 +6,7 @@
 #include "bondtypes.h"
 
 void invReset(void);
-s32 invHasFlagToken(void);
+bool invHasFlagToken(void);
 s32 invCountItems(void);
 
 InvItem *invGetItemByIndex(s32 index);

@@ -1176,14 +1176,14 @@ void propsTickPickups(void)
 {
     PropRecord *prop;
     PropRecord *propprev;
-    bool isCollected = FALSE;
+    TICKOP op = TICKOP_NONE;
 
     if (!playerIsInTank() && !g_PlayerInvincible)
     {
         //for each prop in setup
         for (prop = propsGetActiveTail(); prop != NULL; prop = propprev)
         {
-            isCollected = FALSE;
+            op = TICKOP_NONE;
 
             if (prop->timetoregen <= 0)
             {
@@ -1198,17 +1198,17 @@ void propsTickPickups(void)
                          break;
 
                     case PROP_TYPE_OBJ:
-                        isCollected = objTickPlayer(prop);
+                        op = objTickPlayer(prop);
                         break;
 
                     case PROP_TYPE_WEAPON:
-                        isCollected = weaponTickPlayer(prop);
+                        op = weaponTickPlayer(prop);
                         break;
                 }
             }
             propprev = prop->prev; //not sure why rare put this here and not in the for statement
 
-            propExecuteTickOperation(prop, isCollected);
+            propExecuteTickOperation(prop, op);
         }
     }
 }

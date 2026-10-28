@@ -103,9 +103,9 @@ s32 propCanWalkLine       (PropRecord *prop, coord3d *dest, coord3d *dir);
 void chrSetTargetToPlayer                   (ChrRecord *self);
 void coopChrShotByCurrentPlayer               (ChrRecord *self);
 s32 chrSawTargetRecently                      (ChrRecord *);
-s32 chrCheckTargetInSight                     (ChrRecord *self);
+bool chrCheckTargetInSight                    (ChrRecord *self);
 void chrGetSideDir                    (ChrRecord *self, s32 side, coord3d *dir);
-s32 chrIsNotDeadOrShot                        (ChrRecord *chr);
+bool chrIsNotDeadOrShot                       (ChrRecord *chr);
 void chrTickAnim                            (ChrRecord *self);
 void chrTickDead                            (ChrRecord *self);
 void chrTickArgh                            (ChrRecord *self);
@@ -155,7 +155,7 @@ s32 waypointFindInQuadrant              (coord3d *bondpos, StandTile *stan, f32 
 s32 chrIsPosOffScreen                         (coord3d *pos, StandTile *tile);
 PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, coord3d *pos, StandTile *stan, f32 angle, AIListRecord *ailist, s32 spawnflags);
 void chrInitActAttack                       (ChrRecord *self, struct anim_group_info ** animgroups, s32 flip, point2d *hasGun, s32 attack_type, s32 entityid, s32 standing);
-s32 chrPatrolCalculateStep                  (ChrRecord *self, bool *forward, s32 numsteps);
+s32 chrPatrolCalculateStep                  (ChrRecord *self, bool32 *forward, s32 numsteps);
 bool chrIsPosClearOfObjectBounds            (coord3d *pos, StandTile *stan);
 s32 chrNavTryObstacle                         (ChrRecord *self, coord3d *corner, s32 left, coord3d *othercorner, f32 clearance, s32 checktarget, coord3d *target, struct waydata *way, f32 overshoot, s32 cdtypes, s32 set_copy);
 void chrTickStand                           (ChrRecord *self);
@@ -2937,7 +2937,7 @@ void chrActGoposIncCurIndex(ChrRecord *self)
  * whether the chr will be traversing the path in the forward direction at that
  * point.
  */
-s32 chrPatrolCalculateStep(ChrRecord *self, bool *forward, s32 numsteps)
+s32 chrPatrolCalculateStep(ChrRecord *self, bool32 *forward, s32 numsteps)
 {
     s32 nextstep = self->act_patrol.nextstep;
     bool isforward = *forward;
@@ -3004,7 +3004,7 @@ s32 chrPatrolCalculateStep(ChrRecord *self, bool *forward, s32 numsteps)
 PadRecord *chrGetPatrolStepPad(ChrRecord *self, s32 numsteps)
 {
     waypoint *wp;
-    s32 forward;
+    bool32 forward;
     s32 step;
     s32 *data;
 

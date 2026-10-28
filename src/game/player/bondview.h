@@ -342,41 +342,41 @@ struct player
   * with the exceptions of autoaim_target_y and autoaim_target_x.
   */
 
-  bool docentreupdown;
+  bool32 docentreupdown;
 
   /**
    * When the player is doing manual pitch inputs, this is set to true so
    * the automatic look ahead pitch adjust is interrupted.
    */
-  bool prevupdown;
+  bool32 prevupdown;
 
   /**
   * If the player is moving forward quickly, and has made a manual pitch adjustment, suppress
   * the automatic look ahead pitch adjusting until the player has slowed down.
   */
-  bool movecentrerelease;
+  bool32 movecentrerelease;
 
   /**
    * If enabled, test the tiles ahead of the player for the look ahead functionality.
    * This is always enabled.
    */
-  bool lookaheadcentreenabled;
+  bool32 lookaheadcentreenabled;
 
   /**
    * Look Ahead Setting in the watch menu.
    */
-  bool automovecentreenabled;
+  bool32 automovecentreenabled;
 
   /**
    * Always false.
    */
-  bool fastmovecentreenabled;
+  bool32 fastmovecentreenabled;
 
   /**
    * True when Look Ahead is enabled and the player is giving strong
    * forwards or backwards input.
    */
-  bool automovecentre;
+  bool32 automovecentre;
 
   /**
    * 0: crosshair shown on screen
@@ -1106,7 +1106,7 @@ void currentPlayerSetXAutoAimEnabled(bool enabled);
 bool currentPlayerGetXAutoAimEnabled(void);
 
 bool currentPlayerGetXAutoAimEnabledRedirect(void);
-void currentPlayerSetYAutoAimEnabled(s32 enabled);
+void currentPlayerSetYAutoAimEnabled(bool enabled);
 bool currentPlayerGetYAutoAimEnabled(void);
 bool currentPlayerGetYAutoAimEnabledRedirect(void);
 void currentPlayerSetLookAheadSetting(bool enabled);

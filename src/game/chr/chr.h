@@ -245,7 +245,7 @@ extern struct explosion_death_animation g_ExplosionDeathAnims[];
 
 void        chrFreeResources(PropRecord* prop);
 void        chrDetectRooms(ChrRecord *);
-void        chrSetMoving(ChrRecord *guard,s32 unset);
+void        chrSetMoving(ChrRecord *guard, bool unset);
 f32         chrsGetAnimRate(void);
 void        chrsSetAnimRate(f32);
 PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, StandTile *tile, struct AIListRecord *ailist);

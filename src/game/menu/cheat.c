@@ -1581,7 +1581,7 @@ char *cheatGetName(CHEAT_ID cheat_id)
 
 bool cheatIsActive(CHEAT_ID cheat)
 {
-    return ((bool) (u8) g_CheatPlayerMask[cheat] >> playerGetCurrentNum()) & 1;
+    return (g_CheatPlayerMask[cheat] >> playerGetCurrentNum()) & 1;
 }
 
 

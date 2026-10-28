@@ -323,8 +323,8 @@ s32 gunEquip(GUNHAND hand, s32 next_weapon);
 void casingsTick(void);
 void gunTryReload(GUNHAND hand);
 void ammoGiveMaxAll(void);
-void gunSetGunAmmoVisible(s32 reason, s32 enable);
-void gunSetSightVisible(s32 reason, s32 visible);
+void gunSetGunAmmoVisible(s32 reason, bool enable);
+void gunSetSightVisible(s32 reason, bool visible);
 
 s32 ammoGetMax(s32);
 void ammoGive(s32, s32);
