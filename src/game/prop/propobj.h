@@ -31,7 +31,7 @@ extern f32 g_AutogunDamageScale;
 extern f32 g_SoloAmmoMultiplier;
 
 extern s32 alarm_timer;
-extern s32 *g_AlarmSound;
+extern ALSoundState *g_AlarmSound;
 extern f32 toxic_gas_sound_timer;
 extern s32 activate_gas_sound_timer;
 extern coord3d gasLeakSource;

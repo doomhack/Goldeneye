@@ -489,7 +489,7 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
                 break;
             case AL_SNDP_PLAY_SFX_EVT:
                 if (soundState->flags & SOUND_FLAG_RETRIGGER) {
-                    sndPlaySfx(event->playSfx.soundBank, event->playSfx.soundIndex, soundState->state);
+                    sndPlaySfx(event->playSfx.soundBank, event->playSfx.soundIndex, soundState->handle);
                 }
                 break;
             default:
@@ -665,7 +665,7 @@ ALSoundState *sndSetupSound(struct ALBankAlt_s *soundBank, ALSound* sound)
         state->sound = sound;
         state->pitch_2c = 1.0f;
         state->flags = (keymap->keyMax & (u8)0xf0);
-        state->state = NULL;
+        state->handle = NULL;
 
         if ((state->flags & 0x20) != 0)
         {
@@ -728,14 +728,14 @@ void sndUnlinkClearSound(ALSoundState *state)
 
     state->playingState = AL_STOPPED;
 
-    if (state->state != NULL)
+    if (state->handle != NULL)
     {
-        if (state == (ALSoundState *)state->state->link.next)
+        if (*state->handle == state)
         {
-            state->state->link.next = NULL;
+            *state->handle = NULL;
         }
 
-        state->state = NULL;
+        state->handle = NULL;
     }
 }
 
@@ -771,10 +771,10 @@ u8 sndGetPlayingState(ALSoundState *state)
  *
  * @param soundBank sound bank
  * @param soundIndex index into sound bank: soundBank->instArray[0]->soundArray[soundIndex]
- * @param pendingState Optional pointer. If provided, its link.next pointer will be
- * to the newly created soundState.
+ * @param handle Optional. If provided, *handle is set to the newly created sound state
+ * and cleared again when that sound stops.
  */
-ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundState *pendingState)
+ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundState **handle)
 {
     // declarations
 
@@ -859,7 +859,7 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
     if (nextState != NULL)
     {
         nextState->flags |= 0x1;
-        nextState->state = pendingState;
+        nextState->handle = handle;
 
         if (eventSoundIndex != 0)
         {
@@ -876,9 +876,9 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
         }
     }
 
-    if (pendingState != NULL)
+    if (handle != NULL)
     {
-        pendingState->link.next = (void*)nextState;
+        *handle = nextState;
     }
 
     return nextState;

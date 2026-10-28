@@ -43,8 +43,8 @@ extern s32 watch_time_0;
 #endif
 extern char stringbuffer_lowerleft[5][BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH];
 #if defined(BUGFIX_R1)
-extern s32 g_HudMsgBottomFont1[5];
-extern s32 g_HudMsgBottomFont2[5];
+extern struct font *g_HudMsgBottomFont1[5];
+extern struct fontchar *g_HudMsgBottomFont2[5];
 #endif
 extern PadRecord *g_Startpad[16];
 extern s32 startpadcount;
@@ -117,8 +117,8 @@ extern coord3d ZeroCoordSpawnPos;
 extern s32 status_bar_text_buffer_index;
 extern s32 display_statusbar;
 #ifdef BUGFIX_R0
-extern s32 copy_1stfonttable;
-extern s32 copy_2ndfonttable;
+extern struct font *copy_1stfonttable;
+extern struct fontchar *copy_2ndfonttable;
 #endif
 extern s32 upper_text_buffer_index;
 extern s32 display_upper_text_window;

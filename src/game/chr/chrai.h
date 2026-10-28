@@ -75,14 +75,14 @@ Jump to Routine:
 00000009	pppppppp
 [p]ointer to another animation routine where processing resumes
 */
-#define MONJUMPTO(p) 0x9, p
+#define MONJUMPTO(p) 0x9, (u32)(p)
 /*
 Jump on Chance:
 0000000A	pppppppp	0000xxxx
 [p]ointer to another animation routine where processing resumes
 [x] value to test against a random value.  Jump if rand < xxxx
 */
-#define MONJUMPCHANCE(p,x) 0xA, p, x
+#define MONJUMPCHANCE(p,x) 0xA, (u32)(p), x
 /*
 Loop:
 0000000B

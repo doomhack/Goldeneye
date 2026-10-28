@@ -77,9 +77,9 @@ typedef struct ALSoundState_s {
     // offset 0x2c
     f32 pitch_2c;
 
-    // play state for this sound
+    // caller's handle for this sound (see sndPlaySfx), cleared when it stops
     // offset 0x30
-    struct ALSoundState_s *state;
+    struct ALSoundState_s **handle;
 
     // offset 0x34
     s16 vol;
@@ -182,7 +182,7 @@ u8 sndGetPlayingState(ALSoundState *state);
 void sndDeactivate(ALSoundState *state);
 void sndDeactivateAllSfxByFlag_1(void);
 void sndCreatePostEvent(ALSoundState *state, s16 eventType, s32 data);
-ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundState *pendingState);
+ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundState **handle);
 u16 sndGetSfxSlotFirstNaturalVolume(void);
 void sndApplyVolumeAllSfxSlot(u16 volume);
 void sndSetScalerApplyVolumeAllSfxSlot(f32 volumeScale);

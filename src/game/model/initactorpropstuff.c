@@ -157,28 +157,12 @@ void initResolveAnimGroups(struct anim_group_info **groups)
  */
 s32 initResolveAnimTable(struct StruckAnim *entries)
 {
-    s32 count;
-    struct StruckAnim *entry;
-    s32 address;
-    struct StruckAnim *ptr_animation_table_addr;
+    s32 count = 0;
 
-    count = 0;
-    entry = entries;
-    ptr_animation_table_addr = (struct StruckAnim *)(&g_AnimTable);
-
-
-    if (entry->struck_anim != 0)
+    for (; entries->struck_anim != NULL; entries++)
     {
-        do
-        {
-            address = (*entry).struck_anim;
-            entries = ptr_animation_table_addr;
-            count++;
-            entry++;
-            ptr_animation_table_addr = (struct StruckAnim *)(&g_AnimTable);
-            entry[-1].struck_anim = (ModelAnimation *)((*((s32 *)entries)) + (0, address));
-        }
-        while (entry->struck_anim != 0);
+        entries->struck_anim = (ModelAnimation *)((u32)g_AnimTable + (u32)entries->struck_anim);
+        count++;
     }
 
     return count;
