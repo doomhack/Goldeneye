@@ -398,11 +398,6 @@ void fogLoadLevelEnvironment(s32 level_id, s32 introCamera)
         }
     }
 
-    if (1) // possibly if(level_id != 26) or another blanked printf
-    {
-        // removed
-    }
-
     if (num_players >= 2)
     {
         for (env = &fog_tables[0]; env->Id != 0; env++)

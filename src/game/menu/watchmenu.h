@@ -171,7 +171,7 @@ Gfx *watchMenuRender(Gfx *gdl, Mtx *mtx, s32 watch_transitioning);
 void watchMenuOpen(void);
 
 void watchMenuReset(void);
-int textCountLines(u8 *arg);
+int textCountLines(char *arg);
 void watchMenuTick(void);
 void optionsSetAimControl(u32 value);
 void optionsSetAmmoOnScreen(u32 value);

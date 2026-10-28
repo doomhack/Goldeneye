@@ -139,7 +139,7 @@ waypoint *waypointFindByDist(s32 *pointnums, s32 dist, s32 groupnum)
             return point;
         }
 
-        *pointnums++;
+        pointnums++;
     }
 
     return NULL;
@@ -159,7 +159,7 @@ void waypointsSetUnvisitedDist(s32 *pointnums, s32 value, s32 groupnum)
             waypoint->dist = value;
         }
 
-        *pointnums++;
+        pointnums++;
     }
 }
 
@@ -610,7 +610,6 @@ void waypointsValidate(void)
  
     }
     {
-        waygroup *assignmentGroupCursor;
         waypoint *validationWaypointCursor;
         waygroup *floodGroupCursor;
         s32 changed;
@@ -672,13 +671,6 @@ void waypointsValidate(void)
                             while ((linkedGroup->neighbours[reverseIndex] >= 0) && (validationGroupIndex != linkedGroup->neighbours[reverseIndex]))
                             {
                                 reverseIndex++;
-
-                                if ((!(&g_CurrentSetup)) && (validationGroupIndex + (linkedGroup != 0)))
-                                {
-                                }
-                                if ((!(&g_CurrentSetup)) && (validationGroupIndex + (groupNeighbourIndex != 0)))
-                                {
-                                }
                             }
  
                             if (validationGroupIndex != linkedGroup->neighbours[reverseIndex])
@@ -723,7 +715,6 @@ void waypointsValidate(void)
                 if (floodGroup->neighbours != NULL)
                 {
                     currentGroup = groups;
-                    assignmentGroupCursor = floodGroup;
 
                     do
                     {

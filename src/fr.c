@@ -23,9 +23,9 @@
 // same codegen as (x & 0xffff)
 #define TO_U16_A(x) ((u16)(x))
 // same codegen as ((u16)(x))
-#define TO_U16_B(x) (x & 0xffff)
+#define TO_U16_B(x) ((x) & 0xffff)
 
-#define TO_U16_C(x) ((u16)(x & 0xffff))
+#define TO_U16_C(x) ((u16)((x) & 0xffff))
 
 #define TO_U16_M(x) ((x) % 0xffff)
 

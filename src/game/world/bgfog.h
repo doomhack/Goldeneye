@@ -143,7 +143,7 @@ typedef struct EnvironmentRecord
 #if defined(VERSION_EU)
     s16 Id;
 #else
-    u32 Id;
+    s32 Id;
 #endif
     VisibilityRecord Visibility;
     FogRecord Fog;
@@ -156,7 +156,7 @@ typedef struct EnvironmentFoglessRecord
     /**
      * ID = StageID + Token eg, Bunker Cinema is 9 + 900 = 909
     */
-    u32 Id;
+    s32 Id;
     u8 Red;
     u8 Green;
     u8 Blue;

@@ -359,7 +359,7 @@ struct RicochetSoundsLarge ricochet_sounds_large = {
 struct sfx2 watchlaser_fire_sounds = { RICO_LASER2_SFX, RICO_LASER3_SFX };
 struct sfx3 knife_throw_sounds = { KNIFE_THROW1_SFX, KNIFE_THROW2_SFX, KNIFE_THROW3_SFX };
 struct gun_trigger_state g_ZeroTriggerState = { 0, 0 };
-ModelRenderData g_DefaultCasingModelRenderData = {NULL, TRUE, 0x00000003};
+ModelRenderData g_DefaultCasingModelRenderData = {.zbufferenabled = TRUE, .flags = 3};
 
 #define AMMO_RELATED_MAX 30
 AmmoStats ammo_related[AMMO_RELATED_MAX] = {
@@ -477,7 +477,7 @@ s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *m
     }
 
      // Comma operator is intentional: nudges IDO to emit addu s0,a0,t8.
-    current = (0, keyframes) + i;
+    current = keyframes + i;
 
     i = 2;
 
@@ -673,7 +673,7 @@ int gunGetFistModelItem(void)
 void gunLoadHandModel(GUNHAND hand)
 {
     u32              size_buffer_weapon;
-    s8              *ptr_item_text;
+    char              *ptr_item_text;
     ModelFileHeader *ptr_weapon_model;
     u8              *buffer_weapon;
     enum ITEM_IDS    item;
@@ -683,7 +683,7 @@ void gunLoadHandModel(GUNHAND hand)
         if ((g_CurrentPlayer->handModelState[hand] < -2) || (g_CurrentPlayer->handModelItem[hand] == ITEM_UNARMED))
         {
             item             = g_CurrentPlayer->handModelNextItem[hand];
-            ptr_item_text    = (s8 *)gunGetModelFileName(item);
+            ptr_item_text    = gunGetModelFileName(item);
             ptr_weapon_model = get_ptr_weapon_model_header_line(item);
 
             if ((ptr_item_text != NULL) && (ptr_weapon_model != NULL))
@@ -696,17 +696,17 @@ void gunLoadHandModel(GUNHAND hand)
                 if (item == ITEM_SUIT_LF_HAND)
                 {
                     texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + 0xBD70, size_buffer_weapon + 0xFFFF4290);
-                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], (u8 *)ptr_item_text, buffer_weapon, 0xBD70, &g_CurrentPlayer->handModelTexPool[hand]);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, 0xBD70, &g_CurrentPlayer->handModelTexPool[hand]);
                 }
                 else if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
                 {
                     texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + 0xAFD0, size_buffer_weapon + 0xFFFF5030);
-                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], (u8 *)ptr_item_text, buffer_weapon, 0xAFD0, &g_CurrentPlayer->handModelTexPool[hand]);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, 0xAFD0, &g_CurrentPlayer->handModelTexPool[hand]);
                 }
                 else
                 {
                     texInitPool(&g_CurrentPlayer->handModelTexPool[hand], &buffer_weapon[g_GunModelBufferOffset[hand]], size_buffer_weapon - g_GunModelBufferOffset[hand]);
-                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], (u8 *)ptr_item_text, buffer_weapon, g_GunModelBufferOffset[hand], &g_CurrentPlayer->handModelTexPool[hand]);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, g_GunModelBufferOffset[hand], &g_CurrentPlayer->handModelTexPool[hand]);
                 }
             }
 

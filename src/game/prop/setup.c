@@ -482,7 +482,6 @@ void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex)
 */
 void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex)
 {
-    bool hastoken;
     ChrRecord* chr;
     bool giveweapon;
     s32 setindex;
@@ -536,7 +535,6 @@ void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex)
     }
     else
     {
-        hastoken = 1;
         giveweapon = 1;
 
         if (isMpGame())
@@ -572,7 +570,6 @@ void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex)
 
                 case ITEM_TOKEN:
 
-                    hastoken = 1;
                     giveweapon = 1;
 
                     if (frontGetMpScenario() != SCENARIO_TLD)
@@ -747,14 +744,12 @@ void setupHangingMonitors(s32 stageid, ObjectRecord* rack, s32 cmdindex)
 
 void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
 {
-    MonitorRecord *record;
     s32 modelnum;
     ObjectRecord *owner;
     PropRecord *prop;
     f32 scale;
 
     monitor->Monitor = g_MonitorAnimController;
-    record = &monitor->Monitor;
     monitorSetImageByNum(&monitor->Monitor, monitor->ImageNum);
 
     if (monitor->pad < 0 && (monitor->flags & PROPFLAG_INSIDEANOTHEROBJ) == 0)
@@ -1894,8 +1889,8 @@ void setupCreateProps(enum LEVELID stageId)
 
 
 MonitorRecord g_InitialMonitorAnimController = {monAnim00Bond, 0, 0xFFFF, 0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1.0, 0.0};
-MonitorRecord g_InitialUnknownAnimController = {monAnim34, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0};
-MonitorRecord g_InitialTaserAnimController = {monAnim35Taser, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0};
+MonitorRecord g_InitialUnknownAnimController = {monAnim34, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0, 0.0};
+MonitorRecord g_InitialTaserAnimController = {monAnim35Taser, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0, 0.0};
 
 f32 g_DoorScale = 1.0f;
 

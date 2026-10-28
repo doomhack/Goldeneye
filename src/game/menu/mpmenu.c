@@ -814,6 +814,9 @@ Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_colo
             viY = viGetY();
             gdl = textRenderOutlined(gdl, &textX, &textY, text, g_FontBankGothicChars, g_FontBankGothic, 0xA0A0FFF0, 0x70A0, viX, viY, 0, 0);
             break;
+
+        default:
+            break;
     }
 
     return gdl;

@@ -103,7 +103,7 @@ void fileResetSave(save_data *save)
  * @param save
  * @return u32
  */
-u32 fileGetSaveFolder(save_data *save)
+s32 fileGetSaveFolder(save_data *save)
 {
   return save->completion_bitflags & SAVEFLAG_FOLDER;
 }
@@ -149,7 +149,7 @@ void fileResetSaveFlagSlot(save_data *folder, s32 slot)
  * @param folder
  * @return u32
  */
-u32 fileGetSelectedBond(save_data *folder)
+s32 fileGetSelectedBond(save_data *folder)
 {
   return (folder->completion_bitflags & SAVEFLAG_BOND) >> 5;
 }
@@ -400,7 +400,7 @@ void fileSetSaveCheatUnlocked(save_data *save, s32 cheat)
  * @param foldernum
  * @return save_data*
  */
-save_data * fileGetSaveForFoldernum(u32 folder)
+save_data * fileGetSaveForFoldernum(s32 folder)
 {
     int i;
 
@@ -1692,7 +1692,7 @@ void fileGenerateCRC(u8 *addressA, u8 *addressB, s32 crc[2])
 {
     u8 *byte;
     s32 shift      = 0; // Shift value
-    s64 polynormal = 0x8F809F473108B3C1;
+    u64 polynormal = 0x8F809F473108B3C1;
     s32 checksum1  = 0; // Final checksum #1
     s32 checksum2  = 0; // Final checksum #2
 

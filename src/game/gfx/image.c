@@ -25,7 +25,7 @@
 #include <memp.h>
 #include "game/player/player.h"
 
-s32 texBuildLookup(s8 *lookup, s32 bitsperpixel);
+s32 texBuildLookup(u8 *lookup, s32 bitsperpixel);
 s32 texChannelsToPixels(u8 *src, s32 width, s32 height, u8 *dst, s32 format);
 s32 texInflateLookup(s32 width, s32 height, u8 *dst, u8 *lookup, s32 numcolours, s32 format);
 s32 texInflateLookupFromBuffer(u8 *src, s32 width, s32 height, u8 *dst, u8 *lookup, s32 numcolours, s32 format);
@@ -154,7 +154,6 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, struc
     s32 numimages;
     s32 totalbytesout;
     s32 format;
-    bool foundthething;
     bool writetocache;
     s32 width;
     s32 height;
@@ -204,7 +203,6 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, struc
         palette[i] = texBitsRead(16);
     }
 
-    foundthething = FALSE;
 
     for (j = 0; j < numimages; j++)
     {
@@ -1564,7 +1562,7 @@ void texInflateRle(u8 *dst, s32 blockstotal)
  *
  * This function does NOT work with pixel formats of 8 bits or less.
  */
-s32 texBuildLookup(s8 *lookup, s32 bitsperpixel)
+s32 texBuildLookup(u8 *lookup, s32 bitsperpixel)
 {
     s32 numcolors = texBitsRead(11);
     s32 i;
@@ -2509,13 +2507,11 @@ u32 texBitsRead(s32 bitCount)
 void texResolveTableOffsets(void)
 {   
     s32 offset;
-    s32 next_offset;
     s32 size;
     struct image_entry *entryp;
 
     entryp = g_Textures;
     offset = 0;
-    next_offset = entryp->dataoffset;
 
     while (entryp->dataoffset != 0xffff)
     {
@@ -2523,7 +2519,6 @@ void texResolveTableOffsets(void)
         entryp->dataoffset = offset;
         offset += size;
         entryp++;
-        next_offset = entryp->dataoffset;
     }
 
     entryp->dataoffset = offset;

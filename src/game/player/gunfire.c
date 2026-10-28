@@ -594,7 +594,7 @@ void gunUpdateAndFire(GUNHAND handnum)
         model = (Model *) (&hand->gunmodel);
 
 
-        modelInit(model, mdlhdr, (s32 *) (&hand->gunmodelRwData));
+        modelInit(model, mdlhdr, hand->gunmodelRwData);
         gunSetFirstPersonPartsVisible(model, 1);
         gunSetHeldItemVisible(model, hand->heldItemVisible);
         node = mdlhdr->Switches[1];
@@ -899,6 +899,9 @@ void gunUpdateAndFire(GUNHAND handnum)
                 hand->numShots = hand->numShots + 1;
 #endif
                 gunCreateBeamForHand(handnum);
+                break;
+
+            default:
                 break;
             }
         }
@@ -1446,7 +1449,7 @@ void gunRenderHands(Gfx **gdlptr)
     s32 handnum;
     Model *model;
  
-    renderdata = (ModelRenderData){NULL, TRUE, 3};
+    renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
  
     for (handnum = 0; handnum != 2; handnum++) 
     {
@@ -1555,7 +1558,7 @@ void gunRenderHands(Gfx **gdlptr)
 
 Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour)
 {
-    ModelRenderData renderdata = {NULL, TRUE, 3};
+    ModelRenderData renderdata = {.zbufferenabled = TRUE, .flags = 3};
     Model model = {};
     u32 rwbuf[0x80 / sizeof(u32)];
     Mtxf tmp;
@@ -1801,7 +1804,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     struct coord3d coord_node12_pos;
     struct coord3d coord_node12_base;
 
-    renderdata = (ModelRenderData){NULL, TRUE, 3};
+    renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
     gunSetWatchMenuWeapon(GUNRIGHT, 0x55);
 
@@ -2864,6 +2867,9 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                     handptr->stateFrames = 0;
                 }
                 break;
+
+            default:
+                break;
             }
 
             if (handptr->weapon_firing_status != 0)
@@ -3028,7 +3034,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 #if defined(VERSION_US)
                 // HACK: registers are swapped
                 // addu a1, v1, a0
-                && (handptr->stateTime + weapon_stats->b44[3] < (0,recoilTicks) + settleTicks)
+                && (handptr->stateTime + weapon_stats->b44[3] < recoilTicks + settleTicks)
                 && (handptr->stateTime + weapon_stats->b44[3] >= (s32)weapon_stats->b44[2])
 #endif
 #if  defined(VERSION_EU)
@@ -6680,7 +6686,6 @@ void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpa
     f32 prevfurthest;
     s32 numPenetratedObjects;
     f32 furthest;
-    struct ShotData *localshot; // Assigned but never used, required for matching.
 
     /**
      * If countsAsPenetration is true, then this hit is on an object that bullets may pass through,
@@ -6692,7 +6697,6 @@ void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpa
         prevfurthest = furthest;
         furthestindex = 0;
         numPenetratedObjects = 0;
-        localshot = shotdata;
 
         for (i = 0; i < ARRAYCOUNT(shotdata->hits); i++)
         {

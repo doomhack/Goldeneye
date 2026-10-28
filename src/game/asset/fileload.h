@@ -40,12 +40,12 @@ void *fileLoadByNameToPool(char *filename, FileLoadMode loadMethod, s32 size, u8
 
 
 void fileSetSize(s32 filenum, u8* ptr, u32 size, s32 reallocate);
-s32 fileGetLoadedSizeByName(u8 *name);
+s32 fileGetLoadedSizeByName(char *name);
 s32 fileGetAllocSize(s32 index);
 s32 fileGetLoadedSize(s32 index);
 s32 fileGetIndex(char *resname);
 
 void fileInit(void);
-void fileLoadPartByName(u8 *name, u8 *dst, s32 offset, s32 len);
+void fileLoadPartByName(char *name, u8 *dst, u32 offset, u32 len);
 
 #endif

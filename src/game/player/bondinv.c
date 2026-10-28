@@ -4,6 +4,7 @@
  * lookups the watch's inventory page uses. See docs/subsystems/weapons.md.
  */
 #include <ultra64.h>
+#include <macro.h>
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/player/player.h"
@@ -1354,7 +1355,7 @@ void invDetermineEquippedItem(void)
     }
 }
 
-u8 *invGetActivatedTextObject(ObjectRecord *obj)
+char *invGetActivatedTextObject(ObjectRecord *obj)
 {
     textoverride *override = invGetOverrideForObj(obj);
 
@@ -1366,7 +1367,7 @@ u8 *invGetActivatedTextObject(ObjectRecord *obj)
     return NULL;
 }
 
-u8 *invGetActivatedTextWeapon(ITEM_IDS weaponnum)
+char *invGetActivatedTextWeapon(ITEM_IDS weaponnum)
 {
     textoverride *override = invGetOverrideForWeapon(weaponnum);
 
@@ -1464,6 +1465,6 @@ void invResetHeldTimes(void) {
 
 void invAllocate(s32 additionalentries) {
   g_CurrentPlayer->equipmaxitems = additionalentries + 0x1e;
-    g_CurrentPlayer->p_itemcur     = mempAlloc((g_CurrentPlayer->equipmaxitems * 0x14 + 0xfU | 0xf) ^ 0xf, MEMPOOL_STAGE);
+    g_CurrentPlayer->p_itemcur     = mempAlloc(ALIGN16_a(g_CurrentPlayer->equipmaxitems * 0x14), MEMPOOL_STAGE);
   invReset();
 }

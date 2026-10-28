@@ -3947,11 +3947,6 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
 
         obj->mtx.m[1][1] = normal.y;
 
-        if ((&yawvec) && (&yawvec))
-        {
-            // empty
-        }
-
         obj->mtx.m[1][2] = ((f32*)&normal)[2];
 
         if (normal.x)
@@ -5967,7 +5962,7 @@ s32 objTick(struct PropRecord *prop)
 
 				if (aircraft->model->anim != NULL)
 				{
-					renderdata = (ModelRenderData){NULL, TRUE, 3};
+					renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 					renderdata.basemtx = camGetWorldToScreenMtxf();
 					renderdata.mtxlist = &mtxs[0];
 					modelCalcMatrices(&renderdata, aircraft->model);
@@ -6846,8 +6841,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
         }
 
         {
-            f32 tmp1;
-            f32 tmp2;
 
             if (tconfig != NULL) 
             {
@@ -6865,7 +6858,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
                 yfrac2 = yfrac1;
 
 
-                tmp1 = 1.5707964f;
 
                 if (screen->rot != 0.0f) 
                 {
@@ -6882,7 +6874,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
                     yfrac2 *= cosrot;
                 }
 
-                tmp1 = xfrac1 * yfrac1 * xfrac2;
 
 
                 vertices[0].s = tconfig->width  * (screen->xmid + xfrac1) * 32.0f;
@@ -6898,7 +6889,6 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
                 vertices[3].t = tconfig->height * (screen->ymid - yfrac2) * 32.0f;
             }
 
-            tmp2 = tmp1;
         }
 
         if (1) 
@@ -7188,7 +7178,7 @@ Gfx *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass)
 
     obj = prop->obj;
 
-    mrData = (ModelRenderData){NULL, TRUE, 3};
+    mrData = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
     objAlpha = 0xFF;
     fogfrac = fogGetPropDistColor(prop, &fogcolour);
@@ -7480,7 +7470,7 @@ void objDeform(ObjectRecord *obj, E_EXPLOSIONTYPE explosiontype)
         }
         else
         {
-            for (i = 0, offset = 0; i < ((0, rodata))->numVertices; i++, offset += sizeof(Vertex))
+            for (i = 0, offset = 0; i < rodata->numVertices; i++, offset += sizeof(Vertex))
             {
                 *((Word4 *) (((u8 *) newverts) + offset)) = *((Word4 *) (((u8 *) rodata->Vertices) + offset));
             }
@@ -9549,9 +9539,9 @@ void objGetCollisionBounds(PropRecord* prop, coord2d** polygon, s32* edges, f32*
 }
 
 
-void pickupAppendPickedUp(u8 *buffer,u8 * param2,u8 * param3)
+void pickupAppendPickedUp(char *buffer)
 {
-  u8 *str;
+  char *str;
 
   str = langGet(getStringID(LPROPOBJ,PROPOBJ_STR_00_PICKEDUP)); //Picked up
   strcat(buffer,str);
@@ -9559,9 +9549,9 @@ void pickupAppendPickedUp(u8 *buffer,u8 * param2,u8 * param3)
 }
 
 
-void pickupAppendAmmoAmount(u8 *buffer, AMMOTYPE ammotype,u32 amount)
+void pickupAppendAmmoAmount(char *buffer, AMMOTYPE ammotype,u32 amount)
 {
-    u8 *textfiletext;
+    char *textfiletext;
 
     switch(ammotype) {
     case AMMO_9MM:
@@ -9617,14 +9607,17 @@ void pickupAppendAmmoAmount(u8 *buffer, AMMOTYPE ammotype,u32 amount)
             textfiletext = langGet(getStringID(LPROPOBJ,PROPOBJ_STR_01_SOME)); //some
             strcat(buffer,textfiletext);
         }
+
+    default:
+        break;
     }
     return;
 }
 
 
-void pickupAppendAmmoType(u8 *buffer, AMMOTYPE ammotype, s32 amount)
+void pickupAppendAmmoType(char *buffer, AMMOTYPE ammotype, s32 amount)
 {
-    u8 *textfiletext;
+    char *textfiletext;
     if (((ammotype == AMMO_9MM) || (ammotype == AMMO_9MM_2)) || (ammotype == AMMO_RIFLE))
     {
         textfiletext = langGet(getStringID(LPROPOBJ,PROPOBJ_STR_05_AMMO)); //ammo
@@ -9744,6 +9737,9 @@ void pickupAppendAmmoType(u8 *buffer, AMMOTYPE ammotype, s32 amount)
                         textfiletext = langGet(getStringID(LPROPOBJ,PROPOBJ_STR_1F_PLASTIQUE)); //plastique
                         strcat(buffer,textfiletext);
                         break;
+
+                    default:
+                        break;
                 }
                 if (1 < amount)
                 {
@@ -9788,6 +9784,9 @@ void pickupPlayAmmoSound(AMMOTYPE ammotype)
             break;
         case AMMO_KNIFE:
             sndPlaySfx(g_musicSfxBufferPtr,PICKUP_KNIFE_SFX,0);
+
+        default:
+            break;
     }
 }
 
@@ -9829,12 +9828,12 @@ void pickupPlayWeaponSound(ITEM_IDS weapontype)
 
 
 //!FIXME, i need to be properly split from chrai.c
-void pickupBuildAmmoText(u8 *finaltext, AMMOTYPE ammotype, u32 quantity)
+void pickupBuildAmmoText(char *finaltext, AMMOTYPE ammotype, u32 quantity)
 {
     *finaltext = 0;
     if (!viewIsHalfWidth())
     {
-        pickupAppendPickedUp(finaltext, (u8 *)ammotype, (u8 *)quantity);
+        pickupAppendPickedUp(finaltext);
         pickupAppendAmmoAmount(finaltext, ammotype, quantity);
     }
     pickupAppendAmmoType(finaltext, ammotype, quantity);
@@ -9939,6 +9938,9 @@ s32 weaponGetAmmoInMagazine(AmmoCrateRecord *crate)
         case AMMO_MAGNUM:  qty =  5; break;
         case AMMO_GGUN:    qty =  3; break;
         case AMMO_DARTS:   qty =  4; break;
+
+        default:
+            break;
     }
 
     if (qty > 1 && !isMpGame())
@@ -9983,7 +9985,7 @@ s32 pickupAmmoFromWeapon(WeaponObjRecord *weapon)
 }
 
 
-void pickupBuildWeaponText(u8 *finalstring, ITEM_IDS itemtype)
+void pickupBuildWeaponText(char *finalstring, ITEM_IDS itemtype)
 {
     /* Half-width views skip "Picked up" and strcat onto this, so it must start empty
        (the original left the caller's stack buffer uninitialised) */
@@ -10183,7 +10185,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
 #endif
             }
 
-            op = INV_ITEM_PICKUP;
+            op = TICKOP_GIVETOPLAYER;
 
             break;
         }
@@ -10445,7 +10447,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
     {
         objFree(obj, 0, (obj->state & RUNTIMEBITFLAG_REMOVE));
 
-        return INV_ITEM_WEAPON;
+        return TICKOP_FREE;
     }
 
     if (op != TICKOP_NONE)
@@ -11684,7 +11686,7 @@ void chrRenderHeldWeapon(PropRecord *chrprop, GUNHAND hand, JointListEntry **joi
             if ((s32)(weaponObj->flags2 << 12) >= 0) 
             {
                 heldModel = weaponObj->model;
-                renderData = (ModelRenderData){NULL, TRUE, 3};
+                renderData = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
                 chrModel = chr->model;
                 prop->flags |= PROPFLAG_ONSCREEN;

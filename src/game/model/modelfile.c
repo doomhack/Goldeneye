@@ -27,7 +27,7 @@
  * the file's buffer first so the textures can go in the space after them. Then trims the
  * file's allocation (when it is in the stage pool) to what is used.
  */
-void modelFileLoadTextures(ModelFileHeader *objheader, u8 *name, u8 *dst, struct texpool *buffer)
+void modelFileLoadTextures(ModelFileHeader *objheader, char *name, u8 *dst, struct texpool *buffer)
 {
     ModelNode *node;
     s32 romremaining;
@@ -39,9 +39,10 @@ void modelFileLoadTextures(ModelFileHeader *objheader, u8 *name, u8 *dst, struct
     s32 delta;
     s32 filedata;
     s32 filenum;
+    s32 size; // bytes of display list data being processed
 
     filedata = (s32) objheader->Switches;
-    filenum = fileGetIndex((char *) name);
+    filenum = fileGetIndex(name);
 
     romremaining = fileGetAllocSize(filenum);
     pcremaining = fileGetLoadedSize(filenum);
@@ -50,14 +51,14 @@ void modelFileLoadTextures(ModelFileHeader *objheader, u8 *name, u8 *dst, struct
 
     if (gdl != 0)
     {
-        name = (u8 *) ((pcremaining - ((s32) (((u8 *) objheader->Switches) + (((u32) gdl) & 0x00ffffff)))) + ((s32) filedata));
+        size = (s32) ((pcremaining - ((s32) (((u8 *) objheader->Switches) + (((u32) gdl) & 0x00ffffff)))) + ((s32) filedata));
         
         /* The signed lvalue cast is required for the compiler to choose the target registers. */
         replacementgdl = (u32)*(s32 *)&gdl;
         
-        delta = ((s32) ((romremaining + filedata) - (s32) name)) - ((s32) (((u8 *) objheader->Switches) + (((u32) gdl) & 0x00ffffff)));
+        delta = ((s32) ((romremaining + filedata) - size)) - ((s32) (((u8 *) objheader->Switches) + (((u32) gdl) & 0x00ffffff)));
         
-        texCopyGdls((Gfx *) (((u8 *) objheader->Switches) + (((u32) gdl) & 0x00ffffff)), (Gfx *) ((romremaining + filedata) - (s32) name), (s32) name);
+        texCopyGdls((Gfx *) (((u8 *) objheader->Switches) + (((u32) gdl) & 0x00ffffff)), (Gfx *) ((romremaining + filedata) - size), size);
 
         texLoadFromModelFileHeader(objheader, buffer);
 
@@ -71,23 +72,23 @@ void modelFileLoadTextures(ModelFileHeader *objheader, u8 *name, u8 *dst, struct
                 
                 if (gdl != 0)
                 {
-                    name = (u8 *) (((s32) gdl) - ((s32) curgdl));
+                    size = (s32) (((s32) gdl) - ((s32) curgdl));
                 }
                 else
                 {
-                    name = (u8 *) ((((s32) (filedata + pcremaining)) - ((s32) objheader->Switches)) - (((u32) curgdl) & 0x00ffffff));
+                    size = (s32) ((((s32) (filedata + pcremaining)) - ((s32) objheader->Switches)) - (((u32) curgdl) & 0x00ffffff));
                 }
                 
                 modelNodeReplaceGdl((u32) objheader, curnode, curgdl, (Gfx *) replacementgdl);
                 
-                replacementgdl += texLoadFromGdl( (Gfx *) ((((u8 *) objheader->Switches) + (((u32) curgdl) & 0x00ffffff)) + delta), (s32) name, (Gfx *) (((u8 *) objheader->Switches) + (replacementgdl & 0x00ffffff)), buffer);
+                replacementgdl += texLoadFromGdl( (Gfx *) ((((u8 *) objheader->Switches) + (((u32) curgdl) & 0x00ffffff)) + delta), size, (Gfx *) (((u8 *) objheader->Switches) + (replacementgdl & 0x00ffffff)), buffer);
             } 
             while (node != 0);
         }
 
-        name = (u8 *) (((s32) (((u8 *) objheader->Switches) + (replacementgdl & 0x00ffffff))) - filedata);
+        size = (s32) (((s32) (((u8 *) objheader->Switches) + (replacementgdl & 0x00ffffff))) - filedata);
 
-        fileSetSize(filenum, (u8 *) filedata, (((s32) name + 0xf) & (~0xf)), dst == 0);
+        fileSetSize(filenum, (u8 *) filedata, ((size + 0xf) & (~0xf)), dst == 0);
     }
 }
 
@@ -97,7 +98,7 @@ void modelFileLoadTextures(ModelFileHeader *objheader, u8 *name, u8 *dst, struct
  * and gets it ready to use: header pointers set, offsets turned into pointers, textures
  * loaded.
  */
-void modelFileLoad(struct ModelFileHeader *objheader, u8 *name, u8* dst, s32 size, struct texpool * buffer)
+void modelFileLoad(struct ModelFileHeader *objheader, char *name, u8* dst, s32 size, struct texpool * buffer)
 {
     void *filedata;
 

@@ -1,20 +1,20 @@
 #include <string.h>
 
-unsigned char *strchr(const unsigned char *s, int c)
+char *strchr(const char *s, int c)
 {
-    const unsigned char ch = c;
+    const char ch = c;
     while (*s != ch)
     {
         if (*s == 0)
             return NULL;
         s++;
     }
-    return (unsigned char *)s;
+    return (char *)s;
 }
 
-size_t strlen(const unsigned char *s)
+size_t strlen(const char *s)
 {
-    const unsigned char *sc = s;
+    const char *sc = s;
     while (*sc)
         sc++;
     return sc - s;

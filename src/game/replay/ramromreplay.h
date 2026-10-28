@@ -35,7 +35,7 @@ void test_if_recording_demos_this_stage_load(enum LEVELID stage, enum DIFFICULTY
 void iterate_ramrom_entries_handle_camera_out(void);
 void stop_demo_playback(void);
 s32 get_is_reamrom_flag(void);
-u32 check_ramrom_flags(void);
+s32 check_ramrom_flags(void);
 
 void clear_ramrom_block_buffer_heading_ptrs(void);
 s32 get_is_ramrom_flag(void);

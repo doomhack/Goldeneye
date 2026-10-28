@@ -54,7 +54,7 @@ void invIncrementHeldTime(s32 weapon1, s32 weapon2);
 int invAddProp(PropRecord *prop);
 int invAddWeaponByProp(PropRecord *prop);
 bool invCheckHasKeyFlags(u32 wantkeyflags);
-u8 *invGetActivatedTextObject(ObjectRecord *obj);
-u8 *invGetActivatedTextWeapon(ITEM_IDS weaponnum);
+char *invGetActivatedTextObject(ObjectRecord *obj);
+char *invGetActivatedTextWeapon(ITEM_IDS weaponnum);
 
 #endif

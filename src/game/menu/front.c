@@ -1837,7 +1837,7 @@ void frontLoadFolders(void)
     {
         modelFileLoad(
             PitemZ_entries[PROP_WALLETBOND].header,
-            (s8*)PitemZ_entries[PROP_WALLETBOND].filename,
+            PitemZ_entries[PROP_WALLETBOND].filename,
             (u8*)g_FrontModelBuffer,
             0xA000,
             0);
@@ -2204,7 +2204,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
     struct FolderSelectColour bottomcolour;
     s32 j;
     s32 i;
-    u8 *langp;
+    char *langp;
     s32 chapterindex;                       // index of the chapter (MISSION_HEADER) row in g_FrontMissions
     ModelRenderData renderdata;
     s32 missionindex;                       // index of the mission (MISSION_PART) row in g_FrontMissions
@@ -2237,7 +2237,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
     for (j = 3; j >= 0; j--)
     {
         // struct copy
-        renderdata = (ModelRenderData){NULL, TRUE, 3};
+        renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
         renderdata.flags = 3;
         renderdata.zbufferenabled = FALSE;
@@ -2660,7 +2660,7 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
     camX = g_FrontFolderPos[g_FrontFolder].f[0];
     camY = g_FrontFolderPos[g_FrontFolder].f[1];
 
-    renderdata = (ModelRenderData){NULL, TRUE, 3};
+    renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
     camX += g_FrontFolderCamOffsetX;
     camY += g_FrontFolderCamOffsetY;
@@ -2735,7 +2735,7 @@ void frontSetModeCursor(int mode)
 /**
  * Draws one numbered row of the mode select page.
  */
-static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, char *number, u8 *textstring, s32 text_color)
+static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, char *number, char *textstring, s32 text_color)
 {
     s32 x;
     s32 y;
@@ -2778,18 +2778,18 @@ Gfx* frontModeSelectRender(Gfx* DL)
     text_color = (joyGetControllerCount() >= 2) ? 0xFF : 0x70;
 
     textstring = langGet((g_AppendCheatSinglePlayer != 0) ? getStringID(LTITLE, TITLE_STR_117_CHEATSELECTMISSION) : getStringID(LTITLE, TITLE_STR_29_SELECTMISSION));
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MISSION, "1.\n", (u8 *)textstring, 0xFF);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MISSION, "1.\n", textstring, 0xFF);
 
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COOP, "2.\n", (u8 *)"2 PLAYER CO-OP\n", text_color);
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COUNTEROP, "3.\n", (u8 *)"2 PLAYER COUNTER-OP\n", text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COOP, "2.\n", "2 PLAYER CO-OP\n", text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COUNTEROP, "3.\n", "2 PLAYER COUNTER-OP\n", text_color);
 
     textstring = langGet((g_AppendCheatMultiPlayer != 0) ? getStringID(LTITLE, TITLE_STR_276_CHEATMULTIPLAYER) : getStringID(LTITLE, TITLE_STR_30_MULTIPLAYER));
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "4.\n", (u8 *)textstring, text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "4.\n", textstring, text_color);
 
     if (g_CheatMenuAvailable != 0)
     {
         textstring = langGet(getStringID(LTITLE, TITLE_STR_31_CHEATOPTIONS));
-        DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHEATS, "5.\n", (u8 *)textstring, 0xFF);
+        DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHEATS, "5.\n", textstring, 0xFF);
     }
 
     DL = frontAddPreviousTabText(DL);
@@ -2831,7 +2831,7 @@ static s32 coop_setup_highlighted_row = -1;
 
 static s32 frontCoopCharCount(void);
 static s32 frontCoopGetPartnerChar(void);
-static u8 *frontCoopGetPartnerCharName(void);
+static char *frontCoopGetPartnerCharName(void);
 
 void frontCoopSetupEnter(void)
 {
@@ -3031,7 +3031,7 @@ void frontCoopSetupTick(void)
 
 Gfx *frontCoopSetupRender(Gfx *DL)
 {
-    u8 *text;
+    char *text;
     s32 x;
     s32 y;
     s32 textwidth;
@@ -3049,15 +3049,15 @@ Gfx *frontCoopSetupRender(Gfx *DL)
 
     x = 0x37;
     y = 0x5F;
-    DL = frontPrintText(DL, &x, &y, (u8 *)(g_CounterOpMode ? "2 Player Counter-op\n" : "2 Player Co-op\n"), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, (g_CounterOpMode ? "2 Player Counter-op\n" : "2 Player Co-op\n"), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     for (row = 0; row < COOP_SETUP_ROW_COUNT; row++)
     {
-        text = (u8 *)coop_setup_row_labels[row];
+        text = coop_setup_row_labels[row];
 
         if (g_CounterOpMode && (row == COOP_SETUP_ROW_CHAR))
         {
-            text = (u8 *)"Bond:\n";
+            text = "Bond:\n";
         }
 
         textMeasure(&textheight, &textwidth, text, g_FontZurichChars, g_FontZurich, 0);
@@ -3076,23 +3076,23 @@ Gfx *frontCoopSetupRender(Gfx *DL)
             case COOP_SETUP_ROW_CHAR:
                 if (g_CounterOpMode)
                 {
-                    text = (u8 *)(g_CounterOpBondPad ? "Player 2\n" : "Player 1\n");
+                    text = (g_CounterOpBondPad ? "Player 2\n" : "Player 1\n");
                     break;
                 }
 
                 text = frontCoopGetPartnerCharName();
                 break;
             case COOP_SETUP_ROW_CONTROLS:
-                text = (u8 *)langGet(g_MpControlStyles[g_MpControlStyle[PLAYER_2]].text_preset);
+                text = langGet(g_MpControlStyles[g_MpControlStyle[PLAYER_2]].text_preset);
                 break;
             case COOP_SETUP_ROW_SPLIT:
-                text = (u8 *)(optionsGetSplitStacked() ? "Stacked\n" : "Side by Side\n");
+                text = (optionsGetSplitStacked() ? "Stacked\n" : "Side by Side\n");
                 break;
             case COOP_SETUP_ROW_HIRES:
-                text = (u8 *)(optionsGetHiRes() ? "On\n" : "Off\n");
+                text = (optionsGetHiRes() ? "On\n" : "Off\n");
                 break;
             case COOP_SETUP_ROW_DRAWDIST:
-                text = (u8 *)(optionsGetDrawNear() ? "Near\n" : "Full\n");
+                text = (optionsGetDrawNear() ? "Near\n" : "Full\n");
                 break;
         }
 
@@ -3103,7 +3103,7 @@ Gfx *frontCoopSetupRender(Gfx *DL)
 
     x = 0x39;
     y = COOP_SETUP_ROW_Y(COOP_SETUP_ROW_COUNT) + 0x14;
-    DL = frontPrintText(DL, &x, &y, (u8 *)"A or Left/Right: change\n", g_FontZurichChars, g_FontZurich, 0x70, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, "A or Left/Right: change\n", g_FontZurichChars, g_FontZurich, 0x70, viGetX(), viGetY(), 0, 0);
 
     DL = frontAddPreviousTabText(DL);
     DL = frontAddNextTabText(DL);
@@ -3399,7 +3399,7 @@ Gfx *frontMissionSelectRender(Gfx *DL)
     s32 width;
     s32 entry;
     s32 colour;
-    u8 label[24];
+    char label[24];
     s32 x;
     s32 y;
     s32 c;
@@ -3630,14 +3630,14 @@ void frontSetDifficultyCursor(int difficulty)
 
 Gfx *frontDifficultyRender(Gfx *DL)
 {
-    u8 *text_sp3180;
+    char *text_sp3180;
     s32 unlockedDifficulty;
     s32 x;
     s32 y;
 
     char stagename[3000]; /* frontDrawMissionTitle's line buffer */
 
-    u8 *text; // sp ??
+    char *text; // sp ??
     s32 width;
     s32 height;
     f32 xypos[2];
@@ -3685,7 +3685,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
         if (i == 0 || unlockedDifficulty >= i)
         {
             sprintf(stagename, "%d.\n", i + 1);
-            text = (u8 *) stagename;
+            text = stagename;
 
             textMeasure(&height, &width, text, g_FontZurichChars, g_FontZurich, 0);
 
@@ -3719,7 +3719,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
     {
         x = 0x37;
         y = 0x12C;
-        DL = frontPrintText(DL, &x, &y, (u8 *)(g_CounterOpMode ? "2 PLAYER COUNTER-OP\n" : "2 PLAYER CO-OP\n"),
+        DL = frontPrintText(DL, &x, &y, (g_CounterOpMode ? "2 PLAYER COUNTER-OP\n" : "2 PLAYER CO-OP\n"),
             g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
@@ -3928,7 +3928,7 @@ void frontOptions007Tick(void)
  */
 Gfx *frontOptions007Render(Gfx *DL)
 {
-    u8 *labeltext;
+    char *labeltext;
     s32 textx;
     s32 texty;
     char textbuffer[3000];
@@ -3952,7 +3952,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     textx = 55;
     texty = 143;
 
-    DL = frontPrintText(DL, &textx, &texty, (s8 *)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -3978,7 +3978,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     }
 
     // Render "Enemy health" text.
-    DL = frontPrintText(DL, &textx, &texty, (s8 *)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     sprintf(textbuffer, "%d%%\n", (s32) (g_Front007Health * 100.0f));
 
@@ -3991,7 +3991,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     texty = 164;
 
     // Render enemy health percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4011,7 +4011,7 @@ Gfx *frontOptions007Render(Gfx *DL)
         DL = textRenderRect(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
-    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     sprintf(textbuffer, "%d%%\n", (s32) (g_Front007Damage * 100.0f));
 
@@ -4024,7 +4024,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     texty = 197;
 
     // Render enemy damage percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4044,7 +4044,7 @@ Gfx *frontOptions007Render(Gfx *DL)
         DL = textRenderRect(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
-    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     sprintf(textbuffer, "%d%%\n", (s32) (g_Front007Accuracy * 10.0f));
 
@@ -4057,7 +4057,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     texty = 230;
 
     // Render enemy accuracy percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
 
     /**
@@ -4076,7 +4076,7 @@ Gfx *frontOptions007Render(Gfx *DL)
         DL = textRenderRect(DL, 55, texty - 1, 199, texty + 14, 0x00000032);
     }
 
-    DL = frontPrintText(DL, &textx, &texty, (s8*)labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, labeltext, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     sprintf(textbuffer, "%d%%\n", (s32) (g_Front007Reaction * 100.0f));
 
@@ -4089,7 +4089,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     texty = 263;
 
     // Render enemy reaction speed percentage text.
-    DL = frontPrintText(DL, &textx, &texty, (s8*)textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &textx, &texty, textbuffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     DL = frontAddStartTabText(DL);
     DL = frontAddPreviousTabText(DL);
@@ -4282,21 +4282,21 @@ static s32 frontCoopGetPartnerChar(void)
 /**
  * The name shown on the co-op setup page.
  */
-static u8 *frontCoopGetPartnerCharName(void)
+static char *frontCoopGetPartnerCharName(void)
 {
     s32 character = frontCoopGetPartnerChar();
 
     if (character == COOP_CHAR_BOND_AUTO)
     {
-        return (u8 *)"Bond\n";
+        return "Bond\n";
     }
 
     if (character <= COOP_BOND_OUTFIT_COUNT)
     {
-        return (u8 *)coop_bond_outfits[character - 1].name;
+        return coop_bond_outfits[character - 1].name;
     }
 
-    return (u8 *)langGet(g_MpChars[character - COOP_BOND_OUTFIT_COUNT].text_preset);
+    return langGet(g_MpChars[character - COOP_BOND_OUTFIT_COUNT].text_preset);
 }
 
 /**
@@ -4831,7 +4831,7 @@ void frontMpOptionsTick(void)
 
 Gfx * frontMpOptionsRender(Gfx *DL)
 {
-    u8 *text;
+    char *text;
 
     char acStack12 [8];
 
@@ -5035,7 +5035,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
   // Display: split screen layout (2 players) and hi-res, shared with co-op.
-  text = (u8 *)"Display:\n";
+  text = "Display:\n";
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
   y = 0x12d;
@@ -5046,14 +5046,14 @@ Gfx * frontMpOptionsRender(Gfx *DL)
 
   if (g_MpPlayerCount == 2) {
     if (optionsGetSplitStacked()) {
-      text = (u8 *)(optionsGetHiRes() ? "Stacked, Hi-Res\n" : "Stacked\n");
+      text = (optionsGetHiRes() ? "Stacked, Hi-Res\n" : "Stacked\n");
     }
     else {
-      text = (u8 *)(optionsGetHiRes() ? "Side by Side, Hi-Res\n" : "Side by Side\n");
+      text = (optionsGetHiRes() ? "Side by Side, Hi-Res\n" : "Side by Side\n");
     }
   }
   else {
-    text = (u8 *)(optionsGetHiRes() ? "Hi-Res\n" : "Normal\n");
+    text = (optionsGetHiRes() ? "Hi-Res\n" : "Normal\n");
   }
   x = 0xa0;
   y = 0x12d;
@@ -5333,7 +5333,6 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 left, s32 right, s32 centreX, s32
     s32 baseY;
     s32 cellH;
     s32 shade;
-    s32 selected_photo;
     s32 vtx_index;
     struct sImageTableEntry *simage;
     s32 j;
@@ -5414,25 +5413,21 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 left, s32 right, s32 centreX, s32
 
     gSPVertex(DL++, vertices, 16, 0);
 
-    selected_photo = g_MpChars[character].select_photo * 4;
     simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
     texSelect(&DL, simage + 2, 2, 0, 2);
     gSP1Triangle(DL++, 0, 1, 4, 0);
     gSP1Triangle(DL++, 4, 1, 5, 0);
 
-    selected_photo = g_MpChars[character].select_photo * 4;
     simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
     texSelect(&DL, simage + 3, 2, 0, 2);
     gSP1Triangle(DL++, 2, 3, 6, 0);
     gSP1Triangle(DL++, 6, 3, 7, 0);
 
-    selected_photo = g_MpChars[character].select_photo * 4;
     simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
     texSelect(&DL, simage + 0, 2, 0, 2);
     gSP1Triangle(DL++, 8, 9, 12, 0);
     gSP1Triangle(DL++, 12, 9, 13, 0);
 
-    selected_photo = g_MpChars[character].select_photo * 4;
     simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
     texSelect(&DL, simage + 1, 2, 0, 2);
     gSP1Triangle(DL++, 10, 11, 14, 0);
@@ -5446,7 +5441,7 @@ Gfx *frontMpCharRender(Gfx *DL)
 {
     s32 numplayers;
     s32 playernum;
-    u8 *text;
+    char *text;
     s32 panel_left;  // X position where the portraits completely fade out on the left.
     s32 panel_top;   
     s32 panel_width; // Width of the character portrait panel (1 panel per player)
@@ -5506,7 +5501,7 @@ Gfx *frontMpCharRender(Gfx *DL)
             select_char_x = panel_center_x - (select_char_width >> 1);
             select_char_y = panel_top + 5;
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &select_char_x, &select_char_y, (s8 *) text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &select_char_x, &select_char_y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
         
         text = langGet(g_MpChars[g_MpCharCursor[playernum]].text_preset);
@@ -5515,7 +5510,7 @@ Gfx *frontMpCharRender(Gfx *DL)
         name_x = panel_center_x - (name_width >> 1);
         name_y = (portrait_y_base + 0x46) + 0x32;
         DL = textSetupDraw(DL);
-        DL = frontPrintText(DL, &name_x, &name_y, (s8 *) text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &name_x, &name_y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         DL = frontRenderCharacterPortrait(DL, panel_left + 0xD, (panel_left + panel_width) - 0xE, panel_center_x - g_MpCharScroll[playernum], portrait_y_base + 0x46, g_MpCharPrevCursor[playernum], g_MpCharPortraitSize[playernum]);
 
         if (((g_MpCharChosen[playernum] == 0) && (g_MpCharPortraitSize[playernum] == 0)) || (g_MpCharPrevCursor[playernum] != g_MpCharCursor[playernum]))
@@ -5660,13 +5655,11 @@ Gfx * frontMpHandicapRender(Gfx *DL)
 {
     s32 numplayers;
     s32 i;
-    u8 *text;
+    char *text;
     s32 panelX;
     s32 panelW;
     s32 offset;
-    u8 *text2;
-    s32 padding4;
-    s32 padding1;
+    char *text2;
     s32 panelY;
     s32 height1;
     s32 width1;
@@ -5694,8 +5687,6 @@ Gfx * frontMpHandicapRender(Gfx *DL)
 
     for (i = 0; i < numplayers; i++)
     {
-        padding4 = g_MpCharChosen[i];
-        padding1 = g_MpHandicap[i];
 
         panelY = 0;
 
@@ -5729,7 +5720,7 @@ Gfx * frontMpHandicapRender(Gfx *DL)
             y1 = centreY - (height1 >> 1) - 0xf;
 
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &x1, &y1, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x1, &y1, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         {
@@ -5739,7 +5730,7 @@ Gfx * frontMpHandicapRender(Gfx *DL)
             y2 = centreY - (height2 >> 1) + 0xf;
 
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &x2, &y2, (s8*)text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x2, &y2, text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -5903,13 +5894,11 @@ Gfx * frontMpControlsRender(Gfx *DL)
 {
     s32 numplayers;
     s32 i;
-    u8 *text;
+    char *text;
     s32 panelX;
     s32 panelW;
     s32 offset;
-    u8 *text2;
-    s32 padding4;
-    s32 padding1;
+    char *text2;
     s32 panelY;
     s32 height1;
     s32 width1;
@@ -5937,8 +5926,6 @@ Gfx * frontMpControlsRender(Gfx *DL)
 
     for (i = 0; i < numplayers; i++)
     {
-        padding4 = g_MpCharChosen[i];
-        padding1 = g_MpControlStyle[i];
 
         panelY = 0;
 
@@ -5972,7 +5959,7 @@ Gfx * frontMpControlsRender(Gfx *DL)
             y1 = centreY - (height1 >> 1) - 0xf;
 
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &x1, &y1, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x1, &y1, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         {
@@ -5982,7 +5969,7 @@ Gfx * frontMpControlsRender(Gfx *DL)
             y2 = centreY - (height2 >> 1) + 0xf;
 
             DL = textSetupDraw(DL);
-            DL = frontPrintText(DL, &x2, &y2, (s8*)text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x2, &y2, text2, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -6382,7 +6369,7 @@ Gfx * frontMpScenarioRender(Gfx *DL)
     s32 height;
     s32 width;
 
-    u8 *text;
+    char *text;
     s32 colour;
 
 
@@ -6632,7 +6619,7 @@ Gfx *frontMpTeamsRender(Gfx *DL)
 
     for (playerIndex = 0; playerIndex < numPlayers; playerIndex++)
     {
-        layoutOffset = (0, (playerIndex >= 2) ? 0x8C : 0);
+        layoutOffset = (playerIndex >= 2) ? 0x8C : 0;
         rowTop = layoutOffset + 0x1E;
         layoutOffset = ((playerIndex & 1) ? 0xAF : 0) + 0;
 
@@ -6700,11 +6687,7 @@ Gfx *frontMpTeamsRender(Gfx *DL)
 void frontSetBriefingPage(WATCH_BRIEFING_PAGE page)
 {
 
-    // could be a dev typo
-    if (g_FrontBriefingPage = page)
-    {
-        // maybe previous code was optimized out
-    }
+    g_FrontBriefingPage = page;
 }
 
 
@@ -6843,7 +6826,7 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
     s32 lineY;
     s32 colour;
     s32 lines;
-    u8* text;
+    char* text;
     s32 v1;
 
     index = 0;
@@ -6857,17 +6840,17 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
         {
             v1 = g_FrontBriefing->objective[i].textid;
             text = langGet(v1);
-            strcpy((u8*)buffer, "a.\n");
+            strcpy(buffer, "a.\n");
             *buffer = *buffer + index;
 
             lineheight = 0;
             width = 0;
-            textMeasure(&lineheight, &width, (u8*)buffer, g_FontZurichChars, g_FontZurich, 0);
+            textMeasure(&lineheight, &width, buffer, g_FontZurichChars, g_FontZurich, 0);
 
 
             x = 0x37;
             lineY = (lineheight * lines) + y + (i*0);
-            DL = frontPrintText(DL, &x, &lineY, (s8*)buffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &lineY, buffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
             x = 0x4B;
             lineY = (lineheight * lines) + y + (i*0);
@@ -6875,15 +6858,15 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
             if (showStatus != 0)
             {
                 textSetWordWrap(2);
-                textWrap(0xDC, (s8*)text, (s8*)buffer, g_FontZurichChars, g_FontZurich);
+                textWrap(0xDC, text, buffer, g_FontZurichChars, g_FontZurich);
                 textSetWordWrap(0);
             }
             else
             {
-                textWrap(0x140, (s8*)text, (s8*)buffer, g_FontZurichChars, g_FontZurich);
+                textWrap(0x140, text, buffer, g_FontZurichChars, g_FontZurich);
             }
 
-            DL = frontPrintText(DL, &x, &lineY, (s8*)buffer,  g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &lineY, buffer,  g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
             if (showStatus)
             {
@@ -6904,7 +6887,7 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
                 x = 0x136;
                 lineY = (lineheight * lines) + y + (i*0);
 
-                DL = frontPrintText(DL, &x, &lineY, (s8*)text, g_FontZurichChars, g_FontZurich, colour, viGetX(), viGetY(), 0, 0);
+                DL = frontPrintText(DL, &x, &lineY, text, g_FontZurichChars, g_FontZurich, colour, viGetX(), viGetY(), 0, 0);
             }
 
             lines += textCountLines(buffer);
@@ -6919,7 +6902,7 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
 
 Gfx *frontBriefingRender(Gfx *DL)
 {
-    u8 *text;
+    char *text;
     s32 x;
     s32 y;
     char buffer[3000];
@@ -6960,7 +6943,7 @@ Gfx *frontBriefingRender(Gfx *DL)
 
     x = 0x37;
     y = 0x8F;
-    DL = frontPrintText(DL, &x, &y, (s8*)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     if (g_FrontBriefingPage == BRIEFING_TITLE)
     {
@@ -6989,9 +6972,9 @@ Gfx *frontBriefingRender(Gfx *DL)
 
         x = 0x37;
         y = 0xA7;
-        textWrap(0x140, (s8*)text, (s8*)buffer, g_FontZurichChars, g_FontZurich);
+        textWrap(0x140, text, buffer, g_FontZurichChars, g_FontZurich);
         textSetOverlapCorrection(8);
-        DL = frontPrintText(DL, &x, &y, (s8*)buffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, buffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         textSetOverlapCorrection(-1);
     }
 
@@ -7373,7 +7356,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
         {
             sprintf(text, "PLAYER %d\n", i + 1);
         }
-        DL = frontPrintText(DL, &x, &y, (s8 *)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
     // Counter-op adds the guard player's bodies used and damage to Bond.
@@ -7395,7 +7378,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
         }
         else
         {
-            DL = frontPrintText(DL, &x, &y, (s8 *)((row == 4) ? "Bodies used:\n" : "Damage to Bond:\n"), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, ((row == 4) ? "Bodies used:\n" : "Damage to Bond:\n"), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
 
         for (i = 0; i < 2; i++)
@@ -7441,7 +7424,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
 
             x = columns[i];
             y = rowy;
-            DL = frontPrintText(DL, &x, &y, (s8 *)text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+            DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
         }
     }
 
@@ -7454,7 +7437,7 @@ Gfx *frontStatsRender(Gfx *DL)
 {
     s32 x;
     s32 y;
-    u8 stagename[3000];
+    char stagename[3000];
     char *text;
     s32 y2;
     s32 x2;
@@ -7838,7 +7821,7 @@ Gfx * frontCheatRender(Gfx *DL)
     s32 y;
     s32 height;
     s32 width;
-    u8 *text;
+    char *text;
 
     DL = viSetFillColor(DL,0,0,0);
     DL = viFillScreen(DL);
@@ -8673,6 +8656,9 @@ void frontTick(void)
             case MENU_NO_CONTROLLERS:         frontNoControllerLeave();        break;
             case MENU_DISPLAY_CAST:           frontCastLeave();          break;
             case MENU_COOP_SETUP:             frontCoopSetupLeave();            break;
+
+            default:
+                break;
         }
 
         if (g_FrontNextMenu > MENU_INVALID)
@@ -8713,6 +8699,9 @@ void frontTick(void)
             case MENU_NO_CONTROLLERS:         frontNoControllerEnter();           break;
             case MENU_DISPLAY_CAST:           frontCastEnter();            break;
             case MENU_COOP_SETUP:             frontCoopSetupEnter();              break;
+
+            default:
+                break;
         }
     }
 
@@ -8763,6 +8752,9 @@ void frontTick(void)
             {
                 frontSetMenu(MENU_MISSION_FAILED, 1);
             }
+
+        default:
+            break;
     }
 
 }
@@ -8845,6 +8837,9 @@ Gfx * frontRender(Gfx *DL)
             break;
         case MENU_COOP_SETUP:
             DL = frontCoopSetupRender(DL);
+
+        default:
+            break;
     }
 
     return DL;

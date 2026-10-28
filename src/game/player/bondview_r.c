@@ -66,6 +66,9 @@ u32 weaponLoadProjectileModels(ITEM_IDS modelid)
         break;
     case ITEM_MICROCAMERA:
         model = PROJECTILES_TYPE_MICROCAMERA;
+
+    default:
+        break;
     }
 
     if (-1 < model)
@@ -167,7 +170,6 @@ void playerApplyIntro(void)
     CreditsEntry *credits;
     s32 rand_pad_index;
     f32 stan_height;
-    s32 i;
     struct SetupIntroItem *intro_item;
     struct SetupIntroSwirl *intro_swirl;
     struct SetupIntroWatch *intro_watch;

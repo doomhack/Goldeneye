@@ -31,9 +31,12 @@
 #define MEMA_SLOTS 509
 
 typedef struct MemaSpace {
-    s32 addr;
+    u32 addr;
     u32 size;
 } MemaSpace;
+
+/** addr of the end markers after the spaces array. */
+#define MEMA_END 0xffffffff
 
 /**
  * This structure contains dummy entries before and after the spaces array.
@@ -127,7 +130,7 @@ MemaSpace *memaFindFreeSlot(struct MemaHeap *heap)
                 return curr;
             }
 
-            if ((u32)curr[1].addr < (u32)curr[0].addr) {
+            if (curr[1].addr < curr[0].addr) {
                 memaSwap(&curr[0], &curr[1]);
             }
 
@@ -181,7 +184,7 @@ void memaMarkFree(s32 addr, s32 size)
     }
 
     // If we reached the end of the spaces list, go backwards instead
-    if (curr->addr == -1) {
+    if (curr->addr == MEMA_END) {
         curr = &m_memaHeap.spaces[index];
 
         while (curr->size != 0) {
@@ -207,9 +210,9 @@ void memaReset(void *heapaddr, u32 heapsize)
 	m_memaHeap.start.addr = 0;
 	m_memaHeap.start.size = 0;
 
-	m_memaHeap.end1.addr = 0xffffffff;
+	m_memaHeap.end1.addr = MEMA_END;
 	m_memaHeap.end1.size = 0;
-	m_memaHeap.end2.addr = 0xffffffff;
+	m_memaHeap.end2.addr = MEMA_END;
 	m_memaHeap.end2.size = 0xffffffff;
 
 	for (space = &m_memaHeap.spaces[0]; space <= &m_memaHeap.spaces[MEMA_SLOTS - 2]; space++) {
@@ -254,7 +257,7 @@ void *memaAlloc(u32 amount) {
             continue;
         }
 
-        if (curr->addr == 0xffffffff) {
+        if (curr->addr == MEMA_END) {
             break;
         }
 
@@ -274,7 +277,7 @@ void *memaAlloc(u32 amount) {
             curr++;
         }
 
-        if (curr->addr == 0xffffffff) {
+        if (curr->addr == MEMA_END) {
             for (i = 0; i < 8; i++) {
                 memaDefragPass(&m_memaHeap);
             }
@@ -285,7 +288,7 @@ void *memaAlloc(u32 amount) {
                 curr++;
             }
 
-            if (curr->addr == 0xffffffff) {
+            if (curr->addr == MEMA_END) {
                 return NULL;
             }
         }
@@ -312,32 +315,19 @@ void *memaAlloc(u32 amount) {
 s32 memaGrow(u32 addr, u32 amount)
 {
     u32        size = 0;
-    s32        new_addr;
+    u32        new_addr;
     MemaSpace *curr;
-    short      __unused_1 = addr + 3;
-    u32        __unused_2;
-    s32        __unused_3;
-    short      __unused_4;
-    short      __unused_5;
 
 
     curr     = &m_memaHeap.spaces[0];
     new_addr = addr;
-    __unused_2 = !new_addr;
 
-    while (curr->addr != -1)
+    while (curr->addr != MEMA_END)
     {
-        __unused_1 = __unused_2;
-
-        __unused_3 = __unused_2 + 1;
-
         if (curr->addr == new_addr && curr->size >= amount)
         {
             goto found;
         }
-
-        __unused_4 = new_addr + 2;
-        __unused_5 = new_addr + 3;
 
         curr++;
     }
@@ -372,13 +362,13 @@ void memaFree(void *addr, s32 size)
 s32 memaGetLongestFree(void)
 {
 	struct MemaSpace *curr;
-	s32 biggest = 0;
+	u32 biggest = 0;
 
 	memaDefrag();
 
 	curr = &m_memaHeap.spaces[0];
 
-	while (curr->addr != -1) {
+	while (curr->addr != MEMA_END) {
 		if (curr->size > biggest) {
 			biggest = curr->size;
 		}
