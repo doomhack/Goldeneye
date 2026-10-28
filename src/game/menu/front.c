@@ -1069,18 +1069,18 @@ Gfx *frontDrawCursor(Gfx *DL)
 {
     f32 xypos[2];
     f32 halfedxy[2];
-    sImageTableEntry *image = NULL;
+    sImageTableEntry *image;
     s32 option;
 
     option = g_FrontFolderIcon;
-    if (option == 0) {
-        image = g_ImageCrosshair;
-    }
-    else if (option == 1) {
-        image = g_ImagesMainFolder + IMG_COPY; //COPY
+    if (option == 1) {
+        image = g_ImagesMainFolder + IMG_COPY;
     }
     else if (option == 2) {
         image = g_ImagesMainFolder + IMG_DEL;
+    }
+    else {
+        image = g_ImageCrosshair;
     }
 
     texSelect(&DL, image, 4, 0, 0);

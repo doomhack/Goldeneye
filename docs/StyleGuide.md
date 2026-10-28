@@ -186,6 +186,13 @@ typedef struct CRecord
 
 
 
+## LANGUAGE DIALECT
+The code is GNU C23 built with `-fno-strict-aliasing` and `-fwrapv` (the same choice as the Linux
+kernel), so reading memory through a pointer of another type and signed overflow (which wraps) are
+defined behaviour here. Everything else ISO C leaves undefined stays undefined: GCC optimises on the
+assumption it never happens, for example that a loop never runs past the end of an array or that a
+pointer that has been dereferenced is not NULL.
+
 ## WARNINGS
 Game code (everything in `src/` except libultra) builds with `-Wall -Wextra -Werror`, so any warning
 stops the build. libultra and the generated asset data build with `-w`.
