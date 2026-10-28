@@ -39,9 +39,9 @@ s32 osEepromWrite(OSMesgQueue *mq, u8 address, u8 *buffer)
     ret = __osSiRawStartDma(OS_WRITE, &__osEepPifRam); //send command to pif
     osRecvMesg(mq, NULL, OS_MESG_BLOCK);
 
-    for (i = 0; i < ARRLEN(__osEepPifRam.ramarray) + 1; i++) // buffer overflow?
+    for (i = 0; i < ARRLEN(__osEepPifRam.words); i++)
     {
-        __osEepPifRam.ramarray[i] = CONT_CMD_NOP;
+        __osEepPifRam.words[i] = CONT_CMD_NOP;
     }
 
     __osEepPifRam.pifstatus = CONT_CMD_REQUEST_STATUS;
@@ -73,9 +73,9 @@ static void __osPackEepWriteData(u8 address, u8 *buffer)
     int i;
     ptr = (u8 *)&__osEepPifRam.ramarray;
 
-    for (i = 0; i < ARRLEN(__osEepPifRam.ramarray) + 1; i++) // buffer overflow?
+    for (i = 0; i < ARRLEN(__osEepPifRam.words); i++)
     {
-        __osEepPifRam.ramarray[i] = CONT_CMD_NOP;
+        __osEepPifRam.words[i] = CONT_CMD_NOP;
     }
 
     __osEepPifRam.pifstatus = CONT_CMD_EXE;
@@ -111,9 +111,9 @@ s32 __osEepStatus(OSMesgQueue *mq, OSContStatus *data)
     ptr = (u8 *)__osEepPifRam.ramarray;
     //could be bset or bzero intrinsic
 
-    for (i = 0; i < ARRLEN(__osEepPifRam.ramarray) + 1; i++) //still has the buffer overflow =/, just sets status to 0
+    for (i = 0; i < ARRLEN(__osEepPifRam.words); i++)
     {
-        __osEepPifRam.ramarray[i] = 0;
+        __osEepPifRam.words[i] = 0;
     }
 
     __osEepPifRam.pifstatus = CONT_CMD_EXE;

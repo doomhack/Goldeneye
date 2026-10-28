@@ -55,8 +55,8 @@ void __osPfsRequestData(u8 cmd) {
 
     __osContLastCmd = cmd;
 
-    for (i = 0; i < ARRLEN(__osPfsPifRam.ramarray) + 1; i++) { // also clear pifstatus
-        __osPfsPifRam.ramarray[i] = 0;
+    for (i = 0; i < ARRLEN(__osPfsPifRam.words); i++){ // also clear pifstatus
+        __osPfsPifRam.words[i] = 0;
     }
 
     __osPfsPifRam.pifstatus = CONT_CMD_EXE;

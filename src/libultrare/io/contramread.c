@@ -21,9 +21,9 @@ s32 __osContRamRead(OSMesgQueue *mq, int channel, u16 address, u8 *buffer)
     osRecvMesg(mq, NULL, OS_MESG_BLOCK);
     do
     {
-        for (i = 0; i < ARRLEN(__osPfsPifRam.ramarray) + 1; i++)
+        for (i = 0; i < ARRLEN(__osPfsPifRam.words); i++)
         {
-            __osPfsPifRam.ramarray[i] = CONT_CMD_NOP;
+            __osPfsPifRam.words[i] = CONT_CMD_NOP;
         }
 
         __osPfsPifRam.pifstatus = CONT_CMD_REQUEST_STATUS;
@@ -82,9 +82,9 @@ static void __osPackRamReadData(int channel, u16 address)
 
     ptr = (u8 *)__osPfsPifRam.ramarray;
 
-    for (i = 0; i < ARRLEN(__osPfsPifRam.ramarray) + 1; i++)
+    for (i = 0; i < ARRLEN(__osPfsPifRam.words); i++)
     {
-        __osPfsPifRam.ramarray[i] = CONT_CMD_REQUEST_STATUS;
+        __osPfsPifRam.words[i] = CONT_CMD_REQUEST_STATUS;
     }
 
     __osPfsPifRam.pifstatus = CONT_CMD_EXE;

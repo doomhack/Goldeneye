@@ -85,9 +85,9 @@ void __osPackRequestData(u8 cmd)
     __OSContRequesFormat requestformat;
     int i;
 
-    for (i = 0; i < ARRLEN(__osContPifRam.ramarray) + 1; i++)
+    for (i = 0; i < ARRLEN(__osContPifRam.words); i++)
     {
-        __osContPifRam.ramarray[i] = 0;
+        __osContPifRam.words[i] = 0;
     }
 
     __osContPifRam.pifstatus = CONT_CMD_EXE;
