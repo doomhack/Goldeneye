@@ -281,4 +281,8 @@ void bgChrsInit(void);
 void chrsAllocateSlots(s32 count);
 void chrsFreeAll(void);
 
+s32 chrGetNumFree(void);
+
+s32 chrTick(PropRecord *prop);
+
 #endif

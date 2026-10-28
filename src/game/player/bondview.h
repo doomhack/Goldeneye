@@ -1231,4 +1231,18 @@ void currentPlayerAdjustFade(f32 maxfadetime, s32 r, s32 g, s32 b, f32 frac);
 void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex);
 void camSetPosScale(f32 scale);
 
+void camSetProjectionMtx(Mtx *matrix);
+void camSetProjectionMtxf(Mtxf *matrix);
+void playerSetOutsideWatchMenu(s32 outside);
+void camSetViewToWorldMtxf(Mtxf *matrix);
+void *camSetWorldToScreenMtxf(Mtxf *matrix);
+void camUpdateFrustumPlanes();
+s32 currentPlayerGetCrouchPos(void);
+s32 playerGetCrouchPos(s32 playernum);
+void playerSetCameraModeRaw(s32 mode);
+void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *tile, coord3d *stan_walk_start);
+coord3d * playerGetPos3(void);
+s32 playerTick(PropRecord *prop);
+void camViewToScreenSafe(coord3d *in, coord3d *out);
+
 #endif

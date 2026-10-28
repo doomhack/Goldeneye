@@ -6,12 +6,17 @@
 #include <ultra64.h>
 #include <bondconstants.h>
 #include "joy.h"
+#include "str.h"
 #include "game/player/player.h"
 #include "game/menu/watchmenu.h"
 #include "game/save/file.h"
 #include "game/menu/front.h"
 #include "game/menu/cheat.h"
 #include <random.h>
+#include "game/level/lv.h"
+
+void fileGenerateCRC(u8 *addressA, u8 *addressB, save_data *retval);
+s32 fileIs007ModeUnlocked(u32 folder);
 
 
 // bss
@@ -1590,10 +1595,8 @@ void fileRecordMissionEnd(void)
     }
 }
 
-void fileLoadCurrentSettings(int stage)
+void fileLoadCurrentSettings(void)
 {
-    if(stage){
-    }
     fileLoadSettingsForFolder(g_FrontFolder);
 }
 

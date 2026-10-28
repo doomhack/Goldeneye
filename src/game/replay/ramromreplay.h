@@ -37,5 +37,11 @@ void stop_demo_playback(void);
 s32 get_is_reamrom_flag(void);
 u32 check_ramrom_flags(void);
 
+void clear_ramrom_block_buffer_heading_ptrs(void);
+s32 get_is_ramrom_flag(void);
+s32 frontRunStageTick(void);
+void select_ramrom_to_play(void);
+s32 get_recording_ramrom_flag(void);
+
 #endif
 

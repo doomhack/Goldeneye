@@ -3,6 +3,7 @@
 #include "snd.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "str.h"
+#include "string.h"
 
 /**
  * EU .data, offset from start of data_seg : 0x36b0

@@ -11,6 +11,8 @@
 #include "joy.h"
 #include "game/level/frametiming.h"
 #include "game/replay/testhooks.h"
+#include "game/menu/mp_weapon.h"
+#include "game/player/bondview.h"
 
 struct ramrom_struct
 {

@@ -58,4 +58,6 @@ f32        lvGetSystemPowerTimeSec(void);
 
 void cleanup_REMOVED_(void);
 
+void lvSetDrawWorld(s32 enable);
+
 #endif

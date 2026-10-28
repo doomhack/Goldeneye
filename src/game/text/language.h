@@ -10,4 +10,6 @@ u8 * langGet(s32 slotID);
 void langLoadToBank(int id, u8 *target, int size);
 LEVELID langGetBankForStage(LEVELID level);
 
+void langClearBank(s32 textBank);
+
 #endif

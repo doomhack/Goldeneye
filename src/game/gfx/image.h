@@ -102,4 +102,6 @@ void texInitPool(struct texpool *pool, u8 *start, s32 len);
 void texLoadFromTextureNum(s32 texturenum, struct texpool *pool);
 void texLoadFromModelFileHeader(ModelFileHeader* header, struct texpool* pool);
 
+void texLoadFromDisplayList(Gfx *gdl, struct texpool *pool);
+
 #endif

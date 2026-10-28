@@ -150,5 +150,9 @@ void modelIterateDisplayLists(ModelFileHeader *fileheader, ModelNode **nodeptr, 
 void modelNodeReplaceGdl(u32 unused, ModelNode *node, Gfx *find, Gfx *replacement);
 bool modelTestRayIntersectsTransformedBBox(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord3d *pos, coord3d *dir);
 
+bool modelTestRayIntersectsNodeBBox(Model *model, ModelNode *node, coord3d *pos, coord3d *dir);
+s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypos, coord3d *raydir);
+u32 modelFindRayHitNext(Model *model, coord3d *raypos, coord3d *raydir, ModelNode **nodeptr);
+
 #endif
 

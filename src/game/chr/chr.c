@@ -46,6 +46,7 @@
 #include "game/model/model.h"
 #include "game/gfx/tex.h"
 #include "game/math/physics.h"
+#include "game/world/bgfog.h"
 
 #ifdef VERSION_EU
 #define GROUND_SMOOTH_FACTOR 0.118799984f /* 0x3DF34D68 (PAL-scaled 0.1) */

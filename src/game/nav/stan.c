@@ -22,6 +22,8 @@
 #include "game/nav/stan.h"
 #include "assert.h"
 #include "limits.h"
+#include "str.h"
+#include "token.h"
 
 void stanGetTileMidPoint(StandTile *tile, coord3d *out);
 

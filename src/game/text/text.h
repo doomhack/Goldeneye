@@ -33,4 +33,6 @@ void textSetOverlapCorrection(s32 flag);
 
 Gfx* textRenderBlackBox(Gfx *glist, s32 *ulx, s32 *uly, s32 *lrx, s32 *lry);
 
+void textSetOrientation(s32 orientation);
+
 #endif

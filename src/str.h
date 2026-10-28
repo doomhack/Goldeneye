@@ -10,5 +10,6 @@ char *strcat(char *dst, const char *src);
 int strcmp(const char* str1, const char* str2);
 int strncmp(const char *str1, const char *str2, size_t n);
 long int strtol(const char *str, char **endptr, int base);
+int memcmp(const void *a, const void *b, size_t n); // libultra bcmp.s
 
 #endif

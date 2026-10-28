@@ -56,6 +56,12 @@
 #include "gbi_extension.h"
 #include "game/math/interp.h"
 #include "bondtypes.h"
+#include "game/gfx/dyn.h"
+#include "game/prop/prop.h"
+#include "game/text/language.h"
+#include "game/world/lightfixture.h"
+
+s32 ammoGetHeld(AMMOTYPE ammotype);
 
 
 #ifdef REFRESH_PAL

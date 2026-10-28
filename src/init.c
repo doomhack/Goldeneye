@@ -9,6 +9,10 @@
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "init.h"
 #include "thread_config.h"
+#include "boss.h"
+#include "pi.h"
+#include "token.h"
+#include "vi.h"
 
 
 /**

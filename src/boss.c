@@ -42,6 +42,10 @@
 #include "game/player/bondhead.h"
 #include "game/level/frametiming.h"
 #include "PR/R4300.h"
+#include "game/model/anim.h"
+#include "game/model/initactorpropstuff.h"
+#include "game/prop/explosion.h"
+#include "str.h"
 
 /**
  * @file boss.c

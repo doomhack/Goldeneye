@@ -62,4 +62,11 @@ void        propUpdateRooms(PropRecord* p);
 
 void               propsInit(void);
 
+void propRemoveFromRoom(PropRecord* prop, s16 room);
+void modelGetAxisExtents(Model* model, f32* max, f32* min, s32 axis);
+bool doorIsPadlockFree(DoorRecord* door);
+void propDetach(PropRecord* prop);
+s32 propDoorGetCdTypes(PropRecord* prop);
+s32 roomListsOverlap(s32* roomids1, s32* roomids2);
+
 #endif

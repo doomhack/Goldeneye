@@ -9,6 +9,9 @@
 #include "music.h"
 #include "thread_config.h"
 
+s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP);
+s32 __scTaskComplete(OSSched *sc, OSScTask *t);
+
 /**
  * EU .data, offset from start of data_seg : 0x2300
 */
@@ -497,10 +500,6 @@ s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP)
                           { 
                               *dp = gfx;
                               avail &= ~OS_SC_DP;
-
-                              if (avail & OS_SC_DP == 0)
-                                  assert(sc->curRDPTask == gfx);
-                              
                           }
                           sc->gfxListHead = sc->gfxListHead->next;
                           if (sc->gfxListHead == NULL)

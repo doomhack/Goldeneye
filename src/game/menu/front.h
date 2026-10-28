@@ -280,6 +280,8 @@ u16 frontCoopGetPartnerHead(void);
 u16 frontCoopGetPartnerBody(void);
 void frontSetFullCast(bool doExtended);
 MPSCENARIOS frontGetMpScenario(void);
+s32 frontGetMpTeam(s32 player);
+void frontSetMpTeam(s32 player, s32 flag);
 f32 frontGetMpHandicap(int player);
 f32 frontGetMpCharHeight(int player);
 s32 frontGetMpTimeLimit(void);
@@ -293,5 +295,10 @@ u8 frontGetMpCharGender(int player);
 s32 frontFindMissionEntry(s32 mission);
 
 void frontInit(void);
+
+int frontGetFavWeaponText(int player,int hand);
+u32 frontGetMpControlStyle(s32 playernum);
+u16 frontGetMpCharBody(s32 player);
+u16 frontGetMpCharHead(s32 player);
 
 #endif

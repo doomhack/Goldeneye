@@ -34,4 +34,13 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 x, struct Fol
 Gfx *titleMakeBarrelHoleGfx(Gfx *gdl, Vtx *vertexList, s32 numVertices);
 void titleMakeBarrelHoleVerts(Vtx_t *vtx, s32 numSteps);
 
+void titleFreeBondModels(void);
+void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize);
+s32 titleIsGunbarrelDone(void);
+s32 titleIsRareIntroDone(void);
+void titleLoadBackdrop(u8 **addr, s32 *size);
+void titleLoadRareLogo(s32 address, s32 size);
+Gfx *titleRenderGunbarrel (Gfx *gdl);
+Gfx *titleRenderRareIntro(Gfx *gdl);
+
 #endif

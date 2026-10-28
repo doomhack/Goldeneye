@@ -24,6 +24,7 @@
 #include "game/player/player.h"
 #include "assets/obseg/text/LmiscE.h"
 #include "game/model/model.h"
+#include "game/level/lv.h"
 
 //#include "chraicommands.h" /* needed for ai list commands, remove when moving global ai lists to chraicommands/chrai */
 // bss

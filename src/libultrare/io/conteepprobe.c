@@ -1,4 +1,6 @@
 #include <ultra64.h>
+#include <io/controller.h>
+#include <io/siint.h>
 
 s32 osEepromProbe(OSMesgQueue *mq) {
     s32 status = 0;

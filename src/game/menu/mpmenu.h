@@ -44,4 +44,6 @@ Gfx * mpMenuRender(Gfx *gdl);
 bool mpMenuCanPlayerAct(void);
 s32 mpMenuShowGauges(void);
 
+void mpMenuTick(void);
+
 #endif

@@ -1,5 +1,7 @@
 #include <stdarg.h>
 #include <ultra64.h>
+#include "string.h"
+#include "libultra/libc/xstdio.h"
 /*#include <stddef.h>*/
 
 

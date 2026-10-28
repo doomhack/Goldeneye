@@ -31,6 +31,7 @@
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "game/menu/title.h"
+#include "game/gfx/dyn.h"
 
 
 extern signed short sins(unsigned short x);

@@ -212,4 +212,10 @@ void bgFindRoomsAlongSegment(coord3d *pos1, coord3d *pos2, u8 *initialRooms, u8 
 s32 bgFindPortalOnSegment(coord3d *start, coord3d *end);
 void bgRoomCalcBB(s32 room);
 
+void bgReset(void);
+char *bgDebPrintROOMID(s32 roomId);
+s32 bgGetConnectedRooms(s32 roomIndex, s32* list, s32 max);
+s32 bgGetMaxNumRooms(void);
+bool bgTestRayIntersectsBbox(coord3d *origin, coord3d *dir, s32 *bbox_min, s32 *bbox_max);
+
 #endif

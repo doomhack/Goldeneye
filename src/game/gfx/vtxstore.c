@@ -15,6 +15,9 @@
 #include "game/gfx/vtxstore.h"
 #include "game/prop/propobj.h"
 #include "game/model/model.h"
+#include "game/level/lv.h"
+#include "game/player/player.h"
+#include "game/prop/prop.h"
 
 /** One block of a store: in use (refs > 0), free (0) or an unused entry (-1). */
 struct VtxstoreBatch {

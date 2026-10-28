@@ -182,4 +182,8 @@ s32 explosionCreate(PropRecord *source, struct coord3d *target_pos, StandTile *t
 
 void explosionInitScaleMtx(void);
 
+void explosionStartShake(void);
+void explosionClearBulletImpactRoom(PropRecord* prop);
+void explosionClearBulletImpactRoomByFlag(PropRecord* prop, s8 flag);
+
 #endif
