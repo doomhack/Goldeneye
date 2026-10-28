@@ -527,7 +527,7 @@ void playerLoadBody(void)
                 pitemheader = NULL;
             }
 
-            chrGiveWeaponEx(self, prop, item, 0, (WeaponObjRecord *)helddst, (ItemModelFileRecord *)pitemheader);
+            chrGiveWeaponEx(self, prop, item, 0, (WeaponObjRecord *)helddst, pitemheader);
         }
 
         chrStandImmediate(self, 0.0f);
@@ -1783,7 +1783,7 @@ void tankUpdateTurretOffset(void) {
         g_TankModelPositionOffset.f[0] = turretPos->f[0];
         g_TankModelPositionOffset.f[1] = turretPos->f[1];
         g_TankModelPositionOffset.f[2] = turretPos->f[2];
-        mtx4RotateVecInPlace(&rot, g_TankModelPositionOffset.f);
+        mtx4RotateVecInPlace(&rot, &g_TankModelPositionOffset);
         g_TankModelPositionOffset.f[0] += bodyPos->f[0];
         g_TankModelPositionOffset.f[1] += bodyPos->f[1];
         g_TankModelPositionOffset.f[2] += bodyPos->f[2];
@@ -1791,7 +1791,7 @@ void tankUpdateTurretOffset(void) {
 }
 
 
-void tankGetCollisionBounds(struct rect4f *tank_collision_bounds, struct coord3d *collision_position, f32 tank_orientation_angle)
+void tankGetCollisionBounds(coord2d *tank_collision_bounds, struct coord3d *collision_position, f32 tank_orientation_angle)
 {
     ObjectRecord *obj;
     f32 sinAngle;
@@ -1816,17 +1816,17 @@ void tankGetCollisionBounds(struct rect4f *tank_collision_bounds, struct coord3d
     cosAngle = obj->model->scale * cosf(tank_orientation_angle);
     sinAngle = obj->model->scale * sinf(tank_orientation_angle);
 
-    tank_collision_bounds->points[0].f[0] = collision_position->f[0] + (-zmin * sinAngle) + (xmin * cosAngle);
-    tank_collision_bounds->points[0].f[1] = collision_position->f[2] + (zmin * cosAngle) + (xmin * sinAngle);
+    tank_collision_bounds[0].f[0] = collision_position->f[0] + (-zmin * sinAngle) + (xmin * cosAngle);
+    tank_collision_bounds[0].f[1] = collision_position->f[2] + (zmin * cosAngle) + (xmin * sinAngle);
 
-    tank_collision_bounds->points[1].f[0] = collision_position->f[0] + (-zmin * sinAngle) + (xmax * cosAngle);
-    tank_collision_bounds->points[1].f[1] = collision_position->f[2] + (zmin * cosAngle) + (xmax * sinAngle);
+    tank_collision_bounds[1].f[0] = collision_position->f[0] + (-zmin * sinAngle) + (xmax * cosAngle);
+    tank_collision_bounds[1].f[1] = collision_position->f[2] + (zmin * cosAngle) + (xmax * sinAngle);
 
-    tank_collision_bounds->points[2].f[0] = collision_position->f[0] + (-zmax * sinAngle) + (xmax * cosAngle);
-    tank_collision_bounds->points[2].f[1] = collision_position->f[2] + (zmax * cosAngle) + (xmax * sinAngle);
+    tank_collision_bounds[2].f[0] = collision_position->f[0] + (-zmax * sinAngle) + (xmax * cosAngle);
+    tank_collision_bounds[2].f[1] = collision_position->f[2] + (zmax * cosAngle) + (xmax * sinAngle);
 
-    tank_collision_bounds->points[3].f[0] = collision_position->f[0] + (-zmax * sinAngle) + (xmin * cosAngle);
-    tank_collision_bounds->points[3].f[1] = collision_position->f[2] + (zmax * cosAngle) + (xmin * sinAngle);
+    tank_collision_bounds[3].f[0] = collision_position->f[0] + (-zmax * sinAngle) + (xmin * cosAngle);
+    tank_collision_bounds[3].f[1] = collision_position->f[2] + (zmax * cosAngle) + (xmin * sinAngle);
 }
 
 
@@ -1852,7 +1852,7 @@ s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s3
 s32 tankTestCollision(struct coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, struct coord3d *hitFrom, struct coord3d *hitTo)
 {
     StandTile *tile;
-    struct rect4f tank_collision_bounds;
+    coord2d tank_collision_bounds[4];
     s32 ok;
     f32 angle;
 
@@ -1868,18 +1868,18 @@ s32 tankTestCollision(struct coord3d *collision_position, StandTile *starttile, 
     tile = starttile;
     ok = 0;
 
-    tankGetCollisionBounds(&tank_collision_bounds, collision_position, tank_orientation_angle);
+    tankGetCollisionBounds(tank_collision_bounds, collision_position, tank_orientation_angle);
 
     if (g_PlayerTankProp != NULL)
     {
         propSetMoving(g_PlayerTankProp, 0);
     }
 
-    if ((tankTestLine(&tile, collision_position->f[0], collision_position->f[2], tank_collision_bounds.points[0].f[0], tank_collision_bounds.points[0].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
-        && (tankTestLine(&tile, tank_collision_bounds.points[0].f[0], tank_collision_bounds.points[0].f[1], tank_collision_bounds.points[1].f[0], tank_collision_bounds.points[1].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
-        && (tankTestLine(&tile, tank_collision_bounds.points[1].f[0], tank_collision_bounds.points[1].f[1], tank_collision_bounds.points[2].f[0], tank_collision_bounds.points[2].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
-        && (tankTestLine(&tile, tank_collision_bounds.points[2].f[0], tank_collision_bounds.points[2].f[1], tank_collision_bounds.points[3].f[0], tank_collision_bounds.points[3].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
-        && (tankTestLine(&tile, tank_collision_bounds.points[3].f[0], tank_collision_bounds.points[3].f[1], tank_collision_bounds.points[0].f[0], tank_collision_bounds.points[0].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0))
+    if ((tankTestLine(&tile, collision_position->f[0], collision_position->f[2], tank_collision_bounds[0].f[0], tank_collision_bounds[0].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
+        && (tankTestLine(&tile, tank_collision_bounds[0].f[0], tank_collision_bounds[0].f[1], tank_collision_bounds[1].f[0], tank_collision_bounds[1].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
+        && (tankTestLine(&tile, tank_collision_bounds[1].f[0], tank_collision_bounds[1].f[1], tank_collision_bounds[2].f[0], tank_collision_bounds[2].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
+        && (tankTestLine(&tile, tank_collision_bounds[2].f[0], tank_collision_bounds[2].f[1], tank_collision_bounds[3].f[0], tank_collision_bounds[3].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
+        && (tankTestLine(&tile, tank_collision_bounds[3].f[0], tank_collision_bounds[3].f[1], tank_collision_bounds[0].f[0], tank_collision_bounds[0].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0))
     {
         ok = 1;
 
@@ -1910,7 +1910,7 @@ s32 tankTestCollision(struct coord3d *collision_position, StandTile *starttile, 
             }
 
             mtx4LoadYRotation(M_TAU_F - angle, &rot);
-            mtx4RotateVecInPlace(&rot, (f32*)&barrelEnd);
+            mtx4RotateVecInPlace(&rot, &barrelEnd);
 
             barrelEnd.f[0] *= model->scale;
             barrelEnd.f[2] *= model->scale;
@@ -2540,7 +2540,7 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
     struct coord3d next_pos;
     struct coord3d collision1_pt0;
     struct coord3d collision1_pt1;
-    struct rect4f *polygon;
+    coord2d *polygon;
     s32 edges;
     struct TankRecord *tank_objrecord;
     struct ObjectRecord *obj;
@@ -2590,7 +2590,7 @@ void playerMoveWithCollision(struct coord3d *offset, s32 allow_scoot)
             tankheight = (farr5[4] - farr5[3]) * obj->model->scale;
 
             if (g_PlayerIsInTank == 1
-                || (polygonContainsPoint(&g_CurrentPlayer->bond.collision_position, &tank_objrecord->rect, (s32)tank_objrecord->collision) != 0))
+                || (polygonContainsPoint(&g_CurrentPlayer->bond.collision_position, tank_objrecord->hull, tank_objrecord->hullEdges) != 0))
             {
                 tankheight += (farr6[4] - farr6[3]) * obj->model->scale;
                 g_BondCanEnterTank = 1;
@@ -6711,7 +6711,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 seatPos.f[0] = g_TankModelPositionOffset.f[0];
                 seatPos.f[1] = g_TankModelPositionOffset.f[1];
                 seatPos.f[2] = g_TankModelPositionOffset.f[2];
-                mtx4RotateVecInPlace(&seatRot, (f32*)&seatPos);
+                mtx4RotateVecInPlace(&seatRot, &seatPos);
 
                 seatPos.f[0] += tank_obj->runtime_pos.f[0];
                 seatPos.f[1] += tank_obj->runtime_pos.f[1];
@@ -7346,7 +7346,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         Mtxf tankMtx;
         struct coord3d tankPos;
         s32 step;
-        struct rect4f tankBounds;
+        coord2d tankBounds[4];
         // roomids
         s32 rooms[8];
         s32 stanlineret;
@@ -7404,7 +7404,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         setupUpdateObjectRoomPosition(tankObj);
         chrobjCollisionRelated(tankObj);
-        tankGetCollisionBounds(&tankBounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
+        tankGetCollisionBounds(tankBounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
         propGetRoomIds(tankObj->prop, &rooms);
 
         // update g_NumRoomPropsFound
@@ -7428,7 +7428,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     hitChr = prop->chr;
                     propGetCollisionRadius(prop, &radius, &ymax, &ymin);
 
-                    if (polygonContainsPoint(&prop->pos, &tankBounds, 4))
+                    if (polygonContainsPoint(&prop->pos, tankBounds, 4))
                     {
                         missed = 0;
 
@@ -7449,7 +7449,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         }
                     }
 
-                    if (missed && (chrobjTestPointPolygonCollision(&prop->pos, radius, &tankBounds, 4)))
+                    if (missed && (chrobjTestPointPolygonCollision(&prop->pos, radius, tankBounds, 4)))
                     {
                         missed = 0;
                     }
@@ -7465,11 +7465,11 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 }
                 else if (prop->type == PROP_TYPE_OBJ)
                 {
-                    struct rect4f *polygon;
+                    coord2d *polygon;
                     s32 edges;
 
                     propGetCollisionPolygon2d(prop, &polygon, &edges);
-                    if ((edges > 0) && chrobjTestPolygonsTouchingOrOverlap2D(polygon, edges, &tankBounds, 4))
+                    if ((edges > 0) && chrobjTestPolygonsTouchingOrOverlap2D(polygon, edges, tankBounds, 4))
                     {
                         // Explode destroyable props when the tank touches them
                         objDetonateRecursive(prop, 10000.0f, &prop->obj->runtime_pos, 0x20, playerGetCurrentNum());
@@ -8371,7 +8371,7 @@ Gfx *watchRender(Gfx *gdl)
         mtx4LoadTranslation((coord3d *) nodepos2, &handmtx);
         mtx4MultInPlace(matrices, &handmtx);
         mtxPushUnitWorldScale();
-        mtxF2L(&handmtx, finalmtx);
+        mtxF2L(&handmtx, (Mtxf *)finalmtx);
         mtxPopWorldScale();
         gdl = watchMenuRender(gdl, finalmtx, (g_CurrentPlayer->watch_animation_state == 5) || (g_CurrentPlayer->watch_animation_state == 12));
         mtxPushUnitWorldScale();
@@ -10170,7 +10170,7 @@ void playerSetMoving(PropRecord *prop, s32 flag)
 }
 
 
-void playerGetPropBounds(PropRecord *prop, struct rect4f **bounds, s32 *numpoints, f32 *height_related, f32 *collision)
+void playerGetPropBounds(PropRecord *prop, coord2d **bounds, s32 *numpoints, f32 *height_related, f32 *collision)
 {
     s32 index;
 
@@ -10183,7 +10183,7 @@ void playerGetPropBounds(PropRecord *prop, struct rect4f **bounds, s32 *numpoint
             if (g_playerPointers[index]->cameramode != 1)
             {
                 *numpoints = 4;
-                *bounds = &g_playerPointers[index]->collision_bounds;
+                *bounds = g_playerPointers[index]->collision_bounds;
                 *collision = g_playerPointers[index]->manGround;
                 *height_related = *collision + playerGetEyeHeight(g_playerPointers[index]) + 10.0f;
 
@@ -10201,19 +10201,19 @@ void playerUpdateCollisionBounds(void)
 
     if (g_PlayerIsInTank == 1)
     {
-        tankGetCollisionBounds(&g_CurrentPlayer->collision_bounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
+        tankGetCollisionBounds(g_CurrentPlayer->collision_bounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
 
         return;
     }
 
-    g_CurrentPlayer->collision_bounds.f[0] = (g_CurrentPlayer->bond.collision_position.f[0] + g_CurrentPlayer->bond.collision_radius);
-    g_CurrentPlayer->collision_bounds.f[1] = g_CurrentPlayer->bond.collision_position.f[2];
-    g_CurrentPlayer->collision_bounds.f[2] = g_CurrentPlayer->bond.collision_position.f[0];
-    g_CurrentPlayer->collision_bounds.f[3] = (g_CurrentPlayer->bond.collision_position.f[2] + g_CurrentPlayer->bond.collision_radius);
-    g_CurrentPlayer->collision_bounds.f[4] = (g_CurrentPlayer->bond.collision_position.f[0] - g_CurrentPlayer->bond.collision_radius);
-    g_CurrentPlayer->collision_bounds.f[5] = g_CurrentPlayer->bond.collision_position.f[2];
-    g_CurrentPlayer->collision_bounds.f[6] = g_CurrentPlayer->bond.collision_position.f[0];
-    g_CurrentPlayer->collision_bounds.f[7] = (g_CurrentPlayer->bond.collision_position.f[2] - g_CurrentPlayer->bond.collision_radius);
+    g_CurrentPlayer->collision_bounds[0].x = (g_CurrentPlayer->bond.collision_position.f[0] + g_CurrentPlayer->bond.collision_radius);
+    g_CurrentPlayer->collision_bounds[0].y = g_CurrentPlayer->bond.collision_position.f[2];
+    g_CurrentPlayer->collision_bounds[1].x = g_CurrentPlayer->bond.collision_position.f[0];
+    g_CurrentPlayer->collision_bounds[1].y = (g_CurrentPlayer->bond.collision_position.f[2] + g_CurrentPlayer->bond.collision_radius);
+    g_CurrentPlayer->collision_bounds[2].x = (g_CurrentPlayer->bond.collision_position.f[0] - g_CurrentPlayer->bond.collision_radius);
+    g_CurrentPlayer->collision_bounds[2].y = g_CurrentPlayer->bond.collision_position.f[2];
+    g_CurrentPlayer->collision_bounds[3].x = g_CurrentPlayer->bond.collision_position.f[0];
+    g_CurrentPlayer->collision_bounds[3].y = (g_CurrentPlayer->bond.collision_position.f[2] - g_CurrentPlayer->bond.collision_radius);
 }
 
 

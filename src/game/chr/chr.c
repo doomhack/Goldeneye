@@ -2447,8 +2447,8 @@ after_position_update:
 
         chr->jointList = jointListAddModel(NULL, model);
 
-        chrRenderHeldWeapon(prop, GUNRIGHT, (Gfx **)(&chr->jointList));
-        chrRenderHeldWeapon(prop, GUNLEFT, (Gfx **)(&chr->jointList));
+        chrRenderHeldWeapon(prop, GUNRIGHT, &chr->jointList);
+        chrRenderHeldWeapon(prop, GUNLEFT, &chr->jointList);
 
         if (chr->handle_positiondata_hat != NULL)
         {
@@ -2495,9 +2495,9 @@ after_position_update:
 
                 mtx4LoadTranslation(&pos, &mtx);
 
-                mtx4ScaleRow0(xscale, (f32 *)(&mtx));
-                mtx4ScaleRow1(yscale, (f32 *)(&mtx));
-                mtx4ScaleRow2(zscale, (f32 *)(&mtx));
+                mtx4ScaleRow0(xscale, &mtx);
+                mtx4ScaleRow1(yscale, &mtx);
+                mtx4ScaleRow2(zscale, &mtx);
 
                 mtx4MultAffine((Mtxf *)hatmodel->render_pos, &mtx, &tmp);
                 mtx4Copy(&tmp, (Mtxf *)hatmodel->render_pos);
@@ -2997,7 +2997,7 @@ after_opcode:
 
     if (((ModelRwData_DisplayList_CollisionRecord *) rwdata)->Vertices == ((ModelRoData_DisplayList_CollisionRecord *) node)->Vertices)
     {
-        newvertices = (Vertex *) vtxstoreAllocate(((ModelRoData_DisplayList_CollisionRecord *) node)->numVertices, VTXSTORE_CHR, 0, 0);
+        newvertices = vtxstoreAllocate(((ModelRoData_DisplayList_CollisionRecord *) node)->numVertices, VTXSTORE_CHR, NULL, 0);
 
         if (newvertices != NULL)
         {
@@ -3014,7 +3014,7 @@ after_opcode:
 
     if ((relatedrwdata != NULL) && (relatedrwdata->Vertices == relatedrodata->Vertices))
     {
-        newvertices = (Vertex *) vtxstoreAllocate(relatedrodata->numVertices, VTXSTORE_CHR, 0, 0);
+        newvertices = vtxstoreAllocate(relatedrodata->numVertices, VTXSTORE_CHR, NULL, 0);
 
         if (newvertices != NULL)
         {
@@ -3411,7 +3411,7 @@ PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *self, GUNHAND hand)
  * @param y_out: out parameter, will be character ground + character height
  * @param ground: out parameter, will contain character ground
  */
-void chrUpdateCollisionBounds(PropRecord *prop, rect4f **polygon, s32 *edges, f32 *y_out, f32 *ground)
+void chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *y_out, f32 *ground)
 {
     ChrRecord *chr;
 
@@ -3425,21 +3425,21 @@ void chrUpdateCollisionBounds(PropRecord *prop, rect4f **polygon, s32 *edges, f3
         )
     {
         *edges = 4;
-        *polygon = &chr->collision_bounds;
+        *polygon = chr->collision_bounds;
 
         //collision box is a diamond around chr
 
-        chr->collision_bounds.f[0] = prop->pos.x + chr->chrwidth;
-        chr->collision_bounds.f[1] = prop->pos.z;
+        chr->collision_bounds[0].x = prop->pos.x + chr->chrwidth;
+        chr->collision_bounds[0].y = prop->pos.z;
 
-        chr->collision_bounds.f[2] = prop->pos.x;
-        chr->collision_bounds.f[3] = prop->pos.z + chr->chrwidth;
+        chr->collision_bounds[1].x = prop->pos.x;
+        chr->collision_bounds[1].y = prop->pos.z + chr->chrwidth;
 
-        chr->collision_bounds.f[4] = prop->pos.x - chr->chrwidth;
-        chr->collision_bounds.f[5] = prop->pos.z;
+        chr->collision_bounds[2].x = prop->pos.x - chr->chrwidth;
+        chr->collision_bounds[2].y = prop->pos.z;
 
-        chr->collision_bounds.f[6] = prop->pos.x;
-        chr->collision_bounds.f[7] = prop->pos.z - chr->chrwidth;
+        chr->collision_bounds[3].x = prop->pos.x;
+        chr->collision_bounds[3].y = prop->pos.z - chr->chrwidth;
 
         *ground = chr->ground;
         *y_out = *ground + chr->chrheight;

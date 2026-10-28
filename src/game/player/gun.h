@@ -378,7 +378,7 @@ void gunTickGameplay(s32 triggerOn);
 u8 weaponGetPenetration(ITEM_IDS item);
 void shotPlayGlassSound(coord3d* pos);
 
-Gfx *gunDrawHudString(Gfx *gdl, s8 *text, s32 x, s32 halign, s32 y, s32 valign, bool outline);
+Gfx *gunDrawHudString(Gfx *gdl, char *text, s32 x, s32 halign, s32 y, s32 valign, bool outline);
 Gfx *gunDrawHudInteger(Gfx *gdl, s32 value, s32 x, s32 halign, s32 y, s32 valign, bool outline);
 void beamTick(BeamRecord* beam);
 Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions* buttonpositions, s8* contpadnum);

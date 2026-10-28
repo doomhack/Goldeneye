@@ -3043,7 +3043,7 @@ bool chrIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan)
     s32 roomids[8];
     s16 *propnum;
     PropRecord *props = (PropRecord *)&g_Props;
-    struct rect4f *polygon;
+    coord2d *polygon;
     s32 numedges;
 
     roomids[0] = stan->room;

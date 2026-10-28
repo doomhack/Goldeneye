@@ -67,7 +67,7 @@ Gfx *dynGetMasterDisplayList(void) {
     return (Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex];
 }
 
-Vtx *dynAllocateVertices(s32 count) 
+void *dynAllocateVertices(s32 count)
 {
     void *ptr = g_GfxMemPos;
 	g_GfxMemPos += count * sizeof(Vtx);

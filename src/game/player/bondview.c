@@ -468,7 +468,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 void camSetRoomOrigin(s32 room);
 void watchTrigger(s32 instant);
 void playerUpdateCollisionBounds(void);
-void tankGetCollisionBounds(struct rect4f *, coord3d *, f32);
+void tankGetCollisionBounds(coord2d *, coord3d *, f32);
 void hudmsgTickIntroText(void);
 void hudmsgTopTick(void);
 void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);

@@ -155,7 +155,7 @@ CC := $(TOOLCHAIN)gcc
 # The language is C23 (GNU dialect): bool, true and false are keywords.
 GCC14_RELAX := -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
 CC_BASEFLAGS := -nostdinc -isystem $(shell $(CC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 8 \
-  -ffreestanding -fno-builtin -fno-common -fms-extensions -fno-strict-aliasing -fwrapv -funsigned-char -fno-toplevel-reorder \
+  -ffreestanding -fno-builtin -fno-common -fplan9-extensions -fno-strict-aliasing -fwrapv -funsigned-char -fno-toplevel-reorder \
   -fno-delete-null-pointer-checks -fno-isolate-erroneous-paths-dereference -fno-aggressive-loop-optimizations -fno-math-errno \
   -fno-tree-loop-distribute-patterns -mno-check-zero-division -w -DTARGET_N64 -MMD -MP \
   -std=gnu23 $(GCC14_RELAX)

@@ -1131,7 +1131,7 @@ s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f3
     f32 bottomSlope;
     f32 startGroundY;
     s16 *propnum;
-    struct rect4f *polygon;
+    coord2d *polygon;
     s32 numvertices0;
     //f32 unused2;
     s32 i;
@@ -1201,12 +1201,12 @@ s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f3
                     {
                         next = (i + 1) % numvertices0;
 
-                        if (stanSegmentsIntersect(p_x, p_z, dest_x, dest_z, polygon->points[i].f[0], polygon->points[i].f[1], polygon->points[next].f[0], polygon->points[next].f[1]) != 0)
+                        if (stanSegmentsIntersect(p_x, p_z, dest_x, dest_z, polygon[i].f[0], polygon[i].f[1], polygon[next].f[0], polygon[next].f[1]) != 0)
                         {
-                            edgeA.f[0] = polygon->points[i].f[0];
-                            edgeA.f[1] = polygon->points[i].f[1];
-                            edgeB.f[0] = polygon->points[next].f[0];
-                            edgeB.f[1] = polygon->points[next].f[1];
+                            edgeA.f[0] = polygon[i].f[0];
+                            edgeA.f[1] = polygon[i].f[1];
+                            edgeB.f[0] = polygon[next].f[0];
+                            edgeB.f[1] = polygon[next].f[1];
 
                             frac = stanSegmentIntersectFrac(&from, &to, &edgeA, &edgeB);
 
@@ -1308,7 +1308,7 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
     s32 roomCount;
     s32 roomBuffer[21];
     s16 *propIndexPtr;
-    struct rect4f *polygon;
+    coord2d *polygon;
     s32 numEdges;
     PropRecord *bestProp;
     s32 next;
@@ -1360,14 +1360,14 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
                         {
                             next = (i + 1) % numEdges;
 
-                            if (stanSegmentsIntersect(start_x, start_z, end_x, end_z, polygon->points[i].f[0], polygon->points[i].f[1], polygon->points[next].f[0], polygon->points[next].f[1]))
+                            if (stanSegmentsIntersect(start_x, start_z, end_x, end_z, polygon[i].f[0], polygon[i].f[1], polygon[next].f[0], polygon[next].f[1]))
                             {
-                                edgeStart.f[0] = polygon->points[i].f[0];
-                                tmp = &polygon->points[i];
+                                edgeStart.f[0] = polygon[i].f[0];
+                                tmp = &polygon[i];
                                 edgeStart.f[1] = (*tmp).f[1];
 
-                                edgeEnd.f[0] = polygon->points[next].f[0];
-                                edgeEnd.f[1] = polygon->points[next].f[1];
+                                edgeEnd.f[0] = polygon[next].f[0];
+                                edgeEnd.f[1] = polygon[next].f[1];
 
                                 frac = stanSegmentIntersectFrac(&lineStart, &lineEnd, &edgeStart, &edgeEnd);
 
@@ -1470,7 +1470,7 @@ s32 stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s32 cdtypes, f32 
     s32 numrooms;
     struct PropRecord *prop;
     s32 rooms[0x14];
-    struct rect4f *polygon;
+    coord2d *polygon;
     s32 numvertices0;
     f32 distB;
     f32 distA;
@@ -1524,7 +1524,7 @@ s32 stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s32 cdtypes, f32 
                     {
                         next = (i + 1) % numvertices0;
 
-                        dist = stanGetSignedPointLineDistance(polygon->points[i].f[0], polygon->points[i].f[1], polygon->points[next].f[0], polygon->points[next].f[1], x, z);
+                        dist = stanGetSignedPointLineDistance(polygon[i].f[0], polygon[i].f[1], polygon[next].f[0], polygon[next].f[1], x, z);
 
                         if (dist < 0.0f)
                         {
@@ -1533,22 +1533,22 @@ s32 stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s32 cdtypes, f32 
 
                         if (bestDist < dist)
                         {
-                            distA = stanDist2d(polygon->points[i].f[0], polygon->points[i].f[1], x, z);
-                            distB = stanDist2d(polygon->points[next].f[0], polygon->points[next].f[1], x, z);
+                            distA = stanDist2d(polygon[i].f[0], polygon[i].f[1], x, z);
+                            distB = stanDist2d(polygon[next].f[0], polygon[next].f[1], x, z);
 
                             if ((dist < radius)
                                 && (
                                     (distA < radius)
                                     || (distB < radius)
-                                    || (stanPointProjectsOntoEdge(polygon->points[i].f[0], polygon->points[i].f[1], polygon->points[next].f[0], polygon->points[next].f[1], x, z) != 0)))
+                                    || (stanPointProjectsOntoEdge(polygon[i].f[0], polygon[i].f[1], polygon[next].f[0], polygon[next].f[1], x, z) != 0)))
                             {
                                 g_StanSavedCollHasLine = 1;
                                 bestDist = dist;
 
-                                g_StanHitLineA.f[0] = polygon->points[i].f[0];
-                                g_StanHitLineA.f[1] = polygon->points[i].f[1];
-                                g_StanHitLineB.f[0] = polygon->points[next].f[0];
-                                g_StanHitLineB.f[1] = polygon->points[next].f[1];
+                                g_StanHitLineA.f[0] = polygon[i].f[0];
+                                g_StanHitLineA.f[1] = polygon[i].f[1];
+                                g_StanHitLineB.f[0] = polygon[next].f[0];
+                                g_StanHitLineB.f[1] = polygon[next].f[1];
                                 g_StanHitTile = NULL;
                                 g_StanHitEdge = 0;
                                 g_StanHitProp = prop;

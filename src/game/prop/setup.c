@@ -60,7 +60,7 @@ s32 setupCountPropdefs(PROPDEF_TYPE type);
 void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *centre);
 void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex);
 void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex);
-void setupHat(s32 stageid, ObjectRecord* hat, s32 cmdindex);
+void setupHat(s32 stageid, HatRecord *hat, s32 cmdindex);
 void setupKey(s32 stageid, ObjectRecord* key, s32 cmdindex);
 void setupCctv(s32 stageid, CCTVRecord *cctv, s32 cmdindex);
 void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex);
@@ -451,9 +451,9 @@ void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex)
                         xscale = 1.0f;
                     }
 
-                    mtx4ScaleRow0(xscale, mtx.m[0]);
-                    mtx4ScaleRow1(yscale, mtx.m[0]);
-                    mtx4ScaleRow2(zscale, mtx.m[0]);
+                    mtx4ScaleRow0(xscale, &mtx);
+                    mtx4ScaleRow1(yscale, &mtx);
+                    mtx4ScaleRow2(zscale, &mtx);
 
                     modelSetScale(obj->model, obj->model->scale * maxscale);
                 }
@@ -592,7 +592,7 @@ void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex)
 }
 
 //i should be object hat
-void setupHat(s32 stageid, ObjectRecord* hat, s32 cmdindex)
+void setupHat(s32 stageid, HatRecord *hat, s32 cmdindex)
 {
     if (hat->flags & PROPFLAG_ASSIGNEDTOCHR) {
         ChrRecord* chr = chrFindByLiteralId(hat->pad);
@@ -669,7 +669,7 @@ void setupCctv(s32 stageid, CCTVRecord *cctv, s32 cmdindex)
 
 void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
 {
-    s8 *beam;
+    BeamRecord *beam;
 
     setupObject(stageID, (ObjectRecord *) autogun, cmdindex);
 
@@ -704,7 +704,7 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
 
     beam          = mempAlloc(0x30U, MEMPOOL_STAGE);
     autogun->beam = beam;
-    *beam = -1;
+    beam->age = -1;
 
     autogun->is_active = FALSE;
     autogun->damageAccum = 0.0f;
@@ -723,7 +723,7 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
         }
         else
         {
-            pad = &g_CurrentSetup.boundpads[getBoundPadNum(autogun->padID)];
+            pad = (PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(autogun->padID)];
         }
 
         prop = autogun->prop;
@@ -1021,9 +1021,9 @@ void setupDoor(s32 stageid, struct DoorRecord *door, s32 cmdindex)
                 zscale = 1.0f;
         }
 
-        mtx4ScaleRow0(xscale, mtx.m[0]);
-        mtx4ScaleRow1(yscale, mtx.m[0]);
-        mtx4ScaleRow2(zscale, mtx.m[0]);
+        mtx4ScaleRow0(xscale, &mtx);
+        mtx4ScaleRow1(yscale, &mtx);
+        mtx4ScaleRow2(zscale, &mtx);
 
         centre.f[0] = pos.f[0];
         centre.f[1] = pos.f[1];
@@ -1471,7 +1471,7 @@ void setupCreateProps(enum LEVELID stageId)
                     case PROPDEF_HAT:
                         if (withchrs && (!(((struct ObjectRecord *) phead)->flags2 & flags)))
                         {
-                            setupHat(stageId, (struct ObjectRecord *) phead, pdefIndex);
+                            setupHat(stageId, (HatRecord *) phead, pdefIndex);
                         }
                         break;
                     case PROPDEF_CCTV:
@@ -1634,7 +1634,7 @@ void setupCreateProps(enum LEVELID stageId)
                             pdef_veh->turnrot60    = 0.0f;
                             pdef_veh->roty         = 0.0f;
                             pdef_veh->speedtime60  = -1.0f;
-                            pdef_veh->ailist       = ailistFindById(pdef_veh->ailist);
+                            pdef_veh->ailist       = ailistFindById((s32)pdef_veh->ailist); // setup data holds the list id
                             pdef_veh->aioffset     = 0;
                             pdef_veh->aireturnlist = -1;
                             pdef_veh->path         = 0;
@@ -1656,7 +1656,7 @@ void setupCreateProps(enum LEVELID stageId)
                             pdef_air->yrot            = 0.0f;
                             pdef_air->speedtime60     = -1.0f;
                             pdef_air->rotaryspeedtime = -1.0f;
-                            pdef_air->ailist          = ailistFindById(pdef_air->ailist);
+                            pdef_air->ailist          = ailistFindById((s32)pdef_air->ailist); // setup data holds the list id
                             pdef_air->aioffset        = 0;
                             pdef_air->aireturnlist    = -1;
                             pdef_air->nextstep        = 0;
@@ -1834,7 +1834,7 @@ void setupCreateProps(enum LEVELID stageId)
                             pdef_safe->item = safe_item;
                             pdef_safe->safe = safe;
                             pdef_safe->door = door;
-                            setupLinkSafeItem((struct ObjectRecord *) pdef_safe);
+                            setupLinkSafeItem(pdef_safe);
                             safe_item->flags2 |= PROPFLAG2_LINKEDTOSAFE;
                             door->flags2 |= PROPFLAG2_LINKEDTOSAFE;
                         }
@@ -1893,9 +1893,9 @@ void setupCreateProps(enum LEVELID stageId)
 }
 
 
-MonitorRecord g_InitialMonitorAnimController = {&monAnim00Bond, 0, 0xFFFF, 0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1.0, 0.0};
-struct object_animation_controller g_InitialUnknownAnimController = {&monAnim34, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0};
-struct object_animation_controller g_InitialTaserAnimController = {&monAnim35Taser, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0};
+MonitorRecord g_InitialMonitorAnimController = {monAnim00Bond, 0, 0xFFFF, 0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1.0, 0.0};
+struct object_animation_controller g_InitialUnknownAnimController = {monAnim34, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0};
+struct object_animation_controller g_InitialTaserAnimController = {monAnim35Taser, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0};
 
 f32 g_DoorScale = 1.0f;
 
@@ -2007,10 +2007,10 @@ void setupLinkLockDoor(struct LockDoorRecord *link)
 /**
  * Called from setupCreateProps when PROPDEF type is PROPDEF_SAFE_ITEM.
 */
-void setupLinkSafeItem(struct ObjectRecord *obj)
+void setupLinkSafeItem(SafeObjectRecord *link)
 {
-    obj->prop = g_LevelLoadPropSafeItem;
-    g_LevelLoadPropSafeItem = obj;
+    link->next = g_LevelLoadPropSafeItem;
+    g_LevelLoadPropSafeItem = link;
 }
 
 
@@ -2051,7 +2051,7 @@ void objSoundsStopAll(void) {
 
 void setupFreeProps(s32 stage)
 {
-    u32 *obj = (u32)g_CurrentSetup.propDefs;
+    u32 *obj = (u32 *)g_CurrentSetup.propDefs;
     
     if (obj)
     {
@@ -2113,7 +2113,7 @@ void setupFreeProps(s32 stage)
                 
             }
 
-            obj =  obj + sizepropdef(obj) ;
+            obj += sizepropdef((PropDefHeaderRecord *)obj);
         }
     }
 }
@@ -2250,7 +2250,7 @@ s32 sizepropdef(PropDefHeaderRecord *pdef)
  *Return Item by Setup index
  *Setup Array is most likley PropDefHeaderRecord since size was 4
  */
-ObjectRecord *setupGetPtrToCommandByIndex(s32 index) //#MATCH
+PropDefHeaderRecord *setupGetPtrToCommandByIndex(s32 index)
 {
     PropDefHeaderRecord *object = g_CurrentSetup.propDefs; //wow, first use of header, cool
 
@@ -2406,7 +2406,7 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 }
 
 
- ObjectRecord *setupCommandGetObject(s32 stageID, s32 index)
+ObjectRecord *setupCommandGetObject(s32 stageID, s32 index)
 {
      PropDefHeaderRecord *obj;
 
@@ -2438,7 +2438,7 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
             case PROPDEF_SAFE: //43:
             case PROPDEF_TANK: //45:
             case PROPDEF_TINTED_GLASS:                 //47:
-                return obj;
+                return (ObjectRecord *)obj;
             break;
 
             case PROPDEF_DOOR_SCALE: //2
@@ -2473,7 +2473,7 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
             // return ???
         }
     }
-    return obj;
+    return (ObjectRecord *)obj;
 }
 
 
@@ -2482,7 +2482,7 @@ ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr,
     ObjectRecord *offscreenobj = NULL;
     ObjectRecord *anyobj = NULL;
 
-    u32 *cmd = g_CurrentSetup.propDefs;
+    u32 *cmd = (u32 *)g_CurrentSetup.propDefs;
 
     if (cmd)
     {
@@ -2517,7 +2517,7 @@ ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr,
                 }
             }
 
-            cmd = cmd + sizepropdef(cmd);
+            cmd += sizepropdef((PropDefHeaderRecord *)cmd);
         }
     }
 

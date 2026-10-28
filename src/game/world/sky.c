@@ -40,7 +40,7 @@ void skyGetWorldPosFromScreenPos(f32 offset_x, f32 offset_y, coord3d* out) {
     screen_top = camGetScreenTop();
     coords.y = fogGetCurrentEnvironmentp()->WaterConcavity + (offset_y + screen_top);
     camScreenToViewDir(&coords, out, 100.0f);
-    mtx4RotateVecInPlace(player_mtxf, out->f);
+    mtx4RotateVecInPlace(player_mtxf, out);
 }
 
 bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)

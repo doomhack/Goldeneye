@@ -205,7 +205,7 @@ f32 bgGetLevelVisibilityScale(void);
 void bgRectOutersect(struct bbox2d *a, struct bbox2d *b);
 f32 bgGetLevelScaleInv(void);
 s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, struct coord3d *start, struct coord3d *end);
-void bgGetPortalPlane(s32 portalnum, f32 *out);
+void bgGetPortalPlane(s32 portalnum, struct PortalMetric *metric);
 void bgApplyDynamicCCRMLUT(Gfx *start, Gfx *end, enum CCRMLUT lutIndex);
 void bgFindRoomsInBbox(coord3d *, coord3d *, s32 *, s32 *, s32);
 void bgFindRoomsAlongSegment(coord3d *pos1, coord3d *pos2, u8 *initialRooms, u8 *outRoomSet, s32 *outRoomNums, s32 *outRoomNumsCount, s32 outRoomNumsMax);

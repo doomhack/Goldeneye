@@ -2145,7 +2145,7 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *prop, s32 pass)
     s32 drewAny;
     ObjectRecord *obj;
     s32 lasttype;
-    union RenderPosView *render_pos;
+    RenderPosView *render_pos;
 
     s16 lastmtx;
     s32 impact_type;

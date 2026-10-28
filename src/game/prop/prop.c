@@ -182,7 +182,7 @@ void propsSortOnscreen(void)
         // removed
     }
 
-    g_LastOnScreenProp = (PropRecord *)&g_OnScreenPropList[count];
+    g_LastOnScreenProp = &g_OnScreenPropList[count];
 
     for (i=0; i<count; i++)
     {
@@ -993,7 +993,7 @@ void propGetRoomIds(PropRecord *self, s32 *roomids)
  * @param arg3: out parameter. Maybe ymin. (ground)
  * @param arg4: out parameter. Maybe ymax. (ground + chr/object height)
 */
-void propGetCollisionPolygon(PropRecord *prop, struct rect4f **polygon, s32 *edges, f32 *top, f32 *bottom)
+void propGetCollisionPolygon(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom)
 {
     *polygon = NULL;
     *edges = 0;
@@ -1034,7 +1034,7 @@ void propGetCollisionPolygon(PropRecord *prop, struct rect4f **polygon, s32 *edg
  * @param arg1: out parameter. Bounding coords (x,z) by (x,z).
  * @param arg2: out parameter.
 */
-void propGetCollisionPolygon2d(PropRecord *prop, struct rect4f **polygon, s32 *edges)
+void propGetCollisionPolygon2d(PropRecord *prop, coord2d **polygon, s32 *edges)
 {
     f32 top;
     f32 bottom;
@@ -1049,7 +1049,7 @@ void propGetCollisionPolygon2d(PropRecord *prop, struct rect4f **polygon, s32 *e
  * point is oriented correctly inside all of them.
  * @param edges: Number of edges to iterate in polygon.
 */
-s32 polygonContainsPoint(coord3d *point, struct rect4f *polygon, s32 edges)
+s32 polygonContainsPoint(coord3d *point, coord2d *polygon, s32 edges)
 {
     /**
      * Stack overflow:
@@ -1085,8 +1085,8 @@ s32 polygonContainsPoint(coord3d *point, struct rect4f *polygon, s32 edges)
     for (i=0; i<edges; i++)
     {
         // curse you compiler loop unroller
-        diff = (    (polygon->points[(i+1) % edges].f[1] - polygon->points[i].f[1]) * (point->f[0] - polygon->points[i].f[0]))
-                 - ((polygon->points[(i+1) % edges].f[0] - polygon->points[i].f[0]) * (point->f[2] - polygon->points[i].f[1]));
+        diff = (    (polygon[(i+1) % edges].f[1] - polygon[i].f[1]) * (point->f[0] - polygon[i].f[0]))
+                 - ((polygon[(i+1) % edges].f[0] - polygon[i].f[0]) * (point->f[2] - polygon[i].f[1]));
 
         if (diff != 0.0f)
         {
@@ -1221,12 +1221,12 @@ void propsTickPickups(void)
  */
 f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds, f32 *world_ybounds, coord2d *out_screen)
 {
-    f32 aim_screen[2];
+    coord2d aim_screen;
     coord3d testpos;
-    f32 screen_left_edge[2];
-    f32 screen_right_edge[2];
-    f32 screen_top_edge[2];
-    f32 screen_bottom_edge[2];
+    coord2d screen_left_edge;
+    coord2d screen_right_edge;
+    coord2d screen_top_edge;
+    coord2d screen_bottom_edge;
     f32 crosshair_x;
     f32 crosshair_y;
     f32 autoaim_top;
@@ -1251,51 +1251,51 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
 
     score = -2.0f;
 
-    camViewToScreen(aimpos, (coord3d*)aim_screen);
+    camViewToScreen(aimpos, &aim_screen);
     testpos.x = world_xbounds[0];
     testpos.y = aimpos->y;
     testpos.z = aimpos->z;
-    camViewToScreen(&testpos, (coord3d*)screen_left_edge);
+    camViewToScreen(&testpos, &screen_left_edge);
     testpos.x = world_xbounds[1];
     testpos.y = aimpos->y;
     testpos.z = aimpos->z;
-    camViewToScreen(&testpos, (coord3d*)screen_right_edge);
+    camViewToScreen(&testpos, &screen_right_edge);
     testpos.x = aimpos->x;
     testpos.y = world_ybounds[1];
     testpos.z = aimpos->z;
-    camViewToScreen(&testpos, (coord3d*)screen_top_edge);
+    camViewToScreen(&testpos, &screen_top_edge);
     testpos.x = aimpos->x;
     testpos.y = world_ybounds[0];
     testpos.z = aimpos->z;
-    camViewToScreen(&testpos, (coord3d*)screen_bottom_edge);
+    camViewToScreen(&testpos, &screen_bottom_edge);
 
-    if (screen_bottom_edge[1] >= autoaim_top && autoaim_bottom >= screen_top_edge[1])
+    if (screen_bottom_edge.y >= autoaim_top && autoaim_bottom >= screen_top_edge.y)
     {
         passes_horizontal_check = FALSE;
         gunGetCrosshairPos(&crosshair_x, &crosshair_y);
-        screen_left_edge[0] = mathFloor(screen_left_edge[0]);
-        screen_right_edge[0] = mathCeil(screen_right_edge[0]);
+        screen_left_edge.x = mathFloor(screen_left_edge.x);
+        screen_right_edge.x = mathCeil(screen_right_edge.x);
 
         if (currentPlayerGetXAutoAimEnabledRedirect())
         {
-            if (screen_left_edge[0] <= autoaim_right && autoaim_left <= screen_right_edge[0])
+            if (screen_left_edge.x <= autoaim_right && autoaim_left <= screen_right_edge.x)
             {
-                horizontal_tolerance = (screen_right_edge[0] - screen_left_edge[0]) * 1.5f;
+                horizontal_tolerance = (screen_right_edge.x - screen_left_edge.x) * 1.5f;
 
                 if (!isMpGame())
                 {
                     horizontal_tolerance = horizontal_tolerance * difficulty;
                 }
 
-                passes_horizontal_check = camGetScreenLeft() + 0.5f * camGetScreenWidth() >= (screen_left_edge[0] + screen_right_edge[0]) * 0.5f - horizontal_tolerance
-                    && camGetScreenLeft() + 0.5f * camGetScreenWidth() <= (screen_left_edge[0] + screen_right_edge[0]) * 0.5f + horizontal_tolerance
-                    && autoaim_left <= aim_screen[0]
-                    && autoaim_right >= aim_screen[0];
+                passes_horizontal_check = camGetScreenLeft() + 0.5f * camGetScreenWidth() >= (screen_left_edge.x + screen_right_edge.x) * 0.5f - horizontal_tolerance
+                    && camGetScreenLeft() + 0.5f * camGetScreenWidth() <= (screen_left_edge.x + screen_right_edge.x) * 0.5f + horizontal_tolerance
+                    && autoaim_left <= aim_screen.x
+                    && autoaim_right >= aim_screen.x;
             }
         }
         else
         {
-            passes_horizontal_check = screen_left_edge[0] <= crosshair_x && crosshair_x <= screen_right_edge[0];
+            passes_horizontal_check = screen_left_edge.x <= crosshair_x && crosshair_x <= screen_right_edge.x;
         }
 
         if (passes_horizontal_check)
@@ -1310,7 +1310,7 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
             {
                 if (line_stan == targetprop->stan)
                 {
-                    f32 clamped_screen_y = aim_screen[1];
+                    f32 clamped_screen_y = aim_screen.y;
 
                     if (clamped_screen_y < autoaim_top)
                     {
@@ -1325,7 +1325,7 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
 
                     if (currentPlayerGetXAutoAimEnabledRedirect())
                     {
-                        f32 clamped_screen_x = aim_screen[0];
+                        f32 clamped_screen_x = aim_screen.x;
 
                         if (clamped_screen_x < autoaim_left)
                         {
@@ -1342,19 +1342,19 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *world_xbounds
                     /** If the screen's center x-coord overlaps the target's horizontal span, give it the best possible score of 1.0.
                      *  If this happens, this function's caller, autoaimUpdateTarget, treats this as the winning prop and stops searching.
                      */
-                    if (camGetScreenLeft() + 0.5f * camGetScreenWidth() >= screen_left_edge[0] && camGetScreenLeft() + 0.5f * camGetScreenWidth() <= screen_right_edge[0])
+                    if (camGetScreenLeft() + 0.5f * camGetScreenWidth() >= screen_left_edge.x && camGetScreenLeft() + 0.5f * camGetScreenWidth() <= screen_right_edge.x)
                     {
                         score = 1.0f;
                     }
                     // If the target is towards the left side of the screen, penalize it based on how far towards the left.
-                    else if (camGetScreenLeft() + 0.5f * camGetScreenWidth() >= screen_left_edge[0])
+                    else if (camGetScreenLeft() + 0.5f * camGetScreenWidth() >= screen_left_edge.x)
                     {
-                        score = 1.0f - ((camGetScreenLeft() + 0.5f * camGetScreenWidth()) - screen_right_edge[0]) / horizontal_tolerance;
+                        score = 1.0f - ((camGetScreenLeft() + 0.5f * camGetScreenWidth()) - screen_right_edge.x) / horizontal_tolerance;
                     }
                     // If the target is towards the right side of the screen, penalize it based on how far towards the right.
                     else
                     {
-                        score = 1.0f - (screen_left_edge[0] - (camGetScreenLeft() + 0.5f * camGetScreenWidth())) / horizontal_tolerance;
+                        score = 1.0f - (screen_left_edge.x - (camGetScreenLeft() + 0.5f * camGetScreenWidth())) / horizontal_tolerance;
                     }
                 }
             }
@@ -1438,7 +1438,7 @@ void autoaimUpdateTarget(void)
             }
 
             // Score the candidate based on how close it is to the center of the screen.
-            candidate_score = autoaimScoreProp(candidate_prop, &target_aimpos, &target_world_xbounds.x, &target_world_ybounds.x, &candidate_screen_aim.x);
+            candidate_score = autoaimScoreProp(candidate_prop, &target_aimpos, &target_world_xbounds.x, &target_world_ybounds.x, &candidate_screen_aim);
 
             if (best_score < candidate_score)
             {
@@ -2290,7 +2290,7 @@ f32 bboxRotatedMaxZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 }
 
 
-void boxGetHull2d(f32 x1, f32 x2, f32 y1, f32 y2, f32 z1, f32 z2, Mtxf *m, struct rect4f *poly, struct collision_data *collision)
+s32 boxGetHull2d(f32 x1, f32 x2, f32 y1, f32 y2, f32 z1, f32 z2, Mtxf *m, coord2d *poly)
 {
     f64 pts[8][2];
     s32 i;
@@ -2382,8 +2382,8 @@ filterloop:
     }
 
     cnt = 0;
-    poly->points[cnt].x = pts[minxi][0];
-    poly->points[cnt].y = pts[minxi][1];
+    poly[cnt].x = pts[minxi][0];
+    poly[cnt].y = pts[minxi][1];
     cnt++;
 
     for (i = 0; i < 4; i++)
@@ -2392,15 +2392,15 @@ filterloop:
 
         if (((pts[index][0] - pts[minzi][0]) * (pts[minxi][1] - pts[minzi][1])) < ((pts[minxi][0] - pts[minzi][0]) * (pts[index][1] - pts[minzi][1])))
         {
-            poly->points[cnt].x = pts[index][0];
-            poly->points[cnt].y = pts[index][1];
+            poly[cnt].x = pts[index][0];
+            poly[cnt].y = pts[index][1];
             cnt++;
             break;
         }
     }
 
-    poly->points[cnt].x = pts[minzi][0];
-    poly->points[cnt].y = pts[minzi][1];
+    poly[cnt].x = pts[minzi][0];
+    poly[cnt].y = pts[minzi][1];
     cnt++;
 
     for (i = 0; i < 4; i++)
@@ -2409,15 +2409,15 @@ filterloop:
 
         if (((pts[index][0] - pts[maxxi][0]) * (pts[minzi][1] - pts[maxxi][1])) < ((pts[minzi][0] - pts[maxxi][0]) * (pts[index][1] - pts[maxxi][1])))
         {
-            poly->points[cnt].x = pts[index][0];
-            poly->points[cnt].y = pts[index][1];
+            poly[cnt].x = pts[index][0];
+            poly[cnt].y = pts[index][1];
             cnt++;
             break;
         }
     }
 
-    poly->points[cnt].x = pts[maxxi][0];
-    poly->points[cnt].y = pts[maxxi][1];
+    poly[cnt].x = pts[maxxi][0];
+    poly[cnt].y = pts[maxxi][1];
     cnt++;
 
     for (i = 0; i < 4; i++)
@@ -2426,15 +2426,15 @@ filterloop:
 
         if (((pts[index][0] - pts[maxzi][0]) * (pts[maxxi][1] - pts[maxzi][1])) < ((pts[maxxi][0] - pts[maxzi][0]) * (pts[index][1] - pts[maxzi][1])))
         {
-            poly->points[cnt].x = pts[index][0];
-            poly->points[cnt].y = pts[index][1];
+            poly[cnt].x = pts[index][0];
+            poly[cnt].y = pts[index][1];
             cnt++;
             break;
         }
     }
 
-    poly->points[cnt].x = pts[maxzi][0];
-    poly->points[cnt].y = pts[maxzi][1];
+    poly[cnt].x = pts[maxzi][0];
+    poly[cnt].y = pts[maxzi][1];
     cnt++;
 
     for (i = 0; i < 4; i++)
@@ -2443,26 +2443,26 @@ filterloop:
 
         if (((pts[index][0] - pts[minxi][0]) * (pts[maxzi][1] - pts[minxi][1])) < ((pts[maxzi][0] - pts[minxi][0]) * (pts[index][1] - pts[minxi][1])))
         {
-            poly->points[cnt].x = pts[index][0];
-            poly->points[cnt].y = pts[index][1];
+            poly[cnt].x = pts[index][0];
+            poly[cnt].y = pts[index][1];
             cnt++;
             break;
         }
     }
 
-    collision->edges = cnt;
-
     for (i = 0; i < cnt; i++)
     {
-        poly->points[i].x += m->m[3][0];
-        poly->points[i].y += m->m[3][2];
+        poly[i].x += m->m[3][0];
+        poly[i].y += m->m[3][2];
     }
+
+    return cnt;
 }
 
 
-void bboxGetHull2d(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf* mtx, struct rect4f* hull, struct collision_data* collision)
+s32 bboxGetHull2d(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord2d *hull)
 {
-    boxGetHull2d(bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax, bbox->Bounds.zmin, bbox->Bounds.zmax, mtx, hull, collision);
+    return boxGetHull2d(bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax, bbox->Bounds.zmin, bbox->Bounds.zmax, mtx, hull);
 }
 
 
@@ -2643,7 +2643,7 @@ ObjectRecord *objFindAtPad(s32 PadId) {
 
 ObjectRecord * objFindAtPos(struct coord3d *pos, s32 RoomID)
 {
-    rect4f * polygon;
+    coord2d * polygon;
     s32 edges;
     PropRecord * prop;
 
@@ -2675,7 +2675,7 @@ void propsInit(void)
     g_ActivePropsTail = g_ActivePropsHead = NULL;
     g_OnScreenPropCount = 0;
     g_OnScreenPropList[0] = NULL;
-    g_LastOnScreenProp = (PropRecord *) g_OnScreenPropList;
+    g_LastOnScreenProp = g_OnScreenPropList;
     g_FreeProps = g_Props;
 
     for (i = 0; i < (MAX_PROPS - 1); i++)
@@ -2693,7 +2693,7 @@ void roomPropListsInit(void)
 
     g_RoomPropsFound = (s16 *)mempAlloc(ROOMPROPSFOUND_LEN * sizeof(s16), MEMPOOL_STAGE);
     g_RoomFirstPropBlock       = (s16 *)mempAlloc((((g_MaxNumRooms * 4) + 0xF) | 0xF) ^ 0xF, MEMPOOL_STAGE);
-    g_RoomPropBlocks             = (s16 *)mempAlloc(ROOMPROPBLOCKS_LEN * sizeof(struct roomproplistblock), MEMPOOL_STAGE);
+    g_RoomPropBlocks             = mempAlloc(ROOMPROPBLOCKS_LEN * sizeof(struct roomproplistblock), MEMPOOL_STAGE);
 
     g_RoomPropsFound[0] = -1;
 

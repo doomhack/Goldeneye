@@ -295,7 +295,7 @@ struct player
   PropRecord* prop;
   s32 perimEnabled; /* other props collide with Bond */
 
-  struct rect4f collision_bounds;
+  coord2d collision_bounds[4];
 
   s32 activatePressed; /* B was pressed this frame and not used to enter the tank */
 
@@ -1179,7 +1179,7 @@ int playerIsShowingHealth(void);
 u8 playerGetRoom(void);
 coord3d *playerGetPos(void);
 void playerSetMoving(PropRecord *prop, s32 flag);
-void playerGetPropBounds(PropRecord *prop, struct rect4f **field_B0, s32 *numpoints, f32 *height_related, f32 *collision);
+void playerGetPropBounds(PropRecord *prop, coord2d **field_B0, s32 *numpoints, f32 *height_related, f32 *collision);
 void currentPlayerAddArmor(f32 armour);
 void hudmsgResetIntroText(void);
 void hudmsgsSetOn(s32 flag);

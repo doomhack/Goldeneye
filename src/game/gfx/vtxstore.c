@@ -22,7 +22,7 @@
 /** One block of a store: in use (refs > 0), free (0) or an unused entry (-1). */
 struct VtxstoreBatch {
     Vertex* vertices;
-    s32 modeldef;
+    ModelFileHeader* modeldef;
     s32 destroyedLevel;
     s16 numVtx;
     s16 refs;
@@ -119,26 +119,22 @@ void vtxstoreReset(void)
 *  Search all props and their model data for references to the `find` address
 *  and replace it with the `replacement` address.
 */
-void vtxstoreFixRefs(s32 find, s32 replacement) {
+void vtxstoreFixRefs(Vertex *find, Vertex *replacement) {
     PropRecord* prop;
-    ChrRecord* chr;
-    s32* rwdata;
+    Model* model;
+    union ModelRwData* rwdata;
     ModelNode* node;
-    ModelFileHeader* header;
-    s32 val;
 
     prop = propsGetActiveTail();
     while (prop != NULL) {
-        if (prop->type == 1) {
-            chr = prop->chr;
-            header = ((Model*)chr->chrflags)->obj;
-            node = header->RootNode;
+        if (prop->type == PROP_TYPE_OBJ) {
+            model = prop->obj->model;
+            node = model->obj->RootNode;
             while (node != NULL) {
-                val = node->Opcode & 0xFF;
-                if (val == 0x18) {
-                    rwdata = modelGetNodeRwData((Model *)chr->chrflags, node);
-                    if (find == *rwdata) {
-                        *rwdata = replacement;
+                if ((node->Opcode & 0xFF) == MODELNODE_OPCODE_DLCOLLISION) {
+                    rwdata = modelGetNodeRwData(model, node);
+                    if (rwdata->DisplayListCollisions.Vertices == find) {
+                        rwdata->DisplayListCollisions.Vertices = replacement;
                     }
                     break;
                 } else {
@@ -188,7 +184,7 @@ void vtxstoreTick(void)
                         (g_VtxstoreObjBatches[i].modeldef == g_VtxstoreObjBatches[j].modeldef) &&
                         (g_VtxstoreObjBatches[i].destroyedLevel == g_VtxstoreObjBatches[j].destroyedLevel))
                     {
-                        vtxstoreFixRefs((s32)g_VtxstoreObjBatches[j].vertices, (s32)g_VtxstoreObjBatches[i].vertices);
+                        vtxstoreFixRefs(g_VtxstoreObjBatches[j].vertices, g_VtxstoreObjBatches[i].vertices);
                         merged = 1;
 
                         g_VtxstoreObjBatches[i].refs += g_VtxstoreObjBatches[j].refs;
@@ -239,7 +235,7 @@ void vtxstoreTick(void)
 * PD name: vtxstoreAllocate
 * Description: Allocation for batches within the storage space
 */
-s32 vtxstoreAllocate(s32 numVtx, s32 type, s32 modeldef, s32 destroyedLevel) 
+Vertex *vtxstoreAllocate(s32 numVtx, s32 type, ModelFileHeader *modeldef, s32 destroyedLevel)
 {
     s16* freeVtx;
     s16 batchVtx;
@@ -263,7 +259,7 @@ s32 vtxstoreAllocate(s32 numVtx, s32 type, s32 modeldef, s32 destroyedLevel)
             numBatches = (s16)g_VtxstoreObjNumBatches;
             break;
         default:
-            return 0;
+            return NULL;
     }
 
     result = 0;
@@ -282,7 +278,7 @@ s32 vtxstoreAllocate(s32 numVtx, s32 type, s32 modeldef, s32 destroyedLevel)
         }
     } while (result == 0);
     if (numBatches < steps) {
-        return 0;
+        return NULL;
     }
     if (result == 1) {
         split = 0;
@@ -313,9 +309,9 @@ s32 vtxstoreAllocate(s32 numVtx, s32 type, s32 modeldef, s32 destroyedLevel)
         } else {
             *freeVtx -= batchVtx;
         }
-        return (s32)batches[index].vertices;
+        return batches[index].vertices;
     }
-    return 0;
+    return NULL;
 }
 
 
