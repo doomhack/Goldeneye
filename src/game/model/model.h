@@ -107,7 +107,7 @@ void modelSetAnimationWithMerge(Model *model, ModelAnimation *modelAnimation, s3
 void modelSetAnimation(Model *model, ModelAnimation *modelAnimation, s32 flip, f32 startframe, f32 speed, f32 merge);
 void modelSetAnimLooping(Model *model, f32 loopframe, f32 loopmerge);
 void modelSetAnimEndFrame(Model *model, f32 endframe);
-void modelSetAnimFlipFunction(Model *model, void *callback);
+void modelSetAnimFlipFunction(Model *model, void (*callback)(void));
 void modelSetAnimSpeed(Model *model, f32 anim_speed, f32 startframe);
 void modelSetAnimSpeedToReachFrame(Model *model, f32 targetframe, f32 duration);
 void modelSetAnimPlaySpeed(Model *model, f32 g_ChrAnimRate, f32 startframe);
@@ -136,10 +136,10 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
 void modelRenderNodeOp17(ModelRenderData *renderdata, Model *model, ModelNode *node);
 void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node);
 void modelRender(ModelRenderData *mrData, struct Model *);
-s32 animLoadFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused);
+u8 *animLoadFrame(ModelAnimation *anim, s32 frame, ModelSkeleton *unused);
 void animResetFrameBuffer(void);
 void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr);
-void modelFilePromotePointers(ModelFileHeader *header, s32 vma, u32 addr);
+void modelFilePromotePointers(ModelFileHeader *header, s32 vma, void *addr);
 s32 modelCalculateRwDataIndexes(ModelNode *basenode);
 void modelCalculateRwDataLen(struct ModelFileHeader *objheader);
 void modelInitRwData(Model *model, ModelNode *startnode);

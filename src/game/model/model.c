@@ -34,13 +34,6 @@
 #include "rom.h"
 
 
-typedef struct ModelGroupMtxBuildArg {
-    u16 flags;
-    u16 pad;
-    ModelRoData_GroupRecord *group;
-    ModelNode *parentnode;
-} ModelGroupMtxBuildArg;
-
 // forward declarations
 void modelSetAnimFrame2WithChrStuff(struct Model *model, f32 framea, f32 frameb, f32 frame2a, f32 frame2b);
 
@@ -476,7 +469,7 @@ f32 modelGetRootDepth(Model *objinst)
 union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
 {
     s32 index  = 0;
-    union ModelRwData **data = Objinst->datas;
+    u32 *data = Objinst->datas;
 
     switch (root->Opcode & 0xff)
     {
@@ -532,13 +525,12 @@ union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
         root = root->Parent;
         if ((root->Opcode & 0xFF) == MODELNODE_OPCODE_HEAD)
         {
-            ModelRwData_HeadPlaceholderRecord *tmp = modelGetNodeRwData(Objinst, root);
-            data = tmp->RwDatas;
+            data = modelGetNodeRwData(Objinst, root)->HeadPlaceholder.RwDatas;
             break;
         }
     }
 
-    return &data[index];
+    return (union ModelRwData *)&data[index];
 }
 
 
@@ -548,7 +540,7 @@ void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#M
     {
         case MODELNODE_OPCODE_HEADER:
         {
-            ModelRwData_HeaderRecord *root = modelGetNodeRwData(objinst, part);
+            ModelRwData_HeaderRecord *root = &modelGetNodeRwData(objinst, part)->Header;
             offset->x                   = root->pos.x;
             offset->y                   = root->pos.y;
             offset->z                   = root->pos.z;
@@ -595,7 +587,7 @@ void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
     {
         case MODELNODE_OPCODE_HEADER:
             {
-                ModelRwData_HeaderRecord *rwdata = modelGetNodeRwData(model, node);
+                ModelRwData_HeaderRecord *rwdata = &modelGetNodeRwData(model, node)->Header;
                 coord3d diff[1];
 
                 diff[0].x = pos->x - rwdata->pos.x;
@@ -672,7 +664,7 @@ void modelSetRootRotY(Model *model, f32 angle)
     node = model->obj->RootNode;
     if ((node->Opcode & 0xff) == MODELNODE_OPCODE_HEADER)
     {
-        ModelRwData_HeaderRecord *rwdata = modelGetNodeRwData(model, node);
+        ModelRwData_HeaderRecord *rwdata = &modelGetNodeRwData(model, node)->Header;
         f32 diff = angle - rwdata->yrot;
 
         if (diff < 0) { diff += M_TAU_F; }
@@ -943,14 +935,14 @@ u16 animReadRootMotion16(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelA
 
 f32 animReadRootMotion(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord3d *pos)
 {
-    s16 tmp[3];
+    coord16 tmp;
     u16 angle;
 
-    angle = animReadRootMotion16(jointnum, flip, skeleton, anim, frame, tmp);
+    angle = animReadRootMotion16(jointnum, flip, skeleton, anim, frame, &tmp);
 
-    pos->x = (f32)tmp[0];
-    pos->y = (f32)tmp[1];
-    pos->z = (f32)tmp[2];
+    pos->x = (f32)tmp.x;
+    pos->y = (f32)tmp.y;
+    pos->z = (f32)tmp.z;
 
     return ((f32)angle * M_TAU_F) / M_U16_MAX_VALUE_F;
 }
@@ -1109,48 +1101,33 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
 }
 
 
-void modelCalcJointMtxFromAngles(Mtxf **parentMtx, Model *model, ModelGroupMtxBuildArg *mgm, coord3d *rot)
+void modelCalcJointMtxFromAngles(ModelRenderData *renderdata, Model *model, ModelNode *node, coord3d *rot)
 {
-    u32 flags;
-    ModelRoData_GroupRecord *group;
+    u32 flags = node->Opcode;
+    ModelRoData_GroupRecord *group = &node->Data->Group;
+    s32 matrix0 = group->MatrixID0;
+    s32 matrix1 = group->MatrixID1;
+    s32 matrix2 = group->MatrixID2;
+    f32 *origin = group->Origin.f;
+    RenderPosView *render_pos = model->render_pos;
+    s32 has_matrix2 = flags & MODELGROUP_MTX_HAS_MATRIX2;
     Mtxf *parent;
     Mtxf *matrix0_mtx;
     Mtxf tmp;
-    s32 matrix0;
-    s32 matrix1;
-    s32 matrix2;
-    RenderPosView *render_pos;
-    Mtxf *parentNodeMtx;
-    f32 *origin;
-    s32 has_matrix2;
     quatf q;
     quatf q2;
     Mtxf *dst;
     f32 angle;
-    Mtxf **parentMtxPtr;
-    
-    flags = mgm->flags;
-    group = mgm->group;
-    matrix0 = group->MatrixID0;
-    matrix1 = group->MatrixID1;
-    parentMtxPtr = parentMtx;
-    origin = group->Origin.f;
-    matrix2 = group->MatrixID2;
-    render_pos = model->render_pos;
-    
-    if (((Mtxf *) mgm->parentnode) != NULL)
+
+    if (node->Parent != NULL)
     {
-        parentNodeMtx = modelFindNodeMtx(model, (ModelNode *) ((Mtxf *) mgm->parentnode), 0);
-        parent = parentNodeMtx;
+        parent = modelFindNodeMtx(model, node->Parent, 0);
     }
     else
     {
-        parent = parentMtxPtr[0];
+        parent = renderdata->basemtx;
     }
-    
-    has_matrix2 = flags & MODELGROUP_MTX_HAS_MATRIX2;
-    matrix0_mtx = (Mtxf *) mgm->parentnode;
-    
+
     if (parent != NULL)
     {
         mtx4LoadRotationAndTranslation(&group->Origin, rot, &tmp);
@@ -1455,8 +1432,8 @@ void modelCalcJointMtx(ModelRenderData *renderdata, Model *model, ModelNode *nod
             modelLerpAngles3(&rot3, &rot4, model->frame2Frac);
         }
 
-        quatFromAngles(&rot1, q1);
-        quatFromAngles(&rot3, q2);
+        quatFromAngles(rot1.f, q1);
+        quatFromAngles(rot3.f, q2);
         quatMakeShortestPath(q1, q2);
         quatSlerp(q1, q2, model->mergeWeight, result);
         modelCalcJointMtxFromQuat(renderdata, model, node, result);
@@ -1626,18 +1603,18 @@ void modelCalcYJointMtx(ModelRenderData *renderData, Model *model, ModelNode *no
     jointIndex = rodata->JointID;
     skeleton = model->obj->Skeleton;
 
-    angle = animReadJointYRotation(jointIndex, model->flip, skeleton, model->anim, (u8 *)model->frameaData);
+    angle = animReadJointYRotation(jointIndex, model->flip, skeleton, model->anim, model->frameaData);
 
     if (model->frameFrac != 0.0f) {
-        tmp = animReadJointYRotation(jointIndex, model->flip, skeleton, model->anim, (u8 *)model->framebData);
+        tmp = animReadJointYRotation(jointIndex, model->flip, skeleton, model->anim, model->framebData);
         angle = modelLerpAngle(angle, tmp, model->frameFrac);
     }
 
     if (model->mergeWeight != 0.0f) {
-        tmp = animReadJointYRotation(jointIndex, model->flip2, skeleton, model->anim2, (u8 *)model->frame2aData);
+        tmp = animReadJointYRotation(jointIndex, model->flip2, skeleton, model->anim2, model->frame2aData);
 
         if (model->frame2Frac != 0.0f) {
-            tmp2 = animReadJointYRotation(jointIndex, model->flip2, skeleton, model->anim2, (u8 *)model->frame2bData);
+            tmp2 = animReadJointYRotation(jointIndex, model->flip2, skeleton, model->anim2, model->frame2bData);
             tmp = modelLerpAngle(tmp, tmp2, model->frame2Frac);
         }
 
@@ -1668,11 +1645,11 @@ void modelCalcOffsetMtx(ModelRenderData* renderdata, Model *model, ModelNode *no
     if (parent)
     {
         mtx4LoadTranslation(&rodata->GroupSimple.Origin, &tmp);
-        mtx4MultAffine(parent, &tmp, &matrices[mtxindex]);
+        mtx4MultAffine(parent, &tmp, &matrices[mtxindex].pos);
     }
     else
     {
-        mtx4LoadTranslation(&rodata->GroupSimple.Origin, &matrices[mtxindex]);
+        mtx4LoadTranslation(&rodata->GroupSimple.Origin, &matrices[mtxindex].pos);
     }
 }
 
@@ -1714,7 +1691,7 @@ void modelUpdateDistanceRelations(Model* model, ModelNode* node)
 void modelApplyDistanceRelations(Model* model, ModelNode* node)
 {
     ModelRoData_LODRecord *rodata = &node->Data->LOD;
-    ModelRwData_LODRecord *rwdata = modelGetNodeRwData(model, node);
+    ModelRwData_LODRecord *rwdata = &modelGetNodeRwData(model, node)->LOD;
 
     if (rwdata->visible)
     {
@@ -1730,7 +1707,7 @@ void modelApplyDistanceRelations(Model* model, ModelNode* node)
 void modelApplyToggleRelations(Model* model, ModelNode* node)
 {
     ModelRoData_SwitchRecord *rodata = &node->Data->Switch;
-    ModelRwData_SwitchRecord *rwdata = modelGetNodeRwData(model, node);
+    ModelRwData_SwitchRecord *rwdata = &modelGetNodeRwData(model, node)->Switch;
 
     if (rwdata->visible)
     {
@@ -1745,7 +1722,7 @@ void modelApplyToggleRelations(Model* model, ModelNode* node)
 
 void modelApplyHeadRelations(Model* model, ModelNode* bodynode)
 {
-    struct ModelRwData_HeadPlaceholderRecord *rwdata = modelGetNodeRwData(model, bodynode);
+    struct ModelRwData_HeadPlaceholderRecord *rwdata = &modelGetNodeRwData(model, bodynode)->HeadPlaceholder;
 
     if (rwdata->ModelFileHeader)
     {
@@ -1848,7 +1825,7 @@ void modelUpdateReorderRelations(Model *model, ModelNode *node)
         normal.x = rodata->BSP.Vector.f[0];
         normal.y = rodata->BSP.Vector.f[1];
         normal.z = rodata->BSP.Vector.f[2];
-        mtx4RotateVecInPlace(mtx, normal.f);
+        mtx4RotateVecInPlace(mtx, &normal);
     }
     else if (rodata->BSP.reserved == 2)
     {
@@ -2327,7 +2304,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
 
     if (type == MODELNODE_OPCODE_HEADER) {
         ModelRoData_HeaderRecord *rodata = &model->obj->RootNode->Data->Header;
-        ModelRwData_HeaderRecord *rwdata = modelGetNodeRwData(model, model->obj->RootNode);
+        ModelRwData_HeaderRecord *rwdata = &modelGetNodeRwData(model, model->obj->RootNode)->Header;
         f32 prevYrot;
         f32 sinAngle;
         f32 scale;
@@ -2471,7 +2448,7 @@ void modelSetAnimEndFrame(Model *model, f32 endframe) {
     }
 }
 
-void modelSetAnimFlipFunction(Model *model, void *callback) {
+void modelSetAnimFlipFunction(Model *model, void (*callback)(void)) {
     model->animflipfunc = callback;
 }
 
@@ -2655,7 +2632,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
     if ((va & 0xff) == 1)
     {
         node = (ModelNode *) root->Data;
-        header = (ModelRwData_HeaderRecord *) modelGetNodeRwData(modelptr, root);
+        header = &modelGetNodeRwData(modelptr, root)->Header;
 
         if (header->frozen == 0)
         {
@@ -3145,9 +3122,9 @@ void modelTickAnim(struct Model *model, s32 numticks, s32 update_chrstuff)
                     frame2 = frame;
                     frame = loopframe + frame - limit;
 
-                    if (model->animflipfunc != 0) 
+                    if (model->animflipfunc != NULL) 
                     {
-                        ((void (*)(void))model->animflipfunc)();
+                        model->animflipfunc();
                     }
                 }
             }
@@ -4598,7 +4575,7 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
 
     shadow = &node->Data->Shadow;
     vtxtemplate = g_ModelShadowVtxTemplate;
-    rwdata = (ModelRwData_HeaderRecord *) modelGetNodeRwData(model, shadow->HeaderNode);
+    rwdata = &modelGetNodeRwData(model, shadow->HeaderNode)->Header;
     height = rwdata->pos.y - rwdata->ground;
     sizex = shadow->size.x;
     sizey = shadow->size.y;
@@ -5252,30 +5229,25 @@ u32 modelFindRayHitNext(Model *model, coord3d *raypos, coord3d *raydir, ModelNod
 /**
  * Copy animation from ROM to RAM
 */
-s32 animLoadFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
+u8 *animLoadFrame(ModelAnimation *anim, s32 frame, ModelSkeleton *unused)
 {
-    s32 ret;
-    s32 source;
-    s32 frameSize;
-    u32 dest;
-    u32 size;
+    u8 *ret = NULL;
+    s32 frameSize = anim->frameBits >> 3;
 
-    ret = 0;
-    frameSize = anim->frameBits >> 3; // divide by 8
-
-    if (anim->address & 0x80000000) // If animation's address is in RAM
+    if (anim->address & 0x80000000) // The animation is already in RAM
     {
-        // Load that frame from RAM
-        ret = anim->address + (frame * frameSize);
+        ret = (u8 *)(anim->address + frame * frameSize);
     }
-    else if (g_AnimFrameBuffer != NULL) // should never be NULL after animInitFrameBuffer is called
+    else if (g_AnimFrameBuffer != NULL) // never NULL once animInitFrameBuffer has run
     {
-        // Get dest from this g_AnimFrameBuffer which points to an array. Align to 16 bytes.
-        dest = ((u32) (g_AnimFrameBuffer->animBufferPtr2 + 15) >> 4) * 16;
+        // Copy the frame from ROM to the next 16-byte aligned spot in the frame buffer.
+        u8 *dest = (u8 *)(((u32)g_AnimFrameBuffer->animBufferPtr2 + 15) & ~15);
+        u32 source = anim->address + frame * frameSize;
+        u32 size;
+
         ret = dest;
 
-        // Get source of this animation in ROM with the offset of the frame we'll load
-        source = anim->address + (frame * frameSize);
+        // ROM DMAs must start on an even address
         if (source & 1)
         {
             source--;
@@ -5283,19 +5255,15 @@ s32 animLoadFrame(ModelAnimation* anim, s32 frame, ModelSkeleton* unused)
             ret++;
         }
 
-        // Size of frame but 16-bytes aligned. Observed to be 80 bytes. Might differ for non-guards.
-        size = ((u32) (frameSize + 15) >> 4) * 16;
+        size = (frameSize + 15) & ~15;
+        romCopy(dest, (void *)source, size);
 
-        // This copies one animation frame from ROM to the destination in RAM
-        romCopy((void* ) dest, (void* ) source, size);
+        g_AnimFrameBuffer->uselessPointer++;
 
-        // Increment this which serves nothing
-        g_AnimFrameBuffer->uselessPointer += 1;
-
-        // Set this to point to the end of the copied frame
-        // This allows to copy another frame after this one
-        g_AnimFrameBuffer->animBufferPtr2 = dest + size;
+        // The next frame goes after this one
+        g_AnimFrameBuffer->animBufferPtr2 = (char *)dest + size;
     }
+
     return ret;
 }
 
@@ -5313,7 +5281,7 @@ void animResetFrameBuffer(void)
 
 #define PROMOTE(var) \
     if (var) \
-        var = (void *)((u32)var + diff)
+        var = (typeof(var))((u32)var + diff)
 
 void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr)
 {
@@ -5512,15 +5480,15 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
     }
 }
 
-void modelFilePromotePointers(ModelFileHeader *header, s32 vma, u32 addr) {
-    s32 diff = addr - vma;
+void modelFilePromotePointers(ModelFileHeader *header, s32 vma, void *addr) {
+    s32 diff = (u32)addr - vma;
     s32 i;
 
     for(i = 0;i < header->numSwitches;i++)
     {
         PROMOTE(header->Switches[i]);
     }
-    modelPromoteNodeOffsetsToPointers(header->RootNode, vma, addr);
+    modelPromoteNodeOffsetsToPointers(header->RootNode, vma, (u32)addr);
 }
 
 
@@ -5818,7 +5786,7 @@ void animInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data)
     objinst->anim = NULL;
     objinst->anim2 = NULL;
     objinst->animlooping = 0;
-    objinst->animflipfunc = 0;
+    objinst->animflipfunc = NULL;
     objinst->rootMoveCallback = 0;
     objinst->frameFrac = 0.0f;
     objinst->timespeed = 0.0f;
@@ -5839,7 +5807,7 @@ void animInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data)
 // PD: model00023108
 void modelAttachPart(Model *pmodel, ModelFileHeader *pmodeldef, ModelNode *pnode, ModelFileHeader *cmodeldef)
 {
-    ModelRwData_HeadPlaceholderRecord *rwdata = modelGetNodeRwData(pmodel, pnode);
+    ModelRwData_HeadPlaceholderRecord *rwdata = &modelGetNodeRwData(pmodel, pnode)->HeadPlaceholder;
     ModelNode *node;
 
     rwdata->ModelFileHeader = cmodeldef;

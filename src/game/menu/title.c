@@ -193,7 +193,7 @@ Gfx *titleRenderBondModel(Gfx *gdl, s32 count, Mtxf *matrix)
 
             if (g_TitleTimer == BOND_EYE_ANIM_START)
             {
-                modelSetAnimation(g_TitleBondModel, (struct ModelAnimation *) ((s32) &ANIM_DATA_bond_eye_fire + (s32) &g_AnimTable->data), 0, 2.0f, 0.910000026f, 16.0f);
+                modelSetAnimation(g_TitleBondModel, ANIM(bond_eye_fire), 0, 2.0f, 0.910000026f, 16.0f);
             }
 
             if (g_TitleTimer == BOND_EYE_ANIM_SPEEDUP)

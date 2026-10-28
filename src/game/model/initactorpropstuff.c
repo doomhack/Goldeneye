@@ -34,11 +34,11 @@ void reset_counter_rand_body_head(void)
 
 
 u32 animSumRootTurn(void *ani, int aniid, int endframe) {
-    u16 asStack8[4];
+    coord16 motion;
     u16 result = 0;
 
     while (aniid < endframe) {
-        result += animReadRootMotion16(0, 0, &skeleton_guard, ani, aniid, asStack8);
+        result += animReadRootMotion16(0, 0, &skeleton_guard, ani, aniid, &motion);
         aniid++;
     }
     return result;
@@ -48,7 +48,7 @@ u32 animSumRootTurn(void *ani, int aniid, int endframe) {
 s32 animSumRootForward(ModelAnimation *anim, s32 startframe, s32 endframe)
 {
     s32 sum;
-    s16 out[3];
+    coord16 out;
 
     sum = 0;
 
@@ -56,10 +56,10 @@ s32 animSumRootForward(ModelAnimation *anim, s32 startframe, s32 endframe)
     {
         do
         {
-            animReadRootMotion16(0, 0, &skeleton_guard, anim, startframe, out);
+            animReadRootMotion16(0, 0, &skeleton_guard, anim, startframe, &out);
 
             startframe++;
-            sum += out[2];
+            sum += out.z;
         }
         while (startframe < endframe);
     }

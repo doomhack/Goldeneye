@@ -423,20 +423,16 @@ void mtx4ScaleRow2(f32 scalar, f32 *matrix)
     matrix[10] *= scalar;
 }
 
-void mtx4ScaleRows012(f32 scalar, f32 *matrix)
+void mtx4ScaleRows012(f32 scalar, Mtxf *matrix)
 {
-    matrix[0] *= scalar;
-    matrix[1] *= scalar;
-    matrix[2] *= scalar;
-    matrix[3] *= scalar;
-    matrix[4] *= scalar;
-    matrix[5] *= scalar;
-    matrix[6] *= scalar;
-    matrix[7] *= scalar;
-    matrix[8] *= scalar;
-    matrix[9] *= scalar;
-    matrix[10] *= scalar;
-    matrix[11] *= scalar;
+    s32 i;
+
+    for (i = 0; i < 4; i++)
+    {
+        matrix->m[0][i] *= scalar;
+        matrix->m[1][i] *= scalar;
+        matrix->m[2][i] *= scalar;
+    }
 }
 
 void mtx4Scale3x3(f32 scalar, f32 *matrix)

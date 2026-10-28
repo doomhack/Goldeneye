@@ -31,8 +31,8 @@ struct animation_table_data * g_AnimTable;
 //data
 struct bondstruct_unk_animation_related g_AnimFrameBufferInfo = {
     NULL,
-    &animations_frame_buffer, // Two pointers. One always points to the start of the buffer, the other can be modified.
-    &animations_frame_buffer
+    animations_frame_buffer, // Two pointers. One always points to the start of the buffer, the other can be modified.
+    animations_frame_buffer
 };
 
 ModelAnimation *animation_table_ptrs1[] = {

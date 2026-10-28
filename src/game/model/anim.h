@@ -37,6 +37,12 @@ extern ModelAnimation *animation_table_ptrs1[];
  */
 #define ANIM_OFFSET(offset) ((ModelAnimation *)(offset))
 
+/** The animation at an offset into the loaded g_AnimTable. */
+#define ANIM_AT(offset) ((ModelAnimation *)&g_AnimTable->data[(u32)(offset)])
+
+/** A named animation from animationtable_data.h, e.g. ANIM(idle). */
+#define ANIM(name) ANIM_AT(&ANIM_DATA_##name)
+
 /** An empty slot in animation_table_ptrs1 (the PTR_ANIM_null* entries, which are 1). */
 #define ANIM_UNUSED ((ModelAnimation *)1)
 

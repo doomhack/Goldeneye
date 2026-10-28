@@ -460,7 +460,7 @@ void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex)
             }
 
             modelSetScale(obj->model, obj->model->scale * extrascale);
-            mtx4ScaleRows012(obj->model->scale, mtx.m[0]);
+            mtx4ScaleRows012(obj->model->scale, &mtx);
 
             if (obj->flags & PROPFLAG_ONSCREEN)
             {
@@ -648,7 +648,7 @@ void setupCctv(s32 stageid, CCTVRecord *cctv, s32 cmdindex)
         headpos.f[2] += cctv->prop->pos.f[2];
 
         mtx4LoadFacing(headmtx, 0.0f, 0.0f, 0.0f, headpos.f[0] - lookpad->pos.f[0], headpos.f[1] - lookpad->pos.f[1], headpos.f[2] - lookpad->pos.f[2], 0.0f, 1.0f, 0.0f);
-        mtx4ScaleRows012(cctv->model->scale, headmtx->m[0]);
+        mtx4ScaleRows012(cctv->model->scale, headmtx);
 
         if (cctv->convert_to_f32 == 0)
         {
@@ -800,7 +800,7 @@ void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex)
 
             propReparent(prop, owner->prop);
             mtx4LoadXRotation(0.36651915f, (Mtxf*)&monitor->embedment->matrix);
-            mtx4ScaleRows012(monitor->model->scale / owner->model->scale, (f32*)&monitor->embedment->matrix);
+            mtx4ScaleRows012(monitor->model->scale / owner->model->scale, &monitor->embedment->matrix);
         }
     }
     else

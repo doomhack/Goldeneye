@@ -617,7 +617,7 @@ void gunUpdateAndFire(GUNHAND handnum)
             mtx4ScaleRow0(-1.0f, gunmtx.m[0]);
         }
 
-        mtx4ScaleRows012(IDO_POINT_ONE, gunmtx.m[0]);
+        mtx4ScaleRows012(IDO_POINT_ONE, &gunmtx);
         mtx4Copy(&gunmtx, rwmtx);
 
         if (mdlhdr->Skeleton == (&skeleton_gun_revolver))
@@ -727,7 +727,7 @@ void gunUpdateAndFire(GUNHAND handnum)
                 mtx4LoadTranslation((coord3d *) flashdata, &flashmtx);
             }
 
-            mtx4ScaleRows012(flashscale, flashmtx.m[0]);
+            mtx4ScaleRows012(flashscale, &flashmtx);
             mtx4ScaleRow2AndW(flashext, flashmtx.m[0]);
             mtx4MultInPlace(&gunmtx, &flashmtx);
             mtx4Copy(&flashmtx, &rwmtx[1]);
@@ -755,7 +755,7 @@ void gunUpdateAndFire(GUNHAND handnum)
                     flashpos.z = (((((f32 *) nodepos)[0] * flashmtx.m[0][2]) + (((f32 *) nodepos)[1] * flashmtx.m[1][2])) + (((f32 *) nodepos)[2] * flashmtx.m[2][2])) + flashmtx.m[3][2];
 
                     mtx4LoadAlignViaGu(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
-                    mtx4ScaleRows012(IDO_POINT_ONE * flashscale, flash2mtx.m[0]);
+                    mtx4ScaleRows012(IDO_POINT_ONE * flashscale, &flash2mtx);
                     mtx4LoadAlign(&aimmtx, 0, gunofs.x - hand->aimPos.x, gunofs.y - hand->aimPos.y, gunofs.z - hand->aimPos.z);
                     mtx4MultInPlace(&aimmtx, &flash2mtx);
                     mtx4ScaleColumn2(flashext, flash2mtx.m[0]);
@@ -776,7 +776,7 @@ void gunUpdateAndFire(GUNHAND handnum)
                         flashpos.z = (((((f32 *) nodepos)[0] * flashmtx.m[0][2]) + (((f32 *) nodepos)[1] * flashmtx.m[1][2])) + (((f32 *) nodepos)[2] * flashmtx.m[2][2])) + flashmtx.m[3][2];
                         stackpad_scale = IDO_POINT_ONE * flashscale;
                         mtx4LoadAlignViaGu(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
-                        mtx4ScaleRows012(stackpad_scale, flash2mtx.m[0]);
+                        mtx4ScaleRows012(stackpad_scale, &flash2mtx);
                         mtx4LoadAlign(&aimmtx, 0, gunofs.x - hand->aimPos.x, gunofs.y - hand->aimPos.y, gunofs.z - hand->aimPos.z);
                         mtx4MultInPlace(&aimmtx, &flash2mtx);
                         mtx4ScaleColumn2(flashext, flash2mtx.m[0]);
@@ -1250,7 +1250,7 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode)
         mtx = dynAllocateMatrix();
 
         mtx4LoadTranslation(&pos, &mtxf);
-        mtx4ScaleRows012(0.1f, (f32 *)&mtxf);
+        mtx4ScaleRows012(0.1f, &mtxf);
         mtx4MultAffineInPlace(worldtoscreen, &mtxf);
         mtxF2L(&mtxf, (Mtxf *)mtx);
 
@@ -4373,7 +4373,7 @@ void gunTickGameplay(s32 triggerOn)
 
     if (g_CurrentPlayer->resetshadecol)
     {
-        objGetTileShading(currentPlayerGetProp(), (struct rgba_u8 *) &g_CurrentPlayer->tileColor);
+        objGetTileShading(currentPlayerGetProp(), &g_CurrentPlayer->tileColor);
         g_CurrentPlayer->resetshadecol = FALSE;
     }
     else

@@ -37,7 +37,7 @@ void mtx4ScaleRow0(f32 scalar, f32 *matrix);
 void mtx4ScaleRow1(f32 scalar, f32 *matrix);
 void mtx4ScaleRow2AndW(f32 scalar, f32 *matrix);
 void mtx4ScaleRow2(f32 scalar, f32 *matrix);
-void mtx4ScaleRows012(f32 scalar, f32 *matrix);
+void mtx4ScaleRows012(f32 scalar, Mtxf *matrix);
 void mtx4Scale3x3(f32 scalar, f32 *matrix);
 void mtx4ScaleColumn2(f32 scalar, f32 *matrix);
 void mtx4ScaleColumns012(f32 scalar, f32 *matrix);
