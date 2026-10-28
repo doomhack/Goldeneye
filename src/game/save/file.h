@@ -38,7 +38,7 @@ f32 file007Health(void);
 f32 file007Damage(void);
 f32 file007Accuracy(void);
 void fileRecordMissionEnd(void);
-void fileLoadCurrentSettings(int stage);
+void fileLoadCurrentSettings(void);
 void fileClearCurrentFolder(void);
 void fileUpdateBondInCurrentFolder(void);
 s32 fileGetBondForCurrentFolder(void);
@@ -93,5 +93,15 @@ void fileGetHighestStageDifficultyCompletedForFolder(s32 foldernum, LEVEL_SOLO_S
 bool fileIsAztecCompletedOnSecretOr00AnyFolder(void);
 bool fileIsEgyptCompletedOn00AnyFolder(void);
 LEVEL_SOLO_SEQUENCE fileGetHighestStageUnlockedAnyFolder(void);
+
+void fileResetRamRomSave(void);
+void fileCopyFolderToFirstFree(s32 foldernum);
+save_data * fileGetSaveForFoldernum(u32 folder);
+s32 fileGetSaveStageDifficultyTime(save_data* save, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty);
+s32 fileIs007ModeUnlocked(u32 folder);
+bool fileIsAztecCompletedOnSecretOr00ForFolder(s32 folder);
+bool fileIsCradleCompletedAnyFolder(void);
+bool fileIsCradleCompletedForFolder(s32 folder);
+bool fileIsEgyptCompletedOn00ForFolder(int foldernum);
 
 #endif

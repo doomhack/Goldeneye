@@ -11,6 +11,7 @@
 #include "game/player/player.h"
 #include "game/gfx/texselect.h"
 #include "game/gfx/imagebank.h"
+#include "game/menu/cheat.h"
 
 
 /**

@@ -19,6 +19,11 @@
 #include "game/player/player.h"
 #include "game/player/bondinv.h"
 #include "bondtypes.h"
+#include "game/chr/chraction.h"
+#include "game/level/lv.h"
+#include "game/player/gun.h"
+#include "game/prop/propobj.h"
+#include "game/prop/setup.h"
 
 
 

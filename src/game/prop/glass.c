@@ -17,6 +17,9 @@
 #include "game/mission/objective.h"
 #include "game/player/player.h"
 #include "random.h"
+#include "game/gfx/dyn.h"
+#include "game/gfx/texselect.h"
+#include "game/prop/propobj.h"
 
 
 #ifndef VERSION_EU

@@ -35,6 +35,14 @@
 #include "game/nav/stan.h"
 #include "game/prop/explosion.h"
 #include "game/world/roommtx.h"
+#include "game/gfx/tex.h"
+#include "game/math/line_tri_intersect.h"
+#include "game/world/lightfixture.h"
+#include "mema.h"
+
+s32 bgGetPortalIndex(s32 portalID);
+s32 bgPortalIsVertical(s32 portalnum);
+s32 bgSegmentCrossesPortal(s32 portalnum, coord3d *pos1, coord3d *pos2);
 
 
 #define BG_STACK_SIZE 20
@@ -258,6 +266,8 @@ f32 bgGetPortalThickness(s32 portalnum);
 void bgGrowRoomBoundsToPortals(s32 roomID);
 #if defined(VERSION_EU)
 void bgTraversePortal(s32 roomnum, s32 portalnum, s32 depth, bbox2d *parentbox);
+#else
+s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum, s32 depth, bbox2d *parentbox);
 #endif
 void bgSetLevelScale(f32 scale);
 s32 bgProjectPortalPoints(s32 portalnum, f32 scale, coord3d *points);

@@ -27,4 +27,6 @@ void objSoundsStopAll(void);
 
 void setupGuard(s32 stageid, GuardRecord *guard, s32 cmdindex);
 
+ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr, ObjectRecord **anyobjptr, bool musthaveprop, bool musthavemodel, ModelFileHeader *modeldef);
+
 #endif

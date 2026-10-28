@@ -7,6 +7,7 @@
 #include <PR/R4300.h>
 #include "thread_config.h"
 #include "dbgscreen.h"
+#include "os_internal.h"
 
 /**
  * @file deb_video.c

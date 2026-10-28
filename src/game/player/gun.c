@@ -108,6 +108,10 @@ CartridgeModelFileRecord ejected_cartridge[] = {
 
 #include <assets/obseg/gun/gunModelFileRecord.inc.c>
 #include <PR/libaudio.h>
+#include "game/gfx/dyn.h"
+#include "game/model/initactorpropstuff.h"
+#include "game/prop/explosion.h"
+#include "game/world/bg.h"
 
 u32 g_GunDebApplyKeyframe = 0;
 u32 g_gunDebKeyframeIndex = 0;

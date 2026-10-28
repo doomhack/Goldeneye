@@ -144,7 +144,7 @@ struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord
 void                 alarmStopSound(void);
 void                 alarmsReset(void);
 bool                 padBoundsContainPoint(coord3d* pos, f32 radius, BoundPadRecord *boundpads);
-void                 glassCreateShards(f32*, f32*, f32*, f32*, f32, f32, f32, f32, f32, f32);
+void                 glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax, f32 zmin, f32 zmax);
 void                 modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin);
 s32                  vehicleFindBlockingProp(struct PropRecord *argProp);
 PropRecord*          weaponInitWithModelDef(struct ObjectRecord* obj, ModelFileHeader* modeldef);
@@ -163,5 +163,24 @@ s32                  objDrop(PropRecord *prop);
 void                 modelResetDeformedVertices(Model* model);
 PropRecord          *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 flags, WeaponObjRecord *weapon, ItemModelFileRecord *prop_header);
 Gfx                 *countdownTimerRender(Gfx *DL);
+
+PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags);
+bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, struct coord2d *max, struct coord2d *min);
+bool countdownTimerIsVisible(void);
+void monitorSetImage(MonitorRecord *mon, void *unk88);
+Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, Gfx *gdl, s32 zbufferMode, s32 blendMode);
+void objHit(ShotData *shotdata, BulletHit *hit);
+void objTestShot(PropRecord* prop, struct ShotData* shotdata);
+void pickupAddAmmo(AMMOTYPE ammotype,int amount,int doplaysound,int dodisplaytext);
+void pickupPlayWeaponSound(ITEM_IDS weapontype);
+void pickupShowWeaponText(ITEM_IDS weaponid);
+void alarmGasTimerTick(void);
+bool doorTestForInteract(PropRecord *prop);
+bool objTestForInteract(PropRecord* prop);
+s32 objTick(struct PropRecord *prop);
+TICKOP propdoorInteract(PropRecord* doorprop);
+void doorDeactivatePortal(DoorRecord *door);
+PropRecord* doorInit(DoorRecord* door, coord3d* pos, Mtxf* mtx, StandTile* stan, coord3d* coord, coord3d* centre);
+void hatAssignToChr(HatRecord* hat, ChrRecord* chr);
 
 #endif

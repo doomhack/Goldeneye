@@ -19,6 +19,7 @@
 #include "game/player/player.h"
 #include "game/replay/ramromreplay.h"
 #include "game/nav/stan.h"
+#include "game/prop/setup.h"
 
 
 struct coord3d default_start_position = { 0 };

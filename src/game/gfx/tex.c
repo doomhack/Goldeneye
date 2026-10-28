@@ -15,6 +15,7 @@
 #include "game/level/lv.h"
 #include "game/gfx/image.h"
 #include "game/gfx/tex.h"
+#include "game/world/water.h"
 
 s32 g_TexLutMode;
 TexTileState g_TexTileStates[8]; /* last gDPSetTile per tile, to skip redundant commands */

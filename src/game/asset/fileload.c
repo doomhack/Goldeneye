@@ -27,6 +27,8 @@ FileInfo m_fileInfo[OBJ_INDEX_MAX];
 
 
 #include <assets/obseg/file_resource_table.inc.c>
+#include "rom.h"
+#include "str.h"
 
 /** Number of entries in g_FileTable that are in use. */
 s32 m_fileCount = OBJ_INDEX_END;
@@ -104,7 +106,7 @@ void fileLoadPartByName(u8 *name, u8 *dst, s32 offset, s32 len)
             while (1) {};
         }
 
-        romCopy(dst, &entry->romAddr[offset], len, entry);
+        romCopy(dst, &entry->romAddr[offset], len);
     }
 }
 

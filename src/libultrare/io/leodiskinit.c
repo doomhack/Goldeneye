@@ -1,5 +1,6 @@
 #include <PR/os.h>
 #include <PR/rcp.h>
+#include <PR/os_internal.h>
 #include <ultra64.h>
 
 // this file must include some globally referenced data because it is not called anywhere

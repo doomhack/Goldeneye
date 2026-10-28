@@ -1,6 +1,7 @@
 #include <PR/os.h>
 #include <io/controller.h>
 #include <ultra64.h>
+#include <io/siint.h>
 
 extern u8 __osMaxControllers;
 

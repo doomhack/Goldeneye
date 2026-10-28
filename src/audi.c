@@ -4,6 +4,7 @@
 #include "audi.h"
 #include "thread_config.h"
 #include "bondgame.h"
+#include "init.h"
 
 /**
  * EU .data, offset from start of data_seg : 0x23A0

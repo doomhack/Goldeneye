@@ -8,4 +8,6 @@ void roomGetWorldPos(s32 index, struct coord3d *scaledPos);
 Gfx * roomMtxLoad(Gfx *DL, s32 index);
 struct coord3d* roomGetPos(s32 roomID);
 
+void roomMtxInit(void);
+
 #endif

@@ -22,6 +22,8 @@
 #include "game/audio/levelmusic.h"
 #include "game/save/file.h"
 #include "assets/obseg/text/LmpmenuE.h"
+#include "fr.h"
+#include "game/world/bg.h"
 
 #ifdef REFRESH_PAL
 #define MPMENU_YOFF 8   /* PAL: every text row sits 8 pixels lower */

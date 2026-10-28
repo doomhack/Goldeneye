@@ -1124,22 +1124,22 @@ u16 *invGetNameByIndex(s32 index)
 }
 
 extern f32 itemGetEquipFov(s32 item);
-f32 invGetEquipFovForIndex(int index)
+f32 invGetEquipFovForIndex(s32 index)
 {
     return itemGetEquipFov(invGetWeaponForIndex(index));
 }
 
-int invGetEquipPosXForIndex(int index)
+f32 invGetEquipPosXForIndex(s32 index)
 {
     return itemGetEquipPosX(invGetWeaponForIndex(index));
 }
 
-int invGetEquipPosYForIndex(int index)
+f32 invGetEquipPosYForIndex(s32 index)
 {
     return itemGetEquipPosY(invGetWeaponForIndex(index));
 }
 
-int invGetEquipPosZForIndex(int index)
+f32 invGetEquipPosZForIndex(s32 index)
 {
     return itemGetEquipPosZ(invGetWeaponForIndex(index));
 }
@@ -1240,32 +1240,32 @@ u16 *invGetWatchTitle2ForIndex(s32 index)
     return itemGetWatchTitle2(weaponnum);
 }
 extern f32 itemGetWatchFov(s32 item);
-f32 invGetWatchFovForIndex(int index)
+f32 invGetWatchFovForIndex(s32 index)
 {
     return itemGetWatchFov(invGetWeaponForIndex(index));
 }
 
-int invGetWatchPosXForIndex(int index)
+f32 invGetWatchPosXForIndex(s32 index)
 {
     return itemGetWatchPosX(invGetWeaponForIndex(index));
 }
 
-int invGetWatchPosYForIndex(int index)
+f32 invGetWatchPosYForIndex(s32 index)
 {
     return itemGetWatchPosY(invGetWeaponForIndex(index));
 }
 
-int invGetWatchPosZForIndex(int index)
+f32 invGetWatchPosZForIndex(s32 index)
 {
     return itemGetWatchPosZ(invGetWeaponForIndex(index));
 }
 
-int invGetWatchRotXForIndex(int index)
+f32 invGetWatchRotXForIndex(s32 index)
 {
     return itemGetWatchRotX(invGetWeaponForIndex(index));
 }
 
-int invGetWatchRotYForIndex(int index)
+f32 invGetWatchRotYForIndex(s32 index)
 {
     return itemGetWatchRotY(invGetWeaponForIndex(index));
 }

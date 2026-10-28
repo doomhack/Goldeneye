@@ -170,6 +170,13 @@
 #define FLOAT_TEN_B 10.00f
 
 #include "game/player/bondview_internal.h"
+#include "game/asset/fileload.h"
+#include "game/gfx/dyn.h"
+#include "game/hud/radar.h"
+#include "game/prop/prop.h"
+#include "game/replay/ramromreplay.h"
+
+void playerDie(void);
 
 #define a8s "%8s"
 #define aX4_0f "x %4.0f"

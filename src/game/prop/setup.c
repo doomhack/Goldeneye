@@ -12,6 +12,7 @@
  * (propsResetLevelState).
  */
 #include <ultra64.h>
+#include "game/menu/front.h"
 #include "game/model/chrobjdata.h"
 #include <PR/libaudio.h>
 #include <memp.h>
@@ -40,6 +41,10 @@
 #include "game/nav/stan.h"
 #include "game/model/model.h"
 #include "token.h"
+#include "game/chr/body.h"
+#include "game/level/lv.h"
+#include "game/menu/cheat.h"
+#include "str.h"
 
 /**
  * EU .bss 0x80068480

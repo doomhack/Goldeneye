@@ -33,4 +33,28 @@ void invAddTextOverride(textoverride *override);
 void invResetHeldTimes(void);
 void invAllocate(s32 additionalentries);
 
+void invDetermineEquippedItem(void);
+int invGetCurEquippedItem(void);
+u16 *invGetWatchTitle1ForIndex(s32 index);
+u16 *invGetWatchTitle2ForIndex(s32 index);
+s32 invGetWeaponForIndex(s32 index);
+f32 invGetEquipFovForIndex(s32 index);
+f32 invGetEquipPosXForIndex(s32 index);
+f32 invGetEquipPosYForIndex(s32 index);
+f32 invGetEquipPosZForIndex(s32 index);
+f32 invGetWatchFovForIndex(s32 index);
+f32 invGetWatchPosXForIndex(s32 index);
+f32 invGetWatchPosYForIndex(s32 index);
+f32 invGetWatchPosZForIndex(s32 index);
+f32 invGetWatchRotXForIndex(s32 index);
+f32 invGetWatchRotYForIndex(s32 index);
+void invSetCurEquippedItem(int current_item);
+bool invHasGEKey(void);
+void invIncrementHeldTime(s32 weapon1, s32 weapon2);
+int invAddProp(PropRecord *prop);
+int invAddWeaponByProp(PropRecord *prop);
+bool invCheckHasKeyFlags(u32 wantkeyflags);
+u8 *invGetActivatedTextObject(ObjectRecord *obj);
+u8 *invGetActivatedTextWeapon(ITEM_IDS weaponnum);
+
 #endif

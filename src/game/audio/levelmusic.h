@@ -18,4 +18,7 @@ s32 levelMusicGetXTrack(s32 stageID);
 s32 levelMusicGetTrack(s32 stage);
 void levelStopTankSfx(void);
 
+void levelMusicStop(void);
+void levelMusicPause(void);
+
 #endif

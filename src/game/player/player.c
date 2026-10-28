@@ -16,6 +16,9 @@
 #include "bondtypes.h"
 #include "bondconstants.h"
 #include "game/player/gun.h"
+#include "game/player/bondinv.h"
+#include "game/prop/propobj.h"
+#include "game/save/file.h"
 
 struct player *g_playerPointers[4];
 struct player_data g_playerPlayerData[4];

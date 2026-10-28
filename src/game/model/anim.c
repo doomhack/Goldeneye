@@ -12,6 +12,7 @@
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "bondgame.h"
+#include "rom.h"
 
 /** Sets the buffer that animLoadFrame copies animation frames from ROM into. */
 void animInitFrameBuffer(struct bondstruct_unk_animation_related* animBuffer) {

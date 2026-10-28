@@ -30,6 +30,8 @@
 #include "game/model/modelfile.h"
 #include "game/math/quaternion.h"
 #include "random.h"
+#include "game/gfx/texselect.h"
+#include "rom.h"
 
 
 typedef struct ModelGroupMtxBuildArg {

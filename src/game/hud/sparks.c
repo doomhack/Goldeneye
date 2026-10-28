@@ -1,8 +1,8 @@
 /**
  * Bullet sparks: small camera-facing sprites where a bullet hits something. sparkCreate
  * adds one; lvTick ticks them (sparksTickAll) and lvRender draws them in each view
- * (sparksRenderAll). Moving sparks fly with gravity; PAL has none and its movingSparks*
- * functions forward to the plain spark ones.
+ * (sparksRenderAll). Moving sparks fly with gravity; PAL has none, so its *All functions
+ * only handle the plain sparks.
  */
 
 #include <ultra64.h>
@@ -20,6 +20,7 @@
 #include "random.h"
 #include "game/math/physics.h"
 #include "game/hud/sparks.h"
+#include "game/gfx/texselect.h"
 
 #define BULLET_SPARKS_MAX 20
 #define BULLET_MOVING_SPARKS_MAX 50
@@ -161,7 +162,7 @@ void sparksTick(void)
 }
 
 
-void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
+void sparkRender(s_bullet_spark *thing, Gfx **gdlptr, s32 zbufferMode)
 {
     Vtx vtx;
     Mtxf *mtx;
@@ -195,7 +196,7 @@ void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
 
     vtx = g_SparkVtxTemplate;
     mtx = camGetViewToWorldMtxf();
-    gdl = *((Gfx **) gdlarg);
+    gdl = *gdlptr;
     vertices = dynAllocateVertices(4);
     room = thing->room;
     roompos = roomGetPos(room);
@@ -256,11 +257,11 @@ void sparkRender(s_bullet_spark *thing, Gfx *gdlarg, s32 zbufferMode)
     gSPVertex(gdl++, osVirtualToPhysical(vertices), 4, 0);
     gSP2Triangles(gdl++, 0, 1, 2, 0, 0, 2, 3, 0);
     gSPMatrix(gdl++, osVirtualToPhysical(camGetProjectionMtx()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
-    *((Gfx **) gdlarg) = gdl;
+    *gdlptr = gdl;
 }
 
 
-void sparksRender(Gfx *gdl, s32 zbufferMode)
+void sparksRender(Gfx **gdlptr, s32 zbufferMode)
 {
 
     s_bullet_spark *thing = &g_Sparks[0]; \
@@ -268,7 +269,7 @@ void sparksRender(Gfx *gdl, s32 zbufferMode)
 
     for (; (thing < end); thing++)
     {
-        sparkRender(thing, gdl, zbufferMode);
+        sparkRender(thing, gdlptr, zbufferMode);
     }
 }
 
@@ -284,11 +285,6 @@ void movingSparksReset(void)
     {
         ptr->spark.lifetime = 0;
     }
-}
-#else
-void movingSparksReset(void)
-{
-    sparksReset();
 }
 #endif
 
@@ -314,11 +310,6 @@ s_moving_bullet_spark *movingSparkCreate(coord3d *pos, coord3d *velocity, s32 ty
     }
 
     return NULL;
-}
-#else
-void movingSparkCreate(void)
-{
-    sparksTick();
 }
 #endif
 
@@ -355,17 +346,12 @@ void movingSparksTick(void)
         ptr++;
     }
 }
-#else
-void movingSparksTick(Gfx *gdl, s32 zbufferMode)
-{
-    sparksRender(gdl, zbufferMode);
-}
 #endif
 
 
 #ifndef VERSION_EU
 
-void movingSparksRender(Gfx *gdl, s32 zbufferMode)
+void movingSparksRender(Gfx **gdlptr, s32 zbufferMode)
 {
     s32 max_index;
     s_moving_bullet_spark *ptr;
@@ -374,7 +360,7 @@ void movingSparksRender(Gfx *gdl, s32 zbufferMode)
 
     for (ptr = &g_MovingSparks[0]; ptr < (&g_MovingSparks[max_index]); ptr++)
     {
-        sparkRender(&ptr->spark, gdl, zbufferMode);
+        sparkRender(&ptr->spark, gdlptr, zbufferMode);
     }
 
 }
@@ -397,11 +383,27 @@ void sparksTickAll(void)
 }
 
 
-void sparksRenderAll(Gfx *gdl, s32 zbufferMode)
+void sparksRenderAll(Gfx **gdlptr, s32 zbufferMode)
 {
-    sparksRender(gdl, zbufferMode);
-    movingSparksRender(gdl, zbufferMode);
+    sparksRender(gdlptr, zbufferMode);
+    movingSparksRender(gdlptr, zbufferMode);
+}
+#else
+// PAL has no moving sparks.
+void sparksResetAll(void)
+{
+    sparksReset();
 }
 
 
+void sparksTickAll(void)
+{
+    sparksTick();
+}
+
+
+void sparksRenderAll(Gfx **gdlptr, s32 zbufferMode)
+{
+    sparksRender(gdlptr, zbufferMode);
+}
 #endif

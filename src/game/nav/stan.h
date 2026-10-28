@@ -4,6 +4,7 @@
 
 #include <bondtypes.h>
 
+struct StanPrefixRecord;
 // RGB? I've called them 'triple' because I don't really know what RGB is
 // No parens around params
 #define STAN_TRIPLE_TO_PNT_INDEX(tile, tripleIndex) (tile->hdrTail >> (8 - 4*tripleIndex) & 0xF)
@@ -103,5 +104,8 @@ f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, co
 f32 stanPointLineDist(struct coord3d *point3D, coord2d *lineStart, coord2d *lineEnd);
 f32 stanRaySegmentFrac(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd, coord2d *direction);
 s32 stanResolvePadTile(struct PadRecord *pad, char *tilename, struct StandTile **tile_stack);
+
+void stanDetermineEOF(struct StanPrefixRecord *file , s32 origBase, u8 *newBase);
+void stanLoadFile(struct StanPrefixRecord *file);
 
 #endif

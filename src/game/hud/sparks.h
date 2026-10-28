@@ -31,13 +31,14 @@ typedef struct s_moving_bullet_spark
 extern Vtx g_SparkVtxTemplate;
 s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room);
 void sparkInit(s_bullet_spark *spark, coord3d *pos, s32 type, f32 size, s16 room);
-void sparksRender(Gfx *gdl, s32 zbufferMode);
-void sparksRenderAll(Gfx *gdl, s32 zbufferMode);
+void sparksRender(Gfx **gdlptr, s32 zbufferMode);
+void sparksRenderAll(Gfx **gdlptr, s32 zbufferMode);
 void sparksResetAll(void);
 void sparksTick(void);
 void sparksTickAll(void);
-#ifdef VERSION_EU
-void movingSparkCreate(void);
+#ifndef VERSION_EU
+void movingSparksReset(void);
+void movingSparksTick(void);
 #endif
 
 #endif

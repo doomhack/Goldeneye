@@ -21,4 +21,7 @@ extern s32 g_FrameMinFrames;
 
 void frameWaitForNext(void);
 
+void frameTimingStart(void);
+void frameAdvance(s32 deltaFrames);
+
 #endif

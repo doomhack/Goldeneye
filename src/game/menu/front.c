@@ -54,6 +54,13 @@
 #include "game/model/model.h"
 #include <memp.h>
 #include <macro.h>
+#include "string.h"
+#include "game/gfx/zbuf.h"
+#include "game/menu/watchmenu.h"
+#include "game/player/gun.h"
+#include "game/prop/propobj.h"
+#include "game/replay/ramromreplay.h"
+#include "str.h"
 
 
 /**
@@ -1949,7 +1956,7 @@ void frontSetCursorOnFolder(int index)
  * Tick function for the file folder select screen. Rebuild's each folder model's render matrix
  * then handles input. Also keeps track of the 30 second idle timeout for going back to the legal screen.
  */
-s32 frontFileSelectTick(void)
+void frontFileSelectTick(void)
 {
     s32 walletnum;
     s32 foldernum;
@@ -6427,12 +6434,12 @@ Gfx * frontMpScenarioRender(Gfx *DL)
 }
 
 
-s32 frontGetMpTeam(int player)
+s32 frontGetMpTeam(s32 player)
 {
   return g_playerPlayerData[player].have_token_or_goldengun;
 }
 
-void frontSetMpTeam(int player,s32 flag)
+void frontSetMpTeam(s32 player, s32 flag)
 {
   g_playerPlayerData[player].have_token_or_goldengun = flag;
 }

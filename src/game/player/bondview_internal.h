@@ -128,7 +128,6 @@ extern DirectionLabels g_DebugCompassLabels;
 extern s32 g_PlayerTickCount;
 extern struct firing_anim_struct firing_animation_groups[][6];
 void playerUpdateRooms(struct player *player);
-s32 chrTick(PropRecord *prop);
 void playerRemoveFromRooms(struct player *player);
 void watchUpdateZoom(void);
 void watchStartRaise(f32 speed);

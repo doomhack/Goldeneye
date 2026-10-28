@@ -133,4 +133,7 @@ void playerBodyGiveGun(enum GUNHAND hand);
 void playerInitHands(void);
 void playersStoreFavouriteWeapons(void);
 
+void playersResetHandicaps(void);
+PROP weaponGetChrModel(ITEM_IDS item);
+
 #endif

@@ -28,6 +28,7 @@
 #include <memp.h>
 #include <snd.h>
 #include <gbi_extension.h>
+#include "game/menu/front.h"
 #include "game/prop/propobj.h"
 #include "assets/obseg/text/LpropobjE.h"
 #include "game/world/bg.h"
@@ -65,6 +66,12 @@
 #include "game/text/text.h"
 #include "game/gfx/vtxstore.h"
 #include "game/math/physics.h"
+#include "game/gfx/dyn.h"
+#include "game/gfx/texselect.h"
+#include "game/math/line_tri_intersect.h"
+#include "game/prop/prop.h"
+#include "game/prop/setup.h"
+#include "str.h"
 
 
 #if defined(VERSION_EU)
@@ -8640,8 +8647,8 @@ void glassShatter(ObjectRecord* obj)
     explosionClearBulletImpactRoomByFlag(prop, FALSE);
     explosionClearBulletImpactRoomByFlag(prop, TRUE);
 
-    glassCreateShards(&obj->runtime_pos.f[0],
-        &obj->mtx.m[0][0], &obj->mtx.m[1][0], &obj->mtx.m[2][0],
+    glassCreateShards(&obj->runtime_pos,
+        (coord3d *)obj->mtx.m[0], (coord3d *)obj->mtx.m[1], (coord3d *)obj->mtx.m[2],
         bbox->Bounds.xmin, bbox->Bounds.xmax,
         bbox->Bounds.ymin, bbox->Bounds.ymax,
         bbox->Bounds.zmin, bbox->Bounds.zmax);
@@ -8665,7 +8672,7 @@ void doorShatterGlass(DoorRecord *door)
     bbox = (struct ModelRoData_BoundingBoxRecord *) model->obj->Switches[2]->Data;
 
     doorGetMtx(door, &mtx);
-    glassCreateShards(&mtx.m[3][0], &mtx.m[0][0], &mtx.m[1][0], &mtx.m[2][0], bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax, bbox->Bounds.zmin, bbox->Bounds.zmax);
+    glassCreateShards((coord3d *)mtx.m[3], (coord3d *)mtx.m[0], (coord3d *)mtx.m[1], (coord3d *)mtx.m[2], bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax, bbox->Bounds.zmin, bbox->Bounds.zmax);
 
     explosionClearBulletImpactRoomByFlag(prop, 1);
 
@@ -8693,7 +8700,7 @@ void objBreakCCTVGlass(ObjectRecord *obj)
 
         mtx4MultAffine(camGetViewToWorldMtxf(), node_mtx, &glassNodeWorldMtx);
 
-        glassCreateShards(glassNodeWorldMtx.m[3], glassNodeWorldMtx.m[0], glassNodeWorldMtx.m[1], glassNodeWorldMtx.m[2], ((f32 *)rodata)[1], ((f32 *)rodata)[2], ((f32 *)rodata)[3], ((f32 *)rodata)[4], ((f32 *)rodata)[5], ((f32 *)rodata)[6]);
+        glassCreateShards((coord3d *)glassNodeWorldMtx.m[3], (coord3d *)glassNodeWorldMtx.m[0], (coord3d *)glassNodeWorldMtx.m[1], (coord3d *)glassNodeWorldMtx.m[2], ((f32 *)rodata)[1], ((f32 *)rodata)[2], ((f32 *)rodata)[3], ((f32 *)rodata)[4], ((f32 *)rodata)[5], ((f32 *)rodata)[6]);
     }
 
     explosionClearBulletImpactRoomByFlag(prop, 1);

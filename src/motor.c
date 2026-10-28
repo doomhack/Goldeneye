@@ -1,5 +1,6 @@
 #include <ultra64.h>
 #include "libultra/io/controller.h"
+#include "libultra/io/siint.h"
 
 OSPifRam  _MotorStopData[MAXCONTROLLERS];
 OSPifRam  _MotorStartData[MAXCONTROLLERS];

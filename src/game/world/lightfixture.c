@@ -68,6 +68,9 @@
 #include <assets/image_externs.h>
 #include <PR/gbi.h>
 #include <gbi_extension.h>
+#include "game/world/roommtx.h"
+
+s32 lightIsVertexDarkened(Vtx * vertex, s32 room_index);
 
 #define LIGHTFIXTURE_TABLE_MAX 0x64
 #define DARKENED_LIGHT_TABLE_MAX 0x200

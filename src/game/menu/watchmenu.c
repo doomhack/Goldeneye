@@ -26,6 +26,14 @@
 #include "game/hud/sparks.h"
 #include "game/level/frametiming.h"
 #include "assets/obseg/text/LoptionE.h"
+#include "string.h"
+#include "game/audio/levelmusic.h"
+#include "game/level/lv.h"
+#include "game/mission/objective.h"
+#include "game/player/bondinv.h"
+#include "game/player/gun.h"
+#include "joy.h"
+#include "str.h"
 
 // The controller that drives the watch: in co-op, the player who has it out.
 #define WATCH_PAD (g_CoopMode ? playerGetCurrentNum() : PLAYER_1)
@@ -136,9 +144,6 @@ u16 g_OptionsMusicVolume = 0x7FFF;
 
 coord3d g_ControllerPos = {0.0f, 200.0f, -200.0f};
 
-typedef struct WatchContButtonPositions {
-    f32 words[55]; /* 0xdc bytes */
-} WatchContButtonPositions;
 
 // 3D positions for the buttons at the sides of the screen for the 1x control styles.
 WatchContButtonPositions g_1ContButtonPositions[] = {{
@@ -231,7 +236,7 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl);
 // end forward declarations
 
 
-void watchMenuReset(int stage)
+void watchMenuReset(void)
 {
     g_WatchMenuPage = WATCH_INDEX_MISSION_STATUS;
     g_WatchMenuControlRow = CONTROLLER_OPTIONS_INDEX_STYLE;
@@ -277,7 +282,7 @@ void watchMenuReset(int stage)
     g_WatchStaticScanlineY = 0;
     // The save folder's options belong to controller 1's player.
     optionsCoopUsePlayer(0);
-    fileLoadCurrentSettings(stage);
+    fileLoadCurrentSettings();
     g_FrontMissionAborted = FALSE;
 }
 
@@ -1916,13 +1921,6 @@ typedef struct GunModelFileRecord {
 } GunModelFileRecord;
 #endif
 extern GunModelFileRecord gitem_structs[];
-/* forward declarations so the compiler uses f32 calling convention ($f0) */
-extern f32 invGetWatchPosXForIndex(s32 index);
-extern f32 invGetWatchPosYForIndex(s32 index);
-extern f32 invGetWatchPosZForIndex(s32 index);
-extern f32 invGetWatchFovForIndex(s32 index);
-extern f32 invGetWatchRotXForIndex(s32 index);
-extern f32 invGetWatchRotYForIndex(s32 index);
 Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     Mtx* persp;
     u16 perspNorm;
@@ -2065,13 +2063,6 @@ typedef struct GunModelFileRecord {
 } GunModelFileRecord;
 #endif
 extern GunModelFileRecord gitem_structs[];
-/* forward declarations so the compiler uses f32 calling convention ($f0) */
-extern f32 invGetEquipFovForIndex(s32 index);
-extern f32 invGetEquipPosXForIndex(s32 index);
-extern f32 invGetEquipPosYForIndex(s32 index);
-extern f32 invGetEquipPosZForIndex(s32 index);
-extern f32 invGetWatchRotXForIndex(s32 index);
-extern f32 invGetWatchRotYForIndex(s32 index);
 extern u16 *invGetNameByIndex(s32 index);
 
 

@@ -45,4 +45,7 @@ s32 fileGetAllocSize(s32 index);
 s32 fileGetLoadedSize(s32 index);
 s32 fileGetIndex(char *resname);
 
+void fileInit(void);
+void fileLoadPartByName(u8 *name, u8 *dst, s32 offset, s32 len);
+
 #endif

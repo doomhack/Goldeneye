@@ -10,4 +10,6 @@ Gfx *zbufInit(Gfx *gdl);
 
 void zbufDeallocate(void);
 
+void zbufSetBuffer(s32 buffer, s32 width, s32 height);
+
 #endif

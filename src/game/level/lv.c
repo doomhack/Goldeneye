@@ -63,6 +63,7 @@
 #include "game/world/water.h"
 #include "game/level/frametiming.h"
 #include "game/chr/chr.h"
+#include "game/world/sky.h"
 
 // bss
 u32 *g_FontDl;
@@ -216,11 +217,7 @@ void lvStageLoad(s32 stage)
     levelMusicResetSlots();
     modelmgrSetLevelResetting(TRUE);
     texInitSharedPool();
-#ifdef VERSION_EU
-    movingSparksReset();
-#else
     sparksResetAll();
-#endif
     imageBankLoad();
     textLoadFonts();
 
@@ -258,8 +255,6 @@ void lvStageLoad(s32 stage)
         bgLoad(g_CurrentStageToLoad);
         skySetStageNum(g_CurrentStageToLoad);
 
-        // HACK: This method call is wrong. The function takes one argument, but the asm calls it without
-        // any arguments here.
         watchMenuReset();
 
         levelMusicStart(stage);
@@ -553,11 +548,7 @@ Gfx* lvRender(Gfx* DL)
 
             DL = weaponRenderTracers(DL);
 
-#if defined(VERSION_EU)
-            movingSparksTick(&DL, ZBUF_SURFACE);
-#else
             sparksRenderAll(&DL, ZBUF_SURFACE);
-#endif
             DL = glassRenderShards(DL);
             DL = explosionRenderFlyingParticles(DL);
 
@@ -1020,11 +1011,7 @@ void lvTick(void)
         roomMtxTick();
         waterTick();
         skyTick();
-#ifdef VERSION_EU
-        movingSparkCreate();
-#else
         sparksTickAll();
-#endif
         casingsTick();
         glassTickShards();
         explosionUpdateFlyingParticles();

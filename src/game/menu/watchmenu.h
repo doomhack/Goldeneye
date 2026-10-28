@@ -166,10 +166,19 @@ void optionsSetControlStyle(int type);
 // Do not declare a public prototype for this method. lvStageLoad is expecting
 // this to be defined with no arguments, but the actual method is defined with
 // one argument.
-//void watchMenuReset(int a);
 
 Gfx *watchMenuRender(Gfx *gdl, Mtx *mtx, s32 watch_transitioning);
 void watchMenuOpen(void);
+
+void watchMenuReset(void);
+int textCountLines(u8 *arg);
+void watchMenuTick(void);
+void optionsSetAimControl(u32 value);
+void optionsSetAmmoOnScreen(u32 value);
+void optionsSetLookAhead(u32 value);
+void optionsSetLookInverted(u32 value);
+void optionsSetScreenSize(u32 value);
+void optionsSetSightOnScreen(u32 value);
 
 #endif
 

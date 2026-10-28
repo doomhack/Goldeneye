@@ -9,6 +9,7 @@
 #include "bondtypes.h"
 #include "game/text/language.h"
 #include <fr.h>
+#include "rom.h"
 
 #define SPACE_WIDTH 5
 
