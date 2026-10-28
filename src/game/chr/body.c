@@ -26,11 +26,11 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
 {
     f32 scale;
     f32 pov;
-    s32 opcode;
+    ModelNode *headNode;
     ModelRwData_SwitchRecord *rwdata;
 
     scale = c_item_entries[body].scale * 0.10000001f;
-    opcode = 0;
+    headNode = NULL;
     pov = c_item_entries[body].pov;
 
     if (cheatIsActive(CHEAT_DK_MODE))
@@ -47,8 +47,8 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
 
     if ((c_item_entries[body].hasHead == 0) && (head >= 0))
     {
-        opcode = &bodyHeader->Switches[4]->Opcode;
-        if (opcode != 0)
+        headNode = bodyHeader->Switches[4]; // where the head attaches
+        if (headNode != NULL)
         {
             if (headHeader->RootNode == 0)
             {
@@ -74,7 +74,7 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
         if ((headHeader != 0) && (c_item_entries[body].hasHead == 0))
         {
             bodyHeader->numRecords -= headHeader->numRecords;
-            modelAttachHead(model, opcode, headHeader);
+            modelAttachHead(model, headNode, headHeader);
 
             if ((sunglasses == 0) && ((s32) headHeader->numSwitches > 0))
             {

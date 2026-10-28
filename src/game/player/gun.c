@@ -1924,7 +1924,7 @@ void gunUpdateAttachedRocket(s32 handIndex)
     worldMtx.m[3][1] = 0.0f;
     worldMtx.m[3][2] = 0.0f;
 
-    mtx4ScaleRows012(attachedRocket->model->scale, (f32 *)&worldMtx);
+    mtx4ScaleRows012(attachedRocket->model->scale, &worldMtx);
 
     objChangeShading(attachedRocket, &entry->muzzlePos, &worldMtx, prop->stan);
     chrobjCollisionRelated(attachedRocket);

@@ -3094,7 +3094,7 @@ void watchInitHandModel(void) {
     modelCalculateRwDataLen(itemheader);
     animInit(&g_CurrentPlayer->watchModel, itemheader, g_CurrentPlayer->watchModelRwData);
     modelSetScale(&g_CurrentPlayer->watchModel, c_item_entries[41].scale * 0.10000001f);
-    modelSetAnimation(&g_CurrentPlayer->watchModel, (ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_bond_watch], 0, 0.0f, 0.5f * watch_transition_time, 0.0f);
+    modelSetAnimation(&g_CurrentPlayer->watchModel, ANIM(bond_watch), 0, 0.0f, 0.5f * watch_transition_time, 0.0f);
     g_CurrentPlayer->step_in_view_watch_animation = 0;
 }
 
@@ -8001,7 +8001,7 @@ void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
 
     scale = bgGetLevelVisibilityScale();
 
-    mtx4ScaleRows012(scale, lookmtx.m[0]);
+    mtx4ScaleRows012(scale, &lookmtx);
     guMtxF2L((f32 (*)[4]) &lookmtx, worldtoview);
 
     camSetWorldToViewMtx(worldtoview);
@@ -8318,7 +8318,7 @@ Gfx *watchRender(Gfx *gdl)
         quatSlerp(quat1, quat2, t, quat3);
         quatToMtx4(quat3, matrices->m);
         mtx4SetTranslation(&targetpos, matrices);
-        mtx4ScaleRows012(g_CurrentPlayer->watchModel.scale, (f32 *) matrices);
+        mtx4ScaleRows012(g_CurrentPlayer->watchModel.scale, matrices);
         total_seconds = time / 60;
         seconds = total_seconds % 60;
         total_minutes = total_seconds / 60;

@@ -614,7 +614,7 @@ void bheadInit(void)
 
     renderData = (ModelRenderData){NULL, TRUE, 3};
 
-    modelSetAnimation(&g_CurrentPlayer->model, (struct ModelAnimation *)&g_AnimTable->data[(s32)&ANIM_DATA_idle], 0, 0.0f, 0.5f, 0.0f);
+    modelSetAnimation(&g_CurrentPlayer->model, ANIM(idle), 0, 0.0f, 0.5f, 0.0f);
 
     modelCalcPosition(&g_CurrentPlayer->model);
     mtx4LoadIdentity(&identityMatrix);

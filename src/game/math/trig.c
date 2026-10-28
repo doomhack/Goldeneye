@@ -129,21 +129,21 @@ static s32 acosFixedFromTable(s32 cosine)
     {
         mask = 7;
         shift = 3;
-        table = &m_acosTableFinest;
+        table = m_acosTableFinest;
         cosine = cosine - 0x7FE0;
     }
     else if (cosine >= 0x7800)
     {
         mask = 0x1F;
         shift = 5;
-        table = &m_acosTableFine;
+        table = m_acosTableFine;
         cosine = cosine - 0x7800;
     }
     else
     {
         mask = 0x1FF;
         shift = 9;
-        table = &m_acosTableCoarse;
+        table = m_acosTableCoarse;
     }
 
     above = table[cosine >> shift];

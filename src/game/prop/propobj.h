@@ -72,7 +72,7 @@ void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop)
 void                 chrobjApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 accel, f32 decel, f32 maxSpeed);
 void                 chrobjCallsApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 accel, f32 decel, f32 maxSpeed);
 Gfx                 *weaponRenderTracers(Gfx *gdl);
-void                 objGetTileShading(PropRecord *prop, u8 col[4]);
+void                 objGetTileShading(PropRecord *prop, rgba_u8 *colour);
 void                 propobjSetDropped(PropRecord *prop, DROPTYPE droptype);
 void                 objDropRecursively(PropRecord *prop);
 void                 chrobjSndCreatePostEventDefault(ALSoundState *, coord3d *);

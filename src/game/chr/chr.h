@@ -112,7 +112,7 @@ struct weapon_firing_animation_table
 
 struct anim_group_info
 {
-    struct weapon_firing_animation_table (*table)[];
+    struct weapon_firing_animation_table *table;
     s32 len;
 };
 
@@ -248,8 +248,8 @@ void        chrDetectRooms(ChrRecord *);
 void        chrSetMoving(ChrRecord *guard, bool unset);
 f32         chrsGetAnimRate(void);
 void        chrsSetAnimRate(f32);
-PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, StandTile *tile, struct AIListRecord *ailist);
-PropRecord *chrAllocate(struct Model *model, coord3d *pos, f32 angle, StandTile *tile, s32 ailist);
+PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, StandTile *tile, AIRecord *ailist);
+PropRecord *chrAllocate(struct Model *model, coord3d *pos, f32 angle, StandTile *tile, AIRecord *ailist);
 void        chrSetHiddenToRandom(ChrRecord *self);
 void        chrCheckGuardsHeardSound(f32 noise);
 ChrRecord  *chrFindByLiteralId(s32 index);

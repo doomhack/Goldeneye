@@ -1750,7 +1750,7 @@ Gfx *frontLogoRender(Gfx *DL)
     gelogo.basemtx = &logoMatrix;
     gelogo.mtxlist = dynAllocate(g_FrontLogoModel->obj->numMatrices << 6);
 
-    mtx4ScaleRows012(1.2f, logoMatrix.m[0]);
+    mtx4ScaleRows012(1.2f, &logoMatrix);
     mtx4Copy(&logoMatrix, gelogo.mtxlist);
     g_FrontLogoModel->render_pos = (union RenderPosView*)gelogo.mtxlist;
 
@@ -1988,7 +1988,7 @@ void frontFileSelectTick(void)
 
         mtx4LoadLookAt(&lookatmtx, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
         mtx4LoadTranslation(folderpos, &walletmtx);
-        mtx4ScaleRows012(0.37f, (f32*)&walletmtx);
+        mtx4ScaleRows012(0.37f, &walletmtx);
         mtx4MultInPlace(&lookatmtx, &walletmtx);
 
         g_FrontFolderModels[walletnum]->render_pos = dynAllocate(g_FrontFolderModels[walletnum]->obj->numMatrices << 6);
@@ -2670,7 +2670,7 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
 
     mtx4LoadLookAt(&viewMtx, camX, camY, 4000.0f + g_FrontFolderCamOffsetZ, camX, camY, 0.0f, 0.0f, 1.0f, 0.0f);
     mtx4LoadTranslation(&g_FrontFolderPos[g_FrontFolder], &folderMtx);
-    mtx4ScaleRows012(0.25f, folderMtx.m[0]);
+    mtx4ScaleRows012(0.25f, &folderMtx);
     mtx4MultInPlace(&viewMtx, &folderMtx);
 
     renderdata.basemtx = &folderMtx;
@@ -3311,7 +3311,7 @@ void frontMissionSelectTick(void)
     {
         rodata = (struct ModelRoData_DisplayList_CollisionRecord *)mnode->Data;
 
-        rwdata = (struct ModelRwData_DisplayList_CollisionRecord *)modelGetNodeRwData(g_FrontFolderModels[0], mnode);
+        rwdata = &modelGetNodeRwData(g_FrontFolderModels[0], mnode)->DisplayListCollisions;
         rwdata->Vertices = dynAllocateVertices(rodata->numVertices);
 
         for (i = 0; i < rodata->numVertices; i++)

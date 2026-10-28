@@ -1093,7 +1093,7 @@ typedef union
             f32     Scale;       /*0x1c*/
             u16     RwDataIndex; /*0x20*/
             u16     reserved;    /*0x22 padding*/
-            u32     BaseAddr;    /*0x24 padding*/
+            void   *BaseAddr;    /*0x24*/
         } ModelRoData_GunfireRecord;
 
         typedef struct ModelRwData_GunfireRecord
@@ -1263,7 +1263,7 @@ typedef union
         typedef struct ModelRwData_HeadPlaceholderRecord
         {
             struct ModelFileHeader *ModelFileHeader;
-            void *RwDatas;
+            u32 *RwDatas;
         } ModelRwData_HeadPlaceholderRecord;
 
         /**
@@ -1443,7 +1443,7 @@ typedef union
              * List of length model->obj->numMatrices dynamically allocated.
             */
             RenderPosView     *render_pos;
-            union ModelRwData **datas; // array of pointers to modeldata structs
+            u32 *datas; // rwdata, in words: each node finds its record at datas[RwDataIndex]
 
             f32               scale;
             struct Model     *attachedto;
@@ -1474,8 +1474,8 @@ typedef union
              * Animation frameb (per debug message)
             */
             s16               frameb;
-            s32               frameaData; /* framea's joint rotations, loaded from ROM */
-            s32               framebData;
+            u8               *frameaData; /* framea's joint rotations, loaded from ROM */
+            u8               *framebData;
             f32               endframe;
 
             f32               speed;
@@ -1499,8 +1499,8 @@ typedef union
             */
             s16               frame2b;
 
-            s32               frame2aData;
-            s32               frame2bData;
+            u8               *frame2aData;
+            u8               *frame2bData;
             f32               endframe2;
             f32               speed2;
             f32               newspeed2;
@@ -1517,7 +1517,7 @@ typedef union
             f32               mergeElapsed;
             f32               animloopframe;
             f32               animloopmerge;
-            s32               animflipfunc;
+            void            (*animflipfunc)(void);
             s32               rootMoveCallback; /* can veto or adjust root motion, see modelCalcRootPosition */
             f32               playspeed; // used by ACT_STAND in chrlv
             f32               newplayspeed;
@@ -2011,17 +2011,9 @@ typedef union
         f32     turnspeed; /*0x40*/
     };
 
-    struct patrol_path
-    {
-        s32 *data;
-        u8   unk04;
-        u8   flags;
-        u16  len;
-    };
-
     struct act_patrol
     {
-        struct patrol_path *path;     /*0x02c*/
+        PathRecord *path;     /*0x02c*/
         s32                 nextstep; /*0x030*/
         bool32              forward;  /*0x034*/
         struct waydata      waydata;  /*0x038*/

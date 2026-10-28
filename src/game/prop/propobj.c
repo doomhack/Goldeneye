@@ -504,8 +504,9 @@ struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord
 }
 
 
-void objGetTileShading(PropRecord *prop, u8 col[4])
+void objGetTileShading(PropRecord *prop, rgba_u8 *colour)
 {
+    u8 *col = colour->rgba;
     s32 tmp;
     s32 min;
     s32 med;
@@ -3097,7 +3098,7 @@ void objPlaceOnSurface(ObjectRecord* obj, coord3d* pos, StandTile* stan, coord3d
     f32 ymin;
 
     mtxAlignToNormal(normal, &matrix);
-    mtx4ScaleRows012(obj->model->scale, matrix.m[0]);
+    mtx4ScaleRows012(obj->model->scale, &matrix);
     objChangeShading(obj, pos, &matrix, stan);
 
     ymin = bboxGetYmin(chrobjGetBboxFromObjFile(obj->model->obj));
@@ -3817,7 +3818,7 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
     bbox = (ModelRoData_BoundingBoxRecord *) model->obj->Switches[6]->Data;
 
     mtx4LoadYRotation(((VehichleRecord *)obj)->roty, &mtx);
-    mtx4ScaleRows012(model->scale, (f32 *) (&mtx));
+    mtx4ScaleRows012(model->scale, &mtx);
     mtx4SetTranslation(&obj->runtime_pos, &mtx);
 
     mtx4TransformVec(&mtx, modelpoint0, &point0);
@@ -3966,7 +3967,7 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
         obj->mtx.m[2][1] = (((f32 *)(&obj->mtx))[2] * ((f32 *)(&obj->mtx))[4]) - (((f32 *)(&obj->mtx))[0] * ((f32 *)(&obj->mtx))[6]);
         obj->mtx.m[2][2] = (((f32 *)(&obj->mtx))[0] * obj->mtx.m[1][1]) - (((f32 *)(&obj->mtx))[1] * ((f32 *)(&obj->mtx))[4]);
 
-        mtx4ScaleRows012(model->scale, (f32 *) (&obj->mtx));
+        mtx4ScaleRows012(model->scale, &obj->mtx);
         mtx4TransformVec(&obj->mtx, modelpoint0, &point1);
 
         ypos = (point0.y - (bboxGetYmin(bbox) * model->scale)) - point1.y;
@@ -3976,7 +3977,7 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
     else
     {
         mtx4LoadYRotation(((VehichleRecord *)obj)->roty, &obj->mtx);
-        mtx4ScaleRows012(model->scale, (f32 *) (&obj->mtx));
+        mtx4ScaleRows012(model->scale, &obj->mtx);
 
         ypos = stanGetPositionYValue(prop->stan, prop->pos.x, prop->pos.z) - ((bboxGetYmin(bbox) + modelpoint0->f[1]) * model->scale);
 
@@ -5811,7 +5812,7 @@ s32 objTick(struct PropRecord *prop)
 				mtx4TransformVecInPlace(&objmtx, &gunpos);
 				mtx4LoadYRotation(gunYaw, &mtxs[1]);
 				mtx4SetTranslation(&gunpos, &mtxs[1]);
-				mtx4ScaleRows012(autogun->model->scale, mtxs[1].m[0]);
+				mtx4ScaleRows012(autogun->model->scale, &mtxs[1]);
 				mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), &mtxs[1]);
 				nodepos = (struct coord3d *) model->obj->Switches[2]->Data;
 				mtx4LoadZRotation(gunPitch, &mtxs[2]);
@@ -6970,7 +6971,7 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 xlupass)
         Gfx *g3;
         Gfx *g2;
         bool destroyed;
-        union ModelRwData **rwdataSlot;
+        union ModelRwData *rwdataSlot;
 
         obj = prop->obj;
         model = obj->model;
@@ -7078,9 +7079,9 @@ void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 xlupass)
 
                 if (nodedata != NULL)
                 {
-                    rwdataSlot = &obj->model->datas[nodedata->DisplayListCollisions.RwDataIndex];
+                    rwdataSlot = (union ModelRwData *)&obj->model->datas[nodedata->DisplayListCollisions.RwDataIndex];
 
-                    if (nodedata->DisplayListCollisions.Vertices != (Vertex *)*rwdataSlot)
+                    if (nodedata->DisplayListCollisions.Vertices != rwdataSlot->DisplayListCollisions.Vertices)
                     {
                         recolor = 1;
                     }
@@ -7942,7 +7943,7 @@ s32 objDrop(PropRecord *prop)
             // Helpful for throwing mines through doors during speedruns
             prop->stan = root->stan;
             mtx4LoadIdentity(&rootmtx);
-            mtx4ScaleRows012(model->scale, rootmtx.m[0]);
+            mtx4ScaleRows012(model->scale, &rootmtx);
             mtx4SetTranslation(&root->pos, &rootmtx);
         }
 
@@ -8514,7 +8515,7 @@ bool propobjFindHit(Model *model, ModelNode *startNode, coord3d *rayPos, coord3d
             case MODELNODE_OPCODE_DLCOLLISION:
                 {
                     ModelRoData_DisplayList_CollisionRecord *rodata = &node->Data->DisplayListCollisions;
-                    ModelRwData_DisplayList_CollisionRecord *rwdata = modelGetNodeRwData(model, node);
+                    ModelRwData_DisplayList_CollisionRecord *rwdata = &modelGetNodeRwData(model, node)->DisplayListCollisions;
 
                     if (rwdata->gdl != NULL)
                     {
@@ -8676,7 +8677,7 @@ void doorShatterGlass(DoorRecord *door)
 
     explosionClearBulletImpactRoomByFlag(prop, 1);
 
-    switchdata = (struct ModelRwData_SwitchRecord *)modelGetNodeRwData(model, model->obj->Switches[1]);
+    switchdata = &modelGetNodeRwData(model, model->obj->Switches[1])->Switch;
     switchdata->visible = FALSE;
 }
 
@@ -11743,13 +11744,13 @@ void weaponSetGunfireVisible(PropRecord *prop, s32 firing)
     if (model && model->obj->Skeleton == &skeleton_prop_weapon) {
         node = model->obj->Switches[0];
         if (node) {
-            struct ModelRwData_GunfireRecord *rwdata = modelGetNodeRwData(model, node);
+            struct ModelRwData_GunfireRecord *rwdata = &modelGetNodeRwData(model, node)->Gunfire;
             rwdata->visible = firing;
         }
 
         node = model->obj->Switches[2];
         if (node) {
-            struct ModelRwData_BSPRecord *rwdata = modelGetNodeRwData(model, node);
+            struct ModelRwData_BSPRecord *rwdata = &modelGetNodeRwData(model, node)->BSP;
             rwdata->visible = firing;
         }
     }
@@ -12136,7 +12137,7 @@ PropRecord* doorInit(DoorRecord* door, coord3d* pos, Mtxf* mtx, StandTile* stan,
     door->ptr_allocated_collisiondata_block = mempAlloc(0x50U, MEMPOOL_STAGE);
 
     mtx4Copy(mtx, &door->mtx);
-    mtx4ScaleRows012(scale, door->mtx.m[0]);
+    mtx4ScaleRows012(scale, &door->mtx);
 
     door->slideDir.x = (f32) coord->x;
     door->slideDir.y = (f32) coord->y;
@@ -13133,7 +13134,7 @@ void doorsUpdatePositions(DoorRecord *door)
             model = sibling->model;
             node = model->obj->RootNode->Child->Child;
             rodata = (struct ModelRoData_DisplayList_CollisionRecord *)node->Data;
-            rwdata = (struct ModelRwData_DisplayList_CollisionRecord*)modelGetNodeRwData(model, node);
+            rwdata = &modelGetNodeRwData(model, node)->DisplayListCollisions;
 
             if (rwdata->Vertices != sibling->clipVtx)
             {
