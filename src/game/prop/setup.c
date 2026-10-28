@@ -1700,7 +1700,7 @@ void setupCreateProps(enum LEVELID stageId)
                         break;
                     }
                     case PROPDEF_WATCH_MENU_OBJECTIVE_TEXT:
-                        briefingTextAdd((struct setup_objective_text *) phead);
+                        briefingTextAdd((struct watchMenuObjectiveText *) phead);
                         break;
                     case PROPDEF_CAMERAPOS:
                     {

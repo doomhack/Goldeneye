@@ -3720,7 +3720,7 @@ void watchTrigger(s32 instant)
                 // Note: colors are set here but overwritten in watch.c watchMenuSetTabColours
                 ptr_copy = ptr_a;
                 ptr_a = watchMakeRectVerts(ptr_a, i, 0, 0x64, 0x14, -0x12B, 0x136);
-                ptr_b = watchRenderQuad(ptr_b, OS_K0_TO_PHYSICAL(ptr_copy));
+                ptr_b = watchRenderQuad(ptr_b, ptr_copy);
             }
 
             gSPEndDisplayList(ptr_b);
@@ -3737,7 +3737,7 @@ void watchTrigger(s32 instant)
 
             ptr_copy = &g_CurrentPlayer->watchStaticVtx->vtx[0];
             next = watchMakeRectVerts(ptr_a, 0, 0, 0x398, 0x14, -0x1CC, 0);
-            ptr_b = watchRenderQuad(ptr_b, OS_K0_TO_PHYSICAL(ptr_copy));
+            ptr_b = watchRenderQuad(ptr_b, ptr_copy);
 
             gSPEndDisplayList(ptr_b);
             /**

@@ -35,8 +35,8 @@ void invAllocate(s32 additionalentries);
 
 void invDetermineEquippedItem(void);
 int invGetCurEquippedItem(void);
-u16 *invGetWatchTitle1ForIndex(s32 index);
-u16 *invGetWatchTitle2ForIndex(s32 index);
+char *invGetWatchTitle1ForIndex(s32 index);
+char *invGetWatchTitle2ForIndex(s32 index);
 s32 invGetWeaponForIndex(s32 index);
 f32 invGetEquipFovForIndex(s32 index);
 f32 invGetEquipPosXForIndex(s32 index);

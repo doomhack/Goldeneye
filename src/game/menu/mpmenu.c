@@ -386,8 +386,8 @@ void mpMenuCalculateAwards(bool gameoverdelay)
 
         g_CurrentPlayer->mpmenuon = TRUE;
         g_CurrentPlayer->mpmenumode = MENU_SCORES;
-        g_CurrentPlayer->ptr_text_first_mp_award = 0;
-        g_CurrentPlayer->ptr_text_second_mp_award = 0;
+        g_CurrentPlayer->firstAwardText = NULL;
+        g_CurrentPlayer->secondAwardText = NULL;
 
         invGetWeaponOfChoice(&weapon_choice_1, &weapon_choice_2);
         fileSetFavWeapon((u32) weapon_choice_1, (u32) weapon_choice_2);
@@ -542,7 +542,7 @@ void mpMenuCalculateAwards(bool gameoverdelay)
             if (metrics[i].awards & (1 << awardindex))
             {
                 metrics[i].awards &= ~(1 << awardindex);
-                g_playerPointers[i]->ptr_text_first_mp_award = langGet(g_AwardNames[awardindex]);
+                g_playerPointers[i]->firstAwardText = langGet(g_AwardNames[awardindex]);
                 numdone = 1;
             }
 
@@ -561,7 +561,7 @@ void mpMenuCalculateAwards(bool gameoverdelay)
             if (metrics[i].awards & (1 << awardindex))
             {
                 metrics[i].awards &= ~(1 << awardindex);
-                g_playerPointers[i]->ptr_text_second_mp_award = langGet(g_AwardNames[awardindex]);
+                g_playerPointers[i]->secondAwardText = langGet(g_AwardNames[awardindex]);
                 numdone = 2;
             }
 
@@ -766,13 +766,13 @@ Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_colo
     s32 textY;
     s32 textwidth;
     s32 textheight;
-    u16 *text;
+    char text[12];
     s16 viX;
     s32 viY;
 
-    sprintf(&text, "%d", points);
+    sprintf(text, "%d", points);
 
-    textMeasure(&textheight, &textwidth, &text, g_FontBankGothicChars, g_FontBankGothic, 0);
+    textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
 
     textX = x - (textwidth >> 1);
     textY = y;
@@ -782,37 +782,37 @@ Gfx *mpMenuRenderNumber(Gfx *gdl, s32 x, s32 y, s32 points, TEXTCOLORS text_colo
         case GREEN_NORMAL:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRender(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xFF00B0, viX, viY, 0, 0);
+            gdl = textRender(gdl, &textX, &textY, text, g_FontBankGothicChars, g_FontBankGothic, 0xFF00B0, viX, viY, 0, 0);
             break;
 
         case GREEN_HIGHLIGHT:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRenderOutlined(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xA0FFA0F0, 0x7000A0, viX, viY, 0, 0);
+            gdl = textRenderOutlined(gdl, &textX, &textY, text, g_FontBankGothicChars, g_FontBankGothic, 0xA0FFA0F0, 0x7000A0, viX, viY, 0, 0);
             break;
 
         case RED_NORMAL:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRender(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xFF4040B0, viX, viY, 0, 0);
+            gdl = textRender(gdl, &textX, &textY, text, g_FontBankGothicChars, g_FontBankGothic, 0xFF4040B0, viX, viY, 0, 0);
             break;
 
         case RED_HIGHLIGHT:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRenderOutlined(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xFFA0A0F0, 0x700000A0, viX, viY, 0, 0);
+            gdl = textRenderOutlined(gdl, &textX, &textY, text, g_FontBankGothicChars, g_FontBankGothic, 0xFFA0A0F0, 0x700000A0, viX, viY, 0, 0);
             break;
 
         case BLUE_NORMAL:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRender(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0x4040FFB0, viX, viY, 0, 0);
+            gdl = textRender(gdl, &textX, &textY, text, g_FontBankGothicChars, g_FontBankGothic, 0x4040FFB0, viX, viY, 0, 0);
             break;
 
         case BLUE_HIGHLIGHT:
             viX = viGetX();
             viY = viGetY();
-            gdl = textRenderOutlined(gdl, &textX, &textY, &text, g_FontBankGothicChars, g_FontBankGothic, 0xA0A0FFF0, 0x70A0, viX, viY, 0, 0);
+            gdl = textRenderOutlined(gdl, &textX, &textY, text, g_FontBankGothicChars, g_FontBankGothic, 0xA0A0FFF0, 0x70A0, viX, viY, 0, 0);
             break;
     }
 
@@ -1599,9 +1599,9 @@ Gfx *mpMenuRender(Gfx *gdl)
             h1 = viGetY();
             gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
  
-            if (g_CurrentPlayer->ptr_text_first_mp_award)
+            if (g_CurrentPlayer->firstAwardText)
             {
-                text = (char *) g_CurrentPlayer->ptr_text_first_mp_award;
+                text = g_CurrentPlayer->firstAwardText;
                 textMeasure(&fav_textheight, &fav_textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
                 x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (fav_textheight >> 1)) + (75 + MPMENU_YOFF);
@@ -1610,9 +1610,9 @@ Gfx *mpMenuRender(Gfx *gdl)
                 gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
 
-            if (g_CurrentPlayer->ptr_text_second_mp_award)
+            if (g_CurrentPlayer->secondAwardText)
             {
-                text = (char *) g_CurrentPlayer->ptr_text_second_mp_award;
+                text = g_CurrentPlayer->secondAwardText;
                 textMeasure(&fav_textheight, &fav_textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
                 x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (fav_textheight >> 1)) + (88 + MPMENU_YOFF);

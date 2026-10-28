@@ -236,7 +236,7 @@ extern s32 g_FrontHiResPending;
 extern s32 g_FrontLowResPending;
 extern s32 g_CheatMenuAvailable;
 extern u8 * g_FrontModelBuffer;
-extern s32 g_FrontFrameBuffer;
+extern u8 *g_FrontFrameBuffer;
 extern  Model * g_FrontFolderModels[];
 extern Lights1 g_FrontLogoLight;
 extern Lights1 g_FrontNintendoLight;
@@ -296,7 +296,7 @@ s32 frontFindMissionEntry(s32 mission);
 
 void frontInit(void);
 
-int frontGetFavWeaponText(int player,int hand);
+char *frontGetFavWeaponText(int player, int hand);
 u32 frontGetMpControlStyle(s32 playernum);
 u16 frontGetMpCharBody(s32 player);
 u16 frontGetMpCharHead(s32 player);

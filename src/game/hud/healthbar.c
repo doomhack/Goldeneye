@@ -402,9 +402,9 @@ struct WatchVertex *watchMakeRectVerts(struct WatchVertex *vtx, s32 startx, s32 
 }
 
 
-Gfx *watchRenderQuad(Gfx *gdl, s32 *vtx)
+Gfx *watchRenderQuad(Gfx *gdl, struct WatchVertex *vtx)
 {
-    gSPVertex(gdl++, vtx, 4, 0);
+    gSPVertex(gdl++, OS_K0_TO_PHYSICAL(vtx), 4, 0);
 
     // gfxdis can't parse this, but maybe?: gSPModifyVertex(gdl++, 16, 0, 0x2110);
     // manual specification:

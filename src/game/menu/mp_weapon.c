@@ -213,10 +213,10 @@ void mpWeaponSetNext(void)
     g_MpWeaponSet = (g_MpWeaponSet + 1) % 0xe;
 }
 
-//return pointer to selected g_MpWeaponSet textID
-u16* mpWeaponSetGetName(void)
+//text ID of the selected g_MpWeaponSet
+u16 mpWeaponSetGetTextId(void)
 {
-    return &g_MpWeaponSets[g_MpWeaponSet].textID;
+    return g_MpWeaponSets[g_MpWeaponSet].textID;
 }
 
 //return pointer to selected g_MpWeaponSet data

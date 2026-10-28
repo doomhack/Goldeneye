@@ -54,7 +54,7 @@ f32                bboxRotatedMaxY(struct ModelRoData_BoundingBoxRecord *bbox, M
 f32                bboxRotatedMinZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
 f32                bboxRotatedMaxZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
 s32                bboxGetHull2d(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord2d *hull);
-void               projectRectCornersTo2D(struct coord3d *center, struct coord2d *xrange, struct coord2d *yrange, struct coord2d *corner1, struct coord2d *corner2);
+void               projectRectCornersTo2D(struct coord3d *center, struct coord2d *xrange, struct coord2d *yrange, bbox2d *screen);
 void               switchActivateLinkedDoors(PropRecord *prop);
 struct PropRecord *propFindForInteract(void);
 void        propExecuteTickOperation(PropRecord *prop, TICKOP op);

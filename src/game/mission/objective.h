@@ -6,7 +6,7 @@
 extern struct objective_entry * g_Objectives[OBJECTIVES_MAX];
 extern  OBJECTIVESTATUS g_ObjectiveStatuses[OBJECTIVES_MAX]; //This is an array of 10 OBJECTIVESTATUS,
 
-extern u32 *g_Tags;
+extern struct TagObjectRecord *g_Tags;
 extern struct watchMenuObjectiveText *g_BriefingTexts;
 extern struct criteria_roomentered *g_RoomEnteredCriteria;
 extern struct criteria_deposit *g_DepositCriteria;
@@ -30,7 +30,7 @@ void objectivesFinish(void);
 void objectivesReset(void);
 
 void tagAdd(struct TagObjectRecord *tag);
-void briefingTextAdd(struct setup_objective_text *text);
+void briefingTextAdd(struct watchMenuObjectiveText *text);
 void objectiveAddRoomEntered(struct criteria_roomentered *criteria);
 void objectiveAddDeposit(struct criteria_deposit *criteria);
 void objectiveAddPicture(struct criteria_picture *criteria);
@@ -38,7 +38,7 @@ void objectiveAdd(struct objective_entry* objective);
 
 u8 * briefingGetText(WATCH_BRIEFING_PAGE page);
 s32 objectiveGetDifficulty(s32 objectiveIndex);
-u8 * objectiveGetText(int objectiveIndex);
+char *objectiveGetText(int objectiveIndex);
 void objectivesCheckRoomEntered(s32 roomid);
 
 #endif

@@ -239,7 +239,7 @@ s32 g_FrontLowResPending = FALSE;
 s32 g_CheatMenuAvailable = FALSE;
 
 u8 * g_FrontModelBuffer = NULL;
-s32 g_FrontFrameBuffer = 0;
+u8 *g_FrontFrameBuffer = NULL;
 struct Model *g_FrontLogoModel = NULL;
 struct Model * g_FrontFolderModels[] = { NULL, NULL, NULL, NULL};
 
@@ -994,7 +994,7 @@ s32 frontIsCheatUnlocked(s32 cheat)
 }
 
 
-int frontGetFavWeaponText(int player,int hand) {
+char *frontGetFavWeaponText(int player, int hand) {
     return itemGetChoiceText(g_MpFavWeapon[player][hand]);
 }
 
@@ -1101,7 +1101,7 @@ Gfx *frontDrawCursor(Gfx *DL)
     halfedxy[0] = image->width * 0.5f;
     halfedxy[1] = image->height * 0.5f;
 
-    texRectDrawImage(&DL, &xypos, &halfedxy, image->width, image->height, 0, 0, 1, 255, 255, 255, 220, (image->level > 0), 0);
+    texRectDrawImage(&DL, xypos, halfedxy, image->width, image->height, 0, 0, 1, 255, 255, 255, 220, (image->level > 0), 0);
 
     return DL;
 }
@@ -1361,7 +1361,7 @@ Gfx *frontLegalRender(Gfx *DL)
     
     mtx4Copy(&lookatmtx, renderdata.mtxlist);
     
-    g_FrontLogoModel->render_pos = (union RenderPosView *) renderdata.mtxlist;
+    g_FrontLogoModel->render_pos = (RenderPosView *)renderdata.mtxlist;
     
     modelUpdateNodeRelations(g_FrontLogoModel);
     
@@ -1375,8 +1375,8 @@ Gfx *frontLegalRender(Gfx *DL)
     
     for (i = 0; i < g_FrontLogoModel->obj->numMatrices; i++)
     {
-        mtx4Copy((Mtxf *)&((s8 *)g_FrontLogoModel->render_pos)[i * 0x40], &tmpmtx);
-        mtxF2L(&tmpmtx, &((Mtxf *) g_FrontLogoModel->render_pos)[i]);
+        mtx4Copy(&g_FrontLogoModel->render_pos[i].pos, &tmpmtx);
+        mtxF2L(&tmpmtx, &g_FrontLogoModel->render_pos[i].pos);
     }
     
     DL = textSetupDraw(DL);
@@ -1560,7 +1560,7 @@ Gfx *frontNintendoRender(Gfx *DL)
 
     mtx4Copy(&ninlogoMtxf, ninlogo.mtxlist);
 
-    g_FrontLogoModel->render_pos = (union RenderPosView*)ninlogo.mtxlist;
+    g_FrontLogoModel->render_pos = (RenderPosView *)ninlogo.mtxlist;
 
     modelUpdateNodeRelations(g_FrontLogoModel);
 
@@ -1577,8 +1577,8 @@ Gfx *frontNintendoRender(Gfx *DL)
         Mtxf tmpMtxf;
 
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        mtx4Copy(&((s8*)g_FrontLogoModel->render_pos)[i*0x40], &tmpMtxf);
-        mtxF2L(&tmpMtxf, &((Mtxf*)g_FrontLogoModel->render_pos)[i]);
+        mtx4Copy(&g_FrontLogoModel->render_pos[i].pos, &tmpMtxf);
+        mtxF2L(&tmpMtxf, &g_FrontLogoModel->render_pos[i].pos);
 
     }
 
@@ -1728,7 +1728,7 @@ Gfx *frontLogoRender(Gfx *DL)
     Mtxf logoMatrix;
     s32 i;
     LookAt * logoLookAt;
-    Mtxf logoReflectMtx;
+    Mtx logoReflectMtx;
 
     gelogo = goldeneyelogo_MRD;
 
@@ -1752,7 +1752,7 @@ Gfx *frontLogoRender(Gfx *DL)
 
     mtx4ScaleRows012(1.2f, &logoMatrix);
     mtx4Copy(&logoMatrix, gelogo.mtxlist);
-    g_FrontLogoModel->render_pos = (union RenderPosView*)gelogo.mtxlist;
+    g_FrontLogoModel->render_pos = (RenderPosView *)gelogo.mtxlist;
 
     modelUpdateNodeRelations(g_FrontLogoModel);
 
@@ -1769,8 +1769,8 @@ Gfx *frontLogoRender(Gfx *DL)
         Mtxf tempMtxf;
 
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        mtx4Copy(&((s8*)g_FrontLogoModel->render_pos)[i*0x40], &tempMtxf);
-        mtxF2L(&tempMtxf, &((Mtxf*)g_FrontLogoModel->render_pos)[i]);
+        mtx4Copy(&g_FrontLogoModel->render_pos[i].pos, &tempMtxf);
+        mtxF2L(&tempMtxf, &g_FrontLogoModel->render_pos[i].pos);
 
     }
 
@@ -1859,9 +1859,9 @@ void frontLoadFolders(void)
             Gfx *gdl;
 
             b = (struct ModelNode *)mnode;
-            srecord = b->Data;
+            srecord = &b->Data->DisplayListCollisions;
 
-            gdl = (s32)srecord->BaseAddr + ((s32)srecord->Primary & 0xffffff);
+            gdl = (Gfx *)((u8 *)srecord->BaseAddr + ((u32)srecord->Primary & 0xffffff));
             bgApplyDynamicCCRMLUT(gdl, NULL, CCRMLUT_WALLETBOND);
         }
     }
@@ -1888,7 +1888,7 @@ void frontFreeFolders(void)
 void frontFileSelectEnter(void)
 {
     s32 size = 0x6e000;
-    Gfx* DL = (s32)(g_FrontModelBuffer) + (s32)(4096*10);
+    u8 *buffer = g_FrontModelBuffer + 4096 * 10;
     int i;
 
     g_FrontSkipIntro = FALSE;
@@ -1902,7 +1902,7 @@ void frontFileSelectEnter(void)
     g_FrontTabPrevSelected = FALSE;
     g_FrontFolderErase = FOLDER_INVALID;
     g_FrontFolderEraseChoice = FOLDER2;
-    titleLoadBackdrop(&DL, &size);
+    titleLoadBackdrop(&buffer, &size);
     frontLoadFolders();
     if (g_FrontStartMusic){
         musicTrack1Play(M_FOLDERS);
@@ -2068,23 +2068,20 @@ void frontFileSelectTick(void)
     {
         for (foldernum = FOLDER1; foldernum < MAX_FOLDER_COUNT; foldernum++)
         {
-            f32 xmax;
-            f32 xmin;
-            f32 ymax;
-            f32 ymin;
-
-            struct rectbbox folderbbox;
+            coord2d xrange;
+            coord2d yrange;
+            bbox2d folderbbox;
 
             LEVEL_SOLO_SEQUENCE higheststage;
             DIFFICULTY highestdifficulty;
 
-            modelGetXYExtents(g_FrontFolderModels[foldernum], &xmax, &xmin, &ymax, &ymin);
-            projectRectCornersTo2D(&g_FrontFolderScreenPos[foldernum], &xmin, &ymin, &folderbbox.right, &folderbbox.left);
+            modelGetXYExtents(g_FrontFolderModels[foldernum], &xrange.f[1], &xrange.f[0], &yrange.f[1], &yrange.f[0]);
+            projectRectCornersTo2D(&g_FrontFolderScreenPos[foldernum], &xrange, &yrange, &folderbbox);
 
-            if ((folderbbox.right <= g_FrontCursorX)
-                && (g_FrontCursorX <= folderbbox.left)
-                && (folderbbox.down <= g_FrontCursorY)
-                && (g_FrontCursorY <= folderbbox.up))
+            if ((folderbbox.min.x <= g_FrontCursorX)
+                && (g_FrontCursorX <= folderbbox.max.x)
+                && (folderbbox.min.y <= g_FrontCursorY)
+                && (g_FrontCursorY <= folderbbox.max.y))
             {
                 fileGetHighestStageDifficultyCompletedForFolder(foldernum, &higheststage, &highestdifficulty);
 
@@ -2253,8 +2250,8 @@ Gfx *frontFileSelectRender(Gfx *DL)
 
         for (i=0; i < g_FrontFolderModels[j]->obj->numMatrices; i++)
         {
-            mtx4Copy((Mtxf*)&((s8*)g_FrontFolderModels[j]->render_pos)[i * sizeof(Mtxf)], &mtx);
-            mtxF2L(&mtx, &((Mtxf*)g_FrontFolderModels[j]->render_pos)[i]);
+            mtx4Copy(&g_FrontFolderModels[j]->render_pos[i].pos, &mtx);
+            mtxF2L(&mtx, &g_FrontFolderModels[j]->render_pos[i].pos);
 
         }
     }
@@ -2679,7 +2676,7 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
 
     mtx4Copy(&folderMtx, renderdata.mtxlist);
 
-    g_FrontFolderModels[0]->render_pos = (union RenderPosView*)renderdata.mtxlist;
+    g_FrontFolderModels[0]->render_pos = (RenderPosView *)renderdata.mtxlist;
 
     renderdata.flags = 3;
     renderdata.zbufferenabled = FALSE;
@@ -2692,8 +2689,8 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
     for (i=0; i<g_FrontFolderModels[0]->obj->numMatrices; i++)
     {
         // hack: source address steps by sizeof(Mtxf), but can't get that to match
-        mtx4Copy(&((s8*)g_FrontFolderModels[0]->render_pos)[i*0x40], &tmp);
-        mtxF2L(&tmp, &((Mtxf*)g_FrontFolderModels[0]->render_pos)[i]);
+        mtx4Copy(&g_FrontFolderModels[0]->render_pos[i].pos, &tmp);
+        mtxF2L(&tmp, &g_FrontFolderModels[0]->render_pos[i].pos);
     }
 
 
@@ -3745,7 +3742,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
             halfedxy[1] = image->height * 0.5f;
 
             texSelect(&DL, image, 4, 0, 0);
-            texRectDrawImage(&DL, &xypos, &halfedxy, image->width, image->height, 0, 0, 1, 0xB4, 0, 0, 0xFF, image->level > 0, 0);
+            texRectDrawImage(&DL, xypos, halfedxy, image->width, image->height, 0, 0, 1, 0xB4, 0, 0, 0xFF, image->level > 0, 0);
         }
     }
 
@@ -5015,7 +5012,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
 
-  text = langGet(*(mpWeaponSetGetName()));
+  text = langGet(mpWeaponSetGetTextId());
   x = 0xa0;
   y = 0xc9;
   if (g_MpCanPickWeapons) {
@@ -6836,7 +6833,7 @@ void frontBriefingTick(void)
 }
 
 
-Gfx *frontDrawObjectives(Gfx *DL, s32 y, u8 *buffer, s32 showStatus)
+Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
 {
     s32 i;
     s32 index;
@@ -7157,7 +7154,7 @@ Gfx * frontDebriefRender(Gfx *DL)
     #endif
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
-    DL = frontDrawMissionTitle(DL, &stagename);
+    DL = frontDrawMissionTitle(DL, stagename);
 
     text = langGet(getStringID(LTITLE, TITLE_STR_98_REPORT)); //REPORT:*
     x = 0x37;
@@ -7215,7 +7212,7 @@ Gfx * frontDebriefRender(Gfx *DL)
         DL = frontPrintText(DL, &x, &y, winner, g_FontZurichChars, g_FontZurich, bondwins ? 0xFF : (0x78000000 | 0xFF), viGetX(), viGetY(), 0, 0);
     }
 
-    DL = frontDrawObjectives(DL, 0xBF, &stagename, 1);
+    DL = frontDrawObjectives(DL, 0xBF, stagename, 1);
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);
@@ -7937,7 +7934,7 @@ Gfx *frontNoControllerRender(Gfx *DL)
     s32 x2;
     s32 x;
     s32 y;
-    s32 text;
+    char *text;
     s32 conConnected = joyGetConnectedControllers();
     s32 numContCon = 0;
 
@@ -8420,7 +8417,7 @@ Gfx *frontCastRender(Gfx *DL)
     cast_rootpos_smoothed.y += cast_rootvel_smoothed.y * g_GlobalTimerDelta;
     cast_rootpos_smoothed.z += cast_rootvel_smoothed.z * g_GlobalTimerDelta;
  
-    mtx4TransformVecInPlace(g_CastModel->render_pos, &vec);
+    mtx4TransformVecInPlace(&g_CastModel->render_pos[0].pos, &vec);
  
     vec.f[0] -= cast_rootpos_smoothed.x;
     vec.f[1] -= cast_rootpos_smoothed.y;
@@ -8500,17 +8497,17 @@ Gfx *frontCastRender(Gfx *DL)
  
     for (i = 0; i < g_CastModel->obj->numMatrices; i++)
     {
-        mtx4Copy(&((s8 *)g_CastModel->render_pos)[i * sizeof(Mtxf)], &mtx2);
-        mtxF2L(&mtx2, &((Mtxf *)g_CastModel->render_pos)[i]);
+        mtx4Copy(&g_CastModel->render_pos[i].pos, &mtx2);
+        mtxF2L(&mtx2, &g_CastModel->render_pos[i].pos);
     }
  
     if (g_CastWeaponModel != NULL)
     {
         for (i = 0; i < g_CastWeaponModel->obj->numMatrices; i++)
         {
-            mtx4Copy(&((s8 *)g_CastWeaponModel->render_pos)[i * sizeof(Mtxf)], &mtx2);
+            mtx4Copy(&g_CastWeaponModel->render_pos[i].pos, &mtx2);
  
-            mtxF2L(&mtx2, &((Mtxf *)g_CastWeaponModel->render_pos)[i]);
+            mtxF2L(&mtx2, &g_CastWeaponModel->render_pos[i].pos);
         }
     }
  
@@ -8888,7 +8885,7 @@ void frontInit(void)
     g_FrontFrameBuffer = mempAlloc(0x4b040, MEMPOOL_STAGE);
 #endif
 
-    g_FrontFrameBuffer = ALIGN64_V1(g_FrontFrameBuffer);
+    g_FrontFrameBuffer = (u8 *)ALIGN64_V1((u32)g_FrontFrameBuffer);
 
     for (i = 0; i < 4; i++)
     {
