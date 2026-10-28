@@ -20,7 +20,7 @@
 #include <PR/R4300.h>
 #include "rom.h"
 #include "game/asset/rzip.h"
-#include <token.h>
+#include "boss.h"
 #include <str.h>
 #include <memp.h>
 #include "game/player/player.h"
@@ -2531,10 +2531,7 @@ void texInitSharedPool(void)
 {  
     g_TexCacheCount = 0;
 
-    if (tokenFind(1, "-mt"))
-    {
-        g_TexSharedPoolSize = strtol(tokenFind(1, "-mt"), 0x0, 0) * 1024; //get KB
-    }
+    g_TexSharedPoolSize = g_LevelMemBudget->textureKB * 1024;
 
     if (g_CoopMode)
     {

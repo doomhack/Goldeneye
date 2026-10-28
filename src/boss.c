@@ -24,7 +24,6 @@
 #include "random.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "sched.h"
-#include "token.h"
 #include "fr.h"
 #include "game/gfx/image.h"
 #include "dbgscreen.h"
@@ -99,58 +98,84 @@ void bossMainloop(void);
 /* data */
 /* OS counts the CPU spent building frames, summed. See lvRenderFpsCounter. */
 u32 g_PerfCpuSum = 0;
-s32 g_DebugAndUpdateStageFlag = FALSE;
 s32 g_StageNum = LEVELID_TITLE;
-u32 g_CurentMMallocValue = 0x234800;
-u32 g_CurentMaMallocValue = 0x4B000;
-
-struct memallocstring memallocstringtable[] = {
-{ LEVELID_DAM,          "-ml0 -me0 -mgfx70  -mvtx50 -mt625 -ma275"},
-{ LEVELID_FACILITY,     "-ml0 -me0 -mgfx70  -mvtx50 -mt650 -ma160"},
-{ LEVELID_RUNWAY,       "-ml0 -me0 -mgfx100 -mvtx50 -mt610 -ma300"},
-{ LEVELID_SURFACE,      "-ml0 -me0 -mgfx70  -mvtx50 -mt600 -ma300"},
-{ LEVELID_BUNKER1,      "-ml0 -me0 -mgfx100 -mvtx50 -mt700 -ma150"},
-{ LEVELID_SILO,         "-ml0 -me0 -mgfx70  -mvtx50 -mt660 -ma150"},
-{ LEVELID_FRIGATE,      "-ml0 -me0 -mgfx70  -mvtx50 -mt750 -ma225"},
-{ LEVELID_SURFACE2,     "-ml0 -me0 -mgfx100 -mvtx50 -mt550 -ma350"},
-{ LEVELID_BUNKER2,      "-ml0 -me0 -mgfx100 -mvtx50 -mt725 -ma150"},
-{ LEVELID_STATUE,       "-ml0 -me0 -mgfx70  -mvtx50 -mt750 -ma220"},
-{ LEVELID_ARCHIVES,     "-ml0 -me0 -mgfx70  -mvtx50 -mt600 -ma250"},
-{ LEVELID_STREETS,      "-ml0 -me0 -mgfx60  -mvtx40 -mt635 -ma290"},
-{ LEVELID_DEPOT,        "-ml0 -me0 -mgfx60  -mvtx50 -mt710 -ma300"},
-{ LEVELID_TRAIN,        "-ml0 -me0 -mgfx100 -mvtx50 -mt600 -ma200"},
-{ LEVELID_JUNGLE,       "-ml0 -me0 -mgfx70  -mvtx50 -mt500 -ma200"},
-{ LEVELID_CONTROL,      "-ml0 -me0 -mgfx70  -mvtx50 -mt671 -ma200"},
-{ LEVELID_CRADLE,       "-ml0 -me0 -mgfx100 -mvtx50 -mt650 -ma250"},
-{ LEVELID_CAVERNS,      "-ml0 -me0 -mgfx100 -mvtx50 -mt530 -ma250"},
-{ LEVELID_AZTEC,        "-ml0 -me0 -mgfx60  -mvtx40 -mt855 -ma135"},
-{ LEVELID_EGYPT,        "-ml0 -me0 -mgfx100 -mvtx50 -mt600 -ma250"},
-{ LEVELID_CITADEL,      "-ml0 -me0 -mgfx100 -mvtx50 -mt650 -ma150"},
-{ LEVELID_CUBA,         "-ml0 -me0 -mgfx100 -mvtx50 -mt300 -ma300"},
-{ LEVELID_TITLE,        "-ml0 -me0 -mgfx80 -mvtx20 -mt646 -ma001"},
-{ 0x5B,                 "-ml0 -me0 -mgfx60 -mvtx20 -mt500 -ma001"},
-{ 0x63,                 "-ml0 -me0 -mgfx60 -mvtx20 -mt500 -ma001"},
-{ LEVELID_TEMPLE,       "-ml0 -me0 -mgfx130 -mvtx100 -mt390 -ma100"},
-{ LEVELID_COMPLEX,      "-ml0 -me0 -mgfx130 -mvtx100 -mt400 -ma100"},
-{ LEVELID_LIBRARY,      "-ml0 -me0 -mgfx130 -mvtx100 -mt400 -ma100"},
-{ LEVELID_BASEMENT,     "-ml0 -me0 -mgfx130 -mvtx100 -mt400 -ma100"},
-{ LEVELID_STACK,        "-ml0 -me0 -mgfx130 -mvtx100 -mt400 -ma100"},
-{ LEVELID_CAVES,        "-ml0 -me0 -mgfx130 -mvtx100 -mt400 -ma300"},
-{ LEVELID_BUNKER2_MP ,  "-ml0 -me0 -mgfx130 -mvtx100 -mt550 -ma170"},
-{ LEVELID_ARCHIVES_MP , "-ml0 -me0 -mgfx80  -mvtx100 -mt550 -ma250"},
-{ LEVELID_CAVERNS_MP ,  "-ml0 -me0 -mgfx130 -mvtx100 -mt440 -ma220"},
-{ LEVELID_FACILITY_MP , "-ml0 -me0 -mgfx90  -mvtx100 -mt550 -ma230"},
-{ LEVELID_EGYPT_MP ,    "-ml0 -me0 -mgfx110 -mvtx100 -mt350 -ma400"},
-{ LEVELID_DEFAULT,      "-ml0 -me0 -mgfx100 -mvtx50 -mt700 -ma400"},
-{ 0x0, },
-{ 0x0, },
-{ 0x0, }
+/**
+ * Each level's memory budget, in KB. Two-player and co-op games use the level's _MP entry
+ * when it has one. Levels not listed use LEVELID_DEFAULT's.
+ */
+static const LevelMemBudget m_bossMemBudgets[] = {
+    /* level                gfx  vtx  tex  rooms */
+    { LEVELID_DAM,           70,  50, 625, 275 },
+    { LEVELID_FACILITY,      70,  50, 650, 160 },
+    { LEVELID_RUNWAY,       100,  50, 610, 300 },
+    { LEVELID_SURFACE,       70,  50, 600, 300 },
+    { LEVELID_BUNKER1,      100,  50, 700, 150 },
+    { LEVELID_SILO,          70,  50, 660, 150 },
+    { LEVELID_FRIGATE,       70,  50, 750, 225 },
+    { LEVELID_SURFACE2,     100,  50, 550, 350 },
+    { LEVELID_BUNKER2,      100,  50, 725, 150 },
+    { LEVELID_STATUE,        70,  50, 750, 220 },
+    { LEVELID_ARCHIVES,      70,  50, 600, 250 },
+    { LEVELID_STREETS,       60,  40, 635, 290 },
+    { LEVELID_DEPOT,         60,  50, 710, 300 },
+    { LEVELID_TRAIN,        100,  50, 600, 200 },
+    { LEVELID_JUNGLE,        70,  50, 500, 200 },
+    { LEVELID_CONTROL,       70,  50, 671, 200 },
+    { LEVELID_CRADLE,       100,  50, 650, 250 },
+    { LEVELID_CAVERNS,      100,  50, 530, 250 },
+    { LEVELID_AZTEC,         60,  40, 855, 135 },
+    { LEVELID_EGYPT,        100,  50, 600, 250 },
+    { LEVELID_CITADEL,      100,  50, 650, 150 },
+    { LEVELID_CUBA,         100,  50, 300, 300 },
+    { LEVELID_TITLE,         80,  20, 646,   1 },
+    { LEVELID_TEMPLE,       130, 100, 390, 100 },
+    { LEVELID_COMPLEX,      130, 100, 400, 100 },
+    { LEVELID_LIBRARY,      130, 100, 400, 100 },
+    { LEVELID_BASEMENT,     130, 100, 400, 100 },
+    { LEVELID_STACK,        130, 100, 400, 100 },
+    { LEVELID_CAVES,        130, 100, 400, 300 },
+    { LEVELID_BUNKER2_MP,   130, 100, 550, 170 },
+    { LEVELID_ARCHIVES_MP,   80, 100, 550, 250 },
+    { LEVELID_CAVERNS_MP,   130, 100, 440, 220 },
+    { LEVELID_FACILITY_MP,   90, 100, 550, 230 },
+    { LEVELID_EGYPT_MP,     110, 100, 350, 400 },
+    { LEVELID_DEFAULT,      100,  50, 700, 400 },
 };
+
+/** The current level's memory budget. */
+const LevelMemBudget *g_LevelMemBudget = &m_bossMemBudgets[ARRAYCOUNT(m_bossMemBudgets) - 1];
 
 s32 g_MainStageNum = LEVELID_NONE;
 
 OSScMsg g_bossGfxDoneMsg = { .type = OS_SC_DONE_MSG };
 
+
+/** Looks up a level's memory budget (see m_bossMemBudgets). */
+static const LevelMemBudget *bossFindMemBudget(LEVELID stage)
+{
+    const LevelMemBudget *budget;
+
+    if (stage != LEVELID_TITLE && frontGetPlayerCount() >= 2)
+    {
+        for (budget = m_bossMemBudgets; budget->level != LEVELID_DEFAULT; budget++)
+        {
+            if (budget->level == stage + ENVIRONMENTDATA_PLAYERS_4)
+            {
+                return budget;
+            }
+        }
+    }
+
+    for (budget = m_bossMemBudgets; budget->level != LEVELID_DEFAULT; budget++)
+    {
+        if (budget->level == stage)
+        {
+            return budget;
+        }
+    }
+
+    return budget;
+}
 
 // extern declarations
 extern struct player *g_CurrentPlayer;
@@ -230,7 +255,6 @@ void bossInitMainthreadData(void)
     OSMesg bossmsg;
     OSTimer bosstimer;
     OSMesgQueue bossmq;
-    u32 start;
     s32 i;
 
     bossCheckExpansionPak();
@@ -240,7 +264,6 @@ void bossInitMainthreadData(void)
     bgInit();
     viInit();
     viInitVideoSettings();
-    g_DebugAndUpdateStageFlag = rmonGetToken();
     fileInit();
     joyInit();
     osCreateMesgQueue(&bossmq, &bossmsg, 1);
@@ -259,23 +282,7 @@ void bossInitMainthreadData(void)
         }
     }
 
-    if (tokenFind(1, "-level_") == 0)
-    {
-        g_DebugAndUpdateStageFlag = 1;
-    }
-
-    if (g_DebugAndUpdateStageFlag != 0)
-    {
-        tokenSetString("          -ml0 -me0 -mgfx100 -mvtx50 -mt700 -ma400");
-    }
-
-    if (tokenFind(1, "-m") != 0)
-    {
-        g_CurentMMallocValue = (s32) (strtol(tokenFind(1, "-m"), 0, 0) << 0xa);
-    }
-
-    start = (u32) &_heapSegmentStart;
-    mempInitPools((u8 *)start, PHYS_TO_K0(osMemSize) - start);
+    mempInit((u8 *) &_heapSegmentStart, (u8 *) PHYS_TO_K0(osMemSize));
     mempResetPool(MEMPOOL_PERMANENT);
     langInit();
     lvInit();
@@ -336,10 +343,8 @@ void bossMainloop(void)
     // declarations
 
     s32 done;
-    const unsigned char *tokenFindLevel;
     GFXMsg *localGfxFrameMsg;
     OSScMsg localGfxDoneMsg;
-    s32 stringIndex;
     s32 toggleFlag;
     Gfx *gdl;
     Gfx *firstGdl;
@@ -351,37 +356,12 @@ void bossMainloop(void)
     u32 cpuFrameStart = 0;
     u32 mainTickElapsed;
     s32 rspReplyMsg;
+    u32 roomHeapSize;
 
 
     // end declarations
 
     done = 0;
-    gameResetMePool();
-
-    if (tokenFind(1, "-level_") != NULL)
-    {
-        tokenFindLevel = (const unsigned char *)tokenFind(1, "-level_");
-
-        // quick hack strltolon, converts the two digit ASCII level to 32bit int
-        // eg, "09" = 48*10 + 57 - 528 = 9
-        g_StageNum = (((s32)(tokenFindLevel[0] * 10) + (s32)tokenFindLevel[1]) - 0x210);
-    }
-
-    if (g_StageNum != LEVELID_TITLE)
-    {
-        fileValidateSaves();
-        fileSetCurrentFolder(FOLDER1);
-        fileSetDifficulty(DIFFICULTY_AGENT);
-        fileSetSoloStage(g_StageNum);
-
-        if (tokenFind(1, "-hard"))
-        {
-            // convert ASCII difficulty value to int in set difficulty calls eg '1' = 49, 49-48 = 1
-            fileSetDifficulty(*(const unsigned char*)tokenFind(1, "-hard") - '0');
-            lvSetDifficulty(*(const unsigned char*)tokenFind(1, "-hard") - '0');
-        }
-    }
-
     nowCount = osGetCount();
     randomSetSeed(nowCount);
 
@@ -394,74 +374,26 @@ void bossMainloop(void)
         pendingGfx = 0;
 
         test_if_recording_demos_this_stage_load(g_StageNum, lvGetDifficulty());
-        if (g_DebugAndUpdateStageFlag)
-        {
-            stringIndex = -1;
-
-            if (g_StageNum != LEVELID_TITLE && frontGetPlayerCount() >= 2)
-            {
-                stringIndex = 0;
-
-                while(memallocstringtable[stringIndex].id)
-                {
-                    if (memallocstringtable[stringIndex].id == (g_StageNum + 400))
-                    {
-                        break;
-                    }
-
-                    stringIndex++;
-                }
-
-                if (memallocstringtable[stringIndex].id == 0)
-                {
-                    stringIndex = -1;
-                }
-            }
-
-            if (stringIndex)
-            {
-                // empty
-            }
-
-            if (stringIndex < 0)
-            {
-                stringIndex = 0;
-
-                while(memallocstringtable[stringIndex].id)
-                {
-                    if (memallocstringtable[stringIndex].id == g_StageNum)
-                    {
-                        break;
-                    }
-
-                    stringIndex++;
-                }
-            }
-
-            tokenSetString(memallocstringtable[stringIndex].string);
-        }
+        g_LevelMemBudget = bossFindMemBudget(g_StageNum);
 
         mempResetPool(MEMPOOL_STAGE);
         fileForgetPool(MEMPOOL_STAGE);
-        if (tokenFind(1, "-ma"))
-        {
-            g_CurentMaMallocValue = (s32) (strtol(tokenFind(1, "-ma"), NULL, 0) * 1024);
-        }
-
-        if (g_CoopMode && (g_StageNum != LEVELID_TITLE))
-        {
-            // Co-op: the "-ma" heap holds the loaded rooms, sized for what
-            // one player sees. Two players in different parts of a level
-            // see more rooms at once; when it filled up, rooms stopped
-            // loading (Silo's first computer room).
-            g_CurentMaMallocValue *= 2;
-        }
 
         // Counter-op: when controller 2 plays Bond (player 1), the two
         // controllers swap places for the mission. Menus use them as wired.
         g_JoySwapPads = g_CounterOpMode && (g_CounterOpBondPad != 0) && (g_StageNum != LEVELID_TITLE);
 
-        memaReset(mempAlloc(g_CurentMaMallocValue, MEMPOOL_STAGE), g_CurentMaMallocValue);
+        // Co-op: two players in different parts of a level see more rooms at once than one
+        // player does. When the room heap filled up, rooms stopped loading (Silo's first
+        // computer room), so co-op doubles it.
+        roomHeapSize = g_LevelMemBudget->roomHeapKB * 1024;
+
+        if (g_CoopMode && (g_StageNum != LEVELID_TITLE))
+        {
+            roomHeapSize *= 2;
+        }
+
+        memaReset(mempAlloc(roomHeapSize, MEMPOOL_STAGE), roomHeapSize);
         playersReset();
 
         localSelectedNumPlayers = 0;
@@ -571,7 +503,6 @@ void bossMainloop(void)
                             rspGfxTaskStart(firstGdl, gdl, (s32*)rspReplyMsg);
 
                             pendingGfx++;
-                            memaSingleDefragPass();
                             toggleFlag ^= 1;
 
                             g_PerfCpuSum += osGetCount() - cpuFrameStart;
@@ -602,7 +533,6 @@ void bossMainloop(void)
         g_MainStageNum = LEVELID_NONE;
     }
 
-    gameCloseMePool();
 }
 
 

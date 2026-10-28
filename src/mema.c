@@ -1,411 +1,291 @@
 #include <ultra64.h>
+#include "dbgscreen.h"
 #include "mema.h"
 
 /**
- * mema - memory (ad hoc) allocation system.
+ * mema: a small heap with real frees, used for room geometry.
  *
- * Mema's heap is one allocation in memp's stage pool, so it is reset each time a
- * level loads. Its size comes from the level's "-ma" token in boss.c (150 to 400 KB,
- * doubled in co-op).
+ * mema's heap is one allocation in memp's stage pool, so it starts empty each time a level
+ * loads. Its size comes from the level's memory budget in boss.c (100 to 400 KB, doubled
+ * in co-op). Only world/bg.c uses it: rooms are loaded into it as they come into view and
+ * freed again when they go out of view.
  *
- * Unlike memp, mema can free individual allocations. GoldenEye only uses it for room
- * geometry (bg.c), which is loaded and dropped as the player moves around.
+ * mema keeps a list of the free ranges in the heap, sorted by address. Allocations
+ * themselves aren't recorded anywhere, so memaFree needs the caller to pass the size. A
+ * freed range is merged with the free ranges right before and after it, so the list never
+ * holds two ranges that touch.
  *
- * Mema tracks what has been allocated by storing references to free spaces in
- * its spaces array. The allocations themselves are not referenced. When
- * initialising the spaces array, the first element is set to the entire heap
- * and the remaining elements are set to 0.
- *
- * This creates a bit of a terminology problem. Just remember that a MemaSpace
- * is not an allocation; it's a free space that is available for allocation.
- *
- * Due to the ability to free individual allocations, both the heap and the
- * spaces array can become fragmented. Mema supports defragmenting the spaces
- * array: entries are ordered by address, and back to back entries are merged.
- * The data in the heap itself is never moved, as that would require updating
- * pointers throughout the game code which mema cannot do.
+ * Every size is rounded up to 16 bytes, which keeps every allocation 16-byte aligned (room
+ * data is loaded by DMA, see romCopy).
  */
 
-/* Number of free-space slots, plus one. PAL shrank this to 125 to fit 4MB; with the
- * Expansion Pak all versions use the NTSC size. */
-#define MEMA_SLOTS 509
+/** The most free ranges the list can hold. */
+#define MEMA_MAX_FREE 508
 
-typedef struct MemaSpace {
-    u32 addr;
+#define MEMA_ALIGN(x) (((x) + 15) & ~(typeof(x)) 15)
+
+typedef struct MemaRange {
+    u8 *start;
     u32 size;
-} MemaSpace;
+} MemaRange;
 
-/** addr of the end markers after the spaces array. */
-#define MEMA_END 0xffffffff
+/** The free ranges, sorted by address. */
+static MemaRange m_memaFree[MEMA_MAX_FREE];
+static s32 m_memaFreeCount;
+
+/** Removes free range `index` from the list. */
+static void memaRemoveRange(s32 index)
+{
+    m_memaFreeCount--;
+
+    for (s32 i = index; i < m_memaFreeCount; i++)
+    {
+        m_memaFree[i] = m_memaFree[i + 1];
+    }
+}
+
+/** Inserts a free range at position `index` in the list, which must have room for it. */
+static void memaInsertRange(s32 index, u8 *start, u32 size)
+{
+    for (s32 i = m_memaFreeCount; i > index; i--)
+    {
+        m_memaFree[i] = m_memaFree[i - 1];
+    }
+
+    m_memaFree[index].start = start;
+    m_memaFree[index].size = size;
+    m_memaFreeCount++;
+}
+
+/** Returns the index of the first free range that starts after `addr`. */
+static s32 memaFindRangeAfter(u8 *addr)
+{
+    s32 low = 0;
+    s32 high = m_memaFreeCount;
+
+    while (low < high)
+    {
+        s32 mid = (low + high) / 2;
+
+        if (m_memaFree[mid].start <= addr)
+        {
+            low = mid + 1;
+        }
+        else
+        {
+            high = mid;
+        }
+    }
+
+    return low;
+}
+
+/** Returns the index of the smallest free range. The list must not be empty. */
+static s32 memaFindSmallestRange(void)
+{
+    s32 smallest = 0;
+
+    for (s32 i = 1; i < m_memaFreeCount; i++)
+    {
+        if (m_memaFree[i].size < m_memaFree[smallest].size)
+        {
+            smallest = i;
+        }
+    }
+
+    return smallest;
+}
+
+/** Makes the `size` bytes at `heap` the heap, all of it free. */
+void memaReset(void *heap, u32 size)
+{
+    u8 *start = (u8 *) MEMA_ALIGN((uintptr_t) heap);
+
+    m_memaFreeCount = 0;
+    size -= start - (u8 *) heap;
+    size &= ~15u;
+
+    if (size != 0)
+    {
+        memaInsertRange(0, start, size);
+    }
+}
 
 /**
- * This structure contains dummy entries before and after the spaces array.
- * These are used as start and end markers, but could have been avoided by
- * using loop counters (eg. a typical i < numspaces loop).
+ * Allocates `size` bytes and returns them, or returns NULL if no free range is big enough.
+ * It takes the smallest free range that fits (the best fit), to leave the big ones for big
+ * rooms.
  */
-struct MemaHeap {
-    struct MemaSpace start;
-    struct MemaSpace spaces[MEMA_SLOTS - 1];
-	struct MemaSpace end1;
-	struct MemaSpace end2;
-};
-
-s32 m_memaHeapStart;
-s32 m_memaHeapSize;
-struct MemaHeap m_memaHeap;
-
-/** Swaps two free-space entries. */
-void memaSwap(MemaSpace *a, MemaSpace *b) {
-    u32 tempaddr = a->addr;
-    u32 tempsize = a->size;
-    a->addr = b->addr;
-    a->size = b->size;
-    b->addr = tempaddr;
-    b->size = tempsize;
-}
-
-/** Adds b's space to a (they must be adjacent) and empties b. */
-void memaMerge(MemaSpace *a, MemaSpace *b) {
-    a->size = (a->size + b->size);
-    b->addr = 0;
-    b->size = 0;
-}
-
-/**
- * One pass over the free-space list: swaps entries that are out of address order and
- * merges entries that touch. Returns TRUE if anything was merged.
- */
-s32 memaDefragPass(struct MemaHeap *heap) {
-    s32 any = FALSE;
-	struct MemaSpace *prev = &heap->start;
-	struct MemaSpace *curr = &heap->spaces[0];
-	struct MemaSpace *last = &heap->spaces[MEMA_SLOTS - 2];
-
-    u32 addr = 0;
-    while (curr <= last) {
-        if (curr->size != 0) {
-            if (curr->addr < addr) {
-                memaSwap(curr, prev);
-            }
-            if ((prev->size + addr) == curr->addr) {
-                memaMerge(prev, curr);
-                curr = prev;
-                any = TRUE;
-            }
-            prev = curr;
-            addr = curr->addr;
-        }
-        curr++;
-    }
-    return any;
-}
-
-/** Defragments the free-space list until nothing more can be merged. */
-void memaDefrag(void)
+void *memaAlloc(u32 size)
 {
-    while (memaDefragPass(&m_memaHeap));
-}
+    s32 best = -1;
+    u8 *allocation;
 
-/**
- * Defrag the spaces list in an attempt to free up any slot.
- *
- * If none can be found, return the smallest run of free space so it can be
- * overwritten by the caller.
- */
-MemaSpace *memaFindFreeSlot(struct MemaHeap *heap)
-{
-    struct MemaSpace *curr = &heap->spaces[0];
-	struct MemaSpace *best;
+    size = MEMA_ALIGN(size);
 
-    u32 min;
-    s32 i;
-
-    // Do 124 passes over the list. This ensures the list is in order by the
-	// end. Though in most cases it's roughly in order anyway, and the excessive
-	// looping is just wasting CPU cycles. In reality this situation probably
-	// never occurs.
-    for (i = 0; i < (MEMA_SLOTS - 1); i++) {
-        while (curr <= &heap->spaces[MEMA_SLOTS - 2]) {
-            if (curr->size == 0) {
-                return curr;
-            }
-
-            if (curr[1].addr < curr[0].addr) {
-                memaSwap(&curr[0], &curr[1]);
-            }
-
-            if (curr[1].addr == (curr[0].size + curr[0].addr)) {
-                // Found two that can be merged
-                curr[0].size += curr[1].size;
-                curr[1].addr = 0;
-                curr[1].size = 0;
-                return &curr[1];
-            }
-
-            curr++;
-        }
-
-        curr = &heap->spaces[0];
+    if (size == 0)
+    {
+        return NULL;
     }
 
-    // If this code is reached then the spaces list is so badly and unrepairably
-	// fragmented that we can't find any slot to record the free space in.
-	// Find the smallest run of free space and use that instead.
-	// The caller will overwrite it with its own free allocation, causing the
-	// original run of free space to be unusable until the mema heap is reset.
-    min = 0xFFFFFFFF;
-    best = curr;
-    while (curr <= &heap->spaces[MEMA_SLOTS - 2]) {
-        if (curr->size < min) {            
-            best = curr;
-            min = curr->size;
-        }
+    for (s32 i = 0; i < m_memaFreeCount; i++)
+    {
+        if (m_memaFree[i].size >= size && (best < 0 || m_memaFree[i].size < m_memaFree[best].size))
+        {
+            best = i;
 
-        curr++;
-    }
-
-    return best;
-}
-
-/** Records the `size` bytes at `addr` as free space. */
-void memaMarkFree(s32 addr, s32 size)
-{
-    // Choose an index in the spaces array which we'll mark a space as free,
-	// based on how far into the heap the allocation is. This is a rough
-	// estimate and doesn't need to be any particular index, but the defrag
-	// function tries to order the spaces by address so the closer we get to it
-	// the less work the defrag function will have to do should it be called.
-    s32 index = ((addr - m_memaHeapStart) * (MEMA_SLOTS-1)) / m_memaHeapSize;
-    struct MemaSpace *curr = &m_memaHeap.spaces[index];
-
-    // If the entry is taken, keep moving forward until a zero is found.
-    while (curr->size != 0) {
-        curr++;
-    }
-
-    // If we reached the end of the spaces list, go backwards instead
-    if (curr->addr == MEMA_END) {
-        curr = &m_memaHeap.spaces[index];
-
-        while (curr->size != 0) {
-            curr--;
-        }
-
-        if (curr->addr == 0) {
-            curr = memaFindFreeSlot(&m_memaHeap);
-        }
-    }
-
-    // Mark this space as free
-    curr->addr = addr;
-    curr->size = size;
-}
-
-/** Makes the `heapsize` bytes at `heapaddr` the heap, all of it free. */
-void memaReset(void *heapaddr, u32 heapsize)
-{
-   struct MemaSpace *space;
-
-
-	m_memaHeap.start.addr = 0;
-	m_memaHeap.start.size = 0;
-
-	m_memaHeap.end1.addr = MEMA_END;
-	m_memaHeap.end1.size = 0;
-	m_memaHeap.end2.addr = MEMA_END;
-	m_memaHeap.end2.size = 0xffffffff;
-
-	for (space = &m_memaHeap.spaces[0]; space <= &m_memaHeap.spaces[MEMA_SLOTS - 2]; space++) {
-		space->addr = 0;
-		space->size = 0;
-	}
-
-	m_memaHeap.spaces[0].addr = m_memaHeapStart = (uintptr_t) heapaddr;
-	m_memaHeap.spaces[0].size = m_memaHeapSize = heapsize;
-}
-
-void memaSingleDefragPass(void)
-{
-    memaDefragPass(&m_memaHeap);
-}
-
-
-/**
- * Allocates `amount` bytes and returns their address, or NULL if no free space is big
- * enough.
- *
- * It looks for the best fit among the first 16 free-space entries, stopping early at a
- * close fit. If none of those is big enough, it takes the first big enough entry after
- * them, and failing that defragments 8 times and takes the first big enough entry at all.
- */
-void *memaAlloc(u32 amount) {
-    s32 addr;
-    u32 diff;
-    s32 i;
-
-    struct MemaSpace *curr;
-	u32 bestdiff;
-	struct MemaSpace *best;
-
-
-	curr = &m_memaHeap.spaces[0];
-	bestdiff = 0xffffffff;
-	best = NULL;
-
-    for (i = 0; i < 16; i++, curr++) {
-        if (curr->size < amount) {
-            continue;
-        }
-
-        if (curr->addr == MEMA_END) {
-            break;
-        }
-
-        diff = (curr->size - amount);
-
-        if (diff < bestdiff) {
-            bestdiff = diff;
-            best = curr;
-            if ((diff < 64) || (diff < (amount / 4))) {
+            if (m_memaFree[i].size == size)
+            {
                 break;
             }
         }
     }
 
-    if (best == NULL) {
-        while (curr->size < amount) {
-            curr++;
-        }
-
-        if (curr->addr == MEMA_END) {
-            for (i = 0; i < 8; i++) {
-                memaDefragPass(&m_memaHeap);
-            }
-
-            curr = &m_memaHeap.spaces[0];
-
-            while (curr->size < amount) {
-                curr++;
-            }
-
-            if (curr->addr == MEMA_END) {
-                return NULL;
-            }
-        }
-
-        best = curr;
+    if (best < 0)
+    {
+        return NULL;
     }
 
-    addr = best->addr;
-    best->addr += amount;
-    best->size -= amount;
+    allocation = m_memaFree[best].start;
+    m_memaFree[best].start += size;
+    m_memaFree[best].size -= size;
 
-    if (best->size == 0) {
-        best->addr = 0;
+    if (m_memaFree[best].size == 0)
+    {
+        memaRemoveRange(best);
     }
 
-    return (void*)addr;
+    return allocation;
 }
 
 /**
- * Claims `amount` bytes of free space starting exactly at `addr`, which lets an
- * allocation that ends at `addr` grow in place. Returns `addr`, or 0 if there isn't that
- * much free space there.
+ * Frees the `size` bytes at `addr`. The size must be the one the memory was allocated (or
+ * last resized) with. Freeing memory that is already free stops the game.
  */
-s32 memaGrow(u32 addr, u32 amount)
+void memaFree(void *addr, u32 size)
 {
-    u32        size = 0;
-    u32        new_addr;
-    MemaSpace *curr;
+    u8 *start = addr;
+    s32 next;
+    bool joinsPrev;
+    bool joinsNext;
 
-
-    curr     = &m_memaHeap.spaces[0];
-    new_addr = addr;
-
-    while (curr->addr != MEMA_END)
-    {
-        if (curr->addr == new_addr && curr->size >= amount)
-        {
-            goto found;
-        }
-
-        curr++;
-    }
-
-    return 0;
-
-found:
-    curr->addr += amount;
-    curr->size -= amount;
-
-    size = curr->size;
+    size = MEMA_ALIGN(size);
 
     if (size == 0)
     {
-        curr->addr = 0;
+        return;
     }
 
-    return new_addr;
-}
+    next = memaFindRangeAfter(start);
 
-/** Frees `size` bytes at `addr`. mema doesn't record allocation sizes, so the caller must. */
-void memaFree(void *addr, s32 size)
-{
-	memaMarkFree((uintptr_t) addr, size);
-}
-
-
-/**
- * Find and return the largest amount of contiguous free space in the pool.
- * ie. the biggest allocation that mema can currently make.
- */
-s32 memaGetLongestFree(void)
-{
-	struct MemaSpace *curr;
-	u32 biggest = 0;
-
-	memaDefrag();
-
-	curr = &m_memaHeap.spaces[0];
-
-	while (curr->addr != MEMA_END) {
-		if (curr->size > biggest) {
-			biggest = curr->size;
-		}
-
-		curr++;
-	}
-
-	if (biggest) {
-		return biggest;
-	}
-
-	return 0;
-}
-
-/**
- * Resizes the allocation at `addr` in place from `oldsize` to `newsize` bytes. Growing
- * only works if the free space right after it is big enough. Returns 1 on success, 0 if
- * it couldn't grow.
- */
-s32 memaRealloc(s32 addr, u32 oldsize, u32 newsize)
-{
-    if ((newsize > oldsize))
+    // Catch double frees and bad sizes: the range mustn't overlap the free space around it
+    if ((next > 0 && m_memaFree[next - 1].start + m_memaFree[next - 1].size > start)
+        || (next < m_memaFreeCount && start + size > m_memaFree[next].start))
     {
-        if (memaGrow(addr + oldsize, newsize - oldsize) == 0)
+        dbgFatal("mema: freeing free memory at", (uintptr_t) start);
+    }
+
+    joinsPrev = next > 0 && m_memaFree[next - 1].start + m_memaFree[next - 1].size == start;
+    joinsNext = next < m_memaFreeCount && start + size == m_memaFree[next].start;
+
+    if (joinsPrev && joinsNext)
+    {
+        m_memaFree[next - 1].size += size + m_memaFree[next].size;
+        memaRemoveRange(next);
+    }
+    else if (joinsPrev)
+    {
+        m_memaFree[next - 1].size += size;
+    }
+    else if (joinsNext)
+    {
+        m_memaFree[next].start = start;
+        m_memaFree[next].size += size;
+    }
+    else
+    {
+        if (m_memaFreeCount == MEMA_MAX_FREE)
         {
-			return 0;
-		}
-        else
-        {
-            return 1;
+            // The heap is too fragmented to record another range. Give up the smallest
+            // range instead (until the next level), or this one if it's smaller still.
+            s32 smallest = memaFindSmallestRange();
+
+            if (m_memaFree[smallest].size <= size)
+            {
+                memaRemoveRange(smallest);
+
+                if (smallest < next)
+                {
+                    next--;
+                }
+            }
+            else
+            {
+                return;
+            }
         }
-	}
 
-    if ((oldsize > newsize))
-    {
-        memaFree((void *)(addr + newsize), oldsize - newsize);
+        memaInsertRange(next, start, size);
     }
-    
-	return 1;
+}
+
+/** Returns the biggest allocation mema can make right now. */
+u32 memaGetLongestFree(void)
+{
+    u32 longest = 0;
+
+    for (s32 i = 0; i < m_memaFreeCount; i++)
+    {
+        if (m_memaFree[i].size > longest)
+        {
+            longest = m_memaFree[i].size;
+        }
+    }
+
+    return longest;
+}
+
+/**
+ * Resizes the allocation at `addr` in place from `oldSize` to `newSize` bytes. Shrinking
+ * always works; growing only works if the free range right after the allocation is big
+ * enough. Returns whether it worked.
+ */
+bool memaRealloc(void *addr, u32 oldSize, u32 newSize)
+{
+    u8 *end;
+    s32 next;
+    u32 growBy;
+
+    oldSize = MEMA_ALIGN(oldSize);
+    newSize = MEMA_ALIGN(newSize);
+    end = (u8 *) addr + oldSize;
+
+    if (newSize < oldSize)
+    {
+        memaFree((u8 *) addr + newSize, oldSize - newSize);
+        return true;
+    }
+
+    if (newSize == oldSize)
+    {
+        return true;
+    }
+
+    growBy = newSize - oldSize;
+    next = memaFindRangeAfter(end - 1);
+
+    if (next >= m_memaFreeCount || m_memaFree[next].start != end || m_memaFree[next].size < growBy)
+    {
+        return false;
+    }
+
+    m_memaFree[next].start += growBy;
+    m_memaFree[next].size -= growBy;
+
+    if (m_memaFree[next].size == 0)
+    {
+        memaRemoveRange(next);
+    }
+
+    return true;
 }

@@ -18,7 +18,6 @@
       build/OUTCODE/src/memp.o (.text);
       build/OUTCODE/src/mema.o (.text);
       build/OUTCODE/src/random.o (.text);
-      build/OUTCODE/src/token.o (.text);
       build/OUTCODE/src/str.o (.text);
       build/OUTCODE/src/sprintf.o (.text);
       build/OUTCODE/src/pi.o (.text);

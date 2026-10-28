@@ -11,7 +11,6 @@
 #include "thread_config.h"
 #include "boss.h"
 #include "pi.h"
-#include "token.h"
 #include "vi.h"
 
 
@@ -194,10 +193,6 @@ void mainproc([[maybe_unused]] void *args)
     viDebugRemoved();
     piCreateManager();
     rmonCreateThread();
-    if (tokenReadIo())
-    {
-        osStopThread(RMON_THREAD_ID);
-    }
 
     osSetThreadPri(RMON_THREAD_ID, MAIN_THREAD_PRIORITY);
     // Timers are initialized via:

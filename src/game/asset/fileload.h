@@ -1,15 +1,13 @@
 #ifndef _FILELOAD_H_
 #define _FILELOAD_H_
 #include <ultra64.h>
+#include "memp.h"
 
 typedef struct FileInfo
 {
     u32 romSize;
     u32 loadedSize;
     u32 allocatedSize;
-    u8  loadedPool;
-    u8  unk_11;
-    u16 reserved;
 } FileInfo;
 
 typedef struct FileEntry
@@ -29,8 +27,7 @@ typedef enum FileLoadMode
 
 void  fileLoadFromRom(u8 *ptrdata, s32 bytes,  FileEntry *srcfile,  FileInfo *lookupdata);
 
-void  fileForgetPool(u8 i);
-void  fileForgetMePool(void);
+void  fileForgetPool(MemPool pool);
 
 void *fileLoadToPool(s32 index, FileLoadMode loadMethod, s32 size, u8 bank);
 void *fileLoadToAddr(s32 index, FileLoadMode loadMethod, void *ptrdata, s32 bytes);

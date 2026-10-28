@@ -19,7 +19,6 @@
       build/OUTCODE/src/memp.o (.rodata);
       build/OUTCODE/src/mema.o (.rodata);
       build/OUTCODE/src/random.o (.rodata);
-      build/OUTCODE/src/token.o (.rodata);
       build/OUTCODE/src/str.o (.rodata);
       build/OUTCODE/src/sprintf.o (.rodata);
       build/OUTCODE/src/pi.o (.rodata);

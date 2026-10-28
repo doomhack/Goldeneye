@@ -131,7 +131,7 @@ void *fileLoadByNameToAddr(char *name, FileLoadMode mode, u8 *dst, s32 size)
  *
  * `size` is not used.
  */
-void *fileLoadToPool(s32 index, FileLoadMode mode, s32 size, u8 pool)
+void *fileLoadToPool(s32 index, FileLoadMode mode, [[maybe_unused]] s32 size, u8 pool)
 {
     FileInfo *info = &m_fileInfo[index];
     void     *data = NULL;
@@ -150,7 +150,7 @@ void *fileLoadToPool(s32 index, FileLoadMode mode, s32 size, u8 pool)
 
         if (mode != FILELOAD_KEEP_SPARE)
         {
-            mempResizeLast(data, info->loadedSize, pool);
+            mempResizeLast(data, info->loadedSize);
         }
     }
     else
@@ -165,11 +165,6 @@ void *fileLoadToPool(s32 index, FileLoadMode mode, s32 size, u8 pool)
         info->allocatedSize = info->loadedSize;
 
         fileLoadFromRom(data, 0, &g_FileTable[index], info);
-
-        if (size == 0)
-        {
-            info->loadedPool = pool;
-        }
     }
 
     return data;
@@ -225,7 +220,7 @@ void fileSetSize(s32 index, u8 *data, u32 size, s32 shrinkAllocation)
 
     if (shrinkAllocation != 0)
     {
-        mempResizeLast(data, m_fileInfo[index].loadedSize, MEMPOOL_STAGE);
+        mempResizeLast(data, m_fileInfo[index].loadedSize);
     }
 }
 
@@ -238,31 +233,20 @@ s32 fileGetLoadedSizeByName(char *name)
 }
 
 /**
- * Called when a pool is reset. Clears the record of which files were loaded into this pool
- * or any lower-numbered one, and when the stage pool is reset, forgets every file's
- * decompressed size too.
+ * Called when a pool is reset. When it's the stage pool, forgets every file's decompressed
+ * size, so the next load of each file allocates all the free space again.
  */
-void fileForgetPool(u8 pool)
+void fileForgetPool(MemPool pool)
 {
-    int i;
-
-    for (i = 1; i < m_fileCount; i++)
+    if (pool != MEMPOOL_STAGE)
     {
-        if (m_fileInfo[i].loadedPool <= pool)
-        {
-            m_fileInfo[i].loadedPool = 0;
-        }
-
-        if (pool == MEMPOOL_STAGE)
-        {
-            m_fileInfo[i].loadedSize = 0;
-        }
+        return;
     }
-}
 
-void fileForgetMePool(void)
-{
-    fileForgetPool(MEMPOOL_ME);
+    for (s32 i = 1; i < m_fileCount; i++)
+    {
+        m_fileInfo[i].loadedSize = 0;
+    }
 }
 
 /** Returns the index of a file in g_FileTable, or 0 if there is no such file. */

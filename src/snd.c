@@ -108,7 +108,6 @@ s16 g_sndAllocatedVoicesCount = 0;
 /**
  * Boot flag. If set, sound is disabled.
  */
-s8 g_sndBootswitchSound = 0;
 
 /**
  * Used in level load/setup, sound effect slot volume will be scaled by this amount.
@@ -752,10 +751,6 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
     deltaTotal = 0;
 
 
-    if (g_sndBootswitchSound)
-    {
-        return NULL;
-    }
 
     if (soundIndex == 0)
     {

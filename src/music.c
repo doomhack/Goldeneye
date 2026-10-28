@@ -612,10 +612,6 @@ void musicSeqPlayerInit(void)
     u32 tblSegmentSize;
     u32 size;
     
-    if (g_sndBootswitchSound)
-    {
-        return;
-    }
 
     p = (u8 *)mempAlloc(MUSIC_ALLOCATION_BYTES, MEMPOOL_PERMANENT);
 
@@ -763,10 +759,6 @@ void musicTrack1Play(s32 track)
     void *romAddress;
     u32 bufferSize;
 
-    if (g_sndBootswitchSound)
-    {
-        return;
-    }
 
     if (g_musicXTrack1CurrentTrackNum)
     {
@@ -814,10 +806,6 @@ void musicTrack1Play(s32 track)
  */
 void musicTrack1Stop(void)
 {
-    if (g_sndBootswitchSound)
-    {
-        return;
-    }
 
     g_musicXTrack1Fade = MUSIC_FADESTATE_UNSET;
 
@@ -930,10 +918,6 @@ void musicTrack2Play(s32 track)
     void *romAddress;
     u32 bufferSize;
 
-    if (g_sndBootswitchSound)
-    {
-        return;
-    }
 
     if (g_musicXTrack2CurrentTrackNum)
     {
@@ -981,10 +965,6 @@ void musicTrack2Play(s32 track)
  */
 void musicTrack2Stop(void)
 {
-    if (g_sndBootswitchSound)
-    {
-        return;
-    }
 
     g_musicXTrack2Fade = MUSIC_FADESTATE_UNSET;
 
@@ -1065,10 +1045,6 @@ void musicTrack3Play(s32 track)
     void *romAddress;
     u32 bufferSize;
 
-    if (g_sndBootswitchSound)
-    {
-        return;
-    }
 
     if (g_musicXTrack3CurrentTrackNum)
     {
@@ -1116,10 +1092,6 @@ void musicTrack3Play(s32 track)
  */
 void musicTrack3Stop(void)
 {
-    if (g_sndBootswitchSound)
-    {
-        return;
-    }
 
     g_musicXTrack3Fade = MUSIC_FADESTATE_UNSET;
 

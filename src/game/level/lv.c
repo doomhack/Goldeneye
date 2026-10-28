@@ -24,7 +24,6 @@
 #include <rom.h>
 #include <random.h>
 #include <joy.h>
-#include <token.h>
 #include "game/level/lv.h"
 #include "game/text/language.h"
 #include "game/menu/front.h"
@@ -515,36 +514,6 @@ Gfx* lvRender(Gfx* DL)
             propsTickPickups();
             DL = bgLevelRender(DL);
 
-
-            if (tokenFind(1, "-stanshow_"))
-            {
-                StandTile *tile1 = stanMatchTileName(tokenFind(1, "-stanshow_"));
-                if (tile1)
-                {
-                    DL = stanDebugBeginDraw(DL);
-                    DL = stanDebugDrawTile(DL);
-                }
-            }
-
-            if (tokenFind(2, "-stanshow_"))
-            {
-                StandTile *tile2 = stanMatchTileName(tokenFind(2, "-stanshow_"));
-                if (tile2)
-                {
-                    DL = stanDebugBeginDraw(DL);
-                    DL = stanDebugDrawTile(DL);
-                }
-            }
-
-            if (tokenFind(3, "-stanshow_"))
-            {
-                StandTile *tile3 = stanMatchTileName(tokenFind(3, "-stanshow_"));
-                if (tile3)
-                {
-                    DL = stanDebugBeginDraw(DL);
-                    DL = stanDebugDrawTile(DL);
-                }
-            }
 
             DL = weaponRenderTracers(DL);
 

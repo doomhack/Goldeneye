@@ -1,6 +1,6 @@
 #include <ultra64.h>
 #include "game/gfx/dyn.h"
-#include <token.h>
+#include "boss.h"
 #include <str.h>
 #include <memp.h>
 #include <macro.h>
@@ -41,12 +41,8 @@ void dynInitMemory(void) {
     // Solo levels size these for one view. Co-op draws the level twice.
     s32 views = g_CoopMode ? 2 : 1;
 
-    if (tokenFind(1, "-mgfx")) {
-        g_GfxSizesByPlayerCount[getPlayerCount() - 1] = strtol(tokenFind(1, "-mgfx"), NULL, 0) * 1024 * views;
-    }
-    if (tokenFind(1, "-mvtx")) {
-        g_VtxSizesByPlayerCount[getPlayerCount() - 1] = strtol(tokenFind(1, "-mvtx"), NULL, 0) * 1024 * views;
-    }
+    g_GfxSizesByPlayerCount[getPlayerCount() - 1] = g_LevelMemBudget->gfxKB * 1024 * views;
+    g_VtxSizesByPlayerCount[getPlayerCount() - 1] = g_LevelMemBudget->vtxKB * 1024 * views;
 
     g_GfxBuffers[0] = mempAlloc(g_GfxSizesByPlayerCount[getPlayerCount() - 1] * 2, MEMPOOL_STAGE);
     g_GfxBuffers[1] = (g_GfxBuffers[0] + g_GfxSizesByPlayerCount[getPlayerCount() - 1]);

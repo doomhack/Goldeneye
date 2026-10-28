@@ -104,11 +104,10 @@ static s32 dbgIsCodeAddress(u32 addr)
 }
 
 /**
- * Print the code addresses found on a thread's stack: a rough backtrace.
+ * Print the code addresses found on a stack, starting at `sp`: a rough backtrace.
  */
-static void dbgStackScan(OSThread *t)
+static void dbgStackScanFrom(u32 *sp)
 {
-    u32 *sp = (u32 *)(u32)t->context.sp;
     s32 found = 0;
     s32 i;
 
@@ -135,6 +134,11 @@ static void dbgStackScan(OSThread *t)
     }
 
     dbgPutChar('\n');
+}
+
+static void dbgStackScan(OSThread *t)
+{
+    dbgStackScanFrom((u32 *)(u32)t->context.sp);
 }
 
 static void dbgThread(OSThread *t)
@@ -166,7 +170,7 @@ static void dbgBegin(const char *title)
     dbgPutChar('\n');
 }
 
-void dbgShowScreen(void)
+[[noreturn]] static void dbgShowScreen(void)
 {
     OSViMode *mode = &osViModeTable[(osTvType == TV_TYPE_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
 
@@ -227,5 +231,22 @@ void dbgShowHang(u32 seconds)
         }
     }
 
+    dbgShowScreen();
+}
+
+/**
+ * Stops the game with `message` and `value` on screen, for errors the game can't recover
+ * from (out of memory, for example). Works from any thread.
+ */
+void dbgFatal(const char *message, u32 value)
+{
+    dbgBegin("FATAL ERROR");
+    dbgPuts(message);
+    dbgPutChar(' ');
+    dbgHex(value);
+    dbgPutChar('\n');
+    dbgLabelHex("called from", (u32) __builtin_return_address(0));
+    dbgPutChar('\n');
+    dbgStackScanFrom(__builtin_frame_address(0));
     dbgShowScreen();
 }
