@@ -414,7 +414,7 @@ s32 memaRealloc(s32 addr, u32 oldsize, u32 newsize)
 
     if ((oldsize > newsize))
     {
-        memaFree(addr + newsize, oldsize - newsize);
+        memaFree((void *)(addr + newsize), oldsize - newsize);
     }
     
 	return 1;

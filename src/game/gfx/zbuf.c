@@ -18,14 +18,14 @@ s32 g_ZbufWidth; // 0x8008e8f0
 s32 g_ZbufHeight; // 0x8008e8f4
 
 // data
-s32 g_Zbuf = 0; // 0x8004f010
+u8 *g_Zbuf = NULL;
 
 // TRUE when g_Zbuf is the gameplay buffer from zbufAllocate (sized for hi-res).
 // Buffers handed in through zbufSetBuffer (front-end menus) keep their own width.
 static s32 g_ZbufIsGameplay = FALSE;
 
 void zbufDeallocate(void) {
-    g_Zbuf = 0;
+    g_Zbuf = NULL;
 }
 
 
@@ -54,12 +54,12 @@ void zbufAllocate(void)
     }
 
     g_Zbuf = mempAlloc((g_ZbufWidth * g_ZbufHeight * 2) + 64, MEMPOOL_STAGE);
-    g_Zbuf = ALIGN64_V1(g_Zbuf);
+    g_Zbuf = (u8 *)ALIGN64_V1((uintptr_t)g_Zbuf);
     g_ZbufIsGameplay = (resolution == 0);
 }
 
 
-void zbufSetBuffer(s32 buffer, s32 width, s32 height) {
+void zbufSetBuffer(void *buffer, s32 width, s32 height) {
     g_Zbuf = buffer;
     g_ZbufWidth = width;
     g_ZbufHeight = height;
@@ -69,8 +69,8 @@ void zbufSetBuffer(s32 buffer, s32 width, s32 height) {
 
 Gfx *zbufInit(Gfx *gdl) {
     s32 offset;
-    s32 addr;
-    if (g_Zbuf == 0) {
+    uintptr_t addr;
+    if (g_Zbuf == NULL) {
         zbufAllocate();
     }
     if (g_ZbufIsGameplay) {
@@ -81,8 +81,7 @@ Gfx *zbufInit(Gfx *gdl) {
     } else {
         offset = 0;
     }
-    addr = (g_Zbuf - offset);
-    addr = addr & ~0x3F;
+    addr = (uintptr_t)(g_Zbuf - offset) & ~0x3F;
     gDPPipeSync(gdl++);
     gDPSetDepthImage(gdl++, addr);
     return gdl;

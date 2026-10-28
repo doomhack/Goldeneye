@@ -336,13 +336,13 @@ s32 texCeil(f32 value)
 }
 
 
-s32 texGetLoadBlockDxt(s32 *tex)
+s32 texGetLoadBlockDxt(struct tex *tex)
 {
     s32 depth;
     s32 line;
 
     line = texGetLineSizeInBytes(tex, 0U);
-    depth = tex[2] & 3;
+    depth = tex->depth;
     if (depth == 3)
     {
         return texCeil((2.0f / (f32) (line * 4)) * 2048.0f);
@@ -563,7 +563,7 @@ Gfx *texWriteLoadToTmemZero(Gfx *gdl, struct tex *tex)
 	s32 len;
 	s32 dxt;
 
-	dxt = texGetLoadBlockDxt((s32 *)tex);
+	dxt = texGetLoadBlockDxt(tex);
 	texGetDepthAndSize(tex, &depth, &len);
 
 	if (tex->lutmodeindex == 0)
@@ -696,7 +696,7 @@ Gfx * texHandleType0(Gfx *gdl,struct tex *tex,s32 smode,s32 tmode,s32 offset,u32
 }
 
 
-Gfx * texHandleType4(Gfx *DL,u32 *tex,s32 smode,s32 tmode,s32 offset)
+Gfx *texHandleType4(Gfx *DL, struct tex *tex,s32 smode,s32 tmode,s32 offset)
 {
     DL = texWriteLoadToTmemZero(DL,tex);
     DL = texWriteTile(DL,tex,smode,tmode,offset,0);
@@ -704,7 +704,7 @@ Gfx * texHandleType4(Gfx *DL,u32 *tex,s32 smode,s32 tmode,s32 offset)
 }
 
 
-Gfx * texHandleType3(Gfx *DL,u32 *tex,s32 smode,s32 tmode,s32 offset)
+Gfx *texHandleType3(Gfx *DL, struct tex *tex,s32 smode,s32 tmode,s32 offset)
 {
     DL = texWriteLoadToTmemZero(DL,tex);
     DL = texWriteTile(DL,tex,smode,tmode,offset,0);

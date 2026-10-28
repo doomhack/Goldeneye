@@ -271,7 +271,7 @@ struct AudioManager_s {
 
 } g_AudioManager;
 
-OSScClient g_AudioClient[2];
+OSScClient g_AudioClient;
 
 DMAState g_DmaState;
 
@@ -400,7 +400,7 @@ void amMain(void* arg)
 	s16 *msg = NULL;
 	AudioInfo *info = NULL;
 
-	osScAddClient(&os_scheduler, &g_AudioClient[0], &g_AudioManager.frameMessageQueue, 1);
+	osScAddClient(&os_scheduler, &g_AudioClient, &g_AudioManager.frameMessageQueue, TRUE);
 
 	while (!done) {
 		osRecvMesg(&g_AudioManager.frameMessageQueue, (OSMesg *) &msg, OS_MESG_BLOCK);

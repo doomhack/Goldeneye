@@ -15,7 +15,7 @@ Type: void
 Purpose: This is the main loop of the rmon debugger. It is mostly a protocol
 	parser/dispatcher.
 ************************************************************************/
-void rmonMain(void) {
+void rmonMain(void *arg) {
 }
 
 /**
@@ -44,7 +44,7 @@ void rmonPrintf(void)
 /**
  * Send text to Remote Debugger, GE redirects to screen (crashAppendChar)
  */
-void *proutSyncPrintf(void *str, const char *buf, size_t n)
+char *proutSyncPrintf(char *str, const char *buf, size_t n)
 {
     u32 sent = 0;
 
@@ -54,7 +54,7 @@ void *proutSyncPrintf(void *str, const char *buf, size_t n)
         crashAppendChar(buf[sent++]);
     }
 #endif
-    return ((void *)1); /* return a fake pointer so that it's not NULL */
+    return (char *)1; /* return a fake pointer so that it's not NULL */
 }
 
 
@@ -67,7 +67,7 @@ void osSyncPrintf(const char *fmt, ...)
     int     ans;
     va_list args;
     va_start(args, fmt);
-    ans = _Printf(&proutSyncPrintf, NULL, fmt, args);
+    ans = _Printf(proutSyncPrintf, NULL, fmt, args);
     va_end(args);
 
 }

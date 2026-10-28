@@ -111,7 +111,7 @@ typedef struct s_bound_info
     s32 roomid;
     s32 depth;
     struct bbox2d bbox;
-    void* next;
+    s32 next;
     #endif
 
 

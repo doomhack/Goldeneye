@@ -1465,7 +1465,7 @@ Gfx *explosionRenderPropSmoke(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
     gSPMatrix(gdl++, osVirtualToPhysical((void*)&g_ExplosionScaleMtx), G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW);
 
-    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical((void*)g_ImageBank));
+    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(g_ImageBank));
 
     gSPDisplayList(gdl++, &globalDL_0x000);
 
@@ -1679,7 +1679,7 @@ Gfx *explosionRenderFlyingParticles(Gfx *gdl)
     struct FlyingParticles *particles;
 
     gSPClearGeometryMode(gdl++, G_CULL_BOTH);
-    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical((void*)g_ImageBank));
+    gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(g_ImageBank));
     gSPDisplayList(gdl++, &globalDL_0xa50);
     gDPSetRenderMode(gdl++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
 

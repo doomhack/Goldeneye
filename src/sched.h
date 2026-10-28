@@ -41,6 +41,7 @@ typedef struct OSScTask_s {
 typedef struct SCClient_s {
     struct SCClient_s   *next;
     OSMesgQueue         *msgQ;
+    s32                 halfRate; // only sent every other retrace
 } OSScClient;
 
 //fixme im wrong size, shouldn't copy paste from sample code anyway
@@ -67,12 +68,12 @@ extern f32 g_ViXScales[2];
 extern f32 g_ViYScales[2];
 extern s32 g_ViChangeVideoModes[2];
 extern OSSched os_scheduler;
-extern OSScClient gfxClient[3];
+extern OSScClient gfxClient;
 extern OSViMode g_ViModes[2];
 extern OSViMode *g_ViModePtrs[2];
 
 void permit_stderr(u32 flag);
-void CheckDisplayErrorBuffer(u32 *buffer);
+void CheckDisplayErrorBuffer(u16 *buffer);
 void CheckDisplayErrorBufferEvery16Frames(u32 framecount);
 void osCreateLog(void);
 void __scMain(void *arg);
@@ -86,7 +87,7 @@ void __scYield(OSSched *sc) ;
 void __scAppendList(OSSched *sc, OSScTask *t);
 void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp);
 void osCreateScheduler(OSSched *s, void *stack, u8 mode, u32 numFields);
-void osScAddClient(OSSched *s, OSScClient *c, OSMesgQueue *msgQ, OSScClient *next);
+void osScAddClient(OSSched *s, OSScClient *c, OSMesgQueue *msgQ, s32 halfRate);
 OSMesgQueue *osScGetCmdQ(OSSched *s);
 
 

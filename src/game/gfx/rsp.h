@@ -14,7 +14,7 @@
  */ 
 struct GfxInfo_s {
     OSScTask task;
-    u32 cfb;
+    void *cfb;
     u32 unk5C;
 };
 void rspAllocateBuffers(void);

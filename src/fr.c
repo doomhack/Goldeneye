@@ -93,7 +93,7 @@ u32 g_ViUnblackTimer = 3;
  */
 s32 g_ViNextModeSlot = 0;
 
-f32 g_viProjectionMatrixF[4][4];
+Mtxf g_viProjectionMatrixF;
 Mtx *g_viProjectionMatrix;
 u16 g_viPerspNorm;
 
@@ -413,11 +413,11 @@ void viUpdateMode(void)
 
     if (g_viColorOutputMode != COLORMODE_32BIT)
     {
-        ((struct GfxInfo_s *)g_gfxTaskSettingsList)->cfb = g_ViBackData->framebuf;
+        g_gfxTaskSettingsList->cfb = g_ViBackData->framebuf;
     }
     else
     {
-        ((struct GfxInfo_s *)g_gfxTaskSettingsList)->cfb = cfb_16[0];
+        g_gfxTaskSettingsList->cfb = cfb_16[0];
     }
 
     settings = g_ViBackData;
@@ -555,11 +555,11 @@ void viUpdateMode(void)
 
     if (g_viColorOutputMode != 0)
     {
-        ((struct GfxInfo_s *)g_gfxTaskSettingsList)->cfb = g_ViBackData->framebuf;
+        g_gfxTaskSettingsList->cfb = g_ViBackData->framebuf;
     }
     else
     {
-        ((struct GfxInfo_s *)g_gfxTaskSettingsList)->cfb = cfb_16[0];
+        g_gfxTaskSettingsList->cfb = cfb_16[0];
     }
 
     settings = g_ViBackData;
@@ -638,8 +638,8 @@ Gfx *viSetupCurrentPlayerView(Gfx *gdl)
 
     // Create both a floating-point matrix for the CPU side and a fixed-point matrix for the RSP.
     g_viProjectionMatrix = dynAllocateMatrix();
-    guPerspectiveF(g_viProjectionMatrixF, &g_viPerspNorm, g_ViBackData->fovy, g_ViBackData->aspect, g_ViBackData->znear, g_ViBackData->zfar, 1.0f);
-    guMtxF2L(g_viProjectionMatrixF, g_viProjectionMatrix);
+    guPerspectiveF(g_viProjectionMatrixF.m, &g_viPerspNorm, g_ViBackData->fovy, g_ViBackData->aspect, g_ViBackData->znear, g_ViBackData->zfar, 1.0f);
+    guMtxF2L(g_viProjectionMatrixF.m, g_viProjectionMatrix);
 
     /** 
      * Load g_viProjectionMatrix as the current projection matrix.
@@ -650,7 +650,7 @@ Gfx *viSetupCurrentPlayerView(Gfx *gdl)
 
     // Store the float and non-float projection matrices so we can recall them later instead of having to rebuild them.
     camSetProjectionMtx(g_viProjectionMatrix);
-    camSetProjectionMtxf(g_viProjectionMatrixF);
+    camSetProjectionMtxf(&g_viProjectionMatrixF);
 
     // Normal rendering mode is a 16-bit RGBA image.
     if (g_viColorOutputMode != COLORMODE_32BIT)

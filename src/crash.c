@@ -401,7 +401,7 @@ void crashSetBuffers(u16 *buffer1, u16 *buffer2)
  */
 void crashInitBuffers(void)
 {
-    crashSetBuffers(&cfb_16[0], &cfb_16[1]);
+    crashSetBuffers((u16 *)cfb_16[0], (u16 *)cfb_16[1]);
 }
 
 /**

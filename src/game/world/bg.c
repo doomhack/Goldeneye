@@ -91,7 +91,7 @@ enum GlobalVisOpcode {
 
 extern PortalCache g_BgPortalCache[PORTMAX];
 extern s32 g_BgHeader;
-extern s32 *g_BgVisCommands;
+extern GlobalVisCommand *g_BgVisCommands;
 extern f32 *g_BgRoomValues;
 extern s_bound_info g_BgRoomsDrawn[];
 
@@ -256,10 +256,10 @@ Gfx *bgRenderRoomSecondary(Gfx *gdl, s32 room_index);
 
 Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 width, s32 height);
 
-bool bgIsRoomOnScreen(s32 roomID, struct rectbbox *screenbox);
+bool bgIsRoomOnScreen(s32 roomID, bbox2d *screenbox);
 s32 bgAddVisibleRoom(s32 curroom, s32 unk1, bbox2d *screensize, s32 next);
 void bgUpdateCurrentPlayerScreenMinMax(void);
-void *bgRunVisCommands(s32 *pc);
+void *bgRunVisCommands(GlobalVisCommand *pc);
 void bgDetermineVisibleRooms(void);
 s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *screenbox);
 f32 bgGetPortalThickness(s32 portalnum);
@@ -685,7 +685,7 @@ void bgLoad(LEVEL_INDEX levelid)
         }
         else
         {
-            g_BgVisCommands = (s32 *) BG_SEG_TO_PTR(data, ((s32 *)g_BgHeader)[3]);
+            g_BgVisCommands = (GlobalVisCommand *) BG_SEG_TO_PTR(data, ((s32 *)g_BgHeader)[3]);
  
             if (((s32 *)g_BgHeader)[4] == 0)
             {
@@ -1131,7 +1131,7 @@ void bgResetPortalTable(void)
 }
 
 
-bool bgIsRoomOnScreen(s32 roomID, struct rectbbox *screenbox)
+bool bgIsRoomOnScreen(s32 roomID, bbox2d *screenbox)
 {
     s32 i;
     coord3d projected;
@@ -1179,19 +1179,19 @@ bool bgIsRoomOnScreen(s32 roomID, struct rectbbox *screenbox)
                 count_z++;
             }
 
-            if (screenbox->left <= projected.x) {
+            if (screenbox->min.x <= projected.x) {
                 count_left++;
             }
 
-            if (projected.x <= screenbox->right) {
+            if (projected.x <= screenbox->max.x) {
                 count_right++;
             }
 
-            if (screenbox->up <= projected.y) {
+            if (screenbox->min.y <= projected.y) {
                 count_top++;
             }
 
-            if (projected.y <= screenbox->down) {
+            if (projected.y <= screenbox->max.y) {
                 count_bottom++;
             }
 
@@ -1201,15 +1201,15 @@ bool bgIsRoomOnScreen(s32 roomID, struct rectbbox *screenbox)
                 count_z++;
             }
 
-            if (projected.x <= screenbox->left) {
+            if (projected.x <= screenbox->min.x) {
                 count_left++;
-            } else if (screenbox->right <= projected.x) {
+            } else if (screenbox->max.x <= projected.x) {
                 count_right++;
             }
 
-            if (projected.y <= screenbox->up) {
+            if (projected.y <= screenbox->min.y) {
                 count_top++;
-            } else if (screenbox->down <= projected.y) {
+            } else if (screenbox->max.y <= projected.y) {
                 count_bottom++;
             }
         }
@@ -1329,7 +1329,7 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
     PortalCache *cache;
     s32 j;
     coord3d points[19];
-    coord2d screenpos;
+    coord3d screenpos; // only x/y are written
     bbox2d bounds;
     s32 pointcount;
     s32 onscreencount;
@@ -1371,7 +1371,7 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
                 if (onscreencount == 0)
                 {
                     bounds.min.x = (bounds.max.x = screenpos.x);
-                    bounds.min.y = (bounds.f[1][1] = screenpos.f[1]);
+                    bounds.min.y = (bounds.max.y = screenpos.y);
                 }
                 else
                 {
@@ -1510,7 +1510,7 @@ bg_queued_portal_entry g_BgPortalQueue[BG_PORTAL_QUEUE_LEN];
 bg_portal_data_entry *g_BgPortals;
 s32 g_BgHeader;
 bg_room_data *g_BgRoomFiles;
-s32 *g_BgVisCommands;
+GlobalVisCommand *g_BgVisCommands;
 f32 *g_BgRoomValues;
 
 #ifdef VERSION_EU
@@ -1765,8 +1765,8 @@ Gfx DL_LUT_FIXFOGALPHA3[] = {
 };
 
 Gfx *ptrDynamic_CC_RM_LUT[] = {
-    &DL_LUT_UNKNOWN, &DL_LUT_PRIMARY_ADDFOG, &DL_LUT_BILLBOARD, &DL_LUT_WATER, &DL_LUT_CLOUD,
-    &DL_LUT_SECONDARY_ADDFOG, &DL_LUT_PRIMARY, &DL_LUT_SECONDARY, &DL_LUT_WALLETBOND, &DL_LUT_FIXFOGALPHA3
+    DL_LUT_UNKNOWN, DL_LUT_PRIMARY_ADDFOG, DL_LUT_BILLBOARD, DL_LUT_WATER, DL_LUT_CLOUD,
+    DL_LUT_SECONDARY_ADDFOG, DL_LUT_PRIMARY, DL_LUT_SECONDARY, DL_LUT_WALLETBOND, DL_LUT_FIXFOGALPHA3
 };
 
 
@@ -1803,7 +1803,7 @@ s32 bgGetPortalIndex(s32 portalID)
 u32 bgDecompress(u8* source, u8 *target)
 {
     u8 buffer[0x2100];
-    return rzipInflate(source, target, buffer);
+    return rzipInflate(source, target, (struct huft *)buffer);
 }
 
 
@@ -1829,7 +1829,7 @@ s32 bgLoadRoomVtxData(s32 roomnum, u8 *dst, s32 len)
     * The seemingly unncessary " + g_BgData - g_BgData" likely comes from paired bgdata pointer/offset macros.
     * Adding 0xf1000000 strips the 0x0f000000 segment tag, yielding a file offset.
     */
-    offset = (((u8 *)g_BgRoomFiles[roomnum].pPointTableBin + g_BgData) - g_BgData) + 0xf1000000;
+    offset = (uintptr_t)g_BgRoomFiles[roomnum].pPointTableBin + 0xf1000000;
     fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, dst + (len - alignedsize), offset, alignedsize);
     result = bgDecompress(dst + (len - alignedsize), dst);
 
@@ -1950,7 +1950,7 @@ s32 bgLoadRoomSecondaryGdl(s32 roomnum, u8 *dst, s32 allocsize)
 
     texCopyGdls((Gfx *)dst, (Gfx *)scratch, expanded_size);
 
-    size = texLoadFromGdl((Gfx *)scratch, (Gfx *)expanded_size, (Gfx *)dst, NULL);
+    size = texLoadFromGdl((Gfx *)scratch, expanded_size, (Gfx *)dst, NULL);
 
     if (expanded_size < size) {
         expanded_size = size;
@@ -3252,7 +3252,7 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, b
  
             otherroom = (g_BgPortals[portalnum].connectedRoom1 ^ g_BgPortals[portalnum].connectedRoom2) ^ roomnum;
  
-            if (!bgIsRoomOnScreen(otherroom, (struct rectbbox *) &screenbox))
+            if (!bgIsRoomOnScreen(otherroom, &screenbox))
             {
                 return;
             }
@@ -3382,7 +3382,7 @@ s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s3
  
             otherroom = (g_BgPortals[portalnum].connectedRoom1 ^ g_BgPortals[portalnum].connectedRoom2) ^ roomnum;
  
-            if (!bgIsRoomOnScreen(otherroom, (struct rectbbox *) &screenbox))
+            if (!bgIsRoomOnScreen(otherroom, &screenbox))
             {
                 return value;
             }
@@ -3638,7 +3638,7 @@ GlobalVisCommand *bgParseVisCommands(GlobalVisCommand *cmd, s32 execute)
             case VISOP_ADD_VISIBLE_ROOM:
                 if (execute && !current_visibility)
                 {
-                    if (bgIsRoomOnScreen(cmd[1].arg, (struct rectbbox *)&portalBox.box))
+                    if (bgIsRoomOnScreen(cmd[1].arg, &portalBox.box))
                     {
                         bgAddVisibleRoom(cmd[1].arg, 0, &portalBox.box, 0);
 
@@ -3777,7 +3777,7 @@ PortalCache g_BgPortalCache[PORTMAX];
 
 
 // Something about portals. Void* are structs.
-void *bgRunVisCommands(s32 *pc) 
+void *bgRunVisCommands(GlobalVisCommand *pc)
 {
 
     current_visibility = 0;

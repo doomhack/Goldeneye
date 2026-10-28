@@ -711,7 +711,7 @@ s32 joyGamePakProbe(void)
     return type;
 }
 
-s32 joyGamePakLongRead(u8 address, u8 *buffer, s32 nbytes)
+s32 joyGamePakLongRead(u8 address, void *buffer, s32 nbytes)
 {
     s32 ret;
 
@@ -722,7 +722,7 @@ s32 joyGamePakLongRead(u8 address, u8 *buffer, s32 nbytes)
     return ret;
 }
 
-s32 joyGamePakLongWrite(u8 address, u8 *buffer, s32 nbytes)
+s32 joyGamePakLongWrite(u8 address, void *buffer, s32 nbytes)
 {
     s32 ret;
 

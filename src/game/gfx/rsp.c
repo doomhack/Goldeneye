@@ -18,9 +18,9 @@ u8 g_gfxDramStack[SP_DRAM_STACK_SIZE8];
 
 u8 g_gfxYieldBuf[OS_YIELD_GFX_DATA_SIZE];
 
-s32 g_gfxRdpOutputBufferEnd = 0;
+u8 *g_gfxRdpOutputBufferEnd = NULL;
 
-s32 g_gfxRdpOutputBufferStart = 0;
+u8 *g_gfxRdpOutputBufferStart = NULL;
 
 struct GfxInfo_s g_gfxTaskSettings[2] = 
 {
@@ -233,7 +233,7 @@ void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, s32 unused, OSMesg rspReplyMsg)
     /* reply with this message */
     sctask->msg = rspReplyMsg;
 
-    sctask->framebuffer = (void *) ((struct GfxInfo_s *)g_gfxTaskSettingsList)->cfb;
+    sctask->framebuffer = g_gfxTaskSettingsList->cfb;
 
     osWritebackDCacheAll();
 

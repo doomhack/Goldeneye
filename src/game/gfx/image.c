@@ -231,9 +231,9 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, struc
             return j * 0;
         }
 
-        rzipInflate(g_TexBitsPos, &scratch2, (struct huft *)&scratch);
+        rzipInflate(g_TexBitsPos, scratch2, (struct huft *)scratch);
         imagebytesout = texAlignIndices(scratch2, width, height, format, &dst[totalbytesout]);
-        texBitsInit((s32) rzipGetInputEnd());
+        texBitsInit(rzipGetInputEnd());
 
         if ((explicitLods == 1) && (forcenumimages > 0))
         {
@@ -2322,7 +2322,7 @@ void texLoadFromDisplayList(Gfx *gdl, struct texpool *pool)
         // Look for GBI sequence: fd...... abcd....
         if (bytes[0] == G_SETTIMG && bytes[4] == 0xab && bytes[5] == 0xcd)
         {
-            texLoad((u32 *)((s32)bytes + 4), pool);
+            texLoad((u32 *)(bytes + 4), pool);
         }
 
         bytes += 8;
@@ -2367,7 +2367,7 @@ extern u8 _imagesSegmentRomStart NO_SDATA;
  * z = texture is compressed with zlib
  * l = number of levels of detail within the texture
  */
-void texLoad(s32 *updateword, struct texpool *pool)
+void texLoad(u32 *updateword, struct texpool *pool)
 {
     u8 compbuffer[4000];
     u8 *compptr;
@@ -2404,7 +2404,7 @@ void texLoad(s32 *updateword, struct texpool *pool)
         {
             // Copy the compressed texture to RAM
             romCopy(alignedcompbuffer,
-                    (u32) &_imagesSegmentRomStart + (thisoffset & 0xfffffff8),
+                    &_imagesSegmentRomStart + (thisoffset & 0xfffffff8),
                     ((u32) (nextoffset - thisoffset) + 0x1f) >> 4 << 4);
 
             compptr = (u8 *) alignedcompbuffer + (thisoffset & 7);
@@ -2462,7 +2462,7 @@ void texLoadFromModelFileHeader(ModelFileHeader* header, struct texpool* pool)
     {
         if ((s32)textures[i].TextureID < (s32)MAX_TEXTURES)
         {
-            texLoad(&textures[i], pool);
+            texLoad(&textures[i].TextureID, pool);
         }
     }
 }
@@ -2477,7 +2477,7 @@ void texLoadFromTextureNum(s32 texturenum, struct texpool *pool)
 
 
 /** Starts reading bits at pos (a ROM-loaded buffer address). */
-void texBitsInit(s32 pos) {
+void texBitsInit(u8 *pos) {
     g_TexBitsPos = pos;
     g_TexBitsBuffer = 0;
     g_TexBitsCount = 0;

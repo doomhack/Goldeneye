@@ -37,7 +37,7 @@ typedef struct
 #define FLAGS_HASH 8
 #define FLAGS_ZERO 16
 
-typedef u8 *outfun(u8*,const u8*,size_t);
+typedef char *outfun(char *, const char *, size_t);
 
 int _Printf(outfun prout, char *arg, const char *fmt, va_list args);
 void _Litob(printf_struct *args, u8 type);

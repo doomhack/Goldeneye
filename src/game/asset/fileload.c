@@ -63,7 +63,7 @@ void fileLoadFromRom(u8 *dst, s32 bufferSize, FileEntry *entry, FileInfo *info)
     else
     {
         romCopy(compressed, entry->romAddr, info->romSize);
-        info->loadedSize = rzipInflate(compressed, dst, huftBuf);
+        info->loadedSize = rzipInflate(compressed, dst, (struct huft *)huftBuf);
     }
 }
 
