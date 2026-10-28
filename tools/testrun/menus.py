@@ -7,7 +7,8 @@
 The demos (demos.py) start straight in a level, so they never show the menus. This script
 starts from power-on with a fresh save and presses its way through: title, file select, mode
 select, mission select (Dam), difficulty, the briefing pages, the start of the level, and the
-watch menu's pages. Each step is a screenshot; 'check' prints how many pixels differ from the
+watch menu's pages, with a rumble pak plugged in (the controller pak code runs at boot only
+when a pak is present). Each step is a screenshot; 'check' prints how many pixels differ from the
 baseline and writes OUTDIR/diff-NN.png for each one that does. Garbled text or a hang shows
 up here.
 
@@ -66,7 +67,7 @@ def play(version, outdir):
     rom = f'build/{version}/ge007.{version}.z64'
     cmd = ['xvfb-run', '-a', '-s', '-screen 0 1024x768x24', sys.executable,
            os.path.join(HERE, 'm64run.py'), rom, '--frames', str(FRAMES), '--script', script,
-           '--shots', ','.join(str(f) for f, _, _ in SHOTS), '--outdir', outdir]
+           '--shots', ','.join(str(f) for f, _, _ in SHOTS), '--pak', 'rumble', '--outdir', outdir]
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=1800)
     shots = sorted(f for f in os.listdir(outdir) if f.endswith('.png') and f.startswith('ge007'))
     names = []

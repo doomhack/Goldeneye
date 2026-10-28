@@ -136,6 +136,8 @@ def main():
                          'OUTDIR/state.txt: timer exact coarse, one line per game frame')
     ap.add_argument('--demo', type=int, metavar='N',
                     help='play attract-mode demo N (0-13) and stop when it ends (needs --map)')
+    ap.add_argument('--pak', choices=['none', 'controller', 'rumble'], default='none',
+                    help='what is plugged into each controller (real consoles usually have a pak)')
     ap.add_argument('--dumpram', action='store_true',
                     help='save RDRAM to OUTDIR/end-ram.bin when the run ends')
     ap.add_argument('--readwatch', action='append', default=[], metavar='START:END',
@@ -221,6 +223,7 @@ def main():
         if kind == M64PLUGIN_INPUT:
             inputlib = lib
             lib.ScriptSetPadCount(args.pads)
+            lib.ScriptSetPak({'none': 1, 'controller': 2, 'rumble': 5}[args.pak])
         if core.CoreAttachPlugin(kind, C.c_void_p(lib._handle)) != 0:
             sys.exit(f'attaching {path} failed')
 

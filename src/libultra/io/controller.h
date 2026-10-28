@@ -7,7 +7,10 @@
 #define ARRLEN(x) ((s32)(sizeof(x) / sizeof(x[0])))
 #define CHNL_ERR(format) ((format.rxsize & CHNL_ERR_MASK) >> 4)
 
-typedef struct
+// The PIF RAM image the SI DMAs to and from. It must own whole 16-byte data cache lines: after an
+// SI read, __osSiRawStartDma invalidates the 64 bytes, and a line shared with another variable
+// would write that variable's cached bytes back over the fresh data (real hardware only).
+typedef struct __attribute__((aligned(16)))
 {
     /* 0x0 */ u32 ramarray[15];
     /* 0x3C */ u32 pifstatus;

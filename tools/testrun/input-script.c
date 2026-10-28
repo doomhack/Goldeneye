@@ -16,6 +16,7 @@ typedef union { unsigned int Value; } BUTTONS;
 
 static unsigned int padState[4];
 static int padCount = 1;
+static int pakType = 1; /* mupen's PLUGIN_NONE: no pak in the controller */
 
 /* value = buttons in bits 0-15, stick x in bits 16-23, stick y in bits 24-31 */
 EXPORT void ScriptSetPad(int ctrl, unsigned int value)
@@ -27,6 +28,12 @@ EXPORT void ScriptSetPad(int ctrl, unsigned int value)
 EXPORT void ScriptSetPadCount(int count)
 {
     padCount = count;
+}
+
+/* 1 = no pak, 2 = controller pak, 5 = rumble pak (mupen's PLUGIN_* values) */
+EXPORT void ScriptSetPak(int type)
+{
+    pakType = type;
 }
 
 EXPORT int PluginStartup(void *handle, void *context, void *debugCallback) { return 0; }
@@ -47,7 +54,7 @@ EXPORT void InitiateControllers(CONTROL_INFO info)
     for (int i = 0; i < 4; i++) {
         info.Controls[i].Present = i < padCount;
         info.Controls[i].RawData = 0;
-        info.Controls[i].Plugin = 1; /* PLUGIN_NONE: no controller pak */
+        info.Controls[i].Plugin = pakType;
     }
 }
 
