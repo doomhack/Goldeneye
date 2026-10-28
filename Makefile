@@ -144,8 +144,12 @@ CC := $(TOOLCHAIN)gcc
 # -nostdinc keeps the host's C library headers out; GCC's own freestanding headers are added back.
 # -G 8 puts variables of up to 8 bytes in .sdata/.sbss, which code reaches with one instruction from $gp
 # (see _gp in ge007.ld) instead of a lui + offset pair.
-# The -fno-* flags on the third and fourth lines keep GCC from optimising away decomp-era undefined
-# behaviour (type punning, signed overflow, null and out-of-bounds accesses).
+# The project's C dialect, like the Linux kernel's, defines two things ISO C leaves undefined:
+# -fno-strict-aliasing lets code read memory through a pointer of another type (records, setup
+# data and display lists are punned throughout), and -fwrapv makes signed overflow wrap.
+# Null pointer checks are left to GCC: nothing is mapped at address 0 on the N64, so a null
+# access always faults and GCC may drop checks that come after one.
+# -fno-tree-loop-distribute-patterns stops GCC turning copy/clear loops into memcpy/memset calls.
 # -fno-toplevel-reorder keeps globals in source order: some code still treats neighbouring globals
 # as one array or struct (without it the menu text comes out garbled and the game hangs at file select).
 # -mno-check-zero-division drops the trap GCC puts after every integer divide.
@@ -153,9 +157,8 @@ CC := $(TOOLCHAIN)gcc
 # mixing, mismatched pointer types); they all stay errors.
 # The language is C23 (GNU dialect): bool, true and false are keywords.
 CC_BASEFLAGS := -nostdinc -isystem $(shell $(CC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 8 \
-  -ffreestanding -fno-builtin -fno-common -fplan9-extensions -fno-strict-aliasing -fwrapv -funsigned-char -fno-toplevel-reorder \
-  -fno-delete-null-pointer-checks -fno-isolate-erroneous-paths-dereference -fno-aggressive-loop-optimizations -fno-math-errno \
-  -fno-tree-loop-distribute-patterns -mno-check-zero-division -DTARGET_N64 -MMD -MP \
+  -ffreestanding -fno-common -fplan9-extensions -fno-strict-aliasing -fwrapv -funsigned-char -fno-toplevel-reorder \
+  -fno-math-errno -fno-tree-loop-distribute-patterns -mno-check-zero-division -DTARGET_N64 -MMD -MP \
   -std=gnu23
 # Asset data (and the two boot-time blobs below) is copied out of the object byte for byte, so it
 # must keep every variable in .data, zeros and duplicate constants included, and stay off $gp.

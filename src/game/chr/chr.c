@@ -1494,7 +1494,6 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     s32 i;
 
     chr = NULL;
-    i = 0;
 
     for (i = 0; i < g_NumChrSlots; i++)
     {
@@ -1503,6 +1502,13 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
             chr = &g_ChrSlots[i];
             break;
         }
+    }
+
+    // All chr slots in use: the original wrote through a NULL chr here.
+    if (chr == NULL)
+    {
+        propFree(prop);
+        return NULL;
     }
 
     prop->type = PROP_TYPE_CHR;
