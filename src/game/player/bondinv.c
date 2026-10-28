@@ -1070,7 +1070,7 @@ static char *invCounterOpPillName(ITEM_IDS weaponnum)
     return NULL;
 }
 
-u16 *invGetNameByIndex(s32 index)
+char *invGetNameByIndex(s32 index)
 {
     InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;
@@ -1117,7 +1117,7 @@ u16 *invGetNameByIndex(s32 index)
 
     if (item && invCounterOpPillName(weaponnum))
     {
-        return (u16 *)invCounterOpPillName(weaponnum);
+        return invCounterOpPillName(weaponnum);
     }
 
     return itemGetWatchText(weaponnum);
@@ -1144,7 +1144,7 @@ f32 invGetEquipPosZForIndex(s32 index)
     return itemGetEquipPosZ(invGetWeaponForIndex(index));
 }
 
-u16 *invGetWatchTitle1ForIndex(s32 index)
+char *invGetWatchTitle1ForIndex(s32 index)
 {
     InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;
@@ -1192,7 +1192,7 @@ u16 *invGetWatchTitle1ForIndex(s32 index)
     return itemGetWatchTitle1(weaponnum);
 }
 
-u16 *invGetWatchTitle2ForIndex(s32 index)
+char *invGetWatchTitle2ForIndex(s32 index)
 {
     InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;

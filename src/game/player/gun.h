@@ -310,7 +310,7 @@ f32 gunGetReloadDipDepth(s32 item);
 
 f32 gunGetDualOffset(GUNHAND hand);
 
-u16 *itemGetWatchText(ITEM_IDS item);
+char *itemGetWatchText(ITEM_IDS item);
 
 s32 weaponHasAmmo(ITEM_IDS item);
 
@@ -396,7 +396,7 @@ void gunsInitAnimGroups(void);
 void gunsStopSounds(void);
 void casingsLoadModels(void);
 
-u16 *itemGetChoiceText(ITEM_IDS item);
+char *itemGetChoiceText(ITEM_IDS item);
 s32 statsGetKills(void);
 Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl);
 s32 playerHasCopiedGEKey(void);
@@ -408,8 +408,8 @@ f32 itemGetWatchPosY(ITEM_IDS item);
 f32 itemGetWatchPosZ(ITEM_IDS item);
 f32 itemGetWatchRotX(ITEM_IDS item);
 f32 itemGetWatchRotY(ITEM_IDS item);
-u16 *itemGetWatchTitle1(ITEM_IDS item);
-u16 *itemGetWatchTitle2(ITEM_IDS item);
+char *itemGetWatchTitle1(ITEM_IDS item);
+char *itemGetWatchTitle2(ITEM_IDS item);
 u8 * gunGetHandModelBuffer(GUNHAND hand);
 u32 gunGetHandModelBufferSize(s32 hand);
 ModelFileHeader *gunGetHandModelHeader(GUNHAND hand);

@@ -2588,7 +2588,7 @@ void modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin)
 /**
  * Project rectangle corners to screen
 */
-void projectRectCornersTo2D(struct coord3d *center, struct coord2d *xrange, struct coord2d *yrange, struct coord2d *corner1, struct coord2d *corner2)
+void projectRectCornersTo2D(struct coord3d *center, struct coord2d *xrange, struct coord2d *yrange, bbox2d *screen)
 {
     struct coord3d corner;
     struct coord2d tout;
@@ -2597,25 +2597,25 @@ void projectRectCornersTo2D(struct coord3d *center, struct coord2d *xrange, stru
     corner.f[1] = center->f[1];
     corner.f[2] = center->f[2];
     camViewToScreen(&corner, &tout);
-    corner1->f[0] = tout.f[0];
+    screen->min.x = tout.f[0];
 
     corner.f[0] = xrange->f[1];
     corner.f[1] = center->f[1];
     corner.f[2] = center->f[2];
     camViewToScreen(&corner, &tout);
-    corner2->f[0] = tout.f[0];
+    screen->max.x = tout.f[0];
 
     corner.f[0] = center->f[0];
     corner.f[1] = yrange->f[1];
     corner.f[2] = center->f[2];
     camViewToScreen(&corner, &tout);
-    corner1->f[1] = tout.f[1];
+    screen->min.y = tout.f[1];
 
     corner.f[0] = center->f[0];
     corner.f[1] = yrange->f[0];
     corner.f[2] = center->f[2];
     camViewToScreen(&corner, &tout);
-    corner2->f[1] = tout.f[1];
+    screen->max.y = tout.f[1];
 }
 
 

@@ -9,7 +9,7 @@
 #include "game/asset/fileload.h"
 
 // bss
-s32 g_LangBanks[45];
+u32 *g_LangBanks[45]; // each bank starts with a table of string offsets
 
 
 #if defined(VERSION_US)
@@ -220,7 +220,7 @@ void langInit(void) {
 
 
 	for (i = 0; i < 45; i++) {
-		g_LangBanks[i] = 0;
+		g_LangBanks[i] = NULL;
 	}
     g_LangBanks[LGUN] = fileLoadByNameToPool(g_LangFileNames[LGUN], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
     g_LangBanks[LTITLE] = fileLoadByNameToPool(g_LangFileNames[LTITLE], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
@@ -253,12 +253,12 @@ void langClearBank(s32 textBank) {
  * @param slotID: UniqueID of string (a combination of Bank ID and string index)
  * @return char* string.
  */
-u8 * langGet(s32 slotID)
+char *langGet(s32 slotID)
 {
-    u32 * textbank_ptr = g_LangBanks[slotID >> 10]; /* get the text file bank ID index the text ptr table */
+    u32 *textbank_ptr = g_LangBanks[slotID >> 10]; /* get the text file bank ID index the text ptr table */
     u32 textslot_offset = textbank_ptr[slotID & 0x03FF]; /* load the textbank ptr table then get the slot's offset */
 
     u32 output_slot = textslot_offset; /* add the text slot offset to the base ptr to get the ptr to text file's slot */
     output_slot += (u32)textbank_ptr;
-    return (textslot_offset != 0) ? (u8*)output_slot : NULL;
+    return (textslot_offset != 0) ? (char *)output_slot : NULL;
 }

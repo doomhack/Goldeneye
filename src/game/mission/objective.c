@@ -66,9 +66,9 @@ void tagAdd(struct TagObjectRecord *tag)
     g_Tags = tag;
 }
 
-void briefingTextAdd(struct setup_objective_text *text)
+void briefingTextAdd(struct watchMenuObjectiveText *text)
 {
-    text->next = g_BriefingTexts;
+    text->nextentry = g_BriefingTexts;
     g_BriefingTexts = text;
 }
 
@@ -108,7 +108,7 @@ void objectiveAddPicture(struct criteria_picture *criteria)
 struct objective_entry * g_Objectives[OBJECTIVES_MAX];
 OBJECTIVESTATUS         g_ObjectiveStatuses[OBJECTIVES_MAX]; //This is an array of 10 OBJECTIVESTATUS,
 
-u32 *g_Tags;
+TagObjectRecord *g_Tags;
 struct watchMenuObjectiveText *g_BriefingTexts;
 struct criteria_roomentered *g_RoomEnteredCriteria;
 struct criteria_deposit *g_DepositCriteria;
@@ -208,7 +208,7 @@ s32 objectiveGetCount(void)
 
 
 
-u8 * objectiveGetText(int objectiveIndex)
+char *objectiveGetText(int objectiveIndex)
 {
     
     if ((objectiveIndex < 10) && (g_Objectives[objectiveIndex] != 0)) {
@@ -253,14 +253,14 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
 
     if (objectiveNum < 10)
     {
-        if (!&g_Objectives[objectiveNum]->id)
+        if (g_Objectives[objectiveNum] == NULL)
         {
             status = g_ObjectiveStatuses[objectiveNum];
         }
         else
         {
             // for each objective in objectives
-            for (objective = &g_Objectives[objectiveNum]->id; objective->type != PROPDEF_OBJECTIVE_END; objective = sizepropdef(objective) + (PropDefHeaderRecord *)objective)
+            for (objective = (MissionObjectiveRecord *)g_Objectives[objectiveNum]; objective->type != PROPDEF_OBJECTIVE_END; objective = (MissionObjectiveRecord *)((u32 *)objective + sizepropdef((PropDefHeaderRecord *)objective)))
             {
                 {
                     currentstatus = OBJECTIVESTATUS_COMPLETE;
@@ -427,18 +427,18 @@ void objectivesTickStatusMessages(void)
         if (g_ObjectiveStatuses[i] != status) {
             g_ObjectiveStatuses[i] = status;
             if (objectiveGetDifficulty(i) <= lvGetDifficulty()) {
-                sprintf(&buffer, "%s %c: ", langGet(getStringID(LMISC, MISC_STR_2C_OBJECTIVE)), availableindex + 'a');
+                sprintf(buffer, "%s %c: ", langGet(getStringID(LMISC, MISC_STR_2C_OBJECTIVE)), availableindex + 'a');
                 if (status == OBJECTIVESTATUS_COMPLETE)
                 {
-                    strcat(&buffer, langGet(getStringID(LMISC, MISC_STR_2D_COMPLETED_LF)));
+                    strcat(buffer, langGet(getStringID(LMISC, MISC_STR_2D_COMPLETED_LF)));
                 }
                 else if (status == OBJECTIVESTATUS_INCOMPLETE)
                 {
-                    strcat(&buffer, langGet(getStringID(LMISC, MISC_STR_2E_INCOMPLETE_LF)));
+                    strcat(buffer, langGet(getStringID(LMISC, MISC_STR_2E_INCOMPLETE_LF)));
                 }
                 else if (status == OBJECTIVESTATUS_FAILED)
                 {
-                    strcat(&buffer, langGet(getStringID(LMISC, MISC_STR_2F_FAILED_LF)));
+                    strcat(buffer, langGet(getStringID(LMISC, MISC_STR_2F_FAILED_LF)));
                 }
                 if (g_CoopMode)
                 {
@@ -450,9 +450,9 @@ void objectivesTickStatusMessages(void)
                     {
                         playerSetCurrent(p);
 #ifdef VERSION_US
-                        hudmsgBottomShow(&buffer);
+                        hudmsgBottomShow(buffer);
 #else
-                        hudmsgBottomShowText(&buffer);
+                        hudmsgBottomShowText(buffer);
 #endif
                     }
 
@@ -461,9 +461,9 @@ void objectivesTickStatusMessages(void)
                 else
                 {
 #ifdef VERSION_US
-                    hudmsgBottomShow(&buffer);
+                    hudmsgBottomShow(buffer);
 #else
-                    hudmsgBottomShowText(&buffer);
+                    hudmsgBottomShowText(buffer);
 #endif
                 }
             }
@@ -562,7 +562,7 @@ void objectivesCheckPicture(void)
     struct coord3d viewPos;
     struct coord2d xExtent;
     struct coord2d yExtent;
-    struct rectbbox screenRect;
+    bbox2d screenRect;
     struct criteria_picture *criteria;
 
     criteria = g_PictureCriteria;
@@ -582,17 +582,17 @@ void objectivesCheckPicture(void)
                     && (objIsHealthy(target_object) != 0)
                     && (objGetOnscreenRenderBounds(target_object->prop, &viewPos, &xExtent, &yExtent) != 0))
                 {
-                    projectRectCornersTo2D(&viewPos, &xExtent, &yExtent, &screenRect.right, &screenRect.left);
+                    projectRectCornersTo2D(&viewPos, &xExtent, &yExtent, &screenRect);
                     
-                    if (camGetScreenLeft() < screenRect.right)
+                    if (camGetScreenLeft() < screenRect.min.x)
                     {
-                        if ((screenRect.right < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenLeft() < screenRect.left))
+                        if ((screenRect.min.x < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenLeft() < screenRect.max.x))
                         {
-                            if ((screenRect.left < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenTop() < screenRect.down))
+                            if ((screenRect.max.x < (camGetScreenLeft() + camGetScreenWidth())) && (camGetScreenTop() < screenRect.min.y))
                             {
-                                if ((screenRect.down < (camGetScreenTop() + camGetScreenHeight())) && (camGetScreenTop() < screenRect.up))
+                                if ((screenRect.min.y < (camGetScreenTop() + camGetScreenHeight())) && (camGetScreenTop() < screenRect.max.y))
                                 {
-                                    if (screenRect.up < (camGetScreenTop() + camGetScreenHeight()))
+                                    if (screenRect.max.y < (camGetScreenTop() + camGetScreenHeight()))
                                     {
                                         criteria->flag = 1;
                                     }

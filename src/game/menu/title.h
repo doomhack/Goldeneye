@@ -5,7 +5,7 @@
 #include "ultra64.h"
 #include <ultra64.h>
 
-extern s32 g_TitleBarrelVerts;
+extern Vtx *g_TitleBarrelVerts;
 extern Gfx *g_TitleBarrelGfx;
 extern Mtx *g_TitleMtxRareLogo0;
 extern Mtx *g_TitleMtxBarrel0;
@@ -19,9 +19,9 @@ extern f32 y;
 extern f32 titleTransitionX;
 extern f32 titleTransitionY;
 extern s16 g_TitleBarrelAngle;
-extern s32 g_TitleBackdropPacked;
-extern s32 g_TitleBackdrop;
-extern s32 g_TitleRareLogoData;
+extern u8 *g_TitleBackdropPacked;
+extern u8 *g_TitleBackdrop;
+extern u8 *g_TitleRareLogoData;
 extern s32 g_TitleTimer;
 
 extern u32 g_TitleMtxIndex;
@@ -39,7 +39,7 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize);
 s32 titleIsGunbarrelDone(void);
 s32 titleIsRareIntroDone(void);
 void titleLoadBackdrop(u8 **addr, s32 *size);
-void titleLoadRareLogo(s32 address, s32 size);
+void titleLoadRareLogo(u8 *address, s32 size);
 Gfx *titleRenderGunbarrel (Gfx *gdl);
 Gfx *titleRenderRareIntro(Gfx *gdl);
 

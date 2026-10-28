@@ -227,7 +227,6 @@ Gfx *watchMenuRenderBackgroundZoom(Gfx *gdl, Mtx *mtx);
 Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish);
 void watchMenuOptionSet(u32 *option, u32 value);
 void watchMenuAdjustVolume(u16* outVolume);
-Gfx *watchRenderQuad(Gfx *gdl, s32 *vtx);
 void watchMenuMakeSliderVerts(struct WatchVertex *verts, f32 fill_amount, s32 transition_width);
 void watchMenuSpinController(s8 contpadnum, s32 *counter, f32 *value, f32 *step);
 Gfx *watchMenuRenderDualControlLabels(Gfx *gdl);
@@ -1728,7 +1727,7 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish)
     if (g_WatchBackgroundGreen < 0xE0)
     {
         // Create the thin green scanline that moves up the screen while the watch does static.
-        watchMenuMakeScanlineVerts(g_CurrentPlayer->watchStaticVtx);
+        watchMenuMakeScanlineVerts((Vtx *)g_CurrentPlayer->watchStaticVtx->vtx); // same layout as 4 Vtx
 
         gDPSetRenderMode(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
         gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchStaticGdl));
@@ -1757,9 +1756,9 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
 
     struct font *pFontFile;
     struct fontchar *pFontChars;
-    s32 titleText;
-    s32 confirmText;
-    s32 cancelText;
+    char *titleText;
+    char *confirmText;
+    char *cancelText;
 
     pFontFile = g_FontBankGothic;
     pFontChars = g_FontBankGothicChars;
@@ -1829,8 +1828,8 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
 
 Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
 {
-    s32 txtptr_1;
-    s32 txtptr_2;
+    char *txtptr_1;
+    char *txtptr_2;
     s32 x;
     s32 y;
     s32 height;
@@ -1880,7 +1879,7 @@ Gfx *watchMenuRenderNothing(Gfx *gdl) {
 
 Gfx *watchMenuRenderVersion(Gfx *gdl)
 {
-    s32 txtptr;
+    char *txtptr;
     s32 x;
     s32 y;
     s32 height;
@@ -2063,7 +2062,7 @@ typedef struct GunModelFileRecord {
 } GunModelFileRecord;
 #endif
 extern GunModelFileRecord gitem_structs[];
-extern u16 *invGetNameByIndex(s32 index);
+extern char *invGetNameByIndex(s32 index);
 
 
 Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
@@ -2377,13 +2376,13 @@ Gfx *watchMenuRenderFxVolume(Gfx *gdl)
     cmd = gdl++;
     gDPSetRenderMode(cmd, G_RM_XLU_SURF, G_RM_XLU_SURF2);
 
-    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx1));
+    gdl = watchRenderQuad(gdl, vtx1);
     vtx = watchMakeRectVerts(vtx1, 0, 0, 600, 20, -299, -205);
 
-    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx));
+    gdl = watchRenderQuad(gdl, vtx);
     vtx = watchMakeRectVerts(vtx, 0, 0, 600, 20, -299, -205);
 
-    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx));
+    gdl = watchRenderQuad(gdl, vtx);
     watchMakeRectVerts(vtx, 0, 0, 600, 20, -299, -205);
 
     watchMenuMakeSliderVerts(vtx1, fvolume, 30);
@@ -2424,14 +2423,14 @@ Gfx *watchMenuRenderMusicVolume(Gfx *gdl)
     cmd = gdl++;
     gDPSetRenderMode(cmd, G_RM_XLU_SURF, G_RM_XLU_SURF2);
 
-    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx1));
+    gdl = watchRenderQuad(gdl, vtx1);
     vtx = watchMakeRectVerts(vtx1, 0, 0, 600, 20, -299, -275);
 
 
-    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx));
+    gdl = watchRenderQuad(gdl, vtx);
     vtx = watchMakeRectVerts(vtx, 0, 0, 600, 20, -299, -275);
 
-    gdl = watchRenderQuad(gdl, OS_K0_TO_PHYSICAL(vtx));
+    gdl = watchRenderQuad(gdl, vtx);
     watchMakeRectVerts(vtx, 0, 0, 600, 20, -299, -275);
 
     watchMenuMakeSliderVerts(vtx1, fvolume, 30);
@@ -2851,7 +2850,7 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl)
 
 Gfx *watchMenuRenderDualControlLabels(Gfx *gdl)
 {
-    s32 textptr_aux;
+    char *textptr_aux;
 
     gdl = textSetupDraw(gdl);
 
@@ -2969,7 +2968,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
     u16 perspNorm;
     Mtxf lookat1;
     Mtxf lookat2;
-    void *watchTable;
+    WatchContButtonPositions *watchTable;
     s32 green;
     s8 contpadnum0;
     s8 contpadnum1;
@@ -3041,7 +3040,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
     }
     else
     {
-        gdl = watchRenderControllerOpaque(gdl, &finalmtx, 1, (s32) watchTable, &contpadnum0);
+        gdl = watchRenderControllerOpaque(gdl, &finalmtx, 1, watchTable, &contpadnum0);
     }
 
     if (optionsIsDualControlStyle())
@@ -3092,7 +3091,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
         }
         else
         {
-            gdl = watchRenderControllerOpaque(gdl, &finalmtx, 1, (s32) (&table2), &contpadnum1);
+            gdl = watchRenderControllerOpaque(gdl, &finalmtx, 1, &table2, &contpadnum1);
         }
     }
 
@@ -3126,7 +3125,7 @@ void watchMenuResetAbort(void) {
 
 Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *mtx) {
     s32 colour;
-    u16 *textptr;
+    char *textptr;
     s32 x;
     s32 y;
     s32 width;
@@ -3406,7 +3405,7 @@ Gfx *watchMenuRenderOptionRows(Gfx *gdl)
 
 Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *mtx) {
     s32 colour;
-    u16 *textptr;
+    char *textptr;
     s32 x;
     s32 y;
     s32 width;

@@ -3894,13 +3894,6 @@ struct gun_trigger_state
     s32 triggerOn[2]; // 0 = weapon trigger not held, 1 = weapon trigger held
 };
 
-struct setup_objective_text {
-    s32 unk00;
-    s32 unk04;
-    s32 unk08;
-    struct setup_objective_text *next;
-};
-
 /* matches Perfect Dark */
 struct criteria_roomentered {
     u32 unk00;

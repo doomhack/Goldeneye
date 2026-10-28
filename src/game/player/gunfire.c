@@ -4077,25 +4077,25 @@ f32 itemGetWatchFov(s32 unk) {
 }
 
 
-u16 *itemGetWatchTitle1(ITEM_IDS item)
+char *itemGetWatchTitle1(ITEM_IDS item)
 {
   return langGet(gitem_structs[item].upper_watch_text);
 }
 
 
-u16 *itemGetWatchTitle2(ITEM_IDS item)
+char *itemGetWatchTitle2(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].lower_watch_text);
 }
 
 
-u16 *itemGetWatchText(ITEM_IDS item)
+char *itemGetWatchText(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].watch_equipment_text);
 }
 
 
-u16 *itemGetChoiceText(ITEM_IDS item)
+char *itemGetChoiceText(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].weapon_of_choice_text);
 }

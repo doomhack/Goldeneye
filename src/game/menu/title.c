@@ -38,7 +38,7 @@ extern signed short sins(unsigned short x);
 
 
 // bss
-s32 g_TitleBarrelVerts;
+Vtx *g_TitleBarrelVerts;
 Gfx *g_TitleBarrelGfx;
 Mtx *g_TitleMtxRareLogo0;
 Mtx *g_TitleMtxBarrel0;
@@ -52,9 +52,9 @@ f32 g_TitleY;
 f32 titleTransitionX;
 f32 titleTransitionY;
 s16 g_TitleBarrelAngle;
-s32 g_TitleBackdropPacked;
-s32 g_TitleBackdrop;
-s32 g_TitleRareLogoData;
+u8 *g_TitleBackdropPacked;
+u8 *g_TitleBackdrop;
+u8 *g_TitleRareLogoData;
 
 s32 g_TitleTimer;
 
@@ -133,7 +133,7 @@ Gfx *titleRenderFolderMenuBackground(Gfx *gdl, s32 xOffset, struct FolderSelectC
     gDPSetTextureFilter(gdl++, G_TF_POINT);
     gDPPipeSync(gdl++);
 
-    return titleRenderFolderMenuBackgroundLines(gdl, OS_K0_TO_PHYSICAL(g_TitleBackdrop), xOffset, topColour, bottomColour);
+    return titleRenderFolderMenuBackgroundLines(gdl, (u8 *)OS_K0_TO_PHYSICAL(g_TitleBackdrop), xOffset, topColour, bottomColour);
 }
 
 
@@ -347,7 +347,7 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 unused1, s32 unused2, s32 cameraZ, s32 br
 extern void *_rarewarelogoSegmentRomStart NO_SDATA;
 extern void *_rarewarelogoSegmentStart NO_SDATA;
 extern void *_rarewarelogoSegmentEnd NO_SDATA;
-void titleLoadRareLogo(s32 address, s32 size) {
+void titleLoadRareLogo(u8 *address, s32 size) {
     g_TitleStage = 0;
     g_TitleX = 880.0f;
     g_TitleRareLogoAngle = -40.0f;
@@ -417,7 +417,7 @@ void titleLoadBackdrop(u8 **addr, s32 *size) {
     *size -= 0x40400;
     *addr += 0x40400;
     g_TitleBackdropPacked = *addr;
-    romCopy(g_TitleBackdropPacked, (void *)(s32)&g_TitleBackdropRle, ALIGN64_V2(((u32)&g_TitleBackdropRleEnd - (u32)&g_TitleBackdropRle)));
+    romCopy(g_TitleBackdropPacked, &g_TitleBackdropRle, ALIGN64_V2(((u32)&g_TitleBackdropRleEnd - (u32)&g_TitleBackdropRle)));
     rleExpand8Bit(g_TitleBackdropPacked, g_TitleBackdrop);
 }
 
@@ -439,18 +439,18 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     titleTransitionX = -100.0f;
     titleTransitionY = 482.0f;
     g_TitleBarrelAngle = 0x42;
-    g_TitleBarrelVerts = gfxBuffer;
+    g_TitleBarrelVerts = (Vtx *)gfxBuffer;
     bufferSize -= 0x200;
     gfxBuffer += 0x200;
     
-    titleMakeBarrelHoleVerts(g_TitleBarrelVerts, 0x1E);
+    titleMakeBarrelHoleVerts(&g_TitleBarrelVerts->v, 0x1E);
     
     g_TitleBarrelGfx = (Gfx*)gfxBuffer;
     bufferSize -= 0x100;
     gfxBuffer += 0x100;
     
-    titleMakeBarrelHoleGfx(g_TitleBarrelGfx, g_TitleBarrelVerts + 0x80000000, 0x1E);
-    titleLoadBackdrop((u8 **)&gfxBuffer, &bufferSize);
+    titleMakeBarrelHoleGfx(g_TitleBarrelGfx, (Vtx *)OS_K0_TO_PHYSICAL(g_TitleBarrelVerts), 0x1E);
+    titleLoadBackdrop(&gfxBuffer, &bufferSize);
 
     // struct copy
     rootpos = (struct coord3d){0};

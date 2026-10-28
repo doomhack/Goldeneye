@@ -805,8 +805,8 @@ struct player
   s16 registeredroom;
   f32 bodyAimPitch; /* multiplayer body: aim angles towards the crosshair target */
   f32 bodyAimYaw;
-  s32 ptr_text_first_mp_award;
-  s32 ptr_text_second_mp_award;
+  char *firstAwardText;
+  char *secondAwardText;
   coord3d bodyHandPos[2]; /* multiplayer body: where each gun is, beams start there */
   s32 bodyHandPosTick[2]; /* g_LvTickCount when bodyHandPos was last found */
   s32 cur_item_weapon_getname;
