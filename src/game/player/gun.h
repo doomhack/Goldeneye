@@ -336,9 +336,9 @@ u16 weaponGetSound(ITEM_IDS item);
 u8 weaponGetSoundRate(ITEM_IDS item);
 
 void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_index);
-void shotPlayHitSound(enum ITEM_IDS item, coord3d* arg1, s32 texture_index);
-void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos,  StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *arg5,  PropRecord *owner);
-void beamCreate(struct BeamRecord *arg0, ITEM_IDS item, coord3d *arg2, coord3d *arg3);
+void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index);
+void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos,  StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *tumble,  PropRecord *owner);
+void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, coord3d *to);
 void gunGetAimRay(coord3d *zeropos, coord3d *vec);
 
 void statsAddHit(ITEM_IDS item, SHOT_REGISTER shot_register);
@@ -348,13 +348,13 @@ void         gunClearHandModel(GUNHAND hand);
 void gunUnequip(enum GUNHAND hand, enum ITEM_IDS weapid);
 s32          ammoGetTotal(AMMOTYPE ammotype);
 s32          statsGetCivilianKills(void);
-s32 gunHandModelIsEmpty(enum GUNHAND arg0);
+s32 gunHandModelIsEmpty(enum GUNHAND hand);
 void gunFreeRocket(enum GUNHAND hand);
 void gunSetTracerTarget(coord3d* pos);
 
 void gunCalcBlend(enum GUNHAND handnum);
-void gunUpdateSway(f32 breathing, f32 arg1, f32 speed_verta, f32 speed_theta);
-void gunSetPullback(f32 param_1);
+void gunUpdateSway(f32 breathing, f32 maxspeed, f32 speed_verta, f32 speed_theta);
+void gunSetPullback(f32 angle);
 
 s32 statsGetHits(SHOT_REGISTER shot_register);
 void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle);
@@ -384,7 +384,7 @@ void beamTick(BeamRecord* beam);
 Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions* buttonpositions, s8* contpadnum);
 Gfx *watchRenderControllerOpaque(Gfx *gdl, Mtxf *basemtx, bool animatebuttons, WatchContButtonPositions *buttonpositions, s8 *contpadnum);
 
-Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 arg3, s32 arg4);
+Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour);
 void casingsRender(Gfx **gdl);
 void gunRenderHands(Gfx **gdl);
 Gfx *hudRenderAmmo(Gfx *gdl);

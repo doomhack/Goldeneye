@@ -199,7 +199,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
     coord3d upvel;
     f32 abs_anim_speed;
     ModelRenderData renderData;
-    Mtxf sp40;
+    Mtxf basemtx;
     coord3d offset;
     u32 isMergable;
 
@@ -248,9 +248,9 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
     modelSetAnimMergingEnabled((s32) isMergable);
 
     modelCalcPosition(&g_CurrentPlayer->model);
-    mtx4LoadIdentity(&sp40);
+    mtx4LoadIdentity(&basemtx);
 
-    renderData.basemtx = &sp40;
+    renderData.basemtx = &basemtx;
     renderData.mtxlist = &g_CurrentPlayer->bondheadmatrices[0];
 
     modelCalcMatrices(&renderData, &g_CurrentPlayer->model);
@@ -489,7 +489,7 @@ f32 bheadGetBreathingValue(void)
 
 // forward declarations
 
-void bheadSumRootMotion(void *anim, s32 arg1, s32 arg2, s32 *arg3);
+void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum);
 
 // end forward declarations
 
@@ -503,21 +503,21 @@ void bheadSumRootMotion(void *anim, s32 arg1, s32 arg2, s32 *arg3);
  * @param arg2:
  * @param arg3: unknown type.
 */
-void bheadSumRootMotion(void *anim, s32 arg1, s32 arg2, s32 *arg3)
+void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum)
 {
     // todo: is this a struct? see: animReadRootMotion16
-    s16 sp40[6];
+    s16 motion[6];
 
-    arg3[0] = 0;
-    arg3[1] = 0;
-    arg3[2] = 0;
+    sum[0] = 0;
+    sum[1] = 0;
+    sum[2] = 0;
 
-    for (; arg1<arg2; arg1++)
+    for (; startframe<endframe; startframe++)
     {
-        animReadRootMotion16(0, 0, &skeleton_guard, anim, arg1, &sp40[2]);
-        arg3[0] += sp40[2];
-        arg3[1] += sp40[3];
-        arg3[2] += sp40[4];
+        animReadRootMotion16(0, 0, &skeleton_guard, anim, startframe, &motion[2]);
+        sum[0] += motion[2];
+        sum[1] += motion[3];
+        sum[2] += motion[4];
     }
 }
 
@@ -537,7 +537,7 @@ void bheadSumRootMotion(void *anim, s32 arg1, s32 arg2, s32 *arg3)
 void bheadInit(void)
 {
     s32 i;
-    s32 spD0[3];
+    s32 motion[3];
     ModelRenderData renderData;
     Mtxf identityMatrix;
 
@@ -607,9 +607,9 @@ void bheadInit(void)
             (void*)((s32)g_BondMoveAnimationSetup[i].anim_id + (s32)&g_AnimTable->data),
             (s32)g_BondMoveAnimationSetup[i].loopframe,
             (s32)g_BondMoveAnimationSetup[i].endframe,
-            &spD0);
+            &motion);
 
-        g_BondMoveAnimationSetup[i].speedMultiplier = (f32) (((f32) spD0[2] * IDO_POINT_ONE) / (g_BondMoveAnimationSetup[i].endframe - g_BondMoveAnimationSetup[i].loopframe));
+        g_BondMoveAnimationSetup[i].speedMultiplier = (f32) (((f32) motion[2] * IDO_POINT_ONE) / (g_BondMoveAnimationSetup[i].endframe - g_BondMoveAnimationSetup[i].loopframe));
     }
 
     renderData = (ModelRenderData){NULL, TRUE, 3};
