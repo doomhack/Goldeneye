@@ -1154,13 +1154,13 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 
 #if defined(BUGFIX_R1)
 #define HUDMESSAGEBOTTOM hudmsgBottomShowText
-void hudmsgBottomShow(char *string, s32 font, s32 arg2);
+void hudmsgBottomShow(char *string, s32 font, s32 font1);
 void hudmsgBottomShowText(char *string);
 #else
 // VERSION_US
 #define HUDMESSAGEBOTTOM hudmsgBottomShow
 void hudmsgBottomShow(char *string);
-void hudmsgSetFonts(s32 arg0, s32 arg1);
+void hudmsgSetFonts(s32 font2, s32 font1);
 #endif
 
 Gfx * camSetupFrame(Gfx *gdl);
@@ -1172,8 +1172,8 @@ s32 lvGetMissionTime60(void);
 void playerLoadBody(void);
 void playerUpdateAutoAimY(struct PropRecord *autoaim_target, f32 auto_aim_y);
 void playerUpdateAutoAimX(struct PropRecord *autoaim_target, f32 auto_aim_x);
-void tankGetTurretDir(coord3d *arg0);
-f32 playerGetFloorY(struct StandTile *arg0, f32 arg1, f32 arg2);
+void tankGetTurretDir(coord3d *dir);
+f32 playerGetFloorY(struct StandTile *tile, f32 x, f32 z);
 void playerUpdateCollisionBounds(void);
 void coopFindPartnerSpawn(struct coord3d *pos, StandTile **stan, f32 look_angle);
 void coopRespawnPlayer(void);
@@ -1194,7 +1194,7 @@ void coopTankEndPlayer(s32 moved);
 extern s32 g_CoopCinemaPlayer;
 void coopUpdateSoloView(void);
 f32 playerGetEyeHeight(struct player *player);
-void playerGetCollisionSize(PropRecord* arg0, f32 *collision_radius, f32 *height, f32 *always_30);
+void playerGetCollisionSize(PropRecord* prop, f32 *collision_radius, f32 *height, f32 *always_30);
 void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset);
 void currentPlayerSetFadeColour(s32 r, s32 g, s32 b, f32 frac);
 void currentPlayerSetFadeFrac(f32 maxfadetime, f32 frac);
@@ -1206,8 +1206,8 @@ int playerIsShowingHealth(void);
 u8 playerGetRoom(void);
 coord3d *playerGetPos(void);
 void playerSetMoving(PropRecord *prop, s32 flag);
-void playerGetPropBounds(PropRecord *arg0, struct rect4f **field_B0, s32 *arg2, f32 *height_related, f32 *collision);
-void currentPlayerAddArmor(f32 arg0);
+void playerGetPropBounds(PropRecord *prop, struct rect4f **field_B0, s32 *numpoints, f32 *height_related, f32 *collision);
+void currentPlayerAddArmor(f32 armour);
 void hudmsgResetIntroText(void);
 void hudmsgsSetOn(s32 flag);
 void hudmsgsSetOff(s32 flags);
@@ -1217,15 +1217,15 @@ void camMtxsToRoomSpace(Mtxf *matrices, s32 count);
 void currentPlayerStartChrFade(f32 duration60, f32 targetfrac);
 s32 playerGetVisibleToGuards(void);
 u8 playerGetInvincible(void);
-void playerSetInvincible(u32 arg0);
-void playerSetVisibleToGuards(s32 param_1);
+void playerSetInvincible(u32 invincible);
+void playerSetVisibleToGuards(s32 visible);
 Mtxf *camGetPrevViewToWorldMtxf(void);
 void coopViewsBegin(void);
 void coopViewsEnd(s32 lastplayer);
 f32 bondviewGetPlayerYawRadians(void);
 Mtxf *camGetWorldToScreenMtxf(void);
 void camScreenToViewDir(struct coord2d *in, coord3d *out, f32 value);
-void mtxsF2L(RenderPosView *arg0, s32 arg1);
+void mtxsF2L(RenderPosView *views, s32 count);
 LookAt *camGetLookAt(void);
 Mtx *camGetProjViewMtx(void);
 void camSetProjViewMtx(Mtx *matrix);
@@ -1233,13 +1233,13 @@ void camSetLookAt(LookAt *lookat);
 void camSetWorldToViewMtx(Mtx *matrix);
 Mtx *camGetWorldToViewMtx(void);
 Mtx *camGetProjectionMtx(void);
-Gfx *playerRenderProp(PropRecord *arg0, Gfx *arg1, s32 arg2);
+Gfx *playerRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
 f32 camGetLodScaleZ(void);
 f32 playerGetBreathing(void);
-void     hudmsgTopClearFlag(int param_1);
+void     hudmsgTopClearFlag(int flag);
 
 void     hudmsgTopSetFlag(PLAYERFLAG flag);
-void     playerSetCameraMode(s32 arg0);
+void     playerSetCameraMode(s32 mode);
 bool     playerIsInTank(void);
 void     hudmsgTopShow(char* string);
 void     playerSurroundWithExplosions(int delay);
@@ -1256,6 +1256,6 @@ void camViewToScreen(coord3d *in, coord2d *out);
 void playerRemoveBody(void);
 void currentPlayerAdjustFade(f32 maxfadetime, s32 r, s32 g, s32 b, f32 frac);
 void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex);
-void camSetPosScale(f32 param_1);
+void camSetPosScale(f32 scale);
 
 #endif

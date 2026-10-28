@@ -705,10 +705,10 @@ void playerSetAspect(f32 aspect) {
 }
 
 
-PROP weaponGetChrModel(ITEM_IDS arg0)
+PROP weaponGetChrModel(ITEM_IDS item)
 {
     PROP ret = -1;
-    switch (arg0)
+    switch (item)
     {
         case ITEM_KNIFE:         ret = PROP_CHRKNIFE;         break; /* weapon_multi_hunting_knife */
         case ITEM_WPPK:          ret = PROP_CHRWPPK;          break; /* weapon_multi_pp7 */

@@ -398,8 +398,8 @@ extern struct ModelSkeleton skeleton_gun_kf7;
 
 // forward declarations
 
-void gunGetShotDir(coord3d* arg0, coord3d* result, enum GUNHAND arg2);
-void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *arg2, coord3d *velocity, Mtxf *arg4);
+void gunGetShotDir(coord3d* origin, coord3d* result, enum GUNHAND hand);
+void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *mtx, coord3d *velocity, Mtxf *tumble);
 s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
 void gunAnalyzeGEKey(void);
 void gunOpenWeaponCase(void);
@@ -525,29 +525,29 @@ WeaponStats *weaponGetStats(ITEM_IDS item)
 
 void gunCalcBlend(enum GUNHAND handnum)
 {
-    s32 sp60[2];
-    s32 sp58[2];
+    s32 nextpos[2];
+    s32 curpos[2];
     f32 mult = weaponGetStats(gunGetWeapon(handnum))->Sway;
 
-    sp60[handnum] = (g_CurrentPlayer->hands[handnum].curblendpos + 2) % 4;
-    sp58[handnum] = (g_CurrentPlayer->hands[handnum].curblendpos + 1) % 4;
-    g_CurrentPlayer->hands[handnum].curblendpos = sp58[handnum];
+    nextpos[handnum] = (g_CurrentPlayer->hands[handnum].curblendpos + 2) % 4;
+    curpos[handnum] = (g_CurrentPlayer->hands[handnum].curblendpos + 1) % 4;
+    g_CurrentPlayer->hands[handnum].curblendpos = curpos[handnum];
 
-    g_CurrentPlayer->hands[handnum].blendlook[sp60[handnum]].x = (RANDOMFRAC() - 0.5f) * 0.08f * mult;
-    g_CurrentPlayer->hands[handnum].blendlook[sp60[handnum]].y = (RANDOMFRAC() - 0.5f) * 0.1f * mult;
-    g_CurrentPlayer->hands[handnum].blendlook[sp60[handnum]].z = -1;
+    g_CurrentPlayer->hands[handnum].blendlook[nextpos[handnum]].x = (RANDOMFRAC() - 0.5f) * 0.08f * mult;
+    g_CurrentPlayer->hands[handnum].blendlook[nextpos[handnum]].y = (RANDOMFRAC() - 0.5f) * 0.1f * mult;
+    g_CurrentPlayer->hands[handnum].blendlook[nextpos[handnum]].z = -1;
 
-    g_CurrentPlayer->hands[handnum].blendup[sp60[handnum]].x = (RANDOMFRAC() - 0.5f) * 0.1f * mult;
-    g_CurrentPlayer->hands[handnum].blendup[sp60[handnum]].y = 1;
-    g_CurrentPlayer->hands[handnum].blendup[sp60[handnum]].z = (RANDOMFRAC() - 0.5f) * 0.1f * mult;
+    g_CurrentPlayer->hands[handnum].blendup[nextpos[handnum]].x = (RANDOMFRAC() - 0.5f) * 0.1f * mult;
+    g_CurrentPlayer->hands[handnum].blendup[nextpos[handnum]].y = 1;
+    g_CurrentPlayer->hands[handnum].blendup[nextpos[handnum]].z = (RANDOMFRAC() - 0.5f) * 0.1f * mult;
 
-    g_CurrentPlayer->hands[handnum].blendpos[sp60[handnum]].x = (RANDOMFRAC() * 0.75f) + 1.5f;
-    g_CurrentPlayer->hands[handnum].blendpos[sp60[handnum]].y = (2 + RANDOMFRAC()) * g_CurrentPlayer->hands[handnum].blendscale1;
-    g_CurrentPlayer->hands[handnum].blendpos[sp60[handnum]].z = (RANDOMFRAC() - 0.5f) * 2.5f;
+    g_CurrentPlayer->hands[handnum].blendpos[nextpos[handnum]].x = (RANDOMFRAC() * 0.75f) + 1.5f;
+    g_CurrentPlayer->hands[handnum].blendpos[nextpos[handnum]].y = (2 + RANDOMFRAC()) * g_CurrentPlayer->hands[handnum].blendscale1;
+    g_CurrentPlayer->hands[handnum].blendpos[nextpos[handnum]].z = (RANDOMFRAC() - 0.5f) * 2.5f;
 
     if (g_CurrentPlayer->hands[handnum].sideflag < 0)
     {
-        g_CurrentPlayer->hands[handnum].blendpos[sp60[handnum]].x *= -1;
+        g_CurrentPlayer->hands[handnum].blendpos[nextpos[handnum]].x *= -1;
 
         if (g_CurrentPlayer->hands[handnum].sideflag == -2)
         {
@@ -574,10 +574,10 @@ void gunCalcBlend(enum GUNHAND handnum)
 }
 
 
-s32 gunHandModelIsEmpty(enum GUNHAND arg0)
+s32 gunHandModelIsEmpty(enum GUNHAND hand)
 {
-    return g_CurrentPlayer->handModelState[arg0] > 0
-        || (g_CurrentPlayer->handModelItem[arg0] == 0 && g_CurrentPlayer->handModelNextItem[arg0] < 0);
+    return g_CurrentPlayer->handModelState[hand] > 0
+        || (g_CurrentPlayer->handModelItem[hand] == 0 && g_CurrentPlayer->handModelNextItem[hand] < 0);
 }
 
 
@@ -1078,25 +1078,25 @@ u32 weaponHasFlag(ITEM_IDS item, u32 mask)
 }
 
 
-void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
+void gunUpdateSway(f32 breathing, f32 maxspeed, f32 vertaSpeed, f32 thetaSpeed)
 {
     f32 dampt[2];
     s32 i;
-    f32 sp50 = arg2;
-    f32 sp4c;
+    f32 absVerta = vertaSpeed;
+    f32 breathStep;
     f32 minbreathing;
 
-    if (sp50 < 0.0f) { sp50 = -sp50; }
+    if (absVerta < 0.0f) { absVerta = -absVerta; }
 
-    if (arg1 > 0.8f)
+    if (maxspeed > 0.8f)
     {
         g_CurrentPlayer->gunposamplitude = 1.0f;
     }
     else
     {
-        if (arg1 > 0.1f)
+        if (maxspeed > 0.1f)
         {
-            f32 tmp = (1.0f - cosf((arg1 - 0.1f) * M_TAU_F / 2.8f));
+            f32 tmp = (1.0f - cosf((maxspeed - 0.1f) * M_TAU_F / 2.8f));
             g_CurrentPlayer->gunposamplitude = 0.8f * tmp + 0.2f;
         }
         else
@@ -1110,9 +1110,9 @@ void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
         g_CurrentPlayer->gunposamplitude = playerGetBreathing() * 0.3f;
     }
 
-    if (g_CurrentPlayer->gunposamplitude < 0.5f * sp50)
+    if (g_CurrentPlayer->gunposamplitude < 0.5f * absVerta)
     {
-        g_CurrentPlayer->gunposamplitude = 0.5f * sp50;
+        g_CurrentPlayer->gunposamplitude = 0.5f * absVerta;
     }
 
     for (i = 0; i < g_ClockTimer; i++)
@@ -1122,7 +1122,7 @@ void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
 
     g_CurrentPlayer->gunposamplitude = g_CurrentPlayer->gunAmpSum * (PAL ? 0.059700012f : 0.050000012f);
 
-    minbreathing = 0.016666668f * sp50;
+    minbreathing = 0.016666668f * absVerta;
     if (breathing < minbreathing)
     {
         breathing = minbreathing;
@@ -1135,8 +1135,8 @@ void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
 
     breathing = g_CurrentPlayer->cycleSum * (PAL ? 0.059700012f : 0.050000012f);
 
-    sp4c = breathing * g_GlobalTimerDelta;
-    dampt[0] = g_CurrentPlayer->hands[0].dampt + sp4c;
+    breathStep = breathing * g_GlobalTimerDelta;
+    dampt[0] = g_CurrentPlayer->hands[0].dampt + breathStep;
 
     while (dampt[0] >= 1.0f)
     {
@@ -1153,7 +1153,7 @@ void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
         g_CurrentPlayer->syncchange = (RANDOMFRAC() - 0.5f) * 0.2f / 60.0f;
     }
 
-    if (g_CurrentPlayer->syncchange + sp4c > 0.0f)
+    if (g_CurrentPlayer->syncchange + breathStep > 0.0f)
     {
         g_CurrentPlayer->gunsync += g_CurrentPlayer->syncchange;
     }
@@ -1190,16 +1190,16 @@ void gunUpdateSway(f32 breathing, f32 arg1, f32 arg2, f32 arg3)
     for (i = 0; i < 2; i++)
     {
         g_CurrentPlayer->hands[i].dampt = dampt[i];
-        g_CurrentPlayer->hands[i].weapon_theta_displacement = -1.75f * arg3;
-        g_CurrentPlayer->hands[i].weapon_verta_displacement = -2.0f * arg2;
+        g_CurrentPlayer->hands[i].weapon_theta_displacement = -1.75f * thetaSpeed;
+        g_CurrentPlayer->hands[i].weapon_verta_displacement = -2.0f * vertaSpeed;
     }
 }
 
 
-void gunSetPullback(f32 param_1)
+void gunSetPullback(f32 angle)
 {
-    g_CurrentPlayer->hands[GUNRIGHT].gunofs2_z = (1.0f - cosf(param_1)) * 5.0f;
-    g_CurrentPlayer->hands[GUNLEFT].gunofs2_z = (1.0f - cosf(param_1)) * 5.0f;
+    g_CurrentPlayer->hands[GUNRIGHT].gunofs2_z = (1.0f - cosf(angle)) * 5.0f;
+    g_CurrentPlayer->hands[GUNLEFT].gunofs2_z = (1.0f - cosf(angle)) * 5.0f;
 }
 
 
@@ -1216,9 +1216,9 @@ f32 gunGetMaxHingeAngle(GUNHAND hand)
 }
 
 
-void gunTickHingeAngle(enum GUNHAND hand, s32 arg1)
+void gunTickHingeAngle(enum GUNHAND hand, s32 open)
 {
-    if (arg1 != 0)
+    if (open != 0)
     {
         if (g_CurrentPlayer->hands[hand].hingeAngle < gunGetMaxHingeAngle(hand))
         {
@@ -1348,32 +1348,32 @@ void gunSetHeldItemVisible(Model* model, s32 val)
 }
 
 
-void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *arg5, PropRecord *owner)
+void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *tumble, PropRecord *owner)
 {
-    PropRecord *temp_s1;
-    Projectile *temp_v0;
+    PropRecord *prop;
+    Projectile *projectile;
 
-    temp_s1 = obj->prop;
+    prop = obj->prop;
 
-    if (temp_s1 != NULL)
+    if (prop != NULL)
     {
-        propActivate(temp_s1);
-        propEnable(temp_s1);
+        propActivate(prop);
+        propEnable(prop);
         mtx4ScaleRows012(obj->model->scale, matrix);
         objChangeShading(obj, pos, matrix, stan);
 
         setupUpdateObjectRoomPosition(obj);
 
         chrobjCollisionRelated(obj);
-        objEnsureProjectile(temp_s1);
+        objEnsureProjectile(prop);
 
         if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
         {
-            temp_v0 = obj->projectile;
-            temp_v0->flags |= 0x41;
+            projectile = obj->projectile;
+            projectile->flags |= 0x41;
             obj->projectile->ownerprop = owner;
-            projectileSetSticky(temp_s1);
-            mtx4Copy(arg5, &obj->projectile->mtx);
+            projectileSetSticky(prop);
+            mtx4Copy(tumble, &obj->projectile->mtx);
             obj->projectile->speed.f[0] = velocity->f[0];
             obj->projectile->speed.f[1] = velocity->f[1];
             obj->projectile->speed.f[2] = velocity->f[2];
@@ -1389,7 +1389,7 @@ void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf 
  * is obstructed the player's position used as a fallback. This prevents the player from launching
  * projectiles through nearby surfaces.
  */
-void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *arg2, coord3d *velocity, Mtxf *arg4)
+void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *mtx, coord3d *velocity, Mtxf *tumble)
 {
     PropRecord *playerprop;
     coord3d pos;
@@ -1399,8 +1399,8 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
     s32 usedfallback;
     f32 stanheight;
     u8 rooms[2];
-    s32 sp54;
-    s32 sp50;
+    s32 traversed[20];
+    s32 numtraversed;
 
     if (obj->prop == NULL) {
         return;
@@ -1443,7 +1443,7 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
 
     playerSetMoving(playerprop, 1);
 
-    gunLaunchProjectile(obj, &pos, tile, arg2, velocity, arg4, playerprop);
+    gunLaunchProjectile(obj, &pos, tile, mtx, velocity, tumble, playerprop);
 
     if (obj->runtime_bitflags & 0x80) {
         if (usedfallback) {
@@ -1456,7 +1456,7 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
         rooms[0] = playerGetRoom();
         rooms[1] = 0xff;
 
-        bgFindRoomsAlongSegment(playerGetPos3(), &pos, rooms, obj->projectile->rooms, &sp54, &sp50, 0x14);
+        bgFindRoomsAlongSegment(playerGetPos3(), &pos, rooms, obj->projectile->rooms, traversed, &numtraversed, ARRAYCOUNT(traversed));
     }
 }
 
@@ -1467,17 +1467,17 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
 */
 void gunThrowGrenade(s32 hand)
 {
-    Mtxf spFC;
+    Mtxf tumble;
     struct coord3d throw_speed_vec;
     f32 base_velocity;
-    struct coord3d spE0;
-    Mtxf spA0_a;
+    struct coord3d pos;
+    Mtxf mtx;
     struct WeaponObjRecord *wor;
-    s32 sp94; // sp148
-    struct coord3d base_speed_vec; // sp136
-    struct PropRecord* player_prop; // sp132
-    struct coord3d *bondprevpos;  // sp128
-    Mtxf sp40_f;
+    struct coord3d shotOrigin;
+    struct coord3d base_speed_vec;
+    struct PropRecord* player_prop;
+    struct coord3d *bondprevpos;
+    Mtxf handmtx;
     ALSoundState *sfx_state;
     s32 current_weapon;
 
@@ -1488,8 +1488,8 @@ void gunThrowGrenade(s32 hand)
     bondprevpos = playerGetPrevPos();
     current_weapon = gunGetWeapon(hand);
 
-    physRandomLaunch(&throw_speed_vec, &spFC);
-    gunGetShotDir(&sp94, &base_speed_vec, hand);
+    physRandomLaunch(&throw_speed_vec, &tumble);
+    gunGetShotDir(&shotOrigin, &base_speed_vec, hand);
     mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
@@ -1503,16 +1503,16 @@ void gunThrowGrenade(s32 hand)
         throw_speed_vec.f[2] = ((player_prop->pos.f[2] - bondprevpos->f[2]) / g_GlobalTimerDelta) + throw_speed_vec.f[2];
     }
 
-    spE0.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
-    spE0.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
-    spE0.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
+    pos.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
+    pos.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
+    pos.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
 
-    mtx4LoadIdentity(&spA0_a);
-    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &sp40_f);
-    sp40_f.m[3][0] = 0.0f;
-    sp40_f.m[3][1] = 0.0f;
-    sp40_f.m[3][2] = 0.0f;
-    mtx4MultInPlace(&sp40_f, &spA0_a);
+    mtx4LoadIdentity(&mtx);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &handmtx);
+    handmtx.m[3][0] = 0.0f;
+    handmtx.m[3][1] = 0.0f;
+    handmtx.m[3][2] = 0.0f;
+    mtx4MultInPlace(&handmtx, &mtx);
 
     wor = weaponCreateFromModel(PROP_CHRGRENADE, current_weapon);
 
@@ -1528,7 +1528,7 @@ void gunThrowGrenade(s32 hand)
         wor->runtime_bitflags &= ~(RUNTIMEBITFLAG_OWNER);
         wor->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
-        gunLaunchProjectileFromPlayer(wor, &spE0, &spA0_a, &throw_speed_vec, &spFC);
+        gunLaunchProjectileFromPlayer(wor, &pos, &mtx, &throw_speed_vec, &tumble);
 
         if ((wor->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) != 0)
         {
@@ -1556,14 +1556,14 @@ void gunThrowGrenade(s32 hand)
 void gunThrowKnife(s32 hand)
 {
     struct WeaponObjRecord *wor;
-    Mtxf spFC;
+    Mtxf tumble;
     struct coord3d throw_speed_vec;
     f32 base_velocity;
-    struct coord3d spE0;
-    Mtxf spA0_a;
-    s32 sp94;
+    struct coord3d pos;
+    Mtxf mtx;
+    struct coord3d shotOrigin;
     struct coord3d base_speed_vec;
-    Mtxf sp40_f;
+    Mtxf handmtx;
     struct PropRecord* player_prop;
     struct coord3d *bondprevpos;
 
@@ -1573,8 +1573,8 @@ void gunThrowKnife(s32 hand)
     player_prop = currentPlayerGetProp();
     bondprevpos = playerGetPrevPos();
 
-    physRandomLaunch(&throw_speed_vec, &spFC);
-    gunGetShotDir(&sp94, &base_speed_vec, hand);
+    physRandomLaunch(&throw_speed_vec, &tumble);
+    gunGetShotDir(&shotOrigin, &base_speed_vec, hand);
     mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
@@ -1588,21 +1588,21 @@ void gunThrowKnife(s32 hand)
         throw_speed_vec.f[2] = ((player_prop->pos.f[2] - bondprevpos->f[2]) / g_GlobalTimerDelta) + throw_speed_vec.f[2];
     }
 
-    spE0.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
-    spE0.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
-    spE0.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
+    pos.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
+    pos.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
+    pos.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
 
-    mtx4LoadZRotation(4.712389f, &spA0_a);
-    mtx4LoadXRotation(M_PI_F, &sp40_f);
-    mtx4MultInPlace(&sp40_f, &spA0_a);
-    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &sp40_f);
+    mtx4LoadZRotation(4.712389f, &mtx);
+    mtx4LoadXRotation(M_PI_F, &handmtx);
+    mtx4MultInPlace(&handmtx, &mtx);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &handmtx);
 
-    sp40_f.m[3][0] = 0.0f;
-    sp40_f.m[3][1] = 0.0f;
-    sp40_f.m[3][2] = 0.0f;
-    mtx4MultInPlace(&sp40_f, &spA0_a);
+    handmtx.m[3][0] = 0.0f;
+    handmtx.m[3][1] = 0.0f;
+    handmtx.m[3][2] = 0.0f;
+    mtx4MultInPlace(&handmtx, &mtx);
 
-    guRotateF(&spFC, 360.0f / ((randomGetNext() * (0.5f / (f32)INT_MAX)) + 12.1f), spA0_a.m[1][0], spA0_a.m[1][1], spA0_a.m[1][2]);
+    guRotateF(&tumble, 360.0f / ((randomGetNext() * (0.5f / (f32)INT_MAX)) + 12.1f), mtx.m[1][0], mtx.m[1][1], mtx.m[1][2]);
 
     wor = weaponCreateFromModel(PROP_CHRKNIFE, ITEM_THROWKNIFE);
 
@@ -1611,7 +1611,7 @@ void gunThrowKnife(s32 hand)
         wor->runtime_bitflags &= ~(RUNTIMEBITFLAG_OWNER);
         wor->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
-        gunLaunchProjectileFromPlayer(wor, &spE0, &spA0_a, &throw_speed_vec, &spFC);
+        gunLaunchProjectileFromPlayer(wor, &pos, &mtx, &throw_speed_vec, &tumble);
 
         if ((wor->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) != 0)
         {
@@ -1640,18 +1640,18 @@ void gunThrowObject(s32 hand)
     }
 */
 
-    Mtxf unk_mtxf;
+    Mtxf tumble;
     struct coord3d throw_speed_vec;
     f32 base_velocity;
-    struct coord3d spE0;
-    Mtxf spA0_a;
+    struct coord3d pos;
+    Mtxf mtx;
     struct WeaponObjRecord *wor;
     s32 new_prop_type;
-    s32 sp94; // sp148
-    struct coord3d base_speed_vec; // sp136
-    struct PropRecord* player_prop; // sp132
-    struct coord3d *bondprevpos;  // sp128
-    Mtxf sp40_f;
+    struct coord3d shotOrigin;
+    struct coord3d base_speed_vec;
+    struct PropRecord* player_prop;
+    struct coord3d *bondprevpos;
+    Mtxf handmtx;
     ALSoundState *sfx_state;
     s32 current_weapon;
 
@@ -1667,8 +1667,8 @@ void gunThrowObject(s32 hand)
         base_velocity = 6.6666665f;
     }
 
-    physRandomLaunch(&throw_speed_vec, &unk_mtxf);
-    gunGetShotDir(&sp94, &base_speed_vec, hand);
+    physRandomLaunch(&throw_speed_vec, &tumble);
+    gunGetShotDir(&shotOrigin, &base_speed_vec, hand);
     mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
@@ -1682,16 +1682,16 @@ void gunThrowObject(s32 hand)
         throw_speed_vec.f[2] = ((player_prop->pos.f[2] - bondprevpos->f[2]) / g_GlobalTimerDelta) + throw_speed_vec.f[2];
     }
 
-    spE0.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
-    spE0.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
-    spE0.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
+    pos.f[0] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][0];
+    pos.f[1] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][1];
+    pos.f[2] = g_CurrentPlayer->hands[hand].gunWorldMtx.m[3][2];
 
-    mtx4LoadIdentity(&spA0_a);
-    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &sp40_f);
-    sp40_f.m[3][0] = 0.0f;
-    sp40_f.m[3][1] = 0.0f;
-    sp40_f.m[3][2] = 0.0f;
-    mtx4MultInPlace(&sp40_f, &spA0_a);
+    mtx4LoadIdentity(&mtx);
+    mtx4Copy(&g_CurrentPlayer->hands[hand].gunWorldMtx, &handmtx);
+    handmtx.m[3][0] = 0.0f;
+    handmtx.m[3][1] = 0.0f;
+    handmtx.m[3][2] = 0.0f;
+    mtx4MultInPlace(&handmtx, &mtx);
 
     if (current_weapon == ITEM_GOLDENEYEKEY)
     {
@@ -1802,7 +1802,7 @@ void gunThrowObject(s32 hand)
         wor->runtime_bitflags &= ~(RUNTIMEBITFLAG_OWNER);
         wor->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
-        gunLaunchProjectileFromPlayer(wor, &spE0, &spA0_a, &throw_speed_vec, &unk_mtxf);
+        gunLaunchProjectileFromPlayer(wor, &pos, &mtx, &throw_speed_vec, &tumble);
 
         if ((wor->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) != 0)
         {

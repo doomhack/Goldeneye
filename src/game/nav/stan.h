@@ -19,11 +19,12 @@
 #define STAN_TAIL_D(tile) ((tile->tail.half >> 0x08) & 0xF)
 #define STAN_TAIL_E(tile) ((tile->tail.half >> 0x0C) & 0xF)
 
+/* The ladder quad from stanGetMoveBondCollisionTiles: the shared bottom edge, then the top. */
 struct move_bond_collision {
-    struct coord3d bondCollision;
-    struct coord3d sp190;
-    struct coord3d sp19C;
-    struct coord3d sp1A8;
+    struct coord3d low0;
+    struct coord3d low1;
+    struct coord3d high0;
+    struct coord3d high1;
 };
 
 typedef enum StanCollisionResult {
