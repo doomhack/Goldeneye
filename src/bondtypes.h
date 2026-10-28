@@ -2775,9 +2775,7 @@ typedef union
         // something related to rendering
         s16                calculatedopacity;      /*0xbe*/
         s32                TintDist;      /*0xc0*/
-        s16                CullDist;      /*0xc4*/
-        s8                 soundType;  /*0xc6*/
-        s8                 fadeTime60; /*0xc7*/
+        s32                CullDist;      /*0xc4*/
 
         /**
         * Connected door. Opening/closing this door will also open the linkedDoor.

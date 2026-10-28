@@ -40,79 +40,70 @@ s_shattered_window_piece* g_Shards;
 s32 g_NextShardNum = 0;
 
 
-// rodata
-void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax, f32 arg8, f32 arg9)
+/**
+ * Breaks a glass pane into a grid of shards. The pane spans xmin..xmax and ymin..ymax
+ * along xaxis and yaxis (unnormalised: their lengths scale the extents); zmin and zmax
+ * are the pane's thickness, which isn't used.
+ */
+void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax, f32 zmin, f32 zmax)
 {
-    f32      len;
-    f32      angle;
-    s32      step;
-    s32      xcount;
-    coord3d  shardpos;
-    s32      ycount;
-    s32      xlimit;
-    s32      x;
-    f32      shard_size;
-    s32      y;
-    s32      new_var;
-    coord3d  basepos;
-    coord3d  xnorm;
-    coord3d  ynorm;
-    coord3d *new_var3;
-    xnorm.x = xaxis->x;
-    xnorm.y = xaxis->y;
-    xnorm.z = xaxis->z;
-    len     = xnorm.x * xnorm.x;
-    len     = sqrtf((xnorm.z * xnorm.z) + (len + (xnorm.y * xnorm.y)));
+    f32 len;
+    f32 angle;
+    f32 width;
+    f32 height;
+    f32 shard_size;
+    f32 half;
+    s32 step;
+    s32 xcount;
+    s32 ycount;
+    s32 x;
+    s32 y;
+    coord3d basepos;
+    coord3d shardpos;
+    coord3d xnorm;
+    coord3d ynorm;
+
+    xnorm = *xaxis;
+    len = sqrtf((xnorm.x * xnorm.x) + (xnorm.y * xnorm.y) + (xnorm.z * xnorm.z));
     xnorm.x *= 1.0f / len;
     xnorm.y *= 1.0f / len;
     xnorm.z *= 1.0f / len;
     xmin *= len;
     xmax *= len;
-    ynorm.x = yaxis->x;
-    ynorm.y = yaxis->y;
-    ynorm.z = yaxis->z;
-    len     = ynorm.x * ynorm.x;
-    len     = sqrtf((ynorm.z * ynorm.z) + (len + (ynorm.y * ynorm.y)));
+
+    ynorm = *yaxis;
+    len = sqrtf((ynorm.x * ynorm.x) + (ynorm.y * ynorm.y) + (ynorm.z * ynorm.z));
     ynorm.x *= 1.0f / len;
     ynorm.y *= 1.0f / len;
     ynorm.z *= 1.0f / len;
     ymin *= len;
     ymax *= len;
-    angle    = mathAtan2(zaxis->x, zaxis->z);
-    arg8     = xmax - xmin;
-    arg9     = ymax - ymin;
-    new_var3 = &ynorm;
-    shard_size = sqrtf((0, (arg8 * arg9) / (g_MaxShards / 2)));
-    step       = (s32)shard_size;
-    new_var    = step;
-    basepos.x  = (pos->x + ((xmin + ((f32)(new_var >> 1))) * xnorm.x)) + ((*new_var3).x * (ymin + ((f32)(new_var >> 1))));
-    basepos.y  = (pos->y + ((xmin + ((f32)(new_var >> 1))) * xnorm.y)) + ((*new_var3).y * (ymin + ((f32)(new_var >> 1))));
-    basepos.z  = (pos->z + ((xmin + ((f32)(new_var >> 1))) * xnorm.z)) + ((*new_var3).z * (ymin + ((f32)(new_var >> 1))));
+
+    angle = mathAtan2(zaxis->x, zaxis->z);
+    width = xmax - xmin;
+    height = ymax - ymin;
+    shard_size = sqrtf((width * height) / (g_MaxShards / 2));
+    step = (s32)shard_size;
+    half = (f32)(step >> 1);
+
+    basepos.x = pos->x + ((xmin + half) * xnorm.x) + ((ymin + half) * ynorm.x);
+    basepos.y = pos->y + ((xmin + half) * xnorm.y) + ((ymin + half) * ynorm.y);
+    basepos.z = pos->z + ((xmin + half) * xnorm.z) + ((ymin + half) * ynorm.z);
+
     chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, 0x47, 0), pos);
-    y      = 0;
-    xlimit = (xcount = (s32)(arg8 / ((f32)step)));
-    ycount = (s32)(arg9 / ((f32)new_var));
-    if (ycount > 0)
+
+    xcount = (s32)(width / step);
+    ycount = (s32)(height / step);
+
+    for (y = 0; y < ycount; y++)
     {
-        do
+        for (x = 0; x < xcount; x++)
         {
-            if (TRUE)
-            {
-                x = 0;
-            }
-            if (xcount > 0)
-            {
-                do
-                {
-                    shardpos.x = (basepos.x + ((x * ((f32)step)) * xnorm.x)) + ((*new_var3).x * (((f32)y) * ((f32)new_var)));
-                    shardpos.y = (basepos.y + ((x * ((f32)step)) * xnorm.y)) + ((*new_var3).y * (y * ((f32)new_var)));
-                    shardpos.z = (basepos.z + ((x * ((f32)step)) * xnorm.z)) + ((*new_var3).z * (((f32)y) * ((f32)new_var)));
-                    glassCreateShard(&shardpos, angle, (((randomGetNext() * 2.3283064e-10f) * 0.7f) + 0.1f) * shard_size);
-                    x++;
-                } while (x != xlimit);
-            }
-            y++;
-        } while (y < ycount);
+            shardpos.x = basepos.x + ((x * (f32)step) * xnorm.x) + ((y * (f32)step) * ynorm.x);
+            shardpos.y = basepos.y + ((x * (f32)step) * xnorm.y) + ((y * (f32)step) * ynorm.y);
+            shardpos.z = basepos.z + ((x * (f32)step) * xnorm.z) + ((y * (f32)step) * ynorm.z);
+            glassCreateShard(&shardpos, angle, ((RANDOMFRAC() * 0.7f) + 0.1f) * shard_size);
+        }
     }
 }
 
@@ -204,32 +195,32 @@ void glassCreateShard(coord3d* pos, f32 rotX, f32 shard_size)
 
 
 void glassTickShards(void) {
-    f32 var_f0;
+    f32 ticks;
     s32 i;
     s32 j;
 
     if (g_ClockTimer < 15) {
-        var_f0 = (f32)g_ClockTimer;
+        ticks = (f32)g_ClockTimer;
     } else {
-        var_f0 = 15.0f;
+        ticks = 15.0f;
     }
     if (g_MaxShards > 0) {
         i = 0;
         do {
             if (g_Shards[i].active > 0) {
-                g_Shards[i].active += (s32)var_f0;
+                g_Shards[i].active += (s32)ticks;
                 j = 0;
-                g_Shards[i].rot.x += g_Shards[i].angvel.x * var_f0;
-                g_Shards[i].rot.y += g_Shards[i].angvel.y * var_f0;
-                g_Shards[i].rot.z += g_Shards[i].angvel.z * var_f0;
-                g_Shards[i].pos.x += g_Shards[i].velocity.x * var_f0;
-                g_Shards[i].pos.z += g_Shards[i].velocity.z * var_f0;
-                if ((s32)var_f0 > 0) {
+                g_Shards[i].rot.x += g_Shards[i].angvel.x * ticks;
+                g_Shards[i].rot.y += g_Shards[i].angvel.y * ticks;
+                g_Shards[i].rot.z += g_Shards[i].angvel.z * ticks;
+                g_Shards[i].pos.x += g_Shards[i].velocity.x * ticks;
+                g_Shards[i].pos.z += g_Shards[i].velocity.z * ticks;
+                if ((s32)ticks > 0) {
                     do {
                         g_Shards[i].pos.y += g_Shards[i].velocity.y;
                         g_Shards[i].velocity.y -= 0.1f;
                         j++;
-                    } while (j < (s32)var_f0);
+                    } while (j < (s32)ticks);
                 }
                 if (g_Shards[i].active >= 0x96) {
                     g_Shards[i].active = 0;

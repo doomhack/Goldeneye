@@ -157,8 +157,8 @@ void propsSortOnscreen(void)
     s32 j;
     s32 count;
     PropRecord *prop;
-    s32 phi_a0;
-    f32 phi_f12;
+    s32 best;
+    f32 bestz;
 
     i = 0;
     count = 0;
@@ -185,25 +185,25 @@ void propsSortOnscreen(void)
 
     for (i=0; i<count; i++)
     {
-        phi_a0 = -1;
-        phi_f12 = -4.2949673e9f;
+        best = -1;
+        bestz = -4.2949673e9f;
 
         for (j = i; j < count; j++)
         {
             f32 f = g_OnScreenPropList[j]->zDepth;
 
-            if (phi_f12 < f)
+            if (bestz < f)
             {
-                phi_f12 = f;
-                phi_a0 = j;
+                bestz = f;
+                best = j;
             }
         }
 
-        if (phi_a0 >= 0)
+        if (best >= 0)
         {
             prop = g_OnScreenPropList[i];
-            g_OnScreenPropList[i] = g_OnScreenPropList[phi_a0];
-            g_OnScreenPropList[phi_a0] = prop;
+            g_OnScreenPropList[i] = g_OnScreenPropList[best];
+            g_OnScreenPropList[best] = prop;
         }
     }
 }
@@ -303,8 +303,8 @@ void propActivateThisFrame(PropRecord* prop) {
 
 void propDelist(PropRecord *prop)
 {
-    PropRecord *temp_v0;
-    PropRecord *temp_v0_2;
+    PropRecord *prev;
+    PropRecord *next;
 
     if (prop == g_ActivePropsTail)
     {
@@ -314,15 +314,15 @@ void propDelist(PropRecord *prop)
     {
         g_ActivePropsHead = prop->next;
     }
-    temp_v0 = prop->prev;
-    if (temp_v0 != 0)
+    prev = prop->prev;
+    if (prev != 0)
     {
-        temp_v0->next = prop->next;
+        prev->next = prop->next;
     }
-    temp_v0_2 = prop->next;
-    if (temp_v0_2 != 0)
+    next = prop->next;
+    if (next != 0)
     {
-        temp_v0_2->prev = prop->prev;
+        next->prev = prop->prev;
     }
     prop->prev = NULL;
     prop->next = NULL;
@@ -409,7 +409,7 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
     PropRecord *prop;
     s32* rp;
     // propGetRoomIds() writes up to PROPRECORD_STAN_ROOM_LEN ids plus a -1 terminator; other callers use 8
-    s32 sp48[8];
+    s32 rooms[8];
 
     if (bossGetStageNum() == LEVELID_CUBA)
     {
@@ -445,9 +445,9 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
                 if (flag != 0)
                 {
                     flag = 0;
-                    propGetRoomIds(prop, sp48);
+                    propGetRoomIds(prop, rooms);
 
-                    for (rp = sp48; *rp >= 0; rp++)
+                    for (rp = rooms; *rp >= 0; rp++)
                     {
                         if (bgRoomIsVisible(*rp))
                         {
@@ -477,9 +477,9 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
             if (prop != NULL)
             {
                 flag = 0;
-                propGetRoomIds(prop, sp48);
+                propGetRoomIds(prop, rooms);
 
-                for (rp = sp48; *rp >= 0; rp++)
+                for (rp = rooms; *rp >= 0; rp++)
                 {
                     if (bgRoomIsVisible(*rp))
                     {
@@ -1035,10 +1035,10 @@ void propGetCollisionPolygon(PropRecord *prop, struct rect4f **polygon, s32 *edg
 */
 void propGetCollisionPolygon2d(PropRecord *prop, struct rect4f **polygon, s32 *edges)
 {
-    f32 sp24;
-    f32 sp20;
+    f32 top;
+    f32 bottom;
 
-    propGetCollisionPolygon(prop, polygon, edges, &sp24, &sp20);
+    propGetCollisionPolygon(prop, polygon, edges, &top, &bottom);
 }
 
 
@@ -1118,17 +1118,17 @@ s32 polygonContainsPoint(coord3d *point, struct rect4f *polygon, s32 edges)
  * @param height: out parameter, will be set to height
  * @param always_20: out parameter, will be set to either 20 or 30.
 */
-void propGetCollisionRadius(PropRecord *arg0, f32 *collision_radius, f32 *height, f32 *arg3)
+void propGetCollisionRadius(PropRecord *prop, f32 *collision_radius, f32 *height, f32 *ymin)
 {
-    if (arg0->type == PROP_TYPE_CHR)
+    if (prop->type == PROP_TYPE_CHR)
     {
-        chrGetChrWidthHeight(arg0, collision_radius, height, arg3);
+        chrGetChrWidthHeight(prop, collision_radius, height, ymin);
         return;
     }
 
-    if (arg0->type == PROP_TYPE_VIEWER)
+    if (prop->type == PROP_TYPE_VIEWER)
     {
-        playerGetCollisionSize(arg0, collision_radius, height, arg3);
+        playerGetCollisionSize(prop, collision_radius, height, ymin);
         return;
     }
 
@@ -1136,16 +1136,16 @@ void propGetCollisionRadius(PropRecord *arg0, f32 *collision_radius, f32 *height
 }
 
 
-f32 propGetGroundY(PropRecord *arg0)
+f32 propGetGroundY(PropRecord *prop)
 {
-    if (arg0->type == PROP_TYPE_CHR)
+    if (prop->type == PROP_TYPE_CHR)
     {
-        return chrGetChrGround(arg0);
+        return chrGetChrGround(prop);
     }
 
-    if (arg0->type == PROP_TYPE_VIEWER)
+    if (prop->type == PROP_TYPE_VIEWER)
     {
-        return playerGetStanHeight(g_playerPointers[playerGetIndexForProp(arg0)]);
+        return playerGetStanHeight(g_playerPointers[playerGetIndexForProp(prop)]);
     }
 
     return 0.0f;
@@ -1476,25 +1476,25 @@ void autoaimUpdateTarget(void)
 
 s32 propDoorGetCdTypes(PropRecord* prop)
 {
-    s32 var_v1;
+    s32 cdtypes;
 
     if (prop->door->openPosition <= 0.0f)
     {
-        var_v1 = CDTYPE_CLOSEDDOORS;
+        cdtypes = CDTYPE_CLOSEDDOORS;
     }
     else
     {
-        var_v1 = (prop->door->maxFrac <= prop->door->openPosition)
+        cdtypes = (prop->door->maxFrac <= prop->door->openPosition)
             ? CDTYPE_OPENDOORS
             : CDTYPE_AJARDOORS;
     }
 
     if (((s32)prop->door->flags2 * 4) < 0)
     {
-        var_v1 |= CDTYPE_DOORSLOCKEDTOAI;
+        cdtypes |= CDTYPE_DOORSLOCKEDTOAI;
     }
 
-    return var_v1;
+    return cdtypes;
 }
 
 
@@ -1696,17 +1696,17 @@ void propRemoveFromRoom(PropRecord* prop, s16 room) {
         while (block >= 0)
         {
             bool populated = 0;
-            s32 var_s0_2;
+            s32 i;
 
             // Check each prop entry in the chunk
-            for (var_s0_2 = 0; var_s0_2 < 15; var_s0_2++)
+            for (i = 0; i < 15; i++)
             {
-                if (propIndex == g_RoomPropBlocks[block].propnums[var_s0_2])
+                if (propIndex == g_RoomPropBlocks[block].propnums[i])
                 {
-                    g_RoomPropBlocks[block].propnums[var_s0_2] = -1; // Mark entry as empty
+                    g_RoomPropBlocks[block].propnums[i] = -1; // Mark entry as empty
                     removed = 1;
                 }
-                else if (!populated && g_RoomPropBlocks[block].propnums[var_s0_2] >= 0)
+                else if (!populated && g_RoomPropBlocks[block].propnums[i] >= 0)
                 {
                     populated = 1;
                 }
@@ -2067,225 +2067,225 @@ f32 bboxGetZmin(ModelRoData_BoundingBoxRecord *modelBoundingBox)
 }
 
 
-f32 bboxRotatedMinX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
+f32 bboxRotatedMinX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 {
-    f32 phi_f2;
+    f32 result;
 
-    phi_f2 = 0.0f;
+    result = 0.0f;
 
-    if (arg1->m[0][0] >= 0.0f)
+    if (mtx->m[0][0] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.xmin * arg1->m[0][0]);
+        result += (bbox->Bounds.xmin * mtx->m[0][0]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.xmax * arg1->m[0][0]);
+        result += (bbox->Bounds.xmax * mtx->m[0][0]);
     }
 
-    if (arg1->m[1][0] >= 0.0f)
+    if (mtx->m[1][0] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.ymin * arg1->m[1][0]);
+        result += (bbox->Bounds.ymin * mtx->m[1][0]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.ymax * arg1->m[1][0]);
+        result += (bbox->Bounds.ymax * mtx->m[1][0]);
     }
 
-    if (arg1->m[2][0] >= 0.0f)
+    if (mtx->m[2][0] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.zmin * arg1->m[2][0]);
+        result += (bbox->Bounds.zmin * mtx->m[2][0]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.zmax * arg1->m[2][0]);
+        result += (bbox->Bounds.zmax * mtx->m[2][0]);
     }
 
-    return phi_f2;
+    return result;
 }
 
 
-f32 bboxRotatedMaxX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
+f32 bboxRotatedMaxX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 {
-    f32 phi_f2;
+    f32 result;
 
-    phi_f2 = 0.0f;
+    result = 0.0f;
 
-    if (arg1->m[0][0] <= 0.0f)
+    if (mtx->m[0][0] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.xmin * arg1->m[0][0]);
+        result += (bbox->Bounds.xmin * mtx->m[0][0]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.xmax * arg1->m[0][0]);
+        result += (bbox->Bounds.xmax * mtx->m[0][0]);
     }
 
-    if (arg1->m[1][0] <= 0.0f)
+    if (mtx->m[1][0] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.ymin * arg1->m[1][0]);
+        result += (bbox->Bounds.ymin * mtx->m[1][0]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.ymax * arg1->m[1][0]);
+        result += (bbox->Bounds.ymax * mtx->m[1][0]);
     }
 
-    if (arg1->m[2][0] <= 0.0f)
+    if (mtx->m[2][0] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.zmin * arg1->m[2][0]);
+        result += (bbox->Bounds.zmin * mtx->m[2][0]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.zmax * arg1->m[2][0]);
+        result += (bbox->Bounds.zmax * mtx->m[2][0]);
     }
 
-    return phi_f2;
+    return result;
 }
 
 
-f32 bboxRotatedMinY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
+f32 bboxRotatedMinY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 {
-    f32 phi_f2;
+    f32 result;
 
-    phi_f2 = 0.0f;
+    result = 0.0f;
 
-    if (arg1->m[0][1] >= 0.0f)
+    if (mtx->m[0][1] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.xmin * arg1->m[0][1]);
+        result += (bbox->Bounds.xmin * mtx->m[0][1]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.xmax * arg1->m[0][1]);
+        result += (bbox->Bounds.xmax * mtx->m[0][1]);
     }
 
-    if (arg1->m[1][1] >= 0.0f)
+    if (mtx->m[1][1] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.ymin * arg1->m[1][1]);
+        result += (bbox->Bounds.ymin * mtx->m[1][1]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.ymax * arg1->m[1][1]);
+        result += (bbox->Bounds.ymax * mtx->m[1][1]);
     }
 
-    if (arg1->m[2][1] >= 0.0f)
+    if (mtx->m[2][1] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.zmin * arg1->m[2][1]);
+        result += (bbox->Bounds.zmin * mtx->m[2][1]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.zmax * arg1->m[2][1]);
+        result += (bbox->Bounds.zmax * mtx->m[2][1]);
     }
 
-    return phi_f2;
+    return result;
 }
 
 
-f32 bboxRotatedMaxY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
+f32 bboxRotatedMaxY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 {
-    f32 phi_f2;
+    f32 result;
 
-    phi_f2 = 0.0f;
+    result = 0.0f;
 
-    if (arg1->m[0][1] <= 0.0f)
+    if (mtx->m[0][1] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.xmin * arg1->m[0][1]);
+        result += (bbox->Bounds.xmin * mtx->m[0][1]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.xmax * arg1->m[0][1]);
+        result += (bbox->Bounds.xmax * mtx->m[0][1]);
     }
 
-    if (arg1->m[1][1] <= 0.0f)
+    if (mtx->m[1][1] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.ymin * arg1->m[1][1]);
+        result += (bbox->Bounds.ymin * mtx->m[1][1]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.ymax * arg1->m[1][1]);
+        result += (bbox->Bounds.ymax * mtx->m[1][1]);
     }
 
-    if (arg1->m[2][1] <= 0.0f)
+    if (mtx->m[2][1] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.zmin * arg1->m[2][1]);
+        result += (bbox->Bounds.zmin * mtx->m[2][1]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.zmax * arg1->m[2][1]);
+        result += (bbox->Bounds.zmax * mtx->m[2][1]);
     }
 
-    return phi_f2;
+    return result;
 }
 
 
-f32 bboxRotatedMinZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
+f32 bboxRotatedMinZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 {
-    f32 phi_f2;
+    f32 result;
 
-    phi_f2 = 0.0f;
+    result = 0.0f;
 
-    if (arg1->m[0][2] >= 0.0f)
+    if (mtx->m[0][2] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.xmin * arg1->m[0][2]);
+        result += (bbox->Bounds.xmin * mtx->m[0][2]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.xmax * arg1->m[0][2]);
+        result += (bbox->Bounds.xmax * mtx->m[0][2]);
     }
 
-    if (arg1->m[1][2] >= 0.0f)
+    if (mtx->m[1][2] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.ymin * arg1->m[1][2]);
+        result += (bbox->Bounds.ymin * mtx->m[1][2]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.ymax * arg1->m[1][2]);
+        result += (bbox->Bounds.ymax * mtx->m[1][2]);
     }
 
-    if (arg1->m[2][2] >= 0.0f)
+    if (mtx->m[2][2] >= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.zmin * arg1->m[2][2]);
+        result += (bbox->Bounds.zmin * mtx->m[2][2]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.zmax * arg1->m[2][2]);
+        result += (bbox->Bounds.zmax * mtx->m[2][2]);
     }
 
-    return phi_f2;
+    return result;
 }
 
 
-f32 bboxRotatedMaxZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *arg1)
+f32 bboxRotatedMaxZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 {
-    f32 phi_f2;
+    f32 result;
 
-    phi_f2 = 0.0f;
+    result = 0.0f;
 
-    if (arg1->m[0][2] <= 0.0f)
+    if (mtx->m[0][2] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.xmin * arg1->m[0][2]);
+        result += (bbox->Bounds.xmin * mtx->m[0][2]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.xmax * arg1->m[0][2]);
+        result += (bbox->Bounds.xmax * mtx->m[0][2]);
     }
 
-    if (arg1->m[1][2] <= 0.0f)
+    if (mtx->m[1][2] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.ymin * arg1->m[1][2]);
+        result += (bbox->Bounds.ymin * mtx->m[1][2]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.ymax * arg1->m[1][2]);
+        result += (bbox->Bounds.ymax * mtx->m[1][2]);
     }
 
-    if (arg1->m[2][2] <= 0.0f)
+    if (mtx->m[2][2] <= 0.0f)
     {
-        phi_f2 += (bbox->Bounds.zmin * arg1->m[2][2]);
+        result += (bbox->Bounds.zmin * mtx->m[2][2]);
     }
     else
     {
-        phi_f2 += (bbox->Bounds.zmax * arg1->m[2][2]);
+        result += (bbox->Bounds.zmax * mtx->m[2][2]);
     }
 
-    return phi_f2;
+    return result;
 }
 
 
@@ -2459,9 +2459,9 @@ filterloop:
 }
 
 
-void bboxGetHull2d(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf* arg1, struct rect4f* arg2, struct collision_data* arg3)
+void bboxGetHull2d(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf* mtx, struct rect4f* hull, struct collision_data* collision)
 {
-    boxGetHull2d(bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax, bbox->Bounds.zmin, bbox->Bounds.zmax, arg1, arg2, arg3);
+    boxGetHull2d(bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax, bbox->Bounds.zmin, bbox->Bounds.zmax, mtx, hull, collision);
 }
 
 
@@ -2577,44 +2577,44 @@ void modelGetAxisExtents(Model* model, f32* max, f32* min, s32 axis)
 }
 
 
-void modelGetXYExtents(Model *model, f32 *arg1, f32 *arg2, f32 *arg3, f32 *arg4)
+void modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin)
 {
-    modelGetAxisExtents(model, arg1, arg2, 0);
-    modelGetAxisExtents(model, arg3, arg4, 1);
+    modelGetAxisExtents(model, xmax, xmin, 0);
+    modelGetAxisExtents(model, ymax, ymin, 1);
 }
 
 
 /**
  * Project rectangle corners to screen
 */
-void projectRectCornersTo2D(struct coord3d *center, struct coord2d *arg1, struct coord2d *arg2, struct coord2d *arg3, struct coord2d *arg4)
+void projectRectCornersTo2D(struct coord3d *center, struct coord2d *xrange, struct coord2d *yrange, struct coord2d *corner1, struct coord2d *corner2)
 {
-    struct coord3d sp24;
+    struct coord3d corner;
     struct coord2d tout;
 
-    sp24.f[0] = arg1->f[0];
-    sp24.f[1] = center->f[1];
-    sp24.f[2] = center->f[2];
-    camViewToScreen(&sp24, &tout);
-    arg3->f[0] = tout.f[0];
+    corner.f[0] = xrange->f[0];
+    corner.f[1] = center->f[1];
+    corner.f[2] = center->f[2];
+    camViewToScreen(&corner, &tout);
+    corner1->f[0] = tout.f[0];
 
-    sp24.f[0] = arg1->f[1];
-    sp24.f[1] = center->f[1];
-    sp24.f[2] = center->f[2];
-    camViewToScreen(&sp24, &tout);
-    arg4->f[0] = tout.f[0];
+    corner.f[0] = xrange->f[1];
+    corner.f[1] = center->f[1];
+    corner.f[2] = center->f[2];
+    camViewToScreen(&corner, &tout);
+    corner2->f[0] = tout.f[0];
 
-    sp24.f[0] = center->f[0];
-    sp24.f[1] = arg2->f[1];
-    sp24.f[2] = center->f[2];
-    camViewToScreen(&sp24, &tout);
-    arg3->f[1] = tout.f[1];
+    corner.f[0] = center->f[0];
+    corner.f[1] = yrange->f[1];
+    corner.f[2] = center->f[2];
+    camViewToScreen(&corner, &tout);
+    corner1->f[1] = tout.f[1];
 
-    sp24.f[0] = center->f[0];
-    sp24.f[1] = arg2->f[0];
-    sp24.f[2] = center->f[2];
-    camViewToScreen(&sp24, &tout);
-    arg4->f[1] = tout.f[1];
+    corner.f[0] = center->f[0];
+    corner.f[1] = yrange->f[0];
+    corner.f[2] = center->f[2];
+    camViewToScreen(&corner, &tout);
+    corner2->f[1] = tout.f[1];
 }
 
 

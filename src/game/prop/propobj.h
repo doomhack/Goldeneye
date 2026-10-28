@@ -65,7 +65,7 @@ extern ExplosionDetailsRecord object_explosion_details[];
  * @param arg0: Prop for tank
  * @param arg1: maybe flags
  */
-void                 objSetMoving(struct PropRecord *prop, s32 arg1);
+void                 objSetMoving(struct PropRecord *prop, s32 moving);
 
 void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop);
 
@@ -91,7 +91,7 @@ void                 objGetCollisionBounds(PropRecord *prop, struct rect4f **pol
 void                 doorActivate(DoorRecord *door, DOORSTATE State);
 bool                 posIsInFrontOfDoor(PropRecord *prop, DoorRecord *door);
 void                 doorsChooseSwingDirection(PropRecord *chrprop, DoorRecord *door);
-Gfx                 *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 arg2);
+Gfx                 *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass);
 
 f32                  chrobjFogVisRangeRelated(PropRecord *prop, f32 size);
 s32                  propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox);
@@ -102,7 +102,7 @@ void                 remoteMinesDetonate(void);
 
 void                 objDetach(PropRecord *prop);
 void                 objFreeEmbedmentOrProjectile(PropRecord *);
-void                 objBounce(ObjectRecord *obj, coord3d *arg1);
+void                 objBounce(ObjectRecord *obj, coord3d *velocity);
 bool                 alarmIsActive(void);
 void                 gasStart(coord3d *source);
 void                 chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand);
@@ -118,7 +118,7 @@ void                 countdownTimerSetRunning(bool enable);
 void                 countdownTimerSetValue(f32 time);
 void                 countdownTimerSetVisible(int clocklockbits, bool unset);
 void                 objPlaceAtPad(ObjectRecord *baseobj, struct coord3d *pad, Mtxf *matrix, StandTile *stan, struct coord3d *pos2);
-void                 objPlaceAtPadSideways(ObjectRecord *obj, struct coord3d *pos, Mtxf *arg2, StandTile *stan2, struct coord3d *pos2);
+void                 objPlaceAtPadSideways(ObjectRecord *obj, struct coord3d *pos, Mtxf *padmtx, StandTile *stan2, struct coord3d *pos2);
 bool                 chrEquipWeapon(WeaponObjRecord *wep, ChrRecord *chr);
 bool                 objIsCollectable(PropDefHeaderRecord *obj);
 TICKOP               propPickupByPlayer(PropRecord *prop, bool showstring);
@@ -135,25 +135,25 @@ PropRecord*          objInitWithModelDef(ObjectRecord* object, ModelFileHeader* 
 Embedment           *embedmentAllocate(void);
 void                 objDetach(PropRecord *prop);
 void                 objUpdateThrowKnifeSound(ObjectRecord *obj);
-s32                  chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *arg0, s32 arg1, struct rect4f *arg2, s32 arg3);
+s32                  chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *poly1, s32 edges1, struct rect4f *poly2, s32 edges2);
 s32                  chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius, struct rect4f *polygon, s32 edges);
-void                 objDetonateRecursive(PropRecord *prop, f32 damage, struct coord3d *pos, s32 arg3, s32 owner);
-struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *arg0);
+void                 objDetonateRecursive(PropRecord *prop, f32 damage, struct coord3d *pos, s32 weaponnum, s32 owner);
+struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *obj);
 void                 alarmStopSound(void);
 void                 alarmsReset(void);
 bool                 padBoundsContainPoint(coord3d* pos, f32 radius, BoundPadRecord *boundpads);
 void                 glassCreateShards(f32*, f32*, f32*, f32*, f32, f32, f32, f32, f32, f32);
-void                 modelGetXYExtents(Model *model, f32 *arg1, f32 *arg2, f32 *arg3, f32 *arg4);
+void                 modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin);
 s32                  vehicleFindBlockingProp(struct PropRecord *argProp);
-PropRecord*          weaponInitWithModelDef(struct ObjectRecord* arg0, ModelFileHeader* arg1);
-void                 chrSetupHeldWeapon(WeaponObjRecord* arg0, ChrRecord* arg1);
+PropRecord*          weaponInitWithModelDef(struct ObjectRecord* obj, ModelFileHeader* modeldef);
+void                 chrSetupHeldWeapon(WeaponObjRecord* weapon, ChrRecord* chr);
 void                 playerDropInventory(void);
 void                 objsFreeDeformedVertices(void);
 f32                  bondviewGetPlayerPitchRadians(void);
 TICKOP               objTickPlayer(struct PropRecord* prop);
-TICKOP               weaponTickPlayer(struct PropRecord* arg0);
+TICKOP               weaponTickPlayer(struct PropRecord* prop);
 void                 doorShatterGlass(DoorRecord *door);
-bool                 posIsOnScreen(PropRecord *prop, coord3d *pos, f32 arg2, bool arg3);
+bool                 posIsOnScreen(PropRecord *prop, coord3d *pos, f32 radius, bool checkFogEnd);
 void                 objUpdateShading(rgba_u8 *dest, rgba_u8 *src);
 void                 chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl);
 HATTYPE              hatGetModel(PropRecord *prop);
