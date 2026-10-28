@@ -52,18 +52,18 @@ extern ItemModelFileRecord PitemZ_entries[341];
 // forward declarations
 
 s32 setupCountPropdefs(PROPDEF_TYPE type);
-void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *arg1);
-void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex);
-void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex);
-void setupHat(s32 arg0, ObjectRecord* hat, s32 cmdindex);
-void setupKey(s32 arg0, ObjectRecord* key, s32 cmdindex);
-void setupCctv(s32 arg0, CCTVRecord *arg1, s32 cmdindex);
+void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *centre);
+void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex);
+void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex);
+void setupHat(s32 stageid, ObjectRecord* hat, s32 cmdindex);
+void setupKey(s32 stageid, ObjectRecord* key, s32 cmdindex);
+void setupCctv(s32 stageid, CCTVRecord *cctv, s32 cmdindex);
 void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex);
-void setupHangingMonitors(s32 arg0, ObjectRecord* rack, s32 cmdindex);
+void setupHangingMonitors(s32 stageid, ObjectRecord* rack, s32 cmdindex);
 void setupSingleMonitor(s32 stageID, MonitorObjRecord *monitor, s32 cmdindex);
 void setupMultiMonitor(s32 stageID, MultiMonitorObjRecord* monitor, s32 cmdindex);
-void padGetRoomsEitherSide(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, struct coord3d *arg3, struct coord3d *arg4);
-void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2);
+void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, struct coord3d *pos1, struct coord3d *pos2);
+void setupDoor(s32 stageid, struct DoorRecord *door, s32 cmdindex);
 
 
 s32 setupCountPropdefs(PROPDEF_TYPE type)
@@ -90,7 +90,7 @@ s32 setupCountPropdefs(PROPDEF_TYPE type)
  * perfect dark padGetCentre (pad.c)
  *
 */
-void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *arg1)
+void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *centre)
 {
     struct coord3d normal;
     f32 scale;
@@ -115,17 +115,17 @@ void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *arg1)
     normal.f[1] *= scale;
     normal.f[2] *= scale;
 
-    arg1->f[0] = pad->pos.f[0] + (
+    centre->f[0] = pad->pos.f[0] + (
 			(bb.zmax + bb.zmin) * normal.f[0] +
 			(bb.ymax + bb.ymin) * pad->up.f[0] +
 			(bb.xmax + bb.xmin) * pad->look.f[0]) * 0.5f;
 
-	arg1->f[1] = pad->pos.f[1] + (
+	centre->f[1] = pad->pos.f[1] + (
 			(bb.zmax + bb.zmin) * normal.f[1] +
 			(bb.ymax + bb.ymin) * pad->up.f[1] +
 			(bb.xmax + bb.xmin) * pad->look.f[1]) * 0.5f;
 
-	arg1->f[2] = pad->pos.f[2] + (
+	centre->f[2] = pad->pos.f[2] + (
 			(bb.zmax + bb.zmin) * normal.f[2] +
 			(bb.ymax + bb.ymin) * pad->up.f[2] +
 			(bb.xmax + bb.xmin) * pad->look.f[2]) * 0.5f;
@@ -134,143 +134,143 @@ void padGetBboxCentre(struct BoundPadRecord *pad, struct coord3d *arg1)
 
 /**
 */
-void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
+void setupObject(s32 stageid, ObjectRecord *obj, s32 cmdindex)
 {
-    s32 spF0;
-    f32 var_f0;
-    struct coord3d spE0;
-    struct StandTile *spDC;
-    struct coord3d spD0;
-    StandTile *spCC;
-    Mtxf sp8C;
-    struct coord3d sp80;
-    struct PropRecord *var_v0;
-    f32 sp78;
-    s32 sp74;
-    struct BoundPadRecord *var_s0;
-    ChrRecord *sp6C;
-    ModelRoData_BoundingBoxRecord *temp_v0_3;
-    struct PadRecord *sp64;
-    struct PropRecord *sp60;
-    f32 sp58;
-    f32 sp54;
-    f32 sp50;
-    f32 sp48;
+    s32 modelnum;
+    f32 minscale;
+    struct coord3d floorpos;
+    struct StandTile *floortile;
+    struct coord3d pos;
+    StandTile *tile;
+    Mtxf mtx;
+    struct coord3d centre;
+    struct PropRecord *chrprop;
+    f32 extrascale;
+    s32 canRespawn;
+    struct BoundPadRecord *boundpad;
+    ChrRecord *chr;
+    ModelRoData_BoundingBoxRecord *bbox;
+    struct PadRecord *pad;
+    struct PropRecord *prop;
+    f32 xscale;
+    f32 yscale;
+    f32 zscale;
+    f32 maxscale;
 
-    spF0 = arg1->obj;
-    var_s0 = NULL;
+    modelnum = obj->obj;
+    boundpad = NULL;
 
-    modelLoad(spF0);
+    modelLoad(modelnum);
 
-    sp78 = arg1->extrascale * 0.00390625f;
+    extrascale = obj->extrascale * 0.00390625f;
 
-    arg1->damage = *(s32*)&arg1->damage / 65536.0f;
+    obj->damage = *(s32*)&obj->damage / 65536.0f;
 
     if (isMpGame())
     {
-        sp74 = 1;
+        canRespawn = 1;
 
-        if ((frontGetMpScenario() == SCENARIO_TLD) && (arg1->obj == PROP_FLAG))
+        if ((frontGetMpScenario() == SCENARIO_TLD) && (obj->obj == PROP_FLAG))
         {
-            sp74 = 0;
+            canRespawn = 0;
         }
-        else if ((frontGetMpScenario() == SCENARIO_MWTGG) && (arg1->obj == PROP_CHRGOLDEN))
+        else if ((frontGetMpScenario() == SCENARIO_MWTGG) && (obj->obj == PROP_CHRGOLDEN))
         {
-            sp74 = 0;
+            canRespawn = 0;
         }
 
-        if (sp74 != 0)
+        if (canRespawn != 0)
         {
-            arg1->state |= PROPSTATE_RESPAWN; // respawn enabled
+            obj->state |= PROPSTATE_RESPAWN; // respawn enabled
         }
     }
 
-    if (arg1->flags & PROPFLAG_INSIDEANOTHEROBJ)
+    if (obj->flags & PROPFLAG_INSIDEANOTHEROBJ)
     {
-        if (arg1->type == PROP_TYPE_SMOKE)
+        if (obj->type == PROP_TYPE_SMOKE)
         {
-            weaponInitWithModelDef(arg1, PitemZ_entries[spF0].header);
+            weaponInitWithModelDef(obj, PitemZ_entries[modelnum].header);
         }
         else
         {
-            objInitWithModelDef(arg1, PitemZ_entries[spF0].header);
+            objInitWithModelDef(obj, PitemZ_entries[modelnum].header);
         }
 
-        modelSetScale(arg1->model, arg1->model->scale * sp78);
+        modelSetScale(obj->model, obj->model->scale * extrascale);
     }
-    else if (arg1->flags & PROPFLAG_ASSIGNEDTOCHR)
+    else if (obj->flags & PROPFLAG_ASSIGNEDTOCHR)
     {
-        sp6C = chrFindByLiteralId(arg1->pad);
+        chr = chrFindByLiteralId(obj->pad);
 
-        if ((sp6C != NULL) && (sp6C->prop != NULL) && (sp6C->model != NULL))
+        if ((chr != NULL) && (chr->prop != NULL) && (chr->model != NULL))
         {
-            if (arg1->type == 8)
+            if (obj->type == 8)
             {
-                var_v0 = weaponInitWithModelDef(arg1, PitemZ_entries[spF0].header);
+                chrprop = weaponInitWithModelDef(obj, PitemZ_entries[modelnum].header);
             }
             else
             {
-                var_v0 = objInitWithModelDef(arg1, PitemZ_entries[spF0].header);
+                chrprop = objInitWithModelDef(obj, PitemZ_entries[modelnum].header);
             }
 
-            modelSetScale(arg1->model, arg1->model->scale * sp78);
-            propReparent(var_v0, sp6C->prop);
+            modelSetScale(obj->model, obj->model->scale * extrascale);
+            propReparent(chrprop, chr->prop);
         }
     }
     else
     {
-        if (isNotBoundPad(arg1->pad))
+        if (isNotBoundPad(obj->pad))
         {
-            sp64 = &g_CurrentSetup.pads[arg1->pad];
+            pad = &g_CurrentSetup.pads[obj->pad];
 
-            mtx4LoadFacing(&sp8C, 0.0f, 0.0f, 0.0f, -sp64->look.f[0], -sp64->look.f[1], -sp64->look.f[2], sp64->up.f[0], sp64->up.f[1], sp64->up.f[2]);
+            mtx4LoadFacing(&mtx, 0.0f, 0.0f, 0.0f, -pad->look.f[0], -pad->look.f[1], -pad->look.f[2], pad->up.f[0], pad->up.f[1], pad->up.f[2]);
 
-            spD0.f[0] = sp64->pos.f[0];
-            spD0.f[1] = sp64->pos.f[1];
-            spD0.f[2] = sp64->pos.f[2];
+            pos.f[0] = pad->pos.f[0];
+            pos.f[1] = pad->pos.f[1];
+            pos.f[2] = pad->pos.f[2];
 
-            if (arg1->flags & PROPFLAG_ONSCREEN)
+            if (obj->flags & PROPFLAG_ONSCREEN)
             {
-                sp80.f[0] = sp64->pos.f[0];
-                sp80.f[1] = sp64->pos.f[1];
-                sp80.f[2] = sp64->pos.f[2];
+                centre.f[0] = pad->pos.f[0];
+                centre.f[1] = pad->pos.f[1];
+                centre.f[2] = pad->pos.f[2];
             }
             else
             {
                 // same as above?
 
-                sp80.f[0] = sp64->pos.f[0];
-                sp80.f[1] = sp64->pos.f[1];
-                sp80.f[2] = sp64->pos.f[2];
+                centre.f[0] = pad->pos.f[0];
+                centre.f[1] = pad->pos.f[1];
+                centre.f[2] = pad->pos.f[2];
             }
 
-            spCC = sp64->stan;
+            tile = pad->stan;
         }
         else
         {
-            var_s0 = &g_CurrentSetup.boundpads[getBoundPadNum(arg1->pad)];
+            boundpad = &g_CurrentSetup.boundpads[getBoundPadNum(obj->pad)];
 
-            mtx4LoadFacing(&sp8C, 0.0f, 0.0f, 0.0f, -var_s0->look.f[0], -var_s0->look.f[1], -var_s0->look.f[2], var_s0->up.f[0], var_s0->up.f[1], var_s0->up.f[2]);
+            mtx4LoadFacing(&mtx, 0.0f, 0.0f, 0.0f, -boundpad->look.f[0], -boundpad->look.f[1], -boundpad->look.f[2], boundpad->up.f[0], boundpad->up.f[1], boundpad->up.f[2]);
 
-            if (!(arg1->flags2 & PROPFLAG2_00000001))
+            if (!(obj->flags2 & PROPFLAG2_00000001))
             {
-                padGetBboxCentre(var_s0, &spD0);
+                padGetBboxCentre(boundpad, &pos);
 
-                sp80.f[0] = spD0.f[0] + (var_s0->up.f[0] * ((var_s0->bbox.ymin - var_s0->bbox.ymax) * 0.5f));
-                sp80.f[1] = spD0.f[1] + (var_s0->up.f[1] * ((var_s0->bbox.ymin - var_s0->bbox.ymax) * 0.5f));
-                sp80.f[2] = spD0.f[2] + (var_s0->up.f[2] * ((var_s0->bbox.ymin - var_s0->bbox.ymax) * 0.5f));
+                centre.f[0] = pos.f[0] + (boundpad->up.f[0] * ((boundpad->bbox.ymin - boundpad->bbox.ymax) * 0.5f));
+                centre.f[1] = pos.f[1] + (boundpad->up.f[1] * ((boundpad->bbox.ymin - boundpad->bbox.ymax) * 0.5f));
+                centre.f[2] = pos.f[2] + (boundpad->up.f[2] * ((boundpad->bbox.ymin - boundpad->bbox.ymax) * 0.5f));
 
-                spCC = var_s0->stan;
+                tile = boundpad->stan;
 
-                if (stanWalkLineNoCallback(&spCC, var_s0->pos.f[0], var_s0->pos.f[2], spD0.f[0], spD0.f[2]) == 0)
+                if (stanWalkLineNoCallback(&tile, boundpad->pos.f[0], boundpad->pos.f[2], pos.f[0], pos.f[2]) == 0)
                 {
-                    spD0.f[0] = var_s0->pos.f[0];
-                    spD0.f[1] = var_s0->pos.f[1];
-                    spD0.f[2] = var_s0->pos.f[2];
+                    pos.f[0] = boundpad->pos.f[0];
+                    pos.f[1] = boundpad->pos.f[1];
+                    pos.f[2] = boundpad->pos.f[2];
 
-                    spCC = var_s0->stan;
+                    tile = boundpad->stan;
 
-                    if (!(arg1->flags & PROPFLAG_ONSCREEN) && !(arg1->flags & PROPFLAG_00001000))
+                    if (!(obj->flags & PROPFLAG_ONSCREEN) && !(obj->flags & PROPFLAG_00001000))
                     {
                         // removed
                     }
@@ -278,209 +278,209 @@ void setupObject(s32 arg0, ObjectRecord *arg1, s32 cmdindex)
             }
             else
             {
-                spD0.f[0] = var_s0->pos.f[0];
-                spD0.f[1] = var_s0->pos.f[1];
-                spD0.f[2] = var_s0->pos.f[2];
+                pos.f[0] = boundpad->pos.f[0];
+                pos.f[1] = boundpad->pos.f[1];
+                pos.f[2] = boundpad->pos.f[2];
 
-                spCC = var_s0->stan;
+                tile = boundpad->stan;
 
-                padGetBboxCentre(var_s0, &sp80);
+                padGetBboxCentre(boundpad, &centre);
 
-                sp80.f[0] += (var_s0->bbox.ymin - var_s0->bbox.ymax) * 0.5f * var_s0->up.f[0];
-                sp80.f[1] += (var_s0->bbox.ymin - var_s0->bbox.ymax) * 0.5f * var_s0->up.f[1];
-                sp80.f[2] += (var_s0->bbox.ymin - var_s0->bbox.ymax) * 0.5f * var_s0->up.f[2];
+                centre.f[0] += (boundpad->bbox.ymin - boundpad->bbox.ymax) * 0.5f * boundpad->up.f[0];
+                centre.f[1] += (boundpad->bbox.ymin - boundpad->bbox.ymax) * 0.5f * boundpad->up.f[1];
+                centre.f[2] += (boundpad->bbox.ymin - boundpad->bbox.ymax) * 0.5f * boundpad->up.f[2];
             }
         }
 
-        if (getposstan(&spD0, spCC, 0.0f, &spE0, &spDC) != 0)
+        if (getposstan(&pos, tile, 0.0f, &floorpos, &floortile) != 0)
         {
-            if (arg1->type == PROP_TYPE_SMOKE)
+            if (obj->type == PROP_TYPE_SMOKE)
             {
-                sp60 = weaponInitWithModelDef(arg1, PitemZ_entries[spF0].header);
+                prop = weaponInitWithModelDef(obj, PitemZ_entries[modelnum].header);
             }
             else
             {
-                sp60 = objInitWithAutoModel(arg1);
+                prop = objInitWithAutoModel(obj);
             }
 
-            if (var_s0 != NULL)
+            if (boundpad != NULL)
             {
-                temp_v0_3 = chrobjGetBboxFromObjectRecord(arg1);
-                if (temp_v0_3 != NULL)
+                bbox = chrobjGetBboxFromObjectRecord(obj);
+                if (bbox != NULL)
                 {
-                    sp58 = 1.0f;
-                    sp54 = 1.0f;
-                    sp50 = 1.0f;
+                    xscale = 1.0f;
+                    yscale = 1.0f;
+                    zscale = 1.0f;
 
-                    if (arg1->flags & (PROPFLAG_00000010 | PROPFLAG_00000020))
+                    if (obj->flags & (PROPFLAG_00000010 | PROPFLAG_00000020))
                     {
-                        if (temp_v0_3->Bounds.xmin < temp_v0_3->Bounds.xmax)
+                        if (bbox->Bounds.xmin < bbox->Bounds.xmax)
                         {
-                            if (arg1->flags & PROPFLAG_ONSCREEN)
+                            if (obj->flags & PROPFLAG_ONSCREEN)
                             {
-                                sp58 = (var_s0->bbox.xmax - var_s0->bbox.xmin) / ((temp_v0_3->Bounds.xmax - temp_v0_3->Bounds.xmin) * arg1->model->scale);
+                                xscale = (boundpad->bbox.xmax - boundpad->bbox.xmin) / ((bbox->Bounds.xmax - bbox->Bounds.xmin) * obj->model->scale);
                             }
                             else
                             {
-                                sp58 = (var_s0->bbox.xmax - var_s0->bbox.xmin) / ((temp_v0_3->Bounds.xmax - temp_v0_3->Bounds.xmin) * arg1->model->scale);
+                                xscale = (boundpad->bbox.xmax - boundpad->bbox.xmin) / ((bbox->Bounds.xmax - bbox->Bounds.xmin) * obj->model->scale);
                             }
                         }
                     }
 
-                    if (arg1->flags & (PROPFLAG_00000010 | PROPFLAG_00000040))
+                    if (obj->flags & (PROPFLAG_00000010 | PROPFLAG_00000040))
                     {
-                        if (temp_v0_3->Bounds.ymin < temp_v0_3->Bounds.ymax)
+                        if (bbox->Bounds.ymin < bbox->Bounds.ymax)
                         {
-                            if (arg1->flags & PROPFLAG_ONSCREEN)
+                            if (obj->flags & PROPFLAG_ONSCREEN)
                             {
-                                sp50 = (var_s0->bbox.zmax - var_s0->bbox.zmin) / ((temp_v0_3->Bounds.ymax - temp_v0_3->Bounds.ymin) * arg1->model->scale);
+                                zscale = (boundpad->bbox.zmax - boundpad->bbox.zmin) / ((bbox->Bounds.ymax - bbox->Bounds.ymin) * obj->model->scale);
                             }
                             else
                             {
-                                sp54 = (var_s0->bbox.ymax - var_s0->bbox.ymin) / ((temp_v0_3->Bounds.ymax - temp_v0_3->Bounds.ymin) * arg1->model->scale);
+                                yscale = (boundpad->bbox.ymax - boundpad->bbox.ymin) / ((bbox->Bounds.ymax - bbox->Bounds.ymin) * obj->model->scale);
                             }
                         }
                     }
 
-                    if (arg1->flags & (PROPFLAG_00000010 | PROPFLAG_00000080))
+                    if (obj->flags & (PROPFLAG_00000010 | PROPFLAG_00000080))
                     {
-                        if (temp_v0_3->Bounds.zmin < temp_v0_3->Bounds.zmax)
+                        if (bbox->Bounds.zmin < bbox->Bounds.zmax)
                         {
-                            if (arg1->flags & PROPFLAG_ONSCREEN)
+                            if (obj->flags & PROPFLAG_ONSCREEN)
                             {
-                                sp54 = (var_s0->bbox.ymax - var_s0->bbox.ymin) / ((temp_v0_3->Bounds.zmax - temp_v0_3->Bounds.zmin) * arg1->model->scale);
+                                yscale = (boundpad->bbox.ymax - boundpad->bbox.ymin) / ((bbox->Bounds.zmax - bbox->Bounds.zmin) * obj->model->scale);
                             }
                             else
                             {
-                                sp50 = (var_s0->bbox.zmax - var_s0->bbox.zmin) / ((temp_v0_3->Bounds.zmax - temp_v0_3->Bounds.zmin) * arg1->model->scale);
+                                zscale = (boundpad->bbox.zmax - boundpad->bbox.zmin) / ((bbox->Bounds.zmax - bbox->Bounds.zmin) * obj->model->scale);
                             }
                         }
                     }
 
-                    var_f0 = sp58;
+                    minscale = xscale;
 
-                    if (sp54 < var_f0)
+                    if (yscale < minscale)
                     {
-                        var_f0 = sp54;
+                        minscale = yscale;
                     }
 
-                    if (sp50 < var_f0)
+                    if (zscale < minscale)
                     {
-                        var_f0 = sp50;
+                        minscale = zscale;
                     }
 
-                    sp48 = sp58;
+                    maxscale = xscale;
 
-                    if (sp58 < sp54)
+                    if (xscale < yscale)
                     {
-                        sp48 = sp54;
+                        maxscale = yscale;
                     }
 
-                    if (sp48 < sp50)
+                    if (maxscale < zscale)
                     {
-                        sp48 = sp50;
+                        maxscale = zscale;
                     }
 
-                    if (arg1->flags & PROPFLAG_00000010)
+                    if (obj->flags & PROPFLAG_00000010)
                     {
-                        sp50 = var_f0;
-                        sp54 = var_f0;
-                        sp58 = var_f0;
+                        zscale = minscale;
+                        yscale = minscale;
+                        xscale = minscale;
                     }
                     else
                     {
-                        if (!(arg1->flags & PROPFLAG_00000020))
+                        if (!(obj->flags & PROPFLAG_00000020))
                         {
-                            if (arg1->flags & PROPFLAG_ONSCREEN)
+                            if (obj->flags & PROPFLAG_ONSCREEN)
                             {
-                                if (temp_v0_3->Bounds.xmax == temp_v0_3->Bounds.xmin)
+                                if (bbox->Bounds.xmax == bbox->Bounds.xmin)
                                 {
-                                    sp58 = sp48;
+                                    xscale = maxscale;
                                 }
                             }
-                            else if (temp_v0_3->Bounds.xmax == temp_v0_3->Bounds.xmin)
+                            else if (bbox->Bounds.xmax == bbox->Bounds.xmin)
                             {
-                                sp58 = sp48;
+                                xscale = maxscale;
                             }
                         }
 
-                        if (!(arg1->flags & PROPFLAG_00000040))
+                        if (!(obj->flags & PROPFLAG_00000040))
                         {
-                            if (arg1->flags & PROPFLAG_ONSCREEN)
+                            if (obj->flags & PROPFLAG_ONSCREEN)
                             {
-                                if (temp_v0_3->Bounds.ymax == temp_v0_3->Bounds.ymin)
+                                if (bbox->Bounds.ymax == bbox->Bounds.ymin)
                                 {
-                                    sp50 = sp48;
+                                    zscale = maxscale;
                                 }
                             }
-                            else if (temp_v0_3->Bounds.ymax == temp_v0_3->Bounds.ymin)
+                            else if (bbox->Bounds.ymax == bbox->Bounds.ymin)
                             {
-                                sp54 = sp48;
+                                yscale = maxscale;
                             }
                         }
 
-                        if (!(arg1->flags & PROPFLAG_00000080))
+                        if (!(obj->flags & PROPFLAG_00000080))
                         {
-                            if (arg1->flags & PROPFLAG_ONSCREEN)
+                            if (obj->flags & PROPFLAG_ONSCREEN)
                             {
-                                if (temp_v0_3->Bounds.zmax == temp_v0_3->Bounds.zmin)
+                                if (bbox->Bounds.zmax == bbox->Bounds.zmin)
                                 {
-                                    sp54 = sp48;
+                                    yscale = maxscale;
                                 }
                             }
-                            else if (temp_v0_3->Bounds.zmax == temp_v0_3->Bounds.zmin)
+                            else if (bbox->Bounds.zmax == bbox->Bounds.zmin)
                             {
-                                sp50 = sp48;
+                                zscale = maxscale;
                             }
                         }
                     }
 
-                    sp58 /= sp48;
-                    sp54 /= sp48;
-                    sp50 /= sp48;
+                    xscale /= maxscale;
+                    yscale /= maxscale;
+                    zscale /= maxscale;
 
-                    if ((sp58 <= 0.000001f) || (sp54 <= 0.000001f) || (sp50 <= 0.000001f))
+                    if ((xscale <= 0.000001f) || (yscale <= 0.000001f) || (zscale <= 0.000001f))
                     {
-                        sp50 = 1.0f;
-                        sp54 = 1.0f;
-                        sp58 = 1.0f;
+                        zscale = 1.0f;
+                        yscale = 1.0f;
+                        xscale = 1.0f;
                     }
 
-                    mtx4ScaleRow0(sp58, sp8C.m[0]);
-                    mtx4ScaleRow1(sp54, sp8C.m[0]);
-                    mtx4ScaleRow2(sp50, sp8C.m[0]);
+                    mtx4ScaleRow0(xscale, mtx.m[0]);
+                    mtx4ScaleRow1(yscale, mtx.m[0]);
+                    mtx4ScaleRow2(zscale, mtx.m[0]);
 
-                    modelSetScale(arg1->model, arg1->model->scale * sp48);
+                    modelSetScale(obj->model, obj->model->scale * maxscale);
                 }
             }
 
-            modelSetScale(arg1->model, arg1->model->scale * sp78);
-            mtx4ScaleRows012(arg1->model->scale, sp8C.m[0]);
+            modelSetScale(obj->model, obj->model->scale * extrascale);
+            mtx4ScaleRows012(obj->model->scale, mtx.m[0]);
 
-            if (arg1->flags & PROPFLAG_ONSCREEN)
+            if (obj->flags & PROPFLAG_ONSCREEN)
             {
-                objPlaceAtPadSideways(arg1, &spE0, &sp8C, spDC, &sp80);
+                objPlaceAtPadSideways(obj, &floorpos, &mtx, floortile, &centre);
             }
             else
             {
-                objPlaceAtPad(arg1, &spE0, &sp8C, spDC, &sp80);
+                objPlaceAtPad(obj, &floorpos, &mtx, floortile, &centre);
             }
 
-            setupUpdateObjectRoomPosition(arg1);
-            propActivate(sp60);
-            propEnable(sp60);
+            setupUpdateObjectRoomPosition(obj);
+            propActivate(prop);
+            propEnable(prop);
         }
     }
 }
 
 /**
 */
-void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
+void setupWeapon(s32 stageid, WeaponObjRecord* weapon, s32 cmdindex)
 {
     bool hastoken;
     ChrRecord* chr;
     bool giveweapon;
-    s32 temp_a0;
+    s32 setindex;
     struct s_mp_weapon_set* weapon_set;
 
     if ((weapon->flags & PROPFLAG_ASSIGNEDTOCHR))
@@ -550,18 +550,18 @@ void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
                 case ITEM_SKORPION + 0xF0:
                     weapon_set = mpWeaponSetGetItems();
 
-                    temp_a0 = (u8)weapon->weaponnum - 0xF0;
-                    lastmpweaponnum = temp_a0;
+                    setindex = (u8)weapon->weaponnum - 0xF0;
+                    lastmpweaponnum = setindex;
 
-                    weapon->weaponnum = weapon_set[temp_a0].itemID;
-                    weapon->obj = weapon_set[temp_a0].propID;
+                    weapon->weaponnum = weapon_set[setindex].itemID;
+                    weapon->obj = weapon_set[setindex].propID;
 #if defined(VERSION_EU)
-                    weapon->extrascale = (weapon_set[temp_a0].size16);
+                    weapon->extrascale = (weapon_set[setindex].size16);
 #else
-                    weapon->extrascale = (weapon_set[temp_a0].size * 256.0f);
+                    weapon->extrascale = (weapon_set[setindex].size * 256.0f);
 #endif
 
-                    giveweapon = weapon_set[temp_a0].allowpickup;
+                    giveweapon = weapon_set[setindex].allowpickup;
 
                     break;
 
@@ -581,13 +581,13 @@ void setupWeapon(s32 arg0, WeaponObjRecord* weapon, s32 cmdindex)
         if ((weapon->weaponnum != ITEM_UNARMED) && giveweapon)
         {
             weaponLoadProjectileModels(weapon->weaponnum);
-            setupObject(arg0, (struct ObjectRecord*)weapon, cmdindex);
+            setupObject(stageid, (struct ObjectRecord*)weapon, cmdindex);
         }
     }
 }
 
 //i should be object hat
-void setupHat(s32 arg0, ObjectRecord* hat, s32 cmdindex)
+void setupHat(s32 stageid, ObjectRecord* hat, s32 cmdindex)
 {
     if (hat->flags & PROPFLAG_ASSIGNEDTOCHR) {
         ChrRecord* chr = chrFindByLiteralId(hat->pad);
@@ -595,70 +595,70 @@ void setupHat(s32 arg0, ObjectRecord* hat, s32 cmdindex)
             hatAssignToChr(hat, chr);
         }
     } else {
-        setupObject(arg0, hat, cmdindex);
+        setupObject(stageid, hat, cmdindex);
     }
 }
 
 //i should be object key
-void setupKey(s32 arg0, ObjectRecord* key, s32 cmdindex)
+void setupKey(s32 stageid, ObjectRecord* key, s32 cmdindex)
 {
-    setupObject(arg0, key, cmdindex);
+    setupObject(stageid, key, cmdindex);
 }
 
 
 /**
 */
-void setupCctv(s32 arg0, CCTVRecord *arg1, s32 cmdindex)
+void setupCctv(s32 stageid, CCTVRecord *cctv, s32 cmdindex)
 {
-    struct coord3d *temp_a2;
-    struct PadRecord *sp50;
-    struct coord3d sp44;
-    Mtxf *sp3C;
+    struct coord3d *headoffset;
+    struct PadRecord *lookpad;
+    struct coord3d headpos;
+    Mtxf *headmtx;
 
-    setupObject(arg0, (struct ObjectRecord*)arg1, cmdindex);
+    setupObject(stageid, (struct ObjectRecord*)cctv, cmdindex);
 
-    if (arg1->lookpad >= 0)
+    if (cctv->lookpad >= 0)
     {
-        temp_a2 = (struct coord3d*)arg1->model->obj->Switches[0]->Data;
+        headoffset = (struct coord3d*)cctv->model->obj->Switches[0]->Data;
 
-        if (isNotBoundPad(arg1->lookpad))
+        if (isNotBoundPad(cctv->lookpad))
         {
-            sp50 = &g_CurrentSetup.pads[arg1->lookpad];
+            lookpad = &g_CurrentSetup.pads[cctv->lookpad];
         }
         else
         {
-            sp50 = (struct PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(arg1->lookpad)];
+            lookpad = (struct PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(cctv->lookpad)];
         }
 
-        sp44.f[0] = temp_a2->f[0];
-        sp44.f[1] = temp_a2->f[1];
-        sp44.f[2] = temp_a2->f[2];
+        headpos.f[0] = headoffset->f[0];
+        headpos.f[1] = headoffset->f[1];
+        headpos.f[2] = headoffset->f[2];
 
-        mtx4RotateVecInPlace(&arg1->mtx, &sp44);
+        mtx4RotateVecInPlace(&cctv->mtx, &headpos);
 
-        sp3C = &arg1->headMtx;
+        headmtx = &cctv->headMtx;
 
-        sp44.f[0] += arg1->prop->pos.f[0];
-        sp44.f[1] += arg1->prop->pos.f[1];
-        sp44.f[2] += arg1->prop->pos.f[2];
+        headpos.f[0] += cctv->prop->pos.f[0];
+        headpos.f[1] += cctv->prop->pos.f[1];
+        headpos.f[2] += cctv->prop->pos.f[2];
 
-        mtx4LoadFacing(sp3C, 0.0f, 0.0f, 0.0f, sp44.f[0] - sp50->pos.f[0], sp44.f[1] - sp50->pos.f[1], sp44.f[2] - sp50->pos.f[2], 0.0f, 1.0f, 0.0f);
-        mtx4ScaleRows012(arg1->model->scale, sp3C->m[0]);
+        mtx4LoadFacing(headmtx, 0.0f, 0.0f, 0.0f, headpos.f[0] - lookpad->pos.f[0], headpos.f[1] - lookpad->pos.f[1], headpos.f[2] - lookpad->pos.f[2], 0.0f, 1.0f, 0.0f);
+        mtx4ScaleRows012(cctv->model->scale, headmtx->m[0]);
 
-        if (arg1->convert_to_f32 == 0)
+        if (cctv->convert_to_f32 == 0)
         {
-            arg1->convert_to_f32 = 1;
-            arg1->sweepYaw1 = (*(s32*)&arg1->sweepYaw1 * M_TAU_F) / 65536.0f;
-            arg1->sweepYaw2 = (*(s32*)&arg1->sweepYaw2 * M_TAU_F) / 65536.0f;
-            arg1->maxYawSpeed = (*(s32*)&arg1->maxYawSpeed * M_TAU_F) / 65536.0f;
-            arg1->viewDist = *(s32*)&arg1->viewDist;
+            cctv->convert_to_f32 = 1;
+            cctv->sweepYaw1 = (*(s32*)&cctv->sweepYaw1 * M_TAU_F) / 65536.0f;
+            cctv->sweepYaw2 = (*(s32*)&cctv->sweepYaw2 * M_TAU_F) / 65536.0f;
+            cctv->maxYawSpeed = (*(s32*)&cctv->maxYawSpeed * M_TAU_F) / 65536.0f;
+            cctv->viewDist = *(s32*)&cctv->viewDist;
         }
 
-        arg1->towardsYaw1 = 0;
-        arg1->yawSpeed = 0.0f;
-        arg1->yaw = arg1->sweepYaw1;
-        arg1->baseYaw = mathAtan2(sp44.f[0] - sp50->pos.f[0], sp44.f[2] - sp50->pos.f[2]);
-        arg1->timer = 0;
+        cctv->towardsYaw1 = 0;
+        cctv->yawSpeed = 0.0f;
+        cctv->yaw = cctv->sweepYaw1;
+        cctv->baseYaw = mathAtan2(headpos.f[0] - lookpad->pos.f[0], headpos.f[2] - lookpad->pos.f[2]);
+        cctv->timer = 0;
     }
 }
 
@@ -734,9 +734,9 @@ void setupAutogun(s32 stageID, AutogunRecord *autogun, s32 cmdindex)
 
 
 //i should be object rack
-void setupHangingMonitors(s32 arg0, ObjectRecord* rack, s32 cmdindex)
+void setupHangingMonitors(s32 stageid, ObjectRecord* rack, s32 cmdindex)
 {
-    setupObject(arg0, rack, cmdindex);
+    setupObject(stageid, rack, cmdindex);
 }
 
 
@@ -827,59 +827,59 @@ void setupMultiMonitor(s32 stageID, MultiMonitorObjRecord* monitor, s32 cmdindex
     setupObject(stageID, monitor, cmdindex);
 }
 
-void padGetRoomsEitherSide(struct BoundPadRecord *arg0, s32 *arg1, s32 *arg2, struct coord3d *arg3, struct coord3d *arg4)
+void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, struct coord3d *pos1, struct coord3d *pos2)
 {
-    StandTile *sp4C;
+    StandTile *tile;
     struct coord3d normal;
     struct coord3d center;
-    StandTile *sp2C;
+    StandTile *centretile;
     f32 scale;
 
-    padGetBboxCentre(arg0, &center);
-    sp2C = (StandTile *)arg0->stan;
+    padGetBboxCentre(pad, &center);
+    centretile = (StandTile *)pad->stan;
 
-    if (stanWalkLineNoCallback(&sp2C, arg0->pos.f[0], arg0->pos.f[2], center.f[0], center.f[2]) == 0)
+    if (stanWalkLineNoCallback(&centretile, pad->pos.f[0], pad->pos.f[2], center.f[0], center.f[2]) == 0)
     {
-        sp2C = (StandTile *)arg0->stan;
-        center.f[0] = arg0->pos.f[0];
-        center.f[1] = arg0->pos.f[1];
-        center.f[2] = arg0->pos.f[2];
+        centretile = (StandTile *)pad->stan;
+        center.f[0] = pad->pos.f[0];
+        center.f[1] = pad->pos.f[1];
+        center.f[2] = pad->pos.f[2];
     }
 
-    normal.f[0] = (arg0->up.f[1] * arg0->look.f[2]) - (arg0->up.f[2] * arg0->look.f[1]);
-    normal.f[1] = (arg0->up.f[2] * arg0->look.f[0]) - (arg0->up.f[0] * arg0->look.f[2]);
-    normal.f[2] = (arg0->up.f[0] * arg0->look.f[1]) - (arg0->up.f[1] * arg0->look.f[0]);
+    normal.f[0] = (pad->up.f[1] * pad->look.f[2]) - (pad->up.f[2] * pad->look.f[1]);
+    normal.f[1] = (pad->up.f[2] * pad->look.f[0]) - (pad->up.f[0] * pad->look.f[2]);
+    normal.f[2] = (pad->up.f[0] * pad->look.f[1]) - (pad->up.f[1] * pad->look.f[0]);
 
     scale = 1.0f / sqrtf(((normal.f[0] * normal.f[0]) + (normal.f[1] * normal.f[1])) + (normal.f[2] * normal.f[2]));
-    sp4C = sp2C;
+    tile = centretile;
 
     normal.f[0] *= scale;
     normal.f[1] *= scale;
     normal.f[2] *= scale;
 
-    arg3->f[0] = center.f[0] + (normal.f[0] * 50.0f);
-    arg3->f[1] = center.f[1];
-    arg3->f[2] = center.f[2] + (normal.f[2] * 50.0f);
+    pos1->f[0] = center.f[0] + (normal.f[0] * 50.0f);
+    pos1->f[1] = center.f[1];
+    pos1->f[2] = center.f[2] + (normal.f[2] * 50.0f);
 
 
-    stanWalkLineNoCallback(&sp4C, center.f[0], center.f[2], arg3->f[0], arg3->f[2]);
+    stanWalkLineNoCallback(&tile, center.f[0], center.f[2], pos1->f[0], pos1->f[2]);
 
 
-    *arg1 = (s32) sp4C->room;
-    sp4C = sp2C;
+    *room1 = (s32) tile->room;
+    tile = centretile;
 
-    arg4->f[0] = center.f[0] - (normal.f[0] * 50.0f);
-    arg4->f[1] = center.f[1];
-    arg4->f[2] = center.f[2] - (normal.f[2] * 50.0f);
+    pos2->f[0] = center.f[0] - (normal.f[0] * 50.0f);
+    pos2->f[1] = center.f[1];
+    pos2->f[2] = center.f[2] - (normal.f[2] * 50.0f);
 
-    stanWalkLineNoCallback(&sp4C, center.f[0], center.f[2], arg4->f[0], arg4->f[2]);
+    stanWalkLineNoCallback(&tile, center.f[0], center.f[2], pos2->f[0], pos2->f[2]);
 
 
-    *arg2 = (s32) sp4C->room;
+    *room2 = (s32) tile->room;
 
-    if (*arg2 == *arg1)
+    if (*room2 == *room1)
     {
-        *arg2 = -1;
+        *room2 = -1;
     }
 }
 
@@ -890,31 +890,31 @@ extern f32 g_DoorScale;
  * PAL ADDRESS: 7F0033F0
  * Perfect Dark: void setupCreateDoor(struct doorobj *door, s32 cmdindex)
 */
-void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
+void setupDoor(s32 stageid, struct DoorRecord *door, s32 cmdindex)
 {
     s32 modelnum;
     struct BoundPadRecord *pad;
-    StandTile *sp1C8_stan;
+    StandTile *floortile;
     PropRecord *prop;
-    struct coord3d sp1B8;
-    s32 portalnum; //sp1b4
-    s32 sp1B0;
-    s32 sp1AC;
-    struct coord3d sp1A0;
-    struct coord3d sp194;
-    struct PortalMetric sp180;
-    struct ModelRoData_BoundingBoxRecord *temp_v0;
-    struct coord3d sp170;
-    StandTile *sp16C;
-    Mtxf sp12C;
-    f32 temp_f2; // no sp
-    ModelFileHeader *sp124;
-    struct coord3d sp118;                           /* compiler-managed */
-    StandTile *sp114_stan;
-    Mtxf spD4;
-    struct coord3d spC8;
-    Mtxf sp88;
-    struct coord3d sp7C;
+    struct coord3d floorpos;
+    s32 portalnum;
+    s32 room1;
+    s32 room2;
+    struct coord3d side1;
+    struct coord3d side2;
+    struct PortalMetric plane;
+    struct ModelRoData_BoundingBoxRecord *modelbbox;
+    struct coord3d newpos;
+    StandTile *tile;
+    Mtxf padmtx;
+    f32 dist; // no sp
+    ModelFileHeader *modelfile;
+    struct coord3d pos;                           /* compiler-managed */
+    StandTile *postile;
+    Mtxf mtx;
+    struct coord3d centre;
+    Mtxf rotz;
+    struct coord3d extent;
     struct bbox bb2;
     f32 xscale;
     f32 yscale;
@@ -925,8 +925,8 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
     modelnum = door->obj;
 
     portalnum = -1;
-    sp1B0 = -1;
-    sp1AC = -1;
+    room1 = -1;
+    room2 = -1;
 
     modelLoad(modelnum);
 
@@ -934,11 +934,11 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 
     if ((door->flags & PROPFLAG_CULL_BEHIND_DOOR) || (door->flags & PROPFLAG_NO_PORTAL_CLOSE))
     {
-        padGetRoomsEitherSide(pad, &sp1B0, &sp1AC, &sp1A0, &sp194);
+        padGetRoomsEitherSide(pad, &room1, &room2, &side1, &side2);
 
-        if ((door->flags & PROPFLAG_CULL_BEHIND_DOOR) && (sp1B0 >= 0) && (sp1AC >= 0))
+        if ((door->flags & PROPFLAG_CULL_BEHIND_DOOR) && (room1 >= 0) && (room2 >= 0))
         {
-            portalnum = bgGetPortalBetweenRooms(sp1B0, sp1AC, &sp1A0, &sp194);
+            portalnum = bgGetPortalBetweenRooms(room1, room2, &side1, &side2);
         }
     }
 
@@ -946,33 +946,33 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
     {
         if (portalnum >= 0)
         {
-            bgGetPortalPlane(portalnum, &sp180);
-            sp180.min *= bgGetLevelScaleInv();
+            bgGetPortalPlane(portalnum, &plane);
+            plane.min *= bgGetLevelScaleInv();
 
-            temp_f2 = (pad->pos.f[0] * sp180.normal.f[0]) + (pad->pos.f[1] * sp180.normal.f[1]) + (pad->pos.f[2] * sp180.normal.f[2]);
+            dist = (pad->pos.f[0] * plane.normal.f[0]) + (pad->pos.f[1] * plane.normal.f[1]) + (pad->pos.f[2] * plane.normal.f[2]);
 
             if (g_DoorScale < 1.0f)
             {
-                temp_f2 = (temp_f2 - sp180.min) * (1.0f - g_DoorScale);
-                sp170.f[0] = pad->pos.f[0] - (sp180.normal.f[0] * temp_f2);
-                sp170.f[1] = pad->pos.f[1] - (sp180.normal.f[1] * temp_f2);
-                sp170.f[2] = pad->pos.f[2] - (sp180.normal.f[2] * temp_f2);
+                dist = (dist - plane.min) * (1.0f - g_DoorScale);
+                newpos.f[0] = pad->pos.f[0] - (plane.normal.f[0] * dist);
+                newpos.f[1] = pad->pos.f[1] - (plane.normal.f[1] * dist);
+                newpos.f[2] = pad->pos.f[2] - (plane.normal.f[2] * dist);
             }
             else
             {
-                temp_f2 = (temp_f2 - sp180.min) * (g_DoorScale - 1.0f);
-                sp170.f[0] = pad->pos.f[0] + (sp180.normal.f[0] * temp_f2);
-                sp170.f[1] = pad->pos.f[1] + (sp180.normal.f[1] * temp_f2);
-                sp170.f[2] = pad->pos.f[2] + (sp180.normal.f[2] * temp_f2);
+                dist = (dist - plane.min) * (g_DoorScale - 1.0f);
+                newpos.f[0] = pad->pos.f[0] + (plane.normal.f[0] * dist);
+                newpos.f[1] = pad->pos.f[1] + (plane.normal.f[1] * dist);
+                newpos.f[2] = pad->pos.f[2] + (plane.normal.f[2] * dist);
             }
 
-            sp16C = pad->stan;
-            if (stanWalkLineNoCallback(&sp16C, pad->pos.f[0], pad->pos.f[2], sp170.f[0], sp170.f[2]) != 0)
+            tile = pad->stan;
+            if (stanWalkLineNoCallback(&tile, pad->pos.f[0], pad->pos.f[2], newpos.f[0], newpos.f[2]) != 0)
             {
-                pad->stan = sp16C;
-                pad->pos.f[0] = sp170.f[0];
-                pad->pos.f[1] = sp170.f[1];
-                pad->pos.f[2] = sp170.f[2];
+                pad->stan = tile;
+                pad->pos.f[0] = newpos.f[0];
+                pad->pos.f[1] = newpos.f[1];
+                pad->pos.f[2] = newpos.f[2];
                 pad->bbox.xmin *= g_DoorScale;
                 pad->bbox.xmax *= g_DoorScale;
             }
@@ -984,11 +984,11 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
         }
     }
 
-    if (getposstan(&pad->pos, pad->stan, 0.0f, &sp1B8, &sp1C8_stan) != 0)
+    if (getposstan(&pad->pos, pad->stan, 0.0f, &floorpos, &floortile) != 0)
     {
-        mtx4LoadFacing(&sp12C, 0, 0, 0, -pad->look.f[0], -pad->look.f[1], -pad->look.f[2], pad->up.f[0], pad->up.f[1], pad->up.f[2]);
-        sp124 = PitemZ_entries[modelnum].header;
-        sp114_stan = sp1C8_stan;
+        mtx4LoadFacing(&padmtx, 0, 0, 0, -pad->look.f[0], -pad->look.f[1], -pad->look.f[2], pad->up.f[0], pad->up.f[1], pad->up.f[2]);
+        modelfile = PitemZ_entries[modelnum].header;
+        postile = floortile;
 
         bb2.zmax = pad->bbox.xmin;
         bb2.zmin = pad->bbox.xmax; //78
@@ -997,17 +997,17 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
         bb2.xmax = pad->bbox.zmin; //6c
         bb2.xmin = pad->bbox.zmax; //68
 
-        mtx4LoadXRotation(M_HALF_PI, &spD4);
-        mtx4LoadZRotation(M_HALF_PI, &sp88);
-        mtx4MultInPlace(&sp88, &spD4);
-        mtx4MultInPlace(&sp12C, &spD4);
-        padGetBboxCentre(pad, &sp118);
+        mtx4LoadXRotation(M_HALF_PI, &mtx);
+        mtx4LoadZRotation(M_HALF_PI, &rotz);
+        mtx4MultInPlace(&rotz, &mtx);
+        mtx4MultInPlace(&padmtx, &mtx);
+        padGetBboxCentre(pad, &pos);
 
-        temp_v0 = (struct ModelRoData_BoundingBoxRecord *)sp124->RootNode->Child->Data;
+        modelbbox = (struct ModelRoData_BoundingBoxRecord *)modelfile->RootNode->Child->Data;
 
-        xscale = (bb2.ymin - bb2.ymax) / (temp_v0->Bounds.xmax - temp_v0->Bounds.xmin);
-        yscale = (bb2.xmin - bb2.xmax) / (temp_v0->Bounds.ymax - temp_v0->Bounds.ymin);
-        zscale = (bb2.zmin - bb2.zmax) / (temp_v0->Bounds.zmax - temp_v0->Bounds.zmin);
+        xscale = (bb2.ymin - bb2.ymax) / (modelbbox->Bounds.xmax - modelbbox->Bounds.xmin);
+        yscale = (bb2.xmin - bb2.xmax) / (modelbbox->Bounds.ymax - modelbbox->Bounds.ymin);
+        zscale = (bb2.zmin - bb2.zmax) / (modelbbox->Bounds.zmax - modelbbox->Bounds.zmin);
 
         if ((xscale <= 0.000001f) || (yscale <= 0.000001f) || (zscale <= 0.000001f))
         {
@@ -1016,24 +1016,24 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
                 zscale = 1.0f;
         }
 
-        mtx4ScaleRow0(xscale, spD4.m[0]);
-        mtx4ScaleRow1(yscale, spD4.m[0]);
-        mtx4ScaleRow2(zscale, spD4.m[0]);
+        mtx4ScaleRow0(xscale, mtx.m[0]);
+        mtx4ScaleRow1(yscale, mtx.m[0]);
+        mtx4ScaleRow2(zscale, mtx.m[0]);
 
-        spC8.f[0] = sp118.f[0];
-        spC8.f[1] = sp118.f[1];
-        spC8.f[2] = sp118.f[2];
+        centre.f[0] = pos.f[0];
+        centre.f[1] = pos.f[1];
+        centre.f[2] = pos.f[2];
 
         if (!(door->flags2 & 1))
         {
-            if (stanWalkLineNoCallback(&sp114_stan, sp1B8.f[0], sp1B8.f[2], sp118.f[0], sp118.f[2]) != 0)
+            if (stanWalkLineNoCallback(&postile, floorpos.f[0], floorpos.f[2], pos.f[0], pos.f[2]) != 0)
             {
-                sp1C8_stan = sp114_stan;
+                floortile = postile;
             }
             else
             {
-                sp118.f[0] = sp1B8.f[0];
-                sp118.f[2] = sp1B8.f[2];
+                pos.f[0] = floorpos.f[0];
+                pos.f[2] = floorpos.f[2];
 
                 if (!(door->flags & 0x1000)) // prop flag PROPFLAG_00001000 "Absolute Position"
                 {
@@ -1043,22 +1043,22 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
         }
         else
         {
-            sp118.f[0] = sp1B8.f[0];
-            sp118.f[1] = sp1B8.f[1];
-            sp118.f[2] = sp1B8.f[2];
+            pos.f[0] = floorpos.f[0];
+            pos.f[1] = floorpos.f[1];
+            pos.f[2] = floorpos.f[2];
         }
 
         if ((door->doorType == DOORTYPE_VERTICAL) || (door->doorType == DOORTYPE_FALLAWAY))
         {
-            sp7C.f[0] = pad->look.f[0] * (bb2.xmin - bb2.xmax);
-            sp7C.f[1] = pad->look.f[1] * (bb2.xmin - bb2.xmax);
-            sp7C.f[2] = pad->look.f[2] * (bb2.xmin - bb2.xmax);
+            extent.f[0] = pad->look.f[0] * (bb2.xmin - bb2.xmax);
+            extent.f[1] = pad->look.f[1] * (bb2.xmin - bb2.xmax);
+            extent.f[2] = pad->look.f[2] * (bb2.xmin - bb2.xmax);
         }
         else
         {
-            sp7C.f[0] = pad->up.f[0] * (bb2.ymax - bb2.ymin);
-            sp7C.f[1] = pad->up.f[1] * (bb2.ymax - bb2.ymin);
-            sp7C.f[2] = pad->up.f[2] * (bb2.ymax - bb2.ymin);
+            extent.f[0] = pad->up.f[0] * (bb2.ymax - bb2.ymin);
+            extent.f[1] = pad->up.f[1] * (bb2.ymax - bb2.ymin);
+            extent.f[2] = pad->up.f[2] * (bb2.ymax - bb2.ymin);
         }
 
         // These values are stored in the setup files as integers, but at
@@ -1076,7 +1076,7 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 		door->maxSpeed = (*(s32 *) &door->maxSpeed) / 65536.0f;
 #endif
 
-        prop = doorInit(door, &sp118, &spD4, sp1C8_stan, &sp7C, &spC8);
+        prop = doorInit(door, &pos, &mtx, floortile, &extent, &centre);
         if (door->flags & PROPFLAG_CULL_BEHIND_DOOR)
         {
             door->portalNumber = portalnum;
@@ -1093,18 +1093,18 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 
         if ((door->flags & PROPFLAG_CULL_BEHIND_DOOR) || (door->flags & PROPFLAG_NO_PORTAL_CLOSE))
         {
-            if (sp1B0 != prop->stan->room)
+            if (room1 != prop->stan->room)
             {
-                if (sp1B0 >= 0)
+                if (room1 >= 0)
                 {
-                    prop->rooms[1] = sp1B0;
-                    propAddToRoom(prop, sp1B0);
+                    prop->rooms[1] = room1;
+                    propAddToRoom(prop, room1);
                 }
             }
-            else if (sp1AC >= 0)
+            else if (room2 >= 0)
             {
-                prop->rooms[1] = sp1AC;
-                propAddToRoom(prop, sp1AC);
+                prop->rooms[1] = room2;
+                propAddToRoom(prop, room2);
             }
 
             if (prop->rooms[1] != 0xff && 1)
@@ -1138,7 +1138,7 @@ void setupDoor(s32 arg0, struct DoorRecord *door, s32 arg2)
 
         if (door->linkedDoorOffset != 0)
         {
-            door->linkedDoor = (struct DoorRecord *)setupGetPtrToCommandByIndex(door->linkedDoorOffset + arg2);
+            door->linkedDoor = (struct DoorRecord *)setupGetPtrToCommandByIndex(door->linkedDoorOffset + cmdindex);
         }
     }
     else
@@ -1982,48 +1982,38 @@ void propsResetLevelState(void)
 /**
  * Called from setupCreateProps when PROPDEF type is PROPDEF_SWITCH.
 */
-void setupLinkSwitch(struct LinkRecord *arg0)
+void setupLinkSwitch(struct LinkRecord *link)
 {
-    arg0->next = g_LevelLoadPropSwitch;
-    g_LevelLoadPropSwitch = arg0;
+    link->next = g_LevelLoadPropSwitch;
+    g_LevelLoadPropSwitch = link;
 }
 
 
 /**
  * Called from setupCreateProps when PROPDEF type is PROPDEF_LOCK_DOOR.
 */
-void setupLinkLockDoor(struct LockDoorRecord *arg0)
+void setupLinkLockDoor(struct LockDoorRecord *link)
 {
-    arg0->next = g_LevelLoadPropLockDoor;
-    g_LevelLoadPropLockDoor = arg0;
+    link->next = g_LevelLoadPropLockDoor;
+    g_LevelLoadPropLockDoor = link;
 }
 
 
 /**
  * Called from setupCreateProps when PROPDEF type is PROPDEF_SAFE_ITEM.
 */
-void setupLinkSafeItem(struct ObjectRecord *arg0)
+void setupLinkSafeItem(struct ObjectRecord *obj)
 {
-    arg0->prop = g_LevelLoadPropSafeItem;
-    g_LevelLoadPropSafeItem = arg0;
+    obj->prop = g_LevelLoadPropSafeItem;
+    g_LevelLoadPropSafeItem = obj;
 }
 
 
 void monitorsInitAnimations(void)
 {
-    MonitorRecord spEC;
-    struct object_animation_controller sp78;
-    struct object_animation_controller sp4;
-
-    spEC = g_InitialMonitorAnimController;
-    g_MonitorAnimController = spEC;
-
-    sp78 = g_InitialUnknownAnimController;
-    g_UnknownAnimController = sp78;
-
-    sp4 = g_InitialTaserAnimController;
-    g_TaserAnimController = sp4;
-
+    g_MonitorAnimController = g_InitialMonitorAnimController;
+    g_UnknownAnimController = g_InitialUnknownAnimController;
+    g_TaserAnimController = g_InitialTaserAnimController;
 }
 
 
@@ -2339,75 +2329,75 @@ s32 modelLoad(s32 modelid)
 
 void setupUpdateObjectRoomPosition(ObjectRecord *obj)
 {
-    PropRecord *temp_s1;
-    struct coord3d sp40;
-    struct coord3d sp34;
-    struct ModelRoData_BoundingBoxRecord *sp30;
-    f32 phi_f20;
+    PropRecord *prop;
+    struct coord3d min;
+    struct coord3d max;
+    struct ModelRoData_BoundingBoxRecord *bbox;
+    f32 radius;
 
-    temp_s1 = obj->prop;
-    phi_f20 = 0.0f;
-    propRemoveFromRooms(temp_s1);
+    prop = obj->prop;
+    radius = 0.0f;
+    propRemoveFromRooms(prop);
 
     if (obj->flags2 & 0x20000)
     {
-        if (temp_s1->stan != NULL)
+        if (prop->stan != NULL)
         {
-            temp_s1->rooms[0] = temp_s1->stan->room;
-            temp_s1->rooms[1] = (u8)-1;
+            prop->rooms[0] = prop->stan->room;
+            prop->rooms[1] = (u8)-1;
         }
         else
         {
-            temp_s1->rooms[0] = (u8)-1;
+            prop->rooms[0] = (u8)-1;
         }
     }
     else
     {
-        sp30 = chrobjGetBboxFromObjectRecord(obj);
+        bbox = chrobjGetBboxFromObjectRecord(obj);
 
-        if (sp30 != NULL)
+        if (bbox != NULL)
         {
-            sp40.f[0] = bboxRotatedMinX(sp30, &obj->mtx) - 30.0f;
-            sp40.f[1] = bboxRotatedMinY(sp30, &obj->mtx);
-            sp40.f[2] = bboxRotatedMinZ(sp30, &obj->mtx) - 30.0f;
+            min.f[0] = bboxRotatedMinX(bbox, &obj->mtx) - 30.0f;
+            min.f[1] = bboxRotatedMinY(bbox, &obj->mtx);
+            min.f[2] = bboxRotatedMinZ(bbox, &obj->mtx) - 30.0f;
 
-            sp34.f[0] = bboxRotatedMaxX(sp30, &obj->mtx) + 30.0f;
-            sp34.f[1] = bboxRotatedMaxY(sp30, &obj->mtx);
-            sp34.f[2] = bboxRotatedMaxZ(sp30, &obj->mtx) + 30.0f;
+            max.f[0] = bboxRotatedMaxX(bbox, &obj->mtx) + 30.0f;
+            max.f[1] = bboxRotatedMaxY(bbox, &obj->mtx);
+            max.f[2] = bboxRotatedMaxZ(bbox, &obj->mtx) + 30.0f;
 
-            if (phi_f20 < -sp40.f[0])
+            if (radius < -min.f[0])
             {
-                phi_f20 = -sp40.f[0];
+                radius = -min.f[0];
             }
 
-            if (phi_f20 < -sp40.f[2])
+            if (radius < -min.f[2])
             {
-                phi_f20 = -sp40.f[2];
+                radius = -min.f[2];
             }
 
-            if (phi_f20 < sp34.f[0])
+            if (radius < max.f[0])
             {
-                phi_f20 = sp34.f[0];
+                radius = max.f[0];
             }
 
-            if (phi_f20 < sp34.f[2])
+            if (radius < max.f[2])
             {
-                phi_f20 = sp34.f[2];
+                radius = max.f[2];
             }
 
-            sp40.f[0] += obj->runtime_pos.f[0];
-            sp40.f[1] += obj->runtime_pos.f[1];
-            sp40.f[2] += obj->runtime_pos.f[2];
+            min.f[0] += obj->runtime_pos.f[0];
+            min.f[1] += obj->runtime_pos.f[1];
+            min.f[2] += obj->runtime_pos.f[2];
 
-            sp34.f[0] += obj->runtime_pos.f[0];
-            sp34.f[1] += obj->runtime_pos.f[1];
-            sp34.f[2] += obj->runtime_pos.f[2];
+            max.f[0] += obj->runtime_pos.f[0];
+            max.f[1] += obj->runtime_pos.f[1];
+            max.f[2] += obj->runtime_pos.f[2];
 
-            propCalcRooms(temp_s1, &sp40, &sp34, phi_f20);
+            propCalcRooms(prop, &min, &max, radius);
         }
     }
 
-    propAddToRooms(temp_s1);
+    propAddToRooms(prop);
 }
 
 
@@ -2533,68 +2523,68 @@ ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr,
 }
 
 
-void setupGuard(s32 stageid, GuardRecord *arg1, s32 arg2)
+void setupGuard(s32 stageid, GuardRecord *guard, s32 cmdindex)
 {
     struct PadRecord *pad;
-    struct ChrRecord *temp_v0_5;
-    struct StandTile *sp54; // 84
-    struct coord3d sp48; // 72
-    struct PropRecord *temp_v0_4;
+    struct ChrRecord *chr;
+    struct StandTile *tile; // 84
+    struct coord3d pos; // 72
+    struct PropRecord *prop;
     struct ChrModelFileRecord *cmfr;
-    f32 sp3C; // 60
-    struct Model *sp38; //56
+    f32 angle; // 60
+    struct Model *model; //56
     s32 bodyid;
     s32 headid;
 
-    pad = &g_CurrentSetup.pads[arg1->PadID];
+    pad = &g_CurrentSetup.pads[guard->PadID];
 
-    if (getposstan(&pad->pos, pad->stan, 20.0f, &sp48, &sp54) != 0)
+    if (getposstan(&pad->pos, pad->stan, 20.0f, &pos, &tile) != 0)
     {
         headid = -1;
-        bodyid = (arg1->BodyID == 0xFFFF)
+        bodyid = (guard->BodyID == 0xFFFF)
             ? bodyGetRandom()
-            : arg1->BodyID;
+            : guard->BodyID;
 
         cmfr = &c_item_entries[bodyid];
         if (cmfr->hasHead == 0)
         {
-            headid = (arg1->HeadID >= 0)
-                ? arg1->HeadID
+            headid = (guard->HeadID >= 0)
+                ? guard->HeadID
                 : bodyChooseHead(bodyid);
         }
 
-        sp38 = bodyCreateModelWithFlags(bodyid, headid, (u32) arg1->bitflags);
+        model = bodyCreateModelWithFlags(bodyid, headid, (u32) guard->bitflags);
 
-        if (sp38 != 0)
+        if (model != 0)
         {
-            sp3C = mathAtan2(pad->look.f[0], pad->look.f[2]);
-            temp_v0_4 = chrAllocate(sp38, &sp48, sp3C, sp54, ailistFindById(arg1->AIListID));
+            angle = mathAtan2(pad->look.f[0], pad->look.f[2]);
+            prop = chrAllocate(model, &pos, angle, tile, ailistFindById(guard->AIListID));
 
-            if (temp_v0_4 != 0)
+            if (prop != 0)
             {
-                propActivate(temp_v0_4);
-                propEnable(temp_v0_4);
+                propActivate(prop);
+                propEnable(prop);
 
-                temp_v0_5 = temp_v0_4->chr;
-                temp_v0_5->chrnum = (s16) arg1->chrnum;
-                temp_v0_5->hearingscale = ((f32)arg1->health) / 1000.0f;
-                temp_v0_5->visionrange = (f32)arg1->ReactionTime;
-                temp_v0_5->padpreset1 = (s16) arg1->Preset;
-                temp_v0_5->chrpreset1 = (s16) arg1->chrpreset1;
-                temp_v0_5->headnum = (s8) headid;
-                temp_v0_5->bodynum = (s8) bodyid;
+                chr = prop->chr;
+                chr->chrnum = (s16) guard->chrnum;
+                chr->hearingscale = ((f32)guard->health) / 1000.0f;
+                chr->visionrange = (f32)guard->ReactionTime;
+                chr->padpreset1 = (s16) guard->Preset;
+                chr->chrpreset1 = (s16) guard->chrpreset1;
+                chr->headnum = (s8) headid;
+                chr->bodynum = (s8) bodyid;
 
-                if ((arg1->bitflags & 4) != 0)
+                if ((guard->bitflags & 4) != 0)
                 {
-                    temp_v0_5->chrflags |= CHRFLAG_CLONE;
+                    chr->chrflags |= CHRFLAG_CLONE;
                 }
 
-                if ((arg1->bitflags & 8) != 0)
+                if ((guard->bitflags & 8) != 0)
                 {
-                    temp_v0_5->chrflags |= CHRFLAG_INVINCIBLE;
+                    chr->chrflags |= CHRFLAG_INVINCIBLE;
                 }
 
-                arg1->Data = temp_v0_5;
+                guard->Data = chr;
             }
         }
     }

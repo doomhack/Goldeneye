@@ -159,15 +159,15 @@ extern s32 g_NextImpact;
 
 
 
-s32 explosionSmokeTick(PropRecord *arg0);
+s32 explosionSmokeTick(PropRecord *prop);
 Gfx * explosionRenderFlyingParticles(Gfx *gdl);
-Gfx * explosionCallRenderBulletImpactOnProp(Gfx *arg0);
-Gfx *explosionRenderScorchBuffer(Gfx *arg0);
+Gfx * explosionCallRenderBulletImpactOnProp(Gfx *gdl);
+Gfx *explosionRenderScorchBuffer(Gfx *gdl);
 Gfx *explosionRenderPropExplosion(PropRecord *prop, Gfx *gdl, s32 withalpha);
-Gfx *explosionRenderPropSmoke(PropRecord *arg0, Gfx *gdl, s32 withalpha);
+Gfx *explosionRenderPropSmoke(PropRecord *prop, Gfx *gdl, s32 withalpha);
 
 
-Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *arg1, s32 arg2);
+Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *prop, s32 pass);
 
 void explosionCreateSmoke(coord3d *pos, StandTile *stan, s16 smoke_type, u8 *rooms, s32 flags);
 void explosionUpdateFlyingParticles(void);
@@ -176,8 +176,8 @@ void explosionsReset(void);
 u8 smokePropTick(PropRecord* prop);
 u8 explosionPropTick(PropRecord* prop);
 void explosionScreenShake(coord3d* source_pos, coord3d* source_mag, coord3d* result);
-void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *arg1, s16 impact_type, s16 room, PropRecord *prop, s8 model_render_pos_index, s8 room_clear_flag);
-s32 explosionTick(PropRecord* arg0);
+void explosionCreateBulletImpact(struct coord3d *pos, struct coord3d *normal, s16 impact_type, s16 room, PropRecord *prop, s8 model_render_pos_index, s8 room_clear_flag);
+s32 explosionTick(PropRecord* explosionprop);
 s32 explosionCreate(PropRecord *arg0, struct coord3d *target_pos, StandTile *target_stan, s16 /* enum EXPLOSION_DEF */ explosion_type, s32 arg4, s32 player, u8 *rooms, s32 arg7);
 
 void explosionInitScaleMtx(void);
