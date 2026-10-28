@@ -667,11 +667,15 @@ BITFLAG(RUNTIMEBITFLAG,
 
 #pragma region Constants
 
-#define SP_BOOT_SZ 0x10
+// Thread stacks (src/stacks.c). Measured peaks (US, Dam demo, rumble pak plugged in): boot 0xb58,
+// scheduler 0x23c (more with a pak: joyPoll runs osPfsInit on the scheduler thread), main 0x76f8,
+// audio 0x340, idle almost nothing. Each stack has room to spare, since an overflow runs silently into
+// whichever stack the linker put below it.
+#define SP_BOOT_SZ 0x1000 // init() runs on this until the main thread starts; _start.s hard-codes the size
 #define SP_RMON_SZ 0x300
-#define SP_IDLE_SZ 0x40
-#define SP_SHED_SZ 0x200
-#define SP_MAIN_SZ 0x8000
+#define SP_IDLE_SZ 0x100
+#define SP_SHED_SZ 0x1000
+#define SP_MAIN_SZ 0x10000
 #define SP_AUDI_SZ 0x1000
 #define SP_DEBUG_SZ 0x6B0
 

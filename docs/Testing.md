@@ -86,7 +86,8 @@ recordings. Dam 2 desyncs after 87 frames.
 The demos start straight in a level, so they never show the front end. `menus.py` starts from
 power-on and presses its way through the title, file select, mode select, mission select (Dam),
 difficulty and briefing pages, into the level and through the watch menu's pages, taking a
-screenshot at each step.
+screenshot at each step. It plays with a rumble pak plugged in (`m64run.py --pak`), since the
+pak code only runs when one is present and real consoles usually have one.
 
 ```
 tools/testrun/menus.py record u /tmp/menus-base   # on the commit you start from

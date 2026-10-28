@@ -22,7 +22,7 @@ glabel _start
     lui   $gp, %hi(_gp)
     addiu $gp, %lo(_gp)
     lui   $t2, %hi(init)
-    lui   $sp, %hi(sp_rmon)
+    lui   $sp, %hi(sp_boot + 0x1000)  # top of sp_boot: 0x1000 is SP_BOOT_SZ (bondconstants.h)
     addiu $t2, %lo(init)
     jr    $t2
-     addiu $sp, %lo(sp_rmon)
+     addiu $sp, %lo(sp_boot + 0x1000)
