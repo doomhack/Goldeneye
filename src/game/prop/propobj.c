@@ -177,7 +177,7 @@
 #define PROP_PROJECTILE_GRAVITY_MODIFIER 0.27777779f
 
 s32 alarm_timer = 0;
-s32 *g_AlarmSound = 0;
+ALSoundState *g_AlarmSound = NULL;
 f32 toxic_gas_sound_timer = 0.0;
 s32 activate_gas_sound_timer = FALSE;
 coord3d gasLeakSource = { 0.0f, 0.0f, 0.0f };
@@ -4137,7 +4137,7 @@ s32 objTick(struct PropRecord *prop)
 	struct coord3d smokepos;
 	struct coord3d bloodStainPos;
 	Mtxf inverseNodeMatrix;
-	struct ALSoundState *sfx_state;
+	struct ALSoundState_s *sfx_state;
 
 	// Doors and glass
 	struct DoorRecord *door;
@@ -4491,7 +4491,7 @@ s32 objTick(struct PropRecord *prop)
 							prop->flags |= PROPFLAG_00000010;
 						}
 
-						chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, ATTACH_MINE_SFX, NULL), &prop->pos);
+						chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, ATTACH_MINE_SFX, NULL), &prop->pos);
 						objectivesCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
 						objPlaceOnSurface(obj, &collisionPoint, prop->stan, &collisionNormal);
 						if (g_ProjectileHitProp != NULL)
@@ -4710,11 +4710,11 @@ s32 objTick(struct PropRecord *prop)
 							{
 								if ((airborneWeapon->weaponnum == ITEM_THROWKNIFE) || (airborneWeapon->weaponnum == ITEM_KNIFE))
 								{
-									sfx_state = sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, KNIFE_HIT_WALL_SFX, NULL);
+									sfx_state = sndPlaySfx(g_musicSfxBufferPtr, KNIFE_HIT_WALL_SFX, NULL);
 								}
 								else
 								{
-									sfx_state = sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DROP_GUN_SFX, NULL);
+									sfx_state = sndPlaySfx(g_musicSfxBufferPtr, DROP_GUN_SFX, NULL);
 								}
 
 								chrobjSndCreatePostEventDefault(sfx_state, &prop->pos);
@@ -5348,7 +5348,7 @@ s32 objTick(struct PropRecord *prop)
 			{
 				if (((vehicle->Sound == NULL) || (sndGetPlayingState(vehicle->Sound) == 0)) && (lvGetControlsLocked() == 0))
 				{
-					sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, TRUCK_RUN_SFX, &vehicle->Sound);
+					sndPlaySfx(g_musicSfxBufferPtr, TRUCK_RUN_SFX, &vehicle->Sound);
 				}
 
 				if (vehicle->Sound != NULL)
@@ -5617,7 +5617,7 @@ s32 objTick(struct PropRecord *prop)
 			{
 				if (((aircraft->Sound == NULL) || (sndGetPlayingState(aircraft->Sound) == 0)) && (lvGetControlsLocked() == 0))
 				{
-					sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, HELI_RUN_SFX, &aircraft->Sound);
+					sndPlaySfx(g_musicSfxBufferPtr, HELI_RUN_SFX, &aircraft->Sound);
 				}
 
 				if (aircraft->Sound != NULL)
@@ -5734,7 +5734,7 @@ s32 objTick(struct PropRecord *prop)
 					{
 						if (previousOpenPosition <= bladeStart)
 						{
-							chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, METAL_SLIDE_OPEN_SFX, NULL), &prop->pos);
+							chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_OPEN_SFX, NULL), &prop->pos);
 						}
 					}
 				}
@@ -5742,7 +5742,7 @@ s32 objTick(struct PropRecord *prop)
 				{
 					if (bladeStart < previousOpenPosition)
 					{
-						chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, METAL_SLIDE_CLOSE_SFX, NULL), &prop->pos);
+						chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_CLOSE_SFX, NULL), &prop->pos);
 					}
 				}
 
@@ -6133,12 +6133,12 @@ s32 objTick(struct PropRecord *prop)
 
 					if (autogun->fireSound1 == NULL)
 					{
-						sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_B9_CANNON_SHORT_SFX, &autogun->fireSound1);
+						sndPlaySfx(g_musicSfxBufferPtr, GUN_B9_CANNON_SHORT_SFX, &autogun->fireSound1);
 						chrobjSndCreatePostEventDefault(autogun->fireSound1, &prop->pos);
 					}
 					else if (autogun->fireSound2 == NULL)
 					{
-						sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_B9_CANNON_SHORT_SFX, &autogun->fireSound2);
+						sndPlaySfx(g_musicSfxBufferPtr, GUN_B9_CANNON_SHORT_SFX, &autogun->fireSound2);
 						chrobjSndCreatePostEventDefault(autogun->fireSound2, &prop->pos);
 					}
 
@@ -10164,7 +10164,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
     {
         case PROPDEF_KEY:
         {
-            sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, KEYCARD_SFX, 0);
+            sndPlaySfx(g_musicSfxBufferPtr, KEYCARD_SFX, 0);
 
             if (showstring)
             {
@@ -10230,7 +10230,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
                 pickupAddAmmo(ammotype, ammoquantity, 0, showstring);
             }
 
-            sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, PICKUP_AMMO_SFX, 0);
+            sndPlaySfx(g_musicSfxBufferPtr, PICKUP_AMMO_SFX, 0);
 
             op = TICKOP_FREE;
 
@@ -10344,7 +10344,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
         case PROPDEF_ARMOUR: // Body armor
         {
             currentPlayerAddArmor(((struct BodyArmourRecord *)prop->obj)->amount);
-            sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, ARMOUR_COLLECT_SFX, 0);
+            sndPlaySfx(g_musicSfxBufferPtr, ARMOUR_COLLECT_SFX, 0);
 
             if (showstring)
             {
@@ -10417,7 +10417,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showstring)
         case PROPDEF_TINTED_GLASS:
         default:
         {
-            sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, KEYCARD_SFX, 0);
+            sndPlaySfx(g_musicSfxBufferPtr, KEYCARD_SFX, 0);
 
             if (showstring)
             {
@@ -12317,7 +12317,7 @@ void doorStopSounds(DoorRecord *door) //#MATCH
 
 void doorPlayOpenSound0(DoorRecord *door) {
     ALSoundState *soundState = NULL;
-    ALSoundState *pendingState = NULL;
+    ALSoundState **pendingState = NULL;
 
     doorStopSounds(door);
 
@@ -12442,7 +12442,7 @@ void doorPlayOpenSound0(DoorRecord *door) {
 
 void doorPlayOpenSound1(DoorRecord *door) {
     ALSoundState *soundState = NULL;
-    ALSoundState *pendingState = NULL;
+    ALSoundState **pendingState = NULL;
 
     doorStopSounds(door);
 
@@ -13687,7 +13687,7 @@ void gasTick(void)
             g_GasLastCoughTime = g_GlobalTimer;
             if (toxic_gas_sound_timer >= 600.0f)
             {
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, COUGH_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, COUGH_SFX, NULL);
             }
             if (toxic_gas_sound_timer >= 1800.0f)
             {
@@ -13700,7 +13700,7 @@ void gasTick(void)
             gasLeakTimer = gasLeakTimer + g_GlobalTimerDelta;
             if ((g_GasSound == NULL) && (lvGetControlsLocked() == 0))
             {
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, GAS_HISS_SFX, (ALSoundState* ) &g_GasSound);
+                sndPlaySfx(g_musicSfxBufferPtr, GAS_HISS_SFX, &g_GasSound);
             }
             if (g_GasSound != NULL)
             {

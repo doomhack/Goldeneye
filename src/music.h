@@ -97,7 +97,8 @@ extern s32 g_musicXTrack1Fade;
 extern s32 g_musicXTrack2Fade;
 extern s32 g_musicXTrack3Fade;
 
-extern ALBank *g_musicSfxBufferPtr;
+struct ALBankAlt_s;
+extern struct ALBankAlt_s *g_musicSfxBufferPtr;
 
 extern ALSndPlayer g_sndPlayer;
 extern s16 *g_sndSfxSlotVolume;

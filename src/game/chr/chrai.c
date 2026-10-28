@@ -131,7 +131,7 @@ void aiSoundPlay(s32 slot, s16 soundIndex)
             sfx->Obj     = NULL;
         }
     }
-    sndPlaySfx(g_musicSfxBufferPtr, soundIndex, sfx);
+    sndPlaySfx(g_musicSfxBufferPtr, soundIndex, sfx != NULL ? &sfx->state : NULL);
 }
 
 /**

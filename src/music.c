@@ -445,7 +445,7 @@ ALHeap g_musicHeap;
 /**
  * Sound bank data.
  */
-ALBank *g_musicSfxBufferPtr;
+struct ALBankAlt_s *g_musicSfxBufferPtr;
 
 /**
  * Name comes from referencing _instrumentstblSegmentRomStart
@@ -634,7 +634,7 @@ void musicSeqPlayerInit(void)
         sfxBank = alHeapAlloc(&g_musicHeap, 1, size);
         romCopy(sfxBank, &_sfxctlSegmentRomStart, size);
         alBnkfNew(sfxBank, (u8 *)&_sfxtblSegmentRomStart);
-        g_musicSfxBufferPtr = sfxBank->bankArray[0];
+        g_musicSfxBufferPtr = (struct ALBankAlt_s *)sfxBank->bankArray[0];
     }
 
     if (MUSIC_CONFIG_USE_INSTRUMENT_BANK)

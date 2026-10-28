@@ -243,8 +243,8 @@ char stringbuffer_lowerleft[0x5][BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH];
 char g_StringBufferLowerLeftPad[0x04];
 
 #if defined(BUGFIX_R1)
-s32 g_HudMsgBottomFont1[0x05];
-s32 g_HudMsgBottomFont2[0x05];
+struct font *g_HudMsgBottomFont1[5];
+struct fontchar *g_HudMsgBottomFont2[5];
 #endif
 
 PadRecord *g_Startpad[0x10];
@@ -6842,7 +6842,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     {
                         if (lvGetControlsLocked() == 0)
                         {
-                            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, TANK_SFX, &g_TankSfxState[1]);
+                            sndPlaySfx(g_musicSfxBufferPtr, TANK_SFX, &g_TankSfxState[1]);
                         }
                     }
 
@@ -6878,7 +6878,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 {
                     if (lvGetControlsLocked() == 0)
                     {
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, TRUCK_RUN_SFX, &g_TankSfxState[0]);
+                        sndPlaySfx(g_musicSfxBufferPtr, TRUCK_RUN_SFX, &g_TankSfxState[0]);
                     }
                 }
 
@@ -7439,11 +7439,11 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                                 hitChr->chrflags |= CHRFLAG_01000000;
                                 if ((g_LvTickCount % 3) < 2)
                                 {
-                                    chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, CRUSHED_YELL_SFX, NULL), &prop->pos);
+                                    chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, CRUSHED_YELL_SFX, NULL), &prop->pos);
                                 }
                                 if ((g_LvTickCount % 3) > 0)
                                 {
-                                    chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, TANK_CRUSH_MAN_SFX, NULL), &prop->pos);
+                                    chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, TANK_CRUSH_MAN_SFX, NULL), &prop->pos);
                                 }
                             }
                         }
@@ -10279,7 +10279,7 @@ void hudmsgsSetOff(s32 flags)
 
 
 #ifdef VERSION_US
-void hudmsgSetFonts(s32 font2, s32 font1)
+void hudmsgSetFonts(struct fontchar *font2, struct font *font1)
 {
     copy_2ndfonttable = font2;
     copy_1stfonttable = font1;
@@ -10288,7 +10288,7 @@ void hudmsgSetFonts(s32 font2, s32 font1)
 
 
 #ifdef BUGFIX_R1
-void hudmsgBottomShow(char *string, s32 font, s32 font1)
+void hudmsgBottomShow(char *string, struct fontchar *font, struct font *font1)
 {
     s32 abs_index;
     s32 index;

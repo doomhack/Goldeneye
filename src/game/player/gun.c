@@ -1542,7 +1542,7 @@ void gunThrowGrenade(s32 hand)
             wor->projectile->groundFriction = 0.13333333f;
             wor->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
 
-            sfx_state = sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GRENADE_THROW_SFX, NULL);
+            sfx_state = sndPlaySfx(g_musicSfxBufferPtr, GRENADE_THROW_SFX, NULL);
 
             if (sfx_state != NULL)
             {
@@ -1815,7 +1815,7 @@ void gunThrowObject(s32 hand)
             wor->projectile->bounciness = 0.1f;
             wor->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
 
-            sfx_state = sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GRENADE_THROW_SFX, NULL);
+            sfx_state = sndPlaySfx(g_musicSfxBufferPtr, GRENADE_THROW_SFX, NULL);
 
             if (sfx_state != NULL)
             {

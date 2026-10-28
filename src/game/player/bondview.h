@@ -1059,8 +1059,8 @@ extern coord3d ZeroCoordWatchPos;
 extern coord3d ZeroCoordSpawnPos;
 extern s32 status_bar_text_buffer_index;
 extern s32 display_statusbar;
-extern s32 copy_1stfonttable;
-extern s32 copy_2ndfonttable;
+extern struct font *copy_1stfonttable;
+extern struct fontchar *copy_2ndfonttable;
 extern s32 upper_text_buffer_index;
 extern s32 display_upper_text_window;
 extern s32 upper_text_window_timer;
@@ -1127,13 +1127,13 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 
 #if defined(BUGFIX_R1)
 #define HUDMESSAGEBOTTOM hudmsgBottomShowText
-void hudmsgBottomShow(char *string, s32 font, s32 font1);
+void hudmsgBottomShow(char *string, struct fontchar *font, struct font *font1);
 void hudmsgBottomShowText(char *string);
 #else
 // VERSION_US
 #define HUDMESSAGEBOTTOM hudmsgBottomShow
 void hudmsgBottomShow(char *string);
-void hudmsgSetFonts(s32 font2, s32 font1);
+void hudmsgSetFonts(struct fontchar *font2, struct font *font1);
 #endif
 
 Gfx * camSetupFrame(Gfx *gdl);

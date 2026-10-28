@@ -1755,8 +1755,8 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
     s32 width;
     s32 height;
 
-    s32 pFontFile;
-    s32 pFontChars;
+    struct font *pFontFile;
+    struct fontchar *pFontChars;
     s32 titleText;
     s32 confirmText;
     s32 cancelText;
@@ -1835,8 +1835,8 @@ Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
     s32 y;
     s32 height;
     s32 width;
-    s32 pFontFile;
-    s32 pFontChars;
+    struct font *pFontFile;
+    struct fontchar *pFontChars;
     s32 colour;
     s32 joffset;
 
@@ -1885,8 +1885,8 @@ Gfx *watchMenuRenderVersion(Gfx *gdl)
     s32 y;
     s32 height;
     s32 width;
-    s32 pFontFile;
-    s32 pFontChars;
+    struct font *pFontFile;
+    struct fontchar *pFontChars;
     s32 joffset;
 
     txtptr = langGet(getStringID(LOPTIONS, OPTION_STR_2B_QWATCHVERSION_LF)); //q watch v2.01 beta
@@ -1930,8 +1930,8 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     s32 y;
     s32 height;
     s32 width;
-    s32 font;
-    s32 fontChars;
+    struct font *font;
+    struct fontchar *fontChars;
     s32 index;
     s32 weapon;
     f32 posX;
@@ -2122,12 +2122,12 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
             s32 i;
             s32 textheight;
             s32 textwidth;
-            s32 pFontFile2;
-            s32 pFontChars2;
+            struct font *pFontFile2;
+            struct fontchar *pFontChars2;
             char string_builder_allocation[2000];
 
 #if defined(VERSION_EU)
-            s32 pFontFile;
+            struct font *pFontFile;
             s32 base_y;
             char formattedString[32];
 #endif
@@ -2187,9 +2187,9 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
             {
 #if !defined(VERSION_EU)
                 char formattedString[32];
-                s32 pFontFile;
+                struct font *pFontFile;
 #endif
-                s32 pFontChars;
+                struct fontchar *pFontChars;
                 s32 x2;
                 s32 y2;
                 char *invItemName;
@@ -3131,8 +3131,8 @@ Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *mtx) {
     s32 y;
     s32 width;
     s32 height;
-    s32 pFontFile;
-    s32 pFontChars;
+    struct font *pFontFile;
+    struct fontchar *pFontChars;
 
     gdl = watchMenuRenderBackground(gdl, mtx, 0);
 
@@ -3412,8 +3412,8 @@ Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *mtx) {
     s32 width;
     s32 height;
 
-    s32 pFontFile;
-    s32 pFontChars;
+    struct font *pFontFile;
+    struct fontchar *pFontChars;
 
     gdl = watchMenuRenderBackground(gdl, mtx, 0);
 

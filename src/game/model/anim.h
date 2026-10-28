@@ -2,6 +2,7 @@
 #define _ANIM_H_
 #include <ultra64.h>
 #include <assets/animationtable_data.h>
+#include <bondtypes.h>
 
 
 
@@ -28,14 +29,23 @@ extern struct animation_table_data* g_AnimTable;
  * The index of each value corresponds to `enum ANIMATION`.
  * The value corresponds to (e.g. index=0) PTR_ANIM_idle (same as ANIM_DATA_idle)
 */
-extern s32 animation_table_ptrs1[];
+extern ModelAnimation *animation_table_ptrs1[];
+
+/**
+ * An animation pointer that still holds its offset into g_AnimTable. Boot code adds
+ * the table's address to turn it into a real pointer (animResolveTable, initResolveAnimTable).
+ */
+#define ANIM_OFFSET(offset) ((ModelAnimation *)(offset))
+
+/** An empty slot in animation_table_ptrs1 (the PTR_ANIM_null* entries, which are 1). */
+#define ANIM_UNUSED ((ModelAnimation *)1)
 
 /**
  * Contains offsets into g_AnimTable for object/vehicle animations.
  * The index of each value corresponds to `enum AIRCRAFT_ANIMATION`.
  * The value corresponds to (e.g. index=0) PTR_ANIM_helicopter_cradle (same as ANIM_DATA_helicopter_cradle)
 */
-extern struct ModelAnimation * animation_table_ptrs2[];
+extern ModelAnimation *animation_table_ptrs2[];
 
 /** Where animLoadFrame copies animation frames to. */
 struct bondstruct_unk_animation_related {
@@ -47,7 +57,7 @@ struct bondstruct_unk_animation_related {
 extern struct bondstruct_unk_animation_related *g_AnimFrameBuffer;
 
 void animInitFrameBuffer(struct bondstruct_unk_animation_related *animBuffer);
-void animResolveTable(s32 **table);
+void animResolveTable(ModelAnimation **table);
 void animLoadTable(void);
 
 #endif

@@ -404,8 +404,8 @@ coord3d ZeroCoordSpawnPos = {0};
 s32 status_bar_text_buffer_index = 0;
 s32 display_statusbar = 0;
 #ifdef BUGFIX_R0
-s32 copy_1stfonttable = 0;
-s32 copy_2ndfonttable = 0;
+struct font *copy_1stfonttable = NULL;
+struct fontchar *copy_2ndfonttable = NULL;
 #endif
 s32 upper_text_buffer_index = 0;
 s32 display_upper_text_window = 0;

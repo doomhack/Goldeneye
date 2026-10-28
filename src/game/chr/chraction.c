@@ -400,7 +400,7 @@ void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 
     }
 
     chrStopFiring(self);
-    modelSetAnimation(self->model, (void *)animation_table_ptrs1[animID], (bitfield & ANIM_MIRROR) != 0, startframef, speed, (f32)interpol_time60);
+    modelSetAnimation(self->model, animation_table_ptrs1[animID], (bitfield & ANIM_MIRROR) != 0, startframef, speed, (f32)interpol_time60);
 
     if (endframe >= 0)
     {
@@ -2227,7 +2227,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
         {
             s16 mrs[3];
             bcopy(metal_ricochet_SFX, mrs, sizeof(mrs));
-            ALSoundState * p = sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, mrs[randomGetNext() % 3U], NULL);
+            ALSoundState * p = sndPlaySfx(g_musicSfxBufferPtr, mrs[randomGetNext() % 3U], NULL);
             chrobjSndCreatePostEventDefault(p, &self->prop->pos);
         }
     }
@@ -4675,7 +4675,7 @@ void chrTickAnim(ChrRecord *self)
     {
         if (((g_LvTickCount & 1) == 0) && (chrGetDistanceToBond(self) < 800.0f))
         {
-            chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, SNEEZE_SFX, 0), &self->prop->pos);
+            chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, SNEEZE_SFX, 0), &self->prop->pos);
         }
 
         self->chrflags |= CHRFLAG_02000000;
@@ -4823,7 +4823,7 @@ void chrTickDie(ChrRecord *self)
 
     if ((self->act_die.thudframe1 >= 0.0f) && (self->act_die.thudframe1 <= modelGetAnimFrame(model)))
     {
-        p = sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, body_hit_SFX[thud_index], NULL);
+        p = sndPlaySfx(g_musicSfxBufferPtr, body_hit_SFX[thud_index], NULL);
 
         chrobjSndCreatePostEventDefault(p, &self->prop->pos);
 
@@ -4838,7 +4838,7 @@ void chrTickDie(ChrRecord *self)
 
     if ((self->act_die.thudframe2 >= 0.0f) && (self->act_die.thudframe2 <= modelGetAnimFrame(model)))
     {
-        p = sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, body_hit_SFX[thud_index], NULL);
+        p = sndPlaySfx(g_musicSfxBufferPtr, body_hit_SFX[thud_index], NULL);
 
         chrobjSndCreatePostEventDefault(p, &self->prop->pos);
 
@@ -5072,7 +5072,7 @@ void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
 
             if (slot != NULL)
             {
-                sndPlaySfx(g_musicSfxBufferPtr, soundid, (ALSoundState *) slot);
+                sndPlaySfx(g_musicSfxBufferPtr, soundid, slot);
                 chrobjSndCreatePostEventDefault(*slot, &self->prop->pos);
                 self->nextGunSoundTime[hand] = g_GlobalTimer + soundrate;
                 self->hidden |= 0x80;
@@ -6089,11 +6089,11 @@ void chrFireHand(ChrRecord *self, s32 hand)
 
                                     if (rocket->projectile->sounds[0] == NULL)
                                     {
-                                        sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, ROCKET_LAUNCH_SFX, (ALSoundState *)&rocket->projectile->sounds[0]);
+                                        sndPlaySfx(g_musicSfxBufferPtr, ROCKET_LAUNCH_SFX, &rocket->projectile->sounds[0]);
                                     }
                                     else if (rocket->projectile->sounds[1] == NULL)
                                     {
-                                        sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, ROCKET_LAUNCH_SFX, (ALSoundState *)&rocket->projectile->sounds[1]);
+                                        sndPlaySfx(g_musicSfxBufferPtr, ROCKET_LAUNCH_SFX, &rocket->projectile->sounds[1]);
                                     }
                                 }
                             }

@@ -268,7 +268,7 @@ explosionCreate(PropRecord *source, struct coord3d *target_pos, StandTile *targe
 
         if ((s32) type->sndID > 0)
         {
-            chrobjSndCreatePostEventDefault(sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, (s16) type->sndID, NULL), target_pos);
+            chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, (s16) type->sndID, NULL), target_pos);
         }
 
         if (prop != NULL)

@@ -2461,7 +2461,7 @@ typedef union
         f32 bounciness; // vertical speed kept on a bounce
         u32 numBounces;
         f32 groundFriction; // horizontal slowdown per frame once landed
-        struct ALSoundState* sounds[2];
+        struct ALSoundState_s* sounds[2];
         u32 lastSfxTimer;
         u32 soundSlot;
         u32 airTime; // frames airborne
@@ -3382,7 +3382,7 @@ typedef union
         f32         roty;         /*0xa0*/
         PathRecord *path;         /*0xa4*/
         s32         nextstep;     /*0xa8*/
-        struct ALSoundState *Sound;      /*0xac*/
+        struct ALSoundState_s *Sound;      /*0xac*/
     } VehichleRecord;
     // VehichleRecord *pVehichleData;//not Global, local to Object or function
     // VehichleRecord *pAircraftData;//not Global, local to Object or function
@@ -3410,7 +3410,7 @@ typedef union
         f32           yrot;            /*0xa4*/
         s32           nextstep;        /*0xa8*/
         PathRecord   *path;            /*0xac*/
-        struct ALSoundState *Sound;           /*0xb0*/
+        struct ALSoundState_s *Sound;           /*0xb0*/
     } AircraftRecord;
     #define New_AircraftRecord(pad)                 \
         {                                           \

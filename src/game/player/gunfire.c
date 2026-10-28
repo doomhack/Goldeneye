@@ -2113,7 +2113,7 @@ Gfx *watchRenderControllerOpaque(Gfx *gdl, Mtxf *basemtx, bool animatebuttons, W
 }
 
 
-ALSoundState* gunGetFreeSfxState(void)
+ALSoundState **gunGetFreeSfxState(void)
 {
     s32 i;
 
@@ -2134,7 +2134,7 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
     s32 volume;
     u32 rnd1;
     u32 rnd2;
-    ALSoundState* sound_state;
+    ALSoundState **sound_state;
     struct RicochetSoundsSmall ricochet_sounds_small_copy;
     struct PunchSounds punch_sounds_copy;
     struct BulletFleshSounds bullet_flesh_sounds_copy;
@@ -2169,38 +2169,38 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
         {
             if (item == ITEM_LASER)
             {
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, RICO_LASER1_SFX, sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, RICO_LASER1_SFX, sound_state);
             }
             else
             {
                 ricochet_sounds_small_copy = ricochet_sounds_small;
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, ricochet_sounds_small_copy.arr[rnd1 % 20], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, ricochet_sounds_small_copy.arr[rnd1 % 20], sound_state);
             }
 
-            if (sound_state->link.next != NULL)
+            if (*sound_state != NULL)
             {
-                sndCreatePostEvent((ALSoundState* ) sound_state->link.next, 8, volume);
+                sndCreatePostEvent(*sound_state, 8, volume);
             }
         }
         else
         {
             if (item == ITEM_KNIFE)
             {
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, HIT_BULLET_SNOW_SFX, sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, HIT_BULLET_SNOW_SFX, sound_state);
             }
             else if (item == ITEM_FIST)
             {
                 punch_sounds_copy = punch_sounds;
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, punch_sounds_copy.arr[rnd1 % 3], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, punch_sounds_copy.arr[rnd1 % 3], sound_state);
             }
             else
             {
                 bullet_flesh_sounds_copy = bullet_flesh_sounds;
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, bullet_flesh_sounds_copy.arr[rnd1 % 2], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, bullet_flesh_sounds_copy.arr[rnd1 % 2], sound_state);
             }
 
-            if (sound_state->link.next != NULL) {
-                sndCreatePostEvent((ALSoundState* ) sound_state->link.next, 8, volume);
+            if (*sound_state != NULL) {
+                sndCreatePostEvent(*sound_state, 8, volume);
             }
         }
     }
@@ -2213,12 +2213,12 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
             if (g_HitTypeSounds[g_Textures[texture_index].hitSound]->sfx_len > 0)
             {
                 sfx_index = rnd2 % g_HitTypeSounds[g_Textures[texture_index].hitSound]->sfx_len;
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, g_HitTypeSounds[g_Textures[texture_index].hitSound]->sfx[sfx_index], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, g_HitTypeSounds[g_Textures[texture_index].hitSound]->sfx[sfx_index], sound_state);
             }
 
-            if (sound_state->link.next != NULL)
+            if (*sound_state != NULL)
             {
-                chrobjSndCreatePostEventDefault((ALSoundState* ) sound_state->link.next, &prop->pos);
+                chrobjSndCreatePostEventDefault(*sound_state, &prop->pos);
             }
         }
     }
@@ -2227,8 +2227,7 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
 
 void shotPlayGlassSound(coord3d* pos)
 {
-    ALSoundState* sound;
-    ALLink* link;
+    ALSoundState **sound;
 
     if (g_ClockTimer <= 0) { return; }
 
@@ -2236,12 +2235,11 @@ void shotPlayGlassSound(coord3d* pos)
 
     if (sound != NULL)
     {
-        sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, HIT_BULLET_GLASS_SFX, sound);
+        sndPlaySfx(g_musicSfxBufferPtr, HIT_BULLET_GLASS_SFX, sound);
 
-        link = sound->link.next;
-        if (link != NULL)
+        if (*sound != NULL)
         {
-            chrobjSndCreatePostEventDefault((ALSoundState* ) link, pos);
+            chrobjSndCreatePostEventDefault(*sound, pos);
         }
     }
 }
@@ -2249,7 +2247,7 @@ void shotPlayGlassSound(coord3d* pos)
 
 void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
 {
-    ALSoundState *sound_state;
+    ALSoundState **sound_state;
     u32 rnd1;
     u32 rnd2;
     struct LaserRichochetSounds laser_copied;
@@ -2271,18 +2269,18 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
             if (item == ITEM_LASER)
             {
                 laser_copied = laser_ricochet_sounds;
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, laser_copied.arr[rnd1 % 2], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, laser_copied.arr[rnd1 % 2], sound_state);
             }
             else
             {
                 rico_copied = ricochet_sounds_large;
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, rico_copied.arr[rnd1 % 36], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, rico_copied.arr[rnd1 % 36], sound_state);
             }
         }
 
-        if (sound_state->link.next != NULL)
+        if (*sound_state != NULL)
         {
-            chrobjSndCreatePostEventDefault((ALSoundState* ) sound_state->link.next, pos);
+            chrobjSndCreatePostEventDefault(*sound_state, pos);
         }
     }
 
@@ -2295,12 +2293,12 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
             if (img_sound != NULL)
             {
                 sfx_index = rnd2 % img_sound->sfx_len;
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, img_sound->sfx[sfx_index], sound_state);
+                sndPlaySfx(g_musicSfxBufferPtr, img_sound->sfx[sfx_index], sound_state);
             }
 
-            if (sound_state->link.next != NULL)
+            if (*sound_state != NULL)
             {
-                chrobjSndCreatePostEventDefault((ALSoundState* ) sound_state->link.next, pos);
+                chrobjSndCreatePostEventDefault(*sound_state, pos);
             }
         }
     }
@@ -2911,21 +2909,21 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                             sndDeactivate(handptr->audioHandle);
                         }
 
-                        if (((struct ALSoundState *)handptr->audioHandle2 != 0)
-                            && (sndGetPlayingState((struct ALSoundState *) handptr->audioHandle2) != 0))
+                        if ((handptr->audioHandle2 != 0)
+                            && (sndGetPlayingState(handptr->audioHandle2) != 0))
                         {
-                            sndDeactivate((struct ALSoundState *) handptr->audioHandle2);
+                            sndDeactivate(handptr->audioHandle2);
                         }
 
                         if (weaponGetSound(weapon) != 0)
                         {
                             if (handptr->audioHandle == NULL)
                             {
-                                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, weaponGetSound(weapon), (struct ALSoundState *) &handptr->audioHandle);
+                                sndPlaySfx(g_musicSfxBufferPtr, weaponGetSound(weapon), &handptr->audioHandle);
                             }
-                            else if ((struct ALSoundState *)handptr->audioHandle2 == 0)
+                            else if (handptr->audioHandle2 == 0)
                             {
-                                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, weaponGetSound(weapon), (struct ALSoundState *) &handptr->audioHandle2);
+                                sndPlaySfx(g_musicSfxBufferPtr, weaponGetSound(weapon), &handptr->audioHandle2);
                             }
 
                             handptr->lastSoundTime = g_GlobalTimer;
@@ -2935,7 +2933,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                     if (weapon == ITEM_WATCHLASER)
                     {
                         laserSounds = watchlaser_fire_sounds;
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, laserSounds.half[randomGetNext() & 1], NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, laserSounds.half[randomGetNext() & 1], NULL);
                     }
                 }
             }
@@ -2956,7 +2954,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0))
                )
             {
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, EMPTY_GUN_FIRE_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, EMPTY_GUN_FIRE_SFX, NULL);
             }
         }
     }
@@ -3287,18 +3285,18 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 switch (weapon)
                 {
                     case ITEM_LASER:
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, PICKUP_LASER_SFX, NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, PICKUP_LASER_SFX, NULL);
                         break;
 
                     case ITEM_KNIFE:
                     case ITEM_THROWKNIFE:
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, PICKUP_KNIFE_SFX, NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, PICKUP_KNIFE_SFX, NULL);
                         break;
 
                     case ITEM_TIMEDMINE:
                     case ITEM_PROXIMITYMINE:
                     case ITEM_REMOTEMINE:
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, PICKUP_MINE_SFX, NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, PICKUP_MINE_SFX, NULL);
                         break;
 
                     case ITEM_UNARMED:
@@ -3319,7 +3317,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                         break;
 
                     default:
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, PICKUP_GUN_SFX, NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, PICKUP_GUN_SFX, NULL);
                         break;
                 }
             }
@@ -3470,7 +3468,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             case ITEM_WATCHCOMMUNICATOR:
             case ITEM_WATCHGEIGERCOUNTER:
             case ITEM_WATCHMAGNETREPEL:
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_RIFLECOCK_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, GUN_RIFLECOCK_SFX, NULL);
                 break;
             }
         }
@@ -3633,7 +3631,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 && (handptr->stateTime >= WHEN_11_FLD890_1))
         {
             knifeSounds = knife_throw_sounds;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, knifeSounds.half[randomGetNext() % 3U], NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, knifeSounds.half[randomGetNext() % 3U], NULL);
 
 
             if (handptr->weapon_action_state == GUN_ANIM_STATE_KNIFE_SLASH1_BEGIN)
@@ -4397,14 +4395,14 @@ void gunTickGameplay(s32 triggerOn)
         {
             // Start or restart the hum sound if needed
             if (hand_right->audioHandle == NULL
-                || sndGetPlayingState((struct ALSoundState *) hand_right->audioHandle) == 0)
+                || sndGetPlayingState(hand_right->audioHandle) == 0)
             {
                 if (lvGetControlsLocked() == 0)
                 {
                     sndPlaySfx(
-                        (struct ALBankAlt_s *) g_musicSfxBufferPtr,
+                        g_musicSfxBufferPtr,
                         MAGNETIC_HUM_SFX,
-                        (struct ALSoundState *) &hand_right->audioHandle);
+                        &hand_right->audioHandle);
                 }
             }
         }
@@ -4414,9 +4412,9 @@ void gunTickGameplay(s32 triggerOn)
 
             if (hand_right->audioHandle != NULL)
             {
-                if (sndGetPlayingState((struct ALSoundState *) hand_right->audioHandle) != 0)
+                if (sndGetPlayingState(hand_right->audioHandle) != 0)
                 {
-                    sndDeactivate((struct ALSoundState *) hand_right->audioHandle);
+                    sndDeactivate(hand_right->audioHandle);
                 }
             }
         }
@@ -5191,7 +5189,7 @@ void casingTick(CasingRecord* casing)
             if ((g_CurrentPlayer->hands[0].weapon_action_state != GUN_ANIM_STATE_FIRE) && (g_CurrentPlayer->hands[1].weapon_action_state != GUN_ANIM_STATE_FIRE))
             {
                 // Play bullet casing rolling on floor sound
-                sndPlaySfx((struct ALBankAlt_s* ) g_musicSfxBufferPtr, CART_SPENT_SFX, (ALSoundState* ) &g_CasingSfxState);
+                sndPlaySfx(g_musicSfxBufferPtr, CART_SPENT_SFX, &g_CasingSfxState);
             }
         }
 

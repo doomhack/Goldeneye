@@ -835,21 +835,21 @@ Gfx *frontCastRender(Gfx *DL);
 void frontHideAllSwitches(Model *model);
 void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode);
 void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level);
-Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, u8 *text, s32 chars, s32 font);
+Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, char *text, struct fontchar *fontChars, struct font *font);
 void frontSetModeCursor(int mode);
 void frontSetDifficultyCursor(int difficulty);
 
 // end forward declarations.
 
 
-Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, s8 *text, s32 chars, s32 font, s32 colour, s32 width, s32 height, s32 yOffset, s32 lineheight)
+Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, char *text, struct fontchar *fontChars, struct font *font, s32 colour, s32 width, s32 height, s32 yOffset, s32 lineheight)
 {
     gdl = textRender(
         gdl,
         x,
         y,
         text,
-        chars,
+        fontChars,
         font,
         colour,
         width,
@@ -1323,7 +1323,7 @@ void frontLegalTick(void)
 /**
  * Render a string of standard text on the legal screen e.g. "TWYCROSS BOARD OF GAME CLASSIFICATION"
  */
-Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, u8 *text, s32 chars, s32 font)
+Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, char *text, struct fontchar *fontChars, struct font *font)
 {
     s32 height;
     s32 width;
@@ -1336,7 +1336,7 @@ Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, u8 *t
     x = x0 - ((s32) (halign * width) / 2);
     y = y0 - ((s32) (valign * height) / 2);
 
-    return textRender(dl, &x, &y, text, chars, font, -1, viGetX(), viGetY(), 0, 0);
+    return textRender(dl, &x, &y, text, fontChars, font, -1, viGetX(), viGetY(), 0, 0);
 }
 
 
@@ -2026,33 +2026,33 @@ void frontFileSelectTick(void)
         if ((joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD | L_TRIG | L_CBUTTONS) != 0) && (g_FrontFolderEraseChoice == 0))
         {
             g_FrontFolderEraseChoice = 1;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
         }
         else if ((joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD | R_TRIG | R_CBUTTONS) != 0) && (g_FrontFolderEraseChoice != 0))
         {
             g_FrontFolderEraseChoice = 0;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
         }
         if ((joyGetStickX(0) < -0x2D) && (g_FrontFolderEraseChoice == 0))
         {
             g_FrontFolderEraseChoice = 1;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
         }
         else if ((joyGetStickX(0) >= 0x2E) && (g_FrontFolderEraseChoice != 0))
         {
             g_FrontFolderEraseChoice = 0;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
         }
         if (joyGetButtonsPressedThisFrame(PLAYER_1, A_BUTTON | Z_TRIG | START_BUTTON) != 0)
         {
             if (g_FrontFolderEraseChoice == 0)
             {
                 fileDeleteSaveForFolder(g_FrontFolderErase);
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
             }
             else
             {
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
             }
             frontSetCursorOnFolder(g_FrontFolderErase);
             g_FrontFolderErase = -1;
@@ -2061,7 +2061,7 @@ void frontFileSelectTick(void)
         {
             frontSetCursorOnFolder(g_FrontFolderErase);
             g_FrontFolderErase = -1;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
         }
     }
     else
@@ -2093,13 +2093,13 @@ void frontFileSelectTick(void)
                     if (g_FrontFolderIcon == 0)
                     {
                         g_FrontFolder = foldernum;
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, PAPER_TURN_SFX, NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, PAPER_TURN_SFX, NULL);
                     }
                     else if (g_FrontFolderIcon == 1)
                     {
                         fileCopyFolderToFirstFree(foldernum);
                         g_FrontFolderIcon = 0;
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, COPY_FILE_SFX, NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, COPY_FILE_SFX, NULL);
                     }
                     else if (g_FrontFolderIcon == 2)
                     {
@@ -2110,7 +2110,7 @@ void frontFileSelectTick(void)
                         }
 
                         g_FrontFolderIcon = 0;
-                        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
+                        sndPlaySfx(g_musicSfxBufferPtr, OPTION_CLICK2_SFX, NULL);
                     }
 
                     break;
@@ -2126,7 +2126,7 @@ void frontFileSelectTick(void)
                 && (g_FrontCursorY <= folder_option_COPY_bound.down))
             {
                 g_FrontFolderIcon = 1;
-                sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_LOCK_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_LOCK_SFX, NULL);
             }
             else if ((folder_option_ERASE_bound.left <= g_FrontCursorX)
                 && (g_FrontCursorX <= folder_option_ERASE_bound.right)
@@ -2134,19 +2134,19 @@ void frontFileSelectTick(void)
                 && (g_FrontCursorY <= folder_option_ERASE_bound.down))
             {
                 g_FrontFolderIcon = 2;
-                sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_LOCK_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_LOCK_SFX, NULL);
             }
             else if (g_FrontFolderIcon != 0)
             {
                 g_FrontFolderIcon = 0;
-                sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
             }
         }
         else if ((joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON) != 0)
             && (g_FrontFolderIcon != 0))
         {
             g_FrontFolderIcon = 0;
-            sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, GUN_M60AMMGUN_3_SFX, NULL);
         }
 
         frontMoveCursor();
@@ -3354,7 +3354,7 @@ void frontMissionSelectTick(void)
         {
             g_FrontTabPrevSelected = 1;
 
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
         else if (g_FrontDifficultyHighlight >= 0)
         {
@@ -3362,14 +3362,14 @@ void frontMissionSelectTick(void)
             g_FrontStage = g_FrontMissions[g_FrontMission].stage_id;
             g_FrontTabNextSelected = 1;
 
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     else if (joyGetButtonsPressedThisFrame(0, B_BUTTON) != 0)
     {
         g_FrontTabPrevSelected = 1;
 
-        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
     frontMoveCursor();
@@ -4671,7 +4671,7 @@ void frontMpOptionsTick(void)
     if (joyGetButtonsPressedThisFrame(PLAYER_1, START_BUTTON))
     {
         g_FrontTabStartSelected = 1;
-        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON))
     {
@@ -4725,12 +4725,12 @@ void frontMpOptionsTick(void)
             frontMpStepDisplaySetting();
         }
 
-        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
         g_FrontTabPrevSelected = 1;
-        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
     frontHideAllSwitches(g_FrontFolderModels[0]);
@@ -5211,7 +5211,7 @@ void frontMpCharTick(void)
             if (joyGetButtonsPressedThisFrame(i, B_BUTTON))
             {
                 g_MpCharChosen[i] = 0;
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
 
@@ -5243,7 +5243,7 @@ void frontMpCharTick(void)
                     g_MpCharPortraitSize[i] = 1;
                     g_MpCharChosen[i] = 1;
 
-                    sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+                    sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
                 }
             }
             else if (joyGetStickXInRange(i, -2, 1) > 0)
@@ -5604,7 +5604,7 @@ void frontMpHandicapTick(void)
         if (g_MpCharChosen[i] && joyGetButtonsPressedThisFrame(i, B_BUTTON))
         {
             g_MpCharChosen[i] = 0;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
 
         if (g_MpCharChosen[i] == 0)
@@ -5628,7 +5628,7 @@ void frontMpHandicapTick(void)
             else if (joyGetButtonsPressedThisFrame(i, A_BUTTON|Z_TRIG|START_BUTTON)) // 0xb000
             {
                 g_MpCharChosen[i] = 1;
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
 
             if ((joyGetStickXInRange(i, -2, 1) == -1) || (joyGetStickXInRange(i, -2, 1) == 0))
@@ -5801,7 +5801,7 @@ void frontMpControlsTick(void)
         if (g_MpCharChosen[i] && joyGetButtonsPressedThisFrame(i, B_BUTTON))
         {
             g_MpCharChosen[i] = 0;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
 
         if (g_MpCharChosen[i] == 0)
@@ -5855,7 +5855,7 @@ void frontMpControlsTick(void)
             else if (joyGetButtonsPressedThisFrame(i, A_BUTTON|Z_TRIG|START_BUTTON)) // 0xb000
             {
                 g_MpCharChosen[i] = 1;
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
 
             if (joyGetControllerCount() != 4)
@@ -6495,13 +6495,13 @@ void frontMpTeamsTick(void)
             if (!(g_MpTeamsCursor & 1))
             {
                 g_MpTeamsCursor = 1;
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
         else if (!(g_MpTeamsCursor & 1))
         {
             g_MpTeamsCursor += 1;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     // 0x808
@@ -6512,13 +6512,13 @@ void frontMpTeamsTick(void)
             if (g_MpTeamsCursor & 2)
             {
                 g_MpTeamsCursor = 1;
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
         else if (g_MpTeamsCursor & 2)
         {
             g_MpTeamsCursor -= 2;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     // 0x202
@@ -6529,13 +6529,13 @@ void frontMpTeamsTick(void)
             if (g_MpTeamsCursor & 1)
             {
                 g_MpTeamsCursor = 2;
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
         else if (g_MpTeamsCursor & 1)
         {
             g_MpTeamsCursor -= 1;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     // 0x404
@@ -6546,13 +6546,13 @@ void frontMpTeamsTick(void)
             if (!(g_MpTeamsCursor & 2))
             {
                 g_MpTeamsCursor = 2;
-                sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+                sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
             }
         }
         else if (!(g_MpTeamsCursor & 2))
         {
             g_MpTeamsCursor += 2;
-            sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
 
@@ -6595,7 +6595,7 @@ void frontMpTeamsTick(void)
         }
 
         frontSetMenu(MENU_MP_OPTIONS, 0);
-        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 }
 
@@ -7274,18 +7274,18 @@ void frontStatsTick()
         if (g_FrontTabNextHighlight)
         {
             g_FrontTabNextSelected = 1;
-            sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
         else if (g_FrontTabPrevHighlight != FALSE)
         {
             g_FrontTabPrevSelected = 1;
-            sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
         }
     }
     else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
     {
         g_FrontTabPrevSelected = 1;
-        sndPlaySfx((struct ALBankAlt_s *)g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
     frontHideAllSwitches(g_FrontFolderModels[0]);
@@ -7804,12 +7804,12 @@ void frontCheatTick(void)
             g_CheatMenuToggle = 1;
         }
 
-        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
     else if (joyGetButtonsPressedThisFrame(0, 0x4000U) != 0)
     {
         g_FrontTabPrevSelected = 1;
-        sndPlaySfx((struct ALBankAlt_s *) g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
 
     frontHideAllSwitches(g_FrontFolderModels[0]);
