@@ -14,9 +14,10 @@
 #define RSP_MEMP_BANK                   6
 #define RSP_MEMP_ALLOC_SIZE_BYTES  0xA000
 
-u8 g_gfxDramStack[SP_DRAM_STACK_SIZE8];
+// The RSP reads and writes these by DMA: keep them on whole data cache lines.
+alignas(16) u8 g_gfxDramStack[SP_DRAM_STACK_SIZE8];
 
-u8 g_gfxYieldBuf[OS_YIELD_GFX_DATA_SIZE];
+alignas(16) u8 g_gfxYieldBuf[OS_YIELD_GFX_DATA_SIZE];
 
 u8 *g_gfxRdpOutputBufferEnd = NULL;
 
