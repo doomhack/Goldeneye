@@ -6044,7 +6044,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                     {
                         if (((dx * dx) + (dy * dy) + (dz * dz)) > 160000.0f)
                         {
-                            rocket = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRROCKET, 0x56);
+                            rocket = weaponCreateFromModel(PROP_CHRROCKET, 0x56);
                             if (rocket != NULL)
                             {
                                 mtx4LoadIdentity(&rocketMtx);
@@ -6095,7 +6095,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                     {
                         if (((dx * dx) + (dy * dy) + (dz * dz)) > 160000.0f)
                         {
-                            grenade = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRGRENADEROUND, 0x57);
+                            grenade = weaponCreateFromModel(PROP_CHRGRENADEROUND, 0x57);
                             if (grenade != NULL)
                             {
                                 mtx4LoadIdentity(&grenadeMtx);
@@ -10230,7 +10230,7 @@ bool chrTryThrowGrenade(ChrRecord *self)
 */
 bool chrDropItem(ChrRecord *self, s32 modelnum, u8 weaponid)
 {
-    WeaponObjRecord *NewModel = (WeaponObjRecord *)weaponCreateFromModel(modelnum, weaponid);
+    WeaponObjRecord *NewModel = weaponCreateFromModel(modelnum, weaponid);
 
     if (NewModel && NewModel->prop)
     {

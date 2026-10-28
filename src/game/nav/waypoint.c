@@ -549,7 +549,7 @@ void waypointsValidate(void)
     s32 hasError;
     waypoint *waypoints;
     s32 waypointIndex;
-    waygroup *currentWaypoint;
+    waygroup *currentGroup;
 
     hasError = 0;
     setup = &g_CurrentSetup;
@@ -562,14 +562,16 @@ void waypointsValidate(void)
         s32 neighbourIndex;
         s32 neighbourNum;
 
-        waypointIndex = 0;
-        currentWaypoint = waypoints;
+        waypoint *wp;
 
-        while (((waypoint *) currentWaypoint)->padID >= 0)
+        waypointIndex = 0;
+        wp = waypoints;
+
+        while (wp->padID >= 0)
         {
             neighbourIndex = 0;
 
-            while ((neighbourNum = ((waypoint *) currentWaypoint)->neighbours[neighbourIndex]) >= 0)
+            while ((neighbourNum = wp->neighbours[neighbourIndex]) >= 0)
             {
                 if (neighbourNum == waypointIndex)
                 {
@@ -603,7 +605,7 @@ void waypointsValidate(void)
             }
  
             waypointIndex++;
-            currentWaypoint = &waypoints[waypointIndex];
+            wp = &waypoints[waypointIndex];
         }
  
     }
@@ -720,7 +722,7 @@ void waypointsValidate(void)
 
                 if (floodGroup->neighbours != NULL)
                 {
-                    currentWaypoint = groups;
+                    currentGroup = groups;
                     assignmentGroupCursor = floodGroup;
 
                     do
@@ -747,11 +749,11 @@ void waypointsValidate(void)
                             member = (s32 *) (((char *) floodGroup->waypoints) + waypointIndex);
                         }
  
-                        currentWaypoint++;
-                        floodGroup = currentWaypoint;
+                        currentGroup++;
+                        floodGroup = currentGroup;
                         assignmentGroupIndex++;
                     }
-                    while (currentWaypoint->neighbours != NULL);
+                    while (currentGroup->neighbours != NULL);
                 }
  
             }
@@ -762,7 +764,7 @@ void waypointsValidate(void)
                 assignmentGroupIndex = 0;
                 validationWaypointCursor = validationWaypoint;
                 floodGroupCursor = groups;
-                currentWaypoint = floodGroupCursor;
+                currentGroup = floodGroupCursor;
 
                 while (validationWaypointCursor->padID >= 0)
                 {
@@ -878,10 +880,10 @@ void waypointsValidate(void)
                         }
                     }
  
-                    currentWaypoint = ((waygroup *) currentWaypoint) + 1;
-                    floodGroup = (waygroup *) currentWaypoint;
+                    currentGroup++;
+                    floodGroup = currentGroup;
                 }
-                while (((waygroup *) currentWaypoint)->neighbours != NULL);
+                while (currentGroup->neighbours != NULL);
             }
         }
     }

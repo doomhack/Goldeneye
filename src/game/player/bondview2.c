@@ -1889,9 +1889,9 @@ s32 tankTestCollision(struct coord3d *collision_position, StandTile *starttile, 
             model = obj->model;
             switches = model->obj->Switches;
 
-            gunStart = switches[3]->Data;
-            gunEnd = switches[4]->Data;
-            turretPos = switches[2]->Data;
+            gunStart = &switches[3]->Data->Group.Origin;
+            gunEnd = &switches[4]->Data->Group.Origin;
+            turretPos = &switches[2]->Data->Group.Origin;
 
             barrelEnd.f[0] = gunEnd->f[0] + gunStart->f[0] - turretPos->f[0];
             barrelEnd.f[1] = 0.0f;
@@ -2195,7 +2195,7 @@ s32 playerTestMove(struct coord3d *pos, StandTile **stan)
         {
             if (g_CurrentPlayer->ducking_height_offset == FULL_CROUCH_OFFSET || special < 0)
             {
-                if (stanGetLocusCount(&locus) == 0 && stanTestLocusEdgeAboveY(&tile, pos->f[0], pos->f[2], collision_radius, g_CurrentPlayer->bond.collision_position.f[1] + 175.0f) >= 0)
+                if (stanLocusIsLadder(&locus) == 0 && stanTestLocusEdgeAboveY(&tile, pos->f[0], pos->f[2], collision_radius, g_CurrentPlayer->bond.collision_position.f[1] + 175.0f) >= 0)
                 {
                     goto block_20;
                 }
@@ -3699,11 +3699,11 @@ void watchTrigger(s32 instant)
             watchInitPauseTilt();
             watchZoomToDefault();
 
-            hudMakeDamageSegments(&g_CurrentPlayer->armor_display_values, 23*2, 1, currentPlayerGetArmor());
-            hudRenderGaugeBar(g_CurrentPlayer->watchArmorGdl, OS_K0_TO_PHYSICAL(&g_CurrentPlayer->armor_display_values), 0x2E);
+            hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 23*2, 1, currentPlayerGetArmor());
+            hudRenderGaugeBar(g_CurrentPlayer->watchArmorGdl, g_CurrentPlayer->armor_display_values, 0x2E);
 
-            hudMakeDamageSegments(&g_CurrentPlayer->health_display_values, 23*2, -1, currentPlayerGetHealth());
-            hudRenderGaugeBar(g_CurrentPlayer->watchHealthGdl, OS_K0_TO_PHYSICAL(&g_CurrentPlayer->health_display_values), 0x2E);
+            hudMakeDamageSegments(g_CurrentPlayer->health_display_values, 23*2, -1, currentPlayerGetHealth());
+            hudRenderGaugeBar(g_CurrentPlayer->watchHealthGdl, g_CurrentPlayer->health_display_values, 0x2E);
 
             watchMenuOpen();
 
@@ -6704,7 +6704,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         {
             if (g_PlayerTankProp != NULL)
             {
-                tank_obj = g_PlayerTankProp->obj;
+                tank_obj = (struct TankRecord *)g_PlayerTankProp->obj;
                 mtx4LoadYRotation(M_TAU_F - g_TankOrientationAngle, &seatRot);
                 mtx4ScaleRows012(tank_obj->model->scale, &seatRot);
 
@@ -6983,7 +6983,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         f32 nd; // canonical name
         f32 animScale;
         f32 moveRatio;
-        struct move_bond_temp_struct curLocus;
+        struct StandTileLocusCallbackRecord curLocus;
         struct move_bond_collision bondCollision;
         f32 shorten; // canonical name
         f32 headpos_x;
@@ -7146,7 +7146,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             &curLocus);
 
         /* almost never true */
-        if (stanGetLocusCount(&curLocus) != 0)
+        if (stanLocusIsLadder(&curLocus) != 0)
         {
             use_stanHeight = 1;
         }
@@ -7159,7 +7159,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             &curLocus);
 
         /* almost never true */
-        if (stanGetLocusCount(&curLocus) != 0)
+        if (stanLocusIsLadder(&curLocus) != 0)
         {
             use_stanHeight = 1;
         }
@@ -7172,7 +7172,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             &curLocus);
 
         /* almost always true */
-        if (stanGetLocusCount(&curLocus) == 0)
+        if (stanLocusIsLadder(&curLocus) == 0)
         {
             stanCircleGetSpecial(
                 &tile,
@@ -7183,7 +7183,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         }
 
         /* almost never true */
-        if (stanGetLocusCount(&curLocus))
+        if (stanLocusIsLadder(&curLocus))
         {
             use_stanHeight = 1;
             stanGetMoveBondCollisionTiles(&ladderTile1, &ladderTile2, &bondCollision);
@@ -7342,7 +7342,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         struct TankRecord *tankRec;
         struct ObjectRecord *tankObj;
         f32 smoothY;
-        struct ModelNode_BoundingBoxRecord *bbox;
+        ModelRoData_BoundingBoxRecord *bbox;
         Mtxf tankMtx;
         struct coord3d tankPos;
         s32 step;
@@ -7354,7 +7354,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         tankRec = ((struct TankRecord *)g_PlayerTankProp->obj);
         tankObj = (struct  ObjectRecord*)g_PlayerTankProp->obj;
-        bbox = (struct ModelNode_BoundingBoxRecord *)((struct ModelNode *)tankObj->model->obj->Switches)->Child->Data;
+        bbox = &tankObj->model->obj->Switches[5]->Data->BoundingBox;
 
         tankRec->is_firing_tank = (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
             && gunGetFiringStatus(GUNRIGHT);
@@ -7405,10 +7405,10 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         setupUpdateObjectRoomPosition(tankObj);
         chrobjCollisionRelated(tankObj);
         tankGetCollisionBounds(tankBounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
-        propGetRoomIds(tankObj->prop, &rooms);
+        propGetRoomIds(tankObj->prop, rooms);
 
         // update g_NumRoomPropsFound
-        roomGetProps(&rooms);
+        roomGetProps(rooms);
 
         for (lookup_index=g_RoomPropsFound; *lookup_index>=0; lookup_index++)
         {
@@ -7944,7 +7944,7 @@ void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
     worldtoscreen = (Mtxf *) dynAllocateMatrix();
     viewtoworld = (Mtxf *) dynAllocateMatrix();
 
-    lookat = dynAllocateLights(2);
+    lookat = (LookAt *)dynAllocateLights(2); // a LookAt is two Lights
 
     scale = g_CamPosScale;
 
@@ -8395,12 +8395,12 @@ Gfx *hudRenderHealthBars(Gfx *gdl)
     Mtxf lookatmtxf;
 
     //Set up armor bars.
-    hudMakeDamageSegments(&g_CurrentPlayer->armor_display_values[0].items[0], 0x2e, 1, g_CurrentPlayer->apparentarmour);
-    hudRenderGaugeBar(g_CurrentPlayer->watchArmorGdl, OS_PHYSICAL_TO_K0(&g_CurrentPlayer->armor_display_values[0].items[0]), 0x2e);
+    hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 0x2e, 1, g_CurrentPlayer->apparentarmour);
+    hudRenderGaugeBar(g_CurrentPlayer->watchArmorGdl, g_CurrentPlayer->armor_display_values, 0x2e);
 
     // Set up health bars.
-    hudMakeDamageSegments(&g_CurrentPlayer->health_display_values[0].items[0], 0x2e, -1, g_CurrentPlayer->apparenthealth);
-    hudRenderGaugeBar(g_CurrentPlayer->watchHealthGdl, OS_PHYSICAL_TO_K0(&g_CurrentPlayer->health_display_values[0].items[0]), 0x2e);
+    hudMakeDamageSegments(g_CurrentPlayer->health_display_values, 0x2e, -1, g_CurrentPlayer->apparenthealth);
+    hudRenderGaugeBar(g_CurrentPlayer->watchHealthGdl, g_CurrentPlayer->health_display_values, 0x2e);
 
     // Create an orthographic render state for the gauge.
     lookatmtx = dynAllocateMatrix();
@@ -8442,13 +8442,13 @@ void mpRespawnPlayer(void)
 {
     coord3d start_pos = ZeroCoordSpawnPos;
     f32 start_look_angle;
-    s32 start_stan;
+    StandTile *start_stan;
     f32 stan_height;
     s32 i;
     s32 padnum;
     struct SetupIntroEmpty* intro_record;
 
-    intro_record = g_CurrentSetup.intro;
+    intro_record = (struct SetupIntroEmpty *)g_CurrentSetup.intro;
 
     playerResetLife();
     playerStartNewLife();
@@ -8615,7 +8615,7 @@ static s32 coopDiedLast(void)
  */
 static void coopGiveStartingLoadout(void)
 {
-    struct SetupIntroEmpty *intro_record = g_CurrentSetup.intro;
+    struct SetupIntroEmpty *intro_record = (struct SetupIntroEmpty *)g_CurrentSetup.intro;
     s32 i;
 
     invResetKeepProps();
@@ -10464,7 +10464,7 @@ Gfx* hudmsgBottomRender(Gfx* gdl)
             }
 
             view_vert = view_top - view_top_offset;
-            gdl = textRenderBlackBox(gdl, (s32) &view_left, (s32) &view_vert, (s32) &view_horiz, (s32) &view_top);
+            gdl = textRenderBlackBox(gdl, &view_left, &view_vert, &view_horiz, &view_top);
             gdl = textEndDraw(textRenderOutlined(gdl, &view_left, &view_vert, stringbuffer_lowerleft[status_bar_text_buffer_index], BONDVIEW_2ND_FONTTABLE(status_bar_text_buffer_index), BONDVIEW_1ST_FONTTABLE(status_bar_text_buffer_index), -1, 0x646464FFU, (s16) (s32) viGetX(), (s16) viGetY(), 0, 0));
         }
     }
@@ -10556,7 +10556,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
     s32 debug_y;
     f32 theta_x;
     s32 debug_boxbottom;
-    s32 *roomid;
+    char *roomid;
     s32 debug_angle;
     DirectionLabels directions;
 

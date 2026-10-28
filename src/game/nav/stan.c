@@ -84,14 +84,14 @@ const char aStanlinelog[] = "-stanlinelog";
 // forward declarations
 
 s32 stanCircleCrouchCallback(StandTile *tile, struct StandTileLocusCallbackRecord* record);
-s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, f32 edgeDist, f32 pointDistA, f32 pointDistB, s32 *outFlags);
+s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, f32 edgeDist, f32 pointDistA, f32 pointDistB, struct StandTileLocusCallbackRecord *record);
 s32 stanCircleRooms(StandTile **tileStack, f32 target_x, f32 target_z, f32 radius, s32 *rooms, s32 *count_rtn, s32 bufMax);
 f32 stanTriEdgeDist(StandTile *tile, s32 start3index, f32 p_x, f32 p_z);
 StanCollisionResult stanWalkCircle(struct StandTile**, f32, f32, f32, standTileLocusCallback_A_t, standTileLocusCallback_B_t, standTileLocusCallback_C_t, struct StandTileLocusCallbackRecord*);
 s32 stanLocusAddTileRoomIfNew(StandTile *tile, struct StandTileLocusCallbackRecord *rec);
 s32 stanLocusIsCrouch(struct StandTileLocusCallbackRecord *record);
 s32 stanGetLocusCount(struct StandTileLocusCallbackRecord *record);
-bool stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 distToPointA, f32 distToPointB, f32 *yThreshold);
+s32 stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 distToPointA, f32 distToPointB, struct StandTileLocusCallbackRecord *record);
 
 // end forward declarations
 
@@ -326,21 +326,11 @@ next_room:
 
 void stanLoadFile(struct StanPrefixRecord *file)
 {
-    struct StanPrefixRecord *prefix = &g_StanFile;
-    s32 tokenIndexMask;
-
     g_StanDebugRegion = 1;
-    tokenIndexMask = !file->ptr_firstroom;
-    prefix->stanfile = file;
-    tokenIndexMask = 1;
-
-    /*
-     * Matching artifacts.
-     */
-
+    g_StanFile = file;
     g_StanTiles = (StandTile *)(((u8 *)file->ptr_firstroom) - 0x80);
 
-    if (tokenFind(tokenIndexMask, aStanlinelog))
+    if (tokenFind(1, aStanlinelog))
     {
         g_StanLineLog = 1;
     }
@@ -1672,7 +1662,7 @@ StanCollisionResult stanWalkCircle(StandTile **startTile, f32 x, f32 z, f32 radi
                     {
                         if ((callbackB == NULL || !callbackB(tile, pointI, edgeDist, pointDistA, pointDistB, record)) && (tile->points[pointI].link >> 4))
                         {
-                            linkedTile = ((u32) g_StanTiles) + (tile->points[pointI].link << 3);
+                            linkedTile = (StandTile *)((u8 *)g_StanTiles + (tile->points[pointI].link << 3));
                             for (i = cat - 1; i >= 0; i--)
                             {
                                 if (linkedTile == tileStack[i])
@@ -1816,14 +1806,14 @@ s32 stanCircleCrouchCallback(StandTile *tile, struct StandTileLocusCallbackRecor
     s32 val = tile->mid.half >> 0xC;
     if (g_StanTileSpecialFlags[val] & STANTILEFLAG_FORCECROUCH)
     {
-        record->rooms = 1;
+        record->crouch = 1;
     }
 
     return 0;
 }
 
 
-s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, f32 edgeDist, f32 pointDistA, f32 pointDistB, s32 *outFlags)
+s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, f32 edgeDist, f32 pointDistA, f32 pointDistB, struct StandTileLocusCallbackRecord *record)
 {
     u16 link;
     StandTile *target;
@@ -1837,7 +1827,7 @@ s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, f32 edgeDist, f32 po
         mid = target->mid.half;
 
         if (g_StanTileSpecialFlags[mid >> 0xc] & STANTILEFLAG_FORCECROUCH) {
-            outFlags[0] = 1;
+            record->crouch = 1;
             return 1;
         }
 
@@ -1845,7 +1835,7 @@ s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, f32 edgeDist, f32 po
 
         if (g_StanTileSpecialFlags[mid >> 0xc] & STANTILEFLAG_LADDER) {
             g_StanLadderTile = target;
-            outFlags[1] = 1;
+            record->ladder = 1;
             return 0;
         }
     }
@@ -1856,29 +1846,7 @@ s32 stanCircleLadderCallback(StandTile *tile, s32 pointIdx, f32 edgeDist, f32 po
 
 s32 stanCircleGetSpecial(StandTile **tile, f32 x, f32 z, f32 radius, struct StandTileLocusCallbackRecord *records)
 {
-    s32 i;
-
-    // HACK:
-    for(i=0;;)
-    {
-        ((s32*)records)[i+0] = 0;
-        ((s32*)records)[i+1] = 0;
-        ((s32*)records)[i+2] = 0;
-        ((s32*)records)[i+3] = 0;
-        i+=4;
-        if (i>15) break;
-    }
-
-    // maybe something like:
-    /*
-    for(i=0;i<3;i++)
-    {
-        records[i].unk00 = 0;
-        records[i].count = 0;
-        records[i].bufMax = 0;
-        records[i].nearEdgeCount = 0;
-    }
-    */
+    *records = (struct StandTileLocusCallbackRecord){0};
 
     return stanWalkCircle(tile, x, z, radius, stanCircleCrouchCallback, stanCircleLadderCallback, NULL, records);
 }
@@ -1886,13 +1854,13 @@ s32 stanCircleGetSpecial(StandTile **tile, f32 x, f32 z, f32 radius, struct Stan
 
 s32 stanLocusIsCrouch(struct StandTileLocusCallbackRecord *record)
 {
-    return record->rooms;
+    return record->crouch;
 }
 
 
-s32 stanGetLocusCount(struct StandTileLocusCallbackRecord *record)
+s32 stanLocusIsLadder(struct StandTileLocusCallbackRecord *record)
 {
-    return record->count;
+    return record->ladder;
 }
 
 
@@ -1913,8 +1881,9 @@ void stanGetTileOrderedPointWorldPos(StandTile *tile, s32 pointnum, coord3d *out
 }
 
 
-void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, coord3d *coords)
+void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, struct move_bond_collision *quad)
 {
+    coord3d *coords = quad->corners;
     StandTile *curtileStore;
     StandTile *baseTile;
     StandTile *linktile;
@@ -1959,13 +1928,13 @@ void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, coord3d
                             stanGetTileOrderedPointWorldPos(
                                 linktile,
                                 ((j >> 2) + k) % 3,
-                                (coord3d *)((s32)coords + (((j + k) & 3) * 0xc)));
+                                &coords[(j + k) & 3]);
                         }
 
                         stanGetTileOrderedPointWorldPos(
                             curtileStore,
                             curtilePointI,
-                            (coord3d *)((s32)coords + (((j + 3) & 3) * 0xc)));
+                            &coords[(j + 3) & 3]);
 
                         j++;
 
@@ -2006,35 +1975,13 @@ void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, coord3d
  * 
  * For a given edge, return true if the edge is vertically above yThreshold.
  */
-bool stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 distToPointA, f32 distToPointB, f32 *yThreshold)
+s32 stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 distToPointA, f32 distToPointB, struct StandTileLocusCallbackRecord *record)
 {
-    s32 nextIndex;
-    s32 pointCount;
-    f32 *threshold;
-    s32 pointCountReload;
+    s32 pointCount = (tile->tail.half >> 12) & 0xf;
+    s32 nextIndex = (edgeIndex + 1) % pointCount;
 
-    threshold = yThreshold;
-
-    if (*yThreshold < (f32)tile->points[edgeIndex].y)
-    {
-        /**  
-         * The duplicated point count calculation is required for matching.
-         * This is really just nextIndex = (edgeIndex + 1) % pointCount;
-         */
-        pointCount = (tile->tail.half >> 12) & 0xf;
-        pointCountReload = (tile->tail.half >> 12) & 0xf;
-
-        nextIndex = (edgeIndex + 1) % pointCount;
-
-        pointCount = pointCountReload;
-
-        if (*threshold < (f32)tile->points[nextIndex].y)
-        {
-            return TRUE;
-        }
-    }
-
-    return FALSE;
+    return record->yThreshold < (f32)tile->points[edgeIndex].y
+        && record->yThreshold < (f32)tile->points[nextIndex].y;
 }
 
 
@@ -2043,13 +1990,9 @@ bool stanLocusEdgeIsAboveY(StandTile *tile, s32 edgeIndex, f32 edgeDist, f32 dis
 */
 s32 stanTestLocusEdgeAboveY(StandTile **tile, f32 target_x, f32 target_z, f32 radius, f32 yThreshold)
 {
-    f32 data;
+    struct StandTileLocusCallbackRecord record = { .yThreshold = yThreshold * g_StanScale };
 
-    data = yThreshold * g_StanScale;
-
-    /// TODO: Why is this cast wrong?
-
-    return stanWalkCircle(tile, target_x, target_z, radius, NULL, stanLocusEdgeIsAboveY, NULL, (struct StandTileLocusCallbackRecord*)&data);
+    return stanWalkCircle(tile, target_x, target_z, radius, NULL, stanLocusEdgeIsAboveY, NULL, &record);
 }
 
 
@@ -2301,7 +2244,7 @@ void stanGetTileColour(StandTile *tile, f32 p_x, f32 p_z, u8 *rtn)
  * @param stanIdLo: 5bit stanIdLo File (a-z) and 3bit subtri 0-7
  * canonically Named
  */
-void stanPackId(char *id, u16 *stanIdHi, u8 *stanIdLo)
+void stanPackId(const char *id, u16 *stanIdHi, u8 *stanIdLo)
 {
     u32   bitsnumber;
     char *str_end;
@@ -2367,12 +2310,11 @@ void stanPackId(char *id, u16 *stanIdHi, u8 *stanIdLo)
 }
 
 
-struct StandTilePoint *stanMatchTileName(char *id)
+StandTile *stanMatchTileName(const char *id)
 {
-    StandTilePoint *tile;
+    StandTile *tile;
     u16 stanIdHi;
     u8 stanIdLo;
-    s16 tmp;
 
     if (*id == '\0') {
         return NULL;
@@ -2380,18 +2322,11 @@ struct StandTilePoint *stanMatchTileName(char *id)
 
     stanPackId(id, &stanIdHi, &stanIdLo);
 
-    tile = g_StanFile->ptr_firstroom;
-
-    while (*(u32 *)tile != 0) {
-        if ((u16)tile->x == stanIdHi) {
-            if (*((u8 *)&tile->y) == stanIdLo) {
-                return tile;
-            }
+    for (tile = g_StanFile->ptr_firstroom; *(u32 *)tile != 0;
+         tile = (StandTile *)((u8 *)tile + g_StanTileSizes[(tile->tail.half >> 12) & 0xf])) {
+        if ((tile->id >> 8) == stanIdHi && (u8)tile->id == stanIdLo) {
+            return tile;
         }
-
-        tmp = tile->link;
-        tile = (StandTilePoint *)((u8 *)tile +
-            g_StanTileSizes[(tmp >> 12) & 0xf]);
     }
 
     return NULL;
@@ -2458,7 +2393,7 @@ s32 stanGetTileRoom(StandTile *tile)
 
 //incorrect here so that both this and bgGetRoomValue match
 
-Gfx * stanDebugDrawTile(Gfx *ptrdl, StandTilePoint *tile_point, u32 RGBAColor) {
+Gfx *stanDebugDrawTile(Gfx *ptrdl, StandTile *tile, u32 RGBAColor) {
     return ptrdl;
 }
 

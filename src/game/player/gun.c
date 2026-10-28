@@ -112,6 +112,7 @@ CartridgeModelFileRecord ejected_cartridge[] = {
 #include "game/model/initactorpropstuff.h"
 #include "game/prop/explosion.h"
 #include "game/world/bg.h"
+#include "game/chr/chr.h"
 
 u32 g_GunDebApplyKeyframe = 0;
 u32 g_gunDebKeyframeIndex = 0;
@@ -490,16 +491,16 @@ s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *m
     frac = time / current->duration;
     tangent = current->interpParam;
 
-    quatFromAngles(&current[-1].rot, &q0);
-    quatFromAngles(&current->rot, &q1);
-    quatFromAngles(&current[1].rot, &q2);
-    quatFromAngles(&current[2].rot, &q3);
+    quatFromAngles(current[-1].rot.f, q0);
+    quatFromAngles(current->rot.f, q1);
+    quatFromAngles(current[1].rot.f, q2);
+    quatFromAngles(current[2].rot.f, q3);
 
-    quatMakeShortestPath(&q1, &q2);
-    quatMakeShortestPath(&q2, &q3);
-    quatMakeShortestPath(&q1, &q0);
+    quatMakeShortestPath(q1, q2);
+    quatMakeShortestPath(q2, q3);
+    quatMakeShortestPath(q1, q0);
 
-    quatSpline(&q0, &q1, &q2, &q3, frac, &qResult);
+    quatSpline(q0, q1, q2, q3, frac, qResult);
 
     interpCardinal3(&current[-1].pos, &current->pos, &current[1].pos, &current[2].pos, frac, tangent, &posResult);
 
@@ -510,7 +511,7 @@ s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *m
         qResult[1] = -qResult[1];
     }
 
-    quatToMtx4(&qResult, matrix);
+    quatToMtx4(qResult, matrix->m);
     mtx4SetTranslation(&posResult, matrix);
 
     return 1;
@@ -1606,7 +1607,7 @@ void gunThrowKnife(s32 hand)
     handmtx.m[3][2] = 0.0f;
     mtx4MultInPlace(&handmtx, &mtx);
 
-    guRotateF(&tumble, 360.0f / ((randomGetNext() * (0.5f / (f32)INT_MAX)) + 12.1f), mtx.m[1][0], mtx.m[1][1], mtx.m[1][2]);
+    guRotateF(tumble.m, 360.0f / ((randomGetNext() * (0.5f / (f32)INT_MAX)) + 12.1f), mtx.m[1][0], mtx.m[1][1], mtx.m[1][2]);
 
     wor = weaponCreateFromModel(PROP_CHRKNIFE, ITEM_THROWKNIFE);
 
@@ -1875,7 +1876,7 @@ void gunSpawnGLGrenade(s32 handnum)
         grenadeobj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
         grenadeobj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
-        gunLaunchProjectileFromPlayer(grenadeobj, &hand->muzzlePos, &launchmtx, &launchvel, (s32 *)&identitymtx);
+        gunLaunchProjectileFromPlayer(grenadeobj, &hand->muzzlePos, &launchmtx, &launchvel, &identitymtx);
 
         if (grenadeobj->runtime_bitflags & RUNTIMEBITFLAG_00000080)
         {
@@ -1932,9 +1933,9 @@ void gunUpdateAttachedRocket(s32 handIndex)
     rocketModel->render_pos = dynAllocate((s32)rocketModel->obj->numMatrices << 6);
 
     mtx4Copy(&attachedRocket->mtx, &worldMtx);
-    mtx4SetTranslation((Mtxf *)&attachedRocket->runtime_pos, &worldMtx);
+    mtx4SetTranslation(&attachedRocket->runtime_pos, &worldMtx);
 
-    mtx4MultAffine(camGetWorldToScreenMtxf(), &worldMtx, rocketModel->render_pos);
+    mtx4MultAffine(camGetWorldToScreenMtxf(), &worldMtx, &rocketModel->render_pos->pos);
     modelUpdateRelationsQuick(rocketModel, rocketModel->obj->RootNode);
 
     rocketProp->flags |= 2;
@@ -1951,7 +1952,7 @@ void gunCreateRocket(GUNHAND hand)
 
     if ((hand_ptr->rocket == NULL) && (hand_ptr->weapon_ammo_in_magazine > 0))
     {
-        rocket = (struct WeaponObjRecord *)weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
+        rocket = weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
 
         if (rocket != NULL)
         {
@@ -2093,7 +2094,7 @@ void gunFireTankShell(s32 handnum)
     } 
     else 
     {
-        obj = (WeaponObjRecord *) weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
+        obj = weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
     }
 
     if (obj == NULL) 
@@ -2105,7 +2106,7 @@ void gunFireTankShell(s32 handnum)
     obj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
     obj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
 
-    gunLaunchProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, (s32 *) &identitymtx);
+    gunLaunchProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, &identitymtx);
 
     if (obj->runtime_bitflags & RUNTIMEBITFLAG_00000080)
     {
@@ -2140,12 +2141,9 @@ const char g_GunDeathCountFormat[] = "%s %d %s\n";
 const char aSD_0[] = "%s: %d\n";
 
 
-//uncomment when actor is worked on
-//#include "chr.h"
-extern s32 dynAllocateVerticesDiscard NO_SDATA;
 
 void gunsInitAnimGroups(void) {
-    modelSetVtxAllocator(&dynAllocateVerticesDiscard);
+    modelSetVtxAllocator(dynAllocateVerticesDiscard);
     initWeaponAnimGroups();
 }
 

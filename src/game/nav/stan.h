@@ -22,10 +22,15 @@ struct StanPrefixRecord;
 
 /* The ladder quad from stanGetMoveBondCollisionTiles: the shared bottom edge, then the top. */
 struct move_bond_collision {
-    struct coord3d low0;
-    struct coord3d low1;
-    struct coord3d high0;
-    struct coord3d high1;
+    union {
+        struct {
+            struct coord3d low0;
+            struct coord3d low1;
+            struct coord3d high0;
+            struct coord3d high1;
+        };
+        struct coord3d corners[4];
+    };
 };
 
 typedef enum StanCollisionResult {
@@ -70,7 +75,7 @@ void stanLineRoomsCallback( StandTile *tile,  StandTile *unused,  struct StandTi
 void stanSetLevelScale(f32 ls);
 void stanResetHits(void);
 Gfx * stanDebugBeginDraw(Gfx *gdl);
-Gfx * stanDebugDrawTile(Gfx *ptrdl, StandTilePoint *tile_point, u32 RGBAColor);
+Gfx *stanDebugDrawTile(Gfx *ptrdl, StandTile *tile, u32 RGBAColor);
 s32 stanWalkLineNoCallback(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z);
 bool stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z);
 f32 stanGetPositionYValue(StandTile* tile, f32 p_x, f32 p_z);
@@ -89,14 +94,14 @@ PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, 
 void stanGetTileColour(StandTile *tile, f32 p_x, f32 p_z, u8 *rtn);
 s32 stanCircleGetSpecial(struct StandTile **tile, f32 x, f32 z, f32 radius, struct StandTileLocusCallbackRecord *records);
 s32 stanLocusIsCrouch(struct StandTileLocusCallbackRecord *record);
-s32 stanGetLocusCount(struct StandTileLocusCallbackRecord *record);
+s32 stanLocusIsLadder(struct StandTileLocusCallbackRecord *record);
 f32 stanDist2d(f32 o_x,f32 o_z,f32 p_x,f32 p_z);
 bool stanPointProjectsOntoEdge(f32 x1, f32 z1, f32 x2, f32 z2, f32 x3, f32 z3);
 f32 stanGetSignedPointLineDistance(f32 x1, f32 z1, f32 x2, f32 z2, f32 x3, f32 z3);
-void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, coord3d *coords);
+void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, struct move_bond_collision *quad);
 struct StandTile *stanFindNearestLegalPos(f32 *arg_x, f32 *arg_y, f32 *arg_z, f32 radius);
 bool stanSegmentsIntersect(f32 start1X, f32 start1Z, f32 end1X, f32 end1Z, f32 start2X, f32 start2Z, f32 end2X, f32 end2Z);
-struct StandTilePoint *stanMatchTileName(char *id);
+struct StandTile *stanMatchTileName(const char *id);
 s32 stanIsInsideTriWorld(struct StandTile *tile, f32 p_x, f32 p_z);
 s32 stanCircleRooms(StandTile **tileStack, f32 target_x, f32 target_z, f32 radius, s32 *rooms, s32 *count_rtn, s32 bufMax);
 StandTile *stanFindTileBelowPos(coord3d *pos, u8 *rooms, f32 *yRtn);

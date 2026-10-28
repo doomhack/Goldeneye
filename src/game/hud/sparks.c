@@ -331,7 +331,7 @@ void movingSparksTick(void)
             {
                 if (ptr->spark.lifetime > ptr->spark.age)
                 {
-                    physMoveWithGravity(&ptr->spark.pos.x, &ptr->velocity, g_GlobalTimerDelta);
+                    physMoveWithGravity(&ptr->spark.pos, &ptr->velocity, g_GlobalTimerDelta);
                     if (ptr->spark.pos.y < ptr->minY)
                     {
                         ptr->spark.lifetime = 0;

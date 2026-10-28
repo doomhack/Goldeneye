@@ -119,12 +119,12 @@ coord3d g_ProjectileHitNormal;
 
 MonitorRecord g_MonitorAnimController;
 
-struct object_animation_controller g_UnknownAnimController;
+MonitorRecord g_UnknownAnimController;
 
 /**
  * Unused / unreferenced (from padding / align?)
 */
-struct object_animation_controller g_TaserAnimController;
+MonitorRecord g_TaserAnimController;
 
 
 stagesetup g_CurrentSetup; //Public Working Setup

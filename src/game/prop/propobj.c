@@ -11489,7 +11489,7 @@ WeaponObjRecord blank_08_object_preset_1 = {
  * @param modelnum: index into PitemZ_entries, which is enum PROP
  * @param weaponid: object_weapon.gun_pickup value
  */
-ObjectRecord *weaponCreateFromModel(PROP modelnum, s32 weaponid)
+WeaponObjRecord *weaponCreateFromModel(PROP modelnum, s32 weaponid)
 {
     ModelFileHeader *modeldef;
     PropRecord *prop;
@@ -11542,7 +11542,7 @@ ObjectRecord *weaponCreateFromModel(PROP modelnum, s32 weaponid)
         }
     }
 
-    return (ObjectRecord *)obj;
+    return obj;
 }
 
 
