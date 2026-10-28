@@ -125,7 +125,7 @@ void gunStartBoltRecoil(GUNHAND hand);
 void gunSetHeldItemVisible(Model *model, s32 val);
 void gunReload(enum GUNHAND hand);
 void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos);
-Vtx *dynAllocateVertices(s32 count);
+void *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
 void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 
@@ -614,7 +614,7 @@ void gunUpdateAndFire(GUNHAND handnum)
 
         if ((weaponHasFlag(item, WEAPONSTATBITFLAG_MIRROR_DUAL) != 0) && (handnum == GUNLEFT))
         {
-            mtx4ScaleRow0(-1.0f, gunmtx.m[0]);
+            mtx4ScaleRow0(-1.0f, &gunmtx);
         }
 
         mtx4ScaleRows012(IDO_POINT_ONE, &gunmtx);
@@ -728,7 +728,7 @@ void gunUpdateAndFire(GUNHAND handnum)
             }
 
             mtx4ScaleRows012(flashscale, &flashmtx);
-            mtx4ScaleRow2AndW(flashext, flashmtx.m[0]);
+            mtx4ScaleRow2AndW(flashext, &flashmtx);
             mtx4MultInPlace(&gunmtx, &flashmtx);
             mtx4Copy(&flashmtx, &rwmtx[1]);
 
@@ -1863,7 +1863,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
     for (i = 0; i < objheader->numMatrices; i++)
     {
         mtx4Copy((u32)modelstack.render_pos + i * sizeof(Mtxf), &nodeMtx);
-        mtxF2L(&nodeMtx, &modelstack.render_pos[i]);
+        mtxF2L(&nodeMtx, &modelstack.render_pos[i].pos);
     }
 
     mtxPopWorldScale();
@@ -2097,7 +2097,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
         for (i = 0; i < objheader->numMatrices; i++)
         {
             mtx4Copy((u32)modelstack.render_pos + i * sizeof(Mtxf), &nodeMtx);
-            mtxF2L(&nodeMtx, &modelstack.render_pos[i]);
+            mtxF2L(&nodeMtx, &modelstack.render_pos[i].pos);
         }
 
         mtxPopWorldScale();
@@ -5523,7 +5523,7 @@ Gfx *hudDrawImageDefault(Gfx *gdl, sImageTableEntry *tconfig, f32 x, f32 y, f32 
 /**
  * Address: TODO
  */
-Gfx *gunDrawHudString(Gfx *gdl, s8 *text, s32 x, s32 halign, s32 y, s32 valign, bool outline)
+Gfx *gunDrawHudString(Gfx *gdl, char *text, s32 x, s32 halign, s32 y, s32 valign, bool outline)
 {
     s32 x1;
     s32 y1;

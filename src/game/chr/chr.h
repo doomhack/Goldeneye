@@ -255,7 +255,7 @@ void        chrCheckGuardsHeardSound(f32 noise);
 ChrRecord  *chrFindByLiteralId(s32 index);
 PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand);
 PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *ChrRecord, GUNHAND hand);
-void        chrUpdateCollisionBounds(PropRecord *prop, struct rect4f **polygon, s32 *edges, f32 *y_out, f32 *ground);
+void        chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *y_out, f32 *ground);
 void        chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *height, f32 *always_20);
 f32         chrGetChrGround(PropRecord *prop);
 void        chrDropItems(struct ChrRecord *self);

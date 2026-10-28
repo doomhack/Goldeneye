@@ -2360,7 +2360,7 @@ Gfx *watchMenuRenderFxVolume(Gfx *gdl)
     struct WatchVertex *vtx;
     Gfx *cmd;
 
-    vtx1 = (struct WatchVertex *)dynAllocateVertices(12);
+    vtx1 = dynAllocateVertices(12);
 
     volume = sndGetSfxSlotFirstNaturalVolume();
 
@@ -2410,7 +2410,7 @@ Gfx *watchMenuRenderMusicVolume(Gfx *gdl)
     struct WatchVertex *vtx;
     Gfx *cmd;
 
-    vtx1 = (struct WatchVertex *)dynAllocateVertices(12);
+    vtx1 = dynAllocateVertices(12);
     volume = optionsGetMusicVolume();
 
     if (g_WatchMenuSelected && g_WatchMenuOptionsRow == 0) {

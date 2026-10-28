@@ -185,7 +185,7 @@ s32 roomMtxGet(s32 room)
     roomTransformMatrix.m[3][1] = (g_BgRoomFiles[room].pos.f[1] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[1];
     roomTransformMatrix.m[3][2] = (g_BgRoomFiles[room].pos.f[2] * g_BgLevelScaleInv) - g_CurrentPlayer->current_model_pos.f[2];
 
-    mtxF2L(&roomTransformMatrix, &g_RoomMtxs[mtx]);
+    mtxF2L(&roomTransformMatrix, (Mtxf *)&g_RoomMtxs[mtx]);
 
     return mtx;
 }

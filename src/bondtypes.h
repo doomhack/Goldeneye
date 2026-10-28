@@ -369,14 +369,6 @@ typedef union
         };
     }view4f;
 
-    typedef struct rect4f
-    {
-        union
-        {
-            struct coord2d points[4];
-            f32            f[8];
-        };
-    }rect4f;
 
     struct rectbbox
     {
@@ -1633,14 +1625,14 @@ typedef union
      */
     typedef struct BoundPadRecord /*0x44 (68) long confirmed*/
     {
-        //inherits PadRecord; /*0x00 confirmed*/
+        // Same layout as PadRecord, then the bbox. Not "inherits PadRecord" so that the
+        // setup files can keep their flat initialisers.
         coord3d    pos;       /*0x00*/
         coord3d    up;        /*0x0c*/
         coord3d    look;      /*0x18*/
         char *     plink;     /*0x24 canonical name */
         StandTile *stan;      /*0x28 canonical name */
-        //temporary fix for no inheritance support by glibtools
-        bbox     bbox;      /*0x2c - 0x40 confirmed*/
+        bbox       bbox;      /*0x2c - 0x40 confirmed*/
     } BoundPadRecord;
 
 
@@ -2383,7 +2375,7 @@ typedef union
          * - width
          * Offset 0x011c.
          */
-        rect4f         collision_bounds;
+        coord2d collision_bounds[4];
 
         /* 0x013c */
         f32            shotbondsum;
@@ -2422,11 +2414,6 @@ typedef union
         s16            targetlock60;
     } ChrRecord;
     // ChrRecord *pChrData; //not Global, local to Object or function
-
-    typedef struct ChrRenderContext {
-        s32 unk00;
-        ChrRecord *chr;
-    } ChrRenderContext;
 
     #pragma region IndividualObjectTypes
 
@@ -3449,23 +3436,8 @@ typedef union
     typedef struct TankRecord
     {
         inherits ObjectRecord;
-        collision_data *collision /*0x80*/;
-        rect4f  rect;       /*0x84*/
-        //s32 unk88;
-        //s32 unk8C;
-        //s32 unk90;
-        //s32 unk94;
-        //s32 unk98;
-        //s32 unk9C;
-        //s32 unkA0;
-        s32 unkA4;
-        s32 unkA8;
-        s32 unkAC;
-        s32 unkB0;
-        s32 unkB4; // Tank! Acceleration
-        s32 unkB8; // Tank! Top Speed, Low Angle, Gun Type, Gun Check
-        s32 unkBC; // Tank! Ignition sfx, Idle sfx
-        s32 unkC0; // Tank! Motion sfx, crush sfx
+        s32     hullEdges;  /*0x80*/ // turret collision outline, built each frame by bboxGetHull2d
+        coord2d hull[8];    /*0x84*/
         s32 is_firing_tank;
         f32 turret_vertical_angle;
         f32 turret_orientation_angle;

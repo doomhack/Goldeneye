@@ -4,7 +4,7 @@
 #include <ultra64.h>
 void dynInitMemory(void);
 Gfx *dynGetMasterDisplayList(void);
-Vtx *dynAllocateVertices(s32 count);
+void *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
 Light *dynAllocateLights(s32 count);
 void *dynAllocate(s32 size);

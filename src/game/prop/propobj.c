@@ -190,9 +190,9 @@ f32 clock_time = 0;
 s32 g_RemoteMineOwnerTriggerFlag = 0;
 s32 g_NextWeaponSlot = 0; // numbers between 0 and 30
 s32 g_NextHatSlot = 0;
-ObjectRecord *g_LevelLoadPropSwitch = NULL;
+struct LinkRecord *g_LevelLoadPropSwitch = NULL;
 LockDoorRecord *g_LevelLoadPropLockDoor = NULL;
-ObjectRecord *g_LevelLoadPropSafeItem = NULL;
+SafeObjectRecord *g_LevelLoadPropSafeItem = NULL;
 struct PropRecord * g_ProjectileHitProp = NULL;
 s32 bodypartshot = 0xFFFFFFFF;
 f32 g_CctvAlarmTimeScale = 1.0;
@@ -220,18 +220,18 @@ struct tvcmd {
 s32 doorUpdateDisplacement(DoorRecord* door);
 s32 objGetShotsTaken(ObjectRecord *);
 void objRenderModel(PropRecord *prop, ModelRenderData *, s32 xlupass);
-bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2, s32 numvertices1);
+bool chrobjSeparatingAxisTheorem(coord2d* rect1, s32 numvertices0, coord2d* rect2, s32 numvertices1);
 void chrobjSndCreatePostEvent(ALSoundState *state, coord3d *pos, f32 low, f32 high);
 void proxmineRemove(WeaponObjRecord* proxy);
 void proxmineAdd(WeaponObjRecord* proxy);
-s32 objMove(struct ObjectRecord *obj, f32 *targetpos, struct coord3d *hitpos, struct coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear);
+s32 objMove(struct ObjectRecord *obj, coord3d *targetpos, struct coord3d *hitpos, struct coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear);
 s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed);
 s32 projectileMove(struct ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear);
 void objSettle(struct ObjectRecord *obj, struct coord3d *up);
 void doorsUpdatePositions(struct DoorRecord *door);
 void doorGetMtx(DoorRecord *door, Mtxf *rhs);
 void objBreakCCTVGlass(ObjectRecord *obj);
-void monitorSetImage(MonitorRecord *mon, void *unk88);
+void monitorSetImage(MonitorRecord *mon, struct sImageTableEntry *image);
 void monitorSetAnimation(MonitorRecord *mon, void *image);
 s32 jointListFindHit(JointListEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode);
 AmmoCrateRecord *ammocrateAllocate(void);
@@ -477,7 +477,7 @@ ModelRoData_BoundingBoxRecord *chrobjGetBboxFromObjFile(ModelFileHeader *obj)
         {
             if (mdlnext->Opcode == MODELNODE_OPCODE_BBOX)
             {
-                return mdlnext->Data;
+                return &mdlnext->Data->BoundingBox;
             }
         }
 
@@ -489,7 +489,7 @@ ModelRoData_BoundingBoxRecord *chrobjGetBboxFromObjFile(ModelFileHeader *obj)
             {
                 if (mdlnext->Opcode == MODELNODE_OPCODE_BBOX)
                 {
-                    return mdlnext->Data;
+                    return &mdlnext->Data->BoundingBox;
                 }
             }
         }
@@ -606,7 +606,7 @@ void chrobjCollisionRelated(ObjectRecord *obj)
         bbox = chrobjGetBboxFromObjectRecord(obj);
         mtx4Copy(&obj->mtx, &mtx);
         mtx4SetTranslation(&obj->runtime_pos, &mtx);
-        bboxGetHull2d(bbox, &mtx, &obj->ptr_allocated_collisiondata_block->polygon, obj->ptr_allocated_collisiondata_block);
+        obj->ptr_allocated_collisiondata_block->edges = bboxGetHull2d(bbox, &mtx, obj->ptr_allocated_collisiondata_block->polygon);
 
         obj->ptr_allocated_collisiondata_block->bottom = obj->runtime_pos.f[1] + bboxRotatedMinY(bbox, &mtx);
         obj->ptr_allocated_collisiondata_block->top = obj->runtime_pos.f[1] + bboxRotatedMaxY(bbox, &mtx);
@@ -772,10 +772,10 @@ void objPlaceAtPad(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix, Sta
     {
         ObjectRecord *roomObj;
         f32 distfromTileCenter;
-        f32 byrefA;
-        f32 byrefB;
-        f32 byrefC;
-        f32 byrefD;
+        coord2d *roomObjPolygon;
+        s32 roomObjEdges;
+        f32 roomObjTop;
+        f32 roomObjBottom;
 
         distfromTileCenter = stanGetPositionYValue(mStan, pos->f[0], pos->f[2]);
 
@@ -787,11 +787,11 @@ void objPlaceAtPad(ObjectRecord *baseobj, struct coord3d *pos, Mtxf *matrix, Sta
         if (roomObj)
         {
             PropRecord *roomObjProp = roomObj->prop;
-            propGetCollisionPolygon(roomObjProp, &byrefA, &byrefB, &byrefC, &byrefD);
+            propGetCollisionPolygon(roomObjProp, &roomObjPolygon, &roomObjEdges, &roomObjTop, &roomObjBottom);
 
-            if ((distfromTileCenter < byrefC) && (byrefD < ((mtxcopy.m[1][1] * (ymin - xmax)) + distfromTileCenter + 4.0f)))
+            if ((distfromTileCenter < roomObjTop) && (roomObjBottom < ((mtxcopy.m[1][1] * (ymin - xmax)) + distfromTileCenter + 4.0f)))
             {
-                newPos.y = byrefC - (mtxcopy.m[1][1] * xmax);
+                newPos.y = roomObjTop - (mtxcopy.m[1][1] * xmax);
                 baseobj->runtime_bitflags |= RUNTIMEBITFLAG_00008000;
             }
             else
@@ -1134,7 +1134,7 @@ bool projectileLineTestModel(ObjectRecord *obj, coord3d *modelRayOrigin, coord3d
 
 bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, coord3d *hitPos, coord3d *hitNormal, f32 *hitDist)
 {
-    struct rect4f *polygon;
+    coord2d *polygon;
     s32 numedges;
     f32 ymax;
     f32 ymin;
@@ -1166,12 +1166,12 @@ bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *ray
             for (i = 0; i < numedges; i++)
             {
                 next = (i + 1) % numedges;
-                if (stanSegmentsIntersect(rayStart->x, rayStart->z, rayEnd->x, rayEnd->z, polygon->points[i].x, polygon->points[i].y, polygon->points[next].x, polygon->points[next].y))
+                if (stanSegmentsIntersect(rayStart->x, rayStart->z, rayEnd->x, rayEnd->z, polygon[i].x, polygon[i].y, polygon[next].x, polygon[next].y))
                 {
-                    edgeStart2d.x = polygon->points[i].x;
-                    edgeStart2d.y = polygon->points[i].y;
-                    edgeEnd2d.x = polygon->points[next].x;
-                    edgeEnd2d.y = polygon->points[next].y;
+                    edgeStart2d.x = polygon[i].x;
+                    edgeStart2d.y = polygon[i].y;
+                    edgeEnd2d.x = polygon[next].x;
+                    edgeEnd2d.y = polygon[next].y;
                     dist = stanSegmentIntersectFrac(&rayStart2d, &rayEnd2d, &edgeStart2d, &edgeEnd2d);
 
                     if (dist < bestfrac)
@@ -1184,12 +1184,12 @@ bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *ray
             if (bestedge > 0)
             {
                 next = (bestedge + 1) % numedges;
-                edgeStart3d.x = polygon->points[bestedge].x;
+                edgeStart3d.x = polygon[bestedge].x;
                 edgeStart3d.y = 0.0f;
-                edgeStart3d.z = polygon->points[bestedge].y;
-                edgeEnd3d.x = polygon->points[next].x;
+                edgeStart3d.z = polygon[bestedge].y;
+                edgeEnd3d.x = polygon[next].x;
                 edgeEnd3d.y = 0.0f;
-                edgeEnd3d.z = polygon->points[next].y;
+                edgeEnd3d.z = polygon[next].y;
 
                 chrLineLineIntersection(&edgeStart3d, &edgeEnd3d, rayStart, rayDir, &intersection);
                 dist = (rayDir->z * (intersection.z - rayStart->z)) + (((intersection.x - rayStart->x) * rayDir->x) + ((intersection.y - rayStart->y) * rayDir->y));
@@ -1454,7 +1454,7 @@ bool projectileFindCollidingProp(PropRecord *ignoreProp, coord3d *worldRayStart,
     screenDir.y = dir.y;
     screenDir.z = dir.z;
 
-    mtx4RotateVecInPlace(camGetWorldToScreenMtxf(), screenDir.f);
+    mtx4RotateVecInPlace(camGetWorldToScreenMtxf(), &screenDir);
 
     bestdist = dist;
 
@@ -1953,7 +1953,7 @@ done:
 /**
  * US address 7F042EB4.
 */
-s32 objMove(struct ObjectRecord *obj, f32 *targetpos, struct coord3d *hitpos, struct coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear)
+s32 objMove(struct ObjectRecord *obj, coord3d *targetpos, struct coord3d *hitpos, struct coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear)
 {
     if ((obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) && (obj->projectile->flags & PROJECTILEFLAG_STICKY))
     {
@@ -3082,7 +3082,7 @@ void mtxAlignToNormal(coord3d *normal, Mtxf *out)
     fwd.y = fwdY;
     fwd.z = fwdZ;
 
-    mtx4RotateVecInPlace(&unyaw, fwd.f);
+    mtx4RotateVecInPlace(&unyaw, &fwd);
 
     pitch = mathAtan2(fwd.x, fwd.y);
 
@@ -3142,7 +3142,7 @@ bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNode *nod
             mtx4Copy(&obj->mtx, &mtx1);
             mtx4SetTranslation(&obj->runtime_pos, &mtx1);
             mtx4MultAffine(camGetViewToWorldMtxf(), nodemtx, &mtx2);
-            mtx4InvertAffine((f32 (*)[4]) &mtx2.m, (f32 (*)[4]) &mtx3.m);
+            mtx4InvertAffine(&mtx2, &mtx3);
             mtx4MultAffine((Mtxf* ) &mtx3.m, &mtx1, &obj->embedment->matrix);
 
             return TRUE;
@@ -3500,7 +3500,7 @@ void objTickAttached(PropRecord* prop)
  * Return true if both blocks are not intersecting on the X/Z plane.
  * PD: cdBlockExcludesBlockLaterally
  */
-bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2, s32 numvertices1)
+bool chrobjSeparatingAxisTheorem(coord2d* rect1, s32 numvertices0, coord2d* rect2, s32 numvertices1)
 {
     f64 diff2;
     f64 diff1;
@@ -3516,14 +3516,14 @@ bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2,
     for (i = 0; i < numvertices0; i++)
     {
         next = (i + 1) % numvertices0;
-        diff1 = rect1->points[next].y - (f64)rect1->points[i].y;
-        diff2 = rect1->points[i].x - (f64)rect1->points[next].x;
+        diff1 = rect1[next].y - (f64)rect1[i].y;
+        diff2 = rect1[i].x - (f64)rect1[next].x;
 
         if (diff1 == 0.0f && diff2 == 0.0f)
         {
-            tmp.x = rect1->points[i].x;
+            tmp.x = rect1[i].x;
             tmp.y = 0.0f;
-            tmp.z = rect1->points[i].y;
+            tmp.z = rect1[i].y;
             if (polygonContainsPoint(&tmp, rect2, numvertices1))
             {
                 return FALSE;
@@ -3531,12 +3531,12 @@ bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2,
         }
         else
         {
-            sum1 = rect1->points[i].x * diff1 + rect1->points[i].y * diff2;
+            sum1 = rect1[i].x * diff1 + rect1[i].y * diff2;
             j = (next + 1) % numvertices0;
 
             while (j != i)
             {
-                sum2 = rect1->points[j].x * diff1 + rect1->points[j].y * diff2;
+                sum2 = rect1[j].x * diff1 + rect1[j].y * diff2;
 
                 if (sum2 != sum1) { break; }
 
@@ -3545,7 +3545,7 @@ bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2,
 
             for (k = 0; k < numvertices1; k++)
             {
-                sum3 = rect2->points[k].x * diff1 + rect2->points[k].y * diff2;
+                sum3 = rect2[k].x * diff1 + rect2[k].y * diff2;
 
                 if (sum2 == sum1)
                 {
@@ -3583,16 +3583,16 @@ bool chrobjSeparatingAxisTheorem(rect4f* rect1, s32 numvertices0, rect4f* rect2,
  *
  * So they fixed a bug, but didn't do it the right way so it wouldn't affect performance.
 */
-s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *poly1, s32 edges1, struct rect4f *poly2, s32 edges2)
+s32 chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
 {
     s32 i;
     struct coord3d point;
 
     for (i=0; i<edges1; i++)
     {
-        point.f[0] = poly1->points[i].f[0];
+        point.f[0] = poly1[i].f[0];
         point.f[1] = 0.0f;
-        point.f[2] = poly1->points[i].f[1];
+        point.f[2] = poly1[i].f[1];
 
         if (polygonContainsPoint(&point, poly2, edges2) != 0)
         {
@@ -3602,9 +3602,9 @@ s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *poly1, s32 edges1, stru
 
     for (i=0; i<edges2; i++)
     {
-        point.f[0] = poly2->points[i].f[0];
+        point.f[0] = poly2[i].f[0];
         point.f[1] = 0.0f;
-        point.f[2] = poly2->points[i].f[1];
+        point.f[2] = poly2[i].f[1];
 
         if (polygonContainsPoint(&point, poly1, edges1) != 0)
         {
@@ -3633,7 +3633,7 @@ s32 chrobjTestPolygonsTouchingOrOverlap2D(struct rect4f *poly1, s32 edges1, stru
  * @param polygon: Convex polygon.
  * @param edges: Number of edges to test in polygon.
 */
-s32 chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius, struct rect4f *polygon, s32 edges)
+s32 chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges)
 {
     f32 lineDist;
     f32 dist1;
@@ -3648,22 +3648,22 @@ s32 chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius,
 
     for (i=0; i<edges; i++)
     {
-        next = &polygon->points[(i+1) % edges];
+        next = &polygon[(i+1) % edges];
 
-        lineDist = stanGetSignedPointLineDistance(polygon->points[i].f[0], polygon->points[i].f[1], next->f[0], next->f[1], px, pz);
+        lineDist = stanGetSignedPointLineDistance(polygon[i].f[0], polygon[i].f[1], next->f[0], next->f[1], px, pz);
 
         if (lineDist < 0.0f)
         {
             lineDist = -lineDist;
         }
 
-        dist1 = stanDist2d(polygon->points[i].f[0], polygon->points[i].f[1], px, pz);
+        dist1 = stanDist2d(polygon[i].f[0], polygon[i].f[1], px, pz);
         dist2 = stanDist2d(next->f[0], next->f[1], px, pz);
 
         if ((lineDist < collision_radius)
             && ((dist1 < collision_radius)
                 || (dist2 < collision_radius)
-                || stanPointProjectsOntoEdge(polygon->points[i].f[0], polygon->points[i].f[1], next->f[0], next->f[1], px, pz)
+                || stanPointProjectsOntoEdge(polygon[i].f[0], polygon[i].f[1], next->f[0], next->f[1], px, pz)
             )
         )
         {
@@ -3680,7 +3680,7 @@ s32 chrobjTestPointPolygonCollision(struct coord3d *point, f32 collision_radius,
 s32 vehicleFindBlockingProp(struct PropRecord *argProp)
 {
     s32 clear;
-    struct rect4f *polygon2;
+    coord2d *polygon2;
     s32 edges2;
     f32 chrTop;
     f32 chrBottom;
@@ -3691,7 +3691,7 @@ s32 vehicleFindBlockingProp(struct PropRecord *argProp)
     f32 radius;
     f32 ground;
     PropRecord *propss;
-    struct rect4f *polygon;
+    coord2d *polygon;
     s32 edges;
     f32 top;
     f32 bottom;
@@ -4467,7 +4467,7 @@ s32 objTick(struct PropRecord *prop)
 					propSetMoving(projectile->ownerprop, 0);
 				}
 
-				moveResult = objMove(obj, &newpos.f[0], &collisionPoint, &collisionNormal, canEmbed, 0);
+				moveResult = objMove(obj, &newpos, &collisionPoint, &collisionNormal, canEmbed, 0);
 
 				if (projectile->ownerprop != NULL)
 				{
@@ -4769,10 +4769,10 @@ s32 objTick(struct PropRecord *prop)
 
 					quatSlerp((f32 *) (&projectile->startRot), (f32 *) (&projectile->restRot), projectile->rotFrac, (f32 *) (&rot));
 					objectMatrix = &obj->mtx;
-					quatToMtx4((f32 *) (&rot), (f32 *) (&obj->mtx));
-					mtx4ScaleRow0(projectile->scaleX, (f32 *) objectMatrix);
-					mtx4ScaleRow1(projectile->scaleY, (f32 *) objectMatrix);
-					mtx4ScaleRow2(projectile->scaleZ, (f32 *) objectMatrix);
+					quatToMtx4((f32 *) (&rot), obj->mtx.m);
+					mtx4ScaleRow0(projectile->scaleX, objectMatrix);
+					mtx4ScaleRow1(projectile->scaleY, objectMatrix);
+					mtx4ScaleRow2(projectile->scaleZ, objectMatrix);
 					projectileAlive = 0;
 				}
 
@@ -4811,7 +4811,7 @@ s32 objTick(struct PropRecord *prop)
 						}
 					}
 
-					objMove(obj, &newpos.f[0], &collisionPoint, &collisionNormal, 0, 0);
+					objMove(obj, &newpos, &collisionPoint, &collisionNormal, 0, 0);
 					objMovedThisFrame = 1;
 					floorY = stanGetPositionYValue(prop->stan, prop->pos.f[0], prop->pos.f[2]);
 					obj->runtime_pos.f[1] = prop->pos.f[1] = (floorY - bboxRotatedMinY(objectBBox, objectMatrix)) + 4.0f;
@@ -5420,7 +5420,7 @@ s32 objTick(struct PropRecord *prop)
 					}
 				}
 
-				axlePos = model->obj->Switches[3]->Data;
+				axlePos = &model->obj->Switches[3]->Data->Group.Origin;
 				if (g_GlobalTimerDelta > 0.0f)
 				{
 					truckAngularVelocity = (vehicle->roty - previousYaw) / g_GlobalTimerDelta;
@@ -5452,7 +5452,7 @@ s32 objTick(struct PropRecord *prop)
 					canMove = vehicleFindBlockingProp(prop);
 					if (canMove != 0)
 					{
-						bbox = model->obj->Switches[10]->Data;
+						bbox = &model->obj->Switches[10]->Data->BoundingBox;
 						xminDir.f[0] = bbox->Bounds.xmin * vehicle->mtx.m[0][0];
 						xminDir.f[2] = bbox->Bounds.xmin * vehicle->mtx.m[0][2];
 						xmaxDir.f[0] = bbox->Bounds.xmax * vehicle->mtx.m[0][0];
@@ -5713,12 +5713,12 @@ s32 objTick(struct PropRecord *prop)
 			{
 				lidAngle = M_TAU_F - ((door->openPosition * M_TAU_F) / 360.0f);
 				lidmtx = &mtxs[1];
-				nodepos = (Mtxf *) model->obj->Switches[1]->Data;
+				nodepos = &model->obj->Switches[1]->Data->Group.Origin;
 				mtx4LoadXRotation(lidAngle, lidmtx);
 				mtx4SetTranslation((struct coord3d *) nodepos, lidmtx);
 				mtx4MultInPlace(mtxs, lidmtx);
 				lidmtx = &mtxs[2];
-				nodepos = (Mtxf *) model->obj->Switches[2]->Data;
+				nodepos = &model->obj->Switches[2]->Data->Group.Origin;
 				mtx4LoadXRotation(M_TAU_F - lidAngle, lidmtx);
 				mtx4SetTranslation((struct coord3d *) nodepos, lidmtx);
 				mtx4MultInPlace(mtxs, lidmtx);
@@ -5755,10 +5755,10 @@ s32 objTick(struct PropRecord *prop)
 					Mtxf *tipmtx = &mtxs[i * 2 + 2];
 
 					mtx4LoadZRotation(bladeAngle, blademtx);
-					mtx4SetTranslation(model->obj->Switches[i * 2 + 1]->Data, blademtx);
+					mtx4SetTranslation(&model->obj->Switches[i * 2 + 1]->Data->Group.Origin, blademtx);
 					mtx4MultInPlace(mtxs, blademtx);
 					mtx4LoadZRotation(openAngle, tipmtx);
-					mtx4SetTranslation(model->obj->Switches[i * 2 + 2]->Data, tipmtx);
+					mtx4SetTranslation(&model->obj->Switches[i * 2 + 2]->Data->Group.Origin, tipmtx);
 					mtx4MultInPlace(blademtx, tipmtx);
 				}
 			}
@@ -5804,7 +5804,7 @@ s32 objTick(struct PropRecord *prop)
 					gunYaw -= M_TAU_F;
 				}
 
-				nodepos = model->obj->Switches[1]->Data;
+				nodepos = &model->obj->Switches[1]->Data->Group.Origin;
 				gunpos.f[0] = nodepos->f[0];
 				gunpos.f[1] = nodepos->f[1];
 				gunpos.f[2] = nodepos->f[2];
@@ -5854,13 +5854,13 @@ s32 objTick(struct PropRecord *prop)
 			}
 			else if (obj->type == PROPDEF_RACK)
 			{
-				mtx4LoadTranslation(model->obj->Switches[0]->Data, &mtxs[1]);
+				mtx4LoadTranslation(&model->obj->Switches[0]->Data->Group.Origin, &mtxs[1]);
 				mtx4MultAffineInPlace(&mtxs[0], &mtxs[1]);
-				mtx4LoadTranslation(model->obj->Switches[1]->Data, &mtxs[2]);
+				mtx4LoadTranslation(&model->obj->Switches[1]->Data->Group.Origin, &mtxs[2]);
 				mtx4MultAffineInPlace(&mtxs[0], &mtxs[2]);
-				mtx4LoadTranslation(model->obj->Switches[2]->Data, &mtxs[3]);
+				mtx4LoadTranslation(&model->obj->Switches[2]->Data->Group.Origin, &mtxs[3]);
 				mtx4MultAffineInPlace(&mtxs[0], &mtxs[3]);
-				mtx4LoadTranslation(model->obj->Switches[3]->Data, &mtxs[4]);
+				mtx4LoadTranslation(&model->obj->Switches[3]->Data->Group.Origin, &mtxs[4]);
 				mtx4MultAffineInPlace(&mtxs[0], &mtxs[4]);
 			}
 			else if (obj->type == PROPDEF_VEHICHLE)
@@ -5869,11 +5869,11 @@ s32 objTick(struct PropRecord *prop)
 
 				wheelSpin = 0.0f;
 				switches = model->obj->Switches;
-				wheel1Pos = switches[1]->Data;
-				wheel2Pos = switches[2]->Data;
-				wheel3Pos = switches[3]->Data;
-				wheel4Pos = switches[4]->Data;
-				wheelBbox = switches[6]->Data;
+				wheel1Pos = &switches[1]->Data->Group.Origin;
+				wheel2Pos = &switches[2]->Data->Group.Origin;
+				wheel3Pos = &switches[3]->Data->Group.Origin;
+				wheel4Pos = &switches[4]->Data->Group.Origin;
+				wheelBbox = &switches[6]->Data->BoundingBox;
 				wheelDiameter = (wheelBbox->Bounds.ymax - wheelBbox->Bounds.ymin) * model->scale;
 
 				if (isSimOwner)
@@ -5948,7 +5948,7 @@ s32 objTick(struct PropRecord *prop)
 			{
 				aircraft = (struct AircraftRecord *) obj;
 
-				rotorPos = model->obj->Switches[2]->Data;
+				rotorPos = &model->obj->Switches[2]->Data->Group.Origin;
 
 				if ((g_ClockTimer > 0) && (isSimOwner))
 				{
@@ -6013,11 +6013,11 @@ s32 objTick(struct PropRecord *prop)
 				struct TankRecord *tank_render = (struct TankRecord *) obj;
 
 				switches = model->obj->Switches;
-				turretPos = switches[1]->Data;
-				gunPos = switches[3]->Data;
-				gunTipPos = switches[4]->Data;
-				turretTopPos = switches[2]->Data;
-				turretBbox = switches[6]->Data;
+				turretPos = &switches[1]->Data->Group.Origin;
+				gunPos = &switches[3]->Data->Group.Origin;
+				gunTipPos = &switches[4]->Data->Group.Origin;
+				turretTopPos = &switches[2]->Data->Group.Origin;
+				turretBbox = &switches[6]->Data->BoundingBox;
 				turretPitch = -tank_render->turret_vertical_angle;
 
 				if (turretPitch < 0.0f)
@@ -6044,7 +6044,7 @@ s32 objTick(struct PropRecord *prop)
 				mtx4LoadTranslation(turretTopPos, &mtxs[2]);
 				mtx4MultAffineInPlace(&mtxs[1], &mtxs[2]);
 				mtx4MultAffine(camGetViewToWorldMtxf(), &mtxs[1], &turretWorldMtx);
-				bboxGetHull2d(turretBbox, &turretWorldMtx, &tank_render->rect, (struct collision_data *) (&tank_render->collision));
+				tank_render->hullEdges = bboxGetHull2d(turretBbox, &turretWorldMtx, tank_render->hull);
 
 				if (model->obj->Switches[7] != NULL)
 				{
@@ -6166,7 +6166,7 @@ s32 objTick(struct PropRecord *prop)
 					if ((prop->flags & PROPFLAG_ONSCREEN) && (model->obj->Switches[flashNode] != NULL))
 					{
 						nodemtx = modelFindNodeMtx(model, model->obj->Switches[flashNode], 0);
-						nodepos = model->obj->Switches[flashNode]->Data;
+						nodepos = &model->obj->Switches[flashNode]->Data->Group.Origin;
 						shotFrom.f[0] = nodepos->f[0];
 						shotFrom.f[1] = nodepos->f[1];
 						shotFrom.f[2] = nodepos->f[2];
@@ -6417,173 +6417,173 @@ void monitorSetAnimation(MonitorRecord *mon, void *image)
 
 void monitorSetImageByNum(MonitorRecord *mon, s32 monAnimID)
 {
-    s32 *image = &monAnim00Bond;
+    u32 *image = monAnim00Bond;
     switch (monAnimID)
     {
          default:
          case 0:
             break;
          case 1:
-            image = &monAnim01DesktopsSatellite;
+            image = monAnim01DesktopsSatellite;
             break;
         case 2:
-            image = &monAnim02Astrological;
+            image = monAnim02Astrological;
             break;
         case 3:
-            image = &monAnim03ThreeWavePattern;
+            image = monAnim03ThreeWavePattern;
             break;
         case 4:
-            image = &monAnim04WavePattern;
+            image = monAnim04WavePattern;
             break;
         case 5:
-            image = &monAnim05GreenTextUp;
+            image = monAnim05GreenTextUp;
             break;
         case 6:
-            image = &monAnim06RedTextDown;
+            image = monAnim06RedTextDown;
             break;
         case 7:
-            image = &monAnim07GreenTextDown;
+            image = monAnim07GreenTextDown;
             break;
         case 8:
-            image = &monAnim08RedBarGraph;
+            image = monAnim08RedBarGraph;
             break;
         case 9:
-            image = &monAnim09BlueBarGraph;
+            image = monAnim09BlueBarGraph;
             break;
         case 10:
-            image = &monAnim0AGreenBarGraph;
+            image = monAnim0AGreenBarGraph;
             break;
         case 11:
-            image = &monAnim0BRadar;
+            image = monAnim0BRadar;
             break;
         case 12:
-            image = &monAnim0CSpinningCube;
+            image = monAnim0CSpinningCube;
             break;
         case 13:
-            image = &monAnim0DLocWeapArmed;
+            image = monAnim0DLocWeapArmed;
             break;
         case 14:
-            image = &monAnim0ERedTarget;
+            image = monAnim0ERedTarget;
             break;
         case 15:
-            image = &monAnim0FSatelliteTargeting;
+            image = monAnim0FSatelliteTargeting;
             break;
         case 16:
-            image = &monAnim10GlobalMap;
+            image = monAnim10GlobalMap;
             break;
         case 17:
-            image = &monAnim11KarlYelling;
+            image = monAnim11KarlYelling;
             break;
         case 18:
-            image = &monAnim12Skateboard;
+            image = monAnim12Skateboard;
             break;
         case 19:
-            image = &monAnim13PoliceGuy;
+            image = monAnim13PoliceGuy;
             break;
         case 20:
-            image = &monAnim14Off;
+            image = monAnim14Off;
             break;
         case 21:
-            image = &monAnim15RandomSeven;
+            image = monAnim15RandomSeven;
             break;
         case 22:
-            image = &monAnim16RandomFour;
+            image = monAnim16RandomFour;
             break;
         case 23:
-            image = &monAnim17RandImageEffect;
+            image = monAnim17RandImageEffect;
             break;
         case 24:
-            image = &monRandEffectChanceSHUTTLE1;
+            image = monRandEffectChanceSHUTTLE1;
             break;
         case 25:
-            image = &monRandEffectChanceSHUTTLE2;
+            image = monRandEffectChanceSHUTTLE2;
             break;
         case 26:
-            image = &monRandEffectChanceEARTHFULL1;
+            image = monRandEffectChanceEARTHFULL1;
             break;
         case 27:
-            image = &monRandEffectChanceEARTHFULL2;
+            image = monRandEffectChanceEARTHFULL2;
             break;
         case 28:
-            image = &monRandEffectChanceBLUESTARS;
+            image = monRandEffectChanceBLUESTARS;
             break;
         case 29:
-            image = &monRandEffectChanceGALAXY1;
+            image = monRandEffectChanceGALAXY1;
             break;
         case 30:
-            image = &monRandEffectChanceGALAXY2;
+            image = monRandEffectChanceGALAXY2;
             break;
         case 31:
-            image = &monRandEffectChanceEARTHTEXT;
+            image = monRandEffectChanceEARTHTEXT;
             break;
         case 32:
-            image = &monRandEffectChanceTARGETEARTH;
+            image = monRandEffectChanceTARGETEARTH;
             break;
         case 33:
-            image = &monRandEffectChanceGALAXY3;
+            image = monRandEffectChanceGALAXY3;
             break;
         case 34:
-            image = &monRandChanceScrollOrZoomRandRGBN;
+            image = monRandChanceScrollOrZoomRandRGBN;
             break;
         case 35:
-            image = &monRandChanceScrollOrZoomRed;
+            image = monRandChanceScrollOrZoomRed;
             break;
         case 36:
-            image = &monRandChanceScrollOrZoomGreen;
+            image = monRandChanceScrollOrZoomGreen;
             break;
         case 37:
-            image = &monRandChanceScrollOrZoomBlue;
+            image = monRandChanceScrollOrZoomBlue;
             break;
         case 38:
-            image = &monRandChanceScrollOrZoom;
+            image = monRandChanceScrollOrZoom;
             break;
         case 39:
-            image = &monAnim27RandomEffectScrollRight;
+            image = monAnim27RandomEffectScrollRight;
             break;
         case 40:
-            image = &monAnim28RandomEffectScrollUpFast;
+            image = monAnim28RandomEffectScrollUpFast;
             break;
         case 41:
-            image = &monAnim29RandomEffectScrollUp;
+            image = monAnim29RandomEffectScrollUp;
             break;
         case 42:
-            image = &monAnim2ARandEffectScrollZoom1;
+            image = monAnim2ARandEffectScrollZoom1;
             break;
         case 43:
-            image = &monAnim2ARandEffectScrollZoom2;
+            image = monAnim2ARandEffectScrollZoom2;
             break;
         case 44:
-            image = &monAnim2CRandEffectWaitRoute;
+            image = monAnim2CRandEffectWaitRoute;
             break;
         case 45:
-            image = &monAnim2DRandEffectFlash;
+            image = monAnim2DRandEffectFlash;
             break;
         case 46:
-            image = &monAnim2ERedBrightening;
+            image = monAnim2ERedBrightening;
             break;
         case 47:
-            image = &monAnim2FGreenBrightening;
+            image = monAnim2FGreenBrightening;
             break;
         case 48:
-            image = &monAnim30GreySolid;
+            image = monAnim30GreySolid;
             break;
         case 49:
-            image = &monAnim31RedSolid;
+            image = monAnim31RedSolid;
             break;
         case 50:
-            image = &monAnim32GreenSolid;
+            image = monAnim32GreenSolid;
             break;
         case 51:
-            image = &monAnim33BlackSolid;
+            image = monAnim33BlackSolid;
             break;
     }
     monitorSetAnimation(mon,  image);
 }
 
 
-void monitorSetImage(MonitorRecord *mon, void *unk88)
+void monitorSetImage(MonitorRecord *mon, struct sImageTableEntry *image)
 {
-    mon->tconfig = unk88;
+    mon->tconfig = image;
 }
 
 
@@ -6652,7 +6652,7 @@ Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, 
                 screen->offset += 3;
                 break;
             case TVCMD_SETTEXTURE:
-                monitorSetImage(screen, m->value);
+                monitorSetImage(screen, (struct sImageTableEntry *)m->value); // the command holds the image pointer
                 screen->offset += 2;
                 break;
             case TVCMD_PAUSE:
@@ -7177,7 +7177,7 @@ Gfx *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass)
     struct rgba_f32 fogcolour;
     s32 fogfrac;
     ModelRenderData mrData;
-    struct view4f screenbox;
+    bbox2d screenbox;
     struct rgba_s32 shade;
     s32 renderflags;
     ObjectRecord *obj;
@@ -7232,7 +7232,7 @@ Gfx *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass)
 
     if ((propGetRoomsBbox2d(prop, &screenbox) > 0) && !(obj->flags2 & PROPFLAG2_04000000))
     {
-        gdl = bgScissorCurrentPlayerViewF(gdl, screenbox.left, screenbox.top, screenbox.width, screenbox.height);
+        gdl = bgScissorCurrentPlayerViewF(gdl, screenbox.min.x, screenbox.min.y, screenbox.max.x, screenbox.max.y);
     }
     else
     {
@@ -7709,7 +7709,7 @@ void objBounce(ObjectRecord *obj, coord3d *velocity)
         rot.z = (RANDOMFRAC() * M_TAU_F * 0.015625f) - 0.049087387f;
 #endif
 
-        mtx4LoadRotation((f32*)&rot, &projectile->mtx);
+        mtx4LoadRotation(&rot, &projectile->mtx);
 
         projectile->flags |= PROJECTILEFLAG_AIRBORNE;
 
@@ -7717,7 +7717,7 @@ void objBounce(ObjectRecord *obj, coord3d *velocity)
         dir.y = velocity->y;
         dir.z = velocity->z;
 
-        mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&dir);
+        mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &dir);
 
         projectile->speed.x += 3.3333333f * dir.x;
         projectile->speed.z += 3.3333333f * dir.z;
@@ -7840,7 +7840,7 @@ s32 objDrop(PropRecord *prop)
             rot.z = (RANDOMFRAC() * M_TAU_F * 0.0078125f) - 0.024543693f;
 #endif
 
-            mtx4LoadRotation(rot.f, &projectile->mtx);
+            mtx4LoadRotation(&rot, &projectile->mtx);
         }
         else if (projectile->droptype == DROPTYPE_THROWGRENADE && parent->type == PROP_TYPE_CHR)
         {
@@ -7863,7 +7863,7 @@ s32 objDrop(PropRecord *prop)
             rot.z = (RANDOMFRAC() * M_TAU_F * 0.0078125f) - 0.024543693f;
 #endif
 
-            mtx4LoadRotation(rot.f, &projectile->mtx);
+            mtx4LoadRotation(&rot, &projectile->mtx);
             projectile->flags |= 0x40;
 
         }
@@ -7889,7 +7889,7 @@ s32 objDrop(PropRecord *prop)
             rot.z = (RANDOMFRAC() * M_TAU_F * 0.03125f) - 0.09817477f;
 #endif
 
-            mtx4LoadRotation(rot.f, &projectile->mtx);
+            mtx4LoadRotation(&rot, &projectile->mtx);
         }
         else
         {
@@ -8020,7 +8020,7 @@ void objFall(ObjectRecord *obj, s32 playernum)
 #endif
             }
 
-            mtx4LoadRotation(rot.f, &projectile->mtx);
+            mtx4LoadRotation(&rot, &projectile->mtx);
 
             projectile->flags |= PROJECTILEFLAG_AIRBORNE;
 
@@ -8042,7 +8042,7 @@ void objDestroySupportedObjects(PropRecord* tableprop, s32 playernum)
     ObjectRecord* obj;
     ObjectRecord* tableobj;
     PropRecord* prop;
-    rect4f* rect;
+    coord2d* rect;
     s32 edges;
     u8 room;
 
@@ -8584,7 +8584,7 @@ bool propobjFindHit(Model *model, ModelNode *startNode, coord3d *rayPos, coord3d
             {
                 lastmtx = mtx;
 
-                mtx4InvertAffine(mtx->m, invmtx.m);
+                mtx4InvertAffine(mtx, &invmtx);
 
                 localStart.x = rayPos->x;
                 localStart.y = rayPos->y;
@@ -9183,7 +9183,7 @@ dummy_label_995911:
                     }
                 }
 
-                shotAddHit(hitinfo, prop, -pos.z, hitpart, node, &hit, mtxindex, (s32) hitnode, model, penetrates, (obj->flags2 & PROPFLAG2_00100000) != FALSE);
+                shotAddHit(hitinfo, prop, -pos.z, hitpart, node, &hit, mtxindex, hitnode, model, penetrates, (obj->flags2 & PROPFLAG2_00100000) != FALSE);
             }
         }
     }
@@ -9344,7 +9344,7 @@ void objHit(ShotData *shotdata, BulletHit *hit)
 
         if (((DoorRecord *)obj)->numHits >= 3)
         {
-            doorShatterGlass(obj);
+            doorShatterGlass((DoorRecord *)obj);
         }
     }
 
@@ -9531,7 +9531,7 @@ void objSetMoving(PropRecord* prop, s32 moving) {
 }
 
 
-void objGetCollisionBounds(PropRecord* prop, rect4f** polygon, s32* edges, f32* top, f32* bottom)
+void objGetCollisionBounds(PropRecord* prop, coord2d** polygon, s32* edges, f32* top, f32* bottom)
 {
     ObjectRecord* obj;
     obj = prop->obj;
@@ -9539,7 +9539,7 @@ void objGetCollisionBounds(PropRecord* prop, rect4f** polygon, s32* edges, f32* 
     if ((obj->ptr_allocated_collisiondata_block != NULL) && (obj->flags & PROPFLAG_00000100) && !(obj->state & PROPSTATE_20))
     {
         *edges = obj->ptr_allocated_collisiondata_block->edges;
-        *polygon = &obj->ptr_allocated_collisiondata_block->polygon;
+        *polygon = obj->ptr_allocated_collisiondata_block->polygon;
         *bottom = obj->ptr_allocated_collisiondata_block->bottom;
         *top = obj->ptr_allocated_collisiondata_block->top;
         return;
@@ -10841,12 +10841,12 @@ PropRecord *hatApplyToChr(HatRecord *hat, ChrRecord *chr, ModelFileHeader *filed
 }
 
 
-void hatLoadAndApplyToChr(HatRecord *hat, PropRecord *chrprop)
+void hatLoadAndApplyToChr(HatRecord *hat, ChrRecord *chr)
 {
     s32 obj_idx;
     obj_idx = (u32) hat->obj;
     modelLoad(obj_idx);
-    hatApplyToChr(hat, chrprop, PitemZ_entries[obj_idx].header, NULL, 0);
+    hatApplyToChr(hat, chr, PitemZ_entries[obj_idx].header, NULL, 0);
 }
 
 
@@ -11200,32 +11200,28 @@ void remoteMinesDetonate(void)
 
 
 /**
- * Get Key with ID from Prop (or child of prop)
- * @param ID: ID of key
- * @param prop: Prop to search
- * @return: Key if found
- * @RenameTo: objGetKeyIfExist
-*/
-KeyRecord *keyFindInProp(s32 ID, PropRecord *prop) //#MATCH
+ * Find a weapon prop of the given weapon number: the prop itself or any of its children.
+ */
+WeaponObjRecord *weaponFindInProp(s32 weaponnum, PropRecord *prop)
 {
-    KeyRecord * key;
+    WeaponObjRecord *weapon;
     PropRecord *p;
 
-    if (prop->type == PROPDEF_KEY)
+    if (prop->type == PROP_TYPE_WEAPON)
     {
-        key = prop->obj;
-        if (ID == key->keyID)
+        weapon = prop->weapon;
+        if (weaponnum == weapon->weaponnum)
         {
-            return key;
+            return weapon;
         }
     }
 
     for (p = prop->child; p; p = p->prev)
     {
-        key = keyFindInProp(ID, p);
-        if (key)
+        weapon = weaponFindInProp(weaponnum, p);
+        if (weapon)
         {
-            return key;
+            return weapon;
         }
     }
     return NULL;
@@ -11233,22 +11229,20 @@ KeyRecord *keyFindInProp(s32 ID, PropRecord *prop) //#MATCH
 
 
 /**
- * Get Key if has been "dropped"
- * @param KeyID: ID of Key to Find
- * @return: Key if found and "Dropped"
- * @RenameTo: objGetKeyIfDropped
-*/
-KeyRecord *weaponFindThrown(s32 KeyID) //MATCH
+ * Find a weapon of the given weapon number lying in the level (not in flight as a
+ * projectile). The AI command "if key dropped" uses this for keys and other items.
+ */
+WeaponObjRecord *weaponFindThrown(s32 weaponnum)
 {
-    KeyRecord  *obj;
+    WeaponObjRecord *weapon;
     PropRecord *prop;
 
     for (prop = propsGetActiveTail(); prop; prop = prop->prev)
     {
-        obj = keyFindInProp(KeyID, prop);
-        if (obj && (!(obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)))
+        weapon = weaponFindInProp(weaponnum, prop);
+        if (weapon && (!(weapon->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)))
         {
-            return obj;
+            return weapon;
         }
     }
 
@@ -11414,7 +11408,7 @@ bool chrEquipWeapon(WeaponObjRecord *wep, ChrRecord *chr)
 
                 if (wep2->flags & PROPFLAG_IS_DOUBLE && chr->weapons_held[1 - hand])
                 {
-                    propweaponSetDual(wep2, chr->weapons_held[1 - hand]->obj);
+                    propweaponSetDual(wep2, chr->weapons_held[1 - hand]->weapon);
                 }
             }
             else
@@ -11595,23 +11589,23 @@ WeaponObjRecord blank_08_object_preset_4001 = {
 
 /**
 */
-PropRecord *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 flags, WeaponObjRecord *weapon, ItemModelFileRecord *prop_header)
+PropRecord *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 flags, WeaponObjRecord *weapon, ModelFileHeader *modeldef)
 {
     Model *objinst;
     PropRecord *lastobjentry;
 
-    if (!prop_header)
+    if (!modeldef)
     {
-        prop_header = PitemZ_entries[propid].header;
+        modeldef = PitemZ_entries[propid].header;
         modelLoad(propid);
     }
 
     lastobjentry = propAllocate();
-    objinst = modelmgrInstantiateModel((ModelFileHeader *)prop_header);
+    objinst = modelmgrInstantiateModel(modeldef);
 
     if (!weapon)
     {
-        weapon = weaponCreate(lastobjentry == NULL, objinst == NULL, (ModelFileHeader *)prop_header);
+        weapon = weaponCreate(lastobjentry == NULL, objinst == NULL, modeldef);
     }
 
     if (!lastobjentry)
@@ -11621,7 +11615,7 @@ PropRecord *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 fl
 
     if (!objinst)
     {
-        objinst = modelmgrInstantiateModel((ModelFileHeader *)prop_header);
+        objinst = modelmgrInstantiateModel(modeldef);
     }
 
     if (weapon && lastobjentry && objinst)
@@ -11636,7 +11630,7 @@ PropRecord *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 fl
         // pad = chrnum ???
         weapon->pad = self->chrnum;
 
-        lastobjentry = chrInitHeldWeapon(weapon, self, (ModelFileHeader *)prop_header, lastobjentry, objinst);
+        lastobjentry = chrInitHeldWeapon(weapon, self, modeldef, lastobjentry, objinst);
     }
     else
     {
@@ -11666,14 +11660,9 @@ PropRecord *chrGiveWeapon(ChrRecord *self, s32 PropID, ITEM_IDS ItemID, s32 flag
 
 
 /**
- * Must remain immediately above chrRenderHeldWeapon for matching.
-*/
-
-
-/**
  * Render the weapon(s) characters are holding including the muzzle flash.
  */
-void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
+void chrRenderHeldWeapon(PropRecord *chrprop, GUNHAND hand, JointListEntry **jointList)
 {
     ChrRecord *chr;
     PropRecord *prop;
@@ -11683,7 +11672,7 @@ void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
     Model *chrModel;
     Mtxf rotationMtx;
 
-    chr = ((ChrRenderContext *)renderContext)->chr;
+    chr = chrprop->chr;
     prop = chrGetEquippedWeaponProp(chr, hand);
 
     if (prop != NULL) {
@@ -11712,11 +11701,11 @@ void chrRenderHeldWeapon(void *renderContext, GUNHAND hand, Gfx **gdl)
                 renderData.mtxlist = dynAllocate(heldModel->obj->numMatrices * sizeof(Mtxf));
                 modelCalcMatricesNoAnim(&renderData, heldModel);
 
-                if (gdl != NULL) 
+                if (jointList != NULL)
                 {
                     if (!(weaponObj->runtime_bitflags & RUNTIMEBITFLAG_00000080)) 
                     {
-                        *gdl = jointListAddModel(*gdl, heldModel);
+                        *jointList = jointListAddModel(*jointList, heldModel);
                     }
                 }
 
@@ -11939,7 +11928,7 @@ void doorUpdateBbox(DoorRecord *door)
     }
 
     doorGetMtx(door, &mtx);
-    bboxGetHull2d(&door->bbox, &mtx, &door->ptr_allocated_collisiondata_block->polygon, door->ptr_allocated_collisiondata_block);
+    door->ptr_allocated_collisiondata_block->edges = bboxGetHull2d(&door->bbox, &mtx, door->ptr_allocated_collisiondata_block->polygon);
 
     if (door->doorType == DOORTYPE_VERTICAL)
     {
@@ -12866,11 +12855,7 @@ s32 propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox)
 f32 chrobjFogVisRangeRelated(PropRecord *prop, f32 size)
 {
     f32 ret;
-#if defined(VERSION_US)
     struct NearFogRecord *nfd;
-#else
-    struct NearFogRecordF *nfd;
-#endif
     f32 dist;
 
     ret = 1.0f;
@@ -13761,7 +13746,7 @@ void countdownTimerTick(void)
     }
 }
 
-const char g_CountdownColon[] = ":\n";
+char g_CountdownColon[] = ":\n";
 
 /*
     Renders the on-screen countdown timer
@@ -13804,14 +13789,14 @@ Gfx *countdownTimerRender(Gfx *DL)
         DL = gunDrawHudInteger(DL, mins % 10, 0x8A, HUDHALIGN_MIDDLE, ( viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
         // :
-        DL = gunDrawHudString(DL, &g_CountdownColon, 0x93, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
+        DL = gunDrawHudString(DL, g_CountdownColon, 0x93, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
         // Seconds
         DL = gunDrawHudInteger(DL, (secs % 60) / 10, 0x9C, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
         DL = gunDrawHudInteger(DL, secs % 10, 0xA4, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
         // :
-        DL = gunDrawHudString(DL, &g_CountdownColon, 0xAD, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
+        DL = gunDrawHudString(DL, g_CountdownColon, 0xAD, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);
 
         // Milliseconds
         DL = gunDrawHudInteger(DL, (ms % 100) / 10, 0xB6, HUDHALIGN_MIDDLE, (viGetViewTop() + viGetViewHeight()) - valign_offset, HUDVALIGN_MIDDLE, 1);

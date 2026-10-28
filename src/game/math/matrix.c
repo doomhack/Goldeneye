@@ -394,33 +394,33 @@ void mtx4SetTranslation(struct coord3d *position, Mtxf *matrix)
  * x, y and z axes. Scaling rows 0-2 scales the object before it is placed, scaling
  * columns 0-2 scales the result, translation included.
  */
-void mtx4ScaleRow0(f32 scalar, f32 *matrix)
+void mtx4ScaleRow0(f32 scalar, Mtxf *matrix)
 {
-    matrix[0] *= scalar;
-    matrix[1] *= scalar;
-    matrix[2] *= scalar;
+    matrix->m[0][0] *= scalar;
+    matrix->m[0][1] *= scalar;
+    matrix->m[0][2] *= scalar;
 }
 
-void mtx4ScaleRow1(f32 scalar, f32 *matrix)
+void mtx4ScaleRow1(f32 scalar, Mtxf *matrix)
 {
-    matrix[4] *= scalar;
-    matrix[5] *= scalar;
-    matrix[6] *= scalar;
+    matrix->m[1][0] *= scalar;
+    matrix->m[1][1] *= scalar;
+    matrix->m[1][2] *= scalar;
 }
 
-void mtx4ScaleRow2AndW(f32 scalar, f32 *matrix)
+void mtx4ScaleRow2AndW(f32 scalar, Mtxf *matrix)
 {
-    matrix[8] *= scalar;
-    matrix[9] *= scalar;
-    matrix[10] *= scalar;
-    matrix[11] *= scalar;
+    matrix->m[2][0] *= scalar;
+    matrix->m[2][1] *= scalar;
+    matrix->m[2][2] *= scalar;
+    matrix->m[2][3] *= scalar;
 }
 
-void mtx4ScaleRow2(f32 scalar, f32 *matrix)
+void mtx4ScaleRow2(f32 scalar, Mtxf *matrix)
 {
-    matrix[8] *= scalar;
-    matrix[9] *= scalar;
-    matrix[10] *= scalar;
+    matrix->m[2][0] *= scalar;
+    matrix->m[2][1] *= scalar;
+    matrix->m[2][2] *= scalar;
 }
 
 void mtx4ScaleRows012(f32 scalar, Mtxf *matrix)
@@ -497,12 +497,13 @@ void mtxPopWorldScale(void)
 /**
  * Converts a float matrix to the N64's fixed-point Mtx (like libultra's guMtxF2L), applying
  * the world scale to columns 0-2. The Mtx keeps the integer halves of all 16 values in its
- * first 8 words and the fraction halves in the last 8.
+ * first 8 words and the fraction halves in the last 8. dstmtx is Mtx storage, typed Mtxf
+ * like mtxL2F's source because the game often converts a Mtxf array in place.
  */
-void mtxF2L(f32 mf[4][4], s32 ms[4][4])
+void mtxF2L(Mtxf *srcmtx, Mtxf *dstmtx)
 {
-    f32 *src = (f32 *)mf;
-    s32 *dst = (s32 *)ms;
+    f32 *src = (f32 *)srcmtx;
+    s32 *dst = (s32 *)dstmtx;
     s32 i;
 
     for (i = 0; i < 8; i += 1)

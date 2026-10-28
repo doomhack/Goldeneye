@@ -1279,7 +1279,7 @@ s32 bgProjectPortalPoints(s32 portalnum, f32 offset, coord3d *points)
         point->z = (&g_BgPortals[portalnum].offset_portal->point)[i].z;
 
         if (offset != 0.0f) {
-            bgGetPortalPlane(portalnum, (f32 *) &metric);
+            bgGetPortalPlane(portalnum, &metric);
 
             point->x += metric.normal.x * offset;
             point->y += metric.normal.y * offset;
@@ -4191,8 +4191,9 @@ void bgGrowRoomBoundsToPortals(s32 roomID)
 //#ifdef
 //assert(levelportals[p].p->n>=3)
 //#endif
-void bgGetPortalPlane(s32 portalnum, f32 *out)
+void bgGetPortalPlane(s32 portalnum, struct PortalMetric *metric)
 {
+    f32 *out = metric->normal.f;
     f32 edge1[3];
     f32 edge2[3];
     bg_portal_entry *portal;
@@ -4233,13 +4234,22 @@ void bgGetPortalPlane(s32 portalnum, f32 *out)
 
     for (i = 0; i < portal->numPoints; i++)
     {
-        min = (((((&portal->point)[i].f[0] * out[0]) + ((&portal->point)[i].f[1] * out[1])) + ((&portal->point)[i].f[2] * out[2])) < min) ? ((((&portal->point)[i].f[0] * out[0]) + ((&portal->point)[i].f[1] * out[1])) + ((&portal->point)[i].f[2] * out[2])) : (min);
-        max = (((((&portal->point)[i].f[0] * out[0]) + ((&portal->point)[i].f[1] * out[1])) + ((&portal->point)[i].f[2] * out[2])) > max) ? ((((&portal->point)[i].f[0] * out[0]) + ((&portal->point)[i].f[1] * out[1])) + ((&portal->point)[i].f[2] * out[2])) : (max);
+        coord3d *point = &(&portal->point)[i];
+        f32 dist = (point->f[0] * out[0]) + (point->f[1] * out[1]) + (point->f[2] * out[2]);
+
+        if (dist < min)
+        {
+            min = dist;
+        }
+
+        if (dist > max)
+        {
+            max = dist;
+        }
     }
 
-    out[3] = min;
-    out[4] = max;
-
+    metric->min = min;
+    metric->max = max;
 }
 
 

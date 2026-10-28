@@ -1198,7 +1198,7 @@ void modelCalcJointMtxFromAngles(ModelRenderData *renderdata, Model *model, Mode
             angle = 1.5f;
         }
         
-        mtx4ScaleRow2(angle, (f32 *) dst);
+        mtx4ScaleRow2(angle, dst);
         mtx4SetTranslation(&group->Origin, dst);
         
         if (parent != NULL)
@@ -1280,7 +1280,7 @@ void modelCalcJointMtxFromQuat(ModelRenderData *renderdata, Model *model, ModelN
             angle = 1.5f;
         }
 
-        mtx4ScaleRow2(angle, (f32 *)dst);
+        mtx4ScaleRow2(angle, dst);
         mtx4SetTranslation(&group->Origin, dst);
 
         if (parent != NULL) {
@@ -1548,7 +1548,7 @@ void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, Mode
             scalar = 1.5f;
         }
 
-        mtx4ScaleRow2(scalar, (f32 *) matrixPtr);
+        mtx4ScaleRow2(scalar, matrixPtr);
         mtx4SetTranslation(&data->Group.Origin, matrixPtr);
 
         if (mtx != NULL)

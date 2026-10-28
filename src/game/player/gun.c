@@ -418,7 +418,7 @@ void gunReload(enum GUNHAND hand);
 void gunCreateBeamForHand(enum GUNHAND hand);
 CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx);
 void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos);
-Vtx *dynAllocateVertices(s32 count);
+void *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
 void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 
@@ -1494,7 +1494,7 @@ void gunThrowGrenade(s32 hand)
 
     physRandomLaunch(&throw_speed_vec, &tumble);
     gunGetShotDir(&shotOrigin, &base_speed_vec, hand);
-    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
+    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
     throw_speed_vec.f[1] = (base_speed_vec.f[1] * base_velocity) + 5.0f;
@@ -1579,7 +1579,7 @@ void gunThrowKnife(s32 hand)
 
     physRandomLaunch(&throw_speed_vec, &tumble);
     gunGetShotDir(&shotOrigin, &base_speed_vec, hand);
-    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
+    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
     throw_speed_vec.f[1] = (base_speed_vec.f[1] * base_velocity) + 5.0f;
@@ -1673,7 +1673,7 @@ void gunThrowObject(s32 hand)
 
     physRandomLaunch(&throw_speed_vec, &tumble);
     gunGetShotDir(&shotOrigin, &base_speed_vec, hand);
-    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), (f32*)&base_speed_vec);
+    mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &base_speed_vec);
 
     throw_speed_vec.f[0] = (base_speed_vec.f[0] * base_velocity);
     throw_speed_vec.f[1] = (base_speed_vec.f[1] * base_velocity) + 5.0f;
