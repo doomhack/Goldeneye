@@ -195,6 +195,7 @@ void bgToggleDataPortalsContrlBytes1Bit1(s32 index, s32 toggle);
 void bgFindVisibleRooms(void);
 Gfx* bgLevelRender(Gfx *gdl);
 Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bottom);
+bool bgProjectRoomCoordToScreen(coord3d *src, coord3d *dst);
 Gfx* bgScissorCurrentPlayerViewDefault(Gfx* gdl);
 Gfx* bgScissorCurrentPlayerViewF(Gfx* gdl, f32 left, f32 top, f32 right, f32 bottom);
 f32 bgGetLevelScale(void);

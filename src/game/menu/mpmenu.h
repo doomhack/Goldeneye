@@ -41,7 +41,7 @@ void mpMenuCalculateAwards(bool gameoverdelay);
 s32 mpGetPlayerPoints(s32 playernum);
 void mpMenuStopPlay(void);
 Gfx * mpMenuRender(Gfx *gdl);
-s32 mpMenuCanPlayerAct(void);
+bool mpMenuCanPlayerAct(void);
 s32 mpMenuShowGauges(void);
 
 #endif

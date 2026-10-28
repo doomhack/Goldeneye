@@ -47,12 +47,12 @@
 
 
 f32 chrGetDistanceToBond(ChrRecord *guardData);
-s32 chrCheckTargetInSight(ChrRecord *self);
+bool chrCheckTargetInSight(ChrRecord *self);
 bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid);
 void chrAlertGuardToPlayerPosition(ChrRecord *);
 void chrStandImmediate(ChrRecord *self, f32 mergetime);
 f32 chrGetAngleToBond(ChrRecord *self);
-s32 chrHasStoppedOrPatroling(ChrRecord *);
+bool chrHasStoppedOrPatroling(ChrRecord *);
 s32 chrResolvePadId(ChrRecord *guardData,s32 padNo);
 void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result);
@@ -61,7 +61,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
 bool chrCanSeeBond(ChrRecord *self);
 bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan);
 s32 chrSawTargetRecently(ChrRecord *);
-s32 chrIsDead(ChrRecord *chr);
+bool chrIsDead(ChrRecord *chr);
 bool chrTrySidestep(ChrRecord *self);
 bool chrTryJumpOut(ChrRecord *self);
 bool chrTryRunSideways(ChrRecord *self);
@@ -96,7 +96,7 @@ void chrUnsetFlags2(ChrRecord *self, u8 flags2);
 s32 chrHasFlags2(ChrRecord *self, u8 flags2);
 void chrSetFlags2ById(ChrRecord *self, s32 guard_id, u8 flags2);
 void chrUnsetFlags2ById(ChrRecord *self, s32 guard_id, u8 flags2);
-s32 chrHasFlags2ById(ChrRecord *self, s32 guard_id, u8 flags2); //chrHasFlags2ById
+bool chrHasFlags2ById(ChrRecord *self, s32 guard_id, u8 flags2); //chrHasFlags2ById
 void chrSetStageFlags(ChrRecord *self, s32 flags);
 void chrUnsetStageFlags(ChrRecord *self, u32 flags);
 bool chrHasStageFlag(ChrRecord *self, s32 flags);

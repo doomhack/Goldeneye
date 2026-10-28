@@ -215,7 +215,7 @@ s32 g_FrontFolderErase = FOLDER_INVALID;
 s32 g_FrontFolderEraseChoice = FOLDER2;
 
 s32 g_FrontMissionAborted = FALSE;
-s32 g_FrontBondKilled = FALSE;
+bool g_FrontBondKilled = FALSE;
 
 s32 g_FrontFirstLegal = TRUE;
 s32 g_FrontFirstBoot = TRUE;

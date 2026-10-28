@@ -10,6 +10,7 @@
 #include "game/player/bondinv.h"
 #include "game/player/bondview.h"
 #include "game/menu/cheat.h"
+#include "game/menu/front.h"
 #include "game/chr/chr.h"
 #include "game/chr/chraction.h"
 #include "game/chr/chraidata.h"
@@ -798,7 +799,6 @@ extern f32             g_OrbitCamDist;
 extern f32             g_OrbitCamHeight;
 extern f32             g_OrbitCamTargetHeight;
 extern s32             g_OrbitCamPad;
-extern bool            g_FrontBondKilled;
 // end forward
 
 /**

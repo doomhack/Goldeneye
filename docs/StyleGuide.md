@@ -135,6 +135,11 @@ void SomeFunctionScope()
 Use SDK types (`u8`, `s32`, etc.) rather than C Types (`unsigned char`, `int`, etc.)
 Remember to include `<ultra64.h>`
 
+The code is C23, so `bool`, `true` and `false` are keywords and `bool` is one byte. Use `bool` for
+true/false values in locals, parameters, return values and new globals. Struct fields that are
+true/false but must keep their 4-byte size (structs with fixed offsets or file layouts) use
+`bool32` from bondtypes.h. A value that can be anything other than 0 or 1 is not a `bool`.
+
 Bond Types use the "typedef" keyword
 
 While typedefs are used to avoid typing "struct" and to help intellisense, they are not foolproof.
