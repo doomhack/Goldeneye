@@ -277,7 +277,7 @@ void gunFireTankShell(s32 handnum)
 
         if (weaponid != ITEM_TANKSHELLS)
         {
-            obj->projectile->flags |= PROJECTILEFLAG_00000020;
+            obj->projectile->flags |= PROJECTILEFLAG_RISING;
             obj->projectile->riseY = obj->runtime_pos.y;
             obj->projectile->riseSpeed = obj->projectile->speed.y;
             obj->projectile->accel.x = unscaledvelocity.x;

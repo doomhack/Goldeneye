@@ -79,3 +79,108 @@ void physApplyTumble(Mtxf *mtx, const Mtxf *tumble, s32 ticks)
     }
 }
 
+
+/**
+ * Moves *pos towards target for `ticks` ticks, like a door opening or a player crouching.
+ * It speeds up by `accel` per tick to at most `maxSpeed`, and slows down by `decel` per tick
+ * in time to stop at the target (never below `decel`, so it always arrives). Moving the
+ * other way first brakes by `decel`. The speed is kept in *speed for the next call; it
+ * stops on the target exactly.
+ */
+void physMoveTowards(f32 *pos, f32 target, f32 *speed, f32 accel, f32 decel, f32 maxSpeed, s32 ticks)
+{
+    f32 v = *speed;
+
+    for (s32 i = 0; i < ticks; i++)
+    {
+        f32 brakingDist = v * v * 0.5f / decel;
+        f32 remaining = target - *pos;
+
+        if (remaining > 0.0f)
+        {
+            if (v > 0.0f && remaining <= brakingDist)
+            {
+                v -= decel;
+
+                if (v < decel)
+                {
+                    v = decel;
+                }
+            }
+            else if (v < maxSpeed)
+            {
+                v += v < 0.0f ? decel : accel;
+
+                if (v > maxSpeed)
+                {
+                    v = maxSpeed;
+                }
+            }
+
+            if (v >= remaining)
+            {
+                *pos = target;
+                break;
+            }
+        }
+        else
+        {
+            if (v < 0.0f && -remaining <= brakingDist)
+            {
+                v += decel;
+
+                if (v > -decel)
+                {
+                    v = -decel;
+                }
+            }
+            else if (v > -maxSpeed)
+            {
+                v -= v > 0.0f ? decel : accel;
+
+                if (v < -maxSpeed)
+                {
+                    v = -maxSpeed;
+                }
+            }
+
+            if (v <= remaining)
+            {
+                *pos = target;
+                break;
+            }
+        }
+
+        *pos += v;
+    }
+
+    *speed = v;
+}
+
+/**
+ * physMoveTowards for an angle in [0, 2pi): turns the short way round to `target` and
+ * keeps the result in range.
+ */
+void physTurnTowards(f32 *angle, f32 target, f32 *speed, f32 accel, f32 decel, f32 maxSpeed, s32 ticks)
+{
+    if (target - *angle < -M_PI_F)
+    {
+        target += M_TAU_F;
+    }
+    else if (target - *angle >= M_PI_F)
+    {
+        target -= M_TAU_F;
+    }
+
+    physMoveTowards(angle, target, speed, accel, decel, maxSpeed, ticks);
+
+    if (*angle < 0.0f)
+    {
+        *angle += M_TAU_F;
+    }
+
+    if (*angle >= M_TAU_F)
+    {
+        *angle -= M_TAU_F;
+    }
+}

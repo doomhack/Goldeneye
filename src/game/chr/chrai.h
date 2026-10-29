@@ -40,10 +40,6 @@ extern sfxRecord                          sfx_related[];
 extern struct WeaponObjRecord             g_WeaponSlots[];
 extern struct HatRecord                   g_HatSlots[];
 extern struct AmmoCrateRecord             g_AmmoCrates[];
-extern struct Projectile                  g_Projectiles[];
-extern struct Embedment                   g_Embedments[];
-extern coord3d                     g_ProjectileHitPos;
-extern coord3d                     g_ProjectileHitNormal;
 
 extern stagesetup                        *g_ptrStageSetupFile;
 extern char *setup_text_pointers[];

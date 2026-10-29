@@ -40,6 +40,8 @@
 #include "game/text/language.h"
 #include "game/world/bg.h"
 #include "assets/obseg/text/LpropobjE.h"
+#include "game/math/physics.h"
+#include "game/prop/projectile.h"
 
 static_assert(__builtin_offsetof(DoorRecord, loopSounds) == 0xf4, "DoorRecord layout");
 static_assert(sizeof(DoorRecord) == 0x100, "DoorRecord layout");
@@ -789,7 +791,7 @@ static bool doorApplySpeed(DoorRecord *door)
         return FALSE;
     }
 
-    chrobjApplySpeed(&door->openPosition, target, &door->speed, door->accel, door->decel, door->maxSpeed);
+    physMoveTowards(&door->openPosition, target, &door->speed, door->accel, door->decel, door->maxSpeed, g_ClockTimer);
 
     if (door->openPosition >= door->maxFrac)
     {

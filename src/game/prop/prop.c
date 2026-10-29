@@ -60,6 +60,7 @@
 #include "game/nav/stan.h"
 #include "game/chr/chr.h"
 #include "game/prop/alarm.h"
+#include "game/prop/projectile.h"
 
 
 // bss
@@ -108,14 +109,6 @@ HatRecord g_HatSlots[MAX_HAT_SLOTS];
 
 AmmoCrateRecord g_AmmoCrates[MAX_AMMO_CRATES];
 
-Projectile g_Projectiles[PROJECTILES_ARR_MAX];
-
-Embedment g_Embedments[EMBEDMENT_ARR_MAX];
-
-struct Model *g_CurrentProjectileModel;
-struct ModelNode * g_ProjectileHitNode;
-coord3d g_ProjectileHitPos;
-coord3d g_ProjectileHitNormal;
 
 
 
@@ -1812,7 +1805,7 @@ void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius)
 
         if (obj != NULL
             && obj->runtime_bitflags & 0x80
-            && obj->projectile->flags & PROJECTILEFLAG_00000008) {
+            && obj->projectile->flags & PROJECTILEFLAG_OFFGRID) {
             src = obj->projectile->rooms;
         } else {
             src = prop->rooms;

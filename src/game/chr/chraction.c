@@ -45,6 +45,8 @@
 #include "game/nav/stan.h"
 #include "game/nav/waypoint.h"
 #include "game/prop/alarm.h"
+#include "game/math/physics.h"
+#include "game/math/line_tri_intersect.h"
 
 
 
@@ -6067,9 +6069,9 @@ void chrFireHand(ChrRecord *self, s32 hand)
 
                                 if (rocket->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                                 {
-                                    rocket->projectile->flags |= 0x80;
+                                    rocket->projectile->flags |= PROJECTILEFLAG_LAUNCHING;
                                     rocket->timer = -1;
-                                    rocket->projectile->flags |= 0x20;
+                                    rocket->projectile->flags |= PROJECTILEFLAG_RISING;
 
                                     rocket->projectile->riseY = rocket->runtime_pos.y;
                                     rocket->projectile->riseSpeed = rocket->projectile->speed.f[1];
@@ -7106,14 +7108,13 @@ s32 chrApplySpeed(ChrRecord *self, coord3d *target, s32 speed, f32 *speedPtr)
     maxSpeed *= self_model->playspeed;
     accel *= self_model->playspeed;
 
-    // void chrobjCallsApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 accel, f32 decel, f32 maxSpeed)
-    chrobjCallsApplySpeed(
+    physTurnTowards(
         &openPosition,
         maxFrac,
         speedPtr,
         accel,
         accel * 2.0f,
-        maxSpeed);
+        maxSpeed, g_ClockTimer);
 
     if (openPosition == maxFrac)
     {
@@ -9416,7 +9417,7 @@ bool chrIsTargetedByPlayer(ChrRecord *self)
         modelGetRootPosition(mymodel, &vec);
         mtx4TransformVecInPlace(camGetWorldToScreenMtxf(), &vec);
 
-        if (projectileTestPropBoundingSphere(&zeropos, &pos, &vec, scale))
+        if (intersectRaySphere(&zeropos, &pos, &vec, scale))
         {
             return TRUE;
         }

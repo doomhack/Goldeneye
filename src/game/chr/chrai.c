@@ -45,6 +45,7 @@
 #include <ultra64.h>
 #include "game/prop/alarm.h"
 #include "game/prop/monitor.h"
+#include "game/prop/projectile.h"
 
 // hack? used to match as called with 2 args, but decompiled code takes 1
 extern s32 objectiveGetStatus_WEAK(s32 objectiveNum, s32);
@@ -4728,8 +4729,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                         if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                         {
-                            obj->projectile->flags |= 0x601;
-                            projectileSetSticky(obj->prop);
+                            obj->projectile->flags |= PROJECTILEFLAG_SMOKETRAIL | PROJECTILEFLAG_NOTUMBLE | PROJECTILEFLAG_AIRBORNE;
+                            projectileEnableCollide3D(obj->prop);
                             mtx4LoadIdentity(&obj->projectile->mtx);
                             obj->projectile->speed.x = 0;
                             obj->projectile->speed.y = 0.016666666f; // step height?

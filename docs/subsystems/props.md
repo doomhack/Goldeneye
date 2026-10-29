@@ -7,7 +7,8 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | --- | --- |
 | `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects at run time: movement and projectiles, the per-frame tick, drawing, damage, pickups, weapon and hat slots |
+| `src/game/prop/propobj.c` | Objects at run time: the per-frame tick, drawing, damage, pickups, weapon and hat slots |
+| `src/game/prop/projectile.c` | Objects in flight: the projectile pools, moving with collision, bouncing, settling, sticking |
 | `src/game/prop/door.c` | Doors: moving, collision, portals, sounds, and the player using them |
 | `src/game/prop/monitor.c` | Monitor screens: running their scripts and drawing them |
 | `src/game/prop/monitorscripts.c` | The monitor scripts |
@@ -80,13 +81,23 @@ the tick code checks.
 ## Moving objects
 
 An object that moves (thrown, dropped, knocked off a table, blown up) gets a `Projectile`
-from a pool of 20 (`objEnsureProjectile`). `objTick` moves it each frame with
-`projectileMove`, which tests the move against the floor tiles and other props
-(`projectileFindCollidingProp`) and bounces or stops it. When it comes to rest,
-`objSettle` lines it up with the floor.
+from a pool of 20 (`objEnsureProjectile`); when the pool is full, the oldest one is taken
+over and its object removed. Each frame `objTick` calls `projectileTick`
+(`projectile.c`):
 
-An object stuck to something (a knife in a wall, a mine on a door) gets an `Embedment`
-from a pool of 40 instead.
+1. A gun's projectile first moves straight out to its start point
+   (`PROJECTILEFLAG_MOVETOTARGET`).
+2. In flight (`PROJECTILEFLAG_AIRBORNE`) it falls (rockets rise, then fly under thrust),
+   tumbles, and moves. With `PROJECTILEFLAG_COLLIDE3D` the move is tested in 3D against
+   the level and the props in the rooms along the way (`projectileMove`); otherwise only
+   along the floor plan (`objMoveAlongFloor`).
+3. What it hit decides the rest: mines, bugs and plastique stick (attached to a prop
+   with an `Embedment`, from a pool of 40); a throwing knife shoots a guard; a rocket or
+   grenade round goes off. Anything else bounces, and once a bounce is slow it settles
+   (`objSettle`).
+4. Landed, it turns to lie flat and slides to a stop, and then loses its projectile.
+
+The tick goes through the projectile code once per frame, on the player who threw it.
 
 Objects that do not move only need placing once: `objPlaceAtPad` puts an object on its
 pad, `objPlaceOnFloor` drops it to the floor below, and `objGetTileShading` lights it with
@@ -94,7 +105,7 @@ the colour of the tile it is on.
 
 ## The object tick
 
-`objTick` is the tick for every object and door, and is about 2,400 lines long. It handles
+`objTick` is the tick for every object and door, and is about 1,600 lines long. It handles
 falling and flying, security cameras spotting Bond, autoguns aiming and firing, vehicles
 and aircraft following their paths, the tank, doors opening and closing, and weapons such
 as mines (`chrobjWeaponTick`). Attached props are ticked through `objTickAttached`, and

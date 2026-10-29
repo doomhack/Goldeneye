@@ -177,6 +177,7 @@
 #include "game/prop/prop.h"
 #include "game/replay/ramromreplay.h"
 #include "game/prop/alarm.h"
+#include "game/math/physics.h"
 
 void playerDie(void);
 
@@ -6645,13 +6646,13 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         if (targetDuck != g_CurrentPlayer->ducking_height_offset)
         {
-            chrobjApplySpeed(
+            physMoveTowards(
                 &g_CurrentPlayer->ducking_height_offset,
                 targetDuck,
                 &g_CurrentPlayer->crouchSpeed,
                 CHR_OBJ_ACCEL_SPEED_FACTOR,
                 CHR_OBJ_ACCEL_SPEED_FACTOR,
-                CHR_OBJ_MAXSPEED);
+                CHR_OBJ_MAXSPEED, g_ClockTimer);
         }
 
         if (targetDuck == g_CurrentPlayer->ducking_height_offset)
