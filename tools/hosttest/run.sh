@@ -8,4 +8,7 @@ $CC memtest.c -o "$out/memtest"
 "$out/memtest"
 $CC rziptest.c -lz -o "$out/rziptest"
 "$out/rziptest"
+# -fno-builtin: the maths library's own sinf and cosf, not the compiler's
+$CC -fno-builtin mathtest.c -lm -o "$out/mathtest"
+"$out/mathtest"
 rm -rf "$out"
