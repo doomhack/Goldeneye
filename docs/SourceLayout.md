@@ -57,7 +57,7 @@ All the game's own code is C. What is still assembly is code that cannot be C:
 | `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, per-instance vertex copies. See [subsystems/rendering.md](subsystems/rendering.md) | `image.c`, `tex.c`, `texselect.c`, `dyn.c`, `rsp.c`, `zbuf.c`, `vtxstore.c`, `texrect.c` |
 | `text/` | Strings and the language banks (`language.c`), fonts and drawing text (`text.c`). See [subsystems/text.md](subsystems/text.md) | `language.c`, `text.c` |
 | `math/` | Matrices, quaternions, trig, interpolation, gravity. See [subsystems/math.md](subsystems/math.md) | `matrix.c`, `quaternion.c`, `trig.c` |
-| `asset/` | Loading files from ROM and decompressing them. See [subsystems/assets-memory.md](subsystems/assets-memory.md) | `fileload.c`, `rzip.c` |
+| `asset/` | Loading files from ROM and decompressing them. See [subsystems/assets-memory.md](subsystems/assets-memory.md) | `asset.c`, `rzip.c` |
 | `audio/` | Which music plays in a level and when it changes. See [subsystems/audio.md](subsystems/audio.md) | `levelmusic.c` |
 | `replay/` | Rare's demo playback, and the test hooks the replay tests use | `ramromreplay.c`, `testhooks.c` |
 
