@@ -26,7 +26,7 @@
 #include "game/math/matrix.h"
 #include "game/model/model.h"
 #include "music.h"
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
@@ -464,13 +464,13 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     
     modelFileLoad(c_item_entries[BODY_Brosnan_Tuxedo].header, c_item_entries[BODY_Brosnan_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
     
-    size = ((fileGetLoadedSizeByName(c_item_entries[BODY_Brosnan_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    size = ((assetGetSizeByName(c_item_entries[BODY_Brosnan_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= size;
     gfxBuffer += size;
     
     modelFileLoad(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].header, c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename, gfxBuffer, bufferSize, &texturePool);
     
-    size = ((fileGetLoadedSizeByName(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    size = ((assetGetSizeByName(c_item_entries[BODY_Male_Pierce_Bond_Tuxedo].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= size;
     gfxBuffer += size;
     
@@ -498,7 +498,7 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     modelSetAnimation(g_TitleBondModel, (struct ModelAnimation *) animation, 0, (f32) startframe, 0.91f, 0.0f);
     modelFileLoad(PitemZ_entries[PROP_CHRWPPK].header, PitemZ_entries[PROP_CHRWPPK].filename, gfxBuffer, bufferSize, &texturePool);
     
-    size = ((fileGetLoadedSizeByName(PitemZ_entries[PROP_CHRWPPK].filename) + 0x3F) | 0x3F) ^ 0x3F;
+    size = ((assetGetSizeByName(PitemZ_entries[PROP_CHRWPPK].filename) + 0x3F) | 0x3F) ^ 0x3F;
     bufferSize -= size;
     gfxBuffer += size;
     

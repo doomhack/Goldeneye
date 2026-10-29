@@ -1,7 +1,7 @@
 //TODO: Autogenerate me
 #include "file_resource_id_enums.h"
 
-struct FileEntry g_FileTable[] = {
+struct AssetEntry g_FileTable[] = {
     {NULLFILE, "", 0},
     {BG_SEV_ALL_P, "bg/bg_sev_all_p.seg", bg_sev_all_p_seg},
     {BG_SILO_ALL_P, "bg/bg_silo_all_p.seg", bg_silo_all_p_seg},

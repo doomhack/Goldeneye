@@ -55,7 +55,7 @@
       build/OUTCODE/src/game/world/bgfog.o (.rodata);
       build/OUTCODE/src/game/world/lightfixture.o (.rodata);
       build/OUTCODE/src/game/world/roommtx.o (.rodata);
-      build/OUTCODE/src/game/asset/fileload.o (.rodata);
+      build/OUTCODE/src/game/asset/asset.o (.rodata);
       build/OUTCODE/src/game/gfx/dyn.o (.rodata);
       build/OUTCODE/src/game/level/lv.o (.rodata);
       build/OUTCODE/src/game/replay/ramromreplay.o (.rodata);

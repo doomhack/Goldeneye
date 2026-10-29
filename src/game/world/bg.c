@@ -15,6 +15,7 @@
  * to them. See docs/subsystems/world.md.
  */
 
+#include "dbgscreen.h"
 #include <ultra64.h>
 #include <PR/os.h>
 #include <PR/gbi.h>
@@ -22,7 +23,7 @@
 #include <bondconstants.h>
 #include <fr.h>
 #include <memp.h>
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 #include "game/world/bg.h"
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
@@ -632,7 +633,7 @@ void bgLoad(LEVEL_INDEX levelid)
     lightFixtureInitTables();
  
     g_BgData = (s32)header;
-    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) g_BgData, 0, 0x40);
+    assetLoadPart(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) g_BgData, 0, 0x40);
 
 
     g_BgHeader = g_BgData;
@@ -641,9 +642,9 @@ void bgLoad(LEVEL_INDEX levelid)
     size = (((((u32) g_BgRoomFiles[1].pPointTableBin) & 0x00ffffff) - 1) | 0xf) + 1;
  
     g_BgData = (s32) mempAlloc(size, MEMPOOL_STAGE);
-    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) g_BgData, 0, size);
+    assetLoadPart(levelinfotable[levelentry_index].bg_seg_filename, (u8 *) g_BgData, 0, size);
  
-    g_StanData = (s32) fileLoadByNameToPool(levelinfotable[levelentry_index].bg_stan_filename, FILELOAD_TRIM_2, 0, MEMPOOL_STAGE);
+    g_StanData = (s32) assetLoad(levelinfotable[levelentry_index].bg_stan_filename, MEMPOOL_STAGE);
  
     stanDetermineEOF((struct StanPrefixRecord *) g_StanData, 0, (u8 *) g_StanData);
     stanLoadFile((struct StanPrefixRecord *) g_StanData);
@@ -1798,10 +1799,20 @@ s32 bgGetPortalIndex(s32 portalID)
 }
 
 
-u32 bgDecompress(u8* source, u8 *target)
+/**
+ * Decompresses room data that sits at the end of the `size`-byte buffer at `target` into
+ * the start of it. Stops the game if the data is corrupt or doesn't fit.
+ */
+static u32 bgDecompress(u8 *source, u8 *target, u32 size)
 {
-    u8 buffer[0x2100];
-    return rzipInflate(source, target, (struct huft *)buffer);
+    u32 result = rzipInflate(source, target, size);
+
+    if (result == 0)
+    {
+        dbgFatal("bg: bad room data at", (uintptr_t) source);
+    }
+
+    return result;
 }
 
 
@@ -1828,8 +1839,8 @@ s32 bgLoadRoomVtxData(s32 roomnum, u8 *dst, s32 len)
     * Adding 0xf1000000 strips the 0x0f000000 segment tag, yielding a file offset.
     */
     offset = (uintptr_t)g_BgRoomFiles[roomnum].pPointTableBin + 0xf1000000;
-    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, dst + (len - alignedsize), offset, alignedsize);
-    result = bgDecompress(dst + (len - alignedsize), dst);
+    assetLoadPart(levelinfotable[levelentry_index].bg_seg_filename, dst + (len - alignedsize), offset, alignedsize);
+    result = bgDecompress(dst + (len - alignedsize), dst, len);
 
     room->vertices = (Vtx *)dst;
     room->usize_point_index_binary = result;
@@ -1871,10 +1882,10 @@ s32 bgLoadRoomPrimaryGdl(s32 roomnum, u8 *dst, s32 allocsize)
     fileoffset = (s32)((u8 *)g_BgRoomFiles[roomnum].pPriMappingBin + g_BgData) - g_BgData;
     fileoffset += 0xf1000000;
 
-    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, scratch, fileoffset, size);
+    assetLoadPart(levelinfotable[levelentry_index].bg_seg_filename, scratch, fileoffset, size);
 
     // Decompress from the end-of-buffer location at dst.
-    expanded_size = bgDecompress(scratch, dst);
+    expanded_size = bgDecompress(scratch, dst, allocsize);
 
     /**
      * Copy the decompressed GDL back to the end of the buffer as scratch.
@@ -1934,10 +1945,10 @@ s32 bgLoadRoomSecondaryGdl(s32 roomnum, u8 *dst, s32 allocsize)
     fileoffset = (s32)((u8 *)g_BgRoomFiles[roomnum].pSecMappingBin + g_BgData)  - g_BgData;
     fileoffset += 0xf1000000;
 
-    fileLoadPartByName(levelinfotable[levelentry_index].bg_seg_filename, scratch, fileoffset, size);
+    assetLoadPart(levelinfotable[levelentry_index].bg_seg_filename, scratch, fileoffset, size);
 
     // Decompress from the end-of-buffer location at dst.
-    expanded_size = bgDecompress(scratch, dst);
+    expanded_size = bgDecompress(scratch, dst, allocsize);
 
     /**
      * Copy the decompressed GDL back to the end of the buffer as scratch.

@@ -94,6 +94,7 @@ test that expected the error).
 | Test | Covers |
 | --- | --- |
 | `memtest.c` | memp (pools, resizing, closed and full pools) and mema (best fit, merging, double frees, a full free list, and random alloc/free/resize runs checked against a byte map) |
+| `rziptest.c` | rzip: zlib-made streams (stored, fixed and dynamic blocks, several levels and strategies, up to 300 KB) decompressed separately and in place, a buffer one byte too small, hand-made bad blocks, and bit-flipped streams that must fail without overrunning. Needs zlib (`-lz`) |
 
 Demos can't tell whether a leaf function is right in the cases a level never hits; these tests
 can, so a leaf rewrite gets one.

@@ -1,734 +1,538 @@
 /**
- * Decompression of Rare's "1172" format, used for most files in the ROM, compressed
- * textures and music.
+ * rzip: decompression of Rare's "1172" format, used for most files in the ROM, room
+ * geometry, compressed textures and music.
  *
- * A compressed file is the two bytes 0x11 0x72 followed by a raw deflate stream (a gzip
- * file with its header and trailer cut off; see tools/1172compress.sh). The inflate code
- * is Mark Adler's public domain inflate.c from gzip 1.2.4, with the sliding window
- * replaced by writing straight into the output buffer.
+ * A compressed file is the two bytes 0x11 0x72 followed by a raw deflate stream (RFC 1951):
+ * a gzip file with its header and trailer cut off (see tools/1172compress.sh).
  *
- * The boot code has its own copy in src/inflate/inflate.c, used to unpack the game code
- * before this one is loaded.
+ * The boot code uses this same file to unpack the game code (it's built a second time,
+ * with RZIP_BOOT, into the boot segment; see init.c and the Makefile), so it can't call
+ * anything in the game code. It keeps its state in statics, so only one thread can use it
+ * (the main thread loads files, textures, rooms and music).
+ *
+ * Deflate in brief. The stream is a series of blocks, each stored (raw bytes), or
+ * compressed with either the fixed Huffman codes from the RFC or codes described at the
+ * start of the block. A compressed block is a series of symbols: 0-255 is a literal byte,
+ * 256 ends the block, and 257-285 start a "copy `length` bytes from `distance` bytes back"
+ * (the length and distance each have a base value plus some extra bits). Bits are read
+ * from the low end of each byte first; Huffman codes are stored most significant bit
+ * first, so they come out bit-reversed.
+ *
+ * Huffman codes are decoded with a lookup table indexed by the next RZIP_FAST_BITS bits of
+ * the stream, which gives the symbol and code length of any code that short. Longer codes
+ * (rare) fall back to the canonical decoding: find the code length whose range of codes
+ * contains the next bits.
  */
 #include <ultra64.h>
 #include "game/asset/rzip.h"
-#include "include/string.h"
-#include "include/bstring.h"
 
-#define GETBYTE()   (m_inBuf[m_inPos++])
-#define NEXTBYTE()  (u8)GETBYTE()
-#define NEEDBITS(n) {while(k<(n)){b|=((u32)NEXTBYTE())<<k;k+=8;}}
-#define DUMPBITS(n) {b>>=(n);k-=(n);}
+#ifdef RZIP_BOOT
+#define rzipInflate bootInflate
+#endif
 
-#define WSIZE 0x8000U
-#define BMAX 16
-#define N_MAX 288
+/** Huffman codes up to this many bits long are decoded with one table lookup. */
+#define RZIP_FAST_BITS 9
+#define RZIP_FAST_MASK ((1 << RZIP_FAST_BITS) - 1)
 
+#define RZIP_MAX_CODE_BITS 15
+#define RZIP_MAX_SYMBOLS   288
 
-static u8 *m_inBuf;
-static u8 *m_outBuf;
-static u32 m_inPos;
-static u32 m_outPos;
-static struct huft *m_huftBuf;
-static u32 m_bitBuf;
-static u32 m_bitCount;
-static u32 m_huftCount;
+typedef struct RzipHuffman
+{
+    /* (code length << 9) | symbol for every code up to RZIP_FAST_BITS long, else 0 */
+    u16 fast[1 << RZIP_FAST_BITS];
+    /* For each code length: the first code of that length, and its index in `symbols` */
+    u16 firstCode[RZIP_MAX_CODE_BITS + 1];
+    u16 firstIndex[RZIP_MAX_CODE_BITS + 1];
+    /* For each code length: the first code that is longer, shifted up to 16 bits */
+    u32 endCode[RZIP_MAX_CODE_BITS + 2];
+    /* The symbols sorted by code, and each one's code length */
+    u16 symbols[RZIP_MAX_SYMBOLS];
+    u8 lengths[RZIP_MAX_SYMBOLS];
+} RzipHuffman;
 
+/** Where decompression is up to. */
+typedef struct RzipState
+{
+    const u8 *in;
+    u32 bits;     /* bits read from `in` but not used yet, lowest first */
+    u32 bitCount;
+    u8 *outStart;
+    u8 *out;
+    u8 *outEnd;   /* where the output must stop: the end of the buffer, or the input */
+    bool inPlace; /* the input is inside the output buffer */
+} RzipState;
 
-static u8 m_lengthOrder[0x14] = {
-        16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
-
-static u16 m_lengthBase[0x20] = {
-        3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
-        35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
-
-static u8 m_lengthExtra[0x20] = {
-        0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
-        3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0, 99, 99};
-
-static u16 m_distBase[0x1E] = {
-        1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
-        257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,
-        8193, 12289, 16385, 24577};
-
-static u8 m_distExtra[0x20] = {
-        0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
-        7, 7, 8, 8, 9, 9, 10, 10, 11, 11,
-        12, 12, 13, 13};
-
-static u16 m_maskBits[] = {
-    0, 1, 3, 7, 0xF, 0x1F, 0x3F, 0x7F, 0xFF, 0x1FF, 0x3FF, 0x7FF, 0xFFF, 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF, 0
+/* Base values and extra bits for length symbols 257-285 and distance symbols 0-29 */
+static const u16 m_rzipLengthBase[29] = {
+    3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
+    35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258,
+};
+static const u8 m_rzipLengthExtra[29] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2,
+    3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 0,
+};
+static const u16 m_rzipDistBase[30] = {
+    1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
+    257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145, 8193, 12289, 16385, 24577,
+};
+static const u8 m_rzipDistExtra[30] = {
+    0, 0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6,
+    7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13,
 };
 
-static s32 m_lengthBits = 9;
-static s32 m_distBits = 6;
+/** The order a dynamic block lists the code lengths of the code length code in. */
+static const u8 m_rzipLengthOrder[19] = {
+    16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15,
+};
 
+// Explicitly zeroed: in the boot copy that puts them in .data, inside the boot segment
+static RzipHuffman m_rzipLiterals = {0};
+static RzipHuffman m_rzipDistances = {0};
+static const u8 *m_rzipInputEnd = NULL;
 
-
-/* Given a list of code lengths and a maximum table size, make a set of
-   tables to decode that set of codes.  Return zero on success, one if
-   the given code set is incomplete (the tables are still built in this
-   case), two if the input is invalid (all zero length codes or an
-   oversubscribed set of lengths), and three if not enough memory. */
-static s32 huftBuild(u32 *b, u32 n, u32 s, u16 *d, u8 *e, struct huft **t, s32 *m)
+/** Reverses the lowest 16 bits of `value`. */
+static inline u32 rzipReverse16(u32 value)
 {
-	u32 a;                   /* counter for codes of length k */
-	u32 c[BMAX+1];           /* bit length count table */
-	u32 f;                   /* i repeats in table every f entries */
-	s32 g;                   /* maximum code length */
-	s32 h;                   /* table level */
-	register u32 i;          /* counter, current code */
-	register u32 j;          /* counter */
-	register s32 k;          /* number of bits in current code */
-	s32 l;                   /* bits per table (returned in m) */
-	register u32 *p;         /* pointer into c[], b[], or v[] */
-	register struct huft *q; /* points to current table */
-	struct huft r;           /* table entry for structure assignment */
-	struct huft *u[BMAX];    /* table stack */
-	u32 v[N_MAX];            /* values in order of bit length */
-	register s32 w;          /* bits before this table == (l * h) */
-	u32 x[BMAX+1];           /* bit offsets, then code stack */
-	u32 *xp;                 /* pointer into x */
-	s32 y;                   /* number of dummy codes added */
-	u32 z;                   /* number of entries in current table */
+    // Swap neighbouring bits, then pairs, nibbles and bytes
+    value = ((value & 0xAAAA) >> 1) | ((value & 0x5555) << 1);
+    value = ((value & 0xCCCC) >> 2) | ((value & 0x3333) << 2);
+    value = ((value & 0xF0F0) >> 4) | ((value & 0x0F0F) << 4);
+    value = ((value & 0xFF00) >> 8) | ((value & 0x00FF) << 8);
 
-	/* Generate counts for each bit length */
-    bzero(c, sizeof(c));
-
-	p = b;
-	i = n;
-
-	do {
-		c[*p]++;                  /* assume all entries <= BMAX */
-		p++;                      /* Can't combine with above line (Solaris bug) */
-	} while (--i);
-
-	if (c[0] == n) {              /* null input--all zero length codes */
-		*t = NULL;
-		*m = 0;
-		return 0;
-	}
-
-	/* Find minimum and maximum length, bound *m by those */
-	l = *m;
-
-	for (j = 1; j <= BMAX; j++) {
-		if (c[j]) {
-			break;
-		}
-	}
-
-	k = j;                        /* minimum code length */
-
-	if (l < (s32)j) {
-		l = j;
-	}
-
-	for (i = BMAX; i; i--) {
-		if (c[i]) {
-			break;
-		}
-	}
-
-	g = i;                        /* maximum code length */
-
-	if (l > (s32)i) {
-		l = i;
-	}
-
-	*m = l;
-
-	/* Adjust last length count to fill out codes, if needed */
-	for (y = 1 << j; j < i; j++, y <<= 1) {
-		y -= c[j];
-	}
-
-	y -= c[i];
-	c[i] += y;
-
-	/* Generate starting offsets into the value table for each length */
-	x[1] = j = 0;
-	p = c + 1;
-	xp = x + 2;
-
-	while (--i) {                 /* note that i == g from above */
-		*xp++ = (j += *p++);
-	}
-
-	/* Make a table of values in order of bit lengths */
-	p = b;
-	i = 0;
-
-	do {
-		if ((j = *p++) != 0) {
-			v[x[j]++] = i;
-		}
-	} while (++i < n);
-
-	/* Generate the Huffman codes and for each, make the table entries */
-	x[0] = i = 0;                 /* first Huffman code is zero */
-	p = v;                        /* grab values in bit order */
-	h = -1;                       /* no tables yet--level -1 */
-	w = -l;                       /* bits decoded == (l * h) */
-	u[0] = (struct huft *)NULL;   /* just to keep compilers happy */
-	q = (struct huft *)NULL;      /* ditto */
-	z = 0;                        /* ditto */
-
-	/* go through the bit lengths (k already is bits in shortest code) */
-	for (; k <= g; k++) {
-		a = c[k];
-
-		while (a--) {
-			/* here i is the Huffman code of length k bits for value *p */
-			/* make tables up to required level */
-			while (k > w + l) {
-				h++;
-				w += l;                 /* previous table always l bits */
-
-				/* compute minimum size table less than or equal to l bits */
-				z = (z = g - w) > (u32)l ? (u32)l : z;  /* upper limit on table size */
-
-				if ((f = 1 << (j = k - w)) > a + 1) {   /* try a k-w bit table */
-				                          /* too few codes for k-w bit table */
-					f -= a + 1;           /* deduct codes from patterns left */
-					xp = c + k;
-
-					while (++j < z) {     /* try smaller tables up to z bits */
-						if ((f <<= 1) <= *++xp) {
-							break;            /* enough codes to use up j bits */
-						}
-
-						f -= *xp;           /* else deduct codes from patterns */
-					}
-				}
-
-				z = 1 << j;             /* table entries for j-bit table */
-
-				/* allocate and link in new table */
-				q = &m_huftBuf[m_huftCount];
-
-				m_huftCount += z + 1;         /* track memory usage */
-				*t = q + 1;             /* link to list for huft_free() */
-				*(t = &(q->v.t)) = (struct huft *)NULL;
-				u[h] = ++q;             /* table starts after link */
-
-				/* connect to last table, if there is one */
-				if (h) {
-					x[h] = i;             /* save pattern for backing up */
-					r.b = l;              /* bits to dump before this table */
-					r.e = 16 + j;         /* bits in this table */
-					r.v.t = q;            /* pointer to this table */
-					j = i >> (w - l);     /* (get around Turbo C bug) */
-					u[h-1][j] = r;        /* connect to last table */
-				}
-			}
-
-			/* set up table entry in r */
-			r.b = (k - w);
-
-			if (p >= v + n) {
-				r.e = 99;               /* out of values--invalid code */
-			} else if (*p < s) {
-				r.e = (*p < 256 ? 16 : 15);    /* 256 is end-of-block code */
-				r.v.n = *p;             /* simple code is just the value */
-				p++;                    /* one compiler does not like *p++ */
-			} else {
-				r.e = e[*p - s];   /* non-simple--look up in lists */
-				r.v.n = d[*p++ - s];
-			}
-
-			/* fill code-like entries with r */
-			f = 1 << (k - w);
-
-			for (j = i >> w; j < z; j += f) {
-				q[j] = r;
-			}
-
-			/* backwards increment the k-bit code i */
-			for (j = 1 << (k - 1); i & j; j >>= 1) {
-				i ^= j;
-			}
-
-			i ^= j;
-
-			/* backup over finished tables */
-			while ((i & ((1 << w) - 1)) != x[h]) {
-				h--;                    /* don't need to update q */
-				w -= l;
-			}
-		}
-	}
-
-	/* Return true (1) if we were given an incomplete table */
-	return y != 0 && g != 1;
+    return value;
 }
 
-
-
-
-static s32 inflateCodes(struct huft *tl, struct huft *td, s32 bl, s32 bd)
+/** Tops up the bit buffer to at least 25 bits. */
+static inline void rzipFillBits(RzipState *s)
 {
-    register u32 e;    /* table entry flag/number of extra bits */
-    u32 n;          /* length and index for copy */
-    u32 d;
-    u32 w;             /* current window position */
-    struct huft *t;    /* pointer to table entry */
-    u32 ml;        /* masks for bl and bd bits */
-    u32 md;
-    register u32 k;    /* number of bits in bit buffer */
-    register u32 b;    /* bit buffer */
-
-    /* make local copies of globals */
-    b = m_bitBuf;                       /* initialize bit buffer */
-    k = m_bitCount;
-    w = m_outPos;                       /* initialize window position */
-
-    /* inflate the coded data */
-    ml = m_maskBits[bl];
-    md = m_maskBits[bd];         /* precompute masks for speed */
-    
-    for (;;)                      /* do until end of block */
+    while (s->bitCount <= 24)
     {
-        NEEDBITS((u32)bl)
+        s->bits |= (u32) *s->in++ << s->bitCount;
+        s->bitCount += 8;
+    }
+}
 
-        if ((e = (t = tl + ((u32)b & ml))->e) > 16)
+/** Reads `count` bits (0 to 16). */
+static inline u32 rzipReadBits(RzipState *s, s32 count)
+{
+    u32 value;
+
+    rzipFillBits(s);
+    value = s->bits & ((1u << count) - 1);
+    s->bits >>= count;
+    s->bitCount -= count;
+
+    return value;
+}
+
+/**
+ * Builds the decoding tables for a Huffman code, given each symbol's code length (0 for
+ * symbols that aren't used). Returns false if the lengths don't make a valid code.
+ */
+static bool rzipBuildHuffman(RzipHuffman *h, const u8 *lengths, s32 count)
+{
+    s32 lengthCounts[RZIP_MAX_CODE_BITS + 1] = {0};
+    u32 nextCode[RZIP_MAX_CODE_BITS + 1];
+    u32 code = 0;
+    s32 index = 0;
+
+    for (s32 i = 0; i < (1 << RZIP_FAST_BITS); i++)
+    {
+        h->fast[i] = 0;
+    }
+
+    for (s32 i = 0; i < count; i++)
+    {
+        lengthCounts[lengths[i]]++;
+    }
+
+    lengthCounts[0] = 0;
+
+    // Canonical codes: the codes of each length follow on from the last code of the
+    // length before, doubled
+    for (s32 len = 1; len <= RZIP_MAX_CODE_BITS; len++)
+    {
+        nextCode[len] = code;
+        h->firstCode[len] = code;
+        h->firstIndex[len] = index;
+        code += lengthCounts[len];
+
+        if (lengthCounts[len] != 0 && code > (1u << len))
         {
-            do
-            {
-                DUMPBITS(t->b)
-                e -= 16;
-                NEEDBITS(e)
-
-            } while ((e = (t = t->v.t + ((u32)b & m_maskBits[e]))->e) > 16);
+            return false; // more codes of this length than there is room for
         }
 
-        DUMPBITS(t->b)
+        h->endCode[len] = code << (16 - len);
+        code <<= 1;
+        index += lengthCounts[len];
+    }
 
-        if (e == 16)                /* then it's a literal */
+    h->endCode[RZIP_MAX_CODE_BITS + 1] = 0x10000; // stops the search in rzipDecode
+
+    for (s32 symbol = 0; symbol < count; symbol++)
+    {
+        s32 len = lengths[symbol];
+
+        if (len == 0)
         {
-            if ((u32)(s32)&m_outBuf[w] >= (u32)(s32)&m_inBuf[m_inPos])
+            continue;
+        }
+
+        index = h->firstIndex[len] + (nextCode[len] - h->firstCode[len]);
+        h->symbols[index] = symbol;
+        h->lengths[index] = len;
+
+        if (len <= RZIP_FAST_BITS)
+        {
+            // Every RZIP_FAST_BITS-bit pattern that starts with this code
+            for (u32 j = rzipReverse16(nextCode[len]) >> (16 - len); j < (1 << RZIP_FAST_BITS); j += 1 << len)
             {
-                if ((u32)((s32)&m_outBuf[w] - (s32)&m_inBuf[m_inPos]) < WSIZE)
-                {
-                    while(1){}              
-                }
+                h->fast[j] = (len << 9) | symbol;
             }
-            
-            m_outBuf[w++] = (u8)t->v.n;
         }
-        else                        /* it's an EOB or a length */
+
+        nextCode[len]++;
+    }
+
+    return true;
+}
+
+/** Decodes the next symbol with the Huffman code `h`. Returns -1 for an invalid code. */
+static inline s32 rzipDecode(RzipState *s, const RzipHuffman *h)
+{
+    u32 entry;
+    u32 code;
+    s32 len;
+    s32 index;
+
+    rzipFillBits(s);
+    entry = h->fast[s->bits & RZIP_FAST_MASK];
+
+    if (entry != 0)
+    {
+        len = entry >> 9;
+        s->bits >>= len;
+        s->bitCount -= len;
+        return entry & 0x1FF;
+    }
+
+    // A longer code: find the length whose codes include the next 16 bits
+    code = rzipReverse16(s->bits & 0xFFFF);
+
+    for (len = RZIP_FAST_BITS + 1; code >= h->endCode[len]; len++)
+    {
+    }
+
+    if (len > RZIP_MAX_CODE_BITS)
+    {
+        return -1;
+    }
+
+    index = (code >> (16 - len)) - h->firstCode[len] + h->firstIndex[len];
+
+    if (index >= RZIP_MAX_SYMBOLS || h->lengths[index] != len)
+    {
+        return -1;
+    }
+
+    s->bits >>= len;
+    s->bitCount -= len;
+
+    return h->symbols[index];
+}
+
+/** Moves the output limit up to the input, when decompressing in place. */
+static inline void rzipUpdateLimit(RzipState *s, u8 *bufferEnd)
+{
+    if (s->inPlace)
+    {
+        // Bytes still in the bit buffer have been read, so the output can overwrite them
+        const u8 *unread = s->in;
+        s->outEnd = (unread < bufferEnd) ? (u8 *) unread : bufferEnd;
+    }
+}
+
+/** Decompresses a block of Huffman codes, up to its end symbol. */
+static bool rzipInflateCodes(RzipState *state, u8 *bufferEnd)
+{
+    // Work on a copy: the state can then live in registers, which it can't while the
+    // output bytes written through s.out might alias it
+    RzipState s = *state;
+    bool ok = false;
+
+    for (;;)
+    {
+        s32 symbol = rzipDecode(&s, &m_rzipLiterals);
+
+        rzipUpdateLimit(&s, bufferEnd);
+
+        if (symbol < 256)
         {
-            /* exit if end of block */
-            if (e == 15)
+            if (symbol < 0 || s.out >= s.outEnd)
             {
                 break;
             }
 
-            NEEDBITS(e)
-            /* get length of block to copy */
-            n = t->v.n + ((u32)b & m_maskBits[e]);
-            DUMPBITS(e)
+            *s.out++ = symbol;
+        }
+        else if (symbol == 256)
+        {
+            ok = true;
+            break;
+        }
+        else
+        {
+            s32 length;
+            u32 distance;
+            u8 *from;
 
-            /* decode distance of block to copy */
-            NEEDBITS((u32)bd)
+            symbol -= 257;
 
-            if ((e = (t = td + ((u32)b & md))->e) > 16)
+            if (symbol >= 29)
             {
-                do
-                {
-                    DUMPBITS(t->b)
-                    e -= 16;
-                    NEEDBITS(e)
-
-                } while ((e = (t = t->v.t + ((u32)b & m_maskBits[e]))->e) > 16);
+                break;
             }
 
-            DUMPBITS(t->b)
-            NEEDBITS(e)
-            d = w - t->v.n - ((u32)b & m_maskBits[e]);
-            DUMPBITS(e)
+            length = m_rzipLengthBase[symbol] + rzipReadBits(&s, m_rzipLengthExtra[symbol]);
+            symbol = rzipDecode(&s, &m_rzipDistances);
 
-            /* do the copy */
-            do
+            if (symbol < 0 || symbol >= 30)
             {
-                e = n;
-				n = 0;
-                
-                if (w - d >= e)         /* (this test assumes unsigned comparison) */
-                {
-                    if ((u32)(s32)&m_outBuf[w+e-1] >= (u32)(s32)&m_inBuf[m_inPos])
-                    {
-                        if ((u32)((s32)&m_outBuf[w+e-1] - (s32)&m_inBuf[m_inPos]) < WSIZE)
-                        {
-                            while(1){}              
-                        }
-                    }
+                break;
+            }
 
-                    memcpy(&m_outBuf[w], &m_outBuf[d], e);
-                    w += e;
-                    d += e;
-                }
-                else                      /* do it slow to avoid memcpy() overlap */
-                {
-                    do
-                    {
-                        if ((u32)(s32)&m_outBuf[w] >= (u32)(s32)&m_inBuf[m_inPos])
-                        {
-                            if ((u32)((s32)&m_outBuf[w] - (s32)&m_inBuf[m_inPos]) < WSIZE)
-                            {
-                                while(1){}              
-                            }
-                        }
+            distance = m_rzipDistBase[symbol] + rzipReadBits(&s, m_rzipDistExtra[symbol]);
+            rzipUpdateLimit(&s, bufferEnd);
 
-                        m_outBuf[w++] = m_outBuf[d++];
-                    } while (--e);
-                }
-            } while (n);
-        }
-    }
-
-    /* restore the globals from the locals */
-    m_outPos = w;                       /* restore global window pointer */
-    m_bitBuf = b;                       /* restore global bit buffer */
-    m_bitCount = k;
-
-    /* done */
-    return 0;
-}
-
-
-
-
-
-static s32 inflateStored(void)
-{
-	u32 n;           /* number of bytes in block */
-	u32 w;           /* current window position */
-	register u32 b;  /* bit buffer */
-	register u32 k;  /* number of bits in bit buffer */
-    
-	/* make local copies of globals */
-	b = m_bitBuf;                       /* initialize bit buffer */
-	k = m_bitCount;
-	w = m_outPos;                       /* initialize window position */
-
-	/* go to byte boundary */
-	n = k & 7;
-	DUMPBITS(n);
-
-	/* get the length and its complement */
-	NEEDBITS(16)
-	n = (b & 0xffff);
-	DUMPBITS(16)
-
-	NEEDBITS(16)
-    if (n != (unsigned)((~b) & 0xffff))
-    {
-        // removed
-    }
-	DUMPBITS(16)
-       
-	/* read and output the compressed data */
-	while (n--)
-    {
-		NEEDBITS(8)
-        
-        if ((u32)(s32)&m_outBuf[w] >= (u32)(s32)&m_inBuf[m_inPos])
-        {
-            if ((u32)((s32)&m_outBuf[w] - (s32)&m_inBuf[m_inPos]) < WSIZE)
+            if (distance > (u32) (s.out - s.outStart) || length > s.outEnd - s.out)
             {
-                while(1){}              
+                break;
+            }
+
+            // The copy can overlap what it writes (distance < length repeats a pattern),
+            // so it goes a byte at a time
+            from = s.out - distance;
+
+            while (length-- > 0)
+            {
+                *s.out++ = *from++;
             }
         }
-        
-        m_outBuf[w++] = (u8)b;
-        
-        DUMPBITS(8)
-	}
-
-	/* restore the globals from the locals */
-	m_outPos = w;                       /* restore global window pointer */
-	m_bitBuf = b;                       /* restore global bit buffer */
-	m_bitCount = k;
-
-	return 0;
-}
-
-
-
-
-static s32 inflateFixed(void)
-{
-	s32 i;                /* temporary variable */
-	struct huft *tl;      /* literal/length code table */
-	struct huft *td;      /* distance code table */
-	s32 bl;               /* lookup bits for tl */
-	s32 bd;               /* lookup bits for td */
-	u32 l[288];           /* length list for huftBuild */
-
-	/* set up literal table */
-	for (i = 0; i < 144; i++) {
-		l[i] = 8;
-	}
-	for (; i < 256; i++) {
-		l[i] = 9;
-	}
-	for (; i < 280; i++) {
-		l[i] = 7;
-	}
-	for (; i < 288; i++) {
-		l[i] = 8;
-	}
-
-	bl = 7;
-
-	huftBuild(l, 288, 257, m_lengthBase, m_lengthExtra, &tl, &bl);
-
-	/* set up distance table */
-	for (i = 0; i < 30; i++) {
-		l[i] = 5;
-	}
-
-	bd = 5;
-
-	/* decompress until an end-of-block code */
-	huftBuild(l, 30, 0, m_distBase, m_distExtra, &td, &bd);
-
-	inflateCodes(tl, td, bl, bd);
-
-	return 0;
-}
-
-
-static s32 inflateDynamic(void)
-{
-	u32 i;                /* temporary variables */
-	u32 j;
-	u32 l;           /* last length */
-	u32 m;           /* mask for bit lengths table */
-	u32 n;           /* number of lengths to get */
-	struct huft *tl;      /* literal/length code table */
-	struct huft *td;      /* distance code table */
-	s32 bl;               /* lookup bits for tl */
-	s32 bd;               /* lookup bits for td */
-	u32 nb;          /* number of bit length codes */
-	u32 nl;          /* number of literal/length codes */
-	u32 nd;          /* number of distance codes */
-	register u32 k;  /* number of bits in bit buffer */
-	register u32 b;  /* bit buffer */
-	u32 ll[286+30];  /* literal/length and distance code lengths */
-
-	/* make local bit buffer */
-	b = m_bitBuf;
-	k = m_bitCount;
-
-	/* read in table lengths */
-	NEEDBITS(5)
-	nl = 257 + (b & 0x1f);      /* number of literal/length codes */
-	DUMPBITS(5)
-	NEEDBITS(5)
-	nd = 1 + (b & 0x1f);        /* number of distance codes */
-	DUMPBITS(5)
-	NEEDBITS(4)
-	nb = 4 + (b & 0xf);         /* number of bit length codes */
-	DUMPBITS(4)
-
-	/* read in bit-length-code lengths */
-	for (j = 0; j < nb; j++)
-    {
-		NEEDBITS(3)
-		ll[m_lengthOrder[j]] = b & 7;
-		DUMPBITS(3)
-	}
-
-	for (; j < 19; j++)
-    {
-		ll[m_lengthOrder[j]] = 0;
-	}
-
-	/* build decoding table for trees--single level, 7 bit lookup */
-	bl = 7;
-
-	huftBuild(ll, 19, 19, NULL, NULL, &tl, &bl);
-
-	/* read in literal and distance code lengths */
-	n = nl + nd;
-	m = m_maskBits[bl];
-	i = l = 0;
-
-	while (i < n) {
-		NEEDBITS((u32)bl)
-		j = (td = tl + (b & m))->b;
-		DUMPBITS(j)
-
-		j = td->v.n;
-
-		if (j < 16) {                 /* length of code in bits (0..15) */
-			ll[i++] = l = j;          /* save last length in l */
-		} else if (j == 16) {         /* repeat last length 3 to 6 times */
-			NEEDBITS(2)
-			j = 3 + (b & 3);
-			DUMPBITS(2)
-
-			while (j--) {
-				ll[i++] = l;
-			}
-		} else if (j == 17) {         /* 3 to 10 zero length codes */
-			NEEDBITS(3)
-			j = 3 + (b & 7);
-			DUMPBITS(3)
-
-			while (j--) {
-				ll[i++] = 0;
-			}
-
-			l = 0;
-		} else {                      /* j == 18: 11 to 138 zero length codes */
-			NEEDBITS(7)
-			j = 11 + (b & 0x7f);
-			DUMPBITS(7)
-
-			while (j--) {
-				ll[i++] = 0;
-			}
-
-			l = 0;
-		}
-	}
-
-	/* restore the global bit buffer */
-	m_bitBuf = b;
-	m_bitCount = k;
-
-	/* build the decoding tables for literal/length and distance codes */
-	bl = m_lengthBits;
-
-	huftBuild(ll, nl, 257, m_lengthBase, m_lengthExtra, &tl, &bl);
-
-	bd = m_distBits;
-
-	huftBuild(ll + nl, nd, 0, m_distBase, m_distExtra, &td, &bd);
-
-	/* decompress until an end-of-block code */
-	inflateCodes(tl, td, bl, bd);
-
-	return 0;
-}
-
-
-static s32 inflateBlock(s32 *e)
-{
-	u32 t;                   /* block type */
-	register u32 b = m_bitBuf;  /* bit buffer */
-	register u32 k = m_bitCount;  /* number of bits in bit buffer */
-
-	/* make local bit buffer */
-	b = m_bitBuf;
-	k = m_bitCount;
-
-	/* read in last block bit */
-	NEEDBITS(1)
-	*e = b & 1;
-	DUMPBITS(1)
-
-	/* read in last block type */
-	NEEDBITS(2)
-	t = b & 3;
-	DUMPBITS(2)
-
-	/* restore the global bit buffer */
-	m_bitBuf = b;
-	m_bitCount = k;
-
-	/* inflate that block type */
-	if (t == 2)
-    {
-		return inflateDynamic();
-	}
-
-	if (t == 0)
-    {
-		return inflateStored();
-	}
-
-	if (t == 1)
-    {
-		return inflateFixed();
-	}
-
-	/* bad block type */
-	return 2;
-}
-
-
-
-static int inflate(void)
-{
-    /* last block flag */
-    int e;
-
-    /* result code */
-    int r;
-
-    /* maximum struct huft's malloc'ed */
-    unsigned h;
-
-    /* initialize window, bit buffer */
-    m_outPos = 0;
-    m_bitCount = 0;
-    m_bitBuf = 0;
-
-    /* decompress until the last block */
-    h = 0;
-
-    do
-    {
-        m_huftCount = 0;
-        
-        if ((r = inflateBlock(&e)) != 0)
-        {
-            return r;
-        }
-        
-        if (m_huftCount > h)
-        {
-            h = m_huftCount;
-        }
-    } while (!e);
-
-    /* Undo too much lookahead. The next read will be byte aligned so we
-    * can discard unused bits in the last meaningful byte.
-    */
-    while (m_bitCount >= 8)
-    {
-        m_bitCount -= 8;
-        m_inPos--;
     }
 
-    return 0;
+    *state = s;
+
+    return ok;
+}
+
+/** Copies a stored (uncompressed) block. */
+static bool rzipInflateStored(RzipState *s, u8 *bufferEnd)
+{
+    u32 length;
+    u32 check;
+
+    // Stored blocks start on a byte boundary
+    rzipReadBits(s, s->bitCount & 7);
+    length = rzipReadBits(s, 16);
+    check = rzipReadBits(s, 16);
+
+    if (length != (~check & 0xFFFF))
+    {
+        return false;
+    }
+
+    while (length-- > 0)
+    {
+        u8 byte = rzipReadBits(s, 8);
+
+        rzipUpdateLimit(s, bufferEnd);
+
+        if (s->out >= s->outEnd)
+        {
+            return false;
+        }
+
+        *s->out++ = byte;
+    }
+
+    return true;
+}
+
+/** Sets up the fixed Huffman codes from the RFC. */
+static void rzipBuildFixed(void)
+{
+    u8 lengths[RZIP_MAX_SYMBOLS];
+    s32 i;
+
+    for (i = 0; i < 144; i++)
+    {
+        lengths[i] = 8;
+    }
+    for (; i < 256; i++)
+    {
+        lengths[i] = 9;
+    }
+    for (; i < 280; i++)
+    {
+        lengths[i] = 7;
+    }
+    for (; i < 288; i++)
+    {
+        lengths[i] = 8;
+    }
+
+    rzipBuildHuffman(&m_rzipLiterals, lengths, 288);
+
+    for (i = 0; i < 30; i++)
+    {
+        lengths[i] = 5;
+    }
+
+    rzipBuildHuffman(&m_rzipDistances, lengths, 30);
+}
+
+/** Reads the Huffman codes at the start of a dynamic block. */
+static bool rzipBuildDynamic(RzipState *s)
+{
+    u8 lengths[286 + 30];
+    u8 lengthLengths[19] = {0};
+    s32 literalCount = rzipReadBits(s, 5) + 257;
+    s32 distanceCount = rzipReadBits(s, 5) + 1;
+    s32 lengthLengthCount = rzipReadBits(s, 4) + 4;
+    s32 total = literalCount + distanceCount;
+    s32 i;
+
+    // The code lengths are themselves Huffman coded, with this code
+    for (i = 0; i < lengthLengthCount; i++)
+    {
+        lengthLengths[m_rzipLengthOrder[i]] = rzipReadBits(s, 3);
+    }
+
+    if (!rzipBuildHuffman(&m_rzipLiterals, lengthLengths, 19))
+    {
+        return false;
+    }
+
+    i = 0;
+
+    while (i < total)
+    {
+        s32 symbol = rzipDecode(s, &m_rzipLiterals);
+        s32 repeat;
+        u8 value;
+
+        if (symbol < 0)
+        {
+            return false;
+        }
+
+        if (symbol < 16)
+        {
+            lengths[i++] = symbol;
+            continue;
+        }
+
+        if (symbol == 16)
+        {
+            // Repeat the previous length 3 to 6 times
+            if (i == 0)
+            {
+                return false;
+            }
+
+            value = lengths[i - 1];
+            repeat = 3 + rzipReadBits(s, 2);
+        }
+        else
+        {
+            // 3 to 10, or 11 to 138, zero lengths
+            value = 0;
+            repeat = (symbol == 17) ? 3 + rzipReadBits(s, 3) : 11 + rzipReadBits(s, 7);
+        }
+
+        if (i + repeat > total)
+        {
+            return false;
+        }
+
+        while (repeat-- > 0)
+        {
+            lengths[i++] = value;
+        }
+    }
+
+    return rzipBuildHuffman(&m_rzipLiterals, lengths, literalCount)
+        && rzipBuildHuffman(&m_rzipDistances, lengths + literalCount, distanceCount);
 }
 
 /**
- * Decompresses a 1172 file from `src` into `dst` and returns the decompressed size.
- * `huftBuf` is scratch space for the Huffman tables, about 8 KB.
+ * Decompresses 1172 data at `src` into `dst`, which has room for `dstSize` bytes, and
+ * returns the decompressed size. Returns 0 if the data is corrupt or doesn't fit.
  *
- * The two magic bytes are not checked.
+ * The compressed data can sit at the end of the output buffer (decompressing in place);
+ * decompression then fails if the output would catch up with the data still to be read.
  */
-u32 rzipInflate(u8 *src, u8 *dst, struct huft *huftBuf)
+u32 rzipInflate(const u8 *src, u8 *dst, u32 dstSize)
 {
-    m_inBuf = src + 2;
-    m_outBuf = dst;
-    m_huftBuf = huftBuf;
-    m_outPos = 0;
-    m_inPos = 0;
+    RzipState s;
+    u8 *bufferEnd = dst + dstSize;
+    bool last;
 
-    inflate();
+    s.in = src + 2; // skip the magic bytes
+    s.bits = 0;
+    s.bitCount = 0;
+    s.outStart = dst;
+    s.out = dst;
+    s.outEnd = bufferEnd;
+    s.inPlace = src >= dst && src < bufferEnd;
 
-    return m_outPos;
+    do
+    {
+        u32 type;
+
+        last = rzipReadBits(&s, 1);
+        type = rzipReadBits(&s, 2);
+
+        if (type == 0)
+        {
+            if (!rzipInflateStored(&s, bufferEnd))
+            {
+                return 0;
+            }
+        }
+        else if (type == 1 || type == 2)
+        {
+            if (type == 1)
+            {
+                rzipBuildFixed();
+            }
+            else if (!rzipBuildDynamic(&s))
+            {
+                return 0;
+            }
+
+            if (!rzipInflateCodes(&s, bufferEnd))
+            {
+                return 0;
+            }
+        }
+        else
+        {
+            return 0;
+        }
+    } while (!last);
+
+    // Give back the whole bytes the bit buffer read ahead
+    m_rzipInputEnd = s.in - s.bitCount / 8;
+
+    return s.out - dst;
 }
 
+#ifndef RZIP_BOOT
 /** Returns the address just past the compressed data that the last rzipInflate read. */
-u8 *rzipGetInputEnd(void)
+const u8 *rzipGetInputEnd(void)
 {
-    return m_inBuf + m_inPos;
+    return m_rzipInputEnd;
 }
+#endif

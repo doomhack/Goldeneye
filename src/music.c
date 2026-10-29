@@ -1,9 +1,9 @@
 #include <ultra64.h>
 #include <PR/libaudio.h>
-#include "inflate/inflate.h"
 #include "audi.h"
 #include <bondconstants.h>
 #include "game/asset/rzip.h"
+#include "dbgscreen.h"
 #include "game/gfx/dyn.h"
 #include "memp.h"
 #include "music.h"
@@ -567,9 +567,6 @@ extern u32 _instrumentstblSegmentRomStart NO_SDATA;
 extern u32 _instrumentsctlSegmentRomStart NO_SDATA;
 extern u32 _musicsampletblSegmentRomStart NO_SDATA;
 
-static u8 sMusicHuftBuffer[0x2100];
-#    define MUSIC_HLIST ((struct huft *)sMusicHuftBuffer)
-
 /**
  * Patch the file so that offsets are pointers.
  * This is a copy of alSeqFileNew from n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\bnkf.c
@@ -788,7 +785,10 @@ void musicTrack1Play(s32 track)
     compressed = seqData + bufferSize - trackSizeBytes;
 
     romCopy(compressed, romAddress, trackSizeBytes);
-    rzipInflate(compressed, seqData, MUSIC_HLIST);
+    if (rzipInflate(compressed, seqData, bufferSize) == 0)
+    {
+        dbgFatal("music: bad compressed track", (uintptr_t) romAddress);
+    }
 
     alCSeqNew(&g_musicXTrack1Seq, g_musicXTrack1SeqData);
     alCSPSetSeq(g_musicXTrack1SeqPlayer, &g_musicXTrack1Seq);
@@ -947,7 +947,10 @@ void musicTrack2Play(s32 track)
     compressed = seqData + bufferSize - trackSizeBytes;
 
     romCopy(compressed, romAddress, trackSizeBytes);
-    rzipInflate(compressed, seqData, MUSIC_HLIST);
+    if (rzipInflate(compressed, seqData, bufferSize) == 0)
+    {
+        dbgFatal("music: bad compressed track", (uintptr_t) romAddress);
+    }
 
     alCSeqNew(&g_musicXTrack2Seq, g_musicXTrack2SeqData);
     alCSPSetSeq(g_musicXTrack2SeqPlayer, &g_musicXTrack2Seq);
@@ -1074,7 +1077,10 @@ void musicTrack3Play(s32 track)
     compressed = seqData + bufferSize - trackSizeBytes;
 
     romCopy(compressed, romAddress, trackSizeBytes);
-    rzipInflate(compressed, seqData, MUSIC_HLIST);
+    if (rzipInflate(compressed, seqData, bufferSize) == 0)
+    {
+        dbgFatal("music: bad compressed track", (uintptr_t) romAddress);
+    }
 
     alCSeqNew(&g_musicXTrack3Seq, g_musicXTrack3SeqData);
     alCSPSetSeq(g_musicXTrack3SeqPlayer, &g_musicXTrack3Seq);

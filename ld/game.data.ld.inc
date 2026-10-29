@@ -53,7 +53,7 @@
       build/OUTCODE/src/game/world/bgfog.o (.data);
       build/OUTCODE/src/game/world/lightfixture.o (.data);
       build/OUTCODE/src/game/world/roommtx.o (.data);
-      build/OUTCODE/src/game/asset/fileload.o (.data);
+      build/OUTCODE/src/game/asset/asset.o (.data);
       build/OUTCODE/src/game/gfx/dyn.o (.data);
       build/OUTCODE/src/game/level/lv.o (.data);
       build/OUTCODE/src/game/replay/ramromreplay.o (.data);

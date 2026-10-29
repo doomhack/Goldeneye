@@ -4,7 +4,7 @@
 #include <PR/os_internal.h>
 #include <PR/rcp.h>
 #include <bondgame.h>
-#include "inflate/inflate.h"
+#include "game/asset/rzip.h"
 #include "sched.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "init.h"
@@ -35,7 +35,6 @@
 
 /* Boot-time scratch inside the first 4MB, reused by the heap afterwards (see ge007.ld) */
 #define RZIPLOADADDR 0x80300000
-#define RZIPBUFADDR 0x80340000
 
 
 OSThread rmonThread;
@@ -86,7 +85,13 @@ void init(void)
         datazipram[j] = dataziprom[j];
     }
 
-    decompress_entry(datazipram, csegmentSegmentVaddrStart, (struct huft *) RZIPBUFADDR);
+    if (bootInflate(datazipram, csegmentSegmentVaddrStart, (u8 *) &_csegmentSegmentEnd - csegmentSegmentVaddrStart) == 0)
+    {
+        // The ROM is corrupt, and nothing that could show it is loaded yet
+        while (1)
+        {
+        }
+    }
 
     // Load all game code into RAM at its link address. It used to be paged in
     // 8KB at a time through the TLB; with the Expansion Pak it simply stays resident.

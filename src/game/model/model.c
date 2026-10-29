@@ -16,7 +16,7 @@
 #include <ultra64.h>
 #include <memp.h>
 #include "game/model/model.h"
-#include "../rmon.h" /*<PR/rmon.h>*/
+#include "rmon.h"
 #include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/model/chrobjdata.h"

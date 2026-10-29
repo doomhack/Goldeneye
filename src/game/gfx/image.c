@@ -21,6 +21,7 @@
 #include "rom.h"
 #include "game/asset/rzip.h"
 #include "boss.h"
+#include "dbgscreen.h"
 #include <str.h>
 #include <memp.h>
 #include "game/player/player.h"
@@ -161,8 +162,7 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, struc
     u8 *start;
     s32 numcolours;
     s32 j;
-    u8 scratch2[0x800];
-    u8 scratch[0x2100];
+    u8 scratch2[0x2000];
     u16 palette[0x100];
 
     totalbytesout = 0;
@@ -229,9 +229,13 @@ s32 texInflateZlib(u8 *src, u8 *dst, s32 explicitLods, s32 forcenumimages, struc
             return j * 0;
         }
 
-        rzipInflate(g_TexBitsPos, scratch2, (struct huft *)scratch);
+        if (rzipInflate(g_TexBitsPos, scratch2, sizeof(scratch2)) == 0)
+        {
+            dbgFatal("tex: bad compressed image", (uintptr_t) g_TexBitsPos);
+        }
+
         imagebytesout = texAlignIndices(scratch2, width, height, format, &dst[totalbytesout]);
-        texBitsInit(rzipGetInputEnd());
+        texBitsInit((u8 *) rzipGetInputEnd());
 
         if ((explicitLods == 1) && (forcenumimages > 0))
         {

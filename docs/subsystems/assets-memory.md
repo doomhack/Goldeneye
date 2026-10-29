@@ -8,9 +8,8 @@ else that loads data (levels, models, text, textures, music) goes through these.
 | `src/memp.c` | The pool allocator: almost all the game's memory comes from it |
 | `src/mema.c` | A small heap with real `free`, carved out of the stage pool, used for room geometry |
 | `src/rom.c` | Copying from cartridge ROM to RAM by DMA (`romCopy`) |
-| `src/game/asset/fileload.c` | The file table, and loading files by name into a pool or a buffer |
-| `src/game/asset/rzip.c` | Decompressing Rare's "1172" format (deflate) |
-| `src/inflate/inflate.c` | The boot code's own copy of inflate, which unpacks the game code at startup |
+| `src/game/asset/asset.c` | The file table, and loading files by name into a pool or a buffer |
+| `src/game/asset/rzip.c` | Decompressing Rare's "1172" format (deflate). Built twice: once for the game, and once into the boot segment to unpack the game code at startup |
 
 ## Memory pools (memp)
 
@@ -79,43 +78,62 @@ that isn't, and a partial cache line at the end, go through a small bounce buffe
 a DMA into a cache line the CPU is also using gets overwritten on real hardware (but not in
 emulators). `romCopyUnaligned` copies from an odd ROM address.
 
-## Files
+## Files (assets)
 
 Every file the game loads by name has an entry in `g_FileTable` (generated into
 `assets/obseg/file_resource_table.inc.c`): its name and ROM address. A file's compressed
-size is the distance to the next file in the ROM. `fileGetIndex` looks a name up.
+size is the distance to the next file in the ROM. `assetFind` looks a name up; a name
+that isn't in the table stops the game with a fatal error.
 
-Most files are compressed. `fileLoadByNameToPool(name, mode, 0, pool)` loads one into a new
-pool allocation:
+Most files are compressed. `assetLoad(name, pool)` loads one into a new pool allocation:
 
 1. The decompressed size isn't known the first time, so it allocates all the free space in
    the pool.
 2. It copies the compressed data to the *end* of that space and decompresses it to the
-   start. The output can catch up with the input; if it does, rzip hangs on purpose.
-3. With `FILELOAD_TRIM` it gives back the space it didn't use. With
-   `FILELOAD_KEEP_SPARE` it leaves the allocation as it is, so the caller can unpack the
-   file further in place and then call `fileSetSize` (the model loader does this).
-4. It remembers the decompressed size (`fileGetLoadedSize`), so later loads allocate just
-   that. Resetting the stage pool forgets all the sizes.
+   start (`rzipInflate` stops with an error, rather than corrupt the data, if the output
+   would catch up with the input still to be read).
+3. It gives back the space it didn't use, and remembers the decompressed size
+   (`assetGetSize`), so later loads allocate just that. When the stage pool is emptied,
+   boss.c calls `assetForgetSizes`.
 
-`fileLoadByNameToAddr` does the same into a buffer the caller gives. `fileLoadPartByName`
-reads a range of a file without decompressing; the level geometry files are read this way
-because each room in them is compressed on its own.
+`assetLoadUntrimmed` leaves the allocation as it is, so the caller can unpack the file
+further in place and then call `assetSetSize` (the model loader does this).
+`assetLoadInto` loads into a buffer the caller gives. `assetLoadPart` reads a range of a
+file without decompressing; the level geometry files are read this way because each room
+in them is compressed on its own.
+
+A file that is missing, doesn't fit its buffer or is corrupt stops the game with a
+`FATAL ERROR` screen naming the problem. (Rare's loader returned index 0 for a missing
+file, which then asked the development kit's host PC for it, and didn't check sizes.)
 
 ### The 1172 format
 
-A compressed file is the bytes `0x11 0x72` followed by a raw deflate stream: a gzip file
-with its 10-byte header and 8-byte trailer cut off (`tools/1172compress.sh`). `rzipInflate`
-is gzip 1.2.4's inflate, writing straight into the output buffer instead of a window. It
-needs about 8 KB of scratch space for its Huffman tables, which the caller provides.
-Textures and music are compressed the same way and call `rzipInflate` directly.
+A compressed file is the bytes `0x11 0x72` followed by a raw deflate stream (RFC 1951): a
+gzip file with its 10-byte header and 8-byte trailer cut off (`tools/1172compress.sh`).
+
+`rzipInflate(src, dst, dstSize)` decompresses one and returns the decompressed size, or 0
+if the data is corrupt or doesn't fit in `dstSize` bytes. It writes straight into the
+output buffer (deflate's 32 KB "window" is just the output so far). Huffman codes up to 9
+bits long are decoded with one table lookup, longer ones with the canonical code ranges.
+It needs no scratch memory from the caller. Callers turn a 0 into a fatal error: the asset
+loader, room geometry (`bgDecompress`), compressed textures (image.c) and music (music.c).
+
+The source is built twice. The boot code links its own copy (`rzipboot.o`, built with
+`RZIP_BOOT`, which names the function `bootInflate`) into the boot segment, because it has
+to unpack the game code before any of it is in memory. That copy can't call into the game.
+
+rzip keeps its Huffman tables in statics, so only one thread may decompress at a time. The
+main thread does all of it (files, textures, rooms and music).
+
+(Rare had two copies of gzip 1.2.4's inflate, one for boot and one for the game, which
+needed an 8 KB scratch buffer from the caller, never checked the output size, and hung on
+corrupt data.)
 
 ## Traps
 
-* **`fileload` vs `save/file.c`.** The save code also uses a `file` prefix, for save
-  files. That gets renamed with the save subsystem.
-* **`fileGetIndex` and missing files.** A name that isn't in the table gives index 0.
-  (Rare's version then asked the development kit's host PC for the file; that code is gone.)
-* **Matching leftovers.** Several functions in fileload.c still contain statements that
-  only existed to make the decomp compile to the original bytes. They go when the asset
-  loading is rewritten.
+* **`asset*` vs `file*`.** The asset loader used to be `fileload.c` with a `file*` prefix,
+  which clashed with the save code's `file*` (save/file.c). Asset loading is `asset*` now.
+* **In-place decompression.** A file loaded into a buffer only just big enough can fail
+  where one with room to spare works, if the end of the file compresses very well: the
+  output must not overtake the compressed data still to be read. The loader always has
+  room the first time (it takes the whole pool), and later loads use the recorded size.

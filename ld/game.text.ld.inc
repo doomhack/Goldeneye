@@ -54,7 +54,7 @@
       build/OUTCODE/src/game/world/bgfog.o (.text);
       build/OUTCODE/src/game/world/lightfixture.o (.text);
       build/OUTCODE/src/game/world/roommtx.o (.text);
-      build/OUTCODE/src/game/asset/fileload.o (.text);
+      build/OUTCODE/src/game/asset/asset.o (.text);
       build/OUTCODE/src/game/gfx/dyn.o (.text);
       build/OUTCODE/src/game/level/lv.o (.text);
       build/OUTCODE/src/game/replay/ramromreplay.o (.text);

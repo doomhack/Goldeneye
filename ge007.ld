@@ -70,9 +70,9 @@ SECTIONS
    /* Boot-time scratch: init() copies the compressed data and inflate here (see init.c) */
    BEGIN_SEG(inflate, _cdataSegmentRomEnd, 0x80300000)
    {
-      build/OUTCODE/src/inflate/inflate.o (.text);
-      build/OUTCODE/src/inflate/inflate.o (.data);
-      build/OUTCODE/src/inflate/inflate.o (.rodata);
+      build/OUTCODE/src/game/asset/rzipboot.o (.text);
+      build/OUTCODE/src/game/asset/rzipboot.o (.data);
+      build/OUTCODE/src/game/asset/rzipboot.o (.rodata);
    }
    END_SEG(inflate)
 

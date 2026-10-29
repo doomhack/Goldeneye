@@ -15,7 +15,6 @@ dirs=(
     rsp
     src
     src/game
-    src/inflate
 	src/libultra
     src/libultra/audio
     src/libultra/gt
