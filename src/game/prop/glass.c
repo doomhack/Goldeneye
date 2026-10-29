@@ -8,6 +8,7 @@
 #include <memp.h>
 #include <limits.h>
 #include <music.h>
+#include "game/audio/sfxvolume.h"
 #include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
@@ -93,7 +94,7 @@ void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *za
     basepos.y = pos->y + ((xmin + half) * xnorm.y) + ((ymin + half) * ynorm.y);
     basepos.z = pos->z + ((xmin + half) * xnorm.z) + ((ymin + half) * ynorm.z);
 
-    chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, 0x47, 0), pos);
+    sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, 0x47, 0), pos);
 
     xcount = (s32)(width / step);
     ycount = (s32)(height / step);

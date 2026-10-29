@@ -7,6 +7,7 @@
 #include <ultra64.h>
 #include <assert.h>
 #include <bondaicommands.h>
+#include "game/audio/sfxvolume.h"
 #include "game/world/bg.h"
 #include "game/chr/chr.h"
 #include "game/chr/chraction.h"
@@ -2140,7 +2141,7 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
     ALSoundState **sound_state;
     u32 sfx_index;
 
-    volume = sndVolumeForPosDefault(&prop->pos);
+    volume = sfxVolumeAt(&prop->pos);
 
     rnd1 = randomGetNext();
     rnd2 = randomGetNext();
@@ -2215,7 +2216,7 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
 
         if (*sound_state != NULL)
         {
-            chrobjSndCreatePostEventDefault(*sound_state, &prop->pos);
+            sfxSetVolumeAt(*sound_state, &prop->pos);
         }
     }
 }
@@ -2235,7 +2236,7 @@ void shotPlayGlassSound(coord3d* pos)
 
         if (*sound != NULL)
         {
-            chrobjSndCreatePostEventDefault(*sound, pos);
+            sfxSetVolumeAt(*sound, pos);
         }
     }
 }
@@ -2272,7 +2273,7 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
 
         if (*sound_state != NULL)
         {
-            chrobjSndCreatePostEventDefault(*sound_state, pos);
+            sfxSetVolumeAt(*sound_state, pos);
         }
     }
 
@@ -2287,7 +2288,7 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
 
             if (*sound_state != NULL)
             {
-                chrobjSndCreatePostEventDefault(*sound_state, pos);
+                sfxSetVolumeAt(*sound_state, pos);
             }
         }
     }

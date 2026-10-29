@@ -4791,7 +4791,7 @@ _AI_CMD(
         {
             if (obj->prop->type == PROP_TYPE_DOOR)
             {
-                doorActivateWrapper(obj->prop);
+                doorToggle(obj->prop);
             }
             else if (obj->prop->type == PROP_TYPE_OBJ || obj->prop->type == PROP_TYPE_WEAPON)
             {
@@ -5170,7 +5170,7 @@ _AI_CMD(
         DoorRecord *obj = objFindByTagId(ai->val[0]);
         if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR)
         {
-            doorActivate(obj, DOORSTATE_OPENING);
+            doorMove(obj, DOORSTATE_OPENING);
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
@@ -5205,7 +5205,7 @@ _AI_CMD(
         DoorRecord *obj = objFindByTagId(ai->val[0]);
         if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR)
         {
-            doorActivate(obj, DOORSTATE_CLOSING);
+            doorMove(obj, DOORSTATE_CLOSING);
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
@@ -9570,7 +9570,7 @@ _AI_CMD(
         if (ai->slotID >= 0 && ai->slotID < 8)
         {
             sfx_related[ai->slotID].sfxID = sfxID;
-            sfx_related[ai->slotID].Volume = sndVolumeForDistanceDefault(vol);
+            sfx_related[ai->slotID].Volume = sfxVolumeForDistance(vol);
             sfx_related[ai->slotID].pos = NULL;
             sfx_related[ai->slotID].Obj = NULL;
             if (sfxID == 0)
@@ -10642,13 +10642,7 @@ _AI_CMD(
         DoorRecord *door = objFindByTagId(ai->val[0]);
         if (door && door->prop)
         {
-            door->speed = 0;
-            door->openPosition = door->maxFrac;
-            door->openedTime = g_GlobalTimer;
-            door->openstate = DOORSTATE_STATIONARY;
-            sub_GAME_7F052B00(door);
-            doorActivatePortal(door);
-            sub_GAME_7F053B10(door);
+            doorOpenInstantly(door);
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;

@@ -2410,11 +2410,11 @@ typedef union
         u32                autoCloseFrames;
 
         /**
-         * Sound effect played when the door is opened.
-         * (Actually sets the initial open, continued opening, and final open sounds).
+         * Which sounds the door makes (enum DOOR_OPEN_SOUND): as it starts to move, while it
+         * moves, and when it stops.
          * Offset 0xa4.
          */
-        u32                doorOpenSound;
+        u32                soundType;
 
         coord3d            slideDir; /* sliding doors move openPosition along this */
 
@@ -2470,27 +2470,21 @@ typedef union
         s32                portalNumber;
 
         /**
-         * Unknown. Changes at runtime. Appears to be set to a pointer
-         * while the door is moving, then cleared when the door is stationary.
-         * If you reset this to 0 (NULL pointer), then the door opening
-         * sound never stops playing.
+         * The looping sounds of a moving door. A door starts one when it starts to move, in
+         * whichever slot is free, and they are stopped when it stops. The sound system clears a
+         * slot when its sound ends.
          */
-        ALSoundState *openSoundState;
-
-        ALSoundState *closeSoundState;
+        ALSoundState      *loopSounds[2];
 
         /**
-         * Copy of global timer value.
-         *
-         * For each sibling, the original frac is backed up into the sibling's
-         * lastcalc60 field. The desired frac is then calculated and set in the
-         * sibling's frac property. Then collision checks are done, and the original
-         * frac is restored if any sibling is blocked.
+         * The g_GlobalTimer tick the door last moved on, so it moves once a tick even when
+         * objTick runs for each player. While the door and its linked doors move, it briefly
+         * holds the position each started from, to go back to if one of them is blocked.
          * Offset 0xfc.
          */
         union {
-            s32 lastcalc60i;
-            f32 lastcalc60f;
+            s32 lastUpdateTime;
+            f32 positionBeforeMove;
         };
     } DoorRecord;
 

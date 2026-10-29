@@ -7,7 +7,8 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | --- | --- |
 | `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects and doors at run time: movement and projectiles, the per-frame tick, drawing, damage, pickups, weapon and hat slots, doors |
+| `src/game/prop/propobj.c` | Objects at run time: movement and projectiles, the per-frame tick, drawing, damage, pickups, weapon and hat slots |
+| `src/game/prop/door.c` | Doors: moving, collision, portals, sounds, and the player using them |
 | `src/game/prop/monitor.c` | Monitor screens: running their scripts and drawing them |
 | `src/game/prop/monitorscripts.c` | The monitor scripts |
 | `src/game/prop/alarm.c` | The alarm, the gas leak and the countdown timer |
@@ -135,13 +136,31 @@ Guards' held guns are set up by `chrSetupHeldWeapon` and `chrGiveWeaponEx`.
 
 ## Doors
 
-A `DoorRecord` has a state (`DOORSTATE_STATIONARY`, `OPENING`, `CLOSING`, `WAITING`) and an
-open fraction (`openPosition`). `doorsUpdatePositions` moves a door and the doors linked to
-it, and `doorUpdateDisplacement` turns the fraction into a slide or a swing. Linked doors
-(double doors, the Dam gates) move together, and `DOORSTATE_WAITING` waits for a sibling to
-close. Opening a door turns on the room portal behind it
-(`doorActivatePortal`), so the room is drawn; closing it turns it off again.
-`doorsChooseSwingDirection` makes doors that swing both ways open away from the player.
+Doors are in `door.c`. A `DoorRecord` has a state (`DOORSTATE_STATIONARY`, `OPENING`,
+`CLOSING`, `WAITING`) and how far open it is (`openPosition`, from 0 to `maxFrac`: a
+distance for a sliding door, an angle in degrees for a swinging one). `doorGetMtx` turns
+that into a slide or a swing about the hinge.
+
+`doorMove` opens or closes a door and the doors linked to it (double doors, the Dam gates),
+which move together. `doorToggle` is someone using it. `doorTick`, from `objTick`, closes a
+door that has been open for its `autoCloseFrames`, then moves it and its linked doors a
+tick; if any of them would hit something, they all go back. An airlock door
+(`PROPFLAG2_DOOR_AIRLOCK`) closes the linked doors first and waits (`DOORSTATE_WAITING`)
+until they have shut.
+
+Each door keeps a collision outline from its model's bounding box, which it loses once it
+is open past `perimFrac`. Doors that clip to their bounding box (`DOORFLAG_CLIP_TO_BBOX`)
+also have their model cut back as they slide into the wall. Opening a door turns on the
+room portal behind it (`doorOpenPortal`), so the rooms behind are drawn; closing it turns
+it off again.
+
+The player uses a door when near it and looking at it (`doorTestForInteract`, then
+`doorInteract`), unless it is locked: `keyflags` names the keys that open it, and a locked
+door can be set to open from one side. `doorChooseSwingDirection` makes doors that swing
+both ways open away from whoever opens them.
+
+A door's `soundType` picks its sounds from a table: one as it starts to move, a loop while
+it moves, and one when it stops. Hinged types play only the opening and the shutting sound.
 
 ## Monitors
 

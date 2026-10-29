@@ -26,6 +26,7 @@
 #include <music.h>
 #include <random.h>
 #include <snd.h>
+#include "game/audio/sfxvolume.h"
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
 #include "game/player/bondview.h"
@@ -51,6 +52,7 @@
 #include "game/audio/levelmusic.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
+#include "game/prop/door.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
@@ -611,7 +613,7 @@ bool playerInteract(void)
                 tickop = propobjInteract(prop);
                 break;
             case PROP_TYPE_DOOR:
-                tickop = propdoorInteract(prop);
+                tickop = doorInteract(prop);
                 break;
             case PROP_TYPE_CHR:
             case PROP_TYPE_PLAYER:
@@ -794,7 +796,7 @@ void propsTickOnce(void)
 
                     if (!skip_regen_sfx)
                     {
-                        chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, OBJ_REGEN_SFX, NULL), &prop->pos);
+                        sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, OBJ_REGEN_SFX, NULL), &prop->pos);
                     }
 
                 }
@@ -1989,7 +1991,7 @@ void switchActivateLinkedDoors(PropRecord *prop)
             {
                 if (link->second != NULL)
                 {
-                    doorActivateWrapper(link->second);
+                    doorToggle(link->second);
                 }
             }
         }

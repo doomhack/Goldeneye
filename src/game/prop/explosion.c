@@ -15,6 +15,7 @@
 #include <bondconstants.h>
 #include <bondtypes.h>
 #include <limits.h>
+#include "game/audio/sfxvolume.h"
 #include "game/world/bg.h"
 #include "game/player/bondview.h"
 #include "game/menu/cheat.h"
@@ -268,7 +269,7 @@ explosionCreate(PropRecord *source, coord3d *target_pos, StandTile *target_stan,
 
         if ((s32) type->sndID > 0)
         {
-            chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, (s16) type->sndID, NULL), target_pos);
+            sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, (s16) type->sndID, NULL), target_pos);
         }
 
         if (prop != NULL)

@@ -49,7 +49,7 @@ All the game's own code is C. What is still assembly is code that cannot be C:
 | `player/` | Bond: the player list (`player.c`), camera helpers and player globals (`bondview.c`), movement, collision, camera modes, the watch, HUD and health (`bondview2.c`), level start (`bondview_r.c`), head bob (`bondhead.c`); inventory, guns and firing (`bondinv.c`, `gun.c`, `gunfire.c`). See [subsystems/player.md](subsystems/player.md) and [subsystems/weapons.md](subsystems/weapons.md) | `player.c`, `bondview.c`, `bondview2.c`, `bondinv.c`, `gun.c`, `gunfire.c` |
 | `hud/` | On-screen overlays: radar (`radar.c`), health and armour bars and the watch screen shapes (`healthbar.c`), the death blood effect (`blood.c`), bullet sparks (`sparks.c`). See [subsystems/hud.md](subsystems/hud.md) | `radar.c`, `healthbar.c`, `blood.c`, `sparks.c` |
 | `chr/` | Guards and other characters: slots and the per-frame tick (`chr.c`), actions such as patrolling, attacking and dying (`chraction.c`), the AI script interpreter (`chrai.c`), the global AI scripts (`chraidata.c`), bodies and heads (`body.c`). See [subsystems/guards.md](subsystems/guards.md) | `chr.c`, `chraction.c`, `chrai.c`, `body.c` |
-| `prop/` | Props: the prop pool and per-frame tick and draw loops, level setup, doors, weapons on the floor, vehicles, monitor screens, explosions, glass, the alarm, gas and countdown timer. See [subsystems/props.md](subsystems/props.md) | `prop.c`, `setup.c`, `propobj.c`, `monitor.c`, `alarm.c`, `explosion.c`, `glass.c` |
+| `prop/` | Props: the prop pool and per-frame tick and draw loops, level setup, doors, weapons on the floor, vehicles, monitor screens, explosions, glass, the alarm, gas and countdown timer. See [subsystems/props.md](subsystems/props.md) | `prop.c`, `setup.c`, `propobj.c`, `door.c`, `monitor.c`, `alarm.c`, `explosion.c`, `glass.c` |
 | `nav/` | Where things can stand and walk: the floor tiles (`stan.c`), the collision tests that walk them (`stanwalk.c`), the floor-plane geometry under both (`geometry.c`), and the waypoint graph guards path along (`waypoint.c`). See [subsystems/nav.md](subsystems/nav.md) | `stan.c`, `stanwalk.c`, `geometry.c`, `waypoint.c` |
 | `mission/` | Objectives and briefings: the lists built from the setup file, objective status and the status messages. See [subsystems/mission.md](subsystems/mission.md) | `objective.c` |
 | `world/` | The level geometry: rooms and portals, visibility and drawing the rooms (`bg.c`), the room matrix cache (`roommtx.c`), fog (`bgfog.c`), sky (`sky.c`), water (`water.c`), light fixtures (`lightfixture.c`), what each kind of surface does when shot (`surface.c`). See [subsystems/world.md](subsystems/world.md) | `bg.c`, `bgfog.c`, `sky.c` |
@@ -58,7 +58,7 @@ All the game's own code is C. What is still assembly is code that cannot be C:
 | `text/` | Strings and the language banks (`language.c`), fonts and drawing text (`text.c`). See [subsystems/text.md](subsystems/text.md) | `language.c`, `text.c` |
 | `math/` | Matrices, quaternions, trig, interpolation, gravity. See [subsystems/math.md](subsystems/math.md) | `matrix.c`, `quaternion.c`, `trig.c` |
 | `asset/` | Loading files from ROM and decompressing them. See [subsystems/assets-memory.md](subsystems/assets-memory.md) | `asset.c`, `rzip.c` |
-| `audio/` | Which music plays in a level and when it changes. See [subsystems/audio.md](subsystems/audio.md) | `levelmusic.c` |
+| `audio/` | Which music plays in a level and when it changes, and the volume of sounds heard from somewhere in the level. See [subsystems/audio.md](subsystems/audio.md) | `levelmusic.c`, `sfxvolume.c` |
 | `replay/` | Rare's demo playback, and the test hooks the replay tests use | `ramromreplay.c`, `testhooks.c` |
 
 Each layer mostly calls the ones below it: menus and the level loop drive the player, guards
@@ -80,3 +80,4 @@ that subsystem's main file.
 | `player/bondview.c` | The camera helpers (`cam*`) and the player globals, not Bond's view as a whole |
 | `player/bondview2.c` | Most of the player: movement, camera modes, the watch, health, the HUD, co-op and counter-op |
 | `audio/levelmusic.c` | The level music state and the music slots (was `mp_music.c`), used in solo too |
+| `audio/sfxvolume.c` | Volume of a sound from its distance to the nearest player (was in `propobj.c`) |

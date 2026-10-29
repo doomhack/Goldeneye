@@ -5,6 +5,7 @@
  * are a debug keyframe editor. See docs/subsystems/weapons.md.
  */
 #include <ultra64.h>
+#include "game/audio/sfxvolume.h"
 #include "include/limits.h"
 #include <bondconstants.h>
 #include <bondtypes.h>
@@ -1544,7 +1545,7 @@ void gunThrowGrenade(s32 hand)
 
             if (sfx_state != NULL)
             {
-                chrobjSndCreatePostEventDefault(sfx_state, (coord3d *) &wor->runtime_pos);
+                sfxSetVolumeAt(sfx_state, (coord3d *) &wor->runtime_pos);
             }
         }
     }
@@ -1817,7 +1818,7 @@ void gunThrowObject(s32 hand)
 
             if (sfx_state != NULL)
             {
-                chrobjSndCreatePostEventDefault(sfx_state, (coord3d *) &wor->runtime_pos);
+                sfxSetVolumeAt(sfx_state, (coord3d *) &wor->runtime_pos);
             }
         }
     }

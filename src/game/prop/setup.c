@@ -24,6 +24,7 @@
 #include "game/chr/chrai.h"
 #include "game/chr/chraction.h"
 #include "game/prop/propobj.h"
+#include "game/prop/door.h"
 #include "game/player/bondinv.h"
 #include "game/nav/stan.h"
 #include "limits.h"
@@ -1078,7 +1079,7 @@ void setupDoor(struct DoorRecord *door, s32 cmdindex)
             door->portalNumber = portalnum;
             if ((portalnum >= 0) && (door->openPosition == 0.0f))
             {
-                doorDeactivatePortal(door);
+                doorClosePortal(door);
             }
         }
 
