@@ -2665,49 +2665,44 @@ typedef union
             New_PropDefHeaderRecord(9), 0, pad + 0 \
         }
 
-    //[This struct uses original names]
+    /* A value a monitor script moves smoothly: frac runs from 0 to 1 at rate per tick */
+    typedef struct MonitorTween
+    {
+        f32 value;
+        f32 frac;
+        f32 rate;
+        f32 from;
+        f32 to;
+    } MonitorTween;
+
+    typedef struct MonitorChannel
+    {
+        u8 value;
+        u8 from;
+        u8 to;
+    } MonitorChannel;
+
+    /* The state of one screen's animation script (game/prop/monitor.c) */
     typedef struct MonitorRecord
     {
-        u32 *cmdlist;   // 0x80	4	image pointer for this monitor
-        u16 offset;     // 0x84	2	[runtime] cur. #commands from start of routine
-        s16 pause60;    // 0x86	2	[runtime] loop counter
-        struct sImageTableEntry *tconfig;      //0x88	4	[runtime] monitor image# or p->image header
-        f32 rot;        // 0x8C 4 [runtime][float] rotation
-        f32 xscale;     // 0x90	4	[runtime] [float] cur. horizontal zoom
-        f32 xscalefrac; // 0x94	4	[runtime] [float] cur. h.zoom time
-        f32 xscaleinc;  // 0x98	4	[runtime] [float] final h.zoom time
-        f32 xscaleold;  // 0x9C	4	[runtime] [float] initial h.zoom
-        f32 xscalenew;  // 0xA0	4	[runtime] [float] final h.zoom
-        f32 yscale;     // 0xA4	4	[runtime] [float] cur. vertical zoom
-        f32 yscalefrac; // 0xA8	4	[runtime] [float] cur. v.zoom time
-        f32 yscaleinc;  // 0xAC	4	[runtime] [float] final v.zoom time
-        f32 yscaleold;  // 0xB0	4	[runtime] [float] initial v.zoom
-        f32 yscalenew;  // 0xB4	4	[runtime] [float] final v.zoom
-        f32 xmid;       // 0xB8	4	[runtime] [float] cur. horizontal position
-        f32 xmidfrac;   // 0xBC	4	[runtime] [float] cur. h.scroll time
-        f32 xmidinc;    // 0xC0	4	[runtime] [float] final h.scroll time
-        f32 xmidold;    // 0xC4	4	[runtime] [float] initial h.pos.
-        f32 xmidnew;    // 0xC8	4	[runtime] [float] final h.pos.
-        f32 ymid;       // 0xCC	4	[runtime] [float] cur. vertical position
-        f32 ymidfrac;   // 0xD0	4	[runtime] [float] cur. v.scroll time
-        f32 ymidinc;    // 0xD4	4	[runtime] [float] final v.scroll time
-        f32 ymidold;    // 0xD8	4	[runtime] [float] initial v.pos.
-        f32 ymidnew;    // 0xDC	4	[runtime] [float] final v.pos.
-        u8  red;        // 0xE0	1	[runtime] cur. Red
-        u8  redold;     // 0xE1	1	[runtime] initial R
-        u8  rednew;     // 0xE2	1	[runtime] final R
-        u8  green;      // 0xE3	1	[runtime] cur. Green
-        u8  greenold;   // 0xE4	1	[runtime] initial G
-        u8  greennew;   // 0xE5	1	[runtime] final G
-        u8  blue;       // 0xE6	1	[runtime] cur. Blue
-        u8  blueold;    // 0xE7	1	[runtime] initial B
-        u8  bluenew;    // 0xE8	1	[runtime] final B
-        u8  alpha;      // 0xE9	1	[runtime] cur. Alpha
-        u8  alphaold;   // 0xEA	1	[runtime] initial A
-        u8  alphanew;   // 0xEB	1	[runtime] final A
-        f32 colfrac;    // 0xEC	4	[runtime] [float] cur. colour transition time
-        f32 colinc;     // 0xF0	4	[runtime] [float] final colour transition time
+        const u32 *script;
+        u16 pc;                         /* word offset of the next command in script */
+        s16 waitTicks;                  /* ticks left of a wait command, or -1 */
+        struct sImageTableEntry *image;
+        f32 rotation;                   /* radians */
+        MonitorTween scaleX;            /* fraction of the image shown across the screen */
+        MonitorTween scaleY;
+        MonitorTween midX;              /* the image position at the screen's middle, 0 to 1 */
+        MonitorTween midY;
+        MonitorChannel red;
+        MonitorChannel green;
+        MonitorChannel blue;
+        MonitorChannel alpha;
+        f32 colourFrac;
+        f32 colourRate;
     } MonitorRecord;
+
+    static_assert(sizeof(MonitorRecord) == 0x74, "MonitorRecord is part of the setup files' monitor records");
 
     // PROPDEF_MONITOR (10)
     typedef struct MonitorObjRecord /*116 (0x74) long*/

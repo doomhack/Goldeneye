@@ -10,7 +10,6 @@
 
 #define CHROBJ_TIMETOREGEN   50
 #define CHROBJ_TIMETOREGEN_F 50.0f
-#define CHROBJ_GAS_TIMER 0x5dc /* 1500 */
 
 #define PLASTIQUE_EXPLOSION_DELAY_TICKS 100
 
@@ -18,7 +17,6 @@
 
 #define CHROBJ_TIMETOREGEN   60
 #define CHROBJ_TIMETOREGEN_F 60.0f
-#define CHROBJ_GAS_TIMER 0x708 /* 1800 */
 #define PLASTIQUE_EXPLOSION_DELAY_TICKS 120
 
 #endif
@@ -30,17 +28,6 @@ extern f32 g_AutogunDamageScalar;
 extern f32 g_AutogunDamageScale;
 extern f32 g_SoloAmmoMultiplier;
 
-extern s32 alarm_timer;
-extern ALSoundState *g_AlarmSound;
-extern f32 toxic_gas_sound_timer;
-extern s32 activate_gas_sound_timer;
-extern coord3d gasLeakSource;
-extern s32 g_GasLastCoughTime;
-extern f32 gasLeakTimer;
-extern ALSoundState *g_GasSound;
-extern s32 clock_drawn_flag;
-extern s32 clock_enable;
-extern f32 clock_time;
 extern s32 g_RemoteMineOwnerTriggerFlag;
 extern s32 g_NextWeaponSlot;
 extern s32 g_NextHatSlot;
@@ -76,7 +63,6 @@ void                 objGetTileShading(PropRecord *prop, rgba_u8 *colour);
 void                 propobjSetDropped(PropRecord *prop, DROPTYPE droptype);
 void                 objDropRecursively(PropRecord *prop);
 void                 chrobjSndCreatePostEventDefault(ALSoundState *, coord3d *);
-void                 alarmActivate(void);
 void                 weaponSetGunfireVisible(PropRecord *prop, s32 firing);
 s32                  sndVolumeForPosDefault(coord3d *pos); //getVolume?
 WeaponObjRecord     *weaponCreateFromModel(PROP modelnum, s32 weaponid);
@@ -105,20 +91,12 @@ void                 remoteMinesDetonate(void);
 void                 objDetach(PropRecord *prop);
 void                 objFreeEmbedmentOrProjectile(PropRecord *);
 void                 objBounce(ObjectRecord *obj, coord3d *velocity);
-bool                 alarmIsActive(void);
-void                 gasStart(coord3d *source);
 void                 chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand);
 void                 doorStopSounds(DoorRecord *door);
 void                 doorActivatePortal(DoorRecord *door);
 void                 doorUpdateBbox(DoorRecord *door);
 s32                  sndVolumeForDistanceDefault(f32 vol);
-void                 monitorSetImageByNum(MonitorRecord *mon, s32 monAnimID);
 void                 propweaponSetDual(WeaponObjRecord *leftweapon, WeaponObjRecord *rightweapon);
-f32                  countdownTimerGetValue(void);
-bool                 countdownTimerIsRunning(void);
-void                 countdownTimerSetRunning(bool enable);
-void                 countdownTimerSetValue(f32 time);
-void                 countdownTimerSetVisible(int clocklockbits, bool unset);
 void                 objPlaceAtPad(ObjectRecord *baseobj, coord3d *pad, Mtxf *matrix, StandTile *stan, coord3d *pos2);
 void                 objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan2, coord3d *pos2);
 bool                 chrEquipWeapon(WeaponObjRecord *wep, ChrRecord *chr);
@@ -130,7 +108,6 @@ void                 doorActivateWrapper(PropRecord *prop);
 bool                 objIsHealthy(ObjectRecord *self);
 bool                 objIsMortal(ObjectRecord* obj);
 WeaponObjRecord      *weaponFindThrown(s32 weaponnum);
-bool                 gasIsActive(void);
 HatRecord           *hatCreate(bool musthaveprop, bool musthavemodel, ModelFileHeader *modeldef);
 PropRecord*          objInitWithAutoModel(ObjectRecord* obj);
 PropRecord*          objInitWithModelDef(ObjectRecord* object, ModelFileHeader* header);
@@ -141,8 +118,6 @@ s32                  chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 e
 s32                  chrobjTestPointPolygonCollision(coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges);
 void                 objDetonateRecursive(PropRecord *prop, f32 damage, coord3d *pos, s32 weaponnum, s32 owner);
 struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *obj);
-void                 alarmStopSound(void);
-void                 alarmsReset(void);
 bool                 padBoundsContainPoint(coord3d* pos, f32 radius, BoundPadRecord *boundpads);
 void                 glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
 void                 modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin);
@@ -162,19 +137,14 @@ HATTYPE              hatGetModel(PropRecord *prop);
 s32                  objDrop(PropRecord *prop);
 void                 modelResetDeformedVertices(Model* model);
 PropRecord          *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 flags, WeaponObjRecord *weapon, ModelFileHeader *modeldef);
-Gfx                 *countdownTimerRender(Gfx *DL);
 
 PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags);
 bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, coord2d *max, coord2d *min);
-bool countdownTimerIsVisible(void);
-void monitorSetImage(MonitorRecord *mon, struct sImageTableEntry *image);
-Gfx *monitorTickAnimation(Model *model, ModelNode *node, MonitorRecord *screen, Gfx *gdl, s32 zbufferMode, s32 blendMode);
 void objHit(ShotData *shotdata, BulletHit *hit);
 void objTestShot(PropRecord* prop, struct ShotData* shotdata);
 void pickupAddAmmo(AMMOTYPE ammotype,int amount,int doplaysound,int dodisplaytext);
 void pickupPlayWeaponSound(ITEM_IDS weapontype);
 void pickupShowWeaponText(ITEM_IDS weaponid);
-void alarmGasTimerTick(void);
 bool doorTestForInteract(PropRecord *prop);
 bool objTestForInteract(PropRecord* prop);
 s32 objTick(struct PropRecord *prop);
@@ -182,5 +152,6 @@ TICKOP propdoorInteract(PropRecord* doorprop);
 void doorDeactivatePortal(DoorRecord *door);
 PropRecord* doorInit(DoorRecord* door, coord3d* pos, Mtxf* mtx, StandTile* stan, coord3d* coord, coord3d* centre);
 void hatAssignToChr(HatRecord* hat, ChrRecord* chr);
+void proxminesTickGuards(void);
 
 #endif

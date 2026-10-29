@@ -7,7 +7,10 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | --- | --- |
 | `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects and doors at run time: movement and projectiles, the per-frame tick, drawing, damage, pickups, weapon and hat slots, doors, alarm, gas and the countdown timer |
+| `src/game/prop/propobj.c` | Objects and doors at run time: movement and projectiles, the per-frame tick, drawing, damage, pickups, weapon and hat slots, doors |
+| `src/game/prop/monitor.c` | Monitor screens: running their scripts and drawing them |
+| `src/game/prop/monitorscripts.c` | The monitor scripts |
+| `src/game/prop/alarm.c` | The alarm, the gas leak and the countdown timer |
 | `src/game/prop/explosion.c` | Explosions, smoke, debris particles, scorch marks, bullet impacts, screen shake |
 | `src/game/prop/glass.c` | Glass shards from broken windows |
 
@@ -142,16 +145,31 @@ close. Opening a door turns on the room portal behind it
 
 ## Monitors
 
-Screens run a small animation program (`struct tvcmd`: scroll, scale, set image, wait,
-loop...) to show scrolling images. `monitorTickAnimation` steps it each time the screen is
-drawn. The programs are the `monAnim*` arrays near the top of `propobj.c`.
+Screens (`MonitorObjRecord`, `MultiMonitorObjRecord` with four, and the screens on the
+rocket launcher and taser) each run a small script that scrolls, zooms, rotates and tints
+an image (`monitor.c`). A script is an array of words: a command (`enum MonitorCmd`) and
+its arguments, written with the `MON_*` macros in `monitorscripts.c`.
+
+`monitorTickAndDraw` runs the script each time the screen is drawn, until a command waits,
+then moves each value (`MonitorTween`) a step towards its target and draws the image on
+the model's screen node. Setup files and AI scripts pick one of 52 numbered scripts
+(`monitorInit`, `monitorSetScript`); a destroyed screen switches to the black one.
+
+Scripts can jump to another at random (`MON_GOTO_CHANCE`), which takes a random number,
+so whether a screen is drawn changes the rest of the game.
 
 ## Alarm, gas and the countdown timer
 
-There is one alarm and one gas leak per level, started by AI scripts (`alarmActivate`,
-`gasStart`) and ticked by `alarmGasTimerTick`, which also ticks the on-screen countdown
-timer (`countdownTimer*`). `propsResetLevelState` clears all three on level load, and
-`alarmsReset` turns off the alarm and stops the gas sound at level end.
+There is one alarm, one gas leak and one countdown timer per level (`alarm.c`), started by
+AI scripts and ticked once a frame by `alarmGasTimerTick`. `alarmGasTimerReset` clears them
+at level load, and `alarmGasEndLevel` stops their sounds at level end.
+
+* The alarm sounds for 30 seconds from when it is first set off (`alarmActivate`).
+* The gas (`gasStart`) thickens the fog over 60 seconds, or 2 in Egypt, where it is
+  harmless. Harmful gas makes Bond cough after 10 seconds and hurts him after 30.
+* The countdown timer counts down in ticks and is drawn at the bottom of the screen. It
+  is shown only when nothing hides it: each reason (`enum CountdownHideReason`: the AI
+  script, the watch, the red damage flash, a cutscene, a plastique blast) sets its own bit.
 
 ## Explosions and smoke
 

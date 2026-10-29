@@ -13,6 +13,9 @@
       build/OUTCODE/src/game/chr/chrai.o (.rodata);
       build/OUTCODE/src/game/prop/prop.o (.rodata);
       build/OUTCODE/src/game/prop/propobj.o (.rodata);
+      build/OUTCODE/src/game/prop/alarm.o (.rodata);
+      build/OUTCODE/src/game/prop/monitor.o (.rodata);
+      build/OUTCODE/src/game/prop/monitorscripts.o (.rodata);
       build/OUTCODE/src/game/math/physics.o (.rodata);
       build/OUTCODE/src/game/math/matrix.o (.rodata);
       build/OUTCODE/src/game/math/trig.o (.rodata);

@@ -42,6 +42,7 @@
 #include "game/prop/propobj.h"
 #include "game/nav/stan.h"
 #include "game/nav/waypoint.h"
+#include "game/prop/alarm.h"
 
 
 

@@ -60,6 +60,7 @@
 #include "game/prop/prop.h"
 #include "game/text/language.h"
 #include "game/world/lightfixture.h"
+#include "game/prop/monitor.h"
 
 s32 ammoGetHeld(AMMOTYPE ammotype);
 
@@ -1486,12 +1487,12 @@ void gunRenderHands(Gfx **gdlptr)
  
             if (item == ITEM_ROCKETLAUNCH) 
             {
-                monitorSetImage(&g_UnknownAnimController, g_ImageCrosshair);
-                gdl = monitorTickAnimation(model, handptr->gunmodel.obj->Switches[16], &g_UnknownAnimController, gdl, 0, 4);
+                monitorSetImage(&g_GunScreenRocket, g_ImageCrosshair);
+                gdl = monitorTickAndDraw(model, handptr->gunmodel.obj->Switches[16], &g_GunScreenRocket, gdl, 0, 4);
             } 
             else 
             {
-                gdl = monitorTickAnimation(model, handptr->gunmodel.obj->Switches[16], &g_TaserAnimController, gdl, 0, 1);
+                gdl = monitorTickAndDraw(model, handptr->gunmodel.obj->Switches[16], &g_GunScreenTaser, gdl, 0, 1);
             }
         }
  

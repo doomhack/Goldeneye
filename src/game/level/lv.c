@@ -63,6 +63,7 @@
 #include "game/level/frametiming.h"
 #include "game/chr/chr.h"
 #include "game/world/sky.h"
+#include "game/prop/alarm.h"
 
 // bss
 u32 *g_FontDl;
@@ -1087,7 +1088,7 @@ void lvStageUnload(void)
     explosionsReset();
     glassResetShards();
     cleanup_REMOVED_();
-    alarmsReset();
+    alarmGasEndLevel();
     setupFreeProps();
     objectivesFinish();
     levelStopTankSfx();

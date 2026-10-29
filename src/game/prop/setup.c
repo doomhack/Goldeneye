@@ -44,6 +44,8 @@
 #include "game/level/lv.h"
 #include "game/menu/cheat.h"
 #include "str.h"
+#include "game/prop/alarm.h"
+#include "game/prop/monitor.h"
 
 /**
  * EU .bss 0x80068480
@@ -748,8 +750,7 @@ void setupSingleMonitor(MonitorObjRecord *monitor, s32 cmdindex)
     PropRecord *prop;
     f32 scale;
 
-    monitor->Monitor = g_MonitorAnimController;
-    monitorSetImageByNum(&monitor->Monitor, monitor->ImageNum);
+    monitorInit(&monitor->Monitor, monitor->ImageNum);
 
     if (monitor->pad < 0 && (monitor->flags & PROPFLAG_INSIDEANOTHEROBJ) == 0)
     {
@@ -811,17 +812,13 @@ void setupSingleMonitor(MonitorObjRecord *monitor, s32 cmdindex)
 
 void setupMultiMonitor(MultiMonitorObjRecord* monitor)
 {
-    monitor->Monitor[0] = g_MonitorAnimController;
-    monitorSetImageByNum(&monitor->Monitor[0], monitor->ImageNums[0]);
+    monitorInit(&monitor->Monitor[0], monitor->ImageNums[0]);
 
-    monitor->Monitor[1] = g_MonitorAnimController;
-    monitorSetImageByNum(&monitor->Monitor[1], monitor->ImageNums[1]);
+    monitorInit(&monitor->Monitor[1], monitor->ImageNums[1]);
 
-    monitor->Monitor[2] = g_MonitorAnimController;
-    monitorSetImageByNum(&monitor->Monitor[2], monitor->ImageNums[2]);
+    monitorInit(&monitor->Monitor[2], monitor->ImageNums[2]);
 
-    monitor->Monitor[3] = g_MonitorAnimController;
-    monitorSetImageByNum(&monitor->Monitor[3], monitor->ImageNums[3]);
+    monitorInit(&monitor->Monitor[3], monitor->ImageNums[3]);
 
     setupObject(monitor);
 }
@@ -1869,15 +1866,11 @@ void setupCreateProps(enum LEVELID stageId)
 }
 
 
-MonitorRecord g_InitialMonitorAnimController = {monAnim00Bond, 0, 0xFFFF, 0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1.0, 0.0};
-MonitorRecord g_InitialUnknownAnimController = {monAnim34, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0, 0.0};
-MonitorRecord g_InitialTaserAnimController = {monAnim35Taser, 0, 0xFFFF, 0, 0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.5, 0.0, 0.0, 0.5, 0.5, 0.5, 0.0, 0.0, 0.5, 0.5, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 1.0, 0.0};
 
 f32 g_DoorScale = 1.0f;
 
 // forward declarations
 
-void monitorsInitAnimations();
 void proxminesInit();
 
 // end forward declarations
@@ -1899,21 +1892,9 @@ void propsResetLevelState(void)
 {
     s32 i;
 
-    monitorsInitAnimations();
+    monitorsReset();
     proxminesInit();
-    alarm_timer = 0;
-    g_AlarmSound = 0;
-    toxic_gas_sound_timer = 0.0f;
-    activate_gas_sound_timer = 0;
-    gasLeakSource.f[0] = 0.0f;
-    gasLeakSource.f[1] = 0.0f;
-    gasLeakSource.f[2] = 0.0f;
-    g_GasLastCoughTime = 0;
-    gasLeakTimer = 0.0f;
-    g_GasSound = 0;
-    clock_drawn_flag = 1;
-    clock_enable = 0;
-    clock_time = 0.0f;
+    alarmGasTimerReset();
     g_RemoteMineOwnerTriggerFlag = 0;
 
     for (i = 0; i < MAX_WEAPON_SLOTS; i++)
@@ -1990,12 +1971,6 @@ void setupLinkSafeItem(SafeObjectRecord *link)
 }
 
 
-void monitorsInitAnimations(void)
-{
-    g_MonitorAnimController = g_InitialMonitorAnimController;
-    g_UnknownAnimController = g_InitialUnknownAnimController;
-    g_TaserAnimController = g_InitialTaserAnimController;
-}
 
 
 void proxminesInit(void)
