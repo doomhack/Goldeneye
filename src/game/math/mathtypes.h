@@ -17,6 +17,17 @@ typedef union coord3d
     f32 f[3];
 } coord3d;
 
+/** A point on the floor plane in floats: x, and z in y (or f[1]). */
+typedef union coord2d
+{
+    struct
+    {
+        f32 x;
+        f32 y;
+    };
+    f32 f[2];
+} coord2d;
+
 /** A point in 16-bit integers, as in the N64's vertices. */
 typedef union coord16
 {

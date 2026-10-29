@@ -1,29 +1,120 @@
 #ifndef _STAN_H_
 #define _STAN_H_
 #include <ultra64.h>
-
 #include <bondtypes.h>
 
-struct StanPrefixRecord;
-// RGB? I've called them 'triple' because I don't really know what RGB is
-// No parens around params
-#define STAN_TRIPLE_TO_PNT_INDEX(tile, tripleIndex) (tile->hdrTail >> (8 - 4*tripleIndex) & 0xF)
-#define STAN_POINT_COUNT(tile) (tile->tail.half & 0xF)
+/*
+ * The floor tiles ("stan") and the collision tests that walk them.
+ * See docs/subsystems/nav.md.
+ */
 
-#define STAN_MID_SPECIAL(tile) (tile->mid.half & 0xF)
-#define STAN_MID_R(tile) ((tile->mid.half >> 0x04) & 0xF)
-#define STAN_MID_G(tile) ((tile->mid.half >> 0x08) & 0xF)
-#define STAN_MID_B(tile) ((tile->mid.half >> 0x0C) & 0xF)
+/** A tile's special type */
+enum StanSpecial
+{
+    STAN_SPECIAL_NONE,
+    STAN_SPECIAL_CROUCH, /* Bond squats to move onto it */
+    STAN_SPECIAL_2,      /* in Egypt and Bunker 1, with no effect */
+    STAN_SPECIAL_LADDER,
+};
 
-#define STAN_TAIL_POINT_COUNT(tile) (tile->tail.half & 0xF)/*canonically getsides()*/
-#define STAN_TAIL_C(tile) ((tile->tail.half >> 0x04) & 0xF)
-#define STAN_TAIL_D(tile) ((tile->tail.half >> 0x08) & 0xF)
-#define STAN_TAIL_E(tile) ((tile->tail.half >> 0x0C) & 0xF)
+/** A corner of a tile, and the start of the edge to the next corner */
+typedef struct StandTilePoint
+{
+    s16 x;
+    s16 y;
+    s16 z;
+    /* the tile across the edge, in 8-byte steps from g_StanTiles; below 16 if the edge is a wall */
+    u16 link;
+} StandTilePoint;
 
-/* The ladder quad from stanGetMoveBondCollisionTiles: the shared bottom edge, then the top. */
-struct move_bond_collision {
-    union {
-        struct {
+typedef struct StandTile
+{
+    u32 id : 24; /* the tile's name, see stanResolvePadTile */
+    u8 room;
+    u16 special : 4; /* enum StanSpecial */
+    u16 red : 4;     /* the light a character standing on it gets, stanGetTileColour */
+    u16 green : 4;
+    u16 blue : 4;
+    u16 numPoints : 4;
+    /* Three corners whose triangle covers most of the tile: the quick "on the tile" tests and the floor height use it */
+    u16 tri0 : 4;
+    u16 tri1 : 4;
+    u16 tri2 : 4;
+    StandTilePoint points[]; /* anticlockwise seen from above; always room for at least 3 */
+} StandTile;
+
+/* A level's stan file. The asset files in assets/obseg/stan build it from these. */
+typedef struct StandFileHeader
+{
+    void *unused;
+    StandTile *firstTile; /* then more pointers, up to a NULL, then the tiles */
+    u8 pointers[];
+} StandFileHeader;
+
+typedef struct StandFileFooter
+{
+    char strictstring[8];
+    void *unused[4];
+} StandFileFooter;
+
+/* Citadel's file is the earlier format, kept to build it; the game doesn't load it */
+typedef struct BetaStandFilePoint
+{
+    f32 x;
+    f32 y;
+    f32 z;
+    u32 link;
+} BetaStandFilePoint;
+
+typedef struct BetaStandTile
+{
+    const char *id;
+    u16 special : 4;
+    u16 red : 4;
+    u16 green : 4;
+    u16 blue : 4;
+    u16 room;
+    u8 numPoints;
+    u8 tri0;
+    u8 tri1;
+    u8 tri2;
+    struct BetaStandFilePoint points[];
+} BetaStandTile;
+
+/* What a collision test hit, for stanGetCollisionEdge and for the callers below */
+typedef struct StanHit
+{
+    StandTile *tile; /* the tile whose wall edge was hit, or NULL */
+    s32 edge;
+    bool hasLine;    /* line holds the last prop edge hit */
+    coord2d lineA;
+    coord2d lineB;
+    f32 frac;        /* stanTestLineUnobstructed: how far along the line the hit was */
+    PropRecord *prop; /* the prop hit, or NULL */
+} StanHit;
+
+/* The walks' results */
+typedef enum StanCollisionResult
+{
+    STAN_COLLISION_NONE = -2,
+    STAN_COLLISION_FOUND = 2,
+    STAN_COLLISION_TRAVERSAL_LIMIT = 5, /* the circle covered too many tiles to finish */
+} StanCollisionResult;
+
+/** What stanCircleGetSpecial found under a circle */
+typedef struct StanSpecialTiles
+{
+    bool crouch;
+    bool ladder;
+} StanSpecialTiles;
+
+/** A ladder, from stanGetLadderQuad: the bottom edge, then the top */
+typedef struct LadderQuad
+{
+    union
+    {
+        struct
+        {
             coord3d low0;
             coord3d low1;
             coord3d high0;
@@ -31,84 +122,64 @@ struct move_bond_collision {
         };
         coord3d corners[4];
     };
-};
+} LadderQuad;
 
-typedef enum StanCollisionResult {
-    STAN_COLLISION_NONE = -2,
-    STAN_COLLISION_FOUND = 2,
-    STAN_COLLISION_TRAVERSAL_LIMIT = 5
-} StanCollisionResult;
-
-typedef struct StanRoomBounds {
-    union {
-        struct {
-            s16 minX;
-            s16 minY;
-            s16 minZ;
-            s16 maxX;
-            s16 maxY;
-            s16 maxZ;
-        };
-        struct {
-            s16 min[3];
-            s16 max[3];
-        };
-    };
+typedef struct StanRoomBounds
+{
+    s16 min[3];
+    s16 max[3];
 } StanRoomBounds;
 
-/////////////////
-// extern
-
-extern f32 g_StanHitFrac;
-extern PropRecord *g_StanHitProp;
-extern struct StandTile *g_StanTiles;
-extern s32 g_StanLineLog;
+extern StandTile *g_StanTiles;
+extern f32 g_StanScale;
+extern f32 g_StanInvScale;
 extern StandTile *g_StanRoomFirstTile[139];
 extern StanRoomBounds g_StanRoomBounds[139];
 extern s32 g_StanNumRooms;
+extern StanHit g_StanHit;
 
-/////////////////
-// prototypes
+/** The tile across a tile's edge (from point i to the next), or NULL for a wall */
+static inline StandTile *stanLinkedTile(const StandTile *tile, s32 i)
+{
+    u16 link = tile->points[i].link;
 
-// Necessary forward declaration
-void stanLineRoomsCallback( StandTile *tile,  StandTile *unused,  struct StandTileWalkCallbackRecord *data);
-void stanSetLevelScale(f32 ls);
-void stanResetHits(void);
-s32 stanWalkLineNoCallback(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z);
-bool stanIsNearlyInsideTri(StandTile *tile, f32 p_x, f32 p_z);
-f32 stanGetPositionYValue(StandTile* tile, f32 p_x, f32 p_z);
-bool stanGetCollisionEdge(coord3d *pntA, coord3d *pntB);
-bool stanTileHasZeroArea(StandTile *tile);
-s32 stanTestLocusEdgeAboveY(StandTile **tile, f32 target_x, f32 target_z, f32 radius, f32 yThreshold);
-s32 stanCircleLegal(StandTile** tileStack, f32 target_x, f32 target_z, f32 unknown);
+    return (link >> 4) != 0 ? (StandTile *) ((u8 *) g_StanTiles + link * 8) : NULL;
+}
 
-s32 stanTestLineUnobstructed(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, f32 fromTop, f32 fromBottom, f32 toTop, f32 toBottom);
-StandTile* stanFillSearch(StandTile* srcTile, tilePredicate_t tilePred);
-s32 stanGetRoomsBetween(StandTile *tile, f32 start_x, f32 start_z, StandTile **destTile, f32 dest_x, f32 dest_z, s32 *roomBuffer, s32 maxBufSize);
-s32 stanLineRooms(StandTile **tileStack, f32 start_x, f32 start_z, f32 dest_x, f32 dest_z, s32 *roomBuffer, s32 *rtnCountSize, s32 maxBufSize);
-s32 stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s32 cdtypes, f32 top, f32 bottom);
-s32 stanGetTileRoom(StandTile* tile);
-PropRecord *stanLineFindDoor(StandTile *t, f32 start_x, f32 start_z, f32 end_x, f32 end_z, s32 cdtypes);
-void stanGetTileColour(StandTile *tile, u8 *rtn);
-s32 stanCircleGetSpecial(struct StandTile **tile, f32 x, f32 z, f32 radius, struct StandTileLocusCallbackRecord *records);
-s32 stanLocusIsCrouch(struct StandTileLocusCallbackRecord *record);
-s32 stanLocusIsLadder(struct StandTileLocusCallbackRecord *record);
-f32 stanDist2d(f32 o_x,f32 o_z,f32 p_x,f32 p_z);
-bool stanPointProjectsOntoEdge(f32 x1, f32 z1, f32 x2, f32 z2, f32 x3, f32 z3);
-f32 stanGetSignedPointLineDistance(f32 x1, f32 z1, f32 x2, f32 z2, f32 x3, f32 z3);
-void stanGetMoveBondCollisionTiles(StandTile **tile1, StandTile **tile2, struct move_bond_collision *quad);
-struct StandTile *stanFindNearestLegalPos(f32 *arg_x, f32 *arg_y, f32 *arg_z, f32 radius);
-bool stanSegmentsIntersect(f32 start1X, f32 start1Z, f32 end1X, f32 end1Z, f32 start2X, f32 start2Z, f32 end2X, f32 end2Z);
-struct StandTile *stanMatchTileName(const char *id);
-s32 stanIsInsideTriWorld(struct StandTile *tile, f32 p_x, f32 p_z);
-s32 stanCircleRooms(StandTile **tileStack, f32 target_x, f32 target_z, f32 radius, s32 *rooms, s32 *count_rtn, s32 bufMax);
+/** The index of corner 0, 1 or 2 of a tile's triangle */
+static inline s32 stanTriPoint(const StandTile *tile, s32 corner)
+{
+    return corner == 0 ? tile->tri0 : corner == 1 ? tile->tri1 : tile->tri2;
+}
+
+static inline s32 stanNextPoint(const StandTile *tile, s32 i)
+{
+    return (i + 1) % tile->numPoints;
+}
+
+/* stan.c: the tiles */
+void stanLoadFile(StandFileHeader *file, f32 scale);
+StandTile *stanNextTile(StandTile *tile);
 StandTile *stanFindTileBelowPos(coord3d *pos, u8 *rooms, f32 *yRtn);
-f32 stanSegmentIntersectFrac(coord2d *start1, coord2d *end1, coord2d *start2, coord2d *end2);
-f32 stanPointLineDist(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd);
-f32 stanRaySegmentFrac(coord3d *point3D, coord2d *lineStart, coord2d *lineEnd, coord2d *direction);
-s32 stanResolvePadTile(struct PadRecord *pad, char *tilename, struct StandTile **tile_stack);
+StandTile *stanFindNearestLegalPos(coord3d *pos, f32 radius);
+s32 stanResolvePadTile(struct PadRecord *pad, const char *tilename, StandTile **tile);
+f32 stanGetFloorY(StandTile *tile, f32 x, f32 z);
+bool stanIsNearlyInsideTri(StandTile *tile, f32 x, f32 z);
+void stanGetTileColour(StandTile *tile, u8 *rgb);
+StandTile *stanSearchOutward(StandTile *start, bool (*predicate)(StandTile *tile));
 
-void stanDetermineEOF(struct StanPrefixRecord *file , s32 origBase, u8 *newBase);
-void stanLoadFile(struct StanPrefixRecord *file);
+/* stanwalk.c: the collision tests */
+void stanResetHits(void);
+bool stanGetCollisionEdge(coord3d *a, coord3d *b);
+bool stanWalkLine(StandTile **tile, f32 x, f32 z, f32 destX, f32 destZ);
+s32 stanGetRoomsBetween(StandTile *tile, f32 x, f32 z, StandTile **destTile, f32 destX, f32 destZ, s32 *rooms, s32 maxRooms);
+bool stanTestLineUnobstructed(StandTile **tile, f32 x, f32 z, f32 destX, f32 destZ, s32 cdtypes, f32 fromTop, f32 fromBottom, f32 toTop, f32 toBottom);
+PropRecord *stanLineFindDoor(StandTile *tile, f32 x, f32 z, f32 destX, f32 destZ, s32 cdtypes);
+StanCollisionResult stanCircleLegal(StandTile **tile, f32 x, f32 z, f32 radius);
+StanCollisionResult stanCircleRooms(StandTile **tile, f32 x, f32 z, f32 radius, s32 *rooms, s32 *numRooms, s32 maxRooms);
+StanCollisionResult stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s32 cdtypes, f32 top, f32 bottom);
+StanCollisionResult stanCircleGetSpecial(StandTile **tile, f32 x, f32 z, f32 radius, StanSpecialTiles *found);
+StanCollisionResult stanTestCircleMaxHeight(StandTile **tile, f32 x, f32 z, f32 radius, f32 maxY);
+void stanGetLadderQuad(StandTile **ladderTile, StandTile **topTile, LadderQuad *quad);
 
 #endif

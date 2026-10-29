@@ -1370,7 +1370,7 @@ s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
 
         if (!(chr->chrflags & CHRFLAG_LOCK_Y_POS))
         {
-            ground = stanGetPositionYValue(chr->prop->stan, groundpos->x, groundpos->z);
+            ground = stanGetFloorY(chr->prop->stan, groundpos->x, groundpos->z);
             chr->ground = ground;
 
             if (chr->chrflags & CHRFLAG_INIT)

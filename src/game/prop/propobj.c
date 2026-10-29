@@ -60,7 +60,7 @@
 #include "game/player/player.h"
 #include "game/math/quaternion.h"
 #include "random.h"
-#include "game/nav/stan.h"
+#include "game/nav/geometry.h"
 #include "game/nav/stan.h"
 #include "game/gfx/texcmds.h"
 #include "game/world/surface.h"
@@ -777,7 +777,7 @@ void objPlaceAtPad(ObjectRecord *baseobj, coord3d *pos, Mtxf *matrix, StandTile 
         f32 roomObjTop;
         f32 roomObjBottom;
 
-        distfromTileCenter = stanGetPositionYValue(mStan, pos->f[0], pos->f[2]);
+        distfromTileCenter = stanGetFloorY(mStan, pos->f[0], pos->f[2]);
 
         mtx4Copy(matrix, &mtxcopy);
         newPos.x = pos2->f[0] - (mtxcopy.m[1][0] * xmax);
@@ -805,7 +805,7 @@ void objPlaceAtPad(ObjectRecord *baseobj, coord3d *pos, Mtxf *matrix, StandTile 
         }
     }
 
-    if (!(baseobj->flags2 & 1) && stanWalkLineNoCallback(&mStan, pos->f[0], pos->f[2], newPos.x, newPos.z))
+    if (!(baseobj->flags2 & 1) && stanWalkLine(&mStan, pos->f[0], pos->f[2], newPos.x, newPos.z))
     {
         objChangeShading(baseobj, &newPos, &mtxcopy, mStan);
     }
@@ -844,7 +844,7 @@ void objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandT
     posdiff.y = pos2->y - (matrix.m[2][1] * zmin);
     posdiff.z = pos2->z - (matrix.m[2][2] * zmin);
 
-    if ((!(((s32) obj->flags2) & 1)) && (stanWalkLineNoCallback(&stan, pos->x, pos->z, posdiff.x, posdiff.z) != 0))
+    if ((!(((s32) obj->flags2) & 1)) && (stanWalkLine(&stan, pos->x, pos->z, posdiff.x, posdiff.z) != 0))
     {
         objChangeShading(obj, &posdiff, &matrix, stan);
     }
@@ -1166,13 +1166,13 @@ bool projectileTestPropPolygon(PropRecord *prop, coord3d *rayStart, coord3d *ray
             for (i = 0; i < numedges; i++)
             {
                 next = (i + 1) % numedges;
-                if (stanSegmentsIntersect(rayStart->x, rayStart->z, rayEnd->x, rayEnd->z, polygon[i].x, polygon[i].y, polygon[next].x, polygon[next].y))
+                if (geoSegmentsIntersect(rayStart->x, rayStart->z, rayEnd->x, rayEnd->z, polygon[i].x, polygon[i].y, polygon[next].x, polygon[next].y))
                 {
                     edgeStart2d.x = polygon[i].x;
                     edgeStart2d.y = polygon[i].y;
                     edgeEnd2d.x = polygon[next].x;
                     edgeEnd2d.y = polygon[next].y;
-                    dist = stanSegmentIntersectFrac(&rayStart2d, &rayEnd2d, &edgeStart2d, &edgeEnd2d);
+                    dist = geoSegmentHitFrac(&rayStart2d, &rayEnd2d, &edgeStart2d, &edgeEnd2d);
 
                     if (dist < bestfrac)
                     {
@@ -1749,7 +1749,7 @@ after_bg_loop:
     {
         tile = prop->stan;
 
-        if ((stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, obj->runtime_pos.x, obj->runtime_pos.z) == TRUE) && (tile != NULL))
+        if ((stanWalkLine(&tile, prop->pos.x, prop->pos.z, obj->runtime_pos.x, obj->runtime_pos.z) == TRUE) && (tile != NULL))
         {
             prop->stan = tile;
             prop->pos.x = obj->runtime_pos.x;
@@ -1807,7 +1807,7 @@ s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *
     coord3d edgeA;
     coord3d edgeB;
     coord3d partialpos = {};
-    coord3d rayinfo;
+    coord2d centre;
     coord2d edgeStart;
     coord2d edgeEnd;
     coord2d dir2d;
@@ -1833,7 +1833,7 @@ s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *
         goto done;
     }
 
-    tmp = stanGetPositionYValue(prop->stan, prop->pos.x, prop->pos.z);
+    tmp = stanGetFloorY(prop->stan, prop->pos.x, prop->pos.z);
 
     if ((obj->embedment->flags & PROJECTILEFLAG_00000040) == 0)
     {
@@ -1901,9 +1901,8 @@ normaldone:
 
         chrStanLineDirIntersection(&prop->pos, &dir, hitpos);
 
-        rayinfo.x = width;
-        rayinfo.y = prop->pos.x;
-        rayinfo.z = prop->pos.z;
+        centre.x = prop->pos.x;
+        centre.y = prop->pos.z;
 
         edgeStart.x = edgeA.x;
         edgeStart.y = edgeA.z;
@@ -1913,7 +1912,7 @@ normaldone:
         dir2d.x = target.f[0] - prop->pos.x;
         dir2d.y = target.f[2] - prop->pos.z;
 
-        tmp = stanRaySegmentFrac(&rayinfo, &edgeStart, &edgeEnd, &dir2d);
+        tmp = geoCircleSweepFrac(width, &centre, &dir2d, &edgeStart, &edgeEnd);
 
         stan = prop->stan;
 
@@ -3198,7 +3197,7 @@ s32 propExplode(PropRecord *prop, s32 /* enum EXPLOSION_DEF */ explosionType)
         }
 
         if ((parent->flags & PROPFLAG_00000008) == 0
-            && stanWalkLineNoCallback(&stan, parent->pos.f[0], parent->pos.f[2], pos.x, pos.z))
+            && stanWalkLine(&stan, parent->pos.f[0], parent->pos.f[2], pos.x, pos.z))
         {
     ret =
             explosionCreate(0, &pos, stan, (s16) explosionType, (prop_obj->flags & 0xE) == 0, playernum, parent->rooms, 0);
@@ -3650,20 +3649,20 @@ s32 chrobjTestPointPolygonCollision(coord3d *point, f32 collision_radius, coord2
     {
         next = &polygon[(i+1) % edges];
 
-        lineDist = stanGetSignedPointLineDistance(polygon[i].f[0], polygon[i].f[1], next->f[0], next->f[1], px, pz);
+        lineDist = geoSignedLineDist(polygon[i].f[0], polygon[i].f[1], next->f[0], next->f[1], px, pz);
 
         if (lineDist < 0.0f)
         {
             lineDist = -lineDist;
         }
 
-        dist1 = stanDist2d(polygon[i].f[0], polygon[i].f[1], px, pz);
-        dist2 = stanDist2d(next->f[0], next->f[1], px, pz);
+        dist1 = geoDist2d(polygon[i].f[0], polygon[i].f[1], px, pz);
+        dist2 = geoDist2d(next->f[0], next->f[1], px, pz);
 
         if ((lineDist < collision_radius)
             && ((dist1 < collision_radius)
                 || (dist2 < collision_radius)
-                || stanPointProjectsOntoEdge(polygon[i].f[0], polygon[i].f[1], next->f[0], next->f[1], px, pz)
+                || geoProjectsOntoSegment(polygon[i].f[0], polygon[i].f[1], next->f[0], next->f[1], px, pz)
             )
         )
         {
@@ -3827,9 +3826,9 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
     mtx4TransformVec(&mtx, modelpoint3, &point3);
 
     tile = prop->stan;
-    if (stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, point0.x, point0.z))
+    if (stanWalkLine(&tile, prop->pos.x, prop->pos.z, point0.x, point0.z))
     {
-        point0.y = stanGetPositionYValue(tile, point0.x, point0.z);
+        point0.y = stanGetFloorY(tile, point0.x, point0.z);
     }
     else
     {
@@ -3837,9 +3836,9 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
     }
 
     tile = prop->stan;
-    if (stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, point1.x, point1.z))
+    if (stanWalkLine(&tile, prop->pos.x, prop->pos.z, point1.x, point1.z))
     {
-        point1.y = stanGetPositionYValue(tile, point1.x, point1.z);
+        point1.y = stanGetFloorY(tile, point1.x, point1.z);
     }
     else
     {
@@ -3847,9 +3846,9 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
     }
 
     tile = prop->stan;
-    if (stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, point2.x, point2.z))
+    if (stanWalkLine(&tile, prop->pos.x, prop->pos.z, point2.x, point2.z))
     {
-        point2.y = stanGetPositionYValue(tile, point2.x, point2.z);
+        point2.y = stanGetFloorY(tile, point2.x, point2.z);
     }
     else
     {
@@ -3857,9 +3856,9 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
     }
 
     tile = prop->stan;
-    if (stanWalkLineNoCallback(&tile, prop->pos.x, prop->pos.z, point3.x, point3.z))
+    if (stanWalkLine(&tile, prop->pos.x, prop->pos.z, point3.x, point3.z))
     {
-        point3.y = stanGetPositionYValue(tile, point3.x, point3.z);
+        point3.y = stanGetFloorY(tile, point3.x, point3.z);
     }
     else
     {
@@ -3974,7 +3973,7 @@ s32 vehicleAlignToFloor(ObjectRecord *obj)
         mtx4LoadYRotation(((VehichleRecord *)obj)->roty, &obj->mtx);
         mtx4ScaleRows012(model->scale, &obj->mtx);
 
-        ypos = stanGetPositionYValue(prop->stan, prop->pos.x, prop->pos.z) - ((bboxGetYmin(bbox) + modelpoint0->f[1]) * model->scale);
+        ypos = stanGetFloorY(prop->stan, prop->pos.x, prop->pos.z) - ((bboxGetYmin(bbox) + modelpoint0->f[1]) * model->scale);
 
         prop->pos.y = ypos;
         obj->runtime_pos.y = ypos;
@@ -4600,7 +4599,7 @@ s32 objTick(struct PropRecord *prop)
 
 					if (!(projectile->flags & PROJECTILEFLAG_00000008))
 					{
-						floorY = stanGetPositionYValue(prop->stan, prop->pos.f[0], prop->pos.f[2]);
+						floorY = stanGetFloorY(prop->stan, prop->pos.f[0], prop->pos.f[2]);
 						bboxBottomOffset = bboxRotatedMinY(projectileBBox, &objectMatrix[0]);
 						hitGround = (prop->pos.f[1] < (floorY - bboxBottomOffset));
 					}
@@ -4808,7 +4807,7 @@ s32 objTick(struct PropRecord *prop)
 
 					objMove(obj, &newpos, &collisionPoint, &collisionNormal, 0, 0);
 					objMovedThisFrame = 1;
-					floorY = stanGetPositionYValue(prop->stan, prop->pos.f[0], prop->pos.f[2]);
+					floorY = stanGetFloorY(prop->stan, prop->pos.f[0], prop->pos.f[2]);
 					obj->runtime_pos.f[1] = prop->pos.f[1] = (floorY - bboxRotatedMinY(objectBBox, objectMatrix)) + 4.0f;
 					if ((projectile->speed.f[0] < 0.1f) && (projectile->speed.f[0] > (-0.1f)))
 					{
@@ -5457,7 +5456,7 @@ s32 objTick(struct PropRecord *prop)
 						zmaxDir.f[0] = bbox->Bounds.zmax * vehicle->mtx.m[2][0];
 						zmaxDir.f[2] = bbox->Bounds.zmax * vehicle->mtx.m[2][2];
 						currentTile = prop->stan;
-						if (((((stanWalkLineNoCallback(&currentTile, prop->pos.f[0], prop->pos.f[2], (prop->pos.f[0] + xminDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zminDir.f[2]) == 0) || (stanWalkLineNoCallback(&currentTile, (prop->pos.f[0] + xminDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zminDir.f[2], (prop->pos.f[0] + xmaxDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xmaxDir.f[2]) + zminDir.f[2]) == 0)) || (stanWalkLineNoCallback(&currentTile, (prop->pos.f[0] + xmaxDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xmaxDir.f[2]) + zminDir.f[2], (prop->pos.f[0] + xmaxDir.f[0]) + zmaxDir.f[0], (prop->pos.f[2] + xmaxDir.f[2]) + zmaxDir.f[2]) == 0)) || (stanWalkLineNoCallback(&currentTile, (prop->pos.f[0] + xmaxDir.f[0]) + zmaxDir.f[0], (prop->pos.f[2] + xmaxDir.f[2]) + zmaxDir.f[2], (prop->pos.f[0] + xminDir.f[0]) + zmaxDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zmaxDir.f[2]) == 0)) || (stanWalkLineNoCallback(&currentTile, (prop->pos.f[0] + xminDir.f[0]) + zmaxDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zmaxDir.f[2], (prop->pos.f[0] + xminDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zminDir.f[2]) == 0))
+						if (((((stanWalkLine(&currentTile, prop->pos.f[0], prop->pos.f[2], (prop->pos.f[0] + xminDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zminDir.f[2]) == 0) || (stanWalkLine(&currentTile, (prop->pos.f[0] + xminDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zminDir.f[2], (prop->pos.f[0] + xmaxDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xmaxDir.f[2]) + zminDir.f[2]) == 0)) || (stanWalkLine(&currentTile, (prop->pos.f[0] + xmaxDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xmaxDir.f[2]) + zminDir.f[2], (prop->pos.f[0] + xmaxDir.f[0]) + zmaxDir.f[0], (prop->pos.f[2] + xmaxDir.f[2]) + zmaxDir.f[2]) == 0)) || (stanWalkLine(&currentTile, (prop->pos.f[0] + xmaxDir.f[0]) + zmaxDir.f[0], (prop->pos.f[2] + xmaxDir.f[2]) + zmaxDir.f[2], (prop->pos.f[0] + xminDir.f[0]) + zmaxDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zmaxDir.f[2]) == 0)) || (stanWalkLine(&currentTile, (prop->pos.f[0] + xminDir.f[0]) + zmaxDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zmaxDir.f[2], (prop->pos.f[0] + xminDir.f[0]) + zminDir.f[0], (prop->pos.f[2] + xminDir.f[2]) + zminDir.f[2]) == 0))
 						{
 							canMove = 0;
 						}
@@ -6167,7 +6166,7 @@ s32 objTick(struct PropRecord *prop)
 						shotFrom.f[2] = nodepos->f[2];
 						mtx4MultAffine(camGetViewToWorldMtxf(), nodemtx, &nodeWorldMtx);
 						mtx4TransformVecInPlace(&nodeWorldMtx, &shotFrom);
-						if (stanWalkLineNoCallback(&shotTile, prop->pos.f[0], prop->pos.f[2], shotFrom.f[0], shotFrom.f[2]) == 0)
+						if (stanWalkLine(&shotTile, prop->pos.f[0], prop->pos.f[2], shotFrom.f[0], shotFrom.f[2]) == 0)
 						{
 							shotFrom.f[0] = prop->pos.f[0];
 							shotFrom.f[1] = prop->pos.f[1];
@@ -8104,7 +8103,7 @@ void objExplode(ObjectRecord *obj, coord3d *target_pos, s32 playernum)
 
         if (stan != NULL)
         {
-            if ((!(tailprop->flags & PROPFLAG_00000008)) && stanWalkLineNoCallback(&stan, tailprop->pos.x, tailprop->pos.z, target_pos->x, target_pos->z))
+            if ((!(tailprop->flags & PROPFLAG_00000008)) && stanWalkLine(&stan, tailprop->pos.x, tailprop->pos.z, target_pos->x, target_pos->z))
             {
                 explosionCreate(prop, target_pos, stan, explosion_type, (obj->flags & 0xe) == 0, playernum, tailprop->rooms, 0);
             }
@@ -8150,7 +8149,7 @@ void objExplode(ObjectRecord *obj, coord3d *target_pos, s32 playernum)
 
         if (stan != NULL)
         {
-            if ((!(tailprop->flags & PROPFLAG_00000008)) && stanWalkLineNoCallback(&stan, tailprop->pos.x, tailprop->pos.z, target_pos->x, target_pos->z))
+            if ((!(tailprop->flags & PROPFLAG_00000008)) && stanWalkLine(&stan, tailprop->pos.x, tailprop->pos.z, target_pos->x, target_pos->z))
             {
                 explosionCreate(prop, target_pos, stan, 0x10, (obj->flags & (PROPFLAG_ONSCREEN | PROPFLAG_ENABLED | PROPFLAG_00000008)) == 0, playernum, tailprop->rooms, 0);
             }
@@ -9459,7 +9458,7 @@ bool objTestForInteract(PropRecord* prop)
 
                 if (anglediff <= maxAngle)
                 {
-                    if (!(obj->flags2 & PROPFLAG2_INTERACTCHECKLOS) || (stanWalkLineNoCallback(&stan, player->pos.x, player->pos.z, prop->pos.x, prop->pos.z) != 0))
+                    if (!(obj->flags2 & PROPFLAG2_INTERACTCHECKLOS) || (stanWalkLine(&stan, player->pos.x, player->pos.z, prop->pos.x, prop->pos.z) != 0))
                     {
                         g_InteractProp = prop;
                     }

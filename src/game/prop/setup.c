@@ -266,7 +266,7 @@ void setupObject(ObjectRecord *obj)
 
                 tile = boundpad->stan;
 
-                if (stanWalkLineNoCallback(&tile, boundpad->pos.f[0], boundpad->pos.f[2], pos.f[0], pos.f[2]) == 0)
+                if (stanWalkLine(&tile, boundpad->pos.f[0], boundpad->pos.f[2], pos.f[0], pos.f[2]) == 0)
                 {
                     pos.f[0] = boundpad->pos.f[0];
                     pos.f[1] = boundpad->pos.f[1];
@@ -837,7 +837,7 @@ void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, c
     padGetBboxCentre(pad, &center);
     centretile = (StandTile *)pad->stan;
 
-    if (stanWalkLineNoCallback(&centretile, pad->pos.f[0], pad->pos.f[2], center.f[0], center.f[2]) == 0)
+    if (stanWalkLine(&centretile, pad->pos.f[0], pad->pos.f[2], center.f[0], center.f[2]) == 0)
     {
         centretile = (StandTile *)pad->stan;
         center.f[0] = pad->pos.f[0];
@@ -861,7 +861,7 @@ void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, c
     pos1->f[2] = center.f[2] + (normal.f[2] * 50.0f);
 
 
-    stanWalkLineNoCallback(&tile, center.f[0], center.f[2], pos1->f[0], pos1->f[2]);
+    stanWalkLine(&tile, center.f[0], center.f[2], pos1->f[0], pos1->f[2]);
 
 
     *room1 = (s32) tile->room;
@@ -871,7 +871,7 @@ void padGetRoomsEitherSide(struct BoundPadRecord *pad, s32 *room1, s32 *room2, c
     pos2->f[1] = center.f[1];
     pos2->f[2] = center.f[2] - (normal.f[2] * 50.0f);
 
-    stanWalkLineNoCallback(&tile, center.f[0], center.f[2], pos2->f[0], pos2->f[2]);
+    stanWalkLine(&tile, center.f[0], center.f[2], pos2->f[0], pos2->f[2]);
 
 
     *room2 = (s32) tile->room;
@@ -966,7 +966,7 @@ void setupDoor(struct DoorRecord *door, s32 cmdindex)
             }
 
             tile = pad->stan;
-            if (stanWalkLineNoCallback(&tile, pad->pos.f[0], pad->pos.f[2], newpos.f[0], newpos.f[2]) != 0)
+            if (stanWalkLine(&tile, pad->pos.f[0], pad->pos.f[2], newpos.f[0], newpos.f[2]) != 0)
             {
                 pad->stan = tile;
                 pad->pos.f[0] = newpos.f[0];
@@ -1025,7 +1025,7 @@ void setupDoor(struct DoorRecord *door, s32 cmdindex)
 
         if (!(door->flags2 & 1))
         {
-            if (stanWalkLineNoCallback(&postile, floorpos.f[0], floorpos.f[2], pos.f[0], pos.f[2]) != 0)
+            if (stanWalkLine(&postile, floorpos.f[0], floorpos.f[2], pos.f[0], pos.f[2]) != 0)
             {
                 floortile = postile;
             }
@@ -1577,7 +1577,7 @@ void setupCreateProps(enum LEVELID stageId)
 
                             if (tank_prop)
                             {
-                                stan_y = stanGetPositionYValue(tank_prop->stan, tank_prop->pos.f[0], tank_prop->pos.f[2]);
+                                stan_y = stanGetFloorY(tank_prop->stan, tank_prop->pos.f[0], tank_prop->pos.f[2]);
                             }
 
                             pdef_tank->stan_y = stan_y;

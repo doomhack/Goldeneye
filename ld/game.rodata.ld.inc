@@ -51,6 +51,8 @@
       build/OUTCODE/src/game/menu/watchmenu.o (.rodata);
       build/OUTCODE/src/game/text/text.o (.rodata);
       build/OUTCODE/src/game/nav/stan.o (.rodata);
+      build/OUTCODE/src/game/nav/stanwalk.o (.rodata);
+      build/OUTCODE/src/game/nav/geometry.o (.rodata);
       build/OUTCODE/src/game/world/bg.o (.rodata);
       build/OUTCODE/src/game/world/bgfog.o (.rodata);
       build/OUTCODE/src/game/world/lightfixture.o (.rodata);

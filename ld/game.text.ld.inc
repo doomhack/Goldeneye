@@ -50,6 +50,8 @@
       build/OUTCODE/src/game/menu/watchmenu.o (.text);
       build/OUTCODE/src/game/text/text.o (.text);
       build/OUTCODE/src/game/nav/stan.o (.text);
+      build/OUTCODE/src/game/nav/stanwalk.o (.text);
+      build/OUTCODE/src/game/nav/geometry.o (.text);
       build/OUTCODE/src/game/world/bg.o (.text);
       build/OUTCODE/src/game/world/bgfog.o (.text);
       build/OUTCODE/src/game/world/lightfixture.o (.text);

@@ -6441,7 +6441,7 @@ void shotFireBullet(s32 hand)
     dest.y = (shotdata.dir.y * M_U16_MAX_VALUE_F) + shotdata.gunpos.y;
     dest.z = (shotdata.dir.z * M_U16_MAX_VALUE_F) + shotdata.gunpos.z;
 
-    if (stanWalkLineNoCallback(&fromtile, playerprop->pos.x, playerprop->pos.z, shotdata.gunpos.x, shotdata.gunpos.z))
+    if (stanWalkLine(&fromtile, playerprop->pos.x, playerprop->pos.z, shotdata.gunpos.x, shotdata.gunpos.z))
     {
         distscale = bgGetLevelScale() * bgGetLevelVisibilityScale();
         playerpos = playerGetPos();
@@ -6450,7 +6450,7 @@ void shotFireBullet(s32 hand)
 
         stanResetHits();
 
-        if (!stanWalkLineNoCallback(&fromtile, shotdata.gunpos.x, shotdata.gunpos.z, dest.x, dest.z))
+        if (!stanWalkLine(&fromtile, shotdata.gunpos.x, shotdata.gunpos.z, dest.x, dest.z))
         {
             chrStanLineDirIntersection(&shotdata.gunpos, &shotdata.dir, &stanhit);
             hitbgstan = 1;
@@ -6469,7 +6469,7 @@ void shotFireBullet(s32 hand)
         scaleddir.y = playerpos->y * distscale;
         scaleddir.z = playerpos->z * distscale;
         hittile = fromtile;
-        startroom = stanGetTileRoom(fromtile);
+        startroom = fromtile->room;
 
         for (i = 0; i < 256; i++)
         {
@@ -6487,7 +6487,7 @@ void shotFireBullet(s32 hand)
         {
             if (g_BgPortals[0].offset_portal != 0)
             {
-                bestroom = shotFindBgHitInConnectedRooms(stanGetTileRoom(currentPlayerGetProp()->stan), playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
+                bestroom = shotFindBgHitInConnectedRooms(currentPlayerGetProp()->stan->room, playerpos, &stanhit, &hitdir, &scaleddir, visited, &bghit);
             }
             else
             {

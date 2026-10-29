@@ -41,6 +41,7 @@
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
 #include "game/nav/stan.h"
+#include "game/nav/waypoint.h"
 
 
 
@@ -76,7 +77,7 @@ f32 chrGetRunAnimSpeed           (ChrRecord *self);
 void chrGoPosGetCurWaypointInfo                     (ChrRecord *self, coord3d *target_point, StandTile **target_stan);
 s32 chrGoPosCalculateBaseTtl                (ChrRecord *self);
 waypoint *waypointFindOnTile           (StandTile* tile);
-s32 waypointIsOnTile     (StandTile* tile);
+bool waypointIsOnTile     (StandTile* tile);
 f32 waypointDistSqXz                     (coord3d *pos, waypoint *wp);
 waypoint *waypointFindNearPos                (coord3d *pos, StandTile *starttile);
 s32 chrPathToPadIsOffscreen                   (ChrRecord *self, PadRecord *pad);
@@ -2592,7 +2593,7 @@ waypoint *waypointFindOnTile(StandTile *tile)
 }
 
 
-s32 waypointIsOnTile(StandTile* tile)
+bool waypointIsOnTile(StandTile* tile)
 {
     return waypointFindOnTile(tile) != NULL;
 }
@@ -2623,7 +2624,7 @@ waypoint *waypointFindNearPos(coord3d *pos, StandTile *starttile)
     waypoint *wayp = NULL;
     s32 *n = NULL;
 
-    tile = stanFillSearch(starttile, waypointIsOnTile);
+    tile = stanSearchOutward(starttile, waypointIsOnTile);
     if (tile != NULL)
     {
         ret = waypointFindOnTile(tile);
@@ -4391,7 +4392,7 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
                 region.z = (pad->up.z * (self->chrwidth * 1.1f)) + pad->pos.z;
 
                 //if able to reach region surrounding pad?
-                if (stanWalkLineNoCallback(&stan2, pad->pos.x, pad->pos.z, region.x, region.z) &&
+                if (stanWalkLine(&stan2, pad->pos.x, pad->pos.z, region.x, region.z) &&
                     chrGoToPos(self, &region, stan2, speed))
                 {
                     return TRUE;
@@ -6162,8 +6163,8 @@ void chrFireHand(ChrRecord *self, s32 hand)
                         else
                         {
                             if ((
-                                    (g_StanHitProp == NULL)
-                                    || ((g_StanHitProp->type != PROP_TYPE_CHR) && (g_StanHitProp->type != PROP_TYPE_VIEWER))
+                                    (g_StanHit.prop == NULL)
+                                    || ((g_StanHit.prop->type != PROP_TYPE_CHR) && (g_StanHit.prop->type != PROP_TYPE_VIEWER))
                                 )
                                 && (shotDistSq < 10000.0f))
                             {
@@ -6178,21 +6179,21 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                 sparkCreate(&hitpos, 1, 26.0f, (s16) hittile->room);
                             }
 
-                            if (g_StanHitProp != NULL)
+                            if (g_StanHit.prop != NULL)
                             {
-                                shotPlayHitPropSound(weapon->weaponnum, g_StanHitProp, -1);
+                                shotPlayHitPropSound(weapon->weaponnum, g_StanHit.prop, -1);
 
-                                if (g_StanHitProp->type == PROP_TYPE_CHR)
+                                if (g_StanHit.prop->type == PROP_TYPE_CHR)
                                 {
                                     if ((self->chrflags & CHRFLAG_CAN_SHOOT_CHRS) != 0)
                                     {
-                                        chrTakeShot(g_StanHitProp->chr, 0xF, &shotdir, weapon->weaponnum, 0);
+                                        chrTakeShot(g_StanHit.prop->chr, 0xF, &shotdir, weapon->weaponnum, 0);
                                     }
                                 }
-                                else if ((g_StanHitProp->type == PROP_TYPE_OBJ) || (g_StanHitProp->type == PROP_TYPE_WEAPON))
+                                else if ((g_StanHit.prop->type == PROP_TYPE_OBJ) || (g_StanHit.prop->type == PROP_TYPE_WEAPON))
                                 {
                                     chrobjMaybeDetonateObjectIfFlags(
-                                        g_StanHitProp->obj,
+                                        g_StanHit.prop->obj,
                                         weaponGetDamage(weapon->weaponnum),
                                         &hitpos,
                                         weapon->weaponnum,
@@ -7805,7 +7806,7 @@ s32 chrNavCheckForObstacle(ChrRecord *self, coord3d *from, StandTile *fromtile, 
         stanGetCollisionEdge(&leftEdgeStart, &leftEdgeEnd);
         orderPointsBySide(&leftEdgeStart, &leftEdgeEnd, &dir);
 
-        stanval1 = g_StanHitFrac;
+        stanval1 = g_StanHit.frac;
     }
 
     tile = fromtile;
@@ -7838,7 +7839,7 @@ s32 chrNavCheckForObstacle(ChrRecord *self, coord3d *from, StandTile *fromtile, 
         stanGetCollisionEdge(&rightEdgeStart, &rightEdgeEnd);
         orderPointsBySide(&rightEdgeStart, &rightEdgeEnd, &dir);
 
-        stanval2 = g_StanHitFrac;
+        stanval2 = g_StanHit.frac;
     }
 
     if ((leftBlocked != 0) && (rightBlocked != 0))
@@ -9135,7 +9136,7 @@ bool chrPadRoomIsVisible(ChrRecord *self, s32 padnum)
 
     if (padstan)
     {
-        return bgRoomIsVisible(stanGetTileRoom(padstan));
+        return bgRoomIsVisible(padstan->room);
     }
 
     return FALSE;
@@ -9888,7 +9889,7 @@ s32 chrIsTargetNearlyInSight(ChrRecord *self)
 
     stanResetHits();
 
-    if (stanWalkLineNoCallback(&stan, self_prop->pos.x, self_prop->pos.z, player_prop->pos.x, player_prop->pos.z))
+    if (stanWalkLine(&stan, self_prop->pos.x, self_prop->pos.z, player_prop->pos.x, player_prop->pos.z))
     {
         return FALSE;
     }
@@ -9918,9 +9919,9 @@ s32 chrIsPosOffScreen(coord3d *pos, StandTile *tile)
 
     offscreen = TRUE;
 
-    if (bgRoomIsVisible(stanGetTileRoom(tile)) && fogPositionIsVisibleThroughFog(pos, 0.0f))
+    if (bgRoomIsVisible(tile->room) && fogPositionIsVisibleThroughFog(pos, 0.0f))
     {
-        if (bgGet2dBboxByRoomId(stanGetTileRoom(tile), &box))
+        if (bgGet2dBboxByRoomId(tile->room, &box))
         {
             offscreen = camIsPosInScreenBox(pos, 200.0f, &box) == 0;
         }

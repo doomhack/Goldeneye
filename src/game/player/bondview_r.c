@@ -504,7 +504,7 @@ void playerApplyIntro(void)
     }
     else
     {
-        start_stan = stanFindNearestLegalPos(&start_pos.f[0], &start_pos.f[1], &start_pos.f[2], 30.0f);
+        start_stan = stanFindNearestLegalPos(&start_pos, 30.0f);
         stan_height = playerGetFloorY(start_stan, start_pos.f[0], start_pos.f[2]);
         start_pos.f[1] = g_CurrentPlayer->eyeheight + stan_height;
         g_CurrentPlayer->manGround = stan_height;
