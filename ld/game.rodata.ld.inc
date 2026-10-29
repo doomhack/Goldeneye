@@ -24,6 +24,10 @@
       build/OUTCODE/src/game/prop/objslots.o (.rodata);
       build/OUTCODE/src/game/prop/carried.o (.rodata);
       build/OUTCODE/src/game/prop/mine.o (.rodata);
+      build/OUTCODE/src/game/prop/objtick.o (.rodata);
+      build/OUTCODE/src/game/prop/cctv.o (.rodata);
+      build/OUTCODE/src/game/prop/autogun.o (.rodata);
+      build/OUTCODE/src/game/prop/vehicle.o (.rodata);
       build/OUTCODE/src/game/math/physics.o (.rodata);
       build/OUTCODE/src/game/math/matrix.o (.rodata);
       build/OUTCODE/src/game/math/trig.o (.rodata);

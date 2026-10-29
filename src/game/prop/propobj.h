@@ -21,18 +21,11 @@
 
 #endif
 
-extern f32 g_CctvAlarmTimeScale;
-extern f32 g_CctvDamageScale;
-extern f32 g_AutogunPendingDamageTick;
-extern f32 g_AutogunDamageScalar;
-extern f32 g_AutogunDamageScale;
 extern f32 g_SoloAmmoMultiplier;
 
 extern struct LinkRecord *g_LevelLoadPropSwitch;
 extern LockDoorRecord *g_LevelLoadPropLockDoor;
 extern SafeObjectRecord *g_LevelLoadPropSafeItem;
-extern f32 g_AutogunPendingDamageTick;
-extern f32 g_AutogunDamageScalar;
 extern f32 g_SoloAmmoMultiplier;
 
 #if defined(VERSION_EU)
@@ -54,7 +47,6 @@ void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop)
 Gfx                 *weaponRenderTracers(Gfx *gdl);
 void                 objGetTileShading(PropRecord *prop, rgba_u8 *colour);
 void                 objGetShadeColour(PropRecord *prop, rgba_u8 *colour);
-void                 objDropRecursively(PropRecord *prop);
 void                 chrobjCollisionRelated(ObjectRecord *);
 void                 objChangeShading(ObjectRecord *, coord3d *, Mtxf *, StandTile *);
 void                 objGetCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom);
@@ -85,7 +77,6 @@ void                 objUpdateShading(rgba_u8 *dest, rgba_u8 *src);
 void                 modelResetDeformedVertices(Model* model);
 
 bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, coord2d *max, coord2d *min);
-s32 objTick(struct PropRecord *prop);
 
 
 #include "game/prop/objdamage.h"
@@ -94,5 +85,9 @@ s32 objTick(struct PropRecord *prop);
 #include "game/prop/objslots.h"
 #include "game/prop/carried.h"
 #include "game/prop/mine.h"
+#include "game/prop/objtick.h"
+#include "game/prop/cctv.h"
+#include "game/prop/autogun.h"
+#include "game/prop/vehicle.h"
 
 #endif

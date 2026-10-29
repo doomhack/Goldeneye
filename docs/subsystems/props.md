@@ -7,14 +7,18 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | --- | --- |
 | `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects at run time: the per-frame tick and drawing |
+| `src/game/prop/propobj.c` | Objects at run time: creating, placing, freeing, shading and drawing them |
+| `src/game/prop/objtick.c` | The per-frame tick of objects and doors |
+| `src/game/prop/cctv.c` | Security cameras |
+| `src/game/prop/autogun.c` | Autoguns (drone guns) |
+| `src/game/prop/vehicle.c` | Vehicles, aircraft, and the tank's model |
 | `src/game/prop/objdamage.c` | Damage to objects: destroying, exploding, bending the model, what being destroyed does |
 | `src/game/prop/objhit.c` | Rays against object models (`modelFindTriangleHit`), the player's shots hitting objects |
 | `src/game/prop/projectile.c` | Objects in flight: the projectile pools, moving with collision, bouncing, settling, sticking |
 | `src/game/prop/pickup.c` | Picking props up and using them with the action button |
 | `src/game/prop/objslots.c` | Slots for objects made during play: weapons, hats and ammo crates |
 | `src/game/prop/carried.c` | Guns and hats that characters carry, and dropping them |
-| `src/game/prop/mine.c` | Remote and proximity mines |
+| `src/game/prop/mine.c` | Live explosives: grenades, rockets, plastique, and remote and proximity mines |
 | `src/game/prop/door.c` | Doors: moving, collision, portals, sounds, and the player using them |
 | `src/game/prop/monitor.c` | Monitor screens: running their scripts and drawing them |
 | `src/game/prop/monitorscripts.c` | The monitor scripts |
@@ -111,11 +115,28 @@ the colour of the tile it is on.
 
 ## The object tick
 
-`objTick` is the tick for every object and door, and is about 1,600 lines long. It handles
-falling and flying, security cameras spotting Bond, autoguns aiming and firing, vehicles
-and aircraft following their paths, the tank, doors opening and closing, and weapons such
-as mines (`chrobjWeaponTick`). Attached props are ticked through `objTickAttached`, and
-props out of view do the minimum through `objTickOffscreen`.
+`objTick` (`objtick.c`) is the tick for every object and door, on every player's pass.
+An object's own behaviour runs once a frame, on the "sim owner" pass: the first player in
+the frame's shuffled order, or for a projectile in flight the player who threw it. That
+part moves projectiles (`projectileTick`), and runs doors (`doorTick`), security cameras
+(`cctvTick`), autoguns (`autogunTick`), vehicles (`vehicleTick`) and aircraft
+(`aircraftTick`). The rest runs on every pass, as it is per view: the opacity of tinted
+glass, whether the object is in view, and its model's matrices (`objGetModelMatrices`,
+which calls the type's own: `cctvGetModelMatrices`, `vehicleGetModelMatrices` and so on).
+After that, the sim owner pass fires autoguns (`autogunTickFire`) and drops anything
+attached to a destroyed object.
+
+Every object, carried or in view or not, also goes through `objTickExplosive`
+(`mine.c`), which counts down live grenades and mines. Attached props are ticked through
+`objTickAttached`, and props out of view do the minimum through `objTickOffscreen`.
+
+A security camera sweeps its head between two yaws and sets off the alarm if it sees a
+player for 5 seconds (10 on Agent). An autogun turns towards a player in range and in sight,
+fires while it is aimed close, and keeps firing for 2 seconds after losing sight; damage
+builds up while it is aimed right at the player. A vehicle drives along the path its AI
+script gives it, turning towards each waypoint, and tilts to fit the floor under its
+wheels. In co-op cameras watch every living player, and an autogun keeps the nearest one
+as its target.
 
 `objTickPlayer` and `weaponTickPlayer` (`pickup.c`), called from `propsTickPickups`, check
 whether a player is touching a prop and can pick it up.
@@ -182,10 +203,12 @@ grenade flies forwards and up, a shot-off hat flies away from the player, and an
 else tumbles off in a random direction. It starts where its model was drawn if it can
 reach that point, otherwise at the guard's position.
 
-## Mines
+## Mines and other live explosives
 
-A placed mine is a weapon object ticked by `objTick`: its timer counts down while it arms,
-then 1 means primed and 0 that it goes off. Remote mines go off when their owner uses the
+Thrown grenades, launcher rounds, rockets, plastique and placed mines are weapon objects
+whose timer `objTickExplosive` counts down. Grenades and timed mines go off when it runs
+out. A placed mine's timer counts down while it arms, then 1 means primed and 0 that it
+goes off. Remote mines go off when their owner uses the
 detonator (`remoteMinesDetonate`). Primed proximity mines are kept in a list of 30
 (`g_ProxMines`, `mine.c`) so that guards and moving objects (thrown, falling or driven) can
 set them off as well as the player (`proxminesDetonateNear`, within 2.5 m).
