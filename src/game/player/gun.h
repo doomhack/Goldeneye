@@ -239,8 +239,8 @@ typedef struct CasingRecord {
     coord3d pos;
     coord3d vel;
 #if VERSION_EU
-    f32 rot_mtx[3][3];
-    f32 rot_velocity_mtx[3][3];
+    Mtx3f rot_mtx;
+    Mtx3f rot_velocity_mtx;
 #else
     Mtxf rot_mtx;
     Mtxf rot_velocity_mtx;

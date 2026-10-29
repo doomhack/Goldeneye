@@ -1,239 +1,280 @@
+/**
+ * Quaternions (quatf: w, x, y, z), used to blend rotations smoothly: between animation
+ * frames, from a thrown object's spin to lying flat, and along the first-person gun's
+ * keyframed moves.
+ *
+ * A unit quaternion (w, x, y, z) is a rotation by angle a around the unit axis v, with
+ * w = cos(a/2) and (x, y, z) = v sin(a/2). q and -q are the same rotation, so before
+ * blending two, quatMakeShortestPath flips one if they are more than half a turn apart.
+ *
+ * As with the matrices, the order of the floating-point operations is kept as it was: the
+ * game's state depends on the exact results.
+ */
 #include <ultra64.h>
+#include <math.h>
 #include "game/math/quaternion.h"
 #include "game/math/trig.h"
 
-#define HALF2RAD(x) (x * (M_PI_F / 32768.0f))
+/** How close to (anti)parallel two quaternions must be for slerp to fall back to a lerp. */
+#define QUAT_SLERP_EPSILON 0.00001001f
 
-void quatFromAngles(vec3f angles, quatf q)
+/** The rotation mtx4LoadRotation makes from the same Euler angles (x, then y, then z). */
+void quatFromAngles(const coord3d *angles, quatf *q)
 {
-    f32 cosX = cosf(angles[0] * 0.5f);
-    f32 sinX = sinf(angles[0] * 0.5f);
-    f32 cosY = cosf(angles[1] * 0.5f);
-    f32 sinY = sinf(angles[1] * 0.5f);
-    f32 cosZ = cosf(angles[2] * 0.5f);
-    f32 sinZ = sinf(angles[2] * 0.5f);
+    f32 cosX = cosf(angles->x * 0.5f);
+    f32 sinX = sinf(angles->x * 0.5f);
+    f32 cosY = cosf(angles->y * 0.5f);
+    f32 sinY = sinf(angles->y * 0.5f);
+    f32 cosZ = cosf(angles->z * 0.5f);
+    f32 sinZ = sinf(angles->z * 0.5f);
     f32 cosXCosY = cosX * cosY;
     f32 cosXSinY = cosX * sinY;
     f32 sinXCosY = sinX * cosY;
     f32 sinXSinY = sinX * sinY;
-    q[0] = (cosXCosY * cosZ) + (sinXSinY * sinZ);
-    q[1] = (sinXCosY * cosZ) - (cosXSinY * sinZ);
-    q[2] = (cosXSinY * cosZ) + (sinXCosY * sinZ);
-    q[3] = (cosXCosY * sinZ) - (sinXSinY * cosZ);
+
+    q->w = cosXCosY * cosZ + sinXSinY * sinZ;
+    q->x = sinXCosY * cosZ - cosXSinY * sinZ;
+    q->y = cosXSinY * cosZ + sinXCosY * sinZ;
+    q->z = cosXCosY * sinZ - sinXSinY * cosZ;
 }
 
-void quatToMtx4(quatf q, mat44f matrix)
+/** The rotation matrix of a quaternion, which needn't have length 1. */
+void quatToMtx4(const quatf *q, Mtxf *matrix)
 {
-    f32 scale = 2.0f / ((q[0] * q[0]) + (q[1] * q[1]) + (q[2] * q[2]) +  (q[3] * q[3]));
-    f32 xs = q[1] * scale;
-    f32 ys = q[2] * scale;
-    f32 zs = q[3] * scale;
-    f32 wx = q[0] * xs;
-    f32 wy = q[0] * ys;
-    f32 wz = q[0] * zs;
-    f32 xx = q[1] * xs;
-    f32 xy = q[1] * ys;
-    f32 xz = q[1] * zs;
-    f32 yy = q[2] * ys;
-    f32 yz = q[2] * zs;
-    f32 zz = q[3] * zs;
-    matrix[0][0] = (1.0f - (yy + zz));
-    matrix[0][1] = (xy + wz);
-    matrix[0][2] = (xz - wy);
-    matrix[1][0] = (xy - wz);
-    matrix[1][1] = (1.0f - (xx + zz));
-    matrix[1][2] = (yz + wx);
-    matrix[2][0] = (xz + wy);
-    matrix[2][1] = (yz - wx);
-    matrix[2][2] = (1.0f - (xx + yy));
-    matrix[3][0] = 0.0f;
-    matrix[3][1] = 0.0f;
-    matrix[3][2] = 0.0f;
-    matrix[0][3] = 0.0f;
-    matrix[1][3] = 0.0f;
-    matrix[2][3] = 0.0f;
-    matrix[3][3] = 1.0f;
+    f32 scale = 2.0f / (q->w * q->w + q->x * q->x + q->y * q->y + q->z * q->z);
+    f32 xs = q->x * scale;
+    f32 ys = q->y * scale;
+    f32 zs = q->z * scale;
+    f32 wx = q->w * xs;
+    f32 wy = q->w * ys;
+    f32 wz = q->w * zs;
+    f32 xx = q->x * xs;
+    f32 xy = q->x * ys;
+    f32 xz = q->x * zs;
+    f32 yy = q->y * ys;
+    f32 yz = q->y * zs;
+    f32 zz = q->z * zs;
+
+    *matrix = (Mtxf) {{
+        {1.0f - (yy + zz), xy + wz,          xz - wy,          0.0f},
+        {xy - wz,          1.0f - (xx + zz), yz + wx,          0.0f},
+        {xz + wy,          yz - wx,          1.0f - (xx + yy), 0.0f},
+        {0.0f,             0.0f,             0.0f,             1.0f},
+    }};
 }
 
-void quatToMtx4WithTranslation(vec3f position, quatf rotation, mat44f matrix)
+void quatToMtx4WithTranslation(const coord3d *position, const quatf *q, Mtxf *matrix)
 {
-    quatToMtx4(rotation, matrix);
-    matrix[3][0] = position[0];
-    matrix[3][1] = position[1];
-    matrix[3][2] = position[2];
+    quatToMtx4(q, matrix);
+    matrix->m[3][0] = position->x;
+    matrix->m[3][1] = position->y;
+    matrix->m[3][2] = position->z;
 }
 
-#define EPSILON 0.00001001f
-
-void quatSlerp(quatf q1, quatf q2, f32 t, quatf result)
+static f32 quatDot(const quatf *a, const quatf *b)
 {
-    f32 dot = (q1[0] * q2[0]) + (q1[1] * q2[1]) + (q1[2] * q2[2]) + (q1[3] * q2[3]);
-    f32 theta;
-    f32 thetaQ1;
-    f32 thetaQ2;
-    f32 sine;
-    f32 coeffQ1;
-    f32 coeffQ2;
-    if (dot < (-1.0f + EPSILON)) {
-        result[0] = ((1.0f - t) * q1[0]) - (q2[0] * t);
-        result[1] = ((1.0f - t) * q1[1]) - (q2[1] * t);
-        result[2] = ((1.0f - t) * q1[2]) - (q2[2] * t);
-        result[3] = ((1.0f - t) * q1[3]) - (q2[3] * t);
-    }
-    else if (dot <= (1.0f - EPSILON)) {
-        theta = mathAcos(dot);
-        thetaQ1 = (1.0f - t) * theta;
-        thetaQ2 = t * theta;
-        sine = sinf(theta);
-        coeffQ1 = sinf(thetaQ1) / sine;
-        coeffQ2 = sinf(thetaQ2) / sine;
-        result[0] = (coeffQ1 * q1[0]) + (q2[0] * coeffQ2);
-        result[1] = (coeffQ1 * q1[1]) + (q2[1] * coeffQ2);
-        result[2] = (coeffQ1 * q1[2]) + (q2[2] * coeffQ2);
-        result[3] = (coeffQ1 * q1[3]) + (q2[3] * coeffQ2);
-    } else {
-        result[0] = ((1.0f - t) * q1[0]) + (q2[0] * t);
-        result[1] = ((1.0f - t) * q1[1]) + (q2[1] * t);
-        result[2] = ((1.0f - t) * q1[2]) + (q2[2] * t);
-        result[3] = ((1.0f - t) * q1[3]) + (q2[3] * t);
+    return a->w * b->w + a->x * b->x + a->y * b->y + a->z * b->z;
+}
+
+/** Negates `to` if that makes it closer to `from`, so blending takes the short way round. */
+void quatMakeShortestPath(const quatf *from, quatf *to)
+{
+    if (quatDot(from, to) < 0.0f)
+    {
+        for (s32 i = 0; i < 4; i++)
+        {
+            to->f[i] = -to->f[i];
+        }
     }
 }
 
-void quatSlerpFromIdentity(quatf q, f32 t, quatf result)
+/**
+ * Spherical linear interpolation: the rotation `t` of the way from `from` to `to`, at a
+ * steady speed. Nearly equal (or opposite) quaternions are blended linearly instead, where
+ * the slerp formula would divide by nearly 0.
+ */
+void quatSlerp(const quatf *from, const quatf *to, f32 t, quatf *result)
 {
-    f32 dot = q[0];
+    f32 dot = quatDot(from, to);
+
+    if (dot < -1.0f + QUAT_SLERP_EPSILON)
+    {
+        for (s32 i = 0; i < 4; i++)
+        {
+            result->f[i] = (1.0f - t) * from->f[i] - to->f[i] * t;
+        }
+    }
+    else if (dot <= 1.0f - QUAT_SLERP_EPSILON)
+    {
+        f32 theta = mathAcos(dot);
+        f32 sinTheta = sinf(theta);
+        f32 weightFrom = sinf((1.0f - t) * theta) / sinTheta;
+        f32 weightTo = sinf(t * theta) / sinTheta;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            result->f[i] = weightFrom * from->f[i] + to->f[i] * weightTo;
+        }
+    }
+    else
+    {
+        for (s32 i = 0; i < 4; i++)
+        {
+            result->f[i] = (1.0f - t) * from->f[i] + to->f[i] * t;
+        }
+    }
+}
+
+/** quatSlerp from no rotation (1, 0, 0, 0) to `q`, by the short way. */
+void quatSlerpFromIdentity(const quatf *q, f32 t, quatf *result)
+{
+    f32 dot = q->w;
     f32 identityW = 1.0f;
-    f32 theta;
-    f32 thetaQ;
-    f32 thetaIdentity;
-    f32 sine;
-    f32 coeffQ;
-    f32 coeffIdentity;
-    if (q[0] < 0.0f) {
+
+    if (q->w < 0.0f)
+    {
         dot = -dot;
         identityW = -identityW;
     }
-    if (dot < -0.99998999f) {
-        result[0] = (q[0] * t) - ((1.0f - t) * identityW);
-        result[1] = (q[1] * t);
-        result[2] = (q[2] * t);
-        result[3] = (q[3] * t);
-    } else if (dot <= 0.99998999f) {
-        theta = mathAcos(dot);
-        thetaQ = t * theta;
-        thetaIdentity = (1.0f - t) * theta;
-        sine = sinf(theta);
-        coeffQ = sinf(thetaQ) / sine;
-        coeffIdentity = sinf(thetaIdentity) / sine;
-        result[0] = (q[0] * coeffQ) + (coeffIdentity * identityW);
-        result[1] = (q[1] * coeffQ);
-        result[2] = (q[2] * coeffQ);
-        result[3] = (q[3] * coeffQ);
-    } else {
-        result[0] = (q[0] * t) + ((1.0f - t) * identityW);
-        result[1] = (q[1] * t);
-        result[2] = (q[2] * t);
-        result[3] = (q[3] * t);
+
+    // (dot is never negative here, so only the last two cases happen)
+    if (dot < -1.0f + QUAT_SLERP_EPSILON)
+    {
+        result->w = q->w * t - (1.0f - t) * identityW;
+        result->x = q->x * t;
+        result->y = q->y * t;
+        result->z = q->z * t;
+    }
+    else if (dot <= 1.0f - QUAT_SLERP_EPSILON)
+    {
+        f32 theta = mathAcos(dot);
+        f32 sinTheta = sinf(theta);
+        f32 weightQ = sinf(t * theta) / sinTheta;
+        f32 weightIdentity = sinf((1.0f - t) * theta) / sinTheta;
+
+        result->w = q->w * weightQ + weightIdentity * identityW;
+        result->x = q->x * weightQ;
+        result->y = q->y * weightQ;
+        result->z = q->z * weightQ;
+    }
+    else
+    {
+        result->w = q->w * t + (1.0f - t) * identityW;
+        result->x = q->x * t;
+        result->y = q->y * t;
+        result->z = q->z * t;
     }
 }
 
-void quatMakeShortestPath(quatf q1, quatf q2)
+/** result = lhs * rhs: the rotation rhs, then lhs. */
+static void quatMult(const quatf *lhs, const quatf *rhs, quatf *result)
 {
-    f32 dot = (q1[0] * q2[0]) + (q1[1] * q2[1]) + (q1[2] * q2[2]) + (q1[3] * q2[3]);
-    if (dot < 0.0f) {
-        q2[0] = -q2[0];
-        q2[1] = -q2[1];
-        q2[2] = -q2[2];
-        q2[3] = -q2[3];
+    result->w = lhs->w * rhs->w - lhs->x * rhs->x - lhs->y * rhs->y - lhs->z * rhs->z;
+    result->x = lhs->w * rhs->x + rhs->w * lhs->x + lhs->y * rhs->z - lhs->z * rhs->y;
+    result->y = lhs->w * rhs->y + rhs->w * lhs->y + lhs->z * rhs->x - lhs->x * rhs->z;
+    result->z = lhs->w * rhs->z + rhs->w * lhs->z + lhs->x * rhs->y - lhs->y * rhs->x;
+}
+
+/** The logarithm of a unit quaternion: (0, v a/2) for a rotation by a around v. */
+static void quatLog(const quatf *q, quatf *result)
+{
+    f32 halfAngle = mathAcos(q->w);
+    f32 sine = sinf(halfAngle);
+
+    result->w = 0.0f;
+
+    if (sine == 0.0f)
+    {
+        result->x = 0.0f;
+        result->y = 0.0f;
+        result->z = 0.0f;
+    }
+    else
+    {
+        result->x = q->x * (halfAngle / sine);
+        result->y = q->y * (halfAngle / sine);
+        result->z = q->z * (halfAngle / sine);
     }
 }
 
-void quatMult(quatf lhs, quatf rhs, quatf result)
+/** The inverse of quatLog. */
+static void quatExp(const quatf *q, quatf *result)
 {
-    result[0] = (lhs[0] * rhs[0]) - (lhs[1] * rhs[1]) - (lhs[2] * rhs[2]) - (lhs[3] * rhs[3]);
-    result[1] = (lhs[0] * rhs[1]) + (rhs[0] * lhs[1]) + (lhs[2] * rhs[3]) - (lhs[3] * rhs[2]);
-    result[2] = (lhs[0] * rhs[2]) + (rhs[0] * lhs[2]) + (lhs[3] * rhs[1]) - (lhs[1] * rhs[3]);
-    result[3] = (lhs[0] * rhs[3]) + (rhs[0] * lhs[3]) + (lhs[1] * rhs[2]) - (lhs[2] * rhs[1]);
-}
+    f32 halfAngle = sqrtf(q->x * q->x + q->y * q->y + q->z * q->z);
 
-void quatLog(quatf q, quatf result)
-{
-    f32 angle = mathAcos(q[0]);
-    f32 sine = sinf(angle);
-    if (sine == 0.0f) {
-        result[0] = 0.0f;
-        result[1] = 0.0f;
-        result[2] = 0.0f;
-        result[3] = 0.0f;
-    } else {
-        result[0] = 0.0f;
-        result[1] = (q[1] * (angle / sine));
-        result[2] = (q[2] * (angle / sine));
-        result[3] = (q[3] * (angle / sine));
+    if (halfAngle == 0.0f)
+    {
+        *result = (quatf) {{1.0f, 0.0f, 0.0f, 0.0f}};
+    }
+    else
+    {
+        f32 scale = sinf(halfAngle) / halfAngle;
+
+        result->w = cosf(halfAngle);
+        result->x = q->x * scale;
+        result->y = q->y * scale;
+        result->z = q->z * scale;
     }
 }
 
-void quatExp(quatf q, quatf result)
+/**
+ * The inner control point for the spline segment through `q`, given its neighbours:
+ * q exp(-(log(q^-1 prev) + log(q^-1 next)) / 4).
+ */
+static void quatSplineControlPoint(const quatf *prev, const quatf *q, const quatf *next, quatf *result)
 {
-    f32 sine;
-    f32 angle = sqrtf((q[1] * q[1]) + (q[2] * q[2]) + (q[3] * q[3]));
-    f32 scale;
-    if (angle == 0.0f) {
-        result[0] = 1.0f;
-        result[1] = 0.0f;
-        result[2] = 0.0f;
-        result[3] = 0.0f;
-    } else {
-        sine = sinf(angle);
-        scale = sine / angle;
-        result[0] = cosf(angle);
-        result[1] = (q[1] * scale);
-        result[2] = (q[2] * scale);
-        result[3] = (q[3] * scale);
-    }
-}
-
-void quatSquadControlPoint(quatf prev, quatf q, quatf next, quatf result)
-{
-    quatf conjugate;
+    quatf inverse = {{q->w, -q->x, -q->y, -q->z}};
     quatf toPrev;
     quatf toNext;
     quatf logPrev;
     quatf logNext;
-    conjugate[0] = q[0];
-    conjugate[1] = -q[1];
-    conjugate[2] = -q[2];
-    conjugate[3] = -q[3];
-    quatMult(conjugate, prev, toPrev);
-    quatMult(conjugate, next, toNext);
-    quatLog(toPrev, logPrev);
-    quatLog(toNext, logNext);
-    logPrev[0] = -(logPrev[0] + logNext[0]) * 0.25f;
-    logPrev[1] = -(logPrev[1] + logNext[1]) * 0.25f;
-    logPrev[2] = -(logPrev[2] + logNext[2]) * 0.25f;
-    logPrev[3] = -(logPrev[3] + logNext[3]) * 0.25f;
-    quatExp(logPrev, toPrev);
-    quatMult(q, toPrev, result);
+    quatf tangent;
+    quatf offset;
+
+    quatMult(&inverse, prev, &toPrev);
+    quatMult(&inverse, next, &toNext);
+    quatLog(&toPrev, &logPrev);
+    quatLog(&toNext, &logNext);
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        tangent.f[i] = -(logPrev.f[i] + logNext.f[i]) * 0.25f;
+    }
+
+    quatExp(&tangent, &offset);
+    quatMult(q, &offset, result);
 }
 
-void quatSquad(quatf q1, quatf q2, quatf q3, quatf q4, f32 t, quatf result)
+/**
+ * Spherical quadrangle interpolation ("squad") from q1 to q2 with control points a and b:
+ * slerp(slerp(q1, q2, t), slerp(a, b, t), 2t(1 - t)).
+ */
+static void quatSquad(const quatf *q1, const quatf *a, const quatf *b, const quatf *q2, f32 t, quatf *result)
 {
-    quatf q5;
-    quatf q6;
-    f32 t2 = (t + t) * (1.0f - t);
-    quatMakeShortestPath(q1, q4);
-    quatSlerp(q1, q4, t, q5);
-    quatMakeShortestPath(q2, q3);
-    quatSlerp(q2, q3, t, q6);
-    quatMakeShortestPath(q5, q6);
-    quatSlerp(q5, q6, t2, result);
+    quatf ends;
+    quatf controls;
+    quatf q2Near = *q2;
+    quatf bNear = *b;
+    f32 blend = (t + t) * (1.0f - t);
+
+    quatMakeShortestPath(q1, &q2Near);
+    quatSlerp(q1, &q2Near, t, &ends);
+    quatMakeShortestPath(a, &bNear);
+    quatSlerp(a, &bNear, t, &controls);
+    quatMakeShortestPath(&ends, &controls);
+    quatSlerp(&ends, &controls, blend, result);
 }
 
-void quatSpline(quatf q1, quatf q2, quatf q3, quatf q4, f32 t, quatf result)
+/**
+ * A smooth curve through a sequence of rotations: the point `t` of the way along the
+ * segment from q1 to q2, with q0 and q3 (the rotations before and after) shaping it.
+ */
+void quatSpline(const quatf *q0, const quatf *q1, const quatf *q2, const quatf *q3, f32 t, quatf *result)
 {
-    quatf q5;
-    quatf q6;
-    quatSquadControlPoint(q1, q2, q3, q5);
-    quatSquadControlPoint(q2, q3, q4, q6);
-    quatSquad(q2, q5, q6, q3, t, result);
+    quatf a;
+    quatf b;
+
+    quatSplineControlPoint(q0, q1, q2, &a);
+    quatSplineControlPoint(q1, q2, q3, &b);
+    quatSquad(q1, &a, &b, q2, t, result);
 }

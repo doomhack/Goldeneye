@@ -490,27 +490,27 @@ s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *m
     frac = time / current->duration;
     tangent = current->interpParam;
 
-    quatFromAngles(current[-1].rot.f, q0);
-    quatFromAngles(current->rot.f, q1);
-    quatFromAngles(current[1].rot.f, q2);
-    quatFromAngles(current[2].rot.f, q3);
+    quatFromAngles(&current[-1].rot, &q0);
+    quatFromAngles(&current->rot, &q1);
+    quatFromAngles(&current[1].rot, &q2);
+    quatFromAngles(&current[2].rot, &q3);
 
-    quatMakeShortestPath(q1, q2);
-    quatMakeShortestPath(q2, q3);
-    quatMakeShortestPath(q1, q0);
+    quatMakeShortestPath(&q1, &q2);
+    quatMakeShortestPath(&q2, &q3);
+    quatMakeShortestPath(&q1, &q0);
 
-    quatSpline(q0, q1, q2, q3, frac, qResult);
+    quatSpline(&q0, &q1, &q2, &q3, frac, &qResult);
 
     interpCardinal3(&current[-1].pos, &current->pos, &current[1].pos, &current[2].pos, frac, tangent, &posResult);
 
     if (hand == GUNLEFT)
     {
         posResult.x = -posResult.x;
-        qResult[0] = -qResult[0];
-        qResult[1] = -qResult[1];
+        qResult.w = -qResult.w;
+        qResult.x = -qResult.x;
     }
 
-    quatToMtx4(qResult, matrix->m);
+    quatToMtx4(&qResult, matrix);
     mtx4SetTranslation(&posResult, matrix);
 
     return 1;

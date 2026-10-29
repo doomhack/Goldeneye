@@ -27,6 +27,7 @@
 #include <ultra64.h>
 #include <bondconstants.h>
 #include "snd.h"
+#include "game/math/mathtypes.h"
 
         /**
  * Syntax Sugar for clarification of intent
@@ -91,17 +92,6 @@ typedef struct AIListRecord
  * This region contains all geometry related structures (points colours and volumes)
  */
 #pragma region geometry
-/*
-    Float version of a graphics matrix, which has higher precision than an Mtx.
-    Matrices are stored as Mtxfs then converted to an Mtx when passed to the GPU.
-    Mtxs use a union and a long long int to force alignments. Mtxfs are not
-    aligned but still use the union for consistency with Mtx.
-*/
-typedef union
-{
-    f32 m[4][4];
-    s32 unused;
-} Mtxf;
 
 typedef union
 {
@@ -207,31 +197,10 @@ typedef union
         s32 p[2];
     } point2d;
 
-    typedef union coord3d
-    {
-        struct
-        {
-            f32 x;
-            f32 y;
-            f32 z;
-        };
-        f32 f[3];
-    } coord3d;
-    typedef coord3d vec3d; //canononical name
 
     /**
      16bit Co-Ordinate used for Integer co-ordinates eg, pumping straight to RSP.
      */
-    typedef union coord16
-    {
-        struct
-        {
-            s16 x;
-            s16 y;
-            s16 z;
-        };
-        s16 AsArray[3];
-    } coord16;
 
     #pragma endregion
 
@@ -2335,8 +2304,8 @@ typedef union
         Mtxf mtx;
         f32 rotFrac; // 0..1 from startRot to restRot
         f32 rotSpeed; // rotFrac added per frame
-        f32 startRot[4]; // quaternion when thrown
-        f32 restRot[4]; // quaternion lying flat
+        quatf startRot; // when thrown
+        quatf restRot; // lying flat
         struct PropRecord* ownerprop;
         f32 bounciness; // vertical speed kept on a bounce
         u32 numBounces;

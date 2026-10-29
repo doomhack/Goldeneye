@@ -185,7 +185,7 @@ void playerDie(void);
 #define aS3d "%s %3d"
 
 
-vec3d g_ForceBondMoveOffset;
+coord3d g_ForceBondMoveOffset;
 s32 g_CoopForceMovePlayer = 0;
 
 s32 g_SurroundBondWithExplosionsTicks;
@@ -8285,7 +8285,7 @@ Gfx *watchRender(Gfx *gdl)
         watchpos.y = g_CurrentPlayer->headbodyoffset.y + g_CurrentPlayer->bond.collision_position.y;
         watchpos.z = (g_CurrentPlayer->bond.theta_transform.z * (g_CurrentPlayer->headbodyoffset.z + (-12.0f))) + (g_CurrentPlayer->bond.collision_position.z + (g_CurrentPlayer->headbodyoffset.x * g_CurrentPlayer->bond.theta_transform.x));
     
-        mtx4LoadYRotationWithTranslation(watchpos.f, (360.0f - g_CurrentPlayer->vv_theta) * 0.017453292f, &watchmtx);
+        mtx4LoadYRotationAndTranslation(&watchpos, (360.0f - g_CurrentPlayer->vv_theta) * 0.017453292f, &watchmtx);
         mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), &watchmtx);
         matrices = dynAllocate(objheader->numMatrices << 6);
         playerSelectCuff(&g_CurrentPlayer->watchModel, objheader, 4);
@@ -8308,11 +8308,11 @@ Gfx *watchRender(Gfx *gdl)
         mtx4LoadFacing(&targetmtx, 0.0f, 0.0f, 0.0f, g_CurrentPlayer->watchLook.x, g_CurrentPlayer->watchLook.y, g_CurrentPlayer->watchLook.z, g_CurrentPlayer->watchUp.x, g_CurrentPlayer->watchUp.y, g_CurrentPlayer->watchUp.z);
         mtx4GetRotation(matrices, &currot);
         mtx4GetRotation(&targetmtx, &targetrot);
-        quatFromAngles(currot.f, quat1);
-        quatFromAngles(targetrot.f, quat2);
-        quatMakeShortestPath(quat1, quat2);
-        quatSlerp(quat1, quat2, t, quat3);
-        quatToMtx4(quat3, matrices->m);
+        quatFromAngles(&currot, &quat1);
+        quatFromAngles(&targetrot, &quat2);
+        quatMakeShortestPath(&quat1, &quat2);
+        quatSlerp(&quat1, &quat2, t, &quat3);
+        quatToMtx4(&quat3, matrices);
         mtx4SetTranslation(&targetpos, matrices);
         mtx4ScaleRows012(g_CurrentPlayer->watchModel.scale, matrices);
         total_seconds = time / 60;
@@ -8339,11 +8339,11 @@ Gfx *watchRender(Gfx *gdl)
             hoursAngle += M_TAU_F;
         }
     
-        mtx4LoadYRotationWithTranslation((f32 *) objheader->Switches[0]->Data, hoursAngle, &matrices[1]);
+        mtx4LoadYRotationAndTranslation((coord3d *) objheader->Switches[0]->Data, hoursAngle, &matrices[1]);
         mtx4MultInPlace(matrices, &matrices[1]);
-        mtx4LoadYRotationWithTranslation((f32 *) objheader->Switches[1]->Data, minutesAngle, &matrices[2]);
+        mtx4LoadYRotationAndTranslation((coord3d *) objheader->Switches[1]->Data, minutesAngle, &matrices[2]);
         mtx4MultInPlace(matrices, &matrices[2]);
-        mtx4LoadYRotationWithTranslation((f32 *) objheader->Switches[2]->Data, secondsAngle, &matrices[3]);
+        mtx4LoadYRotationAndTranslation((coord3d *) objheader->Switches[2]->Data, secondsAngle, &matrices[3]);
         mtx4MultInPlace(matrices, &matrices[3]);
         
         renderdata.flags = 3;

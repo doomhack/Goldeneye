@@ -71,7 +71,7 @@ void modelSetScale(Model *objinst, f32 scale);
 void modelSetAnimTranslationScale(Model* model, f32 scale);
 f32 modelGetNodeRadius(Model *model, ModelNode *node);
 f32 modelGetRadius(Model *model);
-void modelLerp3(vec3d *v, vec3d *w, float frac);
+void modelLerp3(coord3d *v, coord3d *w, float frac);
 f32 modelLerpAngle(f32 from, f32 angle, f32 mult);
 void modelLerpAngles3(coord3d *dst, coord3d *target, f32 mult);
 u16 animReadRootMotion16(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord16 *out);

@@ -1,13 +1,14 @@
 /**
- * Trigonometry: sin and cos, and the inverse functions atan2, asin and acos.
+ * Trigonometry: sin and cos, and the inverse functions atan2 and acos.
  *
  * These are Rare's own versions, not the C library's, and they differ from it:
  *  - mathAtan2 returns an angle in [0, 2pi), not (-pi, pi].
- *  - mathAcos and mathAsin work in 16-bit fixed point through a lookup table, so they are
- *    only accurate to about 1/65536 of pi.
+ *  - mathAcos works in 16-bit fixed point through a lookup table, so it is only accurate to
+ *    about 1/65536 of pi (and mathAtan2, which uses it, likewise).
  *
- * The fixed-point versions take a sine or cosine scaled so that 1.0 is 0x7FFF, and return
- * an angle scaled so that pi is 0x10000.
+ * The game's state depends on the exact results (Rare's attract-mode demos replay against
+ * it), so these keep Rare's arithmetic. tools/hosttest/mathtest.c checks them against the C
+ * library.
  *
  * sinf and cosf replace the C library's: they are single precision throughout, which is
  * accurate to about 1e-7 for the angles the game uses.
@@ -87,7 +88,7 @@ f32 mathAtan2(f32 y, f32 x)
  *   finest: inputs 0x7FE0-0x7FFF, one entry every 0x8
  * Each table's first entry repeats the previous table's last.
  */
-u16 m_acosTableCoarse[] = {
+static const u16 m_acosTableCoarse[] = {
     0x8000,0x7EBA,0x7D74,0x7C2D,0x7AE7,0x79A0,0x7859,0x7711,0x75C9,0x7480,
     0x7337,0x71EC,0x70A1,0x6F55,0x6E07,0x6CB8,0x6B68,0x6A17,0x68C4,0x6770,
     0x661A,0x64C1,0x6367,0x620B,0x60AD,0x5F4C,0x5DE9,0x5C83,0x5B1A,0x59AE,
@@ -97,7 +98,7 @@ u16 m_acosTableCoarse[] = {
     0x1CF6,     0
 };
 
-u16 m_acosTableFine[] = {
+static const u16 m_acosTableFine[] = {
     0x1CF6,0x1CBB,0x1C80,0x1C45,0x1C08,0x1BCC,0x1B8F,0x1B51,0x1B13,0x1AD4,
     0x1A95,0x1A55,0x1A14,0x19D3,0x1992,0x194F,0x190C,0x18C9,0x1884,0x183F,
     0x17F9,0x17B3,0x176B,0x1723,0x16DA,0x1690,0x1645,0x15F9,0x15AC,0x155E,
@@ -107,7 +108,7 @@ u16 m_acosTableFine[] = {
     0x734, 0x63D, 0x518, 0x39A
 };
 
-u16 m_acosTableFinest[] = {
+static const u16 m_acosTableFinest[] = {
     0x39A, 0x31E, 0x28C, 0x1CD,     0,     0
 };
 
@@ -118,9 +119,8 @@ u16 m_acosTableFinest[] = {
 static s32 acosFixedFromTable(s32 cosine)
 {
     s32 mask;
-    u16 *table;
+    const u16 *table;
     s32 shift;
-
     s32 above;
     s32 below;
     s32 step;
@@ -156,27 +156,15 @@ static s32 acosFixedFromTable(s32 cosine)
  * acos in fixed point: the cosine is scaled so 1.0 is 0x7FFF, the result so pi is 0x10000
  * (0xFFFF for a cosine of -1).
  */
-u16 mathAcosFixed(s16 cosine)
+static u16 acosFixed(s16 cosine)
 {
-    s32 angle;
-
     if (cosine >= 0)
     {
-        angle = cosine;
-    }
-    else
-    {
-        angle = -cosine;
+        return acosFixedFromTable(cosine);
     }
 
-    angle = acosFixedFromTable(angle);
-
-    if (cosine < 0)
-    {
-        angle = 0xFFFF - angle;
-    }
-
-    return (u16)angle;
+    // acos(-c) = pi - acos(c)
+    return 0xFFFF - acosFixedFromTable(-cosine);
 }
 
 /** acos in radians, through the fixed-point table. Inputs outside [-1, 1] are clamped. */
@@ -197,7 +185,7 @@ f32 mathAcos(f32 cosine)
         cosineFixed = (cosine * 32767.0f);
     }
 
-    return (mathAcosFixed(cosineFixed) * M_PI_F) / 65535.0f;
+    return (acosFixed(cosineFixed) * M_PI_F) / 65535.0f;
 }
 
 
@@ -225,10 +213,14 @@ static f32 sinPolynomial(f32 x)
 /** Rounds to the nearest integer, ties to even (the FPU's rounding mode). */
 static s32 roundToNearest(f32 value)
 {
+#ifdef __mips__
     s32 result;
 
     __asm__("round.w.s %1, %1\n\tmfc1 %0, %1" : "=r"(result), "+f"(value));
     return result;
+#else
+    return __builtin_lrintf(value); // for the host tests
+#endif
 }
 
 f32 sinf(f32 x)

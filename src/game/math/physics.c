@@ -5,30 +5,35 @@
  * Times are in game ticks (60 per second), and gravity is 1/3.6 units per tick per tick.
  */
 #include <ultra64.h>
-#include "math.h"
-#include "bondconstants.h"
-#include "bondtypes.h"
+#include <math.h>
 #include "random.h"
 #include "game/math/matrix.h"
 #include "game/math/physics.h"
 
-coord3d g_ZeroCoord = { {0, 0, 0} };
+/** A random fraction in [0, 1). */
+static f32 physRandomFrac(void)
+{
+    return (f32) randomGetNext() * 2.3283064e-10f;
+}
 
-/** Loads a small random rotation, up to about 0.12 radians around each axis. */
-void physRandomTumble(Mtxf *mtx)
+/**
+ * Loads a small random rotation per tick, up to about 0.1 radians either way around each
+ * axis. PAL's ticks are longer (50 per second), so it turns 1.2 times as far per tick.
+ */
+void physRandomTumble(Mtxf *tumble)
 {
     coord3d angles;
-    angles = g_ZeroCoord;
+
 #if defined(VERSION_US)
-    angles.x = RANDOMFRAC() * M_TAU_F * 0.03125f - 0.09817477f;
-    angles.y = RANDOMFRAC() * M_TAU_F * 0.03125f - 0.09817477f;
-    angles.z = RANDOMFRAC() * M_TAU_F * 0.03125f - 0.09817477f;
+    angles.x = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
+    angles.y = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
+    angles.z = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
 #else
-    angles.x = RANDOMFRAC() * 7.53982257f * 0.03125f - 0.11780973f;
-    angles.y = RANDOMFRAC() * 7.53982257f * 0.03125f - 0.11780973f;
-    angles.z = RANDOMFRAC() * 7.53982257f * 0.03125f - 0.11780973f;
+    angles.x = physRandomFrac() * 7.53982257f * 0.03125f - 0.11780973f;
+    angles.y = physRandomFrac() * 7.53982257f * 0.03125f - 0.11780973f;
+    angles.z = physRandomFrac() * 7.53982257f * 0.03125f - 0.11780973f;
 #endif
-    mtx4LoadRotation(&angles, mtx);
+    mtx4LoadRotation(&angles, tumble);
 }
 
 /**
@@ -37,9 +42,9 @@ void physRandomTumble(Mtxf *mtx)
  */
 void physRandomLaunch(coord3d *velocity, Mtxf *tumble)
 {
-    velocity->x = RANDOMFRAC() * 1.6666666f * 4.0f - 3.3333333f;
-    velocity->y = RANDOMFRAC() * 1.6666666f * 4.0f;
-    velocity->z = RANDOMFRAC() * 1.6666666f * 4.0f - 3.3333333f;
+    velocity->x = physRandomFrac() * 1.6666666f * 4.0f - 3.3333333f;
+    velocity->y = physRandomFrac() * 1.6666666f * 4.0f;
+    velocity->z = physRandomFrac() * 1.6666666f * 4.0f - 3.3333333f;
 
     physRandomTumble(tumble);
 }
@@ -66,11 +71,9 @@ void physMoveWithGravity(coord3d *pos, coord3d *velocity, f32 ticks)
 }
 
 /** Applies a per-tick rotation `ticks` times. */
-void physApplyTumble(Mtxf *mtx, Mtxf *tumble, s32 ticks)
+void physApplyTumble(Mtxf *mtx, const Mtxf *tumble, s32 ticks)
 {
-    s32 i;
-
-    for (i = 0; i < ticks; i++)
+    for (s32 i = 0; i < ticks; i++)
     {
         mtx4MultAffineInPlace(tumble, mtx);
     }

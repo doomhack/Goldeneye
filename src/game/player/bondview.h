@@ -569,16 +569,16 @@ struct player
   f32 headamplitude;
   f32 sideamplitude;
   coord3d headpos;
-  vec3d headlook;
+  coord3d headlook;
 
-  vec3d headup;
+  coord3d headup;
   coord3d headpossum;
 
   // headlooksum[2] has NTSC->PAL conversion rate (5/6)
   coord3d headlooksum;
 
   // headupsum[1] has NTSC->PAL conversion rate (5/6)
-  vec3d headupsum;
+  coord3d headupsum;
   coord3d headbodyoffset;
   f32 standheight; // old name stationary_ground_offset
 
@@ -586,9 +586,9 @@ struct player
   coord3d standbodyoffset;
   f32 standfrac;
 
-  vec3d standlook[2];
+  coord3d standlook[2];
 
-  vec3d standup[2];
+  coord3d standup[2];
 
   s32 standcnt;
   Model model; /* Bond's head bob animation */
@@ -1062,7 +1062,7 @@ extern s32 upper_text_window_timer;
 extern s32 g_UpperTextDisplayFlag;
 
 extern s32 startpadcount;
-extern vec3d g_ForceBondMoveOffset;
+extern coord3d g_ForceBondMoveOffset;
 extern s32 g_CoopForceMovePlayer;
 extern s32 mission_timer;
 

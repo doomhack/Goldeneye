@@ -781,7 +781,7 @@ f32 modelGetRadius(Model *model)
 
 
 // PD: model0001af98
-void modelLerp3(vec3d *v, vec3d *w, float frac)
+void modelLerp3(coord3d *v, coord3d *w, float frac)
 {
     v->x += (w->x - v->x) * frac;
     v->y += (w->y - v->y) * frac;
@@ -1044,7 +1044,7 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
     union ModelRoData* rodata;
     union ModelRwData* rwdata;
     f32 scale;
-    f32* pos;
+    coord3d* pos;
     f32 yrot;
     Mtxf* parent;
     s32 mtxindex;
@@ -1055,7 +1055,7 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
     rwdata = modelGetNodeRwData(model, node);
 
     scale = model->scale;
-    pos = &rwdata->Header.pos.x;
+    pos = &rwdata->Header.pos;
     yrot = rwdata->Header.yrot;
     mtxindex = rodata->Header.MatrixIndex;
     renderpos = &model->render_pos[mtxindex];
@@ -1076,22 +1076,22 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
 
     if (parent != NULL)
     {
-        mtx4LoadYRotationWithTranslation(pos, yrot, &tmp);
+        mtx4LoadYRotationAndTranslation(pos, yrot, &tmp);
 
         if (scale != 1.0f)
         {
-            mtx4Scale3x3(scale, tmp.m[0]);
+            mtx4Scale3x3(scale, &tmp);
         }
 
         mtx4MultAffine(parent, &tmp, &renderpos->pos);
         return;
     }
 
-    mtx4LoadYRotationWithTranslation(pos, yrot, &renderpos->pos);
+    mtx4LoadYRotationAndTranslation(pos, yrot, &renderpos->pos);
 
     if (scale != 1.0f)
     {
-        mtx4Scale3x3(scale, renderpos->pos.m[0]);
+        mtx4Scale3x3(scale, &renderpos->pos);
     }
 }
 
@@ -1103,7 +1103,6 @@ void modelCalcJointMtxFromAngles(ModelRenderData *renderdata, Model *model, Mode
     s32 matrix0 = group->MatrixID0;
     s32 matrix1 = group->MatrixID1;
     s32 matrix2 = group->MatrixID2;
-    f32 *origin = group->Origin.f;
     RenderPosView *render_pos = model->render_pos;
     s32 has_matrix2 = flags & MODELGROUP_MTX_HAS_MATRIX2;
     Mtxf *parent;
@@ -1142,17 +1141,17 @@ void modelCalcJointMtxFromAngles(ModelRenderData *renderdata, Model *model, Mode
     
     if (flags & MODELGROUP_MTX_HAS_MATRIX1)
     {
-        quatFromAngles(rot->f, q);
-        quatSlerpFromIdentity(q, 0.5f, q2);
+        quatFromAngles(rot, &q);
+        quatSlerpFromIdentity(&q, 0.5f, &q2);
         
         if (parent != NULL)
         {
-            quatToMtx4WithTranslation(origin, q2, tmp.m);
+            quatToMtx4WithTranslation(&group->Origin, &q2, &tmp);
             mtx4MultAffine(parent, &tmp, &render_pos[matrix1].pos);
         }
         else
         {
-            quatToMtx4WithTranslation(origin, q2, (render_pos + matrix1)->pos.m);
+            quatToMtx4WithTranslation(&group->Origin, &q2, &render_pos[matrix1].pos);
         }
     }
 
@@ -1204,7 +1203,7 @@ void modelCalcJointMtxFromAngles(ModelRenderData *renderdata, Model *model, Mode
 }
 
 
-void modelCalcJointMtxFromQuat(ModelRenderData *renderdata, Model *model, ModelNode *node, quatf rot)
+void modelCalcJointMtxFromQuat(ModelRenderData *renderdata, Model *model, ModelNode *node, const quatf *rot)
 {
     s32 flags = node->Opcode;
     ModelRoData_GroupRecord *group = (ModelRoData_GroupRecord *)node->Data;
@@ -1227,24 +1226,24 @@ void modelCalcJointMtxFromQuat(ModelRenderData *renderdata, Model *model, ModelN
     if (parent != NULL) {
         Mtxf *matrix0_mtx = &render_pos[matrix0].pos;
 
-        quatToMtx4WithTranslation(group->Origin.f, rot, tmp.m);
+        quatToMtx4WithTranslation(&group->Origin, rot, &tmp);
         mtx4MultAffine(parent, &tmp, matrix0_mtx);
 
         if (g_ModelJointPositionedFunc != NULL) {
             g_ModelJointPositionedFunc(matrix0, matrix0_mtx);
         }
     } else {
-        quatToMtx4WithTranslation(group->Origin.f, rot, render_pos[matrix0].pos.m);
+        quatToMtx4WithTranslation(&group->Origin, rot, &render_pos[matrix0].pos);
     }
 
     if (flags & MODELGROUP_MTX_HAS_MATRIX1) {
-        quatSlerpFromIdentity(rot, 0.5f, halfrot);
+        quatSlerpFromIdentity(rot, 0.5f, &halfrot);
 
         if (parent != NULL) {
-            quatToMtx4WithTranslation(group->Origin.f, halfrot, tmp.m);
+            quatToMtx4WithTranslation(&group->Origin, &halfrot, &tmp);
             mtx4MultAffine(parent, &tmp, &render_pos[matrix1].pos);
         } else {
-            quatToMtx4WithTranslation(group->Origin.f, halfrot, render_pos[matrix1].pos.m);
+            quatToMtx4WithTranslation(&group->Origin, &halfrot, &render_pos[matrix1].pos);
         }
     }
 
@@ -1255,7 +1254,7 @@ void modelCalcJointMtxFromQuat(ModelRenderData *renderdata, Model *model, ModelN
             dst = &render_pos[matrix2].pos;
         }
 
-        angle = 2.0f * mathAcos(rot[0]);
+        angle = 2.0f * mathAcos(rot->w);
 
         if (angle < M_PI_F) {
             angle = angle * 0.5f;
@@ -1427,11 +1426,11 @@ void modelCalcJointMtx(ModelRenderData *renderdata, Model *model, ModelNode *nod
             modelLerpAngles3(&rot3, &rot4, model->frame2Frac);
         }
 
-        quatFromAngles(rot1.f, q1);
-        quatFromAngles(rot3.f, q2);
-        quatMakeShortestPath(q1, q2);
-        quatSlerp(q1, q2, model->mergeWeight, result);
-        modelCalcJointMtxFromQuat(renderdata, model, node, result);
+        quatFromAngles(&rot1, &q1);
+        quatFromAngles(&rot3, &q2);
+        quatMakeShortestPath(&q1, &q2);
+        quatSlerp(&q1, &q2, model->mergeWeight, &result);
+        modelCalcJointMtxFromQuat(renderdata, model, node, &result);
     }
     else
     {
@@ -1451,7 +1450,6 @@ void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, Mode
     s32 m1;
     s32 m2;
     RenderPosView *renderPosBase;
-    f32 *origin;
     s32 matrix2Flag;
     Mtxf *localMtxPtr;
     Mtxf *matrixPtr;
@@ -1478,13 +1476,12 @@ void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, Mode
 
     if (mtx != NULL)
     {
-        mtx4LoadYRotationWithTranslation((f32 *) &data->Group.Origin, angle, localMtxPtr);
+        mtx4LoadYRotationAndTranslation(&data->Group.Origin, angle, localMtxPtr);
         mtx4MultAffine(mtx, &localMtx, &render_pos[m0].pos);
     }
     else
     {
-        origin = (f32 *) &data->Group.Origin;
-        mtx4LoadYRotationWithTranslation(origin, angle, &render_pos[m0].pos);
+        mtx4LoadYRotationAndTranslation(&data->Group.Origin, angle, &render_pos[m0].pos);
     }
 
     matrix2Flag = 0x200;
@@ -1507,12 +1504,12 @@ void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, Mode
     {
         if (mtx != NULL)
         {
-            mtx4LoadYRotationWithTranslation((f32 *) &data->Group.Origin, angle, &localMtx);
+            mtx4LoadYRotationAndTranslation(&data->Group.Origin, angle, &localMtx);
             mtx4MultAffine(mtx, localMtxPtr, &render_pos[m1].pos);
         }
         else
         {
-            mtx4LoadYRotationWithTranslation((f32 *) &data->Group.Origin, angle, &render_pos[m1].pos);
+            mtx4LoadYRotationAndTranslation(&data->Group.Origin, angle, &render_pos[m1].pos);
         }
     }
 

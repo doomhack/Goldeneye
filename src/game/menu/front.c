@@ -1527,7 +1527,7 @@ Gfx *frontNintendoRender(Gfx *DL)
         Mtxf tmpMtx;
 
         mtx4LoadYRotation(g_NintendoLogoSpin, &tmpMtx);
-        mtx4ScaleColumns012(g_NintendoLogoScale, (f32*)&tmpMtx);
+        mtx4ScaleColumns012(g_NintendoLogoScale, &tmpMtx);
 
 #if defined(VERSION_EU)
         g_NintendoLogoScale *= 1.09647190571f;
