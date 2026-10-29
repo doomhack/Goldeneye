@@ -791,7 +791,7 @@ extern PadRecord      *g_CameraLookAtBondPad;
 extern CutsceneRecord *gBondViewCutscene;
 extern enum CAMERAMODE g_CutsceneCamLookAtBond;
 extern s32             g_CutsceneCamUnusedFlag;
-extern vec3d           g_ForceBondMoveOffset;
+extern coord3d           g_ForceBondMoveOffset;
 extern s32             g_CoopForceMovePlayer;
 extern f32             g_OrbitCamAngle;
 extern f32             g_OrbitCamSpeed;
@@ -1645,7 +1645,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiHitChrWithItemRecord *ai  = (AiHitChrWithItemRecord *)(AiListp + Offset);
                     ChrRecord              *chr = chrFindById(ChrEntityp, ai->CHR_NUM);
-                    vec3d                   vec = {};
+                    coord3d                   vec = {};
 
                     if (chr && chr->prop)
                     {
@@ -1665,7 +1665,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         PropRecord      *prop = chrGetEquippedWeaponPropWithCheck(chr1, GUNRIGHT);
                         WeaponObjRecord *weapon;
-                        vec3d            vec = {};
+                        coord3d            vec = {};
 
                         if (!prop) // not Right hand? try left
                         {

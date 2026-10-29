@@ -407,7 +407,7 @@ void stanGetPointInsideCorner(StandTile *tile, s32 tripleIndex /*canonically c *
 
 f32 stanDistSquared(coord3d *p,coord3d *q)
 {
-    // Should be a coord3d or vec3d, but they used an array which
+    // Should be a coord3d or coord3d, but they used an array which
     // causes lots of data reads and writes to the stack.
     f32 components[3];
 

@@ -553,7 +553,7 @@ void gunUpdateAndFire(GUNHAND handnum)
 
     mtx4LoadFacing(&tmpmtx, 0.0f, 0.0f, 0.0f, hand->sway_look_x, hand->sway_look_y, hand->sway_look_z, hand->sway_up_x, hand->sway_up_y, hand->sway_up_z);
     mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
-    mtx4LoadAlignViaGu(&tmpmtx, 0.0f, gunofs.x - hand->aimPos.x, gunofs.y - hand->aimPos.y, gunofs.z - hand->aimPos.z);
+    mtx4LoadAlign(&tmpmtx, 0.0f, gunofs.x - hand->aimPos.x, gunofs.y - hand->aimPos.y, gunofs.z - hand->aimPos.z);
     mtx4MultAffineInPlace(&tmpmtx, &rotmtx);
     mtx4Copy(&rotmtx, &gunmtx);
     mtx4SetTranslation(&gunofs, &gunmtx);
@@ -753,11 +753,11 @@ void gunUpdateAndFire(GUNHAND handnum)
                     flashpos.y = (((((f32 *) nodepos)[0] * flashmtx.m[0][1]) + (((f32 *) nodepos)[1] * flashmtx.m[1][1])) + (((f32 *) nodepos)[2] * flashmtx.m[2][1])) + flashmtx.m[3][1];
                     flashpos.z = (((((f32 *) nodepos)[0] * flashmtx.m[0][2]) + (((f32 *) nodepos)[1] * flashmtx.m[1][2])) + (((f32 *) nodepos)[2] * flashmtx.m[2][2])) + flashmtx.m[3][2];
 
-                    mtx4LoadAlignViaGu(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
+                    mtx4LoadAlign(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
                     mtx4ScaleRows012(IDO_POINT_ONE * flashscale, &flash2mtx);
-                    mtx4LoadAlign(&aimmtx, 0, gunofs.x - hand->aimPos.x, gunofs.y - hand->aimPos.y, gunofs.z - hand->aimPos.z);
+                    mtx4LoadAlignInverse(&aimmtx, 0, gunofs.x - hand->aimPos.x, gunofs.y - hand->aimPos.y, gunofs.z - hand->aimPos.z);
                     mtx4MultInPlace(&aimmtx, &flash2mtx);
-                    mtx4ScaleColumn2(flashext, flash2mtx.m[0]);
+                    mtx4ScaleColumn2(flashext, &flash2mtx);
                     mtx4MultInPlace(&rotmtx, &flash2mtx);
                     mtx4SetTranslation(&flashpos, &flash2mtx);
                     mtx4Copy(&flash2mtx, &rwmtx[2]);
@@ -774,11 +774,11 @@ void gunUpdateAndFire(GUNHAND handnum)
                         flashpos.y = (((((f32 *) nodepos)[0] * flashmtx.m[0][1]) + (((f32 *) nodepos)[1] * flashmtx.m[1][1])) + (((f32 *) nodepos)[2] * flashmtx.m[2][1])) + flashmtx.m[3][1];
                         flashpos.z = (((((f32 *) nodepos)[0] * flashmtx.m[0][2]) + (((f32 *) nodepos)[1] * flashmtx.m[1][2])) + (((f32 *) nodepos)[2] * flashmtx.m[2][2])) + flashmtx.m[3][2];
                         stackpad_scale = IDO_POINT_ONE * flashscale;
-                        mtx4LoadAlignViaGu(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
+                        mtx4LoadAlign(&flash2mtx, (randomGetNext() * (1.0f / M_U32_MAX_VALUE_F)) * M_TAU_F, -flashpos.x, -flashpos.y, -flashpos.z);
                         mtx4ScaleRows012(stackpad_scale, &flash2mtx);
-                        mtx4LoadAlign(&aimmtx, 0, gunofs.x - hand->aimPos.x, gunofs.y - hand->aimPos.y, gunofs.z - hand->aimPos.z);
+                        mtx4LoadAlignInverse(&aimmtx, 0, gunofs.x - hand->aimPos.x, gunofs.y - hand->aimPos.y, gunofs.z - hand->aimPos.z);
                         mtx4MultInPlace(&aimmtx, &flash2mtx);
-                        mtx4ScaleColumn2(flashext, flash2mtx.m[0]);
+                        mtx4ScaleColumn2(flashext, &flash2mtx);
                         mtx4MultInPlace(&rotmtx, &flash2mtx);
                         mtx4SetTranslation(&flashpos, &flash2mtx);
                         mtx4Copy(&flash2mtx, &rwmtx[3]);
@@ -810,7 +810,7 @@ void gunUpdateAndFire(GUNHAND handnum)
             }
             else
             {
-                mtx4LoadYRotationWithTranslation(swdata, hand->hingeAngle, &tmpmtx);
+                mtx4LoadYRotationAndTranslation((coord3d *) swdata, hand->hingeAngle, &tmpmtx);
             }
 
             mtx4MultAffine(&gunmtx, &tmpmtx, &rwmtx[sw6mtxidx]);
@@ -4617,7 +4617,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
         entry->pos.y = mtx->m[3][1];
         entry->pos.z = mtx->m[3][2];
 #if VERSION_EU
-        mtx4ToMtx3(mtx->m, entry->rot_mtx);
+        mtx4ToMtx3(mtx, &entry->rot_mtx);
 #else
         entry->rot_mtx.m[0][0] = mtx->m[0][0];
         entry->rot_mtx.m[0][1] = mtx->m[0][1];
@@ -4763,7 +4763,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(rotmtx.m, casing->rot_velocity_mtx);
+        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -4818,7 +4818,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(rotmtx.m, casing->rot_velocity_mtx);
+        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -4934,7 +4934,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
         entry->pos.y = mtx->m[3][1];
         entry->pos.z = mtx->m[3][2];
 #if VERSION_EU
-        mtx4ToMtx3(mtx->m, entry->rot_mtx);
+        mtx4ToMtx3(mtx, &entry->rot_mtx);
 #else
         entry->rot_mtx.m[0][0] = mtx->m[0][0];
         entry->rot_mtx.m[0][1] = mtx->m[0][1];
@@ -5066,7 +5066,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(rotmtx.m, casing->rot_velocity_mtx);
+        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -5121,7 +5121,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
  
 #if VERSION_EU
         mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(rotmtx.m, casing->rot_velocity_mtx);
+        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
@@ -5196,7 +5196,7 @@ void casingTick(CasingRecord* casing)
 #if defined(VERSION_US)
         mtx4MultAffineInPlace(&casing->rot_velocity_mtx, &casing->rot_mtx);
 #else
-        mtx3MultInPlace(casing->rot_velocity_mtx, casing->rot_mtx);
+        mtx3MultInPlace(&casing->rot_velocity_mtx, &casing->rot_mtx);
 #endif
     }
 }
@@ -5238,7 +5238,7 @@ void casingRender(CasingRecord *casing, Gfx **gdl)
     model.render_pos = model_matrices;
 
 #if defined(VERSION_EU)
-    mtx3ToMtx4(casing->rot_mtx, casing_model_mtx.m);
+    mtx3ToMtx4(&casing->rot_mtx, &casing_model_mtx);
 #else
     mtx4Copy(&casing->rot_mtx, &casing_model_mtx);
 #endif

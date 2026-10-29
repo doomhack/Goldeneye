@@ -1,22 +1,25 @@
+/**
+ * Where a ray hits a triangle, for bullets and line-of-sight tests against the level and
+ * objects. The sums are in doubles (f64), which the N64's FPU does natively.
+ */
 #include <ultra64.h>
-#include <bondtypes.h>
+#include "game/math/line_tri_intersect.h"
 
 /**
- * Tests whether an infinite line intersects a triangle, writing the hit position and unnormalized
- * face normal into *hit on success. All the math is done as f64/double.
+ * Tests whether the line through `linePoint` along `rayDirection` hits the triangle
+ * (vertex0, vertex1, vertex2), at or in front of `rayStart`. If it does, writes where to
+ * `hitPos` and the triangle's normal (not scaled to length 1) to `normal`.
  *
- * @param vertex0 First triangle vertex in local coordinates.
- * @param vertex1 Second triangle vertex in local coordinates.
- * @param vertex2 Third triangle vertex in local coordinates.
- * @param vertexOffset Translation applied to each triangle vertex, moving locally stored
- * geometry into the tested line's coordinate space.
- * @param rayStart Ray origin used to reject intersections behind it.
- * @param linePoint Point on the infinite line used for the plane intersection.
- * @param rayDirection Direction of the line and forward ray test.
- * @param hit Receives the intersection position and face normal on success.
+ * The triangle's vertices are in its model's space, which `vertexOffset` moves into the
+ * line's. A line along the triangle's plane never hits it.
  */
-bool intersectRayTriangle(Vertex *vertex0, Vertex *vertex1, Vertex *vertex2, coord3d *vertexOffset, coord3d *rayStart, coord3d *linePoint, coord3d *rayDirection, HitThing *hit)
+bool intersectRayTriangle(const coord16 *vertex0, const coord16 *vertex1, const coord16 *vertex2,
+                          const coord3d *vertexOffset, const coord3d *rayStart, const coord3d *linePoint,
+                          const coord3d *rayDirection, coord3d *hitPos, coord3d *normal)
 {
+    f64 offset[3] = {vertexOffset->x, vertexOffset->y, vertexOffset->z};
+    f64 dir[3] = {rayDirection->x, rayDirection->y, rayDirection->z};
+    f64 point[3] = {linePoint->x, linePoint->y, linePoint->z};
     f64 edge01[3];
     f64 edge12[3];
     f64 edge02[3];
@@ -25,152 +28,104 @@ bool intersectRayTriangle(Vertex *vertex0, Vertex *vertex1, Vertex *vertex2, coo
     f64 normalZ;
     f64 planeConstant;
     f64 denominator;
-    f64 baryU;
-    f64 hitPosition[3];
-    f64 relativePosition[3];
-    f64 baryV;
-    f64 vertexOffset64[3];
-    f64 rayDirection64[3];
-    f64 linePoint64[3];
     f64 lineParameter;
- 
-    // Widen the 32-bit coord3d components to f64.
-    vertexOffset64[0] = vertexOffset->x;
-    vertexOffset64[1] = vertexOffset->y;
-    vertexOffset64[2] = vertexOffset->z;
- 
-    rayDirection64[0] = rayDirection->x;
-    rayDirection64[1] = rayDirection->y;
-    rayDirection64[2] = rayDirection->z;
- 
-    linePoint64[0] = linePoint->x;
-    linePoint64[1] = linePoint->y;
-    linePoint64[2] = linePoint->z;
- 
-    /**
-     * Build two adjacent edges of the triangle. The shared vertex offset cancels when
-     * subtracting endpoints, so these vectors can remain in the triangle's local space.
-     */
-    edge01[0] = vertex1->coord.x - vertex0->coord.x;
-    edge12[0] = vertex2->coord.x - vertex1->coord.x;
-    edge01[1] = vertex1->coord.y - vertex0->coord.y;
-    edge12[1] = vertex2->coord.y - vertex1->coord.y;
-    edge01[2] = vertex1->coord.z - vertex0->coord.z;
-    edge12[2] = vertex2->coord.z - vertex1->coord.z;
+    f64 hit[3];
+    f64 relative[3];
+    f64 baryU;
+    f64 baryV;
 
-    // Build the direct edge from vertex0 to vertex2 for the barycentric calculations.
-    edge02[0] = vertex2->coord.x - vertex0->coord.x;
-    edge02[1] = vertex2->coord.y - vertex0->coord.y;
-    edge02[2] = vertex2->coord.z - vertex0->coord.z;
- 
-    // Take the cross product of the triangle edges to obtain its unnormalized face normal.
-    normalX = (edge01[1] * edge12[2]) - (edge12[1] * edge01[2]);
-    normalY = (edge01[2] * edge12[0]) - (edge12[2] * edge01[0]);
-    normalZ = (edge01[0] * edge12[1]) - (edge12[0] * edge01[1]);
- 
-    /**
-     * Place the triangle's plane in the line's coordinate space by translating vertex0.
-     * The resulting plane equation is normal's dot product with point vertex0 = planeConstant.
-     */
-    planeConstant = ((normalX * (vertex0->coord.x + vertexOffset64[0])) + (normalY * (vertex0->coord.y + vertexOffset64[1]))) + (normalZ * (vertex0->coord.z + vertexOffset64[2]));
- 
-    /**
-    * Measure how directly the line points through the plane. A zero dot product means
-    * the line runs parallel to the plane and therefore does not intersect.
-    */
-    denominator = ((normalX * rayDirection64[0]) + (normalY * rayDirection64[1])) + (normalZ * rayDirection64[2]);
- 
+    // Two edges, and the third for the barycentric weights. The offset cancels out.
+    edge01[0] = vertex1->x - vertex0->x;
+    edge12[0] = vertex2->x - vertex1->x;
+    edge01[1] = vertex1->y - vertex0->y;
+    edge12[1] = vertex2->y - vertex1->y;
+    edge01[2] = vertex1->z - vertex0->z;
+    edge12[2] = vertex2->z - vertex1->z;
+    edge02[0] = vertex2->x - vertex0->x;
+    edge02[1] = vertex2->y - vertex0->y;
+    edge02[2] = vertex2->z - vertex0->z;
+
+    // The face normal: edge01 x edge12
+    normalX = edge01[1] * edge12[2] - edge12[1] * edge01[2];
+    normalY = edge01[2] * edge12[0] - edge12[2] * edge01[0];
+    normalZ = edge01[0] * edge12[1] - edge12[0] * edge01[1];
+
+    // The plane: normal . p = planeConstant, through vertex0 moved into the line's space
+    planeConstant = normalX * (vertex0->x + offset[0]) + normalY * (vertex0->y + offset[1]) + normalZ * (vertex0->z + offset[2]);
+    denominator = normalX * dir[0] + normalY * dir[1] + normalZ * dir[2];
+
     if (denominator == 0.0)
     {
-        // Line is parallel to the tri's plane, return false for no hit.
-        return FALSE;
+        return false; // the line runs along the plane
     }
- 
-    // Solve the plane equation for the parameter along the infinite line.
-    lineParameter = (((planeConstant - (normalX * linePoint64[0])) - (normalY * linePoint64[1])) - (normalZ * linePoint64[2])) / denominator;
- 
-    /**
-     * Evaluate linePoint + rayDirection * lineParameter to get the plane intersection.
-     */
-    hitPosition[0] = linePoint64[0] + (rayDirection64[0] * lineParameter);
-    hitPosition[1] = linePoint64[1] + (rayDirection64[1] * lineParameter);
-    hitPosition[2] = linePoint64[2] + (rayDirection64[2] * lineParameter);
- 
-    /**
-     * Express the intersection relative to translated vertex0. This lets the following 
-     * calculations determine where the point lies within the triangle.
-     */
-    relativePosition[0] = hitPosition[0] - (vertex0->coord.x + vertexOffset64[0]);
-    relativePosition[1] = hitPosition[1] - (vertex0->coord.y + vertexOffset64[1]);
-    relativePosition[2] = hitPosition[2] - (vertex0->coord.z + vertexOffset64[2]);
- 
-    // Solve the first barycentric weight using the triangle's XY projection.
-    denominator = (edge01[1] * edge12[0]) - (edge01[0] * edge12[1]);
- 
+
+    // Where the line meets the plane
+    lineParameter = (planeConstant - normalX * point[0] - normalY * point[1] - normalZ * point[2]) / denominator;
+
+    for (s32 i = 0; i < 3; i++)
+    {
+        hit[i] = point[i] + dir[i] * lineParameter;
+    }
+
+    relative[0] = hit[0] - (vertex0->x + offset[0]);
+    relative[1] = hit[1] - (vertex0->y + offset[1]);
+    relative[2] = hit[2] - (vertex0->z + offset[2]);
+
+    // The weight of edge02 (u) and of edge01 (v) that make up `relative`: solve in the
+    // xy plane, or yz or xz if the triangle is edge on to it
+    denominator = edge01[1] * edge12[0] - edge01[0] * edge12[1];
+
     if (denominator != 0.0)
     {
-        baryU = ((relativePosition[0] * edge01[1]) - (relativePosition[1] * edge01[0])) / denominator;
+        baryU = (relative[0] * edge01[1] - relative[1] * edge01[0]) / denominator;
     }
     else
     {
-        // The XY projection is degenerate, so try the YZ projection instead.
-        denominator = (edge01[2] * edge12[1]) - (edge01[1] * edge12[2]);
- 
+        denominator = edge01[2] * edge12[1] - edge01[1] * edge12[2];
+
         if (denominator != 0.0)
         {
-            baryU = ((relativePosition[1] * edge01[2]) - (relativePosition[2] * edge01[1])) / denominator;
+            baryU = (relative[1] * edge01[2] - relative[2] * edge01[1]) / denominator;
         }
         else
         {
-            // The YZ projection is also degenerate, so use the XZ projection.
-            denominator = (edge01[0] * edge12[2]) - (edge01[2] * edge12[0]);
-            baryU = ((relativePosition[2] * edge01[0]) - (relativePosition[0] * edge01[2])) / denominator;
+            denominator = edge01[0] * edge12[2] - edge01[2] * edge12[0];
+            baryU = (relative[2] * edge01[0] - relative[0] * edge01[2]) / denominator;
         }
     }
- 
-    // Solve the second barycentric weight using a nonzero component of edge01.
+
     if (edge01[0] != 0.0)
     {
-        baryV = (relativePosition[0] - (baryU * edge02[0])) / edge01[0];
+        baryV = (relative[0] - baryU * edge02[0]) / edge01[0];
     }
     else if (edge01[1] != 0.0)
     {
-        baryV = (relativePosition[1] - (baryU * edge02[1])) / edge01[1];
+        baryV = (relative[1] - baryU * edge02[1]) / edge01[1];
     }
     else
     {
-        baryV = (relativePosition[2] - (baryU * edge02[2])) / edge01[2];
+        baryV = (relative[2] - baryU * edge02[2]) / edge01[2];
     }
- 
-    /** 
-     * Both weights must be nonnegative and their sum must not exceed one. This is the
-     * barycentric test for whether the plane intersection is inside or on the triangle.
-     */
-    if (((baryV >= 0.0) && (baryU >= 0.0)) && ((baryV + baryU) <= 1.0))
+
+    // Inside the triangle (or on an edge)? (Written so that NaNs, from a triangle with no
+    // area, count as a miss.)
+    if (!(baryV >= 0.0 && baryU >= 0.0 && baryV + baryU <= 1.0))
     {
-        /** 
-         * The plane calculation used an infinite line. This dot product verifies that the
-         * intersection lies at or in front of rayStart rather than behind the ray.
-         */
-        if ((((rayDirection64[0] * (hitPosition[0] - rayStart->x)) + (rayDirection64[1] * (hitPosition[1] - rayStart->y))) + (rayDirection64[2] * (hitPosition[2] - rayStart->z))) >= 0.0)
-        {
-            hit->hitpos.x = hitPosition[0];
-            hit->hitpos.y = hitPosition[1];
-            hit->hitpos.z = hitPosition[2];
- 
-            hit->normal.x = normalX;
-            hit->normal.y = normalY;
-            hit->normal.z = normalZ;
- 
-            hit->texturenum = 0;
- 
-            return TRUE;
-        }
- 
-        // The infinite line hit the triangle, but the intersection was behind rayStart.
-        return FALSE;
+        return false;
     }
- 
-    // The line reached the triangle's plane outside the triangle's three edges.
-    return FALSE;
+
+    // In front of the ray's start, not behind it?
+    if (!(dir[0] * (hit[0] - rayStart->x) + dir[1] * (hit[1] - rayStart->y) + dir[2] * (hit[2] - rayStart->z) >= 0.0))
+    {
+        return false;
+    }
+
+    hitPos->x = hit[0];
+    hitPos->y = hit[1];
+    hitPos->z = hit[2];
+    normal->x = normalX;
+    normal->y = normalY;
+    normal->z = normalZ;
+
+    return true;
 }

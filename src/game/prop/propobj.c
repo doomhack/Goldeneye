@@ -1020,7 +1020,7 @@ float objGetWidth(struct ObjectRecord * obj)
 
 bool projectileTestPropBoundingSphere(coord3d *zeropos, coord3d *pos, coord3d *vec, f32 scale)
 {
-    vec3d vector;
+    coord3d vector;
     f32 dist2rd;
 
     vector.x = vec->x - zeropos->x;
@@ -2122,7 +2122,7 @@ void objSettle(ObjectRecord *obj, coord3d *up)
 
     mtx4GetRotation(&obj->mtx, &angles);
     mtx4LoadRotation(&angles, &rotmtx);
-    quatFromAngles((f32 *)&angles, projectile->startRot);
+    quatFromAngles(&angles, &projectile->startRot);
 
     mtx4TransposeRotation(&rotmtx, &aimmtx);
     mtx4Mult(&aimmtx, &obj->mtx, &scalemtx);
@@ -2187,8 +2187,8 @@ void objSettle(ObjectRecord *obj, coord3d *up)
     aimmtx.m[3][3] = 1.0f;
 
     mtx4GetRotation(&aimmtx, &angles);
-    quatFromAngles((f32 *)&angles, projectile->restRot);
-    quatMakeShortestPath(projectile->startRot, projectile->restRot);
+    quatFromAngles(&angles, &projectile->restRot);
+    quatMakeShortestPath(&projectile->startRot, &projectile->restRot);
 
     projectile->rotFrac = 0.0f;
 
@@ -4129,7 +4129,7 @@ s32 objTick(struct PropRecord *prop)
 	f32 previousVerticalSpeed;
 	f32 impulse;
 	f32 friction;
-	f32 rot[4];
+	quatf rot;
 	coord3d smokepos;
 	coord3d bloodStainPos;
 	Mtxf inverseNodeMatrix;
@@ -4762,9 +4762,9 @@ s32 objTick(struct PropRecord *prop)
 						projectile->rotFrac = 1.0f;
 					}
 
-					quatSlerp((f32 *) (&projectile->startRot), (f32 *) (&projectile->restRot), projectile->rotFrac, (f32 *) (&rot));
+					quatSlerp(&projectile->startRot, &projectile->restRot, projectile->rotFrac, &rot);
 					objectMatrix = &obj->mtx;
-					quatToMtx4((f32 *) (&rot), obj->mtx.m);
+					quatToMtx4(&rot, &obj->mtx);
 					mtx4ScaleRow0(projectile->scaleX, objectMatrix);
 					mtx4ScaleRow1(projectile->scaleY, objectMatrix);
 					mtx4ScaleRow2(projectile->scaleZ, objectMatrix);
@@ -8296,7 +8296,7 @@ bool bgTestHitOnObj(coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, Gfx *gd
                 zero = (coord3d){0};
                 pt0 = vtxbase; pt0 += idx[0]; pt1 = vtxbase; pt1 += idx[1]; pt2 = vtxbase; pt2 += idx[2];
 
-                if (intersectRayTriangle(pt0, pt1, pt2, &zero, rayStart, rayEnd, rayDir, &hitbuf))
+                if (intersectRayTriangle(&pt0->coord, &pt1->coord, &pt2->coord, &zero, rayStart, rayEnd, rayDir, &hitbuf.hitpos, &hitbuf.normal))
                 {
                     dx = (f32) (((s32) hitbuf.hitpos.x) - ((s32) rayStart->x));
                     dy = (f32) (((s32) hitbuf.hitpos.y) - ((s32) rayStart->y));
@@ -8417,7 +8417,7 @@ bool bgTestHitOnObj(coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, Gfx *gd
                     zero2 = (coord3d){0};
                     pt0 = vtxbase; pt0 += idx2[0]; pt1 = vtxbase; pt1 += idx2[1]; pt2 = vtxbase; pt2 += idx2[2];
 
-                    if (intersectRayTriangle(pt0, pt1, pt2, &zero2, rayStart, rayEnd, rayDir, &hitbuf))
+                    if (intersectRayTriangle(&pt0->coord, &pt1->coord, &pt2->coord, &zero2, rayStart, rayEnd, rayDir, &hitbuf.hitpos, &hitbuf.normal))
                     {
                         dx = (f32) (((s32) hitbuf.hitpos.x) - ((s32) rayStart->x));
                         dy = (f32) (((s32) hitbuf.hitpos.y) - ((s32) rayStart->y));
@@ -9076,9 +9076,9 @@ apply_damage:
  *
  *   void objTestShotHit(PropRecord* prop, struct ShotData* hitinfo) {
  *      mtx4TransformVecInPlace(?, hitinfo.hitpos);
- *  assert(!IsBadVec3d( (vec3d*)hitinfo.hitpos  );
+ *  assert(!IsBadVec3d( (coord3d*)hitinfo.hitpos  );
  *  mtx4TransformVecInPlace(?, hitinfo.normal);
- *         assert(!IsBadVec3d( (vec3d*)hitinfo.normal  );
+ *         assert(!IsBadVec3d( (coord3d*)hitinfo.normal  );
  * }
  */
 

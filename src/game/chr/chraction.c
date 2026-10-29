@@ -2266,7 +2266,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
     // If chr is dying or already dead then we're done
     if ((self->actiontype != ACT_DIE) && (self->actiontype != ACT_DEAD))
     {
-        vec3d vec;
+        coord3d vec;
         f32   angle;
         f32   damageToCause;
         s32   playerNum;
@@ -3921,7 +3921,7 @@ bool chrCheckTargetInSight(ChrRecord *self)
  * @param side: If GUNLEFT set result is (dz, -dx), otherwise (-dz, dx).
  * @param arg2: Out parameter. Contains result vector.
 */
-void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, vec3d *vec)
+void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec)
 {
     PropRecord *prop;
     f32 norm;
@@ -4147,7 +4147,7 @@ bool chrTryRunSideways(ChrRecord *self)
 {
     PropRecord *myprop;
     f32         distToRun;
-    vec3d       TargetVector;
+    coord3d       TargetVector;
     coord3d     TargetCoord;
 
     if (chrIsNotDeadOrShot(self) && ((g_GlobalTimer - self->lastwalk60) >= CHRLV_RECENT_TIME_CHECK)) //>3 seconds since last walk
@@ -4253,7 +4253,7 @@ bool chrTryAttackRoll(ChrRecord *self)
     PropRecord *myprop;
     PropRecord *bondprop;
 
-    vec3d vec;
+    coord3d vec;
 
     GUNHAND HopOtherDirection;
     GUNHAND HopDirection;
@@ -9401,7 +9401,7 @@ bool chrIsTargetedByPlayer(ChrRecord *self)
     Model  *mymodel;
     coord3d zeropos;
     coord3d pos;
-    vec3d vec;
+    coord3d vec;
     f32     scale;
 
     if (chrHasLineOfSightToPlayer(self))
