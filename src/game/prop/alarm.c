@@ -15,6 +15,7 @@
 #include <boss.h>
 #include <music.h>
 #include <snd.h>
+#include "game/audio/sfxvolume.h"
 #include "game/prop/alarm.h"
 #include "game/prop/propobj.h"
 #include "game/level/lv.h"
@@ -201,7 +202,7 @@ static void gasTick(void)
 
         if (s_GasSound != NULL)
         {
-            chrobjSndCreatePostEventDefault(s_GasSound, &s_GasSource);
+            sfxSetVolumeAt(s_GasSound, &s_GasSource);
         }
     }
     else

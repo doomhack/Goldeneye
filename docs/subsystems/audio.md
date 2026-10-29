@@ -7,6 +7,7 @@ effects player is `snd.c`. This folder decides what those play.
 | File | What it holds |
 | --- | --- |
 | `src/game/audio/levelmusic.c` | Each level's tracks (`g_LevelMusic`), the music state machine (`levelMusicSetState`), the music slots the AI scripts use, and stopping the tank's engine sound at level end |
+| `src/game/audio/sfxvolume.c` | The volume of a sound effect from somewhere in the level |
 
 ## A level's tracks
 
@@ -45,8 +46,19 @@ long to keep it going after the reason stops, and how long at most
 `lvTick`: it counts each slot down, and switches to the X track while any slot is active
 and back to the main track when none is.
 
+## Sounds from places in the level
+
+A sound from a door, a guard or a gunshot is played at a volume for how far it is from the
+nearest player (`sfxVolumeAt`): full volume within 2 metres, falling with the square root
+of the distance to 10000 (out of 32767) at 50 metres, then in a straight line to silence
+at 60 metres. `sfxSetVolumeAt` sets a playing sound's volume that way; things that keep a
+sound going (a door's loop, the gas leak) call it again each frame as the player moves.
+Vehicles' engines (not aircraft) use a shorter range (`sfxVolumeAtRange`).
+
 ## Traps
 
+* The volume functions were `sndVolumeForPos` and `chrobjSndCreatePostEventDefault`, in
+  `propobj.c`.
 * The file was called `mp_music.c` but is used in solo too; the music state functions
   were `set_missionstate` and friends.
 * The slot timers were called "minutes" and "seconds" (`g_LevelMusicSlotLinger`,

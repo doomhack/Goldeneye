@@ -355,7 +355,14 @@ typedef enum PROPFLAG2
     PROPFLAG2_10000000            = 0x10000000, // One-Way Lock (Back)
     PROPFLAG2_20000000            = 0x20000000, // Character AI Cannot Operate
     PROPFLAG2_40000000            = 0x40000000, // Deactivate Special Feature
-    PROPFLAG2_DOOR_ALTCOORDSYSTEM = 0x80000000  // Massive Explosion (08 Type)/Rotating Disabled Drone Gun (0D Type)
+    PROPFLAG2_DOOR_ALTCOORDSYSTEM = 0x80000000, // Massive Explosion (08 Type)/Rotating Disabled Drone Gun (0D Type)
+
+    /* What some of the bits mean on a door */
+    PROPFLAG2_DOOR_NO_LOCKED_TEXT     = 0x00000004, // no "This door is locked." when it won't open
+    PROPFLAG2_DOOR_TRIED_LOCKED       = 0x00000008, // someone tried it while locked (cleared when it moves)
+    PROPFLAG2_DOOR_UNLOCKED_FROM_BACK = 0x08000000, // a locked door that opens from behind without the key
+    PROPFLAG2_DOOR_UNLOCKED_FROM_FRONT = 0x10000000, // ...and from in front
+    PROPFLAG2_DOOR_AIRLOCK            = 0x40000000  // opening it closes the linked doors first, then it opens
 } PROPFLAG2;
 
 // Flags on DoorRecord.doorFlags (u16, offset 0x98)

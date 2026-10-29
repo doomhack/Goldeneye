@@ -4,6 +4,7 @@
  * is included twice: once for the interpreter and once for aiCommandSize. Also the AI
  * sound slots. See docs/subsystems/guards.md.
  */
+#include "game/audio/sfxvolume.h"
 #include "game/chr/chrai.h"
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
@@ -30,6 +31,7 @@
 #include "game/mission/objective.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
+#include "game/prop/door.h"
 #include "game/nav/stan.h"
 #include <assert.h>
 #include <bondaicommands.h>
@@ -64,13 +66,13 @@ void       aiSoundTick(s32 slot)
     {
         if (sfx->pos)
         {
-            sfx->Volume = sndVolumeForPosDefault(sfx->pos);
+            sfx->Volume = sfxVolumeAt(sfx->pos);
         }
         else
         {
             if (sfx->Obj && sfx->Obj->prop)
             {
-                sfx->Volume = sndVolumeForPosDefault(&sfx->Obj->runtime_pos);
+                sfx->Volume = sfxVolumeAt(&sfx->Obj->runtime_pos);
             }
         }
 
@@ -2549,7 +2551,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         if (obj->prop->type == PROP_TYPE_DOOR)
                         {
-                            doorActivateWrapper(obj->prop);
+                            doorToggle(obj->prop);
                         }
                         else if (obj->prop->type == PROP_TYPE_OBJ || obj->prop->type == PROP_TYPE_WEAPON)
                         {
@@ -2697,7 +2699,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR)
                     {
                         // DoorRecord *door = (DoorRecord *)obj;
-                        doorActivate(obj, DOORSTATE_OPENING);
+                        doorMove(obj, DOORSTATE_OPENING);
                     }
                     Offset += sizeof(AiDoorOpenRecord);
                     break;
@@ -2709,7 +2711,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR)
                     {
                         // DoorRecord *door = (DoorRecord *)obj;
-                        doorActivate(obj, DOORSTATE_CLOSING);
+                        doorMove(obj, DOORSTATE_CLOSING);
                     }
                     Offset += sizeof(AiDoorCloseRecord);
                     break;
@@ -3991,7 +3993,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
     #else
                         sfx_related[ai->slotID].sfxID = sfxID;
     #endif
-                        sfx_related[ai->slotID].Volume = sndVolumeForDistanceDefault(vol);
+                        sfx_related[ai->slotID].Volume = sfxVolumeForDistance(vol);
                         sfx_related[ai->slotID].pos    = NULL;
                         sfx_related[ai->slotID].Obj    = NULL;
                         if (sfxID == 0)
@@ -4420,14 +4422,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     DoorRecord              *door = (DoorRecord *)objFindByTagId(ai->OBJECT_TAG);
                     if (door && door->prop)
                     {
-                        // DoorRecord *door   = (DoorRecord *)obj;
-                        door->speed        = 0;
-                        door->openPosition = door->maxFrac;
-                        door->openedTime   = g_GlobalTimer;
-                        door->openstate    = DOORSTATE_STATIONARY;
-                        doorUpdateBbox(door);
-                        doorActivatePortal(door); // doorActivatePortal
-                        doorStopSounds(door);
+                        doorOpenInstantly(door);
                     }
                     Offset += sizeof(AiDoorOpenInstantRecord);
                     break;

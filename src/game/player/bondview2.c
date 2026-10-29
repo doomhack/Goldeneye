@@ -9,6 +9,7 @@
 #include <ultra64.h>
 #include <math.h>
 #include <bondtypes.h>
+#include "game/audio/sfxvolume.h"
 #include "game/menu/cheat.h"
 #include <boss.h>
 #include <fr.h>
@@ -7420,11 +7421,11 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                                 hitChr->chrflags |= CHRFLAG_01000000;
                                 if ((g_LvTickCount % 3) < 2)
                                 {
-                                    chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, CRUSHED_YELL_SFX, NULL), &prop->pos);
+                                    sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, CRUSHED_YELL_SFX, NULL), &prop->pos);
                                 }
                                 if ((g_LvTickCount % 3) > 0)
                                 {
-                                    chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, TANK_CRUSH_MAN_SFX, NULL), &prop->pos);
+                                    sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, TANK_CRUSH_MAN_SFX, NULL), &prop->pos);
                                 }
                             }
                         }

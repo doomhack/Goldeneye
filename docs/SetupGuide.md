@@ -115,13 +115,13 @@ Other examples:
 ```bash
 make -j4                  # build with 4 jobs
 make VERSION=EU -j4       # build PAL (EU) version instead
-make UNLOCK_ALL=1         # open every mission and difficulty, for testing
+make UNLOCK_ALL=1         # open every mission, difficulty and cheat, for testing
 ```
 
 The full list of configurable variables are listed below, **with the default being the first listed**:
 
 * ``VERSION``: ``US``, ``EU``
-* ``UNLOCK_ALL``: ``0``, ``1`` (all missions and difficulties unlocked)
+* ``UNLOCK_ALL``: ``0``, ``1`` (all missions, difficulties and cheats unlocked)
 
 Additional documentation of the build process can be found in the next section.
 

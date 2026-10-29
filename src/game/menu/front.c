@@ -851,6 +851,18 @@ Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, char *text, struct fontchar *fontC
 }
 
 
+/* With UNLOCK_ALL=1 every cheat a save can earn is unlocked */
+static bool cheatEarned(bool earned)
+{
+#ifdef UNLOCK_ALL_LEVELS
+    (void)earned;
+    return TRUE;
+#else
+    return earned;
+#endif
+}
+
+
 s32 frontIsCheatUnlocked(s32 cheat)
 {
     switch(cheat)
@@ -909,73 +921,73 @@ s32 frontIsCheatUnlocked(s32 cheat)
             return 0;
 
         case CHEAT_INVINCIBILITY:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_FACILITY);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_FACILITY));
 
         case CHEAT_ALLGUNS:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_EGYPT);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_EGYPT));
 
         case CHEAT_NO_RADAR_MP:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_FRIGATE);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_FRIGATE));
 
         case CHEAT_FAST_ANIMATION:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_STATUE);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_STATUE));
 
         case CHEAT_INVISIBILITY:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_ARCHIVES);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_ARCHIVES));
 
         case CHEAT_INFINITE_AMMO:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CONTROL);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CONTROL));
 
         case CHEAT_DK_MODE:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_RUNWAY);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_RUNWAY));
 
         case CHEAT_TINY_BOND:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SURFACE2);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SURFACE2));
 
         case CHEAT_SLOW_ANIMATION:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_DEPOT);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_DEPOT));
 
         case CHEAT_PAINTBALL:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_DAM);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_DAM));
 
         case CHEAT_SILVER_PP7:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_TRAIN);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_TRAIN));
 
         case CHEAT_GOLD_PP7:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CRADLE);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CRADLE));
 
         case CHEAT_ENEMY_ROCKETS:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_STREETS);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_STREETS));
 
         case CHEAT_2X_ROCKET_LAUNCHER:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_BUNKER1);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_BUNKER1));
 
         case CHEAT_2X_GRENADE_LAUNCHER:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SURFACE1);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SURFACE1));
 
         case CHEAT_2X_RCP90:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CAVERNS);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_CAVERNS));
 
         case CHEAT_2X_THROWING_KNIFE:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_BUNKER2);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_BUNKER2));
 
         case CHEAT_2X_HUNTING_KNIFE:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_JUNGLE);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_JUNGLE));
 
         case CHEAT_2X_LASER:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_AZTEC);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_AZTEC));
 
         case CHEAT_TURBO_MODE:
-            return fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SILO);
+            return cheatEarned(fileGetIsCheatUnlocked( fileGetSaveForFoldernum(g_FrontFolder), SP_LEVEL_SILO));
 
         case CHEAT_MAGNUM:
-            return fileIsCradleCompletedForFolder(g_FrontFolder);
+            return cheatEarned(fileIsCradleCompletedForFolder(g_FrontFolder));
 
         case CHEAT_LASER:
-            return fileIsAztecCompletedOnSecretOr00ForFolder(g_FrontFolder);
+            return cheatEarned(fileIsAztecCompletedOnSecretOr00ForFolder(g_FrontFolder));
 
         case CHEAT_GOLDEN_GUN:
-            return fileIsEgyptCompletedOn00ForFolder(g_FrontFolder);
+            return cheatEarned(fileIsEgyptCompletedOn00ForFolder(g_FrontFolder));
 
         default:
             do {/* WARNING: Do nothing block with infinite loop */

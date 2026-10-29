@@ -16,6 +16,7 @@
       build/OUTCODE/src/game/prop/alarm.o (.bss);
       build/OUTCODE/src/game/prop/monitor.o (.bss);
       build/OUTCODE/src/game/prop/monitorscripts.o (.bss);
+      build/OUTCODE/src/game/prop/door.o (.bss);
       build/OUTCODE/src/game/math/physics.o (.bss);
       build/OUTCODE/src/game/math/matrix.o (.bss);
       build/OUTCODE/src/game/math/trig.o (.bss);
@@ -67,6 +68,7 @@
       build/OUTCODE/src/game/replay/testhooks.o (.bss);
       build/OUTCODE/src/game/level/frametiming.o (.bss);
       build/OUTCODE/src/game/audio/levelmusic.o (.bss);
+      build/OUTCODE/src/game/audio/sfxvolume.o (.bss);
       build/OUTCODE/src/game/text/language.o (.bss);
       build/OUTCODE/src/game/menu/mpmenu.o (.bss);
       build/OUTCODE/src/game/hud/radar.o (.bss);

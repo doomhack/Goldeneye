@@ -16,6 +16,7 @@
       build/OUTCODE/src/game/prop/alarm.o (.rodata);
       build/OUTCODE/src/game/prop/monitor.o (.rodata);
       build/OUTCODE/src/game/prop/monitorscripts.o (.rodata);
+      build/OUTCODE/src/game/prop/door.o (.rodata);
       build/OUTCODE/src/game/math/physics.o (.rodata);
       build/OUTCODE/src/game/math/matrix.o (.rodata);
       build/OUTCODE/src/game/math/trig.o (.rodata);
@@ -68,6 +69,7 @@
       build/OUTCODE/src/game/replay/testhooks.o (.rodata);
       build/OUTCODE/src/game/level/frametiming.o (.rodata);
       build/OUTCODE/src/game/audio/levelmusic.o (.rodata);
+      build/OUTCODE/src/game/audio/sfxvolume.o (.rodata);
       build/OUTCODE/src/game/text/language.o (.rodata);
       build/OUTCODE/src/game/menu/mpmenu.o (.rodata);
       build/OUTCODE/src/game/hud/radar.o (.rodata);

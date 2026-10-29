@@ -1,18 +1,17 @@
 /**
- * Objects and doors at run time: everything a prop does after it is created.
+ * Objects at run time: everything a prop does after it is created. Doors are in door.c.
  *
  * - Projectiles: objects that fly (thrown, dropped, knocked off) get a Projectile from a
  *   pool of 20; objects stuck to something get an Embedment. objTick moves them with
  *   projectileMove, bouncing off walls and props.
- * - objTick: the per-frame tick for every object and door: falling and flying, CCTV,
- *   autoguns, vehicles, aircraft, the tank, weapons such as mines (chrobjWeaponTick).
- *   It is about 2,400 lines long.
+ * - objTick: the per-frame tick for every object and door (doorTick): falling and flying,
+ *   CCTV, autoguns, vehicles, aircraft, the tank, weapons such as mines (chrobjWeaponTick).
+ *   It is about 2,300 lines long.
  * - Drawing (chrobjRenderProp, objRenderModel); monitor screens are in monitor.c.
  * - Damage: shot tests (objTestShot), damage and destroyed levels (objApplyDamage),
  *   deforming the model (objDeform), exploding (objExplode), shattering glass.
  * - Pickups: collecting weapons, ammo, keys and hats (propPickupByPlayer).
  * - Weapon and hat slots: pools of props created at run time for dropped guns and hats.
- * - Doors: opening and closing, sounds, portals, and which side the player is on.
  */
 
 #include <ultra64.h>
@@ -72,6 +71,8 @@
 #include "game/prop/monitor.h"
 #include "str.h"
 #include "game/prop/alarm.h"
+#include "game/prop/door.h"
+#include "game/audio/sfxvolume.h"
 
 
 #define OBJECT_INTERACTION_TIMER_DELTA g_GlobalTimerDelta
@@ -193,29 +194,21 @@ extern struct ModelAnimation *animation_table_ptrs2[];
 
 // Forward declarations.
 
-s32 doorUpdateDisplacement(DoorRecord* door);
 s32 objGetShotsTaken(ObjectRecord *);
 void objRenderModel(PropRecord *prop, ModelRenderData *, s32 xlupass);
 bool chrobjSeparatingAxisTheorem(coord2d* rect1, s32 numvertices0, coord2d* rect2, s32 numvertices1);
-void chrobjSndCreatePostEvent(ALSoundState *state, coord3d *pos, f32 low, f32 high);
 void proxmineRemove(WeaponObjRecord* proxy);
 void proxmineAdd(WeaponObjRecord* proxy);
 s32 objMove(struct ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear);
 s32 objTryMovePropWithCollision(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal);
 s32 projectileMove(struct ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, s32 canEmbed, s32 moveOnlyIfClear);
 void objSettle(struct ObjectRecord *obj, coord3d *up);
-void doorsUpdatePositions(struct DoorRecord *door);
-void doorGetMtx(DoorRecord *door, Mtxf *rhs);
 void objBreakCCTVGlass(ObjectRecord *obj);
 s32 jointListFindHit(JointListEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode);
 AmmoCrateRecord *ammocrateAllocate(void);
 ModelNode* objFindDlCollisionNode(ObjectRecord* obj);
 bool objNodeCanDeform(ModelFileHeader* modeldef, ModelNode* node);
 void proxminesDetonateNear(coord3d *pos);
-void doorDeactivatePortal(DoorRecord *door);
-void doorSetOpenState(DoorRecord *door, s32 state);
-s32  sndVolumeForPos(coord3d *pos, f32 low, f32 high);
-void doorUpdateSoundVolume(DoorRecord *door);
 
 // End forward declarations.
 
@@ -527,10 +520,16 @@ void objGetTileShading(PropRecord *prop, rgba_u8 *colour)
 }
 
 
-void doorGetTileShading(PropRecord *prop, rgba_u8 *color)
+/**
+ * The colour an object (or door) is shaded towards: its floor tile's light, at half
+ * brightness. An illuminated object keeps the colour it has.
+ */
+void objGetShadeColour(PropRecord *prop, rgba_u8 *color)
 {
-    struct DoorRecord *door = prop->door;
-    if (door->flags & 0x400 ){ return; }
+    if (prop->obj->flags & PROPFLAG_ILLUMINATED)
+    {
+        return;
+    }
 
     objGetTileShading(prop, color);
     color->r >>= 1;
@@ -703,7 +702,7 @@ void objChangeShading(ObjectRecord* obj, coord3d* pos, Mtxf* matrix, StandTile* 
 
     prop->stan = stan;
 
-    doorGetTileShading(obj->prop, &obj->nextcol);
+    objGetShadeColour(obj->prop, &obj->nextcol);
 
     obj->shadecol.r = obj->nextcol.r;
     obj->shadecol.g = obj->nextcol.g;
@@ -889,16 +888,7 @@ void objFree(ObjectRecord* obj, s32 freeprop, s32 canregen)
     }
     else if (obj->type == PROPDEF_DOOR)
     {
-        DoorRecord* record = (DoorRecord*) obj;
-        if ((record->openSoundState != NULL) && (sndGetPlayingState(record->openSoundState) != 0))
-        {
-            sndDeactivate(record->openSoundState);
-        }
-
-        if ((record->closeSoundState != NULL) && (sndGetPlayingState(record->closeSoundState) != 0))
-        {
-            sndDeactivate(record->closeSoundState);
-        }
+        doorStopSounds((DoorRecord *)obj);
     }
     else if (obj->type == PROPDEF_TINTED_GLASS)
     {
@@ -2252,7 +2242,7 @@ void objUpdateThrowKnifeSound(ObjectRecord *obj)
         {
             sndPlaySfx(g_musicSfxBufferPtr, Throwing_knife_SFX[sfxindex], &obj->projectile->sounds[slot]);
 
-            chrobjSndCreatePostEventDefault(obj->projectile->sounds[slot], &obj->prop->pos);
+            sfxSetVolumeAt(obj->projectile->sounds[slot], &obj->prop->pos);
 
             obj->projectile->lastSfxTimer = g_GlobalTimer;
             obj->projectile->soundSlot = 1 - slot;
@@ -3396,16 +3386,9 @@ s32 objTick(struct PropRecord *prop)
 
 	// Doors and glass
 	struct DoorRecord *door;
-	struct DoorRecord *linked;
 	struct TintedGlassRecord *glass;
 	f32 previousOpenPosition; // Start-of-tick snapshot for how open a door is.
-	s32 allLinkedClosed;
 	s32 closePortal;
-	Mtxf *lidmtx;
-	f32 lidAngle;
-	f32 bladeAngle;
-	f32 openAngle;
-	f32 bladeStart;
 
 	// Cameras
 	struct CCTVRecord *cctv;
@@ -3746,7 +3729,7 @@ s32 objTick(struct PropRecord *prop)
 							prop->flags |= PROPFLAG_00000010;
 						}
 
-						chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, ATTACH_MINE_SFX, NULL), &prop->pos);
+						sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, ATTACH_MINE_SFX, NULL), &prop->pos);
 						objectivesCheckDeposit(((struct WeaponObjRecord *) obj)->weaponnum, prop->stan->room);
 						objPlaceOnSurface(obj, &collisionPoint, prop->stan, &collisionNormal);
 						if (g_ProjectileHitProp != NULL)
@@ -3972,7 +3955,7 @@ s32 objTick(struct PropRecord *prop)
 									sfx_state = sndPlaySfx(g_musicSfxBufferPtr, DROP_GUN_SFX, NULL);
 								}
 
-								chrobjSndCreatePostEventDefault(sfx_state, &prop->pos);
+								sfxSetVolumeAt(sfx_state, &prop->pos);
 							}
 
 							projectile->lastHitSoundTick = g_LvTickCount;
@@ -4101,53 +4084,14 @@ s32 objTick(struct PropRecord *prop)
 		{
 			chrobjCollisionRelated(obj);
 			setupUpdateObjectRoomPosition(obj);
-			doorGetTileShading(obj->prop, &obj->nextcol);
+			objGetShadeColour(obj->prop, &obj->nextcol);
 			proxminesDetonateNear(&obj->runtime_pos);
 		}
 
 		if (obj->type == PROPDEF_DOOR)
 		{
-			door = (struct DoorRecord *) prop->obj;
-			previousOpenPosition = door->openPosition;
-#if defined(VERSION_EU)
-			if ((((((s32) door->openedTime) > 0) && (door->openstate == DOORSTATE_STATIONARY)) && (!(door->flags & PROPFLAG_DOOR_KEEPOPEN))) && (((s32) door->openedTime) < (((s32) g_GlobalTimer) - ((((s32) door->autoCloseFrames) * 50) / 60))))
-#else
-			if ((((((s32) door->openedTime) > 0) && (((s32) door->openedTime) < (((s32) g_GlobalTimer) - ((s32) door->autoCloseFrames)))) && (door->openstate == DOORSTATE_STATIONARY)) && (!(door->flags & PROPFLAG_DOOR_KEEPOPEN)))
-#endif
-			{
-				doorActivate(door, DOORSTATE_CLOSING);
-			}
-
-			if (door->openstate == DOORSTATE_WAITING)
-			{
-				linked = door->linkedDoor;
-				allLinkedClosed = 1;
-				while ((linked != NULL) && (linked != door))
-				{
-					if ((linked->openstate != DOORSTATE_STATIONARY) || (linked->openPosition > 0.0f))
-					{
-						allLinkedClosed = 0;
-					}
-
-					linked = linked->linkedDoor;
-				}
-
-
-				if (allLinkedClosed != 0)
-				{
-					doorSetOpenState(door, 1);
-				}
-			}
-
-			if (((door->doorType == DOORTYPE_FALLAWAY) && (doorIsClosed(door) != 0)) && (doorIsPadlockFree(door) != 0))
-			{
-				doorActivateWrapper(prop);
-			}
-
-			if ((door->lastcalc60i < g_GlobalTimer) || (g_ClockTimer == 0))
-			{
-				doorsUpdatePositions(door);
-			}
+			previousOpenPosition = prop->door->openPosition;
+			doorTick(prop);
 		}
 		else if ((obj->type == PROPDEF_CCTV) && (!(obj->flags & PROPFLAG_IS_DRONE_GUN)))
 		{
@@ -4596,7 +4540,7 @@ s32 objTick(struct PropRecord *prop)
 
 			if (((!(obj->flags2 & PROPFLAG2_00080000)) && (objIsHealthy(obj) != 0)) && ((vehicle->speed > 0.0f) || (vehicle->speedaim > 0.0f)))
 			{
-				engineVolume = sndVolumeForPos(&vehicle->runtime_pos, 2000.0f, 3000.0f);
+				engineVolume = sfxVolumeAtRange(&vehicle->runtime_pos, 2000.0f, 3000.0f);
 			}
 
 			if (engineVolume > 0)
@@ -4725,7 +4669,7 @@ s32 objTick(struct PropRecord *prop)
 					if (canMove != 0)
 					{
 						vehicleAlignToFloor(vehicle);
-						doorGetTileShading(prop, &vehicle->nextcol);
+						objGetShadeColour(prop, &vehicle->nextcol);
 						proxminesDetonateNear(&vehicle->runtime_pos);
 						if ((waypointPosition != NULL) && (chrIsArrivingLaterallyAtPos(&previousPos, &newpos, waypointPosition, 100.0f) != 0))
 						{
@@ -4865,7 +4809,7 @@ s32 objTick(struct PropRecord *prop)
 			engineVolume = 0;
 			if ((((!(aircraft->flags2 & PROPFLAG2_00080000)) && (objIsHealthy(obj) != 0)) && (aircraft->rotaryspeed != 0.0f)) && (!(aircraft->flags & PROPFLAG_INMOTION)))
 			{
-				engineVolume = sndVolumeForPos(&aircraft->runtime_pos, 5000.0f, 6000.0f);
+				engineVolume = sfxVolumeAt(&aircraft->runtime_pos);
 			}
 
 			if (engineVolume > 0)
@@ -4924,11 +4868,11 @@ s32 objTick(struct PropRecord *prop)
 
 			if (closePortal != 0)
 			{
-				doorDeactivatePortal(door);
+				doorClosePortal(door);
 			}
 			else
 			{
-				doorActivatePortal(door);
+				doorOpenPortal(door);
 			}
 		}
 	}
@@ -4959,63 +4903,7 @@ s32 objTick(struct PropRecord *prop)
 
 		if (obj->type == PROPDEF_DOOR)
 		{
-			door = (struct DoorRecord *) prop->obj;
-			doorGetMtx(door, mtxs);
-			mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), mtxs);
-
-			if (model->obj->Skeleton == (&skeleton_eyelid_door))
-			{
-				lidAngle = M_TAU_F - ((door->openPosition * M_TAU_F) / 360.0f);
-				lidmtx = &mtxs[1];
-				nodepos = &model->obj->Switches[1]->Data->Group.Origin;
-				mtx4LoadXRotation(lidAngle, lidmtx);
-				mtx4SetTranslation((coord3d *) nodepos, lidmtx);
-				mtx4MultInPlace(mtxs, lidmtx);
-				lidmtx = &mtxs[2];
-				nodepos = &model->obj->Switches[2]->Data->Group.Origin;
-				mtx4LoadXRotation(M_TAU_F - lidAngle, lidmtx);
-				mtx4SetTranslation((coord3d *) nodepos, lidmtx);
-				mtx4MultInPlace(mtxs, lidmtx);
-			}
-			else if (model->obj->Skeleton == (&skeleton_iris_door))
-			{
-				bladeAngle = 0.0f;
-				openAngle = (door->openPosition * M_TAU_F) / 360.0f;
-				bladeStart = door->maxFrac * 0.3f;
-				if (bladeStart < door->openPosition)
-				{
-					bladeAngle = (((door->maxFrac * (door->openPosition - bladeStart)) / (door->maxFrac - bladeStart)) * M_TAU_F) / 360.0f;
-					if (isSimOwner)
-					{
-						if (previousOpenPosition <= bladeStart)
-						{
-							chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_OPEN_SFX, NULL), &prop->pos);
-						}
-					}
-				}
-				else if (isSimOwner)
-				{
-					if (bladeStart < previousOpenPosition)
-					{
-						chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_CLOSE_SFX, NULL), &prop->pos);
-					}
-				}
-
-				// Six blades, each a pivot node (tilted by bladeAngle) with a
-				// child node (turned by openAngle).
-				for (i = 0; i < 6; i++)
-				{
-					Mtxf *blademtx = &mtxs[i * 2 + 1];
-					Mtxf *tipmtx = &mtxs[i * 2 + 2];
-
-					mtx4LoadZRotation(bladeAngle, blademtx);
-					mtx4SetTranslation(&model->obj->Switches[i * 2 + 1]->Data->Group.Origin, blademtx);
-					mtx4MultInPlace(mtxs, blademtx);
-					mtx4LoadZRotation(openAngle, tipmtx);
-					mtx4SetTranslation(&model->obj->Switches[i * 2 + 2]->Data->Group.Origin, tipmtx);
-					mtx4MultInPlace(blademtx, tipmtx);
-				}
-			}
+			doorGetModelMatrices(prop->door, model, mtxs, previousOpenPosition, isSimOwner);
 		}
 		else
 		{
@@ -5389,12 +5277,12 @@ s32 objTick(struct PropRecord *prop)
 					if (autogun->fireSound1 == NULL)
 					{
 						sndPlaySfx(g_musicSfxBufferPtr, GUN_B9_CANNON_SHORT_SFX, &autogun->fireSound1);
-						chrobjSndCreatePostEventDefault(autogun->fireSound1, &prop->pos);
+						sfxSetVolumeAt(autogun->fireSound1, &prop->pos);
 					}
 					else if (autogun->fireSound2 == NULL)
 					{
 						sndPlaySfx(g_musicSfxBufferPtr, GUN_B9_CANNON_SHORT_SFX, &autogun->fireSound2);
-						chrobjSndCreatePostEventDefault(autogun->fireSound2, &prop->pos);
+						sfxSetVolumeAt(autogun->fireSound2, &prop->pos);
 					}
 
 					autogun->nextSoundTime = (s32) (g_GlobalTimer + 2);
@@ -6671,7 +6559,7 @@ s32 objDrop(PropRecord *prop)
 
         mtx4Copy(&rootmtx, &obj->mtx);
 
-        doorGetTileShading(obj->prop, &obj->nextcol);
+        objGetShadeColour(obj->prop, &obj->nextcol);
 
         obj->shadecol.r = obj->nextcol.r;
         obj->shadecol.g = obj->nextcol.g;
@@ -7366,28 +7254,6 @@ void glassShatter(ObjectRecord* obj)
     obj->runtime_bitflags |= RUNTIMEBITFLAG_REMOVE;
     obj->state |= PROPSTATE_DESTROYED;
     obj->maxdamage = 0.0f;
-}
-
-
-void doorShatterGlass(DoorRecord *door)
-{
-    PropRecord *prop;
-    Model *model;
-    struct ModelRoData_BoundingBoxRecord *bbox;
-    struct ModelRwData_SwitchRecord *switchdata;
-    Mtxf mtx;
-
-    prop = door->prop;
-    model = door->model;
-    bbox = (struct ModelRoData_BoundingBoxRecord *) model->obj->Switches[2]->Data;
-
-    doorGetMtx(door, &mtx);
-    glassCreateShards((coord3d *)mtx.m[3], (coord3d *)mtx.m[0], (coord3d *)mtx.m[1], (coord3d *)mtx.m[2], bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax);
-
-    explosionClearBulletImpactRoomByFlag(prop, 1);
-
-    switchdata = &modelGetNodeRwData(model, model->obj->Switches[1])->Switch;
-    switchdata->visible = FALSE;
 }
 
 
@@ -10504,1003 +10370,6 @@ HATTYPE hatGetModel(PropRecord *prop) //#MATCH
 }
 
 
-/**
- * US address 7F0526EC.
-*/
-void doorGetMtx(DoorRecord *door, Mtxf *rhs)
-{
-    Mtxf lhs;
-    coord3d pivot;
-    coord3d offset;
-    BoundPadRecord* pad;
-    coord3d side;
-    coord3d pos;
-
-    if ((door->doorType == DOORTYPE_SWINGING) || (door->doorType == DOORTYPE_AZTECCHAIR))
-    {
-        pad = &g_CurrentSetup.boundpads[door->pad];
-
-        side.f[0] = (pad->up.f[1] * pad->look.f[2]) - (pad->up.f[2] * pad->look.f[1]); // cross product
-        side.f[1] = (pad->up.f[2] * pad->look.f[0]) - (pad->up.f[0] * pad->look.f[2]); // cross product
-        side.f[2] = (pad->up.f[0] * pad->look.f[1]) - (pad->up.f[1] * pad->look.f[0]); // cross product
-
-        pivot.f[0] = pad->pos.f[0] + (pad->up.f[0] * pad->bbox.ymin);
-        pivot.f[1] = pad->pos.f[1] + (pad->up.f[1] * pad->bbox.ymin);
-        pivot.f[2] = pad->pos.f[2] + (pad->up.f[2] * pad->bbox.ymin);
-
-        if (door->doorType == DOORTYPE_AZTECCHAIR)
-        {
-            pivot.f[0] += side.f[0] * pad->bbox.xmax;
-            pivot.f[1] += side.f[1] * pad->bbox.xmax;
-            pivot.f[2] += side.f[2] * pad->bbox.xmax;
-        }
-        else if (door->flags & PROPFLAG_DOOR_OPENTOFRONT)
-        {
-            pivot.f[0] += side.f[0] * pad->bbox.xmax;
-            pivot.f[1] += side.f[1] * pad->bbox.xmax;
-            pivot.f[2] += side.f[2] * pad->bbox.xmax;
-        }
-        else
-        {
-            pivot.f[0] += side.f[0] * pad->bbox.xmin;
-            pivot.f[1] += side.f[1] * pad->bbox.xmin;
-            pivot.f[2] += side.f[2] * pad->bbox.xmin;
-        }
-
-        offset.f[0] = door->runtime_pos.f[0] - pivot.f[0];
-        offset.f[1] = door->runtime_pos.f[1] - pivot.f[1];
-        offset.f[2] = door->runtime_pos.f[2] - pivot.f[2];
-
-        mtx4Copy(&door->mtx, rhs);
-        mtx4LoadTranslation(&offset, &lhs);
-        mtx4MultInPlace(&lhs, rhs);
-
-        if (door->doorType == DOORTYPE_AZTECCHAIR)
-        {
-            if (door->flags & PROPFLAG_DOOR_OPENTOFRONT)
-            {
-                mtx4LoadZRotation(M_TAU_F - ((door->openPosition * M_TAU_F) / 360.0f), &lhs);
-            }
-            else
-            {
-                mtx4LoadZRotation((door->openPosition * M_TAU_F) / 360.0f, &lhs);
-            }
-        }
-        else if (door->flags & PROPFLAG_DOOR_OPENTOFRONT)
-        {
-            mtx4LoadYRotation(M_TAU_F - ((door->openPosition * M_TAU_F) / 360.0f), &lhs);
-        }
-        else
-        {
-            mtx4LoadYRotation((door->openPosition * M_TAU_F) / 360.0f, &lhs);
-        }
-
-        mtx4MultInPlace(&lhs, rhs);
-        mtx4LoadTranslation(&pivot, &lhs);
-        mtx4MultInPlace(&lhs, rhs);
-    }
-    else if ((door->doorType == DOORTYPE_EYE) || (door->doorType == DOORTYPE_IRIS))
-    {
-        mtx4Copy(&door->mtx, rhs);
-        mtx4SetTranslation(&door->runtime_pos, rhs);
-    }
-    else
-    {
-        pos.f[0] = (door->slideDir.x * door->openPosition) + door->runtime_pos.x;
-        pos.f[1] = (door->slideDir.y * door->openPosition) + door->runtime_pos.y;
-        pos.f[2] = (door->slideDir.z * door->openPosition) + door->runtime_pos.z;
-
-        mtx4Copy(&door->mtx, rhs);
-        mtx4SetTranslation(&pos, rhs);
-    }
-
-    if (door->doorFlags & DOORFLAG_FLIP)
-    {
-        mtx4ScaleRow2(-1.0f, rhs);
-    }
-}
-
-
-/**
-*/
-void doorUpdateBbox(DoorRecord *door)
-{
-    struct ModelRoData_BoundingBoxRecord *door_bb;
-    Mtxf mtx;
-
-    door_bb = (struct ModelRoData_BoundingBoxRecord *)door->model->obj->RootNode->Child->Data;
-
-    // struct copy
-    door->bbox = *door_bb;
-
-    // Resize the door's bounding box.
-    if (door->doorFlags & DOORFLAG_CLIP_TO_BBOX)
-    {
-        if (door->doorType == DOORTYPE_VERTICAL)
-        {
-            door->bbox.Bounds.ymax = door_bb->Bounds.ymax + (door_bb->Bounds.ymin - door_bb->Bounds.ymax) * door->openPosition;
-        }
-        else
-        {
-            door->bbox.Bounds.xmin = door_bb->Bounds.xmin + (door_bb->Bounds.xmax - door_bb->Bounds.xmin) * door->openPosition;
-        }
-    }
-
-    if (door->perimFrac <= door->openPosition)
-    {
-        door->ptr_allocated_collisiondata_block->edges = 0;
-
-        return;
-    }
-
-    doorGetMtx(door, &mtx);
-    door->ptr_allocated_collisiondata_block->edges = bboxGetHull2d(&door->bbox, &mtx, door->ptr_allocated_collisiondata_block->polygon);
-
-    if (door->doorType == DOORTYPE_VERTICAL)
-    {
-        door->ptr_allocated_collisiondata_block->bottom = door->runtime_pos.f[1] + bboxRotatedMinY(&door->bbox, &mtx);
-    }
-    else if (door->doorType == DOORTYPE_FALLAWAY)
-    {
-        door->ptr_allocated_collisiondata_block->bottom = door->runtime_pos.f[1] - 10000.0f;
-    }
-    else
-    {
-        door->ptr_allocated_collisiondata_block->bottom = mtx.m[3][1] + bboxRotatedMinY(&door->bbox, &mtx);
-
-        if (door->doorFlags & DOORFLAG_EXTENDEDY)
-        {
-            door->ptr_allocated_collisiondata_block->bottom -= 1000.0f;
-        }
-    }
-
-    if (((door->doorType == DOORTYPE_EYE) && (0 < door->openPosition - (0.4f * door->maxFrac)))
-        || ((door->doorType == DOORTYPE_IRIS) && (0 < door->openPosition - (0.4f * door->maxFrac)))
-        )
-    {
-
-        door->ptr_allocated_collisiondata_block->top = door->ptr_allocated_collisiondata_block->bottom + 50.0f;
-    }
-    else if (door->doorType == DOORTYPE_FALLAWAY)
-    {
-        door->ptr_allocated_collisiondata_block->top = door->runtime_pos.f[1] + 1000.0f;
-    }
-    else
-    {
-        door->ptr_allocated_collisiondata_block->top = mtx.m[3][1] + bboxRotatedMaxY(&door->bbox, &mtx);
-
-        if (door->doorFlags & DOORFLAG_EXTENDEDY)
-        {
-            door->ptr_allocated_collisiondata_block->top += 1000.0f;
-        }
-    }
-
-}
-
-
-/**
- * This function physically resizes sliding doors with DOORFLAG_CLIP_TO_BBOX as they move.
- * When the door is opening, it shrinks. When the door is closing, it expands.
- * This prevents z-fighting if the door's face is parallel with the suface it's sliding into.
- * Examples include the brown security doors in Facility and the sliding stone doors in Egyptian and Temple.
- */
-void doorBuildClippedVertices(DoorRecord *inDoor)
-{
-    Model *mdl;
-    ModelNode *mdlDLCNode;
-    struct ModelRoData_DisplayList_CollisionRecord *src;
-    DoorRecord *door;
-    s16 cutoff;
-    s32 i;
-    s32 j;
-    Vertex *cur;
-    Vertex *n1;
-    Vertex *n2;
-    Vertex *n3;
-    Vertex *dcur;
-    Vertex *d1;
-    Vertex *d2;
-    Vertex *d3;
-
-    if (inDoor->doorFlags & DOORFLAG_CLIP_TO_BBOX)
-    {
-        door = inDoor;
-        mdl = inDoor->model;
-        mdlDLCNode = mdl->obj->RootNode->Child->Child;
-        src = (struct ModelRoData_DisplayList_CollisionRecord *)mdlDLCNode->Data;
-        inDoor = (DoorRecord *)modelGetNodeRwData(mdl, mdlDLCNode);
-
-        if (door->doorType == DOORTYPE_VERTICAL)
-        {
-            cutoff = door->bbox.Bounds.ymax + 0.5f;
-        }
-        else
-        {
-            cutoff = door->bbox.Bounds.xmin + 0.5f;
-        }
-
-        ((struct ModelRwData_DisplayList_CollisionRecord *)inDoor)->Vertices = dynAllocateVertices(src->numVertices);
-
-        for (i = 0; i < src->numVertices / 4; i++)
-        {
-            for (j = 0; j < 4; j++)
-            {
-                dcur = &(&((struct ModelRwData_DisplayList_CollisionRecord *)inDoor)->Vertices[i * 4])[j];
-                d1 = &(&((struct ModelRwData_DisplayList_CollisionRecord *)inDoor)->Vertices[i * 4])[(j + 1) % 4];
-                d2 = &(&((struct ModelRwData_DisplayList_CollisionRecord *)inDoor)->Vertices[i * 4])[(j + 2) % 4];
-                d3 = &(&((struct ModelRwData_DisplayList_CollisionRecord *)inDoor)->Vertices[i * 4])[(j + 3) % 4];
-                cur = &(&src->Vertices[i * 4])[j];
-                n1 = &(&src->Vertices[i * 4])[(j + 1) % 4];
-                n2 = &(&src->Vertices[i * 4])[(j + 2) % 4];
-                n3 = &(&src->Vertices[i * 4])[(j + 3) % 4];
-
-                if (j == 0)
-                {
-                    *dcur = *cur;
-                    *d1 = *n1;
-                    *d2 = *n2;
-                    *d3 = *n3;
-                }
-
-                // Rebuild the S/T coords for vertically sliding doors to mask the door's resizing.
-                if (door->doorType == DOORTYPE_VERTICAL)
-                {
-                    if (cur->coord.y >= cutoff)
-                    {
-                        if (cur->coord.x == n1->coord.x && cur->coord.z == n1->coord.z && cur->coord.y != n1->coord.y)
-                        {
-                            dcur->s = ((cur->coord.y - cutoff) * (n1->s - cur->s) / (cur->coord.y - n1->coord.y)) + cur->s;
-                            dcur->t = ((cur->coord.y - cutoff) * (n1->t - cur->t) / (cur->coord.y - n1->coord.y)) + cur->t;
-                        }
-                        else if (cur->coord.x == n2->coord.x && cur->coord.z == n2->coord.z && cur->coord.y != n2->coord.y)
-                        {
-                            dcur->s = ((cur->coord.y - cutoff) * (n2->s - cur->s) / (cur->coord.y - n2->coord.y)) + cur->s;
-                            dcur->t = ((cur->coord.y - cutoff) * (n2->t - cur->t) / (cur->coord.y - n2->coord.y)) + cur->t;
-                        }
-                        else if (cur->coord.x == n3->coord.x && cur->coord.z == n3->coord.z && cur->coord.y != n3->coord.y)
-                        {
-                            dcur->s = ((cur->coord.y - cutoff) * (n3->s - cur->s) / (cur->coord.y - n3->coord.y)) + cur->s;
-                            dcur->t = ((cur->coord.y - cutoff) * (n3->t - cur->t) / (cur->coord.y - n3->coord.y)) + cur->t;
-                        }
-
-                        dcur->coord.y = cutoff;
-                    }
-                }
-                // Rebuild the S/T coords for horizontally sliding doors.
-                else
-                {
-                    if (cur->coord.x <= cutoff)
-                    {
-                        if (cur->coord.y == n1->coord.y && cur->coord.z == n1->coord.z && cur->coord.x != n1->coord.x)
-                        {
-                            dcur->s = ((cutoff - cur->coord.x) * (n1->s - cur->s) / (n1->coord.x - cur->coord.x)) + cur->s;
-                            dcur->t = ((cutoff - cur->coord.x) * (n1->t - cur->t) / (n1->coord.x - cur->coord.x)) + cur->t;
-                        }
-                        else if (cur->coord.y == n2->coord.y && cur->coord.z == n2->coord.z && cur->coord.x != n2->coord.x)
-                        {
-                            dcur->s = ((cutoff - cur->coord.x) * (n2->s - cur->s) / (n2->coord.x - cur->coord.x)) + cur->s;
-                            dcur->t = ((cutoff - cur->coord.x) * (n2->t - cur->t) / (n2->coord.x - cur->coord.x)) + cur->t;
-                        }
-                        else if (cur->coord.y == n3->coord.y && cur->coord.z == n3->coord.z && cur->coord.x != n3->coord.x)
-                        {
-                            dcur->s = ((cutoff - cur->coord.x) * (n3->s - cur->s) / (n3->coord.x - cur->coord.x)) + cur->s;
-                            dcur->t = ((cutoff - cur->coord.x) * (n3->t - cur->t) / (n3->coord.x - cur->coord.x)) + cur->t;
-                        }
-
-                        dcur->coord.x = cutoff;
-                    }
-                }
-            }
-        }
-    }
-}
-
-
-/**
- * objToggleDoorPortal / doorActivatePortal
- * Toggles (Open/Closed) the portal linked with door
- * @param door: Door to toggle portal on
- */
-void doorActivatePortal(DoorRecord *door)
-{
-    if (door->portalNumber >= 0)
-    {
-        bgToggleDataPortalsContrlBytes1Bit1(door->portalNumber, TRUE);
-    }
-}
-
-
-/**
- * objToggleDoorPortal / doorDeactivatePortal
- * Toggles (Open/Closed) the portal linked with door
- * @param door: Door to toggle portal on
- */
-void doorDeactivatePortal(DoorRecord *door) {
-    if (door->portalNumber >= 0)
-    {
-        bgToggleDataPortalsContrlBytes1Bit1(door->portalNumber, FALSE);
-    }
-}
-
-
-PropRecord* doorInit(DoorRecord* door, coord3d* pos, Mtxf* mtx, StandTile* stan, coord3d* coord, coord3d* centre) {
-    PropRecord* prop;
-    f32 scale;
-
-    prop = objInitWithAutoModel((ObjectRecord* ) door);
-    scale = PitemZ_entries[door->obj].scale;
-    door->ptr_allocated_collisiondata_block = mempAlloc(0x50U, MEMPOOL_STAGE);
-
-    mtx4Copy(mtx, &door->mtx);
-    mtx4ScaleRows012(scale, &door->mtx);
-
-    door->slideDir.x = (f32) coord->x;
-    door->slideDir.y = (f32) coord->y;
-    door->slideDir.z = (f32) coord->z;
-
-    if (door->flags & PROPFLAG_80000000) {
-        door->openPosition = door->maxFrac;
-    } else {
-        door->openPosition = 0.0f;
-    }
-
-    door->speed = 0.0f;
-    door->openstate = DOORSTATE_STATIONARY;
-    door->numHits = 0;
-    door->linkedDoor = NULL;
-
-    if (door->doorFlags & DOORFLAG_CLIP_TO_BBOX) {
-        union ModelRoData *rodata = door->model->obj->RootNode->Child->Child->Data;
-        door->clipVtx = mempAlloc(rodata->DisplayListCollisions.numVertices * sizeof(Vertex), MEMPOOL_STAGE);
-    } else {
-        door->clipVtx = NULL;
-    }
-
-    door->portalNumber = -1;
-    door->openSoundState = 0;
-    door->closeSoundState = 0;
-
-    prop->type = PROP_TYPE_DOOR;
-    prop->door = door;
-    prop->pos.x = pos->x;
-    prop->pos.y = pos->y;
-    prop->pos.z = pos->z;
-    prop->stan = stan;
-
-    door->runtime_pos.x = centre->x;
-    door->runtime_pos.y = centre->y;
-    door->runtime_pos.z = centre->z;
-    door->flags |= PROPFLAG_00000100;
-
-    doorUpdateBbox(door);
-    doorBuildClippedVertices(door);
-    doorGetTileShading(door->prop, &door->nextcol);
-
-    door->shadecol.r = door->nextcol.r;
-    door->shadecol.g = door->nextcol.g;
-    door->shadecol.b = door->nextcol.b;
-    door->shadecol.a = door->nextcol.a;
-
-    return prop;
-}
-
-
-s32 sndVolumeForDistance(f32 distance, f32 min, f32 max)
-{
-    s32 retval;
-
-    if (distance <= 200.0f)
-    {
-        retval = SHRT_MAX;
-    }
-    else if (max <= distance)
-    {
-        retval = 0.0f;
-    }
-    else if (min <= distance)
-    {
-        retval = ((max - distance) * 10000.0f) / (max - min);
-    }
-    else
-    {
-        retval = SHRT_MAX - (s32)((sqrtf(distance - 200.0f) * 22767.0f) / sqrtf(min - 200.0f));
-    }
-
-    return retval;
-}
-
-
-s32 sndVolumeForPos(coord3d *pos, f32 low, f32 high)
-{
-    PropRecord *prop;
-    s32 index;
-    f32 shortest_distance;
-    f32 diffx;
-    f32 diffy;
-    f32 diffz;
-    f32 distance;
-    s32 count;
-
-    shortest_distance = high;
-    count = getPlayerCount();
-
-    for (index = 0; index < count; index++)
-    {
-        prop  = g_playerPointers[index]->prop;
-        diffx = prop->pos.x - pos->x;
-        diffy = prop->pos.y - pos->y;
-        diffz = prop->pos.z - pos->z;
-        distance = sqrtf(diffx * diffx + diffy * diffy + diffz * diffz);
-
-        if (distance < shortest_distance)
-        {
-            shortest_distance = distance;
-        }
-    }
-    return sndVolumeForDistance(shortest_distance, low, high);
-}
-
-
-void chrobjSndCreatePostEvent(ALSoundState *state, coord3d *pos, f32 low, f32 high)
-{
-    sndCreatePostEvent(state, 8, sndVolumeForPos(pos, low, high));
-}
-
-
-s32 sndVolumeForDistanceDefault(f32 vol)
-{
-    return sndVolumeForDistance(vol, 5000.0f, 6000.0f);
-}
-
-
-s32 sndVolumeForPosDefault(coord3d *pos)
-{
-    return sndVolumeForPos(pos, 5000.0f, 6000.0f);
-}
-
-
-void chrobjSndCreatePostEventDefault(ALSoundState *state, coord3d *pos)
-{
-    chrobjSndCreatePostEvent(state, pos, 5000.0f,  6000.0f);
-}
-
-
-void doorUpdateSoundVolume(DoorRecord* door)
-{
-    s32 open_playing;
-    s32 close_playing;
-    s32 volume;
-
-    open_playing = (door->openSoundState != NULL) && (sndGetPlayingState(door->openSoundState) != 0);
-    close_playing = (door->closeSoundState != NULL) && (sndGetPlayingState(door->closeSoundState) != 0);
-
-    if ((open_playing != 0) || (close_playing != 0))
-    {
-
-        volume = sndVolumeForPosDefault(&door->prop->pos);
-
-        if (lvGetControlsLocked() != 0)
-        {
-            volume = 0;
-        }
-
-        if (open_playing != 0)
-        {
-            sndCreatePostEvent(door->openSoundState, 8, volume);
-        }
-
-        if (close_playing != 0)
-        {
-            sndCreatePostEvent(door->closeSoundState, 8, volume);
-        }
-    }
-}
-
-
-void doorStopSounds(DoorRecord *door) //#MATCH
-{
-    if (door->openSoundState && sndGetPlayingState(door->openSoundState))
-    {
-        sndDeactivate(door->openSoundState);
-    }
-
-    if (door->closeSoundState && sndGetPlayingState(door->closeSoundState))
-    {
-        sndDeactivate(door->closeSoundState);
-    }
-}
-
-
-void doorPlayOpenSound0(DoorRecord *door) {
-    ALSoundState *soundState = NULL;
-    ALSoundState **pendingState = NULL;
-
-    doorStopSounds(door);
-
-    if (door->openSoundState == NULL)
-    {
-        pendingState = &door->openSoundState;
-    }
-    else if (door->closeSoundState == NULL)
-    {
-        pendingState = &door->closeSoundState;
-    }
-
-    switch (door->doorOpenSound)
-    {
-    case DOOR_OPEN_SOUND_01:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_SLIDE1_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_02:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_METAL:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_OPEN_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_LOOP_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_04:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SLIDE_OPEN_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SINGLE_LOOP_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_WOOD:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_WOOD_OPEN_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_06:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_WOOD_2:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_CATCH_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_WOOD_SLIDE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_WOOD_3:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_WOOD_OPEN_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_09:
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_SHUTTER_OPEN_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_METAL_2:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_OPEN_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_11:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL_3:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_OPEN3_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_13:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_HYDROLIC:
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_HYDRAL_CLOSE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_STONE:
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_SLIDE_STONE_OPEN_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_16:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SLIDE_OPEN_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL_4:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        if (soundState != NULL)
-        {
-            chrobjSndCreatePostEventDefault(soundState, &door->prop->pos);
-        }
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_OPEN_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_LOOP_SFX, pendingState);
-        }
-        break;
-    }
-
-    if (soundState != NULL)
-    {
-        chrobjSndCreatePostEventDefault(soundState, &door->prop->pos);
-    }
-
-    doorUpdateSoundVolume(door);
-}
-
-
-void doorPlayOpenSound1(DoorRecord *door) {
-    ALSoundState *soundState = NULL;
-    ALSoundState **pendingState = NULL;
-
-    doorStopSounds(door);
-
-    if (door->openSoundState == NULL)
-    {
-        pendingState = &door->openSoundState;
-    }
-    else if (door->closeSoundState == NULL)
-    {
-        pendingState = &door->closeSoundState;
-    }
-
-    switch (door->doorOpenSound)
-    {
-    case DOOR_OPEN_SOUND_01:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_SLIDE1_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_02:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_METAL:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_OPEN_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_LOOP_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_04:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SLIDE_OPEN_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SINGLE_LOOP_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_WOOD_2:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_CATCH_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_WOOD_SLIDE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_WOOD_3:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_WOOD_OPEN_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_09:
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_SHUTTER_OPEN_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_13:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_HYDROLIC:
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_HYDRAL_CLOSE_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_STONE:
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, DOOR_SLIDE_STONE_OPEN_SFX, pendingState);
-        }
-        break;
-    case DOOR_OPEN_SOUND_16:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SLIDE_OPEN_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL_4:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        if (soundState != NULL)
-        {
-            chrobjSndCreatePostEventDefault(soundState, &door->prop->pos);
-        }
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_OPEN_SFX, NULL);
-        if (pendingState != NULL)
-        {
-            sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_LOOP_SFX, pendingState);
-        }
-        break;
-    }
-
-    if (soundState != NULL)
-    {
-        chrobjSndCreatePostEventDefault(soundState, &door->prop->pos);
-    }
-
-    doorUpdateSoundVolume(door);
-}
-
-
-void doorPlayCloseSound0(DoorRecord *door) {
-    ALSoundState *soundState = NULL;
-
-    doorStopSounds(door);
-
-    switch (door->doorOpenSound)
-    {
-    case DOOR_OPEN_SOUND_01:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_02:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_04:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SLIDE_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_WOOD_2:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_WOOD_3:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_WOOD_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_09:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SHUTTER_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_13:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_HYDROLIC:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_HYDRAL_OPEN_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_STONE:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SLIDE_STONE_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_16:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SLIDE_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL_4:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_CLOSE_SFX, NULL);
-        break;
-    }
-
-
-    if (soundState != NULL)
-    {
-        chrobjSndCreatePostEventDefault(soundState, &door->prop->pos);
-    }
-
-    doorUpdateSoundVolume(door);
-}
-
-
-void doorPlayCloseSound1(DoorRecord *door)
-{
-    ALSoundState *soundState = NULL;
-
-    doorStopSounds(door);
-
-    switch (door->doorOpenSound)
-    {
-    case DOOR_OPEN_SOUND_01:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_02:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_04:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SLIDE_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_WOOD:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_WOOD_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_06:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_WOOD_2:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SMART_CATCH1_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_WOOD_3:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_WOOD_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_09:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SHUTTER_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL_2:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_11:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL_3:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE3_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_13:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, TRAIN_SLIDE_DOOR_SLIDE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_HYDROLIC:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_HYDRAL_OPEN_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_STONE:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, DOOR_SLIDE_STONE_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_16:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, HEAVY_SLIDE_CLOSE_SFX, NULL);
-        break;
-    case DOOR_OPEN_SOUND_METAL_4:
-        soundState = sndPlaySfx(g_musicSfxBufferPtr, METAL_SLIDE_CLOSE_SFX, NULL);
-        break;
-    }
-
-
-    if (soundState != NULL) {
-        chrobjSndCreatePostEventDefault(soundState, &door->prop->pos);
-    }
-
-    doorUpdateSoundVolume(door);
-}
-
-
-/**
- * Play the door open sound and activate the door's portal,
- */
-void doorStartOpen(DoorRecord *door)
-{
-    door->flags &= ~PROPFLAG_DOOR_KEEPOPEN;
-    door->runtime_bitflags |= RUNTIMEBITFLAG_BEENOPENED;
-
-    doorPlayOpenSound0(door);
-    doorActivatePortal(door);
-
-    if (door->doorType == DOORTYPE_FALLAWAY)
-    {
-        struct collision_data *col = door->ptr_allocated_collisiondata_block;
-        door->flags |= PROPFLAG_CANNOT_ACTIVATE;
-        door->perimFrac = 0;
-
-        if (col) { col->edges = 0; }
-        door->flags &= ~PROPFLAG_00000100;
-    }
-}
-
-
-/**
- * Play the door close sound
- */
-void doorStartClose(DoorRecord *door)
-{
-    door->flags &= ~PROPFLAG_DOOR_KEEPOPEN;
-    doorPlayOpenSound1(door);
-}
-
-
-void doorFinishOpen(DoorRecord *door)
-{
-    doorPlayCloseSound0(door);
-
-    if (door->doorType == DOORTYPE_FALLAWAY)
-    {
-        objEnsureProjectile(door->prop);
-
-        if (door->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
-        {
-            door->projectile->flags |= 1;
-            mtx4LoadIdentity(&door->projectile->mtx);
-        }
-    }
-}
-
-
-void doorFinishClose(DoorRecord* door)
-{
-    doorPlayCloseSound1(door);
-    doorDeactivatePortal(door);
-}
-
-
-/**
- * Apply the given state to an individual door (not its siblings).
- *
- * Handles playing door open/close sounds and activating the portal if opening.
- */
-void doorSetOpenState(DoorRecord *door, s32 newstate)
-{
-    if (newstate == DOORSTATE_OPENING)
-    {
-        if (door->openstate == DOORSTATE_STATIONARY || door->openstate == DOORSTATE_WAITING)
-        {
-            doorStartOpen(door);
-        }
-
-        door->openstate = newstate;
-    }
-    else if (newstate == DOORSTATE_CLOSING)
-    {
-        if (door->openstate == DOORSTATE_STATIONARY && door->openPosition > 0)
-        {
-            doorStartClose(door);
-        }
-
-        if ((door->openstate != DOORSTATE_STATIONARY && door->openstate != DOORSTATE_WAITING) || door->openPosition > 0)
-        {
-            door->openstate = newstate;
-        }
-        else if (door->openstate == DOORSTATE_WAITING)
-        {
-            door->openstate = DOORSTATE_STATIONARY;
-        }
-    }
-    else
-    {
-        door->openstate = newstate;
-    }
-}
-
-
-void doorActivate(DoorRecord *door, DOORSTATE State) //#MATCH
-{
-    DoorRecord *linkeddoor;
-    DOORSTATE   LinkedState = State;
-
-    if (door->flags2 & 0x40000000) //Close first door before opening second
-    {
-        if (State == DOORSTATE_OPENING)
-        {
-            LinkedState = DOORSTATE_CLOSING;
-            if (door->openstate == DOORSTATE_STATIONARY)
-            {
-                State = DOORSTATE_WAITING;
-            }
-        }
-    }
-
-    doorSetOpenState(door, State);
-
-    linkeddoor = door->linkedDoor;
-
-    while (linkeddoor && linkeddoor != door)
-    {
-        doorSetOpenState(linkeddoor, LinkedState);
-        linkeddoor = linkeddoor->linkedDoor;
-    };
-}
-
-
-bool doorIsClosed(DoorRecord *door)
-{
-    return ((door->openstate == DOORSTATE_STATIONARY) || (door->openstate == DOORSTATE_WAITING)) && (door->openPosition <= 0.0f);
-}
-
 /*
 * Description: Computes the 2D bounding box for every room the prop is in
 *              so it can be used for scissors. Returns true when the prop
@@ -11675,617 +10544,6 @@ bool posIsOnScreen(PropRecord *prop, coord3d *pos, f32 radius, bool checkFogEnd)
 
     return result;
 }
-
-
-/**
-* Loaded to 7F054EA8.
-*/
-s32 doorUpdateDisplacement(DoorRecord* door)
-{
-    int isMoving = 0;
-
-    if (door->openstate == DOORSTATE_OPENING)
-    {
-        chrobjApplySpeed(&door->openPosition, door->maxFrac, &door->speed, door->accel, door->decel, door->maxSpeed);
-
-        if (door->maxFrac <= door->openPosition)
-        {
-            door->openPosition = door->maxFrac;
-        }
-        else
-        {
-            if (door->openPosition <= 0.0f)
-            {
-                door->openPosition = 0.0f;
-            }
-        }
-
-        isMoving = 1;
-    }
-    else if (door->openstate == DOORSTATE_CLOSING)
-    {
-        chrobjApplySpeed(&door->openPosition, 0.0f, &door->speed, door->accel, door->decel, door->maxSpeed);
-
-        if (door->maxFrac <= door->openPosition)
-        {
-            door->openPosition = door->maxFrac;
-        }
-        else
-        {
-            if (door->openPosition <= 0.0f)
-            {
-                door->openPosition = 0.0f;
-            }
-        }
-
-        isMoving = 1;
-    }
-
-    return isMoving;
-}
-
-
-/**
-*/
-void doorsUpdatePositions(DoorRecord *door)
-{
-    Model *model;
-    ModelNode *node;
-    s32 moved;
-    DoorRecord *sibling;
-    s32 canMove;
-    s32 i;
-
-    struct ModelRoData_DisplayList_CollisionRecord *rodata;
-    struct ModelRwData_DisplayList_CollisionRecord *rwdata;
-
-    moved = 0;
-    canMove = 1;
-
-    sibling = door;
-    while (sibling != NULL)
-    {
-        sibling->lastcalc60f = sibling->openPosition;
-        if (doorUpdateDisplacement(sibling) != 0)
-        {
-            moved = 1;
-        }
-
-        sibling = sibling->linkedDoor;
-
-        if (sibling == door)
-        {
-            break;
-        }
-    }
-
-    sibling = door;
-    if ((moved != 0))
-    {
-        while (sibling != NULL)
-        {
-            doorUpdateBbox(sibling);
-            canMove = vehicleFindBlockingProp(sibling->prop);
-
-            if (canMove == 0)
-            {
-                break;
-            }
-
-            sibling = sibling->linkedDoor;
-
-            if (sibling == door)
-            {
-                break;
-            }
-        }
-    }
-
-    sibling = door;
-    while (sibling != NULL)
-    {
-        if (moved)
-        {
-            if (canMove != 0)
-            {
-                if (sibling->openstate == DOORSTATE_OPENING)
-                {
-                    if (sibling->maxFrac <= sibling->openPosition)
-                    {
-                        sibling->openstate = DOORSTATE_STATIONARY;
-                        sibling->speed = 0.0f;
-                        sibling->openedTime = (u32) g_GlobalTimer;
-
-                        doorFinishOpen(sibling);
-                    }
-                }
-                else if ((sibling->openstate == DOORSTATE_CLOSING) && (sibling->openPosition <= 0.0f))
-                {
-                    sibling->openstate = DOORSTATE_STATIONARY;
-                    sibling->speed = 0.0f;
-                    sibling->openedTime = 0;
-
-                    doorFinishClose(sibling);
-                }
-
-                doorGetTileShading(sibling->prop, &sibling->nextcol);
-            }
-            else
-            {
-                sibling->speed = 0.0f;
-                sibling->openPosition = sibling->lastcalc60f;
-
-                doorUpdateBbox(sibling);
-            }
-
-            doorBuildClippedVertices(sibling);
-        }
-        else if  (sibling->doorFlags & DOORFLAG_CLIP_TO_BBOX)
-        {
-            model = sibling->model;
-            node = model->obj->RootNode->Child->Child;
-            rodata = (struct ModelRoData_DisplayList_CollisionRecord *)node->Data;
-            rwdata = &modelGetNodeRwData(model, node)->DisplayListCollisions;
-
-            if (rwdata->Vertices != sibling->clipVtx)
-            {
-                for (i = 0; i < rodata->numVertices; i++)
-                {
-                    // struct copy
-                    sibling->clipVtx[i] = rwdata->Vertices[i];
-                }
-            }
-
-            rwdata->Vertices = sibling->clipVtx;
-        }
-
-        sibling->lastcalc60i = g_GlobalTimer;
-
-        sibling = sibling->linkedDoor;
-
-        if (sibling == door)
-        {
-            break;
-        }
-    }
-}
-
-
-// PD: door0f08f604
-void doorGetAnglesToPlayer(DoorRecord *door, f32 *minangle, f32 *maxangle, s32 altcoordsystem)
-{
-    f32 anglediff;
-    PropRecord *playerprop;
-    BoundPadRecord *pad;
-    coord3d normal;
-    f32 xmin;
-    f32 xmax;
-    coord3d playerpos;
-    f32 angle2;
-    f32 cosine;
-    f32 sine;
-    f32 angle;
-    f32 y1;
-    f32 x1;
-    f32 playerangle;
-    f32 anglediff2;
-    f32 scale;
-    f32 xbound;
-
-    pad = &g_CurrentSetup.boundpads[door->pad];
-    playerprop = currentPlayerGetProp();
-
-    if (1) { scale = 1.0f; }
-    playerpos.f[0] = (((g_CurrentPlayer->bond.theta_transform.x * 30.0f) * scale) * 0.75f) + playerprop->pos.x;
-    playerpos.f[1] = playerprop->pos.y;
-    playerpos.f[2] = (((g_CurrentPlayer->bond.theta_transform.z * 30.0f) * scale) * 0.75f) + playerprop->pos.z;
-
-    if (altcoordsystem != 0)
-    {
-        xmin = pad->bbox.xmin;
-        xmax = pad->bbox.xmax;
-        normal.f[0] = (pad->up.y * pad->look.z) - (pad->look.y * pad->up.z);
-        normal.f[1] = (pad->up.z * pad->look.x) - (pad->look.z * pad->up.x);
-        normal.f[2] = (pad->up.x * pad->look.y) - (pad->look.x * pad->up.y);
-    }
-    else
-    {
-        xmin = pad->bbox.ymin;
-        xmax = pad->bbox.ymax;
-        normal.f[0] = pad->up.x;
-        normal.f[1] = pad->up.y;
-        normal.f[2] = pad->up.z;
-    }
-
-    x1 = (pad->pos.x + (normal.x * xmin)) - playerpos.x;
-    y1 = (pad->pos.z + (normal.z * xmin)) - playerpos.z;
-    angle = mathAtan2(x1, y1);
-
-    playerangle = bondviewGetPlayerYawRadians();
-    anglediff = angle - playerangle;
-
-    scale = (angle - playerangle) + M_TAU_F;
-    if (angle < playerangle)
-    {
-        anglediff = scale;
-    }
-
-    if (anglediff > M_PI_F)
-    {
-        anglediff = anglediff - M_TAU_F;
-    }
-
-    if (door->doorType == DOORTYPE_SWINGING)
-    {
-        angle2 = (door->openPosition * M_TAU_F) / 360.0f;
-
-        if (door->flags & 0x20000000)
-        {
-            angle2 = M_TAU_F - angle2;
-        }
-
-        cosine = cosf(angle2);
-        sine = sinf(angle2);
-
-        xbound = xmax - xmin;
-        x1 = ((pad->pos.x + (normal.x * xmin)) + (xbound * ((normal.x * cosine) + (normal.z * sine)))) - playerpos.x;
-        y1 = ((pad->pos.z + (normal.z * xmin)) + (xbound * (((-normal.x) * sine) + (normal.z * cosine)))) - playerpos.z;
-
-        angle = mathAtan2(x1, y1);
-        playerangle = bondviewGetPlayerYawRadians();
-
-        anglediff2 = angle - playerangle;
-        if (angle < playerangle)
-        {
-            anglediff2 += M_TAU_F;
-        }
-        if (anglediff2 > M_PI_F)
-        {
-            anglediff2 -= M_TAU_F;
-        }
-    }
-    else
-    {
-        x1 = (pad->pos.x + (normal.x * xmax)) - playerpos.x;
-        y1 = (pad->pos.z + (normal.z * xmax)) - playerpos.z;
-
-        angle = mathAtan2(x1, y1);
-        playerangle = bondviewGetPlayerYawRadians();
-
-        anglediff2 = angle - playerangle;
-
-
-        if (angle < playerangle)
-        {
-            anglediff2 += M_TAU_F;
-        }
-
-        if (anglediff2 > M_PI_F)
-        {
-            anglediff2 -= M_TAU_F;
-        }
-    }
-
-    if (anglediff < anglediff2)
-    {
-        *minangle = anglediff;
-        *maxangle = anglediff2;
-    }
-    else
-    {
-        *minangle = anglediff2;
-        *maxangle = anglediff;
-    }
-}
-
-
-// PD: func0f08f968
-bool doorTestInteractAngle(DoorRecord *door, bool altcoordsystem)
-{
-    bool checkmore;
-    f32 minangle;
-    f32 maxangle;
-    DoorRecord *sibling;
-    f32 limit;
-    f32 siblingmin;
-    f32 siblingmax;
-
-    checkmore = TRUE;
-    limit = 0.34906587f;
-
-    if (g_InteractProp == NULL)
-    {
-        doorGetAnglesToPlayer(door, &minangle, &maxangle, altcoordsystem);
-
-        if ((minangle >= -limit) && (minangle <= limit) && (maxangle >= -limit) && (maxangle <= limit))
-        {
-            g_InteractProp = door->prop;
-            checkmore = FALSE;
-        }
-        else
-        {
-            sibling = door->linkedDoor;
-
-            while (sibling != NULL && sibling != door && (minangle >= 0.0f || maxangle < 0.0f))
-            {
-                doorGetAnglesToPlayer(sibling, &siblingmin, &siblingmax, altcoordsystem);
-
-                if ((minangle > 0.0f) && (siblingmin < minangle))
-                {
-                    minangle = siblingmin;
-                }
-
-                if ((maxangle < 0.0f) && (maxangle < siblingmax))
-                {
-                    maxangle = siblingmax;
-                }
-
-                sibling = sibling->linkedDoor;
-            }
-
-            if ((maxangle - minangle) < M_PI_F && (minangle < 0.0f) && (maxangle > 0.0f))
-            {
-                g_InteractProp = door->prop;
-                checkmore = FALSE;
-            }
-        }
-    }
-
-    return checkmore;
-}
-
-
-bool doorTestForInteract(PropRecord *prop)
-{
-	bool checkmore;
-	DoorRecord *door;
-    bool maybe;
-    PropRecord *playerprop;
-    f32 xdiff;
-    f32 ydiff;
-    f32 zdiff;
-    BoundPadRecord *boundpads;
-    u8 rooms1[32];
-    u8 rooms2[32];
-
-    checkmore = TRUE;
-    door = prop->door;
-
-	if ((door->flags & PROPFLAG_CANNOT_ACTIVATE) == 0
-			&& door->maxFrac > 0
-			&& (prop->flags & PROPFLAG_ONSCREEN))
-    {
-		maybe = FALSE;
-		playerprop = currentPlayerGetProp();
-
-		xdiff = door->runtime_pos.x - playerprop->pos.x;
-		ydiff = door->runtime_pos.y - playerprop->pos.y;
-		zdiff = door->runtime_pos.z - playerprop->pos.z;
-
-		if (xdiff * xdiff + zdiff * zdiff < 40000.0f && ydiff < 200.0f && ydiff > -200.0f)
-        {
-			maybe = TRUE;
-		}
-        else
-        {
-            propGetRoomIds(prop, (s32*)rooms1);
-            propGetRoomIds(playerprop, (s32*)rooms2);
-            if (roomListsOverlap((s32*)rooms1, (s32*)rooms2) != 0)
-            {
-                boundpads = &g_CurrentSetup.boundpads[door->pad];
-                if (padBoundsContainPoint(&playerprop->pos, 150.0f, boundpads))
-                {
-                    maybe = TRUE;
-                }
-            }
-		}
-
-		if (maybe)
-        {
-            checkmore = doorTestInteractAngle(door, FALSE);
-
-            if (checkmore && (door->flags2 & PROPFLAG2_DOOR_ALTCOORDSYSTEM))
-            {
-                checkmore = doorTestInteractAngle(door, TRUE);
-            }
-		}
-	}
-
-	return checkmore;
-}
-
-
-void doorActivateWrapper(PropRecord *prop) //#MATCH
-{
-    DoorRecord *door = prop->door;
-
-    if ((door->openstate == DOORSTATE_OPENING) || (door->openstate == DOORSTATE_WAITING))
-    {
-        doorActivate(door, DOORSTATE_CLOSING);
-    }
-    else if (door->openstate == DOORSTATE_CLOSING)
-    {
-        doorActivate(door, DOORSTATE_OPENING);
-    }
-    else if (door->openstate == DOORSTATE_STATIONARY)
-    {
-        if (door->openPosition > 0.5f)
-        {
-            doorActivate(door, DOORSTATE_CLOSING);
-        }
-        else
-        {
-            doorActivate(door, DOORSTATE_OPENING);
-        }
-    }
-    door->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
-    coopNoteActivator();
-    door->flags2 &= ~8;
-    switchActivateLinkedDoors(prop);
-}
-
-
-bool posIsInFrontOfDoor(PropRecord *prop, DoorRecord *door)
-{
-    BoundPadRecord *pad;
-    coord3d diff;
-    coord3d normal;
-    f32 dot;
-    f32 side;
-
-    pad = &g_CurrentSetup.boundpads[((ObjectRecord *) door)->pad];
-
-    normal.f[0] = (pad->up.y * pad->look.z) - (pad->look.y * pad->up.z);
-    normal.f[1] = (pad->up.z * pad->look.x) - (pad->look.z * pad->up.x);
-    normal.f[2] = (pad->up.x * pad->look.y) - (pad->look.x * pad->up.y);
-
-    diff.x = prop->pos.x - pad->pos.x;
-    diff.y = prop->pos.y - pad->pos.y;
-    diff.z = prop->pos.z - pad->pos.z;
-
-    dot = (side = ((diff.x * normal.f[0]) + (diff.y * normal.f[1])) + (diff.z * normal.f[2]));
-
-    if (door->doorFlags & DOORFLAG_FLIP)
-    {
-        side = -dot;
-    }
-
-    if (side < 0.0f)
-    {
-        return FALSE;
-    }
-    else if (side > 0.0f)
-    {
-        return TRUE;
-    }
-    else
-    {
-        return TRUE;
-    }
-}
-
-
-void doorsChooseSwingDirection(PropRecord *chrprop, DoorRecord *door)
-{
-    if ((door->flags & PROPFLAG_DOOR_TWOWAY) && door->openstate == PROPSTATE_NONE && door->openPosition == 0.0f)
-    {
-        bool infront = posIsInFrontOfDoor(chrprop, door);
-        u32 wantflag = 0;
-
-        if ((door->doorFlags & DOORFLAG_FLIP) == 0)
-        {
-            if (!infront)
-            {
-                wantflag = PROPFLAG_DOOR_OPENTOFRONT;
-            }
-        }
-        else
-        {
-            if (infront)
-            {
-                wantflag = PROPFLAG_DOOR_OPENTOFRONT;
-            }
-        }
-
-        // If flags are different
-        if ((s32)((door->flags ^ wantflag) << 2) < 0)
-        {
-            // Toggle direction on door and siblings
-            DoorRecord *sibling = door;
-
-            do
-            {
-                sibling->flags ^= PROPFLAG_DOOR_OPENTOFRONT;
-                sibling = sibling->linkedDoor;
-            } while (sibling && sibling != door);
-        }
-    }
-}
-
-
-TICKOP propdoorInteract(PropRecord* doorprop)
-{
-    s32 canOpen;
-    PropRecord* playerprop;
-    DoorRecord* door;
-    textoverride* txt;
-
-    door = doorprop->door;
-    canOpen = 0;
-    playerprop = currentPlayerGetProp();
-
-    if (door->keyflags == 0)
-    {
-        canOpen = 1;
-    }
-    else if (invCheckHasKeyFlags(door->keyflags) != 0)
-    {
-        canOpen = 1;
-    }
-    else if (posIsInFrontOfDoor(playerprop, door) != 0)
-    {
-        if ((door->flags2 & PROPFLAG2_10000000) && !(door->flags2 & PROPFLAG2_08000000))
-        {
-            canOpen = 1;
-        }
-    }
-    else if (!(door->flags2 & PROPFLAG2_10000000) && (door->flags2 & PROPFLAG2_08000000))
-    {
-        canOpen = 1;
-    }
-
-    if (doorIsPadlockFree(door) == 0)
-    {
-        canOpen = 0;
-    }
-
-    // Counter-op: a door whose opening is Bond's progress (Depot's train)
-    // stays shut for the guard player, showing as locked.
-    if (counterOpIsGuardPlayer(playerGetCurrentNum()) && counterOpDoorIsScripted(door))
-    {
-        canOpen = 0;
-    }
-
-    if (canOpen != 0)
-    {
-        doorsChooseSwingDirection(playerprop, door);
-        doorActivateWrapper(doorprop);
-    }
-    else if ((door->openstate == DOORSTATE_STATIONARY) && (door->openPosition < 0.5f))
-    {
-        if (!(door->flags2 & PROPFLAG2_00000004))
-        {
-            txt = invGetOverrideForObj((ObjectRecord*)door);
-            if ((txt != NULL) && (txt->pickuptext != 0))
-            {
-#ifdef VERSION_US
-                hudmsgBottomShow(langGet((s32) txt->pickuptext));
-#else
-                hudmsgBottomShowText(langGet((s32) txt->pickuptext));
-#endif
-            }
-            else
-            {
-#ifdef VERSION_US
-                hudmsgBottomShow(langGet(0xA440));
-#else
-                hudmsgBottomShowText(langGet(0xA440));
-#endif
-            }
-        }
-        // Counter-op: the guard player trying a locked door isn't news to
-        // the level scripts.
-        if (!counterOpIsGuardPlayer(playerGetCurrentNum()))
-        {
-            door->runtime_bitflags |= RUNTIMEBITFLAG_ACTIVATED;
-            coopNoteActivator();
-        }
-        door->flags2 |= PROPFLAG2_00000008;
-    }
-
-    return TICKOP_NONE;
-}
-
 
 
 void objsFreeDeformedVertices(void)

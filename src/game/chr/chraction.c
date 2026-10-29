@@ -10,6 +10,7 @@
 #include <bondaicommands.h>
 #include <bondgame.h>
 #include <bondconstants.h>
+#include "game/audio/sfxvolume.h"
 #include "game/chr/chraction.h"
 #include <limits.h>
 #include <math.h>
@@ -40,6 +41,7 @@
 #include "game/model/modelfile.h"
 #include "game/player/player.h"
 #include "game/prop/propobj.h"
+#include "game/prop/door.h"
 #include "game/nav/stan.h"
 #include "game/nav/waypoint.h"
 #include "game/prop/alarm.h"
@@ -2161,7 +2163,7 @@ void chrPlayHurtSound(ChrRecord *self)
         }
     }
 
-    chrobjSndCreatePostEventDefault(sndstate, &self->prop->pos);
+    sfxSetVolumeAt(sndstate, &self->prop->pos);
 }
 
 
@@ -2217,7 +2219,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
             s16 mrs[3];
             bcopy(metal_ricochet_SFX, mrs, sizeof(mrs));
             ALSoundState * p = sndPlaySfx(g_musicSfxBufferPtr, mrs[randomGetNext() % 3U], NULL);
-            chrobjSndCreatePostEventDefault(p, &self->prop->pos);
+            sfxSetVolumeAt(p, &self->prop->pos);
         }
     }
 
@@ -4664,7 +4666,7 @@ void chrTickAnim(ChrRecord *self)
     {
         if (((g_LvTickCount & 1) == 0) && (chrGetDistanceToBond(self) < 800.0f))
         {
-            chrobjSndCreatePostEventDefault(sndPlaySfx(g_musicSfxBufferPtr, SNEEZE_SFX, 0), &self->prop->pos);
+            sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, SNEEZE_SFX, 0), &self->prop->pos);
         }
 
         self->chrflags |= CHRFLAG_02000000;
@@ -4814,7 +4816,7 @@ void chrTickDie(ChrRecord *self)
     {
         p = sndPlaySfx(g_musicSfxBufferPtr, body_hit_SFX[thud_index], NULL);
 
-        chrobjSndCreatePostEventDefault(p, &self->prop->pos);
+        sfxSetVolumeAt(p, &self->prop->pos);
 
         thud_index++;
         if (thud_index >= 0xB)
@@ -4829,7 +4831,7 @@ void chrTickDie(ChrRecord *self)
     {
         p = sndPlaySfx(g_musicSfxBufferPtr, body_hit_SFX[thud_index], NULL);
 
-        chrobjSndCreatePostEventDefault(p, &self->prop->pos);
+        sfxSetVolumeAt(p, &self->prop->pos);
 
         thud_index++;
         if (thud_index >= 0xB)
@@ -5062,7 +5064,7 @@ void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
             if (slot != NULL)
             {
                 sndPlaySfx(g_musicSfxBufferPtr, soundid, slot);
-                chrobjSndCreatePostEventDefault(*slot, &self->prop->pos);
+                sfxSetVolumeAt(*slot, &self->prop->pos);
                 self->nextGunSoundTime[hand] = g_GlobalTimer + soundrate;
                 self->hidden |= 0x80;
             }
@@ -8297,8 +8299,8 @@ void chrNavTick(ChrRecord *self, coord3d *target, struct waydata *way)
                 if (((dx * dx) + (dy * dy) + (dz  * dz )) < 40000.0f)
                 {
                     chrGoPosClearRestartTtl(self);
-                    doorsChooseSwingDirection(self_prop, door->door);
-                    doorActivate(door->door, 1);
+                    doorChooseSwingDirection(self_prop, door->door);
+                    doorMove(door->door, DOORSTATE_OPENING);
 
                     if (((self->hidden & CHRHIDDEN_OFFSCREEN_PATROL) == 0)
                         && (modelGetAnim(self->model) != ANIM(idle_unarmed))

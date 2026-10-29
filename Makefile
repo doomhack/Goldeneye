@@ -60,7 +60,7 @@ ifeq ($(VERSION), EU)
 endif
 
 # make UNLOCK_ALL=1: every mission and difficulty (007 too) is open in
-# every save folder, for testing
+# every save folder, and every cheat in the Cheat Options menu, for testing
 ifeq ($(UNLOCK_ALL), 1)
   LCDEFS += -DUNLOCK_ALL_LEVELS
 endif
@@ -544,6 +544,13 @@ tools/mktex/build/tex2png:
 		echo "Building tex2png..."; \
 		cd tools/mktex && $(MAKE); \
 	fi
+
+# Switching UNLOCK_ALL rebuilds the files that use it: the stamp file is
+# rewritten (so newer) only when the setting changes
+UNLOCK_STAMP := $(BUILD_DIR)/unlock_all
+UNLOCK_SETTING := $(if $(filter 1,$(UNLOCK_ALL)),on,off)
+$(shell mkdir -p $(BUILD_DIR); [ "`cat $(UNLOCK_STAMP) 2>/dev/null`" = "$(UNLOCK_SETTING)" ] || echo $(UNLOCK_SETTING) > $(UNLOCK_STAMP))
+$(BUILD_DIR)/src/game/save/file.o $(BUILD_DIR)/src/game/menu/front.o: $(UNLOCK_STAMP)
 
 # Header dependencies written by -MMD
 -include $(shell find $(BUILD_DIR) -name '*.d' 2>/dev/null)
