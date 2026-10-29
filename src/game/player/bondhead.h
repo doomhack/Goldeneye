@@ -16,8 +16,6 @@ struct init_bond_anim_unk {
 
 extern struct init_bond_anim_unk g_BondMoveAnimationSetup[];
 
-s32 waypointFindRoute(waypoint *, waypoint *, waypoint ** arr, s32 arr_len);
-waypoint * waypointFindNextStepToward(waypoint *, waypoint *);
 void bheadFlipAnimation(void);
 void bheadUpdateIdleRoll(void);
 void bheadUpdate(f32 percent_speed, f32 speedsideways);
