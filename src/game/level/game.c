@@ -4,7 +4,7 @@
  */
 
 #include <ultra64.h>
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 #include <memp.h>
 #include "game/level/game.h"
 #include "game/menu/front.h"

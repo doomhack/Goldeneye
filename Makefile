@@ -127,8 +127,8 @@ OBSEG_RZ := $(BG_SEG_FILES) $(CHR_RZ_FILES) $(GUN_RZ_FILES) $(PROP_RZ_FILES) $(S
 IMAGE_BINS := assets/images/combined/combined.bin
 IMAGE_OBJS := $(foreach file,$(IMAGE_BINS),$(BUILD_DIR)/$(file:.bin=.o))
 
-RZFILES := inflate/inflate.c
-RZOBJECTS := $(foreach file,$(RZFILES),$(BUILD_DIR)/src/$(file:.c=.o))
+# The boot code's copy of the decompressor, built from rzip.c (see init.c)
+RZOBJECTS := $(BUILD_DIR)/src/game/asset/rzipboot.o
 
 # libgcc helper functions GCC expects
 CODEOBJECTS += $(BUILD_DIR)/src/gcc/libgcc_compat.o
@@ -137,7 +137,7 @@ OBJECTS := $(RSPOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(OBSEGMENT)
 
 ## Command Line args for builders ##
 
-INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src -I src/inflate
+INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src
 
 CC := $(TOOLCHAIN)gcc
 # Code generation flags shared by the game, libultra and the asset data.
@@ -284,6 +284,11 @@ $(BUILD_DIR)/src/game/chr/chraidata.o: src/game/chr/chraidata.c
 	@mkdir -p $(dir $@)
 	$(ConvertAIPRINT) $< | $(CC) -c $(CFLAGS) -I $(dir $<) -x c -o $@ -
 
+
+$(RZOBJECTS): src/game/asset/rzip.c
+	@mkdir -p $(dir $@)
+	$(CC) -c $(CFLAGS) -DRZIP_BOOT -o $@ $<
+	$(OBJCOPY) --redefine-sym memset=gcc_memset $@
 
 #Build RamRom
 $(BUILD_DIR)/assets/ramrom/%.o: assets/ramrom/%.s

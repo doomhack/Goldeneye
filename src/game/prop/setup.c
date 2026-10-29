@@ -31,7 +31,7 @@
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
 #include "game/menu/mp_weapon.h"
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 #include "game/mission/objective.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
@@ -1194,7 +1194,7 @@ void setupCreateProps(enum LEVELID stageId)
 
         strcat(strResource, setup_text_pointers[stageId] + 1); // Add remaining text back U[mp_] + setupxxxZ
 
-        g_ptrStageSetupFile = fileLoadByNameToPool(strResource, FILELOAD_TRIM, 256, MEMPOOL_STAGE);
+        g_ptrStageSetupFile = assetLoad(strResource, MEMPOOL_STAGE);
 
         local_stage = g_ptrStageSetupFile;
         langLoadToAddr(langGetBankForStage(stageId));

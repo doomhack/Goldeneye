@@ -170,7 +170,7 @@
 #define FLOAT_TEN_B 10.00f
 
 #include "game/player/bondview_internal.h"
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 #include "game/gfx/dyn.h"
 #include "game/hud/radar.h"
 #include "game/prop/prop.h"
@@ -440,7 +440,7 @@ void playerLoadBody(void)
             bodyheader  = gunGetHandModelHeader(GUNRIGHT);
             *bodyheader = *c_item_entries[body].header;
             modelFileLoad(bodyheader, c_item_entries[body].filename, weaponbuf0, size0, &pool);
-            cursor = fileGetLoadedSizeByName(c_item_entries[body].filename);
+            cursor = assetGetSizeByName(c_item_entries[body].filename);
 
             do
             {
@@ -451,7 +451,7 @@ void playerLoadBody(void)
 
 
                 modelFileLoad(headheader, c_item_entries[head].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
-                cursor = ALIGN64_V3(fileGetLoadedSizeByName(c_item_entries[head].filename) + cursor + 0x3f);
+                cursor = ALIGN64_V3(assetGetSizeByName(c_item_entries[head].filename) + cursor + 0x3f);
                 model  = (Model *)(weaponbuf0 + cursor);
                 cursor = ALIGN64_V3(cursor + 0xfb);
                 modelCalculateRwDataLen(bodyheader);
@@ -516,7 +516,7 @@ void playerLoadBody(void)
                 pitemheader  = gunGetHandModelHeader(GUNLEFT);
                 *pitemheader = *PitemZ_entries[prop].header;
                 modelFileLoad(pitemheader, PitemZ_entries[prop].filename, weaponbuf0 + cursor, size0 - cursor, &pool);
-                fileGetLoadedSizeByName(PitemZ_entries[prop].filename);
+                assetGetSizeByName(PitemZ_entries[prop].filename);
                 modelCalculateRwDataLen(pitemheader);
             }
             else

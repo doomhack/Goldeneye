@@ -186,7 +186,6 @@ bool bgRoomsSharePortal(s32 roomA, s32 roomB);
 
 //f32 bgGetRoomValue(s32 room); // u8 not s32 for stanGetTileRoomValue
 s32 bgCopyVisibleRoomsToList(s32 *rooms, s32 max);
-u32 bgDecompress(u8* source, u8 *target);
 bool bgTestBulletHitBackground(coord3d *from, coord3d *to, s32 roomnum, struct HitThing *hit);
 void bgUnloadRoom(s32 roomID);
 void bgLoad(LEVEL_INDEX stagenum);

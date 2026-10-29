@@ -18,7 +18,7 @@
 #include "mema.h"
 #include "memp.h"
 #include "music.h"
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 #include "game/mission/objective.h"
 #include "rom.h"
 #include "random.h"
@@ -264,7 +264,7 @@ void bossInitMainthreadData(void)
     bgInit();
     viInit();
     viInitVideoSettings();
-    fileInit();
+    assetInit();
     joyInit();
     osCreateMesgQueue(&bossmq, &bossmsg, 1);
 
@@ -377,7 +377,7 @@ void bossMainloop(void)
         g_LevelMemBudget = bossFindMemBudget(g_StageNum);
 
         mempResetPool(MEMPOOL_STAGE);
-        fileForgetPool(MEMPOOL_STAGE);
+        assetForgetSizes();
 
         // Counter-op: when controller 2 plays Bond (player 1), the two
         // controllers swap places for the mission. Menus use them as wired.
@@ -524,7 +524,7 @@ void bossMainloop(void)
         lvStageUnload();
         stop_demo_playback();
         mempClosePool(MEMPOOL_STAGE);
-        fileForgetPool(MEMPOOL_STAGE);
+        assetForgetSizes();
 
 #if defined(VERSION_EU)
 #endif

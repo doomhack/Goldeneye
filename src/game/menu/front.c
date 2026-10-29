@@ -49,7 +49,7 @@
 #include "game/menu/title.h"
 #include <assets/font_dl.h>
 #include "game/gfx/image.h"
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 #include "gbi_extension.h"
 #include "game/model/model.h"
 #include <memp.h>
@@ -6687,7 +6687,7 @@ void frontLoadBriefing(void)
     u8 *buffer = (u8 *)g_FrontModelBuffer + 4096 * 10;
     s32 size = 0x200;
 
-    g_FrontBriefing = fileLoadByNameToAddr(g_FrontMissions[g_FrontMission].briefing_name_ptr, FILELOAD_TRIM, buffer, size);
+    g_FrontBriefing = assetLoadInto(g_FrontMissions[g_FrontMission].briefing_name_ptr, buffer, size);
     buffer += size;
 
     langLoadToBank(langGetBankForStage(g_FrontMissions[g_FrontMission].stage_id), buffer, size * 879);
@@ -8049,7 +8049,7 @@ void frontCastEnter(void)
     bodyHeader = c_item_entries[body].header;
 
     modelFileLoad(c_item_entries[body].header, c_item_entries[body].filename, bufferPtr, bufferRemaining, &texPool);
-    allocSize = ALIGN64_V2(fileGetLoadedSizeByName(c_item_entries[body].filename));
+    allocSize = ALIGN64_V2(assetGetSizeByName(c_item_entries[body].filename));
     bufferRemaining -= allocSize;
     bufferPtr += allocSize;
 
@@ -8057,7 +8057,7 @@ void frontCastEnter(void)
     {
         headHeader = c_item_entries[head].header;
         modelFileLoad(c_item_entries[head].header, c_item_entries[head].filename, bufferPtr, bufferRemaining, &texPool);
-        allocSize = ALIGN64_V2(fileGetLoadedSizeByName(c_item_entries[head].filename));
+        allocSize = ALIGN64_V2(assetGetSizeByName(c_item_entries[head].filename));
         bufferRemaining -= allocSize;
         bufferPtr += allocSize;
     }
@@ -8105,7 +8105,7 @@ void frontCastEnter(void)
 
         weaponHeader = PitemZ_entries[weaponProp].header;
         modelFileLoad(weaponHeader, PitemZ_entries[weaponProp].filename, bufferPtr, bufferRemaining, &texPool);
-        allocSize = ALIGN64_V2(fileGetLoadedSizeByName(PitemZ_entries[weaponProp].filename));
+        allocSize = ALIGN64_V2(assetGetSizeByName(PitemZ_entries[weaponProp].filename));
         bufferRemaining -= allocSize;
         bufferPtr += allocSize;
 

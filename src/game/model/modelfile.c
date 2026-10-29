@@ -13,7 +13,7 @@
 #include "game/math/round.h"
 #include "game/model/model.h"
 #include "game/model/model.h"
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 #include <memp.h>
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
@@ -42,10 +42,10 @@ void modelFileLoadTextures(ModelFileHeader *objheader, char *name, u8 *dst, stru
     s32 size; // bytes of display list data being processed
 
     filedata = (s32) objheader->Switches;
-    filenum = fileGetIndex(name);
+    filenum = assetFind(name);
 
-    romremaining = fileGetAllocSize(filenum);
-    pcremaining = fileGetLoadedSize(filenum);
+    romremaining = assetGetBufferSize(filenum);
+    pcremaining = assetGetSize(filenum);
     node = 0;
     modelIterateDisplayLists(objheader, &node, &gdl);
 
@@ -88,7 +88,7 @@ void modelFileLoadTextures(ModelFileHeader *objheader, char *name, u8 *dst, stru
 
         size = (s32) (((s32) (((u8 *) objheader->Switches) + (replacementgdl & 0x00ffffff))) - filedata);
 
-        fileSetSize(filenum, (u8 *) filedata, ((size + 0xf) & (~0xf)), dst == 0);
+        assetSetSize(filenum, (u8 *) filedata, ((size + 0xf) & (~0xf)), dst == 0);
     }
 }
 
@@ -104,11 +104,11 @@ void modelFileLoad(struct ModelFileHeader *objheader, char *name, u8* dst, s32 s
 
     if (dst != 0)
     {
-        filedata = fileLoadByNameToAddr(name, FILELOAD_KEEP_SPARE, dst, size);
+        filedata = assetLoadInto(name, dst, size);
     }
     else
     {
-        filedata = fileLoadByNameToPool(name, FILELOAD_KEEP_SPARE, 0x100, MEMPOOL_STAGE);
+        filedata = assetLoadUntrimmed(name, MEMPOOL_STAGE);
     }
     
     objheader->Switches = (struct ModelNode **)filedata;

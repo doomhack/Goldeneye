@@ -6,7 +6,7 @@
 #include <bondgame.h>
 #include <memp.h>
 #include "game/text/language.h"
-#include "game/asset/fileload.h"
+#include "game/asset/asset.h"
 
 // bss
 u32 *g_LangBanks[45]; // each bank starts with a table of string offsets
@@ -222,25 +222,25 @@ void langInit(void) {
 	for (i = 0; i < 45; i++) {
 		g_LangBanks[i] = NULL;
 	}
-    g_LangBanks[LGUN] = fileLoadByNameToPool(g_LangFileNames[LGUN], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LTITLE] = fileLoadByNameToPool(g_LangFileNames[LTITLE], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMPMENU] = fileLoadByNameToPool(g_LangFileNames[LMPMENU], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LPROPOBJ] = fileLoadByNameToPool(g_LangFileNames[LPROPOBJ], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMPWEAPONS] = fileLoadByNameToPool(g_LangFileNames[LMPWEAPONS], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LOPTIONS] = fileLoadByNameToPool(g_LangFileNames[LOPTIONS], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
-    g_LangBanks[LMISC] = fileLoadByNameToPool(g_LangFileNames[LMISC], FILELOAD_TRIM, 0x100, MEMPOOL_PERMANENT);
+    g_LangBanks[LGUN] = assetLoad(g_LangFileNames[LGUN], MEMPOOL_PERMANENT);
+    g_LangBanks[LTITLE] = assetLoad(g_LangFileNames[LTITLE], MEMPOOL_PERMANENT);
+    g_LangBanks[LMPMENU] = assetLoad(g_LangFileNames[LMPMENU], MEMPOOL_PERMANENT);
+    g_LangBanks[LPROPOBJ] = assetLoad(g_LangFileNames[LPROPOBJ], MEMPOOL_PERMANENT);
+    g_LangBanks[LMPWEAPONS] = assetLoad(g_LangFileNames[LMPWEAPONS], MEMPOOL_PERMANENT);
+    g_LangBanks[LOPTIONS] = assetLoad(g_LangFileNames[LOPTIONS], MEMPOOL_PERMANENT);
+    g_LangBanks[LMISC] = assetLoad(g_LangFileNames[LMISC], MEMPOOL_PERMANENT);
 }
 
 
 void langLoadToAddr(u32 id)
 {
-    g_LangBanks[id] = fileLoadByNameToPool(g_LangFileNames[id], FILELOAD_TRIM, 0x100, MEMPOOL_STAGE);
+    g_LangBanks[id] = assetLoad(g_LangFileNames[id], MEMPOOL_STAGE);
 }
 
 
 void langLoadToBank(int id,u8 *target,int size)
 {
-    g_LangBanks[id] = fileLoadByNameToAddr(g_LangFileNames[id], FILELOAD_TRIM, target, size);
+    g_LangBanks[id] = assetLoadInto(g_LangFileNames[id], target, size);
 }
 
 

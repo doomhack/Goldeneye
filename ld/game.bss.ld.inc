@@ -54,7 +54,7 @@
       build/OUTCODE/src/game/world/bgfog.o (.bss);
       build/OUTCODE/src/game/world/lightfixture.o (.bss);
       build/OUTCODE/src/game/world/roommtx.o (.bss);
-      build/OUTCODE/src/game/asset/fileload.o (.bss);
+      build/OUTCODE/src/game/asset/asset.o (.bss);
       build/OUTCODE/src/game/gfx/dyn.o (.bss);
       build/OUTCODE/src/game/level/lv.o (.bss);
       build/OUTCODE/src/game/replay/ramromreplay.o (.bss);
