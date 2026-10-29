@@ -44,7 +44,7 @@
 #include "game/prop/propobj.h"
 #include "game/nav/stan.h"
 #include "game/model/model.h"
-#include "game/gfx/tex.h"
+#include "game/world/surface.h"
 #include "game/math/physics.h"
 #include "game/world/bgfog.h"
 
@@ -3220,12 +3220,12 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     Mtxf *mtx;
     ChrRecord *chr;
     PropRecord *prop;
-    struct image_sound *sound;
+    const SurfaceHit *sound;
     WeaponObjRecord *weaponobj;
     s32 i;
     s32 temp2;
     coord3d jointpos;
-    struct image_sound *sound2;
+    const SurfaceHit *sound2;
 
     chr = bhit->prop->chr;
 
@@ -3285,13 +3285,13 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
                     // Create a bullet hole on the character's held weapon.
                     } else {
                         if (bhit->hit.texturenum < 0) {
-                            sound = g_HitTypeSounds[0];
+                            sound = &g_SurfaceHits[HIT_DEFAULT];
                         } else {
-                            sound = g_HitTypeSounds[g_Textures[bhit->hit.texturenum].hitTexture];
+                            sound = &g_SurfaceHits[g_Textures[bhit->hit.texturenum].hitTexture];
                         }
 
-                        temp = randomGetNext() % (s16)sound->thing2_len;
-                        explosionCreateBulletImpact(&bhit->hit.hitpos, &bhit->hit.normal, sound->thing2[temp], 1, prop, bhit->room, 0);
+                        temp = randomGetNext() % (s16)sound->numImpacts;
+                        explosionCreateBulletImpact(&bhit->hit.hitpos, &bhit->hit.normal, sound->impacts[temp], 1, prop, bhit->room, 0);
                     }
                 }
             }
@@ -3303,13 +3303,13 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     // Create a bullet on hole on a hat or helmet attached to a character's head.
     if (bhit->hitpart == HIT_HAT) {
         if (bhit->hit.texturenum < 0) {
-            sound2 = g_HitTypeSounds[0];
+            sound2 = &g_SurfaceHits[HIT_DEFAULT];
         } else {
-            sound2 = g_HitTypeSounds[g_Textures[bhit->hit.texturenum].hitTexture];
+            sound2 = &g_SurfaceHits[g_Textures[bhit->hit.texturenum].hitTexture];
         }
 
-        temp2 = randomGetNext() % (s16)sound2->thing2_len;
-        explosionCreateBulletImpact(&bhit->hit.hitpos, &bhit->hit.normal, sound2->thing2[temp2], 1, chr->handle_positiondata_hat, bhit->room, 0);
+        temp2 = randomGetNext() % (s16)sound2->numImpacts;
+        explosionCreateBulletImpact(&bhit->hit.hitpos, &bhit->hit.normal, sound2->impacts[temp2], 1, chr->handle_positiondata_hat, bhit->room, 0);
 
         return;
     }

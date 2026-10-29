@@ -52,9 +52,9 @@ All the game's own code is C. What is still assembly is code that cannot be C:
 | `prop/` | Props: the prop pool and per-frame tick and draw loops, level setup, doors, weapons on the floor, vehicles, explosions, glass, alarms. See [subsystems/props.md](subsystems/props.md) | `prop.c`, `setup.c`, `propobj.c`, `explosion.c`, `glass.c` |
 | `nav/` | Where things can stand and walk: floor tiles (`stan.c`) and the waypoint graph guards path along. See [subsystems/nav.md](subsystems/nav.md) | `stan.c`, `waypoint.c` |
 | `mission/` | Objectives and briefings: the lists built from the setup file, objective status and the status messages. See [subsystems/mission.md](subsystems/mission.md) | `objective.c` |
-| `world/` | The level geometry: rooms and portals, visibility and drawing the rooms (`bg.c`), the room matrix cache (`roommtx.c`), fog (`bgfog.c`), sky (`sky.c`), water (`water.c`), light fixtures (`lightfixture.c`). See [subsystems/world.md](subsystems/world.md) | `bg.c`, `bgfog.c`, `sky.c` |
+| `world/` | The level geometry: rooms and portals, visibility and drawing the rooms (`bg.c`), the room matrix cache (`roommtx.c`), fog (`bgfog.c`), sky (`sky.c`), water (`water.c`), light fixtures (`lightfixture.c`), what each kind of surface does when shot (`surface.c`). See [subsystems/world.md](subsystems/world.md) | `bg.c`, `bgfog.c`, `sky.c` |
 | `model/` | Model files, skeletons, animation, joint lists and the model slots. `cobjdata.c`, `gobjdata.c` and `pobjdata.c` hold the tables of character, gun and prop model files. See [subsystems/models.md](subsystems/models.md) | `model.c`, `anim.c`, `jointlist.c`, `modelfile.c` |
-| `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, per-instance vertex copies. See [subsystems/rendering.md](subsystems/rendering.md) | `texload.c`, `texdecode.c`, `tex.c`, `texselect.c`, `dyn.c`, `rsp.c`, `zbuf.c`, `vtxstore.c`, `texrect.c` |
+| `gfx/` | Textures, the display list allocator, RSP task setup, z-buffer, per-instance vertex copies. See [subsystems/rendering.md](subsystems/rendering.md) | `texload.c`, `texdecode.c`, `texcmds.c`, `dyn.c`, `rsp.c`, `zbuf.c`, `vtxstore.c`, `texrect.c` |
 | `text/` | Strings and the language banks (`language.c`), fonts and drawing text (`text.c`). See [subsystems/text.md](subsystems/text.md) | `language.c`, `text.c` |
 | `math/` | Matrices, quaternions, trig, interpolation, gravity. See [subsystems/math.md](subsystems/math.md) | `matrix.c`, `quaternion.c`, `trig.c` |
 | `asset/` | Loading files from ROM and decompressing them. See [subsystems/assets-memory.md](subsystems/assets-memory.md) | `asset.c`, `rzip.c` |
@@ -77,7 +77,6 @@ that subsystem's main file.
 | File | What it actually holds |
 | --- | --- |
 | `model/initactorpropstuff.c` | Weapon animation groups and ejected casings |
-| `gfx/tex.c` | Also the surface sound and bullet impact tables |
 | `player/bondview.c` | The camera helpers (`cam*`) and the player globals, not Bond's view as a whole |
 | `player/bondview2.c` | Most of the player: movement, camera modes, the watch, health, the HUD, co-op and counter-op |
 | `audio/levelmusic.c` | The level music state and the music slots (was `mp_music.c`), used in solo too |

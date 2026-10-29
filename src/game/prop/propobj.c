@@ -62,12 +62,12 @@
 #include "random.h"
 #include "game/nav/stan.h"
 #include "game/nav/stan.h"
-#include "game/gfx/tex.h"
+#include "game/gfx/texcmds.h"
+#include "game/world/surface.h"
 #include "game/text/text.h"
 #include "game/gfx/vtxstore.h"
 #include "game/math/physics.h"
 #include "game/gfx/dyn.h"
-#include "game/gfx/texselect.h"
 #include "game/math/line_tri_intersect.h"
 #include "game/prop/prop.h"
 #include "game/prop/setup.h"
@@ -9271,8 +9271,8 @@ void objHit(ShotData *shotdata, BulletHit *hit)
         }
         else
         {
-            struct image_sound *impact_sounds;
-            s32 thing2_index;
+            const SurfaceHit *surface;
+            s32 impact_index;
             s8 room_clear_flag;
             s16 texturenum;
 
@@ -9281,21 +9281,21 @@ void objHit(ShotData *shotdata, BulletHit *hit)
 
             if (texturenum < 0)
             {
-                impact_sounds = g_HitTypeSounds[0];
+                surface = &g_SurfaceHits[HIT_DEFAULT];
             }
             else
             {
-                impact_sounds = g_HitTypeSounds[((u8 *)&g_Textures[texturenum])[0] & 0x0f];
+                surface = &g_SurfaceHits[g_Textures[texturenum].hitTexture];
             }
 
-            thing2_index = randomGetNext() % impact_sounds->thing2_len;
+            impact_index = randomGetNext() % surface->numImpacts;
 
             if (((obj->model->obj->Skeleton == &skeleton_door) && (hit->bboxNode == obj->model->obj->Switches[3])) || ((obj->model->obj->Skeleton == &skeleton_cctv) && (hit->bboxNode == obj->model->obj->Switches[1])))
             {
                 room_clear_flag = 1;
             }
 
-            explosionCreateBulletImpact(&hit->hit.hitpos, &hit->hit.normal, impact_sounds->thing2[thing2_index], 1, hit->prop, hit->room, room_clear_flag);
+            explosionCreateBulletImpact(&hit->hit.hitpos, &hit->hit.normal, surface->impacts[impact_index], 1, hit->prop, hit->room, room_clear_flag);
         }
     }
 

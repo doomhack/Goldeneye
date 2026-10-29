@@ -26,7 +26,7 @@
       build/OUTCODE/src/game/model/jointlist.o (.text);
       build/OUTCODE/src/game/model/model.o (.text);
       build/OUTCODE/src/game/model/modelfile.o (.text);
-      build/OUTCODE/src/game/gfx/texselect.o (.text);
+      build/OUTCODE/src/game/gfx/texcmds.o (.text);
       build/OUTCODE/src/game/player/bondview.o (.text);
       build/OUTCODE/src/game/player/bondview2.o (.text);
       build/OUTCODE/src/game/player/bondinv.o (.text);
@@ -53,6 +53,7 @@
       build/OUTCODE/src/game/world/bg.o (.text);
       build/OUTCODE/src/game/world/bgfog.o (.text);
       build/OUTCODE/src/game/world/lightfixture.o (.text);
+      build/OUTCODE/src/game/world/surface.o (.text);
       build/OUTCODE/src/game/world/roommtx.o (.text);
       build/OUTCODE/src/game/asset/asset.o (.text);
       build/OUTCODE/src/game/gfx/dyn.o (.text);
@@ -68,7 +69,6 @@
       build/OUTCODE/src/game/gfx/texdecode.o (.text);
       build/OUTCODE/src/game/gfx/texload.o (.text);
       build/OUTCODE/src/game/gfx/imagebank.o (.text);
-      build/OUTCODE/src/game/gfx/tex.o (.text);
       build/OUTCODE/src/game/asset/rzip.o (.text);
       build/OUTCODE/src/game/gfx/rsp.o (.text);
       build/OUTCODE/src/game/level/game.o (.text);

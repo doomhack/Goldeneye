@@ -20,7 +20,7 @@
 #include "random.h"
 #include "game/math/physics.h"
 #include "game/hud/sparks.h"
-#include "game/gfx/texselect.h"
+#include "game/gfx/texcmds.h"
 
 #define BULLET_SPARKS_MAX 20
 #define BULLET_MOVING_SPARKS_MAX 50
@@ -253,7 +253,7 @@ void sparkRender(s_bullet_spark *thing, Gfx **gdlptr, s32 zbufferMode)
     gSPSetGeometryMode(gdl++, G_CULL_BACK);
     gSPMatrix(gdl++, osVirtualToPhysical((void *) camGetProjViewMtx()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
     gdl = roomMtxLoad(gdl, room);
-    texSelect(&gdl, (struct sImageTableEntry *) (((u8 *) thing->images) + (frame * 12)), 4, zbufferMode, 2);
+    texSelect(&gdl, (struct sImageTableEntry *) (((u8 *) thing->images) + (frame * 12)), TEXBLEND_CLOUD, zbufferMode, 2);
     gSPVertex(gdl++, osVirtualToPhysical(vertices), 4, 0);
     gSP2Triangles(gdl++, 0, 1, 2, 0, 0, 2, 3, 0);
     gSPMatrix(gdl++, osVirtualToPhysical(camGetProjectionMtx()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);

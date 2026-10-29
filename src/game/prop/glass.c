@@ -18,7 +18,7 @@
 #include "game/player/player.h"
 #include "random.h"
 #include "game/gfx/dyn.h"
-#include "game/gfx/texselect.h"
+#include "game/gfx/texcmds.h"
 #include "game/prop/propobj.h"
 
 
@@ -245,7 +245,7 @@ Gfx *glassRenderShards(Gfx *gdl)
     s32 i;
     Mtx *mtx;
 
-    texSelect(&gdl, g_ImageGlassOverlay + 1, 2, 1, 2);
+    texSelect(&gdl, g_ImageGlassOverlay + 1, TEXBLEND_TRANSLUCENT, TEXZBUF_ON, 2);
 
     gSPTexture(gdl++, 0x0D80, 0x0D80, 2, G_TX_RENDERTILE, 1);
     gDPSetCycleType(gdl++, G_CYC_2CYCLE);

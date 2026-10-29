@@ -58,8 +58,8 @@ typedef struct s_impacttype {
     f32 width;
     f32 height;
     u8 apptype;
-    u8 renderMode; // texSetRenderMode blend mode
-    u8 zbufferMode;
+    u8 renderMode; // enum TexBlendMode
+    u8 zbufferMode; // enum TexZbufferMode
 } s_impacttype;
 
 struct ExplosionPart

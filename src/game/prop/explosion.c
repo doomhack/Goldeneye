@@ -25,7 +25,7 @@
 #include "game/prop/explosion.h"
 #include "fr.h"
 #include "game/gfx/imagebank.h"
-#include "game/gfx/texselect.h"
+#include "game/gfx/texcmds.h"
 #include "game/level/lv.h"
 #include "game/math/matrix.h"
 #include "music.h"
@@ -1834,7 +1834,7 @@ Gfx *explosionRenderScorchBuffer(Gfx *gdl)
         gSPClearGeometryMode(gdl++, G_CULL_FRONT | G_FOG);
         gDPSetColorDither(gdl++, G_CD_NOISE);
 
-        texSelect(&gdl, g_ImageGeneric, 4, 1, 2);
+        texSelect(&gdl, g_ImageGeneric, TEXBLEND_CLOUD, TEXZBUF_ON, 2);
 
         for (i=0; i<20; i++)
         {
@@ -2207,7 +2207,7 @@ Gfx *explosionRenderBulletImpactOnProp(Gfx *gdl, PropRecord *prop, s32 pass)
 
                         if (lasttype != impact_type)
                         {
-                            texSelect(&gdl, &g_ImagesImpact[impact_type], g_ImpactTypes[impact_type].renderMode, g_ImpactTypes[impact_type].zbufferMode, 2U);
+                            texSelect(&gdl, &g_ImagesImpact[impact_type], g_ImpactTypes[impact_type].renderMode, g_ImpactTypes[impact_type].zbufferMode, 2);
                             lasttype = impact_type;
                         }
 

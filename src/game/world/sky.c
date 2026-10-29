@@ -13,7 +13,7 @@
 #include "game/level/lv.h"
 #include "game/world/bgfog.h"
 #include "game/world/bg.h"
-#include "game/gfx/texselect.h"
+#include "game/gfx/texcmds.h"
 #include "fr.h"
 #include "game/gfx/imagebank.h"
 
@@ -831,7 +831,7 @@ Gfx *skyRender(Gfx *gdl)
         {
             gDPPipeSync(gdl++);
 
-            texSelect(&gdl, &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->WaterImageId], 1, 0, 2);
+            texSelect(&gdl, &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->WaterImageId], TEXBLEND_OPAQUE, TEXZBUF_OFF, 2);
             gdl = waterSetupGdl(gdl, 0); // ???
             gDPSetRenderMode(gdl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
 
@@ -1250,7 +1250,7 @@ Gfx *skyRender(Gfx *gdl)
 
     gDPPipeSync(gdl++);
 
-    texSelect(&gdl, &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->SkyImageId], 1, 0, 2);
+    texSelect(&gdl, &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->SkyImageId], TEXBLEND_OPAQUE, TEXZBUF_OFF, 2);
 
 
     gDPSetEnvColor(gdl++, fogGetCurrentEnvironmentp()->Red, fogGetCurrentEnvironmentp()->Green, fogGetCurrentEnvironmentp()->Blue, 0xff);

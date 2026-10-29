@@ -56,7 +56,6 @@
 #include "game/model/modelfile.h"
 #include "game/mission/objective.h"
 #include "game/nav/stan.h"
-#include "game/gfx/tex.h"
 #include "game/chr/chr.h"
 
 

@@ -36,7 +36,7 @@
 #include "game/nav/stan.h"
 #include "game/prop/explosion.h"
 #include "game/world/roommtx.h"
-#include "game/gfx/tex.h"
+#include "game/gfx/texcmds.h"
 #include "game/math/line_tri_intersect.h"
 #include "game/world/lightfixture.h"
 #include "mema.h"
