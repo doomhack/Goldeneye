@@ -2288,8 +2288,8 @@ typedef union
             struct Embedment *embedment; // 0x6c
         };
 
-        f32             maxdamage; // 0x70
-        f32             damage; // 0x74
+        f32             damageTaken; // 0x70: damage taken while healthy (x250); once destroyed, shots taken
+        f32             health; // 0x74: damageTaken at which it is destroyed
         rgba_u8         shadecol; // 0x78
         rgba_u8         nextcol; // 0x7C
     } ObjectRecord;

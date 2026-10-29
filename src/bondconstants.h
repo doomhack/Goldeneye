@@ -296,8 +296,8 @@ typedef enum PROPFLAG
     PROPFLAG_00040000                    = 0x00040000, // Allow Pickup (chr_type)
     PROPFLAG_00080000                    = 0x00080000, // Collect Object by Interaction Button Only
     PROPFLAG_UNCOLLECTABLE               = 0x00100000, // Item Not Collectable
-    PROPFLAG_00200000                    = 0x00200000, // Bounce and Destroy If Shot
-    PROPFLAG_00400000                    = 0x00400000, // unknown
+    PROPFLAG_BOUNCEWHENSHOT                    = 0x00200000, // Bounce and Destroy If Shot
+    PROPFLAG_NOBOUNCEWHENSHOT                    = 0x00400000, // unknown
     PROPFLAG_00800000                    = 0x00800000, // unknown
     PROPFLAG_01000000                    = 0x01000000, // Embedded Object
     PROPFLAG_CANNOT_ACTIVATE             = 0x02000000, // Cannot Activate Door/Object
@@ -325,7 +325,7 @@ typedef enum PROPFLAG
 typedef enum PROPFLAG2
 {
     PROPFLAG2_00000001            = 0x00000001, // Activate Drone Gun
-    PROPFLAG2_00000002            = 0x00000002, // lightweight (move when shot)
+    PROPFLAG2_LIGHTWEIGHT            = 0x00000002, // lightweight (move when shot)
     PROPFLAG2_00000004            = 0x00000004, // Interaction Text Not Shown for Doors
     PROPFLAG2_00000008            = 0x00000008, // Don't Load in Multiplayer
     PROPFLAG2_00000010            = 0x00000010, // Don't Load on Agent Mode
@@ -337,14 +337,14 @@ typedef enum PROPFLAG2
     PROPFLAG2_LINKEDTOSAFE        = 0x00000400, // unknown
     PROPFLAG2_INTERACTCHECKLOS    = 0x00000800, // Don't activate if stan gap Bond/Object
     PROPFLAG2_00001000            = 0x00001000, // Watch Magnet Attract through Walls/Objects
-    PROPFLAG2_00002000            = 0x00002000, // Remove When Destroyed
-    PROPFLAG2_00004000            = 0x00004000, // Immune to Gunfire
+    PROPFLAG2_REMOVEWHENDESTROYED            = 0x00002000, // Remove When Destroyed
+    PROPFLAG2_IMMUNETOGUNFIRE            = 0x00004000, // Immune to Gunfire
     PROPFLAG2_SHOOTTHROUGH        = 0x00008000, // Can Shoot Through Object
     PROPFLAG2_00010000            = 0x00010000, // Always Visible (in front)
     PROPFLAG2_00020000            = 0x00020000, // unknown
     PROPFLAG2_00040000            = 0x00040000, // Hide inventory item (for tagged armor/ammo/magazine)
     PROPFLAG2_00080000            = 0x00080000, // Invincible Except to Explosions
-    PROPFLAG2_00100000            = 0x00100000, // Bulletproof Glass
+    PROPFLAG2_BULLETPROOFGLASS            = 0x00100000, // Bulletproof Glass
     PROPFLAG2_00200000            = 0x00200000, // Immune to Explosions
     PROPFLAG2_00400000            = 0x00400000, // Don't load on 2P
     PROPFLAG2_00800000            = 0x00800000, // Don't load on 3P
@@ -510,10 +510,10 @@ BITFLAG(RUNTIMEBITFLAG,
         BEENOPENED,
         DESTROYED, /* only set with disabled or destroyed doors                    */
         00000800,
-        00001000,
+        WRECKED, /* destroyed as far as it goes: shots pass through it            */
         PADLOCKEDDOOR,
         ACTIVATED, /* activated                                                    */
-        00008000,
+        ONSUPPORT, /* stands on another object, and falls if that is destroyed      */
         NOLANDDAMAGE, /* knocked off something: no landing damage until it settles     */
         00020000, /* owner 2bit (0-3) used to                                      */
         00040000, /* attribute kills to players                                    */
@@ -536,7 +536,6 @@ BITFLAG(RUNTIMEBITFLAG,
 #define RUNTIMEBITSHIFT_OWNER         0x11
 #define RUNTIMEBITFLAG_00000001       0x1
 #define RUNTIMEBITFLAG_00000080       0x00000080
-#define RUNTIMEBITFLAG_00001000       0x00001000
 #define RUNTIMEBITFLAG_00000800       0X00000800
 #define RUNTIMEBITFLAG_PADLOCKEDDOOR  0X00002000
 #define RUNTIMEBITFLAG_HASOWNER       0X00080000

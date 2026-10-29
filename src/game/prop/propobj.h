@@ -59,11 +59,8 @@ void                 propobjSetDropped(PropRecord *prop, DROPTYPE droptype);
 void                 objDropRecursively(PropRecord *prop);
 void                 weaponSetGunfireVisible(PropRecord *prop, s32 firing);
 WeaponObjRecord     *weaponCreateFromModel(PROP modelnum, s32 weaponid);
-void                 objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS, s32 playernum);
-void                 chrobjMaybeDetonateObjectIfFlags(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS item, s32 owner);
 void                 chrobjCollisionRelated(ObjectRecord *);
 void                 objChangeShading(ObjectRecord *, coord3d *, Mtxf *, StandTile *);
-bool                 propobjFindHit(Model *model, ModelNode *startNode, coord3d *rayPos, coord3d *rayDir, struct HitThing *hitthing, s32 *dstmtxindex, ModelNode **dstnode);
 void                 objGetCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom);
 Gfx                 *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass);
 
@@ -75,18 +72,13 @@ void                 shadingLerp(rgba_s32 *dest, s32 enable, rgba_f32 *src);
 void                 remoteMinesDetonate(void);
 
 void                 objDetach(PropRecord *prop);
-void                 objBounce(ObjectRecord *obj, coord3d *velocity);
 void                 chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand);
 void                 propweaponSetDual(WeaponObjRecord *leftweapon, WeaponObjRecord *rightweapon);
 void                 objPlaceAtPad(ObjectRecord *baseobj, coord3d *pad, Mtxf *matrix, StandTile *stan, coord3d *pos2);
 void                 objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan2, coord3d *pos2);
 bool                 chrEquipWeapon(WeaponObjRecord *wep, ChrRecord *chr);
-bool                 objIsCollectable(PropDefHeaderRecord *obj);
 TICKOP               propPickupByPlayer(PropRecord *prop, bool showstring);
 TICKOP               propobjInteract(PropRecord *prop);
-s32                  objGetDestroyedLevel(ObjectRecord *obj);
-bool                 objIsHealthy(ObjectRecord *self);
-bool                 objIsMortal(ObjectRecord* obj);
 WeaponObjRecord      *weaponFindThrown(s32 weaponnum);
 HatRecord           *hatCreate(bool musthaveprop, bool musthavemodel, ModelFileHeader *modeldef);
 PropRecord*          objInitWithAutoModel(ObjectRecord* obj);
@@ -94,7 +86,6 @@ PropRecord*          objInitWithModelDef(ObjectRecord* object, ModelFileHeader* 
 void                 objDetach(PropRecord *prop);
 s32                  chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2);
 s32                  chrobjTestPointPolygonCollision(coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges);
-void                 objDetonateRecursive(PropRecord *prop, f32 damage, coord3d *pos, s32 weaponnum, s32 owner);
 struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *obj);
 ModelRoData_BoundingBoxRecord *chrobjGetBboxFromObjFile(ModelFileHeader *obj);
 bool                 padBoundsContainPoint(coord3d* pos, f32 radius, BoundPadRecord *boundpads);
@@ -118,8 +109,6 @@ PropRecord          *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemi
 
 PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags);
 bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, coord2d *max, coord2d *min);
-void objHit(ShotData *shotdata, BulletHit *hit);
-void objTestShot(PropRecord* prop, struct ShotData* shotdata);
 void pickupAddAmmo(AMMOTYPE ammotype,int amount,int doplaysound,int dodisplaytext);
 void pickupPlayWeaponSound(ITEM_IDS weapontype);
 void pickupShowWeaponText(ITEM_IDS weaponid);
@@ -127,5 +116,10 @@ bool objTestForInteract(PropRecord* prop);
 s32 objTick(struct PropRecord *prop);
 void hatAssignToChr(HatRecord* hat, ChrRecord* chr);
 void proxminesTickGuards(void);
+
+AmmoCrateRecord     *ammocrateAllocate(void);
+
+#include "game/prop/objdamage.h"
+#include "game/prop/objhit.h"
 
 #endif
