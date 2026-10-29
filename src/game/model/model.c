@@ -30,7 +30,7 @@
 #include "game/model/modelfile.h"
 #include "game/math/quaternion.h"
 #include "random.h"
-#include "game/gfx/texselect.h"
+#include "game/gfx/texcmds.h"
 #include "rom.h"
 
 

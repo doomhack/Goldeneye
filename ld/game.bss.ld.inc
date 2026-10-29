@@ -26,7 +26,7 @@
       build/OUTCODE/src/game/model/jointlist.o (.bss);
       build/OUTCODE/src/game/model/model.o (.bss);
       build/OUTCODE/src/game/model/modelfile.o (.bss);
-      build/OUTCODE/src/game/gfx/texselect.o (.bss);
+      build/OUTCODE/src/game/gfx/texcmds.o (.bss);
       build/OUTCODE/src/game/player/bondview.o (.bss);
       build/OUTCODE/src/game/player/bondview2.o (.bss);
       build/OUTCODE/src/game/player/bondinv.o (.bss);
@@ -53,6 +53,7 @@
       build/OUTCODE/src/game/world/bg.o (.bss);
       build/OUTCODE/src/game/world/bgfog.o (.bss);
       build/OUTCODE/src/game/world/lightfixture.o (.bss);
+      build/OUTCODE/src/game/world/surface.o (.bss);
       build/OUTCODE/src/game/world/roommtx.o (.bss);
       build/OUTCODE/src/game/asset/asset.o (.bss);
       build/OUTCODE/src/game/gfx/dyn.o (.bss);
@@ -68,7 +69,6 @@
       build/OUTCODE/src/game/gfx/texdecode.o (.bss);
       build/OUTCODE/src/game/gfx/texload.o (.bss);
       build/OUTCODE/src/game/gfx/imagebank.o (.bss);
-      build/OUTCODE/src/game/gfx/tex.o (.bss);
       build/OUTCODE/src/game/asset/rzip.o (.bss);
       build/OUTCODE/src/game/gfx/rsp.o (.bss);
       build/OUTCODE/src/game/level/game.o (.bss);

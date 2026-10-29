@@ -19,7 +19,7 @@
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "game/math/quaternion.h"
-#include "game/gfx/tex.h"
+#include "game/gfx/texcmds.h"
 
 
 /**

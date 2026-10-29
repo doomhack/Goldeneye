@@ -14,8 +14,7 @@ handed to the RSP. What is drawn (rooms, models, the HUD) lives in `world/`, `mo
 | `src/game/gfx/texload.c` | Finding textures in the ROM, texture pools |
 | `src/game/gfx/texdecode.c` | Decompressing textures (no state, tested on the PC by `tools/hosttest/textest.c`) |
 | `src/game/gfx/imagebank.c` | The global image bank (ammo icons, crosshair, smoke, flares) |
-| `src/game/gfx/tex.c` | Rewriting a model's display list to load its textures; surface sound tables |
-| `src/game/gfx/texselect.c` | Setting up the RDP to draw one image from an image table |
+| `src/game/gfx/texcmds.c` | The RDP commands that load textures into TMEM: expanding the texture commands in model and room display lists (`texLoadFromGdl`), and drawing with one image from an image table (`texSelect`) |
 | `src/game/gfx/vtxstore.c` | Per-instance vertex copies for models that change shape or colour |
 
 ## A frame
@@ -76,15 +75,24 @@ smaller levels of detail from the wrong palette entries.
 
 ### From texture to TMEM
 
-Model display lists only name a texture and how to tile it. `texLoadFromGdl`, called when a
-model file is loaded, copies the display list and replaces those commands with real RDP
-commands: `LoadBlock` into TMEM, then the tile settings for each level of detail
-(`texHandleType0` to `texHandleType4` for the different combinations of detail texture and
-mipmaps). It caches the tile state so it doesn't write the same settings twice.
+Model and room display lists only name a texture and how to tile it, with Rare's own
+command, `G_SETTEX` (`gsSPUseTexture` in `gbi_extension.h`). `texLoadFromGdl`, called when a
+model file or a room is loaded, copies the display list and replaces each `G_SETTEX` with
+real RDP commands: one `LoadBlock` of all the texture's levels of detail into TMEM (and a
+`LoadTLUT` of its palette, which is stored after the pixels, into the top half of TMEM), then
+the tiles that draw it. The texture types (`TEXTURETYPE_*`) are a single tile, a mipmap, and
+two kinds that blend into tile 0 with LOD: the texture itself, or a separate detail texture
+loaded first in TMEM. The tile settings are remembered as they're written, so the same
+settings aren't written twice. The water and light fixture textures get extra handling
+(`water.c`, `lightfixture.c`).
 
 HUD, sky, menu and effect images don't go through a model. They are entries in an image
 table (`struct sImageTableEntry`), and `texSelect` writes the load and tile commands for one
-of them directly, along with a render mode (`texSetRenderMode`).
+of them directly, along with a render mode (`enum TexBlendMode`, `enum TexZbufferMode`).
+
+`texcmds.c` was rewritten in phase 5d and checked against Rare's code with a build that ran
+both on every display list and image: identical output through all 28 demos, the menus, and
+every solo level, in US and PAL.
 
 ### The image bank
 
@@ -110,8 +118,9 @@ the allocation fails and the instance keeps using the shared vertices.
 
 ## Traps
 
-* Many parameters are still `s32` where they hold a pointer, and `texSelect`'s arguments are
-  unnamed flags.
-* `texLoadFromGdl` is long and only partly understood; `docs/subsystems/models.md` covers the
-  model file side.
-* `tex.c` holds the surface sound tables, which belong with bullet impacts in `prop/`.
+* Many parameters are still `s32` where they hold a pointer.
+* `texLoadFromGdl` sets the levels of detail in the display list's own `gSPTexture` by
+  changing it in place when no triangles have been drawn since it, and otherwise writes a
+  copy. A second texture before any triangles changes the original, not the copy.
+* A palette more than about 1023 texels into a texture can't be addressed by `LoadTLUT`'s
+  coordinates (see `loadPalette`); none of the game's textures are that big.

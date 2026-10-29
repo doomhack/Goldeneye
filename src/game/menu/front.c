@@ -36,7 +36,7 @@
 #include "game/player/player.h"
 #include "game/text/text.h"
 #include "game/hud/blood.h"
-#include "game/gfx/texselect.h"
+#include "game/gfx/texcmds.h"
 #include "game/gfx/texrect.h"
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
@@ -1083,7 +1083,7 @@ Gfx *frontDrawCursor(Gfx *DL)
         image = g_ImageCrosshair;
     }
 
-    texSelect(&DL, image, 4, 0, 0);
+    texSelect(&DL, image, TEXBLEND_CLOUD, TEXZBUF_OFF, 0);
 
     xypos[0] = mathFloor(g_FrontCursorX + 0.5f);
     xypos[1] = mathFloor(g_FrontCursorY + 0.5f);
@@ -2412,7 +2412,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
         copyhalfsize.f[0] = (f32) (g_ImagesMainFolder + IMG_COPY)->width * 0.5f;
         copyhalfsize.f[1] = (f32) (g_ImagesMainFolder + IMG_COPY)->height * 0.5f;
 
-        texSelect(&DL, g_ImagesMainFolder, 4, 0, 0);
+        texSelect(&DL, g_ImagesMainFolder, TEXBLEND_CLOUD, TEXZBUF_OFF, 0);
         texRectDrawImage(&DL, &copypos.f[0], &copyhalfsize.f[0], g_ImagesMainFolder->width, g_ImagesMainFolder->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) g_ImagesMainFolder->level > 0, 0);
 
         folder_option_COPY_bound.left = copypos.f[0] - copyhalfsize.f[0];
@@ -2425,7 +2425,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
         erasehalfsize.f[0] = (g_ImagesMainFolder + IMG_DEL)->width * 0.5f;
         erasehalfsize.f[1] = (g_ImagesMainFolder + IMG_DEL)->height * 0.5f;
 
-        texSelect(&DL, g_ImagesMainFolder + IMG_DEL, 4, 0, 0);
+        texSelect(&DL, g_ImagesMainFolder + IMG_DEL, TEXBLEND_CLOUD, TEXZBUF_OFF, 0);
         texRectDrawImage(&DL, &erasepos.f[0], &erasehalfsize.f[0], (g_ImagesMainFolder + IMG_DEL)->width, (g_ImagesMainFolder + IMG_DEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_DEL)->level > 0, 0);
 
         folder_option_ERASE_bound.left = (f32) (erasepos.f[0] - erasehalfsize.f[0]);
@@ -2438,7 +2438,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
         selecthalfsize.f[0] = (g_ImagesMainFolder + IMG_SEL)->width * 0.5f;
         selecthalfsize.f[1] = (g_ImagesMainFolder + IMG_SEL)->height * 0.5f;
 
-        texSelect(&DL, g_ImagesMainFolder + IMG_SEL, 4, 0, 0);
+        texSelect(&DL, g_ImagesMainFolder + IMG_SEL, TEXBLEND_CLOUD, TEXZBUF_OFF, 0);
         texRectDrawImage(&DL, &selectpos.f[0], &selecthalfsize.f[0], (g_ImagesMainFolder + IMG_SEL)->width, (g_ImagesMainFolder + IMG_SEL)->height, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0xFF, (s32) (g_ImagesMainFolder + IMG_SEL)->level > 0, 0);
     }
 
@@ -3731,7 +3731,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
             halfedxy[0] = image->width * 0.5f;
             halfedxy[1] = image->height * 0.5f;
 
-            texSelect(&DL, image, 4, 0, 0);
+            texSelect(&DL, image, TEXBLEND_CLOUD, TEXZBUF_OFF, 0);
             texRectDrawImage(&DL, xypos, halfedxy, image->width, image->height, 0, 0, 1, 0xB4, 0, 0, 0xFF, image->level > 0, 0);
         }
     }
@@ -5404,22 +5404,22 @@ Gfx *frontRenderCharacterPortrait(Gfx *DL, s32 left, s32 right, s32 centreX, s32
     gSPVertex(DL++, vertices, 16, 0);
 
     simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
-    texSelect(&DL, simage + 2, 2, 0, 2);
+    texSelect(&DL, simage + 2, TEXBLEND_TRANSLUCENT, TEXZBUF_OFF, 2);
     gSP1Triangle(DL++, 0, 1, 4, 0);
     gSP1Triangle(DL++, 4, 1, 5, 0);
 
     simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
-    texSelect(&DL, simage + 3, 2, 0, 2);
+    texSelect(&DL, simage + 3, TEXBLEND_TRANSLUCENT, TEXZBUF_OFF, 2);
     gSP1Triangle(DL++, 2, 3, 6, 0);
     gSP1Triangle(DL++, 6, 3, 7, 0);
 
     simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
-    texSelect(&DL, simage + 0, 2, 0, 2);
+    texSelect(&DL, simage + 0, TEXBLEND_TRANSLUCENT, TEXZBUF_OFF, 2);
     gSP1Triangle(DL++, 8, 9, 12, 0);
     gSP1Triangle(DL++, 12, 9, 13, 0);
 
     simage = &g_ImagesMpCharSelect[g_MpChars[character].select_photo * 4];
-    texSelect(&DL, simage + 1, 2, 0, 2);
+    texSelect(&DL, simage + 1, TEXBLEND_TRANSLUCENT, TEXZBUF_OFF, 2);
     gSP1Triangle(DL++, 10, 11, 14, 0);
     gSP1Triangle(DL++, 14, 11, 15, 0);
 
@@ -6119,7 +6119,7 @@ Gfx * frontMpStageRender(Gfx *DL)
     gDPSetTextureFilter(DL++, G_TF_POINT);
 
     simage = g_ImagesMainFolder + 5;
-    texSelect(&DL, simage, 1, 0, 2); // IMAGE_DOT
+    texSelect(&DL, simage, TEXBLEND_OPAQUE, TEXZBUF_OFF, 2); // IMAGE_DOT
 
     bgSize.f[0] = 176.0f;
     bgSize.f[1] = 4.0f;
@@ -6151,7 +6151,7 @@ Gfx * frontMpStageRender(Gfx *DL)
             {
                 simage = &g_ImagesMpStageSelect[g_MpStages[count].photo];
 
-                texSelect(&DL, simage, 1, 0, 2);
+                texSelect(&DL, simage, TEXBLEND_OPAQUE, TEXZBUF_OFF, 2);
 
                 if (count == g_MpStageCursor)
                 {

@@ -31,7 +31,8 @@
 #include "game/math/quaternion.h"
 #include "game/gfx/imagebank.h"
 #include "game/gfx/texrect.h"
-#include "game/gfx/texselect.h"
+#include "game/gfx/texcmds.h"
+#include "game/world/surface.h"
 #include "game/player/player.h"
 #include "game/level/lv.h"
 #include "random.h"
@@ -41,7 +42,6 @@
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "game/gfx/texload.h"
-#include "game/gfx/tex.h"
 #include "fr.h"
 #include "assets/obseg/text/LgunE.h"
 #include "game/text/text.h"
@@ -1390,19 +1390,19 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode)
 
         if (flash->weaponnum == ITEM_LASER)
         {
-            texSelect(&gdl, g_ImageFlare5, 4, zbufferMode, 2);
+            texSelect(&gdl, g_ImageFlare5, TEXBLEND_CLOUD, zbufferMode, 2);
 
             gSPVertex(gdl++, osVirtualToPhysical(vtx), 8, 0);
 
             gSP4Triangles(gdl++, 4, 5, 6, 4, 5, 7, 0, 0, 0, 0, 0, 0);
 
-            texSelect(&gdl, image, 4, zbufferMode, 2);
+            texSelect(&gdl, image, TEXBLEND_CLOUD, zbufferMode, 2);
 
             gSP4Triangles(gdl++, 0, 2, 3, 0, 3, 1, 0, 0, 0, 0, 0, 0);
         }
         else
         {
-            texSelect(&gdl, image, 4, zbufferMode, 2);
+            texSelect(&gdl, image, TEXBLEND_CLOUD, zbufferMode, 2);
 
             gSPVertex(gdl++, osVirtualToPhysical(vtx), 4, 0);
 
@@ -2204,18 +2204,17 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
     sound_state = gunGetFreeSfxState();
     if ((sound_state != NULL) && (texture_index >= 0))
     {
-        if (g_HitTypeSounds[g_Textures[texture_index].hitSound] != NULL)
-        {
-            if (g_HitTypeSounds[g_Textures[texture_index].hitSound]->sfx_len > 0)
-            {
-                sfx_index = rnd2 % g_HitTypeSounds[g_Textures[texture_index].hitSound]->sfx_len;
-                sndPlaySfx(g_musicSfxBufferPtr, g_HitTypeSounds[g_Textures[texture_index].hitSound]->sfx[sfx_index], sound_state);
-            }
+        const SurfaceHit *surface = &g_SurfaceHits[g_Textures[texture_index].hitSound];
 
-            if (*sound_state != NULL)
-            {
-                chrobjSndCreatePostEventDefault(*sound_state, &prop->pos);
-            }
+        if (surface->numSfx > 0)
+        {
+            sfx_index = rnd2 % surface->numSfx;
+            sndPlaySfx(g_musicSfxBufferPtr, surface->sfx[sfx_index], sound_state);
+        }
+
+        if (*sound_state != NULL)
+        {
+            chrobjSndCreatePostEventDefault(*sound_state, &prop->pos);
         }
     }
 }
@@ -2247,7 +2246,7 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
     u32 rnd1;
     u32 rnd2;
     u32 sfx_index;
-    struct image_sound *img_sound;
+    const SurfaceHit *surface;
 
     rnd1 = randomGetNext();
     rnd2 = randomGetNext();
@@ -2279,14 +2278,11 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
     sound_state = gunGetFreeSfxState();
     if ((sound_state != NULL) && (texture_index >= 0))
     {
-        img_sound = g_HitTypeSounds[g_Textures[texture_index].hitSound];
-        if (img_sound->sfx_len > 0)
+        surface = &g_SurfaceHits[g_Textures[texture_index].hitSound];
+        if (surface->numSfx > 0)
         {
-            if (img_sound != NULL)
-            {
-                sfx_index = rnd2 % img_sound->sfx_len;
-                sndPlaySfx(g_musicSfxBufferPtr, img_sound->sfx[sfx_index], sound_state);
-            }
+            sfx_index = rnd2 % surface->numSfx;
+            sndPlaySfx(g_musicSfxBufferPtr, surface->sfx[sfx_index], sound_state);
 
             if (*sound_state != NULL)
             {
@@ -5483,7 +5479,7 @@ Gfx *hudDrawImage(Gfx *gdl, struct sImageTableEntry *tconfig, f32 x, f32 y, f32 
     gDPSetPrimColor(gdl++, 0, 0, 0, 0, 0, 0);
     gDPFillRectangle(gdl++, VI_SX(((s32)(xy[0] - halfed[0])) - 1), ((s32)(xy[1] - halfed[1])) - 1, VI_SX(((s32)(xy[0] + halfed[0])) + 1), ((s32)(xy[1] + halfed[1])) + 1);
  
-    texSelect(&gdl, tconfig, (translucent != 0) ? (2) : (1), 0, 0);
+    texSelect(&gdl, tconfig, translucent ? TEXBLEND_TRANSLUCENT : TEXBLEND_OPAQUE, TEXZBUF_OFF, 0);
     texRectDrawImage(&gdl, xy, halfed, tconfig->width, tconfig->height, 0, 0, 1, red, green, blue, alpha, 0 < tconfig->level, 0);
  
     gDPPipeSync(gdl++);
@@ -5861,7 +5857,7 @@ void gunDrawSight(Gfx **gdl) {
 
     if ((g_CurrentPlayer->gunsightmode == 0) && (g_CurrentPlayer->mpmenuon == FALSE)) {
         dl = *gdl;
-        texSelect(&dl, g_ImageCrosshair, 4, 0, 0);
+        texSelect(&dl, g_ImageCrosshair, TEXBLEND_CLOUD, TEXZBUF_OFF, 0);
 
         xypos[0] = g_CurrentPlayer->crosshair_angle.f[0];
         xypos[1] = g_CurrentPlayer->crosshair_angle.f[1];
@@ -6399,7 +6395,7 @@ void shotFireBullet(s32 hand)
     coord3d *finalpos;
     s32 numhits;
     u8 visited[256];
-    struct image_sound *impact_sounds;
+    const SurfaceHit *surface;
     coord3d scaleddir;
     coord3d hitdir;
     f32 distscale;
@@ -6598,19 +6594,19 @@ void shotFireBullet(s32 hand)
         {
             if (bghit.texturenum < 0)
             {
-                impact_sounds = g_HitTypeSounds[0];
+                surface = &g_SurfaceHits[HIT_DEFAULT];
             }
             else
             {
-                impact_sounds = g_HitTypeSounds[((u8 *) (&g_Textures[bghit.texturenum]))[0] & 0xf];
+                surface = &g_SurfaceHits[g_Textures[bghit.texturenum].hitTexture];
             }
 
             if (createSpark)
             {
-                if ((impact_sounds->thing2_len > 0) && (shotdata.weapon != 23))
+                if ((surface->numImpacts > 0) && (shotdata.weapon != 23))
                 {
-                    pad = randomGetNext() % impact_sounds->thing2_len;
-                    explosionCreateBulletImpact(&visiblehitpos, &bghit.normal, impact_sounds->thing2[pad], bestroom, 0, -1, 0);
+                    pad = randomGetNext() % surface->numImpacts;
+                    explosionCreateBulletImpact(&visiblehitpos, &bghit.normal, surface->impacts[pad], bestroom, 0, -1, 0);
                 }
 
                 if (lightIsLightTexture(bghit.texturenum))

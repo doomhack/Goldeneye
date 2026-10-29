@@ -9,7 +9,7 @@
 #include "game/menu/front.h"
 #include "fr.h"
 #include "game/player/player.h"
-#include "game/gfx/texselect.h"
+#include "game/gfx/texcmds.h"
 #include "game/gfx/imagebank.h"
 #include "game/menu/cheat.h"
 
@@ -79,7 +79,7 @@ Gfx *radarRender(Gfx *DL)
         start_left += 0xF;
     }
     
-    texSelect(&DL, g_ImagesMpRadar, 2, 0, 2);
+    texSelect(&DL, g_ImagesMpRadar, TEXBLEND_TRANSLUCENT, TEXZBUF_OFF, 2);
 
     DL = textSetupDraw(DL);
 
