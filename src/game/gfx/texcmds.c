@@ -730,7 +730,7 @@ void texSelect(Gfx **gdlptr, sImageTableEntry *image, u32 blendMode, s32 zbuffer
 
     if (mipmapped && tex != NULL && tex->hasExplicitLods)
     {
-        lastTexel = texLoadTexels(tex);
+        lastTexel = texLoadTexels(tex) - 1;
     }
     else
     {
