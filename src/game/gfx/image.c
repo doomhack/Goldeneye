@@ -502,14 +502,10 @@ s32 texShrinkPaletted(u8 *src, u8 *dst, s32 srcwidth, s32 srcheight, s32 format,
 
                 for (j = 0; j < alignedsrcwidth; j += 4)
                 {
-                    // @bug: The brackets are wrong in colour2 and colour4 which
-                    // causes the index shift to be part of the ternary condition.
-                    // It's done correctly in TEXFORMAT_RGBA16_CI4 (above).
-                    // This buggy calculation is repeated further below.
                     colour1 = palette[(src8[j >> 1] >> 4) & 0xf];
-                    colour2 = palette[(src8[j >> 1] >> (j + 1 < srcwidth) ? 0 : 4) & 0xf];
+                    colour2 = palette[(src8[j >> 1] >> (j + 1 < srcwidth ? 0 : 4)) & 0xf];
                     colour3 = palette[(src8[nextrow + (j >> 1)] >> 4) & 0xf];
-                    colour4 = palette[(src8[nextrow + (j >> 1)] >> (j + 1 < srcwidth) ? 0 : 4) & 0xf];
+                    colour4 = palette[(src8[nextrow + (j >> 1)] >> (j + 1 < srcwidth ? 0 : 4)) & 0xf];
 
                     c = ((((colour1 >> 8) & 0xff) + ((colour2 >> 8) & 0xff) + ((colour3 >> 8) & 0xff) + ((colour4 >> 8) & 0xff)) >> 2) & 0xff;
                     a = ((((colour1 >> 0) & 0xff) + ((colour2 >> 0) & 0xff) + ((colour3 >> 0) & 0xff) + ((colour4 >> 0) & 0xff) + 1) >> 2) & 0xff;
@@ -517,9 +513,9 @@ s32 texShrinkPaletted(u8 *src, u8 *dst, s32 srcwidth, s32 srcheight, s32 format,
                     dst8[j >> 2] = (texFindClosestColourIndexIA(palette, numcolours, c, a) * 0x10) & 0xFFFF;
 
                     colour1 = palette[(src8[(j + 2) >> 1] >> 4) & 0xf];
-                    colour2 = palette[(src8[(j + 2) >> 1] >> (j + 3 < srcwidth) ? 0 : 4) & 0xf];
+                    colour2 = palette[(src8[(j + 2) >> 1] >> (j + 3 < srcwidth ? 0 : 4)) & 0xf];
                     colour3 = palette[(src8[nextrow + ((j + 2) >> 1)] >> 4) & 0xf];
-                    colour4 = palette[(src8[nextrow + ((j + 2) >> 1)] >> (j + 3 < srcwidth) ? 0 : 4) & 0xf];
+                    colour4 = palette[(src8[nextrow + ((j + 2) >> 1)] >> (j + 3 < srcwidth ? 0 : 4)) & 0xf];
 
                     c = ((((colour1 >> 8) & 0xff) + ((colour2 >> 8) & 0xff) + ((colour3 >> 8) & 0xff) + ((colour4 >> 8) & 0xff)) >> 2) & 0xff;
                     a = ((((colour1 >> 0) & 0xff) + ((colour2 >> 0) & 0xff) + ((colour3 >> 0) & 0xff) + ((colour4 >> 0) & 0xff) + 1) >> 2) & 0xff;
@@ -1639,9 +1635,9 @@ void texReadAlphaBits(u8 *image,s32 count)
  */
 s32 texReadUncompressed(u8 *dst, s32 width, s32 height, s32 format)
 {
-	u32 *dst32 = (u32 *)(((u32)dst + 0xf) & ~0xf);
-	u16 *dst16 = (u16 *)(((u32)dst + 7) & ~7);
-	u8 *dst8 = (u8 *)(((u32)dst + 7) & ~7);
+	u32 *dst32 = (u32 *)dst;
+	u16 *dst16 = (u16 *)dst;
+	u8 *dst8 = dst;
 	s32 x;
 	s32 y;
 
@@ -1848,7 +1844,7 @@ s32 texChannelsToPixels(u8 *src, s32 width, s32 height, u8 *dst, s32 format)
 
                 if (width & 1) { pos--; }
 
-                dst8 += (width + 15) & 0xff0;
+                dst8 += ((width + 15) & 0xff0) >> 1;
             }
 
             return (((width + 15) & 0xff0) >> 1) * height;
