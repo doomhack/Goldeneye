@@ -17,6 +17,8 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo);
 void invCycleForward(s32 *nextright, s32 *nextleft, s32 requireammo);
 bool invHasGoldenGun(void);
 int invAddItem(ITEM_IDS item);
+int invHasItem(ITEM_IDS item);
+bool invHasDualWeapon(ITEM_IDS right, ITEM_IDS left);
 int invAddDualItem(ITEM_IDS right, ITEM_IDS left);
 s32 invGetAllGunsFlag(void);
 void invSetAllGunsFlag(s32 all_guns);

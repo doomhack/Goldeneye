@@ -7,10 +7,11 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | --- | --- |
 | `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects at run time: the per-frame tick, drawing, pickups, weapon and hat slots |
+| `src/game/prop/propobj.c` | Objects at run time: the per-frame tick, drawing, weapon and hat slots |
 | `src/game/prop/objdamage.c` | Damage to objects: destroying, exploding, bending the model, what being destroyed does |
 | `src/game/prop/objhit.c` | Rays against object models (`modelFindTriangleHit`), the player's shots hitting objects |
 | `src/game/prop/projectile.c` | Objects in flight: the projectile pools, moving with collision, bouncing, settling, sticking |
+| `src/game/prop/pickup.c` | Picking props up and using them with the action button |
 | `src/game/prop/door.c` | Doors: moving, collision, portals, sounds, and the player using them |
 | `src/game/prop/monitor.c` | Monitor screens: running their scripts and drawing them |
 | `src/game/prop/monitorscripts.c` | The monitor scripts |
@@ -113,8 +114,8 @@ and aircraft following their paths, the tank, doors opening and closing, and wea
 as mines (`chrobjWeaponTick`). Attached props are ticked through `objTickAttached`, and
 props out of view do the minimum through `objTickOffscreen`.
 
-`objTickPlayer` and `weaponTickPlayer`, called from `propsTickPickups`, check whether a
-player is touching a prop and can pick it up.
+`objTickPlayer` and `weaponTickPlayer` (`pickup.c`), called from `propsTickPickups`, check
+whether a player is touching a prop and can pick it up.
 
 ## Damage
 
@@ -136,9 +137,25 @@ Glass breaks with `glassShatter`, which hides the pane and fills its area with s
 
 ## Pickups
 
-`propPickupByPlayer` collects a weapon, ammo, key, hat or other item: it adds it to the
-inventory, plays the sound (`pickupPlayWeaponSound`, `pickupPlayAmmoSound`) and shows the
-"Picked up..." text (`pickupShowWeaponText`, `pickupShowAmmoText`).
+Each frame `objTickPlayer` (`pickup.c`) checks whether the current player is touching a
+prop: within 1 m across and 2 m up or down, on the same tile and with nothing in the way
+(unless the prop has `PROPFLAG2_PICKUPTHROUGHWALLS`). With the watch magnet on for a
+second the range is 3.5 m across and 5 m up or down. A player looking more than 45 degrees
+down picks nothing up, unless the magnet is on. Props the player would gain nothing from are
+left lying: a gun they have with full ammo (unless it makes a pair they haven't got), ammo
+they can't carry (unless it gives an item they haven't got, such as grenades), armour no
+better than theirs, and live grenades and mines.
+
+`propPickupByPlayer` collects a weapon, ammo, armour, key or other item: it adds it to the
+inventory, plays the sound (`pickupPlayWeaponSound`) and shows the "Picked up..." text
+(`pickupShowWeaponText`), or the text the level set up for the prop. Weapons that are
+really ammo, such as grenades and mines, are worded as ammo. In solo, ammo pickups of more
+than one round are multiplied by the difficulty's ammo multiplier.
+
+Props flagged `PROPFLAG_PICKUPONINTERACT`, alarms, and switches linked to doors
+(`RUNTIMEBITFLAG_LINKEDSWITCH`) are used with the action button instead:
+`objTestForInteract` finds the one the player is facing, within 2 m and 22.5 degrees, and
+`objInteract` uses it.
 
 ## Weapon and hat slots
 

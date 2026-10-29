@@ -4795,7 +4795,7 @@ _AI_CMD(
             }
             else if (obj->prop->type == PROP_TYPE_OBJ || obj->prop->type == PROP_TYPE_WEAPON)
             {
-                propobjInteract(obj->prop);
+                objInteract(obj->prop);
             }
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);

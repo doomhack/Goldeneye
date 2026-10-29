@@ -338,6 +338,7 @@ void gunStartWatchSwap(GUNHAND hand, s32 next_weapon);
 void gunClearWatchMenuWeapon(GUNHAND hand);
 void gunUpdateCrosshairSwivel(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed);
 s32 weaponGetHeldAmmo(ITEM_IDS weapon);
+s32 weaponGetMaxAmmo(ITEM_IDS weapon);
 void weaponGiveAmmo(ITEM_IDS weapon, s32 ammo);
 s32 gunGetMagazineAmmo(GUNHAND hand);
 void gunSwitchWhenEmpty(void);

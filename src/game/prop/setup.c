@@ -1780,7 +1780,7 @@ void setupCreateProps(enum LEVELID stageId)
                             pdef_switch->first = doorA->prop;
                             pdef_switch->second = doorB->prop;
                             setupLinkSwitch(pdef_switch);
-                            doorA->runtime_bitflags |= RUNTIMEBITFLAG_00000001; // linked door
+                            doorA->runtime_bitflags |= RUNTIMEBITFLAG_LINKEDSWITCH; // linked door
                         }
 
 

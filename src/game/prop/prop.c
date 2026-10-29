@@ -603,7 +603,7 @@ bool playerInteract(void)
         {
             case PROP_TYPE_OBJ:
             case PROP_TYPE_WEAPON:
-                tickop = propobjInteract(prop);
+                tickop = objInteract(prop);
                 break;
             case PROP_TYPE_DOOR:
                 tickop = doorInteract(prop);
@@ -1976,7 +1976,7 @@ void switchActivateLinkedDoors(PropRecord *prop)
 
     obj = prop->obj;
 
-    if (obj->runtime_bitflags & RUNTIMEBITFLAG_00000001)
+    if (obj->runtime_bitflags & RUNTIMEBITFLAG_LINKEDSWITCH)
     {
         for (link = g_LevelLoadPropSwitch; link != NULL; link = link->next)
         {
