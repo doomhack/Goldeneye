@@ -95,6 +95,7 @@ test that expected the error).
 | --- | --- |
 | `memtest.c` | memp (pools, resizing, closed and full pools) and mema (best fit, merging, double frees, a full free list, and random alloc/free/resize runs checked against a byte map) |
 | `rziptest.c` | rzip: zlib-made streams (stored, fixed and dynamic blocks, several levels and strategies, up to 300 KB) decompressed separately and in place, a buffer one byte too small, hand-made bad blocks, and bit-flipped streams that must fail without overrunning. Needs zlib (`-lz`) |
+| `mathtest.c` | The maths library: sin, cos, atan2, acos and rounding against the C library's double-precision functions (with Rare's accuracy limits written down as tolerances); matrices (rotation order, the three inverses, scaling, the 3x3 ones), cameras and aligns, fixed-point conversion, quaternions (slerp, splines), interpolation, physics, and ray-triangle hits |
 
 Demos can't tell whether a leaf function is right in the cases a level never hits; these tests
 can, so a leaf rewrite gets one.
