@@ -887,7 +887,6 @@ static s32 coopAiCommandMode(u8 cmd)
 }
 
 extern s32 weaponGetAmmoType(ITEM_IDS weapon);
-extern int invHasItem(ITEM_IDS item);
 
 /**
  * Co-op: TRUE if any player can still use an item, i.e. carries it with
@@ -2556,7 +2555,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         }
                         else if (obj->prop->type == PROP_TYPE_OBJ || obj->prop->type == PROP_TYPE_WEAPON)
                         {
-                            propobjInteract(obj->prop);
+                            objInteract(obj->prop);
                         }
                     }
                     Offset += sizeof(AiActivateObjectRecord);

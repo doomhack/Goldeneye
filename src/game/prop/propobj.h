@@ -50,6 +50,7 @@ extern ExplosionDetailsRecord object_explosion_details[];
  */
 void                 objSetMoving(struct PropRecord *prop, s32 moving);
 
+void                 objFree(ObjectRecord *obj, s32 freeprop, s32 canregen);
 void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop);
 
 Gfx                 *weaponRenderTracers(Gfx *gdl);
@@ -77,8 +78,6 @@ void                 propweaponSetDual(WeaponObjRecord *leftweapon, WeaponObjRec
 void                 objPlaceAtPad(ObjectRecord *baseobj, coord3d *pad, Mtxf *matrix, StandTile *stan, coord3d *pos2);
 void                 objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan2, coord3d *pos2);
 bool                 chrEquipWeapon(WeaponObjRecord *wep, ChrRecord *chr);
-TICKOP               propPickupByPlayer(PropRecord *prop, bool showstring);
-TICKOP               propobjInteract(PropRecord *prop);
 WeaponObjRecord      *weaponFindThrown(s32 weaponnum);
 HatRecord           *hatCreate(bool musthaveprop, bool musthavemodel, ModelFileHeader *modeldef);
 PropRecord*          objInitWithAutoModel(ObjectRecord* obj);
@@ -97,8 +96,6 @@ void                 chrSetupHeldWeapon(WeaponObjRecord* weapon, ChrRecord* chr)
 void                 playerDropInventory(void);
 void                 objsFreeDeformedVertices(void);
 f32                  bondviewGetPlayerPitchRadians(void);
-TICKOP               objTickPlayer(struct PropRecord* prop);
-TICKOP               weaponTickPlayer(struct PropRecord* prop);
 bool                 posIsOnScreen(PropRecord *prop, coord3d *pos, f32 radius, bool checkFogEnd);
 void                 objUpdateShading(rgba_u8 *dest, rgba_u8 *src);
 void                 chrRenderHeldWeapon(PropRecord *chrprop, GUNHAND hand, JointListEntry **jointList);
@@ -109,10 +106,6 @@ PropRecord          *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemi
 
 PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags);
 bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, coord2d *max, coord2d *min);
-void pickupAddAmmo(AMMOTYPE ammotype,int amount,int doplaysound,int dodisplaytext);
-void pickupPlayWeaponSound(ITEM_IDS weapontype);
-void pickupShowWeaponText(ITEM_IDS weaponid);
-bool objTestForInteract(PropRecord* prop);
 s32 objTick(struct PropRecord *prop);
 void hatAssignToChr(HatRecord* hat, ChrRecord* chr);
 void proxminesTickGuards(void);
@@ -121,5 +114,6 @@ AmmoCrateRecord     *ammocrateAllocate(void);
 
 #include "game/prop/objdamage.h"
 #include "game/prop/objhit.h"
+#include "game/prop/pickup.h"
 
 #endif

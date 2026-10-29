@@ -20,6 +20,7 @@
       build/OUTCODE/src/game/prop/projectile.o (.data);
       build/OUTCODE/src/game/prop/objdamage.o (.data);
       build/OUTCODE/src/game/prop/objhit.o (.data);
+      build/OUTCODE/src/game/prop/pickup.o (.data);
       build/OUTCODE/src/game/math/physics.o (.data);
       build/OUTCODE/src/game/math/matrix.o (.data);
       build/OUTCODE/src/game/math/trig.o (.data);

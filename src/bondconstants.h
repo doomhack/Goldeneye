@@ -293,8 +293,8 @@ typedef enum PROPFLAG
     PROPFLAG_INSIDEANOTHEROBJ            = 0x00008000, // Embedded Object
     PROPFLAG_FORCEMORTAL                 = 0x00010000, // unknown
     PROPFLAG_INVINCIBLE                  = 0x00020000, // Invincible
-    PROPFLAG_00040000                    = 0x00040000, // Allow Pickup (chr_type)
-    PROPFLAG_00080000                    = 0x00080000, // Collect Object by Interaction Button Only
+    PROPFLAG_PICKUPONTOUCH               = 0x00040000, // picked up by walking over it (props that aren't weapons or ammo)
+    PROPFLAG_PICKUPONINTERACT            = 0x00080000, // picked up only with the action button
     PROPFLAG_UNCOLLECTABLE               = 0x00100000, // Item Not Collectable
     PROPFLAG_BOUNCEWHENSHOT                    = 0x00200000, // Bounce and Destroy If Shot
     PROPFLAG_NOBOUNCEWHENSHOT                    = 0x00400000, // unknown
@@ -336,7 +336,7 @@ typedef enum PROPFLAG2
     PROPFLAG2_FALLWITHOUTROTATION = 0x00000200, // used with mines
     PROPFLAG2_LINKEDTOSAFE        = 0x00000400, // unknown
     PROPFLAG2_INTERACTCHECKLOS    = 0x00000800, // Don't activate if stan gap Bond/Object
-    PROPFLAG2_00001000            = 0x00001000, // Watch Magnet Attract through Walls/Objects
+    PROPFLAG2_PICKUPTHROUGHWALLS  = 0x00001000, // picked up (and pulled by the magnet) through walls and objects
     PROPFLAG2_REMOVEWHENDESTROYED            = 0x00002000, // Remove When Destroyed
     PROPFLAG2_IMMUNETOGUNFIRE            = 0x00004000, // Immune to Gunfire
     PROPFLAG2_SHOOTTHROUGH        = 0x00008000, // Can Shoot Through Object
@@ -498,7 +498,7 @@ BITFLAG(PLAYERFLAG,
 )
 //PropDef bitflag canonically PROPHID_
 BITFLAG(RUNTIMEBITFLAG,
-        00000001,
+        LINKEDSWITCH, /* a switch that opens doors (g_LevelLoadPropSwitch)               */
         00000002,
         REMOVE, /* removes object when set                                         */
         ISRETICK,
@@ -534,7 +534,6 @@ BITFLAG(RUNTIMEBITFLAG,
 
 #define RUNTIMEBITFLAG_OWNER          0x60000
 #define RUNTIMEBITSHIFT_OWNER         0x11
-#define RUNTIMEBITFLAG_00000001       0x1
 #define RUNTIMEBITFLAG_00000080       0x00000080
 #define RUNTIMEBITFLAG_00000800       0X00000800
 #define RUNTIMEBITFLAG_PADLOCKEDDOOR  0X00002000
