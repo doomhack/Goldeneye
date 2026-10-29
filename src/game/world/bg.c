@@ -646,11 +646,8 @@ void bgLoad(LEVEL_INDEX levelid)
  
     g_StanData = (s32) assetLoad(levelinfotable[levelentry_index].bg_stan_filename, MEMPOOL_STAGE);
  
-    stanDetermineEOF((struct StanPrefixRecord *) g_StanData, 0, (u8 *) g_StanData);
-    stanLoadFile((struct StanPrefixRecord *) g_StanData);
- 
+    stanLoadFile((StandFileHeader *) g_StanData, levelinfotable[levelentry_index].levelscale);
     bgSetLevelScale(levelinfotable[levelentry_index].levelscale);
-    stanSetLevelScale(levelinfotable[levelentry_index].levelscale);
  
     mCurrentLevelVisibilityScale = levelinfotable[levelentry_index].visibility;
  
@@ -4080,16 +4077,19 @@ void bgGetRoomCenter(s32 roomnum, coord3d *dst)
 void bgRoomCalcBB(s32 room) // canonical name
 {
     bg_room_data *roomdata;
-    Vtx *vertices = (Vtx *) &g_StanRoomBounds[0];
-    s32 j = 0;
-    StanRoomBounds limits;
+    Vtx *vertices;
+    Vtx *end;
+    s16 min[3];
+    s16 max[3];
+    s32 j;
     u8 wasloaded;
 
-    roomdata = (bg_room_data *) ((s32) g_BgRoomFiles + room * 24);
+    roomdata = &g_BgRoomFiles[room];
 
     if (roomdata->pPointTableBin == NULL)
     {
-        if ((room < g_StanNumRooms) && ((s32) g_StanRoomFirstTile[room] != ((StanRoomBounds *) vertices)->min[j] % 1))
+        /* No model: use the bounds of the room's floor tiles */
+        if (room < g_StanNumRooms && g_StanRoomFirstTile[room] != NULL)
         {
             for (j = 0; j < 3; j++)
             {
@@ -4112,37 +4112,35 @@ void bgRoomCalcBB(s32 room) // canonical name
     }
 
     vertices = g_BgRoomInfo[room].vertices;
-    roomdata = (bg_room_data *) ((s32) g_BgRoomFiles + room * 24);
+    end = (Vtx *) ((u8 *) vertices + g_BgRoomInfo[room].usize_point_index_binary);
 
-    limits.minX = 0x7fff;
-    limits.minY = 0x7fff;
-    limits.minZ = 0x7fff;
-    limits.maxX = -0x7fff;
-    limits.maxY = -0x7fff;
-    limits.maxZ = -0x7fff;
+    for (j = 0; j < 3; j++)
+    {
+        min[j] = 0x7fff;
+        max[j] = -0x7fff;
+    }
 
-    for (; vertices < (Vtx *) ((s32) g_BgRoomInfo[room].vertices + g_BgRoomInfo[room].usize_point_index_binary); vertices++)
+    for (; vertices < end; vertices++)
     {
         for (j = 0; j < 3; j++)
         {
-            if (((s16 *) vertices)[j] < limits.min[j])
+            if (vertices->v.ob[j] < min[j])
             {
-                limits.min[j] = ((s16 *) vertices)[j];
+                min[j] = vertices->v.ob[j];
             }
 
-            if (limits.max[j] < ((s16 *) vertices)[j])
+            if (max[j] < vertices->v.ob[j])
             {
-                limits.max[j] = ((s16 *) vertices)[j];
+                max[j] = vertices->v.ob[j];
             }
         }
     }
 
-    g_BgRoomInfo[room].minbounds.x = roomdata->pos.x + limits.minX;
-    g_BgRoomInfo[room].minbounds.y = roomdata->pos.y + limits.minY;
-    g_BgRoomInfo[room].minbounds.z = roomdata->pos.z + limits.minZ;
-    g_BgRoomInfo[room].maxbounds.x = roomdata->pos.x + limits.maxX;
-    g_BgRoomInfo[room].maxbounds.y = roomdata->pos.y + limits.maxY;
-    g_BgRoomInfo[room].maxbounds.z = roomdata->pos.z + limits.maxZ;
+    for (j = 0; j < 3; j++)
+    {
+        g_BgRoomInfo[room].minbounds.f[j] = roomdata->pos.f[j] + min[j];
+        g_BgRoomInfo[room].maxbounds.f[j] = roomdata->pos.f[j] + max[j];
+    }
 
     if (wasloaded == 0)
     {

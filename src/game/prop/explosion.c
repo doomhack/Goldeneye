@@ -311,16 +311,16 @@ explosionCreate(PropRecord *source, coord3d *target_pos, StandTile *target_stan,
                 if ((source != NULL) && (source->stan != NULL))
                 {
                     exp->pos.f[0] = source->pos.f[0];
-                    exp->pos.f[1] = stanGetPositionYValue(source->stan, source->pos.f[0], source->pos.f[2]) + 4.0f;
+                    exp->pos.f[1] = stanGetFloorY(source->stan, source->pos.f[0], source->pos.f[2]) + 4.0f;
                     exp->pos.f[2] = source->pos.f[2];
-                    exp->room = stanGetTileRoom(source->stan);
+                    exp->room = source->stan->room;
                 }
                 else
                 {
                     exp->pos.f[0] = target_pos->f[0];
-                    exp->pos.f[1] = stanGetPositionYValue(target_stan, target_pos->f[0], target_pos->f[2]) + 4.0f;
+                    exp->pos.f[1] = stanGetFloorY(target_stan, target_pos->f[0], target_pos->f[2]) + 4.0f;
                     exp->pos.f[2] = target_pos->f[2];
-                    exp->room = stanGetTileRoom(target_stan);
+                    exp->room = target_stan->room;
                 }
             }
             else

@@ -1371,7 +1371,7 @@ void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *
     {
         tilefromstart = tile;
 
-        if (stanWalkLineNoCallback(&tilefromstart, stan_walk_start->f[0], stan_walk_start->f[2], pos->f[0], pos->f[2]))
+        if (stanWalkLine(&tilefromstart, stan_walk_start->f[0], stan_walk_start->f[2], pos->f[0], pos->f[2]))
         {
             // @bug ...? This is either a bug or removed code, this function has no side effects.
             // Return value should used to check if point is safe for stan.
@@ -1383,7 +1383,7 @@ void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *
             if (g_CurrentPlayer->cameratile != NULL)
             {
                 tilefromprev = g_CurrentPlayer->cameratile;
-                if (stanWalkLineNoCallback(&tilefromprev, g_CurrentPlayer->pos.f[0], g_CurrentPlayer->pos.f[2], pos->f[0], pos->f[2]))
+                if (stanWalkLine(&tilefromprev, g_CurrentPlayer->pos.f[0], g_CurrentPlayer->pos.f[2], pos->f[0], pos->f[2]))
                 {
                     g_CurrentPlayer->cameratile = tilefromprev;
                 }
@@ -1409,6 +1409,6 @@ void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *
         g_CurrentPlayer->offset.f[2] = offset->f[2];
         g_CurrentPlayer->pos3.f[0] = g_CurrentPlayer->pos.f[0];
         g_CurrentPlayer->pos3.f[2] = g_CurrentPlayer->pos.f[2];
-        g_CurrentPlayer->pos3.f[1] = stanGetPositionYValue(g_CurrentPlayer->cameratile, g_CurrentPlayer->pos.f[0], g_CurrentPlayer->pos.f[2]);
+        g_CurrentPlayer->pos3.f[1] = stanGetFloorY(g_CurrentPlayer->cameratile, g_CurrentPlayer->pos.f[0], g_CurrentPlayer->pos.f[2]);
     }
 }

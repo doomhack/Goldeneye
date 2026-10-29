@@ -54,7 +54,7 @@
 #include "game/prop/propobj.h"
 #include "game/math/quaternion.h"
 #include "random.h"
-#include "game/nav/stan.h"
+#include "game/nav/geometry.h"
 #include "game/nav/stan.h"
 #include "game/text/text.h"
 #include "game/math/interp.h"
@@ -674,7 +674,7 @@ s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, co
 
                         if (lineok < 0)
                         {
-                            floorY = stanGetPositionYValue(checktile, g_DeathCamPos.x, g_DeathCamPos.z);
+                            floorY = stanGetFloorY(checktile, g_DeathCamPos.x, g_DeathCamPos.z);
 
                             g_DeathCamPos.y = (floorY + camclearance) + ((((f32) randomGetNext()) * 2.3283064e-10f) * (185.0f - camclearance));
 
@@ -2135,7 +2135,7 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
     f32 collision_radius;
     s32 special;
     struct TankRecord *tank;
-    struct StandTileLocusCallbackRecord locus;
+    StanSpecialTiles locus;
 
     ok = 0;
 
@@ -2173,7 +2173,7 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
         propSetMoving(g_CurrentPlayer->prop, 0);
         special = stanCircleGetSpecial(&tile, pos->f[0], pos->f[2], collision_radius, &locus);
 
-        if (stanLocusIsCrouch(&locus) != 0)
+        if (locus.crouch)
         {
             g_CurrentPlayer->autocrouchpos = CROUCH_SQUAT;
         }
@@ -2193,7 +2193,7 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
         {
             if (g_CurrentPlayer->ducking_height_offset == FULL_CROUCH_OFFSET || special < 0)
             {
-                if (stanLocusIsLadder(&locus) == 0 && stanTestLocusEdgeAboveY(&tile, pos->f[0], pos->f[2], collision_radius, g_CurrentPlayer->bond.collision_position.f[1] + 175.0f) >= 0)
+                if (!locus.ladder && stanTestCircleMaxHeight(&tile, pos->f[0], pos->f[2], collision_radius, g_CurrentPlayer->bond.collision_position.f[1] + 175.0f) >= 0)
                 {
                     goto block_20;
                 }
@@ -2215,13 +2215,13 @@ block_20:
             // Co-op: the tank is solid for a player while the other uses it.
             if (g_PlayerTankProp == NULL
                 && !s_CoopTankStash.hidden
-                && (g_StanHitProp != NULL)
-                && (g_StanHitProp->type == PROP_TYPE_OBJ))
+                && (g_StanHit.prop != NULL)
+                && (g_StanHit.prop->type == PROP_TYPE_OBJ))
             {
-                tank = (struct TankRecord *)g_StanHitProp->obj;
+                tank = (struct TankRecord *)g_StanHit.prop->obj;
                 if (tank->type == PROPDEF_TANK)
                 {
-                    g_WorldTankProp = g_StanHitProp;
+                    g_WorldTankProp = g_StanHit.prop;
                 }
             }
         }
@@ -2277,7 +2277,7 @@ s32 playerTryMoveSimple(coord3d *next_pos, coord3d *collision_pt0, coord3d *coll
 /**
  * This is a fallback method used when playerTryMoveSimple fails.
  * Instead of moving to the full coordinate specified by `next_pos`, it will
- * scale the position using `stanRaySegmentFrac` and try to move to that position.
+ * scale the position using `geoCircleSweepFrac` and try to move to that position.
  *
  * @param next_pos: 3d coordinate to attempt to move to.
  * @param collision1_pt0: Prior collision point 0.
@@ -2302,7 +2302,7 @@ s32 playerTryMoveFraction(
     f32 always_30;
     coord3d try_next_pos;
     coord3d delta_pos;
-    coord3d circle;
+    coord2d centre;
     coord2d edgeStart;
     coord2d edgeEnd;
     coord2d delta;
@@ -2314,9 +2314,8 @@ s32 playerTryMoveFraction(
     delta_pos.f[0] = next_pos->f[0] - g_CurrentPlayer->bond.collision_position.f[0];
     delta_pos.f[2] = next_pos->f[2] - g_CurrentPlayer->bond.collision_position.f[2];
 
-    circle.f[0] = collision_radius;
-    circle.f[1] = g_CurrentPlayer->bond.collision_position.f[0];
-    circle.f[2] = g_CurrentPlayer->bond.collision_position.f[2];
+    centre.f[0] = g_CurrentPlayer->bond.collision_position.f[0];
+    centre.f[1] = g_CurrentPlayer->bond.collision_position.f[2];
 
     edgeStart.f[0] = collision1_pt0->f[0];
     edgeStart.f[1] = collision1_pt0->f[2];
@@ -2327,7 +2326,7 @@ s32 playerTryMoveFraction(
     delta.f[0] = delta_pos.f[0];
     delta.f[1] = delta_pos.f[2];
 
-    frac = stanRaySegmentFrac(&circle, &edgeStart, &edgeEnd, &delta);
+    frac = geoCircleSweepFrac(collision_radius, &centre, &delta, &edgeStart, &edgeEnd);
 
     try_next_pos.f[0] = g_CurrentPlayer->bond.collision_position.f[0] + (delta_pos.f[0] * frac * 0.25f);
     try_next_pos.f[2] = g_CurrentPlayer->bond.collision_position.f[2] + (delta_pos.f[2] * frac * 0.25f);
@@ -2519,11 +2518,6 @@ s32 playerTryMoveRoundCorner(coord3d *prior_next_pos, coord3d *collision_pt0, co
 }
 
 
-struct dummy_struct {
-    s32 unk00;
-    s32 unk04;
-};
-
 /**
  * Sets Bond bondprevpos, attempts to move by `offset`.
  *
@@ -2682,36 +2676,30 @@ void playerMoveWithCollision(coord3d *offset, s32 allow_scoot)
 
         for (tile_count=0; tile_count<5; tile_count++)
         {
-            /// TODO: fix the horrible casts below.
-
-            for (i=0, numcandidates = 0; i<((stan->tail.half >> 0xC) & 0xF); i++)
+            /* Step to a random neighbouring tile */
+            for (i = 0, numcandidates = 0; i < stan->numPoints; i++)
             {
-                // maybe: if (( stan->points[i+1].link >> 4) != 0)
-                if (( ((struct StandTilePoint*)stan) [i+1].link >> 4) != 0)
+                if (stanLinkedTile(stan, i) != NULL)
                 {
                     numcandidates++;
                 }
             }
 
-            pick = randomGetNext() % (u32)numcandidates;
+            pick = randomGetNext() % (u32) numcandidates;
 
-            for (i=0, numcandidates = 0; i<(((s16) stan->tail.half >> 0xC) & 0xF); i++)
+            for (i = 0, numcandidates = 0; i < stan->numPoints; i++)
             {
-                // maybe: if (( stan->points[i+1].link >> 4) != 0)
-                if (( ((struct StandTilePoint*)stan) [i+1].link >> 4) != 0)
+                if (stanLinkedTile(stan, i) != NULL)
                 {
                     if (numcandidates == pick)
                     {
-                        // note: no `>> 4`
-                        // maybe: stan = &(g_StanTiles)[stan->points[i+1].link];
-                        stan = (struct StandTile*)&((struct dummy_struct*)g_StanTiles)[( ((struct StandTilePoint*)stan)[i+1].link)];
+                        stan = stanLinkedTile(stan, i);
                         break;
                     }
 
                     numcandidates++;
                 }
             }
-
 
             if (stanIsNearlyInsideTri(
                 stan,
@@ -4273,13 +4261,13 @@ f32 playerGetFloorY(StandTile *tile, f32 x, f32 z)
         ObjectRecord * obj = ((PropRecord *)g_PlayerTankProp)->obj;
         PropRecord *p = obj->prop;
 
-        ret = stanGetPositionYValue(p->stan, p->pos.x, p->pos.z);
+        ret = stanGetFloorY(p->stan, p->pos.x, p->pos.z);
 
         ret += g_PlayerTankYOffset;
     }
     else
     {
-        ret = stanGetPositionYValue(tile, x, z);
+        ret = stanGetFloorY(tile, x, z);
     }
 
     return ret;
@@ -4349,7 +4337,7 @@ void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
                 g_CurrentPlayer->bond.collision_position.f[2]);
 
             // Another error checking block, it seems this condition is almost never triggered in the game.
-            if (stanTestLocusEdgeAboveY(
+            if (stanTestCircleMaxHeight(
                 &stan,
                 g_CurrentPlayer->bond.collision_position.f[0],
                 g_CurrentPlayer->bond.collision_position.f[2],
@@ -4461,7 +4449,6 @@ void playerUpdatePosFromCollision(void)
     f32 height;
     s32 i;
     StandTile *tile;
-    s32 oldlinelog;
 
     g_CurrentPlayer->eyeheight = (g_CurrentPlayer->headpos.f[1] * g_playerPerm->player_perspective_height) + 7.0f;
 
@@ -4502,17 +4489,14 @@ void playerUpdatePosFromCollision(void)
     }
 
     tile = g_CurrentPlayer->bond.current_tile_ptr;
-    oldlinelog = g_StanLineLog;
-    g_StanLineLog = 0;
 
-    stanWalkLineNoCallback(
+    stanWalkLine(
         &tile,
         g_CurrentPlayer->bond.collision_position.f[0],
         g_CurrentPlayer->bond.collision_position.f[2],
         g_CurrentPlayer->bond.pos.f[0],
         g_CurrentPlayer->bond.pos.f[2]);
 
-    g_StanLineLog = oldlinelog;
 
     g_CurrentPlayer->bond.current_tile_ptr_for_portals = tile;
 
@@ -6980,8 +6964,8 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         f32 nd; // canonical name
         f32 animScale;
         f32 moveRatio;
-        struct StandTileLocusCallbackRecord curLocus;
-        struct move_bond_collision bondCollision;
+        StanSpecialTiles curLocus;
+        LadderQuad bondCollision;
         f32 shorten; // canonical name
         f32 headpos_x;
         f32 headpos_z;
@@ -7143,7 +7127,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             &curLocus);
 
         /* almost never true */
-        if (stanLocusIsLadder(&curLocus) != 0)
+        if (curLocus.ladder)
         {
             use_stanHeight = 1;
         }
@@ -7156,7 +7140,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             &curLocus);
 
         /* almost never true */
-        if (stanLocusIsLadder(&curLocus) != 0)
+        if (curLocus.ladder)
         {
             use_stanHeight = 1;
         }
@@ -7169,7 +7153,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             &curLocus);
 
         /* almost always true */
-        if (stanLocusIsLadder(&curLocus) == 0)
+        if (!curLocus.ladder)
         {
             stanCircleGetSpecial(
                 &tile,
@@ -7180,10 +7164,10 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         }
 
         /* almost never true */
-        if (stanLocusIsLadder(&curLocus))
+        if (curLocus.ladder)
         {
             use_stanHeight = 1;
-            stanGetMoveBondCollisionTiles(&ladderTile1, &ladderTile2, &bondCollision);
+            stanGetLadderQuad(&ladderTile1, &ladderTile2, &bondCollision);
 
             if (g_CurrentPlayer->stanHeight <= bondCollision.high0.f[1])
             {
@@ -7373,14 +7357,14 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         tankObj->prop->stan = g_CurrentPlayer->bond.current_tile_ptr;
 
-        stanWalkLineNoCallback(
+        stanWalkLine(
             &tankObj->prop->stan,
             g_CurrentPlayer->bond.collision_position.f[0],
             g_CurrentPlayer->bond.collision_position.f[2],
             tankPos.f[0],
             tankPos.f[2]);
 
-        tankRec->stan_y = stanGetPositionYValue(tankObj->prop->stan, tankPos.f[0], tankPos.f[2]);
+        tankRec->stan_y = stanGetFloorY(tankObj->prop->stan, tankPos.f[0], tankPos.f[2]);
 
         for (step=0; step<g_ClockTimer; step++)
         {

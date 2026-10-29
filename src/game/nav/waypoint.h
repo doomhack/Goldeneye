@@ -3,8 +3,8 @@
 #include <ultra64.h>
 #include "bondtypes.h"
 
-void waygroupFindLinkPoints(waygroup *groupa, waygroup *groupb, waypoint **pointa, waypoint **pointb);
-
+s32 waypointFindRoute(waypoint *frompoint, waypoint *topoint, waypoint **route, s32 maxLen);
+waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb);
 void waypointsValidate(void);
 
 #endif

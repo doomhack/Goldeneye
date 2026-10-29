@@ -18,4 +18,7 @@ typedef double f64;
 
 typedef struct OSThread OSThread;
 
+#define TRUE 1
+#define FALSE 0
+
 #endif
