@@ -19,7 +19,7 @@
 #include "game/chr/chr.h"
 #include "game/chr/body.h"
 #include "game/model/chrobjdata.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "game/model/anim.h"
 #include "math.h"
 #include "game/math/round.h"
@@ -410,6 +410,31 @@ s32 titleIsRareIntroDone(void) {
 }
 
 
+/**
+ * The title backdrop is run-length coded: a 10-byte header starting with its width and
+ * height (16 bits each), then (count, value) byte pairs. A count of 0 writes one byte too.
+ */
+static void titleUnpackBackdrop(const u8 *src, u8 *dst)
+{
+    s32 remaining = ((const u16 *)src)[0] * ((const u16 *)src)[1];
+    const u8 *in = &src[10];
+
+    do
+    {
+        s32 count = in[0];
+        u8 value = in[1];
+
+        in += 2;
+        remaining -= count;
+
+        do
+        {
+            *dst++ = value;
+        } while (--count > 0);
+    } while (remaining > 0);
+}
+
+
 extern void *g_TitleBackdropRle NO_SDATA;
 extern void *g_TitleBackdropRleEnd NO_SDATA;
 void titleLoadBackdrop(u8 **addr, s32 *size) {
@@ -418,7 +443,7 @@ void titleLoadBackdrop(u8 **addr, s32 *size) {
     *addr += 0x40400;
     g_TitleBackdropPacked = *addr;
     romCopy(g_TitleBackdropPacked, &g_TitleBackdropRle, ALIGN64_V2(((u32)&g_TitleBackdropRleEnd - (u32)&g_TitleBackdropRle)));
-    rleExpand8Bit(g_TitleBackdropPacked, g_TitleBackdrop);
+    titleUnpackBackdrop(g_TitleBackdropPacked, g_TitleBackdrop);
 }
 
 

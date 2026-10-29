@@ -2,7 +2,7 @@
 #define _UNK_0CC4C0_H_
 #include <ultra64.h>
 
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 
 struct image_sound
 {
@@ -53,9 +53,7 @@ extern struct image_sound *g_HitTypeSounds[];
 
 void texCopyGdls(Gfx *src, Gfx *dst, s32 len);
 void texGetDepthAndSize(struct tex *tex, s32 *deptharg, s32 *lenarg);
-s32 texGetHeightAtLod(struct tex *tex, s32 lod);
 s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, void *texpool);
 
-s32 texGetWidthAtLod(struct tex *tex, s32 lod);
 
 #endif

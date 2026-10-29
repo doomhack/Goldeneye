@@ -8,7 +8,7 @@
 #include <ultra64.h>
 #include <R4300.h>
 #include "game/gfx/tex.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "bondtypes.h"
 #include "game/gfx/texselect.h"
 #include "gbi_extension.h"
@@ -356,8 +356,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s3
 		s32 lrs = 0;
         s32 dxt = 0;
 		s32 line = 0;
-            
-        u16* imgheader;
+
 
         tex = NULL;
         
@@ -369,8 +368,7 @@ void texSelect(Gfx **gdlptr, struct sImageTableEntry *tconfig, u32 blendMode, s3
             texLoad(&tconfig->index, NULL);
         }
 
-        imgheader = (u16 *)PHYS_TO_K0(tconfig->index);
-        tex = texFindInPool((imgheader)[-4], NULL);
+        tex = texFindByData((u8 *)PHYS_TO_K0(tconfig->index), NULL);
 
         if (tconfig->level == 0)
         {

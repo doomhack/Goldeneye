@@ -64,7 +64,8 @@
       build/OUTCODE/src/game/menu/mpmenu.o (.data);
       build/OUTCODE/src/game/hud/radar.o (.data);
       build/OUTCODE/src/game/menu/mp_weapon.o (.data);
-      build/OUTCODE/src/game/gfx/image.o (.data);
+      build/OUTCODE/src/game/gfx/texdecode.o (.data);
+      build/OUTCODE/src/game/gfx/texload.o (.data);
       build/OUTCODE/src/game/gfx/imagebank.o (.data);
       build/OUTCODE/src/game/gfx/tex.o (.data);
       build/OUTCODE/src/game/asset/rzip.o (.data);

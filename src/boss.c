@@ -25,7 +25,7 @@
 #include "rmon.h" /*<PR/rmon.h>*/
 #include "sched.h"
 #include "fr.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "dbgscreen.h"
 #include "vi.h"
 #include "exppak_msg.h"

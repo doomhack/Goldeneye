@@ -65,7 +65,8 @@
       build/OUTCODE/src/game/menu/mpmenu.o (.bss);
       build/OUTCODE/src/game/hud/radar.o (.bss);
       build/OUTCODE/src/game/menu/mp_weapon.o (.bss);
-      build/OUTCODE/src/game/gfx/image.o (.bss);
+      build/OUTCODE/src/game/gfx/texdecode.o (.bss);
+      build/OUTCODE/src/game/gfx/texload.o (.bss);
       build/OUTCODE/src/game/gfx/imagebank.o (.bss);
       build/OUTCODE/src/game/gfx/tex.o (.bss);
       build/OUTCODE/src/game/asset/rzip.o (.bss);

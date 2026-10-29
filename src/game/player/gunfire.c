@@ -40,7 +40,7 @@
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "game/gfx/tex.h"
 #include "fr.h"
 #include "assets/obseg/text/LgunE.h"

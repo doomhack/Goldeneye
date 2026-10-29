@@ -9,7 +9,7 @@ typedef struct LevelMemBudget
     LEVELID level;
     u16 gfxKB;      /* each display list buffer (dyn.c), per view */
     u16 vtxKB;      /* each vertex buffer (dyn.c), per view */
-    u16 textureKB;  /* the shared texture pool (image.c) */
+    u16 textureKB;  /* the shared texture pool (texload.c) */
     u16 roomHeapKB; /* mema's heap, for room geometry */
 } LevelMemBudget;
 

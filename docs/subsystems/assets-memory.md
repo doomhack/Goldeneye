@@ -38,7 +38,7 @@ again.)
 ## Memory budgets
 
 Each level has a `LevelMemBudget` in boss.c's `m_bossMemBudgets` table: the sizes, in KB,
-of its display list and vertex buffers (dyn.c), its shared texture pool (image.c) and
+of its display list and vertex buffers (dyn.c), its shared texture pool (texload.c) and
 mema's room heap. Two-player and co-op games use the level's `_MP` entry when it has one,
 and levels that aren't listed use `LEVELID_DEFAULT`'s. boss.c looks the budget up as each
 level loads and leaves it in `g_LevelMemBudget`. Co-op doubles the gfx and vertex buffers
@@ -116,7 +116,7 @@ if the data is corrupt or doesn't fit in `dstSize` bytes. It writes straight int
 output buffer (deflate's 32 KB "window" is just the output so far). Huffman codes up to 9
 bits long are decoded with one table lookup, longer ones with the canonical code ranges.
 It needs no scratch memory from the caller. Callers turn a 0 into a fatal error: the asset
-loader, room geometry (`bgDecompress`), compressed textures (image.c) and music (music.c).
+loader, room geometry (`bgDecompress`), compressed textures (texload.c) and music (music.c).
 
 The source is built twice. The boot code links its own copy (`rzipboot.o`, built with
 `RZIP_BOOT`, which names the function `bootInflate`) into the boot segment, because it has

@@ -13,7 +13,7 @@
 #include "gbi_extension.h"
 #include "game/world/lightfixture.h"
 #include "game/level/lv.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "game/gfx/tex.h"
 #include "game/world/water.h"
 
@@ -174,70 +174,6 @@ s32 texTrySetTileSize(s32 tile, s32 uls, s32 ult, s32 lrs, s32 lrt)
         g_TexTileSizes[tile].lrt = lrt;
     }
     return retval;
-}
-
-
-s32 texGetWidthAtLod(struct tex *tex, s32 lod)
-{
-    s32 i;
-    s32 width = tex->width;
-
-    if (lod == 0)
-    {
-        return width;
-    }
-
-    if (tex->hasExplicitLods)
-    {
-        for (i = 0; i < g_TexCacheCount; i++)
-        {
-            if (tex->texturenum == g_TexCacheItems[i].texturenum)
-            {
-                return g_TexCacheItems[i].widths[lod - 1];
-            }
-        }
-
-        return 1;
-    }
-
-    for (i = 0; i < lod; i++)
-    {
-        width = (width + 1) >> 1;
-    }
-
-    return width;
-}
-
-
-s32 texGetHeightAtLod(struct tex *tex, s32 lod)
-{
-    s32 i;
-    s32 height = tex->height;
-
-    if (lod == 0)
-    {
-        return height;
-    }
-
-    if (tex->hasExplicitLods)
-    {
-        for (i = 0; i < g_TexCacheCount; i++)
-        {
-            if (tex->texturenum == g_TexCacheItems[i].texturenum)
-            {
-                return g_TexCacheItems[i].heights[lod - 1];
-            }
-        }
-
-        return 1;
-    }
-
-    for (i = 0; i < lod; i++)
-    {
-        height = (height + 1) >> 1;
-    }
-
-    return height;
 }
 
 
