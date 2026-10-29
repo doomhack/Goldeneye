@@ -7,7 +7,9 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | --- | --- |
 | `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects at run time: the per-frame tick, drawing, damage, pickups, weapon and hat slots |
+| `src/game/prop/propobj.c` | Objects at run time: the per-frame tick, drawing, pickups, weapon and hat slots |
+| `src/game/prop/objdamage.c` | Damage to objects: destroying, exploding, bending the model, what being destroyed does |
+| `src/game/prop/objhit.c` | Rays against object models (`modelFindTriangleHit`), the player's shots hitting objects |
 | `src/game/prop/projectile.c` | Objects in flight: the projectile pools, moving with collision, bouncing, settling, sticking |
 | `src/game/prop/door.c` | Doors: moving, collision, portals, sounds, and the player using them |
 | `src/game/prop/monitor.c` | Monitor screens: running their scripts and drawing them |
@@ -116,15 +118,19 @@ player is touching a prop and can pick it up.
 
 ## Damage
 
-`objTestShot` tests a shot against a prop's model. `objApplyDamage` adds the damage to the
-total taken, and when that reaches the object's health, `objExplode` destroys it
-(`PROPSTATE_DESTROYED`) and makes an explosion. After that, the total counts shots
+An object has `health` (from its setup) and `damageTaken`. `objApplyDamage`
+(`objdamage.c`) adds 250 times the weapon's damage; when that passes the health,
+`objExplode` destroys it (`PROPSTATE_DESTROYED`), makes an explosion and knocks off what
+stands on it (`objDestroySupportedObjects`). After that, `damageTaken` counts shots
 instead, and every four shots move it to the next destroyed level, up to 3
-(`objGetDestroyedLevel`). Each
-level is drawn more broken: `objDeform` bends the model's vertices in a copy taken from the
-vertex store (see [rendering](rendering.md)), and the model is drawn darker. Destroying an
-object can destroy what stands on it (`objDestroySupportedObjects`) and set off its
-children (`objDetonateRecursive`).
+(`objGetDestroyedLevel`); after 12 it is wrecked (`RUNTIMEBITFLAG_WRECKED`) and shots go
+through it. Each level is drawn more broken: `objDeform` bends and blackens the model's
+vertices in a copy taken from the vertex store (see [rendering](rendering.md)), with
+random numbers seeded per vertex so an object breaks the same way each time. Destroying an
+object can set off its children (`objDetonateRecursive`).
+
+The player's shots are tested against objects by `objTestShot` and applied by `objHit`
+(`objhit.c`), which also knocks light objects into the air.
 
 Glass breaks with `glassShatter`, which hides the pane and fills its area with shards.
 

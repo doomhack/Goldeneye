@@ -18,6 +18,8 @@
       build/OUTCODE/src/game/prop/monitorscripts.o (.rodata);
       build/OUTCODE/src/game/prop/door.o (.rodata);
       build/OUTCODE/src/game/prop/projectile.o (.rodata);
+      build/OUTCODE/src/game/prop/objdamage.o (.rodata);
+      build/OUTCODE/src/game/prop/objhit.o (.rodata);
       build/OUTCODE/src/game/math/physics.o (.rodata);
       build/OUTCODE/src/game/math/matrix.o (.rodata);
       build/OUTCODE/src/game/math/trig.o (.rodata);

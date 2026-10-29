@@ -6197,7 +6197,7 @@ void chrFireHand(ChrRecord *self, s32 hand)
                                 }
                                 else if ((g_StanHit.prop->type == PROP_TYPE_OBJ) || (g_StanHit.prop->type == PROP_TYPE_WEAPON))
                                 {
-                                    chrobjMaybeDetonateObjectIfFlags(
+                                    objApplyShotDamage(
                                         g_StanHit.prop->obj,
                                         weaponGetDamage(weapon->weaponnum),
                                         &hitpos,

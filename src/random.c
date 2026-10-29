@@ -6,7 +6,7 @@
  *
  * There are two independent streams. g_randomSeed is the general one, used for everything
  * from guard reactions to bullet spread. g_chrObjRandomSeed is only used to dent objects
- * when they are shot (objDeform in propobj.c), which seeds it from each vertex so the same
+ * when they are shot (objDeform in objdamage.c), which seeds it from each vertex so the same
  * object always dents the same way. Demo playback (ramromreplay.c) saves and restores both.
  */
 

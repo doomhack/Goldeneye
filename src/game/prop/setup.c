@@ -172,7 +172,7 @@ void setupObject(ObjectRecord *obj)
 
     extrascale = obj->extrascale * 0.00390625f;
 
-    obj->damage = *(s32*)&obj->damage / 65536.0f;
+    obj->health = *(s32*)&obj->health / 65536.0f;
 
     if (isMpGame())
     {
@@ -762,7 +762,7 @@ void setupSingleMonitor(MonitorObjRecord *monitor, s32 cmdindex)
         modelLoad(modelnum);
 
         scale = monitor->extrascale * (1.0f / 256.0f);
-        monitor->damage = *(s32*)&monitor->damage / M_U16_MAX_VALUE_F;
+        monitor->health = *(s32*)&monitor->health / M_U16_MAX_VALUE_F;
 
         if (isMpGame())
         {

@@ -18,6 +18,8 @@
       build/OUTCODE/src/game/prop/monitorscripts.o (.text);
       build/OUTCODE/src/game/prop/door.o (.text);
       build/OUTCODE/src/game/prop/projectile.o (.text);
+      build/OUTCODE/src/game/prop/objdamage.o (.text);
+      build/OUTCODE/src/game/prop/objhit.o (.text);
       build/OUTCODE/src/game/math/physics.o (.text);
       build/OUTCODE/src/game/math/matrix.o (.text);
       build/OUTCODE/src/game/math/trig.o (.text);

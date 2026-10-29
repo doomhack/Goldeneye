@@ -514,7 +514,7 @@ void propExecuteTickOperation(PropRecord *prop, TICKOP op)
                 propobj->runtime_bitflags |= RUNTIMEBITFLAG_00000800;
                 propobj->runtime_bitflags &= ~RUNTIMEBITFLAG_REMOVE;
                 propobj->state &= ~0x80;
-                propobj->maxdamage = 0.0f;
+                propobj->damageTaken = 0.0f;
                 propRemoveFromRooms(prop);
                 propDisable(prop);
                 return;
@@ -731,16 +731,16 @@ void propsTickOnce(void)
                     prop->timetoregen = 0;
                     if (obj->state & PROPSTATE_10)
                     {
-                        obj->runtime_bitflags |= RUNTIMEBITFLAG_00001000;
+                        obj->runtime_bitflags |= RUNTIMEBITFLAG_WRECKED;
                     }
                     else
                     {
-                        obj->runtime_bitflags &= ~RUNTIMEBITFLAG_00001000;
+                        obj->runtime_bitflags &= ~RUNTIMEBITFLAG_WRECKED;
                     }
                 }
                 else if ((prop->timetoregen < CHROBJ_TIMETOREGEN) && (!is_under_60))
                 {
-                    if ((obj->maxdamage == 0.0f) && (!(obj->state & PROPSTATE_DESTROYED)))
+                    if ((obj->damageTaken == 0.0f) && (!(obj->state & PROPSTATE_DESTROYED)))
                     {
                         if (obj->flags & PROPFLAG_INSIDEANOTHEROBJ)
                         {
@@ -777,7 +777,7 @@ void propsTickOnce(void)
                             obj->flags &= ~PROPFLAG_00000100;
                         }
 
-                        obj->maxdamage = 0.0f;
+                        obj->damageTaken = 0.0f;
                         obj->state &= ~PROPSTATE_DESTROYED;
                         modelResetDeformedVertices(obj->model);
                     }

@@ -2570,7 +2570,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         if (!objGetDestroyedLevel(obj))
                         {
-                            f32 damage = ((obj->damage - obj->maxdamage) + 1) / 250.0f;
+                            f32 damage = ((obj->health - obj->damageTaken) + 1) / 250.0f;
                             /*
                             osSyncPrintf("ai_destroyobj 2 : (def->obj == PROP_ELVIS_SAUCER)\n");
                             osSyncPrintf("Elvis BOOM\n");

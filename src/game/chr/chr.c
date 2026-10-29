@@ -3163,7 +3163,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
 
         while ((hitpart == HIT_GUN) || (hitpart == HIT_HAT))
         {
-            if (propobjFindHit(hitmodel, hitnode, &shotdata->viewOrigin, &shotdata->viewDir, &hitthing, &mtxindex, &dlnode))
+            if (modelFindTriangleHit(hitmodel, hitnode, &shotdata->viewOrigin, &shotdata->viewDir, &hitthing, &mtxindex, &dlnode))
             {
                 break;
             }

@@ -333,7 +333,7 @@ static bool projectileTestModel(ObjectRecord *obj, coord3d *screenStart, coord3d
         found = modelTestRayIntersectsTransformedBBox(&((DoorRecord *) obj)->bbox, &model->render_pos[0].pos, screenStart, screenDir);
         node = model->obj->RootNode;
 
-        if (found > 0 && !propobjFindHit(model, node, screenStart, screenDir, &hitthing, &mtxindex, &hitnode))
+        if (found > 0 && !modelFindTriangleHit(model, node, screenStart, screenDir, &hitthing, &mtxindex, &hitnode))
         {
             found = 0;
         }
@@ -343,7 +343,7 @@ static bool projectileTestModel(ObjectRecord *obj, coord3d *screenStart, coord3d
         do
         {
             found = modelFindRayHitNext(model, screenStart, screenDir, &node);
-        } while (found > 0 && !propobjFindHit(model, node, screenStart, screenDir, &hitthing, &mtxindex, &hitnode));
+        } while (found > 0 && !modelFindTriangleHit(model, node, screenStart, screenDir, &hitthing, &mtxindex, &hitnode));
     }
 
     if (found <= 0)
