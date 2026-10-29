@@ -128,7 +128,6 @@ extern const u32 monScriptGreySolid[];
 extern const u32 monScriptRedSolid[];
 extern const u32 monScriptGreenSolid[];
 extern const u32 monScriptBlackSolid[];
-extern const u32 monScriptRocketSight[];
 extern const u32 monScriptTaser[];
 
 const u32 monScriptBond[] = {
@@ -773,14 +772,6 @@ const u32 monScriptBlackSolid[] = {
     MON_SET_IMAGE(IMGBOND),
     MON_FADE_TO(COLOR_BLACK, 0),
     MON_STOP()
-};
-
-const u32 monScriptRocketSight[] = {
-    MON_SCALE(0x400, 0),
-    MON_WAIT(1),
-    MON_SCALE(0x1000, 20),
-    MON_WAIT(20),
-    MON_RESTART()
 };
 
 const u32 monScriptTaser[] = {

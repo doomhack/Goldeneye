@@ -21,6 +21,9 @@
       build/OUTCODE/src/game/prop/objdamage.o (.text);
       build/OUTCODE/src/game/prop/objhit.o (.text);
       build/OUTCODE/src/game/prop/pickup.o (.text);
+      build/OUTCODE/src/game/prop/objslots.o (.text);
+      build/OUTCODE/src/game/prop/carried.o (.text);
+      build/OUTCODE/src/game/prop/mine.o (.text);
       build/OUTCODE/src/game/math/physics.o (.text);
       build/OUTCODE/src/game/math/matrix.o (.text);
       build/OUTCODE/src/game/math/trig.o (.text);

@@ -21,6 +21,9 @@
       build/OUTCODE/src/game/prop/objdamage.o (.rodata);
       build/OUTCODE/src/game/prop/objhit.o (.rodata);
       build/OUTCODE/src/game/prop/pickup.o (.rodata);
+      build/OUTCODE/src/game/prop/objslots.o (.rodata);
+      build/OUTCODE/src/game/prop/carried.o (.rodata);
+      build/OUTCODE/src/game/prop/mine.o (.rodata);
       build/OUTCODE/src/game/math/physics.o (.rodata);
       build/OUTCODE/src/game/math/matrix.o (.rodata);
       build/OUTCODE/src/game/math/trig.o (.rodata);

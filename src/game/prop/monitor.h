@@ -33,7 +33,6 @@ enum MonitorCmd
 #define MONITOR_NUM_SCRIPTS 52
 #define MONITOR_SCRIPT_BLACK 51 /* for broken screens */
 
-extern MonitorRecord g_GunScreenRocket;
 extern MonitorRecord g_GunScreenTaser;
 
 void monitorsReset(void);

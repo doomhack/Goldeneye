@@ -607,11 +607,11 @@ void chrActorThrowWeaponSurrender(ChrRecord *self)
 
             if (left != 0)
             {
-                propobjSetDropped(left, 2);
+                objSetDropType(left, 2);
             }
             if (right != 0)
             {
-                propobjSetDropped(right, 2);
+                objSetDropType(right, 2);
             }
 
             self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
@@ -2014,13 +2014,13 @@ void chrReactToHit(ChrRecord *self, coord3d *dir, f32 angle, s32 req_animation_i
         {
             if ((self->weapons_held[GUNRIGHT] != NULL) && ((self->weapons_held[GUNRIGHT]->obj->flags & PROPFLAG_AIUNDROPPABLE) == FALSE))
             {
-                propobjSetDropped(self->weapons_held[GUNRIGHT], 1);
+                objSetDropType(self->weapons_held[GUNRIGHT], 1);
                 self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
             }
 
             if ((self->weapons_held[GUNLEFT] != NULL) && ((self->weapons_held[GUNLEFT]->obj->flags & PROPFLAG_AIUNDROPPABLE) == FALSE))
             {
-                propobjSetDropped(self->weapons_held[GUNLEFT], 1);
+                objSetDropType(self->weapons_held[GUNLEFT], 1);
                 self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
             }
         }
@@ -2213,7 +2213,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
         }
         else if (hattype != HATTYPE_HELMATE) //normal hats - knock off
         {
-            propobjSetDropped(self->handle_positiondata_hat, 4); //propobjSetDropped
+            objSetDropType(self->handle_positiondata_hat, 4); //objSetDropType
             self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;           //drop hat
         }
         else //steel helmate - ricochet
@@ -2556,13 +2556,13 @@ s32 chrExplosionDamage(ChrRecord *self, coord3d *pos, f32 damage, s32 playsound)
 
         if ((self->weapons_held[GUNRIGHT] != NULL) && ((self->weapons_held[GUNRIGHT]->obj->flags & 0x2000) == 0))
         {
-            propobjSetDropped(self->weapons_held[GUNRIGHT], 1);
+            objSetDropType(self->weapons_held[GUNRIGHT], 1);
             self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
         }
 
         if ((self->weapons_held[GUNLEFT] != NULL) && ((self->weapons_held[GUNLEFT]->obj->flags & 0x2000) == 0))
         {
-            propobjSetDropped(self->weapons_held[GUNLEFT], 1);
+            objSetDropType(self->weapons_held[GUNLEFT], 1);
             self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
         }
 
@@ -6941,7 +6941,7 @@ void chrTickThrowGrenade(ChrRecord *self)
 
     if ((frame >= 119.0f) && (held_prop != NULL))
     {
-        propobjSetDropped(self->weapons_held[gunhand], 3);
+        objSetDropType(self->weapons_held[gunhand], 3);
         self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
     }
 
@@ -10244,7 +10244,7 @@ bool chrDropItem(ChrRecord *self, s32 modelnum, u8 weaponid)
         modelSetScale(NewModel->model, NewModel->model->scale);
         propReparent(NewModel->prop, self->prop);
         NewModel->timer = CHRLV_DEFAULT_TIMER;
-        propobjSetDropped(NewModel->prop, 1);
+        objSetDropType(NewModel->prop, 1);
         self->hidden = self->hidden | CHRHIDDEN_DROP_HELD_ITEMS;
 
         return TRUE;

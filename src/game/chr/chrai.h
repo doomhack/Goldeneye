@@ -31,7 +31,6 @@ struct roomproplistblock
 
 extern struct SetupPtrs g_SetupPtrs;
 
-extern WeaponObjRecord* proxy_mine_table[30];
 extern f32 difficulty ;
 extern stagesetup g_CurrentSetup;
 

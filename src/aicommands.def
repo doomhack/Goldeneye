@@ -4880,7 +4880,7 @@ _AI_CMD(
         if (obj && obj->prop && obj->prop->parent && obj->prop->parent->type == PROP_TYPE_CHR)
         {
             ChrRecord *chr = obj->prop->parent->chr;
-            propobjSetDropped(obj->prop, 2);
+            objSetDropType(obj->prop, 2);
             chr->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
@@ -4971,12 +4971,12 @@ _AI_CMD(
         {
             if (chr->weapons_held[GUNRIGHT])
             {
-                propobjSetDropped(chr->weapons_held[GUNRIGHT], 1);
+                objSetDropType(chr->weapons_held[GUNRIGHT], 1);
                 chr->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
             }
             if (chr->weapons_held[GUNLEFT])
             {
-                propobjSetDropped(chr->weapons_held[GUNLEFT], 1);
+                objSetDropType(chr->weapons_held[GUNLEFT], 1);
                 chr->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
             }
         }
@@ -9190,7 +9190,7 @@ _AI_CMD(
                 }
                 if (srcweaponL && srcweaponR && cloneweaponL && cloneweaponR && srcweaponR == srcweaponL->dualweapon && srcweaponL == srcweaponR->dualweapon)
                 {
-                    propweaponSetDual(cloneweaponL, cloneweaponR);
+                    weaponSetDual(cloneweaponL, cloneweaponR);
                 }
                 {
                     hatprop = chr->handle_positiondata_hat;
