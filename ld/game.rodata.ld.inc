@@ -28,6 +28,7 @@
       build/OUTCODE/src/game/prop/cctv.o (.rodata);
       build/OUTCODE/src/game/prop/autogun.o (.rodata);
       build/OUTCODE/src/game/prop/vehicle.o (.rodata);
+      build/OUTCODE/src/game/prop/objrender.o (.rodata);
       build/OUTCODE/src/game/math/physics.o (.rodata);
       build/OUTCODE/src/game/math/matrix.o (.rodata);
       build/OUTCODE/src/game/math/trig.o (.rodata);

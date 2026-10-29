@@ -44,19 +44,9 @@ void                 objFree(ObjectRecord *obj, s32 freeprop, s32 canregen);
 PropRecord          *objInit(ObjectRecord *obj, ModelFileHeader *modeldef, PropRecord *prop, Model *model);
 void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop);
 
-Gfx                 *weaponRenderTracers(Gfx *gdl);
-void                 objGetTileShading(PropRecord *prop, rgba_u8 *colour);
-void                 objGetShadeColour(PropRecord *prop, rgba_u8 *colour);
 void                 chrobjCollisionRelated(ObjectRecord *);
 void                 objChangeShading(ObjectRecord *, coord3d *, Mtxf *, StandTile *);
 void                 objGetCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom);
-Gfx                 *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass);
-
-f32                  chrobjFogVisRangeRelated(PropRecord *prop, f32 size);
-s32                  propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox);
-
-// note: rgba to rgb
-void                 shadingLerp(rgba_s32 *dest, s32 enable, rgba_f32 *src);
 
 void                 objPlaceAtPad(ObjectRecord *baseobj, coord3d *pad, Mtxf *matrix, StandTile *stan, coord3d *pos2);
 void                 objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan2, coord3d *pos2);
@@ -72,12 +62,7 @@ void                 modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *
 s32                  vehicleFindBlockingProp(struct PropRecord *argProp);
 void                 objsFreeDeformedVertices(void);
 f32                  bondviewGetPlayerPitchRadians(void);
-bool                 posIsOnScreen(PropRecord *prop, coord3d *pos, f32 radius, bool checkFogEnd);
-void                 objUpdateShading(rgba_u8 *dest, rgba_u8 *src);
 void                 modelResetDeformedVertices(Model* model);
-
-bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, coord2d *max, coord2d *min);
-
 
 #include "game/prop/objdamage.h"
 #include "game/prop/objhit.h"
@@ -89,5 +74,6 @@ bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, coord2d *m
 #include "game/prop/cctv.h"
 #include "game/prop/autogun.h"
 #include "game/prop/vehicle.h"
+#include "game/prop/objrender.h"
 
 #endif

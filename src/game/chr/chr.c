@@ -2636,7 +2636,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
     if (!(chr->chrflags & CHRFLAG_04000000))
     {
-        f32 f = chrobjFogVisRangeRelated(prop, modelGetRadius(chrmodel)); //0-1
+        f32 f = propGetFogFade(prop, modelGetRadius(chrmodel)); //0-1
         chrfadealpha = (s32) (f * (f32) chrfadealpha);
     }
 

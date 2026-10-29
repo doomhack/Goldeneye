@@ -7,7 +7,8 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | --- | --- |
 | `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects at run time: creating, placing, freeing, shading and drawing them |
+| `src/game/prop/propobj.c` | Objects at run time: creating, placing and freeing them |
+| `src/game/prop/objrender.c` | Drawing objects and doors, whether things are in view, and object shading |
 | `src/game/prop/objtick.c` | The per-frame tick of objects and doors |
 | `src/game/prop/cctv.c` | Security cameras |
 | `src/game/prop/autogun.c` | Autoguns (drone guns) |
@@ -140,6 +141,27 @@ as its target.
 
 `objTickPlayer` and `weaponTickPlayer` (`pickup.c`), called from `propsTickPickups`, check
 whether a player is touching a prop and can pick it up.
+
+## Drawing objects
+
+`propRender` calls `objRenderProp` (`objrender.c`) for each object, weapon or door, once
+for the opaque pass and once for the translucent pass. The object fades out in near fog
+(`propGetFogFade`) and while it is about to respawn; a faded object, or one flagged to
+always draw in front, is drawn whole on the translucent pass. The drawing is scissored to
+the screen area of the rooms the prop is in (`propGetRoomsBbox2d`). Its shade colour
+(from the floor it stands on, `objGetShadeColour`) is darkened for each shot it has taken
+and tinted towards the fog colour (`shadingLerp`).
+
+`objRenderModel` then draws monitor screens (`monitorTickAndDraw`), the model, bullet
+impacts on it, and its children. Doors draw with the cull mode for the side they open to.
+A damaged object whose vertices have been bent draws both sides of each face, shaded
+darker the more damaged it is. After the translucent pass the model's matrices are
+converted to fixed point in place, as the display lists point at them.
+
+`posIsOnScreen` decides whether a prop is in view for the ticks: one of its rooms is
+visible, it is not hidden by fog, it is in the screen area of its rooms, and it is within
+32000 units. `weaponRenderTracers` draws the gun beams of guards, drone guns and the other
+players.
 
 ## Damage
 
