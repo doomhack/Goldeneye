@@ -2,24 +2,19 @@
 #define _RSP_H_
 
 #include <ultra64.h>
-
 #include <sched.h>
-#include <PR/gbi.h>
-#include <PR/os.h>
-#include <PR/sptask.h>
 
-/**
- * This is cast to type OSMesg for a call to osSendMesg.
- * Name based on struct GFXInfo from \n64devkit\ultra\usr\src\pr\demos_old\simple\gfx.h.
- */ 
-struct GfxInfo_s {
+/** A frame's graphics task, and the framebuffer it will draw into */
+struct RspGfxTask
+{
     OSScTask task;
-    void *cfb;
-    u32 unk5C;
+    void *framebuffer; /* set before rspGfxTaskStart (fr.c) */
 };
-void rspAllocateBuffers(void);
-void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg rspReplyMsg);
 
-extern struct GfxInfo_s *g_gfxTaskSettingsList;
+/** The task the next rspGfxTaskStart sends */
+extern struct RspGfxTask *g_RspNextTask;
+
+void rspAllocateBuffers(void);
+void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg replyMsg);
 
 #endif

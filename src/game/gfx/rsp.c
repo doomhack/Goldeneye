@@ -1,184 +1,31 @@
 /**
  * Starting the RSP graphics task each frame: the microcode, its DRAM stack, the yield
  * buffer and the RDP output buffer.
+ *
+ * There are two tasks, used in turn, so the one being set up isn't the one the scheduler
+ * may still be holding from the last frame.
  */
 
 #include <ultra64.h>
-#include "game/gfx/rsp.h"
 #include <init.h>
 #include <memp.h>
 #include <sched.h>
 #include <PR/sptask.h>
 #include <PR/ucode.h>
+#include "game/gfx/rsp.h"
 
-#define RSP_MEMP_BANK                   6
-#define RSP_MEMP_ALLOC_SIZE_BYTES  0xA000
+#define RDP_OUTPUT_BUFFER_SIZE 0xa000
 
 // The RSP reads and writes these by DMA: keep them on whole data cache lines.
-alignas(16) u8 g_gfxDramStack[SP_DRAM_STACK_SIZE8];
+alignas(16) static u8 s_DramStack[SP_DRAM_STACK_SIZE8];
+alignas(16) static u8 s_YieldBuffer[OS_YIELD_GFX_DATA_SIZE];
 
-alignas(16) u8 g_gfxYieldBuf[OS_YIELD_GFX_DATA_SIZE];
+static u8 *s_RdpOutputBuffer;
 
-u8 *g_gfxRdpOutputBufferEnd = NULL;
+static struct RspGfxTask s_Tasks[2];
+static s32 s_NextTask;
 
-u8 *g_gfxRdpOutputBufferStart = NULL;
-
-struct GfxInfo_s g_gfxTaskSettings[2] = 
-{
-    {
-        // next
-        {NULL,
-        
-        // state
-        0,
-        
-        // flags
-        0, 
-        
-        // framebuffer
-        NULL,
-
-        // list.t.type
-        {{M_GFXTASK,
-        
-        // list.t.flags
-        OS_TASK_DP_WAIT,
-        
-        // list.t.ucode_boot
-        NULL,
-        
-        // list.t.ucode_boot_size
-        0,
-        
-        // list.t.ucode
-        NULL,
-        
-        // list.t.ucode_size
-        SP_UCODE_SIZE,
-        
-        // list.t.ucode_data
-        NULL,
-        
-        // list.t.ucode_data_size
-        SP_UCODE_DATA_SIZE,
-        
-        // list.t.dram_stack
-        (u64 *)&g_gfxDramStack,
-        
-        // list.t.dram_stack_size
-        SP_DRAM_STACK_SIZE8,
-        
-        // list.t.output_buff
-        NULL,
-        
-        // list.t.output_buff_size
-        0,
-        
-        // list.t.data_ptr
-        NULL,
-        
-        // list.t.data_size
-        0,
-        
-        // list.t.yield_data_ptr
-        NULL,
-        
-        // list.t.yield_data_size
-        0}},
-        
-        // msgQ
-        NULL, 
-        
-        // msg
-        NULL},
-        
-        // cfb (pointer)
-        0,
-        
-        // unk5C
-        0
-    },
-
-    {
-        // next
-        {NULL,
-        
-        // state
-        0,
-        
-        // flags
-        0, 
-        
-        // framebuffer
-        NULL,
-
-        // list.t.type
-        {{M_GFXTASK,
-        
-        // list.t.flags
-        OS_TASK_DP_WAIT,
-        
-        // list.t.ucode_boot
-        NULL,
-        
-        // list.t.ucode_boot_size
-        0,
-        
-        // list.t.ucode
-        NULL,
-        
-        // list.t.ucode_size
-        SP_UCODE_SIZE,
-        
-        // list.t.ucode_data
-        NULL,
-        
-        // list.t.ucode_data_size
-        SP_UCODE_DATA_SIZE,
-        
-        // list.t.dram_stack
-        (u64 *)&g_gfxDramStack,
-        
-        // list.t.dram_stack_size
-        SP_DRAM_STACK_SIZE8,
-        
-        // list.t.output_buff
-        NULL,
-        
-        // list.t.output_buff_size
-        0,
-        
-        // list.t.data_ptr
-        NULL,
-        
-        // list.t.data_size
-        0,
-        
-        // list.t.yield_data_ptr
-        NULL,
-        
-        // list.t.yield_data_size
-        0}},
-        
-        // msgQ
-        NULL, 
-        
-        // msg
-        NULL},
-        
-        // cfb (pointer)
-        0,
-        
-        // unk5C
-        0
-    },
-};
-
-/**
- * Initialization needs to point this to an item in the g_gfxTaskSettings array
- * otherwise rspGfxTaskStart will fail.
- */
-struct GfxInfo_s *g_gfxTaskSettingsList = &g_gfxTaskSettings[0];
+struct RspGfxTask *g_RspNextTask = &s_Tasks[0];
 
 extern long long int rspbootTextStart[];
 extern long long int rspbootTextEnd[];
@@ -187,63 +34,46 @@ extern long long int gsp3DDataStart[];
 
 void rspAllocateBuffers(void)
 {
-    g_gfxRdpOutputBufferStart = mempAlloc(RSP_MEMP_ALLOC_SIZE_BYTES, MEMPOOL_PERMANENT);
-    g_gfxRdpOutputBufferEnd = g_gfxRdpOutputBufferStart + RSP_MEMP_ALLOC_SIZE_BYTES;
+    s_RdpOutputBuffer = mempAlloc(RDP_OUTPUT_BUFFER_SIZE, MEMPOOL_PERMANENT);
 }
 
 /**
- * Has similarities to:
- * createGfxTask from n64devkit\ultra\usr\src\pr\demos_old\simple\gfx.c
- * gfxTaskStart from n64devkit\ultra\usr\src\pr\demos_old\nnsample2\graphic.c
+ * Sends the display list from `firstGdl` to `gdl` to the scheduler to draw into the
+ * framebuffer in g_RspNextTask. The scheduler replies with `replyMsg` on gfxFrameMsgQ
+ * when it's done.
  */
-void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg rspReplyMsg)
+void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg replyMsg)
 {
-    OSScTask *sctask;
-    OSTask *task;
+    OSScTask *sctask = &g_RspNextTask->task;
+    OSTask *task = &sctask->list;
 
-    sctask = &((struct GfxInfo_s *)g_gfxTaskSettingsList)->task;
-    task = &sctask->list;
-
-    task->t.ucode_boot = (u64*)rspbootTextStart;
-    
-    // u64 pointers, cast to x32 to avoid (sra _,_,0x3)
-    task->t.ucode_boot_size = ((s32)rspbootTextEnd - (s32)rspbootTextStart);
-
-    
-    // task>type = M_GFXTASK, set in bss constructor
-    // task->flags = OS_TASK_DP_WAIT, set in bss constructor
-    
-    task->t.ucode = (u64*)gsp3DTextStart;
-    task->t.ucode_data = (u64*)gsp3DDataStart;
-    // task->ucode_data_size = SP_UCODE_DATA_SIZE, set in bss constructor
-    // task->dram_stack = &g_gfxDramStack, set in bss constructor
-    // task->dram_stack_size = SP_DRAM_STACK_SIZE8, set in bss constructor
-    task->t.output_buff = (u64 *)g_gfxRdpOutputBufferStart;
-    task->t.output_buff_size = (u64 *)g_gfxRdpOutputBufferEnd;
-    task->t.data_ptr = (u64 *) firstGdl;
-    task->t.data_size = (s32) ((gdl - firstGdl) * sizeof (Gfx)); // u64 pointers, generates sra	t3,t2,0x3
-    task->t.yield_data_ptr = (u64 *)&g_gfxYieldBuf;
-    task->t.yield_data_size = sizeof(g_gfxYieldBuf);
+    task->t.type = M_GFXTASK;
+    task->t.flags = OS_TASK_DP_WAIT;
+    task->t.ucode_boot = (u64 *)rspbootTextStart;
+    task->t.ucode_boot_size = (u8 *)rspbootTextEnd - (u8 *)rspbootTextStart;
+    task->t.ucode = (u64 *)gsp3DTextStart;
+    task->t.ucode_size = SP_UCODE_SIZE;
+    task->t.ucode_data = (u64 *)gsp3DDataStart;
+    task->t.ucode_data_size = SP_UCODE_DATA_SIZE;
+    task->t.dram_stack = (u64 *)s_DramStack;
+    task->t.dram_stack_size = sizeof(s_DramStack);
+    task->t.output_buff = (u64 *)s_RdpOutputBuffer;
+    // The microcode takes the end of the buffer here, not its size
+    task->t.output_buff_size = (u64 *)(s_RdpOutputBuffer + RDP_OUTPUT_BUFFER_SIZE);
+    task->t.data_ptr = (u64 *)firstGdl;
+    task->t.data_size = (gdl - firstGdl) * sizeof(Gfx);
+    task->t.yield_data_ptr = (u64 *)s_YieldBuffer;
+    task->t.yield_data_size = sizeof(s_YieldBuffer);
 
     sctask->next = NULL;
-    sctask->flags = (OS_SC_NEEDS_RSP | OS_SC_NEEDS_RDP | OS_SC_LAST_TASK | OS_SC_SWAPBUFFER);
-
-    /* reply to when finished */
+    sctask->flags = OS_SC_NEEDS_RSP | OS_SC_NEEDS_RDP | OS_SC_LAST_TASK | OS_SC_SWAPBUFFER;
     sctask->msgQ = &gfxFrameMsgQ;
-
-    /* reply with this message */
-    sctask->msg = rspReplyMsg;
-
-    sctask->framebuffer = g_gfxTaskSettingsList->cfb;
+    sctask->msg = replyMsg;
+    sctask->framebuffer = g_RspNextTask->framebuffer;
 
     osWritebackDCacheAll();
-
-    /* start graphic task */
     osSendMesg(sched_cmdQ, (OSMesg)sctask, OS_MESG_BLOCK);
-    
-    // Toggles the g_gfxTaskSettingsList to point to altnerate tasks.
-    // Depends on first assignment taking place (g_gfxTaskSettingsList = g_gfxTaskSettings[0]).
-    // Not a typo, but probably not best practice.
-    g_gfxTaskSettingsList = (struct GfxInfo_s *)((u32)g_gfxTaskSettingsList ^ (u32) &g_gfxTaskSettings[0] ^ (u32) &g_gfxTaskSettings[1]);
-}
 
+    s_NextTask ^= 1;
+    g_RspNextTask = &s_Tasks[s_NextTask];
+}

@@ -13,85 +13,98 @@
 #include "game/player/player.h"
 #include <fr.h>
 
-// bss
-s32 g_ZbufWidth; // 0x8008e8f0
-s32 g_ZbufHeight; // 0x8008e8f4
+static u8 *s_Zbuf;
+static s32 s_ZbufWidth;
+static s32 s_ZbufHeight;
 
-// data
-u8 *g_Zbuf = NULL;
-
-// TRUE when g_Zbuf is the gameplay buffer from zbufAllocate (sized for hi-res).
+// True when s_Zbuf is the gameplay buffer from zbufAllocate (sized for hi-res).
 // Buffers handed in through zbufSetBuffer (front-end menus) keep their own width.
-static s32 g_ZbufIsGameplay = FALSE;
+static bool s_ZbufIsGameplay;
 
-void zbufDeallocate(void) {
-    g_Zbuf = NULL;
+/** Forgets the buffer (the stage pool it was in is being freed) */
+void zbufDeallocate(void)
+{
+    s_Zbuf = NULL;
 }
 
-
-void zbufAllocate(void)
+static void zbufAllocate(void)
 {
     if (resolution != 0)
     {
-        g_ZbufWidth = Z_BUFFER_4_3_WIDTH;
-        g_ZbufHeight = Z_BUFFER_4_3_HEIGHT;
+        s_ZbufWidth = Z_BUFFER_4_3_WIDTH;
+        s_ZbufHeight = Z_BUFFER_4_3_HEIGHT;
     }
     else
     {
         // Sized for hi-res so the option can be toggled mid-level;
         // zbufInit sets the width actually used each frame.
-        g_ZbufWidth = SCREEN_WIDTH * VI_MAX_SCALEX;
+        s_ZbufWidth = SCREEN_WIDTH * VI_MAX_SCALEX;
 
         // Co-op also shows one view full-screen at times (watch, cutscenes).
         if ((getPlayerCount() == 1) || g_CoopMode)
         {
-            g_ZbufHeight = SCREEN_HEIGHT;
+            s_ZbufHeight = SCREEN_HEIGHT;
         }
         else
         {
-            g_ZbufHeight = Z_BUFFER_HEIGHT;
+            s_ZbufHeight = Z_BUFFER_HEIGHT;
         }
     }
 
-    g_Zbuf = mempAlloc((g_ZbufWidth * g_ZbufHeight * 2) + 64, MEMPOOL_STAGE);
-    g_Zbuf = (u8 *)ALIGN64_V1((uintptr_t)g_Zbuf);
-    g_ZbufIsGameplay = (resolution == 0);
+    s_Zbuf = mempAlloc((s_ZbufWidth * s_ZbufHeight * 2) + 64, MEMPOOL_STAGE);
+    s_Zbuf = (u8 *)ALIGN64_V1((uintptr_t)s_Zbuf);
+    s_ZbufIsGameplay = resolution == 0;
 }
 
 
-void zbufSetBuffer(void *buffer, s32 width, s32 height) {
-    g_Zbuf = buffer;
-    g_ZbufWidth = width;
-    g_ZbufHeight = height;
-    g_ZbufIsGameplay = FALSE;
+/** Uses `buffer` as the z-buffer, for the front-end screens */
+void zbufSetBuffer(void *buffer, s32 width, s32 height)
+{
+    s_Zbuf = buffer;
+    s_ZbufWidth = width;
+    s_ZbufHeight = height;
+    s_ZbufIsGameplay = false;
 }
 
 
-Gfx *zbufInit(Gfx *gdl) {
-    s32 offset;
-    uintptr_t addr;
-    if (g_Zbuf == NULL) {
+/**
+ * Points the RDP at the z-buffer for the current player's view, allocating it the first
+ * time. The bottom view of a stacked split screen (and players 3 and 4) start it a
+ * screen's worth of rows earlier, so that their rows land in the buffer.
+ */
+Gfx *zbufInit(Gfx *gdl)
+{
+    s32 offset = 0;
+
+    if (s_Zbuf == NULL)
+    {
         zbufAllocate();
     }
-    if (g_ZbufIsGameplay) {
-        g_ZbufWidth = VI_SX(SCREEN_WIDTH);
+
+    if (s_ZbufIsGameplay)
+    {
+        s_ZbufWidth = VI_SX(SCREEN_WIDTH);
     }
-    if (!(playerGetCurrentNum() < 2) || ((getViewCount() == 2) && !coopSplitSideBySide() && (coopPlayerPerson(playerGetCurrentNum()) == 1))) {
-        offset = g_ZbufWidth * SCREEN_HEIGHT;
-    } else {
-        offset = 0;
+
+    if (playerGetCurrentNum() >= 2
+        || (getViewCount() == 2 && !coopSplitSideBySide() && coopPlayerPerson(playerGetCurrentNum()) == 1))
+    {
+        offset = s_ZbufWidth * SCREEN_HEIGHT;
     }
-    addr = (uintptr_t)(g_Zbuf - offset) & ~0x3F;
+
     gDPPipeSync(gdl++);
-    gDPSetDepthImage(gdl++, addr);
+    gDPSetDepthImage(gdl++, (uintptr_t)(s_Zbuf - offset) & ~0x3f);
+
     return gdl;
 }
 
 
-Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
+/** Clears the current player's part of the z-buffer */
+Gfx *zbufClearCurrentPlayer(Gfx *gdl)
+{
     s32 start_x;
     s32 end_x;
-    s32 height = g_ZbufHeight;
+    s32 height = s_ZbufHeight;
 
     // Stacked views (co-op or 2 player multiplayer) only need half the rows
     // cleared.
@@ -101,7 +114,7 @@ Gfx *zbufClearCurrentPlayer(Gfx *gdl) {
 
     gDPPipeSync(gdl++);
     gDPSetRenderMode(gdl++, G_RM_NOOP, G_RM_NOOP2);
-    gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, g_ZbufWidth, OS_K0_TO_PHYSICAL(g_Zbuf));
+    gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, s_ZbufWidth, OS_K0_TO_PHYSICAL(s_Zbuf));
     gDPSetCycleType(gdl++, G_CYC_FILL);
     gDPSetFillColor(gdl++, (GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0)));
     gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());

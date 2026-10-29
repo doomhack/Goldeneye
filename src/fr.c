@@ -413,11 +413,11 @@ void viUpdateMode(void)
 
     if (g_viColorOutputMode != COLORMODE_32BIT)
     {
-        g_gfxTaskSettingsList->cfb = g_ViBackData->framebuf;
+        g_RspNextTask->framebuffer = g_ViBackData->framebuf;
     }
     else
     {
-        g_gfxTaskSettingsList->cfb = cfb_16[0];
+        g_RspNextTask->framebuffer = cfb_16[0];
     }
 
     settings = g_ViBackData;
@@ -555,11 +555,11 @@ void viUpdateMode(void)
 
     if (g_viColorOutputMode != 0)
     {
-        g_gfxTaskSettingsList->cfb = g_ViBackData->framebuf;
+        g_RspNextTask->framebuffer = g_ViBackData->framebuf;
     }
     else
     {
-        g_gfxTaskSettingsList->cfb = cfb_16[0];
+        g_RspNextTask->framebuffer = cfb_16[0];
     }
 
     settings = g_ViBackData;
