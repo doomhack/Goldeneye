@@ -1,103 +1,89 @@
-#include <ultra64.h>
-#include "game/gfx/dyn.h"
-#include "boss.h"
-#include <str.h>
-#include <memp.h>
-#include <macro.h>
-#include "game/player/player.h"
-
 /**
- * This file handles memory usage for graphics related tasks.
+ * Graphics memory for each frame.
  *
- * There are two pools, "gfx" and "vtx", which are used to store different data.
- *
- * The gfx pool (g_GfxBuffers) is sized based on the stage's -mgfx
- * argument. It contains only the master display list's GBI bytecode.
- * The master gdl is passed through all rendering functions in the game engine,
- * where each appends to the display list.
- *
- * The vtx pool (g_VtxBuffers) is sized based on the stage's -mvtx argument.
- * It is used for auxiliary graphics data such as vertex arrays, matrices and
- * colours.
- *
- * Both the gfx and vtx pools are split into two buffers of equal size.
- * Only one buffer is active at a time - the other is being drawn to the screen
- * while the active one is being built. Each time a frame is finished the active
- * buffer index is swapped to the other one.
- *
- * Both the gfx and vtx pools have a third element in them, but this is just a
- * marker for the end of the second element's allocation.
+ * There are two kinds: the master display list, which every drawing function appends to,
+ * and the vertex memory, for the vertices, matrices and lights a frame's display list
+ * points at (dynAllocate*). Each is two buffers: the CPU builds a frame in one while the
+ * RSP draws the last frame from the other, and dynSwapBuffers swaps them when a frame is
+ * finished. Their sizes come from the level's memory budget (boss.c), doubled in co-op,
+ * which draws the level twice.
  */
 
-u8 *g_GfxBuffers[3];
-u8 *g_VtxBuffers[3];
-u8 *g_GfxMemPos;
-u8 g_GfxActiveBufferIndex;
-s32 g_GfxRequestedDisplayList;
-s32 g_GfxSizesByPlayerCount[] = {0x10000, 0x18000, 0x20000, 0x28000};
-s32 g_VtxSizesByPlayerCount[] = {0x10000, 0x18000, 0x20000, 0x28000};
+#include <ultra64.h>
+#include <memp.h>
+#include <macro.h>
+#include "boss.h"
+#include "dbgscreen.h"
+#include "game/gfx/dyn.h"
+#include "game/player/player.h"
 
-void dynInitMemory(void) {
-    // Solo levels size these for one view. Co-op draws the level twice.
-    s32 views = g_CoopMode ? 2 : 1;
+/* A pair of buffers, the one in use given by s_Current */
+typedef struct
+{
+    u8 *buffers[2];
+    s32 size;
+} DynBuffers;
 
-    g_GfxSizesByPlayerCount[getPlayerCount() - 1] = g_LevelMemBudget->gfxKB * 1024 * views;
-    g_VtxSizesByPlayerCount[getPlayerCount() - 1] = g_LevelMemBudget->vtxKB * 1024 * views;
+static DynBuffers s_Gfx;
+static DynBuffers s_Vtx;
+static s32 s_Current;
+static u8 *s_VtxNext; /* the next free byte of this frame's vertex memory */
 
-    g_GfxBuffers[0] = mempAlloc(g_GfxSizesByPlayerCount[getPlayerCount() - 1] * 2, MEMPOOL_STAGE);
-    g_GfxBuffers[1] = (g_GfxBuffers[0] + g_GfxSizesByPlayerCount[getPlayerCount() - 1]);
-    g_GfxBuffers[2] = (g_GfxBuffers[1] + g_GfxSizesByPlayerCount[getPlayerCount() - 1]);
-
-    g_VtxBuffers[0] = mempAlloc(g_VtxSizesByPlayerCount[getPlayerCount() - 1] * 2, MEMPOOL_STAGE);
-    g_VtxBuffers[1] = (g_VtxBuffers[0] + g_VtxSizesByPlayerCount[getPlayerCount() - 1]);
-    g_VtxBuffers[2] = (g_VtxBuffers[1] + g_VtxSizesByPlayerCount[getPlayerCount() - 1]);
-
-    g_GfxActiveBufferIndex = 0;
-    g_GfxRequestedDisplayList = FALSE;
-    g_GfxMemPos = g_VtxBuffers[0];
+static void initBuffers(DynBuffers *pair, s32 size)
+{
+    pair->size = size;
+    pair->buffers[0] = mempAlloc(size * 2, MEMPOOL_STAGE);
+    pair->buffers[1] = pair->buffers[0] + size;
 }
 
-Gfx *dynGetMasterDisplayList(void) {
-    g_GfxRequestedDisplayList = TRUE;
+void dynInitMemory(void)
+{
+    s32 views = g_CoopMode ? 2 : 1;
 
-    return (Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex];
+    initBuffers(&s_Gfx, g_LevelMemBudget->gfxKB * 1024 * views);
+    initBuffers(&s_Vtx, g_LevelMemBudget->vtxKB * 1024 * views);
+
+    s_Current = 0;
+    s_VtxNext = s_Vtx.buffers[0];
+}
+
+Gfx *dynGetMasterDisplayList(void)
+{
+    return (Gfx *)s_Gfx.buffers[s_Current];
+}
+
+/** Takes `size` bytes of this frame's vertex memory, rounded up to 16 */
+void *dynAllocate(s32 size)
+{
+    u8 *ptr = s_VtxNext;
+
+    s_VtxNext += ALIGN16_a(size);
+
+    if (s_VtxNext > s_Vtx.buffers[s_Current] + s_Vtx.size)
+    {
+        dbgFatal("dyn: out of vertex memory", s_Vtx.size);
+    }
+
+    return ptr;
 }
 
 void *dynAllocateVertices(s32 count)
 {
-    void *ptr = g_GfxMemPos;
-	g_GfxMemPos += count * sizeof(Vtx);
-	return ptr;
+    return dynAllocate(count * sizeof(Vtx));
 }
 
 Mtx *dynAllocateMatrix(void)
 {
-	void *ptr = g_GfxMemPos;
-	g_GfxMemPos += sizeof(Mtx);
-	return ptr;
+    return dynAllocate(sizeof(Mtx));
 }
 
 Light *dynAllocateLights(s32 count)
 {
-    void *ptr = g_GfxMemPos;
-    g_GfxMemPos += count * sizeof(Light);
-    return ptr;
+    return dynAllocate(count * sizeof(Light));
 }
 
-void *dynAllocate(s32 size) {
-    void *ptr = g_GfxMemPos;
-	size = ALIGN16_a(size);
-	g_GfxMemPos += size;
-	return ptr;
+void dynSwapBuffers(void)
+{
+    s_Current ^= 1;
+    s_VtxNext = s_Vtx.buffers[s_Current];
 }
-
-void dynSwapBuffers(void) {
-    g_GfxActiveBufferIndex = (g_GfxActiveBufferIndex ^ 1);
-    g_GfxRequestedDisplayList = FALSE;
-    g_GfxMemPos = g_VtxBuffers[g_GfxActiveBufferIndex];
-}
-
-s32 dynGetFreeGfx(Gfx *gdl) {
-    return (Gfx*)g_GfxBuffers[g_GfxActiveBufferIndex + 1] - gdl;
-}
-

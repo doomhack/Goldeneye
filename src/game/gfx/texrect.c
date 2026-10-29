@@ -18,7 +18,7 @@
  * @param flipX     Flip X-axis flag.
  * @param flipY     Flip Y-axis flag.
  */
-void texRectDraw(Gfx **gdlptr, f32 *position, f32 *size, s32 width, s32 height, s32 flipXY, s32 flipX, s32 flipY)
+static void texRectDraw(Gfx **gdlptr, f32 *position, f32 *size, s32 width, s32 height, s32 flipXY, s32 flipX, s32 flipY)
 {
     // Only proceed if the size values are positive
     if (size[0] > 0.0f && size[1] > 0.0f)
@@ -128,7 +128,7 @@ void texRectDraw(Gfx **gdlptr, f32 *position, f32 *size, s32 width, s32 height, 
 /**
  * Displays an image at a specific on-screen position with color tinting and optional texture flips.
  * 
- * @param gdl       Pointer to the display list.
+ * @param gdlptr    Pointer to the display list.
  * @param position  Position of the image.
  * @param size      Size (half-width and half-height) of the image.
  * @param twidth    Texture width.
@@ -143,9 +143,8 @@ void texRectDraw(Gfx **gdlptr, f32 *position, f32 *size, s32 width, s32 height, 
  * @param mipmapped_texture  Mipmapped rendering mode flag.
  * @param highlight_mode     Highlight rendering mode flag.
  */
-void texRectDrawImage(Gfx **gdlptr, f32 *position, f32 *size, s32 twidth, u32 theight, u32 flipXY, u32 flipX, u32 flipY, u32 r, u32 g, u32 b, u32 alpha, u32 mipmapped_texture, u32 highlight_mode)
+void texRectDrawImage(Gfx **gdlptr, f32 *position, f32 *size, s32 twidth, s32 theight, s32 flipXY, s32 flipX, s32 flipY, s32 r, s32 g, s32 b, s32 alpha, s32 mipmapped_texture, s32 highlight_mode)
 {
-    
     if (size[0] > 0.0f && size[1] > 0.0f)
     {
         Gfx *gdl = *gdlptr;

@@ -27,7 +27,12 @@ handed to the RSP. What is drawn (rooms, models, the HUD) lives in `world/`, `mo
    frame while the RSP draws this one.
 
 Both buffers are sized per level by the level's memory budget in boss.c
-(`LevelMemBudget`), doubled in co-op. There is no overflow check.
+(`LevelMemBudget`), doubled in co-op. Running out of vertex memory stops the game with
+"dyn: out of vertex memory"; the display list itself has no overflow check yet.
+
+`rspGfxTaskStart` uses two tasks in turn, so the one it fills in isn't one the scheduler
+may still hold from the last frame. `fr.c` sets the framebuffer for the next one
+(`g_RspNextTask`).
 
 ## Textures
 
@@ -114,7 +119,9 @@ instance, and those instances get their own copy from the vertex store:
 
 Each store is a block of vertices split into batches, kept in a doubly linked list in
 address order, so freeing a batch can merge it with free neighbours. When a store is full,
-the allocation fails and the instance keeps using the shared vertices.
+the allocation fails and the instance keeps using the shared vertices. The sizes are set per
+level by `vtxstoreReset`: bigger with more than one player, and a smaller prop store in
+Streets and Depot.
 
 ## Traps
 

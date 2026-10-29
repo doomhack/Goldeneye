@@ -19,370 +19,342 @@
 #include "game/player/player.h"
 #include "game/prop/prop.h"
 
-/** One block of a store: in use (refs > 0), free (0) or an unused entry (-1). */
-struct VtxstoreBatch {
-    Vertex* vertices;
-    ModelFileHeader* modeldef;
+/** A run of a store's vertices: in use (refs > 0), free (0) or an unused entry (-1) */
+struct VtxstoreBatch
+{
+    Vertex *vertices;
+    ModelFileHeader *modeldef; /* VTXSTORE_OBJ: the model and damage level, for sharing */
     s32 destroyedLevel;
     s16 numVtx;
     s16 refs;
-    s16 next;
+    s16 next; /* the batches in address order, -1 at the ends */
     s16 prev;
 };
 
-// bss
-s32 g_VtxstoreChrNumVtx; // item count for g_VtxstoreChrVtx
-s32 g_VtxstoreChrNumBatches; // item count for g_VtxstoreChrBatches
-s32 g_VtxstoreObjNumVtx; // item count for g_VtxstoreObjVtx
-s32 g_VtxstoreObjNumBatches; // item count for g_VtxstoreObjBatches
-Vertex* g_VtxstoreChrVtx; // array ( uses g_VtxstoreChrNumVtx as alloc count, item size 0x10 )
-Vertex* g_VtxstoreObjVtx; // array ( uses g_VtxstoreObjNumVtx as alloc count, item size 0x10 )
-struct VtxstoreBatch* g_VtxstoreChrBatches; // array ( uses g_VtxstoreChrNumBatches as alloc count, item size 0x14 )
-struct VtxstoreBatch* g_VtxstoreObjBatches; // array ( uses g_VtxstoreObjNumBatches as alloc count, item size 0x14 )
-s16 g_VtxstoreChrFreeVtx;
-s16 g_VtxstoreObjFreeVtx;
+typedef struct
+{
+    struct VtxstoreBatch *batches; /* batches[0] always starts the list */
+    Vertex *vertices;
+    s32 numBatches;
+    s32 numVtx;
+    s32 freeVtx;
+} VtxStore;
 
-/*
-* Address: 7F09B820(
-* PD name: vtxstore_reset
-*/
+static VtxStore s_ChrStore;
+static VtxStore s_ObjStore;
 
+static void initStore(VtxStore *store, s32 numVtx, s32 numBatches)
+{
+    store->numVtx = numVtx;
+    store->numBatches = numBatches;
+    store->batches = mempAlloc(numBatches * sizeof(struct VtxstoreBatch), MEMPOOL_STAGE);
+    store->vertices = mempAlloc(numVtx * sizeof(Vertex), MEMPOOL_STAGE);
+    store->freeVtx = numVtx;
+
+    // One free batch of everything, and the rest unused
+    store->batches[0].vertices = store->vertices;
+    store->batches[0].numVtx = numVtx;
+    store->batches[0].refs = 0;
+    store->batches[0].next = -1;
+    store->batches[0].prev = -1;
+
+    for (s32 i = 1; i < numBatches; i++)
+    {
+        store->batches[i].refs = -1;
+    }
+}
+
+/** Makes the stores for a level */
 void vtxstoreReset(void)
 {
-    u32 tmp;
-    s32 stage;
-    s32 i;
-
-    tmp = 0x5DC;
+    s32 stage = lvGetCurrentStage();
 
     if (getPlayerCount() >= 2)
     {
-        g_VtxstoreChrNumVtx = 0xBB8;
-        g_VtxstoreChrNumBatches = 0x50;
-        g_VtxstoreObjNumVtx = 0x1F4;
-        g_VtxstoreObjNumBatches = 0x14;
+        initStore(&s_ChrStore, 3000, 80);
+        initStore(&s_ObjStore, 500, 20);
+    }
+    else if (stage == LEVELID_STREETS || stage == LEVELID_DEPOT)
+    {
+        initStore(&s_ChrStore, 500, 20);
+        initStore(&s_ObjStore, 500, 20);
     }
     else
     {
-        stage = lvGetCurrentStage();
-        if ((stage != 0x1E) && (stage != 0x1D))
+        initStore(&s_ChrStore, 500, 20);
+        initStore(&s_ObjStore, 1500, 40);
+    }
+}
+
+/** Points every prop that uses the vertices at `find` at `replacement` instead */
+static void vtxstoreFixRefs(Vertex *find, Vertex *replacement)
+{
+    for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
+    {
+        Model *model;
+        ModelNode *node;
+
+        if (prop->type != PROP_TYPE_OBJ)
         {
-            g_VtxstoreChrNumVtx = 0x1F4;
-            g_VtxstoreChrNumBatches = 0x14;
-            g_VtxstoreObjNumVtx = tmp;
-            g_VtxstoreObjNumBatches = 0x28;
+            continue;
+        }
+
+        model = prop->obj->model;
+        node = model->obj->RootNode;
+
+        // Find the model's first collision display list
+        while (node != NULL)
+        {
+            if ((node->Opcode & 0xff) == MODELNODE_OPCODE_DLCOLLISION)
+            {
+                union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+
+                if (rwdata->DisplayListCollisions.Vertices == find)
+                {
+                    rwdata->DisplayListCollisions.Vertices = replacement;
+                }
+                break;
+            }
+
+            if (node->Child != NULL)
+            {
+                node = node->Child;
+                continue;
+            }
+
+            while (node != NULL)
+            {
+                if (node->Next != NULL)
+                {
+                    node = node->Next;
+                    break;
+                }
+
+                node = node->Parent;
+            }
+        }
+    }
+}
+
+/** Merges free batches that are next to each other */
+static void mergeFreeBatches(VtxStore *store)
+{
+    struct VtxstoreBatch *batches = store->batches;
+    s32 i = 0;
+
+    while (batches[i].next >= 0)
+    {
+        s32 next = batches[i].next;
+
+        if (batches[i].refs == 0 && batches[next].refs == 0)
+        {
+            batches[i].numVtx += batches[next].numVtx;
+            batches[next].refs = -1;
+            batches[i].next = batches[next].next;
+
+            if (batches[i].next >= 0)
+            {
+                batches[batches[i].next].prev = i;
+            }
         }
         else
         {
-            g_VtxstoreChrNumVtx = 0x1F4;
-            g_VtxstoreChrNumBatches = 0x14;
-            g_VtxstoreObjNumVtx = 0x1F4;
-            g_VtxstoreObjNumBatches = 0x14;
+            i = next;
         }
-    }
-
-    tmp = 0x14;
-    g_VtxstoreChrBatches = mempAlloc(g_VtxstoreChrNumBatches * tmp, MEMPOOL_STAGE);
-    g_VtxstoreChrVtx = mempAlloc(g_VtxstoreChrNumVtx * 0x10, MEMPOOL_STAGE);
-    g_VtxstoreObjBatches = mempAlloc(g_VtxstoreObjNumBatches * tmp, MEMPOOL_STAGE);
-    g_VtxstoreObjVtx = mempAlloc(g_VtxstoreObjNumVtx * 0x10, MEMPOOL_STAGE);
-
-    g_VtxstoreChrFreeVtx = (s16) g_VtxstoreChrNumVtx;
-    g_VtxstoreChrBatches->vertices = g_VtxstoreChrVtx;
-    g_VtxstoreChrBatches->numVtx = (s16) g_VtxstoreChrNumVtx;
-    g_VtxstoreChrBatches->refs = 0;
-    g_VtxstoreChrBatches->next = -1;
-    g_VtxstoreChrBatches->prev = -1;
-
-    for (i = 1; i < g_VtxstoreChrNumBatches; i++)
-    {
-        g_VtxstoreChrBatches[i].refs = -1;
-    }
-
-    g_VtxstoreObjFreeVtx = (s16) g_VtxstoreObjNumVtx;
-    g_VtxstoreObjBatches->vertices = g_VtxstoreObjVtx;
-    g_VtxstoreObjBatches->numVtx = (s16) g_VtxstoreObjNumVtx;
-    g_VtxstoreObjBatches->refs = 0;
-    g_VtxstoreObjBatches->next = -1;
-    g_VtxstoreObjBatches->prev = -1;
-
-    for (i = 1; i < g_VtxstoreObjNumBatches; i++)
-    {
-        g_VtxstoreObjBatches[i].refs = -1;
     }
 }
 
-
-/*
-* PD name: vtxstore_fix_refs
-* PD description:
-*  Search all props and their model data for references to the `find` address
-*  and replace it with the `replacement` address.
-*/
-void vtxstoreFixRefs(Vertex *find, Vertex *replacement) {
-    PropRecord* prop;
-    Model* model;
-    union ModelRwData* rwdata;
-    ModelNode* node;
-
-    prop = propsGetActiveTail();
-    while (prop != NULL) {
-        if (prop->type == PROP_TYPE_OBJ) {
-            model = prop->obj->model;
-            node = model->obj->RootNode;
-            while (node != NULL) {
-                if ((node->Opcode & 0xFF) == MODELNODE_OPCODE_DLCOLLISION) {
-                    rwdata = modelGetNodeRwData(model, node);
-                    if (rwdata->DisplayListCollisions.Vertices == find) {
-                        rwdata->DisplayListCollisions.Vertices = replacement;
-                    }
-                    break;
-                } else {
-                    if (node->Child != NULL) {
-                        node = node->Child;
-                    } else {
-                        while (node != NULL) {
-                            if (node->Next != NULL) {
-                                node = node->Next;
-                                break;
-                            }
-                            node = node->Parent;
-                        }
-                    }
-                }
-            }
-        }
-
-        prop = prop->prev;
-    }
-}
-
-
-
-
-
-/*
-* PD name: vtxstore_tick
-* Description: Merge duplicate batches. May free memory.
-*/
+/**
+ * Called each frame. When the prop store runs low (under a quarter free), props with the
+ * same model and damage share one copy of their vertices, and if it's still low, damaged
+ * props that are out of sight give theirs up (objsFreeDeformedVertices).
+ */
 void vtxstoreTick(void)
 {
-    s16 i;
-    s16 j;
-    s32 stop;
-    s32 merged;
+    VtxStore *store = &s_ObjStore;
+    struct VtxstoreBatch *batches = store->batches;
+    bool merged = false;
 
-    merged = 0;
-
-    if (g_VtxstoreObjFreeVtx < ((s32)g_VtxstoreObjNumVtx >> 2))
+    if (store->freeVtx < store->numVtx >> 2)
     {
-        for (i = 0; i < g_VtxstoreObjNumBatches - 1; i++) {
-            if (g_VtxstoreObjBatches[i].refs > 0)
+        for (s32 i = 0; i < store->numBatches - 1; i++)
+        {
+            if (batches[i].refs <= 0)
             {
-                for (j = i + 1; j < g_VtxstoreObjNumBatches; j++) {
-                    if ((g_VtxstoreObjBatches[j].refs > 0) &&
-                        (g_VtxstoreObjBatches[i].modeldef == g_VtxstoreObjBatches[j].modeldef) &&
-                        (g_VtxstoreObjBatches[i].destroyedLevel == g_VtxstoreObjBatches[j].destroyedLevel))
-                    {
-                        vtxstoreFixRefs(g_VtxstoreObjBatches[j].vertices, g_VtxstoreObjBatches[i].vertices);
-                        merged = 1;
+                continue;
+            }
 
-                        g_VtxstoreObjBatches[i].refs += g_VtxstoreObjBatches[j].refs;
-                        g_VtxstoreObjBatches[j].refs = 0;
-                        
-                        g_VtxstoreObjFreeVtx += g_VtxstoreObjBatches[j].numVtx;
-                    }
+            for (s32 j = i + 1; j < store->numBatches; j++)
+            {
+                if (batches[j].refs > 0 && batches[i].modeldef == batches[j].modeldef
+                    && batches[i].destroyedLevel == batches[j].destroyedLevel)
+                {
+                    vtxstoreFixRefs(batches[j].vertices, batches[i].vertices);
+                    merged = true;
+
+                    batches[i].refs += batches[j].refs;
+                    batches[j].refs = 0;
+                    store->freeVtx += batches[j].numVtx;
                 }
             }
         }
     }
 
-    if (merged != 0) {
-        stop  = 0;
-        i = 0;
-
-        while (stop == 0) {
-            j = g_VtxstoreObjBatches[i].next;
-
-            if (j >= 0) {
-                if (g_VtxstoreObjBatches[i].refs == 0) {
-                    if (g_VtxstoreObjBatches[j].refs == 0) {
-                        g_VtxstoreObjBatches[i].numVtx += g_VtxstoreObjBatches[j].numVtx;
-                        g_VtxstoreObjBatches[j].refs = -1;
-                        j = g_VtxstoreObjBatches[j].next;
-                        g_VtxstoreObjBatches[i].next = j;
-
-                        if (j >= 0) {
-                            g_VtxstoreObjBatches[j].prev = i;
-                        }
-                        continue;
-                    }
-                }
-                i = j;
-            } else {
-                stop = 1;
-            }
-        }
+    if (merged)
+    {
+        mergeFreeBatches(store);
     }
 
-    if (g_VtxstoreObjFreeVtx < ((s32)g_VtxstoreObjNumVtx >> 2)) {
+    if (store->freeVtx < store->numVtx >> 2)
+    {
         objsFreeDeformedVertices();
     }
 }
 
-
-/*
-* PD name: vtxstoreAllocate
-* Description: Allocation for batches within the storage space
-*/
+/**
+ * Takes `numVtx` vertices from a store (VTXSTORE_*). For VTXSTORE_OBJ, `modeldef` and
+ * `destroyedLevel` say what they're for, so vtxstoreTick can share them. Returns NULL if
+ * there's no free run big enough.
+ */
 Vertex *vtxstoreAllocate(s32 numVtx, s32 type, ModelFileHeader *modeldef, s32 destroyedLevel)
 {
-    s16* freeVtx;
-    s16 batchVtx;
-    s32 index;
-    s32 numBatches;
-    s32 split;
-    s32 steps;
-    s32 spare;
-    s16 result;
-    struct VtxstoreBatch* batches;
+    VtxStore *store;
+    struct VtxstoreBatch *batches;
+    struct VtxstoreBatch *batch;
+    s32 index = 0;
+    s32 steps = 0;
+    s32 batchVtx;
 
-    switch (type) {
+    switch (type)
+    {
         case VTXSTORE_CHR:
-            batches = g_VtxstoreChrBatches;
-            freeVtx = &g_VtxstoreChrFreeVtx;
-            numBatches = (s16)g_VtxstoreChrNumBatches;
+            store = &s_ChrStore;
             break;
         case VTXSTORE_OBJ:
-            batches = g_VtxstoreObjBatches;
-            freeVtx = &g_VtxstoreObjFreeVtx;
-            numBatches = (s16)g_VtxstoreObjNumBatches;
+            store = &s_ObjStore;
             break;
         default:
             return NULL;
     }
 
-    result = 0;
-    steps = 0;
-    index = 0;
-    
-    do {
-        if ((batches[index].refs == 0) && (batches[index].numVtx >= numVtx)) {
-            result = 1;
-        } else {
-            index = batches[index].next;
-            steps += 1;
-            if ((index == -1) || (numBatches < steps)) {
-                result = (s16)-1;
-            }
+    batches = store->batches;
+
+    // The first free batch that's big enough (giving up if the list loops)
+    while (batches[index].refs != 0 || batches[index].numVtx < numVtx)
+    {
+        index = batches[index].next;
+        steps++;
+
+        if (index == -1 || steps > store->numBatches)
+        {
+            return NULL;
         }
-    } while (result == 0);
-    if (numBatches < steps) {
-        return NULL;
     }
-    if (result == 1) {
-        split = 0;
-        batchVtx = batches[index].numVtx;
-        batches[index].modeldef = modeldef;
-        batches[index].destroyedLevel = destroyedLevel;
-        batches[index].refs++;
-        if (batchVtx != numVtx) {
-            for (spare = 0; spare < numBatches; spare++) {
-                if (batches[spare].refs == -1) {
-                    batches[index].numVtx = numVtx;
-                    batches[spare].vertices = batches[index].vertices + numVtx;
-                    batches[spare].numVtx = batchVtx - numVtx;
-                    batches[spare].refs = 0;
-                    batches[spare].prev = index;
-                    split = 1;
-                    batches[spare].next = batches[index].next;
-                    if (batches[index].next >= 0) {
-                        batches[batches[index].next].prev = spare;
-                    }
-                    batches[index].next = spare;
-                    break;
+
+    batch = &batches[index];
+    batchVtx = batch->numVtx;
+    batch->modeldef = modeldef;
+    batch->destroyedLevel = destroyedLevel;
+    batch->refs++;
+
+    if (batchVtx != numVtx)
+    {
+        // Split the rest off into an unused entry, if there is one. If there isn't, this
+        // takes the whole batch.
+        for (s32 spare = 0; spare < store->numBatches; spare++)
+        {
+            if (batches[spare].refs == -1)
+            {
+                batch->numVtx = numVtx;
+                batches[spare].vertices = batch->vertices + numVtx;
+                batches[spare].numVtx = batchVtx - numVtx;
+                batches[spare].refs = 0;
+                batches[spare].prev = index;
+                batches[spare].next = batch->next;
+
+                if (batch->next >= 0)
+                {
+                    batches[batch->next].prev = spare;
                 }
+
+                batch->next = spare;
+                break;
             }
         }
-        if (split != 0) {
-            *freeVtx -= numVtx;
-        } else {
-            *freeVtx -= batchVtx;
-        }
-        return batches[index].vertices;
     }
-    return NULL;
+
+    store->freeVtx -= batch->numVtx;
+
+    return batch->vertices;
 }
 
+/** Gives back vertices from vtxstoreAllocate. They're freed when the last user gives them back. */
+void vtxstoreFree(Vertex *vertices)
+{
+    VtxStore *store;
+    struct VtxstoreBatch *batches;
+    s32 index = 0;
 
-/*
-* PD name: vtxstore_free (likely)
-* Description: Either deforming a vertex or frees a vertex (deallocation)
-*/
-void vtxstoreFree(Vertex* vertices) {
-    s16* freeVtx;
-    struct VtxstoreBatch* batches;
-    s16 index;
-    s32 stop;
-    s32 other;
-
-    if ((vertices >= g_VtxstoreChrVtx) &&
-        (vertices <= g_VtxstoreChrVtx + (g_VtxstoreChrNumVtx - 1))) {
-        batches = g_VtxstoreChrBatches;
-        freeVtx = &g_VtxstoreChrFreeVtx;
-    } else if ((vertices >= g_VtxstoreObjVtx) &&
-               (vertices <= g_VtxstoreObjVtx + (g_VtxstoreObjNumVtx - 1))) {
-        batches = g_VtxstoreObjBatches;
-        freeVtx = &g_VtxstoreObjFreeVtx;
-    } else {
+    if (vertices >= s_ChrStore.vertices && vertices < s_ChrStore.vertices + s_ChrStore.numVtx)
+    {
+        store = &s_ChrStore;
+    }
+    else if (vertices >= s_ObjStore.vertices && vertices < s_ObjStore.vertices + s_ObjStore.numVtx)
+    {
+        store = &s_ObjStore;
+    }
+    else
+    {
         return;
     }
 
-    index = 0;
-    stop = 0;
+    batches = store->batches;
 
-    while (stop == 0) {
-        if (batches[index].vertices == vertices) {
-            stop = 1;
-            batches[index].refs--;
-            if (batches[index].refs == 0) {
-                *freeVtx += batches[index].numVtx;
+    while (batches[index].vertices != vertices)
+    {
+        index = batches[index].next;
 
-                // Merge with next free block
-                other = batches[index].next;
-                if (other >= 0) {
-                    if (batches[other].refs == 0) {
-                        batches[index].numVtx += batches[other].numVtx;
-                        batches[index].next = batches[other].next;
-                        batches[other].refs = -1;
-                        other = batches[index].next;
-                        if (other >= 0) {
-                            batches[other].prev = index;
-                        }
-                    }
-                }
+        if (index == -1)
+        {
+            return;
+        }
+    }
 
-                // Merge with prev free block
-                other = batches[index].prev;
-                if (other >= 0) {
-                    if (batches[other].refs == 0) {
-                        batches[other].numVtx += batches[index].numVtx;
-                        batches[other].next = batches[index].next;
-                        batches[index].refs = -1;
-                        index = other;
-                        other = batches[index].next;
-                        if (other >= 0) {
-                            batches[other].prev = index;
-                        }
-                    }
-                }
-            }
-        } else {
-            index = batches[index].next;
-            if (index == -1) {
-                stop = 1;
-            }
+    batches[index].refs--;
+
+    if (batches[index].refs != 0)
+    {
+        return;
+    }
+
+    store->freeVtx += batches[index].numVtx;
+
+    // Merge with the next batch if it's free, then with the previous one
+    s32 other = batches[index].next;
+
+    if (other >= 0 && batches[other].refs == 0)
+    {
+        batches[index].numVtx += batches[other].numVtx;
+        batches[index].next = batches[other].next;
+        batches[other].refs = -1;
+
+        if (batches[index].next >= 0)
+        {
+            batches[batches[index].next].prev = index;
+        }
+    }
+
+    other = batches[index].prev;
+
+    if (other >= 0 && batches[other].refs == 0)
+    {
+        batches[other].numVtx += batches[index].numVtx;
+        batches[other].next = batches[index].next;
+        batches[index].refs = -1;
+
+        if (batches[other].next >= 0)
+        {
+            batches[batches[other].next].prev = other;
         }
     }
 }
-
