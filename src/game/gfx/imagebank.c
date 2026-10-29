@@ -11,7 +11,7 @@
 #include <rom.h>
 #include <memp.h>
 #include "game/gfx/imagebank.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 
 // bss
 //8008D0B0;

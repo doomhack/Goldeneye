@@ -48,7 +48,7 @@
 #include "game/chr/chrai.h"
 #include "game/menu/title.h"
 #include <assets/font_dl.h>
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "game/asset/asset.h"
 #include "gbi_extension.h"
 #include "game/model/model.h"

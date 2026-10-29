@@ -8,7 +8,7 @@
 #include <ultra64.h>
 #include <R4300.h>
 #include "game/gfx/tex.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "bondtypes.h"
 #include "game/gfx/texselect.h"
 #include "gbi_extension.h"

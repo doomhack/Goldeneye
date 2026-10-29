@@ -35,7 +35,7 @@
 #include "game/chr/chrai.h"
 #include "game/audio/levelmusic.h"
 #include "game/model/model.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"

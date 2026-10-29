@@ -6,7 +6,7 @@
 #include "game/chr/chr.h"
 #include "game/math/matrix.h"
 #include "game/menu/watchmenu.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 
 typedef struct invitem_weap
 {

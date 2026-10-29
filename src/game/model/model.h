@@ -4,7 +4,7 @@
 #include <ultra64.h>
 #include <bondtypes.h>
 #include "bondconstants.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "game/model/anim.h"
 
 /* One row per 1/64 turn of pitch towards the camera: which of the tube's view entries to use for each yaw */

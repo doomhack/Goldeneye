@@ -66,7 +66,8 @@
       build/OUTCODE/src/game/menu/mpmenu.o (.rodata);
       build/OUTCODE/src/game/hud/radar.o (.rodata);
       build/OUTCODE/src/game/menu/mp_weapon.o (.rodata);
-      build/OUTCODE/src/game/gfx/image.o (.rodata);
+      build/OUTCODE/src/game/gfx/texdecode.o (.rodata);
+      build/OUTCODE/src/game/gfx/texload.o (.rodata);
       build/OUTCODE/src/game/gfx/imagebank.o (.rodata);
       build/OUTCODE/src/game/gfx/tex.o (.rodata);
       build/OUTCODE/src/game/asset/rzip.o (.rodata);

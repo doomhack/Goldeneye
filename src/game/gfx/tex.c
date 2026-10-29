@@ -13,7 +13,7 @@
 #include "gbi_extension.h"
 #include "game/world/lightfixture.h"
 #include "game/level/lv.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "game/gfx/tex.h"
 #include "game/world/water.h"
 

@@ -11,7 +11,8 @@ handed to the RSP. What is drawn (rooms, models, the HUD) lives in `world/`, `mo
 | `src/game/gfx/rsp.c` | Starting the RSP graphics task |
 | `src/game/gfx/zbuf.c` | The z-buffer |
 | `src/game/gfx/texrect.c` | Drawing a textured rectangle on screen (`texRectDrawImage`), flipped or rotated; was `hud/bondwalk2.c` |
-| `src/game/gfx/image.c` | Loading and decompressing textures, texture pools |
+| `src/game/gfx/texload.c` | Finding textures in the ROM, texture pools |
+| `src/game/gfx/texdecode.c` | Decompressing textures (no state, tested on the PC by `tools/hosttest/textest.c`) |
 | `src/game/gfx/imagebank.c` | The global image bank (ammo icons, crosshair, smoke, flares) |
 | `src/game/gfx/tex.c` | Rewriting a model's display list to load its textures; surface sound tables |
 | `src/game/gfx/texselect.c` | Setting up the RDP to draw one image from an image table |
@@ -33,9 +34,9 @@ Both buffers are sized per level by the level's memory budget in boss.c
 
 A texture is referred to by number. Display lists in model files and room geometry carry
 `G_SETTIMG` commands whose address is `0xabcdNNNN`, meaning "texture NNNN, not loaded yet".
-`texLoad` copies texture NNNN from the textures segment of the ROM, decompresses it into a
-texture pool, and writes the address back over the number, so each texture is only loaded
-once per pool.
+`texLoad` copies texture NNNN from the textures segment of the ROM, decodes it into a
+texture pool with `texDecode`, and writes the address back over the number, so each texture
+is only loaded once per pool.
 
 `g_Textures` has one entry per texture: its offset in ROM (`texResolveTableOffsets` turns
 the stored sizes into offsets at boot), and the sound and impact texture a bullet makes on
@@ -43,25 +44,33 @@ it.
 
 A pool (`struct texpool`) fills from both ends: the pixel data grows from the left, and a
 `struct tex` describing each texture (number, size, format, levels of detail) grows from the
-right. `texFindInPool` searches the right-hand list. The shared pool `g_TexSharedPool` is
-allocated each level by `texInitSharedPool`, sized by the level's memory budget (plus
-512 KB in co-op); models can pass their own. When a pool is full, the texture points at the start of
+right. `texFindInPool` searches the right-hand list. Each texture's pixels follow 8 bytes
+holding its number, which `texSelect` reads. The shared pool `g_TexSharedPool` is allocated
+each level by `texInitSharedPool`, sized by the level's memory budget (plus 512 KB in
+co-op); models can pass their own. When a pool is full, the texture points at the start of
 the pool instead, which draws garbage rather than crashing.
 
 ### Compression
 
-The first byte of a texture says whether it is zlib-compressed and how many levels of detail
-it has.
+`texdecode.c` describes the format in detail. The first byte of a texture says whether it is
+zlib-compressed and how many levels of detail it has.
 
-* zlib textures are always paletted (`texInflateZlib`).
-* The others (`texInflateNonZlib`) use one of the `TEXCOMPMETHOD_*` methods: raw, Huffman,
-  RLE, a colour lookup table, or a combination. Some are blurred after decoding.
+* zlib textures are always paletted.
+* The others are in Rare's own formats, image by image: uncompressed, Huffman or
+  run-length coded one colour channel at a time, indices into a table of colours, or
+  differences from neighbouring pixels.
 
-The decoders read their input through a small bit reader (`texBitsInit`, `texBitsRead`).
-Smaller levels of detail can be stored, or made by shrinking the full image
-(`texShrinkPaletted`, `texShrinkNonPaletted`).
+Smaller levels of detail are either stored, or made by shrinking the full image (averaging
+2x2 squares; for a paletted texture, then finding the nearest palette colour). Odd rows have
+their words swapped, the way the RDP expects a texture loaded with `LoadBlock`.
 
-`rleExpand8Bit` is a separate, simpler RLE used only for the title screen backdrop.
+Decoding has to match Rare's encoder bit for bit, odd parts included (the Huffman tree's
+16-bit frequencies, for one). `textest.c` decodes all 2698 textures in the ROM and compares
+each with a stored hash (`tools/hosttest/texhashes.txt`), so any change to what the game
+draws shows up there. The decoder was checked against Rare's code texture by texture when it
+was rewritten (phase 5d), which found two bugs, fixed since: one IA4 texture (2496) and the
+small levels of detail of eight more came out striped, and eight IA16_CI4 textures made their
+smaller levels of detail from the wrong palette entries.
 
 ### From texture to TMEM
 

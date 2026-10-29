@@ -2,7 +2,7 @@
 #define _UNK_0CC4C0_H_
 #include <ultra64.h>
 
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 
 struct image_sound
 {

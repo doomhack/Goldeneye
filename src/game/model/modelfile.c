@@ -8,7 +8,7 @@
  */
 #include <ultra64.h>
 #include "game/model/chrobjdata.h"
-#include "game/gfx/image.h"
+#include "game/gfx/texload.h"
 #include "game/math/trig.h"
 #include "game/math/round.h"
 #include "game/model/model.h"
