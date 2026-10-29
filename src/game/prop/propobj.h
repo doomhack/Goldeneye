@@ -28,9 +28,6 @@ extern f32 g_AutogunDamageScalar;
 extern f32 g_AutogunDamageScale;
 extern f32 g_SoloAmmoMultiplier;
 
-extern s32 g_RemoteMineOwnerTriggerFlag;
-extern s32 g_NextWeaponSlot;
-extern s32 g_NextHatSlot;
 extern struct LinkRecord *g_LevelLoadPropSwitch;
 extern LockDoorRecord *g_LevelLoadPropLockDoor;
 extern SafeObjectRecord *g_LevelLoadPropSafeItem;
@@ -51,15 +48,13 @@ extern ExplosionDetailsRecord object_explosion_details[];
 void                 objSetMoving(struct PropRecord *prop, s32 moving);
 
 void                 objFree(ObjectRecord *obj, s32 freeprop, s32 canregen);
+PropRecord          *objInit(ObjectRecord *obj, ModelFileHeader *modeldef, PropRecord *prop, Model *model);
 void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop);
 
 Gfx                 *weaponRenderTracers(Gfx *gdl);
 void                 objGetTileShading(PropRecord *prop, rgba_u8 *colour);
 void                 objGetShadeColour(PropRecord *prop, rgba_u8 *colour);
-void                 propobjSetDropped(PropRecord *prop, DROPTYPE droptype);
 void                 objDropRecursively(PropRecord *prop);
-void                 weaponSetGunfireVisible(PropRecord *prop, s32 firing);
-WeaponObjRecord     *weaponCreateFromModel(PROP modelnum, s32 weaponid);
 void                 chrobjCollisionRelated(ObjectRecord *);
 void                 objChangeShading(ObjectRecord *, coord3d *, Mtxf *, StandTile *);
 void                 objGetCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom);
@@ -70,19 +65,11 @@ s32                  propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox);
 
 // note: rgba to rgb
 void                 shadingLerp(rgba_s32 *dest, s32 enable, rgba_f32 *src);
-void                 remoteMinesDetonate(void);
 
-void                 objDetach(PropRecord *prop);
-void                 chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand);
-void                 propweaponSetDual(WeaponObjRecord *leftweapon, WeaponObjRecord *rightweapon);
 void                 objPlaceAtPad(ObjectRecord *baseobj, coord3d *pad, Mtxf *matrix, StandTile *stan, coord3d *pos2);
 void                 objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan2, coord3d *pos2);
-bool                 chrEquipWeapon(WeaponObjRecord *wep, ChrRecord *chr);
-WeaponObjRecord      *weaponFindThrown(s32 weaponnum);
-HatRecord           *hatCreate(bool musthaveprop, bool musthavemodel, ModelFileHeader *modeldef);
 PropRecord*          objInitWithAutoModel(ObjectRecord* obj);
 PropRecord*          objInitWithModelDef(ObjectRecord* object, ModelFileHeader* header);
-void                 objDetach(PropRecord *prop);
 s32                  chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2);
 s32                  chrobjTestPointPolygonCollision(coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges);
 struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *obj);
@@ -91,29 +78,21 @@ bool                 padBoundsContainPoint(coord3d* pos, f32 radius, BoundPadRec
 void                 glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
 void                 modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin);
 s32                  vehicleFindBlockingProp(struct PropRecord *argProp);
-PropRecord*          weaponInitWithModelDef(struct ObjectRecord* obj, ModelFileHeader* modeldef);
-void                 chrSetupHeldWeapon(WeaponObjRecord* weapon, ChrRecord* chr);
-void                 playerDropInventory(void);
 void                 objsFreeDeformedVertices(void);
 f32                  bondviewGetPlayerPitchRadians(void);
 bool                 posIsOnScreen(PropRecord *prop, coord3d *pos, f32 radius, bool checkFogEnd);
 void                 objUpdateShading(rgba_u8 *dest, rgba_u8 *src);
-void                 chrRenderHeldWeapon(PropRecord *chrprop, GUNHAND hand, JointListEntry **jointList);
-HATTYPE              hatGetModel(PropRecord *prop);
-s32                  objDrop(PropRecord *prop);
 void                 modelResetDeformedVertices(Model* model);
-PropRecord          *chrGiveWeaponEx(ChrRecord *self, s32 propid, ITEM_IDS itemid, s32 flags, WeaponObjRecord *weapon, ModelFileHeader *modeldef);
 
-PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags);
 bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *screenpos, coord2d *max, coord2d *min);
 s32 objTick(struct PropRecord *prop);
-void hatAssignToChr(HatRecord* hat, ChrRecord* chr);
-void proxminesTickGuards(void);
 
-AmmoCrateRecord     *ammocrateAllocate(void);
 
 #include "game/prop/objdamage.h"
 #include "game/prop/objhit.h"
 #include "game/prop/pickup.h"
+#include "game/prop/objslots.h"
+#include "game/prop/carried.h"
+#include "game/prop/mine.h"
 
 #endif

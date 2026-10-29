@@ -509,7 +509,7 @@ BITFLAG(RUNTIMEBITFLAG,
         LANDDAMAGE, /* takes a little damage when it lands                          */
         BEENOPENED,
         DESTROYED, /* only set with disabled or destroyed doors                    */
-        00000800,
+        RESPAWNING, /* used up, hidden until it respawns                               */
         WRECKED, /* destroyed as far as it goes: shots pass through it            */
         PADLOCKEDDOOR,
         ACTIVATED, /* activated                                                    */
@@ -534,8 +534,6 @@ BITFLAG(RUNTIMEBITFLAG,
 
 #define RUNTIMEBITFLAG_OWNER          0x60000
 #define RUNTIMEBITSHIFT_OWNER         0x11
-#define RUNTIMEBITFLAG_00000080       0x00000080
-#define RUNTIMEBITFLAG_00000800       0X00000800
 #define RUNTIMEBITFLAG_PADLOCKEDDOOR  0X00002000
 #define RUNTIMEBITFLAG_HASOWNER       0X00080000
 

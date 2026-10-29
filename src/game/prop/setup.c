@@ -1754,7 +1754,7 @@ void setupCreateProps(enum LEVELID stageId)
                         {
                             if ((guna->type == PROPDEF_COLLECTABLE) && (gunb->type == PROPDEF_COLLECTABLE))
                             {
-                                propweaponSetDual(guna, gunb);
+                                weaponSetDual(guna, gunb);
                             }
 
                         }
@@ -1873,7 +1873,6 @@ f32 g_DoorScale = 1.0f;
 
 // forward declarations
 
-void proxminesInit();
 
 // end forward declarations
 
@@ -1895,7 +1894,7 @@ void propsResetLevelState(void)
     s32 i;
 
     monitorsReset();
-    proxminesInit();
+    proxminesReset();
     alarmGasTimerReset();
     g_RemoteMineOwnerTriggerFlag = 0;
 
@@ -1963,15 +1962,6 @@ void setupLinkSafeItem(SafeObjectRecord *link)
 
 
 
-void proxminesInit(void)
-{
-    s32 i;
-
-    for (i=0; i<30; i++)
-    {
-        proxy_mine_table[i] = NULL;
-    }
-}
 
 
 void objSoundsStopAll(void) {

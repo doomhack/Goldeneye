@@ -1877,7 +1877,7 @@ void gunSpawnGLGrenade(s32 handnum)
 
         gunLaunchProjectileFromPlayer(grenadeobj, &hand->muzzlePos, &launchmtx, &launchvel, &identitymtx);
 
-        if (grenadeobj->runtime_bitflags & RUNTIMEBITFLAG_00000080)
+        if (grenadeobj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
         {
             grenadeobj->projectile->bounciness = g_GLGrenadeLaunchUnk8C;
             grenadeobj->projectile->groundFriction = g_GLGrenadeLaunchUnk94;
@@ -2107,7 +2107,7 @@ void gunFireTankShell(s32 handnum)
 
     gunLaunchProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, &identitymtx);
 
-    if (obj->runtime_bitflags & RUNTIMEBITFLAG_00000080)
+    if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
     {
         obj->projectile->flags |= PROJECTILEFLAG_LAUNCHING;
 

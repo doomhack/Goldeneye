@@ -1,5 +1,5 @@
 /**
- * Monitors: the screens in levels, and the screens on the rocket launcher and taser, show
+ * Monitors: the screens in levels, and the screen on the taser, show
  * an image that scrolls, zooms, rotates and changes colour. Each screen runs a small
  * script (monitorscripts.c) each time it is drawn.
  *
@@ -30,10 +30,8 @@
 #define MONITOR_NUM_IMAGES 100
 
 extern const u32 *const g_MonitorScripts[MONITOR_NUM_SCRIPTS];
-extern const u32 monScriptRocketSight[];
 extern const u32 monScriptTaser[];
 
-MonitorRecord g_GunScreenRocket;
 MonitorRecord g_GunScreenTaser;
 
 static const MonitorRecord s_InitialMonitor = {
@@ -80,7 +78,6 @@ static void reset(MonitorRecord *mon, const u32 *script)
 /** Resets the gun screens for a new level */
 void monitorsReset(void)
 {
-    reset(&g_GunScreenRocket, monScriptRocketSight);
     reset(&g_GunScreenTaser, monScriptTaser);
 }
 

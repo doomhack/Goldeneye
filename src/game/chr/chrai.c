@@ -2588,7 +2588,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (obj && obj->prop && obj->prop->parent && obj->prop->parent->type == PROP_TYPE_CHR)
                     {
                         ChrRecord *chr = obj->prop->parent->chr;
-                        propobjSetDropped(obj->prop, 2);
+                        objSetDropType(obj->prop, 2);
                         chr->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
                     }
                     Offset += sizeof(AiDropObjectRecord);
@@ -2613,12 +2613,12 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         if (chr->weapons_held[GUNRIGHT])
                         {
-                            propobjSetDropped(chr->weapons_held[GUNRIGHT], 1);
+                            objSetDropType(chr->weapons_held[GUNRIGHT], 1);
                             chr->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
                         }
                         if (chr->weapons_held[GUNLEFT])
                         {
-                            propobjSetDropped(chr->weapons_held[GUNLEFT], 1);
+                            objSetDropType(chr->weapons_held[GUNLEFT], 1);
                             chr->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
                         }
                     }
@@ -3882,7 +3882,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                             if (srcweaponL && srcweaponR && cloneweaponL && cloneweaponR && srcweaponR == srcweaponL->dualweapon && srcweaponL == srcweaponR->dualweapon)
                             {
-                                propweaponSetDual(cloneweaponL, cloneweaponR);
+                                weaponSetDual(cloneweaponL, cloneweaponR);
                             }
                             {
                                 hatprop = chr->handle_positiondata_hat;

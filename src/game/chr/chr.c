@@ -2514,7 +2514,7 @@ after_position_update:
                 }
             }
 
-            if ((!(chr->hidden & CHRHIDDEN_DROP_HELD_ITEMS)) || (!(hatobj->runtime_bitflags & RUNTIMEBITFLAG_00000080)))
+            if ((!(chr->hidden & CHRHIDDEN_DROP_HELD_ITEMS)) || (!(hatobj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)))
             {
                 chr->jointList = jointListAddModel(chr->jointList, hatmodel);
             }
@@ -2599,7 +2599,7 @@ void chrDropItems(ChrRecord *self)
             WeaponObjRecord *wep = childprop->weapon;
             if (!(wep->flags & 0x2000))
             {
-                propobjSetDropped(childprop, 1);
+                objSetDropType(childprop, 1);
             }
         }
         childprop = childprop->prev;
@@ -3279,7 +3279,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
                         ((WeaponObjRecord *)weaponobj)->weaponnum == ITEM_PROXIMITYMINE
                     )
                     {
-                        propobjSetDropped(prop, 1);
+                        objSetDropType(prop, 1);
                         chr->hidden |= 1;
 
                         objApplyDamage(prop->obj, weaponGetDamage(shot->weapon), &hitpos, shot->weapon, playerGetCurrentNum());

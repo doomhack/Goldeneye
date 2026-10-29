@@ -7,11 +7,14 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | --- | --- |
 | `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects at run time: the per-frame tick, drawing, weapon and hat slots |
+| `src/game/prop/propobj.c` | Objects at run time: the per-frame tick and drawing |
 | `src/game/prop/objdamage.c` | Damage to objects: destroying, exploding, bending the model, what being destroyed does |
 | `src/game/prop/objhit.c` | Rays against object models (`modelFindTriangleHit`), the player's shots hitting objects |
 | `src/game/prop/projectile.c` | Objects in flight: the projectile pools, moving with collision, bouncing, settling, sticking |
 | `src/game/prop/pickup.c` | Picking props up and using them with the action button |
+| `src/game/prop/objslots.c` | Slots for objects made during play: weapons, hats and ammo crates |
+| `src/game/prop/carried.c` | Guns and hats that characters carry, and dropping them |
+| `src/game/prop/mine.c` | Remote and proximity mines |
 | `src/game/prop/door.c` | Doors: moving, collision, portals, sounds, and the player using them |
 | `src/game/prop/monitor.c` | Monitor screens: running their scripts and drawing them |
 | `src/game/prop/monitorscripts.c` | The monitor scripts |
@@ -161,12 +164,31 @@ Props flagged `PROPFLAG_PICKUPONINTERACT`, alarms, and switches linked to doors
 
 Guns that appear during play (dropped by guards, thrown, placed mines) need props that
 were not in the setup file. They come from 30 weapon slots (`g_WeaponSlots`), 10 hat slots
-and 20 ammo crates. `weaponCreate` takes an empty slot if it can, then a setup
-collectable that can be reused (`setupFindObjForReuse`), then a gun lying out of view,
-then any gun lying on the floor. Placed proximity mines are also kept in a list of 30
-(`proxmineAdd`), which `proxminesTickGuards` checks against guards.
+and 20 ammo crates (`objslots.c`). `weaponCreate` takes an empty slot if it can, then a
+setup collectable that can be reused (`setupFindObjForReuse`), then a gun lying out of
+view, then any gun lying on the floor; `hatCreate` does the same for hats.
 
-Guards' held guns are set up by `chrSetupHeldWeapon` and `chrGiveWeaponEx`.
+## Carried objects and dropping
+
+Guards' guns and hats (`carried.c`) are objects whose props are children of the guard's
+prop, with their models attached to the right hand, left hand or head node. Setup guns are
+put in hand by `chrSetupHeldWeapon`, and guns given during play by `chrGiveWeaponEx`;
+`chrRenderHeldWeapon` works out the held gun's matrices each frame. A gun flagged
+`PROPFLAG_IS_DOUBLE` is paired with the gun in the other hand (`weaponSetDual`).
+
+`objDrop` drops a carried object as a projectile, launched by its drop type
+(`objSetDropType`): a surrendering guard lets go of their gun in front of them, a thrown
+grenade flies forwards and up, a shot-off hat flies away from the player, and anything
+else tumbles off in a random direction. It starts where its model was drawn if it can
+reach that point, otherwise at the guard's position.
+
+## Mines
+
+A placed mine is a weapon object ticked by `objTick`: its timer counts down while it arms,
+then 1 means primed and 0 that it goes off. Remote mines go off when their owner uses the
+detonator (`remoteMinesDetonate`). Primed proximity mines are kept in a list of 30
+(`g_ProxMines`, `mine.c`) so that guards and moving objects (thrown, falling or driven) can
+set them off as well as the player (`proxminesDetonateNear`, within 2.5 m).
 
 ## Doors
 
@@ -198,8 +220,8 @@ it moves, and one when it stops. Hinged types play only the opening and the shut
 
 ## Monitors
 
-Screens (`MonitorObjRecord`, `MultiMonitorObjRecord` with four, and the screens on the
-rocket launcher and taser) each run a small script that scrolls, zooms, rotates and tints
+Screens (`MonitorObjRecord`, `MultiMonitorObjRecord` with four, and the screen on the
+taser) each run a small script that scrolls, zooms, rotates and tints
 an image (`monitor.c`). A script is an array of words: a command (`enum MonitorCmd`) and
 its arguments, written with the `MON_*` macros in `monitorscripts.c`.
 

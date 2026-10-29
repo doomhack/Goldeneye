@@ -100,7 +100,6 @@ PropRecord **g_LastOnScreenProp;
 s32 g_OnScreenPropCount;
 
 PropRecord *g_InteractProp;
-WeaponObjRecord* proxy_mine_table[30];
 
 
 WeaponObjRecord g_WeaponSlots[MAX_WEAPON_SLOTS];
@@ -511,7 +510,7 @@ void propExecuteTickOperation(PropRecord *prop, TICKOP op)
                 #else
                 prop->timetoregen = 0x3E8;
                 #endif
-                propobj->runtime_bitflags |= RUNTIMEBITFLAG_00000800;
+                propobj->runtime_bitflags |= RUNTIMEBITFLAG_RESPAWNING;
                 propobj->runtime_bitflags &= ~RUNTIMEBITFLAG_REMOVE;
                 propobj->state &= ~0x80;
                 propobj->damageTaken = 0.0f;
@@ -747,7 +746,7 @@ void propsTickOnce(void)
                             propRemoveFromRooms(prop);
                             propDelist(prop);
 
-                            obj->runtime_bitflags &= ~RUNTIMEBITFLAG_00000800;
+                            obj->runtime_bitflags &= ~RUNTIMEBITFLAG_RESPAWNING;
                             cmdindex = setupGetCommandIndexByProp(prop);
                             pad = obj->pad;
                             setupobj = setupCommandGetObject(cmdindex + pad);
@@ -763,7 +762,7 @@ void propsTickOnce(void)
                         {
                             propEnable(prop);
                             propUpdateRooms(prop);
-                            obj->runtime_bitflags &= ~RUNTIMEBITFLAG_00000800;
+                            obj->runtime_bitflags &= ~RUNTIMEBITFLAG_RESPAWNING;
                         }
                     }
                     else

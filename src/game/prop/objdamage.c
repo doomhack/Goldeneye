@@ -870,7 +870,7 @@ void objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS itemnu
     }
     else
     {
-        propobjSetDropped(obj->prop, DROPTYPE_DEFAULT);
+        objSetDropType(obj->prop, DROPTYPE_DEFAULT);
         objExplode(obj, pos, playernum);
     }
 
@@ -942,7 +942,7 @@ void objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS itemnu
         {
             PropRecord *next = child->prev;
 
-            propobjSetDropped(child, DROPTYPE_DEFAULT);
+            objSetDropType(child, DROPTYPE_DEFAULT);
             child = next;
         }
     }

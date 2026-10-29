@@ -271,7 +271,7 @@ void gunFireTankShell(s32 handnum)
 
     gunLaunchProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, &identitymtx);
 
-    if (obj->runtime_bitflags & RUNTIMEBITFLAG_00000080)
+    if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
     {
         obj->projectile->flags |= PROJECTILEFLAG_LAUNCHING;
 
@@ -1486,15 +1486,9 @@ void gunRenderHands(Gfx **gdlptr)
                 rwdata->Switch.visible = 1;
             }
  
-            if (item == ITEM_ROCKETLAUNCH) 
-            {
-                monitorSetImage(&g_GunScreenRocket, g_ImageCrosshair);
-                gdl = monitorTickAndDraw(model, handptr->gunmodel.obj->Switches[16], &g_GunScreenRocket, gdl, 0, 4);
-            } 
-            else 
-            {
-                gdl = monitorTickAndDraw(model, handptr->gunmodel.obj->Switches[16], &g_GunScreenTaser, gdl, 0, 1);
-            }
+            // The taser's screen. (The rocket launcher had a sight screen here too, but its
+            // model has no screen node, so it was never drawn.)
+            gdl = monitorTickAndDraw(model, handptr->gunmodel.obj->Switches[16], &g_GunScreenTaser, gdl, 0, 1);
         }
  
         renderdata.gdl = gdl;
