@@ -24,6 +24,10 @@
       build/OUTCODE/src/game/prop/objslots.o (.bss);
       build/OUTCODE/src/game/prop/carried.o (.bss);
       build/OUTCODE/src/game/prop/mine.o (.bss);
+      build/OUTCODE/src/game/prop/objtick.o (.bss);
+      build/OUTCODE/src/game/prop/cctv.o (.bss);
+      build/OUTCODE/src/game/prop/autogun.o (.bss);
+      build/OUTCODE/src/game/prop/vehicle.o (.bss);
       build/OUTCODE/src/game/math/physics.o (.bss);
       build/OUTCODE/src/game/math/matrix.o (.bss);
       build/OUTCODE/src/game/math/trig.o (.bss);

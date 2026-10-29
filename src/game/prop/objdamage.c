@@ -885,7 +885,7 @@ void objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS itemnu
 
         if (objGetDestroyedLevel(obj) == 1)
         {
-            obj->flags |= PROPFLAG_IS_DRONE_GUN;
+            obj->flags |= PROPFLAG_AUTOGUN_DISABLED;
         }
     }
     else if (obj->type == PROPDEF_CCTV)
