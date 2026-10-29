@@ -20,18 +20,28 @@ struct texpool
 /** A decoded texture in a pool */
 struct tex
 {
-    u16 texturenum : 12;
-    u16 unused : 4;
-    u8 *data;
+    u16 texturenum;
     u8 width;
     u8 height;
+    u8 *data;
     u8 lastColour;           // palette size - 1
     u8 maxlod : 3;           // levels of detail
     u8 gbiformat : 3;        // G_IM_FMT_*
     u8 depth : 2;            // G_IM_SIZ_*
-    u32 lutmodeindex : 2;    // G_TT_* >> G_MDSFT_TEXTLUT
-    u32 hasExplicitLods : 1; // the smaller levels' sizes are in g_TexCacheItems
-    u32 unused2 : 29;
+    u8 lutmodeindex : 2;     // G_TT_* >> G_MDSFT_TEXTLUT
+    u8 hasExplicitLods : 1;  // the smaller levels are stored (see struct texlodsizes)
+};
+
+/* A texture's pixels follow 8 bytes that start with its number (s16). The code that
+   finds what a bullet hit reads it, from the address in a display list's G_SETTIMG. */
+#define TEX_NUM_BYTES 8
+
+/** The size of each of a texture's stored levels of detail, before its number */
+struct texlodsizes
+{
+    u8 widths[TEX_MAX_LODS];
+    u8 heights[TEX_MAX_LODS];
+    u8 pad[2];
 };
 
 /** A texture's entry in the table of all textures (g_Textures) */
@@ -46,15 +56,6 @@ struct image_entry
     u32 flag6 : 4;
 };
 
-/** The sizes of a texture's stored (explicit) levels of detail, after the first */
-struct texcacheitem
-{
-    s16 texturenum;
-    u8 widths[7];
-    u8 heights[7];
-};
-
-extern struct texcacheitem g_TexCacheItems[];
 extern struct texpool g_TexSharedPool;
 extern struct image_entry g_Textures[];
 extern s32 g_TexCacheCount;
@@ -63,6 +64,9 @@ void texResolveTableOffsets(void);
 void texInitSharedPool(void);
 void texInitPool(struct texpool *pool, u8 *start, s32 len);
 struct tex *texFindInPool(s32 texturenum, struct texpool *pool);
+struct tex *texFindByData(const u8 *data, struct texpool *pool);
+s32 texGetWidthAtLod(const struct tex *tex, s32 lod);
+s32 texGetHeightAtLod(const struct tex *tex, s32 lod);
 void texLoad(u32 *updateword, struct texpool *pool);
 void texLoadFromTextureNum(s32 texturenum, struct texpool *pool);
 void texLoadFromModelFileHeader(ModelFileHeader *header, struct texpool *pool);

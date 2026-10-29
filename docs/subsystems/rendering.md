@@ -44,10 +44,12 @@ it.
 
 A pool (`struct texpool`) fills from both ends: the pixel data grows from the left, and a
 `struct tex` describing each texture (number, size, format, levels of detail) grows from the
-right. `texFindInPool` searches the right-hand list. Each texture's pixels follow 8 bytes
-holding its number, which `texSelect` reads. The shared pool `g_TexSharedPool` is allocated
+right. `texFindInPool` (by number) and `texFindByData` (by address) search the right-hand
+list. Each texture's pixels follow 8 bytes holding its number, which the bullet hit code
+reads (from the address in a `G_SETTIMG`), and a texture with stored levels of detail has
+their sizes before that (`struct texlodsizes`, read by `texGetWidthAtLod`). The shared pool `g_TexSharedPool` is allocated
 each level by `texInitSharedPool`, sized by the level's memory budget (plus 512 KB in
-co-op); models can pass their own. When a pool is full, the texture points at the start of
+co-op); models can pass their own. When a texture doesn't fit, it points at the start of
 the pool instead, which draws garbage rather than crashing.
 
 ### Compression

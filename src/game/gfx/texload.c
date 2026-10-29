@@ -21,8 +21,6 @@
 #include "game/player/player.h"
 
 struct texpool g_TexSharedPool;
-struct texcacheitem g_TexCacheItems[150];
-s32 g_TexCacheCount;
 
 /* How each TEXFORMAT_* is loaded into TMEM */
 static const struct
@@ -79,12 +77,17 @@ void texResolveTableOffsets(void)
     entry->dataoffset = offset;
 }
 
+/** Makes a pool of `len` bytes at `start`, trimmed to 8-byte boundaries */
 void texInitPool(struct texpool *pool, u8 *start, s32 len)
 {
+    u8 *end = (u8 *)((uintptr_t)(start + len) & ~7);
+
+    start = (u8 *)(((uintptr_t)start + 7) & ~7);
+
     pool->start = start;
-    pool->end = (struct tex *)(start + len);
+    pool->end = (struct tex *)end;
     pool->leftpos = start;
-    pool->rightpos = (struct tex *)(start + len);
+    pool->rightpos = (struct tex *)end;
 }
 
 #define COOP_EXTRA_TEXTURE_BYTES (512 * 1024)
@@ -93,8 +96,6 @@ void texInitPool(struct texpool *pool, u8 *start, s32 len)
 void texInitSharedPool(void)
 {
     s32 size = g_LevelMemBudget->textureKB * 1024;
-
-    g_TexCacheCount = 0;
 
     if (g_CoopMode)
     {
@@ -126,34 +127,62 @@ struct tex *texFindInPool(s32 texturenum, struct texpool *pool)
     return NULL;
 }
 
-/** Remembers the sizes of a texture's stored levels of detail, for texGetWidthAtLod */
-static void texCacheLodSizes(s32 texturenum, const TexInfo *info)
+/** Finds the texture whose pixels are at `data` in a pool (NULL for the shared one) */
+struct tex *texFindByData(const u8 *data, struct texpool *pool)
 {
-    struct texcacheitem *item = &g_TexCacheItems[g_TexCacheCount];
-
-    for (s32 i = 0; i < g_TexCacheCount; i++)
+    if (pool == NULL)
     {
-        if (g_TexCacheItems[i].texturenum == texturenum)
+        pool = &g_TexSharedPool;
+    }
+
+    for (struct tex *tex = pool->rightpos; tex < pool->end; tex++)
+    {
+        if (tex->data == data)
         {
-            return;
+            return tex;
         }
     }
 
-    for (s32 lod = 1; lod < info->numLods; lod++)
+    return NULL;
+}
+
+static struct texlodsizes *texLodSizes(const struct tex *tex)
+{
+    return (struct texlodsizes *)(tex->data - TEX_NUM_BYTES) - 1;
+}
+
+s32 texGetWidthAtLod(const struct tex *tex, s32 lod)
+{
+    s32 width = tex->width;
+
+    if (tex->hasExplicitLods)
     {
-        item->widths[lod - 1] = info->widths[lod];
-        item->heights[lod - 1] = info->heights[lod];
+        return texLodSizes(tex)->widths[lod];
     }
 
-    item->texturenum = texturenum;
-
-    // When the list is full it starts again from the beginning, and forgets the rest
-    g_TexCacheCount++;
-
-    if (g_TexCacheCount >= ARRAYCOUNT(g_TexCacheItems))
+    for (s32 i = 0; i < lod; i++)
     {
-        g_TexCacheCount = 0;
+        width = (width + 1) >> 1;
     }
+
+    return width;
+}
+
+s32 texGetHeightAtLod(const struct tex *tex, s32 lod)
+{
+    s32 height = tex->height;
+
+    if (tex->hasExplicitLods)
+    {
+        return texLodSizes(tex)->heights[lod];
+    }
+
+    for (s32 i = 0; i < lod; i++)
+    {
+        height = (height + 1) >> 1;
+    }
+
+    return height;
 }
 
 /**
@@ -168,7 +197,8 @@ static struct tex *texLoadIntoPool(s32 texturenum, struct texpool *pool)
     s32 offset = g_Textures[texturenum].dataoffset;
     s32 size = g_Textures[texturenum + 1].dataoffset - offset;
     const u8 *src;
-    u8 *header;
+    s32 header;
+    u8 *data;
     struct tex *tex;
     TexInfo info;
     s32 bytes;
@@ -181,22 +211,19 @@ static struct tex *texLoadIntoPool(s32 texturenum, struct texpool *pool)
 
     src = romCopyUnaligned(compressed, &_imagesSegmentRomStart + offset, size);
 
-    // Rare's rule of thumb for whether a texture fits: the most that one texture of each
-    // kind could need
-    room = (u8 *)pool->rightpos - pool->leftpos;
+    // The pixels follow the texture's number (TEX_NUM_BYTES), and before that the sizes
+    // of its levels of detail if they're stored
+    header = TEX_NUM_BYTES + ((src[0] & 0x80) ? sizeof(struct texlodsizes) : 0);
+    data = pool->leftpos + header;
+    tex = pool->rightpos - 1;
+    room = (u8 *)tex - data;
 
-    if (room < ((src[0] & 0x40) ? 0xA28 : 0x10CC))
+    if (room < 0)
     {
         return NULL;
     }
 
-    // The pixels start with 8 bytes holding the texture number (texSelect reads it), and
-    // the struct tex goes at the right end
-    header = pool->leftpos;
-    tex = pool->rightpos - 1;
-    room -= 8 + sizeof(struct tex);
-
-    bytes = texDecode(src, header + 8, room, &info);
+    bytes = texDecode(src, data, room, &info);
 
     if (bytes == TEX_DECODE_NO_ROOM)
     {
@@ -208,13 +235,13 @@ static struct tex *texLoadIntoPool(s32 texturenum, struct texpool *pool)
         dbgFatal("tex: bad texture", texturenum);
     }
 
-    *(s16 *)header = texturenum;
-    pool->leftpos = header + 8 + bytes;
+    *(s16 *)(data - TEX_NUM_BYTES) = texturenum;
+    pool->leftpos = data + bytes;
     pool->rightpos = tex;
 
     *tex = (struct tex){
         .texturenum = texturenum,
-        .data = header + 8,
+        .data = data,
         .width = info.widths[0],
         .height = info.heights[0],
         .lastColour = info.lastColour,
@@ -227,7 +254,13 @@ static struct tex *texLoadIntoPool(s32 texturenum, struct texpool *pool)
 
     if (info.explicitLods)
     {
-        texCacheLodSizes(texturenum, &info);
+        struct texlodsizes *sizes = texLodSizes(tex);
+
+        for (s32 lod = 0; lod < TEX_MAX_LODS; lod++)
+        {
+            sizes->widths[lod] = info.widths[lod];
+            sizes->heights[lod] = info.heights[lod];
+        }
     }
 
     return tex;

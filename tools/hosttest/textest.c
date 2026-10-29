@@ -126,12 +126,13 @@ int main(void)
     for (s32 i = 0; i < count; i++)
     {
         u8 *src = calloc(sizes[i] + SRC_PADDING, 1);
-        u8 *dst = calloc(DST_SIZE, 1);
+        u8 *dst = malloc(DST_SIZE);
         TexInfo info;
         s32 result;
 
         CHECK(offset + sizes[i] <= (u32)texturesSize, i);
         memcpy(src, textures + offset, sizes[i]);
+        memset(dst, 0xaa, DST_SIZE); // so that anything left unwritten changes the hash
         offset += sizes[i];
 
         result = texDecode(src, dst, DST_SIZE, &info);

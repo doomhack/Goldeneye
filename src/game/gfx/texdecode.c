@@ -25,7 +25,7 @@
  * pixels uncompressed, Huffman coded, run-length coded (both one colour channel at a time),
  * as indices into a lookup table of colours, or as differences from neighbouring pixels.
  *
- * Row padding isn't written, and some methods fill it from the next row: it is never drawn.
+ * Row padding is zeroed. It is never drawn.
  */
 #include <ultra64.h>
 #include "game/gfx/texdecode.h"
@@ -128,6 +128,15 @@ s32 texRowBytes(s32 format, s32 width)
             return (width + 7) & ~7;
         default:
             return ((width + 15) & ~15) / 2;
+    }
+}
+
+/** Zeroes an image's `bytes` (a multiple of 8, as its rows are), padding included */
+static void clearImage(u8 *image, s32 bytes)
+{
+    for (s32 i = 0; i < bytes; i += 4)
+    {
+        *(u32 *)&image[i] = 0;
     }
 }
 
@@ -600,6 +609,8 @@ static s32 texDecodeZlib(const u8 *src, u8 *dst, s32 dstSize, TexInfo *info)
         {
             return TEX_DECODE_BAD;
         }
+
+        clearImage(&dst[totalBytes], rowBytes * height);
 
         for (s32 y = 0; y < height; y++)
         {
@@ -1152,11 +1163,14 @@ static bool decodeRareImage(TexBits *bits, u8 *dst, s32 width, s32 height, s32 f
 
                     if (info->pixelBits == 4)
                     {
-                        // The second pixel of an odd width's last pair is the next row's
-                        // first: padding
-                        s32 next = numColours > 256 ? ((u16 *)s_Scratch)[pos + 1] : s_Scratch[pos + 1];
+                        row[x >> 1] = pixel << 4;
 
-                        row[x >> 1] = pixel << 4 | pixelFromLookup(lookupColour(s_Lookup, next, format), format, false);
+                        if (x + 1 < width)
+                        {
+                            s32 next = numColours > 256 ? ((u16 *)s_Scratch)[pos + 1] : s_Scratch[pos + 1];
+
+                            row[x >> 1] |= pixelFromLookup(lookupColour(s_Lookup, next, format), format, false);
+                        }
                     }
                     else
                     {
@@ -1224,8 +1238,12 @@ static bool decodeRareImage(TexBits *bits, u8 *dst, s32 width, s32 height, s32 f
 
                     if (info->pixelBits == 4)
                     {
-                        // As above, an odd width's last pair ends with padding
-                        row[x >> 1] = pixel << 4 | pixelFromChannels(s_Scratch, pos + 1, numPixels, format);
+                        row[x >> 1] = pixel << 4;
+
+                        if (x + 1 < width)
+                        {
+                            row[x >> 1] |= pixelFromChannels(s_Scratch, pos + 1, numPixels, format);
+                        }
                     }
                     else
                     {
@@ -1287,6 +1305,8 @@ static s32 texDecodeRare(const u8 *src, u8 *dst, s32 dstSize, TexInfo *info)
         {
             return TEX_DECODE_NO_ROOM;
         }
+
+        clearImage(&dst[totalBytes], bytes);
 
         if (!decodeRareImage(&bits, &dst[totalBytes], width, height, format, method))
         {
