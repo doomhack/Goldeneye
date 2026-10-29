@@ -28,6 +28,7 @@
       build/OUTCODE/src/game/prop/cctv.o (.bss);
       build/OUTCODE/src/game/prop/autogun.o (.bss);
       build/OUTCODE/src/game/prop/vehicle.o (.bss);
+      build/OUTCODE/src/game/prop/objrender.o (.bss);
       build/OUTCODE/src/game/math/physics.o (.bss);
       build/OUTCODE/src/game/math/matrix.o (.bss);
       build/OUTCODE/src/game/math/trig.o (.bss);

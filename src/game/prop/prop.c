@@ -368,7 +368,7 @@ Gfx *propRender(Gfx * gdl, PropRecord *prop, s32 withalpha)
     }
     else if ((type == PROP_TYPE_OBJ) || (type == PROP_TYPE_WEAPON) || (type == PROP_TYPE_DOOR))
     {
-        gdl = chrobjRenderProp(prop, gdl, withalpha);
+        gdl = objRenderProp(prop, gdl, withalpha);
     }
     else if (type == PROP_TYPE_EXPLOSION)
     {
