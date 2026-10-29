@@ -57,6 +57,7 @@
 #include "game/mission/objective.h"
 #include "game/nav/stan.h"
 #include "game/chr/chr.h"
+#include "game/prop/alarm.h"
 
 
 // bss
@@ -98,8 +99,6 @@ s32 g_OnScreenPropCount;
 PropRecord *g_InteractProp;
 WeaponObjRecord* proxy_mine_table[30];
 
-f32 gasTimeToFullOpacity;
-u32 gasDoesDamageFlag;
 
 WeaponObjRecord g_WeaponSlots[MAX_WEAPON_SLOTS];
 
@@ -116,14 +115,6 @@ struct ModelNode * g_ProjectileHitNode;
 coord3d g_ProjectileHitPos;
 coord3d g_ProjectileHitNormal;
 
-MonitorRecord g_MonitorAnimController;
-
-MonitorRecord g_UnknownAnimController;
-
-/**
- * Unused / unreferenced (from padding / align?)
-*/
-MonitorRecord g_TaserAnimController;
 
 
 stagesetup g_CurrentSetup; //Public Working Setup
@@ -944,6 +935,8 @@ void propsTickPerPlayer(void)
     if (playerGetShuffledIndex(playerGetCurrentNum()) == 0)
     {
         alarmGasTimerTick();
+        proxminesTickGuards();
+        g_RemoteMineOwnerTriggerFlag = 0;
         aiSoundsTick();
         propsDefragRoomProps();
     }

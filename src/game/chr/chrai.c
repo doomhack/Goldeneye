@@ -41,6 +41,8 @@
 #include <random.h>
 #include <snd.h>
 #include <ultra64.h>
+#include "game/prop/alarm.h"
+#include "game/prop/monitor.h"
 
 // hack? used to match as called with 2 args, but decompiled code takes 1
 extern s32 objectiveGetStatus_WEAK(s32 objectiveNum, s32);
@@ -3622,13 +3624,13 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_HudCountdownShow:
                 {
-                    countdownTimerSetVisible(1, TRUE);
+                    countdownTimerSetVisible(COUNTDOWN_HIDE_SCRIPT, TRUE);
                     Offset += sizeof(AiHudCountdownShowRecord);
                     break;
                 }
                 case AI_HudCountdownHide:
                 {
-                    countdownTimerSetVisible(1, FALSE);
+                    countdownTimerSetVisible(COUNTDOWN_HIDE_SCRIPT, FALSE);
                     Offset += sizeof(AiHudCountdownHideRecord);
                     break;
                 }
@@ -4145,7 +4147,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         if (obj->type == PROPDEF_MONITOR)
                         {
                             MonitorObjRecord *sm = (MonitorObjRecord *)obj;
-                            monitorSetImageByNum(&sm->Monitor, ai->SCREEN_BANK);
+                            monitorSetScript(&sm->Monitor, ai->SCREEN_BANK);
                         }
                         else if (obj->type == PROPDEF_MULTI_MONITOR)
                         {
@@ -4153,7 +4155,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             if (slot < 4)
                             {
                                 MultiMonitorObjRecord *mm = (MultiMonitorObjRecord *)obj; // need new size here 0x74 (116) + 0x80 (so monitor is obj + 74)
-                                monitorSetImageByNum(&mm->Monitor[slot], ai->SCREEN_BANK);
+                                monitorSetScript(&mm->Monitor[slot], ai->SCREEN_BANK);
                             }
                         }
                     }
@@ -4262,7 +4264,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (!(ai->val & PLAYERFLAG_NOTIMER))
                     {
-                        countdownTimerSetVisible(16, FALSE);
+                        countdownTimerSetVisible(COUNTDOWN_HIDE_NOCONTROL, FALSE);
                     }
                     is_timer_active = FALSE;
                     Offset += sizeof(AiBondDisableControlRecord);
@@ -4274,7 +4276,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     gunSetGunAmmoVisible(GUNAMMOREASON_NOCONTROL, TRUE);
                     hudmsgsSetOn(PLAYERFLAG_NOCONTROL);
                     hudmsgTopClearFlag(2);
-                    countdownTimerSetVisible(16, TRUE);
+                    countdownTimerSetVisible(COUNTDOWN_HIDE_NOCONTROL, TRUE);
                     is_timer_active = TRUE;
                     Offset += sizeof(AiBondEnableControlRecord);
                     break;

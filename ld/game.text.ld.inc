@@ -13,6 +13,9 @@
       build/OUTCODE/src/game/chr/chrai.o (.text);
       build/OUTCODE/src/game/prop/prop.o (.text);
       build/OUTCODE/src/game/prop/propobj.o (.text);
+      build/OUTCODE/src/game/prop/alarm.o (.text);
+      build/OUTCODE/src/game/prop/monitor.o (.text);
+      build/OUTCODE/src/game/prop/monitorscripts.o (.text);
       build/OUTCODE/src/game/math/physics.o (.text);
       build/OUTCODE/src/game/math/matrix.o (.text);
       build/OUTCODE/src/game/math/trig.o (.text);

@@ -175,6 +175,7 @@
 #include "game/hud/radar.h"
 #include "game/prop/prop.h"
 #include "game/replay/ramromreplay.h"
+#include "game/prop/alarm.h"
 
 void playerDie(void);
 
@@ -3304,7 +3305,7 @@ void watchTick(void)
                 gunSetGunAmmoVisible(GUNSIGHTREASON_NOCONTROL, FALSE);
                 hudmsgsSetOff(PLAYERFLAG_LOCKCONTROLS);
                 hudmsgTopSetFlag(PLAYERFLAG_LOCKCONTROLS);
-                countdownTimerSetVisible(4, 0);
+                countdownTimerSetVisible(COUNTDOWN_HIDE_WATCH, FALSE);
 
                 if ((g_CurrentPlayer->pause_state == 0) || (g_CurrentPlayer->pause_state == 2) || (g_CurrentPlayer->pause_state == 3))
                 {
@@ -3527,7 +3528,7 @@ void watchTick(void)
                     gunSetGunAmmoVisible(GUNSIGHTREASON_NOCONTROL, TRUE);
                     hudmsgsSetOn(1);
                     hudmsgTopClearFlag(1);
-                    countdownTimerSetVisible(4, 1);
+                    countdownTimerSetVisible(COUNTDOWN_HIDE_WATCH, TRUE);
 
                     g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x0;
                     g_CurrentPlayer->watch_pause_time = 0;
@@ -5996,7 +5997,7 @@ void playerTickDamageAndHealth(void)
             gunSetSightVisible(GUNSIGHTREASON_DAMAGE, FALSE);
             hudmsgsSetOff(4);
             hudmsgTopSetFlag(PLAYERFLAG_NOTIMER);
-            countdownTimerSetVisible(8, 0);
+            countdownTimerSetVisible(COUNTDOWN_HIDE_DAMAGE, FALSE);
 
             g_CurrentPlayer->damagetype = (s32)(currentPlayerGetHealth() * 8.0f);
 
@@ -6091,7 +6092,7 @@ void playerTickDamageAndHealth(void)
                 gunSetSightVisible(GUNSIGHTREASON_DAMAGE, TRUE);
                 hudmsgsSetOn(4);
                 hudmsgTopClearFlag(PLAYERFLAG_NOTIMER);
-                countdownTimerSetVisible(8, 1);
+                countdownTimerSetVisible(COUNTDOWN_HIDE_DAMAGE, TRUE);
             }
         }
     }
