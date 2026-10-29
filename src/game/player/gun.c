@@ -112,6 +112,7 @@ CartridgeModelFileRecord ejected_cartridge[] = {
 #include "game/prop/explosion.h"
 #include "game/world/bg.h"
 #include "game/chr/chr.h"
+#include "game/prop/projectile.h"
 
 u32 g_GunDebApplyKeyframe = 0;
 u32 g_gunDebKeyframeIndex = 0;
@@ -1373,9 +1374,9 @@ void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf 
         if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
         {
             projectile = obj->projectile;
-            projectile->flags |= 0x41;
+            projectile->flags |= PROJECTILEFLAG_TESTHEIGHT | PROJECTILEFLAG_AIRBORNE;
             obj->projectile->ownerprop = owner;
-            projectileSetSticky(prop);
+            projectileEnableCollide3D(prop);
             mtx4Copy(tumble, &obj->projectile->mtx);
             obj->projectile->speed.f[0] = velocity->f[0];
             obj->projectile->speed.f[1] = velocity->f[1];
@@ -1450,7 +1451,7 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
 
     if (obj->runtime_bitflags & 0x80) {
         if (usedfallback) {
-            obj->projectile->flags |= PROJECTILEFLAG_00000100;
+            obj->projectile->flags |= PROJECTILEFLAG_MOVETOTARGET;
             obj->projectile->targetPos.x = targetpos->x;
             obj->projectile->targetPos.y = targetpos->y;
             obj->projectile->targetPos.z = targetpos->z;
@@ -1535,7 +1536,7 @@ void gunThrowGrenade(s32 hand)
 
         if ((wor->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) != 0)
         {
-            wor->projectile->flags = (s32) (wor->projectile->flags | 2);
+            wor->projectile->flags = (s32) (wor->projectile->flags | PROJECTILEFLAG_BOUNCEONCE);
 
             wor->projectile->bounciness = 0.3f;
             wor->projectile->groundFriction = 0.13333333f;
@@ -1618,7 +1619,7 @@ void gunThrowKnife(s32 hand)
 
         if ((wor->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) != 0)
         {
-            wor->projectile->flags = (s32) (wor->projectile->flags | 2);
+            wor->projectile->flags = (s32) (wor->projectile->flags | PROJECTILEFLAG_BOUNCEONCE);
 
             wor->projectile->bounciness = 0.1f;
             wor->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
@@ -1626,7 +1627,7 @@ void gunThrowKnife(s32 hand)
             wor->runtime_bitflags |= RUNTIMEBITFLAG_THROWING_KNIFE_RELATED;
         }
 
-        objUpdateThrowKnifeSound(wor);
+        projectileUpdateKnifeSound(wor);
     }
 }
 
@@ -1809,7 +1810,7 @@ void gunThrowObject(s32 hand)
 
         if ((wor->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) != 0)
         {
-            wor->projectile->flags = (s32) (wor->projectile->flags | 2);
+            wor->projectile->flags = (s32) (wor->projectile->flags | PROJECTILEFLAG_BOUNCEONCE);
 
             wor->projectile->bounciness = 0.1f;
             wor->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
@@ -2112,7 +2113,7 @@ void gunFireTankShell(s32 handnum)
 
         if (weaponid != ITEM_TANKSHELLS)
         {
-            obj->projectile->flags |= PROJECTILEFLAG_00000020;
+            obj->projectile->flags |= PROJECTILEFLAG_RISING;
             obj->projectile->riseY = obj->runtime_pos.y;
             obj->projectile->riseSpeed = obj->projectile->speed.y;
             obj->projectile->accel.x = unscaledvelocity.x;

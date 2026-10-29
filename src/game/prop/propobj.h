@@ -34,13 +34,9 @@ extern s32 g_NextHatSlot;
 extern struct LinkRecord *g_LevelLoadPropSwitch;
 extern LockDoorRecord *g_LevelLoadPropLockDoor;
 extern SafeObjectRecord *g_LevelLoadPropSafeItem;
-extern struct PropRecord *g_ProjectileHitProp;
-extern s32 bodypartshot;
 extern f32 g_AutogunPendingDamageTick;
 extern f32 g_AutogunDamageScalar;
 extern f32 g_SoloAmmoMultiplier;
-extern struct Model *g_CurrentProjectileModel;
-extern struct ModelNode *g_ProjectileHitNode;
 
 #if defined(VERSION_EU)
 extern ExplosionDetailsRecordEuList object_explosion_details;
@@ -56,8 +52,6 @@ void                 objSetMoving(struct PropRecord *prop, s32 moving);
 
 void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop);
 
-void                 chrobjApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 accel, f32 decel, f32 maxSpeed);
-void                 chrobjCallsApplySpeed(f32 *openPosition, f32 maxFrac, f32 *speedPtr, f32 accel, f32 decel, f32 maxSpeed);
 Gfx                 *weaponRenderTracers(Gfx *gdl);
 void                 objGetTileShading(PropRecord *prop, rgba_u8 *colour);
 void                 objGetShadeColour(PropRecord *prop, rgba_u8 *colour);
@@ -67,11 +61,8 @@ void                 weaponSetGunfireVisible(PropRecord *prop, s32 firing);
 WeaponObjRecord     *weaponCreateFromModel(PROP modelnum, s32 weaponid);
 void                 objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS, s32 playernum);
 void                 chrobjMaybeDetonateObjectIfFlags(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS item, s32 owner);
-void                 objEnsureProjectile(PropRecord *);
-void                 projectileSetSticky(PropRecord *);
 void                 chrobjCollisionRelated(ObjectRecord *);
 void                 objChangeShading(ObjectRecord *, coord3d *, Mtxf *, StandTile *);
-bool                 projectileTestPropBoundingSphere(coord3d *zeropos, coord3d *pos, coord3d *vec, f32 scale);
 bool                 propobjFindHit(Model *model, ModelNode *startNode, coord3d *rayPos, coord3d *rayDir, struct HitThing *hitthing, s32 *dstmtxindex, ModelNode **dstnode);
 void                 objGetCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom);
 Gfx                 *chrobjRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass);
@@ -84,7 +75,6 @@ void                 shadingLerp(rgba_s32 *dest, s32 enable, rgba_f32 *src);
 void                 remoteMinesDetonate(void);
 
 void                 objDetach(PropRecord *prop);
-void                 objFreeEmbedmentOrProjectile(PropRecord *);
 void                 objBounce(ObjectRecord *obj, coord3d *velocity);
 void                 chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand);
 void                 propweaponSetDual(WeaponObjRecord *leftweapon, WeaponObjRecord *rightweapon);
@@ -101,13 +91,12 @@ WeaponObjRecord      *weaponFindThrown(s32 weaponnum);
 HatRecord           *hatCreate(bool musthaveprop, bool musthavemodel, ModelFileHeader *modeldef);
 PropRecord*          objInitWithAutoModel(ObjectRecord* obj);
 PropRecord*          objInitWithModelDef(ObjectRecord* object, ModelFileHeader* header);
-Embedment           *embedmentAllocate(void);
 void                 objDetach(PropRecord *prop);
-void                 objUpdateThrowKnifeSound(ObjectRecord *obj);
 s32                  chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2);
 s32                  chrobjTestPointPolygonCollision(coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges);
 void                 objDetonateRecursive(PropRecord *prop, f32 damage, coord3d *pos, s32 weaponnum, s32 owner);
 struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *obj);
+ModelRoData_BoundingBoxRecord *chrobjGetBboxFromObjFile(ModelFileHeader *obj);
 bool                 padBoundsContainPoint(coord3d* pos, f32 radius, BoundPadRecord *boundpads);
 void                 glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
 void                 modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin);

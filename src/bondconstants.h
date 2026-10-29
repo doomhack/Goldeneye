@@ -434,25 +434,18 @@ typedef enum DROPTYPE
 
 typedef enum PROJECTILEFLAG
 {
-    PROJECTILEFLAG_AIRBORNE    = 0x00000001,
-    PROJECTILEFLAG_00000002    = 0x00000002,
-    PROJECTILEFLAG_STICKY      = 0x00000004,
-    PROJECTILEFLAG_00000008    = 0x00000008,
-    PROJECTILEFLAG_POWERED     = 0x00000010,
-    PROJECTILEFLAG_00000020    = 0x00000020,
-    PROJECTILEFLAG_00000040    = 0x00000040,
-    PROJECTILEFLAG_LAUNCHING   = 0x00000080,
-    PROJECTILEFLAG_00000100    = 0x00000100,
-    PROJECTILEFLAG_00000200    = 0x00000200,
-    PROJECTILEFLAG_FALLING     = 0x00000400,
-    PROJECTILEFLAG_SLIDING     = 0x00000800,
-    PROJECTILEFLAG_00001000    = 0x00001000,
-    PROJECTILEFLAG_00002000    = 0x00002000,
-    PROJECTILEFLAG_NOTIMELIMIT = 0x00004000,
-    PROJECTILEFLAG_INROOM      = 0x00008000,
-    PROJECTILEFLAG_00010000    = 0x00010000,
-    PROJECTILEFLAG_LIGHTWEIGHT = 0x40000000,
-    PROJECTILEFLAG_FREE        = 0x80000000
+    PROJECTILEFLAG_AIRBORNE     = 0x00000001, // flying; otherwise landed, turning flat and sliding
+    PROJECTILEFLAG_BOUNCEONCE   = 0x00000002, // thrown weapons: the first bounce always hops up
+    PROJECTILEFLAG_COLLIDE3D    = 0x00000004, // moves against the level and props in 3D, not just along the floor
+    PROJECTILEFLAG_OFFGRID      = 0x00000008, // no floor tile below it (PROPFLAG_00000008 on its prop too)
+    PROJECTILEFLAG_POWERED      = 0x00000010, // rockets: under thrust, no gravity
+    PROJECTILEFLAG_RISING       = 0x00000020, // rockets: rising to their cruising height after launch
+    PROJECTILEFLAG_TESTHEIGHT   = 0x00000040, // floor moves only hit obstacles at its height
+    PROJECTILEFLAG_LAUNCHING    = 0x00000080, // its sounds are stopped when it is freed
+    PROJECTILEFLAG_MOVETOTARGET = 0x00000100, // fired from a gun: first moves out to targetPos
+    PROJECTILEFLAG_NOTUMBLE     = 0x00000200, // doesn't spin when it bounces
+    PROJECTILEFLAG_SMOKETRAIL   = 0x00000400, // launched by an AI script (AI_ObjectRocketLaunch): trails smoke
+    PROJECTILEFLAG_FREE         = 0x80000000
 } PROJECTILE_FLAG;
 
 // Might be the same flags as PROJECTILEFLAG
@@ -513,7 +506,7 @@ BITFLAG(RUNTIMEBITFLAG,
         THROWING_KNIFE_RELATED,
         EMBEDDED,
         HASPROJECTILE, /* this object owns a live Projectile record in obj->projectile   */
-        00000100,
+        LANDDAMAGE, /* takes a little damage when it lands                          */
         BEENOPENED,
         DESTROYED, /* only set with disabled or destroyed doors                    */
         00000800,
@@ -521,7 +514,7 @@ BITFLAG(RUNTIMEBITFLAG,
         PADLOCKEDDOOR,
         ACTIVATED, /* activated                                                    */
         00008000,
-        00010000,
+        NOLANDDAMAGE, /* knocked off something: no landing damage until it settles     */
         00020000, /* owner 2bit (0-3) used to                                      */
         00040000, /* attribute kills to players                                    */
         HASOWNER,
@@ -543,7 +536,6 @@ BITFLAG(RUNTIMEBITFLAG,
 #define RUNTIMEBITSHIFT_OWNER         0x11
 #define RUNTIMEBITFLAG_00000001       0x1
 #define RUNTIMEBITFLAG_00000080       0x00000080
-#define RUNTIMEBITFLAG_00000100       0x00000100
 #define RUNTIMEBITFLAG_00001000       0x00001000
 #define RUNTIMEBITFLAG_00000800       0X00000800
 #define RUNTIMEBITFLAG_PADLOCKEDDOOR  0X00002000

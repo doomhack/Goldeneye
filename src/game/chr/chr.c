@@ -47,6 +47,7 @@
 #include "game/world/surface.h"
 #include "game/math/physics.h"
 #include "game/world/bgfog.h"
+#include "game/math/line_tri_intersect.h"
 
 #ifdef VERSION_EU
 #define GROUND_SMOOTH_FACTOR 0.118799984f /* 0x3DF34D68 (PAL-scaled 0.1) */
@@ -3149,7 +3150,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
 
     modelsize += heldmodelsize;
 
-    if (projectileTestPropBoundingSphere(&shotdata->viewOrigin, &shotdata->viewDir, (coord3d *) &submatrix->m[3][0], modelsize))
+    if (intersectRaySphere(&shotdata->viewOrigin, &shotdata->viewDir, (coord3d *) &submatrix->m[3][0], modelsize))
     {
         hitbounds = TRUE;
         hitpart = HIT_LEFT_FOOT;

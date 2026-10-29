@@ -47,6 +47,7 @@
 #include "str.h"
 #include "game/prop/alarm.h"
 #include "game/prop/monitor.h"
+#include "game/prop/projectile.h"
 
 /**
  * EU .bss 0x80068480
@@ -1917,23 +1918,11 @@ void propsResetLevelState(void)
         g_AmmoCrates[i].prop = NULL;
     }
 
-    for (i = 0; i < PROJECTILES_ARR_MAX; i++)
-    {
-        g_Projectiles[i].flags = 0x80000000;
-        g_Projectiles[i].sounds[0] = NULL;
-        g_Projectiles[i].sounds[1] = NULL;
-    }
-
-    for (i = 0; i < EMBEDMENT_ARR_MAX; i++)
-    {
-        g_Embedments[i].flags = 1;
-    }
+    projectilesReset();
 
     g_LevelLoadPropSwitch = NULL;
     g_LevelLoadPropLockDoor = NULL;
     g_LevelLoadPropSafeItem = NULL;
-    g_ProjectileHitProp = NULL;
-    bodypartshot = -1;
     g_CctvAlarmTimeScale = 1.0f;
     g_CctvDamageScale = 1.0f;
     g_AutogunPendingDamageTick = 1.0f;

@@ -7,5 +7,6 @@
 bool intersectRayTriangle(const coord16 *vertex0, const coord16 *vertex1, const coord16 *vertex2,
                           const coord3d *vertexOffset, const coord3d *rayStart, const coord3d *linePoint,
                           const coord3d *rayDirection, coord3d *hitPos, coord3d *normal);
+bool intersectRaySphere(const coord3d *rayStart, const coord3d *rayDir, const coord3d *centre, f32 radius);
 
 #endif

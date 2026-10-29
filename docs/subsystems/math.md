@@ -13,8 +13,8 @@ generator.
 | `trig.c` | `sinf` and `cosf` (single precision, replacing the C library's), `mathAtan2` and `mathAcos` |
 | `round.c` | `mathFloor`, `mathCeil` and their `...ToInt` versions |
 | `interp.c` | Linear and cubic interpolation between points |
-| `physics.c` | Gravity, and the random launch and tumble of thrown objects |
-| `line_tri_intersect.c` | `intersectRayTriangle`, a ray against a triangle of the level geometry or an object |
+| `physics.c` | Gravity, the random launch and tumble of thrown objects, and easing a value towards a target (`physMoveTowards`: doors, crouching; `physTurnTowards`: autoguns, vehicles) |
+| `line_tri_intersect.c` | `intersectRayTriangle`, a ray against a triangle of the level geometry or an object; `intersectRaySphere` for bounds checks |
 
 `tools/hosttest/mathtest.c` tests all of it on the PC (see [Testing.md](../Testing.md)).
 

@@ -17,6 +17,7 @@
       build/OUTCODE/src/game/prop/monitor.o (.data);
       build/OUTCODE/src/game/prop/monitorscripts.o (.data);
       build/OUTCODE/src/game/prop/door.o (.data);
+      build/OUTCODE/src/game/prop/projectile.o (.data);
       build/OUTCODE/src/game/math/physics.o (.data);
       build/OUTCODE/src/game/math/matrix.o (.data);
       build/OUTCODE/src/game/math/trig.o (.data);

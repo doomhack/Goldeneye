@@ -452,6 +452,121 @@ static void testPhysics(void)
     }
 }
 
+static void testMoveTowards(void)
+{
+    // Doors: from closed to open, it arrives, never overshoots, and never goes over the
+    // top speed
+    for (s32 i = 0; i < 2000; i++)
+    {
+        f32 start = testRandom(-10, 10);
+        f32 target = testRandom(-10, 10);
+        f32 accel = testRandom(0.001f, 0.05f);
+        f32 decel = testRandom(0.001f, 0.05f);
+        f32 maxSpeed = testRandom(0.05f, 0.5f);
+        f32 pos = start;
+        f32 speed = 0.0f;
+        s32 ticks = 0;
+
+        while (pos != target && ticks < 100000)
+        {
+            f32 before = pos;
+
+            physMoveTowards(&pos, target, &speed, accel, decel, maxSpeed, 1);
+            ticks++;
+
+            CHECK(fabs(speed) <= maxSpeed + 1e-6f);
+            // Each tick moves towards the target (it brakes before it gets there)
+            CHECK(fabs(target - pos) <= fabs(target - before));
+        }
+
+        CHECK(pos == target);
+
+        // Several ticks at once are the same as one at a time, until it arrives (it
+        // stops there; callers zero the speed then, or the next call would move it on)
+        f32 pos1 = start;
+        f32 speed1 = 0.0f;
+        f32 pos5 = start;
+        f32 speed5 = 0.0f;
+
+        for (s32 j = 0; j < 5; j++)
+        {
+            physMoveTowards(&pos1, target, &speed1, accel, decel, maxSpeed, 1);
+        }
+
+        physMoveTowards(&pos5, target, &speed5, accel, decel, maxSpeed, 5);
+        CHECK(pos5 == target || (pos1 == pos5 && speed1 == speed5));
+    }
+
+    // Moving away from the target brakes first, then comes back
+    f32 pos = 0.0f;
+    f32 speed = -0.3f;
+
+    physMoveTowards(&pos, 10.0f, &speed, 0.01f, 0.1f, 0.5f, 1);
+    CHECK_NEAR(speed, -0.2, 1e-6);
+    CHECK_NEAR(pos, -0.2, 1e-6);
+
+    // Angles turn the short way round and stay in [0, 2pi)
+    for (s32 i = 0; i < 2000; i++)
+    {
+        f32 angle = testRandom(0, M_TAU_F - 0.001f);
+        f32 target = testRandom(0, M_TAU_F - 0.001f);
+        f32 turnSpeed = 0.0f;
+        double shortWay = target - angle;
+
+        if (shortWay < -M_PI_F) shortWay += M_TAU_F;
+        if (shortWay >= M_PI_F) shortWay -= M_TAU_F;
+
+        f32 before = angle;
+        physTurnTowards(&angle, target, &turnSpeed, 0.01f, 0.01f, 0.1f, 1);
+        CHECK(angle >= 0.0f && angle < M_TAU_F);
+
+        double moved = angle - before;
+
+        if (moved < -M_PI) moved += 2 * M_PI;
+        if (moved > M_PI) moved -= 2 * M_PI;
+        CHECK(moved * shortWay >= 0);
+
+        for (s32 j = 0; j < 10000 && angle != target; j++)
+        {
+            physTurnTowards(&angle, target, &turnSpeed, 0.01f, 0.01f, 0.1f, 1);
+        }
+
+        // It ends on the target, or one turn away from it (stored in range)
+        CHECK(angle == target || fabs(fabs(angle - target) - M_TAU_F) < 1e-5);
+    }
+}
+
+static void testRaySphere(void)
+{
+    coord3d origin = {{0, 0, 0}};
+    coord3d alongX = {{2, 0, 0}};
+
+    CHECK(intersectRaySphere(&origin, &alongX, &(coord3d) {{100, 5, 0}}, 6.0f));
+    CHECK(!intersectRaySphere(&origin, &alongX, &(coord3d) {{100, 7, 0}}, 6.0f));
+    // Behind the start
+    CHECK(!intersectRaySphere(&origin, &alongX, &(coord3d) {{-100, 0, 0}}, 6.0f));
+
+    // Random rays against the distance from the line, in doubles
+    for (s32 i = 0; i < 100000; i++)
+    {
+        coord3d start = {{testRandom(-1000, 1000), testRandom(-1000, 1000), testRandom(-1000, 1000)}};
+        coord3d dir = {{testRandom(-1, 1), testRandom(-1, 1), testRandom(-1, 1)}};
+        coord3d centre = {{testRandom(-1000, 1000), testRandom(-1000, 1000), testRandom(-1000, 1000)}};
+        f32 radius = testRandom(1, 300);
+        double tx = centre.x - start.x;
+        double ty = centre.y - start.y;
+        double tz = centre.z - start.z;
+        double along = (tx * dir.x + ty * dir.y + tz * dir.z) / sqrt(dir.x * dir.x + dir.y * dir.y + dir.z * dir.z);
+        double lineDist = sqrt(fabs(tx * tx + ty * ty + tz * tz - along * along));
+
+        // Skip the cases too close to call in floats
+        if (fabs(lineDist - radius) > 0.5 && fabs(along) > 0.5)
+        {
+            CHECK(intersectRaySphere(&start, &dir, &centre, radius) == (along > 0 && lineDist <= radius));
+        }
+    }
+}
+
 static void testRayTriangle(void)
 {
     coord16 v0 = {{0, 0, 0}};
@@ -512,6 +627,8 @@ int main(void)
     testQuaternions();
     testInterp();
     testPhysics();
+    testMoveTowards();
+    testRaySphere();
     testRayTriangle();
 
     if (s_failures != 0)

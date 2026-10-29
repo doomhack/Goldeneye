@@ -1,6 +1,7 @@
 /**
  * Where a ray hits a triangle, for bullets and line-of-sight tests against the level and
- * objects. The sums are in doubles (f64), which the N64's FPU does natively.
+ * objects. The sums are in doubles (f64), which the N64's FPU does natively. Also a quick
+ * ray against sphere test, for bounds checks before the exact ones.
  */
 #include <ultra64.h>
 #include "game/math/line_tri_intersect.h"
@@ -128,4 +129,34 @@ bool intersectRayTriangle(const coord16 *vertex0, const coord16 *vertex1, const 
     normal->z = normalZ;
 
     return true;
+}
+
+/**
+ * Tests whether the ray from `rayStart` along `rayDir` (any length) passes within `radius`
+ * of `centre`, with the centre in front of the start. The ray has no end, so a sphere far
+ * beyond the target still counts.
+ */
+bool intersectRaySphere(const coord3d *rayStart, const coord3d *rayDir, const coord3d *centre, f32 radius)
+{
+    coord3d toCentre;
+
+    toCentre.x = centre->x - rayStart->x;
+    toCentre.y = centre->y - rayStart->y;
+    toCentre.z = centre->z - rayStart->z;
+
+    f32 along = rayDir->x * toCentre.x + rayDir->y * toCentre.y + rayDir->z * toCentre.z;
+
+    if (along > 0)
+    {
+        f32 dirLengthSq = rayDir->x * rayDir->x + rayDir->y * rayDir->y + rayDir->z * rayDir->z;
+        f32 distSq = toCentre.x * toCentre.x + toCentre.y * toCentre.y + toCentre.z * toCentre.z;
+
+        // The squared distance from the line is distSq - along^2 / dirLengthSq
+        if ((distSq - radius * radius) * dirLengthSq <= along * along)
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
