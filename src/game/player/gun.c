@@ -1368,7 +1368,7 @@ void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf 
 
         setupUpdateObjectRoomPosition(obj);
 
-        chrobjCollisionRelated(obj);
+        objUpdateCollisionBounds(obj);
         objEnsureProjectile(prop);
 
         if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
@@ -1927,7 +1927,7 @@ void gunUpdateAttachedRocket(s32 handIndex)
     mtx4ScaleRows012(attachedRocket->model->scale, &worldMtx);
 
     objChangeShading(attachedRocket, &entry->muzzlePos, &worldMtx, prop->stan);
-    chrobjCollisionRelated(attachedRocket);
+    objUpdateCollisionBounds(attachedRocket);
 
     rocketModel->render_pos = dynAllocate((s32)rocketModel->obj->numMatrices << 6);
 

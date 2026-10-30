@@ -325,7 +325,7 @@ void objDeform(ObjectRecord *obj, s32 stage)
         if (adjustHeight)
         {
             f32 modelscale = obj->model->scale;
-            ModelRoData_BoundingBoxRecord *bbox = chrobjGetBboxFromObjFile(obj->model->obj);
+            ModelRoData_BoundingBoxRecord *bbox = modelFileFindBbox(obj->model->obj);
 
             obj->prop->pos.y += (modelscale * bboxGetYmin(bbox)) * 0.15000001f;
             obj->runtime_pos.y += (modelscale * bboxGetYmin(bbox)) * 0.15000001f;
@@ -633,7 +633,7 @@ static void objExplode(ObjectRecord *obj, coord3d *targetPos, s32 playernum)
 static void glassShatter(ObjectRecord *obj)
 {
     PropRecord *prop = obj->prop;
-    ModelRoData_BoundingBoxRecord *bbox = chrobjGetBboxFromObjectRecord(obj);
+    ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
 
     explosionClearBulletImpactRoomByFlag(prop, FALSE);
     explosionClearBulletImpactRoomByFlag(prop, TRUE);

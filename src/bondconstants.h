@@ -472,7 +472,7 @@ typedef enum PROPSTATE {
     PROPSTATE_RESPAWN = 0x04,
     PROPSTATE_EXT_COLISION_BLOCK = 0x08,
     PROPSTATE_10 = 0x10,
-    PROPSTATE_20 = 0x20,
+    PROPSTATE_NOCOLLISION = 0x20, // taken out of collision tests for now (objSetMoving)
     PROPSTATE_ACTIVATED = 0x40,
     PROPSTATE_DESTROYED = 0x80
 } PROPSTATE;

@@ -16,6 +16,10 @@
 #include "game/chr/chrai.h"
 #include "game/model/model.h"
 
+WeaponObjRecord g_WeaponSlots[MAX_WEAPON_SLOTS];
+HatRecord g_HatSlots[MAX_HAT_SLOTS];
+AmmoCrateRecord g_AmmoCrates[MAX_AMMO_CRATES];
+
 s32 g_NextWeaponSlot = 0;
 s32 g_NextHatSlot = 0;
 

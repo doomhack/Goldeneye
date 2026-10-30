@@ -64,6 +64,7 @@
 #include "game/chr/chr.h"
 #include "game/world/sky.h"
 #include "game/prop/alarm.h"
+#include "game/prop/autoaim.h"
 
 // bss
 u32 *g_FontDl;
@@ -622,7 +623,7 @@ void lvApplyDifficulty(void)
         g_AiDamageModifier = (DEFAULT_AGENT_AI_DAMAGE_MODIFIER * damageMultiplier);
         g_AiHealthModifier = 2.0f;
         g_SpExplosionDamageMult = (f32) (0.25f * damageMultiplier);
-        difficulty = 1.5f;
+        g_AutoAimTolerance = 1.5f;
         g_SoloAmmoMultiplier = DEFAULT_AGENT_SOLO_AMMO_MULTIPLIER;
         g_AiReactionSpeed = DEFAULT_AGENT_AI_REACTION_SPEED;
     }
@@ -638,7 +639,7 @@ void lvApplyDifficulty(void)
         g_AiHealthModifier = 1.0f;
         g_SpExplosionDamageMult = 0.75f;
 
-        difficulty = 0.75f;
+        g_AutoAimTolerance = 0.75f;
 
         g_SoloAmmoMultiplier = DEFAULT_SECRET_AGENT_SOLO_AMMO_MULTIPLIER;
         g_AiReactionSpeed = DEFAULT_SECRET_AGENT_AI_REACTION_SPEED;
@@ -655,7 +656,7 @@ void lvApplyDifficulty(void)
         g_AiHealthModifier = 1.0f;
         g_SpExplosionDamageMult = 1.0f;
 
-        difficulty = 0.2f;
+        g_AutoAimTolerance = 0.2f;
 
         g_SoloAmmoMultiplier = DEFAULT_00_AGENT_SOLO_AMMO_MULTIPLIER;
         g_AiReactionSpeed = DEFAULT_00_AGENT_AI_REACTION_SPEED;
@@ -671,7 +672,7 @@ void lvApplyDifficulty(void)
         g_AiDamageModifier = DEFAULT_007_AI_DAMAGE_MODIFIER;
         g_AiHealthModifier = 1.0f;
         g_SpExplosionDamageMult = 1.0f;
-        difficulty = 1.0f;
+        g_AutoAimTolerance = 1.0f;
         g_SoloAmmoMultiplier = DEFAULT_007_SOLO_AMMO_MULTIPLIER;
         g_AiReactionSpeed = DEFAULT_007_AI_REACTION_SPEED;
     }

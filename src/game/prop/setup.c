@@ -49,6 +49,10 @@
 #include "game/prop/monitor.h"
 #include "game/prop/projectile.h"
 
+/* The level's setup: the working copy, and the file as loaded */
+stagesetup g_CurrentSetup;
+stagesetup *g_ptrStageSetupFile;
+
 /**
  * EU .bss 0x80068480
 */
@@ -313,7 +317,7 @@ void setupObject(ObjectRecord *obj)
 
             if (boundpad != NULL)
             {
-                bbox = chrobjGetBboxFromObjectRecord(obj);
+                bbox = objFindBbox(obj);
                 if (bbox != NULL)
                 {
                     xscale = 1.0f;
@@ -2288,7 +2292,7 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
     }
     else
     {
-        bbox = chrobjGetBboxFromObjectRecord(obj);
+        bbox = objFindBbox(obj);
 
         if (bbox != NULL)
         {

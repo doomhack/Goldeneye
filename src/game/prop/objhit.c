@@ -422,7 +422,7 @@ void objTestShot(PropRecord *prop, ShotData *shot)
 {
     ObjectRecord *obj = prop->obj;
     Model *model = obj->model;
-    ModelRoData_BoundingBoxRecord *bbox = chrobjGetBboxFromObjectRecord(obj);
+    ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
 
     if ((prop->flags & PROPFLAG_ONSCREEN)
         && !(obj->runtime_bitflags & RUNTIMEBITFLAG_WRECKED)
