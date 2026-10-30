@@ -78,6 +78,8 @@
       build/OUTCODE/src/game/prop/decal.o (.data);
       build/OUTCODE/src/game/prop/glass.o (.data);
       build/OUTCODE/src/game/hud/healthbar.o (.data);
+      build/OUTCODE/src/game/hud/hud.o (.data);
+      build/OUTCODE/src/game/hud/hudmsg.o (.data);
       build/OUTCODE/src/game/hud/sparks.o (.data);
       build/OUTCODE/src/game/menu/watchmenu.o (.data);
       build/OUTCODE/src/game/text/text.o (.data);

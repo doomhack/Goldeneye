@@ -80,6 +80,8 @@
       build/OUTCODE/src/game/prop/decal.o (.rodata);
       build/OUTCODE/src/game/prop/glass.o (.rodata);
       build/OUTCODE/src/game/hud/healthbar.o (.rodata);
+      build/OUTCODE/src/game/hud/hud.o (.rodata);
+      build/OUTCODE/src/game/hud/hudmsg.o (.rodata);
       build/OUTCODE/src/game/hud/sparks.o (.rodata);
       build/OUTCODE/src/game/menu/watchmenu.o (.rodata);
       build/OUTCODE/src/game/text/text.o (.rodata);

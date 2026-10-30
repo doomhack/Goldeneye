@@ -31,14 +31,8 @@ extern f32 watch_time_0;
 #else
 extern s32 watch_time_0;
 #endif
-extern char stringbuffer_lowerleft[5][BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH];
-#if defined(BUGFIX_R1)
-extern struct font *g_HudMsgBottomFont1[5];
-extern struct fontchar *g_HudMsgBottomFont2[5];
-#endif
 extern PadRecord *g_Startpad[16];
 extern s32 startpadcount;
-extern char g_HudmsgTopText[2][BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH];
 extern f32 g_MpSwirlRotateSpeed;
 extern f32 g_MpSwirlAngleDegrees;
 extern f32 g_MpSwirlForwardSpeed;
@@ -104,17 +98,6 @@ extern coord3d g_DefaultFrozenMoveOffset;
 extern coord3d ZeroCoordShake;
 extern coord3d ZeroCoordWatchPos;
 extern coord3d ZeroCoordSpawnPos;
-extern s32 status_bar_text_buffer_index;
-extern s32 display_statusbar;
-#ifdef BUGFIX_R0
-extern struct font *copy_1stfonttable;
-extern struct fontchar *copy_2ndfonttable;
-#endif
-extern s32 upper_text_buffer_index;
-extern s32 display_upper_text_window;
-extern s32 upper_text_window_timer;
-extern s32 g_UpperTextDisplayFlag;
-extern DirectionLabels g_DebugCompassLabels;
 extern s32 g_PlayerTickCount;
 extern struct firing_anim_struct firing_animation_groups[][6];
 void playerUpdateRooms(struct player *player);
@@ -142,8 +125,6 @@ void camSetRoomOrigin(s32 room);
 void watchTrigger(s32 instant);
 void playerUpdateCollisionBounds(void);
 void tankGetCollisionBounds(coord2d *, coord3d *, f32);
-void hudmsgTickIntroText(void);
-void hudmsgTopTick(void);
 void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
 void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
 void playerTickDamageAndHealth(void);
@@ -178,11 +159,7 @@ void playerUpdateSpeedForwards(s32 dir);
 void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, coord3d *pos, coord3d *pos2, struct StandTile **stan, coord3d *lookat);
 void playerCalcIntroSwirlCamera(s32, f32, coord3d *, coord3d *);
 s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, coord3d *collision_pos, StandTile *tile, f32 camera_dist);
-Gfx* hudmsgBottomRender(Gfx* gdl);
-Gfx *hudmsgTopRender(Gfx *gdl);
-Gfx *hudRenderCredits(Gfx *gdl);
 Gfx *watchRender(Gfx *gdl);
-Gfx *hudRenderHealthBars(Gfx *gdl);
 
 // end forward declarations
 

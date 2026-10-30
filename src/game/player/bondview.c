@@ -58,13 +58,6 @@
 
     #define BONDVIEW_AUTOAIM_TIME 0x19 /* 25 */
 
-    #define BONDVIEW_INTRO_CAMERA_BONDMESSCNT_A 0x1a
-    #define BONDVIEW_INTRO_CAMERA_BONDMESSCNT_B 0x19
-    #define BONDVIEW_INTRO_CAMERA_BONDMESSCNT_C 0x64
-
-    #define BONDVIEW_UPPER_TEXT_TIMER_A 0x33
-    #define BONDVIEW_UPPER_TEXT_TIMER_B 0x32
-    #define BONDVIEW_UPPER_TEXT_TIMER_C 0xc8
 
     #define EU_CAMERA_8003642C_ASPECT 1.19047617912f
 
@@ -72,41 +65,7 @@
 
     #define BONDVIEW_AUTOAIM_TIME 0x1e /* 30 */
 
-    #define BONDVIEW_INTRO_CAMERA_BONDMESSCNT_A 0x1f
-    #define BONDVIEW_INTRO_CAMERA_BONDMESSCNT_B 0x1e
-    #define BONDVIEW_INTRO_CAMERA_BONDMESSCNT_C 0x78
 
-    #define BONDVIEW_UPPER_TEXT_TIMER_A 0x3d
-    #define BONDVIEW_UPPER_TEXT_TIMER_B 0x3c
-    #define BONDVIEW_UPPER_TEXT_TIMER_C 0xf0
-
-#endif
-
-/*cannonically these are both*/
-#define BONDVIEW_HUD_MSG_TOP_BUFFER_LENGTH 0x97
-#define BONDVIEW_HUD_MSG_BOTTOM_BUFFER_LENGTH 0x65
-/*these*/
-#define MAXTALKMESSLEN 150
-#define MAXMESSAGELEN 100
-
-
-#if defined(VERSION_US)
-    #define BONDVIEW_2ND_FONTTABLE(_param) copy_2ndfonttable
-    #define BONDVIEW_1ST_FONTTABLE(_param) copy_1stfonttable
-#elif defined(VERSION_EU)
-    #define BONDVIEW_2ND_FONTTABLE(_param) g_HudMsgBottomFont2[_param]
-    #define BONDVIEW_1ST_FONTTABLE(_param) g_HudMsgBottomFont1[_param]
-#endif
-
-
-#if defined(VERSION_US)
-    #define BONDVIEW_VIEW_TOP_OFFSET_1 0x0C
-    #define BONDVIEW_VIEW_TOP_OFFSET_2 0x28
-    #define BONDVIEW_VIEW_TOP_OFFSET_3 0x10
-#elif defined(VERSION_EU)
-    #define BONDVIEW_VIEW_TOP_OFFSET_1 0x16
-    #define BONDVIEW_VIEW_TOP_OFFSET_2 0x32
-    #define BONDVIEW_VIEW_TOP_OFFSET_3 0x14
 #endif
 
 
@@ -400,17 +359,6 @@ coord3d ZeroCoordShake = { 0 };
 
 coord3d ZeroCoordWatchPos = {0};
 coord3d ZeroCoordSpawnPos = {0};
-s32 status_bar_text_buffer_index = 0;
-s32 display_statusbar = 0;
-#ifdef BUGFIX_R0
-struct font *copy_1stfonttable = NULL;
-struct fontchar *copy_2ndfonttable = NULL;
-#endif
-s32 upper_text_buffer_index = 0;
-s32 display_upper_text_window = 0;
-s32 upper_text_window_timer = 0xFFFFFFFF;
-s32 g_UpperTextDisplayFlag = 0;
-DirectionLabels g_DebugCompassLabels = {{"n", "ne", "e", "se", "s", "sw", "w", "nw", "n"}};
 s32 g_PlayerTickCount = 0;
 
 struct firing_anim_struct firing_animation_groups[][6] = {
@@ -468,8 +416,6 @@ void camSetRoomOrigin(s32 room);
 void watchTrigger(s32 instant);
 void playerUpdateCollisionBounds(void);
 void tankGetCollisionBounds(coord2d *, coord3d *, f32);
-void hudmsgTickIntroText(void);
-void hudmsgTopTick(void);
 void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
 void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
 void playerTickDamageAndHealth(void);
@@ -504,11 +450,7 @@ void playerUpdateSpeedForwards(s32 dir);
 void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, coord3d *pos, coord3d *pos2, struct StandTile **stan, coord3d *lookat);
 void playerCalcIntroSwirlCamera(s32, f32, coord3d *, coord3d *);
 s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, coord3d *collision_pos, StandTile *tile, f32 camera_dist);
-Gfx* hudmsgBottomRender(Gfx* gdl);
-Gfx *hudmsgTopRender(Gfx *gdl);
-Gfx *hudRenderCredits(Gfx *gdl);
 Gfx *watchRender(Gfx *gdl);
-Gfx *hudRenderHealthBars(Gfx *gdl);
 
 
 void camSetScreenSize(f32 width, f32 height)
