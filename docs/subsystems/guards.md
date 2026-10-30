@@ -6,7 +6,8 @@ character is a "chr", and its record is a `ChrRecord`.
 | File | What it holds |
 | --- | --- |
 | `src/game/chr/chr.c` | Chr slots, the per-frame chr tick (`chrTick`), moving with collision, drawing, shot hit tests on the body |
-| `src/game/chr/chraction.c` | Actions: what a guard is physically doing (standing, attacking, dodging, dying) and the code that starts and ticks each one; firing |
+| `src/game/chr/chraction.c` | Actions: what a guard is physically doing (standing, dodging, hit reactions, dying) and the code that starts and ticks each one |
+| `src/game/chr/chrattack.c` | Attacking: starting an attack (`chrAttackStand`, `chrAttackKneel`, attack walk and roll), aiming (`chrSetSubroty`), firing (`chrFireHand`) and whether the shot hits the player (`chrUpdateShotbondsum`) |
 | `src/game/chr/chrnav.c` | Moving: walking to a position over the waypoint graph (`chrGoToPos`), patrols (`chrStartPatrol`), running straight to a nearby point (`chrRunToPos`), steering round obstacles, and the walk-line tests (`propCanWalkLine`) |
 | `src/game/chr/chrsight.c` | What guards see and hear, and in co-op which player each one is after |
 | `src/game/chr/chrscript.c` | The chr side of the AI commands: finding chrs and pads by script ids (`chrFindById`, `chrResolvePadId`), distances, angles and room checks, flags, presets, spawning guards (`chrSpawnAtPad`, `chrSpawnAtChr`), and the `chrTry*` actions that fail if the guard is dead or hit |
