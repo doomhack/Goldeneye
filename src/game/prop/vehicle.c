@@ -28,6 +28,7 @@
 #include "game/audio/sfxvolume.h"
 #include "game/chr/chraction.h"
 #include "game/chr/chrai.h"
+#include "game/chr/chraicoop.h"
 #include "game/level/lv.h"
 #include "game/math/matrix.h"
 #include "game/math/physics.h"

@@ -1806,7 +1806,7 @@ static void chrActionTickBody(ChrRecord *self)
         if (((s32)self->sleep < 0) || (self->chrflags & CHRFLAG_00040000))
         {
             self->sleep = 0;
-            ai((PropDefHeaderRecord *)self, PROP_TYPE_CHR);
+            aiRunList((PropDefHeaderRecord *)self, PROP_TYPE_CHR);
 
             switch (self->actiontype)
             {

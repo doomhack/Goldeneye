@@ -1,3 +1,18 @@
+/*
+ * The AI commands, one _AI_CMD block each: name, description and parameters.
+ *
+ * Used for one thing in the build: bondconstants.h includes this file to build the
+ * AI_CMD enum (AI_GotoNext, AI_Label, ...), so the order of the blocks sets each
+ * command's number and must not change.
+ *
+ * The descriptions are the best documentation of what each command does, but the
+ * code bodies are not built and are out of date: the real interpreter is the switch
+ * in ai() (src/game/chr/chrai.c), with lengths in aiCommandSize. The record layouts
+ * and list-writing macros are in aicommands2.h, which used to be generated from this
+ * file by a cmdbuilder tool and is now edited by hand.
+ *
+ * The original format notes follow.
+ */
 /* ****************************************************************************
             //#Format Of Command Builder:
 //---G

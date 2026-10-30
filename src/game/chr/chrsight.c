@@ -438,7 +438,7 @@ void coopChrShotByCurrentPlayer(ChrRecord *self)
  * saw or heard its old target. Unarmed chrs (allies such as Natalya, civilians) stay
  * with the player they met, so an ally follows whoever rescued her, until that player
  * dies. Seeing or hearing the other player retargets it straight away (see the
- * any-player AI commands in ai()), and so does being shot by them. While it fights one
+ * any-player AI commands in aiRunList()), and so does being shot by them. While it fights one
  * player it also switches to the other if it can see them clearly closer by (checked
  * every second).
  */

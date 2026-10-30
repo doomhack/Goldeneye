@@ -20,6 +20,7 @@
       build/OUTCODE/src/game/chr/chrattack.o (.text);
       build/OUTCODE/src/game/chr/chrdamage.o (.text);
       build/OUTCODE/src/game/chr/chrai.o (.text);
+      build/OUTCODE/src/game/chr/chraicoop.o (.text);
       build/OUTCODE/src/game/prop/prop.o (.text);
       build/OUTCODE/src/game/prop/proprooms.o (.text);
       build/OUTCODE/src/game/prop/propcollision.o (.text);

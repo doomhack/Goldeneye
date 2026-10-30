@@ -25,16 +25,6 @@ extern coord3d g_EnterTankCoord;
 extern ITEM_IDS starting_weapon[2];
 extern coord3d g_DeathCamPos;
 extern struct PropRecord *g_DeathCamProp;
-extern PadRecord *g_CameraLookAtBondPad;
-extern CutsceneRecord *gBondViewCutscene;
-extern f32 g_OrbitCamAngle;
-extern f32 g_OrbitCamSpeed;
-extern f32 g_OrbitCamDist;
-extern f32 g_OrbitCamHeight;
-extern f32 g_OrbitCamTargetHeight;
-extern s32 g_OrbitCamPad;
-extern enum CAMERAMODE g_CutsceneCamLookAtBond;
-extern s32 g_CutsceneCamUnusedFlag;
 extern s32 mission_timer;
 #if defined(VERSION_EU)
 extern f32 watch_time_0;

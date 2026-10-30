@@ -15,7 +15,8 @@ character is a "chr", and its record is a `ChrRecord`.
 | `src/game/chr/chrnav.c` | Moving: walking to a position over the waypoint graph (`chrGoToPos`), patrols (`chrStartPatrol`), running straight to a nearby point (`chrRunToPos`), steering round obstacles, and the walk-line tests (`propCanWalkLine`) |
 | `src/game/chr/chrsight.c` | What guards see and hear, and in co-op which player each one is after |
 | `src/game/chr/chrscript.c` | The chr side of the AI commands: finding chrs and pads by script ids (`chrFindById`, `chrResolvePadId`), distances, angles and room checks, flags, presets, spawning guards (`chrSpawnAtPad`, `chrSpawnAtChr`), and the `chrTry*` actions that fail if the guard is dead or hit |
-| `src/game/chr/chrai.c` | The AI script interpreter (`ai`) and the AI sound slots. The commands themselves are in `src/aicommands.def` |
+| `src/game/chr/chrai.c` | The AI script interpreter (`aiRunList`), `aiCommandSize` and the AI sound slots |
+| `src/game/chr/chraicoop.c` | Co-op and counter-op in AI scripts: re-running commands that look at "Bond" for each player, who level-script messages go to, Bond-only doors |
 | `src/game/chr/chraidata.c` | The global AI scripts, shared by every level |
 | `src/game/chr/body.c` | Bodies and heads: loading them and building a chr's model, random heads |
 
@@ -50,18 +51,37 @@ level events) run on dummy chrs in `g_BgChrs`, ticked once per frame by `bgChrsT
 
 ## AI scripts
 
-An AI list is a byte stream of commands. The commands are defined once, in
-`src/aicommands.def`, as `_AI_CMD` blocks giving each command's name, parameters and code;
-`chrai.c` includes the file twice, once to build `ai`, the interpreter, and once to build
-`aiCommandSize`. About half the commands are conditions that jump to a label
-(`aiFindLabel`); the others start actions, set flags and timers, or change the level.
+An AI list is a byte stream of commands. The interpreter, `aiRunList` in `chrai.c`, is
+one big switch with a case per command, and `aiCommandSize` gives each command's length.
+About half the commands are conditions that jump to a label (`aiFindLabel`); the others
+start actions, set flags and timers, or change the level.
+
+Where the commands are described:
+
+* `src/aicommands.def`: one `_AI_CMD` block per command with its name, description and
+  parameters. The build only uses it for the `AI_CMD` enum (in `bondconstants.h`), so the
+  order of the blocks is the command numbering. The code in each block is not built and
+  is out of date; the real code is the case in `aiRunList`.
+* `src/aicommands2.h`: the command record layouts (`AiGotoNextRecord`...) that
+  `aiRunList` reads, and the macros that setup files and `chraidata.c` write lists with.
+  It was generated from `aicommands.def` by an IDO-only tool, which is gone, so it is now
+  edited by hand.
+
+To add a command: add a block at the end of `aicommands.def`, a record and macro to
+`aicommands2.h`, and a case to both `aiCommandSize` and `aiRunList`.
+
+In co-op, `coopAiBegin` and `coopAiEnd` (`chraicoop.c`) wrap each command: commands that
+look at "Bond" are re-run for the other player when one player isn't enough (seen by any
+player, a level condition met by any player, true for every player, or an action applied
+to both). In counter-op scripts stay about Bond, but their messages go to whoever used
+the object the script checked.
 
 A script normally ends each pass with a command that yields, and resumes from
 `aioffset` the next time `sleep` runs out. Scripts are either the level's own (in the
 setup file) or global (`g_GlobalAILists` in `chraidata.c`), found by ID with
 `ailistFindById`.
 
-Objects can run scripts too: vehicles and aircraft run theirs from `objTick`.
+Objects can run scripts too: vehicles and aircraft run theirs from `objTick` (through `aiForObject`, which runs them for Bond in counter-op).
 
 ## Actions
 
@@ -124,8 +144,8 @@ counter-op functions are prefixed `coop` and `counterOp`.
 * Much of the guard code still says "Bond" or "player" where it means "the guard's
   target", because in solo they were the same. In co-op the current player is switched
   to the guard's target, so the code works, but the names mislead.
-* `ai` keeps its one-word decomp name for now: renaming it would also hit every
-  `ai` variable in `aicommands.def`.
+* Inside `aiRunList` every case has a local `ai` pointing at its command record; the
+  function itself was called `ai` in the decomp.
 * Many names come from Perfect Dark, where the functions match (`chrStand`,
   `chrGoPosConsiderRestart`, `chrNavTryObstacle`). PD's code is a good reference here.
 * `chrGetGuard007SpeedRating` and friends scale guard speed and reactions by difficulty.

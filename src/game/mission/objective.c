@@ -237,9 +237,6 @@ s32 objectiveGetDifficulty(s32 objectiveIndex)
 
 
 
-//horrible hack to get ai matching, but it does correctly refrence this func with 2 params
-#pragma weak    objectiveGetStatus_WEAK = objectiveCheckStatus
-
 /*
  * Return Status of objective.
  * Note: This matches but may not in future depending on the result of var
