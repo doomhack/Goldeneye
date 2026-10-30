@@ -63,12 +63,6 @@ bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b);
 bool chrTryAttackKneel(ChrRecord *self, s32 targettype, s32 targetid);
 bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid);
 bool chrTryStartPatrol(ChrRecord *self, PathRecord *path);
-f32 chrGetSubrotySideback(ChrRecord *self);
-f32 chrGetAimLimitAngle(f32 sqdist);
-void chrUpdateAimendbackShoulders(ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 next);
-void chrSetFiring(ChrRecord *self, s32 hand, s32 firing);
-s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *pos);
-void chrTriggerFireWeapon(ChrRecord *self);
 void chrActionTick(ChrRecord *self);
 void bgChrsTick(void);
 s32 chrExplosionDamage(ChrRecord *self, coord3d *pos, f32 damage, s32 playsound);
@@ -87,10 +81,13 @@ void chrActorLookFlustered(ChrRecord *self);
 void chrActorThrowWeaponSurrender(ChrRecord *self);
 void chrActorFadeAway(ChrRecord *self);
 
-/* Used by chrnav.c */
+/* Used by chrnav.c and chrattack.c */
+f32  chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max);
 u32  weaponIsOneHanded(PropRecord *weaponprop);
 void chrStandChooseAnimation(ChrRecord *self, f32 duration);
-void chrStopFiring(ChrRecord *self);
+
+/* Attacking and firing */
+#include "game/chr/chrattack.h"
 
 /* How guards move */
 #include "game/chr/chrnav.h"
