@@ -15,6 +15,7 @@
       build/OUTCODE/src/game/chr/chrsight.o (.data);
       build/OUTCODE/src/game/chr/chrnav.o (.data);
       build/OUTCODE/src/game/chr/chrattack.o (.data);
+      build/OUTCODE/src/game/chr/chrdamage.o (.data);
       build/OUTCODE/src/game/chr/chrai.o (.data);
       build/OUTCODE/src/game/prop/prop.o (.data);
       build/OUTCODE/src/game/prop/proprooms.o (.data);

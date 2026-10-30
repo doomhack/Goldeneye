@@ -51,7 +51,6 @@ void chrStandImmediate(ChrRecord *self, f32 mergetime);
 void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result);
-bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bool isPlayer);
 bool chrIsDead(ChrRecord *chr);
 bool chrTrySidestep(ChrRecord *self);
 bool chrTryJumpOut(ChrRecord *self);
@@ -65,7 +64,6 @@ bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid);
 bool chrTryStartPatrol(ChrRecord *self, PathRecord *path);
 void chrActionTick(ChrRecord *self);
 void bgChrsTick(void);
-s32 chrExplosionDamage(ChrRecord *self, coord3d *pos, f32 damage, s32 playsound);
 
 /* Starting actions, for chrscript.c */
 bool chrIsNotDeadOrShot(ChrRecord *self);
@@ -81,10 +79,16 @@ void chrActorLookFlustered(ChrRecord *self);
 void chrActorThrowWeaponSurrender(ChrRecord *self);
 void chrActorFadeAway(ChrRecord *self);
 
-/* Used by chrnav.c and chrattack.c */
+/* Used by chrnav.c, chrattack.c and chrdamage.c */
+void chrStandImmediateCheckWall(ChrRecord *self, f32 mergetime);
+f32  chrGetClearDistInDirDefault(PropRecord *prop, f32 angle, f32 maxdist);
+f32  chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max);
 f32  chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max);
 u32  weaponIsOneHanded(PropRecord *weaponprop);
 void chrStandChooseAnimation(ChrRecord *self, f32 duration);
+
+/* Being hit, hurt and killed */
+#include "game/chr/chrdamage.h"
 
 /* Attacking and firing */
 #include "game/chr/chrattack.h"
