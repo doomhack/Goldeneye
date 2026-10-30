@@ -1052,14 +1052,6 @@ extern coord3d g_DefaultFrozenMoveOffset;
 
 extern coord3d ZeroCoordWatchPos;
 extern coord3d ZeroCoordSpawnPos;
-extern s32 status_bar_text_buffer_index;
-extern s32 display_statusbar;
-extern struct font *copy_1stfonttable;
-extern struct fontchar *copy_2ndfonttable;
-extern s32 upper_text_buffer_index;
-extern s32 display_upper_text_window;
-extern s32 upper_text_window_timer;
-extern s32 g_UpperTextDisplayFlag;
 
 extern s32 startpadcount;
 extern coord3d g_ForceBondMoveOffset;
@@ -1132,20 +1124,10 @@ void playerStartNewLife(void);
 
 void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 
-#if defined(BUGFIX_R1)
-#define HUDMESSAGEBOTTOM hudmsgBottomShowText
-void hudmsgBottomShow(char *string, struct fontchar *font, struct font *font1);
-void hudmsgBottomShowText(char *string);
-#else
-// VERSION_US
-#define HUDMESSAGEBOTTOM hudmsgBottomShow
-void hudmsgBottomShow(char *string);
-void hudmsgSetFonts(struct fontchar *font2, struct font *font1);
-#endif
+#include "game/hud/hudmsg.h"
 
 Gfx * camSetupFrame(Gfx *gdl);
 s32 playerPressedActivate(void);
-Gfx * hudRender(Gfx *gdl);
 bool camIsPosInScreen(coord3d *vec_scale, f32 norm_scale);
 bool camIsPosInScreenBox(coord3d *, f32, bbox2d *);
 s32 lvGetMissionTime60(void);
@@ -1157,6 +1139,17 @@ f32 playerGetFloorY(struct StandTile *tile, f32 x, f32 z);
 void playerUpdateCollisionBounds(void);
 void coopFindPartnerSpawn(coord3d *pos, StandTile **stan, f32 look_angle);
 void coopRespawnPlayer(void);
+s32  coopDiedLast(void);
+void mpRespawnPlayer(void);
+
+// Co-op: when a dead player can respawn (A, Z or Start once this has passed).
+#define COOP_RESPAWN_DELAY60 (10 * 60)
+extern s32 g_CoopDeathTime[4];
+extern s32 g_CoopRespawnButtonsHeld[4];
+
+Gfx *watchRender(Gfx *gdl);
+Gfx *currentPlayerDrawFade(Gfx *gdl);
+bool currentPlayerIsFadeComplete(void);
 void counterOpResetForStage(void);
 f32 counterOpGetGuardHealth(void);
 s32 counterOpGetGuardModels(s32 *head, s32 *body);
@@ -1188,9 +1181,6 @@ coord3d *playerGetPos(void);
 void playerSetMoving(PropRecord *prop, s32 flag);
 void playerGetPropBounds(PropRecord *prop, coord2d **field_B0, s32 *numpoints, f32 *height_related, f32 *collision);
 void currentPlayerAddArmor(f32 armour);
-void hudmsgResetIntroText(void);
-void hudmsgsSetOn(s32 flag);
-void hudmsgsSetOff(s32 flags);
 Gfx* camLoadWorldToViewMtx(Gfx* gdl);
 Mtxf *camGetViewToWorldMtxf(void);
 void camMtxsToRoomSpace(Mtxf *matrices, s32 count);
@@ -1216,12 +1206,9 @@ Mtx *camGetProjectionMtx(void);
 Gfx *playerRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
 f32 camGetLodScaleZ(void);
 f32 playerGetBreathing(void);
-void     hudmsgTopClearFlag(int flag);
 
-void     hudmsgTopSetFlag(PLAYERFLAG flag);
 void     playerSetCameraMode(s32 mode);
 bool     playerIsInTank(void);
-void     hudmsgTopShow(char* string);
 void     playerSurroundWithExplosions(int delay);
 s32 watchIsZooming(void);
 f32 watchGetOpenFrac(void);
@@ -1230,7 +1217,6 @@ struct PropRecord *playerGetTank(void);
 s32 playerChooseSpawnPad(void);
 void playerResetCollision(struct PlayerBond* col, coord3d *pos, struct StandTile *stan);
 void playerSetWorldScale(f32);
-void hudmsgTopReset(void);
 Mtxf *camGetProjectionMtxf(void);
 void camViewToScreen(coord3d *in, coord2d *out);
 void playerRemoveBody(void);

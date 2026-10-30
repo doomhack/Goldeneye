@@ -79,6 +79,8 @@
       build/OUTCODE/src/game/prop/decal.o (.bss);
       build/OUTCODE/src/game/prop/glass.o (.bss);
       build/OUTCODE/src/game/hud/healthbar.o (.bss);
+      build/OUTCODE/src/game/hud/hud.o (.bss);
+      build/OUTCODE/src/game/hud/hudmsg.o (.bss);
       build/OUTCODE/src/game/hud/sparks.o (.bss);
       build/OUTCODE/src/game/menu/watchmenu.o (.bss);
       build/OUTCODE/src/game/text/text.o (.bss);

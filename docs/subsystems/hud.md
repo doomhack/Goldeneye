@@ -2,16 +2,48 @@
 
 Things drawn over the view or into it that aren't props or the player's guns: the
 multiplayer radar, the health and armour bars, the blood that runs down the screen when
-Bond dies, and bullet sparks. The HUD as a whole is put together by `hudRender` (see
-[player](player.md)), which calls into these files; ammo counters and the sight are in
-[weapons](weapons.md), and HUD text messages are `hudmsg*` in [player](player.md).
+Bond dies, bullet sparks and the HUD text messages. The HUD as a whole is put together
+each frame by `hudRender`, which calls into these files; ammo counters and the sight are
+in [weapons](weapons.md).
 
 | File | What it holds |
 | --- | --- |
+| `src/game/hud/hud.c` | `hudRender`, which draws the HUD over each player's view (hands, sight, blood, casings, watch, health bars, ammo, messages, fades) and runs the death and co-op respawn sequence; `hudRenderHealthBars`; the end-of-level credits (`hudRenderCredits`) |
+| `src/game/hud/hudmsg.c` | The HUD text messages (`hudmsg*`): the bottom-left and top message queues, and the "show position" cheat's readout |
 | `src/game/hud/healthbar.c` | The health and armour bars (`hudMakeDamageSegments`, `hudRenderGaugeBar`), and the green watch-screen shapes that the watch menu and the bars are built from (`watchMake*Verts`, `watchRender*`) |
 | `src/game/hud/sparks.c` | Bullet sparks: short-lived camera-facing sprites where a bullet hits (`sparkCreate`), and moving sparks that fly with gravity (`movingSparkCreate`, not on PAL) |
 | `src/game/hud/blood.c` | The death blood animation: decoding each frame (`bloodDecodeFrame`), smoothing it, and drawing it as a red overlay (`bloodRender`); also used by the gun barrel intro (`bloodRenderGunbarrel`) |
 | `src/game/hud/radar.c` | The multiplayer radar (`radarRender`): a dot per other player |
+
+## hudRender
+
+`hudRender` runs once per player view, after the world is drawn. It does more than draw:
+it also fires the guns for the frame (`gunUpdateAndFireBothHands`), runs counter-op's
+guard takeover, and runs death. In order it does:
+
+1. The guns' firing, then bullet casings, the gun hands and the watch.
+2. The health bars, when showing; the objective status messages (solo).
+3. Death: the blood runs down, the screen fades, then the level restarts (solo), the player
+   respawns at a pad when a button is pressed (multiplayer), or a co-op player can respawn
+   next to the partner once `COOP_RESPAWN_DELAY60` has passed (`coopRespawnPlayer`).
+4. The HUD messages, the sight, ammo, the countdown timer, the radar and the screen fade.
+
+During the intro camera only the messages, the timer, the fade and the credits are drawn.
+
+## HUD messages
+
+The bottom messages are pickups, objective updates and level text. In solo they queue, up
+to 5, and each shows for `HUDMSG_BOTTOM_TIME` (shorter when more are waiting); in
+multiplayer each player has one, replaced by the next. `bondmesscnt` in the player times
+the one showing (`hudmsgTickIntroText`). `hudmsgsSetOff` hides them, for example while a
+cutscene is playing.
+
+The top messages are characters speaking to Bond: a queue of 2, timed by
+`hudmsgTopTick`. In co-op the top text is shared, so each message remembers the player it
+was for and only shows in that player's view.
+
+On US, `hudmsgSetFonts` picks the font for all bottom messages; PAL passes a font with
+each message.
 
 ## Health and armour bars
 
