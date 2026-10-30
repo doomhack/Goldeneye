@@ -618,7 +618,7 @@ static TICKOP pickupWeapon(PropRecord *prop, bool showtext)
         gunEquip(GUNRIGHT, ITEM_TOKEN);
     }
 
-    if (obj->runtime_bitflags & RUNTIMEBITFLAG_DESTROYED)
+    if (obj->runtime_bitflags & RUNTIMEBITFLAG_RENAMED)
     {
         // A mission item that keeps its prop (the player carries it)
         if (weapon->weaponnum < ITEM_BOMBCASE)

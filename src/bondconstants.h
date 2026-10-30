@@ -307,6 +307,7 @@ typedef enum PROPFLAG
     PROPFLAG_GLASS_HASPORTAL             = 0x10000000, // Glass Has Portal
     PROPFLAG_CULL_BEHIND_DOOR            = 0x10000000, // Area Behind Door Invisible
     PROPFLAG_FIXED_MONITOR               = 0x10000000, // Monitor Fixed
+    PROPFLAG_VEHICLE_HIDEPART            = 0x10000000, // Vehicle's sixth model part hidden
     PROPFLAG_CCTV_DISABLED               = 0x10000000, // Disable security camera
     PROPFLAG_AUTOGUN_DISABLED            = 0x10000000, // destroyed autogun: stops aiming and firing
     PROPFLAG_DOOR_OPENTOFRONT            = 0x20000000, // Open Backwards
@@ -318,13 +319,25 @@ typedef enum PROPFLAG
     PROPFLAG_NO_AMMO                     = 0x40000000, // No Ammo on pickup
     PROPFLAG_80000000                    = 0x80000000, // Open By Default/Weapon Paired for Player
     PROPFLAG_IS_DOUBLE                   = 0x80000000,
-    PROPFLAG_DOOR_KEEPOPEN               = 0x80000000
+    PROPFLAG_DOOR_KEEPOPEN               = 0x80000000,
+
+    /* How an object from the setup file is placed at its pad (the low bits share
+       values with the prop flags above) */
+    PROPFLAG_SIDEWAYS                    = 0x00000002, // turned 90 degrees: top faces the pad's look, front faces up
+    PROPFLAG_UPSIDEDOWN                  = 0x00000004, // hangs upside-down from the pad
+    PROPFLAG_INAIR                       = 0x00000008, // stands at the pad, not on the floor
+    PROPFLAG_FITPADBOUNDS                = 0x00000010, // scaled evenly to fit inside its bound pad
+    PROPFLAG_FITPADX                     = 0x00000020, // x scaled to the bound pad
+    PROPFLAG_FITPADY                     = 0x00000040, // y scaled to the bound pad
+    PROPFLAG_FITPADZ                     = 0x00000080, // z scaled to the bound pad
+    PROPFLAG_ABSOLUTEPOS                 = 0x00001000, // drawn at the exact position even off its floor tile
 }PROPFLAG;
 
 // prop definition flags
 typedef enum PROPFLAG2
 {
     PROPFLAG2_00000001            = 0x00000001, // Activate Drone Gun
+    PROPFLAG2_ATPADPOS            = 0x00000001, // placed at the bound pad's origin, not its centre
     PROPFLAG2_LIGHTWEIGHT            = 0x00000002, // lightweight (move when shot)
     PROPFLAG2_00000004            = 0x00000004, // Interaction Text Not Shown for Doors
     PROPFLAG2_00000008            = 0x00000008, // Don't Load in Multiplayer
@@ -508,7 +521,7 @@ BITFLAG(RUNTIMEBITFLAG,
         HASPROJECTILE, /* this object owns a live Projectile record in obj->projectile   */
         LANDDAMAGE, /* takes a little damage when it lands                          */
         BEENOPENED,
-        DESTROYED, /* only set with disabled or destroyed doors                    */
+        RENAMED, /* has a text override (PROPDEF_RENAME): a mission item          */
         RESPAWNING, /* used up, hidden until it respawns                               */
         WRECKED, /* destroyed as far as it goes: shots pass through it            */
         PADLOCKEDDOOR,
@@ -4263,8 +4276,8 @@ typedef enum PROJECTILES
 #define ntohs(var) CharArrayTo16(((unsigned char *)(&(var))), 0)
 
     /* Pad Catagory */
-#define isNotBoundPad(pad)        pad < 10000
-#define getBoundPadNum(pad)       pad - 10000
+#define isNotBoundPad(pad)        ((pad) < 10000)
+#define getBoundPadNum(pad)       ((pad) - 10000)
 #define setBoundPadNum(pad)       pad + 10000
     /* AI Catagory */
 #define isGlobalAIListID(ID)      ((ID) <= 1024)

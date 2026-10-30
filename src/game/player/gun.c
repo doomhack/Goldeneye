@@ -1364,7 +1364,7 @@ void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf 
         propActivate(prop);
         propEnable(prop);
         mtx4ScaleRows012(obj->model->scale, matrix);
-        objChangeShading(obj, pos, matrix, stan);
+        objSetPosition(obj, pos, matrix, stan);
 
         setupUpdateObjectRoomPosition(obj);
 
@@ -1926,7 +1926,7 @@ void gunUpdateAttachedRocket(s32 handIndex)
 
     mtx4ScaleRows012(attachedRocket->model->scale, &worldMtx);
 
-    objChangeShading(attachedRocket, &entry->muzzlePos, &worldMtx, prop->stan);
+    objSetPosition(attachedRocket, &entry->muzzlePos, &worldMtx, prop->stan);
     objUpdateCollisionBounds(attachedRocket);
 
     rocketModel->render_pos = dynAllocate((s32)rocketModel->obj->numMatrices << 6);

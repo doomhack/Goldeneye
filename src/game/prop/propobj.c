@@ -1,89 +1,72 @@
 /**
- * Objects at run time: creating, placing and freeing them, and their collision outlines.
+ * Objects: creating, placing and freeing them.
  *
- * The rest of an object's life is in its own files: the tick in objtick.c (with
- * cctv.c, autogun.c, vehicle.c, projectile.c and mine.c), drawing in objrender.c, damage
- * in objdamage.c and objhit.c, pickups in pickup.c, slots in objslots.c, carried guns and
- * hats in carried.c, and doors in door.c.
+ * An object's record (ObjectRecord, or a type that starts with one) is usually its
+ * propdef in the level's setup file, used in place. objInit gives it a prop and a model
+ * instance. objPlaceAtPad puts it at its pad: on the floor, hanging upside-down, in the
+ * air or sideways. objFree takes its prop and model back, unless it is waiting to
+ * respawn.
+ *
+ * The rest of an object's life is in its own files: setting it up from the setup file in
+ * objsetup.c, the tick in objtick.c (with cctv.c, autogun.c, vehicle.c, projectile.c and
+ * mine.c), drawing in objrender.c, damage in objdamage.c and objhit.c, pickups in
+ * pickup.c, slots in objslots.c, carried guns and hats in carried.c, collision in
+ * propcollision.c, and doors in door.c.
  */
 
 #include <ultra64.h>
-#include <math.h>
-#include <PR/libaudio.h>
-#include <assets/oddtextures.h>
-#include <bondgame.h>
-#include <boss.h>
-#include <limits.h>
-#include <music.h>
 #include <memp.h>
 #include <snd.h>
-#include <gbi_extension.h>
-#include "game/menu/front.h"
+#include <bondconstants.h>
+#include <bondtypes.h>
 #include "game/prop/propobj.h"
-#include "assets/obseg/text/LpropobjE.h"
-#include "game/world/bg.h"
-#include "game/world/bgfog.h"
-#include "bondaicommands.h"
-#include "game/player/bondinv.h"
-#include "game/player/bondview.h"
-#include "game/chr/chr.h"
-#include "game/chr/chrai.h"
-#include "game/chr/chraction.h"
-#include "game/model/chrobjdata.h"
-#include "game/prop/explosion.h"
-#include "fr.h"
-#include "game/prop/glass.h"
-#include "game/hud/healthbar.h"
-#include "game/hud/sparks.h"
-#include "game/player/gun.h"
-#include "game/gfx/imagebank.h"
-#include "game/level/lv.h"
-#include "game/text/language.h"
-#include "game/math/round.h"
-#include "game/math/trig.h"
-#include "game/math/matrix.h"
-#include "game/model/model.h"
-#include "game/model/model.h"
-#include "game/model/jointlist.h"
-#include "game/model/modelfile.h"
-#include "game/mission/objective.h"
-#include "game/player/player.h"
-#include "game/math/quaternion.h"
-#include "random.h"
-#include "game/nav/geometry.h"
-#include "game/nav/stan.h"
-#include "game/gfx/texcmds.h"
-#include "game/world/surface.h"
-#include "game/text/text.h"
-#include "game/gfx/vtxstore.h"
-#include "game/math/physics.h"
-#include "game/gfx/dyn.h"
-#include "game/math/line_tri_intersect.h"
-#include "game/prop/prop.h"
-#include "game/prop/setup.h"
-#include "game/prop/monitor.h"
-#include "str.h"
-#include "game/prop/alarm.h"
 #include "game/prop/door.h"
-#include "game/audio/sfxvolume.h"
+#include "game/prop/explosion.h"
 #include "game/prop/projectile.h"
-#include "game/prop/objdamage.h"
-#include "game/prop/objhit.h"
+#include "game/prop/prop.h"
+#include "game/gfx/vtxstore.h"
+#include "game/math/matrix.h"
+#include "game/model/chrobjdata.h"
+#include "game/model/model.h"
+#include "game/nav/stan.h"
+#include "game/world/bg.h"
 
+/* An object on the floor stands this far above it */
+#define FLOOR_CLEARANCE 4.0f
 
+/* The collision data block: sizeof(collision_data), rounded up to 16 */
+#define COLLISION_DATA_ALLOC 0x50
 
+/* The level's links between props, from the setup file */
 struct LinkRecord *g_LevelLoadPropSwitch = NULL;
 LockDoorRecord *g_LevelLoadPropLockDoor = NULL;
 SafeObjectRecord *g_LevelLoadPropSafeItem = NULL;
 
-/*
-* Set on level load.
-*/
+/* Set by difficulty: scales the ammo in solo pickups */
 f32 g_SoloAmmoMultiplier = 1.0;
 
 
+/* Give a model slot back */
+static void objFreeModel(ObjectRecord *obj, Model *model)
+{
+    if (obj->type == PROPDEF_AIRCRAFT)
+    {
+        modelFreeAnimSlot(model);
+    }
+    else
+    {
+        modelFreeSlot(model);
+    }
+}
 
-PropRecord* objInit(ObjectRecord* obj, ModelFileHeader* model_header, PropRecord* prop, Model* model)
+
+/**
+ * Give an object a prop and a model instance, or use the ones passed. The object starts
+ * at the origin, unshaded and undamaged; a collision data block is allocated if it
+ * collides (PROPFLAG_00000100). NULL (and nothing kept) when there is no free prop or
+ * model slot.
+ */
+PropRecord *objInit(ObjectRecord *obj, ModelFileHeader *header, PropRecord *prop, Model *model)
 {
     if (prop == NULL)
     {
@@ -92,97 +75,84 @@ PropRecord* objInit(ObjectRecord* obj, ModelFileHeader* model_header, PropRecord
 
     if (model == NULL)
     {
-        if (obj->type == PROPDEF_AIRCRAFT)
-        {
-            model = modelmgrInstantiateModelWithAnim(model_header);
-        }
-        else
-        {
-            model = modelmgrInstantiateModel(model_header);
-        }
+        model = obj->type == PROPDEF_AIRCRAFT ? modelmgrInstantiateModelWithAnim(header) : modelmgrInstantiateModel(header);
     }
 
-    if ((prop != NULL) && (model != NULL))
-    {
-        obj->model = model;
-        obj->ptr_allocated_collisiondata_block = NULL;
-
-        if (obj->flags & 0x100)
-        {
-            obj->ptr_allocated_collisiondata_block = mempAlloc(0x50U, MEMPOOL_STAGE);
-            obj->state = (u8) (obj->state | PROPSTATE_EXT_COLISION_BLOCK);
-        }
-        else
-        {
-            obj->state = (u8) (obj->state & 0xFFF7);
-        }
-
-        obj->prop = prop;
-        obj->projectile = NULL;
-
-        obj->shadecol.r = 0;
-        obj->shadecol.g = 0;
-        obj->shadecol.b = 0;
-        obj->shadecol.a = 0;
-
-        obj->nextcol.r = 0;
-        obj->nextcol.g = 0;
-        obj->nextcol.b = 0;
-        obj->nextcol.a = 0;
-
-        obj->damageTaken = 0.0f;
-        obj->model->chr = NULL;
-        modelSetScale(obj->model, PitemZ_entries[obj->obj].scale);
-        prop->type = 1;
-        prop->obj = obj;
-        prop->pos.x = 0.0f;
-        obj->runtime_pos.x = 0.0f;
-        prop->pos.y = 0.0f;
-        obj->runtime_pos.y = 0.0f;
-        prop->pos.z = 0.0f;
-        obj->runtime_pos.z = 0.0f;
-        prop->stan = NULL;
-    }
-    else
+    if (prop == NULL || model == NULL)
     {
         if (model != NULL)
         {
-            if (obj->type == PROPDEF_AIRCRAFT)
-            {
-                modelFreeAnimSlot(model);
-            }
-            else
-            {
-                modelFreeSlot(model);
-            }
+            objFreeModel(obj, model);
         }
 
         if (prop != NULL)
         {
             propFree(prop);
-            prop = NULL;
         }
+
+        return NULL;
     }
+
+    obj->model = model;
+    obj->ptr_allocated_collisiondata_block = NULL;
+
+    if (obj->flags & PROPFLAG_00000100)
+    {
+        obj->ptr_allocated_collisiondata_block = mempAlloc(COLLISION_DATA_ALLOC, MEMPOOL_STAGE);
+        obj->state |= PROPSTATE_EXT_COLISION_BLOCK;
+    }
+    else
+    {
+        obj->state &= ~PROPSTATE_EXT_COLISION_BLOCK;
+    }
+
+    obj->prop = prop;
+    obj->projectile = NULL;
+
+    obj->shadecol.r = 0;
+    obj->shadecol.g = 0;
+    obj->shadecol.b = 0;
+    obj->shadecol.a = 0;
+
+    obj->nextcol.r = 0;
+    obj->nextcol.g = 0;
+    obj->nextcol.b = 0;
+    obj->nextcol.a = 0;
+
+    obj->damageTaken = 0.0f;
+    obj->model->chr = NULL;
+    modelSetScale(obj->model, PitemZ_entries[obj->obj].scale);
+
+    prop->type = PROP_TYPE_OBJ;
+    prop->obj = obj;
+    prop->pos.x = obj->runtime_pos.x = 0.0f;
+    prop->pos.y = obj->runtime_pos.y = 0.0f;
+    prop->pos.z = obj->runtime_pos.z = 0.0f;
+    prop->stan = NULL;
 
     return prop;
 }
 
 
-PropRecord* objInitWithModelDef(ObjectRecord* object, ModelFileHeader* header)
+PropRecord *objInitWithModelDef(ObjectRecord *obj, ModelFileHeader *header)
 {
-  return objInit(object, header, 0, 0);
+    return objInit(obj, header, NULL, NULL);
 }
 
 
-PropRecord* objInitWithAutoModel(ObjectRecord* obj)
+/* objInit with the object's own model */
+PropRecord *objInitWithAutoModel(ObjectRecord *obj)
 {
     return objInitWithModelDef(obj, PitemZ_entries[obj->obj].header);
 }
 
 
-// Changes the color shade on the object, e.g. when walking in a darker area or under a colored light.
-void objChangeShading(ObjectRecord* obj, coord3d* pos, Mtxf* matrix, StandTile* stan) {
-
+/**
+ * Move an object: its matrix, position and floor tile. Its shade colour jumps to the
+ * new floor's (no fade).
+ */
+void objSetPosition(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *stan)
+{
     PropRecord *prop = obj->prop;
 
     mtx4Copy(matrix, &obj->mtx);
@@ -202,265 +172,273 @@ void objChangeShading(ObjectRecord* obj, coord3d* pos, Mtxf* matrix, StandTile* 
 }
 
 
-//moveToPad
-void objPlaceAtPad(ObjectRecord *baseobj, coord3d *pos, Mtxf *matrix, StandTile *stan, coord3d *pos2)
+/**
+ * Move an object to where it was placed, and work out its collision outline. If the
+ * new position can't be walked to from pos on the floor tiles (or with
+ * PROPFLAG2_ATPADPOS), the prop stays at pos; the object is drawn at the new position
+ * only with PROPFLAG2_ATPADPOS or PROPFLAG_ABSOLUTEPOS.
+ */
+static void objMoveToPlacement(ObjectRecord *obj, coord3d *pos, StandTile *stan, coord3d *newpos, Mtxf *matrix)
 {
-    ModelRoData_BoundingBoxRecord *modelBoundingBox;
-    f32 xmax;
-    f32 ymin;
-    coord3d newPos;
-    StandTile *mStan;
-    Mtxf mtxcopy;
+    StandTile *newstan = stan;
 
-    modelBoundingBox = modelFileFindBbox(baseobj->model->obj);
-    xmax = bboxGetYmin(modelBoundingBox);
-    ymin = bboxGetYmax(modelBoundingBox);
-    mStan = stan;
-
-    if (baseobj->flags & 4)
+    if (!(obj->flags2 & PROPFLAG2_ATPADPOS) && stanWalkLine(&newstan, pos->f[0], pos->f[2], newpos->x, newpos->z))
     {
-        mtx4LoadZRotation(M_PI, &mtxcopy);
-        mtx4MultInPlace(matrix, &mtxcopy);
-        newPos.x = pos2->f[0] - (mtxcopy.m[1][0] * ymin);
-        newPos.y = pos2->f[1] - (mtxcopy.m[1][1] * ymin);
-        newPos.z = pos2->f[2] - (mtxcopy.m[1][2] * ymin);
-    }
-    else if (baseobj->flags & 8)
-    {
-        mtx4Copy(matrix, &mtxcopy);
-        newPos.x = pos2->f[0] - (mtxcopy.m[1][0] * xmax);
-        newPos.y = pos2->f[1] - (mtxcopy.m[1][1] * xmax);
-        newPos.z = pos2->f[2] - (mtxcopy.m[1][2] * xmax);
+        objSetPosition(obj, newpos, matrix, newstan);
     }
     else
     {
-        ObjectRecord *roomObj;
-        f32 distfromTileCenter;
-        coord2d *roomObjPolygon;
-        s32 roomObjEdges;
-        f32 roomObjTop;
-        f32 roomObjBottom;
+        objSetPosition(obj, pos, matrix, stan);
 
-        distfromTileCenter = stanGetFloorY(mStan, pos->f[0], pos->f[2]);
-
-        mtx4Copy(matrix, &mtxcopy);
-        newPos.x = pos2->f[0] - (mtxcopy.m[1][0] * xmax);
-        newPos.z = pos2->f[2] - (mtxcopy.m[1][2] * xmax);
-        roomObj  = objFindAtPos(pos, stan->room);
-
-        if (roomObj)
+        if ((obj->flags2 & PROPFLAG2_ATPADPOS) || (obj->flags & PROPFLAG_ABSOLUTEPOS))
         {
-            PropRecord *roomObjProp = roomObj->prop;
-            propGetCollisionPolygon(roomObjProp, &roomObjPolygon, &roomObjEdges, &roomObjTop, &roomObjBottom);
-
-            if ((distfromTileCenter < roomObjTop) && (roomObjBottom < ((mtxcopy.m[1][1] * (ymin - xmax)) + distfromTileCenter + 4.0f)))
-            {
-                newPos.y = roomObjTop - (mtxcopy.m[1][1] * xmax);
-                baseobj->runtime_bitflags |= RUNTIMEBITFLAG_ONSUPPORT;
-            }
-            else
-            {
-                newPos.y = (distfromTileCenter - (mtxcopy.m[1][1] * xmax)) + 4.0f;
-            }
+            obj->runtime_pos.x = newpos->x;
+            obj->runtime_pos.y = newpos->y;
+            obj->runtime_pos.z = newpos->z;
         }
-        else
-        {
-            newPos.y = (distfromTileCenter - (mtxcopy.m[1][1] * xmax)) + 4.0f;
-        }
-    }
-
-    if (!(baseobj->flags2 & 1) && stanWalkLine(&mStan, pos->f[0], pos->f[2], newPos.x, newPos.z))
-    {
-        objChangeShading(baseobj, &newPos, &mtxcopy, mStan);
-    }
-    else
-    {
-        objChangeShading(baseobj, pos, &mtxcopy, stan);
-        if ((baseobj->flags2 & 1) || (baseobj->flags & 0x1000))
-        {
-            baseobj->runtime_pos.x = newPos.x;
-            baseobj->runtime_pos.y = newPos.y;
-            baseobj->runtime_pos.z = newPos.z;
-        }
-    }
-
-    objUpdateCollisionBounds(baseobj);
-}
-
-
-void objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan2, coord3d *pos2)
-{
-    f32 zmin;
-    coord3d posdiff;
-    StandTile *stan;
-    Mtxf matrix;
-    Mtxf yrot;
-
-    zmin = bboxGetZmin(modelFileFindBbox(obj->model->obj));
-    stan = stan2;
-
-    mtx4LoadXRotation(4.712389f, &matrix);
-    mtx4LoadYRotation(M_PI_F, &yrot);
-    mtx4MultInPlace(&yrot, &matrix);
-    mtx4MultInPlace(padmtx, &matrix);
-
-    posdiff.x = pos2->x - (matrix.m[2][0] * zmin);
-    posdiff.y = pos2->y - (matrix.m[2][1] * zmin);
-    posdiff.z = pos2->z - (matrix.m[2][2] * zmin);
-
-    if ((!(((s32) obj->flags2) & 1)) && (stanWalkLine(&stan, pos->x, pos->z, posdiff.x, posdiff.z) != 0))
-    {
-        objChangeShading(obj, &posdiff, &matrix, stan);
-    }
-    else
-    {
-        objChangeShading(obj, pos, &matrix, stan2);
-        obj->runtime_pos.x = posdiff.x;
-        obj->runtime_pos.y = posdiff.y;
-        obj->runtime_pos.z = posdiff.z;
     }
 
     objUpdateCollisionBounds(obj);
 }
 
 
-void objFree(ObjectRecord* obj, s32 freeprop, s32 canregen)
+/**
+ * Place an object at its pad: pos is the floor point under it (on tile stan), centre
+ * the point the object is centred on, and matrix its orientation.
+ *
+ * - PROPFLAG_UPSIDEDOWN: turned over, with its top at the centre;
+ * - PROPFLAG_INAIR: with its bottom at the centre;
+ * - otherwise standing on the floor (FLOOR_CLEARANCE above it), or on top of an object
+ *   already there that it overlaps in height (it then falls if that object is
+ *   destroyed: RUNTIMEBITFLAG_ONSUPPORT).
+ */
+void objPlaceAtPad(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *stan, coord3d *centre)
 {
-    PropRecord *child;
+    ModelRoData_BoundingBoxRecord *bbox = modelFileFindBbox(obj->model->obj);
+    f32 bottom = bboxGetYmin(bbox);
+    f32 top = bboxGetYmax(bbox);
+    coord3d newpos;
+    Mtxf mtx;
 
-    if (obj->type == PROPDEF_AUTOGUN)
+    if (obj->flags & PROPFLAG_UPSIDEDOWN)
     {
-        AutogunRecord* record = (AutogunRecord*)obj;
-        if ((record->fireSound1 != NULL) && (sndGetPlayingState(record->fireSound1) != 0))
-        {
-            sndDeactivate(record->fireSound1);
-        }
+        mtx4LoadZRotation(M_PI, &mtx);
+        mtx4MultInPlace(matrix, &mtx);
+        newpos.x = centre->f[0] - (mtx.m[1][0] * top);
+        newpos.y = centre->f[1] - (mtx.m[1][1] * top);
+        newpos.z = centre->f[2] - (mtx.m[1][2] * top);
+    }
+    else if (obj->flags & PROPFLAG_INAIR)
+    {
+        mtx4Copy(matrix, &mtx);
+        newpos.x = centre->f[0] - (mtx.m[1][0] * bottom);
+        newpos.y = centre->f[1] - (mtx.m[1][1] * bottom);
+        newpos.z = centre->f[2] - (mtx.m[1][2] * bottom);
+    }
+    else
+    {
+        f32 floory = stanGetFloorY(stan, pos->f[0], pos->f[2]);
+        ObjectRecord *below;
 
-        if ((record->fireSound2 != NULL) && (sndGetPlayingState(record->fireSound2) != 0))
+        mtx4Copy(matrix, &mtx);
+        newpos.x = centre->f[0] - (mtx.m[1][0] * bottom);
+        newpos.z = centre->f[2] - (mtx.m[1][2] * bottom);
+        below = objFindAtPos(pos, stan->room);
+
+        newpos.y = (floory - (mtx.m[1][1] * bottom)) + FLOOR_CLEARANCE;
+
+        if (below != NULL)
         {
-            sndDeactivate(record->fireSound2);
-        }
-    }
-    else if (obj->type == PROPDEF_COLLECTABLE)
-    {
-        WeaponObjRecord* record = (WeaponObjRecord*) obj;
-        WeaponObjRecord* record2 = record->dualweapon;
-        if (record2 != NULL)
-        {
-            record2->dualweapon = NULL;
-            record->dualweapon = NULL;
-        }
-    }
-    else if (obj->type == PROPDEF_DOOR)
-    {
-        doorStopSounds((DoorRecord *)obj);
-    }
-    else if (obj->type == PROPDEF_TINTED_GLASS)
-    {
-        TintedGlassRecord* record = (TintedGlassRecord*) obj;
-        if (record->portalnum >= 0)
-        {
-            bgToggleDataPortalsContrlBytes1Bit1(record->portalnum, 1);
-        }
-    }
-    else if (obj->type == PROPDEF_AIRCRAFT)
-    {
-        AircraftRecord* record = (AircraftRecord*) obj;
-        if ((record->Sound != NULL) && (sndGetPlayingState(record->Sound) != 0))
-        {
-            sndDeactivate(record->Sound);
-        }
-    }
-    else if (obj->type == PROPDEF_VEHICHLE)
-    {
-        VehichleRecord* record = (VehichleRecord*) obj;
-        if ((record->Sound != NULL) && (sndGetPlayingState(record->Sound) != 0))
-        {
-            sndDeactivate(record->Sound);
+            coord2d *polygon;
+            s32 edges;
+            f32 belowtop;
+            f32 belowbottom;
+
+            propGetCollisionPolygon(below->prop, &polygon, &edges, &belowtop, &belowbottom);
+
+            if (floory < belowtop && belowbottom < (mtx.m[1][1] * (top - bottom)) + floory + FLOOR_CLEARANCE)
+            {
+                newpos.y = belowtop - (mtx.m[1][1] * bottom);
+                obj->runtime_bitflags |= RUNTIMEBITFLAG_ONSUPPORT;
+            }
         }
     }
 
-    if (obj->prop != NULL)
+    objMoveToPlacement(obj, pos, stan, &newpos, &mtx);
+}
+
+
+/**
+ * Place an object sideways (PROPFLAG_SIDEWAYS) at its pad: turned so its top faces the
+ * pad's look direction and its front faces up, with its back (z min) at the centre.
+ * Like objPlaceAtPad, but the object is always drawn at the new position.
+ */
+void objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan, coord3d *centre)
+{
+    f32 back = bboxGetZmin(modelFileFindBbox(obj->model->obj));
+    StandTile *newstan = stan;
+    coord3d newpos;
+    Mtxf matrix;
+    Mtxf yrot;
+
+    mtx4LoadXRotation(4.712389f, &matrix);
+    mtx4LoadYRotation(M_PI_F, &yrot);
+    mtx4MultInPlace(&yrot, &matrix);
+    mtx4MultInPlace(padmtx, &matrix);
+
+    newpos.x = centre->x - (matrix.m[2][0] * back);
+    newpos.y = centre->y - (matrix.m[2][1] * back);
+    newpos.z = centre->z - (matrix.m[2][2] * back);
+
+    if (!(obj->flags2 & PROPFLAG2_ATPADPOS) && stanWalkLine(&newstan, pos->x, pos->z, newpos.x, newpos.z))
     {
-        explosionClearBulletImpactRoomByFlag(obj->prop, FALSE);
-        explosionClearBulletImpactRoomByFlag(obj->prop, TRUE);
+        objSetPosition(obj, &newpos, &matrix, newstan);
+    }
+    else
+    {
+        objSetPosition(obj, pos, &matrix, stan);
+        obj->runtime_pos.x = newpos.x;
+        obj->runtime_pos.y = newpos.y;
+        obj->runtime_pos.z = newpos.z;
+    }
 
-        if (canregen == 0)
-        {
-            objFreeEmbedmentOrProjectile(obj->prop);
+    objUpdateCollisionBounds(obj);
+}
 
-            if (obj->prop->parent != NULL)
-            {
-                objDetach(obj->prop);
-            }
 
-            propRemoveFromRooms(obj->prop);
-
-            child = obj->prop->child;
-            while (child)
-            {
-                PropRecord* next = child->prev;
-                objFreePermanently(child->obj, TRUE);
-                child = next;
-            }
-
-            if (obj->prop->type != PROP_TYPE_DOOR)
-            {
-                modelResetDeformedVertices(obj->model);
-            }
-
-            if (obj->type == PROPDEF_AIRCRAFT)
-            {
-                modelFreeAnimSlot(obj->model);
-            }
-            else
-            {
-                modelFreeSlot(obj->model);
-            }
-
-            if (freeprop != 0)
-            {
-                propDelist(obj->prop);
-                propDisable(obj->prop);
-                propFree(obj->prop);
-            }
-
-            obj->prop = NULL;
-        }
+/* Stop a sound if it is playing */
+static void objStopSound(ALSoundState *sound)
+{
+    if (sound != NULL && sndGetPlayingState(sound) != 0)
+    {
+        sndDeactivate(sound);
     }
 }
 
 
-void objFreePermanently(struct ObjectRecord * obj, bool freeprop)
+/**
+ * Free an object: stop its sounds, unlink a dual weapon, reopen a tinted glass portal,
+ * and clear its bullet impacts. Unless canregen (it will respawn), also free its
+ * projectile or embedment, detach it, take it out of its rooms, free its children, its
+ * bent vertices and its model, and (with freeprop) its prop.
+ */
+void objFree(ObjectRecord *obj, s32 freeprop, s32 canregen)
 {
-    objFree(obj, freeprop, 0);
+    switch (obj->type)
+    {
+        case PROPDEF_AUTOGUN:
+            objStopSound(((AutogunRecord *)obj)->fireSound1);
+            objStopSound(((AutogunRecord *)obj)->fireSound2);
+            break;
+        case PROPDEF_COLLECTABLE:
+        {
+            WeaponObjRecord *weapon = (WeaponObjRecord *)obj;
+
+            if (weapon->dualweapon != NULL)
+            {
+                weapon->dualweapon->dualweapon = NULL;
+                weapon->dualweapon = NULL;
+            }
+            break;
+        }
+        case PROPDEF_DOOR:
+            doorStopSounds((DoorRecord *)obj);
+            break;
+        case PROPDEF_TINTED_GLASS:
+            if (((TintedGlassRecord *)obj)->portalnum >= 0)
+            {
+                bgToggleDataPortalsContrlBytes1Bit1(((TintedGlassRecord *)obj)->portalnum, 1);
+            }
+            break;
+        case PROPDEF_AIRCRAFT:
+            objStopSound(((AircraftRecord *)obj)->Sound);
+            break;
+        case PROPDEF_VEHICHLE:
+            objStopSound(((VehichleRecord *)obj)->Sound);
+            break;
+    }
+
+    PropRecord *prop = obj->prop;
+
+    if (prop == NULL)
+    {
+        return;
+    }
+
+    explosionClearBulletImpactRoomByFlag(prop, FALSE);
+    explosionClearBulletImpactRoomByFlag(prop, TRUE);
+
+    if (canregen)
+    {
+        return;
+    }
+
+    objFreeEmbedmentOrProjectile(prop);
+
+    if (prop->parent != NULL)
+    {
+        objDetach(prop);
+    }
+
+    propRemoveFromRooms(prop);
+
+    for (PropRecord *child = prop->child; child != NULL;)
+    {
+        PropRecord *next = child->prev;
+
+        objFreePermanently(child->obj, TRUE);
+        child = next;
+    }
+
+    if (prop->type != PROP_TYPE_DOOR)
+    {
+        modelResetDeformedVertices(obj->model);
+    }
+
+    objFreeModel(obj, obj->model);
+
+    if (freeprop)
+    {
+        propDelist(prop);
+        propDisable(prop);
+        propFree(prop);
+    }
+
+    obj->prop = NULL;
 }
 
 
-void modelResetDeformedVertices(Model* model)
+void objFreePermanently(ObjectRecord *obj, bool freeprop)
 {
-    ModelNode* node;
-    ModelFileHeader* header;
-    union ModelRoData* rodata;
-    union ModelRwData* rwdata;
+    objFree(obj, freeprop, FALSE);
+}
 
-    header = model->obj;
-    node = header->RootNode;
+
+/**
+ * Put a model back as it was loaded: bent vertices go back to the vertex store, and the
+ * level of detail, switch and head nodes are reset.
+ */
+void modelResetDeformedVertices(Model *model)
+{
+    ModelFileHeader *header = model->obj;
+    ModelNode *node = header->RootNode;
 
     while (node != NULL)
     {
-        switch (node->Opcode & 0xFF)
+        switch (node->Opcode & 0xff)
         {
             case MODELNODE_OPCODE_DLCOLLISION:
-                rodata = node->Data;
-                rwdata = modelGetNodeRwData(model, node);
+            {
+                union ModelRoData *rodata = node->Data;
+                union ModelRwData *rwdata = modelGetNodeRwData(model, node);
 
-                if ((rwdata->DisplayListCollisions.Vertices != rodata->DisplayListCollisions.Vertices) && (objNodeCanDeform(header, node) != 0))
+                if (rwdata->DisplayListCollisions.Vertices != rodata->DisplayListCollisions.Vertices && objNodeCanDeform(header, node))
                 {
                     vtxstoreFree(rwdata->DisplayListCollisions.Vertices);
                     rwdata->DisplayListCollisions.Vertices = rodata->DisplayListCollisions.Vertices;
                 }
                 break;
+            }
             case MODELNODE_OPCODE_LOD:
                 modelApplyDistanceRelations(model, node);
                 break;
@@ -472,15 +450,16 @@ void modelResetDeformedVertices(Model* model)
                 break;
         }
 
-        if (node->Child)
+        // Depth first: the child, else the next sibling of this node or an ancestor
+        if (node->Child != NULL)
         {
             node = node->Child;
         }
         else
         {
-            while (node)
+            while (node != NULL)
             {
-                if (node->Next)
+                if (node->Next != NULL)
                 {
                     node = node->Next;
                     break;
@@ -493,42 +472,49 @@ void modelResetDeformedVertices(Model* model)
 }
 
 
+/**
+ * When the vertex store runs out: free the first destroyed object off screen that has a
+ * bent copy of its vertices, for good.
+ *
+ * It gives up at the first destroyed object off screen with no collision node or no
+ * node data. The bent check compares the vertex pointer with the first word of the
+ * node's run-time data, as the original does.
+ */
 void objsFreeDeformedVertices(void)
 {
-    Model *model;
-    PropRecord *prop;
-    ObjectRecord *obj;
-    ModelNode *node;
-    ModelRoData_DisplayList_CollisionRecord *rodata;
-
-    for (prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
+    for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {
-        if ((prop->type == PROP_TYPE_OBJ) && !(prop->flags & PROPFLAG_ONSCREEN))
+        if (prop->type != PROP_TYPE_OBJ || (prop->flags & PROPFLAG_ONSCREEN))
         {
-            obj = prop->obj;
-            if (obj->state & PROPSTATE_DESTROYED)
-            {
-                model = obj->model;
-                node = objFindDlCollisionNode(obj);
-                if (node == NULL)
-                {
-                    return;
-                }
-                rodata = (ModelRoData_DisplayList_CollisionRecord *)node->Data;
-                if (rodata == NULL)
-                {
-                    return;
-                }
-                if (objNodeCanDeform(obj->model->obj, node) != 0)
-                {
-                    // The model has its own deformed copy of the vertices.
-                    if ((void *)rodata->Vertices != (void *)model->datas[rodata->RwDataIndex])
-                    {
-                        objFreePermanently(obj, 1);
-                        return;
-                    }
-                }
-            }
+            continue;
+        }
+
+        ObjectRecord *obj = prop->obj;
+
+        if (!(obj->state & PROPSTATE_DESTROYED))
+        {
+            continue;
+        }
+
+        Model *model = obj->model;
+        ModelNode *node = objFindDlCollisionNode(obj);
+
+        if (node == NULL)
+        {
+            return;
+        }
+
+        ModelRoData_DisplayList_CollisionRecord *rodata = (ModelRoData_DisplayList_CollisionRecord *)node->Data;
+
+        if (rodata == NULL)
+        {
+            return;
+        }
+
+        if (objNodeCanDeform(obj->model->obj, node) && (void *)rodata->Vertices != (void *)model->datas[rodata->RwDataIndex])
+        {
+            objFreePermanently(obj, TRUE);
+            return;
         }
     }
 }

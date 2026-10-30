@@ -10,8 +10,9 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | `src/game/prop/propcollision.c` | Collision between props on the x/z plane: outlines, circles, CDTYPE filtering |
 | `src/game/prop/bbox.c` | Model bounding boxes turned into the world, and their x/z outlines |
 | `src/game/prop/autoaim.c` | Choosing the auto-aim target |
-| `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
-| `src/game/prop/propobj.c` | Objects at run time: creating, placing and freeing them |
+| `src/game/prop/setup.c` | Level setup: loading the setup file, the two passes over its propdefs, setup lookup helpers, the per-level prop state reset |
+| `src/game/prop/objsetup.c` | Creating each kind of object from its setup record, at its pad or bound pad |
+| `src/game/prop/propobj.c` | Objects at run time: creating their props and models, placing them at a pad, freeing them |
 | `src/game/prop/objrender.c` | Drawing objects and doors, whether things are in view, and object shading |
 | `src/game/prop/objtick.c` | The per-frame tick of objects and doors |
 | `src/game/prop/cctv.c` | Security cameras |
@@ -93,22 +94,36 @@ holds the model instance, the setup flags, the damage taken, and run-time state
 Each level has a setup file: pads (named positions), the path graph, AI lists, patrol
 paths, and the propdef list, which describes every prop. `setupCreateProps`:
 
-1. loads the setup file and turns its offsets into pointers;
-2. counts the propdefs of each type (`setupCountPropdefs`) to size the model slots
-   (`modelmgrAllocateModelSlots`) and the guard pool;
-3. walks the propdefs and creates each prop: `setupObject` for plain objects, and
-   `setupDoor`, `setupWeapon`, `setupCctv`, `setupAutogun`, `setupSingleMonitor` and so on
-   for the types that need more. Props with the "don't load on this difficulty" flag for
-   the current difficulty are skipped.
+1. loads the setup file and turns its offsets into pointers (`setupRebasePointers`);
+2. counts the propdefs of each type to size the model slots
+   (`modelmgrAllocateModelSlots`), the guard pool and the inventories;
+3. walks the propdefs and creates each guard and object (`setupCreatePropdef`):
+   `setupObject` for plain objects, and `setupDoor`, `setupWeapon`, `setupCctv`,
+   `setupAutogun`, `setupSingleMonitor`, `setupTank` and so on (all in `objsetup.c`)
+   for the types that need more. Objects whose flags2 has the "don't load" bit for the
+   current difficulty (or multiplayer player count) are skipped;
+4. walks them again to link records that refer to others (`setupLinkPropdef`): objects
+   inside other objects, dual weapons, switches, padlocked doors and items in safes. The
+   switch, padlock and safe links are chained into lists the tick code checks.
 
 The propdefs are used in place. An `ObjectRecord` is the setup file's own record, filled in
 at run time, so the prop data for the whole level lives in the setup file in memory.
-`setupCommandGetObject` finds a record by its index in the list, which is how AI scripts
-refer to objects. `setupFreeProps` frees them all at level end.
+Records refer to each other by index in the list, usually relative to their own:
+`setupCommandGetObject` finds an object by index, which is also how AI scripts refer to
+objects. `setupFreeProps` frees them all at level end.
 
-Links between props (switches, locked doors, items inside safes) are separate propdefs.
-`setupLinkSwitch`, `setupLinkLockDoor` and `setupLinkSafeItem` chain them into lists that
-the tick code checks.
+Fractions and angles are stored as 16.16 fixed point in fields that are floats at run
+time, and converted in place when the record is set up.
+
+### Placing an object
+
+A plain pad gives a position and a facing (`look` and `up`). A bound pad also gives a box
+in pad space (x across, y up, z along look). An object at a bound pad stands at the box's
+centre, unless `PROPFLAG2_ATPADPOS` puts it at the pad itself, and the `PROPFLAG_FITPAD*`
+flags scale it to fill the box. The setup flags then choose how `objPlaceAtPad` puts it
+there: on the floor (the default), `PROPFLAG_UPSIDEDOWN` hanging from the pad,
+`PROPFLAG_INAIR` at the pad's height, or `PROPFLAG_SIDEWAYS` turned 90 degrees
+(`objPlaceAtPadSideways`). Doors always use a bound pad and are scaled to fill it.
 
 ## Moving objects
 
@@ -336,9 +351,9 @@ oldest first, and vanish after 150 ticks.
 
 * `PROPFLAG_*` names are used for two different fields. On `PropRecord.flags` (8 bits),
   `PROPFLAG_ONSCREEN` and `PROPFLAG_ENABLED` mean what they say. On `ObjectRecord.flags`
-  (the setup flags), the same bits mean something else: 0x2 is "rotated 90 degrees,
-  upside down" and 0x4 "upside down", as the comments next to the enum say. The names
-  came from Perfect Dark.
+  (the setup flags), the low bits mean how the object is placed. Those have their own
+  names (`PROPFLAG_SIDEWAYS`, `PROPFLAG_UPSIDEDOWN`, `PROPFLAG_FITPADX`...) next to the
+  older ones, which came from Perfect Dark.
 * In `ObjectRecord`, `damage` is the object's health and `maxdamage` the damage taken so
   far: the names are the wrong way round.
 * The `chrobj*` functions are object code, not character code; the prefix comes from the
