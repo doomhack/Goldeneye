@@ -33,7 +33,6 @@
 #include "game/save/file.h"
 #include "game/level/frametiming.h"
 #include "game/menu/front.h"
-#include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
 #include "game/player/gun.h"
@@ -1001,7 +1000,7 @@ void playerSetCameraMode(s32 mode)
 
             if ((g_ExplodeTankOnDeathFlag != 0) && (g_PlayerTankProp != NULL))
             {
-                explosionCreate(g_PlayerTankProp, &g_PlayerTankProp->pos, g_PlayerTankProp->stan, 0xD, 0, playerGetCurrentNum(), g_PlayerTankProp->rooms, 0);
+                explosionCreate(g_PlayerTankProp, &g_PlayerTankProp->pos, g_PlayerTankProp->stan, EXPLOSION_DEF_STANDARD, 0, playerGetCurrentNum(), g_PlayerTankProp->rooms, 0);
             }
         }
         else

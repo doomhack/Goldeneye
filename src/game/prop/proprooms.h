@@ -31,5 +31,6 @@ void propUpdateRooms(PropRecord *prop);
 void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius);
 void roomGetProps(s32 *rooms);
 void propsDefragRoomProps(void);
+void propSetRooms(PropRecord *prop, u8 *rooms);
 
 #endif

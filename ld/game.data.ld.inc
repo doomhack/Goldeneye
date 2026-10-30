@@ -64,6 +64,9 @@
       build/OUTCODE/src/game/player/player.o (.data);
       build/OUTCODE/src/game/gfx/vtxstore.o (.data);
       build/OUTCODE/src/game/prop/explosion.o (.data);
+      build/OUTCODE/src/game/prop/smoke.o (.data);
+      build/OUTCODE/src/game/prop/debris.o (.data);
+      build/OUTCODE/src/game/prop/decal.o (.data);
       build/OUTCODE/src/game/prop/glass.o (.data);
       build/OUTCODE/src/game/hud/healthbar.o (.data);
       build/OUTCODE/src/game/hud/sparks.o (.data);

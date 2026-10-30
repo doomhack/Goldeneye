@@ -1783,7 +1783,7 @@ static void projectileWeaponEffects(PropRecord *prop, Projectile *projectile, s3
             }
             else
             {
-                explosionCreateSmoke(&weapon->runtime_pos, prop->stan, 8, prop->rooms, (prop->flags & PROPFLAG_00000008) != 0);
+                smokeCreate(&weapon->runtime_pos, prop->stan, SMOKE_TYPE_ROCKET, prop->rooms, (prop->flags & PROPFLAG_00000008) != 0);
             }
         }
     }
@@ -1795,7 +1795,7 @@ static void projectileWeaponEffects(PropRecord *prop, Projectile *projectile, s3
         }
         else
         {
-            explosionCreateSmoke(&weapon->runtime_pos, prop->stan, 9, prop->rooms, (prop->flags & PROPFLAG_00000008) != 0);
+            smokeCreate(&weapon->runtime_pos, prop->stan, SMOKE_TYPE_GRENADEROUND, prop->rooms, (prop->flags & PROPFLAG_00000008) != 0);
         }
     }
 
@@ -1841,11 +1841,11 @@ static void projectileSmokeTrail(ObjectRecord *obj)
         pos.f[2] -= 400.0f;
     }
 
-    explosionCreate(NULL, &pos, prop->stan, 0x14, 0, 0, prop->rooms, 0);
+    explosionCreate(NULL, &pos, prop->stan, EXPLOSION_DEF_HIGHTRAIL, 0, 0, prop->rooms, 0);
 
     if ((s32) g_LvTickCount % 40 == 0)
     {
-        explosionCreateSmoke(&pos, prop->stan, 10, prop->rooms, 1);
+        smokeCreate(&pos, prop->stan, SMOKE_TYPE_HIGHTRAIL, prop->rooms, 1);
     }
 }
 

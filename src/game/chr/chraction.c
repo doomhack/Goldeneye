@@ -26,7 +26,6 @@
 #include "game/chr/chrai.h"
 #include "game/save/file.h"
 #include "game/menu/front.h"
-#include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
 #include "game/player/gun.h"

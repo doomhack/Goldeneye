@@ -323,9 +323,9 @@ static Gfx *propRender(Gfx *gdl, PropRecord *prop, s32 withalpha)
         case PROP_TYPE_DOOR:
             return objRenderProp(prop, gdl, withalpha);
         case PROP_TYPE_EXPLOSION:
-            return explosionRenderPropExplosion(prop, gdl, withalpha);
+            return explosionRender(prop, gdl, withalpha);
         case PROP_TYPE_SMOKE:
-            return explosionRenderPropSmoke(prop, gdl, withalpha);
+            return smokeRender(prop, gdl, withalpha);
         case PROP_TYPE_VIEWER:
             return playerRenderProp(prop, gdl, withalpha);
     }
@@ -731,7 +731,7 @@ void propsTickOnce(void)
         }
         else if (prop->type == PROP_TYPE_SMOKE)
         {
-            op = explosionSmokeTick(prop);
+            op = smokeTick(prop);
         }
         else if (prop->type == PROP_TYPE_VIEWER)
         {

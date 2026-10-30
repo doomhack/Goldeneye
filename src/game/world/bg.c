@@ -522,8 +522,8 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
  
     if (lvGetDrawWorld())
     {
-        gdl = explosionRenderScorchBuffer(gdl);
-        gdl = explosionCallRenderBulletImpactOnProp(gdl);
+        gdl = scorchesRender(gdl);
+        gdl = impactsRenderOnWalls(gdl);
     }
  
  

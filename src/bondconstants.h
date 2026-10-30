@@ -358,7 +358,7 @@ typedef enum PROPFLAG2
     PROPFLAG2_00040000            = 0x00040000, // Hide inventory item (for tagged armor/ammo/magazine)
     PROPFLAG2_00080000            = 0x00080000, // Invincible Except to Explosions
     PROPFLAG2_BULLETPROOFGLASS            = 0x00100000, // Bulletproof Glass
-    PROPFLAG2_00200000            = 0x00200000, // Immune to Explosions
+    PROPFLAG2_EXPLOSIONPROOF      = 0x00200000, // Immune to Explosions
     PROPFLAG2_00400000            = 0x00400000, // Don't load on 2P
     PROPFLAG2_00800000            = 0x00800000, // Don't load on 3P
     PROPFLAG2_01000000            = 0x01000000, // Don't load on 4P
@@ -480,8 +480,8 @@ BITFLAG(DOOR_LOCK,
 typedef enum PROPSTATE {
     PROPSTATE_SIGNED_ENUM = -1,
     PROPSTATE_NONE = 0x00,
-    PROPSTATE_DAMAGED = 0x01,
-    PROPSTATE_2 = 0x02, // maybe "double damaged"
+    PROPSTATE_HASIMPACTS = 0x01,    // has bullet impacts drawn in the opaque pass (decal.c)
+    PROPSTATE_HASXLUIMPACTS = 0x02, // and in the translucent pass
     PROPSTATE_RESPAWN = 0x04,
     PROPSTATE_EXT_COLISION_BLOCK = 0x08,
     PROPSTATE_10 = 0x10,
@@ -1493,15 +1493,14 @@ typedef enum E_EXPLOSIONTYPE
     E_EXPLOSIONTYPE_COUNT
 } E_EXPLOSIONTYPE;
 
-/* index into g_ExplosionTypes.
-* Is this the same as E_EXPLOSIONTYPE ?
+/* index into g_ExplosionTypes (explosion.c).
 * Some names are based on logic in objTickExplosive (mine.c).
 */
 typedef enum EXPLOSION_DEF
 {
     EXPLOSION_DEF_SIGNED_ENUM = -1,
     EXPLOSION_DEF_00,
-    EXPLOSION_DEF_01,
+    EXPLOSION_DEF_BULLETPUFF, // a shot hitting a wall: no damage, no screen shake
     EXPLOSION_DEF_02,
     EXPLOSION_DEF_03,
     EXPLOSION_DEF_04,
@@ -1515,14 +1514,14 @@ typedef enum EXPLOSION_DEF
     EXPLOSION_DEF_DRONE,
     // used with grenades and mines
     EXPLOSION_DEF_STANDARD,
-    EXPLOSION_DEF_14,
+    EXPLOSION_DEF_MUSHROOM,   // rises, then spreads out flat
     EXPLOSION_DEF_15,
-    EXPLOSION_DEF_16,
+    EXPLOSION_DEF_DEBRIS,     // a burst of debris: no damage, no screen shake
     EXPLOSION_DEF_MASSIVE,
     EXPLOSION_DEF_PLAYER,
     EXPLOSION_DEF_FACILITY_REMOTE,
-    EXPLOSION_DEF_20,
-    EXPLOSION_DEF_21
+    EXPLOSION_DEF_HIGHTRAIL,  // the flames trailing an object high in the sky (projectileSmokeTrail)
+    EXPLOSION_DEF_COUNT
 } EXPLOSION_DEF;
 
 typedef enum GAMEMODE
@@ -3674,7 +3673,7 @@ typedef enum PROJECTILES
 
     /**
      * Tick operations
-     * The per-prop tick functions like chrTick, objTick, playerTick, explosionTick, explosionSmokeTick
+     * The per-prop tick functions like chrTick, objTick, playerTick, explosionTick, smokeTick
      * and the collect/interact chain returns a tickop telling the game what to do with the prop it just processed.
      * 
      * TICKOP_DISABLE and TICKOP_RETICK are handled but never actually used.

@@ -262,7 +262,7 @@ static void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 xlupas
 
     if (obj->state & (1 << xlupass))
     {
-        gdl = explosionRenderBulletImpactOnProp(gdl, prop, xlupass);
+        gdl = impactsRenderOnProp(gdl, prop, xlupass);
     }
 
     if (worldspace)

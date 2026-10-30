@@ -365,8 +365,8 @@ void objFree(ObjectRecord *obj, s32 freeprop, s32 canregen)
         return;
     }
 
-    explosionClearBulletImpactRoomByFlag(prop, FALSE);
-    explosionClearBulletImpactRoomByFlag(prop, TRUE);
+    impactsRemoveFromProp(prop, FALSE);
+    impactsRemoveFromProp(prop, TRUE);
 
     if (canregen)
     {
