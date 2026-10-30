@@ -29,7 +29,10 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 | `src/game/prop/monitor.c` | Monitor screens: running their scripts and drawing them |
 | `src/game/prop/monitorscripts.c` | The monitor scripts |
 | `src/game/prop/alarm.c` | The alarm, the gas leak and the countdown timer |
-| `src/game/prop/explosion.c` | Explosions, smoke, debris particles, scorch marks, bullet impacts, screen shake |
+| `src/game/prop/explosion.c` | Explosions: fireballs, damage, screen shake |
+| `src/game/prop/smoke.c` | Smoke left by explosions, and rocket and grenade trails |
+| `src/game/prop/debris.c` | Rubble thrown out by explosions and bullet hits |
+| `src/game/prop/decal.c` | Scorch marks and bullet impacts on walls and objects |
 | `src/game/prop/glass.c` | Glass shards from broken windows |
 
 ## Props and objects
@@ -330,15 +333,25 @@ at level load, and `alarmGasEndLevel` stops their sounds at level end.
 ## Explosions and smoke
 
 `explosionCreate` takes one of 6 explosion buffers and makes a `PROP_TYPE_EXPLOSION` prop
-for it, so it is listed, ticked and drawn like any other prop. Each tick it grows its
-parts, damages what is in range (`explosionInflictDamage`), and leaves smoke
-(`explosionCreateSmoke`, 20 buffers, `PROP_TYPE_SMOKE`), a scorch mark (solo only, 20) and
-debris (`explosionInitFlyingParticles`).
+for it, so it is listed, ticked and drawn like any other prop. The explosion type
+(`EXPLOSION_DEF`, table in explosion.c) sets its size, duration, damage, sound, smoke and
+debris. Each tick it adds and plays fireballs (up to 40), and four times over its life it
+damages what is in range (`explosionInflictDamage`). It throws out debris as it starts
+(`debrisCreate`), leaves smoke near its end (`smokeCreate`, 20 buffers,
+`PROP_TYPE_SMOKE`) and, if asked, a scorch mark halfway through (`scorchCreate`, solo
+only, 20). In multiplayer, a new explosion or smoke makes the existing smoke stop making
+clouds (`smokesEndEarly`).
 
-Bullet impacts on walls and props are a ring buffer of 100 (`explosionCreateBulletImpact`).
-Impacts on a prop move with it and are removed when the prop is deformed.
+Debris (200, shared by all players) and glass shards are not props: lv.c ticks and draws
+them each frame.
 
-The camera shake is `g_ShakeTicks`, set to 6 by an explosion and counted down by
+Bullet impacts on walls and objects are a ring buffer of 100 (`impactCreate`), and the
+ten oldest fade out. Impacts on an object move with it; those on glass go when it
+breaks (`impactsRemoveFromProp`) and all go when the object is deformed
+(`impactsRemoveTranslucent`). `PROPSTATE_HASIMPACTS` and `PROPSTATE_HASXLUIMPACTS` say
+whether an object has any to draw in each pass.
+
+The camera shake is set to 6 ticks by an explosion and counted down by
 `explosionScreenShake`.
 
 ## Glass shards
