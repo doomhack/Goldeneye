@@ -9,8 +9,10 @@ inventory are in [weapons](weapons.md).
 | --- | --- |
 | `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`) |
 | `src/game/player/bondview.c` | The player globals, the camera helpers (`cam*`): screen and view transforms, the view matrices, the frustum planes; also choosing a spawn pad, resetting a player for a new life, crouch and lean |
-| `src/game/player/bondview2.c` | Everything else about Bond, about 9,500 lines: camera modes and cutscene cameras, the tank, moving with collision, input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the frame's camera setup (`camSetupFrame`), the player prop tick (`playerTick`), co-op respawn and counter-op |
+| `src/game/player/bondview2.c` | Everything else about Bond, about 8,000 lines: camera modes and cutscene cameras, the tank, moving with collision, input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the frame's camera setup (`camSetupFrame`), the player prop tick (`playerTick`) |
 | `src/game/player/watch.c` | The pause watch: raising and lowering the arm (`watchTick`, `watchStepAnim`), the pause tilt and zoom, opening and closing it (`watchTrigger`), drawing the arm and watch (`watchRender`) |
+| `src/game/player/respawn.c` | Respawning: multiplayer at a pad (`mpRespawnPlayer`), co-op next to the partner (`coopRespawnPlayer`) |
+| `src/game/player/counterop.c` | Counter-op: player 2 taking over guards, the suicide pill, the end screen's stats |
 | `src/game/player/bondview_r.c` | Level start for a player: the intro section of the setup file (`playerApplyIntro`), co-op spawn points, loading projectile models |
 | `src/game/player/bondhead.c` | Head bob: the hidden walk animation whose root motion moves the camera up and down as Bond walks, and breathing |
 
@@ -131,12 +133,16 @@ When Bond drives the tank, `g_PlayerTankProp` is the tank and the `tank*` functi
 
 ## Co-op and counter-op
 
-Added for this fork, at the end of `bondview2.c`:
+Added for this fork:
 
-* `coopUpdateSoloView` decides each frame whether one player's view fills the screen.
-* `coopRespawnPlayer` respawns a dead player next to the partner, taking health from them.
-* `coopTankBeginPlayer` and `coopTankEndPlayer` let one player own the tank.
-* `counterOpTick` and friends let player 2 take over a guard.
+* `coopUpdateSoloView` (`bondview2.c`) decides each frame whether one player's view fills
+  the screen.
+* `coopRespawnPlayer` (`respawn.c`) respawns a dead player next to the partner, taking
+  health from them. `hudRender` runs it when the dead player presses a button.
+* `coopTankBeginPlayer` and `coopTankEndPlayer` (`bondview2.c`) let one player own the tank.
+* `counterop.c` lets player 2 play as the guards: `counterOpTakeOverGuard` puts them in a
+  guard out of Bond's sight, with that guard's body, guns and health, or where a dead guard
+  first stood (`s_CounterOpStarts`); also the suicide pill and the end screen's stats.
 
 ## Traps
 

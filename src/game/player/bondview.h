@@ -1126,6 +1126,8 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 
 #include "game/hud/hudmsg.h"
 #include "game/player/watch.h"
+#include "game/player/respawn.h"
+#include "game/player/counterop.h"
 
 Gfx * camSetupFrame(Gfx *gdl);
 s32 playerPressedActivate(void);
@@ -1139,28 +1141,11 @@ void tankGetTurretDir(coord3d *dir);
 f32 playerGetFloorY(struct StandTile *tile, f32 x, f32 z);
 void playerUpdateCollisionBounds(void);
 void coopFindPartnerSpawn(coord3d *pos, StandTile **stan, f32 look_angle);
-void coopRespawnPlayer(void);
-s32  coopDiedLast(void);
-void mpRespawnPlayer(void);
-
-// Co-op: when a dead player can respawn (A, Z or Start once this has passed).
-#define COOP_RESPAWN_DELAY60 (10 * 60)
-extern s32 g_CoopDeathTime[4];
 extern s32 g_CoopRespawnButtonsHeld[4];
 
 Gfx *watchRender(Gfx *gdl);
 Gfx *currentPlayerDrawFade(Gfx *gdl);
 bool currentPlayerIsFadeComplete(void);
-void counterOpResetForStage(void);
-f32 counterOpGetGuardHealth(void);
-s32 counterOpGetGuardModels(s32 *head, s32 *body);
-s32 counterOpTakeOverGuard(void);
-void counterOpTick(void);
-s32 counterOpSuicidePillTick(s32 triggerOn);
-s32 counterOpGetBodiesUsed(void);
-f32 counterOpGetDamageToBond(void);
-void counterOpNoteDamageToBond(f32 percent);
-f32 counterOpPlayerDamage(s32 shooter, f32 damage, s32 weaponid);
 extern s32 g_CoopTankPlayer;
 s32 coopTankUsedByPartner(void);
 void coopTankBeginPlayer(void);
@@ -1168,6 +1153,7 @@ void coopTankEndPlayer(s32 moved);
 extern s32 g_CoopCinemaPlayer;
 void coopUpdateSoloView(void);
 f32 playerGetEyeHeight(struct player *player);
+void playerDie(void);
 void playerGetCollisionSize(PropRecord* prop, f32 *collision_radius, f32 *height, f32 *always_30);
 void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset);
 void currentPlayerSetFadeColour(s32 r, s32 g, s32 b, f32 frac);

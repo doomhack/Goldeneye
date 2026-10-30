@@ -59,6 +59,8 @@
       build/OUTCODE/src/game/player/bondview.o (.data);
       build/OUTCODE/src/game/player/bondview2.o (.data);
       build/OUTCODE/src/game/player/watch.o (.data);
+      build/OUTCODE/src/game/player/respawn.o (.data);
+      build/OUTCODE/src/game/player/counterop.o (.data);
       build/OUTCODE/src/game/player/bondinv.o (.data);
       build/OUTCODE/src/game/player/bondhead.o (.data);
       build/OUTCODE/src/game/nav/waypoint.o (.data);
