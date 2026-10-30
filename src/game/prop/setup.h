@@ -7,6 +7,20 @@
 extern stagesetup g_CurrentSetup;
 extern stagesetup *g_ptrStageSetupFile;
 
+/**
+ * A pad by number: plain pads and bound pads start the same way (position, up, look),
+ * so a bound pad can be used as a plain one.
+ */
+static inline PadRecord *setupGetPad(s32 padnum)
+{
+    if (isNotBoundPad(padnum))
+    {
+        return &g_CurrentSetup.pads[padnum];
+    }
+
+    return (PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(padnum)];
+}
+
 void setupCreateProps(enum LEVELID stageId);
 void setupFreeProps(void);
 void setupGuard(GuardRecord *guard);

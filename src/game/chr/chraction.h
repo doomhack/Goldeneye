@@ -46,21 +46,17 @@
 
 
 
-f32 chrGetDistanceToBond(ChrRecord *guardData);
 bool chrCheckTargetInSight(ChrRecord *self);
 bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid);
 void chrAlertGuardToPlayerPosition(ChrRecord *);
 void chrStandImmediate(ChrRecord *self, f32 mergetime);
-f32 chrGetAngleToBond(ChrRecord *self);
 bool chrHasStoppedOrPatroling(ChrRecord *);
-s32 chrResolvePadId(ChrRecord *guardData,s32 padNo);
 void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result);
 bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bool isPlayer);
 bool chrCanSeeBond(ChrRecord *self);
 bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan);
-s32 chrSawTargetRecently(ChrRecord *);
 bool chrIsDead(ChrRecord *chr);
 bool chrTrySidestep(ChrRecord *self);
 bool chrTryJumpOut(ChrRecord *self);
@@ -83,62 +79,27 @@ s32 rayPassesNearPoint2d(coord3d *origin, coord3d *dir, coord3d *point, f32 rang
 s32 chrIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *targetpos, f32 range);
 void chrActionTick(ChrRecord *self);
 void bgChrsTick(void);
-s32 chrSawTargetRecently(ChrRecord *self);
-s32 chrHeardTargetRecently(ChrRecord *self);
-ChrRecord *chrFindById(ChrRecord *self, s32);
-f32 chrGetAngleFromBond(ChrRecord *self);
-f32 chrGetDistanceToPad(ChrRecord *self, s32 padID);
-bool chrPadRoomIsVisible(ChrRecord *self, s32 padnum);
-f32 chrGetDistanceToChr(ChrRecord *self, s32 chrID);
-f32 chrGetDistanceFromBondToPad(ChrRecord *self, s32 padid);
-void chrSetFlags2(ChrRecord *self, u8 flags2);
-void chrUnsetFlags2(ChrRecord *self, u8 flags2);
-s32 chrHasFlags2(ChrRecord *self, u8 flags2);
-void chrSetFlags2ById(ChrRecord *self, s32 guard_id, u8 flags2);
-void chrUnsetFlags2ById(ChrRecord *self, s32 guard_id, u8 flags2);
-bool chrHasFlags2ById(ChrRecord *self, s32 guard_id, u8 flags2); //chrHasFlags2ById
-void chrSetStageFlags(s32 flags);
-void chrUnsetStageFlags(u32 flags);
-bool chrHasStageFlag(s32 flags);
-bool chrIsHearingBond(ChrRecord *self);
-bool chrTrySurrender(ChrRecord *self);
-bool chrFadeOut(ChrRecord *self);
-void chrRestartTimer(ChrRecord *self);
-f32 chrGetTimer(ChrRecord *self);
-bool chrIsTargetedByPlayer(ChrRecord *self);
-bool chrIfNearMiss(ChrRecord *self);
-bool chrGoToBond(ChrRecord *self, SPEED speed);
-bool chrGoToChr(ChrRecord *self, s32 chrid, SPEED speed);
-s8 chrGetNumArghs(ChrRecord *self);
-s8 chrGetNumCloseArghs(ChrRecord *self);
-bool chrSawInjury(ChrRecord *self);
-bool chrSawDeath(ChrRecord *self);
-bool chraiStopAnimation(ChrRecord *self);
-bool chrTrySurprisedOneHand(ChrRecord *self);
-bool chrTrySurprisedSurrender(ChrRecord *self);
-bool chrTrySurprisedLookAround(ChrRecord *self);
-bool chrTryKneel(ChrRecord *self);
-s32 chrTryStartAnim(ChrRecord *self, s32 animID, s32 b, s32 c, u8 d, s32 e);
-bool chrCanHearAlarm(void);
-bool chrSetPadPresetToWaypointInTargetQuadrant(ChrRecord *self, u8 quadrant);
-bool chrSetPadPresetToWaypointInQuadrant(ChrRecord *self, u8 padnum);
-bool chrSetChrPresetToNearbyChr(ChrRecord *self, f32 distance);
-void chrSetChrPreset(ChrRecord *self, s32 id);
-void chrSetChrPresetOf(ChrRecord *self, s32 id, s32 id2);
-void chrSetPadPreset( ChrRecord *self, s32 padid);
-void chrSetPadPresetByChrnum(ChrRecord *self, s32 chrid, s32 padid);
-s32 chrIsTargetNearlyInSight(ChrRecord *self);
-bool chrAdjustPosForSpawn(coord3d *pos, StandTile **tile, f32 facing, bool b);
-PropRecord *chrSpawnAtPad(ChrRecord *self, s32 bodynum, s32 headnum, s32 padid, AIRecord *ailist, s32 flags);
-PropRecord *chrSpawnAtChr(ChrRecord *self, s32 bodynum, s32 headnum, s32 chrnum, AIRecord *ailist, s32 flags);
-bool chrIfInPadRoom(ChrRecord *self, s32 chrnum, s32 padnum);
-bool chrPlayerIsInPadRoom(ChrRecord *self, s32 padnum);
-bool chrRemovedAiCommand27(void);
-bool chrRemovedAiCommand2B(void);
-bool chrTryStartAlarm(ChrRecord *self, s32 PadId);
-bool chrTryThrowGrenade(ChrRecord *self);
-bool chrDropItem(ChrRecord *self, s32 modelnum, u8 weaponid);
 void chrGetMovementTarget(ChrRecord *self, coord3d *target);
 s32 chrExplosionDamage(ChrRecord *self, coord3d *pos, f32 damage, s32 playsound);
+
+/* Starting actions, for chrscript.c */
+bool chrIsNotDeadOrShot(ChrRecord *self);
+void chrStandCheckWall(ChrRecord *self);
+void chrKneelChooseAnimation(ChrRecord *self);
+void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60);
+void chrStartAlarmChooseAnimation(ChrRecord *self);
+void chrThrowGrenade(ChrRecord *self, GUNHAND hand, s32 startframe);
+void chrActorShuffleFeet(ChrRecord *self);
+void chrStartSurprised(ChrRecord *self);
+void chrActorLookFlustered(ChrRecord *self);
+void chrActorThrowWeaponSurrender(ChrRecord *self);
+void chrActorFadeAway(ChrRecord *self);
+s32  chrGoToPos(ChrRecord *self, coord3d *pos, StandTile *stan, SPEED speed);
+s32  chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *viapoint, coord3d *bondpos, StandTile *bondstan, s32 cdtypes);
+s32  chrHasLineOfSightToPlayer(ChrRecord *self);
+waypoint *waypointFindNearPos(coord3d *pos, StandTile *starttile);
+
+/* What the AI script commands use */
+#include "game/chr/chrscript.h"
 
 #endif

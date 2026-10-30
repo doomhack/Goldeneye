@@ -1342,7 +1342,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_Stop:
                 {
-                    chraiStopAnimation(ChrEntityp);
+                    chrTryStopAnim(ChrEntityp);
                     Offset += sizeof(AiStopRecord);
                     break;
                 }
@@ -1729,7 +1729,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_RemoveMe:
                 {
-                    chrFadeOut(ChrEntityp);
+                    chrActorFadeAway(ChrEntityp);
                     Offset += sizeof(AiRemoveMeRecord);
                     break;
                 }
@@ -1772,15 +1772,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_TRYRunFromBond:
                 { // run from bond
-                    AiTRYRunFromBondRecord *ai = (AiTRYRunFromBondRecord *)(AiListp + Offset);
-                    if (chrRemovedAiCommand27())
-                    {
-                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
-                    }
-                    else
-                    {
-                        Offset += sizeof(AiTRYRunFromBondRecord);
-                    }
+                    // Never in the game: always fails
+                    Offset += sizeof(AiTRYRunFromBondRecord);
                     break;
                 }
                 case AI_TRYRunToBond:
@@ -1824,15 +1817,8 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_TRYFindCover:
                 { // Find Cover
-                    AiTRYFindCoverRecord *ai = (AiTRYFindCoverRecord *)(AiListp + Offset);
-                    if (chrRemovedAiCommand2B())
-                    {
-                        Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
-                    }
-                    else
-                    {
-                        Offset += sizeof(AiTRYFindCoverRecord);
-                    }
+                    // Never in the game: always fails
+                    Offset += sizeof(AiTRYFindCoverRecord);
                     break;
                 }
                 case AI_TRYRunToChr:
@@ -1960,7 +1946,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFICanHearAlarm:
                 {
                     AiIFICanHearAlarmRecord *ai = (AiIFICanHearAlarmRecord *)(AiListp + Offset);
-                    if (chrCanHearAlarm())
+                    if (alarmIsActive())
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -1999,7 +1985,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFIHeardBond:
                 {
                     AiIFIHeardBondRecord *ai = (AiIFIHeardBondRecord *)(AiListp + Offset);
-                    if (chrIsHearingBond(ChrEntityp))
+                    if (ChrEntityp->hidden & CHRHIDDEN_ALERT_GUARD_RELATED)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2012,7 +1998,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFISeeSomeoneShot:
                 {
                     AiIFISeeSomeoneShotRecord *ai = (AiIFISeeSomeoneShotRecord *)(AiListp + Offset);
-                    if (chrSawInjury(ChrEntityp))
+                    if (ChrEntityp->chrseeshot >= 0)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2025,7 +2011,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFISeeSomeoneDie:
                 {
                     AiIFISeeSomeoneDieRecord *ai = (AiIFISeeSomeoneDieRecord *)(AiListp + Offset);
-                    if (chrSawDeath(ChrEntityp))
+                    if (ChrEntityp->chrseedie >= 0)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2171,7 +2157,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFBondMissedMe:
                 {
                     AiIFBondMissedMeRecord *ai = (AiIFBondMissedMeRecord *)(AiListp + Offset);
-                    if (chrIfNearMiss(ChrEntityp))
+                    if (ChrEntityp->chrflags & CHRFLAG_NEAR_MISS)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2864,7 +2850,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFMyNumArghsLessThan:
                 {
                     AiIFMyNumArghsLessThanRecord *ai = (AiIFMyNumArghsLessThanRecord *)(AiListp + Offset);
-                    if (ai->val > chrGetNumArghs(ChrEntityp)) // order matter
+                    if (ai->val > ChrEntityp->numarghs) // order matter
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2877,7 +2863,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFMyNumArghsGreaterThan:
                 {
                     AiIFMyNumArghsGreaterThanRecord *ai = (AiIFMyNumArghsGreaterThanRecord *)(AiListp + Offset);
-                    if (ai->val < chrGetNumArghs(ChrEntityp)) // order matter
+                    if (ai->val < ChrEntityp->numarghs) // order matter
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2890,7 +2876,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFMyNumCloseArghsLessThan:
                 {
                     AiIFMyNumCloseArghsLessThanRecord *ai = (AiIFMyNumCloseArghsLessThanRecord *)(AiListp + Offset);
-                    if (ai->val > chrGetNumCloseArghs(ChrEntityp))
+                    if (ai->val > ChrEntityp->numclosearghs)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -2903,7 +2889,7 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFMyNumCloseArghsGreaterThan:
                 {
                     AiIFMyNumCloseArghsGreaterThanRecord *ai = (AiIFMyNumCloseArghsGreaterThanRecord *)(AiListp + Offset);
-                    if (ai->val < chrGetNumCloseArghs(ChrEntityp))
+                    if (ai->val < ChrEntityp->numclosearghs)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -3288,21 +3274,21 @@ void                   ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_SetMyFlags2:
                 {
                     AiSetMyFlags2Record *ai = (AiSetMyFlags2Record *)(AiListp + Offset);
-                    chrSetFlags2(ChrEntityp, ai->BITS);
+                    ChrEntityp->flags2 |= ai->BITS;
                     Offset += sizeof(AiSetMyFlags2Record);
                     break;
                 }
                 case AI_UnsetMyFlags2:
                 {
                     AiUnsetMyFlags2Record *ai = (AiUnsetMyFlags2Record *)(AiListp + Offset);
-                    chrUnsetFlags2(ChrEntityp, ai->BITS);
+                    ChrEntityp->flags2 &= ~ai->BITS;
                     Offset += sizeof(AiUnsetMyFlags2Record);
                     break;
                 }
                 case AI_IFMyFlags2Has:
                 {
                     AiIFMyFlags2HasRecord *ai = (AiIFMyFlags2HasRecord *)(AiListp + Offset);
-                    if (chrHasFlags2(ChrEntityp, ai->BITS))
+                    if (ChrEntityp->flags2 & ai->BITS)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }

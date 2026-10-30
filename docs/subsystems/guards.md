@@ -7,6 +7,7 @@ character is a "chr", and its record is a `ChrRecord`.
 | --- | --- |
 | `src/game/chr/chr.c` | Chr slots, the per-frame chr tick (`chrTick`), moving with collision, drawing, shot hit tests on the body, hearing |
 | `src/game/chr/chraction.c` | Actions: what a guard is physically doing (standing, walking a patrol, attacking, dying) and the code that starts and ticks each one; sight, navigation round obstacles, firing |
+| `src/game/chr/chrscript.c` | The chr side of the AI commands: finding chrs and pads by script ids (`chrFindById`, `chrResolvePadId`), distances, angles and room checks, flags, presets, spawning guards (`chrSpawnAtPad`, `chrSpawnAtChr`), and the `chrTry*` actions that fail if the guard is dead or hit |
 | `src/game/chr/chrai.c` | The AI script interpreter (`ai`) and the AI sound slots. The commands themselves are in `src/aicommands.def` |
 | `src/game/chr/chraidata.c` | The global AI scripts, shared by every level |
 | `src/game/chr/body.c` | Bodies and heads: loading them and building a chr's model, random heads |
