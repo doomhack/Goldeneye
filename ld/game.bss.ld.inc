@@ -9,6 +9,9 @@
       build/OUTCODE/src/game/hud/blood.o (.bss);
       build/OUTCODE/src/game/save/file.o (.bss);
       build/OUTCODE/src/game/chr/chr.o (.bss);
+      build/OUTCODE/src/game/chr/chranims.o (.bss);
+      build/OUTCODE/src/game/chr/chrrender.o (.bss);
+      build/OUTCODE/src/game/chr/chrhit.o (.bss);
       build/OUTCODE/src/game/chr/body.o (.bss);
       build/OUTCODE/src/game/chr/chraction.o (.bss);
       build/OUTCODE/src/game/chr/chrscript.o (.bss);
