@@ -1,6 +1,7 @@
       build/OUTCODE/src/game/model/initactorpropstuff.o (.rodata);
       build/OUTCODE/src/game/model/anim.o (.rodata);
       build/OUTCODE/src/game/prop/setup.o (.rodata);
+      build/OUTCODE/src/game/prop/objsetup.o (.rodata);
       build/OUTCODE/src/game/mission/objective.o (.rodata);
       build/OUTCODE/src/game/player/bondview_r.o (.rodata);
       build/OUTCODE/src/game/menu/title.o (.rodata);

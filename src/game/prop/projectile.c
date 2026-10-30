@@ -1361,7 +1361,7 @@ static void objPlaceOnSurface(ObjectRecord *obj, coord3d *pos, StandTile *stan, 
 
     mtxAlignToNormal(normal, &mtx);
     mtx4ScaleRows012(obj->model->scale, &mtx);
-    objChangeShading(obj, pos, &mtx, stan);
+    objSetPosition(obj, pos, &mtx, stan);
 
     f32 ymin = bboxGetYmin(modelFileFindBbox(obj->model->obj));
 

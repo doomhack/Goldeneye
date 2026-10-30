@@ -26,7 +26,6 @@ extern f32 g_SoloAmmoMultiplier;
 extern struct LinkRecord *g_LevelLoadPropSwitch;
 extern LockDoorRecord *g_LevelLoadPropLockDoor;
 extern SafeObjectRecord *g_LevelLoadPropSafeItem;
-extern f32 g_SoloAmmoMultiplier;
 
 #if defined(VERSION_EU)
 extern ExplosionDetailsRecordEuList object_explosion_details;
@@ -35,20 +34,19 @@ extern ExplosionDetailsRecord object_explosion_details[];
 #endif
 
 
-void                 objFree(ObjectRecord *obj, s32 freeprop, s32 canregen);
-PropRecord          *objInit(ObjectRecord *obj, ModelFileHeader *modeldef, PropRecord *prop, Model *model);
-void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop);
+PropRecord *objInit(ObjectRecord *obj, ModelFileHeader *header, PropRecord *prop, Model *model);
+PropRecord *objInitWithModelDef(ObjectRecord *obj, ModelFileHeader *header);
+PropRecord *objInitWithAutoModel(ObjectRecord *obj);
+void        objSetPosition(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *stan);
+void        objPlaceAtPad(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *stan, coord3d *centre);
+void        objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan, coord3d *centre);
+void        objFree(ObjectRecord *obj, s32 freeprop, s32 canregen);
+void        objFreePermanently(ObjectRecord *obj, bool freeprop);
+void        modelResetDeformedVertices(Model *model);
+void        objsFreeDeformedVertices(void);
 
-void                 objChangeShading(ObjectRecord *, coord3d *, Mtxf *, StandTile *);
-
-void                 objPlaceAtPad(ObjectRecord *baseobj, coord3d *pad, Mtxf *matrix, StandTile *stan, coord3d *pos2);
-void                 objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan2, coord3d *pos2);
-PropRecord*          objInitWithAutoModel(ObjectRecord* obj);
-PropRecord*          objInitWithModelDef(ObjectRecord* object, ModelFileHeader* header);
-void                 glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
-void                 objsFreeDeformedVertices(void);
-f32                  bondviewGetPlayerPitchRadians(void);
-void                 modelResetDeformedVertices(Model* model);
+void        glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
+f32         bondviewGetPlayerPitchRadians(void);
 
 #include "game/prop/objdamage.h"
 #include "game/prop/objhit.h"

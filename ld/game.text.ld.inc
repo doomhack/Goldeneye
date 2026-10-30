@@ -1,6 +1,7 @@
       build/OUTCODE/src/game/model/initactorpropstuff.o (.text);
       build/OUTCODE/src/game/model/anim.o (.text);
       build/OUTCODE/src/game/prop/setup.o (.text);
+      build/OUTCODE/src/game/prop/objsetup.o (.text);
       build/OUTCODE/src/game/mission/objective.o (.text);
       build/OUTCODE/src/game/player/bondview_r.o (.text);
       build/OUTCODE/src/game/menu/title.o (.text);
