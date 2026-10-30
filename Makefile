@@ -409,7 +409,6 @@ help:
 	@echo "    VERSION=v                       Region version. (US is default)"
 	@echo "                                    Supported values: ${ALLOWED_VERSIONS}\n"
 
-include include/make/cmd.make
 
 
 

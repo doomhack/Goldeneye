@@ -29,7 +29,7 @@
  Under the hood, AI in GoldenEye and Perfect Dark use a Symbolic Language
  (similar to Bytecode/Pcode) with a 1 or 2 byte "Command" followed by a variable
  length array of parameters.
- At run-time, a small "interpreter" - ai() scans over the code and runs
+ At run-time, a small "interpreter" - aiRunList() (chrai.c) scans over the code and runs
  the subroutine identified by the instruction - also known as a "branch table".
  However, All these details are abstracted away via meaningful C macros.
 
