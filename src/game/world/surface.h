@@ -10,7 +10,7 @@
 typedef struct SurfaceHit
 {
     const u16 *sfx;    /* bullet hit sounds, one picked at random */
-    const u8 *impacts; /* bullet impacts (explosionCreateBulletImpact), one picked at random */
+    const u8 *impacts; /* bullet impacts (impactCreate, decal.c), one picked at random */
     s16 numSfx;
     s16 numImpacts;
 } SurfaceHit;

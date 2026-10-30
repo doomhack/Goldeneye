@@ -469,3 +469,19 @@ void propsDefragRoomProps(void)
         }
     }
 }
+
+/**
+ * Sets a prop's rooms from a list ending in 0xff (at most 7 are taken). It doesn't add
+ * the prop to the rooms' lists.
+ */
+void propSetRooms(PropRecord *prop, u8 *rooms)
+{
+    s32 i;
+
+    for (i = 0; rooms[i] != 0xff && i < 7; i++)
+    {
+        prop->rooms[i] = rooms[i];
+    }
+
+    prop->rooms[i] = 0xff;
+}

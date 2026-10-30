@@ -45,7 +45,6 @@ void        objFreePermanently(ObjectRecord *obj, bool freeprop);
 void        modelResetDeformedVertices(Model *model);
 void        objsFreeDeformedVertices(void);
 
-void        glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
 f32         bondviewGetPlayerPitchRadians(void);
 
 #include "game/prop/objdamage.h"

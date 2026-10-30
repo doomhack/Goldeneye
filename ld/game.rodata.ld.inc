@@ -66,6 +66,9 @@
       build/OUTCODE/src/game/player/player.o (.rodata);
       build/OUTCODE/src/game/gfx/vtxstore.o (.rodata);
       build/OUTCODE/src/game/prop/explosion.o (.rodata);
+      build/OUTCODE/src/game/prop/smoke.o (.rodata);
+      build/OUTCODE/src/game/prop/debris.o (.rodata);
+      build/OUTCODE/src/game/prop/decal.o (.rodata);
       build/OUTCODE/src/game/prop/glass.o (.rodata);
       build/OUTCODE/src/game/hud/healthbar.o (.rodata);
       build/OUTCODE/src/game/hud/sparks.o (.rodata);

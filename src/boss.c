@@ -289,7 +289,7 @@ void bossInitMainthreadData(void)
     textInit();
     playersResetHandicaps();
     frameTimingStart();
-    explosionInitScaleMtx();
+    smokeInitScaleMtx();
     null_init_main_2();
     casingsInit();
     animLoadTable();

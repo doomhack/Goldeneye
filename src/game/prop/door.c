@@ -35,6 +35,7 @@
 #include "game/player/player.h"
 #include "game/prop/door.h"
 #include "game/prop/explosion.h"
+#include "game/prop/glass.h"
 #include "game/prop/prop.h"
 #include "game/prop/propobj.h"
 #include "game/text/language.h"
@@ -1322,7 +1323,7 @@ void doorShatterGlass(DoorRecord *door)
     glassCreateShards((coord3d *)mtx.m[3], (coord3d *)mtx.m[0], (coord3d *)mtx.m[1], (coord3d *)mtx.m[2],
                       pane->Bounds.xmin, pane->Bounds.xmax, pane->Bounds.ymin, pane->Bounds.ymax);
 
-    explosionClearBulletImpactRoomByFlag(door->prop, 1);
+    impactsRemoveFromProp(door->prop, 1);
 
     modelGetNodeRwData(model, model->obj->Switches[1])->Switch.visible = FALSE;
 }

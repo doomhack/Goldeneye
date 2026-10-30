@@ -14,6 +14,7 @@
 #include "game/prop/projectile.h"
 #include "game/prop/door.h"
 #include "game/prop/explosion.h"
+#include "game/prop/glass.h"
 #include "game/hud/sparks.h"
 #include "game/math/line_tri_intersect.h"
 #include "game/math/matrix.h"
@@ -509,7 +510,7 @@ static void objBreakCCTVGlass(ObjectRecord *obj)
         glassCreateShards((coord3d *) lensmtx.m[3], (coord3d *) lensmtx.m[0], (coord3d *) lensmtx.m[1], (coord3d *) lensmtx.m[2], bounds[1], bounds[2], bounds[3], bounds[4]);
     }
 
-    explosionClearBulletImpactRoomByFlag(prop, TRUE);
+    impactsRemoveFromProp(prop, TRUE);
 
     // Hide the lens
     *(s32 *) modelGetNodeRwData(model, model->obj->Switches[3]) = 0;
@@ -557,7 +558,7 @@ static void objHitImpact(ObjectRecord *obj, BulletHit *hit)
 
         s16 impact = (randomGetNext() % 3) + 0x11;
 
-        explosionCreateBulletImpact(&hit->hit.hitpos, &hit->hit.normal, impact, 1, hit->prop, hit->room, clearWithRoom);
+        impactCreate(&hit->hit.hitpos, &hit->hit.normal, impact, 1, hit->prop, hit->room, clearWithRoom);
         return;
     }
 
@@ -572,7 +573,7 @@ static void objHitImpact(ObjectRecord *obj, BulletHit *hit)
         clearWithRoom = 1;
     }
 
-    explosionCreateBulletImpact(&hit->hit.hitpos, &hit->hit.normal, surface->impacts[impact], 1, hit->prop, hit->room, clearWithRoom);
+    impactCreate(&hit->hit.hitpos, &hit->hit.normal, surface->impacts[impact], 1, hit->prop, hit->room, clearWithRoom);
 }
 
 /**

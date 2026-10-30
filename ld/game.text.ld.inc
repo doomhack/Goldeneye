@@ -65,6 +65,9 @@
       build/OUTCODE/src/game/player/player.o (.text);
       build/OUTCODE/src/game/gfx/vtxstore.o (.text);
       build/OUTCODE/src/game/prop/explosion.o (.text);
+      build/OUTCODE/src/game/prop/smoke.o (.text);
+      build/OUTCODE/src/game/prop/debris.o (.text);
+      build/OUTCODE/src/game/prop/decal.o (.text);
       build/OUTCODE/src/game/prop/glass.o (.text);
       build/OUTCODE/src/game/hud/healthbar.o (.text);
       build/OUTCODE/src/game/hud/sparks.o (.text);

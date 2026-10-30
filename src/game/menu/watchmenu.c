@@ -21,7 +21,6 @@
 #include "game/text/language.h"
 #include "game/player/player.h"
 #include "game/text/text.h"
-#include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
 #include "game/level/frametiming.h"

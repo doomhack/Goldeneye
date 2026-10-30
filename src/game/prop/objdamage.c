@@ -20,6 +20,7 @@
 #include "game/prop/prop.h"
 #include "game/prop/projectile.h"
 #include "game/prop/explosion.h"
+#include "game/prop/glass.h"
 #include "game/prop/monitor.h"
 #include "game/prop/alarm.h"
 #include "game/gfx/vtxstore.h"
@@ -299,7 +300,7 @@ void objDeform(ObjectRecord *obj, s32 stage)
         deformseed = randomGetNext();
     }
 
-    explosionClearBulletImpactRoom(obj->prop);
+    impactsRemoveTranslucent(obj->prop);
 
     // A TV holder hangs from the ceiling, so it blackens and sinks the other way
     bool adjustHeight = obj->obj != PROP_TV_HOLDER;
@@ -635,8 +636,8 @@ static void glassShatter(ObjectRecord *obj)
     PropRecord *prop = obj->prop;
     ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
 
-    explosionClearBulletImpactRoomByFlag(prop, FALSE);
-    explosionClearBulletImpactRoomByFlag(prop, TRUE);
+    impactsRemoveFromProp(prop, FALSE);
+    impactsRemoveFromProp(prop, TRUE);
 
     glassCreateShards(&obj->runtime_pos,
         (coord3d *) obj->mtx.m[0], (coord3d *) obj->mtx.m[1], (coord3d *) obj->mtx.m[2],

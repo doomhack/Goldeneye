@@ -13,7 +13,6 @@
 #include "game/gfx/dyn.h"
 #include "game/math/trig.h"
 #include "gbi_extension.h"
-#include "game/prop/glass.h"
 #include "game/gfx/imagebank.h"
 #include "game/level/lv.h"
 #include "game/mission/objective.h"

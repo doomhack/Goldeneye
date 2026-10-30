@@ -12,7 +12,6 @@
 #include "game/chr/chr.h"
 #include "game/chr/chraction.h"
 #include "game/prop/explosion.h"
-#include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
 #include "game/save/file.h"
@@ -6602,7 +6601,7 @@ void shotFireBullet(s32 hand)
                 if ((surface->numImpacts > 0) && (shotdata.weapon != 23))
                 {
                     pad = randomGetNext() % surface->numImpacts;
-                    explosionCreateBulletImpact(&visiblehitpos, &bghit.normal, surface->impacts[pad], bestroom, 0, -1, 0);
+                    impactCreate(&visiblehitpos, &bghit.normal, surface->impacts[pad], bestroom, 0, -1, 0);
                 }
 
                 if (lightIsLightTexture(bghit.texturenum))
@@ -6634,7 +6633,7 @@ void shotFireBullet(s32 hand)
                 {
                     rooms[0] = bestroom;
                     rooms[1] = 255;
-                    explosionCreate(0, finalpos, hittile, 1, 0, playerGetCurrentNum(), rooms, 0);
+                    explosionCreate(NULL, finalpos, hittile, EXPLOSION_DEF_BULLETPUFF, 0, playerGetCurrentNum(), rooms, 0);
                 }
             }
 

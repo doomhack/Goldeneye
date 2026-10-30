@@ -25,7 +25,6 @@
 #include "game/model/chrobjdata.h"
 #include "game/gfx/dyn.h"
 #include "game/gfx/vtxstore.h"
-#include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
 #include "game/save/file.h"
@@ -2747,17 +2746,17 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
             if ((held_right_obj != NULL) && (( held_right_obj->state & ((u8)(1 << withalpha) )) ))
             {
-                gdl = explosionRenderBulletImpactOnProp(gdl, prop_held_right, withalpha);
+                gdl = impactsRenderOnProp(gdl, prop_held_right, withalpha);
             }
 
             if ((held_left_obj != NULL) && (( held_left_obj->state & ((u8)(1 << withalpha) )) ))
             {
-                gdl = explosionRenderBulletImpactOnProp(gdl, prop_held_left, withalpha);
+                gdl = impactsRenderOnProp(gdl, prop_held_left, withalpha);
             }
 
             if ((held_hat_obj != NULL) && (( held_hat_obj->state & ((u8)(1 << withalpha) )) ))
             {
-                gdl = explosionRenderBulletImpactOnProp(gdl, prop_held_hat, withalpha);
+                gdl = impactsRenderOnProp(gdl, prop_held_hat, withalpha);
             }
 
             if (withalpha != 0)
@@ -3292,7 +3291,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
                         }
 
                         temp = randomGetNext() % (s16)sound->numImpacts;
-                        explosionCreateBulletImpact(&bhit->hit.hitpos, &bhit->hit.normal, sound->impacts[temp], 1, prop, bhit->room, 0);
+                        impactCreate(&bhit->hit.hitpos, &bhit->hit.normal, sound->impacts[temp], 1, prop, bhit->room, 0);
                     }
                 }
             }
@@ -3310,7 +3309,7 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
         }
 
         temp2 = randomGetNext() % (s16)sound2->numImpacts;
-        explosionCreateBulletImpact(&bhit->hit.hitpos, &bhit->hit.normal, sound2->impacts[temp2], 1, chr->handle_positiondata_hat, bhit->room, 0);
+        impactCreate(&bhit->hit.hitpos, &bhit->hit.normal, sound2->impacts[temp2], 1, chr->handle_positiondata_hat, bhit->room, 0);
 
         return;
     }

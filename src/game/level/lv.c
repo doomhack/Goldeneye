@@ -521,7 +521,7 @@ Gfx* lvRender(Gfx* DL)
 
             sparksRenderAll(&DL, ZBUF_SURFACE);
             DL = glassRenderShards(DL);
-            DL = explosionRenderFlyingParticles(DL);
+            DL = debrisRender(DL);
 
             if (
 
@@ -985,7 +985,7 @@ void lvTick(void)
         sparksTickAll();
         casingsTick();
         glassTickShards();
-        explosionUpdateFlyingParticles();
+        debrisTick();
 
         // Co-op (first step): guards and level scripts only deal with player 1.
         if (g_CoopMode)
