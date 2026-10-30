@@ -253,22 +253,6 @@ f32 chrGetDistanceFromBondToPad(ChrRecord *self, s32 padnum)
 }
 
 /**
- * Whether the chr saw its target in the last 10 seconds.
- */
-bool chrSawTargetRecently(ChrRecord *self)
-{
-    return self->lastseetarget60 > 0 && (g_GlobalTimer - self->lastseetarget60) < CHRLV_10_SEC_TIMER;
-}
-
-/**
- * Whether the chr heard its target in the last 10 seconds.
- */
-bool chrHeardTargetRecently(ChrRecord *self)
-{
-    return self->lastheartarget60 > 0 && (g_GlobalTimer - self->lastheartarget60) < CHRLV_10_SEC_TIMER;
-}
-
-/**
  * Whether the current player can see the chr and is aiming at it.
  */
 bool chrIsTargetedByPlayer(ChrRecord *self)

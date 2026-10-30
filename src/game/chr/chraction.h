@@ -46,17 +46,13 @@
 
 
 
-bool chrCheckTargetInSight(ChrRecord *self);
 bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid);
-void chrAlertGuardToPlayerPosition(ChrRecord *);
 void chrStandImmediate(ChrRecord *self, f32 mergetime);
 bool chrHasStoppedOrPatroling(ChrRecord *);
 void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result);
 bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bool isPlayer);
-bool chrCanSeeBond(ChrRecord *self);
-bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan);
 bool chrIsDead(ChrRecord *chr);
 bool chrTrySidestep(ChrRecord *self);
 bool chrTryJumpOut(ChrRecord *self);
@@ -84,6 +80,7 @@ s32 chrExplosionDamage(ChrRecord *self, coord3d *pos, f32 damage, s32 playsound)
 
 /* Starting actions, for chrscript.c */
 bool chrIsNotDeadOrShot(ChrRecord *self);
+s32  chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale);
 void chrStandCheckWall(ChrRecord *self);
 void chrKneelChooseAnimation(ChrRecord *self);
 void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60);
@@ -96,8 +93,10 @@ void chrActorThrowWeaponSurrender(ChrRecord *self);
 void chrActorFadeAway(ChrRecord *self);
 s32  chrGoToPos(ChrRecord *self, coord3d *pos, StandTile *stan, SPEED speed);
 s32  chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *viapoint, coord3d *bondpos, StandTile *bondstan, s32 cdtypes);
-s32  chrHasLineOfSightToPlayer(ChrRecord *self);
 waypoint *waypointFindNearPos(coord3d *pos, StandTile *starttile);
+
+/* What guards see and hear */
+#include "game/chr/chrsight.h"
 
 /* What the AI script commands use */
 #include "game/chr/chrscript.h"

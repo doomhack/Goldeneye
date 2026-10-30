@@ -250,7 +250,6 @@ void        chrsSetAnimRate(f32);
 PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, StandTile *tile, AIRecord *ailist);
 PropRecord *chrAllocate(struct Model *model, coord3d *pos, f32 angle, StandTile *tile, AIRecord *ailist);
 void        chrSetHiddenToRandom(ChrRecord *self);
-void        chrCheckGuardsHeardSound(f32 noise);
 ChrRecord  *chrFindByLiteralId(s32 index);
 PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand);
 PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *ChrRecord, GUNHAND hand);

@@ -5,8 +5,9 @@ character is a "chr", and its record is a `ChrRecord`.
 
 | File | What it holds |
 | --- | --- |
-| `src/game/chr/chr.c` | Chr slots, the per-frame chr tick (`chrTick`), moving with collision, drawing, shot hit tests on the body, hearing |
-| `src/game/chr/chraction.c` | Actions: what a guard is physically doing (standing, walking a patrol, attacking, dying) and the code that starts and ticks each one; sight, navigation round obstacles, firing |
+| `src/game/chr/chr.c` | Chr slots, the per-frame chr tick (`chrTick`), moving with collision, drawing, shot hit tests on the body |
+| `src/game/chr/chraction.c` | Actions: what a guard is physically doing (standing, walking a patrol, attacking, dying) and the code that starts and ticks each one; navigation round obstacles, firing |
+| `src/game/chr/chrsight.c` | What guards see and hear, and in co-op which player each one is after |
 | `src/game/chr/chrscript.c` | The chr side of the AI commands: finding chrs and pads by script ids (`chrFindById`, `chrResolvePadId`), distances, angles and room checks, flags, presets, spawning guards (`chrSpawnAtPad`, `chrSpawnAtChr`), and the `chrTry*` actions that fail if the guard is dead or hit |
 | `src/game/chr/chrai.c` | The AI script interpreter (`ai`) and the AI sound slots. The commands themselves are in `src/aicommands.def` |
 | `src/game/chr/chraidata.c` | The global AI scripts, shared by every level |
@@ -91,11 +92,14 @@ the walk animation and slides along the route (`chrGoPosTickMagic`), which is ch
 
 ## Seeing, hearing and being shot
 
-* Sight: `chrCanSeePos` checks the angle and the line of sight over the floor tiles;
-  `chrCheckCanSeeTarget` also records when the guard last saw its target
-  (`lastseetarget60`).
-* Hearing: gunfire calls `chrCheckGuardsHeardSound` with a noise level, and every guard in
-  range hears it.
+* Sight: `chrCheckTargetInSight` is the guard noticing the player: once seen in the last
+  10 seconds it keeps seeing them while the line is clear; otherwise the player must be in
+  range and within 110 degrees of ahead, and the guard notices them at random, less often
+  the further off they are (and for a slow guard). The line itself is tested over the
+  floor tiles (`chrCanSeeBond`, `chrHasLineOfSightToPos`). Seeing records the time and
+  place (`lastseetarget60`, `lastknowntargetpos`).
+* Hearing: gunfire calls `chrCheckGuardsHeardSound` with a noise level, and every guard
+  closer than its `hearingscale` times the noise hears it (`lastheartarget60`).
 * Being shot: `chrTestHit` finds which part of the body a bullet hits, using the joint list
   (see [models](models.md)). `chrTakeShot` applies the damage (armour first, then health,
   scaled by the hit part), plays the hurt sound and reacts with `chrReactToHit`, which
