@@ -70,20 +70,6 @@ static f32 setupFixedToFloat(f32 *field, f32 unit)
 }
 
 /**
- * A pad by number: plain pads and bound pads start the same way (position, up, look),
- * so a bound pad can be used as a plain one.
- */
-static PadRecord *setupGetPad(s32 padnum)
-{
-    if (isNotBoundPad(padnum))
-    {
-        return &g_CurrentSetup.pads[padnum];
-    }
-
-    return (PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(padnum)];
-}
-
-/**
  * Gets where something would stand at pos. Fails if there's no floor there, or (with a
  * radius) if something is in the way.
  */

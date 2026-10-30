@@ -11,6 +11,7 @@
       build/OUTCODE/src/game/chr/chr.o (.rodata);
       build/OUTCODE/src/game/chr/body.o (.rodata);
       build/OUTCODE/src/game/chr/chraction.o (.rodata);
+      build/OUTCODE/src/game/chr/chrscript.o (.rodata);
       build/OUTCODE/src/game/chr/chrai.o (.rodata);
       build/OUTCODE/src/game/prop/prop.o (.rodata);
       build/OUTCODE/src/game/prop/proprooms.o (.rodata);
