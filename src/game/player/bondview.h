@@ -1125,6 +1125,7 @@ void playerStartNewLife(void);
 void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 
 #include "game/hud/hudmsg.h"
+#include "game/player/watch.h"
 
 Gfx * camSetupFrame(Gfx *gdl);
 s32 playerPressedActivate(void);
