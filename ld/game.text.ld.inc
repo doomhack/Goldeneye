@@ -59,6 +59,7 @@
       build/OUTCODE/src/game/gfx/texcmds.o (.text);
       build/OUTCODE/src/game/player/bondview.o (.text);
       build/OUTCODE/src/game/player/bondview2.o (.text);
+      build/OUTCODE/src/game/player/watch.o (.text);
       build/OUTCODE/src/game/player/bondinv.o (.text);
       build/OUTCODE/src/game/player/bondhead.o (.text);
       build/OUTCODE/src/game/nav/waypoint.o (.text);

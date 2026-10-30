@@ -9,7 +9,8 @@ inventory are in [weapons](weapons.md).
 | --- | --- |
 | `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`) |
 | `src/game/player/bondview.c` | The player globals, the camera helpers (`cam*`): screen and view transforms, the view matrices, the frustum planes; also choosing a spawn pad, resetting a player for a new life, crouch and lean |
-| `src/game/player/bondview2.c` | Everything else about Bond, 12,000 lines: camera modes and cutscene cameras, the tank, moving with collision, the watch and pause tilt, input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the frame's camera setup (`camSetupFrame`), the player prop tick (`playerTick`), co-op respawn and counter-op |
+| `src/game/player/bondview2.c` | Everything else about Bond, about 9,500 lines: camera modes and cutscene cameras, the tank, moving with collision, input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the frame's camera setup (`camSetupFrame`), the player prop tick (`playerTick`), co-op respawn and counter-op |
+| `src/game/player/watch.c` | The pause watch: raising and lowering the arm (`watchTick`, `watchStepAnim`), the pause tilt and zoom, opening and closing it (`watchTrigger`), drawing the arm and watch (`watchRender`) |
 | `src/game/player/bondview_r.c` | Level start for a player: the intro section of the setup file (`playerApplyIntro`), co-op spawn points, loading projectile models |
 | `src/game/player/bondhead.c` | Head bob: the hidden walk animation whose root motion moves the camera up and down as Bond walks, and breathing |
 
@@ -110,7 +111,8 @@ crouching. `playerUpdateRooms` keeps the player's prop in the right rooms.
 
 Pressing Start brings up the watch: `watchTrigger` starts it, `watchTick` runs the raise
 animation, the camera tilts down (`watchStartPauseTilt`) and zooms in (`watchZoomTo`), then
-the watch menu (in `menu/`) takes over. `watchRender` draws Bond's arm and the watch.
+the watch menu (in `menu/`) takes over. `watchRender` draws Bond's arm and the watch. All
+of this is in `watch.c`.
 In solo play the game is paused while the watch is out; in co-op it pauses for both.
 
 ## Health and death
