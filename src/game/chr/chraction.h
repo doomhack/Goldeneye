@@ -48,7 +48,6 @@
 
 bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid);
 void chrStandImmediate(ChrRecord *self, f32 mergetime);
-bool chrHasStoppedOrPatroling(ChrRecord *);
 void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result);
 void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result);
@@ -63,7 +62,6 @@ bool chrTryAttackRoll(ChrRecord *self);
 bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b);
 bool chrTryAttackKneel(ChrRecord *self, s32 targettype, s32 targetid);
 bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid);
-bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed);
 bool chrTryStartPatrol(ChrRecord *self, PathRecord *path);
 f32 chrGetSubrotySideback(ChrRecord *self);
 f32 chrGetAimLimitAngle(f32 sqdist);
@@ -71,11 +69,8 @@ void chrUpdateAimendbackShoulders(ChrRecord *self, struct weapon_firing_animatio
 void chrSetFiring(ChrRecord *self, s32 hand, s32 firing);
 s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *pos);
 void chrTriggerFireWeapon(ChrRecord *self);
-s32 rayPassesNearPoint2d(coord3d *origin, coord3d *dir, coord3d *point, f32 range);
-s32 chrIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *targetpos, f32 range);
 void chrActionTick(ChrRecord *self);
 void bgChrsTick(void);
-void chrGetMovementTarget(ChrRecord *self, coord3d *target);
 s32 chrExplosionDamage(ChrRecord *self, coord3d *pos, f32 damage, s32 playsound);
 
 /* Starting actions, for chrscript.c */
@@ -91,9 +86,14 @@ void chrStartSurprised(ChrRecord *self);
 void chrActorLookFlustered(ChrRecord *self);
 void chrActorThrowWeaponSurrender(ChrRecord *self);
 void chrActorFadeAway(ChrRecord *self);
-s32  chrGoToPos(ChrRecord *self, coord3d *pos, StandTile *stan, SPEED speed);
-s32  chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *viapoint, coord3d *bondpos, StandTile *bondstan, s32 cdtypes);
-waypoint *waypointFindNearPos(coord3d *pos, StandTile *starttile);
+
+/* Used by chrnav.c */
+u32  weaponIsOneHanded(PropRecord *weaponprop);
+void chrStandChooseAnimation(ChrRecord *self, f32 duration);
+void chrStopFiring(ChrRecord *self);
+
+/* How guards move */
+#include "game/chr/chrnav.h"
 
 /* What guards see and hear */
 #include "game/chr/chrsight.h"
