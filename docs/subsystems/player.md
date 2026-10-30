@@ -9,10 +9,12 @@ inventory are in [weapons](weapons.md).
 | --- | --- |
 | `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`) |
 | `src/game/player/bondview.c` | The player globals, the camera helpers (`cam*`): screen and view transforms, the view matrices, the frustum planes; also choosing a spawn pad, resetting a player for a new life, crouch and lean |
-| `src/game/player/bondview2.c` | Everything else about Bond, about 8,000 lines: camera modes and cutscene cameras, the tank, moving with collision, input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the frame's camera setup (`camSetupFrame`), the player prop tick (`playerTick`) |
+| `src/game/player/bondview2.c` | Everything else about Bond, about 7,000 lines: camera modes and cutscene cameras, input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the frame's camera setup (`camSetupFrame`), the player prop tick (`playerTick`) |
 | `src/game/player/watch.c` | The pause watch: raising and lowering the arm (`watchTick`, `watchStepAnim`), the pause tilt and zoom, opening and closing it (`watchTrigger`), drawing the arm and watch (`watchRender`) |
 | `src/game/player/respawn.c` | Respawning: multiplayer at a pad (`mpRespawnPlayer`), co-op next to the partner (`coopRespawnPlayer`) |
 | `src/game/player/counterop.c` | Counter-op: player 2 taking over guards, the suicide pill, the end screen's stats |
+| `src/game/player/playermove.c` | Moving with collision (`playerMoveWithCollision`, `playerTestMove`), the player's collision state (`playerResetCollision`), keeping the player prop in its rooms (`playerUpdateRooms`) |
+| `src/game/player/tank.c` | The tank: its collision box (`tankTestCollision`, `tankTryMoveTo`), the turret (`tankUpdateTurretOffset`, `tankGetTurretDir`), co-op ownership (`coopTankBeginPlayer`) |
 | `src/game/player/bondview_r.c` | Level start for a player: the intro section of the setup file (`playerApplyIntro`), co-op spawn points, loading projectile models |
 | `src/game/player/bondhead.c` | Head bob: the hidden walk animation whose root motion moves the camera up and down as Bond walks, and breathing |
 
@@ -107,7 +109,8 @@ the world origin, so that the fixed-point matrices keep their precision.
 stepping round the end of the edge (`playerTryMoveRoundCorner`). Each try uses the floor
 tiles (see [nav](nav.md)) and the props' collision outlines (`playerTestMove`).
 `playerUpdateVertical` then sets Bond's height from the floor under him, with falling and
-crouching. `playerUpdateRooms` keeps the player's prop in the right rooms.
+crouching. `playerUpdateRooms` keeps the player's prop in the right rooms. All but
+`playerUpdateVertical` are in `playermove.c`.
 
 ## The watch
 
@@ -127,9 +130,10 @@ multiplayer `mpRespawnPlayer` respawns at a pad from `playerChooseSpawnPad`.
 
 ## The tank
 
-When Bond drives the tank, `g_PlayerTankProp` is the tank and the `tank*` functions in
-`bondview2.c` move it, test its collision box against the floor tiles and props
-(`tankTestCollision`), and aim the turret (`tankGetTurretDir`).
+When Bond drives the tank, `g_PlayerTankProp` is the tank. `playerMove` (`bondview2.c`)
+drives it; the `tank*` functions in `tank.c` test its collision box against the floor
+tiles and props (`tankTestCollision`, `tankTryMoveTo`) and place and aim the turret
+(`tankUpdateTurretOffset`, `tankGetTurretDir`).
 
 ## Co-op and counter-op
 
@@ -139,7 +143,8 @@ Added for this fork:
   the screen.
 * `coopRespawnPlayer` (`respawn.c`) respawns a dead player next to the partner, taking
   health from them. `hudRender` runs it when the dead player presses a button.
-* `coopTankBeginPlayer` and `coopTankEndPlayer` (`bondview2.c`) let one player own the tank.
+* `coopTankBeginPlayer` and `coopTankEndPlayer` (`tank.c`) let one player own the tank;
+  the other walks, and the tank is solid for them (`coopTankIsHidden`, `playerTestMove`).
 * `counterop.c` lets player 2 play as the guards: `counterOpTakeOverGuard` puts them in a
   guard out of Bond's sight, with that guard's body, guns and health, or where a dead guard
   first stood (`s_CounterOpStarts`); also the suicide pill and the end screen's stats.

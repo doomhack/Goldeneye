@@ -1128,6 +1128,8 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 #include "game/player/watch.h"
 #include "game/player/respawn.h"
 #include "game/player/counterop.h"
+#include "game/player/playermove.h"
+#include "game/player/tank.h"
 
 Gfx * camSetupFrame(Gfx *gdl);
 s32 playerPressedActivate(void);
@@ -1137,7 +1139,6 @@ s32 lvGetMissionTime60(void);
 void playerLoadBody(void);
 void playerUpdateAutoAimY(struct PropRecord *autoaim_target, f32 auto_aim_y);
 void playerUpdateAutoAimX(struct PropRecord *autoaim_target, f32 auto_aim_x);
-void tankGetTurretDir(coord3d *dir);
 f32 playerGetFloorY(struct StandTile *tile, f32 x, f32 z);
 void playerUpdateCollisionBounds(void);
 void coopFindPartnerSpawn(coord3d *pos, StandTile **stan, f32 look_angle);
@@ -1146,10 +1147,6 @@ extern s32 g_CoopRespawnButtonsHeld[4];
 Gfx *watchRender(Gfx *gdl);
 Gfx *currentPlayerDrawFade(Gfx *gdl);
 bool currentPlayerIsFadeComplete(void);
-extern s32 g_CoopTankPlayer;
-s32 coopTankUsedByPartner(void);
-void coopTankBeginPlayer(void);
-void coopTankEndPlayer(s32 moved);
 extern s32 g_CoopCinemaPlayer;
 void coopUpdateSoloView(void);
 f32 playerGetEyeHeight(struct player *player);
@@ -1195,14 +1192,11 @@ f32 camGetLodScaleZ(void);
 f32 playerGetBreathing(void);
 
 void     playerSetCameraMode(s32 mode);
-bool     playerIsInTank(void);
 void     playerSurroundWithExplosions(int delay);
 s32 watchIsZooming(void);
 f32 watchGetOpenFrac(void);
 coord3d *playerGetPrevPos(void);
-struct PropRecord *playerGetTank(void);
 s32 playerChooseSpawnPad(void);
-void playerResetCollision(struct PlayerBond* col, coord3d *pos, struct StandTile *stan);
 void playerSetWorldScale(f32);
 Mtxf *camGetProjectionMtxf(void);
 void camViewToScreen(coord3d *in, coord2d *out);

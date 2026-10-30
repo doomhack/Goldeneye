@@ -62,6 +62,8 @@
       build/OUTCODE/src/game/player/watch.o (.bss);
       build/OUTCODE/src/game/player/respawn.o (.bss);
       build/OUTCODE/src/game/player/counterop.o (.bss);
+      build/OUTCODE/src/game/player/playermove.o (.bss);
+      build/OUTCODE/src/game/player/tank.o (.bss);
       build/OUTCODE/src/game/player/bondinv.o (.bss);
       build/OUTCODE/src/game/player/bondhead.o (.bss);
       build/OUTCODE/src/game/nav/waypoint.o (.bss);
