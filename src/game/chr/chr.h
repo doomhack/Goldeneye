@@ -258,20 +258,23 @@ void        chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *height, f32 
 f32         chrGetChrGround(PropRecord *prop);
 void        chrDropItems(struct ChrRecord *self);
 s32         chrsGetNumSlots(void);
-Gfx        *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
 
 void        chrAddHealth(ChrRecord *chr, f32 health);
 void        chrSetMaxDamage(ChrRecord *chr, f32 maxdamage);
 s32         chrGetOnscreenRenderBounds(PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds);
-void        chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit);
 
 //tentative signature
 s32         chrRootMoveCallback(Model *, coord3d *, coord3d *, f32 *);
-void        chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, coord3d *pos);
-void        chrTestHit(PropRecord *prop, ShotData *shotdata);
 
-#ifdef BUGFIX_R1
-#endif
+/* Drawing (chrrender.c) */
+Gfx        *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
+void        chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix);
+
+/* Bullets hitting guards (chrhit.c) */
+void        chrTestHit(PropRecord *prop, ShotData *shotdata);
+void        chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit);
+void        chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, coord3d *pos);
+
 
 void chrsInit(void);
 void bgChrsInit(void);

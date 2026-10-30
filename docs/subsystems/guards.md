@@ -5,7 +5,10 @@ character is a "chr", and its record is a `ChrRecord`.
 
 | File | What it holds |
 | --- | --- |
-| `src/game/chr/chr.c` | Chr slots, the per-frame chr tick (`chrTick`), moving with collision, drawing, shot hit tests on the body |
+| `src/game/chr/chr.c` | Chr slots, the per-frame chr tick (`chrTick`), moving with collision, collision bounds, the background AI chrs |
+| `src/game/chr/chrrender.c` | Drawing a guard (`chrRenderProp`), and bending its joints for aiming and flinching (`chrHandleJointPositioned`) |
+| `src/game/chr/chrhit.c` | Bullets hitting a guard: which body part (`chrTestHit`), applying the hit (`chrHandleBulletHit`), smoke puffs and blood stains |
+| `src/game/chr/chranims.c` | Animation tables: hit reactions per body part, death and flinch animations, explosion deaths, firing animations |
 | `src/game/chr/chraction.c` | `chrActionTick`, and the simpler actions: standing, kneeling, scripted animations, dodging, surprise, surrender, the alarm; the `chrTry*` functions the AI commands call |
 | `src/game/chr/chrdamage.c` | Being hurt: bullet hits (`chrTakeShot`), explosions (`chrExplosionDamage`), hurt sounds, hit reactions (`chrReactToHit`), dying and the dead guard fading out |
 | `src/game/chr/chrattack.c` | Attacking: starting an attack (`chrAttackStand`, `chrAttackKneel`, attack walk and roll), aiming (`chrSetSubroty`), firing (`chrFireHand`) and whether the shot hits the player (`chrUpdateShotbondsum`) |
