@@ -34,9 +34,7 @@ extern char *setup_text_pointers[];
 
 s32                aiCommandSize(AIRecord *list, s32 offset);
 AIRecord          *ailistFindById(s32 ID);
-void               aiForObject(PropDefHeaderRecord *Entityp);
-s32                counterOpDoorIsScripted(DoorRecord *door);
-void ai(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType);
+void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType);
 void aiSoundsTick(void);
 
 #endif

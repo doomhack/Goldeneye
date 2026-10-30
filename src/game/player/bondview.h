@@ -1064,6 +1064,18 @@ extern s32 g_UpperTextDisplayFlag;
 extern s32 startpadcount;
 extern coord3d g_ForceBondMoveOffset;
 extern s32 g_CoopForceMovePlayer;
+
+// Cutscene cameras, set up by AI script commands (chrai.c)
+extern PadRecord *g_CameraLookAtBondPad;
+extern CutsceneRecord *gBondViewCutscene;
+extern enum CAMERAMODE g_CutsceneCamLookAtBond;
+extern s32 g_CutsceneCamUnusedFlag;
+extern f32 g_OrbitCamAngle;
+extern f32 g_OrbitCamSpeed;
+extern f32 g_OrbitCamDist;
+extern f32 g_OrbitCamHeight;
+extern f32 g_OrbitCamTargetHeight;
+extern s32 g_OrbitCamPad;
 extern s32 mission_timer;
 
 #if defined(VERSION_EU)
