@@ -42,33 +42,15 @@
 #endif
 
 
-
-
-
-
-bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid);
-void chrStandImmediate(ChrRecord *self, f32 mergetime);
-void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result);
-void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result);
-void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result);
-bool chrIsDead(ChrRecord *chr);
-bool chrTrySidestep(ChrRecord *self);
-bool chrTryJumpOut(ChrRecord *self);
-bool chrTryRunSideways(ChrRecord *self);
-bool chrTryAttackWalk(ChrRecord *self);
-bool chrTryAttackRun(ChrRecord *self);
-bool chrTryAttackRoll(ChrRecord *self);
-bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b);
-bool chrTryAttackKneel(ChrRecord *self, s32 targettype, s32 targetid);
-bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid);
-bool chrTryStartPatrol(ChrRecord *self, PathRecord *path);
+/* The per-frame tick: runs a chr's AI list and current action */
 void chrActionTick(ChrRecord *self);
 void bgChrsTick(void);
 
-/* Starting actions, for chrscript.c */
-bool chrIsNotDeadOrShot(ChrRecord *self);
-s32  chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale);
+/* Standing and simple actions */
+void chrStandImmediate(ChrRecord *self, f32 mergetime);
+void chrStandImmediateCheckWall(ChrRecord *self, f32 mergetime);
 void chrStandCheckWall(ChrRecord *self);
+void chrStandChooseAnimation(ChrRecord *self, f32 duration);
 void chrKneelChooseAnimation(ChrRecord *self);
 void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60);
 void chrStartAlarmChooseAnimation(ChrRecord *self);
@@ -79,13 +61,32 @@ void chrActorLookFlustered(ChrRecord *self);
 void chrActorThrowWeaponSurrender(ChrRecord *self);
 void chrActorFadeAway(ChrRecord *self);
 
-/* Used by chrnav.c, chrattack.c and chrdamage.c */
-void chrStandImmediateCheckWall(ChrRecord *self, f32 mergetime);
-f32  chrGetClearDistInDirDefault(PropRecord *prop, f32 angle, f32 maxdist);
-f32  chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max);
+/* The actions the AI commands start; each fails if the guard can't do it now */
+bool chrIsDead(ChrRecord *chr);
+bool chrIsNotDeadOrShot(ChrRecord *self);
+bool chrTrySidestep(ChrRecord *self);
+bool chrTryJumpOut(ChrRecord *self);
+bool chrTryRunSideways(ChrRecord *self);
+bool chrTryAttackWalk(ChrRecord *self);
+bool chrTryAttackRun(ChrRecord *self);
+bool chrTryAttackRoll(ChrRecord *self);
+bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b);
+bool chrTryAttackKneel(ChrRecord *self, s32 targettype, s32 targetid);
+bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid);
+bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid);
+bool chrTryStartPatrol(ChrRecord *self, PathRecord *path);
+
+/* Difficulty scaling of guard speed and reactions */
 f32  chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max);
+s32  chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale);
+f32  chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max);
+
+/* Helpers */
 u32  weaponIsOneHanded(PropRecord *weaponprop);
-void chrStandChooseAnimation(ChrRecord *self, f32 duration);
+f32  chrGetClearDistInDirDefault(PropRecord *prop, f32 angle, f32 maxdist);
+void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result);
+void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result);
+void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result);
 
 /* Being hit, hurt and killed */
 #include "game/chr/chrdamage.h"

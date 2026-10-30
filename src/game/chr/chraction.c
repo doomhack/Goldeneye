@@ -1,10 +1,12 @@
 /**
- * Guard actions: what a guard is physically doing (ACT_STAND, ACT_PATROL, ACT_GOPOS,
- * ACT_ATTACK, ACT_DIE...). Each action has a function that starts it and a tick function
- * called from chrActionTick, and the background AI chrs (g_BgChrs) that run level
- * scripts not tied to a guard. Moving is in chrnav.c, attacking and firing in
- * chrattack.c, being hit and dying in chrdamage.c.
- * The chrTry* functions are the ones the AI commands call. See docs/subsystems/guards.md.
+ * Guard actions: what a guard is physically doing (actiontype). Each action has a
+ * function that starts it and a tick function; chrActionTick runs the guard's AI list and
+ * then the tick for its action. This file has standing, kneeling, scripted animations,
+ * dodging (sidestep, jump out), surprise, surrender and alarm actions, the chrTry*
+ * functions the AI commands call, and the background AI chrs (g_BgChrs) that run level
+ * scripts not tied to a guard.
+ * Moving is in chrnav.c, attacking and firing in chrattack.c, being hit and dying in
+ * chrdamage.c. See docs/subsystems/guards.md.
  */
 #include <ultra64.h>
 #include <bondaicommands.h>
@@ -35,7 +37,6 @@
 #include "game/math/trig.h"
 #include "game/math/matrix.h"
 #include "game/model/model.h"
-#include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "game/player/player.h"
@@ -49,45 +50,26 @@
 
 
 
-// forward declarations
-
-u32 weaponIsOneHanded            (PropRecord *weaponprop);
-void chrStandChooseAnimation                (ChrRecord *self, f32 duration);
-f32 chrGetGuard007SpeedRating               (ChrRecord *self, f32 min, f32 max);
-s32 chrGetGuard007SpeedRatingInt            (ChrRecord *self, s32 scale);
-f32 chrGetGuard007ArghRating                (ChrRecord *self, f32 min, f32 max);
-void chrStand            (ChrRecord *self);
-void chrStandImmediateCheckWall        (ChrRecord *self, f32 mergetime);
-void chrStandCheckWall    (ChrRecord *self);
-void chrKneelChooseAnimation                  (ChrRecord *self);
-void chrStartAnim            (ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 bitfield, s32 interpol_time60);
-void chrStartAlarmChooseAnimation             (ChrRecord *self);
-void chrThrowGrenade                        (ChrRecord *self, GUNHAND hand, s32 startframe);
-void chrSpotChooseAnimation            (ChrRecord *self, f32 mergetime);
-void chrActorShuffleFeet                    (ChrRecord *self);
-void chrStartSurprised           (ChrRecord *self);
-void chrActorLookFlustered                  (ChrRecord *self);
-void chrActorThrowWeaponSurrender           (ChrRecord *self);
-void chrActorFadeAway                       (ChrRecord *self);
-f32 chrGetClearDistInDir              (PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 unkHeight, f32 unkA);
-f32 chrGetClearDistInDirDefault      (PropRecord *prop, f32 angle, f32 maxdist);
-void chrTickSurrender                       (ChrRecord *self);
-void chrGetSideDir                    (ChrRecord *self, s32 side, coord3d *dir);
-bool chrIsNotDeadOrShot                       (ChrRecord *chr);
-void chrTickAnim                            (ChrRecord *self);
-void chrTickSidestep                        (ChrRecord *self);
-void chrTickJumpout                         (ChrRecord *self);
-void chrTickTest                            (ChrRecord *self);
-void chrTickStartAlarm                      (ChrRecord *self);
-void chrTickSurprised                       (ChrRecord *self);
-void chrTickThrowGrenade                    (ChrRecord *self);
-void chrTickBondIntro                       (ChrRecord *self);
-void chrTickBondDieRemoved                  (void);
-void chrTickStand                           (ChrRecord *self);
-
-
-
-// end forward declarations
+static void chrStand(ChrRecord *self);
+static void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime);
+static void chrSidestep(ChrRecord *self, GUNHAND side);
+static void chrJumpOut(ChrRecord *self, GUNHAND side);
+static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 unkHeight, f32 unkA);
+static void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec);
+static s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance);
+static void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir);
+static s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance);
+static void chrTickStand(ChrRecord *self);
+static void chrTickKneel(ChrRecord *actor);
+static void chrTickAnim(ChrRecord *self);
+static void chrTickSurrender(ChrRecord *self);
+static void chrTickSidestep(ChrRecord *self);
+static void chrTickJumpout(ChrRecord *self);
+static void chrTickTest(ChrRecord *self);
+static void chrTickStartAlarm(ChrRecord *self);
+static void chrTickSurprised(ChrRecord *self);
+static void chrTickThrowGrenade(ChrRecord *self);
+static void chrTickBondIntro(ChrRecord *self);
 
 
 /* weaponprop is a held weapon's prop */
@@ -130,10 +112,6 @@ void chrStandChooseAnimation(ChrRecord *self, f32 duration)
 }
 
 
-/**
- * Address 0x7F023A94 (VERSION_US).
- * Address 0x7F023D94 (other)
- */
 #ifdef REFRESH_PAL
 #define RATE 1.2f
 #else
@@ -225,7 +203,7 @@ f32 chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max)
 }
 
 
-void chrStand(ChrRecord *self)
+static void chrStand(ChrRecord *self)
 {
     if (self->actiontype == ACT_KNEEL)
     {
@@ -410,7 +388,7 @@ void chrThrowGrenade(ChrRecord *self, GUNHAND hand, s32 startframe)
 }
 
 
-void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime)
+static void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime)
 {
     PropRecord *left;
     PropRecord *right;
@@ -563,7 +541,7 @@ void chrActorFadeAway(ChrRecord *self)
  * chrStepToSide
  * PD: chrSidestepChooseAnimation (Somewhat similar)
  */
-void chrSidestep(ChrRecord *self, GUNHAND side)
+static void chrSidestep(ChrRecord *self, GUNHAND side)
 {
     PropRecord *left;
     PropRecord *right;
@@ -631,7 +609,7 @@ void chrSidestep(ChrRecord *self, GUNHAND side)
  * chrHopToSide
  * PD: chrSidestepChooseAnimation (somewhat similar)
  */
-void chrJumpOut(ChrRecord *self, GUNHAND side)
+static void chrJumpOut(ChrRecord *self, GUNHAND side)
 {
     PropRecord *left;
     PropRecord *right;
@@ -802,7 +780,7 @@ void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result)
 }
 
 
-f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 unkHeight, f32 unkA)
+static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 unkHeight, f32 unkA)
 {
     coord3d dir;
     f32 dest_x;
@@ -865,7 +843,7 @@ f32 chrGetClearDistInDirDefault(PropRecord *prop, f32 angle, f32 maxdist)
  * @param side: If GUNLEFT set result is (dz, -dx), otherwise (-dz, dx).
  * @param arg2: Out parameter. Contains result vector.
 */
-void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec)
+static void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec)
 {
     PropRecord *prop;
     f32 norm;
@@ -901,7 +879,7 @@ void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec)
 /**
  * @see chrIsClear
 */
-s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
+static s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
     coord3d dir;
@@ -923,7 +901,7 @@ s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
  * @param arg1: flag. If set result is (cos, -sin), otherwise (-cos, sin).
  * @param arg2: out parameter, contains coordinate result.
 */
-void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir)
+static void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir)
 {
     f32 angle;
 
@@ -947,7 +925,7 @@ void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir)
 /**
  * @see chrIsClearLow
 */
-s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance)
+static s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
     coord3d dir;
@@ -1318,7 +1296,7 @@ bool chrTryStartPatrol(ChrRecord *self, PathRecord *path)
 }
 
 
-void chrTickStand(ChrRecord *self)
+static void chrTickStand(ChrRecord *self)
 {
     s32 i;             // any
     PropRecord *left;  // 160
@@ -1532,14 +1510,15 @@ void chrTickStand(ChrRecord *self)
 }
 
 
-void chrTickKneel(ChrRecord *actor) {
+static void chrTickKneel(ChrRecord *actor)
+{
     actor->sleep = 0;
 }
 
 // #still chraction.c
 
 
-void chrTickAnim(ChrRecord *self)
+static void chrTickAnim(ChrRecord *self)
 {
 
     if (self->act_anim.holdLastFrame == 0)
@@ -1573,7 +1552,7 @@ void chrTickAnim(ChrRecord *self)
 }
 
 
-void chrTickSurrender(ChrRecord *self)
+static void chrTickSurrender(ChrRecord *self)
 {
     Model *model;
 
@@ -1609,7 +1588,7 @@ void chrTickSurrender(ChrRecord *self)
  * @see chrTickTest
  * @see chrTickStartAlarm
 */
-void chrTickSidestep(ChrRecord *self)
+static void chrTickSidestep(ChrRecord *self)
 {
     Model *model = self->model;
 
@@ -1626,7 +1605,7 @@ void chrTickSidestep(ChrRecord *self)
  * @see chrTickTest
  * @see chrTickStartAlarm
 */
-void chrTickJumpout(ChrRecord *self)
+static void chrTickJumpout(ChrRecord *self)
 {
     Model *model = self->model;
 
@@ -1643,7 +1622,7 @@ void chrTickJumpout(ChrRecord *self)
  * @see chrTickJumpout
  * @see chrTickStartAlarm
 */
-void chrTickTest(ChrRecord *self)
+static void chrTickTest(ChrRecord *self)
 {
     Model *model = self->model;
 
@@ -1659,7 +1638,7 @@ void chrTickTest(ChrRecord *self)
  * @see chrTickJumpout
  * @see chrTickTest
 */
-void chrTickStartAlarm(ChrRecord *self)
+static void chrTickStartAlarm(ChrRecord *self)
 {
     Model *model = self->model;
 
@@ -1676,7 +1655,7 @@ void chrTickStartAlarm(ChrRecord *self)
 }
 
 
-void chrTickSurprised(ChrRecord *self)
+static void chrTickSurprised(ChrRecord *self)
 {
     Model *model = self->model;
 
@@ -1700,7 +1679,7 @@ void chrTickSurprised(ChrRecord *self)
 
 
 
-void chrTickThrowGrenade(ChrRecord *self)
+static void chrTickThrowGrenade(ChrRecord *self)
 {
     Model *self_model;
     f32 frame;
@@ -1744,7 +1723,7 @@ void chrTickThrowGrenade(ChrRecord *self)
 }
 
 
-void chrTickBondIntro(ChrRecord *self)
+static void chrTickBondIntro(ChrRecord *self)
 {
     Model *self_model;
     f32 frame;
@@ -1774,10 +1753,6 @@ void chrTickBondIntro(ChrRecord *self)
 }
 
 
-void chrTickBondDieRemoved(void)
-{
-    // removed.
-}
 
 
 
@@ -1899,7 +1874,7 @@ static void chrActionTickBody(ChrRecord *self)
                     chrTickBondIntro(self);
                     break;
                 case ACT_BONDDIE:
-                    chrTickBondDieRemoved();
+                    // Bond's model in the death cutscene: nothing to tick
                     break;
 
                 default:
