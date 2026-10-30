@@ -133,7 +133,7 @@ f32 bboxRotatedMaxZ(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 
 /* Add to the hull the first of the remaining corners that lies outside the edge from
    corner a to corner b, if there is one */
-static void hullAddCornerOutside(f64 pts[8][2], s32 rem[4], s32 a, s32 b, coord2d *poly, s32 *count)
+static void hullAddCornerOutside(f64 pts[8][2], s32 rem[8], s32 a, s32 b, coord2d *poly, s32 *count)
 {
     for (s32 i = 0; i < 4; i++)
     {
@@ -174,7 +174,9 @@ static s32 boxGetHull2d(f32 x1, f32 x2, f32 y1, f32 y2, f32 z1, f32 z2, Mtxf *m,
     s32 maxx = 0;
     s32 minz = 0;
     s32 maxz = 0;
-    s32 rem[4];
+    // The corners other than the extremes: 4, or more when two extremes are the same
+    // corner (a box with no width or depth). Only the first 4 are tested.
+    s32 rem[8];
     s32 numrem = 0;
     s32 count = 0;
     f64 x1d = x1;
