@@ -264,7 +264,6 @@ Gfx        *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
 
 void        chrAddHealth(ChrRecord *chr, f32 health);
 void        chrSetMaxDamage(ChrRecord *chr, f32 maxdamage);
-s32         propIsOfCdType(PropRecord* prop, s32 cdtypes);
 s32         chrGetOnscreenRenderBounds(PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds);
 void        chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit);
 

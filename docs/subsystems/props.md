@@ -5,7 +5,11 @@ on the floor, cameras, autoguns, vehicles, glass, plus the explosions and smoke 
 
 | File | What it holds |
 | --- | --- |
-| `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, room prop lists, collision outlines, auto-aim |
+| `src/game/prop/prop.c` | The prop manager: the prop pool and lists, the per-frame tick and draw loops, respawning, the use button |
+| `src/game/prop/proprooms.c` | Which props are in which rooms: the room prop lists |
+| `src/game/prop/propcollision.c` | Collision between props on the x/z plane: outlines, circles, CDTYPE filtering |
+| `src/game/prop/bbox.c` | Model bounding boxes turned into the world, and their x/z outlines |
+| `src/game/prop/autoaim.c` | Choosing the auto-aim target |
 | `src/game/prop/setup.c` | Level setup: loading the setup file and creating every prop in it; setup lookup helpers; the per-level prop state reset |
 | `src/game/prop/propobj.c` | Objects at run time: creating, placing and freeing them |
 | `src/game/prop/objrender.c` | Drawing objects and doors, whether things are in view, and object shading |
@@ -61,6 +65,23 @@ Each room has a list of the props in it, kept in blocks of 15 prop numbers
 as props move, and `propsDefragRoomProps` compacts them. `roomGetProps` collects the props
 in a list of rooms into `g_RoomPropsFound`, which is how collision, line-of-sight and shot
 tests find nearby props without looking at all 600.
+
+## Collision between props
+
+Props collide on the x/z plane, each with a height range (`propcollision.c`). Objects and
+doors use a convex outline: the hull of their bounding box's corners seen from above
+(`bboxGetHull2d` in `bbox.c`), worked out when they are placed or move
+(`objUpdateCollisionBounds`). Guards and players are circles. `propIsOfCdType` says
+whether a prop counts for a test's `CDTYPE` flags, and `propSetMoving(prop, FALSE)` takes
+a prop out of tests for a moment (so a guard's line of sight does not hit the guard).
+`propIsUnblocked` tells a moving door or vehicle whether anything is in its way.
+
+## Respawning
+
+A used-up object that respawns (`PROPSTATE_RESPAWN`) is hidden by
+`propExecuteTickOperation` for 1200 ticks (1000 on PAL). `propsTickOnce` counts it down;
+it comes back for the last `CHROBJ_TIMETOREGEN` ticks and fades in, but waits while a
+player is within 400 units.
 
 For doors, objects and weapons, the record behind the prop is an `ObjectRecord` (or a
 type that starts with one: `DoorRecord`, `WeaponObjRecord`, `MonitorObjRecord`...). It

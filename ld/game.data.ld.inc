@@ -12,6 +12,10 @@
       build/OUTCODE/src/game/chr/chraction.o (.data);
       build/OUTCODE/src/game/chr/chrai.o (.data);
       build/OUTCODE/src/game/prop/prop.o (.data);
+      build/OUTCODE/src/game/prop/proprooms.o (.data);
+      build/OUTCODE/src/game/prop/propcollision.o (.data);
+      build/OUTCODE/src/game/prop/bbox.o (.data);
+      build/OUTCODE/src/game/prop/autoaim.o (.data);
       build/OUTCODE/src/game/prop/propobj.o (.data);
       build/OUTCODE/src/game/prop/alarm.o (.data);
       build/OUTCODE/src/game/prop/monitor.o (.data);

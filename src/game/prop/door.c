@@ -830,7 +830,7 @@ static void doorsTickMovement(DoorRecord *door)
         FOR_EACH_LINKED_DOOR(sibling, door)
         {
             doorUpdateCollision(sibling);
-            clear = vehicleFindBlockingProp(sibling->prop);
+            clear = propIsUnblocked(sibling->prop);
 
             if (!clear)
             {

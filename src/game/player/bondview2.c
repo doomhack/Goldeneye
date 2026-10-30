@@ -1806,7 +1806,7 @@ void tankGetCollisionBounds(coord2d *tank_collision_bounds, coord3d *collision_p
 
     obj = g_PlayerTankProp->obj;
 
-    bbox = chrobjGetBboxFromObjectRecord(obj);
+    bbox = objFindBbox(obj);
 
     xmin = bbox->Bounds.xmin - g_TankModelPositionOffset.f[0];
     xmax = bbox->Bounds.xmax - g_TankModelPositionOffset.f[0];
@@ -2571,7 +2571,7 @@ void playerMoveWithCollision(coord3d *offset, s32 allow_scoot)
 
         if ((g_PlayerIsInTank == 1)
             || (polygonContainsPoint(&g_CurrentPlayer->bond.collision_position, polygon, edges) != 0)
-            || ((chrobjTestPointPolygonCollision(&g_CurrentPlayer->bond.collision_position, g_CurrentPlayer->bond.collision_radius, polygon, edges) != 0)))
+            || ((polygonTouchesCircle(&g_CurrentPlayer->bond.collision_position, g_CurrentPlayer->bond.collision_radius, polygon, edges) != 0)))
         {
 
             obj = g_WorldTankProp->obj;
@@ -7386,7 +7386,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         tankObj->runtime_pos.f[2] = tankObj->prop->pos.f[2] = tankPos.f[2];
 
         setupUpdateObjectRoomPosition(tankObj);
-        chrobjCollisionRelated(tankObj);
+        objUpdateCollisionBounds(tankObj);
         tankGetCollisionBounds(tankBounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
         propGetRoomIds(tankObj->prop, rooms);
 
@@ -7432,7 +7432,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         }
                     }
 
-                    if (missed && (chrobjTestPointPolygonCollision(&prop->pos, radius, tankBounds, 4)))
+                    if (missed && (polygonTouchesCircle(&prop->pos, radius, tankBounds, 4)))
                     {
                         missed = 0;
                     }
@@ -7452,7 +7452,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     s32 edges;
 
                     propGetCollisionPolygon2d(prop, &polygon, &edges);
-                    if ((edges > 0) && chrobjTestPolygonsTouchingOrOverlap2D(polygon, edges, tankBounds, 4))
+                    if ((edges > 0) && polygonsOverlap(polygon, edges, tankBounds, 4))
                     {
                         // Explode destroyable props when the tank touches them
                         objDetonateRecursive(prop, 10000.0f, &prop->obj->runtime_pos, 0x20, playerGetCurrentNum());

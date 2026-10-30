@@ -34,32 +34,18 @@ extern ExplosionDetailsRecordEuList object_explosion_details;
 extern ExplosionDetailsRecord object_explosion_details[];
 #endif
 
-/**
- * @param prop: Prop for tank
- * @param moving: whether the tank is moving
- */
-void                 objSetMoving(struct PropRecord *prop, s32 moving);
 
 void                 objFree(ObjectRecord *obj, s32 freeprop, s32 canregen);
 PropRecord          *objInit(ObjectRecord *obj, ModelFileHeader *modeldef, PropRecord *prop, Model *model);
 void                 objFreePermanently(struct ObjectRecord *obj, bool freeprop);
 
-void                 chrobjCollisionRelated(ObjectRecord *);
 void                 objChangeShading(ObjectRecord *, coord3d *, Mtxf *, StandTile *);
-void                 objGetCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom);
 
 void                 objPlaceAtPad(ObjectRecord *baseobj, coord3d *pad, Mtxf *matrix, StandTile *stan, coord3d *pos2);
 void                 objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan2, coord3d *pos2);
 PropRecord*          objInitWithAutoModel(ObjectRecord* obj);
 PropRecord*          objInitWithModelDef(ObjectRecord* object, ModelFileHeader* header);
-s32                  chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2);
-s32                  chrobjTestPointPolygonCollision(coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges);
-struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *obj);
-ModelRoData_BoundingBoxRecord *chrobjGetBboxFromObjFile(ModelFileHeader *obj);
-bool                 padBoundsContainPoint(coord3d* pos, f32 radius, BoundPadRecord *boundpads);
 void                 glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
-void                 modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin);
-s32                  vehicleFindBlockingProp(struct PropRecord *argProp);
 void                 objsFreeDeformedVertices(void);
 f32                  bondviewGetPlayerPitchRadians(void);
 void                 modelResetDeformedVertices(Model* model);

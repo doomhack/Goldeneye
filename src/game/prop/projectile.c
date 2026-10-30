@@ -705,7 +705,7 @@ static bool projectileFindHitProp(PropRecord *ignoreProp, coord3d *rayStart, coo
             }
 
             // The tank the player is driving
-            if (prop == playerstank && (obj->state & PROPSTATE_20))
+            if (prop == playerstank && (obj->state & PROPSTATE_NOCOLLISION))
             {
                 continue;
             }
@@ -1363,13 +1363,13 @@ static void objPlaceOnSurface(ObjectRecord *obj, coord3d *pos, StandTile *stan, 
     mtx4ScaleRows012(obj->model->scale, &mtx);
     objChangeShading(obj, pos, &mtx, stan);
 
-    f32 ymin = bboxGetYmin(chrobjGetBboxFromObjFile(obj->model->obj));
+    f32 ymin = bboxGetYmin(modelFileFindBbox(obj->model->obj));
 
     obj->runtime_pos.f[0] -= ymin * obj->mtx.m[1][0];
     obj->runtime_pos.f[1] -= ymin * obj->mtx.m[1][1];
     obj->runtime_pos.f[2] -= ymin * obj->mtx.m[1][2];
 
-    chrobjCollisionRelated(obj);
+    objUpdateCollisionBounds(obj);
 }
 
 /**
@@ -1670,7 +1670,7 @@ static void projectileRocketHit(ObjectRecord *obj)
 static bool projectileBounce(PropRecord *prop, Projectile *projectile, s32 moveResult, f32 startY, coord3d *prevXAxis, coord3d *hitpos, coord3d *hitnormal, bool *bounced)
 {
     ObjectRecord *obj = prop->obj;
-    ModelRoData_BoundingBoxRecord *bbox = chrobjGetBboxFromObjectRecord(obj);
+    ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
     f32 floorY = 0.0f;
     f32 bottom = 1.0f;
     bool hitFloor = FALSE;
@@ -1948,7 +1948,7 @@ static void projectileTickLanded(PropRecord *prop, Projectile *projectile, coord
 
     if ((projectile->speed.f[0] != 0.0f || projectile->speed.f[2] != 0.0f || projectile->rotFrac < 1.0f) && !(projectile->flags & PROJECTILEFLAG_OFFGRID))
     {
-        ModelRoData_BoundingBoxRecord *bbox = chrobjGetBboxFromObjectRecord(obj);
+        ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
         coord3d hitpos;
         coord3d hitnormal;
 

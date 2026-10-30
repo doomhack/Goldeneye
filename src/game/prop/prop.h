@@ -1,73 +1,45 @@
 #ifndef _PROP_H_
 #define _PROP_H_
 #include <ultra64.h>
+#include <bondconstants.h>
 #include <bondtypes.h>
 
-extern s16 * g_RoomPropsFound;
 extern PropRecord g_Props[];
 extern PropRecord *g_ActivePropsTail;
 extern PropRecord *g_ActivePropsHead;
 extern PropRecord *g_FreeProps;
-extern s32                                g_OnScreenPropCount;
-extern PropRecord **                      g_LastOnScreenProp;
-extern PropRecord *                       g_OnScreenPropList[];
-extern s16 *                              g_RoomFirstPropBlock;
-extern struct roomproplistblock *         g_RoomPropBlocks;
-void               propsTickOnce(void);
-void               propsTickPerPlayer(void);
-void               propsSortOnscreen(void);
-void               autoaimUpdateTarget(void);
-bool               playerInteract(void);
-void               propsTickPickups(void);
-void               propAddToRoom(PropRecord *, s16);
-PropRecord*        propAllocate(void);
-void               propReparent(PropRecord *newChild, PropRecord *host);
-void               propDelist(PropRecord *prop);
-void               propRemoveFromRooms(PropRecord *);
-void               propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius);
-void               propAddToRooms(PropRecord *posData);
-void               propActivate(PropRecord *);
-void               propEnable(PropRecord *);
-void               propActivateThisFrame(PropRecord *);
-void               propGetCollisionPolygon(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom);
-void               propSetMoving(PropRecord *prop, bool unset);
-void               propGetCollisionPolygon2d(PropRecord *prop, coord2d **polygon, s32 *edges);
-s32                polygonContainsPoint(coord3d *point, coord2d *polygon, s32 edges);
-void               roomGetProps(s32 *roomids);
-ObjectRecord      *objFindAtPad(s32 PadId);
-Gfx               *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass);
-PropRecord        *propsGetActiveTail(void);
-void               propsDefragRoomProps(void);
-void               propGetRoomIds(PropRecord *self, s32 *roomids);
-void               propFree(PropRecord *prop);
-void               propDisable(PropRecord *prop);
-f32                bboxGetYmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
-f32                bboxGetYmax(ModelRoData_BoundingBoxRecord *modelBoundingBox);
-f32                bboxGetZmin(ModelRoData_BoundingBoxRecord *modelBoundingBox);
-ObjectRecord      *objFindAtPos(coord3d *pos, s32 RoomID);
-void               propGetCollisionRadius(PropRecord *prop, f32 *collision_radius, f32 *height, f32 *ymin);
-f32                propGetGroundY(PropRecord *prop);
-f32                bboxRotatedMinX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
-f32                bboxRotatedMaxX(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
-f32                bboxRotatedMinY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
-f32                bboxRotatedMaxY(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
-f32                bboxRotatedMinZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
-f32                bboxRotatedMaxZ(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx);
-s32                bboxGetHull2d(struct ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord2d *hull);
-void               projectRectCornersTo2D(coord3d *center, coord2d *xrange, coord2d *yrange, bbox2d *screen);
-void               switchActivateLinkedDoors(PropRecord *prop);
-bool               objCanPickupFromSafe(ObjectRecord *obj);
-struct PropRecord *propFindForInteract(void);
+extern s32 g_OnScreenPropCount;
+extern PropRecord **g_LastOnScreenProp;
+extern PropRecord *g_OnScreenPropList[];
+
+void        propsInit(void);
+void        propsSortOnscreen(void);
+void        propEnable(PropRecord *prop);
+void        propDisable(PropRecord *prop);
+PropRecord *propsGetActiveTail(void);
+PropRecord *propAllocate(void);
+void        propFree(PropRecord *prop);
+void        propActivate(PropRecord *prop);
+void        propActivateThisFrame(PropRecord *prop);
+void        propDelist(PropRecord *prop);
+void        propReparent(PropRecord *child, PropRecord *host);
+void        propDetach(PropRecord *prop);
+Gfx        *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass);
 void        propExecuteTickOperation(PropRecord *prop, TICKOP op);
-void        propUpdateRooms(PropRecord* p);
+PropRecord *propFindForInteract(void);
+bool        playerInteract(void);
+void        propsTickOnce(void);
+void        propsTickPerPlayer(void);
+void        propsTickPickups(void);
+void        switchActivateLinkedDoors(PropRecord *prop);
+bool        doorIsPadlockFree(DoorRecord *door);
+bool        objCanPickupFromSafe(ObjectRecord *obj);
+ObjectRecord *objFindAtPad(s32 padid);
+ObjectRecord *objFindAtPos(coord3d *pos, s32 roomid);
 
-void               propsInit(void);
-
-void propRemoveFromRoom(PropRecord* prop, s16 room);
-void modelGetAxisExtents(Model* model, f32* max, f32* min, s32 axis);
-bool doorIsPadlockFree(DoorRecord* door);
-void propDetach(PropRecord* prop);
-s32 propDoorGetCdTypes(PropRecord* prop);
-s32 roomListsOverlap(s32* roomids1, s32* roomids2);
+#include "game/prop/proprooms.h"
+#include "game/prop/propcollision.h"
+#include "game/prop/bbox.h"
+#include "game/prop/autoaim.h"
 
 #endif

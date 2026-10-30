@@ -414,10 +414,10 @@ static void vehicleDrive(PropRecord *prop, VehichleRecord *vehicle, Model *model
         prop->stan = tile;
         vehicle->runtime_pos.f[0] = (prop->pos.f[0] = newpos.f[0]);
         vehicle->runtime_pos.f[2] = (prop->pos.f[2] = newpos.f[2]);
-        chrobjCollisionRelated(obj);
+        objUpdateCollisionBounds(obj);
         setupUpdateObjectRoomPosition(obj);
 
-        canmove = vehicleFindBlockingProp(prop) && vehicleBodyFitsFloor(prop, vehicle, model);
+        canmove = propIsUnblocked(prop) && vehicleBodyFitsFloor(prop, vehicle, model);
 
         if (canmove)
         {
@@ -446,7 +446,7 @@ static void vehicleDrive(PropRecord *prop, VehichleRecord *vehicle, Model *model
             obj->runtime_pos.f[0] = (prop->pos.f[0] = prevpos.f[0]);
             obj->runtime_pos.f[1] = (prop->pos.f[1] = prevpos.f[1]);
             obj->runtime_pos.f[2] = (prop->pos.f[2] = prevpos.f[2]);
-            chrobjCollisionRelated(obj);
+            objUpdateCollisionBounds(obj);
             setupUpdateObjectRoomPosition(obj);
         }
     }

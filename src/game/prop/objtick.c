@@ -306,7 +306,7 @@ TICKOP objTick(PropRecord *prop)
 
         if (moved)
         {
-            chrobjCollisionRelated(obj);
+            objUpdateCollisionBounds(obj);
             setupUpdateObjectRoomPosition(obj);
             objGetShadeColour(obj->prop, &obj->nextcol);
             proxminesDetonateNear(&obj->runtime_pos);

@@ -9,9 +9,6 @@
 
 #define SFX_RELATED_LEN 8
 #define MAX_PROPS 600
-#define ROOMPROPSFOUND_LEN 512
-#define ROOMPROPBLOCKS_LEN 256
-#define ROOMPROPBLOCK_LEN 16
 #define MAX_WEAPON_SLOTS 30
 #define MAX_HAT_SLOTS 10
 #define MAX_AMMO_CRATES 20
@@ -20,18 +17,10 @@
 #define EMBEDMENT_ARR_MAX 40
 #define ONSCREEN_PROP_LIST_LEN 500
 
-/**
- * Getting a match on roomPropListsInit makes it seem
- * the struct is just one continuous array. (or maybe there's no struct....)
-*/
-struct roomproplistblock
-{
-    s16 propnums[16];
-};
 
 extern struct SetupPtrs g_SetupPtrs;
 
-extern f32 difficulty ;
+
 extern stagesetup g_CurrentSetup;
 
 extern PropRecord *                       g_InteractProp;

@@ -82,73 +82,6 @@ SafeObjectRecord *g_LevelLoadPropSafeItem = NULL;
 f32 g_SoloAmmoMultiplier = 1.0;
 
 
-// Forward declarations.
-
-bool chrobjSeparatingAxisTheorem(coord2d* rect1, s32 numvertices0, coord2d* rect2, s32 numvertices1);
-AmmoCrateRecord *ammocrateAllocate(void);
-
-// End forward declarations.
-
-ModelRoData_BoundingBoxRecord *chrobjGetBboxFromObjFile(ModelFileHeader *obj)
-{
-    ModelNode *mdlnext;
-
-    if (obj->RootNode->Child)
-    {
-        //for each next node, check for BBox
-        for (mdlnext = obj->RootNode->Child; mdlnext; mdlnext = mdlnext->Next)
-        {
-            if (mdlnext->Opcode == MODELNODE_OPCODE_BBOX)
-            {
-                return &mdlnext->Data->BoundingBox;
-            }
-        }
-
-        //none found, check FIRST child
-        if (obj->RootNode->Child->Child)
-        {
-            //for each next node, check for BBox
-            for (mdlnext = obj->RootNode->Child->Child; mdlnext; mdlnext = mdlnext->Next)
-            {
-                if (mdlnext->Opcode == MODELNODE_OPCODE_BBOX)
-                {
-                    return &mdlnext->Data->BoundingBox;
-                }
-            }
-        }
-    }
-    return NULL;
-}
-
-
-struct ModelRoData_BoundingBoxRecord* chrobjGetBboxFromObjectRecord(ObjectRecord *obj)
-{
-    return (struct ModelRoData_BoundingBoxRecord *)chrobjGetBboxFromObjFile(obj->model->obj);
-}
-
-
-void chrobjCollisionRelated(ObjectRecord *obj)
-{
-    struct ModelRoData_BoundingBoxRecord *bbox;
-    Mtxf mtx;
-
-    if (obj->ptr_allocated_collisiondata_block != NULL)
-    {
-        bbox = chrobjGetBboxFromObjectRecord(obj);
-        mtx4Copy(&obj->mtx, &mtx);
-        mtx4SetTranslation(&obj->runtime_pos, &mtx);
-        obj->ptr_allocated_collisiondata_block->edges = bboxGetHull2d(bbox, &mtx, obj->ptr_allocated_collisiondata_block->polygon);
-
-        obj->ptr_allocated_collisiondata_block->bottom = obj->runtime_pos.f[1] + bboxRotatedMinY(bbox, &mtx);
-        obj->ptr_allocated_collisiondata_block->top = obj->runtime_pos.f[1] + bboxRotatedMaxY(bbox, &mtx);
-
-        if (obj->type == PROPDEF_AIRCRAFT)
-        {
-            obj->ptr_allocated_collisiondata_block->bottom -= 200.0f;
-        }
-    }
-}
-
 
 PropRecord* objInit(ObjectRecord* obj, ModelFileHeader* model_header, PropRecord* prop, Model* model)
 {
@@ -279,7 +212,7 @@ void objPlaceAtPad(ObjectRecord *baseobj, coord3d *pos, Mtxf *matrix, StandTile 
     StandTile *mStan;
     Mtxf mtxcopy;
 
-    modelBoundingBox = chrobjGetBboxFromObjFile(baseobj->model->obj);
+    modelBoundingBox = modelFileFindBbox(baseobj->model->obj);
     xmax = bboxGetYmin(modelBoundingBox);
     ymin = bboxGetYmax(modelBoundingBox);
     mStan = stan;
@@ -351,7 +284,7 @@ void objPlaceAtPad(ObjectRecord *baseobj, coord3d *pos, Mtxf *matrix, StandTile 
         }
     }
 
-    chrobjCollisionRelated(baseobj);
+    objUpdateCollisionBounds(baseobj);
 }
 
 
@@ -363,7 +296,7 @@ void objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandT
     Mtxf matrix;
     Mtxf yrot;
 
-    zmin = bboxGetZmin(chrobjGetBboxFromObjFile(obj->model->obj));
+    zmin = bboxGetZmin(modelFileFindBbox(obj->model->obj));
     stan = stan2;
 
     mtx4LoadXRotation(4.712389f, &matrix);
@@ -387,7 +320,7 @@ void objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandT
         obj->runtime_pos.z = posdiff.z;
     }
 
-    chrobjCollisionRelated(obj);
+    objUpdateCollisionBounds(obj);
 }
 
 
@@ -501,324 +434,6 @@ void objFree(ObjectRecord* obj, s32 freeprop, s32 canregen)
 void objFreePermanently(struct ObjectRecord * obj, bool freeprop)
 {
     objFree(obj, freeprop, 0);
-}
-
-
-/**
- * Description: Separating Axis Theorem
- *
- * Return true if both blocks are not intersecting on the X/Z plane.
- * PD: cdBlockExcludesBlockLaterally
- */
-bool chrobjSeparatingAxisTheorem(coord2d* rect1, s32 numvertices0, coord2d* rect2, s32 numvertices1)
-{
-    f64 diff2;
-    f64 diff1;
-    s32 j;
-    s32 k;
-    s32 next;
-    s32 i;
-    f64 sum3;
-    f64 sum2 = 0.0;
-    f64 sum1;
-    coord3d tmp;
-
-    for (i = 0; i < numvertices0; i++)
-    {
-        next = (i + 1) % numvertices0;
-        diff1 = rect1[next].y - (f64)rect1[i].y;
-        diff2 = rect1[i].x - (f64)rect1[next].x;
-
-        if (diff1 == 0.0f && diff2 == 0.0f)
-        {
-            tmp.x = rect1[i].x;
-            tmp.y = 0.0f;
-            tmp.z = rect1[i].y;
-            if (polygonContainsPoint(&tmp, rect2, numvertices1))
-            {
-                return FALSE;
-            }
-        }
-        else
-        {
-            sum1 = rect1[i].x * diff1 + rect1[i].y * diff2;
-            j = (next + 1) % numvertices0;
-
-            while (j != i)
-            {
-                sum2 = rect1[j].x * diff1 + rect1[j].y * diff2;
-
-                if (sum2 != sum1) { break; }
-
-                j = (j + 1) % numvertices0;
-            }
-
-            for (k = 0; k < numvertices1; k++)
-            {
-                sum3 = rect2[k].x * diff1 + rect2[k].y * diff2;
-
-                if (sum2 == sum1)
-                {
-                    sum2 = sum1 - sum3 + sum1;
-                }
-
-                if (sum3 < sum1 && sum2 < sum1) { break; }
-                if (sum3 > sum1 && sum2 > sum1) { break; }
-            }
-
-            if (k == numvertices1)
-            {
-                return TRUE;
-            }
-        }
-    }
-
-    return FALSE;
-}
-
-
-/**
- * Address 0x7F0446B8 (NTSC)
- * Address 0x7F0449A0 (NTSC-J)
- *
- * Description: Does a 2D collision check between two (convex?) polygons.
- *
- * Note: The NTSC version is 7 to 8 times faster than the others.
- *       Was this an attempt at optimization or to fix a bug?
- *
- * Deepseek says JP/EU's new code will detect edges cases such as a polygon
- * fully contained into another. NTSC's only check is SAT, which misses when
- * the polygons have edges that don’t overlap. NTSC's code handles 95% of
- * collisions so it should be called first.
- *
- * So they fixed a bug, but didn't do it the right way so it wouldn't affect performance.
-*/
-s32 chrobjTestPolygonsTouchingOrOverlap2D(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
-{
-    s32 i;
-    coord3d point;
-
-    for (i=0; i<edges1; i++)
-    {
-        point.f[0] = poly1[i].f[0];
-        point.f[1] = 0.0f;
-        point.f[2] = poly1[i].f[1];
-
-        if (polygonContainsPoint(&point, poly2, edges2) != 0)
-        {
-            return 1;
-        }
-    }
-
-    for (i=0; i<edges2; i++)
-    {
-        point.f[0] = poly2[i].f[0];
-        point.f[1] = 0.0f;
-        point.f[2] = poly2[i].f[1];
-
-        if (polygonContainsPoint(&point, poly1, edges1) != 0)
-        {
-            return 1;
-        }
-    }
-
-    if (chrobjSeparatingAxisTheorem(poly1, edges1, poly2, edges2))
-    {
-        return 0;
-    }
-
-    if (chrobjSeparatingAxisTheorem(poly2, edges2, poly1, edges1))
-    {
-        return 0;
-    }
-
-    return 1;
-}
-
-
-/**
- * Checks whether a point collision with a convex polygon is within the specified radius.
- * @param point: 3d point to test collision with polygon. Only (x,z) are used.
- * @param collision_radius: Collision radius of point to test.
- * @param polygon: Convex polygon.
- * @param edges: Number of edges to test in polygon.
-*/
-s32 chrobjTestPointPolygonCollision(coord3d *point, f32 collision_radius, coord2d *polygon, s32 edges)
-{
-    f32 lineDist;
-    f32 dist1;
-    f32 px;
-    f32 pz;
-    f32 dist2;
-    s32 i;
-    coord2d *next;
-
-    px = point->f[0];
-    pz = point->f[2];
-
-    for (i=0; i<edges; i++)
-    {
-        next = &polygon[(i+1) % edges];
-
-        lineDist = geoSignedLineDist(polygon[i].f[0], polygon[i].f[1], next->f[0], next->f[1], px, pz);
-
-        if (lineDist < 0.0f)
-        {
-            lineDist = -lineDist;
-        }
-
-        dist1 = geoDist2d(polygon[i].f[0], polygon[i].f[1], px, pz);
-        dist2 = geoDist2d(next->f[0], next->f[1], px, pz);
-
-        if ((lineDist < collision_radius)
-            && ((dist1 < collision_radius)
-                || (dist2 < collision_radius)
-                || geoProjectsOntoSegment(polygon[i].f[0], polygon[i].f[1], next->f[0], next->f[1], px, pz)
-            )
-        )
-        {
-            return 1;
-        }
-    }
-
-    return 0;
-}
-
-
-/**
-*/
-s32 vehicleFindBlockingProp(struct PropRecord *argProp)
-{
-    s32 clear;
-    coord2d *polygon2;
-    s32 edges2;
-    f32 chrTop;
-    f32 chrBottom;
-    s32 roomids[8];
-    s16 *propnum;
-    f32 height;
-    f32 arbitratyNumber;
-    f32 radius;
-    f32 ground;
-    PropRecord *propss;
-    coord2d *polygon;
-    s32 edges;
-    f32 top;
-    f32 bottom;
-
-    propGetCollisionPolygon(argProp, &polygon2, &edges2, &chrTop, &chrBottom);
-
-    if (edges2 <= 0)
-    {
-        return 1;
-    }
-
-    propGetRoomIds(argProp, (s32*)&roomids);
-    roomGetProps((s32*)&roomids);
-
-    propss = (PropRecord *)&g_Props;
-
-    for (propnum = g_RoomPropsFound; *propnum >= 0; propnum++)
-    {
-        PropRecord *prop = &propss[*propnum];
-
-        if (prop != argProp)
-        {
-            if ((prop->type == PROP_TYPE_VIEWER) || (prop->type == PROP_TYPE_CHR))
-            {
-                ChrRecord *chr = prop->chr;
-
-                if ((chr == NULL) || !(chr->chrflags & CHRFLAG_HIDDEN))
-                {
-                    propGetCollisionRadius(prop, &radius, &height, &arbitratyNumber);
-
-                    ground = propGetGroundY(prop);
-                    arbitratyNumber += ground;
-                    height += ground;
-
-                    if (arbitratyNumber <= chrTop)
-                    {
-                        clear = 1;
-
-                        if (chrBottom <= height)
-                        {
-                            if (polygonContainsPoint(&prop->pos, polygon2, edges2) != 0)
-                            {
-                                clear = 0;
-                            }
-
-                            // 'else if' avoided here
-                            if ((clear != 0) && (chrobjTestPointPolygonCollision(&prop->pos, radius, polygon2, edges2) != 0))
-                            {
-                                clear = 0;
-                            }
-
-                            if (clear == 0)
-                            {
-                                if ((prop->type == PROP_TYPE_CHR) && (argProp->type == PROP_TYPE_DOOR))
-                                {
-                                    prop->chr->hidden |= CHRHIDDEN_OFFSCREEN_PATROL;
-                                }
-
-                                return 0;
-                            }
-                        }
-                    }
-                }
-            }
-            else if (
-                ((prop->type == PROP_TYPE_OBJ) || (prop->type == PROP_TYPE_WEAPON) || (prop->type == PROP_TYPE_DOOR))
-                && (
-                    (argProp->type != PROP_TYPE_DOOR)
-                    || ((prop->type != PROP_TYPE_DOOR) && ((prop->obj->type != PROPDEF_SAFE)) && (prop->obj->type != PROPDEF_AIRCRAFT))))
-            {
-                propGetCollisionPolygon(prop, &polygon, &edges, &top, &bottom);
-
-                if ((edges > 0)
-                    && (bottom <= chrTop)
-                    && (chrBottom <= top)
-                    && (chrobjTestPolygonsTouchingOrOverlap2D(polygon, edges, polygon2, edges2) != 0))
-                {
-                    return 0;
-                }
-            }
-        }
-    }
-
-    return 1;
-}
-
-
-void objSetMoving(PropRecord* prop, s32 moving) {
-    ChrRecord* chr;
-    chr = prop->chr;
-
-    if (moving != 0)
-    {
-        chr->accuracyrating = (u8) chr->accuracyrating & ~0x20;
-    }
-    else
-    {
-        chr->accuracyrating = (u8) chr->accuracyrating | 0x20;
-    }
-}
-
-
-void objGetCollisionBounds(PropRecord* prop, coord2d** polygon, s32* edges, f32* top, f32* bottom)
-{
-    ObjectRecord* obj;
-    obj = prop->obj;
-
-    if ((obj->ptr_allocated_collisiondata_block != NULL) && (obj->flags & PROPFLAG_00000100) && !(obj->state & PROPSTATE_20))
-    {
-        *edges = obj->ptr_allocated_collisiondata_block->edges;
-        *polygon = obj->ptr_allocated_collisiondata_block->polygon;
-        *bottom = obj->ptr_allocated_collisiondata_block->bottom;
-        *top = obj->ptr_allocated_collisiondata_block->top;
-        return;
-    }
-
-    *edges = 0;
 }
 
 

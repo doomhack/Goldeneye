@@ -12,6 +12,10 @@
       build/OUTCODE/src/game/chr/chraction.o (.bss);
       build/OUTCODE/src/game/chr/chrai.o (.bss);
       build/OUTCODE/src/game/prop/prop.o (.bss);
+      build/OUTCODE/src/game/prop/proprooms.o (.bss);
+      build/OUTCODE/src/game/prop/propcollision.o (.bss);
+      build/OUTCODE/src/game/prop/bbox.o (.bss);
+      build/OUTCODE/src/game/prop/autoaim.o (.bss);
       build/OUTCODE/src/game/prop/propobj.o (.bss);
       build/OUTCODE/src/game/prop/alarm.o (.bss);
       build/OUTCODE/src/game/prop/monitor.o (.bss);
