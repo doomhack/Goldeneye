@@ -19,8 +19,6 @@ f32 chrGetDistanceToChr(ChrRecord *self, s32 chrnum);
 f32 chrGetDistanceFromBondToPad(ChrRecord *self, s32 padnum);
 
 /* What the chr knows */
-bool chrSawTargetRecently(ChrRecord *self);
-bool chrHeardTargetRecently(ChrRecord *self);
 bool chrIsTargetedByPlayer(ChrRecord *self);
 bool chrIsTargetNearlyInSight(ChrRecord *self);
 bool chrPadRoomIsVisible(ChrRecord *self, s32 padnum);

@@ -12,6 +12,7 @@
       build/OUTCODE/src/game/chr/body.o (.text);
       build/OUTCODE/src/game/chr/chraction.o (.text);
       build/OUTCODE/src/game/chr/chrscript.o (.text);
+      build/OUTCODE/src/game/chr/chrsight.o (.text);
       build/OUTCODE/src/game/chr/chrai.o (.text);
       build/OUTCODE/src/game/prop/prop.o (.text);
       build/OUTCODE/src/game/prop/proprooms.o (.text);

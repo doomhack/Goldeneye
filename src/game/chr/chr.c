@@ -3342,28 +3342,6 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
 
 
 /**
- * Iterates all guards and checks if the noise is within the hearing scale distance.
- *
- * @param noise: noise amount to check.
- */
-void chrCheckGuardsHeardSound(f32 noise)
-{
-    s32 i;
-
-    for (i=0; i<g_NumChrSlots; i++)
-    {
-        if (g_ChrSlots[i].model != NULL)
-        {
-            if (chrGetDistanceToBond(&g_ChrSlots[i]) < g_ChrSlots[i].hearingscale * (noise * 100.0f))
-            {
-                chrAlertGuardToPlayerPosition(&g_ChrSlots[i]);
-            }
-        }
-    }
-}
-
-
-/**
  * Iterates g_ChrSlots. Returns the first object that (1) model
  * is not null and (2) chrnum matches index.
  *
