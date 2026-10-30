@@ -6,7 +6,8 @@ character is a "chr", and its record is a `ChrRecord`.
 | File | What it holds |
 | --- | --- |
 | `src/game/chr/chr.c` | Chr slots, the per-frame chr tick (`chrTick`), moving with collision, drawing, shot hit tests on the body |
-| `src/game/chr/chraction.c` | Actions: what a guard is physically doing (standing, dodging, hit reactions, dying) and the code that starts and ticks each one |
+| `src/game/chr/chraction.c` | Actions: what a guard is physically doing (standing, dodging, surrendering, animations) and the code that starts and ticks each one; `chrActionTick` |
+| `src/game/chr/chrdamage.c` | Being hurt: bullet hits (`chrTakeShot`), explosions (`chrExplosionDamage`), hurt sounds, hit reactions (`chrReactToHit`), dying and the dead guard fading out |
 | `src/game/chr/chrattack.c` | Attacking: starting an attack (`chrAttackStand`, `chrAttackKneel`, attack walk and roll), aiming (`chrSetSubroty`), firing (`chrFireHand`) and whether the shot hits the player (`chrUpdateShotbondsum`) |
 | `src/game/chr/chrnav.c` | Moving: walking to a position over the waypoint graph (`chrGoToPos`), patrols (`chrStartPatrol`), running straight to a nearby point (`chrRunToPos`), steering round obstacles, and the walk-line tests (`propCanWalkLine`) |
 | `src/game/chr/chrsight.c` | What guards see and hear, and in co-op which player each one is after |

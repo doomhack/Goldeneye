@@ -237,7 +237,6 @@ extern s16 female_guard_yelps[];
 extern s32 male_guard_yelp_counter;
 extern s16 male_guard_yelps[];
 
-extern s16 metal_ricochet_SFX[3];
 
 extern struct explosion_anim_group_info explosion_animation_table[];
 extern struct explosion_death_animation g_ExplosionDeathAnims[];
