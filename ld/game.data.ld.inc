@@ -65,6 +65,9 @@
       build/OUTCODE/src/game/player/tank.o (.data);
       build/OUTCODE/src/game/player/cammode.o (.data);
       build/OUTCODE/src/game/player/camview.o (.data);
+      build/OUTCODE/src/game/player/playerdamage.o (.data);
+      build/OUTCODE/src/game/player/playerfade.o (.data);
+      build/OUTCODE/src/game/player/playerinput.o (.data);
       build/OUTCODE/src/game/player/bondinv.o (.data);
       build/OUTCODE/src/game/player/bondhead.o (.data);
       build/OUTCODE/src/game/nav/waypoint.o (.data);

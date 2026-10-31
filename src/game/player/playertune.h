@@ -1,0 +1,70 @@
+#ifndef _PLAYERTUNE_H_
+#define _PLAYERTUNE_H_
+
+// Movement, aiming and timing constants for the player. PAL runs at 50 Hz, so
+// some are scaled for it.
+
+#ifdef VERSION_EU
+
+    #define BONDVIEW_AUTOAIM_TIME 0x19 /* 25 */
+
+    #define EU_CAMERA_8003642C_ASPECT 1.19047617912f
+
+#else
+
+    #define BONDVIEW_AUTOAIM_TIME 0x1e /* 30 */
+
+#endif
+
+#if defined(VERSION_EU)
+    #define TANKUPDATEROTATION_SCALE 0.904799997807f
+    #define TANKTURRETVERTICALANGLERELATED_SCALE 0.928399980068f
+    #define TANK_Y_SMOOTHING 0.79960000515f
+    #define CHR_OBJ_ACCEL_SPEED_FACTOR 0.6f
+    #define CHR_OBJ_MAXSPEED 6.0f
+    #define MAX_SPEED_FACTOR 0.8f
+    #define TANK_DAMAGE_PENTALTY_TICKS 75
+
+    #define TANK_VERT_ANGLE_FACTOR 0.0716000199318f
+    #define TANK_VERT_ANGLE_RAD_FACTOR 0.0952f
+
+    #define MAX_AIMLOCK_SPEED_DEFAULT 0.8344f
+
+    #define THREE_SECOND_TICKS 150
+    #define PLAYER_TICKEXPLODE_FACTOR 12
+
+    #define CROUCH_DAMP 0.765100002289f
+    #define CROUCH_DAMP_INV 0.234899997711f
+    #define LANDING_DIP_FRAMES 12
+    #define CROUCH_FALL_STEP -5.625f
+#else
+    #define TANKUPDATEROTATION_SCALE 0.92f
+    #define TANKTURRETVERTICALANGLERELATED_SCALE 0.94f
+    #define TANK_Y_SMOOTHING 0.83f
+    #define CHR_OBJ_ACCEL_SPEED_FACTOR 0.5f
+    #define CHR_OBJ_MAXSPEED 5.0f
+    #define MAX_SPEED_FACTOR 0.8f
+    #define TANK_DAMAGE_PENTALTY_TICKS 90
+
+    #define TANK_VERT_ANGLE_FACTOR 0.0600000023842f
+    #define TANK_VERT_ANGLE_RAD_FACTOR 0.0799999833107f
+    #define MAX_AIMLOCK_SPEED_DEFAULT 0.86f
+
+    #define THREE_SECOND_TICKS 180
+    #define PLAYER_TICKEXPLODE_FACTOR 15
+
+    #define CROUCH_DAMP 0.8f
+    #define CROUCH_DAMP_INV 0.19999999f
+    #define LANDING_DIP_FRAMES 15
+    #define CROUCH_FALL_STEP -4.5f
+#endif
+
+#define SPEED_REGULAR_MAX  1.0f
+#define SPEED_RUN_MAX      1.25f
+#define SPEED_TICK_ADJUST  0.01f
+#define TANK_MAX_SPEED     15.0f
+
+#define FLOAT_TEN_A 10.0f
+#define FLOAT_TEN_B 10.00f
+
+#endif

@@ -9,7 +9,11 @@ inventory are in [weapons](weapons.md).
 | --- | --- |
 | `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`) |
 | `src/game/player/bondview.c` | The player globals; choosing a spawn pad, resetting a player for a new life, crouch and lean |
-| `src/game/player/bondview2.c` | Everything else about Bond, about 5,500 lines: input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the player prop tick (`playerTick`) |
+| `src/game/player/bondview2.c` | The rest of Bond, about 3,200 lines: loading the body, height and falling (`playerUpdateVertical`), the per-frame update (`playerUpdate`, `playerMove`), the player prop tick (`playerTick`) |
+| `src/game/player/playerinput.c` | Input (`playerProcessInput`), auto-aim, look and walk speeds |
+| `src/game/player/playerdamage.c` | Health, armour, damage (`playerTakeDamage`), the damage flash and health bars, dying (`playerDie`), explosions round the player |
+| `src/game/player/playerfade.c` | The screen fade over a player's view and fading the player's body |
+| `src/game/player/playertune.h` | Movement, aiming and timing constants, with their PAL values |
 | `src/game/player/cammode.c` | Camera modes: switching (`playerSetCameraMode`, `playerAdvanceCameraMode`), the intro, swirl, cutscene, death and orbit cameras (`playerTickFrozenCamera`), co-op's full-screen view (`coopUpdateSoloView`) |
 | `src/game/player/camview.c` | The camera helpers (`cam*`): screen and view transforms, the view matrices, the frustum planes, the viewports, the frame's camera setup (`camSetupFrame`) |
 | `src/game/player/watch.c` | The pause watch: raising and lowering the arm (`watchTick`, `watchStepAnim`), the pause tilt and zoom, opening and closing it (`watchTrigger`), drawing the arm and watch (`watchRender`) |
@@ -127,7 +131,8 @@ In solo play the game is paused while the watch is out; in co-op it pauses for b
 `bondhealth` and `bondarmour` run from 0 to 1. `playerTakeDamage` takes armour first
 (unless the damage ignores armour, like gas), then health, and calls `playerDie` at 0.
 `playerTickDamageAndHealth` runs the red flash and the health bars, and `playerTickExplode`
-the explosions some levels set off round Bond (`playerSurroundWithExplosions`). In
+the explosions some levels set off round Bond (`playerSurroundWithExplosions`), all in
+`playerdamage.c`. In
 multiplayer `mpRespawnPlayer` respawns at a pad from `playerChooseSpawnPad`.
 
 ## The tank

@@ -66,6 +66,9 @@
       build/OUTCODE/src/game/player/tank.o (.bss);
       build/OUTCODE/src/game/player/cammode.o (.bss);
       build/OUTCODE/src/game/player/camview.o (.bss);
+      build/OUTCODE/src/game/player/playerdamage.o (.bss);
+      build/OUTCODE/src/game/player/playerfade.o (.bss);
+      build/OUTCODE/src/game/player/playerinput.o (.bss);
       build/OUTCODE/src/game/player/bondinv.o (.bss);
       build/OUTCODE/src/game/player/bondhead.o (.bss);
       build/OUTCODE/src/game/nav/waypoint.o (.bss);
