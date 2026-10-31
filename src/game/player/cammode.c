@@ -431,14 +431,14 @@ void playerSetCameraMode(s32 mode)
         currentPlayerSetFadeColour(0, 0, 0, 1.0f);
         currentPlayerSetFadeFrac(60.0f, 0.0f);
 
-        if (g_ExplodeTankOnDeathFlag && (g_PlayerTankProp != NULL))
+        if (g_ExplodeTankOnDeathFlag && (g_CurrentPlayer->tankMounted != NULL))
         {
             // removed
         }
         else
         {
             // This branch restarts Bond's death animation for his death replay
-            g_PlayerIsInTank = 0;
+            g_CurrentPlayer->tankDriving = 0;
 
             // struct copy
             g_CurrentPlayer->bond = g_CurrentPlayer->bondDie;
@@ -474,18 +474,18 @@ void playerSetCameraMode(s32 mode)
             modelSetRootRotY(g_CurrentPlayer->bodyModel, camdist);
         }
 
-        if (g_ExplodeTankOnDeathFlag && (g_PlayerTankProp != NULL))
+        if (g_ExplodeTankOnDeathFlag && (g_CurrentPlayer->tankMounted != NULL))
         {
-            focusprop = g_PlayerTankProp;
+            focusprop = g_CurrentPlayer->tankMounted;
             camdist = 500.0f; // distance to place the camera
-            focuspos.f[0] = g_PlayerTankProp->pos.f[0];
-            focuspos.f[1] = g_PlayerTankProp->pos.f[1];
-            focuspos.f[2] = g_PlayerTankProp->pos.f[2];
-            collisionprop = g_PlayerTankProp;
-            collisionpos.f[0] = g_PlayerTankProp->pos.f[0];
-            collisionpos.f[1] = g_PlayerTankProp->pos.f[1];
-            collisionpos.f[2] = g_PlayerTankProp->pos.f[2];
-            focustile = g_PlayerTankProp->stan;
+            focuspos.f[0] = g_CurrentPlayer->tankMounted->pos.f[0];
+            focuspos.f[1] = g_CurrentPlayer->tankMounted->pos.f[1];
+            focuspos.f[2] = g_CurrentPlayer->tankMounted->pos.f[2];
+            collisionprop = g_CurrentPlayer->tankMounted;
+            collisionpos.f[0] = g_CurrentPlayer->tankMounted->pos.f[0];
+            collisionpos.f[1] = g_CurrentPlayer->tankMounted->pos.f[1];
+            collisionpos.f[2] = g_CurrentPlayer->tankMounted->pos.f[2];
+            focustile = g_CurrentPlayer->tankMounted->stan;
         }
         else
         {
@@ -510,9 +510,9 @@ void playerSetCameraMode(s32 mode)
                 sndSetScalerApplyVolumeAllSfxSlot(0.5f);
             }
 
-            if ((g_ExplodeTankOnDeathFlag != 0) && (g_PlayerTankProp != NULL))
+            if ((g_ExplodeTankOnDeathFlag != 0) && (g_CurrentPlayer->tankMounted != NULL))
             {
-                explosionCreate(g_PlayerTankProp, &g_PlayerTankProp->pos, g_PlayerTankProp->stan, EXPLOSION_DEF_STANDARD, 0, playerGetCurrentNum(), g_PlayerTankProp->rooms, 0);
+                explosionCreate(g_CurrentPlayer->tankMounted, &g_CurrentPlayer->tankMounted->pos, g_CurrentPlayer->tankMounted->stan, EXPLOSION_DEF_STANDARD, 0, playerGetCurrentNum(), g_CurrentPlayer->tankMounted->rooms, 0);
             }
         }
         else

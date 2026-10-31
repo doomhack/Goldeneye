@@ -471,9 +471,8 @@ void bossMainloop(void)
                                     localPlayer = g_CurrentPlayer;
                                     viSetViewPosition(localPlayer->viewleft, localPlayer->viewtop);
 
-                                    coopTankBeginPlayer();
                                     lvPlayerTick();
-                                    coopTankEndPlayer(TRUE);
+                                    tankUpdateDriver();
                                 }
                             }
 

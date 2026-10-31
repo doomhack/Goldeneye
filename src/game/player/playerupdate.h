@@ -3,13 +3,6 @@
 #include <ultra64.h>
 #include <bondtypes.h>
 
-extern coord3d g_TankModelPositionOffset;
-extern s32 g_EnterTankAudioState;
-extern f32 g_TankEnteringSitHeight;
-extern f32 g_TankEnteringSitHeightRemain;
-extern f32 g_TankEnterBondHorizAngleDeg;
-extern f32 g_TankEnterBondVertAngleDeg;
-extern coord3d g_EnterTankCoord;
 extern s32 g_bondviewForceDisarm;
 extern s32 resolution;
 extern f32 g_PlayerWorldScale;

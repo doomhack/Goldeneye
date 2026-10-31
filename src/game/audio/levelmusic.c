@@ -653,19 +653,19 @@ s32 levelMusicGetXTrack(s32 stageID)
 
 
 void levelStopTankSfx(void) {
-    if (g_TankSfxState[0] != 0)
+    if (g_Tank.sfx[0] != 0)
     {
-        if (sndGetPlayingState(g_TankSfxState[0]) != AL_STOPPED)
+        if (sndGetPlayingState(g_Tank.sfx[0]) != AL_STOPPED)
         {
-            sndDeactivate(g_TankSfxState[0]);
+            sndDeactivate(g_Tank.sfx[0]);
         }
     }
 
-    if (g_TankSfxState[1] != 0)
+    if (g_Tank.sfx[1] != 0)
     {
-        if (sndGetPlayingState(g_TankSfxState[1]) != AL_STOPPED)
+        if (sndGetPlayingState(g_Tank.sfx[1]) != AL_STOPPED)
         {
-            sndDeactivate(g_TankSfxState[1]);
+            sndDeactivate(g_Tank.sfx[1]);
         }
     }
 

@@ -487,7 +487,6 @@ Gfx* lvRender(Gfx* DL)
         for(i = 0; i < pcount; i++)
         {
             playerSetCurrent(playerGetShuffled(i));
-            coopTankBeginPlayer();
 
             viSetViewSize(g_CurrentPlayer->viewx, g_CurrentPlayer->viewy);
             viSetViewPosition(g_CurrentPlayer->viewleft, g_CurrentPlayer->viewtop);
@@ -539,7 +538,6 @@ Gfx* lvRender(Gfx* DL)
             DL = hudRender(DL);
 
             DL = mpMenuRender(DL);
-            coopTankEndPlayer(FALSE);
         }
 
         if (gameIsTwoPlayerMission() && (pcount > 0))

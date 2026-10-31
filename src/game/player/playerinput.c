@@ -551,7 +551,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             }
             else
             {
-                if (g_PlayerIsInTank == 1 && !g_CurrentPlayer->insightaimmode)
+                if (g_CurrentPlayer->tankDriving == 1 && !g_CurrentPlayer->insightaimmode)
                 {
                     moveData.analogTurn = adjustedStickX;
                 }
@@ -724,7 +724,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     moveData.btap = 0;
                 }
 
-                if (g_PlayerIsInTank == 1 && g_CurrentPlayer->insightaimmode)
+                if (g_CurrentPlayer->tankDriving == 1 && g_CurrentPlayer->insightaimmode)
                 {
                     if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
                     {
@@ -804,7 +804,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         {
                             if (!g_CurrentPlayer->insightaimmode)
                             {
-                                if (g_PlayerIsInTank == 1)
+                                if (g_CurrentPlayer->tankDriving == 1)
                                 {
                                     moveData.aimTurnLeftSpeed = 1.0f;
                                 }
@@ -823,7 +823,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         {
                             if (!g_CurrentPlayer->insightaimmode)
                             {
-                                if (g_PlayerIsInTank == 1)
+                                if (g_CurrentPlayer->tankDriving == 1)
                                 {
                                     moveData.aimTurnRightSpeed = 1.0f;
                                 }
@@ -846,7 +846,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                         moveData.canNaturalPitch = !g_CurrentPlayer->insightaimmode;
 
-                        if (g_PlayerIsInTank == 1)
+                        if (g_CurrentPlayer->tankDriving == 1)
                         {
                             moveData.canTurnTank = !g_CurrentPlayer->insightaimmode;
                         }
@@ -989,7 +989,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         moveData.btap = 0;
                     }
 
-                    if ((g_PlayerIsInTank == 1) && (g_CurrentPlayer->insightaimmode))
+                    if ((g_CurrentPlayer->tankDriving == 1) && (g_CurrentPlayer->insightaimmode))
                     {
                         if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
                         {
@@ -1032,9 +1032,9 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     if (moveData.btap)
     {
         /* If Bond is in the tank and pressed B, then exit. */
-        if (g_PlayerIsInTank == 1)
+        if (g_CurrentPlayer->tankDriving == 1)
         {
-            exitTank = (struct TankRecord *)g_PlayerTankProp->obj;
+            exitTank = (struct TankRecord *)g_CurrentPlayer->tankMounted->obj;
             exitTank->storedShells = weaponGetHeldAmmo(ITEM_TANKSHELLS);
 
             weaponGiveAmmo(ITEM_TANKSHELLS, 0);
@@ -1047,7 +1047,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             }
 
             exitTank->is_firing_tank = 0;
-            g_PlayerIsInTank = 0;
+            g_CurrentPlayer->tankDriving = 0;
             g_CurrentPlayer->speedsideways = 0;
             g_CurrentPlayer->speedforwards = 0;
             g_CurrentPlayer->speedtheta = 0;
@@ -1060,40 +1060,40 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             g_CurrentPlayer->crouchpos = CROUCH_STAND;
         }
         /* If Bond is standing on the tank and pressed B, enter the tank. */
-        else if (g_PlayerTankProp != NULL
-            && g_PlayerTankProp->type == PROP_TYPE_OBJ
-            && g_PlayerTankProp->obj->type == PROPDEF_TANK
-            && g_BondCanEnterTank
+        else if (g_CurrentPlayer->tankMounted != NULL
+            && g_CurrentPlayer->tankMounted->type == PROP_TYPE_OBJ
+            && g_CurrentPlayer->tankMounted->obj->type == PROPDEF_TANK
+            && g_CurrentPlayer->tankCanEnter
             // Counter-op: the guard player can't drive the tank.
             && !counterOpIsGuardPlayer(playerGetCurrentNum()))
         {
-            enterTank = (struct TankRecord *)g_PlayerTankProp->obj;
+            enterTank = (struct TankRecord *)g_CurrentPlayer->tankMounted->obj;
 
             invAddItem(ITEM_TANKSHELLS);
             weaponGiveAmmo(ITEM_TANKSHELLS, enterTank->storedShells);
             enterTank->storedShells = 0;
-            g_TankTurretVerticalAngle = enterTank->turret_vertical_angle;
-            g_TankTurretVerticalAngleRelated = g_TankTurretVerticalAngle / TANK_VERT_ANGLE_FACTOR;
-            g_TankTurretAngle = enterTank->turret_orientation_angle;
-            g_TankTurretOrientationAngleRad = enterTank->turret_orientation_angle;
-            g_TankTurretOrientationAngleDeg = g_TankTurretOrientationAngleRad / TANK_VERT_ANGLE_RAD_FACTOR;
-            tank_turret_turn_speed = 0;
-            g_TankOrientationAngle = enterTank->tank_orientation_angle;
-            g_TankTurnSpeed = 0;
-            g_PlayerIsInTank = 1;
-            g_EnterTankAudioState = TANK_RUN_STATE_NOT_RUNNING;
+            g_Tank.turretPitch = enterTank->turret_vertical_angle;
+            g_Tank.turretPitchSum = g_Tank.turretPitch / TANK_VERT_ANGLE_FACTOR;
+            g_Tank.turretAngle = enterTank->turret_orientation_angle;
+            g_Tank.turretYaw = enterTank->turret_orientation_angle;
+            g_Tank.turretYawSum = g_Tank.turretYaw / TANK_VERT_ANGLE_RAD_FACTOR;
+            g_Tank.turretTurnSpeed = 0;
+            g_Tank.yaw = enterTank->tank_orientation_angle;
+            g_Tank.turnSpeed = 0;
+            g_CurrentPlayer->tankDriving = 1;
+            g_Tank.enterAudioState = TANK_RUN_STATE_NOT_RUNNING;
             g_CurrentPlayer->speedsideways = 0;
             g_CurrentPlayer->speedforwards = 0;
             g_CurrentPlayer->speedtheta = 0;
             g_CurrentPlayer->crouchpos = CROUCH_HALF;
-            g_TankEnteringSitHeight = 0;
-            g_TankEnteringSitHeightRemain = 1.0f;
-            g_TankEnterBondHorizAngleDeg = g_CurrentPlayer->vv_theta;
-            g_TankEnterBondVertAngleDeg = g_CurrentPlayer->vv_verta;
-            g_EnterTankCoord.f[0] = g_CurrentPlayer->bond.collision_position.f[0];
-            g_EnterTankCoord.f[1] = g_CurrentPlayer->bond.collision_position.f[1];
-            g_EnterTankCoord.f[2] = g_CurrentPlayer->bond.collision_position.f[2];
-            g_TankDamagePenaltyTicks = 0;
+            g_Tank.enterProgress = 0;
+            g_Tank.enterRemain = 1.0f;
+            g_Tank.enterYawDeg = g_CurrentPlayer->vv_theta;
+            g_Tank.enterPitchDeg = g_CurrentPlayer->vv_verta;
+            g_Tank.enterPos.f[0] = g_CurrentPlayer->bond.collision_position.f[0];
+            g_Tank.enterPos.f[1] = g_CurrentPlayer->bond.collision_position.f[1];
+            g_Tank.enterPos.f[2] = g_CurrentPlayer->bond.collision_position.f[2];
+            g_Tank.damagePenaltyTicks = 0;
 
             tankUpdateTurretOffset();
         }
@@ -1172,19 +1172,19 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         watchUpdateZoom();
     }
 
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
-        g_TankTurretTurn = 0;
+        g_Tank.turretTurn = 0;
 
-        if (g_EnterTankAudioState == TANK_RUN_STATE_RUNNING)
+        if (g_Tank.enterAudioState == TANK_RUN_STATE_RUNNING)
         {
             if (moveData.tankTurnRightSpeed > 0)
             {
-                g_TankTurretTurn += g_GlobalTimerDelta * moveData.tankTurnRightSpeed * DegToRad1Fact(1);
+                g_Tank.turretTurn += g_GlobalTimerDelta * moveData.tankTurnRightSpeed * DegToRad1Fact(1);
             }
             else if (moveData.tankTurnLeftSpeed > 0)
             {
-                g_TankTurretTurn -= g_GlobalTimerDelta * moveData.tankTurnLeftSpeed * DegToRad1Fact(1);
+                g_Tank.turretTurn -= g_GlobalTimerDelta * moveData.tankTurnLeftSpeed * DegToRad1Fact(1);
             }
             else if (moveData.canTurnTank)
             {
@@ -1200,7 +1200,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     targetSpeed = -1.0f;
                 }
 
-                g_TankTurretTurn += DegToRad1Fact(1) * targetSpeed * g_GlobalTimerDelta;
+                g_Tank.turretTurn += DegToRad1Fact(1) * targetSpeed * g_GlobalTimerDelta;
             }
 
             if (!g_CurrentPlayer->insightaimmode)
@@ -1234,11 +1234,11 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 unadjustedTargetSpeed = walkFrac * TANK_MAX_SPEED;
                 targetSpeed = unadjustedTargetSpeed;
 
-                if (g_TankDamagePenaltyTicks > 0)
+                if (g_Tank.damagePenaltyTicks > 0)
                 {
                     targetSpeed = unadjustedTargetSpeed * 0.5f;
                     accelScale = 4.0f;
-                    g_TankDamagePenaltyTicks -= g_ClockTimer;
+                    g_Tank.damagePenaltyTicks -= g_ClockTimer;
                 }
 
                 if (targetSpeed != g_CurrentPlayer->speedforwards)
@@ -1453,7 +1453,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         }
 
 
-        if (g_PlayerIsInTank == 0)
+        if (g_CurrentPlayer->tankDriving == 0)
         {
             /**
              * If the player is giving manual pitch inputs, stop the automatic look ahead pitch adjust.
@@ -1509,7 +1509,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
          */
         if (g_CurrentPlayer->docentreupdown)
         {
-            if (g_PlayerIsInTank == 0)
+            if (g_CurrentPlayer->tankDriving == 0)
             {
                 limit = (g_CurrentPlayer->speedverta * g_CurrentPlayer->speedverta * 0.5f) / 0.05f;
 
@@ -1601,7 +1601,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
             g_CurrentPlayer->vv_verta += g_CurrentPlayer->speedverta * g_GlobalTimerDelta * 3.5f;
 
-            if ((g_PlayerIsInTank == 1) && (g_EnterTankAudioState == TANK_RUN_STATE_RUNNING) && (g_CurrentPlayer->vv_verta < -20.0f))
+            if ((g_CurrentPlayer->tankDriving == 1) && (g_Tank.enterAudioState == TANK_RUN_STATE_RUNNING) && (g_CurrentPlayer->vv_verta < -20.0f))
             {
                 g_CurrentPlayer->vv_verta = -20.0f;
             }
@@ -1647,9 +1647,9 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         playerUpdateSpeedTheta(0);
     }
 
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
-        if (g_EnterTankAudioState == TANK_RUN_STATE_RUNNING)
+        if (g_Tank.enterAudioState == TANK_RUN_STATE_RUNNING)
         {
             turnTarget = 0;
 
@@ -1668,10 +1668,10 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
             for (step=0; step<g_ClockTimer; step++)
             {
-                g_TankTurnSpeed = (TANKUPDATEROTATION_SCALE * g_TankTurnSpeed) + turnTarget;
+                g_Tank.turnSpeed = (TANKUPDATEROTATION_SCALE * g_Tank.turnSpeed) + turnTarget;
             }
 
-            g_CurrentPlayer->speedtheta = g_TankTurnSpeed * TANK_VERT_ANGLE_RAD_FACTOR;
+            g_CurrentPlayer->speedtheta = g_Tank.turnSpeed * TANK_VERT_ANGLE_RAD_FACTOR;
         }
         else
         {

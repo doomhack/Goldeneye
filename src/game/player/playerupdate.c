@@ -61,30 +61,6 @@ static coord3d g_DefaultFrozenMoveOffset = { 0 };
 coord3d g_ForceBondMoveOffset;
 s32 g_CoopForceMovePlayer = 0;
 
-
-coord3d g_TankModelPositionOffset;
-
-static s32 g_TankEngineSfxVolume;
-
-/**
- * State 0: begin.
- * State 1: Finished sitting down/turning, queue audio.
- * State 2: complete
-*/
-s32 g_EnterTankAudioState;
-
-f32 g_TankEnteringSitHeight;
-
-f32 g_TankEnteringSitHeightRemain;
-
-f32 g_TankEnterBondHorizAngleDeg;
-
-f32 g_TankEnterBondVertAngleDeg;
-
-
-coord3d g_EnterTankCoord;
-
-
 s32 mission_timer;
 
 #if defined(VERSION_EU)
@@ -160,14 +136,14 @@ f32 playerGetFloorY(StandTile *tile, f32 x, f32 z)
 {
     f32 ret;
 
-    if (g_PlayerTankProp != NULL)
+    if (g_CurrentPlayer->tankMounted != NULL)
     {
-        ObjectRecord * obj = ((PropRecord *)g_PlayerTankProp)->obj;
+        ObjectRecord * obj = ((PropRecord *)g_CurrentPlayer->tankMounted)->obj;
         PropRecord *p = obj->prop;
 
         ret = stanGetFloorY(p->stan, p->pos.x, p->pos.z);
 
-        ret += g_PlayerTankYOffset;
+        ret += g_CurrentPlayer->tankYOffset;
     }
     else
     {
@@ -197,7 +173,7 @@ void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
     f32 gravity;
 
 
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
         g_CurrentPlayer->stanHeight = playerGetFloorY(
             g_CurrentPlayer->bond.current_tile_ptr,
@@ -560,7 +536,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         Crouching applies a 50% base speed reduction before applying boost.
         Bond can't be boosted while in the tank.
     */
-    if (g_PlayerIsInTank == 0)
+    if (g_CurrentPlayer->tankDriving == 0)
     {
         // This `if` block is Perfect Dark bwalkApplyCrouchSpeed.
         if (currentPlayerGetCrouchPos() == CROUCH_SQUAT)
@@ -626,7 +602,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
      * This section updates the tank turret horizontal position (turning left and right),
      * as well as turning the tank left and right.
     */
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
         coord3d check_collision_p1;
         coord3d check_collision_p2;
@@ -640,7 +616,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         f32 tank_collision_dz;
 
         tankChangeInAngle = DegToRad1Fact(g_CurrentPlayer->speedtheta * g_GlobalTimerDelta) * 3.5f;
-        curTankAngleRad = g_TankOrientationAngle + tankChangeInAngle;
+        curTankAngleRad = g_Tank.yaw + tankChangeInAngle;
 
         if (curTankAngleRad >= M_TAU_F)
         {
@@ -659,7 +635,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             &check_collision_p1,
             &check_collision_p2))
         {
-            g_TankOrientationAngle = curTankAngleRad;
+            g_Tank.yaw = curTankAngleRad;
         }
         else
         {
@@ -772,7 +748,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     &check_collision_p1,
                     &check_collision_p2))
                 {
-                    g_TankOrientationAngle = curTankAngleRad;
+                    g_Tank.yaw = curTankAngleRad;
                 }
                 else
                 {
@@ -785,19 +761,19 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             }
         }
 
-        savedTurretAngle = g_TankTurretOrientationAngleRad;
-        g_TankTurretAngle += g_TankTurretTurn;
-        if (g_TankTurretAngle >= M_TAU_F)
+        savedTurretAngle = g_Tank.turretYaw;
+        g_Tank.turretAngle += g_Tank.turretTurn;
+        if (g_Tank.turretAngle >= M_TAU_F)
         {
-            g_TankTurretAngle -= M_TAU_F;
+            g_Tank.turretAngle -= M_TAU_F;
         }
 
-        if (g_TankTurretAngle < 0.0f)
+        if (g_Tank.turretAngle < 0.0f)
         {
-            g_TankTurretAngle += M_TAU_F;
+            g_Tank.turretAngle += M_TAU_F;
         }
 
-        ftemp = (DegToRad1Fact(g_CurrentPlayer->speedtheta * 3.5f) * 4.0f) + g_TankTurretAngle;
+        ftemp = (DegToRad1Fact(g_CurrentPlayer->speedtheta * 3.5f) * 4.0f) + g_Tank.turretAngle;
 
         if (ftemp < 0.0f)
         {
@@ -809,56 +785,56 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             ftemp -= M_TAU_F;
         }
 
-        if ((ftemp - g_TankTurretOrientationAngleRad) >= M_PI_F)
+        if ((ftemp - g_Tank.turretYaw) >= M_PI_F)
         {
             ftemp -= M_TAU_F;
         }
-        else if ((ftemp - g_TankTurretOrientationAngleRad) < -M_PI_F)
+        else if ((ftemp - g_Tank.turretYaw) < -M_PI_F)
         {
             ftemp += M_TAU_F;
         }
 
         for (step=0; step<g_ClockTimer; step++)
         {
-            g_TankTurretOrientationAngleDeg = ((TANKUPDATEROTATION_SCALE) * g_TankTurretOrientationAngleDeg) + ftemp;
+            g_Tank.turretYawSum = ((TANKUPDATEROTATION_SCALE) * g_Tank.turretYawSum) + ftemp;
         }
 
-        g_TankTurretOrientationAngleRad = g_TankTurretOrientationAngleDeg * (1.0f - TANKUPDATEROTATION_SCALE);
+        g_Tank.turretYaw = g_Tank.turretYawSum * (1.0f - TANKUPDATEROTATION_SCALE);
 
-        if (g_TankTurretOrientationAngleRad >= M_TAU_F)
+        if (g_Tank.turretYaw >= M_TAU_F)
         {
-            g_TankTurretOrientationAngleRad -= M_TAU_F;
-            g_TankTurretOrientationAngleDeg = g_TankTurretOrientationAngleRad / (1.0f - TANKUPDATEROTATION_SCALE);
+            g_Tank.turretYaw -= M_TAU_F;
+            g_Tank.turretYawSum = g_Tank.turretYaw / (1.0f - TANKUPDATEROTATION_SCALE);
         }
 
-        if (g_TankTurretOrientationAngleRad < 0.0f)
+        if (g_Tank.turretYaw < 0.0f)
         {
-            g_TankTurretOrientationAngleRad += M_TAU_F;
-            g_TankTurretOrientationAngleDeg = g_TankTurretOrientationAngleRad / (1.0f - TANKUPDATEROTATION_SCALE);
+            g_Tank.turretYaw += M_TAU_F;
+            g_Tank.turretYawSum = g_Tank.turretYaw / (1.0f - TANKUPDATEROTATION_SCALE);
         }
 
         if (tankTestCollisionAt(
             &g_CurrentPlayer->bond.collision_position,
             g_CurrentPlayer->bond.current_tile_ptr,
-            g_TankOrientationAngle) == 0)
+            g_Tank.yaw) == 0)
         {
-            g_TankTurretOrientationAngleRad = savedTurretAngle;
-            g_TankTurretOrientationAngleDeg = g_TankTurretOrientationAngleRad / (1.0f - TANKUPDATEROTATION_SCALE);
-            g_TankTurretAngle = savedTurretAngle;
+            g_Tank.turretYaw = savedTurretAngle;
+            g_Tank.turretYawSum = g_Tank.turretYaw / (1.0f - TANKUPDATEROTATION_SCALE);
+            g_Tank.turretAngle = savedTurretAngle;
         }
 
-        if (g_PlayerTankProp != NULL)
+        if (g_CurrentPlayer->tankMounted != NULL)
         {
             // sp 0x300
             struct TankRecord *tankRec;
             coord3d tank_move_offset;
             Mtxf rot;
 
-            tankRec = (struct TankRecord *)g_PlayerTankProp->obj;
+            tankRec = (struct TankRecord *)g_CurrentPlayer->tankMounted->obj;
 
             tank_move_offset.f[1] = 0.0f;
-            tank_move_offset.f[0] = g_TankModelPositionOffset.f[0];
-            tank_move_offset.f[2] = g_TankModelPositionOffset.f[2];
+            tank_move_offset.f[0] = g_Tank.turretOffset.f[0];
+            tank_move_offset.f[2] = g_Tank.turretOffset.f[2];
 
             mtx4LoadYRotation(tankChangeInAngle, &rot);
             mtx4RotateVecInPlace(&rot, &tank_move_offset);
@@ -866,10 +842,10 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
 
             tank_move_offset.f[1] = 0.0f;
-            tank_move_offset.f[0] = g_TankModelPositionOffset.f[0] - tank_move_offset.f[0];
-            tank_move_offset.f[2] = g_TankModelPositionOffset.f[2] - tank_move_offset.f[2];
+            tank_move_offset.f[0] = g_Tank.turretOffset.f[0] - tank_move_offset.f[0];
+            tank_move_offset.f[2] = g_Tank.turretOffset.f[2] - tank_move_offset.f[2];
 
-            mtx4LoadYRotation(M_TAU_F - g_TankOrientationAngle, &rot);
+            mtx4LoadYRotation(M_TAU_F - g_Tank.yaw, &rot);
             mtx4ScaleRows012(tankRec->model->scale, &rot);
             mtx4RotateVecInPlace(&rot, &tank_move_offset);
             playerMoveWithCollision(&tank_move_offset, 1);
@@ -878,15 +854,15 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         if (g_ClockTimer > 0) {
             for (i=0; i<g_ClockTimer; i++)
             {
-                tank_turret_turn_speed = (TANKUPDATEROTATION_SCALE * tank_turret_turn_speed) + (g_TankTurretTurn / g_GlobalTimerDelta);
+                g_Tank.turretTurnSpeed = (TANKUPDATEROTATION_SCALE * g_Tank.turretTurnSpeed) + (g_Tank.turretTurn / g_GlobalTimerDelta);
             }
         }
 
-        ftemp = tank_turret_turn_speed * (1.0f - TANKUPDATEROTATION_SCALE);
+        ftemp = g_Tank.turretTurnSpeed * (1.0f - TANKUPDATEROTATION_SCALE);
 
         g_CurrentPlayer->vv_theta = (
-            g_TankOrientationAngle +
-            g_TankTurretOrientationAngleRad +
+            g_Tank.yaw +
+            g_Tank.turretYaw +
             ((DegToRad1Fact(g_CurrentPlayer->speedtheta * 3.5f)) * (4.0f)) +
             (ftemp * 4.0f)
             ) * 360.0f / M_TAU_F;
@@ -958,7 +934,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     /**
      * Update forwards/backwards movement.
     */
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
         /**
          * This section handles the forward/backwards movement of the tank.
@@ -978,43 +954,43 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
          * If so, initialize the tank prop.
          * This also handles spinning Bond around (if required) to face the same direction as the turret.
         */
-        if (g_EnterTankAudioState == TANK_RUN_STATE_NOT_RUNNING)
+        if (g_Tank.enterAudioState == TANK_RUN_STATE_NOT_RUNNING)
         {
-            if (g_PlayerTankProp != NULL)
+            if (g_CurrentPlayer->tankMounted != NULL)
             {
-                tank_obj = (struct TankRecord *)g_PlayerTankProp->obj;
-                mtx4LoadYRotation(M_TAU_F - g_TankOrientationAngle, &seatRot);
+                tank_obj = (struct TankRecord *)g_CurrentPlayer->tankMounted->obj;
+                mtx4LoadYRotation(M_TAU_F - g_Tank.yaw, &seatRot);
                 mtx4ScaleRows012(tank_obj->model->scale, &seatRot);
 
-                seatPos.f[0] = g_TankModelPositionOffset.f[0];
-                seatPos.f[1] = g_TankModelPositionOffset.f[1];
-                seatPos.f[2] = g_TankModelPositionOffset.f[2];
+                seatPos.f[0] = g_Tank.turretOffset.f[0];
+                seatPos.f[1] = g_Tank.turretOffset.f[1];
+                seatPos.f[2] = g_Tank.turretOffset.f[2];
                 mtx4RotateVecInPlace(&seatRot, &seatPos);
 
                 seatPos.f[0] += tank_obj->runtime_pos.f[0];
                 seatPos.f[1] += tank_obj->runtime_pos.f[1];
                 seatPos.f[2] += tank_obj->runtime_pos.f[2];
 
-                turretYawDeg = ((g_TankOrientationAngle + g_TankTurretOrientationAngleRad) * 360.0f) / M_TAU_F;
+                turretYawDeg = ((g_Tank.yaw + g_Tank.turretYaw) * 360.0f) / M_TAU_F;
                 pitch = g_CurrentPlayer->vv_verta;
                 if (pitch < -20.0f)
                 {
                     pitch = -20.0f;
                 }
 
-                g_TankEnteringSitHeight += g_GlobalTimerDelta / 45.0f;
-                if (g_TankEnteringSitHeight >= 1.0f)
+                g_Tank.enterProgress += g_GlobalTimerDelta / 45.0f;
+                if (g_Tank.enterProgress >= 1.0f)
                 {
-                    g_TankEnteringSitHeight = 1.0f;
+                    g_Tank.enterProgress = 1.0f;
                 }
 
-                g_TankEnteringSitHeightRemain = (cosf(g_TankEnteringSitHeight * M_TAU_F * 0.5f) + 1.0f) * 0.5f;
+                g_Tank.enterRemain = (cosf(g_Tank.enterProgress * M_TAU_F * 0.5f) + 1.0f) * 0.5f;
 
                 g_CurrentPlayer->vv_verta =
-                    (g_TankEnteringSitHeightRemain * g_TankEnterBondVertAngleDeg)
-                    + ((1.0f - g_TankEnteringSitHeightRemain) * pitch);
+                    (g_Tank.enterRemain * g_Tank.enterPitchDeg)
+                    + ((1.0f - g_Tank.enterRemain) * pitch);
 
-                yawDiff = turretYawDeg - g_TankEnterBondHorizAngleDeg;
+                yawDiff = turretYawDeg - g_Tank.enterYawDeg;
                 if (yawDiff > 180.0f)
                 {
                     turretYawDeg -= 360.0f;
@@ -1025,8 +1001,8 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 }
 
                 g_CurrentPlayer->vv_theta =
-                    (g_TankEnteringSitHeightRemain * g_TankEnterBondHorizAngleDeg)
-                    + ((1.0f - g_TankEnteringSitHeightRemain) * turretYawDeg);
+                    (g_Tank.enterRemain * g_Tank.enterYawDeg)
+                    + ((1.0f - g_Tank.enterRemain) * turretYawDeg);
 
                 if (g_CurrentPlayer->vv_theta >= 360.0f)
                 {
@@ -1039,26 +1015,26 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 }
 
                 move_offset.f[0] = (
-                        (g_TankEnteringSitHeightRemain * g_EnterTankCoord.f[0]) +
-                        ((1.0f - g_TankEnteringSitHeightRemain) * seatPos.f[0])
+                        (g_Tank.enterRemain * g_Tank.enterPos.f[0]) +
+                        ((1.0f - g_Tank.enterRemain) * seatPos.f[0])
                     ) -
                     g_CurrentPlayer->bond.collision_position.f[0];
 
                 move_offset.f[1] = 0.0f;
 
                 move_offset.f[2] = (
-                    (g_TankEnteringSitHeightRemain * g_EnterTankCoord.f[2]) +
-                    ((1.0f - g_TankEnteringSitHeightRemain) * seatPos.f[2])
+                    (g_Tank.enterRemain * g_Tank.enterPos.f[2]) +
+                    ((1.0f - g_Tank.enterRemain) * seatPos.f[2])
                     ) -
                     g_CurrentPlayer->bond.collision_position.f[2];
             }
 
-            if (!(g_TankEnteringSitHeight >= 1.0f))
+            if (!(g_Tank.enterProgress >= 1.0f))
             {
             }
             else
             {
-                g_EnterTankAudioState = TANK_RUN_STATE_STARTING;
+                g_Tank.enterAudioState = TANK_RUN_STATE_STARTING;
             }
         }
         /**
@@ -1069,16 +1045,16 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             /**
              * There's an initial "starting" step.
             */
-            if (g_EnterTankAudioState == TANK_RUN_STATE_STARTING)
+            if (g_Tank.enterAudioState == TANK_RUN_STATE_STARTING)
             {
-                g_EnterTankAudioState = TANK_RUN_STATE_RUNNING;
-                if ((g_TankSfxState[0] == NULL) && (lvGetControlsLocked() == 0))
+                g_Tank.enterAudioState = TANK_RUN_STATE_RUNNING;
+                if ((g_Tank.sfx[0] == NULL) && (lvGetControlsLocked() == 0))
                 {
-                    sndPlaySfx(g_musicSfxBufferPtr, TRUCK_START_SFX, &g_TankSfxState[0]);
+                    sndPlaySfx(g_musicSfxBufferPtr, TRUCK_START_SFX, &g_Tank.sfx[0]);
                 }
 
-                sndCreatePostEvent(g_TankSfxState[0], 8, 0x61A8);
-                g_TankEngineSfxVolume = 0x61A8;
+                sndCreatePostEvent(g_Tank.sfx[0], 8, 0x61A8);
+                g_Tank.engineVolume = 0x61A8;
             }
             /**
              * Else Bond has fully entered the tank, and the engine is running.
@@ -1116,15 +1092,15 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         tank_engine_utilization_percent = 1.0f;
                     }
 
-                    if (g_TankSfxState[1] == NULL)
+                    if (g_Tank.sfx[1] == NULL)
                     {
                         if (lvGetControlsLocked() == 0)
                         {
-                            sndPlaySfx(g_musicSfxBufferPtr, TANK_SFX, &g_TankSfxState[1]);
+                            sndPlaySfx(g_musicSfxBufferPtr, TANK_SFX, &g_Tank.sfx[1]);
                         }
                     }
 
-                    if (g_TankSfxState[1] != NULL)
+                    if (g_Tank.sfx[1] != NULL)
                     {
                         s32 sfxPitch;
 
@@ -1138,37 +1114,37 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                             sfxPitch = (s32) ((((tank_engine_utilization_percent - 0.15f) * 12767.0f) / 0.75f) + 20000.0f);
                         }
 
-                        sndCreatePostEvent(g_TankSfxState[1], 8, sfxPitch);
+                        sndCreatePostEvent(g_Tank.sfx[1], 8, sfxPitch);
                     }
                 }
                 else
                 {
-                    if (g_TankSfxState[1] != NULL)
+                    if (g_Tank.sfx[1] != NULL)
                     {
-                        if (sndGetPlayingState(g_TankSfxState[1]) != 0)
+                        if (sndGetPlayingState(g_Tank.sfx[1]) != 0)
                         {
-                            sndDeactivate(g_TankSfxState[1]);
+                            sndDeactivate(g_Tank.sfx[1]);
                         }
                     }
                 }
 
-                if (g_TankSfxState[0] == NULL)
+                if (g_Tank.sfx[0] == NULL)
                 {
                     if (lvGetControlsLocked() == 0)
                     {
-                        sndPlaySfx(g_musicSfxBufferPtr, TRUCK_RUN_SFX, &g_TankSfxState[0]);
+                        sndPlaySfx(g_musicSfxBufferPtr, TRUCK_RUN_SFX, &g_Tank.sfx[0]);
                     }
                 }
 
-                if (g_TankSfxState[0] != NULL)
+                if (g_Tank.sfx[0] != NULL)
                 {
-                    g_TankEngineSfxVolume = 0x7FFF;
+                    g_Tank.engineVolume = 0x7FFF;
                     if (tank_engine_utilization_percent < 0.9f)
                     {
-                        g_TankEngineSfxVolume = (s32) (((tank_engine_utilization_percent * 7767.0f) / 0.9f) + 25000.0f);
+                        g_Tank.engineVolume = (s32) (((tank_engine_utilization_percent * 7767.0f) / 0.9f) + 25000.0f);
                     }
 
-                    sndCreatePostEvent(g_TankSfxState[0], 8, g_TankEngineSfxVolume);
+                    sndCreatePostEvent(g_Tank.sfx[0], 8, g_Tank.engineVolume);
                 }
 
                 if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
@@ -1178,7 +1154,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                 }
                 else
                 {
-                    tank_vertical_angle = g_TankTurretVerticalAngle;
+                    tank_vertical_angle = g_Tank.turretPitch;
                 }
 
                 if (tank_vertical_angle > DegToRad1Fact(25))
@@ -1194,10 +1170,10 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
                 for (step=0; step<g_ClockTimer; step++)
                 {
-                    g_TankTurretVerticalAngleRelated = (TANKTURRETVERTICALANGLERELATED_SCALE * g_TankTurretVerticalAngleRelated) + tank_vertical_angle;
+                    g_Tank.turretPitchSum = (TANKTURRETVERTICALANGLERELATED_SCALE * g_Tank.turretPitchSum) + tank_vertical_angle;
                 }
 
-                g_TankTurretVerticalAngle = g_TankTurretVerticalAngleRelated * (1.0f - TANKTURRETVERTICALANGLERELATED_SCALE);
+                g_Tank.turretPitch = g_Tank.turretPitchSum * (1.0f - TANKTURRETVERTICALANGLERELATED_SCALE);
             }
 
         }
@@ -1211,12 +1187,12 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         playerTickMoveAnim(0.0f, 0.0f, 0.0f);
 
-        move_offset.f[0] += g_CurrentPlayer->speedforwards * sinf(M_TAU_F - g_TankOrientationAngle) * g_GlobalTimerDelta;
-        move_offset.f[2] += g_CurrentPlayer->speedforwards * cosf(M_TAU_F - g_TankOrientationAngle) * g_GlobalTimerDelta;
+        move_offset.f[0] += g_CurrentPlayer->speedforwards * sinf(M_TAU_F - g_Tank.yaw) * g_GlobalTimerDelta;
+        move_offset.f[2] += g_CurrentPlayer->speedforwards * cosf(M_TAU_F - g_Tank.yaw) * g_GlobalTimerDelta;
 
         playerMoveWithCollision(&move_offset, 1);
 
-        if ((g_EnterTankAudioState == TANK_RUN_STATE_RUNNING) && (g_ClockTimer > 0))
+        if ((g_Tank.enterAudioState == TANK_RUN_STATE_RUNNING) && (g_ClockTimer > 0))
         {
             f32 calc_x;
             f32 calc_z;
@@ -1241,7 +1217,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             g_CurrentPlayer->speedforwards = calc_speedforwards;
         }
     }
-    else // not in tank: g_PlayerIsInTank != 1
+    else // not in tank: g_CurrentPlayer->tankDriving != 1
     {
         f32 swayDx;
         f32 swayDz;
@@ -1271,29 +1247,29 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         f32 edgeNormX;
         f32 edgeNormZ;
 
-        if ((g_TankSfxState[0] != NULL) && (sndGetPlayingState(g_TankSfxState[0]) != 0))
+        if ((g_Tank.sfx[0] != NULL) && (sndGetPlayingState(g_Tank.sfx[0]) != 0))
         {
             #if defined(VERSION_US)
-            g_TankEngineSfxVolume -= (g_ClockTimer * 1000);
+            g_Tank.engineVolume -= (g_ClockTimer * 1000);
             #endif
 
             #if defined(VERSION_EU)
-            g_TankEngineSfxVolume -= (s32)(1000.0f * g_GlobalTimerDelta);
+            g_Tank.engineVolume -= (s32)(1000.0f * g_GlobalTimerDelta);
             #endif
 
-            if (g_TankEngineSfxVolume > 0)
+            if (g_Tank.engineVolume > 0)
             {
-                sndCreatePostEvent(g_TankSfxState[0], 8, g_TankEngineSfxVolume);
+                sndCreatePostEvent(g_Tank.sfx[0], 8, g_Tank.engineVolume);
             }
             else
             {
-                sndDeactivate(g_TankSfxState[0]);
+                sndDeactivate(g_Tank.sfx[0]);
             }
         }
 
-        if ((g_TankSfxState[1] != NULL) && (sndGetPlayingState(g_TankSfxState[1]) != 0))
+        if ((g_Tank.sfx[1] != NULL) && (sndGetPlayingState(g_Tank.sfx[1]) != 0))
         {
-            sndDeactivate(g_TankSfxState[1]);
+            sndDeactivate(g_Tank.sfx[1]);
         }
 
 
@@ -1614,7 +1590,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
      * with the tank. If colliding with character, play the "arrrhghhg" sound effect, or if
      * colliding with prop then set tank movement penalty and create an explosion.
     */
-    if ((g_PlayerTankProp != NULL) && (g_PlayerIsInTank == 1) && (g_EnterTankAudioState == TANK_RUN_STATE_RUNNING))
+    if ((g_CurrentPlayer->tankMounted != NULL) && (g_CurrentPlayer->tankDriving == 1) && (g_Tank.enterAudioState == TANK_RUN_STATE_RUNNING))
     {
         struct PropRecord *prop;
         struct TankRecord *tankRec;
@@ -1629,23 +1605,23 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         s32 rooms[8];
         s16 *lookup_index;
 
-        tankRec = ((struct TankRecord *)g_PlayerTankProp->obj);
-        tankObj = (struct  ObjectRecord*)g_PlayerTankProp->obj;
+        tankRec = ((struct TankRecord *)g_CurrentPlayer->tankMounted->obj);
+        tankObj = (struct  ObjectRecord*)g_CurrentPlayer->tankMounted->obj;
         bbox = &tankObj->model->obj->Switches[5]->Data->BoundingBox;
 
         tankRec->is_firing_tank = (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
             && gunGetFiringStatus(GUNRIGHT);
 
-        tankRec->turret_vertical_angle = g_TankTurretVerticalAngle;
-        tankRec->turret_orientation_angle = g_TankTurretOrientationAngleRad;
-        tankRec->tank_orientation_angle = g_TankOrientationAngle;
+        tankRec->turret_vertical_angle = g_Tank.turretPitch;
+        tankRec->turret_orientation_angle = g_Tank.turretYaw;
+        tankRec->tank_orientation_angle = g_Tank.yaw;
 
-        mtx4LoadYRotation(M_TAU_F - g_TankOrientationAngle, &tankMtx);
+        mtx4LoadYRotation(M_TAU_F - g_Tank.yaw, &tankMtx);
         mtx4ScaleRows012(tankObj->model->scale, &tankMtx);
 
-        tankPos.f[0] = -g_TankModelPositionOffset.f[0];
-        tankPos.f[1] = -g_TankModelPositionOffset.f[1];
-        tankPos.f[2] = -g_TankModelPositionOffset.f[2];
+        tankPos.f[0] = -g_Tank.turretOffset.f[0];
+        tankPos.f[1] = -g_Tank.turretOffset.f[1];
+        tankPos.f[2] = -g_Tank.turretOffset.f[2];
 
         mtx4RotateVecInPlace(&tankMtx, &tankPos);
 
@@ -1681,7 +1657,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         setupUpdateObjectRoomPosition(tankObj);
         objUpdateCollisionBounds(tankObj);
-        tankGetCollisionBounds(tankBounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
+        tankGetCollisionBounds(tankBounds, &g_CurrentPlayer->bond.collision_position, g_Tank.yaw);
         propGetRoomIds(tankObj->prop, rooms);
 
         // update g_NumRoomPropsFound
@@ -1750,7 +1726,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                     {
                         // Explode destroyable props when the tank touches them
                         objDetonateRecursive(prop, 10000.0f, &prop->obj->runtime_pos, 0x20, playerGetCurrentNum());
-                        g_TankDamagePenaltyTicks = TANK_DAMAGE_PENTALTY_TICKS;
+                        g_Tank.damagePenaltyTicks = TANK_DAMAGE_PENTALTY_TICKS;
                     }
                 }
             }
