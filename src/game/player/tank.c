@@ -11,23 +11,6 @@
 #include "game/player/tank.h"
 #include "game/level/gamemode.h"
 
-s32 g_PlayerIsInTank = 0;
-
-struct PropRecord *g_WorldTankProp = NULL;
-
-// The tank Bond is driving ("bondonprop" in Perfect Dark)
-struct PropRecord *g_PlayerTankProp = NULL;
-
-/**
- * Related to g_PlayerTankProp.
- */
-f32 g_PlayerTankYOffset = 0;
-
-/**
- * Can enter tank, remains set once Bond is in tank.
- */
-s32 g_BondCanEnterTank = 0;
-
 s32 g_ExplodeTankOnDeathFlag = 0;
 
 /* The level's tank (Streets and Runway have one), see struct Tank */
@@ -45,9 +28,9 @@ void tankUpdateTurretOffset(void)
     Mtxf rot;
     ModelNode **switches;
 
-    if (g_PlayerTankProp != NULL)
+    if (g_CurrentPlayer->tankMounted != NULL)
     {
-        obj = g_PlayerTankProp->obj;
+        obj = g_CurrentPlayer->tankMounted->obj;
 
         /// TODO: Fix Model struct Data type.
         switches = obj->model->obj->Switches;
@@ -81,7 +64,7 @@ void tankGetCollisionBounds(coord2d *tank_collision_bounds, coord3d *collision_p
     struct ModelRoData_BoundingBoxRecord *bbox;
 
 
-    obj = g_PlayerTankProp->obj;
+    obj = g_CurrentPlayer->tankMounted->obj;
 
     bbox = objFindBbox(obj);
 
@@ -157,9 +140,9 @@ s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tan
 
     tankGetCollisionBounds(tank_collision_bounds, collision_position, tank_orientation_angle);
 
-    if (g_PlayerTankProp != NULL)
+    if (g_CurrentPlayer->tankMounted != NULL)
     {
-        propSetMoving(g_PlayerTankProp, 0);
+        propSetMoving(g_CurrentPlayer->tankMounted, 0);
     }
 
     if ((tankTestLine(&tile, collision_position->f[0], collision_position->f[2], tank_collision_bounds[0].f[0], tank_collision_bounds[0].f[1], CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_OBJSIMMUNETOEXPLOSIONS, hitFrom, hitTo) != 0)
@@ -170,9 +153,9 @@ s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tan
     {
         ok = 1;
 
-        if (g_PlayerTankProp != NULL)
+        if (g_CurrentPlayer->tankMounted != NULL)
         {
-            ObjectRecord *obj = g_PlayerTankProp->obj;
+            ObjectRecord *obj = g_CurrentPlayer->tankMounted->obj;
             model = obj->model;
             switches = model->obj->Switches;
 
@@ -215,9 +198,9 @@ s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tan
         }
     }
 
-    if (g_PlayerTankProp != NULL)
+    if (g_CurrentPlayer->tankMounted != NULL)
     {
-        propSetMoving(g_PlayerTankProp, 1);
+        propSetMoving(g_CurrentPlayer->tankMounted, 1);
     }
 
     return ok;
@@ -264,109 +247,40 @@ s32 tankTryMoveTo(coord3d *pos, f32 angle, StandTile **outTile)
 
 
 /**
- * Co-op: the player using the tank (climbing on or driving it), or -1.
- * Streets and Runway have one tank and its state is all globals, so only
- * one player can use it; the other walks.
+ * Two-player missions: TRUE if the other player is using the tank. Streets and
+ * Runway have one tank, so only one player can use it; the other walks, and
+ * the tank is solid for them (playerTestMove).
  */
-s32 g_CoopTankPlayer = -1;
-
-static struct
+s32 tankUsedByPartner(void)
 {
-    s32 hidden;
-    s32 inTank;
-    s32 canEnter;
-    f32 yOffset;
-    struct PropRecord *worldTank;
-    struct PropRecord *playerTank;
-} s_CoopTankStash;
-
-/**
- * Co-op: TRUE while the tank is hidden from the player not using it (it is then
- * solid for them, see playerTestMove).
- */
-s32 coopTankIsHidden(void)
-{
-    return s_CoopTankStash.hidden;
+    return gameIsTwoPlayerMission() && (g_Tank.driver >= 0) && (g_Tank.driver != playerGetCurrentNum());
 }
 
 /**
- * Co-op: TRUE if the other player is using the tank.
+ * Two-player missions: after the current player's tick, note whether they
+ * have started or stopped using the tank.
  */
-s32 coopTankUsedByPartner(void)
+void tankUpdateDriver(void)
 {
-    return gameIsTwoPlayerMission() && (g_CoopTankPlayer >= 0) && (g_CoopTankPlayer != playerGetCurrentNum());
-}
-
-/**
- * Co-op: while the current player is moved or drawn, hide the tank state
- * if the other player is using the tank, so this player isn't treated as
- * being in it. Undone by coopTankEndPlayer.
- */
-void coopTankBeginPlayer(void)
-{
-    s_CoopTankStash.hidden = coopTankUsedByPartner();
-
-    if (s_CoopTankStash.hidden)
+    if (gameIsTwoPlayerMission() && !tankUsedByPartner())
     {
-        s_CoopTankStash.inTank = g_PlayerIsInTank;
-        s_CoopTankStash.canEnter = g_BondCanEnterTank;
-        s_CoopTankStash.yOffset = g_PlayerTankYOffset;
-        s_CoopTankStash.worldTank = g_WorldTankProp;
-        s_CoopTankStash.playerTank = g_PlayerTankProp;
-
-        g_PlayerIsInTank = FALSE;
-        g_BondCanEnterTank = FALSE;
-        g_PlayerTankYOffset = 0.0f;
-        g_WorldTankProp = NULL;
-        g_PlayerTankProp = NULL;
-    }
-}
-
-/**
- * Co-op: undo coopTankBeginPlayer. After a player's move, also note whether
- * they have started or stopped using the tank.
- */
-void coopTankEndPlayer(s32 moved)
-{
-    if (s_CoopTankStash.hidden)
-    {
-        g_PlayerIsInTank = s_CoopTankStash.inTank;
-        g_BondCanEnterTank = s_CoopTankStash.canEnter;
-        g_PlayerTankYOffset = s_CoopTankStash.yOffset;
-        g_WorldTankProp = s_CoopTankStash.worldTank;
-        g_PlayerTankProp = s_CoopTankStash.playerTank;
-        s_CoopTankStash.hidden = FALSE;
-    }
-    else if (gameIsTwoPlayerMission() && moved)
-    {
-        g_CoopTankPlayer = ((g_PlayerTankProp != NULL) || g_PlayerIsInTank) ? playerGetCurrentNum() : -1;
+        g_Tank.driver = ((g_CurrentPlayer->tankMounted != NULL) || g_CurrentPlayer->tankDriving) ? playerGetCurrentNum() : -1;
     }
 }
 
 // TRUE if the current player is in (driving) the tank
 bool playerIsInTank(void)
 {
-    if (coopTankUsedByPartner())
-    {
-        return FALSE;
-    }
-
-    // The owner, asked while the tank is hidden for the other player's view.
-    if (s_CoopTankStash.hidden)
-    {
-        return s_CoopTankStash.inTank;
-    }
-
-    return g_PlayerIsInTank;
+    return g_CurrentPlayer->tankDriving;
 }
 
 
 // The tank the current player is driving, or NULL
 PropRecord *playerGetTank(void)
 {
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
-        return g_PlayerTankProp;
+        return g_CurrentPlayer->tankMounted;
     }
 
     return NULL;

@@ -136,14 +136,14 @@ f32 playerGetFloorY(StandTile *tile, f32 x, f32 z)
 {
     f32 ret;
 
-    if (g_PlayerTankProp != NULL)
+    if (g_CurrentPlayer->tankMounted != NULL)
     {
-        ObjectRecord * obj = ((PropRecord *)g_PlayerTankProp)->obj;
+        ObjectRecord * obj = ((PropRecord *)g_CurrentPlayer->tankMounted)->obj;
         PropRecord *p = obj->prop;
 
         ret = stanGetFloorY(p->stan, p->pos.x, p->pos.z);
 
-        ret += g_PlayerTankYOffset;
+        ret += g_CurrentPlayer->tankYOffset;
     }
     else
     {
@@ -173,7 +173,7 @@ void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset)
     f32 gravity;
 
 
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
         g_CurrentPlayer->stanHeight = playerGetFloorY(
             g_CurrentPlayer->bond.current_tile_ptr,
@@ -536,7 +536,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         Crouching applies a 50% base speed reduction before applying boost.
         Bond can't be boosted while in the tank.
     */
-    if (g_PlayerIsInTank == 0)
+    if (g_CurrentPlayer->tankDriving == 0)
     {
         // This `if` block is Perfect Dark bwalkApplyCrouchSpeed.
         if (currentPlayerGetCrouchPos() == CROUCH_SQUAT)
@@ -602,7 +602,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
      * This section updates the tank turret horizontal position (turning left and right),
      * as well as turning the tank left and right.
     */
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
         coord3d check_collision_p1;
         coord3d check_collision_p2;
@@ -823,14 +823,14 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             g_Tank.turretAngle = savedTurretAngle;
         }
 
-        if (g_PlayerTankProp != NULL)
+        if (g_CurrentPlayer->tankMounted != NULL)
         {
             // sp 0x300
             struct TankRecord *tankRec;
             coord3d tank_move_offset;
             Mtxf rot;
 
-            tankRec = (struct TankRecord *)g_PlayerTankProp->obj;
+            tankRec = (struct TankRecord *)g_CurrentPlayer->tankMounted->obj;
 
             tank_move_offset.f[1] = 0.0f;
             tank_move_offset.f[0] = g_Tank.turretOffset.f[0];
@@ -934,7 +934,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     /**
      * Update forwards/backwards movement.
     */
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
         /**
          * This section handles the forward/backwards movement of the tank.
@@ -956,9 +956,9 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         */
         if (g_Tank.enterAudioState == TANK_RUN_STATE_NOT_RUNNING)
         {
-            if (g_PlayerTankProp != NULL)
+            if (g_CurrentPlayer->tankMounted != NULL)
             {
-                tank_obj = (struct TankRecord *)g_PlayerTankProp->obj;
+                tank_obj = (struct TankRecord *)g_CurrentPlayer->tankMounted->obj;
                 mtx4LoadYRotation(M_TAU_F - g_Tank.yaw, &seatRot);
                 mtx4ScaleRows012(tank_obj->model->scale, &seatRot);
 
@@ -1217,7 +1217,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             g_CurrentPlayer->speedforwards = calc_speedforwards;
         }
     }
-    else // not in tank: g_PlayerIsInTank != 1
+    else // not in tank: g_CurrentPlayer->tankDriving != 1
     {
         f32 swayDx;
         f32 swayDz;
@@ -1590,7 +1590,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
      * with the tank. If colliding with character, play the "arrrhghhg" sound effect, or if
      * colliding with prop then set tank movement penalty and create an explosion.
     */
-    if ((g_PlayerTankProp != NULL) && (g_PlayerIsInTank == 1) && (g_Tank.enterAudioState == TANK_RUN_STATE_RUNNING))
+    if ((g_CurrentPlayer->tankMounted != NULL) && (g_CurrentPlayer->tankDriving == 1) && (g_Tank.enterAudioState == TANK_RUN_STATE_RUNNING))
     {
         struct PropRecord *prop;
         struct TankRecord *tankRec;
@@ -1605,8 +1605,8 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         s32 rooms[8];
         s16 *lookup_index;
 
-        tankRec = ((struct TankRecord *)g_PlayerTankProp->obj);
-        tankObj = (struct  ObjectRecord*)g_PlayerTankProp->obj;
+        tankRec = ((struct TankRecord *)g_CurrentPlayer->tankMounted->obj);
+        tankObj = (struct  ObjectRecord*)g_CurrentPlayer->tankMounted->obj;
         bbox = &tankObj->model->obj->Switches[5]->Data->BoundingBox;
 
         tankRec->is_firing_tank = (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)

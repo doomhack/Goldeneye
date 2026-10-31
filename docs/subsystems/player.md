@@ -21,7 +21,7 @@ inventory are in [weapons](weapons.md).
 | `src/game/player/respawn.c` | Respawning: multiplayer at a pad (`mpRespawnPlayer`), co-op next to the partner (`coopRespawnPlayer`) |
 | `src/game/player/counterop.c` | Counter-op: player 2 taking over guards, the suicide pill, the end screen's stats |
 | `src/game/player/playermove.c` | Moving with collision (`playerMoveWithCollision`, `playerTestMove`), the player's collision state (`playerResetCollision`), keeping the player prop in its rooms (`playerUpdateRooms`) |
-| `src/game/player/tank.c` | The tank: its collision box (`tankTestCollision`, `tankTryMoveTo`), the turret (`tankUpdateTurretOffset`, `tankGetTurretDir`), co-op ownership (`coopTankBeginPlayer`) |
+| `src/game/player/tank.c` | The tank: its collision box (`tankTestCollision`, `tankTryMoveTo`), the turret (`tankUpdateTurretOffset`, `tankGetTurretDir`), the tank's state (`g_Tank`), co-op ownership (`tankUsedByPartner`) |
 | `src/game/player/playerintro.c` | Level start for a player: the intro section of the setup file (`playerApplyIntro`), co-op spawn points, loading projectile models |
 | `src/game/player/coop.c` | Co-op and counter-op state: whose controller and settings each player uses (`coopPlayerPerson`), reviving (`coopPartnerCanRevive`), the last player to use an object, the split-screen layout |
 | `src/game/player/headbob.c` | Head bob: the hidden walk animation whose root motion moves the camera up and down as Bond walks, and breathing |
@@ -139,7 +139,8 @@ multiplayer `mpRespawnPlayer` respawns at a pad from `playerChooseSpawnPad`.
 
 ## The tank
 
-When Bond drives the tank, `g_PlayerTankProp` is the tank. `playerMove` (`playerupdate.c`)
+When Bond drives the tank, `tankMounted` (in `struct player`) is the tank and `g_Tank` holds its
+state: angles, turret, sounds. `playerMove` (`playerupdate.c`)
 drives it; the `tank*` functions in `tank.c` test its collision box against the floor
 tiles and props (`tankTestCollision`, `tankTryMoveTo`) and place and aim the turret
 (`tankUpdateTurretOffset`, `tankGetTurretDir`).
@@ -156,8 +157,10 @@ Added for this fork:
   the screen.
 * `coopRespawnPlayer` (`respawn.c`) respawns a dead player next to the partner, taking
   health from them. `hudRender` runs it when the dead player presses a button.
-* `coopTankBeginPlayer` and `coopTankEndPlayer` (`tank.c`) let one player own the tank;
-  the other walks, and the tank is solid for them (`coopTankIsHidden`, `playerTestMove`).
+* Only one player can use the tank. Each player's part (on it, in it) is in their
+  `struct player` (`tankMounted`, `tankDriving`...); `g_Tank.driver` is who uses it, set by
+  `tankUpdateDriver` after each player's tick. The other walks, and the tank is solid for
+  them (`tankUsedByPartner`, `playerTestMove`).
 * `counterop.c` lets player 2 play as the guards: `counterOpTakeOverGuard` puts them in a
   guard out of Bond's sight, with that guard's body, guns and health, or where a dead guard
   first stood (`s_CounterOpStarts`); also the suicide pill and the end screen's stats.

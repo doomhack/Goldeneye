@@ -96,7 +96,7 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
 
     ok = 0;
 
-    if ((g_PlayerIsInTank == 1) && (g_Tank.enterAudioState != TANK_RUN_STATE_NOT_RUNNING))
+    if ((g_CurrentPlayer->tankDriving == 1) && (g_Tank.enterAudioState != TANK_RUN_STATE_NOT_RUNNING))
     {
         ok = tankTryMoveTo(pos, g_Tank.yaw, stan);
     }
@@ -115,9 +115,9 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
 
         playerGetCollisionSize(g_CurrentPlayer->prop, &collision_radius, &height, &always_30);
 
-        if (g_WorldTankProp != NULL)
+        if (g_CurrentPlayer->tankTouched != NULL)
         {
-            propSetMoving(g_WorldTankProp, 0);
+            propSetMoving(g_CurrentPlayer->tankTouched, 0);
         }
 
         overlap_partner = coopGetOverlappingPartner();
@@ -158,18 +158,18 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
         }
         else
         {
-            // Blocked by the tank: remember it as g_WorldTankProp, which later moves
+            // Blocked by the tank: remember it as tankTouched, which later moves
             // ignore so Bond can climb on. Not in co-op while the other player uses
-            // the tank (coopTankIsHidden), so it stays solid for this one.
-            if (g_PlayerTankProp == NULL
-                && !coopTankIsHidden()
+            // the tank (tankUsedByPartner), so it stays solid for this one.
+            if (g_CurrentPlayer->tankMounted == NULL
+                && !tankUsedByPartner()
                 && (g_StanHit.prop != NULL)
                 && (g_StanHit.prop->type == PROP_TYPE_OBJ))
             {
                 tank = (struct TankRecord *)g_StanHit.prop->obj;
                 if (tank->type == PROPDEF_TANK)
                 {
-                    g_WorldTankProp = g_StanHit.prop;
+                    g_CurrentPlayer->tankTouched = g_StanHit.prop;
                 }
             }
         }
@@ -181,9 +181,9 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
             propSetMoving(overlap_partner, 1);
         }
 
-        if (g_WorldTankProp != NULL)
+        if (g_CurrentPlayer->tankTouched != NULL)
         {
-            propSetMoving(g_WorldTankProp, 1);
+            propSetMoving(g_CurrentPlayer->tankTouched, 1);
         }
     }
 
@@ -500,40 +500,40 @@ void playerMoveWithCollision(coord3d *offset, s32 allow_scoot)
     next_pos.f[0] = g_CurrentPlayer->bond.collision_position.f[0] + offset->f[0];
     next_pos.f[2] = g_CurrentPlayer->bond.collision_position.f[2] + offset->f[2];
 
-    g_BondCanEnterTank = 0;
+    g_CurrentPlayer->tankCanEnter = 0;
 
     g_CurrentPlayer->autocrouchpos = CROUCH_STAND;
 
-    if (g_WorldTankProp != NULL)
+    if (g_CurrentPlayer->tankTouched != NULL)
     {
-        propGetCollisionPolygon2d(g_WorldTankProp, &polygon, &edges);
+        propGetCollisionPolygon2d(g_CurrentPlayer->tankTouched, &polygon, &edges);
 
-        if ((g_PlayerIsInTank == 1)
+        if ((g_CurrentPlayer->tankDriving == 1)
             || (polygonContainsPoint(&g_CurrentPlayer->bond.collision_position, polygon, edges) != 0)
             || ((polygonTouchesCircle(&g_CurrentPlayer->bond.collision_position, g_CurrentPlayer->bond.collision_radius, polygon, edges) != 0)))
         {
 
-            obj = g_WorldTankProp->obj;
-            tank_objrecord = (struct TankRecord *)g_WorldTankProp->obj;
+            obj = g_CurrentPlayer->tankTouched->obj;
+            tank_objrecord = (struct TankRecord *)g_CurrentPlayer->tankTouched->obj;
 
             /// TODO: replace with ModelNode structs
             farr5 = (f32*)obj->model->obj->Switches[5]->Data;
             farr6 = (f32*)obj->model->obj->Switches[6]->Data;
-            g_PlayerTankProp = g_WorldTankProp;
+            g_CurrentPlayer->tankMounted = g_CurrentPlayer->tankTouched;
 
             tankheight = (farr5[4] - farr5[3]) * obj->model->scale;
 
-            if (g_PlayerIsInTank == 1
+            if (g_CurrentPlayer->tankDriving == 1
                 || (polygonContainsPoint(&g_CurrentPlayer->bond.collision_position, tank_objrecord->hull, tank_objrecord->hullEdges) != 0))
             {
                 tankheight += (farr6[4] - farr6[3]) * obj->model->scale;
-                g_BondCanEnterTank = 1;
+                g_CurrentPlayer->tankCanEnter = 1;
             }
 
-            if ((g_PlayerIsInTank == 0) && (g_PlayerTankYOffset < tankheight))
+            if ((g_CurrentPlayer->tankDriving == 0) && (g_CurrentPlayer->tankYOffset < tankheight))
             {
-                g_PlayerTankYOffset += (20.0f * g_GlobalTimerDelta);
-                if ((tankheight < g_PlayerTankYOffset))
+                g_CurrentPlayer->tankYOffset += (20.0f * g_GlobalTimerDelta);
+                if ((tankheight < g_CurrentPlayer->tankYOffset))
                 {
                     //empty;
                 }
@@ -542,32 +542,32 @@ void playerMoveWithCollision(coord3d *offset, s32 allow_scoot)
                     return;
                 }
 
-                g_PlayerTankYOffset = tankheight;
+                g_CurrentPlayer->tankYOffset = tankheight;
             }
             else
             {
-                g_PlayerTankYOffset = tankheight;
+                g_CurrentPlayer->tankYOffset = tankheight;
             }
 
-            if (g_PlayerIsInTank == 1)
+            if (g_CurrentPlayer->tankDriving == 1)
             {
                 if (g_Tank.enterAudioState == TANK_RUN_STATE_NOT_RUNNING)
                 {
-                    g_PlayerTankYOffset += -37.0f * (1.0f - g_Tank.enterRemain);
+                    g_CurrentPlayer->tankYOffset += -37.0f * (1.0f - g_Tank.enterRemain);
                 }
                 else
                 {
-                    g_PlayerTankYOffset += -37.0f;
+                    g_CurrentPlayer->tankYOffset += -37.0f;
                 }
             }
         }
         else
         {
-            if (g_PlayerTankProp != NULL)
+            if (g_CurrentPlayer->tankMounted != NULL)
             {
-                g_WorldTankProp = NULL;
-                g_PlayerTankProp = NULL;
-                g_PlayerTankYOffset = 0.0f;
+                g_CurrentPlayer->tankTouched = NULL;
+                g_CurrentPlayer->tankMounted = NULL;
+                g_CurrentPlayer->tankYOffset = 0.0f;
             }
         }
     }
@@ -702,10 +702,10 @@ void playerSetMoving(PropRecord *prop, s32 flag)
         chrSetMoving(prop->chr, flag);
     }
 
-    if (g_PlayerTankProp != NULL)
+    if (g_CurrentPlayer->tankMounted != NULL)
     {
         // When commented out tank shells fired from the tank detonate immediately.
-        objSetMoving(g_PlayerTankProp, flag);
+        objSetMoving(g_CurrentPlayer->tankMounted, flag);
     }
 
     g_playerPointers[playerIndex]->perimEnabled = flag;
@@ -741,7 +741,7 @@ void playerGetPropBounds(PropRecord *prop, coord2d **bounds, s32 *numpoints, f32
 void playerUpdateCollisionBounds(void)
 {
 
-    if (g_PlayerIsInTank == 1)
+    if (g_CurrentPlayer->tankDriving == 1)
     {
         tankGetCollisionBounds(g_CurrentPlayer->collision_bounds, &g_CurrentPlayer->bond.collision_position, g_Tank.yaw);
 

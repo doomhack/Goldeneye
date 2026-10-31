@@ -297,7 +297,7 @@ void playerDie(void)
         g_CurrentPlayer->thetadie = g_CurrentPlayer->vv_theta;
         g_CurrentPlayer->vertadie = g_CurrentPlayer->vv_verta;
 
-        if ((g_PlayerTankProp != NULL) && !coopTankUsedByPartner())
+        if (g_CurrentPlayer->tankMounted != NULL)
         {
             g_ExplodeTankOnDeathFlag = 1;
         }
@@ -343,7 +343,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 
     if (!gameIsMulti() || (g_MpStopPlay == 0 && g_MpGameOver == 0))
     {
-        if (g_PlayerIsInTank == 1)
+        if (g_CurrentPlayer->tankDriving == 1)
         {
             damage_dealt *= 0.25f;
         }

@@ -298,6 +298,13 @@ struct player
 
   s32 activatePressed; /* B was pressed this frame and not used to enter the tank */
 
+  /* The tank (see struct Tank in tank.h). Only one player at a time uses it. */
+  s32 tankDriving;               /* in the tank, driving it */
+  s32 tankCanEnter;              /* on the tank where B climbs in; stays set while in it */
+  f32 tankYOffset;               /* height of the player above the floor while on the tank */
+  struct PropRecord *tankTouched; /* the tank the player bumped into, so they can climb on */
+  struct PropRecord *tankMounted; /* the tank the player is on or in ("bondonprop" in Perfect Dark) */
+
   /**
    * bodyModel is the third person model - it's seen by the other players in MP, and
    * during intro/outros/death scenes in SP.

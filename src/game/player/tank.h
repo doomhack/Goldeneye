@@ -4,12 +4,14 @@
 #include <bondtypes.h>
 
 /**
- * The tank's state while a player drives it. All angles are radians unless
+ * The tank's state while a player drives it. Each player's own part (whether
+ * they are on it or in it) is in struct player (tankDriving, tankMounted...). All angles are radians unless
  * named Deg. The *Sum fields are running sums that smooth turning: each frame
  * sum = sum * scale + target, and the angle used is sum * (1 - scale).
  */
 struct Tank
 {
+    s32 driver;             // two-player missions: the player using the tank (on it or in it), or -1
     ALSoundState *sfx[2];   // [0] the engine, [1] the tracks while moving
     f32 turnSpeed;          // body turn speed, -3.75 to 3.75
     f32 yaw;                // body facing
@@ -45,19 +47,9 @@ void tankGetTurretDir(coord3d *dir);
 bool playerIsInTank(void);
 PropRecord *playerGetTank(void);
 
-// Co-op: the player using the tank, or -1
-extern s32 g_CoopTankPlayer;
+s32  tankUsedByPartner(void);
+void tankUpdateDriver(void);
 
-s32  coopTankIsHidden(void);
-s32  coopTankUsedByPartner(void);
-void coopTankBeginPlayer(void);
-void coopTankEndPlayer(s32 moved);
-
-extern s32 g_PlayerIsInTank;
-extern struct PropRecord *g_WorldTankProp;
-extern struct PropRecord *g_PlayerTankProp;
-extern f32 g_PlayerTankYOffset;
-extern s32 g_BondCanEnterTank;
 extern s32 g_ExplodeTankOnDeathFlag;
 
 #endif
