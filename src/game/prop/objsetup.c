@@ -25,7 +25,7 @@
 #include "game/chr/chr.h"
 #include "game/chr/chrai.h"
 #include "game/player/player.h"
-#include "game/player/bondview_r.h"
+#include "game/player/playerintro.h"
 #include "game/prop/propobj.h"
 #include "game/prop/door.h"
 #include "game/prop/monitor.h"

@@ -980,23 +980,8 @@ s32 playerGetShuffled(PLAYER_ID id);
 void playerSetCurrent(s32 playernum);
 s32 getPlayerCount(void);
 s32 getViewCount(void);
-s32 coopSplitSideBySide(void);
 s32 viewIsHalfWidth(void);
 s32 isMpGame(void);
-s32 coopPartnerAlive(void);
-s32 coopPartnerCanRevive(void);
-#define COUNTEROP_BOND  0
-#define COUNTEROP_GUARD 1
-void coopNoteActivator(void);
-extern s32 g_CoopLastActivator;
-extern s32 g_CoopMode;
-extern s32 g_CounterOpMode;
-extern s32 g_CounterOpBondPad;
-s32 coopPlayerPerson(s32 player);
-s32 counterOpIsGuardPlayer(s32 player);
-extern s32 g_CoopPlayersOverlap;
-extern s32 g_CoopSoloView;
-extern s32 g_CoopSoloViewIsCinema;
 void playerSetScreenSize(u32 width, u32 height);
 void playerSetViewportPos(u32 ulx, u32 uly);
 
@@ -1043,6 +1028,7 @@ coord3d * playerGetPos3(void);
 #include "game/player/playerfade.h"
 #include "game/player/playerinput.h"
 #include "game/player/playerlife.h"
+#include "game/player/coop.h"
 #include "game/player/playerbody.h"
 #include "game/player/playerupdate.h"
 

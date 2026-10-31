@@ -11,7 +11,7 @@
 #include "game/chr/chraicoop.h"
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/menu/cheat.h"
 #include "game/menu/front.h"
 #include "game/chr/chr.h"

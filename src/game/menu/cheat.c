@@ -10,7 +10,7 @@
 #include <joy.h>
 #include <music.h>
 #include <snd.h>
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/menu/cheat.h"
 #include "game/chr/chr.h"
 #include "game/save/file.h"

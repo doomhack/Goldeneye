@@ -1,7 +1,6 @@
 /**
  * The inventory: a circular sorted list of weapons, dual weapon pairs and picked-up
- * props, cycling through it, keys, text overrides for picked-up objects, and the item
- * lookups the watch's inventory page uses. See docs/subsystems/weapons.md.
+ * props, cycling through it, keys, and text overrides for picked-up objects. See docs/subsystems/weapons.md.
  */
 #include <ultra64.h>
 #include <macro.h>
@@ -10,7 +9,7 @@
 #include "game/text/text.h"
 #include <bondconstants.h>
 #include "game/text/language.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/gun.h"
 #include "game/level/lv.h"
 #include <bondtypes.h>
@@ -1123,152 +1122,6 @@ char *invGetNameByIndex(s32 index)
     return itemGetWatchText(weaponnum);
 }
 
-extern f32 itemGetEquipFov(void);
-f32 invGetEquipFovForIndex(void)
-{
-    return itemGetEquipFov();
-}
-
-f32 invGetEquipPosXForIndex(s32 index)
-{
-    return itemGetEquipPosX(invGetWeaponForIndex(index));
-}
-
-f32 invGetEquipPosYForIndex(s32 index)
-{
-    return itemGetEquipPosY(invGetWeaponForIndex(index));
-}
-
-f32 invGetEquipPosZForIndex(s32 index)
-{
-    return itemGetEquipPosZ(invGetWeaponForIndex(index));
-}
-
-char *invGetWatchTitle1ForIndex(s32 index)
-{
-    InvItem      *item      = invGetItemByIndex(index);
-    ITEM_IDS      weaponnum = 0;
-    textoverride *override;
-
-    if (item)
-    {
-        if (item->type == INV_ITEM_PROP)
-        {
-            PropRecord *prop = item->type_inv_item.type_prop.prop;
-            override         = invGetOverrideForObj(prop->obj);
-
-            if (override)
-            {
-                if (override->titletext1)
-                {
-                    return langGet(override->titletext1);
-                }
-
-                weaponnum = override->weapon;
-            }
-        }
-        else if (item->type == INV_ITEM_WEAPON)
-        {
-            weaponnum = item->type_inv_item.type_weap.weapon;
-            override  = invGetOverrideForWeapon(weaponnum);
-
-            if (override && override->titletext1)
-            {
-                return langGet(override->titletext1);
-            }
-        }
-    }
-    else
-    {
-        if (g_CurrentPlayer->equipallguns)
-        {
-            if (index < ITEM_TANKSHELLS)
-            {
-                return itemGetWatchTitle1(index + 1);
-            }
-        }
-    }
-
-    return itemGetWatchTitle1(weaponnum);
-}
-
-char *invGetWatchTitle2ForIndex(s32 index)
-{
-    InvItem      *item      = invGetItemByIndex(index);
-    ITEM_IDS      weaponnum = 0;
-    textoverride *override;
-
-    if (item)
-    {
-        if (item->type == INV_ITEM_PROP)
-        {
-            PropRecord *prop = item->type_inv_item.type_prop.prop;
-            override         = invGetOverrideForObj(prop->obj);
-
-            if (override)
-            {
-                if (override->titletext2)
-                {
-                    return langGet(override->titletext2);
-                }
-
-                weaponnum = override->weapon;
-            }
-        }
-        else if (item->type == INV_ITEM_WEAPON)
-        {
-            weaponnum = item->type_inv_item.type_weap.weapon;
-            override  = invGetOverrideForWeapon(weaponnum);
-
-            if (override && override->titletext2)
-            {
-                return langGet(override->titletext2);
-            }
-        }
-    }
-    else
-    {
-        if (g_CurrentPlayer->equipallguns)
-        {
-            if (index < ITEM_TANKSHELLS)
-            {
-                return itemGetWatchTitle2(index + 1);
-            }
-        }
-    }
-
-    return itemGetWatchTitle2(weaponnum);
-}
-extern f32 itemGetWatchFov(void);
-f32 invGetWatchFovForIndex(void)
-{
-    return itemGetWatchFov();
-}
-
-f32 invGetWatchPosXForIndex(s32 index)
-{
-    return itemGetWatchPosX(invGetWeaponForIndex(index));
-}
-
-f32 invGetWatchPosYForIndex(s32 index)
-{
-    return itemGetWatchPosY(invGetWeaponForIndex(index));
-}
-
-f32 invGetWatchPosZForIndex(s32 index)
-{
-    return itemGetWatchPosZ(invGetWeaponForIndex(index));
-}
-
-f32 invGetWatchRotXForIndex(s32 index)
-{
-    return itemGetWatchRotX(invGetWeaponForIndex(index));
-}
-
-f32 invGetWatchRotYForIndex(s32 index)
-{
-    return itemGetWatchRotY(invGetWeaponForIndex(index));
-}
 
 /**
  * Co-op respawn: empty the current player's inventory but keep the objects

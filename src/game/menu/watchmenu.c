@@ -28,7 +28,7 @@
 #include "game/audio/levelmusic.h"
 #include "game/level/lv.h"
 #include "game/mission/objective.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/gun.h"
 #include "joy.h"
 #include "str.h"
@@ -1917,7 +1917,6 @@ typedef struct GunModelFileRecord {
     f32   equip_watch_x, equip_watch_y, equip_watch_z;
 } GunModelFileRecord;
 #endif
-extern GunModelFileRecord gitem_structs[];
 Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     Mtx* persp;
     u16 perspNorm;
@@ -2059,7 +2058,6 @@ typedef struct GunModelFileRecord {
     f32   equip_watch_x, equip_watch_y, equip_watch_z;
 } GunModelFileRecord;
 #endif
-extern GunModelFileRecord gitem_structs[];
 extern char *invGetNameByIndex(s32 index);
 
 

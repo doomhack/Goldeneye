@@ -234,6 +234,9 @@ typedef struct GunModelFileRecord
   f32 equip_watch_z;
 } GunModelFileRecord;
 
+// Per item: the first-person model, the watch texts and where the watch shows it
+extern GunModelFileRecord gitem_structs[];
+
 typedef struct CasingRecord {
     f32 floor_y_pos;
     coord3d pos;
@@ -284,7 +287,6 @@ f32 gunGetReloadDipDepth(s32 item);
 
 f32 gunGetDualOffset(GUNHAND hand);
 
-char *itemGetWatchText(ITEM_IDS item);
 
 s32 weaponHasAmmo(ITEM_IDS item);
 
@@ -341,16 +343,6 @@ void gunsStopSounds(void);
 
 char *itemGetChoiceText(ITEM_IDS item);
 s32 playerHasCopiedGEKey(void);
-f32 itemGetEquipPosX(ITEM_IDS item);
-f32 itemGetEquipPosY(ITEM_IDS item);
-f32 itemGetEquipPosZ(ITEM_IDS item);
-f32 itemGetWatchPosX(ITEM_IDS item);
-f32 itemGetWatchPosY(ITEM_IDS item);
-f32 itemGetWatchPosZ(ITEM_IDS item);
-f32 itemGetWatchRotX(ITEM_IDS item);
-f32 itemGetWatchRotY(ITEM_IDS item);
-char *itemGetWatchTitle1(ITEM_IDS item);
-char *itemGetWatchTitle2(ITEM_IDS item);
 u8 * gunGetHandModelBuffer(GUNHAND hand);
 u32 gunGetHandModelBufferSize(s32 hand);
 ModelFileHeader *gunGetHandModelHeader(GUNHAND hand);

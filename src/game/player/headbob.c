@@ -1,6 +1,6 @@
 /**
  * Head bob. Bond has a hidden walk animation whose root motion moves the camera up and
- * down and side to side as he walks; bheadUpdate advances it and bheadInit sets it up
+ * down and side to side as he walks; headBobUpdate advances it and headBobInit sets it up
  * at level start. Also breathing. See docs/subsystems/player.md.
  */
 #include <ultra64.h>
@@ -15,7 +15,7 @@
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "game/player/player.h"
-#include "game/player/bondhead.h"
+#include "game/player/headbob.h"
 #include "game/model/model.h"
 #include "game/math/interp.h"
 #include <math.h>
@@ -34,19 +34,19 @@ struct init_bond_anim_unk g_BondMoveAnimationSetup[2] = {
 
 // forward declarations
 
-void bheadUpdatePos(coord3d *vel);
-void bheadUpdateRot(coord3d *lookvel, coord3d *upvel);
-void bheadSetdamp(f32 headdamp);
+void headBobUpdatePos(coord3d *vel);
+void headBobUpdateRot(coord3d *lookvel, coord3d *upvel);
+void headBobSetDamp(f32 headdamp);
 
 // end forward declarations
 
 
-void bheadFlipAnimation()
+void headBobFlipAnimation()
 {
     g_CurrentPlayer->model.flip = !g_CurrentPlayer->model.flip;
 }
 
-void bheadUpdateIdleRoll()
+void headBobUpdateIdleRoll()
 {
     f32 mult = 1.0f / UINT_MAX;
 
@@ -69,7 +69,7 @@ void bheadUpdateIdleRoll()
 	g_CurrentPlayer->standcnt = 1 - g_CurrentPlayer->standcnt;
 }
 
-void bheadUpdatePos(coord3d *vel)
+void headBobUpdatePos(coord3d *vel)
 {
 #if defined(VERSION_EU)
 #define CURRENTPLAYERUPDATEHEADPOS_SCALE 0.916599988937f
@@ -100,7 +100,7 @@ void bheadUpdatePos(coord3d *vel)
 #undef CURRENTPLAYERUPDATEHEADPOS_SCALE
 }
 
-void bheadUpdateRot(coord3d *lookvel, coord3d *upvel)
+void headBobUpdateRot(coord3d *lookvel, coord3d *upvel)
 {
 	s32 i;
 
@@ -137,7 +137,7 @@ void bheadUpdateRot(coord3d *lookvel, coord3d *upvel)
 	g_CurrentPlayer->headup.f[2] = g_CurrentPlayer->headupsum.f[2] * (1.0f - g_CurrentPlayer->headdamp);
 }
 
-void bheadSetdamp(f32 headdamp)
+void headBobSetDamp(f32 headdamp)
 {
 	if (headdamp != g_CurrentPlayer->headdamp)
     {
@@ -183,7 +183,7 @@ ModelRenderData headModelRenderData = {NULL,
 /**
  * Updates the head movement based on the player's speed and animation state.
  */
-void bheadUpdate(f32 percent_speed, f32 speedsideways)
+void headBobUpdate(f32 percent_speed, f32 speedsideways)
 {
     coord3d headpos;
     coord3d lookvel;
@@ -287,20 +287,20 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
 #if defined(VERSION_EU)
             if (g_CurrentPlayer->headwalkingtime60 > TICKS_PER_SECOND)
             {
-                bheadSetdamp(0.916599988937f);
+                headBobSetDamp(0.916599988937f);
             }
             else
             {
-                bheadSetdamp(0.987999975681f);
+                headBobSetDamp(0.987999975681f);
             }
 #else
             if (g_CurrentPlayer->headwalkingtime60 > TICKS_PER_SECOND)
             {
-                bheadSetdamp(0.93f);
+                headBobSetDamp(0.93f);
             }
             else
             {
-                bheadSetdamp(0.99f);
+                headBobSetDamp(0.99f);
             }
 #endif
         }
@@ -314,7 +314,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
             upvel.f[1] = g_CurrentPlayer->bondheadmatrices[0].m[1][1];
             upvel.f[2] = g_CurrentPlayer->bondheadmatrices[0].m[1][2];
 
-            bheadSetdamp(0.85f);
+            headBobSetDamp(0.85f);
         }
     }
     else
@@ -329,15 +329,15 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
 
         g_CurrentPlayer->headwalkingtime60 = 0;
 #if defined(VERSION_EU)
-        bheadSetdamp(0.987999975681f);
+        headBobSetDamp(0.987999975681f);
 #else
-        bheadSetdamp(0.99f);
+        headBobSetDamp(0.99f);
 #endif
         g_CurrentPlayer->standfrac += (0.008333334f + (0.025000002f * playerGetBreathing())) * g_GlobalTimerDelta;
 
         if (g_CurrentPlayer->standfrac >= 1.0f)
         {
-            bheadUpdateIdleRoll();
+            headBobUpdateIdleRoll();
             g_CurrentPlayer->standfrac -= 1.0f;
         }
 
@@ -364,8 +364,8 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
         upvel.f[2] *= (1.0f + (5.0f * playerGetBreathing()));
     }
 
-    bheadUpdatePos(&headpos);
-    bheadUpdateRot(&lookvel, &upvel);
+    headBobUpdatePos(&headpos);
+    headBobUpdateRot(&lookvel, &upvel);
 }
 
 
@@ -374,7 +374,7 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
  *
  * @param f32 speed: The movement speed to adjust the animation to.
  */
-void bheadAdjustAnimation(f32 speed)
+void headBobAdjustAnimation(f32 speed)
 {
     s32 i;
     f32 startframe;
@@ -408,7 +408,7 @@ void bheadAdjustAnimation(f32 speed)
 
                 modelSetAnimLooping(&g_CurrentPlayer->model, g_BondMoveAnimationSetup[i].loopframe, 0.0f);
                 modelSetAnimEndFrame(&g_CurrentPlayer->model, g_BondMoveAnimationSetup[i].endframe);
-                modelSetAnimFlipFunction(&g_CurrentPlayer->model, bheadFlipAnimation);
+                modelSetAnimFlipFunction(&g_CurrentPlayer->model, headBobFlipAnimation);
                 g_CurrentPlayer->headanim = i;
             }
 
@@ -429,7 +429,7 @@ void bheadAdjustAnimation(f32 speed)
  * @param startFrame The starting frame of the animation.
  * @param speed The speed of the animation.
  */
-void bheadStartDeathAnimation(struct ModelAnimation *animnum, s32 flip, f32 fstarttime, f32 speed)
+void headBobStartDeathAnimation(struct ModelAnimation *animnum, s32 flip, f32 fstarttime, f32 speed)
 {
     modelSetAnimation(&g_CurrentPlayer->model, animnum, flip, fstarttime, speed * 0.5f, 12.0f);
     g_CurrentPlayer->headanim = -1;
@@ -440,7 +440,7 @@ void bheadStartDeathAnimation(struct ModelAnimation *animnum, s32 flip, f32 fsta
  * 
  * @param speed The speed to set for the head animation.
  */
-void bheadSetSpeed(f32 speed)
+void headBobSetSpeed(f32 speed)
 {
     modelSetAnimSpeed(&g_CurrentPlayer->model, speed * 0.5f, 0.0f);
 }
@@ -451,7 +451,7 @@ void bheadSetSpeed(f32 speed)
  * 
  * @return The calculated breathing value.
  */
-f32 bheadGetBreathingValue(void)
+f32 headBobGetBreathingValue(void)
 {
 	if (g_CurrentPlayer->headanim >= 0) {
         // playerGetBreathing() * (1/80) + (1/240)
@@ -479,7 +479,7 @@ f32 bheadGetBreathingValue(void)
 
 // forward declarations
 
-void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum);
+void headBobSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum);
 
 // end forward declarations
 
@@ -490,7 +490,7 @@ void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum);
  * @param arg2:
  * @param arg3: unknown type.
 */
-void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum)
+void headBobSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum)
 {
     coord16 motion;
 
@@ -519,7 +519,7 @@ void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum)
 #endif
 
 
-void bheadInit(void)
+void headBobInit(void)
 {
     s32 i;
     s32 motion[3];
@@ -587,7 +587,7 @@ void bheadInit(void)
 
     for (i=0; i<2; i++)
     {
-        bheadSumRootMotion(
+        headBobSumRootMotion(
             ANIM_AT(g_BondMoveAnimationSetup[i].anim_id),
             (s32)g_BondMoveAnimationSetup[i].loopframe,
             (s32)g_BondMoveAnimationSetup[i].endframe,
@@ -624,13 +624,13 @@ void bheadInit(void)
 
     modelSetAnimLooping(&g_CurrentPlayer->model, g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].loopframe, 0.0f);
     modelSetAnimEndFrame(&g_CurrentPlayer->model, g_BondMoveAnimationSetup[g_CurrentPlayer->headanim].endframe);
-    modelSetAnimFlipFunction(&g_CurrentPlayer->model, bheadFlipAnimation);
+    modelSetAnimFlipFunction(&g_CurrentPlayer->model, headBobFlipAnimation);
 
-    bheadUpdateIdleRoll();
+    headBobUpdateIdleRoll();
 }
 
 
-void bheadInitGaitModel(void) {
+void headBobInitGaitModel(void) {
   player_gait_object_header.RootNode = &player_gait_hdr;
   return;
 }

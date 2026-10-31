@@ -8,9 +8,9 @@
 #include <bondconstants.h>
 #include <boss.h>
 #include "game/math/trig.h"
-#include "game/player/bondview_r.h"
+#include "game/player/playerintro.h"
 #include "random.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/chr/chrai.h"
 #include "game/menu/front.h"
 #include "game/player/gun.h"

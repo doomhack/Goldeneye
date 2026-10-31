@@ -27,9 +27,9 @@
 #include "game/level/lv.h"
 #include "game/text/language.h"
 #include "game/menu/front.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/player.h"
-#include "game/player/bondhead.h"
+#include "game/player/headbob.h"
 #include "game/prop/propobj.h"
 #include "game/prop/explosion.h"
 #include "game/chr/chrai.h"
@@ -54,7 +54,7 @@
 #include "game/prop/setup.h"
 #include "game/nav/waypoint.h"
 #include "game/hud/hud.h"
-#include "game/player/bondview_r.h"
+#include "game/player/playerintro.h"
 #include "game/gfx/zbuf.h"
 #include "game/nav/stan.h"
 #include "game/player/gun.h"
@@ -355,7 +355,7 @@ void lvStageLoad(s32 stage)
             playerResetLife();
             playerApplyIntro();
             playerStartNewLife();
-            bheadInit();
+            headBobInit();
             cheatResetInput();
         }
 

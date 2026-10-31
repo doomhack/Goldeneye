@@ -3,7 +3,7 @@
       build/OUTCODE/src/game/prop/setup.o (.rodata);
       build/OUTCODE/src/game/prop/objsetup.o (.rodata);
       build/OUTCODE/src/game/mission/objective.o (.rodata);
-      build/OUTCODE/src/game/player/bondview_r.o (.rodata);
+      build/OUTCODE/src/game/player/playerintro.o (.rodata);
       build/OUTCODE/src/game/menu/title.o (.rodata);
       build/OUTCODE/src/game/menu/front.o (.rodata);
       build/OUTCODE/src/game/hud/blood.o (.rodata);
@@ -84,8 +84,8 @@
       build/OUTCODE/src/game/player/playerdamage.o (.rodata);
       build/OUTCODE/src/game/player/playerfade.o (.rodata);
       build/OUTCODE/src/game/player/playerinput.o (.rodata);
-      build/OUTCODE/src/game/player/bondinv.o (.rodata);
-      build/OUTCODE/src/game/player/bondhead.o (.rodata);
+      build/OUTCODE/src/game/player/inventory.o (.rodata);
+      build/OUTCODE/src/game/player/headbob.o (.rodata);
       build/OUTCODE/src/game/nav/waypoint.o (.rodata);
       build/OUTCODE/src/game/chr/chraidata.o (.rodata);
       build/OUTCODE/src/game/model/pobjdata.o (.rodata);
@@ -97,6 +97,7 @@
       build/OUTCODE/src/game/world/water.o (.rodata);
       build/OUTCODE/src/game/world/sky.o (.rodata);
       build/OUTCODE/src/game/player/player.o (.rodata);
+      build/OUTCODE/src/game/player/coop.o (.rodata);
       build/OUTCODE/src/game/gfx/vtxstore.o (.rodata);
       build/OUTCODE/src/game/prop/explosion.o (.rodata);
       build/OUTCODE/src/game/prop/smoke.o (.rodata);

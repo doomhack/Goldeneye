@@ -5,10 +5,10 @@
  */
 #include "game/player/respawn.h"
 #include "game/math/trig.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
-#include "game/player/bondview_r.h"
+#include "game/player/playerintro.h"
 #include "game/replay/ramromreplay.h"
 #include "random.h"
 #include <ultra64.h>
