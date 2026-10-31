@@ -61,6 +61,7 @@
 #include "game/world/lightfixture.h"
 #include "game/prop/monitor.h"
 #include "game/level/gamemode.h"
+#include "game/mission/mission.h"
 
 
 #ifdef REFRESH_PAL
@@ -1842,7 +1843,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             if ((g_ClockTimer > 0)
                 && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
                 && (gunHandModelIsEmpty(hand) != 0)
-                && (g_PlayerInvincible == FALSE)
+                && (g_Mission.playerInvincible == FALSE)
                 && (g_CurrentPlayer->bonddead == 0)
                )
             {
@@ -1961,7 +1962,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             && (g_ClockTimer > 0)
             && (g_CurrentPlayer->cameramode != CAMERAMODE_INTRO)
             && (gunHandModelIsEmpty(hand) != 0)
-            && (g_PlayerInvincible == FALSE)
+            && (g_Mission.playerInvincible == FALSE)
             && (g_CurrentPlayer->bonddead == 0)
            )
         {

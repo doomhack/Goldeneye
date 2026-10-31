@@ -50,6 +50,7 @@
 #include "game/prop/monitor.h"
 #include "game/prop/projectile.h"
 #include "game/level/gamemode.h"
+#include "game/mission/mission.h"
 
 // bss
 sfxRecord  sfx_related[SFX_RELATED_LEN];
@@ -3881,7 +3882,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         countdownTimerSetVisible(COUNTDOWN_HIDE_NOCONTROL, FALSE);
                     }
-                    is_timer_active = FALSE;
+                    g_Mission.playerHasControl = FALSE;
                     Offset += sizeof(AiBondDisableControlRecord);
                     break;
                 }
@@ -3892,7 +3893,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     hudmsgsSetOn(PLAYERFLAG_NOCONTROL);
                     hudmsgTopClearFlag(2);
                     countdownTimerSetVisible(COUNTDOWN_HIDE_NOCONTROL, TRUE);
-                    is_timer_active = TRUE;
+                    g_Mission.playerHasControl = TRUE;
                     Offset += sizeof(AiBondEnableControlRecord);
                     break;
                 }
@@ -3965,7 +3966,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_ScreenFadeToBlack:
                 {
-                    if (stop_time_flag != 2)
+                    if (g_Mission.exitOnPress != 2)
                     {
                         currentPlayerSetFadeColour(0, 0, 0, 0);
                         currentPlayerSetFadeFrac(CHRAI_TICKRATE_F, 1);
@@ -3975,7 +3976,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_ScreenFadeFromBlack:
                 {
-                    if (stop_time_flag != 2)
+                    if (g_Mission.exitOnPress != 2)
                     {
                         currentPlayerSetFadeColour(0, 0, 0, 1);
                         currentPlayerSetFadeFrac(CHRAI_TICKRATE_F, 0);
@@ -4143,9 +4144,9 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_TriggerFadeAndExitLevelOnButtonPress:
                 {
-                    if (stop_time_flag == FALSE)
+                    if (g_Mission.exitOnPress == FALSE)
                     {
-                        stop_time_flag = TRUE;
+                        g_Mission.exitOnPress = TRUE;
                     }
                     Offset += sizeof(AiTriggerFadeAndExitLevelOnButtonPressRecord);
                     break;
@@ -4165,7 +4166,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 }
                 case AI_BondDisableDamageAndPickups:
                 {
-                    g_PlayerInvincible = TRUE;
+                    g_Mission.playerInvincible = TRUE;
                     Offset += sizeof(AiBondDisableDamageAndPickupsRecord);
                     break;
                 }
@@ -4253,7 +4254,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFBondDamageAndPickupsDisabled:
                 {
                     AiIFBondDamageAndPickupsDisabledRecord *ai = (AiIFBondDamageAndPickupsDisabledRecord *)(AiListp + Offset);
-                    if (g_PlayerInvincible)
+                    if (g_Mission.playerInvincible)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }

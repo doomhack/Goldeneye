@@ -50,6 +50,5 @@ PropRecord *playerGetTank(void);
 s32  tankUsedByPartner(void);
 void tankUpdateDriver(void);
 
-extern s32 g_ExplodeTankOnDeathFlag;
 
 #endif

@@ -23,6 +23,7 @@
 #include "random.h"
 #include "game/player/cammode.h"
 #include "game/level/gamemode.h"
+#include "game/mission/mission.h"
 
 static coord3d g_DeathCamPos;
 
@@ -414,7 +415,7 @@ void playerSetCameraMode(s32 mode)
             gunEquip(GUNRIGHT, starting_weapon[GUNRIGHT]);
         }
 
-        stop_time_flag = 0;
+        g_Mission.exitOnPress = 0;
     }
     else if (g_CameraMode == CAMERAMODE_DEATH_CAM_SP)
     {
@@ -431,7 +432,7 @@ void playerSetCameraMode(s32 mode)
         currentPlayerSetFadeColour(0, 0, 0, 1.0f);
         currentPlayerSetFadeFrac(60.0f, 0.0f);
 
-        if (g_ExplodeTankOnDeathFlag && (g_CurrentPlayer->tankMounted != NULL))
+        if (g_Mission.explodeTankOnDeath && (g_CurrentPlayer->tankMounted != NULL))
         {
             // removed
         }
@@ -474,7 +475,7 @@ void playerSetCameraMode(s32 mode)
             modelSetRootRotY(g_CurrentPlayer->bodyModel, camdist);
         }
 
-        if (g_ExplodeTankOnDeathFlag && (g_CurrentPlayer->tankMounted != NULL))
+        if (g_Mission.explodeTankOnDeath && (g_CurrentPlayer->tankMounted != NULL))
         {
             focusprop = g_CurrentPlayer->tankMounted;
             camdist = 500.0f; // distance to place the camera
@@ -510,7 +511,7 @@ void playerSetCameraMode(s32 mode)
                 sndSetScalerApplyVolumeAllSfxSlot(0.5f);
             }
 
-            if ((g_ExplodeTankOnDeathFlag != 0) && (g_CurrentPlayer->tankMounted != NULL))
+            if ((g_Mission.explodeTankOnDeath != 0) && (g_CurrentPlayer->tankMounted != NULL))
             {
                 explosionCreate(g_CurrentPlayer->tankMounted, &g_CurrentPlayer->tankMounted->pos, g_CurrentPlayer->tankMounted->stan, EXPLOSION_DEF_STANDARD, 0, playerGetCurrentNum(), g_CurrentPlayer->tankMounted->rooms, 0);
             }

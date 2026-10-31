@@ -44,6 +44,7 @@
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/world/bg.h"
+#include "game/mission/mission.h"
 
 /* A respawning object waits while a player is this close */
 #define RESPAWN_PLAYER_DIST 400.0f
@@ -805,7 +806,7 @@ void propsTickPerPlayer(void)
  */
 void propsTickPickups(void)
 {
-    if (playerIsInTank() || g_PlayerInvincible)
+    if (playerIsInTank() || g_Mission.playerInvincible)
     {
         return;
     }

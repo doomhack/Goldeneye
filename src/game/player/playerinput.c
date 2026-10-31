@@ -480,7 +480,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     }
 
     if (g_CurrentPlayer->bonddead == FALSE
-        && g_bondviewForceDisarm <= 0
+        && g_CurrentPlayer->forceDisarmTicks <= 0
         && (
             (g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0x5
                 && ((buttons & ~oldbuttons) & START_BUTTON)

@@ -25,6 +25,7 @@
 #include "game/text/text.h"
 #include "game/world/bgfog.h"
 #include "fr.h"
+#include "game/mission/mission.h"
 
 #if defined(VERSION_EU)
 #define ALARM_DURATION_TICKS 1500
@@ -163,7 +164,7 @@ static void gasTick(void)
         }
     }
 
-    if (s_GasLevel <= 0.0f || g_PlayerInvincible)
+    if (s_GasLevel <= 0.0f || g_Mission.playerInvincible)
     {
         return;
     }

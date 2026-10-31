@@ -1,8 +1,7 @@
 /**
  * A player's life: choosing a spawn pad, resetting a player for a new life
  * (playerResetLife, playerStartNewLife), crouch, lean and setting the player's
- * position. Also the level-wide flags the AI scripts set (timer, stop time,
- * invincible). See docs/subsystems/player.md.
+ * position. See docs/subsystems/player.md.
  */
 #include <ultra64.h>
 #include <math.h>
@@ -61,12 +60,6 @@ PadRecord *g_Startpad[0x10];
 s32 startpadcount;
 
 
-// Set by AI scripts for the whole level. stop_time_flag: end the level on the
-// next button press (2 once pressed). is_timer_active: FALSE while the player
-// has no control. g_PlayerInvincible: no damage.
-s32 stop_time_flag = 0;
-s32 is_timer_active = 1;
-bool g_PlayerInvincible = FALSE;
 
 
 s32 playerChooseSpawnPad(void)

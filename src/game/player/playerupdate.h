@@ -3,7 +3,6 @@
 #include <ultra64.h>
 #include <bondtypes.h>
 
-extern s32 g_bondviewForceDisarm;
 extern s32 resolution;
 extern f32 g_PlayerWorldScale;
 extern coord3d g_ForceBondMoveOffset;

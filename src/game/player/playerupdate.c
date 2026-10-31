@@ -25,6 +25,7 @@
 #include "game/prop/setup.h"
 #include "random.h"
 #include "game/level/gamemode.h"
+#include "game/mission/mission.h"
 
 
 
@@ -32,7 +33,6 @@
  * When set, will increment each tick until reaching a threshold value (4).
  * Then current items will be unequipped from left and run hands.
 */
-s32 g_bondviewForceDisarm = 0;
 
 s32 resolution = 0;
 
@@ -503,12 +503,12 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     climbOffset = 0.0f;
 
 
-    if (g_bondviewForceDisarm > 0)
+    if (g_CurrentPlayer->forceDisarmTicks > 0)
     {
-        g_bondviewForceDisarm++;
-        if (g_bondviewForceDisarm >= 4)
+        g_CurrentPlayer->forceDisarmTicks++;
+        if (g_CurrentPlayer->forceDisarmTicks >= 4)
         {
-            g_bondviewForceDisarm = 0;
+            g_CurrentPlayer->forceDisarmTicks = 0;
             g_CurrentPlayer->handModelLocked[GUNLEFT] = 0;
             g_CurrentPlayer->handModelLocked[GUNRIGHT] = 0;
             gunUnequip(GUNLEFT, gunGetWeapon(GUNLEFT));
@@ -1903,7 +1903,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 #if defined(VERSION_EU)
 #endif
 
-    if ((g_CameraMode == CAMERAMODE_NONE) || ((g_CameraMode == CAMERAMODE_FP) && (is_timer_active != 0)) || (g_CameraMode == CAMERAMODE_FADE_TO_TITLE))
+    if ((g_CameraMode == CAMERAMODE_NONE) || ((g_CameraMode == CAMERAMODE_FP) && (g_Mission.playerHasControl != 0)) || (g_CameraMode == CAMERAMODE_FADE_TO_TITLE))
     {
         if (playerGetCurrentNum() == 0)
         {
@@ -1924,11 +1924,11 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
     watch_time_0 += g_FrameDelta;
 #endif
 
-    if (stop_time_flag != 0)
+    if (g_Mission.exitOnPress != 0)
     {
         if ((lvGetControlsLocked() == 0) && ((buttons & ~(g_CurrentPlayer->buttons_pressed) & (CONT_A | B_BUTTON | Z_TRIG | START_BUTTON | CONT_R | CONT_L))))
         {
-            stop_time_flag = 2;
+            g_Mission.exitOnPress = 2;
 
             if (currentPlayerIsFadeComplete())
             {
@@ -1947,7 +1947,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
             }
         }
 
-        if ((stop_time_flag == 2) && currentPlayerIsFadeComplete() && (g_CurrentPlayer->colourscreenfrac == 1.0f))
+        if ((g_Mission.exitOnPress == 2) && currentPlayerIsFadeComplete() && (g_CurrentPlayer->colourscreenfrac == 1.0f))
         {
             bossReturnTitleStage();
         }
