@@ -112,8 +112,6 @@
     #define CROUCH_FALL_STEP -4.5f
 #endif
 
-#define FULL_CROUCH_OFFSET -100.0f
-
 #define SPEED_REGULAR_MAX  1.0f
 #define SPEED_RUN_MAX      1.25f
 #define SPEED_TICK_ADJUST  0.01f
@@ -390,9 +388,7 @@ struct firing_anim_struct firing_animation_groups[][6] = {
 
 // forward declarations
 
-void playerUpdateRooms(struct player *player);
 s32 chrTick(PropRecord *prop);
-void playerRemoveFromRooms(struct player *player);
 void watchUpdateZoom(void);
 void watchStartRaise(f32 speed);
 void watchStartLower(f32 speed);
@@ -415,7 +411,6 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 void camSetRoomOrigin(s32 room);
 void watchTrigger(s32 instant);
 void playerUpdateCollisionBounds(void);
-void tankGetCollisionBounds(coord2d *, coord3d *, f32);
 void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
 void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
 void playerTickDamageAndHealth(void);
@@ -423,21 +418,11 @@ void playerTickExplode(void);
 void pauseStopSounds(void);
 void watchTick(void);
 void playerUpdatePosFromCollision(void);
-void tankUpdateTurretOffset(void);
-s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, coord3d *hitFrom, coord3d *hitTo);
-s32 tankTestCollisionAt(coord3d *collision_position, struct StandTile *tile, f32 tank_orientation_angle);
-s32 tankTryMoveTo(coord3d *pos, f32 angle, struct StandTile **outTile);
-s32 playerTestMove(coord3d *pos, struct StandTile **stan);
-s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 dest_z, s32 cdtypes, coord3d *coord_p, coord3d *coord_dest);
 
-s32 playerTryMoveFraction(coord3d *next_pos, coord3d *collision1_pt0, coord3d *collision1_pt1, coord3d *collision2_pt0, coord3d *collision2_pt1);
-s32 playerTryMoveAlongEdge(coord3d *prior_next_pos, coord3d *collision_pt0, coord3d *collision_pt1);
-s32 playerTryMoveRoundCorner(coord3d *prior_next_pos, coord3d *collision_pt0, coord3d *collision_pt1);
 void playerUpdateVertaTheta(void);
 
 f32 bheadGetBreathingValue(void);
 void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways);
-void playerMoveWithCollision(coord3d *offset, s32 allow_scoot);
 f32 watchSetupPauseTilt(bool topause);
 void watchStartPauseTilt(f32 duration);
 void watchStartUnpauseTilt(f32 duration);

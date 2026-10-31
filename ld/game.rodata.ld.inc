@@ -63,6 +63,8 @@
       build/OUTCODE/src/game/player/watch.o (.rodata);
       build/OUTCODE/src/game/player/respawn.o (.rodata);
       build/OUTCODE/src/game/player/counterop.o (.rodata);
+      build/OUTCODE/src/game/player/playermove.o (.rodata);
+      build/OUTCODE/src/game/player/tank.o (.rodata);
       build/OUTCODE/src/game/player/bondinv.o (.rodata);
       build/OUTCODE/src/game/player/bondhead.o (.rodata);
       build/OUTCODE/src/game/nav/waypoint.o (.rodata);
