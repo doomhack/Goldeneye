@@ -1966,7 +1966,6 @@ void gunCreateRocket(GUNHAND hand)
 /*
 * This function frees some sort of ObjectRecord from the given hand
 */
-#if defined(VERSION_EU)
 void gunFreeRocket(enum GUNHAND hand)
 {
     struct hand* hand_ptr;
@@ -2132,7 +2131,6 @@ void gunFireTankShell(s32 handnum)
         }
     }
 }
-#endif
 
 const char g_GunHudIntegerFormat[] = "%d\n";
 const char aSD[] = "%s: %d\n";

@@ -129,179 +129,6 @@ void *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
 void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
 
-#if !defined(VERSION_EU)
-void gunFreeRocket(enum GUNHAND hand)
-{
-    struct hand* hand_ptr;
-    ObjectRecord* hand_obj_record;
-
-    hand_ptr = &g_CurrentPlayer->hands[hand];
-    hand_obj_record = hand_ptr->rocket;
-
-    if (hand_obj_record != NULL)
-    {
-        objFreePermanently(hand_obj_record, 1);
-        hand_ptr->rocket = NULL;
-    }
-}
-
-
-extern f32 g_ThrowVelocityScale;
-
-void gunFireTankShell(s32 handnum)
-{
-    WeaponObjRecord *obj;
-    struct hand *hand;
-    Mtxf identitymtx;
-    coord3d velocity;
-    ObjectRecord *tankobj;
-    coord3d unscaledvelocity;
-    Mtxf shellmtx;
-    coord3d screenpos;
-    coord3d aimdir;
-    PropRecord *playerprop;
-    coord3d *prevplayerpos;
-    ITEM_IDS weaponid;
-    coord3d spawnpos;
-    PropRecord *tankprop;
-
-    hand = &g_CurrentPlayer->hands[handnum];
-
-    playerprop = currentPlayerGetProp();
-    prevplayerpos = playerGetPrevPos();
-    weaponid = gunGetWeapon(handnum);
-
-    mtx4LoadIdentity(&identitymtx);
-
-    if (weaponid == ITEM_TANKSHELLS) 
-    {
-        tankprop = playerGetTank();
-
-
-        if ((tankprop != NULL) && (tankprop->flags & TANK_RUN_STATE_RUNNING)) 
-        {
-            tankGetTurretDir(&aimdir);
-        } 
-        else 
-        {
-            gunGetAimRay(&screenpos, &aimdir);
-            mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
-        }
-
-        velocity.x = aimdir.x * g_TankShellSpeed;
-        velocity.y = aimdir.y * g_TankShellSpeed;
-        velocity.z = aimdir.z * g_TankShellSpeed;
-
-        if (g_ClockTimer > 0) {
-            velocity.x += (playerprop->pos.x - prevplayerpos->x) / g_GlobalTimerDelta;
-            velocity.y += (playerprop->pos.y - prevplayerpos->y) / g_GlobalTimerDelta;
-            velocity.z += (playerprop->pos.z - prevplayerpos->z) / g_GlobalTimerDelta;
-        }
-
-        if ((tankprop != NULL) && (tankprop->flags & TANK_RUN_STATE_RUNNING)) 
-        {
-            tankobj = tankprop->obj;
-            spawnpos.x = tankobj->model->render_pos[4].pos.m[3][0];
-            spawnpos.y = tankobj->model->render_pos[4].pos.m[3][1];
-            spawnpos.z = tankobj->model->render_pos[4].pos.m[3][2];
-
-            mtx4TransformVecInPlace(camGetViewToWorldMtxf(), &spawnpos);
-        } 
-        else 
-        {
-            spawnpos.x = playerprop->pos.x;
-            spawnpos.y = playerprop->pos.y;
-            spawnpos.z = playerprop->pos.z;
-        }
-
-
-        explosionStartShake();
-    } 
-    else 
-    {
-        gunGetShotDir(&screenpos, &aimdir, handnum);
-        mtx4RotateVecInPlace(camGetViewToWorldMtxf(), &aimdir);
-
-        spawnpos.x = hand->muzzlePos.x;
-        spawnpos.y = hand->muzzlePos.y;
-        spawnpos.z = hand->muzzlePos.z;
-
-
-        unscaledvelocity.x = aimdir.x * g_ThrowVelocityScale;
-        unscaledvelocity.y = aimdir.y * g_ThrowVelocityScale;
-        unscaledvelocity.z = aimdir.z * g_ThrowVelocityScale;
-
-        velocity.x = unscaledvelocity.x * g_GlobalTimerDelta;
-        velocity.y = unscaledvelocity.y * g_GlobalTimerDelta;
-        velocity.z = unscaledvelocity.z * g_GlobalTimerDelta;
-
-        if (g_ClockTimer > 0) 
-        {
-            velocity.x += (playerprop->pos.x - prevplayerpos->x) / g_GlobalTimerDelta;
-            velocity.y += (playerprop->pos.y - prevplayerpos->y) / g_GlobalTimerDelta;
-            velocity.z += (playerprop->pos.z - prevplayerpos->z) / g_GlobalTimerDelta;
-        }
-    }
-
-    mtx4Copy(&g_CurrentPlayer->hands[handnum].gunWorldMtx, &shellmtx);
-
-    shellmtx.m[3][0] = 0.0f;
-    shellmtx.m[3][1] = 0.0f;
-    shellmtx.m[3][2] = 0.0f;
-
-    if (hand->rocket != NULL) 
-    {
-        obj = (WeaponObjRecord *) hand->rocket;
-        hand->firedrocket = 1;
-    } 
-    else 
-    {
-        obj = (WeaponObjRecord *) weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
-    }
-
-    if (obj == NULL) 
-    {
-        return;
-    }
-
-    obj->timer = -1;
-    obj->runtime_bitflags &= ~RUNTIMEBITFLAG_OWNER;
-    obj->runtime_bitflags |= playerGetCurrentNum() << RUNTIMEBITSHIFT_OWNER;
-
-    gunLaunchProjectileFromPlayer(obj, &spawnpos, &shellmtx, &velocity, &identitymtx);
-
-    if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
-    {
-        obj->projectile->flags |= PROJECTILEFLAG_LAUNCHING;
-
-        if (weaponid != ITEM_TANKSHELLS)
-        {
-            obj->projectile->flags |= PROJECTILEFLAG_RISING;
-            obj->projectile->riseY = obj->runtime_pos.y;
-            obj->projectile->riseSpeed = obj->projectile->speed.y;
-            obj->projectile->accel.x = unscaledvelocity.x;
-            obj->projectile->accel.y = unscaledvelocity.y;
-            obj->projectile->accel.z = unscaledvelocity.z;
-            obj->projectile->refreshrate = THROWN_ITEM_REFRESH_RATE;
-
-            if (obj->projectile->sounds[0] == NULL)
-            {
-                sndPlaySfx(g_musicSfxBufferPtr, 1, &obj->projectile->sounds[0]);
-            } 
-            else if (obj->projectile->sounds[1] == NULL)
-            {
-                sndPlaySfx(g_musicSfxBufferPtr, 1, &obj->projectile->sounds[1]);
-            }
-        }
-    }
-}
-
-
-/**
- * g_ThrowVelocityScale belongs to gunFireTankShell, but must sit here
- * immediately ahead of this function's pool for that function to match.
- */
-#endif
 
 void gunUpdateAndFire(GUNHAND handnum)
 {
@@ -4542,7 +4369,6 @@ void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle) {
 extern const f32 g_GunScreenAspectRatio;
 
 
-#if !defined(VERSION_US)
 void gunGetAimRay(coord3d *zeropos, coord3d *vec)
 {
     zeropos->x = 0.0f;
@@ -4635,7 +4461,6 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
 
     return NULL;
 }
-#endif
 
 
  
@@ -4664,7 +4489,6 @@ extern const f32 g_RifleCasingGravity;
 /**
  * Ejects a spent cartridge casing from the gun in the given hand.
  */
-#if defined(VERSION_EU)
 void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 {
     CasingRecord *casing;
@@ -4679,6 +4503,9 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
     Mtxf rotmtx;
 #endif
     f32 rand;
+#ifndef VERSION_EU
+    s32 limit;
+#endif
     f32 frac = 0.0f;
 #if VERSION_EU
     s32 randlimit;
@@ -4690,8 +4517,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #endif
     struct hand *hand;
     u32 randval;
-#if VERSION_EU
-#endif
  
     weaponid = gunGetWeapon(handnum);
     cartridge_header = weaponGetStats(weaponid)->ptr_cartridge_struct;
@@ -4840,7 +4665,6 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
     }
  
 }
-#endif
 
 
 /* ===== merged from gun2.c ===== */
@@ -4859,291 +4683,6 @@ extern const char g_GunDeathCountFormat[];
 extern const char aSD_0[];
 
 
-#if defined(VERSION_US)
-void gunGetAimRay(coord3d *zeropos, coord3d *vec)
-{
-    zeropos->x = 0.0f;
-    zeropos->y = 0.0f;
-    zeropos->z = 0.0f;
-
-    camScreenToViewDir(&g_CurrentPlayer->crosshair_angle, vec, 1.0f);
-}
-
-
-/*
-* This function computes the angle the player's bullets are fired at
-*/
-void gunGetShotDir(coord3d* origin, coord3d* result, enum GUNHAND hand)
-{
-    coord2d crosspos;
-    f32 inaccuracy;
-    f32 scaledspread;
-    f32 randfactor;
-
-    inaccuracy = weaponGetStats(gunGetWeapon(hand))->Inaccuracy;
-    if ((weaponHasFlag(gunGetShownWeapon(hand), WEAPONSTATBITFLAG_FIRST_SHOT_ACCURACY) != 0) && (g_CurrentPlayer->hands[hand].volley == 1))
-    {
-        // Single shots are four times more accurate
-        inaccuracy *= 0.25f;
-    }
-
-    scaledspread = (120.0f * inaccuracy) / viGetFovY();
-
-    randfactor = (RANDOMFRAC() - 0.5f) * RANDOMFRAC();
-    crosspos.x = g_CurrentPlayer->crosshair_angle.f[0] + randfactor * scaledspread * camGetScreenWidth() * g_GunScreenAspectRatio
-        / (camGetPerspAspect() * 320.0f);
-
-    randfactor = (RANDOMFRAC() - 0.5f) * RANDOMFRAC();
-    crosspos.y =  g_CurrentPlayer->crosshair_angle.f[1] + randfactor * scaledspread * camGetScreenHeight()
-        / (PAL ? (f32)(SCREEN_HEIGHT_272) : (f32)(SCREEN_HEIGHT_240));
-
-    origin->x = 0.0f;
-    origin->y = 0.0f;
-    origin->z = 0.0f;
-
-    // Result is a normalized vector describing the path the bullet will follow
-    // Can be used to compute x,y,z displacement off the center of the screen if done for a projectile
-    camScreenToViewDir(&crosspos, result, 1.0f);
-}
-
-
-CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
-{
-    CasingRecord* entry = g_Casings;
-    CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
-
-    while (entry < end && entry->header != NULL)
-    {
-        entry++;
-    }
-
-    if (entry < end)
-    {
-        entry->header = header;
-
-        entry->pos.x = mtx->m[3][0];
-        entry->pos.y = mtx->m[3][1];
-        entry->pos.z = mtx->m[3][2];
-#if VERSION_EU
-        mtx4ToMtx3(mtx, &entry->rot_mtx);
-#else
-        entry->rot_mtx.m[0][0] = mtx->m[0][0];
-        entry->rot_mtx.m[0][1] = mtx->m[0][1];
-        entry->rot_mtx.m[0][2] = mtx->m[0][2];
-        entry->rot_mtx.m[0][3] = 0.0f;
-
-        entry->rot_mtx.m[1][0] = mtx->m[1][0];
-        entry->rot_mtx.m[1][1] = mtx->m[1][1];
-        entry->rot_mtx.m[1][2] = mtx->m[1][2];
-        entry->rot_mtx.m[1][3] = 0.0f;
-
-        entry->rot_mtx.m[2][0] = mtx->m[2][0];
-        entry->rot_mtx.m[2][1] = mtx->m[2][1];
-        entry->rot_mtx.m[2][2] = mtx->m[2][2];
-        entry->rot_mtx.m[2][3] = 0.0f;
-
-        entry->rot_mtx.m[3][0] = 0.0f;
-        entry->rot_mtx.m[3][1] = 0.0f;
-        entry->rot_mtx.m[3][2] = 0.0f;
-        entry->rot_mtx.m[3][3] = 1.0f;
-#endif
-        return entry;
-    }
-
-    return NULL;
-}
-#endif
-
-
-#if VERSION_EU
-#else
-#endif
- 
- 
- 
- 
-/**
- * Ejects a spent cartridge casing from the gun in the given hand.
- */
-#if !defined(VERSION_EU)
-void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
-{
-    CasingRecord *casing;
-    Mtxf mtx;
-    ITEM_IDS weaponid;
-    coord3d *switchdata;
-    ModelFileHeader *cartridge_header;
-    coord3d switchpos;
-    ModelNode *switch0;
-    coord3d rot;
-#if VERSION_EU
-    Mtxf rotmtx;
-#endif
-    f32 rand;
-    s32 limit;
-    f32 frac = 0.0f;
-#if VERSION_EU
-    s32 randlimit;
-#endif
-    f32 oldvely;
-    f32 newvely;
-#ifndef VERSION_EU
-    s32 randlimit;
-#endif
-    struct hand *hand;
-    u32 randval;
-#if VERSION_EU
-    s32 pad[2];
-#endif
- 
-    weaponid = gunGetWeapon(handnum);
-    cartridge_header = weaponGetStats(weaponid)->ptr_cartridge_struct;
- 
-    // Do not create ejected casings in multiplayer.
-    if ((cartridge_header == NULL) || (getPlayerCount() >= 2))
-    {
-        return;
-    }
- 
-    hand = &g_CurrentPlayer->hands[handnum];
-    switch0 = g_CurrentPlayer->handModelHeader[handnum].Switches[0];
- 
-    if (switch0 != NULL)
-    {
-        switchdata = (coord3d *) switch0->Data;
- 
-        switchpos.x = switchdata->x * g_CasingSwitchScale;
-        switchpos.y = switchdata->y * g_CasingSwitchScale;
-        switchpos.z = switchdata->z * g_CasingSwitchScale;
- 
-        mtx4LoadTranslation(&switchpos, &mtx);
-        mtx4MultInPlace(&hand->gunWorldMtx, &mtx);
-    }
-    else
-    {
-        mtx4Copy(&hand->gunWorldMtx, &mtx);
-    }
- 
-    casing = casingCreate(cartridge_header, &mtx);
- 
-    if (casing == NULL)
-    {
-        return;
-    }
- 
-    rot = (coord3d){0};
-    casing->floor_y_pos = floor_y_pos;
- 
-    if (((((weaponid == ITEM_WPPK) || (weaponid == ITEM_WPPKSIL)) || (weaponid == ITEM_TT33)) || (weaponid == ITEM_SILVERWPPK)) || (weaponid == ITEM_GOLDWPPK))
-    {
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        newvely = 0.0625f;
-        casing->vel.x = -(((rand * g_PistolCasingHorizontalSpeed) * newvely) + g_PistolCasingHorizontalSpeed);
- 
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        casing->vel.y = ((rand * 2.5f) * 0.0625f) + 2.5f;
-        casing->vel.z = frac * 0.0f;
- 
-        mtx4RotateVecInPlace(&hand->gunWorldMtx, &casing->vel);
- 
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        rot.x = (((rand + rand) * g_PistolCasingRotationScaleX) * newvely) - g_PistolCasingRotationOffsetX;
- 
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        rot.y = (((rand + rand) * g_PistolCasingRotationScaleY) * newvely) - g_PistolCasingRotationOffsetY;
- 
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        rot.z = (((rand + rand) * g_PistolCasingRotationScaleZ) * newvely) - g_PistolCasingRotationOffsetZ;
- 
-#if VERSION_EU
-        mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
-#else
-        mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
-#endif
- 
-#if VERSION_EU
-        randlimit = ((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10;
-        randlimit = randlimit + 0x158679;
-        randval = randomGetNext();
-        oldvely = casing->vel.y;
-        frac = ((f32) ((u32) (randval % randlimit))) / g_PistolCasingRandomDivisor;
-#else
-        randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
-        limit = randlimit;
-        randval = randomGetNext();
-        oldvely = casing->vel.y;
-        frac = ((f32) ((u32) (randval % limit))) / g_PistolCasingRandomDivisor;
-#endif
-        newvely = oldvely - (frac * g_PistolCasingGravity);
- 
-        casing->vel.y = newvely;
-        casing->pos.y += (frac * (oldvely + newvely)) * 0.5f;
-        casing->pos.x += frac * casing->vel.x;
-        casing->pos.z += frac * casing->vel.z;
- 
-        // Keep the 0 + 1 for matching.
-        if (g_ClockTimer >= (0 + 1))
-        {
-            casing->vel.x += (hand->gunWorldMtx.m[3][0] - hand->prevGunWorldMtx.m[3][0]) / g_GlobalTimerDelta;
-            casing->vel.y += (hand->gunWorldMtx.m[3][1] - hand->prevGunWorldMtx.m[3][1]) / g_GlobalTimerDelta;
-            casing->vel.z += (hand->gunWorldMtx.m[3][2] - hand->prevGunWorldMtx.m[3][2]) / g_GlobalTimerDelta;
-        }
-    }
-    else
-    {
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        casing->vel.x = -(((rand * g_RifleCasingHorizontalSpeed) * 0.125f) + g_RifleCasingHorizontalSpeed);
- 
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        casing->vel.y = ((rand * g_RifleCasingVerticalSpeed) * 0.125f) + g_RifleCasingVerticalSpeed;
-        casing->vel.z = 0.0f;
- 
-        mtx4RotateVecInPlace(&hand->gunWorldMtx, &casing->vel);
- 
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        rot.x = (((rand + rand) * g_RifleCasingRotationScaleX) * 0.0625f) - g_RifleCasingRotationOffsetX;
- 
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        rot.y = (((rand + rand) * g_RifleCasingRotationScaleY) * 0.0625f) - g_RifleCasingRotationOffsetY;
- 
-        rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
-        rot.z = (((rand + rand) * g_RifleCasingRotationScaleZ) * 0.0625f) - g_RifleCasingRotationOffsetZ;
- 
-#if VERSION_EU
-        mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
-#else
-        mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
-#endif
-        randval = ((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10;
-#if VERSION_EU
-        randval = randval + 0x158679;
-        randlimit = randomGetNext();
-        oldvely = (&casing->vel)->y;
-        frac = ((f32) ((u32) (randlimit % randval))) / g_RifleCasingRandomDivisor;
-#else
-        randlimit = randval + 0x158679;
-        randval = randomGetNext();
-        oldvely = (&casing->vel)->y;
-        frac = ((f32) ((u32) (randval % randlimit))) / g_RifleCasingRandomDivisor;
-#endif
-        newvely = (casing->vel.y = oldvely - (frac * g_RifleCasingGravity));
- 
-        casing->pos.y += (frac * (oldvely + newvely)) * 0.5f;
-        casing->pos.x += frac * casing->vel.x;
-        casing->pos.z += frac * casing->vel.z;
- 
-        if (g_ClockTimer > 0)
-        {
-            casing->vel.x += (hand->gunWorldMtx.m[3][0] - hand->prevGunWorldMtx.m[3][0]) / g_GlobalTimerDelta;
-            casing->vel.y += (hand->gunWorldMtx.m[3][1] - hand->prevGunWorldMtx.m[3][1]) / g_GlobalTimerDelta;
-            casing->vel.z += (hand->gunWorldMtx.m[3][2] - hand->prevGunWorldMtx.m[3][2]) / g_GlobalTimerDelta;
-        }
-    }
- 
-}
-#endif
 
 
 extern const f32 g_CasingGravity;
