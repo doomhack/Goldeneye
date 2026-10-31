@@ -14,4 +14,9 @@ void playerUpdateRooms(struct player *player);
 
 extern s32 g_PlayerCollisionOn;
 
+void playerUpdateCollisionBounds(void);
+void playerGetCollisionSize(PropRecord* prop, f32 *collision_radius, f32 *height, f32 *always_30);
+void playerSetMoving(PropRecord *prop, s32 flag);
+void playerGetPropBounds(PropRecord *prop, coord2d **field_B0, s32 *numpoints, f32 *height_related, f32 *collision);
+
 #endif

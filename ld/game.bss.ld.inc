@@ -64,7 +64,8 @@
       build/OUTCODE/src/game/model/modelfile.o (.bss);
       build/OUTCODE/src/game/gfx/texcmds.o (.bss);
       build/OUTCODE/src/game/player/playerlife.o (.bss);
-      build/OUTCODE/src/game/player/bondview2.o (.bss);
+      build/OUTCODE/src/game/player/playerupdate.o (.bss);
+      build/OUTCODE/src/game/player/playerbody.o (.bss);
       build/OUTCODE/src/game/player/watch.o (.bss);
       build/OUTCODE/src/game/player/respawn.o (.bss);
       build/OUTCODE/src/game/player/counterop.o (.bss);

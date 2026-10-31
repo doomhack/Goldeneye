@@ -7,9 +7,10 @@ inventory are in [weapons](weapons.md).
 
 | File | What it holds |
 | --- | --- |
-| `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`) |
+| `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`), and small getters (`playerGetPos`, `playerGetEyeHeight` and the like) |
 | `src/game/player/playerlife.c` | Choosing a spawn pad, resetting a player for a new life (`playerResetLife`, `playerStartNewLife`), crouch and lean, and the level-wide flags AI scripts set |
-| `src/game/player/bondview2.c` | The rest of Bond, about 3,200 lines: loading the body, height and falling (`playerUpdateVertical`), the per-frame update (`playerUpdate`, `playerMove`), the player prop tick (`playerTick`) |
+| `src/game/player/playerupdate.c` | The per-frame update (`playerUpdate`, `playerMove`, `playerMoveFrozen`), height and falling (`playerUpdateVertical`), getting in and driving the tank, the mission timer |
+| `src/game/player/playerbody.c` | Bond's body: loading the body and head models and the guns in its hands, cuffs, the player prop tick (`playerTick`) that poses it, and drawing it |
 | `src/game/player/playerinput.c` | Input (`playerProcessInput`), auto-aim, look and walk speeds |
 | `src/game/player/playerdamage.c` | Health, armour, damage (`playerTakeDamage`), the damage flash and health bars, dying (`playerDie`), explosions round the player |
 | `src/game/player/playerfade.c` | The screen fade over a player's view and fading the player's body |
@@ -137,7 +138,7 @@ multiplayer `mpRespawnPlayer` respawns at a pad from `playerChooseSpawnPad`.
 
 ## The tank
 
-When Bond drives the tank, `g_PlayerTankProp` is the tank. `playerMove` (`bondview2.c`)
+When Bond drives the tank, `g_PlayerTankProp` is the tank. `playerMove` (`playerupdate.c`)
 drives it; the `tank*` functions in `tank.c` test its collision box against the floor
 tiles and props (`tankTestCollision`, `tankTryMoveTo`) and place and aim the turret
 (`tankUpdateTurretOffset`, `tankGetTurretDir`).
@@ -159,8 +160,6 @@ Added for this fork:
 ## Traps
 
 * "Bond" in a name often means "the current player", from when there was only one.
-* `bondview2.c` is most of the rest of the player. The name comes from the decomp; it is
-  being split by topic. Its globals now live in the files that use them.
 * `player->bond` (`struct PlayerBond`) is Bond's body: its tile, position and look
   vectors. Its position is the real player position; `bondDie` is a copy taken at death
   for the death replay.

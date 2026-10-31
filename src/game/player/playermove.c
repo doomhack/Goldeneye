@@ -689,3 +689,87 @@ void playerUpdateRooms(struct player *player)
         propAddToRoom(player->prop, player->registeredroom);
     }
 }
+
+
+void playerSetMoving(PropRecord *prop, s32 flag)
+{
+    s32 playerIndex;
+
+    playerIndex = playerGetIndexForProp(prop);
+
+    if (prop->chr != NULL)
+    {
+        chrSetMoving(prop->chr, flag);
+    }
+
+    if (g_PlayerTankProp != NULL)
+    {
+        // When commented out tank shells fired from the tank detonate immediately.
+        objSetMoving(g_PlayerTankProp, flag);
+    }
+
+    g_playerPointers[playerIndex]->perimEnabled = flag;
+}
+
+
+void playerGetPropBounds(PropRecord *prop, coord2d **bounds, s32 *numpoints, f32 *height_related, f32 *collision)
+{
+    s32 index;
+
+    index = playerGetIndexForProp(prop);
+    if (g_playerPointers[index]->perimEnabled != 0)
+    {
+        // What is this doing and why is it 1 player only?
+        if (getPlayerCount() == 1 || g_playerPointers[index]->bonddead == FALSE)
+        {
+            if (g_playerPointers[index]->cameramode != 1)
+            {
+                *numpoints = 4;
+                *bounds = g_playerPointers[index]->collision_bounds;
+                *collision = g_playerPointers[index]->manGround;
+                *height_related = *collision + playerGetEyeHeight(g_playerPointers[index]) + 10.0f;
+
+                return;
+            }
+        }
+    }
+
+    *numpoints = 0;
+}
+
+
+void playerUpdateCollisionBounds(void)
+{
+
+    if (g_PlayerIsInTank == 1)
+    {
+        tankGetCollisionBounds(g_CurrentPlayer->collision_bounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
+
+        return;
+    }
+
+    g_CurrentPlayer->collision_bounds[0].x = (g_CurrentPlayer->bond.collision_position.f[0] + g_CurrentPlayer->bond.collision_radius);
+    g_CurrentPlayer->collision_bounds[0].y = g_CurrentPlayer->bond.collision_position.f[2];
+    g_CurrentPlayer->collision_bounds[1].x = g_CurrentPlayer->bond.collision_position.f[0];
+    g_CurrentPlayer->collision_bounds[1].y = (g_CurrentPlayer->bond.collision_position.f[2] + g_CurrentPlayer->bond.collision_radius);
+    g_CurrentPlayer->collision_bounds[2].x = (g_CurrentPlayer->bond.collision_position.f[0] - g_CurrentPlayer->bond.collision_radius);
+    g_CurrentPlayer->collision_bounds[2].y = g_CurrentPlayer->bond.collision_position.f[2];
+    g_CurrentPlayer->collision_bounds[3].x = g_CurrentPlayer->bond.collision_position.f[0];
+    g_CurrentPlayer->collision_bounds[3].y = (g_CurrentPlayer->bond.collision_position.f[2] - g_CurrentPlayer->bond.collision_radius);
+}
+
+
+/**
+ * @param prop: prop
+ * @param collision_radius: out parameter, will be set to bond.collision_radius
+ * @param height: out parameter, will be set to character height - 30
+ * @param always_30: out parameter, will be set to 30
+ */
+void playerGetCollisionSize(PropRecord *prop, f32 *collision_radius, f32 *height, f32 *always_30)
+{
+    struct player *player = g_playerPointers[playerGetIndexForProp(prop)];
+
+    *collision_radius = player->bond.collision_radius;
+    *height = (playerGetEyeHeight(player) + 10.0f) - 30.0f;
+    *always_30 = 30.0f;
+}

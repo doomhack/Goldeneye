@@ -1011,71 +1011,25 @@ s32 playerGetIndexForProp( PropRecord* prop);
 void playerSetAspect(f32 aspect);
 void playerInit(s32 player_num);
 s32 playerGetShuffledIndex(s32 current_player_num);
-void playerBodyRemoveGun(enum GUNHAND hand);
-void playerBodyGiveGun(enum GUNHAND hand);
 
 void playerInitHands(void);
 void playersStoreFavouriteWeapons(void);
 
 void playersResetHandicaps(void);
-PROP weaponGetChrModel(ITEM_IDS item);
 
 
-// bondview2.c
-extern coord3d g_TankModelPositionOffset;
-extern s32 g_EnterTankAudioState;
-extern f32 g_TankEnteringSitHeight;
-extern f32 g_TankEnteringSitHeightRemain;
-extern f32 g_TankEnterBondHorizAngleDeg;
-extern f32 g_TankEnterBondVertAngleDeg;
-extern coord3d g_EnterTankCoord;
-extern s32 g_bondviewForceDisarm;
-extern s32 resolution;
-extern s32 g_VisibleToGuardsFlag;
-extern f32 g_PlayerWorldScale;
-extern s32 g_bondviewBondDeathAnimations[];
-extern s32 g_bondviewBondDeathAnimationsCount;
-extern coord3d g_ForceBondMoveOffset;
-extern s32 g_CoopForceMovePlayer;
-extern s32 mission_timer;
-#if defined(VERSION_EU)
-extern f32 watch_time_0;
-#else
-extern s32 watch_time_0;
-#endif
-extern ITEM_IDS starting_weapon[2];
 PropRecord* currentPlayerGetProp(void);
-void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 s32 playerPressedActivate(void);
-s32 lvGetMissionTime60(void);
-void playerLoadBody(void);
-f32 playerGetFloorY(struct StandTile *tile, f32 x, f32 z);
-void playerUpdateCollisionBounds(void);
 f32 playerGetEyeHeight(struct player *player);
-void playerGetCollisionSize(PropRecord* prop, f32 *collision_radius, f32 *height, f32 *always_30);
-void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset);
 f32 playerGetStanHeight(struct player *player);
 u8 playerGetRoom(void);
 coord3d *playerGetPos(void);
-void playerSetMoving(PropRecord *prop, s32 flag);
-void playerGetPropBounds(PropRecord *prop, coord2d **field_B0, s32 *numpoints, f32 *height_related, f32 *collision);
 s32 playerGetVisibleToGuards(void);
 void playerSetVisibleToGuards(s32 visible);
 f32 bondviewGetPlayerYawRadians(void);
-Gfx *playerRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
 f32 playerGetBreathing(void);
 coord3d *playerGetPrevPos(void);
-void playerSetWorldScale(f32);
-void playerRemoveBody(void);
-void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex);
 coord3d * playerGetPos3(void);
-s32 playerTick(PropRecord *prop);
-extern struct firing_anim_struct firing_animation_groups[][6];
-void playerMoveFrozen(u16, u16);
-void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
-void playerUpdatePosFromCollision(void);
-void playerUpdateVertaTheta(void);
-void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways);
 
 #include "game/hud/hudmsg.h"
 #include "game/player/watch.h"
@@ -1089,5 +1043,7 @@ void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways);
 #include "game/player/playerfade.h"
 #include "game/player/playerinput.h"
 #include "game/player/playerlife.h"
+#include "game/player/playerbody.h"
+#include "game/player/playerupdate.h"
 
 #endif
