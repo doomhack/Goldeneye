@@ -1,8 +1,7 @@
 /**
- * Co-op and counter-op state shared by the player code: the mode flags,
- * whose controller and settings each player uses, whether a partner can
- * revive the current player, the last player to use an object, and the
- * split-screen layout. See docs/subsystems/player.md.
+ * Co-op and counter-op state shared by the player code: whose controller and
+ * settings each player uses, whether a partner can revive the current player,
+ * the last player to use an object, and the split-screen layout. See docs/subsystems/player.md.
  */
 #include <ultra64.h>
 #include <bondconstants.h>
@@ -10,20 +9,12 @@
 #include "game/menu/watchmenu.h"
 #include "game/player/player.h"
 #include "game/player/coop.h"
+#include "game/level/gamemode.h"
 
 /**
- * Co-op: two players share a solo mission. getPlayerCount() then returns 2,
- * so code that means "is this a deathmatch" must use isMpGame() instead.
+ * Counter-op: Bond is always player 1 (index 0); g_CounterOpBondPad says
+ * whose controller and settings that is.
  */
-s32 g_CoopMode = FALSE;
-
-/**
- * Counter-op: player 2 plays a guard against Bond in a solo mission, as in
- * Perfect Dark. g_CoopMode is set too, as the two modes share everything
- * about two players in a solo mission. Bond is always player 1 (index 0);
- * g_CounterOpBondPad says whose controller and settings that is.
- */
-s32 g_CounterOpMode = FALSE;
 s32 g_CounterOpBondPad = 0;
 
 /**
@@ -34,7 +25,7 @@ s32 g_CounterOpBondPad = 0;
  */
 s32 coopPlayerPerson(s32 player)
 {
-    if (g_CounterOpMode && (g_CounterOpBondPad != 0) && (player < 2))
+    if (gameIsCounterOp() && (g_CounterOpBondPad != 0) && (player < 2))
     {
         return player ^ 1;
     }
@@ -47,7 +38,7 @@ s32 coopPlayerPerson(s32 player)
  */
 s32 counterOpIsGuardPlayer(s32 player)
 {
-    return g_CounterOpMode && (player == COUNTEROP_GUARD);
+    return gameIsCounterOp() && (player == COUNTEROP_GUARD);
 }
 
 /**
@@ -81,14 +72,14 @@ s32 coopPartnerCanRevive(void)
     s32 cur = playerGetCurrentNum();
     s32 i;
 
-    if (!g_CoopMode)
+    if (!gameIsTwoPlayerMission())
     {
         return FALSE;
     }
 
     // Counter-op: the guard player comes back in a new guard while Bond is
     // alive. Bond has one life.
-    if (g_CounterOpMode)
+    if (gameIsCounterOp())
     {
         return counterOpIsGuardPlayer(cur) && !g_playerPointers[COUNTEROP_BOND]->bonddead;
     }
@@ -127,13 +118,13 @@ s32 coopPartnerAlive(void)
     s32 cur = playerGetCurrentNum();
     s32 i;
 
-    if (!g_CoopMode)
+    if (!gameIsTwoPlayerMission())
     {
         return FALSE;
     }
 
     // Counter-op: Bond's death ends the mission whoever is left.
-    if (g_CounterOpMode)
+    if (gameIsCounterOp())
     {
         return counterOpIsGuardPlayer(cur) && !g_playerPointers[COUNTEROP_BOND]->bonddead;
     }

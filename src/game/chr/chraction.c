@@ -46,6 +46,7 @@
 #include "game/prop/alarm.h"
 #include "game/math/physics.h"
 #include "game/math/line_tri_intersect.h"
+#include "game/level/gamemode.h"
 
 
 
@@ -1772,7 +1773,7 @@ void chrActionTick(ChrRecord *self)
 {
     s32 prevplayer;
 
-    if (!g_CoopMode)
+    if (!gameIsTwoPlayerMission())
     {
         chrActionTickBody(self);
         return;

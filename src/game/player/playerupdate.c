@@ -24,6 +24,7 @@
 #include "game/prop/propobj.h"
 #include "game/prop/setup.h"
 #include "random.h"
+#include "game/level/gamemode.h"
 
 
 
@@ -1787,7 +1788,7 @@ void playerMoveFrozen(u16 buttons, u16 oldbuttons)
     playerTickMoveAnim(0, 0, 0);
 
     if (((g_ForceBondMoveOffset.f[0] != 0.0f) || (g_ForceBondMoveOffset.f[2] != 0.0f))
-        && (!g_CoopMode || (playerGetCurrentNum() == g_CoopForceMovePlayer)))
+        && (!gameIsTwoPlayerMission() || (playerGetCurrentNum() == g_CoopForceMovePlayer)))
     {
         offset.f[0] += g_ForceBondMoveOffset.f[0] * g_GlobalTimerDelta;
         offset.f[2] += g_ForceBondMoveOffset.f[2] * g_GlobalTimerDelta;
@@ -1919,8 +1920,8 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 
     gunSetSightVisible(
         GUNSIGHTREASON_1,
-        (!isMpGame() && optionsGetSightOnScreen())
-            || (isMpGame() && g_playerPerm->sight)
+        (!gameIsMulti() && optionsGetSightOnScreen())
+            || (gameIsMulti() && g_playerPerm->sight)
     );
 
 #if defined(VERSION_EU)

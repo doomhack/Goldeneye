@@ -16,6 +16,7 @@
 #include "game/prop/propobj.h"
 #include "game/save/file.h"
 #include "random.h"
+#include "game/level/gamemode.h"
 
 // Rounds down to a multiple of 64
 #define ALIGN64_V3(val) (((val) | 0x3f) ^ 0x3f)
@@ -111,7 +112,7 @@ void playerLoadBody(void)
         }
         // Counter-op: until then (the intro) the guard player is a Bond, as
         // player 2's co-op character may be one with no head or body entry.
-        else if (!isMpGame() && ((playerGetCurrentNum() == 0) || frontCoopPartnerIsBond() || counterOpIsGuardPlayer(playerGetCurrentNum())))
+        else if (!gameIsMulti() && ((playerGetCurrentNum() == 0) || frontCoopPartnerIsBond() || counterOpIsGuardPlayer(playerGetCurrentNum())))
         {
             helddst = fileGetBondForCurrentFolder();
             switch (g_CurrentPlayer->bondtype)
@@ -222,7 +223,7 @@ void playerLoadBody(void)
                     break;
             }
         }
-        else if (g_CoopMode)
+        else if (gameIsTwoPlayerMission())
         {
             head = frontCoopGetPartnerHead();
             body = frontCoopGetPartnerBody();

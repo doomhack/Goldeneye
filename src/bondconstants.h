@@ -1524,13 +1524,14 @@ typedef enum EXPLOSION_DEF
     EXPLOSION_DEF_COUNT
 } EXPLOSION_DEF;
 
-typedef enum GAMEMODE
+/* The mode select page's choice; FRONTMODE_MISSION covers co-op and counter-op too */
+typedef enum FRONTMODE
 {
-    GAMEMODE_INTRO = -1,
-    GAMEMODE_SOLO,
-    GAMEMODE_MULTI,
-    GAMEMODE_CHEATS
-} GAMEMODE;
+    FRONTMODE_INTRO = -1,
+    FRONTMODE_MISSION,
+    FRONTMODE_MULTI,
+    FRONTMODE_CHEATS
+} FRONTMODE;
 
 typedef enum GUN_ANIMATION_STATE_IDS
 {

@@ -44,6 +44,7 @@
 #include "game/model/initactorpropstuff.h"
 #include "game/prop/explosion.h"
 #include "str.h"
+#include "game/level/gamemode.h"
 
 /**
  * @file boss.c
@@ -380,14 +381,14 @@ void bossMainloop(void)
 
         // Counter-op: when controller 2 plays Bond (player 1), the two
         // controllers swap places for the mission. Menus use them as wired.
-        g_JoySwapPads = g_CounterOpMode && (g_CounterOpBondPad != 0) && (g_StageNum != LEVELID_TITLE);
+        g_JoySwapPads = gameIsCounterOp() && (g_CounterOpBondPad != 0) && (g_StageNum != LEVELID_TITLE);
 
         // Co-op: two players in different parts of a level see more rooms at once than one
         // player does. When the room heap filled up, rooms stopped loading (Silo's first
         // computer room), so co-op doubles it.
         roomHeapSize = g_LevelMemBudget->roomHeapKB * 1024;
 
-        if (g_CoopMode && (g_StageNum != LEVELID_TITLE))
+        if (gameIsTwoPlayerMission() && (g_StageNum != LEVELID_TITLE))
         {
             roomHeapSize *= 2;
         }

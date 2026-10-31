@@ -16,6 +16,7 @@
 #include "dbgscreen.h"
 #include "game/gfx/dyn.h"
 #include "game/player/player.h"
+#include "game/level/gamemode.h"
 
 /* A pair of buffers, the one in use given by s_Current */
 typedef struct
@@ -38,7 +39,7 @@ static void initBuffers(DynBuffers *pair, s32 size)
 
 void dynInitMemory(void)
 {
-    s32 views = g_CoopMode ? 2 : 1;
+    s32 views = gameIsTwoPlayerMission() ? 2 : 1;
 
     initBuffers(&s_Gfx, g_LevelMemBudget->gfxKB * 1024 * views);
     initBuffers(&s_Vtx, g_LevelMemBudget->vtxKB * 1024 * views);

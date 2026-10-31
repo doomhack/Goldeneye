@@ -24,6 +24,7 @@
 #include "game/player/gun.h"
 #include "game/prop/propobj.h"
 #include "game/prop/setup.h"
+#include "game/level/gamemode.h"
 
 
 
@@ -437,7 +438,7 @@ void objectivesTickStatusMessages(void)
                 {
                     strcat(buffer, langGet(getStringID(LMISC, MISC_STR_2F_FAILED_LF)));
                 }
-                if (g_CoopMode)
+                if (gameIsTwoPlayerMission())
                 {
                     // Co-op: show it on every player's screen.
                     s32 prevplayer = playerGetCurrentNum();

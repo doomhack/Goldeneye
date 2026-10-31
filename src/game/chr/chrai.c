@@ -49,6 +49,7 @@
 #include "game/prop/alarm.h"
 #include "game/prop/monitor.h"
 #include "game/prop/projectile.h"
+#include "game/level/gamemode.h"
 
 // bss
 sfxRecord  sfx_related[SFX_RELATED_LEN];
@@ -850,7 +851,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
         // loop forever (or until broken)
         for (;;)
         {
-            if (g_CoopMode)
+            if (gameIsTwoPlayerMission())
             {
                 coopAiBegin(&coop, AiListp, Offset, ChrEntityp);
             }
@@ -2035,7 +2036,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     // only counts while no player still has a copy they
                     // could place correctly. Other uses, like Silo's
                     // plastique starting a countdown, are unchanged.
-                    s32 coopsecondcopy = g_CoopMode
+                    s32 coopsecondcopy = gameIsTwoPlayerMission()
                         && (Offset >= (s32)sizeof(AiIFItemIsAttachedToObjectRecord))
                         && (((u8 *)AiListp)[Offset - sizeof(AiIFItemIsAttachedToObjectRecord)] == AI_IFItemIsAttachedToObject)
                         && (((u8 *)AiListp)[Offset - sizeof(AiIFItemIsAttachedToObjectRecord) + 1] == ai->KEY_ID)
@@ -4006,7 +4007,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             // cutscene that follows animates one of them
                             // (solo creates Bond's body after this). A
                             // hidden chr doesn't run its AI list.
-                            if (g_CoopMode && (g_ChrSlots[num].prop != NULL) && (g_ChrSlots[num].prop->type == PROP_TYPE_VIEWER))
+                            if (gameIsTwoPlayerMission() && (g_ChrSlots[num].prop != NULL) && (g_ChrSlots[num].prop->type == PROP_TYPE_VIEWER))
                             {
                                 continue;
                             }
@@ -4370,7 +4371,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
             } // switch
 
-            if (g_CoopMode)
+            if (gameIsTwoPlayerMission())
             {
                 coopAiEnd(&coop, &Offset, ChrEntityp);
             }

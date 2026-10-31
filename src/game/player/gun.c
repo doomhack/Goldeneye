@@ -114,6 +114,7 @@ CartridgeModelFileRecord ejected_cartridge[] = {
 #include "game/chr/chr.h"
 #include "game/prop/projectile.h"
 #include "game/text/language.h"
+#include "game/level/gamemode.h"
 
 u32 g_GunDebApplyKeyframe = 0;
 u32 g_gunDebKeyframeIndex = 0;
@@ -1648,7 +1649,7 @@ void gunThrowObject(s32 hand)
         switch (current_weapon)
         {
             case ITEM_REMOTEMINE:
-            if (!isMpGame())
+            if (!gameIsMulti())
             {
                 wor->timer = THROWN_ITEM_TIMER_SOLO;
             }
@@ -1659,7 +1660,7 @@ void gunThrowObject(s32 hand)
             break;
 
             case ITEM_PROXIMITYMINE:
-            if (!isMpGame())
+            if (!gameIsMulti())
             {
                 wor->timer = THROWN_ITEM_TIMER_SOLO;
             }
@@ -1670,7 +1671,7 @@ void gunThrowObject(s32 hand)
             break;
 
             case ITEM_TIMEDMINE:
-            if (!isMpGame())
+            if (!gameIsMulti())
             {
                 wor->timer = THROWN_ITEM_TIMER_SOLO;
             }
@@ -1681,7 +1682,7 @@ void gunThrowObject(s32 hand)
             break;
 
             case ITEM_BOMBCASE:
-            if (!isMpGame())
+            if (!gameIsMulti())
             {
                 wor->timer = THROWN_ITEM_TIMER_SOLO;
             }

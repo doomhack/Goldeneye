@@ -17,6 +17,7 @@
 #include <bondgame.h>
 #include <bondtypes.h>
 #include <boss.h>
+#include "game/level/gamemode.h"
 
 /**
  * Co-op: how an AI command that looks at "Bond" treats the two players.
@@ -40,7 +41,7 @@ static s32 coopAiCommandMode(u8 cmd)
 {
     // Counter-op: level scripts and guards only know Bond. Only a cutscene's
     // control lock reaches the guard player as well.
-    if (g_CounterOpMode)
+    if (gameIsCounterOp())
     {
         if ((cmd == AI_BondDisableControl) || (cmd == AI_BondEnableControl))
         {
@@ -156,7 +157,7 @@ void coopAiActOnActivator(ChrRecord *chr)
 
     // Counter-op: the script stays about Bond, but its messages go to
     // whoever used the object.
-    if (g_CounterOpMode)
+    if (gameIsCounterOp())
     {
         if ((player >= 0) && (player < getPlayerCount()) && !g_playerPointers[player]->bonddead)
         {
@@ -166,7 +167,7 @@ void coopAiActOnActivator(ChrRecord *chr)
         return;
     }
 
-    if (!g_CoopMode || (chr == NULL) || (player < 0) || (player >= getPlayerCount()) || g_playerPointers[player]->bonddead)
+    if (!gameIsTwoPlayerMission() || (chr == NULL) || (player < 0) || (player >= getPlayerCount()) || g_playerPointers[player]->bonddead)
     {
         return;
     }
@@ -306,7 +307,7 @@ void aiForObject(PropDefHeaderRecord *Entityp)
 {
     s32 prevplayer;
 
-    if (!g_CounterOpMode)
+    if (!gameIsCounterOp())
     {
         aiRunList(Entityp, PROP_TYPE_OBJ);
         return;

@@ -212,7 +212,7 @@ extern f32 tab2_bottom_y_coord;
 
 extern s32 g_FrontFolder;
 extern s32 g_FrontFolderSaved;
-extern GAMEMODE g_FrontGameMode;
+extern FRONTMODE g_FrontMode;
 extern s32 g_FrontStage;
 extern s32 g_FrontMission;
 extern DIFFICULTY g_FrontDifficulty;

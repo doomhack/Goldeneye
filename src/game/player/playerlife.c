@@ -51,6 +51,7 @@
 #include "game/nav/stan.h"
 #include "game/nav/stan.h"
 #include "game/text/text.h"
+#include "game/level/gamemode.h"
 
 ITEM_IDS starting_weapon[2];
 
@@ -180,7 +181,7 @@ void playerResetLife(void)
     // In counter-op with controller 2 playing Bond, the two swap.
     s32 person = coopPlayerPerson(playerGetCurrentNum());
 
-    if (isMpGame() || (g_CoopMode && (person > 0)))
+    if (gameIsMulti() || (gameIsTwoPlayerMission() && (person > 0)))
     {
         g_CurrentPlayer->controldef = frontGetMpControlStyle(person);
         optionsSetControlStyle(frontGetMpControlStyle(person));
@@ -191,7 +192,7 @@ void playerResetLife(void)
             fileCoopRestorePartnerOptions();
         }
     }
-    else if (g_CoopMode && (playerGetCurrentNum() > 0))
+    else if (gameIsTwoPlayerMission() && (playerGetCurrentNum() > 0))
     {
         optionsSetControlStyle(fileGetFolderControlType(g_FrontFolder));
     }

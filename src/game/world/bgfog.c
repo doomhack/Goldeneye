@@ -15,6 +15,7 @@
 #include "game/player/player.h"
 #include "game/menu/watchmenu.h"
 #include <limits.h>
+#include "game/level/gamemode.h"
 
 s32 g_FogSkyIsEnabled;
 
@@ -249,7 +250,7 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *env)
     s_FogLastEnvironment = env;
     farfog = env->Visibility.FarFog;
 
-    if (g_CoopMode && optionsGetDrawNear())
+    if (gameIsTwoPlayerMission() && optionsGetDrawNear())
     {
         farfog *= COOP_NEAR_DRAW_SCALE;
     }
@@ -358,7 +359,7 @@ void fogLoadLevelEnvironment(s32 level_id, s32 introCamera)
     num_players = getPlayerCount();
 
     // Co-op plays solo levels, which only have solo fog tables.
-    if ((num_players == 1) || !isMpGame())
+    if ((num_players == 1) || !gameIsMulti())
     {
         num_players = 0;
     }

@@ -30,6 +30,7 @@
 #include "game/prop/propobj.h"
 #include "game/prop/explosion.h"
 #include <assets/oddtextures.h>
+#include "game/level/gamemode.h"
 
 /* The mushroom explosion rises this long, then spreads out */
 #define MUSHROOM_RISE_TICKS 32
@@ -459,7 +460,7 @@ static void explosionInflictDamage(PropRecord *expprop, f32 hrange, f32 vrange)
             prevplayer = playerGetCurrentNum();
             playerSetCurrent(playerGetIndexForProp(prop));
 
-            if (!isMpGame())
+            if (!gameIsMulti())
             {
                 damage *= g_SpExplosionDamageMult;
             }

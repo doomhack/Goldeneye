@@ -18,6 +18,7 @@
 #include "game/nav/stan.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
+#include "game/level/gamemode.h"
 
 /* Set by difficulty: scales how far from the centre of the screen a target may be */
 f32 g_AutoAimTolerance = 1.0;
@@ -108,7 +109,7 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *xbounds, f32 
         {
             tolerance = (rightedge.x - leftedge.x) * 1.5f;
 
-            if (!isMpGame())
+            if (!gameIsMulti())
             {
                 tolerance = tolerance * g_AutoAimTolerance;
             }
@@ -182,7 +183,7 @@ static bool autoaimIsCandidate(PropRecord *prop)
     }
 
     // In co-op the other player is a friend
-    if (g_CoopMode && !g_CounterOpMode && prop->type == PROP_TYPE_VIEWER)
+    if (gameIsCoop() && prop->type == PROP_TYPE_VIEWER)
     {
         return FALSE;
     }

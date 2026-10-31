@@ -19,6 +19,7 @@
 #include "game/player/inventory.h"
 #include "game/prop/propobj.h"
 #include "game/save/file.h"
+#include "game/level/gamemode.h"
 
 /**
  * Flag to toggle invisibility cheat.
@@ -114,11 +115,6 @@ void playersInit(s32 playercount)
     playerSetCurrent(PLAYER_1);
     playerSetScreenSize(viGetViewWidth(), viGetViewHeight());
     playerSetViewportPos(viGetViewLeft(), viGetViewTop());
-}
-
-s32 isMpGame(void)
-{
-    return !g_CoopMode && getPlayerCount() >= 2;
 }
 
 /**
@@ -527,7 +523,7 @@ void playerSetCurrent(s32 playernum)
     player_num = playernum;
     g_CurrentPlayer = g_playerPointers[playernum];
     // Player 2 has their own options in co-op and in multiplayer.
-    optionsCoopUsePlayer(((coopPlayerPerson(playernum) == 1) && (g_CoopMode || isMpGame())) ? 1 : 0);
+    optionsCoopUsePlayer(((coopPlayerPerson(playernum) == 1) && (gameIsTwoPlayerMission() || gameIsMulti())) ? 1 : 0);
     g_playerPerm = &g_playerPlayerData[playernum];
 }
 
@@ -646,7 +642,7 @@ void playerInitHands(void)
 
     g_CurrentPlayer->handModelBuffer[GUNRIGHT] = mempAlloc(size_item_buffer[0], MEMPOOL_STAGE);
 
-    if (!isMpGame())
+    if (!gameIsMulti())
     {
         g_CurrentPlayer->handModelBuffer[GUNLEFT] = mempAlloc(size_item_buffer[1], MEMPOOL_STAGE);
     }

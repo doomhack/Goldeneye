@@ -90,6 +90,7 @@
       build/OUTCODE/src/game/world/sky.o (.bss);
       build/OUTCODE/src/game/player/player.o (.bss);
       build/OUTCODE/src/game/player/coop.o (.bss);
+      build/OUTCODE/src/game/level/gamemode.o (.bss);
       build/OUTCODE/src/game/gfx/vtxstore.o (.bss);
       build/OUTCODE/src/game/prop/explosion.o (.bss);
       build/OUTCODE/src/game/prop/smoke.o (.bss);

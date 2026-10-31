@@ -17,7 +17,7 @@ typedef struct ramromfilestructure {
     save_data savefile;
     s32 totaltime_ms;
     s32 filesize;
-    enum GAMEMODE mode;
+    enum FRONTMODE mode;
     u32 slotnum;
     u32 numplayers;
     u32 scenario;

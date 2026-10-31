@@ -313,7 +313,7 @@ void copy_current_ingame_registers_before_ramrom_playback(ramromfilestructure *s
 {
     state->randomseed = g_randomSeed;
     state->randomizer = g_chrObjRandomSeed;
-    state->mode = g_FrontGameMode;
+    state->mode = g_FrontMode;
     state->numplayers = g_MpPlayerCount;
     state->scenario = g_MpScenario;
     state->mpstage_sel = g_MpStage;
@@ -342,7 +342,7 @@ void copy_recorded_ramrom_registers_to_proper_place_ingame(ramromfilestructure *
 {
     g_randomSeed = state->randomseed;
     g_chrObjRandomSeed = state->randomizer;
-    g_FrontGameMode = state->mode;
+    g_FrontMode = state->mode;
     g_MpPlayerCount = state->numplayers;
     g_MpScenario = state->scenario;
     g_MpStage = state->mpstage_sel;

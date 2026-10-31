@@ -60,6 +60,7 @@
 #include "game/text/language.h"
 #include "game/world/lightfixture.h"
 #include "game/prop/monitor.h"
+#include "game/level/gamemode.h"
 
 
 #ifdef REFRESH_PAL
@@ -1342,7 +1343,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             case ITEM_PITONGUN:
                 if (handptr->stateFrames == 0)
                 {
-                    if ((!isMpGame()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
+                    if ((!gameIsMulti()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
                     {
                         handptr->firing = 1;
                     }
@@ -1374,7 +1375,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 {
                     if (((s32) handptr->stateFrames % weaponGetFireRate(weapon)) == 0)
                     {
-                        if ((!isMpGame()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
+                        if ((!gameIsMulti()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
                         {
                             handptr->firing = 1;
                         }
@@ -1464,7 +1465,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                     playSound = 1;
                 }
 
-                if ((!isMpGame()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
+                if ((!gameIsMulti()) || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0)))
                 {
                     if (playSound != 0)
                     {
@@ -1513,7 +1514,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
             handptr->stateTime = 0;
             handptr->stateFrames = 0;
 
-            if ((!isMpGame())
+            if ((!gameIsMulti())
                 || ((mpIsPaused() == 0) && (g_CurrentPlayer->mpmenuon == 0))
                )
             {
@@ -2574,7 +2575,7 @@ s32 playerHasCopiedGEKey(void)
   s32 i;
 
   // Co-op: objectives are shared, so a copy made by either player counts.
-  if (g_CoopMode)
+  if (gameIsTwoPlayerMission())
   {
     for (i = 0; i < getPlayerCount(); i++)
     {

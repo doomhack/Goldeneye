@@ -22,6 +22,7 @@
 #include <bondtypes.h>
 #include <fr.h>
 #include <music.h>
+#include "game/level/gamemode.h"
 
 f32 watch_transition_time = 0.90909088;
 
@@ -1037,7 +1038,7 @@ void watchTrigger(s32 instant)
     {
         // Co-op: the save folder holds player 1's options; player 2's are
         // kept separately.
-        if (!g_CoopMode || (coopPlayerPerson(playerGetCurrentNum()) == 0))
+        if (!gameIsTwoPlayerMission() || (coopPlayerPerson(playerGetCurrentNum()) == 0))
         {
             fileClearCurrentFolder();
         }
@@ -1047,7 +1048,7 @@ void watchTrigger(s32 instant)
         }
 
         // The draw distance option may have changed.
-        if (g_CoopMode)
+        if (gameIsTwoPlayerMission())
         {
             fogReloadCurrentEnvironment();
         }
@@ -1291,7 +1292,7 @@ s32 coopPartnerHasWatchOut(void)
     s32 count = getPlayerCount();
     s32 i;
 
-    if (!g_CoopMode)
+    if (!gameIsTwoPlayerMission())
     {
         return FALSE;
     }

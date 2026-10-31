@@ -14,6 +14,7 @@
 #include "game/level/lv.h"
 #include <bondtypes.h>
 #include <memp.h>
+#include "game/level/gamemode.h"
 
 void invReset(void)
 {
@@ -272,7 +273,7 @@ s32 invItemAvailableForHand(ITEM_IDS right, ITEM_IDS left)
     if (g_CurrentPlayer->equipallguns &&
         right < ITEM_BOMBCASE &&
         right == left &&
-        !isMpGame() &&
+        !gameIsMulti() &&
         weaponHasFlag(right, WEAPONSTATBITFLAG_CAN_DUAL_WIELD))
     {
         return TRUE;
@@ -287,7 +288,7 @@ s32 invItemAvailableForHand(ITEM_IDS right, ITEM_IDS left)
         if (g_CurrentPlayer->equipallguns &&
             right < ITEM_BOMBCASE &&
             right == left &&
-            !isMpGame() &&
+            !gameIsMulti() &&
             weaponHasFlag(right, WEAPONSTATBITFLAG_CAN_DUAL_WIELD))
         {
             return TRUE;
@@ -552,7 +553,7 @@ void invCycleForward(s32 *nextright, s32 *nextleft, s32 requireammo)
     {
         s32 candidate = *nextright;
 
-        if (!isMpGame() && weaponHasFlag(*nextright, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (*nextleft < *nextright) && (requireammo == FALSE || weaponHasAmmo(*nextright)) && (weapon1 != *nextright || *nextright < weapon2))
+        if (!gameIsMulti() && weaponHasFlag(*nextright, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (*nextleft < *nextright) && (requireammo == FALSE || weaponHasAmmo(*nextright)) && (weapon1 != *nextright || *nextright < weapon2))
         {
             weapon1 = *nextright;
             weapon2 = *nextright;
@@ -654,7 +655,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
         {
             if (candidate == weapon1)
             {
-                if (!isMpGame() && weaponHasFlag(candidate, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (requireammo == FALSE || weaponHasAmmo(candidate)) && (candidate != *nextright || candidate < *nextleft) && (weapon2 < candidate))
+                if (!gameIsMulti() && weaponHasFlag(candidate, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (requireammo == FALSE || weaponHasAmmo(candidate)) && (candidate != *nextright || candidate < *nextleft) && (weapon2 < candidate))
                 {
                     weapon1 = candidate;
                     weapon2 = candidate;
@@ -665,7 +666,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
             else if (
                 (requireammo == FALSE || weaponHasAmmo(candidate)))
             {
-                if (!isMpGame() && weaponHasFlag(candidate, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (candidate != *nextright || candidate < *nextleft))
+                if (!gameIsMulti() && weaponHasFlag(candidate, WEAPONSTATBITFLAG_CAN_DUAL_WIELD) && (candidate != *nextright || candidate < *nextleft))
                 {
                     weapon1 = candidate;
                     weapon2 = candidate;
@@ -738,7 +739,7 @@ bool invCheckHasKeyFlags(u32 wantkeyflags)
 
     // Co-op: keys are shared, so either player opens a door the other has
     // the key for.
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         for (i = 0; i < getPlayerCount(); i++)
         {
@@ -842,7 +843,7 @@ bool invAnyPlayerHasProp(PropRecord *prop)
 {
     s32 i;
 
-    if (!g_CoopMode)
+    if (!gameIsTwoPlayerMission())
     {
         return invHasProp(prop);
     }
@@ -1167,7 +1168,7 @@ void invAddTextOverride(textoverride *override)
 
     // Co-op: the setup's renames (e.g. Dam's "covert modem") are loaded
     // with the last player current, but every player's inventory uses them.
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         s32 i;
 

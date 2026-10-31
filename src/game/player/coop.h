@@ -6,8 +6,6 @@
 #define COUNTEROP_BOND  0
 #define COUNTEROP_GUARD 1
 
-extern s32 g_CoopMode;
-extern s32 g_CounterOpMode;
 extern s32 g_CounterOpBondPad;
 extern s32 g_CoopPlayersOverlap;
 extern s32 g_CoopSoloView;

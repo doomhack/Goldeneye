@@ -31,6 +31,7 @@
 #include "game/math/trig.h"
 #include "game/audio/sfxvolume.h"
 #include "assets/obseg/text/LpropobjE.h"
+#include "game/level/gamemode.h"
 
 /* How close the player must be to walk over a prop and pick it up, and, with the watch
    magnet on, to pull it in. The magnet works once it has been on for a second. */
@@ -491,7 +492,7 @@ static s32 ammoPerPickup(AMMOTYPE ammotype)
 /* In solo, a pickup of more than one round gives more on the easier difficulties */
 static s32 ammoApplySoloMultiplier(s32 amount)
 {
-    if (amount > 1 && !isMpGame())
+    if (amount > 1 && !gameIsMulti())
     {
         amount *= g_SoloAmmoMultiplier;
     }
@@ -742,7 +743,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showtext)
             {
                 s32 amount = crate->slots[slot].quantity;
 
-                if (!isMpGame())
+                if (!gameIsMulti())
                 {
                     amount *= g_SoloAmmoMultiplier;
                 }
@@ -924,7 +925,7 @@ static bool playerWantsPickup(PropRecord *prop)
 
             // In these multiplayer scenarios, the player with the flag or the Golden Gun
             // can't take armour
-            if (isMpGame())
+            if (gameIsMulti())
             {
                 MPSCENARIOS scenario = frontGetMpScenario();
 

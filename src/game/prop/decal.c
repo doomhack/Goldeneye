@@ -20,6 +20,7 @@
 #include "game/gfx/texcmds.h"
 #include "game/math/matrix.h"
 #include "game/prop/decal.h"
+#include "game/level/gamemode.h"
 
 /* How many of the oldest impacts fade out (the oldest fully) */
 #define IMPACT_FADE_COUNT 10
@@ -76,7 +77,7 @@ void scorchCreate(coord3d *pos, f32 size, s16 room)
     u8 alpha = 0xFF - (randomGetNext() % 80U);
     coord3d *roompos = roomGetPos(room);
 
-    if (isMpGame())
+    if (gameIsMulti())
     {
         return;
     }
@@ -151,7 +152,7 @@ Gfx *scorchesRender(Gfx *gdl)
     s32 lastroom = -1;
     s32 i;
 
-    if (isMpGame())
+    if (gameIsMulti())
     {
         return gdl;
     }
@@ -518,7 +519,7 @@ void decalsInit(void)
     s_NextScorch = 0;
     s_NextImpact = 0;
 
-    if (!isMpGame())
+    if (!gameIsMulti())
     {
         s_Scorches = mempAlloc(SCORCH_BUFFER_LEN * sizeof(struct Scorch), MEMPOOL_STAGE);
 

@@ -60,6 +60,7 @@
 #include "game/prop/propobj.h"
 #include "game/replay/ramromreplay.h"
 #include "str.h"
+#include "game/level/gamemode.h"
 
 
 /**
@@ -202,7 +203,7 @@ s32 g_FrontTabPrevHighlight = FALSE;
 s32 g_FrontFolder = FOLDER1;
 s32 g_FrontFolderSaved = FOLDER1;
 
-GAMEMODE g_FrontGameMode = GAMEMODE_INTRO;
+FRONTMODE g_FrontMode = FRONTMODE_INTRO;
 s32 g_FrontStage = LEVELID_NONE;
 s32 g_FrontMission = BRIEFING_INVALID;
 DIFFICULTY g_FrontDifficulty = DIFFICULTY_MULTI;
@@ -2482,9 +2483,8 @@ void frontModeSelectEnter(void)
 {
     // Co-op is picked again here (frontSetModeCursor has already used it
     // to put the cursor back on the co-op row).
-    g_CoopMode = FALSE;
-    g_CounterOpMode = FALSE;
-    g_FrontGameMode = GAMEMODE_INTRO;
+    g_GameMode = GAMEMODE_SOLO;
+    g_FrontMode = FRONTMODE_INTRO;
     g_FrontTabNextSelected = FALSE;
     g_FrontTabPrevSelected = FALSE;
     frontLoadFolders();
@@ -2569,27 +2569,23 @@ void frontModeSelectTick(void)
             switch (row)
             {
                 case MODESEL_ROW_MISSION:
-                    g_FrontGameMode = GAMEMODE_SOLO;
-                    g_CoopMode = FALSE;
-                    g_CounterOpMode = FALSE;
+                    g_FrontMode = FRONTMODE_MISSION;
+                    g_GameMode = GAMEMODE_SOLO;
                     break;
                 case MODESEL_ROW_COOP:
-                    g_FrontGameMode = GAMEMODE_SOLO;
-                    g_CoopMode = TRUE;
-                    g_CounterOpMode = FALSE;
+                    g_FrontMode = FRONTMODE_MISSION;
+                    g_GameMode = GAMEMODE_COOP;
                     break;
                 case MODESEL_ROW_COUNTEROP:
-                    g_FrontGameMode = GAMEMODE_SOLO;
-                    g_CoopMode = TRUE;
-                    g_CounterOpMode = TRUE;
+                    g_FrontMode = FRONTMODE_MISSION;
+                    g_GameMode = GAMEMODE_COUNTEROP;
                     break;
                 case MODESEL_ROW_MULTI:
-                    g_FrontGameMode = GAMEMODE_MULTI;
-                    g_CoopMode = FALSE;
-                    g_CounterOpMode = FALSE;
+                    g_FrontMode = FRONTMODE_MULTI;
+                    g_GameMode = GAMEMODE_SOLO;
                     break;
                 case MODESEL_ROW_CHEATS:
-                    g_FrontGameMode = GAMEMODE_CHEATS;
+                    g_FrontMode = FRONTMODE_CHEATS;
                     break;
             }
 
@@ -2620,23 +2616,23 @@ void frontModeSelectTick(void)
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, 0);
     }
     frontMoveCursor();
-    if ((g_FrontGameMode == GAMEMODE_SOLO) && g_CoopMode)
+    if ((g_FrontMode == FRONTMODE_MISSION) && gameIsTwoPlayerMission())
     {
         frontSetMenu(MENU_COOP_SETUP, FALSE);
         return;
     }
-    if (g_FrontGameMode == GAMEMODE_SOLO)
+    if (g_FrontMode == FRONTMODE_MISSION)
     {
         frontSetMenu(MENU_MISSION_SELECT, FALSE);
         frontSetMissionCursor(0);
         return;
     }
-    if (g_FrontGameMode == GAMEMODE_MULTI)
+    if (g_FrontMode == FRONTMODE_MULTI)
     {
         frontSetMenu(MENU_MP_OPTIONS, FALSE);
         return;
     }
-    if (g_FrontGameMode == GAMEMODE_CHEATS)
+    if (g_FrontMode == FRONTMODE_CHEATS)
     {
         frontSetMenu(MENU_CHEAT, FALSE);
         return;
@@ -2700,27 +2696,26 @@ Gfx *frontSetupMenuBackground(Gfx *DL)
 
 
 /**
- * Puts the cursor on the mode select row for a game mode (GAMEMODE_SOLO
- * with g_CoopMode set is the co-op row, or the counter-op row with
- * g_CounterOpMode).
+ * Puts the cursor on the mode select row for a front-end mode
+ * (FRONTMODE_MISSION is the co-op or counter-op row when g_GameMode says so).
  */
 void frontSetModeCursor(int mode)
 {
     s32 row;
 
-    if (mode == GAMEMODE_MULTI)
+    if (mode == FRONTMODE_MULTI)
     {
         row = MODESEL_ROW_MULTI;
     }
-    else if (mode == GAMEMODE_CHEATS)
+    else if (mode == FRONTMODE_CHEATS)
     {
         row = MODESEL_ROW_CHEATS;
     }
-    else if (g_CounterOpMode)
+    else if (gameIsCounterOp())
     {
         row = MODESEL_ROW_COUNTEROP;
     }
-    else if (g_CoopMode)
+    else if (gameIsCoop())
     {
         row = MODESEL_ROW_COOP;
     }
@@ -2870,7 +2865,7 @@ static void frontCoopSetupStep(s32 row, s32 step)
         case COOP_SETUP_ROW_CHAR:
             // Counter-op: which controller plays Bond. Player 2 plays
             // whichever guard they take over, so there is no character.
-            if (g_CounterOpMode)
+            if (gameIsCounterOp())
             {
                 g_CounterOpBondPad ^= 1;
                 break;
@@ -2912,10 +2907,9 @@ void frontCoopSetupTick(void)
 
     if (joyGetControllerCount() < 2)
     {
-        g_CoopMode = FALSE;
-        g_CounterOpMode = FALSE;
+        g_GameMode = GAMEMODE_SOLO;
         frontSetMenu(MENU_MODE_SELECT, FALSE);
-        frontSetModeCursor(GAMEMODE_SOLO);
+        frontSetModeCursor(FRONTMODE_MISSION);
         return;
     }
 
@@ -3018,7 +3012,7 @@ void frontCoopSetupTick(void)
         // Mode select clears co-op once it opens; the cursor goes back to
         // the co-op row.
         frontSetMenu(MENU_MODE_SELECT, FALSE);
-        frontSetModeCursor(GAMEMODE_SOLO);
+        frontSetModeCursor(FRONTMODE_MISSION);
         return;
     }
 
@@ -3050,13 +3044,13 @@ Gfx *frontCoopSetupRender(Gfx *DL)
 
     x = 0x37;
     y = 0x5F;
-    DL = frontPrintText(DL, &x, &y, (g_CounterOpMode ? "2 Player Counter-op\n" : "2 Player Co-op\n"), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    DL = frontPrintText(DL, &x, &y, (gameIsCounterOp() ? "2 Player Counter-op\n" : "2 Player Co-op\n"), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
     for (row = 0; row < COOP_SETUP_ROW_COUNT; row++)
     {
         text = coop_setup_row_labels[row];
 
-        if (g_CounterOpMode && (row == COOP_SETUP_ROW_CHAR))
+        if (gameIsCounterOp() && (row == COOP_SETUP_ROW_CHAR))
         {
             text = "Bond:\n";
         }
@@ -3075,7 +3069,7 @@ Gfx *frontCoopSetupRender(Gfx *DL)
         switch (row)
         {
             case COOP_SETUP_ROW_CHAR:
-                if (g_CounterOpMode)
+                if (gameIsCounterOp())
                 {
                     text = (g_CounterOpBondPad ? "Player 2\n" : "Player 1\n");
                     break;
@@ -3190,8 +3184,7 @@ void frontMissionSelectEnter(void)
     // goes back there.
     if (joyGetControllerCount() < 2)
     {
-        g_CoopMode = FALSE;
-        g_CounterOpMode = FALSE;
+        g_GameMode = GAMEMODE_SOLO;
     }
     if (g_FrontStartMusic)
     {
@@ -3716,11 +3709,11 @@ Gfx *frontDifficultyRender(Gfx *DL)
         }
     }
 
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         x = 0x37;
         y = 0x12C;
-        DL = frontPrintText(DL, &x, &y, (g_CounterOpMode ? "2 PLAYER COUNTER-OP\n" : "2 PLAYER CO-OP\n"),
+        DL = frontPrintText(DL, &x, &y, (gameIsCounterOp() ? "2 PLAYER COUNTER-OP\n" : "2 PLAYER CO-OP\n"),
             g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
@@ -4170,11 +4163,11 @@ void frontUnlockAllMpChars(void) {
 
 s32 frontGetPlayerCount(void)
 {
-    if (g_FrontGameMode == GAMEMODE_MULTI)
+    if (g_FrontMode == FRONTMODE_MULTI)
     {
         return g_MpPlayerCount;
     }
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         return 2;
     }
@@ -4310,7 +4303,7 @@ void frontCoopResetPartnerOutfit(void)
 
 s32 frontCoopPartnerIsBond(void)
 {
-    return g_CoopMode && (frontCoopGetPartnerChar() <= COOP_BOND_OUTFIT_COUNT);
+    return gameIsTwoPlayerMission() && (frontCoopGetPartnerChar() <= COOP_BOND_OUTFIT_COUNT);
 }
 
 /**
@@ -4588,7 +4581,7 @@ void frontMpOptionsTick(void)
     if (joyGetControllerCount() < 2)
     {
         frontSetMenu(MENU_MODE_SELECT, 0);
-        frontSetModeCursor(g_FrontGameMode);
+        frontSetModeCursor(g_FrontMode);
     }
 
     if (joyGetControllerCount() < g_MpPlayerCount)
@@ -4741,7 +4734,7 @@ void frontMpOptionsTick(void)
     if (g_FrontTabPrevSelected)
     {
         frontSetMenu(MENU_MODE_SELECT, 0);
-        frontSetModeCursor(g_FrontGameMode);
+        frontSetModeCursor(g_FrontMode);
         return;
     }
 
@@ -7181,7 +7174,7 @@ Gfx * frontDebriefRender(Gfx *DL)
 
     // Counter-op: Bond wins by completing the mission, the guard player by
     // stopping him. Name the controller too, as either can be Bond.
-    if (g_CounterOpMode)
+    if (gameIsCounterOp())
     {
         s32 bondwins = frontIsMissionSuccess();
         char winner[48];
@@ -7342,14 +7335,14 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
 
     // Counter-op has two more rows, so they sit closer together to fit on
     // the page.
-    s32 top = g_CounterOpMode ? 0xC6 : 0xCC;
-    s32 step = lineheight + (g_CounterOpMode ? 1 : 4);
+    s32 top = gameIsCounterOp() ? 0xC6 : 0xCC;
+    s32 step = lineheight + (gameIsCounterOp() ? 1 : 4);
 
     for (i = 0; i < 2; i++)
     {
         x = columns[i];
         y = top;
-        if (g_CounterOpMode)
+        if (gameIsCounterOp())
         {
             sprintf(text, (i == COUNTEROP_BOND) ? "BOND\n" : "GUARD\n");
         }
@@ -7361,7 +7354,7 @@ static Gfx *frontDrawCoopMissionStats(Gfx *DL, s32 lineheight)
     }
 
     // Counter-op adds the guard player's bodies used and damage to Bond.
-    for (row = 0; row < (g_CounterOpMode ? 6 : 4); row++)
+    for (row = 0; row < (gameIsCounterOp() ? 6 : 4); row++)
     {
         static const s32 labels[4] = {
             TITLE_STR_106_ACCURACY,  // Accuracy:
@@ -7562,7 +7555,7 @@ Gfx *frontStatsRender(Gfx *DL)
     }
 
 
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         DL = frontDrawCoopMissionStats(DL, y2);
         goto tabs;
@@ -7802,7 +7795,7 @@ void frontCheatTick(void)
     if (g_FrontTabPrevSelected)
     {
         frontSetMenu(MENU_MODE_SELECT, 0);
-        frontSetModeCursor(g_FrontGameMode);
+        frontSetModeCursor(g_FrontMode);
         return;
     }
 
@@ -8733,7 +8726,7 @@ void frontTick(void)
             {
                 frontSetMenu(MENU_LEGAL_SCREEN, 1);
             }
-            else if (g_FrontGameMode == GAMEMODE_MULTI)
+            else if (g_FrontMode == FRONTMODE_MULTI)
             {
                 frontSetMenu(MENU_MP_OPTIONS, 1);
             }

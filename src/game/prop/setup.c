@@ -39,6 +39,7 @@
 #include "game/prop/carried.h"
 #include "game/prop/setup.h"
 #include "game/prop/objsetup.h"
+#include "game/level/gamemode.h"
 
 /* The level's setup: the working copy, and the file as loaded */
 stagesetup g_CurrentSetup;
@@ -308,7 +309,7 @@ static void setupLoadFile(enum LEVELID stageId)
     name[0] = setup_text_pointers[stageId][0];
     name[1] = '\0';
 
-    if (isMpGame())
+    if (gameIsMulti())
     {
         strcat(name, "mp_");
     }
@@ -489,7 +490,7 @@ static s32 setupGetSkipFlags(void)
 {
     s32 flags = 1 << (lvGetDifficulty() + 4);
 
-    if (isMpGame())
+    if (gameIsMulti())
     {
         flags |= 1 << (getPlayerCount() + 20);
     }
