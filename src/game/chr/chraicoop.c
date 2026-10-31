@@ -10,7 +10,7 @@
 #include "game/chr/chraicoop.h"
 #include "game/chr/chrai.h"
 #include "game/mission/objective.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include <bondaicommands.h>

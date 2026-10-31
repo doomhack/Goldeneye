@@ -7,7 +7,7 @@
 #include "game/player/counterop.h"
 #include "game/model/model.h"
 #include "game/nav/stan.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "random.h"

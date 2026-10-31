@@ -13,7 +13,7 @@
 #include "game/menu/front.h"
 #include "game/menu/mpmenu.h"
 #include "game/menu/watchmenu.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/player/playertune.h"

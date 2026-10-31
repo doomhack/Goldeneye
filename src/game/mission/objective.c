@@ -16,7 +16,7 @@
 #include "PR/os.h"
 #include "str.h"
 #include "game/player/player.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "bondtypes.h"
 #include "game/chr/chraction.h"
 #include "game/nav/stan.h"

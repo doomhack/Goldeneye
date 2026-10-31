@@ -1,10 +1,13 @@
 /**
  * The 3D models in the pause watch: the held item and the controller
- * diagram on the controls page.
+ * diagram on the controls page. Also each item's watch texts and where it
+ * sits on the inventory and equipment pages (itemGetWatch*, invGetWatch*).
  */
 #include "assets/obseg/text/LgunE.h"
 #include "game/gfx/dyn.h"
 #include "game/menu/watchmenu.h"
+#include "game/player/inventory.h"
+#include "game/text/language.h"
 #include "game/model/model.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
@@ -582,4 +585,229 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 Gfx *watchRenderControllerOpaque(Gfx *gdl, Mtxf *basemtx, bool animatebuttons, WatchContButtonPositions *buttonpositions, s8 *contpadnum)
 {
     return watchRenderController(gdl, basemtx, 0xff, animatebuttons, buttonpositions, contpadnum);
+}
+
+
+f32 itemGetWatchPosX(ITEM_IDS item)
+{
+  return gitem_structs[item].watch_pos_x;
+}
+
+
+f32 itemGetWatchPosY(ITEM_IDS item)
+{
+  return gitem_structs[item].watch_pos_y;
+}
+
+
+f32 itemGetWatchPosZ(ITEM_IDS item)
+{
+  return gitem_structs[item].watch_pos_z;
+}
+
+
+f32 itemGetWatchRotX(ITEM_IDS item)
+
+{
+  return gitem_structs[item].x_rotation;
+}
+
+
+f32 itemGetWatchRotY(ITEM_IDS item)
+{
+  return gitem_structs[item].y_rotation;
+}
+
+
+f32 itemGetWatchFov(void) {
+  return 45.0f;
+}
+
+
+char *itemGetWatchTitle1(ITEM_IDS item)
+{
+  return langGet(gitem_structs[item].upper_watch_text);
+}
+
+
+char *itemGetWatchTitle2(ITEM_IDS item)
+{
+    return langGet(gitem_structs[item].lower_watch_text);
+}
+
+
+char *itemGetWatchText(ITEM_IDS item)
+{
+    return langGet(gitem_structs[item].watch_equipment_text);
+}
+
+
+f32 itemGetEquipFov(void)
+{
+	return 45.0f;
+}
+
+
+f32 itemGetEquipPosX(ITEM_IDS item)
+{
+  return gitem_structs[item].equip_watch_x;
+}
+
+
+f32 itemGetEquipPosY(ITEM_IDS item)
+{
+  return gitem_structs[item].equip_watch_y;
+}
+
+
+f32 itemGetEquipPosZ(ITEM_IDS item)
+{
+  return gitem_structs[item].equip_watch_z;
+}
+
+
+f32 invGetEquipFovForIndex(void)
+{
+    return itemGetEquipFov();
+}
+
+f32 invGetEquipPosXForIndex(s32 index)
+{
+    return itemGetEquipPosX(invGetWeaponForIndex(index));
+}
+
+f32 invGetEquipPosYForIndex(s32 index)
+{
+    return itemGetEquipPosY(invGetWeaponForIndex(index));
+}
+
+f32 invGetEquipPosZForIndex(s32 index)
+{
+    return itemGetEquipPosZ(invGetWeaponForIndex(index));
+}
+
+char *invGetWatchTitle1ForIndex(s32 index)
+{
+    InvItem      *item      = invGetItemByIndex(index);
+    ITEM_IDS      weaponnum = 0;
+    textoverride *override;
+
+    if (item)
+    {
+        if (item->type == INV_ITEM_PROP)
+        {
+            PropRecord *prop = item->type_inv_item.type_prop.prop;
+            override         = invGetOverrideForObj(prop->obj);
+
+            if (override)
+            {
+                if (override->titletext1)
+                {
+                    return langGet(override->titletext1);
+                }
+
+                weaponnum = override->weapon;
+            }
+        }
+        else if (item->type == INV_ITEM_WEAPON)
+        {
+            weaponnum = item->type_inv_item.type_weap.weapon;
+            override  = invGetOverrideForWeapon(weaponnum);
+
+            if (override && override->titletext1)
+            {
+                return langGet(override->titletext1);
+            }
+        }
+    }
+    else
+    {
+        if (g_CurrentPlayer->equipallguns)
+        {
+            if (index < ITEM_TANKSHELLS)
+            {
+                return itemGetWatchTitle1(index + 1);
+            }
+        }
+    }
+
+    return itemGetWatchTitle1(weaponnum);
+}
+
+char *invGetWatchTitle2ForIndex(s32 index)
+{
+    InvItem      *item      = invGetItemByIndex(index);
+    ITEM_IDS      weaponnum = 0;
+    textoverride *override;
+
+    if (item)
+    {
+        if (item->type == INV_ITEM_PROP)
+        {
+            PropRecord *prop = item->type_inv_item.type_prop.prop;
+            override         = invGetOverrideForObj(prop->obj);
+
+            if (override)
+            {
+                if (override->titletext2)
+                {
+                    return langGet(override->titletext2);
+                }
+
+                weaponnum = override->weapon;
+            }
+        }
+        else if (item->type == INV_ITEM_WEAPON)
+        {
+            weaponnum = item->type_inv_item.type_weap.weapon;
+            override  = invGetOverrideForWeapon(weaponnum);
+
+            if (override && override->titletext2)
+            {
+                return langGet(override->titletext2);
+            }
+        }
+    }
+    else
+    {
+        if (g_CurrentPlayer->equipallguns)
+        {
+            if (index < ITEM_TANKSHELLS)
+            {
+                return itemGetWatchTitle2(index + 1);
+            }
+        }
+    }
+
+    return itemGetWatchTitle2(weaponnum);
+}
+extern f32 itemGetWatchFov(void);
+f32 invGetWatchFovForIndex(void)
+{
+    return itemGetWatchFov();
+}
+
+f32 invGetWatchPosXForIndex(s32 index)
+{
+    return itemGetWatchPosX(invGetWeaponForIndex(index));
+}
+
+f32 invGetWatchPosYForIndex(s32 index)
+{
+    return itemGetWatchPosY(invGetWeaponForIndex(index));
+}
+
+f32 invGetWatchPosZForIndex(s32 index)
+{
+    return itemGetWatchPosZ(invGetWeaponForIndex(index));
+}
+
+f32 invGetWatchRotXForIndex(s32 index)
+{
+    return itemGetWatchRotX(invGetWeaponForIndex(index));
+}
+
+f32 invGetWatchRotYForIndex(s32 index)
+{
+    return itemGetWatchRotY(invGetWeaponForIndex(index));
 }

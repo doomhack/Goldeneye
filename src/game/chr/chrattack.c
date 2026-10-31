@@ -19,7 +19,7 @@
 #include <random.h>
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
-#include "game/player/bondhead.h"
+#include "game/player/headbob.h"
 #include "game/chr/chr.h"
 #include "game/chr/body.h"
 #include "game/chr/chrai.h"

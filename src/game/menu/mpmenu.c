@@ -6,7 +6,7 @@
 #include <ultra64.h>
 #include <music.h>
 #include <bondgame.h>
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include <bondconstants.h>
 #include <boss.h>
 #include <joy.h>

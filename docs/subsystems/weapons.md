@@ -14,8 +14,8 @@ and the ammo HUD. The player as a whole is in [player](player.md).
 | `src/game/player/ammo.c` | Ammo: carry limits and HUD icons per ammo type (`g_AmmoStats`), giving ammo, and what each hand holds and has loaded |
 | `src/game/player/playerstats.c` | Per-player mission stats for the end screen (`stats*`) |
 | `src/game/hud/ammohud.c` | The ammo HUD and the gun sight |
-| `src/game/menu/watchmodel.c` | The 3D models in the pause watch: the held item and the controller |
-| `src/game/player/bondinv.c` | The inventory (`inv*`): what the player carries, cycling through it, keys, text overrides for picked-up objects, and the watch's item list |
+| `src/game/menu/watchmodel.c` | The 3D models in the pause watch (the held item and the controller), and each item's watch texts and placement |
+| `src/game/player/inventory.c` | The inventory (`inv*`): what the player carries, cycling through it, keys, and text overrides for picked-up objects |
 
 ## Hands
 

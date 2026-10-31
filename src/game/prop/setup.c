@@ -27,7 +27,7 @@
 #include "game/chr/chrai.h"
 #include "game/chr/body.h"
 #include "game/player/player.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/text/language.h"
 #include "game/asset/asset.h"
 #include "game/mission/objective.h"

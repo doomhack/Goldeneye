@@ -22,7 +22,7 @@
 #include <bondgame.h>
 #include <music.h>
 #include <snd.h>
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/gun.h"
 #include "game/model/chrobjdata.h"
 #include "game/prop/propobj.h"
@@ -50,7 +50,7 @@
 #include "game/menu/mpmenu.h"
 #include "joy.h"
 #include "game/math/matrix.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/nav/stan.h"
 #include "gbi_extension.h"
 #include "game/math/interp.h"
@@ -79,7 +79,6 @@
 #endif
 
 s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
-extern GunModelFileRecord gitem_structs[];
 extern u16 watchlaser_fire_sounds[2];
 extern u16 knife_throw_sounds[3];
 extern Weapon1PTransformKeyframe knifeSlashKeyframes1[];

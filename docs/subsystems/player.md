@@ -22,8 +22,9 @@ inventory are in [weapons](weapons.md).
 | `src/game/player/counterop.c` | Counter-op: player 2 taking over guards, the suicide pill, the end screen's stats |
 | `src/game/player/playermove.c` | Moving with collision (`playerMoveWithCollision`, `playerTestMove`), the player's collision state (`playerResetCollision`), keeping the player prop in its rooms (`playerUpdateRooms`) |
 | `src/game/player/tank.c` | The tank: its collision box (`tankTestCollision`, `tankTryMoveTo`), the turret (`tankUpdateTurretOffset`, `tankGetTurretDir`), co-op ownership (`coopTankBeginPlayer`) |
-| `src/game/player/bondview_r.c` | Level start for a player: the intro section of the setup file (`playerApplyIntro`), co-op spawn points, loading projectile models |
-| `src/game/player/bondhead.c` | Head bob: the hidden walk animation whose root motion moves the camera up and down as Bond walks, and breathing |
+| `src/game/player/playerintro.c` | Level start for a player: the intro section of the setup file (`playerApplyIntro`), co-op spawn points, loading projectile models |
+| `src/game/player/coop.c` | Co-op and counter-op state: the mode flags, whose controller and settings each player uses (`coopPlayerPerson`), reviving (`coopPartnerCanRevive`), the last player to use an object, the split-screen layout |
+| `src/game/player/headbob.c` | Head bob: the hidden walk animation whose root motion moves the camera up and down as Bond walks, and breathing |
 
 ## Players
 
@@ -48,7 +49,7 @@ For each player, `lvStageLoad` (in `lv.c`) calls:
 3. `playerApplyIntro`: reads the intro section of the setup file: the spawn pad, the
    starting weapons and ammo, and the intro cameras.
 4. `playerStartNewLife`: eye height, per-life counters, the fist.
-5. `bheadInit`: sets up the hidden walk animation.
+5. `headBobInit`: sets up the hidden walk animation.
 
 ## Each frame
 

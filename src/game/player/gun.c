@@ -12,7 +12,7 @@
 #include <bondgame.h>
 #include <music.h>
 #include <snd.h>
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/player/gun.h"
 #include "game/model/chrobjdata.h"
 #include "game/prop/propobj.h"
@@ -38,7 +38,7 @@
 #include "game/menu/mpmenu.h"
 #include "joy.h"
 #include "game/math/matrix.h"
-#include "game/player/bondinv.h"
+#include "game/player/inventory.h"
 #include "game/nav/stan.h"
 #include "gbi_extension.h"
 #include "game/math/physics.h"
@@ -2057,85 +2057,9 @@ void gunsStopSounds(void)
 }
 
 
-f32 itemGetWatchPosX(ITEM_IDS item)
-{
-  return gitem_structs[item].watch_pos_x;
-}
-
-
-f32 itemGetWatchPosY(ITEM_IDS item)
-{
-  return gitem_structs[item].watch_pos_y;
-}
-
-
-f32 itemGetWatchPosZ(ITEM_IDS item)
-{
-  return gitem_structs[item].watch_pos_z;
-}
-
-
-f32 itemGetWatchRotX(ITEM_IDS item)
-
-{
-  return gitem_structs[item].x_rotation;
-}
-
-
-f32 itemGetWatchRotY(ITEM_IDS item)
-{
-  return gitem_structs[item].y_rotation;
-}
-
-
-f32 itemGetWatchFov(void) {
-  return 45.0f;
-}
-
-
-char *itemGetWatchTitle1(ITEM_IDS item)
-{
-  return langGet(gitem_structs[item].upper_watch_text);
-}
-
-
-char *itemGetWatchTitle2(ITEM_IDS item)
-{
-    return langGet(gitem_structs[item].lower_watch_text);
-}
-
-
-char *itemGetWatchText(ITEM_IDS item)
-{
-    return langGet(gitem_structs[item].watch_equipment_text);
-}
-
-
 char *itemGetChoiceText(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].weapon_of_choice_text);
 }
 
 
-f32 itemGetEquipFov(void)
-{
-	return 45.0f;
-}
-
-
-f32 itemGetEquipPosX(ITEM_IDS item)
-{
-  return gitem_structs[item].equip_watch_x;
-}
-
-
-f32 itemGetEquipPosY(ITEM_IDS item)
-{
-  return gitem_structs[item].equip_watch_y;
-}
-
-
-f32 itemGetEquipPosZ(ITEM_IDS item)
-{
-  return gitem_structs[item].equip_watch_z;
-}

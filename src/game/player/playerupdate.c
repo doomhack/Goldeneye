@@ -17,7 +17,7 @@
 #include "game/menu/watchmenu.h"
 #include "game/model/model.h"
 #include "game/nav/stan.h"
-#include "game/player/bondhead.h"
+#include "game/player/headbob.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/player/playertune.h"
@@ -96,7 +96,7 @@ s32 watch_time_0;
 
 
 /**
- * Will apply a move animation update. The pass through call to bheadUpdate is
+ * Will apply a move animation update. The pass through call to headBobUpdate is
  * what allows Bond to move. This will also trigger the death animation once
  * Bond dies. This chooses a random death animation from g_bondviewBondDeathAnimations.
 */
@@ -110,7 +110,7 @@ void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways)
 
     if (g_CurrentPlayer->bonddead == 0)
     {
-        bheadAdjustAnimation(speed);
+        headBobAdjustAnimation(speed);
 
         if (speed != 0.0f)
         {
@@ -128,15 +128,15 @@ void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways)
             // HACK: g_AnimTable dereference addition is backwards.
             // this should be:
             // g_AnimTable->data[g_bondviewBondDeathAnimations[((u32) randomGetNext() % (u32) g_bondviewBondDeathAnimationsCount)]]
-            bheadStartDeathAnimation((struct ModelAnimation *) ((s32)g_bondviewBondDeathAnimations[((u32) randomGetNext() % (u32) g_bondviewBondDeathAnimationsCount)] + (s32)&g_AnimTable->data[0]), randomGetNext() & 1, 0.0f, 1.0f);
+            headBobStartDeathAnimation((struct ModelAnimation *) ((s32)g_bondviewBondDeathAnimations[((u32) randomGetNext() % (u32) g_bondviewBondDeathAnimationsCount)] + (s32)&g_AnimTable->data[0]), randomGetNext() & 1, 0.0f, 1.0f);
             g_CurrentPlayer->startnewbonddie = FALSE;
         }
 
-        bheadSetSpeed(0.5f);
+        headBobSetSpeed(0.5f);
         speedsideways = 0.0f;
     }
 
-    bheadUpdate(percent_speed, speedsideways);
+    headBobUpdate(percent_speed, speedsideways);
 
     mtx4LoadXRotation((360.0f - g_CurrentPlayer->vv_verta360) * DegToRad1Fact(1), &view);
     mtx4LoadFacing(&rot, 0.0f, 0.0f, 0.0f, -g_CurrentPlayer->headlook.f[0], -g_CurrentPlayer->headlook.f[1], -g_CurrentPlayer->headlook.f[2], g_CurrentPlayer->headup.f[0], g_CurrentPlayer->headup.f[1], g_CurrentPlayer->headup.f[2]);
@@ -1583,7 +1583,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         /*
         Following matches the end of Perfect Dark bwalk0f0c69b8
         */
-        breathing = bheadGetBreathingValue();
+        breathing = headBobGetBreathingValue();
 
         if (weapon_speed_verta > 1.0f)
         {

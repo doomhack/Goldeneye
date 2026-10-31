@@ -37,7 +37,7 @@
 #include "game/text/text.h"
 #include "game/player/player.h"
 #include "game/player/gun.h"
-#include "game/player/bondhead.h"
+#include "game/player/headbob.h"
 #include "game/level/frametiming.h"
 #include "PR/R4300.h"
 #include "game/model/anim.h"
@@ -295,7 +295,7 @@ void bossInitMainthreadData(void)
     gunsInitAnimGroups();
     reset_counter_rand_body_head();
     null_init_main_3();
-    bheadInitGaitModel();
+    headBobInitGaitModel();
     gameInitData();
     fileResetRamRomSave();
     clear_ramrom_block_buffer_heading_ptrs();

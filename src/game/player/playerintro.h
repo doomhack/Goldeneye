@@ -1,5 +1,5 @@
-#ifndef _BONDVIEW_R_H_
-#define _BONDVIEW_R_H_
+#ifndef _PLAYERINTRO_H_
+#define _PLAYERINTRO_H_
 
 #include <ultra64.h>
 #include <bondconstants.h>
