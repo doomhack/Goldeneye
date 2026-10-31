@@ -51,6 +51,39 @@ Gfx *currentPlayerDrawFade(Gfx *gdl)
 }
 
 
+/**
+ * Co-op: the fade through black while the screen switches between split
+ * views and one full-screen view (g_CoopViewFade), over the whole frame.
+ */
+Gfx *coopDrawViewFade(Gfx *gdl)
+{
+    if (g_CoopViewFade <= 0.0f)
+    {
+        return gdl;
+    }
+
+    gDPPipeSync(gdl++);
+    gDPSetCycleType(gdl++, G_CYC_1CYCLE);
+    gDPSetColorDither(gdl++, G_CD_DISABLE);
+    gDPSetTexturePersp(gdl++, G_TP_NONE);
+    gDPSetAlphaCompare(gdl++, G_AC_NONE);
+    gDPSetTextureLOD(gdl++, G_TL_TILE);
+    gDPSetTextureFilter(gdl++, G_TF_BILERP);
+    gDPSetTextureConvert(gdl++, G_TC_FILT);
+    gDPSetTextureLUT(gdl++, G_TT_NONE);
+    gDPSetRenderMode(gdl++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
+    gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
+    gDPSetPrimColor(gdl++, 0, 0, 0, 0, 0, (s32)(g_CoopViewFade * 255.0f));
+    gDPFillRectangle(gdl++, VI_SX(0), 0, VI_SX(viGetX()), viGetY());
+    gDPPipeSync(gdl++);
+    gDPSetColorDither(gdl++, G_CD_BAYER);
+    gDPSetTexturePersp(gdl++, G_TP_PERSP);
+    gDPSetTextureLOD(gdl++, G_TL_LOD);
+
+    return gdl;
+}
+
+
 // Sets the screen fade's colour and opacity at once
 void currentPlayerSetFadeColour(s32 r, s32 g, s32 b, f32 frac)
 {

@@ -58,6 +58,7 @@
 #include "game/gfx/zbuf.h"
 #include "game/nav/stan.h"
 #include "game/player/gun.h"
+#include "game/player/playerfade.h"
 #include "game/world/roommtx.h"
 #include "game/world/water.h"
 #include "game/level/frametiming.h"
@@ -582,6 +583,11 @@ Gfx* lvRender(Gfx* DL)
         }
 
         gDPPipeSync(DL++);
+    }
+
+    if ((g_CurrentStageToLoad != LEVELID_TITLE) && gameIsTwoPlayerMission())
+    {
+        DL = coopDrawViewFade(DL);
     }
 
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && optionsGetShowFps())
