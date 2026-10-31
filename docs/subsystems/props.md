@@ -58,7 +58,7 @@ gives it back.
    disable the prop (`propExecuteTickOperation`).
 3. `propsSortOnscreen` sorts the props on screen by depth, and `propsRenderPass` draws
    them room by room.
-4. `shotFireHands` (in `player/gunfire.c`) fires the player's guns, `propsTickPickups`
+4. `shotFireHands` (in `player/shot.c`) fires the player's guns, `propsTickPickups`
    checks what the player is touching, and `playerInteract` handles the use button.
 
 ## Room prop lists

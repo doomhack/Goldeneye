@@ -288,40 +288,25 @@ char *itemGetWatchText(ITEM_IDS item);
 
 s32 weaponHasAmmo(ITEM_IDS item);
 
-void gunDrawSight(Gfx **gdl);
 
 WeaponStats *weaponGetStats(ITEM_IDS item);
 
 ITEM_IDS gunGetWeapon(GUNHAND hand);
 void gunEquip(GUNHAND hand, s32 next_weapon);
-void casingsTick(void);
 void gunTryReload(GUNHAND hand);
-void ammoGiveMaxAll(void);
-void gunSetGunAmmoVisible(s32 reason, bool enable);
-void gunSetSightVisible(s32 reason, bool visible);
 
-s32 ammoGetMax(s32);
-void ammoGive(s32, s32);
 s8 weaponGetFireRate(ITEM_IDS item);
-void statsAddCivilianKill(void);
-void statsAddKill(void);
 f32 weaponGetDamage(ITEM_IDS item);
 u16 weaponGetSound(ITEM_IDS item);
 u8 weaponGetSoundRate(ITEM_IDS item);
 
-void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_index);
-void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index);
 void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos,  StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *tumble,  PropRecord *owner);
-void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, coord3d *to);
 void gunGetAimRay(coord3d *zeropos, coord3d *vec);
 
-void statsAddHit(ITEM_IDS item, SHOT_REGISTER shot_register);
 s8 gunGetFiringStatus(GUNHAND hand);
 void gunFireTankShell(s32 hand);
 void         gunClearHandModel(GUNHAND hand);
 void gunUnequip(enum GUNHAND hand, enum ITEM_IDS weapid);
-s32          ammoGetTotal(AMMOTYPE ammotype);
-s32          statsGetCivilianKills(void);
 s32 gunHandModelIsEmpty(enum GUNHAND hand);
 void gunFreeRocket(enum GUNHAND hand);
 void gunSetTracerTarget(coord3d* pos);
@@ -330,17 +315,12 @@ void gunCalcBlend(enum GUNHAND handnum);
 void gunUpdateSway(f32 breathing, f32 maxspeed, f32 speed_verta, f32 speed_theta);
 void gunSetPullback(f32 angle);
 
-s32 statsGetHits(SHOT_REGISTER shot_register);
 void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle);
 
 ITEM_IDS gunGetShownWeapon(GUNHAND hand);
 void gunStartWatchSwap(GUNHAND hand, s32 next_weapon);
 void gunClearWatchMenuWeapon(GUNHAND hand);
 void gunUpdateCrosshairSwivel(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed);
-s32 weaponGetHeldAmmo(ITEM_IDS weapon);
-s32 weaponGetMaxAmmo(ITEM_IDS weapon);
-void weaponGiveAmmo(ITEM_IDS weapon, s32 ammo);
-s32 gunGetMagazineAmmo(GUNHAND hand);
 void gunSwitchWhenEmpty(void);
 f32 gunGetNoise(GUNHAND hand);
 void gunZoomIn(f32 zoom);
@@ -351,29 +331,15 @@ void gunCycleBackward(void);
 void gunUpdateCrosshairManual(f32 turn_x, f32 turn_y);
 void gunTickGameplay(s32 triggerOn);
 u8 weaponGetPenetration(ITEM_IDS item);
-void shotPlayGlassSound(coord3d* pos);
 
-Gfx *gunDrawHudString(Gfx *gdl, char *text, s32 x, s32 halign, s32 y, s32 valign, bool outline);
-Gfx *gunDrawHudInteger(Gfx *gdl, s32 value, s32 x, s32 halign, s32 y, s32 valign, bool outline);
-void beamTick(BeamRecord* beam);
-Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions* buttonpositions, s8* contpadnum);
-Gfx *watchRenderControllerOpaque(Gfx *gdl, Mtxf *basemtx, bool animatebuttons, WatchContButtonPositions *buttonpositions, s8 *contpadnum);
 
-Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour);
-void casingsRender(Gfx **gdl);
 void gunRenderHands(Gfx **gdl);
-Gfx *hudRenderAmmo(Gfx *gdl);
 
-void        shotFireHands(void);
-void        shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, ModelNode *bboxnode, Model *model, bool countsAsPenetration, s32 blocksFurtherHits);
 
 void gunsInitAnimGroups(void);
 void gunsStopSounds(void);
-void casingsLoadModels(void);
 
 char *itemGetChoiceText(ITEM_IDS item);
-s32 statsGetKills(void);
-Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl);
 s32 playerHasCopiedGEKey(void);
 f32 itemGetEquipPosX(ITEM_IDS item);
 f32 itemGetEquipPosY(ITEM_IDS item);
@@ -388,10 +354,6 @@ char *itemGetWatchTitle2(ITEM_IDS item);
 u8 * gunGetHandModelBuffer(GUNHAND hand);
 u32 gunGetHandModelBufferSize(s32 hand);
 ModelFileHeader *gunGetHandModelHeader(GUNHAND hand);
-void statsAddDeath(void);
-void statsAddGoldenGunKill(void);
-void statsAddSuicide(void);
-s32 weaponGetAmmoType(ITEM_IDS weapon);
 void gunCreateRocket(GUNHAND hand);
 void gunDebApplyKeyframe(void);
 void gunEquipPreviousWeapons(void);
@@ -406,7 +368,30 @@ void gunThrowObject(s32 hand);
 void gunTickBoltRecoil(GUNHAND hand);
 void gunTickHingeAngle(enum GUNHAND hand, s32 open);
 void gunUpdateAttachedRocket(s32 handIndex);
-s32 ammoGetHeld(AMMOTYPE ammotype);
-Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode);
+
+extern Lights1 g_WeaponEnvmapLight;
+void gunGetShotDir(coord3d *origin, coord3d *result, enum GUNHAND hand);
+void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *mtx, coord3d *velocity, Mtxf *tumble);
+void gunAnalyzeGEKey(void);
+void gunOpenWeaponCase(void);
+f32 gunSetHorizontalOffset(GUNHAND hand);
+f32 gunGetMaxHingeAngle(GUNHAND hand);
+void gunStartBoltRecoil(GUNHAND hand);
+void gunReload(enum GUNHAND hand);
+extern ALSoundState *g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
+extern u32 g_GunDebApplyKeyframe;
+extern u32 g_gunDebKeyframeIndex;
+extern CartridgeModelFileRecord ejected_cartridge[];
+ModelFileHeader *get_ptr_weapon_model_header_line(ITEM_IDS weapon);
+void gunSetWatchMenuWeapon(GUNHAND hand, ITEM_IDS weaponnum_watchmenu);
+void gunSetHeldItemVisible(Model *model, s32 val);
+
+#include "game/hud/ammohud.h"
+#include "game/menu/watchmodel.h"
+#include "game/player/ammo.h"
+#include "game/player/beam.h"
+#include "game/player/casing.h"
+#include "game/player/playerstats.h"
+#include "game/player/shot.h"
 
 #endif

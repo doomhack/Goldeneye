@@ -50,8 +50,14 @@
       build/OUTCODE/src/game/math/quaternion.o (.text);
       build/OUTCODE/src/game/math/round.o (.text);
       build/OUTCODE/src/game/player/gun.o (.text);
-      build/OUTCODE/src/game/player/gun_rodata.o (.text);
       build/OUTCODE/src/game/player/gunfire.o (.text);
+      build/OUTCODE/src/game/player/ammo.o (.text);
+      build/OUTCODE/src/game/player/beam.o (.text);
+      build/OUTCODE/src/game/player/casing.o (.text);
+      build/OUTCODE/src/game/player/playerstats.o (.text);
+      build/OUTCODE/src/game/player/shot.o (.text);
+      build/OUTCODE/src/game/hud/ammohud.o (.text);
+      build/OUTCODE/src/game/menu/watchmodel.o (.text);
       build/OUTCODE/src/game/gfx/texrect.o (.text);
       build/OUTCODE/src/game/model/jointlist.o (.text);
       build/OUTCODE/src/game/model/model.o (.text);

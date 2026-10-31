@@ -50,7 +50,6 @@
       build/OUTCODE/src/game/math/quaternion.o (.data);
       build/OUTCODE/src/game/math/round.o (.data);
       build/OUTCODE/src/game/player/gun.o (.data);
-      build/OUTCODE/src/game/player/gun_rodata.o (.data);
       build/OUTCODE/src/game/gfx/texrect.o (.data);
       build/OUTCODE/src/game/model/jointlist.o (.data);
       build/OUTCODE/src/game/model/model.o (.data);
