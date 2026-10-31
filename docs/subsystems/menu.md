@@ -131,8 +131,9 @@ stick is read through small helpers that only fire once per push (`watchMenuStic
 `g_Options` holds the settings: look up/down, auto-aim, aim control, sight and ammo on
 screen, look ahead, screen size, ratio, hi-res, split screen, fps counter and draw
 distance, read through `optionsGet*`. The control style is kept per player in the player
-struct. In co-op, `optionsCoopUsePlayer` (called when the current player changes) swaps
-the first seven settings so each player has their own; the rest are shared. The save file
+struct. The first seven settings are each player's own: player 2's (person 1, see
+`coopPlayerPerson`) are kept apart from `g_Options`, and `optionsUsePerson` (called when the
+current player changes) picks whose the getters read; the rest are shared. The save file
 stores the settings with each folder (see [save](save.md)).
 
 ## The multiplayer pause menu
