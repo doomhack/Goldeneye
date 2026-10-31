@@ -1,15 +1,6 @@
 #ifndef _BONDVIEW_INTERNAL_H_
 #define _BONDVIEW_INTERNAL_H_
 
-extern coord3d g_CamFrustumTopNormal;
-extern f32 g_CamFrustumTopOffset;
-extern coord3d g_CamFrustumBottomNormal;
-extern f32 g_CamFrustumBottomOffset;
-extern coord3d g_CamFrustumLeftNormal;
-extern f32 g_CamFrustumLeftOffset;
-extern coord3d g_CamFrustumRightNormal;
-extern f32 g_CamFrustumRightOffset;
-extern f32 g_CamFrustumNearOffset;
 extern coord3d g_ForceBondMoveOffset;
 extern s32 g_CoopForceMovePlayer;
 extern s32 g_SurroundBondWithExplosionsTicks;
@@ -107,19 +98,11 @@ void watchStepAnim(void);
 f32 watchGetAnimFrac(void);
 void playerUpdateSpeedVerta(f32 value);
 void playerUpdateSpeedTheta(f32 value);
-s16 playerGetViewportWidth(void);
-s16 playerGetViewportHeight(void);
-s16 playerGetViewportTop(void);
 void currentPlayerTickChrFade(void);
 void currentPlayerTickColourFade(void);
-s16 viGetFrameWidth(void);
-s16 viGetFrameHeight(void);
-void playerAdvanceCameraMode(void);
 bool currentPlayerIsFadeComplete(void);
-s16 playerGetViewportLeft(void);
 void playerMoveFrozen(u16, u16);
 void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
-void camSetRoomOrigin(s32 room);
 void watchTrigger(s32 instant);
 void playerUpdateCollisionBounds(void);
 void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
@@ -143,9 +126,6 @@ void playerSetLeanTarget(s32 value);
 void playerAdjustCrouch(s32 value);
 void playerUpdateSpeedSideways(s32 dir);
 void playerUpdateSpeedForwards(s32 dir);
-void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, coord3d *pos, coord3d *pos2, struct StandTile **stan, coord3d *lookat);
-void playerCalcIntroSwirlCamera(s32, f32, coord3d *, coord3d *);
-s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, coord3d *collision_pos, StandTile *tile, f32 camera_dist);
 Gfx *watchRender(Gfx *gdl);
 
 // end forward declarations

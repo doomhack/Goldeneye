@@ -30,4 +30,7 @@ void watchRequestToggle(void);
 void watchTrigger(s32 instant);
 Gfx *watchRender(Gfx *gdl);
 
+// Co-op: TRUE if another player has their watch out
+s32 coopPartnerHasWatchOut(void);
+
 #endif

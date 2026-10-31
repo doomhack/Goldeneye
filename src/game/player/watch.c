@@ -1276,3 +1276,29 @@ Gfx *watchRender(Gfx *gdl)
     end:
     return gdl;
 }
+
+
+/**
+ * Co-op: TRUE if another player has their watch out. Only one player can
+ * pause at a time.
+ */
+s32 coopPartnerHasWatchOut(void)
+{
+    s32 count = getPlayerCount();
+    s32 i;
+
+    if (!g_CoopMode)
+    {
+        return FALSE;
+    }
+
+    for (i = 0; i < count; i++)
+    {
+        if ((i != playerGetCurrentNum()) && (g_playerPointers[i]->watch_animation_state != WATCH_ANIMATION_0x0))
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}

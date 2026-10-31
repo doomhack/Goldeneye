@@ -1091,16 +1091,7 @@ f32 currentPlayerGetArmor(void);
 
 bool currentPlayerGetIsAiming(void);
 
-void camSetScreenSize(f32 width, f32 height);
-void camUpdateScale(void);
-void camSetScreenPosition(f32 left, f32 top);
-void camSetPerspective(f32 fovy, f32 aspect);
 
-f32 camGetScreenWidth(void);
-f32 camGetScreenHeight(void);
-f32 camGetScreenLeft(void);
-f32 camGetScreenTop(void);
-f32 camGetPerspAspect(void);
 void currentPlayerSetXAutoAimEnabled(bool enabled);
 bool currentPlayerGetXAutoAimEnabled(void);
 
@@ -1110,7 +1101,6 @@ bool currentPlayerGetYAutoAimEnabled(void);
 bool currentPlayerGetYAutoAimEnabledRedirect(void);
 void currentPlayerSetLookAheadSetting(bool enabled);
 
-u32 playerGetCameraMode(void);
 
 void watchZoomTo(f32 zoominfovy);
 
@@ -1130,11 +1120,10 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 #include "game/player/counterop.h"
 #include "game/player/playermove.h"
 #include "game/player/tank.h"
+#include "game/player/cammode.h"
+#include "game/player/camview.h"
 
-Gfx * camSetupFrame(Gfx *gdl);
 s32 playerPressedActivate(void);
-bool camIsPosInScreen(coord3d *vec_scale, f32 norm_scale);
-bool camIsPosInScreenBox(coord3d *, f32, bbox2d *);
 s32 lvGetMissionTime60(void);
 void playerLoadBody(void);
 void playerUpdateAutoAimY(struct PropRecord *autoaim_target, f32 auto_aim_y);
@@ -1147,8 +1136,6 @@ extern s32 g_CoopRespawnButtonsHeld[4];
 Gfx *watchRender(Gfx *gdl);
 Gfx *currentPlayerDrawFade(Gfx *gdl);
 bool currentPlayerIsFadeComplete(void);
-extern s32 g_CoopCinemaPlayer;
-void coopUpdateSoloView(void);
 f32 playerGetEyeHeight(struct player *player);
 void playerDie(void);
 void playerGetCollisionSize(PropRecord* prop, f32 *collision_radius, f32 *height, f32 *always_30);
@@ -1165,58 +1152,30 @@ coord3d *playerGetPos(void);
 void playerSetMoving(PropRecord *prop, s32 flag);
 void playerGetPropBounds(PropRecord *prop, coord2d **field_B0, s32 *numpoints, f32 *height_related, f32 *collision);
 void currentPlayerAddArmor(f32 armour);
-Gfx* camLoadWorldToViewMtx(Gfx* gdl);
-Mtxf *camGetViewToWorldMtxf(void);
-void camMtxsToRoomSpace(Mtxf *matrices, s32 count);
 void currentPlayerStartChrFade(f32 duration60, f32 targetfrac);
 s32 playerGetVisibleToGuards(void);
 u8 playerGetInvincible(void);
 void playerSetInvincible(u32 invincible);
 void playerSetVisibleToGuards(s32 visible);
-Mtxf *camGetPrevViewToWorldMtxf(void);
-void coopViewsBegin(void);
-void coopViewsEnd(s32 lastplayer);
 f32 bondviewGetPlayerYawRadians(void);
-Mtxf *camGetWorldToScreenMtxf(void);
-void camScreenToViewDir(coord2d *in, coord3d *out, f32 value);
-void mtxsF2L(RenderPosView *views, s32 count);
-LookAt *camGetLookAt(void);
-Mtx *camGetProjViewMtx(void);
-void camSetProjViewMtx(Mtx *matrix);
-void camSetLookAt(LookAt *lookat);
-void camSetWorldToViewMtx(Mtx *matrix);
-Mtx *camGetWorldToViewMtx(void);
-Mtx *camGetProjectionMtx(void);
 Gfx *playerRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
-f32 camGetLodScaleZ(void);
 f32 playerGetBreathing(void);
 
-void     playerSetCameraMode(s32 mode);
 void     playerSurroundWithExplosions(int delay);
 s32 watchIsZooming(void);
 f32 watchGetOpenFrac(void);
 coord3d *playerGetPrevPos(void);
 s32 playerChooseSpawnPad(void);
 void playerSetWorldScale(f32);
-Mtxf *camGetProjectionMtxf(void);
-void camViewToScreen(coord3d *in, coord2d *out);
 void playerRemoveBody(void);
 void currentPlayerAdjustFade(f32 maxfadetime, s32 r, s32 g, s32 b, f32 frac);
 void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex);
-void camSetPosScale(f32 scale);
 
-void camSetProjectionMtx(Mtx *matrix);
-void camSetProjectionMtxf(Mtxf *matrix);
 void playerSetOutsideWatchMenu(s32 outside);
-void camSetViewToWorldMtxf(Mtxf *matrix);
-void camSetWorldToScreenMtxf(Mtxf *matrix);
-void camUpdateFrustumPlanes();
 s32 currentPlayerGetCrouchPos(void);
 s32 playerGetCrouchPos(s32 playernum);
-void playerSetCameraModeRaw(s32 mode);
 void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *tile, coord3d *stan_walk_start);
 coord3d * playerGetPos3(void);
 s32 playerTick(PropRecord *prop);
-void camViewToScreenSafe(coord3d *in, coord3d *out);
 
 #endif

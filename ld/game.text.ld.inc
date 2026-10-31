@@ -64,6 +64,8 @@
       build/OUTCODE/src/game/player/counterop.o (.text);
       build/OUTCODE/src/game/player/playermove.o (.text);
       build/OUTCODE/src/game/player/tank.o (.text);
+      build/OUTCODE/src/game/player/cammode.o (.text);
+      build/OUTCODE/src/game/player/camview.o (.text);
       build/OUTCODE/src/game/player/bondinv.o (.text);
       build/OUTCODE/src/game/player/bondhead.o (.text);
       build/OUTCODE/src/game/nav/waypoint.o (.text);
