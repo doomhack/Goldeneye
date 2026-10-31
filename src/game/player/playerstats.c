@@ -4,7 +4,6 @@
  */
 #include "assets/obseg/text/LgunE.h"
 #include "game/menu/watchmenu.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/text/language.h"

@@ -14,7 +14,6 @@
 #include <random.h>
 #include "game/world/bg.h"
 #include "game/world/bgfog.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/chr/chr.h"

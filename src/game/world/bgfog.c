@@ -11,7 +11,6 @@
 #include <bondconstants.h>
 #include <fr.h>
 #include "game/world/bg.h"
-#include "game/player/bondview.h"
 #include "game/world/bgfog.h"
 #include "game/player/player.h"
 #include "game/menu/watchmenu.h"

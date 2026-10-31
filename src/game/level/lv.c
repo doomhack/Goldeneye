@@ -53,7 +53,6 @@
 #include "game/chr/body.h"
 #include "game/prop/setup.h"
 #include "game/nav/waypoint.h"
-#include "game/player/bondview.h"
 #include "game/hud/hud.h"
 #include "game/player/bondview_r.h"
 #include "game/gfx/zbuf.h"

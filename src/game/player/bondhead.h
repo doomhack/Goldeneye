@@ -26,4 +26,6 @@ void bheadSetSpeed(f32 speed);
 void bheadInit(void);
 void bheadInitGaitModel(void);
 
+f32 bheadGetBreathingValue(void);
+
 #endif

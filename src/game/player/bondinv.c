@@ -5,7 +5,6 @@
  */
 #include <ultra64.h>
 #include <macro.h>
-#include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/player/player.h"
 #include "game/text/text.h"

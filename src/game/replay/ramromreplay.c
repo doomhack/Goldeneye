@@ -12,7 +12,7 @@
 #include "game/level/frametiming.h"
 #include "game/replay/testhooks.h"
 #include "game/menu/mp_weapon.h"
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 
 struct ramrom_struct
 {

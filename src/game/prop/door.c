@@ -32,7 +32,6 @@
 #include "game/model/chrobjdata.h"
 #include "game/model/model.h"
 #include "game/player/bondinv.h"
-#include "game/player/bondview.h"
 #include "game/player/player.h"
 #include "game/prop/door.h"
 #include "game/prop/explosion.h"

@@ -9,7 +9,6 @@
 #include "game/level/lv.h"
 #include "game/math/trig.h"
 #include "game/menu/watchmenu.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "gbi_extension.h"

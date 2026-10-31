@@ -9,7 +9,6 @@
 #include "game/math/trig.h"
 #include "game/menu/cheat.h"
 #include "game/nav/stan.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/prop/alarm.h"

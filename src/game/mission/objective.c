@@ -15,7 +15,6 @@
 #include "game/text/language.h"
 #include "PR/os.h"
 #include "str.h"
-#include "game/player/bondview.h"
 #include "game/player/player.h"
 #include "game/player/bondinv.h"
 #include "bondtypes.h"

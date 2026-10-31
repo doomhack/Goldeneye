@@ -16,7 +16,7 @@
 #include <bondtypes.h>
 #include "game/prop/bbox.h"
 #include "game/model/model.h"
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 
 
 /* The first bounding box node among the root's children, or failing that among its

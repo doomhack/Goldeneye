@@ -17,7 +17,7 @@
 #include <memp.h>
 #include "game/model/model.h"
 #include "rmon.h"
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 #include "game/chr/chr.h"
 #include "game/model/chrobjdata.h"
 #include "gbi_extension.h"

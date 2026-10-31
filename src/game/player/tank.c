@@ -6,11 +6,59 @@
  */
 #include "game/menu/watchmenu.h"
 #include "game/nav/stan.h"
-#include "game/player/bondview.h"
-#include "game/player/bondview_internal.h"
 #include "game/player/player.h"
 #include "game/world/bgfog.h"
 #include "game/player/tank.h"
+
+s32 g_PlayerIsInTank = 0;
+
+struct PropRecord *g_WorldTankProp = NULL;
+
+// The tank Bond is driving ("bondonprop" in Perfect Dark)
+struct PropRecord *g_PlayerTankProp = NULL;
+
+/**
+ * Related to g_PlayerTankProp.
+ */
+f32 g_PlayerTankYOffset = 0;
+
+ALSoundState * g_TankSfxState[2] = { NULL, NULL };
+
+/**
+ * min -3.749999, max +3.749999
+*/
+f32 g_TankTurnSpeed = 0;
+
+f32 g_TankOrientationAngle = 0;
+
+f32 tank_turret_unused_angle = 0.0f;
+
+/**
+ * Argument to sinf,cosf.
+ */
+f32 g_TankTurretVerticalAngle = 0;
+
+f32 g_TankTurretVerticalAngleRelated = 0;
+
+f32 g_TankTurretOrientationAngleRad = 0;
+
+f32 g_TankTurretOrientationAngleDeg = 0;
+
+f32 tank_turret_turn_speed = 0;
+
+/**
+ * Can enter tank, remains set once Bond is in tank.
+ */
+s32 g_BondCanEnterTank = 0;
+
+f32 g_TankTurretAngle = 0;
+
+f32 g_TankTurretTurn = 0;
+
+s32 g_ExplodeTankOnDeathFlag = 0;
+
+s32 g_TankDamagePenaltyTicks = 0;
+
 
 /**
  * Sets g_TankModelPositionOffset: where the turret sits on the tank's body for

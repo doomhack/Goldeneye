@@ -19,7 +19,6 @@
 #include "game/menu/mpmenu.h"
 #include "game/mission/objective.h"
 #include "game/model/model.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/prop/alarm.h"
@@ -34,6 +33,13 @@
 #include <math.h>
 #include <music.h>
 #include <str.h>
+
+s32 g_CreditsScrollFrame = 0;
+
+s32 credits_state = 0;
+
+CreditsEntry *credits_pointer = NULL;
+
 
 /**
  * Renders the in-game health and armor gauges.

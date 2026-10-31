@@ -7,7 +7,6 @@
 #include <limits.h>
 #include <assets/animationtable_data.h>
 #include <random.h>
-#include "game/player/bondview.h"
 #include "game/chr/chrai.h"
 #include "game/model/anim.h"
 #include "game/level/lv.h"
@@ -33,9 +32,6 @@ struct init_bond_anim_unk g_BondMoveAnimationSetup[2] = {
 };
 
 
-
-
-
 // forward declarations
 
 void bheadUpdatePos(coord3d *vel);
@@ -43,9 +39,6 @@ void bheadUpdateRot(coord3d *lookvel, coord3d *upvel);
 void bheadSetdamp(f32 headdamp);
 
 // end forward declarations
-
-
-
 
 
 void bheadFlipAnimation()
@@ -185,8 +178,6 @@ ModelRenderData headModelRenderData = {NULL,
                               {{0, 0, 0, 0}},
                               {{0, 0, 0, 0}},
                               CULLMODE_BOTH};
-
-
 
 
 /**
@@ -378,7 +369,6 @@ void bheadUpdate(f32 percent_speed, f32 speedsideways)
 }
 
 
-
 /**
  * Adjusts Bond's head animation based on movement speed.
  *
@@ -494,9 +484,6 @@ void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum);
 // end forward declarations
 
 
-
-
-
 /**
  * @param anim:
  * @param arg1:
@@ -519,7 +506,6 @@ void bheadSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum)
         sum[2] += motion.z;
     }
 }
-
 
 
 #ifdef REFRESH_PAL

@@ -12,7 +12,6 @@
 #include <bondgame.h>
 #include <music.h>
 #include <snd.h>
-#include "game/player/bondview.h"
 #include "game/player/bondinv.h"
 #include "game/player/gun.h"
 #include "game/model/chrobjdata.h"
@@ -1883,7 +1882,6 @@ void gunFreeRocket(enum GUNHAND hand)
 }
 
 
-
 void gunFireTankShell(s32 handnum)
 {
     WeaponObjRecord *obj;
@@ -2031,8 +2029,6 @@ void gunFireTankShell(s32 handnum)
         }
     }
 }
-
-
 
 
 void gunsInitAnimGroups(void) {

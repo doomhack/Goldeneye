@@ -8,7 +8,6 @@
 #include "game/gfx/texcmds.h"
 #include "game/gfx/texrect.h"
 #include "game/menu/watchmenu.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/text/text.h"

@@ -12,7 +12,6 @@
 #include "game/menu/watchmenu.h"
 #include "game/mission/objective.h"
 #include "game/nav/stan.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/prop/explosion.h"

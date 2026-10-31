@@ -5,7 +5,7 @@
  */
 
 #include <ultra64.h>
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 #include "game/level/lv.h"
 #include "game/world/water.h"
 

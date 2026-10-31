@@ -14,7 +14,6 @@
 #include "random.h"
 #include "snd.h"
 #include "game/audio/sfxvolume.h"
-#include "game/player/bondview.h"
 #include "game/player/player.h"
 #include "game/gfx/dyn.h"
 #include "game/gfx/imagebank.h"

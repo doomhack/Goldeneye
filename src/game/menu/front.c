@@ -19,7 +19,6 @@
 #include <random.h>
 #include <snd.h>
 #include <macro.h>  
-#include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/chr/body.h"
 #include "game/chr/chraction.h"

@@ -6,13 +6,23 @@
 #include "game/player/respawn.h"
 #include "game/math/trig.h"
 #include "game/player/bondinv.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
+#include "game/player/bondview_r.h"
 #include "game/replay/ramromreplay.h"
 #include "random.h"
 #include <ultra64.h>
 #include <bondtypes.h>
+
+/**
+ * Co-op: set when a player respawns, until they let go of the buttons they
+ * respawned with, so that pressing Start to respawn doesn't also open the watch.
+ */
+s32 g_CoopRespawnButtonsHeld[4];
+
+
+static coord3d ZeroCoordSpawnPos = {0};
+
 
 void mpRespawnPlayer(void)
 {
@@ -145,7 +155,6 @@ void mpRespawnPlayer(void)
     g_CurrentPlayer->deltaPos.z = 0.0f;
     currentPlayerStartChrFade(120.0f, 1.0f);
 }
-
 
 
 /**

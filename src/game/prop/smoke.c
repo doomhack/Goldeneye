@@ -16,7 +16,6 @@
 #include "random.h"
 #include "game/world/bg.h"
 #include "game/world/roommtx.h"
-#include "game/player/bondview.h"
 #include "game/player/player.h"
 #include "game/gfx/dyn.h"
 #include "game/gfx/imagebank.h"

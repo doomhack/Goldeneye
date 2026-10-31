@@ -3,7 +3,7 @@
 #include <ultra64.h>
 #include <bondconstants.h>
 #include <bondtypes.h>
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 
 void skySetStageNum(s32 stagenum);
 void skyTick(void);

@@ -13,7 +13,7 @@
 #include "random.h"
 #include <snd.h>
 #include <PR/libaudio.h>
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 
 #ifdef VERSION_EU
 #define MP_MUSIC_FRAMERATE 50

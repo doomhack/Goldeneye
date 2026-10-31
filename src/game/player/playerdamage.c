@@ -14,8 +14,6 @@
 #include "game/menu/mpmenu.h"
 #include "game/menu/watchmenu.h"
 #include "game/player/bondinv.h"
-#include "game/player/bondview.h"
-#include "game/player/bondview_internal.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/player/playertune.h"
@@ -25,6 +23,39 @@
 #include "game/world/bgfog.h"
 #include "random.h"
 #include "game/player/playerdamage.h"
+
+static s32 g_SurroundBondWithExplosionsTicks;
+
+static s32 g_PlayerTickExplodeCreatePosition;
+
+
+s32 g_SurroundBondWithExplosionsFlag = 0;
+
+static struct DamageType g_DamageTypes[] = {
+        {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF}, // 1 bars
+        {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF},
+        {   0,    10.0,    50.0,    0.6,    0,    5.0,    30.0,    0.800000011921, 0xFF,       0xFF,       0xFF},
+        {   0,    10.0,    40.0,    0.6,    0,    5.0,    25.0,    0.600000023842, 0xFF,       0xFF,       0xFF},
+        {   0,    10.0,    35.0,    0.6,    0,    5.0,    22.0,    0.550000011921, 0xFF,       0xFF,       0xFF},
+        {   0,    10.0,    30.0,    0.6,    0,    5.0,    19.0,    0.5,            0xFF,       0xFF,       0xFF},
+        {   0,    10.0,    30.0,    0.6,    0,    5.0,    17.0,    0.449999988079, 0xFF,       0xFF,       0xFF},
+        {   0,    10.0,    30.0,    0.6,    0,    5.0,    15.0,    0.40000000596,  0xFF,       0xFF,       0xFF}  // 8 bars
+};
+
+/**
+ * The second column is how many frames before the gauge switches from showing the old health to the new health.
+ * The third column is how many frames before the health display is hidden.
+ */
+static struct HealthDisplayDuration g_HealthDisplayDurations[8] = {
+    { 0, 40, 100 }, // 1 bar of health
+    { 0, 30, 80 },
+    { 0, 20, 60 },
+    { 0, 20, 60 },
+    { 0, 20, 60 },
+    { 0, 20, 50 },
+    { 0, 20, 50 },
+    { 0, 20, 50 }  // 8 bars of health
+};
 
 
 /**

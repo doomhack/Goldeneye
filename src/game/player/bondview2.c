@@ -26,7 +26,6 @@
 #include "game/hud/blood.h"
 #include "game/player/bondhead.h"
 #include "game/player/bondinv.h"
-#include "game/player/bondview.h"
 #include "game/hud/hud.h"
 #include "game/chr/chr.h"
 #include "game/chr/body.h"
@@ -63,7 +62,6 @@
 #include "game/math/interp.h"
 
 
-#include "game/player/bondview_internal.h"
 #include "game/player/playertune.h"
 #include "game/asset/asset.h"
 #include "game/gfx/dyn.h"
@@ -73,16 +71,95 @@
 #include "game/prop/alarm.h"
 #include "game/math/physics.h"
 
+/**
+ * When set, will increment each tick until reaching a threshold value (4).
+ * Then current items will be unequipped from left and run hands.
+*/
+s32 g_bondviewForceDisarm = 0;
+
+s32 resolution = 0;
+
+/**
+ * Flag to toggle invisibility cheat.
+ * 1 = visible to guards
+ * 0 = not visible to guards
+ */
+s32 g_VisibleToGuardsFlag = TRUE;
+
+f32 g_PlayerWorldScale = 1.0;
+
+static f32 g_PlayerWorldScaleInv = 1.0;
+
+s32 g_bondviewBondDeathAnimations[] = {
+    PTR_ANIM_death_forward_face_down,
+    PTR_ANIM_death_forward_spin_face_up,
+    PTR_ANIM_death_backward_fall_face_up1,
+    PTR_ANIM_death_backward_spin_face_down_right,
+    PTR_ANIM_death_backward_spin_face_up_right,
+    PTR_ANIM_death_backward_spin_face_down_left,
+    PTR_ANIM_death_backward_spin_face_up_left,
+    PTR_ANIM_death_forward_face_down_hard,
+    PTR_ANIM_death_forward_face_down_soft,
+    PTR_ANIM_death_fetal_position_right,
+    PTR_ANIM_death_fetal_position_left,
+    PTR_ANIM_death_backward_fall_face_up2,
+    0
+};
+
+s32 g_bondviewBondDeathAnimationsCount = 0;
+
+// Defaults for playerMoveFrozen's position and move offset
+static coord3d g_DefaultMoveBondOffset = { 0 };
+
+// struct player `pos`
+static coord3d g_DefaultFrozenPlayerPos = { 0 };
+
+// struct player `pos2`
+static coord3d g_DefaultFrozenPlayerPos2 = { {0, 0, 1.0f} };
+
+// struct player `offset`
+static coord3d g_DefaultFrozenPlayerOffset = { {0, 1.0f, 0} };
+
+// struct player `offset`
+static coord3d g_DefaultFrozenMoveOffset = { 0 };
+
+static s32 g_PlayerTickCount = 0;
+
+struct firing_anim_struct firing_animation_groups[][6] = {
+    {{pistol_firing_animation_group1, 0, 0.1, 79.0, 87.0},
+     {&g_ChrMoveFireAnims[2], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[3], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
+     {crouched_pistol_firing_animation_group1, 0, 0.1, 56.0, 68.0}},
+    {{rifle_firing_animation_group1, 0, 0.050000001, 35.0, 40.0},
+     {&g_ChrMoveFireAnims[0], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[1], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
+     {&crouched_rifle_firing_animation_group1[1], 0, 0.1, 45.0, 55.0}},
+    {{NULL, 0x8194, 0.25, 0.0, -1.0},
+     {NULL, 0x8204, 0.5, 0.0, -1.0},
+     {NULL, 0x777C, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
+     {NULL, 0x6C18, 0.050000001, 28.0, 29.0}},
+    {{doubles_firing_animation_group1, 0, 0.1, 32.0, 42.0},
+     {&g_ChrMoveFireAnims[4], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[5], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
+     {crouched_doubles_firing_animation_group1, 0, 0.1, 37.0, 47.0}}
+ };
+
 
 coord3d g_ForceBondMoveOffset;
 s32 g_CoopForceMovePlayer = 0;
 
-s32 g_SurroundBondWithExplosionsTicks;
-s32 g_PlayerTickExplodeCreatePosition;
 
 coord3d g_TankModelPositionOffset;
 
-s32 g_TankEngineSfxVolume;
+static s32 g_TankEngineSfxVolume;
 
 /**
  * State 0: begin.
@@ -105,20 +182,7 @@ coord3d g_EnterTankCoord;
 
 ITEM_IDS starting_weapon[2];
 
-coord3d g_DeathCamPos;
 
-struct PropRecord* g_DeathCamProp;
-
-PadRecord * g_CameraLookAtBondPad;
-CutsceneRecord *gBondViewCutscene;
-f32 g_OrbitCamAngle;
-f32 g_OrbitCamSpeed;
-f32 g_OrbitCamDist;
-f32 g_OrbitCamHeight;
-f32 g_OrbitCamTargetHeight;
-s32 g_OrbitCamPad;
-enum CAMERAMODE g_CutsceneCamLookAtBond;
-s32 g_CutsceneCamUnusedFlag;
 s32 mission_timer;
 
 #if defined(VERSION_EU)
@@ -127,16 +191,6 @@ f32 watch_time_0;
 s32 watch_time_0;
 #endif
 
-
-PadRecord *g_Startpad[0x10];
-
-s32 startpadcount;
-
-
-f32 g_MpSwirlRotateSpeed;
-f32 g_MpSwirlAngleDegrees;
-f32 g_MpSwirlForwardSpeed;
-f32 g_MpSwirlDistance;
 
 #define ALIGN64_V3(val) (((val) | 0x3f) ^ 0x3f)
 
@@ -825,18 +879,6 @@ void playerUpdateVertaTheta(void)
     g_CurrentPlayer->bond.theta_transform.f[1] = 0;
     g_CurrentPlayer->bond.theta_transform.f[2] = g_CurrentPlayer->vv_costheta;
 }
-
-
-/**
- * US address 7F081974.
- * EU address 7F081A18.
- * Perfect Dark method bmoveProcessInput.
-*/
-/**
- * Co-op: set when a player respawns, until they let go of the buttons they
- * respawned with, so that pressing Start to respawn doesn't also open the watch.
- */
-s32 g_CoopRespawnButtonsHeld[4];
 
 
 /**

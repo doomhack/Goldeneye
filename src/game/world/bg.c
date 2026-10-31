@@ -25,7 +25,6 @@
 #include <memp.h>
 #include "game/asset/asset.h"
 #include "game/world/bg.h"
-#include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/asset/rzip.h"
 #include "game/world/bgfog.h"

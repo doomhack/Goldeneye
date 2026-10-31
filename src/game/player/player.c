@@ -10,7 +10,6 @@
 #include <random.h>
 #include "game/player/player.h"
 #include "game/world/water.h"
-#include "game/player/bondview.h"
 #include "game/level/lv.h"
 #include "game/menu/watchmenu.h"
 #include "bondtypes.h"
@@ -847,8 +846,6 @@ s32 playerGetShuffled(PLAYER_ID id)
 
     return 0;
 }
-
-
 
 
 void playerInitHands(void)

@@ -14,7 +14,6 @@
 #include <snd.h>
 #include <random.h>
 #include "game/menu/watchmenu.h"
-#include "game/player/bondview.h"
 #include "game/gfx/dyn.h"
 #include "game/save/file.h"
 #include "game/menu/front.h"
