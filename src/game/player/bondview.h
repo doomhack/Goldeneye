@@ -1086,20 +1086,10 @@ extern s32 startpadcount;
 
 PropRecord* currentPlayerGetProp(void);
 
-f32 currentPlayerGetHealth(void);
-f32 currentPlayerGetArmor(void);
-
-bool currentPlayerGetIsAiming(void);
 
 
-void currentPlayerSetXAutoAimEnabled(bool enabled);
-bool currentPlayerGetXAutoAimEnabled(void);
 
-bool currentPlayerGetXAutoAimEnabledRedirect(void);
-void currentPlayerSetYAutoAimEnabled(bool enabled);
-bool currentPlayerGetYAutoAimEnabled(void);
-bool currentPlayerGetYAutoAimEnabledRedirect(void);
-void currentPlayerSetLookAheadSetting(bool enabled);
+
 
 
 void watchZoomTo(f32 zoominfovy);
@@ -1122,53 +1112,39 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 #include "game/player/tank.h"
 #include "game/player/cammode.h"
 #include "game/player/camview.h"
+#include "game/player/playerdamage.h"
+#include "game/player/playerfade.h"
+#include "game/player/playerinput.h"
 
 s32 playerPressedActivate(void);
 s32 lvGetMissionTime60(void);
 void playerLoadBody(void);
-void playerUpdateAutoAimY(struct PropRecord *autoaim_target, f32 auto_aim_y);
-void playerUpdateAutoAimX(struct PropRecord *autoaim_target, f32 auto_aim_x);
 f32 playerGetFloorY(struct StandTile *tile, f32 x, f32 z);
 void playerUpdateCollisionBounds(void);
 void coopFindPartnerSpawn(coord3d *pos, StandTile **stan, f32 look_angle);
 extern s32 g_CoopRespawnButtonsHeld[4];
 
 Gfx *watchRender(Gfx *gdl);
-Gfx *currentPlayerDrawFade(Gfx *gdl);
-bool currentPlayerIsFadeComplete(void);
 f32 playerGetEyeHeight(struct player *player);
-void playerDie(void);
 void playerGetCollisionSize(PropRecord* prop, f32 *collision_radius, f32 *height, f32 *always_30);
 void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset);
-void currentPlayerSetFadeColour(s32 r, s32 g, s32 b, f32 frac);
-void currentPlayerSetFadeFrac(f32 maxfadetime, f32 frac);
 f32 playerGetStanHeight(struct player *player);
-void playerTakeDamage(f32, f32, f32, s32, s32);
-void playerTakeDamageFromAngle(f32 damage_amount, f32 rad, s32 playerid, s32 affects_armor);
-int playerIsShowingDamage(void);
-int playerIsShowingHealth(void);
 u8 playerGetRoom(void);
 coord3d *playerGetPos(void);
 void playerSetMoving(PropRecord *prop, s32 flag);
 void playerGetPropBounds(PropRecord *prop, coord2d **field_B0, s32 *numpoints, f32 *height_related, f32 *collision);
-void currentPlayerAddArmor(f32 armour);
-void currentPlayerStartChrFade(f32 duration60, f32 targetfrac);
 s32 playerGetVisibleToGuards(void);
-u8 playerGetInvincible(void);
-void playerSetInvincible(u32 invincible);
 void playerSetVisibleToGuards(s32 visible);
 f32 bondviewGetPlayerYawRadians(void);
 Gfx *playerRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
 f32 playerGetBreathing(void);
 
-void     playerSurroundWithExplosions(int delay);
 s32 watchIsZooming(void);
 f32 watchGetOpenFrac(void);
 coord3d *playerGetPrevPos(void);
 s32 playerChooseSpawnPad(void);
 void playerSetWorldScale(f32);
 void playerRemoveBody(void);
-void currentPlayerAdjustFade(f32 maxfadetime, s32 r, s32 g, s32 b, f32 frac);
 void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex);
 
 void playerSetOutsideWatchMenu(s32 outside);

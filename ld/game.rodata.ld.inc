@@ -67,6 +67,9 @@
       build/OUTCODE/src/game/player/tank.o (.rodata);
       build/OUTCODE/src/game/player/cammode.o (.rodata);
       build/OUTCODE/src/game/player/camview.o (.rodata);
+      build/OUTCODE/src/game/player/playerdamage.o (.rodata);
+      build/OUTCODE/src/game/player/playerfade.o (.rodata);
+      build/OUTCODE/src/game/player/playerinput.o (.rodata);
       build/OUTCODE/src/game/player/bondinv.o (.rodata);
       build/OUTCODE/src/game/player/bondhead.o (.rodata);
       build/OUTCODE/src/game/nav/waypoint.o (.rodata);
