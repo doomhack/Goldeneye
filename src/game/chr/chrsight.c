@@ -22,6 +22,7 @@
 #include "game/model/model.h"
 #include "game/nav/stan.h"
 #include "game/level/gamemode.h"
+#include "game/player/coop.h"
 
 /* Sight lines are taken from this far below the top of a guard's head */
 #define EYE_DROP 20.0f
@@ -343,11 +344,17 @@ bool chrCheckTargetInSight(ChrRecord *self)
 
 /**
  * Something the current player did made a noise (gunfire, an explosion): every guard
- * closer than its hearing scale times the noise (in metres) hears them.
+ * closer than its hearing scale times the noise (in metres) hears them. In counter-op
+ * the guard player is one of the guards, so their noise alerts nobody.
  */
 void chrCheckGuardsHeardSound(f32 noise)
 {
     s32 i;
+
+    if (gameIsCounterOp() && playerGetCurrentNum() != COUNTEROP_BOND)
+    {
+        return;
+    }
 
     for (i = 0; i < g_NumChrSlots; i++)
     {
