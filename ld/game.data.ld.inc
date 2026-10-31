@@ -56,7 +56,8 @@
       build/OUTCODE/src/game/model/modelfile.o (.data);
       build/OUTCODE/src/game/gfx/texcmds.o (.data);
       build/OUTCODE/src/game/player/playerlife.o (.data);
-      build/OUTCODE/src/game/player/bondview2.o (.data);
+      build/OUTCODE/src/game/player/playerupdate.o (.data);
+      build/OUTCODE/src/game/player/playerbody.o (.data);
       build/OUTCODE/src/game/player/watch.o (.data);
       build/OUTCODE/src/game/player/respawn.o (.data);
       build/OUTCODE/src/game/player/counterop.o (.data);

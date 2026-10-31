@@ -66,5 +66,5 @@ Vehicles' engines (not aircraft) use a shorter range (`sfxVolumeAtRange`).
 * The original US code did nothing when a level started from `MUSICSTATE_SILENT` going
   to silent again; PAL stops all three channels. The US build here takes the PAL path
   (`BACKPORT_R1`).
-* Solo death music isn't part of the state machine: `bondview2.c` stops the slots, sets
+* Solo death music isn't part of the state machine: `hudRender` (`hud/hud.c`) stops the slots, sets
   the state to silent and plays the death track on channel 1 itself.

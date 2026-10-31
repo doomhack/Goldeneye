@@ -72,7 +72,8 @@
       build/OUTCODE/src/game/model/modelfile.o (.rodata);
       build/OUTCODE/src/game/gfx/texcmds.o (.rodata);
       build/OUTCODE/src/game/player/playerlife.o (.rodata);
-      build/OUTCODE/src/game/player/bondview2.o (.rodata);
+      build/OUTCODE/src/game/player/playerupdate.o (.rodata);
+      build/OUTCODE/src/game/player/playerbody.o (.rodata);
       build/OUTCODE/src/game/player/watch.o (.rodata);
       build/OUTCODE/src/game/player/respawn.o (.rodata);
       build/OUTCODE/src/game/player/counterop.o (.rodata);

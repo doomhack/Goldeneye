@@ -52,6 +52,9 @@
 #include "game/nav/stan.h"
 #include "game/text/text.h"
 
+ITEM_IDS starting_weapon[2];
+
+
 PadRecord *g_Startpad[0x10];
 
 s32 startpadcount;

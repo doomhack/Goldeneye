@@ -9,6 +9,7 @@
 #include <fr.h>
 #include <random.h>
 #include "game/player/player.h"
+#include "game/nav/stan.h"
 #include "game/world/water.h"
 #include "game/level/lv.h"
 #include "game/menu/watchmenu.h"
@@ -18,6 +19,14 @@
 #include "game/player/bondinv.h"
 #include "game/prop/propobj.h"
 #include "game/save/file.h"
+
+/**
+ * Flag to toggle invisibility cheat.
+ * 1 = visible to guards
+ * 0 = not visible to guards
+ */
+static s32 g_VisibleToGuardsFlag = TRUE;
+
 
 struct player *g_playerPointers[4];
 struct player_data g_playerPlayerData[4];
@@ -707,77 +716,6 @@ void playerSetAspect(f32 aspect) {
 }
 
 
-PROP weaponGetChrModel(ITEM_IDS item)
-{
-    PROP ret = -1;
-    switch (item)
-    {
-        case ITEM_KNIFE:         ret = PROP_CHRKNIFE;         break; /* weapon_multi_hunting_knife */
-        case ITEM_WPPK:          ret = PROP_CHRWPPK;          break; /* weapon_multi_pp7 */
-        case ITEM_SKORPION:      ret = PROP_CHRSKORPION;      break; /* weapon_multi_klobb */
-        case ITEM_AK47:          ret = PROP_CHRKALASH;        break; /* weapon_multi_kf7 */
-        case ITEM_UZI:           ret = PROP_CHRUZI;           break; /* weapon_multi_zmg */
-        case ITEM_MP5K:          ret = PROP_CHRMP5K;          break; /* weapon_multi_d5k */
-        case ITEM_SPECTRE:       ret = PROP_CHRSPECTRE;       break; /* weapon_multi_phantom */
-        case ITEM_M16:           ret = PROP_CHRM16;           break; /* weapon_multi_ar33 */
-        case ITEM_FNP90:         ret = PROP_CHRFNP90;         break; /* weapon_multi_rcp90 */
-        case ITEM_SHOTGUN:       ret = PROP_CHRSHOTGUN;       break; /* weapon_multi_shotgun */
-        case ITEM_GRENADELAUNCH: ret = PROP_CHRGRENADELAUNCH; break; /* weapon_multi_grenade_laun */
-        case ITEM_GRENADE:       ret = PROP_CHRGRENADE;       break; /* weapon_multi_hand */
-        case ITEM_REMOTEMINE:    ret = PROP_CHRREMOTEMINE;    break; /* weapon_multi_remote */
-        case ITEM_PROXIMITYMINE: ret = PROP_CHRPROXIMITYMINE; break; /* weapon_multi_prox */
-        case ITEM_TIMEDMINE:     ret = PROP_CHRTIMEDMINE;     break; /* weapon_multi_timed */
-        case ITEM_RUGER:         ret = PROP_CHRRUGER;         break; /* weapon_multi_cougar */
-        case ITEM_LASER:         ret = PROP_CHRLASER;         break; /* weapon_multi_moonraker */
-        case ITEM_SNIPERRIFLE:   ret = PROP_CHRSNIPERRIFLE;   break; /* weapon_multi_sniper */
-        case ITEM_MP5KSIL:       ret = PROP_CHRMP5KSIL;       break; /* weapon_multi_d5k_silent */
-        case ITEM_TT33:          ret = PROP_CHRTT33;          break; /* weapon_multi_dd44 */
-        case ITEM_WPPKSIL:       ret = PROP_CHRWPPKSIL;       break; /* weapon_multi_pp7_silent */
-        case ITEM_THROWKNIFE:    ret = PROP_CHRTHROWKNIFE;    break; /* weapon_multi_throwing_knife */
-        case ITEM_AUTOSHOT:      ret = PROP_CHRAUTOSHOT;      break; /* weapon_multi_auto_shot */
-        case ITEM_ROCKETLAUNCH:  ret = PROP_CHRROCKETLAUNCH;  break; /* weapon_multi_rocket_launch */
-        case ITEM_GOLDENGUN:     ret = PROP_CHRGOLDEN;        break; /* weapon_multi_goldengun */
-        case ITEM_SILVERWPPK:    ret = PROP_CHRWPPK;          break; /* weapon_multi_pp7_special1 */
-        case ITEM_GOLDWPPK:      ret = PROP_CHRWPPK;          break; /* weapon_multi_pp7_special2 */
-        case ITEM_TOKEN:         ret = PROP_FLAG;             break;
-        case ITEM_UNARMED:       break;
-        case ITEM_TASER:         break;
-
-        default:
-            break;
-    }
-    return ret;
-}
-
-
-void playerBodyRemoveGun(enum GUNHAND hand)
-{
-    chrRemoveHeldWeapon(g_CurrentPlayer->prop->chr, hand);
-}
-
-void playerBodyGiveGun(enum GUNHAND hand)
-{
-    ChrRecord *chr;
-    enum ITEM_IDS wepid;
-    enum PROP prop;
-    s32 flags;
-
-    chr = g_CurrentPlayer->prop->chr;
-
-    if (chr->weapons_held[hand] == NULL)
-    {
-        wepid = gunGetWeapon(hand);
-        prop = weaponGetChrModel(wepid);
-        if (prop >= 0)
-        {
-            flags = ((hand * 4) == 0)
-                  ? 0
-                  : PROPFLAG_WEAPON_LEFTHANDED;
-            chrGiveWeaponEx(chr, prop, wepid, flags, NULL, NULL);
-        }
-    }
-}
-
 void playersShuffleOrder(void) {
     s32 i;
     u32 random;
@@ -946,4 +884,110 @@ void playersStoreFavouriteWeapons(void) {
     }
 
     playerSetCurrent(current_player);
+}
+
+
+f32 playerGetStanHeight(struct player *player)
+{
+    return player->stanHeight;
+}
+
+
+f32 playerGetEyeHeight(struct player *player)
+{
+    return player->eyeheight + player->crouchHeight + player->ducking_height_offset;
+}
+
+
+PropRecord* currentPlayerGetProp(void) {
+    return g_CurrentPlayer->prop;
+}
+
+
+f32 playerGetBreathing(void)
+{
+    return g_CurrentPlayer->bondbreathing;
+}
+
+
+/**
+ * Gets the current player's heading angle, converted from degrees to radians.
+ * @return Heading (Yaw) in Radians
+*/
+f32 bondviewGetPlayerYawRadians(void)
+{
+    return DegToRad(360.0f - g_CurrentPlayer->vv_theta);
+}
+
+
+/**
+ * Gets the current player's vertical look angle, converted from degrees to radians.
+ * @return Pitch in radians.
+ */
+f32 bondviewGetPlayerPitchRadians(void)
+{
+    return DegToRad(g_CurrentPlayer->vv_verta);
+}
+
+
+s32 playerPressedActivate(void) {
+    return g_CurrentPlayer->activatePressed;
+}
+
+
+/**
+ * Sets g_VisibleToGuardsFlag.
+ * 1 = visible, 0 = not visible.
+ */
+void playerSetVisibleToGuards(s32 visible)
+{
+  g_VisibleToGuardsFlag = visible;
+}
+
+/**
+ * Gets g_VisibleToGuardsFlag.
+ * 1 = visible, 0 = not visible
+ */
+s32 playerGetVisibleToGuards(void)
+{
+    return g_VisibleToGuardsFlag;
+}
+
+
+u8 playerGetRoom(void)
+{
+    if ((g_CurrentPlayer->cameramode == 1) && (g_CurrentPlayer->cameratile != 0))
+    {
+        return g_CurrentPlayer->cameratile->room;
+    }
+
+    return g_CurrentPlayer->bond.current_tile_ptr_for_portals->room;
+}
+
+
+coord3d *playerGetPos(void)
+{
+    if (g_CurrentPlayer->cameramode == 1)
+    {
+        return &g_CurrentPlayer->pos;
+    }
+
+    return &g_CurrentPlayer->bond.pos;
+}
+
+
+coord3d * playerGetPos3(void)
+{
+
+    if (g_CurrentPlayer->cameramode == 1)
+    {
+        return &g_CurrentPlayer->pos3;
+    }
+
+    return &g_CurrentPlayer->bond.pos3;
+}
+
+coord3d *playerGetPrevPos(void)
+{
+    return &g_CurrentPlayer->bondprevpos;
 }

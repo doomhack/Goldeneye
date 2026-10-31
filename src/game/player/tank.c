@@ -1,7 +1,7 @@
 /**
  * The tank Bond drives: its collision box against the floor tiles and props
  * (tankTestCollision, tankTryMoveTo), the turret's position and aim, and in co-op
- * which player owns it. Driving it is in playerMove (bondview2.c). See
+ * which player owns it. Driving it is in playerMove (playerupdate.c). See
  * docs/subsystems/player.md.
  */
 #include "game/menu/watchmenu.h"

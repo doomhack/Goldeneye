@@ -18,4 +18,6 @@ void playerAdjustCrouch(s32 value);
 extern s32 startpadcount;
 extern PadRecord *g_Startpad[];
 
+extern ITEM_IDS starting_weapon[2];
+
 #endif
