@@ -300,6 +300,56 @@ void coopUpdateSoloView(void)
 
 
 /**
+ * Co-op: the intro shows both players. The partner, who stands beside player 1
+ * (coopFindPartnerSpawn), plays the same intro animation in the swirl. Their
+ * camera mode is set to 1 so their body is ticked like player 1's (chrTick);
+ * their own player tick resets it when first person starts.
+ */
+static void coopStartPartnerIntro(struct ModelAnimation *anim, f32 startframe, f32 speed, f32 endframe)
+{
+    s32 cur = playerGetCurrentNum();
+    s32 i;
+
+    for (i = 0; i < getPlayerCount(); i++)
+    {
+        struct player *partner = g_playerPointers[i];
+        struct ChrRecord *chr;
+
+        if ((i == cur) || (partner->bodyModel == NULL) || (partner->prop->chr == NULL))
+        {
+            continue;
+        }
+
+        modelSetAnimation(partner->bodyModel, anim, 0, startframe, speed, 0.0f);
+
+        if (endframe > 0.0f)
+        {
+            modelSetAnimEndFrame(partner->bodyModel, endframe);
+        }
+
+        chr = partner->prop->chr;
+        chr->actiontype = ACT_BONDINTRO;
+        chr->sleep = 0;
+        partner->cameramode = 1;
+    }
+}
+
+/**
+ * Co-op: whether the partner is shown during a cinema camera mode. They sit
+ * out cutscenes and death replays, but the level intro shows both players.
+ */
+bool coopShowPartnerInCinema(void)
+{
+    if (!gameIsCoop())
+    {
+        return FALSE;
+    }
+
+    return (g_CameraMode == CAMERAMODE_INTRO) || (g_CameraMode == CAMERAMODE_FADESWIRL)
+        || (g_CameraMode == CAMERAMODE_SWIRL);
+}
+
+/**
  * Switches the current player's camera to mode and sets it up: the intro camera
  * (or the swirl if the level has none or a demo is playing), the swirl, first
  * person, the death cameras, and so on.
@@ -385,6 +435,11 @@ void playerSetCameraMode(s32 mode)
             chr->actiontype = ACT_BONDINTRO;
             chr->sleep = 0;
             g_CurrentPlayer->cameratile = NULL;
+
+            if (gameIsCoop())
+            {
+                coopStartPartnerIntro(anim, ftemp_1, ftemp_3, endframe);
+            }
         }
         else
         {

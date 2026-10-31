@@ -17,6 +17,7 @@ void playerAdvanceCameraMode(void);
 void playerCalcIntroSwirlCamera(s32 index, f32 time, coord3d *pos, coord3d *lookat);
 void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, coord3d *pos, coord3d *pos2, StandTile **stan, coord3d *lookat);
 void playerSetCameraModeRaw(s32 mode);
+bool coopShowPartnerInCinema(void);
 
 extern enum CAMERAMODE g_CameraMode;
 extern enum CAMERAMODE g_CameraAfterCinema;
