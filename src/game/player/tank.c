@@ -23,46 +23,18 @@ struct PropRecord *g_PlayerTankProp = NULL;
  */
 f32 g_PlayerTankYOffset = 0;
 
-ALSoundState * g_TankSfxState[2] = { NULL, NULL };
-
-/**
- * min -3.749999, max +3.749999
-*/
-f32 g_TankTurnSpeed = 0;
-
-f32 g_TankOrientationAngle = 0;
-
-f32 tank_turret_unused_angle = 0.0f;
-
-/**
- * Argument to sinf,cosf.
- */
-f32 g_TankTurretVerticalAngle = 0;
-
-f32 g_TankTurretVerticalAngleRelated = 0;
-
-f32 g_TankTurretOrientationAngleRad = 0;
-
-f32 g_TankTurretOrientationAngleDeg = 0;
-
-f32 tank_turret_turn_speed = 0;
-
 /**
  * Can enter tank, remains set once Bond is in tank.
  */
 s32 g_BondCanEnterTank = 0;
 
-f32 g_TankTurretAngle = 0;
-
-f32 g_TankTurretTurn = 0;
-
 s32 g_ExplodeTankOnDeathFlag = 0;
 
-s32 g_TankDamagePenaltyTicks = 0;
-
+/* The level's tank (Streets and Runway have one), see struct Tank */
+struct Tank g_Tank;
 
 /**
- * Sets g_TankModelPositionOffset: where the turret sits on the tank's body for
+ * Sets g_Tank.turretOffset: where the turret sits on the tank's body for
  * the turret's current angle.
  */
 void tankUpdateTurretOffset(void)
@@ -81,14 +53,14 @@ void tankUpdateTurretOffset(void)
         switches = obj->model->obj->Switches;
         turretPos = (coord3d *)switches[2]->Data;
         bodyPos = (coord3d *)switches[1]->Data;
-        mtx4LoadYRotation(M_TAU_F - g_TankTurretOrientationAngleRad, &rot);
-        g_TankModelPositionOffset.f[0] = turretPos->f[0];
-        g_TankModelPositionOffset.f[1] = turretPos->f[1];
-        g_TankModelPositionOffset.f[2] = turretPos->f[2];
-        mtx4RotateVecInPlace(&rot, &g_TankModelPositionOffset);
-        g_TankModelPositionOffset.f[0] += bodyPos->f[0];
-        g_TankModelPositionOffset.f[1] += bodyPos->f[1];
-        g_TankModelPositionOffset.f[2] += bodyPos->f[2];
+        mtx4LoadYRotation(M_TAU_F - g_Tank.turretYaw, &rot);
+        g_Tank.turretOffset.f[0] = turretPos->f[0];
+        g_Tank.turretOffset.f[1] = turretPos->f[1];
+        g_Tank.turretOffset.f[2] = turretPos->f[2];
+        mtx4RotateVecInPlace(&rot, &g_Tank.turretOffset);
+        g_Tank.turretOffset.f[0] += bodyPos->f[0];
+        g_Tank.turretOffset.f[1] += bodyPos->f[1];
+        g_Tank.turretOffset.f[2] += bodyPos->f[2];
     }
 }
 
@@ -113,11 +85,11 @@ void tankGetCollisionBounds(coord2d *tank_collision_bounds, coord3d *collision_p
 
     bbox = objFindBbox(obj);
 
-    xmin = bbox->Bounds.xmin - g_TankModelPositionOffset.f[0];
-    xmax = bbox->Bounds.xmax - g_TankModelPositionOffset.f[0];
+    xmin = bbox->Bounds.xmin - g_Tank.turretOffset.f[0];
+    xmax = bbox->Bounds.xmax - g_Tank.turretOffset.f[0];
 
-    zmin = bbox->Bounds.zmin - g_TankModelPositionOffset.f[2];
-    zmax = bbox->Bounds.zmax - g_TankModelPositionOffset.f[2];
+    zmin = bbox->Bounds.zmin - g_Tank.turretOffset.f[2];
+    zmax = bbox->Bounds.zmax - g_Tank.turretOffset.f[2];
 
     cosAngle = obj->model->scale * cosf(tank_orientation_angle);
     sinAngle = obj->model->scale * sinf(tank_orientation_angle);
@@ -212,7 +184,7 @@ s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tan
             barrelEnd.f[1] = 0.0f;
             barrelEnd.f[2] = gunEnd->f[2] + gunStart->f[2] - turretPos->f[2];
 
-            angle = tank_orientation_angle + g_TankTurretOrientationAngleRad;
+            angle = tank_orientation_angle + g_Tank.turretYaw;
 
             if (angle >= M_TAU_F)
             {
@@ -409,7 +381,7 @@ void tankGetTurretDir(coord3d *dir)
 {
     f32 f;
 
-    f = g_TankOrientationAngle + g_TankTurretOrientationAngleRad;
+    f = g_Tank.yaw + g_Tank.turretYaw;
 
     if (f >= M_TAU_F)
     {
@@ -421,7 +393,7 @@ void tankGetTurretDir(coord3d *dir)
         f = f + M_TAU_F;
     }
 
-    dir->f[0] = -sinf(f) * cosf(g_TankTurretVerticalAngle);
-    dir->f[1] = sinf(g_TankTurretVerticalAngle);
-    dir->f[2] = cosf(f) * cosf(g_TankTurretVerticalAngle);
+    dir->f[0] = -sinf(f) * cosf(g_Tank.turretPitch);
+    dir->f[1] = sinf(g_Tank.turretPitch);
+    dir->f[2] = cosf(f) * cosf(g_Tank.turretPitch);
 }

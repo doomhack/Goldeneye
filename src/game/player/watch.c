@@ -467,8 +467,8 @@ void pauseStopSounds(void)
 
     for (i = 0; i < 2; i++)
     {
-        if (g_TankSfxState[i] && sndGetPlayingState(g_TankSfxState[i]) != AL_STOPPED) {
-			sndDeactivate(g_TankSfxState[i]);
+        if (g_Tank.sfx[i] && sndGetPlayingState(g_Tank.sfx[i]) != AL_STOPPED) {
+			sndDeactivate(g_Tank.sfx[i]);
 		}
     }
 

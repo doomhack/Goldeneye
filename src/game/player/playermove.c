@@ -96,9 +96,9 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
 
     ok = 0;
 
-    if ((g_PlayerIsInTank == 1) && (g_EnterTankAudioState != TANK_RUN_STATE_NOT_RUNNING))
+    if ((g_PlayerIsInTank == 1) && (g_Tank.enterAudioState != TANK_RUN_STATE_NOT_RUNNING))
     {
-        ok = tankTryMoveTo(pos, g_TankOrientationAngle, stan);
+        ok = tankTryMoveTo(pos, g_Tank.yaw, stan);
     }
     else
     {
@@ -551,9 +551,9 @@ void playerMoveWithCollision(coord3d *offset, s32 allow_scoot)
 
             if (g_PlayerIsInTank == 1)
             {
-                if (g_EnterTankAudioState == TANK_RUN_STATE_NOT_RUNNING)
+                if (g_Tank.enterAudioState == TANK_RUN_STATE_NOT_RUNNING)
                 {
-                    g_PlayerTankYOffset += -37.0f * (1.0f - g_TankEnteringSitHeightRemain);
+                    g_PlayerTankYOffset += -37.0f * (1.0f - g_Tank.enterRemain);
                 }
                 else
                 {
@@ -743,7 +743,7 @@ void playerUpdateCollisionBounds(void)
 
     if (g_PlayerIsInTank == 1)
     {
-        tankGetCollisionBounds(g_CurrentPlayer->collision_bounds, &g_CurrentPlayer->bond.collision_position, g_TankOrientationAngle);
+        tankGetCollisionBounds(g_CurrentPlayer->collision_bounds, &g_CurrentPlayer->bond.collision_position, g_Tank.yaw);
 
         return;
     }
