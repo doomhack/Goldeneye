@@ -7,9 +7,15 @@ and the ammo HUD. The player as a whole is in [player](player.md).
 | File | What it holds |
 | --- | --- |
 | `src/game/player/gun.c` | The hands: which gun each holds, loading its first-person model, switching and cycling weapons, reloading, zoom, the weapon stats table lookups (`weaponGet*`), sway, throwing grenades, knives and mines, grenade launcher rounds, rockets and tank shells |
-| `src/game/player/gunfire.c` | Each frame for the hands: the hand state machine (`gunTickHandState`), positioning and drawing the gun models, beams and tracers, hit sounds, the crosshair and aim, ejected casings, ammo, the ammo HUD and sight, per-player stats (`stats*`), and firing shots into the world (`shotFireHands`, `shotFireBullet`) |
+| `src/game/player/gunfire.c` | Each frame for the hands: the hand state machine (`gunTickHandState`), firing (`gunUpdateAndFire`), positioning and drawing the gun models, reloading, gun noise, the crosshair and aim |
+| `src/game/player/shot.c` | Firing shots into the world (`shotFireHands`, `shotFireBullet`): what a bullet hits, and the hit sounds |
+| `src/game/player/beam.c` | Beams and tracers left by shots |
+| `src/game/player/casing.c` | Ejected bullet casings |
+| `src/game/player/ammo.c` | Ammo: carry limits and HUD icons per ammo type (`g_AmmoStats`), giving ammo, and what each hand holds and has loaded |
+| `src/game/player/playerstats.c` | Per-player mission stats for the end screen (`stats*`) |
+| `src/game/hud/ammohud.c` | The ammo HUD and the gun sight |
+| `src/game/menu/watchmodel.c` | The 3D models in the pause watch: the held item and the controller |
 | `src/game/player/bondinv.c` | The inventory (`inv*`): what the player carries, cycling through it, keys, text overrides for picked-up objects, and the watch's item list |
-| `src/game/player/gun_rodata.c` | Four float constants kept in their own file so the linker keeps `gun.c`'s literal pool in order |
 
 ## Hands
 

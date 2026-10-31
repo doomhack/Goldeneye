@@ -46,7 +46,7 @@
  *               to re-apply the >>2 to every vertex the darkened table lists for
  *               that room, restoring lights the player broke earlier.
  *
- * Bullet hit    gunfire.c checks lightIsLightTexture() on the hit
+ * Bullet hit    shot.c checks lightIsLightTexture() on the hit
  *               texture and, if it matches, calls lightFixtureBreak() with the
  *               display list command of the triangle that was hit.
  * 

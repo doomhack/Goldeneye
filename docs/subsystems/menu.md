@@ -12,6 +12,7 @@ multiplayer).
 | `src/game/menu/cheat.c` | Cheat codes typed with the buttons, the table of every cheat (`g_CheatInfo`), and what turning each one on or off does |
 | `src/game/menu/mp_weapon.c` | The multiplayer weapon sets and which one is picked (`mpWeaponSet*`) |
 | `src/game/menu/watchmenu.c` | The watch menu's pages (`watchMenu*`) and the settings they change (`options*`, `g_Options`) |
+| `src/game/menu/watchmodel.c` | The 3D models the watch draws: the held item and the controller on the controls page |
 | `src/game/menu/mpmenu.c` | The multiplayer pause menu, end-of-game awards, and the multiplayer pause state (`mpMenu*`, `g_MpPaused`) |
 
 ## How the front end runs

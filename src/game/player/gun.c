@@ -47,10 +47,8 @@
 
 
 // bss
-ALSoundState *g_CasingSfxState;
 ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
 
-CasingRecord g_Casings[20];
 
 #ifdef REFRESH_PAL
     /* PAL */
@@ -78,9 +76,12 @@ CasingRecord g_Casings[20];
     #define GUN_SPRING_SCALE                           0.050000012f
 #endif
 
-extern f32 g_GLGrenadeLaunchUnk8C;
-extern f32 g_GLGrenadeLaunchUnk94;
-extern f32 g_TankShellSpeed;
+// Launched grenades: bounciness and ground friction
+static const f32 g_GLGrenadeLaunchUnk8C = 0.3f;
+static const f32 g_GLGrenadeLaunchUnk94 = 0.13333333f;
+// gunFireTankShell: tank shell speed, and the speed of the other rounds it fires
+static const f32 g_TankShellSpeed = 66.666664f;
+static const f32 g_ThrowVelocityScale = 1.111111f;
 
 // data
 /**
@@ -113,6 +114,7 @@ CartridgeModelFileRecord ejected_cartridge[] = {
 #include "game/world/bg.h"
 #include "game/chr/chr.h"
 #include "game/prop/projectile.h"
+#include "game/text/language.h"
 
 u32 g_GunDebApplyKeyframe = 0;
 u32 g_gunDebKeyframeIndex = 0;
@@ -310,92 +312,9 @@ Weapon1PTransformKeyframe taserRaiseKeyframes[6] = {
 };
 
 
-
-// These were a zero scalar followed by an array, read as one ModelRenderData
-// (or coord3d) through a cast. That only works while the compiler keeps them
-// adjacent, which -G 8 and zero-init-in-bss do not, so define real structs.
-u32 watchControllerButtonBases[] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
-//D:0x80035E04
-u16 ricochet_sounds_small[20] = {
-    RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
-    RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
-    RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
-    RICO_5_A_SFX,      RICO_5_B_SFX,      RICO_5_C_SFX,      RICO_5_D_SFX,
-    RICO_6_HBBA_A_SFX, RICO_6_HBBA_B_SFX, RICO_6_HBBA_C_SFX, RICO_6_HBBA_D_SFX
-};
-
-u16 punch_sounds[3] = {
-    PUNCH1_SFX,
-    PUNCH2_SFX,
-    PUNCH3_SFX
-};
-
-u16 bullet_flesh_sounds[2] = {
-    HIT_BULLET_FLESH_SFX,
-    HIT_BULLET_FLESH_SFX
-};
-
-u16 laser_ricochet_sounds[2] = {
-    RICO_LASER2_SFX,
-    RICO_LASER3_SFX
-};
-
-u16 ricochet_sounds_large[36] = {
-	RICO_12_GBU_A_SFX, RICO_12_GBU_B_SFX, RICO_12_GBU_C_SFX, RICO_12_GBU_D_SFX,
-    RICO_6_TAJ_A_SFX,  RICO_6_TAJ_B_SFX,  RICO_6_TAJ_C_SFX,  RICO_6_TAJ_D_SFX,
-    RICO_6_TAJ_A_SFX,  RICO_6_TAJ_B_SFX,  RICO_6_TAJ_C_SFX,  RICO_6_TAJ_D_SFX,
-    RICO_6_TAJ_A_SFX,  RICO_6_TAJ_B_SFX,  RICO_6_TAJ_C_SFX,  RICO_6_TAJ_D_SFX,
-    RICO_4_A_SFX,      RICO_4_B_SFX,      RICO_4_B_SFX,      RICO_4_C_SFX,
-    RICO_4_A_SFX,      RICO_4_B_SFX,      RICO_4_B_SFX,      RICO_4_C_SFX,
-    RICO_4_A_SFX,      RICO_4_B_SFX,      RICO_4_B_SFX,      RICO_4_C_SFX,
-    RICO_5_A_SFX,      RICO_5_B_SFX,      RICO_5_C_SFX,      RICO_5_D_SFX,
-    RICO_6_HBBA_A_SFX, RICO_6_HBBA_B_SFX, RICO_6_HBBA_C_SFX, RICO_6_HBBA_D_SFX
-};
-
 u16 watchlaser_fire_sounds[2] = { RICO_LASER2_SFX, RICO_LASER3_SFX };
 u16 knife_throw_sounds[3] = { KNIFE_THROW1_SFX, KNIFE_THROW2_SFX, KNIFE_THROW3_SFX };
-ModelRenderData g_DefaultCasingModelRenderData = {.zbufferenabled = TRUE, .flags = 3};
 
-#define AMMO_RELATED_MAX 30
-AmmoStats ammo_related[AMMO_RELATED_MAX] = {
-    { 0x0    , 0x00000000,   0.0f, },
-    { 0x320  , 0x02000C84,   0.0f, },
-    { 0xC8   , 0x00000000,   0.0f, },
-    { 0x190  , 0x02000C90,  -2.0f, },
-    { 0x64   , 0x02000C9C,   0.0f, },
-    { 0xC    , 0x02000CD8,   0.0f, },
-    { 0x3    , 0x02000CC0,  -2.0f, },
-    { 0xA    , 0x02000CFC,   1.0f, },
-    { 0xA    , 0x02000D14,   1.0f, },
-    { 0xA    , 0x02000D08,   1.0f, },
-    { 0xA    , 0x02000CA8,   0.0f, },
-    { 0xC    , 0x02000CB4,   0.0f, },
-    { 0xC8   , 0x02000CE4,   0.0f, },
-    { 0x64   , 0x02000CF0,   0.0f, },
-    { 0x32   , 0x00000000,   0.0f, },
-    { 0xA    , 0x00000000,   0.0f, },
-    { 0x2    , 0x00000000,   0.0f, },
-    { 0x8    , 0x00000000,   0.0f, },
-    { 0x6    , 0x00000000,   0.0f, },
-    { 0xA    , 0x00000000,   0.0f, },
-    { 0xA    , 0x00000000,   0.0f, },
-    { 0xA    , 0x00000000,   0.0f, },
-    { 0x1    , 0x00000000,   0.0f, },
-    { 0xA    , 0x00000000,   0.0f, },
-    { 0x3E8  , 0x00000000,   0.0f, },
-    { 0xA    , 0x00000000,   0.0f, },
-    { 0xA    , 0x00000000,   0.0f, },
-    { 0xA    , 0x00000000,   0.0f, },
-    { 0x32   , 0x02000D20,  -1.0f, },
-    { 0x1    , 0x00000000,   0.0f, },
-};
-
-/* Unused. Kept after ammo_related[] in case anything reads past the end of it. */
-u16 g_AmmoRelatedPad[] = { 0, 0, 0, 0, };
 
 extern struct ModelSkeleton skeleton_gun_kf7;
 
@@ -408,16 +327,11 @@ s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *m
 void gunAnalyzeGEKey(void);
 void gunOpenWeaponCase(void);
 struct ModelFileHeader * get_ptr_weapon_model_header_line(ITEM_IDS weapon);
-s32 gunGetHeldAmmo(enum GUNHAND hand);
-s32 weaponGetAmmoType(ITEM_IDS weapon);
 f32 gunSetHorizontalOffset(GUNHAND hand);
 void gunOpenWeaponCase(void);
 void gunSetWatchMenuWeapon(GUNHAND hand, ITEM_IDS weaponnum_watchmenu);
 void gunStartBoltRecoil(GUNHAND hand);
 void gunReload(enum GUNHAND hand);
-void gunCreateBeamForHand(enum GUNHAND hand);
-CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx);
-void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos);
 void *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
 void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
@@ -475,7 +389,6 @@ s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *m
         }
     }
 
-     // Comma operator is intentional: nudges IDO to emit addu s0,a0,t8.
     current = keyframes + i;
 
     i = 2;
@@ -1465,10 +1378,6 @@ void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *
 }
 
 
-/**
- * Address 0x7F05EE24 (NTSC)
- * Address 0x7F05F2DC (PAL)
-*/
 void gunThrowGrenade(s32 hand)
 {
     Mtxf tumble;
@@ -1553,10 +1462,6 @@ void gunThrowGrenade(s32 hand)
 }
 
 
-/**
- * Address 0x7F05F09C (NTSC)
- * Address 0x7F05F554 (PAL)
-*/
 void gunThrowKnife(s32 hand)
 {
     struct WeaponObjRecord *wor;
@@ -1632,10 +1537,6 @@ void gunThrowKnife(s32 hand)
 }
 
 
-/**
- * Address 0x7F05F358 (NTSC)
- * Address 0x7F05F810 (PAL)
-*/
 void gunThrowObject(s32 hand)
 {
 /*
@@ -1982,7 +1883,6 @@ void gunFreeRocket(enum GUNHAND hand)
 }
 
 
-extern f32 g_ThrowVelocityScale;
 
 void gunFireTankShell(s32 handnum)
 {
@@ -2132,10 +2032,6 @@ void gunFireTankShell(s32 handnum)
     }
 }
 
-const char g_GunHudIntegerFormat[] = "%d\n";
-const char aSD[] = "%s: %d\n";
-const char g_GunDeathCountFormat[] = "%s %d %s\n";
-const char aSD_0[] = "%s: %d\n";
 
 
 
@@ -2162,4 +2058,88 @@ void gunsStopSounds(void)
             }
         }
     }
+}
+
+
+f32 itemGetWatchPosX(ITEM_IDS item)
+{
+  return gitem_structs[item].watch_pos_x;
+}
+
+
+f32 itemGetWatchPosY(ITEM_IDS item)
+{
+  return gitem_structs[item].watch_pos_y;
+}
+
+
+f32 itemGetWatchPosZ(ITEM_IDS item)
+{
+  return gitem_structs[item].watch_pos_z;
+}
+
+
+f32 itemGetWatchRotX(ITEM_IDS item)
+
+{
+  return gitem_structs[item].x_rotation;
+}
+
+
+f32 itemGetWatchRotY(ITEM_IDS item)
+{
+  return gitem_structs[item].y_rotation;
+}
+
+
+f32 itemGetWatchFov(void) {
+  return 45.0f;
+}
+
+
+char *itemGetWatchTitle1(ITEM_IDS item)
+{
+  return langGet(gitem_structs[item].upper_watch_text);
+}
+
+
+char *itemGetWatchTitle2(ITEM_IDS item)
+{
+    return langGet(gitem_structs[item].lower_watch_text);
+}
+
+
+char *itemGetWatchText(ITEM_IDS item)
+{
+    return langGet(gitem_structs[item].watch_equipment_text);
+}
+
+
+char *itemGetChoiceText(ITEM_IDS item)
+{
+    return langGet(gitem_structs[item].weapon_of_choice_text);
+}
+
+
+f32 itemGetEquipFov(void)
+{
+	return 45.0f;
+}
+
+
+f32 itemGetEquipPosX(ITEM_IDS item)
+{
+  return gitem_structs[item].equip_watch_x;
+}
+
+
+f32 itemGetEquipPosY(ITEM_IDS item)
+{
+  return gitem_structs[item].equip_watch_y;
+}
+
+
+f32 itemGetEquipPosZ(ITEM_IDS item)
+{
+  return gitem_structs[item].equip_watch_z;
 }

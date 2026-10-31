@@ -3,8 +3,8 @@
 Things drawn over the view or into it that aren't props or the player's guns: the
 multiplayer radar, the health and armour bars, the blood that runs down the screen when
 Bond dies, bullet sparks and the HUD text messages. The HUD as a whole is put together
-each frame by `hudRender`, which calls into these files; ammo counters and the sight are
-in [weapons](weapons.md).
+each frame by `hudRender`, which calls into these files; the ammo counters and the sight
+(`hud/ammohud.c`) are described in [weapons](weapons.md).
 
 | File | What it holds |
 | --- | --- |
