@@ -20,6 +20,7 @@
 #include "game/player/headbob.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
+#include "game/player/playerdamage.h"
 #include "game/player/playertune.h"
 #include "game/prop/propobj.h"
 #include "game/prop/setup.h"
@@ -458,6 +459,43 @@ void playerUpdateVertaTheta(void)
     g_CurrentPlayer->bond.theta_transform.f[0] = -g_CurrentPlayer->vv_sintheta;
     g_CurrentPlayer->bond.theta_transform.f[1] = 0;
     g_CurrentPlayer->bond.theta_transform.f[2] = g_CurrentPlayer->vv_costheta;
+}
+
+
+/**
+ * Co-op and counter-op: the tank runs over the other player, as it does guards. They
+ * die at once (unless invincible), with the guards' crush yell.
+ */
+static void tankRunOverPlayer(PropRecord *victimprop, coord3d *tankpos)
+{
+    s32 driver = playerGetCurrentNum();
+    s32 victim = playerGetIndexForProp(victimprop);
+    f32 dx = victimprop->pos.f[0] - tankpos->f[0];
+    f32 dz = victimprop->pos.f[2] - tankpos->f[2];
+
+    if (victim < 0 || victim == driver || g_playerPointers[victim]->bonddead)
+    {
+        return;
+    }
+
+    if (dx != 0.0f || dz != 0.0f)
+    {
+        f32 dist = sqrtf((dx * dx) + (dz * dz));
+
+        dx /= dist;
+        dz /= dist;
+    }
+
+    playerSetCurrent(victim);
+    playerTakeDamage(1000.0f, dx, dz, driver, TRUE);
+
+    if (g_CurrentPlayer->bonddead)
+    {
+        sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, CRUSHED_YELL_SFX, NULL), &victimprop->pos);
+        sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, TANK_CRUSH_MAN_SFX, NULL), &victimprop->pos);
+    }
+
+    playerSetCurrent(driver);
 }
 
 
@@ -1714,6 +1752,13 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
                         explosionPos.f[2] = tankObj->runtime_pos.f[2];
 
                         chrExplosionDamage(prop->chr, &explosionPos, 3.0f, 1);
+                    }
+                }
+                else if (prop->type == PROP_TYPE_VIEWER)
+                {
+                    if (gameIsTwoPlayerMission() && polygonContainsPoint(&prop->pos, tankBounds, 4))
+                    {
+                        tankRunOverPlayer(prop, &tankObj->runtime_pos);
                     }
                 }
                 else if (prop->type == PROP_TYPE_OBJ)
