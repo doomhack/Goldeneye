@@ -298,6 +298,9 @@ struct player
 
   s32 activatePressed; /* B was pressed this frame and not used to enter the tank */
 
+  /* Solo: counts up to 4 after the body is removed, then the guns are put away */
+  s32 forceDisarmTicks;
+
   /* The tank (see struct Tank in tank.h). Only one player at a time uses it. */
   s32 tankDriving;               /* in the tank, driving it */
   s32 tankCanEnter;              /* on the tank where B climbs in; stays set while in it */

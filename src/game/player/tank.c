@@ -11,8 +11,6 @@
 #include "game/player/tank.h"
 #include "game/level/gamemode.h"
 
-s32 g_ExplodeTankOnDeathFlag = 0;
-
 /* The level's tank (Streets and Runway have one), see struct Tank */
 struct Tank g_Tank;
 

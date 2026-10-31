@@ -24,13 +24,13 @@
 #include "random.h"
 #include "game/player/playerdamage.h"
 #include "game/level/gamemode.h"
+#include "game/mission/mission.h"
 
 static s32 g_SurroundBondWithExplosionsTicks;
 
 static s32 g_PlayerTickExplodeCreatePosition;
 
 
-s32 g_SurroundBondWithExplosionsFlag = 0;
 
 static struct DamageType g_DamageTypes[] = {
         {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF}, // 1 bars
@@ -231,15 +231,15 @@ void playerTickDamageAndHealth(void)
 }
 
 /**
- * If global flag g_SurroundBondWithExplosionsFlag is set then explosions
- * will be randomly created around Bond.
+ * While g_Mission.surroundWithExplosions is set, explosions are created at
+ * random round the player.
 */
 void playerTickExplode(void)
 {
     g_PlayerTickExplodeCreatePosition++;
 
-    if (g_SurroundBondWithExplosionsFlag
-        && (g_PlayerInvincible == FALSE)
+    if (g_Mission.surroundWithExplosions
+        && (g_Mission.playerInvincible == FALSE)
         && g_SurroundBondWithExplosionsTicks < g_GlobalTimer)
     {
         coord3d pos;
@@ -299,7 +299,7 @@ void playerDie(void)
 
         if (g_CurrentPlayer->tankMounted != NULL)
         {
-            g_ExplodeTankOnDeathFlag = 1;
+            g_Mission.explodeTankOnDeath = 1;
         }
 
         // Counter-op: the guard player drops their gun like a guard.
@@ -365,7 +365,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
             damage_dealt = (g_CurrentPlayer->bondhealth * g_CurrentPlayer->actual_health) + (g_CurrentPlayer->bondarmour * g_CurrentPlayer->actual_armor);
         }
 
-        if (g_CurrentPlayer->cheatBondInvincible == FALSE && g_CurrentPlayer->bonddead == FALSE && g_PlayerInvincible == FALSE &&
+        if (g_CurrentPlayer->cheatBondInvincible == FALSE && g_CurrentPlayer->bonddead == FALSE && g_Mission.playerInvincible == FALSE &&
             (g_CurrentPlayer->damageshowtime < 0 || (gameIsMulti() && g_CurrentPlayer->damageshowtime == 0)
                 // Counter-op: like the guard they took over, the guard
                 // player feels every shot, not one per damage flash.
@@ -541,7 +541,7 @@ void currentPlayerAddArmor(f32 armour)
 // Starts explosions round the player after delay ticks (see playerTickExplode)
 void playerSurroundWithExplosions(int delay)
 {
-    g_SurroundBondWithExplosionsFlag = 1;
+    g_Mission.surroundWithExplosions = 1;
     g_SurroundBondWithExplosionsTicks = delay + g_GlobalTimer;
     g_PlayerTickExplodeCreatePosition = 0;
 }

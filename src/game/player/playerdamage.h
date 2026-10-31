@@ -19,6 +19,5 @@ f32 currentPlayerGetArmor(void);
 void currentPlayerAddArmor(f32 armour);
 void playerSurroundWithExplosions(int delay);
 
-extern s32 g_SurroundBondWithExplosionsFlag;
 
 #endif

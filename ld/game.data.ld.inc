@@ -3,6 +3,7 @@
       build/OUTCODE/src/game/prop/setup.o (.data);
       build/OUTCODE/src/game/prop/objsetup.o (.data);
       build/OUTCODE/src/game/mission/objective.o (.data);
+      build/OUTCODE/src/game/mission/mission.o (.data);
       build/OUTCODE/src/game/player/playerintro.o (.data);
       build/OUTCODE/src/game/menu/title.o (.data);
       build/OUTCODE/src/game/menu/front.o (.data);

@@ -21,6 +21,7 @@
 #include "game/nav/stan.h"
 #include "game/prop/setup.h"
 #include "game/level/gamemode.h"
+#include "game/mission/mission.h"
 
 static struct SetupIntroCamera* g_CurrentSetupIntroCamera = NULL;
 
@@ -203,7 +204,7 @@ void playerApplyIntro(void)
 
     intro_record = (struct SetupIntroEmpty *)g_CurrentSetup.intro;
     g_FrontBondKilled = 0;
-    g_bondviewForceDisarm = 0;
+    g_CurrentPlayer->forceDisarmTicks = 0;
     resolution = 0;
     cameraBufferToggle = 0;
     cameraFrameCounter1 = 0;
@@ -225,7 +226,7 @@ void playerApplyIntro(void)
     g_ForceBondMoveOffset.f[1] = FLOAT_INIT;
     g_ForceBondMoveOffset.f[2] = FLOAT_INIT;
     g_CoopForceMovePlayer = 0;
-    g_SurroundBondWithExplosionsFlag = 0;
+    g_Mission.surroundWithExplosions = 0;
     startpadcount = 0;
     g_CurrentPlayer->tankDriving = 0;
     g_CurrentPlayer->tankTouched = 0;
@@ -247,13 +248,13 @@ void playerApplyIntro(void)
     g_CurrentPlayer->tankCanEnter = 0;
     g_Tank.turretAngle = FLOAT_INIT;
     g_Tank.turretTurn = FLOAT_INIT;
-    g_ExplodeTankOnDeathFlag = 0;
-    is_timer_active = 1;
-    g_PlayerInvincible = FALSE;
+    g_Mission.explodeTankOnDeath = 0;
+    g_Mission.playerHasControl = 1;
+    g_Mission.playerInvincible = FALSE;
     g_CameraMode = 0;
     g_CameraAfterCinema = 0;
     camera_fade_active = 0;
-    stop_time_flag = 0;
+    g_Mission.exitOnPress = 0;
     camera_transition_timer = FLOAT_INIT;
     intro_camera_index = CAMERAMODE_INTRO;
     g_IntroSwirl = NULL;

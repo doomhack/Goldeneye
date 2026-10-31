@@ -7,7 +7,8 @@ drive most of a mission (setting stage flags, opening doors) are in
 
 | File | What it holds |
 | --- | --- |
-| `src/game/mission/objective.c` | Everything here: the lists built from the setup file, objective status (`objectiveCheckStatus`), the "Objective A: completed" messages, the checks for entering a room, depositing an item and taking a photo, and the briefing text for the watch |
+| `src/game/mission/mission.c` | `g_Mission`: mission-wide flags AI scripts set (exit on a button press, the player's controls taken away, invincible, explosions round the player, the tank blowing up on death) |
+| `src/game/mission/objective.c` | The lists built from the setup file, objective status (`objectiveCheckStatus`), the "Objective A: completed" messages, the checks for entering a room, depositing an item and taking a photo, and the briefing text for the watch |
 
 ## From the setup file
 

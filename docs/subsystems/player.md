@@ -8,7 +8,7 @@ inventory are in [weapons](weapons.md).
 | File | What it holds |
 | --- | --- |
 | `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`), and small getters (`playerGetPos`, `playerGetEyeHeight` and the like) |
-| `src/game/player/playerlife.c` | Choosing a spawn pad, resetting a player for a new life (`playerResetLife`, `playerStartNewLife`), crouch and lean, and the level-wide flags AI scripts set |
+| `src/game/player/playerlife.c` | Choosing a spawn pad, resetting a player for a new life (`playerResetLife`, `playerStartNewLife`), crouch and lean |
 | `src/game/player/playerupdate.c` | The per-frame update (`playerUpdate`, `playerMove`, `playerMoveFrozen`), height and falling (`playerUpdateVertical`), getting in and driving the tank, the mission timer |
 | `src/game/player/playerbody.c` | Bond's body: loading the body and head models and the guns in its hands, cuffs, the player prop tick (`playerTick`) that poses it, and drawing it |
 | `src/game/player/playerinput.c` | Input (`playerProcessInput`), auto-aim, look and walk speeds |

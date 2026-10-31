@@ -10298,7 +10298,7 @@ _AI_CMD(
         {
             countdownTimerSetVisible(16, FALSE);
         }
-        is_timer_active = FALSE;
+        g_Mission.playerHasControl = FALSE;
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -10336,7 +10336,7 @@ _AI_CMD(
         hudmsgsSetOn(PLAYERFLAG_NOCONTROL);
         hudmsgTopClearFlag(2);
         countdownTimerSetVisible(16, TRUE);
-        is_timer_active = TRUE;
+        g_Mission.playerHasControl = TRUE;
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -10461,7 +10461,7 @@ _AI_CMD_POLYMORPH(,
 
 _AI_CMD(
     {
-    if (stop_time_flag != 2)
+    if (g_Mission.exitOnPress != 2)
     {
         currentPlayerSetFadeColour(0, 0, 0, 0);
         currentPlayerSetFadeFrac(CHRLV_FRAMERATE_F, 1);
@@ -10497,7 +10497,7 @@ _AI_CMD(
 
 _AI_CMD(
     {
-        if (stop_time_flag != 2)
+        if (g_Mission.exitOnPress != 2)
         {
             currentPlayerSetFadeColour(0, 0, 0, 1);
             currentPlayerSetFadeFrac(CHRLV_FRAMERATE_F, 0);
@@ -11098,9 +11098,9 @@ _AI_CMD(
 
 _AI_CMD(
     {
-        if (stop_time_flag == FALSE)
+        if (g_Mission.exitOnPress == FALSE)
         {
-            stop_time_flag = TRUE;
+            g_Mission.exitOnPress = TRUE;
         }
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
@@ -11174,7 +11174,7 @@ _AI_CMD(
 
 _AI_CMD(
     {
-        g_PlayerInvincible = TRUE;
+        g_Mission.playerInvincible = TRUE;
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -11465,7 +11465,7 @@ _AI_CMD(
 _AI_CMD(
     {
         AIRecord *ai = AiListp + Offset;
-        if (g_PlayerInvincible)
+        if (g_Mission.playerInvincible)
         {
             Offset = aiFindLabel(AiListp, Offset, ai->val[0]);
         }

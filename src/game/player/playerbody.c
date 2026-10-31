@@ -361,7 +361,7 @@ void playerRemoveBody(void)
         chrFreeResources(g_CurrentPlayer->prop);
         g_CurrentPlayer->prop->chr = NULL;
         g_CurrentPlayer->bodyModel = 0;
-        g_bondviewForceDisarm = 1;
+        g_CurrentPlayer->forceDisarmTicks = 1;
         playerUpdateRooms(g_CurrentPlayer);
     }
 }

@@ -3,9 +3,6 @@
 #include <ultra64.h>
 #include <bondtypes.h>
 
-extern s32 stop_time_flag;
-extern s32 is_timer_active;
-extern bool g_PlayerInvincible;
 void playerResetLife(void);
 void playerStartNewLife(void);
 s32 playerChooseSpawnPad(void);
