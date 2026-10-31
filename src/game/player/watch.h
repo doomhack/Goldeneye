@@ -1,5 +1,5 @@
-#ifndef _WATCH_H_
-#define _WATCH_H_
+#ifndef _PLAYER_WATCH_H_
+#define _PLAYER_WATCH_H_
 #include <ultra64.h>
 #include <bondtypes.h>
 
