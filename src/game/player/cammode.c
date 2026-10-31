@@ -22,6 +22,7 @@
 #include "game/world/bgfog.h"
 #include "random.h"
 #include "game/player/cammode.h"
+#include "game/player/coop.h"
 #include "game/level/gamemode.h"
 #include "game/mission/mission.h"
 
@@ -336,11 +337,14 @@ static void coopStartPartnerIntro(struct ModelAnimation *anim, f32 startframe, f
 
 /**
  * Co-op: whether the partner is shown during a cinema camera mode. They sit
- * out cutscenes and death replays, but the level intro shows both players.
+ * out cutscenes and death replays, but the level intro shows both players
+ * unless they share a spawn spot.
  */
 bool coopShowPartnerInCinema(void)
 {
-    if (!gameIsCoop())
+    // If the level start had no room for the partner (e.g. Facility's vent,
+    // Frigate), they spawn inside player 1, so leave them out of the intro.
+    if (!gameIsCoop() || g_CoopPlayersOverlap)
     {
         return FALSE;
     }
@@ -436,7 +440,7 @@ void playerSetCameraMode(s32 mode)
             chr->sleep = 0;
             g_CurrentPlayer->cameratile = NULL;
 
-            if (gameIsCoop())
+            if (coopShowPartnerInCinema())
             {
                 coopStartPartnerIntro(anim, ftemp_1, ftemp_3, endframe);
             }
