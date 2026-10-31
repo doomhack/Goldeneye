@@ -891,6 +891,32 @@ bool cheatIsMpCheat(CHEAT_ID cheat_id)
 
 
 
+/**
+ * Counter-op: cheats that change the world (guards, animation speed,
+ * drawing) rather than help one player, so both sides get them.
+ */
+static bool cheatAffectsWorld(CHEAT_ID id)
+{
+    switch (id)
+    {
+        case CHEAT_DK_MODE:
+        case CHEAT_PAINTBALL:
+        case CHEAT_FAST_ANIMATION:
+        case CHEAT_SLOW_ANIMATION:
+        case CHEAT_ENEMY_ROCKETS:
+        case CHEAT_LINEMODE:
+        case CHEAT_NO_RADAR_MP:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+/**
+ * Turns on a cheat chosen in the menus at level start: for the one player,
+ * for every player in co-op, and for Bond (or everyone, for world cheats) in
+ * counter-op. Multiplayer only takes multiplayer cheats.
+ */
 void cheatActivate(CHEAT_ID cheatindex)
 {
     u32 cheat_mask;
@@ -906,9 +932,24 @@ void cheatActivate(CHEAT_ID cheatindex)
     {
         cheatTurnOn(cheatindex);
     }
+    else if (gameIsCounterOp() && !cheatAffectsWorld(cheatindex))
+    {
+        // Counter-op: cheats that help a player are Bond's alone
+        playerSetCurrent(COUNTEROP_BOND);
+        cheatTurnOn(cheatindex);
+
+        if ((cheat_mask & CHEAT_MASK_SHOW_TEXT) == 0)
+        {
+            g_CheatPlayerMask[cheatindex] = 1 << COUNTEROP_BOND;
+        }
+
+        playerSetCurrent(starting_player_number);
+    }
     else
     {
-        if (cheat_mask & CHEAT_MASK_MPGAME)
+        // Multiplayer only takes its own cheats; co-op and counter-op take
+        // all of them, for both players
+        if ((cheat_mask & CHEAT_MASK_MPGAME) || gameIsTwoPlayerMission())
         {
             if (cheat_mask & CHEAT_MASK_GLOBAL)
             {
@@ -1071,7 +1112,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_EXTRA_WEAPONS:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 s32 vvv;
 
@@ -1094,7 +1135,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_TINY_BOND:
-            if ((player_count == 1) && (g_playerPerm->player_perspective_height == 1.0f))
+            if (!gameIsMulti() && (g_playerPerm->player_perspective_height == 1.0f))
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_19_TINYBONDON_LF)));
                 g_playerPerm->player_perspective_height = 0.5f;
@@ -1128,7 +1169,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_MAGNUM:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_RUGER);
                 ammoGive(AMMO_MAGNUM, ammoGetMax(AMMO_MAGNUM));
@@ -1137,7 +1178,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_LASER:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_LASER);
                 return;
@@ -1145,7 +1186,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_GOLDEN_GUN:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_GOLDENGUN);
                 ammoGive(AMMO_GGUN, ammoGetMax(AMMO_GGUN));
@@ -1154,7 +1195,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_SILVER_PP7:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_SILVERWPPK);
                 ammoGive(AMMO_9MM, ammoGetMax(AMMO_9MM));
@@ -1163,7 +1204,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_GOLD_PP7:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_GOLDWPPK);
                 ammoGive(AMMO_9MM, ammoGetMax(AMMO_9MM));
@@ -1215,7 +1256,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_2X_ROCKET_LAUNCHER:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_ROCKETLAUNCH);
                 invAddDualItem(ITEM_ROCKETLAUNCH, ITEM_ROCKETLAUNCH);
@@ -1225,7 +1266,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_2X_GRENADE_LAUNCHER:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_GRENADELAUNCH);
                 invAddDualItem(ITEM_GRENADELAUNCH, ITEM_GRENADELAUNCH);
@@ -1235,7 +1276,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_2X_RCP90:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_FNP90);
                 invAddDualItem(ITEM_FNP90, ITEM_FNP90);
@@ -1245,7 +1286,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_2X_THROWING_KNIFE:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_THROWKNIFE);
                 invAddDualItem(ITEM_THROWKNIFE, ITEM_THROWKNIFE);
@@ -1255,7 +1296,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_2X_HUNTING_KNIFE:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_KNIFE);
                 invAddDualItem(ITEM_KNIFE, ITEM_KNIFE);
@@ -1264,7 +1305,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_2X_LASER:
-            if (player_count == 1)
+            if (!gameIsMulti())
             {
                 invAddItem(ITEM_LASER);
                 invAddDualItem(ITEM_LASER, ITEM_LASER);
@@ -1362,11 +1403,9 @@ void cheatTurnOff(CHEAT_ID cheat_id)
 {
     s32 mask;
     s32 current_player_number;
-    s32 player_count;
 
     mask = g_CheatInfo[cheat_id - 1].maskfield;
     current_player_number = playerGetCurrentNum();
-    player_count = getPlayerCount();
 
     if ((mask & CHEAT_MASK_SHOW_TEXT) == 0)
     {
@@ -1423,7 +1462,7 @@ void cheatTurnOff(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_TINY_BOND:
-            if ((player_count == 1) && (g_playerPerm->player_perspective_height != 1.0f))
+            if (!gameIsMulti() && (g_playerPerm->player_perspective_height != 1.0f))
             {
                 HUDMESSAGEBOTTOM((char *)langGet(getStringID(LMISC, MISC_STR_24_TINYBONDOFF_LF)));
                 g_playerPerm->player_perspective_height = 1.0f;
