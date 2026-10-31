@@ -1,7 +1,6 @@
 /*
- * THIS FILE IS AN OS FILE (include\PR\rmon.h)
- * needs moving to libultrare since its modified
- * apparently they ifdeffed out func contents rather than while file?
+ * What is left of libultra's remote debugger (rmon): an empty thread, and osSyncPrintf, which
+ * prints to the crash screen's text buffer.
  */
 #ifndef _RMON_H_
 #define _RMON_H_

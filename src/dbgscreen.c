@@ -172,7 +172,7 @@ static void dbgBegin(const char *title)
 
 [[noreturn]] static void dbgShowScreen(void)
 {
-    OSViMode *mode = &osViModeTable[(osTvType == TV_TYPE_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
+    OSViMode *mode = &osViModeTable[(osTvType == OS_TV_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
 
     IO_WRITE(VI_CONTROL_REG, mode->comRegs.ctrl);
     IO_WRITE(VI_WIDTH_REG, SCREEN_WIDTH);

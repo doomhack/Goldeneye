@@ -15,26 +15,6 @@ dirs=(
     rsp
     src
     src/game
-	src/libultra
-    src/libultra/audio
-    src/libultra/gt
-    src/libultra/gu
-    src/libultra/io
-	src/libultra/libc
-    src/libultra/os
-    src/libultra/rg
-    src/libultra/sched
-    src/libultra/sp
-	src/libultrare
-    src/libultrare/audio
-    src/libultrare/gt
-    src/libultrare/gu
-    src/libultrare/io
-	src/libultrare/libc
-    src/libultrare/os
-    src/libultrare/rg
-    src/libultrare/sched
-    src/libultrare/sp
 	assets assets/obseg
 	assets/obseg/brief
     assets/obseg/chr

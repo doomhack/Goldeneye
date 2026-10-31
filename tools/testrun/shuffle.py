@@ -39,7 +39,7 @@ LINE = re.compile(r'^(\s*)(\S+\.o) \((\.data|\.rodata|\.bss) (?:\.data|\.rodata|
 SMALL = re.compile(r'^(\s*)\* \((\.sdata|\.sbss) ')
 
 # Objects whose layout is fixed on purpose (asset data, boot blobs) or that are not game code.
-SKIP = ('/libultra/', '/libultrare/', '/assets/', 'c_data_filler', 'inflate', 'aspboot', 'gspboot',
+SKIP = ('libultra.a', '/assets/', 'c_data_filler', 'inflate', 'aspboot', 'gspboot',
         'stacks.o', 'cfb.o', 'rsp/')
 
 

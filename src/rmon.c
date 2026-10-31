@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <ultra64.h>
 #include <PR/os.h>
-#include "libultra/libc/xstdio.h"
 #include "crash.h"
 #include "rmon.h" /*<PR/rmon.h>*/
 
@@ -19,14 +18,6 @@ void rmonMain([[maybe_unused]] void *arg) {
 }
 
 
-/**
- * Removed
- * rmonPrintf
- */
-void rmonPrintf(void)
-{
-}
-
 /*
  * -----------------------------------------------------------------
  * This is a new file (PR/libultra/libc/syncprintf.c)
@@ -36,17 +27,16 @@ void rmonPrintf(void)
 /**
  * Send text to Remote Debugger, GE redirects to screen (crashAppendChar)
  */
-char *proutSyncPrintf([[maybe_unused]] char *str, const char *buf, size_t n)
-{
-    u32 sent = 0;
+// libultra's printf engine (lib/ultralib/src/libc/xprintf.c)
+int _Printf(void *prout(void *, const char *, size_t), void *arg, const char *fmt, va_list ap);
 
-#ifndef _FINALROM
-    while (sent < n)
+static void *proutSyncPrintf([[maybe_unused]] void *str, const char *buf, size_t n)
+{
+    for (size_t sent = 0; sent < n; sent++)
     {
-        crashAppendChar(buf[sent++]);
+        crashAppendChar(buf[sent]);
     }
-#endif
-    return (char *)1; /* return a fake pointer so that it's not NULL */
+    return (void *)1; /* return a fake pointer so that it's not NULL */
 }
 
 

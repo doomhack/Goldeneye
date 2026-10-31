@@ -273,7 +273,7 @@ void viUpdateMode(void)
             {
                 if (g_viColorOutputMode != COLORMODE_32BIT)
                 {
-                    if (osTvType == TV_TYPE_MPAL)
+                    if (osTvType == OS_TV_MPAL)
                     {
                         g_viOriginalVideoMode = osViModeTable[OS_VI_MPAL_LAN1];
                     }
@@ -284,7 +284,7 @@ void viUpdateMode(void)
                 }
                 else
                 {
-                    if (osTvType == TV_TYPE_MPAL)
+                    if (osTvType == OS_TV_MPAL)
                     {
                         g_viOriginalVideoMode = osViModeTable[OS_VI_MPAL_LAN2];
                     }
@@ -304,7 +304,7 @@ void viUpdateMode(void)
             }
 
             case MD_MAXIMUM:
-                if (osTvType == TV_TYPE_MPAL)
+                if (osTvType == OS_TV_MPAL)
                 {
                     viMode = &osViModeTable[OS_VI_MPAL_HAF1];
                 }
@@ -345,7 +345,7 @@ void viUpdateMode(void)
 
         if (g_viColorOutputMode != COLORMODE_32BIT)
         {
-            if (osTvType == TV_TYPE_MPAL)
+            if (osTvType == OS_TV_MPAL)
             {
                 g_ViModes[nextMode] = osViModeTable[OS_VI_MPAL_LAN1];
             }
@@ -356,7 +356,7 @@ void viUpdateMode(void)
         }
         else
         {
-            if (osTvType == TV_TYPE_MPAL)
+            if (osTvType == OS_TV_MPAL)
             {
                 g_ViModes[nextMode] = osViModeTable[OS_VI_MPAL_LAN2];
             }

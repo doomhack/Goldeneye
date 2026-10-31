@@ -75,7 +75,6 @@ extern OSViMode *g_ViModePtrs[2];
 void permit_stderr(u32 flag);
 void CheckDisplayErrorBuffer(u16 *buffer);
 void CheckDisplayErrorBufferEvery16Frames(u32 framecount);
-void osCreateLog(void);
 void __scMain(void *arg);
 
 extern volatile u32 g_PerfGfxStart;

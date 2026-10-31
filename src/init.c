@@ -2,6 +2,7 @@
 #include <PR/R4300.h>
 #include <PR/os.h>
 #include <PR/os_internal.h>
+#include <PRinternal/piint.h>
 #include <PR/rcp.h>
 #include <bondgame.h>
 #include "game/asset/rzip.h"
@@ -97,7 +98,7 @@ void init(void)
     // 8KB at a time through the TLB; with the Expansion Pak it simply stays resident.
     gameSegmentSize = (u32) &_gameSegmentEnd - (u32) &_gameSegmentStart;
     osWritebackDCacheAll();
-    osPiRawStartDma(OS_READ, (u32) &_gameSegmentRomStart, &_gameSegmentStart, gameSegmentSize);
+    __osPiRawStartDma(OS_READ, (u32) &_gameSegmentRomStart, &_gameSegmentStart, gameSegmentSize);
     while ((osPiGetStatus() & PI_STATUS_DMA_BUSY))
     {
     }
