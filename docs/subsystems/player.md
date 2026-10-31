@@ -8,8 +8,10 @@ inventory are in [weapons](weapons.md).
 | File | What it holds |
 | --- | --- |
 | `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`) |
-| `src/game/player/bondview.c` | The player globals, the camera helpers (`cam*`): screen and view transforms, the view matrices, the frustum planes; also choosing a spawn pad, resetting a player for a new life, crouch and lean |
-| `src/game/player/bondview2.c` | Everything else about Bond, about 7,000 lines: camera modes and cutscene cameras, input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the frame's camera setup (`camSetupFrame`), the player prop tick (`playerTick`) |
+| `src/game/player/bondview.c` | The player globals; choosing a spawn pad, resetting a player for a new life, crouch and lean |
+| `src/game/player/bondview2.c` | Everything else about Bond, about 5,500 lines: input, health and damage, the per-frame update (`playerUpdate`, `playerMove`), the player prop tick (`playerTick`) |
+| `src/game/player/cammode.c` | Camera modes: switching (`playerSetCameraMode`, `playerAdvanceCameraMode`), the intro, swirl, cutscene, death and orbit cameras (`playerTickFrozenCamera`), co-op's full-screen view (`coopUpdateSoloView`) |
+| `src/game/player/camview.c` | The camera helpers (`cam*`): screen and view transforms, the view matrices, the frustum planes, the viewports, the frame's camera setup (`camSetupFrame`) |
 | `src/game/player/watch.c` | The pause watch: raising and lowering the arm (`watchTick`, `watchStepAnim`), the pause tilt and zoom, opening and closing it (`watchTrigger`), drawing the arm and watch (`watchRender`) |
 | `src/game/player/respawn.c` | Respawning: multiplayer at a pad (`mpRespawnPlayer`), co-op next to the partner (`coopRespawnPlayer`) |
 | `src/game/player/counterop.c` | Counter-op: player 2 taking over guards, the suicide pill, the end screen's stats |
@@ -83,7 +85,7 @@ only stores the mode; `playerSetCameraMode` also sets up the new mode.
 
 ## The camera helpers
 
-`bondview.c` keeps the current player's camera: screen size and position, field of view,
+`camview.c` keeps the current player's camera: screen size and position, field of view,
 the scale factors between screen pixels and view space (`camUpdateScale`), and the matrices
 that `camUpdateMatrices` makes each frame:
 
@@ -139,7 +141,7 @@ tiles and props (`tankTestCollision`, `tankTryMoveTo`) and place and aim the tur
 
 Added for this fork:
 
-* `coopUpdateSoloView` (`bondview2.c`) decides each frame whether one player's view fills
+* `coopUpdateSoloView` (`cammode.c`) decides each frame whether one player's view fills
   the screen.
 * `coopRespawnPlayer` (`respawn.c`) respawns a dead player next to the partner, taking
   health from them. `hudRender` runs it when the dead player presses a button.
@@ -152,9 +154,9 @@ Added for this fork:
 ## Traps
 
 * "Bond" in a name often means "the current player", from when there was only one.
-* `bondview.c` is mostly camera code plus the player globals, and `bondview2.c` is most of
-  the player. The names come from the decomp; `bondview2.c` is being split by topic
-  (the HUD and its messages are now in `hud/`).
+* `bondview.c` is mostly the player globals, and `bondview2.c` is most of the rest of the
+  player. The names come from the decomp; `bondview2.c` is being split by topic (the HUD
+  and its messages are now in `hud/`).
 * `player->bond` (`struct PlayerBond`) is Bond's body: its tile, position and look
   vectors. Its position is the real player position; `bondDie` is a copy taken at death
   for the death replay.

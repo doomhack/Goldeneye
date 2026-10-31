@@ -1,5 +1,5 @@
-#ifndef _WATCH_H_
-#define _WATCH_H_
+#ifndef _PLAYER_WATCH_H_
+#define _PLAYER_WATCH_H_
 #include <ultra64.h>
 #include <bondtypes.h>
 
@@ -29,5 +29,8 @@ void watchTick(void);
 void watchRequestToggle(void);
 void watchTrigger(s32 instant);
 Gfx *watchRender(Gfx *gdl);
+
+// Co-op: TRUE if another player has their watch out
+s32 coopPartnerHasWatchOut(void);
 
 #endif
