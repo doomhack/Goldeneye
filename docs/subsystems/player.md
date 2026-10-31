@@ -8,7 +8,7 @@ inventory are in [weapons](weapons.md).
 | File | What it holds |
 | --- | --- |
 | `src/game/player/player.c` | The player list: `g_playerPointers`, the current player (`playerSetCurrent`), allocating each player (`playerInit`), the draw order, per-player screen size and field of view, the hands' first setup (`playerInitHands`) |
-| `src/game/player/bondview.c` | The player globals; choosing a spawn pad, resetting a player for a new life, crouch and lean |
+| `src/game/player/playerlife.c` | Choosing a spawn pad, resetting a player for a new life (`playerResetLife`, `playerStartNewLife`), crouch and lean, and the level-wide flags AI scripts set |
 | `src/game/player/bondview2.c` | The rest of Bond, about 3,200 lines: loading the body, height and falling (`playerUpdateVertical`), the per-frame update (`playerUpdate`, `playerMove`), the player prop tick (`playerTick`) |
 | `src/game/player/playerinput.c` | Input (`playerProcessInput`), auto-aim, look and walk speeds |
 | `src/game/player/playerdamage.c` | Health, armour, damage (`playerTakeDamage`), the damage flash and health bars, dying (`playerDie`), explosions round the player |
@@ -26,7 +26,7 @@ inventory are in [weapons](weapons.md).
 
 ## Players
 
-A `struct player` (in `bondview.h`) holds everything about one player, about 11 KB of it.
+A `struct player` (in `player.h`) holds everything about one player, about 11 KB of it.
 `playerInit` allocates one per player at level load. `g_CurrentPlayer` points at the one
 being worked on, and almost every function in this subsystem works on it; the level loop
 and the prop loop call `playerSetCurrent` before each player's turn. The functions named
@@ -159,9 +159,8 @@ Added for this fork:
 ## Traps
 
 * "Bond" in a name often means "the current player", from when there was only one.
-* `bondview.c` is mostly the player globals, and `bondview2.c` is most of the rest of the
-  player. The names come from the decomp; `bondview2.c` is being split by topic (the HUD
-  and its messages are now in `hud/`).
+* `bondview2.c` is most of the rest of the player. The name comes from the decomp; it is
+  being split by topic. Its globals now live in the files that use them.
 * `player->bond` (`struct PlayerBond`) is Bond's body: its tile, position and look
   vectors. Its position is the real player position; `bondDie` is a copy taken at death
   for the death replay.

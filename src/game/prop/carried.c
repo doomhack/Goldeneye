@@ -35,7 +35,6 @@
 #include "game/model/model.h"
 #include "game/nav/stan.h"
 #include "game/player/bondinv.h"
-#include "game/player/bondview.h"
 #include "game/player/player.h"
 
 /* The model switches that held guns and hats attach to */

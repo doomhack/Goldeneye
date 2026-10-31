@@ -22,7 +22,6 @@
 #include "game/chr/chr.h"
 #include "game/math/matrix.h"
 #include "game/nav/geometry.h"
-#include "game/player/bondview.h"
 #include "game/player/player.h"
 
 /* Aircraft collide from this far below their bounding box */

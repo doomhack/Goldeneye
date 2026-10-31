@@ -55,4 +55,9 @@ Gfx*camLoadWorldToViewMtx(Gfx*gdl);
 void mtxsF2L(RenderPosView *views, s32 count);
 void camMtxsToRoomSpace(Mtxf *matrices, s32 count);
 
+extern s32 cameraBufferToggle;
+extern s32 cameraFrameCounter1;
+extern s32 cameraFrameCounter2;
+extern f32 g_CamPosScale;
+
 #endif

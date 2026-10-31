@@ -36,7 +36,7 @@
 #include "game/model/anim.h"
 #include "game/model/model.h"
 #include "game/nav/stan.h"
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 
 /* How fast vehicles turn, in radians per frame (and per frame per frame) */
 #if defined(VERSION_EU)

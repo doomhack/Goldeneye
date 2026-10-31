@@ -20,7 +20,7 @@
 #include "game/prop/propobj.h"
 #include "game/level/lv.h"
 #include "game/math/round.h"
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 #include "game/player/gun.h"
 #include "game/text/text.h"
 #include "game/world/bgfog.h"

@@ -10,12 +10,13 @@
 #include "game/mission/objective.h"
 #include "game/nav/geometry.h"
 #include "game/nav/stan.h"
-#include "game/player/bondview.h"
-#include "game/player/bondview_internal.h"
 #include "game/player/player.h"
 #include "game/world/bgfog.h"
 #include "random.h"
 #include "game/player/playermove.h"
+
+s32 g_PlayerCollisionOn = TRUE;
+
 
 /**
  * Puts the player's body (col) at pos on tile stan, looking along +x.

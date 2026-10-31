@@ -33,4 +33,6 @@ Gfx *watchRender(Gfx *gdl);
 // Co-op: TRUE if another player has their watch out
 s32 coopPartnerHasWatchOut(void);
 
+extern f32 watch_transition_time;
+
 #endif

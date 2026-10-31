@@ -41,7 +41,6 @@
 #include "game/level/lv.h"
 #include "game/model/model.h"
 #include "game/nav/stan.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/world/bg.h"

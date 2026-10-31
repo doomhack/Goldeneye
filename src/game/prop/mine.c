@@ -21,7 +21,6 @@
 #include "game/chr/chraction.h"
 #include "game/chr/chrai.h"
 #include "game/player/player.h"
-#include "game/player/bondview.h"
 #include "game/prop/alarm.h"
 #include "game/prop/objdamage.h"
 #include "game/prop/propobj.h"

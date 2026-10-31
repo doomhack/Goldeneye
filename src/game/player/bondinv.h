@@ -2,7 +2,7 @@
 #define _BONDINV_H_
 #include <ultra64.h>
 #include <bondconstants.h>
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 #include "bondtypes.h"
 
 void invReset(void);

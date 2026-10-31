@@ -1,7 +1,8 @@
 /**
- * The player globals. Also choosing a spawn pad, resetting a player for a new life
- * (playerResetLife), crouch, lean and setting the player's position. The camera
- * helpers are in camview.c. See docs/subsystems/player.md.
+ * A player's life: choosing a spawn pad, resetting a player for a new life
+ * (playerResetLife, playerStartNewLife), crouch, lean and setting the player's
+ * position. Also the level-wide flags the AI scripts set (timer, stop time,
+ * invincible). See docs/subsystems/player.md.
  */
 #include <ultra64.h>
 #include <math.h>
@@ -18,7 +19,6 @@
 #include "game/hud/blood.h"
 #include "game/player/bondhead.h"
 #include "game/player/bondinv.h"
-#include "game/player/bondview.h"
 #include "game/chr/chr.h"
 #include "game/chr/body.h"
 #include "game/chr/chraction.h"
@@ -52,293 +52,19 @@
 #include "game/nav/stan.h"
 #include "game/text/text.h"
 
+PadRecord *g_Startpad[0x10];
 
-#include "game/player/bondview_internal.h"
+s32 startpadcount;
 
 
-
-
-/**
- * When set, will increment each tick until reaching a threshold value (4).
- * Then current items will be unequipped from left and run hands.
-*/
-s32 g_bondviewForceDisarm = 0;
-
-s32 resolution = 0;
-s32 cameraBufferToggle = 0;
-s32 cameraFrameCounter1 = 0;
-s32 cameraFrameCounter2 = 0;
-s32 g_CreditsScrollFrame = 0;
-s32 credits_state = 0;
-CreditsEntry *credits_pointer = NULL;
-s32 g_SurroundBondWithExplosionsFlag = 0;
-
-s32 g_PlayerIsInTank = 0;
-
-struct PropRecord *g_WorldTankProp = NULL;
-
-//D:80036450 cannonically bondonprop2
-struct PropRecord *g_PlayerTankProp = NULL;
-
-/**
- * Related to g_PlayerTankProp.
- */
-f32 g_PlayerTankYOffset = 0;
-
-/**
- * US address 80036458.
-*/
-ALSoundState * g_TankSfxState[2] = { NULL, NULL };
-
-/**
- * min -3.749999, max +3.749999
-*/
-f32 g_TankTurnSpeed = 0;
-
-f32 g_TankOrientationAngle = 0;
-
-f32 tank_turret_unused_angle = 0.0f;
-
-/**
- * Argument to sinf,cosf.
- */
-f32 g_TankTurretVerticalAngle = 0;
-
-f32 g_TankTurretVerticalAngleRelated = 0;
-
-f32 g_TankTurretOrientationAngleRad = 0;
-
-f32 g_TankTurretOrientationAngleDeg = 0;
-
-f32 tank_turret_turn_speed = 0;
-
-/**
- * Can enter tank, remains set once Bond is in tank.
- * Address 0x80036480.80036480
-*/
-s32 g_BondCanEnterTank = 0;
-
-f32 g_TankTurretAngle = 0;
-
-f32 g_TankTurretTurn = 0;
-
-s32 g_ExplodeTankOnDeathFlag = 0;
-s32 g_TankDamagePenaltyTicks = 0;
-enum CAMERAMODE g_CameraMode = CAMERAMODE_NONE;
-enum CAMERAMODE g_CameraAfterCinema = CAMERAMODE_NONE;
-s32 camera_fade_active = 0;
+// Set by AI scripts for the whole level. stop_time_flag: end the level on the
+// next button press (2 once pressed). is_timer_active: FALSE while the player
+// has no control. g_PlayerInvincible: no damage.
 s32 stop_time_flag = 0;
-f32 camera_transition_timer = 0;
-s32 intro_camera_index = 1;
-struct SetupIntroSwirl *g_IntroSwirl = NULL;
 s32 is_timer_active = 1;
 bool g_PlayerInvincible = FALSE;
-struct SetupIntroCamera* g_CurrentSetupIntroCamera = NULL;
-s32 g_SetupIntroCameraCount = 0;
-struct SetupIntroCamera *g_IntroCamera = NULL;
-
-/**
- * Flag to toggle invisibility cheat.
- * 1 = visible to guards
- * 0 = not visible to guards
- */
-s32 g_VisibleToGuardsFlag = TRUE;
-
-s32 g_PlayerCollisionOn = TRUE;
-f32 g_CamPosScale = 1.0;
-f32 g_PlayerWorldScale = 1.0;
-f32 g_PlayerWorldScaleInv = 1.0;
-
-s32 g_bondviewBondDeathAnimations[] = {
-    PTR_ANIM_death_forward_face_down,
-    PTR_ANIM_death_forward_spin_face_up,
-    PTR_ANIM_death_backward_fall_face_up1,
-    PTR_ANIM_death_backward_spin_face_down_right,
-    PTR_ANIM_death_backward_spin_face_up_right,
-    PTR_ANIM_death_backward_spin_face_down_left,
-    PTR_ANIM_death_backward_spin_face_up_left,
-    PTR_ANIM_death_forward_face_down_hard,
-    PTR_ANIM_death_forward_face_down_soft,
-    PTR_ANIM_death_fetal_position_right,
-    PTR_ANIM_death_fetal_position_left,
-    PTR_ANIM_death_backward_fall_face_up2,
-    0
-};
-
-s32 g_bondviewBondDeathAnimationsCount = 0;
-
-enum CAMERAMODE camera_mode = CAMERAMODE_NONE;
-s32 g_IntroAnimationIndex = 0;
-
-struct struct_4 stage_intro_anim_table[] = {
-    {PTR_ANIM_extending_left_hand, 95.0, -1.0, 0.02},
-    {PTR_ANIM_fire_standing_draw_one_handed_weapon_fast, 7.0, 40.0, 0.5},
-    {PTR_ANIM_draw_one_handed_weapon_and_look_around, 0.0, -1.0, 0.5},
-    {PTR_ANIM_draw_one_handed_weapon_and_stand_up, 0.0, -1.0, 0.5},
-    {PTR_ANIM_aim_one_handed_weapon_left_right, 0.0, -1.0, 0.5},
-    {PTR_ANIM_cock_one_handed_weapon_and_turn_around, 0.0, -1.0, 0.5},
-    {PTR_ANIM_cock_one_handed_weapon_turn_around_and_stand_up, 0.0, -1.0, 0.5},
-    {PTR_ANIM_draw_one_handed_weapon_and_turn_around, 0.0, -1.0, 0.5},
-    {PTR_ANIM_bond_eye_fire_alt, 0.0, -1.0, 0.5}
-};
-
-f32 watch_transition_time = 0.90909088;
-
-WeaponObjRecord dummy_08_pp7_obj[] = {
-    {{{0x0100,
-    0x00,
-    0x08},
-    PROP_CHRWPPK,
-    0x4000,
-    0x00000000,
-    0x00000000,
-    NULL,
-    NULL,
-    {
-        {{1.0f, 0.0f, 0.0f, 0.0f},
-        {0.0f, 1.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f, 0.0f},
-        {0.0f, 0.0f, 0.0f, 1.0f}}
-    },
-    {{0.0f, 0.0f, 0.0f}},
-    {0x00000000},
-    NULL,
-    {NULL},
-    0.0f,
-    1000.0f,
-    {{0xff, 0xff, 0xff, 0x00}},
-    {{0xff,
-    0xff,
-    0xff,
-    0x00}}},
-    ITEM_WPPK,
-    -1,
-    -1,
-    NULL}
-};
 
 
-struct DamageType g_DamageTypes[] = {
-        {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF}, // 1 bars
-        {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF},
-        {   0,    10.0,    50.0,    0.6,    0,    5.0,    30.0,    0.800000011921, 0xFF,       0xFF,       0xFF},
-        {   0,    10.0,    40.0,    0.6,    0,    5.0,    25.0,    0.600000023842, 0xFF,       0xFF,       0xFF},
-        {   0,    10.0,    35.0,    0.6,    0,    5.0,    22.0,    0.550000011921, 0xFF,       0xFF,       0xFF},
-        {   0,    10.0,    30.0,    0.6,    0,    5.0,    19.0,    0.5,            0xFF,       0xFF,       0xFF},
-        {   0,    10.0,    30.0,    0.6,    0,    5.0,    17.0,    0.449999988079, 0xFF,       0xFF,       0xFF},
-        {   0,    10.0,    30.0,    0.6,    0,    5.0,    15.0,    0.40000000596,  0xFF,       0xFF,       0xFF}  // 8 bars
-};
-
-
-/**
- * The second column is how many frames before the gauge switches from showing the old health to the new health.
- * The third column is how many frames before the health display is hidden.
- */
-struct HealthDisplayDuration g_HealthDisplayDurations[8] = {
-    { 0, 40, 100 }, // 1 bar of health
-    { 0, 30, 80 },
-    { 0, 20, 60 },
-    { 0, 20, 60 },
-    { 0, 20, 60 },
-    { 0, 20, 50 },
-    { 0, 20, 50 },
-    { 0, 20, 50 }  // 8 bars of health
-};
-
-/**
- * US Address 0x800367F4.
-*/
-coord3d g_DefaultMoveBondOffset = { 0 };
-
-/**
- * struct player property `pos` .
- * US address 80036800.
- */
-coord3d g_DefaultFrozenPlayerPos = { 0 };
-
-/**
- * struct player property `pos2`.
- * US address 8003680C.
- */
-coord3d g_DefaultFrozenPlayerPos2 = { {0, 0, 1.0f} };
-
-/**
- * struct player property `offset`.
- * US address 80036818.
- */
-coord3d g_DefaultFrozenPlayerOffset = { {0, 1.0f, 0} };
-
-/**
- * struct player property `offset`.
- * US address 80036824.
- */
-coord3d g_DefaultFrozenMoveOffset = { 0 };
-
-coord3d ZeroCoordShake = { 0 };
-
-
-coord3d ZeroCoordWatchPos = {0};
-coord3d ZeroCoordSpawnPos = {0};
-s32 g_PlayerTickCount = 0;
-
-struct firing_anim_struct firing_animation_groups[][6] = {
-    {{pistol_firing_animation_group1, 0, 0.1, 79.0, 87.0},
-     {&g_ChrMoveFireAnims[2], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[3], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
-     {crouched_pistol_firing_animation_group1, 0, 0.1, 56.0, 68.0}},
-    {{rifle_firing_animation_group1, 0, 0.050000001, 35.0, 40.0},
-     {&g_ChrMoveFireAnims[0], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[1], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
-     {&crouched_rifle_firing_animation_group1[1], 0, 0.1, 45.0, 55.0}},
-    {{NULL, 0x8194, 0.25, 0.0, -1.0},
-     {NULL, 0x8204, 0.5, 0.0, -1.0},
-     {NULL, 0x777C, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[9], 0, 0.5, 0.0, -1.0},
-     {NULL, 0x6C18, 0.050000001, 28.0, 29.0}},
-    {{doubles_firing_animation_group1, 0, 0.1, 32.0, 42.0},
-     {&g_ChrMoveFireAnims[4], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[5], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
-     {&g_ChrMoveFireAnims[8], 0, 0.5, 0.0, -1.0},
-     {crouched_doubles_firing_animation_group1, 0, 0.1, 37.0, 47.0}}
- };
-
-// forward declarations
-
-s32 chrTick(PropRecord *prop);
-void watchUpdateZoom(void);
-void watchStartRaise(f32 speed);
-void watchStartLower(f32 speed);
-void watchStepAnim(void);
-f32 watchGetAnimFrac(void);
-void playerMoveFrozen(u16, u16);
-void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
-void watchTrigger(s32 instant);
-void playerUpdateCollisionBounds(void);
-void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
-void pauseStopSounds(void);
-void watchTick(void);
-void playerUpdatePosFromCollision(void);
-
-void playerUpdateVertaTheta(void);
-
-f32 bheadGetBreathingValue(void);
-void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways);
-f32 watchSetupPauseTilt(bool topause);
-void watchStartPauseTilt(f32 duration);
-void watchStartUnpauseTilt(f32 duration);
-bool watchIsPauseTilting(void);
-void playerSetLeanTarget(s32 value);
-void playerAdjustCrouch(s32 value);
-Gfx *watchRender(Gfx *gdl);
-
-
-//split here makes sense to have the pd split make sense
 s32 playerChooseSpawnPad(void)
 {
     PadRecord *pad;

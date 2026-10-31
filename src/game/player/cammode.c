@@ -14,8 +14,6 @@
 #include "game/menu/watchmenu.h"
 #include "game/model/model.h"
 #include "game/nav/stan.h"
-#include "game/player/bondview.h"
-#include "game/player/bondview_internal.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/prop/explosion.h"
@@ -24,6 +22,70 @@
 #include "game/world/bgfog.h"
 #include "random.h"
 #include "game/player/cammode.h"
+
+static coord3d g_DeathCamPos;
+
+static struct PropRecord* g_DeathCamProp;
+
+PadRecord * g_CameraLookAtBondPad;
+
+CutsceneRecord *gBondViewCutscene;
+
+f32 g_OrbitCamAngle;
+
+f32 g_OrbitCamSpeed;
+
+f32 g_OrbitCamDist;
+
+f32 g_OrbitCamHeight;
+
+f32 g_OrbitCamTargetHeight;
+
+s32 g_OrbitCamPad;
+
+enum CAMERAMODE g_CutsceneCamLookAtBond;
+
+s32 g_CutsceneCamUnusedFlag;
+
+static f32 g_MpSwirlRotateSpeed;
+
+static f32 g_MpSwirlAngleDegrees;
+
+static f32 g_MpSwirlForwardSpeed;
+
+static f32 g_MpSwirlDistance;
+
+
+enum CAMERAMODE g_CameraMode = CAMERAMODE_NONE;
+
+enum CAMERAMODE g_CameraAfterCinema = CAMERAMODE_NONE;
+
+s32 camera_fade_active = 0;
+
+f32 camera_transition_timer = 0;
+
+s32 intro_camera_index = 1;
+
+struct SetupIntroSwirl *g_IntroSwirl = NULL;
+
+struct SetupIntroCamera *g_IntroCamera = NULL;
+
+enum CAMERAMODE camera_mode = CAMERAMODE_NONE;
+
+s32 g_IntroAnimationIndex = 0;
+
+static struct struct_4 stage_intro_anim_table[] = {
+    {PTR_ANIM_extending_left_hand, 95.0, -1.0, 0.02},
+    {PTR_ANIM_fire_standing_draw_one_handed_weapon_fast, 7.0, 40.0, 0.5},
+    {PTR_ANIM_draw_one_handed_weapon_and_look_around, 0.0, -1.0, 0.5},
+    {PTR_ANIM_draw_one_handed_weapon_and_stand_up, 0.0, -1.0, 0.5},
+    {PTR_ANIM_aim_one_handed_weapon_left_right, 0.0, -1.0, 0.5},
+    {PTR_ANIM_cock_one_handed_weapon_and_turn_around, 0.0, -1.0, 0.5},
+    {PTR_ANIM_cock_one_handed_weapon_turn_around_and_stand_up, 0.0, -1.0, 0.5},
+    {PTR_ANIM_draw_one_handed_weapon_and_turn_around, 0.0, -1.0, 0.5},
+    {PTR_ANIM_bond_eye_fire_alt, 0.0, -1.0, 0.5}
+};
+
 
 u32 playerGetCameraMode(void)
 {

@@ -1,7 +1,7 @@
 #ifndef _WATER_H_
 #define _WATER_H_
 #include <ultra64.h>
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 
 
 extern f32 g_SkyCloudOffset;

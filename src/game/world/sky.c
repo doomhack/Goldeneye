@@ -9,7 +9,6 @@
 #include "game/world/sky.h"
 #include "game/player/player.h"
 #include "game/world/water.h"
-#include "game/player/bondview.h"
 #include "game/level/lv.h"
 #include "game/world/bgfog.h"
 #include "game/world/bg.h"

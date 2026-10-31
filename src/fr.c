@@ -7,7 +7,6 @@
 #include "sched.h"
 #include "game/gfx/rsp.h"
 #include <PR/os.h>
-#include "game/player/bondview.h"
 #include "game/gfx/zbuf.h"
 #include "game/gfx/dyn.h"
 

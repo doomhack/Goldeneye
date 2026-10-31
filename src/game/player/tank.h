@@ -21,4 +21,23 @@ s32  coopTankUsedByPartner(void);
 void coopTankBeginPlayer(void);
 void coopTankEndPlayer(s32 moved);
 
+extern s32 g_PlayerIsInTank;
+extern struct PropRecord *g_WorldTankProp;
+extern struct PropRecord *g_PlayerTankProp;
+extern f32 g_PlayerTankYOffset;
+extern ALSoundState * g_TankSfxState[2];
+extern f32 g_TankTurnSpeed;
+extern f32 g_TankOrientationAngle;
+extern f32 tank_turret_unused_angle;
+extern f32 g_TankTurretVerticalAngle;
+extern f32 g_TankTurretVerticalAngleRelated;
+extern f32 g_TankTurretOrientationAngleRad;
+extern f32 g_TankTurretOrientationAngleDeg;
+extern f32 tank_turret_turn_speed;
+extern s32 g_BondCanEnterTank;
+extern f32 g_TankTurretAngle;
+extern f32 g_TankTurretTurn;
+extern s32 g_ExplodeTankOnDeathFlag;
+extern s32 g_TankDamagePenaltyTicks;
+
 #endif

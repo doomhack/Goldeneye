@@ -28,7 +28,7 @@
 #include "game/model/model.h"
 #include "game/model/chrobjdata.h"
 #include "game/nav/stan.h"
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 #include "game/nav/geometry.h"
 #include "random.h"
 

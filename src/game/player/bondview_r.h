@@ -7,4 +7,6 @@
 void playerApplyIntro(void);
 u32 weaponLoadProjectileModels(ITEM_IDS modelid);
 
+void coopFindPartnerSpawn(coord3d *pos, StandTile **stan, f32 look_angle);
+
 #endif

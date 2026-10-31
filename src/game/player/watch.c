@@ -12,7 +12,6 @@
 #include "game/math/quaternion.h"
 #include "game/menu/watchmenu.h"
 #include "game/model/model.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/prop/alarm.h"
@@ -23,6 +22,11 @@
 #include <bondtypes.h>
 #include <fr.h>
 #include <music.h>
+
+f32 watch_transition_time = 0.90909088;
+
+static coord3d ZeroCoordWatchPos = {0};
+
 
 void watchInitPauseTilt(void)
 {

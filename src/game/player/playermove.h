@@ -12,4 +12,6 @@ void playerMoveWithCollision(coord3d *offset, s32 allow_scoot);
 void playerRemoveFromRooms(struct player *player);
 void playerUpdateRooms(struct player *player);
 
+extern s32 g_PlayerCollisionOn;
+
 #endif

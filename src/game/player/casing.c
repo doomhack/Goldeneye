@@ -10,7 +10,6 @@
 #include "game/menu/watchmenu.h"
 #include "game/model/model.h"
 #include "game/model/modelfile.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "random.h"

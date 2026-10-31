@@ -10,7 +10,6 @@
 #include <bondconstants.h>
 #include <bondtypes.h>
 #include "random.h"
-#include "game/player/bondview.h"
 #include "game/player/player.h"
 #include "game/gfx/dyn.h"
 #include "game/gfx/imagebank.h"

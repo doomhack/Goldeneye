@@ -22,7 +22,6 @@
 #include <bondgame.h>
 #include <music.h>
 #include <snd.h>
-#include "game/player/bondview.h"
 #include "game/player/bondinv.h"
 #include "game/player/gun.h"
 #include "game/model/chrobjdata.h"
@@ -63,7 +62,6 @@
 #include "game/prop/monitor.h"
 
 
-
 #ifdef REFRESH_PAL
 #define THROWN_ITEM_REFRESH_RATE 50
 #define DUAL_WIELD_TRIGGER_SWAP_TICKS 24
@@ -99,7 +97,6 @@ extern Weapon1PTransformKeyframe sniperMeleeKeyframes2[];
 extern Weapon1PTransformKeyframe taserFireKeyFrames[];
 extern Weapon1PTransformKeyframe taserRaiseKeyframes[];
 extern struct ModelSkeleton skeleton_gun_kf7;
-
 
 
 void gunUpdateAndFire(GUNHAND handnum)

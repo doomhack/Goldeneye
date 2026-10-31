@@ -11,8 +11,6 @@
 #include "game/hud/blood.h"
 #include "game/math/trig.h"
 #include "game/menu/watchmenu.h"
-#include "game/player/bondview.h"
-#include "game/player/bondview_internal.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/prop/explosion.h"
@@ -20,6 +18,17 @@
 #include "game/world/bg.h"
 #include "game/world/roommtx.h"
 #include "game/player/camview.h"
+
+s32 cameraBufferToggle = 0;
+
+s32 cameraFrameCounter1 = 0;
+
+s32 cameraFrameCounter2 = 0;
+
+f32 g_CamPosScale = 1.0;
+
+static coord3d ZeroCoordShake = { 0 };
+
 
 // The frustum planes in world space, set by camUpdateFrustumPlanes
 static coord3d g_CamFrustumTopNormal;

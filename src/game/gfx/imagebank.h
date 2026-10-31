@@ -2,7 +2,7 @@
 #define _IMAGEBANK_H_
 #include <ultra64.h>
 #include <bondtypes.h>
-#include "game/player/bondview.h"
+#include "game/player/player.h"
 
 extern struct sImageTableEntry *g_ImageCrosshair;
 

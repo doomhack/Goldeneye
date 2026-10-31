@@ -21,7 +21,6 @@
 #include "game/math/trig.h"
 #include "game/nav/stan.h"
 #include "game/player/player.h"
-#include "game/player/bondview.h"
 
 /* How long a camera must see a player to set off the alarm */
 #ifdef VERSION_EU

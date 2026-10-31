@@ -22,7 +22,6 @@
 #include "game/prop/alarm.h"
 #include "game/prop/objdamage.h"
 #include "game/player/bondinv.h"
-#include "game/player/bondview.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/menu/front.h"

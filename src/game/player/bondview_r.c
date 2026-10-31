@@ -9,17 +9,21 @@
 #include <boss.h>
 #include "game/math/trig.h"
 #include "game/player/bondview_r.h"
-#include "game/player/bondview.h"
 #include "random.h"
 #include "game/player/bondinv.h"
 #include "game/chr/chrai.h"
 #include "game/menu/front.h"
 #include "game/player/gun.h"
 #include "game/text/language.h"
+#include "game/hud/hud.h"
 #include "game/player/player.h"
 #include "game/replay/ramromreplay.h"
 #include "game/nav/stan.h"
 #include "game/prop/setup.h"
+
+static struct SetupIntroCamera* g_CurrentSetupIntroCamera = NULL;
+
+static s32 g_SetupIntroCameraCount = 0;
 
 
 coord3d default_start_position = { 0 };

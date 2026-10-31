@@ -14,7 +14,6 @@
 #include <bondgame.h>
 #include <random.h>
 #include "game/world/bgfog.h"
-#include "game/player/bondview.h"
 #include "game/player/player.h"
 #include "game/chr/chr.h"
 #include "game/chr/chraction.h"
