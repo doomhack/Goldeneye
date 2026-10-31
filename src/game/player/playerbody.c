@@ -513,8 +513,9 @@ s32 playerTick(PropRecord *prop)
         }
     }
 
-    // Co-op: the partner sits out cutscenes and isn't shown in them.
-    if (g_CoopSoloViewIsCinema && (index != g_CoopSoloView))
+    // Co-op: the partner sits out cutscenes and isn't shown in them, except
+    // the level intro.
+    if (g_CoopSoloViewIsCinema && (index != g_CoopSoloView) && !coopShowPartnerInCinema())
     {
         goto clear_and_return;
     }
