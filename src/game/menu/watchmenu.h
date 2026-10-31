@@ -145,8 +145,8 @@ u32 optionsGetShowFps(void);
 void optionsSetShowFps(u32 enabled);
 u32 optionsGetDrawNear(void);
 void optionsSetDrawNear(u32 near);
-void optionsCoopUsePlayer(s32 player);
-void optionsCoopCopyFromPlayer1(void);
+void optionsUsePerson(s32 person);
+void optionsCopyPlayer1ToPlayer2(void);
 
 s32 optionsGetAutoAim(void);
 u32 optionsGetLookAhead(void);

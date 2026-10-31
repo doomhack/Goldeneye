@@ -188,7 +188,7 @@ void playerResetLife(void)
 
         if (person == PLAYER_2)
         {
-            optionsCoopCopyFromPlayer1();
+            optionsCopyPlayer1ToPlayer2();
             fileCoopRestorePartnerOptions();
         }
     }

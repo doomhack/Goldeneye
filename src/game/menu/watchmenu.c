@@ -225,6 +225,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx);
 Gfx *watchMenuRenderBackgroundZoom(Gfx *gdl, Mtx *mtx);
 Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish);
 void watchMenuOptionSet(u32 *option, u32 value);
+static u32 *optionValue(s32 option);
 void watchMenuAdjustVolume(u16* outVolume);
 void watchMenuMakeSliderVerts(struct WatchVertex *verts, f32 fill_amount, s32 transition_width);
 void watchMenuSpinController(s8 contpadnum, s32 *counter, f32 *value, f32 *step);
@@ -279,7 +280,7 @@ void watchMenuReset(void)
     g_WatchController2SpinCounter = 0;
     g_WatchStaticScanlineY = 0;
     // The save folder's options belong to controller 1's player.
-    optionsCoopUsePlayer(0);
+    optionsUsePerson(0);
     fileLoadCurrentSettings();
     g_FrontMissionAborted = FALSE;
 }
@@ -320,166 +321,165 @@ void optionsSetControlStyle(int type)
 
 u32 optionsGetLookInverted(void)
 {
-    return g_Options[PLAYER_OPTION_LOOK].current_value;
+    return *optionValue(PLAYER_OPTION_LOOK);
 }
 
 void optionsSetLookInverted(u32 value)
 {
-    g_Options[PLAYER_OPTION_LOOK].current_value = value;
+    *optionValue(PLAYER_OPTION_LOOK) = value;
 }
 
 s32 optionsGetAutoAim(void)
 {
-    return g_Options[PLAYER_OPTION_AUTOAIM].current_value;
+    return *optionValue(PLAYER_OPTION_AUTOAIM);
 }
 
 void optionsSetAutoAim(u32 value)
 {
-    g_Options[PLAYER_OPTION_AUTOAIM].current_value = value;
+    *optionValue(PLAYER_OPTION_AUTOAIM) = value;
 }
 
 u32 optionsGetLookAhead(void)
 {
-    return g_Options[PLAYER_OPTION_LOOKAHEAD].current_value;
+    return *optionValue(PLAYER_OPTION_LOOKAHEAD);
 }
 
 void optionsSetLookAhead(u32 value)
 {
-    g_Options[PLAYER_OPTION_LOOKAHEAD].current_value = value;
+    *optionValue(PLAYER_OPTION_LOOKAHEAD) = value;
 }
 
 u32 optionsGetAimControl(void)
 {
-    return g_Options[PLAYER_OPTION_AIM].current_value;
+    return *optionValue(PLAYER_OPTION_AIM);
 }
 
 void optionsSetAimControl(u32 value)
 {
-    g_Options[PLAYER_OPTION_AIM].current_value = value;
+    *optionValue(PLAYER_OPTION_AIM) = value;
 }
 
 u32 optionsGetSightOnScreen(void)
 {
-    return g_Options[PLAYER_OPTION_SIGHT].current_value;
+    return *optionValue(PLAYER_OPTION_SIGHT);
 }
 void optionsSetSightOnScreen(u32 value)
 {
-    g_Options[PLAYER_OPTION_SIGHT].current_value = value;
+    *optionValue(PLAYER_OPTION_SIGHT) = value;
 }
 
 u32 optionsGetAmmoOnScreen(void)
 {
-    return g_Options[PLAYER_OPTION_AMMODISPLAY].current_value;
+    return *optionValue(PLAYER_OPTION_AMMODISPLAY);
 }
 void optionsSetAmmoOnScreen(u32 value)
 {
-    g_Options[PLAYER_OPTION_AMMODISPLAY].current_value = value;
+    *optionValue(PLAYER_OPTION_AMMODISPLAY) = value;
 }
 
 u32 optionsGetScreenSize(void)
 {
-    return g_Options[PLAYER_OPTION_SCREEN].current_value;
+    return *optionValue(PLAYER_OPTION_SCREEN);
 }
 void optionsSetScreenSize(u32 value)
 {
-    g_Options[PLAYER_OPTION_SCREEN].current_value = value;
+    *optionValue(PLAYER_OPTION_SCREEN) = value;
 }
 
 SCREEN_RATIO_OPTION optionsGetScreenRatio(void)
 {
-    return g_Options[PLAYER_OPTION_RATIO].current_value;
+    return *optionValue(PLAYER_OPTION_RATIO);
 }
 
 void optionsSetScreenRatio(SCREEN_RATIO_OPTION ratio_option)
 {
-    g_Options[PLAYER_OPTION_RATIO].current_value = ratio_option;
+    *optionValue(PLAYER_OPTION_RATIO) = ratio_option;
 }
 
 u32 optionsGetHiRes(void)
 {
-    return g_Options[PLAYER_OPTION_HIRES].current_value;
+    return *optionValue(PLAYER_OPTION_HIRES);
 }
 
 void optionsSetHiRes(u32 enabled)
 {
-    g_Options[PLAYER_OPTION_HIRES].current_value = enabled;
+    *optionValue(PLAYER_OPTION_HIRES) = enabled;
 }
 
 u32 optionsGetSplitStacked(void)
 {
-    return g_Options[PLAYER_OPTION_SPLIT].current_value;
+    return *optionValue(PLAYER_OPTION_SPLIT);
 }
 
 void optionsSetSplitStacked(u32 stacked)
 {
-    g_Options[PLAYER_OPTION_SPLIT].current_value = stacked;
+    *optionValue(PLAYER_OPTION_SPLIT) = stacked;
 }
 
 u32 optionsGetShowFps(void)
 {
-    return g_Options[PLAYER_OPTION_FPS].current_value;
+    return *optionValue(PLAYER_OPTION_FPS);
 }
 
 void optionsSetShowFps(u32 enabled)
 {
-    g_Options[PLAYER_OPTION_FPS].current_value = enabled;
+    *optionValue(PLAYER_OPTION_FPS) = enabled;
 }
 
 u32 optionsGetDrawNear(void)
 {
-    return g_Options[PLAYER_OPTION_DRAWDIST].current_value;
+    return *optionValue(PLAYER_OPTION_DRAWDIST);
 }
 
 void optionsSetDrawNear(u32 near)
 {
-    g_Options[PLAYER_OPTION_DRAWDIST].current_value = near;
+    *optionValue(PLAYER_OPTION_DRAWDIST) = near;
 }
 
 /**
- * Co-op: g_Options holds the current player's own options (look,
- * aim, sight, ammo, screen size). playerSetCurrent swaps them in, so the watch
- * and the options* getters see that player's values. Ratio, hi-res,
- * split screen and the fps counter are shared.
+ * Look, auto-aim, aim control, sight, look ahead, ammo and screen size are
+ * each person's own (see coopPlayerPerson): person 0 (controller 1, the save
+ * folder) keeps them in g_Options and person 1 (player 2) here. Ratio, hi-res,
+ * split screen, the fps counter and draw distance are shared and always in
+ * g_Options. playerSetCurrent picks the current player's person.
  */
-#define COOP_PLAYER_OPTION_COUNT (PLAYER_OPTION_SCREEN + 1)
+#define PER_PLAYER_OPTION_COUNT (PLAYER_OPTION_SCREEN + 1)
 
-static u32 s_CoopOptions[2][COOP_PLAYER_OPTION_COUNT];
-static s32 s_CoopOptionsPlayer = 0;
+static u32 s_Player2Options[PER_PLAYER_OPTION_COUNT];
+static s32 s_OptionsPerson = 0;
 
-void optionsCoopUsePlayer(s32 player)
+void optionsUsePerson(s32 person)
+{
+    s_OptionsPerson = person;
+}
+
+/** Where the current person's value of an option is kept. */
+static u32 *optionValue(s32 option)
+{
+    if ((s_OptionsPerson == 1) && (option < PER_PLAYER_OPTION_COUNT))
+    {
+        return &s_Player2Options[option];
+    }
+
+    return &g_Options[option].current_value;
+}
+
+/**
+ * Gives player 2 a copy of player 1's options, when player 2 is the current
+ * person.
+ */
+void optionsCopyPlayer1ToPlayer2(void)
 {
     s32 i;
 
-    if (player == s_CoopOptionsPlayer)
+    if (s_OptionsPerson == 0)
     {
         return;
     }
 
-    for (i = 0; i < COOP_PLAYER_OPTION_COUNT; i++)
+    for (i = 0; i < PER_PLAYER_OPTION_COUNT; i++)
     {
-        s_CoopOptions[s_CoopOptionsPlayer][i] = g_Options[i].current_value;
-        g_Options[i].current_value = s_CoopOptions[player][i];
-    }
-
-    s_CoopOptionsPlayer = player;
-}
-
-/**
- * Gives player 2 a copy of player 1's options. Called when player 2's
- * options are swapped in.
- */
-void optionsCoopCopyFromPlayer1(void)
-{
-    s32 i;
-
-    if (s_CoopOptionsPlayer == 0)
-    {
-        return;
-    }
-
-    for (i = 0; i < COOP_PLAYER_OPTION_COUNT; i++)
-    {
-        g_Options[i].current_value = s_CoopOptions[0][i];
+        s_Player2Options[i] = g_Options[i].current_value;
     }
 }
 
@@ -2646,7 +2646,7 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl)
     char *dirtext1;
     char *dirtext2;
  
-    if (g_Options[0].current_value == 1)
+    if (*optionValue(PLAYER_OPTION_LOOK) == 1)
     {
         dirtext1 = langGet(getStringID(LOPTIONS, OPTION_STR_2D_UP_LF));
         dirtext2 = langGet(getStringID(LOPTIONS, OPTION_STR_2C_DOWN_LF));
@@ -3211,26 +3211,26 @@ void watchMenuOptionToggleTick(s32 option_index)
 {
     if ( (joyGetButtonsPressedThisFrame(WATCH_PAD, L_CBUTTONS|L_TRIG|L_JPAD) || watchMenuStickPushedLeft()) && g_WatchMenuSelected )
     {
-        if (g_Options[option_index].current_value == 1)
+        if (*optionValue(option_index) == 1)
         {
-            watchMenuOptionSet(&g_Options[option_index].current_value, 0);
+            watchMenuOptionSet(optionValue(option_index), 0);
         }
-        else if (g_Options[option_index].current_value == 2)
+        else if (*optionValue(option_index) == 2)
         {
-            watchMenuOptionSet(&g_Options[option_index].current_value, 1);
+            watchMenuOptionSet(optionValue(option_index), 1);
         }
     }
     else
     {
         if ( (joyGetButtonsPressedThisFrame(WATCH_PAD, R_CBUTTONS|R_TRIG|R_JPAD) || watchMenuStickPushedRight()) && g_WatchMenuSelected )
         {
-            if (g_Options[option_index].current_value == 0)
+            if (*optionValue(option_index) == 0)
             {
-                watchMenuOptionSet(&g_Options[option_index].current_value, 1);
+                watchMenuOptionSet(optionValue(option_index), 1);
             }
-            else if ( (g_Options[option_index].current_value == 1) && g_Options[option_index].text[3] )
+            else if ( (*optionValue(option_index) == 1) && g_Options[option_index].text[3] )
             {
-                watchMenuOptionSet(&g_Options[option_index].current_value, 2);
+                watchMenuOptionSet(optionValue(option_index), 2);
             }
         }
     }
@@ -3284,15 +3284,15 @@ Gfx *watchMenuRenderOptionValue(Gfx *gdl, s32 y, s32 option_index, u32 state)
 
 state_unhighlighted:
     entry = &g_Options[option_index];
-    if (entry->current_value == 0)
+    if (*optionValue(option_index) == 0)
     {
         colour1 = 0x00FF00B0;
     }
-    else if (entry->current_value == 1)
+    else if (*optionValue(option_index) == 1)
     {
         colour2 = 0x00FF00B0;
     }
-    else if (entry->current_value == 2)
+    else if (*optionValue(option_index) == 2)
     {
         colour3 = 0x00FF00B0;
     }
@@ -3305,15 +3305,15 @@ state_unhighlighted:
  */
 state_highlighted:
     entry = &g_Options[option_index];
-    if (entry->current_value == 0)
+    if (*optionValue(option_index) == 0)
     {
         colour1 = 0x00FF00B0;
     }
-    else if (entry->current_value == 1)
+    else if (*optionValue(option_index) == 1)
     {
         colour2 = 0x00FF00B0;
     }
-    else if (entry->current_value == 2)
+    else if (*optionValue(option_index) == 2)
     {
         colour3 = 0x00FF00B0;
     }
@@ -3325,15 +3325,15 @@ state_highlighted:
 state_selected:
     watchMenuOptionToggleTick(option_index);
     entry = &g_Options[option_index];
-    if (entry->current_value == 0)
+    if (*optionValue(option_index) == 0)
     {
         colour1 = 0xA0FFA0F0;
     }
-    else if (entry->current_value == 1)
+    else if (*optionValue(option_index) == 1)
     {
         colour2 = 0xA0FFA0F0;
     }
-    else if (entry->current_value == 2)
+    else if (*optionValue(option_index) == 2)
     {
         colour3 = 0xA0FFA0F0;
     }

@@ -523,7 +523,7 @@ void playerSetCurrent(s32 playernum)
     player_num = playernum;
     g_CurrentPlayer = g_playerPointers[playernum];
     // Player 2 has their own options in co-op and in multiplayer.
-    optionsCoopUsePlayer(((coopPlayerPerson(playernum) == 1) && (gameIsTwoPlayerMission() || gameIsMulti())) ? 1 : 0);
+    optionsUsePerson(((coopPlayerPerson(playernum) == 1) && (gameIsTwoPlayerMission() || gameIsMulti())) ? 1 : 0);
     g_playerPerm = &g_playerPlayerData[playernum];
 }
 
