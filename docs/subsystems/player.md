@@ -23,7 +23,7 @@ inventory are in [weapons](weapons.md).
 | `src/game/player/playermove.c` | Moving with collision (`playerMoveWithCollision`, `playerTestMove`), the player's collision state (`playerResetCollision`), keeping the player prop in its rooms (`playerUpdateRooms`) |
 | `src/game/player/tank.c` | The tank: its collision box (`tankTestCollision`, `tankTryMoveTo`), the turret (`tankUpdateTurretOffset`, `tankGetTurretDir`), co-op ownership (`coopTankBeginPlayer`) |
 | `src/game/player/playerintro.c` | Level start for a player: the intro section of the setup file (`playerApplyIntro`), co-op spawn points, loading projectile models |
-| `src/game/player/coop.c` | Co-op and counter-op state: the mode flags, whose controller and settings each player uses (`coopPlayerPerson`), reviving (`coopPartnerCanRevive`), the last player to use an object, the split-screen layout |
+| `src/game/player/coop.c` | Co-op and counter-op state: whose controller and settings each player uses (`coopPlayerPerson`), reviving (`coopPartnerCanRevive`), the last player to use an object, the split-screen layout |
 | `src/game/player/headbob.c` | Head bob: the hidden walk animation whose root motion moves the camera up and down as Bond walks, and breathing |
 
 ## Players
@@ -148,6 +148,10 @@ tiles and props (`tankTestCollision`, `tankTryMoveTo`) and place and aim the tur
 
 Added for this fork:
 
+* `g_GameMode` (`level/gamemode.c`) is solo, co-op or counter-op, set on the mode select
+  page. Test it with `gameIsCoop()` (co-op only), `gameIsCounterOp()` and
+  `gameIsTwoPlayerMission()` (either). `gameIsMulti()` is true in a multiplayer match;
+  it goes by the player count, since co-op also has two players.
 * `coopUpdateSoloView` (`cammode.c`) decides each frame whether one player's view fills
   the screen.
 * `coopRespawnPlayer` (`respawn.c`) respawns a dead player next to the partner, taking

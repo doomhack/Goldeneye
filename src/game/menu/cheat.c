@@ -24,6 +24,7 @@
 #include "assets/obseg/text/LmiscE.h"
 #include "game/model/model.h"
 #include "game/level/lv.h"
+#include "game/level/gamemode.h"
 
 //#include "chraicommands.h" /* needed for ai list commands, remove when moving global ai lists to chraicommands/chrai */
 // bss
@@ -768,7 +769,7 @@ void cheatCheckInput(void)
     }
     else
     {
-        applicableMask = (!isMpGame()) ? CHEAT_MASK_SPGAME : CHEAT_MASK_MPGAME;
+        applicableMask = (!gameIsMulti()) ? CHEAT_MASK_SPGAME : CHEAT_MASK_MPGAME;
     }
 
     // Iterate through all cheats until one is activated or all are checked

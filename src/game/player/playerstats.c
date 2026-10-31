@@ -8,6 +8,7 @@
 #include "game/player/player.h"
 #include "game/text/language.h"
 #include "game/player/playerstats.h"
+#include "game/level/gamemode.h"
 
 
 /**
@@ -62,7 +63,7 @@ void statsAddKill(void)
     g_playerPerm->kill_count += 1;
     g_CurrentPlayer->kills_this_life += 1;
 
-    if (!isMpGame()) { return; }
+    if (!gameIsMulti()) { return; }
 
     mission_time = lvGetMissionTime60();
     sprintf(buffer, "%s: %d\n", langGet(getStringID(LGUN, GUN_STR_DA_KILLCOUNT)), g_playerPerm->kill_count); // "kill count"
@@ -137,7 +138,7 @@ void statsAddDeath(void)
 {
 	char buffer[256];
     g_CurrentPlayer->deathcount = (s32) (g_CurrentPlayer->deathcount + 1);
-    if (isMpGame())
+    if (gameIsMulti())
     {
         if (g_CurrentPlayer->deathcount == 1)
         {
@@ -166,7 +167,7 @@ void statsAddSuicide(void) {
     s32 currentTime;
 
     g_CurrentPlayer->num_suicides += 1;
-    if (isMpGame()) {
+    if (gameIsMulti()) {
 
         currentTime = lvGetMissionTime60();
 

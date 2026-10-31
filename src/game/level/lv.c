@@ -65,6 +65,7 @@
 #include "game/world/sky.h"
 #include "game/prop/alarm.h"
 #include "game/prop/autoaim.h"
+#include "game/level/gamemode.h"
 
 // bss
 u32 *g_FontDl;
@@ -265,7 +266,7 @@ void lvStageLoad(s32 stage)
             s32 s3;
             player_data = (struct player_data *)&g_playerPlayerData[i];
 
-            if (!isMpGame())
+            if (!gameIsMulti())
             {
                 // s4 variable
                 player_data->autoaim = 0;
@@ -478,7 +479,7 @@ Gfx* lvRender(Gfx* DL)
 
         gSPClipRatio(DL++, FRUSTRATIO_2);
 
-        if (g_CoopMode)
+        if (gameIsTwoPlayerMission())
         {
             coopViewsBegin();
         }
@@ -541,7 +542,7 @@ Gfx* lvRender(Gfx* DL)
             coopTankEndPlayer(FALSE);
         }
 
-        if (g_CoopMode && (pcount > 0))
+        if (gameIsTwoPlayerMission() && (pcount > 0))
         {
             coopViewsEnd(playerGetShuffled(pcount - 1));
         }
@@ -730,7 +731,7 @@ void lvTick(void)
         }
     }
 
-    if ((isMpGame()) && (g_CurrentStageToLoad != LEVELID_TITLE))
+    if ((gameIsMulti()) && (g_CurrentStageToLoad != LEVELID_TITLE))
     {
         if (levelMusicGetState() == MUSICSTATE_MP_DEATH)
         {
@@ -988,7 +989,7 @@ void lvTick(void)
         debrisTick();
 
         // Co-op (first step): guards and level scripts only deal with player 1.
-        if (g_CoopMode)
+        if (gameIsTwoPlayerMission())
         {
             playerSetCurrent(0);
         }

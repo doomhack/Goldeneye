@@ -12,6 +12,7 @@
 #include "game/gfx/texcmds.h"
 #include "game/gfx/imagebank.h"
 #include "game/menu/cheat.h"
+#include "game/level/gamemode.h"
 
 
 /**
@@ -56,7 +57,7 @@ Gfx *radarRender(Gfx *DL)
     cur_playernum = playerGetCurrentNum();
     player_count = getPlayerCount();
     
-    if (!isMpGame())
+    if (!gameIsMulti())
     {
         return DL;
     }

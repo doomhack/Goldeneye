@@ -981,7 +981,6 @@ void playerSetCurrent(s32 playernum);
 s32 getPlayerCount(void);
 s32 getViewCount(void);
 s32 viewIsHalfWidth(void);
-s32 isMpGame(void);
 void playerSetScreenSize(u32 width, u32 height);
 void playerSetViewportPos(u32 ulx, u32 uly);
 

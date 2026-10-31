@@ -24,6 +24,7 @@
 #include "assets/obseg/text/LmpmenuE.h"
 #include "fr.h"
 #include "game/world/bg.h"
+#include "game/level/gamemode.h"
 
 #ifdef REFRESH_PAL
 #define MPMENU_YOFF 8   /* PAL: every text row sits 8 pixels lower */
@@ -310,7 +311,7 @@ void mpMenuPause(void)
 
 bool mpMenuCanPlayerAct(void)
 {
-    if (!isMpGame())
+    if (!gameIsMulti())
     {
         return TRUE;
     }
@@ -597,7 +598,7 @@ void mpMenuTick(void)
         }
     }
 
-    if (isMpGame())
+    if (gameIsMulti())
     {
         // If a player has their pause menu up when they die and the game isn't over, turn their menu off. 
         if ((g_CurrentPlayer->bonddead) && (!g_MpGameOver))
@@ -1666,7 +1667,7 @@ Gfx *mpMenuRender(Gfx *gdl)
         gdl = textEndDraw(gdl);
     }
     else if (((((g_CurrentPlayer->bonddead) && (g_CurrentPlayer->deathanimfinished)) && (g_CurrentPlayer->redbloodfinished)) && (!g_MpStopPlay)) && (!g_MpGameOver)
-        && (!g_CoopMode || coopPartnerCanRevive())) // co-op: no respawn once both are dead, or the partner is too weak
+        && (!gameIsTwoPlayerMission() || coopPartnerCanRevive())) // co-op: no respawn once both are dead, or the partner is too weak
     {
         total_kills_against_current = 0;
  
@@ -1680,7 +1681,7 @@ Gfx *mpMenuRender(Gfx *gdl)
             gdl = bgScissorCurrentPlayerViewDefault(gdl);
             gdl = textSetupDraw(gdl);
 
-            if (g_CoopMode)
+            if (gameIsTwoPlayerMission())
             {
                 // Co-op: a dead player's view can be empty apart from the
                 // fog-colour clear (Jungle), whose pixels don't hold full

@@ -13,6 +13,7 @@
 #include "random.h"
 #include <ultra64.h>
 #include <bondtypes.h>
+#include "game/level/gamemode.h"
 
 /**
  * Co-op: set when a player respawns, until they let go of the buttons they
@@ -173,7 +174,7 @@ s32 coopDiedLast(void)
     s32 i;
 
     // Counter-op: the mission ends with Bond, so his death is the replay.
-    if (g_CounterOpMode)
+    if (gameIsCounterOp())
     {
         return (cur == COUNTEROP_BOND);
     }

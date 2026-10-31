@@ -98,6 +98,7 @@
       build/OUTCODE/src/game/world/sky.o (.rodata);
       build/OUTCODE/src/game/player/player.o (.rodata);
       build/OUTCODE/src/game/player/coop.o (.rodata);
+      build/OUTCODE/src/game/level/gamemode.o (.rodata);
       build/OUTCODE/src/game/gfx/vtxstore.o (.rodata);
       build/OUTCODE/src/game/prop/explosion.o (.rodata);
       build/OUTCODE/src/game/prop/smoke.o (.rodata);

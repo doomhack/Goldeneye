@@ -18,6 +18,7 @@
 #include "game/world/bg.h"
 #include "game/world/roommtx.h"
 #include "game/player/camview.h"
+#include "game/level/gamemode.h"
 
 s32 cameraBufferToggle = 0;
 
@@ -189,7 +190,7 @@ static s32 coopCurrentPlayerIndex(void)
 void camSetWorldToScreenMtxf(Mtxf *matrix) {
     g_CurrentPlayer->worldToScreenMtxf = matrix;
 
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         s32 player = coopCurrentPlayerIndex();
 
@@ -201,7 +202,7 @@ void camSetWorldToScreenMtxf(Mtxf *matrix) {
 }
 
 Mtxf *camGetWorldToScreenMtxf(void) {
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         s32 player = coopCurrentPlayerIndex();
 
@@ -294,7 +295,7 @@ void coopViewsEnd(s32 lastplayer)
  * the last view drawn showed it, so that view's matrix is the right one.
  */
 Mtxf *camGetPrevViewToWorldMtxf(void) {
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         return &s_CoopPrevViewToWorld;
     }

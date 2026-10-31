@@ -48,6 +48,7 @@
 #include "game/math/physics.h"
 #include "game/world/bgfog.h"
 #include "game/math/line_tri_intersect.h"
+#include "game/level/gamemode.h"
 
 #ifdef VERSION_EU
 #define GROUND_SMOOTH_FACTOR 0.118799984f /* 0x3DF34D68 (PAL-scaled 0.1) */
@@ -984,7 +985,7 @@ s32 chrTick(PropRecord *prop)
     // run, aim and shoot twice as fast. The later pass doesn't update the
     // animation at all: with no time passing it would only redo the same
     // position, room and shading work.
-    coopRepeat = g_CoopMode && (prop->type == PROP_TYPE_CHR)
+    coopRepeat = gameIsTwoPlayerMission() && (prop->type == PROP_TYPE_CHR)
         && (playerGetShuffledIndex(playerGetCurrentNum()) != 0);
 
     if (coopRepeat)

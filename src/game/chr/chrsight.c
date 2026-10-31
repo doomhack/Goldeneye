@@ -21,6 +21,7 @@
 #include "game/math/trig.h"
 #include "game/model/model.h"
 #include "game/nav/stan.h"
+#include "game/level/gamemode.h"
 
 /* Sight lines are taken from this far below the top of a guard's head */
 #define EYE_DROP 20.0f
@@ -416,7 +417,7 @@ void coopChrShotByCurrentPlayer(ChrRecord *self)
 {
     s32 player = playerGetCurrentNum();
 
-    if (!g_CoopMode || g_CounterOpMode || self->prop == NULL || self->prop->type != PROP_TYPE_CHR
+    if (!gameIsCoop() || self->prop == NULL || self->prop->type != PROP_TYPE_CHR
         || self->targetplayer == player || g_CurrentPlayer->bonddead)
     {
         return;
@@ -464,7 +465,7 @@ void coopChrSelectTarget(ChrRecord *self)
             target = 0;
         }
     }
-    else if (g_CounterOpMode)
+    else if (gameIsCounterOp())
     {
         // Counter-op: every guard, and every level script, is about Bond
         target = COUNTEROP_BOND;

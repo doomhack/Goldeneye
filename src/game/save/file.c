@@ -14,6 +14,7 @@
 #include "game/menu/cheat.h"
 #include <random.h>
 #include "game/level/lv.h"
+#include "game/level/gamemode.h"
 
 void fileGenerateCRC(u8 *addressA, u8 *addressB, s32 crc[2]);
 s32 fileIs007ModeUnlocked(u32 folder);
@@ -1244,7 +1245,7 @@ void fileLoadSettingsForFolder(u32 folder)
 
         options = save->options;
 
-        if (!isMpGame())
+        if (!gameIsMulti())
         {
             optionsSetControlStyle(((s32) (options & OPTION_CONTROLTYPE) >> 8) & 0xFFFF);
         }
@@ -1646,7 +1647,7 @@ void fileSetDifficulty(DIFFICULTY difficulty)
 
 void fileSetSoloStage(LEVELID stage)
 {
-    g_FrontGameMode = GAMEMODE_SOLO;
+    g_FrontMode = FRONTMODE_MISSION;
     g_FrontStage = stage;
     g_FrontMission = frontFindMissionEntry(stage);
 }

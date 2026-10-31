@@ -21,6 +21,7 @@
 #include <fr.h>
 #include <math.h>
 #include <str.h>
+#include "game/level/gamemode.h"
 
 #ifdef VERSION_EU
     #define HUDMSG_BOTTOM_TIME_SKIP  0x1a
@@ -399,7 +400,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
             if (s_TopText[s_TopFirst][0] != '\0')
             {
                 if ((g_CurrentPlayer->mpmenuon == 0)
-                    && (!g_CoopMode || (s_CoopTopTextPlayer[s_TopFirst] == playerGetCurrentNum())))
+                    && (!gameIsTwoPlayerMission() || (s_CoopTopTextPlayer[s_TopFirst] == playerGetCurrentNum())))
                 {
                     gdl = textSetupDraw(gdl);
                     msg.textwidth = 0;

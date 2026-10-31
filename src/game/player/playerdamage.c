@@ -23,6 +23,7 @@
 #include "game/world/bgfog.h"
 #include "random.h"
 #include "game/player/playerdamage.h"
+#include "game/level/gamemode.h"
 
 static s32 g_SurroundBondWithExplosionsTicks;
 
@@ -278,7 +279,7 @@ void playerDie(void)
             watchTrigger(1);
         }
 
-        if (g_CoopMode)
+        if (gameIsTwoPlayerMission())
         {
             g_CoopDeathTime[playerGetCurrentNum()] = g_GlobalTimer;
         }
@@ -340,7 +341,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
         hudMakeDamageSegments(g_CurrentPlayer->health_display_values, -1, currentPlayerGetHealth());
     }
 
-    if (!isMpGame() || (g_MpStopPlay == 0 && g_MpGameOver == 0))
+    if (!gameIsMulti() || (g_MpStopPlay == 0 && g_MpGameOver == 0))
     {
         if (g_PlayerIsInTank == 1)
         {
@@ -357,7 +358,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
             }
         }
 
-        if (isMpGame() && frontGetMpScenario() == SCENARIO_LTK)
+        if (gameIsMulti() && frontGetMpScenario() == SCENARIO_LTK)
         {
             // the damage dealt is always equivalent to how much health and armor the player has
             // the result of this is to always kill the player regardless of how much damage he can sustain
@@ -365,7 +366,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
         }
 
         if (g_CurrentPlayer->cheatBondInvincible == FALSE && g_CurrentPlayer->bonddead == FALSE && g_PlayerInvincible == FALSE &&
-            (g_CurrentPlayer->damageshowtime < 0 || (isMpGame() && g_CurrentPlayer->damageshowtime == 0)
+            (g_CurrentPlayer->damageshowtime < 0 || (gameIsMulti() && g_CurrentPlayer->damageshowtime == 0)
                 // Counter-op: like the guard they took over, the guard
                 // player feels every shot, not one per damage flash.
                 || counterOpIsGuardPlayer(playerGetCurrentNum())))
@@ -375,7 +376,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
                 g_CurrentPlayer->oldhealth = g_CurrentPlayer->bondhealth;
                 g_CurrentPlayer->oldarmour = g_CurrentPlayer->bondarmour;
 
-                if (isMpGame())
+                if (gameIsMulti())
                 {
                     cur_player_num = playerGetCurrentNum();
                     angle = g_playerPointers[cur_player_num]->vv_theta - (360.0f - ((mathAtan2(vectorx, vectorz) * 180.0f) / 3.1415927f));
@@ -410,7 +411,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 
                     if (g_CurrentPlayer->bondhealth <= 0.0f)
                     {
-                        if (isMpGame())
+                        if (gameIsMulti())
                         {
                             prevplayer = playerGetCurrentNum();
                             hadgoldengun = 0;
@@ -447,7 +448,7 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 
                             g_playerPlayerData[playerid].kill_counts[prevplayer]++;
                         }
-                        else if (g_CounterOpMode && (playerid >= 0) && (playerid < getPlayerCount())
+                        else if (gameIsCounterOp() && (playerid >= 0) && (playerid < getPlayerCount())
                                  && (playerid != playerGetCurrentNum()))
                         {
                             // Counter-op: killing the other player counts

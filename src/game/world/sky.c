@@ -15,6 +15,7 @@
 #include "game/gfx/texcmds.h"
 #include "fr.h"
 #include "game/gfx/imagebank.h"
+#include "game/level/gamemode.h"
 
 #define SKYABS(val) (val >= 0.0f ? (val) : -(val))
 
@@ -297,7 +298,7 @@ Gfx *skyRender(Gfx *gdl)
     if (!fogGetCurrentEnvironmentp()->Clouds)
     {
         // Co-op plays solo levels, so clear each view to the fog colour too.
-        if ((getPlayerCount() == 1) || g_CoopMode)
+        if ((getPlayerCount() == 1) || gameIsTwoPlayerMission())
         {
             gDPSetCycleType(gdl++, G_CYC_FILL);
 

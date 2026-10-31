@@ -20,6 +20,7 @@
 #include "game/replay/ramromreplay.h"
 #include "game/nav/stan.h"
 #include "game/prop/setup.h"
+#include "game/level/gamemode.h"
 
 static struct SetupIntroCamera* g_CurrentSetupIntroCamera = NULL;
 
@@ -181,7 +182,7 @@ void playerApplyIntro(void)
 
     // Co-op: this runs once per player and resets the intro camera state,
     // which player 1's run has already set up for the intro.
-    s32 coopPartner = g_CoopMode && (playerGetCurrentNum() > 0);
+    s32 coopPartner = gameIsTwoPlayerMission() && (playerGetCurrentNum() > 0);
     __typeof__(g_CameraMode) saved_cameramode = g_CameraMode;
     __typeof__(g_CameraAfterCinema) saved_aftercinema = g_CameraAfterCinema;
     __typeof__(camera_transition_timer) saved_transition_timer = camera_transition_timer;
@@ -477,7 +478,7 @@ void playerApplyIntro(void)
 
     if (startpadcount > 0)
     {
-        if ((isMpGame()) && (startpadcount > 0))
+        if ((gameIsMulti()) && (startpadcount > 0))
         {
             rand_pad_index = playerChooseSpawnPad();
         }
@@ -498,7 +499,7 @@ void playerApplyIntro(void)
         g_CurrentPlayer->manGround = stan_height;
         start_look_angle = M_TAU_F - mathAtan2(g_Startpad[rand_pad_index]->look.f[0], g_Startpad[rand_pad_index]->look.f[2]);
 
-        if (g_CoopMode && (playerGetCurrentNum() > 0))
+        if (gameIsTwoPlayerMission() && (playerGetCurrentNum() > 0))
         {
             coopFindPartnerSpawn(&start_pos, &start_stan, start_look_angle);
             stan_height = playerGetFloorY(start_stan, start_pos.f[0], start_pos.f[2]);
@@ -551,7 +552,7 @@ void playerApplyIntro(void)
     g_CurrentPlayer->dampEyeSum.f[1] = (g_CurrentPlayer->bond.pos.f[1] / EYE_DAMP_INV);
     g_CurrentPlayer->dampEyeSum.f[2] = (g_CurrentPlayer->bond.pos.f[2] / EYE_DAMP_INV);
 
-    if (!isMpGame())
+    if (!gameIsMulti())
     {
         // Co-op: the intro plays once, full-screen from player 1's view.
         if (!coopPartner)

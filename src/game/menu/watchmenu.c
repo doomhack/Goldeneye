@@ -32,9 +32,10 @@
 #include "game/player/gun.h"
 #include "joy.h"
 #include "str.h"
+#include "game/level/gamemode.h"
 
 // The controller that drives the watch: in co-op, the player who has it out.
-#define WATCH_PAD (g_CoopMode ? playerGetCurrentNum() : PLAYER_1)
+#define WATCH_PAD (gameIsTwoPlayerMission() ? playerGetCurrentNum() : PLAYER_1)
 
 #define WATCH_BACKGROUND_VERTEX_COUNT 30
 
@@ -853,7 +854,7 @@ void watchMenuControlInputsTick(void)
  */
 static bool watchMenuOptionVisible(s32 i)
 {
-    if (!g_CoopMode && (i == PLAYER_OPTION_SPLIT || i == PLAYER_OPTION_DRAWDIST))
+    if (!gameIsTwoPlayerMission() && (i == PLAYER_OPTION_SPLIT || i == PLAYER_OPTION_DRAWDIST))
     {
         return FALSE;
     }

@@ -78,7 +78,7 @@ pressed.
   control styles and aim settings, all `g_Mp*`, read through `frontGetMp*`.
   `frontSetMpScenario` sets which options a scenario allows (`g_MpCanPick*`).
 * **Co-op:** the partner's outfit (`frontCoopGetPartner*`).
-* `g_FrontGameMode`: intro, solo, multiplayer or cheats.
+* `g_FrontMode`: intro, missions (solo, co-op or counter-op, see `g_GameMode`), multiplayer or cheats.
 
 ## Title intro
 

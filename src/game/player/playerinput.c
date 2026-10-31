@@ -20,6 +20,7 @@
 #include "game/world/bgfog.h"
 #include "os_extension.h"
 #include "game/player/playerinput.h"
+#include "game/level/gamemode.h"
 
 
 void currentPlayerSetLookAheadSetting(bool enabled)
@@ -36,7 +37,7 @@ void currentPlayerSetYAutoAimEnabled(bool enabled)
 
 bool currentPlayerGetYAutoAimEnabled(void)
 {
-    if (!isMpGame())
+    if (!gameIsMulti())
     {
         return g_CurrentPlayer->autoyaimenabled;
     }
@@ -95,7 +96,7 @@ void currentPlayerSetXAutoAimEnabled(bool enabled)
 
 bool currentPlayerGetXAutoAimEnabled(void)
 {
-    if (!isMpGame())
+    if (!gameIsMulti())
     {
         return g_CurrentPlayer->autoxaimenabled;
     }
@@ -466,7 +467,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     moveData.analogStrafe = moveData.controlStickXSafe;
     moveData.analogWalk = moveData.controlStickYSafe;
 
-    if (g_CoopMode && g_CoopRespawnButtonsHeld[playerGetCurrentNum()])
+    if (gameIsTwoPlayerMission() && g_CoopRespawnButtonsHeld[playerGetCurrentNum()])
     {
         if (buttons & START_BUTTON)
         {
@@ -488,7 +489,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5
                 && g_CurrentPlayer->open_close_solo_watch_menu)
         )
-        && !isMpGame()
+        && !gameIsMulti()
         && !coopPartnerHasWatchOut())
     {
         // Co-op: either player's watch pauses the game for both and fills
@@ -499,7 +500,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
     if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x0
         && g_CurrentPlayer->bonddead == FALSE
         && (
-            !isMpGame()
+            !gameIsMulti()
             || (
                 g_MpStopPlay == 0
                 && g_MpGameOver == 0)))
@@ -1113,7 +1114,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         moveData.speedVertaUp = tmp;
     }
 
-    if (playerIsShowingDamage() && !isMpGame())
+    if (playerIsShowingDamage() && !gameIsMulti())
     {
         moveData.triggerOn = 0;
     }
@@ -1687,7 +1688,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
     canCycleWeapons = 1;
 
-    if ((isMpGame()) && (frontGetMpScenario() == 2) && (invHasFlagToken()))
+    if ((gameIsMulti()) && (frontGetMpScenario() == 2) && (invHasFlagToken()))
     {
         canCycleWeapons = 0;
     }

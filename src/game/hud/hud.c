@@ -33,6 +33,7 @@
 #include <math.h>
 #include <music.h>
 #include <str.h>
+#include "game/level/gamemode.h"
 
 s32 g_CreditsScrollFrame = 0;
 
@@ -291,7 +292,7 @@ Gfx *hudRender(Gfx *gdl)
         return hudRenderCredits(gdl);
     }
 
-    if (g_CounterOpMode)
+    if (gameIsCounterOp())
     {
         counterOpTick();
     }
@@ -329,7 +330,7 @@ Gfx *hudRender(Gfx *gdl)
         }
     }
 
-    if (!isMpGame())
+    if (!gameIsMulti())
     {
         objectivesTickStatusMessages();
     }
@@ -352,7 +353,7 @@ Gfx *hudRender(Gfx *gdl)
                     // Co-op: the partner plays on, so keep the music and
                     // mission going.
                 }
-                else if (!isMpGame())
+                else if (!gameIsMulti())
                 {
                     // Solo death: stop the level's music and play the death tune
                     levelMusicSlotStop(-1);
@@ -411,7 +412,7 @@ Gfx *hudRender(Gfx *gdl)
                             && coopPartnerCanRevive()
                             && joyGetButtons(playerGetCurrentNum(), 0xB000))
                         {
-                            if (!g_CounterOpMode)
+                            if (!gameIsCounterOp())
                             {
                                 coopRespawnPlayer();
                                 g_CoopRespawnButtonsHeld[playerGetCurrentNum()] = TRUE;
@@ -422,11 +423,11 @@ Gfx *hudRender(Gfx *gdl)
                             }
                         }
                     }
-                    else if (!isMpGame())
+                    else if (!gameIsMulti())
                     {
                         // Co-op: the replay shows the player who died last,
                         // so wait for their death to play out.
-                        if (!g_CoopMode || coopDiedLast())
+                        if (!gameIsTwoPlayerMission() || coopDiedLast())
                         {
                             playerSetCameraMode(CAMERAMODE_DEATH_CAM_SP);
                         }

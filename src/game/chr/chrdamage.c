@@ -43,6 +43,7 @@
 #include "game/prop/alarm.h"
 #include "game/math/physics.h"
 #include "game/math/line_tri_intersect.h"
+#include "game/level/gamemode.h"
 
 
 static void chrReactToHit(ChrRecord *self, coord3d *dir, f32 angle, s32 req_animation_id, ITEM_IDS item);
@@ -408,7 +409,7 @@ static void chrPlayHurtSound(ChrRecord *self)
     if (self->prop->type == PROP_TYPE_VIEWER)
     {
         // Co-op player bodies are the chosen character's, as in solo.
-        if ((getPlayerCount() == 1) || g_CoopMode)
+        if ((getPlayerCount() == 1) || gameIsTwoPlayerMission())
         {
             if (c_item_entries[self->bodynum].isMale != FALSE)
             {
@@ -580,7 +581,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
 
         damageToCause = weaponGetDamage(weaponid);
 
-        if (isPlayer && (!isMpGame()))
+        if (isPlayer && (!gameIsMulti()))
         {
             damageToCause *= g_AiHealthModifier;
         }
@@ -646,12 +647,12 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
             damageToCause = 0.0f;
         }
 
-        if ((self->prop->type == PROP_TYPE_VIEWER) && g_CoopMode && (g_CounterOpMode ? !isPlayer : isPlayer))
+        if ((self->prop->type == PROP_TYPE_VIEWER) && gameIsTwoPlayerMission() && (gameIsCounterOp() ? !isPlayer : isPlayer))
         {
             // Co-op: no friendly fire. Counter-op: the two players hurt
             // each other, and guards' stray shots don't hurt the guard
             // player.
-            if (g_CounterOpMode)
+            if (gameIsCounterOp())
             {
                 return FALSE;
             }
@@ -660,7 +661,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
         {
             playerNum = playerGetCurrentNum();
 
-            if (g_CounterOpMode)
+            if (gameIsCounterOp())
             {
                 damageToCause = counterOpPlayerDamage(playerNum, damageToCause, weaponid);
             }
@@ -671,7 +672,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
 
             playerSetCurrent(playerGetIndexForProp(self->prop));
 
-            if (g_CounterOpMode && counterOpIsGuardPlayer(playerNum))
+            if (gameIsCounterOp() && counterOpIsGuardPlayer(playerNum))
             {
                 // For the end screen: how much of Bond's health and armour
                 // this shot took.

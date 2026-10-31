@@ -33,6 +33,7 @@
 #include "game/prop/carried.h"
 #include "game/prop/setup.h"
 #include "game/prop/objsetup.h"
+#include "game/level/gamemode.h"
 
 /* Weapon records with these numbers take their weapon from slot (number - 0xF0) of the
    multiplayer weapon set */
@@ -472,7 +473,7 @@ void setupObject(ObjectRecord *obj)
     extrascale = obj->extrascale * (1.0f / 256.0f);
     obj->health = setupFixedToFloat(&obj->health, 1.0f);
 
-    if (isMpGame() && objRespawnsInMp(obj))
+    if (gameIsMulti() && objRespawnsInMp(obj))
     {
         obj->state |= PROPSTATE_RESPAWN;
     }
@@ -811,7 +812,7 @@ void setupWeapon(WeaponObjRecord *weapon)
         return;
     }
 
-    if (isMpGame())
+    if (gameIsMulti())
     {
         s_LastMpWeaponSlot = -1;
 
@@ -993,7 +994,7 @@ void setupSingleMonitor(MonitorObjRecord *monitor, s32 cmdindex)
         scale = monitor->extrascale * (1.0f / 256.0f);
         monitor->health = setupFixedToFloat(&monitor->health, 1.0f);
 
-        if (isMpGame())
+        if (gameIsMulti())
         {
             monitor->state |= PROPSTATE_RESPAWN;
         }
@@ -1103,7 +1104,7 @@ void setupAmmoCrate(MultiAmmoCrateRecord *crate, bool skipped)
     s32 amount = 1;
     s32 i;
 
-    if (isMpGame())
+    if (gameIsMulti())
     {
         mpweapon = &mpWeaponSetGetItems()[s_LastMpWeaponSlot];
         amount = mpweapon->ammoamount;

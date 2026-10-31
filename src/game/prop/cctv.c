@@ -21,6 +21,7 @@
 #include "game/math/trig.h"
 #include "game/nav/stan.h"
 #include "game/player/player.h"
+#include "game/level/gamemode.h"
 
 /* How long a camera must see a player to set off the alarm */
 #ifdef VERSION_EU
@@ -43,7 +44,7 @@ f32 g_CctvDamageScale = 1.0;
  */
 bool objMayWatchPlayer(s32 player)
 {
-    if (g_CounterOpMode)
+    if (gameIsCounterOp())
     {
         return player == COUNTEROP_BOND;
     }
@@ -238,20 +239,20 @@ void cctvTick(PropRecord *prop)
     CCTVRecord *cctv = (CCTVRecord *)prop->obj;
     // Co-op: the camera watches every player it may, and an alarm needs it to see any of
     // them for long enough
-    s32 player = g_CoopMode ? 0 : playerGetCurrentNum();
-    s32 end = g_CoopMode ? getPlayerCount() : (player + 1);
+    s32 player = gameIsTwoPlayerMission() ? 0 : playerGetCurrentNum();
+    s32 end = gameIsTwoPlayerMission() ? getPlayerCount() : (player + 1);
     bool seen = false;
 
     for (; player < end; player++)
     {
         PropRecord *playerprop;
 
-        if (g_CoopMode && (!objMayWatchPlayer(player) || g_playerPointers[player]->prop == NULL))
+        if (gameIsTwoPlayerMission() && (!objMayWatchPlayer(player) || g_playerPointers[player]->prop == NULL))
         {
             continue;
         }
 
-        playerprop = g_CoopMode ? g_playerPointers[player]->prop : currentPlayerGetProp();
+        playerprop = gameIsTwoPlayerMission() ? g_playerPointers[player]->prop : currentPlayerGetProp();
 
         if (cctvCanSeePlayer(prop, cctv, playerprop))
         {

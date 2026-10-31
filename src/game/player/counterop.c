@@ -13,6 +13,7 @@
 #include "random.h"
 #include <ultra64.h>
 #include <bondtypes.h>
+#include "game/level/gamemode.h"
 
 /**
  * Counter-op: a guard closer to Bond than this can't be taken over, so the
@@ -119,7 +120,7 @@ f32 counterOpGetGuardHealth(void)
  */
 s32 counterOpGetGuardModels(s32 *head, s32 *body)
 {
-    if (!g_CounterOpMode || (s_CounterOpBody < 0))
+    if (!gameIsCounterOp() || (s_CounterOpBody < 0))
     {
         return FALSE;
     }

@@ -9,6 +9,7 @@
 #include "game/player/player.h"
 #include "game/world/bgfog.h"
 #include "game/player/tank.h"
+#include "game/level/gamemode.h"
 
 s32 g_PlayerIsInTank = 0;
 
@@ -321,7 +322,7 @@ s32 coopTankIsHidden(void)
  */
 s32 coopTankUsedByPartner(void)
 {
-    return g_CoopMode && (g_CoopTankPlayer >= 0) && (g_CoopTankPlayer != playerGetCurrentNum());
+    return gameIsTwoPlayerMission() && (g_CoopTankPlayer >= 0) && (g_CoopTankPlayer != playerGetCurrentNum());
 }
 
 /**
@@ -364,7 +365,7 @@ void coopTankEndPlayer(s32 moved)
         g_PlayerTankProp = s_CoopTankStash.playerTank;
         s_CoopTankStash.hidden = FALSE;
     }
-    else if (g_CoopMode && moved)
+    else if (gameIsTwoPlayerMission() && moved)
     {
         g_CoopTankPlayer = ((g_PlayerTankProp != NULL) || g_PlayerIsInTank) ? playerGetCurrentNum() : -1;
     }

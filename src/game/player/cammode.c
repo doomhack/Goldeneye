@@ -22,6 +22,7 @@
 #include "game/world/bgfog.h"
 #include "random.h"
 #include "game/player/cammode.h"
+#include "game/level/gamemode.h"
 
 static coord3d g_DeathCamPos;
 
@@ -275,7 +276,7 @@ void coopUpdateSoloView(void)
     g_CoopSoloView = -1;
     g_CoopSoloViewIsCinema = FALSE;
 
-    if (!g_CoopMode || (count < 2))
+    if (!gameIsTwoPlayerMission() || (count < 2))
     {
         return;
     }
@@ -304,7 +305,7 @@ void coopUpdateSoloView(void)
  */
 void playerSetCameraMode(s32 mode)
 {
-    if (g_CoopMode && coopIsCinemaCameraMode(mode))
+    if (gameIsTwoPlayerMission() && coopIsCinemaCameraMode(mode))
     {
         g_CoopCinemaPlayer = playerGetCurrentNum();
     }
@@ -402,7 +403,7 @@ void playerSetCameraMode(s32 mode)
             currentPlayerSetFadeFrac(60.0f, 0.0f);
         }
 
-        if (isMpGame())
+        if (gameIsMulti())
         {
             fogLoadLevelEnvironment(bossGetStageNum(), 0);
         }

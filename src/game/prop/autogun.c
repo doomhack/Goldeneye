@@ -36,6 +36,7 @@
 #include "game/nav/stan.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
+#include "game/level/gamemode.h"
 
 /* A gun with this in flags2 wanders between random home angles instead of aiming; with
    PROPFLAG2_40000000 too, it stays still */
@@ -91,7 +92,7 @@ static s32 autogunGetTargetPlayer(PropRecord *prop)
     s32 best = -1;
     f32 bestdist = 0.0f;
 
-    if (!g_CoopMode)
+    if (!gameIsTwoPlayerMission())
     {
         return -1;
     }

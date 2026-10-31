@@ -82,6 +82,7 @@
       build/OUTCODE/src/game/world/sky.o (.data);
       build/OUTCODE/src/game/player/player.o (.data);
       build/OUTCODE/src/game/player/coop.o (.data);
+      build/OUTCODE/src/game/level/gamemode.o (.data);
       build/OUTCODE/src/game/gfx/vtxstore.o (.data);
       build/OUTCODE/src/game/prop/explosion.o (.data);
       build/OUTCODE/src/game/prop/smoke.o (.data);

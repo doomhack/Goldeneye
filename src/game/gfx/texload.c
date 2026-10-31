@@ -19,6 +19,7 @@
 #include "dbgscreen.h"
 #include <memp.h>
 #include "game/player/player.h"
+#include "game/level/gamemode.h"
 
 struct texpool g_TexSharedPool;
 
@@ -97,7 +98,7 @@ void texInitSharedPool(void)
 {
     s32 size = g_LevelMemBudget->textureKB * 1024;
 
-    if (g_CoopMode)
+    if (gameIsTwoPlayerMission())
     {
         // The per-level sizes are tuned for solo, where Bond's body textures
         // go in the weapon buffer. Co-op loads both bodies MP style into this
