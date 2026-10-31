@@ -235,6 +235,7 @@ void playerApplyIntro(void)
     g_CoopSoloView = -1;
     g_CoopSoloViewIsCinema = FALSE;
     g_CoopCinemaPlayer = 0;
+    coopResetViewFade();
     g_CurrentPlayer->tankYOffset = FLOAT_INIT;
     g_Tank.sfx[0] = NULL;
     g_Tank.sfx[1] = NULL;

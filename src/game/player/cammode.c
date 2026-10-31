@@ -9,6 +9,7 @@
 #include <boss.h>
 #include <music.h>
 #include "game/chr/chraction.h"
+#include "game/level/frametiming.h"
 #include "game/level/lv.h"
 #include "game/math/interp.h"
 #include "game/menu/watchmenu.h"
@@ -263,16 +264,47 @@ static s32 coopIsCinemaCameraMode(s32 mode)
 }
 
 /**
+ * Co-op: switching between split screen and one full-screen view fades
+ * through black. The screen fades out over COOP_VIEW_FADE_TICKS (60 Hz
+ * ticks), the layout changes, then it fades back in. g_CoopViewFade is the
+ * black overlay's strength, drawn over the whole frame by coopDrawViewFade.
+ */
+#define COOP_VIEW_FADE_TICKS 10.0f
+
+f32 g_CoopViewFade = 0.0f;
+
+static s32 s_CoopShownView = -1;
+static s32 s_CoopShownIsCinema = FALSE;
+static s32 s_CoopViewFadingOut = FALSE;
+static s32 s_CoopViewSnap = TRUE;
+
+/**
+ * Co-op: at level start the first layout (the intro, full-screen) is shown
+ * straight away, without a fade.
+ */
+void coopResetViewFade(void)
+{
+    g_CoopViewFade = 0.0f;
+    s_CoopShownView = -1;
+    s_CoopShownIsCinema = FALSE;
+    s_CoopViewFadingOut = FALSE;
+    s_CoopViewSnap = TRUE;
+}
+
+/**
  * Co-op: once per frame, before the players move, decide whether one view
  * fills the screen on its own (g_CoopSoloView). That is the case while a
  * player has their watch out, which pauses the game for both, and while the
  * camera plays a cutscene, the intro or the final death replay. The other
  * player is then neither moved nor drawn, and during a cutscene their body
- * is hidden as well.
+ * is hidden as well. A change of layout waits for the fade to black, so the
+ * old layout (and who moves) stays until the screen is black.
  */
 void coopUpdateSoloView(void)
 {
     s32 count = getPlayerCount();
+    s32 wanted = -1;
+    s32 wantedIsCinema = FALSE;
     s32 i;
 
     g_CoopSoloView = -1;
@@ -280,6 +312,7 @@ void coopUpdateSoloView(void)
 
     if (!gameIsTwoPlayerMission() || (count < 2))
     {
+        g_CoopViewFade = 0.0f;
         return;
     }
 
@@ -287,16 +320,63 @@ void coopUpdateSoloView(void)
     {
         if (g_playerPointers[i]->watch_animation_state != WATCH_ANIMATION_0x0)
         {
-            g_CoopSoloView = i;
-            return;
+            wanted = i;
+            break;
         }
     }
 
-    if (coopIsCinemaCameraMode(g_CameraMode) && (g_CoopCinemaPlayer >= 0) && (g_CoopCinemaPlayer < count))
+    if ((wanted < 0) && coopIsCinemaCameraMode(g_CameraMode) && (g_CoopCinemaPlayer >= 0) && (g_CoopCinemaPlayer < count))
     {
-        g_CoopSoloView = g_CoopCinemaPlayer;
-        g_CoopSoloViewIsCinema = TRUE;
+        wanted = g_CoopCinemaPlayer;
+        wantedIsCinema = TRUE;
     }
+
+    if (s_CoopViewSnap)
+    {
+        s_CoopViewSnap = FALSE;
+        s_CoopShownView = wanted;
+        g_CoopViewFade = 0.0f;
+    }
+    else
+    {
+        f32 step = g_FrameDelta / COOP_VIEW_FADE_TICKS;
+
+        if (wanted != s_CoopShownView)
+        {
+            s_CoopViewFadingOut = TRUE;
+        }
+
+        if (s_CoopViewFadingOut)
+        {
+            g_CoopViewFade += step;
+
+            if (g_CoopViewFade >= 1.0f)
+            {
+                g_CoopViewFade = 1.0f;
+                s_CoopShownView = wanted;
+                s_CoopViewFadingOut = FALSE;
+            }
+        }
+        else if (g_CoopViewFade > 0.0f)
+        {
+            g_CoopViewFade -= step;
+
+            if (g_CoopViewFade < 0.0f)
+            {
+                g_CoopViewFade = 0.0f;
+            }
+        }
+    }
+
+    // The same view staying full-screen (a watch closing into a cutscene,
+    // say) needs no fade, only the new reason.
+    if (s_CoopShownView == wanted)
+    {
+        s_CoopShownIsCinema = wantedIsCinema;
+    }
+
+    g_CoopSoloView = s_CoopShownView;
+    g_CoopSoloViewIsCinema = (s_CoopShownView >= 0) && s_CoopShownIsCinema;
 }
 
 
