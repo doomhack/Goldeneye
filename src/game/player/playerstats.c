@@ -41,10 +41,31 @@ void statsAddCivilianKill(void)
 
 
 /**
- * Innocents killed.
+ * Innocents killed, for the AI scripts that fail a mission (Facility's
+ * scientists). The scripts run with any player current, so in co-op this is
+ * both players' total, and in counter-op it is Bond's alone (the guard player
+ * is on the other side).
  */
 s32 statsGetCivilianKills(void)
 {
+    if (gameIsCoop())
+    {
+        s32 total = 0;
+        s32 i;
+
+        for (i = 0; i < getPlayerCount(); i++)
+        {
+            total += g_playerPlayerData[i].killed_civilians;
+        }
+
+        return total;
+    }
+
+    if (gameIsCounterOp())
+    {
+        return g_playerPlayerData[COUNTEROP_BOND].killed_civilians;
+    }
+
     return g_playerPerm->killed_civilians;
 }
 
