@@ -20,6 +20,7 @@
 #include "game/prop/prop.h"
 #include "game/prop/setup.h"
 #include "game/chr/chr.h"
+#include "game/chr/chrai.h"
 #include "game/nav/stan.h"
 #include "game/world/bg.h"
 
@@ -356,6 +357,13 @@ void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius)
 }
 
 
+/*
+ * roomGetProps marks each prop it has listed with the number of the call, so it can
+ * skip repeats without searching the list. Cleared when the number wraps.
+ */
+static u16 s_RoomPropsMark[MAX_PROPS];
+static u16 s_RoomPropsCall;
+
 /**
  * Collect the props in any of a list of rooms (ended by -1) into g_RoomPropsFound, each
  * once, ended by -1.
@@ -363,6 +371,16 @@ void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius)
 void roomGetProps(s32 *rooms)
 {
     s16 *end = g_RoomPropsFound;
+
+    if (++s_RoomPropsCall == 0)
+    {
+        for (s32 i = 0; i < MAX_PROPS; i++)
+        {
+            s_RoomPropsMark[i] = 0;
+        }
+
+        s_RoomPropsCall = 1;
+    }
 
     for (; *rooms >= 0; rooms++)
     {
@@ -372,22 +390,13 @@ void roomGetProps(s32 *rooms)
             {
                 s32 propnum = g_RoomPropBlocks[block].propnums[i];
 
-                if (propnum < 0)
+                if (propnum < 0 || s_RoomPropsMark[propnum] == s_RoomPropsCall)
                 {
                     continue;
                 }
 
-                s16 *found = g_RoomPropsFound;
-
-                while (found < end && *found != propnum)
-                {
-                    found++;
-                }
-
-                if (found == end)
-                {
-                    *end++ = propnum;
-                }
+                s_RoomPropsMark[propnum] = s_RoomPropsCall;
+                *end++ = propnum;
             }
         }
     }
