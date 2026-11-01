@@ -48,6 +48,23 @@ static void texRectDraw(Gfx **gdlptr, f32 *position, f32 *size, s32 width, s32 h
         xh = (posx + halfx) * 4.0f;
         yh = (posy + halfy) * 4.0f;
 
+        // Front end (fractional scale, fr.h): put each edge on a whole framebuffer pixel and
+        // fit the texture to the rectangle, so no row or column is drawn with partial
+        // coverage sampling past the image's edge.
+        if (g_ViBackData->sxDiv != 1 || g_ViBackData->syDiv != 1)
+        {
+            xl = (xl + 2) & ~3;
+            yl = (yl + 2) & ~3;
+            xh = (xh + 2) & ~3;
+            yh = (yh + 2) & ~3;
+
+            if (xh > xl && yh > yl)
+            {
+                halfx = (xh - xl) * 0.125f;
+                halfy = (yh - yl) * 0.125f;
+            }
+        }
+
         // Proceed if the rectangle is within screen bounds
         if (xh >= 0 && yh >= 0)
         {
