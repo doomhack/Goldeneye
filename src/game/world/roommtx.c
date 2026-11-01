@@ -50,7 +50,7 @@ void roomMtxInit(void)
 
     for (i=0; i<bgGetMaxNumRooms(); ++i)
     {
-        g_BgRoomInfo[i].mtxIndex = -1;
+        g_BgRoomState[i].mtxIndex = -1;
     }
 }
 
@@ -69,7 +69,7 @@ void roomMtxSetOriginRoom(s32 roomIndex) {
 void roomMtxAssign(int mtx,int room)
 {
 
-    g_BgRoomInfo[room].mtxIndex = mtx;
+    g_BgRoomState[room].mtxIndex = mtx;
     g_RoomMtxRoom[mtx] = room;
 }
 
@@ -80,7 +80,7 @@ void roomMtxAssign(int mtx,int room)
 void roomMtxUnassign(int mtx,int room)
 {
 
-    g_BgRoomInfo[room].mtxIndex = -1;
+    g_BgRoomState[room].mtxIndex = -1;
     g_RoomMtxRoom[mtx] = -1;
 }
 
@@ -151,7 +151,7 @@ s32 roomMtxGet(s32 room)
     s32 mtx;
     Mtxf roomTransformMatrix;
 
-    mtx = g_BgRoomInfo[room].mtxIndex;
+    mtx = g_BgRoomState[room].mtxIndex;
 
     if ((mtx == -1) || (g_CurrentPlayer->curRoomIndex != g_RoomMtxOrigin[mtx]))
     {
