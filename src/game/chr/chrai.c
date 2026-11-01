@@ -726,34 +726,73 @@ s32 ailistGetId(AIRecord *AIList, bool *isGlobalAIList)
 }
 
 /**
- * GoTo Label
- * @param AIlist: AIList containing label
- * @param LabelNum: Integer/enum ID to go to
- * @return Offset of label from beggining of AIList.
+ * Scans a list for a label: the first label LabelNum at or after Offset. Returns its
+ * offset, or 0 (the start of the list) if the list ends first.
  */
-s32 aiFindLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
+static s32 aiScanForLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
 {
-    bool  isGlobalAIList;
-
     for (;;)
     {
         if (AIList[Offset].cmd == AI_Label)
         {
             if (AIList[Offset].val[0] == LabelNum)
             {
-                // exit loop and return offset to label number
                 return Offset;
             }
         }
         else if (AIList[Offset].cmd == AI_EndList)
         {
-            // restart ai list PC if next label not found - causes infinite loop outside of debug
-            ailistGetId(AIList, &isGlobalAIList);
+            // Not found: restart the list (an endless loop outside of debug builds)
             return 0;
         }
 
         Offset += aiCommandSize(AIList, Offset);
     }
+}
+
+/*
+ * Lists never change while a level runs, so where a jump lands depends only on the
+ * list, where the scan starts and the label. A small cache keeps recent answers, so
+ * most jumps skip the scan. Cleared when a level loads, since lists move.
+ */
+#define AI_LABEL_CACHE_SIZE 256
+
+static struct AiLabelCacheEntry
+{
+    AIRecord *list;
+    s32       start;
+    s32       offset;
+    u8        label;
+} s_AiLabelCache[AI_LABEL_CACHE_SIZE];
+
+void aiLabelCacheReset(void)
+{
+    for (s32 i = 0; i < AI_LABEL_CACHE_SIZE; i++)
+    {
+        s_AiLabelCache[i].list = NULL;
+    }
+}
+
+/**
+ * Finds the first label LabelNum at or after Offset in AIList.
+ * @return Offset of the label from the start of the list, or 0 if there is none.
+ */
+s32 aiFindLabel(AIRecord *AIList, s32 Offset, u8 LabelNum)
+{
+    u32                       hash  = ((u32)AIList >> 2) + (u32)Offset * 7 + (u32)LabelNum * 31;
+    struct AiLabelCacheEntry *entry = &s_AiLabelCache[(hash ^ (hash >> 8)) % AI_LABEL_CACHE_SIZE];
+
+    if (entry->list == AIList && entry->start == Offset && entry->label == LabelNum)
+    {
+        return entry->offset;
+    }
+
+    entry->list   = AIList;
+    entry->start  = Offset;
+    entry->label  = LabelNum;
+    entry->offset = aiScanForLabel(AIList, Offset, LabelNum);
+
+    return entry->offset;
 }
 
 AIRecord *ailistFindById(s32 ID)
@@ -859,10 +898,12 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
     if (AiListp) // continue if Has ailist (check once)
     {
+        const bool twoPlayer = gameIsTwoPlayerMission();
+
         // loop forever (or until broken)
         for (;;)
         {
-            if (gameIsTwoPlayerMission())
+            if (twoPlayer)
             {
                 coopAiBegin(&coop, AiListp, Offset, ChrEntityp);
             }
@@ -4364,7 +4405,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
             } // switch
 
-            if (gameIsTwoPlayerMission())
+            if (twoPlayer)
             {
                 coopAiEnd(&coop, &Offset, ChrEntityp);
             }

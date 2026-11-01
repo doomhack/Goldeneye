@@ -47,5 +47,6 @@ s32                aiCommandSize(AIRecord *list, s32 offset);
 AIRecord          *ailistFindById(s32 ID);
 void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType);
 void aiSoundsTick(void);
+void aiLabelCacheReset(void);
 
 #endif
