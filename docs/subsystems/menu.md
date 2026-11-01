@@ -36,9 +36,16 @@ handlers, named after it:
 `frontSetMenu(menu, viaBlank)` changes menu. With `viaBlank` false the new menu opens on
 the next frame (`g_FrontEnterMenu`). With it true, the old menu's Leave runs and the
 screen goes black for at least 4 frames (the `Blank` menu, `g_FrontNextMenu`) before the
-new menu opens; this is also where the screen switches between 320x240 (logos, intro, a
-running mission) and 440x330 (the folder menus), waiting for the right frame buffer to come
-round (`g_FrontHiResPending`, `g_FrontLowResPending`).
+new menu opens; this is also where the screen switches between 320x240 (a running mission)
+and 440x330 (every front-end screen, from the legal screen on), waiting for the right frame
+buffer to come round (`g_FrontHiResPending`, `g_FrontLowResPending`).
+
+The front end is laid out in 440x330 coordinates, but it is drawn straight into a 640 wide
+framebuffer of the height the TV shows: 640x240 on NTSC and 640x286 on PAL
+(`viSetFrontScale`, `FRONT_*` in `fr.h`). The original game drew 440x330 and let the VI
+stretch it across and squash it down. Every 2D draw (text, rectangles, scissors, image
+rectangles) scales its coordinates with `VI_SX` / `VI_SY` and its texture steps with
+`VI_DSDX` / `VI_DTDY`; 3D models scale through the viewport.
 
 ## The menus
 

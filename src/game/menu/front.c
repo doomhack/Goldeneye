@@ -238,6 +238,11 @@ s32 g_FrontLowResPending = FALSE;
 
 s32 g_CheatMenuAvailable = FALSE;
 
+/* Models for the front-end screens. The cast screen also keeps its z-buffer at the end:
+ * 0x31160 bytes of textures and models, then a z-buffer the size of the framebuffer. */
+#define FRONT_CAST_ZBUF_OFFSET   0x31160
+#define FRONT_MODEL_BUFFER_SIZE  (FRONT_CAST_ZBUF_OFFSET + 0x40 + (FRONT_PHYS_WIDTH * FRONT_PHYS_HEIGHT * 2))
+
 u8 * g_FrontModelBuffer = NULL;
 u8 *g_FrontFrameBuffer = NULL;
 struct Model *g_FrontLogoModel = NULL;
@@ -5484,7 +5489,7 @@ Gfx *frontMpCharRender(Gfx *DL)
             panel_left = grid_offset + 0x26;
         }
         
-        gDPSetScissor(DL++, G_SC_NON_INTERLACE, (panel_left + 6), panel_top + 5, (panel_left + panel_width - 6), (panel_top + 0x8C - 5));
+        gDPSetScissor(DL++, G_SC_NON_INTERLACE, VI_SX(panel_left + 6), VI_SY(panel_top + 5), VI_SX(panel_left + panel_width - 6), VI_SY(panel_top + 0x8C - 5));
 
         panel_center_x = (panel_width >> 1) + panel_left;
 
@@ -5700,7 +5705,7 @@ Gfx * frontMpHandicapRender(Gfx *DL)
             panelX = (offset) + 0x26;
         }
 
-        gDPSetScissor(DL++, G_SC_NON_INTERLACE, (panelX + 6), panelY + 5, (panelX + panelW - 6), (panelY + 0x8C - 5));
+        gDPSetScissor(DL++, G_SC_NON_INTERLACE, VI_SX(panelX + 6), VI_SY(panelY + 5), VI_SX(panelX + panelW - 6), VI_SY(panelY + 0x8C - 5));
 
         centreX = ((panelW >> 1) + panelX);
         centreY = panelY + 0x46;
@@ -5939,7 +5944,7 @@ Gfx * frontMpControlsRender(Gfx *DL)
             panelX = (offset) + 0x26;
         }
 
-        gDPSetScissor(DL++, G_SC_NON_INTERLACE, (panelX + 6), panelY + 5, (panelX + panelW - 6), (panelY + 0x8C - 5));
+        gDPSetScissor(DL++, G_SC_NON_INTERLACE, VI_SX(panelX + 6), VI_SY(panelY + 5), VI_SX(panelX + panelW - 6), VI_SY(panelY + 0x8C - 5));
 
         centreX = ((panelW >> 1) + panelX);
         centreY = panelY + 0x46;
@@ -6617,7 +6622,7 @@ Gfx *frontMpTeamsRender(Gfx *DL)
         rowTop = layoutOffset + 0x1E;
         layoutOffset = ((playerIndex & 1) ? 0xAF : 0) + 0;
 
-        gDPSetScissor(DL++, G_SC_NON_INTERLACE, layoutOffset + 0x2c, rowTop + 5, layoutOffset + 0xcf, rowTop + 0x87);
+        gDPSetScissor(DL++, G_SC_NON_INTERLACE, VI_SX(layoutOffset + 0x2c), VI_SY(rowTop + 5), VI_SX(layoutOffset + 0xcf), VI_SY(rowTop + 0x87));
 
         centerX = layoutOffset + 0x7d;
 
@@ -8040,12 +8045,13 @@ void frontCastEnter(void)
     } 
 
     allocSize = 0x19000; 
-    bufferRemaining = 0x18160; 
+    bufferRemaining = FRONT_CAST_ZBUF_OFFSET - allocSize; 
 
 
     bufferRemaining = bufferRemaining + allocSize; 
 
-    zbufSetBuffer((void *)ALIGN64_V2(bufferPtr + bufferRemaining), Z_BUFFER_4_3_WIDTH, Z_BUFFER_4_3_HEIGHT);
+    // The z-buffer has the framebuffer's size (fr.h), at the end of g_FrontModelBuffer
+    zbufSetBuffer((void *)ALIGN64_V2(bufferPtr + bufferRemaining), FRONT_PHYS_WIDTH, FRONT_PHYS_HEIGHT);
     texInitPool(&texPool, bufferPtr, allocSize);
 
     bufferRemaining -= allocSize;
@@ -8484,7 +8490,7 @@ Gfx *frontCastRender(Gfx *DL)
         }
     }
  
-    gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, 440, 330);
+    gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, VI_SX(440), VI_SY(330));
     gDPPipeSync(DL++);
     gDPSetCycleType(DL++, G_CYC_1CYCLE);
     gDPSetColorDither(DL++, G_CD_DISABLE);
@@ -8497,7 +8503,7 @@ Gfx *frontCastRender(Gfx *DL)
     gDPSetRenderMode(DL++, G_RM_CLD_SURF, G_RM_CLD_SURF2);
     gDPSetCombineMode(DL++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
     gDPSetPrimColor(DL++, 0, 0, 0, 0, 0, 0xFF - (s32)(255.0f * fade));
-    gDPFillRectangle(DL++, 0, 0, 440, 330);
+    gDPFillRectangle(DL++, 0, 0, VI_SX(440), VI_SY(330));
     gDPPipeSync(DL++);
     gDPSetColorDither(DL++, G_CD_BAYER);
     gDPSetTexturePersp(DL++, G_TP_PERSP);
@@ -8598,6 +8604,9 @@ void frontTick(void)
         viSetAspect(MENU_INIT_ASPECT_440);
         viSetXY(440, 330);
         viSetBuf(440, 330);
+        // Draw the 440x330 layout straight into a 640 wide framebuffer of the height the
+        // TV shows, instead of letting the VI stretch it (fr.h)
+        viSetFrontScale();
         playerSetScreenSize(440, 330);
         viSetViewSize(440, 330);
         playerSetViewportPos(0, 0);
@@ -8862,13 +8871,10 @@ void frontInit(void)
         g_FrontNextMenu = MENU_FILE_SELECT;
     }
 
-    g_FrontModelBuffer = (u8 *)mempAlloc(0x78000, MEMPOOL_STAGE); // allocation in bytes so cast to u8 from gfx
+    g_FrontModelBuffer = (u8 *)mempAlloc(FRONT_MODEL_BUFFER_SIZE, MEMPOOL_STAGE); // allocation in bytes so cast to u8 from gfx
 
-#if defined(VERSION_EU)
-    g_FrontFrameBuffer = mempAlloc(0x55040, MEMPOOL_STAGE);
-#else
-    g_FrontFrameBuffer = mempAlloc(0x4b040, MEMPOOL_STAGE);
-#endif
+    // Stands in for cfb_16[1] on the 440x330 screens, so it is the same size
+    g_FrontFrameBuffer = mempAlloc(VI_FB_SIZE + 0x40, MEMPOOL_STAGE);
 
     g_FrontFrameBuffer = (u8 *)ALIGN64_V1((u32)g_FrontFrameBuffer);
 

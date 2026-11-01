@@ -41,14 +41,14 @@
 #if defined(VERSION_EU)
 struct VideoSettings_s g_ViDataArray[NUM_VIDEO_SETTINGS] =
 {
-    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1},
-    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1}
+    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1, 1, 1, 1},
+    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1, 1, 1, 1}
 };
 #else
 struct VideoSettings_s g_ViDataArray[NUM_VIDEO_SETTINGS] =
 {
-    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1},
-    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1}};
+    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1, 1, 1, 1},
+    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1, 1, 1, 1}};
 #endif
 
 /**
@@ -371,12 +371,12 @@ void viUpdateMode(void)
 
         if (1)
         {
-            g_ViModes[nextMode].fldRegs[0].yScale = (g_ViBackData->bufy * yScaleMax) / SCREEN_HEIGHT_MAX;
+            g_ViModes[nextMode].fldRegs[0].yScale = (VI_SY(g_ViBackData->bufy) * yScaleMax) / SCREEN_HEIGHT_MAX;
         }
 
         packedStart = g_ViModes[nextMode].comRegs.hStart;
 
-        g_ViModes[nextMode].fldRegs[1].yScale = (g_ViBackData->bufy * yScaleMax) / SCREEN_HEIGHT_MAX;
+        g_ViModes[nextMode].fldRegs[1].yScale = (VI_SY(g_ViBackData->bufy) * yScaleMax) / SCREEN_HEIGHT_MAX;
         g_ViModes[nextMode].fldRegs[0].origin = VI_SX(g_ViBackData->bufx) * 2;
         g_ViModes[nextMode].fldRegs[1].origin = VI_SX(g_ViBackData->bufx) * 2;
 
@@ -514,9 +514,9 @@ void viUpdateMode(void)
         g_ViModes[modeIndex].comRegs.xScale = (VI_SX(g_ViBackData->bufx) * 0x400) / 640;
         registerValue = (g_ViBackData->bufy == 330) ? (28) : (0);
         upperAdjust = 0;
-        g_ViModes[modeIndex].fldRegs[0].yScale = (g_ViBackData->bufy * 0x800) / (registerValue + 0x220);
+        g_ViModes[modeIndex].fldRegs[0].yScale = (VI_SY(g_ViBackData->bufy) * 0x800) / (registerValue + 0x220);
         registerValue = (g_ViBackData->bufy == 330) ? (28) : (0);
-        g_ViModes[modeIndex].fldRegs[1].yScale = (g_ViBackData->bufy * 0x800) / (registerValue + 0x220);
+        g_ViModes[modeIndex].fldRegs[1].yScale = (VI_SY(g_ViBackData->bufy) * 0x800) / (registerValue + 0x220);
         g_ViModes[modeIndex].fldRegs[0].origin = VI_SX(g_ViBackData->bufx) * 2;
         g_ViModes[modeIndex].fldRegs[1].origin = VI_SX(g_ViBackData->bufx) * 2;
 
@@ -603,7 +603,7 @@ void viSetVideoMode(s32 m)
     g_ViBackData->mode = m;
     g_ViBackData->x = g_ViBackData->bufx = g_viRuntimeScreenWidths[m];
     g_ViBackData->y = g_ViBackData->bufy = g_viRuntimeScreenHeights[m];
-    g_ViBackData->scalex = 1;
+    viSetScale(1, 1, 1, 1);
 }
 
 u8 *viGetFrameBuf2(void)
@@ -628,8 +628,8 @@ Gfx *viSetupCurrentPlayerView(Gfx *gdl)
     {
         g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[0] = (VI_SX(g_ViBackData->viewx) * 2);
         g_CurrentPlayer->viewports[g_ViBackIndex].vp.vtrans[0] = (VI_SX(g_ViBackData->viewx) * 2) + (VI_SX(g_ViBackData->viewleft) * 4);
-        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[1] = (g_ViBackData->viewy * 2);
-        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vtrans[1] = (g_ViBackData->viewy * 2) + (g_ViBackData->viewtop * 4);
+        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[1] = (VI_SY(g_ViBackData->viewy) * 2);
+        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vtrans[1] = (VI_SY(g_ViBackData->viewy) * 2) + (VI_SY(g_ViBackData->viewtop) * 4);
     }
 
     // Make the RSP's viewport transform the current player's screen rectangle.
@@ -679,7 +679,7 @@ Gfx *viClearZBufCurrentPlayer(Gfx *gdl)
 Gfx *viFillScreen(Gfx *gdl)
 {
 	gDPSetCycleType(gdl++, G_CYC_FILL);
-	gDPFillRectangle(gdl++, 0, 0, (VI_SX(g_ViBackData->bufx) - 1), (g_ViBackData->bufy - 1));
+	gDPFillRectangle(gdl++, 0, 0, (VI_SX(g_ViBackData->bufx) - 1), (VI_SY(g_ViBackData->bufy) - 1));
 	gDPPipeSync(gdl++);
 
     return gdl;
@@ -780,12 +780,28 @@ void viSetBuf(s16 x, s16 y)
     g_ViBackData->bufy = y;
 
     // Hi-res is opted into per frame by the gameplay renderer (viSetScaleX)
-    g_ViBackData->scalex = 1;
+    // and the front end (viSetFrontScale)
+    viSetScale(1, 1, 1, 1);
 }
 
+void viSetScale(s32 xmul, s32 xdiv, s32 ymul, s32 ydiv)
+{
+    g_ViBackData->sxMul = xmul;
+    g_ViBackData->sxDiv = xdiv;
+    g_ViBackData->syMul = ymul;
+    g_ViBackData->syDiv = ydiv;
+}
+
+/** Gameplay hi-res: physical width is `scalex` times the logical width */
 void viSetScaleX(s32 scalex)
 {
-    g_ViBackData->scalex = scalex;
+    viSetScale(scalex, 1, 1, 1);
+}
+
+/** Front end: the 440x330 layout drawn into a full-width 640 wide framebuffer */
+void viSetFrontScale(void)
+{
+    viSetScale(FRONT_SCALEX_MUL, FRONT_SCALEX_DIV, FRONT_SCALEY_MUL, FRONT_SCALEY_DIV);
 }
 
 void viSetXY(s16 x, s16 y)

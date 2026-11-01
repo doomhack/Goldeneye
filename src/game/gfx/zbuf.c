@@ -117,7 +117,7 @@ Gfx *zbufClearCurrentPlayer(Gfx *gdl)
     gDPSetColorImage(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, s_ZbufWidth, OS_K0_TO_PHYSICAL(s_Zbuf));
     gDPSetCycleType(gdl++, G_CYC_FILL);
     gDPSetFillColor(gdl++, (GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0)));
-    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
+    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), VI_SY(viGetY()));
     if (!viewIsHalfWidth()) {
         start_x = 0;
         end_x = VI_SX(viGetX()) - 1;

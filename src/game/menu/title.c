@@ -160,7 +160,7 @@ Gfx *titleRenderFade(Gfx *gdl, u32 alpha)
     gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
     gDPSetPrimColor(gdl++, 0, 0, 0x00, 0x00, 0x00, alpha);
     gDPSetColorDither(gdl++, G_CD_MAGICSQ);
-    gDPFillRectangle(gdl++, 0, 0, viGetX(), viGetY());
+    gDPFillRectangle(gdl++, 0, 0, VI_SX(viGetX()), VI_SY(viGetY()));
 
     return gdl;
 }
@@ -734,6 +734,8 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
     f32 bottomGreen;
     f32 bottomBlue;
     s32 i;
+    s32 py;
+    s32 pyEnd;
 
     topRed = topColour->red;
     topGreen = topColour->green;
@@ -742,13 +744,31 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
     bottomGreen = bottomColour->green;
     bottomBlue = bottomColour->blue;
 
-    i = 0;
+    // One rectangle per framebuffer row. The front end draws its 440x330 layout into a
+    // 640 wide framebuffer with fewer rows (fr.h), so each row shows the image row under
+    // its centre: rows 16 to 314 of the layout, image rows 0 to 298.
+    pyEnd = VI_SY(16 + 299);
 
-    while ((i + 1) < 300) 
+    for (py = VI_SY(16); py < pyEnd; py++)
     {
+        u8 *row;
+
+        i = ((((2 * py) + 1) * g_ViBackData->syDiv) / (2 * g_ViBackData->syMul)) - 16;
+
+        if (i < 0)
+        {
+            i = 0;
+        }
+        else if (i > 298)
+        {
+            i = 298;
+        }
+
+        row = image + (i * 440); // Each texel is 1 byte.
+
         // Load a 440 wide by 1 pixel tall 8-bit intensity texture.
         gDPLoadTextureBlock(
-            gdl++, image, G_IM_FMT_I, G_IM_SIZ_8b, 440, 1, 0, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP,
+            gdl++, row, G_IM_FMT_I, G_IM_SIZ_8b, 440, 1, 0, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP,
             G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD
         );
 
@@ -760,20 +780,17 @@ Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 xOffset, stru
         if (xOffset < 0) 
         {
             gSPTextureRectangle(
-                gdl++, 0, (i + 0x10) << 2, (440 << 2) - 1, ((((i + 1) + 0x10)) << 2) - 1, G_TX_RENDERTILE, (-xOffset) << 5, 0,
-                1 << 10, 1 << 10
+                gdl++, 0, py << 2, VI_SX(440 << 2) - 1, ((py + 1) << 2) - 1, G_TX_RENDERTILE, (-xOffset) << 5, 0,
+                VI_DSDX(1 << 10), 1 << 10
             );
         } 
         else 
         {
             gSPTextureRectangle(
-                gdl++, xOffset << 2, (i + 0x10) << 2, (440 << 2) - 1, ((((i + 1) + 0x10)) << 2) - 1, G_TX_RENDERTILE, 0, 0,
-                1 << 10, 1 << 10
+                gdl++, VI_SX(xOffset << 2), py << 2, VI_SX(440 << 2) - 1, ((py + 1) << 2) - 1, G_TX_RENDERTILE, 0, 0,
+                VI_DSDX(1 << 10), 1 << 10
             );
         }
-
-        i++;
-        image += 440; // Advance the image data by 440 bytes, since each texel is 1 byte.
     }
 
     return gdl;

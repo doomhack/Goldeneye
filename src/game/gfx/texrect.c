@@ -33,18 +33,20 @@ static void texRectDraw(Gfx **gdlptr, f32 *position, f32 *size, s32 width, s32 h
         s32 dsdx;
         s32 dtdy;
 
-        // Position and half width in physical (hi-res) pixels
-        f32 posx = position[0] * g_ViBackData->scalex;
-        f32 halfx = size[0] * g_ViBackData->scalex;
+        // Position and half size in physical (hi-res / front end) pixels
+        f32 posx = (position[0] * g_ViBackData->sxMul) / g_ViBackData->sxDiv;
+        f32 halfx = (size[0] * g_ViBackData->sxMul) / g_ViBackData->sxDiv;
+        f32 posy = (position[1] * g_ViBackData->syMul) / g_ViBackData->syDiv;
+        f32 halfy = (size[1] * g_ViBackData->syMul) / g_ViBackData->syDiv;
 
         // Disable texture perspective correction
         gDPSetTexturePersp(gdl++, G_TP_NONE);
 
         // Compute rectangle coordinates
         xl = (posx - halfx) * 4.0f;
-        yl = (position[1] - size[1]) * 4.0f;
+        yl = (posy - halfy) * 4.0f;
         xh = (posx + halfx) * 4.0f;
-        yh = (position[1] + size[1]) * 4.0f;
+        yh = (posy + halfy) * 4.0f;
 
         // Proceed if the rectangle is within screen bounds
         if (xh >= 0 && yh >= 0)
@@ -82,13 +84,13 @@ static void texRectDraw(Gfx **gdlptr, f32 *position, f32 *size, s32 width, s32 h
             // Calculate texture scaling based on flipXY flag
             if (flipXY)
             {
-                dsdx = width / (2.0f * size[1]) * 1024.0f;
+                dsdx = width / (2.0f * halfy) * 1024.0f;
                 dtdy = height / (2.0f * halfx) * 1024.0f;
             }
             else
             {
                 dsdx = width / (2.0f * halfx) * 1024.0f;
-                dtdy = height / (2.0f * size[1]) * 1024.0f;
+                dtdy = height / (2.0f * halfy) * 1024.0f;
             }
             
             // Flip texture horizontally if needed

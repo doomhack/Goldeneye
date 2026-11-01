@@ -468,7 +468,7 @@ Gfx* lvRender(Gfx* DL)
     {
         DL = viClearZBufCurrentPlayer(DL);
         DL = viSetupCurrentPlayerView(DL);
-        gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, (s16)VI_SX(viGetX()), (s16)viGetY());
+        gDPSetScissor(DL++, G_SC_NON_INTERLACE, 0, 0, (s16)VI_SX(viGetX()), (s16)VI_SY(viGetY()));
         DL = frontRender(DL);
     }
     else

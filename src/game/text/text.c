@@ -148,7 +148,7 @@ Gfx* textRenderBlackBox(Gfx *glist, s32 *ulx, s32 *uly, s32 *lrx, s32 *lry)
     gDPSetRenderMode(glist++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
     gDPSetCombineMode(glist++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
     gDPSetPrimColor(glist++, 0, 0, 0x00, 0x00, 0x00, 0x00);
-    gDPFillRectangle(glist++, VI_SX(*ulx), *uly, VI_SX(*lrx), *lry);
+    gDPFillRectangle(glist++, VI_SX(*ulx), VI_SY(*uly), VI_SX(*lrx), VI_SY(*lry));
     gDPSetRenderMode(glist++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
     gDPSetCombineLERP(glist++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0);
     
@@ -164,7 +164,7 @@ Gfx * textRenderRect(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry, u32 color)
     gDPSetRenderMode(gdl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
     gDPSetCombineMode(gdl++, G_CC_PRIMITIVE, G_CC_PRIMITIVE);
     gDPSetPrimColor(gdl++, 0, 0, r, g, b, a);
-    gDPFillRectangle(gdl++, VI_SX(ulx), uly, VI_SX(lrx), lry);
+    gDPFillRectangle(gdl++, VI_SX(ulx), VI_SY(uly), VI_SX(lrx), VI_SY(lry));
     gDPSetCombineLERP(gdl++, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0, 0, 0, 0, PRIMITIVE, TEXEL0, 0, PRIMITIVE, 0);
     return gdl;
 }
@@ -190,7 +190,7 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
 				&& curchar->baseline + drawY + curchar->height >= clipY)
         {
             gDPSetTextureLUT(gdl++, G_TT_NONE);
-            gDPLoadTextureBlock(gdl++, curchar->pixeldata, G_IM_FMT_I, G_IM_SIZ_8b, ((curchar->width + 7) & 0xF8), curchar->height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, 0, 0);
+            gDPLoadTextureBlock(gdl++, curchar->pixeldata, G_IM_FMT_I, G_IM_SIZ_8b, ((curchar->width + 7) & 0xF8), curchar->height, 0, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, 0, 0);
 
             if ((*x + curchar->width) <= clipX + clipWidth)
             {
@@ -205,14 +205,14 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
                             // B3000000 0400FC00:
                             gSPTextureRectangleFlip(gdl++,
                                 /* xl */ VI_SX((((drawY - curchar->baseline) - curchar->height) * 4) + g_TextY),
-                                /* yl */ ((*x * 4) + g_TextX),
+                                /* yl */ VI_SY(((*x * 4) + g_TextX)),
                                 /* xh */ VI_SX(((drawY - curchar->baseline) * 4) + g_TextY),
-                                /* yh */ ((*x + curchar->width) * 4) + g_TextX ,
+                                /* yh */ VI_SY(((*x + curchar->width) * 4) + g_TextX),
                                 /* tile */  G_TX_RENDERTILE,
                                 /* s */ g_TextT,
                                 /* t */ ((curchar->height - 1) << 5) + g_TextS,
-                                /* dsdx */ 0x400,
-                                /* dsdy */ (u16)-(0x400 / g_ViBackData->scalex));
+                                /* dsdx */ VI_DTDY(0x400),
+                                /* dsdy */ (u16)-VI_DSDX(0x400));
                         }
                         else
                         {
@@ -221,14 +221,14 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
                             // B3000000 04000400:
                             gSPTextureRectangle(gdl++,
                                 /* xl */ VI_SX((*x * 4) + g_TextX),
-                                /* yl */ ((drawY + curchar->baseline) * 4) + g_TextY,
+                                /* yl */ VI_SY(((drawY + curchar->baseline) * 4) + g_TextY),
                                 /* xh */ VI_SX(((*x + curchar->width) * 4) + g_TextX),
-                                /* yh */ ((curchar->baseline + drawY + curchar->height) * 4) + g_TextY,
+                                /* yh */ VI_SY(((curchar->baseline + drawY + curchar->height) * 4) + g_TextY),
                                 /* tile */  G_TX_RENDERTILE,
                                 /* s */ g_TextS,
                                 /* t */ g_TextT,
-                                /* dsdx */ (0x400 / g_ViBackData->scalex),
-                                /* dsdy */ 0x400);
+                                /* dsdx */ VI_DSDX(0x400),
+                                /* dsdy */ VI_DTDY(0x400));
                         }
 
                     }
@@ -239,14 +239,14 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
                         // B3000000 04000400:
                         gSPTextureRectangle(gdl++,
                             /* xl */ VI_SX((*x * 4) + g_TextX),
-                            /* yl */ ((drawY + curchar->baseline) * 4) + g_TextY,
+                            /* yl */ VI_SY(((drawY + curchar->baseline) * 4) + g_TextY),
                             /* xh */ VI_SX(((*x + curchar->width) * 4) + g_TextX),
-                            /* yh */ clipY + clipHeight + g_TextY,
+                            /* yh */ VI_SY(clipY + clipHeight + g_TextY),
                             /* tile */  G_TX_RENDERTILE,
                             /* s */ g_TextS,
                             /* t */ g_TextT,
-                            /* dsdx */ (0x400 / g_ViBackData->scalex),
-                            /* dsdy */ 0x400);
+                            /* dsdx */ VI_DSDX(0x400),
+                            /* dsdy */ VI_DTDY(0x400));
                     }
                 }
                 else
@@ -258,14 +258,14 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
                         // B3000000 04000400:
                         gSPTextureRectangle(gdl++,
                             /* xl */ VI_SX((*x * 4) + g_TextX),
-                            /* yl */ (clipY * 4) + g_TextY,
+                            /* yl */ VI_SY((clipY * 4) + g_TextY),
                             /* xh */ VI_SX(((*x + curchar->width) * 4) + g_TextX),
-                            /* yh */ ((curchar->baseline + drawY + curchar->height) * 4) + g_TextY,
+                            /* yh */ VI_SY(((curchar->baseline + drawY + curchar->height) * 4) + g_TextY),
                             /* tile */  G_TX_RENDERTILE,
                             /* s */ g_TextS,
                             /* t */ (((clipY - drawY) - curchar->baseline) << 5) + g_TextT,
-                            /* dsdx */ (0x400 / g_ViBackData->scalex),
-                            /* dsdy */ 0x400);
+                            /* dsdx */ VI_DSDX(0x400),
+                            /* dsdy */ VI_DTDY(0x400));
                     }
                 }
             }
@@ -359,7 +359,7 @@ Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar,
             && *x >= clipX
             && drawY + curchar->baseline + curchar->height >= clipY) {
         gDPSetTextureLUT(gdl++, G_TT_NONE);
-        gDPLoadTextureBlock(gdl++, curchar->pixeldata, G_IM_FMT_I, G_IM_SIZ_8b, ((curchar->width + 7) & 0xF8), curchar->height, 0, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMIRROR | G_TX_WRAP, G_TX_NOMASK, G_TX_NOMASK, 0, 0);
+        gDPLoadTextureBlock(gdl++, curchar->pixeldata, G_IM_FMT_I, G_IM_SIZ_8b, ((curchar->width + 7) & 0xF8), curchar->height, 0, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMIRROR | G_TX_CLAMP, G_TX_NOMASK, G_TX_NOMASK, 0, 0);
 
         /**
          * Render outlines.
@@ -408,27 +408,27 @@ Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 cli
                 {
                     gSPTextureRectangleFlip(gdl++, 
                         /* xl */ VI_SX(((y - curchar->baseline) - curchar->height) << 2), 
-                        /* yl */ x << 2, 
+                        /* yl */ VI_SY(x << 2), 
                         /* xh */ VI_SX((y - curchar->baseline) << 2), 
-                        /* yh */ (x + curchar->width) << 2, 
+                        /* yh */ VI_SY((x + curchar->width) << 2), 
                         /* tile */ G_TX_RENDERTILE, 
                         /* s */ 0, 
                         /* t */ (curchar->height - 1) << 5, 
-                        /* dsdx */ 0x400,
-                        /* dsdy */ (u16)-(0x400 / g_ViBackData->scalex));
+                        /* dsdx */ VI_DTDY(0x400),
+                        /* dsdy */ (u16)-VI_DSDX(0x400));
                 }
                 else
                 {
                     gSPTextureRectangle(gdl++, 
                         /* xl */ VI_SX(x << 2), 
-                        /* yl */ (y + curchar->baseline) << 2, 
+                        /* yl */ VI_SY((y + curchar->baseline) << 2), 
                         /* xh */ VI_SX((x + curchar->width) << 2), 
-                        /* yh */ (curchar->baseline + y + curchar->height) << 2, 
+                        /* yh */ VI_SY((curchar->baseline + y + curchar->height) << 2), 
                         /* tile */ G_TX_RENDERTILE, 
                         /* s */ 0, 
                         /* t */ 0, 
-                        /* dsdx */ (0x400 / g_ViBackData->scalex),
-                        /* dsdy */ 0x400);
+                        /* dsdx */ VI_DSDX(0x400),
+                        /* dsdy */ VI_DTDY(0x400));
                 }
             }
             else if (clipY + clipHeight >= curchar->baseline + y) // Glyph bottom is below the clipping rectangle.
@@ -436,28 +436,28 @@ Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 cli
                 // Bottom coordinates clipped to savedy + height.
                 gSPTextureRectangle(gdl++, 
                     /* xl */ VI_SX(x << 2), 
-                    /* yl */ (y + curchar->baseline) << 2, 
+                    /* yl */ VI_SY((y + curchar->baseline) << 2), 
                     /* xh */ VI_SX((x + curchar->width) << 2), 
-                    /* yh */ ((clipY + clipHeight) << 2), 
+                    /* yh */ VI_SY(((clipY + clipHeight) << 2)), 
                     /* tile */ G_TX_RENDERTILE, 
                     /* s */ 0, 
                     /* t */ 0, 
-                    /* dsdx */ (0x400 / g_ViBackData->scalex),
-                    /* dsdy */ 0x400); 
+                    /* dsdx */ VI_DSDX(0x400),
+                    /* dsdy */ VI_DTDY(0x400)); 
             }
         }
         else if (curchar->baseline + y + curchar->height >= clipY) // Glyph top is above the clipping rectangle.
         {
             gSPTextureRectangle(gdl++, // Top clipped to fit.
                 /* xl */ VI_SX(x << 2), 
-                /* yl */ clipY<< 2, 
+                /* yl */ VI_SY(clipY<< 2), 
                 /* xh */ VI_SX((x + curchar->width) << 2), 
-                /* yh */ (curchar->baseline + y + curchar->height) << 2, 
+                /* yh */ VI_SY((curchar->baseline + y + curchar->height) << 2), 
                 /* tile */ G_TX_RENDERTILE, 
                 /* s */ 0, 
                 /* t */ ((clipY - curchar->baseline) - y) << 5, 
-                /* dsdx */ (0x400 / g_ViBackData->scalex),
-                /* dsdy */ 0x400);
+                /* dsdx */ VI_DSDX(0x400),
+                /* dsdy */ VI_DTDY(0x400));
         }
     }
 

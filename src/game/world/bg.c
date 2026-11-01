@@ -1110,7 +1110,7 @@ Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bott
         bottom = player->viewtop + player->viewy;
     }
 
-    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, VI_SX(left), top, VI_SX(right), bottom);
+    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, VI_SX(left), VI_SY(top), VI_SX(right), VI_SY(bottom));
 
     return gdl;
 }

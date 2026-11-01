@@ -96,7 +96,7 @@ Gfx *radarRender(Gfx *DL)
         G_TX_RENDERTILE,
         0x10,
         0x10,
-        0x400 / g_ViBackData->scalex,
+        VI_DSDX(0x400),
         RADAR_RECT1_D);
     
     DL = textRenderRect(DL, start_left - 2, start_top - 2, start_left + 2, start_top + 2, 0x40);

@@ -168,20 +168,39 @@ typedef struct VideoSettings_s {
     u8* framebuf;
 
     /**
-     * Horizontal hi-res factor: physical framebuffer pixels per logical pixel.
-     * Everything above the RDP works in logical (320-wide) coordinates; only the
-     * framebuffer, Z-buffer, viewport and 2D draw calls are multiplied by this.
+     * Logical to physical pixel scale, as a fraction per axis (mul / div).
+     * Everything above the RDP works in logical coordinates (320 wide in game, 440x330 in the
+     * front end); only the framebuffer, Z-buffer, viewport and 2D draw calls are scaled.
+     * In game: x is 1/1 or 2/1 (hi-res option), y is 1/1.
+     * Front end: 440x330 logical drawn into a 640x240 (NTSC) or 640x286 (PAL) framebuffer.
      */
-    s32 scalex;
+    s16 sxMul;
+    s16 sxDiv;
+    s16 syMul;
+    s16 syDiv;
 } VideoSettings;
 
 extern VideoSettings *g_ViBackData;
 
-/* Logical x (or width) to physical framebuffer pixels for the frame being built */
-#define VI_SX(x) ((x) * g_ViBackData->scalex)
+/* Logical x / y (or width / height) to physical framebuffer pixels for the frame being built.
+ * Also works on 10.2 fixed point coordinates (texture rectangles). */
+#define VI_SX(x) (((x) * g_ViBackData->sxMul) / g_ViBackData->sxDiv)
+#define VI_SY(y) (((y) * g_ViBackData->syMul) / g_ViBackData->syDiv)
 
-/* Same for an inclusive right edge, as used by fill-mode rectangles */
-#define VI_SX_INCL(x) ((((x) + 1) * g_ViBackData->scalex) - 1)
+/* Same for an inclusive right / bottom edge, as used by fill-mode rectangles */
+#define VI_SX_INCL(x) (VI_SX((x) + 1) - 1)
+#define VI_SY_INCL(y) (VI_SY((y) + 1) - 1)
+
+/* Physical y back to logical (rounds down) */
+#define VI_UNSY(y) (((y) * g_ViBackData->syDiv) / g_ViBackData->syMul)
+
+/* Texture step per physical pixel for a texture rectangle drawn 1 texel per logical pixel
+ * (s5.10, 0x400 = 1 texel) */
+#define VI_DSDX(d) (((d) * g_ViBackData->sxDiv) / g_ViBackData->sxMul)
+#define VI_DTDY(d) (((d) * g_ViBackData->syDiv) / g_ViBackData->syMul)
+
+/* True when the frame is drawn at a different size than its logical coordinates */
+#define VI_IS_SCALED() ((g_ViBackData->sxMul != g_ViBackData->sxDiv) || (g_ViBackData->syMul != g_ViBackData->syDiv))
 
 extern OSViMode *viMode;
 extern u32 g_viOriginalHstart;
@@ -192,8 +211,37 @@ extern Mtx *g_viProjectionMatrix;
 /* Hi-res doubles the width. The framebuffers are always sized for it. */
 #define VI_MAX_SCALEX 2
 
+/*
+ * The front end lays its screens out at 440x330 and draws them into a framebuffer of the size
+ * the TV shows: 640x240 on NTSC (330 lines scaled by 8/11) and 640x286 on PAL (13/15, the
+ * 286 lines the original 440x330 mode filled). The VI then shows it 1:1.
+ */
+#define FRONT_LOGICAL_WIDTH   440
+#define FRONT_LOGICAL_HEIGHT  330
+#define FRONT_PHYS_WIDTH      640
+#define FRONT_SCALEX_MUL      16
+#define FRONT_SCALEX_DIV      11
+#if defined(VERSION_EU)
+#define FRONT_SCALEY_MUL      13
+#define FRONT_SCALEY_DIV      15
+#define FRONT_PHYS_HEIGHT     286
+#else
+#define FRONT_SCALEY_MUL      8
+#define FRONT_SCALEY_DIV      11
+#define FRONT_PHYS_HEIGHT     240
+#endif
+
+/* Framebuffer height: the taller of the game screen and the front end */
+#if FRONT_PHYS_HEIGHT > SCREEN_HEIGHT
+#define VI_FB_HEIGHT FRONT_PHYS_HEIGHT
+#else
+#define VI_FB_HEIGHT SCREEN_HEIGHT
+#endif
+
+#define VI_FB_SIZE (SCREEN_WIDTH * VI_MAX_SCALEX * VI_FB_HEIGHT * 2)
+
 /* SCREEN_HEIGHT #define changes based on version (PAL or NTSC) */
-extern u8 cfb_16[NUM_VIDEO_FRAME_BUFFERS][SCREEN_WIDTH * VI_MAX_SCALEX * SCREEN_HEIGHT * 2];
+extern u8 cfb_16[NUM_VIDEO_FRAME_BUFFERS][VI_FB_SIZE];
 
 void viShake(f32 intensity);
 
@@ -229,6 +277,8 @@ void viUpdateMode(void);
 void viSetBuf(s16 x, s16 y);
 void viSetXY(s16 x, s16 y);
 void viSetScaleX(s32 scalex);
+void viSetScale(s32 xmul, s32 xdiv, s32 ymul, s32 ydiv);
+void viSetFrontScale(void);
 Gfx *viSetFillColor(Gfx *gdl, s32 r, s32 g, s32 b);
 Gfx *viFillScreen(Gfx *gdl);
 Gfx *viSetupScreensForNumPlayers(Gfx *gdl);
