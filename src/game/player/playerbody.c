@@ -13,6 +13,7 @@
 #include "game/model/modelfile.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
+#include "game/player/coop.h"
 #include "game/prop/propobj.h"
 #include "game/save/file.h"
 #include "random.h"
@@ -951,9 +952,17 @@ clear_and_return:
 
 Gfx *playerRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
-    if (prop->chr != NULL)
+    ChrRecord *chr = prop->chr;
+
+    if (chr != NULL)
     {
+        // Co-op: players are hidden from each other while they overlap at a
+        // shared spawn, then fade in (coopPartnerVisibility)
+        u8 fadealpha = chr->fadealpha;
+
+        chr->fadealpha = (u8)(fadealpha * coopPartnerVisibility());
         gdl = chrRenderProp(prop, gdl, withalpha);
+        chr->fadealpha = fadealpha;
     }
 
     return gdl;

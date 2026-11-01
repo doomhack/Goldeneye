@@ -18,5 +18,8 @@ s32 coopPartnerCanRevive(void);
 void coopNoteActivator(void);
 s32 coopPartnerAlive(void);
 s32 coopSplitSideBySide(void);
+void coopPlayersMovedApart(void);
+void coopResetPartnerFade(void);
+f32 coopPartnerVisibility(void);
 
 #endif

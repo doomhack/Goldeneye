@@ -200,6 +200,7 @@ void playerApplyIntro(void)
     if (playerGetCurrentNum() == 0)
     {
         g_CoopPlayersOverlap = FALSE;
+        coopResetPartnerFade();
     }
 
     intro_record = (struct SetupIntroEmpty *)g_CurrentSetup.intro;

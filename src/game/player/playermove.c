@@ -67,7 +67,7 @@ static PropRecord *coopGetOverlappingPartner(void)
 
     if ((dx * dx) + (dz * dz) > COOP_OVERLAP_CLEAR_DIST * COOP_OVERLAP_CLEAR_DIST)
     {
-        g_CoopPlayersOverlap = FALSE;
+        coopPlayersMovedApart();
         return NULL;
     }
 
