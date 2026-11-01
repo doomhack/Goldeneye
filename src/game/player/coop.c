@@ -10,6 +10,7 @@
 #include "game/player/player.h"
 #include "game/player/coop.h"
 #include "game/level/gamemode.h"
+#include "game/level/lv.h"
 
 /**
  * Counter-op: Bond is always player 1 (index 0); g_CounterOpBondPad says
@@ -46,6 +47,67 @@ s32 counterOpIsGuardPlayer(s32 player)
  * then don't collide with each other until they have moved apart.
  */
 s32 g_CoopPlayersOverlap = FALSE;
+
+/**
+ * Co-op: while the players overlap they are hidden from each other (each
+ * would see bits of the other's model around them). Once apart, each fades
+ * into the other's view over this many 60ths of a second.
+ */
+#define COOP_PARTNER_FADE_TIME60 30
+
+// g_GlobalTimer when the players moved apart, or -1 when there is no fade
+static s32 s_CoopPartnerFadeStart = -1;
+
+/**
+ * Co-op: called when the players have moved apart after a shared spawn.
+ * They collide again from now on, and fade into each other's view.
+ */
+void coopPlayersMovedApart(void)
+{
+    g_CoopPlayersOverlap = FALSE;
+    s_CoopPartnerFadeStart = g_GlobalTimer;
+}
+
+/**
+ * Co-op: at the start of a level, no fade is running.
+ */
+void coopResetPartnerFade(void)
+{
+    s_CoopPartnerFadeStart = -1;
+}
+
+/**
+ * How visible a player's body is to the other player, from 0 (hidden) to 1.
+ */
+f32 coopPartnerVisibility(void)
+{
+    s32 elapsed;
+
+    if (!gameIsCoop())
+    {
+        return 1.0f;
+    }
+
+    if (g_CoopPlayersOverlap)
+    {
+        return 0.0f;
+    }
+
+    if (s_CoopPartnerFadeStart < 0)
+    {
+        return 1.0f;
+    }
+
+    elapsed = g_GlobalTimer - s_CoopPartnerFadeStart;
+
+    if ((elapsed < 0) || (elapsed >= COOP_PARTNER_FADE_TIME60))
+    {
+        s_CoopPartnerFadeStart = -1;
+        return 1.0f;
+    }
+
+    return (f32)elapsed / COOP_PARTNER_FADE_TIME60;
+}
 
 /**
  * Co-op: the player whose view fills the screen on its own this frame, or
