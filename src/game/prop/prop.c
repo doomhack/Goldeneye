@@ -96,18 +96,48 @@ void propsInit(void)
 }
 
 
+/*
+ * The room each on-screen prop is drawn with in this view (the first of its rooms that
+ * is visible), or -1. Worked out by the view's first propsRenderPass, which is called
+ * for every pass of every drawn room and so used to look up each prop's rooms each time.
+ */
+static s16 s_OnScreenPropDrawRoom[ONSCREEN_PROP_LIST_LEN];
+static bool s_OnScreenDrawRoomsValid;
+
+/* For when the on-screen list or the visible rooms change */
+void propsInvalidateDrawRooms(void)
+{
+    s_OnScreenDrawRoomsValid = FALSE;
+}
+
+
 /**
  * Collect the enabled props on screen and sort them far to near (largest zDepth first).
  */
 void propsSortOnscreen(void)
 {
+    /* Each prop's depth beside it, so the sort doesn't read every prop again for each
+       compare */
+    static f32 depths[ONSCREEN_PROP_LIST_LEN];
     s32 count = 0;
 
     for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {
         if ((prop->flags & (PROPFLAG_ENABLED | PROPFLAG_ONSCREEN)) == (PROPFLAG_ENABLED | PROPFLAG_ONSCREEN))
         {
-            g_OnScreenPropList[count] = prop;
+            // Insertion sort, after the props as far or further away
+            f32 z = prop->zDepth;
+            s32 i = count;
+
+            while (i > 0 && depths[i - 1] < z)
+            {
+                depths[i] = depths[i - 1];
+                g_OnScreenPropList[i] = g_OnScreenPropList[i - 1];
+                i--;
+            }
+
+            depths[i] = z;
+            g_OnScreenPropList[i] = prop;
             count++;
         }
     }
@@ -115,32 +145,7 @@ void propsSortOnscreen(void)
     g_OnScreenPropCount = count;
     g_OnScreenPropList[count] = NULL;
     g_LastOnScreenProp = &g_OnScreenPropList[count];
-
-    // Selection sort
-    for (s32 i = 0; i < count; i++)
-    {
-        s32 best = -1;
-        f32 bestz = -4.2949673e9f;
-
-        for (s32 j = i; j < count; j++)
-        {
-            f32 z = g_OnScreenPropList[j]->zDepth;
-
-            if (bestz < z)
-            {
-                bestz = z;
-                best = j;
-            }
-        }
-
-        if (best >= 0)
-        {
-            PropRecord *swap = g_OnScreenPropList[i];
-
-            g_OnScreenPropList[i] = g_OnScreenPropList[best];
-            g_OnScreenPropList[best] = swap;
-        }
-    }
+    s_OnScreenDrawRoomsValid = FALSE;
 }
 
 
@@ -337,8 +342,8 @@ static Gfx *propRender(Gfx *gdl, PropRecord *prop, s32 withalpha)
 }
 
 
-/* Whether a prop is drawn with this room: the first of its rooms that is visible */
-static bool propIsDrawnInRoom(PropRecord *prop, s32 roomid)
+/* The room a prop is drawn with: the first of its rooms that is visible, or -1 */
+static s32 propGetDrawRoom(PropRecord *prop)
 {
     s32 rooms[8];
 
@@ -348,11 +353,28 @@ static bool propIsDrawnInRoom(PropRecord *prop, s32 roomid)
     {
         if (bgRoomIsVisible(*room))
         {
-            return roomid == *room;
+            return *room;
         }
     }
 
-    return FALSE;
+    return -1;
+}
+
+
+/* Work out the draw room of each prop on screen, if not done for this view yet */
+static void propsFindDrawRooms(void)
+{
+    if (s_OnScreenDrawRoomsValid)
+    {
+        return;
+    }
+
+    for (PropRecord **pp = g_OnScreenPropList; pp < g_LastOnScreenProp; pp++)
+    {
+        s_OnScreenPropDrawRoom[pp - g_OnScreenPropList] = *pp != NULL ? propGetDrawRoom(*pp) : -1;
+    }
+
+    s_OnScreenDrawRoomsValid = TRUE;
 }
 
 
@@ -381,6 +403,8 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
         }
     }
 
+    propsFindDrawRooms();
+
     if (renderpass == 0 || renderpass == 2)
     {
         u32 want = renderpass == 0 ? 0 : PROPFLAG_RENDERPOSTBG;
@@ -389,9 +413,8 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
         {
             PropRecord *prop = *pp;
 
-            if (prop != NULL
-                && (prop->flags & (PROPFLAG_00000020 | PROPFLAG_RENDERPOSTBG)) == want
-                && propIsDrawnInRoom(prop, roomid))
+            if (s_OnScreenPropDrawRoom[pp - g_OnScreenPropList] == roomid
+                && (prop->flags & (PROPFLAG_00000020 | PROPFLAG_RENDERPOSTBG)) == want)
             {
                 gdl = propRender(gdl, prop, 0);
             }
@@ -403,7 +426,7 @@ Gfx *propsRenderPass(Gfx *gdl, s32 roomid, s32 renderpass)
         {
             PropRecord *prop = *pp;
 
-            if (prop != NULL && propIsDrawnInRoom(prop, roomid))
+            if (s_OnScreenPropDrawRoom[pp - g_OnScreenPropList] == roomid)
             {
                 if (prop->flags & PROPFLAG_00000020)
                 {

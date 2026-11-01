@@ -14,6 +14,7 @@ extern PropRecord *g_OnScreenPropList[];
 
 void        propsInit(void);
 void        propsSortOnscreen(void);
+void        propsInvalidateDrawRooms(void);
 void        propEnable(PropRecord *prop);
 void        propDisable(PropRecord *prop);
 PropRecord *propsGetActiveTail(void);

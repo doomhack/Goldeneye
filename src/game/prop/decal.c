@@ -38,6 +38,10 @@ typedef struct s_impacttype {
 
 static struct Scorch *s_Scorches;
 static struct Impact *s_Impacts;
+
+/* Each impact slot's prop, packed together: impactsRenderOnProp runs for every object
+   with impacts and looks for its own, which read a cache line per slot from s_Impacts */
+static PropRecord *s_ImpactProps[IMPACT_BUFFER_LEN];
 static s32 s_NextScorch = 0;
 static s32 s_NextImpact = 0;
 
@@ -350,6 +354,7 @@ void impactCreate(coord3d *pos, coord3d *normal, s16 type, s16 room, PropRecord 
 
     slot = &s_Impacts[s_NextImpact];
     slot->prop = prop;
+    s_ImpactProps[s_NextImpact] = prop;
     slot->node = node;
     slot->onGlass = onGlass;
     slot->room = room;
@@ -441,9 +446,14 @@ Gfx *impactsRenderOnProp(Gfx *gdl, PropRecord *prop, s32 xlupass)
 
     for (i = 0; i < IMPACT_BUFFER_LEN; i++)
     {
+        if (prop != s_ImpactProps[i])
+        {
+            continue;
+        }
+
         struct Impact *impact = &s_Impacts[i];
 
-        if (prop != impact->prop || impact->room < 0)
+        if (impact->room < 0)
         {
             continue;
         }
@@ -530,5 +540,6 @@ void decalsInit(void)
     for (i = 0; i < IMPACT_BUFFER_LEN; i++)
     {
         s_Impacts[i].room = -1;
+        s_ImpactProps[i] = NULL;
     }
 }
