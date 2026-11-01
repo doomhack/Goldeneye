@@ -1,8 +1,8 @@
 /**
  * What guards see and hear. A guard notices the player at random, more likely the closer
  * the player is and the more nearly in front, and only along a clear line
- * (chrCheckTargetInSight). Seeing or hearing the player records when, and where they
- * were (lastseetarget60, lastheartarget60, lastknowntargetpos). Gunfire and other noise
+ * (chrCheckTargetInSight). Seeing or hearing the player records when
+ * (lastseetarget60, lastheartarget60). Gunfire and other noise
  * alerts every guard within its hearing range (chrCheckGuardsHeardSound).
  *
  * "The player" is the current player. In co-op each guard picks which player that is
@@ -240,24 +240,12 @@ bool chrHasLineOfSightToPlayer(ChrRecord *self)
     return canSee;
 }
 
-/* Remembers where the current player is now */
-static void chrSetTargetPos(ChrRecord *self)
-{
-    PropRecord *playerprop = currentPlayerGetProp();
-
-    self->lastknowntargetpos.x = playerprop->pos.x;
-    self->lastknowntargetpos.y = playerprop->pos.y;
-    self->lastknowntargetpos.z = playerprop->pos.z;
-    self->targetTile = playerprop->stan;
-}
-
 /**
  * The chr sees the current player now.
  */
 void chrSetTargetToPlayer(ChrRecord *self)
 {
     self->lastseetarget60 = g_GlobalTimer;
-    chrSetTargetPos(self);
 }
 
 /**
@@ -267,7 +255,6 @@ void chrAlertGuardToPlayerPosition(ChrRecord *self)
 {
     self->hidden |= CHRHIDDEN_ALERT_GUARD_RELATED;
     self->lastheartarget60 = g_GlobalTimer;
-    chrSetTargetPos(self);
 }
 
 /**
