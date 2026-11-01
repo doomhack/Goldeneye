@@ -208,6 +208,17 @@ extern s32 g_ChrUnused;
 extern s32 g_ChrShowPatrols;
 extern s32 g_NextChrNum;
 extern ChrRecord *g_ChrSlots;
+
+/* chrnum is CHRSLOT_EMPTY when the slot holds no chr (no chr can have that number: chrnums
+   are s16 and chrFindByLiteralId is never asked for it) */
+#define CHRSLOT_EMPTY ((s16)0x8000)
+typedef struct ChrSlotHot
+{
+    s16 chrnum;
+    s32 lastseetarget60;
+} ChrSlotHot;
+extern ChrSlotHot *g_ChrSlotHot;
+void chrSlotSync(ChrRecord *chr);
 extern s32 g_NumChrSlots;
 extern rgba_u8 gBloodColour;
 

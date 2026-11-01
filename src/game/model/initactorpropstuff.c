@@ -253,4 +253,6 @@ void initCasingPool(void)
         ptr->header = NULL;
         ptr++;
     }
+
+    g_NumLiveCasings = 0;
 }

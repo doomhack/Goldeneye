@@ -32,6 +32,11 @@
  * Other weapons have their bullet beam capped at 10000 max length, otherwise if the player
  * fires into the void, there may be graphical glitches with the beam.
 */
+/* How many beams are flying (age >= 0), so the props loops can skip the beams when there
+   are none. Counted up when a beam starts, down when beamTick or chrFreeResources ends one; a
+   beam dropped some other way only leaves the count too high, which just costs the skip. */
+s32 g_NumLiveBeams = 0;
+
 void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, coord3d *to)
 {
     f32 dist;
@@ -63,6 +68,11 @@ void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, coord3d *
         {
             dist = 10000.0f;
         }
+    }
+
+    if (beam->age < 0)
+    {
+        g_NumLiveBeams++;
     }
 
     beam->age = 0;
@@ -118,6 +128,7 @@ void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, coord3d *
     {
         // No beam will be rendered
         beam->age = -1;
+        g_NumLiveBeams--;
     }
 }
 
@@ -494,6 +505,7 @@ void beamTick(BeamRecord* beam)
         if (beam->maxdist <= beam->dist)
         {
             beam->age = -1;
+            g_NumLiveBeams--;
             return;
         }
 

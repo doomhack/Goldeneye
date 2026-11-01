@@ -2860,6 +2860,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiSetMyChrNumRecord *ai = (AiSetMyChrNumRecord *)(AiListp + Offset);
                     ChrEntityp->chrnum      = ai->CHR_NUM;
+                    chrSlotSync(ChrEntityp);
                     Offset += sizeof(AiSetMyChrNumRecord);
                     break;
                 }
@@ -3469,6 +3470,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                             if (!chrFindById(ChrEntityp, chrnum))
                             {
                                 clone->chrnum = chrnum;
+                                chrSlotSync(clone);
                             }
                             // chrSetChrnum(clone, getLowestUnusedChrId());
                             // chr->chrdup = clone->chrnum;

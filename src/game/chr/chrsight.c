@@ -246,6 +246,7 @@ bool chrHasLineOfSightToPlayer(ChrRecord *self)
 void chrSetTargetToPlayer(ChrRecord *self)
 {
     self->lastseetarget60 = g_GlobalTimer;
+    chrSlotSync(self);
 }
 
 /**
@@ -399,6 +400,7 @@ static s32 coopChrTrySwitchToCloserPlayer(ChrRecord *self, s32 target)
         }
 
         self->lastseetarget60 = lastsee;
+        chrSlotSync(self);
     }
 
     return target;
@@ -419,6 +421,7 @@ void coopChrShotByCurrentPlayer(ChrRecord *self)
 
     self->targetplayer = player;
     self->lastseetarget60 = 0;
+    chrSlotSync(self);
     self->lastheartarget60 = g_GlobalTimer;
 }
 
@@ -513,6 +516,7 @@ void coopChrSelectTarget(ChrRecord *self)
         // as seen for up to 10 seconds, so guards would know where a respawned player is
         // without looking.
         self->lastseetarget60 = 0;
+        chrSlotSync(self);
         self->lastheartarget60 = 0;
     }
 

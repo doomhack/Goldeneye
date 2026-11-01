@@ -1898,7 +1898,6 @@ void bgChrsTick(void)
 {
     s32 i;
     s32 max;
-    ChrRecord *guard;
 
     max = chrsGetNumSlots();
 
@@ -1911,11 +1910,11 @@ void bgChrsTick(void)
 
     for (i=0; i<max; i++)
     {
-        guard = &g_ChrSlots[i];
+        ChrSlotHot *hot = &g_ChrSlotHot[i];
 
-        if (guard->model != NULL)
+        if (hot->chrnum != CHRSLOT_EMPTY)
         {
-            if ((guard->lastseetarget60 > 0) && (g_GlobalTimer - guard->lastseetarget60 < CHRLV_SEEN_RECENT_CHECK))
+            if ((hot->lastseetarget60 > 0) && (g_GlobalTimer - hot->lastseetarget60 < CHRLV_SEEN_RECENT_CHECK))
             {
                 g_SeenBondRecentlyGuardCount++;
             }

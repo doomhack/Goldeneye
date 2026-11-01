@@ -17,6 +17,10 @@
 
 CasingRecord g_Casings[20];
 
+/* Live entries (header set) in g_Casings, so the tick and render loops can skip an empty
+   pool instead of reading every entry */
+s32 g_NumLiveCasings = 0;
+
 // The casing landing sound; only one plays at a time
 static ALSoundState *g_CasingSfxState;
 
@@ -73,6 +77,11 @@ CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
 
     if (entry < end)
     {
+        if (header != NULL)
+        {
+            g_NumLiveCasings++;
+        }
+
         entry->header = header;
 
         entry->pos.x = mtx->m[3][0];
@@ -319,6 +328,7 @@ void casingTick(CasingRecord* casing)
 
         // This casing is removed and not updated anymore
         casing->header = NULL;
+        g_NumLiveCasings--;
         return;
     }
 
@@ -344,6 +354,11 @@ void casingsTick(void)
 {
     CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
     CasingRecord* entry = g_Casings;
+
+    if (g_NumLiveCasings == 0)
+    {
+        return;
+    }
 
     while (entry < end)
     {
@@ -446,6 +461,11 @@ void casingsRender(Gfx **gdl)
 {
     CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
     CasingRecord* entry = g_Casings;
+
+    if (g_NumLiveCasings == 0)
+    {
+        return;
+    }
 
     while (entry < end)
     {

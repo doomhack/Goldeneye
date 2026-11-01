@@ -77,6 +77,7 @@ PropRecord *g_InteractProp;
  */
 void propsInit(void)
 {
+    g_NumLiveBeams = 0;
     g_AutoAimTolerance = 1.0f;
     g_ActivePropsTail = g_ActivePropsHead = NULL;
     g_OnScreenPropCount = 0;
@@ -712,8 +713,11 @@ void propsTickOnce(void)
 
         if (prop->type == PROP_TYPE_CHR)
         {
-            beamTick(&prop->chr->beams[0]);
-            beamTick(&prop->chr->beams[1]);
+            if (g_NumLiveBeams > 0)
+            {
+                beamTick(&prop->chr->beams[0]);
+                beamTick(&prop->chr->beams[1]);
+            }
         }
         else if (prop->type == PROP_TYPE_OBJ || prop->type == PROP_TYPE_WEAPON || prop->type == PROP_TYPE_DOOR)
         {
@@ -722,7 +726,7 @@ void propsTickOnce(void)
                 objTickRespawn(prop);
             }
 
-            if (prop->obj->type == PROPDEF_AUTOGUN)
+            if (prop->obj->type == PROPDEF_AUTOGUN && g_NumLiveBeams > 0)
             {
                 beamTick(((AutogunRecord *)prop->obj)->beam);
             }
@@ -741,7 +745,7 @@ void propsTickOnce(void)
             beamTick(&g_playerPointers[playerGetIndexForProp(prop)]->hands[1].weapon_beam);
 
             // A player's body (in multiplayer) has beams too
-            if (prop->chr != NULL && getPlayerCount() >= 2)
+            if (prop->chr != NULL && getPlayerCount() >= 2 && g_NumLiveBeams > 0)
             {
                 beamTick(&prop->chr->beams[0]);
                 beamTick(&prop->chr->beams[1]);
@@ -758,6 +762,9 @@ void propsTickOnce(void)
  * first view only) the alarm, gas and countdown timer, proximity mines, AI sounds and
  * the room lists.
  */
+/* No jump table for the switch on the prop type: the one read of the table per prop
+   missed the data cache almost every time, and a few compares cost less. */
+__attribute__((optimize("no-jump-tables")))
 void propsTickPerPlayer(void)
 {
     PropRecord *prop = propsGetActiveTail();
