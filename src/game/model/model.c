@@ -4641,16 +4641,9 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
 
     gSPSetGeometryMode(renderdata->gdl++, G_CULL_BACK);
 
-    {
-        Gfx *gdl;
-        gSPMatrix(renderdata->gdl++, osVirtualToPhysical(mtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
-        gSPVertex(renderdata->gdl++, osVirtualToPhysical(vtx), 4, 0);
-        // gSP2Triangles(gdl, 0, 1, 2, 0, 2, 3, 0, 0) via GE's G_TRI4. The macro
-        // itself can't be used here: its inner Gfx temp would be the block's gfx
-        // pointer local and shift the spill homes off the original layout.
-        gdl = renderdata->gdl++;
-        gdl->words.w0 = _SHIFTL(G_TRI4, 24, 8) | _SHIFTL(2, 0, 4); gdl->words.w1 = _SHIFTL(3, 12, 4) | _SHIFTL(2, 8, 4) | _SHIFTL(1, 4, 4);
-    }
+    gSPMatrix(renderdata->gdl++, osVirtualToPhysical(mtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW);
+    gSPVertex(renderdata->gdl++, osVirtualToPhysical(vtx), 4, 0);
+    gSP2Triangles(renderdata->gdl++, 0, 1, 2, 0, 2, 3, 0, 0);
 }
 
 

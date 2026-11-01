@@ -224,7 +224,6 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode)
     f32 dist_to_start;
     Vtx *vtx;
     f32 dist;
-    Gfx *cmd;
 
     if (flash->age >= 0)
     {
@@ -447,14 +446,7 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode)
 
         gSPClearGeometryMode(gdl++, G_CULL_BACK);
 
-        // gSPMatrix(gdl++, osVirtualToPhysical(mtx), G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH), written out
-        {
-            cmd = gdl++;
-            cmd->words.w0 = _SHIFTL(G_MTX, 24, 8)
-                | _SHIFTL(G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH, 16, 8)
-                | _SHIFTL(sizeof(Mtx), 0, 16);
-            cmd->words.w1 = osVirtualToPhysical(mtx);
-        }
+        gSPMatrix(gdl++, osVirtualToPhysical(mtx), G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
 
         if (flash->weaponnum == ITEM_LASER)
         {

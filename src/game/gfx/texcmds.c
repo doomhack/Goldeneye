@@ -21,6 +21,7 @@
 #include "gbi_extension.h"
 #include "bondconstants.h"
 #include "game/gfx/texcmds.h"
+#include "game/gfx/gfxdl.h"
 #include "game/gfx/texload.h"
 #include "game/world/lightfixture.h"
 #include "game/world/water.h"
@@ -559,12 +560,6 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, struct texpool *pool)
                 *out++ = *in;
                 break;
 
-            case (u8)G_TRI1:
-            case (u8)G_TRI4:
-                drawnSince = true;
-                synced = false;
-                *out++ = *in;
-                break;
 
             case (u8)G_TEXTURE:
                 lastTexture = out;
@@ -573,6 +568,12 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, struct texpool *pool)
                 break;
 
             default:
+                if (gfxIsTris(in))
+                {
+                    drawnSince = true;
+                    synced = false;
+                }
+
                 *out++ = *in;
                 break;
         }

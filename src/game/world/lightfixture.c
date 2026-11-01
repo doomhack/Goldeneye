@@ -69,6 +69,7 @@
 #include <PR/gbi.h>
 #include <gbi_extension.h>
 #include "game/world/roommtx.h"
+#include "game/gfx/gfxdl.h"
 
 s32 lightIsVertexDarkened(Vtx * vertex, s32 room_index);
 
@@ -180,12 +181,12 @@ Vtx *lightFindVertexBaseForTri(Gfx *gfx, s32 room_index)
 {
     Vtx * ret;
 
-    while (gfx->dma.cmd != G_VTX )
-    { 
-        gfx--; 
+    while (!gfxIsVtx(gfx))
+    {
+        gfx--;
     }
 
-    ret = (Vtx *)gfx->dma.addr;
+    ret = (Vtx *)gfxVtxAddr(gfx);
 
     if (((uintptr_t)ret & 0xFF000000) == 0x0E000000)
     {
@@ -198,35 +199,12 @@ Vtx *lightFindVertexBaseForTri(Gfx *gfx, s32 room_index)
 
 void lightGetTriVertexIndices(Gfx* gfx, u32 tri_type, s32* idx1, s32* idx2, s32* idx3)
 {
-    switch (tri_type) 
-    {
-        case 0:
-            *idx1 = (s32) gfx->tri.tri.v[0] / 10;
-            *idx2 = (s32) gfx->tri.tri.v[1] / 10;
-            *idx3 = (s32) gfx->tri.tri.v[2] / 10;
-            break;
-        // unsure of how to cleanly access the below versions
-        case 1:
-            *idx1 = ((u32*)gfx)[1] & 0xF;
-            *idx2 = ((((u8*)gfx)[7]) & 0xFFFFFFFFu) >> 4;
-            *idx3 = ((s32*)gfx)[0] & 0xF;
-            break;
-        case 2:
-            *idx1 = ((u8*)gfx)[6] & 0xF;
-            *idx2 = ((((u16*)gfx)[3]) & 0xFFFFFFFFu) >> 0xC;
-            *idx3 = ((((u8*)gfx)[3]) & 0xFFFFFFFFu) >> 4;
-            break;
-        case 3:
-            *idx1 = ((u16*)gfx)[2] & 0xF;
-            *idx2 = ((((u8*)gfx)[5]) & 0xFFFFFFFFu) >> 4;
-            *idx3 = ((u8*)gfx)[2] & 0xF;
-            break;
-        case 4:
-            *idx1 = ((u8*)gfx)[4] & 0xF;
-            *idx2 = ((u32*)gfx)[1] >> 0x1C;
-            *idx3 = ((((u16*)gfx)[1]) & 0xFFFFFFFFu) >> 0xC;
-            break;
-    }
+    s32 idx[3];
+
+    gfxGetTri(gfx, tri_type, idx);
+    *idx1 = idx[0];
+    *idx2 = idx[1];
+    *idx3 = idx[2];
 }
 
 
@@ -425,8 +403,6 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
     Gfx *fixture_gfx;
     f32 edge_frac;
     s32 j;
-    s8 darken_tri1;
-    s8 darken_tri4;
     s16 diff_y_23;
     s16 diff_y_12;
     s16 diff_x_13;
@@ -543,55 +519,15 @@ void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
          */
         for (fixture_gfx = light_fixture_table[i].ptr_start_pertinent_DL; fixture_gfx < light_fixture_table[i].ptr_end_pertinent_DL; fixture_gfx++)
         {
-            if (fixture_gfx->dma.cmd == G_TRI1)
+            for (j = gfxFirstTri(fixture_gfx); j < gfxFirstTri(fixture_gfx) + gfxTriCount(fixture_gfx); j++)
             {
-                darken_tri1 = 0;
- 
-                lightGetTriVertexCoords(fixture_gfx, 0, light_fixture_table[i].room_index, &cand_vtx1, &cand_vtx2, &cand_vtx3);
- 
-                if (lightIsCoordNearDarkenedVertex(&cand_vtx1, light_fixture_table[i].room_index) != 0)
+                lightGetTriVertexCoords(fixture_gfx, j, light_fixture_table[i].room_index, &cand_vtx1, &cand_vtx2, &cand_vtx3);
+
+                if (lightIsCoordNearDarkenedVertex(&cand_vtx1, light_fixture_table[i].room_index) != 0
+                    || lightIsCoordNearDarkenedVertex(&cand_vtx2, light_fixture_table[i].room_index) != 0
+                    || lightIsCoordNearDarkenedVertex(&cand_vtx3, light_fixture_table[i].room_index) != 0)
                 {
-                    darken_tri1 = 1;
-                }
-                else if (lightIsCoordNearDarkenedVertex(&cand_vtx2, light_fixture_table[i].room_index) != 0)
-                {
-                    darken_tri1 = 1;
-                }
-                else if (lightIsCoordNearDarkenedVertex(&cand_vtx3, light_fixture_table[i].room_index) != 0)
-                {
-                    darken_tri1 = 1;
-                }
- 
-                if (darken_tri1 != 0)
-                {
-                    lightDarkenTri(fixture_gfx, 0, light_fixture_table[i].room_index);
-                }
-            }
-            else if (fixture_gfx->dma.cmd == G_TRI4)
-            {
-                for (j = 0; j < 4; j++)
-                {
-                    darken_tri4 = 0;
- 
-                    lightGetTriVertexCoords(fixture_gfx, j + 1, light_fixture_table[i].room_index, &cand_vtx1, &cand_vtx2, &cand_vtx3);
- 
-                    if (lightIsCoordNearDarkenedVertex(&cand_vtx1, light_fixture_table[i].room_index) != 0)
-                    {
-                        darken_tri4 = 1;
-                    }
-                    else if (lightIsCoordNearDarkenedVertex(&cand_vtx2, light_fixture_table[i].room_index) != 0)
-                    {
-                        darken_tri4 = 1;
-                    }
-                    else if (lightIsCoordNearDarkenedVertex(&cand_vtx3, light_fixture_table[i].room_index) != 0)
-                    {
-                        darken_tri4 = 1;
-                    }
- 
-                    if (darken_tri4 != 0)
-                    {
-                        lightDarkenTri(fixture_gfx, j + 1, light_fixture_table[i].room_index);
-                    }
+                    lightDarkenTri(fixture_gfx, j, light_fixture_table[i].room_index);
                 }
             }
         }
