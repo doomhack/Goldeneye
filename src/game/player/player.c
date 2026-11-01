@@ -77,12 +77,15 @@ void playersResetHandicaps(void)
   g_playerPlayerData[PLAYER_4].handicap = value;
 }
 
+static void playersCount(void);
+
 void playersReset(void)
 {
     g_playerPointers[PLAYER_1] = NULL;
     g_playerPointers[PLAYER_2] = NULL;
     g_playerPointers[PLAYER_3] = NULL;
     g_playerPointers[PLAYER_4] = NULL;
+    playersCount();
     g_CurrentPlayer = NULL;
     g_playerPerm = NULL;
     player_num = PLAYER_1;
@@ -101,6 +104,7 @@ void playersInit(s32 playercount)
     g_playerPointers[PLAYER_2] = NULL;
     g_playerPointers[PLAYER_3] = NULL;
     g_playerPointers[PLAYER_4] = NULL;
+    playersCount();
     random_byte = (s32) (randomGetNext() & 0xFF);
     if (playercount > 0)
     {
@@ -140,16 +144,28 @@ s32 viewIsHalfWidth(void)
     return (getViewCount() >= 3) || coopSplitSideBySide();
 }
 
-s32 getPlayerCount(void)
+/* How many of g_playerPointers are set: kept by playersCount, as it's asked for per prop
+   every frame */
+static s32 s_NumPlayers;
+
+static void playersCount(void)
 {
     s32 count = 0;
-    s32 i;
-    for (i = 0; i < 4; i++) {
-        if (g_playerPointers[i] != NULL) {
+
+    for (s32 i = 0; i < 4; i++)
+    {
+        if (g_playerPointers[i] != NULL)
+        {
             count++;
         }
     }
-    return count;
+
+    s_NumPlayers = count;
+}
+
+s32 getPlayerCount(void)
+{
+    return s_NumPlayers;
 }
 
 /* What each hand holds when a player is created: nothing */
@@ -181,6 +197,7 @@ void playerInit(s32 player_num)
     s32 one;
     default_hand = s_DefaultHand;
     g_playerPointers[player_num] = mempAlloc((sizeof(struct player) + 0xF) & ~0xF, MEMPOOL_STAGE);
+    playersCount();
     g_playerPointers[player_num]->watchGfx = mempAlloc((sizeof(struct PlayerWatchGfx) + 0xF) & ~0xF, MEMPOOL_STAGE);
 
 
