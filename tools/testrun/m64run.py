@@ -150,6 +150,9 @@ def main():
                     help='start counting N frames after the demo starts (or at frame N without --demo)')
     ap.add_argument('--cachesim-frames', type=int, default=600, metavar='N',
                     help='count for N frames, then save the counts and RAM and stop')
+    ap.add_argument('--cachesim-watch', metavar='[*]SYMBOL:SIZE',
+                    help='also count accesses and misses per 4-byte word over SIZE bytes at SYMBOL '
+                         '(or, with *, at the address SYMBOL holds when counting starts); saved to FILE.words')
     ap.add_argument('--stall', type=float, default=20,
                     help='seconds without a new frame before the run counts as hung')
     args = ap.parse_args()
@@ -333,6 +336,12 @@ def main():
                     # would add misses the game itself doesn't have, so they stop here.
                     if args.statelog or args.demo is not None:
                         ram[addr('g_TestHooksEnabled') >> 2] = 0
+                    if args.cachesim_watch:
+                        name, size = args.cachesim_watch.split(':')
+                        where = addr(name.lstrip('*'))
+                        if name.startswith('*'):
+                            where = word(ram, where) & 0x1fffffff
+                        core.cachesim_watch(C.c_uint32(where), C.c_uint32(int(size, 0)))
                     core.cachesim_reset()
                     core.cachesim_enable(1)
                     cs['start'] = frame
@@ -342,6 +351,8 @@ def main():
             core.cachesim_enable(0)
             core.cachesim_dump(os.path.abspath(args.cachesim).encode())
             core.cachesim_dump_blocks((os.path.abspath(args.cachesim) + '.blocks').encode())
+            if args.cachesim_watch:
+                core.cachesim_dump_watch((os.path.abspath(args.cachesim) + '.words').encode())
             open(os.path.abspath(args.cachesim) + '.ram', 'wb').write(
                 C.string_at(core.DebugMemGetPointer(M64P_DBG_PTR_RDRAM), 8 << 20))
             result['cachesim'] = {'vi_frames': args.cachesim_frames, 'start_frame': cs['start'],

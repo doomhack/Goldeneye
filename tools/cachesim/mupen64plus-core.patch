@@ -11,7 +11,7 @@ index b4deb39..464de32 100644
      $(SRCDIR)/device/rcp/ai/ai_controller.c \
      $(SRCDIR)/device/rcp/mi/mi_controller.c \
 diff --git a/src/api/api_export.ver b/src/api/api_export.ver
-index 289adf2..0fd4c9b 100644
+index 289adf2..1cea168 100644
 --- a/src/api/api_export.ver
 +++ b/src/api/api_export.ver
 @@ -48,7 +48,7 @@ DebugDecodeOp;
@@ -19,7 +19,7 @@ index 289adf2..0fd4c9b 100644
  DebugGetState;
  DebugMemGetMemInfo;
 -DebugMemGetPointer;
-+DebugMemGetPointer; cachesim_enable; cachesim_reset; cachesim_dump; cachesim_dump_blocks; cachesim_track_alloc;
++DebugMemGetPointer; cachesim_enable; cachesim_reset; cachesim_dump; cachesim_dump_blocks; cachesim_track_alloc; cachesim_watch; cachesim_dump_watch;
  DebugMemGetRecompInfo;
  DebugMemRead16;
  DebugMemRead32;
@@ -37,10 +37,10 @@ index b46d99a..18c08f7 100644
  // -----------------------------------------------------------
 diff --git a/src/device/r4300/cachesim.c b/src/device/r4300/cachesim.c
 new file mode 100644
-index 0000000..9bc58e2
+index 0000000..e6b319f
 --- /dev/null
 +++ b/src/device/r4300/cachesim.c
-@@ -0,0 +1,151 @@
+@@ -0,0 +1,175 @@
 +/* VR4300 data cache model for GoldenEye cache studies.
 + * 8 KB, direct mapped, 16-byte lines, write-back, write-allocate.
 + * Counts, per physical 16-byte line and per CPU PC, read misses, write misses
@@ -95,6 +95,26 @@ index 0000000..9bc58e2
 +    return 0;
 +}
 +
++/* Optional per-word counts over one address range, to see which struct members are used. */
++static uint32_t watch_start, watch_len, *watch_acc, *watch_miss;
++
++EXPORT void cachesim_watch(uint32_t vaddr, uint32_t len)
++{
++    free(watch_acc); free(watch_miss);
++    watch_start = vaddr & 0x7fffff; watch_len = len;
++    watch_acc = calloc(len / 4 + 1, 4); watch_miss = calloc(len / 4 + 1, 4);
++}
++
++EXPORT int cachesim_dump_watch(const char *path)
++{
++    FILE *f = fopen(path, "wb");
++    if (!f || !watch_acc) { if (f) fclose(f); return -1; }
++    fwrite(&watch_start, 4, 1, f); fwrite(&watch_len, 4, 1, f);
++    fwrite(watch_acc, 4, watch_len / 4 + 1, f); fwrite(watch_miss, 4, watch_len / 4 + 1, f);
++    fclose(f);
++    return 0;
++}
++
 +void cachesim_access(uint32_t vaddr, int write, uint32_t pc)
 +{
 +    if ((vaddr & 0xe0000000) != 0x80000000) return;     /* KSEG0 only */
@@ -103,12 +123,16 @@ index 0000000..9bc58e2
 +    uint32_t idx = line & (NLINES - 1);
 +    uint32_t pcs = (pc & 0x7fffff) >> 2;
 +    tot_acc++; line_acc[line]++;
++    uint32_t woff = paddr - watch_start;
++    int watched = watch_acc && woff < watch_len;
++    if (watched) watch_acc[woff >> 2]++;
 +    if ((pc & 0xe0000000) == 0x80000000) pc_acc[pcs]++;
 +    if (tag[idx] != line + 1) {
 +        if (tag[idx] && dirty[idx]) { tot_wb++; line_wb[tag[idx] - 1]++; }
 +        tag[idx] = line + 1; dirty[idx] = 0;
 +        if (write) { tot_wmiss++; line_wmiss[line]++; } else { tot_rmiss++; line_rmiss[line]++; }
 +        if ((pc & 0xe0000000) == 0x80000000) pc_miss[pcs]++;
++        if (watched) watch_miss[woff >> 2]++;
 +    }
 +    if (write) dirty[idx] = 1;
 +}

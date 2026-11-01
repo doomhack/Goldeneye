@@ -4,7 +4,17 @@
 Usage: cscompare.py BEFORE.json AFTER.json [--top N]
 """
 import argparse
+import collections
 import json
+import re
+
+
+def merged(objects):
+    """Heap blocks are named with their size, which can change between builds; add them up by name."""
+    out = collections.Counter()
+    for name, misses in objects.items():
+        out[re.sub(r' \(\d+ B\)$', '', name)] += misses
+    return out
 
 
 def main():
@@ -24,6 +34,7 @@ def main():
     print(f'per game frame        before      after     change')
     for k in pa:
         print(f'  {k:14} {pa[k]:10.0f} {pb[k]:10.0f} {100 * (pb[k] - pa[k]) / max(pa[k], 1):+9.1f}%')
+    a['objects'], b['objects'] = merged(a['objects']), merged(b['objects'])
     names = set(a['objects']) | set(b['objects'])
     rows = sorted(((b['objects'].get(n, 0) / fb - a['objects'].get(n, 0) / fa, n) for n in names))
     print(f'\nBiggest changes in misses per game frame (before -> after):')

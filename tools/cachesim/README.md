@@ -46,3 +46,14 @@ plugin (the game doesn't produce frames without one).
 blocks) and FILE.json (game frames counted) are saved and the run stops. The state
 checksums are switched off while counting, because they walk every prop, guard and player
 each frame and would add misses the game doesn't have.
+
+## Which members of a struct are used
+
+`--watch [*]SYMBOL:SIZE` on csdemos.py (or `--cachesim-watch` on m64run.py) also counts
+accesses and misses for each 4-byte word of one struct instance: SIZE bytes at SYMBOL, or with
+`*` at the address SYMBOL holds when counting starts. Then
+
+    tools/cachesim/cswords.py build/u/ge007.u.elf player /tmp/cs/pw/demo*.cs
+
+lists each member's accesses and misses per game frame, and each 16-byte line's totals. For
+example `--watch '*g_playerPointers:4728'` watches player 1's struct player.
