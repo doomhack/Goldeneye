@@ -351,6 +351,8 @@ def main():
             core.cachesim_enable(0)
             core.cachesim_dump(os.path.abspath(args.cachesim).encode())
             core.cachesim_dump_blocks((os.path.abspath(args.cachesim) + '.blocks').encode())
+            if hasattr(core, 'cachesim_dump_usage'):
+                core.cachesim_dump_usage((os.path.abspath(args.cachesim) + '.usage').encode())
             if args.cachesim_watch:
                 core.cachesim_dump_watch((os.path.abspath(args.cachesim) + '.words').encode())
             open(os.path.abspath(args.cachesim) + '.ram', 'wb').write(
