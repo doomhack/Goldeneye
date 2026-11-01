@@ -46,10 +46,8 @@ struct Explosion {
     s8 explosion_type;         /* EXPLOSION_DEF */
     s8 makeScorch;
     s8 player;                 /* who set it off, for kill credit */
-    s8 unk3CF;
     coord3d pos;               /* where the scorch mark goes */
     s16 room;
-    s16 unk3DE;
 };
 
 extern f32 g_SpExplosionDamageMult;

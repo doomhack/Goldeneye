@@ -28,6 +28,7 @@ extern Gfx globalDL_0xa50 NO_SDATA;
 
 static s32 s_MaxDebris;
 static struct Debris *s_Debris;
+static s32 s_NumActiveDebris; // chips with age > 0, so the per-frame passes can skip an empty pool
 static s32 s_NextDebris = 0;
 
 /* A random corner offset: 0.75 to 1.5 times size */
@@ -49,6 +50,11 @@ void debrisCreate(coord3d *pos, f32 scatter, f32 hvel, f32 vvel, f32 size)
     s16 u;
     s16 v;
     s32 i;
+
+    if (debris->age <= 0)
+    {
+        s_NumActiveDebris++;
+    }
 
     debris->age = 1;
 
@@ -135,6 +141,11 @@ void debrisTick(void)
     s32 i;
     s32 j;
 
+    if (s_NumActiveDebris == 0)
+    {
+        return;
+    }
+
     for (i = 0; i < s_MaxDebris; i++)
     {
         struct Debris *debris = &s_Debris[i];
@@ -172,6 +183,11 @@ void debrisTick(void)
         {
             debris->age = 0;
         }
+
+        if (debris->age == 0)
+        {
+            s_NumActiveDebris--;
+        }
     }
 }
 
@@ -182,13 +198,15 @@ Gfx *debrisRender(Gfx *gdl)
 {
     Mtxf mtx;
     s32 i;
+    // With no debris out there's nothing to find, so skip walking the whole pool.
+    s32 count = s_NumActiveDebris != 0 ? s_MaxDebris : 0;
 
     gSPClearGeometryMode(gdl++, G_CULL_BOTH);
     gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(g_ImageBank));
     gSPDisplayList(gdl++, &globalDL_0xa50);
     gDPSetRenderMode(gdl++, G_RM_AA_ZB_XLU_SURF, G_RM_AA_ZB_XLU_SURF2);
 
-    for (i = 0; i < s_MaxDebris; i++)
+    for (i = 0; i < count; i++)
     {
         struct Debris *debris = &s_Debris[i];
 
@@ -225,6 +243,7 @@ void debrisInit(void)
     s32 i;
 
     s_NextDebris = 0;
+    s_NumActiveDebris = 0;
     s_MaxDebris = DEBRIS_MAX / getPlayerCount();
 
     if (lvGetCurrentStage() == LEVELID_STREETS || lvGetCurrentStage() == LEVELID_DEPOT)
