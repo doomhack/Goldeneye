@@ -91,9 +91,16 @@ bool geoSegmentsCross(f32 ax, f32 az, f32 bx, f32 bz, f32 cx, f32 cz, f32 dx, f3
 {
     s32 limit = touching ? 1 : 0;
     s32 sidesOfCD = turnSign(bx - ax, bz - az, cx - ax, cz - az) * turnSign(bx - ax, bz - az, dx - ax, dz - az);
+
+    // Most edges tested are nowhere near the line: stop before the second pair of tests
+    if (sidesOfCD >= limit)
+    {
+        return FALSE;
+    }
+
     s32 sidesOfAB = turnSign(dx - cx, dz - cz, ax - cx, az - cz) * turnSign(dx - cx, dz - cz, bx - cx, bz - cz);
 
-    return sidesOfCD < limit && sidesOfAB < limit;
+    return sidesOfAB < limit;
 }
 
 bool geoSegmentsIntersect(f32 ax, f32 az, f32 bx, f32 bz, f32 cx, f32 cz, f32 dx, f32 dz)

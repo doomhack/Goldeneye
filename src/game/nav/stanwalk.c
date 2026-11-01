@@ -232,6 +232,29 @@ s32 stanGetRoomsBetween(StandTile *tile, f32 x, f32 z, StandTile **destTile, f32
 }
 
 /**
+ * Whether a polygon lies wholly to one side of the box around the line from (x, z) to
+ * (destX, destZ), so none of its edges can meet the line. Cheaper than testing each edge.
+ */
+static bool polygonOutsideLineBox(const coord2d *polygon, s32 numEdges, f32 x, f32 z, f32 destX, f32 destZ)
+{
+    f32 lineMinX = x < destX ? x : destX;
+    f32 lineMaxX = x < destX ? destX : x;
+    f32 lineMinZ = z < destZ ? z : destZ;
+    f32 lineMaxZ = z < destZ ? destZ : z;
+    bool left = TRUE, right = TRUE, below = TRUE, above = TRUE;
+
+    for (s32 i = 0; i < numEdges; i++)
+    {
+        left &= polygon[i].f[0] < lineMinX;
+        right &= polygon[i].f[0] > lineMaxX;
+        below &= polygon[i].f[1] < lineMinZ;
+        above &= polygon[i].f[1] > lineMaxZ;
+    }
+
+    return left || right || below || above;
+}
+
+/**
  * Whether the line from (x, z) to (destX, destZ) is clear of walls and of props of the
  * collision types cdtypes. *tile starts as the tile at (x, z) and ends as the last tile the
  * line reaches before any hit; g_StanHit.frac is how far along the line that is.
@@ -295,6 +318,11 @@ bool stanTestLineUnobstructed(StandTile **tilePtr, f32 x, f32 z, f32 destX, f32 
             }
 
             propGetCollisionPolygon(prop, &polygon, &numEdges, &propTop, &propBottom);
+
+            if (numEdges == 0 || polygonOutsideLineBox(polygon, numEdges, x, z, destX, destZ))
+            {
+                continue;
+            }
 
             for (i = 0; i < numEdges; i++)
             {
@@ -418,6 +446,11 @@ PropRecord *stanLineFindDoor(StandTile *tile, f32 x, f32 z, f32 destX, f32 destZ
         }
 
         propGetCollisionPolygon2d(prop, &polygon, &numEdges);
+
+        if (numEdges == 0 || polygonOutsideLineBox(polygon, numEdges, x, z, destX, destZ))
+        {
+            continue;
+        }
 
         for (i = 0; i < numEdges; i++)
         {
