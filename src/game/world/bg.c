@@ -38,6 +38,7 @@
 #include "game/gfx/texcmds.h"
 #include "game/math/line_tri_intersect.h"
 #include "game/world/lightfixture.h"
+#include "game/gfx/gfxdl.h"
 #include "mema.h"
 
 s32 bgGetPortalIndex(s32 portalID);
@@ -2314,9 +2315,9 @@ void bgBuildRoomVtxBounds(s32 roomID)
     cmdindex = 0;
     numpoints = 0;
 
-    while (gdl[cmdindex].dma.cmd != G_ENDDL)
+    while (!gfxIsEnd(&gdl[cmdindex]))
     {
-        if (gdl[cmdindex].dma.cmd == G_VTX) 
+        if (gfxIsVtx(&gdl[cmdindex]))
         {
             numpoints++;
         }
@@ -2337,9 +2338,9 @@ void bgBuildRoomVtxBounds(s32 roomID)
     numpoints = 0;
     cmdindex = 0;
 
-    while (gdl[cmdindex].dma.cmd != G_ENDDL)
+    while (!gfxIsEnd(&gdl[cmdindex]))
     {
-        if (gdl[cmdindex].dma.cmd == G_VTX)
+        if (gfxIsVtx(&gdl[cmdindex]))
         {
 
             points[numpoints].gdlindex = cmdindex;
@@ -2350,9 +2351,9 @@ void bgBuildRoomVtxBounds(s32 roomID)
                 points[numpoints].max[i] = -0x8000;
             }
 
-            numvertices = ((gdl[cmdindex].dma.par >> 4) & 0xf) + 1;
+            numvertices = gfxVtxCount(&gdl[cmdindex]);
 
-            vtx = (Vtx *)(SEGMENT_OFFSET(gdl[cmdindex].dma.addr) + (u32)vertices);
+            vtx = (Vtx *)(SEGMENT_OFFSET(gfxVtxAddr(&gdl[cmdindex])) + (u32)vertices);
 
             for (i = 0; i < numvertices; i++)
             {
@@ -2578,320 +2579,93 @@ bool bgTestRayIntersectsBbox(coord3d *origin, coord3d *dir, s32 *bbox_min, s32 *
 }
 
 
+/**
+ * Tests a ray against the triangles drawn after one of a room's vertex loads (`point`),
+ * and fills in the nearest hit. Returns whether there was one.
+ */
 bool bgTestRayIntersectionInRoom(coord3d *from, coord3d *to, coord3d *dir, RoomVtxBatchBounds *point, s32 roomnum, struct HitThing *hitthing)
 {
-    Vertex *vtxbase;
-    Vertex *v;
+    s_room_info *roominfo = &g_BgRoomInfo[roomnum];
+    Gfx *start = (Gfx *)roominfo->ptr_expanded_mapping_info;
+    Gfx *gdl = &start[point->gdlindex];
+    s32 vtxoff = gfxVtxFirst(gdl);
+    Vertex *vtxbase = (Vertex *)((uintptr_t)roominfo->vertices + (gfxVtxAddr(gdl) & 0x00ffffff));
+    s32 bestScore = 0x7FFFFFFF;
+    bool found = FALSE;
 
-    union {
-        s32 word;
-        Vertex *vertices;
-        s_room_info *roominfo;
-    } temp;
-
-    s32 op;
-    s32 found;
-    Gfx *gdl;
-    HitThing hitbuf;
-    Gfx *tcmd;
-    s32 bestScore;
-    s32 idx[3];
-    s32 vtxoff;
-    BoundVec bboxMin;
-    BoundVec bboxMax;
-    s32 i;
-    s32 s2;
-    s32 texnum;
-    s32 dx;
-    s32 dy;
-    s32 dz;
-    s32 dist;
-    s32 idx2[3];
-    s32 score;
-    BoundVec bboxMin2;
-    BoundVec bboxMax2;
-
-    struct {
-        s32 unused;
-        s_room_info *roominfo;
-        s32 padding[6];
-    } local;
-
-    gdl = (Gfx *) g_BgRoomInfo[roomnum].ptr_expanded_mapping_info;
-    gdl = &gdl[point->gdlindex];
-    vtxoff = ((u8 *) gdl)[1] & 0xf;
-    temp.vertices = (Vertex *)g_BgRoomInfo[roomnum].vertices;
-    vtxbase = (Vertex *)((s32)temp.vertices + (((u32 *)gdl)[1] & 0x00ffffff));
-    temp.roominfo = &g_BgRoomInfo[roomnum];
-    bestScore = 0x7FFFFFFF;
-    found = 0;
-    gdl++;
-    op = *((s8 *) gdl);
-
-    if ((op != G_VTX) && (op != ((s8) G_ENDDL)))
+    for (gdl++; !gfxIsVtx(gdl) && !gfxIsEnd(gdl); gdl++)
     {
-        local.roominfo = temp.roominfo;
+        s32 first = gfxFirstTri(gdl);
+        s32 last = first + gfxTriCount(gdl);
 
-        do
+        for (s32 tri = first; tri < last; tri++)
         {
-            if (op == ((s8) G_TRI1))
+            BoundVec bboxMin = {0x7FFF, 0x7FFF, 0x7FFF};
+            BoundVec bboxMax = {-0x8000, -0x8000, -0x8000};
+            HitThing hitbuf;
+            s32 idx[3];
+
+            gfxGetTri(gdl, tri, idx);
+
+            for (s32 i = 0; i < 3; i++)
             {
-                bboxMin = (BoundVec){0x7FFF, 0x7FFF, 0x7FFF};
-                bboxMax = (BoundVec){-0x8000, -0x8000, -0x8000};
-                score = dist;
-                idx[0] = (((u8 *) gdl)[5] / 10) - vtxoff;
-                idx[1] = (((u8 *) gdl)[6] / 10) - vtxoff;
-                idx[2] = (((u8 *) gdl)[7] / 10) - vtxoff;
-                i = 0;
-                
-                do
-                {
-                    v = vtxbase;
-                    v += idx[i];
+                Vertex *v;
 
-                    if (v->coord.x < bboxMin.x)
-                    {
-                        bboxMin.x = v->coord.x;
-                    }
-                    if (bboxMax.x < v->coord.x)
-                    {
-                        bboxMax.x = v->coord.x;
-                    }
-                    if (v->coord.y < bboxMin.y)
-                    {
-                        bboxMin.y = v->coord.y;
-                    }
-                    if (bboxMax.y < v->coord.y)
-                    {
-                        bboxMax.y = v->coord.y;
-                    }
+                idx[i] -= vtxoff;
+                v = &vtxbase[idx[i]];
 
-
-                    if (v->coord.z < bboxMin.z)
-                    {
-                        bboxMin.z = v->coord.z;
-                    }
-                    if (bboxMax.z < v->coord.z)
-                    {
-                        bboxMax.z = v->coord.z;
-                    }
-                    i++;
-                } 
-                while (i < 3);
-
-                bboxMin.x += (s32) g_BgRoomFiles[roomnum].pos.x;
-                bboxMin.y += (s32) g_BgRoomFiles[roomnum].pos.y;
-                bboxMin.z += (s32) g_BgRoomFiles[roomnum].pos.z;
-                bboxMax.x += (s32) g_BgRoomFiles[roomnum].pos.x;
-                bboxMax.y += (s32) g_BgRoomFiles[roomnum].pos.y;
-                bboxMax.z += (s32) g_BgRoomFiles[roomnum].pos.z;
-
-                if (bgTestRayIntersectsBbox(from, dir, (s32 *) (&bboxMin), (s32 *) (&bboxMax)))
-                {
-                    if (intersectRayTriangle(&vtxbase[idx[0]].coord, &vtxbase[idx[1]].coord, &vtxbase[idx[2]].coord, &g_BgRoomFiles[roomnum].pos, from, to, dir, &hitbuf.hitpos, &hitbuf.normal))
-                    {
-                        tcmd = gdl;
-                        dx = ((s32) hitbuf.hitpos.x) - ((s32) from->x);
-                        dy = ((s32) hitbuf.hitpos.y) - ((s32) from->y);
-                        dz = ((s32) hitbuf.hitpos.z) - ((s32) from->z);
-                        dist = ((dx * dx) + (dy * dy)) + (dz * dz);
-                        score = dist;
-                        found = 1;
-
-                        if (((*((u8 *) gdl)) != G_SETTIMG) && (dist || vtxbase || 1) && (((Gfx *) local.roominfo->ptr_expanded_mapping_info) < gdl))
-                        {
-                            do
-                            {
-                                tcmd--;
-                                if ((*((u8 *) tcmd)) == G_SETTIMG)
-                                {
-                                    break;
-                                }
-                            }
-                            while (((Gfx *) local.roominfo->ptr_expanded_mapping_info) < tcmd);
-                        }
-
-                        if (tcmd == ((Gfx *) local.roominfo->ptr_expanded_mapping_info))
-                        {
-                            texnum = -1;
-                        }
-                        else
-                        {
-                            temp.word = ((u32 *) tcmd)[1] - 8;
-                            texnum = *((u16 *) (temp.word | 0x80000000));
-                        }
-
-                        if (lightIsLightTexture(texnum))
-                        {
-                            score = dist - 4;
-                        }
-
-
-                        // Texture 0x4FD is used for the light shafts that come through windows in Archives.
-                        if ((score < bestScore) && (texnum != 0x4FD))
-                        {
-                            bestScore = score;
-                            hitthing->hitpos.x = hitbuf.hitpos.x;
-                            hitthing->hitpos.y = hitbuf.hitpos.y;
-                            hitthing->hitpos.z = hitbuf.hitpos.z;
-                            hitthing->normal.x = hitbuf.normal.x;
-                            hitthing->normal.y = hitbuf.normal.y;
-                            hitthing->normal.z = hitbuf.normal.z;
-                            hitthing->vtx0 = &vtxbase[idx[0]];
-                            hitthing->vtx1 = &vtxbase[idx[1]];
-                            hitthing->vtx2 = &vtxbase[idx[2]];
-                            hitthing->texturenum = texnum;
-                            hitthing->tricmd = gdl;
-                            hitthing->triNum = 0;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (op == ((s8) G_TRI4))
-                {
-                    // Keep this line as-is for matching.
-                    s2 = 0; do
-                    {
-                        bboxMin2 = (BoundVec){0x7FFF, 0x7FFF, 0x7FFF};
-                        bboxMax2 = (BoundVec){-0x8000, -0x8000, -0x8000};
-
-                        if (s2 == 0)
-                        {
-                            idx2[0] = (((u32 *) gdl)[1] & 0xf) - vtxoff;
-                            idx2[1] = (((u32) ((u8 *) gdl)[7]) >> 4) - vtxoff;
-                            idx2[2] = (((u32 *) gdl)[0] & 0xf) - vtxoff;
-                        }
-                        else if (s2 == 1)
-                        {
-                            idx2[0] = (((u8 *) gdl)[6] & 0xf) - vtxoff;
-                            idx2[1] = (((u32) ((u16 *) gdl)[3]) >> 12) - vtxoff;
-                            idx2[2] = (((u32) ((u8 *) gdl)[3]) >> 4) - vtxoff;
-                        }
-                        else if (s2 == 2)
-                        {
-                            idx2[0] = (((u16 *) gdl)[2] & 0xf) - vtxoff;
-                            idx2[1] = (((u32) ((u8 *) gdl)[5]) >> 4) - vtxoff;
-                            idx2[2] = (((u8 *) gdl)[2] & 0xf) - vtxoff;
-                        }
-                        else
-                        {
-                            idx2[0] = (((u8 *) gdl)[4] & 0xf) - vtxoff;
-                            idx2[1] = (((u32 *) gdl)[1] >> 28) - vtxoff;
-                            idx2[2] = (((u32) ((u16 *) gdl)[1]) >> 12) - vtxoff;
-                        }
-
-                        i = 0;
-
-                        do
-                        {
-                            v = vtxbase;
-                            v += idx2[i];
-                            if (v->coord.x < bboxMin2.x)
-                            {
-                                bboxMin2.x = v->coord.x;
-                            }
-                            if (bboxMax2.x < v->coord.x)
-                            {
-                                bboxMax2.x = v->coord.x;
-                            }
-                            if (v->coord.y < bboxMin2.y)
-                            {
-                                bboxMin2.y = v->coord.y;
-                            }
-                            if (bboxMax2.y < v->coord.y)
-                            {
-                                bboxMax2.y = v->coord.y;
-                            }
-                            if (v->coord.z < bboxMin2.z)
-                            {
-                                bboxMin2.z = v->coord.z;
-                            }
-                            if (bboxMax2.z < v->coord.z)
-                            {
-                                bboxMax2.z = v->coord.z;
-                            }
-                            i++;
-                        } 
-                        while (i < 3);
-                        
-                        bboxMin2.x += (s32) g_BgRoomFiles[roomnum].pos.x;
-                        bboxMin2.y += (s32) g_BgRoomFiles[roomnum].pos.y;
-                        bboxMin2.z += (s32) g_BgRoomFiles[roomnum].pos.z;
-                        bboxMax2.x += (s32) g_BgRoomFiles[roomnum].pos.x;
-                        bboxMax2.y += (s32) g_BgRoomFiles[roomnum].pos.y;
-                        bboxMax2.z += (s32) g_BgRoomFiles[roomnum].pos.z;
-
-                        if (bgTestRayIntersectsBbox(from, dir, (s32 *) (&bboxMin2), (s32 *) (&bboxMax2)))
-                        {
-                            if (intersectRayTriangle(&vtxbase[idx2[0]].coord, &vtxbase[idx2[1]].coord, &vtxbase[idx2[2]].coord, &g_BgRoomFiles[roomnum].pos, from, to, dir, &hitbuf.hitpos, &hitbuf.normal))
-                            {
-                                tcmd = gdl;
-                                dx = ((s32) hitbuf.hitpos.x) - ((s32) from->x);
-                                dy = ((s32) hitbuf.hitpos.y) - ((s32) from->y);
-                                dz = ((s32) hitbuf.hitpos.z) - ((s32) from->z);
-                                dist = ((dx * dx) + (dy * dy)) + (dz * dz);
-                                score = dist;
-                                found = 1;
-
-                                if (((*((u8 *) gdl)) != G_SETTIMG) && (dist || vtxbase || 1) && (((Gfx *) local.roominfo->ptr_expanded_mapping_info) < gdl))
-                                {
-                                    do
-                                    {
-                                        tcmd--;
-                                        if ((*((u8 *) tcmd)) == G_SETTIMG)
-                                        {
-                                            break;
-                                        }
-                                    }
-                                    while (((Gfx *) local.roominfo->ptr_expanded_mapping_info) < tcmd);
-                                }
-                                
-                                if (tcmd == ((Gfx *) local.roominfo->ptr_expanded_mapping_info))
-                                {
-                                    texnum = -1;
-                                }
-                                else
-                                {
-                                    temp.word = ((u32 *) tcmd)[1] - 8;
-                                    texnum = *((u16 *) (temp.word | 0x80000000));
-                                }
-
-                                if (lightIsLightTexture(texnum))
-                                {
-                                    score = dist - 4;
-                                }
-
-
-                                if ((score < bestScore) && (texnum != 0x4FD))
-                                {
-                                    bestScore = score;
-                                    hitthing->hitpos.x = hitbuf.hitpos.x;
-                                    hitthing->hitpos.y = hitbuf.hitpos.y;
-                                    hitthing->hitpos.z = hitbuf.hitpos.z;
-                                    hitthing->normal.x = hitbuf.normal.x;
-                                    hitthing->normal.y = hitbuf.normal.y;
-                                    hitthing->normal.z = hitbuf.normal.z;
-                                    hitthing->vtx0 = &vtxbase[idx2[0]];
-                                    hitthing->vtx1 = &vtxbase[idx2[1]];
-                                    hitthing->vtx2 = &vtxbase[idx2[2]];
-                                    hitthing->texturenum = texnum;
-                                    hitthing->tricmd = gdl;
-                                    hitthing->triNum = s2 + 1;
-                                }
-                            }
-                        }
-                        s2++;
-                    }
-                    while (s2 != 4);
-                }
+                if (v->coord.x < bboxMin.x) bboxMin.x = v->coord.x;
+                if (bboxMax.x < v->coord.x) bboxMax.x = v->coord.x;
+                if (v->coord.y < bboxMin.y) bboxMin.y = v->coord.y;
+                if (bboxMax.y < v->coord.y) bboxMax.y = v->coord.y;
+                if (v->coord.z < bboxMin.z) bboxMin.z = v->coord.z;
+                if (bboxMax.z < v->coord.z) bboxMax.z = v->coord.z;
             }
 
-            gdl++;
-            op = *((s8 *) gdl);
+            bboxMin.x += (s32) g_BgRoomFiles[roomnum].pos.x;
+            bboxMin.y += (s32) g_BgRoomFiles[roomnum].pos.y;
+            bboxMin.z += (s32) g_BgRoomFiles[roomnum].pos.z;
+            bboxMax.x += (s32) g_BgRoomFiles[roomnum].pos.x;
+            bboxMax.y += (s32) g_BgRoomFiles[roomnum].pos.y;
+            bboxMax.z += (s32) g_BgRoomFiles[roomnum].pos.z;
+
+            if (bgTestRayIntersectsBbox(from, dir, (s32 *) (&bboxMin), (s32 *) (&bboxMax))
+                && intersectRayTriangle(&vtxbase[idx[0]].coord, &vtxbase[idx[1]].coord, &vtxbase[idx[2]].coord, &g_BgRoomFiles[roomnum].pos, from, to, dir, &hitbuf.hitpos, &hitbuf.normal))
+            {
+                s32 dx = ((s32) hitbuf.hitpos.x) - ((s32) from->x);
+                s32 dy = ((s32) hitbuf.hitpos.y) - ((s32) from->y);
+                s32 dz = ((s32) hitbuf.hitpos.z) - ((s32) from->z);
+                s32 dist = ((dx * dx) + (dy * dy)) + (dz * dz);
+                s32 score = dist;
+                s32 texnum = gfxFindTextureNum(gdl, start);
+
+                found = TRUE;
+
+                // Prefer light fixtures, so they break when shot
+                if (lightIsLightTexture(texnum))
+                {
+                    score = dist - 4;
+                }
+
+                // Texture 0x4FD is used for the light shafts that come through windows in Archives.
+                if ((score < bestScore) && (texnum != 0x4FD))
+                {
+                    bestScore = score;
+                    hitthing->hitpos.x = hitbuf.hitpos.x;
+                    hitthing->hitpos.y = hitbuf.hitpos.y;
+                    hitthing->hitpos.z = hitbuf.hitpos.z;
+                    hitthing->normal.x = hitbuf.normal.x;
+                    hitthing->normal.y = hitbuf.normal.y;
+                    hitthing->normal.z = hitbuf.normal.z;
+                    hitthing->vtx0 = &vtxbase[idx[0]];
+                    hitthing->vtx1 = &vtxbase[idx[1]];
+                    hitthing->vtx2 = &vtxbase[idx[2]];
+                    hitthing->texturenum = texnum;
+                    hitthing->tricmd = gdl;
+                    hitthing->triNum = tri;
+                }
+            }
         }
-        while ((op != G_VTX) && (op != ((s8) G_ENDDL)));
     }
 
     return found;
@@ -4660,7 +4434,7 @@ void bgApplyDynamicCCRMLUT(Gfx *start, Gfx *end, enum CCRMLUT lutIndex)
     curGfx = start;
 
     /* Loop until end pointer or sentinel G_ENDDL (when end==NULL) */
-    while (((end != NULL) && (curGfx < end)) || ((end == NULL) && (((s8*)curGfx)[0] != (s8)G_ENDDL)))
+    while (((end != NULL) && (curGfx < end)) || ((end == NULL) && !gfxIsEnd(curGfx)))
     {
         for (lutPair = ptrDynamic_CC_RM_LUT[(s32)lutIndex]; lutPair->words.w0 != 0; lutPair += 2)
         {

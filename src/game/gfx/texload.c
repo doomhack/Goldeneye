@@ -20,6 +20,7 @@
 #include <memp.h>
 #include "game/player/player.h"
 #include "game/level/gamemode.h"
+#include "game/gfx/gfxdl.h"
 
 struct texpool g_TexSharedPool;
 
@@ -344,11 +345,11 @@ void texLoadFromModelFileHeader(ModelFileHeader *header, struct texpool *pool)
 /** Loads the textures a display list names with G_SETTIMG 0xabcdNNNN */
 void texLoadFromDisplayList(Gfx *gdl, struct texpool *pool)
 {
-    for (u8 *cmd = (u8 *)gdl; cmd[0] != (u8)G_ENDDL; cmd += 8)
+    for (Gfx *cmd = gdl; !gfxIsEnd(cmd); cmd++)
     {
-        if (cmd[0] == G_SETTIMG && cmd[4] == 0xab && cmd[5] == 0xcd)
+        if ((gfxOp(cmd) == G_SETTIMG) && ((cmd->words.w1 >> 16) == 0xabcd))
         {
-            texLoad((u32 *)(cmd + 4), pool);
+            texLoad(&cmd->words.w1, pool);
         }
     }
 }

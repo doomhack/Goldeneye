@@ -406,13 +406,7 @@ Gfx *watchRenderQuad(Gfx *gdl, struct WatchVertex *vtx)
 {
     gSPVertex(gdl++, OS_K0_TO_PHYSICAL(vtx), 4, 0);
 
-    // gfxdis can't parse this, but maybe?: gSPModifyVertex(gdl++, 16, 0, 0x2110);
-    // manual specification:
-    {								\
-        Gfx *_g = (Gfx *)(gdl++);		\
-        _g->words.w0 = 0xB1000032;	\
-        _g->words.w1 = 0x2110;		\
-    }
+    gSP2Triangles(gdl++, 0, 1, 2, 0, 1, 2, 3, 0);
 
     return gdl;
 }

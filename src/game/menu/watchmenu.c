@@ -2973,7 +2973,6 @@ Gfx *watchMenuRenderController(Gfx *gdl)
     WatchContButtonPositions table1;
     WatchContButtonPositions table2;
     Gfx *cmd0;
-    Gfx *cmd1;
 
     perspmtx = dynAllocateMatrix();
     pos = g_ControllerPos;
@@ -3069,15 +3068,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
 
         guPerspective(perspmtx, &perspNorm, WATCH_PERSPECTIVE_FOVY, WATCH_PERSPECTIVE_ASPECT, 1000.0f, 3000.0f, 1.0f);
 
-        /**
-         * This should be something like:
-         * 
-         *   cmd1 = gdl++;
-         *   gSPMatrix(cmd1, osVirtualToPhysical(perspmtx),G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
-         * 
-         * but it doesn't match for some reason.
-         */
-        cmd1 = gdl++; cmd1->words.w0 = 0x01030040; cmd1->words.w1 = osVirtualToPhysical(perspmtx);
+        gSPMatrix(gdl++, osVirtualToPhysical(perspmtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
         gdl = watchMenuSetupDraw(gdl);
         green = g_WatchBackgroundGreen;

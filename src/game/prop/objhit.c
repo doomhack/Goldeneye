@@ -7,6 +7,7 @@
 #include <ultra64.h>
 #include <bondgame.h>
 #include <gbi_extension.h>
+#include "game/gfx/gfxdl.h"
 #include "game/prop/objhit.h"
 #include "game/prop/objdamage.h"
 #include "game/prop/propobj.h"
@@ -87,29 +88,7 @@ static bool objTestTriangle(coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir,
     f32 dy = (f32) ((s32) hit.hitpos.y - (s32) rayStart->y);
     f32 dz = (f32) ((s32) hit.hitpos.z - (s32) rayStart->z);
 
-    // The texture: from the last G_SETTIMG before the triangle (its number is stored just
-    // before the pixels)
-    Gfx *settimg = tricmd;
-    s32 texnum;
-
-    if (*(u8 *) tricmd != G_SETTIMG && cmdStart < tricmd)
-    {
-        do
-        {
-            settimg--;
-        } while (*(u8 *) settimg != G_SETTIMG && cmdStart < settimg);
-    }
-
-    if (settimg == cmdStart)
-    {
-        texnum = -1;
-    }
-    else
-    {
-        u32 addr = ((u32 *) settimg)[1] - 8;
-
-        texnum = *(u16 *) (addr | 0x80000000);
-    }
+    s32 texnum = gfxFindTextureNum(tricmd, cmdStart);
 
     f32 distSq = ((dx * dx) + (dy * dy)) + (dz * dz);
 
@@ -144,11 +123,7 @@ static bool objTestDisplayList(coord3d *rayStart, coord3d *rayEnd, coord3d *rayD
 
     while (TRUE)
     {
-        s32 op = *(s8 *) gdl;
-        u32 w0 = ((u32 *) gdl)[0];
-        u32 w1 = ((u32 *) gdl)[1];
-
-        if (op == (s8) G_ENDDL)
+        if (gfxIsEnd(gdl))
         {
             if (gdl2 == NULL)
             {
@@ -160,36 +135,23 @@ static bool objTestDisplayList(coord3d *rayStart, coord3d *rayEnd, coord3d *rayD
             continue;
         }
 
-        if (op == G_VTX)
+        if (gfxIsVtx(gdl))
         {
-            // The vertices are loaded from w1's offset into the buffer at the index in w0
-            s32 first = ((u8 *) gdl)[1] & 0xf;
-
-            vtxbase = (Vertex *) (((uintptr_t) vertices + (w1 & 0x00ffffff)) - (first << 4));
+            // The vertices are loaded from the address's offset into the buffer at the first index
+            vtxbase = (Vertex *) (((uintptr_t) vertices + (gfxVtxAddr(gdl) & 0x00ffffff)) - (gfxVtxFirst(gdl) << 4));
             gdl++;
             continue;
         }
 
-        if (op == (s8) G_TRI1)
+        for (s32 tri = gfxFirstTri(gdl); tri < gfxFirstTri(gdl) + gfxTriCount(gdl); tri++)
         {
-            s32 idx[3] = {((w1 >> 16) & 0xff) / 10, ((w1 >> 8) & 0xff) / 10, (w1 & 0xff) / 10};
+            s32 idx[3];
 
-            if (objTestTriangle(rayStart, rayEnd, rayDir, vtxbase, idx, gdl, 0, cmdStart, &bestDistSq, hitthing))
+            gfxGetTri(gdl, tri, idx);
+
+            if (objTestTriangle(rayStart, rayEnd, rayDir, vtxbase, idx, gdl, tri, cmdStart, &bestDistSq, hitthing))
             {
                 found = TRUE;
-            }
-        }
-        else if (op == (s8) G_TRI4)
-        {
-            // Four triangles, a nibble per vertex index
-            for (s32 t = 0; t < 4; t++)
-            {
-                s32 idx[3] = {(w1 >> (8 * t)) & 0xf, (w1 >> (8 * t + 4)) & 0xf, (w0 >> (4 * t)) & 0xf};
-
-                if (objTestTriangle(rayStart, rayEnd, rayDir, vtxbase, idx, gdl, t + 1, cmdStart, &bestDistSq, hitthing))
-                {
-                    found = TRUE;
-                }
             }
         }
 
