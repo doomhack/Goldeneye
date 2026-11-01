@@ -18,7 +18,11 @@ come from and check whether a change (for example a smaller or reordered struct)
 - Every call to `mempAlloc` and `memaAlloc` from boot, so heap misses can be named by the
   function that allocated the block.
 
-Not modelled: the instruction cache, DMA by the RSP/RDP/PI (it doesn't go through the CPU
+- An instruction count and a 16 KB direct-mapped instruction cache with 32-byte lines, for
+  code run from KSEG0. The idle thread's empty loop (`idleproc`) is left out of the count,
+  since it only fills the time the game leaves over.
+
+Not modelled: DMA by the RSP/RDP/PI (it doesn't go through the CPU
 cache), and timing. The core runs its pure interpreter, so how many game frames fit in a
 second differs from a console; results are given per game frame.
 
@@ -35,6 +39,16 @@ Then make a change, rebuild, run csdemos.py and csreport.py again into another d
 and compare:
 
     tools/cachesim/cscompare.py /tmp/cs/base.json /tmp/cs/new.json
+
+To compare how much CPU work two builds do, count the same game frames in both: with
+`--ticks N` csdemos.py counts N game frames from game frame `--from` (g_LvTickCount)
+instead of a number of VI frames, so a faster build doesn't cover more play. Then
+
+    tools/cachesim/csdemos.py u /tmp/cs/a --demos 0,2,3,4,5,6,7,8,9,10,11,12,13 --from 30 --ticks 200
+    tools/cachesim/csspeed.py /tmp/cs/a /tmp/cs/b
+
+prints instructions, I-cache and D-cache misses and write-backs per game frame, and a rough
+cycle estimate.
 
 US Dam 2 (demo 1) desyncs under every emulator setting, so leave it out of US reports.
 csreport.py needs `pahole` (package dwarves) for `--fields`, and xvfb-run for the video

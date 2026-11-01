@@ -21,11 +21,14 @@ OUTDIR/hang-ram.bin (8 MB RDRAM) and the CPU PC. OUTDIR/result.json gives the ou
 frame and logs each change to OUTDIR/watch.txt as 'frame value'.
 """
 import argparse
+import functools
+import glob
 import json
 import ctypes as C
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import threading
@@ -109,12 +112,24 @@ def save_framebuffer(ram, origin, width, path):
     img.save(path)
 
 
+@functools.cache
 def symbol_address(mapfile, symbol):
     pattern = re.compile(r'^\s+0x([0-9a-f]+)\s+' + re.escape(symbol) + r'\s*$')
     for line in open(mapfile):
         m = pattern.match(line)
         if m:
             return int(m.group(1), 16)
+    # The map only lists global symbols. An LTO=1 build makes most of the game's globals
+    # local, so look in the ELF's symbol table next to the map too.
+    elf = re.sub(r'\.map$', '.elf', mapfile)
+    if elf != mapfile and os.path.exists(elf):
+        nm = [shutil.which('mips-linux-gnu-nm')] + glob.glob('/opt/ge-gcc15*/bin/mips-linux-gnu-nm') + ['nm']
+        nm = [n for n in nm if n]
+        out = subprocess.run([nm[0], elf], capture_output=True, text=True).stdout
+        for line in out.splitlines():
+            parts = line.split()
+            if len(parts) == 3 and parts[2].split('.lto_priv.')[0] == symbol:
+                return int(parts[0], 16)
     sys.exit(f'{symbol} not found in {mapfile}')
 
 
@@ -150,6 +165,9 @@ def main():
                     help='start counting N frames after the demo starts (or at frame N without --demo)')
     ap.add_argument('--cachesim-frames', type=int, default=600, metavar='N',
                     help='count for N frames, then save the counts and RAM and stop')
+    ap.add_argument('--cachesim-ticks', type=int, metavar='N',
+                    help='count game frames instead: start at game frame (g_LvTickCount) --cachesim-from '
+                         'and stop after N game frames, so builds of different speed count the same play')
     ap.add_argument('--cachesim-watch', metavar='[*]SYMBOL:SIZE',
                     help='also count accesses and misses per 4-byte word over SIZE bytes at SYMBOL '
                          '(or, with *, at the address SYMBOL holds when counting starts); saved to FILE.words')
@@ -331,7 +349,14 @@ def main():
             began = seen['demo'] if args.demo is not None else True
             if began:
                 cs['begin'] = cs.get('begin', frame)
-                if frame >= cs['begin'] + args.cachesim_from:
+                if args.cachesim_ticks:
+                    # wait for the level's frame count to restart before counting from it
+                    tick = word(ram, addr('g_LvTickCount'))
+                    cs['restarted'] = cs.get('restarted') or tick < args.cachesim_from
+                    due = cs['restarted'] and tick >= args.cachesim_from
+                else:
+                    due = frame >= cs['begin'] + args.cachesim_from
+                if due:
                     # The state checksums walk every prop, guard and player each frame, which
                     # would add misses the game itself doesn't have, so they stop here.
                     if args.statelog or args.demo is not None:
@@ -342,12 +367,20 @@ def main():
                         if name.startswith('*'):
                             where = word(ram, where) & 0x1fffffff
                         core.cachesim_watch(C.c_uint32(where), C.c_uint32(int(size, 0)))
+                    if hasattr(core, 'cachesim_idle_range'):
+                        # the idle thread's empty loop fills whatever CPU time the game leaves
+                        idle = symbol_address(args.map, 'idleproc')
+                        core.cachesim_idle_range(C.c_uint32(idle), C.c_uint32(idle + 8))
                     core.cachesim_reset()
                     core.cachesim_enable(1)
                     cs['start'] = frame
                     cs['tick0'] = word(ram, addr('g_LvTickCount'))
             return
-        if frame >= cs['start'] + args.cachesim_frames:
+        if args.cachesim_ticks:
+            due = word(ram, addr('g_LvTickCount')) - cs['tick0'] >= args.cachesim_ticks
+        else:
+            due = frame >= cs['start'] + args.cachesim_frames
+        if due:
             core.cachesim_enable(0)
             core.cachesim_dump(os.path.abspath(args.cachesim).encode())
             core.cachesim_dump_blocks((os.path.abspath(args.cachesim) + '.blocks').encode())
@@ -357,8 +390,13 @@ def main():
                 core.cachesim_dump_watch((os.path.abspath(args.cachesim) + '.words').encode())
             open(os.path.abspath(args.cachesim) + '.ram', 'wb').write(
                 C.string_at(core.DebugMemGetPointer(M64P_DBG_PTR_RDRAM), 8 << 20))
-            result['cachesim'] = {'vi_frames': args.cachesim_frames, 'start_frame': cs['start'],
+            result['cachesim'] = {'vi_frames': frame - cs['start'], 'start_frame': cs['start'],
                                   'game_frames': word(ram, addr('g_LvTickCount')) - cs['tick0']}
+            if hasattr(core, 'cachesim_icounts'):
+                counts = (C.c_uint64 * 2)()
+                core.cachesim_icounts(counts)
+                result['cachesim']['instructions'] = counts[0]
+                result['cachesim']['icache_misses'] = counts[1]
             json.dump(result['cachesim'], open(os.path.abspath(args.cachesim) + '.json', 'w'))
             cs['done'] = True
             core.CoreDoCommand(M64CMD_STOP, 0, None)

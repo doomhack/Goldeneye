@@ -38,6 +38,8 @@ float __floatundisf(u64_t u) { return __ull_to_f(u); }
 /**
  * libultra's memset symbol is an alias of bzero(ptr, len), not the standard memset.
  * The Makefile renames memset to gcc_memset in GCC objects so they land here.
+ * With LTO the game objects can't be renamed (they hold GCC's intermediate code),
+ * so the memset calls GCC makes at link time come here through the alias below.
  * This file is built with -fno-tree-loop-distribute-patterns so the loop is not
  * turned back into a memset call.
  */
@@ -52,3 +54,5 @@ void *gcc_memset(void *dst, int c, unsigned int n)
 
     return dst;
 }
+
+void *memset(void *dst, int c, unsigned int n) __attribute__((alias("gcc_memset")));

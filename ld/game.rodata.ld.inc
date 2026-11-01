@@ -141,3 +141,5 @@
       build/OUTCODE/src/game/gfx/zbuf.o (.rodata);
 #ifndef VERSION_EU
 #endif
+      /* With LTO, the code GCC compiles at link time (see the Makefile) */
+      *ltrans*.o (.rodata .rodata.*);
