@@ -330,6 +330,7 @@ void lvStageLoad(s32 stage)
     propsResetLevelState();
     objSoundsInit();
     chrsInit();
+    aiLabelCacheReset();
     bodiesReset();
     setupCreateProps(stage);
     explosionsInit();

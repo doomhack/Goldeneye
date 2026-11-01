@@ -29,6 +29,13 @@
 
 
 /*
+ * Tags by ID, so tagFind doesn't walk the list. Tag IDs in the setups are below 47;
+ * larger ones still work, through the list.
+ */
+#define TAG_TABLE_SIZE 64
+static TagObjectRecord *s_TagById[TAG_TABLE_SIZE];
+
+/*
  * Clears Objectives and states.
  *
  */
@@ -55,6 +62,12 @@ void objectivesReset(void)
     }
     
     g_Tags = NULL;
+
+    for (i = 0; i < TAG_TABLE_SIZE; i++)
+    {
+        s_TagById[i] = NULL;
+    }
+
     g_BriefingTexts = NULL;
     g_RoomEnteredCriteria = NULL;
     g_DepositCriteria = NULL;
@@ -65,6 +78,12 @@ void tagAdd(struct TagObjectRecord *tag)
 {
     tag->NextTag = g_Tags;
     g_Tags = tag;
+
+    // Like the list (newest first), the newest tag with an ID wins
+    if (tag->ID < TAG_TABLE_SIZE)
+    {
+        s_TagById[tag->ID] = tag;
+    }
 }
 
 void briefingTextAdd(struct watchMenuObjectiveText *text)
@@ -124,21 +143,26 @@ s32 g_ObjectiveStatusDisplayDisabled = FALSE;
 /*
  * Return Tag with TagID
  */
-TagObjectRecord *tagFind(s32 TagID) //#MATCH
+TagObjectRecord *tagFind(s32 TagID)
 {
-    u16              ID  = TagID;
-    TagObjectRecord *tag = g_Tags;
-    while (tag)
+    u16              ID = TagID;
+    TagObjectRecord *tag;
+
+    if (ID < TAG_TABLE_SIZE)
+    {
+        return s_TagById[ID];
+    }
+
+    for (tag = g_Tags; tag; tag = tag->NextTag)
     {
         if (tag->ID == ID)
         {
             return tag;
         }
-        tag = tag->NextTag;
     }
+
     return NULL;
 }
-
 
 
 
