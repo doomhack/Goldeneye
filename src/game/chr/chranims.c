@@ -48,27 +48,27 @@
  * Legend: iN/iSz = impact puff count/size, bN/bSz = back puff count/size,
  *         u8/u14 = unused, dN/fN = death/flinch anim counts (filled at init by initWeaponAnimGroups).
  */
-/*                       part,                       iN,  u8,  iSz,   bN, u14,  bSz,  deathAnims,           dN, flinchAnims,          fN */
-struct ChrHitReaction g_HitReactionTable[] = {     
-/* HIT_NULL_PART      */ {0                        , 0,   0,   0,     0,  0,    0,    NULL,                 0,  NULL,                  0},
-/* HIT_LEFT_FOOT      */ {1                        , 1,   0,   17.0,  3,  0,    34.0, death_left_foot,      0,  flinch_left_foot,      0},
-/* HIT_LEFT_LEG       */ {2                        , 1,   0,   17.0,  3,  0,    39.0, death_left_leg,       0,  flinch_left_leg,       0},
-/* HIT_LEFT_THIGH     */ {3                        , 1,   0,   21.0,  3,  0,    43.0, death_left_thigh,     0,  flinch_left_thigh,     0},
-/* HIT_RIGHT_FOOT     */ {4                        , 1,   0,   17.0,  3,  0,    34.0, death_right_foot,     0,  flinch_right_foot,     0},
-/* HIT_RIGHT_LEG      */ {5                        , 1,   0,   17.0,  3,  0,    39.0, death_right_leg,      0,  flinch_right_leg,      0},
-/* HIT_RIGHT_THIGH    */ {6                        , 1,   0,   21.0,  3,  0,    43.0, death_right_thigh,    0,  flinch_right_thigh,    0},
-/* HIT_PELVIS         */ {7                        , 1,   0,   21.0,  3,  0,    52.0, death_pelvis,         0,  flinch_pelvis,         0},
-/* HIT_HEAD           */ {8                        , 1,   0,   21.0,  3,  0,    43.0, death_head,           0,  flinch_head,           0},
-/* HIT_LEFT_HAND      */ {9                        , 1,   0,   17.0,  3,  0,    34.0, death_left_hand,      0,  flinch_left_hand,      0},
-/* HIT_LEFT_ARM       */ {0xA                      , 1,   0,   17.0,  3,  0,    43.0, death_left_arm,       0,  flinch_left_arm,       0},
-/* HIT_LEFT_SHOULDER  */ {0xB                      , 1,   0,   21.0,  3,  0,    52.0, death_left_shoulder,  0,  flinch_left_shoulder,  0},
-/* HIT_RIGHT_HAND     */ {0xC                      , 1,   0,   17.0,  3,  0,    34.0, death_right_hand,     0,  flinch_right_hand,     0},
-/* HIT_RIGHT_ARM      */ {0xD                      , 1,   0,   17.0,  3,  0,    43.0, death_right_arm,      0,  flinch_right_arm,      0},
-/* HIT_RIGHT_SHOULDER */ {0xE                      , 1,   0,   21.0,  3,  0,    52.0, death_right_shoulder, 0,  flinch_right_shoulder, 0},
-/* HIT_CHEST          */ {0xF                      , 1,   0,   26.0,  3,  0,    60.0, death_chest,          0,  flinch_chest,          0},
-/* HIT_GUN            */ {0x64                     , 1,   0,   26.0,  0,  0,    0.0,  death_gun,            0,  flinch_gun,            0},
-/* HIT_HAT            */ {0x6E                     , 1,   0,   21.0,  0,  0,    0.0,  NULL,                 0,  NULL,                  0},
-/* terminator         */ {0xFFFFFFFF               , 0,   0,   0.0,   0,  0,    0.0,  NULL,                 0,  NULL,                  0},
+/*   part,                      iN,  u8,  iSz,   bN, u14,  bSz,  deathAnims,           dN, flinchAnims,          fN */
+struct ChrHitReaction g_HitReactionTable[] = {
+    {HIT_NULL_PART            , 0,   0,   0,     0,  0,    0,    NULL,                 0,  NULL,                  0},
+    {HIT_LEFT_FOOT            , 1,   0,   17.0,  3,  0,    34.0, death_left_foot,      0,  flinch_left_foot,      0},
+    {HIT_LEFT_LEG             , 1,   0,   17.0,  3,  0,    39.0, death_left_leg,       0,  flinch_left_leg,       0},
+    {HIT_LEFT_THIGH           , 1,   0,   21.0,  3,  0,    43.0, death_left_thigh,     0,  flinch_left_thigh,     0},
+    {HIT_RIGHT_FOOT           , 1,   0,   17.0,  3,  0,    34.0, death_right_foot,     0,  flinch_right_foot,     0},
+    {HIT_RIGHT_LEG            , 1,   0,   17.0,  3,  0,    39.0, death_right_leg,      0,  flinch_right_leg,      0},
+    {HIT_RIGHT_THIGH          , 1,   0,   21.0,  3,  0,    43.0, death_right_thigh,    0,  flinch_right_thigh,    0},
+    {HIT_PELVIS               , 1,   0,   21.0,  3,  0,    52.0, death_pelvis,         0,  flinch_pelvis,         0},
+    {HIT_HEAD                 , 1,   0,   21.0,  3,  0,    43.0, death_head,           0,  flinch_head,           0},
+    {HIT_LEFT_HAND            , 1,   0,   17.0,  3,  0,    34.0, death_left_hand,      0,  flinch_left_hand,      0},
+    {HIT_LEFT_ARM             , 1,   0,   17.0,  3,  0,    43.0, death_left_arm,       0,  flinch_left_arm,       0},
+    {HIT_LEFT_SHOULDER        , 1,   0,   21.0,  3,  0,    52.0, death_left_shoulder,  0,  flinch_left_shoulder,  0},
+    {HIT_RIGHT_HAND           , 1,   0,   17.0,  3,  0,    34.0, death_right_hand,     0,  flinch_right_hand,     0},
+    {HIT_RIGHT_ARM            , 1,   0,   17.0,  3,  0,    43.0, death_right_arm,      0,  flinch_right_arm,      0},
+    {HIT_RIGHT_SHOULDER       , 1,   0,   21.0,  3,  0,    52.0, death_right_shoulder, 0,  flinch_right_shoulder, 0},
+    {HIT_CHEST                , 1,   0,   26.0,  3,  0,    60.0, death_chest,          0,  flinch_chest,          0},
+    {HIT_GUN                  , 1,   0,   26.0,  0,  0,    0.0,  death_gun,            0,  flinch_gun,            0},
+    {HIT_HAT                  , 1,   0,   21.0,  0,  0,    0.0,  NULL,                 0,  NULL,                  0},
+    {-1                       , 0,   0,   0.0,   0,  0,    0.0,  NULL,                 0,  NULL,                  0},
 };
 
 
@@ -391,7 +391,7 @@ struct StruckAnim flinch_gun[] = {
 };
 
 
-struct explosion_death_animation g_ExplosionDeathAnims[] = {
+struct ExplosionDeathAnim g_ExplosionDeathAnims[] = {
     { PTR_ANIM_death_explosion_forward, 0, 0.5, 9.0, 18.0, 29.0, -1.0 },
     { PTR_ANIM_death_explosion_forward, 1, 0.5, 9.0, 18.0, 29.0, -1.0 },
     { PTR_ANIM_death_explosion_forward_face_down, 0, 0.5, 11.0, 19.0, 31.0, -1.0 },

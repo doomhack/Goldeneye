@@ -52,104 +52,114 @@
 #include "game/level/gamemode.h"
 #include "game/mission/mission.h"
 
-// bss
-sfxRecord  sfx_related[SFX_RELATED_LEN];
+AiSound g_AiSounds[AI_SOUND_SLOTS];
 
 /**
- * Play Audio in slot X from Prop or Pad
- * @param slot: Where audio is loaded
+ * Keeps an AI sound slot's volume up to date while it plays: follows its object or pad
+ * if it has one, fades towards the target volume, and is silent while the controls are
+ * locked (cutscenes).
  */
-void       aiSoundTick(s32 slot)
+static void aiSoundTick(s32 slot)
 {
-    int        tempvol;
-    sfxRecord *sfx = &sfx_related[slot];
-    int        clock_timer;
+    AiSound *sfx = &g_AiSounds[slot];
+    s32 volume;
+    s32 ticks;
 
-    if ((sfx->state) && (sndGetPlayingState(sfx->state)))
+    if (sfx->state && sndGetPlayingState(sfx->state))
     {
         if (sfx->pos)
         {
-            sfx->Volume = sfxVolumeAt(sfx->pos);
+            sfx->targetVolume = sfxVolumeAt(sfx->pos);
         }
-        else
+        else if (sfx->obj && sfx->obj->prop)
         {
-            if (sfx->Obj && sfx->Obj->prop)
-            {
-                sfx->Volume = sfxVolumeAt(&sfx->Obj->runtime_pos);
-            }
+            sfx->targetVolume = sfxVolumeAt(&sfx->obj->runtime_pos);
         }
 
-        tempvol = sfx->Volume;
-        if (sfx->sfxID >= 0)
+        volume = sfx->targetVolume;
+
+        if (sfx->fadeTime >= 0)
         {
-            clock_timer = g_ClockTimer;
-            if (clock_timer < sfx->sfxID)
+            ticks = g_ClockTimer;
+
+            if (ticks < sfx->fadeTime)
             {
-                tempvol = (((sfx->Volume - sfx->Volume2) * clock_timer) / sfx->sfxID) + sfx->Volume2;
+                volume = (((sfx->targetVolume - sfx->volume) * ticks) / sfx->fadeTime) + sfx->volume;
             }
-            sfx->sfxID = sfx->sfxID - clock_timer;
+
+            sfx->fadeTime -= ticks;
         }
-        if (lvGetControlsLocked() != 0)
+
+        if (lvGetControlsLocked())
         {
-            tempvol = 0;
+            volume = 0;
         }
-        if (tempvol != sfx->Volume2)
+
+        if (volume != sfx->volume)
         {
-            sndCreatePostEvent(sfx->state, 8, tempvol);
-            sfx->Volume2 = tempvol;
-            return;
+            sndCreatePostEvent(sfx->state, 8, volume);
+            sfx->volume = volume;
         }
+
         return;
     }
-    sfx->Volume2 = 0;
+
+    sfx->volume = 0;
 }
 
-/**
- Play All Sounds in all slots
-*/
 void aiSoundsTick(void)
 {
-    int i;
-    for (i = 0; i < SFX_RELATED_LEN; i++)
+    s32 i;
+
+    for (i = 0; i < AI_SOUND_SLOTS; i++)
     {
         aiSoundTick(i);
     }
 }
 
 /**
- * Load Audio Slot with sound and Play
- * @param slot: where to load sound
- * @param soundIndex: SFX_ID
+ * Plays a sound, in a slot (so scripts can change its volume or stop it) if the slot
+ * is free, otherwise without one.
  */
-void aiSoundPlay(s32 slot, s16 soundIndex)
+static void aiSoundPlay(s32 slot, s16 soundIndex)
 {
-    sfxRecord *sfx = NULL;
-    //"Existing ai sound number %d!\n"
-    if (slot >= 0 && slot < SFX_RELATED_LEN)
-    {
-        if (!sfx_related[slot].state || !sndGetPlayingState(sfx_related[slot].state))
-        {
-            sfx = &sfx_related[slot];
+    AiSound *sfx = NULL;
 
-            sfx->Volume  = SHRT_MAX;
-            sfx->Volume2 = SHRT_MAX;
-            sfx->sfxID   = -1;
-            sfx->pos     = NULL;
-            sfx->Obj     = NULL;
+    if (slot >= 0 && slot < AI_SOUND_SLOTS)
+    {
+        if (!g_AiSounds[slot].state || !sndGetPlayingState(g_AiSounds[slot].state))
+        {
+            sfx = &g_AiSounds[slot];
+
+            sfx->targetVolume = SHRT_MAX;
+            sfx->volume = SHRT_MAX;
+            sfx->fadeTime = -1;
+            sfx->pos = NULL;
+            sfx->obj = NULL;
         }
     }
+
     sndPlaySfx(g_musicSfxBufferPtr, soundIndex, sfx != NULL ? &sfx->state : NULL);
 }
 
-/**
- Stop All Sounds in all slots
-*/
-void aiSoundStop(s32 slot)
+static void aiSoundStop(s32 slot)
 {
-    if ((slot >= 0) && (slot < SFX_RELATED_LEN))
+    if ((slot >= 0) && (slot < AI_SOUND_SLOTS))
     {
-        sndDeactivate(sfx_related[slot].state);
+        sndDeactivate(g_AiSounds[slot].state);
     }
+}
+
+/**
+ * A fade time from a script (60ths of a second) in clock ticks.
+ */
+static s32 aiSoundFadeTicks(u16 time60)
+{
+#ifdef VERSION_EU
+    return (time60 * 50) / 60;
+#else
+    return time60;
+#endif
 }
 
 /**
@@ -984,7 +994,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_PlayAnimation:
                 {
                     AiPlayAnimationRecord *ai = (AiPlayAnimationRecord *)(AiListp + Offset);
-                    s32                    startframe, anim_id, zero, endframe;
+                    s32                    startframe, anim_id, endframe;
 
                     anim_id    = ntohs(ai->ANIMATION_ID);
                     startframe = ntohs(ai->START_TIME30);
@@ -1005,8 +1015,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     else if (AircraftEntityp)
                     {
-                        zero = 0; // debug value maybe?
-                        modelSetAnimation(AircraftEntityp->model, animation_table_ptrs2[anim_id], zero, startframe, 0.5f, (s32)ai->INTERPOL_TIME60);
+                        modelSetAnimation(AircraftEntityp->model, animation_table_ptrs2[anim_id], 0, startframe, 0.5f, (s32)ai->INTERPOL_TIME60);
                         if (endframe >= 0)
                         {
                             modelSetAnimEndFrame(AircraftEntityp->model, endframe);
@@ -1300,20 +1309,17 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         WeaponObjRecord *weapon;
                         coord3d            vec = {};
 
-                        if (!prop) // not Right hand? try left
+                        if (!prop)
                         {
                             prop = chrGetEquippedWeaponPropWithCheck(chr1, GUNLEFT);
                         }
 
-                        if (prop) // hopefully have gun else exit
+                        if (prop)
                         {
                             vec.x = chr2->prop->pos.x - chr1->prop->pos.x;
                             vec.y = chr2->prop->pos.y - chr1->prop->pos.y;
                             vec.z = chr2->prop->pos.z - chr1->prop->pos.z;
                             guNormalize(&vec.x, &vec.y, &vec.z);
-                            if (prop)
-                            {
-                            } // prop needs upgrading to v1 instead of t
                             weapon = prop->weapon;
                             chrTakeShot(chr2, ai->PART_NUM, &vec, weapon->weaponnum, 0);
                         }
@@ -1801,7 +1807,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     // Alternative Names?
                     // aiIfTargetInFovLeft or aiIfBondOutOfFov
                     AiIFMyAngleToBondLessThanRecord *ai  = (AiIFMyAngleToBondLessThanRecord *)(AiListp + Offset);
-                    float                            rad = chrGetAngleToBond(ChrEntityp); // must use float to save "hidden var"
+                    float                            rad = chrGetAngleToBond(ChrEntityp);
                     if (ByteToRadian((ai->ANGLE)) > rad)
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
@@ -3572,18 +3578,14 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiSfxSetChannelVolumeRecord *ai    = (AiSfxSetChannelVolumeRecord *)(AiListp + Offset);
                     s16                          vol   = ntohs(ai->TARGET_VOLUME);
-                    u16                          sfxID = ntohs(ai->sfxID);
-                    if (ai->slotID >= 0 && ai->slotID < 8)
+                    u16                          fadeTime = ntohs(ai->FADE_TIME);
+                    if (ai->slotID >= 0 && ai->slotID < AI_SOUND_SLOTS)
                     {
-    #ifdef VERSION_EU
-                        sfx_related[ai->slotID].sfxID = (sfxID * 50) / 60;
-    #else
-                        sfx_related[ai->slotID].sfxID = sfxID;
-    #endif
-                        sfx_related[ai->slotID].Volume = vol;
-                        sfx_related[ai->slotID].pos    = NULL;
-                        sfx_related[ai->slotID].Obj    = NULL;
-                        if (sfxID == 0)
+                        g_AiSounds[ai->slotID].fadeTime = aiSoundFadeTicks(fadeTime);
+                        g_AiSounds[ai->slotID].targetVolume = vol;
+                        g_AiSounds[ai->slotID].pos = NULL;
+                        g_AiSounds[ai->slotID].obj = NULL;
+                        if (fadeTime == 0)
                         {
                             aiSoundTick(ai->slotID);
                         }
@@ -3598,21 +3600,17 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiSfxFadeChannelVolumeRecord *ai    = (AiSfxFadeChannelVolumeRecord *)(AiListp + Offset);
                     f32                           vol   = ntohs(ai->TARGET_VOLUME);
-                    u16                           sfxID = ntohs(ai->sfxID);
+                    u16                           fadeTime = ntohs(ai->FADE_TIME);
                     /*
                         "fadeTo\n"
                      */
-                    if (ai->slotID >= 0 && ai->slotID < 8)
+                    if (ai->slotID >= 0 && ai->slotID < AI_SOUND_SLOTS)
                     {
-    #ifdef VERSION_EU
-                        sfx_related[ai->slotID].sfxID = (sfxID * 50) / 60;
-    #else
-                        sfx_related[ai->slotID].sfxID = sfxID;
-    #endif
-                        sfx_related[ai->slotID].Volume = sfxVolumeForDistance(vol);
-                        sfx_related[ai->slotID].pos    = NULL;
-                        sfx_related[ai->slotID].Obj    = NULL;
-                        if (sfxID == 0)
+                        g_AiSounds[ai->slotID].fadeTime = aiSoundFadeTicks(fadeTime);
+                        g_AiSounds[ai->slotID].targetVolume = sfxVolumeForDistance(vol);
+                        g_AiSounds[ai->slotID].pos = NULL;
+                        g_AiSounds[ai->slotID].obj = NULL;
+                        if (fadeTime == 0)
                         {
                             aiSoundTick(ai->slotID);
                         }
@@ -3624,17 +3622,13 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiSfxEmitFromObjectRecord *ai    = (AiSfxEmitFromObjectRecord *)(AiListp + Offset);
                     ObjectRecord              *obj   = objFindByTagId(ai->OBJECT_TAG);
-                    u16                        sfxID = ntohs(ai->sfxID);
-                    if (ai->slotID >= 0 && ai->slotID < 8 && obj)
+                    u16                        fadeTime = ntohs(ai->FADE_TIME);
+                    if (ai->slotID >= 0 && ai->slotID < AI_SOUND_SLOTS && obj)
                     {
-    #ifdef VERSION_EU
-                        sfx_related[ai->slotID].sfxID = (sfxID * 50) / 60;
-    #else
-                        sfx_related[ai->slotID].sfxID = sfxID;
-    #endif
-                        sfx_related[ai->slotID].pos = NULL;
-                        sfx_related[ai->slotID].Obj = obj;
-                        if (sfxID == 0)
+                        g_AiSounds[ai->slotID].fadeTime = aiSoundFadeTicks(fadeTime);
+                        g_AiSounds[ai->slotID].pos = NULL;
+                        g_AiSounds[ai->slotID].obj = obj;
+                        if (fadeTime == 0)
                         {
                             aiSoundTick(ai->slotID);
                         }
@@ -3647,7 +3641,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiSfxEmitFromPadRecord *ai     = (AiSfxEmitFromPadRecord *)(AiListp + Offset);
                     u16                     padnum = ntohs(ai->PAD);
                     PadRecord              *pad;
-                    u16                     sfxID = ntohs(ai->sfxID);
+                    u16                     fadeTime = ntohs(ai->FADE_TIME);
                     if (isNotBoundPad(padnum))
                     {
                         pad = &g_CurrentSetup.pads[padnum];
@@ -3656,16 +3650,12 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     {
                         pad = (PadRecord *)&g_CurrentSetup.boundpads[getBoundPadNum(padnum)];
                     }
-                    if (ai->slotID >= 0 && ai->slotID < 8 && pad)
+                    if (ai->slotID >= 0 && ai->slotID < AI_SOUND_SLOTS && pad)
                     {
-    #ifdef VERSION_EU
-                        sfx_related[ai->slotID].sfxID = (sfxID * 50) / 60;
-    #else
-                        sfx_related[ai->slotID].sfxID = sfxID;
-    #endif
-                        sfx_related[ai->slotID].pos = &pad->pos;
-                        sfx_related[ai->slotID].Obj = NULL;
-                        if (sfxID == 0)
+                        g_AiSounds[ai->slotID].fadeTime = aiSoundFadeTicks(fadeTime);
+                        g_AiSounds[ai->slotID].pos = &pad->pos;
+                        g_AiSounds[ai->slotID].obj = NULL;
+                        if (fadeTime == 0)
                         {
                             aiSoundTick(ai->slotID);
                         }
@@ -3682,7 +3672,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                      * "ai_ifmusicqueueemptyjumpf : %s, State=%x (getlvleveltime60=%f)\n"
                      */
 
-                    if ((ai->slotID >= 0) && (ai->slotID < 8) && (sfx_related[ai->slotID].Volume2 < vol))
+                    if ((ai->slotID >= 0) && (ai->slotID < AI_SOUND_SLOTS) && (g_AiSounds[ai->slotID].volume < vol))
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
@@ -4121,7 +4111,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
 
                     if (isNotBoundPad(padnum))
                     {
-                        pad = &g_CurrentSetup.pads[padnum * 1]; // needs a mult by 1 to correct s0/v1
+                        pad = &g_CurrentSetup.pads[padnum];
                     }
                     else
                     {

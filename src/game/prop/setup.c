@@ -960,9 +960,9 @@ void objSoundsInit(void)
 {
     s32 i;
 
-    for (i = 0; i < SFX_RELATED_LEN; i++)
+    for (i = 0; i < AI_SOUND_SLOTS; i++)
     {
-        sfx_related[i].state = AL_STOPPED;
+        g_AiSounds[i].state = AL_STOPPED;
     }
 }
 
@@ -970,11 +970,11 @@ void objSoundsStopAll(void)
 {
     s32 i;
 
-    for (i = 0; i < SFX_RELATED_LEN; i++)
+    for (i = 0; i < AI_SOUND_SLOTS; i++)
     {
-        if (sfx_related[i].state != NULL && sndGetPlayingState(sfx_related[i].state) != AL_STOPPED)
+        if (g_AiSounds[i].state != NULL && sndGetPlayingState(g_AiSounds[i].state) != AL_STOPPED)
         {
-            sndDeactivate(sfx_related[i].state);
+            sndDeactivate(g_AiSounds[i].state);
         }
     }
 }

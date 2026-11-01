@@ -104,19 +104,23 @@ void chrAttackSetEndFrame(ChrRecord *self)
 }
 
 
+/**
+ * The angle from the way the guard faces to what it attacks or faces (an ATTACKTYPE),
+ * 0 to 2 pi: 0 for straight ahead, for a compass direction the difference to it.
+ */
 f32 chrGetAngleToTarget(ChrRecord *self, s32 attack_type, s32 entityid)
 {
     f32 ret;
-    StandTile *out_unused;
+    StandTile *stan;
 
-    if ((attack_type & 2) != 0)
+    if (attack_type & ATTACKTYPE_FORWARD)
     {
         return 0.0f;
     }
 
-    if ((attack_type & 0x10) != 0)
+    if (attack_type & ATTACKTYPE_DIRECTION)
     {
-        ret = ((f32) entityid * M_TAU_F) / M_U16_MAX_VALUE_F;
+        ret = ((f32)entityid * M_TAU_F) / M_U16_MAX_VALUE_F;
 
         ret -= modelGetRootRotY(self->model);
 
@@ -128,37 +132,30 @@ f32 chrGetAngleToTarget(ChrRecord *self, s32 attack_type, s32 entityid)
         return ret;
     }
 
-    return chrGetAngleToPos(self, chrGetChrOrPresetLocation(self, attack_type, entityid, &out_unused));
+    return chrGetAngleToPos(self, chrGetChrOrPresetLocation(self, attack_type, entityid, &stan));
 }
 
 
- /**
-  * @param self:
-  * @param arg1: address of array of firing animations (example: ptr_pistol_firing_animation_groups)
-  * @param arg2: flag of some sort related to calculating distance
-  * @param arg3: flags
-  * @param attack_type:
-  * @param arg5: chrGetAngleToTarget arg2
-  * @param arg6: set self->act_attack.unk54 to this
-  */
+/**
+ * Starts ACT_ATTACK: picks a firing animation from animgroups (32 of them by the angle to
+ * the target, mirrored when flip is set), and how many shots to fire with which guns.
+ *
+ * @param animgroups: e.g. ptr_pistol_firing_animation_groups
+ * @param hasGun: which hands fire
+ * @param standing: 1 standing, 0 kneeling
+ */
 static void chrInitActAttack(ChrRecord *self, struct anim_group_info **animgroups, s32 flip, point2d *hasGun, s32 attack_type, s32 entityid, s32 standing)
 {
-    /**
-     * Two unused stack variables, I tried to use them with the animation table
-     * but couldn't get a match.
-    */
-
-    //
-    Model *self_model; // 140
+    Model *self_model;
     s32 oneBurst;
     s32 next_anim;
-    struct weapon_firing_animation_table *panim_float; // 128
+    struct weapon_firing_animation_table *panim_float;
     s32 recoil;
-    f32 dist;
+    f32 angle;
     s32 anim_index;
     WeaponObjRecord *weapon;
-    point2d singleShot; // 96
-    point2d isLauncher; // 88
+    point2d singleShot;
+    point2d isLauncher;
     s32 i;
 
     self_model = self->model;
@@ -168,18 +165,18 @@ static void chrInitActAttack(ChrRecord *self, struct anim_group_info **animgroup
     recoil = 1;
     oneBurst = 0;
 
-    dist = chrGetAngleToTarget(self, attack_type, entityid);
+    angle = chrGetAngleToTarget(self, attack_type, entityid);
 
     if (flip != 0)
     {
-        anim_index = (s32) ((((M_TAU_F - dist) * 32.0f) / M_TAU_F) + 0.5f);
+        anim_index = (s32)((((M_TAU_F - angle) * 32.0f) / M_TAU_F) + 0.5f);
     }
     else
     {
-        anim_index = (s32) (((dist * 32.0f) / M_TAU_F) + 0.5f);
+        anim_index = (s32)(((angle * 32.0f) / M_TAU_F) + 0.5f);
     }
 
-    if (anim_index >= 0x20)
+    if (anim_index >= 32)
     {
         anim_index = 0;
     }
@@ -194,7 +191,7 @@ static void chrInitActAttack(ChrRecord *self, struct anim_group_info **animgroup
         panim_float = &animgroups[anim_index]->table[(next_anim + 1) % animgroups[anim_index]->len];
     }
 
-    for (i=0; i<2; i++)
+    for (i = 0; i < 2; i++)
     {
         if (hasGun->p[i] != 0)
         {
@@ -272,164 +269,105 @@ static void chrInitActAttack(ChrRecord *self, struct anim_group_info **animgroup
     self->act_attack.attack_time = 0;
     self->sleep = 0;
 
-    modelSetAnimation(
-        self_model,
-        (struct ModelAnimation *) panim_float->anim.anim,
-        flip,
-        panim_float->start_frame,
-        chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
-        16.0f);
+    modelSetAnimation(self_model, panim_float->anim.anim, flip, panim_float->start_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
 
     chrAttackSetEndFrame(self);
 }
 
 
-void chrAttackStand(ChrRecord *self, s32 attack_type, s32 entityid)
+/**
+ * Starts an attack from the given animation tables: two guns fire both at once (doubles)
+ * two times in three, otherwise one gun fires (pistol), and a single two-handed gun
+ * uses the rifle animations.
+ */
+static void chrAttackWithAnims(ChrRecord *self, s32 attack_type, s32 entityid, s32 standing,
+    struct anim_group_info **pistol, struct anim_group_info **doubles, struct anim_group_info **rifle)
 {
     PropRecord *left;
     PropRecord *right;
     s32 flip;
-    struct anim_group_info **animation_pointer;
-    point2d sp;
-    PropRecord * left2;
-    PropRecord * right2;
+    struct anim_group_info **animgroups;
+    point2d hasGun;
+    PropRecord *leftgun;
+    PropRecord *rightgun;
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
 
-    sp = (point2d){0};
+    hasGun = (point2d){0};
 
     if ((left != NULL) && (right != NULL))
     {
-        left2 = chrGetEquippedWeaponPropWithCheck(self, GUNLEFT);
-        right2 = chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT);
+        leftgun = chrGetEquippedWeaponPropWithCheck(self, GUNLEFT);
+        rightgun = chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT);
 
-        if ((left2 != NULL) && (right2 != NULL))
+        if ((leftgun != NULL) && (rightgun != NULL))
         {
-            flip = (u32)randomGetNext() & (u32)1;
+            flip = (u32)randomGetNext() & 1u;
 
             if (((u32)randomGetNext() % 3U) == 0)
             {
-                animation_pointer = (struct anim_group_info **)ptr_pistol_firing_animation_groups;
-                sp.p[GUNLEFT] = flip;
-                sp.p[GUNRIGHT] = !flip;
+                animgroups = pistol;
+                hasGun.p[GUNLEFT] = flip;
+                hasGun.p[GUNRIGHT] = !flip;
             }
             else
             {
-                animation_pointer = (struct anim_group_info **)ptr_doubles_firing_animation_groups;
-                sp.p[GUNLEFT] = 1;
-                sp.p[GUNRIGHT] = 1;
+                animgroups = doubles;
+                hasGun.p[GUNLEFT] = 1;
+                hasGun.p[GUNRIGHT] = 1;
             }
         }
         else
         {
-            flip = right2 == 0;
-            animation_pointer = (struct anim_group_info **)ptr_pistol_firing_animation_groups;
-            sp.p[GUNLEFT] = flip;
-            sp.p[GUNRIGHT] = !flip;
+            flip = rightgun == NULL;
+            animgroups = pistol;
+            hasGun.p[GUNLEFT] = flip;
+            hasGun.p[GUNRIGHT] = !flip;
         }
     }
     else
     {
-        if ((weaponIsOneHanded(left) != 0) || (weaponIsOneHanded(right) != 0))
-        {
-            flip = left != 0;
-            animation_pointer = (struct anim_group_info **)ptr_pistol_firing_animation_groups;
-            sp.p[GUNLEFT] = flip;
-            sp.p[GUNRIGHT] = !flip;
-        }
-        else
-        {
-            flip = left != 0;
-            animation_pointer = (struct anim_group_info **)ptr_rifle_firing_animation_groups;
-            sp.p[GUNLEFT] = flip;
-            sp.p[GUNRIGHT] = !flip;
-        }
+        flip = left != NULL;
+        animgroups = (weaponIsOneHanded(left) || weaponIsOneHanded(right)) ? pistol : rifle;
+        hasGun.p[GUNLEFT] = flip;
+        hasGun.p[GUNRIGHT] = !flip;
     }
 
-    chrInitActAttack(self, animation_pointer, flip, &sp, attack_type, entityid, 1);
+    chrInitActAttack(self, animgroups, flip, &hasGun, attack_type, entityid, standing);
+}
+
+
+void chrAttackStand(ChrRecord *self, s32 attack_type, s32 entityid)
+{
+    chrAttackWithAnims(self, attack_type, entityid, 1,
+        (struct anim_group_info **)ptr_pistol_firing_animation_groups,
+        (struct anim_group_info **)ptr_doubles_firing_animation_groups,
+        (struct anim_group_info **)ptr_rifle_firing_animation_groups);
 }
 
 
 void chrAttackKneel(ChrRecord *self, s32 attack_type, s32 entityid)
 {
-    PropRecord *left;
-    PropRecord *right;
-    s32 flip;
-    struct anim_group_info **animation_pointer;
-    point2d sp;
-    PropRecord * left2;
-    PropRecord * right2;
-
-    left = chrGetEquippedWeaponProp(self, GUNLEFT);
-    right = chrGetEquippedWeaponProp(self, GUNRIGHT);
-
-    sp = (point2d){0};
-
-    if ((left != NULL) && (right != NULL))
-    {
-        left2 = chrGetEquippedWeaponPropWithCheck(self, GUNLEFT);
-        right2 = chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT);
-
-        if ((left2 != NULL) && (right2 != NULL))
-        {
-            flip = (u32)randomGetNext() & (u32)1;
-
-            if (((u32)randomGetNext() % 3U) == 0)
-            {
-                animation_pointer = (struct anim_group_info **)ptr_crouched_pistol_firing_animation_groups;
-                sp.p[GUNLEFT] = flip;
-                sp.p[GUNRIGHT] = !flip;
-            }
-            else
-            {
-                animation_pointer = (struct anim_group_info **)ptr_crouched_doubles_firing_animation_groups;
-                sp.p[GUNLEFT] = 1;
-                sp.p[GUNRIGHT] = 1;
-            }
-        }
-        else
-        {
-            flip = right2 == 0;
-            animation_pointer = (struct anim_group_info **)ptr_crouched_pistol_firing_animation_groups;
-            sp.p[GUNLEFT] = flip;
-            sp.p[GUNRIGHT] = !flip;
-        }
-    }
-    else
-    {
-        if ((weaponIsOneHanded(left) != 0) || (weaponIsOneHanded(right) != 0))
-        {
-            flip = left != 0;
-            animation_pointer = (struct anim_group_info **)ptr_crouched_pistol_firing_animation_groups;
-            sp.p[GUNLEFT] = flip;
-            sp.p[GUNRIGHT] = !flip;
-        }
-        else
-        {
-            flip = left != 0;
-            animation_pointer = (struct anim_group_info **)ptr_crouched_rifle_firing_animation_groups;
-            sp.p[GUNLEFT] = flip;
-            sp.p[GUNRIGHT] = !flip;
-        }
-    }
-
-    chrInitActAttack(self, animation_pointer, flip, &sp, attack_type, entityid, 0);
+    chrAttackWithAnims(self, attack_type, entityid, 0,
+        (struct anim_group_info **)ptr_crouched_pistol_firing_animation_groups,
+        (struct anim_group_info **)ptr_crouched_doubles_firing_animation_groups,
+        (struct anim_group_info **)ptr_crouched_rifle_firing_animation_groups);
 }
 
 
 /**
- * // run forward shooting
-*/
+ * Starts ACT_ATTACKWALK: walking (or running) at the target while firing.
+ */
 void chrInitActAttackWalk(ChrRecord *chr, s32 run)
 {
-    struct weapon_firing_animation_table *panim_float; // 132
-    s32 i; //
+    struct weapon_firing_animation_table *panim_float;
+    s32 i;
     WeaponObjRecord *weapon;
-    s32 flip; // 120
-    point2d hasGun; // 112
-    point2d singleShot; // 104
-    point2d isLauncher; // 96
+    s32 flip;
+    point2d hasGun;
+    point2d singleShot;
+    point2d isLauncher;
     PropRecord *left;
     PropRecord *left2;
     PropRecord *right;
@@ -448,7 +386,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
         left2 = chrGetEquippedWeaponPropWithCheck(chr, GUNLEFT);
         right2 = chrGetEquippedWeaponPropWithCheck(chr, GUNRIGHT);
 
-        variant = 0U;
+        variant = 0;
 
         if ((left2 != NULL) && (right2 != NULL))
         {
@@ -457,7 +395,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
         }
         else
         {
-            flip = right2 == 0;
+            flip = right2 == NULL;
         }
 
         if (variant == 0)
@@ -511,7 +449,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
     }
     else if (weaponIsOneHanded(left) || weaponIsOneHanded(right))
     {
-        flip = (s32)left != 0;
+        flip = left != NULL;
 
         if (run)
         {
@@ -533,7 +471,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
     }
     else
     {
-        flip = (s32)left != 0;
+        flip = left != NULL;
 
         if (run)
         {
@@ -554,7 +492,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
         }
     }
 
-    for (i=0; i<2; i++)
+    for (i = 0; i < 2; i++)
     {
         if (hasGun.p[i])
         {
@@ -574,48 +512,48 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
 
     chr->actiontype = ACT_ATTACKWALK;
     chr->act_attackwalk.clock_timer30 = 0;
-    #if defined(REFRESH_PAL)
-    chr->act_attackwalk.clock_timer34 = ((u32) randomGetNext() % (u32) (s32) (333.333343506f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
-    #else
-    chr->act_attackwalk.clock_timer34 = ((u32) randomGetNext() % (u32) (s32) (400.0f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
-    #endif
+#if defined(REFRESH_PAL)
+    chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(333.333343506f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
+#else
+    chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(400.0f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
+#endif
     chr->act_attackwalk.facedTarget = 0;
     chr->act_attackwalk.animfloats = panim_float;
     chr->act_attackwalk.timer40 = 0;
     chr->act_attackwalk.nextGun = (u32)randomGetNext() & 1U;
-    chr->act_attackwalk.hasGun[1] = (s8) hasGun.p[1];
-    chr->act_attackwalk.hasGun[0] = (s8) hasGun.p[0];
-    chr->act_attackwalk.singleShot[1] = (s8) singleShot.p[1];
-    chr->act_attackwalk.singleShot[0] = (s8) singleShot.p[0];
-    chr->act_attackwalk.isLauncher[1] = (s8) isLauncher.p[1];
-    chr->act_attackwalk.isLauncher[0] = (s8) isLauncher.p[0];
+    chr->act_attackwalk.hasGun[1] = hasGun.p[1];
+    chr->act_attackwalk.hasGun[0] = hasGun.p[0];
+    chr->act_attackwalk.singleShot[1] = singleShot.p[1];
+    chr->act_attackwalk.singleShot[0] = singleShot.p[0];
+    chr->act_attackwalk.isLauncher[1] = isLauncher.p[1];
+    chr->act_attackwalk.isLauncher[0] = isLauncher.p[0];
     chr->sleep = 0;
     chr->act_attackwalk.speed = 0.0f;
 
-    modelSetAnimation(chr->model, (struct ModelAnimation *) panim_float->anim.anim, flip, panim_float->start_frame, 0.5f, 16.0f);
+    modelSetAnimation(chr->model, panim_float->anim.anim, flip, panim_float->start_frame, 0.5f, 16.0f);
 }
 
 
 /**
- * chrRollToSide
-*/
+ * Starts ACT_ATTACKROLL: a roll to the given side, firing.
+ */
 void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
 {
-    Model *self_model; // 140
-    struct weapon_firing_animation_table *panim_float; // 136
-    PropRecord *left; // any
-    PropRecord *left_2; // any
-    s32 flip; // 124
-    s32 oneHanded; // 120
+    Model *self_model;
+    struct weapon_firing_animation_table *panim_float;
+    PropRecord *left;
+    PropRecord *left_2;
+    s32 flip;
+    s32 oneHanded;
     WeaponObjRecord *weapon;
-    PropRecord *right; // any
-    point2d hasGun; // 100
-    PropRecord *right_2; // any
-    s32 oneBurst; // 92
-    point2d singleShot; // 84
-    point2d isLauncher; // 76
-    s8 recoil; // 72
-    s32 i; // 68
+    PropRecord *right;
+    point2d hasGun;
+    PropRecord *right_2;
+    s32 oneBurst;
+    point2d singleShot;
+    point2d isLauncher;
+    s8 recoil;
+    s32 i;
 
     self_model = chr->model;
     left = chrGetEquippedWeaponProp(chr, GUNLEFT);
@@ -650,7 +588,7 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
         }
         else
         {
-            flip = (s32)right_2 == 0;
+            flip = right_2 == NULL;
             oneHanded = 1;
             hasGun.p[1] = flip;
             hasGun.p[0] = flip == 0;
@@ -658,14 +596,14 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
     }
     else if (weaponIsOneHanded(left) || weaponIsOneHanded(right))
     {
-        flip = (s32)left != 0;
+        flip = left != NULL;
         oneHanded = 1;
         hasGun.p[1] = flip;
         hasGun.p[0] = flip == 0;
     }
     else
     {
-        flip = (s32)left != 0;
+        flip = left != NULL;
         hasGun.p[1] = flip;
         hasGun.p[0] = flip == 0;
     }
@@ -691,12 +629,13 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
         panim_float = &g_ChrFireAnims[3];
     }
 
+    // The one-handed rolls follow the two-handed ones
     if (oneHanded != 0)
     {
         panim_float += 4;
     }
 
-    for (i=0; i<2; i++)
+    for (i = 0; i < 2; i++)
     {
         if (hasGun.p[i] != 0)
         {
@@ -726,7 +665,7 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
     chr->actiontype = ACT_ATTACKROLL;
     chr->act_attackroll.animfloats = panim_float;
     chr->act_attackroll.fired = 0;
-    chr->act_attackroll.nextGun = (u32)randomGetNext() & (u32)1;
+    chr->act_attackroll.nextGun = (u32)randomGetNext() & 1u;
     chr->act_attackroll.hasGun[1] = hasGun.p[1];
     chr->act_attackroll.hasGun[0] = hasGun.p[0];
     chr->act_attackroll.singleShot[1] = singleShot.p[1];
@@ -748,7 +687,7 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
         }
         else
         {
-            chr->act_attackroll.maxShots = (s8) 1U;
+            chr->act_attackroll.maxShots = 1;
         }
     }
     else
@@ -761,21 +700,15 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
         }
     }
 
-    chr->act_attackroll.unk4c[0] = 1;
-    chr->act_attackroll.unk4c[1] = 0;
-    chr->act_attackroll.unk54[0] = 1;
-    chr->act_attackroll.unk54[1] = 0;
+    chr->act_attackroll.attacktype = ATTACKTYPE_BOND;
+    chr->act_attackroll.entityid = 0;
+    chr->act_attackroll.standing = 1;
+    chr->act_attackroll.type_of_motion = 0;
     chr->act_attackroll.lastFire60 = 0;
     chr->act_attackroll.attack_time = 0;
     chr->sleep = 0;
 
-    modelSetAnimation(
-        self_model,
-        (struct ModelAnimation *) panim_float->anim.anim,
-        flip,
-        panim_float->start_frame,
-        chrGetGuard007SpeedRating(chr, 0.5f, 0.8f),
-        16.0f);
+    modelSetAnimation(self_model, panim_float->anim.anim, flip, panim_float->start_frame, chrGetGuard007SpeedRating(chr, 0.5f, 0.8f), 16.0f);
 
     if (oneHanded == 0)
     {
@@ -802,6 +735,10 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
 }
 
 
+/**
+ * Plays the gun's sound for a shot from that hand, if the gun's sound rate allows
+ * (once per frame per guard, and not again until soundrate frames have passed).
+ */
 static void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
 {
     PropRecord *prop;
@@ -822,7 +759,7 @@ static void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
     {
         if (soundrate > 0)
         {
-            if (((self->hidden & 0x80) == 0) && (self->nextGunSoundTime[hand] < g_GlobalTimer))
+            if (!(self->hidden & CHRHIDDEN_FIRE_TRACER) && (self->nextGunSoundTime[hand] < g_GlobalTimer))
             {
                 play = 1;
             }
@@ -851,17 +788,17 @@ static void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
             }
         }
 
-        if (((u16) soundid) != 0)
+        if ((u16)soundid != 0)
         {
             slot = NULL;
 
             if (self->gunSounds[hand].ptr_SEbuffer1 == NULL)
             {
-                slot = (ALSoundState **) (&self->gunSounds[hand].ptr_SEbuffer1);
+                slot = (ALSoundState **)&self->gunSounds[hand].ptr_SEbuffer1;
             }
             else if (self->gunSounds[hand].ptr_SEbuffer2 == NULL)
             {
-                slot = (ALSoundState **) (&self->gunSounds[hand].ptr_SEbuffer2);
+                slot = (ALSoundState **)&self->gunSounds[hand].ptr_SEbuffer2;
             }
 
             if (slot != NULL)
@@ -869,7 +806,7 @@ static void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
                 sndPlaySfx(g_musicSfxBufferPtr, soundid, slot);
                 sfxSetVolumeAt(*slot, &self->prop->pos);
                 self->nextGunSoundTime[hand] = g_GlobalTimer + soundrate;
-                self->hidden |= 0x80;
+                self->hidden |= CHRHIDDEN_FIRE_TRACER;
             }
         }
     }
@@ -1026,12 +963,10 @@ s32 chrSetSubroty(ChrRecord *self, s32 state, f32 endframe, f32 speed, f32 angle
 
 
 /**
- * @param self:
- * @param arg1:
- * @param arg2:
- * @param arg3:
- * @param arg4:
-*/
+ * Aims the guard's arms and back (aimend*) at its target, with an error from its
+ * accuracy, and returns whether the shot from that gun would hit: the muzzle's line to
+ * the target is clear. The aim at the player is randomly high or low by inaccuracy.
+ */
 static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 inaccuracy)
 {
     f32 aimup;
@@ -1051,8 +986,6 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animati
     coord3d rootpos;
     PropRecord *player_prop;
     f32 subroty;
-
-    /////////////////////
 
     ret = 1;
     aimup = 0.0f;
@@ -1108,46 +1041,46 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animati
                 {
                     if (self_prop->pos.f[1] < (current_player_pos->f[1] - (2.0f * ducking_height)))
                     {
-                        dy -= ducking_height * (0.55f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
+                        dy -= ducking_height * (0.55f + (0.1f * RANDOMGETNEXT_F32() * inaccuracy));
                     }
                     else if ((current_player_pos->f[1] - (ducking_height * 0.5f)) < self_prop->pos.f[1])
                     {
-                        dy -= ducking_height * (0.15f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
+                        dy -= ducking_height * (0.15f + (0.1f * RANDOMGETNEXT_F32() * inaccuracy));
                     }
                     else
                     {
-                        dy = (((f32) (u32)randomGetNext() * (1.0f / UINT_MAX) * 0.1f * inaccuracy) + 1.0f) * 40.0f;
+                        dy = ((RANDOMGETNEXT_F32() * 0.1f * inaccuracy) + 1.0f) * 40.0f;
                     }
                 }
                 else
                 {
-                    dy += ducking_height * (0.025f - (0.05f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
+                    dy += ducking_height * (0.025f - (0.05f * RANDOMGETNEXT_F32() * inaccuracy));
                 }
             }
             else if (((dx * dx) + (dy * dy) + (dz * dz)) > 1000000.0f)
             {
                 if (((u32)randomGetNext() % 3U) == 0)
                 {
-                    dy += ducking_height * (0.05f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
+                    dy += ducking_height * (0.05f + (0.1f * RANDOMGETNEXT_F32() * inaccuracy));
                 }
                 else
                 {
-                    dy -= ducking_height * (0.05f + (0.55f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
+                    dy -= ducking_height * (0.05f + (0.55f * RANDOMGETNEXT_F32() * inaccuracy));
                 }
             }
             else
             {
                 if (self_prop->pos.f[1] < (current_player_pos->f[1] - ducking_height))
                 {
-                    dy -= ducking_height * (0.55f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
+                    dy -= ducking_height * (0.55f + (0.1f * RANDOMGETNEXT_F32() * inaccuracy));
                 }
                 else if ((current_player_pos->f[1] - (ducking_height * 0.5f)) < self_prop->pos.f[1])
                 {
-                    dy -= ducking_height * (0.15f + (0.1f * ((f32) (u32)randomGetNext() * (1.0f / UINT_MAX)) * inaccuracy));
+                    dy -= ducking_height * (0.15f + (0.1f * RANDOMGETNEXT_F32() * inaccuracy));
                 }
                 else
                 {
-                    dy = (((f32) (u32)randomGetNext() * (1.0f / UINT_MAX) * 0.1f * inaccuracy) - 0.05f) * ducking_height;
+                    dy = ((RANDOMGETNEXT_F32() * 0.1f * inaccuracy) - 0.05f) * ducking_height;
                 }
             }
         }
@@ -1184,12 +1117,10 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animati
             Mtxf handmtx;
             coord3d closest;
             coord3d facing;
-            coord3d side; // handmtx
+            coord3d side;
             Mtxf *nodemtx;
             struct ObjectRecord *obj;
             f32 t1;
-
-            ////////////////////////////////////////////
 
             subroty = chrGetSubrotySideback(self);
 
@@ -1202,8 +1133,9 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animati
                 weapon_prop = chrGetEquippedWeaponProp(self, GUNLEFT);
             }
 
-            // This if block is a slight modification of @see chrGetHandPos.
-            if ((weapon_prop != NULL) && (weapon_prop->flags & 2) && (dxdydz_square < 1000000.0f))
+            // Within 10 m, aim from the gun's muzzle (or the hand) rather than the guard's
+            // centre. Much as chrGetHandPos, but from last frame's matrices.
+            if ((weapon_prop != NULL) && (weapon_prop->flags & PROPFLAG_ONSCREEN) && (dxdydz_square < 1000000.0f))
             {
                 obj = weapon_prop->obj;
                 weapon_prop_model = obj->model;
@@ -1280,9 +1212,10 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animati
                 }
             }
 
-            if ((attack_type & 1) && ((attack_type & 0x60) == 0))
+            // Firing at the player: sweep the aim from side to side once a second
+            if ((attack_type & ATTACKTYPE_BOND) && !(attack_type & (ATTACKTYPE_AIMONLY | ATTACKTYPE_DONTTURN)))
             {
-                t1 = (((f32) ((s32) ((s32) ((f32) g_GlobalTimer * self->model->playspeed) + self->chrnum) % 60) * M_TAU_F) / 60.0f);
+                t1 = (((f32)(((s32)((f32)g_GlobalTimer * self->model->playspeed) + self->chrnum) % 60) * M_TAU_F) / 60.0f);
                 t1 = sinf(t1) * (chrGetAimLimitAngle(dxdydz_square) * 0.5f);
                 calc_aimendsideback += t1;
 
@@ -1335,25 +1268,21 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animati
 
     chrUpdateAimendbackShoulders(self, anim, leftgun, rightgun, aimup);
     self->aimendsideback = calc_aimendsideback;
-    self->aimendcount = 0xA;
+    self->aimendcount = 10;
 
     return ret;
 }
 
 
 /**
- * Calculates and sets chr aimendrshoulder, aimendlshoulder, and aimendback.
- * rshoulder defaults to 0.0f, lshoulder defaults to @param next.
+ * Splits an up/down aim angle between the shoulders and the back: the gun arm takes it up
+ * to the animation's limits (max_up, max_down) and the back the rest. The free arm
+ * follows by free_arm_frac_up or _down. A gun in each hand: both arms aim.
  *
- * @param self:
- * @param arg1: todo/fixme/hack: unsure of arg1 type.
- * @param same: When set, both shoulders will receive lshoulder value. Only
- *     applies with @param swap is set.
- * @param swap: When set, aimendrshoulder will get the calculated lshoulder value,
- *     and aimendlshoulder will get the rshoulder value. If both @param swap and
- *     @param same is set they will both be set to lshoulder value.
- * @param next: Starting aimendlshoulder value.
-*/
+ * @param anim: the firing animation, or NULL for no limits
+ * @param leftgun, rightgun: which hands hold guns (rightgun = the right arm aims)
+ * @param next: the aim angle
+ */
 void chrUpdateAimendbackShoulders(ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 next)
 {
     f32 next_lshoulder;
@@ -1371,7 +1300,6 @@ void chrUpdateAimendbackShoulders(ChrRecord *self, struct weapon_firing_animatio
             next_aimendback = next - anim->max_up;
             next_lshoulder = anim->max_up;
         }
-
         else if (next < anim->max_down)
         {
             next_aimendback = next - anim->max_down;
@@ -1413,7 +1341,7 @@ void chrUpdateAimendbackShoulders(ChrRecord *self, struct weapon_firing_animatio
 
 static void chrResetAimend(ChrRecord *self)
 {
-    self->aimendcount = 0xA;
+    self->aimendcount = 10;
     self->aimendrshoulder = 0.0f;
     self->aimendlshoulder = 0.0f;
     self->aimendback = 0.0f;
@@ -1504,11 +1432,13 @@ f32 chrGetAimLimitAngle(f32 sqdist)
 
 
 /**
- * @param arg0:
- * @param arg1: out parameter. bool. Whether or not self has correct line of site to hit player.
- * @param arg2: out parameter. bool. True if damage done, false otherwise.
- * @param item: weapon doing damage
-*/
+ * Whether a guard's shot hits the player. Each shot towards the player adds to the
+ * guard's shotbondsum by its accuracy, distance and the 007 accuracy slider; when it
+ * reaches 1 the player takes the gun's damage.
+ *
+ * @param inSight: out, whether the guard faces the player closely enough to hit
+ * @param hitBond: out, whether the player took damage
+ */
 static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, ITEM_IDS item)
 {
     f32 limit_angle;
@@ -1545,12 +1475,7 @@ static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, IT
         relangle += M_TAU_F;
     }
 
-    insight = (relangle < limit_angle);
-
-    if ((relangle < limit_angle) == 0)
-    {
-        insight = ((M_TAU_F - limit_angle) < relangle);
-    }
+    insight = (relangle < limit_angle) || ((M_TAU_F - limit_angle) < relangle);
 
     *inSight = insight;
     *hitBond = 0;
@@ -1566,19 +1491,19 @@ static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, IT
             increment *= (300.0f / dist);
         }
 
-        if ((s32) self->accuracyrating > 0)
+        if (self->accuracyrating > 0)
         {
-            increment *= (1.0f + ((f32) self->accuracyrating / 10.0f));
+            increment *= 1.0f + ((f32)self->accuracyrating / 10.0f);
         }
-        else if ((s32) self->accuracyrating < 0)
+        else if (self->accuracyrating < 0)
         {
-            if ((s32) self->accuracyrating < -0x63)
+            if (self->accuracyrating < -99)
             {
                 increment = 0.0f;
             }
             else
             {
-                increment *= ((f32) (self->accuracyrating + 0x64) / 100.0f);
+                increment *= (f32)(self->accuracyrating + 100) / 100.0f;
             }
         }
 
@@ -1628,8 +1553,9 @@ static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, IT
 
 
 /**
- * Slight modification of a part of @see chrUpdateAimendsideback.
-*/
+ * The world position of the muzzle of the gun in that hand (or of the hand holding it).
+ * FALSE if the hand is empty or the gun is offscreen.
+ */
 s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *pos)
 {
     struct ObjectRecord *obj;
@@ -1645,12 +1571,12 @@ s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *pos)
     weapon_prop = chrGetEquippedWeaponProp(self, hand);
     ret = 0;
 
-    if ((weapon_prop != NULL) )
+    if (weapon_prop != NULL)
     {
         obj = weapon_prop->obj;
         weapon_prop_model = obj->model;
 
-        if ((weapon_prop->flags & 2))
+        if (weapon_prop->flags & PROPFLAG_ONSCREEN)
         {
             if (weapon_prop_model->obj->Switches[0])
             {
@@ -1684,45 +1610,50 @@ s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *pos)
 }
 
 
+/**
+ * Fires the gun in one hand, at the rate of fire: a bullet (traced along the aim to what
+ * it hits, with chrUpdateShotbondsum deciding whether it hits the player), or a rocket or
+ * grenade. Also its sound, tracer and muzzle flash.
+ */
 static void chrFireHand(ChrRecord *self, s32 hand)
 {
-    PropRecord *self_prop; // 644
-    s32 ratelimit; // ?
-    s32 firing; // stack 636
+    PropRecord *self_prop;
+    s32 ratelimit;
+    s32 firing;
     s32 betweenShots;
     WeaponObjRecord *weapon;
-    PropRecord *player_prop; // 624
-    s32 attacktype; // ?
-    s32 shoot; // 616
-    s32 tracer; // 612
-    coord3d hitpos; // 600
-    StandTile *hittile; // 596
-    f32 subroty; // 592
-    f32 aimup; // 588
-    coord3d gunpos; // 576
-    StandTile *self_stan; // 572
-    StandTile *guntile; // 568
-    s32 inSight; // 564
-    s32 hitBond; // 560
-    s32 showHit; // 556
+    PropRecord *player_prop;
+    s32 attacktype;
+    s32 shoot;
+    s32 tracer;
+    coord3d hitpos;
+    StandTile *hittile;
+    f32 subroty;
+    f32 aimup;
+    coord3d gunpos;
+    StandTile *self_stan;
+    StandTile *guntile;
+    s32 inSight;
+    s32 hitBond;
+    s32 showHit;
     coord3d shotdir;
     s32 canSeeTarget;
     f32 dy;
     f32 dz;
     f32 dx;
-    f32 shotDistSq; // 524
+    f32 shotDistSq;
     struct WeaponObjRecord *rocket;
     Mtxf rocketMtx;
-    coord3d rocketSpeed;  // 444
+    coord3d rocketSpeed;
     PropRecord *weapon_prop;
-    coord3d rocketAccel; // 428
+    coord3d rocketAccel;
     Mtxf rocketRot;
     Mtxf rocketYRot;
-    struct WeaponObjRecord *grenade; // 296
+    struct WeaponObjRecord *grenade;
     Mtxf grenadeMtx;
-    coord3d grenadeSpeed; // 220
+    coord3d grenadeSpeed;
     Mtxf grenadeRot;
-    Mtxf grenadeYRot; // 92
+    Mtxf grenadeYRot;
     s32 needsSight;
 
     self_prop = self->prop;
@@ -1734,14 +1665,16 @@ static void chrFireHand(ChrRecord *self, s32 hand)
         betweenShots = 0;
         weapon = weapon_prop->weapon;
         player_prop = currentPlayerGetProp();
-        attacktype = 1;
+        attacktype = ATTACKTYPE_BOND;
 
         if (self->actiontype == ACT_ATTACK)
         {
             attacktype = self->act_attack.attacktype;
         }
 
-        needsSight = attacktype & 1;
+        // Firing at the player needs them seen in the last 2 seconds, unless the gun
+        // fires single shots.
+        needsSight = attacktype & ATTACKTYPE_BOND;
 
         if (
             (needsSight == 0)
@@ -1758,11 +1691,12 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                 shoot = 1;
                 tracer = 1;
             }
-            else if (((s32) self->firecount[hand] % weaponGetFireRate(weapon->weaponnum)) == 0)
+            else if ((self->firecount[hand] % weaponGetFireRate(weapon->weaponnum)) == 0)
             {
+                // Automatic: a bullet every fire-rate frames, a tracer every other bullet
                 shoot = 1;
 
-                if ((((s32) self->firecount[hand] % (s32) (weaponGetFireRate(weapon->weaponnum) * 2)) == 0)
+                if (((self->firecount[hand] % (weaponGetFireRate(weapon->weaponnum) * 2)) == 0)
                     || (weapon->weaponnum == ITEM_LASER))
                 {
                     tracer = 1;
@@ -1781,13 +1715,13 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                 self_stan = self_prop->stan;
                 firing = 1;
 
-                if (chrGetHandPos(self, hand, (coord3d *) &gunpos) == 0)
+                if (!chrGetHandPos(self, hand, &gunpos))
                 {
                     gunpos.f[0] = self_prop->pos.f[0];
                     gunpos.f[1] = self_prop->pos.f[1] + 30.0f;
                     gunpos.f[2] = self_prop->pos.f[2];
 
-                    if (hand == 1)
+                    if (hand == GUNLEFT)
                     {
                         gunpos.f[0] += cosf(subroty) * 10.0f;
                         gunpos.f[2] += -sinf(subroty) * 10.0f;
@@ -1799,7 +1733,8 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                     }
                 }
 
-                if (stanTestLineUnobstructed(&self_stan, self_prop->pos.x, self_prop->pos.f[2], gunpos.f[0], gunpos.f[2], CDTYPE_DOORS, gunpos.f[1] - self->ground, gunpos.f[1] - self->ground, 0.0f, 1.0f) != 0)
+                // No firing through a door the gun pokes through
+                if (stanTestLineUnobstructed(&self_stan, self_prop->pos.x, self_prop->pos.f[2], gunpos.f[0], gunpos.f[2], CDTYPE_DOORS, gunpos.f[1] - self->ground, gunpos.f[1] - self->ground, 0.0f, 1.0f))
                 {
                     guntile = self_stan;
                 }
@@ -1825,7 +1760,7 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                     hitpos.f[1] = gunpos.f[1] + (shotdir.f[1] * M_U16_MAX_VALUE_F);
                     hitpos.f[2] = gunpos.f[2] + (shotdir.f[2] * M_U16_MAX_VALUE_F);
 
-                    chrSetMoving(self, 0);
+                    chrSetMoving(self, FALSE);
                     stanResetHits();
                     self_stan = guntile;
 
@@ -1838,7 +1773,7 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                         hitpos.f[2] -= 26.0f * shotdir.f[2];
                     }
 
-                    chrSetMoving(self, 1);
+                    chrSetMoving(self, TRUE);
 
                     dx = hitpos.f[0] - gunpos.f[0];
                     dy = hitpos.f[1] - gunpos.f[1];
@@ -1846,11 +1781,12 @@ static void chrFireHand(ChrRecord *self, s32 hand)
 
                     shotDistSq = (dx * dx) + (dy * dy) + (dz * dz);
 
+                    // Rockets and grenades are only fired at something over 4 m away
                     if (weapon->weaponnum == ITEM_ROCKETLAUNCH)
                     {
                         if (((dx * dx) + (dy * dy) + (dz * dz)) > 160000.0f)
                         {
-                            rocket = weaponCreateFromModel(PROP_CHRROCKET, 0x56);
+                            rocket = weaponCreateFromModel(PROP_CHRROCKET, ITEM_ROCKETROUND);
                             if (rocket != NULL)
                             {
                                 mtx4LoadIdentity(&rocketMtx);
@@ -1901,7 +1837,7 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                     {
                         if (((dx * dx) + (dy * dy) + (dz * dz)) > 160000.0f)
                         {
-                            grenade = weaponCreateFromModel(PROP_CHRGRENADEROUND, 0x57);
+                            grenade = weaponCreateFromModel(PROP_CHRGRENADEROUND, ITEM_GRENADEROUND);
                             if (grenade != NULL)
                             {
                                 mtx4LoadIdentity(&grenadeMtx);
@@ -1912,7 +1848,7 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                                 mtx4LoadYRotation(subroty, &grenadeYRot);
                                 mtx4MultAffineInPlace(&grenadeYRot, &grenadeRot);
                                 grenade->timer = CHRLV_DEFAULT_TIMER;
-                                gunLaunchProjectile((ObjectRecord *) grenade, &gunpos, guntile, &grenadeRot, &grenadeSpeed, &grenadeMtx, self_prop);
+                                gunLaunchProjectile((ObjectRecord *)grenade, &gunpos, guntile, &grenadeRot, &grenadeSpeed, &grenadeMtx, self_prop);
 
                                 if (grenade->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                                 {
@@ -1980,9 +1916,9 @@ static void chrFireHand(ChrRecord *self, s32 hand)
 
                         if (showHit != 0)
                         {
-                            if (hittile != 0)
+                            if (hittile != NULL)
                             {
-                                sparkCreate(&hitpos, 1, 26.0f, (s16) hittile->room);
+                                sparkCreate(&hitpos, 1, 26.0f, (s16)hittile->room);
                             }
 
                             if (g_StanHit.prop != NULL)
@@ -1993,7 +1929,7 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                                 {
                                     if ((self->chrflags & CHRFLAG_CAN_SHOOT_CHRS) != 0)
                                     {
-                                        chrTakeShot(g_StanHit.prop->chr, 0xF, &shotdir, weapon->weaponnum, 0);
+                                        chrTakeShot(g_StanHit.prop->chr, HIT_CHEST, &shotdir, weapon->weaponnum, FALSE);
                                     }
                                 }
                                 else if ((g_StanHit.prop->type == PROP_TYPE_OBJ) || (g_StanHit.prop->type == PROP_TYPE_WEAPON))
@@ -2070,7 +2006,7 @@ void chrTriggerFireWeapon(ChrRecord *self)
         self->hidden &= ~CHRHIDDEN_FIRE_WEAPON_RIGHT;
     }
 
-     if (self->hidden & CHRHIDDEN_FIRE_WEAPON_LEFT)
+    if (self->hidden & CHRHIDDEN_FIRE_WEAPON_LEFT)
     {
         chrFireHand(self, GUNLEFT);
 
@@ -2079,6 +2015,10 @@ void chrTriggerFireWeapon(ChrRecord *self)
 }
 
 
+/**
+ * A roll that ends kneeling (g_ChrFireAnims[2] and [3]) goes into kneeling fire
+ * (g_ChrFireAnims[1]) instead of standing up. FALSE for other rolls and attacks.
+ */
 static s32 chrAttackRollToKneel(ChrRecord *self)
 {
     Model *model;
@@ -2088,20 +2028,14 @@ static s32 chrAttackRollToKneel(ChrRecord *self)
     if ((self->act_attackroll.animfloats == &g_ChrFireAnims[2]) || (self->act_attackroll.animfloats == &g_ChrFireAnims[3]))
     {
         model = self->model;
-        flip = (s32) model->flip;
+        flip = (s32)model->flip;
         self->act_attackroll.turning = 2;
         self->act_attackroll.animfloats = &g_ChrFireAnims[1];
         self->sleep = 0;
 
         p = &g_ChrFireAnims[1];
 
-        modelSetAnimation(
-            model,
-            (void *) p->anim.anim,
-            flip,
-            p->shoot_end_frame,
-            chrGetGuard007SpeedRating(self, 0.7f, 1.12f),
-            22.0f);
+        modelSetAnimation(model, p->anim.anim, flip, p->shoot_end_frame, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 22.0f);
 
         if (g_ChrFireAnims[1].end_frame >= 0.0f)
         {
@@ -2115,6 +2049,10 @@ static s32 chrAttackRollToKneel(ChrRecord *self)
 }
 
 
+/**
+ * After the last shot, plays the attack's animation on from the end of the recoil (or of
+ * the shooting).
+ */
 static void chrAttackRollResumeAfterShot(ChrRecord *self)
 {
     Model *model;
@@ -2123,23 +2061,11 @@ static void chrAttackRollResumeAfterShot(ChrRecord *self)
 
     if (self->act_attackroll.animfloats->recoil_end_frame > 0.0f)
     {
-        modelSetAnimation(
-            model,
-            modelGetAnim(model),
-            (s32) model->flip,
-            self->act_attackroll.animfloats->recoil_end_frame,
-            chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
-            8.0f);
+        modelSetAnimation(model, modelGetAnim(model), (s32)model->flip, self->act_attackroll.animfloats->recoil_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 8.0f);
     }
     else
     {
-        modelSetAnimation(
-            model,
-            modelGetAnim(model),
-            (s32) model->flip,
-            self->act_attackroll.animfloats->shoot_end_frame,
-            chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
-            8.0f);
+        modelSetAnimation(model, modelGetAnim(model), (s32)model->flip, self->act_attackroll.animfloats->shoot_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 8.0f);
     }
 
     if (self->act_attackroll.animfloats->end_frame >= 0.0f)
@@ -2149,21 +2075,29 @@ static void chrAttackRollResumeAfterShot(ChrRecord *self)
 }
 
 
+/**
+ * The shared tick of ACT_ATTACK and ACT_ATTACKROLL (the roll's fields are laid out as the
+ * attack's): stops an attack whose target hasn't been hit for a while, replays the
+ * firing part of the animation for each shot, turns to the target, aims, and sets each
+ * hand firing.
+ */
 static void chrTickAttackCommon(ChrRecord *self)
 {
     s32 i;
     Model *self_model;
     f32 df;
     f32 speed;
-    f32 fp1; // 92
+    f32 startframe;
     f32 frame;
-    f32 fp2;
-    f32 fn40; // 80
-    f32 fanon1; // 76
+    f32 endframe;
+    f32 angleoffset;
+    f32 turnendframe;
 
     self_model = self->model;
     frame = modelGetAnimFrame(self_model);
 
+    // Half a second of firing without the shots counting as aimed at the target (see
+    // chrFireHand): give up.
     if (
 #ifdef REFRESH_PAL
         (self->act_attack.attack_time < (self->act_attack.lastFire60 - 25))
@@ -2175,19 +2109,13 @@ static void chrTickAttackCommon(ChrRecord *self)
         if (((self->act_attack.animfloats->shoot_start_frame + 10.0f) < frame)
             && (frame < self->act_attack.animfloats->shoot_end_frame))
         {
-            if (((self->act_attack.animfloats->recoil_end_frame < 0.0f)) || (frame < self->act_attack.animfloats->recoil_end_frame))
+            if ((self->act_attack.animfloats->recoil_end_frame < 0.0f) || (frame < self->act_attack.animfloats->recoil_end_frame))
             {
                 if (self->act_attack.doRecoil == 0)
                 {
-                    if (chrAttackRollToKneel(self) == 0)
+                    if (!chrAttackRollToKneel(self))
                     {
-                        modelSetAnimation(
-                            self_model,
-                            modelGetAnim(self_model),
-                            (s32) self_model->flip,
-                            self->act_attack.animfloats->shoot_end_frame,
-                            chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
-                            8.0f);
+                        modelSetAnimation(self_model, modelGetAnim(self_model), (s32)self_model->flip, self->act_attack.animfloats->shoot_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 8.0f);
 
                         if (self->act_attack.animfloats->end_frame >= 0.0f)
                         {
@@ -2200,7 +2128,7 @@ static void chrTickAttackCommon(ChrRecord *self)
                     chrAttackRollResumeAfterShot(self);
                 }
 
-                self->act_attack.numShots = (s8) (self->act_attack.maxShots + 1);
+                self->act_attack.numShots = self->act_attack.maxShots + 1;
                 frame = modelGetAnimFrame(self_model);
             }
         }
@@ -2210,7 +2138,7 @@ static void chrTickAttackCommon(ChrRecord *self)
     {
         if ((self->act_attack.doOneBurst != 0) || (self->act_attack.maxShots < self->act_attack.numShots))
         {
-            if (chrAttackRollToKneel(self) == 0)
+            if (!chrAttackRollToKneel(self))
             {
                 if ((self->act_attack.attacktype & TARGET_BOND) != 0)
                 {
@@ -2229,43 +2157,45 @@ static void chrTickAttackCommon(ChrRecord *self)
         }
         else if (self->act_attack.fired != 0)
         {
+            // Replay the shot (or recoil) part of the animation for the next shot, at
+            // a speed that makes it last 12 to 16 frames.
             speed = 0.5f;
 
             if (self->act_attack.doRecoil != 0)
             {
                 if (self->act_attack.animfloats->recoil_start_frame > 0.0f)
                 {
-                    fp1 = self->act_attack.animfloats->recoil_start_frame;
+                    startframe = self->act_attack.animfloats->recoil_start_frame;
                 }
                 else
                 {
-                    fp1 = self->act_attack.animfloats->shoot_start_frame;
+                    startframe = self->act_attack.animfloats->shoot_start_frame;
                 }
 
                 if (self->act_attack.animfloats->recoil_end_frame > 0.0f)
                 {
-                    fp2 = self->act_attack.animfloats->recoil_end_frame;
+                    endframe = self->act_attack.animfloats->recoil_end_frame;
                 }
                 else
                 {
-                    fp2 = self->act_attack.animfloats->shoot_end_frame;
+                    endframe = self->act_attack.animfloats->shoot_end_frame;
                 }
             }
             else
             {
-                fp1 = self->act_attack.animfloats->shoot_start_frame;
+                startframe = self->act_attack.animfloats->shoot_start_frame;
 
                 if (self->act_attack.animfloats->recoil_start_frame > 0.0f)
                 {
-                    fp2 = self->act_attack.animfloats->recoil_start_frame;
+                    endframe = self->act_attack.animfloats->recoil_start_frame;
                 }
                 else
                 {
-                    fp2 = self->act_attack.animfloats->shoot_end_frame;
+                    endframe = self->act_attack.animfloats->shoot_end_frame;
                 }
             }
 
-            df = fp2 - fp1;
+            df = endframe - startframe;
             if (df < 12.0f)
             {
                 speed = (df * 0.5f) / 12.0f;
@@ -2282,8 +2212,8 @@ static void chrTickAttackCommon(ChrRecord *self)
 
             self->act_attack.fired = 0;
 
-            modelSetAnimation(self_model, modelGetAnim(self_model), (s32) self_model->flip, fp1, speed, 8.0f);
-            modelSetAnimEndFrame(self_model, fp2);
+            modelSetAnimation(self_model, modelGetAnim(self_model), (s32)self_model->flip, startframe, speed, 8.0f);
+            modelSetAnimEndFrame(self_model, endframe);
         }
 
         frame = modelGetAnimFrame(self_model);
@@ -2291,43 +2221,40 @@ static void chrTickAttackCommon(ChrRecord *self)
 
     if ((self->act_attack.attacktype & TARGET_DONTTURN) == 0)
     {
-        fn40 = self->act_attack.animfloats->angle_offset;
-        fanon1 = self->act_attack.animfloats->turnEndFrame;
+        angleoffset = self->act_attack.animfloats->angle_offset;
+        turnendframe = self->act_attack.animfloats->turnEndFrame;
 
         if ((self->act_attack.attacktype & TARGET_AIM_ONLY) != 0)
         {
-            if (modelGetAnimEndFrame(self_model) < fanon1)
+            if (modelGetAnimEndFrame(self_model) < turnendframe)
             {
-                fanon1 = modelGetAnimEndFrame(self_model);
+                turnendframe = modelGetAnimEndFrame(self_model);
             }
         }
 
         if (self_model->flip != GUNRIGHT)
         {
-            fn40 = M_TAU_F - fn40;
+            angleoffset = M_TAU_F - angleoffset;
         }
 
-        self->act_attack.turning = chrSetSubroty(
-            self,
-            (s32) self->act_attack.turning,
-            fanon1,
-            chrGetGuard007SpeedRating(self, 1.0f, 1.6f),
-            fn40);
+        self->act_attack.turning = chrSetSubroty(self, (s32)self->act_attack.turning, turnendframe, chrGetGuard007SpeedRating(self, 1.0f, 1.6f), angleoffset);
     }
 
     if ((self->act_attack.animfloats->aim_start_frame < frame) && (frame < self->act_attack.animfloats->aim_end_frame))
     {
-        chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.hasGun[1], (s32) self->act_attack.hasGun[0], 1.0f);
+        chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32)self->act_attack.hasGun[1], (s32)self->act_attack.hasGun[0], 1.0f);
     }
     else
     {
         chrResetAimend(self);
     }
 
-    for (i=0; i<2; i++)
+    for (i = 0; i < 2; i++)
     {
         if (self->act_attack.hasGun[i] != 0)
         {
+            // Automatic guns fire for the whole shooting part of the animation; a roll
+            // slows down while firing so the burst lasts long enough.
             if (self->act_attack.singleShot[i] == 0)
             {
                 if ((self->act_attack.animfloats->shoot_start_frame <= frame) && (frame < self->act_attack.animfloats->shoot_end_frame))
@@ -2346,9 +2273,9 @@ static void chrTickAttackCommon(ChrRecord *self)
                         if (df < 30.0f)
                         {
 #ifdef REFRESH_PAL
-                            if ((s32) self->act_attack.numWaitTicks >= (50 - ((s32) df * 2)))
+                            if ((s32)self->act_attack.numWaitTicks >= (50 - ((s32)df * 2)))
 #else
-                            if ((s32) self->act_attack.numWaitTicks >= (60 - ((s32) df * 2)))
+                            if ((s32)self->act_attack.numWaitTicks >= (60 - ((s32)df * 2)))
 #endif
                             {
                                 modelSetAnimSpeed(self_model, 0.5f, 0.0f);
@@ -2372,33 +2299,21 @@ static void chrTickAttackCommon(ChrRecord *self)
                 else
                 {
                     chrSetHandFiring(self, i, 0);
-
-                    if (self->actiontype == ACT_ATTACKROLL)
-                    {
-                        modelSetAnimSpeed(self_model, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 0.0f);
-                    }
-                    else
-                    {
-                        modelSetAnimSpeed(self_model, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 0.0f);
-                    }
+                    modelSetAnimSpeed(self_model, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 0.0f);
                 }
             }
             else if (
                 (self->act_attack.fired == 0)
                 && ((i == self->act_attack.nextGun) || (self->act_attack.singleShot[self->act_attack.nextGun] == 0))
-                && (
-                    (
-                        ( self->act_attack.animfloats->recoil_start_frame >= 0.0f)
+                && (((self->act_attack.animfloats->recoil_start_frame >= 0.0f)
                         && (self->act_attack.animfloats->recoil_start_frame <= frame)
                         && (frame <= self->act_attack.animfloats->recoil_end_frame))
-                    ||
-                    (
-                        (self->act_attack.animfloats->recoil_start_frame < 0.0f)
-                        && (self->act_attack.animfloats->shoot_start_frame <= frame)
-                    )))
+                    || ((self->act_attack.animfloats->recoil_start_frame < 0.0f)
+                        && (self->act_attack.animfloats->shoot_start_frame <= frame))))
             {
+                // A single shot gun fires once per replay of the shot, the hands taking turns
                 self->act_attack.fired = 1;
-                self->act_attack.nextGun = (s8) (1 - self->act_attack.nextGun);
+                self->act_attack.nextGun = 1 - self->act_attack.nextGun;
                 self->act_attack.numShots++;
                 self->act_attack.lastFire60 = g_GlobalTimer;
 
@@ -2439,13 +2354,7 @@ void chrTickAttack(ChrRecord *self)
                 endframe = self->act_attack.animfloats->shoot_end_frame;
             }
 
-            modelSetAnimation(
-                self_model,
-                modelGetAnim(self_model),
-                (s32) self_model->flip,
-                endframe,
-                chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
-                16.0f);
+            modelSetAnimation(self_model, modelGetAnim(self_model), (s32)self_model->flip, endframe, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
 
             if (self->act_attack.animfloats->end_frame >= 0.0f)
             {
@@ -2463,20 +2372,19 @@ void chrTickAttack(ChrRecord *self)
             if (modelGetAnimEndFrame(self_model) <= frame)
             {
 #if defined(VERSION_US)
+                // PAL doesn't set TARGET_AIM_ONLY
                 self->act_attack.attacktype |= TARGET_AIM_ONLY;
-#else
-                // don't set TARGET_AIM_ONLY
 #endif
                 self->act_attack.attacktype &= ~TARGET_DONTTURN;
 
                 if (self->act_attack.standing != 0)
                 {
-                    chrAttackStand(self, (s32) self->act_attack.attacktype, self->act_attack.entityid);
+                    chrAttackStand(self, (s32)self->act_attack.attacktype, self->act_attack.entityid);
 
                     return;
                 }
 
-                chrAttackKneel(self, (s32) self->act_attack.attacktype, self->act_attack.entityid);
+                chrAttackKneel(self, (s32)self->act_attack.attacktype, self->act_attack.entityid);
 
                 return;
             }
@@ -2489,7 +2397,7 @@ void chrTickAttack(ChrRecord *self)
     {
         if ((self->act_attack.attacktype & TARGET_DONTTURN) != 0)
         {
-            if (chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32) self->act_attack.hasGun[1], (s32) self->act_attack.hasGun[0], 0.2f) == 0)
+            if (chrUpdateAimendsideback(self, self->act_attack.animfloats, (s32)self->act_attack.hasGun[1], (s32)self->act_attack.hasGun[0], 0.2f) == 0)
             {
                 self->act_attack.type_of_motion = 1;
             }
@@ -2512,13 +2420,7 @@ void chrTickAttack(ChrRecord *self)
         {
             if (modelGetAnimEndFrame(self_model) <= frame)
             {
-                modelSetAnimation(
-                    self_model,
-                    modelGetAnim(self_model),
-                    (s32) self_model->flip,
-                    self->act_attack.animfloats->recoil_end_frame,
-                    chrGetGuard007SpeedRating(self, 0.5f, 0.8f),
-                    16.0f);
+                modelSetAnimation(self_model, modelGetAnim(self_model), (s32)self_model->flip, self->act_attack.animfloats->recoil_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
 
                 if (self->act_attack.doOneBurst != 0)
                 {
@@ -2539,30 +2441,54 @@ void chrTickAttack(ChrRecord *self)
 }
 
 
+/**
+ * Which of g_ChrFireAnims (0 to 19) a firing animation is, or -1.
+ */
+static s32 chrGetRollAnimIndex(struct weapon_firing_animation_table *anim)
+{
+    s32 i;
+
+    for (i = 0; i < 20; i++)
+    {
+        if (anim == &g_ChrFireAnims[i])
+        {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+
+/**
+ * A one-handed roll (g_ChrFireAnims[4] to [7]) goes on into firing from a crouch
+ * (g_ChrFireAnims[8] to [19], with both guns from [12]), blending over the frames
+ * it takes to turn back to face the target.
+ */
 void chrTickAttackRoll(ChrRecord *self)
 {
-    Model *model; // 68
+    // Blend frames for g_ChrFireAnims[8] to [19]
+    static const f32 turnframes_for_anim[12] = {24.0f, 24.0f, 32.0f, 44.0f, 24.0f, 34.0f, 32.0f, 44.0f, 24.0f, 34.0f, 32.0f, 44.0f};
+    Model *model;
     f32 frame;
-    struct weapon_firing_animation_table *nextanim; // 60
-    s32 flip; // 56
-    f32 turnframes; // 52
+    struct weapon_firing_animation_table *nextanim;
+    s32 flip;
+    f32 turnframes;
     ModelRwData_HeaderRecord *rootrw;
+    s32 index;
+    s32 nextindex;
 
     if (self->act_attackroll.oneHanded != 0)
     {
         model = self->model;
         frame = modelGetAnimFrame(model);
+        index = chrGetRollAnimIndex(self->act_attackroll.animfloats);
 
-        if (
-            (self->act_attackroll.animfloats == &g_ChrFireAnims[4])
-            || (self->act_attackroll.animfloats == &g_ChrFireAnims[5])
-            || (self->act_attackroll.animfloats == &g_ChrFireAnims[6])
-            || (self->act_attackroll.animfloats == &g_ChrFireAnims[7])
-        )
+        if ((index >= 4) && (index <= 7))
         {
             if (self->act_attackroll.animfloats->end_frame <= frame)
             {
-                flip = (s32) model->flip;
+                flip = (s32)model->flip;
                 nextanim = &self->act_attackroll.animfloats[4];
 
                 turnframes = 16.0f;
@@ -2579,60 +2505,18 @@ void chrTickAttackRoll(ChrRecord *self)
                     }
                 }
 
-                if (nextanim == &g_ChrFireAnims[8])
+                nextindex = chrGetRollAnimIndex(nextanim);
+
+                if ((nextindex >= 8) && (nextindex <= 19))
                 {
-                    turnframes = 24.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[9])
-                {
-                    turnframes = 24.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[10])
-                {
-                    turnframes = 32.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[11])
-                {
-                    turnframes = 44.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[12])
-                {
-                    turnframes = 24.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[13])
-                {
-                    turnframes = 34.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[14])
-                {
-                    turnframes = 32.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[15])
-                {
-                    turnframes = 44.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[16])
-                {
-                    turnframes = 24.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[17])
-                {
-                    turnframes = 34.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[18])
-                {
-                    turnframes = 32.0f;
-                }
-                else if (nextanim == &g_ChrFireAnims[19])
-                {
-                    turnframes = 44.0f;
+                    turnframes = turnframes_for_anim[nextindex - 8];
                 }
 
                 self->act_attackroll.turning = 2;
                 self->act_attackroll.animfloats = nextanim;
                 self->sleep = 0;
 
-                modelSetAnimation(model, (void *) nextanim->anim.anim, flip, nextanim->start_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), turnframes);
+                modelSetAnimation(model, nextanim->anim.anim, flip, nextanim->start_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), turnframes);
 
                 if (self->act_attackroll.doRecoil != 0)
                 {
@@ -2658,7 +2542,7 @@ void chrTickAttackRoll(ChrRecord *self)
                 {
                     rootrw = &modelGetNodeRwData(model, model->obj->RootNode)->Header;
                     rootrw->turnFrames = turnframes;
-                    rootrw->turnPerFrame = (-self->act_attackroll.animfloats->angle_offset / turnframes);
+                    rootrw->turnPerFrame = -self->act_attackroll.animfloats->angle_offset / turnframes;
 
                     if (flip != GUNRIGHT)
                     {
@@ -2667,28 +2551,13 @@ void chrTickAttackRoll(ChrRecord *self)
                 }
             }
         }
-        else if (
-            (
-                (self->act_attackroll.animfloats == &g_ChrFireAnims[8])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[9])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[10])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[11])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[12])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[13])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[14])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[15])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[16])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[17])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[18])
-                || (self->act_attackroll.animfloats == &g_ChrFireAnims[19])
-            )
-            && (self->act_attackroll.doRecoil == 0))
+        else if ((index >= 8) && (index <= 19) && (self->act_attackroll.doRecoil == 0))
         {
             if ((self->act_attackroll.animfloats->recoil_end_frame > 0.0f) && (frame <= self->act_attackroll.animfloats->recoil_end_frame))
             {
                 if (modelGetAnimEndFrame(model) <= frame)
                 {
-                    modelSetAnimation(model, modelGetAnim(model), (s32) model->flip, self->act_attackroll.animfloats->recoil_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+                    modelSetAnimation(model, modelGetAnim(model), (s32)model->flip, self->act_attackroll.animfloats->recoil_end_frame, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
 
                     if (self->act_attackroll.doOneBurst != 0)
                     {
@@ -2705,6 +2574,7 @@ void chrTickAttackRoll(ChrRecord *self)
             }
         }
     }
+
     chrTickAttackCommon(self);
 }
 
@@ -2761,7 +2631,7 @@ void chrTickAttackWalk(ChrRecord *self)
 
     if (self->act_attackwalk.clock_timer30 >= CHRLV_ATTACKWALK_CLOCK_TIMER30_MIN)
     {
-        chrUpdateAimendsideback(self, self->act_attackwalk.animfloats, (s32) self->act_attackwalk.hasGun[1], (s32) self->act_attackwalk.hasGun[0], 1.0f);
+        chrUpdateAimendsideback(self, self->act_attackwalk.animfloats, (s32)self->act_attackwalk.hasGun[1], (s32)self->act_attackwalk.hasGun[0], 1.0f);
     }
     else
     {
@@ -2770,7 +2640,7 @@ void chrTickAttackWalk(ChrRecord *self)
 
     if (self->act_attackwalk.facedTarget && !(self->act_attackwalk.clock_timer30 < CHRLV_ATTACKWALK_CLOCK_TIMER30_MAX))
     {
-        for (i=0; i<2; i++)
+        for (i = 0; i < 2; i++)
         {
             if (self->act_attackwalk.hasGun[i])
             {

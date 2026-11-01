@@ -1605,8 +1605,12 @@ typedef union
          */
         s32                                   attack_time;
 
-        s32                                   unk4c[2];
-        s32                                   unk54[2];
+        // The same fields as act_attack's: the shared attack code reads a roll through
+        // act_attack. A roll always targets the current player.
+        u32                                   attacktype;
+        u32                                   entityid;
+        u32                                   standing;
+        s32                                   type_of_motion;
     };
 
 
@@ -3315,15 +3319,6 @@ typedef struct stagesetup
 
 #pragma endregion stagesetup.h
 
-    typedef struct sfxRecord //Need 24 size
-    {
-        ALSoundState *state; //0
-        s32           Volume2;   //4
-        s32           sfxID;     //8
-        s32           Volume;    //12
-        coord3d      *pos;       //16
-        ObjectRecord *Obj;       //20
-    } sfxRecord;
 
 typedef struct object_standard {
     s16 scale;

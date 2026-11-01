@@ -41,9 +41,7 @@
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "game/player/player.h"
-#include "game/prop/propobj.h"
 #include "game/nav/stan.h"
-#include "game/model/model.h"
 #include "game/world/surface.h"
 #include "game/math/physics.h"
 #include "game/world/bgfog.h"
@@ -58,15 +56,9 @@
 #define FALLSPEED_DECAY      0.9f         /* 0x3F666666 */
 #endif
 
-// forward declarations
+static void chrUpdateAimProperties(ChrRecord *self);
+static void chrUpdateAnim(ChrRecord *chr, s32 tickamount);
 
-void chrUpdateAimProperties(ChrRecord *self);
-void chrUpdateAnim(ChrRecord *chr, s32 tickamount);
-f32  file007Health(void);
-
-// end forward declarations
-
-// data
 f32 g_ChrAnimRate = 0;
 s32 g_ChrDebugAnimOverride = 0;
 
@@ -74,11 +66,9 @@ s32 g_ChrDebugAnimIndex = 0;
 s32 g_ChrDebugPaused = 0;
 s32 g_ChrDebugStep = 0;
 
-
-s32 g_ChrUnused = 0; // Set to 0 but otherwise never used.
 s32 g_ChrShowPatrols = FALSE;
 s32 g_NextChrNum = 5000;
-ChrRecord *g_ChrSlots = 0;
+ChrRecord *g_ChrSlots = NULL;
 
 /* For each chr slot, the two fields the per-frame scans of every slot read (chrnum, only
    while the slot holds a chr, and lastseetarget60), so chrFindByLiteralId and bgChrsTick
@@ -86,11 +76,7 @@ ChrRecord *g_ChrSlots = 0;
 ChrSlotHot *g_ChrSlotHot = NULL;
 s32 g_NumChrSlots = 0;
 
-
-
-rgba_u8 gBloodColour = { {0x5a, 0, 0, 0}};
-
-
+rgba_u8 gBloodColour = {{0x5a, 0, 0, 0}};
 
 u32 num_bodies = 0;
 u32 num_male_heads = 0;
@@ -163,7 +149,7 @@ s32 objectiveregisters1 = 0;
 /**
  * List of characters updated every tick.
 */
-ChrRecord* g_BgChrs = 0;
+ChrRecord *g_BgChrs = NULL;
 static ChrRecord g_BgChrTemplate = { 0 };
 
 /**
@@ -217,23 +203,22 @@ f32 g_ChrSpeedRunFemale = 0;
 f32 g_ChrSpeedSprintOneHanded2 = 0;
 
 
-
-
-
-
-
 s32 chrsGetNumSlots(void)
 {
-  return g_NumChrSlots;
+    return g_NumChrSlots;
 }
 
 
 Vertex *dynAllocateVerticesDiscard(s32 count)
 {
-  return dynAllocate(count * sizeof(Vertex));
+    return dynAllocate(count * sizeof(Vertex));
 }
 
 
+/**
+ * CHRHIDDEN_MOVING is set while chrMoveWithCollision moves the guard, so that its own
+ * collision bounds don't block it.
+ */
 void chrSetMoving(ChrRecord *self, bool unset)
 {
     if (unset)
@@ -244,172 +229,137 @@ void chrSetMoving(ChrRecord *self, bool unset)
     {
         self->hidden |= CHRHIDDEN_MOVING;
     }
-    return;
 }
 
 
+// What a guard's movement collides with
+#define CHR_MOVE_CDTYPES (CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER)
+
+/**
+ * The tile at (x, z) if a guard of this width and height can move there in a straight
+ * line from src, otherwise NULL.
+ */
+static StandTile *chrTryMoveTo(StandTile *stan, coord3d *src, f32 x, f32 z, f32 width, f32 top, f32 bottom)
+{
+    StandTile *tile = stan;
+
+    if (stanTestLineUnobstructed(&tile, src->x, src->z, x, z, CHR_MOVE_CDTYPES, top, bottom, 0.0f, 1.0f)
+        && (stanTestVolume(&tile, x, z, width, CHR_MOVE_CDTYPES, top, bottom) < 0))
+    {
+        return tile;
+    }
+
+    return NULL;
+}
+
+
+/**
+ * Tries the part of the move (delta, from src) along the direction (dirx, dirz). On
+ * success moves dst there and returns the new tile.
+ */
+static StandTile *chrTrySlide(ChrRecord *guard, StandTile *stan, coord3d *src, coord3d *dst, coord3d *delta, f32 dirx, f32 dirz, f32 width, f32 top, f32 bottom)
+{
+    StandTile *tile;
+    f32 scale;
+    f32 along;
+    f32 x;
+    f32 z;
+
+    scale = 1.0f / sqrtf((dirz * dirz) + (dirx * dirx));
+    dirx *= scale;
+    dirz *= scale;
+
+    along = (dirz * delta->z) + (delta->x * dirx);
+    x = (dirx * along) + src->x;
+    z = (dirz * along) + src->z;
+
+    tile = chrTryMoveTo(stan, src, x, z, width, top, bottom);
+
+    if (tile != NULL)
+    {
+        dst->x = x;
+        dst->z = z;
+        guard->invalidmove = 2;
+    }
+
+    return tile;
+}
+
+
+/**
+ * Moves a guard from src towards dst. If the way is blocked, slides along the edge it hit,
+ * or around the edge's end if dst is within the guard's width of a corner, and moves dst
+ * to where it ends up. Returns the new tile, or NULL (and invalidmove = 1) if the guard
+ * can't move. invalidmove is 0 for a clean move (with updateLastMoveOk) and 2 for a slide.
+ */
 StandTile *chrMoveWithCollision(ChrRecord *guard, StandTile *stan, coord3d *src, coord3d *dst, s32 updateLastMoveOk)
 {
     StandTile *ret;
-    StandTile *tile;
-    f32 height;
-    f32 always_20;
+    f32 top;
+    f32 bottom;
     f32 width;
     coord3d edgeA;
     coord3d edgeB;
     coord3d delta;
-    coord3d dir;
-    f32 tmp;
-    s32 hasprojection;
-    coord3d newpos;
+    f32 dx;
+    f32 dz;
+    f32 widthsq;
 
-    ret = NULL;
-    tile = stan;
-
-    chrGetChrWidthHeight(guard->prop, &width, &height, &always_20);
-    chrSetMoving(guard, 0);
+    chrGetChrWidthHeight(guard->prop, &width, &top, &bottom);
+    chrSetMoving(guard, FALSE);
     stanResetHits();
 
-    if (stanTestLineUnobstructed(&tile, src->x, src->z, dst->x, dst->z, 0x1f, height, always_20, 0.0f, 1.0f))
-    {
-        if (stanTestVolume(&tile, dst->x, dst->z, width, 0x1f, height, always_20) < 0)
-        {
-            if (updateLastMoveOk)
-            {
-                guard->invalidmove = 0;
-                guard->lastmoveok60 = g_GlobalTimer;
-            }
+    ret = chrTryMoveTo(stan, src, dst->x, dst->z, width, top, bottom);
 
-            ret = tile;
-            goto done;
+    if (ret != NULL)
+    {
+        if (updateLastMoveOk)
+        {
+            guard->invalidmove = 0;
+            guard->lastmoveok60 = g_GlobalTimer;
         }
     }
-
-    hasprojection = 0;
-
-    if (stanGetCollisionEdge(&edgeA, &edgeB))
+    else if (stanGetCollisionEdge(&edgeA, &edgeB))
     {
         delta.x = dst->x - src->x;
         delta.z = dst->z - src->z;
 
+        // Slide along the edge
         if ((edgeA.x != edgeB.x) || (edgeA.z != edgeB.z))
         {
-            hasprojection = 1;
-
-            dir.x = edgeB.x - edgeA.x;
-            dir.z = edgeB.z - edgeA.z;
-
-            tmp = 1.0f / sqrtf((dir.z * dir.z) + (dir.x * dir.x));
-
-            dir.x *= tmp;
-            dir.z *= tmp;
-
-            tmp = (dir.z * delta.z) + (delta.x * dir.x);
-
-            newpos.x = (dir.x * tmp) + src->x;
-            newpos.z = (dir.z * tmp) + src->z;
-
-
-            tile = stan;
+            ret = chrTrySlide(guard, stan, src, dst, &delta, edgeB.x - edgeA.x, edgeB.z - edgeA.z, width, top, bottom);
         }
 
-        if (hasprojection)
+        if (ret == NULL)
         {
-            if (stanTestLineUnobstructed(&tile, src->x, src->z, newpos.x, newpos.z, 0x1f, height, always_20, 0.0f, 1.0f))
+            // Slide around a corner the guard is pushing into: at right angles to the
+            // line from src to the corner.
+            widthsq = width * width;
+
+            dx = edgeA.x - dst->x;
+            dz = edgeA.z - dst->z;
+
+            if (((dz * dz) + (dx * dx)) <= widthsq)
             {
-                if (stanTestVolume(&tile, newpos.x, newpos.z, width, 0x1f, height, always_20) < 0)
+                if ((edgeA.x != src->x) || (edgeA.z != src->z))
                 {
-                    dst->x = newpos.x;
-                    dst->z = newpos.z;
-                    guard->invalidmove = 2;
-                    ret = tile;
-                    goto done;
+                    ret = chrTrySlide(guard, stan, src, dst, &delta, -(edgeA.z - src->z), edgeA.x - src->x, width, top, bottom);
                 }
             }
-        }
-
-        tmp = width * width;
-
-        dir.x = edgeA.x - dst->x;
-        dir.z = edgeA.z - dst->z;
-
-        if (((dir.z * dir.z) + (dir.x * dir.x)) <= tmp)
-        {
-            if ((edgeA.x == src->x) && (edgeA.z == src->z))
+            else
             {
-                goto done;
-            }
+                dx = edgeB.x - dst->x;
+                dz = edgeB.z - dst->z;
 
-            dir.x = -(edgeA.z - src->z);
-            dir.z = edgeA.x - src->x;
-
-            tmp = 1.0f / sqrtf((dir.z * dir.z) + (dir.x * dir.x));
-
-            dir.x *= tmp;
-            dir.z *= tmp;
-
-            tmp = (dir.z * delta.z) + (delta.x * dir.x);
-
-            newpos.x = (dir.x * tmp) + src->x;
-            newpos.z = (dir.z * tmp) + src->z;
-
-            tile = stan;
-
-            if (stanTestLineUnobstructed(&tile, src->x, src->z, newpos.x, newpos.z, 0x1f, height, always_20, 0.0f, 1.0f))
-            {
-                if (stanTestVolume(&tile, newpos.x, newpos.z, width, 0x1f, height, always_20) < 0)
+                if ((((dz * dz) + (dx * dx)) <= widthsq) && ((edgeB.x != src->x) || (edgeB.z != src->z)))
                 {
-                    dst->x = newpos.x;
-                    dst->z = newpos.z;
-                    guard->invalidmove = 2;
-                    ret = tile;
-                    goto done;
-                }
-            }
-        }
-        else
-        {
-            dir.x = edgeB.x - dst->x;
-            dir.z = edgeB.z - dst->z;
-
-            if (((dir.z * dir.z) + (dir.x * dir.x)) <= tmp)
-            {
-                if ((edgeB.x == src->x) && (edgeB.z == src->z))
-                {
-                    goto done;
-                }
-
-                dir.x = -(edgeB.z - src->z);
-                dir.z = edgeB.x - src->x;
-
-                tmp = 1.0f / sqrtf((dir.z * dir.z) + (dir.x * dir.x));
-
-                dir.x *= tmp;
-                dir.z *= tmp;
-
-                tmp = (dir.z * delta.z) + (delta.x * dir.x);
-
-                newpos.x = (dir.x * tmp) + src->x;
-                newpos.z = (dir.z * tmp) + src->z;
-
-                tile = stan;
-
-                if (stanTestLineUnobstructed(&tile, src->x, src->z, newpos.x, newpos.z, 0x1f, height, always_20, 0.0f, 1.0f))
-                {
-                    if (stanTestVolume(&tile, newpos.x, newpos.z, width, 0x1f, height, always_20) < 0)
-                    {
-                        dst->x = newpos.x;
-                        dst->z = newpos.z;
-                        guard->invalidmove = 2;
-                        ret = tile;
-                    }
+                    ret = chrTrySlide(guard, stan, src, dst, &delta, -(edgeB.z - src->z), edgeB.x - src->x, width, top, bottom);
                 }
             }
         }
     }
 
-done:
-    chrSetMoving(guard, 1);
+    chrSetMoving(guard, TRUE);
 
     if (ret == NULL)
     {
@@ -438,7 +388,8 @@ s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
 
     if (chr->prop->stan != NULL)
     {
-        if ((chr->actiontype == ACT_DIE) && (chr->act_die.timeextra > ground))
+        // Knockback of a death from a hit (chrReactToHit), slowing to a stop
+        if ((chr->actiontype == ACT_DIE) && (chr->act_die.timeextra > 0.0f))
         {
 #ifdef BUGFIX_R1
             tmp = ((model->playspeed * g_GlobalTimerDeltaRaw) * (chr->act_die.timeextra - chr->act_die.elapseextra)) / chr->act_die.timeextra;
@@ -483,7 +434,7 @@ s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
             {
                 rwdata = modelGetNodeRwData(model, model->obj->RootNode);
 
-                chr->chrflags &= ~1;
+                chr->chrflags &= ~CHRFLAG_INIT;
                 chr->manground = chr->ground;
                 chr->sumground = chr->ground / GROUND_SMOOTH_FACTOR;
 
@@ -503,40 +454,24 @@ s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
                     }
                 }
 
+                // On the ground: follow it smoothly and let the push from a fall or
+                // explosion die away.
                 if (chr->manground <= chr->ground)
                 {
-                    i = 0;
-
-                    if (g_ClockTimer > 0)
+                    for (i = 0; i < g_ClockTimer; i++)
                     {
-                        tmp = FALLSPEED_DECAY;
-
-                        do
-                        {
-                            chr->sumground = (chr->sumground * tmp) + chr->ground;
-                            chr->fallspeed.x *= tmp;
-                            chr->fallspeed.z *= tmp;
-                            i++;
-                        }
-                        while (i < g_ClockTimer);
+                        chr->sumground = (chr->sumground * FALLSPEED_DECAY) + chr->ground;
+                        chr->fallspeed.x *= FALLSPEED_DECAY;
+                        chr->fallspeed.z *= FALLSPEED_DECAY;
                     }
 
-                    tmp = 0.1f;
                     chr->manground = chr->sumground * GROUND_SMOOTH_FACTOR;
 
-                    if (chr->fallspeed.x < tmp)
+                    if ((chr->fallspeed.x < 0.1f) && (chr->fallspeed.x > -0.1f)
+                        && (chr->fallspeed.z < 0.1f) && (chr->fallspeed.z > -0.1f))
                     {
-                        if (-0.1f < chr->fallspeed.x)
-                        {
-                            if (chr->fallspeed.z < tmp)
-                            {
-                                if (-0.1f < chr->fallspeed.z)
-                                {
-                                    chr->fallspeed.z = 0.0f;
-                                    chr->fallspeed.x = 0.0f;
-                                }
-                            }
-                        }
+                        chr->fallspeed.z = 0.0f;
+                        chr->fallspeed.x = 0.0f;
                     }
                 }
             }
@@ -571,7 +506,7 @@ s32 chrGetNumFree(void)
 
     for (i = 0; i < g_NumChrSlots; i++)
     {
-        if (g_ChrSlots[i].model == 0)
+        if (g_ChrSlots[i].model == NULL)
         {
             count++;
         }
@@ -583,13 +518,13 @@ s32 chrGetNumFree(void)
 
 void chrSetMaxDamage(ChrRecord *chr, f32 maxdamage)
 {
-    chr->maxdamage = (file007Health() * maxdamage);
+    chr->maxdamage = file007Health() * maxdamage;
 }
 
 
 void chrAddHealth(ChrRecord *chr, f32 health)
 {
-    chr->damage -= (health * file007Health());
+    chr->damage -= health * file007Health();
 }
 
 
@@ -630,14 +565,14 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     modelSetRootPosition(model, pos);
     modelSetRootRotY(model, angle);
 
-    #if defined(VERSION_EU)
+#if defined(VERSION_EU)
     modelSetAnimPlaySpeed(model, g_ChrAnimRate * 1.2f, 0.0f);
-    #else
+#else
     modelSetAnimPlaySpeed(model, g_ChrAnimRate, 0.0f);
-    #endif
+#endif
 
-    chr->chrnum = (s16) g_NextChrNum;
-    g_NextChrNum += 1;
+    chr->chrnum = (s16)g_NextChrNum;
+    g_NextChrNum++;
     chr->headnum = 0;
     chr->bodynum = 0;
     chr->prop = prop;
@@ -731,11 +666,11 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
 
 PropRecord *chrAllocate(Model *model, coord3d *pos, f32 angle, StandTile *tile, AIRecord *ailist)
 {
-    PropRecord * ret;
+    PropRecord *ret;
 
     ret = propAllocate();
 
-    if (ret != 0)
+    if (ret != NULL)
     {
         ret = chrInit(ret, model, pos, angle, tile, ailist);
     }
@@ -755,32 +690,28 @@ void chrFreeResources(PropRecord *prop)
     chr = prop->chr;
     model = chr->model;
 
-    if (chr->gunSounds[0].ptr_SEbuffer1 != NULL && sndGetPlayingState(chr->gunSounds[0].ptr_SEbuffer1) != 0) {
-        sndDeactivate(chr->gunSounds[0].ptr_SEbuffer1);
-    }
-    if (chr->gunSounds[0].ptr_SEbuffer2 != NULL && sndGetPlayingState(chr->gunSounds[0].ptr_SEbuffer2) != 0) {
-        sndDeactivate(chr->gunSounds[0].ptr_SEbuffer2);
-    }
-    if (chr->gunSounds[1].ptr_SEbuffer1 != NULL && sndGetPlayingState(chr->gunSounds[1].ptr_SEbuffer1) != 0) {
-        sndDeactivate(chr->gunSounds[1].ptr_SEbuffer1);
-    }
-    if (chr->gunSounds[1].ptr_SEbuffer2 != NULL && sndGetPlayingState(chr->gunSounds[1].ptr_SEbuffer2) != 0) {
-        sndDeactivate(chr->gunSounds[1].ptr_SEbuffer2);
+    for (s32 i = 0; i < 2; i++)
+    {
+        if ((chr->gunSounds[i].ptr_SEbuffer1 != NULL) && sndGetPlayingState(chr->gunSounds[i].ptr_SEbuffer1))
+        {
+            sndDeactivate(chr->gunSounds[i].ptr_SEbuffer1);
+        }
+
+        if ((chr->gunSounds[i].ptr_SEbuffer2 != NULL) && sndGetPlayingState(chr->gunSounds[i].ptr_SEbuffer2))
+        {
+            sndDeactivate(chr->gunSounds[i].ptr_SEbuffer2);
+        }
     }
 
     modelResetDeformedVertices(model);
     propRemoveFromRooms(prop);
 
-    child = propChild(prop);
-
-    if (child != NULL) {
-        do {
-            obj = (ObjectRecord *)child->obj;
-            prev = child->prev;
-            objDetach(child);
-            objFreePermanently(obj, TRUE);
-            child = prev;
-        } while (child != NULL);
+    for (child = propChild(prop); child != NULL; child = prev)
+    {
+        obj = child->obj;
+        prev = child->prev;
+        objDetach(child);
+        objFreePermanently(obj, TRUE);
     }
 
     modelFreeAnimSlot(model);
@@ -798,7 +729,8 @@ void chrFreeResources(PropRecord *prop)
         }
     }
 
-    if (chr->jointList != NULL) {
+    if (chr->jointList != NULL)
+    {
         jointListFree(chr->jointList);
     }
 }
@@ -810,12 +742,11 @@ void chrsSetAnimRate(f32 rate)
 
     g_ChrAnimRate = rate;
 
-    for (i=0; i<g_NumChrSlots; i++)
+    for (i = 0; i < g_NumChrSlots; i++)
     {
         if (g_ChrSlots[i].model != NULL)
         {
 #if defined(REFRESH_PAL)
-/* should reference D_80047E4C (1.2f) */
             modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate * 1.2f, 600.0f);
 #else
             modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate, 600.0f);
@@ -827,20 +758,24 @@ void chrsSetAnimRate(f32 rate)
 
 f32 chrsGetAnimRate(void)
 {
-  return g_ChrAnimRate;
+    return g_ChrAnimRate;
 }
 
 
-void chrUpdateAimProperties(ChrRecord *self)
+/**
+ * Turns the aim (shoulders and back) a step towards its target, so it gets there over
+ * aimendcount frames.
+ */
+static void chrUpdateAimProperties(ChrRecord *self)
 {
     f32 mult;
 
     if (self->aimendcount >= 2)
     {
 #if defined(BUGFIX_R1)
-        mult = g_GlobalTimerDeltaRaw / (f32) self->aimendcount;
+        mult = g_GlobalTimerDeltaRaw / (f32)self->aimendcount;
 #else
-        mult = g_GlobalTimerDelta / (f32) self->aimendcount;
+        mult = g_GlobalTimerDelta / (f32)self->aimendcount;
 #endif
 
         if (mult > 1.0f)
@@ -868,7 +803,7 @@ void chrSetHiddenToRandom(ChrRecord *self)
 {
     u32 rand;
 
-    if ((s32) self->flinchcnt < 0)
+    if (self->flinchcnt < 0)
     {
         self->flinchcnt = 1;
         self->hidden &= ~CHRHIDDEN_RAND_FLINCH_MASK;
@@ -908,8 +843,6 @@ void chrSetHiddenToRandom(ChrRecord *self)
 }
 
 
-
-
 /**
  * For visibility, player collision, tank collision, bullet collision, and explosion damage
  * tests the game needs to know which room(s) a character is in. This allows the game to perform
@@ -941,7 +874,7 @@ void chrDetectRooms(ChrRecord *self)
 }
 
 
-void chrUpdateAnim(ChrRecord *chr, s32 tickamount)
+static void chrUpdateAnim(ChrRecord *chr, s32 tickamount)
 {
     Model *model;
     PropRecord* prop;
@@ -1084,11 +1017,8 @@ s32 chrTick(PropRecord *prop)
                     chrUpdateAnim(chr, tickamount);
                 }
             }
-
-            goto after_position_update;
         }
-
-        if ((chr->actiontype == ACT_PATROL) || (chr->actiontype == ACT_GOPOS))
+        else if ((chr->actiontype == ACT_PATROL) || (chr->actiontype == ACT_GOPOS))
         {
             if (((chr->actiontype == ACT_PATROL) && (chr->act_patrol.waydata.mode == WAYMODE_MAGIC)) || ((chr->actiontype == ACT_GOPOS) && (chr->act_gopos.waydata.mode == WAYMODE_MAGIC)))
             {
@@ -1096,7 +1026,6 @@ s32 chrTick(PropRecord *prop)
 
                 if (headSwitchVisible)
                 {
-
                     modelGetRootPosition(model, &chr->prevpos);
                     modelCalcPosition(model);
                     objGetTileShading(prop, &chr->nextcol);
@@ -1184,7 +1113,6 @@ s32 chrTick(PropRecord *prop)
         }
     }
 
-after_position_update:
     if (((chr->actiontype != ACT_STAND) || (model->anim2 != NULL)) || (prop->type == PROP_TYPE_VIEWER))
     {
         chr->hidden |= CHRHIDDEN_BACKGROUND_AI;
@@ -1203,21 +1131,20 @@ after_position_update:
 
     if (headSwitchVisible)
     {
-
         prop->flags |= PROPFLAG_ONSCREEN;
         chr->chrflags |= CHRFLAG_HAS_BEEN_ON_SCREEN;
 
 #ifdef BUGFIX_R1
-    if (cheatIsActive(CHEAT_DK_MODE))
-    {
-        modelSetLodScale(0.3125f);
-
-        if (chr->chrflags & CHRFLAG_10000000)
+        if (cheatIsActive(CHEAT_DK_MODE))
         {
-            chr->chrflags &= ~CHRFLAG_10000000;
-            modelSetScale(chr->model, chr->model->scale / 0.8f);
+            modelSetLodScale(0.3125f);
+
+            if (chr->chrflags & CHRFLAG_10000000)
+            {
+                chr->chrflags &= ~CHRFLAG_10000000;
+                modelSetScale(chr->model, chr->model->scale / 0.8f);
+            }
         }
-    }
 #else
         if (cheatIsActive(CHEAT_DK_MODE))
         {
@@ -1236,9 +1163,9 @@ after_position_update:
             g_CurModelChr->flinchcnt += g_ClockTimer;
 
 #ifdef VERSION_EU
-               if (g_CurModelChr->flinchcnt >= 24)
+            if (g_CurModelChr->flinchcnt >= 24)
 #else
-               if (g_CurModelChr->flinchcnt >= 30)
+            if (g_CurModelChr->flinchcnt >= 30)
 #endif
             {
                 g_CurModelChr->flinchcnt = -1;
@@ -1291,8 +1218,8 @@ after_position_update:
                 hat = hatGetModel(chr->handle_positiondata_hat);
 
                 headindex = chr->headnum - HEAD_START;
-                entry = &((struct headHat (*)[6]) g_HeadHats)[headindex][hat];
-
+                // g_HeadHats has a row of 6 hat types per head
+                entry = &g_HeadHats[(headindex * 6) + hat];
 
                 pos.x = entry->xoffset * 21.3f;
                 pos.y = entry->yoffset * 21.3f;
@@ -1390,45 +1317,39 @@ after_position_update:
 }
 
 
+/**
+ * Drops everything the guard carries other than its hat and the guns in its hands
+ * (unless marked undroppable).
+ */
 void chrDropItems(ChrRecord *self)
 {
-    PropRecord *childprop = propChild(self->prop);
-    while (childprop)
+    PropRecord *childprop;
+
+    for (childprop = propChild(self->prop); childprop != NULL; childprop = childprop->prev)
     {
         if ((childprop != self->handle_positiondata_hat) &&
             (childprop != self->weapons_held[GUNLEFT]) &&
             (childprop != self->weapons_held[GUNRIGHT]))
         {
-            WeaponObjRecord *wep = childprop->weapon;
-            if (!(wep->flags & 0x2000))
+            if (!(childprop->weapon->flags & PROPFLAG_AIUNDROPPABLE))
             {
                 objSetDropType(childprop, 1);
             }
         }
-        childprop = childprop->prev;
-    };
+    }
 
-    self->hidden |= 1;
+    self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
 }
 
 
-
-
-
-
-
-
 /**
- * Iterates g_ChrSlots. Returns the first object that (1) model
- * is not null and (2) chrnum matches index.
- *
- * chrFindByLiteralId
+ * The guard in a slot with this chrnum, or NULL.
  */
-ChrRecord* chrFindByLiteralId(s32 index)
+ChrRecord *chrFindByLiteralId(s32 index)
 {
     s32 i;
 
-    for (i=0; i<g_NumChrSlots; i++)
+    for (i = 0; i < g_NumChrSlots; i++)
     {
         if (g_ChrSlotHot[i].chrnum == index)
         {
@@ -1446,30 +1367,34 @@ PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand)
 }
 
 
+/**
+ * The prop in that hand if it's held as a gun (not e.g. a key or a hat), otherwise NULL.
+ */
 PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *self, GUNHAND hand)
 {
     PropRecord *gunprop = self->weapons_held[hand];
-    if (gunprop)
-    {
-        WeaponObjRecord *wep = gunprop->weapon;
 
-        if (weaponHasFlag(wep->weaponnum, WEAPONSTATBITFLAG_HOLD_AS_GUN) == 0)
+    if (gunprop != NULL)
+    {
+        if (!weaponHasFlag(gunprop->weapon->weaponnum, WEAPONSTATBITFLAG_HOLD_AS_GUN))
         {
             gunprop = NULL;
         }
     }
+
     return gunprop;
 }
 
 
 /**
- * Updates character collision bounds based on chracter width.
+ * A guard's collision shape for the player and other props: a diamond reaching chrwidth
+ * from its position, from its ground up to ground + chrheight. Dying, dead, hidden and
+ * moving guards have none (*edges = 0).
  *
- * @param arg0: prop
- * @param arg1: out parameter, will contain character collision_bounds.
- * @param arg2: out parameter, will contain 0 or 4
- * @param y_out: out parameter, will be character ground + character height
- * @param ground: out parameter, will contain character ground
+ * @param polygon: out, the 4 corners
+ * @param edges: out, 4, or 0 for no collision
+ * @param y_out: out, top
+ * @param ground: out, bottom
  */
 void chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *y_out, f32 *ground)
 {
@@ -1486,8 +1411,6 @@ void chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f
     {
         *edges = 4;
         *polygon = chr->collision_bounds;
-
-        //collision box is a diamond around chr
 
         chr->collision_bounds[0].x = prop->pos.x + chr->chrwidth;
         chr->collision_bounds[0].y = prop->pos.z;
@@ -1512,19 +1435,17 @@ void chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f
 
 
 /**
- * @param arg0: prop
- * @param width: out parameter, will be set to character width
- * @param height: out parameter, will be set to character height - 20
- * @param always_20: out parameter, will be set to 20
+ * The size a guard collides with as it moves: its width, and the height band above the
+ * ground it can't pass through (from 20 up to chrheight - 20, so it steps over low
+ * obstacles).
  */
-void chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *height, f32 *always_20)
+void chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *top, f32 *bottom)
 {
-
     ChrRecord *c = prop->chr;
 
     *width = c->chrwidth;
-    *height = c->chrheight - 20.0f;
-    *always_20 = 20.0f;
+    *top = c->chrheight - 20.0f;
+    *bottom = 20.0f;
 }
 
 
@@ -1536,8 +1457,10 @@ f32 chrGetChrGround(PropRecord *prop)
 
 
 /**
- * Calculate auto aim position coordinates.
-*/
+ * For auto-aim: the point a quarter of the way from the second model matrix (render_pos[1])
+ * to the root, and the guard's screen extents. FALSE if it's offscreen, behind the camera,
+ * dying, dead or not auto-aimable.
+ */
 s32 chrGetOnscreenRenderBounds(PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds)
 {
     struct ChrRecord *chr;
@@ -1580,19 +1503,16 @@ s32 chrGetOnscreenRenderBounds(PropRecord *prop, coord3d *pos, coord2d *xbounds,
 }
 
 
-//consolidate with other align_addr_zero macro when cleaning up
-#define align_addr_zero(X) ((((X) + 0xF) | 0xF) ^ 0xF)
-
-void chrsInit(void) {
+void chrsInit(void)
+{
     g_ChrAnimRate = 1.0f;
     g_ChrDebugAnimOverride = 0;
     g_ChrDebugAnimIndex = 0;
     g_ChrDebugPaused = 0;
     g_ChrDebugStep = 0;
-    g_ChrUnused = 0;
     g_ChrShowPatrols = FALSE;
-    g_NextChrNum = 0x1388;
-    g_ChrSlots = 0;
+    g_NextChrNum = 5000;
+    g_ChrSlots = NULL;
     g_NumChrSlots = 0;
     objectiveregisters1 = 0;
     g_AiAccuracyModifier = 1.0f;
@@ -1614,38 +1534,30 @@ void bgChrsInit(void)
     g_BgChrs = NULL;
     g_NumBgChrs = 0;
 
-    if (!g_CurrentSetup.ailists) { return; }
+    if (!g_CurrentSetup.ailists)
+    {
+        return;
+    }
 
     count = 0;
 
-    // Count the number of background AI lists
-    i = 0;
-    while (g_CurrentSetup.ailists[i].ailist)
+    for (i = 0; g_CurrentSetup.ailists[i].ailist; i++)
     {
         if (g_CurrentSetup.ailists[i].ID >= 0x1000)
         {
             g_NumBgChrs++;
         }
-
-        i++;
     }
 
     if (g_NumBgChrs > 0)
     {
-        ChrRecord tmp;
-
-        // Allocate BG chrs
         g_BgChrs = mempAlloc(ALIGN16_a(g_NumBgChrs * sizeof(ChrRecord)), MEMPOOL_STAGE);
 
-        // Initialise BG chrs
-        i = 0;
-        while (g_CurrentSetup.ailists[i].ailist)
+        for (i = 0; g_CurrentSetup.ailists[i].ailist; i++)
         {
             if (g_CurrentSetup.ailists[i].ID >= 0x1000)
             {
-                tmp = g_BgChrTemplate;
-
-                g_BgChrs[count] = tmp;
+                g_BgChrs[count] = g_BgChrTemplate;
 
                 g_BgChrs[count].chrnum = 0xFE;
                 g_BgChrs[count].ailist = g_CurrentSetup.ailists[i].ailist;
@@ -1654,8 +1566,6 @@ void bgChrsInit(void)
                 g_BgChrs[count].actiontype = ACT_NULL;
                 count++;
             }
-
-            i++;
         }
     }
 }
@@ -1663,14 +1573,16 @@ void bgChrsInit(void)
 void chrsAllocateSlots(s32 count)
 {
     s32 i;
-    
-    g_NumChrSlots = count + 10; //special guards?
 
-    g_ChrSlots = mempAlloc(align_addr_zero(g_NumChrSlots * sizeof(ChrRecord)), MEMPOOL_STAGE);
-    g_ChrSlotHot = mempAlloc(align_addr_zero(g_NumChrSlots * sizeof(ChrSlotHot)), MEMPOOL_STAGE);
-    for(i = 0; g_NumChrSlots > i; i++)
+    // 10 spare slots for guards spawned in play
+    g_NumChrSlots = count + 10;
+
+    g_ChrSlots = mempAlloc(ALIGN16_a(g_NumChrSlots * sizeof(ChrRecord)), MEMPOOL_STAGE);
+    g_ChrSlotHot = mempAlloc(ALIGN16_a(g_NumChrSlots * sizeof(ChrSlotHot)), MEMPOOL_STAGE);
+
+    for (i = 0; i < g_NumChrSlots; i++)
     {
-        g_ChrSlots[i].model = 0;
+        g_ChrSlots[i].model = NULL;
         g_ChrSlotHot[i].chrnum = CHRSLOT_EMPTY;
         g_ChrSlotHot[i].lastseetarget60 = 0;
     }
@@ -1693,10 +1605,12 @@ void chrSlotSync(ChrRecord *chr)
 
 void chrsFreeAll(void)
 {
-    int i;
+    s32 i;
 
-    for (i = 0; i < g_NumChrSlots; i++) {
-        if (g_ChrSlots[i].model != 0) {
+    for (i = 0; i < g_NumChrSlots; i++)
+    {
+        if (g_ChrSlots[i].model != NULL)
+        {
             chrFreeResources(g_ChrSlots[i].prop);
             propDelist(g_ChrSlots[i].prop);
             propDisable(g_ChrSlots[i].prop);

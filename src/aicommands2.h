@@ -8002,7 +8002,7 @@ typedef struct AiSfxEmitFromObjectRecord
     u8  cmd;
     s8  slotID;
     u8  OBJECT_TAG;
-    s16 sfxID;
+    s16 FADE_TIME;
 } AiSfxEmitFromObjectRecord;
 
 typedef struct AiSfxEmitFromPadRecord
@@ -8010,7 +8010,7 @@ typedef struct AiSfxEmitFromPadRecord
     u8  cmd;
     s8  slotID;
     s16 PAD;
-    s16 sfxID;
+    s16 FADE_TIME;
 } AiSfxEmitFromPadRecord;
 
 typedef struct AiSfxSetChannelVolumeRecord
@@ -8018,7 +8018,7 @@ typedef struct AiSfxSetChannelVolumeRecord
     u8  cmd;
     s8  slotID;
     s16 TARGET_VOLUME;
-    s16 sfxID;
+    s16 FADE_TIME;
 } AiSfxSetChannelVolumeRecord;
 
 typedef struct AiSfxFadeChannelVolumeRecord
@@ -8026,7 +8026,7 @@ typedef struct AiSfxFadeChannelVolumeRecord
     u8  cmd;
     s8  slotID;
     s16 TARGET_VOLUME;
-    s16 sfxID;
+    s16 FADE_TIME;
 } AiSfxFadeChannelVolumeRecord;
 
 typedef struct AiSfxStopChannelRecord
