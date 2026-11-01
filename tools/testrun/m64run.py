@@ -143,6 +143,16 @@ def main():
     ap.add_argument('--readwatch', action='append', default=[], metavar='START:END',
                     help='log every CPU read or write of the virtual address range START..END (hex, '
                          'END exclusive) to OUTDIR/access.txt; runs the slow interpreter')
+    ap.add_argument('--cachesim', metavar='FILE',
+                    help='model the VR4300 data cache and write per-line and per-PC miss counts to FILE '
+                         '(needs a mupen64plus core built with tools/cachesim; runs the slow interpreter)')
+    ap.add_argument('--cachesim-from', type=int, default=0, metavar='N',
+                    help='start counting N frames after the demo starts (or at frame N without --demo)')
+    ap.add_argument('--cachesim-frames', type=int, default=600, metavar='N',
+                    help='count for N frames, then save the counts and RAM and stop')
+    ap.add_argument('--cachesim-watch', metavar='[*]SYMBOL:SIZE',
+                    help='also count accesses and misses per 4-byte word over SIZE bytes at SYMBOL '
+                         '(or, with *, at the address SYMBOL holds when counting starts); saved to FILE.words')
     ap.add_argument('--stall', type=float, default=20,
                     help='seconds without a new frame before the run counts as hung')
     args = ap.parse_args()
@@ -179,7 +189,7 @@ def main():
 
     configdir = tempfile.mkdtemp(prefix='m64cfg-')
     shotdir = os.path.abspath(args.outdir)
-    core = C.CDLL(LIBDIR + '/libmupen64plus.so.2', mode=C.RTLD_GLOBAL)
+    core = C.CDLL(os.environ.get('M64RUN_CORE', LIBDIR + '/libmupen64plus.so.2'), mode=C.RTLD_GLOBAL)
     debug_cb = C.CFUNCTYPE(None, C.c_void_p, C.c_int, C.c_char_p)(
         lambda ctx, level, msg: level <= 2 and print('m64:', msg.decode(errors='replace'), file=sys.stderr))
     state_cb = C.CFUNCTYPE(None, C.c_void_p, C.c_int, C.c_int)(lambda ctx, param, value: None)
@@ -195,7 +205,7 @@ def main():
             core.ConfigSetParameter(handle, name.encode(), kind, C.byref(v))
 
     config_set('Core', 'ScreenshotPath', M64TYPE_STRING, shotdir)
-    config_set('Core', 'R4300Emulator', M64TYPE_INT, 0 if args.readwatch else 2)
+    config_set('Core', 'R4300Emulator', M64TYPE_INT, 0 if args.readwatch or args.cachesim else 2)
     if args.readwatch:
         config_set('Core', 'EnableDebugger', M64TYPE_BOOL, 1)
     config_set('Core', 'OnScreenDisplay', M64TYPE_BOOL, 0)
@@ -294,6 +304,8 @@ def main():
             elif seen['demo']:
                 result['demo'] = 'desynced' if word(ram, desync_flag) else 'ended'
                 core.CoreDoCommand(M64CMD_STOP, 0, None)
+        if args.cachesim:
+            cachesim_frame(frame, ram)
         if os.environ.get('M64RUN_TRACE'):
             print('frame', frame, flush=True)
         for pad, value in enumerate(pad_values(events, frame)):
@@ -306,6 +318,47 @@ def main():
         if frame in shots:
             core.CoreDoCommand(M64CMD_TAKE_NEXT_SCREENSHOT, 0, None)
         if frame >= args.frames + 2:  # +2 so a screenshot on the last frame gets written
+            core.CoreDoCommand(M64CMD_STOP, 0, None)
+
+    # Cache model: count from the start frame for --cachesim-frames frames, then save the counts,
+    # the game frame count and RAM (heap pointers are needed to name the misses) and stop.
+    cs = {'start': None, 'done': False}
+
+    def cachesim_frame(frame, ram):
+        if cs['done']:
+            return
+        if cs['start'] is None:
+            began = seen['demo'] if args.demo is not None else True
+            if began:
+                cs['begin'] = cs.get('begin', frame)
+                if frame >= cs['begin'] + args.cachesim_from:
+                    # The state checksums walk every prop, guard and player each frame, which
+                    # would add misses the game itself doesn't have, so they stop here.
+                    if args.statelog or args.demo is not None:
+                        ram[addr('g_TestHooksEnabled') >> 2] = 0
+                    if args.cachesim_watch:
+                        name, size = args.cachesim_watch.split(':')
+                        where = addr(name.lstrip('*'))
+                        if name.startswith('*'):
+                            where = word(ram, where) & 0x1fffffff
+                        core.cachesim_watch(C.c_uint32(where), C.c_uint32(int(size, 0)))
+                    core.cachesim_reset()
+                    core.cachesim_enable(1)
+                    cs['start'] = frame
+                    cs['tick0'] = word(ram, addr('g_LvTickCount'))
+            return
+        if frame >= cs['start'] + args.cachesim_frames:
+            core.cachesim_enable(0)
+            core.cachesim_dump(os.path.abspath(args.cachesim).encode())
+            core.cachesim_dump_blocks((os.path.abspath(args.cachesim) + '.blocks').encode())
+            if args.cachesim_watch:
+                core.cachesim_dump_watch((os.path.abspath(args.cachesim) + '.words').encode())
+            open(os.path.abspath(args.cachesim) + '.ram', 'wb').write(
+                C.string_at(core.DebugMemGetPointer(M64P_DBG_PTR_RDRAM), 8 << 20))
+            result['cachesim'] = {'vi_frames': args.cachesim_frames, 'start_frame': cs['start'],
+                                  'game_frames': word(ram, addr('g_LvTickCount')) - cs['tick0']}
+            json.dump(result['cachesim'], open(os.path.abspath(args.cachesim) + '.json', 'w'))
+            cs['done'] = True
             core.CoreDoCommand(M64CMD_STOP, 0, None)
 
     # A crashed or hung game stops producing frames, so a watchdog ends the run.
@@ -324,6 +377,10 @@ def main():
                 core.CoreDoCommand(M64CMD_STOP, 0, None)
                 return
 
+    if args.cachesim:
+        # Note every heap allocation from boot on, so misses can be named by who allocated.
+        for fn in ('mempAlloc', 'memaAlloc'):
+            core.cachesim_track_alloc(C.c_uint32(symbol_address(args.map, fn)))
     frame_cb = C.CFUNCTYPE(None, C.c_uint)(on_frame)
     core.CoreDoCommand(M64CMD_SET_FRAME_CALLBACK, 0, frame_cb)
     threading.Thread(target=watchdog, daemon=True).start()

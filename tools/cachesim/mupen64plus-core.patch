@@ -1,0 +1,314 @@
+diff --git a/projects/unix/Makefile b/projects/unix/Makefile
+index b4deb39..464de32 100644
+--- a/projects/unix/Makefile
++++ b/projects/unix/Makefile
+@@ -583,6 +583,7 @@ SOURCE = \
+     $(SRCDIR)/device/r4300/interrupt.c \
+     $(SRCDIR)/device/r4300/pure_interp.c \
+     $(SRCDIR)/device/r4300/r4300_core.c \
++    $(SRCDIR)/device/r4300/cachesim.c \
+     $(SRCDIR)/device/r4300/tlb.c \
+     $(SRCDIR)/device/rcp/ai/ai_controller.c \
+     $(SRCDIR)/device/rcp/mi/mi_controller.c \
+diff --git a/src/api/api_export.ver b/src/api/api_export.ver
+index 289adf2..1cea168 100644
+--- a/src/api/api_export.ver
++++ b/src/api/api_export.ver
+@@ -48,7 +48,7 @@ DebugDecodeOp;
+ DebugGetCPUDataPtr;
+ DebugGetState;
+ DebugMemGetMemInfo;
+-DebugMemGetPointer;
++DebugMemGetPointer; cachesim_enable; cachesim_reset; cachesim_dump; cachesim_dump_blocks; cachesim_track_alloc; cachesim_watch; cachesim_dump_watch;
+ DebugMemGetRecompInfo;
+ DebugMemRead16;
+ DebugMemRead32;
+diff --git a/src/device/r4300/cached_interp.c b/src/device/r4300/cached_interp.c
+index b46d99a..18c08f7 100644
+--- a/src/device/r4300/cached_interp.c
++++ b/src/device/r4300/cached_interp.c
+@@ -186,6 +186,7 @@ void cached_interp_##name##_IDLE(void) \
+ #define irt32 *((int32_t*) (*r4300_pc_struct(r4300))->f.i.rt + 1)
+ #endif
+ 
++#define CACHESIM_CACHEOP_HOOK
+ #include "mips_instructions.def"
+ 
+ // -----------------------------------------------------------
+diff --git a/src/device/r4300/cachesim.c b/src/device/r4300/cachesim.c
+new file mode 100644
+index 0000000..e6b319f
+--- /dev/null
++++ b/src/device/r4300/cachesim.c
+@@ -0,0 +1,175 @@
++/* VR4300 data cache model for GoldenEye cache studies.
++ * 8 KB, direct mapped, 16-byte lines, write-back, write-allocate.
++ * Counts, per physical 16-byte line and per CPU PC, read misses, write misses
++ * and dirty write-backs while enabled. Only KSEG0 (cached) accesses are modelled. */
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include "cachesim.h"
++
++#define EXPORT __attribute__((visibility("default")))
++#define NLINES 512
++#define RAMLINES (0x800000 / 16)
++#define PCSLOTS (0x800000 / 4)
++
++int g_cachesim_on = 0;
++static uint32_t tag[NLINES];       /* physical line number + 1, 0 = invalid */
++static uint8_t dirty[NLINES];
++static uint32_t *line_rmiss, *line_wmiss, *line_wb, *line_acc;
++static uint32_t *pc_miss, *pc_acc;
++static uint64_t tot_acc, tot_rmiss, tot_wmiss, tot_wb, tot_cachewb;
++
++static void alloc_arrays(void)
++{
++    if (line_rmiss) return;
++    line_rmiss = calloc(RAMLINES, 4); line_wmiss = calloc(RAMLINES, 4);
++    line_wb = calloc(RAMLINES, 4); line_acc = calloc(RAMLINES, 4);
++    pc_miss = calloc(PCSLOTS, 4); pc_acc = calloc(PCSLOTS, 4);
++}
++
++EXPORT void cachesim_enable(int on) { alloc_arrays(); g_cachesim_on = on; }
++
++EXPORT void cachesim_reset(void)
++{
++    alloc_arrays();
++    memset(line_rmiss, 0, RAMLINES * 4); memset(line_wmiss, 0, RAMLINES * 4);
++    memset(line_wb, 0, RAMLINES * 4); memset(line_acc, 0, RAMLINES * 4);
++    memset(pc_miss, 0, PCSLOTS * 4); memset(pc_acc, 0, PCSLOTS * 4);
++    tot_acc = tot_rmiss = tot_wmiss = tot_wb = tot_cachewb = 0;
++}
++
++EXPORT int cachesim_dump(const char *path)
++{
++    FILE *f = fopen(path, "wb");
++    if (!f) return -1;
++    uint64_t hdr[6] = { 0x43534d31, tot_acc, tot_rmiss, tot_wmiss, tot_wb, tot_cachewb };
++    fwrite(hdr, 8, 6, f);
++    fwrite(line_acc, 4, RAMLINES, f); fwrite(line_rmiss, 4, RAMLINES, f);
++    fwrite(line_wmiss, 4, RAMLINES, f); fwrite(line_wb, 4, RAMLINES, f);
++    fwrite(pc_acc, 4, PCSLOTS, f); fwrite(pc_miss, 4, PCSLOTS, f);
++    fclose(f);
++    return 0;
++}
++
++/* Optional per-word counts over one address range, to see which struct members are used. */
++static uint32_t watch_start, watch_len, *watch_acc, *watch_miss;
++
++EXPORT void cachesim_watch(uint32_t vaddr, uint32_t len)
++{
++    free(watch_acc); free(watch_miss);
++    watch_start = vaddr & 0x7fffff; watch_len = len;
++    watch_acc = calloc(len / 4 + 1, 4); watch_miss = calloc(len / 4 + 1, 4);
++}
++
++EXPORT int cachesim_dump_watch(const char *path)
++{
++    FILE *f = fopen(path, "wb");
++    if (!f || !watch_acc) { if (f) fclose(f); return -1; }
++    fwrite(&watch_start, 4, 1, f); fwrite(&watch_len, 4, 1, f);
++    fwrite(watch_acc, 4, watch_len / 4 + 1, f); fwrite(watch_miss, 4, watch_len / 4 + 1, f);
++    fclose(f);
++    return 0;
++}
++
++void cachesim_access(uint32_t vaddr, int write, uint32_t pc)
++{
++    if ((vaddr & 0xe0000000) != 0x80000000) return;     /* KSEG0 only */
++    uint32_t paddr = vaddr & 0x7fffff;
++    uint32_t line = paddr >> 4;
++    uint32_t idx = line & (NLINES - 1);
++    uint32_t pcs = (pc & 0x7fffff) >> 2;
++    tot_acc++; line_acc[line]++;
++    uint32_t woff = paddr - watch_start;
++    int watched = watch_acc && woff < watch_len;
++    if (watched) watch_acc[woff >> 2]++;
++    if ((pc & 0xe0000000) == 0x80000000) pc_acc[pcs]++;
++    if (tag[idx] != line + 1) {
++        if (tag[idx] && dirty[idx]) { tot_wb++; line_wb[tag[idx] - 1]++; }
++        tag[idx] = line + 1; dirty[idx] = 0;
++        if (write) { tot_wmiss++; line_wmiss[line]++; } else { tot_rmiss++; line_rmiss[line]++; }
++        if ((pc & 0xe0000000) == 0x80000000) pc_miss[pcs]++;
++        if (watched) watch_miss[woff >> 2]++;
++    }
++    if (write) dirty[idx] = 1;
++}
++
++/* CACHE instruction, D-cache operations only (op & 3 == 1). */
++void cachesim_cacheop(uint32_t op, uint32_t vaddr)
++{
++    if ((op & 3) != 1) return;
++    uint32_t line = (vaddr & 0x7fffff) >> 4;
++    uint32_t idx = line & (NLINES - 1);
++    int hit = (vaddr & 0xe0000000) == 0x80000000 && tag[idx] == line + 1;
++    switch (op >> 2) {
++    case 0: /* index writeback invalidate */
++        if (tag[idx] && dirty[idx]) tot_cachewb++;
++        tag[idx] = 0; dirty[idx] = 0; break;
++    case 2: /* index store tag (TagLo is 0 when the game clears the cache) */
++        tag[idx] = 0; dirty[idx] = 0; break;
++    case 3: /* create dirty exclusive: no fill */
++        if (tag[idx] && dirty[idx] && tag[idx] != line + 1) { tot_wb++; line_wb[tag[idx] - 1]++; }
++        tag[idx] = line + 1; dirty[idx] = 1; break;
++    case 4: /* hit invalidate */
++        if (hit) { tag[idx] = 0; dirty[idx] = 0; } break;
++    case 5: /* hit writeback invalidate */
++        if (hit) { if (dirty[idx]) tot_cachewb++; tag[idx] = 0; dirty[idx] = 0; } break;
++    case 6: /* hit writeback */
++        if (hit && dirty[idx]) { tot_cachewb++; dirty[idx] = 0; } break;
++    }
++}
++
++/* Allocation tracking: when the CPU enters one of the allocator entry points, note the
++ * size (a0) and the caller (ra); when it reaches ra again, v0 is the block. Each 16-byte
++ * line remembers the last block that covered it, so heap misses can be named by the
++ * function that allocated them. */
++#define MAXBLOCKS 65536
++struct csblock { uint32_t addr, size, caller, entry; };
++static struct csblock blocks[MAXBLOCKS];
++static uint32_t nblocks;
++static uint32_t *line_owner;          /* block index + 1 */
++uint32_t g_cachesim_alloc_pc[4];
++int g_cachesim_alloc_n;
++static struct { uint32_t ra, size, entry; } pending[16];
++static int npending;
++
++EXPORT void cachesim_track_alloc(uint32_t entry_pc)
++{
++    if (!line_owner) line_owner = calloc(RAMLINES, 4);
++    if (g_cachesim_alloc_n < 4) g_cachesim_alloc_pc[g_cachesim_alloc_n++] = entry_pc;
++}
++
++void cachesim_pc(uint32_t pc, const int64_t *regs)
++{
++    if (npending && pc == pending[npending - 1].ra) {
++        npending--;
++        uint32_t v0 = (uint32_t)regs[2];
++        uint32_t size = pending[npending].size;
++        if (v0 && size && size < 0x800000 && nblocks < MAXBLOCKS) {
++            blocks[nblocks] = (struct csblock){ v0, size, pending[npending].ra, pending[npending].entry };
++            nblocks++;
++            uint32_t a = v0 & 0x7fffff, end = a + size;
++            if (end > 0x800000) end = 0x800000;
++            for (uint32_t l = a >> 4; l < (end + 15) >> 4; l++) line_owner[l] = nblocks;
++        }
++    }
++    for (int i = 0; i < g_cachesim_alloc_n; i++) {
++        if (pc == g_cachesim_alloc_pc[i] && npending < 16) {
++            pending[npending].ra = (uint32_t)regs[31];
++            pending[npending].size = (uint32_t)regs[4];
++            pending[npending].entry = pc;
++            npending++;
++        }
++    }
++}
++
++EXPORT int cachesim_dump_blocks(const char *path)
++{
++    FILE *f = fopen(path, "wb");
++    if (!f) return -1;
++    fwrite(&nblocks, 4, 1, f);
++    fwrite(blocks, sizeof(struct csblock), nblocks, f);
++    if (line_owner) fwrite(line_owner, 4, RAMLINES, f);
++    fclose(f);
++    return 0;
++}
+diff --git a/src/device/r4300/cachesim.h b/src/device/r4300/cachesim.h
+new file mode 100644
+index 0000000..e64f621
+--- /dev/null
++++ b/src/device/r4300/cachesim.h
+@@ -0,0 +1,9 @@
++#ifndef CACHESIM_H
++#define CACHESIM_H
++#include <stdint.h>
++extern int g_cachesim_on;
++void cachesim_access(uint32_t vaddr, int write, uint32_t pc);
++void cachesim_cacheop(uint32_t op, uint32_t vaddr);
++extern int g_cachesim_alloc_n;
++void cachesim_pc(uint32_t pc, const int64_t *regs);
++#endif
+diff --git a/src/device/r4300/mips_instructions.def b/src/device/r4300/mips_instructions.def
+index c3a4acf..2b42e0a 100644
+--- a/src/device/r4300/mips_instructions.def
++++ b/src/device/r4300/mips_instructions.def
+@@ -987,6 +987,7 @@ DECLARE_JUMP(BC1TL, PCADDR + (iimmediate+1)*4, ((*r4300_cp1_fcr31(&r4300->cp1))
+ DECLARE_INSTRUCTION(CACHE)
+ {
+     DECLARE_R4300
++    CACHESIM_CACHEOP_HOOK
+     ADD_TO_PC(1);
+ }
+ 
+diff --git a/src/device/r4300/pure_interp.c b/src/device/r4300/pure_interp.c
+index db5a596..b1dced5 100644
+--- a/src/device/r4300/pure_interp.c
++++ b/src/device/r4300/pure_interp.c
+@@ -160,6 +160,8 @@ static void InterpretOpcode(struct r4300_core* r4300);
+   static void JALR_IDLE(struct r4300_core*, uint32_t) __attribute__((used));
+ #endif
+ 
++#include "cachesim.h"
++#define CACHESIM_CACHEOP_HOOK if (g_cachesim_on) cachesim_cacheop(RT_OF(op), (uint32_t)(irs32 + iimmediate));
+ #include "mips_instructions.def"
+ 
+ void InterpretOpcode(struct r4300_core* r4300)
+@@ -168,6 +170,7 @@ void InterpretOpcode(struct r4300_core* r4300)
+ 	if (op_address == NULL)
+ 		return;
+ 	uint32_t op = *op_address;
++	if (g_cachesim_alloc_n) cachesim_pc(*r4300_pc(r4300), (const int64_t *)r4300_regs(r4300));
+ 
+ 	switch ((op >> 26) & 0x3F) {
+ 	case 0: /* SPECIAL prefix */
+diff --git a/src/device/r4300/r4300_core.c b/src/device/r4300/r4300_core.c
+index 76e9f50..10c7185 100644
+--- a/src/device/r4300/r4300_core.c
++++ b/src/device/r4300/r4300_core.c
+@@ -20,6 +20,7 @@
+  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+ 
+ #include "r4300_core.h"
++#include "cachesim.h"
+ #include "cached_interp.h"
+ #if defined(COUNT_INSTR)
+ #include "instr_counters.h"
+@@ -303,6 +304,8 @@ uint32_t *fast_mem_access(struct r4300_core* r4300, uint32_t address)
+  */
+ int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t* value)
+ {
++    if (g_cachesim_on) cachesim_access(address, 0, *r4300_pc(r4300));
++
+     if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
+         address = virtual_to_physical_address(r4300, address, 0);
+         if (address == 0) {
+@@ -320,6 +323,8 @@ int r4300_read_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t
+ /* Read aligned dword from memory */
+ int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_t* value)
+ {
++    if (g_cachesim_on) cachesim_access(address, 0, *r4300_pc(r4300));
++
+     uint32_t w[2];
+ 
+     /* XXX: unaligned dword accesses should trigger a address error,
+@@ -353,6 +358,8 @@ int r4300_read_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_
+  */
+ int r4300_write_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_t value, uint32_t mask)
+ {
++    if (g_cachesim_on) cachesim_access(address, 1, *r4300_pc(r4300));
++
+     if ((address & UINT32_C(0xc0000000)) != UINT32_C(0x80000000)) {
+ 
+         invalidate_r4300_cached_code(r4300, address, 4);
+@@ -376,6 +383,8 @@ int r4300_write_aligned_word(struct r4300_core* r4300, uint32_t address, uint32_
+ /* Write aligned dword to memory */
+ int r4300_write_aligned_dword(struct r4300_core* r4300, uint32_t address, uint64_t value, uint64_t mask)
+ {
++    if (g_cachesim_on) cachesim_access(address, 1, *r4300_pc(r4300));
++
+     /* XXX: unaligned dword accesses should trigger a address error,
+      * but inaccurate timing of the core can lead to unaligned address on reset
+      * so just emit a warning and keep going */
