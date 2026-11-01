@@ -16,8 +16,10 @@ Emulators don't model the N64's caches or DMA timing, so some bugs only show up 
 
 ## Setup (Linux)
 
-* Toolchain: GCC 15 for `mips-linux-gnu`. A prebuilt static copy lives in the project files
+* Toolchain: GCC 15 for `mips-linux-gnu`, with LTO. A prebuilt copy lives in the project files
   (`toolchain/`), or build it with `tools/toolchain/build-gcc.sh`. Put its `bin` first in `PATH`.
+  The build uses link-time optimisation; a toolchain without it (such as the older static one)
+  still builds, without LTO (`make LTO=0` does the same on purpose).
 * Base ROMs: `baserom.u.z64` and `baserom.e.z64` in the repository root (never commit them),
   then `make build_tools extractassets`.
 * Headless emulator: `apt install mupen64plus-ui-console mupen64plus-video-rice mupen64plus-rsp-hle

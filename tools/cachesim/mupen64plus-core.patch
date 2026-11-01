@@ -1,5 +1,5 @@
 diff --git a/projects/unix/Makefile b/projects/unix/Makefile
-index b4deb39..464de32 100644
+index b4deb39e..464de320 100644
 --- a/projects/unix/Makefile
 +++ b/projects/unix/Makefile
 @@ -583,6 +583,7 @@ SOURCE = \
@@ -11,7 +11,7 @@ index b4deb39..464de32 100644
      $(SRCDIR)/device/rcp/ai/ai_controller.c \
      $(SRCDIR)/device/rcp/mi/mi_controller.c \
 diff --git a/src/api/api_export.ver b/src/api/api_export.ver
-index 289adf2..2c0b099 100644
+index 289adf20..5e33187b 100644
 --- a/src/api/api_export.ver
 +++ b/src/api/api_export.ver
 @@ -48,7 +48,7 @@ DebugDecodeOp;
@@ -19,12 +19,12 @@ index 289adf2..2c0b099 100644
  DebugGetState;
  DebugMemGetMemInfo;
 -DebugMemGetPointer;
-+DebugMemGetPointer; cachesim_enable; cachesim_reset; cachesim_dump; cachesim_dump_blocks; cachesim_track_alloc; cachesim_watch; cachesim_dump_watch; cachesim_dump_usage;
++DebugMemGetPointer; cachesim_enable; cachesim_reset; cachesim_dump; cachesim_dump_blocks; cachesim_track_alloc; cachesim_watch; cachesim_dump_watch; cachesim_dump_usage; cachesim_icounts; cachesim_idle_range;
  DebugMemGetRecompInfo;
  DebugMemRead16;
  DebugMemRead32;
 diff --git a/src/device/r4300/cached_interp.c b/src/device/r4300/cached_interp.c
-index b46d99a..18c08f7 100644
+index b46d99ac..18c08f72 100644
 --- a/src/device/r4300/cached_interp.c
 +++ b/src/device/r4300/cached_interp.c
 @@ -186,6 +186,7 @@ void cached_interp_##name##_IDLE(void) \
@@ -37,10 +37,10 @@ index b46d99a..18c08f7 100644
  // -----------------------------------------------------------
 diff --git a/src/device/r4300/cachesim.c b/src/device/r4300/cachesim.c
 new file mode 100644
-index 0000000..61c4760
+index 00000000..fd50cabe
 --- /dev/null
 +++ b/src/device/r4300/cachesim.c
-@@ -0,0 +1,228 @@
+@@ -0,0 +1,244 @@
 +/* VR4300 data cache model for GoldenEye cache studies.
 + * 8 KB, direct mapped, 16-byte lines, write-back, write-allocate.
 + * Counts, per physical 16-byte line and per CPU PC, read misses, write misses
@@ -99,6 +99,21 @@ index 0000000..61c4760
 +    pc_once = calloc(PCSLOTS, 4); pc_twice = calloc(PCSLOTS, 4); pc_fills = calloc(PCSLOTS, 4);
 +}
 +
++/* Instruction count and a 16 KB direct-mapped I-cache with 32-byte lines (KSEG0 code only). */
++static uint32_t itag[512];
++static uint64_t tot_instr, tot_imiss;
++static uint32_t idle_lo, idle_hi;   /* the idle thread's loop: not counted as work */
++EXPORT void cachesim_idle_range(uint32_t lo, uint32_t hi) { idle_lo = lo; idle_hi = hi; }
++void cachesim_ifetch(uint32_t pc)
++{
++    if ((pc & 0xe0000000) != 0x80000000) return;
++    uint32_t line = (pc & 0x7fffff) >> 5, idx = line & 511;
++    if (pc >= idle_lo && pc < idle_hi) { itag[idx] = line + 1; return; }
++    tot_instr++;
++    if (itag[idx] != line + 1) { itag[idx] = line + 1; tot_imiss++; }
++}
++EXPORT void cachesim_icounts(uint64_t *out) { out[0] = tot_instr; out[1] = tot_imiss; }
++
 +EXPORT void cachesim_enable(int on) { alloc_arrays(); g_cachesim_on = on; }
 +
 +EXPORT void cachesim_reset(void)
@@ -108,6 +123,7 @@ index 0000000..61c4760
 +    memset(line_wb, 0, RAMLINES * 4); memset(line_acc, 0, RAMLINES * 4);
 +    memset(pc_miss, 0, PCSLOTS * 4); memset(pc_acc, 0, PCSLOTS * 4);
 +    tot_acc = tot_rmiss = tot_wmiss = tot_wb = tot_cachewb = 0;
++    tot_instr = tot_imiss = 0;
 +    memset(line_once, 0, RAMLINES * 4); memset(line_twice, 0, RAMLINES * 4); memset(line_fills, 0, RAMLINES * 4);
 +    memset(line_once_wb, 0, RAMLINES * 4);
 +    memset(pc_once, 0, PCSLOTS * 4); memset(pc_twice, 0, PCSLOTS * 4); memset(pc_fills, 0, PCSLOTS * 4);
@@ -271,10 +287,10 @@ index 0000000..61c4760
 +}
 diff --git a/src/device/r4300/cachesim.h b/src/device/r4300/cachesim.h
 new file mode 100644
-index 0000000..e64f621
+index 00000000..402c40bc
 --- /dev/null
 +++ b/src/device/r4300/cachesim.h
-@@ -0,0 +1,9 @@
+@@ -0,0 +1,10 @@
 +#ifndef CACHESIM_H
 +#define CACHESIM_H
 +#include <stdint.h>
@@ -282,10 +298,11 @@ index 0000000..e64f621
 +void cachesim_access(uint32_t vaddr, int write, uint32_t pc);
 +void cachesim_cacheop(uint32_t op, uint32_t vaddr);
 +extern int g_cachesim_alloc_n;
++void cachesim_ifetch(uint32_t pc);
 +void cachesim_pc(uint32_t pc, const int64_t *regs);
 +#endif
 diff --git a/src/device/r4300/mips_instructions.def b/src/device/r4300/mips_instructions.def
-index c3a4acf..2b42e0a 100644
+index c3a4acfb..2b42e0ac 100644
 --- a/src/device/r4300/mips_instructions.def
 +++ b/src/device/r4300/mips_instructions.def
 @@ -987,6 +987,7 @@ DECLARE_JUMP(BC1TL, PCADDR + (iimmediate+1)*4, ((*r4300_cp1_fcr31(&r4300->cp1))
@@ -297,7 +314,7 @@ index c3a4acf..2b42e0a 100644
  }
  
 diff --git a/src/device/r4300/pure_interp.c b/src/device/r4300/pure_interp.c
-index db5a596..b1dced5 100644
+index db5a596f..62fddcfc 100644
 --- a/src/device/r4300/pure_interp.c
 +++ b/src/device/r4300/pure_interp.c
 @@ -160,6 +160,8 @@ static void InterpretOpcode(struct r4300_core* r4300);
@@ -309,16 +326,17 @@ index db5a596..b1dced5 100644
  #include "mips_instructions.def"
  
  void InterpretOpcode(struct r4300_core* r4300)
-@@ -168,6 +170,7 @@ void InterpretOpcode(struct r4300_core* r4300)
+@@ -168,6 +170,8 @@ void InterpretOpcode(struct r4300_core* r4300)
  	if (op_address == NULL)
  		return;
  	uint32_t op = *op_address;
++	if (g_cachesim_on) cachesim_ifetch(*r4300_pc(r4300));
 +	if (g_cachesim_alloc_n) cachesim_pc(*r4300_pc(r4300), (const int64_t *)r4300_regs(r4300));
  
  	switch ((op >> 26) & 0x3F) {
  	case 0: /* SPECIAL prefix */
 diff --git a/src/device/r4300/r4300_core.c b/src/device/r4300/r4300_core.c
-index 76e9f50..10c7185 100644
+index 76e9f50d..10c71857 100644
 --- a/src/device/r4300/r4300_core.c
 +++ b/src/device/r4300/r4300_core.c
 @@ -20,6 +20,7 @@

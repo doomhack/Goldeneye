@@ -25,6 +25,7 @@ def main():
     ap.add_argument('--demos', default=','.join(str(i) for i in range(14)))
     ap.add_argument('--from', dest='start', type=int, default=30)
     ap.add_argument('--frames', type=int, default=300)
+    ap.add_argument('--ticks', type=int, help='count N game frames from game frame --from instead of VI frames')
     ap.add_argument('--watch', metavar='[*]SYMBOL:SIZE', help='passed to m64run.py --cachesim-watch')
     ap.add_argument('--jobs', type=int, default=os.cpu_count())
     args = ap.parse_args()
@@ -39,6 +40,8 @@ def main():
         cmd = ['xvfb-run', '-a', sys.executable, RUN, rom, '--frames', '20000', '--demo', str(i),
                '--map', mapfile, '--outdir', out, '--cachesim', out + '.cs',
                '--cachesim-from', str(args.start), '--cachesim-frames', str(args.frames), '--stall', '120']
+        if args.ticks:
+            cmd += ['--cachesim-ticks', str(args.ticks)]
         if args.watch:
             cmd += ['--cachesim-watch', args.watch]
         r = subprocess.run(cmd, capture_output=True, text=True)

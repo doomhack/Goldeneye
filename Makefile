@@ -171,7 +171,39 @@ ASSET_CFLAGS := -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
 # warning is an error. The assets are generated data, so
 # they build quietly (-w). See docs/StyleGuide.md.
 WARNFLAGS := -w
-CFLAGS = $(CC_BASEFLAGS) $(ULTRALIB_VERSION_DEFINES) $(WARNFLAGS) $(SHUFFLEFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
+CFLAGS = $(CC_BASEFLAGS) $(ULTRALIB_VERSION_DEFINES) $(WARNFLAGS) $(SHUFFLEFLAGS) $(LTOFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
+
+# Link-time optimisation (on by default, make LTO=0 turns it off): the C objects hold GCC's
+# intermediate code instead of machine code, and GCC compiles them all together at link
+# time, so it can inline and specialise across files. The code built at link time comes
+# out in files named *.ltrans*.o, which the ld/game.*.ld.inc lists place last in each
+# section, so all of it runs from the game segment. LTO_PARTITION picks how GCC splits the
+# program for that final compile (one = no split, which optimises best).
+# It needs a GCC built with LTO and a binutils ld with plugin support (see
+# tools/toolchain/build-gcc.sh); with an older toolchain the build falls back to LTO=0.
+# make SHUFFLE=<seed> needs one object per source file, so it builds without LTO.
+LTO ?= 1
+LTO_PARTITION ?= one
+ifeq ($(LTO), 1)
+  ifneq ($(SHUFFLE),)
+    LTO := 0
+  else ifeq ($(wildcard $(shell $(CC) -print-prog-name=lto1)),)
+    $(info This GCC has no LTO support: building with LTO=0 (see tools/toolchain/build-gcc.sh))
+    LTO := 0
+  else ifneq ($(shell $(TOOLCHAIN)ld --help | grep -c 'plugin PLUGIN.*(ignored)'),0)
+    $(info This ld has no plugin support: building with LTO=0 (see tools/toolchain/build-gcc.sh))
+    LTO := 0
+  endif
+endif
+ifeq ($(LTO), 1)
+  LTO_LINKFLAGS := -flto=auto -flto-partition=$(LTO_PARTITION)
+$(BUILD_DIR)/src/%.o: LTOFLAGS := -flto
+# These stay ordinary objects: init() runs before the game code is loaded, so it stays in
+# the code segment; the boot copy of the decompressor runs from its own segment; ge007.ld
+# places the stacks, frame buffers and compressed data by object; and GCC's helper
+# functions must already exist when GCC makes calls to them at link time.
+$(RZOBJECTS) $(addprefix $(BUILD_DIR)/src/,init.o c_data_filler.o stacks.o cfb.o gcc/libgcc_compat.o): LTOFLAGS :=
+endif
 
 LD := $(TOOLCHAIN)ld
 LD_SCRIPT := $(BUILD_DIR)/ge007.$(OUTCODE).ld
@@ -275,7 +307,7 @@ endif
 $(BUILD_DIR)/src/%.o: src/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $<
-	$(OBJCOPY) --redefine-sym memset=gcc_memset $@
+	$(if $(LTOFLAGS),,$(OBJCOPY) --redefine-sym memset=gcc_memset $@)
 
 # chraidata.c: convert AI_PRINT commands from readable to byte-array first
 $(BUILD_DIR)/src/game/chr/chraidata.o: src/game/chr/chraidata.c
@@ -320,7 +352,11 @@ $(APPELF): $(RSPOBJECTS) $(ULTRALIB) $(HEADEROBJECTS) $(OBSEG_RZ) $(BUILD_DIR)/$
 		-e 's|^( */DISCARD/ : \{)|\1\n      * (.comment);\n      * (.note*);|' $(BUILD_DIR)/ge007.$(OUTCODE).ld
 	$(if $(SHUFFLE),python3 tools/testrun/shuffle.py ld $(BUILD_DIR)/ge007.$(OUTCODE).ld --seed $(SHUFFLE))
 	@echo "Linking Files into ELF"
+ifeq ($(LTO), 1)
+	$(CC) $(filter-out -MMD -MP,$(CFLAGS)) $(LTO_LINKFLAGS) -nostdlib -nostartfiles -Wl,-T,$(LD_SCRIPT),-Map,$(BUILD_DIR)/ge007.$(OUTCODE).map,--no-warn-mismatch -o $@ $(ULTRALIB)
+else
 	$(LD) $(LDFLAGS) -o $@ $(ULTRALIB)
+endif
 
 $(APPBIN): $(APPELF)
 	@echo "Building ROM"
@@ -548,6 +584,11 @@ UNLOCK_STAMP := $(BUILD_DIR)/unlock_all
 UNLOCK_SETTING := $(if $(filter 1,$(UNLOCK_ALL)),on,off)
 $(shell mkdir -p $(BUILD_DIR); [ "`cat $(UNLOCK_STAMP) 2>/dev/null`" = "$(UNLOCK_SETTING)" ] || echo $(UNLOCK_SETTING) > $(UNLOCK_STAMP))
 $(BUILD_DIR)/src/game/save/file.o $(BUILD_DIR)/src/game/menu/front.o: $(UNLOCK_STAMP)
+
+# Switching LTO rebuilds every game object the same way
+LTO_STAMP := $(BUILD_DIR)/lto
+$(shell [ "`cat $(LTO_STAMP) 2>/dev/null`" = "$(LTO)" ] || echo $(LTO) > $(LTO_STAMP))
+$(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS): $(LTO_STAMP)
 
 # Header dependencies written by -MMD
 -include $(shell find $(BUILD_DIR) -name '*.d' 2>/dev/null)

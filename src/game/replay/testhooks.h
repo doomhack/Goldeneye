@@ -5,7 +5,10 @@
 /*
  * Hooks for the headless test runner (tools/testrun). They do nothing unless the
  * runner writes to these variables in RAM, so test runs use the same ROM that ships.
+ * TEST_HOOK_VAR keeps them as they are with LTO: the runner reads and writes them
+ * from outside, which GCC can't see when it optimises the whole game at once.
  */
+#define TEST_HOOK_VAR __attribute__((used, externally_visible))
 
 /* Set to 1 by the runner to log a state checksum every game frame. */
 extern s32 g_TestHooksEnabled;

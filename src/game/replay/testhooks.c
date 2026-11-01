@@ -8,11 +8,11 @@
 #include "game/player/player.h"
 #include "game/replay/testhooks.h"
 
-s32 g_TestHooksEnabled = 0;
-u32 g_TestStateLogCount = 0;
-u32 g_TestStateLog[TEST_STATE_LOG_LEN][3];
-s32 g_TestForceDemo = -1;
-s32 g_TestDemoDesynced = 0;
+TEST_HOOK_VAR s32 g_TestHooksEnabled = 0;
+TEST_HOOK_VAR u32 g_TestStateLogCount = 0;
+TEST_HOOK_VAR u32 g_TestStateLog[TEST_STATE_LOG_LEN][3];
+TEST_HOOK_VAR s32 g_TestForceDemo = -1;
+TEST_HOOK_VAR s32 g_TestDemoDesynced = 0;
 
 /* FNV-1a */
 static u32 hashWord(u32 hash, u32 value)
