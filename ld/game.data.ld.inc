@@ -121,7 +121,6 @@
       build/OUTCODE/src/game/gfx/imagebank.o (.data);
       build/OUTCODE/src/game/asset/rzip.o (.data);
       build/OUTCODE/src/game/gfx/rsp.o (.data);
-      build/OUTCODE/src/game/gfx/f3dex3.o (.data);
       build/OUTCODE/src/game/level/game.o (.data);
       build/OUTCODE/src/game/gfx/zbuf.o (.data);
 #ifndef VERSION_EU

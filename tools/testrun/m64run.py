@@ -141,10 +141,7 @@ def main():
     ap.add_argument('--pads', type=int, default=1)
     ap.add_argument('--shots', default='')
     ap.add_argument('--outdir', default='testrun-out')
-    ap.add_argument('--gfx', choices=['rice', 'angrylion', 'z64', 'none'], default='rice',
-                    help='rice = HLE video; angrylion or z64 = low-level RDP (needed for F3DEX3, pair with --rsp cxd4)')
-    ap.add_argument('--rsp', choices=['hle', 'cxd4', 'z64'], default='hle',
-                    help='hle = high-level RSP (Fast3D only); cxd4 or z64 = low-level RSP that runs the real microcode')
+    ap.add_argument('--gfx', choices=['rice', 'none'], default='rice')
     ap.add_argument('--map')
     ap.add_argument('--watch')
     ap.add_argument('--poke', action='append', default=[], metavar='SYMBOL=VALUE',
@@ -243,10 +240,10 @@ def main():
     if not os.path.exists(built) or os.path.getmtime(built) < os.path.getmtime(os.path.join(HERE, 'input-script.c')):
         os.system(f'cc -shared -fPIC -O2 -o {built} {HERE}/input-script.c')
     plugins = []
-    if args.gfx != 'none':
-        plugins.append((M64PLUGIN_GFX, PLUGINDIR + f'/mupen64plus-video-{args.gfx}.so'))
+    if args.gfx == 'rice':
+        plugins.append((M64PLUGIN_GFX, PLUGINDIR + '/mupen64plus-video-rice.so'))
     plugins.append((M64PLUGIN_INPUT, built))
-    plugins.append((M64PLUGIN_RSP, PLUGINDIR + f'/mupen64plus-rsp-{args.rsp}.so'))
+    plugins.append((M64PLUGIN_RSP, PLUGINDIR + '/mupen64plus-rsp-hle.so'))
     inputlib = None
     for kind, path in plugins:
         lib = C.CDLL(path)

@@ -12,7 +12,7 @@ typedef enum MemPool : u8
 } MemPool;
 
 /** The permanent pool's size. The stage pool gets the rest of the memory. */
-#define MEMP_PERMANENT_SIZE ((296 + 1280) * 1024) /* + F3DEX3 spike translation buffers */
+#define MEMP_PERMANENT_SIZE (296 * 1024)
 
 void mempInit(u8 *start, u8 *end);
 void *mempAlloc(u32 bytes, MemPool pool);

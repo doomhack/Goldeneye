@@ -137,7 +137,6 @@
       build/OUTCODE/src/game/gfx/imagebank.o (.rodata);
       build/OUTCODE/src/game/asset/rzip.o (.rodata);
       build/OUTCODE/src/game/gfx/rsp.o (.rodata);
-      build/OUTCODE/src/game/gfx/f3dex3.o (.rodata);
       build/OUTCODE/src/game/level/game.o (.rodata);
       build/OUTCODE/src/game/gfx/zbuf.o (.rodata);
 #ifndef VERSION_EU

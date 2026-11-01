@@ -25,7 +25,6 @@
 #include <memp.h>
 #include "game/asset/asset.h"
 #include "game/world/bg.h"
-#include "game/gfx/f3dex3.h"
 #include "game/chr/chr.h"
 #include "game/asset/rzip.h"
 #include "game/world/bgfog.h"
@@ -487,7 +486,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
-                if (lvGetDrawWorld() && !(g_PerfSkip & PERFSKIP_PROPS))
+                if (lvGetDrawWorld())
                 {
                     gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 0);
                 }
@@ -509,7 +508,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
-                if (lvGetDrawWorld() && !(g_PerfSkip & PERFSKIP_PROPS))
+                if (lvGetDrawWorld())
                 {
                     gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 2);
                 }
@@ -521,7 +520,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
     gdl = bgScissorCurrentPlayerViewDefault(fogRenderClearFogMode(gdl));
     gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjViewMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
  
-    if (lvGetDrawWorld() && !(g_PerfSkip & PERFSKIP_PROPS))
+    if (lvGetDrawWorld())
     {
         gdl = scorchesRender(gdl);
         gdl = impactsRenderOnWalls(gdl);
@@ -552,7 +551,7 @@ Gfx *bgRenderVisibleRooms(Gfx *gdl)
                 gSPMatrix(gdl++, osVirtualToPhysical((void*)camGetProjectionMtx()), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION));
                 gdl = fogRenderClearFogMode(gdl);
  
-                if (lvGetDrawWorld() && !(g_PerfSkip & PERFSKIP_PROPS))
+                if (lvGetDrawWorld())
                 {
                     gdl = propsRenderPass(gdl, g_BgRoomsDrawn[j].roomid, 1);
                 }
