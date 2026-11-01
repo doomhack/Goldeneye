@@ -1869,50 +1869,60 @@ typedef union
      */
     typedef struct PropRecord
     {
-        u8  type;        /*0x00   PROP_TYPE */
-        u8  flags;       /*0x01*/
-        s16 timetoregen; // ticks down /*0x02*/
+        // Laid out for the 16-byte cache lines: the fields every walk of the prop lists reads
+        // (type, flags, the object, the links) share the first line, position and floor tile
+        // the second, and g_Props is 16-byte aligned so a prop is exactly three lines.
+        u8  type;        /* PROP_TYPE */
+        u8  flags;
+        s16 timetoregen; // ticks down
         union
         {
             struct ChrRecord       *chr;
             struct ObjectRecord    *obj;
             struct DoorRecord      *door;
             struct WeaponObjRecord *weapon;
-            struct Explosion *explosion;
-            struct Smoke *smoke;
-            struct Scorch *scorch;
+            struct Explosion       *explosion;
+            struct Smoke           *smoke;
             void                   *voidp;
-        };                       /*0x04*/
-        coord3d            pos;  /*0x08*/
-        StandTile         *stan; /*0x14 canonical name */
+        };
+        struct PropRecord *prev;
+        struct PropRecord *next;
 
-        /**
-         * Maybe float. Something related to draw (render) distance.
-         */
-        f32                zDepth;                          /*0x18*/
-        struct PropRecord *parent;                          /*0x1c*/
-        struct PropRecord *child;                           /*0x20*/
-        struct PropRecord *prev;                            /*0x24*/
-        struct PropRecord *next;                            /*0x28*/
-        u8                 rooms[PROPRECORD_STAN_ROOM_LEN]; /*0x2c*/
-        s32                unk30;
+        coord3d            pos;
+        StandTile         *stan;
 
-        // u16 unk38;         /*0x38* /
-        // s16 unk3a;         /*0x3a* /
-        // u8 unk3c;          /*0x3c* /
-        // u8 propstateindex; /*0x3d* /
-        // u8 unk3e;          /*0x3e* /
-        // u8 unk3f_00 : 1;   /*0x3f* /
-        // u8 unk3f_01 : 1;   /*0x3f* /
-        // u8 unk3f_02 : 1;   /*0x3f* /
-        // u8 unk3f_03 : 1;   /*0x3f* /
-        // u8 unk3f_04 : 1;   /*0x3f* /
-        // u8 unk3f_05 : 1;   /*0x3f* /
-        // u8 unk3f_06 : 1;   /*0x3f* /
-        // u8 unk3f_07 : 1;   /*0x3f* /
-        // u32 unk40;         /*0x40* /
-        // u32 unk44;         /*0x44*/
+        // The rooms the prop is in, ending in 0xff (up to 7 rooms).
+        u8                 rooms[PROPRECORD_STAN_ROOM_LEN];
+        f32                zDepth;     // distance in front of the camera, for sorting and fog
+        // The prop this one is attached to and its last attached child, as g_Props indices
+        // (-1 for none); use propParent/propChild and propSetParent/propSetChild.
+        s16                parentnum;
+        s16                childnum;
     } PropRecord;
+
+    static_assert(sizeof(PropRecord) == 48, "PropRecord is three 16-byte cache lines");
+
+    extern PropRecord g_Props[];
+
+    static inline PropRecord *propParent(const PropRecord *prop)
+    {
+        return prop->parentnum < 0 ? NULL : &g_Props[prop->parentnum];
+    }
+
+    static inline PropRecord *propChild(const PropRecord *prop)
+    {
+        return prop->childnum < 0 ? NULL : &g_Props[prop->childnum];
+    }
+
+    static inline void propSetParent(PropRecord *prop, PropRecord *parent)
+    {
+        prop->parentnum = parent ? parent - g_Props : -1;
+    }
+
+    static inline void propSetChild(PropRecord *prop, PropRecord *child)
+    {
+        prop->childnum = child ? child - g_Props : -1;
+    }
 
     #pragma region GlobalPropDef
 

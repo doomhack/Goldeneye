@@ -933,7 +933,7 @@ ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr,
             else if (wanttype != PROPDEF_COLLECTABLE
                      && (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) == 0
                      && (obj->state & PROPSTATE_RESPAWN) == 0
-                     && obj->prop->parent == NULL
+                     && propParent(obj->prop) == NULL
                      && (!musthavemodel || modelmgrCanSlotFitRwdata(obj->model, modeldef)))
             {
                 if (offscreenobj == NULL && (obj->prop->flags & PROPFLAG_ONSCREEN) == 0)

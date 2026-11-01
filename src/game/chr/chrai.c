@@ -2060,7 +2060,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     bool                              pass = FALSE;
                     if (obj && obj->prop)
                     {
-                        PropRecord *prop = obj->prop->child;
+                        PropRecord *prop = propChild(obj->prop);
                         while (prop)
                         {
                             if (prop->type == PROP_TYPE_WEAPON)
@@ -2200,9 +2200,9 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiDropObjectRecord *ai  = (AiDropObjectRecord *)(AiListp + Offset);
                     ObjectRecord       *obj = objFindByTagId(ai->OBJECT_TAG);
-                    if (obj && obj->prop && obj->prop->parent && obj->prop->parent->type == PROP_TYPE_CHR)
+                    if (obj && obj->prop && propParent(obj->prop) && propParent(obj->prop)->type == PROP_TYPE_CHR)
                     {
-                        ChrRecord *chr = obj->prop->parent->chr;
+                        ChrRecord *chr = propParent(obj->prop)->chr;
                         objSetDropType(obj->prop, 2);
                         chr->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
                     }
@@ -2259,7 +2259,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ChrRecord              *chr = chrFindById(ChrEntityp, ai->CHR_NUM);
                     if (obj && obj->prop && chr)
                     {
-                        if (obj->prop->parent)
+                        if (propParent(obj->prop))
                         {
                             objDetach(obj->prop);
                         }

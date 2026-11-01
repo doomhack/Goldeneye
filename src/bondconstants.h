@@ -4213,7 +4213,7 @@ typedef enum PROJECTILES
 #define MAX_CHRWAYPOINTS         6
 #define MAX_WAYMODE              ((s32)WAYMODE_MAGIC)
 #define MAX_TEXTURES             3001
-#define PROPRECORD_STAN_ROOM_LEN 4
+#define PROPRECORD_STAN_ROOM_LEN 8
 #define NUMBER_SHOTGUN_BULLETS   5
 
 #ifdef VERSION_EU

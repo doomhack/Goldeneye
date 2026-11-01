@@ -248,7 +248,7 @@ static bool objIsSimOwner(ObjectRecord *obj, s32 playercount)
 
 static void objTickChildren(PropRecord *prop, void (*tick)(PropRecord *child))
 {
-    PropRecord *child = prop->child;
+    PropRecord *child = propChild(prop);
 
     while (child != NULL)
     {
@@ -398,7 +398,7 @@ TICKOP objTick(PropRecord *prop)
 /* Drop everything attached to the prop, and everything attached to those */
 void objDropRecursively(PropRecord *prop)
 {
-    PropRecord *child = prop->child;
+    PropRecord *child = propChild(prop);
 
     while (child)
     {

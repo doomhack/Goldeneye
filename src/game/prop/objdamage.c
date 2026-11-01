@@ -137,19 +137,19 @@ s32 propExplode(PropRecord *prop, s32 explosionType)
     ObjectRecord *obj = prop->obj;
     s32 playernum = (obj->runtime_bitflags & RUNTIMEBITFLAG_OWNER) >> RUNTIMEBITSHIFT_OWNER;
 
-    if (prop->parent == NULL)
+    if (propParent(prop) == NULL)
     {
         return explosionCreate(NULL, &obj->runtime_pos, prop->stan, explosionType,
             (obj->flags & OBJFLAGS_IN_AIR) == 0 && (prop->flags & PROPFLAG_00000008) == 0,
             playernum, prop->rooms, (prop->flags & PROPFLAG_00000008) != 0);
     }
 
-    PropRecord *root = prop->parent;
+    PropRecord *root = propParent(prop);
     coord3d pos;
 
-    while (root->parent)
+    while (propParent(root))
     {
-        root = root->parent;
+        root = propParent(root);
     }
 
     StandTile *stan = root->stan;
@@ -562,9 +562,9 @@ static void objExplode(ObjectRecord *obj, coord3d *targetPos, s32 playernum)
 
     s16 explosionType = objGetExplosionType(obj);
 
-    while (root->parent != NULL)
+    while (propParent(root) != NULL)
     {
-        root = root->parent;
+        root = propParent(root);
     }
 
     if (objGetDestroyedLevel(obj) == 0)
@@ -665,7 +665,7 @@ void objDetonateRecursive(PropRecord *prop, f32 damage, coord3d *pos, s32 weapon
         return;
     }
 
-    PropRecord *child = prop->child;
+    PropRecord *child = propChild(prop);
 
     while (child != NULL)
     {
@@ -937,7 +937,7 @@ void objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS itemnu
     // Destroyed: what is attached to it drops (the monitors on Bunker's holders, say)
     if (objGetDestroyedLevel(obj) == 1)
     {
-        PropRecord *child = obj->prop->child;
+        PropRecord *child = propChild(obj->prop);
 
         while (child != NULL)
         {

@@ -190,7 +190,7 @@ static s32 counterOpChrIsExcluded(ChrRecord *chr)
 
     // A guard carrying anything besides their guns and hat (a key card,
     // a mission item) keeps it for Bond to take from their body.
-    for (child = chr->prop->child; child != NULL; child = child->prev)
+    for (child = propChild(chr->prop); child != NULL; child = child->prev)
     {
         if ((child != chr->handle_positiondata_hat) && (child != chr->weapons_held[GUNLEFT])
             && (child != chr->weapons_held[GUNRIGHT]) && !(child->weapon->flags & 0x2000))

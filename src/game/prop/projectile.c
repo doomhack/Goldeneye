@@ -486,7 +486,7 @@ static bool projectileTestObject(ObjectRecord *obj, coord3d *rayStart, coord3d *
     f32 along = 0.0f;
 
     // How far along the ray the object is (attached objects count as at the start)
-    if (prop->parent == NULL)
+    if (propParent(prop) == NULL)
     {
         dx = obj->runtime_pos.x - rayStart->x;
         dy = obj->runtime_pos.y - rayStart->y;
@@ -565,7 +565,7 @@ static bool projectileTestObjectTree(ObjectRecord *obj, coord3d *rayStart, coord
 
     if (prop->flags & PROPFLAG_ONSCREEN)
     {
-        for (PropRecord *child = prop->child; child != NULL; child = child->prev)
+        for (PropRecord *child = propChild(prop); child != NULL; child = child->prev)
         {
             if ((child->flags & PROPFLAG_ONSCREEN)
                 && projectileTestObjectTree(child->obj, rayStart, rayEnd, rayDir, maxDist, screenStart, screenDir, bestHitPos, bestHitNormal, bestDist))

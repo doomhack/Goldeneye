@@ -350,7 +350,7 @@ static void objTestShotModel(PropRecord *prop, ShotData *shot)
         return;
     }
 
-    PropRecord *child = prop->child;
+    PropRecord *child = propChild(prop);
 
     while (child != NULL)
     {
@@ -586,9 +586,9 @@ void objHit(ShotData *shot, BulletHit *hit)
     PropRecord *rootprop = hit->prop;
     coord3d pos;
 
-    while (rootprop->parent != NULL)
+    while (propParent(rootprop) != NULL)
     {
-        rootprop = rootprop->parent;
+        rootprop = propParent(rootprop);
     }
 
     // Where it hit, 26 units back towards the player, in the world
