@@ -643,10 +643,6 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     chr->invalidmove = 0;
     chr->lastmoveok60 = g_GlobalTimer;
     chr->lastseetarget60 = 0;
-    chr->lastknowntargetpos.f[0] = 0.0f;
-    chr->lastknowntargetpos.f[1] = 0.0f;
-    chr->lastknowntargetpos.f[2] = 0.0f;
-    chr->targetTile = NULL;
     chr->seen_bond_time = 0;
     chr->lastheartarget60 = 0;
     chr->numclosearghs = 0;

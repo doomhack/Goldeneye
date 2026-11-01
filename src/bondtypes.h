@@ -1446,10 +1446,6 @@ typedef union
         s8  face_target;     /*0x4c*/
     };
 
-    struct act_kneel
-    {
-        int padding[30];
-    };
 
     struct act_anim
     {
@@ -1549,22 +1545,6 @@ typedef union
         u32                                   standing;    /*0x54*/
 
         s32                                   type_of_motion; /*0x58 reaim*/
-        u32                                   unk5C;
-
-        u32                                   unk60;
-        u32                                   unk64;
-        u32                                   unk68;
-        u32                                   unk6c;
-
-        u32                                   unk70;
-        u32                                   unk74;
-        u32                                   unk78;
-        u32                                   unk7c;
-
-        s8                                    attack_item;
-        u8                                    unk81;
-        u8                                    unk82;
-        u8                                    unk83;
     };
 
     struct act_attackwalk
@@ -1589,22 +1569,6 @@ typedef union
         f32                                   speed;
 
         u32                                   unk58;
-        u32                                   unk5C;
-
-        u32                                   unk60;
-        u32                                   unk64;
-        u32                                   unk68;
-        u32                                   unk6c;
-
-        u32                                   unk70;
-        u32                                   unk74;
-        u32                                   unk78;
-        u32                                   unk7c;
-
-        s8                                    attack_item;
-        u8                                    unk81;
-        u8                                    unk82;
-        u8                                    unk83;
     };
 
     struct act_attackroll
@@ -1643,34 +1607,9 @@ typedef union
 
         s32                                   unk4c[2];
         s32                                   unk54[2];
-
-        u32                                   unk5C;
-
-        u32                                   unk60;
-        u32                                   unk64;
-        u32                                   unk68;
-        u32                                   unk6c;
-
-        u32                                   unk70;
-        u32                                   unk74;
-        u32                                   unk78;
-        u32                                   unk7c;
-
-        s8                                    attack_item;
-        u8                                    unk81;
-        u8                                    unk82;
-        u8                                    unk83;
     };
 
-    struct act_sidestep
-    {
-        bool32 side; /*0x2c*/
-    };
 
-    struct act_jumpout
-    {
-        bool32 side; /*0x2c*/
-    };
 
     struct act_runpos
     {
@@ -1704,16 +1643,6 @@ typedef union
          * Offset 0x7c.
          */
         f32                 speed;
-
-        s32                 unk80;
-        s32                 unk84;
-        s32                 unk88;
-        s32                 unk8c;
-        s32                 unk90;
-        s32                 unk94;
-        s32                 unk98;
-        s32                 unk9c;
-        s32                 unka0;
     };
 
     struct act_gopos
@@ -1792,70 +1721,20 @@ typedef union
         //s32 cheapend60; // lvframe60 time that the chr exited cheap method of wayfinding /*0x098*/
         //f32 unk0ac;                                                        /*0x09c*/
     };
-    struct act_surrender
-    {
-        int padding[30];
-    };
 
-    struct act_lookattarget
-    {
-        int padding[30];
-    };
 
-    struct act_surprised
-    {
-        u32 type; /*0x2c*/
-    };
 
-    struct act_startalarm
-    {
-        int padding[30];
-    };
 
-    struct act_throwgrenade
-    {
-        u32  entitytype; /*0x2c*/
-        u32  entityid;   /*0x30*/
-        u32  hand;       /*0x34*/
-        bool32 needsequip; /*0x38*/
-    };
 
-    struct act_turndir
-    {
-        int padding[30];
-    };
 
-    struct act_test
-    {
-        int padding[30];
-    };
 
-    struct act_bondintro
-    {
-        int padding[30];
-    };
 
-    struct act_bonddie
-    {
-        int padding[30];
-    };
 
     struct act_bondmulti
     {
         struct weapon_firing_animation_table *animfloats;
-
-        s32  unk30;
-        s32  unk34;
-        s32  unk38;
-        s32  unk3c;
-
-        int  padding[25];
     };
 
-    struct act_null
-    {
-        int padding[30];
-    };
 
 
 #pragma endregion ACT_TYPES
@@ -1998,7 +1877,6 @@ typedef union
         union
         {
             struct act_stand        act_stand;
-            struct act_kneel        act_kneel;
             struct act_anim         act_anim;
             struct act_die          act_die;
             struct act_dead         act_dead;
@@ -2007,22 +1885,10 @@ typedef union
             struct act_attack       act_attack;
             struct act_attackwalk   act_attackwalk;
             struct act_attackroll   act_attackroll;
-            struct act_sidestep     act_sidestep;
-            struct act_jumpout      act_jumpout;
             struct act_runpos       act_runpos;
             struct act_patrol       act_patrol;
             struct act_gopos        act_gopos;
-            struct act_surrender    act_surrender;
-            struct act_lookattarget act_lookattarget;
-            struct act_surprised    act_surprised;
-            struct act_startalarm   act_startalarm;
-            struct act_throwgrenade act_throwgrenade;
-            struct act_turndir      act_turndir;
-            struct act_test         act_test;
-            struct act_bondintro    act_bondintro;
-            struct act_bonddie      act_bonddie;
             struct act_bondmulti    act_bondmulti;
-            struct act_null         act_null;
         };
         f32     sumground;          /*0xA4*/
         f32     manground;          /*0xA8*/
@@ -2033,19 +1899,7 @@ typedef union
         s32     lastmoveok60;       /*0xCC*/
         f32     visionrange;        /*0xD0*/
         s32     lastseetarget60;    /*0xD4*/
-        coord3d lastknowntargetpos; /*0xD8 confirmed*/
-        void   *targetTile;         /*0xE4 maybe lastshooter*/
-
-        /*0xE8 */
-        union
-        {
-            s32 seen_bond_time;
-            struct
-            {
-                s16 lastshooter; /*0xE8 */
-                s16 timeshooter; /*0xEA*/
-            };
-        };
+        s32     seen_bond_time;
         f32            hearingscale;     /*0xEC increases when shot at*/
         s32            lastheartarget60; /*0xF0 increases after hearing bond (NOTE s32 not u32) */
                                          /* this next block MUST exist here */
