@@ -18,7 +18,10 @@
 
 // The RSP reads and writes these by DMA: keep them on whole data cache lines.
 alignas(16) static u8 s_DramStack[SP_DRAM_STACK_SIZE8];
-alignas(16) static u8 s_YieldBuffer[OS_YIELD_GFX_DATA_SIZE];
+// Where the Fast3D microcode saves its state when an audio task interrupts it
+#define GFX_YIELD_DATA_SIZE 0xBA0
+
+alignas(16) static u8 s_YieldBuffer[GFX_YIELD_DATA_SIZE];
 
 static u8 *s_RdpOutputBuffer;
 

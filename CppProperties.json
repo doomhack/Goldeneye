@@ -125,8 +125,8 @@
             "${workspaceRoot}",
             "${workspaceRoot}\\include",
             "${workspaceRoot}\\include\\PR",
-            "${workspaceRoot}\\src\\libultrare",
-            "${workspaceRoot}\\src\\libultra"
+            "${workspaceRoot}\\lib\\ultralib\\include",
+            "${workspaceRoot}\\lib\\ultralib\\include\\PR"
         ],
         "intelliSenseMode": "linux-gcc-x86",
         "defines": [
@@ -179,8 +179,8 @@
             "${workspaceRoot}",
             "${workspaceRoot}\\include",
             "${workspaceRoot}\\include\\PR",
-            "${workspaceRoot}\\src\\libultrare",
-            "${workspaceRoot}\\src\\libultra"
+            "${workspaceRoot}\\lib\\ultralib\\include",
+            "${workspaceRoot}\\lib\\ultralib\\include\\PR"
         ],
         "intelliSenseMode": "linux-gcc-x86",
         "defines": [

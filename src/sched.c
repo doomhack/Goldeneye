@@ -115,11 +115,8 @@ void CheckDisplayErrorBufferEvery16Frames(u32 framecount)
 	}
 }
 
-/**
- * Not 100% on name, came from osInitialize's call to function
- * store current Count to 800230A4
- */
-void osCreateLog(void)
+// Remembers when the scheduler started, for the error buffer timing above
+static void schedRecordStartCount(void)
 {
 	currentcount=osGetCount();
 }
@@ -148,7 +145,7 @@ void osCreateScheduler (OSSched * sc, void * stack, u8 mode, u32 numFields)
     osSetEventMesg(OS_EVENT_DP, &sc->interruptQ, (OSMesg)RDP_DONE_MSG);
     osSetEventMesg(OS_EVENT_PRENMI, &sc->interruptQ, (OSMesg)PRE_NMI_MSG);
     osViSetEvent(&sc->interruptQ, (OSMesg)VIDEO_MSG, numFields);
-    osCreateLog();
+    schedRecordStartCount();
     osCreateThread(sc->thread, SCHED_THREAD_ID, &__scMain, sc, setSPToEnd(sp_shed, sizeof(sp_shed)), SCHED_THREAD_PRIORITY);
     osStartThread(sc->thread);
 }
@@ -222,7 +219,7 @@ void __scMain(void *arg)
         }
     }
 
-    if (osTvType == TV_TYPE_MPAL)
+    if (osTvType == OS_TV_MPAL)
     {
         osViSetMode(&osViModeTable[OS_VI_MPAL_LAN1]);
     }

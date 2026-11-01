@@ -2,7 +2,7 @@
 
 The game code lives in `src/game`, one folder per subsystem. The engine and platform code
 (boot, threads, scheduler, memory pools, audio, controllers, video) is in `src/`, and
-Nintendo's SDK is in `src/libultra` and `src/libultrare`.
+Nintendo's library (libultra) is in `lib/ultralib`.
 
 Include game headers by their path from `src/`, for example `#include "game/chr/chrai.h"`.
 
@@ -37,7 +37,8 @@ All the game's own code is C. What is still assembly is code that cannot be C:
 | `src/bootcode.s` | Nintendo's boot code (IPL3), which the console checksums |
 | `src/_start.s` | The entry point: clears .bss and sets up `$gp` and the stack before any C can run, then jumps to `init()` |
 | `src/rspboot.s`, `src/gspboot.s`, `src/aspboot.s`, `rsp/` | Microcode for the RSP, a different processor |
-| `src/libultra`, `src/libultrare` | Nintendo's SDK, kept as it is: CP0, cache and TLB instructions and its own maths |
+| `lib/ultralib` | Nintendo's library (libultra 2.0L, from the ultralib decompilation), kept as it is |
+| `lib/ultralib-ge` | GoldenEye's own versions of a few library files (see `lib/ultralib.mk`) |
 
 ## Folders, from the top of the frame down
 

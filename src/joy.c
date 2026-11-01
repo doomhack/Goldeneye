@@ -168,7 +168,7 @@ void joyCheckStatusThreadSafe(void)
     }
 }
 
-s32 osPfsChecker(void)
+s32 osPfsChecker([[maybe_unused]] OSPfs *pfs)
 {
     return PFS_ERR_INCONSISTENT;
 }

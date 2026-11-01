@@ -154,7 +154,7 @@ Source `.c` files are compiled directly by GCC.
 
 `src` and the subsystem folders under `src/game` (see [SourceLayout.md](SourceLayout.md)): .c and .s files are compiled into .o files
 
-`src/libultra`: .c and .s files are compiled into .o files
+`lib/ultralib` and `lib/ultralib-ge`: Nintendo's library is compiled and archived into `libultra.a`; the linker takes only the parts the game uses (see [lib/ultralib/README.md](../lib/ultralib/README.md))
 
 ### Asset/data build process
 

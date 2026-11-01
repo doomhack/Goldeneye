@@ -229,7 +229,7 @@ static void bossCheckExpansionPak(void)
     // scheduler can't blank the screen again on the next retrace.
     osSetIntMask(OS_IM_NONE);
 
-    mode = &osViModeTable[(osTvType == TV_TYPE_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
+    mode = &osViModeTable[(osTvType == OS_TV_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
 
     IO_WRITE(VI_CONTROL_REG, mode->comRegs.ctrl);
     IO_WRITE(VI_WIDTH_REG, mode->comRegs.width);

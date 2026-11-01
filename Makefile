@@ -137,7 +137,7 @@ OBJECTS := $(RSPOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(OBSEGMENT)
 
 ## Command Line args for builders ##
 
-INCLUDE := -I . -I include -I include/ultra64 -I include/PR -I src
+INCLUDE := -I . -I include -I src -I lib/ultralib/include -I lib/ultralib/include/PR
 
 CC := $(TOOLCHAIN)gcc
 # Code generation flags shared by the game, libultra and the asset data.
@@ -167,11 +167,11 @@ LAYOUT_CFLAGS := -G 0 -fno-toplevel-reorder -fno-zero-initialized-in-bss -fno-me
 # The generated asset data (models, levels, setups) still puts arrays and integers into pointer
 # fields; it is data rather than code, so those GCC 14 errors stay warnings there.
 ASSET_CFLAGS := -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
-# Warnings: the game code (everything in src/ but libultra) builds with -Wall -Wextra and any
-# warning is an error. libultra is Nintendo's library and the assets are generated data, so
+# Warnings: the game code (everything in src/) builds with -Wall -Wextra and any
+# warning is an error. The assets are generated data, so
 # they build quietly (-w). See docs/StyleGuide.md.
 WARNFLAGS := -w
-CFLAGS = $(CC_BASEFLAGS) $(WARNFLAGS) $(SHUFFLEFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
+CFLAGS = $(CC_BASEFLAGS) $(ULTRALIB_VERSION_DEFINES) $(WARNFLAGS) $(SHUFFLEFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
 
 LD := $(TOOLCHAIN)ld
 LD_SCRIPT := $(BUILD_DIR)/ge007.$(OUTCODE).ld
@@ -189,6 +189,7 @@ else
 endif
 
 OBJCOPY := $(TOOLCHAIN)objcopy
+AR := $(TOOLCHAIN)ar
 
 
 
@@ -205,7 +206,7 @@ OBJCOPY := $(TOOLCHAIN)objcopy
 
 # Don't delete intermediate files from these targets on make completion.
 .SECONDARY:
-	$(APPELF) $(APPROM) $(APPBIN) $(ULTRAOBJECTS) $(BUILD_DIR)/ge007.$(OUTCODE).map \
+	$(APPELF) $(APPROM) $(APPBIN) $(ULTRALIB_OBJECTS) $(BUILD_DIR)/ge007.$(OUTCODE).map \
 	$(HEADEROBJECTS) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) \
 	$(OBSEG_OBJECTS) $(OBSEG_RZ) $(ROMOBJECTS) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(IMAGE_OBJS) $(MUSIC_RZ_FILES)
 
@@ -219,9 +220,8 @@ OBJCOPY := $(TOOLCHAIN)objcopy
 .PHONY: print_info create_directories build_tools prerequisites all_p1 all default commonclean setupclean stanclean dataclean libultraclean codeclean clean nuke help cmdbuidler context extractassets forceextractassets textures convert_props convert_chrs convert_guns extract_u extract_e force_extract_u force_extract_e extract_rsp
 
 
-# this file references variables defined above: BUILD_DIR, CFLAGWARNING, INCLUDE, LCDEFS
-# this file defines and builds $(ULTRAOBJECTS)
-include src/libultrare/Makefile.libultrare
+# Nintendo's library, built from lib/ultralib into $(ULTRALIB)
+include lib/ultralib.mk
 
 # Build RSP
 $(BUILD_DIR)/rsp/%.bin: rsp/*.s
@@ -260,9 +260,7 @@ $(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-# The more specific pattern wins, so libultra keeps the quiet default
 $(BUILD_DIR)/src/%.o: WARNFLAGS := -Wall -Wextra -Werror
-$(BUILD_DIR)/src/libultra/%.o $(BUILD_DIR)/src/libultrare/%.o: WARNFLAGS := -w
 # make SHUFFLE=<seed> links the game's variables in a random order with guard gaps between them,
 # to catch code that depends on how globals are laid out (tools/testrun/shuffle.py). Build it in
 # a clean tree: the objects differ from a normal build.
@@ -315,14 +313,14 @@ $(BUILD_DIR)/assets/%.o: assets/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 #Link Files
-$(APPELF): $(RSPOBJECTS) $(ULTRAOBJECTS) $(HEADEROBJECTS) $(OBSEG_RZ) $(BUILD_DIR)/$(OBSEGMENT) $(MUSIC_RZ_FILES) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(ROMOBJECTS) $(ASSET_DATAOBJECTS) $(ROMOBJECTS2) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(OBSEG_OBJECTS) ge007.ld
+$(APPELF): $(RSPOBJECTS) $(ULTRALIB) $(HEADEROBJECTS) $(OBSEG_RZ) $(BUILD_DIR)/$(OBSEGMENT) $(MUSIC_RZ_FILES) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(ROMOBJECTS) $(ASSET_DATAOBJECTS) $(ROMOBJECTS2) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(OBSEG_OBJECTS) ge007.ld
 	cpp $(LDFILEOPTS) -P ge007.ld -o $(BUILD_DIR)/ge007.$(OUTCODE).ld
 	@# GCC emits extra sections (.rodata.*, .text.*) that the per-object lines name exactly
 	sed -i -E -e '/\.o *\(/s/\((\.text|\.data|\.rodata)\)/(\1 \1.*)/' -e '/\.o *\(/s/\(\.bss\)/(.bss .bss.* COMMON)/' \
 		-e 's|^( */DISCARD/ : \{)|\1\n      * (.comment);\n      * (.note*);|' $(BUILD_DIR)/ge007.$(OUTCODE).ld
 	$(if $(SHUFFLE),python3 tools/testrun/shuffle.py ld $(BUILD_DIR)/ge007.$(OUTCODE).ld --seed $(SHUFFLE))
 	@echo "Linking Files into ELF"
-	$(LD) $(LDFLAGS) -o $@
+	$(LD) $(LDFLAGS) -o $@ $(ULTRALIB)
 
 $(APPBIN): $(APPELF)
 	@echo "Building ROM"
@@ -371,7 +369,7 @@ dataclean: commonclean stanclean setupclean
 	rm -f $(BUILD_DIR)/imagelist.csv
 
 libultraclean: commonclean
-	rm -f $(ULTRAOBJECTS)
+	rm -rf $(ULTRALIB) $(BUILD_DIR)/lib
 
 codeclean: commonclean libultraclean
 	rm -f $(HEADEROBJECTS) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(RSPOBJECTS)
@@ -396,7 +394,7 @@ help:
 	@echo "    dataclean                      Delete only asset build artifacts"
 	@echo "    codeclean                      Delete only code (asm, .c) build artifacts"
 	@echo "    libultraclean                  Delete only code (asm, .c) build artifacts "
-	@echo "                                    from Rare's libultra files"
+	@echo "                                    of Nintendo's library (lib/ultralib)"
 	@echo "    stanclean                      Delete only stan build artifacts"
 	@echo "    setupclean                     Delete only setup build artifacts"
 	@echo "    cmdbuidler                     BuildAI Commands"

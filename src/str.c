@@ -26,6 +26,17 @@ char *strcat(char *dst, const char *src) {
     return dst;
 }
 
+int memcmp(const void *a, const void *b, size_t n) {
+    const unsigned char *pa = a;
+    const unsigned char *pb = b;
+    for (; n != 0; n--, pa++, pb++) {
+        if (*pa != *pb) {
+            return *pa < *pb ? -1 : 1;
+        }
+    }
+    return 0;
+}
+
 int strcmp(const char* str1, const char* str2) {
     unsigned int var;
     unsigned char c1;

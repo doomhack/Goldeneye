@@ -17,6 +17,8 @@
  *
  **************************************************************************/
 
+#include <stdint.h>
+#include "platform_info.h"
 #ifndef _GBI_H_
 #define _GBI_H_
 
