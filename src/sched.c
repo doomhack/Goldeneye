@@ -8,6 +8,8 @@
 #include "joy.h"
 #include "music.h"
 #include "thread_config.h"
+#include "game/gfx/f3dex3.h"
+extern u8 g_GfxYieldBuffer[];
 
 s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP);
 s32 __scTaskComplete(OSScTask *t);
@@ -301,6 +303,22 @@ void __scHandleRSP(OSSched *sc) {
         if (t->list.t.type != M_AUDTASK)
         {
             g_PerfRspSum += osGetCount() - g_PerfGfxStart;
+
+            // F3DEX3 spike: its counters are in the end of the yield buffer
+            if (g_UcodeMode != UCODE_FAST3D)
+            {
+                F3DEX3YieldDataFooter *footer = (F3DEX3YieldDataFooter *)(g_GfxYieldBuffer + 0xC00 - sizeof(F3DEX3YieldDataFooter));
+                u32 *w = (u32 *)footer;
+
+                osInvalDCache(footer, sizeof(F3DEX3YieldDataFooter));
+                g_F3dex3Counters = *footer;
+                osInvalDCache(footer, sizeof(F3DEX3YieldDataFooter));
+                g_F3dex3CounterSum[0] += w[0];
+                g_F3dex3CounterSum[1] += w[1];
+                g_F3dex3CounterSum[2] += w[2];
+                g_F3dex3CounterSum[3] += w[3];
+                g_F3dex3CounterTasks++;
+            }
         }
 
         t->state &= ~OS_SC_NEEDS_RSP;

@@ -13,9 +13,31 @@ glabel gsp3DTextStart
 .incbin "bin/gspboot.text.bin"
 glabel gsp3DTextEnd
 
+# F3DEX3 spike: alternative graphics microcodes (rsp/f3dex3/README.md)
+.balign 16
+glabel gspF3dex3NocTextStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC.code"
+.balign 16
+glabel gspF3dex3NocPaTextStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC_PA.code"
+.balign 16
+glabel gspF3dex3NocPbTextStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC_PB.code"
+.balign 16
+
 .section .data
 glabel gsp3DDataStart
 .incbin "bin/gspboot.data.bin"
 glabel gsp3DDataEnd
+.balign 16
+glabel gspF3dex3NocDataStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC.data"
+.balign 16
+glabel gspF3dex3NocPaDataStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC_PA.data"
+.balign 16
+glabel gspF3dex3NocPbDataStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC_PB.data"
+.balign 16
 .section .rodata
 .section .bss

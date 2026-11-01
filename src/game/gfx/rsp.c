@@ -12,6 +12,7 @@
 #include <sched.h>
 #include <PR/sptask.h>
 #include <PR/ucode.h>
+#include "game/gfx/f3dex3.h"
 #include "game/gfx/rsp.h"
 
 #define RDP_OUTPUT_BUFFER_SIZE 0xa000
@@ -19,9 +20,9 @@
 // The RSP reads and writes these by DMA: keep them on whole data cache lines.
 alignas(16) static u8 s_DramStack[SP_DRAM_STACK_SIZE8];
 // Where the Fast3D microcode saves its state when an audio task interrupts it
-#define GFX_YIELD_DATA_SIZE 0xBA0
+#define GFX_YIELD_DATA_SIZE 0xC00 /* F3DEX3 needs 0xC00 (Fast3D 0xBA0); its counters sit at the end */
 
-alignas(16) static u8 s_YieldBuffer[GFX_YIELD_DATA_SIZE];
+alignas(16) u8 g_GfxYieldBuffer[GFX_YIELD_DATA_SIZE];
 
 static u8 *s_RdpOutputBuffer;
 
@@ -34,10 +35,14 @@ extern long long int rspbootTextStart[];
 extern long long int rspbootTextEnd[];
 extern long long int gsp3DTextStart[];
 extern long long int gsp3DDataStart[];
+extern long long int gspF3dex3NocTextStart[], gspF3dex3NocDataStart[];
+extern long long int gspF3dex3NocPaTextStart[], gspF3dex3NocPaDataStart[];
+extern long long int gspF3dex3NocPbTextStart[], gspF3dex3NocPbDataStart[];
 
 void rspAllocateBuffers(void)
 {
     s_RdpOutputBuffer = mempAlloc(RDP_OUTPUT_BUFFER_SIZE, MEMPOOL_PERMANENT);
+    f3dex3AllocateBuffers();
 }
 
 /**
@@ -57,7 +62,39 @@ void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg replyMsg)
     task->t.ucode = (u64 *)gsp3DTextStart;
     task->t.ucode_size = SP_UCODE_SIZE;
     task->t.ucode_data = (u64 *)gsp3DDataStart;
+
+    // F3DEX3 spike: translate the frame and run it on the selected F3DEX3
+    // (g_XlDebug 256: alternate Fast3D and F3DEX3 NOC every frame, to compare)
+    if (g_XlDebug & 256)
+    {
+        g_UcodeMode = (g_UcodeMode == UCODE_FAST3D) ? UCODE_F3DEX3_NOC : UCODE_FAST3D;
+    }
+
+    if (g_UcodeMode != UCODE_FAST3D)
+    {
+        firstGdl = f3dex3TranslateFrame(firstGdl, gdl, &gdl);
+
+        switch (g_UcodeMode)
+        {
+            case UCODE_F3DEX3_NOC_PA:
+                task->t.ucode = (u64 *)gspF3dex3NocPaTextStart;
+                task->t.ucode_data = (u64 *)gspF3dex3NocPaDataStart;
+                break;
+            case UCODE_F3DEX3_NOC_PB:
+                task->t.ucode = (u64 *)gspF3dex3NocPbTextStart;
+                task->t.ucode_data = (u64 *)gspF3dex3NocPbDataStart;
+                break;
+            default:
+                task->t.ucode = (u64 *)gspF3dex3NocTextStart;
+                task->t.ucode_data = (u64 *)gspF3dex3NocDataStart;
+                break;
+        }
+    }
     task->t.ucode_data_size = SP_UCODE_DATA_SIZE;
+    if ((g_UcodeMode != UCODE_FAST3D) && (g_XlDebug & 512))
+    {
+        task->t.ucode_data_size = 744;
+    }
     task->t.dram_stack = (u64 *)s_DramStack;
     task->t.dram_stack_size = sizeof(s_DramStack);
     task->t.output_buff = (u64 *)s_RdpOutputBuffer;
@@ -65,8 +102,8 @@ void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg replyMsg)
     task->t.output_buff_size = (u64 *)(s_RdpOutputBuffer + RDP_OUTPUT_BUFFER_SIZE);
     task->t.data_ptr = (u64 *)firstGdl;
     task->t.data_size = (gdl - firstGdl) * sizeof(Gfx);
-    task->t.yield_data_ptr = (u64 *)s_YieldBuffer;
-    task->t.yield_data_size = sizeof(s_YieldBuffer);
+    task->t.yield_data_ptr = (u64 *)g_GfxYieldBuffer;
+    task->t.yield_data_size = sizeof(g_GfxYieldBuffer);
 
     sctask->next = NULL;
     sctask->flags = OS_SC_NEEDS_RSP | OS_SC_NEEDS_RDP | OS_SC_LAST_TASK | OS_SC_SWAPBUFFER;

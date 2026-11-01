@@ -24,6 +24,7 @@
 #include <rom.h>
 #include <random.h>
 #include <joy.h>
+#include "game/gfx/f3dex3.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
 #include "game/menu/front.h"
@@ -392,6 +393,11 @@ static u32 s_FpsLastTasks;
 static s32 s_FpsCpuMs;
 static s32 s_FpsRspMs;
 static s32 s_FpsRdpMs;
+static u32 s_XLastSum[4];
+static u32 s_XLastTasks;
+static u32 s_XAvg[4];
+static u32 s_XAvgHi[4];
+static u32 s_XAvgLo[4];
 
 /**
  * Draws the frame rate (the watch's fps counter option) in the top right
@@ -401,7 +407,8 @@ static s32 s_FpsRdpMs;
  */
 static Gfx *lvRenderFpsCounter(Gfx *DL)
 {
-    char text[40];
+    char text[200];
+    char extra[120];
     s32 x;
     s32 y;
     s32 width;
@@ -430,9 +437,44 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
         s_FpsLastRsp = rsp;
         s_FpsLastRdp = rdp;
         s_FpsLastTasks = tasks;
+
+        // F3DEX3 spike counters, averaged per task over the last second
+        {
+            u32 ct = g_F3dex3CounterTasks - s_XLastTasks;
+            s32 k;
+
+            for (k = 0; k < 4; k++)
+            {
+                u32 sum = g_F3dex3CounterSum[k];
+                s_XAvg[k] = (ct != 0) ? (sum - s_XLastSum[k]) / ct : 0;
+                s_XAvgHi[k] = (ct != 0) ? ((sum - s_XLastSum[k]) >> 16) / ct : 0;
+                s_XAvgLo[k] = (ct != 0) ? ((sum - s_XLastSum[k]) & 0xFFFF) / ct : 0;
+                s_XLastSum[k] = sum;
+            }
+
+            s_XLastTasks = g_F3dex3CounterTasks;
+        }
     }
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs);
+    switch (g_UcodeMode)
+    {
+        case UCODE_F3DEX3_NOC_PA:
+            // cycles at 62.5 MHz: / 6250 = tenths of a ms
+            sprintf(extra, "%s\nVTX %d.%d TRI %d.%d STALL %d.%d\nCMDS %d", f3dex3ModeName(g_UcodeMode),
+                s_XAvg[0] / 62500, (s_XAvg[0] / 6250) % 10, s_XAvg[3] / 62500, (s_XAvg[3] / 6250) % 10,
+                s_XAvg[2] / 62500, (s_XAvg[2] / 6250) % 10, s_XAvgLo[1]);
+            break;
+        case UCODE_F3DEX3_NOC_PB:
+            sprintf(extra, "%s\nVERTS %d CLIPPED %d", f3dex3ModeName(g_UcodeMode), s_XAvgHi[0], s_XAvg[1]);
+            break;
+        default:
+            sprintf(extra, "%s", f3dex3ModeName(g_UcodeMode));
+            break;
+    }
+
+    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n%s\n%s%s%s%s", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs, extra,
+        (g_PerfSkip & PERFSKIP_SKY) ? "NOSKY " : "", (g_PerfSkip & PERFSKIP_PROPS) ? "NOPROP " : "",
+        (g_PerfSkip & PERFSKIP_VIEW2) ? "NOVIEW2 " : "", (g_F3dex3Unsupported != 0) ? "XLERR" : "");
 
     width = 0;
     height = 0;
@@ -501,7 +543,10 @@ Gfx* lvRender(Gfx* DL)
             DL = camSetupFrame(DL);
 
             DL = viSetupScreensForNumPlayers(DL);
-            DL = skyRender(DL);
+            if (!(g_PerfSkip & PERFSKIP_SKY) && !((g_PerfSkip & PERFSKIP_VIEW2) && (i > 0)))
+            {
+                DL = skyRender(DL);
+            }
             bgFindVisibleRooms();
             propsTickPerPlayer();
             propsSortOnscreen();
@@ -515,7 +560,10 @@ Gfx* lvRender(Gfx* DL)
             }
 
             propsTickPickups();
-            DL = bgLevelRender(DL);
+            if (!((g_PerfSkip & PERFSKIP_VIEW2) && (i > 0)))
+            {
+                DL = bgLevelRender(DL);
+            }
 
 
             DL = weaponRenderTracers(DL);
@@ -592,6 +640,14 @@ Gfx* lvRender(Gfx* DL)
 
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && optionsGetShowFps())
     {
+        if (joyGetButtons(PLAYER_1, L_TRIG))
+        {
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD)) g_PerfSkip ^= PERFSKIP_SKY;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD)) g_PerfSkip ^= PERFSKIP_PROPS;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD)) g_PerfSkip ^= PERFSKIP_VIEW2;
+            if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD)) g_UcodeMode = (g_UcodeMode + 1) % UCODE_COUNT;
+        }
+
         DL = lvRenderFpsCounter(DL);
     }
 

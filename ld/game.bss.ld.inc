@@ -129,6 +129,7 @@
       build/OUTCODE/src/game/gfx/imagebank.o (.bss);
       build/OUTCODE/src/game/asset/rzip.o (.bss);
       build/OUTCODE/src/game/gfx/rsp.o (.bss);
+      build/OUTCODE/src/game/gfx/f3dex3.o (.bss);
       build/OUTCODE/src/game/level/game.o (.bss);
       build/OUTCODE/src/game/gfx/zbuf.o (.bss);
 #ifndef VERSION_EU
