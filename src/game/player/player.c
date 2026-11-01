@@ -181,6 +181,7 @@ void playerInit(s32 player_num)
     s32 one;
     default_hand = s_DefaultHand;
     g_playerPointers[player_num] = mempAlloc((sizeof(struct player) + 0xF) & ~0xF, MEMPOOL_STAGE);
+    g_playerPointers[player_num]->watchGfx = mempAlloc((sizeof(struct PlayerWatchGfx) + 0xF) & ~0xF, MEMPOOL_STAGE);
 
 
     g_playerPointers[player_num]->cameramode = 0;

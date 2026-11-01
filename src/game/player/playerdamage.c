@@ -337,8 +337,8 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 
     if (g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0x0)
     {
-        hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 1, currentPlayerGetArmor());
-        hudMakeDamageSegments(g_CurrentPlayer->health_display_values, -1, currentPlayerGetHealth());
+        hudMakeDamageSegments(g_CurrentPlayer->watchGfx->armor_display_values, 1, currentPlayerGetArmor());
+        hudMakeDamageSegments(g_CurrentPlayer->watchGfx->health_display_values, -1, currentPlayerGetHealth());
     }
 
     if (!gameIsMulti() || (g_MpStopPlay == 0 && g_MpGameOver == 0))
