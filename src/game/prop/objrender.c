@@ -271,7 +271,7 @@ static void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 xlupas
 
     mrData->gdl = gdl;
 
-    for (PropRecord *child = prop->child; child != NULL; child = child->prev)
+    for (PropRecord *child = propChild(prop); child != NULL; child = child->prev)
     {
         objRenderModel(child, mrData, xlupass);
     }

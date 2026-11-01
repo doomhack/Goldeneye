@@ -57,7 +57,7 @@
 #endif
 
 /* The prop pool: every prop in the game is one of these */
-PropRecord g_Props[MAX_PROPS];
+PropRecord g_Props[MAX_PROPS] __attribute__((aligned(16)));
 
 PropRecord *g_ActivePropsTail = NULL;
 PropRecord *g_ActivePropsHead = NULL;
@@ -84,9 +84,11 @@ void propsInit(void)
     g_LastOnScreenProp = g_OnScreenPropList;
     g_FreeProps = g_Props;
 
-    for (s32 i = 0; i < MAX_PROPS - 1; i++)
+    for (s32 i = 0; i < MAX_PROPS; i++)
     {
-        g_Props[i].prev = &g_Props[i + 1];
+        g_Props[i].prev = i < MAX_PROPS - 1 ? &g_Props[i + 1] : NULL;
+        g_Props[i].parentnum = -1;
+        g_Props[i].childnum = -1;
     }
 
     roomPropListsInit();
@@ -173,8 +175,8 @@ PropRecord *propAllocate(void)
 
     prop->prev = NULL;
     prop->next = NULL;
-    prop->parent = NULL;
-    prop->child = NULL;
+    propSetParent(prop, NULL);
+    propSetChild(prop, NULL);
 
     prop->flags = 0;
     prop->stan = NULL;
@@ -266,33 +268,33 @@ void propDelist(PropRecord *prop)
 /* Attach a prop to another (host), as its newest child */
 void propReparent(PropRecord *child, PropRecord *host)
 {
-    child->parent = host;
+    propSetParent(child, host);
 
-    if (host->child != NULL)
+    if (propChild(host) != NULL)
     {
-        host->child->next = child;
+        propChild(host)->next = child;
     }
 
-    child->prev = host->child;
+    child->prev = propChild(host);
     child->next = NULL;
     child->stan = NULL;
-    host->child = child;
+    propSetChild(host, child);
 }
 
 
 /* Detach a prop from its parent, if it has one */
 void propDetach(PropRecord *prop)
 {
-    PropRecord *parent = prop->parent;
+    PropRecord *parent = propParent(prop);
 
     if (parent == NULL)
     {
         return;
     }
 
-    if (prop == parent->child)
+    if (prop == propChild(parent))
     {
-        parent->child = prop->prev;
+        propSetChild(parent, prop->prev);
     }
 
     if (prop->prev != NULL)
@@ -305,7 +307,7 @@ void propDetach(PropRecord *prop)
         prop->next->prev = prop->prev;
     }
 
-    prop->parent = NULL;
+    propSetParent(prop, NULL);
     prop->prev = NULL;
     prop->next = NULL;
 }

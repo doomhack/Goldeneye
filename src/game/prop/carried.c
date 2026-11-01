@@ -536,7 +536,7 @@ static WeaponObjRecord *weaponFindInProp(s32 weaponnum, PropRecord *prop)
         return prop->weapon;
     }
 
-    for (PropRecord *child = prop->child; child; child = child->prev)
+    for (PropRecord *child = propChild(prop); child; child = child->prev)
     {
         WeaponObjRecord *weapon = weaponFindInProp(weaponnum, child);
 
@@ -576,7 +576,7 @@ void objSetDropType(PropRecord *prop, DROPTYPE droptype)
 {
     ObjectRecord *obj = prop->obj;
 
-    if (prop->parent == NULL)
+    if (propParent(prop) == NULL)
     {
         return;
     }
@@ -598,7 +598,7 @@ void objSetDropType(PropRecord *prop, DROPTYPE droptype)
    them, and a gun stops firing. */
 void objDetach(PropRecord *prop)
 {
-    PropRecord *parent = prop->parent;
+    PropRecord *parent = propParent(prop);
     ObjectRecord *obj = prop->obj;
 
     if (parent == NULL)
@@ -700,7 +700,7 @@ static void objLaunchDropped(Projectile *projectile, PropRecord *parent)
  */
 bool objDrop(PropRecord *prop)
 {
-    PropRecord *parent = prop->parent;
+    PropRecord *parent = propParent(prop);
     ObjectRecord *obj = prop->obj;
     Projectile *projectile;
     Model *model;
@@ -733,7 +733,7 @@ bool objDrop(PropRecord *prop)
 
     objLaunchDropped(projectile, parent);
 
-    for (root = parent; root->parent != NULL; root = root->parent)
+    for (root = parent; propParent(root) != NULL; root = propParent(root))
     {
     }
 

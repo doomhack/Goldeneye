@@ -769,7 +769,7 @@ void chrFreeResources(PropRecord *prop)
     modelResetDeformedVertices(model);
     propRemoveFromRooms(prop);
 
-    child = prop->child;
+    child = propChild(prop);
 
     if (child != NULL) {
         do {
@@ -1357,7 +1357,7 @@ after_position_update:
     {
         if (chr->hidden & CHRHIDDEN_DROP_HELD_ITEMS)
         {
-            PropRecord *dropprop = prop->child;
+            PropRecord *dropprop = propChild(prop);
 
             while (dropprop != NULL)
             {
@@ -1380,7 +1380,7 @@ after_position_update:
 
 void chrDropItems(ChrRecord *self)
 {
-    PropRecord *childprop = self->prop->child;
+    PropRecord *childprop = propChild(self->prop);
     while (childprop)
     {
         if ((childprop != self->handle_positiondata_hat) &&

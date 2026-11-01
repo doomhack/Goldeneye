@@ -375,14 +375,14 @@ void objFree(ObjectRecord *obj, s32 freeprop, s32 canregen)
 
     objFreeEmbedmentOrProjectile(prop);
 
-    if (prop->parent != NULL)
+    if (propParent(prop) != NULL)
     {
         objDetach(prop);
     }
 
     propRemoveFromRooms(prop);
 
-    for (PropRecord *child = prop->child; child != NULL;)
+    for (PropRecord *child = propChild(prop); child != NULL;)
     {
         PropRecord *next = child->prev;
 

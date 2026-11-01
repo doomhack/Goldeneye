@@ -134,7 +134,7 @@ static ObjectRecord *slotAllocate(u8 *slots, s32 slotsize, s32 numslots, s32 *ne
 static bool weaponSlotReusable(ObjectRecord *obj)
 {
     WeaponObjRecord *weapon = (WeaponObjRecord *)obj;
-    PropRecord *parent = obj->prop->parent;
+    PropRecord *parent = propParent(obj->prop);
 
     if ((obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) || (obj->state & PROPSTATE_RESPAWN))
     {
@@ -159,7 +159,7 @@ static bool weaponSlotReusable(ObjectRecord *obj)
 /* A hat can be reused once it has landed on the floor */
 static bool hatSlotReusable(ObjectRecord *obj)
 {
-    return !(obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) && obj->prop->parent == NULL;
+    return !(obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) && propParent(obj->prop) == NULL;
 }
 
 
@@ -203,7 +203,7 @@ AmmoCrateRecord *ammocrateAllocate(void)
 
             if (!(crate->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
                     && !(crate->state & PROPSTATE_RESPAWN)
-                    && crate->prop->parent == NULL
+                    && propParent(crate->prop) == NULL
                     && (pass == 1 || !(crate->prop->flags & PROPFLAG_ONSCREEN)))
             {
                 objFreePermanently(crate, TRUE);
