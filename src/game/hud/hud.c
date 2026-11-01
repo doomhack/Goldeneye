@@ -53,12 +53,12 @@ Gfx *hudRenderHealthBars(Gfx *gdl)
     Mtxf lookatmtxf;
 
     //Set up armor bars.
-    hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 1, g_CurrentPlayer->apparentarmour);
-    hudRenderGaugeBar(g_CurrentPlayer->watchArmorGdl, g_CurrentPlayer->armor_display_values, 0x2e);
+    hudMakeDamageSegments(g_CurrentPlayer->watchGfx->armor_display_values, 1, g_CurrentPlayer->apparentarmour);
+    hudRenderGaugeBar(g_CurrentPlayer->watchGfx->watchArmorGdl, g_CurrentPlayer->watchGfx->armor_display_values, 0x2e);
 
     // Set up health bars.
-    hudMakeDamageSegments(g_CurrentPlayer->health_display_values, -1, g_CurrentPlayer->apparenthealth);
-    hudRenderGaugeBar(g_CurrentPlayer->watchHealthGdl, g_CurrentPlayer->health_display_values, 0x2e);
+    hudMakeDamageSegments(g_CurrentPlayer->watchGfx->health_display_values, -1, g_CurrentPlayer->apparenthealth);
+    hudRenderGaugeBar(g_CurrentPlayer->watchGfx->watchHealthGdl, g_CurrentPlayer->watchGfx->health_display_values, 0x2e);
 
     // Create an orthographic render state for the gauge.
     lookatmtx = dynAllocateMatrix();
@@ -87,8 +87,8 @@ Gfx *hudRenderHealthBars(Gfx *gdl)
     gDPSetPrimColor(gdl++, 0, 0, 0xe6, 0xe6, 0xe6, 0x00);
     gSPClearGeometryMode(gdl++, G_CULL_BOTH);
 
-    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchArmorGdl));
-    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchHealthGdl));
+    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchGfx->watchArmorGdl));
+    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchGfx->watchHealthGdl));
 
     gSPMatrix(gdl++, osVirtualToPhysical(camGetProjectionMtx()), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
 

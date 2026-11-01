@@ -964,19 +964,19 @@ void watchTrigger(s32 instant)
             watchInitPauseTilt();
             watchZoomToDefault();
 
-            hudMakeDamageSegments(g_CurrentPlayer->armor_display_values, 1, currentPlayerGetArmor());
-            hudRenderGaugeBar(g_CurrentPlayer->watchArmorGdl, g_CurrentPlayer->armor_display_values, 0x2E);
+            hudMakeDamageSegments(g_CurrentPlayer->watchGfx->armor_display_values, 1, currentPlayerGetArmor());
+            hudRenderGaugeBar(g_CurrentPlayer->watchGfx->watchArmorGdl, g_CurrentPlayer->watchGfx->armor_display_values, 0x2E);
 
-            hudMakeDamageSegments(g_CurrentPlayer->health_display_values, -1, currentPlayerGetHealth());
-            hudRenderGaugeBar(g_CurrentPlayer->watchHealthGdl, g_CurrentPlayer->health_display_values, 0x2E);
+            hudMakeDamageSegments(g_CurrentPlayer->watchGfx->health_display_values, -1, currentPlayerGetHealth());
+            hudRenderGaugeBar(g_CurrentPlayer->watchGfx->watchHealthGdl, g_CurrentPlayer->watchGfx->health_display_values, 0x2E);
 
             watchMenuOpen();
 
             /**
              * This section is for rendering the selected screen rectangles.
             */
-            ptr_b = g_CurrentPlayer->watchTabsGdl;
-            ptr_a = &g_CurrentPlayer->watchTabsVtx->vtx[0];
+            ptr_b = g_CurrentPlayer->watchGfx->watchTabsGdl;
+            ptr_a = &g_CurrentPlayer->watchGfx->watchTabsVtx->vtx[0];
 
             for (i=0;
                 i<(WATCH_NUMBER_SCREENS * WATCH_SCREEN_SELECT_RECTANGLE_HSTEP);
@@ -997,10 +997,10 @@ void watchTrigger(s32 instant)
              * This section is related to rendering static on the watch menu.
              * Static is defined by a horizontal bar in the middle of the screen.
             */
-            ptr_a = &g_CurrentPlayer->watchStaticVtx->vtx[0];
-            ptr_b = g_CurrentPlayer->watchStaticGdl;
+            ptr_a = &g_CurrentPlayer->watchGfx->watchStaticVtx->vtx[0];
+            ptr_b = g_CurrentPlayer->watchGfx->watchStaticGdl;
 
-            ptr_copy = &g_CurrentPlayer->watchStaticVtx->vtx[0];
+            ptr_copy = &g_CurrentPlayer->watchGfx->watchStaticVtx->vtx[0];
             watchMakeRectVerts(ptr_a, 0, 0, 0x398, 0x14, -0x1CC, 0);
             ptr_b = watchRenderQuad(ptr_b, ptr_copy);
 

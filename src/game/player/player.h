@@ -245,6 +245,28 @@ typedef struct gunheld {
 } gunheld;
 
 
+/**
+ * Display lists and vertices for the watch screens and the health and armour bars. They are
+ * written only when the bars or the watch change and are read by the RSP, so they live in
+ * their own allocation instead of spreading struct player over more cache lines.
+ */
+struct PlayerWatchGfx
+{
+  struct damage_display_val armor_display_values[46]; // watch gauge vertices
+  struct damage_display_val health_display_values[46];
+
+  struct WatchRectangle watchTabsVtx[WATCH_NUMBER_SCREENS];
+
+  /**
+   * Watch static, not "static vertices".
+  */
+  struct WatchRectangle watchStaticVtx[1];
+  Gfx watchArmorGdl[230];
+  Gfx watchHealthGdl[230];
+  Gfx watchTabsGdl[WATCH_NUMBER_SCREENS * 8];
+  Gfx watchStaticGdl[4];
+};
+
 struct player
 {
   s32 cameramode; // canonical name
@@ -766,19 +788,7 @@ struct player
   u8 cheatInputBufferIndex; // canonically "buthistindex"
   u8 cheatInputCount; // canonically "buthistlen"
   u8 cheatBondInvincible; // canonically "bondinvincible"
-  struct damage_display_val armor_display_values[46]; // watch gauge vertices
-  struct damage_display_val health_display_values[46];
-
-  struct WatchRectangle watchTabsVtx[WATCH_NUMBER_SCREENS];
-
-  /**
-   * Watch static, not "static vertices".
-  */
-  struct WatchRectangle watchStaticVtx[1];
-  Gfx watchArmorGdl[230];
-  Gfx watchHealthGdl[230];
-  Gfx watchTabsGdl[WATCH_NUMBER_SCREENS * 8];
-  Gfx watchStaticGdl[4];
+  struct PlayerWatchGfx *watchGfx; // the watch and health bar display lists, see playerInit
 
   s32 healthdamagetype; // canonical name
 

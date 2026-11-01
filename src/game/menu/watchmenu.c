@@ -1648,9 +1648,9 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish)
     {
         gSPClearGeometryMode(gdl++, G_CULL_BOTH);
         // draw body armor bars
-        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchArmorGdl));
+        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchGfx->watchArmorGdl));
         // draw health bars
-        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchHealthGdl));
+        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchGfx->watchHealthGdl));
     }
 
     /**
@@ -1664,9 +1664,9 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish)
     {
         gSPClearGeometryMode(gdl++, G_CULL_BOTH);
         // draw body armor bars
-        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchArmorGdl));
+        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchGfx->watchArmorGdl));
         // draw health bars
-        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchHealthGdl));
+        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchGfx->watchHealthGdl));
     }
     /**
      * End health bar zoom section
@@ -1712,7 +1712,7 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish)
     */
     gDPSetRenderMode(gdl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
     gDPSetCombineMode(gdl++, G_CC_SHADE, G_CC_SHADE);
-    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchTabsGdl));
+    gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchGfx->watchTabsGdl));
     /**
      * // end green rectangles/page select section
     */
@@ -1726,10 +1726,10 @@ Gfx *watchMenuRenderBackground(Gfx *gdl, Mtx *mtx, s32 zoom_squish)
     if (g_WatchBackgroundGreen < 0xE0)
     {
         // Create the thin green scanline that moves up the screen while the watch does static.
-        watchMenuMakeScanlineVerts((Vtx *)g_CurrentPlayer->watchStaticVtx->vtx); // same layout as 4 Vtx
+        watchMenuMakeScanlineVerts((Vtx *)g_CurrentPlayer->watchGfx->watchStaticVtx->vtx); // same layout as 4 Vtx
 
         gDPSetRenderMode(gdl++, G_RM_AA_XLU_SURF, G_RM_AA_XLU_SURF2);
-        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchStaticGdl));
+        gSPDisplayList(gdl++, OS_PHYSICAL_TO_K0(g_CurrentPlayer->watchGfx->watchStaticGdl));
     }
 
     return gdl;
@@ -3749,7 +3749,7 @@ const char g_ObjectiveLineEndGap2[] = " \n\n";
 
 Gfx *watchMenuRender(Gfx *gdl, Mtx *mtx, s32 watch_transitioning)
 {
-    watchMenuSetTabColours(g_WatchMenuPage, (struct WatchVertex *)g_CurrentPlayer->watchTabsVtx);
+    watchMenuSetTabColours(g_WatchMenuPage, (struct WatchVertex *)g_CurrentPlayer->watchGfx->watchTabsVtx);
 
     if (watch_transitioning == TRUE)
     {
