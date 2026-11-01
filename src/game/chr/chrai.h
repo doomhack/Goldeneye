@@ -5,9 +5,20 @@
 
 #include <bondtypes.h>
 
+/* A sound slot AI scripts play sounds in, to change their volume or stop them later */
+typedef struct AiSound
+{
+    ALSoundState *state;
+    s32           volume;       // current
+    s32           fadeTime;     // ticks left fading to targetVolume, -1 = none
+    s32           targetVolume;
+    coord3d      *pos;          // emitting from a pad, volume by distance
+    ObjectRecord *obj;          // emitting from an object
+} AiSound;
+
 #define CHRAI_TICKRATE_F 60.0f
 
-#define SFX_RELATED_LEN 8
+#define AI_SOUND_SLOTS 8
 #define MAX_PROPS 600
 #define MAX_WEAPON_SLOTS 30
 #define MAX_HAT_SLOTS 10
@@ -24,7 +35,7 @@ extern struct SetupPtrs g_SetupPtrs;
 extern stagesetup g_CurrentSetup;
 
 extern PropRecord *                       g_InteractProp;
-extern sfxRecord                          sfx_related[];
+extern AiSound                            g_AiSounds[];
 extern struct WeaponObjRecord             g_WeaponSlots[];
 extern struct HatRecord                   g_HatSlots[];
 extern struct AmmoCrateRecord             g_AmmoCrates[];

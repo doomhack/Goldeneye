@@ -12,16 +12,14 @@
 #include "game/model/model.h"
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
-#include "game/model/model.h"
-
-// # This file is chrlv.c
 
 /**
- * Address 0x7F0232E8 (VERSION_US)
- * Address 0x7F0235D8 (other version)
- * Not a very descriptive name for a function. What it does is load Bond's model or those
- * for spawning guards. It is not used for guards that spawn at level loading.
-*/
+ * Builds a chr's model from a body and (if the body has none of its own) a head,
+ * loading their model files if needed. Used for Bond's model and for guards spawned
+ * during play, not for guards set up at level load. Fills in model if given,
+ * otherwise instantiates a new one. Without sunglasses the head's first switch
+ * (its glasses) is hidden.
+ */
 struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHeader, struct ModelFileHeader *headHeader, s32 sunglasses, struct Model *model)
 {
     f32 scale;
@@ -38,19 +36,19 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
         scale *= 0.8f;
     }
 
-    if (bodyHeader->RootNode == 0)
+    if (bodyHeader->RootNode == NULL)
     {
         modelFileLoadToPool(bodyHeader, c_item_entries[body].filename);
     }
 
     modelCalculateRwDataLen(bodyHeader);
 
-    if ((c_item_entries[body].hasHead == 0) && (head >= 0))
+    if (!c_item_entries[body].hasHead && (head >= 0))
     {
         headNode = bodyHeader->Switches[4]; // where the head attaches
         if (headNode != NULL)
         {
-            if (headHeader->RootNode == 0)
+            if (headHeader->RootNode == NULL)
             {
                 modelFileLoadToPool(headHeader, c_item_entries[head].filename);
             }
@@ -61,24 +59,24 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
         }
     }
 
-    if (model == 0)
+    if (model == NULL)
     {
         model = modelmgrInstantiateModelWithAnim(bodyHeader);
     }
 
-    if (model != 0)
+    if (model != NULL)
     {
         modelSetScale(model, scale);
         modelSetAnimTranslationScale(model, pov);
 
-        if ((headHeader != 0) && (c_item_entries[body].hasHead == 0))
+        if ((headHeader != NULL) && !c_item_entries[body].hasHead)
         {
             bodyHeader->numRecords -= headHeader->numRecords;
             modelAttachHead(model, headNode, headHeader);
 
-            if ((sunglasses == 0) && ((s32) headHeader->numSwitches > 0))
+            if (!sunglasses && ((s32)headHeader->numSwitches > 0))
             {
-                if (headHeader->Switches[0] != 0)
+                if (headHeader->Switches[0] != NULL)
                 {
                     rwdata = &modelGetNodeRwData(model, headHeader->Switches[0])->Switch;
                     rwdata->visible = 0;
@@ -90,13 +88,17 @@ struct Model *bodyCreateModel(s32 body, s32 head, struct ModelFileHeader *bodyHe
     return model;
 }
 
-Model *bodyCreateModelNew(int body,int head,ModelFileHeader *body_header, ModelFileHeader *head_header,int sunglasses)
+Model *bodyCreateModelNew(s32 body, s32 head, ModelFileHeader *body_header, ModelFileHeader *head_header, s32 sunglasses)
 {
-  return bodyCreateModel(body,head,body_header,head_header,sunglasses,0x0);
+    return bodyCreateModel(body, head, body_header, head_header, sunglasses, NULL);
 }
 
 
-Model * bodyCreateModelWithFlags(s32 body, s32 head, u32 bitflags)
+/**
+ * Builds a new model for a body and head. bitflags: 1 = sunglasses, 2 = sunglasses
+ * half the time.
+ */
+Model *bodyCreateModelWithFlags(s32 body, s32 head, u32 bitflags)
 {
     ModelFileHeader *body_header;
     ModelFileHeader *head_header;
@@ -107,16 +109,16 @@ Model * bodyCreateModelWithFlags(s32 body, s32 head, u32 bitflags)
 
     sunglasses = 0;
 
-    if ((bitflags & 1))
+    if (bitflags & 1)
     {
         sunglasses = 1;
     }
-    else if ((bitflags & 2))
+    else if (bitflags & 2)
     {
         sunglasses = (randomGetNext() & 1) == 0;
     }
 
-    if ((head >= 0) && (c_item_entries[body].hasHead == 0))
+    if ((head >= 0) && !c_item_entries[body].hasHead)
     {
         head_header = c_item_entries[head].header;
     }
@@ -126,13 +128,12 @@ Model * bodyCreateModelWithFlags(s32 body, s32 head, u32 bitflags)
 
 s32 bodyGetRandom(void)
 {
-  return list_of_bodies[current_random_body];
+    return list_of_bodies[current_random_body];
 }
 
 /**
- * Get a Random Male Head Only
- * @param id: Integer Index of body
- * @return an integer ID of a head to use
+ * A head for a body: for a male body one of the next four in the random male head
+ * list, for a female body the current random female head.
  */
 s32 bodyChooseHead(s32 id)
 {
@@ -153,10 +154,8 @@ s32 bodyChooseHead(s32 id)
 }
 
 /**
- * Get a Random head for body ID
- * @param id: Integer Index of body
- * @return an integer ID of a head to use
-*/
+ * A random head of the body's gender.
+ */
 s32 bodyGetRandomHead(s32 id)
 {
     return (c_item_entries[id].isMale ? random_male_heads[randomGetNext() % num_male_heads] : random_female_heads[randomGetNext() % num_female_heads]);
@@ -166,11 +165,12 @@ s32 bodyGetRandomHead(s32 id)
 void bodiesReset(void)
 {
     s32 i;
-  
-    for (i=0; c_item_entries[i].header!=0; i++)
+
+    for (i = 0; c_item_entries[i].header != NULL; i++)
     {
-        c_item_entries[i].header->RootNode = (ModelNode*)0;
+        c_item_entries[i].header->RootNode = NULL;
     }
+
     current_random_male_head = randomGetNext() % num_male_heads;
     current_random_female_head = randomGetNext() % num_female_heads;
     current_random_body = randomGetNext() % num_bodies;

@@ -40,15 +40,16 @@ struct StruckAnim
     f32 thudframe2;
 };
 
-struct explosion_death_animation
+// A death from an explosion (g_ExplosionDeathAnims)
+struct ExplosionDeathAnim
 {
-    s32 anonymous_0;
-    s32 anonymous_1;
-    f32 anonymous_2;
-    f32 anonymous_3;
-    f32 anonymous_4;
-    f32 anonymous_5;
-    f32 anonymous_6;
+    s32 animOffset; // into g_AnimTable (ANIM_AT)
+    s32 flip;
+    f32 speed;
+    f32 startframe;
+    f32 unusedFrame;
+    f32 thudframe;  // when the body hits the ground
+    f32 endframe;   // -1 = play to the end
 };
 
 struct explosion_anim_group_info
@@ -204,7 +205,6 @@ extern s32 g_ChrDebugAnimIndex;
 extern s32 g_ChrDebugPaused;
 extern s32 g_ChrDebugStep;
 
-extern s32 g_ChrUnused;
 extern s32 g_ChrShowPatrols;
 extern s32 g_NextChrNum;
 extern ChrRecord *g_ChrSlots;
@@ -250,7 +250,7 @@ extern s16 male_guard_yelps[];
 
 
 extern struct explosion_anim_group_info explosion_animation_table[];
-extern struct explosion_death_animation g_ExplosionDeathAnims[];
+extern struct ExplosionDeathAnim g_ExplosionDeathAnims[];
 
 void        chrFreeResources(PropRecord* prop);
 void        chrDetectRooms(ChrRecord *);
@@ -265,7 +265,7 @@ PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand);
 PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *ChrRecord, GUNHAND hand);
 Vertex     *dynAllocateVerticesDiscard(s32 count);
 void        chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *y_out, f32 *ground);
-void        chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *height, f32 *always_20);
+void        chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *top, f32 *bottom);
 f32         chrGetChrGround(PropRecord *prop);
 void        chrDropItems(struct ChrRecord *self);
 s32         chrsGetNumSlots(void);

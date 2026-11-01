@@ -44,14 +44,14 @@
 #include "game/math/line_tri_intersect.h"
 
 
-static void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos);
+static void chrCreateHitPuffs(PropRecord *prop, s32 hitpart, coord3d *vec, coord3d *pos);
 
 
 /**
  * Creates a smoke puff at the front of the character when the character is shot,
  * and also has a ~50% chance of creating a second smoke puff just behind the character.
  */
-static void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord3d *pos)
+static void chrCreateHitPuffs(PropRecord *prop, s32 hitpart, coord3d *vec, coord3d *pos)
 {
     s32 i;
     f32 scale;
@@ -60,28 +60,22 @@ static void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord
     struct ChrHitReaction *entry;
 
     index = 0;
-    i = 0;
 
-    if (g_HitReactionTable[0].hitpart != -1) 
+    for (i = 0; g_HitReactionTable[i].hitpart != -1; i++)
     {
-        do 
+        if (hitpart == g_HitReactionTable[i].hitpart)
         {
-            if (anim_id == g_HitReactionTable[i].hitpart) 
-            {
-                index = i;
-                break;
-            }
-
-            i++;
+            index = i;
+            break;
         }
-        while (g_HitReactionTable[i].hitpart != -1);
     }
 
     entry = &g_HitReactionTable[index];
 
-    if (entry->backImpactPuffCount) {
+    if (entry->backImpactPuffCount)
+    {
         // True when randomGetNext() bit 2 is 0, so roughly 50% chance.
-        if ((randomGetNext() & 4) == 0) 
+        if ((randomGetNext() & 4) == 0)
         {
             scale = (42.0f / sqrtf(vec->z * vec->z + (vec->x * vec->x + vec->y * vec->y))) + 1.0f;
 
@@ -95,35 +89,41 @@ static void chrCreateHitPuffs(PropRecord *prop, s32 anim_id, coord3d *vec, coord
         }
     }
 
-    if (entry->impactPuffCount) 
+    if (entry->impactPuffCount)
     {
         sparkCreate(pos, entry->impactPuffCount, entry->impactPuffSize, prop->stan->room);
     }
 }
 
 
+/**
+ * Paints blood onto the body near a hit: finds the collision vertex of the model's
+ * display lists closest to pos (in the hit node's space), gives the node (and the
+ * neighbouring node sharing that vertex) its own copy of its vertices, and sets the
+ * alpha of every vertex that uses that point. Head and chest hits bleed more.
+ */
 void chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, coord3d *pos)
 {
-    s32 sp_pos[3];
+    s32 target[3];
     s32 bestdist;
     ModelNode *bestnode;
     s32 bestindex;
     ModelNode *node;
     s32 opcode;
     ModelRoData_DisplayList_CollisionRecord *rodata;
+    ModelRwData_DisplayList_CollisionRecord *rwdata;
     ModelRoData_DisplayList_CollisionRecord *relatedrodata;
     ModelRwData_DisplayList_CollisionRecord *relatedrwdata;
     ModelNode *relatednode;
-    ModelNode *rwdata;
     Vertex *vtx;
     Vertex *newvertices;
     s32 n;
     s32 paintval;
     s32 relatedindex;
 
-    sp_pos[0] = pos->x;
-    sp_pos[1] = pos->y;
-    sp_pos[2] = pos->z;
+    target[0] = pos->x;
+    target[1] = pos->y;
+    target[2] = pos->z;
 
     bestnode = NULL;
     bestindex = 0;
@@ -134,72 +134,41 @@ void chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, coord3d *po
     {
         opcode = node->Opcode & 0xff;
 
-        if (opcode == MODELNODE_OPCODE_LOD)
+        switch (opcode)
         {
-            goto apply_distance;
-        }
+            case MODELNODE_OPCODE_LOD:
+                modelApplyDistanceRelations(model, node);
+                break;
 
-        if (opcode == MODELNODE_OPCODE_SWITCH)
-        {
-            goto apply_toggle;
-        }
+            case MODELNODE_OPCODE_SWITCH:
+                modelApplyToggleRelations(model, node);
+                break;
 
-        if (opcode == MODELNODE_OPCODE_HEAD)
-        {
-            goto apply_head;
-        }
+            case MODELNODE_OPCODE_HEAD:
+                modelApplyHeadRelations(model, node);
+                break;
 
-        if (opcode != MODELNODE_OPCODE_DLCOLLISION)
-        {
-            goto after_opcode;
-        }
+            case MODELNODE_OPCODE_DLCOLLISION:
+                rodata = &node->Data->DisplayListCollisions;
+                vtx = rodata->CollisionVertices;
 
-        rodata = &node->Data->DisplayListCollisions;
-        n = 0;
-
-        if (rodata->numCollisionVertices > 0)
-        {
-            vtx = rodata->CollisionVertices;
-
-            do
-            {
-                s32 dx;
-                s32 dy;
-                s32 dz;
-                s32 dist;
-
-                dx = sp_pos[0] - vtx->coord.x;
-                dy = sp_pos[1] - vtx->coord.y;
-                dz = sp_pos[2] - vtx->coord.z;
-                dist = ((((u32) dx) * ((u32) dx)) + (((u32) dy) * ((u32) dy))) + (((u32) dz) * ((u32) dz));
-
-                if (dist < bestdist)
+                for (n = 0; n < rodata->numCollisionVertices; n++, vtx++)
                 {
-                    bestdist = dist;
-                    bestnode = node;
-                    bestindex = n;
-                }
+                    s32 dx = target[0] - vtx->coord.x;
+                    s32 dy = target[1] - vtx->coord.y;
+                    s32 dz = target[2] - vtx->coord.z;
+                    s32 dist = (dx * dx) + (dy * dy) + (dz * dz);
 
-                n++;
-                vtx++;
-            }
-            while (n < rodata->numCollisionVertices);
+                    if (dist < bestdist)
+                    {
+                        bestdist = dist;
+                        bestnode = node;
+                        bestindex = n;
+                    }
+                }
+                break;
         }
 
-        goto after_opcode;
-
-apply_distance:
-        modelApplyDistanceRelations(model, node);
-        goto after_opcode;
-
-apply_toggle:
-        modelApplyToggleRelations(model, node);
-        goto after_opcode;
-
-apply_head:
-        modelApplyHeadRelations(model, node);
-
-after_opcode:
         if ((node->Child != NULL) && ((node == root) || ((opcode != MODELNODE_OPCODE_BBOX) && (opcode != MODELNODE_OPCODE_OP17))))
         {
             node = node->Child;
@@ -230,45 +199,46 @@ after_opcode:
         return;
     }
 
-    node = (ModelNode *) bestnode->Data;
-    rwdata = (ModelNode *) modelGetNodeRwData(model, bestnode);
+    rodata = &bestnode->Data->DisplayListCollisions;
+    rwdata = &modelGetNodeRwData(model, bestnode)->DisplayListCollisions;
     relatedrodata = NULL;
     relatedrwdata = NULL;
     relatedindex = 0;
     paintval = (randomGetNext() % 50) + 20;
 
-    if (hitpart == 8)
+    if (hitpart == HIT_HEAD)
     {
         paintval += 100;
     }
 
-    if (hitpart == 0x0f)
+    if (hitpart == HIT_CHEST)
     {
         paintval += 50;
     }
 
-    relatednode = (ModelNode *) ((ModelRoData_DisplayList_CollisionRecord *) node)->CollisionVertices[bestindex].CollisionRelatedNode;
+    relatednode = rodata->CollisionVertices[bestindex].CollisionRelatedNode;
 
-    if (((ModelRoData_DisplayList_CollisionRecord *) node)->CollisionVertices[bestindex].CollisionRelatedNode != NULL)
+    if (relatednode != NULL)
     {
         relatedrodata = &relatednode->Data->DisplayListCollisions;
         relatedrwdata = &modelGetNodeRwData(model, relatednode)->DisplayListCollisions;
-        relatedindex = ((ModelRoData_DisplayList_CollisionRecord *) node)->CollisionVertices[bestindex].CollisionRelatedIndex;
+        relatedindex = rodata->CollisionVertices[bestindex].CollisionRelatedIndex;
     }
 
-    if (((ModelRwData_DisplayList_CollisionRecord *) rwdata)->Vertices == ((ModelRoData_DisplayList_CollisionRecord *) node)->Vertices)
+    // Until it is first painted a node draws its read-only vertices: copy them.
+    if (rwdata->Vertices == rodata->Vertices)
     {
-        newvertices = vtxstoreAllocate(((ModelRoData_DisplayList_CollisionRecord *) node)->numVertices, VTXSTORE_CHR, NULL, 0);
+        newvertices = vtxstoreAllocate(rodata->numVertices, VTXSTORE_CHR, NULL, 0);
 
         if (newvertices != NULL)
         {
             s32 j;
 
-            ((ModelRwData_DisplayList_CollisionRecord *) rwdata)->Vertices = newvertices;
+            rwdata->Vertices = newvertices;
 
-            for (j = 0; j < ((ModelRoData_DisplayList_CollisionRecord *) node)->numVertices; j++)
+            for (j = 0; j < rodata->numVertices; j++)
             {
-                newvertices[j] = ((ModelRoData_DisplayList_CollisionRecord *) node)->Vertices[j];
+                newvertices[j] = rodata->Vertices[j];
             }
         }
     }
@@ -290,24 +260,21 @@ after_opcode:
         }
     }
 
-    if (((ModelRwData_DisplayList_CollisionRecord *) rwdata)->Vertices != ((ModelRoData_DisplayList_CollisionRecord *) node)->Vertices)
+    // PointUsage chains every vertex that shares a collision point.
+    if (rwdata->Vertices != rodata->Vertices)
     {
-        s32 index;
-
-        index = ((ModelRoData_DisplayList_CollisionRecord *) node)->CollisionVertices[bestindex].index;
+        s32 index = rodata->CollisionVertices[bestindex].index;
 
         while (index >= 0)
         {
-            ((ModelRwData_DisplayList_CollisionRecord *) rwdata)->Vertices[index].a = paintval;
-            index = ((ModelRoData_DisplayList_CollisionRecord *) node)->PointUsage[index];
+            rwdata->Vertices[index].a = paintval;
+            index = rodata->PointUsage[index];
         }
     }
 
     if ((relatedrwdata != NULL) && (relatedrwdata->Vertices != relatedrodata->Vertices))
     {
-        s32 index;
-
-        index = relatedrodata->CollisionVertices[relatedindex].index;
+        s32 index = relatedrodata->CollisionVertices[relatedindex].index;
 
         while (index >= 0)
         {
@@ -323,18 +290,10 @@ after_opcode:
  *
  * First tests the shot against the chr's bounding sphere expanded by the
  * largest held weapon's model size. On a bounds hit, the model hit list is
- * walked for a body part. A confirmed body hit is registered via shotAddHit; 
+ * walked for a body part. A confirmed body hit is registered via shotAddHit;
  * a near miss inside max range flags CHRFLAG_NEAR_MISS and bumps numclosearghs.
  *
  * PD: chr_test_hit
- */
-
-/**
- * This assert is from the former NONMATCHING block and belongs somewhere in chrTestHit.
- * 
- * #ifdef DEBUG
- * assert(hits && hits->HasHits());
- * #endif
  */
 void chrTestHit(PropRecord *prop, ShotData *shotdata)
 {
@@ -423,11 +382,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
                 break;
             }
 
-            // Leave if (1) for matching.
-            if (1)
-            {
-                hitpart = jointListFindHitNext(&entry, &shotdata->viewOrigin, &shotdata->viewDir, &hitmodel, &hitnode);
-            }
+            hitpart = jointListFindHitNext(&entry, &shotdata->viewOrigin, &shotdata->viewDir, &hitmodel, &hitnode);
         }
     }
 
@@ -440,7 +395,6 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
         submatrix = camGetViewToWorldMtxf();
         mtx4RotateVecInPlace(submatrix, &viewdir);
         nodemtx = modelFindNodeMtx(hitmodel, hitnode, 0);
-
 
         diff.x = nodemtx->m[3][0] - shotdata->viewOrigin.x;
         diff.y = nodemtx->m[3][1] - shotdata->viewOrigin.y;
@@ -471,17 +425,14 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     f32 scale;
     Mtxf invmtx;
     coord3d nearhitpos;
-    s32 temp;
     coord3d hitpos;
     Mtxf *mtx;
     ChrRecord *chr;
     PropRecord *prop;
-    const SurfaceHit *sound;
+    const SurfaceHit *surface;
     WeaponObjRecord *weaponobj;
     s32 i;
-    s32 temp2;
     coord3d jointpos;
-    const SurfaceHit *sound2;
 
     chr = bhit->prop->chr;
 
@@ -490,11 +441,10 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     hitpos.f[1] = shot->viewOrigin.y - ((bhit->dist * shot->viewDir.y) / shot->viewDir.z);
     hitpos.f[2] = shot->viewOrigin.z - bhit->dist;
 
+    // A point 42 units nearer the camera, so the tracer and smoke puffs don't land
+    // inside the character model.
     scale = 1.0f - (42.0f / sqrtf(SQ(hitpos.f[0]) + SQ(hitpos.f[1]) + SQ(hitpos.f[2])));
 
-    /** Use scale to create a near hit position closer to the camera.
-     *  Probably to prevent the tracer effect and smoke puffs from landing inside the character model.
-    */
     nearhitpos.x = hitpos.f[0] * scale;
     nearhitpos.y = hitpos.f[1] * scale;
     nearhitpos.z = hitpos.f[2] * scale;
@@ -510,62 +460,75 @@ void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
     chrCreateHitPuffs(bhit->prop, bhit->hitpart, &hitpos, &nearhitpos);
 
     // Apply damage to the character.
-    if (!chrTakeShot(chr, bhit->hitpart, &shot->dir, shot->weapon, TRUE)) {
+    if (!chrTakeShot(chr, bhit->hitpart, &shot->dir, shot->weapon, TRUE))
+    {
         return;
     }
 
-    if (bhit->hitpart == HIT_GUN) {
-        for (i = 0; i != 2; i++) {
+    if (bhit->hitpart == HIT_GUN)
+    {
+        for (i = 0; i != 2; i++)
+        {
             prop = chr->weapons_held[i];
 
-            if (prop != NULL) {
-                weaponobj = (WeaponObjRecord *)prop->obj;
-                /**
-                 * If a character is holding an explosive such as a grenade, and the explosive is shot, detonate it.
-                 */
-                if (weaponobj->model == bhit->model) {
-                    if (
-                        ((WeaponObjRecord *)weaponobj)->weaponnum == ITEM_GRENADE ||
-                        ((WeaponObjRecord *)weaponobj)->weaponnum == ITEM_GRENADEROUND ||
-                        ((WeaponObjRecord *)weaponobj)->weaponnum == ITEM_ROCKETROUND ||
-                        ((WeaponObjRecord *)weaponobj)->weaponnum == ITEM_TIMEDMINE ||
-                        ((WeaponObjRecord *)weaponobj)->weaponnum == ITEM_BOMBCASE  ||
-                        ((WeaponObjRecord *)weaponobj)->weaponnum == ITEM_REMOTEMINE  ||
-                        ((WeaponObjRecord *)weaponobj)->weaponnum == ITEM_PROXIMITYMINE
-                    )
-                    {
-                        objSetDropType(prop, 1);
-                        chr->hidden |= 1;
+            if (prop == NULL)
+            {
+                continue;
+            }
 
-                        objApplyDamage(prop->obj, weaponGetDamage(shot->weapon), &hitpos, shot->weapon, playerGetCurrentNum());
-                    // Create a bullet hole on the character's held weapon.
-                    } else {
-                        if (bhit->hit.texturenum < 0) {
-                            sound = &g_SurfaceHits[HIT_DEFAULT];
-                        } else {
-                            sound = &g_SurfaceHits[g_Textures[bhit->hit.texturenum].hitTexture];
-                        }
+            weaponobj = prop->weapon;
 
-                        temp = randomGetNext() % (s16)sound->numImpacts;
-                        impactCreate(&bhit->hit.hitpos, &bhit->hit.normal, sound->impacts[temp], 1, prop, bhit->room, 0);
-                    }
+            if (weaponobj->model != bhit->model)
+            {
+                continue;
+            }
+
+            // A held explosive that is shot goes off.
+            if (weaponobj->weaponnum == ITEM_GRENADE ||
+                weaponobj->weaponnum == ITEM_GRENADEROUND ||
+                weaponobj->weaponnum == ITEM_ROCKETROUND ||
+                weaponobj->weaponnum == ITEM_TIMEDMINE ||
+                weaponobj->weaponnum == ITEM_BOMBCASE ||
+                weaponobj->weaponnum == ITEM_REMOTEMINE ||
+                weaponobj->weaponnum == ITEM_PROXIMITYMINE)
+            {
+                objSetDropType(prop, 1);
+                chr->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
+
+                objApplyDamage(prop->obj, weaponGetDamage(shot->weapon), &hitpos, shot->weapon, playerGetCurrentNum());
+            }
+            else
+            {
+                // A bullet hole in the held weapon.
+                if (bhit->hit.texturenum < 0)
+                {
+                    surface = &g_SurfaceHits[HIT_DEFAULT];
                 }
+                else
+                {
+                    surface = &g_SurfaceHits[g_Textures[bhit->hit.texturenum].hitTexture];
+                }
+
+                impactCreate(&bhit->hit.hitpos, &bhit->hit.normal, surface->impacts[randomGetNext() % (s16)surface->numImpacts], 1, prop, bhit->room, 0);
             }
         }
 
         return;
     }
 
-    // Create a bullet on hole on a hat or helmet attached to a character's head.
-    if (bhit->hitpart == HIT_HAT) {
-        if (bhit->hit.texturenum < 0) {
-            sound2 = &g_SurfaceHits[HIT_DEFAULT];
-        } else {
-            sound2 = &g_SurfaceHits[g_Textures[bhit->hit.texturenum].hitTexture];
+    // A bullet hole in a hat or helmet.
+    if (bhit->hitpart == HIT_HAT)
+    {
+        if (bhit->hit.texturenum < 0)
+        {
+            surface = &g_SurfaceHits[HIT_DEFAULT];
+        }
+        else
+        {
+            surface = &g_SurfaceHits[g_Textures[bhit->hit.texturenum].hitTexture];
         }
 
-        temp2 = randomGetNext() % (s16)sound2->numImpacts;
-        impactCreate(&bhit->hit.hitpos, &bhit->hit.normal, sound2->impacts[temp2], 1, chr->handle_positiondata_hat, bhit->room, 0);
+        impactCreate(&bhit->hit.hitpos, &bhit->hit.normal, surface->impacts[randomGetNext() % (s16)surface->numImpacts], 1, chr->handle_positiondata_hat, bhit->room, 0);
 
         return;
     }

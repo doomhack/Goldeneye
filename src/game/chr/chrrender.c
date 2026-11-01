@@ -50,9 +50,9 @@ static f32 chrGetFlinchAmount(ChrRecord *chr);
 /**
  * Flinch animation envelope. Maps a character's flinchcnt timer to a normalized
  * intensity that goes 0->1 then falls 1->0, used to drive the flinch animation.
- * 
+ *
  * Flinches happen when a character has body armor or has the CHRFLAG_INVINCIBLE flag and is shot in the arm or torso.
- * 
+ *
  * Rise and fall are measured in VI retraces: 1/60 s on NTSC and 1/50 s on PAL.
  */
 static f32 chrGetFlinchAmount(ChrRecord *chr)
@@ -86,6 +86,11 @@ static f32 chrGetFlinchAmount(ChrRecord *chr)
 #define FIVEPI_OVER_18 0.87266463f
 
 
+/**
+ * Called for each joint as a guard's model matrices are built (g_ModelJointPositionedFunc,
+ * with g_CurModelChr the guard): turns the arms, torso and head to aim, adds the flinch,
+ * and in DK mode scales the head and arms.
+ */
 void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 {
     f32 scale;
@@ -132,37 +137,30 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
         }
     }
 #endif
-    if ((((bodypart != CHR_RENDERPART_LEFT_ARM) && (bodypart != CHR_RENDERPART_RIGHT_ARM)) && (bodypart != CHR_RENDERPART_TORSO)) && (bodypart != CHR_RENDERPART_HEAD))
+
+    if ((bodypart != CHR_RENDERPART_LEFT_ARM) && (bodypart != CHR_RENDERPART_RIGHT_ARM)
+        && (bodypart != CHR_RENDERPART_TORSO) && (bodypart != CHR_RENDERPART_HEAD))
     {
         return;
     }
 
-    zrot = (yrot = (xrot = 0.0f));
+    xrot = 0.0f;
+    yrot = 0.0f;
+    zrot = 0.0f;
 
-#ifdef BUGFIX_R1
     chr = g_CurModelChr;
-#endif
+
     if (bodypart == CHR_RENDERPART_RIGHT_ARM)
     {
-#ifdef BUGFIX_R1
         xrot = chr->aimuprshoulder;
-#else
-        xrot = g_CurModelChr->aimuprshoulder;
-#endif
     }
     else if (bodypart == CHR_RENDERPART_LEFT_ARM)
     {
-#ifdef BUGFIX_R1
         xrot = chr->aimuplshoulder;
-#else
-        xrot = g_CurModelChr->aimuplshoulder;
-#endif
     }
     else if (bodypart == CHR_RENDERPART_TORSO)
     {
-#ifndef BUGFIX_R1
-        chr = g_CurModelChr;
-#endif
+        // With CHRHIDDEN_0400 the head takes the first part of the aim up or down.
         xrot = chr->aimupback;
         if (chr->hidden & CHRHIDDEN_0400)
         {
@@ -181,27 +179,20 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
         }
 
         yrot = chr->aimsideback;
-
     }
     else if (bodypart == CHR_RENDERPART_HEAD)
     {
-#ifndef BUGFIX_R1
-        chr = g_CurModelChr;
-#endif
         if (chr->hidden & CHRHIDDEN_0400)
         {
             xrot = chr->aimupback;
 
-            if (chr->hidden & CHRHIDDEN_0400)
+            if (PI_OVER_3 < xrot)
             {
-                if (PI_OVER_3 < xrot)
-                {
-                    xrot = PI_OVER_3;
-                }
-                else if (xrot < -FIVEPI_OVER_18)
-                {
-                    xrot = -FIVEPI_OVER_18;
-                }
+                xrot = PI_OVER_3;
+            }
+            else if (xrot < -FIVEPI_OVER_18)
+            {
+                xrot = -FIVEPI_OVER_18;
             }
         }
         else if (chr->model->flip != GUNRIGHT)
@@ -214,15 +205,13 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
         }
     }
 
-    chr = g_CurModelChr;
-
+    // Flinch: up to 15 degrees (10 for the torso's roll), in random directions
+    // (chrSetHiddenToRandom)
     if (chr->flinchcnt >= 0)
     {
-
         if ((bodypart == CHR_RENDERPART_RIGHT_ARM) || (bodypart == CHR_RENDERPART_LEFT_ARM))
         {
             amount = chrGetFlinchAmount(chr) * M_TAU_F * 15.0f / 360.0f;
-            chr = g_CurModelChr;
             hidden = chr->hidden;
             xrot -= amount;
 
@@ -240,7 +229,6 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
             tmp = chrGetFlinchAmount(chr);
             tmp *= M_TAU_F;
             amount = tmp * 15.0f;
-            chr = g_CurModelChr;
             hidden = chr->hidden;
             amount /= 360.0f;
             xrot += amount;
@@ -256,7 +244,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 
             if (hidden & CHRHIDDEN_RAND_FLINCH_4)
             {
-                 zrot += (tmp * 10.0f) / 360.0f;
+                zrot += (tmp * 10.0f) / 360.0f;
             }
             else if (hidden & CHRHIDDEN_RAND_FLINCH_8)
             {
@@ -265,7 +253,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
         }
     }
 
-    if ((((xrot == 0.0f) && (yrot == 0.0f)) && (zrot == 0.0f)) && (scale == 1.0f))
+    if ((xrot == 0.0f) && (yrot == 0.0f) && (zrot == 0.0f) && (scale == 1.0f))
     {
         return;
     }
@@ -350,55 +338,49 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     ChrRecord *chr;
     Model *chrmodel;
-    rgba_f32 fogColour; // 192
-    s32 fogType; // 188
-    s32 renderFlags; // 184
-    s32 chrfadealpha; // 180
-    ModelRenderData mrData; // 112
+    rgba_f32 fogColour;
+    s32 fogType;
+    s32 renderFlags;
+    s32 chrfadealpha;
+    ModelRenderData mrData;
     bbox2d bbox;
     rgba_s32 chrShade;
-    s32 shadowAlpha; // 76
-    PropRecord *prop_held_right; // 72
-    PropRecord *prop_held_left; // 68
-    PropRecord *prop_held_hat; // 64
-    ObjectRecord *held_right_obj; // 60
-    ObjectRecord *held_left_obj; // 56
-    ObjectRecord *held_hat_obj; // 52
-
-    //
+    s32 shadowAlpha;
+    PropRecord *prop_held_right;
+    PropRecord *prop_held_left;
+    PropRecord *prop_held_hat;
+    ObjectRecord *held_right_obj;
+    ObjectRecord *held_left_obj;
+    ObjectRecord *held_hat_obj;
 
     chr = prop->chr;
     chrmodel = chr->model;
-    chrfadealpha = (s32) chr->fadealpha;
+    chrfadealpha = (s32)chr->fadealpha;
 
     if (!(chr->chrflags & CHRFLAG_04000000))
     {
-        f32 f = propGetFogFade(prop, modelGetRadius(chrmodel)); //0-1
-        chrfadealpha = (s32) (f * (f32) chrfadealpha);
+        f32 f = propGetFogFade(prop, modelGetRadius(chrmodel)); // 0 to 1
+        chrfadealpha = (s32)(f * (f32)chrfadealpha);
     }
 
+    // A see-through guard is drawn in the alpha pass only (render flags 3), a solid one
+    // in both passes (1 opaque, 2 translucent).
     if ((chrfadealpha < 0xFF) || (chr->chrflags & CHRFLAG_00020000))
     {
         if (withalpha == 0)
         {
-            // nothing to do
             return gdl;
         }
-        else
-        {
-            renderFlags = 3;
-        }
+
+        renderFlags = 3;
+    }
+    else if (withalpha == 0)
+    {
+        renderFlags = 1;
     }
     else
     {
-        if (withalpha == 0)
-        {
-            renderFlags = 1;
-        }
-        else
-        {
-            renderFlags = 2;
-        }
+        renderFlags = 2;
     }
 
     fogType = fogGetPropDistColor(prop, &fogColour);
@@ -408,8 +390,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
         {
             mrData = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
 
-
-            shadowAlpha = 0x50;
+            shadowAlpha = 80;
 
             prop_held_right = chr->weapons_held[GUNRIGHT];
             prop_held_left = chr->weapons_held[GUNLEFT];
@@ -452,7 +433,7 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
             }
             else if (fogType == 1)
             {
-                shadowAlpha = ((1.0f - fogColour.a) * (f32)(shadowAlpha));
+                shadowAlpha = (1.0f - fogColour.a) * (f32)shadowAlpha;
             }
 
             modelSetShadowAlpha(shadowAlpha);
@@ -464,8 +445,8 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
             shadingLerp(&chrShade, fogType, &fogColour);
 
-            mrData.envcolour.word = ((gBloodColour.rgba[0] << 0x18) | (gBloodColour.rgba[1] << 0x10)) | (gBloodColour.rgba[2] << 0x08);
-            mrData.fogcolour.word = (chrShade.rgba[0] << 0x18) | (chrShade.rgba[1] << 0x10) | (chrShade.rgba[2] << 0x08) | (chrShade.rgba[3] << 0x00);
+            mrData.envcolour.word = (gBloodColour.rgba[0] << 24) | (gBloodColour.rgba[1] << 16) | (gBloodColour.rgba[2] << 8);
+            mrData.fogcolour.word = (chrShade.rgba[0] << 24) | (chrShade.rgba[1] << 16) | (chrShade.rgba[2] << 8) | chrShade.rgba[3];
 
             if (chrfadealpha < 0xFF)
             {
@@ -477,22 +458,22 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
                 mrData.PropType = 7;
             }
 
-            g_playerPerm->time_other_players_on_screen += 1;
+            g_playerPerm->time_other_players_on_screen++;
             jointListDraw(&mrData, chr->jointList);
 
             gdl = mrData.gdl;
 
-            if ((held_right_obj != NULL) && (( held_right_obj->state & ((u8)(1 << withalpha) )) ))
+            if ((held_right_obj != NULL) && (held_right_obj->state & (u8)(1 << withalpha)))
             {
                 gdl = impactsRenderOnProp(gdl, prop_held_right, withalpha);
             }
 
-            if ((held_left_obj != NULL) && (( held_left_obj->state & ((u8)(1 << withalpha) )) ))
+            if ((held_left_obj != NULL) && (held_left_obj->state & (u8)(1 << withalpha)))
             {
                 gdl = impactsRenderOnProp(gdl, prop_held_left, withalpha);
             }
 
-            if ((held_hat_obj != NULL) && (( held_hat_obj->state & ((u8)(1 << withalpha) )) ))
+            if ((held_hat_obj != NULL) && (held_hat_obj->state & (u8)(1 << withalpha)))
             {
                 gdl = impactsRenderOnProp(gdl, prop_held_hat, withalpha);
             }
@@ -501,12 +482,12 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
             {
                 mtxsF2L(chr->model->render_pos, chr->model->obj->numMatrices);
 
-                if ((held_right_obj != NULL) && ((held_right_obj->runtime_bitflags & 0x800) == 0))
+                if ((held_right_obj != NULL) && !(held_right_obj->runtime_bitflags & RUNTIMEBITFLAG_RESPAWNING))
                 {
                     mtxsF2L(held_right_obj->model->render_pos, held_right_obj->model->obj->numMatrices);
                 }
 
-                if ((held_left_obj != NULL) && ((held_left_obj->runtime_bitflags & 0x800) == 0))
+                if ((held_left_obj != NULL) && !(held_left_obj->runtime_bitflags & RUNTIMEBITFLAG_RESPAWNING))
                 {
                     mtxsF2L(held_left_obj->model->render_pos, held_left_obj->model->obj->numMatrices);
                 }

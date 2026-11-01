@@ -49,12 +49,11 @@
 #include "game/level/gamemode.h"
 
 
-
 static void chrStand(ChrRecord *self);
 static void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime);
 static void chrSidestep(ChrRecord *self, GUNHAND side);
 static void chrJumpOut(ChrRecord *self, GUNHAND side);
-static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 unkHeight, f32 unkA);
+static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 top, f32 bottom);
 static void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec);
 static s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance);
 static void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir);
@@ -107,8 +106,6 @@ void chrStandChooseAnimation(ChrRecord *self, f32 duration)
         modelSetAnimLooping(self->model, 0, 16.0f);
         modelSetAnimEndFrame(self->model, 120.0f);
     }
-
-    return;
 }
 
 
@@ -134,9 +131,8 @@ void chrStandImmediate(ChrRecord *self, f32 mergetime)
     self->act_stand.reaim = 0;
     self->act_stand.turning = 2;
     self->act_stand.checkfacingwall = 0;
-    //eu bug, doesnt use pal version of CHRLV_SEEN_RECENT_CHECK) + CHRLV_DEFAULT_TIMER;
-    //so temp hardcoded to 120) + 180;
-    self->act_stand.wallcount = (randomGetNext() % (u32) 120) + 180;
+    // 2 to 5 seconds at 60 Hz. PAL doesn't scale it (CHRLV_SEEN_RECENT_CHECK + CHRLV_DEFAULT_TIMER would).
+    self->act_stand.wallcount = (randomGetNext() % 120u) + 180;
 
     fsleep = mergetime;
 
@@ -154,50 +150,47 @@ void chrStandImmediate(ChrRecord *self, f32 mergetime)
         fsleep = 127.0f;
     }
 
-    self->sleep = (s8) (s32) fsleep;
+    self->sleep = (s8)(s32)fsleep;
     chrStandChooseAnimation(self, mergetime);
 }
 
 
 /**
- * @param arg0: guard
- * @param min: min reaction speed range
- * @param max: max reaction speed range
+ * A value from min (slowest guard) to max (fastest), by the guard's speed rating raised
+ * by the 007 reaction slider.
  */
 f32 chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max)
 {
     f32 ret;
 
-    ret = (f32) self->speedrating;
+    ret = (f32)self->speedrating;
     ret = (file007Reaction() * (100.0f - ret)) + ret;
     return ((ret * (max - min)) / 100.0f) + min;
 }
 
 
 /**
- * @param self: guard
- * @param scale: scale factor
+ * scale for the slowest guard down to 0 for the fastest (speed rating and 007 reaction
+ * slider as chrGetGuard007SpeedRating).
  */
 s32 chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale)
 {
     s32 ret;
 
-    ret = (s32) self->speedrating;
+    ret = (s32)self->speedrating;
     ret = (s32)(file007Reaction() * (f32)(100 - ret)) + ret;
     return ((100 - ret) * scale) / 100;
 }
 
 
 /**
- * @param arg0: guard
- * @param min: min argh speed range
- * @param max: max argh speed range
+ * As chrGetGuard007SpeedRating, by the guard's argh (hit reaction) rating.
  */
 f32 chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max)
 {
     f32 ret;
 
-    ret = (f32) self->arghrating;
+    ret = (f32)self->arghrating;
     ret = (file007Reaction() * (100.0f - ret)) + ret;
     return ((ret * (max - min)) / 100.0f) + min;
 }
@@ -222,12 +215,12 @@ static void chrStand(ChrRecord *self)
 
         if (modelGetAnim(self->model) == ANIM(fire_kneel_forward_one_handed_weapon_slow))
         {
-            modelSetAnimation(self->model, ANIM(fire_kneel_forward_one_handed_weapon_slow), (s32) self->model->flip, 109.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+            modelSetAnimation(self->model, ANIM(fire_kneel_forward_one_handed_weapon_slow), (s32)self->model->flip, 109.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
             modelSetAnimEndFrame(self->model, 140.0f);
         }
         else
         {
-            modelSetAnimation(self->model, ANIM(fire_kneel_left_leg), (s32) self->model->flip, 120.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
+            modelSetAnimation(self->model, ANIM(fire_kneel_left_leg), (s32)self->model->flip, 120.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
             modelSetAnimEndFrame(self->model, 151.0f);
         }
 
@@ -365,8 +358,8 @@ void chrStartAlarmChooseAnimation(ChrRecord *self)
 
 
 /**
- * Play the grenade throw animation. Takes a PropRecord* as an argument but
- * does not use it.
+ * Starts the grenade throw with the given hand: from the start (reaching for the grenade)
+ * if startframe is non-zero, otherwise from frame 84.
  */
 void chrThrowGrenade(ChrRecord *self, GUNHAND hand, s32 startframe)
 {
@@ -393,7 +386,7 @@ static void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime)
     PropRecord *left;
     PropRecord *right;
     s32 flip;
-    f32 objarg4;
+    f32 speed;
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
@@ -408,8 +401,8 @@ static void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime)
         flip = randomGetNext() & 1;
     }
 
-    objarg4 = chrGetGuard007SpeedRating(self, 0.6f, 0.96000004f); // 0.96000004 is different from 0.96
-    modelSetAnimation(self->model, ANIM(spotting_bond), flip, 10.0f, objarg4, mergetime);
+    speed = chrGetGuard007SpeedRating(self, 0.6f, 0.96000004f); // 0.96000004 is different from 0.96
+    modelSetAnimation(self->model, ANIM(spotting_bond), flip, 10.0f, speed, mergetime);
     modelSetAnimEndFrame(self->model, 52.0f);
 }
 
@@ -499,13 +492,14 @@ void chrActorThrowWeaponSurrender(ChrRecord *self)
             modelSetAnimation(self->model, ANIM(surrendering_armed_drop_weapon), randomGetNext() & 1, 0.0f, 0.5f, 16.0f);
             modelSetAnimLooping(self->model, 40.0f, 16.0f);
 
-            self->sleep = 0x10;
+            self->sleep = 16;
 
-            if (left != 0)
+            if (left != NULL)
             {
                 objSetDropType(left, 2);
             }
-            if (right != 0)
+
+            if (right != NULL)
             {
                 objSetDropType(right, 2);
             }
@@ -517,7 +511,7 @@ void chrActorThrowWeaponSurrender(ChrRecord *self)
             modelSetAnimation(self->model, ANIM(surrendering_armed), randomGetNext() & 1, 0.0f, 0.5f, 16.0f);
             modelSetAnimLooping(self->model, 30.0f, 16.0f);
 
-            self->sleep = 0x10;
+            self->sleep = 16;
         }
 
         chrDropItems(self);
@@ -538,8 +532,8 @@ void chrActorFadeAway(ChrRecord *self)
 
 
 /**
- * chrStepToSide
- * PD: chrSidestepChooseAnimation (Somewhat similar)
+ * A step to the given side (GUNRIGHT = right), or with some weapons a slide.
+ * PD: chrSidestepChooseAnimation (somewhat similar)
  */
 static void chrSidestep(ChrRecord *self, GUNHAND side)
 {
@@ -562,7 +556,7 @@ static void chrSidestep(ChrRecord *self, GUNHAND side)
     {
         if ((weaponIsOneHanded(right) == 0) && ((left != NULL) || (right != NULL)))
         {
-            flip = left != 0;
+            flip = left != NULL;
             variant = randomGetNext() & 1;
         }
     }
@@ -593,20 +587,17 @@ static void chrSidestep(ChrRecord *self, GUNHAND side)
     {
         modelSetAnimation(self->model, ANIM(slide_left), flip, 5.0f, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
         modelSetAnimEndFrame(self->model, 34.0f);
-
     }
     else
     {
         modelSetAnimation(self->model, ANIM(slide_right), flip, 5.0f, chrGetGuard007SpeedRating(self, 0.7f, 1.12f), 16.0f);
         modelSetAnimEndFrame(self->model, 32.0f);
     }
-
-    return;
 }
 
 
 /**
- * chrHopToSide
+ * A jump to the given side, firing.
  * PD: chrSidestepChooseAnimation (somewhat similar)
  */
 static void chrJumpOut(ChrRecord *self, GUNHAND side)
@@ -665,17 +656,11 @@ static void chrJumpOut(ChrRecord *self, GUNHAND side)
         modelSetAnimation(self->model, ANIM(fire_jump_to_side_left), side2, 91.0f, chrGetGuard007SpeedRating(self, 0.5f, 0.8f), 16.0f);
         modelSetAnimEndFrame(self->model, 136.0f);
     }
-
-    return;
 }
 
 
-
-
-
-
 /**
- * Line-line intersection, where arg0 and arg1 are two points on line1, and arg2 and arg3 are a point and a direction of line2.
+ * Line-line intersection, where line1 goes through two points and line2 is a point and a direction.
  * 3d coord/vector are passed as arguments, but only the 2d (x,z) values are used to find the intersection.
  *
  * @param line1_p1: first point to describe line1
@@ -757,9 +742,8 @@ void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result
 
 
 /**
- * @param arg0:
- * @param arg1:
- * @param result: out parameter, contains result.
+ * Where the line through pos in direction dir crosses the last collision edge
+ * (stanGetCollisionEdge), as a point on the edge.
  */
 void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result)
 {
@@ -780,7 +764,10 @@ void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result)
 }
 
 
-static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 unkHeight, f32 unkA)
+/**
+ * How far the prop can see or move in a direction (an angle), up to maxdist.
+ */
+static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 top, f32 bottom)
 {
     coord3d dir;
     f32 dest_x;
@@ -799,10 +786,10 @@ static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cd
     dest_x = prop->pos.f[0] + (dir.f[0] * maxdist);
     dest_z = prop->pos.f[2] + (dir.f[2] * maxdist);
 
-    chrSetMoving(chr, 0);
+    chrSetMoving(chr, FALSE);
     stanResetHits();
 
-    if (stanTestLineUnobstructed(&stan, prop->pos.f[0], prop->pos.f[2], dest_x, dest_z, cdtypes, unkHeight, unkA, 0.0f, 1.0f) != 0)
+    if (stanTestLineUnobstructed(&stan, prop->pos.f[0], prop->pos.f[2], dest_x, dest_z, cdtypes, top, bottom, 0.0f, 1.0f))
     {
         ret = maxdist;
     }
@@ -814,35 +801,30 @@ static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cd
         ret = sqrtf((dest_x * dest_x) + (dest_z * dest_z));
     }
 
-    chrSetMoving(chr, 1);
+    chrSetMoving(chr, TRUE);
 
     return ret;
 }
 
 
+/**
+ * How far a guard can move in a direction, up to maxdist.
+ */
 f32 chrGetClearDistInDirDefault(PropRecord *prop, f32 angle, f32 maxdist)
 {
-    f32 height;
-    f32 always20;
+    f32 top;
+    f32 bottom;
     f32 width;
 
-    chrGetChrWidthHeight(prop, &width, &height, &always20);
-    return chrGetClearDistInDir(prop, angle, maxdist, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, height, always20);
+    chrGetChrWidthHeight(prop, &width, &top, &bottom);
+    return chrGetClearDistInDir(prop, angle, maxdist, CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER, top, bottom);
 }
 
 
-
-
-
-
-
-
 /**
- * get vector to run on
- * @param self:
- * @param side: If GUNLEFT set result is (dz, -dx), otherwise (-dz, dx).
- * @param arg2: Out parameter. Contains result vector.
-*/
+ * The unit vector at right angles to the line from the guard to the current player:
+ * (dz, -dx) for side GUNLEFT, otherwise (-dz, dx).
+ */
 static void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec)
 {
     PropRecord *prop;
@@ -863,22 +845,23 @@ static void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec)
 
     if (side != GUNRIGHT)
     {
-        vec->f[1]  = 0;
-        vec->f[0]  = dz;
-        vec->f[2]  = -(dx);
+        vec->f[1] = 0;
+        vec->f[0] = dz;
+        vec->f[2] = -dx;
     }
     else
     {
-        vec->f[2]  = dx;
-        vec->f[0]  = -(dz);
-        vec->f[1]  = 0;
+        vec->f[2] = dx;
+        vec->f[0] = -dz;
+        vec->f[1] = 0;
     }
 }
 
 
 /**
- * @see chrIsClear
-*/
+ * Whether the guard can walk distance units sideways from the player (as chrIsClear,
+ * but relative to the player rather than the guard's facing).
+ */
 static s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
@@ -897,10 +880,9 @@ static s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
 
 
 /**
- * @param self:
- * @param arg1: flag. If set result is (cos, -sin), otherwise (-cos, sin).
- * @param arg2: out parameter, contains coordinate result.
-*/
+ * The guard's sideways unit vector: (cos, 0, -sin) of its facing if side is non-zero,
+ * otherwise the opposite.
+ */
 static void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir)
 {
     f32 angle;
@@ -923,8 +905,8 @@ static void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir)
 
 
 /**
- * @see chrIsClearLow
-*/
+ * Whether the guard can walk distance units to one side of its facing.
+ */
 static s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
@@ -964,141 +946,153 @@ bool chrIsDead(ChrRecord *self)
 }
 
 
+/**
+ * Whether the current player is within 45 degrees of straight ahead of the guard or
+ * straight behind it, the directions a sidestep or jump to the side gets out of.
+ */
+static bool chrIsBondInFrontOrBehind(ChrRecord *self)
+{
+    PropRecord *myprop = self->prop;
+    PropRecord *bondprop = currentPlayerGetProp();
+    f32 facing = modelGetRootRotY(self->model);
+    f32 toBond = mathAtan2(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
+    f32 angle = toBond - facing;
+
+    if (toBond < facing)
+    {
+        angle += M_TAU_F;
+    }
+
+    return (angle < DegToRad(45)) || (angle > DegToRad(360.0 - 45))
+        || ((angle > DegToRad(180.0 - 45)) && (angle < DegToRad(180.0 + 45)));
+}
+
+
 bool chrTrySidestep(ChrRecord *self)
 {
-    PropRecord *myprop;
-    PropRecord *bondprop;
-    f32 myRadDirection;
-    f32 myRadDirectionToBond;
-    f32 radChangeToFaceBond;
-    GUNHAND HopOtherDirection; //needed for stack size
-    GUNHAND HopDirection;
-    f32 myNormalizedRadToBond;
+    GUNHAND side;
 
-    if (chrIsNotDeadOrShot(self))
+    if (chrIsNotDeadOrShot(self) && chrIsBondInFrontOrBehind(self))
     {
-        myprop                = self->prop;
-        bondprop              = currentPlayerGetProp();
-        myRadDirection        = modelGetRootRotY(self->model);
-        myRadDirectionToBond  = mathAtan2(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
-        radChangeToFaceBond   = myRadDirectionToBond - myRadDirection;
-        myNormalizedRadToBond = radChangeToFaceBond;
+        // A random side, or the other one if that's blocked
+        side = (randomGetNext() & 1) == 0;
 
-        if (myRadDirectionToBond < myRadDirection) //avoid negative radians
+        if (chrIsClear(self, side, 100.0f))
         {
-            myNormalizedRadToBond = radChangeToFaceBond + M_TAU_F;
+            chrSidestep(self, side);
+            return TRUE;
         }
 
-        if ((myNormalizedRadToBond < DegToRad(45)) || (myNormalizedRadToBond > DegToRad(360.0 - 45)) ||        /*Front*/
-            ((myNormalizedRadToBond > DegToRad(180.0 - 45)) && (myNormalizedRadToBond < DegToRad(180.0 + 45))) /*Back*/
-        )
+        side = side == 0;
+
+        if (chrIsClear(self, side, 100.0f))
         {
-            HopDirection = (randomGetNext() & 1) == 0;         //Hop Left or Right
-            if (chrIsClear(self, HopDirection, 100.0f)) //able to step dir?
-            {
-                chrSidestep(self, HopDirection);
-                return TRUE;
-            }
-
-            HopOtherDirection = HopDirection == 0;
-
-            if (chrIsClear(self, HopOtherDirection, 100.0f)) //able to step other dir?
-            {
-                chrSidestep(self, HopOtherDirection);
-                return TRUE;
-            }
+            chrSidestep(self, side);
+            return TRUE;
         }
     }
 
-    return FALSE; //unable to step
+    return FALSE;
 }
 
 
 bool chrTryJumpOut(ChrRecord *self)
 {
-    PropRecord *myprop;
-    PropRecord *bondprop;
-    f32 myRadDirection;
-    f32 myRadDirectionToBond;
-    f32 radChangeToFaceBond;
-    GUNHAND HopOtherDirection; //needed for stack size
-    GUNHAND HopDirection;
-    f32 myNormalizedRadToBond;
+    GUNHAND side;
 
-    if (chrIsNotDeadOrShot(self))
+    if (chrIsNotDeadOrShot(self) && chrIsBondInFrontOrBehind(self))
     {
-        myprop                = self->prop;
-        bondprop              = currentPlayerGetProp();
-        myRadDirection        = modelGetRootRotY(self->model);
-        myRadDirectionToBond  = mathAtan2(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
-        radChangeToFaceBond   = myRadDirectionToBond - myRadDirection;
-        myNormalizedRadToBond = radChangeToFaceBond;
+        side = (randomGetNext() & 1) == 0;
 
-        if (myRadDirectionToBond < myRadDirection) //avoid negative radians
+        if (chrIsClear(self, side, 200.0f))
         {
-            myNormalizedRadToBond = radChangeToFaceBond + M_TAU_F;
+            chrJumpOut(self, side);
+            return TRUE;
         }
 
-        if ((myNormalizedRadToBond < DegToRad(45)) || (myNormalizedRadToBond > DegToRad(360.0 - 45)) ||        /*Front*/
-            ((myNormalizedRadToBond > DegToRad(180.0 - 45)) && (myNormalizedRadToBond < DegToRad(180.0 + 45))) /*Back*/
-        )
+        side = side == 0;
+
+        if (chrIsClear(self, side, 200.0f))
         {
-            HopDirection = (randomGetNext() & 1) == 0;         //Hop Left or Right
-
-            if (chrIsClear(self, HopDirection, 200.0f)) //able to hop dir?
-            {
-                chrJumpOut(self, HopDirection);
-                return TRUE;
-            }
-
-            HopOtherDirection = HopDirection == 0;
-
-            if (chrIsClear(self, HopOtherDirection, 200.0f)) //able to hop other dir?
-            {
-                chrJumpOut(self, HopOtherDirection);
-                return TRUE;
-            }
+            chrJumpOut(self, side);
+            return TRUE;
         }
     }
 
-    return FALSE; //unable to hop
+    return FALSE;
 }
 
 
+/**
+ * Runs 200 to 400 units to one side (at right angles to the player), or the other side
+ * if that's blocked. Not within 3 seconds of the last walk.
+ */
 bool chrTryRunSideways(ChrRecord *self)
 {
     PropRecord *myprop;
-    f32         distToRun;
-    coord3d       TargetVector;
-    coord3d     TargetCoord;
+    f32 dist;
+    coord3d dir;
+    coord3d target;
 
-    if (chrIsNotDeadOrShot(self) && ((g_GlobalTimer - self->lastwalk60) >= CHRLV_RECENT_TIME_CHECK)) //>3 seconds since last walk
+    if (chrIsNotDeadOrShot(self) && ((g_GlobalTimer - self->lastwalk60) >= CHRLV_RECENT_TIME_CHECK))
     {
-        myprop    = self->prop;
-        distToRun = ((u32)randomGetNext() * (1.0f / UINT_MAX) * 200.0f) + 200.0f;         //random dist to run between 0 and 200
-        chrNormDistanceToPlayer(self, ((u32)randomGetNext() & 1) == 0, &TargetVector);  //get vector to run on
+        myprop = self->prop;
+        dist = (RANDOMGETNEXT_F32() * 200.0f) + 200.0f;
+        chrNormDistanceToPlayer(self, ((u32)randomGetNext() & 1) == 0, &dir);
 
-        TargetCoord.x = (TargetVector.x * distToRun) + myprop->pos.x;
-        TargetCoord.y = myprop->pos.y;
-        TargetCoord.z = (TargetVector.z * distToRun) + myprop->pos.z;
+        target.x = (dir.x * dist) + myprop->pos.x;
+        target.y = myprop->pos.y;
+        target.z = (dir.z * dist) + myprop->pos.z;
 
-        if (propCanWalkLine(myprop, &TargetCoord, &TargetVector))
+        if (propCanWalkLine(myprop, &target, &dir))
         {
-            chrRunToPos(self, &TargetCoord);
+            chrRunToPos(self, &target);
             return TRUE;
         }
 
-        TargetVector.x = -TargetVector.x;
-        TargetVector.z = -TargetVector.z;
-        TargetCoord.x  = (TargetVector.x * distToRun) + myprop->pos.x;
-        TargetCoord.y  = myprop->pos.y;
-        TargetCoord.z  = (TargetVector.z * distToRun) + myprop->pos.z;
+        dir.x = -dir.x;
+        dir.z = -dir.z;
+        target.x = (dir.x * dist) + myprop->pos.x;
+        target.y = myprop->pos.y;
+        target.z = (dir.z * dist) + myprop->pos.z;
 
-
-        if (propCanWalkLine(myprop, &TargetCoord, &TargetVector))
+        if (propCanWalkLine(myprop, &target, &dir))
         {
-            chrRunToPos(self, &TargetCoord);
+            chrRunToPos(self, &target);
             return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+
+/**
+ * Walks or runs while firing, if armed, the player is at least 10 m away and the last
+ * walk was over 3 seconds ago.
+ */
+static bool chrTryAttackMoving(ChrRecord *self, SPEED speed)
+{
+    PropRecord *myprop;
+    PropRecord *bondprop;
+
+    if (chrIsNotDeadOrShot(self))
+    {
+        myprop = self->prop;
+        bondprop = currentPlayerGetProp();
+
+        if ((chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT) || chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))
+            && ((g_GlobalTimer - self->lastwalk60) >= CHRLV_RECENT_TIME_CHECK))
+        {
+            f32 dx = bondprop->pos.x - myprop->pos.x;
+            f32 dy = bondprop->pos.y - myprop->pos.y;
+            f32 dz = bondprop->pos.z - myprop->pos.z;
+
+            if ((SQR(dx) + SQR(dy) + SQR(dz)) >= 1000000.0f)
+            {
+                chrInitActAttackWalk(self, speed);
+                return TRUE;
+            }
         }
     }
 
@@ -1108,65 +1102,13 @@ bool chrTryRunSideways(ChrRecord *self)
 
 bool chrTryAttackWalk(ChrRecord *self)
 {
-    PropRecord *myprop;
-    PropRecord *bondprop;
-
-    if (chrIsNotDeadOrShot(self))
-    {
-        myprop   = self->prop;
-        bondprop = currentPlayerGetProp();
-
-        if (
-            (chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT) || chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))
-            &&
-            ((g_GlobalTimer - self->lastwalk60) >= CHRLV_RECENT_TIME_CHECK)
-            )
-        {
-            f32 dx = bondprop->pos.x - myprop->pos.x;
-            f32 dy = bondprop->pos.y - myprop->pos.y;
-            f32 dz = bondprop->pos.z - myprop->pos.z;
-
-            if ( (SQR(dx) + SQR(dy) + SQR(dz)) >= (1000000.0f))
-            {
-                chrInitActAttackWalk(self, SPEED_WALK);
-                return TRUE;
-            }
-        }
-    }
-
-    return FALSE;
+    return chrTryAttackMoving(self, SPEED_WALK);
 }
 
 
 bool chrTryAttackRun(ChrRecord *self)
 {
-    PropRecord *myprop;
-    PropRecord *bondprop;
-
-    if (chrIsNotDeadOrShot(self))
-    {
-        myprop   = self->prop;
-        bondprop = currentPlayerGetProp();
-
-        if (
-            (chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT) || chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))
-            &&
-            ((g_GlobalTimer - self->lastwalk60) >= CHRLV_RECENT_TIME_CHECK)
-            )
-        {
-            f32 dx = bondprop->pos.x - myprop->pos.x;
-            f32 dy = bondprop->pos.y - myprop->pos.y;
-            f32 dz = bondprop->pos.z - myprop->pos.z;
-
-            if ((SQR(dx) + SQR(dy) + SQR(dz)) >= (1000000.0f))
-            {
-                chrInitActAttackWalk(self, SPEED_RUN);
-                return TRUE;
-            }
-        }
-    }
-
-    return FALSE;
+    return chrTryAttackMoving(self, SPEED_RUN);
 }
 
 
@@ -1174,12 +1116,9 @@ bool chrTryAttackRoll(ChrRecord *self)
 {
     PropRecord *myprop;
     PropRecord *bondprop;
-
     coord3d vec;
-
-    GUNHAND HopOtherDirection;
-    GUNHAND HopDirection;
-    float vec2rd;
+    GUNHAND side;
+    f32 distsq;
 
     if (chrIsNotDeadOrShot(self))
     {
@@ -1188,26 +1127,27 @@ bool chrTryAttackRoll(ChrRecord *self)
 
         if (chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT) || chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))
         {
-            vec.x  = bondprop->pos.x - myprop->pos.x;
-            vec.y  = bondprop->pos.y - myprop->pos.y;
-            vec.z  = bondprop->pos.z - myprop->pos.z;
-            vec2rd = SQR(vec.x) + SQR(vec.y) + SQR(vec.z);
+            vec.x = bondprop->pos.x - myprop->pos.x;
+            vec.y = bondprop->pos.y - myprop->pos.y;
+            vec.z = bondprop->pos.z - myprop->pos.z;
+            distsq = SQR(vec.x) + SQR(vec.y) + SQR(vec.z);
 
-            if (SQR(200.0f) <= vec2rd) /*Bond GT 200 from chr*/
+            // The player is at least 2 m away: roll to a random side, or the other one.
+            if (SQR(200.0f) <= distsq)
             {
-                HopDirection = (randomGetNext() & 1) == 0; //Hop Left or Right
+                side = (randomGetNext() & 1) == 0;
 
-                if (chrIsClearLow(self, HopDirection, 200))
+                if (chrIsClearLow(self, side, 200))
                 {
-                    chrInitActAttackRoll(self, HopDirection);
+                    chrInitActAttackRoll(self, side);
                     return TRUE;
                 }
 
-                HopOtherDirection = HopDirection == 0;
+                side = side == 0;
 
-                if (chrIsClearLow(self, HopOtherDirection, 200))
+                if (chrIsClearLow(self, side, 200))
                 {
-                    chrInitActAttackRoll(self, HopOtherDirection);
+                    chrInitActAttackRoll(self, side);
                     return TRUE;
                 }
             }
@@ -1251,7 +1191,7 @@ bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid)
         if (self->act_attack.attacktype & (TARGET_AIM_ONLY | TARGET_DONTTURN))
         {
             self->act_attack.attacktype = newtargettype;
-            self->act_attack.entityid   = newtargetid;
+            self->act_attack.entityid = newtargetid;
             chrAttackSetEndFrame(self);
             return TRUE;
         }
@@ -1263,7 +1203,7 @@ bool chrTryModifyAttack(ChrRecord *self, s32 newtargettype, s32 newtargetid)
 
 bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid)
 {
-    if (chrIsNotDeadOrShot(self) != 0)
+    if (chrIsNotDeadOrShot(self))
     {
         if (self->actiontype != ACT_STAND)
         {
@@ -1271,17 +1211,15 @@ bool chrTryStop(ChrRecord *self, s32 faceentitytype, s32 faceentityid)
         }
 
         self->act_stand.face_entitytype = faceentitytype;
-        self->act_stand.face_entityid   = faceentityid;
-        self->act_stand.reaim          = 0;
-        self->act_stand.checkfacingwall          = 0;
+        self->act_stand.face_entityid = faceentityid;
+        self->act_stand.reaim = 0;
+        self->act_stand.checkfacingwall = 0;
 
         return TRUE;
     }
 
     return FALSE;
 }
-
-
 
 
 bool chrTryStartPatrol(ChrRecord *self, PathRecord *path)
@@ -1296,18 +1234,22 @@ bool chrTryStartPatrol(ChrRecord *self, PathRecord *path)
 }
 
 
+/**
+ * Standing: finishes getting up from a kneel, turns to face a target (walking on the
+ * spot), and after a while standing facing a wall turns away from it.
+ */
 static void chrTickStand(ChrRecord *self)
 {
-    s32 i;             // any
-    PropRecord *left;  // 160
-    PropRecord *right; // 156
-    s32 index;         // any
-    f32 cleardist[8];       // 116
-    f32 subroty;       // 112
-    f32 angle;       // 108
-    f32 subrotyarg2;   // any
-    s32 j;             // any
-    s32 order[8];       // 68
+    s32 i;
+    PropRecord *left;
+    PropRecord *right;
+    s32 index;
+    f32 cleardist[8];
+    f32 subroty;
+    f32 angle;
+    f32 endframe;
+    s32 j;
+    s32 order[8];
 
     if (self->sleep > 0)
     {
@@ -1316,7 +1258,6 @@ static void chrTickStand(ChrRecord *self)
 
     if (self->act_stand.prestand != 0)
     {
-        // needs to save $f0 into sp(0x3c)
         if (modelGetAnimFrame(self->model) >= modelGetAnimEndFrame(self->model))
         {
             chrStandChooseAnimation(self, 8.0f);
@@ -1332,15 +1273,15 @@ static void chrTickStand(ChrRecord *self)
     {
         if (self->act_stand.reaim)
         {
-            subrotyarg2 = modelGetAnim(self->model)->numFrames - 1;
-            self->act_stand.turning = chrSetSubroty(self, self->act_stand.turning, subrotyarg2, 1.0f, 0.0f);
+            endframe = modelGetAnim(self->model)->numFrames - 1;
+            self->act_stand.turning = chrSetSubroty(self, self->act_stand.turning, endframe, 1.0f, 0.0f);
 
             if (self->act_stand.turning != 1)
             {
                 chrStandChooseAnimation(self, 8.0f);
                 self->act_stand.reaim = 0;
 
-                if (self->act_stand.face_entitytype & 0x10)
+                if (self->act_stand.face_entitytype & TARGET_COMPASS)
                 {
                     self->act_stand.face_entitytype = 0;
                 }
@@ -1349,10 +1290,11 @@ static void chrTickStand(ChrRecord *self)
         else
         {
             angle = chrGetAngleToTarget(self, self->act_stand.face_entitytype, self->act_stand.face_entityid);
+            // More than 20 degrees off: turn
             if ((angle > 0.34906587f) && (angle < 5.9341197f))
             {
-                left = chrGetEquippedWeaponProp(self, 1);
-                right = chrGetEquippedWeaponProp(self, 0);
+                left = chrGetEquippedWeaponProp(self, GUNLEFT);
+                right = chrGetEquippedWeaponProp(self, GUNRIGHT);
 
                 self->act_stand.reaim = 1;
                 self->act_stand.turning = 1;
@@ -1362,39 +1304,16 @@ static void chrTickStand(ChrRecord *self)
                     || weaponIsOneHanded(left)
                     || weaponIsOneHanded(right))
                 {
-                    // required to fix stack above
-                    // looks like it doesn't matter which `s32` is used.
-                    i = (s32)((u32)randomGetNext() & 1U);
-                    modelSetAnimation(
-                        self->model,
-                        // awkward fix: addu instruction is backwards
-                        ANIM(walking_unarmed),
-                        i,
-                        0.0f,
-                        0.5f,
-                        16.0f);
-
-                    modelSetAnimEndFrame(
-                        self->model,
-                        (ANIM(walking_unarmed)->numFrames - 1));
+                    modelSetAnimation(self->model, ANIM(walking_unarmed), randomGetNext() & 1, 0.0f, 0.5f, 16.0f);
+                    modelSetAnimEndFrame(self->model, ANIM(walking_unarmed)->numFrames - 1);
                 }
                 else if ((right != NULL) || (left != NULL))
                 {
-                    modelSetAnimation(
-                        self->model,
-                        // awkward fix: addu instruction is backwards
-                        ANIM(walking),
-                        left != NULL,
-                        0.0f,
-                        0.5f,
-                        16.0f);
-
-                    modelSetAnimEndFrame(
-                        self->model,
-                        (ANIM(walking)->numFrames - 1));
+                    modelSetAnimation(self->model, ANIM(walking), left != NULL, 0.0f, 0.5f, 16.0f);
+                    modelSetAnimEndFrame(self->model, ANIM(walking)->numFrames - 1);
                 }
             }
-            else if (self->act_stand.face_entitytype & 0x10)
+            else if (self->act_stand.face_entitytype & TARGET_COMPASS)
             {
                 self->act_stand.face_entitytype = 0;
             }
@@ -1405,7 +1324,7 @@ static void chrTickStand(ChrRecord *self)
         return;
     }
 
-    self->sleep = ((u32)randomGetNext() % 5U) + 0xE;
+    self->sleep = ((u32)randomGetNext() % 5U) + 14;
 
     if (self->act_stand.checkfacingwall)
     {
@@ -1418,6 +1337,9 @@ static void chrTickStand(ChrRecord *self)
         self->act_stand.wallcount -= self->sleep;
         if (self->act_stand.wallcount < 0)
         {
+            // How far it's clear in 8 directions, cleardist[i] at (i + 1) * 45 degrees
+            // round from ahead (cleardist[7] is straight ahead), then sorted nearest
+            // first into order[].
             subroty = modelGetRootRotY(self->model);
 
             angle = subroty;
@@ -1438,10 +1360,8 @@ static void chrTickStand(ChrRecord *self)
                 order[i] = i;
             }
 
-            /**
-             * Selection sort.
-            */
-            for (i=0; i<7; i++)
+            // Selection sort
+            for (i = 0; i < 7; i++)
             {
                 index = i;
 
@@ -1499,7 +1419,7 @@ static void chrTickStand(ChrRecord *self)
                     angle -= M_TAU_F;
                 }
 
-                chrTryStop(self, 0x10, (s32) ((angle * M_U16_MAX_VALUE_F) / M_TAU_F));
+                chrTryStop(self, TARGET_COMPASS, (s32)((angle * M_U16_MAX_VALUE_F) / M_TAU_F));
             }
             else
             {
@@ -1515,12 +1435,9 @@ static void chrTickKneel(ChrRecord *actor)
     actor->sleep = 0;
 }
 
-// #still chraction.c
-
 
 static void chrTickAnim(ChrRecord *self)
 {
-
     if (self->act_anim.holdLastFrame == 0)
     {
         f32 frame = modelGetAnimFrame(self->model);
@@ -1539,15 +1456,15 @@ static void chrTickAnim(ChrRecord *self)
     {
         if (((g_LvTickCount & 1) == 0) && (chrGetDistanceToBond(self) < 800.0f))
         {
-            sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, SNEEZE_SFX, 0), &self->prop->pos);
+            sfxSetVolumeAt(sndPlaySfx(g_musicSfxBufferPtr, SNEEZE_SFX, NULL), &self->prop->pos);
         }
 
         self->chrflags |= CHRFLAG_02000000;
     }
 
-    if (((s32) self->sleep <= 0) && (self->act_anim.idleOnEnd != 0))
+    if ((self->sleep <= 0) && (self->act_anim.idleOnEnd != 0))
     {
-        self->sleep = (randomGetNext() % 5U) + 0xE;
+        self->sleep = (randomGetNext() % 5U) + 14;
     }
 }
 
@@ -1556,22 +1473,22 @@ static void chrTickSurrender(ChrRecord *self)
 {
     Model *model;
 
-    if ((s32) self->sleep <= 0)
+    if (self->sleep <= 0)
     {
         model = self->model;
-        self->sleep = 0x10;
+        self->sleep = 16;
 
         if ((modelGetAnim(model) == ANIM(surrendering_armed_drop_weapon))
             && (modelGetAnimFrame(model) >= 80.0f))
         {
             coord3d dir = {0};
-
             f32 t = modelGetRootRotY(model);
 
             dir.f[0] = -sinf(t);
             dir.f[2] = -cosf(t);
 
-            if (propCanWalkInDir(self->prop, &dir, 20.0f) == 0)
+            // Backed up against something: stop stepping back
+            if (!propCanWalkInDir(self->prop, &dir, 20.0f))
             {
                 modelSetAnimation(self->model, ANIM(surrendering_armed), randomGetNext() & 1, 30.0f, 0.5f, 16.0f);
                 modelSetAnimLooping(self->model, 30.0f, 16.0f);
@@ -1581,13 +1498,6 @@ static void chrTickSurrender(ChrRecord *self)
 }
 
 
-
-
-/**
- * @see chrTickJumpout
- * @see chrTickTest
- * @see chrTickStartAlarm
-*/
 static void chrTickSidestep(ChrRecord *self)
 {
     Model *model = self->model;
@@ -1600,11 +1510,6 @@ static void chrTickSidestep(ChrRecord *self)
 }
 
 
-/**
- * @see chrTickSidestep
- * @see chrTickTest
- * @see chrTickStartAlarm
-*/
 static void chrTickJumpout(ChrRecord *self)
 {
     Model *model = self->model;
@@ -1617,11 +1522,6 @@ static void chrTickJumpout(ChrRecord *self)
 }
 
 
-/**
- * @see chrTickSidestep
- * @see chrTickJumpout
- * @see chrTickStartAlarm
-*/
 static void chrTickTest(ChrRecord *self)
 {
     Model *model = self->model;
@@ -1633,11 +1533,6 @@ static void chrTickTest(ChrRecord *self)
 }
 
 
-/**
- * @see chrTickSidestep
- * @see chrTickJumpout
- * @see chrTickTest
-*/
 static void chrTickStartAlarm(ChrRecord *self)
 {
     Model *model = self->model;
@@ -1677,8 +1572,6 @@ static void chrTickSurprised(ChrRecord *self)
 }
 
 
-
-
 static void chrTickThrowGrenade(ChrRecord *self)
 {
     Model *self_model;
@@ -1691,16 +1584,16 @@ static void chrTickThrowGrenade(ChrRecord *self)
     gunhand = (self_model->flip != GUNRIGHT) ? GUNLEFT : GUNRIGHT;
     held_prop = chrGetEquippedWeaponProp(self, gunhand);
 
+    // The grenade is hidden (chrTryThrowGrenade) until the guard reaches for it.
     if ((frame >= 20.0f) && (held_prop != NULL))
     {
-        struct ObjectRecord *obj = held_prop->obj;
-        obj->runtime_bitflags &= ~0x800;
+        held_prop->obj->runtime_bitflags &= ~RUNTIMEBITFLAG_RESPAWNING;
     }
 
+    // Pulls the pin
     if ((frame >= 61.0f) && (held_prop != NULL))
     {
-        struct WeaponObjRecord *weap = held_prop->weapon;
-        weap->timer = CHRLV_DEFAULT_TIMER;
+        held_prop->weapon->timer = CHRLV_DEFAULT_TIMER;
     }
 
     if ((frame >= 119.0f) && (held_prop != NULL))
@@ -1753,14 +1646,6 @@ static void chrTickBondIntro(ChrRecord *self)
 }
 
 
-
-
-
-
-
-
-
-
 static void chrActionTickBody(ChrRecord *self);
 
 /**
@@ -1803,7 +1688,7 @@ static void chrActionTickBody(ChrRecord *self)
 
         self->sleep -= g_ClockTimer;
 
-        if (((s32)self->sleep < 0) || (self->chrflags & CHRFLAG_00040000))
+        if ((self->sleep < 0) || (self->chrflags & CHRFLAG_00040000))
         {
             self->sleep = 0;
             aiRunList((PropDefHeaderRecord *)self, PROP_TYPE_CHR);
@@ -1901,14 +1786,14 @@ void bgChrsTick(void)
 
     max = chrsGetNumSlots();
 
-    for (i=0; i<g_NumBgChrs; i++)
+    for (i = 0; i < g_NumBgChrs; i++)
     {
         chrActionTick(&g_BgChrs[i]);
     }
 
     g_SeenBondRecentlyGuardCount = 0;
 
-    for (i=0; i<max; i++)
+    for (i = 0; i < max; i++)
     {
         ChrSlotHot *hot = &g_ChrSlotHot[i];
 
