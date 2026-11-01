@@ -10,4 +10,6 @@ void gunCreateBeamForHand(enum GUNHAND hand);
 Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode);
 void beamTick(BeamRecord *beam);
 
+extern s32 g_NumLiveBeams;
+
 #endif

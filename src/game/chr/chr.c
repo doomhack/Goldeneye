@@ -79,6 +79,11 @@ s32 g_ChrUnused = 0; // Set to 0 but otherwise never used.
 s32 g_ChrShowPatrols = FALSE;
 s32 g_NextChrNum = 5000;
 ChrRecord *g_ChrSlots = 0;
+
+/* For each chr slot, the two fields the per-frame scans of every slot read (chrnum, only
+   while the slot holds a chr, and lastseetarget60), so chrFindByLiteralId and bgChrsTick
+   don't pull in a 464-byte ChrRecord per slot. chrSlotSync keeps it up to date. */
+ChrSlotHot *g_ChrSlotHot = NULL;
 s32 g_NumChrSlots = 0;
 
 
@@ -643,6 +648,7 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     chr->invalidmove = 0;
     chr->lastmoveok60 = g_GlobalTimer;
     chr->lastseetarget60 = 0;
+    chrSlotSync(chr);
     chr->seen_bond_time = 0;
     chr->lastheartarget60 = 0;
     chr->numclosearghs = 0;
@@ -781,6 +787,16 @@ void chrFreeResources(PropRecord *prop)
 
     chr->model = NULL;
     chr->chrnum = -1;
+    chrSlotSync(chr);
+
+    for (s32 i = 0; i < 2; i++)
+    {
+        if (chr->beams[i].age >= 0)
+        {
+            chr->beams[i].age = -1;
+            g_NumLiveBeams--;
+        }
+    }
 
     if (chr->jointList != NULL) {
         jointListFree(chr->jointList);
@@ -1414,7 +1430,7 @@ ChrRecord* chrFindByLiteralId(s32 index)
 
     for (i=0; i<g_NumChrSlots; i++)
     {
-        if (g_ChrSlots[i].model != NULL && g_ChrSlots[i].chrnum == index)
+        if (g_ChrSlotHot[i].chrnum == index)
         {
             return &g_ChrSlots[i];
         }
@@ -1651,9 +1667,26 @@ void chrsAllocateSlots(s32 count)
     g_NumChrSlots = count + 10; //special guards?
 
     g_ChrSlots = mempAlloc(align_addr_zero(g_NumChrSlots * sizeof(ChrRecord)), MEMPOOL_STAGE);
+    g_ChrSlotHot = mempAlloc(align_addr_zero(g_NumChrSlots * sizeof(ChrSlotHot)), MEMPOOL_STAGE);
     for(i = 0; g_NumChrSlots > i; i++)
     {
         g_ChrSlots[i].model = 0;
+        g_ChrSlotHot[i].chrnum = CHRSLOT_EMPTY;
+        g_ChrSlotHot[i].lastseetarget60 = 0;
+    }
+}
+
+
+/* Copy a chr's chrnum and lastseetarget60 to g_ChrSlotHot, after either changes (or its model
+   is set or cleared). Does nothing for the background chrs. */
+void chrSlotSync(ChrRecord *chr)
+{
+    u32 i = chr - g_ChrSlots;
+
+    if (g_ChrSlots != NULL && i < (u32)g_NumChrSlots)
+    {
+        g_ChrSlotHot[i].chrnum = chr->model != NULL ? chr->chrnum : CHRSLOT_EMPTY;
+        g_ChrSlotHot[i].lastseetarget60 = chr->lastseetarget60;
     }
 }
 

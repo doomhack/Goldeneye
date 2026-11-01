@@ -6953,6 +6953,7 @@ _AI_CMD(
     {
         AIRecord *ai       = AiListp + Offset;
         ChrEntityp->chrnum = ai->val[0];
+        chrSlotSync(ChrEntityp);
         Offset += CAT(CAT(AI_, CMDNAME), _LENGTH);
         break;
     })
@@ -9182,6 +9183,7 @@ _AI_CMD(
                 if (!chrFindById(ChrEntityp, chrnum))
                 {
                     clone->chrnum = chrnum;
+                    chrSlotSync(clone);
                 }
                 srcweaponRprop = chrGetEquippedWeaponProp(chr, GUNRIGHT);
                 if (srcweaponRprop)

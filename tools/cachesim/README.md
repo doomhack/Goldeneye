@@ -57,3 +57,10 @@ accesses and misses for each 4-byte word of one struct instance: SIZE bytes at S
 
 lists each member's accesses and misses per game frame, and each 16-byte line's totals. For
 example `--watch '*g_playerPointers:4728'` watches player 1's struct player.
+
+## Lines used once
+
+`csusage.py ELF DUMP...` lists read-only lines that were filled and then left the cache after
+one access (or two), by data object, by the code that loaded them, and by the pair. Those
+are where an uncached (KSEG1) read, or keeping the hot field somewhere denser, could help.
+Needs a core built from the current patch (it writes DUMP.usage).

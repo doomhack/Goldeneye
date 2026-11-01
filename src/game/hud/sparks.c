@@ -41,6 +41,13 @@ Vtx g_SparkVtxTemplate = {};
 // size of each item is 0x2c (see sparkCreate)
 s_bullet_spark g_Sparks[BULLET_SPARKS_MAX];
 
+/* Live entries (lifetime > 0) in g_Sparks and g_MovingSparks, so the tick and render loops
+   can skip a pool with nothing in it instead of reading every entry */
+static s32 s_NumLiveSparks = 0;
+#ifndef VERSION_EU
+static s32 s_NumLiveMovingSparks = 0;
+#endif
+
 #ifndef VERSION_EU
 
 s_moving_bullet_spark g_MovingSparks[BULLET_MOVING_SPARKS_MAX];
@@ -61,6 +68,8 @@ void sparksReset(void)
         g_Sparks[i].lifetime = 0;
         g_Sparks[i].age = 0;
     }
+
+    s_NumLiveSparks = 0;
 }
 
 
@@ -133,6 +142,7 @@ s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room)
         if (ptr->lifetime == 0)
         {
             sparkInit(ptr, pos, type, size, room);
+            s_NumLiveSparks++;
             return ptr;
         }
     }
@@ -146,6 +156,11 @@ void sparksTick(void)
     s_bullet_spark *thing = &g_Sparks[0]; \
     s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
 
+    if (s_NumLiveSparks == 0)
+    {
+        return;
+    }
+
     for (; thing < end; thing++)
     {
         if (thing->lifetime > 0)
@@ -155,6 +170,7 @@ void sparksTick(void)
             if (thing->age >= 0 && thing->age >= thing->lifetime)
             {
                 thing->lifetime = 0;
+                s_NumLiveSparks--;
             } 
         }
     }
@@ -266,6 +282,11 @@ void sparksRender(Gfx **gdlptr, s32 zbufferMode)
     s_bullet_spark *thing = &g_Sparks[0]; \
     s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
 
+    if (s_NumLiveSparks == 0)
+    {
+        return;
+    }
+
     for (; (thing < end); thing++)
     {
         sparkRender(thing, gdlptr, zbufferMode);
@@ -284,6 +305,8 @@ void movingSparksReset(void)
     {
         ptr->spark.lifetime = 0;
     }
+
+    s_NumLiveMovingSparks = 0;
 }
 #endif
 
@@ -303,6 +326,7 @@ s_moving_bullet_spark *movingSparkCreate(coord3d *pos, coord3d *velocity, s32 ty
             ptr->velocity.y = velocity->y;
             ptr->velocity.z = velocity->z;
             ptr->minY = minY;
+            s_NumLiveMovingSparks++;
 
             return ptr;
         }
@@ -321,6 +345,11 @@ void movingSparksTick(void)
 
     ptr = &g_MovingSparks[0]; end = &g_MovingSparks[BULLET_MOVING_SPARKS_MAX];
 
+    if (s_NumLiveMovingSparks == 0)
+    {
+        return;
+    }
+
     while (ptr < end)
     {
         if (ptr->spark.lifetime > 0)
@@ -334,11 +363,13 @@ void movingSparksTick(void)
                     if (ptr->spark.pos.y < ptr->minY)
                     {
                         ptr->spark.lifetime = 0;
+                        s_NumLiveMovingSparks--;
                     }
                 }
                 else
                 {
                     ptr->spark.lifetime = 0;
+                    s_NumLiveMovingSparks--;
                 }
             }
         }
@@ -355,7 +386,7 @@ void movingSparksRender(Gfx **gdlptr, s32 zbufferMode)
     s32 max_index;
     s_moving_bullet_spark *ptr;
 
-    max_index = BULLET_MOVING_SPARKS_MAX;
+    max_index = s_NumLiveMovingSparks > 0 ? BULLET_MOVING_SPARKS_MAX : 0;
 
     for (ptr = &g_MovingSparks[0]; ptr < (&g_MovingSparks[max_index]); ptr++)
     {

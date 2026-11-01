@@ -257,6 +257,7 @@ typedef struct CartridgeModelFileRecord {
 } CartridgeModelFileRecord;
 
 extern CasingRecord g_Casings[20];
+extern s32 g_NumLiveCasings;
 extern u32 size_item_buffer[];
 extern WeaponStats sniperrifle_stats;
 extern WeaponStats camera_stats;

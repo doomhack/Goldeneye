@@ -465,6 +465,11 @@ static void autogunCreateBeam(BeamRecord *beam, coord3d *from, coord3d *to)
         dist = 10000.0f;
     }
 
+    if (beam->age < 0)
+    {
+        g_NumLiveBeams++;
+    }
+
     beam->age = 0;
     beam->weaponnum = ITEM_FNP90;
     beam->maxdist = dist;

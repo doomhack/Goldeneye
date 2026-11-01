@@ -131,15 +131,34 @@ struct tex *texFindInPool(s32 texturenum, struct texpool *pool)
 /** Finds the texture whose pixels are at `data` in a pool (NULL for the shared one) */
 struct tex *texFindByData(const u8 *data, struct texpool *pool)
 {
+    // The last few shared-pool finds, by address: texSelect asks for the same few textures
+    // over and over, and each search reads entries all over the pool. An entry is only used
+    // while it is still in the pool and still holds that texture.
+    static struct tex *recent[8];
+    struct tex **slot = NULL;
+
     if (pool == NULL)
     {
         pool = &g_TexSharedPool;
+        slot = &recent[((u32)data >> 4) & 7];
+
+        struct tex *tex = *slot;
+
+        if (tex >= pool->rightpos && tex < pool->end && tex->data == data)
+        {
+            return tex;
+        }
     }
 
     for (struct tex *tex = pool->rightpos; tex < pool->end; tex++)
     {
         if (tex->data == data)
         {
+            if (slot != NULL)
+            {
+                *slot = tex;
+            }
+
             return tex;
         }
     }

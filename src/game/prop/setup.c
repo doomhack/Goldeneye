@@ -878,6 +878,7 @@ void setupGuard(GuardRecord *guard)
 
     chr = prop->chr;
     chr->chrnum = guard->chrnum;
+    chrSlotSync(chr);
     chr->hearingscale = guard->health / 1000.0f;
     chr->visionrange = guard->ReactionTime;
     chr->padpreset1 = guard->Preset;

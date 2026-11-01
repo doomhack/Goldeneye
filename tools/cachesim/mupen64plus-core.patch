@@ -11,7 +11,7 @@ index b4deb39..464de32 100644
      $(SRCDIR)/device/rcp/ai/ai_controller.c \
      $(SRCDIR)/device/rcp/mi/mi_controller.c \
 diff --git a/src/api/api_export.ver b/src/api/api_export.ver
-index 289adf2..1cea168 100644
+index 289adf2..2c0b099 100644
 --- a/src/api/api_export.ver
 +++ b/src/api/api_export.ver
 @@ -48,7 +48,7 @@ DebugDecodeOp;
@@ -19,7 +19,7 @@ index 289adf2..1cea168 100644
  DebugGetState;
  DebugMemGetMemInfo;
 -DebugMemGetPointer;
-+DebugMemGetPointer; cachesim_enable; cachesim_reset; cachesim_dump; cachesim_dump_blocks; cachesim_track_alloc; cachesim_watch; cachesim_dump_watch;
++DebugMemGetPointer; cachesim_enable; cachesim_reset; cachesim_dump; cachesim_dump_blocks; cachesim_track_alloc; cachesim_watch; cachesim_dump_watch; cachesim_dump_usage;
  DebugMemGetRecompInfo;
  DebugMemRead16;
  DebugMemRead32;
@@ -37,10 +37,10 @@ index b46d99a..18c08f7 100644
  // -----------------------------------------------------------
 diff --git a/src/device/r4300/cachesim.c b/src/device/r4300/cachesim.c
 new file mode 100644
-index 0000000..e6b319f
+index 0000000..61c4760
 --- /dev/null
 +++ b/src/device/r4300/cachesim.c
-@@ -0,0 +1,175 @@
+@@ -0,0 +1,228 @@
 +/* VR4300 data cache model for GoldenEye cache studies.
 + * 8 KB, direct mapped, 16-byte lines, write-back, write-allocate.
 + * Counts, per physical 16-byte line and per CPU PC, read misses, write misses
@@ -63,12 +63,40 @@ index 0000000..e6b319f
 +static uint32_t *pc_miss, *pc_acc;
 +static uint64_t tot_acc, tot_rmiss, tot_wmiss, tot_wb, tot_cachewb;
 +
++/* Line use: for each resident line, how many accesses it got before it left the cache,
++ * whether it was written, and which instruction filled it. A line filled by a read and
++ * read only once (or twice) before eviction is a candidate for an uncached (KSEG1) read. */
++static uint8_t res_acc[NLINES], res_wrote[NLINES], res_victimdirty[NLINES];
++static uint32_t res_fillpc[NLINES];
++static uint32_t *line_once, *line_twice, *line_fills, *pc_once, *pc_twice, *pc_fills, *line_once_wb;
++static uint64_t tot_once, tot_twice, tot_fills;
++
++#define MAXEVENTS (4 << 20)
++static uint32_t *once_log; static uint32_t n_once_log;
++
++static void usage_retire(uint32_t idx)
++{
++    if (!tag[idx]) return;
++    uint32_t line = tag[idx] - 1, pcs = (res_fillpc[idx] & 0x7fffff) >> 2;
++    int fromkseg0 = (res_fillpc[idx] & 0xe0000000) == 0x80000000;
++    if (res_wrote[idx]) return;
++    tot_fills++; line_fills[line]++; if (fromkseg0) pc_fills[pcs]++;
++    if (res_acc[idx] == 1) {
++        if (!once_log) once_log = malloc(MAXEVENTS * 8);
++        if (n_once_log < MAXEVENTS) { once_log[2 * n_once_log] = line; once_log[2 * n_once_log + 1] = res_fillpc[idx]; n_once_log++; }
++        tot_once++; line_once[line]++; if (fromkseg0) pc_once[pcs]++; if (res_victimdirty[idx]) line_once_wb[line]++; }
++    else if (res_acc[idx] == 2) { tot_twice++; line_twice[line]++; if (fromkseg0) pc_twice[pcs]++; }
++}
++
 +static void alloc_arrays(void)
 +{
 +    if (line_rmiss) return;
 +    line_rmiss = calloc(RAMLINES, 4); line_wmiss = calloc(RAMLINES, 4);
 +    line_wb = calloc(RAMLINES, 4); line_acc = calloc(RAMLINES, 4);
 +    pc_miss = calloc(PCSLOTS, 4); pc_acc = calloc(PCSLOTS, 4);
++    line_once = calloc(RAMLINES, 4); line_twice = calloc(RAMLINES, 4); line_fills = calloc(RAMLINES, 4);
++    line_once_wb = calloc(RAMLINES, 4);
++    pc_once = calloc(PCSLOTS, 4); pc_twice = calloc(PCSLOTS, 4); pc_fills = calloc(PCSLOTS, 4);
 +}
 +
 +EXPORT void cachesim_enable(int on) { alloc_arrays(); g_cachesim_on = on; }
@@ -80,6 +108,25 @@ index 0000000..e6b319f
 +    memset(line_wb, 0, RAMLINES * 4); memset(line_acc, 0, RAMLINES * 4);
 +    memset(pc_miss, 0, PCSLOTS * 4); memset(pc_acc, 0, PCSLOTS * 4);
 +    tot_acc = tot_rmiss = tot_wmiss = tot_wb = tot_cachewb = 0;
++    memset(line_once, 0, RAMLINES * 4); memset(line_twice, 0, RAMLINES * 4); memset(line_fills, 0, RAMLINES * 4);
++    memset(line_once_wb, 0, RAMLINES * 4);
++    memset(pc_once, 0, PCSLOTS * 4); memset(pc_twice, 0, PCSLOTS * 4); memset(pc_fills, 0, PCSLOTS * 4);
++    tot_once = tot_twice = tot_fills = 0; n_once_log = 0;
++    memset(res_wrote, 1, NLINES);   /* lines already resident at reset are not counted */
++}
++
++EXPORT int cachesim_dump_usage(const char *path)
++{
++    FILE *f = fopen(path, "wb");
++    if (!f) return -1;
++    uint64_t hdr[4] = { 0x43535531, tot_fills, tot_once, tot_twice };
++    fwrite(hdr, 8, 4, f);
++    fwrite(line_fills, 4, RAMLINES, f); fwrite(line_once, 4, RAMLINES, f);
++    fwrite(line_twice, 4, RAMLINES, f); fwrite(line_once_wb, 4, RAMLINES, f);
++    fwrite(pc_fills, 4, PCSLOTS, f); fwrite(pc_once, 4, PCSLOTS, f); fwrite(pc_twice, 4, PCSLOTS, f);
++    fwrite(&n_once_log, 4, 1, f); if (n_once_log) fwrite(once_log, 8, n_once_log, f);
++    fclose(f);
++    return 0;
 +}
 +
 +EXPORT int cachesim_dump(const char *path)
@@ -128,13 +175,17 @@ index 0000000..e6b319f
 +    if (watched) watch_acc[woff >> 2]++;
 +    if ((pc & 0xe0000000) == 0x80000000) pc_acc[pcs]++;
 +    if (tag[idx] != line + 1) {
++        usage_retire(idx);
++        res_victimdirty[idx] = tag[idx] && dirty[idx];
 +        if (tag[idx] && dirty[idx]) { tot_wb++; line_wb[tag[idx] - 1]++; }
 +        tag[idx] = line + 1; dirty[idx] = 0;
++        res_acc[idx] = 0; res_wrote[idx] = write; res_fillpc[idx] = pc;
 +        if (write) { tot_wmiss++; line_wmiss[line]++; } else { tot_rmiss++; line_rmiss[line]++; }
 +        if ((pc & 0xe0000000) == 0x80000000) pc_miss[pcs]++;
 +        if (watched) watch_miss[woff >> 2]++;
 +    }
-+    if (write) dirty[idx] = 1;
++    if (write) { dirty[idx] = 1; res_wrote[idx] = 1; }
++    if (res_acc[idx] < 255) res_acc[idx]++;
 +}
 +
 +/* CACHE instruction, D-cache operations only (op & 3 == 1). */
@@ -144,6 +195,8 @@ index 0000000..e6b319f
 +    uint32_t line = (vaddr & 0x7fffff) >> 4;
 +    uint32_t idx = line & (NLINES - 1);
 +    int hit = (vaddr & 0xe0000000) == 0x80000000 && tag[idx] == line + 1;
++    if ((op >> 2) == 0 || (op >> 2) == 2 || (op >> 2) == 3 || (((op >> 2) == 4 || (op >> 2) == 5) && hit)) usage_retire(idx);
++    if ((op >> 2) == 3) { res_wrote[idx] = 1; }
 +    switch (op >> 2) {
 +    case 0: /* index writeback invalidate */
 +        if (tag[idx] && dirty[idx]) tot_cachewb++;

@@ -1124,6 +1124,7 @@ typedef union
 
             struct ChrRecord  *chr;
             ModelFileHeader   *obj;
+            f32               scale;       /* with obj, in the first 16 bytes: modelGetRadius reads both */
 
             /**
              * List of length model->obj->numMatrices dynamically allocated.
@@ -1131,7 +1132,6 @@ typedef union
             RenderPosView     *render_pos;
             u32 *datas; // rwdata, in words: each node finds its record at datas[RwDataIndex]
 
-            f32               scale;
             struct Model     *attachedto;
             ModelNode        *attachedto_objinst;
         } ModelBase;

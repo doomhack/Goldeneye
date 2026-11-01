@@ -68,6 +68,11 @@
  */
 Gfx *weaponRenderTracers(Gfx *gdl)
 {
+    if (g_NumLiveBeams == 0)
+    {
+        return gdl;
+    }
+
     for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {
         if (prop->type == PROP_TYPE_CHR)
