@@ -47,12 +47,13 @@ typedef struct BoundVec {
     s32 x, y, z; 
 } BoundVec;
 
-typedef struct s_room_info {
+/**
+ * The per-room flags that the visibility and unload passes walk for every room each frame,
+ * kept apart from s_room_info so a pass over all rooms touches 8 bytes per room.
+ */
+typedef struct RoomState {
     // is room being rendered? boolean
-    u8 room_rendered;                       // 0x00
-
-    // is the room a neighbor to a room being rendered? boolean
-    u8 room_neighbor_to_rendered;           // 0x01
+    u8 room_rendered;
 
     /**
      * Acts like a small room age counter.
@@ -61,38 +62,44 @@ typedef struct s_room_info {
      * 2-3 = loaded but aging towards unload
      * 4 = unload on tick
      */
-    u8 model_bin_loaded;                    // 0x02
+    u8 model_bin_loaded;
 
     /**
      * Counts how often this room has been reached during the current portal
      * visibility traversal.
      */
-    u8 portal_visit_count;                  // 0x03
+    u8 portal_visit_count;
 
-    Vtx *vertices;                          // 0x04
-    void *ptr_expanded_mapping_info;        // 0x08
-    void *ptr_secondary_expanded_mapping_info; // 0x0c
-
-    s32 csize_point_index_binary;           // 0x10
-    s32 csize_primary_DL_binary;            // 0x14
-    s32 csize_secondary_DL_binary;          // 0x18
-
-    s32 usize_point_index_binary;           // 0x1c
-    s32 usize_primary_DL_binary;            // 0x20
-    s32 usize_secondary_DL_binary;          // 0x24
-
-    s32 cur_room_totalsize;                 // 0x28
-    RoomVtxBatchBounds *vtx_batch_bounds;   // 0x2c
-
-    s16 num_vtx_batch_bounds;               // 0x30
-    s16 field_32;                           // 0x32
-
-    u8 room_loaded_mask;                    // 0x34
+    u8 room_loaded_mask;
     u8 requested; // set once the room's model has been asked for; such rooms are never unloaded
-    s16 mtxIndex;                           // 0x36
+    s16 mtxIndex;
+} RoomState;
 
-    coord3d minbounds;                      // 0x38
-    coord3d maxbounds;                      // 0x44
+static_assert(sizeof(RoomState) == 8, "RoomState packs into 8 bytes");
+
+/**
+ * A room's model data. What rendering and collision read comes first; the load sizes,
+ * used only when the room is loaded or unloaded, come last.
+ */
+typedef struct s_room_info {
+    coord3d minbounds;
+    coord3d maxbounds;
+
+    Vtx *vertices;
+    void *ptr_expanded_mapping_info;
+    void *ptr_secondary_expanded_mapping_info;
+    RoomVtxBatchBounds *vtx_batch_bounds;
+    s32 num_vtx_batch_bounds;
+
+    s32 csize_point_index_binary;
+    s32 csize_primary_DL_binary;
+    s32 csize_secondary_DL_binary;
+
+    s32 usize_point_index_binary;
+    s32 usize_primary_DL_binary;
+    s32 usize_secondary_DL_binary;
+
+    s32 cur_room_totalsize;
 } s_room_info; 
 
 typedef struct s_bound_info
@@ -175,6 +182,7 @@ extern f32 g_BgLevelScaleInv;
 
 extern bg_room_data * g_BgRoomFiles;
 extern s_room_info g_BgRoomInfo[];
+extern RoomState g_BgRoomState[];
 extern Gfx *ptrDynamic_CC_RM_LUT[];
 extern Gfx DL_LUT_PRIMARY_ADDFOG[];
 
