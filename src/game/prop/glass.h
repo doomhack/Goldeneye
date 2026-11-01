@@ -13,7 +13,6 @@ struct Shard {
     coord3d rot;
     coord3d vel;               /* per tick; y falls with gravity */
     coord3d rotvel;
-    u32 unused34;
     Vtx vertices[3];
 };
 

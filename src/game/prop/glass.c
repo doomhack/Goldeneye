@@ -38,6 +38,7 @@
 #define SHARD_LIFETIME 150
 
 static s32 s_MaxShards;
+static s32 s_NumActiveShards; // shards with age > 0, so the per-frame passes can skip an empty pool
 static struct Shard *s_Shards;
 static s32 s_NextShard = 0;
 
@@ -119,6 +120,11 @@ void glassCreateShard(coord3d *pos, f32 angle, f32 size)
     f32 dz = (2.0f * RANDOMFRAC()) - 1.0f;
     s32 i;
 
+    if (shard->age <= 0)
+    {
+        s_NumActiveShards++;
+    }
+
     shard->age = 1;
     shard->pos.x = pos->x;
     shard->pos.y = pos->y;
@@ -182,6 +188,11 @@ void glassTickShards(void)
     s32 i;
     s32 j;
 
+    if (s_NumActiveShards == 0)
+    {
+        return;
+    }
+
     for (i = 0; i < s_MaxShards; i++)
     {
         struct Shard *shard = &s_Shards[i];
@@ -214,6 +225,11 @@ void glassTickShards(void)
         {
             shard->age = 0;
         }
+
+        if (shard->age == 0)
+        {
+            s_NumActiveShards--;
+        }
     }
 }
 
@@ -224,6 +240,8 @@ Gfx *glassRenderShards(Gfx *gdl)
 {
     Mtxf mtxf;
     s32 i;
+    // With no shards out there's nothing to find, so skip walking the whole pool.
+    s32 count = s_NumActiveShards != 0 ? s_MaxShards : 0;
 
     texSelect(&gdl, g_ImageGlassOverlay + 1, TEXBLEND_TRANSLUCENT, TEXZBUF_ON, 2);
 
@@ -235,7 +253,7 @@ Gfx *glassRenderShards(Gfx *gdl)
     gSPSetGeometryMode(gdl++, G_LIGHTING | G_TEXTURE_GEN);
     gSPMatrix(gdl++, osVirtualToPhysical(camGetProjViewMtx()), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
 
-    for (i = 0; i < s_MaxShards; i++)
+    for (i = 0; i < count; i++)
     {
         struct Shard *shard = &s_Shards[i];
 
@@ -290,6 +308,7 @@ void glassInitShards(void)
     }
 
     s_NextShard = 0;
+    s_NumActiveShards = 0;
 }
 
 /**
@@ -303,4 +322,6 @@ void glassResetShards(void)
     {
         s_Shards[i].age = 0;
     }
+
+    s_NumActiveShards = 0;
 }

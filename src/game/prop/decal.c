@@ -108,10 +108,6 @@ void scorchCreate(coord3d *pos, f32 size, s16 room)
     s16 t[4] = { g_ImageGeneric->width << 5, 0, 0, g_ImageGeneric->height << 5 };
 
     scorch->room = room;
-    scorch->pos.f[0] = pos->f[0];
-    scorch->pos.f[1] = pos->f[1];
-    scorch->pos.f[2] = pos->f[2];
-    scorch->size = size;
 
     for (i = 0; i < 4; i++)
     {
