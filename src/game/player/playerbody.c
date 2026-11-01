@@ -957,10 +957,15 @@ Gfx *playerRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
     if (chr != NULL)
     {
         // Co-op: players are hidden from each other while they overlap at a
-        // shared spawn, then fade in (coopPartnerVisibility)
+        // shared spawn, then fade in (coopPartnerVisibility). Not in cutscenes
+        // such as the intro swirl, which show the player's own body.
         u8 fadealpha = chr->fadealpha;
 
-        chr->fadealpha = (u8)(fadealpha * coopPartnerVisibility());
+        if (!g_CoopSoloViewIsCinema && (playerGetIndexForProp(prop) != playerGetCurrentNum()))
+        {
+            chr->fadealpha = (u8)(fadealpha * coopPartnerVisibility());
+        }
+
         gdl = chrRenderProp(prop, gdl, withalpha);
         chr->fadealpha = fadealpha;
     }
