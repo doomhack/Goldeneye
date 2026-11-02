@@ -4172,11 +4172,9 @@ typedef enum PROJECTILES
 
 #pragma endregion
 
-#if !defined(VERSION_EU)
+/* PAL cut this to 139 (Dam's room table fills it exactly) to fit 4MB; with the
+   Expansion Pak all versions use the NTSC size. */
 #define MAXROOMCOUNT    150
-#else
-#define MAXROOMCOUNT    139
-#endif
 
 
 /* special chr num IDs */
