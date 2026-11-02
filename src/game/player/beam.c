@@ -454,11 +454,11 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode)
 
             gSPVertex(gdl++, osVirtualToPhysical(vtx), 8, 0);
 
-            gSP4Triangles(gdl++, 4, 5, 6, 4, 5, 7, 0, 0, 0, 0, 0, 0);
+            gSP2Triangles(gdl++, 4, 5, 6, 0, 4, 5, 7, 0);
 
             texSelect(&gdl, image, TEXBLEND_CLOUD, zbufferMode, 2);
 
-            gSP4Triangles(gdl++, 0, 2, 3, 0, 3, 1, 0, 0, 0, 0, 0, 0);
+            gSP2Triangles(gdl++, 0, 2, 3, 0, 0, 3, 1, 0);
         }
         else
         {
@@ -466,7 +466,7 @@ Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode)
 
             gSPVertex(gdl++, osVirtualToPhysical(vtx), 4, 0);
 
-            gSP4Triangles(gdl++, 0, 2, 3, 0, 3, 1, 0, 0, 0, 0, 0, 0);
+            gSP2Triangles(gdl++, 0, 2, 3, 0, 0, 3, 1, 0);
         }
     }
 

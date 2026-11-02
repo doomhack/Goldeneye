@@ -1,8 +1,11 @@
 # bg
 
 # Pattern rules for building .seg files from .bin files
+# (F3DEX3 builds every level that has a .c from it, as its display lists are converted)
+ifneq ($(UCODE), f3dex3)
 $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.seg: $(OBSEG_DIR)/bg/$(COUNTRYCODE)/%.bin
 	@cp -f $< $@
+endif
 
 $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.seg: $(OBSEG_DIR)/bg/%.bin
 	@cp -f $< $@
@@ -19,11 +22,24 @@ $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.elf: $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.o
 	$(LD) -T assets/obseg/bg/bg_all_p.ld -o $@ $<
 
 # Build .o from .c (country-specific and generic)
+ifeq ($(UCODE), f3dex3)
+# The room display lists are converted from Fast3D to F3DEX3 into a copy of the .c
+BG_F3DEX3_INCLUDES := -I$(OBSEG_DIR)/bg/$(COUNTRYCODE) -I$(OBSEG_DIR)/bg
+
+$(BUILD_DIR)/$(OBSEG_DIR)/bg/%.f3dex3.c: $(OBSEG_DIR)/bg/$(COUNTRYCODE)/%.c tools/f3dex3_bg.py
+	@mkdir -p $(@D)
+	python3 tools/f3dex3_bg.py $< $@
+
+$(BUILD_DIR)/$(OBSEG_DIR)/bg/%.f3dex3.c: $(OBSEG_DIR)/bg/%.c tools/f3dex3_bg.py
+	@mkdir -p $(@D)
+	python3 tools/f3dex3_bg.py $< $@
+else
 $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.o: $(OBSEG_DIR)/bg/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.o: $(OBSEG_DIR)/bg/$(COUNTRYCODE)/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
+endif
 
 # List of segment names (from LEVELNAMELIST)
 BG_SEG_NAMES = $(foreach lvl,$(LEVELNAMELIST),bg_$(lvl)_all_p)
@@ -33,6 +49,12 @@ BG_O_FILES := $(foreach name,$(BG_SEG_NAMES),$(BUILD_DIR)/$(OBSEG_DIR)/bg/$(name
 BG_BIN_FILES := $(foreach name,$(BG_SEG_NAMES),$(BUILD_DIR)/$(OBSEG_DIR)/bg/$(name).bin)
 BG_ELF_FILES := $(foreach name,$(BG_SEG_NAMES),$(BUILD_DIR)/$(OBSEG_DIR)/bg/$(name).elf)
 BG_SEG_FILES := $(foreach name,$(BG_SEG_NAMES),$(BUILD_DIR)/$(OBSEG_DIR)/bg/$(name).seg)
+
+ifeq ($(UCODE), f3dex3)
+# A static pattern rule, so it wins over the rule for assets/%.c in the main Makefile
+$(BG_O_FILES): $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.o: $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.f3dex3.c
+	$(CC) -c $(CFLAGS) $(BG_F3DEX3_INCLUDES) -o $@ $<
+endif
 
 BG_BUILD_FILES := $(BG_O_FILES) $(BG_BIN_FILES) $(BG_ELF_FILES) $(BG_SEG_FILES)
 

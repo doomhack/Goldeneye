@@ -5,6 +5,7 @@
  * level start (playerInitHands). See docs/subsystems/player.md.
  */
 #include <ultra64.h>
+#include <gbi_extension.h>
 #include <memp.h>
 #include <fr.h>
 #include <random.h>
@@ -375,12 +376,12 @@ void playerInit(s32 player_num)
     for (i = 0; i < 2; i++)
     {
         g_playerPointers[player_num]->viewports[i].vp.vscale[0] = 0x280;
-        g_playerPointers[player_num]->viewports[i].vp.vscale[1] = DEFAULT_VIEWPORT_V_VAL;
-        g_playerPointers[player_num]->viewports[i].vp.vscale[2] = 0x1FF;
+        g_playerPointers[player_num]->viewports[i].vp.vscale[1] = GE_VP_YSCALE(DEFAULT_VIEWPORT_V_VAL);
+        g_playerPointers[player_num]->viewports[i].vp.vscale[2] = GE_VP_ZHALF;
         g_playerPointers[player_num]->viewports[i].vp.vscale[3] = 0;
         g_playerPointers[player_num]->viewports[i].vp.vtrans[0] = 0x280;
         g_playerPointers[player_num]->viewports[i].vp.vtrans[1] = DEFAULT_VIEWPORT_V_VAL;
-        g_playerPointers[player_num]->viewports[i].vp.vtrans[2] = 0x1FF;
+        g_playerPointers[player_num]->viewports[i].vp.vtrans[2] = GE_VP_ZHALF;
         g_playerPointers[player_num]->viewports[i].vp.vtrans[3] = 0;
     }
 

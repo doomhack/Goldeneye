@@ -19,6 +19,7 @@
 #include "game/world/roommtx.h"
 #include "game/player/camview.h"
 #include "game/level/gamemode.h"
+#include <gbi_extension.h>
 
 s32 cameraBufferToggle = 0;
 
@@ -788,7 +789,7 @@ void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
         cam_look_dir->x, cam_look_dir->y, cam_look_dir->z,
         cam_up->x, cam_up->y, cam_up->z);
 
-    guLookAtReflect(&lookatmtx, lookat,
+    geLookAtReflect(&lookatmtx, lookat,
         scaledpos.x, scaledpos.y, scaledpos.z,
         clpos.x, clpos.y, clpos.z,
         cam_up->x, cam_up->y, cam_up->z);

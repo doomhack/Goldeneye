@@ -2,7 +2,10 @@
 #    define _GBI_EXT_H_
 #include <PR/gbi.h>
 
+/* GE's Fast3D has G_TRI4 (4 triangles in one command); F3DEX3 has G_TRI2 instead */
+#ifndef UCODE_F3DEX3
 #define TRI4_Ext
+#endif
 
 /**
  * This file should contain most of the extensions to gbi avoiding loosing
@@ -47,7 +50,36 @@ typedef enum
 
 #ifdef TRI4_Ext
 #    define G_TRI4 (G_IMMFIRST - 14)
-#    define G_SETTEX 0xc0 /*   0 */
+#endif
+
+/* Viewport (Vp) Y scale and Z scale/translation: F3DEX3 wants Y negated and a bigger Z range */
+#ifdef UCODE_F3DEX3
+#define GE_VP_YSCALE(s) (-(s))
+#define GE_VP_ZHALF     (G_NEW_MAXZ / 2)
+#else
+#define GE_VP_YSCALE(s) (s)
+#define GE_VP_ZHALF     (G_MAXZ / 2)
+#endif
+
+/* GE's texture command, replaced with real ones when a display list is loaded (texcmds.c) */
+#define G_SETTEX 0xc0
+
+#ifdef UCODE_F3DEX3
+/*
+ * gsSP4Triangles for F3DEX3: two commands, each a G_TRI2, a G_TRI1 or a no-op, so that
+ * triangles whose three indices are all 0 are left out as G_TRI4 does.
+ */
+#define GE_TRI_EMPTY(x, y, z) ((((x) | (y) | (z))) == 0)
+#define GE_TRIPAIR_W0(x1, y1, z1, x2, y2, z2)                                               \
+    (GE_TRI_EMPTY(x1, y1, z1)                                                               \
+         ? (GE_TRI_EMPTY(x2, y2, z2) ? _SHIFTL(G_SPNOOP, 24, 8)                             \
+                                     : (_SHIFTL(G_TRI1, 24, 8) | __gsSP1Triangle_w1(x2, y2, z2))) \
+         : (_SHIFTL(GE_TRI_EMPTY(x2, y2, z2) ? G_TRI1 : G_TRI2, 24, 8) | __gsSP1Triangle_w1(x1, y1, z1)))
+#define GE_TRIPAIR_W1(x1, y1, z1, x2, y2, z2) \
+    ((GE_TRI_EMPTY(x1, y1, z1) || GE_TRI_EMPTY(x2, y2, z2)) ? 0 : __gsSP1Triangle_w1(x2, y2, z2))
+#define gsSP4Triangles(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4)    \
+    { GE_TRIPAIR_W0(x1, y1, z1, x2, y2, z2), GE_TRIPAIR_W1(x1, y1, z1, x2, y2, z2) }, \
+    { GE_TRIPAIR_W0(x3, y3, z3, x4, y4, z4), GE_TRIPAIR_W1(x3, y3, z3, x4, y4, z4) }
 #endif
 
 /* Fade Modes ... for GE? */
@@ -152,6 +184,7 @@ typedef enum
 	gSP4Triangles(pkt, x1, y1, z1, x2, y2, z2, 0, 0, 0, 0, 0, 0)
 #define gsSP2Triangles(x1, y1, z1, flag0, x2, y2, z2, flag1) \
 	gsSP4Triangles(x1, y1, z1, x2, y2, z2, 0, 0, 0, 0, 0, 0)
+#endif /* TRI4_Ext */
 
 
 #define	gDPLoadTLUT06(pkt, a, b, c, d)				                                        \
@@ -207,7 +240,6 @@ typedef enum
     }                                                \
 }
 
-#endif
 
 /**
  * Like gDPSetPrimColor, but is useful when the input colour is already in
@@ -226,5 +258,34 @@ typedef enum
 #define gDPSetFogColorViaWord(pkt, rgba) gDPSetColor(pkt, G_SETFOGCOLOR, rgba)
 
 
+
+/*
+ * guLookAtReflect for the game's LookAt. libultra writes Fast3D's layout (two 16 byte
+ * lights, direction at byte 8 of each); F3DEX3's is two 4 byte directions.
+ */
+#ifdef UCODE_F3DEX3
+#include <PR/gu.h>
+static inline void geLookAtReflect(Mtx *m, LookAt *l, float xEye, float yEye, float zEye,
+                                   float xAt, float yAt, float zAt, float xUp, float yUp, float zUp)
+{
+    union {
+        long long int align;
+        signed char bytes[32];
+    } fast3d;
+
+    guLookAtReflect(m, (LookAt *)&fast3d, xEye, yEye, zEye, xAt, yAt, zAt, xUp, yUp, zUp);
+
+    for (int i = 0; i < 3; i++)
+    {
+        l->l[0].l.dir[i] = fast3d.bytes[8 + i];
+        l->l[1].l.dir[i] = fast3d.bytes[24 + i];
+    }
+
+    l->l[0].l.pad1 = 0;
+    l->l[1].l.pad1 = 0;
+}
+#else
+#define geLookAtReflect guLookAtReflect
+#endif
 
 #endif

@@ -18,3 +18,8 @@ It builds the NTSC (US) and PAL (EU) versions. Assets are extracted from these o
 * [Setup Guide:](./docs/SetupGuide.md) useful information about installing the necessary dependencies and how to use it
 * [Structure Guide:](./docs/StructureGuide.md) learn more about the project structure of this repository
 * [Style Guide:](./docs/StyleGuide.md) code style conventions if you want to contribute code
+
+## Credits
+
+* F3DEX3 Microcode - Sauraen ([HackerN64/F3DEX3](https://github.com/HackerN64/F3DEX3)), used by
+  `make UCODE=f3dex3`. See [rsp/f3dex3](./rsp/f3dex3/README.md).

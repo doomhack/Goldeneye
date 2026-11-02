@@ -1695,8 +1695,8 @@ Gfx DL_LUT_BILLBOARD[] = {
 
 //water
 Gfx DL_LUT_WATER[] = {
-    {{0xB900031D, 0x00552078}}, {{0xB900031D, 0x00502078}},
-    {{0xB900031D, 0x0C192078}}, {{0xB900031D, 0x0C182078}},
+    gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x00552078), gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x00502078),
+    gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x0C192078), gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x0C182078),
     /*
     //1 Cycle Opa to Particle
     gsDPSetRenderMode(RM_AA_ZB_OPA_SURF, RM_AA_ZB_OPA_SURF2), gDPSetRenderMode(G_RM_AA_ZB_PCL_SURF, G_RM_AA_ZB_PCL_SURF2),
@@ -1716,8 +1716,8 @@ Gfx DL_LUT_CLOUD[] = {
 Gfx DL_LUT_WALLETBOND[] = {
     gsDPSetCycleType(G_CYC_1CYCLE),
     gsDPSetCycleType(G_CYC_2CYCLE), //1Cycle --> 2Cycle
-    {{0xB900031D, 0x00502048}},
-    {{0xB900031D, 0x08D02048}},
+    gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x00502048),
+    gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x08D02048),
     gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE,  TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE),
     gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE,  0, 0, 0, COMBINED,  0, 0, 0, COMBINED),
     /*

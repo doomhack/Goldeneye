@@ -10,12 +10,23 @@
 
 .section .text, "ax"
 glabel gsp3DTextStart
+.ifdef UCODE_F3DEX3
+# F3DEX3 (rsp/f3dex3/README.md)
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC.code"
+.else
 .incbin "bin/gspboot.text.bin"
+.endif
 glabel gsp3DTextEnd
+.balign 16
 
 .section .data
 glabel gsp3DDataStart
+.ifdef UCODE_F3DEX3
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC.data"
+.else
 .incbin "bin/gspboot.data.bin"
+.endif
 glabel gsp3DDataEnd
+.balign 16
 .section .rodata
 .section .bss

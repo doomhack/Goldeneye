@@ -1738,7 +1738,7 @@ Gfx *frontLogoRender(Gfx *DL)
     DL = viFillScreen(DL);
 
     logoLookAt = (LookAt *)dynAllocateLights(2);
-    guLookAtReflect(&logoReflectMtx, logoLookAt, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    geLookAtReflect(&logoReflectMtx, logoLookAt, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
     // Lights macro? These need to be on one line.
     gSPNumLights(DL++, 1); \
@@ -8327,7 +8327,7 @@ Gfx *frontCastRender(Gfx *DL)
  
     light = dynAllocateLights(2);
  
-    guLookAtReflect(&lookatmtx, (LookAt *)light, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    geLookAtReflect(&lookatmtx, (LookAt *)light, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
  
     gSPNumLights(DL++, 1); \
     gSPLight(DL++, &g_FrontLogoLight.l[0], 1); \
