@@ -282,6 +282,11 @@ volatile u32 g_PerfGfxStart;
 volatile u32 g_PerfRspSum;
 volatile u32 g_PerfRdpSum;
 volatile u32 g_PerfGfxTasks;
+/* The RDP's own counters (RCP cycles), summed over graphics tasks: busy with
+   commands, with the pixel pipeline, and with texture memory (TMEM) loads */
+volatile u32 g_PerfRdpCmdSum;
+volatile u32 g_PerfRdpPipeSum;
+volatile u32 g_PerfRdpTmemSum;
 
 void __scHandleRSP(OSSched *sc) {
     OSScTask *t, *sp = 0, *dp = 0;
@@ -323,6 +328,9 @@ void __scHandleRDP(OSSched *sc)
     if (sc->curRDPTask != NULL) {
         osDpGetCounters(g_DisplayPerformanceCounters);
         g_PerfRdpSum += osGetCount() - g_PerfGfxStart;
+        g_PerfRdpCmdSum += g_DisplayPerformanceCounters[1];
+        g_PerfRdpPipeSum += g_DisplayPerformanceCounters[2];
+        g_PerfRdpTmemSum += g_DisplayPerformanceCounters[3];
         g_PerfGfxTasks++;
         t = sc->curRDPTask;
         sc->curRDPTask = NULL;

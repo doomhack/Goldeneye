@@ -394,6 +394,8 @@ static u32 s_FpsLastTasks;
 static s32 s_FpsCpuMs;
 static s32 s_FpsRspMs;
 static s32 s_FpsRdpMs;
+static u32 s_FpsLastRdpCounters[3];
+static s32 s_FpsRdpTenths[3]; /* RDP busy with commands, pipeline, TMEM: tenths of a ms per task */
 #ifdef UCODE_F3DEX3
 static u32 s_FpsLastCounterSums[RSP_PROFILE_COUNT][RSPCOUNT_MAX];
 static u32 s_FpsLastCounterTasks[RSP_PROFILE_COUNT];
@@ -409,7 +411,7 @@ static s32 s_FpsCountersMode;
  */
 static Gfx *lvRenderFpsCounter(Gfx *DL)
 {
-    char text[160];
+    char text[200];
     s32 x;
     s32 y;
     s32 width;
@@ -439,6 +441,17 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
         s_FpsLastRdp = rdp;
         s_FpsLastTasks = tasks;
 
+        {
+            // The RDP's counters run at the RCP clock, 62.5 MHz: 6250 cycles is a tenth of a ms
+            u32 rdpCounters[3] = { g_PerfRdpCmdSum, g_PerfRdpPipeSum, g_PerfRdpTmemSum };
+
+            for (s32 i = 0; i < 3; i++)
+            {
+                s_FpsRdpTenths[i] = (ntasks != 0) ? (rdpCounters[i] - s_FpsLastRdpCounters[i]) / 6250 / ntasks : 0;
+                s_FpsLastRdpCounters[i] = rdpCounters[i];
+            }
+        }
+
 #ifdef UCODE_F3DEX3
         {
             s32 mode = g_RspProfileMode;
@@ -459,7 +472,10 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
 #endif
     }
 
-    s32 len = sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs);
+    s32 len = sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d.%d TMEM %d.%d CMD %d.%d\n",
+        s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs,
+        s_FpsRdpTenths[1] / 10, s_FpsRdpTenths[1] % 10, s_FpsRdpTenths[2] / 10, s_FpsRdpTenths[2] % 10,
+        s_FpsRdpTenths[0] / 10, s_FpsRdpTenths[0] % 10);
 
 #ifdef UCODE_F3DEX3
     // F3DEX3's counters, per task. Cycles are RCP cycles at 62.5 MHz, shown in
