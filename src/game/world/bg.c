@@ -99,6 +99,7 @@ extern s_bound_info g_BgRoomsDrawn[];
 
 /* PAL halved this to fit 4MB; with the Expansion Pak all versions use the NTSC size. */
 #define BG_PORTAL_QUEUE_LEN 500
+/* Rooms each view can draw per frame. PAL had 124 (120 used); all versions now use the NTSC size. */
 #define BG_ROOMS_DRAWN_LEN 204
 
 // bss
@@ -113,11 +114,7 @@ s32 g_StanData;
 s32 g_BgSingleDl;
 s32 g_BgFormat;
 
-#ifdef VERSION_EU
-char list_visible_rooms_in_cur_global_vis_packet[0x8c];
-#else
-char list_visible_rooms_in_cur_global_vis_packet[0x98];
-#endif
+char list_visible_rooms_in_cur_global_vis_packet[MAXROOMCOUNT + 2];
 
 s32 num_visible_rooms_in_cur_global_vis_packet;
 
@@ -347,8 +344,8 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
 
 #if defined(VERSION_EU)
     i = g_BgNumberOfRoomsDrawn;
-    if (i >= 0x78) {
-        i = 0x77;
+    if (i >= BG_ROOMS_DRAWN_LEN) {
+        i = BG_ROOMS_DRAWN_LEN - 1;
     }
     g_BgRoomsDrawn[i].roomid = curroom;
     g_BgRoomsDrawn[i].depth = unk1;
@@ -358,7 +355,7 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
     g_BgRoomsDrawn[i].bbox.max.y = screensize->max.y;
     g_BgRoomsDrawn[i].next = next;
     g_BgRoomsDrawnCount++;
-    if (g_BgRoomsDrawnCount < 0x78) {
+    if (g_BgRoomsDrawnCount < BG_ROOMS_DRAWN_LEN) {
         g_BgNumberOfRoomsDrawn = g_BgRoomsDrawnCount;
     }
 
@@ -1670,11 +1667,7 @@ bg_room_data *g_BgRoomFiles;
 GlobalVisCommand *g_BgVisCommands;
 f32 *g_BgRoomValues;
 
-#ifdef VERSION_EU
-s_bound_info g_BgRoomsDrawn[124];
-#else
 s_bound_info g_BgRoomsDrawn[BG_ROOMS_DRAWN_LEN];
-#endif
 
 /* Portals visited this frame (counted, never read) */
 s32 g_BgPortalVisits = 0;
@@ -3750,9 +3743,6 @@ void bgDetermineVisibleRooms(void)
 
     g_BgRoomLoadSlot = (s32) (g_BgRoomLoadSlot + 1) % 10;
 
-#if !defined(VERSION_US)
-    *(s32 *) &g_BgRoomsDrawn[120] = 0;
-#endif
     g_BgPortalVisits = 0;
 
     bgResetPortalQueue();
