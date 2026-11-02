@@ -2370,7 +2370,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiDoorCloseRecord *ai  = (AiDoorCloseRecord *)(AiListp + Offset);
                     DoorRecord        *obj = (DoorRecord *)objFindByTagId(ai->OBJECT_TAG);
-                    if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR)
+                    if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR && !coopDoorKeptOpen(obj))
                     {
                         // DoorRecord *door = (DoorRecord *)obj;
                         doorMove(obj, DOORSTATE_CLOSING);
@@ -2434,7 +2434,8 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiDoorSetLockRecord *ai  = (AiDoorSetLockRecord *)(AiListp + Offset);
                     ObjectRecord        *obj = objFindByTagId(ai->OBJECT_TAG);
-                    if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR)
+                    if (obj && obj->prop && obj->prop->type == PROP_TYPE_DOOR
+                        && !coopDoorKeptOpen((DoorRecord *)obj))
                     {
                         DoorRecord *door = (DoorRecord *)obj;
                         u8          bits = ai->LOCK_FLAG;

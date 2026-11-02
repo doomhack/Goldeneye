@@ -16,7 +16,7 @@ character is a "chr", and its record is a `ChrRecord`.
 | `src/game/chr/chrsight.c` | What guards see and hear, and in co-op which player each one is after |
 | `src/game/chr/chrscript.c` | The chr side of the AI commands: finding chrs and pads by script ids (`chrFindById`, `chrResolvePadId`), distances, angles and room checks, flags, presets, spawning guards (`chrSpawnAtPad`, `chrSpawnAtChr`), and the `chrTry*` actions that fail if the guard is dead or hit |
 | `src/game/chr/chrai.c` | The AI script interpreter (`aiRunList`), `aiCommandSize` and the AI sound slots |
-| `src/game/chr/chraicoop.c` | Co-op and counter-op in AI scripts: re-running commands that look at "Bond" for each player, who level-script messages go to, Bond-only doors |
+| `src/game/chr/chraicoop.c` | Co-op and counter-op in AI scripts: re-running commands that look at "Bond" for each player, who level-script messages go to, Bond-only doors (counter-op), doors kept open for respawns (co-op) |
 | `src/game/chr/chraidata.c` | The global AI scripts, shared by every level |
 | `src/game/chr/body.c` | Bodies and heads: loading them and building a chr's model, random heads |
 
