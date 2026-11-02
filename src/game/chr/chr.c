@@ -929,8 +929,12 @@ s32 chrTick(PropRecord *prop)
     // actions and animation must only advance on the first pass, or guards
     // run, aim and shoot twice as fast. The later pass doesn't update the
     // animation at all: with no time passing it would only redo the same
-    // position, room and shading work.
-    coopRepeat = gameIsTwoPlayerMission() && (prop->type == PROP_TYPE_CHR)
+    // position, room and shading work. The same goes for a player's body
+    // while a script animates it: both views are drawn as a cutscene fades
+    // in, and a body that animated twice as fast for those frames ended up
+    // ahead of the helicopter it hangs from in Cradle's ending.
+    coopRepeat = gameIsTwoPlayerMission()
+        && ((prop->type == PROP_TYPE_CHR) || (prop->type == PROP_TYPE_VIEWER))
         && (playerGetShuffledIndex(playerGetCurrentNum()) != 0);
 
     if (coopRepeat)
