@@ -1093,21 +1093,12 @@ Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bott
 
     // The screen box rooms are clipped to stays 1 pixel inside the framebuffer (stock
     // bgViewRelated, which the game logic depends on through room visibility). Draw up to
-    // the framebuffer's edge anyway: otherwise its outer rows and columns are left to the
-    // sky, which under F3DEX3 showed as a line along the top of the screen.
-    if (left <= bgViewRelated[0])
-    {
-        left = 0;
-    }
-
+    // the framebuffer's top and bottom rows anyway: otherwise they are left to the sky,
+    // which under F3DEX3 showed as a line along the top of the screen. (Widening the
+    // scissor sideways as well put a line along the top of the NTSC picture on hardware.)
     if (top <= bgViewRelated[1])
     {
         top = 0;
-    }
-
-    if (right >= viGetX() + bgViewRelated[2])
-    {
-        right = viGetX();
     }
 
     if (bottom >= viGetY() + bgViewRelated[3])

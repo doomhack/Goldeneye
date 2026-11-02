@@ -537,6 +537,11 @@ static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf
     modelview = dynAllocateMatrix();
     guMtxIdent(modelview);
 
+    // The planes reach SKY_SCREEN_MARGIN past the view: keep that out of the black bands
+    // round it (above and below the picture on NTSC, between the co-op views)
+    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, VI_SX(viGetViewLeft()), viGetViewTop(),
+            VI_SX(viGetViewLeft() + viGetViewWidth()), viGetViewTop() + viGetViewHeight());
+
     gSPMatrix(gdl++, osVirtualToPhysical(modelview), G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
     gSPClearGeometryMode(gdl++, G_CULL_BOTH | G_FOG | G_LIGHTING | G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR);
     gSPSetGeometryMode(gdl++, G_SHADE | G_SHADING_SMOOTH);
@@ -569,8 +574,12 @@ static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf
     }
 
     gdl = skyLoadProjection(gdl, &full, &pieces[4], &counts[4], 1, originPos, posDiv);
+    gdl = skyDrawPiece(gdl, pieces[4], counts[4], originPos, posDiv, originSt, 1.0f);
 
-    return skyDrawPiece(gdl, pieces[4], counts[4], originPos, posDiv, originSt, 1.0f);
+    // Back to the whole framebuffer, as viSetupScreensForNumPlayers left it
+    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
+
+    return gdl;
 }
 
 /** skyDrawPlane's retile for the clouds: the tiles texSelect sets, scaled */
