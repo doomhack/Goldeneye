@@ -617,6 +617,9 @@ UCODE_ASSET_OBJECTS := $(BUILD_DIR)/src/gspboot.o $(BG_O_FILES) $(ASSET_DATAOBJE
 	$(foreach n,$(CHRNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/chr/$(n)/Model.o) \
 	$(foreach n,$(GUNNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/gun/$(n)/Model.o) \
 	$(foreach n,$(PROPNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/prop/$(n)/Model.o)
+# A level's .seg comes from its .o under F3DEX3 but can be copied from an extracted .bin
+# under Fast3D, so it must be remade on a switch too
+$(BG_SEG_FILES): $(UCODE_STAMP)
 $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(UCODE_ASSET_OBJECTS): $(UCODE_STAMP)
 
 # Header dependencies written by -MMD
