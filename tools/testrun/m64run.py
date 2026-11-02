@@ -149,8 +149,8 @@ def main():
     ap.add_argument('--watch')
     ap.add_argument('--stage', type=int, metavar='LEVELID',
                     help='start this level (a LEVELID number, e.g. 41 = Cradle) solo from the title screen')
-    ap.add_argument('--poke', action='append', default=[], metavar='SYMBOL=VALUE',
-                    help='write a 32-bit value to a global at the first frame (needs --map)')
+    ap.add_argument('--poke', action='append', default=[], metavar='SYMBOL[+OFFSET]=VALUE',
+                    help='write a 32-bit value to a global (plus a byte offset) at the first frame (needs --map)')
     ap.add_argument('--statelog', action='store_true',
                     help='turn on the game\'s state checksums (src/game/replay/testhooks.c) and write '
                          'OUTDIR/state.txt: timer exact coarse, one line per game frame')
@@ -160,6 +160,10 @@ def main():
                     help='what is plugged into each controller (real consoles usually have a pak)')
     ap.add_argument('--demo-shots', default='', metavar='F,F,...',
                     help='with --demo, screenshots at these frames counted from the start of the demo')
+    ap.add_argument('--tick-shots', default='', metavar='T,T,...',
+                    help='screenshots at the first frame g_LvTickCount reaches each of these game frames '
+                         '(needs --map; with --demo, only once the demo plays); unlike --shots or --demo-shots, builds of different speed '
+                         'shoot the same play')
     ap.add_argument('--dumpram-demo', type=int, default=0, metavar='N',
                     help='with --demo, save RDRAM to OUTDIR/demo-ram-K.bin for the first N frames of the demo')
     ap.add_argument('--dumpram', action='store_true',
@@ -188,16 +192,19 @@ def main():
     events = parse_script(args.script) if args.script else []
     shots = {int(s) for s in args.shots.split(',') if s}
     demo_shots = {int(s) for s in args.demo_shots.split(",") if s}
+    tick_shots = sorted(int(s) for s in args.tick_shots.split(',') if s)
     def addr(symbol):
         if not args.map:
             sys.exit(f'--map is needed to find {symbol}')
         return symbol_address(args.map, symbol) & 0x1fffffff
 
     watch_addr = addr(args.watch) if args.watch else None
+    tick_addr = addr('g_LvTickCount') if tick_shots else None
     pokes = []
     for item in args.poke:
         symbol, value = item.split('=')
-        pokes.append((addr(symbol), int(value, 0)))
+        symbol, _, offset = symbol.partition('+')
+        pokes.append((addr(symbol) + int(offset or '0', 0), int(value, 0)))
     if args.stage is not None:
         pokes.append((addr('g_TestForceStage'), args.stage))
     if args.statelog or args.demo is not None:
@@ -327,6 +334,14 @@ def main():
                 base = log_base + (n % 64) * 12
                 state_log.write(f'{word(ram, base)} {word(ram, base + 4):08x} {word(ram, base + 8):08x}\n')
             seen['log'] = count
+        if tick_shots and (args.demo is None or seen['demo']) and word(ram, tick_addr) < tick_shots[0]:
+            # Armed only once the count is below the first shot, so a count left over from the
+            # title screen (before the level resets it) doesn't shoot
+            seen['ticks_armed'] = True
+        if tick_shots and seen.get('ticks_armed') and word(ram, tick_addr) >= tick_shots[0]:
+            while tick_shots and word(ram, tick_addr) >= tick_shots[0]:
+                tick_shots.pop(0)
+            core.CoreDoCommand(M64CMD_TAKE_NEXT_SCREENSHOT, 0, None)
         if args.demo is not None:
             playing = word(ram, demo_flag) != 0
             if playing:
