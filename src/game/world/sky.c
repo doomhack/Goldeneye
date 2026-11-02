@@ -290,6 +290,41 @@ typedef struct SkyPolyVtx
 /** Sets the tiles to draw with texture coordinates scaled up by 2^shift */
 typedef Gfx *(*SkyRetileFunc)(Gfx *gdl, sImageTableEntry *image, s32 shift);
 
+/** Sets a corner's colour from how far it is from the horizon (skyChooseCloudVtxColour etc.) */
+typedef void (*SkyColourFunc)(SkyVtx *vtx, f32 frac);
+
+/**
+ * Sets the colour of each corner of a piece from the direction it's in from the eye, as
+ * skyRender does for the screen's corners. The RDP shades in screen space, as the raw
+ * triangles were, so the corners clipping adds have to be coloured for where they land on
+ * screen: blending the polygon's corners along its edges in world space would give the near
+ * part (a few percent of a plane reaching 300000 units) almost the colour of the near edge.
+ * `elevationSign` is 1 for the clouds (above the eye) and -1 for the water.
+ */
+static void skyColourPiece(SkyPolyVtx *poly, s32 n, const f32 *originPos, f32 elevationSign,
+                           SkyColourFunc colour)
+{
+    for (s32 i = 0; i < n; i++)
+    {
+        f32 dx = poly[i].pos[0] - originPos[0];
+        f32 dy = poly[i].pos[1] - originPos[1];
+        f32 dz = poly[i].pos[2] - originPos[2];
+        f32 elevation = elevationSign * 2.0f * dy / sqrtf(dx * dx + dz * dz + 0.0001f);
+        SkyVtx vtx;
+
+        if (elevation > 1.0f)
+        {
+            elevation = 1.0f;
+        }
+
+        colour(&vtx, 1.0f - elevation);
+
+        poly[i].rgb[0] = vtx.r;
+        poly[i].rgb[1] = vtx.g;
+        poly[i].rgb[2] = vtx.b;
+    }
+}
+
 /**
  * Keeps the part of polygon `in` where sign * (st[axis] - limit) <= 0, in `out`.
  * Returns the number of corners kept.
@@ -445,7 +480,8 @@ static Gfx *skyLoadProjection(Gfx *gdl, const Mtxf *full, SkyPolyVtx (*polys)[SK
  * be set up already; `retile` sets the texture's tiles for the far parts.
  */
 static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf *mtx, f32 scale,
-                         sImageTableEntry *image, SkyRetileFunc retile)
+                         sImageTableEntry *image, SkyRetileFunc retile,
+                         f32 elevationSign, SkyColourFunc colour)
 {
     static const u8 quadorder[4] = {0, 1, 3, 2};
     SkyPolyVtx poly[5];
@@ -559,6 +595,11 @@ static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf
     /* The near part */
     n = skyClipPolygon(strip, n, tmp, 1, 1.0f, eyeSt[1] + SKY_NEAR_RANGE);
     counts[4] = skyClipPolygon(tmp, n, pieces[4], 1, -1.0f, eyeSt[1] - SKY_NEAR_RANGE);
+
+    for (i = 0; i < 5; i++)
+    {
+        skyColourPiece(pieces[i], counts[i], originPos, elevationSign, colour);
+    }
 
     if (counts[0] >= 3 || counts[1] >= 3 || counts[2] >= 3 || counts[3] >= 3)
     {
@@ -1214,7 +1255,8 @@ Gfx *skyRender(Gfx *gdl)
             gDPSetRenderMode(gdl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
 
 #ifdef UCODE_F3DEX3
-            gdl = skyDrawPlane(gdl, waterverts, numverts, &waterMtx, scale, NULL, skyRetileWater);
+            gdl = skyDrawPlane(gdl, waterverts, numverts, &waterMtx, scale, NULL, skyRetileWater,
+                    -1.0f, skyChooseWaterVtxColour);
 #else
             if (numverts == 4)
             {
@@ -1662,7 +1704,8 @@ Gfx *skyRender(Gfx *gdl)
 
 #ifdef UCODE_F3DEX3
         gdl = skyDrawPlane(gdl, skyverts, numverts, &skyMtx, scale,
-                &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->SkyImageId], skyRetileClouds);
+                &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->SkyImageId], skyRetileClouds,
+                1.0f, skyChooseCloudVtxColour);
 #else
         if (numverts == 4)
         {
