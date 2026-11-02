@@ -236,6 +236,20 @@ void skyTick(void)
 
 #ifdef UCODE_F3DEX3
 /*
+ * How far past each edge of the view the sky and water planes are worked out, in pixels.
+ * The RSP projects the corners again and lands them a fraction of a pixel either side of
+ * where the CPU put them. Inside the view, the polygon would only partly cover the view's
+ * top row and left column, which the rooms' scissor leaves to the sky, and the blended
+ * edge shows as a dark line that flickers as the camera bobs. The scissor cuts the overhang
+ * off.
+ */
+#define SKY_SCREEN_MARGIN 1.0f
+#else
+#define SKY_SCREEN_MARGIN 0.0f
+#endif
+
+#ifdef UCODE_F3DEX3
+/*
  * Drawing the sky with F3DEX3.
  *
  * F3DEX3 can't send the RDP raw triangles, so instead of rasterising the cloud and water
@@ -678,10 +692,16 @@ Gfx *skyRender(Gfx *gdl)
     gdl = viSetFillColor(gdl, env->Red, env->Green, env->Blue);
 
 
-    skyGetWorldPosFromScreenPos(0.0f, 0.0f, &tlDir);
-    skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, 0.0f, &trDir);
-    skyGetWorldPosFromScreenPos(0.0f, camGetScreenHeight() - 0.1f, &blDir);
-    skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, camGetScreenHeight() - 0.1f, &brDir);
+    // The corners of the screen the planes are worked out for
+    f32 edgeLeft = -SKY_SCREEN_MARGIN;
+    f32 edgeTop = -SKY_SCREEN_MARGIN;
+    f32 edgeRight = camGetScreenWidth() - 0.1f + SKY_SCREEN_MARGIN;
+    f32 edgeBottom = camGetScreenHeight() - 0.1f + SKY_SCREEN_MARGIN;
+
+    skyGetWorldPosFromScreenPos(edgeLeft, edgeTop, &tlDir);
+    skyGetWorldPosFromScreenPos(edgeRight, edgeTop, &trDir);
+    skyGetWorldPosFromScreenPos(edgeLeft, edgeBottom, &blDir);
+    skyGetWorldPosFromScreenPos(edgeRight, edgeBottom, &brDir);
 
     tlInSky = skyIsScreenCornerInSky(&tlDir, &tlSky, &tlSkyFrac);
     trInSky = skyIsScreenCornerInSky(&trDir, &trSky, &trSkyFrac);
@@ -695,9 +715,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (tlInSky != blInSky)
     {
-        leftHorizonY = camGetScreenTop() + camGetScreenHeight() * (tlDir.f[1] / (tlDir.f[1] - blDir.f[1]));
+        leftHorizonY = camGetScreenTop() + edgeTop + (camGetScreenHeight() + 2 * SKY_SCREEN_MARGIN) * (tlDir.f[1] / (tlDir.f[1] - blDir.f[1]));
 
-        skyGetWorldPosFromScreenPos(0.0f, leftHorizonY - camGetScreenTop(), &leftDir);
+        skyGetWorldPosFromScreenPos(edgeLeft, leftHorizonY - camGetScreenTop(), &leftDir);
         skyCalculateEdgeVertex(&tlDir, &blDir, &leftDir);
         skyIsScreenCornerInSky(&leftDir, &leftSky, &leftSkyFrac);
         skyIsCornerInWater(&leftDir, &leftWater, &leftWaterFrac);
@@ -709,9 +729,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (trInSky != brInSky)
     {
-        rightHorizonY = camGetScreenTop() + camGetScreenHeight() * (trDir.f[1] / (trDir.f[1] - brDir.f[1]));
+        rightHorizonY = camGetScreenTop() + edgeTop + (camGetScreenHeight() + 2 * SKY_SCREEN_MARGIN) * (trDir.f[1] / (trDir.f[1] - brDir.f[1]));
 
-        skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, rightHorizonY - camGetScreenTop(), &rightDir);
+        skyGetWorldPosFromScreenPos(edgeRight, rightHorizonY - camGetScreenTop(), &rightDir);
         skyCalculateEdgeVertex(&trDir, &brDir, &rightDir);
         skyIsScreenCornerInSky(&rightDir, &rightSky, &rightSkyFrac);
         skyIsCornerInWater(&rightDir, &rightWater, &rightWaterFrac);
@@ -723,7 +743,7 @@ Gfx *skyRender(Gfx *gdl)
 
     if (tlInSky != trInSky)
     {
-        skyGetWorldPosFromScreenPos(camGetScreenWidth() * (tlDir.f[1] / (tlDir.f[1] - trDir.f[1])), 0.0f, &topDir);
+        skyGetWorldPosFromScreenPos(edgeLeft + (camGetScreenWidth() + 2 * SKY_SCREEN_MARGIN) * (tlDir.f[1] / (tlDir.f[1] - trDir.f[1])), edgeTop, &topDir);
         skyCalculateEdgeVertex(&tlDir, &trDir, &topDir);
         skyIsScreenCornerInSky(&topDir, &topSky, &topSkyFrac);
         skyIsCornerInWater(&topDir, &topWater, &topWaterFrac);
@@ -731,9 +751,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (blInSky != brInSky)
     {
-        tmp = camGetScreenLeft() + camGetScreenWidth() * (blDir.f[1] / (blDir.f[1] - brDir.f[1]));
+        tmp = camGetScreenLeft() + edgeLeft + (camGetScreenWidth() + 2 * SKY_SCREEN_MARGIN) * (blDir.f[1] / (blDir.f[1] - brDir.f[1]));
 
-        skyGetWorldPosFromScreenPos(tmp - camGetScreenLeft(), camGetScreenHeight() - 0.1f, &bottomDir);
+        skyGetWorldPosFromScreenPos(tmp - camGetScreenLeft(), edgeBottom, &bottomDir);
         skyCalculateEdgeVertex(&blDir, &brDir, &bottomDir);
         skyIsScreenCornerInSky(&bottomDir, &bottomSky, &bottomSkyFrac);
         skyIsCornerInWater(&bottomDir, &bottomWater, &bottomWaterFrac);
