@@ -128,6 +128,15 @@ f32 g_BgLevelScaleInv = 1.0;
 f32 mCurrentLevelVisibilityScale = 1.0;
 s32 levelentry_index = 1;
 
+/**
+ * Something related to player screen.
+ * Maybe x, y, width, height.
+ * DefaultScreenXMin = 1; //always 1 (related to getvideosettings) Xmin
+ * DefaultScreenYMin = 1; //always 1 (related to getvideosettings)Ymin
+ * SubtractFromWidth = -1; //always -1 (related to getvideosettings)
+ * SubtractFromHeight = -1; //always -1 (related to getvideosettings)
+ */
+s32 bgViewRelated[] = { 1, 1, -1, -1 };
 
 
 /**
@@ -1081,6 +1090,30 @@ Gfx* bgScissorCurrentPlayerViewF(Gfx* gdl, f32 left, f32 top, f32 right, f32 bot
 Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bottom)
 {
     struct player *player = g_CurrentPlayer;
+
+    // The screen box rooms are clipped to stays 1 pixel inside the framebuffer (stock
+    // bgViewRelated, which the game logic depends on through room visibility). Draw up to
+    // the framebuffer's edge anyway: otherwise its outer rows and columns are left to the
+    // sky, which under F3DEX3 showed as a line along the top of the screen.
+    if (left <= bgViewRelated[0])
+    {
+        left = 0;
+    }
+
+    if (top <= bgViewRelated[1])
+    {
+        top = 0;
+    }
+
+    if (right >= viGetX() + bgViewRelated[2])
+    {
+        right = viGetX();
+    }
+
+    if (bottom >= viGetY() + bgViewRelated[3])
+    {
+        bottom = viGetY();
+    }
 
     if (left < (s32) player->viewleft)
     {
@@ -3749,29 +3782,65 @@ bool bgRoomsSharePortal(s32 room1, s32 room2)
 }
 
 
-static inline f32 bgClampf(f32 value, f32 min, f32 max)
-{
-    return value < min ? min : value > max ? max : value;
-}
-
-/**
- * Sets the current player's screen box (what the rooms are drawn and portals clipped to)
- * to their view, kept within the framebuffer.
- *
- * Stock GE kept a 1-pixel border round the framebuffer out of it, so the rooms never drew
- * the screen's outer rows and columns and the sky (or the clear) showed there instead. Under
- * F3DEX3 that showed as a line along the top of the screen.
- */
 void bgUpdateCurrentPlayerScreenMinMax(void)
 {
-    f32 width = (f32) viGetX();
-    f32 height = (f32) viGetY();
-    bbox2d *box = &g_CurrentPlayer->screensize;
+    f32 fx;
+    f32 fwidth;
+    f32 fy;
+    f32 fheight;
 
-    box->min.x = bgClampf((f32) viGetViewLeft(), 0.0f, width);
-    box->min.y = bgClampf((f32) viGetViewTop(), 0.0f, height);
-    box->max.x = bgClampf((f32) (viGetViewLeft() + viGetViewWidth()), 0.0f, width);
-    box->max.y = bgClampf((f32) (viGetViewTop() + viGetViewHeight()), 0.0f, height);
+    fx = (f32) bgViewRelated[0];
+    fy = (f32) bgViewRelated[1];
+    fwidth = (f32) viGetX() + (f32) bgViewRelated[2];
+    fheight = (f32) viGetY() + (f32) bgViewRelated[3];
+
+    g_CurrentPlayer->screensize.min.x = (f32) viGetViewLeft();
+
+    if (g_CurrentPlayer->screensize.min.x < fx)
+    {
+        g_CurrentPlayer->screensize.min.x = fx;
+    }
+
+    if (fwidth < g_CurrentPlayer->screensize.min.x)
+    {
+        g_CurrentPlayer->screensize.min.x = fwidth;
+    }
+
+    g_CurrentPlayer->screensize.min.y = (f32) viGetViewTop();
+
+    if (g_CurrentPlayer->screensize.min.y < fy)
+    {
+        g_CurrentPlayer->screensize.min.y = fy;
+    }
+
+    if (fheight < g_CurrentPlayer->screensize.min.y)
+    {
+        g_CurrentPlayer->screensize.min.y = fheight;
+    }
+
+    g_CurrentPlayer->screensize.max.x = (f32) (viGetViewLeft() + viGetViewWidth());
+
+    if (g_CurrentPlayer->screensize.max.x < fx)
+    {
+        g_CurrentPlayer->screensize.max.x = fx;
+    }
+
+    if (fwidth < g_CurrentPlayer->screensize.max.x)
+    {
+        g_CurrentPlayer->screensize.max.x = fwidth;
+    }
+
+    g_CurrentPlayer->screensize.max.y = (f32) (viGetViewTop() + viGetViewHeight());
+
+    if (g_CurrentPlayer->screensize.max.y < fy)
+    {
+        g_CurrentPlayer->screensize.max.y = fy;
+    }
+
+    if (fheight < g_CurrentPlayer->screensize.max.y)
+    {
+        g_CurrentPlayer->screensize.max.y = fheight;
+    }
 }
 
 
