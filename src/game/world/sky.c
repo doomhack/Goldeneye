@@ -269,6 +269,8 @@ typedef struct SkyPolyVtx
 #define SKY_TEX_PERIOD 4096.0f
 
 /* Vertex positions are scaled to fit in this */
+/* The largest clip coordinate to give the RSP (it keeps them as s15.16) */
+#define SKY_CLIP_RANGE 8192.0f
 #define SKY_POS_RANGE 30000.0f
 
 /** Sets the tiles to draw with texture coordinates scaled up by 2^shift */
@@ -368,6 +370,62 @@ static Gfx *skyDrawPiece(Gfx *gdl, const SkyPolyVtx *poly, s32 n, const f32 *ori
 }
 
 /**
+ * Loads `full` as the projection for some polygons (with positions as skyDrawPiece makes
+ * them), scaled down as a whole if their clip coordinates would be too big for the RSP:
+ * F3DEX3 keeps them as s15.16, and the sky reaches far further than anything else. Scaling
+ * x, y, z and w alike leaves the screen positions and depths as they are.
+ */
+static Gfx *skyLoadProjection(Gfx *gdl, const Mtxf *full, SkyPolyVtx (*polys)[SKY_POLY_MAX],
+                              const s32 *counts, s32 numpolys, const f32 *originPos, f32 posDiv)
+{
+    Mtxf scaled = *full;
+    Mtx *projection;
+    f32 maxabs = 1.0f;
+
+    for (s32 p = 0; p < numpolys; p++)
+    {
+        for (s32 i = 0; i < counts[p]; i++)
+        {
+            f32 local[3];
+
+            for (s32 k = 0; k < 3; k++)
+            {
+                local[k] = (polys[p][i].pos[k] - originPos[k]) / posDiv;
+            }
+
+            for (s32 j = 0; j < 4; j++)
+            {
+                f32 c = local[0] * full->m[0][j] + local[1] * full->m[1][j] + local[2] * full->m[2][j] + full->m[3][j];
+
+                if (SKYABS(c) > maxabs)
+                {
+                    maxabs = SKYABS(c);
+                }
+            }
+        }
+    }
+
+    if (maxabs > SKY_CLIP_RANGE)
+    {
+        f32 k = SKY_CLIP_RANGE / maxabs;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            for (s32 j = 0; j < 4; j++)
+            {
+                scaled.m[i][j] *= k;
+            }
+        }
+    }
+
+    projection = dynAllocateMatrix();
+    guMtxF2L(scaled.m, projection);
+    gSPMatrix(gdl++, osVirtualToPhysical(projection), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+
+    return gdl;
+}
+
+/**
  * Draws a cloud or water polygon from skyRender: `numverts` corners (3, 4 or 5; four are a
  * quad in the order 0 1 3 2) in the space `mtx` projects. The texture and render mode must
  * be set up already; `retile` sets the texture's tiles for the far parts.
@@ -390,7 +448,6 @@ static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf
     f32 concavity;
     Mtxf pre;
     Mtxf full;
-    Mtx *projection;
     Mtx *modelview;
     s32 n;
     s32 i;
@@ -463,12 +520,9 @@ static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf
         full.m[i][1] += concavity * full.m[i][3];
     }
 
-    projection = dynAllocateMatrix();
     modelview = dynAllocateMatrix();
-    guMtxF2L(full.m, projection);
     guMtxIdent(modelview);
 
-    gSPMatrix(gdl++, osVirtualToPhysical(projection), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
     gSPMatrix(gdl++, osVirtualToPhysical(modelview), G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
     gSPClearGeometryMode(gdl++, G_CULL_BOTH | G_FOG | G_LIGHTING | G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR);
     gSPSetGeometryMode(gdl++, G_SHADE | G_SHADING_SMOOTH);
@@ -490,6 +544,7 @@ static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf
     if (counts[0] >= 3 || counts[1] >= 3 || counts[2] >= 3 || counts[3] >= 3)
     {
         gdl = retile(gdl, image, SKY_FAR_SHIFT);
+        gdl = skyLoadProjection(gdl, &full, pieces, counts, 4, originPos, posDiv);
 
         for (i = 0; i < 4; i++)
         {
@@ -498,6 +553,8 @@ static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf
 
         gdl = retile(gdl, image, 0);
     }
+
+    gdl = skyLoadProjection(gdl, &full, &pieces[4], &counts[4], 1, originPos, posDiv);
 
     return skyDrawPiece(gdl, pieces[4], counts[4], originPos, posDiv, originSt, 1.0f);
 }

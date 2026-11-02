@@ -41,6 +41,7 @@
 #include "game/model/jointlist.h"
 #include "game/model/modelfile.h"
 #include "game/gfx/dyn.h"
+#include "game/gfx/rsp.h"
 #include "assets/obseg/text/LtitleE.h"
 #include "game/math/matrix.h"
 #include "game/world/bg.h"
@@ -1502,9 +1503,13 @@ Gfx *frontNintendoRender(Gfx *DL)
     DL = screenClearBlack(DL);
 
     // Lights macro? These need to be on one line.
-    gSPNumLights(DL++, 1); \
-    gSPLight(DL++, &g_FrontNintendoLight.l[0], 1); \
-    gSPLight(DL++, &g_FrontNintendoLight, 2);
+    gSPSetLights1(DL++, g_FrontNintendoLight);
+
+#ifdef UCODE_F3DEX3
+    // The logo is environment mapped and relied on Fast3D's default LookAt, which F3DEX3
+    // doesn't have, so set the same one
+    gSPLookAt(DL++, &g_Fast3dDefaultLookAt);
+#endif
 
 #if defined(VERSION_EU)
     // 0x100000000 ? 0xFFFECD34 = 0x132CC (78540 decimal)
@@ -1741,9 +1746,7 @@ Gfx *frontLogoRender(Gfx *DL)
     geLookAtReflect(&logoReflectMtx, logoLookAt, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 
     // Lights macro? These need to be on one line.
-    gSPNumLights(DL++, 1); \
-    gSPLight(DL++, &g_FrontLogoLight.l[0], 1); \
-    gSPLight(DL++, &g_FrontLogoLight, 2);
+    gSPSetLights1(DL++, g_FrontLogoLight);
 
     // gSPLookAt macro expands to gSPLookAtX + gSPLookAtY
     gSPLookAt(DL++, logoLookAt);
@@ -8329,9 +8332,7 @@ Gfx *frontCastRender(Gfx *DL)
  
     geLookAtReflect(&lookatmtx, (LookAt *)light, 0.0f, 0.0f, 4000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
  
-    gSPNumLights(DL++, 1); \
-    gSPLight(DL++, &g_FrontLogoLight.l[0], 1); \
-    gSPLight(DL++, &g_FrontLogoLight, 2);
+    gSPSetLights1(DL++, g_FrontLogoLight);
  
     gSPLookAt(DL++, light);
  

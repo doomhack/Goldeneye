@@ -39,6 +39,12 @@ extern long long int rspbootTextEnd[];
 extern long long int gsp3DTextStart[];
 extern long long int gsp3DDataStart[];
 
+#ifdef UCODE_F3DEX3
+LookAt g_Fast3dDefaultLookAt = {
+    .l = { { .l = { .dir = { 0, 127, 0 } } }, { .l = { .dir = { 127, 0, 0 } } } },
+};
+#endif
+
 void rspAllocateBuffers(void)
 {
     s_RdpOutputBuffer = mempAlloc(RDP_OUTPUT_BUFFER_SIZE, MEMPOOL_PERMANENT);

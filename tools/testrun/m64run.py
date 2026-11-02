@@ -147,6 +147,8 @@ def main():
                     help='hle = high-level RSP (Fast3D only); cxd4 or z64 = low-level RSP that runs the real microcode')
     ap.add_argument('--map')
     ap.add_argument('--watch')
+    ap.add_argument('--stage', type=int, metavar='LEVELID',
+                    help='start this level (a LEVELID number, e.g. 41 = Cradle) solo from the title screen')
     ap.add_argument('--poke', action='append', default=[], metavar='SYMBOL=VALUE',
                     help='write a 32-bit value to a global at the first frame (needs --map)')
     ap.add_argument('--statelog', action='store_true',
@@ -196,6 +198,8 @@ def main():
     for item in args.poke:
         symbol, value = item.split('=')
         pokes.append((addr(symbol), int(value, 0)))
+    if args.stage is not None:
+        pokes.append((addr('g_TestForceStage'), args.stage))
     if args.statelog or args.demo is not None:
         pokes.append((addr('g_TestHooksEnabled'), 1))
     if args.demo is not None:
