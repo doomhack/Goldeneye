@@ -11,11 +11,12 @@
 #include "game/world/roommtx.h"
 #include "game/math/matrix.h"
 
-#ifdef VERSION_EU
-#define AMT300 100
-#else
+// The original PAL game only had room for 100 matrices. Co-op needs up to
+// four per visible room (each view builds its own, and last frame's are kept
+// until the RSP is done with them), and the walk up to Cradle's platform
+// already reaches 93. A full cache hands out matrix 0 again while it is still
+// in use, which draws rooms in the wrong place, so PAL now has as many as US.
 #define AMT300 300
-#endif
 
 // bss
 u8 g_RoomMtxAge[AMT300];
