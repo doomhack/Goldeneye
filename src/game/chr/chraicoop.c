@@ -320,23 +320,18 @@ void aiForObject(PropDefHeaderRecord *Entityp)
 }
 
 /**
- * Counter-op: doors whose opening is progress for Bond, so the guard player
- * can't open them. Other doors level scripts watch (lifts driving floor
- * monitors, ending cutscenes, guard ambushes) stay open to them.
+ * A door from a per-level table (stage, object tag).
  */
-static const struct
+struct CoopDoorTag
 {
     s16 stage;
     u8 tag;
-} s_CounterOpBondOnlyDoors[] = {
-    { LEVELID_DEPOT, 0x06 }, // Trevelyan's train: opening it completes "Locate Trevelyan's train"
 };
 
 /**
- * Counter-op: TRUE if this door, or a door linked to it, is one the guard
- * player can't open (see s_CounterOpBondOnlyDoors).
+ * TRUE if this door, or a door linked to it, is in the table for the current stage.
  */
-s32 counterOpDoorIsScripted(DoorRecord *door)
+static s32 coopDoorInTable(DoorRecord *door, const struct CoopDoorTag *table, s32 count)
 {
     s32 stage = bossGetStageNum();
     DoorRecord *cur = door;
@@ -344,10 +339,9 @@ s32 counterOpDoorIsScripted(DoorRecord *door)
 
     do
     {
-        for (i = 0; i < (s32)(sizeof(s_CounterOpBondOnlyDoors) / sizeof(s_CounterOpBondOnlyDoors[0])); i++)
+        for (i = 0; i < count; i++)
         {
-            if ((s_CounterOpBondOnlyDoors[i].stage == stage)
-                && (objFindByTagId(s_CounterOpBondOnlyDoors[i].tag) == (ObjectRecord *)cur))
+            if ((table[i].stage == stage) && (objFindByTagId(table[i].tag) == (ObjectRecord *)cur))
             {
                 return TRUE;
             }
@@ -357,4 +351,47 @@ s32 counterOpDoorIsScripted(DoorRecord *door)
     } while ((cur != NULL) && (cur != door));
 
     return FALSE;
+}
+
+/**
+ * Co-op: doors a level script closes and locks behind Bond, which would shut a
+ * respawned player in at the start. They stay open in co-op.
+ */
+static const struct CoopDoorTag s_CoopKeepOpenDoors[] = {
+    // Control: the door Natalya opens from the first computer. The script shuts
+    // and locks it once Bond is through, and the start area's other exit is
+    // still locked then, so a player who respawns at the start can't get out.
+    { LEVELID_CONTROL, 0x11 },
+};
+
+/**
+ * Co-op: TRUE if level scripts must not close or lock this door (see
+ * s_CoopKeepOpenDoors).
+ */
+s32 coopDoorKeptOpen(DoorRecord *door)
+{
+    if (!gameIsCoop())
+    {
+        return FALSE;
+    }
+
+    return coopDoorInTable(door, s_CoopKeepOpenDoors, ARRAYCOUNT(s_CoopKeepOpenDoors));
+}
+
+/**
+ * Counter-op: doors whose opening is progress for Bond, so the guard player
+ * can't open them. Other doors level scripts watch (lifts driving floor
+ * monitors, ending cutscenes, guard ambushes) stay open to them.
+ */
+static const struct CoopDoorTag s_CounterOpBondOnlyDoors[] = {
+    { LEVELID_DEPOT, 0x06 }, // Trevelyan's train: opening it completes "Locate Trevelyan's train"
+};
+
+/**
+ * Counter-op: TRUE if this door, or a door linked to it, is one the guard
+ * player can't open (see s_CounterOpBondOnlyDoors).
+ */
+s32 counterOpDoorIsScripted(DoorRecord *door)
+{
+    return coopDoorInTable(door, s_CounterOpBondOnlyDoors, ARRAYCOUNT(s_CounterOpBondOnlyDoors));
 }
