@@ -9,5 +9,6 @@ Mtx *dynAllocateMatrix(void);
 Light *dynAllocateLights(s32 count);
 void *dynAllocate(s32 size);
 void dynSwapBuffers(void);
+bool dynIsThisFrame(const void *ptr);
 
 #endif
