@@ -8,6 +8,7 @@
 #include "joy.h"
 #include "music.h"
 #include "thread_config.h"
+#include "game/gfx/rsp.h"
 
 s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP);
 s32 __scTaskComplete(OSScTask *t);
@@ -301,6 +302,9 @@ void __scHandleRSP(OSSched *sc) {
         if (t->list.t.type != M_AUDTASK)
         {
             g_PerfRspSum += osGetCount() - g_PerfGfxStart;
+#ifdef UCODE_F3DEX3
+            rspReadCounters(&t->list);
+#endif
         }
 
         t->state &= ~OS_SC_NEEDS_RSP;

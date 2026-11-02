@@ -36,6 +36,7 @@
 #include "game/audio/levelmusic.h"
 #include "game/model/model.h"
 #include "game/gfx/texload.h"
+#include "game/gfx/rsp.h"
 #include "game/prop/glass.h"
 #include "game/hud/healthbar.h"
 #include "game/hud/sparks.h"
@@ -393,6 +394,12 @@ static u32 s_FpsLastTasks;
 static s32 s_FpsCpuMs;
 static s32 s_FpsRspMs;
 static s32 s_FpsRdpMs;
+#ifdef UCODE_F3DEX3
+static u32 s_FpsLastCounterSums[RSP_PROFILE_COUNT][RSPCOUNT_MAX];
+static u32 s_FpsLastCounterTasks[RSP_PROFILE_COUNT];
+static u32 s_FpsCounters[RSPCOUNT_MAX]; /* per task, over the last second */
+static s32 s_FpsCountersMode;
+#endif
 
 /**
  * Draws the frame rate (the watch's fps counter option) in the top right
@@ -402,7 +409,7 @@ static s32 s_FpsRdpMs;
  */
 static Gfx *lvRenderFpsCounter(Gfx *DL)
 {
-    char text[40];
+    char text[160];
     s32 x;
     s32 y;
     s32 width;
@@ -431,9 +438,56 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
         s_FpsLastRsp = rsp;
         s_FpsLastRdp = rdp;
         s_FpsLastTasks = tasks;
+
+#ifdef UCODE_F3DEX3
+        {
+            s32 mode = g_RspProfileMode;
+            u32 counterTasks = g_RspCounterTasks[mode];
+            u32 n = counterTasks - s_FpsLastCounterTasks[mode];
+
+            for (s32 i = 0; i < RSPCOUNT_MAX; i++)
+            {
+                u32 sum = g_RspCounterSums[mode][i];
+
+                s_FpsCounters[i] = (n != 0) ? (sum - s_FpsLastCounterSums[mode][i]) / n : 0;
+                s_FpsLastCounterSums[mode][i] = sum;
+            }
+
+            s_FpsLastCounterTasks[mode] = counterTasks;
+            s_FpsCountersMode = mode;
+        }
+#endif
     }
 
-    sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs);
+    s32 len = sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n", s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs);
+
+#ifdef UCODE_F3DEX3
+    // F3DEX3's counters, per task. Cycles are RCP cycles at 62.5 MHz, shown in
+    // tenths of a millisecond (6250 cycles).
+    switch (s_FpsCountersMode)
+    {
+        case RSP_PROFILE_A:
+            sprintf(text + len, "A VTX %d.%d TRI %d.%d\nSTALL %d.%d CMDS %d\n",
+                s_FpsCounters[RSPCOUNT_VTX_CYCLES] / 62500, (s_FpsCounters[RSPCOUNT_VTX_CYCLES] / 6250) % 10,
+                s_FpsCounters[RSPCOUNT_TRI_CYCLES] / 62500, (s_FpsCounters[RSPCOUNT_TRI_CYCLES] / 6250) % 10,
+                s_FpsCounters[RSPCOUNT_A_FIFO_STALL_CYCLES] / 62500, (s_FpsCounters[RSPCOUNT_A_FIFO_STALL_CYCLES] / 6250) % 10,
+                s_FpsCounters[RSPCOUNT_DL_COMMANDS]);
+            break;
+        case RSP_PROFILE_B:
+            sprintf(text + len, "B VTX %d LIT %d\nCLIP %d OVL %d\n",
+                s_FpsCounters[RSPCOUNT_B_VERTICES], s_FpsCounters[RSPCOUNT_LIT_VERTICES],
+                s_FpsCounters[RSPCOUNT_CLIPPED_TRIS], s_FpsCounters[RSPCOUNT_OVERLAY_LOADS]);
+            break;
+        default:
+            sprintf(text + len, "VTX %d TRI %d/%d\nRECT %d STALL %d.%d\n",
+                s_FpsCounters[RSPCOUNT_VERTICES], s_FpsCounters[RSPCOUNT_TRIS_OUT], s_FpsCounters[RSPCOUNT_TRIS_IN],
+                s_FpsCounters[RSPCOUNT_RECTS],
+                s_FpsCounters[RSPCOUNT_FIFO_STALL_CYCLES] / 62500, (s_FpsCounters[RSPCOUNT_FIFO_STALL_CYCLES] / 6250) % 10);
+            break;
+    }
+#else
+    (void)len;
+#endif
 
     width = 0;
     height = 0;
@@ -593,6 +647,14 @@ Gfx* lvRender(Gfx* DL)
 
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && optionsGetShowFps())
     {
+#ifdef UCODE_F3DEX3
+        // Player 1 holding L and pressing D-pad down picks the next set of F3DEX3 counters
+        if (joyGetButtons(PLAYER_1, L_TRIG) && joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD))
+        {
+            g_RspProfileMode = (g_RspProfileMode + 1) % RSP_PROFILE_COUNT;
+        }
+#endif
+
         DL = lvRenderFpsCounter(DL);
     }
 
