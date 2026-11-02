@@ -21,6 +21,7 @@
 #include "gbi_extension.h"
 #include "bondconstants.h"
 #include "game/gfx/texcmds.h"
+#include "dbgscreen.h"
 #include "game/gfx/gfxdl.h"
 #include "game/gfx/texload.h"
 #include "game/world/lightfixture.h"
@@ -577,6 +578,13 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, struct texpool *pool)
                 *out++ = *in;
                 break;
         }
+
+        // Expanding in place (dst below src): writing past the next command still to be read
+        // means the buffer was too small for the expanded display list
+        if (dst <= src && out > in + 1)
+        {
+            dbgFatal("texLoadFromGdl: buffer too small", (u8 *)out - (u8 *)dst);
+        }
     }
 
     if (inLight)
@@ -674,6 +682,64 @@ static s32 loadBlockTexels(s32 depth, s32 width, s32 height, s32 numLods)
 }
 
 /**
+ * The tile shift that scales texture coordinates by 2^`shift` (negative shrinks), in
+ * gDPSetTile's encoding: 1-10 shift right, 11-15 shift left by 5-1.
+ */
+static s32 tileShift(s32 shift)
+{
+    return shift > 0 ? 16 - shift : -shift;
+}
+
+/**
+ * Writes the tiles (one per level of detail) to draw an image that's in TMEM, as texSelect
+ * loads it, with texture coordinates scaled by 2^`shift` on top of each level's own scale.
+ */
+static Gfx *setImageTiles(Gfx *gdl, sImageTableEntry *image, struct tex *tex, s32 format, s32 depth,
+                          s32 numLods, u32 uvOffset, s32 shift)
+{
+    s32 width = image->width;
+    s32 height = image->height;
+    s32 tmem = 0;
+
+    for (s32 tile = 0; tile < numLods; tile++)
+    {
+        s32 line;
+
+        if (tile > 0)
+        {
+            if (tex != NULL && tex->hasExplicitLods)
+            {
+                width = texGetWidthAtLod(tex, tile);
+                height = texGetHeightAtLod(tex, tile);
+            }
+            else
+            {
+                if (width >= 2)
+                {
+                    width >>= 1;
+                }
+
+                if (height >= 2)
+                {
+                    height >>= 1;
+                }
+            }
+        }
+
+        line = lineWords(depth, width);
+
+        gDPSetTile(gdl++, format, depth, line, tmem, tile, 0,
+                   image->flagsT, maskBits(height), tileShift(shift - tile),
+                   image->flagsS, maskBits(width), tileShift(shift - tile));
+        gDPSetTileSize(gdl++, tile, uvOffset, uvOffset, ((width - 1) << 2) + uvOffset, ((height - 1) << 2) + uvOffset);
+
+        tmem += line * height;
+    }
+
+    return gdl;
+}
+
+/**
  * Writes the commands to draw with an image from an image table: its render mode (see
  * TexBlendMode and TexZbufferMode), loading it into TMEM and its tiles, offset by
  * `uvOffset` (10.2 fixed point: 2 is half a texel). An image whose `level` isn't 0 is
@@ -686,7 +752,7 @@ static s32 loadBlockTexels(s32 depth, s32 width, s32 height, s32 numLods)
 void texSelect(Gfx **gdlptr, sImageTableEntry *image, u32 blendMode, s32 zbufferMode, u32 uvOffset)
 {
     Gfx *gdl = *gdlptr;
-    s32 xparam = zbufferMode >= TEXZBUF_DECAL ? zbufferMode : 0;
+    [[maybe_unused]] s32 xparam = zbufferMode >= TEXZBUF_DECAL ? zbufferMode : 0;
     struct tex *tex;
     s32 format;
     s32 depth;
@@ -696,7 +762,6 @@ void texSelect(Gfx **gdlptr, sImageTableEntry *image, u32 blendMode, s32 zbuffer
     s32 width = image ? image->width : 0;
     s32 height = image ? image->height : 0;
     s32 lastTexel;
-    s32 tmem = 0;
 
     if (image == NULL)
     {
@@ -800,39 +865,27 @@ void texSelect(Gfx **gdlptr, sImageTableEntry *image, u32 blendMode, s32 zbuffer
         gDPSetTextureLUT(gdl++, G_TT_NONE);
     }
 
-    for (s32 tile = 0; tile < numLods; tile++)
-    {
-        s32 line;
+    gdl = setImageTiles(gdl, image, tex, format, depth, numLods, uvOffset, 0);
 
-        if (tile > 0)
-        {
-            if (tex != NULL && tex->hasExplicitLods)
-            {
-                width = texGetWidthAtLod(tex, tile);
-                height = texGetHeightAtLod(tex, tile);
-            }
-            else
-            {
-                if (width >= 2)
-                {
-                    width >>= 1;
-                }
+    *gdlptr = gdl;
+}
 
-                if (height >= 2)
-                {
-                    height >>= 1;
-                }
-            }
-        }
+/**
+ * Sets the tiles for an image that texSelect has just loaded again, with its texture
+ * coordinates scaled up by 2^`shift`, so vertices can cover a bigger stretch of texture
+ * than their texture coordinates can hold. (The coordinates lose that many bits of
+ * precision.)
+ */
+void texSelectScaled(Gfx **gdlptr, sImageTableEntry *image, u32 uvOffset, s32 shift)
+{
+    struct tex *tex = texFindByData((u8 *)PHYS_TO_K0(image->index), NULL);
+    s32 format = tex != NULL ? tex->gbiformat : image->format;
+    s32 depth = tex != NULL ? tex->depth : image->depth;
+    s32 numLods = image->level != 0 ? image->level : 1;
+    Gfx *gdl = *gdlptr;
 
-        line = lineWords(depth, width);
-
-        gDPSetTile(gdl++, format, depth, line, tmem, tile, 0,
-                   image->flagsT, maskBits(height), tile, image->flagsS, maskBits(width), tile);
-        gDPSetTileSize(gdl++, tile, uvOffset, uvOffset, ((width - 1) << 2) + uvOffset, ((height - 1) << 2) + uvOffset);
-
-        tmem += line * height;
-    }
+    gDPPipeSync(gdl++);
+    gdl = setImageTiles(gdl, image, tex, format, depth, numLods, uvOffset, shift);
 
     *gdlptr = gdl;
 }

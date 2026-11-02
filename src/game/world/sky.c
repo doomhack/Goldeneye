@@ -16,6 +16,8 @@
 #include "fr.h"
 #include "game/gfx/imagebank.h"
 #include "game/level/gamemode.h"
+#include "game/gfx/dyn.h"
+#include "game/math/matrix.h"
 
 #define SKYABS(val) (val >= 0.0f ? (val) : -(val))
 
@@ -232,6 +234,376 @@ void skyTick(void)
     }
 }
 
+#ifdef UCODE_F3DEX3
+/*
+ * How far past each edge of the view the sky and water planes are worked out, in pixels.
+ * The RSP projects the corners again and lands them a fraction of a pixel either side of
+ * where the CPU put them. Inside the view, the polygon would only partly cover the view's
+ * top row and left column, which the rooms' scissor leaves to the sky, and the blended
+ * edge shows as a dark line that flickers as the camera bobs. The scissor cuts the overhang
+ * off.
+ */
+#define SKY_SCREEN_MARGIN 1.0f
+#else
+#define SKY_SCREEN_MARGIN 0.0f
+#endif
+
+#ifdef UCODE_F3DEX3
+/*
+ * Drawing the sky with F3DEX3.
+ *
+ * F3DEX3 can't send the RDP raw triangles, so instead of rasterising the cloud and water
+ * polygons on the CPU, skyDrawPlane sends the polygon skyRender has worked out (the part of
+ * the plane that's on screen, 3 to 5 corners) to the RSP as ordinary vertices.
+ *
+ * The polygon reaches up to 300000 units from the eye, while a vertex's texture coordinate
+ * (10.5 fixed point, one unit of the sky's s and t per 1/32 texel) can only reach 32768
+ * units. So the polygon is cut into the part within SKY_NEAR_RANGE of the eye, drawn as
+ * it is, and the parts beyond, drawn with texture coordinates divided by 2^SKY_FAR_SHIFT
+ * and the tiles scaling them back up (that far away a texel is much smaller than a pixel,
+ * so the lost precision doesn't show).
+ */
+
+/** A corner of a sky or water polygon */
+typedef struct SkyPolyVtx
+{
+    f32 pos[3]; /* as in SkyVtx: world position times the sky's scale */
+    f32 st[2];  /* texture coordinates, 10.5 fixed point units */
+    f32 rgb[3];
+} SkyPolyVtx;
+
+/* Clipping a 5 sided polygon to a square adds at most 4 corners */
+#define SKY_POLY_MAX 9
+
+/* How far from the eye (in texture coordinate units) the polygon is drawn at full precision */
+#define SKY_NEAR_RANGE 28000.0f
+#define SKY_FAR_SHIFT  4
+
+/* Texture coordinates are measured from a multiple of this, which every sky texture repeats in */
+#define SKY_TEX_PERIOD 4096.0f
+
+/* Vertex positions are scaled to fit in this */
+/* The largest clip coordinate to give the RSP (it keeps them as s15.16) */
+#define SKY_CLIP_RANGE 8192.0f
+#define SKY_POS_RANGE 30000.0f
+
+/** Sets the tiles to draw with texture coordinates scaled up by 2^shift */
+typedef Gfx *(*SkyRetileFunc)(Gfx *gdl, sImageTableEntry *image, s32 shift);
+
+/**
+ * Keeps the part of polygon `in` where sign * (st[axis] - limit) <= 0, in `out`.
+ * Returns the number of corners kept.
+ */
+static s32 skyClipPolygon(const SkyPolyVtx *in, s32 n, SkyPolyVtx *out, s32 axis, f32 sign, f32 limit)
+{
+    s32 count = 0;
+
+    for (s32 i = 0; i < n; i++)
+    {
+        const SkyPolyVtx *a = &in[i];
+        const SkyPolyVtx *b = &in[(i + 1) % n];
+        f32 da = sign * (a->st[axis] - limit);
+        f32 db = sign * (b->st[axis] - limit);
+
+        if (da <= 0.0f)
+        {
+            out[count++] = *a;
+        }
+
+        if ((da <= 0.0f) != (db <= 0.0f))
+        {
+            f32 frac = da / (da - db);
+            SkyPolyVtx *v = &out[count++];
+
+            for (s32 k = 0; k < 3; k++)
+            {
+                v->pos[k] = a->pos[k] + (b->pos[k] - a->pos[k]) * frac;
+                v->rgb[k] = a->rgb[k] + (b->rgb[k] - a->rgb[k]) * frac;
+            }
+
+            for (s32 k = 0; k < 2; k++)
+            {
+                v->st[k] = a->st[k] + (b->st[k] - a->st[k]) * frac;
+            }
+        }
+    }
+
+    return count;
+}
+
+static s16 skyToS16(f32 value)
+{
+    return (s16)skyClamp(value, -32767.0f, 32767.0f);
+}
+
+/**
+ * Draws a convex polygon as a triangle fan, with positions measured from `originPos` and
+ * divided by `posDiv`, and texture coordinates measured from `originSt` and divided by
+ * `stDiv`.
+ */
+static Gfx *skyDrawPiece(Gfx *gdl, const SkyPolyVtx *poly, s32 n, const f32 *originPos, f32 posDiv,
+                         const f32 *originSt, f32 stDiv)
+{
+    Vtx *vtx;
+    s32 i;
+
+    if (n < 3)
+    {
+        return gdl;
+    }
+
+    vtx = dynAllocateVertices(n);
+
+    for (i = 0; i < n; i++)
+    {
+        for (s32 k = 0; k < 3; k++)
+        {
+            vtx[i].v.ob[k] = skyToS16((poly[i].pos[k] - originPos[k]) / posDiv);
+            vtx[i].v.cn[k] = (u8)skyClamp(poly[i].rgb[k] + 0.5f, 0.0f, 255.0f);
+        }
+
+        vtx[i].v.flag = 0;
+        vtx[i].v.tc[0] = skyToS16((poly[i].st[0] - originSt[0]) / stDiv);
+        vtx[i].v.tc[1] = skyToS16((poly[i].st[1] - originSt[1]) / stDiv);
+        vtx[i].v.cn[3] = 0xff;
+    }
+
+    gSPVertex(gdl++, osVirtualToPhysical(vtx), n, 0);
+
+    for (i = 1; i + 2 < n; i += 2)
+    {
+        gSP2Triangles(gdl++, 0, i, i + 1, 0, 0, i + 1, i + 2, 0);
+    }
+
+    if (i + 1 < n)
+    {
+        gSP1Triangle(gdl++, 0, i, i + 1, 0);
+    }
+
+    return gdl;
+}
+
+/**
+ * Loads `full` as the projection for some polygons (with positions as skyDrawPiece makes
+ * them), scaled down as a whole if their clip coordinates would be too big for the RSP:
+ * F3DEX3 keeps them as s15.16, and the sky reaches far further than anything else. Scaling
+ * x, y, z and w alike leaves the screen positions and depths as they are.
+ */
+static Gfx *skyLoadProjection(Gfx *gdl, const Mtxf *full, SkyPolyVtx (*polys)[SKY_POLY_MAX],
+                              const s32 *counts, s32 numpolys, const f32 *originPos, f32 posDiv)
+{
+    Mtxf scaled = *full;
+    Mtx *projection;
+    f32 maxabs = 1.0f;
+
+    for (s32 p = 0; p < numpolys; p++)
+    {
+        for (s32 i = 0; i < counts[p]; i++)
+        {
+            f32 local[3];
+
+            for (s32 k = 0; k < 3; k++)
+            {
+                local[k] = (polys[p][i].pos[k] - originPos[k]) / posDiv;
+            }
+
+            for (s32 j = 0; j < 4; j++)
+            {
+                f32 c = local[0] * full->m[0][j] + local[1] * full->m[1][j] + local[2] * full->m[2][j] + full->m[3][j];
+
+                if (SKYABS(c) > maxabs)
+                {
+                    maxabs = SKYABS(c);
+                }
+            }
+        }
+    }
+
+    if (maxabs > SKY_CLIP_RANGE)
+    {
+        f32 k = SKY_CLIP_RANGE / maxabs;
+
+        for (s32 i = 0; i < 4; i++)
+        {
+            for (s32 j = 0; j < 4; j++)
+            {
+                scaled.m[i][j] *= k;
+            }
+        }
+    }
+
+    projection = dynAllocateMatrix();
+    guMtxF2L(scaled.m, projection);
+    gSPMatrix(gdl++, osVirtualToPhysical(projection), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
+
+    return gdl;
+}
+
+/**
+ * Draws a cloud or water polygon from skyRender: `numverts` corners (3, 4 or 5; four are a
+ * quad in the order 0 1 3 2) in the space `mtx` projects. The texture and render mode must
+ * be set up already; `retile` sets the texture's tiles for the far parts.
+ */
+static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf *mtx, f32 scale,
+                         sImageTableEntry *image, SkyRetileFunc retile)
+{
+    static const u8 quadorder[4] = {0, 1, 3, 2};
+    SkyPolyVtx poly[5];
+    SkyPolyVtx strip[SKY_POLY_MAX];
+    SkyPolyVtx pieces[5][SKY_POLY_MAX];
+    s32 counts[5];
+    SkyPolyVtx tmp[SKY_POLY_MAX];
+    coord3d *eye = playerGetPos();
+    f32 eyeSt[2];
+    f32 originSt[2];
+    f32 originPos[3];
+    f32 posDiv;
+    f32 maxabs = 0.0f;
+    f32 concavity;
+    Mtxf pre;
+    Mtxf full;
+    Mtx *modelview;
+    s32 n;
+    s32 i;
+
+    if (numverts < 3)
+    {
+        return gdl;
+    }
+
+    for (i = 0; i < numverts; i++)
+    {
+        const SkyVtx *src = &verts[numverts == 4 ? quadorder[i] : i];
+
+        poly[i].pos[0] = src->x;
+        poly[i].pos[1] = src->y;
+        poly[i].pos[2] = src->z;
+        poly[i].st[0] = src->s;
+        poly[i].st[1] = src->t;
+        poly[i].rgb[0] = src->r;
+        poly[i].rgb[1] = src->g;
+        poly[i].rgb[2] = src->b;
+    }
+
+    /* Positions are measured from the eye, scaled down to fit */
+    originPos[0] = eye->x * scale;
+    originPos[1] = eye->y * scale;
+    originPos[2] = eye->z * scale;
+
+    for (i = 0; i < numverts; i++)
+    {
+        for (s32 k = 0; k < 3; k++)
+        {
+            f32 d = SKYABS(poly[i].pos[k] - originPos[k]);
+
+            if (d > maxabs)
+            {
+                maxabs = d;
+            }
+        }
+    }
+
+    posDiv = maxabs / SKY_POS_RANGE;
+
+    if (posDiv < 1.0f / 64.0f)
+    {
+        posDiv = 1.0f / 64.0f;
+    }
+
+    /* Texture coordinates are measured from the texture repeat nearest the eye */
+    eyeSt[0] = eye->x;
+    eyeSt[1] = eye->z + g_SkyCloudOffset;
+    originSt[0] = SKY_TEX_PERIOD * (s32)(eyeSt[0] / SKY_TEX_PERIOD);
+    originSt[1] = SKY_TEX_PERIOD * (s32)(eyeSt[1] / SKY_TEX_PERIOD);
+
+    /*
+     * The matrix: vertex * posDiv + originPos, then `mtx`. Then the water's concavity, which
+     * moves the planes up the screen by that many pixels (as skyProjectVertex does).
+     */
+    mtx4LoadIdentity(&pre);
+    pre.m[0][0] = pre.m[1][1] = pre.m[2][2] = posDiv;
+    pre.m[3][0] = originPos[0];
+    pre.m[3][1] = originPos[1];
+    pre.m[3][2] = originPos[2];
+    mtx4Mult(mtx, &pre, &full);
+
+    concavity = 2.0f * fogGetCurrentEnvironmentp()->WaterConcavity / camGetScreenHeight();
+
+    for (i = 0; i < 4; i++)
+    {
+        full.m[i][1] += concavity * full.m[i][3];
+    }
+
+    modelview = dynAllocateMatrix();
+    guMtxIdent(modelview);
+
+    // The planes reach SKY_SCREEN_MARGIN past the view: keep that out of the black bands
+    // round it (above and below the picture on NTSC, between the co-op views)
+    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, VI_SX(viGetViewLeft()), viGetViewTop(),
+            VI_SX(viGetViewLeft() + viGetViewWidth()), viGetViewTop() + viGetViewHeight());
+
+    gSPMatrix(gdl++, osVirtualToPhysical(modelview), G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
+    gSPClearGeometryMode(gdl++, G_CULL_BOTH | G_FOG | G_LIGHTING | G_TEXTURE_GEN | G_TEXTURE_GEN_LINEAR);
+    gSPSetGeometryMode(gdl++, G_SHADE | G_SHADING_SMOOTH);
+
+    /* The far parts: right of, left of, then in line with but in front of and behind the near square */
+    counts[0] = skyClipPolygon(poly, numverts, pieces[0], 0, -1.0f, eyeSt[0] + SKY_NEAR_RANGE);
+    counts[1] = skyClipPolygon(poly, numverts, pieces[1], 0, 1.0f, eyeSt[0] - SKY_NEAR_RANGE);
+
+    n = skyClipPolygon(poly, numverts, tmp, 0, 1.0f, eyeSt[0] + SKY_NEAR_RANGE);
+    n = skyClipPolygon(tmp, n, strip, 0, -1.0f, eyeSt[0] - SKY_NEAR_RANGE);
+
+    counts[2] = skyClipPolygon(strip, n, pieces[2], 1, -1.0f, eyeSt[1] + SKY_NEAR_RANGE);
+    counts[3] = skyClipPolygon(strip, n, pieces[3], 1, 1.0f, eyeSt[1] - SKY_NEAR_RANGE);
+
+    /* The near part */
+    n = skyClipPolygon(strip, n, tmp, 1, 1.0f, eyeSt[1] + SKY_NEAR_RANGE);
+    counts[4] = skyClipPolygon(tmp, n, pieces[4], 1, -1.0f, eyeSt[1] - SKY_NEAR_RANGE);
+
+    if (counts[0] >= 3 || counts[1] >= 3 || counts[2] >= 3 || counts[3] >= 3)
+    {
+        gdl = retile(gdl, image, SKY_FAR_SHIFT);
+        gdl = skyLoadProjection(gdl, &full, pieces, counts, 4, originPos, posDiv);
+
+        for (i = 0; i < 4; i++)
+        {
+            gdl = skyDrawPiece(gdl, pieces[i], counts[i], originPos, posDiv, originSt, (f32)(1 << SKY_FAR_SHIFT));
+        }
+
+        gdl = retile(gdl, image, 0);
+    }
+
+    gdl = skyLoadProjection(gdl, &full, &pieces[4], &counts[4], 1, originPos, posDiv);
+    gdl = skyDrawPiece(gdl, pieces[4], counts[4], originPos, posDiv, originSt, 1.0f);
+
+    // Back to the whole framebuffer, as viSetupScreensForNumPlayers left it
+    gDPSetScissor(gdl++, G_SC_NON_INTERLACE, 0, 0, VI_SX(viGetX()), viGetY());
+
+    return gdl;
+}
+
+/** skyDrawPlane's retile for the clouds: the tiles texSelect sets, scaled */
+static Gfx *skyRetileClouds(Gfx *gdl, sImageTableEntry *image, s32 shift)
+{
+    texSelectScaled(&gdl, image, 2, shift);
+    return gdl;
+}
+
+/** skyDrawPlane's retile for the water: the tiles waterSetupGdl sets, scaled */
+static Gfx *skyRetileWater(Gfx *gdl, sImageTableEntry *image, s32 shift)
+{
+    s32 tileshift = shift > 0 ? 16 - shift : 0;
+
+    (void)image;
+
+    gDPPipeSync(gdl++);
+    gDPSetTile(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 4, 0, 0, 0, 0, 5, tileshift, 0, 5, tileshift);
+    gDPSetTile(gdl++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 4, 0, 1, 0, 0, 5, tileshift, 0, 5, tileshift);
+
+    return gdl;
+}
+#endif
+
 Gfx* waterSetupGdl(Gfx*, s32);
 
 Gfx *skyRender(Gfx *gdl)
@@ -288,7 +660,7 @@ Gfx *skyRender(Gfx *gdl)
     SkyVtx waterverts[5];
     f32 tmp;
     f32 scale;
-    bool nudgeWater;
+    [[maybe_unused]] bool nudgeWater;
     struct CurrentEnvironmentRecord *env;
 
     scale = bgGetLevelScale() / 30.0f;
@@ -329,10 +701,16 @@ Gfx *skyRender(Gfx *gdl)
     gdl = viSetFillColor(gdl, env->Red, env->Green, env->Blue);
 
 
-    skyGetWorldPosFromScreenPos(0.0f, 0.0f, &tlDir);
-    skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, 0.0f, &trDir);
-    skyGetWorldPosFromScreenPos(0.0f, camGetScreenHeight() - 0.1f, &blDir);
-    skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, camGetScreenHeight() - 0.1f, &brDir);
+    // The corners of the screen the planes are worked out for
+    f32 edgeLeft = -SKY_SCREEN_MARGIN;
+    f32 edgeTop = -SKY_SCREEN_MARGIN;
+    f32 edgeRight = camGetScreenWidth() - 0.1f + SKY_SCREEN_MARGIN;
+    f32 edgeBottom = camGetScreenHeight() - 0.1f + SKY_SCREEN_MARGIN;
+
+    skyGetWorldPosFromScreenPos(edgeLeft, edgeTop, &tlDir);
+    skyGetWorldPosFromScreenPos(edgeRight, edgeTop, &trDir);
+    skyGetWorldPosFromScreenPos(edgeLeft, edgeBottom, &blDir);
+    skyGetWorldPosFromScreenPos(edgeRight, edgeBottom, &brDir);
 
     tlInSky = skyIsScreenCornerInSky(&tlDir, &tlSky, &tlSkyFrac);
     trInSky = skyIsScreenCornerInSky(&trDir, &trSky, &trSkyFrac);
@@ -346,9 +724,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (tlInSky != blInSky)
     {
-        leftHorizonY = camGetScreenTop() + camGetScreenHeight() * (tlDir.f[1] / (tlDir.f[1] - blDir.f[1]));
+        leftHorizonY = camGetScreenTop() + edgeTop + (camGetScreenHeight() + 2 * SKY_SCREEN_MARGIN) * (tlDir.f[1] / (tlDir.f[1] - blDir.f[1]));
 
-        skyGetWorldPosFromScreenPos(0.0f, leftHorizonY - camGetScreenTop(), &leftDir);
+        skyGetWorldPosFromScreenPos(edgeLeft, leftHorizonY - camGetScreenTop(), &leftDir);
         skyCalculateEdgeVertex(&tlDir, &blDir, &leftDir);
         skyIsScreenCornerInSky(&leftDir, &leftSky, &leftSkyFrac);
         skyIsCornerInWater(&leftDir, &leftWater, &leftWaterFrac);
@@ -360,9 +738,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (trInSky != brInSky)
     {
-        rightHorizonY = camGetScreenTop() + camGetScreenHeight() * (trDir.f[1] / (trDir.f[1] - brDir.f[1]));
+        rightHorizonY = camGetScreenTop() + edgeTop + (camGetScreenHeight() + 2 * SKY_SCREEN_MARGIN) * (trDir.f[1] / (trDir.f[1] - brDir.f[1]));
 
-        skyGetWorldPosFromScreenPos(camGetScreenWidth() - 0.1f, rightHorizonY - camGetScreenTop(), &rightDir);
+        skyGetWorldPosFromScreenPos(edgeRight, rightHorizonY - camGetScreenTop(), &rightDir);
         skyCalculateEdgeVertex(&trDir, &brDir, &rightDir);
         skyIsScreenCornerInSky(&rightDir, &rightSky, &rightSkyFrac);
         skyIsCornerInWater(&rightDir, &rightWater, &rightWaterFrac);
@@ -374,7 +752,7 @@ Gfx *skyRender(Gfx *gdl)
 
     if (tlInSky != trInSky)
     {
-        skyGetWorldPosFromScreenPos(camGetScreenWidth() * (tlDir.f[1] / (tlDir.f[1] - trDir.f[1])), 0.0f, &topDir);
+        skyGetWorldPosFromScreenPos(edgeLeft + (camGetScreenWidth() + 2 * SKY_SCREEN_MARGIN) * (tlDir.f[1] / (tlDir.f[1] - trDir.f[1])), edgeTop, &topDir);
         skyCalculateEdgeVertex(&tlDir, &trDir, &topDir);
         skyIsScreenCornerInSky(&topDir, &topSky, &topSkyFrac);
         skyIsCornerInWater(&topDir, &topWater, &topWaterFrac);
@@ -382,9 +760,9 @@ Gfx *skyRender(Gfx *gdl)
 
     if (blInSky != brInSky)
     {
-        tmp = camGetScreenLeft() + camGetScreenWidth() * (blDir.f[1] / (blDir.f[1] - brDir.f[1]));
+        tmp = camGetScreenLeft() + edgeLeft + (camGetScreenWidth() + 2 * SKY_SCREEN_MARGIN) * (blDir.f[1] / (blDir.f[1] - brDir.f[1]));
 
-        skyGetWorldPosFromScreenPos(tmp - camGetScreenLeft(), camGetScreenHeight() - 0.1f, &bottomDir);
+        skyGetWorldPosFromScreenPos(tmp - camGetScreenLeft(), edgeBottom, &bottomDir);
         skyCalculateEdgeVertex(&blDir, &brDir, &bottomDir);
         skyIsScreenCornerInSky(&bottomDir, &bottomSky, &bottomSkyFrac);
         skyIsCornerInWater(&bottomDir, &bottomWater, &bottomWaterFrac);
@@ -835,6 +1213,9 @@ Gfx *skyRender(Gfx *gdl)
             gdl = waterSetupGdl(gdl, 0); // ???
             gDPSetRenderMode(gdl++, G_RM_OPA_SURF, G_RM_OPA_SURF2);
 
+#ifdef UCODE_F3DEX3
+            gdl = skyDrawPlane(gdl, waterverts, numverts, &waterMtx, scale, NULL, skyRetileWater);
+#else
             if (numverts == 4)
             {
                 gdl = skyRenderTri(gdl, &waterScreen[0], &waterScreen[1], &waterScreen[3], 130.0f, TRUE);
@@ -859,6 +1240,7 @@ Gfx *skyRender(Gfx *gdl)
             {
                 gdl = skyRenderTri(gdl, &waterScreen[0], &waterScreen[1], &waterScreen[2], 130.0f, TRUE);
             }
+#endif
         }
     }
 
@@ -1261,21 +1643,27 @@ Gfx *skyRender(Gfx *gdl)
     {
         Mtxf skyViewProj;
         Mtxf skyMtx;
-        SkyScreenVtx skyScreen[5];
-        s32 i;
 
         mtx4Mult(camGetProjectionMtxf(), camGetWorldToScreenMtxf(), &skyViewProj);
         guScaleF(g_SkyInvScaleMtx.m, 1.0f / scale, 1.0f / scale, 1.0f / scale);
         mtx4Mult(&skyViewProj, &g_SkyInvScaleMtx, &skyMtx);
 
-        for (i = 0; i < numverts; i++)
+#ifndef UCODE_F3DEX3
+        SkyScreenVtx skyScreen[5];
+
+        for (s32 i = 0; i < numverts; i++)
         {
             skyProjectVertex(&skyverts[i], &skyMtx, 130, 65535.0f, 65535.0f, &skyScreen[i]);
 
             skyScreen[i].screenX = skyClamp(skyScreen[i].screenX, VI_SX(camGetScreenLeft()) * 4.0f, VI_SX(camGetScreenLeft() + camGetScreenWidth()) * 4.0f - 1.0f);
             skyScreen[i].screenY = skyClamp(skyScreen[i].screenY, camGetScreenTop() * 4.0f, (camGetScreenTop() + camGetScreenHeight()) * 4.0f - 1.0f);
         }
+#endif
 
+#ifdef UCODE_F3DEX3
+        gdl = skyDrawPlane(gdl, skyverts, numverts, &skyMtx, scale,
+                &g_ImagesSkyWater[fogGetCurrentEnvironmentp()->SkyImageId], skyRetileClouds);
+#else
         if (numverts == 4)
         {
             if (((tlInSky << 3) | (trInSky << 2) | (blInSky << 1) | brInSky) == 12)
@@ -1330,6 +1718,7 @@ Gfx *skyRender(Gfx *gdl)
         {
             gdl = skyRenderTri(gdl, &skyScreen[0], &skyScreen[1], &skyScreen[2], 130.0f, TRUE);
         }
+#endif
     }
 
     return gdl;
@@ -1413,6 +1802,7 @@ bool skyVerticesAreTheSame(SkyScreenVtx *a, SkyScreenVtx *b)
     return sqrtf((dx * dx) + (dy * dy)) < 1.0f ? TRUE : FALSE;
 }
 
+#ifndef UCODE_F3DEX3
 Gfx *skyRenderTri(Gfx *gdl, SkyScreenVtx *v1, SkyScreenVtx *v2, SkyScreenVtx *v3, f32 perspScale, bool textured)
 {
     SkyScreenVtx *top;
@@ -2236,3 +2626,5 @@ Gfx *skyRenderFull(Gfx *gdl, SkyScreenVtx *v1, SkyScreenVtx *v2, SkyScreenVtx *v
 
     return gdl;
 }
+#endif
+

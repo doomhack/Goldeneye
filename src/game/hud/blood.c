@@ -17,6 +17,8 @@
 
 #define BLOOD_IMG_WIDTH 80
 #define BLOOD_IMG_HEIGHT 96
+/* An image packed to 4 bits a pixel, as the RDP draws it */
+#define BLOOD_IMG_PACKED_SIZE (BLOOD_IMG_WIDTH * BLOOD_IMG_HEIGHT / 2)
 
 u8 g_BloodAnimData[] = {
    0x00, 0x20, 0x03, 0x05, 0x04, 0x02, 0x60, 0x21, 0x22, 0x01, 0xE0, 0xE0, 0xE0, 0xE0,
@@ -253,6 +255,28 @@ s32 bloodNextFrame(s32 mode) {
    return (g_CurrentPlayer->bloodImgNxt >= &g_BloodAnimDataEnd);
 }
 
+/*
+ * The current blood image, in this frame's vertex memory. The title sequence only decodes a
+ * new image every other frame, and the image from the frame before is in the vertex memory
+ * the CPU reuses while the RDP is still drawing this frame, so copy it across first.
+ * (Without this the bottom of the blood showed stripes on hardware once F3DEX3 sped up
+ * the RSP enough for the CPU to get there before the RDP loaded the texture.)
+ */
+static u8 *bloodCurrentImage(void)
+{
+   u8 **image = &g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx];
+
+   if (!dynIsThisFrame(*image))
+   {
+      u8 *copy = dynAllocate(BLOOD_IMG_PACKED_SIZE);
+
+      bcopy(*image, copy, BLOOD_IMG_PACKED_SIZE);
+      *image = copy;
+   }
+
+   return *image;
+}
+
 Gfx *bloodRenderGunbarrel(Gfx *gdl) {
    gDPSetTextureLUT(gdl++, G_TT_NONE);
    gDPSetTextureFilter(gdl++, G_TF_BILERP); 
@@ -265,7 +289,7 @@ Gfx *bloodRenderGunbarrel(Gfx *gdl) {
    gDPSetColorDither(gdl++, G_CD_MAGICSQ);
    gDPSetPrimColor(gdl++, 0, 0, 0x96, 0x00, 0x00, 0xB4);
    gDPSetTexturePersp(gdl++, G_TP_NONE);
-   gDPLoadTextureBlock_4b(gdl++, OS_K0_TO_PHYSICAL(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]), G_IM_FMT_I, 96, 80, 0, (G_TX_NOMIRROR | G_TX_CLAMP), (G_TX_NOMIRROR | G_TX_CLAMP), G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
+   gDPLoadTextureBlock_4b(gdl++, OS_K0_TO_PHYSICAL(bloodCurrentImage()), G_IM_FMT_I, 96, 80, 0, (G_TX_NOMIRROR | G_TX_CLAMP), (G_TX_NOMIRROR | G_TX_CLAMP), G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD);
    gSPTextureRectangle(gdl++, 0, 0, ((VI_SX(viGetX()) * 4) - 1), ((viGetY() * 4) - 1), G_TX_RENDERTILE, 0, 0, 0x18000 / VI_SX(viGetX()), 0x14000 / viGetY());
    
    return gdl;
@@ -282,7 +306,7 @@ Gfx *bloodRender(Gfx *gdl) {
    gDPSetColorDither(gdl++, G_CD_MAGICSQ);
    gDPSetPrimColor(gdl++, 0, 0, 0x96, 0x00, 0x00, 0xB4);
    gDPSetTexturePersp(gdl++, G_TP_NONE);
-   gDPLoadTextureBlock_4b(gdl++, OS_K0_TO_PHYSICAL(g_CurrentPlayer->bloodImgBufPtrArray[g_CurrentPlayer->bloodImgIdx]), G_IM_FMT_I, 96, 80, 0, (G_TX_NOMIRROR | G_TX_CLAMP), (G_TX_NOMIRROR | G_TX_CLAMP), G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD); 
+   gDPLoadTextureBlock_4b(gdl++, OS_K0_TO_PHYSICAL(bloodCurrentImage()), G_IM_FMT_I, 96, 80, 0, (G_TX_NOMIRROR | G_TX_CLAMP), (G_TX_NOMIRROR | G_TX_CLAMP), G_TX_NOMASK, G_TX_NOMASK, G_TX_NOLOD, G_TX_NOLOD); 
    gSPTextureRectangle(gdl++, (VI_SX(viGetViewLeft()) * 4), (viGetViewTop() * 4), ((VI_SX(viGetViewLeft() + viGetViewWidth()) * 4) - 1), (((viGetViewTop() + viGetViewHeight()) * 4) - 1), G_TX_RENDERTILE, 0, 0, (0x18000 / VI_SX(viGetViewWidth())), (0x14000 / viGetViewHeight()));
    gDPPipeSync(gdl++);
    gDPSetColorDither(gdl++, G_CD_BAYER);

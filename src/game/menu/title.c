@@ -32,6 +32,8 @@
 #include "game/model/modelfile.h"
 #include "game/menu/title.h"
 #include "game/gfx/dyn.h"
+#include "gbi_extension.h"
+#include "game/gfx/rsp.h"
 
 
 extern signed short sins(unsigned short x);
@@ -319,6 +321,11 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 cameraZ, s32 brightness) {
 #endif
     gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxRareLogo2[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
     gSPSetLights1(gdl++, gunbarrelLights);
+#ifdef UCODE_F3DEX3
+    // The logo is environment mapped and relied on Fast3D's default LookAt, which F3DEX3
+    // doesn't have, so set the same one
+    gSPLookAt(gdl++, &g_Fast3dDefaultLookAt);
+#endif
     gunbarrelLights.a.l.col[0] = gunbarrelLights.a.l.col[1] = gunbarrelLights.a.l.col[2] = gunbarrelLights.a.l.colc[0] = gunbarrelLights.a.l.colc[1] = gunbarrelLights.a.l.colc[2] = brightness;
     gDPPipeSync(gdl++);
     gDPPipeSync(gdl++);

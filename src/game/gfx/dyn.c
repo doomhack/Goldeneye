@@ -88,3 +88,11 @@ void dynSwapBuffers(void)
     s_Current ^= 1;
     s_VtxNext = s_Vtx.buffers[s_Current];
 }
+
+/** Whether `ptr` is in the vertex memory of the frame being built */
+bool dynIsThisFrame(const void *ptr)
+{
+    const u8 *buffer = s_Vtx.buffers[s_Current];
+
+    return (const u8 *)ptr >= buffer && (const u8 *)ptr < buffer + s_Vtx.size;
+}

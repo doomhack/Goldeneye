@@ -422,6 +422,12 @@ void bossMainloop(void)
 
         while (g_MainStageNum < 0 || pendingGfx != 0)
         {
+            if (g_TestForceStage >= 0 && g_StageNum == LEVELID_TITLE)
+            {
+                bossSetLoadedStage(g_TestForceStage);
+                g_TestForceStage = -1;
+            }
+
             osRecvMesg(&gfxFrameMsgQ, (OSMesg *)&localGfxFrameMsg, OS_MESG_BLOCK);
 
             switch (localGfxFrameMsg->gen.type)

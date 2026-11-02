@@ -15,7 +15,9 @@ coarse checksum (positions to whole units, health to 1%) differs from the baseli
 A pure refactor should match exactly. Exits 0 when every demo matches.
 
 With DEMOS_DUMPRAM=1 in the environment each demo also saves its RAM at the end
-(end-ram.bin), for tools/testrun/shuffle.py check.
+(end-ram.bin), for tools/testrun/shuffle.py check. DEMOS_JOBS=N plays N demos at once
+(default: one per CPU). DEMOS_LLE=1 runs the real microcode on the low-level RSP and RDP
+plugins, which a UCODE=f3dex3 build needs (several times slower).
 """
 import concurrent.futures
 import json
@@ -34,10 +36,14 @@ def play(version, index, outdir):
     mapfile = f'build/{version}/ge007.{version}.map'
     cmd = ['xvfb-run', '-a', '-s', '-screen 0 1024x768x24', sys.executable,
            os.path.join(HERE, 'm64run.py'), rom, '--frames', '20000', '--demo', str(index),
-           '--map', mapfile, '--outdir', outdir]
+           '--map', mapfile, '--outdir', outdir,
+           # Loading a level makes no frames for a while, longer with many demos on few CPUs
+           '--stall', '120']
     if os.environ.get('DEMOS_DUMPRAM'):
         cmd.append('--dumpram')
-    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=1800)
+    if os.environ.get('DEMOS_LLE'):
+        cmd += ['--rsp', 'z64', '--gfx', 'angrylion', '--demo-shots', '300,1200']
+    subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5400)
     try:
         return json.load(open(os.path.join(outdir, 'result.json')))
     except FileNotFoundError:
@@ -53,7 +59,7 @@ def read_log(path):
 
 
 def play_all(version, outdir):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count() or 4) as pool:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=int(os.environ.get('DEMOS_JOBS', 0)) or os.cpu_count() or 4) as pool:
         jobs = {i: pool.submit(play, version, i, os.path.join(outdir, f'demo{i:02d}'))
                 for i in range(len(DEMOS))}
         return {i: job.result() for i, job in jobs.items()}

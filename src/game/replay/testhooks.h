@@ -26,6 +26,9 @@ extern u32 g_TestStateLog[TEST_STATE_LOG_LEN][3];
 /* Attract-mode demo to play instead of a random one (index into ramrom_table), or -1. */
 extern s32 g_TestForceDemo;
 
+/* Level to start (a LEVELID) straight from the title screen, as solo on Agent, or -1. */
+extern s32 g_TestForceStage;
+
 /* Set when a demo stops because the game no longer matches the recording
  * (its random seed or input checksum differs). */
 extern s32 g_TestDemoDesynced;

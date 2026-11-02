@@ -18,8 +18,12 @@
 
 // The RSP reads and writes these by DMA: keep them on whole data cache lines.
 alignas(16) static u8 s_DramStack[SP_DRAM_STACK_SIZE8];
-// Where the Fast3D microcode saves its state when an audio task interrupts it
+// Where the graphics microcode saves its state when an audio task interrupts it
+#ifdef UCODE_F3DEX3
+#define GFX_YIELD_DATA_SIZE 0xC00 /* what F3DEX3 needs */
+#else
 #define GFX_YIELD_DATA_SIZE 0xBA0
+#endif
 
 alignas(16) static u8 s_YieldBuffer[GFX_YIELD_DATA_SIZE];
 
@@ -34,6 +38,12 @@ extern long long int rspbootTextStart[];
 extern long long int rspbootTextEnd[];
 extern long long int gsp3DTextStart[];
 extern long long int gsp3DDataStart[];
+
+#ifdef UCODE_F3DEX3
+LookAt g_Fast3dDefaultLookAt = {
+    .l = { { .l = { .dir = { 0, 127, 0 } } }, { .l = { .dir = { 127, 0, 0 } } } },
+};
+#endif
 
 void rspAllocateBuffers(void)
 {

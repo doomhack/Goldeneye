@@ -1236,6 +1236,21 @@ Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bott
 {
     struct player *player = g_CurrentPlayer;
 
+    // The screen box rooms are clipped to stays 1 pixel inside the framebuffer (stock
+    // bgViewRelated, which the game logic depends on through room visibility). Draw up to
+    // the framebuffer's top and bottom rows anyway: otherwise they are left to the sky,
+    // which under F3DEX3 showed as a line along the top of the screen. (Widening the
+    // scissor sideways as well put a line along the top of the NTSC picture on hardware.)
+    if (top <= bgViewRelated[1])
+    {
+        top = 0;
+    }
+
+    if (bottom >= viGetY() + bgViewRelated[3])
+    {
+        bottom = viGetY();
+    }
+
     if (left < (s32) player->viewleft)
     {
         left = (s32) player->viewleft;
@@ -1840,8 +1855,8 @@ Gfx DL_LUT_BILLBOARD[] = {
 
 //water
 Gfx DL_LUT_WATER[] = {
-    {{0xB900031D, 0x00552078}}, {{0xB900031D, 0x00502078}},
-    {{0xB900031D, 0x0C192078}}, {{0xB900031D, 0x0C182078}},
+    gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x00552078), gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x00502078),
+    gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x0C192078), gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x0C182078),
     /*
     //1 Cycle Opa to Particle
     gsDPSetRenderMode(RM_AA_ZB_OPA_SURF, RM_AA_ZB_OPA_SURF2), gDPSetRenderMode(G_RM_AA_ZB_PCL_SURF, G_RM_AA_ZB_PCL_SURF2),
@@ -1861,8 +1876,8 @@ Gfx DL_LUT_CLOUD[] = {
 Gfx DL_LUT_WALLETBOND[] = {
     gsDPSetCycleType(G_CYC_1CYCLE),
     gsDPSetCycleType(G_CYC_2CYCLE), //1Cycle --> 2Cycle
-    {{0xB900031D, 0x00502048}},
-    {{0xB900031D, 0x08D02048}},
+    gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x00502048),
+    gsSPSetOtherMode(G_SETOTHERMODE_L, 3, 29, 0x08D02048),
     gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE,  TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE),
     gsDPSetCombineLERP(TEXEL0, 0, SHADE, 0,  0, 0, 0, SHADE,  0, 0, 0, COMBINED,  0, 0, 0, COMBINED),
     /*

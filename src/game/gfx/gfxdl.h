@@ -11,8 +11,9 @@
  * loads and triangles is here, so a change of microcode only changes this file.
  *
  * Triangles are numbered within their command as in HitThing.triNum: a command holds
- * gfxTriCount() of them, numbered gfxFirstTri() up. Fast3D's G_TRI1 has triangle 0;
- * GE's G_TRI4 has triangles 1 to 4 (one with all three indices 0 is not drawn).
+ * gfxTriCount() of them, numbered gfxFirstTri() up. G_TRI1 has triangle 0; Fast3D's
+ * G_TRI4 (GE's) has triangles 1 to 4 (one with all three indices 0 is not drawn), and
+ * F3DEX3's G_TRI2 has triangles 1 and 2.
  */
 
 static inline u32 gfxOp(const Gfx *cmd)
@@ -32,16 +33,24 @@ static inline bool gfxIsVtx(const Gfx *cmd)
     return gfxOp(cmd) == (u8)G_VTX;
 }
 
-/** A vertex load's first vertex buffer index */
-static inline s32 gfxVtxFirst(const Gfx *cmd)
-{
-    return (cmd->words.w0 >> 16) & 0xf;
-}
-
 /** The number of vertices a vertex load loads */
 static inline s32 gfxVtxCount(const Gfx *cmd)
 {
+#ifdef UCODE_F3DEX3
+    return (cmd->words.w0 >> 12) & 0xff;
+#else
     return ((cmd->words.w0 >> 20) & 0xf) + 1;
+#endif
+}
+
+/** A vertex load's first vertex buffer index */
+static inline s32 gfxVtxFirst(const Gfx *cmd)
+{
+#ifdef UCODE_F3DEX3
+    return ((cmd->words.w0 >> 1) & 0x7f) - gfxVtxCount(cmd);
+#else
+    return (cmd->words.w0 >> 16) & 0xf;
+#endif
 }
 
 /** A vertex load's address (segmented or physical) */
@@ -50,12 +59,20 @@ static inline u32 gfxVtxAddr(const Gfx *cmd)
     return cmd->words.w1;
 }
 
+#ifdef UCODE_F3DEX3
+#define GFX_OP_TRIS (u8)G_TRI2
+#define GFX_TRIS_COUNT 2
+#else
+#define GFX_OP_TRIS (u8)G_TRI4
+#define GFX_TRIS_COUNT 4
+#endif
+
 /** A command that draws triangles */
 static inline bool gfxIsTris(const Gfx *cmd)
 {
     u32 op = gfxOp(cmd);
 
-    return (op == (u8)G_TRI1) || (op == (u8)G_TRI4);
+    return (op == (u8)G_TRI1) || (op == GFX_OP_TRIS);
 }
 
 /** The number of triangles in a triangle command (0 for any other command) */
@@ -63,13 +80,13 @@ static inline s32 gfxTriCount(const Gfx *cmd)
 {
     u32 op = gfxOp(cmd);
 
-    return (op == (u8)G_TRI1) ? 1 : (op == (u8)G_TRI4) ? 4 : 0;
+    return (op == (u8)G_TRI1) ? 1 : (op == GFX_OP_TRIS) ? GFX_TRIS_COUNT : 0;
 }
 
 /** The number of a triangle command's first triangle */
 static inline s32 gfxFirstTri(const Gfx *cmd)
 {
-    return (gfxOp(cmd) == (u8)G_TRI4) ? 1 : 0;
+    return (gfxOp(cmd) == GFX_OP_TRIS) ? 1 : 0;
 }
 
 /** Gets triangle `tri` of a triangle command as vertex buffer indices */
@@ -78,6 +95,14 @@ static inline void gfxGetTri(const Gfx *cmd, s32 tri, s32 idx[3])
     u32 w0 = cmd->words.w0;
     u32 w1 = cmd->words.w1;
 
+#ifdef UCODE_F3DEX3
+    /* Index bytes are vertex numbers times 2: G_TRI1's in w0, G_TRI2's second in w1 */
+    u32 w = (tri == 2) ? w1 : w0;
+
+    idx[0] = ((w >> 16) & 0xff) / 2;
+    idx[1] = ((w >> 8) & 0xff) / 2;
+    idx[2] = (w & 0xff) / 2;
+#else
     if (gfxOp(cmd) == (u8)G_TRI1)
     {
         idx[0] = ((w1 >> 16) & 0xff) / 10;
@@ -92,6 +117,7 @@ static inline void gfxGetTri(const Gfx *cmd, s32 tri, s32 idx[3])
         idx[1] = (w1 >> (8 * t + 4)) & 0xf;
         idx[2] = (w0 >> (4 * t)) & 0xf;
     }
+#endif
 }
 
 /**

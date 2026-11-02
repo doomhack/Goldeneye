@@ -90,9 +90,26 @@ Lights1 g_WeaponEnvmapLight = gdSPDefLights1(
     0x96, 0x96, 0x96,   // ambient RGB
     0xff, 0xff, 0xff,   // diffuse RGB
     0xb2, 0x4d, 0x2e);  // direction
-u32 size_item_buffer[] = {0x14820, 0x14820};
+/*
+ * Each hand's model buffer: the model file and its expanded display lists first, then its
+ * textures. A model expands in place (see modelFileLoad), so its part must hold the expanded
+ * size. F3DEX3's display lists are bigger (two triangles per command, not four), so that
+ * build gives the models more room; the texture part stays the same size.
+ */
+#ifdef UCODE_F3DEX3
+#define HAND_MODEL_EXTRA 0x2000
+#else
+#define HAND_MODEL_EXTRA 0
+#endif
 
-u32 g_GunModelBufferOffset[] ={0x7530, 0x7530};
+/* The model part for Bond's hand, the Trigger and the Watch laser, and everything else */
+#define HAND_MODEL_SIZE_SUIT_HAND (0xBD70 + HAND_MODEL_EXTRA)
+#define HAND_MODEL_SIZE_TRIGGER   (0xAFD0 + HAND_MODEL_EXTRA)
+#define HAND_MODEL_SIZE_GUN       (0x7530 + HAND_MODEL_EXTRA)
+
+u32 size_item_buffer[] = {0x14820 + HAND_MODEL_EXTRA, 0x14820 + HAND_MODEL_EXTRA};
+
+u32 g_GunModelBufferOffset[] = {HAND_MODEL_SIZE_GUN, HAND_MODEL_SIZE_GUN};
 
 
 CartridgeModelFileRecord ejected_cartridge[] = {
@@ -607,13 +624,13 @@ void gunLoadHandModel(GUNHAND hand)
 
                 if (item == ITEM_SUIT_LF_HAND)
                 {
-                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + 0xBD70, size_buffer_weapon + 0xFFFF4290);
-                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, 0xBD70, &g_CurrentPlayer->handModelTexPool[hand]);
+                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + HAND_MODEL_SIZE_SUIT_HAND, size_buffer_weapon - HAND_MODEL_SIZE_SUIT_HAND);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, HAND_MODEL_SIZE_SUIT_HAND, &g_CurrentPlayer->handModelTexPool[hand]);
                 }
                 else if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
                 {
-                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + 0xAFD0, size_buffer_weapon + 0xFFFF5030);
-                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, 0xAFD0, &g_CurrentPlayer->handModelTexPool[hand]);
+                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + HAND_MODEL_SIZE_TRIGGER, size_buffer_weapon - HAND_MODEL_SIZE_TRIGGER);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, HAND_MODEL_SIZE_TRIGGER, &g_CurrentPlayer->handModelTexPool[hand]);
                 }
                 else
                 {

@@ -141,9 +141,14 @@ def main():
     ap.add_argument('--pads', type=int, default=1)
     ap.add_argument('--shots', default='')
     ap.add_argument('--outdir', default='testrun-out')
-    ap.add_argument('--gfx', choices=['rice', 'none'], default='rice')
+    ap.add_argument('--gfx', choices=['rice', 'angrylion', 'z64', 'none'], default='rice',
+                    help='rice = HLE video; angrylion or z64 = low-level RDP (needed for F3DEX3, pair with --rsp z64)')
+    ap.add_argument('--rsp', choices=['hle', 'cxd4', 'z64'], default='hle',
+                    help='hle = high-level RSP (Fast3D only); cxd4 or z64 = low-level RSP that runs the real microcode')
     ap.add_argument('--map')
     ap.add_argument('--watch')
+    ap.add_argument('--stage', type=int, metavar='LEVELID',
+                    help='start this level (a LEVELID number, e.g. 41 = Cradle) solo from the title screen')
     ap.add_argument('--poke', action='append', default=[], metavar='SYMBOL=VALUE',
                     help='write a 32-bit value to a global at the first frame (needs --map)')
     ap.add_argument('--statelog', action='store_true',
@@ -153,6 +158,10 @@ def main():
                     help='play attract-mode demo N (0-13) and stop when it ends (needs --map)')
     ap.add_argument('--pak', choices=['none', 'controller', 'rumble'], default='none',
                     help='what is plugged into each controller (real consoles usually have a pak)')
+    ap.add_argument('--demo-shots', default='', metavar='F,F,...',
+                    help='with --demo, screenshots at these frames counted from the start of the demo')
+    ap.add_argument('--dumpram-demo', type=int, default=0, metavar='N',
+                    help='with --demo, save RDRAM to OUTDIR/demo-ram-K.bin for the first N frames of the demo')
     ap.add_argument('--dumpram', action='store_true',
                     help='save RDRAM to OUTDIR/end-ram.bin when the run ends')
     ap.add_argument('--readwatch', action='append', default=[], metavar='START:END',
@@ -178,6 +187,7 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
     events = parse_script(args.script) if args.script else []
     shots = {int(s) for s in args.shots.split(',') if s}
+    demo_shots = {int(s) for s in args.demo_shots.split(",") if s}
     def addr(symbol):
         if not args.map:
             sys.exit(f'--map is needed to find {symbol}')
@@ -188,6 +198,8 @@ def main():
     for item in args.poke:
         symbol, value = item.split('=')
         pokes.append((addr(symbol), int(value, 0)))
+    if args.stage is not None:
+        pokes.append((addr('g_TestForceStage'), args.stage))
     if args.statelog or args.demo is not None:
         pokes.append((addr('g_TestHooksEnabled'), 1))
     if args.demo is not None:
@@ -240,10 +252,10 @@ def main():
     if not os.path.exists(built) or os.path.getmtime(built) < os.path.getmtime(os.path.join(HERE, 'input-script.c')):
         os.system(f'cc -shared -fPIC -O2 -o {built} {HERE}/input-script.c')
     plugins = []
-    if args.gfx == 'rice':
-        plugins.append((M64PLUGIN_GFX, PLUGINDIR + '/mupen64plus-video-rice.so'))
+    if args.gfx != 'none':
+        plugins.append((M64PLUGIN_GFX, PLUGINDIR + f'/mupen64plus-video-{args.gfx}.so'))
     plugins.append((M64PLUGIN_INPUT, built))
-    plugins.append((M64PLUGIN_RSP, PLUGINDIR + '/mupen64plus-rsp-hle.so'))
+    plugins.append((M64PLUGIN_RSP, os.environ.get('M64RUN_RSP_PLUGIN') or PLUGINDIR + f'/mupen64plus-rsp-{args.rsp}.so'))
     inputlib = None
     for kind, path in plugins:
         lib = C.CDLL(path)
@@ -318,7 +330,18 @@ def main():
         if args.demo is not None:
             playing = word(ram, demo_flag) != 0
             if playing:
+                if not seen['demo']:
+                    seen['demo_start'] = frame
                 seen['demo'] = True
+                if frame - seen['demo_start'] in demo_shots:
+                    core.CoreDoCommand(M64CMD_TAKE_NEXT_SCREENSHOT, 0, None)
+                k = frame - seen['demo_start']
+                if k < args.dumpram_demo or args.dumpram_demo < 0:
+                    # A negative count keeps the last -N frames' dumps (for catching hangs)
+                    name = f'demo-ram-{k % -args.dumpram_demo}.bin' if args.dumpram_demo < 0 else f'demo-ram-{k}.bin'
+                    dump = C.string_at(core.DebugMemGetPointer(M64P_DBG_PTR_RDRAM), 8 << 20)
+                    open(os.path.join(args.outdir, name), 'wb').write(dump)
+                    open(os.path.join(args.outdir, 'demo-ram-last.txt'), 'w').write(f'{k} {name}\n')
             elif seen['demo']:
                 result['demo'] = 'desynced' if word(ram, desync_flag) else 'ended'
                 core.CoreDoCommand(M64CMD_STOP, 0, None)
@@ -410,6 +433,7 @@ def main():
                 core.DebugGetCPUDataPtr.restype = C.c_void_p
                 pc = C.cast(core.DebugGetCPUDataPtr(M64P_CPU_PC), C.POINTER(C.c_uint32))[0]
                 result.update(status='hung', frame=progress['frame'], pc=f'{pc:08x}')
+                print('hung at frame', progress['frame'], 'pc', f'{pc:08x}', flush=True)
                 ram = C.string_at(core.DebugMemGetPointer(M64P_DBG_PTR_RDRAM), 8 << 20)
                 open(os.path.join(args.outdir, 'hang-ram.bin'), 'wb').write(ram)
                 vi = C.cast(core.DebugMemGetPointer(M64P_DBG_PTR_VI_REG), C.POINTER(C.c_uint32))

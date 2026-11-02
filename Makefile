@@ -65,6 +65,21 @@ ifeq ($(UNLOCK_ALL), 1)
   LCDEFS += -DUNLOCK_ALL_LEVELS
 endif
 
+# make UCODE=f3dex3: build for the F3DEX3 graphics microcode instead of Fast3D
+# (rsp/f3dex3/README.md)
+UCODE ?= fast3d
+ifeq ($(UCODE), f3dex3)
+  LCDEFS += -DUCODE_F3DEX3 -DF3DEX_GBI_2
+  ASMDEFS += --defsym UCODE_F3DEX3=1
+  # Model.c files made before the generators wrote geometry modes by name have Fast3D's
+  # bit values, which mean other things to F3DEX3
+  ifneq ($(shell grep -l 'GeometryMode.0x' assets/obseg/*/*/Model.c 2>/dev/null | head -1),)
+    $(error Model.c files are out of date for F3DEX3: run make forceextractassets)
+  endif
+else ifneq ($(UCODE), fast3d)
+  $(error UCODE "$(UCODE)" not supported, use fast3d or f3dex3)
+endif
+
 ALLOWED_VERSIONS := US EU
 ALLOWED_COUNTRYCODE := u e
 ifeq ($(filter $(VERSION),$(ALLOWED_VERSIONS)),)
@@ -293,6 +308,10 @@ $(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 $(BUILD_DIR)/src/%.o: WARNFLAGS := -Wall -Wextra -Werror
+# F3DEX3's GBI writes static commands without the inner braces of the Gfx union
+ifeq ($(UCODE), f3dex3)
+$(BUILD_DIR)/src/%.o: WARNFLAGS += -Wno-missing-braces
+endif
 # make SHUFFLE=<seed> links the game's variables in a random order with guard gaps between them,
 # to catch code that depends on how globals are laid out (tools/testrun/shuffle.py). Build it in
 # a clean tree: the objects differ from a normal build.
@@ -589,6 +608,19 @@ $(BUILD_DIR)/src/game/save/file.o $(BUILD_DIR)/src/game/menu/front.o: $(UNLOCK_S
 LTO_STAMP := $(BUILD_DIR)/lto
 $(shell [ "`cat $(LTO_STAMP) 2>/dev/null`" = "$(LTO)" ] || echo $(LTO) > $(LTO_STAMP))
 $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS): $(LTO_STAMP)
+
+# Switching UCODE rebuilds everything that uses display lists, which is nearly
+# everything: every game object and asset
+UCODE_STAMP := $(BUILD_DIR)/ucode
+$(shell [ "`cat $(UCODE_STAMP) 2>/dev/null`" = "$(UCODE)" ] || echo $(UCODE) > $(UCODE_STAMP))
+UCODE_ASSET_OBJECTS := $(BUILD_DIR)/src/gspboot.o $(BG_O_FILES) $(ASSET_DATAOBJECTS) \
+	$(foreach n,$(CHRNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/chr/$(n)/Model.o) \
+	$(foreach n,$(GUNNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/gun/$(n)/Model.o) \
+	$(foreach n,$(PROPNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/prop/$(n)/Model.o)
+# A level's .seg comes from its .o under F3DEX3 but can be copied from an extracted .bin
+# under Fast3D, so it must be remade on a switch too
+$(BG_SEG_FILES): $(UCODE_STAMP)
+$(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(UCODE_ASSET_OBJECTS): $(UCODE_STAMP)
 
 # Header dependencies written by -MMD
 -include $(shell find $(BUILD_DIR) -name '*.d' 2>/dev/null)

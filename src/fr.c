@@ -1,4 +1,5 @@
 #include <ultra64.h>
+#include <gbi_extension.h>
 #include "vi.h"
 #include "fr.h"
 #include <bondgame.h>
@@ -628,7 +629,7 @@ Gfx *viSetupCurrentPlayerView(Gfx *gdl)
     {
         g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[0] = (VI_SX(g_ViBackData->viewx) * 2);
         g_CurrentPlayer->viewports[g_ViBackIndex].vp.vtrans[0] = (VI_SX(g_ViBackData->viewx) * 2) + (VI_SX(g_ViBackData->viewleft) * 4);
-        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[1] = (g_ViBackData->viewy * 2);
+        g_CurrentPlayer->viewports[g_ViBackIndex].vp.vscale[1] = GE_VP_YSCALE(g_ViBackData->viewy * 2);
         g_CurrentPlayer->viewports[g_ViBackIndex].vp.vtrans[1] = (g_ViBackData->viewy * 2) + (g_ViBackData->viewtop * 4);
     }
 

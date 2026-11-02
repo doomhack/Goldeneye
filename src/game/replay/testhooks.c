@@ -13,6 +13,7 @@ TEST_HOOK_VAR u32 g_TestStateLogCount = 0;
 TEST_HOOK_VAR u32 g_TestStateLog[TEST_STATE_LOG_LEN][3];
 TEST_HOOK_VAR s32 g_TestForceDemo = -1;
 TEST_HOOK_VAR s32 g_TestDemoDesynced = 0;
+TEST_HOOK_VAR s32 g_TestForceStage = -1;
 
 /* FNV-1a */
 static u32 hashWord(u32 hash, u32 value)

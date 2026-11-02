@@ -38,6 +38,35 @@ OPCODES = {
 }
 
 # Binary reader utilities
+
+# Fast3D's geometry mode bits. The names are written out rather than the numbers because
+# other microcodes (F3DEX2, F3DEX3) put some of these modes on different bits.
+FAST3D_GEOMETRY_MODES = [
+    (0x00000001, "G_ZBUFFER"),
+    (0x00000004, "G_SHADE"),
+    (0x00000200, "G_SHADING_SMOOTH"),
+    (0x00001000, "G_CULL_FRONT"),
+    (0x00002000, "G_CULL_BACK"),
+    (0x00010000, "G_FOG"),
+    (0x00020000, "G_LIGHTING"),
+    (0x00040000, "G_TEXTURE_GEN"),
+    (0x00080000, "G_TEXTURE_GEN_LINEAR"),
+    (0x00100000, "G_LOD"),
+]
+
+
+def fast3d_geometry_mode_names(mode):
+    """A Fast3D geometry mode word as G_* names joined with |"""
+    names = []
+    for bit, name in FAST3D_GEOMETRY_MODES:
+        if mode & bit:
+            names.append(name)
+            mode &= ~bit
+    if mode:
+        raise ValueError(f"unknown Fast3D geometry mode bits 0x{mode:08X}")
+    return " | ".join(names) if names else "0"
+
+
 def read_u32(data, offset): return struct.unpack('>I', data[offset:offset+4])[0]
 def read_s32(data, offset): return struct.unpack('>i', data[offset:offset+4])[0]
 def read_u16(data, offset): return struct.unpack('>H', data[offset:offset+2])[0]
@@ -997,13 +1026,11 @@ def decode_gfx_command(w0: int, w1: int, vertex_array_name: str = None, vertex_a
 
     # gsSPSetGeometryMode (0xB7 classic, 0xD9 F3DEX2 variant)
     elif opcode == 0xB7:
-        mode = w1
-        return f"gsSPSetGeometryMode(0x{mode:08X})"
+        return f"gsSPSetGeometryMode({fast3d_geometry_mode_names(w1)})"
 
     # gsSPClearGeometryMode (0xB6)
     elif opcode == 0xB6:
-        mode = w1
-        return f"gsSPClearGeometryMode(0x{mode:08X})"
+        return f"gsSPClearGeometryMode({fast3d_geometry_mode_names(w1)})"
 
     # gsDPSetPrimColor (0xFA)
     elif opcode == 0xFA:
