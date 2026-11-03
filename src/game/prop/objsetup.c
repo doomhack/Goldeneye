@@ -1108,7 +1108,12 @@ void setupAmmoCrate(MultiAmmoCrateRecord *crate, bool skipped)
     {
         mpweapon = &mpWeaponSetGetItems()[s_LastMpWeaponSlot];
         amount = mpweapon->ammoamount;
-        crate->slots[mpweapon->ammotype - 1].quantity = amount;
+
+        // the Lasers set's laser has no ammo type (its amount is 0)
+        if (mpweapon->ammotype > AMMO_NONE)
+        {
+            crate->slots[mpweapon->ammotype - 1].quantity = amount;
+        }
     }
 
     if (amount <= 0 || skipped)

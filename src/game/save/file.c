@@ -12,6 +12,7 @@
 #include "game/save/file.h"
 #include "game/menu/front.h"
 #include "game/menu/cheat.h"
+#include "game/menu/mp_weapon.h"
 #include <random.h>
 #include "game/level/lv.h"
 #include "game/level/gamemode.h"
@@ -502,6 +503,7 @@ void fileValidateSaves(void)
         }
 
         fileCoopLoadPartnerSettings(&joyChecksum);
+        fileMpLoadWeaponSettings(&joyChecksum);
 
         // Block read 5 saves starting at address 4th byte (? bug: address must be multiple of 8 - return is -1)
         joyGamePakLongRead(4, g_Saves, sizeof(save_data) * 5);
@@ -1324,6 +1326,54 @@ void fileCoopSavePartnerSettings(void)
     s_SaveHeader.data[3] = options & 0xFF;
     s_SaveHeader.data[4] = s_CoopPartnerChar;
     fileWriteSmallSave(&s_SaveHeader);
+}
+
+/**
+ * The multiplayer custom weapon set, also in the spare bytes of the EEPROM header:
+ * unk[5] = MP_WEAPONS_SAVE_MAGIC, unk[6..13] = the weapon in each slot.
+ */
+#define MP_WEAPONS_SAVE_MAGIC 0xC2
+#define MP_WEAPONS_SAVE_START 6
+
+void fileMpLoadWeaponSettings(const smallSave *header)
+{
+    if (header->data[5] == MP_WEAPONS_SAVE_MAGIC)
+    {
+        mpCustomWeaponLoad(&header->data[MP_WEAPONS_SAVE_START]);
+    }
+}
+
+/**
+ * Writes the custom weapon set to the EEPROM header if it changed.
+ */
+void fileMpSaveWeaponSettings(void)
+{
+    u8 choices[MP_WEAPON_SET_SLOTS];
+    s32 i;
+    bool changed;
+
+    if (!s_SaveHeaderValid)
+    {
+        return;
+    }
+
+    mpCustomWeaponSave(choices);
+    changed = s_SaveHeader.data[5] != MP_WEAPONS_SAVE_MAGIC;
+
+    for (i = 0; i < MP_WEAPON_SET_SLOTS; i++)
+    {
+        if (s_SaveHeader.data[MP_WEAPONS_SAVE_START + i] != choices[i])
+        {
+            s_SaveHeader.data[MP_WEAPONS_SAVE_START + i] = choices[i];
+            changed = TRUE;
+        }
+    }
+
+    if (changed)
+    {
+        s_SaveHeader.data[5] = MP_WEAPONS_SAVE_MAGIC;
+        fileWriteSmallSave(&s_SaveHeader);
+    }
 }
 
 s32 fileCoopGetPartnerChar(void)
