@@ -567,7 +567,7 @@ static void autogunFireShot(const PropRecord *prop, const Model *model, AutogunR
         zdiff = to.f[2] - from.f[2];
 
         // The target is nearer than the wall
-        if (targetdistsq <= (((xdiff * xdiff) + (ydiff * ydiff)) + (zdiff * zdiff)) && !playerIsShowingDamage())
+        if (targetdistsq <= (((xdiff * xdiff) + (ydiff * ydiff)) + (zdiff * zdiff)))
         {
             f32 targetdist = sqrtf(targetdistsq);
             f32 damage = (0.16f * g_GlobalTimerDelta) * g_AutogunPendingDamageTick;

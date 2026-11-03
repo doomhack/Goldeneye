@@ -1480,7 +1480,7 @@ static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, IT
     *inSight = insight;
     *hitBond = 0;
 
-    if ((playerIsShowingDamage() == 0) && (insight != 0))
+    if (insight != 0)
     {
         dist = sqrtf(dxdydz_square);
 
