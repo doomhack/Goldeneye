@@ -22,6 +22,7 @@
 #include <math.h>
 #include <str.h>
 #include "game/level/gamemode.h"
+#include "game/player/coop.h"
 
 #ifdef VERSION_EU
     #define HUDMSG_BOTTOM_TIME_SKIP  0x1a
@@ -269,7 +270,16 @@ Gfx* hudmsgBottomRender(Gfx* gdl)
 
             if (getPlayerCount() < 3)
             {
-                if ((weaponGetAmmoType(gunGetWeapon(GUNLEFT)) == 0) && (countdownTimerIsVisible() == 0))
+                /* The message is raised above the bottom-left ammo counter (left
+                   gun). In a half-width view it is wide enough to also reach the
+                   bottom-right counter (right gun), so clear that one too. */
+                bool ammo_below = weaponGetAmmoType(gunGetWeapon(GUNLEFT)) != 0;
+                if (viewIsHalfWidth() && weaponGetAmmoType(gunGetWeapon(GUNRIGHT)) != 0)
+                {
+                    ammo_below = true;
+                }
+
+                if (!ammo_below && (countdownTimerIsVisible() == 0))
                 {
                     view_top = (viGetViewTop() + viGetViewHeight()) - BOTTOM_OFFSET_NO_AMMO;
                 }
@@ -342,6 +352,13 @@ void hudmsgTopShow(const char* mess)
 
 void hudmsgTopTick(void)
 {
+    // Two player missions draw a HUD per view: count the time down once a
+    // frame, in the first view, or the message only lasts half as long.
+    if (gameIsTwoPlayerMission() && (playerGetShuffledIndex(playerGetCurrentNum()) != 0))
+    {
+        return;
+    }
+
     if ((s_TopHidden == FALSE) && (g_CurrentPlayer->mpmenuon == FALSE))
     {
         if (s_TopTimer >= 0)
@@ -402,10 +419,29 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                 if ((g_CurrentPlayer->mpmenuon == 0)
                     && (!gameIsTwoPlayerMission() || (s_CoopTopTextPlayer[s_TopFirst] == playerGetCurrentNum())))
                 {
+                    const char *text = s_TopText[s_TopFirst];
+                    char wrapped[HUDMSG_TOP_LEN * 2];
+                    s32 boxleft = 0;
+                    s32 boxright = viGetX();
+
+                    if (viewIsHalfWidth())
+                    {
+                        // A half-width view: wrap the text to the view. The
+                        // margin is wider on the view's side at the screen
+                        // edge (overscan), as for the bottom messages.
+                        s32 leftmargin = (coopPlayerPerson(playerGetCurrentNum()) & 1) ? 0xA : 0x1E;
+                        s32 rightmargin = (0x1E + 0xA) - leftmargin;
+
+                        textWrap(viGetViewWidth() - leftmargin - rightmargin, text, wrapped, g_FontZurichChars, g_FontZurich);
+                        text = wrapped;
+                        boxleft = viGetViewLeft();
+                        boxright = viGetViewLeft() + viGetViewWidth();
+                    }
+
                     gdl = textSetupDraw(gdl);
                     msg.textwidth = 0;
                     msg.textheight = 0;
-                    textMeasure(&msg.textheight, &msg.textwidth, s_TopText[s_TopFirst], g_FontZurichChars, g_FontZurich, 0);
+                    textMeasure(&msg.textheight, &msg.textwidth, text, g_FontZurichChars, g_FontZurich, 0);
                     if (cameraBufferToggle != 0)
                     {
                         msg.x = viGetViewLeft() + 0x46;
@@ -425,10 +461,15 @@ Gfx *hudmsgTopRender(Gfx *gdl)
 #endif
                     }
 
+                    if (viewIsHalfWidth())
+                    {
+                        msg.x = viGetViewLeft() + ((coopPlayerPerson(playerGetCurrentNum()) & 1) ? 0xA : 0x1E);
+                    }
+
                     msg.bottom = msg.y + msg.textheight;
-                    gdl = textRenderRect(gdl, 0, msg.y - 2, viGetX(), msg.bottom, 0x64);
+                    gdl = textRenderRect(gdl, boxleft, msg.y - 2, boxright, msg.bottom, 0x64);
                     sw.screenwidth = viGetX();
-                    gdl = textRender(gdl, &msg.x, &msg.y, s_TopText[s_TopFirst], g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
+                    gdl = textRender(gdl, &msg.x, &msg.y, text, g_FontZurichChars, g_FontZurich, -1, sw.screenwidth, viGetY(), 0, 0);
                     gdl = textEndDraw(gdl);
                     goto end;
                 }
