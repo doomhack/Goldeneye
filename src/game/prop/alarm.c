@@ -265,6 +265,7 @@ Gfx *countdownTimerRender(Gfx *gdl)
     s32 mins;
     s32 secs;
     s32 hundredths;
+    s32 x;
     s32 y;
 
     if (!countdownTimerIsVisible())
@@ -289,15 +290,26 @@ Gfx *countdownTimerRender(Gfx *gdl)
     y = viGetViewTop() + viGetViewHeight() - 28;
 #endif
 
+    // Centred on the screen, which is the view in a full-width one. A half
+    // width view centres it on the view instead, and lifts it above the
+    // ammo counter, which sits near the middle of such a view.
+    x = 0;
+
+    if (viewIsHalfWidth())
+    {
+        x = viGetViewLeft() + (viGetViewWidth() / 2) - 160;
+        y -= 13;
+    }
+
     gdl = textSetupDraw(gdl);
-    gdl = gunDrawHudInteger(gdl, mins % 100 / 10, 130, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
-    gdl = gunDrawHudInteger(gdl, mins % 10, 138, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
-    gdl = gunDrawHudString(gdl, colon, 147, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
-    gdl = gunDrawHudInteger(gdl, secs % 60 / 10, 156, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
-    gdl = gunDrawHudInteger(gdl, secs % 10, 164, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
-    gdl = gunDrawHudString(gdl, colon, 173, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
-    gdl = gunDrawHudInteger(gdl, hundredths % 100 / 10, 182, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
-    gdl = gunDrawHudInteger(gdl, hundredths % 10, 190, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
+    gdl = gunDrawHudInteger(gdl, mins % 100 / 10, x + 130, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
+    gdl = gunDrawHudInteger(gdl, mins % 10, x + 138, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
+    gdl = gunDrawHudString(gdl, colon, x + 147, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
+    gdl = gunDrawHudInteger(gdl, secs % 60 / 10, x + 156, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
+    gdl = gunDrawHudInteger(gdl, secs % 10, x + 164, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
+    gdl = gunDrawHudString(gdl, colon, x + 173, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
+    gdl = gunDrawHudInteger(gdl, hundredths % 100 / 10, x + 182, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
+    gdl = gunDrawHudInteger(gdl, hundredths % 10, x + 190, HUDHALIGN_MIDDLE, y, HUDVALIGN_MIDDLE, TRUE);
 
     return textEndDraw(gdl);
 }
