@@ -50,9 +50,9 @@ void playerResetCollision(struct PlayerBond *col, coord3d *pos, StandTile *stan)
  * g_CoopPlayersOverlap), returns the partner's prop so movement can ignore
  * it. Clears the overlap once they are far enough apart.
  */
-static PropRecord *coopGetOverlappingPartner(void)
+static const PropRecord *coopGetOverlappingPartner(void)
 {
-    PropRecord *other;
+    const PropRecord *other;
     f32 dx;
     f32 dz;
 
@@ -85,7 +85,7 @@ s32 playerTestMove(const coord3d *pos, StandTile **stan)
 {
     s32 ok;
     StandTile *tile;
-    PropRecord *overlap_partner;
+    const PropRecord *overlap_partner;
     s32 cdtypes;
     f32 height;
     f32 always_30;
@@ -767,7 +767,7 @@ void playerUpdateCollisionBounds(void)
  */
 void playerGetCollisionSize(const PropRecord *prop, f32 *collision_radius, f32 *height, f32 *always_30)
 {
-    struct player *player = g_playerPointers[playerGetIndexForProp(prop)];
+    const struct player *player = g_playerPointers[playerGetIndexForProp(prop)];
 
     *collision_radius = player->bond.collision_radius;
     *height = (playerGetEyeHeight(player) + 10.0f) - 30.0f;

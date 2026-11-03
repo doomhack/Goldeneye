@@ -46,7 +46,7 @@ typedef struct StandTile
 /* A level's stan file. The asset files in assets/obseg/stan build it from these. */
 typedef struct StandFileHeader
 {
-    void *unused;
+    const void *unused;
     StandTile *firstTile; /* then more pointers, up to a NULL, then the tiles */
     u8 pointers[];
 } StandFileHeader;
@@ -174,7 +174,7 @@ bool stanGetCollisionEdge(coord3d *a, coord3d *b);
 bool stanWalkLine(StandTile **tile, f32 x, f32 z, f32 destX, f32 destZ);
 s32 stanGetRoomsBetween(StandTile *tile, f32 x, f32 z, StandTile **destTile, f32 destX, f32 destZ, s32 *rooms, s32 maxRooms);
 bool stanTestLineUnobstructed(StandTile **tile, f32 x, f32 z, f32 destX, f32 destZ, s32 cdtypes, f32 fromTop, f32 fromBottom, f32 toTop, f32 toBottom);
-PropRecord *stanLineFindDoor(StandTile *tile, f32 x, f32 z, f32 destX, f32 destZ, s32 cdtypes);
+const PropRecord *stanLineFindDoor(StandTile *tile, f32 x, f32 z, f32 destX, f32 destZ, s32 cdtypes);
 StanCollisionResult stanCircleLegal(StandTile **tile, f32 x, f32 z, f32 radius);
 StanCollisionResult stanCircleRooms(StandTile **tile, f32 x, f32 z, f32 radius, s32 *rooms, s32 *numRooms, s32 maxRooms);
 StanCollisionResult stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s32 cdtypes, f32 top, f32 bottom);

@@ -384,6 +384,12 @@ write through such a pointer; drop the const instead.
 `tools/constify.py run` adds const to every pointer parameter that still compiles as const in both
 regions (it compiles with `-Wcast-qual`, so a cast can't hide a write) and leaves the code generated
 unchanged; check with `LTO=0 tools/compare/compare.sh`.
+
+Tables that nothing writes are const, so they live in .rodata: `static const s16 tbl[] = {...}`,
+or `T *const tbl[]` when the elements are pointers. A pointer into such a table (a local, a
+field, a return type) is a pointer to const. `tools/constdata.py run` finds every table that can
+be const, together with the pointers that have to change with it. Unlike const parameters this
+moves data, so check the demos afterwards.
 ## COMMENTS
 Comments should be C style / * * / for block comments and header documentation.
 

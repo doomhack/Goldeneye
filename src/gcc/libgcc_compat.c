@@ -43,7 +43,7 @@ float __floatundisf(u64_t u) { return __ull_to_f(u); }
  * This file is built with -fno-tree-loop-distribute-patterns so the loop is not
  * turned back into a memset call.
  */
-void *gcc_memset(void *dst, int c, unsigned int n)
+const void *gcc_memset(void *dst, int c, unsigned int n)
 {
     u8 *p = dst;
 

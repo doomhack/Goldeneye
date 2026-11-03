@@ -209,7 +209,7 @@ s32 ramrom_replay_handler(struct contsample *samples, s32 index)
 {
     s32 frame;
     s32 cont;
-    struct ramrom_blockbuf *entry;
+    const struct ramrom_blockbuf *entry;
     u8 checksum;
     s32 numcontrollers;
     s32 count;

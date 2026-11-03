@@ -236,8 +236,8 @@ void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event) {
     s32 limitReached;
     ALSndpEvent postEvent;
     ALSndpEvent nextStateEvent;
-    ALSound *sound;
-    ALKeyMap *keyMap;
+    const ALSound *sound;
+    const ALKeyMap *keyMap;
     s32 volume;
     s32 fxMix;
     s32 isEventForSingleSound;
@@ -582,7 +582,7 @@ void sndRemoveEvents(ALEventQueue *evtq, const ALSoundState *state, u16 eventTyp
 ALSoundState *sndSetupSound(ALSound* sound)
 {
     s32 decayTimeFlag;
-    ALKeyMap *keymap = sound->keyMap;
+    const ALKeyMap *keymap = sound->keyMap;
     ALSoundState *state = (ALSoundState *)g_sndStates.free;
     OSIntMask mask;
 
@@ -759,7 +759,7 @@ ALSoundState *sndPlaySfx(struct ALBankAlt_s *soundBank, s16 soundIndex, ALSoundS
 
     do
     {
-        ALKeyMap *keyMap;
+        const ALKeyMap *keyMap;
 
         sound = (soundBank->instArray[0]->soundArray[soundIndex]);
 

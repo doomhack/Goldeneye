@@ -44,19 +44,19 @@ static f32 g_PlayerWorldScaleInv = 1.0;
 
 
 // Defaults for playerMoveFrozen's position and move offset
-static coord3d g_DefaultMoveBondOffset = { 0 };
+static const coord3d g_DefaultMoveBondOffset = { 0 };
 
 // struct player `pos`
-static coord3d g_DefaultFrozenPlayerPos = { 0 };
+static const coord3d g_DefaultFrozenPlayerPos = { 0 };
 
 // struct player `pos2`
-static coord3d g_DefaultFrozenPlayerPos2 = { {0, 0, 1.0f} };
+static const coord3d g_DefaultFrozenPlayerPos2 = { {0, 0, 1.0f} };
 
 // struct player `offset`
-static coord3d g_DefaultFrozenPlayerOffset = { {0, 1.0f, 0} };
+static const coord3d g_DefaultFrozenPlayerOffset = { {0, 1.0f, 0} };
 
 // struct player `offset`
-static coord3d g_DefaultFrozenMoveOffset = { 0 };
+static const coord3d g_DefaultFrozenMoveOffset = { 0 };
 
 
 coord3d g_ForceBondMoveOffset;
@@ -140,7 +140,7 @@ f32 playerGetFloorY(const StandTile *tile, f32 x, f32 z)
     if (g_CurrentPlayer->tankMounted != NULL)
     {
         ObjectRecord * obj = ((PropRecord *)g_CurrentPlayer->tankMounted)->obj;
-        PropRecord *p = obj->prop;
+        const PropRecord *p = obj->prop;
 
         ret = stanGetFloorY(p->stan, p->pos.x, p->pos.z);
 
@@ -1634,14 +1634,14 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         struct TankRecord *tankRec;
         struct ObjectRecord *tankObj;
         f32 smoothY;
-        ModelRoData_BoundingBoxRecord *bbox;
+        const ModelRoData_BoundingBoxRecord *bbox;
         Mtxf tankMtx;
         coord3d tankPos;
         s32 step;
         coord2d tankBounds[4];
         // roomids
         s32 rooms[8];
-        s16 *lookup_index;
+        const s16 *lookup_index;
 
         tankRec = ((struct TankRecord *)g_CurrentPlayer->tankMounted->obj);
         tankObj = (struct  ObjectRecord*)g_CurrentPlayer->tankMounted->obj;

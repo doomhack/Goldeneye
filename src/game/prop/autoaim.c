@@ -23,7 +23,7 @@
 /* Set by difficulty: scales how far from the centre of the screen a target may be */
 f32 g_AutoAimTolerance = 1.0;
 
-static coord2d g_DefaultAutoAimCoord = {0};
+static const coord2d g_DefaultAutoAimCoord = {0};
 
 /* The part of the screen auto-aim works in: the middle 65% vertically and 50% across */
 #define AUTOAIM_TOP    0.175f
@@ -132,7 +132,7 @@ f32 autoaimScoreProp(const PropRecord *targetprop, const coord3d *aimpos, const 
     }
 
     // The player must be able to see the floor the target stands on
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *playerprop = currentPlayerGetProp();
     StandTile *stan = playerprop->stan;
     f32 eyeheight = playerGetEyeHeight(g_CurrentPlayer);
 
@@ -193,7 +193,7 @@ static bool autoaimIsCandidate(const PropRecord *prop)
         return FALSE;
     }
 
-    ChrRecord *chr = prop->chr;
+    const ChrRecord *chr = prop->chr;
 
     return chrGetEquippedWeaponProp(chr, GUNRIGHT) != NULL || chrGetEquippedWeaponProp(chr, GUNLEFT) != NULL;
 }

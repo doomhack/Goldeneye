@@ -247,7 +247,7 @@ extern f32 g_Front007Accuracy;
 extern f32 g_Front007Damage;
 
 
-extern struct mission_folder_setup g_FrontMissions[];
+extern const struct mission_folder_setup g_FrontMissions[];
 
 extern s32 g_MpPlayerCount;
 extern s32 g_MpChar[];
@@ -262,7 +262,7 @@ extern s32 g_MpCanPickWeapons;
 extern s32 g_MpCanPickHandicap;
 extern s32 g_MpCanPickControls;
 extern s32 g_MpCanPickAim;
-extern s16 g_FrontTargetTimes[20][3];
+extern const s16 g_FrontTargetTimes[20][3];
 
 extern s32 g_CastIndex;
 extern u32 g_CastAnim;

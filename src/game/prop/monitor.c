@@ -323,7 +323,7 @@ static void setTextureCoords(const MonitorRecord *mon, Vertex *vertices)
  */
 Gfx *monitorTickAndDraw(Model *model, const ModelNode *node, MonitorRecord *mon, Gfx *gdl, s32 zbufferMode, s32 blendMode)
 {
-    union ModelRoData *rodata;
+    const union ModelRoData *rodata;
     union ModelRwData *rwdata;
     Vertex *vertices;
     Gfx *branch;

@@ -214,7 +214,7 @@ static void objMoveToPlacement(ObjectRecord *obj, const coord3d *pos, StandTile 
  */
 void objPlaceAtPad(ObjectRecord *obj, const coord3d *pos, const Mtxf *matrix, StandTile *stan, const coord3d *centre)
 {
-    ModelRoData_BoundingBoxRecord *bbox = modelFileFindBbox(obj->model->obj);
+    const ModelRoData_BoundingBoxRecord *bbox = modelFileFindBbox(obj->model->obj);
     f32 bottom = bboxGetYmin(bbox);
     f32 top = bboxGetYmax(bbox);
     coord3d newpos;
@@ -238,7 +238,7 @@ void objPlaceAtPad(ObjectRecord *obj, const coord3d *pos, const Mtxf *matrix, St
     else
     {
         f32 floory = stanGetFloorY(stan, pos->f[0], pos->f[2]);
-        ObjectRecord *below;
+        const ObjectRecord *below;
 
         mtx4Copy(matrix, &mtx);
         newpos.x = centre->f[0] - (mtx.m[1][0] * bottom);
@@ -382,9 +382,9 @@ void objFree(ObjectRecord *obj, s32 freeprop, s32 canregen)
 
     propRemoveFromRooms(prop);
 
-    for (PropRecord *child = propChild(prop); child != NULL;)
+    for (const PropRecord *child = propChild(prop); child != NULL;)
     {
-        PropRecord *next = child->prev;
+        const PropRecord *next = child->prev;
 
         objFreePermanently(child->obj, TRUE);
         child = next;
@@ -420,7 +420,7 @@ void objFreePermanently(ObjectRecord *obj, bool freeprop)
  */
 void modelResetDeformedVertices(const Model *model)
 {
-    ModelFileHeader *header = model->obj;
+    const ModelFileHeader *header = model->obj;
     ModelNode *node = header->RootNode;
 
     while (node != NULL)
@@ -429,7 +429,7 @@ void modelResetDeformedVertices(const Model *model)
         {
             case MODELNODE_OPCODE_DLCOLLISION:
             {
-                union ModelRoData *rodata = node->Data;
+                const union ModelRoData *rodata = node->Data;
                 union ModelRwData *rwdata = modelGetNodeRwData(model, node);
 
                 if (rwdata->DisplayListCollisions.Vertices != rodata->DisplayListCollisions.Vertices && objNodeCanDeform(header, node))
@@ -482,7 +482,7 @@ void modelResetDeformedVertices(const Model *model)
  */
 void objsFreeDeformedVertices(void)
 {
-    for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
+    for (const PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {
         if (prop->type != PROP_TYPE_OBJ || (prop->flags & PROPFLAG_ONSCREEN))
         {

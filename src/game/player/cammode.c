@@ -29,11 +29,11 @@
 
 static coord3d g_DeathCamPos;
 
-static struct PropRecord* g_DeathCamProp;
+static const struct PropRecord* g_DeathCamProp;
 
 PadRecord * g_CameraLookAtBondPad;
 
-CutsceneRecord *gBondViewCutscene;
+const CutsceneRecord *gBondViewCutscene;
 
 f32 g_OrbitCamAngle;
 
@@ -78,7 +78,7 @@ enum CAMERAMODE camera_mode = CAMERAMODE_NONE;
 
 s32 g_IntroAnimationIndex = 0;
 
-static struct struct_4 stage_intro_anim_table[] = {
+static const struct struct_4 stage_intro_anim_table[] = {
     {PTR_ANIM_extending_left_hand, 95.0, -1.0, 0.02},
     {PTR_ANIM_fire_standing_draw_one_handed_weapon_fast, 7.0, 40.0, 0.5},
     {PTR_ANIM_draw_one_handed_weapon_and_look_around, 0.0, -1.0, 0.5},
@@ -102,7 +102,7 @@ u32 playerGetCameraMode(void)
  * direction, at least camera_dist away with clear floor between, at a random height
  * near the floor. prop2 is ignored by the line tests. FALSE if no spot was found.
  */
-s32 playerPickDeathCamera(PropRecord *prop1, const coord3d *pos, const PropRecord *prop2, const coord3d *collision_pos, StandTile *tile, f32 camera_dist)
+s32 playerPickDeathCamera(const PropRecord *prop1, const coord3d *pos, const PropRecord *prop2, const coord3d *collision_pos, StandTile *tile, f32 camera_dist)
 {
     s32 found;
     s32 outertries;
@@ -559,11 +559,11 @@ void playerSetCameraMode(s32 mode)
     else if (g_CameraMode == CAMERAMODE_DEATH_CAM_SP)
     {
         f32 camdist;
-        PropRecord *focusprop;
+        const PropRecord *focusprop;
         coord3d focuspos;
         StandTile *focustile;
         coord3d collisionpos;
-        PropRecord *collisionprop;
+        const PropRecord *collisionprop;
         struct ChrRecord *chr;
 
         camera_transition_timer = 0.0f;
@@ -746,11 +746,11 @@ void playerAdvanceCameraMode(void)
  */
 void playerCalcIntroSwirlCamera(s32 index, f32 time, coord3d *pos, coord3d *lookat)
 {
-    struct SetupIntroSwirl *base;
-    struct SetupIntroSwirl *loopbase;
+    const struct SetupIntroSwirl *base;
+    const struct SetupIntroSwirl *loopbase;
     // four coord3d control points are written and read (pointbuf[9..11] is the last)
     f32 pointbuf[12];
-    struct SetupIntroSwirl *swirl;
+    const struct SetupIntroSwirl *swirl;
     f32 frac;
     f32 *dst;
 
@@ -765,9 +765,9 @@ void playerCalcIntroSwirlCamera(s32 index, f32 time, coord3d *pos, coord3d *look
     }
 
     {
-        struct SetupIntroSwirl *entry;
+        const struct SetupIntroSwirl *entry;
         union {
-            struct SetupIntroSwirl *swirl;
+            const struct SetupIntroSwirl *swirl;
             struct player *player;
         } target;
         s32 i;

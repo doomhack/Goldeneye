@@ -16,7 +16,7 @@
 #include "game/level/lv.h"
 #include "game/level/gamemode.h"
 
-void fileGenerateCRC(u8 *addressA, u8 *addressB, s32 crc[2]);
+void fileGenerateCRC(const u8 *addressA, const u8 *addressB, s32 crc[2]);
 s32 fileIs007ModeUnlocked(u32 folder);
 
 
@@ -612,7 +612,7 @@ bool fileIsFolderValid(s32 folder)
  */
 STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty)
 {
-    save_data* save;
+    const save_data* save;
     s32 i;
 
     if (( fileIsFolderValid(foldernum)) &&
@@ -820,7 +820,7 @@ void fileSaveFolderUnlockCheat(s32 foldernum, s32 cheat)
  */
 void fileGetHighestStageDifficultyCompletedForFolder(s32 foldernum, LEVEL_SOLO_SEQUENCE *levelid, DIFFICULTY *difficulty)
 {
-    save_data *folder;
+    const save_data *folder;
     LEVEL_SOLO_SEQUENCE stageid;
     DIFFICULTY difficultyid;
 
@@ -1057,7 +1057,7 @@ void fileDeleteSaveForFolder(s32 foldernum)
  */
 void fileCopyFolderToFirstFree(s32 foldernum)
 {
-    save_data* save;
+    const save_data* save;
     LEVEL_SOLO_SEQUENCE levelid;
     DIFFICULTY difficulty;
     s32 other;
@@ -1217,7 +1217,7 @@ void fileSaveSettingsForFolder(save_data *save)
  */
 s32 fileGetFolderControlType(u32 folder)
 {
-    save_data *save = fileGetSaveForFoldernum(folder);
+    const save_data *save = fileGetSaveForFoldernum(folder);
 
     if (save == NULL)
     {
@@ -1234,7 +1234,7 @@ s32 fileGetFolderControlType(u32 folder)
  */
 void fileLoadSettingsForFolder(u32 folder)
 {
-    save_data *save;
+    const save_data *save;
     u16 options;
 
     save = fileGetSaveForFoldernum(folder);
@@ -1476,7 +1476,7 @@ void fileUpdateSelectedBondInSave(s32 folder)
 void fileCopySave(s32 folder, save_data *out_save)
 {
 
-    save_data *in_save = fileGetSaveForFoldernum(folder);
+    const save_data *in_save = fileGetSaveForFoldernum(folder);
 
     if (in_save)
     {
@@ -1512,7 +1512,7 @@ void fileCopyDemoSaveToRamRomSave(u32 folder, const save_data *save)
 s32 fileIs007ModeUnlocked(u32 folder)
 {
     LEVEL_SOLO_SEQUENCE levelid;
-    save_data* save;
+    const save_data* save;
 
 #ifdef UNLOCK_ALL_LEVELS
     return TRUE;
@@ -1688,9 +1688,9 @@ void fileSetFavWeapon(u32 right,u32 left)
  * @param retval
  * @return * void
  */
-void fileGenerateCRC(u8 *addressA, u8 *addressB, s32 crc[2])
+void fileGenerateCRC(const u8 *addressA, const u8 *addressB, s32 crc[2])
 {
-    u8 *byte;
+    const u8 *byte;
     s32 shift      = 0; // Shift value
     u64 polynormal = 0x8F809F473108B3C1;
     s32 checksum1  = 0; // Final checksum #1

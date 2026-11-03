@@ -216,7 +216,7 @@ typedef struct AmmoStats {
 
 typedef struct GunModelFileRecord
 {
-  ModelFileHeader * item_header;
+  const ModelFileHeader * item_header;
   const char *item_file_name;
   s32 has_no_model;
   WeaponStats * item_weapon_stats;
@@ -258,7 +258,7 @@ typedef struct CartridgeModelFileRecord {
 
 extern CasingRecord g_Casings[20];
 extern s32 g_NumLiveCasings;
-extern u32 size_item_buffer[];
+extern const u32 size_item_buffer[];
 extern WeaponStats sniperrifle_stats;
 extern WeaponStats camera_stats;
 
@@ -374,8 +374,8 @@ void gunReload(enum GUNHAND hand);
 extern ALSoundState *g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
 extern u32 g_GunDebApplyKeyframe;
 extern u32 g_gunDebKeyframeIndex;
-extern CartridgeModelFileRecord ejected_cartridge[];
-ModelFileHeader *get_ptr_weapon_model_header_line(ITEM_IDS weapon);
+extern const CartridgeModelFileRecord ejected_cartridge[];
+const ModelFileHeader *get_ptr_weapon_model_header_line(ITEM_IDS weapon);
 void gunSetWatchMenuWeapon(GUNHAND hand, ITEM_IDS weaponnum_watchmenu);
 void gunSetHeldItemVisible(const Model *model, s32 val);
 

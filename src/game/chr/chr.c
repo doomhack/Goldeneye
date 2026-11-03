@@ -76,13 +76,13 @@ ChrRecord *g_ChrSlots = NULL;
 ChrSlotHot *g_ChrSlotHot = NULL;
 s32 g_NumChrSlots = 0;
 
-rgba_u8 gBloodColour = {{0x5a, 0, 0, 0}};
+const rgba_u8 gBloodColour = {{0x5a, 0, 0, 0}};
 
 u32 num_bodies = 0;
 u32 num_male_heads = 0;
 u32 num_female_heads = 0;
 
-s32 list_of_bodies[] = {
+const s32 list_of_bodies[] = {
     BODY_Jungle_Commando,BODY_St_Petersburg_Guard,BODY_Russian_Soldier,BODY_Russian_Infantry,
     BODY_Janus_Special_Forces,BODY_Brosnan_Tuxedo,BODY_Boris,BODY_Ourumov,
     BODY_Trevelyan_Janus,BODY_Valentin_,BODY_Xenia,BODY_Baron_Samedi,
@@ -96,7 +96,7 @@ s32 list_of_bodies[] = {
     BODY_Moonraker_Elite_1_Male,BODY_Moonraker_Elite_2_Female,-1,
 };
 
-s32 random_male_heads[] = {
+const s32 random_male_heads[] = {
     HEAD_Male_Jim,HEAD_Male_Chris,HEAD_Male_Lee,HEAD_Male_Graeme,HEAD_Male_Steve_H,
     HEAD_Male_Neil,HEAD_Male_Robin,HEAD_Male_Des,HEAD_Male_Grant,HEAD_Male_Dave_Dr_Doak,
     HEAD_Male_Karl,HEAD_Male_Alan,HEAD_Male_Pete,HEAD_Male_Martin,HEAD_Male_Mark,
@@ -105,7 +105,7 @@ s32 random_male_heads[] = {
     -1
 };
 
-s32 random_female_heads[] = {
+const s32 random_female_heads[] = {
     HEAD_Female_Sally,HEAD_Female_Marion_Rosika,HEAD_Female_Mandy,HEAD_Female_Vivien, -1
 };
 
@@ -150,7 +150,7 @@ s32 objectiveregisters1 = 0;
  * List of characters updated every tick.
 */
 ChrRecord *g_BgChrs = NULL;
-static ChrRecord g_BgChrTemplate = { 0 };
+static const ChrRecord g_BgChrTemplate = { 0 };
 
 /**
  * Number of items in g_BgChrs.
@@ -375,7 +375,7 @@ s32 chrRootMoveCallback(const Model *model, coord3d *src, coord3d *dst, f32 *gro
     ChrRecord *chr;
     s32 moved;
     f32 ground;
-    coord3d *groundpos;
+    const coord3d *groundpos;
     f32 tmp;
     s32 i;
     StandTile *tile;
@@ -1192,7 +1192,7 @@ s32 chrTick(PropRecord *prop)
 
         if (chr->handle_positiondata_hat != NULL)
         {
-            ObjectRecord *hatobj;
+            const ObjectRecord *hatobj;
             Model *hatmodel;
 
             hatobj = chr->handle_positiondata_hat->obj;
@@ -1214,7 +1214,7 @@ s32 chrTick(PropRecord *prop)
                 Mtxf mtx;
                 Mtxf tmp;
                 HATTYPE hat;
-                struct headHat *entry;
+                const struct headHat *entry;
                 s32 headindex;
 
                 pos = (coord3d){0};
@@ -1256,7 +1256,7 @@ s32 chrTick(PropRecord *prop)
 
         if (model->obj->Switches[4] != NULL)
         {
-            union ModelRwData *rwdata;
+            const union ModelRwData *rwdata;
             ModelFileHeader *headfile;
 
             rwdata = modelGetNodeRwData(model, model->obj->Switches[4]);
@@ -1327,7 +1327,7 @@ s32 chrTick(PropRecord *prop)
  */
 void chrDropItems(ChrRecord *self)
 {
-    PropRecord *childprop;
+    const PropRecord *childprop;
 
     for (childprop = propChild(self->prop); childprop != NULL; childprop = childprop->prev)
     {
@@ -1445,7 +1445,7 @@ void chrUpdateCollisionBounds(const PropRecord *prop, coord2d **polygon, s32 *ed
  */
 void chrGetChrWidthHeight(const PropRecord *prop, f32 *width, f32 *top, f32 *bottom)
 {
-    ChrRecord *c = prop->chr;
+    const ChrRecord *c = prop->chr;
 
     *width = c->chrwidth;
     *top = c->chrheight - 20.0f;
@@ -1455,7 +1455,7 @@ void chrGetChrWidthHeight(const PropRecord *prop, f32 *width, f32 *top, f32 *bot
 
 f32 chrGetChrGround(const PropRecord *prop)
 {
-    ChrRecord *c = prop->chr;
+    const ChrRecord *c = prop->chr;
     return c->ground;
 }
 
@@ -1467,7 +1467,7 @@ f32 chrGetChrGround(const PropRecord *prop)
  */
 s32 chrGetOnscreenRenderBounds(const PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds)
 {
-    struct ChrRecord *chr;
+    const struct ChrRecord *chr;
 
     chr = prop->chr;
 
@@ -1475,9 +1475,9 @@ s32 chrGetOnscreenRenderBounds(const PropRecord *prop, coord3d *pos, coord2d *xb
     {
         if ((chr->actiontype != ACT_DIE) && (chr->actiontype != ACT_DEAD) && !(chr->chrflags & CHRFLAG_NO_AUTOAIM))
         {
-            struct Model *model;
-            RenderPosView *model_render_pos_1;
-            RenderPosView *model_render_pos_2;
+            const struct Model *model;
+            const RenderPosView *model_render_pos_1;
+            const RenderPosView *model_render_pos_2;
 
             model = chr->model;
             model_render_pos_1 = &model->render_pos[0];

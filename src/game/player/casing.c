@@ -24,7 +24,7 @@ s32 g_NumLiveCasings = 0;
 // The casing landing sound; only one plays at a time
 static ALSoundState *g_CasingSfxState;
 
-static ModelRenderData g_DefaultCasingModelRenderData = {.zbufferenabled = TRUE, .flags = 3};
+static const ModelRenderData g_DefaultCasingModelRenderData = {.zbufferenabled = TRUE, .flags = 3};
 
 // How ejected casings fly: speeds, spin and gravity (pistol and rifle rounds)
 static const f32 g_CasingSwitchScale = 0.10000001f;
@@ -68,7 +68,7 @@ static const f32 g_CasingMaxMatrixTranslation = 30000.0f;
 CasingRecord* casingCreate(ModelFileHeader* header, const Mtxf* mtx)
 {
     CasingRecord* entry = g_Casings;
-    CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
+    const CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
 
     while (entry < end && entry->header != NULL)
     {
@@ -149,7 +149,7 @@ void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #ifndef VERSION_EU
     s32 randlimit;
 #endif
-    struct hand *hand;
+    const struct hand *hand;
     u32 randval;
  
     weaponid = gunGetWeapon(handnum);
@@ -352,7 +352,7 @@ void casingTick(CasingRecord* casing)
  */
 void casingsTick(void)
 {
-    CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
+    const CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
     CasingRecord* entry = g_Casings;
 
     if (g_NumLiveCasings == 0)
@@ -459,8 +459,8 @@ void casingRender(const CasingRecord *casing, Gfx **gdl)
  */
 void casingsRender(Gfx **gdl)
 {
-    CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
-    CasingRecord* entry = g_Casings;
+    const CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
+    const CasingRecord* entry = g_Casings;
 
     if (g_NumLiveCasings == 0)
     {

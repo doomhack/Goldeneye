@@ -1,12 +1,12 @@
 #include "str.h"
 
-char *strcpy(char *dst, const char *src) {
+const char *strcpy(char *dst, const char *src) {
     char *ptr = dst;
     while ((*ptr++ = *src++) != '\0');
     return dst;
 }
 
-char *strncpy(char *dst, const char *src, size_t n) {
+const char *strncpy(char *dst, const char *src, size_t n) {
     char *ptr = dst;
     while((*ptr++ = *src++)) { 
         if (--n == 0) {
@@ -19,7 +19,7 @@ char *strncpy(char *dst, const char *src, size_t n) {
     return dst;
 }
 
-char *strcat(char *dst, const char *src) {
+const char *strcat(char *dst, const char *src) {
     char *ptr = dst;
     while (*ptr) { ptr++; };
     while ((*ptr++ = *src++) != '\0');
@@ -110,7 +110,7 @@ long int strtol(const char *str, char **endptr, int base) {
     unsigned int cutlim;
     unsigned int accum;
     unsigned char c;
-    unsigned char *before;
+    const unsigned char *before;
     int overflow;
     if ((base < 0) || (base == 1) || (base > 36)) {
         base = 10;

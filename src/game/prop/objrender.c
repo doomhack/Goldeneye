@@ -153,7 +153,7 @@ static Gfx *objRenderScreens(ObjectRecord *obj, Gfx *gdl)
 /* Whether the object's vertices have been bent by damage: its model uses its own copy */
 static bool objIsDeformed(const ObjectRecord *obj)
 {
-    ModelNode *node = objFindDlCollisionNode(obj);
+    const ModelNode *node = objFindDlCollisionNode(obj);
 
     if (node == NULL || node->Data == NULL)
     {
@@ -170,7 +170,7 @@ static bool objIsDeformed(const ObjectRecord *obj)
 /* Set the cull mode and the damage shading */
 static void objSetCullAndDamage(const PropRecord *prop, ModelRenderData *mrData)
 {
-    ObjectRecord *obj = prop->obj;
+    const ObjectRecord *obj = prop->obj;
 
     if (obj->type == PROPDEF_DOOR)
     {
@@ -276,7 +276,7 @@ static void objRenderModel(const PropRecord *prop, ModelRenderData *mrData, s32 
 
     mrData->gdl = gdl;
 
-    for (PropRecord *child = propChild(prop); child != NULL; child = child->prev)
+    for (const PropRecord *child = propChild(prop); child != NULL; child = child->prev)
     {
         objRenderModel(child, mrData, xlupass);
     }
@@ -431,8 +431,8 @@ bool objGetOnscreenRenderBounds(const PropRecord *prop, coord3d *viewpos, coord2
         return FALSE;
     }
 
-    ObjectRecord *obj = prop->obj;
-    Mtxf *matrix = modelGetRootMtx(obj->model);
+    const ObjectRecord *obj = prop->obj;
+    const Mtxf *matrix = modelGetRootMtx(obj->model);
 
     viewpos->z = matrix->m[3][2];
 
@@ -467,7 +467,7 @@ bool propGetRoomsBbox2d(const PropRecord *prop, bbox2d *bbox)
 
     propGetRoomIds(prop, rooms);
 
-    for (s32 *room = rooms; *room >= 0; room++)
+    for (const s32 *room = rooms; *room >= 0; room++)
     {
         if (!bgGet2dBboxByRoomId(*room, &roombox))
         {
@@ -522,7 +522,7 @@ static f32 fogScaleDist(const NearFogValues *fog, f32 dist, f32 size)
  */
 f32 propGetFogFade(const PropRecord *prop, f32 size)
 {
-    NearFogValues *fog = fogGetNearFogValuesP();
+    const NearFogValues *fog = fogGetNearFogValuesP();
 
     if (fog == NULL || !(fog->MaxObfuscationRange < prop->zDepth))
     {
@@ -549,15 +549,15 @@ f32 propGetFogFade(const PropRecord *prop, f32 size)
    distance, measured the same way as propGetFogFade */
 static bool posIsBeforeFogEnd(const coord3d *pos, f32 size)
 {
-    NearFogValues *fog = fogGetNearFogValuesP();
+    const NearFogValues *fog = fogGetNearFogValuesP();
 
     if (fog == NULL)
     {
         return TRUE;
     }
 
-    coord3d *campos = playerGetPos();
-    Mtxf *mtx = camGetWorldToScreenMtxf();
+    const coord3d *campos = playerGetPos();
+    const Mtxf *mtx = camGetWorldToScreenMtxf();
     coord3d rel;
 
     rel.x = pos->x - campos->x;
@@ -589,7 +589,7 @@ static bool propIsInVisibleRoom(const PropRecord *prop)
 
     propGetRoomIds(prop, rooms);
 
-    for (s32 *room = rooms; *room >= 0; room++)
+    for (const s32 *room = rooms; *room >= 0; room++)
     {
         if (bgRoomIsVisible(*room))
         {
@@ -632,7 +632,7 @@ bool posIsOnScreen(const PropRecord *prop, const coord3d *pos, f32 radius, bool 
 
     if (onscreen)
     {
-        coord3d *campos = playerGetPos();
+        const coord3d *campos = playerGetPos();
         f32 xdiff = pos->x - campos->x;
         f32 ydiff = pos->y - campos->y;
         f32 zdiff = pos->z - campos->z;

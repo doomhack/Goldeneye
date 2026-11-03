@@ -65,7 +65,7 @@ void chrAttackSetEndFrame(const ChrRecord *self)
 {
     Model* model = self->model;
 
-    struct weapon_firing_animation_table *f = self->act_attack.animfloats;
+    const struct weapon_firing_animation_table *f = self->act_attack.animfloats;
 
     if ((self->act_attack.attacktype & TARGET_AIM_ONLY) != 0)
     {
@@ -153,7 +153,7 @@ static void chrInitActAttack(ChrRecord *self, struct anim_group_info **animgroup
     s32 recoil;
     f32 angle;
     s32 anim_index;
-    WeaponObjRecord *weapon;
+    const WeaponObjRecord *weapon;
     point2d singleShot;
     point2d isLauncher;
     s32 i;
@@ -283,13 +283,13 @@ static void chrInitActAttack(ChrRecord *self, struct anim_group_info **animgroup
 static void chrAttackWithAnims(ChrRecord *self, s32 attack_type, s32 entityid, s32 standing,
     struct anim_group_info **pistol, struct anim_group_info **doubles, struct anim_group_info **rifle)
 {
-    PropRecord *left;
-    PropRecord *right;
+    const PropRecord *left;
+    const PropRecord *right;
     s32 flip;
     struct anim_group_info **animgroups;
     point2d hasGun;
-    PropRecord *leftgun;
-    PropRecord *rightgun;
+    const PropRecord *leftgun;
+    const PropRecord *rightgun;
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
@@ -363,15 +363,15 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
 {
     struct weapon_firing_animation_table *panim_float;
     s32 i;
-    WeaponObjRecord *weapon;
+    const WeaponObjRecord *weapon;
     s32 flip;
     point2d hasGun;
     point2d singleShot;
     point2d isLauncher;
-    PropRecord *left;
-    PropRecord *left2;
-    PropRecord *right;
-    PropRecord *right2;
+    const PropRecord *left;
+    const PropRecord *left2;
+    const PropRecord *right;
+    const PropRecord *right2;
     s32 variant;
 
     left = chrGetEquippedWeaponProp(chr, GUNLEFT);
@@ -541,14 +541,14 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
 {
     Model *self_model;
     struct weapon_firing_animation_table *panim_float;
-    PropRecord *left;
-    PropRecord *left_2;
+    const PropRecord *left;
+    const PropRecord *left_2;
     s32 flip;
     s32 oneHanded;
-    WeaponObjRecord *weapon;
-    PropRecord *right;
+    const WeaponObjRecord *weapon;
+    const PropRecord *right;
     point2d hasGun;
-    PropRecord *right_2;
+    const PropRecord *right_2;
     s32 oneBurst;
     point2d singleShot;
     point2d isLauncher;
@@ -741,8 +741,8 @@ void chrInitActAttackRoll(ChrRecord *chr, GUNHAND side)
  */
 static void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
 {
-    PropRecord *prop;
-    WeaponObjRecord *weapon;
+    const PropRecord *prop;
+    const WeaponObjRecord *weapon;
     s32 play;
     u8 soundrate;
     s16 soundid;
@@ -815,7 +815,7 @@ static void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
 
 f32 chrGetSubrotySideback(const ChrRecord *self)
 {
-    Model *model;
+    const Model *model;
     f32 offset;
     f32 ret;
 
@@ -879,7 +879,7 @@ static f32 chrGetAimUpAngle(const ChrRecord *self)
 
 s32 chrSetSubroty(ChrRecord *self, s32 state, f32 endframe, f32 speed, f32 angleoffset)
 {
-    Model *model;
+    const Model *model;
     f32 frame;
     f32 dist;
     f32 roty;
@@ -907,7 +907,7 @@ s32 chrSetSubroty(ChrRecord *self, s32 state, f32 endframe, f32 speed, f32 angle
         }
         else
         {
-            PropRecord* p;
+            const PropRecord* p;
             p = currentPlayerGetProp();
             dist = chrGetAngleToPos(self, &p->pos);
         }
@@ -978,13 +978,13 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, const struct weapon_firing_a
     f32 dy;
     f32 dz;
     f32 dxdydz_square;
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     s32 seen_bond_flag;
-    coord3d *current_player_pos;
+    const coord3d *current_player_pos;
     f32 ducking_height;
     StandTile *pstan;
     coord3d rootpos;
-    PropRecord *player_prop;
+    const PropRecord *player_prop;
     f32 subroty;
 
     ret = 1;
@@ -1106,20 +1106,20 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, const struct weapon_firing_a
 
         if (seen_bond_flag)
         {
-            Model *weapon_prop_model;
+            const Model *weapon_prop_model;
             coord3d gunpos;
-            PropRecord *weapon_prop;
-            ModelRwData_HeaderRecord *rootrw;
+            const PropRecord *weapon_prop;
+            const ModelRwData_HeaderRecord *rootrw;
             Mtxf gunmtx;
-            f32 *muzzle;
+            const f32 *muzzle;
             coord3d muzzlepos;
             s32 intersect_flag;
             Mtxf handmtx;
             coord3d closest;
             coord3d facing;
             coord3d side;
-            Mtxf *nodemtx;
-            struct ObjectRecord *obj;
+            const Mtxf *nodemtx;
+            const struct ObjectRecord *obj;
             f32 t1;
 
             subroty = chrGetSubrotySideback(self);
@@ -1354,7 +1354,7 @@ static void chrResetAimend(ChrRecord *self)
 */
 void chrSetFiring(const ChrRecord *self, s32 hand, s32 firing)
 {
-    PropRecord *prop;
+    const PropRecord *prop;
 
     prop = chrGetEquippedWeaponProp(self, hand);
 
@@ -1449,9 +1449,9 @@ static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, IT
     f32 atan;
     f32 subroty;
     f32 relangle;
-    PropRecord *player_prop;
+    const PropRecord *player_prop;
     f32 dist;
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     f32 t2;
     f32 increment;
     s32 insight;
@@ -1558,14 +1558,14 @@ static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, IT
  */
 s32 chrGetHandPos(const ChrRecord *self, GUNHAND hand, coord3d *pos)
 {
-    struct ObjectRecord *obj;
-    PropRecord *weapon_prop;
-    Model *weapon_prop_model;
+    const struct ObjectRecord *obj;
+    const PropRecord *weapon_prop;
+    const Model *weapon_prop_model;
     s32 ret;
-    Mtxf *nodemtx;
+    const Mtxf *nodemtx;
     Mtxf worldmtx;
-    f32 *muzzle;
-    Mtxf *nodemtx2;
+    const f32 *muzzle;
+    const Mtxf *nodemtx2;
     Mtxf worldmtx2;
 
     weapon_prop = chrGetEquippedWeaponProp(self, hand);
@@ -1621,13 +1621,13 @@ static void chrFireHand(ChrRecord *self, s32 hand)
     s32 ratelimit;
     s32 firing;
     s32 betweenShots;
-    WeaponObjRecord *weapon;
-    PropRecord *player_prop;
+    const WeaponObjRecord *weapon;
+    const PropRecord *player_prop;
     s32 attacktype;
     s32 shoot;
     s32 tracer;
     coord3d hitpos;
-    StandTile *hittile;
+    const StandTile *hittile;
     f32 subroty;
     f32 aimup;
     coord3d gunpos;
@@ -1645,7 +1645,7 @@ static void chrFireHand(ChrRecord *self, s32 hand)
     struct WeaponObjRecord *rocket;
     Mtxf rocketMtx;
     coord3d rocketSpeed;
-    PropRecord *weapon_prop;
+    const PropRecord *weapon_prop;
     coord3d rocketAccel;
     Mtxf rocketRot;
     Mtxf rocketYRot;
@@ -2022,7 +2022,7 @@ void chrTriggerFireWeapon(ChrRecord *self)
 static s32 chrAttackRollToKneel(ChrRecord *self)
 {
     Model *model;
-    struct weapon_firing_animation_table *p;
+    const struct weapon_firing_animation_table *p;
     s32 flip;
 
     if ((self->act_attackroll.animfloats == &g_ChrFireAnims[2]) || (self->act_attackroll.animfloats == &g_ChrFireAnims[3]))
@@ -2582,10 +2582,10 @@ void chrTickAttackRoll(ChrRecord *self)
 void chrTickAttackWalk(ChrRecord *self)
 {
     Model *self_model;
-    PropRecord *player_prop;
+    const PropRecord *player_prop;
     f32 dx;
     f32 dz;
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     s32 i;
 
     self_model = self->model;

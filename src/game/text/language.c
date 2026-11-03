@@ -255,7 +255,7 @@ void langClearBank(s32 textBank) {
  */
 const char *langGet(s32 slotID)
 {
-    u32 *textbank_ptr = g_LangBanks[slotID >> 10]; /* get the text file bank ID index the text ptr table */
+    const u32 *textbank_ptr = g_LangBanks[slotID >> 10]; /* get the text file bank ID index the text ptr table */
     u32 textslot_offset = textbank_ptr[slotID & 0x03FF]; /* load the textbank ptr table then get the slot's offset */
 
     u32 output_slot = textslot_offset; /* add the text slot offset to the base ptr to get the ptr to text file's slot */

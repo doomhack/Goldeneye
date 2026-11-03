@@ -275,7 +275,7 @@ static void vehicleResetHeading(VehichleRecord *vehicle)
    outline must not leave the floor */
 static bool vehicleBodyFitsFloor(const PropRecord *prop, const VehichleRecord *vehicle, const Model *model)
 {
-    ModelRoData_BoundingBoxRecord *bbox = &model->obj->Switches[VEHICLE_SWITCH_BODYBOX]->Data->BoundingBox;
+    const ModelRoData_BoundingBoxRecord *bbox = &model->obj->Switches[VEHICLE_SWITCH_BODYBOX]->Data->BoundingBox;
     coord3d xmin, xmax, zmin, zmax;
     f32 corners[4][2];
     StandTile *tile = prop->stan;
@@ -343,7 +343,7 @@ static void vehicleDrive(PropRecord *prop, VehichleRecord *vehicle, const Model 
     f32 angularspeed = 0.0f;
     coord3d forward;
     coord3d newpos;
-    coord3d *axlepos;
+    const coord3d *axlepos;
     f32 sideslip;
 
     if (waypointpos != NULL)
@@ -464,7 +464,7 @@ void vehicleTick(PropRecord *prop)
     ObjectRecord *obj = prop->obj;
     VehichleRecord *vehicle = (VehichleRecord *)obj;
     f32 targetyaw = vehicle->roty;
-    coord3d *waypointpos = NULL;
+    const coord3d *waypointpos = NULL;
     s32 volume = 0;
 
     aiForObject((PropDefHeaderRecord *)vehicle);
@@ -480,7 +480,7 @@ void vehicleTick(PropRecord *prop)
 
     if (vehicle->path != NULL)
     {
-        waypoint *next = &g_CurrentSetup.pathwaypoints[vehicle->path->waypoints[vehicle->nextstep]];
+        const waypoint *next = &g_CurrentSetup.pathwaypoints[vehicle->path->waypoints[vehicle->nextstep]];
 
         waypointpos = &g_CurrentSetup.pads[next->padID].pos;
         targetyaw = mathAtan2(waypointpos->f[0] - vehicle->runtime_pos.f[0], waypointpos->f[2] - vehicle->runtime_pos.f[2]);
@@ -533,11 +533,11 @@ void vehicleGetModelMatrices(const PropRecord *prop, const Model *model, Mtxf *m
 {
     VehichleRecord *vehicle = (VehichleRecord *)prop->obj;
     ModelNode **switches = model->obj->Switches;
-    coord3d *wheel1pos = &switches[VEHICLE_SWITCH_WHEEL1]->Data->Group.Origin;
-    coord3d *wheel2pos = &switches[VEHICLE_SWITCH_WHEEL2]->Data->Group.Origin;
-    coord3d *wheel3pos = &switches[VEHICLE_SWITCH_WHEEL3]->Data->Group.Origin;
-    coord3d *wheel4pos = &switches[VEHICLE_SWITCH_WHEEL4]->Data->Group.Origin;
-    ModelRoData_BoundingBoxRecord *wheelbox = &switches[VEHICLE_SWITCH_WHEELBOX]->Data->BoundingBox;
+    const coord3d *wheel1pos = &switches[VEHICLE_SWITCH_WHEEL1]->Data->Group.Origin;
+    const coord3d *wheel2pos = &switches[VEHICLE_SWITCH_WHEEL2]->Data->Group.Origin;
+    const coord3d *wheel3pos = &switches[VEHICLE_SWITCH_WHEEL3]->Data->Group.Origin;
+    const coord3d *wheel4pos = &switches[VEHICLE_SWITCH_WHEEL4]->Data->Group.Origin;
+    const ModelRoData_BoundingBoxRecord *wheelbox = &switches[VEHICLE_SWITCH_WHEELBOX]->Data->BoundingBox;
     f32 wheeldiameter = (wheelbox->Bounds.ymax - wheelbox->Bounds.ymin) * model->scale;
     f32 wheelspin = 0.0f;
     Mtxf rollmtx;
@@ -694,7 +694,7 @@ void aircraftTick(PropRecord *prop)
 void aircraftGetModelMatrices(const PropRecord *prop, const Model *model, Mtxf *mtxs, bool issimowner)
 {
     AircraftRecord *aircraft = (AircraftRecord *)prop->obj;
-    coord3d *rotorpos = &model->obj->Switches[2]->Data->Group.Origin;
+    const coord3d *rotorpos = &model->obj->Switches[2]->Data->Group.Origin;
     coord3d *nodepos;
     Mtxf *nodemtx;
     Mtxf rotormtx;
@@ -769,11 +769,11 @@ void tankGetModelMatrices(const PropRecord *prop, const Model *model, Mtxf *mtxs
 {
     TankRecord *tank = (TankRecord *)prop->obj;
     ModelNode **switches = model->obj->Switches;
-    coord3d *turretpos = &switches[1]->Data->Group.Origin;
-    coord3d *turrettoppos = &switches[2]->Data->Group.Origin;
-    coord3d *gunpos = &switches[3]->Data->Group.Origin;
-    coord3d *guntippos = &switches[4]->Data->Group.Origin;
-    ModelRoData_BoundingBoxRecord *turretbox = &switches[6]->Data->BoundingBox;
+    const coord3d *turretpos = &switches[1]->Data->Group.Origin;
+    const coord3d *turrettoppos = &switches[2]->Data->Group.Origin;
+    const coord3d *gunpos = &switches[3]->Data->Group.Origin;
+    const coord3d *guntippos = &switches[4]->Data->Group.Origin;
+    const ModelRoData_BoundingBoxRecord *turretbox = &switches[6]->Data->BoundingBox;
     f32 pitch = -tank->turret_vertical_angle;
     f32 yaw;
     Mtxf turretworldmtx;

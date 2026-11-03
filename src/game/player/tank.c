@@ -20,7 +20,7 @@ struct Tank g_Tank;
  */
 void tankUpdateTurretOffset(void)
 {
-    struct ObjectRecord *obj;
+    const struct ObjectRecord *obj;
     coord3d *turretPos;
     coord3d *bodyPos;
     Mtxf rot;
@@ -52,14 +52,14 @@ void tankUpdateTurretOffset(void)
  */
 void tankGetCollisionBounds(coord2d *tank_collision_bounds, const coord3d *collision_position, f32 tank_orientation_angle)
 {
-    ObjectRecord *obj;
+    const ObjectRecord *obj;
     f32 sinAngle;
     f32 xmin;
     f32 xmax;
     f32 zmin;
     f32 zmax;
     f32 cosAngle;
-    struct ModelRoData_BoundingBoxRecord *bbox;
+    const struct ModelRoData_BoundingBoxRecord *bbox;
 
 
     obj = g_CurrentPlayer->tankMounted->obj;
@@ -124,14 +124,14 @@ s32 tankTestCollision(const coord3d *collision_position, StandTile *starttile, f
     s32 ok;
     f32 angle;
 
-    Model *model;
+    const Model *model;
 
     ModelNode **switches;
-    coord3d *gunEnd;
-    coord3d *turretPos;
+    const coord3d *gunEnd;
+    const coord3d *turretPos;
     coord3d barrelEnd;
     Mtxf rot;
-    coord3d *gunStart;
+    const coord3d *gunStart;
 
     tile = starttile;
     ok = 0;
@@ -153,7 +153,7 @@ s32 tankTestCollision(const coord3d *collision_position, StandTile *starttile, f
 
         if (g_CurrentPlayer->tankMounted != NULL)
         {
-            ObjectRecord *obj = g_CurrentPlayer->tankMounted->obj;
+            const ObjectRecord *obj = g_CurrentPlayer->tankMounted->obj;
             model = obj->model;
             switches = model->obj->Switches;
 
@@ -274,7 +274,7 @@ bool playerIsInTank(void)
 
 
 // The tank the current player is driving, or NULL
-PropRecord *playerGetTank(void)
+const PropRecord *playerGetTank(void)
 {
     if (g_CurrentPlayer->tankDriving == 1)
     {

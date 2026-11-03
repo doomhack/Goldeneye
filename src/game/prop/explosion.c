@@ -52,7 +52,7 @@ static s32 s_ShakeBoostTicks = 0;
 
 /* The explosion types (EXPLOSION_DEF). EU runs at 50 Hz: shorter durations and faster growth. */
 #if defined(VERSION_EU)
-static s_explosiontype g_ExplosionTypes[EXPLOSION_DEF_COUNT] = {
+static const s_explosiontype g_ExplosionTypes[EXPLOSION_DEF_COUNT] = {
    //hrange, vrange,    hchg,               vchg,           expsize, exprang, dmgrang,   dur, proprate, flarespd, nbits,  bitsize, bitdist, bithvel, bitvvel, smoketype,             sndid, damage
     {  0.1f,   0.1f,    0.0f,               0.0f,                   0.1f,    0.0f,    0.0f,     1,        1,     1.0f,     0,     0.1f,    0.0f,    0.0f,    0.0f,         0,              0x00,   0.0f},
     {  1.0f,   1.0f,    0.0f,               0.0f,                   1.0f,    0.0f,    0.0f,    25,        1,     1.0f,    10,     5.0f,    0.0f,    2.0f,    6.0f,         7,              0x00,   0.0f},
@@ -79,7 +79,7 @@ static s_explosiontype g_ExplosionTypes[EXPLOSION_DEF_COUNT] = {
     {160.0f, 120.0f,    7.19999980926514f,  2.40000009536743f,    600.0f,  450.0f,  640.0f,    50,        1,     2.0f,     0,     0.0f,    0.0f,    0.0f,    0.0f,         0,  EXPLOSION_4B_SFX,   4.0f},
 };
 #else
-static s_explosiontype g_ExplosionTypes[EXPLOSION_DEF_COUNT] = {
+static const s_explosiontype g_ExplosionTypes[EXPLOSION_DEF_COUNT] = {
    //hrange, vrange,    hchg,  vchg,  expsize, exprang, dmgrang,   dur, proprate, flarespd, nbits,  bitsize, bitdist, bithvel, bitvvel, smoketype,             sndid, damage
     {  0.1f,   0.1f,    0.0f,  0.0f,     0.1f,    0.0f,    0.0f,     1,        1,     1.0f,     0,     0.1f,    0.0f,    0.0f,    0.0f,         0,       NOTHING_SFX,   0.0f},
     {  1.0f,   1.0f,    0.0f,  0.0f,     1.0f,    0.0f,    0.0f,    30,        1,     1.0f,    10,     5.0f,    0.0f,    2.0f,    6.0f,         7,       NOTHING_SFX,   0.0f},
@@ -134,7 +134,7 @@ static void explosionPartStart(struct ExplosionPart *part, coord3d *pos, const s
  */
 s32 explosionCreate(PropRecord *source, coord3d *pos, StandTile *stan, s16 type, s32 makeScorch, s32 player, u8 *rooms, s32 inAir)
 {
-    s_explosiontype *exptype = &g_ExplosionTypes[type];
+    const s_explosiontype *exptype = &g_ExplosionTypes[type];
     struct Explosion *exp = NULL;
     PropRecord *prop;
     s32 i;
@@ -248,7 +248,7 @@ void explosionStartShake(void)
  */
 void explosionScreenShake(const coord3d *eyepos, const coord3d *lookdir, coord3d *result)
 {
-    PropRecord *prop;
+    const PropRecord *prop;
     f32 angle;
     f32 xdir;
     f32 zdir;
@@ -382,10 +382,10 @@ static bool explosionGetFalloff(f32 xdist, f32 ydist, f32 zdist, f32 hrange, f32
 static void explosionInflictDamage(const PropRecord *expprop, f32 hrange, f32 vrange)
 {
     struct Explosion *exp = expprop->explosion;
-    s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];
+    const s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];
     ObjectRecord *obj;
-    PropRecord *prop;
-    s16 *propnum;
+    const PropRecord *prop;
+    const s16 *propnum;
     s32 rooms[8];
     s32 prevplayer;
     f32 xdist;
@@ -511,7 +511,7 @@ static void explosionMakeSmoke(PropRecord *expprop, const struct Explosion *exp,
 s32 explosionTick(PropRecord *expprop)
 {
     struct Explosion *exp = expprop->explosion;
-    s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];
+    const s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];
     coord3d bbmin;
     coord3d bbmax;
     coord3d partpos;
@@ -634,7 +634,7 @@ s32 explosionTick(PropRecord *expprop)
  */
 u8 explosionPropTick(PropRecord *prop)
 {
-    Mtxf *mtx = camGetWorldToScreenMtxf();
+    const Mtxf *mtx = camGetWorldToScreenMtxf();
 
     prop->zDepth = -((((mtx->m[0][2] * prop->pos.x) + (mtx->m[1][2] * prop->pos.y)) + (mtx->m[2][2] * prop->pos.z)) + mtx->m[3][2]);
 
@@ -657,8 +657,8 @@ u8 explosionPropTick(PropRecord *prop)
  */
 static Gfx *explosionRenderPart(const struct ExplosionPart *part, Gfx *gdl, const coord3d *roompos)
 {
-    Mtxf *cammtx = camGetViewToWorldMtxf();
-    coord3d *eyepos = playerGetPos();
+    const Mtxf *cammtx = camGetViewToWorldMtxf();
+    const coord3d *eyepos = playerGetPos();
     Vtx *vertices = dynAllocateVertices(4);
     coord3d rightcos;
     coord3d rightsin;
@@ -749,7 +749,7 @@ static Gfx *explosionRenderPart(const struct ExplosionPart *part, Gfx *gdl, cons
 Gfx *explosionRender(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     struct Explosion *exp = prop->explosion;
-    s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];
+    const s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];
     s32 room = prop->rooms[0];
     coord3d *roompos = roomGetPos(room);
     bbox2d bbox;

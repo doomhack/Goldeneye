@@ -34,8 +34,8 @@ void modelFileLoadTextures(const ModelFileHeader *objheader, const char *name, c
     Gfx *gdl;
     s32 pcremaining;
     u32 replacementgdl;
-    ModelNode *curnode;
-    Gfx *curgdl;
+    const ModelNode *curnode;
+    const Gfx *curgdl;
     s32 delta;
     s32 filedata;
     s32 filenum;

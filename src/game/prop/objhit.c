@@ -44,7 +44,7 @@ static bool objTestTriangle(const coord3d *rayStart, const coord3d *rayEnd, cons
 
     for (s32 i = 0; i < 3; i++)
     {
-        Vertex *v = &vtxbase[idx[i]];
+        const Vertex *v = &vtxbase[idx[i]];
 
         if (v->coord.x < bboxMin.x)
         {
@@ -117,7 +117,7 @@ static bool objTestTriangle(const coord3d *rayStart, const coord3d *rayEnd, cons
 static bool objTestDisplayList(const coord3d *rayStart, const coord3d *rayEnd, const coord3d *rayDir, Gfx *gdl, Gfx *gdl2, const Vertex *vertices, HitThing *hitthing)
 {
     Vertex *vtxbase = NULL;
-    Gfx *cmdStart = gdl;
+    const Gfx *cmdStart = gdl;
     f32 bestDistSq = M_U32_MAX_VALUE_F;
     bool found = FALSE;
 
@@ -171,8 +171,8 @@ bool modelFindTriangleHit(const Model *model, ModelNode *startNode, const coord3
     coord3d localStart;
     coord3d localEnd;
     coord3d localDir;
-    Mtxf *lastmtx = NULL;
-    Vertex *vertices = NULL;
+    const Mtxf *lastmtx = NULL;
+    const Vertex *vertices = NULL;
     ModelNode *node = startNode;
     bool done = FALSE;
 
@@ -185,8 +185,8 @@ bool modelFindTriangleHit(const Model *model, ModelNode *startNode, const coord3
         {
             case MODELNODE_OPCODE_DLCOLLISION:
             {
-                ModelRoData_DisplayList_CollisionRecord *rodata = &node->Data->DisplayListCollisions;
-                ModelRwData_DisplayList_CollisionRecord *rwdata = &modelGetNodeRwData(model, node)->DisplayListCollisions;
+                const ModelRoData_DisplayList_CollisionRecord *rodata = &node->Data->DisplayListCollisions;
+                const ModelRwData_DisplayList_CollisionRecord *rwdata = &modelGetNodeRwData(model, node)->DisplayListCollisions;
 
                 if (rwdata->gdl != NULL)
                 {
@@ -210,7 +210,7 @@ bool modelFindTriangleHit(const Model *model, ModelNode *startNode, const coord3
             }
             case MODELNODE_OPCODE_DL:
             {
-                ModelRoData_DisplayListRecord *rodata = &node->Data->DisplayList;
+                const ModelRoData_DisplayListRecord *rodata = &node->Data->DisplayList;
 
                 if (rodata->Primary != NULL)
                 {
@@ -239,7 +239,7 @@ bool modelFindTriangleHit(const Model *model, ModelNode *startNode, const coord3
         if (gdl != NULL)
         {
             s32 mtxindex = modelFindNodeMtxIndex(node, 0);
-            Mtxf *mtx = mtxindex >= 0 ? &model->render_pos[mtxindex].pos : NULL;
+            const Mtxf *mtx = mtxindex >= 0 ? &model->render_pos[mtxindex].pos : NULL;
 
             // The ray in the node's space (worked out again only when the matrix changes)
             if (mtx && mtx != lastmtx)
@@ -382,9 +382,9 @@ static void objTestShotModel(PropRecord *prop, ShotData *shot)
 /** Tests the player's shot against an object, if it is on screen and in range. */
 void objTestShot(PropRecord *prop, ShotData *shot)
 {
-    ObjectRecord *obj = prop->obj;
-    Model *model = obj->model;
-    ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
+    const ObjectRecord *obj = prop->obj;
+    const Model *model = obj->model;
+    const ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
 
     if ((prop->flags & PROPFLAG_ONSCREEN)
         && !(obj->runtime_bitflags & RUNTIMEBITFLAG_WRECKED)
@@ -456,14 +456,14 @@ static void objBounce(const ObjectRecord *obj, const coord3d *shotDir)
 /** A shot hits a CCTV camera's lens: it breaks into shards and is hidden. */
 static void objBreakCCTVGlass(const ObjectRecord *obj)
 {
-    PropRecord *prop = obj->prop;
+    const PropRecord *prop = obj->prop;
     Model *model = obj->model;
 
     if (prop->flags & PROPFLAG_ONSCREEN)
     {
         // Switch 2's data holds the lens's extent
         f32 *bounds = (f32 *) model->obj->Switches[2]->Data;
-        Mtxf *nodemtx = modelFindNodeMtx(model, model->obj->Switches[1], 0);
+        const Mtxf *nodemtx = modelFindNodeMtx(model, model->obj->Switches[1], 0);
         Mtxf lensmtx;
 
         mtx4MultAffine(camGetViewToWorldMtxf(), nodemtx, &lensmtx);
@@ -545,7 +545,7 @@ static void objHitImpact(const ObjectRecord *obj, const BulletHit *hit)
 void objHit(const ShotData *shot, const BulletHit *hit)
 {
     ObjectRecord *obj = hit->prop->obj;
-    PropRecord *rootprop = hit->prop;
+    const PropRecord *rootprop = hit->prop;
     coord3d pos;
 
     while (propParent(rootprop) != NULL)

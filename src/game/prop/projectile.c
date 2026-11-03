@@ -350,7 +350,7 @@ static bool projectileTestModel(ObjectRecord *obj, coord3d *screenStart, coord3d
         return FALSE;
     }
 
-    Mtxf *mtx = &model->render_pos[mtxindex].pos;
+    const Mtxf *mtx = &model->render_pos[mtxindex].pos;
 
     *hitPos = hitthing.hitpos;
     mtx4TransformVecInPlace(mtx, hitPos);
@@ -541,7 +541,7 @@ static bool projectileTestObject(ObjectRecord *obj, const coord3d *rayStart, con
  */
 static bool projectileTestObjectTree(ObjectRecord *obj, const coord3d *rayStart, const coord3d *rayEnd, const coord3d *rayDir, f32 maxDist, coord3d *screenStart, coord3d *screenDir, coord3d *bestHitPos, coord3d *bestHitNormal, f32 *bestDist)
 {
-    PropRecord *prop = obj->prop;
+    const PropRecord *prop = obj->prop;
     coord3d hitPos;
     coord3d hitNormal;
     f32 hitDist;
@@ -565,7 +565,7 @@ static bool projectileTestObjectTree(ObjectRecord *obj, const coord3d *rayStart,
 
     if (prop->flags & PROPFLAG_ONSCREEN)
     {
-        for (PropRecord *child = propChild(prop); child != NULL; child = child->prev)
+        for (const PropRecord *child = propChild(prop); child != NULL; child = child->prev)
         {
             if ((child->flags & PROPFLAG_ONSCREEN)
                 && projectileTestObjectTree(child->obj, rayStart, rayEnd, rayDir, maxDist, screenStart, screenDir, bestHitPos, bestHitNormal, bestDist))
@@ -606,7 +606,7 @@ static bool projectileTestChr(const ChrRecord *chr, const coord3d *rayStart, con
         return FALSE;
     }
 
-    Mtxf *mtx = modelFindNodeMtx(model, node, 0);
+    const Mtxf *mtx = modelFindNodeMtx(model, node, 0);
 
     dx = mtx->m[3][0] - screenStart->x;
     dy = mtx->m[3][1] - screenStart->y;
@@ -639,7 +639,7 @@ static bool projectileTestChr(const ChrRecord *chr, const coord3d *rayStart, con
  */
 static bool projectileFindHitProp(const PropRecord *ignoreProp, const coord3d *rayStart, const coord3d *rayEnd, u32 cdtypes, coord3d *hitPos, coord3d *hitNormal, const s32 *rooms)
 {
-    PropRecord *playerstank = playerGetTank();
+    const PropRecord *playerstank = playerGetTank();
     bool found = FALSE;
     coord3d dir;
 
@@ -673,7 +673,7 @@ static bool projectileFindHitProp(const PropRecord *ignoreProp, const coord3d *r
 
     roomGetProps(rooms);
 
-    for (s16 *propnum = g_RoomPropsFound; *propnum >= 0; propnum++)
+    for (const s16 *propnum = g_RoomPropsFound; *propnum >= 0; propnum++)
     {
         PropRecord *prop = &g_Props[*propnum];
 
@@ -799,7 +799,7 @@ static s32 projectileMove(ObjectRecord *obj, const coord3d *targetpos, coord3d *
     roomNums[roomCount] = -1;
 
     // The level. The hit in the last room listed wins, not the nearest.
-    for (s32 *room = roomNums; *room >= 0; room++)
+    for (const s32 *room = roomNums; *room >= 0; room++)
     {
         HitThing hit;
 
@@ -1394,7 +1394,7 @@ static bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNo
     Mtxf objmtx;
     Mtxf nodeworld;
     Mtxf worldtonode;
-    Mtxf *nodemtx = modelFindNodeMtx(model, node, 0);
+    const Mtxf *nodemtx = modelFindNodeMtx(model, node, 0);
 
     obj->runtime_bitflags |= RUNTIMEBITFLAG_EMBEDDED;
 
@@ -1551,7 +1551,7 @@ static bool weaponCanStick(ITEM_IDS weaponnum)
 static bool projectileTryStick(PropRecord *prop, Projectile *projectile, const coord3d *hitpos, const coord3d *hitnormal)
 {
     ObjectRecord *obj = prop->obj;
-    PropRecord *hitprop = s_HitProp;
+    const PropRecord *hitprop = s_HitProp;
 
     if (hitprop != NULL
         && (hitprop->type == PROP_TYPE_CHR || hitprop->type == PROP_TYPE_VIEWER || (hitprop->obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)))
@@ -1582,7 +1582,7 @@ static bool projectileTryStick(PropRecord *prop, Projectile *projectile, const c
 /** Leaves a blood stain on the body part a knife hit, half way in from where it hit. */
 static void projectileKnifeBloodStain(const coord3d *hitpos)
 {
-    Mtxf *nodemtx = modelFindNodeMtx(s_HitModel, s_HitNode, 0);
+    const Mtxf *nodemtx = modelFindNodeMtx(s_HitModel, s_HitNode, 0);
     Mtxf worldtonode;
     coord3d pos = *hitpos;
 
@@ -1607,7 +1607,7 @@ static void projectileKnifeBloodStain(const coord3d *hitpos)
  */
 static bool projectileKnifeHit(ObjectRecord *obj, Projectile *projectile, const coord3d *hitpos, const coord3d *hitnormal)
 {
-    PropRecord *hitprop = s_HitProp;
+    const PropRecord *hitprop = s_HitProp;
     ITEM_IDS weaponnum = ((WeaponObjRecord *) obj)->weaponnum;
 
     if (!(hitprop->type == PROP_TYPE_CHR || (hitprop->type == PROP_TYPE_VIEWER && hitprop->obj != NULL && playerGetIndexForProp(hitprop) != playerGetCurrentNum())))
@@ -1647,7 +1647,7 @@ static bool projectileKnifeHit(ObjectRecord *obj, Projectile *projectile, const 
 /** A rocket that hit a prop damages it, and is set to go off. */
 static void projectileRocketHit(ObjectRecord *obj)
 {
-    PropRecord *hitprop = s_HitProp;
+    const PropRecord *hitprop = s_HitProp;
 
     if (hitprop->type == PROP_TYPE_CHR)
     {
@@ -1669,7 +1669,7 @@ static void projectileRocketHit(ObjectRecord *obj)
 static bool projectileBounce(PropRecord *prop, Projectile *projectile, s32 moveResult, f32 startY, const coord3d *prevXAxis, const coord3d *hitpos, const coord3d *hitnormal, bool *bounced)
 {
     ObjectRecord *obj = prop->obj;
-    ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
+    const ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
     f32 floorY = 0.0f;
     f32 bottom = 1.0f;
     bool hitFloor = FALSE;
@@ -1947,7 +1947,7 @@ static void projectileTickLanded(PropRecord *prop, Projectile *projectile, coord
 
     if ((projectile->speed.f[0] != 0.0f || projectile->speed.f[2] != 0.0f || projectile->rotFrac < 1.0f) && !(projectile->flags & PROJECTILEFLAG_OFFGRID))
     {
-        ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
+        const ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
         coord3d hitpos;
         coord3d hitnormal;
 

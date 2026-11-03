@@ -226,7 +226,10 @@ def focus(text, msg):
             if n <= len(args):
                 return args[n - 1]
         return text
-    m = re.match(r"assignment of read-only location '(.*)'", msg)
+    m = re.search(r"(?:assignment|increment|decrement) of read-only (?:variable|parameter) '(\w+)'", msg)
+    if m:
+        return m.group(1)
+    m = re.match(r"(?:assignment|increment|decrement) of read-only location '(.*)'", msg)
     if m:
         return m.group(1)
     if re.match(r"(?:assignment|increment|decrement) of member '\w+' in read-only object", msg):

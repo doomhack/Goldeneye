@@ -238,7 +238,7 @@ Gfx* watchRenderController(Gfx* gdl, const Mtxf* basemtx, s32 envcolour, bool an
     Mtxf nodeMtx;
     Mtxf rotMtx;
     struct ModelFileHeader* objheader;
-    coord3d* position;
+    const coord3d* position;
     Mtxf* matrices;
     ModelNode* node;
     Mtxf buttonMtx;
@@ -688,15 +688,15 @@ f32 invGetEquipPosZForIndex(s32 index)
 
 const char *invGetWatchTitle1ForIndex(s32 index)
 {
-    InvItem      *item      = invGetItemByIndex(index);
+    const InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;
-    textoverride *override;
+    const textoverride *override;
 
     if (item)
     {
         if (item->type == INV_ITEM_PROP)
         {
-            PropRecord *prop = item->type_inv_item.type_prop.prop;
+            const PropRecord *prop = item->type_inv_item.type_prop.prop;
             override         = invGetOverrideForObj(prop->obj);
 
             if (override)
@@ -736,15 +736,15 @@ const char *invGetWatchTitle1ForIndex(s32 index)
 
 const char *invGetWatchTitle2ForIndex(s32 index)
 {
-    InvItem      *item      = invGetItemByIndex(index);
+    const InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;
-    textoverride *override;
+    const textoverride *override;
 
     if (item)
     {
         if (item->type == INV_ITEM_PROP)
         {
-            PropRecord *prop = item->type_inv_item.type_prop.prop;
+            const PropRecord *prop = item->type_inv_item.type_prop.prop;
             override         = invGetOverrideForObj(prop->obj);
 
             if (override)

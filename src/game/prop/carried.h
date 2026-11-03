@@ -7,7 +7,7 @@
 #include "game/model/jointlist.h"
 
 void             hatAssignToChr(HatRecord *hat, ChrRecord *chr);
-PropRecord      *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags);
+const PropRecord      *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags);
 HATTYPE          hatGetModel(const PropRecord *prop);
 
 void             weaponSetGunfireVisible(const PropRecord *prop, s32 firing);
@@ -20,7 +20,7 @@ PropRecord      *chrGiveWeaponEx(ChrRecord *chr, s32 modelnum, ITEM_IDS weaponid
 PropRecord      *chrGiveWeapon(ChrRecord *chr, s32 modelnum, ITEM_IDS weaponid, s32 flags);
 void             chrRemoveHeldWeapon(const ChrRecord *chr, GUNHAND hand);
 void             chrRenderHeldWeapon(const PropRecord *chrprop, GUNHAND hand, JointListEntry **jointList);
-WeaponObjRecord *weaponFindThrown(s32 weaponnum);
+const WeaponObjRecord *weaponFindThrown(s32 weaponnum);
 
 void             objSetDropType(const PropRecord *prop, DROPTYPE droptype);
 void             objDetach(PropRecord *prop);

@@ -8,8 +8,8 @@
 
 /* The sprite type that libultra's gu.h declares functions for (F3DEX3's GBI leaves it out) */
 typedef struct {
-    void *SourceImagePointer;
-    void *TlutPointer;
+    const void *SourceImagePointer;
+    const void *TlutPointer;
     short Stride;
     short SubImageWidth;
     short SubImageHeight;

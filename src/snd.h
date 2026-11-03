@@ -171,7 +171,7 @@ struct ALBankAlt_s
     u8 flags;
     u8 pad;
     s32 sampleRate;             /* e.g. 44100, 22050, etc...       */
-    ALInstrument *percussion;   /* default percussion for GM       */
+    const ALInstrument *percussion;   /* default percussion for GM       */
     struct ALInstrumentAlt_s *instArray[1]; /* ARRAY of instruments            */
 };
 

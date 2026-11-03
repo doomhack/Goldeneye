@@ -185,7 +185,7 @@ u32 g_DebugOutputBitmaps[] = {
 };
 
 u16 *g_DebugOutputVideoBuffer1 = NULL;
-u16 *g_DebugOutputVideoBuffer2 = NULL;
+const u16 *g_DebugOutputVideoBuffer2 = NULL;
 
 // forward declarations
 
@@ -207,11 +207,11 @@ void crashInit(void)
 /**
  * @param data Unused.
  */
-extern OSThread *__osRunQueue;
+extern const OSThread *__osRunQueue;
 void crashMain([[maybe_unused]] void *data)
 {
     OSMesg msg = 0;
-    static OSThread *curr;
+    static const OSThread *curr;
     osSetEventMesg(OS_EVENT_FAULT, &g_faultMesgQ, (OSMesg)MSG_FAULT);
 
     // Wake twice a second: a fault message also wakes us straight away

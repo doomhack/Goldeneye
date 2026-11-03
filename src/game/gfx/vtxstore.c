@@ -89,10 +89,10 @@ void vtxstoreReset(void)
 /** Points every prop that uses the vertices at `find` at `replacement` instead */
 static void vtxstoreFixRefs(const Vertex *find, Vertex *replacement)
 {
-    for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
+    for (const PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {
-        Model *model;
-        ModelNode *node;
+        const Model *model;
+        const ModelNode *node;
 
         if (prop->type != PROP_TYPE_OBJ)
         {

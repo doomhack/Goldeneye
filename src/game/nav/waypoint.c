@@ -199,7 +199,7 @@ static void floodPoints(waypoint *from, const waypoint *to, bool all)
 
         for (m = members; *m >= 0; m++)
         {
-            waypoint *point = getPoint(*m);
+            const waypoint *point = getPoint(*m);
 
             if (point->dist == dist && point->neighbours != NULL)
             {
@@ -276,13 +276,13 @@ s32 waypointFindRoute(waypoint *frompoint, waypoint *topoint, waypoint **route, 
         if (markGroupRoute(fromgroup, togroup))
         {
             waypoint *point = frompoint;
-            waygroup *group = fromgroup;
+            const waygroup *group = fromgroup;
             s32 dist;
 
             /* To the waypoint linking each group on the route to the next, and over */
             for (dist = fromgroup->dist + 1; dist <= togroup->dist && maxLen >= 2; dist++)
             {
-                waygroup *nextgroup = findGroupByDist(group->neighbours, dist);
+                const waygroup *nextgroup = findGroupByDist(group->neighbours, dist);
                 waypoint *exitpoint;
                 waypoint *entrypoint;
                 s32 written;
@@ -306,7 +306,7 @@ s32 waypointFindRoute(waypoint *frompoint, waypoint *topoint, waypoint **route, 
     return out - route;
 }
 
-static waypoint *findRandomPointByDist(const s32 *pointnums, s32 dist)
+static const waypoint *findRandomPointByDist(const s32 *pointnums, s32 dist)
 {
     s32 len = listLength(pointnums);
     s32 start = randomGetNext() % len;
@@ -315,7 +315,7 @@ static waypoint *findRandomPointByDist(const s32 *pointnums, s32 dist)
     /* From a random place in the list, so any of the matches is as likely */
     for (i = 0; i < len; i++)
     {
-        waypoint *point = getPoint(pointnums[(start + i) % len]);
+        const waypoint *point = getPoint(pointnums[(start + i) % len]);
 
         if (point->dist == dist)
         {
@@ -326,7 +326,7 @@ static waypoint *findRandomPointByDist(const s32 *pointnums, s32 dist)
     return NULL;
 }
 
-static waygroup *findRandomGroupByDist(const s32 *groupnums, s32 dist)
+static const waygroup *findRandomGroupByDist(const s32 *groupnums, s32 dist)
 {
     s32 len = listLength(groupnums);
     s32 start = randomGetNext() % len;
@@ -334,7 +334,7 @@ static waygroup *findRandomGroupByDist(const s32 *groupnums, s32 dist)
 
     for (i = 0; i < len; i++)
     {
-        waygroup *group = getGroup(groupnums[(start + i) % len]);
+        const waygroup *group = getGroup(groupnums[(start + i) % len]);
 
         if (group->dist == dist)
         {
@@ -350,9 +350,9 @@ static waygroup *findRandomGroupByDist(const s32 *groupnums, s32 dist)
  * doesn't take it closer, chosen at random, or failing that one that does. (It is for
  * guards who should look like they are searching, not walking straight there.)
  */
-waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
+const waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 {
-    waygroup *groupa;
+    const waygroup *groupa;
     waygroup *groupb;
 
     if (g_CurrentSetup.waypointgroups == NULL)
@@ -365,7 +365,7 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 
     if (groupa == groupb)
     {
-        waypoint *point;
+        const waypoint *point;
         waypoint *wp;
 
         /* Clear every dist, so a neighbour outside the group reads as unreached */
@@ -390,7 +390,7 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 
     if (groupa->dist >= 0)
     {
-        waygroup *group = findRandomGroupByDist(groupa->neighbours, -1);
+        const waygroup *group = findRandomGroupByDist(groupa->neighbours, -1);
         waypoint *exitpoint;
         waypoint *entrypoint;
 
@@ -436,7 +436,7 @@ waypoint *waypointFindNextStepToward(waypoint *pointa, waypoint *pointb)
 void waypointsValidate(void)
 {
     waypoint *points = g_CurrentSetup.pathwaypoints;
-    waygroup *groups = g_CurrentSetup.waypointgroups;
+    const waygroup *groups = g_CurrentSetup.waypointgroups;
     bool broken = FALSE;
     s32 i;
 
@@ -486,7 +486,7 @@ void waypointsValidate(void)
 
     if (points != NULL && groups != NULL)
     {
-        waygroup *group;
+        const waygroup *group;
 
         for (i = 0; groups[i].neighbours != NULL; i++)
         {

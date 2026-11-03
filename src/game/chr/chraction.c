@@ -86,7 +86,7 @@ u32 weaponIsOneHanded(const PropRecord *weaponprop)
 void chrStandChooseAnimation(const ChrRecord *self, f32 duration)
 {
     PropRecord *left;
-    PropRecord *right;
+    const PropRecord *right;
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
@@ -257,7 +257,7 @@ void chrStandCheckWall(ChrRecord *self)
 void chrKneelChooseAnimation(ChrRecord *self)
 {
     PropRecord *left;
-    PropRecord *right;
+    const PropRecord *right;
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
     right = chrGetEquippedWeaponProp(self, GUNRIGHT);
@@ -334,8 +334,8 @@ void chrStartAnim(ChrRecord *self, s32 animID, s32 startframe, s32 endframe, u8 
  */
 void chrStartAlarmChooseAnimation(ChrRecord *self)
 {
-    PropRecord *left = chrGetEquippedWeaponProp(self, GUNLEFT);
-    PropRecord *right = chrGetEquippedWeaponProp(self, GUNRIGHT);
+    const PropRecord *left = chrGetEquippedWeaponProp(self, GUNLEFT);
+    const PropRecord *right = chrGetEquippedWeaponProp(self, GUNRIGHT);
     bool flip = FALSE;
 
     if (left && !right)
@@ -383,8 +383,8 @@ void chrThrowGrenade(ChrRecord *self, GUNHAND hand, s32 startframe)
 
 static void chrSpotChooseAnimation(const ChrRecord *self, f32 mergetime)
 {
-    PropRecord *left;
-    PropRecord *right;
+    const PropRecord *left;
+    const PropRecord *right;
     s32 flip;
     f32 speed;
 
@@ -475,8 +475,8 @@ void chrActorLookFlustered(ChrRecord *self)
  */
 void chrActorThrowWeaponSurrender(ChrRecord *self)
 {
-    PropRecord *left;
-    PropRecord *right;
+    const PropRecord *left;
+    const PropRecord *right;
 
     if (self->actiontype != ACT_SURRENDER)
     {
@@ -537,8 +537,8 @@ void chrActorFadeAway(ChrRecord *self)
  */
 static void chrSidestep(ChrRecord *self, GUNHAND side)
 {
-    PropRecord *left;
-    PropRecord *right;
+    const PropRecord *left;
+    const PropRecord *right;
     s32 flip;
     s32 variant;
 
@@ -602,8 +602,8 @@ static void chrSidestep(ChrRecord *self, GUNHAND side)
  */
 static void chrJumpOut(ChrRecord *self, GUNHAND side)
 {
-    PropRecord *left;
-    PropRecord *right;
+    const PropRecord *left;
+    const PropRecord *right;
     s32 side2;
 
     left = chrGetEquippedWeaponProp(self, GUNLEFT);
@@ -827,11 +827,11 @@ f32 chrGetClearDistInDirDefault(const PropRecord *prop, f32 angle, f32 maxdist)
  */
 static void chrNormDistanceToPlayer(const ChrRecord *self, GUNHAND side, coord3d *vec)
 {
-    PropRecord *prop;
+    const PropRecord *prop;
     f32 norm;
     f32 dx;
     f32 dz;
-    PropRecord *player_prop;
+    const PropRecord *player_prop;
 
     prop = self->prop;
     player_prop = currentPlayerGetProp();
@@ -864,7 +864,7 @@ static void chrNormDistanceToPlayer(const ChrRecord *self, GUNHAND side, coord3d
  */
 static s32 chrIsClearLow(const ChrRecord *self, GUNHAND side, f32 distance)
 {
-    PropRecord *prop;
+    const PropRecord *prop;
     coord3d dir;
     coord3d dest;
 
@@ -909,7 +909,7 @@ static void chrGetSideDir(const ChrRecord *self, s32 side, coord3d *dir)
  */
 static s32 chrIsClear(const ChrRecord *self, GUNHAND side, f32 distance)
 {
-    PropRecord *prop;
+    const PropRecord *prop;
     coord3d dir;
     coord3d dest;
 
@@ -952,8 +952,8 @@ bool chrIsDead(const ChrRecord *self)
  */
 static bool chrIsBondInFrontOrBehind(const ChrRecord *self)
 {
-    PropRecord *myprop = self->prop;
-    PropRecord *bondprop = currentPlayerGetProp();
+    const PropRecord *myprop = self->prop;
+    const PropRecord *bondprop = currentPlayerGetProp();
     f32 facing = modelGetRootRotY(self->model);
     f32 toBond = mathAtan2(bondprop->pos.x - myprop->pos.x, bondprop->pos.z - myprop->pos.z);
     f32 angle = toBond - facing;
@@ -1029,7 +1029,7 @@ bool chrTryJumpOut(ChrRecord *self)
  */
 bool chrTryRunSideways(ChrRecord *self)
 {
-    PropRecord *myprop;
+    const PropRecord *myprop;
     f32 dist;
     coord3d dir;
     coord3d target;
@@ -1073,8 +1073,8 @@ bool chrTryRunSideways(ChrRecord *self)
  */
 static bool chrTryAttackMoving(ChrRecord *self, SPEED speed)
 {
-    PropRecord *myprop;
-    PropRecord *bondprop;
+    const PropRecord *myprop;
+    const PropRecord *bondprop;
 
     if (chrIsNotDeadOrShot(self))
     {
@@ -1114,8 +1114,8 @@ bool chrTryAttackRun(ChrRecord *self)
 
 bool chrTryAttackRoll(ChrRecord *self)
 {
-    PropRecord *myprop;
-    PropRecord *bondprop;
+    const PropRecord *myprop;
+    const PropRecord *bondprop;
     coord3d vec;
     GUNHAND side;
     f32 distsq;
@@ -1242,7 +1242,7 @@ static void chrTickStand(ChrRecord *self)
 {
     s32 i;
     PropRecord *left;
-    PropRecord *right;
+    const PropRecord *right;
     s32 index;
     f32 cleardist[8];
     f32 subroty;
@@ -1500,7 +1500,7 @@ static void chrTickSurrender(ChrRecord *self)
 
 static void chrTickSidestep(ChrRecord *self)
 {
-    Model *model = self->model;
+    const Model *model = self->model;
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
@@ -1512,7 +1512,7 @@ static void chrTickSidestep(ChrRecord *self)
 
 static void chrTickJumpout(ChrRecord *self)
 {
-    Model *model = self->model;
+    const Model *model = self->model;
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
@@ -1524,7 +1524,7 @@ static void chrTickJumpout(ChrRecord *self)
 
 static void chrTickTest(ChrRecord *self)
 {
-    Model *model = self->model;
+    const Model *model = self->model;
 
     if (modelGetAnimFrame(model) >= modelGetAnimEndFrame(model))
     {
@@ -1535,7 +1535,7 @@ static void chrTickTest(ChrRecord *self)
 
 static void chrTickStartAlarm(ChrRecord *self)
 {
-    Model *model = self->model;
+    const Model *model = self->model;
 
     // bug/typo, should be 50.0f on VERSION_EU
     if (modelGetAnimFrame(model) >= 60.0f)
@@ -1574,7 +1574,7 @@ static void chrTickSurprised(ChrRecord *self)
 
 static void chrTickThrowGrenade(ChrRecord *self)
 {
-    Model *self_model;
+    const Model *self_model;
     f32 frame;
     s32 gunhand;
     PropRecord *held_prop;
@@ -1795,7 +1795,7 @@ void bgChrsTick(void)
 
     for (i = 0; i < max; i++)
     {
-        ChrSlotHot *hot = &g_ChrSlotHot[i];
+        const ChrSlotHot *hot = &g_ChrSlotHot[i];
 
         if (hot->chrnum != CHRSLOT_EMPTY)
         {

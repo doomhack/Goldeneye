@@ -160,7 +160,7 @@ s32 g_MpStageCursor;
 s32 g_MpScenarioCursor;
 s32 g_FrontDifficultyHighlight;
 s32 g_MpTeamsCursor;
-struct BriefingData *g_FrontBriefing;
+const struct BriefingData *g_FrontBriefing;
 s32 g_NewCheatUnlocked;
 s32 g_Front007HlReaction;
 s32 g_Front007HlHealth;
@@ -262,7 +262,7 @@ f32 g_Front007Health = 1.0f;
 f32 g_Front007Damage = 1.0f;
 f32 g_Front007Accuracy = 1.0f;
 
-coord3d legalpage_pos = {{0.0f, 0.0f, 0.0f}};
+const coord3d legalpage_pos = {{0.0f, 0.0f, 0.0f}};
 
 struct legal_screen_text g_LegalTexts[] = {
     {220,  30, CENTER_ALIGN, CENTER_ALIGN, getStringID(LTITLE, TITLE_STR_07_TWY), 0}, //"TWYCROSS BOARD OF GAME CLASSIFICATION\n"
@@ -279,7 +279,7 @@ struct legal_screen_text g_LegalTexts[] = {
     { 80, 280, LEFT_ALIGN, CENTER_ALIGN, getStringID(LTITLE, TITLE_STR_18_EMI), 0}  //"Used by permission of EMI Unart Catalog Inc.\n"
 };
 
-ModelRenderData legalscreen_MRD = {NULL,
+const ModelRenderData legalscreen_MRD = {NULL,
                                     TRUE,
                                     0x00000003,
                                     NULL,
@@ -300,9 +300,9 @@ ModelRenderData legalscreen_MRD = {NULL,
                                     CULLMODE_BOTH};
 
 
-coord3d nintendologo_pos = {0};
+const coord3d nintendologo_pos = {0};
 
-ModelRenderData       nintendologo_MRD = {NULL,
+const ModelRenderData       nintendologo_MRD = {NULL,
                                     TRUE,
                                     0x00000003,
                                     NULL,
@@ -323,9 +323,9 @@ ModelRenderData       nintendologo_MRD = {NULL,
                                     CULLMODE_BOTH};
 
 
-coord3d goldeneyelogo_pos = { 0 };
+const coord3d goldeneyelogo_pos = { 0 };
 
-ModelRenderData       goldeneyelogo_MRD = {NULL,
+const ModelRenderData       goldeneyelogo_MRD = {NULL,
                                     TRUE,
                                     0x00000003,
                                     NULL,
@@ -346,7 +346,7 @@ ModelRenderData       goldeneyelogo_MRD = {NULL,
                                     CULLMODE_BOTH};
 
 
-coord3d g_FrontFolderPos[] = {
+const coord3d g_FrontFolderPos[] = {
     {{-900.0f, 800.0f, 0.0f}},
     {{1800.0f, 800.0f, 0.0f}},
     {{-1800.0f, -200.0f, 0.0f}},
@@ -356,7 +356,7 @@ coord3d g_FrontFolderPos[] = {
 struct rectbbox folder_option_COPY_bound = { 0 };
 struct rectbbox folder_option_ERASE_bound = { 0 };
 
-struct mission_folder_setup g_FrontMissions[] = {
+const struct mission_folder_setup g_FrontMissions[] = {
   /* string_ptr  folder_text_preset                                                         icon_text_preset                                            stage_id           unknown type             mission_num briefing_name_ptr */
     {"1",        getStringID(LTITLE, TITLE_STR_120_ARK)            /* Arkangelsk */,        0,                                                          LEVELID_NONE,           0, MISSION_HEADER,          -1, 0},
     {"i",        getStringID(LTITLE, TITLE_STR_121_DAM)            /* Dam */,               0,                                                          LEVELID_DAM,            0, MISSION_PART,             0, "UbriefdamZ"},
@@ -395,18 +395,18 @@ struct mission_folder_setup g_FrontMissions[] = {
 
 
 
-f32 g_FrontFolderCamOffsetX = 0;
-f32 g_FrontFolderCamOffsetY = 190.0;
-f32 g_FrontFolderCamOffsetZ = -3300.0;
-s32 g_FrontMissionCursorX[] = {73, 142, 212, 282, 352};
+const f32 g_FrontFolderCamOffsetX = 0;
+const f32 g_FrontFolderCamOffsetY = 190.0;
+const f32 g_FrontFolderCamOffsetZ = -3300.0;
+const s32 g_FrontMissionCursorX[] = {73, 142, 212, 282, 352};
 
 #if defined(VERSION_EU)
-s32 g_FrontMissionCursorY[] = {62, 130, 201, 270};
+const s32 g_FrontMissionCursorY[] = {62, 130, 201, 270};
 #else
-s32 g_FrontMissionCursorY[] = {62, 131, 201, 270};
+const s32 g_FrontMissionCursorY[] = {62, 131, 201, 270};
 #endif
 
-struct MP_game_length_settings g_MpGameLengths[] = {
+const struct MP_game_length_settings g_MpGameLengths[] = {
     {getStringID(LTITLE, TITLE_STR_45_UNLIMITED), 0, 0, 0},                    /* unlimited */
     {getStringID(LTITLE, TITLE_STR_46_5MIN), 0, MINS_TO_TIMER60(5), 0},   /* 5 minutes */
     {getStringID(LTITLE, TITLE_STR_47_10MIN), 0, MINS_TO_TIMER60(10), 0},  /* 10 minutes */
@@ -417,7 +417,7 @@ struct MP_game_length_settings g_MpGameLengths[] = {
     {getStringID(LTITLE, TITLE_STR_52_LASTALIVE), 0, 0, 0}                     /* last person alive wins */
 };
 
-struct mp_stage_playercount g_MpStagePlayerCounts[] = {
+const struct mp_stage_playercount g_MpStagePlayerCounts[] = {
     {getStringID(LTITLE, TITLE_STR_53_NORMAL), 2, 4}, //"Normal"
     {getStringID(LTITLE, TITLE_STR_54_YOLT), 2, 4}, //"You Only Live Twice"
     {getStringID(LTITLE, TITLE_STR_55_FLAGTAG), 2, 4}, //"The Living Daylights [Flag Tag]"
@@ -456,7 +456,7 @@ struct mp_stage_setup g_MpStages[] = {
 s32 g_MpCharCount = 8;
 
 #ifdef BUGFIX_R0
-struct MP_selectable_chars g_MpChars[] = {
+const struct MP_selectable_chars g_MpChars[] = {
     {getStringID(LTITLE, TITLE_STR_184_BOND), MALE,   IMG_MPC_BROSNAN, BODY_Brosnan_Tuxedo,                   HEAD_Male_Brosnan_Tuxedo, 1.0},
     {getStringID(LTITLE, TITLE_STR_191_NATALYA), FEMALE, IMG_MPC_NATALYA, BODY_Natalya_Skirt,            HEAD_Male_Brosnan_Tuxedo, 0.96609998},
     {getStringID(LTITLE, TITLE_STR_188_TREVELYAN), MALE,   IMG_MPC_TREVELYAN, BODY_Trevelyan_Janus,          HEAD_Male_Brosnan_Tuxedo, 1.0},
@@ -523,7 +523,7 @@ struct MP_selectable_chars g_MpChars[] = {
     {getStringID(LTITLE, TITLE_STR_226_VIVIEN), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Female_Vivien, 1.0446}
 };
 #else
-struct MP_selectable_chars g_MpChars[] = {
+const struct MP_selectable_chars g_MpChars[] = {
     {getStringID(LTITLE, TITLE_STR_184_BOND), MALE,   IMG_MPC_BROSNAN, BODY_Brosnan_Tuxedo,                   HEAD_Male_Brosnan_Tuxedo, 1.0},
     {getStringID(LTITLE, TITLE_STR_191_NATALYA), FEMALE, IMG_MPC_NATALYA, BODY_Natalya_Skirt,            HEAD_Male_Brosnan_Tuxedo, 0.96609998},
     {getStringID(LTITLE, TITLE_STR_188_TREVELYAN), MALE,   IMG_MPC_TREVELYAN, BODY_Trevelyan_Janus,          HEAD_Male_Brosnan_Tuxedo, 1.0},
@@ -592,7 +592,7 @@ struct MP_selectable_chars g_MpChars[] = {
 #endif
 
 
-struct MP_handicap_menu g_MpHandicaps[] = {
+const struct MP_handicap_menu g_MpHandicaps[] = {
     {getStringID(LTITLE, TITLE_STR_61_HERO), 0, 10.0},       // "Health -10\n(Hero)"
     {getStringID(LTITLE, TITLE_STR_62_VET4), 0, 2.8560996},  // "Health -4\n(Veteran)"
     {getStringID(LTITLE, TITLE_STR_63_VET3), 0, 2.1969998},  // "Health -3\n(Veteran)"
@@ -606,7 +606,7 @@ struct MP_handicap_menu g_MpHandicaps[] = {
     {getStringID(LTITLE, TITLE_STR_71_ROOKIE), 0, 0.1}         // "Health +10\n(Rookie)"
 };
 
-struct MP_controller_configuration_menu g_MpControlStyles[] = {
+const struct MP_controller_configuration_menu g_MpControlStyles[] = {
     {getStringID(LTITLE, TITLE_STR_277_11HONEY), 0, 1}, //1.1 Honey*
     {getStringID(LTITLE, TITLE_STR_278_12SOLITAIRE), 1, 1}, //1.2 Solitaire*
     {getStringID(LTITLE, TITLE_STR_279_13KISSY), 2, 1}, //1.3 Kissy*
@@ -617,7 +617,7 @@ struct MP_controller_configuration_menu g_MpControlStyles[] = {
     {getStringID(LTITLE, TITLE_STR_284_24GOODHEAD), 7, 2}  //2.4 Goodhead*
 };
 
-struct MP_sight_aim_settings g_MpAimSettings[] = {
+const struct MP_sight_aim_settings g_MpAimSettings[] = {
     {getStringID(LTITLE, TITLE_STR_72_SOFFAOFF), 0, 0}, // "Sight OFF, Auto Aim OFF"
     {getStringID(LTITLE, TITLE_STR_73_SONAOFF), 1, 0}, // "Sight ON, Auto Aim OFF"
     {getStringID(LTITLE, TITLE_STR_74_SOFFAON), 0, 1}, // "Sight OFF, Auto Aim ON"
@@ -641,7 +641,7 @@ s32 g_MpCanPickAim = TRUE;
 
 u32 g_MpTeamsBlinkTimer = 0;
 
-s16 g_FrontTargetTimes[20][3] = {
+const s16 g_FrontTargetTimes[20][3] = {
     {0, 160, 0}, // Dam
     {0, 0, 125}, // Facility
     {300, 0, 0}, // Runway
@@ -676,7 +676,7 @@ struct Model *g_CastModel = NULL;
 struct Model *g_CastWeaponModel = NULL;
 u32 g_CastFull = 0;
 
-struct intro_char g_CastChars[] = {
+const struct intro_char g_CastChars[] = {
     {BODY_Brosnan_Tuxedo,             HEAD_Male_Brosnan_Tuxedo, getStringID(LTITLE, TITLE_STR_227_LF),            getStringID(LTITLE, TITLE_STR_228_THEACTORS),             getStringID(LTITLE, TITLE_STR_227_LF),               0, 1},
     {BODY_Special_Operations_Uniform, HEAD_Male_Brosnan_Boiler, getStringID(LTITLE, TITLE_STR_229_STARRING),      getStringID(LTITLE, TITLE_STR_232_007),                   getStringID(LTITLE, TITLE_STR_233_JAMESBOND),        0, 0},
     {BODY_Natalya_Skirt,              HEAD_FIXED,               getStringID(LTITLE, TITLE_STR_229_STARRING),      getStringID(LTITLE, TITLE_STR_234_NATALYASIMONOVA),       getStringID(LTITLE, TITLE_STR_227_LF),               0, 0},
@@ -714,7 +714,7 @@ struct intro_char g_CastChars[] = {
     {0xFFFFFFFF,                      0,                        0,                                                0,                                                        0,                                                   0, 0}
 };
 
-struct intro_animation g_CastAnims[] = {
+const struct intro_animation g_CastAnims[] = {
     {ANIM_spotting_bond, 98.0, 1.0, 0},
     {ANIM_fire_standing_draw_one_handed_weapon_fast, 21.0, 1.0, 1},
     {ANIM_fire_standing_draw_one_handed_weapon_slow, 26.0, 1.0, 1},
@@ -740,10 +740,10 @@ struct intro_animation g_CastAnims[] = {
     {0xFFFFFFFF, 0.0, 0.0, 0}
 };
 
-coord3d zeroCoord = { 0 };
+const coord3d zeroCoord = { 0 };
 
 #define INTRO_RANDOM_RIFLE_LEN 6
-PROP g_CastRifles[INTRO_RANDOM_RIFLE_LEN] = {
+const PROP g_CastRifles[INTRO_RANDOM_RIFLE_LEN] = {
     PROP_CHRKALASH,
     PROP_CHRM16,
     PROP_CHRFNP90,
@@ -753,7 +753,7 @@ PROP g_CastRifles[INTRO_RANDOM_RIFLE_LEN] = {
 };
 
 #define INTRO_RANDOM_PISTOL_LEN 10
-PROP g_CastPistols[INTRO_RANDOM_PISTOL_LEN] = {
+const PROP g_CastPistols[INTRO_RANDOM_PISTOL_LEN] = {
     PROP_CHRWPPK,
     PROP_CHRWPPKSIL,
     PROP_CHRSKORPION,
@@ -766,11 +766,11 @@ PROP g_CastPistols[INTRO_RANDOM_PISTOL_LEN] = {
     PROP_CHRGOLDEN
 };
 
-coord3d cast_camera_pos    = { {0.0f, 0.0f, 1.0f} }; // campos in frontCastRender is set to this, but is then immediately overwritten, so the values here have no effect.
-coord3d cast_camera_target = { {0.0f, 0.0f, 0.0f} };
-coord3d cast_camera_up     = { {0.0f, 1.0f, 0.0f} }; // Display cast character up vector
+const coord3d cast_camera_pos    = { {0.0f, 0.0f, 1.0f} }; // campos in frontCastRender is set to this, but is then immediately overwritten, so the values here have no effect.
+const coord3d cast_camera_target = { {0.0f, 0.0f, 0.0f} };
+const coord3d cast_camera_up     = { {0.0f, 1.0f, 0.0f} }; // Display cast character up vector
 
-ModelRenderData cast_renderdata_default = { NULL,
+const ModelRenderData cast_renderdata_default = { NULL,
                                             TRUE,
                                             0x00000003,
                                             NULL,
@@ -791,7 +791,7 @@ ModelRenderData cast_renderdata_default = { NULL,
                                            CULLMODE_BOTH};
 
 
-coord3d cast_camera_offset = { {0.0f, 40.0f, 25.0f} }; // vec in frontCastRender is initialized to this, but then gets overwritten before it's read, so these values don't have any effect.
+const coord3d cast_camera_offset = { {0.0f, 40.0f, 25.0f} }; // vec in frontCastRender is initialized to this, but then gets overwritten before it's read, so these values don't have any effect.
 
 
 // forward declarations
@@ -1345,7 +1345,7 @@ Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, const
 
 Gfx *frontLegalRender(Gfx *DL)
 {
-    struct legal_screen_text *legal_text_end;
+    const struct legal_screen_text *legal_text_end;
     struct ModelRenderData renderdata;
     Mtxf lookatmtx;
     s32 i;
@@ -1784,7 +1784,7 @@ Gfx *frontLogoRender(Gfx *DL)
 void frontHideAllSwitches(const Model *model)
 {
     s32 i;
-    ModelNode *mnode;
+    const ModelNode *mnode;
 
     for (i = 0; i < model->obj->numSwitches; i++)
     {
@@ -1965,7 +1965,7 @@ void frontFileSelectTick(void)
     s32 foldernum;
     Mtxf lookatmtx;
     Mtxf walletmtx;
-    coord3d *folderpos;
+    const coord3d *folderpos;
 
     /**
      *  Accumulate the menu timer if there's been no button inputs and no more than marginal stick input.
@@ -2266,7 +2266,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
     {
         char difficultytext[4];
         char missiontext[18];   // "Mission <chapter>.<part>\n"
-        coord3d * folderworldpos;
+        const coord3d * folderworldpos;
 
         folderworldpos = &g_FrontFolderScreenPos[foldernum];
 
@@ -2477,7 +2477,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
 #define MODESEL_ROW_MULTI     3
 #define MODESEL_ROW_CHEATS    4
 
-static s32 modesel_row_y[5] = {0xC4, 0xDE, 0xF8, 0x112, 0x12C};
+static const s32 modesel_row_y[5] = {0xC4, 0xDE, 0xF8, 0x112, 0x12C};
 static s32 modesel_highlighted_row = -1;
 
 void frontModeSelectEnter(void)
@@ -2816,7 +2816,7 @@ Gfx* frontModeSelectRender(Gfx* DL)
 #define COOP_SETUP_VALUE_X 0xC8
 #define COOP_SETUP_CURSOR_X 0x28
 
-static const char *coop_setup_row_labels[COOP_SETUP_ROW_COUNT] = {
+static const char *const coop_setup_row_labels[COOP_SETUP_ROW_COUNT] = {
     "Player 2:\n", // "Bond:" in counter-op
     "Player 2 Controls:\n",
     "Split Screen:\n",
@@ -4219,7 +4219,7 @@ struct coop_bond_outfit {
     s32 cuff;
 };
 
-static struct coop_bond_outfit coop_bond_outfits[COOP_BOND_OUTFIT_COUNT] = {
+static const struct coop_bond_outfit coop_bond_outfits[COOP_BOND_OUTFIT_COUNT] = {
     {"Bond: Suit\n",       CUFF_BLUE},
     {"Bond: Tuxedo\n",     CUFF_BROSNAN},
     {"Bond: Boiler Suit\n", CUFF_BOILER},
@@ -4231,11 +4231,11 @@ static struct coop_bond_outfit coop_bond_outfits[COOP_BOND_OUTFIT_COUNT] = {
  * The outfits player 2's Bond can wear next to player 1's, one picked at
  * random per mission. Bond has only one cold weather outfit.
  */
-static s32 coop_outfits_blue[]    = {CUFF_BROSNAN, CUFF_BOILER, -1};
-static s32 coop_outfits_tuxedo[]  = {CUFF_BLUE, -1};
-static s32 coop_outfits_boiler[]  = {CUFF_BLUE, CUFF_JUNGLE, -1};
-static s32 coop_outfits_jungle[]  = {CUFF_BOILER, -1};
-static s32 coop_outfits_snow[]    = {CUFF_BOILER, -1};
+static const s32 coop_outfits_blue[]    = {CUFF_BROSNAN, CUFF_BOILER, -1};
+static const s32 coop_outfits_tuxedo[]  = {CUFF_BLUE, -1};
+static const s32 coop_outfits_boiler[]  = {CUFF_BLUE, CUFF_JUNGLE, -1};
+static const s32 coop_outfits_jungle[]  = {CUFF_BOILER, -1};
+static const s32 coop_outfits_snow[]    = {CUFF_BOILER, -1};
 
 static s32 s_CoopPartnerCuff = -1;
 
@@ -4314,7 +4314,7 @@ s32 frontCoopPartnerIsBond(void)
 s32 frontCoopGetPartnerCuff(s32 player1cuff)
 {
     s32 character = frontCoopGetPartnerChar();
-    s32 *outfits;
+    const s32 *outfits;
     s32 count;
 
     if (character > COOP_BOND_OUTFIT_COUNT)

@@ -19,7 +19,7 @@
 #define DBG_LEFT 4
 
 extern u32 g_DebugOutputBitmaps[];
-extern OSThread *__osActiveQueue;
+extern const OSThread *__osActiveQueue;
 
 volatile u32 g_DbgFrameCounter = 0;
 
@@ -172,7 +172,7 @@ static void dbgBegin(const char *title)
 
 [[noreturn]] static void dbgShowScreen(void)
 {
-    OSViMode *mode = &osViModeTable[(osTvType == OS_TV_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
+    const OSViMode *mode = &osViModeTable[(osTvType == OS_TV_MPAL) ? OS_VI_MPAL_LAN1 : OS_VI_NTSC_LAN1];
 
     IO_WRITE(VI_CONTROL_REG, mode->comRegs.ctrl);
     IO_WRITE(VI_WIDTH_REG, SCREEN_WIDTH);
@@ -206,7 +206,7 @@ void dbgShowFault(const OSThread *t)
 
 void dbgShowHang(u32 seconds)
 {
-    OSThread *t;
+    const OSThread *t;
     s32 n = 0;
 
     dbgBegin("HANG: no frame for a few seconds");

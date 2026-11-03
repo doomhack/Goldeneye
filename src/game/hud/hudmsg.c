@@ -80,7 +80,7 @@ static s32 s_TopCount = 0;
 static s32 s_TopTimer = -1;
 static s32 s_TopHidden = 0;   // PLAYERFLAG bits that hide the top messages
 
-static DirectionLabels s_DebugCompassLabels = {{"n", "ne", "e", "se", "s", "sw", "w", "nw", "n"}};
+static const DirectionLabels s_DebugCompassLabels = {{"n", "ne", "e", "se", "s", "sw", "w", "nw", "n"}};
 
 void hudmsgResetIntroText(void)
 {
@@ -383,7 +383,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
     s32 debug_y;
     f32 theta_x;
     s32 debug_boxbottom;
-    char *roomid;
+    const char *roomid;
     s32 debug_angle;
     DirectionLabels directions;
 

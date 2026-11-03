@@ -170,7 +170,7 @@ s32 getPlayerCount(void)
 }
 
 /* What each hand holds when a player is created: nothing */
-static struct hand s_DefaultHand = {
+static const struct hand s_DefaultHand = {
     .weaponnum_watchmenu = -1,
     .heldItemVisible = 1,
     .animMtx = { { {1.0f,0.0f,0.0f,0.0f}, {0.0f,1.0f,0.0f,0.0f}, {0.0f,0.0f,1.0f,0.0f}, {0.0f,0.0f,0.0f,1.0f} } },
@@ -829,7 +829,7 @@ u8 playerGetRoom(void)
 }
 
 
-coord3d *playerGetPos(void)
+const coord3d *playerGetPos(void)
 {
     if (g_CurrentPlayer->cameramode == 1)
     {
@@ -840,7 +840,7 @@ coord3d *playerGetPos(void)
 }
 
 
-coord3d * playerGetPos3(void)
+const coord3d * playerGetPos3(void)
 {
 
     if (g_CurrentPlayer->cameramode == 1)
@@ -851,7 +851,7 @@ coord3d * playerGetPos3(void)
     return &g_CurrentPlayer->bond.pos3;
 }
 
-coord3d *playerGetPrevPos(void)
+const coord3d *playerGetPrevPos(void)
 {
     return &g_CurrentPlayer->bondprevpos;
 }

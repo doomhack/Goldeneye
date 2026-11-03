@@ -160,7 +160,7 @@ void jointListCalcDepths(JointListEntry *entry)
             case MODELNODE_OPCODE_HEADER:
             {
                 union ModelRoData *data;
-                ModelNode *othernode;
+                const ModelNode *othernode;
                 Mtxf *mtx;
 
                 data = node->Data;
@@ -170,7 +170,7 @@ void jointListCalcDepths(JointListEntry *entry)
 
                 if (othernode != NULL)
                 {
-                    Mtxf *othermtx;
+                    const Mtxf *othermtx;
 
                     othermtx = modelFindNodeMtx(entry->model, othernode, 0);
                     entry->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
@@ -185,7 +185,7 @@ void jointListCalcDepths(JointListEntry *entry)
             case MODELNODE_OPCODE_GROUP:
             {
                 union ModelRoData *data;
-                ModelNode *othernode;
+                const ModelNode *othernode;
                 Mtxf *mtx;
 
                 data = node->Data;
@@ -195,7 +195,7 @@ void jointListCalcDepths(JointListEntry *entry)
 
                 if (othernode != NULL)
                 {
-                    Mtxf *othermtx;
+                    const Mtxf *othermtx;
 
                     othermtx = modelFindNodeMtx(entry->model, othernode, 0);
                     entry->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
@@ -210,7 +210,7 @@ void jointListCalcDepths(JointListEntry *entry)
             case MODELNODE_OPCODE_OP03:
             {
                 union ModelRoData *data;
-                ModelNode *othernode;
+                const ModelNode *othernode;
                 Mtxf *mtx;
 
                 data = node->Data;
@@ -220,7 +220,7 @@ void jointListCalcDepths(JointListEntry *entry)
 
                 if (othernode != NULL)
                 {
-                    Mtxf *othermtx;
+                    const Mtxf *othermtx;
 
                     othermtx = modelFindNodeMtx(entry->model, othernode, 0);
                     entry->sortvalue = -(mtx->m[3][2] + othermtx->m[3][2]) * 0.5f;
@@ -259,7 +259,7 @@ void jointListCalcDepths(JointListEntry *entry)
             case MODELNODE_OPCODE_INTERLINK:
             {
                 Mtxf *mtx;
-                ModelRoData_InterlinkageRecord *interlinkage;
+                const ModelRoData_InterlinkageRecord *interlinkage;
                 f32 sortvalue1;
                 f32 sortvalue2;
 
@@ -307,7 +307,7 @@ void jointListCalcDepths(JointListEntry *entry)
             case MODELNODE_OPCODE_OP11:
             {
                 Mtxf *mtx;
-                ModelRoData_Op11Record *op11;
+                const ModelRoData_Op11Record *op11;
 
                 mtx = modelFindNodeMtx(entry->model, node, 0);
                 op11 = &node->Data->Op11;
@@ -337,8 +337,8 @@ void jointListCalcDepths(JointListEntry *entry)
             case MODELNODE_OPCODE_SHADOW:
             {
                 Mtxf *mtx;
-                ModelRoData_ShadowRecord *shadow;
-                union ModelRwData *rwdata;
+                const ModelRoData_ShadowRecord *shadow;
+                const union ModelRwData *rwdata;
 
                 mtx = modelFindNodeMtx(entry->model, node, 0);
                 shadow = &node->Data->Shadow;

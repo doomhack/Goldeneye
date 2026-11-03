@@ -57,7 +57,7 @@ typedef struct RzipState
     const u8 *in;
     u32 bits;     /* bits read from `in` but not used yet, lowest first */
     u32 bitCount;
-    u8 *outStart;
+    const u8 *outStart;
     u8 *out;
     u8 *outEnd;   /* where the output must stop: the end of the buffer, or the input */
     bool inPlace; /* the input is inside the output buffer */
@@ -285,7 +285,7 @@ static bool rzipInflateCodes(RzipState *state, u8 *bufferEnd)
         {
             s32 length;
             u32 distance;
-            u8 *from;
+            const u8 *from;
 
             symbol -= 257;
 

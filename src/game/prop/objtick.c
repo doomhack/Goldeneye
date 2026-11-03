@@ -46,7 +46,7 @@
  */
 s32 glassCalculateOpacity(const coord3d *pos, f32 xludist, f32 opadist, f32 minOpacity)
 {
-    coord3d *campos = &currentPlayerGetProp()->pos;
+    const coord3d *campos = &currentPlayerGetProp()->pos;
     f32 xdiff = pos->x - campos->x;
     f32 ydiff = pos->y - campos->y;
     f32 zdiff = pos->z - campos->z;
@@ -92,7 +92,7 @@ static bool objUpdateOpacity(const PropRecord *prop, s32 playercount)
     if (obj->type == PROPDEF_DOOR && (((DoorRecord *)obj)->doorFlags & DOORFLAG_WINDOWED))
     {
         DoorRecord *door = (DoorRecord *)obj;
-        Model *model = obj->model;
+        const Model *model = obj->model;
 
         door->calculatedopacity = glassCalculateOpacity(&obj->runtime_pos, door->TintDist, door->CullDist, 0.0f);
 
@@ -124,7 +124,7 @@ static bool objUpdateOpacity(const PropRecord *prop, s32 playercount)
 /* Whether the object is drawn on this pass */
 static bool objIsVisible(const PropRecord *prop, bool applyfogcull)
 {
-    ObjectRecord *obj = prop->obj;
+    const ObjectRecord *obj = prop->obj;
 
     // The tank the player is in, and objects flagged always visible
     if (obj->type == PROPDEF_TANK && playerGetTank() == prop)
@@ -163,7 +163,7 @@ static void rackGetModelMatrices(const Model *model, Mtxf *mtxs)
  */
 static void objGetModelMatrices(const PropRecord *prop, const Model *model, Mtxf *mtxs, f32 prevopenposition, bool issimowner)
 {
-    ObjectRecord *obj = prop->obj;
+    const ObjectRecord *obj = prop->obj;
     Mtxf objmtx;
 
     if (obj->type == PROPDEF_DOOR)
@@ -234,7 +234,7 @@ static bool objIsSimOwner(const ObjectRecord *obj, s32 playercount)
 
     if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
     {
-        Projectile *projectile = obj->projectile;
+        const Projectile *projectile = obj->projectile;
 
         if (projectile->ownerprop != NULL && playerGetIndexForProp(projectile->ownerprop) >= 0)
         {

@@ -159,8 +159,8 @@ static const u8 s_AmmoItems[AMMOTYPE_MAX] = {
  */
 bool objTestForInteract(PropRecord *prop)
 {
-    ObjectRecord *obj = prop->obj;
-    PropRecord *player;
+    const ObjectRecord *obj = prop->obj;
+    const PropRecord *player;
     StandTile *stan;
     f32 xdiff, ydiff, zdiff;
     f32 maxdistsq, maxydiff, maxangle;
@@ -954,8 +954,8 @@ static bool playerWantsPickup(const PropRecord *prop)
  */
 TICKOP objTickPlayer(PropRecord *prop)
 {
-    ObjectRecord *obj = prop->obj;
-    PropRecord *playerprop;
+    const ObjectRecord *obj = prop->obj;
+    const PropRecord *playerprop;
     f32 xdiff, ydiff, zdiff;
     bool inrange;
 

@@ -337,7 +337,7 @@ typedef union
      */
     typedef struct ModelRenderData
     {
-        Mtxf   *basemtx;        /*0x00*/ // Canonical name. See modelCalcMatricesNoAnim in model.c.
+        const Mtxf   *basemtx;        /*0x00*/ // Canonical name. See modelCalcMatricesNoAnim in model.c.
         bool32  zbufferenabled; /*0x04*/
         u32     flags;          /*0x08*/
         Gfx    *gdl;            /*0x0c*/
@@ -379,7 +379,7 @@ typedef union
             struct Vertex *LinkedTo;
 
             /* Collision vertices only: points to related model node. */
-            void *CollisionRelatedNode; /* 0x8 */
+            const void *CollisionRelatedNode; /* 0x8 */
         };
 
         union
@@ -535,7 +535,7 @@ typedef union
             s16 MatrixIndex; /* 0x02 */
             union {                                       
                 struct ModelRoData_GroupRecord *FirstGroup;  /* 0x04 */ /*0x4 First group in tree*/
-                ModelNode *FirstGroupNode;
+                const ModelNode *FirstGroupNode;
             }; 
 
             union
@@ -601,7 +601,7 @@ typedef union
             };
             union {                                             /*0x14*/
                 struct ModelRoData_GroupRecord *ChildGroup;
-                ModelNode *ChildGroupNode;
+                const ModelNode *ChildGroupNode;
             }; 
             f32                           BoundingVolumeRadius; /*0x18*/
         } ModelRoData_GroupRecord;
@@ -800,7 +800,7 @@ typedef union
 
             union {           /* 0x14 */
                 ModelRoData_HeaderRecord *Header;
-                ModelNode *HeaderNode;
+                const ModelNode *HeaderNode;
             };
 
             f32 Scale;        /* 0x18 */
@@ -858,7 +858,7 @@ typedef union
             s32        hitpart;     /* 0x00 */
             f32        radiusSq;    /* 0x04 */
             coord3d    pos;         /* 0x08 */
-            ModelNode *othernode;   /* 0x14 */
+            const ModelNode *othernode;   /* 0x14 */
             f32        scale1;      /* 0x18 */
             f32        scale2;      /* 0x1c */
         } ModelRoData_Op17Record;
@@ -1051,7 +1051,7 @@ typedef union
         {
             short       numjoints; //Always at least 1 (root)
             short       pad1;      //pad
-            ModelJoint *Joints;
+            const ModelJoint *Joints;
             short       SkeletonSize;
             short       pad2;
         } ModelSkeleton;
@@ -1059,7 +1059,7 @@ typedef union
         typedef struct ModelFileHeader
         {
             ModelNode         *RootNode;             //possibly this is "root data"
-            ModelSkeleton     *Skeleton;
+            const ModelSkeleton     *Skeleton;
             /* This is a pointer to a variable length array of pointers to modelnodes, but the array is followed by an s16 array of part numbers.*/
             ModelNode        **Switches;
             s16                numSwitches;          // c Number of "05"s, these link to positions/switches Note: Does not reflect number actually used
@@ -1766,7 +1766,7 @@ typedef union
             struct WeaponObjRecord *weapon;
             struct Explosion       *explosion;
             struct Smoke           *smoke;
-            void                   *voidp;
+            const void                   *voidp;
         };
         struct PropRecord *prev;
         struct PropRecord *next;
@@ -2786,7 +2786,7 @@ typedef union
         u16      unk4;
         u16 unk6;
         u32      unk8;
-        PropRecord *lastprop;
+        const PropRecord *lastprop;
     } PhotographObjectRecord;
     #define New_CollectObjectRecord(TagID)         \
         {                                          \
@@ -3328,8 +3328,8 @@ typedef struct object_standard {
     u16 presetID;
     u32 flags1;
     u32 flags2;
-    void* ptrPOSData;
-    void* ptrObjInstanceController;
+    const void* ptrPOSData;
+    const void* ptrObjInstanceController;
     f32 runtime_MATRIX[4][4];
     f32 xPOS;
     f32 yPOS;
@@ -3349,7 +3349,7 @@ typedef struct object_weapon {
     u8 gun_pickup;
     u8 linked_item;
     s16 timer;
-    void* ptr_linkeditem;
+    const void* ptr_linkeditem;
 } object_weapon;
 
 

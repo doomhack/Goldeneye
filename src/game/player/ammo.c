@@ -46,7 +46,7 @@ AmmoStats g_AmmoStats[] = {
 };
 
 /* Unused. Kept after g_AmmoStats[] in case anything reads past the end of it. */
-u16 g_AmmoStatsPad[] = { 0, 0, 0, 0, };
+const u16 g_AmmoStatsPad[] = { 0, 0, 0, 0, };
 
 
 /**
@@ -177,7 +177,7 @@ s32 weaponGetAmmoType(ITEM_IDS weapon) {
  * Reserve ammo for a weapon's ammo type.
  */
 s32 weaponGetHeldAmmo(ITEM_IDS weapon) {
-  WeaponStats *weaponstats = weaponGetStats(weapon);
+  const WeaponStats *weaponstats = weaponGetStats(weapon);
   return g_CurrentPlayer->ammoheldarr[weaponstats->AmmoType];
 }
 

@@ -109,7 +109,7 @@ void proxminesTickGuards(void)
 
     for (s32 i = 0; i < numslots; i++)
     {
-        ChrRecord *guard = &g_ChrSlots[i];
+        const ChrRecord *guard = &g_ChrSlots[i];
 
         if (guard->model != NULL && (guard->hidden & CHRHIDDEN_BACKGROUND_AI))
         {
@@ -149,7 +149,7 @@ static bool explosiveDetonate(PropRecord *prop, s32 explosiontype)
 
 static void remoteMineTick(PropRecord *prop, WeaponObjRecord *weapon)
 {
-    ObjectRecord *obj = prop->obj;
+    const ObjectRecord *obj = prop->obj;
 
     if (g_RemoteMineOwnerTriggerFlag)
     {
@@ -209,7 +209,7 @@ static void proxmineTick(PropRecord *prop, WeaponObjRecord *weapon)
     {
         // Primed: the current player sets it off (guards and moving objects do through
         // the list)
-        PropRecord *playerprop = currentPlayerGetProp();
+        const PropRecord *playerprop = currentPlayerGetProp();
         f32 xdiff = playerprop->pos.f[0] - prop->pos.f[0];
         f32 ydiff = playerprop->pos.f[1] - prop->pos.f[1];
         f32 zdiff = playerprop->pos.f[2] - prop->pos.f[2];

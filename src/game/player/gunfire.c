@@ -80,23 +80,23 @@
 #define GUN_SPRING_SCALE 0.050000012f
 #endif
 
-s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
-extern u16 watchlaser_fire_sounds[2];
-extern u16 knife_throw_sounds[3];
-extern Weapon1PTransformKeyframe knifeSlashKeyframes1[];
-extern Weapon1PTransformKeyframe knifeSlashKeyframes2[];
-extern Weapon1PTransformKeyframe throwKnifeDrawBackKeyframes[];
-extern Weapon1PTransformKeyframe throwKnifeReleaseKeyframes[];
-extern Weapon1PTransformKeyframe grenadeThrowKeyframes[];
-extern Weapon1PTransformKeyframe timedMineThrowKeyframes[];
-extern Weapon1PTransformKeyframe proxMineThrowKeyframes[];
-extern Weapon1PTransformKeyframe remoteMineThrowKeyframes[];
-extern Weapon1PTransformKeyframe fistMeleeKeyframes1[];
-extern Weapon1PTransformKeyframe fistMeleeKeyframes2[];
-extern Weapon1PTransformKeyframe sniperMeleeKeyframes1[];
-extern Weapon1PTransformKeyframe sniperMeleeKeyframes2[];
-extern Weapon1PTransformKeyframe taserFireKeyFrames[];
-extern Weapon1PTransformKeyframe taserRaiseKeyframes[];
+s32 gunSample1PTransform(const Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
+extern const u16 watchlaser_fire_sounds[2];
+extern const u16 knife_throw_sounds[3];
+extern const Weapon1PTransformKeyframe knifeSlashKeyframes1[];
+extern const Weapon1PTransformKeyframe knifeSlashKeyframes2[];
+extern const Weapon1PTransformKeyframe throwKnifeDrawBackKeyframes[];
+extern const Weapon1PTransformKeyframe throwKnifeReleaseKeyframes[];
+extern const Weapon1PTransformKeyframe grenadeThrowKeyframes[];
+extern const Weapon1PTransformKeyframe timedMineThrowKeyframes[];
+extern const Weapon1PTransformKeyframe proxMineThrowKeyframes[];
+extern const Weapon1PTransformKeyframe remoteMineThrowKeyframes[];
+extern const Weapon1PTransformKeyframe fistMeleeKeyframes1[];
+extern const Weapon1PTransformKeyframe fistMeleeKeyframes2[];
+extern const Weapon1PTransformKeyframe sniperMeleeKeyframes1[];
+extern const Weapon1PTransformKeyframe sniperMeleeKeyframes2[];
+extern const Weapon1PTransformKeyframe taserFireKeyFrames[];
+extern const Weapon1PTransformKeyframe taserRaiseKeyframes[];
 extern struct ModelSkeleton skeleton_gun_kf7;
 
 
@@ -117,7 +117,7 @@ void gunUpdateAndFire(GUNHAND handnum)
     ModelNode *node;
     s32 j;
     ITEM_IDS item;
-    WeaponStats *itemstats;
+    const WeaponStats *itemstats;
     f32 rndf;
     u32 rnd;
     f32 stackpad_scale;
@@ -969,7 +969,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 ammoType;
     struct hand *other;
     s32 playSound;
-    struct WeaponStats *weapon_stats;
+    const struct WeaponStats *weapon_stats;
     s32 recoilTicks;
     s32 settleTicks;
     f32 recoilUp;
@@ -993,11 +993,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 slashTime;
     enum ITEM_IDS weapon;
     struct PropRecord *prop;
-    Weapon1PTransformKeyframe *punchKeyframes;
+    const Weapon1PTransformKeyframe *punchKeyframes;
     f32 recoilAngle;
-    Weapon1PTransformKeyframe *slashKeyframes;
+    const Weapon1PTransformKeyframe *slashKeyframes;
     f32 punchTime;
-    struct hand *otherhand;
+    const struct hand *otherhand;
     f32 tiltAngle = 0.0f;
     f32 lowerTicks = 16.0f;
     f32 raiseTicks = 23.0f;
@@ -1006,7 +1006,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 ammoType;
     struct hand *other;
     s32 playSound;
-    struct WeaponStats *weapon_stats;
+    const struct WeaponStats *weapon_stats;
     s32 recoilTicks;
     s32 settleTicks;
     f32 recoilUp;
@@ -1032,12 +1032,12 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 slashTime;
     enum ITEM_IDS otherWeapon;
     enum ITEM_IDS weapon;
-    Weapon1PTransformKeyframe *punchKeyframes;
+    const Weapon1PTransformKeyframe *punchKeyframes;
     struct PropRecord *prop;
     f32 recoilAngle;
-    Weapon1PTransformKeyframe *slashKeyframes;
+    const Weapon1PTransformKeyframe *slashKeyframes;
     f32 punchTime;
-    struct hand *otherhand;
+    const struct hand *otherhand;
     f32 tiltAngle = 0.0f;
     f32 lowerTicks = 13.0f;
     f32 raiseTicks = 19.0f;
@@ -2616,8 +2616,8 @@ void gunTickNoise(void)
     enum ITEM_IDS weapon_id_right;
     enum ITEM_IDS weapon_id_left;
     f32 noise_reduction;
-    WeaponStats *item_right_stats;
-    WeaponStats *item_left_stats;
+    const WeaponStats *item_right_stats;
+    const WeaponStats *item_left_stats;
     f32 noise_reduction_max;
 
     weapon_id_right = gunGetWeapon(GUNRIGHT);
@@ -3014,7 +3014,7 @@ void gunUpdateCrosshairSwivel(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed)
 
 void gunUpdateCrosshairManual(f32 turn_x, f32 turn_y)
 {
-    WeaponStats * item_stats;
+    const WeaponStats * item_stats;
     f32 guncrossdamp;
     f32 gunaimdamp;
 

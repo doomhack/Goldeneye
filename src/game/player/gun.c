@@ -103,12 +103,12 @@ Lights1 g_WeaponEnvmapLight = gdSPDefLights1(
 #define HAND_MODEL_SIZE_TRIGGER   (0xAFD0 + HAND_MODEL_EXTRA)
 #define HAND_MODEL_SIZE_GUN       (0x7530 + HAND_MODEL_EXTRA)
 
-u32 size_item_buffer[] = {0x14820 + HAND_MODEL_EXTRA, 0x14820 + HAND_MODEL_EXTRA};
+const u32 size_item_buffer[] = {0x14820 + HAND_MODEL_EXTRA, 0x14820 + HAND_MODEL_EXTRA};
 
 u32 g_GunModelBufferOffset[] = {HAND_MODEL_SIZE_GUN, HAND_MODEL_SIZE_GUN};
 
 
-CartridgeModelFileRecord ejected_cartridge[] = {
+const CartridgeModelFileRecord ejected_cartridge[] = {
 	{&cartridge_header, "GcartridgeZ"},
 	{&cartrifle_header, "GcartrifleZ"},
 	{&cartblue_header, "GcartblueZ"},
@@ -133,7 +133,7 @@ u32 g_GunDebApplyKeyframe = 0;
 u32 g_gunDebKeyframeIndex = 0;
 
 /** Knife slash: the first of the two alternating swings. */
-Weapon1PTransformKeyframe knifeSlashKeyframes1[10] = {
+const Weapon1PTransformKeyframe knifeSlashKeyframes1[10] = {
     { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 8.0f },
     { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 8.0f },
     { 0, { {6.0f, -1.5f, 0.0f} }, { {5.641564f, 0.23511f, 0.13564f} }, 0.5f, 8.0f },
@@ -147,7 +147,7 @@ Weapon1PTransformKeyframe knifeSlashKeyframes1[10] = {
 };
 
 /** Knife slash: the second swing. */
-Weapon1PTransformKeyframe knifeSlashKeyframes2[10] = {
+const Weapon1PTransformKeyframe knifeSlashKeyframes2[10] = {
     { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 8.0f },
     { 0, { {0.0f, 0.0f, 0.0f} }, { {0.0f, 0.0f, 0.0f} }, 0.5f, 8.0f },
     { 0, { {-8.5f, -6.0f, 0.0f} }, { {5.483035f, 5.834561f, 6.082734f} }, 0.5f, 8.0f },
@@ -163,7 +163,7 @@ Weapon1PTransformKeyframe knifeSlashKeyframes2[10] = {
 /**
  * Throwing Knife animation for when Z is pressed/held down.
  */
-struct Weapon1PTransformKeyframe throwKnifeDrawBackKeyframes[6] = {
+const struct Weapon1PTransformKeyframe throwKnifeDrawBackKeyframes[6] = {
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, { {0.0f, 0.0f, 4.5f}}, { {5.576369f, 0.0f, 0.0f}}, 0.5f, 8.0f},
@@ -175,7 +175,7 @@ struct Weapon1PTransformKeyframe throwKnifeDrawBackKeyframes[6] = {
 /**
  * Throwing Knife animation for when Z is released.
  */
-struct Weapon1PTransformKeyframe throwKnifeReleaseKeyframes[6] = {
+const struct Weapon1PTransformKeyframe throwKnifeReleaseKeyframes[6] = {
     { 0, { {0.0f, 0.0f, 4.5f}}, { {5.576369f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, { {0.0f, 0.0f, 20.5f}}, { {5.26209f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, { {0.0f, 3.0f, 5.5f}}, { {0.031375f, 0.0f, 0.0f}}, 0.5f, 8.0f},
@@ -187,7 +187,7 @@ struct Weapon1PTransformKeyframe throwKnifeReleaseKeyframes[6] = {
 /**
  * Keyframes for the Grenade which is strange since you cannot see it on screen. Perhaps the developers once intended to have a proper first person Grenade throwing animation?
  */
-struct Weapon1PTransformKeyframe grenadeThrowKeyframes[6] = {
+const struct Weapon1PTransformKeyframe grenadeThrowKeyframes[6] = {
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
     { 0, { {10.0f, 12.5f, 17.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
@@ -199,7 +199,7 @@ struct Weapon1PTransformKeyframe grenadeThrowKeyframes[6] = {
 /**
  * Keyframes for the Timed Mine, but changing the durations has no effect.
  */
-struct Weapon1PTransformKeyframe timedMineThrowKeyframes[6] = {
+const struct Weapon1PTransformKeyframe timedMineThrowKeyframes[6] = {
     { 0, { {10.0f, 34.5f, 25.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
     { 0, { {10.0f, 34.5f, 25.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
     { 0, { {10.0f, 12.5f, 17.5f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
@@ -211,7 +211,7 @@ struct Weapon1PTransformKeyframe timedMineThrowKeyframes[6] = {
 /**
  * Keyframes for the Proximity Mine. Changing the durations does effect the time it takes to throw the mine, although nothing is seen on screen.
  */
-struct Weapon1PTransformKeyframe proxMineThrowKeyframes[6] = {
+const struct Weapon1PTransformKeyframe proxMineThrowKeyframes[6] = {
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 4.0f},
     { 0, { {0.0f, 0.0f, 4.5f}}, { {5.576369f, 0.0f, 0.0f}}, 0.5f, 4.0f},
@@ -224,7 +224,7 @@ struct Weapon1PTransformKeyframe proxMineThrowKeyframes[6] = {
  * Keyframes for the Remote Mine. Changing the durations does not effect the time it takes to throw them,
  * but it does change the time it takes before you can throw another.
  */
-struct Weapon1PTransformKeyframe remoteMineThrowKeyframes[7] = {
+const struct Weapon1PTransformKeyframe remoteMineThrowKeyframes[7] = {
     { 0, { {0.0f, 0.0f, 4.5f}}, { {5.576369f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, { {0.0f, 0.0f, 20.5f}}, { {5.26209f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, { {0.0f, 3.0f, 5.5f}}, { {0.031375f, 0.0f, 0.0f}}, 0.5f, 8.0f},
@@ -237,7 +237,7 @@ struct Weapon1PTransformKeyframe remoteMineThrowKeyframes[7] = {
 /**
  * Slapper attack when the hand starts at the right of the screen then chops downward and to the left.
  */
-Weapon1PTransformKeyframe fistMeleeKeyframes1[10] = {
+const Weapon1PTransformKeyframe fistMeleeKeyframes1[10] = {
     { 0, {   {0.0f,  0.0f, 0.0f} }, {      {0.0f,      0.0f,      0.0f} }, 0.5f, 10.0f },
     { 0, {   {0.0f,  0.0f, 0.0f} }, {      {0.0f,      0.0f,      0.0f} }, 0.5f, 10.0f },
     { 0, {   {6.0f, 23.0f, 0.0f} }, {  {5.91572f, 0.085832f, 0.219482f} }, 0.5f, 10.0f },
@@ -253,7 +253,7 @@ Weapon1PTransformKeyframe fistMeleeKeyframes1[10] = {
 /**
  * Slapper attack when the hand moves to the left of the screen then chops downward and to the right.
  */
-Weapon1PTransformKeyframe fistMeleeKeyframes2[10] = {
+const Weapon1PTransformKeyframe fistMeleeKeyframes2[10] = {
        { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
        { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 10.0f},
        { 0, { {-6.0f, 23.0f, 0.0f}}, { {5.08683f, 6.131295f, 5.534376f}}, 0.5f, 10.0f},
@@ -269,7 +269,7 @@ Weapon1PTransformKeyframe fistMeleeKeyframes2[10] = {
 /**
  * Sniper swing right to left.
  */
-Weapon1PTransformKeyframe sniperMeleeKeyframes1[11] = {
+const Weapon1PTransformKeyframe sniperMeleeKeyframes1[11] = {
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 9.0f},
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, {{9.5f, -0.5f, 3.5f}}, { {0.291053f, 5.584375f, 6.212358f}}, 0.5f, 8.0f},
@@ -286,7 +286,7 @@ Weapon1PTransformKeyframe sniperMeleeKeyframes1[11] = {
 /**
  * Sniper swing left to right.
  */
-Weapon1PTransformKeyframe sniperMeleeKeyframes2[11] = {
+const Weapon1PTransformKeyframe sniperMeleeKeyframes2[11] = {
     { 0, {   {0.0f,  0.0f,  0.0f} }, {                 {0.0f,                 0.0f,                 0.0f} }, 0.5f,  9.0f },
     { 0, {   {0.0f,  0.0f,  0.0f} }, {                 {0.0f,                 0.0f,                 0.0f} }, 0.5f,  8.0f },
     { 0, { {-15.5f,  0.5f, 15.0f} }, {  {0.9344959855079651f,  0.6256099939346313f,  0.2237969934940338f} }, 0.5f,  8.0f },
@@ -303,7 +303,7 @@ Weapon1PTransformKeyframe sniperMeleeKeyframes2[11] = {
 /**
  * Animation when the Taser is lowering to fire position.
  */
-Weapon1PTransformKeyframe taserFireKeyFrames[6] = {
+const Weapon1PTransformKeyframe taserFireKeyFrames[6] = {
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, { {0.0f, 0.0f, 0.0f}}, { {0.0f, 0.0f, 0.0f}}, 0.5f, 8.0f},
     { 0, { {0.5f, -6.0f, -8.0f}}, { {0.439468f, 0.278829f, 0.195178f}}, 0.5f, 8.0f},
@@ -315,7 +315,7 @@ Weapon1PTransformKeyframe taserFireKeyFrames[6] = {
 /**
  * Animation once the Taser has fired and goes back to idle position.
  */
-Weapon1PTransformKeyframe taserRaiseKeyframes[6] = {
+const Weapon1PTransformKeyframe taserRaiseKeyframes[6] = {
     {0, { {-2.0f, -8.0f, -10.0f}}, {{1.101655f, 0.460753f, 0.570961f}}, 0.5f, 8.0f},
     {0, { {-2.0f, -8.0f, -10.0f}}, {{1.101655f, 0.460753f, 0.570961f}}, 0.5f, 8.0f},
     {0, { {0.5f, -6.0f, -8.0f}}, {{0.439468f, 0.278829f, 0.195178f}}, 0.5f, 8.0f},
@@ -325,8 +325,8 @@ Weapon1PTransformKeyframe taserRaiseKeyframes[6] = {
 };
 
 
-u16 watchlaser_fire_sounds[2] = { RICO_LASER2_SFX, RICO_LASER3_SFX };
-u16 knife_throw_sounds[3] = { KNIFE_THROW1_SFX, KNIFE_THROW2_SFX, KNIFE_THROW3_SFX };
+const u16 watchlaser_fire_sounds[2] = { RICO_LASER2_SFX, RICO_LASER3_SFX };
+const u16 knife_throw_sounds[3] = { KNIFE_THROW1_SFX, KNIFE_THROW2_SFX, KNIFE_THROW3_SFX };
 
 
 extern struct ModelSkeleton skeleton_gun_kf7;
@@ -336,10 +336,10 @@ extern struct ModelSkeleton skeleton_gun_kf7;
 
 void gunGetShotDir(coord3d* origin, coord3d* result, enum GUNHAND hand);
 void gunLaunchProjectileFromPlayer(ObjectRecord *obj, const coord3d *targetpos, Mtxf *mtx, const coord3d *velocity, const Mtxf *tumble);
-s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
+s32 gunSample1PTransform(const Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
 void gunAnalyzeGEKey(void);
 void gunOpenWeaponCase(void);
-struct ModelFileHeader * get_ptr_weapon_model_header_line(ITEM_IDS weapon);
+const struct ModelFileHeader * get_ptr_weapon_model_header_line(ITEM_IDS weapon);
 f32 gunSetHorizontalOffset(GUNHAND hand);
 void gunOpenWeaponCase(void);
 void gunSetWatchMenuWeapon(GUNHAND hand, ITEM_IDS weaponnum_watchmenu);
@@ -373,9 +373,9 @@ void gunDebApplyKeyframe(void)
  * @returns 1 when an in-progress frame was interpolated, 0 when `time` reached
  * the final keyframe and the static end pose was written.
  */
-s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand)
+s32 gunSample1PTransform(const Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand)
 {
-    Weapon1PTransformKeyframe *current;
+    const Weapon1PTransformKeyframe *current;
     f32 frac;
     f32 tangent;
     coord3d posResult;
@@ -579,7 +579,7 @@ const char *gunGetModelFileName(ITEM_IDS item)
 }
 
 
- ModelFileHeader *get_ptr_weapon_model_header_line(ITEM_IDS weapon)
+ const ModelFileHeader *get_ptr_weapon_model_header_line(ITEM_IDS weapon)
 {
     if (weapon == ITEM_FIST)
     {
@@ -599,7 +599,7 @@ void gunLoadHandModel(GUNHAND hand)
 {
     u32              size_buffer_weapon;
     const char              *ptr_item_text;
-    ModelFileHeader *ptr_weapon_model;
+    const ModelFileHeader *ptr_weapon_model;
     u8              *buffer_weapon;
     enum ITEM_IDS    item;
 
@@ -1401,8 +1401,8 @@ void gunThrowGrenade(s32 hand)
     struct WeaponObjRecord *wor;
     coord3d shotOrigin;
     coord3d base_speed_vec;
-    struct PropRecord* player_prop;
-    coord3d *bondprevpos;
+    const struct PropRecord* player_prop;
+    const coord3d *bondprevpos;
     Mtxf handmtx;
     ALSoundState *sfx_state;
     s32 current_weapon;
@@ -1486,8 +1486,8 @@ void gunThrowKnife(s32 hand)
     coord3d shotOrigin;
     coord3d base_speed_vec;
     Mtxf handmtx;
-    struct PropRecord* player_prop;
-    coord3d *bondprevpos;
+    const struct PropRecord* player_prop;
+    const coord3d *bondprevpos;
 
     wor = NULL;
     base_velocity = 25.0f;
@@ -1567,8 +1567,8 @@ void gunThrowObject(s32 hand)
     s32 new_prop_type;
     coord3d shotOrigin;
     coord3d base_speed_vec;
-    struct PropRecord* player_prop;
-    coord3d *bondprevpos;
+    const struct PropRecord* player_prop;
+    const coord3d *bondprevpos;
     Mtxf handmtx;
     ALSoundState *sfx_state;
     s32 current_weapon;
@@ -1746,14 +1746,14 @@ void gunThrowObject(s32 hand)
 void gunSpawnGLGrenade(s32 handnum)
 {
     WeaponObjRecord *grenadeobj;
-    struct hand *hand;
+    const struct hand *hand;
     Mtxf identitymtx;
     coord3d launchvel;
     Mtxf launchmtx;
     coord3d aimpos;
     coord3d aimdir;
-    PropRecord *playerprop;
-    coord3d *prevplayerpos;
+    const PropRecord *playerprop;
+    const coord3d *prevplayerpos;
 
     hand = &g_CurrentPlayer->hands[handnum];
 
@@ -1806,11 +1806,11 @@ void gunSpawnGLGrenade(s32 handnum)
  */
 void gunUpdateAttachedRocket(s32 handIndex)
 {
-    struct hand *entry;
+    const struct hand *entry;
     ObjectRecord *attachedRocket;
     Model *rocketModel;
     Mtxf worldMtx;
-    PropRecord *prop;
+    const PropRecord *prop;
     PropRecord *rocketProp;
 
     entry = &g_CurrentPlayer->hands[handIndex];
@@ -1902,16 +1902,16 @@ void gunFireTankShell(s32 handnum)
     struct hand *hand;
     Mtxf identitymtx;
     coord3d velocity;
-    ObjectRecord *tankobj;
+    const ObjectRecord *tankobj;
     coord3d unscaledvelocity;
     Mtxf shellmtx;
     coord3d screenpos;
     coord3d aimdir;
-    PropRecord *playerprop;
-    coord3d *prevplayerpos;
+    const PropRecord *playerprop;
+    const coord3d *prevplayerpos;
     ITEM_IDS weaponid;
     coord3d spawnpos;
-    PropRecord *tankprop;
+    const PropRecord *tankprop;
 
     hand = &g_CurrentPlayer->hands[handnum];
 
@@ -2060,7 +2060,7 @@ void gunsStopSounds(void)
     {
         for (j = 0; j < 2; j++)
         {
-            struct hand *hand = &g_playerPointers[i]->hands[j];
+            const struct hand *hand = &g_playerPointers[i]->hands[j];
             
             if (hand->audioHandle != NULL && sndGetPlayingState(hand->audioHandle))
             {

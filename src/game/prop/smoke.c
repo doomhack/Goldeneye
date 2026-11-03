@@ -38,7 +38,7 @@ extern Gfx globalDL_0x000 NO_SDATA;
 
 /* The smoke types (SMOKE_TYPE). EU runs at 50 Hz: shorter times. */
 #if defined(VERSION_EU)
-static s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
+static const s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
    // dur, appr, dis, size, bgrate,    r,  g,    b, fgrate, propclouds
     {   1,   50,  99,    0,   0.0f, 128, 128, 128,   0.3f,     150 },
     { 400,   50,  37,   60,  0.02f,  80,  80,  96,   0.3f,     150 },
@@ -53,7 +53,7 @@ static s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
     { 750,   50,  58,  900,  0.01f,  64,  64,  64,   0.3f,     150 }
 };
 #else
-static s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
+static const s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
    // dur, appr, dis,size, bgrate,   r,  g,    b, fgrate, propclouds
     {   1,   60,  99,   0,   0.0f, 128, 128, 128,   0.3f,     180},
     { 480,   60,  45,  60,  0.02f,  80,  80,  96,   0.3f,     180},
@@ -209,8 +209,8 @@ static void smokePartStart(const struct Smoke *smoke, struct SmokePart *part, co
 s32 smokeTick(PropRecord *prop)
 {
     struct Smoke *smoke = prop->smoke;
-    s_smoketype *type = &s_SmokeTypes[smoke->smoke_type];
-    struct SmokePart *part;
+    const s_smoketype *type = &s_SmokeTypes[smoke->smoke_type];
+    const struct SmokePart *part;
     coord3d bbmin;
     coord3d bbmax;
     f32 lvupdate;
@@ -350,9 +350,9 @@ u8 smokePropTick(PropRecord *prop)
  */
 static Gfx *smokeRenderPart(const struct Smoke *smoke, const struct SmokePart *part, Gfx *gdl, const coord3d *roompos)
 {
-    s_smoketype *type = &s_SmokeTypes[smoke->smoke_type];
-    Mtxf *mtx = camGetViewToWorldMtxf();
-    coord3d *eyepos = playerGetPos();
+    const s_smoketype *type = &s_SmokeTypes[smoke->smoke_type];
+    const Mtxf *mtx = camGetViewToWorldMtxf();
+    const coord3d *eyepos = playerGetPos();
     Vtx *vertices;
     coord3d rightcos;
     coord3d rightsin;

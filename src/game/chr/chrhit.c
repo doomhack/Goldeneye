@@ -57,7 +57,7 @@ static void chrCreateHitPuffs(const PropRecord *prop, s32 hitpart, const coord3d
     f32 scale;
     coord3d puffPos;
     s32 index;
-    struct ChrHitReaction *entry;
+    const struct ChrHitReaction *entry;
 
     index = 0;
 
@@ -106,7 +106,7 @@ void chrCreateBloodStain(const Model *model, s32 hitpart, ModelNode *root, const
 {
     s32 target[3];
     s32 bestdist;
-    ModelNode *bestnode;
+    const ModelNode *bestnode;
     s32 bestindex;
     ModelNode *node;
     s32 opcode;
@@ -114,8 +114,8 @@ void chrCreateBloodStain(const Model *model, s32 hitpart, ModelNode *root, const
     ModelRwData_DisplayList_CollisionRecord *rwdata;
     ModelRoData_DisplayList_CollisionRecord *relatedrodata;
     ModelRwData_DisplayList_CollisionRecord *relatedrwdata;
-    ModelNode *relatednode;
-    Vertex *vtx;
+    const ModelNode *relatednode;
+    const Vertex *vtx;
     Vertex *newvertices;
     s32 n;
     s32 paintval;
@@ -309,9 +309,9 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
     ModelNode *dlnode;
     Mtxf *submatrix;
     f32 heldmodelsize;
-    Mtxf *nodemtx;
+    const Mtxf *nodemtx;
     f32 len;
-    struct WeaponObjRecord *weapon;
+    const struct WeaponObjRecord *weapon;
     f32 dist;
     JointListEntry *entry;
     coord3d viewdir;
@@ -426,11 +426,11 @@ void chrHandleBulletHit(const struct ShotData *shot, const struct BulletHit *bhi
     Mtxf invmtx;
     coord3d nearhitpos;
     coord3d hitpos;
-    Mtxf *mtx;
+    const Mtxf *mtx;
     ChrRecord *chr;
     PropRecord *prop;
     const SurfaceHit *surface;
-    WeaponObjRecord *weaponobj;
+    const WeaponObjRecord *weaponobj;
     s32 i;
     coord3d jointpos;
 

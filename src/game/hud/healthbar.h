@@ -4,9 +4,9 @@
 #include <bondtypes.h>
 
 void watchMakeArcVerts(struct WatchVertex *vtx, s32 numverts, f32 scale, s32 addCentre);
-Gfx *watchRenderBackground(Gfx *gdl, struct WatchVertex *watch_verts, s32 drawFan);
+const Gfx *watchRenderBackground(Gfx *gdl, struct WatchVertex *watch_verts, s32 drawFan);
 Gfx *watchRenderQuad(Gfx *gdl, struct WatchVertex *vtx);
-Gfx *hudRenderGaugeBar(Gfx *gdl, const struct damage_display_val *vertices, s32 numvertices);
+const Gfx *hudRenderGaugeBar(Gfx *gdl, const struct damage_display_val *vertices, s32 numvertices);
 void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 isArmour, f32 HealthValue);
 struct WatchVertex *watchMakeRectVerts(struct WatchVertex *vtx, s32 startx, s32 startz, s32 width, s32 height, s32 horizontal_offset, s32 vertical_offset);
 

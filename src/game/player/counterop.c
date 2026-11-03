@@ -180,7 +180,7 @@ static const s16 s_CounterOpExcludedModels[] = {
 
 static s32 counterOpChrIsExcluded(const ChrRecord *chr)
 {
-    PropRecord *child;
+    const PropRecord *child;
     s32 i;
 
     if (chr->chrflags & CHRFLAG_COUNT_DEATH_AS_CIVILIAN)
@@ -291,16 +291,16 @@ static void counterOpRecordStarts(void)
  */
 static s32 counterOpPickDeadGuardStart(struct CounterOpSpawn *spawn)
 {
-    PropRecord *bondprop = g_playerPointers[COUNTEROP_BOND]->prop;
-    struct CounterOpSpawn *pick = NULL;
-    struct CounterOpSpawn *nearest = NULL;
+    const PropRecord *bondprop = g_playerPointers[COUNTEROP_BOND]->prop;
+    const struct CounterOpSpawn *pick = NULL;
+    const struct CounterOpSpawn *nearest = NULL;
     f32 nearestdist = 0.0f;
     s32 count = 0;
     s32 i;
 
     for (i = 0; i < s_CounterOpStartCount; i++)
     {
-        struct CounterOpSpawn *start = &s_CounterOpStarts[i];
+        const struct CounterOpSpawn *start = &s_CounterOpStarts[i];
         f32 dist;
 
         // Still alive: they are a guard to take over, not a start to use.
@@ -352,7 +352,7 @@ static s32 counterOpPickDeadGuardStart(struct CounterOpSpawn *spawn)
  */
 static ChrRecord *counterOpPickGuard(void)
 {
-    PropRecord *bondprop = g_playerPointers[COUNTEROP_BOND]->prop;
+    const PropRecord *bondprop = g_playerPointers[COUNTEROP_BOND]->prop;
     ChrRecord *pick = NULL;
     ChrRecord *nearest = NULL;
     f32 nearestdist = 0.0f;

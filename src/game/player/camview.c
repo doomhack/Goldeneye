@@ -29,7 +29,7 @@ s32 cameraFrameCounter2 = 0;
 
 f32 g_CamPosScale = 1.0;
 
-static coord3d ZeroCoordShake = { 0 };
+static const coord3d ZeroCoordShake = { 0 };
 
 
 // The frustum planes in world space, set by camUpdateFrustumPlanes
@@ -202,7 +202,7 @@ void camSetWorldToScreenMtxf(Mtxf *matrix) {
     }
 }
 
-Mtxf *camGetWorldToScreenMtxf(void) {
+const Mtxf *camGetWorldToScreenMtxf(void) {
     if (gameIsTwoPlayerMission())
     {
         s32 player = coopCurrentPlayerIndex();
@@ -222,7 +222,7 @@ void camSetProjectionMtxf(Mtxf *matrix) {
     g_CurrentPlayer->projmatrixf = matrix;
 }
 
-Mtxf *camGetProjectionMtxf(void) {
+const Mtxf *camGetProjectionMtxf(void) {
     return g_CurrentPlayer->projmatrixf;
 }
 
@@ -245,7 +245,7 @@ static s32 s_CoopLastViewPlayer = -1;
  */
 void coopViewsBegin(void)
 {
-    struct player *player;
+    const struct player *player;
 
     s_CoopFrame++;
 
@@ -274,7 +274,7 @@ void coopViewsEnd(s32 lastplayer)
 
     for (i = 0; i < 4; i++)
     {
-        struct player *player = g_playerPointers[i];
+        const struct player *player = g_playerPointers[i];
 
         if ((player != NULL) && (player->worldToScreenMtxf != NULL) && (s_CoopWorldToScreenFrame[i] == s_CoopFrame))
         {
@@ -295,7 +295,7 @@ void coopViewsEnd(s32 lastplayer)
  * once it holds bad floats). A gun's matrices are only kept as on screen when
  * the last view drawn showed it, so that view's matrix is the right one.
  */
-Mtxf *camGetPrevViewToWorldMtxf(void) {
+const Mtxf *camGetPrevViewToWorldMtxf(void) {
     if (gameIsTwoPlayerMission())
     {
         return &s_CoopPrevViewToWorld;
@@ -757,7 +757,7 @@ void camUpdateMatrices(const coord3d* cam_pos, const coord3d* cam_look_dir, cons
     coord3d scaledpos;
     f32 scale;
     Mtx *projview;
-    Mtxf *projmtx;
+    const Mtxf *projmtx;
     Mtxf projviewf;
     Mtx *worldtoview;
     Mtxf *worldtoscreen;
@@ -853,7 +853,7 @@ Gfx *camSetupFrame(Gfx *gdl)
     coord3d cam_pos;
     coord3d cam_look;
     coord3d cam_up;
-    struct PlayerBond *collision;
+    const struct PlayerBond *collision;
     coord3d shake;
     coord3d vec;
     coord3d zeropos;

@@ -45,7 +45,7 @@ s32  tankTryMoveTo(const coord3d *pos, f32 angle, StandTile **outTile);
 void tankGetTurretDir(coord3d *dir);
 
 bool playerIsInTank(void);
-PropRecord *playerGetTank(void);
+const PropRecord *playerGetTank(void);
 
 s32  tankUsedByPartner(void);
 void tankUpdateDriver(void);

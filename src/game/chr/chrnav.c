@@ -44,8 +44,8 @@ static void chrGoPosConsiderRestart(ChrRecord *self);
 static void chrGoPosResetMagic(ChrRecord *self);
 static void chrActGoposIncCurIndex(ChrRecord *self);
 static s32 chrPatrolCalculateStep(const ChrRecord *self, bool32 *forward, s32 numsteps);
-static PadRecord *chrGetPatrolStepPad(const ChrRecord *self, s32 numsteps);
-static PadRecord *chrGetNextPatrolStepPad(const ChrRecord *self);
+static const PadRecord *chrGetPatrolStepPad(const ChrRecord *self, s32 numsteps);
+static const PadRecord *chrGetNextPatrolStepPad(const ChrRecord *self);
 static void chrSetNextActPatrolStepPadPos(ChrRecord *self);
 static void chrAdvancePatrolStep(ChrRecord *self);
 static bool chrIsPosClearOfObjectBounds(const coord3d *pos, const StandTile *stan);
@@ -69,8 +69,8 @@ static void chrNavTick(ChrRecord *self, const coord3d *target, struct waydata *w
  */
 static bool chrUsesRifleMoveAnims(const ChrRecord *self, s32 *flip)
 {
-    PropRecord *left = chrGetEquippedWeaponProp(self, GUNLEFT);
-    PropRecord *right = chrGetEquippedWeaponProp(self, GUNRIGHT);
+    const PropRecord *left = chrGetEquippedWeaponProp(self, GUNLEFT);
+    const PropRecord *right = chrGetEquippedWeaponProp(self, GUNRIGHT);
 
     if ((left != NULL) == (right != NULL))
     {
@@ -170,7 +170,7 @@ static f32 waypointDistSqXz(const coord3d *pos, const waypoint *wp)
 {
     f32 dz;
     f32 dx;
-    PadRecord *pad;
+    const PadRecord *pad;
 
     pad = &g_CurrentSetup.pads[wp->padID];
     dx = pad->pos.f[0] - pos->f[0];
@@ -185,7 +185,7 @@ waypoint *waypointFindNearPos(const coord3d *pos, StandTile *starttile)
     f32 bestdist;
     waypoint *ret = NULL;
     waypoint *wayp = NULL;
-    s32 *n = NULL;
+    const s32 *n = NULL;
 
     tile = stanSearchOutward(starttile, waypointIsOnTile);
     if (tile != NULL)
@@ -221,7 +221,7 @@ waypoint *waypointFindNearPos(const coord3d *pos, StandTile *starttile)
 static s32 chrPathIsOffscreen(const ChrRecord *self, const coord3d *pos, StandTile *tile)
 {
     s32 rooms[MAX_PATH_ROOMS];
-    PropRecord *prop = self->prop;
+    const PropRecord *prop = self->prop;
     s32 numrooms;
     s32 i;
 
@@ -255,7 +255,7 @@ static s32 chrPathToPadIsOffscreen(const ChrRecord *self, const PadRecord *pad)
 */
 static void chrSetGoposSegDistTotal(const ChrRecord *self, struct waydata *way, const coord3d *pos)
 {
-    PropRecord *prop;
+    const PropRecord *prop;
     f32 dx;
     f32 dz;
     f32 angle;
@@ -283,7 +283,7 @@ static void chrSetGoposSegDistTotal(const ChrRecord *self, struct waydata *way, 
 */
 static void chrGoPosGetCurWaypointInfo(const ChrRecord *self, coord3d *target_point, StandTile **target_stan)
 {
-    waypoint *waypoint;
+    const waypoint *waypoint;
     PadRecord *pad;
 
     waypoint = self->act_gopos.waypoints[self->act_gopos.curindex];
@@ -358,7 +358,7 @@ static s32 chrGoPosCalculateBaseTtl(const ChrRecord *self)
 {
     f32 dx;
     f32 dz;
-    PropRecord *prop;
+    const PropRecord *prop;
     coord3d waypos;
     StandTile *waytile;
     f32 animspeed;
@@ -547,12 +547,12 @@ static s32 chrPatrolCalculateStep(const ChrRecord *self, bool32 *forward, s32 nu
 /**
  * PD: chrPatrolCalculatePadNum (had some nice finds when searching for "patrol" in "chraction.c" in PD)
 */
-static PadRecord *chrGetPatrolStepPad(const ChrRecord *self, s32 numsteps)
+static const PadRecord *chrGetPatrolStepPad(const ChrRecord *self, s32 numsteps)
 {
-    waypoint *wp;
+    const waypoint *wp;
     bool32 forward;
     s32 step;
-    s32 *data;
+    const s32 *data;
 
     forward = self->act_patrol.forward;
     step = chrPatrolCalculateStep(self, &forward, numsteps);
@@ -565,7 +565,7 @@ static PadRecord *chrGetPatrolStepPad(const ChrRecord *self, s32 numsteps)
 }
 
 
-static PadRecord *chrGetNextPatrolStepPad(const ChrRecord *self)
+static const PadRecord *chrGetNextPatrolStepPad(const ChrRecord *self)
 {
     return chrGetPatrolStepPad(self, 0);
 }
@@ -573,7 +573,7 @@ static PadRecord *chrGetNextPatrolStepPad(const ChrRecord *self)
 
 static void chrSetNextActPatrolStepPadPos(ChrRecord *self)
 {
-    PadRecord *pad;
+    const PadRecord *pad;
 
     pad = chrGetNextPatrolStepPad(self);
     self->act_patrol.waydata.mode = WAYMODE_0;
@@ -599,8 +599,8 @@ static void chrAdvancePatrolStep(ChrRecord *self)
 static bool chrIsPosClearOfObjectBounds(const coord3d *pos, const StandTile *stan)
 {
     s32 roomids[8];
-    s16 *propnum;
-    PropRecord *props = (PropRecord *)&g_Props;
+    const s16 *propnum;
+    const PropRecord *props = (PropRecord *)&g_Props;
     coord2d *polygon;
     s32 numedges;
 
@@ -611,7 +611,7 @@ static bool chrIsPosClearOfObjectBounds(const coord3d *pos, const StandTile *sta
 
     for (propnum = g_RoomPropsFound; *propnum >= 0; propnum++)
     {
-        PropRecord *prop = &props[*propnum];
+        const PropRecord *prop = &props[*propnum];
 
         if (prop->type == PROP_TYPE_OBJ)
         {
@@ -635,8 +635,8 @@ static void chrGoPosTickMagic(ChrRecord *self, struct waydata *way, f32 speed, c
 {
     PropRecord *self_prop;
     u8 curindex;
-    waypoint *pta;
-    PadRecord *pad;
+    const waypoint *pta;
+    const PadRecord *pad;
     coord3d waypos;
     StandTile *waytile;
 
@@ -725,7 +725,7 @@ static void chrGoPosTickMagic(ChrRecord *self, struct waydata *way, f32 speed, c
 */
 void chrGetMovementTarget(const ChrRecord *self, coord3d *target)
 {
-    PadRecord *pad;
+    const PadRecord *pad;
     f32 percent;
     coord3d waypos;
     StandTile *stan;
@@ -846,7 +846,7 @@ static void chrGoPosChooseAnimation(const ChrRecord *self)
 
 s32 chrGoToPos(ChrRecord *self, const coord3d *pos, StandTile *stan, SPEED speed)
 {
-    PropRecord *prop;
+    const PropRecord *prop;
     waypoint *prop_waypoint;
     waypoint *target_waypoint;
     waypoint *route[MAX_CHRWAYPOINTS];
@@ -927,12 +927,12 @@ static void chrPatrolChooseAnimation(const ChrRecord *self)
 
 void chrStartPatrol(ChrRecord *self, PathRecord *path)
 {
-    PadRecord *pad;
+    const PadRecord *pad;
     s32 next_step = -1;
-    PropRecord *prop = self->prop;
+    const PropRecord *prop = self->prop;
     s32 count = 0;
-    waypoint *pta;
-    s32 *dataptr;
+    const waypoint *pta;
+    const s32 *dataptr;
     f32 dx;
     f32 dz;
 
@@ -1173,8 +1173,8 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 s32 chrApplySpeed(const ChrRecord *self, const coord3d *target, s32 speed, f32 *speedPtr)
 {
     f32 maxSpeed;
-    Model *self_model;
-    PropRecord *self_prop;
+    const Model *self_model;
+    const PropRecord *self_prop;
     f32 accel;
     f32 targetAngle;
     f32 curAngle;
@@ -1347,7 +1347,7 @@ s32 chrIsArrivingLaterallyAtPos(const coord3d *prevpos, const coord3d *curpos, c
 
 void chrTickRunPos(ChrRecord *self)
 {
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     Model *self_model;
     f32 frame;
 
@@ -1719,7 +1719,7 @@ static s32 chrNavTryObstacle(
     s32 cdtypes,
     s32 set_copy)
 {
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     coord3d dd;
     coord3d pos;
     f32 norm;
@@ -1841,7 +1841,7 @@ static f32 navAngleBetween(f32 a, f32 b)
  */
 static bool chrNavTryAroundObstacle(ChrRecord *self, struct waydata *way, s32 cdtypes)
 {
-    PropRecord *prop = self->prop;
+    const PropRecord *prop = self->prop;
     coord3d othercorner;
     coord3d *corner;
     s32 left;
@@ -1883,13 +1883,13 @@ static void chrNavTick(ChrRecord *self, const coord3d *target, struct waydata *w
 {
     coord3d targetpos;
     coord3d othercorner;
-    struct ObjectRecord *obj;
-    PropRecord *self_prop;
+    const struct ObjectRecord *obj;
+    const PropRecord *self_prop;
     f32 dx;
     f32 dy;
     f32 dz;
     s32 cdtypes;
-    PropRecord *door;
+    const PropRecord *door;
 
     self_prop = self->prop;
     cdtypes = CDTYPE_OBJS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER | CDTYPE_DOORSLOCKEDTOAI;
@@ -2090,9 +2090,9 @@ static void chrNavTick(ChrRecord *self, const coord3d *target, struct waydata *w
 /**
  * Position of route waypoint index, or the final target when the route ends there.
  */
-static coord3d *chrGoPosGetWaypointPos(ChrRecord *self, s32 index, StandTile **stan)
+static const coord3d *chrGoPosGetWaypointPos(ChrRecord *self, s32 index, StandTile **stan)
 {
-    waypoint *wp = self->act_gopos.waypoints[index];
+    const waypoint *wp = self->act_gopos.waypoints[index];
     PadRecord *pad;
 
     if (wp == NULL)
@@ -2113,7 +2113,7 @@ static coord3d *chrGoPosGetWaypointPos(ChrRecord *self, s32 index, StandTile **s
  */
 static bool chrCanWalkLineClear(ChrRecord *self, const coord3d *dest, const StandTile *deststan)
 {
-    PropRecord *prop = self->prop;
+    const PropRecord *prop = self->prop;
 
     return chrCanWalkLine(self, &prop->pos, prop->stan, dest, deststan, CDTYPE_PATHBLOCKER)
         && chrCanWalkLineWithin(self, &prop->pos, prop->stan, dest, self->chrwidth * 1.2f, CDTYPE_PATHBLOCKER);
@@ -2122,10 +2122,10 @@ static bool chrCanWalkLineClear(ChrRecord *self, const coord3d *dest, const Stan
 
 void chrTickGoPos(ChrRecord *self)
 {
-    waypoint *wp;
-    coord3d *wp_pos;
+    const waypoint *wp;
+    const coord3d *wp_pos;
     StandTile *wp_stan;
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     s32 restarted;
     coord3d waypos;
     StandTile *waytile;
@@ -2246,9 +2246,9 @@ void chrTickGoPos(ChrRecord *self)
 
 void chrTickPatrol(ChrRecord *self)
 {
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     s32 restarted;
-    PadRecord *pad;
+    const PadRecord *pad;
 
     self_prop = self->prop;
     pad = chrGetNextPatrolStepPad(self);

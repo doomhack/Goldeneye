@@ -31,7 +31,7 @@ void titleAllocMatrices(void);
 
 Gfx* titleRenderFolderMenuBackgroundLines(Gfx* gdl, u8 *image, s32 x, struct FolderSelectColour* topColour, struct FolderSelectColour* bottomColour);
 
-Gfx *titleMakeBarrelHoleGfx(Gfx *gdl, Vtx *vertexList, s32 numVertices);
+const Gfx *titleMakeBarrelHoleGfx(Gfx *gdl, Vtx *vertexList, s32 numVertices);
 void titleMakeBarrelHoleVerts(Vtx_t *vtx, s32 numSteps);
 
 void titleFreeBondModels(void);

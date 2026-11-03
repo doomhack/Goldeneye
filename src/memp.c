@@ -91,7 +91,7 @@ bool mempResizeLast(const void *allocation, u32 newSize)
 /** Returns how many bytes are left in a pool. */
 u32 mempGetFreeBytes(MemPool poolId)
 {
-    MemoryPool *pool = &m_mempPools[poolId];
+    const MemoryPool *pool = &m_mempPools[poolId];
 
     return pool->pos == NULL ? 0 : pool->end - pool->pos;
 }

@@ -58,7 +58,7 @@ void testhooksEndFrame(void)
 
     for (i = 0; i < 4; i++)
     {
-        struct player *player = g_playerPointers[i];
+        const struct player *player = g_playerPointers[i];
 
         if (player == NULL || player->prop == NULL)
         {
@@ -80,7 +80,7 @@ void testhooksEndFrame(void)
 
     for (i = 0; i < g_NumChrSlots; i++)
     {
-        ChrRecord *chr = &g_ChrSlots[i];
+        const ChrRecord *chr = &g_ChrSlots[i];
 
         if (chr->model == NULL || chr->prop == NULL)
         {

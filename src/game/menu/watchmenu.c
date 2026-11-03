@@ -141,11 +141,11 @@ s32 g_WatchController2SpinCounter = 0;
 s32 g_WatchStaticScanlineY = 0;
 u16 g_OptionsMusicVolume = 0x7FFF;
 
-coord3d g_ControllerPos = {{0.0f, 200.0f, -200.0f}};
+const coord3d g_ControllerPos = {{0.0f, 200.0f, -200.0f}};
 
 
 // 3D positions for the buttons at the sides of the screen for the 1x control styles.
-WatchContButtonPositions g_1ContButtonPositions[] = {{
+const WatchContButtonPositions g_1ContButtonPositions[] = {{
     {0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
@@ -168,7 +168,7 @@ WatchContButtonPositions g_1ContButtonPositions[] = {{
 }};
 
 // 3D positions for the buttons of the left controller for the 2x control styles.
-WatchContButtonPositions g_2ContLeftButtonPositions[] = {{
+const WatchContButtonPositions g_2ContLeftButtonPositions[] = {{
     {0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f,
@@ -191,7 +191,7 @@ WatchContButtonPositions g_2ContLeftButtonPositions[] = {{
 }};
 
 // 3D positions for the buttons of the right controller for the 2x control styles.
-WatchContButtonPositions g_2ContRightButtonPositions[] = {{
+const WatchContButtonPositions g_2ContRightButtonPositions[] = {{
     {0.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 0.0f,
     0.0f, 0.0f, 0.0f, 0.0f,
@@ -1753,7 +1753,7 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
     s32 width;
     s32 height;
 
-    struct font *pFontFile;
+    const struct font *pFontFile;
     struct fontchar *pFontChars;
     const char *titleText;
     const char *confirmText;
@@ -1833,7 +1833,7 @@ Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
     s32 y;
     s32 height;
     s32 width;
-    struct font *pFontFile;
+    const struct font *pFontFile;
     struct fontchar *pFontChars;
     s32 colour;
     s32 joffset;
@@ -1883,7 +1883,7 @@ Gfx *watchMenuRenderVersion(Gfx *gdl)
     s32 y;
     s32 height;
     s32 width;
-    struct font *pFontFile;
+    const struct font *pFontFile;
     struct fontchar *pFontChars;
     s32 joffset;
 
@@ -2152,7 +2152,7 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
 
             for (i = 0; i < invCountItems(); i++)
             {
-                char *name = invGetNameByIndex(i);
+                const char *name = invGetNameByIndex(i);
 
                 strcat(string_builder_allocation, name);
             }
@@ -2578,10 +2578,10 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
     s32 x;
     s32 y;
     s32 i;
-    u16 *stringids;
+    const u16 *stringids;
     s32 textheight;
     s32 textwidth;
-    struct font *font;
+    const struct font *font;
     struct fontchar *chars;
     const char *selectedtext;
 
@@ -3118,7 +3118,7 @@ Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *mtx) {
     s32 y;
     s32 width;
     s32 height;
-    struct font *pFontFile;
+    const struct font *pFontFile;
     struct fontchar *pFontChars;
 
     gdl = watchMenuRenderBackground(gdl, mtx, 0);
@@ -3243,8 +3243,8 @@ Gfx *watchMenuRenderOptionValue(Gfx *gdl, s32 y, s32 option_index, u32 state)
     s32 colour3;
     s32 x1;
     s32 x2;
-    struct game_options *entry;
-    struct game_options *drawentry;
+    const struct game_options *entry;
+    const struct game_options *drawentry;
 
     colour1 = 0x00800080;
     colour2 = 0x00800080;
@@ -3399,7 +3399,7 @@ Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *mtx) {
     s32 width;
     s32 height;
 
-    struct font *pFontFile;
+    const struct font *pFontFile;
     struct fontchar *pFontChars;
 
     gdl = watchMenuRenderBackground(gdl, mtx, 0);
@@ -3494,9 +3494,9 @@ int textCountLines(const char *arg) {
 }
 
 
-char *textLastLine(char *arg)
+const char *textLastLine(const char *arg)
 {
-    char *ret;
+    const char *ret;
 
     ret = arg;
 
@@ -3538,7 +3538,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
         s32 textHeight = 0;
         s32 textWidth = 0;
 
-        struct font *font = g_FontBankGothic;
+        const struct font *font = g_FontBankGothic;
         struct fontchar *chars = g_FontBankGothicChars;
 
 #if defined(VERSION_EU)

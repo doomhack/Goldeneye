@@ -87,7 +87,7 @@ bool chrCheckCanSeeTarget(ChrRecord *self, const coord3d *pos, StandTile *tile)
         return TRUE;
     }
 
-    coord3d *targetpos = chrGetChrOrPresetLocation(self, attacktype, self->act_attack.entityid, &targettile);
+    const coord3d *targetpos = chrGetChrOrPresetLocation(self, attacktype, self->act_attack.entityid, &targettile);
 
     chrSetMoving(self, FALSE);
 
@@ -143,8 +143,8 @@ bool chrCanSeeBond(ChrRecord *self)
         return FALSE;
     }
 
-    PropRecord *prop = self->prop;
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *prop = self->prop;
+    const PropRecord *playerprop = currentPlayerGetProp();
     f32 eyeheight = self->chrheight - EYE_DROP;
 
     chrSetMoving(self, FALSE);
@@ -171,7 +171,7 @@ bool chrCanSeeBond(ChrRecord *self)
  */
 bool chrHasLineOfSightToPos(ChrRecord *self, const coord3d *pos, const StandTile *stan)
 {
-    PropRecord *prop = self->prop;
+    const PropRecord *prop = self->prop;
     f32 eyeheight = self->chrheight - EYE_DROP;
     bool canSee = FALSE;
 
@@ -220,8 +220,8 @@ bool chrCanSeePos(ChrRecord *self, const coord3d *pos, const StandTile *tile)
  */
 bool chrHasLineOfSightToPlayer(const ChrRecord *self)
 {
-    PropRecord *prop = self->prop;
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *prop = self->prop;
+    const PropRecord *playerprop = currentPlayerGetProp();
     bool canSee = FALSE;
 
     playerSetMoving(g_CurrentPlayer->prop, 0);
@@ -268,8 +268,8 @@ void chrAlertGuardToPlayerPosition(ChrRecord *self)
  */
 bool chrCheckTargetInSight(ChrRecord *self)
 {
-    PropRecord *prop = self->prop;
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *prop = self->prop;
+    const PropRecord *playerprop = currentPlayerGetProp();
     f32 heading = modelGetRootRotY(self->model);
     f32 dx = playerprop->pos.x - prop->pos.x;
     f32 dy = playerprop->pos.y - prop->pos.y;
@@ -357,7 +357,7 @@ void chrCheckGuardsHeardSound(f32 noise)
 
 static f32 coopChrDistSqToPlayer(const ChrRecord *self, s32 player)
 {
-    PropRecord *prop = g_playerPointers[player]->prop;
+    const PropRecord *prop = g_playerPointers[player]->prop;
     f32 dx = prop->pos.x - self->prop->pos.x;
     f32 dz = prop->pos.z - self->prop->pos.z;
 

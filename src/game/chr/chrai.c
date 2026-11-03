@@ -1347,7 +1347,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     if (chr1 && chr2 && chr1->prop && chr2->prop)
                     {
                         PropRecord      *prop = chrGetEquippedWeaponPropWithCheck(chr1, GUNRIGHT);
-                        WeaponObjRecord *weapon;
+                        const WeaponObjRecord *weapon;
                         coord3d            vec = {};
 
                         if (!prop)
@@ -2112,7 +2112,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         {
                             if (prop->type == PROP_TYPE_WEAPON)
                             {
-                                WeaponObjRecord *weapon = prop->weapon;
+                                const WeaponObjRecord *weapon = prop->weapon;
                                 if (weapon->weaponnum == ai->ITEM_NUM)
                                 {
                                     pass = TRUE;
@@ -3495,18 +3495,18 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     ChrRecord             *chr      = chrFindById(ChrEntityp, ai->CHR_NUM);
                     bool                   pass     = FALSE;
                     int                    chrnum;
-                    PropRecord            *srcweaponLprop   = NULL;
-                    PropRecord            *srcweaponRprop   = NULL;
-                    PropRecord            *cloneweaponRprop = NULL;
-                    PropRecord            *cloneweaponLprop = NULL;
-                    PropRecord            *cloneprop        = NULL;
+                    const PropRecord            *srcweaponLprop   = NULL;
+                    const PropRecord            *srcweaponRprop   = NULL;
+                    const PropRecord            *cloneweaponRprop = NULL;
+                    const PropRecord            *cloneweaponLprop = NULL;
+                    const PropRecord            *cloneprop        = NULL;
                     ChrRecord             *clone            = NULL;
-                    WeaponObjRecord       *srcweaponL       = NULL;
+                    const WeaponObjRecord       *srcweaponL       = NULL;
                     WeaponObjRecord       *cloneweaponL     = NULL;
                     WeaponObjRecord       *cloneweaponR     = NULL;
-                    WeaponObjRecord       *srcweaponR       = NULL;
-                    PropRecord            *hatprop;
-                    ObjectRecord          *hatobj;
+                    const WeaponObjRecord       *srcweaponR       = NULL;
+                    const PropRecord            *hatprop;
+                    const ObjectRecord          *hatobj;
                     // bool tryhat;
                     if (chr && (chr->chrflags & CHRFLAG_CLONE))
                     {

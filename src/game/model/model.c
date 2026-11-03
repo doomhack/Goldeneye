@@ -49,7 +49,7 @@ s32 g_ModelLodDisabled = 0;
 f32 g_ModelLodScale = 1.0;
 struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices) = NULL;
 void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx) = NULL;
-struct TubeAngleRow g_ModelTubeAngleTable[32] = {
+const struct TubeAngleRow g_ModelTubeAngleTable[32] = {
     { 0, 0, 0x10 },
     { 1, 0x1000, 0xD },
     { 1, 0x1000, 0xD },
@@ -87,7 +87,7 @@ struct TubeAngleRow g_ModelTubeAngleTable[32] = {
 u32 g_ModelAnimMergingEnabled = 1;
 
 /* Template for the vertices of muzzle flashes: opaque white */
-Vertex g_ModelGunfireVtxTemplate = {
+const Vertex g_ModelGunfireVtxTemplate = {
     { {0, 0, 0} },
     0,
     { {0, 0} },
@@ -99,7 +99,7 @@ Vertex g_ModelGunfireVtxTemplate = {
 
 u32 g_ModelShadowAlpha = 0x50;
 /* Template for the vertices of shadows: alpha is replaced from g_ModelShadowAlpha */
-Vtx g_ModelShadowVtxTemplate = {
+const Vtx g_ModelShadowVtxTemplate = {
     {
         { 0, 0, 0 },
         0,
@@ -364,7 +364,7 @@ void modelSetVtxAllocator(Vertex *(*allocator)(s32 numvertices)) {
 
 void modelCalcDirToCamera(const Model* model, coord3d* coord)
 {
-    Mtxf* mtx;
+    const Mtxf* mtx;
     f32 dist;
     f32 neg_x;
     f32 neg_y;
@@ -401,10 +401,10 @@ void modelGetDirToCamera(const Model* model, coord3d* coord)
 // PD: model0001a524
 s32 modelFindNodeMtxIndex(const ModelNode *node, s32 which)
 {
-    union ModelRoData *rodata1;
-    union ModelRoData *rodata2;
-    union ModelRoData *rodata3;
-    union ModelRoData *rodata4;
+    const union ModelRoData *rodata1;
+    const union ModelRoData *rodata2;
+    const union ModelRoData *rodata3;
+    const union ModelRoData *rodata4;
 
     while (node)
     {
@@ -457,7 +457,7 @@ Mtxf *modelGetRootMtx(const Model *objinst)
 
 f32 modelGetRootDepth(const Model *objinst)
 {
-    Mtxf *mtx = modelGetRootMtx(objinst);
+    const Mtxf *mtx = modelGetRootMtx(objinst);
     if (mtx != 0)
     {
         return -mtx->m[3][2];
@@ -540,7 +540,7 @@ void modelGetNodePosition(const Model *objinst, const ModelNode *part, coord3d *
     {
         case MODELNODE_OPCODE_HEADER:
         {
-            ModelRwData_HeaderRecord *root = &modelGetNodeRwData(objinst, part)->Header;
+            const ModelRwData_HeaderRecord *root = &modelGetNodeRwData(objinst, part)->Header;
             offset->x                   = root->pos.x;
             offset->y                   = root->pos.y;
             offset->z                   = root->pos.z;
@@ -548,7 +548,7 @@ void modelGetNodePosition(const Model *objinst, const ModelNode *part, coord3d *
         }
         case MODELNODE_OPCODE_GROUP:
         {
-            ModelRoData_GroupRecord *prt = &part->Data->Group;
+            const ModelRoData_GroupRecord *prt = &part->Data->Group;
             offset->x                  = prt->Origin.x;
             offset->y                  = prt->Origin.y;
             offset->z                  = prt->Origin.z;
@@ -556,7 +556,7 @@ void modelGetNodePosition(const Model *objinst, const ModelNode *part, coord3d *
         }
         case MODELNODE_OPCODE_OP03:
         {
-            ModelRoData_GroupSimpleRecord *prt = &part->Data->GroupSimple; //UNUSED at this time
+            const ModelRoData_GroupSimpleRecord *prt = &part->Data->GroupSimple; //UNUSED at this time
             offset->x                        = prt->Origin.x;
             offset->y                        = prt->Origin.y;
             offset->z                        = prt->Origin.z;
@@ -564,7 +564,7 @@ void modelGetNodePosition(const Model *objinst, const ModelNode *part, coord3d *
         }
         case MODELNODE_OPCODE_GROUPSIMPLE:
         {
-            ModelRoData_GroupSimpleRecord *prt = &part->Data->GroupSimple;
+            const ModelRoData_GroupSimpleRecord *prt = &part->Data->GroupSimple;
             offset->x                        = prt->Origin.x;
             offset->y                        = prt->Origin.y;
             offset->z                        = prt->Origin.z;
@@ -645,7 +645,7 @@ void modelSetRootPosition(const Model *objinst, const coord3d *offset) //#MATCH
 
 f32 modelGetRootRotY(const Model *objinst)
 {
-    ModelNode *root;
+    const ModelNode *root;
 
 
     root = objinst->obj->RootNode;
@@ -660,7 +660,7 @@ f32 modelGetRootRotY(const Model *objinst)
 
 void modelSetRootRotY(const Model *model, f32 angle)
 {
-    ModelNode* node;
+    const ModelNode* node;
     node = model->obj->RootNode;
     if ((node->Opcode & 0xff) == MODELNODE_OPCODE_HEADER)
     {
@@ -712,52 +712,52 @@ f32 modelGetNodeRadius(const Model *model, const ModelNode *node)
             {
                 case MODELNODE_OPCODE_HEADER:
                 {
-                    ModelRoData_HeaderRecord *rodata = &node->Data->Header;
+                    const ModelRoData_HeaderRecord *rodata = &node->Data->Header;
                     return rodata->GroupsAsF32 * model->scale;
                 }
                 case MODELNODE_OPCODE_GROUP:
                 {
-                    ModelRoData_GroupRecord *rodata = &node->Data->Group;
+                    const ModelRoData_GroupRecord *rodata = &node->Data->Group;
                     return rodata->BoundingVolumeRadius * model->scale;
                 }
                 case MODELNODE_OPCODE_OP03:
                 {
-                    ModelRoData_GroupRecord *rodata = &node->Data->Group;
+                    const ModelRoData_GroupRecord *rodata = &node->Data->Group;
                     return rodata->BoundingVolumeRadius * model->scale;
                 }
                 case MODELNODE_OPCODE_GROUPSIMPLE:
                 {
-                    ModelRoData_GroupSimpleRecord *rodata = &node->Data->GroupSimple;
+                    const ModelRoData_GroupSimpleRecord *rodata = &node->Data->GroupSimple;
                     return rodata->BoundingVolumeRadius * model->scale;
                 }
                 case MODELNODE_OPCODE_OP11:
                 {
-                    ModelRoData_Op11Record *rodata = &node->Data->Op11;
+                    const ModelRoData_Op11Record *rodata = &node->Data->Op11;
                     return rodata->BoundingVolumeRadius * model->scale;
                 }
                 case MODELNODE_OPCODE_GUNFIRE:
                 {
-                    ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
+                    const ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
                     return rodata->Scale * model->scale;
                 }
                 case MODELNODE_OPCODE_SHADOW:
                 {
-                    ModelRoData_ShadowRecord *rodata = &node->Data->Shadow;
+                    const ModelRoData_ShadowRecord *rodata = &node->Data->Shadow;
                     return rodata->Scale * model->scale;
                 }
                 case MODELNODE_OPCODE_OP14:
                 {
-                    ModelRoData_Op14Record *rodata = &node->Data->Op14;
+                    const ModelRoData_Op14Record *rodata = &node->Data->Op14;
                     return rodata->Scale * model->scale;
                 }
                 case MODELNODE_OPCODE_INTERLINK:
                 {
-                    ModelRoData_InterlinkageRecord *rodata = &node->Data->Interlinkage;
+                    const ModelRoData_InterlinkageRecord *rodata = &node->Data->Interlinkage;
                     return rodata->Scale * model->scale;
                 }
                 case MODELNODE_OPCODE_OP16:
                 {
-                    ModelNode_Op16Record *rodata = &node->Data->Op16;
+                    const ModelNode_Op16Record *rodata = &node->Data->Op16;
                     return rodata->Scale * model->scale;
                 }
                 default:
@@ -836,8 +836,8 @@ u16 animReadChannel(const ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffs
 {
     u32 result;
     u32 oldResult;
-    struct ModelAnimBitField *desc;
-    u8 *byteptr;
+    const struct ModelAnimBitField *desc;
+    const u8 *byteptr;
     u32 totalBitOffset;
     u32 byteIndex;
     u32 mask;
@@ -1029,7 +1029,7 @@ void modelCalcRootPosition(Model *model, const ModelNode *modelNode)
 
 void modelCalcPosition(Model *model)
 {
-    struct ModelNode *root;
+    const struct ModelNode *root;
 
 
     root = model->obj->RootNode;
@@ -1041,12 +1041,12 @@ void modelCalcPosition(Model *model)
 
 void modelCalcRootMtx(const ModelRenderData* renderdata, const Model* model, const ModelNode* node)
 {
-    union ModelRoData* rodata;
+    const union ModelRoData* rodata;
     union ModelRwData* rwdata;
     f32 scale;
     coord3d* pos;
     f32 yrot;
-    Mtxf* parent;
+    const Mtxf* parent;
     s32 mtxindex;
     RenderPosView* renderpos;
     Mtxf tmp;
@@ -1099,13 +1099,13 @@ void modelCalcRootMtx(const ModelRenderData* renderdata, const Model* model, con
 void modelCalcJointMtxFromAngles(const ModelRenderData *renderdata, const Model *model, const ModelNode *node, const coord3d *rot)
 {
     u32 flags = node->Opcode;
-    ModelRoData_GroupRecord *group = &node->Data->Group;
+    const ModelRoData_GroupRecord *group = &node->Data->Group;
     s32 matrix0 = group->MatrixID0;
     s32 matrix1 = group->MatrixID1;
     s32 matrix2 = group->MatrixID2;
     RenderPosView *render_pos = model->render_pos;
     s32 has_matrix2 = flags & MODELGROUP_MTX_HAS_MATRIX2;
-    Mtxf *parent;
+    const Mtxf *parent;
     Mtxf *matrix0_mtx;
     Mtxf tmp;
     quatf q;
@@ -1211,7 +1211,7 @@ void modelCalcJointMtxFromQuat(const ModelRenderData *renderdata, const Model *m
     s32 matrix1 = group->MatrixID1;
     s32 matrix2 = group->MatrixID2;
     RenderPosView *render_pos = model->render_pos;
-    Mtxf *parent;
+    const Mtxf *parent;
     Mtxf tmp;
     quatf halfrot;
     Mtxf *dst;
@@ -1389,7 +1389,7 @@ void modelCalcJointMtx(const ModelRenderData *renderdata, const Model *model, co
         long long int force_structure_alignment;
     } jointnum;
 
-    ModelSkeleton *skeleton;
+    const ModelSkeleton *skeleton;
     coord3d rot1;
     coord3d rot2;
     coord3d rot3;
@@ -1397,7 +1397,7 @@ void modelCalcJointMtx(const ModelRenderData *renderdata, const Model *model, co
     quatf q2;
     quatf result;
     coord3d rot4;
-    ModelRoData_GroupRecord *group;
+    const ModelRoData_GroupRecord *group;
 
     group = &node->Data->Group;
     jointnum.v = group->JointID;
@@ -1442,8 +1442,8 @@ void modelCalcJointMtx(const ModelRenderData *renderdata, const Model *model, co
 void modelCalcYJointMtxFromAngle(const ModelRenderData *renderData, const Model *model, const ModelNode *node, f32 angle)
 {
     s32 opcode;
-    union ModelRoData *data;
-    Mtxf *mtx;
+    const union ModelRoData *data;
+    const Mtxf *mtx;
     RenderPosView *render_pos;
     Mtxf localMtx;
     s32 m0;
@@ -1584,8 +1584,8 @@ f32 animReadJointYRotation(s32 jointIndex, s32 useMtxB, const ModelSkeleton *ske
 
 void modelCalcYJointMtx(const ModelRenderData *renderData, const Model *model, const ModelNode *node)
 {    
-    ModelSkeleton *skeleton;
-    ModelRoData_GroupRecord *rodata;
+    const ModelSkeleton *skeleton;
+    const ModelRoData_GroupRecord *rodata;
     s32 jointIndex;
     f32 angle;
     f32 tmp2;
@@ -1619,8 +1619,8 @@ void modelCalcYJointMtx(const ModelRenderData *renderData, const Model *model, c
 
 void modelCalcOffsetMtx(const ModelRenderData* renderdata, const Model *model, const ModelNode *node)
 {
-    union ModelRoData *rodata = node->Data;
-    Mtxf *parent;
+    const union ModelRoData *rodata = node->Data;
+    const Mtxf *parent;
     Mtxf tmp;
     s32 mtxindex = rodata->GroupSimple.Group1;
     RenderPosView *matrices = model->render_pos;
@@ -1647,9 +1647,9 @@ void modelCalcOffsetMtx(const ModelRenderData* renderdata, const Model *model, c
 
 void modelUpdateDistanceRelations(const Model* model, ModelNode* node)
 {
-    union ModelRoData *rodata = node->Data;
+    const union ModelRoData *rodata = node->Data;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
-    Mtxf *mtx = modelFindNodeMtx(model, node, 0);
+    const Mtxf *mtx = modelFindNodeMtx(model, node, 0);
     f32 distance;
 
     if (g_ModelLodDisabled)
@@ -1682,8 +1682,8 @@ void modelUpdateDistanceRelations(const Model* model, ModelNode* node)
 
 void modelApplyDistanceRelations(const Model* model, ModelNode* node)
 {
-    ModelRoData_LODRecord *rodata = &node->Data->LOD;
-    ModelRwData_LODRecord *rwdata = &modelGetNodeRwData(model, node)->LOD;
+    const ModelRoData_LODRecord *rodata = &node->Data->LOD;
+    const ModelRwData_LODRecord *rwdata = &modelGetNodeRwData(model, node)->LOD;
 
     if (rwdata->visible)
     {
@@ -1698,8 +1698,8 @@ void modelApplyDistanceRelations(const Model* model, ModelNode* node)
 
 void modelApplyToggleRelations(const Model* model, ModelNode* node)
 {
-    ModelRoData_SwitchRecord *rodata = &node->Data->Switch;
-    ModelRwData_SwitchRecord *rwdata = &modelGetNodeRwData(model, node)->Switch;
+    const ModelRoData_SwitchRecord *rodata = &node->Data->Switch;
+    const ModelRwData_SwitchRecord *rwdata = &modelGetNodeRwData(model, node)->Switch;
 
     if (rwdata->visible)
     {
@@ -1714,7 +1714,7 @@ void modelApplyToggleRelations(const Model* model, ModelNode* node)
 
 void modelApplyHeadRelations(const Model* model, ModelNode* bodynode)
 {
-    struct ModelRwData_HeadPlaceholderRecord *rwdata = &modelGetNodeRwData(model, bodynode)->HeadPlaceholder;
+    const struct ModelRwData_HeadPlaceholderRecord *rwdata = &modelGetNodeRwData(model, bodynode)->HeadPlaceholder;
 
     if (rwdata->ModelFileHeader)
     {
@@ -1733,7 +1733,7 @@ void modelApplyHeadRelations(const Model* model, ModelNode* bodynode)
 
 void modelApplyReorderRelationsByArg(ModelNode *basenode, bool visible)
 {
-    union ModelRoData *rodata = basenode->Data;
+    const union ModelRoData *rodata = basenode->Data;
     ModelNode *node1;
     ModelNode *node2;
     ModelNode *loopnode;
@@ -1798,16 +1798,16 @@ void modelApplyReorderRelationsByArg(ModelNode *basenode, bool visible)
 
 void modelApplyReorderRelations(const Model* model, ModelNode* node)
 {
-    union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+    const union ModelRwData *rwdata = modelGetNodeRwData(model, node);
     modelApplyReorderRelationsByArg(node, rwdata->BSP.visible);
 }
 
 
 void modelUpdateReorderRelations(const Model *model, ModelNode *node)
 {
-    union ModelRoData *rodata = node->Data;
+    const union ModelRoData *rodata = node->Data;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
-    Mtxf *mtx = modelFindNodeMtx(model, node, 0);
+    const Mtxf *mtx = modelFindNodeMtx(model, node, 0);
     coord3d normal;
     coord3d point;
     f32 dot;
@@ -1861,9 +1861,9 @@ void modelUpdateReorderRelations(const Model *model, ModelNode *node)
 
 void modelUpdateTubeIndex(const Model *model, const ModelNode *node)
 {
-    union ModelRoData *rodata = node->Data;
+    const union ModelRoData *rodata = node->Data;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
-    Mtxf *mtx = modelFindNodeMtx(model, node, 0);
+    const Mtxf *mtx = modelFindNodeMtx(model, node, 0);
     f32 ratio;
     f32 coord_multiplied;
     coord3d coord;
@@ -2150,7 +2150,7 @@ f32 modelGetAnimFrame(const Model *model)
 f32 modelGetAnimEndFrame(const Model *model)
 {
     f32 end;
-    ModelAnimation *modelAnimation;
+    const ModelAnimation *modelAnimation;
 
     end = model->endframe;
 
@@ -2223,7 +2223,7 @@ s32 modelConstrainOrWrapAnimFrame(s32 frame, const ModelAnimation *anim, f32 end
 void modelCopyAnimForMerge(Model *model, f32 timemerge)
 {
     ModelAnimation *anim;
-    ModelNode *root;
+    const ModelNode *root;
     ModelRwData_HeaderRecord *rwdata;
     s32 opcode; 
 
@@ -2293,7 +2293,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
     type = model->obj->RootNode->Opcode & 0xff;
 
     if (type == MODELNODE_OPCODE_HEADER) {
-        ModelRoData_HeaderRecord *rodata = &model->obj->RootNode->Data->Header;
+        const ModelRoData_HeaderRecord *rodata = &model->obj->RootNode->Data->Header;
         ModelRwData_HeaderRecord *rwdata = &modelGetNodeRwData(model, model->obj->RootNode)->Header;
         f32 prevYrot;
         f32 sinAngle;
@@ -2303,7 +2303,7 @@ void modelSetAnimation2(Model *model, ModelAnimation *anim, s32 flip, f32 frame,
         coord3d pos;
         f32 angleDelta;
         coord3d tmppos[2];
-        ModelSkeleton *skeleton;
+        const ModelSkeleton *skeleton;
 
         animPart = rodata->AnimPart;
         skeleton = model->obj->Skeleton;
@@ -2429,7 +2429,7 @@ void modelSetAnimLooping(Model *model, f32 loopframe, f32 loopmerge) {
 
 
 void modelSetAnimEndFrame(Model *model, f32 endframe) {
-    ModelAnimation *modelAnimation = model->anim;
+    const ModelAnimation *modelAnimation = model->anim;
 
     if ((modelAnimation != NULL) && (endframe < (modelAnimation->numFrames - 1))) {
         model->endframe = endframe;
@@ -2592,7 +2592,7 @@ void modelSetAnimFrame2WithChrStuff(Model *model, f32 framea, f32 frameb, f32 fr
     ModelNode *root;
     ModelNode *node;
     s32 jointnum;
-    ModelSkeleton *skeleton;
+    const ModelSkeleton *skeleton;
     f32 scale;
     s32 curframe;
     f32 speed;
@@ -4123,26 +4123,26 @@ void modelRenderNodeTube(ModelRenderData* renderdata, const Model* model, const 
     s32 rw_index_sel;
     s32 rw_index_sel2;
     s32 c_entry_count;
-    struct ModelRoData_TubeRecord *rodata2;
+    const struct ModelRoData_TubeRecord *rodata2;
     s32 c_entry2_count;
     s32 c_entry_index;
     s32 renderpos_index;
-    ModelNode *node_from_07;
-    struct ModelRoData_Child *c_entry2;
+    const ModelNode *node_from_07;
+    const struct ModelRoData_Child *c_entry2;
     Vertex *vtx2;
     u8 *entry2_04;
     bool swap_order;
     struct ModelRoData_TubeRecord *rodata;
-    struct ModelRoData_Child *c_entry;
-    struct ModelRwData_TubeRecord *rwdata;
-    Vertex *vtx_10;
-    Vertex *vtx_10_2;
+    const struct ModelRoData_Child *c_entry;
+    const struct ModelRwData_TubeRecord *rwdata;
+    const Vertex *vtx_10;
+    const Vertex *vtx_10_2;
     RenderPosView *render_pos2;
     RenderPosView *render_pos;
     s32 rw_index2;
     s32 rw_index;
     Vertex *vtx1;
-    struct ModelRwData_TubeRecord *rwdata2;
+    const struct ModelRwData_TubeRecord *rwdata2;
     u8 *entry_04;
     s32 renderpos_index2;
 
@@ -4374,7 +4374,7 @@ void modelRenderNodeGunfire(ModelRenderData *renderdata, const Model *model, con
 {
     f32 negUpX;
     ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
-    union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+    const union ModelRwData *rwdata = modelGetNodeRwData(model, node);
     sImageTableEntry *tconfig;
     f32 yaw;
     f32 pitch;
@@ -4540,7 +4540,7 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, const Model *model, cons
     f32 sizex;
     f32 sizey;
     f32 height;
-    ModelRwData_HeaderRecord *rwdata;
+    const ModelRwData_HeaderRecord *rwdata;
 
     if ((s32) g_ModelShadowAlpha <= 0)
     {
@@ -4946,7 +4946,7 @@ bool modelTestRayIntersectsTransformedBBox(const ModelRoData_BoundingBoxRecord *
 
 bool modelTestRayIntersectsNodeBBox(const Model *model, const ModelNode *node, const coord3d *pos, const coord3d *dir)
 {
-    ModelRoData_BoundingBoxRecord *bbox = &node->Data->BoundingBox;
+    const ModelRoData_BoundingBoxRecord *bbox = &node->Data->BoundingBox;
 
     return modelTestRayIntersectsTransformedBBox(bbox, modelFindNodeMtx(model, node, 0), pos, dir);
 }
@@ -4955,10 +4955,10 @@ bool modelTestRayIntersectsNodeBBox(const Model *model, const ModelNode *node, c
 s32 modelTestRayIntersectsNodeOp17(const Model *model, const ModelNode *node, const coord3d *raypos, const coord3d *raydir)
 {
     ModelRoData_Op17Record *hitData;
-    Mtxf *nodeMtx;
+    const Mtxf *nodeMtx;
     ModelOp17MainStack rayData[1];
     f32 centerProjection;
-    Mtxf *otherNodeMtx;
+    const Mtxf *otherNodeMtx;
     ModelOp17AxisStack axisData[1];
     f32 scaledProjection;
     f32 projectionScalar;
@@ -5633,7 +5633,7 @@ void modelInitRwData(const Model *model, ModelNode *startnode)
             case MODELNODE_OPCODE_LOD:
                 if (1)
                 {
-                    ModelRoData_LODRecord* rodata = &node->Data->LOD;
+                    const ModelRoData_LODRecord* rodata = &node->Data->LOD;
                     ModelRwData_LODRecord* rwdata = &modelGetNodeRwData(model, node)->LOD;
                     rwdata->visible = FALSE;
                     node->Child = rodata->Affects;
@@ -5643,7 +5643,7 @@ void modelInitRwData(const Model *model, ModelNode *startnode)
             case MODELNODE_OPCODE_SWITCH:
                 if (1)
                 {
-                    ModelRoData_SwitchRecord* rodata = &node->Data->Switch;
+                    const ModelRoData_SwitchRecord* rodata = &node->Data->Switch;
                     ModelRwData_SwitchRecord* rwdata = &modelGetNodeRwData(model, node)->Switch;
                     rwdata->visible = TRUE;
                     node->Child = rodata->Controls;
@@ -5687,7 +5687,7 @@ void modelInitRwData(const Model *model, ModelNode *startnode)
             case MODELNODE_OPCODE_DLCOLLISION:
                 if (1)
                 {
-                    ModelRoData_DisplayList_CollisionRecord* rodata = &node->Data->DisplayListCollisions;
+                    const ModelRoData_DisplayList_CollisionRecord* rodata = &node->Data->DisplayListCollisions;
                     ModelRwData_DisplayList_CollisionRecord* rwdata = &modelGetNodeRwData(model, node)->DisplayListCollisions;
                     rwdata->Vertices = rodata->Vertices;
                     rwdata->gdl = rodata->Primary;
@@ -5800,7 +5800,7 @@ void modelAttachPart(const Model *pmodel, ModelFileHeader *pmodeldef, ModelNode 
 void modelIterateDisplayLists(const ModelFileHeader *fileheader, ModelNode **nodeptr, Gfx **gdlptr)
 {
     ModelNode *node = *nodeptr;
-    union ModelRoData *rodata;
+    const union ModelRoData *rodata;
     Gfx *gdl = NULL;
 
     if (node == NULL)

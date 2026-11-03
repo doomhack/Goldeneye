@@ -5,8 +5,8 @@
 #include <bondconstants.h>
 #include <bondtypes.h>
 
-ModelRoData_BoundingBoxRecord *modelFileFindBbox(const ModelFileHeader *header);
-ModelRoData_BoundingBoxRecord *objFindBbox(const ObjectRecord *obj);
+const ModelRoData_BoundingBoxRecord *modelFileFindBbox(const ModelFileHeader *header);
+const ModelRoData_BoundingBoxRecord *objFindBbox(const ObjectRecord *obj);
 
 f32 bboxGetYmin(const ModelRoData_BoundingBoxRecord *bbox);
 f32 bboxGetYmax(const ModelRoData_BoundingBoxRecord *bbox);
