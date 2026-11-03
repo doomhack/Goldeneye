@@ -392,6 +392,46 @@ void hudmsgTopTick(void)
 }
 
 
+/**
+ * Dialog text is broken into lines by hand for a full-width view, with the
+ * lines after the first indented under the speaker's name. Joins it back
+ * into one line (each run of spaces and line breaks becomes one space,
+ * keeping a final line break) so it can be wrapped to a narrower view.
+ */
+static void hudmsgJoinLines(char *dst, const char *src)
+{
+    bool space = false;
+    bool newline = false;
+    char *out = dst;
+
+    for (; *src != '\0'; src++)
+    {
+        if ((*src == ' ') || (*src == '\n'))
+        {
+            space = true;
+            newline = (*src == '\n');
+            continue;
+        }
+
+        if (space && (out != dst))
+        {
+            *out++ = ' ';
+        }
+
+        space = false;
+        newline = false;
+        *out++ = *src;
+    }
+
+    if (newline)
+    {
+        *out++ = '\n';
+    }
+
+    *out = '\0';
+}
+
+
 Gfx *hudmsgTopRender(Gfx *gdl)
 {
     TopMessageLocals msg;
@@ -432,7 +472,10 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                         s32 leftmargin = (coopPlayerPerson(playerGetCurrentNum()) & 1) ? 0xA : 0x1E;
                         s32 rightmargin = (0x1E + 0xA) - leftmargin;
 
-                        textWrap(viGetViewWidth() - leftmargin - rightmargin, text, wrapped, g_FontZurichChars, g_FontZurich);
+                        char joined[HUDMSG_TOP_LEN + 1];
+
+                        hudmsgJoinLines(joined, text);
+                        textWrap(viGetViewWidth() - leftmargin - rightmargin, joined, wrapped, g_FontZurichChars, g_FontZurich);
                         text = wrapped;
                         boxleft = viGetViewLeft();
                         boxright = viGetViewLeft() + viGetViewWidth();
