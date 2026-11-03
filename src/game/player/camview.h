@@ -27,6 +27,7 @@ Mtxf *camGetProjectionMtxf(void);
 void camSetViewToWorldMtxf(Mtxf *matrix);
 Mtxf *camGetViewToWorldMtxf(void);
 void coopViewsBegin(void);
+s32 coopGetFrame(void);
 void coopViewsEnd(s32 lastplayer);
 Mtxf *camGetPrevViewToWorldMtxf(void);
 void camSetLookAt(LookAt *lookat);

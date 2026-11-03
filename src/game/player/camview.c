@@ -262,6 +262,12 @@ void coopViewsBegin(void)
     }
 }
 
+/** Co-op: counts frames (coopViewsBegin), so data from this frame's views can be told apart */
+s32 coopGetFrame(void)
+{
+    return s_CoopFrame;
+}
+
 /**
  * Co-op: called after the views of a frame are drawn, with the player whose
  * view was drawn last.

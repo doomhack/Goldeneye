@@ -2090,6 +2090,65 @@ void modelUpdateMatrices(ModelRenderData *renderdata, Model *model)
 }
 
 
+/**
+ * Co-op: the view-dependent node updates of modelUpdateMatrices (level of detail,
+ * BSP order, tube and switch choices), without the joint matrices. For a model whose
+ * matrices for this view were made from another view's (model->render_pos already
+ * set; see chrCoopReuseMatrices).
+ */
+void modelUpdateViewRelations(Model *model)
+{
+    ModelNode *node = model->obj->RootNode;
+
+    while (node)
+    {
+        switch (node->Opcode & 0xff)
+        {
+            case MODELNODE_OPCODE_LOD:
+                modelUpdateDistanceRelations(model, node);
+                break;
+
+            case MODELNODE_OPCODE_BSP:
+                modelUpdateReorderRelations(model, node);
+                break;
+
+            case MODELNODE_OPCODE_TUBE:
+                modelUpdateTubeIndex(model, node);
+                break;
+
+            case MODELNODE_OPCODE_SWITCH:
+                modelApplyToggleRelations(model, node);
+                break;
+
+            case MODELNODE_OPCODE_HEAD:
+                modelApplyHeadRelations(model, node);
+                break;
+
+            default:
+                break;
+        }
+
+        if (node->Child)
+        {
+            node = node->Child;
+        }
+        else
+        {
+            while (node)
+            {
+                if (node->Next)
+                {
+                    node = node->Next;
+                    break;
+                }
+
+                node = node->Parent;
+            }
+        }
+    }
+}
+
+
 void modelCalcMatricesNoAnim(ModelRenderData* renderdata, Model* model)
 {
     model->render_pos = (RenderPosView* ) renderdata->mtxlist;

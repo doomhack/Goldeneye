@@ -1969,6 +1969,13 @@ typedef union
         /* Co-op: frames left before this chr may switch to another player
            after a level-script check picked targetplayer. */
         s16            targetlock60;
+
+        /* Co-op: the joint matrices from the first view that drew this chr this
+           frame (coopMtxFrame), and that view's view-to-world matrix. Later views
+           turn them into their own view's space (chrCoopReuseMatrices). */
+        Mtxf          *coopMtxs;
+        Mtxf          *coopMtxViewToWorld;
+        s32            coopMtxFrame;
     } ChrRecord;
     // ChrRecord *pChrData; //not Global, local to Object or function
 
