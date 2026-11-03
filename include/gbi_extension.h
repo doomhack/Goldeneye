@@ -2,11 +2,6 @@
 #    define _GBI_EXT_H_
 #include <PR/gbi.h>
 
-/* GE's Fast3D has G_TRI4 (4 triangles in one command); F3DEX3 has G_TRI2 instead */
-#ifndef UCODE_F3DEX3
-#define TRI4_Ext
-#endif
-
 /**
  * This file should contain most of the extensions to gbi avoiding loosing
  * changes should the OS ever be updated.
@@ -48,25 +43,16 @@ typedef enum
 
 
 
-#ifdef TRI4_Ext
-#    define G_TRI4 (G_IMMFIRST - 14)
-#endif
-
 /* Viewport (Vp) Y scale and Z scale/translation: F3DEX3 wants Y negated and a bigger Z range */
-#ifdef UCODE_F3DEX3
 #define GE_VP_YSCALE(s) (-(s))
 #define GE_VP_ZHALF     (G_NEW_MAXZ / 2)
-#else
-#define GE_VP_YSCALE(s) (s)
-#define GE_VP_ZHALF     (G_MAXZ / 2)
-#endif
 
 /* GE's texture command, replaced with real ones when a display list is loaded (texcmds.c) */
 #define G_SETTEX 0xc0
 
-#ifdef UCODE_F3DEX3
 /*
- * gsSP4Triangles for F3DEX3: two commands, each a G_TRI2, a G_TRI1 or a no-op, so that
+ * gsSP4Triangles, from GE's original microcode's 4 triangle command (G_TRI4): here two
+ * commands, each a G_TRI2, a G_TRI1 or a no-op, so that
  * triangles whose three indices are all 0 are left out as G_TRI4 does.
  */
 #define GE_TRI_EMPTY(x, y, z) ((((x) | (y) | (z))) == 0)
@@ -80,7 +66,6 @@ typedef enum
 #define gsSP4Triangles(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4)    \
     { GE_TRIPAIR_W0(x1, y1, z1, x2, y2, z2), GE_TRIPAIR_W1(x1, y1, z1, x2, y2, z2) }, \
     { GE_TRIPAIR_W0(x3, y3, z3, x4, y4, z4), GE_TRIPAIR_W1(x3, y3, z3, x4, y4, z4) }
-#endif
 
 /* Fade Modes ... for GE? */
 #define G_CC_MODULATEIFADE    TEXEL0, 0, SHADE, 0, 0, 0, 0, ENVIRONMENT
@@ -107,84 +92,6 @@ typedef enum
 #define G_RM_CUSTOM_AA_ZB_XLU_SURF2 RM_CUSTOM_AA_ZB_XLU_SURF(2)
 
 
-#ifdef TRI4_Ext
-
-
-/***
- ***  4 Triangles
- ***/
-/**
- * Remarks:
- * Ryan: I've been learning a lot about PD's graphics microcode lately. It's likely that the decision to
- * implement tri4 was to reduce memory usage in RDRAM. But to fit 4 tris in one command they had to limit
- * themselves to 4 bits per vertex, which means they can only address up to 16 vertices. They could have
- * fit 32 vertices in DMEM if they wanted. In stock microcodes the vertex IDs are pre-multiplied by 10
- * which makes it easy for the RSP to calculate the vertex offset in the DMEM buffer (it can use a
- * single shift operation). But because PD is using a compact format there's more work for the RSP to
- * calculate it. So they've sacrificed RSP performance for memory saving.
-*/
-
-//cannot use 2tri with 4tri, so lets just make sure they are undefined so errors happen.
-#undef gSP2Triangles
-#undef gsSP2Triangles
-
-/**
-  Draw up to 4 triangles at a time.
-  Vertex index is 0-15, to use a higher index use gSP1Triangle
-  Triangles with all points set to 0 are not drawn.
-*/
-#define gSP4Triangles(pkt, x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) \
-{                                                                          \
-    Gfx *_g = (Gfx *)(pkt);                                                \
-                                                                           \
-    _g->words.w0 = (_SHIFTL(G_TRI4, 24, 8)                                 \
-            | _SHIFTL(z4, 12, 4)                                           \
-            | _SHIFTL(z3, 8, 4)                                            \
-            | _SHIFTL(z2, 4, 4)                                            \
-            | _SHIFTL(z1, 0, 4));                                          \
-    _g->words.w1 = (_SHIFTL(y4, 28, 4)                                     \
-            | _SHIFTL(x4, 24, 4)                                           \
-            | _SHIFTL(y3, 20, 4)                                           \
-            | _SHIFTL(x3, 16, 4)                                           \
-            | _SHIFTL(y2, 12, 4)                                           \
-            | _SHIFTL(x2, 8, 4)                                            \
-            | _SHIFTL(y1, 4, 4)                                            \
-            | _SHIFTL(x1, 0, 4));                                          \
-}
-
-/**
-  Draw up to 4 triangles at a time.
-  Vertex index is 0-15, to use a higher index use gSP1Triangle
-  Triangles with all points set to 0 are not drawn.
-*/
-#define gsSP4Triangles(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4) \
-{                                                                      \
-    {                                                                  \
-        (_SHIFTL(G_TRI4, 24, 8)                                        \
-            | _SHIFTL(z4, 12, 4)                                       \
-            | _SHIFTL(z3, 8, 4)                                        \
-            | _SHIFTL(z2, 4, 4)                                        \
-            | _SHIFTL(z1, 0, 4)),                                      \
-        (_SHIFTL(y4, 28, 4)                                            \
-            | _SHIFTL(x4, 24, 4)                                       \
-            | _SHIFTL(y3, 20, 4)                                       \
-            | _SHIFTL(x3, 16, 4)                                       \
-            | _SHIFTL(y2, 12, 4)                                       \
-            | _SHIFTL(x2, 8, 4)                                        \
-            | _SHIFTL(y1, 4, 4)                                        \
-            | _SHIFTL(x1, 0, 4))                                       \
-    }                                                                  \
-}
-
-/**
-  Source compatible F3DEX gSP2Triangles for GE
-  Vertex index is 0-15, to use a higher index use gSP1Triangle
-*/
-#define gSP2Triangles(pkt, x1, y1, z1, flag0, x2, y2, z2, flag1) \
-	gSP4Triangles(pkt, x1, y1, z1, x2, y2, z2, 0, 0, 0, 0, 0, 0)
-#define gsSP2Triangles(x1, y1, z1, flag0, x2, y2, z2, flag1) \
-	gsSP4Triangles(x1, y1, z1, x2, y2, z2, 0, 0, 0, 0, 0, 0)
-#endif /* TRI4_Ext */
 
 
 #define	gDPLoadTLUT06(pkt, a, b, c, d)				                                        \
@@ -263,7 +170,6 @@ typedef enum
  * guLookAtReflect for the game's LookAt. libultra writes Fast3D's layout (two 16 byte
  * lights, direction at byte 8 of each); F3DEX3's is two 4 byte directions.
  */
-#ifdef UCODE_F3DEX3
 #include <PR/gu.h>
 static inline void geLookAtReflect(Mtx *m, LookAt *l, float xEye, float yEye, float zEye,
                                    float xAt, float yAt, float zAt, float xUp, float yUp, float zUp)
@@ -284,8 +190,5 @@ static inline void geLookAtReflect(Mtx *m, LookAt *l, float xEye, float yEye, fl
     l->l[0].l.pad1 = 0;
     l->l[1].l.pad1 = 0;
 }
-#else
-#define geLookAtReflect guLookAtReflect
-#endif
 
 #endif

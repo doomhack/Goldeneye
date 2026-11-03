@@ -307,9 +307,7 @@ void __scHandleRSP(OSSched *sc) {
         if (t->list.t.type != M_AUDTASK)
         {
             g_PerfRspSum += osGetCount() - g_PerfGfxStart;
-#ifdef UCODE_F3DEX3
             rspReadCounters(&t->list);
-#endif
         }
 
         t->state &= ~OS_SC_NEEDS_RSP;

@@ -22,8 +22,12 @@ Emulators don't model the N64's caches or DMA timing, so some bugs only show up 
   still builds, without LTO (`make LTO=0` does the same on purpose).
 * Base ROMs: `baserom.u.z64` and `baserom.e.z64` in the repository root (never commit them),
   then `make build_tools extractassets`.
-* Headless emulator: `apt install mupen64plus-ui-console mupen64plus-video-rice mupen64plus-rsp-hle
-  libmupen64plus-dev xvfb python3-pil`.
+* Headless emulator: `apt install mupen64plus-ui-console mupen64plus-rsp-z64
+  libmupen64plus-dev xvfb python3-pil`, plus the angrylion RDP plugin: build
+  [angrylion-rdp-plus](https://github.com/ata4/angrylion-rdp-plus) and copy its
+  `mupen64plus-video-angrylion-plus.so` into the mupen64plus plugin folder as
+  `mupen64plus-video-angrylion.so`. The game's F3DEX3 microcode needs these low-level
+  plugins; the high-level ones (rsp-hle, video-rice) can't run it.
 
 ## Comparing ROMs: `tools/compare/romcmp.sh [BASE] [VERSION]`
 

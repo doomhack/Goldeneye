@@ -11,7 +11,7 @@ Usage:
 
 Example (does the ROM still reach the title screen?):
   objbisect.py ../ge-gcc10 ../ge-gcc15 ../ge-mix \\
-      --test 'python3 tools/testrun/m64run.py build/u/ge007.u.z64 --frames 1500 --gfx rice \\
+      --test 'python3 tools/testrun/m64run.py build/u/ge007.u.z64 --frames 1500 \\
               --outdir /tmp/bisect && grep -q ok /tmp/bisect/result.json'
 
 Prints the single object whose bad version breaks the build. If no single object explains

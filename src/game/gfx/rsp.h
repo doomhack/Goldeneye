@@ -14,7 +14,6 @@ struct RspGfxTask
 /** The task the next rspGfxTaskStart sends */
 extern struct RspGfxTask *g_RspNextTask;
 
-#ifdef UCODE_F3DEX3
 /*
  * The LookAt Fast3D starts with (from its DMEM data): X along y, Y along x. Environment
  * mapped models drawn without a gSPLookAt of their own (the Nintendo and Rare logos)
@@ -67,7 +66,6 @@ extern volatile u32 g_RspCounterSums[RSP_PROFILE_COUNT][RSPCOUNT_MAX];
 extern volatile u32 g_RspCounterTasks[RSP_PROFILE_COUNT];
 
 void rspReadCounters(OSTask *task);
-#endif
 
 void rspAllocateBuffers(void);
 void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg replyMsg);

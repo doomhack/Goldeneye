@@ -1,6 +1,6 @@
 # F3DEX3
 
-The graphics microcode for `make UCODE=f3dex3`: F3DEX3 by Sauraen, from
+The game's graphics microcode: F3DEX3 by Sauraen, from
 https://github.com/HackerN64/F3DEX3 at commit 91a85284821181af627d838e47d245718804f388.
 
 Built with armips (Kingcom/armips 62adab4):

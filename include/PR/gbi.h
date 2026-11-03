@@ -1,8 +1,7 @@
 /*
- * The GBI (display list commands) for the graphics microcode the game is built for:
- * Fast3D (the original), or F3DEX3 with `make UCODE=f3dex3`.
+ * The GBI (display list commands) for the game's graphics microcode, F3DEX3
+ * (rsp/f3dex3/README.md).
  */
-#ifdef UCODE_F3DEX3
 #ifndef GE_GBI_F3DEX3_EXTRA
 #define GE_GBI_F3DEX3_EXTRA
 #include <PR/gbi_f3dex3.h>
@@ -25,7 +24,4 @@ typedef union {
     uSprite_t s;
     long long int force_structure_allignment[3];
 } uSprite;
-#endif
-#else
-#include <PR/gbi_fast3d.h>
 #endif

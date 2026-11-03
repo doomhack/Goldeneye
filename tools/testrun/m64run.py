@@ -6,7 +6,7 @@ in frames (frame callbacks from the core), so a run is repeatable.
 
 Usage:
   m64run.py ROM --frames N [--script FILE] [--pads N] [--shots F,F,...]
-            [--outdir DIR] [--gfx rice|none] [--map MAPFILE --watch SYMBOL]
+            [--outdir DIR] [--gfx angrylion|z64|none] [--map MAPFILE --watch SYMBOL]
 
 Script lines (blank lines and # comments ignored):
   FROM TO PAD BUTTONS [STICKX STICKY]
@@ -141,10 +141,12 @@ def main():
     ap.add_argument('--pads', type=int, default=1)
     ap.add_argument('--shots', default='')
     ap.add_argument('--outdir', default='testrun-out')
-    ap.add_argument('--gfx', choices=['rice', 'angrylion', 'z64', 'none'], default='rice',
-                    help='rice = HLE video; angrylion or z64 = low-level RDP (needed for F3DEX3, pair with --rsp z64)')
-    ap.add_argument('--rsp', choices=['hle', 'cxd4', 'z64'], default='hle',
-                    help='hle = high-level RSP (Fast3D only); cxd4 or z64 = low-level RSP that runs the real microcode')
+    # The game's microcode is F3DEX3, which the high-level (HLE) plugins don't know, so the
+    # real microcode runs on a low-level RSP and the RDP commands it makes on a low-level RDP
+    ap.add_argument('--gfx', choices=['angrylion', 'z64', 'none'], default='angrylion',
+                    help='low-level RDP plugin (none = no video)')
+    ap.add_argument('--rsp', choices=['z64', 'cxd4'], default='z64',
+                    help='low-level RSP plugin that runs the real microcode (cxd4 mis-shades F3DEX3)')
     ap.add_argument('--map')
     ap.add_argument('--watch')
     ap.add_argument('--stage', type=int, metavar='LEVELID',
