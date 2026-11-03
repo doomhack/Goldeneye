@@ -44,8 +44,18 @@ const EnvironmentRecord * g_EnvironmentMainp;
 
 const EnvironmentRecord * g_EnvironmentAltp;
 
-#if defined(VERSION_EU)
+#if defined(VERSION_EU) || defined(FOG_TUNE)
 NearFogValues eu_loadCurrentNearFog;
+#endif
+
+#ifdef FOG_TUNE
+/* Tuning build (make FOGTUNE=1): scales on the level's far plane and prop fade
+   distances, set with L + C buttons, and the values they give (fogTuneGetValues) */
+f32 g_FogTuneFarScale = 1.0f;
+f32 g_FogTuneFadeScale = 1.0f;
+static f32 s_FogTuneTableFar;
+static f32 s_FogTuneFar;
+static NearFogValues s_FogTuneTableFade;
 #endif
 
 
@@ -255,6 +265,12 @@ void fogLoadCurrentEnvironment(const EnvironmentRecord *env)
         farfog *= COOP_NEAR_DRAW_SCALE;
     }
 
+#ifdef FOG_TUNE
+    s_FogTuneTableFar = env->Visibility.FarFog;
+    farfog *= g_FogTuneFarScale;
+    s_FogTuneFar = farfog;
+#endif
+
     viSetZRange(env->Visibility.BlendMultiplier, farfog);
     viGetZRange(zrange);
 
@@ -311,11 +327,17 @@ void fogLoadCurrentEnvironment(const EnvironmentRecord *env)
     }
     else
     {
-#if defined(VERSION_EU)
+#if defined(VERSION_EU) || defined(FOG_TUNE)
         eu_loadCurrentNearFog.NearFog = env->Visibility.Nfd.NearFog;
         eu_loadCurrentNearFog.MaxVisRange = env->Visibility.Nfd.MaxVisRange;
         eu_loadCurrentNearFog.MaxObfuscationRange = env->Visibility.Nfd.MaxObfuscationRange;
         g_NearFogValuesP = &eu_loadCurrentNearFog;
+#ifdef FOG_TUNE
+        s_FogTuneTableFade = eu_loadCurrentNearFog;
+        eu_loadCurrentNearFog.NearFog *= g_FogTuneFadeScale;
+        eu_loadCurrentNearFog.MaxVisRange *= g_FogTuneFadeScale;
+        eu_loadCurrentNearFog.MaxObfuscationRange *= g_FogTuneFadeScale;
+#endif
 #else
         g_NearFogValuesP = &env->Visibility.Nfd;
 #endif
@@ -347,6 +369,30 @@ void fogLoadFoglessCurrentEnvironment(const EnvironmentFoglessRecord *env)
 }
 
 
+#ifdef FOG_TUNE
+/**
+ * The far plane and prop fade distances in use and the fog table's own ones.
+ * The fade values are 0 when the level has no prop fade.
+ */
+void fogTuneGetValues(f32 *far, f32 *tableFar, NearFogValues *fade, NearFogValues *tableFade)
+{
+    *far = s_FogTuneFar;
+    *tableFar = s_FogTuneTableFar;
+
+    if (g_NearFogValuesP != NULL)
+    {
+        *fade = *g_NearFogValuesP;
+        *tableFade = s_FogTuneTableFade;
+    }
+    else
+    {
+        *fade = (NearFogValues){0};
+        *tableFade = (NearFogValues){0};
+    }
+}
+#endif
+
+
 void fogLoadLevelEnvironment(s32 level_id, s32 introCamera)
 {
     const EnvironmentRecord *env;
@@ -366,6 +412,18 @@ void fogLoadLevelEnvironment(s32 level_id, s32 introCamera)
 
     g_ScaledFarFogIntensity = FLT_MAX;
     g_ScaledDifferenceFromFarFogIntensity = 0.0f;
+
+#ifdef FOG_TUNE
+    // Each level starts from its own table values (kept from the intro into play)
+    static s32 s_FogTuneLevel = -1;
+
+    if (level_id != s_FogTuneLevel)
+    {
+        s_FogTuneLevel = level_id;
+        g_FogTuneFarScale = 1.0f;
+        g_FogTuneFadeScale = 1.0f;
+    }
+#endif
 
     if (introCamera)
     {
