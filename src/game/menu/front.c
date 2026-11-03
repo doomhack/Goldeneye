@@ -4403,18 +4403,10 @@ void frontSetMpScenario(MPSCENARIOS scenarioid)
         {
             g_MpGameLength = 2;
         }
-        if (0xd < mpWeaponSetGetIndex())
-        {
-            mpWeaponSetSelect(0xd);
-        }
         break;
     case SCENARIO_YOLT:
         g_MpGameLength = 7;
 
-        if (0xd < mpWeaponSetGetIndex())
-        {
-            mpWeaponSetSelect(0xd);
-        }
         g_MpCanPickLength = 0;
         break;
     case SCENARIO_TLD:
@@ -4422,17 +4414,13 @@ void frontSetMpScenario(MPSCENARIOS scenarioid)
         {
             g_MpGameLength = 2;
         }
-        if (0xd < mpWeaponSetGetIndex())
-        {
-            mpWeaponSetSelect(0xd);
-        }
         break;
     case SCENARIO_MWTGG:
         if (6 < g_MpGameLength)
         {
             g_MpGameLength = 2;
         }
-        mpWeaponSetSelect(0xd);
+        mpWeaponSetSelect(MP_WEAPON_SET_GOLDEN_GUN);
         g_MpCanPickWeapons = 0;
         break;
     case SCENARIO_LTK:
@@ -4440,7 +4428,7 @@ void frontSetMpScenario(MPSCENARIOS scenarioid)
         {
             g_MpGameLength = 2;
         }
-        mpWeaponSetSelect(1);
+        mpWeaponSetSelect(MP_WEAPON_SET_PISTOLS);
         g_MpCanPickHandicap = 0;
     }
     return;
