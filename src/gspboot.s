@@ -18,6 +18,15 @@ glabel gsp3DTextStart
 .endif
 glabel gsp3DTextEnd
 .balign 16
+.ifdef UCODE_F3DEX3
+# The same with F3DEX3's profiling counters A and B, picked from the fps counter
+glabel gspF3dex3PaTextStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC_PA.code"
+.balign 16
+glabel gspF3dex3PbTextStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC_PB.code"
+.balign 16
+.endif
 
 .section .data
 glabel gsp3DDataStart
@@ -28,5 +37,13 @@ glabel gsp3DDataStart
 .endif
 glabel gsp3DDataEnd
 .balign 16
+.ifdef UCODE_F3DEX3
+glabel gspF3dex3PaDataStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC_PA.data"
+.balign 16
+glabel gspF3dex3PbDataStart
+.incbin "rsp/f3dex3/F3DEX3_BrZ_NOC_PB.data"
+.balign 16
+.endif
 .section .rodata
 .section .bss
