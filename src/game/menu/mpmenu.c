@@ -1097,7 +1097,9 @@ Gfx *mpMenuRender(Gfx *gdl)
     {
         gdl = textSetupDraw(gdl);
     
-        if (player_count == 2)
+        // The menu is laid out for a 160 wide view: centre it in a full
+        // width 2 player view, but not in a side by side one.
+        if ((player_count == 2) && !viewIsHalfWidth())
         {
             two_player_x_offset = 80;
         }
@@ -1572,7 +1574,7 @@ Gfx *mpMenuRender(Gfx *gdl)
         {
             fav_x_offset = two_player_x_offset;
 
-            if (player_count >= 3)
+            if (viewIsHalfWidth())
             {
                 if (curplayernum & 1)
                 {

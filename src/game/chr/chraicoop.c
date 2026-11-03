@@ -153,7 +153,28 @@ s32 counterOpTextBegin(void)
  */
 void coopAiActOnActivator(ChrRecord *chr)
 {
-    s32 player = g_CoopLastActivator;
+    coopAiActOnPlayer(chr, g_CoopLastActivator);
+}
+
+/**
+ * Co-op: a thrown item a level script checks has landed (e.g. Frigate's
+ * tracker bug on the helicopter). The rest of the script acts on the player
+ * who threw it, as for coopAiActOnActivator.
+ */
+void coopAiActOnThrower(ChrRecord *chr, const ObjectRecord *item)
+{
+    if (item != NULL)
+    {
+        coopAiActOnPlayer(chr, (s32)((item->runtime_bitflags & RUNTIMEBITFLAG_OWNER) >> RUNTIMEBITSHIFT_OWNER));
+    }
+}
+
+/**
+ * Co-op: the rest of the script acts on this player (messages, objectives,
+ * fades). Counter-op: only its messages go to them.
+ */
+void coopAiActOnPlayer(ChrRecord *chr, s32 player)
+{
 
     // Counter-op: the script stays about Bond, but its messages go to
     // whoever used the object.
