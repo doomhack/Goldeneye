@@ -15,6 +15,7 @@
 #include <bondtypes.h>
 #include <memp.h>
 #include "game/level/gamemode.h"
+#include "game/menu/mp_weapon.h"
 
 void invReset(void)
 {
@@ -451,6 +452,18 @@ int invAddProp(PropRecord *prop)
     return TRUE;
 }
 
+/**
+ * Whether picking up another copy of a weapon the current player already carries
+ * would give them the pair: the multiplayer Dual Wield option is on, the weapon can
+ * be dual wielded and they don't have the pair yet.
+ */
+bool invCanDualWieldPickup(ITEM_IDS weapon)
+{
+    return gameIsMulti() && mpDualWieldIsOn()
+        && weaponHasFlag(weapon, WEAPONSTATBITFLAG_CAN_DUAL_WIELD)
+        && invHasItem(weapon) && !invHasDualWeapon(weapon, weapon);
+}
+
 int invAddWeaponByProp(const PropRecord *prop)
 {
     int added;
@@ -466,6 +479,7 @@ int invAddWeaponByProp(const PropRecord *prop)
             const WeaponObjRecord *otherweapon;
 
             s8 weaponnum = weapon->weaponnum;
+            bool hadweapon = invHasItem(weaponnum);
             added = invAddItem(weaponnum);
 
             otherweapon = weapon->dualweapon;
@@ -496,6 +510,12 @@ int invAddWeaponByProp(const PropRecord *prop)
                         added = invAddDualItem(weaponnum, weapon->LinkedWeaponType);
                     }
                 }
+            }
+
+            // Multiplayer dual wield: a second copy of a weapon gives the pair
+            if (hadweapon && invCanDualWieldPickup(weaponnum))
+            {
+                added = invAddDualItem(weaponnum, weaponnum);
             }
         }
     }

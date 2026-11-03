@@ -432,3 +432,19 @@ void mpCustomWeaponSave(u8 *choices)
         choices[slot] = s_CustomChoices[slot];
     }
 }
+
+
+/**
+ * Multiplayer option: picking up a second copy of a weapon you carry gives you the pair.
+ */
+static bool s_MpDualWield = FALSE;
+
+bool mpDualWieldIsOn(void)
+{
+    return s_MpDualWield;
+}
+
+void mpDualWieldSet(bool on)
+{
+    s_MpDualWield = on;
+}
