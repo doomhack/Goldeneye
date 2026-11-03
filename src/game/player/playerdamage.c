@@ -60,6 +60,98 @@ static const struct HealthDisplayDuration g_HealthDisplayDurations[8] = {
 
 
 /**
+ * Gauges asked for with a double tap of Start (see playerProcessInput):
+ * ticks of game time each player's request still keeps them up.
+ */
+static s32 s_HealthRequestTicks[4];
+
+#if defined(VERSION_EU)
+#define HEALTH_REQUEST_TICKS 100 // 2 s at 50 Hz
+#else
+#define HEALTH_REQUEST_TICKS 120 // 2 s at 60 Hz
+#endif
+
+
+/**
+ * Shows the current player's health and armour gauges as when hurt, but
+ * without the red flash, for HEALTH_REQUEST_TICKS (longer while held).
+ */
+void playerRequestHealthDisplay(bool held)
+{
+    s32 n = playerGetCurrentNum();
+
+    if (g_CurrentPlayer->bonddead)
+    {
+        s_HealthRequestTicks[n] = 0;
+        return;
+    }
+
+    if (!held)
+    {
+        s_HealthRequestTicks[n] = HEALTH_REQUEST_TICKS;
+
+        if (g_CurrentPlayer->healthshowtime < 0)
+        {
+            // Not already showing a hit: start the display with no change
+            // to animate (old health is the current health).
+            g_CurrentPlayer->oldhealth = g_CurrentPlayer->bondhealth;
+            g_CurrentPlayer->oldarmour = g_CurrentPlayer->bondarmour;
+            g_CurrentPlayer->healthshowtime = 0;
+        }
+    }
+    else if (s_HealthRequestTicks[n] < 1)
+    {
+        s_HealthRequestTicks[n] = 1;
+    }
+}
+
+
+void playerCancelHealthDisplayRequest(s32 playernum)
+{
+    s_HealthRequestTicks[playernum] = 0;
+}
+
+
+/**
+ * Keeps requested gauges up: holds the hurt display at its first frame
+ * showing the real health until the request runs out.
+ */
+static void playerTickHealthRequest(void)
+{
+    s32 n = playerGetCurrentNum();
+    const struct HealthDisplayDuration *duration;
+
+    if (s_HealthRequestTicks[n] <= 0)
+    {
+        return;
+    }
+
+    if (g_CurrentPlayer->bonddead)
+    {
+        s_HealthRequestTicks[n] = 0;
+        return;
+    }
+
+    s_HealthRequestTicks[n] -= g_ClockTimer;
+
+    if (g_CurrentPlayer->healthshowtime < 0)
+    {
+        g_CurrentPlayer->oldhealth = g_CurrentPlayer->bondhealth;
+        g_CurrentPlayer->oldarmour = g_CurrentPlayer->bondarmour;
+        g_CurrentPlayer->healthshowtime = 0;
+        return;
+    }
+
+    duration = &g_HealthDisplayDurations[g_CurrentPlayer->healthdamagetype];
+
+    if (g_CurrentPlayer->healthshowtime > duration->updateToRealHealthFrame + 1)
+    {
+        g_CurrentPlayer->healthshowtime = duration->updateToRealHealthFrame + 1;
+    }
+}
+
+
+/**
  * Each frame: the red damage flash, which hides the ammo, sight and messages
  * while it shows, and the health and armour bars.
  */
@@ -228,6 +320,8 @@ void playerTickDamageAndHealth(void)
             g_CurrentPlayer->healthshowtime = -1;
         }
     }
+
+    playerTickHealthRequest();
 }
 
 /**

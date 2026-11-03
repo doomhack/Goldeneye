@@ -44,6 +44,7 @@
 #include "game/mission/objective.h"
 #include "os_extension.h"
 #include "game/player/player.h"
+#include "game/player/playerinput.h"
 #include "game/prop/propobj.h"
 #include "game/math/quaternion.h"
 #include "random.h"
@@ -235,6 +236,7 @@ void playerResetLife(void)
     g_CurrentPlayer->apparentarmour = 0.0f;
     g_CurrentPlayer->damageshowtime = -1;
     g_CurrentPlayer->healthshowtime = -1;
+    playerCancelStartTap(playerGetCurrentNum());
     g_CurrentPlayer->watch_pause_time = 0;
     g_CurrentPlayer->timer_1C4 = 0;
     g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0x0;

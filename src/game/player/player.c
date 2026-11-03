@@ -10,6 +10,7 @@
 #include <fr.h>
 #include <random.h>
 #include "game/player/player.h"
+#include "game/player/playerinput.h"
 #include "game/nav/stan.h"
 #include "game/world/water.h"
 #include "game/level/lv.h"
@@ -252,6 +253,7 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->apparentarmour = 0.0f;
     g_playerPointers[player_num]->damageshowtime = -1;
     g_playerPointers[player_num]->healthshowtime = -1;
+    playerCancelStartTap(player_num);
     g_playerPointers[player_num]->docentreupdown = FALSE;
     g_playerPointers[player_num]->prevupdown = 0;
     g_playerPointers[player_num]->movecentrerelease = FALSE;
