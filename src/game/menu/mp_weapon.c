@@ -186,6 +186,20 @@ struct s_mp_weapon_set mp_weapon_set_golden[] =
     INLINE_S_MP_WEAPON_SET(ITEM_GOLDENGUN, PROP_CHRGOLDEN, 1.5, AMMO_GGUN, 0xA, 1)
 };
 
+// ZMGs, proximity mines (ammo crates only, as in the Proximity Mines set), grenade
+// launchers and golden guns, two slots each.
+struct s_mp_weapon_set mp_weapon_set_fire_gold[] =
+{
+    INLINE_S_MP_WEAPON_SET(ITEM_UZI, PROP_CHRUZI, 1.5, AMMO_9MM, 0x64, 1),
+    INLINE_S_MP_WEAPON_SET(ITEM_UZI, PROP_CHRUZI, 1.5, AMMO_9MM, 0x64, 1),
+    INLINE_S_MP_WEAPON_SET(ITEM_PROXIMITYMINE, PROP_CHRPROXIMITYMINE, 1.5, AMMO_PROXMINE, 5, 0),
+    INLINE_S_MP_WEAPON_SET(ITEM_PROXIMITYMINE, PROP_CHRPROXIMITYMINE, 1.5, AMMO_PROXMINE, 5, 0),
+    INLINE_S_MP_WEAPON_SET(ITEM_GRENADELAUNCH, PROP_CHRGRENADELAUNCH, 1.0, AMMO_GRENADEROUND, 6, 1),
+    INLINE_S_MP_WEAPON_SET(ITEM_GRENADELAUNCH, PROP_CHRGRENADELAUNCH, 1.0, AMMO_GRENADEROUND, 6, 1),
+    INLINE_S_MP_WEAPON_SET(ITEM_GOLDENGUN, PROP_CHRGOLDEN, 1.5, AMMO_GGUN, 0xA, 1),
+    INLINE_S_MP_WEAPON_SET(ITEM_GOLDENGUN, PROP_CHRGOLDEN, 1.5, AMMO_GGUN, 0xA, 1)
+};
+
 struct s_mp_weapon_set_text g_MpWeaponSets[] = 
 {
     {getStringID(LMPWEAPONS, MPWEAPON_STR_00_SLAPPERSONLY), mp_weapon_set_slaps},
@@ -201,16 +215,19 @@ struct s_mp_weapon_set_text g_MpWeaponSets[] =
     {getStringID(LMPWEAPONS, MPWEAPON_STR_09_PROXIMITYMINES), mp_weapon_set_prox_m},
     {getStringID(LMPWEAPONS, MPWEAPON_STR_0A_ROCKETS), mp_weapon_set_rockets},
     {getStringID(LMPWEAPONS, MPWEAPON_STR_0B_LASERS), mp_weapon_set_lasers},
-    {getStringID(LMPWEAPONS, MPWEAPON_STR_0C_GOLDENGUN), mp_weapon_set_golden}
+    {getStringID(LMPWEAPONS, MPWEAPON_STR_0C_GOLDENGUN), mp_weapon_set_golden},
+    {getStringID(LMPWEAPONS, MPWEAPON_STR_0E_FIREANDGOLD), mp_weapon_set_fire_gold}
 };
+
+_Static_assert(ARRAYCOUNT(g_MpWeaponSets) == MP_WEAPON_SET_COUNT, "MP_WEAPON_SET_COUNT");
 
 s32 g_MpWeaponSet = 0xB;
 
 
-//increment g_MpWeaponSet by 1, capping at 0xE
+// steps to the next weapon set, wrapping round to the first
 void mpWeaponSetNext(void)
 {
-    g_MpWeaponSet = (g_MpWeaponSet + 1) % 0xe;
+    g_MpWeaponSet = (g_MpWeaponSet + 1) % MP_WEAPON_SET_COUNT;
 }
 
 //text ID of the selected g_MpWeaponSet
