@@ -53,8 +53,10 @@ For each player, the level loop calls `bgFindVisibleRooms`:
    screen box by `bgAddVisibleRoom` into `g_BgRoomsDrawn`.
 3. Cradle has no useful portals, so every room on screen is drawn there.
 
-Rooms not drawn for a few frames have their models freed (`bgRoomsTickUnload`). Loading
-is spread out: at most three room models load per frame in normal play
+Room models stay loaded once seen. Once a level has loaded, the room heap (mema) gets the
+stage memory the level didn't use, less 1 MB kept for loads during play (`bossGrowRoomHeap`).
+`bgRoomsTickUnload` only ages the rooms; when the heap is full, `bgEvictOldestRoom` frees
+the room drawn longest ago (not drawn for at least 3 frames). Loading is spread out: at most three room models load per frame in normal play
 (`g_RoomLoadBudget`), but any number during the intro and cutscenes.
 
 ### The visibility commands

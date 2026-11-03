@@ -5,10 +5,11 @@
 /**
  * mema: a small heap with real frees, used for room geometry.
  *
- * mema's heap is one allocation in memp's stage pool, so it starts empty each time a level
- * loads. Its size comes from the level's memory budget in boss.c (100 to 400 KB, doubled
- * in co-op). Only world/bg.c uses it: rooms are loaded into it as they come into view and
- * freed again when they go out of view.
+ * mema's heap lives in memp's stage pool, so it starts empty each time a level loads. It
+ * starts as the level's room budget from boss.c (100 to 400 KB, doubled in co-op); once the
+ * level has loaded, boss.c adds the stage memory the level didn't use (memaAddFree). Only
+ * world/bg.c uses it: rooms are loaded into it as they come into view and stay there until
+ * the space is needed for another room.
  *
  * mema keeps a list of the free ranges in the heap, sorted by address. Allocations
  * themselves aren't recorded anywhere, so memaFree needs the caller to pass the size. A
@@ -226,6 +227,20 @@ void memaFree(void *addr, u32 size)
         }
 
         memaInsertRange(next, start, size);
+    }
+}
+
+/**
+ * Adds the `size` bytes at `start` to the heap as free space. They needn't touch the
+ * existing heap.
+ */
+void memaAddFree(void *start, u32 size)
+{
+    u8 *aligned = (u8 *) MEMA_ALIGN((uintptr_t) start);
+
+    if (size > (u32) (aligned - (u8 *) start))
+    {
+        memaFree(aligned, (size - (aligned - (u8 *) start)) & ~15u);
     }
 }
 

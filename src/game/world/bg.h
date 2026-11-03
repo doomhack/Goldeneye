@@ -56,11 +56,11 @@ typedef struct RoomState {
     u8 room_rendered;
 
     /**
-     * Acts like a small room age counter.
+     * The room's age, counted in frames since it was last drawn.
      * 0 = unloaded
-     * 1 = loaded/used recently
-     * 2-3 = loaded but aging towards unload
-     * 4 = unload on tick
+     * 1 = loaded and drawn recently
+     * 2 and up = loaded, not drawn for a while (stops at 255); from 4 the room can be
+     * freed when the room heap needs space (bgEvictOldestRoom)
      */
     u8 model_bin_loaded;
 

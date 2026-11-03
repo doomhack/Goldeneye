@@ -6,8 +6,8 @@
  * runs the visibility commands (bgParseVisCommands) and walks out through the portals
  * (bgTraversePortal), adding each room it can see to g_BgRoomsDrawn with its box on
  * screen. bgLevelRender then draws those rooms and the props in them, room by room
- * (bgRenderVisibleRooms). Room models are loaded when first seen and freed when unseen
- * for a few frames (bgRoomsTickUnload).
+ * (bgRenderVisibleRooms). Room models are loaded when first seen and stay loaded until the
+ * room heap needs the space for another room (bgEvictOldestRoom).
  *
  * Also here: rays against room geometry (bgTestBulletHitBackground), the rooms a line
  * passes through (bgFindRoomsAlongSegment), and patching room display lists for fog
@@ -250,6 +250,7 @@ Gfx *bgScissorAndRenderRooms(Gfx *gdl);
 Gfx *bgRenderVisibleRooms(Gfx *gdl);
 s32 bgCheckIfRoomModelNeedsLoad(s32 roomID);
 void bgLoadRoomModelData(s32 room);
+static bool bgEvictOldestRoom(void);
 void bgBuildRoomVtxBounds(s32 roomID);
 Gfx *bgRenderRoomPrimary(Gfx *gdl, s32 room_index);
 Gfx *bgRenderRoomSecondary(Gfx *gdl, s32 room_index);
@@ -2124,6 +2125,19 @@ s32 bgLoadRoomSecondaryGdl(s32 roomnum, u8 *dst, s32 allocsize)
 }
 
 
+/** A loaded room's age (RoomState.model_bin_loaded) stops counting here. */
+#define ROOM_AGE_MAX 255
+
+/**
+ * A room this old (not drawn for 3 frames) is no longer in any display list the RDP may
+ * still be drawing, so it can be freed.
+ */
+#define ROOM_AGE_FREEABLE 4
+
+/** Room data unpacks to at most about this many times its compressed size, plus a bit. */
+#define ROOM_FIRST_LOAD_RATIO 8
+#define ROOM_FIRST_LOAD_EXTRA 0x10000
+
 s32 bgCheckIfRoomModelNeedsLoad(s32 roomID)
 {
     g_BgRoomState[roomID].requested = 1;
@@ -2163,11 +2177,24 @@ void bgLoadRoomModelData(s32 roomID)
     // Get the cached file size. Is zero when the size is not yet known.
     allocsize = g_BgRoomInfo[roomID].cur_room_totalsize;
 
-    if (allocsize > 0)
+    // Make room by freeing rooms that haven't been drawn for longest. The first time a
+    // room loads its size isn't known, so ask for well over what it unpacks to.
     {
-        // Unknown debug code
+        u32 needed = allocsize;
+
+        if (allocsize <= 0)
+        {
+            needed = ROOM_FIRST_LOAD_RATIO * (g_BgRoomInfo[roomID].csize_point_index_binary
+                + g_BgRoomInfo[roomID].csize_primary_DL_binary
+                + g_BgRoomInfo[roomID].csize_secondary_DL_binary) + ROOM_FIRST_LOAD_EXTRA;
+        }
+
+        while (memaGetLongestFree() < needed && bgEvictOldestRoom())
+        {
+        }
     }
-    else
+
+    if (allocsize <= 0)
     {
         // On a first allocation, we'll allocate the largest memory block available.
         allocsize = memaGetLongestFree();
@@ -2335,8 +2362,10 @@ void bgUnloadAllRooms(void)
 
 
 /**
- * Ages loaded rooms that are no longer marked active, then unloads them
- * once their unload delay expires.
+ * Ages the loaded rooms: drawing a room sets its age back to 1. Rooms stay loaded however
+ * old they get; bgEvictOldestRoom frees the oldest when the room heap is full. (The
+ * original game freed a room as soon as it reached ROOM_AGE_FREEABLE, and loaded it from
+ * ROM again the next time it came into view: 10 ms or more each time.)
  */
 void bgRoomsTickUnload(void)
 {
@@ -2346,16 +2375,41 @@ void bgRoomsTickUnload(void)
     {
         if (g_BgRoomState[i].requested == 0)
         {
-            if (g_BgRoomState[i].model_bin_loaded == 4)
-            {
-                bgUnloadRoom(i);
-            }
-            else if (g_BgRoomState[i].model_bin_loaded != 0)
+            if (g_BgRoomState[i].model_bin_loaded != 0 && g_BgRoomState[i].model_bin_loaded != ROOM_AGE_MAX)
             {
                 g_BgRoomState[i].model_bin_loaded = g_BgRoomState[i].model_bin_loaded + 1;
             }
         }
     }
+}
+
+
+/**
+ * Frees the loaded room that has gone longest without being drawn, if one is old enough
+ * that no display list still being drawn uses it. Returns whether it freed one.
+ */
+static bool bgEvictOldestRoom(void)
+{
+    s32 oldest = -1;
+    s32 i;
+
+    for (i = 1; i < g_MaxNumRooms; i++)
+    {
+        if (g_BgRoomState[i].requested == 0
+            && g_BgRoomState[i].model_bin_loaded >= ROOM_AGE_FREEABLE
+            && (oldest < 0 || g_BgRoomState[i].model_bin_loaded > g_BgRoomState[oldest].model_bin_loaded))
+        {
+            oldest = i;
+        }
+    }
+
+    if (oldest < 0)
+    {
+        return false;
+    }
+
+    bgUnloadRoom(oldest);
+    return true;
 }
 
 
@@ -2876,9 +2930,11 @@ bool bgTestBulletHitBackground(const coord3d *from, const coord3d *to, s32 roomn
     dir.y = toscaled.y - fromscaled.y;
     dir.z = toscaled.z - fromscaled.z;
     point = g_BgRoomInfo[roomnum].vtx_batch_bounds;
-    point = g_BgRoomInfo[roomnum].vtx_batch_bounds;
 
-    if (point == NULL)
+    // Only rooms drawn in the last few frames can be hit. That's all the original game had
+    // loaded, and keeping rooms loaded longer (bgRoomsTickUnload) mustn't change what shots
+    // and thrown things hit.
+    if (point == NULL || g_BgRoomState[roomnum].model_bin_loaded >= ROOM_AGE_FREEABLE)
     {
         return FALSE;
     }

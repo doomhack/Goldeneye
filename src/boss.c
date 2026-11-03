@@ -250,6 +250,30 @@ static void bossCheckExpansionPak(void)
     }
 }
 
+/**
+ * Stage memory kept free after a level has loaded, for what's loaded during play: models
+ * seen for the first time (guards, dropped guns) and the weapon model cache.
+ */
+#define BOSS_STAGE_RESERVE (1024 * 1024)
+
+/**
+ * Gives the room heap the stage memory the level didn't use, less BOSS_STAGE_RESERVE.
+ * Rooms then stay loaded once seen instead of being read from ROM and unpacked again each
+ * time they come back into view (see bgRoomsTickUnload).
+ */
+static void bossGrowRoomHeap(void)
+{
+    u32 spare = mempGetFreeBytes(MEMPOOL_STAGE);
+
+    if (g_StageNum == LEVELID_TITLE || spare <= BOSS_STAGE_RESERVE)
+    {
+        return;
+    }
+
+    spare -= BOSS_STAGE_RESERVE;
+    memaAddFree(mempAlloc(spare, MEMPOOL_STAGE), spare);
+}
+
 void bossInitMainthreadData(void)
 {
     OSMesg bossmsg;
@@ -410,6 +434,7 @@ void bossMainloop(void)
         dynInitMemory();
         joyCheckStatusThreadSafe();
         lvStageLoad(g_StageNum);
+        bossGrowRoomHeap();
         viInitBuffers();
         frameWaitForNext();
 
