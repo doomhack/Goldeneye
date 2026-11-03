@@ -23,6 +23,7 @@
 #include "game/player/player.h"
 #include "game/level/lv.h"
 #include "random.h"
+#include <memp.h>
 #include "game/math/trig.h"
 #include "game/prop/setup.h"
 #include "game/model/model.h"
@@ -105,7 +106,27 @@ Lights1 g_WeaponEnvmapLight = gdSPDefLights1(
 
 const u32 size_item_buffer[] = {0x14820 + HAND_MODEL_EXTRA, 0x14820 + HAND_MODEL_EXTRA};
 
-u32 g_GunModelBufferOffset[] = {HAND_MODEL_SIZE_GUN, HAND_MODEL_SIZE_GUN};
+
+/**
+ * Weapon models already loaded this level. Loading one into a hand's buffer means reading
+ * it from ROM, unpacking it and decoding its textures (100 ms or more), which the original
+ * game did on every weapon switch and pickup. Now each model is loaded once into its own
+ * stage pool memory and every hand of every player that holds it uses that copy: the
+ * file's data isn't changed once loaded, only each hand's Model instance is.
+ */
+#define GUN_MODEL_CACHE_MAX 32
+
+/** The stage memory kept free when deciding whether to add a model to the cache. */
+#define GUN_MODEL_CACHE_KEEP_FREE (256 * 1024)
+
+typedef struct GunModelCacheEntry
+{
+    const ModelFileHeader *source; /* the weapon's header in its item table */
+    ModelFileHeader header;        /* a copy of it, ready to use */
+} GunModelCacheEntry;
+
+static GunModelCacheEntry s_GunModelCache[GUN_MODEL_CACHE_MAX];
+static s32 s_GunModelCacheCount;
 
 
 const CartridgeModelFileRecord ejected_cartridge[] = {
@@ -595,6 +616,61 @@ int gunGetFistModelItem(void)
 }
 
 
+/** Forgets the cached weapon models, when the stage pool is emptied for a new level. */
+void gunResetModelCache(void)
+{
+    s_GunModelCacheCount = 0;
+}
+
+
+/** Returns the cached copy of weapon model `source`, or NULL. */
+static const ModelFileHeader *gunFindCachedModel(const ModelFileHeader *source)
+{
+    for (s32 i = 0; i < s_GunModelCacheCount; i++)
+    {
+        if (s_GunModelCache[i].source == source)
+        {
+            return &s_GunModelCache[i].header;
+        }
+    }
+
+    return NULL;
+}
+
+
+/**
+ * Loads weapon model `source` (file `filename`) into new stage memory and adds it to the
+ * cache. `modelSize` is the room the model gets before its textures, as in a hand buffer.
+ * Returns the cached copy, or NULL if the cache or the stage pool is full.
+ */
+static const ModelFileHeader *gunCacheModel(const ModelFileHeader *source, const char *filename, u32 modelSize)
+{
+    GunModelCacheEntry *entry;
+    struct texpool pool;
+    u32 size = size_item_buffer[GUNRIGHT];
+    u8 *buffer;
+
+    if (s_GunModelCacheCount == GUN_MODEL_CACHE_MAX || mempGetFreeBytes(MEMPOOL_STAGE) < size + GUN_MODEL_CACHE_KEEP_FREE)
+    {
+        return NULL;
+    }
+
+    entry = &s_GunModelCache[s_GunModelCacheCount++];
+    entry->source = source;
+    entry->header = *source;
+
+    buffer = mempAlloc(size, MEMPOOL_STAGE);
+    texInitPool(&pool, buffer + modelSize, size - modelSize);
+    modelFileLoad(&entry->header, filename, buffer, modelSize, &pool);
+
+    // Keep only up to the last texture: the texture records at the pool's far end are only
+    // used while the model's textures load
+    mempResizeLast(buffer, ((pool.leftpos - buffer) + 15) & ~15);
+
+    return &entry->header;
+}
+
+
 void gunLoadHandModel(GUNHAND hand)
 {
     u32              size_buffer_weapon;
@@ -613,25 +689,36 @@ void gunLoadHandModel(GUNHAND hand)
 
             if ((ptr_item_text != NULL) && (ptr_weapon_model != NULL))
             {
-                buffer_weapon      = gunGetHandModelBuffer(hand);
-                size_buffer_weapon = gunGetHandModelBufferSize(hand);
-
-                g_CurrentPlayer->handModelHeader[hand] = *ptr_weapon_model;
+                const ModelFileHeader *cached = gunFindCachedModel(ptr_weapon_model);
+                u32 modelSize = HAND_MODEL_SIZE_GUN;
 
                 if (item == ITEM_SUIT_LF_HAND)
                 {
-                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + HAND_MODEL_SIZE_SUIT_HAND, size_buffer_weapon - HAND_MODEL_SIZE_SUIT_HAND);
-                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, HAND_MODEL_SIZE_SUIT_HAND, &g_CurrentPlayer->handModelTexPool[hand]);
+                    modelSize = HAND_MODEL_SIZE_SUIT_HAND;
                 }
                 else if ((item == ITEM_TRIGGER) || (item == ITEM_WATCHLASER))
                 {
-                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + HAND_MODEL_SIZE_TRIGGER, size_buffer_weapon - HAND_MODEL_SIZE_TRIGGER);
-                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, HAND_MODEL_SIZE_TRIGGER, &g_CurrentPlayer->handModelTexPool[hand]);
+                    modelSize = HAND_MODEL_SIZE_TRIGGER;
+                }
+
+                if (cached == NULL)
+                {
+                    cached = gunCacheModel(ptr_weapon_model, ptr_item_text, modelSize);
+                }
+
+                buffer_weapon      = gunGetHandModelBuffer(hand);
+                size_buffer_weapon = gunGetHandModelBufferSize(hand);
+
+                if (cached != NULL)
+                {
+                    g_CurrentPlayer->handModelHeader[hand] = *cached;
                 }
                 else
                 {
-                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], &buffer_weapon[g_GunModelBufferOffset[hand]], size_buffer_weapon - g_GunModelBufferOffset[hand]);
-                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, g_GunModelBufferOffset[hand], &g_CurrentPlayer->handModelTexPool[hand]);
+                    // The stage pool is too full to cache it: load it into the hand's buffer
+                    g_CurrentPlayer->handModelHeader[hand] = *ptr_weapon_model;
+                    texInitPool(&g_CurrentPlayer->handModelTexPool[hand], buffer_weapon + modelSize, size_buffer_weapon - modelSize);
+                    modelFileLoad(&g_CurrentPlayer->handModelHeader[hand], ptr_item_text, buffer_weapon, modelSize, &g_CurrentPlayer->handModelTexPool[hand]);
                 }
             }
 

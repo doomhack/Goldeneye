@@ -378,6 +378,7 @@ void bossMainloop(void)
 
         mempResetPool(MEMPOOL_STAGE);
         assetForgetSizes();
+        gunResetModelCache();
 
         // Counter-op: when controller 2 plays Bond (player 1), the two
         // controllers swap places for the mission. Menus use them as wired.

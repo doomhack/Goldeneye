@@ -353,6 +353,7 @@ void gunEquipPreviousWeapons(void);
 int gunGetFistModelItem(void);
 s32 gunGetHandModelItem(GUNHAND hand);
 void gunLoadHandModel(GUNHAND hand);
+void gunResetModelCache(void);
 void gunSetFirstPersonPartsVisible(const Model* model, s32 val);
 void gunSpawnGLGrenade(s32 handnum);
 void gunThrowGrenade(s32 hand);
