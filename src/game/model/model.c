@@ -107,7 +107,6 @@ const Vtx g_ModelShadowVtxTemplate = {
         { 0xFF, 0xFF, 0xFF, 0x50 }
     }
 };
-struct bondstruct_unk_animation_related* g_AnimFrameBuffer =  0;
 
 
 #define MODEL_SPARE_SLOTS          30
@@ -2108,24 +2107,22 @@ void modelCalcMatrices(ModelRenderData *renderdata, struct Model *model)
     if (model->anim != NULL)
     {
 
-        model->frameaData = animLoadFrame(model->anim, model->framea);
+        model->frameaData = animGetFrame(model->anim, model->framea);
 
         if (model->frameFrac != 0.0f)
         {
-            model->framebData = animLoadFrame(model->anim, model->frameb);
+            model->framebData = animGetFrame(model->anim, model->frameb);
         }
 
         if (model->anim2 != NULL)
         {
-            model->frame2aData = animLoadFrame(model->anim2, model->frame2a);
+            model->frame2aData = animGetFrame(model->anim2, model->frame2a);
 
             if (model->frame2Frac != 0.0f)
             {
-                model->frame2bData = animLoadFrame(model->anim2, model->frame2b);
+                model->frame2bData = animGetFrame(model->anim2, model->frame2b);
             }
         }
-
-        animResetFrameBuffer();
     }
 
     modelCalcMatricesNoAnim(renderdata, model);
@@ -5185,55 +5182,12 @@ u32 modelFindRayHitNext(const Model *model, const coord3d *raypos, const coord3d
 
 
 /**
- * Copy animation from ROM to RAM
-*/
-u8 *animLoadFrame(const ModelAnimation *anim, s32 frame)
+ * Returns where frame `frame` of `anim` starts. All the frames are in RAM (animLoadTable),
+ * each anim->frameBits / 8 bytes long, starting at any byte.
+ */
+u8 *animGetFrame(const ModelAnimation *anim, s32 frame)
 {
-    u8 *ret = NULL;
-    s32 frameSize = anim->frameBits >> 3;
-
-    if (anim->address & 0x80000000) // The animation is already in RAM
-    {
-        ret = (u8 *)(anim->address + frame * frameSize);
-    }
-    else if (g_AnimFrameBuffer != NULL) // never NULL once animInitFrameBuffer has run
-    {
-        // Copy the frame from ROM to the next 16-byte aligned spot in the frame buffer.
-        u8 *dest = (u8 *)(((u32)g_AnimFrameBuffer->animBufferPtr2 + 15) & ~15);
-        u32 source = anim->address + frame * frameSize;
-        u32 size;
-
-        ret = dest;
-
-        // ROM DMAs must start on an even address
-        if (source & 1)
-        {
-            source--;
-            frameSize++;
-            ret++;
-        }
-
-        size = (frameSize + 15) & ~15;
-        romCopy(dest, (void *)source, size);
-
-        g_AnimFrameBuffer->uselessPointer++;
-
-        // The next frame goes after this one
-        g_AnimFrameBuffer->animBufferPtr2 = (char *)dest + size;
-    }
-
-    return ret;
-}
-
-
-void animResetFrameBuffer(void)
-{
-    if (g_AnimFrameBuffer != NULL) // should never be NULL after animInitFrameBuffer is called
-    {
-        // Reset the pointer to point to the start of the array
-        g_AnimFrameBuffer->animBufferPtr2 = g_AnimFrameBuffer->animBufferPtr1;
-        g_AnimFrameBuffer->uselessPointer = NULL;
-    }
+    return (u8 *) anim->address + frame * (anim->frameBits >> 3);
 }
 
 

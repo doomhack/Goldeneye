@@ -84,9 +84,9 @@ time (tubes, shadows, gunfire) get them.
 ## Animation
 
 Animations (`ModelAnimation`) are in one table, `g_AnimTable`. At boot `animLoadTable`
-copies the headers into the permanent pool and turns their offsets into pointers
-(`animResolveTable`). The frame data stays in ROM, and `animLoadFrame` copies each frame into
-`g_AnimFrameBuffer` as it is needed, a few at a time.
+copies the headers and all the frame data (1.4 MB) into the permanent pool and turns their
+offsets into pointers (`animResolveTable`); `animGetFrame` returns where a frame starts. (The
+original game left the frames in ROM and copied each one it drew by DMA.)
 
 A frame is a bit stream. Each joint's rotation is three angles of `angleBits` bits (a full
 turn is 0x10000), read by `animReadJointRotation`. The skeleton gives each joint an index

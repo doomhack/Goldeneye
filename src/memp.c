@@ -28,11 +28,11 @@ static MemoryPool m_mempPools[MEMPOOL_COUNT];
 
 /**
  * Splits the memory from `start` to `end` into the pools: the permanent pool gets the top
- * MEMP_PERMANENT_SIZE bytes and the stage pool the rest. Both start closed.
+ * `permanentSize` bytes and the stage pool the rest. Both start closed.
  */
-void mempInit(u8 *start, u8 *end)
+void mempInit(u8 *start, u8 *end, u32 permanentSize)
 {
-    u8 *split = end - MEMP_PERMANENT_SIZE;
+    u8 *split = end - permanentSize;
 
     m_mempPools[MEMPOOL_STAGE] = (MemoryPool) { .start = start, .end = split };
     m_mempPools[MEMPOOL_PERMANENT] = (MemoryPool) { .start = split, .end = end };

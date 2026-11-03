@@ -53,17 +53,8 @@ extern ModelAnimation *animation_table_ptrs1[];
 */
 extern ModelAnimation *animation_table_ptrs2[];
 
-/** Where animLoadFrame copies animation frames to. */
-struct bondstruct_unk_animation_related {
-    char* uselessPointer; // Is incremented like a count when an animation is copied from ROM to RAM but it's never read
-    char* animBufferPtr1; 
-    char* animBufferPtr2; 
-};
-
-extern struct bondstruct_unk_animation_related *g_AnimFrameBuffer;
-
-void animInitFrameBuffer(struct bondstruct_unk_animation_related *animBuffer);
 void animResolveTable(ModelAnimation **table);
+u32 animGetFramesSize(void);
 void animLoadTable(void);
 
 #endif

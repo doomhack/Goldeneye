@@ -306,7 +306,7 @@ void bossInitMainthreadData(void)
         }
     }
 
-    mempInit((u8 *) &_heapSegmentStart, (u8 *) PHYS_TO_K0(osMemSize));
+    mempInit((u8 *) &_heapSegmentStart, (u8 *) PHYS_TO_K0(osMemSize), MEMP_PERMANENT_SIZE + animGetFramesSize());
     mempResetPool(MEMPOOL_PERMANENT);
     langInit();
     lvInit();
