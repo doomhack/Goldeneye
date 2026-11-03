@@ -1,8 +1,7 @@
 /**
  * Bullet sparks: small camera-facing sprites where a bullet hits something. sparkCreate
- * adds one; lvTick ticks them (sparksTickAll) and lvRender draws them in each view
- * (sparksRenderAll). Moving sparks fly with gravity; PAL has none, so its *All functions
- * only handle the plain sparks.
+ * adds one; lvTick ticks them (sparksTick) and lvRender draws them in each view
+ * (sparksRender).
  */
 
 #include <ultra64.h>
@@ -22,7 +21,6 @@
 #include "game/gfx/texcmds.h"
 
 #define BULLET_SPARKS_MAX 20
-#define BULLET_MOVING_SPARKS_MAX 50
 
 rgba_u8 g_SparkColors[8] = {
     { {0xFF, 0xFF, 0xFF, 0xFF} },
@@ -41,18 +39,9 @@ Vtx g_SparkVtxTemplate = {};
 // size of each item is 0x2c (see sparkCreate)
 s_bullet_spark g_Sparks[BULLET_SPARKS_MAX];
 
-/* Live entries (lifetime > 0) in g_Sparks and g_MovingSparks, so the tick and render loops
-   can skip a pool with nothing in it instead of reading every entry */
+/* Live entries (lifetime > 0) in g_Sparks, so the tick and render loops can skip
+   the pool when nothing is in it instead of reading every entry */
 static s32 s_NumLiveSparks = 0;
-#ifndef VERSION_EU
-static s32 s_NumLiveMovingSparks = 0;
-#endif
-
-#ifndef VERSION_EU
-
-s_moving_bullet_spark g_MovingSparks[BULLET_MOVING_SPARKS_MAX];
-
-#endif
 
 
 void sparksReset(void)
@@ -73,7 +62,7 @@ void sparksReset(void)
 }
 
 
-void sparkInit(s_bullet_spark *spark, coord3d *pos, s32 type, f32 size, s16 room)
+static void sparkInit(s_bullet_spark *spark, coord3d *pos, s32 type, f32 size, s16 room)
 {
     f32 angle;
 
@@ -153,7 +142,7 @@ s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room)
 
 void sparksTick(void)
 {
-    s_bullet_spark *thing = &g_Sparks[0]; \
+    s_bullet_spark *thing = &g_Sparks[0];
     s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
 
     if (s_NumLiveSparks == 0)
@@ -279,7 +268,7 @@ void sparkRender(s_bullet_spark *thing, Gfx **gdlptr, s32 zbufferMode)
 void sparksRender(Gfx **gdlptr, s32 zbufferMode)
 {
 
-    s_bullet_spark *thing = &g_Sparks[0]; \
+    s_bullet_spark *thing = &g_Sparks[0];
     s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
 
     if (s_NumLiveSparks == 0)
@@ -292,148 +281,3 @@ void sparksRender(Gfx **gdlptr, s32 zbufferMode)
         sparkRender(thing, gdlptr, zbufferMode);
     }
 }
-
-
-#ifndef VERSION_EU
-void movingSparksReset(void)
-{
-    s_moving_bullet_spark *ptr;
-
-    ptr = g_MovingSparks;
-
-    for (ptr = &g_MovingSparks[0]; ptr < &g_MovingSparks[BULLET_MOVING_SPARKS_MAX]; ptr++)
-    {
-        ptr->spark.lifetime = 0;
-    }
-
-    s_NumLiveMovingSparks = 0;
-}
-#endif
-
-
-#ifndef VERSION_EU
-s_moving_bullet_spark *movingSparkCreate(coord3d *pos, coord3d *velocity, s32 type, f32 size, f32 minY, s16 room)
-{
-    s_moving_bullet_spark *ptr;
-
-    for (ptr = &g_MovingSparks[0]; ptr < &g_MovingSparks[BULLET_MOVING_SPARKS_MAX]; ptr++)
-    {
-        if (ptr->spark.lifetime == 0)
-        {
-            sparkInit(&ptr->spark, pos, type, size, room);
-
-            ptr->velocity.x = velocity->x;
-            ptr->velocity.y = velocity->y;
-            ptr->velocity.z = velocity->z;
-            ptr->minY = minY;
-            s_NumLiveMovingSparks++;
-
-            return ptr;
-        }
-    }
-
-    return NULL;
-}
-#endif
-
-
-#ifndef VERSION_EU
-void movingSparksTick(void)
-{
-    s_moving_bullet_spark *ptr;
-    s_moving_bullet_spark *end;
-
-    ptr = &g_MovingSparks[0]; end = &g_MovingSparks[BULLET_MOVING_SPARKS_MAX];
-
-    if (s_NumLiveMovingSparks == 0)
-    {
-        return;
-    }
-
-    while (ptr < end)
-    {
-        if (ptr->spark.lifetime > 0)
-        {
-            ptr->spark.age += g_ClockTimer;
-            if (ptr->spark.age >= 0)
-            {
-                if (ptr->spark.lifetime > ptr->spark.age)
-                {
-                    physMoveWithGravity(&ptr->spark.pos, &ptr->velocity, g_GlobalTimerDelta);
-                    if (ptr->spark.pos.y < ptr->minY)
-                    {
-                        ptr->spark.lifetime = 0;
-                        s_NumLiveMovingSparks--;
-                    }
-                }
-                else
-                {
-                    ptr->spark.lifetime = 0;
-                    s_NumLiveMovingSparks--;
-                }
-            }
-        }
-        ptr++;
-    }
-}
-#endif
-
-
-#ifndef VERSION_EU
-
-void movingSparksRender(Gfx **gdlptr, s32 zbufferMode)
-{
-    s32 max_index;
-    s_moving_bullet_spark *ptr;
-
-    max_index = s_NumLiveMovingSparks > 0 ? BULLET_MOVING_SPARKS_MAX : 0;
-
-    for (ptr = &g_MovingSparks[0]; ptr < (&g_MovingSparks[max_index]); ptr++)
-    {
-        sparkRender(&ptr->spark, gdlptr, zbufferMode);
-    }
-
-}
-
-
-void sparksResetAll(void)
-{
-    sparksReset();
-    movingSparksReset();
-}
-
-
-void sparksTickAll(void)
-{
-    sparksTick();
-
-    // responsible for updating bullet sparks and dust clouds that spawn when shooting at other players
-    // these are 2D and always facing the camera
-    movingSparksTick();
-}
-
-
-void sparksRenderAll(Gfx **gdlptr, s32 zbufferMode)
-{
-    sparksRender(gdlptr, zbufferMode);
-    movingSparksRender(gdlptr, zbufferMode);
-}
-#else
-// PAL has no moving sparks.
-void sparksResetAll(void)
-{
-    sparksReset();
-}
-
-
-void sparksTickAll(void)
-{
-    sparksTick();
-}
-
-
-void sparksRenderAll(Gfx **gdlptr, s32 zbufferMode)
-{
-    sparksRender(gdlptr, zbufferMode);
-}
-#endif
