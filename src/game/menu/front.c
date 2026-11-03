@@ -153,9 +153,9 @@ bool g_MpCharChosen[MAX_PLAYER_COUNT];
 
 s32 g_MpCharPortraitSize[MAX_PLAYER_COUNT];
 s32 g_MpStickHeld[MAX_PLAYER_COUNT];
-char* g_FrontTabStartText;
-char* g_FrontTabNextText;
-char* g_FrontTabPrevText;
+const char* g_FrontTabStartText;
+const char* g_FrontTabNextText;
+const char* g_FrontTabPrevText;
 s32 g_MpStageCursor;
 s32 g_MpScenarioCursor;
 s32 g_FrontDifficultyHighlight;
@@ -826,14 +826,14 @@ Gfx *frontCastRender(Gfx *DL);
 void frontHideAllSwitches(const Model *model);
 void frontSetSwitchVisible(const Model* objinstance, s32 item, s32 mode);
 void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level);
-Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, char *text, struct fontchar *fontChars, const struct font *font);
+Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, const char *text, struct fontchar *fontChars, const struct font *font);
 void frontSetModeCursor(int mode);
 void frontSetDifficultyCursor(int difficulty);
 
 // end forward declarations.
 
 
-Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, char *text, struct fontchar *fontChars, const struct font *font, s32 colour, s32 width, s32 height, s32 yOffset, s32 lineheight)
+Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, const char *text, struct fontchar *fontChars, const struct font *font, s32 colour, s32 width, s32 height, s32 yOffset, s32 lineheight)
 {
     gdl = textRender(
         gdl,
@@ -997,7 +997,7 @@ s32 frontIsCheatUnlocked(s32 cheat)
 }
 
 
-char *frontGetFavWeaponText(int player, int hand) {
+const char *frontGetFavWeaponText(int player, int hand) {
     return itemGetChoiceText(g_MpFavWeapon[player][hand]);
 }
 
@@ -1326,7 +1326,7 @@ void frontLegalTick(void)
 /**
  * Render a string of standard text on the legal screen e.g. "TWYCROSS BOARD OF GAME CLASSIFICATION"
  */
-Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, char *text, struct fontchar *fontChars, const struct font *font)
+Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, const char *text, struct fontchar *fontChars, const struct font *font)
 {
     s32 height;
     s32 width;
@@ -2172,9 +2172,9 @@ void frontFileSelectTick(void)
 }
 
 
-char* frontGetDifficultyName(s32 difficulty)
+const char* frontGetDifficultyName(s32 difficulty)
 {
-    char* text = NULL;
+    const char* text = NULL;
     switch (difficulty)
     {
     case 0:
@@ -2207,7 +2207,7 @@ Gfx *frontFileSelectRender(Gfx *DL)
     struct FolderSelectColour bottomcolour;
     s32 j;
     s32 i;
-    char *langp;
+    const char *langp;
     s32 chapterindex;                       // index of the chapter (MISSION_HEADER) row in g_FrontMissions
     ModelRenderData renderdata;
     s32 missionindex;                       // index of the mission (MISSION_PART) row in g_FrontMissions
@@ -2361,11 +2361,11 @@ Gfx *frontFileSelectRender(Gfx *DL)
 
                     if (chapterindex >= 0)
                     {
-                        strcat((char *)missiontext, (char *)g_FrontMissions[chapterindex].string_ptr);
+                        strcat((char *)missiontext, g_FrontMissions[chapterindex].string_ptr);
                         strcat((char *)missiontext, ".");
                     }
 
-                    strcat((char *)missiontext, (char *)g_FrontMissions[missionindex].string_ptr);
+                    strcat((char *)missiontext, g_FrontMissions[missionindex].string_ptr);
                     strcat((char *)missiontext, "\n");
                     textsize.p[0] = 0;
                     textsize.p[1] = 0;
@@ -2732,7 +2732,7 @@ void frontSetModeCursor(int mode)
 /**
  * Draws one numbered row of the mode select page.
  */
-static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, char *number, char *textstring, s32 text_color)
+static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, const char *number, const char *textstring, s32 text_color)
 {
     s32 x;
     s32 y;
@@ -2760,7 +2760,7 @@ static Gfx *frontDrawModeSelRow(Gfx *DL, s32 row, char *number, char *textstring
 
 Gfx* frontModeSelectRender(Gfx* DL)
 {
-    char *textstring;
+    const char *textstring;
     s32 text_color;
 
     DL = viSetFillColor(DL,0,0,0);
@@ -2816,7 +2816,7 @@ Gfx* frontModeSelectRender(Gfx* DL)
 #define COOP_SETUP_VALUE_X 0xC8
 #define COOP_SETUP_CURSOR_X 0x28
 
-static char *coop_setup_row_labels[COOP_SETUP_ROW_COUNT] = {
+static const char *coop_setup_row_labels[COOP_SETUP_ROW_COUNT] = {
     "Player 2:\n", // "Bond:" in counter-op
     "Player 2 Controls:\n",
     "Split Screen:\n",
@@ -2828,7 +2828,7 @@ static s32 coop_setup_highlighted_row = -1;
 
 static s32 frontCoopCharCount(void);
 static s32 frontCoopGetPartnerChar(void);
-static char *frontCoopGetPartnerCharName(void);
+static const char *frontCoopGetPartnerCharName(void);
 
 void frontCoopSetupEnter(void)
 {
@@ -3027,7 +3027,7 @@ void frontCoopSetupTick(void)
 
 Gfx *frontCoopSetupRender(Gfx *DL)
 {
-    char *text;
+    const char *text;
     s32 x;
     s32 y;
     s32 textwidth;
@@ -3625,14 +3625,14 @@ void frontSetDifficultyCursor(int difficulty)
 
 Gfx *frontDifficultyRender(Gfx *DL)
 {
-    char *text_sp3180;
+    const char *text_sp3180;
     s32 unlockedDifficulty;
     s32 x;
     s32 y;
 
     char stagename[3000]; /* frontDrawMissionTitle's line buffer */
 
-    char *text; // sp ??
+    const char *text; // sp ??
     s32 width;
     s32 height;
     f32 xypos[2];
@@ -3923,7 +3923,7 @@ void frontOptions007Tick(void)
  */
 Gfx *frontOptions007Render(Gfx *DL)
 {
-    char *labeltext;
+    const char *labeltext;
     s32 textx;
     s32 texty;
     char textbuffer[3000];
@@ -4215,7 +4215,7 @@ u16 frontGetMpCharBody(s32 player)
 #define COOP_BOND_OUTFIT_COUNT 5
 
 struct coop_bond_outfit {
-    char *name;
+    const char *name;
     s32 cuff;
 };
 
@@ -4277,7 +4277,7 @@ static s32 frontCoopGetPartnerChar(void)
 /**
  * The name shown on the co-op setup page.
  */
-static char *frontCoopGetPartnerCharName(void)
+static const char *frontCoopGetPartnerCharName(void)
 {
     s32 character = frontCoopGetPartnerChar();
 
@@ -4826,7 +4826,7 @@ void frontMpOptionsTick(void)
 
 Gfx * frontMpOptionsRender(Gfx *DL)
 {
-    char *text;
+    const char *text;
 
     char acStack12 [8];
 
@@ -5436,7 +5436,7 @@ Gfx *frontMpCharRender(Gfx *DL)
 {
     s32 numplayers;
     s32 playernum;
-    char *text;
+    const char *text;
     s32 panel_left;  // X position where the portraits completely fade out on the left.
     s32 panel_top;   
     s32 panel_width; // Width of the character portrait panel (1 panel per player)
@@ -5650,11 +5650,11 @@ Gfx * frontMpHandicapRender(Gfx *DL)
 {
     s32 numplayers;
     s32 i;
-    char *text;
+    const char *text;
     s32 panelX;
     s32 panelW;
     s32 offset;
-    char *text2;
+    const char *text2;
     s32 panelY;
     s32 height1;
     s32 width1;
@@ -5889,11 +5889,11 @@ Gfx * frontMpControlsRender(Gfx *DL)
 {
     s32 numplayers;
     s32 i;
-    char *text;
+    const char *text;
     s32 panelX;
     s32 panelW;
     s32 offset;
-    char *text2;
+    const char *text2;
     s32 panelY;
     s32 height1;
     s32 width1;
@@ -6364,7 +6364,7 @@ Gfx * frontMpScenarioRender(Gfx *DL)
     s32 height;
     s32 width;
 
-    char *text;
+    const char *text;
     s32 colour;
 
 
@@ -6587,7 +6587,7 @@ Gfx *frontMpTeamsRender(Gfx *DL)
     s32 useFirstTeam;
     s32 centerX;
     s32 rowTop;
-    char *text;
+    const char *text;
     s32 textColour;
     s32 titleHeight;
     s32 titleWidth;
@@ -6597,7 +6597,7 @@ Gfx *frontMpTeamsRender(Gfx *DL)
     s32 textWidth;
     s32 textX;
     s32 textY;
-    char *titleText;
+    const char *titleText;
 
     numPlayers = frontGetPlayerCount();
 
@@ -6821,7 +6821,7 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
     s32 lineY;
     s32 colour;
     s32 lines;
-    char* text;
+    const char* text;
     s32 v1;
 
     index = 0;
@@ -6897,7 +6897,7 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
 
 Gfx *frontBriefingRender(Gfx *DL)
 {
-    char *text = NULL;
+    const char *text = NULL;
     s32 x;
     s32 y;
     char buffer[3000];
@@ -7117,7 +7117,7 @@ Gfx * frontDebriefRender(Gfx *DL)
     s32 y;
 
     char stagename[0xbb8];
-    char *text;
+    const char *text;
     s32 colour;
 
     s32 y2;
@@ -7433,7 +7433,7 @@ Gfx *frontStatsRender(Gfx *DL)
     s32 x;
     s32 y;
     char stagename[3000];
-    char *text;
+    const char *text;
     s32 y2;
     s32 x2;
     s32 missiontimer;
@@ -7816,7 +7816,7 @@ Gfx * frontCheatRender(Gfx *DL)
     s32 y;
     s32 height;
     s32 width;
-    char *text;
+    const char *text;
 
     DL = viSetFillColor(DL,0,0,0);
     DL = viFillScreen(DL);
@@ -7912,7 +7912,7 @@ Gfx *frontNoControllerRender(Gfx *DL)
     s32 x2;
     s32 x;
     s32 y;
-    char *text;
+    const char *text;
     s32 conConnected = joyGetConnectedControllers();
     s32 numContCon = 0;
 
@@ -8286,7 +8286,7 @@ Gfx *frontCastRender(Gfx *DL)
     s32 i;
     f32 menufrac = (f32)g_FrontTimer / CAST_INTRO_LEN_F;
     f32 fade;
-    char *text;
+    const char *text;
     coord3d vec = cast_camera_offset;
     coord3d suboffset;
     Mtx lookatmtx;

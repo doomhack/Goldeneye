@@ -1755,9 +1755,9 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
 
     struct font *pFontFile;
     struct fontchar *pFontChars;
-    char *titleText;
-    char *confirmText;
-    char *cancelText;
+    const char *titleText;
+    const char *confirmText;
+    const char *cancelText;
 
     pFontFile = g_FontBankGothic;
     pFontChars = g_FontBankGothicChars;
@@ -1827,8 +1827,8 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
 
 Gfx *watchMenuRenderStatusTitle(Gfx *gdl)
 {
-    char *txtptr_1;
-    char *txtptr_2;
+    const char *txtptr_1;
+    const char *txtptr_2;
     s32 x;
     s32 y;
     s32 height;
@@ -1878,7 +1878,7 @@ Gfx *watchMenuRenderNothing(Gfx *gdl) {
 
 Gfx *watchMenuRenderVersion(Gfx *gdl)
 {
-    char *txtptr;
+    const char *txtptr;
     s32 x;
     s32 y;
     s32 height;
@@ -1937,8 +1937,8 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     f32 fov;
     f32 rotx;
     f32 roty;
-    char* text;
-    char* text2;
+    const char* text;
+    const char* text2;
 
     persp = dynAllocateMatrix();
     height = 0;
@@ -2453,7 +2453,7 @@ void optionsSetMusicVolume(u16 volume)
  * This draws the text for the toggle options (both option titles and values).
  * It also draws button names and the actions mapped to them on the controller screen.
  */
-Gfx *watchMenuRenderLabel(Gfx *gdl, s32 x, s32 y, char *text, u32 colour, s32 outlined, u32 outlinecolour, s32 centre, s32 drawbg, u32 bgcolour, s32 rightalign)
+Gfx *watchMenuRenderLabel(Gfx *gdl, s32 x, s32 y, const char *text, u32 colour, s32 outlined, u32 outlinecolour, s32 centre, s32 drawbg, u32 bgcolour, s32 rightalign)
 {
     s32 textx;
     s32 textright;
@@ -2583,7 +2583,7 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
     s32 textwidth;
     struct font *font;
     struct fontchar *chars;
-    char *selectedtext;
+    const char *selectedtext;
 
     font = g_FontBankGothic;
     chars = g_FontBankGothicChars;
@@ -2643,8 +2643,8 @@ Gfx *watchMenuRenderControlStyles(Gfx *gdl)
  
 Gfx *watchMenuRenderControlLabels(Gfx *gdl)
 {
-    char *dirtext1;
-    char *dirtext2;
+    const char *dirtext1;
+    const char *dirtext2;
  
     if (*optionValue(PLAYER_OPTION_LOOK) == 1)
     {
@@ -2658,8 +2658,8 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl)
     }
  
     {
-        char *ctext = NULL;
-        char *dpadtext = NULL;
+        const char *ctext = NULL;
+        const char *dpadtext = NULL;
         s32 buttons;
         s32 showmovesight;
         volatile unsigned int y;
@@ -2847,7 +2847,7 @@ Gfx *watchMenuRenderControlLabels(Gfx *gdl)
 
 Gfx *watchMenuRenderDualControlLabels(Gfx *gdl)
 {
-    char *textptr_aux;
+    const char *textptr_aux;
 
     gdl = textSetupDraw(gdl);
 
@@ -3113,7 +3113,7 @@ void watchMenuResetAbort(void) {
 
 Gfx *watchMenuRenderControl(Gfx *gdl, Mtx *mtx) {
     s32 colour;
-    char *textptr;
+    const char *textptr;
     s32 x;
     s32 y;
     s32 width;
@@ -3393,7 +3393,7 @@ Gfx *watchMenuRenderOptionRows(Gfx *gdl)
 
 Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *mtx) {
     s32 colour;
-    char *textptr;
+    const char *textptr;
     s32 x;
     s32 y;
     s32 width;
@@ -3548,10 +3548,10 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
 #endif
 
         char pageTitle[0x20];
-        char *completeText;
-        char *incompleteText;
-        char *failedText;
-        char *titleText;
+        const char *completeText;
+        const char *incompleteText;
+        const char *failedText;
+        const char *titleText;
 
         s32 lineCount;
         s32 objectiveRow;
@@ -3616,7 +3616,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
                 u32 colour = 0;
                 s32 i;
                 s32 j;
-                char *objectiveText;
+                const char *objectiveText;
                 s32 visibleObjectiveIndex;
                 char *objectiveLetterPtr;
 

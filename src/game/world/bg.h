@@ -8,8 +8,8 @@
 struct levelentry
 {
     s32 levelID;
-    void *bg_seg_filename;
-    void *bg_stan_filename;
+    const char *bg_seg_filename;
+    const char *bg_stan_filename;
     f32 levelscale;
     f32 visibility;
     f32 unknownfloat;

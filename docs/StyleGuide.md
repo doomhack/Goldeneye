@@ -200,14 +200,16 @@ with zeros. If data belongs together, make it one array or struct. `make SHUFFLE
 this (see docs/Testing.md).
 
 ## WARNINGS
-Game code (everything in `src/` except libultra) builds with `-Wall -Wextra -Werror`, so any warning
-stops the build. libultra and the generated asset data build with `-w`.
+Game code (everything in `src/` except libultra) builds with `-Wall -Wextra -Wwrite-strings -Werror`, so any
+warning stops the build. libultra and the generated asset data build with `-w`.
 - Brace every sub-struct and sub-array in an initialiser, or use designated initialisers
   (`{.flags = 3}`). Use `{}` for an all-zero value.
 - A parameter a function never reads is removed. When the signature is fixed by a function
   pointer type (thread entry points, callbacks), mark it `[[maybe_unused]]`.
 - A `case` that is meant to run on into the next one ends with `[[fallthrough]];`.
 - Initialise a local when some path can reach a use without setting it.
+- String literals are `const char` (`-Wwrite-strings`): text that is only read, including the
+  strings `langGet()` returns, is `const char *`. Copy into a `char` buffer to build a string.
 - `tools/compare/warncount.py` lists warnings by kind and file.
 
 ## CONSTANTS

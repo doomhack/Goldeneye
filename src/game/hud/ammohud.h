@@ -8,7 +8,7 @@
 void gunSetGunAmmoVisible(s32 reason, bool enable);
 Gfx *hudDrawImage(Gfx *gdl, struct sImageTableEntry *tconfig, f32 x, f32 y, f32 baseY, s32 flipX, f32 offsetY, s32 translucent, s32 red, s32 green, s32 blue, s32 alpha);
 Gfx *hudDrawImageDefault(Gfx *gdl, sImageTableEntry *tconfig, f32 x, f32 y, f32 baseY, s32 flipX, f32 offsetY, s32 translucent);
-Gfx *gunDrawHudString(Gfx *gdl, char *text, s32 x, s32 halign, s32 y, s32 valign, bool outline);
+Gfx *gunDrawHudString(Gfx *gdl, const char *text, s32 x, s32 halign, s32 y, s32 valign, bool outline);
 Gfx *gunDrawHudInteger(Gfx *gdl, s32 value, s32 x, s32 halign, s32 y, s32 valign, bool outline);
 Gfx *hudRenderAmmo(Gfx *gdl);
 Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl);

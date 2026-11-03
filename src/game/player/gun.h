@@ -217,7 +217,7 @@ typedef struct AmmoStats {
 typedef struct GunModelFileRecord
 {
   ModelFileHeader * item_header;
-  char * item_file_name;
+  const char *item_file_name;
   s32 has_no_model;
   WeaponStats * item_weapon_stats;
   u16 upper_watch_text;
@@ -253,7 +253,7 @@ typedef struct CasingRecord {
 
 typedef struct CartridgeModelFileRecord {
     ModelFileHeader* header;
-    char * text;
+    const char *text;
 } CartridgeModelFileRecord;
 
 extern CasingRecord g_Casings[20];
@@ -342,7 +342,7 @@ void gunRenderHands(Gfx **gdl);
 void gunsInitAnimGroups(void);
 void gunsStopSounds(void);
 
-char *itemGetChoiceText(ITEM_IDS item);
+const char *itemGetChoiceText(ITEM_IDS item);
 s32 playerHasCopiedGEKey(void);
 u8 * gunGetHandModelBuffer(GUNHAND hand);
 u32 gunGetHandModelBufferSize(s32 hand);

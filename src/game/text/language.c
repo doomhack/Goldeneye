@@ -15,7 +15,7 @@ u32 *g_LangBanks[45]; // each bank starts with a table of string offsets
 #if defined(VERSION_US)
 
 // The text bank file for each language bank id.
-char *g_LangFileNames[45] = {
+const char *g_LangFileNames[45] = {
     NULL,            /* Null (unused) */
     "LameE",         /* Library (multi) */
     "LarchE",        /* Archives */
@@ -67,7 +67,7 @@ char *g_LangFileNames[45] = {
 
 #if defined(VERSION_EU)
 // The text bank file for each language bank id.
-char *g_LangFileNames[45] = {
+const char *g_LangFileNames[45] = {
     NULL,            /* Null (unused) */
     "LameP",         /* Library (multi) */
     "LarchP",        /* Archives */
@@ -253,7 +253,7 @@ void langClearBank(s32 textBank) {
  * @param slotID: UniqueID of string (a combination of Bank ID and string index)
  * @return char* string.
  */
-char *langGet(s32 slotID)
+const char *langGet(s32 slotID)
 {
     u32 *textbank_ptr = g_LangBanks[slotID >> 10]; /* get the text file bank ID index the text ptr table */
     u32 textslot_offset = textbank_ptr[slotID & 0x03FF]; /* load the textbank ptr table then get the slot's offset */

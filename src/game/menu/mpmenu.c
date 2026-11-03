@@ -1062,7 +1062,7 @@ Gfx *mpMenuRender(Gfx *gdl)
     s32 h2;
     char rankbuffer[4];
     s32 two_player_x_offset;
-    char *text = NULL;
+    const char *text = NULL;
     s32 scores[4];
     s32 i;
     TEXTCOLORS current_colour;
@@ -1076,7 +1076,7 @@ Gfx *mpMenuRender(Gfx *gdl)
     s32 y3;
     s32 textwidth3;
     s32 textheight3;
-    char *text3;
+    const char *text3;
     s32 self_paused;
     s32 total_kills_against_current;
     s16 x2;
@@ -1114,27 +1114,27 @@ Gfx *mpMenuRender(Gfx *gdl)
             case MENU_SCORES:
                 if (!g_MpGameOver)
                 {
-                    text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_15_PLAY)); /* PLAY */
+                    text = langGet(getStringID(LMPMENU, MPMENU_STR_15_PLAY)); /* PLAY */
                 }
                 else
                 {
                     if (g_MpMenuAltGameOverMsg)
                     {
-                        text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_16_GAMEOVER)); /* GAME OVER */
+                        text = langGet(getStringID(LMPMENU, MPMENU_STR_16_GAMEOVER)); /* GAME OVER */
                     }
                     else
                     {
-                        text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_17_STARTTTOEXIT)); /* START TO EXIT */
+                        text = langGet(getStringID(LMPMENU, MPMENU_STR_17_STARTTTOEXIT)); /* START TO EXIT */
                     }
                 }
                 break;
             case MENU_FINISHED:
-                text = (char *) ascii_MP_watch_menu_BLANK;
+                text = ascii_MP_watch_menu_BLANK;
                 break;
             case MENU_PAUSE:
                 if (g_MpPaused)
                 {
-                    text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_18_PAUSED)); /* PAUSED */
+                    text = langGet(getStringID(LMPMENU, MPMENU_STR_18_PAUSED)); /* PAUSED */
                     if (playerGetCurrentNum() == g_MpPausedBy)
                     {
                         self_paused = 1;
@@ -1142,12 +1142,12 @@ Gfx *mpMenuRender(Gfx *gdl)
                 }
                 else
                 {
-                    text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_19_PAUSE)); /* PAUSE */
+                    text = langGet(getStringID(LMPMENU, MPMENU_STR_19_PAUSE)); /* PAUSE */
                 }
                 break;
             case MENU_EXIT:
             case MENU_EXIT_CONFIRM:
-                text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_1A_EXIT)); /* EXIT */
+                text = langGet(getStringID(LMPMENU, MPMENU_STR_1A_EXIT)); /* EXIT */
                 x = (viGetViewLeft() + two_player_x_offset) + 65;
                 break;
         }
@@ -1190,13 +1190,13 @@ Gfx *mpMenuRender(Gfx *gdl)
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, (char *) ascii_MP_watch_menu_left_chevron, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, ascii_MP_watch_menu_left_chevron, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
             else
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRenderOutlined(gdl, &x, &y, (char *) ascii_MP_watch_menu_left_chevron, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
+                gdl = textRenderOutlined(gdl, &x, &y, ascii_MP_watch_menu_left_chevron, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
             }
         }
  
@@ -1218,13 +1218,13 @@ Gfx *mpMenuRender(Gfx *gdl)
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRender(gdl, &x, &y, (char *) ascii_MP_watch_menu_right_chevron, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
+                gdl = textRender(gdl, &x, &y, ascii_MP_watch_menu_right_chevron, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
             else
             {
                 viewleft = viGetX(); 
                 h1 = viGetY();
-                gdl = textRenderOutlined(gdl, &x, &y, (char *) ascii_MP_watch_menu_right_chevron, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
+                gdl = textRenderOutlined(gdl, &x, &y, ascii_MP_watch_menu_right_chevron, g_FontBankGothicChars, g_FontBankGothic, 0xa0ffa0f0, 0x007000a0, viewleft, h1, 0, 0);
             }
         }
  
@@ -1271,7 +1271,7 @@ Gfx *mpMenuRender(Gfx *gdl)
             if (mpMenuShowScore())
             {
                 scenario = frontGetMpScenario();
-                text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_1B_SCORES)); /* SCORES */
+                text = langGet(getStringID(LMPMENU, MPMENU_STR_1B_SCORES)); /* SCORES */
                 textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
                 x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 80;
                 y = (viGetViewTop() - (textheight >> 1)) + (53 + MPMENU_YOFF);
@@ -1584,7 +1584,7 @@ Gfx *mpMenuRender(Gfx *gdl)
                 }
             }
  
-            text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_1F_WEAPONOFCHOICE)); /* Weapon of choice: */
+            text = langGet(getStringID(LMPMENU, MPMENU_STR_1F_WEAPONOFCHOICE)); /* Weapon of choice: */
             textMeasure(&fav_textheight, &fav_textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + fav_x_offset) - (fav_textwidth >> 1)) + 80;
             y = (viGetViewTop() - (fav_textheight >> 1)) + (37 + MPMENU_YOFF);
@@ -1628,7 +1628,7 @@ Gfx *mpMenuRender(Gfx *gdl)
 
         if (g_CurrentPlayer->mpmenumode == MENU_EXIT_CONFIRM)
         {
-            text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_20_CANCEL)); /* cancel */
+            text = langGet(getStringID(LMPMENU, MPMENU_STR_20_CANCEL)); /* cancel */
             textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 54;
             y = (viGetViewTop() - (textheight >> 1)) + (54 + MPMENU_YOFF);
@@ -1646,7 +1646,7 @@ Gfx *mpMenuRender(Gfx *gdl)
                 gdl = textRender(gdl, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, 0x00ff00b0, viewleft, h1, 0, 0);
             }
  
-            text = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_21_CONFIRM)); /* confirm */
+            text = langGet(getStringID(LMPMENU, MPMENU_STR_21_CONFIRM)); /* confirm */
             textMeasure(&textheight, &textwidth, text, g_FontBankGothicChars, g_FontBankGothic, 0);
             x = ((viGetViewLeft() + two_player_x_offset) - (textwidth >> 1)) + 104;
             y = (viGetViewTop() - (textheight >> 1)) + (54 + MPMENU_YOFF);
@@ -1690,7 +1690,7 @@ Gfx *mpMenuRender(Gfx *gdl)
                 gDPSetRenderMode(gdl++, G_RM_XLU_SURF, G_RM_XLU_SURF2);
             }
 
-            text3 = (char *) langGet(getStringID(LMPMENU, MPMENU_STR_22_PRESSSTART_LF)); /* press start */
+            text3 = langGet(getStringID(LMPMENU, MPMENU_STR_22_PRESSSTART_LF)); /* press start */
             textMeasure(&textheight3, &textwidth3, text3, g_FontBankGothicChars, g_FontBankGothic, 0);
             x2 = viGetViewLeft();
             x3 = (x2 + (viGetViewWidth() >> 1)) - (textwidth3 >> 1);

@@ -43,14 +43,14 @@ struct legal_screen_text {
 };
 
 struct mission_folder_setup {
-    void * string_ptr;
+    const char *string_ptr;
     u16 folder_text_preset;
     u16 icon_text_preset;
     s32 stage_id;
     s32 unknown; 
     s32 type;
     s32 mission_num;
-    void * briefing_name_ptr;
+    const char *briefing_name_ptr;
 };
 
 struct MP_game_length_settings {
@@ -167,9 +167,9 @@ extern s32 g_MpCharScroll[4];
 extern bool g_MpCharChosen[];
 extern s32 g_MpCharPortraitSize[];
 extern s32 g_MpHandicap[];
-extern char* g_FrontTabStartText;
-extern char* g_FrontTabNextText;
-extern char* g_FrontTabPrevText;
+extern const char* g_FrontTabStartText;
+extern const char* g_FrontTabNextText;
+extern const char* g_FrontTabPrevText;
 extern s32 g_MpStageCursor;
 extern s32 g_MpScenarioCursor;
 extern s32 g_FrontDifficultyHighlight;
@@ -296,7 +296,7 @@ s32 frontFindMissionEntry(s32 mission);
 
 void frontInit(void);
 
-char *frontGetFavWeaponText(int player, int hand);
+const char *frontGetFavWeaponText(int player, int hand);
 u32 frontGetMpControlStyle(s32 playernum);
 u16 frontGetMpCharBody(s32 player);
 u16 frontGetMpCharHead(s32 player);

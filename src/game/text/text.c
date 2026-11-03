@@ -279,7 +279,7 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, const s32 *y, struct fontchar *curchar, c
 /**
  * Render plain text with no outline e.g. briefings and watch menu text.
  */
-Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
+Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, const char *text,
                 struct fontchar *chars, const struct font *font, u32 colour,
                 s32 width, s32 height, u32 yOffset, s32 lineheight)
 {
@@ -469,7 +469,7 @@ Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, const struct fontchar *curchar, s
  * Used for ammo counter, bottom left HUD messages, countdown timers.
  */
 Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y, 
-                    char *text, struct fontchar *chars, const struct font *font, 
+                    const char *text, struct fontchar *chars, const struct font *font, 
                     u32 colour, u32 colour2, s32 width, s32 height, 
                     s32 yOffset, s32 lineheight)
 {

@@ -41,7 +41,7 @@ extern struct HatRecord                   g_HatSlots[];
 extern struct AmmoCrateRecord             g_AmmoCrates[];
 
 extern stagesetup                        *g_ptrStageSetupFile;
-extern char *setup_text_pointers[];
+extern const char *setup_text_pointers[];
 
 s32                aiCommandSize(AIRecord *list, s32 offset);
 AIRecord          *ailistFindById(s32 ID);

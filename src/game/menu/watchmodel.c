@@ -624,19 +624,19 @@ f32 itemGetWatchFov(void) {
 }
 
 
-char *itemGetWatchTitle1(ITEM_IDS item)
+const char *itemGetWatchTitle1(ITEM_IDS item)
 {
   return langGet(gitem_structs[item].upper_watch_text);
 }
 
 
-char *itemGetWatchTitle2(ITEM_IDS item)
+const char *itemGetWatchTitle2(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].lower_watch_text);
 }
 
 
-char *itemGetWatchText(ITEM_IDS item)
+const char *itemGetWatchText(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].watch_equipment_text);
 }
@@ -686,7 +686,7 @@ f32 invGetEquipPosZForIndex(s32 index)
     return itemGetEquipPosZ(invGetWeaponForIndex(index));
 }
 
-char *invGetWatchTitle1ForIndex(s32 index)
+const char *invGetWatchTitle1ForIndex(s32 index)
 {
     InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;
@@ -734,7 +734,7 @@ char *invGetWatchTitle1ForIndex(s32 index)
     return itemGetWatchTitle1(weaponnum);
 }
 
-char *invGetWatchTitle2ForIndex(s32 index)
+const char *invGetWatchTitle2ForIndex(s32 index)
 {
     InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;

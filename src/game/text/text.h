@@ -22,8 +22,8 @@ Gfx * textRenderRect(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry, u32 color);
 void textMeasure(s32 *textheight, s32 *textwidth, const char *text, const struct fontchar *font1, const struct font *font2, s32 lineheight);
 
 Gfx *textSetupDraw(Gfx *gdl);
-Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text, struct fontchar *chars, const struct font *font, u32 colour, s32 width, s32 height, u32 yOffset, s32 lineheight);
-Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y, char *text, struct fontchar *chars, const struct font *font, u32 colour, u32 colour2, s32 width, s32 height, s32 yOffset, s32 lineheight);
+Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, const char *text, struct fontchar *chars, const struct font *font, u32 colour, s32 width, s32 height, u32 yOffset, s32 lineheight);
+Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y, const char *text, struct fontchar *chars, const struct font *font, u32 colour, u32 colour2, s32 width, s32 height, s32 yOffset, s32 lineheight);
 
 Gfx *textEndDraw(Gfx *gdl);
 void textSetSpacing(s32 spacing);
