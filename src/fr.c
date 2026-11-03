@@ -253,7 +253,7 @@ void viUpdateMode(void)
     f32 calculatedYScale;
     s32 yScaleMax;
     f32 calculatedXScale;
-    VideoSettings *settings;
+    const VideoSettings *settings;
     s32 nextMode;
 
     if (g_ViFrontData->mode != g_ViBackData->mode)
@@ -440,7 +440,7 @@ void viUpdateMode(void)
     s32 registerValue;
     f32 calculatedYScale;
     f32 calculatedXScale;
-    VideoSettings *settings;
+    const VideoSettings *settings;
     s32 modeIndex;
     s32 upperAdjust;
 

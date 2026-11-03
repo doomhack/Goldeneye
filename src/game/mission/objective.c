@@ -172,7 +172,7 @@ TagObjectRecord *tagFind(s32 TagID)
  */
 ObjectRecord *objFindByTagId(s32 TagID) //#MATCH
 {
-    TagObjectRecord *tag = tagFind(TagID);
+    const TagObjectRecord *tag = tagFind(TagID);
     ObjectRecord *   obj = NULL;
 
     if (tag)
@@ -190,7 +190,7 @@ ObjectRecord *objFindByTagId(s32 TagID) //#MATCH
 
 const char *briefingGetText(WATCH_BRIEFING_PAGE page)
 {
-    struct watchMenuObjectiveText * curentry;
+    const struct watchMenuObjectiveText * curentry;
     const char * textptr;
 
     textptr = NULL;
@@ -246,7 +246,7 @@ const char *objectiveGetText(int objectiveIndex)
 
 s32 objectiveGetDifficulty(s32 objectiveIndex)
 {
-    struct objective_entry * entry;
+    const struct objective_entry * entry;
 
     if (objectiveIndex < OBJECTIVES_MAX)
     {
@@ -290,7 +290,7 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
                     {
                         case PROPDEF_OBJECTIVE_DESTROY_OBJECT:
                         {
-                            ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
+                            const ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
                             if (obj && obj->prop && objIsHealthy(obj))
                             {
                                 currentstatus = OBJECTIVESTATUS_INCOMPLETE;
@@ -315,7 +315,7 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
                         }
                         case PROPDEF_OBJECTIVE_COLLECT_OBJECT:
                         {
-                            ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
+                            const ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
                             if (!obj || !obj->prop || !objIsHealthy(obj))
                             {
                                 currentstatus = OBJECTIVESTATUS_FAILED;
@@ -328,7 +328,7 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
                         }
                         case PROPDEF_OBJECTIVE_DEPOSIT_OBJECT:
                         {
-                            ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
+                            const ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
                             if (obj && obj->prop && invAnyPlayerHasProp(obj->prop))
                             {
                                 currentstatus = OBJECTIVESTATUS_INCOMPLETE;
@@ -337,7 +337,7 @@ OBJECTIVESTATUS objectiveCheckStatus(s32 objectiveNum) //#MATCH
                         }
                         case PROPDEF_OBJECTIVE_PHOTOGRAPH:
                         {
-                            ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
+                            const ObjectRecord *obj = objFindByTagId(objective->ObjRefID);
                             if (!objective->TextID) //0x8
                             {
                                 if (!obj || !obj->prop || !objIsHealthy(obj))
@@ -509,7 +509,7 @@ void objectivesCheckRoomEntered(s32 roomid)
 {
     struct criteria_roomentered *criteria;
     struct PadRecord* setupPad;
-    struct StandTile *stan;
+    const struct StandTile *stan;
     
     criteria = g_RoomEnteredCriteria;
     while (criteria != NULL)
@@ -579,8 +579,8 @@ void objectivesCheckDeposit(s32 weaponnum, s32 roomid)
 */
 void objectivesCheckPicture(void)
 {
-    ObjectRecord *target_object;
-    PropRecord *target_prop;
+    const ObjectRecord *target_object;
+    const PropRecord *target_prop;
     coord3d viewPos;
     coord2d xExtent;
     coord2d yExtent;

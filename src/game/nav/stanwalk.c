@@ -93,7 +93,7 @@ static bool walkLine(StandTile **tilePtr, f32 x, f32 z, f32 destX, f32 destZ, Ro
 {
     StandTile *tile = *tilePtr;
     StandTile *prev = tile;
-    StandTile *prevPrev = tile;
+    const StandTile *prevPrev = tile;
     StandTile *next = NULL;
     s32 hitEdge = 0;
     s32 steps = 0;
@@ -281,7 +281,7 @@ bool stanTestLineUnobstructed(StandTile **tilePtr, f32 x, f32 z, f32 destX, f32 
 
     if (!clear)
     {
-        StandTile *hit = g_StanHit.tile;
+        const StandTile *hit = g_StanHit.tile;
         const StandTilePoint *a = &hit->points[g_StanHit.edge];
         const StandTilePoint *b = &hit->points[stanNextPoint(hit, g_StanHit.edge)];
 
@@ -298,7 +298,7 @@ bool stanTestLineUnobstructed(StandTile **tilePtr, f32 x, f32 z, f32 destX, f32 
 
     if (cdtypes != 0)
     {
-        s16 *propnum;
+        const s16 *propnum;
 
         rooms[numRooms] = -1;
         roomGetProps(rooms);
@@ -413,15 +413,15 @@ bool stanTestLineUnobstructed(StandTile **tilePtr, f32 x, f32 z, f32 destX, f32 
 }
 
 /** The nearest prop of the collision types on the line, or NULL. Walls don't stop it. */
-PropRecord *stanLineFindDoor(StandTile *tile, f32 x, f32 z, f32 destX, f32 destZ, s32 cdtypes)
+const PropRecord *stanLineFindDoor(StandTile *tile, f32 x, f32 z, f32 destX, f32 destZ, s32 cdtypes)
 {
     coord2d from = {.f = {x, z}};
     coord2d to = {.f = {destX, destZ}};
     s32 rooms[MAX_TEST_ROOMS + 1];
     s32 numRooms = 0;
-    PropRecord *best = NULL;
+    const PropRecord *best = NULL;
     f32 bestFrac = 1.0f;
-    s16 *propnum;
+    const s16 *propnum;
 
     lineRooms(&tile, x, z, destX, destZ, rooms, &numRooms, MAX_TEST_ROOMS);
 
@@ -435,7 +435,7 @@ PropRecord *stanLineFindDoor(StandTile *tile, f32 x, f32 z, f32 destX, f32 destZ
 
     for (propnum = g_RoomPropsFound; *propnum >= 0; propnum++)
     {
-        PropRecord *prop = &g_Props[*propnum];
+        const PropRecord *prop = &g_Props[*propnum];
         coord2d *polygon;
         s32 numEdges;
         s32 i;
@@ -633,7 +633,7 @@ StanCollisionResult stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s
     s32 numRooms = 0;
     bool checkHeight = bottom <= top;
     StanCollisionResult result;
-    s16 *propnum;
+    const s16 *propnum;
 
     result = stanCircleRooms(tile, x, z, radius, rooms, &numRooms, MAX_TEST_ROOMS);
 

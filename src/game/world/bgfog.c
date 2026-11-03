@@ -19,7 +19,7 @@
 
 s32 g_FogSkyIsEnabled;
 
-NearFogValues *g_NearFogValuesP;
+const NearFogValues *g_NearFogValuesP;
 
 /**
  * Address 0x800825C8. Private struct to this file only
@@ -38,11 +38,11 @@ f32 g_FarFogIntensity;
 
 f32 g_DifferenceFromFarFogIntensity;
 
-EnvironmentRecord *g_EnvironmentFoundp;
+const EnvironmentRecord *g_EnvironmentFoundp;
 
-EnvironmentRecord * g_EnvironmentMainp;
+const EnvironmentRecord * g_EnvironmentMainp;
 
-EnvironmentRecord * g_EnvironmentAltp;
+const EnvironmentRecord * g_EnvironmentAltp;
 
 #if defined(VERSION_EU)
 NearFogValues eu_loadCurrentNearFog;
@@ -78,7 +78,7 @@ CurrentEnvironmentRecord g_CurrentEnvironment = {
 };
 
 #if defined(VERSION_EU)
-EnvironmentRecord fog_tables[] = {
+const EnvironmentRecord fog_tables[] = {
      //stageID                              blendmultiplier    farfog    nearfog  mvisrng  mobfnrng  dif_ght  far_alight    red     green     blue    clouds   cloudrept  skymid, cloudred   green    blue   iswater  waterrepeat  waterid  water red,green,blue  waterconcavity
     {LEVELID_STATUE                             ,        {15,      3500,    {2000,     2500,    2000}},    {0x3E4,    0x3E8},       {0,       0,       8,        1,      5000,       0,      170,    100,     40,        0,       -1000,       0,       0,     0,    0,    30.0} },
     {LEVELID_CONTROL                            ,        {10,     10000,    {2500,     5000,     800}},    {0x3E4,    0x3E8},       {0,       0,       0,        0,         0,       0,        0,      0,      0,        0,           0,       0,       0,     0,    0,     0.0} },
@@ -130,7 +130,7 @@ EnvironmentRecord fog_tables[] = {
     {ENVIRONMENTDATA_END},
 };
 #else
-EnvironmentRecord fog_tables[] = {
+const EnvironmentRecord fog_tables[] = {
      //stageID                              blendmultiplier    farfog    nearfog  mvisrng  mobfnrng  mnvisrng   intensity  dif_ght  far_alight    red     green     blue    clouds   cloudrept skyimid reserved  cloudred   green    blue   iswater  padding[3]  waterrepeat  waterid reserved2   water red,green,blue  waterconcavity
     {LEVELID_STATUE                             ,        {15,      3500,    {2000,     2500,    2000},        0,      0x3E7},    {0x3E4,    0x3E8},       {0,       0,       8,        1,      5000,    0,        0,        170,    100,     40,        0,    {0,0,0},         -1000,       0,        0,        0,     0,    0,    30.0} },
     {LEVELID_CONTROL                            ,        {10,     10000,    {2500,     5000,     800},        0,      0x3E7},    {0x3E4,    0x3E8},       {0,       0,       0,        0,         0,    0,        0,          0,      0,      0,        0,    {0,0,0},             0,       0,        0,        0,     0,    0,     0.0} },
@@ -184,7 +184,7 @@ EnvironmentRecord fog_tables[] = {
 #endif
 
 
-EnvironmentFoglessRecord fog_tables2[] = {
+const EnvironmentFoglessRecord fog_tables2[] = {
     {LEVELID_NONE   ,    0,       0x10,    0x40,    0,        5000.0,        0,        0,        255.0,        255.0,        255.0,        0,        {0,        0,        0},           0.0,        0,        0,          0.0,          0.0,          0.0,        0.0},
     {LEVELID_FRIGATE,    0x10,    0x30,    0x60,    1,        3000.0,        0,        0,        230.0,        230.0,        230.0,        1,        {0,        0,        0},        -150.0,        2,        0,        255.0,        255.0,        150.0,        0.0},
     {LEVELID_CUBA   ,    0x30,    0x40,    0x10,    0,        5000.0,        0,        0,        255.0,        255.0,        255.0,        0,        {0,        0,        0},           0.0,        0,        0,          0.0,          0.0,          0.0,        0.0},
@@ -193,7 +193,7 @@ EnvironmentFoglessRecord fog_tables2[] = {
 
 // forward declarations
 
-void fogLoadCurrentEnvironment(EnvironmentRecord *env);
+void fogLoadCurrentEnvironment(const EnvironmentRecord *env);
 void fogLoadFoglessCurrentEnvironment(const EnvironmentFoglessRecord *env);
 
 // end forward declarations
@@ -224,7 +224,7 @@ f32 fogGetScaledFarFogIntensitySquared(void)
  */
 #define COOP_NEAR_DRAW_SCALE 0.5f
 
-static EnvironmentRecord *s_FogLastEnvironment;
+static const EnvironmentRecord *s_FogLastEnvironment;
 
 /**
  * Loads the last environment again, after the draw distance option changed.
@@ -237,7 +237,7 @@ void fogReloadCurrentEnvironment(void)
     }
 }
 
-void fogLoadCurrentEnvironment(EnvironmentRecord *env)
+void fogLoadCurrentEnvironment(const EnvironmentRecord *env)
 {
     f32 farfog;
     f32 zrange[2];
@@ -349,9 +349,9 @@ void fogLoadFoglessCurrentEnvironment(const EnvironmentFoglessRecord *env)
 
 void fogLoadLevelEnvironment(s32 level_id, s32 introCamera)
 {
-    EnvironmentRecord *env;
-    EnvironmentFoglessRecord *fogless;
-    EnvironmentFoglessRecord *found;
+    const EnvironmentRecord *env;
+    const EnvironmentFoglessRecord *fogless;
+    const EnvironmentFoglessRecord *found;
     s32 num_players;
 
     found = NULL;
@@ -534,8 +534,8 @@ s32 fogPositionIsVisibleThroughFog(const coord3d *pos, f32 range)
 {
     coord3d rel;
     f32 ff;
-    coord3d *player_pos;
-    Mtxf *player_mtx;
+    const coord3d *player_pos;
+    const Mtxf *player_mtx;
 
     if (g_FogSkyIsEnabled == 0)
     {
@@ -560,7 +560,7 @@ s32 fogPositionIsVisibleThroughFog(const coord3d *pos, f32 range)
 }
 
 
-NearFogValues *fogGetNearFogValuesP(void)
+const NearFogValues *fogGetNearFogValuesP(void)
 {
     return g_NearFogValuesP;
 }

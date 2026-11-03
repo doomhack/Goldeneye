@@ -26,7 +26,7 @@
 
 f32 watch_transition_time = 0.90909088;
 
-static coord3d ZeroCoordWatchPos = {0};
+static const coord3d ZeroCoordWatchPos = {0};
 
 
 void watchInitPauseTilt(void)
@@ -448,7 +448,7 @@ void playerSetOutsideWatchMenu(s32 outside) {
 
 void pauseStopSounds(void)
 {
-    struct hand *hand;
+    const struct hand *hand;
 	s32 i;
     ObjectRecord *obj;
     PropRecord *prop;

@@ -133,11 +133,11 @@ ChrRecord *chrFindById(const ChrRecord *self, s32 id)
  * gone), with ATTACKTYPE_PAD the pad, otherwise the current player. *stan is set to the
  * target's tile, except that for a chr it's self's tile, as in the original.
  */
-coord3d *chrGetChrOrPresetLocation(ChrRecord *self, s32 attacktype, s32 id, StandTile **stan)
+const coord3d *chrGetChrOrPresetLocation(ChrRecord *self, s32 attacktype, s32 id, StandTile **stan)
 {
     if (attacktype & ATTACKTYPE_CHR)
     {
-        ChrRecord *chr = chrFindById(self, id);
+        const ChrRecord *chr = chrFindById(self, id);
 
         if (chr == NULL || chr->prop == NULL)
         {
@@ -171,7 +171,7 @@ coord3d *chrGetChrOrPresetLocation(ChrRecord *self, s32 attacktype, s32 id, Stan
 f32 chrGetAngleToPos(const ChrRecord *self, const coord3d *pos)
 {
     f32 heading = modelGetRootRotY(self->model);
-    PropRecord *prop = self->prop;
+    const PropRecord *prop = self->prop;
     f32 angle = mathAtan2(pos->x - prop->pos.x, pos->z - prop->pos.z);
     f32 result = angle - heading;
 
@@ -194,8 +194,8 @@ f32 chrGetAngleToBond(const ChrRecord *self)
 f32 chrGetAngleFromBond(const ChrRecord *self)
 {
     f32 heading = bondviewGetPlayerYawRadians();
-    PropRecord *prop = self->prop;
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *prop = self->prop;
+    const PropRecord *playerprop = currentPlayerGetProp();
     f32 angle = mathAtan2(prop->pos.x - playerprop->pos.x, prop->pos.z - playerprop->pos.z);
     f32 result = angle - heading;
 
@@ -223,7 +223,7 @@ f32 chrGetDistanceToBond(const ChrRecord *self)
 
 f32 chrGetDistanceToPad(const ChrRecord *self, s32 padnum)
 {
-    PropRecord *prop = self->prop;
+    const PropRecord *prop = self->prop;
 
     return distance(&chrGetPad(self, padnum)->pos, &prop->pos);
 }
@@ -233,8 +233,8 @@ f32 chrGetDistanceToPad(const ChrRecord *self, s32 padnum)
  */
 f32 chrGetDistanceToChr(const ChrRecord *self, s32 chrnum)
 {
-    PropRecord *prop = self->prop;
-    ChrRecord *chr = chrFindById(self, chrnum);
+    const PropRecord *prop = self->prop;
+    const ChrRecord *chr = chrFindById(self, chrnum);
 
     if (chr && chr->model && chr->prop)
     {
@@ -246,7 +246,7 @@ f32 chrGetDistanceToChr(const ChrRecord *self, s32 chrnum)
 
 f32 chrGetDistanceFromBondToPad(const ChrRecord *self, s32 padnum)
 {
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *playerprop = currentPlayerGetProp();
 
     return distance(&chrGetPad(self, padnum)->pos, &playerprop->pos);
 }
@@ -265,7 +265,7 @@ bool chrIsTargetedByPlayer(const ChrRecord *self)
         return FALSE;
     }
 
-    Model *model = self->model;
+    const Model *model = self->model;
     f32 radius = modelGetRadius(model) * 0.8f;
 
     gunGetAimRay(&raystart, &raydir);
@@ -281,8 +281,8 @@ bool chrIsTargetedByPlayer(const ChrRecord *self)
  */
 bool chrIsTargetNearlyInSight(ChrRecord *self)
 {
-    PropRecord *playerprop = currentPlayerGetProp();
-    PropRecord *prop = self->prop;
+    const PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *prop = self->prop;
     StandTile *stan = prop->stan;
     coord3d edgestart;
     coord3d edgeend;
@@ -305,7 +305,7 @@ bool chrIsTargetNearlyInSight(ChrRecord *self)
  */
 bool chrPadRoomIsVisible(const ChrRecord *self, s32 padnum)
 {
-    StandTile *stan = chrGetPad(self, padnum)->stan;
+    const StandTile *stan = chrGetPad(self, padnum)->stan;
 
     if (stan)
     {
@@ -320,8 +320,8 @@ bool chrPadRoomIsVisible(const ChrRecord *self, s32 padnum)
  */
 bool chrIfInPadRoom(const ChrRecord *self, s32 chrnum, s32 padnum)
 {
-    ChrRecord *chr = chrFindById(self, chrnum);
-    PadRecord *pad = chrGetPad(self, padnum);
+    const ChrRecord *chr = chrFindById(self, chrnum);
+    const PadRecord *pad = chrGetPad(self, padnum);
 
     return pad->stan && chr && chr->prop && pad->stan->room == chr->prop->stan->room;
 }
@@ -331,8 +331,8 @@ bool chrIfInPadRoom(const ChrRecord *self, s32 chrnum, s32 padnum)
  */
 bool chrPlayerIsInPadRoom(const ChrRecord *self, s32 padnum)
 {
-    PropRecord *playerprop = currentPlayerGetProp();
-    PadRecord *pad = chrGetPad(self, padnum);
+    const PropRecord *playerprop = currentPlayerGetProp();
+    const PadRecord *pad = chrGetPad(self, padnum);
 
     return pad->stan && pad->stan->room == playerprop->stan->room;
 }
@@ -361,7 +361,7 @@ void chrUnsetFlags2ById(const ChrRecord *self, s32 chrnum, u8 flags)
 
 bool chrHasFlags2ById(const ChrRecord *self, s32 chrnum, u8 flags)
 {
-    ChrRecord *chr = chrFindById(self, chrnum);
+    const ChrRecord *chr = chrFindById(self, chrnum);
 
     if (chr != NULL)
     {
@@ -427,7 +427,7 @@ void chrSetChrPresetOf(const ChrRecord *self, s32 chrnum, s32 presetchrnum)
 bool chrSetChrPresetToNearbyChr(ChrRecord *self, f32 distance)
 {
     s32 numchrs = chrsGetNumSlots();
-    PropRecord *prop = self->prop;
+    const PropRecord *prop = self->prop;
     s32 room = prop->stan->room;
     coord3d min;
     coord3d max;
@@ -442,7 +442,7 @@ bool chrSetChrPresetToNearbyChr(ChrRecord *self, f32 distance)
 
     for (i = 0; i < numchrs; i++)
     {
-        ChrRecord *chr = &g_ChrSlots[i];
+        const ChrRecord *chr = &g_ChrSlots[i];
 
         // In co-op the players' bodies are chrs too: an ally like Natalya mustn't pick them
         if (chr == self || chr->model == NULL || chrIsDead(chr) || chr->prop == NULL || chr->prop->type == PROP_TYPE_VIEWER)
@@ -450,7 +450,7 @@ bool chrSetChrPresetToNearbyChr(ChrRecord *self, f32 distance)
             continue;
         }
 
-        coord3d *pos = &chr->prop->pos;
+        const coord3d *pos = &chr->prop->pos;
 
         if (pos->x >= min.x && pos->x <= max.x
             && pos->y >= min.y && pos->y <= max.y
@@ -487,7 +487,7 @@ void chrSetPadPresetByChrnum(const ChrRecord *self, s32 chrnum, s32 padnum)
 /* Whether a waypoint's pad is within 90 degrees either side of angle, seen from pos */
 static bool waypointIsWithin90DegreesOfPosAngle(const waypoint *wp, const coord3d *pos, f32 angle)
 {
-    PadRecord *pad = &g_CurrentSetup.pads[wp->padID];
+    const PadRecord *pad = &g_CurrentSetup.pads[wp->padID];
     f32 padangle = mathAtan2(pad->pos.x - pos->x, pad->pos.z - pos->z);
     f32 diff = angle - padangle;
 
@@ -506,7 +506,7 @@ static bool waypointIsWithin90DegreesOfPosAngle(const waypoint *wp, const coord3
  */
 static s32 waypointFindInQuadrant(const coord3d *pos, StandTile *stan, f32 angle, u8 quadrant)
 {
-    waypoint *wp = waypointFindNearPos(pos, stan);
+    const waypoint *wp = waypointFindNearPos(pos, stan);
     s32 i;
 
     if (wp == NULL)
@@ -541,7 +541,7 @@ static s32 waypointFindInQuadrant(const coord3d *pos, StandTile *stan, f32 angle
 
     for (i = 0; wp->neighbours[i] >= 0; i++)
     {
-        waypoint *neighbour = &g_CurrentSetup.pathwaypoints[wp->neighbours[i]];
+        const waypoint *neighbour = &g_CurrentSetup.pathwaypoints[wp->neighbours[i]];
 
         if (waypointIsWithin90DegreesOfPosAngle(neighbour, pos, angle))
         {
@@ -562,8 +562,8 @@ bool chrSetPadPresetToWaypointInTargetQuadrant(ChrRecord *self, u8 quadrant)
 {
     if (quadrant == QUADRANT_2NDWPTOTARGET || quadrant == QUADRANT_20)
     {
-        PropRecord *prop = self->prop;
-        PropRecord *playerprop = currentPlayerGetProp();
+        const PropRecord *prop = self->prop;
+        const PropRecord *playerprop = currentPlayerGetProp();
         waypoint *from = waypointFindNearPos(&prop->pos, prop->stan);
         waypoint *to = waypointFindNearPos(&playerprop->pos, playerprop->stan);
         waypoint *route[PATH_FINDING_WP_LIMIT];
@@ -585,7 +585,7 @@ bool chrSetPadPresetToWaypointInTargetQuadrant(ChrRecord *self, u8 quadrant)
             return FALSE;
         }
 
-        waypoint *next = waypointFindNextStepToward(from, to);
+        const waypoint *next = waypointFindNextStepToward(from, to);
 
         if (next != NULL)
         {
@@ -622,7 +622,7 @@ bool chrSetPadPresetToWaypointInQuadrant(ChrRecord *self, u8 quadrant)
     }
 
     f32 yaw = bondviewGetPlayerYawRadians();
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *playerprop = currentPlayerGetProp();
     s32 padnum = waypointFindInQuadrant(&playerprop->pos, playerprop->stan, yaw, quadrant);
 
     if (padnum >= 0)
@@ -705,7 +705,7 @@ bool chrAdjustPosForSpawn(coord3d *pos, StandTile **stan, f32 facing, bool allow
  * running ailist. Fails if fewer than 3 chr slots are free or there's no room.
  * SPAWN_IGNORE_PAD_SIGHT_CHECK lets it appear in view.
  */
-PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, const coord3d *pos, StandTile *stan, f32 angle, AIRecord *ailist, s32 spawnflags)
+const PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, const coord3d *pos, StandTile *stan, f32 angle, AIRecord *ailist, s32 spawnflags)
 {
     if (chrGetNumFree() < 3)
     {
@@ -750,9 +750,9 @@ PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, const coord3d *pos, StandT
 /**
  * Spawns a guard at a pad, facing the way the pad looks.
  */
-PropRecord *chrSpawnAtPad(const ChrRecord *self, s32 bodynum, s32 headnum, s32 padnum, AIRecord *ailist, s32 spawnflags)
+const PropRecord *chrSpawnAtPad(const ChrRecord *self, s32 bodynum, s32 headnum, s32 padnum, AIRecord *ailist, s32 spawnflags)
 {
-    PadRecord *pad = chrGetPad(self, padnum);
+    const PadRecord *pad = chrGetPad(self, padnum);
 
     return chrSpawnAtCoord(bodynum, headnum, &pad->pos, pad->stan, mathAtan2(pad->look.x, pad->look.z), ailist, spawnflags);
 }
@@ -761,9 +761,9 @@ PropRecord *chrSpawnAtPad(const ChrRecord *self, s32 bodynum, s32 headnum, s32 p
  * Spawns a guard where another chr is, facing the same way, as long as that chr has never
  * been on screen.
  */
-PropRecord *chrSpawnAtChr(const ChrRecord *self, s32 bodynum, s32 headnum, s32 chrnum, AIRecord *ailist, s32 spawnflags)
+const PropRecord *chrSpawnAtChr(const ChrRecord *self, s32 bodynum, s32 headnum, s32 chrnum, AIRecord *ailist, s32 spawnflags)
 {
-    ChrRecord *chr = chrFindById(self, chrnum);
+    const ChrRecord *chr = chrFindById(self, chrnum);
 
     if (chr->chrflags & CHRFLAG_HAS_BEEN_ON_SCREEN)
     {
@@ -771,7 +771,7 @@ PropRecord *chrSpawnAtChr(const ChrRecord *self, s32 bodynum, s32 headnum, s32 c
     }
 
     f32 angle = modelGetRootRotY(chr->model);
-    PropRecord *prop = chr->prop;
+    const PropRecord *prop = chr->prop;
 
     return chrSpawnAtCoord(bodynum, headnum, &prop->pos, prop->stan, angle, ailist, spawnflags);
 }
@@ -876,7 +876,7 @@ bool chrGoToBond(ChrRecord *self, SPEED speed)
         return FALSE;
     }
 
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *playerprop = currentPlayerGetProp();
 
     return chrGoToPos(self, &playerprop->pos, playerprop->stan, speed) != 0;
 }
@@ -891,7 +891,7 @@ bool chrGoToChr(ChrRecord *self, s32 chrnum, SPEED speed)
         return FALSE;
     }
 
-    ChrRecord *chr = chrFindById(self, chrnum);
+    const ChrRecord *chr = chrFindById(self, chrnum);
 
     if (chr == NULL || chr->model == NULL || chr->prop == NULL)
     {
@@ -913,7 +913,7 @@ bool chrTryStartAlarm(ChrRecord *self, s32 padnum)
         return FALSE;
     }
 
-    ObjectRecord *alarm = objFindAtPad(padnum);
+    const ObjectRecord *alarm = objFindAtPad(padnum);
 
     if (alarm == NULL || !objIsHealthy(alarm))
     {
@@ -946,7 +946,7 @@ bool chrTryThrowGrenade(ChrRecord *self)
         return FALSE;
     }
 
-    PropRecord *left = chrGetEquippedWeaponProp(self, GUNLEFT);
+    const PropRecord *left = chrGetEquippedWeaponProp(self, GUNLEFT);
     PropRecord *right = chrGetEquippedWeaponProp(self, GUNRIGHT);
 
     if (right && right->weapon->weaponnum == ITEM_GRENADE)

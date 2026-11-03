@@ -42,7 +42,7 @@ s32 g_bondviewBondDeathAnimationsCount = 0;
 
 static s32 g_PlayerTickCount = 0;
 
-struct firing_anim_struct firing_animation_groups[][6] = {
+const struct firing_anim_struct firing_animation_groups[][6] = {
     {{pistol_firing_animation_group1, 0, 0.1, 79.0, 87.0},
      {&g_ChrMoveFireAnims[2], 0, 0.5, 0.0, -1.0},
      {&g_ChrMoveFireAnims[3], 0, 0.5, 0.0, -1.0},
@@ -481,7 +481,7 @@ s32 playerTick(PropRecord *prop)
     s32 group;
     s32 ret;
     s32 sub;
-    PropRecord *leftprop;
+    const PropRecord *leftprop;
     f32 mtx[15];
     s32 tailret;
     s32 anim;
@@ -497,9 +497,9 @@ s32 playerTick(PropRecord *prop)
     s32 i;
     s32 found;
     s32 cur;
-    PropRecord *rightprop;
-    struct WeaponObjRecord *leftobj;
-    struct WeaponObjRecord *rightobj;
+    const PropRecord *rightprop;
+    const struct WeaponObjRecord *leftobj;
+    const struct WeaponObjRecord *rightobj;
     s32 setanim;
     struct player **ppointers;
  
@@ -804,7 +804,7 @@ lean_return_to_centre:
         }
  
         {
-            struct firing_anim_struct *fa = &firing_animation_groups[group][sub];
+            const struct firing_anim_struct *fa = &firing_animation_groups[group][sub];
  
             firingtable = fa->pointer;
  

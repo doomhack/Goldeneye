@@ -46,7 +46,7 @@ static s32 s_NextScorch = 0;
 static s32 s_NextImpact = 0;
 
 /* The impact types. Their images are g_ImagesImpact, in the same order. */
-static s_impacttype s_ImpactTypes[IMPACT_TYPE_COUNT] = {
+static const s_impacttype s_ImpactTypes[IMPACT_TYPE_COUNT] = {
     {10.0f, 10.0f, 1, 2, 8},
     { 6.0f,  6.0f, 1, 2, 8},
     { 8.0f,  8.0f, 0, 2, 8},
@@ -79,7 +79,7 @@ void scorchCreate(coord3d *pos, f32 size, s16 room)
 {
     f32 angle = RANDOMFRAC() * M_TAU_F;
     u8 alpha = 0xFF - (randomGetNext() % 80U);
-    coord3d *roompos = roomGetPos(room);
+    const coord3d *roompos = roomGetPos(room);
 
     if (gameIsMulti())
     {
@@ -259,7 +259,7 @@ static void impactsFadeOldest(s32 index)
  */
 void impactCreate(const coord3d *pos, const coord3d *normal, s16 type, s16 room, PropRecord *prop, s8 node, s8 onGlass)
 {
-    s_impacttype *impact;
+    const s_impacttype *impact;
     struct Impact *slot;
     coord3d centre;
     f32 halfw;
@@ -319,7 +319,7 @@ void impactCreate(const coord3d *pos, const coord3d *normal, s16 type, s16 room,
     {
         // On an object: sized to come out right once the node's matrix scales it
         ObjectRecord *obj = prop->obj;
-        RenderPosView *renderpos = &obj->model->render_pos[node];
+        const RenderPosView *renderpos = &obj->model->render_pos[node];
         coord3d right = {{ rightX, 0.0f, rightZ }};
         coord3d up = {{ upX, upY, upZ }};
 
@@ -343,7 +343,7 @@ void impactCreate(const coord3d *pos, const coord3d *normal, s16 type, s16 room,
     }
     else
     {
-        coord3d *roompos = roomGetPos(room);
+        const coord3d *roompos = roomGetPos(room);
 
         centre.f[0] = (centre.f[0] * bgGetLevelScale()) - roompos->f[0];
         centre.f[1] = (centre.f[1] * bgGetLevelScale()) - roompos->f[1];

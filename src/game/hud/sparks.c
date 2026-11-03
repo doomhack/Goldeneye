@@ -22,7 +22,7 @@
 
 #define BULLET_SPARKS_MAX 20
 
-rgba_u8 g_SparkColors[8] = {
+const rgba_u8 g_SparkColors[8] = {
     { {0xFF, 0xFF, 0xFF, 0xFF} },
     { {0xFF, 0xFF, 0xC8, 0xFF} },
     { {0xFF, 0x00, 0x00, 0xFF} },
@@ -32,7 +32,7 @@ rgba_u8 g_SparkColors[8] = {
     {},
     {}
 };
-Vtx g_SparkVtxTemplate = {};
+const Vtx g_SparkVtxTemplate = {};
 
 
 // something explosion related
@@ -122,7 +122,7 @@ static void sparkInit(s_bullet_spark *spark, coord3d *pos, s32 type, f32 size, s
 }
 
 
-s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room)
+const s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room)
 {
     s_bullet_spark *ptr;
 
@@ -143,7 +143,7 @@ s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room)
 void sparksTick(void)
 {
     s_bullet_spark *thing = &g_Sparks[0];
-    s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
+    const s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
 
     if (s_NumLiveSparks == 0)
     {
@@ -169,7 +169,7 @@ void sparksTick(void)
 void sparkRender(s_bullet_spark *thing, Gfx **gdlptr, s32 zbufferMode)
 {
     Vtx vtx;
-    Mtxf *mtx;
+    const Mtxf *mtx;
     Gfx *gdl;
     Vtx *vertices;
     f32 z;
@@ -181,7 +181,7 @@ void sparkRender(s_bullet_spark *thing, Gfx **gdlptr, s32 zbufferMode)
     f32 s3[3];
     s32 frame;
     s32 room;
-    coord3d *roompos;
+    const coord3d *roompos;
     
     if (thing->lifetime <= 0)
     {
@@ -269,7 +269,7 @@ void sparksRender(Gfx **gdlptr, s32 zbufferMode)
 {
 
     s_bullet_spark *thing = &g_Sparks[0];
-    s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
+    const s_bullet_spark *end = g_Sparks + BULLET_SPARKS_MAX;
 
     if (s_NumLiveSparks == 0)
     {

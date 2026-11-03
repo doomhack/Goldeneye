@@ -181,7 +181,7 @@ static void padGetRoomsEitherSide(const BoundPadRecord *pad, s32 *room1, s32 *ro
 void setupUpdateObjectRoomPosition(const ObjectRecord *obj)
 {
     PropRecord *prop = obj->prop;
-    ModelRoData_BoundingBoxRecord *bbox;
+    const ModelRoData_BoundingBoxRecord *bbox;
     coord3d min;
     coord3d max;
     f32 radius = 0.0f;
@@ -347,10 +347,10 @@ static void objFitToBoundPad(const ObjectRecord *obj, const BoundPadRecord *pad,
  */
 static void objPlaceFromSetup(ObjectRecord *obj, f32 extrascale)
 {
-    BoundPadRecord *boundpad = NULL;
-    ModelRoData_BoundingBoxRecord *bbox;
+    const BoundPadRecord *boundpad = NULL;
+    const ModelRoData_BoundingBoxRecord *bbox;
     PropRecord *prop;
-    PadRecord *pad;
+    const PadRecord *pad;
     StandTile *tile;
     StandTile *floortile;
     coord3d pos;
@@ -465,7 +465,7 @@ void setupObject(ObjectRecord *obj)
     s32 modelnum = obj->obj;
     ModelFileHeader *header = PitemZ_entries[modelnum].header;
     PropRecord *prop;
-    ChrRecord *chr;
+    const ChrRecord *chr;
     f32 extrascale;
 
     modelLoad(modelnum);
@@ -787,7 +787,7 @@ static bool weaponBecomesRockets(s32 weaponnum)
  */
 void setupWeapon(WeaponObjRecord *weapon)
 {
-    struct s_mp_weapon_set *weaponset;
+    const struct s_mp_weapon_set *weaponset;
     ChrRecord *chr;
     bool load = TRUE;
     s32 slot;
@@ -875,7 +875,7 @@ void setupHat(HatRecord *hat)
 void setupCctv(CCTVRecord *cctv)
 {
     coord3d *headoffset;
-    PadRecord *lookpad;
+    const PadRecord *lookpad;
     coord3d headpos;
 
     setupObject((ObjectRecord *)cctv);
@@ -921,8 +921,8 @@ void setupCctv(CCTVRecord *cctv)
 void setupAutogun(AutogunRecord *autogun)
 {
     BeamRecord *beam;
-    PadRecord *pad;
-    PropRecord *prop;
+    const PadRecord *pad;
+    const PropRecord *prop;
     f32 xdiff;
     f32 ydiff;
     f32 zdiff;
@@ -1064,7 +1064,7 @@ void setupArmour(BodyArmourRecord *armour)
  */
 void setupTintedGlass(TintedGlassRecord *glass)
 {
-    BoundPadRecord *pad;
+    const BoundPadRecord *pad;
     coord3d below;
     coord3d above;
     s32 i;
@@ -1133,7 +1133,7 @@ void setupAmmoCrate(MultiAmmoCrateRecord *crate, bool skipped)
 void setupTank(TankRecord *tank)
 {
     f32 floory = 0.0f;
-    PropRecord *prop;
+    const PropRecord *prop;
 
     weaponLoadProjectileModels(ITEM_TANKSHELLS);
     setupObject((ObjectRecord *)tank);

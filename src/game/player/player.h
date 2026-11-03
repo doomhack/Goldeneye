@@ -1027,13 +1027,13 @@ s32 playerPressedActivate(void);
 f32 playerGetEyeHeight(const struct player *player);
 f32 playerGetStanHeight(const struct player *player);
 u8 playerGetRoom(void);
-coord3d *playerGetPos(void);
+const coord3d *playerGetPos(void);
 s32 playerGetVisibleToGuards(void);
 void playerSetVisibleToGuards(s32 visible);
 f32 bondviewGetPlayerYawRadians(void);
 f32 playerGetBreathing(void);
-coord3d *playerGetPrevPos(void);
-coord3d * playerGetPos3(void);
+const coord3d *playerGetPrevPos(void);
+const coord3d * playerGetPos3(void);
 
 #include "game/hud/hudmsg.h"
 #include "game/player/watch.h"

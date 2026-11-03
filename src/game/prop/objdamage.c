@@ -156,7 +156,7 @@ s32 propExplode(PropRecord *prop, s32 explosionType)
 
     if (prop->flags & PROPFLAG_ONSCREEN)
     {
-        Mtxf *mtx = modelGetRootMtx(obj->model);
+        const Mtxf *mtx = modelGetRootMtx(obj->model);
 
         pos.x = mtx->m[3][0];
         pos.y = mtx->m[3][1];
@@ -326,7 +326,7 @@ void objDeform(ObjectRecord *obj, s32 stage)
         if (adjustHeight)
         {
             f32 modelscale = obj->model->scale;
-            ModelRoData_BoundingBoxRecord *bbox = modelFileFindBbox(obj->model->obj);
+            const ModelRoData_BoundingBoxRecord *bbox = modelFileFindBbox(obj->model->obj);
 
             obj->prop->pos.y += (modelscale * bboxGetYmin(bbox)) * 0.15000001f;
             obj->runtime_pos.y += (modelscale * bboxGetYmin(bbox)) * 0.15000001f;
@@ -336,7 +336,7 @@ void objDeform(ObjectRecord *obj, s32 stage)
     }
 
     // Copy the current vertices (already bent, or the model's own)
-    Vertex *from = *vtxslot;
+    const Vertex *from = *vtxslot;
 
     for (s32 i = 0; i < rodata->numVertices; i++)
     {
@@ -395,7 +395,7 @@ void objDeform(ObjectRecord *obj, s32 stage)
 
     for (s32 i = 0; i < rodata->numVertices; i++)
     {
-        Vertex *orig = &rodata->Vertices[i];
+        const Vertex *orig = &rodata->Vertices[i];
         Vertex *vtx = &newverts[i];
         s32 chance = 0;
 
@@ -497,7 +497,7 @@ static void objFall(ObjectRecord *obj, s32 playernum)
  */
 static void objDestroySupportedObjects(const PropRecord *tableprop, s32 playernum)
 {
-    ObjectRecord *tableobj = tableprop->obj;
+    const ObjectRecord *tableobj = tableprop->obj;
     u8 room = tableprop->stan->room;
     coord2d *polygon;
     s32 edges;
@@ -509,7 +509,7 @@ static void objDestroySupportedObjects(const PropRecord *tableprop, s32 playernu
         return;
     }
 
-    for (PropRecord *prop = propsGetActiveTail(); prop; prop = prop->prev)
+    for (const PropRecord *prop = propsGetActiveTail(); prop; prop = prop->prev)
     {
         if ((prop->type == PROP_TYPE_OBJ || prop->type == PROP_TYPE_WEAPON) && prop->stan->room == room)
         {
@@ -633,8 +633,8 @@ static void objExplode(ObjectRecord *obj, coord3d *targetPos, s32 playernum)
 /** Glass breaks into shards and is removed. */
 static void glassShatter(ObjectRecord *obj)
 {
-    PropRecord *prop = obj->prop;
-    ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
+    const PropRecord *prop = obj->prop;
+    const ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
 
     impactsRemoveFromProp(prop, FALSE);
     impactsRemoveFromProp(prop, TRUE);
@@ -665,11 +665,11 @@ void objDetonateRecursive(const PropRecord *prop, f32 damage, coord3d *pos, s32 
         return;
     }
 
-    PropRecord *child = propChild(prop);
+    const PropRecord *child = propChild(prop);
 
     while (child != NULL)
     {
-        PropRecord *next = child->prev;
+        const PropRecord *next = child->prev;
 
         objDetonateRecursive(child, damage, pos, weaponnum, owner);
         child = next;
@@ -937,11 +937,11 @@ void objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS itemnu
     // Destroyed: what is attached to it drops (the monitors on Bunker's holders, say)
     if (objGetDestroyedLevel(obj) == 1)
     {
-        PropRecord *child = propChild(obj->prop);
+        const PropRecord *child = propChild(obj->prop);
 
         while (child != NULL)
         {
-            PropRecord *next = child->prev;
+            const PropRecord *next = child->prev;
 
             objSetDropType(child, DROPTYPE_DEFAULT);
             child = next;

@@ -189,10 +189,10 @@ s32 invGetAllGunsFlag(void)
     return g_CurrentPlayer->equipallguns;
 }
 
-InvItem *invGetItem(ITEM_IDS weapon)
+const InvItem *invGetItem(ITEM_IDS weapon)
 {
-    InvItem *first = g_CurrentPlayer->ptr_inventory_first_in_cycle;
-    InvItem *item  = first;
+    const InvItem *first = g_CurrentPlayer->ptr_inventory_first_in_cycle;
+    const InvItem *item  = first;
 
     while (item)
     {
@@ -222,10 +222,10 @@ int invHasItem(ITEM_IDS item)
     return invGetItem(item) != NULL;
 }
 
-InvItem *invGetDualWeapon(ITEM_IDS right, ITEM_IDS left)
+const InvItem *invGetDualWeapon(ITEM_IDS right, ITEM_IDS left)
 {
-    InvItem *first = g_CurrentPlayer->ptr_inventory_first_in_cycle;
-    InvItem *item  = first;
+    const InvItem *first = g_CurrentPlayer->ptr_inventory_first_in_cycle;
+    const InvItem *item  = first;
 
     while (item)
     {
@@ -463,7 +463,7 @@ int invAddWeaponByProp(const PropRecord *prop)
         if (obj->type == PROPDEF_COLLECTABLE)
         {
             WeaponObjRecord *weapon = (WeaponObjRecord *)prop->obj;
-            WeaponObjRecord *otherweapon;
+            const WeaponObjRecord *otherweapon;
 
             s8 weaponnum = weapon->weaponnum;
             added = invAddItem(weaponnum);
@@ -506,7 +506,7 @@ void invCycleForward(s32 *nextright, s32 *nextleft, s32 requireammo)
 {
     s32      weapon1 = *nextright;
     s32      weapon2 = *nextleft;
-    InvItem *item    = g_CurrentPlayer->ptr_inventory_first_in_cycle;
+    const InvItem *item    = g_CurrentPlayer->ptr_inventory_first_in_cycle;
 
     while (item)
     {
@@ -594,7 +594,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
 
     if (g_CurrentPlayer->ptr_inventory_first_in_cycle != NULL)
     {
-        InvItem *item = g_CurrentPlayer->ptr_inventory_first_in_cycle->prev;
+        const InvItem *item = g_CurrentPlayer->ptr_inventory_first_in_cycle->prev;
 
         while (TRUE)
         {
@@ -700,7 +700,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
 static u32 invGetHeldKeyFlags(const struct player *player)
 {
     u32      heldkeyflags = 0;
-    InvItem *item         = player->ptr_inventory_first_in_cycle;
+    const InvItem *item         = player->ptr_inventory_first_in_cycle;
 
     while (item)
     {
@@ -752,9 +752,9 @@ bool invCheckHasKeyFlags(u32 wantkeyflags)
 
 bool invHasGEKey(void)
 {
-    InvItem      *item;
-    PropRecord   *prop;
-    ObjectRecord *obj;
+    const InvItem      *item;
+    const PropRecord   *prop;
+    const ObjectRecord *obj;
 
     item = g_CurrentPlayer->ptr_inventory_first_in_cycle;
 
@@ -811,7 +811,7 @@ bool invHasGoldenGun(void)
 
 static bool invPlayerHasProp(const struct player *player, const PropRecord *prop)
 {
-    InvItem *item = player->ptr_inventory_first_in_cycle;
+    const InvItem *item = player->ptr_inventory_first_in_cycle;
 
     while (item)
     {
@@ -861,7 +861,7 @@ bool invAnyPlayerHasProp(const PropRecord *prop)
 
 s32 invCountItems(void)
 {
-    InvItem *item;
+    const InvItem *item;
     s32      numitems = 0;
 
     if (g_CurrentPlayer->equipallguns)
@@ -875,11 +875,11 @@ s32 invCountItems(void)
     {
         if (item->type == INV_ITEM_PROP)
         {
-            PropRecord *prop = item->type_inv_item.type_prop.prop;
+            const PropRecord *prop = item->type_inv_item.type_prop.prop;
 
             if (prop->type == PROP_TYPE_WEAPON)
             {
-                ObjectRecord *obj = prop->obj;
+                const ObjectRecord *obj = prop->obj;
 
                 if (obj->runtime_bitflags & 0x400)
                 {
@@ -913,9 +913,9 @@ s32 invCountItems(void)
     return numitems;
 }
 
-InvItem *invGetItemByIndex(s32 index)
+const InvItem *invGetItemByIndex(s32 index)
 {
-    InvItem *item;
+    const InvItem *item;
 
     if (g_CurrentPlayer->equipallguns)
     {
@@ -933,11 +933,11 @@ InvItem *invGetItemByIndex(s32 index)
     {
         if (item->type == INV_ITEM_PROP)
         {
-            PropRecord *prop = item->type_inv_item.type_prop.prop;
+            const PropRecord *prop = item->type_inv_item.type_prop.prop;
 
             if (prop->type == PROP_TYPE_WEAPON)
             {
-                ObjectRecord *obj = prop->obj;
+                const ObjectRecord *obj = prop->obj;
 
                 if (obj->runtime_bitflags & 0x400)
                 {
@@ -1000,9 +1000,9 @@ textoverride *invGetOverrideForObj(const ObjectRecord *obj)
     return NULL;
 }
 
-textoverride *invGetOverrideForWeapon(ITEM_IDS weaponnum)
+const textoverride *invGetOverrideForWeapon(ITEM_IDS weaponnum)
 {
-    textoverride *override = g_CurrentPlayer->textoverrides;
+    const textoverride *override = g_CurrentPlayer->textoverrides;
 
     while (override)
     {
@@ -1019,8 +1019,8 @@ textoverride *invGetOverrideForWeapon(ITEM_IDS weaponnum)
 
 s32 invGetWeaponForIndex(s32 index)
 {
-    textoverride *override;
-    InvItem *     inv_item;
+    const textoverride *override;
+    const InvItem *     inv_item;
 
     inv_item = invGetItemByIndex(index);
 
@@ -1028,7 +1028,7 @@ s32 invGetWeaponForIndex(s32 index)
     {
         if (inv_item->type == INV_ITEM_PROP)
         {
-            PropRecord *prop = inv_item->type_inv_item.type_prop.prop;
+            const PropRecord *prop = inv_item->type_inv_item.type_prop.prop;
 
             override = invGetOverrideForObj(prop->obj);
 
@@ -1072,15 +1072,15 @@ static const char *invCounterOpPillName(ITEM_IDS weaponnum)
 
 const char *invGetNameByIndex(s32 index)
 {
-    InvItem      *item      = invGetItemByIndex(index);
+    const InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;
-    textoverride *override;
+    const textoverride *override;
 
     if (item)
     {
         if (item->type == INV_ITEM_PROP)
         {
-            PropRecord *prop = item->type_inv_item.type_prop.prop;
+            const PropRecord *prop = item->type_inv_item.type_prop.prop;
             override         = invGetOverrideForObj(prop->obj);
 
             if (override)
@@ -1210,7 +1210,7 @@ void invDetermineEquippedItem(void)
 
 const char *invGetActivatedTextObject(const ObjectRecord *obj)
 {
-    textoverride *override = invGetOverrideForObj(obj);
+    const textoverride *override = invGetOverrideForObj(obj);
 
     if (override && override->pickuptext)
     {
@@ -1222,7 +1222,7 @@ const char *invGetActivatedTextObject(const ObjectRecord *obj)
 
 const char *invGetActivatedTextWeapon(ITEM_IDS weaponnum)
 {
-    textoverride *override = invGetOverrideForWeapon(weaponnum);
+    const textoverride *override = invGetOverrideForWeapon(weaponnum);
 
     if (override && override->pickuptext)
     {

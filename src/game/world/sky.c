@@ -33,7 +33,7 @@ Mtxf g_SkyInvScaleMtx;
  * edges in the wrong place in every split-screen view but the top-left one.)
  */
 void skyGetWorldPosFromScreenPos(f32 offset_x, f32 offset_y, coord3d* out) {
-    Mtxf* player_mtxf;
+    const Mtxf* player_mtxf;
     coord2d coords;
     f32 screen_top;
 
@@ -47,7 +47,7 @@ void skyGetWorldPosFromScreenPos(f32 offset_x, f32 offset_y, coord3d* out) {
 
 bool skyIsScreenCornerInSky(const coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 {
-    coord3d *eye = playerGetPos();
+    const coord3d *eye = playerGetPos();
     f32 elevation = 2.0f * corner3dpos->y / sqrtf(corner3dpos->f[0] * corner3dpos->f[0] + corner3dpos->f[2] * corner3dpos->f[2] + 0.0001f);
     f32 dist;
     f32 horizDist;
@@ -92,7 +92,7 @@ bool skyIsScreenCornerInSky(const coord3d *corner3dpos, coord3d *dstpos, f32 *ds
 
 bool skyIsCornerInWater(const coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 {
-    coord3d *eye = playerGetPos();
+    const coord3d *eye = playerGetPos();
     f32 elevation = -2.0f * corner3dpos->y / sqrtf(corner3dpos->f[0] * corner3dpos->f[0] + corner3dpos->f[2] * corner3dpos->f[2] + 0.0001f);
     f32 dist;
     f32 horizDist;
@@ -484,7 +484,7 @@ static Gfx *skyDrawPlane(Gfx *gdl, const SkyVtx *verts, s32 numverts, const Mtxf
     SkyPolyVtx pieces[5][SKY_POLY_MAX];
     s32 counts[5];
     SkyPolyVtx tmp[SKY_POLY_MAX];
-    coord3d *eye = playerGetPos();
+    const coord3d *eye = playerGetPos();
     f32 eyeSt[2];
     f32 originSt[2];
     f32 originPos[3];

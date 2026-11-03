@@ -136,8 +136,8 @@ s32 g_LvDrawWorld = 1;
 
 
 
-extern u8* _fontdlSegmentRomStart NO_SDATA;
-extern u8* _fontdlSegmentRomEnd NO_SDATA;
+extern const u8* _fontdlSegmentRomStart NO_SDATA;
+extern const u8* _fontdlSegmentRomEnd NO_SDATA;
 
 
 // forward declarations

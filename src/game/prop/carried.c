@@ -79,7 +79,7 @@ static void modelApplyExtraScale(Model *model, s32 extrascale)
 }
 
 
-static PropRecord *hatApplyToChr(HatRecord *hat, ChrRecord *chr, ModelFileHeader *modeldef, PropRecord *prop, Model *model)
+static const PropRecord *hatApplyToChr(HatRecord *hat, ChrRecord *chr, ModelFileHeader *modeldef, PropRecord *prop, Model *model)
 {
     prop = objInit((ObjectRecord *)hat, modeldef, prop, model);
 
@@ -112,7 +112,7 @@ void hatAssignToChr(HatRecord *hat, ChrRecord *chr)
  * Give a guard a new hat during play, from the hat slots. Returns its prop, or NULL if
  * no prop, model or slot could be found.
  */
-PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags)
+const PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags)
 {
     ModelFileHeader *modeldef = PitemZ_entries[modelnum].header;
     PropRecord *prop;
@@ -278,7 +278,7 @@ bool chrEquipWeapon(WeaponObjRecord *weapon, ChrRecord *chr)
 
     if (!(weapon->flags & PROPFLAG_CONCEAL_GUN))
     {
-        PropRecord *otherhand = chr->weapons_held[1 - hand];
+        const PropRecord *otherhand = chr->weapons_held[1 - hand];
 
         if (chr->weapons_held[hand])
         {
@@ -486,7 +486,7 @@ void chrRenderHeldWeapon(const PropRecord *chrprop, GUNHAND hand, JointListEntry
 {
     ChrRecord *chr = chrprop->chr;
     PropRecord *prop = chrGetEquippedWeaponProp(chr, hand);
-    ObjectRecord *obj;
+    const ObjectRecord *obj;
     Model *model;
     ModelRenderData renderdata;
     Mtxf lefthandmtx;
@@ -529,16 +529,16 @@ void chrRenderHeldWeapon(const PropRecord *chrprop, GUNHAND hand, JointListEntry
 
 
 /* Find a weapon of the given weapon number: the prop itself or any of its children */
-static WeaponObjRecord *weaponFindInProp(s32 weaponnum, const PropRecord *prop)
+static const WeaponObjRecord *weaponFindInProp(s32 weaponnum, const PropRecord *prop)
 {
     if (prop->type == PROP_TYPE_WEAPON && prop->weapon->weaponnum == weaponnum)
     {
         return prop->weapon;
     }
 
-    for (PropRecord *child = propChild(prop); child; child = child->prev)
+    for (const PropRecord *child = propChild(prop); child; child = child->prev)
     {
-        WeaponObjRecord *weapon = weaponFindInProp(weaponnum, child);
+        const WeaponObjRecord *weapon = weaponFindInProp(weaponnum, child);
 
         if (weapon)
         {
@@ -554,11 +554,11 @@ static WeaponObjRecord *weaponFindInProp(s32 weaponnum, const PropRecord *prop)
  * Find a weapon of the given weapon number lying in the level (not in flight as a
  * projectile). The AI command "if key dropped" uses this for keys and other items.
  */
-WeaponObjRecord *weaponFindThrown(s32 weaponnum)
+const WeaponObjRecord *weaponFindThrown(s32 weaponnum)
 {
-    for (PropRecord *prop = propsGetActiveTail(); prop; prop = prop->prev)
+    for (const PropRecord *prop = propsGetActiveTail(); prop; prop = prop->prev)
     {
-        WeaponObjRecord *weapon = weaponFindInProp(weaponnum, prop);
+        const WeaponObjRecord *weapon = weaponFindInProp(weaponnum, prop);
 
         if (weapon && !(weapon->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE))
         {
@@ -598,7 +598,7 @@ void objSetDropType(const PropRecord *prop, DROPTYPE droptype)
    them, and a gun stops firing. */
 void objDetach(PropRecord *prop)
 {
-    PropRecord *parent = propParent(prop);
+    const PropRecord *parent = propParent(prop);
     ObjectRecord *obj = prop->obj;
 
     if (parent == NULL)
@@ -675,7 +675,7 @@ static void objLaunchDropped(Projectile *projectile, const PropRecord *parent)
     else if (projectile->droptype == DROPTYPE_HAT)
     {
         // Knocked away from the player
-        PropRecord *playerprop = currentPlayerGetProp();
+        const PropRecord *playerprop = currentPlayerGetProp();
         f32 x = parent->pos.x - playerprop->pos.x;
         f32 z = parent->pos.z - playerprop->pos.z;
         f32 angle = mathAtan2(x, z);
@@ -703,9 +703,9 @@ bool objDrop(PropRecord *prop)
     PropRecord *parent = propParent(prop);
     ObjectRecord *obj = prop->obj;
     Projectile *projectile;
-    Model *model;
+    const Model *model;
     Mtxf mtx;
-    PropRecord *root;
+    const PropRecord *root;
     StandTile *stan;
 
     // Stuck in something: the embedment's projectile becomes the object's own
@@ -742,7 +742,7 @@ bool objDrop(PropRecord *prop)
         // Start where the model was drawn, if that point can be reached from the carrier
         // and the object fits there. Otherwise start at the carrier's position.
         f32 width = objGetWidth(obj);
-        Mtxf *rendermtx = modelGetRootMtx(model);
+        const Mtxf *rendermtx = modelGetRootMtx(model);
         s32 cdtypes = CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER;
 
         mtx4MultAffine(camGetViewToWorldMtxf(), rendermtx, &mtx);

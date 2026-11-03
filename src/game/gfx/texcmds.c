@@ -474,7 +474,7 @@ static Gfx *setTextureLods(Gfx *gdl, Gfx *lastTexture, const struct tex *tex, bo
  * commands that draw it. Also notes where the light fixtures' commands are (see
  * lightfixture.c). Returns the size of the new display list, in bytes.
  */
-s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, struct texpool *pool)
+s32 texLoadFromGdl(const Gfx *src, s32 srcsize, Gfx *dst, struct texpool *pool)
 {
     Gfx *out = dst;
     Gfx *lastTexture = NULL;
@@ -489,7 +489,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, struct texpool *pool)
         pool = &g_TexSharedPool;
     }
 
-    for (Gfx *in = src; in < src + (srcsize >> 3); in++)
+    for (const Gfx *in = src; in < src + (srcsize >> 3); in++)
     {
         // (The immediate commands' opcodes are negative)
         switch (in->words.w0 >> 24)

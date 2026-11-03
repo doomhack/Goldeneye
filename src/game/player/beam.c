@@ -138,7 +138,7 @@ void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, const coo
  */
 void gunCreateBeamForHand(enum GUNHAND hand)
 {
-    Mtxf *player_matrix;
+    const Mtxf *player_matrix;
     struct hand *hand_ptr;
     f32 val;
     struct ChrRecord *chr;
@@ -204,7 +204,7 @@ Gfx *beamRender(Gfx *gdl, const BeamRecord *flash, s32 zbufferMode)
     Mtxf mtxf;
     Vtx templatevtx;
     coord3d pos;
-    coord3d *playerpos;
+    const coord3d *playerpos;
     f32 radius;
     f32 startoffset;
     coord3d up;
@@ -214,7 +214,7 @@ Gfx *beamRender(Gfx *gdl, const BeamRecord *flash, s32 zbufferMode)
     f32 extra_scale;
     struct sImageTableEntry *image;
     f32 d;
-    Mtxf *worldtoscreen;
+    const Mtxf *worldtoscreen;
     coord3d tmp;
     coord3d divout;
     f32 divin[2];

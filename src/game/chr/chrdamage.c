@@ -65,7 +65,7 @@ static void chrAlertOthersOfInjury(ChrRecord *self, s32 flag);
 static void chrReactToHit(ChrRecord *self, const coord3d *dir, f32 angle, s32 hitpart, ITEM_IDS item)
 {
     bool dying;
-    PropRecord *prop;
+    const PropRecord *prop;
     struct Model *model;
     bool reacted;
     f32 impact_force;
@@ -78,7 +78,7 @@ static void chrReactToHit(ChrRecord *self, const coord3d *dir, f32 angle, s32 hi
     f32 dist_left;
     f32 dist_right;
     f32 ft;
-    struct StruckAnim *struck_ani;
+    const struct StruckAnim *struck_ani;
     s32 i;
 
     dying = TRUE;
@@ -272,8 +272,8 @@ static void chrReactToHit(ChrRecord *self, const coord3d *dir, f32 angle, s32 hi
             {
                 if ((g_HitReactionTable[reaction_index].flinchAnims != NULL) && (g_HitReactionTable[reaction_index].flinchAnimCount > 0))
                 {
-                    PropRecord *leftprop = chrGetEquippedWeaponProp(self, GUNLEFT);
-                    PropRecord *rightprop = chrGetEquippedWeaponProp(self, GUNRIGHT);
+                    const PropRecord *leftprop = chrGetEquippedWeaponProp(self, GUNLEFT);
+                    const PropRecord *rightprop = chrGetEquippedWeaponProp(self, GUNRIGHT);
                     s32 tr;
 
                     reacted = TRUE;
@@ -391,7 +391,7 @@ static s32 chrGetHitInterruptFrame(const ChrRecord *self, f32 *result)
 
 static void chrPlayHurtSound(const ChrRecord *self)
 {
-    PropRecord *prop;
+    const PropRecord *prop;
     bool male;
     ALSoundState *sndstate;
  
@@ -474,7 +474,7 @@ static void chrPlayHurtSound(const ChrRecord *self)
 }
 
 
-static s16 metal_ricochet_SFX[3] = {HIT_BULLET_METAL_A3_SFX, HIT_BULLET_METAL_A_SFX, HIT_BULLET_METAL_B_SFX};
+static const s16 metal_ricochet_SFX[3] = {HIT_BULLET_METAL_A3_SFX, HIT_BULLET_METAL_A_SFX, HIT_BULLET_METAL_B_SFX};
 
 /**
  * Counter-op: damage one player's shot does to the other, in the units of
@@ -499,7 +499,7 @@ f32 counterOpPlayerDamage(s32 shooter, f32 damage, s32 weaponid)
 bool chrTakeShot(ChrRecord *self, s32 hitpart, const coord3d *vector, s32 weaponid, bool isPlayer)
 {
     s32 hattype;
-    PropRecord *myprop = self->prop;
+    const PropRecord *myprop = self->prop;
 
     // Counter-op: the guard player's shots pass through other guards.
     if (isPlayer && counterOpIsGuardPlayer(playerGetCurrentNum()) && (myprop->type != PROP_TYPE_VIEWER))
@@ -750,7 +750,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, const coord3d *vector, s32 weapon
 s32 chrExplosionDamage(ChrRecord *self, const coord3d *pos, f32 damage, s32 playsound)
 {
     Model *self_model;
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     f32 subroty;
     f32 atan;
     f32 norm;
@@ -903,12 +903,12 @@ void chrTickDead(ChrRecord *self)
 static void chrAlertOthersOfInjury(ChrRecord *self, s32 flag)
 {
     ChrRecord *guard;
-    PropRecord *self_prop;
+    const PropRecord *self_prop;
     f32 dx;
     f32 dz;
     f32 dy;
     s32 numguards;
-    PropRecord *guard_prop;
+    const PropRecord *guard_prop;
     s32 i = 0;
     s32 alert_count = 0;
 
@@ -1053,7 +1053,7 @@ void chrTickArgh(ChrRecord *self)
 
 void chrTickPreArgh(ChrRecord *self)
 {
-    Model *model;
+    const Model *model;
     coord3d dir;
 
     model = self->model;

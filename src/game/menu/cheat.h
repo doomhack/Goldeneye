@@ -77,7 +77,7 @@ typedef struct  {
      * Seems to be pointer to u16 array.
      * Offset 0x4.
      */
-    u16 *cheatbuttons;
+    const u16 *cheatbuttons;
 
     /**
      * Offset 0x8.

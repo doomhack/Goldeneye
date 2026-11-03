@@ -134,7 +134,7 @@ static ObjectRecord *slotAllocate(u8 *slots, s32 slotsize, s32 numslots, s32 *ne
 static bool weaponSlotReusable(ObjectRecord *obj)
 {
     WeaponObjRecord *weapon = (WeaponObjRecord *)obj;
-    PropRecord *parent = propParent(obj->prop);
+    const PropRecord *parent = propParent(obj->prop);
 
     if ((obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) || (obj->state & PROPSTATE_RESPAWN))
     {

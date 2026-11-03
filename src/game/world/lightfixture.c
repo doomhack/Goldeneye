@@ -213,7 +213,7 @@ void lightGetTriVertexCoords(const Gfx * gfx, u32 tri_type, s32 room_index, coor
     s32 idx1;
     s32 idx2;
     s32 idx3;
-    Vtx * vertices;
+    const Vtx * vertices;
 
     lightGetTriVertexIndices(gfx, tri_type, &idx1, &idx2, &idx3);
     vertices = lightFindVertexBaseForTri(gfx, room_index);
@@ -326,7 +326,7 @@ s32 lightIsTriDarkened(const Gfx * gfx, u32 tri_type, s32 room_index)
     s32 idx1;
     s32 idx2;
     s32 idx3;
-    Vtx * vertices;
+    const Vtx * vertices;
     s32 out2;
     s32 out1;
 
@@ -348,7 +348,7 @@ s32 lightIsCoordNearDarkenedVertex(const coord16 * coord, s32 room_index)
     s32 dy;
     s32 dz;
     s32 i;
-    Vtx * vertex;
+    const Vtx * vertex;
 
     i = 0;
     do
@@ -400,7 +400,7 @@ void lightFixtureBreak(const Gfx * hit_gfx, u32 tri_type, s32 room_index)
  
     s16 diff_x_23;
     s16 diff_x_12;
-    Gfx *fixture_gfx;
+    const Gfx *fixture_gfx;
     f32 edge_frac;
     s32 j;
     s16 diff_y_23;

@@ -19,8 +19,8 @@ typedef struct s_bullet_spark {
     u8 a;
 } s_bullet_spark;
 
-extern Vtx g_SparkVtxTemplate;
-s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room);
+extern const Vtx g_SparkVtxTemplate;
+const s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room);
 void sparksRender(Gfx **gdlptr, s32 zbufferMode);
 void sparksReset(void);
 void sparksTick(void);

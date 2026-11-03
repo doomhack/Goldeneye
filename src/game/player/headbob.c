@@ -156,13 +156,13 @@ void headBobSetDamp(f32 headdamp)
 }
 
 
-coord3d initialHeadPosition = { {0.0f, 0.0f, 0.0f} };
+const coord3d initialHeadPosition = { {0.0f, 0.0f, 0.0f} };
 
-coord3d headLookDirection = { {0.0f, 0.0f, 1.0f} };
+const coord3d headLookDirection = { {0.0f, 0.0f, 1.0f} };
 
-coord3d headUpDirection = { {0.0f, 1.0f, 0.0f} };
+const coord3d headUpDirection = { {0.0f, 1.0f, 0.0f} };
 
-ModelRenderData headModelRenderData = {NULL,
+const ModelRenderData headModelRenderData = {NULL,
                               TRUE,
                               0x00000003,
                               NULL,

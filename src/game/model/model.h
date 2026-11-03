@@ -25,9 +25,9 @@ extern u32 g_ModelShadowAlpha;
 
 extern struct Vertex* (*g_ModelVtxAllocator)(s32 numvertices);
 extern void (*g_ModelJointPositionedFunc)(s32 mtxindex, Mtxf *mtx);
-extern struct TubeAngleRow g_ModelTubeAngleTable[];
-extern Vertex g_ModelGunfireVtxTemplate;
-extern Vtx g_ModelShadowVtxTemplate;
+extern const struct TubeAngleRow g_ModelTubeAngleTable[];
+extern const Vertex g_ModelGunfireVtxTemplate;
+extern const Vtx g_ModelShadowVtxTemplate;
 
 
 // tentative signature

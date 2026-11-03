@@ -142,7 +142,7 @@ typedef struct bg_portal_data_entry
 
 typedef struct bg_room_data
 {
-    void* pPointTableBin;
+    const void* pPointTableBin;
     void* pPriMappingBin;
     void* pSecMappingBin;
     coord3d pos;
@@ -183,7 +183,7 @@ extern f32 g_BgLevelScaleInv;
 extern bg_room_data * g_BgRoomFiles;
 extern s_room_info g_BgRoomInfo[];
 extern RoomState g_BgRoomState[];
-extern Gfx *ptrDynamic_CC_RM_LUT[];
+extern Gfx *const ptrDynamic_CC_RM_LUT[];
 extern Gfx DL_LUT_PRIMARY_ADDFOG[];
 
 
@@ -220,7 +220,7 @@ s32 bgFindPortalOnSegment(const coord3d *start, const coord3d *end);
 void bgRoomCalcBB(s32 room);
 
 void bgReset(void);
-char *bgDebPrintROOMID(s32 roomId);
+const char *bgDebPrintROOMID(s32 roomId);
 s32 bgGetConnectedRooms(s32 roomIndex, s32* list, s32 max);
 s32 bgGetMaxNumRooms(void);
 bool bgTestRayIntersectsBbox(const coord3d *origin, const coord3d *dir, const s32 *bbox_min, const s32 *bbox_max);

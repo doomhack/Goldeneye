@@ -32,7 +32,7 @@ static s32 g_PlayerTickExplodeCreatePosition;
 
 
 
-static struct DamageType g_DamageTypes[] = {
+static const struct DamageType g_DamageTypes[] = {
         {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF}, // 1 bars
         {   0,    10.0,    60.0,    0.6,    0,    5.0,    40.0,    1.0,            0xFF,       0xFF,       0xFF},
         {   0,    10.0,    50.0,    0.6,    0,    5.0,    30.0,    0.800000011921, 0xFF,       0xFF,       0xFF},
@@ -47,7 +47,7 @@ static struct DamageType g_DamageTypes[] = {
  * The second column is how many frames before the gauge switches from showing the old health to the new health.
  * The third column is how many frames before the health display is hidden.
  */
-static struct HealthDisplayDuration g_HealthDisplayDurations[8] = {
+static const struct HealthDisplayDuration g_HealthDisplayDurations[8] = {
     { 0, 40, 100 }, // 1 bar of health
     { 0, 30, 80 },
     { 0, 20, 60 },

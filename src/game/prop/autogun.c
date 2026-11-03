@@ -99,7 +99,7 @@ static s32 autogunGetTargetPlayer(const PropRecord *prop)
 
     for (s32 i = 0; i < getPlayerCount(); i++)
     {
-        PropRecord *playerprop = g_playerPointers[i]->prop;
+        const PropRecord *playerprop = g_playerPointers[i]->prop;
         f32 x, y, z, dist;
 
         if (playerprop == NULL || !objMayWatchPlayer(i))
@@ -123,7 +123,7 @@ static s32 autogunGetTargetPlayer(const PropRecord *prop)
 }
 
 
-static PropRecord *autogunGetTargetProp(s32 target)
+static const PropRecord *autogunGetTargetProp(s32 target)
 {
     return (target >= 0) ? g_playerPointers[target]->prop : currentPlayerGetProp();
 }
@@ -253,7 +253,7 @@ void autogunTick(const PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
     AutogunRecord *autogun = (AutogunRecord *)obj;
-    PropRecord *targetprop = autogunGetTargetProp(autogunGetTargetPlayer(prop));
+    const PropRecord *targetprop = autogunGetTargetProp(autogunGetTargetPlayer(prop));
     bool seen = false;
     bool insight = false;
     bool firing = false;
@@ -419,8 +419,8 @@ static void autogunGetShotOrigin(const PropRecord *prop, const Model *model, s32
 {
     if ((prop->flags & PROPFLAG_ONSCREEN) && model->obj->Switches[flashnode] != NULL)
     {
-        Mtxf *nodemtx = modelFindNodeMtx(model, model->obj->Switches[flashnode], 0);
-        coord3d *nodepos = &model->obj->Switches[flashnode]->Data->Group.Origin;
+        const Mtxf *nodemtx = modelFindNodeMtx(model, model->obj->Switches[flashnode], 0);
+        const coord3d *nodepos = &model->obj->Switches[flashnode]->Data->Group.Origin;
         Mtxf worldmtx;
 
         from->f[0] = nodepos->f[0];
@@ -512,12 +512,12 @@ static void autogunCreateBeam(BeamRecord *beam, coord3d *from, const coord3d *to
 static void autogunFireShot(const PropRecord *prop, const Model *model, AutogunRecord *autogun)
 {
     bool hitwall = true;
-    StandTile *hittile = NULL;
+    const StandTile *hittile = NULL;
     StandTile *tile = prop->stan;
     bool showbeam = (autogun->numShots & 3) == 0;
     // Co-op: the shots are for the gun's target, wherever this pass's player is
     s32 target = autogunGetTargetPlayer(prop);
-    PropRecord *targetprop = autogunGetTargetProp(target);
+    const PropRecord *targetprop = autogunGetTargetProp(target);
     s32 flashnode = AUTOGUN_SWITCH_FLASH1;
     s32 prevplayer;
     coord3d from, dir, to;

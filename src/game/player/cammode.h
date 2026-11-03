@@ -10,7 +10,7 @@
 extern s32 g_CoopCinemaPlayer;
 
 u32 playerGetCameraMode(void);
-s32 playerPickDeathCamera(PropRecord *prop1, const coord3d *pos, const PropRecord *prop2, const coord3d *collision_pos, StandTile *tile, f32 camera_dist);
+s32 playerPickDeathCamera(const PropRecord *prop1, const coord3d *pos, const PropRecord *prop2, const coord3d *collision_pos, StandTile *tile, f32 camera_dist);
 void coopUpdateSoloView(void);
 void coopResetViewFade(void);
 extern f32 g_CoopViewFade;
@@ -32,7 +32,7 @@ extern enum CAMERAMODE camera_mode;
 extern s32 g_IntroAnimationIndex;
 
 extern PadRecord *g_CameraLookAtBondPad;
-extern CutsceneRecord *gBondViewCutscene;
+extern const CutsceneRecord *gBondViewCutscene;
 extern enum CAMERAMODE g_CutsceneCamLookAtBond;
 extern s32 g_CutsceneCamUnusedFlag;
 extern f32 g_OrbitCamAngle;

@@ -62,7 +62,7 @@ OSMesgQueue g_ContEnablePollReceiveMessageQueue;
 OSContStatus g_ContStatus[MAXCONTROLLERS];
 OSPfs g_ContPfs[MAXCONTROLLERS];
 
-struct contdata *g_ContDataPtr = &g_ContData[CONTDATA_REGULAR];
+const struct contdata *g_ContDataPtr = &g_ContData[CONTDATA_REGULAR];
 s32 g_ContBusy = 0;
 s32 g_ContPollDisableCount = 0;
 u8 g_ConnectedControllers = 0;

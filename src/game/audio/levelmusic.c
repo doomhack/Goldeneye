@@ -496,7 +496,7 @@ struct music_setup
 };
 
 // data
-struct music_setup g_LevelMusic[] = {
+const struct music_setup g_LevelMusic[] = {
     { LEVELID_BUNKER1,   M_BUNKER1,      0xFFFF,   M_BUNKER1X },
     { LEVELID_SILO,      M_SILO,         0xFFFF,   M_SILOX },
     { LEVELID_STATUE,    M_STATUE,       0xFFFF,   M_STATUEPART },
@@ -523,7 +523,7 @@ struct music_setup g_LevelMusic[] = {
     { 0 }
 };
 
-s16 g_LevelMusicRandom[] = {
+const s16 g_LevelMusicRandom[] = {
     M_TRAIN,
     M_DEPOT,
     M_MPTHEME,

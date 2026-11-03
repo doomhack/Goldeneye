@@ -18,9 +18,9 @@ void propSetMoving(const PropRecord *prop, bool collidable);
 s32  propDoorGetCdTypes(const PropRecord *prop);
 bool propIsOfCdType(const PropRecord *prop, s32 cdtypes);
 
-bool polygonContainsPoint(const coord3d *point, coord2d *polygon, s32 edges);
-bool polygonsOverlap(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2);
-bool polygonTouchesCircle(const coord3d *point, f32 radius, coord2d *polygon, s32 edges);
+bool polygonContainsPoint(const coord3d *point, const coord2d *polygon, s32 edges);
+bool polygonsOverlap(const coord2d *poly1, s32 edges1, const coord2d *poly2, s32 edges2);
+bool polygonTouchesCircle(const coord3d *point, f32 radius, const coord2d *polygon, s32 edges);
 bool propIsUnblocked(const PropRecord *mover);
 
 #endif

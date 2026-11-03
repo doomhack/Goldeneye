@@ -74,7 +74,7 @@ static f32 cctvGetHeadYaw(const CCTVRecord *cctv)
 /* Whether the camera can see a player this frame */
 static bool cctvCanSeePlayer(const PropRecord *prop, const CCTVRecord *cctv, const PropRecord *playerprop)
 {
-    ObjectRecord *obj = prop->obj;
+    const ObjectRecord *obj = prop->obj;
     f32 xdiff = playerprop->pos.f[0] - obj->runtime_pos.f[0];
     f32 viewdist = cctv->viewDist;
     f32 ydiff = playerprop->pos.f[1] - obj->runtime_pos.f[1];
@@ -245,7 +245,7 @@ void cctvTick(const PropRecord *prop)
 
     for (; player < end; player++)
     {
-        PropRecord *playerprop;
+        const PropRecord *playerprop;
 
         if (gameIsTwoPlayerMission() && (!objMayWatchPlayer(player) || g_playerPointers[player]->prop == NULL))
         {

@@ -240,7 +240,7 @@ void doorGetMtx(const DoorRecord *door, Mtxf *mtx)
 {
     if (door->doorType == DOORTYPE_SWINGING || door->doorType == DOORTYPE_AZTECCHAIR)
     {
-        BoundPadRecord *pad = &g_CurrentSetup.boundpads[door->pad];
+        const BoundPadRecord *pad = &g_CurrentSetup.boundpads[door->pad];
         coord3d side;
         coord3d hinge;
         coord3d offset;
@@ -458,8 +458,8 @@ static void doorClipQuad(const Vertex *src, Vertex *dst, s16 cutoff, bool vertic
  */
 static void doorClipVertices(const DoorRecord *door)
 {
-    Model *model;
-    ModelNode *node;
+    const Model *model;
+    const ModelNode *node;
     const struct ModelRoData_DisplayList_CollisionRecord *rodata;
     struct ModelRwData_DisplayList_CollisionRecord *rwdata;
     bool vertical;
@@ -507,8 +507,8 @@ static void doorClipVertices(const DoorRecord *door)
  */
 static void doorKeepClippedVertices(const DoorRecord *door)
 {
-    Model *model = door->model;
-    ModelNode *node = model->obj->RootNode->Child->Child;
+    const Model *model = door->model;
+    const ModelNode *node = model->obj->RootNode->Child->Child;
     const struct ModelRoData_DisplayList_CollisionRecord *rodata = &node->Data->DisplayListCollisions;
     struct ModelRwData_DisplayList_CollisionRecord *rwdata = &modelGetNodeRwData(model, node)->DisplayListCollisions;
 
@@ -574,7 +574,7 @@ PropRecord *doorInit(DoorRecord *door, const coord3d *pos, const Mtxf *mtx, Stan
 
     if (door->doorFlags & DOORFLAG_CLIP_TO_BBOX)
     {
-        union ModelRoData *rodata = door->model->obj->RootNode->Child->Child->Data;
+        const union ModelRoData *rodata = door->model->obj->RootNode->Child->Child->Data;
         door->clipVtx = mempAlloc(rodata->DisplayListCollisions.numVertices * sizeof(Vertex), MEMPOOL_STAGE);
     }
     else
@@ -908,7 +908,7 @@ void doorTick(const PropRecord *prop)
     {
         bool allClosed = TRUE;
 
-        for (DoorRecord *sibling = door->linkedDoor; sibling != NULL && sibling != door; sibling = sibling->linkedDoor)
+        for (const DoorRecord *sibling = door->linkedDoor; sibling != NULL && sibling != door; sibling = sibling->linkedDoor)
         {
             if (sibling->openstate != DOORSTATE_STATIONARY || sibling->openPosition > 0.0f)
             {
@@ -965,8 +965,8 @@ static f32 angleFromView(f32 x, f32 z, const coord3d *eye, f32 yaw)
  */
 static void doorGetAnglesToPlayer(const DoorRecord *door, f32 *minangle, f32 *maxangle, bool altAxis)
 {
-    BoundPadRecord *pad = &g_CurrentSetup.boundpads[door->pad];
-    PropRecord *playerprop = currentPlayerGetProp();
+    const BoundPadRecord *pad = &g_CurrentSetup.boundpads[door->pad];
+    const PropRecord *playerprop = currentPlayerGetProp();
     f32 yaw = bondviewGetPlayerYawRadians();
     coord3d eye;
     coord3d axis;
@@ -1058,7 +1058,7 @@ static bool doorTestInteractAngle(const DoorRecord *door, bool altAxis)
     }
 
     /* Widen to the linked doors, until the doors cross the middle of the view */
-    for (DoorRecord *sibling = door->linkedDoor;
+    for (const DoorRecord *sibling = door->linkedDoor;
          sibling != NULL && sibling != door && (minangle >= 0.0f || maxangle < 0.0f);
          sibling = sibling->linkedDoor)
     {
@@ -1093,8 +1093,8 @@ static bool doorTestInteractAngle(const DoorRecord *door, bool altAxis)
  */
 bool doorTestForInteract(const PropRecord *prop)
 {
-    DoorRecord *door = prop->door;
-    PropRecord *playerprop;
+    const DoorRecord *door = prop->door;
+    const PropRecord *playerprop;
     bool inReach = FALSE;
     bool checkmore = TRUE;
     f32 xdiff;
@@ -1147,7 +1147,7 @@ bool doorTestForInteract(const PropRecord *prop)
 /** Whether the prop is in front of the door (on its side axis side). Exactly in line counts as in front. */
 static bool doorIsInFront(const DoorRecord *door, const PropRecord *prop)
 {
-    BoundPadRecord *pad = &g_CurrentSetup.boundpads[door->pad];
+    const BoundPadRecord *pad = &g_CurrentSetup.boundpads[door->pad];
     coord3d side;
     f32 dist;
 
@@ -1186,7 +1186,7 @@ void doorChooseSwingDirection(const PropRecord *chrprop, DoorRecord *door)
 TICKOP doorInteract(const PropRecord *prop)
 {
     DoorRecord *door = prop->door;
-    PropRecord *playerprop = currentPlayerGetProp();
+    const PropRecord *playerprop = currentPlayerGetProp();
     bool canOpen = FALSE;
 
     if (door->keyflags == 0 || invCheckHasKeyFlags(door->keyflags))

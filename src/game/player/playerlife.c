@@ -64,8 +64,8 @@ s32 startpadcount;
 
 s32 playerChooseSpawnPad(void)
 {
-    PadRecord *pad;
-    PropRecord *player_prop;
+    const PadRecord *pad;
+    const PropRecord *player_prop;
     s32 player_count;
     f32 diff_x;
     s32 pad_index;

@@ -35,8 +35,8 @@ void        propsTickPickups(void);
 void        switchActivateLinkedDoors(const PropRecord *prop);
 bool        doorIsPadlockFree(const DoorRecord *door);
 bool        objCanPickupFromSafe(const ObjectRecord *obj);
-ObjectRecord *objFindAtPad(s32 padid);
-ObjectRecord *objFindAtPos(const coord3d *pos, s32 roomid);
+const ObjectRecord *objFindAtPad(s32 padid);
+const ObjectRecord *objFindAtPos(const coord3d *pos, s32 roomid);
 
 #include "game/prop/proprooms.h"
 #include "game/prop/propcollision.h"

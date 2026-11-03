@@ -470,7 +470,7 @@ void amMain([[maybe_unused]] void* arg)
 void amHandleFrameMessage(AudioInfo *info, const AudioInfo *lastInfo)
 {
     s16* outBuffer;
-    Acmd *cmdlp;
+    const Acmd *cmdlp;
 
     /* call once a frame, before doing alAudioFrame */
     amClearDmaBuffers();
@@ -542,7 +542,7 @@ void amHandleDoneMessage(void)
     * the static keyword. That breaks the build, but the following
     * code will compile to a matching binary,
     */
-    int *b;
+    const int *b;
 
     samplesLeft = (s32)osAiGetLength() >> 2;
 

@@ -188,6 +188,6 @@ Gfx *fogSetRenderFogColor(Gfx *gdl);
 Gfx *fogRenderClearFogMode(Gfx *gdl);
 s32 fogGetPropDistColor(const PropRecord *prop, rgba_f32 *color);
 void fogSwitchToSolosky2(f32 frac);
-NearFogValues *fogGetNearFogValuesP(void);
+const NearFogValues *fogGetNearFogValuesP(void);
 
 #endif

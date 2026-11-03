@@ -105,7 +105,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
     f32 sideback;
     Mtxf rotmtx;
     u16 hidden;
-    ChrRecord *chr;
+    const ChrRecord *chr;
 
     scale = 1.0f;
 
@@ -337,7 +337,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 Gfx *chrRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     ChrRecord *chr;
-    Model *chrmodel;
+    const Model *chrmodel;
     rgba_f32 fogColour;
     s32 fogType;
     s32 renderFlags;
@@ -346,12 +346,12 @@ Gfx *chrRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha)
     bbox2d bbox;
     rgba_s32 chrShade;
     s32 shadowAlpha;
-    PropRecord *prop_held_right;
-    PropRecord *prop_held_left;
-    PropRecord *prop_held_hat;
-    ObjectRecord *held_right_obj;
-    ObjectRecord *held_left_obj;
-    ObjectRecord *held_hat_obj;
+    const PropRecord *prop_held_right;
+    const PropRecord *prop_held_left;
+    const PropRecord *prop_held_hat;
+    const ObjectRecord *held_right_obj;
+    const ObjectRecord *held_left_obj;
+    const ObjectRecord *held_hat_obj;
 
     chr = prop->chr;
     chrmodel = chr->model;

@@ -192,7 +192,7 @@ extern struct player *g_CurrentPlayer;
  */
 static void bossCheckExpansionPak(void)
 {
-    OSViMode *mode;
+    const OSViMode *mode;
     u16 *fb;
     s32 i;
     s32 x;
@@ -350,7 +350,7 @@ void bossMainloop(void)
     Gfx *firstGdl;
     u32 nowCount;
     s32 i;
-    struct player *localPlayer;
+    const struct player *localPlayer;
     s32 localSelectedNumPlayers;
     u32 pendingGfx = 0;
     u32 cpuFrameStart = 0;

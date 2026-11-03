@@ -76,7 +76,7 @@ void roomPropListsInit(void)
  */
 void propGetRoomIds(const PropRecord *prop, s32 *roomids)
 {
-    StandTile *stan = prop->stan;
+    const StandTile *stan = prop->stan;
 
     if (stan == NULL)
     {
@@ -102,11 +102,11 @@ void propGetRoomIds(const PropRecord *prop, s32 *roomids)
 
 
 /* Whether two room lists (ended by -1) share a room */
-bool roomListsOverlap(s32 *rooms1, s32 *rooms2)
+bool roomListsOverlap(const s32 *rooms1, const s32 *rooms2)
 {
-    for (s32 *a = rooms1; *a >= 0; a++)
+    for (const s32 *a = rooms1; *a >= 0; a++)
     {
-        for (s32 *b = rooms2; *b >= 0; b++)
+        for (const s32 *b = rooms2; *b >= 0; b++)
         {
             if (*a == *b)
             {
@@ -260,9 +260,9 @@ void propRemoveFromRoom(const PropRecord *prop, s16 room)
 
 
 /* Add a prop to the lists of all the rooms it is in */
-void propAddToRooms(PropRecord *prop)
+void propAddToRooms(const PropRecord *prop)
 {
-    for (u8 *room = prop->rooms; *room != 0xff; room++)
+    for (const u8 *room = prop->rooms; *room != 0xff; room++)
     {
         propAddToRoom(prop, *room);
     }
@@ -273,7 +273,7 @@ void propAddToRooms(PropRecord *prop)
    PROPFLAG_00000010, it then counts as in no room. */
 void propRemoveFromRooms(PropRecord *prop)
 {
-    for (u8 *room = prop->rooms; *room != 0xff; room++)
+    for (const u8 *room = prop->rooms; *room != 0xff; room++)
     {
         propRemoveFromRoom(prop, *room);
     }
@@ -312,8 +312,8 @@ void propCalcRooms(PropRecord *prop, const coord3d *bbmin, const coord3d *bbmax,
 
     if (prop->flags & PROPFLAG_00000008)
     {
-        ObjectRecord *obj = NULL;
-        u8 *src;
+        const ObjectRecord *obj = NULL;
+        const u8 *src;
         s32 i;
 
         if (prop->type == PROP_TYPE_OBJ || prop->type == PROP_TYPE_WEAPON || prop->type == PROP_TYPE_DOOR)

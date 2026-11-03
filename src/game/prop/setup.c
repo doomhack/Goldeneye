@@ -673,7 +673,7 @@ static void setupLinkPropdef(PropDefHeaderRecord *pdef, s32 index)
         {
             // an object inside another: its pad is the owner's relative index
             ObjectRecord *obj = (ObjectRecord *)pdef;
-            ObjectRecord *owner;
+            const ObjectRecord *owner;
 
             if (obj->prop != NULL && (obj->flags & PROPFLAG_INSIDEANOTHEROBJ))
             {
@@ -834,8 +834,8 @@ void setupFreeProps(void)
  */
 void setupGuard(GuardRecord *guard)
 {
-    PadRecord *pad = &g_CurrentSetup.pads[guard->PadID];
-    ChrModelFileRecord *bodyfile;
+    const PadRecord *pad = &g_CurrentSetup.pads[guard->PadID];
+    const ChrModelFileRecord *bodyfile;
     StandTile *tile;
     PropRecord *prop;
     ChrRecord *chr;

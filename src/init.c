@@ -59,10 +59,10 @@ void init(void)
 {
     u32 inflateromSize;
     u8 *csegmentSegmentVaddrStart;
-    u8 *cdataSegmentRomStart;
+    const u8 *cdataSegmentRomStart;
     u32 flags;
     u32 cdataSegmentRomSize;
-    u8 *inflateSegmentRomStart;
+    const u8 *inflateSegmentRomStart;
     s32 i;
     s32 j;
 
@@ -70,7 +70,7 @@ void init(void)
     u32 gameSegmentSize;
     u32 copylen;
     s32 *stack_pointer;
-    u8 *dataziprom;
+    const u8 *dataziprom;
 
     csegmentSegmentVaddrStart = (u8 *) &_csegmentSegmentStart;
     cdataSegmentRomStart = (u8 *) &_cdataSegmentRomStart;

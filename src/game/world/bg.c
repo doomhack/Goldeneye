@@ -94,7 +94,7 @@ enum GlobalVisOpcode {
 extern PortalCache g_BgPortalCache[PORTMAX];
 extern s32 g_BgHeader;
 extern GlobalVisCommand *g_BgVisCommands;
-extern f32 *g_BgRoomValues;
+extern const f32 *g_BgRoomValues;
 extern s_bound_info g_BgRoomsDrawn[];
 
 /* PAL halved this to fit 4MB; with the Expansion Pak all versions use the NTSC size. */
@@ -134,7 +134,7 @@ s32 levelentry_index = 1;
  * SubtractFromWidth = -1; //always -1 (related to getvideosettings)
  * SubtractFromHeight = -1; //always -1 (related to getvideosettings)
  */
-s32 bgViewRelated[] = { 1, 1, -1, -1 };
+const s32 bgViewRelated[] = { 1, 1, -1, -1 };
 
 
 /**
@@ -166,7 +166,7 @@ u8 g_BgPortalIsVertical[PORTMAX] = {
 };
 
 
-struct levelentry levelinfotable[] = {
+const struct levelentry levelinfotable[] = {
 /*  levelID;            bg_seg_filename;        bg_stan_filename;      levelscale;  visibility; unknownfloat;*/
     {LEVELID_BUNKER1,  "bg/bg_sev_all_p.seg",  "Tbg_sev_all_p_stanZ",  0.53931433,  1.0,        23.148148},
     {LEVELID_SILO,     "bg/bg_silo_all_p.seg", "Tbg_silo_all_p_stanZ", 0.47256002,  1.0,        29.069},
@@ -241,7 +241,7 @@ Lights1 GlobalLight = gdSPDefLights1(
 /* Room models load at most one room in ten per frame: rooms whose number ends in this digit. */
 s32 g_BgRoomLoadSlot = 0;
 /* Set to load any room as soon as it is drawn; always set, so g_BgRoomLoadSlot is not used. */
-s32 g_BgLoadAllRooms = 1;
+const s32 g_BgLoadAllRooms = 1;
 
 // forward declarations
 
@@ -259,7 +259,7 @@ Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 width, s32 heig
 bool bgIsRoomOnScreen(s32 roomID, const bbox2d *screenbox);
 s32 bgAddVisibleRoom(s32 curroom, s32 unk1, bbox2d *screensize, s32 next);
 void bgUpdateCurrentPlayerScreenMinMax(void);
-void *bgRunVisCommands(GlobalVisCommand *pc);
+const void *bgRunVisCommands(GlobalVisCommand *pc);
 void bgDetermineVisibleRooms(void);
 s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *screenbox);
 f32 bgGetPortalThickness(s32 portalnum);
@@ -283,7 +283,7 @@ void bgInit(void)
 
 void bgMarkSpecialPortals(void) {
     u8 *ptr;
-    u8 *end;
+    const u8 *end;
     u8 portal;
 
     ptr = (u8 *)specialportalarray;
@@ -694,7 +694,7 @@ static void bgBuildRoomPortalLists(bool hasportals)
     /* The portals' bounding boxes, found the way bgFindRoomsInBbox used to each time */
     for (i = 0; i < numportals; i++)
     {
-        bg_portal_entry *portal = g_BgPortals[i].offset_portal;
+        const bg_portal_entry *portal = g_BgPortals[i].offset_portal;
         PortalBounds *bounds = &s_PortalBounds[i];
 
         bounds->min = (coord3d){{MAXFLOAT, MAXFLOAT, MAXFLOAT}};
@@ -956,8 +956,8 @@ extern void bgRoomsTickUnload(void);
 
 void bgFindVisibleRooms(void)
 {
-    coord3d *pos;
-    coord3d *pos3;
+    const coord3d *pos;
+    const coord3d *pos3;
     s32 room;
     s32 portalnum;
     s32 lastportal;
@@ -1231,7 +1231,7 @@ Gfx* bgScissorCurrentPlayerViewF(Gfx* gdl, f32 left, f32 top, f32 right, f32 bot
 */
 Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bottom)
 {
-    struct player *player = g_CurrentPlayer;
+    const struct player *player = g_CurrentPlayer;
 
     // The screen box rooms are clipped to stays 1 pixel inside the framebuffer (stock
     // bgViewRelated, which the game logic depends on through room visibility). Draw up to
@@ -1388,7 +1388,7 @@ bool bgIsRoomOnScreen(s32 roomID, const bbox2d *screenbox)
 
 bool bgProjectRoomCoordToScreen(const coord3d* src, coord3d* dst)
 {
-    Mtxf* mtx;
+    const Mtxf* mtx;
 
     mtx = camGetWorldToScreenMtxf();
     dst->x = src->x * g_BgLevelScaleInv;
@@ -1411,7 +1411,7 @@ bool bgProjectRoomCoordToScreen(const coord3d* src, coord3d* dst)
 
 s32 bgProjectPortalPoints(s32 portalnum, f32 offset, coord3d *points)
 {
-    Mtxf *matrix;
+    const Mtxf *matrix;
     coord3d *point;
     s32 i;
     s32 next;
@@ -1640,7 +1640,7 @@ void bbox2dCopy(bbox2d *a, const bbox2d *b)
 /**
  * Formats a room ID for debug output.
  */
-char *bgDebPrintROOMID(s32 roomId)
+const char *bgDebPrintROOMID(s32 roomId)
 {
     static char bgDebRoomOutBuffer[10][9];
     static s32 bgDebRoomOutLineNum = 0;
@@ -1665,14 +1665,14 @@ bg_portal_data_entry *g_BgPortals;
 s32 g_BgHeader;
 bg_room_data *g_BgRoomFiles;
 GlobalVisCommand *g_BgVisCommands;
-f32 *g_BgRoomValues;
+const f32 *g_BgRoomValues;
 
 s_bound_info g_BgRoomsDrawn[BG_ROOMS_DRAWN_LEN];
 
 /* Portals visited this frame (counted, never read) */
 s32 g_BgPortalVisits = 0;
 /* How many portals deep the visibility search goes */
-s32 g_BgMaxPortalDepth = 15;
+const s32 g_BgMaxPortalDepth = 15;
 s32 g_BgPortalQueueWriteIndex = 0;
 s32 g_BgPortalQueueReadIndex = 0;
 
@@ -1914,7 +1914,7 @@ Gfx DL_LUT_FIXFOGALPHA3[] = {
     {{0,0}}
 };
 
-Gfx *ptrDynamic_CC_RM_LUT[] = {
+Gfx *const ptrDynamic_CC_RM_LUT[] = {
     DL_LUT_UNKNOWN, DL_LUT_PRIMARY_ADDFOG, DL_LUT_BILLBOARD, DL_LUT_WATER, DL_LUT_CLOUD,
     DL_LUT_SECONDARY_ADDFOG, DL_LUT_PRIMARY, DL_LUT_SECONDARY, DL_LUT_WALLETBOND, DL_LUT_FIXFOGALPHA3
 };
@@ -2448,13 +2448,13 @@ Gfx *bgRenderRoomSecondary(Gfx *gdl, s32 room_index)
 void bgBuildRoomVtxBounds(s32 roomID)
 {
     s32 cmdindex;
-    Gfx *gdl;
-    Vtx *vertices;
+    const Gfx *gdl;
+    const Vtx *vertices;
     RoomVtxBatchBounds *points;
     s32 numpoints;
     s32 i;
     s32 numvertices;
-    Vtx *vtx;
+    const Vtx *vtx;
 
     // Check if a cached bounding box is already present for this room
     if (g_BgRoomInfo[roomID].vtx_batch_bounds != NULL)
@@ -2762,7 +2762,7 @@ bool bgTestRayIntersectionInRoom(const coord3d *from, const coord3d *to, const c
 
             for (s32 i = 0; i < 3; i++)
             {
-                Vertex *v;
+                const Vertex *v;
 
                 idx[i] -= vtxoff;
                 v = &vtxbase[idx[i]];
@@ -3046,7 +3046,7 @@ void bgQueuePortalTraversal(s32 value, s32 roomnum, s32 portalnum, s32 depth, co
 #if defined(VERSION_EU)
 bool bgProcessNextQueuedPortal(void)
 {
-    bg_queued_portal_entry *entry;
+    const bg_queued_portal_entry *entry;
 
     if (g_BgPortalQueueReadIndex == g_BgPortalQueueWriteIndex) {
         return 0;
@@ -3067,7 +3067,7 @@ bool bgProcessNextQueuedPortal(void)
 #else
 bool bgProcessNextQueuedPortal(s32 *valueptr)
 {
-    bg_queued_portal_entry *entry;
+    const bg_queued_portal_entry *entry;
     s32 value;
 
     value = *valueptr;
@@ -3102,7 +3102,7 @@ bool bgProcessNextQueuedPortal(s32 *valueptr)
 void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, const bbox2d *parentbox)
 {
     bbox2d screenbox;
-    coord3d *playerpos;
+    const coord3d *playerpos;
     s32 otherroom;
     struct PortalMetric metric;
     f32 playermetric;
@@ -3234,7 +3234,7 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, c
 s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, const bbox2d *parentbox)
 {
     bbox2d screenbox;
-    coord3d *playerpos;
+    const coord3d *playerpos;
     s32 otherroom;
     struct PortalMetric metric;
     f32 playermetric;
@@ -3706,7 +3706,7 @@ PortalCache g_BgPortalCache[PORTMAX];
 
 
 // Something about portals. Void* are structs.
-void *bgRunVisCommands(GlobalVisCommand *pc)
+const void *bgRunVisCommands(GlobalVisCommand *pc)
 {
 
     current_visibility = 0;
@@ -3971,7 +3971,7 @@ void bgUpdateCurrentPlayerScreenMinMax(void)
 void bgGetRoomCenter(s32 roomnum, coord3d *dst)
 {
     s32 i;
-    s_room_info *room = &g_BgRoomInfo[roomnum];
+    const s_room_info *room = &g_BgRoomInfo[roomnum];
 
     for (i = 0; i < 3; i++) {
         dst->f[i] = (room->minbounds.f[i] + room->maxbounds.f[i]) * 0.5f;
@@ -3981,7 +3981,7 @@ void bgGetRoomCenter(s32 roomnum, coord3d *dst)
 
 void bgRoomCalcBB(s32 room) // canonical name
 {
-    bg_room_data *roomdata;
+    const bg_room_data *roomdata;
     Vtx *vertices;
     Vtx *end;
     s16 min[3];
@@ -4100,7 +4100,7 @@ void bgGetPortalPlane(s32 portalnum, struct PortalMetric *metric)
     f32 *out = metric->normal.f;
     f32 edge1[3];
     f32 edge2[3];
-    bg_portal_entry *portal;
+    const bg_portal_entry *portal;
     f32 min;
     f32 max;
     f32 dot;
@@ -4138,7 +4138,7 @@ void bgGetPortalPlane(s32 portalnum, struct PortalMetric *metric)
 
     for (i = 0; i < portal->numPoints; i++)
     {
-        coord3d *point = &(&portal->point)[i];
+        const coord3d *point = &(&portal->point)[i];
         f32 dist = (point->f[0] * out[0]) + (point->f[1] * out[1]) + (point->f[2] * out[2]);
 
         if (dist < min)
@@ -4526,7 +4526,7 @@ void bgFindRoomsInBbox(const coord3d *bbmin, const coord3d *bbmax, s32 *room_lis
 void bgApplyDynamicCCRMLUT(Gfx *start, const Gfx *end, enum CCRMLUT lutIndex)
 {
     Gfx *curGfx;
-    Gfx *lutPair;
+    const Gfx *lutPair;
 
     static s32 s_bg_lut_replacement_count = 0;
 

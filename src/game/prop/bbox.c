@@ -21,16 +21,16 @@
 
 /* The first bounding box node among the root's children, or failing that among its
    first child's children */
-ModelRoData_BoundingBoxRecord *modelFileFindBbox(const ModelFileHeader *header)
+const ModelRoData_BoundingBoxRecord *modelFileFindBbox(const ModelFileHeader *header)
 {
-    ModelNode *first = header->RootNode->Child;
+    const ModelNode *first = header->RootNode->Child;
 
     if (first == NULL)
     {
         return NULL;
     }
 
-    for (ModelNode *node = first; node != NULL; node = node->Next)
+    for (const ModelNode *node = first; node != NULL; node = node->Next)
     {
         if (node->Opcode == MODELNODE_OPCODE_BBOX)
         {
@@ -38,7 +38,7 @@ ModelRoData_BoundingBoxRecord *modelFileFindBbox(const ModelFileHeader *header)
         }
     }
 
-    for (ModelNode *node = first->Child; node != NULL; node = node->Next)
+    for (const ModelNode *node = first->Child; node != NULL; node = node->Next)
     {
         if (node->Opcode == MODELNODE_OPCODE_BBOX)
         {
@@ -50,7 +50,7 @@ ModelRoData_BoundingBoxRecord *modelFileFindBbox(const ModelFileHeader *header)
 }
 
 
-ModelRoData_BoundingBoxRecord *objFindBbox(const ObjectRecord *obj)
+const ModelRoData_BoundingBoxRecord *objFindBbox(const ObjectRecord *obj)
 {
     return modelFileFindBbox(obj->model->obj);
 }
@@ -319,15 +319,15 @@ bool padBoundsContainPoint(const coord3d *pos, f32 radius, const BoundPadRecord 
  */
 void modelGetAxisExtents(const Model *model, f32 *max, f32 *min, s32 axis)
 {
-    ModelNode *node = model->obj->RootNode;
+    const ModelNode *node = model->obj->RootNode;
     bool first = TRUE;
 
     while (node != NULL)
     {
         if ((node->Opcode & 0xff) == MODELNODE_OPCODE_BBOX)
         {
-            ModelRoData_BoundingBoxRecord *bbox = &node->Data->BoundingBox;
-            Mtxf *mtx = modelFindNodeMtx(model, node, 0);
+            const ModelRoData_BoundingBoxRecord *bbox = &node->Data->BoundingBox;
+            const Mtxf *mtx = modelFindNodeMtx(model, node, 0);
             f32 hi = bboxRotatedExtent(bbox, mtx, axis, TRUE) + mtx->m[3][axis];
             f32 lo = bboxRotatedExtent(bbox, mtx, axis, FALSE) + mtx->m[3][axis];
 

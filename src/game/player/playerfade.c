@@ -156,7 +156,7 @@ void currentPlayerTickColourFade(void)
  */
 void currentPlayerStartChrFade(f32 duration60, f32 targetfrac)
 {
-    ChrRecord *chr = g_CurrentPlayer->prop->chr;
+    const ChrRecord *chr = g_CurrentPlayer->prop->chr;
 
     if (chr)
     {

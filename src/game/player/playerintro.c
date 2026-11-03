@@ -28,7 +28,7 @@ static struct SetupIntroCamera* g_CurrentSetupIntroCamera = NULL;
 static s32 g_SetupIntroCameraCount = 0;
 
 
-coord3d default_start_position = { 0 };
+const coord3d default_start_position = { 0 };
 
 u32 weaponLoadProjectileModels(ITEM_IDS modelid)
 {

@@ -349,7 +349,7 @@ static s32 propGetDrawRoom(const PropRecord *prop)
 
     propGetRoomIds(prop, rooms);
 
-    for (s32 *room = rooms; *room >= 0; room++)
+    for (const s32 *room = rooms; *room >= 0; room++)
     {
         if (bgRoomIsVisible(*room))
         {
@@ -599,7 +599,7 @@ static bool propIsFarFromPlayers(const PropRecord *prop)
 
     for (s32 i = 0; i < numplayers; i++)
     {
-        PropRecord *playerprop = g_playerPointers[i]->prop;
+        const PropRecord *playerprop = g_playerPointers[i]->prop;
         coord3d diff;
 
         diff.x = playerprop->pos.x - prop->pos.x;
@@ -637,7 +637,7 @@ static void objRespawn(PropRecord *prop)
 
             s32 cmdindex = setupGetCommandIndexByProp(prop);
             s32 pad = obj->pad;
-            ObjectRecord *container = setupCommandGetObject(cmdindex + pad);
+            const ObjectRecord *container = setupCommandGetObject(cmdindex + pad);
 
             if (container != NULL && container->prop != NULL)
             {
@@ -875,7 +875,7 @@ void switchActivateLinkedDoors(const PropRecord *prop)
         return;
     }
 
-    for (struct LinkRecord *link = g_LevelLoadPropSwitch; link != NULL; link = link->next)
+    for (const struct LinkRecord *link = g_LevelLoadPropSwitch; link != NULL; link = link->next)
     {
         if (prop == link->first && link->second != NULL)
         {
@@ -893,7 +893,7 @@ bool doorIsPadlockFree(const DoorRecord *door)
         return TRUE;
     }
 
-    for (LockDoorRecord *link = g_LevelLoadPropLockDoor; link != NULL; link = link->next)
+    for (const LockDoorRecord *link = g_LevelLoadPropLockDoor; link != NULL; link = link->next)
     {
         if (door == link->door && link->lock != NULL && link->lock->prop != NULL && objIsHealthy(link->lock))
         {
@@ -913,7 +913,7 @@ bool objCanPickupFromSafe(const ObjectRecord *obj)
         return TRUE;
     }
 
-    for (SafeObjectRecord *link = g_LevelLoadPropSafeItem; link != NULL; link = link->next)
+    for (const SafeObjectRecord *link = g_LevelLoadPropSafeItem; link != NULL; link = link->next)
     {
         if (obj == link->item && link->door != NULL && link->door->prop != NULL && link->door->openPosition <= 0.5f)
         {
@@ -926,11 +926,11 @@ bool objCanPickupFromSafe(const ObjectRecord *obj)
 
 
 /* The first active object placed at a pad */
-ObjectRecord *objFindAtPad(s32 padid)
+const ObjectRecord *objFindAtPad(s32 padid)
 {
     s16 pad = padid;
 
-    for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
+    for (const PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {
         if (prop->type == PROP_TYPE_OBJ && pad == prop->obj->pad)
         {
@@ -943,9 +943,9 @@ ObjectRecord *objFindAtPad(s32 padid)
 
 
 /* The first active object in a room whose collision outline contains a point */
-ObjectRecord *objFindAtPos(const coord3d *pos, s32 roomid)
+const ObjectRecord *objFindAtPos(const coord3d *pos, s32 roomid)
 {
-    for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
+    for (const PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {
         if (prop->type == PROP_TYPE_OBJ && roomid == prop->stan->room)
         {

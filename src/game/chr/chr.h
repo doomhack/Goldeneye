@@ -220,7 +220,7 @@ typedef struct ChrSlotHot
 extern ChrSlotHot *g_ChrSlotHot;
 void chrSlotSync(const ChrRecord *chr);
 extern s32 g_NumChrSlots;
-extern rgba_u8 gBloodColour;
+extern const rgba_u8 gBloodColour;
 
 extern f32 g_ChrSpeedWalk;
 extern f32 g_ChrSpeedRun;
@@ -236,9 +236,9 @@ extern f32 g_ChrSpeedSprintOneHanded2;
 extern u32 num_bodies;
 extern u32 num_male_heads;
 extern u32 num_female_heads;
-extern s32 list_of_bodies[];
-extern s32 random_male_heads[];
-extern s32 random_female_heads[];
+extern const s32 list_of_bodies[];
+extern const s32 random_male_heads[];
+extern const s32 random_female_heads[];
 extern u32 current_random_body;
 extern u32 current_random_male_head;
 extern u32 current_random_female_head;
@@ -249,7 +249,7 @@ extern s32 male_guard_yelp_counter;
 extern s16 male_guard_yelps[];
 
 
-extern struct explosion_anim_group_info explosion_animation_table[];
+extern const struct explosion_anim_group_info explosion_animation_table[];
 extern struct ExplosionDeathAnim g_ExplosionDeathAnims[];
 
 void        chrFreeResources(PropRecord* prop);

@@ -65,23 +65,23 @@ s32 g_TitleTimer;
 u32 g_TitleMtxIndex = 0;
 u8 g_TitleStage = 0x3;
 
-struct FolderSelectColour g_FolderGradientBlack = { 0x00, 0x00, 0x00 };
-struct FolderSelectColour g_FolderGradientWhite = { 0xFF, 0xFF, 0xFF };
+const struct FolderSelectColour g_FolderGradientBlack = { 0x00, 0x00, 0x00 };
+const struct FolderSelectColour g_FolderGradientWhite = { 0xFF, 0xFF, 0xFF };
 
 Model *g_TitleBondModel = NULL;
 Model *g_TitleGunModel = NULL;
 
-ModelRenderData gunbarrelRenderData = { NULL, TRUE, 3, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, {{0, 0, 0, 0}}, {{0, 0, 0, 0}}, CULLMODE_BOTH };
+const ModelRenderData gunbarrelRenderData = { NULL, TRUE, 3, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, {{0, 0, 0, 0}}, {{0, 0, 0, 0}}, CULLMODE_BOTH };
 
-f32 gunbarrelPosition1[3] = {1758.2957f, 220.0f, 684.28143f};
-f32 gunbarrelPosition2[3] = {-0.97f, 0.0f, 0.24f};
-f32 gunbarrelPosition3[3] = {0.0f, 1.0f, -0.0f};
+const f32 gunbarrelPosition1[3] = {1758.2957f, 220.0f, 684.28143f};
+const f32 gunbarrelPosition2[3] = {-0.97f, 0.0f, 0.24f};
+const f32 gunbarrelPosition3[3] = {0.0f, 1.0f, -0.0f};
 
 Lights1 gunbarrelLights = gdSPDefLights1(0xDC, 0xDC, 0xDC, 0xFF, 0xFF, 0xFF, 0x00, 0x7F, 0x00);
 
 f32 cameraPosition1[3] = {0.0f, 0.0f, 4883.0f};
-f32 cameraPosition2[3] = {0.0f, 0.0f, -1.0f};
-f32 cameraPosition3[3] = {0.0f, 1.0f, 0.0f};
+const f32 cameraPosition2[3] = {0.0f, 0.0f, -1.0f};
+const f32 cameraPosition3[3] = {0.0f, 1.0f, 0.0f};
 
 f32 g_TitleRareLogoAngle = 0.0f;
 s32 g_TitleCounter = 0;
@@ -168,7 +168,7 @@ Gfx *titleRenderFade(Gfx *gdl, u32 alpha)
 }
 
 
-Gfx *titleRenderBondModel(Gfx *gdl, s32 count, Mtxf *matrix)
+Gfx *titleRenderBondModel(Gfx *gdl, s32 count, const Mtxf *matrix)
 {
 #if defined(REFRESH_PAL)
     #define BOND_EYE_ANIM_START 114
@@ -349,9 +349,9 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 cameraZ, s32 brightness) {
 }
 
 
-extern void *_rarewarelogoSegmentRomStart NO_SDATA;
-extern void *_rarewarelogoSegmentStart NO_SDATA;
-extern void *_rarewarelogoSegmentEnd NO_SDATA;
+extern const void *_rarewarelogoSegmentRomStart NO_SDATA;
+extern const void *_rarewarelogoSegmentStart NO_SDATA;
+extern const void *_rarewarelogoSegmentEnd NO_SDATA;
 void titleLoadRareLogo(u8 *address) {
     g_TitleStage = 0;
     g_TitleX = 880.0f;
@@ -440,8 +440,8 @@ static void titleUnpackBackdrop(const u8 *src, u8 *dst)
 }
 
 
-extern void *g_TitleBackdropRle NO_SDATA;
-extern void *g_TitleBackdropRleEnd NO_SDATA;
+extern const void *g_TitleBackdropRle NO_SDATA;
+extern const void *g_TitleBackdropRleEnd NO_SDATA;
 void titleLoadBackdrop(u8 **addr, s32 *size) {
     g_TitleBackdrop = *addr;
     *size -= 0x40400;
@@ -813,7 +813,7 @@ void titleMakeBarrelHoleVerts(Vtx_t *vtx, s32 numSteps)
 }
 
 
-Gfx *titleMakeBarrelHoleGfx(Gfx *gdl, Vtx *vertexList, s32 numVertices)
+const Gfx *titleMakeBarrelHoleGfx(Gfx *gdl, Vtx *vertexList, s32 numVertices)
 {
     s8 j;
     

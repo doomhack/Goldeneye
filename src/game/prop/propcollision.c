@@ -41,7 +41,7 @@ void objUpdateCollisionBounds(const ObjectRecord *obj)
         return;
     }
 
-    ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
+    const ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
     Mtxf mtx;
 
     mtx4Copy(&obj->mtx, &mtx);
@@ -65,7 +65,7 @@ void objUpdateCollisionBounds(const ObjectRecord *obj)
  */
 void objGetCollisionBounds(const PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom)
 {
-    ObjectRecord *obj = prop->obj;
+    const ObjectRecord *obj = prop->obj;
     collision_data *col = obj->ptr_allocated_collisiondata_block;
 
     if (col != NULL && (obj->flags & PROPFLAG_00000100) && !(obj->state & PROPSTATE_NOCOLLISION))
@@ -191,7 +191,7 @@ void propSetMoving(const PropRecord *prop, bool collidable)
 /* The CDTYPE a door counts as: closed, open or ajar, and whether guards can't use it */
 s32 propDoorGetCdTypes(const PropRecord *prop)
 {
-    DoorRecord *door = prop->door;
+    const DoorRecord *door = prop->door;
     s32 cdtypes;
 
     if (door->openPosition <= 0.0f)
@@ -228,7 +228,7 @@ s32 propDoorGetCdTypes(const PropRecord *prop)
 bool propIsOfCdType(const PropRecord *prop, s32 cdtypes)
 {
     bool result = TRUE;
-    ObjectRecord *obj;
+    const ObjectRecord *obj;
 
     if (prop->type == PROP_TYPE_DOOR)
     {
@@ -293,7 +293,7 @@ bool propIsOfCdType(const PropRecord *prop, s32 cdtypes)
  * Whether a point (x and z) is inside a convex polygon: on the same side of every edge.
  * Edges the point lies on are skipped. A polygon with no edges contains nothing.
  */
-bool polygonContainsPoint(const coord3d *point, coord2d *polygon, s32 edges)
+bool polygonContainsPoint(const coord3d *point, const coord2d *polygon, s32 edges)
 {
     s32 side = -1;
 
@@ -304,8 +304,8 @@ bool polygonContainsPoint(const coord3d *point, coord2d *polygon, s32 edges)
 
     for (s32 i = 0; i < edges; i++)
     {
-        coord2d *a = &polygon[i];
-        coord2d *b = &polygon[(i + 1) % edges];
+        const coord2d *a = &polygon[i];
+        const coord2d *b = &polygon[(i + 1) % edges];
         f32 cross = ((b->f[1] - a->f[1]) * (point->f[0] - a->f[0])) - ((b->f[0] - a->f[0]) * (point->f[2] - a->f[1]));
 
         if (cross == 0.0f)
@@ -334,7 +334,7 @@ bool polygonContainsPoint(const coord3d *point, coord2d *polygon, s32 edges)
  * is beyond the edge, on the other side from the rest of poly1. A zero-length edge is
  * tested as a point instead. Uses doubles.
  */
-static bool polygonExcludesPolygon(const coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
+static bool polygonExcludesPolygon(const coord2d *poly1, s32 edges1, const coord2d *poly2, s32 edges2)
 {
     f64 other = 0.0;
 
@@ -413,7 +413,7 @@ static bool polygonExcludesPolygon(const coord2d *poly1, s32 edges1, coord2d *po
  * Whether two convex polygons touch or overlap: a corner of one is inside the other, or
  * no edge of either separates them.
  */
-bool polygonsOverlap(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
+bool polygonsOverlap(const coord2d *poly1, s32 edges1, const coord2d *poly2, s32 edges2)
 {
     coord3d point;
 
@@ -459,15 +459,15 @@ bool polygonsOverlap(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
  * Whether a circle (centre x and z of point) touches an edge of a polygon: it is within
  * radius of the edge's line, and of one of its ends or alongside the edge.
  */
-bool polygonTouchesCircle(const coord3d *point, f32 radius, coord2d *polygon, s32 edges)
+bool polygonTouchesCircle(const coord3d *point, f32 radius, const coord2d *polygon, s32 edges)
 {
     f32 px = point->f[0];
     f32 pz = point->f[2];
 
     for (s32 i = 0; i < edges; i++)
     {
-        coord2d *a = &polygon[i];
-        coord2d *b = &polygon[(i + 1) % edges];
+        const coord2d *a = &polygon[i];
+        const coord2d *b = &polygon[(i + 1) % edges];
         f32 linedist = geoSignedLineDist(a->f[0], a->f[1], b->f[0], b->f[1], px, pz);
 
         if (linedist < 0.0f)
@@ -490,7 +490,7 @@ bool polygonTouchesCircle(const coord3d *point, f32 radius, coord2d *polygon, s3
 
 
 /* Whether a guard or player stands in the outline (with the height range) */
-static bool chrBlocksOutline(const PropRecord *prop, const PropRecord *mover, coord2d *outline, s32 edges, f32 top, f32 bottom)
+static bool chrBlocksOutline(const PropRecord *prop, const PropRecord *mover, const coord2d *outline, s32 edges, f32 top, f32 bottom)
 {
     ChrRecord *chr = prop->chr;
     f32 radius;
@@ -553,9 +553,9 @@ bool propIsUnblocked(const PropRecord *mover)
     propGetRoomIds(mover, rooms);
     roomGetProps(rooms);
 
-    for (s16 *propnum = g_RoomPropsFound; *propnum >= 0; propnum++)
+    for (const s16 *propnum = g_RoomPropsFound; *propnum >= 0; propnum++)
     {
-        PropRecord *prop = &g_Props[*propnum];
+        const PropRecord *prop = &g_Props[*propnum];
 
         if (prop == mover)
         {

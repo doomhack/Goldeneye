@@ -341,10 +341,10 @@ void __scHandleRDP(OSSched *sc)
     }
 }
 
-OSScTask *__scTaskReady(OSScTask *t) 
+const OSScTask *__scTaskReady(const OSScTask *t) 
 {
-    void *a;
-    void *b;    
+    const void *a;
+    const void *b;    
 
     if (t) {    
         if ((a=osViGetCurrentFramebuffer()) != (b=osViGetNextFramebuffer())) {

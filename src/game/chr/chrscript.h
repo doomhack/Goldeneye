@@ -7,7 +7,7 @@
 s32        chrResolveId(const ChrRecord *self, s32 id);
 s32        chrResolvePadId(const ChrRecord *self, s32 padnum);
 ChrRecord *chrFindById(const ChrRecord *self, s32 id);
-coord3d   *chrGetChrOrPresetLocation(ChrRecord *self, s32 attacktype, s32 id, StandTile **stan);
+const coord3d   *chrGetChrOrPresetLocation(ChrRecord *self, s32 attacktype, s32 id, StandTile **stan);
 
 /* Distances and angles */
 f32 chrGetAngleToPos(const ChrRecord *self, const coord3d *pos);
@@ -46,9 +46,9 @@ bool chrSetPadPresetToWaypointInQuadrant(ChrRecord *self, u8 quadrant);
 
 /* Spawning */
 bool        chrAdjustPosForSpawn(coord3d *pos, StandTile **stan, f32 facing, bool allowonscreen);
-PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, const coord3d *pos, StandTile *stan, f32 angle, AIRecord *ailist, s32 spawnflags);
-PropRecord *chrSpawnAtPad(const ChrRecord *self, s32 bodynum, s32 headnum, s32 padnum, AIRecord *ailist, s32 spawnflags);
-PropRecord *chrSpawnAtChr(const ChrRecord *self, s32 bodynum, s32 headnum, s32 chrnum, AIRecord *ailist, s32 spawnflags);
+const PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, const coord3d *pos, StandTile *stan, f32 angle, AIRecord *ailist, s32 spawnflags);
+const PropRecord *chrSpawnAtPad(const ChrRecord *self, s32 bodynum, s32 headnum, s32 padnum, AIRecord *ailist, s32 spawnflags);
+const PropRecord *chrSpawnAtChr(const ChrRecord *self, s32 bodynum, s32 headnum, s32 chrnum, AIRecord *ailist, s32 spawnflags);
 
 /* Actions the scripts ask for: each fails if the chr is dead or reacting to a shot */
 bool chrTryStopAnim(ChrRecord *self);

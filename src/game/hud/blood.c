@@ -438,14 +438,14 @@ void bloodSmoothDownRight(const u8 *src, s32 height, u8 *dst)
 /**
  * Converts the decoded blood frame from column-major to row-major order.
  */
-void bloodImgTranspose(u8 *src, s32 srcwidth, s32 srcheight, u8 *dst)
+void bloodImgTranspose(const u8 *src, s32 srcwidth, s32 srcheight, u8 *dst)
 {
     s32 pixelcount;
-    u8 *rowend;
-    u8 *nextRowEnd;
+    const u8 *rowend;
+    const u8 *nextRowEnd;
     u8 *out;
-    u8 *in;
-    u8 *end;
+    const u8 *in;
+    const u8 *end;
 
     pixelcount = srcwidth * srcheight;
     in = src;

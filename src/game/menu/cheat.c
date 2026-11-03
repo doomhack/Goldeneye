@@ -37,7 +37,7 @@ bool g_CheatShowPos = FALSE;
 
 #pragma region ButtonCodes
 
-u16 mBtnCheatExtraMPChars[] = {
+const u16 mBtnCheatExtraMPChars[] = {
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG |          U_CBUTTONS ,
     L_TRIG | R_TRIG | L_JPAD,
@@ -50,7 +50,7 @@ u16 mBtnCheatExtraMPChars[] = {
     L_TRIG |          D_JPAD
 };
 
-u16 mBtnCheatInvincibility[] = {
+const u16 mBtnCheatInvincibility[] = {
     L_TRIG |          D_JPAD,
              R_TRIG | R_CBUTTONS ,
              R_TRIG | U_CBUTTONS ,
@@ -63,7 +63,7 @@ u16 mBtnCheatInvincibility[] = {
     L_TRIG | R_TRIG | R_CBUTTONS
 };
 
-u16 mBtnCheatAllGuns[] = {
+const u16 mBtnCheatAllGuns[] = {
     L_TRIG | R_TRIG | D_JPAD,
     L_TRIG |          L_CBUTTONS ,
     L_TRIG |          R_CBUTTONS ,
@@ -76,7 +76,7 @@ u16 mBtnCheatAllGuns[] = {
     L_TRIG |          L_CBUTTONS
 
 };
-u16 mBtnCheatMaxAmmo[] = {
+const u16 mBtnCheatMaxAmmo[] = {
     L_TRIG | R_TRIG | R_CBUTTONS  ,
              R_TRIG | U_JPAD,
              R_TRIG | D_JPAD,
@@ -89,7 +89,7 @@ u16 mBtnCheatMaxAmmo[] = {
              R_TRIG | L_JPAD
 
 };
-u16 mBtnCheatInvalid[] = {
+const u16 mBtnCheatInvalid[] = {
     L_TRIG |          U_JPAD,
              R_TRIG | R_CBUTTONS ,
              R_TRIG | D_CBUTTONS ,
@@ -102,7 +102,7 @@ u16 mBtnCheatInvalid[] = {
     L_TRIG | R_TRIG | D_JPAD
 
 };
-u16 mBtnCheatDeactivateInvincibilityMulti[] = {
+const u16 mBtnCheatDeactivateInvincibilityMulti[] = {
              R_TRIG | R_JPAD,
     L_TRIG |          L_JPAD,
     L_TRIG |          L_JPAD,
@@ -114,7 +114,7 @@ u16 mBtnCheatDeactivateInvincibilityMulti[] = {
     L_TRIG |          D_JPAD,
     L_TRIG |          U_CBUTTONS
 };
-u16 mBtnCheatLineMode[] = {
+const u16 mBtnCheatLineMode[] = {
              R_TRIG | D_CBUTTONS ,
     L_TRIG | R_TRIG | D_JPAD,
     L_TRIG |          R_JPAD,
@@ -127,7 +127,7 @@ u16 mBtnCheatLineMode[] = {
              R_TRIG | U_CBUTTONS
 
 };
-u16 mBtnCheatInvisibility[] = {
+const u16 mBtnCheatInvisibility[] = {
              R_TRIG | L_CBUTTONS ,
     L_TRIG | R_TRIG | U_CBUTTONS  ,
     L_TRIG | R_TRIG | L_JPAD,
@@ -139,7 +139,7 @@ u16 mBtnCheatInvisibility[] = {
     L_TRIG | R_TRIG | L_JPAD,
              R_TRIG | R_JPAD
 };
-u16 mBtnCheatBondPhase[] = {
+const u16 mBtnCheatBondPhase[] = {
     L_TRIG |          U_CBUTTONS ,
     L_TRIG | R_TRIG | L_CBUTTONS  ,
              R_TRIG | U_JPAD,
@@ -151,7 +151,7 @@ u16 mBtnCheatBondPhase[] = {
     L_TRIG |          U_JPAD,
     L_TRIG | R_TRIG | D_CBUTTONS
 };
-u16 mBtnCheatDam[] = {
+const u16 mBtnCheatDam[] = {
     L_TRIG | R_TRIG | U_CBUTTONS  ,
              R_TRIG | L_JPAD,
              R_TRIG | D_CBUTTONS ,
@@ -163,7 +163,7 @@ u16 mBtnCheatDam[] = {
     L_TRIG | R_TRIG | R_JPAD,
              R_TRIG | D_CBUTTONS
 };
-u16 mBtnCheatFacility[] = {
+const u16 mBtnCheatFacility[] = {
     L_TRIG | R_TRIG | U_CBUTTONS  ,
              R_TRIG | L_CBUTTONS ,
     L_TRIG |          L_JPAD,
@@ -175,7 +175,7 @@ u16 mBtnCheatFacility[] = {
     L_TRIG | R_TRIG | U_CBUTTONS  ,
     L_TRIG |          R_JPAD
 };
-u16 mBtnCheatRunway[] = {
+const u16 mBtnCheatRunway[] = {
     L_TRIG | R_TRIG | L_JPAD,
              R_TRIG | L_JPAD,
     L_TRIG |          U_CBUTTONS ,
@@ -187,7 +187,7 @@ u16 mBtnCheatRunway[] = {
     L_TRIG |          D_JPAD,
              R_TRIG | L_CBUTTONS
 };
-u16 mBtnCheatSurface[] = {
+const u16 mBtnCheatSurface[] = {
              R_TRIG | L_CBUTTONS ,
     L_TRIG | R_TRIG | U_CBUTTONS  ,
     L_TRIG |          L_JPAD,
@@ -199,7 +199,7 @@ u16 mBtnCheatSurface[] = {
     L_TRIG |          R_CBUTTONS ,
     L_TRIG | R_TRIG | D_JPAD,
 };
-u16 mBtnCheatBunker[] = {
+const u16 mBtnCheatBunker[] = {
     L_TRIG |          D_CBUTTONS ,
              R_TRIG | R_JPAD,
     L_TRIG |          R_CBUTTONS ,
@@ -211,7 +211,7 @@ u16 mBtnCheatBunker[] = {
              R_TRIG | R_CBUTTONS ,
     L_TRIG |          U_JPAD,
 };
-u16 mBtnCheatSilo[] = {
+const u16 mBtnCheatSilo[] = {
     L_TRIG |          U_JPAD,
              R_TRIG | D_CBUTTONS ,
     L_TRIG |          L_JPAD,
@@ -223,7 +223,7 @@ u16 mBtnCheatSilo[] = {
              R_TRIG | R_JPAD,
              R_TRIG | R_CBUTTONS
 };
-u16 mBtnCheatFrigate[] = {
+const u16 mBtnCheatFrigate[] = {
              R_TRIG | U_CBUTTONS ,
     L_TRIG |          D_JPAD,
              R_TRIG | R_CBUTTONS ,
@@ -235,7 +235,7 @@ u16 mBtnCheatFrigate[] = {
     L_TRIG | R_TRIG | D_CBUTTONS  ,
              R_TRIG | U_JPAD
 };
-u16 mBtnCheatSurface2[] = {
+const u16 mBtnCheatSurface2[] = {
     L_TRIG |          D_CBUTTONS ,
     L_TRIG | R_TRIG | R_CBUTTONS  ,
              R_TRIG | R_CBUTTONS ,
@@ -247,7 +247,7 @@ u16 mBtnCheatSurface2[] = {
     L_TRIG | R_TRIG | D_JPAD,
     L_TRIG |          R_CBUTTONS
 };
-u16 mBtnCheatBunker2[] = {
+const u16 mBtnCheatBunker2[] = {
     L_TRIG |          D_JPAD,
              R_TRIG | D_JPAD,
     L_TRIG | R_TRIG | U_CBUTTONS  ,
@@ -259,7 +259,7 @@ u16 mBtnCheatBunker2[] = {
     L_TRIG |          L_JPAD,
     L_TRIG |          D_CBUTTONS
 };
-u16 mBtnCheatStatue[] = {
+const u16 mBtnCheatStatue[] = {
     L_TRIG | R_TRIG | D_CBUTTONS  ,
     L_TRIG | R_TRIG | D_CBUTTONS  ,
     L_TRIG |          R_JPAD,
@@ -271,7 +271,7 @@ u16 mBtnCheatStatue[] = {
              R_TRIG | D_CBUTTONS ,
              R_TRIG | R_JPAD
 };
-u16 mBtnCheatArchives[] = {
+const u16 mBtnCheatArchives[] = {
              R_TRIG | L_JPAD,
     L_TRIG | R_TRIG | U_JPAD,
     L_TRIG | R_TRIG | D_CBUTTONS  ,
@@ -283,7 +283,7 @@ u16 mBtnCheatArchives[] = {
     L_TRIG |          U_JPAD,
              R_TRIG | D_CBUTTONS
 };
-u16 mBtnCheatStreets[] = {
+const u16 mBtnCheatStreets[] = {
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG |          R_CBUTTONS ,
     L_TRIG |          U_JPAD,
@@ -295,7 +295,7 @@ u16 mBtnCheatStreets[] = {
              R_TRIG | U_CBUTTONS ,
     L_TRIG |          D_JPAD
 };
-u16 mBtnCheatDepot[] = {
+const u16 mBtnCheatDepot[] = {
     L_TRIG |          D_JPAD,
     L_TRIG |          D_JPAD,
              R_TRIG | D_CBUTTONS ,
@@ -307,7 +307,7 @@ u16 mBtnCheatDepot[] = {
     L_TRIG |          R_CBUTTONS ,
     L_TRIG |          U_JPAD
 };
-u16 mBtnCheatTrain[] = {
+const u16 mBtnCheatTrain[] = {
              R_TRIG | L_JPAD,
              R_TRIG | D_CBUTTONS ,
              R_TRIG | R_CBUTTONS ,
@@ -319,7 +319,7 @@ u16 mBtnCheatTrain[] = {
     L_TRIG |          U_JPAD,
     L_TRIG |          U_CBUTTONS
 };
-u16 mBtnCheatJungle[] = {
+const u16 mBtnCheatJungle[] = {
              R_TRIG | D_CBUTTONS ,
              R_TRIG | L_JPAD,
     L_TRIG | R_TRIG | U_JPAD,
@@ -331,7 +331,7 @@ u16 mBtnCheatJungle[] = {
              R_TRIG | U_CBUTTONS ,
     L_TRIG | R_TRIG | L_JPAD
 };
-u16 mBtnCheatControl[] = {
+const u16 mBtnCheatControl[] = {
     L_TRIG |          D_CBUTTONS ,
              R_TRIG | D_JPAD,
     L_TRIG |          R_JPAD,
@@ -343,7 +343,7 @@ u16 mBtnCheatControl[] = {
              R_TRIG | L_JPAD,
     L_TRIG | R_TRIG | U_CBUTTONS
 };
-u16 mBtnCheatCaverns[] = {
+const u16 mBtnCheatCaverns[] = {
     L_TRIG |          D_JPAD,
              R_TRIG | D_CBUTTONS ,
     L_TRIG | R_TRIG | U_JPAD,
@@ -355,7 +355,7 @@ u16 mBtnCheatCaverns[] = {
     L_TRIG |          U_JPAD,
              R_TRIG | L_CBUTTONS
 };
-u16 mBtnCheatCradle[] = {
+const u16 mBtnCheatCradle[] = {
     L_TRIG | R_TRIG | U_CBUTTONS  ,
     L_TRIG |          L_JPAD,
              R_TRIG | D_JPAD,
@@ -367,7 +367,7 @@ u16 mBtnCheatCradle[] = {
     L_TRIG |          L_CBUTTONS ,
              R_TRIG | R_JPAD
 };
-u16 mBtnCheatAztek[] = {
+const u16 mBtnCheatAztek[] = {
              R_TRIG | D_CBUTTONS ,
              R_TRIG | L_JPAD,
     L_TRIG |          R_JPAD,
@@ -379,7 +379,7 @@ u16 mBtnCheatAztek[] = {
     L_TRIG | R_TRIG | R_JPAD,
     L_TRIG |          L_CBUTTONS
 };
-u16 mBtnCheatEgypt[] = {
+const u16 mBtnCheatEgypt[] = {
     L_TRIG | R_TRIG | U_JPAD,
     L_TRIG | R_TRIG | R_CBUTTONS  ,
     L_TRIG |          D_JPAD,
@@ -395,7 +395,7 @@ u16 mBtnCheatEgypt[] = {
     L_TRIG | R_TRIG | A_BUTTON,
     L_TRIG | R_TRIG | B_BUTTON
 };
-u16 mBtnCheatPaintballMod[] = {
+const u16 mBtnCheatPaintballMod[] = {
     L_TRIG |          U_JPAD,
                       U_CBUTTONS,
              R_TRIG | R_JPAD,
@@ -407,7 +407,7 @@ u16 mBtnCheatPaintballMod[] = {
     L_TRIG | R_TRIG | U_JPAD,
     L_TRIG |          D_CBUTTONS
 };
-u16 mBtnCheatInvincible2[] = {
+const u16 mBtnCheatInvincible2[] = {
              R_TRIG | L_JPAD,
     L_TRIG |          D_JPAD,
                       L_JPAD,
@@ -419,7 +419,7 @@ u16 mBtnCheatInvincible2[] = {
     L_TRIG | R_TRIG | R_JPAD,
     L_TRIG |          L_CBUTTONS
 };
-u16 mBtnCheatDKMode[] = {
+const u16 mBtnCheatDKMode[] = {
     L_TRIG | R_TRIG | U_JPAD,
                       R_CBUTTONS,
              R_TRIG | L_JPAD,
@@ -431,7 +431,7 @@ u16 mBtnCheatDKMode[] = {
     L_TRIG | R_TRIG | D_JPAD,
     L_TRIG | R_TRIG | L_CBUTTONS
 };
-u16 mBtnCheat2xGL[] = {
+const u16 mBtnCheat2xGL[] = {
              R_TRIG | D_JPAD,
              R_TRIG | U_JPAD,
                       R_JPAD,
@@ -443,7 +443,7 @@ u16 mBtnCheat2xGL[] = {
                       U_JPAD,
              R_TRIG | D_CBUTTONS
 };
-u16 mBtnCheat2xRL[] = {
+const u16 mBtnCheat2xRL[] = {
              R_TRIG | R_JPAD,
     L_TRIG |          U_JPAD,
                       D_JPAD,
@@ -455,7 +455,7 @@ u16 mBtnCheat2xRL[] = {
              R_TRIG | D_JPAD,
              R_TRIG | L_CBUTTONS
 };
-u16 mBtnCheatTurboMode[] = {
+const u16 mBtnCheatTurboMode[] = {
     L_TRIG |          D_JPAD,
     L_TRIG |          D_CBUTTONS ,
     L_TRIG | R_TRIG | U_JPAD,
@@ -467,7 +467,7 @@ u16 mBtnCheatTurboMode[] = {
              R_TRIG | D_JPAD,
     L_TRIG |          R_JPAD
 };
-u16 mBtnCheatNoRadar[] = {
+const u16 mBtnCheatNoRadar[] = {
              R_TRIG | U_JPAD,
                       D_CBUTTONS,
                       L_CBUTTONS,
@@ -479,7 +479,7 @@ u16 mBtnCheatNoRadar[] = {
              R_TRIG | L_JPAD,
              R_TRIG | R_JPAD
 };
-u16 mBtnCheatTinyBond[] = {
+const u16 mBtnCheatTinyBond[] = {
     L_TRIG | R_TRIG | D_JPAD,
              R_TRIG | D_JPAD,
     L_TRIG |          D_CBUTTONS ,
@@ -491,7 +491,7 @@ u16 mBtnCheatTinyBond[] = {
              R_TRIG | D_CBUTTONS ,
              R_TRIG | R_JPAD
 };
-u16 mBtnCheat2xTKnives[] = {
+const u16 mBtnCheat2xTKnives[] = {
              R_TRIG | L_CBUTTONS ,
     L_TRIG |          L_JPAD,
                       U_JPAD,
@@ -503,7 +503,7 @@ u16 mBtnCheat2xTKnives[] = {
              R_TRIG | L_JPAD,
              R_TRIG | L_CBUTTONS
 };
-u16 mBtnCheatFastAnimation[] = {
+const u16 mBtnCheatFastAnimation[] = {
     L_TRIG |          D_CBUTTONS ,
     L_TRIG |          L_CBUTTONS ,
                       D_CBUTTONS,
@@ -515,7 +515,7 @@ u16 mBtnCheatFastAnimation[] = {
              R_TRIG | L_CBUTTONS ,
     L_TRIG |          L_JPAD
 };
-u16 mBtnCheatBondInvisible[] = {
+const u16 mBtnCheatBondInvisible[] = {
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG | R_TRIG | D_CBUTTONS  ,
     L_TRIG |          L_CBUTTONS ,
@@ -527,7 +527,7 @@ u16 mBtnCheatBondInvisible[] = {
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG |          D_JPAD
 };
-u16 mBtnCheatEnemyRL[] = {
+const u16 mBtnCheatEnemyRL[] = {
     L_TRIG | R_TRIG | D_CBUTTONS  ,
                       L_CBUTTONS,
              R_TRIG | D_CBUTTONS ,
@@ -539,7 +539,7 @@ u16 mBtnCheatEnemyRL[] = {
              R_TRIG | U_JPAD,
     L_TRIG |          U_JPAD
 };
-u16 mBtnCheatSlowAnimation[] = {
+const u16 mBtnCheatSlowAnimation[] = {
     L_TRIG | R_TRIG | L_JPAD,
     L_TRIG | R_TRIG | L_JPAD,
     L_TRIG | R_TRIG | D_JPAD,
@@ -551,7 +551,7 @@ u16 mBtnCheatSlowAnimation[] = {
                       L_CBUTTONS,
                       U_CBUTTONS
 };
-u16 mBtnCheatSilverPPK[] = {
+const u16 mBtnCheatSilverPPK[] = {
     L_TRIG |          L_JPAD,
     L_TRIG | R_TRIG | U_JPAD,
     L_TRIG |          R_JPAD,
@@ -563,7 +563,7 @@ u16 mBtnCheatSilverPPK[] = {
     L_TRIG | R_TRIG | R_JPAD,
     L_TRIG | R_TRIG | L_JPAD
 };
-u16 mBtnCheat2xHKnives[] = {
+const u16 mBtnCheat2xHKnives[] = {
              R_TRIG | D_CBUTTONS ,
     L_TRIG |          R_JPAD,
              R_TRIG | L_CBUTTONS ,
@@ -575,7 +575,7 @@ u16 mBtnCheat2xHKnives[] = {
     L_TRIG |          R_JPAD,
     L_TRIG |          L_CBUTTONS
 };
-u16 mBtnCheatInfinitAmmo[] = {
+const u16 mBtnCheatInfinitAmmo[] = {
     L_TRIG |          L_CBUTTONS ,
     L_TRIG | R_TRIG | R_JPAD,
                       R_CBUTTONS,
@@ -587,7 +587,7 @@ u16 mBtnCheatInfinitAmmo[] = {
     L_TRIG |          U_JPAD,
                       R_CBUTTONS
 };
-u16 mBtnCheat2xFNP90[] = {
+const u16 mBtnCheat2xFNP90[] = {
                       U_JPAD,
                       R_JPAD,
     L_TRIG |          L_JPAD,
@@ -599,7 +599,7 @@ u16 mBtnCheat2xFNP90[] = {
                       U_CBUTTONS,
     L_TRIG | R_TRIG | D_JPAD
 };
-u16 mBtnCheatGoldPPK[] = {
+const u16 mBtnCheatGoldPPK[] = {
     L_TRIG | R_TRIG | R_JPAD,
     L_TRIG | R_TRIG | D_JPAD,
     L_TRIG |          U_JPAD,
@@ -611,7 +611,7 @@ u16 mBtnCheatGoldPPK[] = {
                       D_JPAD,
     L_TRIG |          D_CBUTTONS
 };
-u16 mBtnCheat2xLaser[] = {
+const u16 mBtnCheat2xLaser[] = {
     L_TRIG |          R_JPAD,
     L_TRIG | R_TRIG | L_CBUTTONS  ,
     L_TRIG |          D_JPAD,
@@ -623,7 +623,7 @@ u16 mBtnCheat2xLaser[] = {
              R_TRIG | R_JPAD,
     L_TRIG | R_TRIG | U_JPAD
 };
-u16 mBtnCheatUnlockAllGuns[] = {
+const u16 mBtnCheatUnlockAllGuns[] = {
                       D_JPAD,
                       L_JPAD,
                       U_CBUTTONS,
@@ -637,7 +637,7 @@ u16 mBtnCheatUnlockAllGuns[] = {
 };
 #pragma endregion
 
-CheatInfo g_CheatInfo[] = {
+const CheatInfo g_CheatInfo[] = {
     {          CHEAT_EXTRA_MP_CHARS,  0xA, 0, 0, mBtnCheatExtraMPChars,                                                        0, 0,  /* 0x31 */                     CHEAT_MASK_GLOBAL | CHEAT_MASK_SHOW_TEXT | CHEAT_MASK_MENUS},
     {           CHEAT_INVINCIBILITY,  0xA, 0, 0, mBtnCheatInvincibility,       getStringID(LMISC, MISC_STR_00_INVINCIBLE       ), 0,  /* 0x06 */                                                         CHEAT_MASK_MPGAME | CHEAT_MASK_SPGAME},
     {                 CHEAT_ALLGUNS,  0xA, 0, 0, mBtnCheatAllGuns,             getStringID(LMISC, MISC_STR_01_ALLGUNS          ), 0,  /* 0x02 */                                                                             CHEAT_MASK_SPGAME},
@@ -757,7 +757,7 @@ s32 cheatCountBits(u16 bits)
 
 void cheatCheckInput(void)
 {
-    CheatInfo *cheatInfo = &g_CheatInfo[0];
+    const CheatInfo *cheatInfo = &g_CheatInfo[0];
     s32 applicableMask;
     s32 inputBufferIndex;
     s32 cheatButtonIndex;

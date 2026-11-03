@@ -9,9 +9,9 @@ void invReset(void);
 bool invHasFlagToken(void);
 s32 invCountItems(void);
 
-InvItem *invGetItemByIndex(s32 index);
+const InvItem *invGetItemByIndex(s32 index);
 textoverride *invGetOverrideForObj(const ObjectRecord *obj);
-textoverride *invGetOverrideForWeapon(ITEM_IDS weaponnum);
+const textoverride *invGetOverrideForWeapon(ITEM_IDS weaponnum);
 
 void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo);
 void invCycleForward(s32 *nextright, s32 *nextleft, s32 requireammo);

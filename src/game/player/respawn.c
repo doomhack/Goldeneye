@@ -22,7 +22,7 @@
 s32 g_CoopRespawnButtonsHeld[4];
 
 
-static coord3d ZeroCoordSpawnPos = {0};
+static const coord3d ZeroCoordSpawnPos = {0};
 
 
 void mpRespawnPlayer(void)

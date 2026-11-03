@@ -430,7 +430,7 @@ s8 expl_back[] = {0x14, 0x15, 0x16, 0x17};
 s8 expl_b_right[] = {0x12, 0x18, 0x00, 0x00};
 s8 expl_b_left[] = {0x13, 0x19, 0x00, 0x00};
 
-struct explosion_anim_group_info explosion_animation_table[EXPLOSION_ANIMATION_TABLE_LEN] = {
+const struct explosion_anim_group_info explosion_animation_table[EXPLOSION_ANIMATION_TABLE_LEN] = {
     {expl_forward, 6},
     {expl_f_left, 3},
     {expl_left, 3},

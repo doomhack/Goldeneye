@@ -10,7 +10,7 @@ Gfx *playerRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha);
 void playerRemoveBody(void);
 void playerSelectCuff(const Model *model, const ModelFileHeader *header, s32 switchindex);
 s32 playerTick(PropRecord *prop);
-extern struct firing_anim_struct firing_animation_groups[][6];
+extern const struct firing_anim_struct firing_animation_groups[][6];
 
 void playerBodyRemoveGun(enum GUNHAND hand);
 void playerBodyGiveGun(enum GUNHAND hand);

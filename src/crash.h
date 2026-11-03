@@ -11,7 +11,7 @@ typedef struct regDesc_t
 {
     u32 mask;
     u32 value;
-    char *string;
+    const char *string;
 } regDesc_t;
 
 

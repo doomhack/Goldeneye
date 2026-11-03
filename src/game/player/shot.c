@@ -23,7 +23,7 @@
 #include "game/player/shot.h"
 
 // Sounds for bullets hitting things, picked by surface
-static u16 ricochet_sounds_small[20] = {
+static const u16 ricochet_sounds_small[20] = {
     RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
     RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
     RICO_8_AFDM_A_SFX, RICO_8_AFDM_B_SFX, RICO_8_AFDM_C_SFX, RICO_8_AFDM_D_SFX,
@@ -31,23 +31,23 @@ static u16 ricochet_sounds_small[20] = {
     RICO_6_HBBA_A_SFX, RICO_6_HBBA_B_SFX, RICO_6_HBBA_C_SFX, RICO_6_HBBA_D_SFX
 };
 
-static u16 punch_sounds[3] = {
+static const u16 punch_sounds[3] = {
     PUNCH1_SFX,
     PUNCH2_SFX,
     PUNCH3_SFX
 };
 
-static u16 bullet_flesh_sounds[2] = {
+static const u16 bullet_flesh_sounds[2] = {
     HIT_BULLET_FLESH_SFX,
     HIT_BULLET_FLESH_SFX
 };
 
-static u16 laser_ricochet_sounds[2] = {
+static const u16 laser_ricochet_sounds[2] = {
     RICO_LASER2_SFX,
     RICO_LASER3_SFX
 };
 
-static u16 ricochet_sounds_large[36] = {
+static const u16 ricochet_sounds_large[36] = {
 	RICO_12_GBU_A_SFX, RICO_12_GBU_B_SFX, RICO_12_GBU_C_SFX, RICO_12_GBU_D_SFX,
     RICO_6_TAJ_A_SFX,  RICO_6_TAJ_B_SFX,  RICO_6_TAJ_C_SFX,  RICO_6_TAJ_D_SFX,
     RICO_6_TAJ_A_SFX,  RICO_6_TAJ_B_SFX,  RICO_6_TAJ_C_SFX,  RICO_6_TAJ_D_SFX,
@@ -258,7 +258,7 @@ s32 shotRayHitsRoomBbox(s32 room, const coord3d* start, const coord3d* dir)
 {
     s32 max[3];
     s32 min[3];
-    s_room_info* roominfo;
+    const s_room_info* roominfo;
 
     roominfo = &g_BgRoomInfo[room];
 
@@ -296,7 +296,7 @@ s32 shotFindBgHitInVisibleRooms(const coord3d *from, const coord3d *to, const co
 {
     s32 rooms[100];
     s32 *roomptr;
-    s32 *end;
+    const s32 *end;
     s32 numrooms;
     struct HitThing hit;
     f32 scale;
@@ -523,7 +523,7 @@ s32 shotFindBgHit(const coord3d *from, const coord3d *to, const coord3d *dir, co
 void shotFireBullet(s32 hand)
 {
     f32 maxRange;
-    coord3d *playerpos;
+    const coord3d *playerpos;
     s32 hitbgstan;
     coord3d stanhit;
     StandTile *hittile;
@@ -546,7 +546,7 @@ void shotFireBullet(s32 hand)
     coord3d scaleddir;
     coord3d hitdir;
     f32 distscale;
-    PropRecord *playerprop;
+    const PropRecord *playerprop;
     PropRecord *prop;
     PropRecord **pp;
     s32 startroom;
@@ -927,10 +927,10 @@ void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpa
  */
 void shotPunch(s32 hand, s32 item_id)
 {
-    PropRecord *playerprop;
+    const PropRecord *playerprop;
     f32 ducking;
     s32 hit;
-    PropRecord *prop;
+    const PropRecord *prop;
     PropRecord **propptr;
     ChrRecord *chr;
     f32 max0;
