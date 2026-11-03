@@ -38,7 +38,10 @@ The player has two hands, `GUNRIGHT` and `GUNLEFT`, each a `struct hand` in
 * the gun model itself (`gunmodel`, a `Model` without the animation part, with its node
   data in `gunmodelRwData`) and where its muzzle flash is (`muzzlePos`).
 
-Each hand's gun model is loaded on demand into a buffer of its own (`gunLoadHandModel`).
+Gun models are loaded on demand (`gunLoadHandModel`), each one once per level into its own
+stage pool memory (`gunCacheModel`); every hand of every player holding that gun shares the
+loaded file and has its own `Model`. If the stage pool is nearly full, a gun is loaded into
+the hand's own buffer instead, as the original game always did.
 `gunSetHandModel` asks for a new model, which is swapped in when the gun is lowered.
 
 ## Each frame
