@@ -36,6 +36,7 @@
 #include "game/nav/stan.h"
 #include "game/player/inventory.h"
 #include "game/player/player.h"
+#include "game/menu/mp_weapon.h"
 
 /* The model switches that held guns and hats attach to */
 #define CHR_SWITCH_RIGHTHAND 3
@@ -818,11 +819,29 @@ void playerDropInventory(void)
         if (modelnum >= 0 && invHasItem(item))
         {
             PropRecord *prop = chrGiveWeaponEx(playerchr, modelnum, item, PROPFLAG_CONCEAL_GUN, NULL, NULL);
+            PropRecord *left = NULL;
+
+            // A pair is dropped as a pair, so picking it up gives both guns
+            if (prop != NULL && invHasDualWeapon(item, item))
+            {
+                left = chrGiveWeaponEx(playerchr, modelnum, item, PROPFLAG_CONCEAL_GUN | PROPFLAG_WEAPON_LEFTHANDED, NULL, NULL);
+
+                if (left != NULL)
+                {
+                    weaponSetDual(left->weapon, prop->weapon);
+                }
+            }
 
             if (prop != NULL)
             {
                 objSetDropType(prop, DROPTYPE_DEFAULT);
                 objDrop(prop);
+            }
+
+            if (left != NULL)
+            {
+                objSetDropType(left, DROPTYPE_DEFAULT);
+                objDrop(left);
             }
         }
     }

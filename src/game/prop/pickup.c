@@ -32,6 +32,7 @@
 #include "game/audio/sfxvolume.h"
 #include "assets/obseg/text/LpropobjE.h"
 #include "game/level/gamemode.h"
+#include "game/menu/mp_weapon.h"
 
 /* How close the player must be to walk over a prop and pick it up, and, with the watch
    magnet on, to pull it in. The magnet works once it has been on for a second. */
@@ -829,7 +830,7 @@ static bool playerHasAllOfWeapon(const WeaponObjRecord *weapon)
 
     if (weapon->dualweapon == NULL && weapon->LinkedWeaponType < 0)
     {
-        return true;
+        return !invCanDualWieldPickup(weapon->weaponnum);
     }
 
     other = weapon->dualweapon != NULL ? weapon->dualweapon->weaponnum : weapon->LinkedWeaponType;

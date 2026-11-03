@@ -1330,8 +1330,11 @@ void fileCoopSavePartnerSettings(void)
 
 /**
  * The multiplayer custom weapon set, also in the spare bytes of the EEPROM header:
- * unk[5] = MP_WEAPONS_SAVE_MAGIC, unk[6..13] = the weapon in each slot.
+ * unk[5] = MP_WEAPONS_SAVE_MAGIC, unk[6..13] = the weapon in each slot,
+ * unk[14] = multiplayer flags (MP_SAVE_FLAG_*).
  */
+#define MP_SAVE_FLAGS          14
+#define MP_SAVE_FLAG_DUALWIELD 0x01
 #define MP_WEAPONS_SAVE_MAGIC 0xC2
 #define MP_WEAPONS_SAVE_START 6
 
@@ -1340,15 +1343,18 @@ void fileMpLoadWeaponSettings(const smallSave *header)
     if (header->data[5] == MP_WEAPONS_SAVE_MAGIC)
     {
         mpCustomWeaponLoad(&header->data[MP_WEAPONS_SAVE_START]);
+        mpDualWieldSet((header->data[MP_SAVE_FLAGS] & MP_SAVE_FLAG_DUALWIELD) != 0);
     }
 }
 
 /**
- * Writes the custom weapon set to the EEPROM header if it changed.
+ * Writes the custom weapon set and the multiplayer flags to the EEPROM header if they
+ * changed.
  */
 void fileMpSaveWeaponSettings(void)
 {
     u8 choices[MP_WEAPON_SET_SLOTS];
+    u8 flags = mpDualWieldIsOn() ? MP_SAVE_FLAG_DUALWIELD : 0;
     s32 i;
     bool changed;
 
@@ -1358,7 +1364,8 @@ void fileMpSaveWeaponSettings(void)
     }
 
     mpCustomWeaponSave(choices);
-    changed = s_SaveHeader.data[5] != MP_WEAPONS_SAVE_MAGIC;
+    changed = (s_SaveHeader.data[5] != MP_WEAPONS_SAVE_MAGIC) || (s_SaveHeader.data[MP_SAVE_FLAGS] != flags);
+    s_SaveHeader.data[MP_SAVE_FLAGS] = flags;
 
     for (i = 0; i < MP_WEAPON_SET_SLOTS; i++)
     {

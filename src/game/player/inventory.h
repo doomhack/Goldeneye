@@ -20,6 +20,7 @@ int invAddItem(ITEM_IDS item);
 int invHasItem(ITEM_IDS item);
 bool invHasDualWeapon(ITEM_IDS right, ITEM_IDS left);
 int invAddDualItem(ITEM_IDS right, ITEM_IDS left);
+bool invCanDualWieldPickup(ITEM_IDS weapon);
 s32 invGetAllGunsFlag(void);
 void invSetAllGunsFlag(s32 all_guns);
 bool          invHasProp(const PropRecord *prop);

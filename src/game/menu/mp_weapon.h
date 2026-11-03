@@ -94,4 +94,7 @@ const char *mpCustomWeaponGetName(s32 slot);
 void mpCustomWeaponLoad(const u8 *choices);
 void mpCustomWeaponSave(u8 *choices);
 
+bool mpDualWieldIsOn(void);
+void mpDualWieldSet(bool on);
+
 #endif
