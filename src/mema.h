@@ -8,5 +8,6 @@ void *memaAlloc(u32 size);
 void memaFree(void *addr, u32 size);
 u32 memaGetLongestFree(void);
 bool memaRealloc(void *addr, u32 oldSize, u32 newSize);
+void memaAddFree(void *start, u32 size);
 
 #endif
