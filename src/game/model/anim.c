@@ -1,9 +1,9 @@
 /**
  * The animation table: the guard, player and vehicle animations.
  *
- * At boot the animation headers (ModelAnimation) are copied from ROM into the permanent
- * pool and their offsets turned into pointers. The frame data stays in ROM: as an
- * animation plays, animLoadFrame (model.c) copies the frames it needs into a small buffer.
+ * At boot the animation headers (ModelAnimation) and all their frames (1.4 MB) are copied
+ * from ROM into the permanent pool, and their offsets turned into pointers. (The original
+ * game left the frames in ROM and copied each one it drew by DMA, several times a frame.)
  */
 #include <ultra64.h>
 #include <memp.h>
@@ -13,27 +13,13 @@
 #include "game/model/modelfile.h"
 #include "bondgame.h"
 #include "rom.h"
-
-/** Sets the buffer that animLoadFrame copies animation frames from ROM into. */
-void animInitFrameBuffer(struct bondstruct_unk_animation_related* animBuffer) {
-    g_AnimFrameBuffer = animBuffer; // Data structure with offset and two tables
-}
-
-
-//bss
-
-// Where animation frames are saved. Can possibly hold as much as nine, but the game will ever store four at maximum.
-char animations_frame_buffer[0x2D0];
+#include <macro.h>
 
 // Animation table ptr
 struct animation_table_data * g_AnimTable;
 
-//data
-struct bondstruct_unk_animation_related g_AnimFrameBufferInfo = {
-    NULL,
-    animations_frame_buffer, // Two pointers. One always points to the start of the buffer, the other can be modified.
-    animations_frame_buffer
-};
+/** Every animation's frames, copied from the animation_entries segment. */
+static u8 *s_AnimFrames;
 
 ModelAnimation *animation_table_ptrs1[] = {
     ANIM_OFFSET(PTR_ANIM_idle),
@@ -230,7 +216,14 @@ ModelAnimation *animation_table_ptrs2[] = {
 };
 
 
-extern u32 _animation_entriesSegmentRomStart[];
+extern u8 _animation_entriesSegmentRomStart[];
+extern u8 _animation_entriesSegmentRomEnd[];
+
+/** The memory animLoadTable needs for the animation frames, in the permanent pool. */
+u32 animGetFramesSize(void)
+{
+    return ALIGN16_a(_animation_entriesSegmentRomEnd - _animation_entriesSegmentRomStart);
+}
 
 /**
  * Turns each animation offset in a NULL-terminated table into a pointer, and resolves
@@ -252,7 +245,7 @@ void animResolveTable(ModelAnimation **table)
         anim = (ModelAnimation *)&g_AnimTable->data[(u32)*entry];
         anim->bitDescriptors = (ModelAnimBitField *)&g_AnimTable->data[(u32)anim->bitDescriptors];
         anim->bitStream = &g_AnimTable->data[(u32)anim->bitStream];
-        anim->address += (s32)_animation_entriesSegmentRomStart;
+        anim->address += (u32) s_AnimFrames;
         *entry = anim;
     }
 }
@@ -261,13 +254,14 @@ void animLoadTable(void)
 {
     s32 animsDataSegmentSize;
     
-    animInitFrameBuffer(&g_AnimFrameBufferInfo);
-    
     animsDataSegmentSize = (s32)&_animation_dataSegmentEnd - (s32)&_animation_dataSegmentStart;
     
     g_AnimTable = mempAlloc(animsDataSegmentSize, MEMPOOL_PERMANENT);
 
     romCopy(g_AnimTable, &_animation_dataSegmentRomStart, animsDataSegmentSize);
+
+    s_AnimFrames = mempAlloc(animGetFramesSize(), MEMPOOL_PERMANENT);
+    romCopy(s_AnimFrames, _animation_entriesSegmentRomStart, animGetFramesSize());
     animResolveTable(animation_table_ptrs1);
     animResolveTable(animation_table_ptrs2);
 }
