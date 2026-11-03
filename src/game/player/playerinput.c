@@ -1114,11 +1114,6 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         moveData.speedVertaUp = tmp;
     }
 
-    if (playerIsShowingDamage() && !gameIsMulti())
-    {
-        moveData.triggerOn = 0;
-    }
-
     moveData.triggerOn = counterOpSuicidePillTick(moveData.triggerOn);
 
     gunTickGameplay(moveData.triggerOn);
