@@ -19,26 +19,10 @@ typedef struct s_bullet_spark {
     u8 a;
 } s_bullet_spark;
 
-#ifndef VERSION_EU
-typedef struct s_moving_bullet_spark
-{
-    s_bullet_spark spark;
-    coord3d velocity;
-    f32 minY; // the spark dies when it falls below this
-} s_moving_bullet_spark;
-#endif
-
 extern Vtx g_SparkVtxTemplate;
 s_bullet_spark *sparkCreate(coord3d *pos, s32 type, f32 size, s16 room);
-void sparkInit(s_bullet_spark *spark, coord3d *pos, s32 type, f32 size, s16 room);
 void sparksRender(Gfx **gdlptr, s32 zbufferMode);
-void sparksRenderAll(Gfx **gdlptr, s32 zbufferMode);
-void sparksResetAll(void);
+void sparksReset(void);
 void sparksTick(void);
-void sparksTickAll(void);
-#ifndef VERSION_EU
-void movingSparksReset(void);
-void movingSparksTick(void);
-#endif
 
 #endif

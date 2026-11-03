@@ -221,7 +221,7 @@ void lvStageLoad(s32 stage)
     levelMusicResetSlots();
     modelmgrSetLevelResetting(TRUE);
     texInitSharedPool();
-    sparksResetAll();
+    sparksReset();
     imageBankLoad();
     textLoadFonts();
 
@@ -595,7 +595,7 @@ Gfx* lvRender(Gfx* DL)
 
             DL = weaponRenderTracers(DL);
 
-            sparksRenderAll(&DL, ZBUF_SURFACE);
+            sparksRender(&DL, ZBUF_SURFACE);
             DL = glassRenderShards(DL);
             DL = debrisRender(DL);
 
@@ -1070,7 +1070,7 @@ void lvTick(void)
         roomMtxTick();
         waterTick();
         skyTick();
-        sparksTickAll();
+        sparksTick();
         casingsTick();
         glassTickShards();
         debrisTick();

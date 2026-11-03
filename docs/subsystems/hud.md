@@ -11,7 +11,7 @@ each frame by `hudRender`, which calls into these files; the ammo counters and t
 | `src/game/hud/hud.c` | `hudRender`, which draws the HUD over each player's view (hands, sight, blood, casings, watch, health bars, ammo, messages, fades) and runs the death and co-op respawn sequence; `hudRenderHealthBars`; the end-of-level credits (`hudRenderCredits`) |
 | `src/game/hud/hudmsg.c` | The HUD text messages (`hudmsg*`): the bottom-left and top message queues, and the "show position" cheat's readout |
 | `src/game/hud/healthbar.c` | The health and armour bars (`hudMakeDamageSegments`, `hudRenderGaugeBar`), and the green watch-screen shapes that the watch menu and the bars are built from (`watchMake*Verts`, `watchRender*`) |
-| `src/game/hud/sparks.c` | Bullet sparks: short-lived camera-facing sprites where a bullet hits (`sparkCreate`), and moving sparks that fly with gravity (`movingSparkCreate`, not on PAL) |
+| `src/game/hud/sparks.c` | Bullet sparks: short-lived camera-facing sprites where a bullet hits (`sparkCreate`) |
 | `src/game/hud/blood.c` | The death blood animation: decoding each frame (`bloodDecodeFrame`), smoothing it, and drawing it as a red overlay (`bloodRender`); also used by the gun barrel intro (`bloodRenderGunbarrel`) |
 | `src/game/hud/radar.c` | The multiplayer radar (`radarRender`): a dot per other player |
 
@@ -57,9 +57,10 @@ display list. The watch's health page draws the same bars.
 ## Bullet sparks
 
 `sparkCreate` adds a spark at a world position, in one of the colours in `g_SparkColors`;
-guns, guards and objects call it on impact. There are 20 fixed sparks (`g_Sparks`) and 50
-moving ones (`g_MovingSparks`), which `lvTick` ticks (`sparksTickAll`) and `lvRender` draws
-for each view after the rooms (`sparksRenderAll`).
+guns, guards and objects call it on impact. There are 20 sparks (`g_Sparks`), which `lvTick` ticks
+(`sparksTick`) and `lvRender` draws for each view after the rooms (`sparksRender`). The US
+version also had 50 moving sparks that fell with gravity, but nothing ever created one, so
+they were removed.
 
 ## The death blood
 
@@ -86,7 +87,4 @@ gun.
 * The file names were misleading before this mapping: `glass2.c` (now `healthbar.c` and
   `sparks.c`) had nothing to do with glass, and `bondwalk2.c` (now `gfx/texrect.c`) only
   draws a textured rectangle.
-* On PAL, there are no moving sparks: the `movingSparks*` functions just call the plain
-  spark ones, with the wrong arguments in places. The rewrite should use one version.
 * The spark structure fields are still mostly `unkXX`.
-* `sparkGetColor` and `sparkSetColor` are never called.
