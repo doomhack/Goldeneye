@@ -11,7 +11,6 @@
 #include <macro.h>
 #include "game/player/player.h"
 #include <fr.h>
-#include "game/level/gamemode.h"
 
 static u8 *s_Zbuf;
 static s32 s_ZbufWidth;
@@ -40,8 +39,10 @@ static void zbufAllocate(void)
         // zbufInit sets the width actually used each frame.
         s_ZbufWidth = SCREEN_WIDTH * VI_MAX_SCALEX;
 
-        // Co-op also shows one view full-screen at times (watch, cutscenes).
-        if ((getPlayerCount() == 1) || gameIsTwoPlayerMission())
+        // Two views need full height too: side by side views are full
+        // height, and co-op also shows one view full-screen at times
+        // (watch, cutscenes). Only 3 and 4 player games stack every view.
+        if (getPlayerCount() <= 2)
         {
             s_ZbufHeight = SCREEN_HEIGHT;
         }
