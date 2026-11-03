@@ -16,8 +16,8 @@ struct Shard {
     Vtx vertices[3];
 };
 
-void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
-void glassCreateShard(coord3d *pos, f32 angle, f32 size);
+void glassCreateShards(const coord3d *pos, const coord3d *xaxis, const coord3d *yaxis, const coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax);
+void glassCreateShard(const coord3d *pos, f32 angle, f32 size);
 void glassTickShards(void);
 Gfx *glassRenderShards(Gfx *gdl);
 void glassInitShards(void);

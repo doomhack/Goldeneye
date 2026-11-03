@@ -303,7 +303,7 @@ f32 weaponGetDamage(ITEM_IDS item);
 u16 weaponGetSound(ITEM_IDS item);
 u8 weaponGetSoundRate(ITEM_IDS item);
 
-void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos,  StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *tumble,  PropRecord *owner);
+void gunLaunchProjectile(ObjectRecord *obj, const coord3d *pos,  StandTile *stan, Mtxf *matrix, const coord3d *velocity, const Mtxf *tumble,  PropRecord *owner);
 void gunGetAimRay(coord3d *zeropos, coord3d *vec);
 
 s8 gunGetFiringStatus(GUNHAND hand);
@@ -312,7 +312,7 @@ void         gunClearHandModel(GUNHAND hand);
 void gunUnequip(enum GUNHAND hand, enum ITEM_IDS weapid);
 s32 gunHandModelIsEmpty(enum GUNHAND hand);
 void gunFreeRocket(enum GUNHAND hand);
-void gunSetTracerTarget(coord3d* pos);
+void gunSetTracerTarget(const coord3d* pos);
 
 void gunCalcBlend(enum GUNHAND handnum);
 void gunUpdateSway(f32 breathing, f32 maxspeed, f32 speed_verta, f32 speed_theta);
@@ -353,7 +353,7 @@ void gunEquipPreviousWeapons(void);
 int gunGetFistModelItem(void);
 s32 gunGetHandModelItem(GUNHAND hand);
 void gunLoadHandModel(GUNHAND hand);
-void gunSetFirstPersonPartsVisible(Model* model, s32 val);
+void gunSetFirstPersonPartsVisible(const Model* model, s32 val);
 void gunSpawnGLGrenade(s32 handnum);
 void gunThrowGrenade(s32 hand);
 void gunThrowKnife(s32 hand);
@@ -364,7 +364,7 @@ void gunUpdateAttachedRocket(s32 handIndex);
 
 extern Lights1 g_WeaponEnvmapLight;
 void gunGetShotDir(coord3d *origin, coord3d *result, enum GUNHAND hand);
-void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *mtx, coord3d *velocity, Mtxf *tumble);
+void gunLaunchProjectileFromPlayer(ObjectRecord *obj, const coord3d *targetpos, Mtxf *mtx, const coord3d *velocity, const Mtxf *tumble);
 void gunAnalyzeGEKey(void);
 void gunOpenWeaponCase(void);
 f32 gunSetHorizontalOffset(GUNHAND hand);
@@ -377,7 +377,7 @@ extern u32 g_gunDebKeyframeIndex;
 extern CartridgeModelFileRecord ejected_cartridge[];
 ModelFileHeader *get_ptr_weapon_model_header_line(ITEM_IDS weapon);
 void gunSetWatchMenuWeapon(GUNHAND hand, ITEM_IDS weaponnum_watchmenu);
-void gunSetHeldItemVisible(Model *model, s32 val);
+void gunSetHeldItemVisible(const Model *model, s32 val);
 
 #include "game/hud/ammohud.h"
 #include "game/menu/watchmodel.h"

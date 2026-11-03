@@ -31,34 +31,34 @@
 #include "game/math/line_tri_intersect.h"
 #include "game/math/physics.h"
 
-static waypoint *waypointFindOnTile(StandTile *tile);
+static waypoint *waypointFindOnTile(const StandTile *tile);
 static bool waypointIsOnTile(StandTile *tile);
-static f32 waypointDistSqXz(coord3d *pos, waypoint *wp);
-static s32 chrPathIsOffscreen(ChrRecord *self, coord3d *pos, StandTile *tile);
-static s32 chrPathToPadIsOffscreen(ChrRecord *self, PadRecord *pad);
-static void chrSetGoposSegDistTotal(ChrRecord *self, struct waydata *way, coord3d *pos);
-static void chrGoPosGetCurWaypointInfo(ChrRecord *self, coord3d *target_point, StandTile **target_stan);
-static s32 chrGoPosCalculateBaseTtl(ChrRecord *self);
+static f32 waypointDistSqXz(const coord3d *pos, const waypoint *wp);
+static s32 chrPathIsOffscreen(const ChrRecord *self, const coord3d *pos, StandTile *tile);
+static s32 chrPathToPadIsOffscreen(const ChrRecord *self, const PadRecord *pad);
+static void chrSetGoposSegDistTotal(const ChrRecord *self, struct waydata *way, const coord3d *pos);
+static void chrGoPosGetCurWaypointInfo(const ChrRecord *self, coord3d *target_point, StandTile **target_stan);
+static s32 chrGoPosCalculateBaseTtl(const ChrRecord *self);
 static void chrGoPosClearRestartTtl(ChrRecord *self);
 static void chrGoPosConsiderRestart(ChrRecord *self);
 static void chrGoPosResetMagic(ChrRecord *self);
 static void chrActGoposIncCurIndex(ChrRecord *self);
-static s32 chrPatrolCalculateStep(ChrRecord *self, bool32 *forward, s32 numsteps);
-static PadRecord *chrGetPatrolStepPad(ChrRecord *self, s32 numsteps);
-static PadRecord *chrGetNextPatrolStepPad(ChrRecord *self);
+static s32 chrPatrolCalculateStep(const ChrRecord *self, bool32 *forward, s32 numsteps);
+static PadRecord *chrGetPatrolStepPad(const ChrRecord *self, s32 numsteps);
+static PadRecord *chrGetNextPatrolStepPad(const ChrRecord *self);
 static void chrSetNextActPatrolStepPadPos(ChrRecord *self);
 static void chrAdvancePatrolStep(ChrRecord *self);
-static bool chrIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan);
-static void chrGoPosTickMagic(ChrRecord *self, struct waydata *way, f32 speed, coord3d *pos, StandTile *tile);
-static void chrGoPosChooseAnimationEx(ChrRecord *self, s32 speed, s32 isMale);
-static void chrGoPosChooseAnimation(ChrRecord *self);
-static void chrPatrolChooseAnimation(ChrRecord *self);
-static s32 chrCanWalkLine(ChrRecord *self, coord3d *point, StandTile *tile, coord3d *dest, StandTile * desttile, s32 cdtypes);
-static s32 chrCanWalkLineWithin(ChrRecord *self, coord3d *point, StandTile *tile, coord3d *dest, f32 halfwidth, s32 cdtypes);
-static void orderPointsBySide(coord3d *a, coord3d *b, coord3d *dir);
-static s32 chrNavCheckLine(ChrRecord *self, coord3d *from, StandTile *fromtile, coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes, bool nearestEdge);
-static s32 chrNavTryObstacle(ChrRecord *self, coord3d *corner, s32 left, coord3d *othercorner, f32 clearance, s32 checktarget, coord3d *target, struct waydata *way, f32 overshoot, s32 cdtypes, s32 set_copy);
-static void chrNavTick(ChrRecord *self, coord3d *target, struct waydata *way);
+static bool chrIsPosClearOfObjectBounds(const coord3d *pos, const StandTile *stan);
+static void chrGoPosTickMagic(ChrRecord *self, struct waydata *way, f32 speed, const coord3d *pos, StandTile *tile);
+static void chrGoPosChooseAnimationEx(const ChrRecord *self, s32 speed, s32 isMale);
+static void chrGoPosChooseAnimation(const ChrRecord *self);
+static void chrPatrolChooseAnimation(const ChrRecord *self);
+static s32 chrCanWalkLine(ChrRecord *self, const coord3d *point, StandTile *tile, const coord3d *dest, const StandTile * desttile, s32 cdtypes);
+static s32 chrCanWalkLineWithin(ChrRecord *self, const coord3d *point, StandTile *tile, const coord3d *dest, f32 halfwidth, s32 cdtypes);
+static void orderPointsBySide(coord3d *a, coord3d *b, const coord3d *dir);
+static s32 chrNavCheckLine(ChrRecord *self, const coord3d *from, StandTile *fromtile, const coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes, bool nearestEdge);
+static s32 chrNavTryObstacle(ChrRecord *self, coord3d *corner, s32 left, coord3d *othercorner, f32 clearance, s32 checktarget, const coord3d *target, struct waydata *way, f32 overshoot, s32 cdtypes, s32 set_copy);
+static void chrNavTick(ChrRecord *self, const coord3d *target, struct waydata *way);
 
 
 /**
@@ -67,7 +67,7 @@ static void chrNavTick(ChrRecord *self, coord3d *target, struct waydata *way);
  * one-handed/unarmed set is used. *flip mirrors the animation for a left-hand gun,
  * or is random when the guard holds two guns or none.
  */
-static bool chrUsesRifleMoveAnims(ChrRecord *self, s32 *flip)
+static bool chrUsesRifleMoveAnims(const ChrRecord *self, s32 *flip)
 {
     PropRecord *left = chrGetEquippedWeaponProp(self, GUNLEFT);
     PropRecord *right = chrGetEquippedWeaponProp(self, GUNRIGHT);
@@ -135,7 +135,7 @@ void chrRunToPos(ChrRecord *self, coord3d *pos)
 /**
  * Given a stan tile, find the first waypoint on that tile.
  */
-static waypoint *waypointFindOnTile(StandTile *tile)
+static waypoint *waypointFindOnTile(const StandTile *tile)
 {
     waypoint *head;
     waypoint *wp;
@@ -166,7 +166,7 @@ static bool waypointIsOnTile(StandTile *tile)
 /**
  * Squared distance from pos to the waypoint's pad, ignoring height.
  */
-static f32 waypointDistSqXz(coord3d *pos, waypoint *wp)
+static f32 waypointDistSqXz(const coord3d *pos, const waypoint *wp)
 {
     f32 dz;
     f32 dx;
@@ -179,7 +179,7 @@ static f32 waypointDistSqXz(coord3d *pos, waypoint *wp)
 }
 
 
-waypoint *waypointFindNearPos(coord3d *pos, StandTile *starttile)
+waypoint *waypointFindNearPos(const coord3d *pos, StandTile *starttile)
 {
     StandTile *tile = NULL;
     f32 bestdist;
@@ -218,7 +218,7 @@ waypoint *waypointFindNearPos(coord3d *pos, StandTile *starttile)
  * True if none of the rooms between the guard and pos are visible, so the guard
  * can be moved there without anyone seeing it. False if the room list overflows.
  */
-static s32 chrPathIsOffscreen(ChrRecord *self, coord3d *pos, StandTile *tile)
+static s32 chrPathIsOffscreen(const ChrRecord *self, const coord3d *pos, StandTile *tile)
 {
     s32 rooms[MAX_PATH_ROOMS];
     PropRecord *prop = self->prop;
@@ -244,7 +244,7 @@ static s32 chrPathIsOffscreen(ChrRecord *self, coord3d *pos, StandTile *tile)
 }
 
 
-static s32 chrPathToPadIsOffscreen(ChrRecord *self, PadRecord *pad)
+static s32 chrPathToPadIsOffscreen(const ChrRecord *self, const PadRecord *pad)
 {
     return chrPathIsOffscreen(self, &pad->pos, pad->stan);
 }
@@ -253,7 +253,7 @@ static s32 chrPathToPadIsOffscreen(ChrRecord *self, PadRecord *pad)
 /**
  * PD: chrGoPosInitMagic
 */
-static void chrSetGoposSegDistTotal(ChrRecord *self, struct waydata *way, coord3d *pos)
+static void chrSetGoposSegDistTotal(const ChrRecord *self, struct waydata *way, const coord3d *pos)
 {
     PropRecord *prop;
     f32 dx;
@@ -281,7 +281,7 @@ static void chrSetGoposSegDistTotal(ChrRecord *self, struct waydata *way, coord3
  *
  * PD: chrGoPosGetCurWaypointInfoWithFlags (somewhat similar)
 */
-static void chrGoPosGetCurWaypointInfo(ChrRecord *self, coord3d *target_point, StandTile **target_stan)
+static void chrGoPosGetCurWaypointInfo(const ChrRecord *self, coord3d *target_point, StandTile **target_stan)
 {
     waypoint *waypoint;
     PadRecord *pad;
@@ -312,7 +312,7 @@ static void chrGoPosGetCurWaypointInfo(ChrRecord *self, coord3d *target_point, S
 /**
  * PD: func0f0370a8 (but GE has much more cases)
 */
-f32 chrGetRunAnimSpeed(ChrRecord *self)
+f32 chrGetRunAnimSpeed(const ChrRecord *self)
 {
     f32 scale_factor = g_ChrSpeedWalk;
 
@@ -354,7 +354,7 @@ f32 chrGetRunAnimSpeed(ChrRecord *self)
 }
 
 
-static s32 chrGoPosCalculateBaseTtl(ChrRecord *self)
+static s32 chrGoPosCalculateBaseTtl(const ChrRecord *self)
 {
     f32 dx;
     f32 dz;
@@ -483,7 +483,7 @@ static void chrActGoposIncCurIndex(ChrRecord *self)
  * whether the chr will be traversing the path in the forward direction at that
  * point.
  */
-static s32 chrPatrolCalculateStep(ChrRecord *self, bool32 *forward, s32 numsteps)
+static s32 chrPatrolCalculateStep(const ChrRecord *self, bool32 *forward, s32 numsteps)
 {
     s32 nextstep = self->act_patrol.nextstep;
     bool isforward = *forward;
@@ -547,7 +547,7 @@ static s32 chrPatrolCalculateStep(ChrRecord *self, bool32 *forward, s32 numsteps
 /**
  * PD: chrPatrolCalculatePadNum (had some nice finds when searching for "patrol" in "chraction.c" in PD)
 */
-static PadRecord *chrGetPatrolStepPad(ChrRecord *self, s32 numsteps)
+static PadRecord *chrGetPatrolStepPad(const ChrRecord *self, s32 numsteps)
 {
     waypoint *wp;
     bool32 forward;
@@ -565,7 +565,7 @@ static PadRecord *chrGetPatrolStepPad(ChrRecord *self, s32 numsteps)
 }
 
 
-static PadRecord *chrGetNextPatrolStepPad(ChrRecord *self)
+static PadRecord *chrGetNextPatrolStepPad(const ChrRecord *self)
 {
     return chrGetPatrolStepPad(self, 0);
 }
@@ -596,7 +596,7 @@ static void chrAdvancePatrolStep(ChrRecord *self)
  * Returns true if pos is not inside the 2D collision footprint of
  * any normal object (PROP_TYPE_OBJ) in the stan's room.
 */
-static bool chrIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan)
+static bool chrIsPosClearOfObjectBounds(const coord3d *pos, const StandTile *stan)
 {
     s32 roomids[8];
     s16 *propnum;
@@ -631,7 +631,7 @@ static bool chrIsPosClearOfObjectBounds(coord3d *pos, StandTile *stan)
 /**
  * contrast with @see chrNavTick
 */
-static void chrGoPosTickMagic(ChrRecord *self, struct waydata *way, f32 speed, coord3d *pos, StandTile *tile)
+static void chrGoPosTickMagic(ChrRecord *self, struct waydata *way, f32 speed, const coord3d *pos, StandTile *tile)
 {
     PropRecord *self_prop;
     u8 curindex;
@@ -723,7 +723,7 @@ static void chrGoPosTickMagic(ChrRecord *self, struct waydata *way, f32 speed, c
  *
  * PD: chrCalculatePosition.
 */
-void chrGetMovementTarget(ChrRecord *self, coord3d *target)
+void chrGetMovementTarget(const ChrRecord *self, coord3d *target)
 {
     PadRecord *pad;
     f32 percent;
@@ -783,7 +783,7 @@ void chrGetMovementTarget(ChrRecord *self, coord3d *target)
 /**
  * Starts the movement animation for speed: sprint when 2, run when 1, otherwise walk.
  */
-static void chrGoPosChooseAnimationEx(ChrRecord *self, s32 speed, s32 isMale)
+static void chrGoPosChooseAnimationEx(const ChrRecord *self, s32 speed, s32 isMale)
 {
     s32 ani_arg;
 
@@ -838,13 +838,13 @@ static void chrGoPosChooseAnimationEx(ChrRecord *self, s32 speed, s32 isMale)
 }
 
 
-static void chrGoPosChooseAnimation(ChrRecord *self)
+static void chrGoPosChooseAnimation(const ChrRecord *self)
 {
     chrGoPosChooseAnimationEx(self, self->act_gopos.speedMode, c_item_entries[self->bodynum].isMale);
 }
 
 
-s32 chrGoToPos(ChrRecord *self, coord3d *pos, StandTile *stan, SPEED speed)
+s32 chrGoToPos(ChrRecord *self, const coord3d *pos, StandTile *stan, SPEED speed)
 {
     PropRecord *prop;
     waypoint *prop_waypoint;
@@ -909,7 +909,7 @@ s32 chrGoToPos(ChrRecord *self, coord3d *pos, StandTile *stan, SPEED speed)
 }
 
 
-static void chrPatrolChooseAnimation(ChrRecord *self)
+static void chrPatrolChooseAnimation(const ChrRecord *self)
 {
     s32 ani_arg;
 
@@ -995,7 +995,7 @@ void chrStartPatrol(ChrRecord *self, PathRecord *path)
 }
 
 
-s32 propCanWalkLine(PropRecord *prop, coord3d *dest, coord3d *dir)
+s32 propCanWalkLine(const PropRecord *prop, const coord3d *dest, const coord3d *dir)
 {
     ChrRecord *chr;
     f32 startX;
@@ -1053,7 +1053,7 @@ s32 propCanWalkLine(PropRecord *prop, coord3d *dest, coord3d *dir)
 }
 
 
-s32 propCanWalkInDir(PropRecord *prop, coord3d *dir, f32 dist)
+s32 propCanWalkInDir(const PropRecord *prop, const coord3d *dir, f32 dist)
 {
     coord3d dest;
 
@@ -1065,7 +1065,7 @@ s32 propCanWalkInDir(PropRecord *prop, coord3d *dir, f32 dist)
 }
 
 
-bool chrHasStoppedOrPatroling(ChrRecord *self)
+bool chrHasStoppedOrPatroling(const ChrRecord *self)
 {
     if ((self->actiontype == ACT_STAND) && !self->act_stand.prestand && !self->act_stand.reaim)
     {
@@ -1170,7 +1170,7 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 #define ACCEL_C 0.0117809725925326f
 #endif
 
-s32 chrApplySpeed(ChrRecord *self, coord3d *target, s32 speed, f32 *speedPtr)
+s32 chrApplySpeed(const ChrRecord *self, const coord3d *target, s32 speed, f32 *speedPtr)
 {
     f32 maxSpeed;
     Model *self_model;
@@ -1275,7 +1275,7 @@ s32 chrApplySpeed(ChrRecord *self, coord3d *target, s32 speed, f32 *speedPtr)
  * True if the ray from origin along dir (in XZ) passes within range of point,
  * ahead of the origin. A zero dir tests the origin itself.
  */
-s32 rayPassesNearPoint2d(coord3d *origin, coord3d *dir, coord3d *point, f32 range)
+s32 rayPassesNearPoint2d(const coord3d *origin, const coord3d *dir, const coord3d *point, f32 range)
 {
     coord3d dd;
     f32 along;
@@ -1313,7 +1313,7 @@ s32 rayPassesNearPoint2d(coord3d *origin, coord3d *dir, coord3d *point, f32 rang
  *
  * PD: posIsArrivingLaterallyAtPos.
  */
-s32 chrIsArrivingLaterallyAtPos(coord3d *prevpos, coord3d *curpos, coord3d *targetpos, f32 range)
+s32 chrIsArrivingLaterallyAtPos(const coord3d *prevpos, const coord3d *curpos, const coord3d *targetpos, f32 range)
 {
     coord3d dir;
 
@@ -1407,7 +1407,7 @@ void chrTickRunPos(ChrRecord *self)
 }
 
 
-static s32 chrCanWalkLine(ChrRecord *self, coord3d *point, StandTile *tile, coord3d *dest, StandTile * desttile, s32 cdtypes)
+static s32 chrCanWalkLine(ChrRecord *self, const coord3d *point, StandTile *tile, const coord3d *dest, const StandTile * desttile, s32 cdtypes)
 {
     StandTile *curtile;
     s32 ok;
@@ -1435,7 +1435,7 @@ static s32 chrCanWalkLine(ChrRecord *self, coord3d *point, StandTile *tile, coor
 }
 
 
-static s32 chrCanWalkLineWithin(ChrRecord *self, coord3d *point, StandTile *tile, coord3d *dest, f32 halfwidth, s32 cdtypes)
+static s32 chrCanWalkLineWithin(ChrRecord *self, const coord3d *point, StandTile *tile, const coord3d *dest, f32 halfwidth, s32 cdtypes)
 {
     StandTile *pstan;
     coord3d dd;
@@ -1493,7 +1493,7 @@ static s32 chrCanWalkLineWithin(ChrRecord *self, coord3d *point, StandTile *tile
 }
 
 
-s32 chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord3d *viapoint, coord3d *bondpos, StandTile *bondstan, s32 cdtypes)
+s32 chrCanWalkViaPoint(ChrRecord *self, const coord3d *mypos, StandTile *mystan, const coord3d *viapoint, const coord3d *bondpos, const StandTile *bondstan, s32 cdtypes)
 {
     StandTile *tile;
     bool pass;
@@ -1529,7 +1529,7 @@ s32 chrCanWalkViaPoint(ChrRecord *self, coord3d *mypos, StandTile *mystan, coord
  * Orders a and b so that b lies to the left of a when looking along dir
  * (swaps them unless the 2D cross product of dir and b - a is positive).
  */
-static void orderPointsBySide(coord3d *a, coord3d *b, coord3d *dir)
+static void orderPointsBySide(coord3d *a, coord3d *b, const coord3d *dir)
 {
     coord3d ab;
     coord3d perp;
@@ -1570,7 +1570,7 @@ static void orderPointsBySide(coord3d *a, coord3d *b, coord3d *dir)
  *
  * PD: chrNavCanSeeNextPos and chrNavCheckForObstacle.
  */
-static s32 chrNavCheckLine(ChrRecord *self, coord3d *from, StandTile *fromtile, coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes, bool nearestEdge)
+static s32 chrNavCheckLine(ChrRecord *self, const coord3d *from, StandTile *fromtile, const coord3d *to, coord3d *edgeStart, coord3d *edgeEnd, f32 overshoot, f32 width, s32 cdtypes, bool nearestEdge)
 {
     StandTile *tile;
     coord3d dir;
@@ -1713,7 +1713,7 @@ static s32 chrNavTryObstacle(
     coord3d *othercorner,
     f32 clearance,
     s32 checktarget,
-    coord3d *target,
+    const coord3d *target,
     struct waydata *way,
     f32 overshoot,
     s32 cdtypes,
@@ -1802,7 +1802,7 @@ static s32 chrNavTryObstacle(
 /**
  * Heading from prop to pos.
  */
-static f32 navAngleTo(PropRecord *prop, coord3d *pos)
+static f32 navAngleTo(const PropRecord *prop, const coord3d *pos)
 {
     return mathAtan2(pos->f[0] - prop->pos.f[0], pos->f[2] - prop->pos.f[2]);
 }
@@ -1879,7 +1879,7 @@ static bool chrNavTryAroundObstacle(ChrRecord *self, struct waydata *way, s32 cd
  * @see chrTickGoPos
  * contrast with @see chrGoPosTickMagic
 */
-static void chrNavTick(ChrRecord *self, coord3d *target, struct waydata *way)
+static void chrNavTick(ChrRecord *self, const coord3d *target, struct waydata *way)
 {
     coord3d targetpos;
     coord3d othercorner;
@@ -2111,7 +2111,7 @@ static coord3d *chrGoPosGetWaypointPos(ChrRecord *self, s32 index, StandTile **s
 /**
  * True if the guard has a clear, full-width line to dest (path blockers only).
  */
-static bool chrCanWalkLineClear(ChrRecord *self, coord3d *dest, StandTile *deststan)
+static bool chrCanWalkLineClear(ChrRecord *self, const coord3d *dest, const StandTile *deststan)
 {
     PropRecord *prop = self->prop;
 

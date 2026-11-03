@@ -117,7 +117,7 @@ static const Vtx s_FireballVertex = {{{0, 0, 0}, 0, {0, 0}, {0xff, 0xff, 0xff, 0
 /**
  * Starts a fireball at pos, a random size and angle.
  */
-static void explosionPartStart(struct ExplosionPart *part, coord3d *pos, s_explosiontype *type)
+static void explosionPartStart(struct ExplosionPart *part, coord3d *pos, const s_explosiontype *type)
 {
     f32 size = ((RANDOMFRAC() * 0.5f) + 1.0f) * type->explosion_size;
     f32 angle = RANDOMFRAC() * M_TAU_F;
@@ -246,7 +246,7 @@ void explosionStartShake(void)
  * offset to move the eye by (in result), and the screen's shake. The shake is stronger
  * the bigger and closer the explosions, and flips direction every 2 ticks.
  */
-void explosionScreenShake(coord3d *eyepos, coord3d *lookdir, coord3d *result)
+void explosionScreenShake(const coord3d *eyepos, const coord3d *lookdir, coord3d *result)
 {
     PropRecord *prop;
     f32 angle;
@@ -379,7 +379,7 @@ static bool explosionGetFalloff(f32 xdist, f32 ydist, f32 zdist, f32 hrange, f32
  * Objects take damage falling off straight with distance, characters and players with
  * its square. Explosions count as remote mine damage.
  */
-static void explosionInflictDamage(PropRecord *expprop, f32 hrange, f32 vrange)
+static void explosionInflictDamage(const PropRecord *expprop, f32 hrange, f32 vrange)
 {
     struct Explosion *exp = expprop->explosion;
     s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];
@@ -482,7 +482,7 @@ static void explosionInflictDamage(PropRecord *expprop, f32 hrange, f32 vrange)
  * Leaves the explosion's smoke: at its source, if it has one on the floor, else where it
  * is.
  */
-static void explosionMakeSmoke(PropRecord *expprop, struct Explosion *exp, s_explosiontype *type)
+static void explosionMakeSmoke(PropRecord *expprop, const struct Explosion *exp, const s_explosiontype *type)
 {
     PropRecord *source = exp->source;
     bool inair = (expprop->flags & PROPFLAG_00000008) != 0;
@@ -655,7 +655,7 @@ u8 explosionPropTick(PropRecord *prop)
  * distance (at most EXPLOSION_PULLBACK) and shrunk to match. roompos is the room the
  * vertices are relative to.
  */
-static Gfx *explosionRenderPart(struct ExplosionPart *part, Gfx *gdl, coord3d *roompos)
+static Gfx *explosionRenderPart(const struct ExplosionPart *part, Gfx *gdl, const coord3d *roompos)
 {
     Mtxf *cammtx = camGetViewToWorldMtxf();
     coord3d *eyepos = playerGetPos();
@@ -746,7 +746,7 @@ static Gfx *explosionRenderPart(struct ExplosionPart *part, Gfx *gdl, coord3d *r
  * Draws an explosion (in the translucent pass): its fireballs, grouped by animation
  * frame, last frame first. Fireballs that have finished their animation are freed.
  */
-Gfx *explosionRender(PropRecord *prop, Gfx *gdl, s32 withalpha)
+Gfx *explosionRender(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     struct Explosion *exp = prop->explosion;
     s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];

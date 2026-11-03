@@ -44,7 +44,7 @@
 
 s32 bgGetPortalIndex(s32 portalID);
 s32 bgPortalIsVertical(s32 portalnum);
-s32 bgSegmentCrossesPortal(s32 portalnum, coord3d *pos1, coord3d *pos2);
+s32 bgSegmentCrossesPortal(s32 portalnum, const coord3d *pos1, const coord3d *pos2);
 
 
 #define BG_STACK_SIZE 20
@@ -256,7 +256,7 @@ Gfx *bgRenderRoomSecondary(Gfx *gdl, s32 room_index);
 
 Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 width, s32 height);
 
-bool bgIsRoomOnScreen(s32 roomID, bbox2d *screenbox);
+bool bgIsRoomOnScreen(s32 roomID, const bbox2d *screenbox);
 s32 bgAddVisibleRoom(s32 curroom, s32 unk1, bbox2d *screensize, s32 next);
 void bgUpdateCurrentPlayerScreenMinMax(void);
 void *bgRunVisCommands(GlobalVisCommand *pc);
@@ -265,9 +265,9 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *screenbox);
 f32 bgGetPortalThickness(s32 portalnum);
 void bgGrowRoomBoundsToPortals(s32 roomID);
 #if defined(VERSION_EU)
-void bgTraversePortal(s32 roomnum, s32 portalnum, s32 depth, bbox2d *parentbox);
+void bgTraversePortal(s32 roomnum, s32 portalnum, s32 depth, const bbox2d *parentbox);
 #else
-s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum, s32 depth, bbox2d *parentbox);
+s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum, s32 depth, const bbox2d *parentbox);
 #endif
 void bgSetLevelScale(f32 scale);
 s32 bgProjectPortalPoints(s32 portalnum, f32 scale, coord3d *points);
@@ -1057,7 +1057,7 @@ void bgAddToRoomSet(u8* set, u8 newElement) {
 
 #define PORTALSTATUS_UNKNOWN 0xff
 
-void bgFindRoomsAlongSegment(coord3d *fromPos, coord3d *toPos, u8 *fromRooms, u8 *finalRooms, s32 *traversedRooms, s32 *traversedRoomCount, s32 maxTraversedRooms)
+void bgFindRoomsAlongSegment(const coord3d *fromPos, const coord3d *toPos, const u8 *fromRooms, u8 *finalRooms, s32 *traversedRooms, s32 *traversedRoomCount, s32 maxTraversedRooms)
 {
     u8 sourceRooms[16];
     u8 foundRooms[16];
@@ -1285,7 +1285,7 @@ void bgResetPortalTable(void)
 }
 
 
-bool bgIsRoomOnScreen(s32 roomID, bbox2d *screenbox)
+bool bgIsRoomOnScreen(s32 roomID, const bbox2d *screenbox)
 {
     s32 i;
     coord3d projected;
@@ -1386,7 +1386,7 @@ bool bgIsRoomOnScreen(s32 roomID, bbox2d *screenbox)
 }
 
 
-bool bgProjectRoomCoordToScreen(coord3d* src, coord3d* dst)
+bool bgProjectRoomCoordToScreen(const coord3d* src, coord3d* dst)
 {
     Mtxf* mtx;
 
@@ -1597,7 +1597,7 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
  *
  * Returns 0 if no intersection (or edge equality), 1 otherwise.
  */
-s32 bgRectIntersect(bbox2d *a, bbox2d *b)
+s32 bgRectIntersect(bbox2d *a, const bbox2d *b)
 {
 	a->min.x = a->min.x > b->min.x ? a->min.x : b->min.x;
 	a->min.y = a->min.y > b->min.y ? a->min.y : b->min.y;
@@ -1619,7 +1619,7 @@ s32 bgRectIntersect(bbox2d *a, bbox2d *b)
 
 
 // Does a union. Increases the size of 'a' so it contains 'b'.
-void bgRectOutersect(bbox2d *a, bbox2d *b)
+void bgRectOutersect(bbox2d *a, const bbox2d *b)
 {
     (a->min).x = ((a->min).x < (b->min).x) ? (a->min).x : (b->min).x;
     (a->min).y = ((a->min).y < (b->min).y) ? (a->min).y : (b->min).y;
@@ -1628,7 +1628,7 @@ void bgRectOutersect(bbox2d *a, bbox2d *b)
 }
 
 // Does a shallow copy of 'b' into 'a'. Equivalent to '*a = *b;'.
-void bbox2dCopy(bbox2d *a, bbox2d *b)
+void bbox2dCopy(bbox2d *a, const bbox2d *b)
 {
     (a->min).x = (b->min).x;
     (a->min).y = (b->min).y;
@@ -1954,7 +1954,7 @@ s32 bgGetPortalIndex(s32 portalID)
  * Decompresses room data that sits at the end of the `size`-byte buffer at `target` into
  * the start of it. Stops the game if the data is corrupt or doesn't fit.
  */
-static u32 bgDecompress(u8 *source, u8 *target, u32 size)
+static u32 bgDecompress(const u8 *source, u8 *target, u32 size)
 {
     u32 result = rzipInflate(source, target, size);
 
@@ -2578,7 +2578,7 @@ void bgBuildRoomVtxBounds(s32 roomID)
 /**
  * Slab method ray vs axis aligned bounding box test, written to be division-free.
  */
-bool bgTestRayIntersectsBbox(coord3d *origin, coord3d *dir, s32 *bbox_min, s32 *bbox_max)
+bool bgTestRayIntersectsBbox(const coord3d *origin, const coord3d *dir, const s32 *bbox_min, const s32 *bbox_max)
 {
     coord3d boxmin;
     coord3d boxmax;
@@ -2736,7 +2736,7 @@ bool bgTestRayIntersectsBbox(coord3d *origin, coord3d *dir, s32 *bbox_min, s32 *
  * Tests a ray against the triangles drawn after one of a room's vertex loads (`point`),
  * and fills in the nearest hit. Returns whether there was one.
  */
-bool bgTestRayIntersectionInRoom(coord3d *from, coord3d *to, coord3d *dir, RoomVtxBatchBounds *point, s32 roomnum, struct HitThing *hitthing)
+bool bgTestRayIntersectionInRoom(const coord3d *from, const coord3d *to, const coord3d *dir, const RoomVtxBatchBounds *point, s32 roomnum, struct HitThing *hitthing)
 {
     s_room_info *roominfo = &g_BgRoomInfo[roomnum];
     Gfx *start = (Gfx *)roominfo->ptr_expanded_mapping_info;
@@ -2844,7 +2844,7 @@ struct HitThingSub {
 };
 
 
-bool bgTestBulletHitBackground(coord3d *from, coord3d *to, s32 roomnum, struct HitThing *hit)
+bool bgTestBulletHitBackground(const coord3d *from, const coord3d *to, s32 roomnum, struct HitThing *hit)
 {
     RoomVtxBatchBounds *point;
     s16 numpoints;
@@ -2988,7 +2988,7 @@ u8 bgIncrementRoomPortalVisitCount(s32 roomnum)
 
 
 #ifdef VERSION_EU
-void bgQueuePortalTraversal(s32 roomnum, s32 portalnum, s32 depth, bbox2d *box)
+void bgQueuePortalTraversal(s32 roomnum, s32 portalnum, s32 depth, const bbox2d *box)
 {
     bg_queued_portal_entry *entry;
     entry = &g_BgPortalQueue[g_BgPortalQueueWriteIndex];
@@ -3014,7 +3014,7 @@ void bgQueuePortalTraversal(s32 roomnum, s32 portalnum, s32 depth, bbox2d *box)
     }
 }
 #else
-void bgQueuePortalTraversal(s32 value, s32 roomnum, s32 portalnum, s32 depth, bbox2d *box)
+void bgQueuePortalTraversal(s32 value, s32 roomnum, s32 portalnum, s32 depth, const bbox2d *box)
 {
     bg_queued_portal_entry *entry;
     entry = &g_BgPortalQueue[g_BgPortalQueueWriteIndex];
@@ -3099,7 +3099,7 @@ bool bgProcessNextQueuedPortal(s32 *valueptr)
  * bgPortalDescend
  */
 #if defined(VERSION_EU)
-void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, bbox2d *parentbox)
+void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, const bbox2d *parentbox)
 {
     bbox2d screenbox;
     coord3d *playerpos;
@@ -3231,7 +3231,7 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, b
     }
 }
 #else
-s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, bbox2d *parentbox)
+s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, const bbox2d *parentbox)
 {
     bbox2d screenbox;
     coord3d *playerpos;
@@ -4255,7 +4255,7 @@ void bgOrderPortal(s32 portalnum) // canonical name
 }
 
 
-s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *start, coord3d *end)
+s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, const coord3d *start, const coord3d *end)
 {
     s32 i;
     s32 portalIndex = -1;
@@ -4291,7 +4291,7 @@ void bgToggleDataPortalsContrlBytes1Bit1(s32 portal, s32 toggle)
 
 
 //bg_consider_window82397B18
-s32 bgFindPortalOnSegment(coord3d *start, coord3d *end)
+s32 bgFindPortalOnSegment(const coord3d *start, const coord3d *end)
 {
     s32 bestportalnum = -1;
     s32 count = 0;
@@ -4326,7 +4326,7 @@ s32 bgFindPortalOnSegment(coord3d *start, coord3d *end)
 }
 
 
-s32 bgSegmentCrossesPortal(s32 portalnum, coord3d *pos1, coord3d *pos2)
+s32 bgSegmentCrossesPortal(s32 portalnum, const coord3d *pos1, const coord3d *pos2)
 {
     f32 value1;
     f32 value2;
@@ -4410,7 +4410,7 @@ s32 bgSegmentCrossesPortal(s32 portalnum, coord3d *pos1, coord3d *pos2)
 }
 
 
-bool bgIsBboxOverlapping(coord3d *portalbbmin, coord3d *portalbbmax, coord3d *propbbmin, coord3d *propbbmax)
+bool bgIsBboxOverlapping(const coord3d *portalbbmin, const coord3d *portalbbmax, const coord3d *propbbmin, const coord3d *propbbmax)
 {
     s32 i;
 
@@ -4431,7 +4431,7 @@ bool bgIsBboxOverlapping(coord3d *portalbbmin, coord3d *portalbbmax, coord3d *pr
  * portals whose bounding box overlaps the given box (in world units), from the rooms
  * already in the list and then from those added, until no more are found.
  */
-void bgFindRoomsInBbox(coord3d *bbmin, coord3d *bbmax, s32 *room_list, s32 *count, s32 max_count)
+void bgFindRoomsInBbox(const coord3d *bbmin, const coord3d *bbmax, s32 *room_list, s32 *count, s32 max_count)
 {
     s32 cur_count = *count;
     s32 i = 0;
@@ -4523,7 +4523,7 @@ void bgFindRoomsInBbox(coord3d *bbmin, coord3d *bbmax, s32 *room_list, s32 *coun
  *   end     - pointer one-past-last Gfx to scan, or NULL to use G_ENDDL sentinel
  *   lutIndex- index into ptrDynamic_CC_RM_LUT selecting the active LUT
  */
-void bgApplyDynamicCCRMLUT(Gfx *start, Gfx *end, enum CCRMLUT lutIndex)
+void bgApplyDynamicCCRMLUT(Gfx *start, const Gfx *end, enum CCRMLUT lutIndex)
 {
     Gfx *curGfx;
     Gfx *lutPair;

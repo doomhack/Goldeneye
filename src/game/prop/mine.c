@@ -66,7 +66,7 @@ void proxmineAdd(WeaponObjRecord *mine)
 }
 
 
-void proxmineRemove(WeaponObjRecord *mine)
+void proxmineRemove(const WeaponObjRecord *mine)
 {
     for (s32 i = 0; i < MAX_PROXMINES; i++)
     {
@@ -80,7 +80,7 @@ void proxmineRemove(WeaponObjRecord *mine)
 
 
 /* Set off the primed proximity mines near a position */
-void proxminesDetonateNear(coord3d *pos)
+void proxminesDetonateNear(const coord3d *pos)
 {
     for (s32 i = 0; i < MAX_PROXMINES; i++)
     {
@@ -122,7 +122,7 @@ void proxminesTickGuards(void)
 }
 
 
-static s32 explosiveGetSize(ObjectRecord *obj)
+static s32 explosiveGetSize(const ObjectRecord *obj)
 {
     return (obj->flags2 & EXPLOSIVE_FLAG2_MASSIVE) ? EXPLOSION_DEF_MASSIVE : EXPLOSION_DEF_STANDARD;
 }

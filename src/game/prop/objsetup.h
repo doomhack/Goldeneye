@@ -6,9 +6,9 @@
 /* Doors are scaled about their portal by this (a PROPDEF_DOOR_SCALE record sets it) */
 extern f32 g_DoorScale;
 
-bool setupCheckPlacement(coord3d *pos, StandTile *stan, f32 radius, coord3d *posout, StandTile **stanout);
-void padGetBboxCentre(BoundPadRecord *pad, coord3d *centre);
-void setupUpdateObjectRoomPosition(ObjectRecord *obj);
+bool setupCheckPlacement(const coord3d *pos, StandTile *stan, f32 radius, coord3d *posout, StandTile **stanout);
+void padGetBboxCentre(const BoundPadRecord *pad, coord3d *centre);
+void setupUpdateObjectRoomPosition(const ObjectRecord *obj);
 
 void setupObject(ObjectRecord *obj);
 void setupDoor(DoorRecord *door, s32 cmdindex);

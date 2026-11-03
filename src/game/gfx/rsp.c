@@ -87,7 +87,7 @@ typedef struct
  * Called by the scheduler when a graphics task has finished on the RSP (not
  * yielded): adds its F3DEX3 counters to the sums for the build that ran it.
  */
-void rspReadCounters(OSTask *task)
+void rspReadCounters(const OSTask *task)
 {
     F3dex3YieldFooter *footer = (F3dex3YieldFooter *)(s_YieldBuffer + sizeof(s_YieldBuffer) - sizeof(F3dex3YieldFooter));
     F3dex3YieldFooter c;
@@ -143,7 +143,7 @@ void rspAllocateBuffers(void)
  * framebuffer in g_RspNextTask. The scheduler replies with `replyMsg` on gfxFrameMsgQ
  * when it's done.
  */
-void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg replyMsg)
+void rspGfxTaskStart(Gfx *firstGdl, const Gfx *gdl, OSMesg replyMsg)
 {
     OSScTask *sctask = &g_RspNextTask->task;
     OSTask *task = &sctask->list;

@@ -321,7 +321,7 @@ static void setTextureCoords(const MonitorRecord *mon, Vertex *vertices)
  * quad (the node's collision display list) with its own four vertices, branched to from
  * the node's display list.
  */
-Gfx *monitorTickAndDraw(Model *model, ModelNode *node, MonitorRecord *mon, Gfx *gdl, s32 zbufferMode, s32 blendMode)
+Gfx *monitorTickAndDraw(Model *model, const ModelNode *node, MonitorRecord *mon, Gfx *gdl, s32 zbufferMode, s32 blendMode)
 {
     union ModelRoData *rodata;
     union ModelRwData *rwdata;

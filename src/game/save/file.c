@@ -104,7 +104,7 @@ void fileResetSave(save_data *save)
  * @param save
  * @return u32
  */
-s32 fileGetSaveFolder(save_data *save)
+s32 fileGetSaveFolder(const save_data *save)
 {
   return save->completion_bitflags & SAVEFLAG_FOLDER;
 }
@@ -127,7 +127,7 @@ void fileSetSaveFoldernum(save_data *save, u32 folder)
  * @param folder
  * @return u32
  */
-u32 fileGetSaveFlagSlot(save_data *folder)
+u32 fileGetSaveFlagSlot(const save_data *folder)
 {
   return (folder->completion_bitflags & SAVEFLAG_SLOT) >> 3;
 }
@@ -150,7 +150,7 @@ void fileResetSaveFlagSlot(save_data *folder, s32 slot)
  * @param folder
  * @return u32
  */
-s32 fileGetSelectedBond(save_data *folder)
+s32 fileGetSelectedBond(const save_data *folder)
 {
   return (folder->completion_bitflags & SAVEFLAG_BOND) >> 5;
 }
@@ -173,7 +173,7 @@ void fileSetSelectedBond(save_data *folder, s32 bond)
  * @param folder
  * @return TRUE/FALSE
  */
-bool fileGetSaveFlagDoReset(save_data *folder)
+bool fileGetSaveFlagDoReset(const save_data *folder)
 {
   return ((folder->completion_bitflags & SAVEFLAG_DORESET) != FALSE);
 }
@@ -205,7 +205,7 @@ void fileSetSaveFlagDoReset(save_data *folder, bool enable)
  * @param difficulty
  * @return best time for stage at difficulty
  */
-s32 fileGetSaveStageDifficultyTime(save_data* save, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty)
+s32 fileGetSaveStageDifficultyTime(const save_data* save, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty)
 {
     s32 offset;
     LEVEL_SOLO_SEQUENCE max_level;
@@ -322,7 +322,7 @@ void fileSetDifficultyStageTime(save_data *save, LEVEL_SOLO_SEQUENCE levelid, DI
  * @param difficulty
  * @return is stage at diffiuclty completed
  */
-bool fileGetSaveStageCompletedForDifficulty(save_data *folder, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty)
+bool fileGetSaveStageCompletedForDifficulty(const save_data *folder, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty)
 {
     if ((levelid >= SP_LEVEL_DAM) && (levelid < SP_LEVEL_MAX) && (difficulty >= DIFFICULTY_AGENT) && (difficulty <= DIFFICULTY_007))
     {
@@ -360,7 +360,7 @@ void fileCheckSaveStageDifficultyTime(save_data *folder, LEVEL_SOLO_SEQUENCE lev
  * @param cheat
  * @return bool
  */
-bool fileGetIsCheatUnlocked(save_data *save, s32 cheat)
+bool fileGetIsCheatUnlocked(const save_data *save, s32 cheat)
 {
     s32 bits;
 
@@ -711,7 +711,7 @@ STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE l
  * @param save1
  * @param save2
  */
-void fileOverwriteSaveSlotWithNewSave(save_data *save1, save_data *save2)
+void fileOverwriteSaveSlotWithNewSave(save_data *save1, const save_data *save2)
 {
     s32 folder_with_flag;
     s32 slot;
@@ -1278,7 +1278,7 @@ static u16 s_CoopPartnerOptions;
 static s32 s_CoopPartnerOptionsSet = FALSE;
 static s32 s_CoopPartnerChar = 0;
 
-void fileCoopLoadPartnerSettings(smallSave *header)
+void fileCoopLoadPartnerSettings(const smallSave *header)
 {
     s_SaveHeader = *header;
     s_SaveHeaderValid = TRUE;
@@ -1495,7 +1495,7 @@ void fileCopySave(s32 folder, save_data *out_save)
  * @param folder
  * @param save
  */
-void fileCopyDemoSaveToRamRomSave(u32 folder, save_data *save)
+void fileCopyDemoSaveToRamRomSave(u32 folder, const save_data *save)
 {
     if (folder == RAMROM_FOLDERNUM)
     {
@@ -1662,7 +1662,7 @@ void fileCopyCurrentSave(struct save_data *savefile)
  * Switches to the ramrom demo's own save folder, after copying the demo's save into it.
  * The current folder is kept in g_FrontFolderSaved so it can be restored afterwards.
  */
-void fileUseDemoSave(struct save_data *eeprom)
+void fileUseDemoSave(const struct save_data *eeprom)
 {
     g_FrontFolderSaved = g_FrontFolder;
     g_FrontFolder = RAMROM_FOLDERNUM;

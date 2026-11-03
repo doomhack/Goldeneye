@@ -54,7 +54,7 @@ bool objMayWatchPlayer(s32 player)
 
 
 /* The camera's yaw (relative to its base yaw) brought into 0 to 2 pi */
-static f32 cctvGetHeadYaw(CCTVRecord *cctv)
+static f32 cctvGetHeadYaw(const CCTVRecord *cctv)
 {
     f32 yaw = cctv->yaw;
 
@@ -72,7 +72,7 @@ static f32 cctvGetHeadYaw(CCTVRecord *cctv)
 
 
 /* Whether the camera can see a player this frame */
-static bool cctvCanSeePlayer(PropRecord *prop, CCTVRecord *cctv, PropRecord *playerprop)
+static bool cctvCanSeePlayer(const PropRecord *prop, const CCTVRecord *cctv, const PropRecord *playerprop)
 {
     ObjectRecord *obj = prop->obj;
     f32 xdiff = playerprop->pos.f[0] - obj->runtime_pos.f[0];
@@ -234,7 +234,7 @@ static void cctvSweep(CCTVRecord *cctv)
  * Watch for players, setting off the alarm after seeing one for long enough, and sweep
  * the head. Runs once a frame.
  */
-void cctvTick(PropRecord *prop)
+void cctvTick(const PropRecord *prop)
 {
     CCTVRecord *cctv = (CCTVRecord *)prop->obj;
     // Co-op: the camera watches every player it may, and an alarm needs it to see any of
@@ -276,7 +276,7 @@ void cctvTick(PropRecord *prop)
 
 
 /* The head's matrix (mtxs[1]): turned by the sweep, at the head node */
-void cctvGetModelMatrices(PropRecord *prop, Model *model, Mtxf *objmtx, Mtxf *mtxs)
+void cctvGetModelMatrices(const PropRecord *prop, const Model *model, const Mtxf *objmtx, Mtxf *mtxs)
 {
     CCTVRecord *cctv = (CCTVRecord *)prop->obj;
     coord3d *nodepos = (coord3d *)model->obj->Switches[0]->Data;

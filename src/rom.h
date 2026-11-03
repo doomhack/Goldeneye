@@ -4,7 +4,7 @@
 
 void romCreateMesgQueue(void);
 void romCopy(void *target, void *source, u32 size);
-void *romCopyUnaligned(void *target, void *source, s32 length);
-void romWrite(void *source, void *target, u32 size);
+void *romCopyUnaligned(const void *target, void *source, s32 length);
+void romWrite(void *source, const void *target, u32 size);
 
 #endif

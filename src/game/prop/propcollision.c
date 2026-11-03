@@ -32,7 +32,7 @@
  * Work out an object's collision outline and height range from its bounding box, its
  * matrix and its position.
  */
-void objUpdateCollisionBounds(ObjectRecord *obj)
+void objUpdateCollisionBounds(const ObjectRecord *obj)
 {
     collision_data *col = obj->ptr_allocated_collisiondata_block;
 
@@ -63,7 +63,7 @@ void objUpdateCollisionBounds(ObjectRecord *obj)
  * collision data, does not collide (no PROPFLAG_00000100), or is taken out of collision
  * tests for now (PROPSTATE_NOCOLLISION).
  */
-void objGetCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom)
+void objGetCollisionBounds(const PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom)
 {
     ObjectRecord *obj = prop->obj;
     collision_data *col = obj->ptr_allocated_collisiondata_block;
@@ -82,7 +82,7 @@ void objGetCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 
 
 
 /* Take an object out of collision tests (collidable FALSE) or put it back */
-void objSetMoving(PropRecord *prop, bool collidable)
+void objSetMoving(const PropRecord *prop, bool collidable)
 {
     ObjectRecord *obj = prop->obj;
 
@@ -102,7 +102,7 @@ void objSetMoving(PropRecord *prop, bool collidable)
  * is an outline). Guards and players without a polygon have no edges here; they collide
  * as circles (propGetCollisionRadius).
  */
-void propGetCollisionPolygon(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom)
+void propGetCollisionPolygon(const PropRecord *prop, coord2d **polygon, s32 *edges, f32 *top, f32 *bottom)
 {
     *polygon = NULL;
     *edges = 0;
@@ -122,7 +122,7 @@ void propGetCollisionPolygon(PropRecord *prop, coord2d **polygon, s32 *edges, f3
 }
 
 
-void propGetCollisionPolygon2d(PropRecord *prop, coord2d **polygon, s32 *edges)
+void propGetCollisionPolygon2d(const PropRecord *prop, coord2d **polygon, s32 *edges)
 {
     f32 top;
     f32 bottom;
@@ -135,7 +135,7 @@ void propGetCollisionPolygon2d(PropRecord *prop, coord2d **polygon, s32 *edges)
  * A guard's or player's collision circle: radius, and the top and bottom of its height
  * range above the ground (propGetGroundY). Other props have radius 0.
  */
-void propGetCollisionRadius(PropRecord *prop, f32 *radius, f32 *height, f32 *ymin)
+void propGetCollisionRadius(const PropRecord *prop, f32 *radius, f32 *height, f32 *ymin)
 {
     if (prop->type == PROP_TYPE_CHR)
     {
@@ -154,7 +154,7 @@ void propGetCollisionRadius(PropRecord *prop, f32 *radius, f32 *height, f32 *ymi
 
 
 /* The height of the ground under a guard or player, and 0 for other props */
-f32 propGetGroundY(PropRecord *prop)
+f32 propGetGroundY(const PropRecord *prop)
 {
     if (prop->type == PROP_TYPE_CHR)
     {
@@ -171,7 +171,7 @@ f32 propGetGroundY(PropRecord *prop)
 
 
 /* Take a prop out of collision tests (collidable FALSE) or put it back */
-void propSetMoving(PropRecord *prop, bool collidable)
+void propSetMoving(const PropRecord *prop, bool collidable)
 {
     if (prop->type == PROP_TYPE_CHR)
     {
@@ -189,7 +189,7 @@ void propSetMoving(PropRecord *prop, bool collidable)
 
 
 /* The CDTYPE a door counts as: closed, open or ajar, and whether guards can't use it */
-s32 propDoorGetCdTypes(PropRecord *prop)
+s32 propDoorGetCdTypes(const PropRecord *prop)
 {
     DoorRecord *door = prop->door;
     s32 cdtypes;
@@ -225,7 +225,7 @@ s32 propDoorGetCdTypes(PropRecord *prop)
  * doors and objects guards can see through (PROPFLAG_04000000) don't count. With
  * CDTYPE_OBJSIMMUNETOEXPLOSIONS only invincible objects count.
  */
-bool propIsOfCdType(PropRecord *prop, s32 cdtypes)
+bool propIsOfCdType(const PropRecord *prop, s32 cdtypes)
 {
     bool result = TRUE;
     ObjectRecord *obj;
@@ -293,7 +293,7 @@ bool propIsOfCdType(PropRecord *prop, s32 cdtypes)
  * Whether a point (x and z) is inside a convex polygon: on the same side of every edge.
  * Edges the point lies on are skipped. A polygon with no edges contains nothing.
  */
-bool polygonContainsPoint(coord3d *point, coord2d *polygon, s32 edges)
+bool polygonContainsPoint(const coord3d *point, coord2d *polygon, s32 edges)
 {
     s32 side = -1;
 
@@ -334,7 +334,7 @@ bool polygonContainsPoint(coord3d *point, coord2d *polygon, s32 edges)
  * is beyond the edge, on the other side from the rest of poly1. A zero-length edge is
  * tested as a point instead. Uses doubles.
  */
-static bool polygonExcludesPolygon(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
+static bool polygonExcludesPolygon(const coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
 {
     f64 other = 0.0;
 
@@ -459,7 +459,7 @@ bool polygonsOverlap(coord2d *poly1, s32 edges1, coord2d *poly2, s32 edges2)
  * Whether a circle (centre x and z of point) touches an edge of a polygon: it is within
  * radius of the edge's line, and of one of its ends or alongside the edge.
  */
-bool polygonTouchesCircle(coord3d *point, f32 radius, coord2d *polygon, s32 edges)
+bool polygonTouchesCircle(const coord3d *point, f32 radius, coord2d *polygon, s32 edges)
 {
     f32 px = point->f[0];
     f32 pz = point->f[2];
@@ -490,7 +490,7 @@ bool polygonTouchesCircle(coord3d *point, f32 radius, coord2d *polygon, s32 edge
 
 
 /* Whether a guard or player stands in the outline (with the height range) */
-static bool chrBlocksOutline(PropRecord *prop, PropRecord *mover, coord2d *outline, s32 edges, f32 top, f32 bottom)
+static bool chrBlocksOutline(const PropRecord *prop, const PropRecord *mover, coord2d *outline, s32 edges, f32 top, f32 bottom)
 {
     ChrRecord *chr = prop->chr;
     f32 radius;
@@ -535,7 +535,7 @@ static bool chrBlocksOutline(PropRecord *prop, PropRecord *mover, coord2d *outli
  * door ignores other doors, safes and aircraft. A guard in a closing door's way is told
  * to move on.
  */
-bool propIsUnblocked(PropRecord *mover)
+bool propIsUnblocked(const PropRecord *mover)
 {
     coord2d *outline;
     s32 edges;

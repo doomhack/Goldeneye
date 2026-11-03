@@ -1797,12 +1797,12 @@ typedef union
         return prop->childnum < 0 ? NULL : &g_Props[prop->childnum];
     }
 
-    static inline void propSetParent(PropRecord *prop, PropRecord *parent)
+    static inline void propSetParent(PropRecord *prop, const PropRecord *parent)
     {
         prop->parentnum = parent ? parent - g_Props : -1;
     }
 
-    static inline void propSetChild(PropRecord *prop, PropRecord *child)
+    static inline void propSetChild(PropRecord *prop, const PropRecord *child)
     {
         prop->childnum = child ? child - g_Props : -1;
     }

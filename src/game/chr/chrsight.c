@@ -51,7 +51,7 @@
 /**
  * Whether the chr saw its target in the last 10 seconds.
  */
-bool chrSawTargetRecently(ChrRecord *self)
+bool chrSawTargetRecently(const ChrRecord *self)
 {
     return self->lastseetarget60 > 0 && (g_GlobalTimer - self->lastseetarget60) < CHRLV_10_SEC_TIMER;
 }
@@ -59,7 +59,7 @@ bool chrSawTargetRecently(ChrRecord *self)
 /**
  * Whether the chr heard its target in the last 10 seconds.
  */
-bool chrHeardTargetRecently(ChrRecord *self)
+bool chrHeardTargetRecently(const ChrRecord *self)
 {
     return self->lastheartarget60 > 0 && (g_GlobalTimer - self->lastheartarget60) < CHRLV_10_SEC_TIMER;
 }
@@ -69,7 +69,7 @@ bool chrHeardTargetRecently(ChrRecord *self)
  * (the current player unless it's attacking something else). Always TRUE for an attack
  * aimed straight ahead.
  */
-bool chrCheckCanSeeTarget(ChrRecord *self, coord3d *pos, StandTile *tile)
+bool chrCheckCanSeeTarget(ChrRecord *self, const coord3d *pos, StandTile *tile)
 {
     s32 attacktype = ATTACKTYPE_BOND;
     bool canSee = FALSE;
@@ -169,7 +169,7 @@ bool chrCanSeeBond(ChrRecord *self)
 /**
  * Whether the chr has a clear sight line to pos, on stan. Chrs and players don't block it.
  */
-bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan)
+bool chrHasLineOfSightToPos(ChrRecord *self, const coord3d *pos, const StandTile *stan)
 {
     PropRecord *prop = self->prop;
     f32 eyeheight = self->chrheight - EYE_DROP;
@@ -195,7 +195,7 @@ bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan)
  * Whether the chr can see pos: it's within 100 degrees either side of where the chr
  * faces, and the sight line is clear.
  */
-bool chrCanSeePos(ChrRecord *self, coord3d *pos, StandTile *tile)
+bool chrCanSeePos(ChrRecord *self, const coord3d *pos, const StandTile *tile)
 {
     f32 heading = modelGetRootRotY(self->model);
     f32 angle = mathAtan2(pos->x - self->prop->pos.x, pos->z - self->prop->pos.z);
@@ -218,7 +218,7 @@ bool chrCanSeePos(ChrRecord *self, coord3d *pos, StandTile *tile)
  * Whether there's a clear line from the current player's eyes to the chr: objects,
  * doors and scenery block it, chrs don't.
  */
-bool chrHasLineOfSightToPlayer(ChrRecord *self)
+bool chrHasLineOfSightToPlayer(const ChrRecord *self)
 {
     PropRecord *prop = self->prop;
     PropRecord *playerprop = currentPlayerGetProp();
@@ -355,7 +355,7 @@ void chrCheckGuardsHeardSound(f32 noise)
     }
 }
 
-static f32 coopChrDistSqToPlayer(ChrRecord *self, s32 player)
+static f32 coopChrDistSqToPlayer(const ChrRecord *self, s32 player)
 {
     PropRecord *prop = g_playerPointers[player]->prop;
     f32 dx = prop->pos.x - self->prop->pos.x;

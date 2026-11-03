@@ -58,7 +58,7 @@ static void memaInsertRange(s32 index, u8 *start, u32 size)
 }
 
 /** Returns the index of the first free range that starts after `addr`. */
-static s32 memaFindRangeAfter(u8 *addr)
+static s32 memaFindRangeAfter(const u8 *addr)
 {
     s32 low = 0;
     s32 high = m_memaFreeCount;

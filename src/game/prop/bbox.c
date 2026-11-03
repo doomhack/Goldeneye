@@ -21,7 +21,7 @@
 
 /* The first bounding box node among the root's children, or failing that among its
    first child's children */
-ModelRoData_BoundingBoxRecord *modelFileFindBbox(ModelFileHeader *header)
+ModelRoData_BoundingBoxRecord *modelFileFindBbox(const ModelFileHeader *header)
 {
     ModelNode *first = header->RootNode->Child;
 
@@ -50,25 +50,25 @@ ModelRoData_BoundingBoxRecord *modelFileFindBbox(ModelFileHeader *header)
 }
 
 
-ModelRoData_BoundingBoxRecord *objFindBbox(ObjectRecord *obj)
+ModelRoData_BoundingBoxRecord *objFindBbox(const ObjectRecord *obj)
 {
     return modelFileFindBbox(obj->model->obj);
 }
 
 
-f32 bboxGetYmin(ModelRoData_BoundingBoxRecord *bbox)
+f32 bboxGetYmin(const ModelRoData_BoundingBoxRecord *bbox)
 {
     return bbox->Bounds.ymin;
 }
 
 
-f32 bboxGetYmax(ModelRoData_BoundingBoxRecord *bbox)
+f32 bboxGetYmax(const ModelRoData_BoundingBoxRecord *bbox)
 {
     return bbox->Bounds.ymax;
 }
 
 
-f32 bboxGetZmin(ModelRoData_BoundingBoxRecord *bbox)
+f32 bboxGetZmin(const ModelRoData_BoundingBoxRecord *bbox)
 {
     return bbox->Bounds.zmin;
 }
@@ -79,7 +79,7 @@ f32 bboxGetZmin(ModelRoData_BoundingBoxRecord *bbox)
  * by mtx (without its translation). For each of the box's axes the corner on the low or
  * high side is picked by the sign of the matrix entry.
  */
-static f32 bboxRotatedExtent(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, s32 axis, bool max)
+static f32 bboxRotatedExtent(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx, s32 axis, bool max)
 {
     f32 result = 0.0f;
 
@@ -95,37 +95,37 @@ static f32 bboxRotatedExtent(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, s32
 }
 
 
-f32 bboxRotatedMinX(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
+f32 bboxRotatedMinX(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx)
 {
     return bboxRotatedExtent(bbox, mtx, 0, FALSE);
 }
 
 
-f32 bboxRotatedMaxX(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
+f32 bboxRotatedMaxX(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx)
 {
     return bboxRotatedExtent(bbox, mtx, 0, TRUE);
 }
 
 
-f32 bboxRotatedMinY(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
+f32 bboxRotatedMinY(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx)
 {
     return bboxRotatedExtent(bbox, mtx, 1, FALSE);
 }
 
 
-f32 bboxRotatedMaxY(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
+f32 bboxRotatedMaxY(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx)
 {
     return bboxRotatedExtent(bbox, mtx, 1, TRUE);
 }
 
 
-f32 bboxRotatedMinZ(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
+f32 bboxRotatedMinZ(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx)
 {
     return bboxRotatedExtent(bbox, mtx, 2, FALSE);
 }
 
 
-f32 bboxRotatedMaxZ(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
+f32 bboxRotatedMaxZ(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx)
 {
     return bboxRotatedExtent(bbox, mtx, 2, TRUE);
 }
@@ -133,7 +133,7 @@ f32 bboxRotatedMaxZ(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 
 /* Add to the hull the first of the remaining corners that lies outside the edge from
    corner a to corner b, if there is one */
-static void hullAddCornerOutside(f64 pts[8][2], s32 rem[8], s32 a, s32 b, coord2d *poly, s32 *count)
+static void hullAddCornerOutside(const f64 pts[8][2], const s32 rem[8], s32 a, s32 b, coord2d *poly, s32 *count)
 {
     for (s32 i = 0; i < 4; i++)
     {
@@ -151,7 +151,7 @@ static void hullAddCornerOutside(f64 pts[8][2], s32 rem[8], s32 a, s32 b, coord2
 
 
 /* Add a corner to the hull */
-static void hullAddCorner(f64 pts[8][2], s32 c, coord2d *poly, s32 *count)
+static void hullAddCorner(const f64 pts[8][2], s32 c, coord2d *poly, s32 *count)
 {
     poly[*count].x = pts[c][0];
     poly[*count].y = pts[c][1];
@@ -167,7 +167,7 @@ static void hullAddCorner(f64 pts[8][2], s32 c, coord2d *poly, s32 *count)
  * The four corners furthest along -x, -z, +x and +z are always on the hull. Between each
  * two of them, at most one of the other corners can stick out.
  */
-static s32 boxGetHull2d(f32 x1, f32 x2, f32 y1, f32 y2, f32 z1, f32 z2, Mtxf *m, coord2d *poly)
+static s32 boxGetHull2d(f32 x1, f32 x2, f32 y1, f32 y2, f32 z1, f32 z2, const Mtxf *m, coord2d *poly)
 {
     f64 pts[8][2];
     s32 minx = 0;
@@ -264,7 +264,7 @@ static s32 boxGetHull2d(f32 x1, f32 x2, f32 y1, f32 y2, f32 z1, f32 z2, Mtxf *m,
 
 
 /* The x/z outline of a bounding box node turned by mtx (see boxGetHull2d) */
-s32 bboxGetHull2d(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord2d *hull)
+s32 bboxGetHull2d(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx, coord2d *hull)
 {
     return boxGetHull2d(bbox->Bounds.xmin, bbox->Bounds.xmax, bbox->Bounds.ymin, bbox->Bounds.ymax, bbox->Bounds.zmin, bbox->Bounds.zmax, mtx, hull);
 }
@@ -274,7 +274,7 @@ s32 bboxGetHull2d(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord2d *hull)
  * Whether a point is inside a bound pad's box (in the pad's frame: look is its z axis,
  * up its y axis), grown by radius on every side.
  */
-bool padBoundsContainPoint(coord3d *pos, f32 radius, BoundPadRecord *pad)
+bool padBoundsContainPoint(const coord3d *pos, f32 radius, const BoundPadRecord *pad)
 {
     f32 dx = pos->x - pad->pos.x;
     f32 dy = pos->y - pad->pos.y;
@@ -317,7 +317,7 @@ bool padBoundsContainPoint(coord3d *pos, f32 radius, BoundPadRecord *pad)
  * (view space once the model has been placed for drawing): the union of all its
  * bounding box nodes.
  */
-void modelGetAxisExtents(Model *model, f32 *max, f32 *min, s32 axis)
+void modelGetAxisExtents(const Model *model, f32 *max, f32 *min, s32 axis)
 {
     ModelNode *node = model->obj->RootNode;
     bool first = TRUE;
@@ -366,7 +366,7 @@ void modelGetAxisExtents(Model *model, f32 *max, f32 *min, s32 axis)
 }
 
 
-void modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin)
+void modelGetXYExtents(const Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin)
 {
     modelGetAxisExtents(model, xmax, xmin, 0);
     modelGetAxisExtents(model, ymax, ymin, 1);
@@ -377,7 +377,7 @@ void modelGetXYExtents(Model *model, f32 *xmax, f32 *xmin, f32 *ymax, f32 *ymin)
  * The screen rectangle of a view-space box: each side is the centre moved to that side's
  * x or y range, projected. y increases down the screen, so the top of the range is min.y.
  */
-void projectRectCornersTo2D(coord3d *center, coord2d *xrange, coord2d *yrange, bbox2d *screen)
+void projectRectCornersTo2D(const coord3d *center, const coord2d *xrange, const coord2d *yrange, bbox2d *screen)
 {
     coord3d corner;
     coord2d out;

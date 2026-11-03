@@ -27,7 +27,7 @@
  * the file's buffer first so the textures can go in the space after them. Then trims the
  * file's allocation (when it is in the stage pool) to what is used.
  */
-void modelFileLoadTextures(ModelFileHeader *objheader, char *name, u8 *dst, struct texpool *buffer)
+void modelFileLoadTextures(const ModelFileHeader *objheader, const char *name, const u8 *dst, struct texpool *buffer)
 {
     ModelNode *node;
     s32 romremaining;
@@ -98,7 +98,7 @@ void modelFileLoadTextures(ModelFileHeader *objheader, char *name, u8 *dst, stru
  * and gets it ready to use: header pointers set, offsets turned into pointers, textures
  * loaded.
  */
-void modelFileLoad(struct ModelFileHeader *objheader, char *name, u8* dst, s32 size, struct texpool * buffer)
+void modelFileLoad(struct ModelFileHeader *objheader, const char *name, u8* dst, s32 size, struct texpool * buffer)
 {
     void *filedata;
 
@@ -123,7 +123,7 @@ void modelFileLoad(struct ModelFileHeader *objheader, char *name, u8* dst, s32 s
 }
 
 
-void modelFileLoadToPool(struct ModelFileHeader *header,char *name)
+void modelFileLoadToPool(struct ModelFileHeader *header,const char *name)
 {
    modelFileLoad(header,name,0,0,0);
    return;

@@ -18,7 +18,7 @@ struct CoopAiState
 };
 
 void coopAiReset(struct CoopAiState *st);
-void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset, ChrRecord *chr);
+void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset, const ChrRecord *chr);
 s32  coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr);
 void coopAiActOnActivator(ChrRecord *chr);
 s32  coopAnyPlayerStillHasItem(ITEM_IDS item);

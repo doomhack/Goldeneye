@@ -67,7 +67,7 @@ void *mempAlloc(u32 bytes, MemPool poolId)
  * moving it. Returns false, and does nothing, if `allocation` isn't the most recent
  * allocation in either pool. Stops the game if the pool can't fit the new size.
  */
-bool mempResizeLast(void *allocation, u32 newSize)
+bool mempResizeLast(const void *allocation, u32 newSize)
 {
     for (s32 i = 0; i < MEMPOOL_COUNT; i++)
     {

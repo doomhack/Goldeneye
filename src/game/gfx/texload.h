@@ -63,13 +63,13 @@ extern s32 g_TexCacheCount;
 void texResolveTableOffsets(void);
 void texInitSharedPool(void);
 void texInitPool(struct texpool *pool, u8 *start, s32 len);
-struct tex *texFindInPool(s32 texturenum, struct texpool *pool);
-struct tex *texFindByData(const u8 *data, struct texpool *pool);
+struct tex *texFindInPool(s32 texturenum, const struct texpool *pool);
+struct tex *texFindByData(const u8 *data, const struct texpool *pool);
 s32 texGetWidthAtLod(const struct tex *tex, s32 lod);
 s32 texGetHeightAtLod(const struct tex *tex, s32 lod);
 void texLoad(u32 *updateword, struct texpool *pool);
 void texLoadFromTextureNum(s32 texturenum, struct texpool *pool);
-void texLoadFromModelFileHeader(ModelFileHeader *header, struct texpool *pool);
+void texLoadFromModelFileHeader(const ModelFileHeader *header, struct texpool *pool);
 void texLoadFromDisplayList(Gfx *gdl, struct texpool *pool);
 
 #endif

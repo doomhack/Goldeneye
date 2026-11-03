@@ -14,11 +14,11 @@ void projectilesReset(void);
 void projectileFree(Projectile *projectile);
 Embedment *embedmentAllocate(void);
 void embedmentFree(Embedment *embedment);
-void objEnsureProjectile(PropRecord *prop);
-void objFreeEmbedmentOrProjectile(PropRecord *prop);
-void projectileEnableCollide3D(PropRecord *prop);
+void objEnsureProjectile(const PropRecord *prop);
+void objFreeEmbedmentOrProjectile(const PropRecord *prop);
+void projectileEnableCollide3D(const PropRecord *prop);
 
-f32 objGetWidth(ObjectRecord *obj);
+f32 objGetWidth(const ObjectRecord *obj);
 
 void projectileUpdateKnifeSound(ObjectRecord *obj);
 TICKOP projectileTick(PropRecord *prop, bool *moved);

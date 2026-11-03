@@ -118,7 +118,7 @@ void hudmsgSetFonts(struct fontchar *font2, struct font *font1)
 
 
 #ifdef BUGFIX_R1
-void hudmsgBottomShow(char *string, struct fontchar *font, struct font *font1)
+void hudmsgBottomShow(const char *string, struct fontchar *font, struct font *font1)
 {
     s32 index;
 
@@ -148,7 +148,7 @@ void hudmsgBottomShow(char *string, struct fontchar *font, struct font *font1)
 }
 
 #else
-void hudmsgBottomShow(char *mess)
+void hudmsgBottomShow(const char *mess)
 {
     s32 index;
 
@@ -175,7 +175,7 @@ void hudmsgBottomShow(char *mess)
 
 
 #if defined(BUGFIX_R1)
-void hudmsgBottomShowText(char *string)
+void hudmsgBottomShowText(const char *string)
 {
     hudmsgBottomShow(string, g_FontBankGothicChars, g_FontBankGothic);
 }
@@ -327,7 +327,7 @@ void hudmsgTopSetFlag(PLAYERFLAG flag)
  */
 static s8 s_CoopTopTextPlayer[2];
 
-void hudmsgTopShow(char* mess)
+void hudmsgTopShow(const char* mess)
 {
     s32 index;
     if (s_TopCount >= 2) { return; }

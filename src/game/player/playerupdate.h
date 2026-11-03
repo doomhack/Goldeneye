@@ -15,7 +15,7 @@ extern s32 watch_time_0;
 #endif
 void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 s32 lvGetMissionTime60(void);
-f32 playerGetFloorY(struct StandTile *tile, f32 x, f32 z);
+f32 playerGetFloorY(const struct StandTile *tile, f32 x, f32 z);
 void playerUpdateVertical(s32 use_stanHeight, f32 stanHeight_offset);
 void playerSetWorldScale(f32);
 void playerMoveFrozen(u16, u16);

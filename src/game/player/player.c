@@ -547,7 +547,7 @@ s32 playerGetCurrentNum(void) {
     return player_num;
 }
 
-s32 playerGetIndexForProp(PropRecord* prop)
+s32 playerGetIndexForProp(const PropRecord* prop)
 {
     s32 i;
 
@@ -751,13 +751,13 @@ void playersStoreFavouriteWeapons(void) {
 }
 
 
-f32 playerGetStanHeight(struct player *player)
+f32 playerGetStanHeight(const struct player *player)
 {
     return player->stanHeight;
 }
 
 
-f32 playerGetEyeHeight(struct player *player)
+f32 playerGetEyeHeight(const struct player *player)
 {
     return player->eyeheight + player->crouchHeight + player->ducking_height_offset;
 }

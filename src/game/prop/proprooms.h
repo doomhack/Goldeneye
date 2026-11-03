@@ -21,15 +21,15 @@ extern s16 *g_RoomFirstPropBlock;
 extern struct roomproplistblock *g_RoomPropBlocks;
 
 void roomPropListsInit(void);
-void propGetRoomIds(PropRecord *prop, s32 *roomids);
+void propGetRoomIds(const PropRecord *prop, s32 *roomids);
 bool roomListsOverlap(s32 *rooms1, s32 *rooms2);
-void propAddToRoom(PropRecord *prop, s16 room);
-void propRemoveFromRoom(PropRecord *prop, s16 room);
+void propAddToRoom(const PropRecord *prop, s16 room);
+void propRemoveFromRoom(const PropRecord *prop, s16 room);
 void propAddToRooms(PropRecord *prop);
 void propRemoveFromRooms(PropRecord *prop);
-void propUpdateRooms(PropRecord *prop);
-void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius);
-void roomGetProps(s32 *rooms);
+void propUpdateRooms(const PropRecord *prop);
+void propCalcRooms(PropRecord *prop, const coord3d *bbmin, const coord3d *bbmax, f32 radius);
+void roomGetProps(const s32 *rooms);
 void propsDefragRoomProps(void);
 void propSetRooms(PropRecord *prop, u8 *rooms);
 

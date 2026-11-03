@@ -72,7 +72,7 @@ static waygroup *findGroupByDist(const s32 *groupnums, s32 dist)
 }
 
 /** Numbers the groups by their distance from from: up to to, or with all, every group it reaches */
-static bool floodGroups(waygroup *from, waygroup *to, bool all)
+static bool floodGroups(waygroup *from, const waygroup *to, bool all)
 {
     waygroup *groups = g_CurrentSetup.waypointgroups;
     waygroup *group;
@@ -135,7 +135,7 @@ static bool markGroupRoute(waygroup *from, waygroup *to)
 }
 
 /** The first link from a waypoint of groupa to one of groupb, or two NULLs */
-static void findLinkPoints(waygroup *groupa, waygroup *groupb, waypoint **pointa, waypoint **pointb)
+static void findLinkPoints(const waygroup *groupa, const waygroup *groupb, waypoint **pointa, waypoint **pointb)
 {
     const s32 *pointnums;
 
@@ -178,7 +178,7 @@ static waypoint *findPointByDist(const s32 *pointnums, s32 dist, s32 groupnum)
 }
 
 /** Numbers from's group's waypoints by their distance from it: up to to, or with all, all of them */
-static void floodPoints(waypoint *from, waypoint *to, bool all)
+static void floodPoints(waypoint *from, const waypoint *to, bool all)
 {
     s32 groupnum = from->groupNum;
     const s32 *members = getGroup(groupnum)->waypoints;

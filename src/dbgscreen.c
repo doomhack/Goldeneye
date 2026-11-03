@@ -106,7 +106,7 @@ static s32 dbgIsCodeAddress(u32 addr)
 /**
  * Print the code addresses found on a stack, starting at `sp`: a rough backtrace.
  */
-static void dbgStackScanFrom(u32 *sp)
+static void dbgStackScanFrom(const u32 *sp)
 {
     s32 found = 0;
     s32 i;
@@ -136,12 +136,12 @@ static void dbgStackScanFrom(u32 *sp)
     dbgPutChar('\n');
 }
 
-static void dbgStackScan(OSThread *t)
+static void dbgStackScan(const OSThread *t)
 {
     dbgStackScanFrom((u32 *)(u32)t->context.sp);
 }
 
-static void dbgThread(OSThread *t)
+static void dbgThread(const OSThread *t)
 {
     dbgLabelHex("id", t->id);
     dbgLabelHex("st", t->state);
@@ -193,7 +193,7 @@ static void dbgBegin(const char *title)
     }
 }
 
-void dbgShowFault(OSThread *t)
+void dbgShowFault(const OSThread *t)
 {
     dbgBegin("CPU EXCEPTION");
     dbgThread(t);

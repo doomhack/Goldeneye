@@ -74,7 +74,7 @@ static f32 setupFixedToFloat(f32 *field, f32 unit)
  * Gets where something would stand at pos. Fails if there's no floor there, or (with a
  * radius) if something is in the way.
  */
-bool setupCheckPlacement(coord3d *pos, StandTile *stan, f32 radius, coord3d *posout, StandTile **stanout)
+bool setupCheckPlacement(const coord3d *pos, StandTile *stan, f32 radius, coord3d *posout, StandTile **stanout)
 {
     *posout = *pos;
     *stanout = stan;
@@ -96,7 +96,7 @@ bool setupCheckPlacement(coord3d *pos, StandTile *stan, f32 radius, coord3d *pos
 /**
  * The pad's side axis: up x look, normalised.
  */
-static void padGetSide(BoundPadRecord *pad, coord3d *side)
+static void padGetSide(const BoundPadRecord *pad, coord3d *side)
 {
     f32 scale;
 
@@ -115,7 +115,7 @@ static void padGetSide(BoundPadRecord *pad, coord3d *side)
  * The centre of a bound pad's box in world space. The box is in pad space: x along the
  * pad's side axis, y along up and z along look.
  */
-void padGetBboxCentre(BoundPadRecord *pad, coord3d *centre)
+void padGetBboxCentre(const BoundPadRecord *pad, coord3d *centre)
 {
     coord3d side;
     s32 i;
@@ -135,7 +135,7 @@ void padGetBboxCentre(BoundPadRecord *pad, coord3d *centre)
  * Finds the rooms on each side of a bound pad (a door's), 50 units either side of its
  * centre along its side axis. room2 is -1 if both sides are the same room.
  */
-static void padGetRoomsEitherSide(BoundPadRecord *pad, s32 *room1, s32 *room2, coord3d *pos1, coord3d *pos2)
+static void padGetRoomsEitherSide(const BoundPadRecord *pad, s32 *room1, s32 *room2, coord3d *pos1, coord3d *pos2)
 {
     coord3d centre;
     coord3d side;
@@ -178,7 +178,7 @@ static void padGetRoomsEitherSide(BoundPadRecord *pad, s32 *room1, s32 *room2, c
  * Puts an object into the rooms it overlaps: its bounding box turned by its matrix, 30
  * units wider each way. Objects flagged to stay in one room only go in their floor tile's.
  */
-void setupUpdateObjectRoomPosition(ObjectRecord *obj)
+void setupUpdateObjectRoomPosition(const ObjectRecord *obj)
 {
     PropRecord *prop = obj->prop;
     ModelRoData_BoundingBoxRecord *bbox;
@@ -256,7 +256,7 @@ void setupUpdateObjectRoomPosition(ObjectRecord *obj)
  * sideways object's y and z lie along the pad's z and y. Rows of mtx take the scale on
  * each axis relative to the largest, and the model takes the largest.
  */
-static void objFitToBoundPad(ObjectRecord *obj, BoundPadRecord *pad, ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
+static void objFitToBoundPad(const ObjectRecord *obj, const BoundPadRecord *pad, const ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx)
 {
     bool sideways = (obj->flags & PROPFLAG_SIDEWAYS) != 0;
     f32 padsize[3];
@@ -441,7 +441,7 @@ static void objPlaceFromSetup(ObjectRecord *obj, f32 extrascale)
  * Whether an object respawns after being picked up or destroyed in multiplayer: all do,
  * except the scenario's flag or golden gun.
  */
-static bool objRespawnsInMp(ObjectRecord *obj)
+static bool objRespawnsInMp(const ObjectRecord *obj)
 {
     if (frontGetMpScenario() == SCENARIO_TLD && obj->obj == PROP_FLAG)
     {

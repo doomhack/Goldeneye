@@ -86,7 +86,7 @@ void camUpdateScale(void)
  * 'out' looks to be a vector which probably has the length 'length'
  * It starts from the middle of the screenn.
  */
-void camScreenToViewDir(coord2d *in, coord3d *out, f32 length)
+void camScreenToViewDir(const coord2d *in, coord3d *out, f32 length)
 {
     f32 norm;
     f32 x;
@@ -103,7 +103,7 @@ void camScreenToViewDir(coord2d *in, coord3d *out, f32 length)
 }
 
 
-void camViewToScreen(coord3d *in, coord2d *out)
+void camViewToScreen(const coord3d *in, coord2d *out)
 {
     f32 inv_z = (1.0f / in->z);
     out->y = (in->y * inv_z * g_CurrentPlayer->c_recipscaley) + (g_CurrentPlayer->c_screentop + g_CurrentPlayer->c_halfheight);
@@ -111,7 +111,7 @@ void camViewToScreen(coord3d *in, coord2d *out)
 }
 
 
-void camViewToScreenSafe(coord3d *in, coord3d *out)
+void camViewToScreenSafe(const coord3d *in, coord3d *out)
 {
 	f32 inv_z;
 
@@ -129,7 +129,7 @@ void camViewToScreenSafe(coord3d *in, coord3d *out)
 }
 
 
-void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out)
+void camViewDeltaToScreen(const coord3d *in, f32 divisor, coord3d *out)
 {
 	out->y = in->y * (1.0f / divisor) * g_CurrentPlayer->c_recipscaley;
 	out->x = in->x * (1.0f / divisor) * g_CurrentPlayer->c_recipscalex;
@@ -416,7 +416,7 @@ void camUpdateFrustumPlanes(void)
  * @param margin: Value added to g_CamFrustumNearOffset to compare g_CurrentPlayer->viewtoworldmtxf,
  * and the four values starting at g_CamFrustumLeftOffset.
  */
-bool camIsPosInScreen(coord3d *pos, f32 margin)
+bool camIsPosInScreen(const coord3d *pos, f32 margin)
 {
     if (g_CamFrustumNearOffset + margin < (g_CurrentPlayer->viewtoworldmtxf->m[2][0] * pos->f[0]) + (g_CurrentPlayer->viewtoworldmtxf->m[2][1] * pos->f[1]) + (g_CurrentPlayer->viewtoworldmtxf->m[2][2] * pos->f[2]))
     {
@@ -457,7 +457,7 @@ bool camIsPosInScreen(coord3d *pos, f32 margin)
  * 
  * @param box: screen space rectangle with 'min' being the top-left corner and 'max' the bottom-right corner.
  */
-bool camIsPosInScreenBox(coord3d *pos, f32 margin, bbox2d *box)
+bool camIsPosInScreenBox(const coord3d *pos, f32 margin, const bbox2d *box)
 {
     coord3d topnormal;
     f32 topoffset;
@@ -748,7 +748,7 @@ void camStorePrevOrigin(void) {
  * Builds the frame's view matrices from the camera's position, look direction and
  * up vector, relative to the room origin, then the frustum planes.
  */
-void camUpdateMatrices(coord3d* cam_pos, coord3d* cam_look_dir, coord3d* cam_up)
+void camUpdateMatrices(const coord3d* cam_pos, const coord3d* cam_look_dir, const coord3d* cam_up)
 {
     Mtx lookatmtx;
     LookAt *lookat;

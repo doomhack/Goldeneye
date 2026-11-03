@@ -5,25 +5,25 @@
 #include <bondconstants.h>
 #include <bondtypes.h>
 
-PropRecord *doorInit(DoorRecord *door, coord3d *pos, Mtxf *mtx, StandTile *stan, coord3d *slideDir, coord3d *centre);
-void doorTick(PropRecord *prop);
-void doorUpdateSoundVolume(DoorRecord *door);
-void doorStopSounds(DoorRecord *door);
+PropRecord *doorInit(DoorRecord *door, const coord3d *pos, const Mtxf *mtx, StandTile *stan, coord3d *slideDir, const coord3d *centre);
+void doorTick(const PropRecord *prop);
+void doorUpdateSoundVolume(const DoorRecord *door);
+void doorStopSounds(const DoorRecord *door);
 
 void doorMove(DoorRecord *door, DOORSTATE state);
-void doorToggle(PropRecord *prop);
+void doorToggle(const PropRecord *prop);
 void doorOpenInstantly(DoorRecord *door);
-bool doorIsClosed(DoorRecord *door);
-void doorChooseSwingDirection(PropRecord *chrprop, DoorRecord *door);
+bool doorIsClosed(const DoorRecord *door);
+void doorChooseSwingDirection(const PropRecord *chrprop, DoorRecord *door);
 
-bool doorTestForInteract(PropRecord *prop);
-TICKOP doorInteract(PropRecord *prop);
+bool doorTestForInteract(const PropRecord *prop);
+TICKOP doorInteract(const PropRecord *prop);
 
-void doorOpenPortal(DoorRecord *door);
-void doorClosePortal(DoorRecord *door);
+void doorOpenPortal(const DoorRecord *door);
+void doorClosePortal(const DoorRecord *door);
 
-void doorGetMtx(DoorRecord *door, Mtxf *mtx);
-void doorGetModelMatrices(DoorRecord *door, Model *model, Mtxf *mtxs, f32 prevOpenPosition, bool playSounds);
-void doorShatterGlass(DoorRecord *door);
+void doorGetMtx(const DoorRecord *door, Mtxf *mtx);
+void doorGetModelMatrices(const DoorRecord *door, const Model *model, Mtxf *mtxs, f32 prevOpenPosition, bool playSounds);
+void doorShatterGlass(const DoorRecord *door);
 
 #endif

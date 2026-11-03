@@ -369,6 +369,19 @@ Examples from GE:
     ((void*)assetPtr != NULL)
     ((void*)nodePtr != NULL)
 ```
+
+### const
+A pointer parameter that the function only reads through is a pointer to const:
+```C
+    void chrStanPointPointIntersection(const coord3d *pos, const coord3d *dir, coord3d *result);
+```
+This is shallow: `const ChrRecord *chr` says the function doesn't change the guard record itself,
+but it may still change what the record points to (its prop, model, ...). Don't cast const away to
+write through such a pointer; drop the const instead.
+
+`tools/constify.py run` adds const to every pointer parameter that still compiles as const in both
+regions (it compiles with `-Wcast-qual`, so a cast can't hide a write) and leaves the code generated
+unchanged; check with `LTO=0 tools/compare/compare.sh`.
 ## COMMENTS
 Comments should be C style / * * / for block comments and header documentation.
 

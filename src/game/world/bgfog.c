@@ -194,7 +194,7 @@ EnvironmentFoglessRecord fog_tables2[] = {
 // forward declarations
 
 void fogLoadCurrentEnvironment(EnvironmentRecord *env);
-void fogLoadFoglessCurrentEnvironment(EnvironmentFoglessRecord *env);
+void fogLoadFoglessCurrentEnvironment(const EnvironmentFoglessRecord *env);
 
 // end forward declarations
 
@@ -326,7 +326,7 @@ void fogLoadCurrentEnvironment(EnvironmentRecord *env)
     g_FogSkyIsEnabled = 1;
 }
 
-void fogLoadFoglessCurrentEnvironment(EnvironmentFoglessRecord *env)
+void fogLoadFoglessCurrentEnvironment(const EnvironmentFoglessRecord *env)
 {
     g_CurrentEnvironment.Red = env->Red;
     g_CurrentEnvironment.Green = env->Green;
@@ -530,7 +530,7 @@ Gfx *fogRenderClearFogMode(Gfx *gdl)
 }
 
 
-s32 fogPositionIsVisibleThroughFog(coord3d *pos, f32 range)
+s32 fogPositionIsVisibleThroughFog(const coord3d *pos, f32 range)
 {
     coord3d rel;
     f32 ff;
@@ -566,7 +566,7 @@ NearFogValues *fogGetNearFogValuesP(void)
 }
 
 
-s32 fogGetPropDistColor(PropRecord *prop, rgba_f32 *color)
+s32 fogGetPropDistColor(const PropRecord *prop, rgba_f32 *color)
 {
     if (g_FogSkyIsEnabled == 0)
     {

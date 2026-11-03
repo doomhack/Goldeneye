@@ -211,7 +211,7 @@ Embedment *embedmentAllocate(void)
 }
 
 /** An object's projectile: its own, or its embedment's. NULL if it has none. */
-static Projectile *objGetProjectile(ObjectRecord *obj)
+static Projectile *objGetProjectile(const ObjectRecord *obj)
 {
     if (obj->runtime_bitflags & RUNTIMEBITFLAG_EMBEDDED)
     {
@@ -230,7 +230,7 @@ static Projectile *objGetProjectile(ObjectRecord *obj)
  * Gives an object a projectile, if it can get one. An embedded object always gets a new
  * one (the old one is not freed).
  */
-void objEnsureProjectile(PropRecord *prop)
+void objEnsureProjectile(const PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
 
@@ -249,7 +249,7 @@ void objEnsureProjectile(PropRecord *prop)
     }
 }
 
-void objFreeEmbedmentOrProjectile(PropRecord *prop)
+void objFreeEmbedmentOrProjectile(const PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
 
@@ -280,7 +280,7 @@ void objFreeEmbedmentOrProjectile(PropRecord *prop)
  * Makes an object's projectile move against the level and props in 3D, starting from the
  * room it is in.
  */
-void projectileEnableCollide3D(PropRecord *prop)
+void projectileEnableCollide3D(const PropRecord *prop)
 {
     Projectile *projectile = objGetProjectile(prop->obj);
 
@@ -300,7 +300,7 @@ void projectileEnableCollide3D(PropRecord *prop)
 }
 
 /** The radius an object collides with when it moves along the floor. */
-f32 objGetWidth(ObjectRecord *obj)
+f32 objGetWidth(const ObjectRecord *obj)
 {
     // Original bug: compares a PROPDEF_ type to a PROP_TYPE_ value
     if (obj->type == PROP_TYPE_WEAPON)
@@ -383,7 +383,7 @@ static bool projectileTestModel(ObjectRecord *obj, coord3d *screenStart, coord3d
 }
 
 /** The normal of a hit on a prop's side: back along the ray, flat. */
-static void projectileSideNormal(coord3d *rayDir, coord3d *hitNormal)
+static void projectileSideNormal(const coord3d *rayDir, coord3d *hitNormal)
 {
     hitNormal->x = -rayDir->x;
     hitNormal->y = 0.0f;
@@ -403,7 +403,7 @@ static void projectileSideNormal(coord3d *rayDir, coord3d *hitNormal)
  * Tests a ray against a prop's collision polygon (its outline on the floor plan, between
  * its top and bottom). If it hits closer than *hitDist, updates the hit.
  */
-static bool projectileTestPolygon(PropRecord *prop, coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, coord3d *hitPos, coord3d *hitNormal, f32 *hitDist)
+static bool projectileTestPolygon(PropRecord *prop, const coord3d *rayStart, const coord3d *rayEnd, const coord3d *rayDir, coord3d *hitPos, coord3d *hitNormal, f32 *hitDist)
 {
     coord2d *polygon;
     s32 numedges;
@@ -475,7 +475,7 @@ static bool projectileTestPolygon(PropRecord *prop, coord3d *rayStart, coord3d *
  * Tests a ray against one object: its model if it is on screen, otherwise its bounding
  * sphere and collision polygon. The hit must be within maxDist.
  */
-static bool projectileTestObject(ObjectRecord *obj, coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, f32 maxDist, coord3d *screenStart, coord3d *screenDir, coord3d *hitPos, coord3d *hitNormal, f32 *hitDist, Model **hitModel, ModelNode **hitNode)
+static bool projectileTestObject(ObjectRecord *obj, const coord3d *rayStart, const coord3d *rayEnd, const coord3d *rayDir, f32 maxDist, coord3d *screenStart, coord3d *screenDir, coord3d *hitPos, coord3d *hitNormal, f32 *hitDist, Model **hitModel, ModelNode **hitNode)
 {
     Model *model = obj->model;
     f32 radius = modelGetRadius(model);
@@ -539,7 +539,7 @@ static bool projectileTestObject(ObjectRecord *obj, coord3d *rayStart, coord3d *
  * Tests a ray against an object and, if it is on screen, the objects attached to it. If
  * one is hit closer than *bestDist, updates the hit.
  */
-static bool projectileTestObjectTree(ObjectRecord *obj, coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, f32 maxDist, coord3d *screenStart, coord3d *screenDir, coord3d *bestHitPos, coord3d *bestHitNormal, f32 *bestDist)
+static bool projectileTestObjectTree(ObjectRecord *obj, const coord3d *rayStart, const coord3d *rayEnd, const coord3d *rayDir, f32 maxDist, coord3d *screenStart, coord3d *screenDir, coord3d *bestHitPos, coord3d *bestHitNormal, f32 *bestDist)
 {
     PropRecord *prop = obj->prop;
     coord3d hitPos;
@@ -582,7 +582,7 @@ static bool projectileTestObjectTree(ObjectRecord *obj, coord3d *rayStart, coord
  * Tests a ray against a guard's or player's body parts, if they are on screen. If one is
  * hit closer than *bestDist, updates the hit; its position is on the ray.
  */
-static bool projectileTestChr(ChrRecord *chr, coord3d *rayStart, coord3d *rayDir, f32 rayLen, coord3d *screenStart, coord3d *screenDir, coord3d *hitPos, coord3d *hitNormal, f32 *bestDist)
+static bool projectileTestChr(const ChrRecord *chr, const coord3d *rayStart, const coord3d *rayDir, f32 rayLen, const coord3d *screenStart, const coord3d *screenDir, coord3d *hitPos, coord3d *hitNormal, f32 *bestDist)
 {
     PropRecord *prop = chr->prop;
     f32 radius = modelGetRadius(chr->model);
@@ -637,7 +637,7 @@ static bool projectileTestChr(ChrRecord *chr, coord3d *rayStart, coord3d *rayDir
  * hits, in the given rooms (-1 terminated), ignoring `ignoreProp`. On a hit, sets
  * hitPos, hitNormal and the s_Hit variables, and returns TRUE.
  */
-static bool projectileFindHitProp(PropRecord *ignoreProp, coord3d *rayStart, coord3d *rayEnd, u32 cdtypes, coord3d *hitPos, coord3d *hitNormal, s32 *rooms)
+static bool projectileFindHitProp(const PropRecord *ignoreProp, const coord3d *rayStart, const coord3d *rayEnd, u32 cdtypes, coord3d *hitPos, coord3d *hitNormal, const s32 *rooms)
 {
     PropRecord *playerstank = playerGetTank();
     bool found = FALSE;
@@ -767,7 +767,7 @@ static bool isBetween(f32 a, f32 b, f32 x)
  * (unless moveOnlyIfClear); blocked by a prop, it stays where it is but takes the target
  * height. hitpos and hitnormal give the hit.
  */
-static s32 projectileMove(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, bool canEmbed, bool moveOnlyIfClear)
+static s32 projectileMove(ObjectRecord *obj, const coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, bool canEmbed, bool moveOnlyIfClear)
 {
     PropRecord *prop = obj->prop;
     Projectile *projectile = obj->projectile;
@@ -960,7 +960,7 @@ static s32 projectileMove(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos
  * (stopping a little short), and returns MOVE_BLOCKED with hitpos and hitnormal set (the
  * normal is flat). Either way it takes the target height.
  */
-static s32 objMoveAlongFloor(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal)
+static s32 objMoveAlongFloor(ObjectRecord *obj, const coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal)
 {
     const u32 cdtypes = CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PLAYERS | CDTYPE_CHRS | CDTYPE_PATHBLOCKER;
     PropRecord *prop = obj->prop;
@@ -1080,7 +1080,7 @@ static s32 objMoveAlongFloor(ObjectRecord *obj, coord3d *targetpos, coord3d *hit
     return MOVE_BLOCKED;
 }
 
-static s32 objMove(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, bool canEmbed, bool moveOnlyIfClear)
+static s32 objMove(ObjectRecord *obj, const coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, bool canEmbed, bool moveOnlyIfClear)
 {
     if ((obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE) && (obj->projectile->flags & PROJECTILEFLAG_COLLIDE3D))
     {
@@ -1091,7 +1091,7 @@ static s32 objMove(ObjectRecord *obj, coord3d *targetpos, coord3d *hitpos, coord
 }
 
 /** objMove, without colliding with whoever threw it. */
-static s32 projectileMoveObj(ObjectRecord *obj, Projectile *projectile, coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, bool canEmbed, bool moveOnlyIfClear)
+static s32 projectileMoveObj(ObjectRecord *obj, const Projectile *projectile, const coord3d *targetpos, coord3d *hitpos, coord3d *hitnormal, bool canEmbed, bool moveOnlyIfClear)
 {
     if (projectile->ownerprop != NULL)
     {
@@ -1115,7 +1115,7 @@ static s32 projectileMoveObj(ObjectRecord *obj, Projectile *projectile, coord3d 
  * (keeping its heading, and staying upside down if it is), then slide to a stop. A door
  * just loses its projectile. prevXAxis is the object's x axis before this tick.
  */
-static void objSettle(ObjectRecord *obj, coord3d *prevXAxis)
+static void objSettle(ObjectRecord *obj, const coord3d *prevXAxis)
 {
     Projectile *projectile;
     coord3d angles;
@@ -1297,7 +1297,7 @@ void projectileUpdateKnifeSound(ObjectRecord *obj)
 }
 
 /** A rotation whose y axis is along `normal`. */
-static void mtxAlignToNormal(coord3d *normal, Mtxf *out)
+static void mtxAlignToNormal(const coord3d *normal, Mtxf *out)
 {
     f32 fwdX;
     f32 fwdY;
@@ -1354,7 +1354,7 @@ static void mtxAlignToNormal(coord3d *normal, Mtxf *out)
 }
 
 /** Stands an object on a surface at pos, with its base on it, facing out along `normal`. */
-static void objPlaceOnSurface(ObjectRecord *obj, coord3d *pos, StandTile *stan, coord3d *normal)
+static void objPlaceOnSurface(ObjectRecord *obj, const coord3d *pos, StandTile *stan, const coord3d *normal)
 {
     Mtxf mtx;
 
@@ -1420,7 +1420,7 @@ static bool objEmbed(PropRecord *prop, PropRecord *parent, Model *model, ModelNo
 /* ---- The tick ---- */
 
 /** Bounces the projectile's speed off a surface: speed += -(1 + bounciness) (speed . normal) normal */
-static void projectileReflect(Projectile *projectile, coord3d *normal)
+static void projectileReflect(Projectile *projectile, const coord3d *normal)
 {
     f32 impulse = ((projectile->speed.f[0] * normal->f[0]) + (projectile->speed.f[1] * normal->f[1])) + (projectile->speed.f[2] * normal->f[2]);
 
@@ -1548,7 +1548,7 @@ static bool weaponCanStick(ITEM_IDS weaponnum)
  * on the surface, and if it hit a prop, is attached to it. Not to guards, players or
  * other flying things. Returns TRUE if it was attached to a prop.
  */
-static bool projectileTryStick(PropRecord *prop, Projectile *projectile, coord3d *hitpos, coord3d *hitnormal)
+static bool projectileTryStick(PropRecord *prop, Projectile *projectile, const coord3d *hitpos, const coord3d *hitnormal)
 {
     ObjectRecord *obj = prop->obj;
     PropRecord *hitprop = s_HitProp;
@@ -1580,7 +1580,7 @@ static bool projectileTryStick(PropRecord *prop, Projectile *projectile, coord3d
 }
 
 /** Leaves a blood stain on the body part a knife hit, half way in from where it hit. */
-static void projectileKnifeBloodStain(coord3d *hitpos)
+static void projectileKnifeBloodStain(const coord3d *hitpos)
 {
     Mtxf *nodemtx = modelFindNodeMtx(s_HitModel, s_HitNode, 0);
     Mtxf worldtonode;
@@ -1605,7 +1605,7 @@ static void projectileKnifeBloodStain(coord3d *hitpos)
  * A throwing knife hit a guard, or another player: while it is still deadly, it shoots
  * them, bounces off and leaves a blood stain. Returns TRUE if it hurt them.
  */
-static bool projectileKnifeHit(ObjectRecord *obj, Projectile *projectile, coord3d *hitpos, coord3d *hitnormal)
+static bool projectileKnifeHit(ObjectRecord *obj, Projectile *projectile, const coord3d *hitpos, const coord3d *hitnormal)
 {
     PropRecord *hitprop = s_HitProp;
     ITEM_IDS weaponnum = ((WeaponObjRecord *) obj)->weaponnum;
@@ -1666,7 +1666,7 @@ static void projectileRocketHit(ObjectRecord *obj)
  * gone through it, settling it when it is slow. Returns whether it hit the floor, and in
  * *bounced whether it bounced up off something.
  */
-static bool projectileBounce(PropRecord *prop, Projectile *projectile, s32 moveResult, f32 startY, coord3d *prevXAxis, coord3d *hitpos, coord3d *hitnormal, bool *bounced)
+static bool projectileBounce(PropRecord *prop, Projectile *projectile, s32 moveResult, f32 startY, const coord3d *prevXAxis, const coord3d *hitpos, const coord3d *hitnormal, bool *bounced)
 {
     ObjectRecord *obj = prop->obj;
     ModelRoData_BoundingBoxRecord *bbox = objFindBbox(obj);
@@ -1822,7 +1822,7 @@ static void projectileWeaponEffects(PropRecord *prop, Projectile *projectile, s3
 }
 
 /** An object launched by an AI script trails smoke from far below it (it is high up). */
-static void projectileSmokeTrail(ObjectRecord *obj)
+static void projectileSmokeTrail(const ObjectRecord *obj)
 {
     PropRecord *prop = obj->prop;
     coord3d pos;

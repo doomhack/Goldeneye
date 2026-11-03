@@ -196,7 +196,7 @@ u32 assetGetBufferSize(s32 index)
  * allocate that much, and optionally shrinks its allocation (from assetLoadUntrimmed) to
  * match.
  */
-void assetSetSize(s32 index, void *data, u32 size, bool shrinkAllocation)
+void assetSetSize(s32 index, const void *data, u32 size, bool shrinkAllocation)
 {
     m_assetInfo[index].size = size;
     m_assetInfo[index].bufferSize = size;

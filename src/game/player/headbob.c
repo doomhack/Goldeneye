@@ -34,8 +34,8 @@ struct init_bond_anim_unk g_BondMoveAnimationSetup[2] = {
 
 // forward declarations
 
-void headBobUpdatePos(coord3d *vel);
-void headBobUpdateRot(coord3d *lookvel, coord3d *upvel);
+void headBobUpdatePos(const coord3d *vel);
+void headBobUpdateRot(const coord3d *lookvel, const coord3d *upvel);
 void headBobSetDamp(f32 headdamp);
 
 // end forward declarations
@@ -69,7 +69,7 @@ void headBobUpdateIdleRoll()
 	g_CurrentPlayer->standcnt = 1 - g_CurrentPlayer->standcnt;
 }
 
-void headBobUpdatePos(coord3d *vel)
+void headBobUpdatePos(const coord3d *vel)
 {
 #if defined(VERSION_EU)
 #define CURRENTPLAYERUPDATEHEADPOS_SCALE 0.916599988937f
@@ -100,7 +100,7 @@ void headBobUpdatePos(coord3d *vel)
 #undef CURRENTPLAYERUPDATEHEADPOS_SCALE
 }
 
-void headBobUpdateRot(coord3d *lookvel, coord3d *upvel)
+void headBobUpdateRot(const coord3d *lookvel, const coord3d *upvel)
 {
 	s32 i;
 
@@ -479,7 +479,7 @@ f32 headBobGetBreathingValue(void)
 
 // forward declarations
 
-void headBobSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum);
+void headBobSumRootMotion(const void *anim, s32 startframe, s32 endframe, s32 *sum);
 
 // end forward declarations
 
@@ -490,7 +490,7 @@ void headBobSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum);
  * @param arg2:
  * @param arg3: unknown type.
 */
-void headBobSumRootMotion(void *anim, s32 startframe, s32 endframe, s32 *sum)
+void headBobSumRootMotion(const void *anim, s32 startframe, s32 endframe, s32 *sum)
 {
     coord16 motion;
 

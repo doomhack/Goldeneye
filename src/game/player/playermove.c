@@ -81,7 +81,7 @@ static PropRecord *coopGetOverlappingPartner(void)
  * for their collision circle, and the ceiling is high enough (unless on a ladder).
  * In the tank, tests the tank's box instead (tankTryMoveTo).
  */
-s32 playerTestMove(coord3d *pos, StandTile **stan)
+s32 playerTestMove(const coord3d *pos, StandTile **stan)
 {
     s32 ok;
     StandTile *tile;
@@ -200,7 +200,7 @@ s32 playerTestMove(coord3d *pos, StandTile **stan)
  *
  * @return 1 if able to update stan and collision position, zero otherwise.
  */
-static s32 playerTryMoveSimple(coord3d *next_pos, coord3d *collision_pt0, coord3d *collision_pt1)
+static s32 playerTryMoveSimple(const coord3d *next_pos, coord3d *collision_pt0, coord3d *collision_pt1)
 {
     struct StandTile *stan;
 
@@ -238,9 +238,9 @@ static s32 playerTryMoveSimple(coord3d *next_pos, coord3d *collision_pt0, coord3
  * Perfect Dark, see bondwalk.c bwalk0f0c47d0, bondbike.c bbike0f0d36d4.
 */
 static s32 playerTryMoveFraction(
-    coord3d *next_pos,
-    coord3d *collision1_pt0,
-    coord3d *collision1_pt1,
+    const coord3d *next_pos,
+    const coord3d *collision1_pt0,
+    const coord3d *collision1_pt1,
     coord3d *collision2_pt0,
     coord3d *collision2_pt1)
 {
@@ -315,7 +315,7 @@ static s32 playerTryMoveFraction(
  * @return -1 if either x or z coordinates are the same for the collision points, 1 if able to update stan and collision position, zero otherwise.
  *
  */
-static s32 playerTryMoveAlongEdge(coord3d *prior_next_pos, coord3d *collision_pt0, coord3d *collision_pt1)
+static s32 playerTryMoveAlongEdge(const coord3d *prior_next_pos, const coord3d *collision_pt0, const coord3d *collision_pt1)
 {
     coord3d delta_pos;
     f32 tempf;
@@ -377,7 +377,7 @@ static s32 playerTryMoveAlongEdge(coord3d *prior_next_pos, coord3d *collision_pt
  *
  * Perfect Dark bwalk0f0c4a5c.
 */
-static s32 playerTryMoveRoundCorner(coord3d *prior_next_pos, coord3d *collision_pt0, coord3d *collision_pt1)
+static s32 playerTryMoveRoundCorner(const coord3d *prior_next_pos, const coord3d *collision_pt0, const coord3d *collision_pt1)
 {
     coord3d delta_pos;
     coord3d offset;
@@ -469,7 +469,7 @@ static s32 playerTryMoveRoundCorner(coord3d *prior_next_pos, coord3d *collision_
  * @param offset: Attempt to move Bond by {x,0,z} amount.
  * @param allow_scoot: If movement causes collision, when set will allow Bond to scoot along the collision edge and to bump around corner edges. Otherwise, any collision will stop movement.
  */
-void playerMoveWithCollision(coord3d *offset, s32 allow_scoot)
+void playerMoveWithCollision(const coord3d *offset, s32 allow_scoot)
 {
     coord3d next_pos;
     coord3d collision1_pt0;
@@ -691,7 +691,7 @@ void playerUpdateRooms(struct player *player)
 }
 
 
-void playerSetMoving(PropRecord *prop, s32 flag)
+void playerSetMoving(const PropRecord *prop, s32 flag)
 {
     s32 playerIndex;
 
@@ -712,7 +712,7 @@ void playerSetMoving(PropRecord *prop, s32 flag)
 }
 
 
-void playerGetPropBounds(PropRecord *prop, coord2d **bounds, s32 *numpoints, f32 *height_related, f32 *collision)
+void playerGetPropBounds(const PropRecord *prop, coord2d **bounds, s32 *numpoints, f32 *height_related, f32 *collision)
 {
     s32 index;
 
@@ -765,7 +765,7 @@ void playerUpdateCollisionBounds(void)
  * @param height: out parameter, will be set to character height - 30
  * @param always_30: out parameter, will be set to 30
  */
-void playerGetCollisionSize(PropRecord *prop, f32 *collision_radius, f32 *height, f32 *always_30)
+void playerGetCollisionSize(const PropRecord *prop, f32 *collision_radius, f32 *height, f32 *always_30)
 {
     struct player *player = g_playerPointers[playerGetIndexForProp(prop)];
 

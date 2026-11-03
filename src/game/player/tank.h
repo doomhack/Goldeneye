@@ -38,10 +38,10 @@ struct Tank
 extern struct Tank g_Tank;
 
 void tankUpdateTurretOffset(void);
-void tankGetCollisionBounds(coord2d *tank_collision_bounds, coord3d *collision_position, f32 tank_orientation_angle);
-s32  tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, coord3d *hitFrom, coord3d *hitTo);
-s32  tankTestCollisionAt(coord3d *collision_position, StandTile *tile, f32 tank_orientation_angle);
-s32  tankTryMoveTo(coord3d *pos, f32 angle, StandTile **outTile);
+void tankGetCollisionBounds(coord2d *tank_collision_bounds, const coord3d *collision_position, f32 tank_orientation_angle);
+s32  tankTestCollision(const coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, coord3d *hitFrom, coord3d *hitTo);
+s32  tankTestCollisionAt(const coord3d *collision_position, StandTile *tile, f32 tank_orientation_angle);
+s32  tankTryMoveTo(const coord3d *pos, f32 angle, StandTile **outTile);
 void tankGetTurretDir(coord3d *dir);
 
 bool playerIsInTank(void);

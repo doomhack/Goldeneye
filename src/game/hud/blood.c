@@ -391,7 +391,7 @@ u8 *bloodDecodeFrame(u8 *src, u8 width, u8 height, u8 *dst, u8 *edgeOut)
 }
 
 
-void bloodPack4Bit(u8* src, u16 count, u8* dst)
+void bloodPack4Bit(const u8* src, u16 count, u8* dst)
 {
     while (count-- > 0)
     {
@@ -402,7 +402,7 @@ void bloodPack4Bit(u8* src, u16 count, u8* dst)
 
 
 // Averages 4 pixel data, ending on "second" row.
-void bloodSmoothUpLeft(u8 *src, s32 height, u8 *dst)
+void bloodSmoothUpLeft(const u8 *src, s32 height, u8 *dst)
 {
     s32 i;
     s32 j;
@@ -419,7 +419,7 @@ void bloodSmoothUpLeft(u8 *src, s32 height, u8 *dst)
 
 
 // Averages 4 pixel data, ending on "first" row.
-void bloodSmoothDownRight(u8 *src, s32 height, u8 *dst)
+void bloodSmoothDownRight(const u8 *src, s32 height, u8 *dst)
 {
     s32 i;
     s32 j;

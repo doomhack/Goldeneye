@@ -87,7 +87,7 @@ void vtxstoreReset(void)
 }
 
 /** Points every prop that uses the vertices at `find` at `replacement` instead */
-static void vtxstoreFixRefs(Vertex *find, Vertex *replacement)
+static void vtxstoreFixRefs(const Vertex *find, Vertex *replacement)
 {
     for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {
@@ -137,7 +137,7 @@ static void vtxstoreFixRefs(Vertex *find, Vertex *replacement)
 }
 
 /** Merges free batches that are next to each other */
-static void mergeFreeBatches(VtxStore *store)
+static void mergeFreeBatches(const VtxStore *store)
 {
     struct VtxstoreBatch *batches = store->batches;
     s32 i = 0;
@@ -289,7 +289,7 @@ Vertex *vtxstoreAllocate(s32 numVtx, s32 type, ModelFileHeader *modeldef, s32 de
 }
 
 /** Gives back vertices from vtxstoreAllocate. They're freed when the last user gives them back. */
-void vtxstoreFree(Vertex *vertices)
+void vtxstoreFree(const Vertex *vertices)
 {
     VtxStore *store;
     struct VtxstoreBatch *batches;

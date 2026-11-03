@@ -39,6 +39,6 @@ void monitorsReset(void);
 void monitorInit(MonitorRecord *mon, s32 scriptNum);
 void monitorSetScript(MonitorRecord *mon, s32 scriptNum);
 void monitorSetImage(MonitorRecord *mon, struct sImageTableEntry *image);
-Gfx *monitorTickAndDraw(Model *model, ModelNode *node, MonitorRecord *mon, Gfx *gdl, s32 zbufferMode, s32 blendMode);
+Gfx *monitorTickAndDraw(Model *model, const ModelNode *node, MonitorRecord *mon, Gfx *gdl, s32 zbufferMode, s32 blendMode);
 
 #endif

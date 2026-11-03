@@ -65,7 +65,7 @@ static const f32 g_CasingMaxMatrixTranslation = 30000.0f;
  * Spawns a casing using the model and the gun's matrix, or returns NULL if
  * all slots are in use.
  */
-CasingRecord* casingCreate(ModelFileHeader* header, Mtxf* mtx)
+CasingRecord* casingCreate(ModelFileHeader* header, const Mtxf* mtx)
 {
     CasingRecord* entry = g_Casings;
     CasingRecord* end = g_Casings + ARRAYCOUNT(g_Casings);
@@ -375,7 +375,7 @@ void casingsTick(void)
 /**
  * Draws one casing.
  */
-void casingRender(CasingRecord *casing, Gfx **gdl)
+void casingRender(const CasingRecord *casing, Gfx **gdl)
 {
     Gfx             *savedgdl = *gdl;
     ModelFileHeader *model_header = casing->header;

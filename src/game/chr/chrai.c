@@ -697,7 +697,7 @@ s32 aiCommandSize(AIRecord *list, s32 offset)
  * @param AIList: Ailist to get ID of
  * @return ID of AIList
  */
-s32 ailistGetId(AIRecord *AIList, bool *isGlobalAIList)
+s32 ailistGetId(const AIRecord *AIList, bool *isGlobalAIList)
 {
     s32 i;
 

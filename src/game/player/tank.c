@@ -50,7 +50,7 @@ void tankUpdateTurretOffset(void)
  * The tank's collision box (its bounding box turned by the tank's angle) as four
  * corners in x/z, centred on collision_position.
  */
-void tankGetCollisionBounds(coord2d *tank_collision_bounds, coord3d *collision_position, f32 tank_orientation_angle)
+void tankGetCollisionBounds(coord2d *tank_collision_bounds, const coord3d *collision_position, f32 tank_orientation_angle)
 {
     ObjectRecord *obj;
     f32 sinAngle;
@@ -117,7 +117,7 @@ static s32 tankTestLine(StandTile **pTile, f32 p_x, f32 p_z, f32 dest_x, f32 des
  * centre to the first corner, round the four corners and out to the end of the
  * gun barrel must all be clear. If one is blocked it is written to hitFrom/hitTo.
  */
-s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, coord3d *hitFrom, coord3d *hitTo)
+s32 tankTestCollision(const coord3d *collision_position, StandTile *starttile, f32 tank_orientation_angle, coord3d *hitFrom, coord3d *hitTo)
 {
     StandTile *tile;
     coord2d tank_collision_bounds[4];
@@ -206,7 +206,7 @@ s32 tankTestCollision(coord3d *collision_position, StandTile *starttile, f32 tan
 
 
 // tankTestCollision without the blocked line
-s32 tankTestCollisionAt(coord3d *collision_position, StandTile *tile, f32 tank_orientation_angle)
+s32 tankTestCollisionAt(const coord3d *collision_position, StandTile *tile, f32 tank_orientation_angle)
 {
     return tankTestCollision(collision_position, tile, tank_orientation_angle, NULL, NULL);
 }
@@ -216,7 +216,7 @@ s32 tankTestCollisionAt(coord3d *collision_position, StandTile *tile, f32 tank_o
  * TRUE (and the tile at pos in *outTile) if the tank can move from the current
  * player's position to pos with this angle.
  */
-s32 tankTryMoveTo(coord3d *pos, f32 angle, StandTile **outTile)
+s32 tankTryMoveTo(const coord3d *pos, f32 angle, StandTile **outTile)
 {
     StandTile *tile;
 

@@ -10,7 +10,7 @@
 extern s32 g_CoopCinemaPlayer;
 
 u32 playerGetCameraMode(void);
-s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, coord3d *collision_pos, StandTile *tile, f32 camera_dist);
+s32 playerPickDeathCamera(PropRecord *prop1, const coord3d *pos, const PropRecord *prop2, const coord3d *collision_pos, StandTile *tile, f32 camera_dist);
 void coopUpdateSoloView(void);
 void coopResetViewFade(void);
 extern f32 g_CoopViewFade;

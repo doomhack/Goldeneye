@@ -5,10 +5,10 @@
 
 // Drawing items and the controller in 3D on the watch menu
 
-Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour);
-void watchControllerButtonMtx(coord3d *base, Mtxf *m1, Mtxf *m2, Mtxf *m3, coord3d *pos, Mtxf *m5, Mtxf *out);
-Gfx *watchRenderController(Gfx *gdl, Mtxf *basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions *buttonpositions, s8 *contpadnum);
-Gfx *watchRenderControllerOpaque(Gfx *gdl, Mtxf *basemtx, bool animatebuttons, WatchContButtonPositions *buttonpositions, s8 *contpadnum);
+Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, const Mtxf *mtx, s32 alpha, s32 colour);
+void watchControllerButtonMtx(const coord3d *base, const Mtxf *m1, const Mtxf *m2, const Mtxf *m3, const coord3d *pos, const Mtxf *m5, Mtxf *out);
+Gfx *watchRenderController(Gfx *gdl, const Mtxf *basemtx, s32 envcolour, bool animatebuttons, const WatchContButtonPositions *buttonpositions, const s8 *contpadnum);
+Gfx *watchRenderControllerOpaque(Gfx *gdl, const Mtxf *basemtx, bool animatebuttons, const WatchContButtonPositions *buttonpositions, const s8 *contpadnum);
 
 f32 itemGetWatchPosX(ITEM_IDS item);
 f32 itemGetWatchPosY(ITEM_IDS item);

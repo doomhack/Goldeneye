@@ -9,8 +9,8 @@ extern f32 g_AutogunPendingDamageTick;
 extern f32 g_AutogunDamageScalar;
 extern f32 g_AutogunDamageScale;
 
-void autogunTick(PropRecord *prop);
-void autogunTickFire(PropRecord *prop);
-void autogunGetModelMatrices(PropRecord *prop, Model *model, Mtxf *objmtx, Mtxf *mtxs);
+void autogunTick(const PropRecord *prop);
+void autogunTickFire(const PropRecord *prop);
+void autogunGetModelMatrices(const PropRecord *prop, const Model *model, const Mtxf *objmtx, Mtxf *mtxs);
 
 #endif

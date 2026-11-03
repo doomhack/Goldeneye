@@ -368,7 +368,7 @@ void playerRemoveBody(void)
 }
 
 
-void playerSelectCuff(Model *model, ModelFileHeader *header, s32 switchindex)
+void playerSelectCuff(const Model *model, const ModelFileHeader *header, s32 switchindex)
 {
     s32 local;
     ModelNode **switches;
@@ -950,7 +950,7 @@ clear_and_return:
 }
 
 
-Gfx *playerRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
+Gfx *playerRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     ChrRecord *chr = prop->chr;
 

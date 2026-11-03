@@ -33,7 +33,7 @@ void reset_counter_rand_body_head(void)
 }
 
 
-u32 animSumRootTurn(void *ani, int aniid, int endframe) {
+u32 animSumRootTurn(const void *ani, int aniid, int endframe) {
     coord16 motion;
     u16 result = 0;
 
@@ -45,7 +45,7 @@ u32 animSumRootTurn(void *ani, int aniid, int endframe) {
 }
 
 
-s32 animSumRootForward(ModelAnimation *anim, s32 startframe, s32 endframe)
+s32 animSumRootForward(const ModelAnimation *anim, s32 startframe, s32 endframe)
 {
     s32 sum;
     coord16 out;

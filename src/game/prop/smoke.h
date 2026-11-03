@@ -50,11 +50,11 @@ struct Smoke {
     struct SmokePart parts[SMOKE_PARTS_LEN];
 };
 
-void smokeCreate(coord3d *pos, StandTile *stan, s16 type, u8 *rooms, s32 inAir);
+void smokeCreate(const coord3d *pos, StandTile *stan, s16 type, u8 *rooms, s32 inAir);
 void smokesEndEarly(s32 count);
 s32  smokeTick(PropRecord *prop);
 u8   smokePropTick(PropRecord *prop);
-Gfx *smokeRender(PropRecord *prop, Gfx *gdl, s32 withalpha);
+Gfx *smokeRender(const PropRecord *prop, Gfx *gdl, s32 withalpha);
 void smokeInitScaleMtx(void);
 void smokesInit(void);
 void smokesReset(void);

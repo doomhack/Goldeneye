@@ -120,10 +120,10 @@ ALMicroTime sndPlayerVoiceHandler(void *node);
 void sndHandleEvent(ALSndPlayer *sndp, ALSndpEvent *event);
 void sndDisposeSound(ALSoundState *state);
 void sndCreatePitchEvent(ALSoundState *state);
-void sndRemoveEvents(ALEventQueue *evtq, ALSoundState *state, u16 eventType);
+void sndRemoveEvents(ALEventQueue *evtq, const ALSoundState *state, u16 eventType);
 ALSoundState *sndSetupSound(ALSound* sound);
 void sndUnlinkClearSound(ALSoundState *state);
-u8 sndGetPlayingState(ALSoundState *state);
+u8 sndGetPlayingState(const ALSoundState *state);
 void sndDeactivateAllSfxByFlag(u8 flag);
 void sndDeactivateAllSfxByFlag_1(void);
 u16 sndGetSfxSlotFirstNaturalVolume(void);
@@ -138,7 +138,7 @@ void sndSetSfxSlotVolume(u8 sfxIndex, u16 volume);
  * Mostly identical to n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\sndplayer.c
  * method alSndpNew.
  */
-void sndNewPlayerInit(ALSeqpSfxConfig *sfxSeqpConfig)
+void sndNewPlayerInit(const ALSeqpSfxConfig *sfxSeqpConfig)
 {
     u8 *ptr;
     struct ALSoundState_s *sState;
@@ -536,7 +536,7 @@ void sndCreatePitchEvent(ALSoundState *state)
  * static void _removeEvents(ALEventQueue *evtq, ALSoundState *state)
  * from n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\sndplayer.c
  */
-void sndRemoveEvents(ALEventQueue *evtq, ALSoundState *state, u16 eventType)
+void sndRemoveEvents(ALEventQueue *evtq, const ALSoundState *state, u16 eventType)
 {
     ALLink              *thisNode;
     ALLink              *nextNode;
@@ -697,7 +697,7 @@ void sndUnlinkClearSound(ALSoundState *state)
  * @param state: the state to check
  * @return AL_PLAYSTATE
  */
-u8 sndGetPlayingState(ALSoundState *state)
+u8 sndGetPlayingState(const ALSoundState *state)
 {
     if (state != NULL)
     {

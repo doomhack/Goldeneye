@@ -44,7 +44,7 @@
  * Work out how see-through tinted glass is from the current player: fully see-through
  * (minOpacity) within xludist, solid (255) beyond opadist, and in between in between.
  */
-s32 glassCalculateOpacity(coord3d *pos, f32 xludist, f32 opadist, f32 minOpacity)
+s32 glassCalculateOpacity(const coord3d *pos, f32 xludist, f32 opadist, f32 minOpacity)
 {
     coord3d *campos = &currentPlayerGetProp()->pos;
     f32 xdiff = pos->x - campos->x;
@@ -71,7 +71,7 @@ s32 glassCalculateOpacity(coord3d *pos, f32 xludist, f32 opadist, f32 minOpacity
  * its portal so the room behind isn't drawn. Returns FALSE if the object must be drawn
  * even in fog (glass is never fogged out).
  */
-static bool objUpdateOpacity(PropRecord *prop, s32 playercount)
+static bool objUpdateOpacity(const PropRecord *prop, s32 playercount)
 {
     ObjectRecord *obj = prop->obj;
 
@@ -122,7 +122,7 @@ static bool objUpdateOpacity(PropRecord *prop, s32 playercount)
 
 
 /* Whether the object is drawn on this pass */
-static bool objIsVisible(PropRecord *prop, bool applyfogcull)
+static bool objIsVisible(const PropRecord *prop, bool applyfogcull)
 {
     ObjectRecord *obj = prop->obj;
 
@@ -147,7 +147,7 @@ static bool objIsVisible(PropRecord *prop, bool applyfogcull)
 
 
 /* The racks' shelves sit at their nodes */
-static void rackGetModelMatrices(Model *model, Mtxf *mtxs)
+static void rackGetModelMatrices(const Model *model, Mtxf *mtxs)
 {
     for (s32 i = 0; i < RACK_NUM_SHELVES; i++)
     {
@@ -161,7 +161,7 @@ static void rackGetModelMatrices(Model *model, Mtxf *mtxs)
  * Work out the matrices of an object's model for this view, into mtxs. The root matrix
  * (mtxs[0]) places the object; the rest depend on the type.
  */
-static void objGetModelMatrices(PropRecord *prop, Model *model, Mtxf *mtxs, f32 prevopenposition, bool issimowner)
+static void objGetModelMatrices(const PropRecord *prop, const Model *model, Mtxf *mtxs, f32 prevopenposition, bool issimowner)
 {
     ObjectRecord *obj = prop->obj;
     Mtxf objmtx;
@@ -221,7 +221,7 @@ static void objGetModelMatrices(PropRecord *prop, Model *model, Mtxf *mtxs, f32 
  * game ran a projectile on its owner's pass whatever the owner was, so a guard's dropped
  * gun was never moved in multiplayer; only a player owner counts.)
  */
-static bool objIsSimOwner(ObjectRecord *obj, s32 playercount)
+static bool objIsSimOwner(const ObjectRecord *obj, s32 playercount)
 {
     bool issimowner;
 
@@ -246,7 +246,7 @@ static bool objIsSimOwner(ObjectRecord *obj, s32 playercount)
 }
 
 
-static void objTickChildren(PropRecord *prop, void (*tick)(PropRecord *child))
+static void objTickChildren(const PropRecord *prop, void (*tick)(PropRecord *child))
 {
     PropRecord *child = propChild(prop);
 
@@ -396,7 +396,7 @@ TICKOP objTick(PropRecord *prop)
 
 
 /* Drop everything attached to the prop, and everything attached to those */
-void objDropRecursively(PropRecord *prop)
+void objDropRecursively(const PropRecord *prop)
 {
     PropRecord *child = propChild(prop);
 

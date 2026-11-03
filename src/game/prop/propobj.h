@@ -37,12 +37,12 @@ extern ExplosionDetailsRecord object_explosion_details[];
 PropRecord *objInit(ObjectRecord *obj, ModelFileHeader *header, PropRecord *prop, Model *model);
 PropRecord *objInitWithModelDef(ObjectRecord *obj, ModelFileHeader *header);
 PropRecord *objInitWithAutoModel(ObjectRecord *obj);
-void        objSetPosition(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *stan);
-void        objPlaceAtPad(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *stan, coord3d *centre);
-void        objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan, coord3d *centre);
+void        objSetPosition(ObjectRecord *obj, const coord3d *pos, const Mtxf *matrix, StandTile *stan);
+void        objPlaceAtPad(ObjectRecord *obj, const coord3d *pos, const Mtxf *matrix, StandTile *stan, const coord3d *centre);
+void        objPlaceAtPadSideways(ObjectRecord *obj, const coord3d *pos, const Mtxf *padmtx, StandTile *stan, const coord3d *centre);
 void        objFree(ObjectRecord *obj, s32 freeprop, s32 canregen);
 void        objFreePermanently(ObjectRecord *obj, bool freeprop);
-void        modelResetDeformedVertices(Model *model);
+void        modelResetDeformedVertices(const Model *model);
 void        objsFreeDeformedVertices(void);
 
 f32         bondviewGetPlayerPitchRadians(void);

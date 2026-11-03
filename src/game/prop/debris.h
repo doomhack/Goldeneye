@@ -17,7 +17,7 @@ struct Debris {
     Vtx vertices[4];
 };
 
-void debrisCreate(coord3d *pos, f32 scatter, f32 hvel, f32 vvel, f32 size);
+void debrisCreate(const coord3d *pos, f32 scatter, f32 hvel, f32 vvel, f32 size);
 void debrisTick(void);
 Gfx *debrisRender(Gfx *gdl);
 void debrisInit(void);

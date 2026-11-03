@@ -74,7 +74,7 @@ void roomPropListsInit(void)
  * The rooms a prop is in, ended by -1. A player's prop without a body is only in the
  * room of the tile it stands on.
  */
-void propGetRoomIds(PropRecord *prop, s32 *roomids)
+void propGetRoomIds(const PropRecord *prop, s32 *roomids)
 {
     StandTile *stan = prop->stan;
 
@@ -169,7 +169,7 @@ static s32 roomBlockAllocate(s32 room, s32 prevblock)
 
 /* Add a prop to a room's list, taking a new block when its blocks are full. If no block
    is free the prop is left out. */
-void propAddToRoom(PropRecord *prop, s16 room)
+void propAddToRoom(const PropRecord *prop, s16 room)
 {
     if (room < 0)
     {
@@ -200,7 +200,7 @@ void propAddToRoom(PropRecord *prop, s16 room)
 
 
 /* Remove a prop from a room's list. Blocks found empty on the way are freed. */
-void propRemoveFromRoom(PropRecord *prop, s16 room)
+void propRemoveFromRoom(const PropRecord *prop, s16 room)
 {
     if (room < 0)
     {
@@ -286,7 +286,7 @@ void propRemoveFromRooms(PropRecord *prop)
 
 
 /* Work out again which rooms a guard or object is in */
-void propUpdateRooms(PropRecord *prop)
+void propUpdateRooms(const PropRecord *prop)
 {
     if (prop->type == PROP_TYPE_CHR)
     {
@@ -305,7 +305,7 @@ void propUpdateRooms(PropRecord *prop)
  * own list), or else the rooms of the floor tiles within radius of it. Then it adds the
  * rooms its bounding box reaches through portals.
  */
-void propCalcRooms(PropRecord *prop, coord3d *bbmin, coord3d *bbmax, f32 radius)
+void propCalcRooms(PropRecord *prop, const coord3d *bbmin, const coord3d *bbmax, f32 radius)
 {
     s32 rooms[PROP_MAX_ROOMS];
     s32 count = 0;
@@ -368,7 +368,7 @@ static u16 s_RoomPropsCall;
  * Collect the props in any of a list of rooms (ended by -1) into g_RoomPropsFound, each
  * once, ended by -1.
  */
-void roomGetProps(s32 *rooms)
+void roomGetProps(const s32 *rooms)
 {
     s16 *end = g_RoomPropsFound;
 

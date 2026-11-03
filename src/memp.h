@@ -16,7 +16,7 @@ typedef enum MemPool : u8
 
 void mempInit(u8 *start, u8 *end);
 void *mempAlloc(u32 bytes, MemPool pool);
-bool mempResizeLast(void *allocation, u32 newSize);
+bool mempResizeLast(const void *allocation, u32 newSize);
 u32 mempGetFreeBytes(MemPool pool);
 void mempResetPool(MemPool pool);
 void mempClosePool(MemPool pool);

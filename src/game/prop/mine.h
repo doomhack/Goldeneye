@@ -16,8 +16,8 @@ void remoteMinesDetonate(void);
 
 void proxminesReset(void);
 void proxmineAdd(WeaponObjRecord *mine);
-void proxmineRemove(WeaponObjRecord *mine);
-void proxminesDetonateNear(coord3d *pos);
+void proxmineRemove(const WeaponObjRecord *mine);
+void proxminesDetonateNear(const coord3d *pos);
 void proxminesTickGuards(void);
 void objTickExplosive(PropRecord *prop);
 

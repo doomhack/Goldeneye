@@ -181,7 +181,7 @@ void coopAiActOnActivator(ChrRecord *chr)
  * Called before each command. Starts repeating it over the players if it
  * needs that, with the current player first.
  */
-void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset, ChrRecord *chr)
+void coopAiBegin(struct CoopAiState *st, AIRecord *list, s32 offset, const ChrRecord *chr)
 {
     s32 mode;
     s32 count;

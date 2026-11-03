@@ -104,7 +104,7 @@ static void objUpdateEngineSound(struct ALSoundState_s **sound, s32 sfx, s32 vol
 
 /* Find where a wheel touches the floor, walking from the vehicle's position to it.
    Returns FALSE if the wheel is off the floor. */
-static bool vehicleFindWheelFloor(PropRecord *prop, coord3d *point)
+static bool vehicleFindWheelFloor(const PropRecord *prop, coord3d *point)
 {
     StandTile *tile = prop->stan;
 
@@ -118,7 +118,7 @@ static bool vehicleFindWheelFloor(PropRecord *prop, coord3d *point)
 }
 
 
-static void edgeNormalize(coord3d *edge, coord3d *from, coord3d *to)
+static void edgeNormalize(coord3d *edge, const coord3d *from, const coord3d *to)
 {
     edge->x = to->x - from->x;
     edge->y = to->y - from->y;
@@ -273,7 +273,7 @@ static void vehicleResetHeading(VehichleRecord *vehicle)
 
 /* Whether the body's collision box fits on the floor where the vehicle is: walking its
    outline must not leave the floor */
-static bool vehicleBodyFitsFloor(PropRecord *prop, VehichleRecord *vehicle, Model *model)
+static bool vehicleBodyFitsFloor(const PropRecord *prop, const VehichleRecord *vehicle, const Model *model)
 {
     ModelRoData_BoundingBoxRecord *bbox = &model->obj->Switches[VEHICLE_SWITCH_BODYBOX]->Data->BoundingBox;
     coord3d xmin, xmax, zmin, zmax;
@@ -334,7 +334,7 @@ static void vehicleStop(VehichleRecord *vehicle, f32 prevyaw, f32 prevturnspeed)
 
 /* Turn towards the target yaw and move forward, stopping if anything is in the way.
    waypointpos is the waypoint it is heading to, or NULL. */
-static void vehicleDrive(PropRecord *prop, VehichleRecord *vehicle, Model *model, f32 targetyaw, coord3d *waypointpos)
+static void vehicleDrive(PropRecord *prop, VehichleRecord *vehicle, const Model *model, f32 targetyaw, const coord3d *waypointpos)
 {
     ObjectRecord *obj = prop->obj;
     StandTile *tile = prop->stan;
@@ -529,7 +529,7 @@ static void vehicleRollWheels(VehichleRecord *vehicle, f32 spin)
  * The wheels' matrices: rolling with the speed, and the front wheels steering with the
  * turn. Only the player who ticks the vehicle rolls the wheels.
  */
-void vehicleGetModelMatrices(PropRecord *prop, Model *model, Mtxf *mtxs, bool issimowner)
+void vehicleGetModelMatrices(const PropRecord *prop, const Model *model, Mtxf *mtxs, bool issimowner)
 {
     VehichleRecord *vehicle = (VehichleRecord *)prop->obj;
     ModelNode **switches = model->obj->Switches;
@@ -691,7 +691,7 @@ void aircraftTick(PropRecord *prop)
  * aircraft (PROPFLAG_INMOTION) has its rotor turned on its side. Only the player who
  * ticks the aircraft spins the rotors.
  */
-void aircraftGetModelMatrices(PropRecord *prop, Model *model, Mtxf *mtxs, bool issimowner)
+void aircraftGetModelMatrices(const PropRecord *prop, const Model *model, Mtxf *mtxs, bool issimowner)
 {
     AircraftRecord *aircraft = (AircraftRecord *)prop->obj;
     coord3d *rotorpos = &model->obj->Switches[2]->Data->Group.Origin;
@@ -765,7 +765,7 @@ void aircraftGetModelMatrices(PropRecord *prop, Model *model, Mtxf *mtxs, bool i
  * The tank's matrices: the turret turned, the gun pitched, and the muzzle flash. Also
  * works out the turret's outline for collisions.
  */
-void tankGetModelMatrices(PropRecord *prop, Model *model, Mtxf *mtxs)
+void tankGetModelMatrices(const PropRecord *prop, const Model *model, Mtxf *mtxs)
 {
     TankRecord *tank = (TankRecord *)prop->obj;
     ModelNode **switches = model->obj->Switches;

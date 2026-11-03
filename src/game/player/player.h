@@ -1011,7 +1011,7 @@ s32 playerGetCurrentNum(void);
 extern inline __attribute__((gnu_inline)) s32 playerGetCurrentNum(void) { return player_num; }
 #endif
 void playerSetFovY(f32 fovy);
-s32 playerGetIndexForProp( PropRecord* prop);
+s32 playerGetIndexForProp( const PropRecord* prop);
 void playerSetAspect(f32 aspect);
 void playerInit(s32 player_num);
 s32 playerGetShuffledIndex(s32 current_player_num);
@@ -1024,8 +1024,8 @@ void playersResetHandicaps(void);
 
 PropRecord* currentPlayerGetProp(void);
 s32 playerPressedActivate(void);
-f32 playerGetEyeHeight(struct player *player);
-f32 playerGetStanHeight(struct player *player);
+f32 playerGetEyeHeight(const struct player *player);
+f32 playerGetStanHeight(const struct player *player);
 u8 playerGetRoom(void);
 coord3d *playerGetPos(void);
 s32 playerGetVisibleToGuards(void);

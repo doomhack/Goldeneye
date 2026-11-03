@@ -271,7 +271,7 @@ static void coopGiveStartingLoadout(void)
  * Co-op: puts the current player at pos (on the floor of stan), facing
  * look_angle (radians).
  */
-void coopPlaceCurrentPlayer(coord3d *posp, StandTile *stan, f32 look_angle)
+void coopPlaceCurrentPlayer(const coord3d *posp, StandTile *stan, f32 look_angle)
 {
     coord3d pos = *posp;
     f32 stan_height;

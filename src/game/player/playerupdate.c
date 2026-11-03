@@ -133,7 +133,7 @@ void playerTickMoveAnim(f32 speed, f32 speedforwards, f32 speedsideways)
 }
 
 
-f32 playerGetFloorY(StandTile *tile, f32 x, f32 z)
+f32 playerGetFloorY(const StandTile *tile, f32 x, f32 z)
 {
     f32 ret;
 
@@ -466,7 +466,7 @@ void playerUpdateVertaTheta(void)
  * Co-op and counter-op: the tank runs over the other player, as it does guards. They
  * die at once (unless invincible), with the guards' crush yell.
  */
-static void tankRunOverPlayer(PropRecord *victimprop, coord3d *tankpos)
+static void tankRunOverPlayer(const PropRecord *victimprop, const coord3d *tankpos)
 {
     s32 driver = playerGetCurrentNum();
     s32 victim = playerGetIndexForProp(victimprop);
