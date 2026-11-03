@@ -335,7 +335,7 @@ extern struct ModelSkeleton skeleton_gun_kf7;
 // forward declarations
 
 void gunGetShotDir(coord3d* origin, coord3d* result, enum GUNHAND hand);
-void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *mtx, coord3d *velocity, Mtxf *tumble);
+void gunLaunchProjectileFromPlayer(ObjectRecord *obj, const coord3d *targetpos, Mtxf *mtx, const coord3d *velocity, const Mtxf *tumble);
 s32 gunSample1PTransform(Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
 void gunAnalyzeGEKey(void);
 void gunOpenWeaponCase(void);
@@ -347,7 +347,7 @@ void gunStartBoltRecoil(GUNHAND hand);
 void gunReload(enum GUNHAND hand);
 void *dynAllocateVertices(s32 count);
 Mtx *dynAllocateMatrix(void);
-void camViewDeltaToScreen(coord3d *in, f32 divisor, coord3d *out);
+void camViewDeltaToScreen(const coord3d *in, f32 divisor, coord3d *out);
 
 // end forward declarations
 
@@ -1211,7 +1211,7 @@ void gunTickBoltRecoil(GUNHAND hand)
 
 
 /** Shows or hides the parts of a gun model only drawn in first person (switches 8-13 and 35). */
-void gunSetFirstPersonPartsVisible(Model* model, s32 val)
+void gunSetFirstPersonPartsVisible(const Model* model, s32 val)
 {
     if (model->obj->Switches[8] != NULL)
     {
@@ -1254,7 +1254,7 @@ void gunSetFirstPersonPartsVisible(Model* model, s32 val)
 
 
 /** Shows or hides the item held in a thrown weapon's hand, such as the grenade (switches 14 and 15). */
-void gunSetHeldItemVisible(Model* model, s32 val)
+void gunSetHeldItemVisible(const Model* model, s32 val)
 {
     ModelNode* switch_14;
     ModelNode* switch_15;
@@ -1278,7 +1278,7 @@ void gunSetHeldItemVisible(Model* model, s32 val)
 }
 
 
-void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf *matrix, coord3d *velocity, Mtxf *tumble, PropRecord *owner)
+void gunLaunchProjectile(ObjectRecord *obj, const coord3d *pos, StandTile *stan, Mtxf *matrix, const coord3d *velocity, const Mtxf *tumble, PropRecord *owner)
 {
     PropRecord *prop;
     Projectile *projectile;
@@ -1319,7 +1319,7 @@ void gunLaunchProjectile(ObjectRecord *obj, coord3d *pos, StandTile *stan, Mtxf 
  * is obstructed the player's position used as a fallback. This prevents the player from launching
  * projectiles through nearby surfaces.
  */
-void gunLaunchProjectileFromPlayer(ObjectRecord *obj, coord3d *targetpos, Mtxf *mtx, coord3d *velocity, Mtxf *tumble)
+void gunLaunchProjectileFromPlayer(ObjectRecord *obj, const coord3d *targetpos, Mtxf *mtx, const coord3d *velocity, const Mtxf *tumble)
 {
     PropRecord *playerprop;
     coord3d pos;

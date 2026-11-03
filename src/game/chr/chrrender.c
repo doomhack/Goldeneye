@@ -44,7 +44,7 @@
 #include "game/math/line_tri_intersect.h"
 
 
-static f32 chrGetFlinchAmount(ChrRecord *chr);
+static f32 chrGetFlinchAmount(const ChrRecord *chr);
 
 
 /**
@@ -55,7 +55,7 @@ static f32 chrGetFlinchAmount(ChrRecord *chr);
  *
  * Rise and fall are measured in VI retraces: 1/60 s on NTSC and 1/50 s on PAL.
  */
-static f32 chrGetFlinchAmount(ChrRecord *chr)
+static f32 chrGetFlinchAmount(const ChrRecord *chr)
 {
     f32 count;
     f32 amount;
@@ -334,7 +334,7 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 #undef FIVEPI_OVER_18
 
 
-Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
+Gfx *chrRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     ChrRecord *chr;
     Model *chrmodel;

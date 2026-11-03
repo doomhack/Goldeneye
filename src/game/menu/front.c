@@ -823,17 +823,17 @@ Gfx *frontCheatRender(Gfx *DL);
 Gfx *frontNoControllerRender(Gfx *DL);
 Gfx *frontBlankRender(Gfx *DL);
 Gfx *frontCastRender(Gfx *DL);
-void frontHideAllSwitches(Model *model);
-void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode);
+void frontHideAllSwitches(const Model *model);
+void frontSetSwitchVisible(const Model* objinstance, s32 item, s32 mode);
 void frontSetMissionCursor(LEVEL_SOLO_SEQUENCE level);
-Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, char *text, struct fontchar *fontChars, struct font *font);
+Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, char *text, struct fontchar *fontChars, const struct font *font);
 void frontSetModeCursor(int mode);
 void frontSetDifficultyCursor(int difficulty);
 
 // end forward declarations.
 
 
-Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, char *text, struct fontchar *fontChars, struct font *font, s32 colour, s32 width, s32 height, s32 yOffset, s32 lineheight)
+Gfx *frontPrintText(Gfx *gdl, s32 *x, s32 *y, char *text, struct fontchar *fontChars, const struct font *font, s32 colour, s32 width, s32 height, s32 yOffset, s32 lineheight)
 {
     gdl = textRender(
         gdl,
@@ -1326,7 +1326,7 @@ void frontLegalTick(void)
 /**
  * Render a string of standard text on the legal screen e.g. "TWYCROSS BOARD OF GAME CLASSIFICATION"
  */
-Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, char *text, struct fontchar *fontChars, struct font *font)
+Gfx *frontDrawAlignedText(Gfx *dl, s32 x0, s32 y0, s32 halign, s32 valign, char *text, struct fontchar *fontChars, const struct font *font)
 {
     s32 height;
     s32 width;
@@ -1781,7 +1781,7 @@ Gfx *frontLogoRender(Gfx *DL)
 }
 
 
-void frontHideAllSwitches(Model *model)
+void frontHideAllSwitches(const Model *model)
 {
     s32 i;
     ModelNode *mnode;
@@ -1803,7 +1803,7 @@ void frontHideAllSwitches(Model *model)
 }
 
 
-void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode)
+void frontSetSwitchVisible(const Model* objinstance, s32 item, s32 mode)
 {
     if (objinstance->obj->Switches[item] != NULL)
     {
@@ -1818,7 +1818,7 @@ void frontSetSwitchVisible(Model* objinstance, s32 item, s32 mode)
 //WALLETINIT
 //********************************************************************************************************
 
-void frontSelectBondPicture(Model *objinstance)
+void frontSelectBondPicture(const Model *objinstance)
 {
     frontSetSwitchVisible(objinstance,SW_BROSNAN,TRUE); //brosnan picture
     frontSetSwitchVisible(objinstance,SW_CONNERY,FALSE);

@@ -82,7 +82,7 @@ ALSoundState **gunGetFreeSfxState(void)
 /**
  * Plays the sound of a shot hitting a prop or a guard.
  */
-void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_index)
+void shotPlayHitPropSound(enum ITEM_IDS item, const PropRecord* prop, s32 texture_index)
 {
     s32 volume;
     u32 rnd1;
@@ -173,7 +173,7 @@ void shotPlayHitPropSound(enum ITEM_IDS item, PropRecord* prop, s32 texture_inde
 /**
  * Plays the sound of a shot breaking glass at pos.
  */
-void shotPlayGlassSound(coord3d* pos)
+void shotPlayGlassSound(const coord3d* pos)
 {
     ALSoundState **sound;
 
@@ -197,7 +197,7 @@ void shotPlayGlassSound(coord3d* pos)
  * Plays the ricochet sound of a shot hitting the world, chosen by the
  * weapon and the surface's texture.
  */
-void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
+void shotPlayHitSound(enum ITEM_IDS item, const coord3d* pos, s32 texture_index)
 {
     ALSoundState **sound_state;
     u32 rnd1;
@@ -254,7 +254,7 @@ void shotPlayHitSound(enum ITEM_IDS item, coord3d* pos, s32 texture_index)
  * Tests if a ray intersects the bounding box of the given room.
  * @return TRUE if the ray intersects, otherwise FALSE.
 */
-s32 shotRayHitsRoomBbox(s32 room, coord3d* start, coord3d* dir)
+s32 shotRayHitsRoomBbox(s32 room, const coord3d* start, const coord3d* dir)
 {
     s32 max[3];
     s32 min[3];
@@ -292,7 +292,7 @@ s32 shotRayHitsRoomBbox(s32 room, coord3d* start, coord3d* dir)
  * @return Returns the room number of the accepted hit, or the bestroom if no
  * closer visible room hit is found.
  */
-s32 shotFindBgHitInVisibleRooms(coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *besthit, s32 bestroom)
+s32 shotFindBgHitInVisibleRooms(const coord3d *from, const coord3d *to, const coord3d *dir, const coord3d *scaledDir, u8 *visited, struct HitThing *besthit, s32 bestroom)
 {
     s32 rooms[100];
     s32 *roomptr;
@@ -374,7 +374,7 @@ s32 shotFindBgHitInVisibleRooms(coord3d *from, coord3d *to, coord3d *dir, coord3
  * @return Return 0 if no hit is found, otherwise the room number of the first room whose bbox and
  * background geometry intersect the bullet ray.
  */
-s32 shotFindBgHitInConnectedRooms(s32 startroom, coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *hit)
+s32 shotFindBgHitInConnectedRooms(s32 startroom, const coord3d *from, const coord3d *to, const coord3d *dir, const coord3d *scaledDir, u8 *visited, struct HitThing *hit)
 {
     u8 rooms[256];
     s32 neighbours[100];
@@ -435,7 +435,7 @@ s32 shotFindBgHitInConnectedRooms(s32 startroom, coord3d *from, coord3d *to, coo
  * This seems to be a brute force/fallback version of the function above, shotFindBgHitInConnectedRooms.
  * @return 0 if no bg hit in any unvisited room, otherwise the room number containing the closest bg hit.
  */
-s32 shotFindBgHit(coord3d *from, coord3d *to, coord3d *dir, coord3d *scaledDir, u8 *visited, struct HitThing *besthit)
+s32 shotFindBgHit(const coord3d *from, const coord3d *to, const coord3d *dir, const coord3d *scaledDir, u8 *visited, struct HitThing *besthit)
 {
     f32 dx;
     f32 dy;
@@ -807,7 +807,7 @@ void shotFireBullet(s32 hand)
  * Hitscans gather candidate hits along the bullet path. This function records each candidate hit into shotdata
  * and enforces pentration limits and removes hits that should be blocked by closer objects.
  */
-void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, struct HitThing *hitthing, s32 room, ModelNode *bboxnode, Model *model, bool countsAsPenetration, s32 blocksFurtherHits)
+void shotAddHit(struct ShotData *shotdata, PropRecord *prop, f32 dist, s32 hitpart, ModelNode *node, const struct HitThing *hitthing, s32 room, ModelNode *bboxnode, Model *model, bool countsAsPenetration, s32 blocksFurtherHits)
 {
     s32 i;
     s32 furthestindex;

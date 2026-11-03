@@ -41,7 +41,7 @@ static s16 debrisCornerOffset(f32 size)
  * Throws out one chip of debris from near pos: up to scatter away from it, moving
  * outwards at up to hvel and upwards at up to vvel. size is the chip's size.
  */
-void debrisCreate(coord3d *pos, f32 scatter, f32 hvel, f32 vvel, f32 size)
+void debrisCreate(const coord3d *pos, f32 scatter, f32 hvel, f32 vvel, f32 size)
 {
     struct Debris *debris = &s_Debris[s_NextDebris];
     f32 dx = (2.0f * RANDOMFRAC()) - 1.0f;

@@ -177,8 +177,8 @@ struct ALBankAlt_s
 
 // end Alternate defintion for ALInstrument
 
-void sndNewPlayerInit(ALSeqpSfxConfig *sfxSeqpConfig);
-u8 sndGetPlayingState(ALSoundState *state);
+void sndNewPlayerInit(const ALSeqpSfxConfig *sfxSeqpConfig);
+u8 sndGetPlayingState(const ALSoundState *state);
 void sndDeactivate(ALSoundState *state);
 void sndDeactivateAllSfxByFlag_1(void);
 void sndCreatePostEvent(ALSoundState *state, s16 eventType, s32 data);

@@ -22,7 +22,7 @@ void romCreateMesgQueue(void)
 }
 
 /** Starts a DMA from ROM to RAM, after dropping the target from the data cache. */
-void romStartDma(void *target, void *source, u32 size)
+void romStartDma(void *target, const void *source, u32 size)
 {
     osInvalDCache(target, size);
     osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_READ, (u32)source, target, size, &m_romQueue);
@@ -44,7 +44,7 @@ void romWaitDma(void)
 #define ROM_BOUNCE_SIZE 0x400
 static u8 romBounceBuffer[ROM_BOUNCE_SIZE] __attribute__((aligned(16)));
 
-static void romCopyBounced(u8 *target, u8 *source, u32 size)
+static void romCopyBounced(u8 *target, const u8 *source, u32 size)
 {
     u32 chunk;
 
@@ -94,7 +94,7 @@ void romCopy(void *target, void *source, u32 size)
  * into the 16-byte aligned address at or above `target`, and returns where the requested
  * data starts. The buffer needs about 17 bytes to spare.
  */
-void *romCopyUnaligned(void *target, void *source, s32 length)
+void *romCopyUnaligned(const void *target, void *source, s32 length)
 {
     u8 *source_aligned = (u8 *)align_addr_even((uintptr_t)source);
     s32 offset = (u8 *)source - source_aligned;
@@ -105,14 +105,14 @@ void *romCopyUnaligned(void *target, void *source, s32 length)
 }
 
 /** Starts a DMA from RAM to the cartridge address space, after writing back the cache. */
-void romStartWrite(void *source, void *target, u32 size)
+void romStartWrite(void *source, const void *target, u32 size)
 {
     osWritebackDCache(source, size);
     osPiStartDma(&m_romIoMesg, OS_MESG_PRI_NORMAL, OS_WRITE, (u32)target, source, size, &m_romQueue);
 }
 
 /** Writes to the cartridge address space and waits. Development kit only. */
-void romWrite(void *source, void *target, u32 size)
+void romWrite(void *source, const void *target, u32 size)
 {
     romStartWrite(source, target, size);
     romWaitDma();

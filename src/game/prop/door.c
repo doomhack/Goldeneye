@@ -126,13 +126,13 @@ static ALSoundState *doorPlaySfx(s16 sfx)
     return sndPlaySfx(g_musicSfxBufferPtr, sfx, NULL);
 }
 
-static bool doorSoundIsPlaying(ALSoundState *sound)
+static bool doorSoundIsPlaying(const ALSoundState *sound)
 {
     return sound != NULL && sndGetPlayingState(sound) != 0;
 }
 
 /** Turns the door's loops up or down for how near the nearest player is, and off in cutscenes. */
-void doorUpdateSoundVolume(DoorRecord *door)
+void doorUpdateSoundVolume(const DoorRecord *door)
 {
     bool playing[2];
     s32 volume;
@@ -162,7 +162,7 @@ void doorUpdateSoundVolume(DoorRecord *door)
     }
 }
 
-void doorStopSounds(DoorRecord *door)
+void doorStopSounds(const DoorRecord *door)
 {
     for (s32 i = 0; i < 2; i++)
     {
@@ -236,7 +236,7 @@ static void doorPlaySound(DoorRecord *door, enum DoorSoundEvent event)
  */
 
 /** The door's model matrix in the world, with it as far open as it is. */
-void doorGetMtx(DoorRecord *door, Mtxf *mtx)
+void doorGetMtx(const DoorRecord *door, Mtxf *mtx)
 {
     if (door->doorType == DOORTYPE_SWINGING || door->doorType == DOORTYPE_AZTECCHAIR)
     {
@@ -456,7 +456,7 @@ static void doorClipQuad(const Vertex *src, Vertex *dst, s16 cutoff, bool vertic
  * frame's clipped vertices. The model is made of quads, 4 vertices each.
  * Examples are the brown security doors in Facility and the stone doors in Egypt and Temple.
  */
-static void doorClipVertices(DoorRecord *door)
+static void doorClipVertices(const DoorRecord *door)
 {
     Model *model;
     ModelNode *node;
@@ -505,7 +505,7 @@ static void doorClipVertices(DoorRecord *door)
  * A clipped door's vertices from doorClipVertices last only a frame. Once it stops, they go in
  * the door's own copy (clipVtx) for the model to keep drawing.
  */
-static void doorKeepClippedVertices(DoorRecord *door)
+static void doorKeepClippedVertices(const DoorRecord *door)
 {
     Model *model = door->model;
     ModelNode *node = model->obj->RootNode->Child->Child;
@@ -524,7 +524,7 @@ static void doorKeepClippedVertices(DoorRecord *door)
 }
 
 /** Opens the door's portal, so the rooms behind it are drawn. */
-void doorOpenPortal(DoorRecord *door)
+void doorOpenPortal(const DoorRecord *door)
 {
     if (door->portalNumber >= 0)
     {
@@ -532,7 +532,7 @@ void doorOpenPortal(DoorRecord *door)
     }
 }
 
-void doorClosePortal(DoorRecord *door)
+void doorClosePortal(const DoorRecord *door)
 {
     if (door->portalNumber >= 0)
     {
@@ -544,7 +544,7 @@ void doorClosePortal(DoorRecord *door)
  * Sets a door up at level load (from setupDoor), with its prop. The setup data gives where
  * it is (centre) and which way it slides (slideDir).
  */
-PropRecord *doorInit(DoorRecord *door, coord3d *pos, Mtxf *mtx, StandTile *stan, coord3d *slideDir, coord3d *centre)
+PropRecord *doorInit(DoorRecord *door, const coord3d *pos, const Mtxf *mtx, StandTile *stan, coord3d *slideDir, const coord3d *centre)
 {
     PropRecord *prop = objInitWithAutoModel((ObjectRecord *)door);
     f32 scale = PitemZ_entries[door->obj].scale;
@@ -727,7 +727,7 @@ void doorMove(DoorRecord *door, DOORSTATE state)
  * Someone used the door: it turns round if it is moving, and otherwise opens if it is less
  * than half open and closes if not. Switches linked to the door use it too.
  */
-void doorToggle(PropRecord *prop)
+void doorToggle(const PropRecord *prop)
 {
     DoorRecord *door = prop->door;
 
@@ -769,7 +769,7 @@ void doorOpenInstantly(DoorRecord *door)
     doorStopSounds(door);
 }
 
-bool doorIsClosed(DoorRecord *door)
+bool doorIsClosed(const DoorRecord *door)
 {
     return (door->openstate == DOORSTATE_STATIONARY || door->openstate == DOORSTATE_WAITING) && door->openPosition <= 0.0f;
 }
@@ -885,7 +885,7 @@ static void doorsTickMovement(DoorRecord *door)
 }
 
 /** The door's part of objTick: closing itself, the airlock wait, and moving. */
-void doorTick(PropRecord *prop)
+void doorTick(const PropRecord *prop)
 {
     DoorRecord *door = prop->door;
 #if defined(VERSION_EU)
@@ -963,7 +963,7 @@ static f32 angleFromView(f32 x, f32 z, const coord3d *eye, f32 yaw)
  * door's edges are along the pad's up axis, or its side axis for altAxis. They are measured
  * from a little in front of the player. A swinging door's far edge is where it has swung to.
  */
-static void doorGetAnglesToPlayer(DoorRecord *door, f32 *minangle, f32 *maxangle, bool altAxis)
+static void doorGetAnglesToPlayer(const DoorRecord *door, f32 *minangle, f32 *maxangle, bool altAxis)
 {
     BoundPadRecord *pad = &g_CurrentSetup.boundpads[door->pad];
     PropRecord *playerprop = currentPlayerGetProp();
@@ -1038,7 +1038,7 @@ static void doorGetAnglesToPlayer(DoorRecord *door, f32 *minangle, f32 *maxangle
  * ahead, or the door (with its linked doors) across the middle of the view. If so it becomes
  * g_InteractProp. Returns FALSE when it has, so the search can stop.
  */
-static bool doorTestInteractAngle(DoorRecord *door, bool altAxis)
+static bool doorTestInteractAngle(const DoorRecord *door, bool altAxis)
 {
     f32 minangle;
     f32 maxangle;
@@ -1091,7 +1091,7 @@ static bool doorTestInteractAngle(DoorRecord *door, bool altAxis)
  * Whether the current player can use the door: near it and looking at it. If so it becomes
  * g_InteractProp. Returns FALSE when it has, so the search can stop.
  */
-bool doorTestForInteract(PropRecord *prop)
+bool doorTestForInteract(const PropRecord *prop)
 {
     DoorRecord *door = prop->door;
     PropRecord *playerprop;
@@ -1145,7 +1145,7 @@ bool doorTestForInteract(PropRecord *prop)
 }
 
 /** Whether the prop is in front of the door (on its side axis side). Exactly in line counts as in front. */
-static bool doorIsInFront(DoorRecord *door, PropRecord *prop)
+static bool doorIsInFront(const DoorRecord *door, const PropRecord *prop)
 {
     BoundPadRecord *pad = &g_CurrentSetup.boundpads[door->pad];
     coord3d side;
@@ -1164,7 +1164,7 @@ static bool doorIsInFront(DoorRecord *door, PropRecord *prop)
 }
 
 /** A two-way swinging door that is shut opens away from whoever opens it (and its linked doors with it). */
-void doorChooseSwingDirection(PropRecord *chrprop, DoorRecord *door)
+void doorChooseSwingDirection(const PropRecord *chrprop, DoorRecord *door)
 {
     if ((door->flags & PROPFLAG_DOOR_TWOWAY) && door->openstate == DOORSTATE_STATIONARY && door->openPosition == 0.0f)
     {
@@ -1183,7 +1183,7 @@ void doorChooseSwingDirection(PropRecord *chrprop, DoorRecord *door)
 }
 
 /** The current player uses the door: it opens or closes, or says it is locked. */
-TICKOP doorInteract(PropRecord *prop)
+TICKOP doorInteract(const PropRecord *prop)
 {
     DoorRecord *door = prop->door;
     PropRecord *playerprop = currentPlayerGetProp();
@@ -1259,7 +1259,7 @@ TICKOP doorInteract(PropRecord *prop)
  * door's six blades tilts out once the door is 30% open, as its tip turns. The iris plays a
  * sound as its blades start and finish (playSounds: once in co-op).
  */
-void doorGetModelMatrices(DoorRecord *door, Model *model, Mtxf *mtxs, f32 prevOpenPosition, bool playSounds)
+void doorGetModelMatrices(const DoorRecord *door, const Model *model, Mtxf *mtxs, f32 prevOpenPosition, bool playSounds)
 {
     doorGetMtx(door, mtxs);
     mtx4MultAffineInPlace(camGetWorldToScreenMtxf(), mtxs);
@@ -1313,7 +1313,7 @@ void doorGetModelMatrices(DoorRecord *door, Model *model, Mtxf *mtxs, f32 prevOp
 }
 
 /** A glass door's pane breaks into shards (after three hits). */
-void doorShatterGlass(DoorRecord *door)
+void doorShatterGlass(const DoorRecord *door)
 {
     Model *model = door->model;
     const struct ModelRoData_BoundingBoxRecord *pane = &model->obj->Switches[2]->Data->BoundingBox;

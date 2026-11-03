@@ -5,11 +5,11 @@
 
 // Ejected cartridge casings: creating them as a gun fires, moving and drawing them
 
-CasingRecord *casingCreate(ModelFileHeader *header, Mtxf *mtx);
+CasingRecord *casingCreate(ModelFileHeader *header, const Mtxf *mtx);
 void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos);
 void casingTick(CasingRecord *casing);
 void casingsTick(void);
-void casingRender(CasingRecord *casing, Gfx * *gdl);
+void casingRender(const CasingRecord *casing, Gfx * *gdl);
 void casingsRender(Gfx * *gdl);
 void casingsLoadModels(void);
 

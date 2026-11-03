@@ -386,7 +386,7 @@ s32 playerGetCrouchPos(s32 playernum)
  * player position values to parameter values.
  * Also updates related room pointer.
  */
-void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *tile, coord3d *stan_walk_start)
+void playerSetPosition(const coord3d *pos, const coord3d *pos2, const coord3d *offset, StandTile *tile, const coord3d *stan_walk_start)
 {
     StandTile *tilefromstart;
     StandTile *tilefromprev;

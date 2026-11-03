@@ -320,7 +320,7 @@ void propDetach(PropRecord *prop)
 
 
 /* Draw a prop on the opaque (withalpha 0) or translucent (1) pass */
-static Gfx *propRender(Gfx *gdl, PropRecord *prop, s32 withalpha)
+static Gfx *propRender(Gfx *gdl, const PropRecord *prop, s32 withalpha)
 {
     switch (prop->type)
     {
@@ -343,7 +343,7 @@ static Gfx *propRender(Gfx *gdl, PropRecord *prop, s32 withalpha)
 
 
 /* The room a prop is drawn with: the first of its rooms that is visible, or -1 */
-static s32 propGetDrawRoom(PropRecord *prop)
+static s32 propGetDrawRoom(const PropRecord *prop)
 {
     s32 rooms[8];
 
@@ -593,7 +593,7 @@ bool playerInteract(void)
 
 
 /* Whether no player is within RESPAWN_PLAYER_DIST of a prop */
-static bool propIsFarFromPlayers(PropRecord *prop)
+static bool propIsFarFromPlayers(const PropRecord *prop)
 {
     s32 numplayers = getPlayerCount();
 
@@ -868,7 +868,7 @@ void propsTickPickups(void)
 
 
 /* A switch toggles the doors linked to it */
-void switchActivateLinkedDoors(PropRecord *prop)
+void switchActivateLinkedDoors(const PropRecord *prop)
 {
     if (!(prop->obj->runtime_bitflags & RUNTIMEBITFLAG_LINKEDSWITCH))
     {
@@ -886,7 +886,7 @@ void switchActivateLinkedDoors(PropRecord *prop)
 
 
 /* Whether a padlocked door's padlocks are all shot off */
-bool doorIsPadlockFree(DoorRecord *door)
+bool doorIsPadlockFree(const DoorRecord *door)
 {
     if (!(door->runtime_bitflags & RUNTIMEBITFLAG_PADLOCKEDDOOR))
     {
@@ -906,7 +906,7 @@ bool doorIsPadlockFree(DoorRecord *door)
 
 
 /* Whether an object in a safe can be picked up: the safe's door is more than half open */
-bool objCanPickupFromSafe(ObjectRecord *obj)
+bool objCanPickupFromSafe(const ObjectRecord *obj)
 {
     if (!(obj->flags2 & PROPFLAG2_LINKEDTOSAFE))
     {
@@ -943,7 +943,7 @@ ObjectRecord *objFindAtPad(s32 padid)
 
 
 /* The first active object in a room whose collision outline contains a point */
-ObjectRecord *objFindAtPos(coord3d *pos, s32 roomid)
+ObjectRecord *objFindAtPos(const coord3d *pos, s32 roomid)
 {
     for (PropRecord *prop = propsGetActiveTail(); prop != NULL; prop = prop->prev)
     {

@@ -194,7 +194,7 @@ bool bgRoomsSharePortal(s32 roomA, s32 roomB);
 
 //f32 bgGetRoomValue(s32 room); // u8 not s32 for stanGetTileRoomValue
 s32 bgCopyVisibleRoomsToList(s32 *rooms, s32 max);
-bool bgTestBulletHitBackground(coord3d *from, coord3d *to, s32 roomnum, struct HitThing *hit);
+bool bgTestBulletHitBackground(const coord3d *from, const coord3d *to, s32 roomnum, struct HitThing *hit);
 void bgUnloadRoom(s32 roomID);
 void bgLoad(LEVEL_INDEX stagenum);
 
@@ -202,27 +202,27 @@ void bgToggleDataPortalsContrlBytes1Bit1(s32 index, s32 toggle);
 void bgFindVisibleRooms(void);
 Gfx* bgLevelRender(Gfx *gdl);
 Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bottom);
-bool bgProjectRoomCoordToScreen(coord3d *src, coord3d *dst);
+bool bgProjectRoomCoordToScreen(const coord3d *src, coord3d *dst);
 Gfx* bgScissorCurrentPlayerViewDefault(Gfx* gdl);
 Gfx* bgScissorCurrentPlayerViewF(Gfx* gdl, f32 left, f32 top, f32 right, f32 bottom);
 f32 bgGetLevelScale(void);
 u8 bgRoomIsVisible(int roomID);
 s32 bgGet2dBboxByRoomId(s32 room_id, bbox2d *result);
 f32 bgGetLevelVisibilityScale(void);
-void bgRectOutersect(bbox2d *a, bbox2d *b);
+void bgRectOutersect(bbox2d *a, const bbox2d *b);
 f32 bgGetLevelScaleInv(void);
-s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, coord3d *start, coord3d *end);
+s32 bgGetPortalBetweenRooms(s32 room1, s32 room2, const coord3d *start, const coord3d *end);
 void bgGetPortalPlane(s32 portalnum, struct PortalMetric *metric);
-void bgApplyDynamicCCRMLUT(Gfx *start, Gfx *end, enum CCRMLUT lutIndex);
-void bgFindRoomsInBbox(coord3d *, coord3d *, s32 *, s32 *, s32);
-void bgFindRoomsAlongSegment(coord3d *pos1, coord3d *pos2, u8 *initialRooms, u8 *outRoomSet, s32 *outRoomNums, s32 *outRoomNumsCount, s32 outRoomNumsMax);
-s32 bgFindPortalOnSegment(coord3d *start, coord3d *end);
+void bgApplyDynamicCCRMLUT(Gfx *start, const Gfx *end, enum CCRMLUT lutIndex);
+void bgFindRoomsInBbox(const coord3d *, const coord3d *, s32 *, s32 *, s32);
+void bgFindRoomsAlongSegment(const coord3d *pos1, const coord3d *pos2, const u8 *initialRooms, u8 *outRoomSet, s32 *outRoomNums, s32 *outRoomNumsCount, s32 outRoomNumsMax);
+s32 bgFindPortalOnSegment(const coord3d *start, const coord3d *end);
 void bgRoomCalcBB(s32 room);
 
 void bgReset(void);
 char *bgDebPrintROOMID(s32 roomId);
 s32 bgGetConnectedRooms(s32 roomIndex, s32* list, s32 max);
 s32 bgGetMaxNumRooms(void);
-bool bgTestRayIntersectsBbox(coord3d *origin, coord3d *dir, s32 *bbox_min, s32 *bbox_max);
+bool bgTestRayIntersectsBbox(const coord3d *origin, const coord3d *dir, const s32 *bbox_min, const s32 *bbox_max);
 
 #endif

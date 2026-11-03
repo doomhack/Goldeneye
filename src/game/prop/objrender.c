@@ -103,7 +103,7 @@ Gfx *weaponRenderTracers(Gfx *gdl)
 
 /* How a monitor screen uses the z-buffer: not at all for an object always drawn in
    front, and as a decal on a fixed monitor (decalflags) */
-static s32 monitorGetZbufferMode(ObjectRecord *obj, u32 decalflags)
+static s32 monitorGetZbufferMode(const ObjectRecord *obj, u32 decalflags)
 {
     if (obj->flags2 & PROPFLAG2_00010000)
     {
@@ -151,7 +151,7 @@ static Gfx *objRenderScreens(ObjectRecord *obj, Gfx *gdl)
 
 
 /* Whether the object's vertices have been bent by damage: its model uses its own copy */
-static bool objIsDeformed(ObjectRecord *obj)
+static bool objIsDeformed(const ObjectRecord *obj)
 {
     ModelNode *node = objFindDlCollisionNode(obj);
 
@@ -168,7 +168,7 @@ static bool objIsDeformed(ObjectRecord *obj)
 
 
 /* Set the cull mode and the damage shading */
-static void objSetCullAndDamage(PropRecord *prop, ModelRenderData *mrData)
+static void objSetCullAndDamage(const PropRecord *prop, ModelRenderData *mrData)
 {
     ObjectRecord *obj = prop->obj;
 
@@ -226,7 +226,7 @@ static void objSetCullAndDamage(PropRecord *prop, ModelRenderData *mrData)
  * environment mapping) are drawn in the world's frame with the background's projection,
  * so their reflections stay fixed to the world.
  */
-static void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 xlupass)
+static void objRenderModel(const PropRecord *prop, ModelRenderData *mrData, s32 xlupass)
 {
     if (!(prop->flags & PROPFLAG_ONSCREEN))
     {
@@ -300,7 +300,7 @@ static void objRenderModel(PropRecord *prop, ModelRenderData *mrData, s32 xlupas
 
 /* The object's shading: its floor's colour, darker for each shot taken, then tinted
    towards the fog colour (by fogfrac) */
-static u32 objGetRenderShade(ObjectRecord *obj, s32 fogfrac, rgba_f32 *fogcolour)
+static u32 objGetRenderShade(const ObjectRecord *obj, s32 fogfrac, rgba_f32 *fogcolour)
 {
     s32 shots = objGetShotsTaken(obj);
     s32 brightness = 0xff - shots * SHOT_DARKEN;
@@ -330,7 +330,7 @@ static u32 objGetRenderShade(ObjectRecord *obj, s32 fogfrac, rgba_f32 *fogcolour
 /**
  * Draw an object, weapon or door prop on the opaque (xlupass 0) or translucent (1) pass.
  */
-Gfx *objRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass)
+Gfx *objRenderProp(const PropRecord *prop, Gfx *gdl, s32 xlupass)
 {
     ObjectRecord *obj = prop->obj;
     ModelRenderData mrData = {.zbufferenabled = TRUE, .flags = RENDERPASS_OPA | RENDERPASS_XLU};
@@ -424,7 +424,7 @@ Gfx *objRenderProp(PropRecord *prop, Gfx *gdl, s32 xlupass)
  * Where an object on screen is, in the view's frame: its root position (viewpos) and the
  * x and y ranges of its model (min, max). FALSE when it is off screen or behind the camera.
  */
-bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *viewpos, coord2d *xrange, coord2d *yrange)
+bool objGetOnscreenRenderBounds(const PropRecord *prop, coord3d *viewpos, coord2d *xrange, coord2d *yrange)
 {
     if (!(prop->flags & PROPFLAG_ONSCREEN))
     {
@@ -459,7 +459,7 @@ bool objGetOnscreenRenderBounds(PropRecord *prop, coord3d *viewpos, coord2d *xra
  * The screen area covered by the rooms the prop is in, to scissor its drawing to. FALSE
  * when none of its rooms has one.
  */
-bool propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox)
+bool propGetRoomsBbox2d(const PropRecord *prop, bbox2d *bbox)
 {
     s32 rooms[8];
     bool found = FALSE;
@@ -510,7 +510,7 @@ bool propGetRoomsBbox2d(PropRecord *prop, bbox2d *bbox)
 
 /* How far into near fog a prop's distance is, scaled up for a small prop (size is its
    radius): beyond the start of the fog, the distance grows by 100 / size */
-static f32 fogScaleDist(NearFogValues *fog, f32 dist, f32 size)
+static f32 fogScaleDist(const NearFogValues *fog, f32 dist, f32 size)
 {
     return (((dist - fog->MaxObfuscationRange) * 100.0f) / size + fog->MaxObfuscationRange) * camGetLodScaleZ();
 }
@@ -520,7 +520,7 @@ static f32 fogScaleDist(NearFogValues *fog, f32 dist, f32 size)
  * How visible a prop is through near fog: 1 when clear of it, fading to 0 at the
  * level's furthest view distance. Small props fade out sooner.
  */
-f32 propGetFogFade(PropRecord *prop, f32 size)
+f32 propGetFogFade(const PropRecord *prop, f32 size)
 {
     NearFogValues *fog = fogGetNearFogValuesP();
 
@@ -547,7 +547,7 @@ f32 propGetFogFade(PropRecord *prop, f32 size)
 
 /* Whether a position of the given size is nearer than the level's furthest view
    distance, measured the same way as propGetFogFade */
-static bool posIsBeforeFogEnd(coord3d *pos, f32 size)
+static bool posIsBeforeFogEnd(const coord3d *pos, f32 size)
 {
     NearFogValues *fog = fogGetNearFogValuesP();
 
@@ -583,7 +583,7 @@ static bool posIsBeforeFogEnd(coord3d *pos, f32 size)
 
 
 /* Whether any of the rooms the prop is in is visible this frame */
-static bool propIsInVisibleRoom(PropRecord *prop)
+static bool propIsInVisibleRoom(const PropRecord *prop)
 {
     s32 rooms[8];
 
@@ -606,7 +606,7 @@ static bool propIsInVisibleRoom(PropRecord *prop)
  * not hidden by fog (nor, with checkFogEnd, beyond the furthest view distance), it is
  * within the screen area of the prop's rooms, and it is no more than MAX_DRAW_DIST away.
  */
-bool posIsOnScreen(PropRecord *prop, coord3d *pos, f32 radius, bool checkFogEnd)
+bool posIsOnScreen(const PropRecord *prop, const coord3d *pos, f32 radius, bool checkFogEnd)
 {
     bbox2d bbox;
     bool onscreen;
@@ -652,7 +652,7 @@ bool posIsOnScreen(PropRecord *prop, coord3d *pos, f32 radius, bool checkFogEnd)
  * its hue and saturation (its lowest channel is taken off all three) at half brightness,
  * and the alpha is 3/4 of how dark the tile is.
  */
-void objGetTileShading(PropRecord *prop, rgba_u8 *colour)
+void objGetTileShading(const PropRecord *prop, rgba_u8 *colour)
 {
     u8 *col = colour->rgba;
     s32 lo = 0;
@@ -709,7 +709,7 @@ void objGetTileShading(PropRecord *prop, rgba_u8 *colour)
  * The colour an object (or door) is shaded towards: its floor tile's light, at half
  * brightness. An illuminated object keeps the colour it has.
  */
-void objGetShadeColour(PropRecord *prop, rgba_u8 *colour)
+void objGetShadeColour(const PropRecord *prop, rgba_u8 *colour)
 {
     if (prop->obj->flags & PROPFLAG_ILLUMINATED)
     {
@@ -725,7 +725,7 @@ void objGetShadeColour(PropRecord *prop, rgba_u8 *colour)
 
 /* Move a shade colour an eighth of the way towards another (rounding up), so a moving
    object's shade changes smoothly */
-void objUpdateShading(rgba_u8 *dest, rgba_u8 *src)
+void objUpdateShading(rgba_u8 *dest, const rgba_u8 *src)
 {
     for (s32 i = 0; i < 4; i++)
     {

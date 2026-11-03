@@ -48,7 +48,7 @@
  * How far gone an object is: 0 to 3 while healthy (in quarters of its health, rounded
  * down), then 4 plus the shots taken since it was destroyed.
  */
-s32 objGetShotsTaken(ObjectRecord *obj)
+s32 objGetShotsTaken(const ObjectRecord *obj)
 {
     if (!(obj->state & PROPSTATE_DESTROYED))
     {
@@ -62,7 +62,7 @@ s32 objGetShotsTaken(ObjectRecord *obj)
  * 0 while healthy, then 1 when destroyed, 2 after 4 more shots, 3 after 8 (and more after
  * 12, when it is wrecked). Each level is drawn more broken.
  */
-s32 objGetDestroyedLevel(ObjectRecord *obj)
+s32 objGetDestroyedLevel(const ObjectRecord *obj)
 {
     if (!(obj->state & PROPSTATE_DESTROYED))
     {
@@ -72,12 +72,12 @@ s32 objGetDestroyedLevel(ObjectRecord *obj)
     return ((s32) obj->damageTaken >> 2) + 1;
 }
 
-bool objIsHealthy(ObjectRecord *obj)
+bool objIsHealthy(const ObjectRecord *obj)
 {
     return objGetDestroyedLevel(obj) == 0;
 }
 
-bool objIsCollectable(PropDefHeaderRecord *obj)
+bool objIsCollectable(const PropDefHeaderRecord *obj)
 {
     switch (obj->type)
     {
@@ -119,7 +119,7 @@ bool objIsMortal(ObjectRecord *obj)
     return TRUE;
 }
 
-static s16 objGetExplosionType(ObjectRecord *obj)
+static s16 objGetExplosionType(const ObjectRecord *obj)
 {
 #if defined(VERSION_EU)
     return ((s8 *) object_explosion_details.typeids)[obj->obj];
@@ -180,7 +180,7 @@ s32 propExplode(PropRecord *prop, s32 explosionType)
 /* ---- Bending the model ---- */
 
 /** The model's collision display list node, applying the model's switches on the way. */
-ModelNode *objFindDlCollisionNode(ObjectRecord *obj)
+ModelNode *objFindDlCollisionNode(const ObjectRecord *obj)
 {
     ModelNode *node = obj->model->obj->RootNode;
 
@@ -224,7 +224,7 @@ ModelNode *objFindDlCollisionNode(ObjectRecord *obj)
 }
 
 /** The consoles' screens stay whole. */
-bool objNodeCanDeform(ModelFileHeader *modeldef, ModelNode *node)
+bool objNodeCanDeform(const ModelFileHeader *modeldef, const ModelNode *node)
 {
     if (modeldef->Skeleton == &skeleton_console_one_screen && node == modeldef->Switches[0])
     {
@@ -495,7 +495,7 @@ static void objFall(ObjectRecord *obj, s32 playernum)
  * Knocks off the objects standing on a destroyed one: those above it, in the same room,
  * inside its outline.
  */
-static void objDestroySupportedObjects(PropRecord *tableprop, s32 playernum)
+static void objDestroySupportedObjects(const PropRecord *tableprop, s32 playernum)
 {
     ObjectRecord *tableobj = tableprop->obj;
     u8 room = tableprop->stan->room;
@@ -526,7 +526,7 @@ static void objDestroySupportedObjects(PropRecord *tableprop, s32 playernum)
 }
 
 /** An explosion at targetPos, with a scorch mark if the object's root prop is on the floor plan. */
-static void objExplosionAt(ObjectRecord *obj, PropRecord *root, coord3d *targetPos, s16 type, s32 playernum)
+static void objExplosionAt(const ObjectRecord *obj, PropRecord *root, coord3d *targetPos, s16 type, s32 playernum)
 {
     StandTile *stan = root->stan;
 
@@ -653,7 +653,7 @@ static void glassShatter(ObjectRecord *obj)
  * Damages a prop and everything attached to it (children first), unless it has an owner
  * set already. The damage is credited to `owner`.
  */
-void objDetonateRecursive(PropRecord *prop, f32 damage, coord3d *pos, s32 weaponnum, s32 owner)
+void objDetonateRecursive(const PropRecord *prop, f32 damage, coord3d *pos, s32 weaponnum, s32 owner)
 {
     ObjectRecord *obj = prop->obj;
 

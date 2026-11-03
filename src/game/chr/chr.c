@@ -239,7 +239,7 @@ void chrSetMoving(ChrRecord *self, bool unset)
  * The tile at (x, z) if a guard of this width and height can move there in a straight
  * line from src, otherwise NULL.
  */
-static StandTile *chrTryMoveTo(StandTile *stan, coord3d *src, f32 x, f32 z, f32 width, f32 top, f32 bottom)
+static StandTile *chrTryMoveTo(StandTile *stan, const coord3d *src, f32 x, f32 z, f32 width, f32 top, f32 bottom)
 {
     StandTile *tile = stan;
 
@@ -257,7 +257,7 @@ static StandTile *chrTryMoveTo(StandTile *stan, coord3d *src, f32 x, f32 z, f32 
  * Tries the part of the move (delta, from src) along the direction (dirx, dirz). On
  * success moves dst there and returns the new tile.
  */
-static StandTile *chrTrySlide(ChrRecord *guard, StandTile *stan, coord3d *src, coord3d *dst, coord3d *delta, f32 dirx, f32 dirz, f32 width, f32 top, f32 bottom)
+static StandTile *chrTrySlide(ChrRecord *guard, StandTile *stan, const coord3d *src, coord3d *dst, const coord3d *delta, f32 dirx, f32 dirz, f32 width, f32 top, f32 bottom)
 {
     StandTile *tile;
     f32 scale;
@@ -292,7 +292,7 @@ static StandTile *chrTrySlide(ChrRecord *guard, StandTile *stan, coord3d *src, c
  * to where it ends up. Returns the new tile, or NULL (and invalidmove = 1) if the guard
  * can't move. invalidmove is 0 for a clean move (with updateLastMoveOk) and 2 for a slide.
  */
-StandTile *chrMoveWithCollision(ChrRecord *guard, StandTile *stan, coord3d *src, coord3d *dst, s32 updateLastMoveOk)
+StandTile *chrMoveWithCollision(ChrRecord *guard, StandTile *stan, const coord3d *src, coord3d *dst, s32 updateLastMoveOk)
 {
     StandTile *ret;
     f32 top;
@@ -370,7 +370,7 @@ StandTile *chrMoveWithCollision(ChrRecord *guard, StandTile *stan, coord3d *src,
 }
 
 
-s32 chrRootMoveCallback(Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
+s32 chrRootMoveCallback(const Model *model, coord3d *src, coord3d *dst, f32 *ground_y)
 {
     ChrRecord *chr;
     s32 moved;
@@ -848,7 +848,7 @@ void chrSetHiddenToRandom(ChrRecord *self)
  * tests the game needs to know which room(s) a character is in. This allows the game to perform
  * tests on only characters in loaded rooms, not the entire stage.
  */
-void chrDetectRooms(ChrRecord *self)
+void chrDetectRooms(const ChrRecord *self)
 {
     PropRecord *myprop;
     coord3d     lowerbounds;
@@ -1365,7 +1365,7 @@ ChrRecord *chrFindByLiteralId(s32 index)
 }
 
 
-PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand)
+PropRecord *chrGetEquippedWeaponProp(const ChrRecord *self, GUNHAND hand)
 {
     return self->weapons_held[hand];
 }
@@ -1374,7 +1374,7 @@ PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand)
 /**
  * The prop in that hand if it's held as a gun (not e.g. a key or a hat), otherwise NULL.
  */
-PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *self, GUNHAND hand)
+PropRecord *chrGetEquippedWeaponPropWithCheck(const ChrRecord *self, GUNHAND hand)
 {
     PropRecord *gunprop = self->weapons_held[hand];
 
@@ -1400,7 +1400,7 @@ PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *self, GUNHAND hand)
  * @param y_out: out, top
  * @param ground: out, bottom
  */
-void chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *y_out, f32 *ground)
+void chrUpdateCollisionBounds(const PropRecord *prop, coord2d **polygon, s32 *edges, f32 *y_out, f32 *ground)
 {
     ChrRecord *chr;
 
@@ -1443,7 +1443,7 @@ void chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f
  * ground it can't pass through (from 20 up to chrheight - 20, so it steps over low
  * obstacles).
  */
-void chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *top, f32 *bottom)
+void chrGetChrWidthHeight(const PropRecord *prop, f32 *width, f32 *top, f32 *bottom)
 {
     ChrRecord *c = prop->chr;
 
@@ -1453,7 +1453,7 @@ void chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *top, f32 *bottom)
 }
 
 
-f32 chrGetChrGround(PropRecord *prop)
+f32 chrGetChrGround(const PropRecord *prop)
 {
     ChrRecord *c = prop->chr;
     return c->ground;
@@ -1465,7 +1465,7 @@ f32 chrGetChrGround(PropRecord *prop)
  * to the root, and the guard's screen extents. FALSE if it's offscreen, behind the camera,
  * dying, dead or not auto-aimable.
  */
-s32 chrGetOnscreenRenderBounds(PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds)
+s32 chrGetOnscreenRenderBounds(const PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds)
 {
     struct ChrRecord *chr;
 
@@ -1595,7 +1595,7 @@ void chrsAllocateSlots(s32 count)
 
 /* Copy a chr's chrnum and lastseetarget60 to g_ChrSlotHot, after either changes (or its model
    is set or cleared). Does nothing for the background chrs. */
-void chrSlotSync(ChrRecord *chr)
+void chrSlotSync(const ChrRecord *chr)
 {
     u32 i = chr - g_ChrSlots;
 

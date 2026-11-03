@@ -13,7 +13,7 @@ s32  coopDiedLast(void);
 void coopRespawnPlayer(void);
 
 // Puts the current player at a position and resets them for a new life (also counter-op)
-void coopPlaceCurrentPlayer(coord3d *posp, StandTile *stan, f32 look_angle);
+void coopPlaceCurrentPlayer(const coord3d *posp, StandTile *stan, f32 look_angle);
 
 extern s32 g_CoopRespawnButtonsHeld[4];
 

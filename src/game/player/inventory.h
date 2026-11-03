@@ -10,7 +10,7 @@ bool invHasFlagToken(void);
 s32 invCountItems(void);
 
 InvItem *invGetItemByIndex(s32 index);
-textoverride *invGetOverrideForObj(ObjectRecord *obj);
+textoverride *invGetOverrideForObj(const ObjectRecord *obj);
 textoverride *invGetOverrideForWeapon(ITEM_IDS weaponnum);
 
 void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo);
@@ -22,8 +22,8 @@ bool invHasDualWeapon(ITEM_IDS right, ITEM_IDS left);
 int invAddDualItem(ITEM_IDS right, ITEM_IDS left);
 s32 invGetAllGunsFlag(void);
 void invSetAllGunsFlag(s32 all_guns);
-bool          invHasProp(PropRecord *prop);
-bool          invAnyPlayerHasProp(PropRecord *prop);
+bool          invHasProp(const PropRecord *prop);
+bool          invAnyPlayerHasProp(const PropRecord *prop);
 void          invResetKeepProps(void);
 WeaponObjRecord *invRemoveWeaponProp(ITEM_IDS weaponnum);
 void invRemoveItemByID(ITEM_IDS weaponnum);
@@ -42,9 +42,9 @@ void invSetCurEquippedItem(int current_item);
 bool invHasGEKey(void);
 void invIncrementHeldTime(s32 weapon1, s32 weapon2);
 int invAddProp(PropRecord *prop);
-int invAddWeaponByProp(PropRecord *prop);
+int invAddWeaponByProp(const PropRecord *prop);
 bool invCheckHasKeyFlags(u32 wantkeyflags);
-char *invGetActivatedTextObject(ObjectRecord *obj);
+char *invGetActivatedTextObject(const ObjectRecord *obj);
 char *invGetActivatedTextWeapon(ITEM_IDS weaponnum);
 
 #endif

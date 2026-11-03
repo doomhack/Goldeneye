@@ -36,7 +36,7 @@
  * hits closer than *bestDistSq, records the hit, with the texture last set before the
  * triangle command.
  */
-static bool objTestTriangle(coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, Vertex *vtxbase, s32 idx[3], Gfx *tricmd, s32 triNum, Gfx *cmdStart, f32 *bestDistSq, HitThing *hitthing)
+static bool objTestTriangle(const coord3d *rayStart, const coord3d *rayEnd, const coord3d *rayDir, Vertex *vtxbase, s32 idx[3], Gfx *tricmd, s32 triNum, const Gfx *cmdStart, f32 *bestDistSq, HitThing *hitthing)
 {
     BoundVec bboxMin = {0x7fff, 0x7fff, 0x7fff};
     BoundVec bboxMax = {-0x8000, -0x8000, -0x8000};
@@ -114,7 +114,7 @@ static bool objTestTriangle(coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir,
  * continues into (gdl2, may be NULL), using `vertices` for its G_VTX loads. Fills in the
  * nearest hit.
  */
-static bool objTestDisplayList(coord3d *rayStart, coord3d *rayEnd, coord3d *rayDir, Gfx *gdl, Gfx *gdl2, Vertex *vertices, HitThing *hitthing)
+static bool objTestDisplayList(const coord3d *rayStart, const coord3d *rayEnd, const coord3d *rayDir, Gfx *gdl, Gfx *gdl2, const Vertex *vertices, HitThing *hitthing)
 {
     Vertex *vtxbase = NULL;
     Gfx *cmdStart = gdl;
@@ -166,7 +166,7 @@ static bool objTestDisplayList(coord3d *rayStart, coord3d *rayEnd, coord3d *rayD
  * Stops at the first display list that is hit (not necessarily the nearest), and gives
  * the hit (in the node's model space), the node's matrix index and the node.
  */
-bool modelFindTriangleHit(Model *model, ModelNode *startNode, coord3d *rayPos, coord3d *rayDir, HitThing *hitthing, s32 *dstmtxindex, ModelNode **dstnode)
+bool modelFindTriangleHit(const Model *model, ModelNode *startNode, const coord3d *rayPos, const coord3d *rayDir, HitThing *hitthing, s32 *dstmtxindex, ModelNode **dstnode)
 {
     coord3d localStart;
     coord3d localEnd;
@@ -404,7 +404,7 @@ void objTestShot(PropRecord *prop, ShotData *shot)
  * Knocks a shot object into the air, away from the player (who is then its owner): a
  * random hop and spin, plus the direction of the shot.
  */
-static void objBounce(ObjectRecord *obj, coord3d *shotDir)
+static void objBounce(const ObjectRecord *obj, const coord3d *shotDir)
 {
     coord3d rot = {{0, 0, 0}};
     Projectile *projectile = NULL;
@@ -454,7 +454,7 @@ static void objBounce(ObjectRecord *obj, coord3d *shotDir)
 }
 
 /** A shot hits a CCTV camera's lens: it breaks into shards and is hidden. */
-static void objBreakCCTVGlass(ObjectRecord *obj)
+static void objBreakCCTVGlass(const ObjectRecord *obj)
 {
     PropRecord *prop = obj->prop;
     Model *model = obj->model;
@@ -505,7 +505,7 @@ static bool objBouncesWhenShot(ObjectRecord *obj)
 }
 
 /** Leaves a bullet hole or impact mark where a shot hit an object. */
-static void objHitImpact(ObjectRecord *obj, BulletHit *hit)
+static void objHitImpact(const ObjectRecord *obj, const BulletHit *hit)
 {
     s8 clearWithRoom = 0;
 
@@ -542,7 +542,7 @@ static void objHitImpact(ObjectRecord *obj, BulletHit *hit)
  * damage (double to drone guns on Agent, a hundred times to a camera's lens), a door
  * window cracking, and light objects jumping.
  */
-void objHit(ShotData *shot, BulletHit *hit)
+void objHit(const ShotData *shot, const BulletHit *hit)
 {
     ObjectRecord *obj = hit->prop->obj;
     PropRecord *rootprop = hit->prop;

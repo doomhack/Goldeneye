@@ -21,7 +21,7 @@ static u32 watchControllerButtonBases[48];
 /**
  * Draws an item's model on the watch's inventory page.
  */
-Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, Mtxf *mtx, s32 alpha, s32 colour)
+Gfx *watchRenderItem(Gfx *gdl, ITEM_IDS itemid, const Mtxf *mtx, s32 alpha, s32 colour)
 {
     ModelRenderData renderdata = {.zbufferenabled = TRUE, .flags = 3};
     Model model = {};
@@ -210,7 +210,7 @@ earlyreturn:
  * The matrix for one button of the watch menu's controller model:
  * out = m5 * translate(pos) * m3 * m2 * m1 * translate(base).
  */
-void watchControllerButtonMtx(coord3d *base, Mtxf *m1, Mtxf *m2, Mtxf *m3, coord3d *pos, Mtxf *m5, Mtxf *out)
+void watchControllerButtonMtx(const coord3d *base, const Mtxf *m1, const Mtxf *m2, const Mtxf *m3, const coord3d *pos, const Mtxf *m5, Mtxf *out)
 {
     Mtxf translation;
 
@@ -228,7 +228,7 @@ void watchControllerButtonMtx(coord3d *base, Mtxf *m1, Mtxf *m2, Mtxf *m3, coord
  * Draws the controller on the watch's control page, with the buttons for
  * the current control style, and works out where each button label goes.
  */
-Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animatebuttons, WatchContButtonPositions* buttonpositions, s8* contpadnum)
+Gfx* watchRenderController(Gfx* gdl, const Mtxf* basemtx, s32 envcolour, bool animatebuttons, const WatchContButtonPositions* buttonpositions, const s8* contpadnum)
 {
     ModelRenderData renderdata;
     Model modelstack = {};
@@ -582,7 +582,7 @@ Gfx* watchRenderController(Gfx* gdl, Mtxf* basemtx, s32 envcolour, bool animateb
 /**
  * watchRenderController at full opacity.
  */
-Gfx *watchRenderControllerOpaque(Gfx *gdl, Mtxf *basemtx, bool animatebuttons, WatchContButtonPositions *buttonpositions, s8 *contpadnum)
+Gfx *watchRenderControllerOpaque(Gfx *gdl, const Mtxf *basemtx, bool animatebuttons, const WatchContButtonPositions *buttonpositions, const s8 *contpadnum)
 {
     return watchRenderController(gdl, basemtx, 0xff, animatebuttons, buttonpositions, contpadnum);
 }

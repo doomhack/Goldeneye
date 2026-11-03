@@ -23,6 +23,6 @@ void  assetLoadPart(const char *name, void *dst, u32 offset, u32 len);
 u32   assetGetSize(s32 index);
 u32   assetGetSizeByName(const char *name);
 u32   assetGetBufferSize(s32 index);
-void  assetSetSize(s32 index, void *data, u32 size, bool shrinkAllocation);
+void  assetSetSize(s32 index, const void *data, u32 size, bool shrinkAllocation);
 
 #endif

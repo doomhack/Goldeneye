@@ -34,13 +34,13 @@ struct fontchar * g_FontZurichChars = NULL;
 
 // forward declarations
 
-Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct fontchar *prevchar,
-		struct font *font, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight, s32 yOffset);
-Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, 
-                struct fontchar *prevchar, struct font *font, s32 clipX, s32 clipY, 
+Gfx *textRenderGlyph(Gfx *gdl, s32 *x, const s32 *y, struct fontchar *curchar, const struct fontchar *prevchar,
+		const struct font *font, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight, s32 yOffset);
+Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, const s32 *y, struct fontchar *curchar, 
+                const struct fontchar *prevchar, const struct font *font, s32 clipX, s32 clipY, 
                 u32 textColour, u32 outlineColour, s32 clipWidth, s32 clipHeight, 
                 s32 yOffset);
-Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight);
+Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, const struct fontchar *curchar, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight);
 
 // -------------------------------------------------------------------------------------------------
 
@@ -172,8 +172,8 @@ Gfx * textRenderRect(Gfx *gdl, s32 ulx, s32 uly, s32 lrx, s32 lry, u32 color)
 /**
  * Render a single character with no outline.
  */
-Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct fontchar *prevchar,
-		struct font *font, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight, s32 yOffset)
+Gfx *textRenderGlyph(Gfx *gdl, s32 *x, const s32 *y, struct fontchar *curchar, const struct fontchar *prevchar,
+		const struct font *font, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight, s32 yOffset)
 {
 	s32 kerningOffset;
     s32 drawY;
@@ -280,7 +280,7 @@ Gfx *textRenderGlyph(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, struct 
  * Render plain text with no outline e.g. briefings and watch menu text.
  */
 Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
-                struct fontchar *chars, struct font *font, u32 colour,
+                struct fontchar *chars, const struct font *font, u32 colour,
                 s32 width, s32 height, u32 yOffset, s32 lineheight)
 {
     s32 savedx;
@@ -333,8 +333,8 @@ Gfx *textRender(Gfx *gdl, s32 *x, s32 *y, char *text,
 /**
  * Draw individual characters with an outline.
  */
-Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar, 
-                       struct fontchar *prevchar, struct font *font, s32 clipX, s32 clipY, 
+Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, const s32 *y, struct fontchar *curchar, 
+                       const struct fontchar *prevchar, const struct font *font, s32 clipX, s32 clipY, 
                        u32 textColour, u32 outlineColour, s32 clipWidth, s32 clipHeight, 
                        s32 yOffset)
 {
@@ -396,7 +396,7 @@ Gfx *textRenderGlyphOutlined(Gfx *gdl, s32 *x, s32 *y, struct fontchar *curchar,
 /**
  * Draw a quad for the current glyph, clipping it inside the region defined by clipX, clipY, clipWidth, and clipHeight.
  */
-Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight)
+Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, const struct fontchar *curchar, s32 clipX, s32 clipY, s32 clipWidth, s32 clipHeight)
 {
     if (clipX + clipWidth >= curchar->width + x) // Check if the glyph's right edge is inside or touching the clipping rect's right edge.
     {
@@ -469,7 +469,7 @@ Gfx *textDrawGlyphQuad(Gfx *gdl, s32 x, s32 y, struct fontchar *curchar, s32 cli
  * Used for ammo counter, bottom left HUD messages, countdown timers.
  */
 Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y, 
-                    char *text, struct fontchar *chars, struct font *font, 
+                    char *text, struct fontchar *chars, const struct font *font, 
                     u32 colour, u32 colour2, s32 width, s32 height, 
                     s32 yOffset, s32 lineheight)
 {
@@ -510,7 +510,7 @@ Gfx *textRenderOutlined(Gfx *gdl, s32 *x, s32 *y,
     return gdl;
 }
 
-void textMeasure(s32 *textheight, s32 *textwidth, char *text, struct fontchar *font1, struct font *font2, s32 lineheight)
+void textMeasure(s32 *textheight, s32 *textwidth, const char *text, const struct fontchar *font1, const struct font *font2, s32 lineheight)
 {
     char prevchar;
 	s32 longest;
@@ -572,7 +572,7 @@ void textMeasure(s32 *textheight, s32 *textwidth, char *text, struct fontchar *f
     }
 }
 
-void textWrap(s32 wrapwidth, char *src, char *dst, struct fontchar *chars, struct font *font)
+void textWrap(s32 wrapwidth, const char *src, char *dst, const struct fontchar *chars, const struct font *font)
 {
 	s32 curlinewidth = 0;
 	bool itfits;

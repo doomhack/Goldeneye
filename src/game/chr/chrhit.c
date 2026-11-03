@@ -44,14 +44,14 @@
 #include "game/math/line_tri_intersect.h"
 
 
-static void chrCreateHitPuffs(PropRecord *prop, s32 hitpart, coord3d *vec, coord3d *pos);
+static void chrCreateHitPuffs(const PropRecord *prop, s32 hitpart, const coord3d *vec, coord3d *pos);
 
 
 /**
  * Creates a smoke puff at the front of the character when the character is shot,
  * and also has a ~50% chance of creating a second smoke puff just behind the character.
  */
-static void chrCreateHitPuffs(PropRecord *prop, s32 hitpart, coord3d *vec, coord3d *pos)
+static void chrCreateHitPuffs(const PropRecord *prop, s32 hitpart, const coord3d *vec, coord3d *pos)
 {
     s32 i;
     f32 scale;
@@ -102,7 +102,7 @@ static void chrCreateHitPuffs(PropRecord *prop, s32 hitpart, coord3d *vec, coord
  * neighbouring node sharing that vertex) its own copy of its vertices, and sets the
  * alpha of every vertex that uses that point. Head and chest hits bleed more.
  */
-void chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, coord3d *pos)
+void chrCreateBloodStain(const Model *model, s32 hitpart, ModelNode *root, const coord3d *pos)
 {
     s32 target[3];
     s32 bestdist;
@@ -420,7 +420,7 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
 /**
  * Resolves a known hit against a character.
  */
-void chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit)
+void chrHandleBulletHit(const struct ShotData *shot, const struct BulletHit *bhit)
 {
     f32 scale;
     Mtxf invmtx;

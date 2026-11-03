@@ -7,7 +7,7 @@
 
 extern f32 g_AutoAimTolerance;
 
-f32  autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *xbounds, f32 *ybounds, coord2d *out_screen);
+f32  autoaimScoreProp(const PropRecord *targetprop, const coord3d *aimpos, const f32 *xbounds, const f32 *ybounds, coord2d *out_screen);
 void autoaimUpdateTarget(void);
 
 #endif

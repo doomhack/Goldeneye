@@ -160,12 +160,12 @@ static inline s32 stanNextPoint(const StandTile *tile, s32 i)
 /* stan.c: the tiles */
 void stanLoadFile(StandFileHeader *file, f32 scale);
 StandTile *stanNextTile(StandTile *tile);
-StandTile *stanFindTileBelowPos(coord3d *pos, u8 *rooms, f32 *yRtn);
+StandTile *stanFindTileBelowPos(const coord3d *pos, const u8 *rooms, f32 *yRtn);
 StandTile *stanFindNearestLegalPos(coord3d *pos, f32 radius);
-s32 stanResolvePadTile(struct PadRecord *pad, const char *tilename, StandTile **tile);
-f32 stanGetFloorY(StandTile *tile, f32 x, f32 z);
-bool stanIsNearlyInsideTri(StandTile *tile, f32 x, f32 z);
-void stanGetTileColour(StandTile *tile, u8 *rgb);
+s32 stanResolvePadTile(const struct PadRecord *pad, const char *tilename, StandTile **tile);
+f32 stanGetFloorY(const StandTile *tile, f32 x, f32 z);
+bool stanIsNearlyInsideTri(const StandTile *tile, f32 x, f32 z);
+void stanGetTileColour(const StandTile *tile, u8 *rgb);
 StandTile *stanSearchOutward(StandTile *start, bool (*predicate)(StandTile *tile));
 
 /* stanwalk.c: the collision tests */

@@ -8,7 +8,7 @@
 TICKOP objTick(PropRecord *prop);
 void   objTickOffscreen(PropRecord *prop);
 void   objTickAttached(PropRecord *prop);
-void   objDropRecursively(PropRecord *prop);
-s32    glassCalculateOpacity(coord3d *pos, f32 xludist, f32 opadist, f32 minOpacity);
+void   objDropRecursively(const PropRecord *prop);
+s32    glassCalculateOpacity(const coord3d *pos, f32 xludist, f32 opadist, f32 minOpacity);
 
 #endif

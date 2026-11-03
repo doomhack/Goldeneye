@@ -11,7 +11,7 @@
 #include "game/gfx/rsp.h"
 
 s32 __scSchedule(OSSched *sc, OSScTask **sp, OSScTask **dp, s32 availRCP);
-s32 __scTaskComplete(OSScTask *t);
+s32 __scTaskComplete(const OSScTask *t);
 
 /**
  * EU .data, offset from start of data_seg : 0x2300
@@ -89,7 +89,7 @@ void permit_stderr(u32 flag)
 /**
  * test to display stderr and update Count
  */
-void CheckDisplayErrorBuffer(u16 *buffer)
+void CheckDisplayErrorBuffer(const u16 *buffer)
 {
 	if ((stderr_permitted && stderr_active) || stderr_enabled )
     {
@@ -357,7 +357,7 @@ OSScTask *__scTaskReady(OSScTask *t)
     return 0;
 }
 
-s32 __scTaskComplete(OSScTask *t)
+s32 __scTaskComplete(const OSScTask *t)
 {
     static int firsttime = 1;
     if ((t->state & OS_SC_RCP_MASK) == 0) {
@@ -450,7 +450,7 @@ void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp)
 }
 
 
-void __scYield(OSSched *sc) 
+void __scYield(const OSSched *sc) 
 {
     if (sc->curRSPTask->list.t.type == M_GFXTASK) {
         sc->curRSPTask->state |= 0x0010;

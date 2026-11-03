@@ -37,7 +37,7 @@
    beam dropped some other way only leaves the count too high, which just costs the skip. */
 s32 g_NumLiveBeams = 0;
 
-void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, coord3d *to)
+void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, const coord3d *to)
 {
     f32 dist;
 
@@ -198,7 +198,7 @@ void gunCreateBeamForHand(enum GUNHAND hand)
 /**
  * Draws a beam.
  */
-Gfx *beamRender(Gfx *gdl, BeamRecord *flash, s32 zbufferMode)
+Gfx *beamRender(Gfx *gdl, const BeamRecord *flash, s32 zbufferMode)
 {
     Mtx *mtx;
     Mtxf mtxf;

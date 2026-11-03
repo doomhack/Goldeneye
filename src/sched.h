@@ -73,7 +73,7 @@ extern OSViMode g_ViModes[2];
 extern OSViMode *g_ViModePtrs[2];
 
 void permit_stderr(u32 flag);
-void CheckDisplayErrorBuffer(u16 *buffer);
+void CheckDisplayErrorBuffer(const u16 *buffer);
 void CheckDisplayErrorBufferEvery16Frames(u32 framecount);
 void __scMain(void *arg);
 
@@ -85,7 +85,7 @@ extern volatile u32 g_PerfRdpCmdSum;
 extern volatile u32 g_PerfRdpPipeSum;
 extern volatile u32 g_PerfRdpTmemSum;
 extern u32 g_PerfCpuSum;
-void __scYield(OSSched *sc) ;
+void __scYield(const OSSched *sc) ;
 void __scAppendList(OSSched *sc, OSScTask *t);
 void __scExec(OSSched *sc, OSScTask *sp, OSScTask *dp);
 void osCreateScheduler(OSSched *s, void *stack, u8 mode, u32 numFields);

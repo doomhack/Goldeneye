@@ -111,7 +111,7 @@ void texInitSharedPool(void)
 }
 
 /** Finds a texture in a pool (NULL for the shared one). Returns NULL if it isn't there. */
-struct tex *texFindInPool(s32 texturenum, struct texpool *pool)
+struct tex *texFindInPool(s32 texturenum, const struct texpool *pool)
 {
     if (pool == NULL)
     {
@@ -130,7 +130,7 @@ struct tex *texFindInPool(s32 texturenum, struct texpool *pool)
 }
 
 /** Finds the texture whose pixels are at `data` in a pool (NULL for the shared one) */
-struct tex *texFindByData(const u8 *data, struct texpool *pool)
+struct tex *texFindByData(const u8 *data, const struct texpool *pool)
 {
     // The last few shared-pool finds, by address: texSelect asks for the same few textures
     // over and over, and each search reads entries all over the pool. An entry is only used
@@ -329,7 +329,7 @@ void texLoadFromTextureNum(s32 texturenum, struct texpool *pool)
 }
 
 /** Loads the textures a model file lists */
-void texLoadFromModelFileHeader(ModelFileHeader *header, struct texpool *pool)
+void texLoadFromModelFileHeader(const ModelFileHeader *header, struct texpool *pool)
 {
     ModelFileTextures *textures = header->Textures;
 

@@ -48,20 +48,20 @@
 
 static void chrInitActAttack(ChrRecord *self, struct anim_group_info **animgroups, s32 flip, point2d *hasGun, s32 attack_type, s32 entityid, s32 standing);
 static void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit);
-static f32 chrGetAimUpAngle(ChrRecord *self);
-static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 inaccuracy);
+static f32 chrGetAimUpAngle(const ChrRecord *self);
+static s32 chrUpdateAimendsideback(ChrRecord *self, const struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 inaccuracy);
 static void chrResetAimend(ChrRecord *self);
 static void chrSetHandFiring(ChrRecord *self, s32 hand, s32 firing);
 static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, ITEM_IDS item);
 static void chrFireHand(ChrRecord *self, s32 hand);
 static s32 chrAttackRollToKneel(ChrRecord *self);
-static void chrAttackRollResumeAfterShot(ChrRecord *self);
+static void chrAttackRollResumeAfterShot(const ChrRecord *self);
 static void chrTickAttackCommon(ChrRecord *self);
 
 /**
  * Called from chrTryModifyAttack, where action type is ACT_ATTACK.
  */
-void chrAttackSetEndFrame(ChrRecord *self)
+void chrAttackSetEndFrame(const ChrRecord *self)
 {
     Model* model = self->model;
 
@@ -813,7 +813,7 @@ static void chrPlayGunfireSound(ChrRecord *self, s32 hand, s32 ratelimit)
 }
 
 
-f32 chrGetSubrotySideback(ChrRecord *self)
+f32 chrGetSubrotySideback(const ChrRecord *self)
 {
     Model *model;
     f32 offset;
@@ -863,7 +863,7 @@ f32 chrGetSubrotySideback(ChrRecord *self)
 }
 
 
-static f32 chrGetAimUpAngle(ChrRecord *self)
+static f32 chrGetAimUpAngle(const ChrRecord *self)
 {
     f32 angle;
 
@@ -967,7 +967,7 @@ s32 chrSetSubroty(ChrRecord *self, s32 state, f32 endframe, f32 speed, f32 angle
  * accuracy, and returns whether the shot from that gun would hit: the muzzle's line to
  * the target is clear. The aim at the player is randomly high or low by inaccuracy.
  */
-static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 inaccuracy)
+static s32 chrUpdateAimendsideback(ChrRecord *self, const struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 inaccuracy)
 {
     f32 aimup;
     f32 calc_aimendsideback;
@@ -1283,7 +1283,7 @@ static s32 chrUpdateAimendsideback(ChrRecord *self, struct weapon_firing_animati
  * @param leftgun, rightgun: which hands hold guns (rightgun = the right arm aims)
  * @param next: the aim angle
  */
-void chrUpdateAimendbackShoulders(ChrRecord *self, struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 next)
+void chrUpdateAimendbackShoulders(ChrRecord *self, const struct weapon_firing_animation_table *anim, s32 leftgun, s32 rightgun, f32 next)
 {
     f32 next_lshoulder;
     f32 next_rshoulder;
@@ -1352,7 +1352,7 @@ static void chrResetAimend(ChrRecord *self)
 /**
  * PD: chrSetFiring
 */
-void chrSetFiring(ChrRecord *self, s32 hand, s32 firing)
+void chrSetFiring(const ChrRecord *self, s32 hand, s32 firing)
 {
     PropRecord *prop;
 
@@ -1556,7 +1556,7 @@ static void chrUpdateShotbondsum(ChrRecord *self, s32 *inSight, s32 *hitBond, IT
  * The world position of the muzzle of the gun in that hand (or of the hand holding it).
  * FALSE if the hand is empty or the gun is offscreen.
  */
-s32 chrGetHandPos(ChrRecord *self, GUNHAND hand, coord3d *pos)
+s32 chrGetHandPos(const ChrRecord *self, GUNHAND hand, coord3d *pos)
 {
     struct ObjectRecord *obj;
     PropRecord *weapon_prop;
@@ -2053,7 +2053,7 @@ static s32 chrAttackRollToKneel(ChrRecord *self)
  * After the last shot, plays the attack's animation on from the end of the recoil (or of
  * the shooting).
  */
-static void chrAttackRollResumeAfterShot(ChrRecord *self)
+static void chrAttackRollResumeAfterShot(const ChrRecord *self)
 {
     Model *model;
 
@@ -2444,7 +2444,7 @@ void chrTickAttack(ChrRecord *self)
 /**
  * Which of g_ChrFireAnims (0 to 19) a firing animation is, or -1.
  */
-static s32 chrGetRollAnimIndex(struct weapon_firing_animation_table *anim)
+static s32 chrGetRollAnimIndex(const struct weapon_firing_animation_table *anim)
 {
     s32 i;
 

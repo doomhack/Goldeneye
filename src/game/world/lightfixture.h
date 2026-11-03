@@ -20,7 +20,7 @@ void lightFixtureEntryEnd(Gfx *DL);
 bool lightIsLightTexture(s32 imageID);
 void lightFixtureEntryBegin(Gfx *DL);
 
-void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index);
+void lightFixtureBreak(const Gfx * hit_gfx, u32 tri_type, s32 room_index);
 void lightFixtureClearRoom(s32 room_index);
 void lightFixtureInitTables(void);
 void lightRedarkenRoom(s32 room_index);

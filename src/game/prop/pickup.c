@@ -501,14 +501,14 @@ static s32 ammoApplySoloMultiplier(s32 amount)
 }
 
 
-static s32 pickupAmmoFromMagazine(AmmoCrateRecord *crate)
+static s32 pickupAmmoFromMagazine(const AmmoCrateRecord *crate)
 {
     return ammoApplySoloMultiplier(ammoPerPickup(crate->ammoType));
 }
 
 
 /* The ammo that comes with a picked-up gun. A grenade launcher comes loaded with 3. */
-static s32 pickupAmmoFromWeapon(WeaponObjRecord *weapon)
+static s32 pickupAmmoFromWeapon(const WeaponObjRecord *weapon)
 {
     AMMOTYPE ammotype = weaponGetAmmoType(weapon->weaponnum);
 
@@ -576,7 +576,7 @@ void pickupShowWeaponText(ITEM_IDS weapon)
 
 /* The text set up for this object by the level (eg. "Picked up the Safe Key"), or the
    given default */
-static char *objPickupText(ObjectRecord *obj, s32 defaulttext)
+static char *objPickupText(const ObjectRecord *obj, s32 defaulttext)
 {
     char *text = invGetActivatedTextObject(obj);
 
@@ -599,7 +599,7 @@ static AMMOTYPE ammoCrateSlotType(s32 slot)
 }
 
 
-static TICKOP pickupWeapon(PropRecord *prop, bool showtext)
+static TICKOP pickupWeapon(const PropRecord *prop, bool showtext)
 {
     ObjectRecord *obj = prop->obj;
     WeaponObjRecord *weapon = (WeaponObjRecord *)obj;
@@ -816,7 +816,7 @@ static bool ammoGivesMissingItem(AMMOTYPE ammotype)
 
 /* The player has this weapon and can't carry any more of its ammo. A gun that comes as a
    pair is still worth picking up if the player hasn't got the pair. */
-static bool playerHasAllOfWeapon(WeaponObjRecord *weapon)
+static bool playerHasAllOfWeapon(const WeaponObjRecord *weapon)
 {
     ITEM_IDS other, right, left;
 
@@ -857,7 +857,7 @@ static bool weaponIsPlacedExplosive(ITEM_IDS weapon)
 
 
 /* Whether the current player would gain anything from picking the prop up */
-static bool playerWantsPickup(PropRecord *prop)
+static bool playerWantsPickup(const PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
 

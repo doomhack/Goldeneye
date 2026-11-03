@@ -201,7 +201,7 @@ static s32 roundToInt(f32 value)
 /**
  * Removes the impacts on prop that are (or aren't) on glass.
  */
-void impactsRemoveFromProp(PropRecord *prop, bool onGlass)
+void impactsRemoveFromProp(const PropRecord *prop, bool onGlass)
 {
     s32 i;
 
@@ -218,7 +218,7 @@ void impactsRemoveFromProp(PropRecord *prop, bool onGlass)
  * Removes the translucent impacts on prop (all of them, as every type is translucent):
  * for when it's damaged and changes shape.
  */
-void impactsRemoveTranslucent(PropRecord *prop)
+void impactsRemoveTranslucent(const PropRecord *prop)
 {
     s32 i;
 
@@ -257,7 +257,7 @@ static void impactsFadeOldest(s32 index)
  * the room it's in; on an object, prop is the object and node the model node it's on.
  * The paintball cheat swaps every mark for a splat of paint.
  */
-void impactCreate(coord3d *pos, coord3d *normal, s16 type, s16 room, PropRecord *prop, s8 node, s8 onGlass)
+void impactCreate(const coord3d *pos, const coord3d *normal, s16 type, s16 room, PropRecord *prop, s8 node, s8 onGlass)
 {
     s_impacttype *impact;
     struct Impact *slot;
@@ -428,7 +428,7 @@ void impactCreate(coord3d *pos, coord3d *normal, s16 type, s16 room, PropRecord 
  * translucent pass those that are translucent and z-buffered, otherwise the rest. Clears
  * the object's flag for this pass if it has none left.
  */
-Gfx *impactsRenderOnProp(Gfx *gdl, PropRecord *prop, s32 xlupass)
+Gfx *impactsRenderOnProp(Gfx *gdl, const PropRecord *prop, s32 xlupass)
 {
     ObjectRecord *obj = NULL;
     bool drewany = FALSE;

@@ -25,8 +25,8 @@ enum TexZbufferMode
 };
 
 s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, struct texpool *pool);
-void texCopyGdls(Gfx *src, Gfx *dst, s32 len);
+void texCopyGdls(const Gfx *src, Gfx *dst, s32 len);
 void texSelect(Gfx **gdlptr, sImageTableEntry *image, u32 blendMode, s32 zbufferMode, u32 uvOffset);
-void texSelectScaled(Gfx **gdlptr, sImageTableEntry *image, u32 uvOffset, s32 shift);
+void texSelectScaled(Gfx **gdlptr, const sImageTableEntry *image, u32 uvOffset, s32 shift);
 
 #endif

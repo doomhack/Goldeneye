@@ -102,7 +102,7 @@ u32 playerGetCameraMode(void)
  * direction, at least camera_dist away with clear floor between, at a random height
  * near the floor. prop2 is ignored by the line tests. FALSE if no spot was found.
  */
-s32 playerPickDeathCamera(PropRecord *prop1, coord3d *pos, PropRecord *prop2, coord3d *collision_pos, StandTile *tile, f32 camera_dist)
+s32 playerPickDeathCamera(PropRecord *prop1, const coord3d *pos, const PropRecord *prop2, const coord3d *collision_pos, StandTile *tile, f32 camera_dist)
 {
     s32 found;
     s32 outertries;

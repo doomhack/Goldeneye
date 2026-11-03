@@ -87,7 +87,7 @@ f32 g_AutogunDamageScale = 1.0;
  * a frame, and which player that is changes from frame to frame, so the gun takes the
  * nearest player it may watch instead and keeps one target.
  */
-static s32 autogunGetTargetPlayer(PropRecord *prop)
+static s32 autogunGetTargetPlayer(const PropRecord *prop)
 {
     s32 best = -1;
     f32 bestdist = 0.0f;
@@ -201,7 +201,7 @@ static void autogunWander(AutogunRecord *autogun)
 }
 
 
-static bool autogunRecentlySawTarget(AutogunRecord *autogun)
+static bool autogunRecentlySawTarget(const AutogunRecord *autogun)
 {
     return autogun->lastSeenTime >= 0 && (g_GlobalTimer - AUTOGUN_TRACKING_FRAMES) < autogun->lastSeenTime;
 }
@@ -249,7 +249,7 @@ static void autogunSpinBarrels(AutogunRecord *autogun, bool firing)
  * Look for the target and turn towards it, deciding whether to fire (is_active). Runs
  * once a frame.
  */
-void autogunTick(PropRecord *prop)
+void autogunTick(const PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
     AutogunRecord *autogun = (AutogunRecord *)obj;
@@ -415,7 +415,7 @@ void autogunTick(PropRecord *prop)
 
 /* Where a shot leaves the gun: the muzzle flash node if the gun is drawn and the node can
    be reached, else the gun's position */
-static void autogunGetShotOrigin(PropRecord *prop, Model *model, s32 flashnode, StandTile **tile, coord3d *from)
+static void autogunGetShotOrigin(const PropRecord *prop, const Model *model, s32 flashnode, StandTile **tile, coord3d *from)
 {
     if ((prop->flags & PROPFLAG_ONSCREEN) && model->obj->Switches[flashnode] != NULL)
     {
@@ -442,7 +442,7 @@ static void autogunGetShotOrigin(PropRecord *prop, Model *model, s32 flashnode, 
 
 
 /* Start a tracer from the gun to where the shot ended */
-static void autogunCreateBeam(BeamRecord *beam, coord3d *from, coord3d *to)
+static void autogunCreateBeam(BeamRecord *beam, coord3d *from, const coord3d *to)
 {
     f32 dist;
     f32 scale;
@@ -509,7 +509,7 @@ static void autogunCreateBeam(BeamRecord *beam, coord3d *from, coord3d *to)
 
 /* Fire one shot: it hits the target if the gun was aimed right at them this frame and
    nothing was in the way, else it hits the wall */
-static void autogunFireShot(PropRecord *prop, Model *model, AutogunRecord *autogun)
+static void autogunFireShot(const PropRecord *prop, const Model *model, AutogunRecord *autogun)
 {
     bool hitwall = true;
     StandTile *hittile = NULL;
@@ -622,7 +622,7 @@ static void autogunFireShot(PropRecord *prop, Model *model, AutogunRecord *autog
 
 
 /* Play the firing sound, alternating between two sound slots, at most every 2 frames */
-static void autogunPlayFireSound(PropRecord *prop, AutogunRecord *autogun)
+static void autogunPlayFireSound(const PropRecord *prop, AutogunRecord *autogun)
 {
     if (autogun->nextSoundTime >= g_GlobalTimer)
     {
@@ -658,7 +658,7 @@ static void autogunPlayFireSound(PropRecord *prop, AutogunRecord *autogun)
  * Fire if the gun is active: one shot a frame, alternating barrels, and show the muzzle
  * flashes. Runs once a frame, after the model's matrices are worked out.
  */
-void autogunTickFire(PropRecord *prop)
+void autogunTickFire(const PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
     AutogunRecord *autogun = (AutogunRecord *)obj;
@@ -700,7 +700,7 @@ void autogunTickFire(PropRecord *prop)
  * The gun's matrices: mtxs[1] turned by its yaw at the yaw joint, mtxs[2] by its pitch,
  * and the barrels spinning.
  */
-void autogunGetModelMatrices(PropRecord *prop, Model *model, Mtxf *objmtx, Mtxf *mtxs)
+void autogunGetModelMatrices(const PropRecord *prop, const Model *model, const Mtxf *objmtx, Mtxf *mtxs)
 {
     AutogunRecord *autogun = (AutogunRecord *)prop->obj;
     f32 gunyaw = autogun->yaw + M_PI_2F;

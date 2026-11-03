@@ -48,7 +48,7 @@
  * Turns a special chr id (CHR_SELF, CHR_PRESET, CHR_SEE_SHOT...) into a chr number.
  * Other ids are returned as they are.
  */
-s32 chrResolveId(ChrRecord *self, s32 id)
+s32 chrResolveId(const ChrRecord *self, s32 id)
 {
     // The ids come from a script byte, so the special ones arrive as 0xF8 to 0xFD
     if (id == (u8)CHR_SEE_SHOT)
@@ -86,7 +86,7 @@ s32 chrResolveId(ChrRecord *self, s32 id)
 /**
  * Turns PAD_PRESET1 into the chr's preset pad. Other pad numbers are returned as they are.
  */
-s32 chrResolvePadId(ChrRecord *self, s32 padnum)
+s32 chrResolvePadId(const ChrRecord *self, s32 padnum)
 {
     if (padnum == PAD_PRESET1)
     {
@@ -97,7 +97,7 @@ s32 chrResolvePadId(ChrRecord *self, s32 padnum)
 }
 
 /* A pad by the number a script gave */
-static PadRecord *chrGetPad(ChrRecord *self, s32 padnum)
+static PadRecord *chrGetPad(const ChrRecord *self, s32 padnum)
 {
     return setupGetPad(chrResolvePadId(self, padnum));
 }
@@ -106,7 +106,7 @@ static PadRecord *chrGetPad(ChrRecord *self, s32 padnum)
  * Finds a chr by id (special ids allowed), including the background chrs that run level
  * scripts. NULL if there's none.
  */
-ChrRecord *chrFindById(ChrRecord *self, s32 id)
+ChrRecord *chrFindById(const ChrRecord *self, s32 id)
 {
     s32 i;
 
@@ -168,7 +168,7 @@ coord3d *chrGetChrOrPresetLocation(ChrRecord *self, s32 attacktype, s32 id, Stan
 /**
  * The angle from the way the chr faces to pos, anticlockwise, 0 to 2 pi.
  */
-f32 chrGetAngleToPos(ChrRecord *self, coord3d *pos)
+f32 chrGetAngleToPos(const ChrRecord *self, const coord3d *pos)
 {
     f32 heading = modelGetRootRotY(self->model);
     PropRecord *prop = self->prop;
@@ -183,7 +183,7 @@ f32 chrGetAngleToPos(ChrRecord *self, coord3d *pos)
     return result;
 }
 
-f32 chrGetAngleToBond(ChrRecord *self)
+f32 chrGetAngleToBond(const ChrRecord *self)
 {
     return chrGetAngleToPos(self, &currentPlayerGetProp()->pos);
 }
@@ -191,7 +191,7 @@ f32 chrGetAngleToBond(ChrRecord *self)
 /**
  * The angle from the way the current player faces to the chr, 0 to 2 pi.
  */
-f32 chrGetAngleFromBond(ChrRecord *self)
+f32 chrGetAngleFromBond(const ChrRecord *self)
 {
     f32 heading = bondviewGetPlayerYawRadians();
     PropRecord *prop = self->prop;
@@ -207,7 +207,7 @@ f32 chrGetAngleFromBond(ChrRecord *self)
     return result;
 }
 
-static f32 distance(coord3d *a, coord3d *b)
+static f32 distance(const coord3d *a, const coord3d *b)
 {
     f32 dx = a->x - b->x;
     f32 dy = a->y - b->y;
@@ -216,12 +216,12 @@ static f32 distance(coord3d *a, coord3d *b)
     return sqrtf(SQR(dx) + SQR(dy) + SQR(dz));
 }
 
-f32 chrGetDistanceToBond(ChrRecord *self)
+f32 chrGetDistanceToBond(const ChrRecord *self)
 {
     return distance(&currentPlayerGetProp()->pos, &self->prop->pos);
 }
 
-f32 chrGetDistanceToPad(ChrRecord *self, s32 padnum)
+f32 chrGetDistanceToPad(const ChrRecord *self, s32 padnum)
 {
     PropRecord *prop = self->prop;
 
@@ -231,7 +231,7 @@ f32 chrGetDistanceToPad(ChrRecord *self, s32 padnum)
 /**
  * The distance to another chr, or 0 if it's gone.
  */
-f32 chrGetDistanceToChr(ChrRecord *self, s32 chrnum)
+f32 chrGetDistanceToChr(const ChrRecord *self, s32 chrnum)
 {
     PropRecord *prop = self->prop;
     ChrRecord *chr = chrFindById(self, chrnum);
@@ -244,7 +244,7 @@ f32 chrGetDistanceToChr(ChrRecord *self, s32 chrnum)
     return 0.0f;
 }
 
-f32 chrGetDistanceFromBondToPad(ChrRecord *self, s32 padnum)
+f32 chrGetDistanceFromBondToPad(const ChrRecord *self, s32 padnum)
 {
     PropRecord *playerprop = currentPlayerGetProp();
 
@@ -254,7 +254,7 @@ f32 chrGetDistanceFromBondToPad(ChrRecord *self, s32 padnum)
 /**
  * Whether the current player can see the chr and is aiming at it.
  */
-bool chrIsTargetedByPlayer(ChrRecord *self)
+bool chrIsTargetedByPlayer(const ChrRecord *self)
 {
     coord3d raystart;
     coord3d raydir;
@@ -303,7 +303,7 @@ bool chrIsTargetNearlyInSight(ChrRecord *self)
 /**
  * Whether the room a pad is in is being drawn.
  */
-bool chrPadRoomIsVisible(ChrRecord *self, s32 padnum)
+bool chrPadRoomIsVisible(const ChrRecord *self, s32 padnum)
 {
     StandTile *stan = chrGetPad(self, padnum)->stan;
 
@@ -318,7 +318,7 @@ bool chrPadRoomIsVisible(ChrRecord *self, s32 padnum)
 /**
  * Whether a chr is in the same room as a pad.
  */
-bool chrIfInPadRoom(ChrRecord *self, s32 chrnum, s32 padnum)
+bool chrIfInPadRoom(const ChrRecord *self, s32 chrnum, s32 padnum)
 {
     ChrRecord *chr = chrFindById(self, chrnum);
     PadRecord *pad = chrGetPad(self, padnum);
@@ -329,7 +329,7 @@ bool chrIfInPadRoom(ChrRecord *self, s32 chrnum, s32 padnum)
 /**
  * Whether the current player is in the same room as a pad.
  */
-bool chrPlayerIsInPadRoom(ChrRecord *self, s32 padnum)
+bool chrPlayerIsInPadRoom(const ChrRecord *self, s32 padnum)
 {
     PropRecord *playerprop = currentPlayerGetProp();
     PadRecord *pad = chrGetPad(self, padnum);
@@ -339,7 +339,7 @@ bool chrPlayerIsInPadRoom(ChrRecord *self, s32 padnum)
 
 /* flags2 is a byte of flags for the level's scripts to use as they like */
 
-void chrSetFlags2ById(ChrRecord *self, s32 chrnum, u8 flags)
+void chrSetFlags2ById(const ChrRecord *self, s32 chrnum, u8 flags)
 {
     ChrRecord *chr = chrFindById(self, chrnum);
 
@@ -349,7 +349,7 @@ void chrSetFlags2ById(ChrRecord *self, s32 chrnum, u8 flags)
     }
 }
 
-void chrUnsetFlags2ById(ChrRecord *self, s32 chrnum, u8 flags)
+void chrUnsetFlags2ById(const ChrRecord *self, s32 chrnum, u8 flags)
 {
     ChrRecord *chr = chrFindById(self, chrnum);
 
@@ -359,7 +359,7 @@ void chrUnsetFlags2ById(ChrRecord *self, s32 chrnum, u8 flags)
     }
 }
 
-bool chrHasFlags2ById(ChrRecord *self, s32 chrnum, u8 flags)
+bool chrHasFlags2ById(const ChrRecord *self, s32 chrnum, u8 flags)
 {
     ChrRecord *chr = chrFindById(self, chrnum);
 
@@ -397,7 +397,7 @@ void chrRestartTimer(ChrRecord *self)
 /**
  * The chr's timer, in seconds.
  */
-f32 chrGetTimer(ChrRecord *self)
+f32 chrGetTimer(const ChrRecord *self)
 {
     return self->timer60 / CHRLV_FRAMERATE_F;
 }
@@ -410,7 +410,7 @@ void chrSetChrPreset(ChrRecord *self, s32 chrnum)
 /**
  * Sets another chr's preset (ids resolved as self sees them).
  */
-void chrSetChrPresetOf(ChrRecord *self, s32 chrnum, s32 presetchrnum)
+void chrSetChrPresetOf(const ChrRecord *self, s32 chrnum, s32 presetchrnum)
 {
     ChrRecord *chr = chrFindById(self, chrnum);
 
@@ -474,7 +474,7 @@ void chrSetPadPreset(ChrRecord *self, s32 padnum)
 /**
  * Sets another chr's preset pad (PAD_PRESET1 meaning self's).
  */
-void chrSetPadPresetByChrnum(ChrRecord *self, s32 chrnum, s32 padnum)
+void chrSetPadPresetByChrnum(const ChrRecord *self, s32 chrnum, s32 padnum)
 {
     ChrRecord *chr = chrFindById(self, chrnum);
 
@@ -485,7 +485,7 @@ void chrSetPadPresetByChrnum(ChrRecord *self, s32 chrnum, s32 padnum)
 }
 
 /* Whether a waypoint's pad is within 90 degrees either side of angle, seen from pos */
-static bool waypointIsWithin90DegreesOfPosAngle(waypoint *wp, coord3d *pos, f32 angle)
+static bool waypointIsWithin90DegreesOfPosAngle(const waypoint *wp, const coord3d *pos, f32 angle)
 {
     PadRecord *pad = &g_CurrentSetup.pads[wp->padID];
     f32 padangle = mathAtan2(pad->pos.x - pos->x, pad->pos.z - pos->z);
@@ -504,7 +504,7 @@ static bool waypointIsWithin90DegreesOfPosAngle(waypoint *wp, coord3d *pos, f32 
  * angle: the nearest waypoint to pos if it's in the quadrant, or else one of its
  * neighbours. Returns its pad, or -1 if none of them is.
  */
-static s32 waypointFindInQuadrant(coord3d *pos, StandTile *stan, f32 angle, u8 quadrant)
+static s32 waypointFindInQuadrant(const coord3d *pos, StandTile *stan, f32 angle, u8 quadrant)
 {
     waypoint *wp = waypointFindNearPos(pos, stan);
     s32 i;
@@ -636,7 +636,7 @@ bool chrSetPadPresetToWaypointInQuadrant(ChrRecord *self, u8 quadrant)
 }
 
 /* Whether pos is out of every player's view (allowing a margin) or hidden by fog */
-static bool chrIsPosOffScreen(coord3d *pos, StandTile *stan)
+static bool chrIsPosOffScreen(const coord3d *pos, const StandTile *stan)
 {
     bbox2d box;
 
@@ -705,7 +705,7 @@ bool chrAdjustPosForSpawn(coord3d *pos, StandTile **stan, f32 facing, bool allow
  * running ailist. Fails if fewer than 3 chr slots are free or there's no room.
  * SPAWN_IGNORE_PAD_SIGHT_CHECK lets it appear in view.
  */
-PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, coord3d *pos, StandTile *stan, f32 angle, AIRecord *ailist, s32 spawnflags)
+PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, const coord3d *pos, StandTile *stan, f32 angle, AIRecord *ailist, s32 spawnflags)
 {
     if (chrGetNumFree() < 3)
     {
@@ -750,7 +750,7 @@ PropRecord *chrSpawnAtCoord(s32 bodynum, s32 headnum, coord3d *pos, StandTile *s
 /**
  * Spawns a guard at a pad, facing the way the pad looks.
  */
-PropRecord *chrSpawnAtPad(ChrRecord *self, s32 bodynum, s32 headnum, s32 padnum, AIRecord *ailist, s32 spawnflags)
+PropRecord *chrSpawnAtPad(const ChrRecord *self, s32 bodynum, s32 headnum, s32 padnum, AIRecord *ailist, s32 spawnflags)
 {
     PadRecord *pad = chrGetPad(self, padnum);
 
@@ -761,7 +761,7 @@ PropRecord *chrSpawnAtPad(ChrRecord *self, s32 bodynum, s32 headnum, s32 padnum,
  * Spawns a guard where another chr is, facing the same way, as long as that chr has never
  * been on screen.
  */
-PropRecord *chrSpawnAtChr(ChrRecord *self, s32 bodynum, s32 headnum, s32 chrnum, AIRecord *ailist, s32 spawnflags)
+PropRecord *chrSpawnAtChr(const ChrRecord *self, s32 bodynum, s32 headnum, s32 chrnum, AIRecord *ailist, s32 spawnflags)
 {
     ChrRecord *chr = chrFindById(self, chrnum);
 

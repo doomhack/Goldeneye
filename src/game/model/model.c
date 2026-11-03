@@ -186,7 +186,7 @@ void modelmgrAllocateAnimModelSlots(s32 numanimated)
 
 
 //newfile per EU
-bool modelmgrCanSlotFitRwdata(Model *modelslot, ModelFileHeader *modeldef)
+bool modelmgrCanSlotFitRwdata(const Model *modelslot, const ModelFileHeader *modeldef)
 {
     return modeldef->numRecords <= 0
         || (modelslot->datas != NULL && modelslot->rwdatalen >= modeldef->numRecords);
@@ -331,7 +331,7 @@ Model *modelmgrInstantiateModelWithAnim(ModelFileHeader *modelFileHeader)
 }
 
 
-void modelAttachHead(Model *model, ModelNode *node,  ModelFileHeader *head)
+void modelAttachHead(const Model *model, ModelNode *node,  ModelFileHeader *head)
 {
     modelAttachPart(model,model->obj,node,head);
 
@@ -362,7 +362,7 @@ void modelSetVtxAllocator(Vertex *(*allocator)(s32 numvertices)) {
 }
 
 
-void modelCalcDirToCamera(Model* model, coord3d* coord)
+void modelCalcDirToCamera(const Model* model, coord3d* coord)
 {
     Mtxf* mtx;
     f32 dist;
@@ -392,14 +392,14 @@ void modelCalcDirToCamera(Model* model, coord3d* coord)
 }
 
 
-void modelGetDirToCamera(Model* model, coord3d* coord)
+void modelGetDirToCamera(const Model* model, coord3d* coord)
 {
   modelCalcDirToCamera(model, coord);
 }
 
 
 // PD: model0001a524
-s32 modelFindNodeMtxIndex(ModelNode *node, s32 which)
+s32 modelFindNodeMtxIndex(const ModelNode *node, s32 which)
 {
     union ModelRoData *rodata1;
     union ModelRoData *rodata2;
@@ -436,7 +436,7 @@ s32 modelFindNodeMtxIndex(ModelNode *node, s32 which)
 
 
 // PD: model0001a5cc
-Mtxf *modelFindNodeMtx(struct Model *model, struct ModelNode *node, s32 which) {
+Mtxf *modelFindNodeMtx(const struct Model *model, const struct ModelNode *node, s32 which) {
     s32 index = modelFindNodeMtxIndex(node, which);
 
     if (index >= 0) {
@@ -449,13 +449,13 @@ Mtxf *modelFindNodeMtx(struct Model *model, struct ModelNode *node, s32 which) {
 
 //rejoined per EU
 // PD: model0001a60c
-Mtxf *modelGetRootMtx(Model *objinst)
+Mtxf *modelGetRootMtx(const Model *objinst)
 {
     return modelFindNodeMtx(objinst, objinst->obj->RootNode, 0);
 }
 
 
-f32 modelGetRootDepth(Model *objinst)
+f32 modelGetRootDepth(const Model *objinst)
 {
     Mtxf *mtx = modelGetRootMtx(objinst);
     if (mtx != 0)
@@ -466,7 +466,7 @@ f32 modelGetRootDepth(Model *objinst)
 }
 
 
-union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
+union ModelRwData* modelGetNodeRwData(const Model *Objinst, const ModelNode *root)
 {
     s32 index  = 0;
     u32 *data = Objinst->datas;
@@ -534,7 +534,7 @@ union ModelRwData* modelGetNodeRwData(Model *Objinst, ModelNode *root)
 }
 
 
-void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#MATCH - however OPCODE 3 needs defining
+void modelGetNodePosition(const Model *objinst, const ModelNode *part, coord3d *offset) //#MATCH - however OPCODE 3 needs defining
 {
     switch (part->Opcode & 0xFF)
     {
@@ -581,7 +581,7 @@ void modelGetNodePosition(Model *objinst, ModelNode *part, coord3d *offset) //#M
 }
 
 
-void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
+void modelSetNodePosition(const Model *model, const ModelNode *node, const coord3d *pos)
 {
     switch (node->Opcode & 0xff)
     {
@@ -631,19 +631,19 @@ void modelSetNodePosition(Model *model, ModelNode *node, coord3d *pos)
 }
 
 
-void modelGetRootPosition(Model *objinst, coord3d *offset) //#MATCH
+void modelGetRootPosition(const Model *objinst, coord3d *offset) //#MATCH
 {
     modelGetNodePosition(objinst, objinst->obj->RootNode, offset);
 }
 
 
-void modelSetRootPosition(Model *objinst, coord3d *offset) //#MATCH
+void modelSetRootPosition(const Model *objinst, const coord3d *offset) //#MATCH
 {
     modelSetNodePosition(objinst, objinst->obj->RootNode, offset);
 }
 
 
-f32 modelGetRootRotY(Model *objinst)
+f32 modelGetRootRotY(const Model *objinst)
 {
     ModelNode *root;
 
@@ -658,7 +658,7 @@ f32 modelGetRootRotY(Model *objinst)
 }
 
 
-void modelSetRootRotY(Model *model, f32 angle)
+void modelSetRootRotY(const Model *model, f32 angle)
 {
     ModelNode* node;
     node = model->obj->RootNode;
@@ -700,7 +700,7 @@ void modelSetAnimTranslationScale(Model* model, f32 scale)
 }
 
 
-f32 modelGetNodeRadius(Model *model, ModelNode *node)
+f32 modelGetNodeRadius(const Model *model, const ModelNode *node)
 {
 
 
@@ -773,7 +773,7 @@ f32 modelGetNodeRadius(Model *model, ModelNode *node)
 /**
  * PD: model0001af80
 */
-f32 modelGetRadius(Model *model)
+f32 modelGetRadius(const Model *model)
 {
 
     return model->obj->BoundingVolumeRadius * model->scale;
@@ -781,7 +781,7 @@ f32 modelGetRadius(Model *model)
 
 
 // PD: model0001af98
-void modelLerp3(coord3d *v, coord3d *w, float frac)
+void modelLerp3(coord3d *v, const coord3d *w, float frac)
 {
     v->x += (w->x - v->x) * frac;
     v->y += (w->y - v->y) * frac;
@@ -824,7 +824,7 @@ f32 modelLerpAngle(f32 from, f32 to, f32 mult)
 
 
 // PD: model0001b07c
-void modelLerpAngles3(coord3d *dst, coord3d *target, f32 mult)
+void modelLerpAngles3(coord3d *dst, const coord3d *target, f32 mult)
 {
     dst->x = modelLerpAngle(dst->x, target->x, mult);
     dst->y = modelLerpAngle(dst->y, target->y, mult);
@@ -832,7 +832,7 @@ void modelLerpAngles3(coord3d *dst, coord3d *target, f32 mult)
 }
 
 
-u16 animReadChannel(ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
+u16 animReadChannel(const ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
 {
     u32 result;
     u32 oldResult;
@@ -895,7 +895,7 @@ u16 animReadChannel(ModelAnimation *anim, s32 fieldIndex, s32 extraBitOffset)
 }
 
 
-u16 animReadRootMotion16(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord16 *out)
+u16 animReadRootMotion16(s32 jointnum, s32 flip, const ModelSkeleton *skeleton, const ModelAnimation *anim, s32 frame, coord16 *out)
 {
     u32 scaled;
     s32 base;
@@ -933,7 +933,7 @@ u16 animReadRootMotion16(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelA
 }
 
 
-f32 animReadRootMotion(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, s32 frame, coord3d *pos)
+f32 animReadRootMotion(s32 jointnum, s32 flip, const ModelSkeleton *skeleton, const ModelAnimation *anim, s32 frame, coord3d *pos)
 {
     coord16 tmp;
     u16 angle;
@@ -948,7 +948,7 @@ f32 animReadRootMotion(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAni
 }
 
 
-void modelCalcRootPosition(Model *model, ModelNode *modelNode)
+void modelCalcRootPosition(Model *model, const ModelNode *modelNode)
 {
     union ModelRwData *rw;
     coord3d pos;
@@ -1039,7 +1039,7 @@ void modelCalcPosition(Model *model)
     }
 }
 
-void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node)
+void modelCalcRootMtx(const ModelRenderData* renderdata, const Model* model, const ModelNode* node)
 {
     union ModelRoData* rodata;
     union ModelRwData* rwdata;
@@ -1096,7 +1096,7 @@ void modelCalcRootMtx(ModelRenderData* renderdata, Model* model, ModelNode* node
 }
 
 
-void modelCalcJointMtxFromAngles(ModelRenderData *renderdata, Model *model, ModelNode *node, coord3d *rot)
+void modelCalcJointMtxFromAngles(const ModelRenderData *renderdata, const Model *model, const ModelNode *node, const coord3d *rot)
 {
     u32 flags = node->Opcode;
     ModelRoData_GroupRecord *group = &node->Data->Group;
@@ -1203,7 +1203,7 @@ void modelCalcJointMtxFromAngles(ModelRenderData *renderdata, Model *model, Mode
 }
 
 
-void modelCalcJointMtxFromQuat(ModelRenderData *renderdata, Model *model, ModelNode *node, const quatf *rot)
+void modelCalcJointMtxFromQuat(const ModelRenderData *renderdata, const Model *model, const ModelNode *node, const quatf *rot)
 {
     s32 flags = node->Opcode;
     ModelRoData_GroupRecord *group = (ModelRoData_GroupRecord *)node->Data;
@@ -1284,7 +1284,7 @@ void modelCalcJointMtxFromQuat(ModelRenderData *renderdata, Model *model, ModelN
 }
 
 
-u32 animReadAngleBits(u8 *bitstream, u8 width, u32 bitOffset)
+u32 animReadAngleBits(const u8 *bitstream, u8 width, u32 bitOffset)
 {
     u32 value = 0;
     u32 mask;
@@ -1323,7 +1323,7 @@ u32 animReadAngleBits(u8 *bitstream, u8 width, u32 bitOffset)
 }
 
 
-void animReadJointRotation(s32 jointnum, s32 flip, ModelSkeleton *skeleton, ModelAnimation *anim, u8 *bitstream, coord3d *rot)
+void animReadJointRotation(s32 jointnum, s32 flip, const ModelSkeleton *skeleton, const ModelAnimation *anim, const u8 *bitstream, coord3d *rot)
 {
     u32 bitoffset;
     u8 width;
@@ -1381,7 +1381,7 @@ void animReadJointRotation(s32 jointnum, s32 flip, ModelSkeleton *skeleton, Mode
 }
 
 
-void modelCalcJointMtx(ModelRenderData *renderdata, Model *model, ModelNode *node)
+void modelCalcJointMtx(const ModelRenderData *renderdata, const Model *model, const ModelNode *node)
 {
     union
     {
@@ -1439,7 +1439,7 @@ void modelCalcJointMtx(ModelRenderData *renderdata, Model *model, ModelNode *nod
 }
 
 
-void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, ModelNode *node, f32 angle)
+void modelCalcYJointMtxFromAngle(const ModelRenderData *renderData, const Model *model, const ModelNode *node, f32 angle)
 {
     s32 opcode;
     union ModelRoData *data;
@@ -1552,7 +1552,7 @@ void modelCalcYJointMtxFromAngle(ModelRenderData *renderData, Model *model, Mode
 
 
 // Decodes a packed joint angle from the animation bitstream using either mtxA or mtxB.
-f32 animReadJointYRotation(s32 jointIndex, s32 useMtxB, ModelSkeleton *skeleton, ModelAnimation *anim, u8 *bitstream)
+f32 animReadJointYRotation(s32 jointIndex, s32 useMtxB, const ModelSkeleton *skeleton, const ModelAnimation *anim, const u8 *bitstream)
 {    
     u32 bitOffset;
     u32 raw;
@@ -1582,7 +1582,7 @@ f32 animReadJointYRotation(s32 jointIndex, s32 useMtxB, ModelSkeleton *skeleton,
 }
 
 
-void modelCalcYJointMtx(ModelRenderData *renderData, Model *model, ModelNode *node)
+void modelCalcYJointMtx(const ModelRenderData *renderData, const Model *model, const ModelNode *node)
 {    
     ModelSkeleton *skeleton;
     ModelRoData_GroupRecord *rodata;
@@ -1617,7 +1617,7 @@ void modelCalcYJointMtx(ModelRenderData *renderData, Model *model, ModelNode *no
 }
 
 
-void modelCalcOffsetMtx(ModelRenderData* renderdata, Model *model, ModelNode *node)
+void modelCalcOffsetMtx(const ModelRenderData* renderdata, const Model *model, const ModelNode *node)
 {
     union ModelRoData *rodata = node->Data;
     Mtxf *parent;
@@ -1645,7 +1645,7 @@ void modelCalcOffsetMtx(ModelRenderData* renderdata, Model *model, ModelNode *no
     }
 }
 
-void modelUpdateDistanceRelations(Model* model, ModelNode* node)
+void modelUpdateDistanceRelations(const Model* model, ModelNode* node)
 {
     union ModelRoData *rodata = node->Data;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
@@ -1680,7 +1680,7 @@ void modelUpdateDistanceRelations(Model* model, ModelNode* node)
     node->Child = NULL;
 }
 
-void modelApplyDistanceRelations(Model* model, ModelNode* node)
+void modelApplyDistanceRelations(const Model* model, ModelNode* node)
 {
     ModelRoData_LODRecord *rodata = &node->Data->LOD;
     ModelRwData_LODRecord *rwdata = &modelGetNodeRwData(model, node)->LOD;
@@ -1696,7 +1696,7 @@ void modelApplyDistanceRelations(Model* model, ModelNode* node)
 }
 
 
-void modelApplyToggleRelations(Model* model, ModelNode* node)
+void modelApplyToggleRelations(const Model* model, ModelNode* node)
 {
     ModelRoData_SwitchRecord *rodata = &node->Data->Switch;
     ModelRwData_SwitchRecord *rwdata = &modelGetNodeRwData(model, node)->Switch;
@@ -1712,7 +1712,7 @@ void modelApplyToggleRelations(Model* model, ModelNode* node)
 }
 
 
-void modelApplyHeadRelations(Model* model, ModelNode* bodynode)
+void modelApplyHeadRelations(const Model* model, ModelNode* bodynode)
 {
     struct ModelRwData_HeadPlaceholderRecord *rwdata = &modelGetNodeRwData(model, bodynode)->HeadPlaceholder;
 
@@ -1796,14 +1796,14 @@ void modelApplyReorderRelationsByArg(ModelNode *basenode, bool visible)
 }
 
 
-void modelApplyReorderRelations(Model* model, ModelNode* node)
+void modelApplyReorderRelations(const Model* model, ModelNode* node)
 {
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
     modelApplyReorderRelationsByArg(node, rwdata->BSP.visible);
 }
 
 
-void modelUpdateReorderRelations(Model *model, ModelNode *node)
+void modelUpdateReorderRelations(const Model *model, ModelNode *node)
 {
     union ModelRoData *rodata = node->Data;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
@@ -1859,7 +1859,7 @@ void modelUpdateReorderRelations(Model *model, ModelNode *node)
 }
 
 
-void modelUpdateTubeIndex(Model *model, ModelNode *node)
+void modelUpdateTubeIndex(const Model *model, const ModelNode *node)
 {
     union ModelRoData *rodata = node->Data;
     union ModelRwData *rwdata = modelGetNodeRwData(model, node);
@@ -1895,7 +1895,7 @@ void modelUpdateTubeIndex(Model *model, ModelNode *node)
 }
 
 
-void modelUpdateRelationsQuick(Model *model, ModelNode *parent)
+void modelUpdateRelationsQuick(const Model *model, const ModelNode *parent)
 {
     ModelNode *node = parent->Child;
 
@@ -1961,7 +1961,7 @@ void modelUpdateRelationsQuick(Model *model, ModelNode *parent)
 }
 
 
-void modelUpdateNodeRelations(Model *model)
+void modelUpdateNodeRelations(const Model *model)
 {
     ModelNode *node = model->obj->RootNode;
 
@@ -2018,7 +2018,7 @@ void modelUpdateNodeRelations(Model *model)
 }
 
 
-void modelUpdateMatrices(ModelRenderData *renderdata, Model *model)
+void modelUpdateMatrices(const ModelRenderData *renderdata, const Model *model)
 {
     ModelNode *node = model->obj->RootNode;
 
@@ -2131,23 +2131,23 @@ void modelCalcMatrices(ModelRenderData *renderdata, struct Model *model)
     modelCalcMatricesNoAnim(renderdata, model);
 }
 
-struct ModelAnimation * modelGetAnim(struct Model* model) {
+struct ModelAnimation * modelGetAnim(const struct Model* model) {
     return model->anim;
 }
 
-s8 modelGetAnimFlip(Model *model) 
+s8 modelGetAnimFlip(const Model *model) 
 {
     return model->flip;
 }
 
 
-f32 modelGetAnimFrame(Model *model)
+f32 modelGetAnimFrame(const Model *model)
 {
     return model->frame;
 }
 
 
-f32 modelGetAnimEndFrame(Model *model)
+f32 modelGetAnimEndFrame(const Model *model)
 {
     f32 end;
     ModelAnimation *modelAnimation;
@@ -2170,7 +2170,7 @@ f32 modelGetAnimEndFrame(Model *model)
 }
 
 
-f32 modelGetAnimSpeed(Model *model)
+f32 modelGetAnimSpeed(const Model *model)
 {
     return model->speed;
 }
@@ -2179,7 +2179,7 @@ f32 modelGetAnimSpeed(Model *model)
 /**
  * PD: modelGetAbsAnimSpeed
 */
-f32 modelGetAbsAnimSpeed(Model *model)
+f32 modelGetAbsAnimSpeed(const Model *model)
 {
     f32 speed;
 
@@ -2194,7 +2194,7 @@ f32 modelGetAbsAnimSpeed(Model *model)
 }
 
 
-s32 modelConstrainOrWrapAnimFrame(s32 frame, ModelAnimation *anim, f32 endframe)
+s32 modelConstrainOrWrapAnimFrame(s32 frame, const ModelAnimation *anim, f32 endframe)
 {
     if (frame < 0) {
         if (anim->flags & 1) {
@@ -3776,7 +3776,7 @@ void modelApplyCullMode(ModelRenderData *renderdata)
 }
 
 
-void modelRenderNodeGundl(ModelRenderData* renderdata, ModelNode* node)
+void modelRenderNodeGundl(ModelRenderData* renderdata, const ModelNode* node)
 {
     ModelRoData_DisplayListRecord* rodata = &node->Data->DisplayList;
 
@@ -3956,7 +3956,7 @@ Model Type 4: Normal Fog/Lighting object
 These are applied to each part of an object at runtime and can be overridden. loading the next part will use these values once more.
 GeometryMode is not in setup and is persistent accross parts.
 */
-void modelRenderNodeDl(ModelRenderData *renderdata, Model *model, ModelNode *node)
+void modelRenderNodeDl(ModelRenderData *renderdata, const Model *model, const ModelNode *node)
 {
     union ModelRoData *rodata = node->Data;
 
@@ -4038,7 +4038,7 @@ void modelRenderNodeDl(ModelRenderData *renderdata, Model *model, ModelNode *nod
  * writes them to a newly allocated vertices table and queues the node's
  * displaylist to the renderdata's DL.
  */
-void modelRenderNodeRotTex(ModelRenderData *renderdata, ModelNode *node)
+void modelRenderNodeRotTex(ModelRenderData *renderdata, const ModelNode *node)
 {
     if (renderdata->skipDraw == 0 && (renderdata->flags & 2))
     {
@@ -4118,7 +4118,7 @@ void modelSelectTexture(ModelRenderData *renderdata, struct sImageTableEntry *tc
 
 
 
-void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* node)
+void modelRenderNodeTube(ModelRenderData* renderdata, const Model* model, const ModelNode* node)
 {
     s32 rw_index_sel;
     s32 rw_index_sel2;
@@ -4370,7 +4370,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, Model* model, ModelNode* n
 
 
 // PD: modelRenderNodeChrGunfire
-void modelRenderNodeGunfire(ModelRenderData *renderdata, Model *model, ModelNode *node)
+void modelRenderNodeGunfire(ModelRenderData *renderdata, const Model *model, const ModelNode *node)
 {
     f32 negUpX;
     ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
@@ -4528,7 +4528,7 @@ void modelSetShadowAlpha(s32 alpha)
 }
 
 
-void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode *node)
+void modelRenderNodeShadow(ModelRenderData *renderdata, const Model *model, const ModelNode *node)
 {
     sImageTableEntry *image;
     RenderPosView *mtx;
@@ -4649,7 +4649,7 @@ void modelRenderNodeShadow(ModelRenderData *renderdata, Model *model, ModelNode 
 
 
 
-void modelRenderNode(ModelRenderData* data, Model* model, ModelNode* node) {
+void modelRenderNode(ModelRenderData* data, const Model* model, ModelNode* node) {
     u32 id = node->Opcode & 0xFF;
     switch (id) {
     case MODELNODE_OPCODE_LOD:
@@ -4741,7 +4741,7 @@ void modelRender(ModelRenderData *mrData, Model *mdl)
  * 
  * @returns TRUE if the ray intersects the bbox, otherwise FALSE.
  */
-bool modelTestRayIntersectsTransformedBBox(ModelRoData_BoundingBoxRecord *bbox, Mtxf *mtx, coord3d *pos, coord3d *dir)
+bool modelTestRayIntersectsTransformedBBox(const ModelRoData_BoundingBoxRecord *bbox, const Mtxf *mtx, const coord3d *pos, const coord3d *dir)
 {
     f32 xthingx;
     f32 xthingy;
@@ -4944,7 +4944,7 @@ bool modelTestRayIntersectsTransformedBBox(ModelRoData_BoundingBoxRecord *bbox, 
 }
 
 
-bool modelTestRayIntersectsNodeBBox(Model *model, ModelNode *node, coord3d *pos, coord3d *dir)
+bool modelTestRayIntersectsNodeBBox(const Model *model, const ModelNode *node, const coord3d *pos, const coord3d *dir)
 {
     ModelRoData_BoundingBoxRecord *bbox = &node->Data->BoundingBox;
 
@@ -4952,7 +4952,7 @@ bool modelTestRayIntersectsNodeBBox(Model *model, ModelNode *node, coord3d *pos,
 }
 
 
-s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypos, coord3d *raydir)
+s32 modelTestRayIntersectsNodeOp17(const Model *model, const ModelNode *node, const coord3d *raypos, const coord3d *raydir)
 {
     ModelRoData_Op17Record *hitData;
     Mtxf *nodeMtx;
@@ -5100,7 +5100,7 @@ s32 modelTestRayIntersectsNodeOp17(Model *model, ModelNode *node, coord3d *raypo
 }
 
 
-u32 modelFindRayHitNext(Model *model, coord3d *raypos, coord3d *raydir, ModelNode **nodeptr)
+u32 modelFindRayHitNext(const Model *model, const coord3d *raypos, const coord3d *raydir, ModelNode **nodeptr)
 {
     ModelNode *node;
     s32 descend;
@@ -5187,7 +5187,7 @@ u32 modelFindRayHitNext(Model *model, coord3d *raypos, coord3d *raydir, ModelNod
 /**
  * Copy animation from ROM to RAM
 */
-u8 *animLoadFrame(ModelAnimation *anim, s32 frame)
+u8 *animLoadFrame(const ModelAnimation *anim, s32 frame)
 {
     u8 *ret = NULL;
     s32 frameSize = anim->frameBits >> 3;
@@ -5438,7 +5438,7 @@ void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr
     }
 }
 
-void modelFilePromotePointers(ModelFileHeader *header, s32 vma, void *addr) {
+void modelFilePromotePointers(const ModelFileHeader *header, s32 vma, const void *addr) {
     s32 diff = (u32)addr - vma;
     s32 i;
 
@@ -5576,7 +5576,7 @@ void modelCalculateRwDataLen(struct ModelFileHeader *objheader)
 }
 
 
-void modelInitRwData(Model *model, ModelNode *startnode)
+void modelInitRwData(const Model *model, ModelNode *startnode)
 {
     ModelNode *node = startnode;
 
@@ -5763,7 +5763,7 @@ void animInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data)
 
 
 // PD: model00023108
-void modelAttachPart(Model *pmodel, ModelFileHeader *pmodeldef, ModelNode *pnode, ModelFileHeader *cmodeldef)
+void modelAttachPart(const Model *pmodel, ModelFileHeader *pmodeldef, ModelNode *pnode, ModelFileHeader *cmodeldef)
 {
     ModelRwData_HeadPlaceholderRecord *rwdata = &modelGetNodeRwData(pmodel, pnode)->HeadPlaceholder;
     ModelNode *node;
@@ -5797,7 +5797,7 @@ void modelAttachPart(Model *pmodel, ModelFileHeader *pmodeldef, ModelNode *pnode
  * Note that some node types support multiple display lists, so the function
  * may return the same node while it iterates the display lists for that node.
  */
-void modelIterateDisplayLists(ModelFileHeader *fileheader, ModelNode **nodeptr, Gfx **gdlptr)
+void modelIterateDisplayLists(const ModelFileHeader *fileheader, ModelNode **nodeptr, Gfx **gdlptr)
 {
     ModelNode *node = *nodeptr;
     union ModelRoData *rodata;
@@ -5890,7 +5890,7 @@ void modelIterateDisplayLists(ModelFileHeader *fileheader, ModelNode **nodeptr, 
 }
 
 
-void modelNodeReplaceGdl(ModelNode *node, Gfx *find, Gfx *replacement)
+void modelNodeReplaceGdl(const ModelNode *node, const Gfx *find, Gfx *replacement)
 {
     union ModelRoData *rodata;
     u32 type = node->Opcode & 0xff;

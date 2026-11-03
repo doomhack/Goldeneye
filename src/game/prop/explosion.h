@@ -55,9 +55,9 @@ extern f32 g_SpExplosionDamageMult;
 s32  explosionCreate(PropRecord *source, coord3d *pos, StandTile *stan, s16 type, s32 makeScorch, s32 player, u8 *rooms, s32 inAir);
 s32  explosionTick(PropRecord *prop);
 u8   explosionPropTick(PropRecord *prop);
-Gfx *explosionRender(PropRecord *prop, Gfx *gdl, s32 withalpha);
+Gfx *explosionRender(const PropRecord *prop, Gfx *gdl, s32 withalpha);
 void explosionStartShake(void);
-void explosionScreenShake(coord3d *eyepos, coord3d *lookdir, coord3d *result);
+void explosionScreenShake(const coord3d *eyepos, const coord3d *lookdir, coord3d *result);
 void explosionsInit(void);
 void explosionsReset(void);
 

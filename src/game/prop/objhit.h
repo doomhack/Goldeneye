@@ -5,8 +5,8 @@
 #include <bondconstants.h>
 #include <bondtypes.h>
 
-bool modelFindTriangleHit(Model *model, ModelNode *startNode, coord3d *rayPos, coord3d *rayDir, HitThing *hitthing, s32 *dstmtxindex, ModelNode **dstnode);
+bool modelFindTriangleHit(const Model *model, ModelNode *startNode, const coord3d *rayPos, const coord3d *rayDir, HitThing *hitthing, s32 *dstmtxindex, ModelNode **dstnode);
 void objTestShot(PropRecord *prop, ShotData *shot);
-void objHit(ShotData *shot, BulletHit *hit);
+void objHit(const ShotData *shot, const BulletHit *hit);
 
 #endif

@@ -46,7 +46,7 @@ void fileSetCurrentFolder(u32 foldernum);
 void fileSetDifficulty(DIFFICULTY difficulty);
 void fileSetSoloStage(LEVELID stage);
 void fileCopyCurrentSave(struct save_data *savefile);
-void fileUseDemoSave(struct save_data *eeprom);
+void fileUseDemoSave(const struct save_data *eeprom);
 void fileSetFavWeapon(u32 right,u32 left);
 
 
@@ -74,14 +74,14 @@ extern ChrRecord *g_CurModelChr;
 
 u8 fileGetBondForFolder(void);
 void fileValidateSaves(void);
-bool fileGetIsCheatUnlocked(save_data *save, s32 cheat);
+bool fileGetIsCheatUnlocked(const save_data *save, s32 cheat);
 STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty);
 void fileUnlockStageInFolderAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty, s32 newtime);
 void fileSaveFolderUnlockCheat(s32 foldernum, s32 cheat);
 void fileLoadSettingsForFolder(u32 folder);
 s32 fileGetFolderControlType(u32 folder);
 void fileSaveDisplaySettingsForFolder(s32 folder);
-void fileCoopLoadPartnerSettings(smallSave *header);
+void fileCoopLoadPartnerSettings(const smallSave *header);
 void fileCoopSavePartnerSettings(void);
 s32 fileCoopGetPartnerChar(void);
 void fileCoopSetPartnerChar(s32 character);
@@ -97,7 +97,7 @@ LEVEL_SOLO_SEQUENCE fileGetHighestStageUnlockedAnyFolder(void);
 void fileResetRamRomSave(void);
 void fileCopyFolderToFirstFree(s32 foldernum);
 save_data * fileGetSaveForFoldernum(s32 folder);
-s32 fileGetSaveStageDifficultyTime(save_data* save, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty);
+s32 fileGetSaveStageDifficultyTime(const save_data* save, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty);
 s32 fileIs007ModeUnlocked(u32 folder);
 bool fileIsAztecCompletedOnSecretOr00ForFolder(s32 folder);
 bool fileIsCradleCompletedAnyFolder(void);

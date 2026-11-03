@@ -451,7 +451,7 @@ int invAddProp(PropRecord *prop)
     return TRUE;
 }
 
-int invAddWeaponByProp(PropRecord *prop)
+int invAddWeaponByProp(const PropRecord *prop)
 {
     int added;
     added = FALSE;
@@ -697,7 +697,7 @@ void invCycleBackward(s32 *nextright, s32 *nextleft, s32 requireammo)
 /**
  * The key flags of every key in a player's inventory.
  */
-static u32 invGetHeldKeyFlags(struct player *player)
+static u32 invGetHeldKeyFlags(const struct player *player)
 {
     u32      heldkeyflags = 0;
     InvItem *item         = player->ptr_inventory_first_in_cycle;
@@ -809,7 +809,7 @@ bool invHasGoldenGun(void)
     return invHasItem(ITEM_GOLDENGUN);
 }
 
-static bool invPlayerHasProp(struct player *player, PropRecord *prop)
+static bool invPlayerHasProp(const struct player *player, const PropRecord *prop)
 {
     InvItem *item = player->ptr_inventory_first_in_cycle;
 
@@ -831,7 +831,7 @@ static bool invPlayerHasProp(struct player *player, PropRecord *prop)
     return FALSE;
 }
 
-bool invHasProp(PropRecord *prop)
+bool invHasProp(const PropRecord *prop)
 {
     return invPlayerHasProp(g_CurrentPlayer, prop);
 }
@@ -839,7 +839,7 @@ bool invHasProp(PropRecord *prop)
 /**
  * Co-op: TRUE if any player carries the prop (objectives are shared).
  */
-bool invAnyPlayerHasProp(PropRecord *prop)
+bool invAnyPlayerHasProp(const PropRecord *prop)
 {
     s32 i;
 
@@ -983,7 +983,7 @@ InvItem *invGetItemByIndex(s32 index)
     return NULL;
 }
 
-textoverride *invGetOverrideForObj(ObjectRecord *obj)
+textoverride *invGetOverrideForObj(const ObjectRecord *obj)
 {
     textoverride *override = g_CurrentPlayer->textoverrides;
 
@@ -1208,7 +1208,7 @@ void invDetermineEquippedItem(void)
     }
 }
 
-char *invGetActivatedTextObject(ObjectRecord *obj)
+char *invGetActivatedTextObject(const ObjectRecord *obj)
 {
     textoverride *override = invGetOverrideForObj(obj);
 

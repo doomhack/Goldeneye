@@ -21,7 +21,7 @@ void crashMain(void* data);
 void crashAppendChar(unsigned char c);
 void crashScroll(s32 numlines);
 void crashInitBuffers(void);
-void crashRenderFrame(u16 *buffer);
+void crashRenderFrame(const u16 *buffer);
 
 
 #endif

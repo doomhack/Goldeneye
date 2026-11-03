@@ -47,7 +47,7 @@ static s32 s_NextShard = 0;
  * along xaxis and yaxis (unnormalised: their lengths scale the extents), facing along
  * zaxis. Enough shards are made to use about half the buffer.
  */
-void glassCreateShards(coord3d *pos, coord3d *xaxis, coord3d *yaxis, coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax)
+void glassCreateShards(const coord3d *pos, const coord3d *xaxis, const coord3d *yaxis, const coord3d *zaxis, f32 xmin, f32 xmax, f32 ymin, f32 ymax)
 {
     coord3d xnorm = *xaxis;
     coord3d ynorm = *yaxis;
@@ -112,7 +112,7 @@ static s16 shardCornerOffset(f32 size)
  * Throws out one shard of glass at pos, turned to angle about the vertical. It flies
  * out at random, mostly upwards.
  */
-void glassCreateShard(coord3d *pos, f32 angle, f32 size)
+void glassCreateShard(const coord3d *pos, f32 angle, f32 size)
 {
     struct Shard *shard = &s_Shards[s_NextShard];
     f32 dx = (2.0f * RANDOMFRAC()) - 1.0f;

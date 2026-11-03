@@ -851,7 +851,7 @@ void jointListDraw(ModelRenderData *data, JointListEntry *entry)
 #endif
 
 
-s32 jointListFindHitNext(JointListEntry **entryptr, coord3d *raypos, coord3d *raydir, Model **outModel, ModelNode **inoutNode)
+s32 jointListFindHitNext(JointListEntry **entryptr, const coord3d *raypos, const coord3d *raydir, Model **outModel, ModelNode **inoutNode)
 {
     JointListEntry *entry = *entryptr;
     ModelNode *node;
@@ -979,7 +979,7 @@ walk_node:
  * Starts a ray hit search: moves *entryptr to the last joint list entry, clears the
  * outputs, then lets jointListFindHitNext walk the list backwards.
  */
-s32 jointListFindHit(JointListEntry **entryptr, coord3d *modelRayStart, coord3d *modelRayDir, Model **outModel, ModelNode **outNode)
+s32 jointListFindHit(JointListEntry **entryptr, const coord3d *modelRayStart, const coord3d *modelRayDir, Model **outModel, ModelNode **outNode)
 {
     JointListEntry *entry = *entryptr;
 

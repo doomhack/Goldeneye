@@ -45,7 +45,7 @@ void skyGetWorldPosFromScreenPos(f32 offset_x, f32 offset_y, coord3d* out) {
     mtx4RotateVecInPlace(player_mtxf, out);
 }
 
-bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
+bool skyIsScreenCornerInSky(const coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 {
     coord3d *eye = playerGetPos();
     f32 elevation = 2.0f * corner3dpos->y / sqrtf(corner3dpos->f[0] * corner3dpos->f[0] + corner3dpos->f[2] * corner3dpos->f[2] + 0.0001f);
@@ -90,7 +90,7 @@ bool skyIsScreenCornerInSky(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 }
 
 
-bool skyIsCornerInWater(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
+bool skyIsCornerInWater(const coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
 {
     coord3d *eye = playerGetPos();
     f32 elevation = -2.0f * corner3dpos->y / sqrtf(corner3dpos->f[0] * corner3dpos->f[0] + corner3dpos->f[2] * corner3dpos->f[2] + 0.0001f);
@@ -134,7 +134,7 @@ bool skyIsCornerInWater(coord3d *corner3dpos, coord3d *dstpos, f32 *dstfrac)
     return FALSE;
 }
 
-void skyCalculateEdgeVertex(coord3d *base, coord3d* ref, coord3d* out)
+void skyCalculateEdgeVertex(const coord3d *base, const coord3d* ref, coord3d* out)
 {
     f32 mult;
 
@@ -419,7 +419,7 @@ static Gfx *skyDrawPiece(Gfx *gdl, const SkyPolyVtx *poly, s32 n, const f32 *ori
  * F3DEX3 keeps them as s15.16, and the sky reaches far further than anything else. Scaling
  * x, y, z and w alike leaves the screen positions and depths as they are.
  */
-static Gfx *skyLoadProjection(Gfx *gdl, const Mtxf *full, SkyPolyVtx (*polys)[SKY_POLY_MAX],
+static Gfx *skyLoadProjection(Gfx *gdl, const Mtxf *full, const SkyPolyVtx (*polys)[SKY_POLY_MAX],
                               const s32 *counts, s32 numpolys, const f32 *originPos, f32 posDiv)
 {
     Mtxf scaled = *full;
@@ -1667,7 +1667,7 @@ Gfx *skyRender(Gfx *gdl)
 }
 
 
-void skyProjectVertex(SkyVtx *vtx, Mtxf *mtx, u16 perspScale, f32 sScale, f32 tScale, SkyScreenVtx *out)
+void skyProjectVertex(const SkyVtx *vtx, const Mtxf *mtx, u16 perspScale, f32 sScale, f32 tScale, SkyScreenVtx *out)
 {
     f32 clip[4];
     f32 t;
@@ -1734,7 +1734,7 @@ void skyProjectVertex(SkyVtx *vtx, Mtxf *mtx, u16 perspScale, f32 sScale, f32 tS
     out->a = vtx->a;
 }
 
-bool skyVerticesAreTheSame(SkyScreenVtx *a, SkyScreenVtx *b)
+bool skyVerticesAreTheSame(const SkyScreenVtx *a, const SkyScreenVtx *b)
 {
     f32 dx;
     f32 dy;

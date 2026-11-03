@@ -8,7 +8,7 @@ void playerStartNewLife(void);
 s32 playerChooseSpawnPad(void);
 s32 currentPlayerGetCrouchPos(void);
 s32 playerGetCrouchPos(s32 playernum);
-void playerSetPosition(coord3d *pos, coord3d *pos2, coord3d *offset, StandTile *tile, coord3d *stan_walk_start);
+void playerSetPosition(const coord3d *pos, const coord3d *pos2, const coord3d *offset, StandTile *tile, const coord3d *stan_walk_start);
 void playerSetLeanTarget(s32 value);
 void playerAdjustCrouch(s32 value);
 

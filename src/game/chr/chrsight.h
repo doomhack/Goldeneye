@@ -3,13 +3,13 @@
 #include <ultra64.h>
 #include <bondtypes.h>
 
-bool chrSawTargetRecently(ChrRecord *self);
-bool chrHeardTargetRecently(ChrRecord *self);
-bool chrCheckCanSeeTarget(ChrRecord *self, coord3d *pos, StandTile *tile);
+bool chrSawTargetRecently(const ChrRecord *self);
+bool chrHeardTargetRecently(const ChrRecord *self);
+bool chrCheckCanSeeTarget(ChrRecord *self, const coord3d *pos, StandTile *tile);
 bool chrCanSeeBond(ChrRecord *self);
-bool chrHasLineOfSightToPos(ChrRecord *self, coord3d *pos, StandTile *stan);
-bool chrCanSeePos(ChrRecord *self, coord3d *pos, StandTile *tile);
-bool chrHasLineOfSightToPlayer(ChrRecord *self);
+bool chrHasLineOfSightToPos(ChrRecord *self, const coord3d *pos, const StandTile *stan);
+bool chrCanSeePos(ChrRecord *self, const coord3d *pos, const StandTile *tile);
+bool chrHasLineOfSightToPlayer(const ChrRecord *self);
 void chrSetTargetToPlayer(ChrRecord *self);
 void chrAlertGuardToPlayerPosition(ChrRecord *self);
 bool chrCheckTargetInSight(ChrRecord *self);

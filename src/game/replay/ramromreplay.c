@@ -88,7 +88,7 @@ void ramromFadeToTitle(void);
 s32 ramrom_replay_handler(struct contsample *samples, s32 index);
 void record_player_input_as_packet(struct contsample *samples, s32 lastread, s32 lastwrite);
 void copy_current_ingame_registers_before_ramrom_playback(ramromfilestructure *state);
-void copy_recorded_ramrom_registers_to_proper_place_ingame(ramromfilestructure *state);
+void copy_recorded_ramrom_registers_to_proper_place_ingame(const ramromfilestructure *state);
 
 
 void clear_ramrom_block_buffer_heading_ptrs(void) {
@@ -338,7 +338,7 @@ void copy_current_ingame_registers_before_ramrom_playback(ramromfilestructure *s
     state->mp_flags[3] = frontGetMpTeam(3);
 }
 
-void copy_recorded_ramrom_registers_to_proper_place_ingame(ramromfilestructure *state)
+void copy_recorded_ramrom_registers_to_proper_place_ingame(const ramromfilestructure *state)
 {
     g_randomSeed = state->randomseed;
     g_chrObjRandomSeed = state->randomizer;

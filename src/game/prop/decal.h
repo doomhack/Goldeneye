@@ -29,10 +29,10 @@ struct Impact {
 
 void scorchCreate(coord3d *pos, f32 size, s16 room);
 Gfx *scorchesRender(Gfx *gdl);
-void impactCreate(coord3d *pos, coord3d *normal, s16 type, s16 room, PropRecord *prop, s8 node, s8 onGlass);
-void impactsRemoveFromProp(PropRecord *prop, bool onGlass);
-void impactsRemoveTranslucent(PropRecord *prop);
-Gfx *impactsRenderOnProp(Gfx *gdl, PropRecord *prop, s32 xlupass);
+void impactCreate(const coord3d *pos, const coord3d *normal, s16 type, s16 room, PropRecord *prop, s8 node, s8 onGlass);
+void impactsRemoveFromProp(const PropRecord *prop, bool onGlass);
+void impactsRemoveTranslucent(const PropRecord *prop);
+Gfx *impactsRenderOnProp(Gfx *gdl, const PropRecord *prop, s32 xlupass);
 Gfx *impactsRenderOnWalls(Gfx *gdl);
 void decalsInit(void);
 

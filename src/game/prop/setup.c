@@ -89,7 +89,7 @@ static bool propdefIsObject(s32 type)
 /**
  * The size of a propdef record, in words.
  */
-s32 sizepropdef(PropDefHeaderRecord *pdef)
+s32 sizepropdef(const PropDefHeaderRecord *pdef)
 {
     switch (pdef->type)
     {
@@ -198,7 +198,7 @@ s32 tagGetCommandIndex(ObjectRecord *tag)
  * The index of the propdef record whose prop this is, or -1. Every record is checked as
  * an object, whatever its type.
  */
-s32 setupGetCommandIndexByProp(PropRecord *prop)
+s32 setupGetCommandIndexByProp(const PropRecord *prop)
 {
     PropDefHeaderRecord *pdef = g_CurrentSetup.propDefs;
     s32 i;
@@ -906,7 +906,7 @@ void setupGuard(GuardRecord *guard)
  * not a weapon, a projectile, respawning or inside something, and (if musthavemodel)
  * with a model slot that can hold modeldef.
  */
-ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr, ObjectRecord **anyobjptr, bool musthaveprop, bool musthavemodel, ModelFileHeader *modeldef)
+ObjectRecord *setupFindObjForReuse(s32 wanttype, ObjectRecord **offscreenobjptr, ObjectRecord **anyobjptr, bool musthaveprop, bool musthavemodel, const ModelFileHeader *modeldef)
 {
     PropDefHeaderRecord *pdef = g_CurrentSetup.propDefs;
     ObjectRecord *offscreenobj = NULL;

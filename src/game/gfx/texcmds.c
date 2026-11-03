@@ -599,7 +599,7 @@ s32 texLoadFromGdl(Gfx *src, s32 srcsize, Gfx *dst, struct texpool *pool)
  * Copies `len` bytes of display list from `src` to `dst`, which may overlap it from
  * above: the last command is copied first.
  */
-void texCopyGdls(Gfx *src, Gfx *dst, s32 len)
+void texCopyGdls(const Gfx *src, Gfx *dst, s32 len)
 {
     for (s32 i = (len >> 3) - 1; i >= 0; i--)
     {
@@ -694,7 +694,7 @@ static s32 tileShift(s32 shift)
  * Writes the tiles (one per level of detail) to draw an image that's in TMEM, as texSelect
  * loads it, with texture coordinates scaled by 2^`shift` on top of each level's own scale.
  */
-static Gfx *setImageTiles(Gfx *gdl, sImageTableEntry *image, struct tex *tex, s32 format, s32 depth,
+static Gfx *setImageTiles(Gfx *gdl, const sImageTableEntry *image, const struct tex *tex, s32 format, s32 depth,
                           s32 numLods, u32 uvOffset, s32 shift)
 {
     s32 width = image->width;
@@ -876,7 +876,7 @@ void texSelect(Gfx **gdlptr, sImageTableEntry *image, u32 blendMode, s32 zbuffer
  * than their texture coordinates can hold. (The coordinates lose that many bits of
  * precision.)
  */
-void texSelectScaled(Gfx **gdlptr, sImageTableEntry *image, u32 uvOffset, s32 shift)
+void texSelectScaled(Gfx **gdlptr, const sImageTableEntry *image, u32 uvOffset, s32 shift)
 {
     struct tex *tex = texFindByData((u8 *)PHYS_TO_K0(image->index), NULL);
     s32 format = tex != NULL ? tex->gbiformat : image->format;

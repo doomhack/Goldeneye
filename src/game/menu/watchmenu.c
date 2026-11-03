@@ -228,7 +228,7 @@ void watchMenuOptionSet(u32 *option, u32 value);
 static u32 *optionValue(s32 option);
 void watchMenuAdjustVolume(u16* outVolume);
 void watchMenuMakeSliderVerts(struct WatchVertex *verts, f32 fill_amount, s32 transition_width);
-void watchMenuSpinController(s8 contpadnum, s32 *counter, f32 *value, f32 *step);
+void watchMenuSpinController(s8 contpadnum, s32 *counter, f32 *value, const f32 *step);
 Gfx *watchMenuRenderDualControlLabels(Gfx *gdl);
 Gfx *watchMenuRenderControlLabels(Gfx *gdl);
 
@@ -2530,7 +2530,7 @@ f32 watchMenuApproach(f32 value, f32 target, f32 divisor)
 }
 
 
-void watchMenuSpinController(s8 contpadnum, s32 *counter, f32 *value, f32 *step)
+void watchMenuSpinController(s8 contpadnum, s32 *counter, f32 *value, const f32 *step)
 {
     s32 count;
 
@@ -3473,7 +3473,7 @@ Gfx *watchMenuRenderOptions(Gfx *gdl, Mtx *mtx) {
 }
 
 
-int textCountLines(char *arg) {
+int textCountLines(const char *arg) {
     u8 cVar1;
     int count;
 

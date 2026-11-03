@@ -50,14 +50,14 @@
 
 
 static void chrStand(ChrRecord *self);
-static void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime);
+static void chrSpotChooseAnimation(const ChrRecord *self, f32 mergetime);
 static void chrSidestep(ChrRecord *self, GUNHAND side);
 static void chrJumpOut(ChrRecord *self, GUNHAND side);
-static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 top, f32 bottom);
-static void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec);
-static s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance);
-static void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir);
-static s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance);
+static f32 chrGetClearDistInDir(const PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 top, f32 bottom);
+static void chrNormDistanceToPlayer(const ChrRecord *self, GUNHAND side, coord3d *vec);
+static s32 chrIsClearLow(const ChrRecord *self, GUNHAND side, f32 distance);
+static void chrGetSideDir(const ChrRecord *self, s32 side, coord3d *dir);
+static s32 chrIsClear(const ChrRecord *self, GUNHAND side, f32 distance);
 static void chrTickStand(ChrRecord *self);
 static void chrTickKneel(ChrRecord *actor);
 static void chrTickAnim(ChrRecord *self);
@@ -72,7 +72,7 @@ static void chrTickBondIntro(ChrRecord *self);
 
 
 /* weaponprop is a held weapon's prop */
-u32 weaponIsOneHanded(PropRecord *weaponprop)
+u32 weaponIsOneHanded(const PropRecord *weaponprop)
 {
     if (weaponprop != NULL)
     {
@@ -83,7 +83,7 @@ u32 weaponIsOneHanded(PropRecord *weaponprop)
 }
 
 
-void chrStandChooseAnimation(ChrRecord *self, f32 duration)
+void chrStandChooseAnimation(const ChrRecord *self, f32 duration)
 {
     PropRecord *left;
     PropRecord *right;
@@ -159,7 +159,7 @@ void chrStandImmediate(ChrRecord *self, f32 mergetime)
  * A value from min (slowest guard) to max (fastest), by the guard's speed rating raised
  * by the 007 reaction slider.
  */
-f32 chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max)
+f32 chrGetGuard007SpeedRating(const ChrRecord *self, f32 min, f32 max)
 {
     f32 ret;
 
@@ -173,7 +173,7 @@ f32 chrGetGuard007SpeedRating(ChrRecord *self, f32 min, f32 max)
  * scale for the slowest guard down to 0 for the fastest (speed rating and 007 reaction
  * slider as chrGetGuard007SpeedRating).
  */
-s32 chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale)
+s32 chrGetGuard007SpeedRatingInt(const ChrRecord *self, s32 scale)
 {
     s32 ret;
 
@@ -186,7 +186,7 @@ s32 chrGetGuard007SpeedRatingInt(ChrRecord *self, s32 scale)
 /**
  * As chrGetGuard007SpeedRating, by the guard's argh (hit reaction) rating.
  */
-f32 chrGetGuard007ArghRating(ChrRecord *self, f32 min, f32 max)
+f32 chrGetGuard007ArghRating(const ChrRecord *self, f32 min, f32 max)
 {
     f32 ret;
 
@@ -381,7 +381,7 @@ void chrThrowGrenade(ChrRecord *self, GUNHAND hand, s32 startframe)
 }
 
 
-static void chrSpotChooseAnimation(ChrRecord *self, f32 mergetime)
+static void chrSpotChooseAnimation(const ChrRecord *self, f32 mergetime)
 {
     PropRecord *left;
     PropRecord *right;
@@ -669,7 +669,7 @@ static void chrJumpOut(ChrRecord *self, GUNHAND side)
  * @param dir: vector giving direction of line2
  * @param result: contains result
  */
-void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line2_p3, coord3d *dir, coord3d *result)
+void chrLineLineIntersection(const coord3d *line1_p1, const coord3d *line1_p2, const coord3d *line2_p3, const coord3d *dir, coord3d *result)
 {
     /*
      * Line1 = P1 + u * (P2 - P1)
@@ -731,7 +731,7 @@ void chrLineLineIntersection(coord3d *line1_p1, coord3d *line1_p2, coord3d *line
  * @param dir: vector giving direction of line2
  * @param result: out parameter, contains result.
  */
-void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result)
+void chrStanLineDirIntersection(const coord3d *line2_p3, const coord3d *dir, coord3d *result)
 {
     coord3d edgeStart;
     coord3d edgeEnd;
@@ -745,7 +745,7 @@ void chrStanLineDirIntersection(coord3d *line2_p3, coord3d *dir, coord3d *result
  * Where the line through pos in direction dir crosses the last collision edge
  * (stanGetCollisionEdge), as a point on the edge.
  */
-void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result)
+void chrStanPointPointIntersection(const coord3d *pos, const coord3d *dir, coord3d *result)
 {
     coord3d edgeStart;
     coord3d edgeEnd;
@@ -767,7 +767,7 @@ void chrStanPointPointIntersection(coord3d *pos, coord3d *dir, coord3d *result)
 /**
  * How far the prop can see or move in a direction (an angle), up to maxdist.
  */
-static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 top, f32 bottom)
+static f32 chrGetClearDistInDir(const PropRecord *prop, f32 angle, f32 maxdist, s32 cdtypes, f32 top, f32 bottom)
 {
     coord3d dir;
     f32 dest_x;
@@ -810,7 +810,7 @@ static f32 chrGetClearDistInDir(PropRecord *prop, f32 angle, f32 maxdist, s32 cd
 /**
  * How far a guard can move in a direction, up to maxdist.
  */
-f32 chrGetClearDistInDirDefault(PropRecord *prop, f32 angle, f32 maxdist)
+f32 chrGetClearDistInDirDefault(const PropRecord *prop, f32 angle, f32 maxdist)
 {
     f32 top;
     f32 bottom;
@@ -825,7 +825,7 @@ f32 chrGetClearDistInDirDefault(PropRecord *prop, f32 angle, f32 maxdist)
  * The unit vector at right angles to the line from the guard to the current player:
  * (dz, -dx) for side GUNLEFT, otherwise (-dz, dx).
  */
-static void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec)
+static void chrNormDistanceToPlayer(const ChrRecord *self, GUNHAND side, coord3d *vec)
 {
     PropRecord *prop;
     f32 norm;
@@ -862,7 +862,7 @@ static void chrNormDistanceToPlayer(ChrRecord *self, GUNHAND side, coord3d *vec)
  * Whether the guard can walk distance units sideways from the player (as chrIsClear,
  * but relative to the player rather than the guard's facing).
  */
-static s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
+static s32 chrIsClearLow(const ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
     coord3d dir;
@@ -883,7 +883,7 @@ static s32 chrIsClearLow(ChrRecord *self, GUNHAND side, f32 distance)
  * The guard's sideways unit vector: (cos, 0, -sin) of its facing if side is non-zero,
  * otherwise the opposite.
  */
-static void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir)
+static void chrGetSideDir(const ChrRecord *self, s32 side, coord3d *dir)
 {
     f32 angle;
 
@@ -907,7 +907,7 @@ static void chrGetSideDir(ChrRecord *self, s32 side, coord3d *dir)
 /**
  * Whether the guard can walk distance units to one side of its facing.
  */
-static s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance)
+static s32 chrIsClear(const ChrRecord *self, GUNHAND side, f32 distance)
 {
     PropRecord *prop;
     coord3d dir;
@@ -924,7 +924,7 @@ static s32 chrIsClear(ChrRecord *self, GUNHAND side, f32 distance)
 }
 
 
-bool chrIsNotDeadOrShot(ChrRecord *self)
+bool chrIsNotDeadOrShot(const ChrRecord *self)
 {
     s8 currentaction = self->actiontype;
 
@@ -938,7 +938,7 @@ bool chrIsNotDeadOrShot(ChrRecord *self)
 }
 
 
-bool chrIsDead(ChrRecord *self)
+bool chrIsDead(const ChrRecord *self)
 {
     s8 currentaction = self->actiontype;
 
@@ -950,7 +950,7 @@ bool chrIsDead(ChrRecord *self)
  * Whether the current player is within 45 degrees of straight ahead of the guard or
  * straight behind it, the directions a sidestep or jump to the side gets out of.
  */
-static bool chrIsBondInFrontOrBehind(ChrRecord *self)
+static bool chrIsBondInFrontOrBehind(const ChrRecord *self)
 {
     PropRecord *myprop = self->prop;
     PropRecord *bondprop = currentPlayerGetProp();

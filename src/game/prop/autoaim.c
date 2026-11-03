@@ -68,7 +68,7 @@ static f32 autoaimClamp(f32 value, f32 min, f32 max)
  * x and y ranges (min, max). out_screen gets the screen point to aim at: the target's
  * centre, kept inside the auto-aim area.
  */
-f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *xbounds, f32 *ybounds, coord2d *out_screen)
+f32 autoaimScoreProp(const PropRecord *targetprop, const coord3d *aimpos, const f32 *xbounds, const f32 *ybounds, coord2d *out_screen)
 {
     f32 top = camGetScreenTop() + camGetScreenHeight() * AUTOAIM_TOP;
     f32 bottom = camGetScreenTop() + camGetScreenHeight() * AUTOAIM_BOTTOM;
@@ -174,7 +174,7 @@ f32 autoaimScoreProp(PropRecord *targetprop, coord3d *aimpos, f32 *xbounds, f32 
 
 /* Whether auto-aim may pick this prop: an armed guard, or in multiplayer and counter-op
    another player. The guard player in counter-op only aims at Bond. */
-static bool autoaimIsCandidate(PropRecord *prop)
+static bool autoaimIsCandidate(const PropRecord *prop)
 {
     if (prop->type != PROP_TYPE_CHR
         && (prop->type != PROP_TYPE_VIEWER || prop->obj == NULL || playerGetIndexForProp(prop) == playerGetCurrentNum()))

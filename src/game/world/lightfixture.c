@@ -71,7 +71,7 @@
 #include "game/world/roommtx.h"
 #include "game/gfx/gfxdl.h"
 
-s32 lightIsVertexDarkened(Vtx * vertex, s32 room_index);
+s32 lightIsVertexDarkened(const Vtx * vertex, s32 room_index);
 
 #define LIGHTFIXTURE_TABLE_MAX 0x64
 #define DARKENED_LIGHT_TABLE_MAX 0x200
@@ -177,7 +177,7 @@ bool lightIsLightTexture(s32 imageID)
  * at draw time, but this runs on the CPU and so adds the room's vertex base by
  * hand.
  */
-Vtx *lightFindVertexBaseForTri(Gfx *gfx, s32 room_index)
+Vtx *lightFindVertexBaseForTri(const Gfx *gfx, s32 room_index)
 {
     Vtx * ret;
 
@@ -197,7 +197,7 @@ Vtx *lightFindVertexBaseForTri(Gfx *gfx, s32 room_index)
 }
 
 
-void lightGetTriVertexIndices(Gfx* gfx, u32 tri_type, s32* idx1, s32* idx2, s32* idx3)
+void lightGetTriVertexIndices(const Gfx* gfx, u32 tri_type, s32* idx1, s32* idx2, s32* idx3)
 {
     s32 idx[3];
 
@@ -208,7 +208,7 @@ void lightGetTriVertexIndices(Gfx* gfx, u32 tri_type, s32* idx1, s32* idx2, s32*
 }
 
 
-void lightGetTriVertexCoords(Gfx * gfx, u32 tri_type, s32 room_index, coord16 * out1, coord16 * out2, coord16 * out3)
+void lightGetTriVertexCoords(const Gfx * gfx, u32 tri_type, s32 room_index, coord16 * out1, coord16 * out2, coord16 * out3)
 {
     s32 idx1;
     s32 idx2;
@@ -281,7 +281,7 @@ void lightDarkenVertex(Vtx * vertex, s32 room_index)
 }
 
 
-s32 lightIsVertexDarkened(Vtx * vertex, s32 room_index)
+s32 lightIsVertexDarkened(const Vtx * vertex, s32 room_index)
 {
     u32 vtx_index;
     s32 i;
@@ -301,7 +301,7 @@ s32 lightIsVertexDarkened(Vtx * vertex, s32 room_index)
 }
 
 
-void lightDarkenTri(Gfx *gfx, u32 tri_type, s32 room_index)
+void lightDarkenTri(const Gfx *gfx, u32 tri_type, s32 room_index)
 {
     Vtx * vertex;
     s32 idx1;
@@ -320,7 +320,7 @@ void lightDarkenTri(Gfx *gfx, u32 tri_type, s32 room_index)
 }
 
 
-s32 lightIsTriDarkened(Gfx * gfx, u32 tri_type, s32 room_index)
+s32 lightIsTriDarkened(const Gfx * gfx, u32 tri_type, s32 room_index)
 {
     s32 out3;
     s32 idx1;
@@ -342,7 +342,7 @@ s32 lightIsTriDarkened(Gfx * gfx, u32 tri_type, s32 room_index)
 /**
  * Test whether a tri belongs to a light fixture region that should also be darkened.
  */
-s32 lightIsCoordNearDarkenedVertex(coord16 * coord, s32 room_index)
+s32 lightIsCoordNearDarkenedVertex(const coord16 * coord, s32 room_index)
 {
     s32 dx;
     s32 dy;
@@ -384,7 +384,7 @@ s32 lightIsCoordNearDarkenedVertex(coord16 * coord, s32 room_index)
  * gfx >= entry->ptr_start_pertinent_DL
  * gfx <  entry->ptr_end_pertinent_DL
  */
-void lightFixtureBreak(Gfx * hit_gfx, u32 tri_type, s32 room_index)
+void lightFixtureBreak(const Gfx * hit_gfx, u32 tri_type, s32 room_index)
 {
     s16 diff_z_12;
  

@@ -134,7 +134,7 @@ s32 counterOpGetGuardModels(s32 *head, s32 *body)
  * Counter-op: TRUE if Bond has a clear line of sight to a point height
  * above the floor at pos.
  */
-static s32 counterOpBondCanSeePos(coord3d *pos, StandTile *stan, f32 height, PropRecord *bondprop)
+static s32 counterOpBondCanSeePos(const coord3d *pos, StandTile *stan, f32 height, const PropRecord *bondprop)
 {
     return stanTestLineUnobstructed(&stan, pos->x, pos->z, bondprop->pos.x, bondprop->pos.z,
             CDTYPE_OBJS | CDTYPE_DOORS | CDTYPE_PATHBLOCKER | CDTYPE_AIOPAQUE, height, height, 0.0f, 1.0f)
@@ -145,7 +145,7 @@ static s32 counterOpBondCanSeePos(coord3d *pos, StandTile *stan, f32 height, Pro
  * Counter-op: TRUE if a spot is far enough from Bond and out of his sight
  * for the guard player to appear there. *distp is the squared distance.
  */
-static s32 counterOpSpotIsHidden(coord3d *pos, StandTile *stan, f32 height, PropRecord *bondprop, f32 *distp)
+static s32 counterOpSpotIsHidden(const coord3d *pos, StandTile *stan, f32 height, const PropRecord *bondprop, f32 *distp)
 {
     f32 dx = pos->x - bondprop->pos.x;
     f32 dz = pos->z - bondprop->pos.z;
@@ -178,7 +178,7 @@ static const s16 s_CounterOpExcludedModels[] = {
     BODY_Male_Dave_Dr_Doak, BODY_Male_Mishkin, BODY_Female_Marion_Rosika,
 };
 
-static s32 counterOpChrIsExcluded(ChrRecord *chr)
+static s32 counterOpChrIsExcluded(const ChrRecord *chr)
 {
     PropRecord *child;
     s32 i;
@@ -214,7 +214,7 @@ static s32 counterOpChrIsExcluded(ChrRecord *chr)
  * Counter-op: TRUE if chr is a living, armed guard the guard player may
  * become, wherever they are.
  */
-static s32 counterOpChrIsGuard(ChrRecord *chr)
+static s32 counterOpChrIsGuard(const ChrRecord *chr)
 {
     return (chr->model != NULL) && (chr->prop != NULL) && (chr->prop->type == PROP_TYPE_CHR)
         && (chr->prop->flags & PROPFLAG_ENABLED)
@@ -230,7 +230,7 @@ static s32 counterOpChrIsGuard(ChrRecord *chr)
  * Counter-op: TRUE if the guard player may take over chr: a guard (see
  * counterOpChrIsGuard), out of Bond's sight and not too close to him.
  */
-static s32 counterOpGuardCanBeTaken(ChrRecord *chr, PropRecord *bondprop, f32 *distp)
+static s32 counterOpGuardCanBeTaken(const ChrRecord *chr, const PropRecord *bondprop, f32 *distp)
 {
     if (!counterOpChrIsGuard(chr))
     {

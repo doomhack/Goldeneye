@@ -571,7 +571,7 @@ extern u32 _musicsampletblSegmentRomStart NO_SDATA;
  * Patch the file so that offsets are pointers.
  * This is a copy of alSeqFileNew from n64devkit\ultra\usr\src\pr\libsrc\libultra\audio\bnkf.c
  */
-void musicSeqFileNew(RareALSeqBankFile *file, u8 *base)
+void musicSeqFileNew(RareALSeqBankFile *file, const u8 *base)
 {
     s32 offset = (s32) base;
     s32 i;

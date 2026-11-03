@@ -46,9 +46,9 @@
 #include "game/level/gamemode.h"
 
 
-static void chrReactToHit(ChrRecord *self, coord3d *dir, f32 angle, s32 hitpart, ITEM_IDS item);
-static s32 chrGetHitInterruptFrame(ChrRecord *self, f32 *result);
-static void chrPlayHurtSound(ChrRecord *self);
+static void chrReactToHit(ChrRecord *self, const coord3d *dir, f32 angle, s32 hitpart, ITEM_IDS item);
+static s32 chrGetHitInterruptFrame(const ChrRecord *self, f32 *result);
+static void chrPlayHurtSound(const ChrRecord *self);
 static void chrAlertOthersOfInjury(ChrRecord *self, s32 flag);
 
 /**
@@ -62,7 +62,7 @@ static void chrAlertOthersOfInjury(ChrRecord *self, s32 flag);
  * @param hitpart: body part, looked up in g_HitReactionTable
  * @param item: the weapon, for its impact force (weaponGetImpactForce)
  */
-static void chrReactToHit(ChrRecord *self, coord3d *dir, f32 angle, s32 hitpart, ITEM_IDS item)
+static void chrReactToHit(ChrRecord *self, const coord3d *dir, f32 angle, s32 hitpart, ITEM_IDS item)
 {
     bool dying;
     PropRecord *prop;
@@ -338,7 +338,7 @@ static void chrReactToHit(ChrRecord *self, coord3d *dir, f32 angle, s32 hitpart,
  * (the turn at the start of a roll), and if so the frame to stop it at in *result.
  * ACT_PREARGH returns TRUE without setting *result.
  */
-static s32 chrGetHitInterruptFrame(ChrRecord *self, f32 *result)
+static s32 chrGetHitInterruptFrame(const ChrRecord *self, f32 *result)
 {
     s32 flag;
     f32 out_val;
@@ -389,7 +389,7 @@ static s32 chrGetHitInterruptFrame(ChrRecord *self, f32 *result)
 }
 
 
-static void chrPlayHurtSound(ChrRecord *self)
+static void chrPlayHurtSound(const ChrRecord *self)
 {
     PropRecord *prop;
     bool male;
@@ -496,7 +496,7 @@ f32 counterOpPlayerDamage(s32 shooter, f32 damage, s32 weaponid)
 }
 
 
-bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bool isPlayer)
+bool chrTakeShot(ChrRecord *self, s32 hitpart, const coord3d *vector, s32 weaponid, bool isPlayer)
 {
     s32 hattype;
     PropRecord *myprop = self->prop;
@@ -747,7 +747,7 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, coord3d *vector, s32 weaponid, bo
 }
 
 
-s32 chrExplosionDamage(ChrRecord *self, coord3d *pos, f32 damage, s32 playsound)
+s32 chrExplosionDamage(ChrRecord *self, const coord3d *pos, f32 damage, s32 playsound)
 {
     Model *self_model;
     PropRecord *self_prop;

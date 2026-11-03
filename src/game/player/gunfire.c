@@ -2901,7 +2901,7 @@ void gunTickGameplay(s32 triggerOn)
 }
 
 
-void gunSetAimPos(coord3d *pos)
+void gunSetAimPos(const coord3d *pos)
 {
   g_CurrentPlayer->hands[GUNRIGHT].aimPos.x = gunGetDualOffset(GUNRIGHT) + pos->x;
   g_CurrentPlayer->hands[GUNRIGHT].aimPos.y = pos->y;
@@ -2914,7 +2914,7 @@ void gunSetAimPos(coord3d *pos)
 }
 
 
-void gunSetTracerTarget(coord3d* pos)
+void gunSetTracerTarget(const coord3d* pos)
 {
     g_CurrentPlayer->hands[GUNLEFT].item_related.x = g_CurrentPlayer->hands[GUNRIGHT].item_related.x = pos->x;
     g_CurrentPlayer->hands[GUNLEFT].item_related.y = g_CurrentPlayer->hands[GUNRIGHT].item_related.y = pos->y;

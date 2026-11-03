@@ -171,7 +171,7 @@ PropRecord *hatCreateForChr(ChrRecord *chr, s32 modelnum, u32 flags)
 
 
 /* Which kind of hat a hat prop is, for what happens when it is shot */
-HATTYPE hatGetModel(PropRecord *prop)
+HATTYPE hatGetModel(const PropRecord *prop)
 {
     switch (prop->obj->obj)
     {
@@ -206,7 +206,7 @@ HATTYPE hatGetModel(PropRecord *prop)
 
 
 /* Show or hide a weapon model's muzzle flash */
-void weaponSetGunfireVisible(PropRecord *prop, s32 firing)
+void weaponSetGunfireVisible(const PropRecord *prop, s32 firing)
 {
     Model *model = prop->obj->model;
     ModelNode *node;
@@ -468,7 +468,7 @@ PropRecord *chrGiveWeapon(ChrRecord *chr, s32 modelnum, ITEM_IDS weaponid, s32 f
 
 
 /* Mark the weapon in a guard's hand to be removed */
-void chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand)
+void chrRemoveHeldWeapon(const ChrRecord *chr, GUNHAND hand)
 {
     if (chr->weapons_held[hand])
     {
@@ -482,7 +482,7 @@ void chrRemoveHeldWeapon(ChrRecord *chr, GUNHAND hand)
  * drawing. The left hand's gun is turned over. A gun waiting to respawn or hidden isn't
  * drawn.
  */
-void chrRenderHeldWeapon(PropRecord *chrprop, GUNHAND hand, JointListEntry **jointList)
+void chrRenderHeldWeapon(const PropRecord *chrprop, GUNHAND hand, JointListEntry **jointList)
 {
     ChrRecord *chr = chrprop->chr;
     PropRecord *prop = chrGetEquippedWeaponProp(chr, hand);
@@ -529,7 +529,7 @@ void chrRenderHeldWeapon(PropRecord *chrprop, GUNHAND hand, JointListEntry **joi
 
 
 /* Find a weapon of the given weapon number: the prop itself or any of its children */
-static WeaponObjRecord *weaponFindInProp(s32 weaponnum, PropRecord *prop)
+static WeaponObjRecord *weaponFindInProp(s32 weaponnum, const PropRecord *prop)
 {
     if (prop->type == PROP_TYPE_WEAPON && prop->weapon->weaponnum == weaponnum)
     {
@@ -572,7 +572,7 @@ WeaponObjRecord *weaponFindThrown(s32 weaponnum)
 
 /* Say how a carried object will be dropped (DROPTYPE), giving it a projectile for the
    flight */
-void objSetDropType(PropRecord *prop, DROPTYPE droptype)
+void objSetDropType(const PropRecord *prop, DROPTYPE droptype)
 {
     ObjectRecord *obj = prop->obj;
 
@@ -647,7 +647,7 @@ static void projectileRandomTumble(Projectile *projectile, f32 fraction, f32 off
 
 
 /* The speed and spin a dropped object starts its flight with */
-static void objLaunchDropped(Projectile *projectile, PropRecord *parent)
+static void objLaunchDropped(Projectile *projectile, const PropRecord *parent)
 {
     if (projectile->droptype == DROPTYPE_SURRENDER && parent->type == PROP_TYPE_CHR)
     {

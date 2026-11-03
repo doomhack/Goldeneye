@@ -388,7 +388,7 @@ void crashRenderChar(s32 x, s32 y, unsigned char c)
  * @param cfba | A0000000 -> 8002417C
  * @param cfbb | A0000000 -> 80024180
  */
-void crashSetBuffers(u16 *buffer1, u16 *buffer2)
+void crashSetBuffers(const u16 *buffer1, const u16 *buffer2)
 {
     g_DebugOutputVideoBuffer1 = (void *)K0_TO_K1(buffer1);
     g_DebugOutputVideoBuffer2 = (void *)K0_TO_K1(buffer2);
@@ -407,7 +407,7 @@ void crashInitBuffers(void)
  * write stderr to video buffer
  * @param buffer: video buffer to render output 
  */
-void crashRenderFrame(u16 *buffer)
+void crashRenderFrame(const u16 *buffer)
 {
     s32 screen_w;
     s32 screen_h;

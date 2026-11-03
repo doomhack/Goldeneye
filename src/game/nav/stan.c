@@ -151,7 +151,7 @@ static bool isInsideTri(const StandTile *tile, f32 x, f32 z, f32 margin)
 }
 
 /** Whether a world point is on the tile, or within 2 tile units of it */
-bool stanIsNearlyInsideTri(StandTile *tile, f32 x, f32 z)
+bool stanIsNearlyInsideTri(const StandTile *tile, f32 x, f32 z)
 {
     return isInsideTri(tile, x * g_StanScale, z * g_StanScale, 2.0f);
 }
@@ -218,7 +218,7 @@ static bool isRoomInList(const u8 *rooms, s32 room)
  * only those in rooms, a list of up to 4 ended by 0xff). Slow: used for objects that have
  * no tile yet. Sets *floorY, if given, to the floor height there.
  */
-StandTile *stanFindTileBelowPos(coord3d *pos, u8 *rooms, f32 *floorY)
+StandTile *stanFindTileBelowPos(const coord3d *pos, const u8 *rooms, f32 *floorY)
 {
     f32 x = pos->x * g_StanScale;
     f32 y = pos->y * g_StanScale;
@@ -434,7 +434,7 @@ static StandTile *findTileByName(const char *name)
  * back to the pad from there.
  * Returns 1 if the named tile was right, 2 if another tile was found, 0 if none.
  */
-s32 stanResolvePadTile(struct PadRecord *pad, const char *tilename, StandTile **tile)
+s32 stanResolvePadTile(const struct PadRecord *pad, const char *tilename, StandTile **tile)
 {
     coord3d pos;
 
@@ -460,7 +460,7 @@ s32 stanResolvePadTile(struct PadRecord *pad, const char *tilename, StandTile **
 }
 
 /** The height of the tile's floor at (x, z), in world units */
-f32 stanGetFloorY(StandTile *tile, f32 x, f32 z)
+f32 stanGetFloorY(const StandTile *tile, f32 x, f32 z)
 {
     const StandTilePoint *a = &tile->points[tile->tri0];
     const StandTilePoint *b = &tile->points[tile->tri1];
@@ -497,7 +497,7 @@ f32 stanGetFloorY(StandTile *tile, f32 x, f32 z)
 }
 
 /** The colour a character standing on the tile is lit by: r, g, b from 0 to 255 */
-void stanGetTileColour(StandTile *tile, u8 *rgb)
+void stanGetTileColour(const StandTile *tile, u8 *rgb)
 {
     rgb[0] = tile->red * 0x11;
     rgb[1] = tile->green * 0x11;

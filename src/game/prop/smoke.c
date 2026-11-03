@@ -109,7 +109,7 @@ void smokesEndEarly(s32 count)
  * Creates smoke at pos, if there's a free slot. Smoke in the air is drawn even where its
  * floor tile's room isn't.
  */
-void smokeCreate(coord3d *pos, StandTile *stan, s16 type, u8 *rooms, s32 inAir)
+void smokeCreate(const coord3d *pos, StandTile *stan, s16 type, u8 *rooms, s32 inAir)
 {
     struct Smoke *smoke;
     PropRecord *prop;
@@ -165,7 +165,7 @@ void smokeCreate(coord3d *pos, StandTile *stan, s16 type, u8 *rooms, s32 inAir)
 /**
  * Moves a cloud on a tick: it rises, grows, fades and spins, and wobbles sideways.
  */
-static void smokePartTick(struct SmokePart *part, s_smoketype *type)
+static void smokePartTick(struct SmokePart *part, const s_smoketype *type)
 {
     part->pos.f[1] += 0.3f;
     part->size += 0.15f;
@@ -185,7 +185,7 @@ static void smokePartTick(struct SmokePart *part, s_smoketype *type)
  * Starts a cloud at the smoke's position: a random size, opacity, angle and spin. The
  * clouds made near the end start fainter.
  */
-static void smokePartStart(struct Smoke *smoke, struct SmokePart *part, s_smoketype *type)
+static void smokePartStart(const struct Smoke *smoke, struct SmokePart *part, const s_smoketype *type)
 {
     part->size = type->size * (RANDOMFRAC() * 0.5f + 1.0f);
     part->alpha = (randomGetNext() % 70) + 110.0f;
@@ -348,7 +348,7 @@ u8 smokePropTick(PropRecord *prop)
  * Draws a cloud: a square facing the camera, pulled towards the eye like an explosion's
  * fireball, wobbling sideways, and fading in over its first rateappear ticks.
  */
-static Gfx *smokeRenderPart(struct Smoke *smoke, struct SmokePart *part, Gfx *gdl, coord3d *roompos)
+static Gfx *smokeRenderPart(const struct Smoke *smoke, const struct SmokePart *part, Gfx *gdl, const coord3d *roompos)
 {
     s_smoketype *type = &s_SmokeTypes[smoke->smoke_type];
     Mtxf *mtx = camGetViewToWorldMtxf();
@@ -485,7 +485,7 @@ static Gfx *smokeRenderPart(struct Smoke *smoke, struct SmokePart *part, Gfx *gd
 /**
  * Draws smoke (in the translucent pass): each of its clouds.
  */
-Gfx *smokeRender(PropRecord *prop, Gfx *gdl, s32 withalpha)
+Gfx *smokeRender(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     struct Smoke *smoke = prop->smoke;
     s32 room = prop->rooms[0];

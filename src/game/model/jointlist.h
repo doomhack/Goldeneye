@@ -11,7 +11,7 @@ void jointListFree(JointListEntry *entry);
 void jointListCalcDepths(JointListEntry *list);
 JointListEntry *jointListSortByDepth(JointListEntry *list);
 void jointListDraw(ModelRenderData *renderdata, JointListEntry *entry);
-s32 jointListFindHitNext(JointListEntry **entryptr, coord3d *raypos, coord3d *raydir, Model **outModel, ModelNode **inoutNode);
-s32 jointListFindHit(JointListEntry **entryptr, coord3d *raypos, coord3d *raydir, Model **outModel, ModelNode **outNode);
+s32 jointListFindHitNext(JointListEntry **entryptr, const coord3d *raypos, const coord3d *raydir, Model **outModel, ModelNode **inoutNode);
+s32 jointListFindHit(JointListEntry **entryptr, const coord3d *raypos, const coord3d *raydir, Model **outModel, ModelNode **outNode);
 
 #endif

@@ -292,7 +292,7 @@ OSMesg g_DmaMessageBuffer[AUDIO_DMA_QUEUE_SIZE];
 // Forward declarations
 s32 amDmaCallback(s32 addr, s32 len, void* state);
 void amClearDmaBuffers(void);
-void amHandleFrameMessage(AudioInfo *info, AudioInfo *lastInfo);
+void amHandleFrameMessage(AudioInfo *info, const AudioInfo *lastInfo);
 void amHandleDoneMessage(void);
 void amMain(void* arg);
 ALDMAproc amDmaNew(DMAState** state);
@@ -467,7 +467,7 @@ void amMain([[maybe_unused]] void* arg)
  * @param info audio info.
  * @param lastInfo last info.
  */
-void amHandleFrameMessage(AudioInfo *info, AudioInfo *lastInfo)
+void amHandleFrameMessage(AudioInfo *info, const AudioInfo *lastInfo)
 {
     s16* outBuffer;
     Acmd *cmdlp;

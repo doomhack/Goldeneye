@@ -47,7 +47,7 @@ f32 g_SoloAmmoMultiplier = 1.0;
 
 
 /* Give a model slot back */
-static void objFreeModel(ObjectRecord *obj, Model *model)
+static void objFreeModel(const ObjectRecord *obj, Model *model)
 {
     if (obj->type == PROPDEF_AIRCRAFT)
     {
@@ -151,7 +151,7 @@ PropRecord *objInitWithAutoModel(ObjectRecord *obj)
  * Move an object: its matrix, position and floor tile. Its shade colour jumps to the
  * new floor's (no fade).
  */
-void objSetPosition(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *stan)
+void objSetPosition(ObjectRecord *obj, const coord3d *pos, const Mtxf *matrix, StandTile *stan)
 {
     PropRecord *prop = obj->prop;
 
@@ -178,7 +178,7 @@ void objSetPosition(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *st
  * PROPFLAG2_ATPADPOS), the prop stays at pos; the object is drawn at the new position
  * only with PROPFLAG2_ATPADPOS or PROPFLAG_ABSOLUTEPOS.
  */
-static void objMoveToPlacement(ObjectRecord *obj, coord3d *pos, StandTile *stan, coord3d *newpos, Mtxf *matrix)
+static void objMoveToPlacement(ObjectRecord *obj, const coord3d *pos, StandTile *stan, const coord3d *newpos, const Mtxf *matrix)
 {
     StandTile *newstan = stan;
 
@@ -212,7 +212,7 @@ static void objMoveToPlacement(ObjectRecord *obj, coord3d *pos, StandTile *stan,
  *   already there that it overlaps in height (it then falls if that object is
  *   destroyed: RUNTIMEBITFLAG_ONSUPPORT).
  */
-void objPlaceAtPad(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *stan, coord3d *centre)
+void objPlaceAtPad(ObjectRecord *obj, const coord3d *pos, const Mtxf *matrix, StandTile *stan, const coord3d *centre)
 {
     ModelRoData_BoundingBoxRecord *bbox = modelFileFindBbox(obj->model->obj);
     f32 bottom = bboxGetYmin(bbox);
@@ -273,7 +273,7 @@ void objPlaceAtPad(ObjectRecord *obj, coord3d *pos, Mtxf *matrix, StandTile *sta
  * pad's look direction and its front faces up, with its back (z min) at the centre.
  * Like objPlaceAtPad, but the object is always drawn at the new position.
  */
-void objPlaceAtPadSideways(ObjectRecord *obj, coord3d *pos, Mtxf *padmtx, StandTile *stan, coord3d *centre)
+void objPlaceAtPadSideways(ObjectRecord *obj, const coord3d *pos, const Mtxf *padmtx, StandTile *stan, const coord3d *centre)
 {
     f32 back = bboxGetZmin(modelFileFindBbox(obj->model->obj));
     StandTile *newstan = stan;
@@ -418,7 +418,7 @@ void objFreePermanently(ObjectRecord *obj, bool freeprop)
  * Put a model back as it was loaded: bent vertices go back to the vertex store, and the
  * level of detail, switch and head nodes are reset.
  */
-void modelResetDeformedVertices(Model *model)
+void modelResetDeformedVertices(const Model *model)
 {
     ModelFileHeader *header = model->obj;
     ModelNode *node = header->RootNode;

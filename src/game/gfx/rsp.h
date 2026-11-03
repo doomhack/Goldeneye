@@ -65,9 +65,9 @@ extern volatile s32 g_RspProfileMode;
 extern volatile u32 g_RspCounterSums[RSP_PROFILE_COUNT][RSPCOUNT_MAX];
 extern volatile u32 g_RspCounterTasks[RSP_PROFILE_COUNT];
 
-void rspReadCounters(OSTask *task);
+void rspReadCounters(const OSTask *task);
 
 void rspAllocateBuffers(void);
-void rspGfxTaskStart(Gfx *firstGdl, Gfx *gdl, OSMesg replyMsg);
+void rspGfxTaskStart(Gfx *firstGdl, const Gfx *gdl, OSMesg replyMsg);
 
 #endif

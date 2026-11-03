@@ -218,7 +218,7 @@ typedef struct ChrSlotHot
     s32 lastseetarget60;
 } ChrSlotHot;
 extern ChrSlotHot *g_ChrSlotHot;
-void chrSlotSync(ChrRecord *chr);
+void chrSlotSync(const ChrRecord *chr);
 extern s32 g_NumChrSlots;
 extern rgba_u8 gBloodColour;
 
@@ -253,7 +253,7 @@ extern struct explosion_anim_group_info explosion_animation_table[];
 extern struct ExplosionDeathAnim g_ExplosionDeathAnims[];
 
 void        chrFreeResources(PropRecord* prop);
-void        chrDetectRooms(ChrRecord *);
+void        chrDetectRooms(const ChrRecord *);
 void        chrSetMoving(ChrRecord *guard, bool unset);
 f32         chrsGetAnimRate(void);
 void        chrsSetAnimRate(f32);
@@ -261,30 +261,30 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
 PropRecord *chrAllocate(struct Model *model, coord3d *pos, f32 angle, StandTile *tile, AIRecord *ailist);
 void        chrSetHiddenToRandom(ChrRecord *self);
 ChrRecord  *chrFindByLiteralId(s32 index);
-PropRecord *chrGetEquippedWeaponProp(ChrRecord *self, GUNHAND hand);
-PropRecord *chrGetEquippedWeaponPropWithCheck(ChrRecord *ChrRecord, GUNHAND hand);
+PropRecord *chrGetEquippedWeaponProp(const ChrRecord *self, GUNHAND hand);
+PropRecord *chrGetEquippedWeaponPropWithCheck(const ChrRecord *ChrRecord, GUNHAND hand);
 Vertex     *dynAllocateVerticesDiscard(s32 count);
-void        chrUpdateCollisionBounds(PropRecord *prop, coord2d **polygon, s32 *edges, f32 *y_out, f32 *ground);
-void        chrGetChrWidthHeight(PropRecord *prop, f32 *width, f32 *top, f32 *bottom);
-f32         chrGetChrGround(PropRecord *prop);
+void        chrUpdateCollisionBounds(const PropRecord *prop, coord2d **polygon, s32 *edges, f32 *y_out, f32 *ground);
+void        chrGetChrWidthHeight(const PropRecord *prop, f32 *width, f32 *top, f32 *bottom);
+f32         chrGetChrGround(const PropRecord *prop);
 void        chrDropItems(struct ChrRecord *self);
 s32         chrsGetNumSlots(void);
 
 void        chrAddHealth(ChrRecord *chr, f32 health);
 void        chrSetMaxDamage(ChrRecord *chr, f32 maxdamage);
-s32         chrGetOnscreenRenderBounds(PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds);
+s32         chrGetOnscreenRenderBounds(const PropRecord *prop, coord3d *pos, coord2d *xbounds, coord2d *ybounds);
 
 //tentative signature
-s32         chrRootMoveCallback(Model *, coord3d *, coord3d *, f32 *);
+s32         chrRootMoveCallback(const Model *, coord3d *, coord3d *, f32 *);
 
 /* Drawing (chrrender.c) */
-Gfx        *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha);
+Gfx        *chrRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha);
 void        chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix);
 
 /* Bullets hitting guards (chrhit.c) */
 void        chrTestHit(PropRecord *prop, ShotData *shotdata);
-void        chrHandleBulletHit(struct ShotData *shot, struct BulletHit *bhit);
-void        chrCreateBloodStain(Model *model, s32 hitpart, ModelNode *root, coord3d *pos);
+void        chrHandleBulletHit(const struct ShotData *shot, const struct BulletHit *bhit);
+void        chrCreateBloodStain(const Model *model, s32 hitpart, ModelNode *root, const coord3d *pos);
 
 
 void chrsInit(void);

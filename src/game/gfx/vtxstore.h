@@ -9,6 +9,6 @@
 void vtxstoreReset(void);
 void vtxstoreTick(void);
 Vertex *vtxstoreAllocate(s32 numVtx, s32 store, ModelFileHeader *modeldef, s32 destroyedLevel);
-void vtxstoreFree(Vertex *vertices);
+void vtxstoreFree(const Vertex *vertices);
 
 #endif

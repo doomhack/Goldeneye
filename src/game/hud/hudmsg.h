@@ -8,11 +8,11 @@
 
 #if defined(BUGFIX_R1)
 #define HUDMESSAGEBOTTOM hudmsgBottomShowText
-void hudmsgBottomShow(char *string, struct fontchar *font, struct font *font1);
-void hudmsgBottomShowText(char *string);
+void hudmsgBottomShow(const char *string, struct fontchar *font, struct font *font1);
+void hudmsgBottomShowText(const char *string);
 #else
 #define HUDMESSAGEBOTTOM hudmsgBottomShow
-void hudmsgBottomShow(char *string);
+void hudmsgBottomShow(const char *string);
 void hudmsgSetFonts(struct fontchar *font2, struct font *font1);
 #endif
 
@@ -25,7 +25,7 @@ Gfx *hudmsgBottomRender(Gfx *gdl);
 void hudmsgTopReset(void);
 void hudmsgTopClearFlag(int flag);
 void hudmsgTopSetFlag(PLAYERFLAG flag);
-void hudmsgTopShow(char *mess);
+void hudmsgTopShow(const char *mess);
 void hudmsgTopTick(void);
 Gfx *hudmsgTopRender(Gfx *gdl);
 
