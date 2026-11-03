@@ -51,6 +51,7 @@ Gfx *hudRenderHealthBars(Gfx *gdl)
     Mtx *lookatmtx;
     Mtx *orthomtx;
     Mtxf lookatmtxf;
+    f32 gaugeheight;
 
     //Set up armor bars.
     hudMakeDamageSegments(g_CurrentPlayer->watchGfx->armor_display_values, 1, g_CurrentPlayer->apparentarmour);
@@ -64,7 +65,12 @@ Gfx *hudRenderHealthBars(Gfx *gdl)
     lookatmtx = dynAllocateMatrix();
     orthomtx = dynAllocateMatrix();
 
-    guOrtho(orthomtx, -800.0f * g_CamPosScale, 800.0f * g_CamPosScale, -600.0f * g_CamPosScale, 600.0f * g_CamPosScale, -100.0f, 1000.0f, 1.0f);
+    // Side by side views are half as wide but full height: double the
+    // height covered so the gauges keep their shape (as in a 4 player view)
+    // instead of being stretched to twice their height.
+    gaugeheight = coopSplitSideBySide() ? 1200.0f : 600.0f;
+
+    guOrtho(orthomtx, -800.0f * g_CamPosScale, 800.0f * g_CamPosScale, -gaugeheight * g_CamPosScale, gaugeheight * g_CamPosScale, -100.0f, 1000.0f, 1.0f);
 
     gSPMatrix(gdl++, osVirtualToPhysical(orthomtx), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
 
