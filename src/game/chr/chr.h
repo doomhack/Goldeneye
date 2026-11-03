@@ -295,6 +295,5 @@ void chrsFreeAll(void);
 s32 chrGetNumFree(void);
 
 s32 chrTick(PropRecord *prop);
-void chrCoopKeepMatrices(ChrRecord *chr);
 
 #endif

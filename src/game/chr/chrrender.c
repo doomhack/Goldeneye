@@ -31,7 +31,6 @@
 #include "game/model/anim.h"
 #include "joy.h"
 #include "game/level/lv.h"
-#include "game/level/gamemode.h"
 #include "game/text/language.h"
 #include "game/math/matrix.h"
 #include "game/model/model.h"
@@ -481,11 +480,6 @@ Gfx *chrRenderProp(PropRecord *prop, Gfx *gdl, s32 withalpha)
 
             if (withalpha != 0)
             {
-                if (gameIsTwoPlayerMission())
-                {
-                    chrCoopKeepMatrices(chr);
-                }
-
                 mtxsF2L(chr->model->render_pos, chr->model->obj->numMatrices);
 
                 if ((held_right_obj != NULL) && !(held_right_obj->runtime_bitflags & RUNTIMEBITFLAG_RESPAWNING))

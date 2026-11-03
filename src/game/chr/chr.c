@@ -21,7 +21,6 @@
 #include "game/world/bg.h"
 #include "game/menu/cheat.h"
 #include "game/chr/chr.h"
-#include "game/player/camview.h"
 #include "game/chr/chrai.h"
 #include "game/chr/chraction.h"
 #include "game/model/chrobjdata.h"
@@ -655,9 +654,6 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     chr->handle_positiondata_hat = NULL;
     chr->targetplayer = 0;
     chr->targetlock60 = 0;
-    chr->coopMtxs = NULL;
-    chr->coopMtxViewToWorld = NULL;
-    chr->coopMtxFrame = 0;
     chr->chrwidth = 20.0f;
     chr->chrheight = 185.0f;
 
@@ -900,73 +896,6 @@ static void chrUpdateAnim(ChrRecord *chr, s32 tickamount)
 
     modelCalcPosition(model);
     modelGetRootPosition(model, &prop->pos);
-}
-
-/**
- * Co-op: keeps the joint matrices a chr's model just got in the first view
- * that drew it this frame, with that view's view-to-world matrix.
- */
-static void chrCoopSaveMatrices(ChrRecord *chr, Model *model)
-{
-    if (gameIsTwoPlayerMission())
-    {
-        chr->coopMtxs = &model->render_pos->pos;
-        chr->coopMtxViewToWorld = camGetViewToWorldMtxf();
-        chr->coopMtxFrame = coopGetFrame();
-    }
-}
-
-/**
- * Co-op: gives a chr's model its joint matrices for the current view by moving
- * the ones an earlier view of this frame worked out into this view's space,
- * instead of working them out again from the animation. Animation doesn't
- * advance between the views, so the result is the same, for one matrix multiply
- * per joint. Returns FALSE when no earlier view drew the chr this frame.
- */
-static bool chrCoopReuseMatrices(ChrRecord *chr, Model *model, Mtxf *mtxlist)
-{
-    Mtxf toThisView;
-    s32 count = model->obj->numMatrices;
-
-    if ((chr->coopMtxs == NULL) || (chr->coopMtxFrame != coopGetFrame()) || (chr->coopMtxViewToWorld == NULL))
-    {
-        return FALSE;
-    }
-
-    // That view's space -> world -> this view's space
-    mtx4MultAffine(camGetWorldToScreenMtxf(), chr->coopMtxViewToWorld, &toThisView);
-
-    for (s32 i = 0; i < count; i++)
-    {
-        mtx4MultAffine(&toThisView, &chr->coopMtxs[i], &mtxlist[i]);
-    }
-
-    model->render_pos = (RenderPosView *)mtxlist;
-    modelUpdateViewRelations(model);
-
-    return TRUE;
-}
-
-/**
- * Co-op: called just before a chr's joint matrices are turned into the RSP's
- * fixed-point form in place. If they are the ones a later view will reuse,
- * keeps a float copy for it first.
- */
-void chrCoopKeepMatrices(ChrRecord *chr)
-{
-    Model *model = chr->model;
-    s32 size;
-    Mtxf *copy;
-
-    if ((chr->coopMtxs == NULL) || (chr->coopMtxs != &model->render_pos->pos) || (chr->coopMtxFrame != coopGetFrame()))
-    {
-        return;
-    }
-
-    size = model->obj->numMatrices * sizeof(Mtxf);
-    copy = dynAllocate(size);
-    bcopy(chr->coopMtxs, copy, size);
-    chr->coopMtxs = copy;
 }
 
 
@@ -1233,8 +1162,7 @@ s32 chrTick(PropRecord *prop)
         renderdata.basemtx = camGetWorldToScreenMtxf();
         renderdata.mtxlist = dynAllocate(model->obj->numMatrices * (sizeof(Mtxf)));
 
-        // Co-op: the flinch advances with time, so only on the first view
-        if ((g_CurModelChr->flinchcnt >= 0) && !coopRepeat)
+        if (g_CurModelChr->flinchcnt >= 0)
         {
             g_CurModelChr->flinchcnt += g_ClockTimer;
 
@@ -1248,11 +1176,7 @@ s32 chrTick(PropRecord *prop)
             }
         }
 
-        if (!(coopRepeat && chrCoopReuseMatrices(chr, model, renderdata.mtxlist)))
-        {
-            modelCalcMatrices(&renderdata, model);
-            chrCoopSaveMatrices(chr, model);
-        }
+        modelCalcMatrices(&renderdata, model);
 
         g_ModelJointPositionedFunc = NULL;
         modelSetLodScale(1.0f);

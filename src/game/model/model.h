@@ -93,7 +93,6 @@ void modelUpdateRelationsQuick(Model *model, ModelNode *parent);
 void modelUpdateNodeRelations(Model *model);
 void modelUpdateMatrices(ModelRenderData *renderdata, Model *model);
 void modelCalcMatricesNoAnim(ModelRenderData* renderdata, Model* model);
-void modelUpdateViewRelations(Model *model);
 void modelCalcMatrices(ModelRenderData *renderdata, struct Model *model);
 struct ModelAnimation * modelGetAnim(struct Model* model);
 s8 modelGetAnimFlip(Model *model);
