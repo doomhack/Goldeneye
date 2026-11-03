@@ -214,6 +214,14 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                 rightx = 109;
             }
 
+            // Dual wielding in a half-width view: the stock places overlap, so each
+            // counter goes a quarter of the way in from its side of the view
+            if (viewIsHalfWidth() && weapon_left != ITEM_UNARMED)
+            {
+                leftx = viGetViewWidth() / 4;
+                rightx = leftx;
+            }
+
             if (weapon_right != ITEM_UNARMED)
             {
                 ammotype = weaponGetAmmoType(weapon_right);
