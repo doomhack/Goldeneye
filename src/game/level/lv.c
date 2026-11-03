@@ -396,6 +396,14 @@ static s32 s_FpsRspMs;
 static s32 s_FpsRdpMs;
 static u32 s_FpsLastRdpCounters[3];
 static s32 s_FpsRdpTenths[3]; /* RDP busy with commands, pipeline, TMEM: tenths of a ms per task */
+
+/* Page 0 shows only the frame rate and CPU/RSP/RDP times; L + D-pad down steps through the rest */
+#ifdef UCODE_F3DEX3
+#define FPS_PAGE_COUNT (1 + RSP_PROFILE_COUNT)
+#else
+#define FPS_PAGE_COUNT 2
+#endif
+static s32 s_FpsPage;
 #ifdef UCODE_F3DEX3
 static u32 s_FpsLastCounterSums[RSP_PROFILE_COUNT][RSPCOUNT_MAX];
 static u32 s_FpsLastCounterTasks[RSP_PROFILE_COUNT];
@@ -472,14 +480,22 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
 #endif
     }
 
-    s32 len = sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\nPIPE %d.%d TMEM %d.%d CMD %d.%d\n",
-        s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs,
-        s_FpsRdpTenths[1] / 10, s_FpsRdpTenths[1] % 10, s_FpsRdpTenths[2] / 10, s_FpsRdpTenths[2] % 10,
-        s_FpsRdpTenths[0] / 10, s_FpsRdpTenths[0] % 10);
+    s32 len = sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n",
+        s_FpsTenths / 10, s_FpsTenths % 10, s_FpsCpuMs, s_FpsRspMs, s_FpsRdpMs);
+
+    // The first page is just the frame rate and times; the others add the RDP's
+    // own counters and, on F3DEX3, one set of the microcode's counters
+    if (s_FpsPage != 0)
+    {
+        len += sprintf(text + len, "PIPE %d.%d TMEM %d.%d CMD %d.%d\n",
+            s_FpsRdpTenths[1] / 10, s_FpsRdpTenths[1] % 10, s_FpsRdpTenths[2] / 10, s_FpsRdpTenths[2] % 10,
+            s_FpsRdpTenths[0] / 10, s_FpsRdpTenths[0] % 10);
+    }
 
 #ifdef UCODE_F3DEX3
     // F3DEX3's counters, per task. Cycles are RCP cycles at 62.5 MHz, shown in
     // tenths of a millisecond (6250 cycles).
+    if (s_FpsPage != 0)
     switch (s_FpsCountersMode)
     {
         case RSP_PROFILE_A:
@@ -663,13 +679,15 @@ Gfx* lvRender(Gfx* DL)
 
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && optionsGetShowFps())
     {
-#ifdef UCODE_F3DEX3
-        // Player 1 holding L and pressing D-pad down picks the next set of F3DEX3 counters
+        // Player 1 holding L and pressing D-pad down shows the next page of counters
         if (joyGetButtons(PLAYER_1, L_TRIG) && joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD))
         {
-            g_RspProfileMode = (g_RspProfileMode + 1) % RSP_PROFILE_COUNT;
-        }
+            s_FpsPage = (s_FpsPage + 1) % FPS_PAGE_COUNT;
+#ifdef UCODE_F3DEX3
+            // Page 1 on uses the F3DEX3 build that counts its set
+            g_RspProfileMode = (s_FpsPage != 0) ? (s_FpsPage - 1) : RSP_PROFILE_DEFAULT;
 #endif
+        }
 
         DL = lvRenderFpsCounter(DL);
     }
