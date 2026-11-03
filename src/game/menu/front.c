@@ -4526,6 +4526,26 @@ void frontMpOptionsLeave(void)
 
 
 static s32 g_MpHlDisplay = FALSE;
+static s32 g_MpHlDual = FALSE;
+
+/* The rows of the multiplayer options page, 0x12 apart to fit Dual Wield */
+enum MpOptionRow
+{
+    MP_OPT_ROW_PLAYERS,
+    MP_OPT_ROW_SCENARIO,
+    MP_OPT_ROW_STAGE,
+    MP_OPT_ROW_LENGTH,
+    MP_OPT_ROW_WEAPONS,
+    MP_OPT_ROW_DUAL,
+    MP_OPT_ROW_CHAR,
+    MP_OPT_ROW_HANDICAP,
+    MP_OPT_ROW_CONTROLS,
+    MP_OPT_ROW_AIM,
+    MP_OPT_ROW_DISPLAY,
+    MP_OPT_ROW_COUNT
+};
+
+#define MP_OPT_ROW_Y(row) (0x79 + (row) * 0x12)
 
 /**
  * Steps the multiplayer display setting: with 2 players side by side,
@@ -4593,6 +4613,7 @@ void frontMpOptionsTick(void)
         g_MpHlControls = 0;
         g_MpHlAim = 0;
         g_MpHlDisplay = 0;
+        g_MpHlDual = 0;
 
         if (frontCheckCursorOnPreviousTab())
         {
@@ -4604,46 +4625,30 @@ void frontMpOptionsTick(void)
         }
         else
         {
-            s32 cursorY = g_FrontCursorY;
-            if (cursorY >= 0x12D)
+            s32 row = ((s32)g_FrontCursorY - MP_OPT_ROW_Y(0) + 1) / 0x12;
+
+            if ((s32)g_FrontCursorY < MP_OPT_ROW_Y(0))
             {
-                g_MpHlDisplay = 1;
+                row = MP_OPT_ROW_PLAYERS;
             }
-            else if ((cursorY >= 0x119) && (g_MpCanPickAim))
+            else if (row >= MP_OPT_ROW_COUNT)
             {
-                g_MpHlAim = 1;
+                row = MP_OPT_ROW_COUNT - 1;
             }
-            else if ((cursorY >= 0x105) && (g_MpCanPickControls))
+
+            switch (row)
             {
-                g_MpHlControls = 1;
-            }
-            else if ((cursorY >= 0xF1) && (g_MpCanPickHandicap))
-            {
-                g_MpHlHandicap = 1;
-            }
-            else if ((cursorY >= 0xDD) && (g_MpCanPickChar))
-            {
-                g_MpHlChar = 1;
-            }
-            else if ((cursorY >= 0xC9) && (g_MpCanPickWeapons))
-            {
-                g_MpHlWeapons = 1;
-            }
-            else if ((cursorY >= 0xB5) && (g_MpCanPickLength))
-            {
-                g_MpHlLength = 1;
-            }
-            else if ((cursorY >= 0xA1) && (g_MpCanPickStage))
-            {
-                g_MpHlStage = 1;
-            }
-            else if (cursorY >= 0x8D)
-            {
-                g_MpHlScenario = 1;
-            }
-            else
-            {
-                g_MpHlPlayers = 1;
+                case MP_OPT_ROW_PLAYERS:  g_MpHlPlayers = 1;                       break;
+                case MP_OPT_ROW_SCENARIO: g_MpHlScenario = 1;                      break;
+                case MP_OPT_ROW_STAGE:    g_MpHlStage = g_MpCanPickStage;          break;
+                case MP_OPT_ROW_LENGTH:   g_MpHlLength = g_MpCanPickLength;        break;
+                case MP_OPT_ROW_WEAPONS:  g_MpHlWeapons = g_MpCanPickWeapons;      break;
+                case MP_OPT_ROW_DUAL:     g_MpHlDual = 1;                          break;
+                case MP_OPT_ROW_CHAR:     g_MpHlChar = g_MpCanPickChar;            break;
+                case MP_OPT_ROW_HANDICAP: g_MpHlHandicap = g_MpCanPickHandicap;    break;
+                case MP_OPT_ROW_CONTROLS: g_MpHlControls = g_MpCanPickControls;    break;
+                case MP_OPT_ROW_AIM:      g_MpHlAim = g_MpCanPickAim;              break;
+                case MP_OPT_ROW_DISPLAY:  g_MpHlDisplay = 1;                       break;
             }
         }
     }
@@ -4704,6 +4709,10 @@ void frontMpOptionsTick(void)
         {
             frontMpStepDisplaySetting();
         }
+        else if (g_MpHlDual)
+        {
+            mpDualWieldSet(!mpDualWieldIsOn());
+        }
 
         sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
     }
@@ -4722,6 +4731,7 @@ void frontMpOptionsTick(void)
 
     if (g_FrontTabPrevSelected)
     {
+        fileMpSaveWeaponSettings();
         frontSetMenu(MENU_MODE_SELECT, 0);
         frontSetModeCursor(g_FrontMode);
         return;
@@ -4731,6 +4741,7 @@ void frontMpOptionsTick(void)
     {
         // Player 2's control style is shared with co-op.
         fileCoopSavePartnerSettings();
+        fileMpSaveWeaponSettings();
         fileSaveDisplaySettingsForFolder(g_FrontFolder);
 
         if (g_MpStages[g_MpStage].stage_id < 0)
@@ -4842,27 +4853,27 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   text = langGet(getStringID(LTITLE, TITLE_STR_77_PLAYERS));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0x79;
+  y = MP_OPT_ROW_Y(0);
   if (g_MpHlPlayers) {
-    DL = textRenderRect(DL,0x37,0x78,iStack28 + 0x3c,0x87,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(0) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(0) + 0xE, 0x32);
   }
   DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_78_SCENARIO));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0x8d;
+  y = MP_OPT_ROW_Y(1);
   if (g_MpHlScenario) {
-    DL = textRenderRect(DL,0x37,0x8c,iStack28 + 0x3c,0x9b,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(1) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(1) + 0xE, 0x32);
   }
   DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   text = langGet(getStringID(LTITLE, TITLE_STR_79_LEVEL));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0xa1;
+  y = MP_OPT_ROW_Y(2);
   if (g_MpHlStage) {
-    DL = textRenderRect(DL,0x37,0xa0,iStack28 + 0x3c,0xaf,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(2) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(2) + 0xE, 0x32);
   }
   if (g_MpCanPickStage) {
     entry = 0xFF;
@@ -4875,9 +4886,9 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   text = langGet(getStringID(LTITLE, TITLE_STR_80_GAMELENGTH));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0xb5;
+  y = MP_OPT_ROW_Y(3);
   if (g_MpHlLength) {
-    DL = textRenderRect(DL,0x37,0xb4,iStack28 + 0x3c,0xc3,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(3) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(3) + 0xE, 0x32);
   }
   if (g_MpCanPickLength) {
     entry = 0xFF;
@@ -4890,9 +4901,9 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   text = langGet(getStringID(LTITLE, TITLE_STR_81_WEAPONS));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0xc9;
+  y = MP_OPT_ROW_Y(4);
   if (g_MpHlWeapons) {
-    DL = textRenderRect(DL,0x37,200,iStack28 + 0x3c,0xd7,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(4) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(4) + 0xE, 0x32);
   }
   if (g_MpCanPickWeapons) {
     entry = 0xFF;
@@ -4905,9 +4916,9 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   text = langGet(getStringID(LTITLE, TITLE_STR_82_CHARACTER));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0xdd;
+  y = MP_OPT_ROW_Y(6);
   if (g_MpHlChar) {
-    DL = textRenderRect(DL,0x37,0xdc,iStack28 + 0x3c,0xeb,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(6) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(6) + 0xE, 0x32);
   }
   if (g_MpCanPickChar) {
     entry = 0xFF;
@@ -4920,9 +4931,9 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   text = langGet(getStringID(LTITLE, TITLE_STR_83_HEALTH));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0xf1;
+  y = MP_OPT_ROW_Y(7);
   if (g_MpHlHandicap) {
-    DL = textRenderRect(DL,0x37,0xf0,iStack28 + 0x3c,0xff,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(7) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(7) + 0xE, 0x32);
   }
   if (g_MpCanPickHandicap) {
     entry = 0xFF;
@@ -4935,9 +4946,9 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   text = langGet(getStringID(LTITLE, TITLE_STR_286_CONTROLSTYLE));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0x105;
+  y = MP_OPT_ROW_Y(8);
   if (g_MpHlControls) {
-    DL = textRenderRect(DL,0x37,0x104,iStack28 + 0x3c,0x113,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(8) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(8) + 0xE, 0x32);
   }
   if (g_MpCanPickControls) {
     entry = 0xFF;
@@ -4950,9 +4961,9 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   text = langGet(getStringID(LTITLE, TITLE_STR_84_AIM));
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0x119;
+  y = MP_OPT_ROW_Y(9);
   if (g_MpHlAim) {
-    DL = textRenderRect(DL,0x37,0x118,iStack28 + 0x3c,0x127,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(9) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(9) + 0xE, 0x32);
   }
   if (g_MpCanPickAim) {
     entry = 0xFF;
@@ -4964,17 +4975,17 @@ Gfx * frontMpOptionsRender(Gfx *DL)
 
   sprintf(acStack12,"%d",g_MpPlayerCount);
   x = 0xa0;
-  y = 0x79;
+  y = MP_OPT_ROW_Y(0);
   DL = frontPrintText(DL, &x, &y, acStack12, g_FontZurichChars, g_FontZurich, 0xff, viGetX(), viGetY(), 0, 0);
 
   text = langGet(g_MpStagePlayerCounts[g_MpScenario].stage);
   x = 0xa0;
-  y = 0x8d;
+  y = MP_OPT_ROW_Y(1);
   DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   text = langGet(g_MpStages[g_MpStage].folder_text_preset);
   x = 0xa0;
-  y = 0xa1;
+  y = MP_OPT_ROW_Y(2);
   if (g_MpCanPickStage) {
     entry = 0xFF;
   }
@@ -4985,7 +4996,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
 
   text = langGet(g_MpGameLengths[g_MpGameLength].text_preset);
   x = 0xa0;
-  y = 0xb5;
+  y = MP_OPT_ROW_Y(3);
   if (g_MpCanPickLength) {
     entry = 0xFF;
   }
@@ -4997,7 +5008,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
 
   text = langGet(mpWeaponSetGetTextId());
   x = 0xa0;
-  y = 0xc9;
+  y = MP_OPT_ROW_Y(4);
   if (g_MpCanPickWeapons) {
     entry = 0xFF;
   }
@@ -5008,7 +5019,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
 
   text = langGet(g_MpAimSettings[g_MpAimSetting].anonymous_0);
   x = 0xa0;
-  y = 0x119;
+  y = MP_OPT_ROW_Y(9);
   if (g_MpCanPickAim) {
     entry = 0xFF;
   }
@@ -5017,13 +5028,28 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   }
   DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,entry,viGetX(),viGetY(),0,0);
 
+  // Dual Wield: a second copy of a weapon you carry gives you the pair.
+  text = "Dual Wield:\n";
+  textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
+  x = 0x39;
+  y = MP_OPT_ROW_Y(MP_OPT_ROW_DUAL);
+  if (g_MpHlDual) {
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(MP_OPT_ROW_DUAL) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(MP_OPT_ROW_DUAL) + 0xE, 0x32);
+  }
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
+
+  text = mpDualWieldIsOn() ? "On\n" : "Off\n";
+  x = 0xa0;
+  y = MP_OPT_ROW_Y(MP_OPT_ROW_DUAL);
+  DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
+
   // Display: split screen layout (2 players) and hi-res, shared with co-op.
   text = "Display:\n";
   textMeasure(&iStack24,&iStack28,text,g_FontZurichChars,g_FontZurich,0);
   x = 0x39;
-  y = 0x12d;
+  y = MP_OPT_ROW_Y(10);
   if (g_MpHlDisplay) {
-    DL = textRenderRect(DL,0x37,0x12c,iStack28 + 0x3c,0x13b,0x32);
+    DL = textRenderRect(DL, 0x37, MP_OPT_ROW_Y(10) - 1, iStack28 + 0x3c, MP_OPT_ROW_Y(10) + 0xE, 0x32);
   }
   DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
@@ -5039,7 +5065,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
     text = (optionsGetHiRes() ? "Hi-Res\n" : "Normal\n");
   }
   x = 0xa0;
-  y = 0x12d;
+  y = MP_OPT_ROW_Y(10);
   DL = frontPrintText(DL,&x,&y,text,g_FontZurichChars,g_FontZurich,0xff,viGetX(),viGetY(),0,0);
 
   DL = frontAddPreviousTabText(DL);

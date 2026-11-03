@@ -22,6 +22,7 @@
 #include "game/prop/propobj.h"
 #include "game/save/file.h"
 #include "game/level/gamemode.h"
+#include "game/menu/mp_weapon.h"
 
 /**
  * Flag to toggle invisibility cheat.
@@ -659,7 +660,9 @@ void playerInitHands(void)
 
     g_CurrentPlayer->handModelBuffer[GUNRIGHT] = mempAlloc(size_item_buffer[0], MEMPOOL_STAGE);
 
-    if (!gameIsMulti())
+    // Multiplayer only needs the left hand with the Dual Wield option. The hand
+    // models are usually shared from the gun model cache, the buffer is the fallback.
+    if (!gameIsMulti() || mpDualWieldIsOn())
     {
         g_CurrentPlayer->handModelBuffer[GUNLEFT] = mempAlloc(size_item_buffer[1], MEMPOOL_STAGE);
     }
