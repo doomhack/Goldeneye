@@ -2090,8 +2090,11 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                         && (((u8 *)AiListp)[Offset - sizeof(AiIFItemIsAttachedToObjectRecord) + 1] == ai->KEY_ID)
                         && coopAnyPlayerStillHasItem(ai->KEY_ID);
 
-                    if (weaponFindThrown(ai->KEY_ID) && !coopsecondcopy)
+                    const WeaponObjRecord *thrown = weaponFindThrown(ai->KEY_ID);
+
+                    if (thrown && !coopsecondcopy)
                     {
+                        coopAiActOnThrower(ChrEntityp, (const ObjectRecord *)thrown);
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
@@ -2104,6 +2107,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 {
                     AiIFItemIsAttachedToObjectRecord *ai   = (AiIFItemIsAttachedToObjectRecord *)(AiListp + Offset);
                     ObjectRecord                     *obj  = objFindByTagId(ai->OBJECT_TAG);
+                    const WeaponObjRecord            *attached = NULL;
                     bool                              pass = FALSE;
                     if (obj && obj->prop)
                     {
@@ -2116,6 +2120,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                                 if (weapon->weaponnum == ai->ITEM_NUM)
                                 {
                                     pass = TRUE;
+                                    attached = weapon;
                                     break;
                                 }
                             }
@@ -2124,6 +2129,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     }
                     if (pass)
                     {
+                        coopAiActOnThrower(ChrEntityp, (const ObjectRecord *)attached);
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }
                     else
