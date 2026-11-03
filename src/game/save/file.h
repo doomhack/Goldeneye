@@ -48,6 +48,8 @@ void fileSetSoloStage(LEVELID stage);
 void fileCopyCurrentSave(struct save_data *savefile);
 void fileUseDemoSave(const struct save_data *eeprom);
 void fileSetFavWeapon(u32 right,u32 left);
+void fileMpLoadWeaponSettings(const smallSave *header);
+void fileMpSaveWeaponSettings(void);
 
 
 

@@ -15,5 +15,5 @@ char *LmpweaponsE[] = {
  "Golden Gun", //MPWEAPON_STR_0C
  "Throwing Knives", //MPWEAPON_STR_0D
  "Fire and Gold", //MPWEAPON_STR_0E
- 0 //MPWEAPON_STR_0F
+ "Custom" //MPWEAPON_STR_0F
 };

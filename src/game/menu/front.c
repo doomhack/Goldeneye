@@ -4792,7 +4792,7 @@ void frontMpOptionsTick(void)
     }
     if (weapon_selected)
     {
-        mpWeaponSetNext();
+        frontSetMenu(MENU_MP_WEAPON_SELECT, 0);
         return;
     }
     if (health_selected)
@@ -5046,6 +5046,360 @@ Gfx * frontMpOptionsRender(Gfx *DL)
   DL = frontAddStartTabText(DL);
   DL = frontDrawCursor(DL);
   return DL;
+}
+
+
+//********************************************************************************************************
+//MULTIPLAYER WEAPON SETS
+//********************************************************************************************************
+
+/**
+ * Weapon set select, opened from the Weapons line of the multiplayer options: every
+ * set in two columns. A picks a set and goes back to the options; picking Custom opens
+ * the custom set editor. B goes back without changing the set.
+ */
+#define MP_WEAPON_SELECT_ROWS     8
+#define MP_WEAPON_SELECT_ROW_Y(row) (0x79 + (row) * 0x14)
+#define MP_WEAPON_SELECT_COL_X(col) ((col) ? 0xD2 : 0x39)
+#define MP_WEAPON_SELECT_COL_SPLIT 0xC8
+
+static s32 s_MpWeaponSelectHighlight = -1;
+
+static void frontMpWeaponPagesEnter(void)
+{
+    g_FrontTabStartSelected = FALSE;
+    g_FrontTabNextSelected = FALSE;
+    g_FrontTabPrevSelected = FALSE;
+    g_FrontTabPrevHighlight = FALSE;
+    g_FrontTabNextHighlight = FALSE;
+    g_FrontTabStartHighlight = FALSE;
+    frontLoadFolders();
+}
+
+void frontMpWeaponSelectEnter(void)
+{
+    s32 set = mpWeaponSetGetIndex();
+
+    frontMpWeaponPagesEnter();
+    s_MpWeaponSelectHighlight = -1;
+    g_FrontCursorX = MP_WEAPON_SELECT_COL_X(set / MP_WEAPON_SELECT_ROWS) - 0x11;
+    g_FrontCursorY = MP_WEAPON_SELECT_ROW_Y(set % MP_WEAPON_SELECT_ROWS) + 6;
+}
+
+void frontMpWeaponSelectLeave(void)
+{
+    return;
+}
+
+void frontMpWeaponSelectTick(void)
+{
+    s32 row;
+    s32 set;
+
+    viSetFovY(FOV_Y_F);
+    viSetAspect(ASPECT_RATIO_SD);
+    viSetZRange(100.0f, 10000.0f);
+    viSetUseZBuf(FALSE);
+
+    g_FrontTabPrevHighlight = FALSE;
+    s_MpWeaponSelectHighlight = -1;
+
+    if (frontCheckCursorOnPreviousTab())
+    {
+        g_FrontTabPrevHighlight = TRUE;
+    }
+    else if (g_FrontCursorX < TABS_LEFT_EDGE)
+    {
+        for (row = 0; row < MP_WEAPON_SELECT_ROWS; row++)
+        {
+            if ((g_FrontCursorY >= MP_WEAPON_SELECT_ROW_Y(row) - 1) && (g_FrontCursorY < MP_WEAPON_SELECT_ROW_Y(row) + 0x13))
+            {
+                set = row + ((g_FrontCursorX >= MP_WEAPON_SELECT_COL_SPLIT) ? MP_WEAPON_SELECT_ROWS : 0);
+
+                if (set < MP_WEAPON_SET_COUNT)
+                {
+                    s_MpWeaponSelectHighlight = set;
+                }
+            }
+        }
+    }
+
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON))
+    {
+        if (g_FrontTabPrevHighlight)
+        {
+            g_FrontTabPrevSelected = TRUE;
+        }
+        else if (s_MpWeaponSelectHighlight >= 0)
+        {
+            mpWeaponSetSelect(s_MpWeaponSelectHighlight);
+
+            if (s_MpWeaponSelectHighlight == MP_WEAPON_SET_CUSTOM)
+            {
+                frontSetMenu(MENU_MP_CUSTOM_WEAPONS, 0);
+            }
+            else
+            {
+                g_FrontTabPrevSelected = TRUE;
+            }
+        }
+
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+    }
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
+    {
+        g_FrontTabPrevSelected = TRUE;
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+    }
+
+    // The D-pad steps the cursor between the sets.
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD|D_JPAD|L_JPAD|R_JPAD))
+    {
+        set = (s_MpWeaponSelectHighlight >= 0) ? s_MpWeaponSelectHighlight : mpWeaponSetGetIndex();
+
+        if (joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) && (set % MP_WEAPON_SELECT_ROWS) < MP_WEAPON_SELECT_ROWS - 1)
+        {
+            set++;
+        }
+        else if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD) && (set % MP_WEAPON_SELECT_ROWS) > 0)
+        {
+            set--;
+        }
+        else if (joyGetButtonsPressedThisFrame(PLAYER_1, R_JPAD) && set < MP_WEAPON_SELECT_ROWS)
+        {
+            set += MP_WEAPON_SELECT_ROWS;
+        }
+        else if (joyGetButtonsPressedThisFrame(PLAYER_1, L_JPAD) && set >= MP_WEAPON_SELECT_ROWS)
+        {
+            set -= MP_WEAPON_SELECT_ROWS;
+        }
+
+        if (set >= MP_WEAPON_SET_COUNT)
+        {
+            set = MP_WEAPON_SET_COUNT - 1;
+        }
+
+        g_FrontCursorX = MP_WEAPON_SELECT_COL_X(set / MP_WEAPON_SELECT_ROWS) - 0x11;
+        g_FrontCursorY = MP_WEAPON_SELECT_ROW_Y(set % MP_WEAPON_SELECT_ROWS) + 6;
+    }
+
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CONFIDENTIAL2, 1);
+    frontMoveCursor();
+
+    if (g_FrontTabPrevSelected)
+    {
+        frontSetMenu(MENU_MP_OPTIONS, 0);
+    }
+}
+
+Gfx *frontMpWeaponSelectRender(Gfx *DL)
+{
+    const char *text;
+    s32 x;
+    s32 y;
+    s32 textwidth;
+    s32 textheight;
+    s32 set;
+
+    DL = viSetFillColor(DL, 0, 0, 0);
+    DL = viFillScreen(DL);
+    #if defined(BUGFIX_R2)
+    DL = viFillScreen(DL);
+    DL = viFillScreen(DL);
+    #endif
+    DL = frontSetupMenuBackground(DL);
+    DL = textSetupDraw(DL);
+
+    x = 0x37;
+    y = 0x5F;
+    DL = frontPrintText(DL, &x, &y, langGet(getStringID(LTITLE, TITLE_STR_81_WEAPONS)), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+
+    for (set = 0; set < MP_WEAPON_SET_COUNT; set++)
+    {
+        s32 col = set / MP_WEAPON_SELECT_ROWS;
+        s32 row = set % MP_WEAPON_SELECT_ROWS;
+
+        text = langGet(mpWeaponSetGetTextIdFor(set));
+        textMeasure(&textheight, &textwidth, text, g_FontZurichChars, g_FontZurich, 0);
+
+        if (s_MpWeaponSelectHighlight == set)
+        {
+            DL = textRenderRect(DL, MP_WEAPON_SELECT_COL_X(col) - 2, MP_WEAPON_SELECT_ROW_Y(row) - 1, MP_WEAPON_SELECT_COL_X(col) + textwidth + 3, MP_WEAPON_SELECT_ROW_Y(row) + 0xE, 0x32);
+        }
+
+        // the chosen set is bright, the others dimmed
+        x = MP_WEAPON_SELECT_COL_X(col);
+        y = MP_WEAPON_SELECT_ROW_Y(row);
+        DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, (set == mpWeaponSetGetIndex()) ? 0xFF : 0x90, viGetX(), viGetY(), 0, 0);
+    }
+
+    DL = frontAddPreviousTabText(DL);
+    DL = frontDrawCursor(DL);
+    return DL;
+}
+
+/**
+ * The custom set editor: the weapon in each of the 8 slots. Weapons in the lower slots
+ * stand where the levels put the light weapons, slots 7 and 8 where they put the heavy
+ * ones. Point at a slot and press A (or C-right / right on the D-pad) for the next
+ * weapon, C-left / left on the D-pad for the one before. B goes back to the options.
+ */
+#define MP_CUSTOM_ROW_Y(row) (0x79 + (row) * 0x14)
+#define MP_CUSTOM_VALUE_X 0x8C
+#define MP_CUSTOM_CURSOR_X 0x28
+
+static s32 s_MpCustomHighlight = -1;
+
+void frontMpCustomWeaponsEnter(void)
+{
+    frontMpWeaponPagesEnter();
+    s_MpCustomHighlight = -1;
+    g_FrontCursorX = MP_CUSTOM_CURSOR_X;
+    g_FrontCursorY = MP_CUSTOM_ROW_Y(0) + 6;
+}
+
+void frontMpCustomWeaponsLeave(void)
+{
+    fileMpSaveWeaponSettings();
+}
+
+void frontMpCustomWeaponsTick(void)
+{
+    s32 step = 0;
+    s32 row;
+
+    viSetFovY(FOV_Y_F);
+    viSetAspect(ASPECT_RATIO_SD);
+    viSetZRange(100.0f, 10000.0f);
+    viSetUseZBuf(FALSE);
+
+    g_FrontTabPrevHighlight = FALSE;
+    s_MpCustomHighlight = -1;
+
+    if (frontCheckCursorOnPreviousTab())
+    {
+        g_FrontTabPrevHighlight = TRUE;
+    }
+    else if (g_FrontCursorX < TABS_LEFT_EDGE)
+    {
+        for (row = 0; row < MP_WEAPON_SET_SLOTS; row++)
+        {
+            if ((g_FrontCursorY >= MP_CUSTOM_ROW_Y(row) - 1) && (g_FrontCursorY < MP_CUSTOM_ROW_Y(row) + 0x13))
+            {
+                s_MpCustomHighlight = row;
+            }
+        }
+    }
+
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, Z_TRIG|A_BUTTON))
+    {
+        if (g_FrontTabPrevHighlight)
+        {
+            g_FrontTabPrevSelected = TRUE;
+            sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+        }
+        else
+        {
+            step = 1;
+        }
+    }
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, R_CBUTTONS|R_JPAD))
+    {
+        step = 1;
+    }
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS|L_JPAD))
+    {
+        step = -1;
+    }
+    else if (joyGetButtonsPressedThisFrame(PLAYER_1, B_BUTTON))
+    {
+        g_FrontTabPrevSelected = TRUE;
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+    }
+
+    if ((step != 0) && (s_MpCustomHighlight >= 0))
+    {
+        mpCustomWeaponStep(s_MpCustomHighlight, step);
+        sndPlaySfx(g_musicSfxBufferPtr, DOOR_METAL_CLOSE2_SFX, NULL);
+    }
+
+    // Up and down on the D-pad step the cursor between slots.
+    if (joyGetButtonsPressedThisFrame(PLAYER_1, U_JPAD|D_JPAD))
+    {
+        row = s_MpCustomHighlight;
+
+        if (row < 0)
+        {
+            row = joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? -1 : MP_WEAPON_SET_SLOTS;
+        }
+
+        row += joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD) ? 1 : -1;
+        row = (row < 0) ? 0 : ((row >= MP_WEAPON_SET_SLOTS) ? (MP_WEAPON_SET_SLOTS - 1) : row);
+        g_FrontCursorX = MP_CUSTOM_CURSOR_X;
+        g_FrontCursorY = MP_CUSTOM_ROW_Y(row) + 6;
+    }
+
+    frontHideAllSwitches(g_FrontFolderModels[0]);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_TABS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_PAPER, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_OHMSS, 1);
+    frontSetSwitchVisible(g_FrontFolderModels[0], SW_CONFIDENTIAL2, 1);
+    frontMoveCursor();
+
+    if (g_FrontTabPrevSelected)
+    {
+        frontSetMenu(MENU_MP_OPTIONS, 0);
+    }
+}
+
+Gfx *frontMpCustomWeaponsRender(Gfx *DL)
+{
+    char label[16];
+    s32 x;
+    s32 y;
+    s32 textwidth;
+    s32 textheight;
+    s32 row;
+
+    DL = viSetFillColor(DL, 0, 0, 0);
+    DL = viFillScreen(DL);
+    #if defined(BUGFIX_R2)
+    DL = viFillScreen(DL);
+    DL = viFillScreen(DL);
+    #endif
+    DL = frontSetupMenuBackground(DL);
+    DL = textSetupDraw(DL);
+
+    x = 0x37;
+    y = 0x5F;
+    DL = frontPrintText(DL, &x, &y, "Custom Weapons\n", g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+
+    for (row = 0; row < MP_WEAPON_SET_SLOTS; row++)
+    {
+        sprintf(label, "Slot %d:\n", row + 1);
+        textMeasure(&textheight, &textwidth, label, g_FontZurichChars, g_FontZurich, 0);
+
+        if (s_MpCustomHighlight == row)
+        {
+            DL = textRenderRect(DL, 0x37, MP_CUSTOM_ROW_Y(row) - 1, textwidth + 0x3C, MP_CUSTOM_ROW_Y(row) + 0xE, 0x32);
+        }
+
+        x = 0x39;
+        y = MP_CUSTOM_ROW_Y(row);
+        DL = frontPrintText(DL, &x, &y, label, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+
+        x = MP_CUSTOM_VALUE_X;
+        y = MP_CUSTOM_ROW_Y(row);
+        DL = frontPrintText(DL, &x, &y, mpCustomWeaponGetName(row), g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    }
+
+    DL = frontAddPreviousTabText(DL);
+    DL = frontDrawCursor(DL);
+    return DL;
 }
 
 
@@ -8633,6 +8987,8 @@ void frontTick(void)
             case MENU_NO_CONTROLLERS:         frontNoControllerLeave();        break;
             case MENU_DISPLAY_CAST:           frontCastLeave();          break;
             case MENU_COOP_SETUP:             frontCoopSetupLeave();            break;
+            case MENU_MP_WEAPON_SELECT:       frontMpWeaponSelectLeave();       break;
+            case MENU_MP_CUSTOM_WEAPONS:      frontMpCustomWeaponsLeave();      break;
 
             default:
                 break;
@@ -8676,6 +9032,8 @@ void frontTick(void)
             case MENU_NO_CONTROLLERS:         frontNoControllerEnter();           break;
             case MENU_DISPLAY_CAST:           frontCastEnter();            break;
             case MENU_COOP_SETUP:             frontCoopSetupEnter();              break;
+            case MENU_MP_WEAPON_SELECT:       frontMpWeaponSelectEnter();         break;
+            case MENU_MP_CUSTOM_WEAPONS:      frontMpCustomWeaponsEnter();        break;
 
             default:
                 break;
@@ -8708,6 +9066,8 @@ void frontTick(void)
         case MENU_NO_CONTROLLERS:         frontNoControllerTick();         break;
         case MENU_DISPLAY_CAST:           frontCastTick();           break;
         case MENU_COOP_SETUP:             frontCoopSetupTick();             break;
+        case MENU_MP_WEAPON_SELECT:       frontMpWeaponSelectTick();        break;
+        case MENU_MP_CUSTOM_WEAPONS:      frontMpCustomWeaponsTick();       break;
         case MENU_RUN_STAGE:
             if (frontRunStageTick())
             {
@@ -8814,6 +9174,13 @@ Gfx * frontRender(Gfx *DL)
             break;
         case MENU_COOP_SETUP:
             DL = frontCoopSetupRender(DL);
+            break;
+        case MENU_MP_WEAPON_SELECT:
+            DL = frontMpWeaponSelectRender(DL);
+            break;
+        case MENU_MP_CUSTOM_WEAPONS:
+            DL = frontMpCustomWeaponsRender(DL);
+            break;
 
         default:
             break;

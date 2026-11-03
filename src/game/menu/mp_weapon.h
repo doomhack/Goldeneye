@@ -76,12 +76,22 @@ extern struct s_mp_weapon_set mp_weapon_set_fire_gold[];
 /* Weapon set indices the scenarios force */
 #define MP_WEAPON_SET_PISTOLS    1
 #define MP_WEAPON_SET_GOLDEN_GUN 13
-#define MP_WEAPON_SET_COUNT      15
+#define MP_WEAPON_SET_CUSTOM     15
+#define MP_WEAPON_SET_COUNT      16
+
+#define MP_WEAPON_SET_SLOTS      8
 
 void mpWeaponSetNext(void);
 u16 mpWeaponSetGetTextId(void);
 struct s_mp_weapon_set* mpWeaponSetGetItems(void);
 void mpWeaponSetSelect(s32 setNUM);
 s32 mpWeaponSetGetIndex(void);
+u16 mpWeaponSetGetTextIdFor(s32 setnum);
+
+s32 mpCustomWeaponGetChoice(s32 slot);
+void mpCustomWeaponStep(s32 slot, s32 step);
+const char *mpCustomWeaponGetName(s32 slot);
+void mpCustomWeaponLoad(const u8 *choices);
+void mpCustomWeaponSave(u8 *choices);
 
 #endif

@@ -15,5 +15,5 @@ enum LMPWEAPONSE_STRINGS
     MPWEAPON_STR_0C_GOLDENGUN, // "Golden Gun",
     MPWEAPON_STR_0D_THROWINGKNIVES, // "Throwing Knives",
     MPWEAPON_STR_0E_FIREANDGOLD, // "Fire and Gold",
-    MPWEAPON_STR_0F // 0
+    MPWEAPON_STR_0F_CUSTOM // "Custom"
 };
