@@ -16,8 +16,8 @@ A pure refactor should match exactly. Exits 0 when every demo matches.
 
 With DEMOS_DUMPRAM=1 in the environment each demo also saves its RAM at the end
 (end-ram.bin), for tools/testrun/shuffle.py check. DEMOS_JOBS=N plays N demos at once
-(default: one per CPU). DEMOS_LLE=1 runs the real microcode on the low-level RSP and RDP
-plugins, which a UCODE=f3dex3 build needs (several times slower).
+(default: one per CPU). The demos run the real microcode on the low-level RSP and RDP
+plugins (m64run.py's defaults), several minutes per demo.
 """
 import concurrent.futures
 import json
@@ -41,8 +41,7 @@ def play(version, index, outdir):
            '--stall', '120']
     if os.environ.get('DEMOS_DUMPRAM'):
         cmd.append('--dumpram')
-    if os.environ.get('DEMOS_LLE'):
-        cmd += ['--rsp', 'z64', '--gfx', 'angrylion', '--demo-shots', '300,1200']
+    cmd += ['--demo-shots', '300,1200']
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5400)
     try:
         return json.load(open(os.path.join(outdir, 'result.json')))

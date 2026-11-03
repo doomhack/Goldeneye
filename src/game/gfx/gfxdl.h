@@ -8,12 +8,11 @@
  *
  * Collision, bullet hits and the light fixtures read the triangles in room and model
  * display lists. Everything that depends on how the graphics microcode encodes vertex
- * loads and triangles is here, so a change of microcode only changes this file.
+ * loads and triangles (F3DEX3's) is here.
  *
  * Triangles are numbered within their command as in HitThing.triNum: a command holds
- * gfxTriCount() of them, numbered gfxFirstTri() up. G_TRI1 has triangle 0; Fast3D's
- * G_TRI4 (GE's) has triangles 1 to 4 (one with all three indices 0 is not drawn), and
- * F3DEX3's G_TRI2 has triangles 1 and 2.
+ * gfxTriCount() of them, numbered gfxFirstTri() up. G_TRI1 has triangle 0 and G_TRI2
+ * has triangles 1 and 2.
  */
 
 static inline u32 gfxOp(const Gfx *cmd)
@@ -36,21 +35,13 @@ static inline bool gfxIsVtx(const Gfx *cmd)
 /** The number of vertices a vertex load loads */
 static inline s32 gfxVtxCount(const Gfx *cmd)
 {
-#ifdef UCODE_F3DEX3
     return (cmd->words.w0 >> 12) & 0xff;
-#else
-    return ((cmd->words.w0 >> 20) & 0xf) + 1;
-#endif
 }
 
 /** A vertex load's first vertex buffer index */
 static inline s32 gfxVtxFirst(const Gfx *cmd)
 {
-#ifdef UCODE_F3DEX3
     return ((cmd->words.w0 >> 1) & 0x7f) - gfxVtxCount(cmd);
-#else
-    return (cmd->words.w0 >> 16) & 0xf;
-#endif
 }
 
 /** A vertex load's address (segmented or physical) */
@@ -59,13 +50,8 @@ static inline u32 gfxVtxAddr(const Gfx *cmd)
     return cmd->words.w1;
 }
 
-#ifdef UCODE_F3DEX3
 #define GFX_OP_TRIS (u8)G_TRI2
 #define GFX_TRIS_COUNT 2
-#else
-#define GFX_OP_TRIS (u8)G_TRI4
-#define GFX_TRIS_COUNT 4
-#endif
 
 /** A command that draws triangles */
 static inline bool gfxIsTris(const Gfx *cmd)
@@ -95,29 +81,12 @@ static inline void gfxGetTri(const Gfx *cmd, s32 tri, s32 idx[3])
     u32 w0 = cmd->words.w0;
     u32 w1 = cmd->words.w1;
 
-#ifdef UCODE_F3DEX3
     /* Index bytes are vertex numbers times 2: G_TRI1's in w0, G_TRI2's second in w1 */
     u32 w = (tri == 2) ? w1 : w0;
 
     idx[0] = ((w >> 16) & 0xff) / 2;
     idx[1] = ((w >> 8) & 0xff) / 2;
     idx[2] = (w & 0xff) / 2;
-#else
-    if (gfxOp(cmd) == (u8)G_TRI1)
-    {
-        idx[0] = ((w1 >> 16) & 0xff) / 10;
-        idx[1] = ((w1 >> 8) & 0xff) / 10;
-        idx[2] = (w1 & 0xff) / 10;
-    }
-    else
-    {
-        s32 t = tri - 1;
-
-        idx[0] = (w1 >> (8 * t)) & 0xf;
-        idx[1] = (w1 >> (8 * t + 4)) & 0xf;
-        idx[2] = (w0 >> (4 * t)) & 0xf;
-    }
-#endif
 }
 
 /**

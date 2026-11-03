@@ -93,14 +93,10 @@ Lights1 g_WeaponEnvmapLight = gdSPDefLights1(
 /*
  * Each hand's model buffer: the model file and its expanded display lists first, then its
  * textures. A model expands in place (see modelFileLoad), so its part must hold the expanded
- * size. F3DEX3's display lists are bigger (two triangles per command, not four), so that
- * build gives the models more room; the texture part stays the same size.
+ * size. F3DEX3's display lists are bigger than the original microcode's (two triangles per
+ * command, not four), so the models get more room; the texture part stays the same size.
  */
-#ifdef UCODE_F3DEX3
 #define HAND_MODEL_EXTRA 0x2000
-#else
-#define HAND_MODEL_EXTRA 0
-#endif
 
 /* The model part for Bond's hand, the Trigger and the Watch laser, and everything else */
 #define HAND_MODEL_SIZE_SUIT_HAND (0xBD70 + HAND_MODEL_EXTRA)

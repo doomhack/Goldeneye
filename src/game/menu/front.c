@@ -1505,11 +1505,9 @@ Gfx *frontNintendoRender(Gfx *DL)
     // Lights macro? These need to be on one line.
     gSPSetLights1(DL++, g_FrontNintendoLight);
 
-#ifdef UCODE_F3DEX3
     // The logo is environment mapped and relied on Fast3D's default LookAt, which F3DEX3
     // doesn't have, so set the same one
     gSPLookAt(DL++, &g_Fast3dDefaultLookAt);
-#endif
 
 #if defined(VERSION_EU)
     // 0x100000000 ? 0xFFFECD34 = 0x132CC (78540 decimal)

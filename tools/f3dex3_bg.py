@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Converts a level's room display lists from Fast3D to F3DEX3 (make UCODE=f3dex3).
+Converts a level's room display lists from the original microcode (Fast3D) to F3DEX3,
+the game's microcode. The build runs it on every level.
 
 The room display lists are the pri_mapping_binary_N and sec_mapping_binary_N arrays in
 assets/obseg/bg/bg_*_all_p.c, each compressed in Rare's 1172 format (the bytes 0x11 0x72

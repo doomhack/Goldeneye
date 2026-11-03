@@ -398,18 +398,12 @@ static u32 s_FpsLastRdpCounters[3];
 static s32 s_FpsRdpTenths[3]; /* RDP busy with commands, pipeline, TMEM: tenths of a ms per task */
 
 /* Page 0 shows only the frame rate and CPU/RSP/RDP times; L + D-pad down steps through the rest */
-#ifdef UCODE_F3DEX3
 #define FPS_PAGE_COUNT (1 + RSP_PROFILE_COUNT)
-#else
-#define FPS_PAGE_COUNT 2
-#endif
 static s32 s_FpsPage;
-#ifdef UCODE_F3DEX3
 static u32 s_FpsLastCounterSums[RSP_PROFILE_COUNT][RSPCOUNT_MAX];
 static u32 s_FpsLastCounterTasks[RSP_PROFILE_COUNT];
 static u32 s_FpsCounters[RSPCOUNT_MAX]; /* per task, over the last second */
 static s32 s_FpsCountersMode;
-#endif
 
 /**
  * Draws the frame rate (the watch's fps counter option) in the top right
@@ -460,7 +454,6 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
             }
         }
 
-#ifdef UCODE_F3DEX3
         {
             s32 mode = g_RspProfileMode;
             u32 counterTasks = g_RspCounterTasks[mode];
@@ -477,7 +470,6 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
             s_FpsLastCounterTasks[mode] = counterTasks;
             s_FpsCountersMode = mode;
         }
-#endif
     }
 
     s32 len = sprintf(text, "%d.%d FPS\nCPU %d RSP %d RDP %d\n",
@@ -492,7 +484,6 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
             s_FpsRdpTenths[0] / 10, s_FpsRdpTenths[0] % 10);
     }
 
-#ifdef UCODE_F3DEX3
     // F3DEX3's counters, per task. Cycles are RCP cycles at 62.5 MHz, shown in
     // tenths of a millisecond (6250 cycles).
     if (s_FpsPage != 0)
@@ -517,9 +508,6 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
                 s_FpsCounters[RSPCOUNT_FIFO_STALL_CYCLES] / 62500, (s_FpsCounters[RSPCOUNT_FIFO_STALL_CYCLES] / 6250) % 10);
             break;
     }
-#else
-    (void)len;
-#endif
 
     width = 0;
     height = 0;
@@ -683,10 +671,8 @@ Gfx* lvRender(Gfx* DL)
         if (joyGetButtons(PLAYER_1, L_TRIG) && joyGetButtonsPressedThisFrame(PLAYER_1, D_JPAD))
         {
             s_FpsPage = (s_FpsPage + 1) % FPS_PAGE_COUNT;
-#ifdef UCODE_F3DEX3
             // Page 1 on uses the F3DEX3 build that counts its set
             g_RspProfileMode = (s_FpsPage != 0) ? (s_FpsPage - 1) : RSP_PROFILE_DEFAULT;
-#endif
         }
 
         DL = lvRenderFpsCounter(DL);
