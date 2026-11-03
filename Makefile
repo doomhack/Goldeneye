@@ -175,8 +175,8 @@ LAYOUT_CFLAGS := -G 0 -fno-toplevel-reorder -fno-zero-initialized-in-bss -fno-me
 # The generated asset data (models, levels, setups) still puts arrays and integers into pointer
 # fields; it is data rather than code, so those GCC 14 errors stay warnings there.
 ASSET_CFLAGS := -Wno-error=incompatible-pointer-types -Wno-error=int-conversion
-# Warnings: the game code (everything in src/) builds with -Wall -Wextra and any
-# warning is an error. The assets are generated data, so
+# Warnings: the game code (everything in src/) builds with -Wall -Wextra -Wwrite-strings
+# (string literals are const) and any warning is an error. The assets are generated data, so
 # they build quietly (-w). See docs/StyleGuide.md.
 WARNFLAGS := -w
 CFLAGS = $(CC_BASEFLAGS) $(ULTRALIB_VERSION_DEFINES) $(WARNFLAGS) $(SHUFFLEFLAGS) $(LTOFLAGS) $(INCLUDE) $(LCDEFS) $(OPTIMIZATION)
@@ -300,7 +300,7 @@ $(BUILD_DIR)/src/gcc/%.o: src/gcc/%.c
 	@mkdir -p $(dir $@)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(BUILD_DIR)/src/%.o: WARNFLAGS := -Wall -Wextra -Werror
+$(BUILD_DIR)/src/%.o: WARNFLAGS := -Wall -Wextra -Wwrite-strings -Werror
 # F3DEX3's GBI writes static commands without the inner braces of the Gfx union
 $(BUILD_DIR)/src/%.o: WARNFLAGS += -Wno-missing-braces
 # make SHUFFLE=<seed> links the game's variables in a random order with guard gaps between them,

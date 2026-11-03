@@ -569,7 +569,7 @@ void gunSetHandModel(GUNHAND hand, ITEM_IDS item)
 }
 
 
-char *gunGetModelFileName(ITEM_IDS item)
+const char *gunGetModelFileName(ITEM_IDS item)
 {
     if (item == ITEM_FIST)
     {
@@ -598,7 +598,7 @@ int gunGetFistModelItem(void)
 void gunLoadHandModel(GUNHAND hand)
 {
     u32              size_buffer_weapon;
-    char              *ptr_item_text;
+    const char              *ptr_item_text;
     ModelFileHeader *ptr_weapon_model;
     u8              *buffer_weapon;
     enum ITEM_IDS    item;
@@ -2071,7 +2071,7 @@ void gunsStopSounds(void)
 }
 
 
-char *itemGetChoiceText(ITEM_IDS item)
+const char *itemGetChoiceText(ITEM_IDS item)
 {
     return langGet(gitem_structs[item].weapon_of_choice_text);
 }

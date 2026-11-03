@@ -3577,7 +3577,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_TextPrintBottom:
                 {
                     AiTextPrintBottomRecord *ai   = (AiTextPrintBottomRecord *)(AiListp + Offset);
-                    char                    *text = langGet(ntohs(ai->txt));
+                    const char                    *text = langGet(ntohs(ai->txt));
                     s32 prevplayer = counterOpTextBegin();
     #ifdef BUGFIX_R1
                     hudmsgBottomShowText(text);
@@ -3591,7 +3591,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_TextPrintTop:
                 {
                     AiTextPrintTopRecord *ai   = (AiTextPrintTopRecord *)(AiListp + Offset);
-                    char                 *text = langGet(ntohs(ai->txt));
+                    const char                 *text = langGet(ntohs(ai->txt));
 
 
                     s32 prevplayer = counterOpTextBegin();

@@ -188,10 +188,10 @@ ObjectRecord *objFindByTagId(s32 TagID) //#MATCH
 
 
 
-char *briefingGetText(WATCH_BRIEFING_PAGE page)
+const char *briefingGetText(WATCH_BRIEFING_PAGE page)
 {
     struct watchMenuObjectiveText * curentry;
-    char * textptr;
+    const char * textptr;
 
     textptr = NULL;
 
@@ -233,7 +233,7 @@ s32 objectiveGetCount(void)
 
 
 
-char *objectiveGetText(int objectiveIndex)
+const char *objectiveGetText(int objectiveIndex)
 {
     
     if ((objectiveIndex < 10) && (g_Objectives[objectiveIndex] != 0)) {

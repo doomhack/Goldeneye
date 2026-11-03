@@ -36,9 +36,9 @@ void objectiveAddDeposit(struct criteria_deposit *criteria);
 void objectiveAddPicture(struct criteria_picture *criteria);
 void objectiveAdd(struct objective_entry* objective);
 
-char *briefingGetText(WATCH_BRIEFING_PAGE page);
+const char *briefingGetText(WATCH_BRIEFING_PAGE page);
 s32 objectiveGetDifficulty(s32 objectiveIndex);
-char *objectiveGetText(int objectiveIndex);
+const char *objectiveGetText(int objectiveIndex);
 void objectivesCheckRoomEntered(s32 roomid);
 
 #endif

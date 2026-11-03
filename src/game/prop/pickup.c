@@ -44,7 +44,7 @@
 /* Without the magnet, a player looking further down than this doesn't pick things up */
 #define PICKUP_MAX_LOOK_DOWN     -0.7853982f
 
-static char *pickupText(s32 slot)
+static const char *pickupText(s32 slot)
 {
     return langGet(getStringID(LPROPOBJ, slot));
 }
@@ -576,9 +576,9 @@ void pickupShowWeaponText(ITEM_IDS weapon)
 
 /* The text set up for this object by the level (eg. "Picked up the Safe Key"), or the
    given default */
-static char *objPickupText(const ObjectRecord *obj, s32 defaulttext)
+static const char *objPickupText(const ObjectRecord *obj, s32 defaulttext)
 {
-    char *text = invGetActivatedTextObject(obj);
+    const char *text = invGetActivatedTextObject(obj);
 
     if (text == NULL)
     {
@@ -628,7 +628,7 @@ static TICKOP pickupWeapon(const PropRecord *prop, bool showtext)
 
         if (showtext)
         {
-            char *text = invGetActivatedTextObject(obj);
+            const char *text = invGetActivatedTextObject(obj);
 
             if (text)
             {
@@ -653,7 +653,7 @@ static TICKOP pickupWeapon(const PropRecord *prop, bool showtext)
 
         if (showtext)
         {
-            char *text = invGetActivatedTextWeapon(weapon->weaponnum);
+            const char *text = invGetActivatedTextWeapon(weapon->weaponnum);
 
             if (text)
             {

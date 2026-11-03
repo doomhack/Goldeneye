@@ -1077,14 +1077,14 @@ typedef union
         typedef struct ItemModelFileRecord
         {
             ModelFileHeader *header;
-            char            *filename;
+            const char      *filename;
             float            scale;
         } ItemModelFileRecord;
 
         typedef struct ChrModelFileRecord
         {
             ModelFileHeader *header;
-            char            *filename;
+            const char      *filename;
             float            scale;
             float            pov;
             u8               isMale;
@@ -3145,12 +3145,12 @@ typedef struct SetupIntroCamera
     union
     {
         u16   lang_index[2];
-        char *lang_ptr;
+        const char *lang_ptr;
     } lang1c;
     union
     {
         s32   lang_index;
-        char *lang_ptr;
+        const char *lang_ptr;
     } lang20;
     struct SetupIntroCamera *prev;
 } SetupIntroCamera;

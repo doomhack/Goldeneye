@@ -110,7 +110,7 @@ void cheatTick(void);
 bool cheatIsActive(CHEAT_ID cheatindex);
 bool cheatIsMpCheat(CHEAT_ID cheatindex);
 void cheatTurnAllOff(void);
-char *cheatGetName(CHEAT_ID cheatindex);
+const char *cheatGetName(CHEAT_ID cheatindex);
 
 void cheatResetInput(void);
 void cheatResetPlayerMasks(void);

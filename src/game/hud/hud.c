@@ -113,7 +113,7 @@ Gfx *hudRenderCredits(Gfx *gdl)
     s32 align1;
     s32 align2;
     s16 viewheight;
-    char *text;
+    const char *text;
 
     if (bossGetStageNum() == LEVELID_CUBA && credits_state == 1 && credits_pointer != NULL)
     {

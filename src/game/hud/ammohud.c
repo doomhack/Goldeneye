@@ -110,7 +110,7 @@ Gfx *hudDrawImageDefault(Gfx *gdl, sImageTableEntry *tconfig, f32 x, f32 y, f32 
 /**
  * Draws a HUD string at x, y, aligned by halign/valign, with an optional outline.
  */
-Gfx *gunDrawHudString(Gfx *gdl, char *text, s32 x, s32 halign, s32 y, s32 valign, bool outline)
+Gfx *gunDrawHudString(Gfx *gdl, const char *text, s32 x, s32 halign, s32 y, s32 valign, bool outline)
 {
     s32 x1;
     s32 y1;

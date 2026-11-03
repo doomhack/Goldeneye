@@ -1060,7 +1060,7 @@ s32 invGetWeaponForIndex(s32 index)
  * Counter-op: the guard player's empty hand is the suicide pill
  * (counterOpSuicidePillTick), so the watch names it that instead of "-".
  */
-static char *invCounterOpPillName(ITEM_IDS weaponnum)
+static const char *invCounterOpPillName(ITEM_IDS weaponnum)
 {
     if ((weaponnum == ITEM_UNARMED) && counterOpIsGuardPlayer(playerGetCurrentNum()))
     {
@@ -1070,7 +1070,7 @@ static char *invCounterOpPillName(ITEM_IDS weaponnum)
     return NULL;
 }
 
-char *invGetNameByIndex(s32 index)
+const char *invGetNameByIndex(s32 index)
 {
     InvItem      *item      = invGetItemByIndex(index);
     ITEM_IDS      weaponnum = 0;
@@ -1208,7 +1208,7 @@ void invDetermineEquippedItem(void)
     }
 }
 
-char *invGetActivatedTextObject(const ObjectRecord *obj)
+const char *invGetActivatedTextObject(const ObjectRecord *obj)
 {
     textoverride *override = invGetOverrideForObj(obj);
 
@@ -1220,7 +1220,7 @@ char *invGetActivatedTextObject(const ObjectRecord *obj)
     return NULL;
 }
 
-char *invGetActivatedTextWeapon(ITEM_IDS weaponnum)
+const char *invGetActivatedTextWeapon(ITEM_IDS weaponnum)
 {
     textoverride *override = invGetOverrideForWeapon(weaponnum);
 

@@ -7,7 +7,7 @@
 typedef struct AssetEntry
 {
     s32   index;
-    char *filename;
+    const char *filename;
     u8   *romAddr;
 } AssetEntry;
 
