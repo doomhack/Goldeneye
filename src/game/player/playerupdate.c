@@ -20,6 +20,7 @@
 #include "game/player/headbob.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
+#include "game/player/playerinput.h"
 #include "game/player/playerdamage.h"
 #include "game/player/playertune.h"
 #include "game/prop/propobj.h"
@@ -1802,6 +1803,8 @@ void playerMoveFrozen(u16 buttons, u16 oldbuttons)
     property_offset = g_DefaultFrozenPlayerOffset;
     offset = g_DefaultFrozenMoveOffset;
 
+    // No pending Start tap or gauge request survives into a frozen camera.
+    playerCancelStartTap(playerGetCurrentNum());
     playerTickDamageAndHealth();
     playerTickExplode();
     playerProcessInput(0, 0, 0, 0);

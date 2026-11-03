@@ -21,6 +21,7 @@ f32 playerScaleLookSpeedVerta(f32 value);
 void playerUpdateSpeedVerta(f32 value);
 f32 playerScaleLookSpeedTheta(f32 speed);
 void playerUpdateSpeedTheta(f32 value);
+void playerCancelStartTap(s32 playernum);
 void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons);
 
 #endif

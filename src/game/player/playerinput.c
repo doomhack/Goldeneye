@@ -20,6 +20,8 @@
 #include "game/world/bgfog.h"
 #include "os_extension.h"
 #include "game/player/playerinput.h"
+#include "game/player/playerdamage.h"
+#include "game/level/frametiming.h"
 #include "game/level/gamemode.h"
 
 
@@ -363,6 +365,104 @@ void playerUpdateSpeedTheta(f32 value)
  * movement, look, aim, fire, reload, weapon switching, crouch, lean, the watch
  * and the tank's controls, for the chosen control style. Also runs auto-aim.
  */
+/**
+ * Start taps: a single tap opens the watch (pausing the game), a double tap
+ * shows the player's health and armour gauges without pausing. To tell them
+ * apart the watch opens START_DOUBLE_TAP_FRAMES after a first tap that no
+ * second tap followed. Counted in VI frames per player.
+ */
+#if defined(VERSION_EU)
+#define START_DOUBLE_TAP_FRAMES 13 // ~0.25 s at 50 Hz
+#else
+#define START_DOUBLE_TAP_FRAMES 15 // 0.25 s at 60 Hz
+#endif
+
+static s32 s_StartTapFrames[4];     // > 0: a first tap waits for a second
+static bool s_StartHealthHeld[4];   // Start still held after a double tap
+
+
+void playerCancelStartTap(s32 playernum)
+{
+    s_StartTapFrames[playernum] = 0;
+    s_StartHealthHeld[playernum] = FALSE;
+    playerCancelHealthDisplayRequest(playernum);
+}
+
+
+static void playerTickStartButton(u16 buttons, u16 oldbuttons)
+{
+    s32 n = playerGetCurrentNum();
+    bool tapped = ((buttons & ~oldbuttons) & START_BUTTON) != 0;
+    bool canwatch = g_CurrentPlayer->bonddead == FALSE
+        && g_CurrentPlayer->forceDisarmTicks <= 0
+        && !gameIsMulti()
+        && !coopPartnerHasWatchOut();
+
+    if (s_StartHealthHeld[n])
+    {
+        if (buttons & START_BUTTON)
+        {
+            playerRequestHealthDisplay(TRUE);
+        }
+        else
+        {
+            s_StartHealthHeld[n] = FALSE;
+        }
+    }
+
+    if (!canwatch)
+    {
+        s_StartTapFrames[n] = 0;
+        return;
+    }
+
+    if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5)
+    {
+        s_StartTapFrames[n] = 0;
+
+        if (g_CurrentPlayer->open_close_solo_watch_menu)
+        {
+            watchTrigger(0);
+        }
+    }
+    else if (g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0x0)
+    {
+        // Watch on its way up or down: Start acts at once, as before.
+        s_StartTapFrames[n] = 0;
+
+        if (tapped)
+        {
+            watchTrigger(0);
+        }
+    }
+    else if (tapped)
+    {
+        if (s_StartTapFrames[n] > 0)
+        {
+            s_StartTapFrames[n] = 0;
+            s_StartHealthHeld[n] = TRUE;
+            playerRequestHealthDisplay(FALSE);
+        }
+        else
+        {
+            s_StartTapFrames[n] = START_DOUBLE_TAP_FRAMES;
+        }
+    }
+    else if (s_StartTapFrames[n] > 0)
+    {
+        s_StartTapFrames[n] -= g_FrameDelta;
+
+        if (s_StartTapFrames[n] <= 0)
+        {
+            // Co-op: either player's watch pauses the game for both and
+            // fills the screen while it is out (see coopUpdateSoloView).
+            s_StartTapFrames[n] = 0;
+            watchTrigger(0);
+        }
+    }
+}
+
+
 void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 {
     struct MoveData moveData;
@@ -479,23 +579,7 @@ void playerProcessInput(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
         }
     }
 
-    if (g_CurrentPlayer->bonddead == FALSE
-        && g_CurrentPlayer->forceDisarmTicks <= 0
-        && (
-            (g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0x5
-                && ((buttons & ~oldbuttons) & START_BUTTON)
-            )
-            ||
-            (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5
-                && g_CurrentPlayer->open_close_solo_watch_menu)
-        )
-        && !gameIsMulti()
-        && !coopPartnerHasWatchOut())
-    {
-        // Co-op: either player's watch pauses the game for both and fills
-        // the screen while it is out (see coopUpdateSoloView).
-        watchTrigger(0);
-    }
+    playerTickStartButton(buttons, oldbuttons);
 
     if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x0
         && g_CurrentPlayer->bonddead == FALSE

@@ -12,6 +12,8 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
 void playerTakeDamageFromAngle(f32 damage_amount, f32 angle, s32 playerid, s32 affects_armor);
 int playerIsShowingDamage(void);
 int playerIsShowingHealth(void);
+void playerRequestHealthDisplay(bool held);
+void playerCancelHealthDisplayRequest(s32 playernum);
 void playerSetInvincible(u32 invincible);
 u8 playerGetInvincible(void);
 f32 currentPlayerGetHealth(void);
