@@ -201,6 +201,33 @@ void dbgShowFault(const OSThread *t)
     dbgLabelHex("badvaddr", t->context.badvaddr);
     dbgPutChar('\n');
     dbgStackScan(t);
+
+    // Floating point exception: the FPU status and registers (f0 to f31, as stored)
+    if (((t->context.cause >> 2) & 0x1F) == 15)
+    {
+        const __OSfp *fp = &t->context.fp0;
+        s32 i;
+
+        dbgLabelHex("fpcsr", t->context.fpcsr);
+
+        for (i = 0; i < 16; i++)
+        {
+            if ((i % 3) == 0)
+            {
+                dbgPutChar('\n');
+            }
+
+            dbgPutChar('f');
+            dbgPutChar('0' + ((i * 2) / 10));
+            dbgPutChar('0' + ((i * 2) % 10));
+            dbgPutChar(' ');
+            dbgHex(*(const u32 *) &fp[i].f.f_even);
+            dbgHex(*(const u32 *) &fp[i].f.f_odd);
+            dbgPutChar(' ');
+        }
+
+        dbgPutChar('\n');
+    }
     dbgShowScreen();
 }
 
