@@ -49,6 +49,7 @@ const PropRecord *playerGetTank(void);
 
 s32  tankUsedByPartner(void);
 void tankUpdateDriver(void);
+void tankLeaveOnDeath(void);
 
 
 #endif

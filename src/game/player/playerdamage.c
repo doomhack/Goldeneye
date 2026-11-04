@@ -25,6 +25,7 @@
 #include "game/player/playerdamage.h"
 #include "game/level/gamemode.h"
 #include "game/mission/mission.h"
+#include "game/player/tank.h"
 
 static s32 g_SurroundBondWithExplosionsTicks;
 
@@ -391,7 +392,12 @@ void playerDie(void)
         g_CurrentPlayer->thetadie = g_CurrentPlayer->vv_theta;
         g_CurrentPlayer->vertadie = g_CurrentPlayer->vv_verta;
 
-        if (g_CurrentPlayer->tankMounted != NULL)
+        if (gameIsTwoPlayerMission() && coopPartnerAlive())
+        {
+            // The partner carries on: leave the tank where it is for them.
+            tankLeaveOnDeath();
+        }
+        else if (g_CurrentPlayer->tankMounted != NULL)
         {
             g_Mission.explodeTankOnDeath = 1;
         }
