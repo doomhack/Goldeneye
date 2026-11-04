@@ -27,6 +27,7 @@
 #include "game/save/file.h"
 #include "game/prop/propobj.h"
 #include "game/prop/explosion.h"
+#include "game/player/coop.h"
 #include "game/player/gun.h"
 #include "game/model/anim.h"
 #include "joy.h"
@@ -409,7 +410,11 @@ void chrTestHit(PropRecord *prop, ShotData *shotdata)
         }
     }
 
-    if (hitbounds && (prop->zDepth <= shotdata->maxdist))
+    // Counter-op: the guard player's shots still stop at guards (and do no damage, see
+    // chrTakeShot), but don't count as a near miss, which the guard would take as Bond
+    // shooting at them.
+    if (hitbounds && (prop->zDepth <= shotdata->maxdist)
+        && !((prop->type == PROP_TYPE_CHR) && counterOpIsGuardPlayer(playerGetCurrentNum())))
     {
         chr->chrflags |= CHRFLAG_NEAR_MISS;
         chr->numclosearghs++;
