@@ -193,6 +193,15 @@ void sparkRender(s_bullet_spark *thing, Gfx **gdlptr, s32 zbufferMode)
         return;
     }
     
+    /* Only sparks in rooms this view draws. The room matrix is built from the view's
+       origin room and holds offsets up to +-32768 only, so in co-op a spark from the
+       other player's fight at the far end of Streets would overflow it (mtxF2L) and
+       crash. A spark in a room that isn't drawn is behind a wall anyway. */
+    if (!bgRoomIsVisible(thing->room))
+    {
+        return;
+    }
+
     if (!camIsPosInScreen((coord3d *) (&thing->pos.x), *((f32 *) (&thing->size))))
     {
         return;

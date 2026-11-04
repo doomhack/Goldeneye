@@ -37,6 +37,9 @@
    beam dropped some other way only leaves the count too high, which just costs the skip. */
 s32 g_NumLiveBeams = 0;
 
+/* How far from the camera (on any axis) a beam can start and still be drawn */
+#define BEAM_MAX_VIEW_OFFSET 32000.0f
+
 void beamCreate(struct BeamRecord *beam, ITEM_IDS item, coord3d *from, const coord3d *to)
 {
     f32 dist;
@@ -316,11 +319,22 @@ Gfx *beamRender(Gfx *gdl, const BeamRecord *flash, s32 zbufferMode)
             vtx = dynAllocateVertices(4);
         }
 
-        mtx = dynAllocateMatrix();
-
         mtx4LoadTranslation(&pos, &mtxf);
         mtx4ScaleRows012(0.1f, &mtxf);
         mtx4MultAffineInPlace(worldtoscreen, &mtxf);
+
+        /* The fixed-point matrix only holds offsets up to +-32768. A tracer further
+           than that from the camera (in co-op, the other player's fight at the far
+           end of Streets) would overflow and crash in mtxF2L, and is far too
+           small to see anyway. */
+        if ((mtxf.m[3][0] > BEAM_MAX_VIEW_OFFSET) || (mtxf.m[3][0] < -BEAM_MAX_VIEW_OFFSET)
+            || (mtxf.m[3][1] > BEAM_MAX_VIEW_OFFSET) || (mtxf.m[3][1] < -BEAM_MAX_VIEW_OFFSET)
+            || (mtxf.m[3][2] > BEAM_MAX_VIEW_OFFSET) || (mtxf.m[3][2] < -BEAM_MAX_VIEW_OFFSET))
+        {
+            return gdl;
+        }
+
+        mtx = dynAllocateMatrix();
         mtxF2L(&mtxf, (Mtxf *)mtx);
 
         vtx[0] = templatevtx;
