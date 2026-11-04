@@ -44,9 +44,30 @@ const EnvironmentRecord * g_EnvironmentMainp;
 
 const EnvironmentRecord * g_EnvironmentAltp;
 
-#if defined(VERSION_EU) || defined(FOG_TUNE)
-NearFogValues eu_loadCurrentNearFog;
-#endif
+/* The level's near fog (prop fade) values in use, as floats: PAL's table stores them
+   as s16, and co-op and counter-op can change them (s_TwoPlayerFog) */
+static NearFogValues s_CurrentNearFog;
+
+/**
+ * Co-op and counter-op draw two views, so some levels draw less far than solo:
+ * the far plane (and fog), and where the prop fade begins. The fade keeps the
+ * solo table's length (MaxVisRange - NearFog) and MaxObfuscationRange.
+ * A fadeBegin of 0 keeps the solo fade.
+ */
+static const struct
+{
+    LEVELID level;
+    f32 far;
+    f32 fadeBegin;
+} s_TwoPlayerFog[] = {
+    { LEVELID_BUNKER2,  5000.0f,    0.0f },
+    { LEVELID_CONTROL,  5000.0f, 2000.0f },
+    { LEVELID_STREETS,  5000.0f, 3000.0f },
+    { LEVELID_DEPOT,    3000.0f, 2750.0f },
+    { LEVELID_JUNGLE,   2000.0f, 2000.0f },
+    { LEVELID_AZTEC,   10000.0f,    0.0f },
+    { LEVELID_EGYPT,   10000.0f, 3000.0f },
+};
 
 #ifdef FOG_TUNE
 /* Tuning build (make FOGTUNE=1): scales on the level's far plane and prop fade
@@ -260,13 +281,35 @@ void fogLoadCurrentEnvironment(const EnvironmentRecord *env)
     s_FogLastEnvironment = env;
     farfog = env->Visibility.FarFog;
 
+    s_CurrentNearFog.NearFog = env->Visibility.Nfd.NearFog;
+    s_CurrentNearFog.MaxVisRange = env->Visibility.Nfd.MaxVisRange;
+    s_CurrentNearFog.MaxObfuscationRange = env->Visibility.Nfd.MaxObfuscationRange;
+
+    if (gameIsTwoPlayerMission())
+    {
+        for (s32 i = 0; i < ARRAYCOUNT(s_TwoPlayerFog); i++)
+        {
+            if (env->Id == s_TwoPlayerFog[i].level)
+            {
+                farfog = s_TwoPlayerFog[i].far;
+
+                if (s_TwoPlayerFog[i].fadeBegin != 0.0f)
+                {
+                    s_CurrentNearFog.MaxVisRange += s_TwoPlayerFog[i].fadeBegin - s_CurrentNearFog.NearFog;
+                    s_CurrentNearFog.NearFog = s_TwoPlayerFog[i].fadeBegin;
+                }
+                break;
+            }
+        }
+    }
+
     if (gameIsTwoPlayerMission() && optionsGetDrawNear())
     {
         farfog *= COOP_NEAR_DRAW_SCALE;
     }
 
 #ifdef FOG_TUNE
-    s_FogTuneTableFar = env->Visibility.FarFog;
+    s_FogTuneTableFar = farfog;
     farfog *= g_FogTuneFarScale;
     s_FogTuneFar = farfog;
 #endif
@@ -327,20 +370,13 @@ void fogLoadCurrentEnvironment(const EnvironmentRecord *env)
     }
     else
     {
-#if defined(VERSION_EU) || defined(FOG_TUNE)
-        eu_loadCurrentNearFog.NearFog = env->Visibility.Nfd.NearFog;
-        eu_loadCurrentNearFog.MaxVisRange = env->Visibility.Nfd.MaxVisRange;
-        eu_loadCurrentNearFog.MaxObfuscationRange = env->Visibility.Nfd.MaxObfuscationRange;
-        g_NearFogValuesP = &eu_loadCurrentNearFog;
 #ifdef FOG_TUNE
-        s_FogTuneTableFade = eu_loadCurrentNearFog;
-        eu_loadCurrentNearFog.NearFog *= g_FogTuneFadeScale;
-        eu_loadCurrentNearFog.MaxVisRange *= g_FogTuneFadeScale;
-        eu_loadCurrentNearFog.MaxObfuscationRange *= g_FogTuneFadeScale;
+        s_FogTuneTableFade = s_CurrentNearFog;
+        s_CurrentNearFog.NearFog *= g_FogTuneFadeScale;
+        s_CurrentNearFog.MaxVisRange *= g_FogTuneFadeScale;
+        s_CurrentNearFog.MaxObfuscationRange *= g_FogTuneFadeScale;
 #endif
-#else
-        g_NearFogValuesP = &env->Visibility.Nfd;
-#endif
+        g_NearFogValuesP = &s_CurrentNearFog;
     }
 
 #undef FOG_ZERO
