@@ -9,6 +9,7 @@
 #include <fr.h>
 #include <music.h>
 #include "game/audio/sfxvolume.h"
+#include "game/chr/chr.h"
 #include "game/chr/chraction.h"
 #include "game/level/frametiming.h"
 #include "game/level/lv.h"
@@ -18,6 +19,7 @@
 #include "game/model/model.h"
 #include "game/nav/stan.h"
 #include "game/player/headbob.h"
+#include "game/player/coop.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/player/playerinput.h"
@@ -1393,6 +1395,14 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         headpos_x = g_CurrentPlayer->headpos.f[0];
         headpos_z = g_CurrentPlayer->headpos.f[2];
+
+        // Counter-op: the guard player is one of the guards, so the fast and
+        // slow animation cheats speed them up or slow them down too
+        if (counterOpIsGuardPlayer(playerGetCurrentNum()))
+        {
+            headpos_x *= chrsGetAnimRate();
+            headpos_z *= chrsGetAnimRate();
+        }
 
         move_offset.f[0] +=
             (
