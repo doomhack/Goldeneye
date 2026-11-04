@@ -10,6 +10,8 @@
 #include "game/world/bgfog.h"
 #include "game/player/tank.h"
 #include "game/level/gamemode.h"
+#include "game/player/gun.h"
+#include "game/player/inventory.h"
 
 /* The level's tank (Streets and Runway have one), see struct Tank */
 struct Tank g_Tank;
@@ -263,6 +265,41 @@ void tankUpdateDriver(void)
     if (gameIsTwoPlayerMission() && !tankUsedByPartner())
     {
         g_Tank.driver = ((g_CurrentPlayer->tankMounted != NULL) || g_CurrentPlayer->tankDriving) ? playerGetCurrentNum() : -1;
+    }
+}
+
+/**
+ * Two-player missions: the current player has just died in or on the tank.
+ * The tank stays where it is with its shells, and nobody owns it any more,
+ * so the partner can climb in. The dead player respawns on foot.
+ */
+void tankLeaveOnDeath(void)
+{
+    if (g_CurrentPlayer->tankDriving == 1)
+    {
+        struct TankRecord *tank = (struct TankRecord *)g_CurrentPlayer->tankMounted->obj;
+
+        tank->storedShells = weaponGetHeldAmmo(ITEM_TANKSHELLS);
+
+        if (gunGetWeapon(GUNRIGHT) == ITEM_TANKSHELLS)
+        {
+            tank->storedShells += gunGetMagazineAmmo(GUNRIGHT);
+        }
+
+        weaponGiveAmmo(ITEM_TANKSHELLS, 0);
+        invRemoveItemByID(ITEM_TANKSHELLS);
+        tank->is_firing_tank = 0;
+    }
+
+    g_CurrentPlayer->tankDriving = 0;
+    g_CurrentPlayer->tankCanEnter = 0;
+    g_CurrentPlayer->tankTouched = NULL;
+    g_CurrentPlayer->tankMounted = NULL;
+    g_CurrentPlayer->tankYOffset = 0.0f;
+
+    if (g_Tank.driver == playerGetCurrentNum())
+    {
+        g_Tank.driver = -1;
     }
 }
 
