@@ -964,6 +964,13 @@ Gfx *playerRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha)
         if (!g_CoopSoloViewIsCinema && (playerGetIndexForProp(prop) != playerGetCurrentNum()))
         {
             chr->fadealpha = (u8)(fadealpha * coopPartnerVisibility());
+
+            // Counter-op: the invisibility cheat hides Bond from the guard
+            // player too, not just from the AI guards
+            if (gameIsCounterOp() && (playerGetIndexForProp(prop) == COUNTEROP_BOND) && !playerGetVisibleToGuards())
+            {
+                chr->fadealpha = 0;
+            }
         }
 
         gdl = chrRenderProp(prop, gdl, withalpha);
