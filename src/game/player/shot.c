@@ -12,7 +12,6 @@
 #include "game/menu/watchmenu.h"
 #include "game/mission/objective.h"
 #include "game/nav/stan.h"
-#include "game/player/coop.h"
 #include "game/player/gun.h"
 #include "game/player/player.h"
 #include "game/prop/explosion.h"
@@ -524,7 +523,6 @@ s32 shotFindBgHit(const coord3d *from, const coord3d *to, const coord3d *dir, co
 void shotFireBullet(s32 hand)
 {
     f32 maxRange;
-    bool guardplayer;
     const coord3d *playerpos;
     s32 hitbgstan;
     coord3d stanhit;
@@ -685,21 +683,12 @@ void shotFireBullet(s32 hand)
         shotdata.maxdist = maxRange;
     }
 
-    // Counter-op: the guard player's bullets pass straight through other guards, so
-    // they neither hit them nor count as a near miss (which would alert the guard).
-    guardplayer = counterOpIsGuardPlayer(playerGetCurrentNum());
-
     for (pp = g_LastOnScreenProp; (--pp) >= g_OnScreenPropList;)
     {
         prop = *pp;
 
         if (prop != 0)
         {
-            if ((prop->type == PROP_TYPE_CHR) && guardplayer)
-            {
-                continue;
-            }
-
             if ((prop->type == PROP_TYPE_CHR) || (((prop->type == PROP_TYPE_VIEWER) && (prop->chr != 0)) && (playerGetIndexForProp(prop) != playerGetCurrentNum())))
             {
                 chrTestHit(prop, &shotdata);
