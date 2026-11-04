@@ -1,7 +1,8 @@
 /**
- * The z-buffer: allocated in the stage pool the first time a level draws (wide enough for
- * hi-res, so the option can change mid-level), and cleared for each player's view as it is
- * drawn. Front-end screens hand in their own buffer instead (zbufSetBuffer).
+ * The z-buffer: g_GameZbuf (src/cfb.c), which has an RDRAM bank to itself, picked up the
+ * first time a level draws. It is wide enough for hi-res, so the option can change
+ * mid-level, and is cleared for each player's view as it is drawn. Front-end screens hand
+ * in their own buffer instead (zbufSetBuffer).
  */
 
 #include <ultra64.h>
@@ -20,7 +21,7 @@ static s32 s_ZbufHeight;
 // Buffers handed in through zbufSetBuffer (front-end menus) keep their own width.
 static bool s_ZbufIsGameplay;
 
-/** Forgets the buffer (the stage pool it was in is being freed) */
+/** Forgets the buffer, so the next level picks g_GameZbuf up again */
 void zbufDeallocate(void)
 {
     s_Zbuf = NULL;
@@ -52,8 +53,10 @@ static void zbufAllocate(void)
         }
     }
 
-    s_Zbuf = mempAlloc((s_ZbufWidth * s_ZbufHeight * 2) + 64, MEMPOOL_STAGE);
-    s_Zbuf = (u8 *)ALIGN64_V1((uintptr_t)s_Zbuf);
+    static_assert(Z_BUFFER_4_3_WIDTH * Z_BUFFER_4_3_HEIGHT * 2 <= sizeof(g_GameZbuf));
+    static_assert(SCREEN_WIDTH * VI_MAX_SCALEX * SCREEN_HEIGHT * 2 <= sizeof(g_GameZbuf));
+
+    s_Zbuf = g_GameZbuf;
     s_ZbufIsGameplay = resolution == 0;
 }
 

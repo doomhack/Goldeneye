@@ -4,6 +4,7 @@
 #include <bondconstants.h>
 #include <bondgame.h>
 #include "boss.h"
+#include <macro.h>
 #include "crash.h"
 #include "game/menu/cheat.h"
 #include "game/text/language.h"
@@ -187,8 +188,9 @@ extern struct player *g_CurrentPlayer;
 
 /**
  * The mod needs the Expansion Pak: the game code is resident in RAM and the heap
- * runs to the top of 8MB. Without it, say so on screen instead of crashing.
- * Everything used here sits in the first 4MB.
+ * and buffers fill the top of 8MB. Without it, say so on screen instead of crashing.
+ * Everything used here sits in the first 4MB: the framebuffers are in the upper 4MB, so
+ * the message is drawn at the (still unused) start of the heap instead.
  */
 static void bossCheckExpansionPak(void)
 {
@@ -204,7 +206,7 @@ static void bossCheckExpansionPak(void)
         return;
     }
 
-    fb = (u16 *) K0_TO_K1(cfb_16[0]);
+    fb = (u16 *) K0_TO_K1(ALIGN64_V1((uintptr_t) &_heapSegmentStart));
 
     for (i = 0; i < SCREEN_WIDTH * SCREEN_HEIGHT; i++)
     {
@@ -243,7 +245,7 @@ static void bossCheckExpansionPak(void)
     IO_WRITE(VI_V_BURST_REG, mode->fldRegs[0].vBurst);
     IO_WRITE(VI_INTR_REG, mode->fldRegs[0].vIntr);
     IO_WRITE(VI_Y_SCALE_REG, mode->fldRegs[0].yScale);
-    IO_WRITE(VI_ORIGIN_REG, osVirtualToPhysical(cfb_16[0]) + mode->fldRegs[0].origin);
+    IO_WRITE(VI_ORIGIN_REG, K0_TO_PHYS(ALIGN64_V1((uintptr_t) &_heapSegmentStart)) + mode->fldRegs[0].origin);
 
     while (1)
     {
@@ -306,7 +308,8 @@ void bossInitMainthreadData(void)
         }
     }
 
-    mempInit((u8 *) &_heapSegmentStart, (u8 *) PHYS_TO_K0(osMemSize), MEMP_PERMANENT_SIZE + animGetFramesSize());
+    // The heap stops at the z-buffer and framebuffer banks (ge007.ld, src/cfb.c)
+    mempInit((u8 *) &_heapSegmentStart, (u8 *) &_zbufSegmentStart, MEMP_PERMANENT_SIZE + animGetFramesSize());
     mempResetPool(MEMPOOL_PERMANENT);
     langInit();
     lvInit();

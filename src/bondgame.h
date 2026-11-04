@@ -25,6 +25,7 @@ extern const u32 *_inflateSegmentRomEnd NO_SDATA;
 extern const u32 *_gameSegmentStart NO_SDATA;
 extern const u32 *_gameSegmentEnd NO_SDATA;
 extern const u32 *_heapSegmentStart NO_SDATA;
+extern const u32 *_zbufSegmentStart NO_SDATA;
 extern const u32 *_gameSegmentRomStart NO_SDATA;
 extern const u32 *_gameSegmentRomEnd NO_SDATA;
 

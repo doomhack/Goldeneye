@@ -195,6 +195,9 @@ extern Mtx *g_viProjectionMatrix;
 /* SCREEN_HEIGHT #define changes based on version (PAL or NTSC) */
 extern u8 cfb_16[NUM_VIDEO_FRAME_BUFFERS][SCREEN_WIDTH * VI_MAX_SCALEX * SCREEN_HEIGHT * 2];
 
+/* The gameplay z-buffer, in its own RDRAM bank (src/cfb.c) */
+extern u8 g_GameZbuf[SCREEN_WIDTH * VI_MAX_SCALEX * SCREEN_HEIGHT * 2];
+
 void viShake(f32 intensity);
 
 void viInitVideoSettings(void);

@@ -222,15 +222,26 @@ SECTIONS
    }
    _stacksSegmentEnd = ADDR(.stacks) + SIZEOF(.stacks);
 
-   _cfbSegmentStart = ADDR(.cfb);
-   .cfb ALIGN(_stacksSegmentEnd, 64) (NOLOAD) :
+   /* The heap runs from here to the z-buffer bank (_zbufSegmentStart) */
+   _heapSegmentStart = ALIGN(_stacksSegmentEnd, 16);
+
+   /* The z-buffer and the colour framebuffers each have a 1 MB RDRAM bank of their own
+      (banks 6 and 7, see src/cfb.c), at the top of the 8 MB. */
+   _zbufSegmentStart = ADDR(.zbuf);
+   .zbuf 0x80600000 (NOLOAD) :
    {
-      build/OUTCODE/src/cfb.o (.bss);
+      build/OUTCODE/src/cfb.o (.bss.zbuf);
+   }
+   _zbufSegmentEnd = ADDR(.zbuf) + SIZEOF(.zbuf);
+   __zbufBankCheck = ASSERT(SIZEOF(.zbuf) <= 0x100000, "z-buffer doesn't fit its 1MB bank");
+
+   _cfbSegmentStart = ADDR(.cfb);
+   .cfb 0x80700000 (NOLOAD) :
+   {
+      build/OUTCODE/src/cfb.o (.bss.cfb);
    }
    _cfbSegmentEnd = ADDR(.cfb) + SIZEOF(.cfb);
-
-   /* The heap runs from here to the end of the 8MB */
-   _heapSegmentStart = ALIGN(_cfbSegmentEnd, 16);
+   __cfbBankCheck = ASSERT(_cfbSegmentEnd <= 0x80800000, "framebuffers don't fit their 1MB bank");
 
    /* init() runs on sp_rmon and copies the compressed data to just below 0x80300000,
       so the boot image (bss and stacks) must stay clear of that area. 0x14000 covers c_data. */
