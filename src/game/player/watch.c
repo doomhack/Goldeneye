@@ -1047,12 +1047,6 @@ void watchTrigger(s32 instant)
             fileCoopStorePartnerOptions();
         }
 
-        // The draw distance option may have changed.
-        if (gameIsTwoPlayerMission())
-        {
-            fogReloadCurrentEnvironment();
-        }
-
         levelMusicResume();
         g_CurrentPlayer->watch_animation_state = WATCH_ANIMATION_0xc;
         g_CurrentPlayer->watch_pause_time = 0;

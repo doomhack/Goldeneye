@@ -105,6 +105,10 @@ The record after it is the alternative environment: an AI script can switch to i
 (`AI_SwitchSky`, `fogSwitchToSolosky2`), and toxic gas blends towards it.
 `fogSetRenderFogColor` puts the fog into the display list; props use
 `fogGetPropDistColor` so they fade into the fog the same way.
+Co-op and counter-op draw two views, so `s_TwoPlayerFog` gives some levels a nearer far
+plane and an earlier prop fade (`NearFog`, keeping the solo fade length) in those modes.
+`make FOGTUNE=1` builds a tuning mode: player 1 holds L and steps the far plane with
+C-left/right and the prop fade with C-up/down, with the values shown on screen.
 
 ## Sky and water
 

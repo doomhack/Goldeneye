@@ -524,6 +524,96 @@ static Gfx *lvRenderFpsCounter(Gfx *DL)
     return DL;
 }
 
+#ifdef FOG_TUNE
+#include "game/world/bgfog.h"
+
+#define FOG_TUNE_STEP 1.1f
+#define FOG_TUNE_MIN 0.1f
+#define FOG_TUNE_MAX 4.0f
+
+static f32 fogTuneStep(f32 scale, s32 dir)
+{
+    scale = (dir > 0) ? (scale * FOG_TUNE_STEP) : (scale / FOG_TUNE_STEP);
+
+    // Snap back onto 1.0 when passing it, so the table value is easy to get back to
+    if (scale > 0.97f && scale < 1.03f)
+    {
+        scale = 1.0f;
+    }
+
+    return (scale < FOG_TUNE_MIN) ? FOG_TUNE_MIN : (scale > FOG_TUNE_MAX) ? FOG_TUNE_MAX : scale;
+}
+
+/**
+ * Tuning build: player 1 holding L steps the far plane (and with it the fog)
+ * with C-left/right and the prop fade distances with C-up/down, 10% a press.
+ */
+static void lvFogTuneInput(void)
+{
+    if (!joyGetButtons(PLAYER_1, L_TRIG))
+    {
+        return;
+    }
+
+    u16 pressed = joyGetButtonsPressedThisFrame(PLAYER_1, L_CBUTTONS | R_CBUTTONS | U_CBUTTONS | D_CBUTTONS);
+
+    if (pressed == 0)
+    {
+        return;
+    }
+
+    if (pressed & R_CBUTTONS) g_FogTuneFarScale = fogTuneStep(g_FogTuneFarScale, 1);
+    if (pressed & L_CBUTTONS) g_FogTuneFarScale = fogTuneStep(g_FogTuneFarScale, -1);
+    if (pressed & U_CBUTTONS) g_FogTuneFadeScale = fogTuneStep(g_FogTuneFadeScale, 1);
+    if (pressed & D_CBUTTONS) g_FogTuneFadeScale = fogTuneStep(g_FogTuneFadeScale, -1);
+
+    fogReloadCurrentEnvironment();
+}
+
+/**
+ * Tuning build: the far plane and prop fade distances in use, with the fog
+ * table's values in brackets, top left.
+ */
+static Gfx *lvRenderFogTune(Gfx *DL)
+{
+    char text[160];
+    f32 far;
+    f32 tableFar;
+    NearFogValues fade;
+    NearFogValues tableFade;
+    s32 x = 0x14;
+    s32 y = 0x10;
+    s32 width = 0;
+    s32 height = 0;
+
+    fogTuneGetValues(&far, &tableFar, &fade, &tableFade);
+
+    s32 len = sprintf(text, "FAR %d x%d.%02d (%d)\n", (s32)far,
+        (s32)g_FogTuneFarScale, (s32)(g_FogTuneFarScale * 100.0f + 0.5f) % 100, (s32)tableFar);
+
+    if (tableFade.NearFog != 0.0f)
+    {
+        sprintf(text + len, "FADE %d-%d OBF %d x%d.%02d\n(%d-%d OBF %d)\n",
+            (s32)fade.NearFog, (s32)fade.MaxVisRange, (s32)fade.MaxObfuscationRange,
+            (s32)g_FogTuneFadeScale, (s32)(g_FogTuneFadeScale * 100.0f + 0.5f) % 100,
+            (s32)tableFade.NearFog, (s32)tableFade.MaxVisRange, (s32)tableFade.MaxObfuscationRange);
+    }
+    else
+    {
+        sprintf(text + len, "NO PROP FADE\n");
+    }
+
+    textMeasure(&height, &width, text, g_FontBankGothicChars, g_FontBankGothic, 0);
+
+    DL = textSetupDraw(DL);
+    DL = textRenderRect(DL, x - 2, y - 1, x + width + 2, y + height + 1, 0x64);
+    DL = textRender(DL, &x, &y, text, g_FontBankGothicChars, g_FontBankGothic, -1, viGetX(), viGetY(), 0, 0);
+    DL = textEndDraw(DL);
+
+    return DL;
+}
+#endif
+
 /**
  * Graphics render method.
  * Also sets player max ammo if infinite ammo cheat is enabled.
@@ -677,6 +767,14 @@ Gfx* lvRender(Gfx* DL)
 
         DL = lvRenderFpsCounter(DL);
     }
+
+#ifdef FOG_TUNE
+    if (g_CurrentStageToLoad != LEVELID_TITLE)
+    {
+        lvFogTuneInput();
+        DL = lvRenderFogTune(DL);
+    }
+#endif
 
     return DL;
 }

@@ -190,4 +190,10 @@ s32 fogGetPropDistColor(const PropRecord *prop, rgba_f32 *color);
 void fogSwitchToSolosky2(f32 frac);
 const NearFogValues *fogGetNearFogValuesP(void);
 
+#ifdef FOG_TUNE
+extern f32 g_FogTuneFarScale;
+extern f32 g_FogTuneFadeScale;
+void fogTuneGetValues(f32 *far, f32 *tableFar, NearFogValues *fade, NearFogValues *tableFade);
+#endif
+
 #endif

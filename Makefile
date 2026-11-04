@@ -65,6 +65,12 @@ ifeq ($(UNLOCK_ALL), 1)
   LCDEFS += -DUNLOCK_ALL_LEVELS
 endif
 
+# make FOGTUNE=1: player 1 holding L can scale the level's far plane and fog
+# (C-left/right) and the prop fade distances (C-up/down), with the values on screen
+ifeq ($(FOGTUNE), 1)
+  LCDEFS += -DFOG_TUNE
+endif
+
 # The graphics microcode is F3DEX3 (rsp/f3dex3/README.md)
 LCDEFS += -DF3DEX_GBI_2
 # Model.c files made before the generators wrote geometry modes by name have the original
@@ -594,6 +600,12 @@ UNLOCK_STAMP := $(BUILD_DIR)/unlock_all
 UNLOCK_SETTING := $(if $(filter 1,$(UNLOCK_ALL)),on,off)
 $(shell mkdir -p $(BUILD_DIR); [ "`cat $(UNLOCK_STAMP) 2>/dev/null`" = "$(UNLOCK_SETTING)" ] || echo $(UNLOCK_SETTING) > $(UNLOCK_STAMP))
 $(BUILD_DIR)/src/game/save/file.o $(BUILD_DIR)/src/game/menu/front.o: $(UNLOCK_STAMP)
+
+# Same for FOGTUNE
+FOGTUNE_STAMP := $(BUILD_DIR)/fogtune
+FOGTUNE_SETTING := $(if $(filter 1,$(FOGTUNE)),on,off)
+$(shell [ "`cat $(FOGTUNE_STAMP) 2>/dev/null`" = "$(FOGTUNE_SETTING)" ] || echo $(FOGTUNE_SETTING) > $(FOGTUNE_STAMP))
+$(BUILD_DIR)/src/game/world/bgfog.o $(BUILD_DIR)/src/game/level/lv.o: $(FOGTUNE_STAMP)
 
 # Switching LTO rebuilds every game object the same way
 LTO_STAMP := $(BUILD_DIR)/lto

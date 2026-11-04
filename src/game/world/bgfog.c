@@ -44,8 +44,39 @@ const EnvironmentRecord * g_EnvironmentMainp;
 
 const EnvironmentRecord * g_EnvironmentAltp;
 
-#if defined(VERSION_EU)
-NearFogValues eu_loadCurrentNearFog;
+/* The level's near fog (prop fade) values in use, as floats: PAL's table stores them
+   as s16, and co-op and counter-op can change them (s_TwoPlayerFog) */
+static NearFogValues s_CurrentNearFog;
+
+/**
+ * Co-op and counter-op draw two views, so some levels draw less far than solo:
+ * the far plane (and fog), and where the prop fade begins. The fade keeps the
+ * solo table's length (MaxVisRange - NearFog) and MaxObfuscationRange.
+ * A fadeBegin of 0 keeps the solo fade.
+ */
+static const struct
+{
+    LEVELID level;
+    f32 far;
+    f32 fadeBegin;
+} s_TwoPlayerFog[] = {
+    { LEVELID_BUNKER2,  5000.0f,    0.0f },
+    { LEVELID_CONTROL,  5000.0f, 2000.0f },
+    { LEVELID_STREETS,  5000.0f, 3000.0f },
+    { LEVELID_DEPOT,    3000.0f, 2750.0f },
+    { LEVELID_JUNGLE,   2000.0f, 2000.0f },
+    { LEVELID_AZTEC,   10000.0f,    0.0f },
+    { LEVELID_EGYPT,   10000.0f, 3000.0f },
+};
+
+#ifdef FOG_TUNE
+/* Tuning build (make FOGTUNE=1): scales on the level's far plane and prop fade
+   distances, set with L + C buttons, and the values they give (fogTuneGetValues) */
+f32 g_FogTuneFarScale = 1.0f;
+f32 g_FogTuneFadeScale = 1.0f;
+static f32 s_FogTuneTableFar;
+static f32 s_FogTuneFar;
+static NearFogValues s_FogTuneTableFade;
 #endif
 
 
@@ -215,19 +246,10 @@ f32 fogGetScaledFarFogIntensitySquared(void)
 }
 
 
-/**
- * Co-op's "near" draw distance: the far plane comes in to this fraction of
- * the level's. Rooms and props past it aren't drawn, which saves time in both
- * views. The fog positions are fractions of the depth buffer range, which is
- * 1/z-like: the level's fog keeps starting at about the same distance and
- * still reaches full strength at the (nearer) far plane, so nothing pops.
- */
-#define COOP_NEAR_DRAW_SCALE 0.5f
-
 static const EnvironmentRecord *s_FogLastEnvironment;
 
 /**
- * Loads the last environment again, after the draw distance option changed.
+ * Loads the last environment again (the tuning build, after its scales change).
  */
 void fogReloadCurrentEnvironment(void)
 {
@@ -250,10 +272,33 @@ void fogLoadCurrentEnvironment(const EnvironmentRecord *env)
     s_FogLastEnvironment = env;
     farfog = env->Visibility.FarFog;
 
-    if (gameIsTwoPlayerMission() && optionsGetDrawNear())
+    s_CurrentNearFog.NearFog = env->Visibility.Nfd.NearFog;
+    s_CurrentNearFog.MaxVisRange = env->Visibility.Nfd.MaxVisRange;
+    s_CurrentNearFog.MaxObfuscationRange = env->Visibility.Nfd.MaxObfuscationRange;
+
+    if (gameIsTwoPlayerMission())
     {
-        farfog *= COOP_NEAR_DRAW_SCALE;
+        for (s32 i = 0; i < ARRAYCOUNT(s_TwoPlayerFog); i++)
+        {
+            if (env->Id == s_TwoPlayerFog[i].level)
+            {
+                farfog = s_TwoPlayerFog[i].far;
+
+                if (s_TwoPlayerFog[i].fadeBegin != 0.0f)
+                {
+                    s_CurrentNearFog.MaxVisRange += s_TwoPlayerFog[i].fadeBegin - s_CurrentNearFog.NearFog;
+                    s_CurrentNearFog.NearFog = s_TwoPlayerFog[i].fadeBegin;
+                }
+                break;
+            }
+        }
     }
+
+#ifdef FOG_TUNE
+    s_FogTuneTableFar = farfog;
+    farfog *= g_FogTuneFarScale;
+    s_FogTuneFar = farfog;
+#endif
 
     viSetZRange(env->Visibility.BlendMultiplier, farfog);
     viGetZRange(zrange);
@@ -311,14 +356,13 @@ void fogLoadCurrentEnvironment(const EnvironmentRecord *env)
     }
     else
     {
-#if defined(VERSION_EU)
-        eu_loadCurrentNearFog.NearFog = env->Visibility.Nfd.NearFog;
-        eu_loadCurrentNearFog.MaxVisRange = env->Visibility.Nfd.MaxVisRange;
-        eu_loadCurrentNearFog.MaxObfuscationRange = env->Visibility.Nfd.MaxObfuscationRange;
-        g_NearFogValuesP = &eu_loadCurrentNearFog;
-#else
-        g_NearFogValuesP = &env->Visibility.Nfd;
+#ifdef FOG_TUNE
+        s_FogTuneTableFade = s_CurrentNearFog;
+        s_CurrentNearFog.NearFog *= g_FogTuneFadeScale;
+        s_CurrentNearFog.MaxVisRange *= g_FogTuneFadeScale;
+        s_CurrentNearFog.MaxObfuscationRange *= g_FogTuneFadeScale;
 #endif
+        g_NearFogValuesP = &s_CurrentNearFog;
     }
 
 #undef FOG_ZERO
@@ -347,6 +391,30 @@ void fogLoadFoglessCurrentEnvironment(const EnvironmentFoglessRecord *env)
 }
 
 
+#ifdef FOG_TUNE
+/**
+ * The far plane and prop fade distances in use and the fog table's own ones.
+ * The fade values are 0 when the level has no prop fade.
+ */
+void fogTuneGetValues(f32 *far, f32 *tableFar, NearFogValues *fade, NearFogValues *tableFade)
+{
+    *far = s_FogTuneFar;
+    *tableFar = s_FogTuneTableFar;
+
+    if (g_NearFogValuesP != NULL)
+    {
+        *fade = *g_NearFogValuesP;
+        *tableFade = s_FogTuneTableFade;
+    }
+    else
+    {
+        *fade = (NearFogValues){0};
+        *tableFade = (NearFogValues){0};
+    }
+}
+#endif
+
+
 void fogLoadLevelEnvironment(s32 level_id, s32 introCamera)
 {
     const EnvironmentRecord *env;
@@ -366,6 +434,18 @@ void fogLoadLevelEnvironment(s32 level_id, s32 introCamera)
 
     g_ScaledFarFogIntensity = FLT_MAX;
     g_ScaledDifferenceFromFarFogIntensity = 0.0f;
+
+#ifdef FOG_TUNE
+    // Each level starts from its own table values (kept from the intro into play)
+    static s32 s_FogTuneLevel = -1;
+
+    if (level_id != s_FogTuneLevel)
+    {
+        s_FogTuneLevel = level_id;
+        g_FogTuneFarScale = 1.0f;
+        g_FogTuneFadeScale = 1.0f;
+    }
+#endif
 
     if (introCamera)
     {
