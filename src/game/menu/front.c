@@ -2809,8 +2809,7 @@ Gfx* frontModeSelectRender(Gfx* DL)
 #define COOP_SETUP_ROW_CONTROLS 1
 #define COOP_SETUP_ROW_SPLIT    2
 #define COOP_SETUP_ROW_HIRES    3
-#define COOP_SETUP_ROW_DRAWDIST 4
-#define COOP_SETUP_ROW_COUNT    5
+#define COOP_SETUP_ROW_COUNT    4
 
 #define COOP_SETUP_ROW_Y(row) (0x79 + (row) * 0x14)
 #define COOP_SETUP_VALUE_X 0xC8
@@ -2821,7 +2820,6 @@ static const char *const coop_setup_row_labels[COOP_SETUP_ROW_COUNT] = {
     "Player 2 Controls:\n",
     "Split Screen:\n",
     "Hi-Res:\n",
-    "Draw Distance:\n",
 };
 
 static s32 coop_setup_highlighted_row = -1;
@@ -2887,10 +2885,6 @@ static void frontCoopSetupStep(s32 row, s32 step)
 
         case COOP_SETUP_ROW_HIRES:
             optionsSetHiRes(!optionsGetHiRes());
-            break;
-
-        case COOP_SETUP_ROW_DRAWDIST:
-            optionsSetDrawNear(!optionsGetDrawNear());
             break;
     }
 }
@@ -3086,9 +3080,6 @@ Gfx *frontCoopSetupRender(Gfx *DL)
                 break;
             case COOP_SETUP_ROW_HIRES:
                 text = (optionsGetHiRes() ? "On\n" : "Off\n");
-                break;
-            case COOP_SETUP_ROW_DRAWDIST:
-                text = (optionsGetDrawNear() ? "Near\n" : "Full\n");
                 break;
         }
 

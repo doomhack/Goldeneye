@@ -1168,11 +1168,6 @@ static u16 fileGetCurrentPlayerOptions(void)
         bits |= OPTION_FPS;
     }
 
-    if (optionsGetDrawNear())
-    {
-        bits |= OPTION_DRAWNEAR;
-    }
-
     temp = ((u16) (optionsGetControlStyle() << 8)) & OPTION_CONTROLTYPE;
     return bits | temp;
 }
@@ -1261,7 +1256,6 @@ void fileLoadSettingsForFolder(u32 folder)
         optionsSetHiRes((options & OPTION_HIRES) != FALSE);
         optionsSetSplitStacked((options & OPTION_SPLITSIDE) == FALSE);
         optionsSetShowFps((options & OPTION_FPS) != FALSE);
-        optionsSetDrawNear((options & OPTION_DRAWNEAR) != FALSE);
     }
 }
 
@@ -1446,13 +1440,8 @@ void fileSaveDisplaySettingsForFolder(s32 folder)
             bits |= OPTION_SPLITSIDE;
         }
 
-        if (optionsGetDrawNear())
-        {
-            bits |= OPTION_DRAWNEAR;
-        }
-
         new_save = *save;
-        new_save.options = (new_save.options & ~(OPTION_HIRES | OPTION_SPLITSIDE | OPTION_DRAWNEAR)) | bits;
+        new_save.options = (new_save.options & ~(OPTION_HIRES | OPTION_SPLITSIDE | OPTION_UNUSED_8000)) | bits;
 
         if (new_save.options != save->options)
         {

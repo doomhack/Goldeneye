@@ -109,8 +109,7 @@ struct game_options g_Options[] = {
     { {getStringID(LOPTIONS, OPTION_STR_18_RATIO_LF), getStringID(LOPTIONS, OPTION_STR_22_NORMAL_LF), getStringID(LOPTIONS, OPTION_STR_23_169_LF), 0}, 0}, //ratio, normal, 16:9
     { {getStringID(LOPTIONS, OPTION_STR_3D_HIRES_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0}, //hi-res, off, on
     { {getStringID(LOPTIONS, OPTION_STR_3E_SPLITSCREEN_LF), getStringID(LOPTIONS, OPTION_STR_40_SIDE_LF), getStringID(LOPTIONS, OPTION_STR_41_STACKED_LF), 0}, 1}, //split screen, side, stacked (default)
-    { {getStringID(LOPTIONS, OPTION_STR_3F_FPSCOUNTER_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0}, //fps counter, off, on
-    { {getStringID(LOPTIONS, OPTION_STR_42_DRAWDISTANCE_LF), getStringID(LOPTIONS, OPTION_STR_1F_FULL_LF), getStringID(LOPTIONS, OPTION_STR_43_NEAR_LF), 0}, 0} //draw distance (co-op), full, near
+    { {getStringID(LOPTIONS, OPTION_STR_3F_FPSCOUNTER_LF), getStringID(LOPTIONS, OPTION_STR_1A_OFF_LF), getStringID(LOPTIONS, OPTION_STR_19_ON_LF), 0}, 0} //fps counter, off, on
 };
 
 u32 g_WatchMenuStickXReady = 0;
@@ -426,21 +425,11 @@ void optionsSetShowFps(u32 enabled)
     *optionValue(PLAYER_OPTION_FPS) = enabled;
 }
 
-u32 optionsGetDrawNear(void)
-{
-    return *optionValue(PLAYER_OPTION_DRAWDIST);
-}
-
-void optionsSetDrawNear(u32 near)
-{
-    *optionValue(PLAYER_OPTION_DRAWDIST) = near;
-}
-
 /**
  * Look, auto-aim, aim control, sight, look ahead, ammo and screen size are
  * each person's own (see coopPlayerPerson): person 0 (controller 1, the save
  * folder) keeps them in g_Options and person 1 (player 2) here. Ratio, hi-res,
- * split screen, the fps counter and draw distance are shared and always in
+ * split screen and the fps counter are shared and always in
  * g_Options. playerSetCurrent picks the current player's person.
  */
 #define PER_PLAYER_OPTION_COUNT (PLAYER_OPTION_SCREEN + 1)
@@ -849,12 +838,11 @@ void watchMenuControlInputsTick(void)
 
 
 /**
- * Split screen and draw distance only matter in co-op, so the watch hides
- * them in solo. i is a PLAYER_OPTION index (g_WatchMenuOptionsRow - 2).
+ * Split screen only matters in co-op, so the watch hides it in solo. i is a PLAYER_OPTION index (g_WatchMenuOptionsRow - 2).
  */
 static bool watchMenuOptionVisible(s32 i)
 {
-    if (!gameIsTwoPlayerMission() && (i == PLAYER_OPTION_SPLIT || i == PLAYER_OPTION_DRAWDIST))
+    if (!gameIsTwoPlayerMission() && (i == PLAYER_OPTION_SPLIT))
     {
         return FALSE;
     }
@@ -1501,7 +1489,6 @@ void watchMenuTick(void)
                 case GAME_OPTIONS_INDEX_HIRES:
                 case GAME_OPTIONS_INDEX_SPLIT:
                 case GAME_OPTIONS_INDEX_FPS:
-                case GAME_OPTIONS_INDEX_DRAWDIST:
                     watchMenuOptionsMoveCursor();
             }
             watchMenuOptionsTick();

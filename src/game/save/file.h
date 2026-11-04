@@ -68,7 +68,7 @@ void fileMpSaveWeaponSettings(void);
 #define OPTION_HIRES         0x1000
 #define OPTION_SPLITSIDE     0x2000 // set = side by side; stacked is the default
 #define OPTION_FPS           0x4000
-#define OPTION_DRAWNEAR      0x8000
+#define OPTION_UNUSED_8000   0x8000 // was co-op draw distance near; cleared on save
 
 #define DEFAULT_OPTIONS (OPTION_AUTOAIM | OPTION_SIGHTONSCREEN | OPTION_LOOKAHEAD | OPTION_DISPLAYAMMO)
 

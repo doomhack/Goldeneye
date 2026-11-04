@@ -104,7 +104,6 @@ typedef enum WATCH_GAME_OPTIONS_INDEX {
     GAME_OPTIONS_INDEX_HIRES,
     GAME_OPTIONS_INDEX_SPLIT,
     GAME_OPTIONS_INDEX_FPS,
-    GAME_OPTIONS_INDEX_DRAWDIST,
     GAME_OPTIONS_INDEX_COUNT
 } WATCH_GAME_OPTIONS_INDEX;
 
@@ -143,8 +142,6 @@ u32 optionsGetSplitStacked(void);
 void optionsSetSplitStacked(u32 stacked);
 u32 optionsGetShowFps(void);
 void optionsSetShowFps(u32 enabled);
-u32 optionsGetDrawNear(void);
-void optionsSetDrawNear(u32 near);
 void optionsUsePerson(s32 person);
 void optionsCopyPlayer1ToPlayer2(void);
 

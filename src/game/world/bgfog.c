@@ -246,19 +246,10 @@ f32 fogGetScaledFarFogIntensitySquared(void)
 }
 
 
-/**
- * Co-op's "near" draw distance: the far plane comes in to this fraction of
- * the level's. Rooms and props past it aren't drawn, which saves time in both
- * views. The fog positions are fractions of the depth buffer range, which is
- * 1/z-like: the level's fog keeps starting at about the same distance and
- * still reaches full strength at the (nearer) far plane, so nothing pops.
- */
-#define COOP_NEAR_DRAW_SCALE 0.5f
-
 static const EnvironmentRecord *s_FogLastEnvironment;
 
 /**
- * Loads the last environment again, after the draw distance option changed.
+ * Loads the last environment again (the tuning build, after its scales change).
  */
 void fogReloadCurrentEnvironment(void)
 {
@@ -301,11 +292,6 @@ void fogLoadCurrentEnvironment(const EnvironmentRecord *env)
                 break;
             }
         }
-    }
-
-    if (gameIsTwoPlayerMission() && optionsGetDrawNear())
-    {
-        farfog *= COOP_NEAR_DRAW_SCALE;
     }
 
 #ifdef FOG_TUNE
