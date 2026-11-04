@@ -465,11 +465,11 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
             damage_dealt = (g_CurrentPlayer->bondhealth * g_CurrentPlayer->actual_health) + (g_CurrentPlayer->bondarmour * g_CurrentPlayer->actual_armor);
         }
 
-        // Every hit counts, as in Perfect Dark. The original game ignored
-        // hits while the red damage flash showed (only one per frame in
-        // multiplayer), which with the trigger lock that went with it
-        // stopped the player firing back under heavy fire.
-        if (g_CurrentPlayer->cheatBondInvincible == FALSE && g_CurrentPlayer->bonddead == FALSE && g_Mission.playerInvincible == FALSE)
+        if (g_CurrentPlayer->cheatBondInvincible == FALSE && g_CurrentPlayer->bonddead == FALSE && g_Mission.playerInvincible == FALSE &&
+            (g_CurrentPlayer->damageshowtime < 0 || (gameIsMulti() && g_CurrentPlayer->damageshowtime == 0)
+                // Counter-op: like the guard they took over, the guard
+                // player feels every shot, not one per damage flash.
+                || counterOpIsGuardPlayer(playerGetCurrentNum())))
         {
             if (g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0x5 && g_CurrentPlayer->watch_animation_state != WATCH_ANIMATION_0xc)
             {
