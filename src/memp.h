@@ -12,12 +12,12 @@ typedef enum MemPool : u8
 } MemPool;
 
 /**
- * The permanent pool's size, not counting the animation frames (animGetFramesSize). The
- * stage pool gets the rest of the memory.
+ * The least the permanent pool needs. It gets whatever the framebuffers leave of the top
+ * 1 MB bank (ge007.ld checks this fits).
  */
 #define MEMP_PERMANENT_SIZE (296 * 1024)
 
-void mempInit(u8 *start, u8 *end, u32 permanentSize);
+void mempInit(u8 *stageStart, u8 *stageEnd, u8 *permanentStart, u8 *permanentEnd);
 void *mempAlloc(u32 bytes, MemPool pool);
 bool mempResizeLast(const void *allocation, u32 newSize);
 u32 mempGetFreeBytes(MemPool pool);

@@ -55,6 +55,7 @@ extern ModelAnimation *animation_table_ptrs2[];
 
 void animResolveTable(ModelAnimation **table);
 u32 animGetFramesSize(void);
+u8 *animGetFramesStart(void);
 void animLoadTable(void);
 
 #endif

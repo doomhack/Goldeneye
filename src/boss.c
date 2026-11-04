@@ -308,8 +308,12 @@ void bossInitMainthreadData(void)
         }
     }
 
-    // The heap stops at the z-buffer and framebuffer banks (ge007.ld, src/cfb.c)
-    mempInit((u8 *) &_heapSegmentStart, (u8 *) &_zbufSegmentStart, MEMP_PERMANENT_SIZE + animGetFramesSize());
+    // RAM map (ge007.ld, src/cfb.c), so the z-buffer and the framebuffers each have a
+    // 1 MB RDRAM bank free of the RSP's and the other buffer's traffic:
+    //   code, data, stacks | stage pool | animation frames, z-buffer (top of bank 6) |
+    //   framebuffers, permanent pool (bank 7)
+    mempInit((u8 *) &_heapSegmentStart, animGetFramesStart(),
+             (u8 *) &_permanentSegmentStart, (u8 *) PHYS_TO_K0(osMemSize));
     mempResetPool(MEMPOOL_PERMANENT);
     langInit();
     lvInit();

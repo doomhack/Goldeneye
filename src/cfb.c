@@ -4,11 +4,12 @@
 #include "fr.h"
 
 /*
- * The colour framebuffers and the gameplay z-buffer each get a 1 MB RDRAM bank to
- * themselves (ge007.ld places them): the framebuffers at 0x80700000 (bank 7) and the
- * z-buffer at 0x80600000 (bank 6). Each bank keeps its own open page, so the RDP's colour
- * and depth accesses don't close each other's pages, and neither shares a bank with the
- * CPU's globals and stacks or with the level data the RSP reads.
+ * The colour framebuffers and the gameplay z-buffer are in separate 1 MB RDRAM banks
+ * (ge007.ld places them): the framebuffers at 0x80700000 (bank 7, with the permanent pool
+ * after them) and the z-buffer at the top of bank 6 (with the animation frames below it).
+ * Each bank keeps its own open page, so the RDP's colour and depth accesses don't close
+ * each other's pages, and neither bank holds the CPU's globals and stacks or the level
+ * data the RSP reads while the RDP draws.
  */
 
 /* SCREEN_HEIGHT #define changes based on version (PAL or NTSC) */

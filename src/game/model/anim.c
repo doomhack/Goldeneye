@@ -226,6 +226,15 @@ u32 animGetFramesSize(void)
 }
 
 /**
+ * Where the animation frames are kept: straight below the z-buffer, sharing its bank. Only
+ * the CPU reads them, so they cost the RDP's depth accesses little; the stage pool ends here.
+ */
+u8 *animGetFramesStart(void)
+{
+    return (u8 *) &_zbufSegmentStart - animGetFramesSize();
+}
+
+/**
  * Turns each animation offset in a NULL-terminated table into a pointer, and resolves
  * the offsets inside that animation's header. ANIM_UNUSED slots are left alone.
  */
@@ -260,7 +269,7 @@ void animLoadTable(void)
 
     romCopy(g_AnimTable, &_animation_dataSegmentRomStart, animsDataSegmentSize);
 
-    s_AnimFrames = mempAlloc(animGetFramesSize(), MEMPOOL_PERMANENT);
+    s_AnimFrames = animGetFramesStart();
     romCopy(s_AnimFrames, _animation_entriesSegmentRomStart, animGetFramesSize());
     animResolveTable(animation_table_ptrs1);
     animResolveTable(animation_table_ptrs2);

@@ -1,5 +1,5 @@
 /**
- * The z-buffer: g_GameZbuf (src/cfb.c), which has an RDRAM bank to itself, picked up the
+ * The z-buffer: g_GameZbuf (src/cfb.c), in its own RDRAM bank apart from the framebuffers, picked up the
  * first time a level draws. It is wide enough for hi-res, so the option can change
  * mid-level, and is cleared for each player's view as it is drawn. Front-end screens hand
  * in their own buffer instead (zbufSetBuffer).

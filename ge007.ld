@@ -222,18 +222,23 @@ SECTIONS
    }
    _stacksSegmentEnd = ADDR(.stacks) + SIZEOF(.stacks);
 
-   /* The heap runs from here to the z-buffer bank (_zbufSegmentStart) */
+   /* The stage pool runs from here to the animation frames, below the z-buffer */
    _heapSegmentStart = ALIGN(_stacksSegmentEnd, 16);
 
-   /* The z-buffer and the colour framebuffers each have a 1 MB RDRAM bank of their own
-      (banks 6 and 7, see src/cfb.c), at the top of the 8 MB. */
+   /* The z-buffer and the colour framebuffers are in RDRAM banks 6 and 7 (see src/cfb.c).
+      The z-buffer (640 x screen height, 16 bit) ends at the top of bank 6. */
+#ifdef VERSION_EU
+#define ZBUF_BYTES (640 * 272 * 2)
+#else
+#define ZBUF_BYTES (640 * 240 * 2)
+#endif
    _zbufSegmentStart = ADDR(.zbuf);
-   .zbuf 0x80600000 (NOLOAD) :
+   .zbuf (0x80700000 - ZBUF_BYTES) (NOLOAD) :
    {
       build/OUTCODE/src/cfb.o (.bss.zbuf);
    }
    _zbufSegmentEnd = ADDR(.zbuf) + SIZEOF(.zbuf);
-   __zbufBankCheck = ASSERT(SIZEOF(.zbuf) <= 0x100000, "z-buffer doesn't fit its 1MB bank");
+   __zbufBankCheck = ASSERT(_zbufSegmentEnd == 0x80700000, "z-buffer must end at the top of bank 6");
 
    _cfbSegmentStart = ADDR(.cfb);
    .cfb 0x80700000 (NOLOAD) :
@@ -241,7 +246,8 @@ SECTIONS
       build/OUTCODE/src/cfb.o (.bss.cfb);
    }
    _cfbSegmentEnd = ADDR(.cfb) + SIZEOF(.cfb);
-   __cfbBankCheck = ASSERT(_cfbSegmentEnd <= 0x80800000, "framebuffers don't fit their 1MB bank");
+   _permanentSegmentStart = ALIGN(_cfbSegmentEnd, 16);
+   __cfbBankCheck = ASSERT(_permanentSegmentStart + 296 * 1024 <= 0x80800000, "framebuffers + permanent pool (MEMP_PERMANENT_SIZE) don't fit bank 7");
 
    /* init() runs on sp_rmon and copies the compressed data to just below 0x80300000,
       so the boot image (bss and stacks) must stay clear of that area. 0x14000 covers c_data. */

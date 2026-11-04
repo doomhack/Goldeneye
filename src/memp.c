@@ -5,13 +5,14 @@
 /**
  * memp: the pool allocator, which provides almost all of the game's memory.
  *
- * All RAM from the end of the game's code and data to the top of the 8 MB is split into
- * two pools. A pool hands out memory like a stack: each allocation comes straight after
+ * RAM is split into two pools (see bossInitMainthreadData for the map). The stage pool
+ * runs from the end of the game's code, data and stacks up to the animation frames; the
+ * permanent pool fills the rest of the framebuffers' bank, at the top of RAM. A pool hands out memory like a stack: each allocation comes straight after
  * the previous one, nothing is freed on its own, and the whole pool is emptied at once.
  *
  *  - The stage pool holds everything for the current level and is emptied each time a
  *    level (or the title screen) loads. mema's heap is one allocation in it.
- *  - The permanent pool, at the top of RAM, holds things loaded once at boot.
+ *  - The permanent pool holds things loaded once at boot.
  *
  * A level uses about 2 MB of the 5.8 MB stage pool, and boot about 110 KB of the permanent
  * pool, so running out means something is badly wrong: it stops the game with an error.
@@ -26,16 +27,11 @@ typedef struct MemoryPool {
 
 static MemoryPool m_mempPools[MEMPOOL_COUNT];
 
-/**
- * Splits the memory from `start` to `end` into the pools: the permanent pool gets the top
- * `permanentSize` bytes and the stage pool the rest. Both start closed.
- */
-void mempInit(u8 *start, u8 *end, u32 permanentSize)
+/** Sets up the two pools' memory ranges. Both start closed. */
+void mempInit(u8 *stageStart, u8 *stageEnd, u8 *permanentStart, u8 *permanentEnd)
 {
-    u8 *split = end - permanentSize;
-
-    m_mempPools[MEMPOOL_STAGE] = (MemoryPool) { .start = start, .end = split };
-    m_mempPools[MEMPOOL_PERMANENT] = (MemoryPool) { .start = split, .end = end };
+    m_mempPools[MEMPOOL_STAGE] = (MemoryPool) { .start = stageStart, .end = stageEnd };
+    m_mempPools[MEMPOOL_PERMANENT] = (MemoryPool) { .start = permanentStart, .end = permanentEnd };
 }
 
 /**
