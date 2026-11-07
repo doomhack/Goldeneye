@@ -129,10 +129,16 @@ make VERSION=EU -j4      # PAL version
 
 The ROMs are written to:
 
-| Version | ROM |
-| --- | --- |
-| US | `build/u/ge007.u.z64` |
-| PAL | `build/e/ge007.e.z64` |
+| Version | ROM | ELF (symbols and debug info) |
+| --- | --- | --- |
+| US | `build/u/ge007.u.z64` | `build/u/ge007.u.elf` |
+| PAL | `build/e/ge007.e.z64` | `build/e/ge007.e.elf` |
+
+The `.elf` is the linked program the ROM is made from, with every symbol and full DWARF debug
+info (source lines, types, locals). Load it in a debugger next to the matching ROM, for example
+gdb connected to ares's GDB server: `target remote localhost:9123` after `file build/u/ge007.u.elf`
+(use a MIPS gdb such as `gdb-multiarch`). Keep the two together: an `.elf` only matches the ROM
+it was built with.
 
 A full build takes a few minutes. The two versions build into separate folders, so you can
 build both without cleaning in between.
@@ -160,6 +166,7 @@ Options are passed on the `make` command line. The first value listed is the def
 | `VERSION` | `US`, `EU` | Which version to build. `EU` is PAL. |
 | `UNLOCK_ALL` | `0`, `1` | `1` opens every mission and difficulty (007 included) in every save folder, and every cheat in the cheat menu. Handy for testing or for jumping straight into co-op on any level. |
 | `LTO` | `1`, `0` | Link-time optimisation. `0` turns it off, which builds faster. |
+| `DEBUG_INFO` | `1`, `0` | Debug info in the `.elf`. `0` leaves it out, which builds a little faster; the ROM is byte-identical either way. |
 | `FOGTUNE` | `0`, `1` | A tuning build: player 1 holds L and uses the C buttons to change the level's draw distance (C-left/right) and the prop fade distance (C-up/down), with the values on screen. |
 
 For example, a PAL build with everything unlocked:

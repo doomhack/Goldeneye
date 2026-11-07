@@ -154,6 +154,14 @@ OBJECTS := $(RSPOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(OBSEGMENT)
 INCLUDE := -I . -I include -I src -I lib/ultralib/include -I lib/ultralib/include/PR
 
 CC := $(TOOLCHAIN)gcc
+# Debug info (on by default, make DEBUG_INFO=0 turns it off): -g puts DWARF line and type info in
+# the objects and the linked ge007.<region>.elf, so a debugger (e.g. gdb on ares's GDB server) can
+# show source lines, locals and structs. It never changes the generated code: objcopy only copies
+# loadable sections into the ROM, so the .z64 is byte-identical either way.
+DEBUG_INFO ?= 1
+ifeq ($(DEBUG_INFO), 1)
+  DEBUGFLAGS := -g
+endif
 # Code generation flags shared by the game, libultra and the asset data.
 # -nostdinc keeps the host's C library headers out; GCC's own freestanding headers are added back.
 # -G 8 puts variables of up to 8 bytes in .sdata/.sbss, which code reaches with one instruction from $gp
@@ -173,7 +181,7 @@ CC := $(TOOLCHAIN)gcc
 CC_BASEFLAGS := -nostdinc -isystem $(shell $(CC) -print-file-name=include) -EB -march=vr4300 -mtune=vr4300 -mabi=32 -mfix4300 -mno-abicalls -fno-pic -G 8 \
   -ffreestanding -fno-common -fplan9-extensions -fno-strict-aliasing -fwrapv -funsigned-char \
   -fno-math-errno -fno-tree-loop-distribute-patterns -mno-check-zero-division -DTARGET_N64 -MMD -MP \
-  -std=gnu23
+  -std=gnu23 $(DEBUGFLAGS)
 # Asset data (and the two boot-time blobs below) is copied out of the object byte for byte, so it
 # must keep every variable in .data in source order, zeros and duplicate constants included, and
 # stay off $gp.
@@ -611,6 +619,11 @@ $(BUILD_DIR)/src/game/world/bgfog.o $(BUILD_DIR)/src/game/level/lv.o: $(FOGTUNE_
 LTO_STAMP := $(BUILD_DIR)/lto
 $(shell [ "`cat $(LTO_STAMP) 2>/dev/null`" = "$(LTO)" ] || echo $(LTO) > $(LTO_STAMP))
 $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS): $(LTO_STAMP)
+
+# Same for DEBUG_INFO (the ROM is the same either way; only the objects and the .elf change)
+DEBUG_STAMP := $(BUILD_DIR)/debug_info
+$(shell [ "`cat $(DEBUG_STAMP) 2>/dev/null`" = "$(DEBUG_INFO)" ] || echo $(DEBUG_INFO) > $(DEBUG_STAMP))
+$(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS): $(DEBUG_STAMP)
 
 # Header dependencies written by -MMD
 -include $(shell find $(BUILD_DIR) -name '*.d' 2>/dev/null)
