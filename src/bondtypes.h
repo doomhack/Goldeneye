@@ -1966,6 +1966,10 @@ typedef union
         /* Co-op: index of the player this chr is fighting. See coopChrSelectTarget. */
         s8             targetplayer;
 
+        /* Two-player missions: bit n set if this chr was on player n's screen when
+           their view was last drawn. See chrIsOnScreenForAi. */
+        u8             onscreenviews;
+
         /* Co-op: frames left before this chr may switch to another player
            after a level-script check picked targetplayer. */
         s16            targetlock60;

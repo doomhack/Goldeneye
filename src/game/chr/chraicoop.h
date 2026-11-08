@@ -29,5 +29,6 @@ s32  counterOpTextBegin(void);
 void aiForObject(PropDefHeaderRecord *Entityp);
 s32  counterOpDoorIsScripted(DoorRecord *door);
 s32  coopDoorKeptOpen(DoorRecord *door);
+s32  chrIsOnScreenForAi(const ChrRecord *chr);
 
 #endif

@@ -321,6 +321,26 @@ s32 coopAiEnd(struct CoopAiState *st, s32 *offset, ChrRecord *chr)
 
 
 /**
+ * The AI's "am I on screen" check. Solo: on the screen. Co-op: on either
+ * player's screen. Counter-op: on Bond's screen, as scripts are about Bond
+ * (Jungle's Xenia only starts her fight once Bond sees her).
+ */
+s32 chrIsOnScreenForAi(const ChrRecord *chr)
+{
+    if (!gameIsTwoPlayerMission())
+    {
+        return (chr->prop->flags & PROPFLAG_ONSCREEN) != 0;
+    }
+
+    if (gameIsCounterOp())
+    {
+        return (chr->onscreenviews & (1 << COUNTEROP_BOND)) != 0;
+    }
+
+    return chr->onscreenviews != 0;
+}
+
+/**
  Counter-op: runs a vehicle's or aircraft's AI list for Bond, putting the
  current player back afterwards. Chrs do this in chrActionTick.
 */
