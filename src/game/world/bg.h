@@ -154,9 +154,11 @@ typedef struct s_specialportal
     u8 portallist[];
 } s_specialportal;
 
+/* A portal's screen box, valid for the visibility pass numbered pass (see bgResetPortalTable) */
 typedef struct PortalCache {
     s32 count;
     bbox2d bbox;
+    u32 pass;
 } PortalCache;
 
 typedef struct bg_queued_portal_entry {
@@ -202,7 +204,6 @@ void bgToggleDataPortalsContrlBytes1Bit1(s32 index, s32 toggle);
 void bgFindVisibleRooms(void);
 Gfx* bgLevelRender(Gfx *gdl);
 Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bottom);
-bool bgProjectRoomCoordToScreen(const coord3d *src, coord3d *dst);
 Gfx* bgScissorCurrentPlayerViewDefault(Gfx* gdl);
 Gfx* bgScissorCurrentPlayerViewF(Gfx* gdl, f32 left, f32 top, f32 right, f32 bottom);
 f32 bgGetLevelScale(void);

@@ -390,23 +390,6 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
 }
 
 
-void bgResetPortalVisitCounts(void)
-{
-  s32 i;
-
-  g_BgNumberOfRoomsDrawn = 0;
-#ifdef VERSION_EU
-  g_BgRoomsDrawnCount = 0;
-#endif
-  i = 0;
-  while (i != MAXROOMCOUNT)
-  {
-    g_BgRoomState[i].portal_visit_count = 0;
-    i++;
-  }
-}
-
-
 /**
  * Searches g_BgRoomsDrawn for matching id.
  * If found, sets result to 2d bbox and returns 1.
@@ -622,6 +605,15 @@ typedef struct PortalBounds {
 
 static PortalBounds s_PortalBounds[PORTMAX];
 
+/*
+ * Each portal's plane, worked out once at level load (bgCalcPortalPlane) instead of every
+ * time the visibility pass or a line test asks for it. Portal points never move.
+ */
+static struct PortalMetric s_PortalPlanes[PORTMAX];
+static s32 s_NumPortalPlanes;
+
+static void bgCalcPortalPlane(s32 portalnum, struct PortalMetric *metric);
+
 /* The portals of a room: sets *portals and returns how many */
 static inline s32 bgGetRoomPortals(s32 room, const u8 **portals)
 {
@@ -646,6 +638,8 @@ static void bgBuildRoomPortalLists(bool hasportals)
     {
         s_RoomPortalStart[i] = 0;
     }
+
+    s_NumPortalPlanes = 0;
 
     if (!hasportals || g_BgPortals == NULL)
     {
@@ -692,6 +686,13 @@ static void bgBuildRoomPortalLists(bool hasportals)
         }
     }
 
+    for (i = 0; i < numportals; i++)
+    {
+        bgCalcPortalPlane(i, &s_PortalPlanes[i]);
+    }
+
+    s_NumPortalPlanes = numportals;
+
     /* The portals' bounding boxes, found the way bgFindRoomsInBbox used to each time */
     for (i = 0; i < numportals; i++)
     {
@@ -735,6 +736,7 @@ void bgLoad(LEVEL_INDEX levelid)
     s32 *data;
  
     levelentry_index = 0;
+    s_NumPortalPlanes = 0;
 
     for (i = 0; i < MAXROOMCOUNT; i++) 
     {
@@ -1275,138 +1277,213 @@ Gfx *bgScissorCurrentPlayerView(Gfx *gdl, s32 left, s32 top, s32 right, s32 bott
 }
 
 
+/*
+ * Starts a new visibility pass: the portal screen boxes cached by earlier passes are stale.
+ * Numbering the passes saves clearing all PORTMAX entries (4 KB, half the data cache) on
+ * every pass.
+ */
+static u32 s_BgVisPass;
+
 void bgResetPortalTable(void) 
 {
-    s32 i;
+    s_BgVisPass++;
 
-    for (i = 0; i < PORTMAX; i++) 
+    if (s_BgVisPass == 0)
     {
-        g_BgPortalCache[i].count = -1;
+        /* Wrapped (after years of play): no entry may look current */
+        for (s32 i = 0; i < PORTMAX; i++)
+        {
+            g_BgPortalCache[i].pass = 0;
+        }
+
+        s_BgVisPass = 1;
     }
 }
 
 
-bool bgIsRoomOnScreen(s32 roomID, const bbox2d *screenbox)
+/*
+ * Local copies of mtx4TransformVecInPlace and camViewToScreenSafe for the visibility pass,
+ * which runs them for every portal point and room corner it tests: same arithmetic in the
+ * same order, without a call (and an I-cache miss) each time.
+ */
+static inline void bgTransformPoint(const Mtxf *mtx, coord3d *p)
 {
-    s32 i;
-    coord3d projected;
-    coord3d corner;
-    s32 count_z;
-    s32 count_failed_projection;
-    s32 count_left;
-    s32 count_right;
-    s32 count_top;
-    s32 count_bottom;
-    f32 zrange[2];
+    f32 x = p->x;
+    f32 y = p->y;
+    f32 z = p->z;
 
-    count_z = 0;
-    count_failed_projection = 0;
-    count_left = 0;
-    count_right = 0;
-    count_top = 0;
-    count_bottom = 0;
-
-    viGetZRange(zrange);
-
-    zrange[1] = zrange[1] / mCurrentLevelVisibilityScale;
-
-    for (i = 0; i < 8; i++) {
-        if (i & 1) {
-            corner.x = g_BgRoomInfo[roomID].minbounds.x;
-        } else {
-            corner.x = g_BgRoomInfo[roomID].maxbounds.x;
-        }
-
-        if (i & 2) {
-            corner.y = g_BgRoomInfo[roomID].minbounds.y;
-        } else {
-            corner.y = g_BgRoomInfo[roomID].maxbounds.y;
-        }
-
-        if (i & 4) {
-            corner.z = g_BgRoomInfo[roomID].minbounds.z;
-        } else {
-            corner.z = g_BgRoomInfo[roomID].maxbounds.z;
-        }
-
-        if (bgProjectRoomCoordToScreen(&corner, &projected) == 0) {
-            if (zrange[1] <= -projected.z) {
-                count_z++;
-            }
-
-            if (screenbox->min.x <= projected.x) {
-                count_left++;
-            }
-
-            if (projected.x <= screenbox->max.x) {
-                count_right++;
-            }
-
-            if (screenbox->min.y <= projected.y) {
-                count_top++;
-            }
-
-            if (projected.y <= screenbox->max.y) {
-                count_bottom++;
-            }
-
-            count_failed_projection++;
-        } else {
-            if (zrange[1] <= -projected.z) {
-                count_z++;
-            }
-
-            if (projected.x <= screenbox->min.x) {
-                count_left++;
-            } else if (screenbox->max.x <= projected.x) {
-                count_right++;
-            }
-
-            if (projected.y <= screenbox->min.y) {
-                count_top++;
-            } else if (screenbox->max.y <= projected.y) {
-                count_bottom++;
-            }
-        }
+    for (s32 i = 0; i < 3; i++)
+    {
+        p->f[i] = mtx->m[0][i] * x + mtx->m[1][i] * y + mtx->m[2][i] * z + mtx->m[3][i];
     }
-
-    /**
-     * If all 8 of the room's bounding box corners are behind the camera,
-     * reject this room
-     */
-    if (count_failed_projection == 8
-            || count_z == 8
-            || count_left == 8
-            || count_right == 8
-            || count_top == 8
-            || count_bottom == 8) {
-        return FALSE;
-    }
-
-    return TRUE;
 }
 
-
-bool bgProjectRoomCoordToScreen(const coord3d* src, coord3d* dst)
+static inline void bgViewToScreen(const coord3d *in, coord3d *out)
 {
-    const Mtxf* mtx;
+    const struct player *player = g_CurrentPlayer;
+    f32 invz;
 
-    mtx = camGetWorldToScreenMtxf();
-    dst->x = src->x * g_BgLevelScaleInv;
-    dst->y = src->y * g_BgLevelScaleInv;
-    dst->z = src->z * g_BgLevelScaleInv;
-    mtx4TransformVecInPlace(mtx, dst);
-
-    camViewToScreenSafe(dst, dst);
-
-    if (dst->z > 0.0f)
+    if (in->z == 0.0f)
     {
-        return FALSE;
+        invz = -100000000000000000000.0f;
     }
     else
     {
-        return TRUE;
+        invz = 1.0f / in->z;
     }
+
+    out->y = in->y * invz * player->c_recipscaley + (player->c_screentop + player->c_halfheight);
+    out->x = (player->c_screenleft + player->c_halfwidth) - in->x * invz * player->c_recipscalex;
+}
+
+
+/*
+ * Whether any of a room's bounding box could be inside screenbox: the room is off screen
+ * when all 8 corners of its box are behind the camera, all past the far plane, or all
+ * beyond the same edge of screenbox.
+ *
+ * This gives the same answer, bit for bit, as projecting each corner with
+ * mtx4TransformVecInPlace and camViewToScreenSafe and counting the corners past each edge,
+ * as it used to, but it is the visibility pass's most called test (once per
+ * room the vis script names, every view, every frame), so:
+ * - the corners share their matrix products (each of the 6 bound values is multiplied by
+ *   its matrix row once, in the same order as mtx4RotateVec);
+ * - the projection is done here instead of in two calls per corner;
+ * - it stops as soon as each of the six tests has a corner that fails it, which for a
+ *   room that is on screen is usually after a few corners.
+ */
+bool bgIsRoomOnScreen(s32 roomID, const bbox2d *screenbox)
+{
+    enum {
+        SEEN_INFRONT = 1 << 0, // a corner is not behind the camera
+        SEEN_NEAR    = 1 << 1, // a corner is not past the far plane
+        SEEN_NOTLEFT = 1 << 2, // a corner is not left of screenbox
+        SEEN_NOTRIGHT = 1 << 3,
+        SEEN_NOTABOVE = 1 << 4,
+        SEEN_NOTBELOW = 1 << 5,
+        SEEN_ALL     = 0x3f,
+    };
+    const Mtxf *mtx = camGetWorldToScreenMtxf();
+    const struct player *player = g_CurrentPlayer;
+    const s_room_info *room = &g_BgRoomInfo[roomID];
+    f32 prod[3][2][3]; // prod[axis][max/min][out] = mtx->m[axis][out] * bound
+    f32 zrange[2];
+    f32 zfar;
+    f32 centrex;
+    f32 centrey;
+    u32 seen = 0;
+    s32 i;
+
+    viGetZRange(zrange);
+
+    zfar = zrange[1] / mCurrentLevelVisibilityScale;
+
+    for (s32 axis = 0; axis < 3; axis++)
+    {
+        f32 hi = room->maxbounds.f[axis] * g_BgLevelScaleInv;
+        f32 lo = room->minbounds.f[axis] * g_BgLevelScaleInv;
+
+        for (s32 k = 0; k < 3; k++)
+        {
+            prod[axis][0][k] = mtx->m[axis][k] * hi;
+            prod[axis][1][k] = mtx->m[axis][k] * lo;
+        }
+    }
+
+    centrex = player->c_screenleft + player->c_halfwidth;
+    centrey = player->c_screentop + player->c_halfheight;
+
+    for (i = 0; i < 8; i++)
+    {
+        s32 xi = i & 1;
+        s32 yi = (i >> 1) & 1;
+        s32 zi = (i >> 2) & 1;
+        f32 vx = prod[0][xi][0] + prod[1][yi][0] + prod[2][zi][0] + mtx->m[3][0];
+        f32 vy = prod[0][xi][1] + prod[1][yi][1] + prod[2][zi][1] + mtx->m[3][1];
+        f32 vz = prod[0][xi][2] + prod[1][yi][2] + prod[2][zi][2] + mtx->m[3][2];
+        f32 invz;
+        f32 sx;
+        f32 sy;
+
+        // camViewToScreenSafe
+        if (vz == 0.0f)
+        {
+            invz = -100000000000000000000.0f;
+        }
+        else
+        {
+            invz = 1.0f / vz;
+        }
+
+        sy = vy * invz * player->c_recipscaley + centrey;
+        sx = centrex - vx * invz * player->c_recipscalex;
+
+        if (!(zfar <= -vz))
+        {
+            seen |= SEEN_NEAR;
+        }
+
+        if (vz > 0.0f)
+        {
+            // Behind the camera: the projection is mirrored
+            if (!(screenbox->min.x <= sx))
+            {
+                seen |= SEEN_NOTLEFT;
+            }
+
+            if (!(sx <= screenbox->max.x))
+            {
+                seen |= SEEN_NOTRIGHT;
+            }
+
+            if (!(screenbox->min.y <= sy))
+            {
+                seen |= SEEN_NOTABOVE;
+            }
+
+            if (!(sy <= screenbox->max.y))
+            {
+                seen |= SEEN_NOTBELOW;
+            }
+        }
+        else
+        {
+            seen |= SEEN_INFRONT;
+
+            if (sx <= screenbox->min.x)
+            {
+                seen |= SEEN_NOTRIGHT;
+            }
+            else if (screenbox->max.x <= sx)
+            {
+                seen |= SEEN_NOTLEFT;
+            }
+            else
+            {
+                seen |= SEEN_NOTLEFT | SEEN_NOTRIGHT;
+            }
+
+            if (sy <= screenbox->min.y)
+            {
+                seen |= SEEN_NOTBELOW;
+            }
+            else if (screenbox->max.y <= sy)
+            {
+                seen |= SEEN_NOTABOVE;
+            }
+            else
+            {
+                seen |= SEEN_NOTABOVE | SEEN_NOTBELOW;
+            }
+        }
+
+        if (seen == SEEN_ALL)
+        {
+            return TRUE;
+        }
+    }
+
+    return FALSE;
 }
 
 
@@ -1426,6 +1503,10 @@ s32 bgProjectPortalPoints(s32 portalnum, f32 offset, coord3d *points)
     viGetZRange(zrange);
     zrange[1] /= mCurrentLevelVisibilityScale;
 
+    if (offset != 0.0f) {
+        bgGetPortalPlane(portalnum, &metric);
+    }
+
     for (i = 0; i < g_BgPortals[portalnum].offset_portal->numPoints; i++) {
         point = &points[i];
 
@@ -1434,8 +1515,6 @@ s32 bgProjectPortalPoints(s32 portalnum, f32 offset, coord3d *points)
         point->z = (&g_BgPortals[portalnum].offset_portal->point)[i].z;
 
         if (offset != 0.0f) {
-            bgGetPortalPlane(portalnum, &metric);
-
             point->x += metric.normal.x * offset;
             point->y += metric.normal.y * offset;
             point->z += metric.normal.z * offset;
@@ -1446,7 +1525,7 @@ s32 bgProjectPortalPoints(s32 portalnum, f32 offset, coord3d *points)
         point->y *= g_BgLevelScaleInv;
         point->z *= g_BgLevelScaleInv;
 
-        mtx4TransformVecInPlace(matrix, point);
+        bgTransformPoint(matrix, point);
 
         if (-zrange[1] * 0.9f < point->z) {
             allbehind = 0;
@@ -1492,7 +1571,7 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
 
     cache = &g_BgPortalCache[portalnum];
 
-    if (cache->count >= 0)
+    if (cache->pass == s_BgVisPass)
     {
         bbox->min.x = cache->bbox.min.x;
         bbox->min.y = cache->bbox.min.y;
@@ -1521,7 +1600,7 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
         {
             if (points[j].z <= 0.0f)
             {
-                camViewToScreenSafe(&points[j], &screenpos);
+                bgViewToScreen(&points[j], &screenpos);
 
                 if (onscreencount == 0)
                 {
@@ -1588,6 +1667,7 @@ s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *bbox)
     cache->bbox.max.x = bbox->max.x;
     cache->bbox.max.y = bbox->max.y;
     cache->count = onscreencount;
+    cache->pass = s_BgVisPass;
 
     return onscreencount;
 }
@@ -3789,11 +3869,16 @@ void bgDetermineVisibleRooms(void)
 
     screenbox = g_CurrentPlayer->screensize;
 
-    bgResetPortalVisitCounts();
+    // The drawn room list and the per-room flags start empty
+    g_BgNumberOfRoomsDrawn = 0;
+#ifdef VERSION_EU
+    g_BgRoomsDrawnCount = 0;
+#endif
 
     for (i = 0; i < MAXROOMCOUNT; i++) 
     {
         g_BgRoomState[i].room_rendered = 0;
+        g_BgRoomState[i].portal_visit_count = 0;
         g_BgRoomState[i].room_loaded_mask = 0;
     }
 
@@ -4153,6 +4238,19 @@ void bgGrowRoomBoundsToPortals(s32 roomID)
 //#endif
 void bgGetPortalPlane(s32 portalnum, struct PortalMetric *metric)
 {
+    if (portalnum < s_NumPortalPlanes)
+    {
+        *metric = s_PortalPlanes[portalnum];
+        return;
+    }
+
+    bgCalcPortalPlane(portalnum, metric);
+}
+
+
+/* The portal's unit normal, and the range of its points' distances along it */
+static void bgCalcPortalPlane(s32 portalnum, struct PortalMetric *metric)
+{
     f32 *out = metric->normal.f;
     f32 edge1[3];
     f32 edge2[3];
@@ -4220,7 +4318,7 @@ s32 bgPortalIsVertical(s32 portalnum)
 {
     struct PortalMetric metric;
 
-    bgGetPortalPlane(portalnum, &metric);
+    bgCalcPortalPlane(portalnum, &metric);
 
     if (((metric.normal.f[0] * metric.normal.f[0]) + (metric.normal.f[2] * metric.normal.f[2])) < 0.999f)
     {
@@ -4276,7 +4374,7 @@ void bgOrderPortal(s32 portalnum) // canonical name
     bgGetRoomCenter(roomnum1, &room1centre);
     bgGetRoomCenter(roomnum2, &room2centre);
 
-    bgGetPortalPlane(portalnum, &metric);
+    bgCalcPortalPlane(portalnum, &metric);
 
     if (metric.max - metric.min < 0.1f) {
     }
