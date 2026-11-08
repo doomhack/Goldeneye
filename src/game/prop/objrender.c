@@ -461,13 +461,26 @@ bool objGetOnscreenRenderBounds(const PropRecord *prop, coord3d *viewpos, coord2
  */
 bool propGetRoomsBbox2d(const PropRecord *prop, bbox2d *bbox)
 {
-    s32 rooms[8];
     bool found = FALSE;
     bbox2d roombox;
+    const StandTile *stan = prop->stan;
+    u8 viewerroom[2];
+    const u8 *rooms = prop->rooms;
 
-    propGetRoomIds(prop, rooms);
+    // The same rooms as propGetRoomIds, read in place
+    if (stan == NULL)
+    {
+        return FALSE;
+    }
 
-    for (const s32 *room = rooms; *room >= 0; room++)
+    if (prop->type == PROP_TYPE_VIEWER && prop->obj == NULL)
+    {
+        viewerroom[0] = stan->room;
+        viewerroom[1] = 0xff;
+        rooms = viewerroom;
+    }
+
+    for (const u8 *room = rooms; *room != 0xff; room++)
     {
         if (!bgGet2dBboxByRoomId(*room, &roombox))
         {

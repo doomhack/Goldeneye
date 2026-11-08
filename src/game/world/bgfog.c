@@ -658,9 +658,23 @@ s32 fogGetPropDistColor(const PropRecord *prop, rgba_f32 *color)
         return 2; // Prop is behind the camera
     }
 
-    color->rgba[0] = (f32) g_CurrentEnvironment.Red / 255.0f;
-    color->rgba[1] = (f32) g_CurrentEnvironment.Green / 255.0f;
-    color->rgba[2] = (f32) g_CurrentEnvironment.Blue / 255.0f;
+    // The fog colour as fractions, worked out again only when it changes (three divides
+    // saved per prop drawn)
+    static u32 s_FogColourKey = 0xffffffff;
+    static f32 s_FogColour[3];
+    u32 key = (g_CurrentEnvironment.Red << 16) | (g_CurrentEnvironment.Green << 8) | g_CurrentEnvironment.Blue;
+
+    if (key != s_FogColourKey)
+    {
+        s_FogColourKey = key;
+        s_FogColour[0] = (f32) g_CurrentEnvironment.Red / 255.0f;
+        s_FogColour[1] = (f32) g_CurrentEnvironment.Green / 255.0f;
+        s_FogColour[2] = (f32) g_CurrentEnvironment.Blue / 255.0f;
+    }
+
+    color->rgba[0] = s_FogColour[0];
+    color->rgba[1] = s_FogColour[1];
+    color->rgba[2] = s_FogColour[2];
     color->rgba[3] = (g_CurFogDetails.far_fog_dist_scaled / prop->zDepth) + g_CurFogDetails.near_fog_dist_scaled;
 
     if (color->rgba[3] < 0.0f)
