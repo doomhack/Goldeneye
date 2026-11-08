@@ -6,8 +6,12 @@ default: all
 ### Default Build Options ###
 # Version of the game to build
 VERSION := US
-# Optimisation level for game code
-OPTIMIZATION := -O2
+# Optimisation level for game code. -fno-inline-functions-called-once: with LTO, GCC would
+# otherwise inline every function that has one caller, so the per-type handlers (door, cctv,
+# autogun, vehicle ticks, each guard action, each model node type...) all ended up inside
+# their dispatcher. objTick grew to 16 KB, the whole I-cache, of which ~3 KB runs per frame,
+# and its stack frame had to fit all of them. Kept out of line, objTick is 2.8 KB.
+OPTIMIZATION := -O2 -fno-inline-functions-called-once
 
 # Include Terminal Codes for colourising text.
 include include/make/VT100Codes.make
