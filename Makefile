@@ -218,7 +218,9 @@ ifeq ($(LTO), 1)
   endif
 endif
 ifeq ($(LTO), 1)
-  LTO_LINKFLAGS := -flto=auto -flto-partition=$(LTO_PARTITION)
+  # -ffunction-sections gives each function its own .text.<name> section, so ge007.ld can
+  # place the hot ones first (ld/game.hot.ld.inc, made by tools/hotorder.py).
+  LTO_LINKFLAGS := -flto=auto -flto-partition=$(LTO_PARTITION) -ffunction-sections
 $(BUILD_DIR)/src/%.o: LTOFLAGS := -flto
 # These stay ordinary objects: init() runs before the game code is loaded, so it stays in
 # the code segment; the boot copy of the decompressor runs from its own segment; ge007.ld
@@ -369,7 +371,7 @@ $(BUILD_DIR)/assets/%.o: assets/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 #Link Files
-$(APPELF): $(RSPOBJECTS) $(ULTRALIB) $(HEADEROBJECTS) $(OBSEG_RZ) $(BUILD_DIR)/$(OBSEGMENT) $(MUSIC_RZ_FILES) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(ROMOBJECTS) $(ASSET_DATAOBJECTS) $(ROMOBJECTS2) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(OBSEG_OBJECTS) ge007.ld
+$(APPELF): $(RSPOBJECTS) $(ULTRALIB) $(HEADEROBJECTS) $(OBSEG_RZ) $(BUILD_DIR)/$(OBSEGMENT) $(MUSIC_RZ_FILES) $(BOOTOBJECTS) $(CODEOBJECTS) $(GAMEOBJECTS) $(RZOBJECTS) $(ROMOBJECTS) $(ASSET_DATAOBJECTS) $(ROMOBJECTS2) $(RAMROM_OBJECTS) $(FONTOBJECTS) $(MUSIC_OBJECTS) $(OBSEG_OBJECTS) ge007.ld $(wildcard ld/*.ld.inc)
 	cpp $(LDFILEOPTS) -P ge007.ld -o $(BUILD_DIR)/ge007.$(OUTCODE).ld
 	@# GCC emits extra sections (.rodata.*, .text.*) that the per-object lines name exactly
 	sed -i -E -e '/\.o *\(/s/\((\.text|\.data|\.rodata)\)/(\1 \1.*)/' -e '/\.o *\(/s/\(\.bss\)/(.bss .bss.* COMMON)/' \
