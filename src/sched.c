@@ -31,6 +31,7 @@ s32 __scTaskComplete(const OSScTask *t);
 #define RSP_DONE_MSG    667
 #define RDP_DONE_MSG    668
 #define PRE_NMI_MSG     669
+#define TASK_MSG        670 // a task was put on cmdQ: start it now, not at the next retrace
 
 
 #define OS_SC_DP                0x0001
@@ -50,6 +51,8 @@ s32 __scTaskComplete(const OSScTask *t);
 void __scHandleRetrace(OSSched *sc);
 void __scHandleRSP(OSSched *sc);
 void __scHandleRDP(OSSched *sc);
+static void __scHandleNewTasks(OSSched *sc);
+static void __scSwap(void *framebuffer);
 void __scMain(void *arg);
 
 u32 stderr_enabled = 0;
@@ -64,9 +67,18 @@ u32 currentcount = 0;
 u32 dp_busy = 0;
 u32 dpCount = 0;
 s32 g_schedViCurrentFrameBuffer = 0;
-f32 g_ViXScales[NUM_VIDEO_FRAME_BUFFERS] = {1.0, 1.0};
-f32 g_ViYScales[NUM_VIDEO_FRAME_BUFFERS] = {1.0, 1.0};
-s32 g_ViChangeVideoModes[NUM_VIDEO_FRAME_BUFFERS] = {0, 0}; // boolean
+f32 g_ViXScales[NUM_VIDEO_FRAME_BUFFERS] = {1.0, 1.0, 1.0};
+f32 g_ViYScales[NUM_VIDEO_FRAME_BUFFERS] = {1.0, 1.0, 1.0};
+s32 g_ViChangeVideoModes[NUM_VIDEO_FRAME_BUFFERS] = {0, 0, 0}; // boolean
+
+/*
+ * Triple buffering. The VI shows one framebuffer and may have a second one
+ * waiting for the next retrace (osViSwapBuffer). A finished frame that comes in
+ * while a swap is still waiting is held here and handed to the VI at the next
+ * retrace, so the RDP can go straight on to the third buffer instead of
+ * waiting for the VI.
+ */
+static void *s_SwapHeldFramebuffer;
 
 OSSched os_scheduler;
 OSScClient gfxClient;
@@ -109,8 +121,12 @@ void CheckDisplayErrorBufferEvery16Frames(u32 framecount)
         {
 			if (userCompareValue < (osGetCount() - currentcount))
             {
-				crashRenderFrame((u16*)cfb_16[0]);
-				crashRenderFrame((u16*)cfb_16[1]);
+				s32 i;
+
+				for (i = 0; i < NUM_VIDEO_FRAME_BUFFERS; i++)
+				{
+					crashRenderFrame((u16*)cfb_16[i]);
+				}
 			}
 		}
 	}
@@ -203,6 +219,10 @@ void __scMain(void *arg)
                 __scHandleRDP(sc);
                 break;
 
+            case TASK_MSG:
+                __scHandleNewTasks(sc);
+                break;
+
             case PRE_NMI_MSG:
             do {
                 joyRumblePakStop();
@@ -255,6 +275,15 @@ void __scHandleRetrace(OSSched *sc) {
     viVsyncRelated();
     joyPoll();
     musicFadeTick();
+
+    // The VI has taken the buffer it was waiting for, so a held frame can go next
+    if (s_SwapHeldFramebuffer != NULL && osViGetCurrentFramebuffer() == osViGetNextFramebuffer()) {
+        void *fb = s_SwapHeldFramebuffer;
+
+        s_SwapHeldFramebuffer = NULL;
+        __scSwap(fb);
+    }
+
     while (osRecvMesg(&sc->cmdQ, (OSMesg*)&rspTask, OS_MESG_NOBLOCK) != -1) {
         __scAppendList(sc, rspTask);
     }
@@ -271,6 +300,34 @@ void __scHandleRetrace(OSSched *sc) {
         }
     }
     CheckDisplayErrorBufferEvery16Frames(sc->frameCount);
+}
+
+/*
+ * The main thread has put a graphics task on cmdQ. Start it now if the RCP is
+ * free, instead of leaving it until the next retrace.
+ */
+static void __scHandleNewTasks(OSSched *sc)
+{
+    OSScTask *task = NULL;
+    OSScTask *sp = NULL;
+    OSScTask *dp = NULL;
+    s32 state;
+
+    while (osRecvMesg(&sc->cmdQ, (OSMesg*)&task, OS_MESG_NOBLOCK) != -1) {
+        __scAppendList(sc, task);
+    }
+    if (sc->doAudio && sc->curRSPTask) {
+        __scYield(sc);
+    } else {
+        state = ((sc->curRSPTask == 0) << 1) | (sc->curRDPTask == 0);
+        if (__scSchedule(sc, &sp, &dp, state) != state)
+            __scExec(sc, sp, dp);
+    }
+}
+
+void schedKickTasks(void)
+{
+    osSendMesg(&os_scheduler.interruptQ, (OSMesg)TASK_MSG, OS_MESG_NOBLOCK);
 }
 
 /*
@@ -341,13 +398,16 @@ void __scHandleRDP(OSSched *sc)
     }
 }
 
+/*
+ * A graphics task can start once its framebuffer is neither on screen, nor
+ * waiting for the VI, nor held for the VI.
+ */
 const OSScTask *__scTaskReady(const OSScTask *t) 
 {
-    const void *a;
-    const void *b;    
+    if (t) {
+        const void *fb = t->framebuffer;
 
-    if (t) {    
-        if ((a=osViGetCurrentFramebuffer()) != (b=osViGetNextFramebuffer())) {
+        if (fb == osViGetCurrentFramebuffer() || fb == osViGetNextFramebuffer() || fb == s_SwapHeldFramebuffer) {
             return 0;
         }
 
@@ -357,27 +417,44 @@ const OSScTask *__scTaskReady(const OSScTask *t)
     return 0;
 }
 
-s32 __scTaskComplete(const OSScTask *t)
+/*
+ * Hands a finished frame to the VI with the video mode it was drawn for.
+ * Frames reach here in the order the main thread made them, so the mode
+ * slots are used in the same order viUpdateMode filled them.
+ */
+static void __scSwap(void *framebuffer)
 {
     static int firsttime = 1;
+
+    if (firsttime) {
+        osViBlack(FALSE);
+        firsttime = 0;
+    }
+    if (g_ViChangeVideoModes[g_schedViCurrentFrameBuffer]) {
+        OSIntMask mask = osSetIntMask(OS_IM_VI);
+        *g_ViModePtrs[g_schedViCurrentFrameBuffer] = g_ViModes[g_schedViCurrentFrameBuffer];
+        osSetIntMask(mask);
+    }
+    osViSetXScale(g_ViXScales[g_schedViCurrentFrameBuffer]);
+    osViSetYScale(g_ViYScales[g_schedViCurrentFrameBuffer]);
+    g_schedViCurrentFrameBuffer = ((g_schedViCurrentFrameBuffer + 1) % NUM_VIDEO_FRAME_BUFFERS);
+    CheckDisplayErrorBuffer(framebuffer);
+    osViSwapBuffer(framebuffer);
+}
+
+s32 __scTaskComplete(const OSScTask *t)
+{
     if ((t->state & OS_SC_RCP_MASK) == 0) {
         osSendMesg(t->msgQ, t->msg, OS_MESG_BLOCK);
         if (t->list.t.type == M_GFXTASK) {
             if ((t->flags & OS_SC_SWAPBUFFER) && (t->flags & OS_SC_LAST_TASK)){
-                if (firsttime) {
-                    osViBlack(FALSE);
-                    firsttime = 0;
+                // With three buffers there is at most one frame held at a time:
+                // the next task can't start while all three are taken.
+                if (osViGetCurrentFramebuffer() != osViGetNextFramebuffer()) {
+                    s_SwapHeldFramebuffer = t->framebuffer;
+                } else {
+                    __scSwap(t->framebuffer);
                 }
-                if (g_ViChangeVideoModes[g_schedViCurrentFrameBuffer]) {
-                    OSIntMask mask = osSetIntMask(OS_IM_VI);
-                    *g_ViModePtrs[g_schedViCurrentFrameBuffer] = g_ViModes[g_schedViCurrentFrameBuffer];
-                    osSetIntMask(mask);
-                }
-                osViSetXScale(g_ViXScales[g_schedViCurrentFrameBuffer]);
-                osViSetYScale(g_ViYScales[g_schedViCurrentFrameBuffer]);
-                g_schedViCurrentFrameBuffer = ((g_schedViCurrentFrameBuffer + 1) % 2);
-                CheckDisplayErrorBuffer(t->framebuffer);
-                osViSwapBuffer(t->framebuffer);
             }
         }
         return 1;

@@ -7,6 +7,7 @@
 #include "game/math/matrix.h"
 #include "game/menu/watchmenu.h"
 #include "game/gfx/texload.h"
+#include "fr.h"
 
 typedef struct invitem_weap
 {
@@ -627,7 +628,7 @@ struct player
 
   Mtxf bondheadmatrices[4];
 
-  Vp viewports[2];
+  Vp viewports[NUM_VIDEO_FRAME_BUFFERS]; // one per framebuffer, indexed by g_ViBackIndex
 
   s16 viewx;
 

@@ -393,7 +393,7 @@ void playerInit(s32 player_num)
     g_playerPointers[player_num]->standup[1].f[2] = 0.0f;
     g_playerPointers[player_num]->standcnt = 0;
 
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < NUM_VIDEO_FRAME_BUFFERS; i++)
     {
         g_playerPointers[player_num]->viewports[i].vp.vscale[0] = 0x280;
         g_playerPointers[player_num]->viewports[i].vp.vscale[1] = GE_VP_YSCALE(DEFAULT_VIEWPORT_V_VAL);

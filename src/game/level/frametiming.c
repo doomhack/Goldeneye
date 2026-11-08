@@ -6,6 +6,7 @@
 
 #include <ultra64.h>
 #include "game/level/frametiming.h"
+#include "sched.h"
 
 // data
 s32 g_FrameCounterPrev = -1;
@@ -32,6 +33,27 @@ u32 g_FramePrevCount = 0;
 u32 g_FrameStartCount = 0;
 s32 g_FrameMinFrames = 1; //usually 1
 
+/*
+ * The scheduler's retrace count when the current game frame started. Frames
+ * are counted in whole video frames from this, so a game frame that starts
+ * part way through a video frame (triple buffering) neither gains nor loses
+ * game time: the deltas add up to the retraces that really happened.
+ */
+static u32 s_FrameStartRetrace;
+
+static u32 frameGetRetraceCount(void)
+{
+    return *(volatile u32 *)&os_scheduler.frameCount;
+}
+
+/**
+ * The number of retraces since the current game frame started.
+ */
+s32 frameRetracesSinceStart(void)
+{
+    return (s32)(frameGetRetraceCount() - s_FrameStartRetrace);
+}
+
 
 /**
  * Stores the current OS count in the two global variables.
@@ -40,6 +62,7 @@ void frameTimingStart(void)
 {
     g_FrameStartCount = osGetCount();
     g_FramePrevCount = g_FrameStartCount;
+    s_FrameStartRetrace = frameGetRetraceCount();
 }
 
 
@@ -52,6 +75,7 @@ void frameAdvance(s32 deltaFrames)
 {
     g_FramePrevCount = (s32) g_FrameStartCount;
     g_FrameStartCount = osGetCount();
+    s_FrameStartRetrace = frameGetRetraceCount();
 
     g_FrameCounterPrev = g_FrameCounter;
     g_FrameCounter = (s32) (g_FrameCounter + deltaFrames);
@@ -74,24 +98,19 @@ void frameAdvance(s32 deltaFrames)
 
 
 /**
- * Waits until the appropriate time has passed before updating the frame counters.
- * This function effectively controls the frame rate by waiting for the next tick.
+ * Waits until at least g_FrameMinFrames retraces have passed since the last
+ * game frame started, then starts the next one with that many retraces as its
+ * delta. The main loop only gets here once a retrace has passed, so this
+ * normally doesn't wait.
  */
-void frameWaitForNext(void) //maybe WaitForTick
+void frameWaitForNext(void)
 {
-  s32 nextFrameTime; //next frame time?
-  
-  do {
-    #ifdef REFRESH_PAL
-    nextFrameTime = ((osGetCount() - g_FrameStartCount) + 465525) / 931050; 
-    #else
-    nextFrameTime = ((osGetCount() - g_FrameStartCount) + 387937) / 775875; //current time + 1/5
-    #endif
-  } while (nextFrameTime < g_FrameMinFrames);
+    s32 retraces;
 
-  g_FrameMinFrames = 1;
-  frameAdvance(nextFrameTime);
+    do {
+        retraces = frameRetracesSinceStart();
+    } while (retraces < g_FrameMinFrames);
+
+    g_FrameMinFrames = 1;
+    frameAdvance(retraces);
 }
-
-
-

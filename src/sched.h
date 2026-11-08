@@ -64,18 +64,19 @@ typedef struct {
     s32         doAudio;
 } OSSched;
 
-extern f32 g_ViXScales[2];
-extern f32 g_ViYScales[2];
-extern s32 g_ViChangeVideoModes[2];
+extern f32 g_ViXScales[];
+extern f32 g_ViYScales[];
+extern s32 g_ViChangeVideoModes[];
 extern OSSched os_scheduler;
 extern OSScClient gfxClient;
-extern OSViMode g_ViModes[2];
-extern OSViMode *g_ViModePtrs[2];
+extern OSViMode g_ViModes[];
+extern OSViMode *g_ViModePtrs[];
 
 void permit_stderr(u32 flag);
 void CheckDisplayErrorBuffer(const u16 *buffer);
 void CheckDisplayErrorBufferEvery16Frames(u32 framecount);
 void __scMain(void *arg);
+void schedKickTasks(void);
 
 extern volatile u32 g_PerfGfxStart;
 extern volatile u32 g_PerfRspSum;
