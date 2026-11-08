@@ -1779,7 +1779,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                 case AI_IFImOnScreen:
                 {
                     AiIFImOnScreenRecord *ai = (AiIFImOnScreenRecord *)(AiListp + Offset);
-                    if ((ChrEntityp->prop->flags & PROPFLAG_ONSCREEN))
+                    if (chrIsOnScreenForAi(ChrEntityp))
                     {
                         Offset = aiFindLabel(AiListp, Offset, ai->GOTOLABEL);
                     }

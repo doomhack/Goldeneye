@@ -653,6 +653,7 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     chr->weapons_held[1] = NULL;
     chr->handle_positiondata_hat = NULL;
     chr->targetplayer = 0;
+    chr->onscreenviews = 0;
     chr->targetlock60 = 0;
     chr->chrwidth = 20.0f;
     chr->chrheight = 185.0f;
@@ -1133,8 +1134,19 @@ s32 chrTick(PropRecord *prop)
         chr->jointList = NULL;
     }
 
+    // PROPFLAG_ONSCREEN only says whether the chr is on the screen of the
+    // view drawn last, and the view order is shuffled every frame. Record
+    // each player's view for the AI's "am I on screen" check. The first view
+    // of a frame starts afresh, after this chr's AI has run, so a view that
+    // stops being drawn (a full-screen solo view) doesn't leave a stale bit.
+    if (!coopRepeat)
+    {
+        chr->onscreenviews = 0;
+    }
+
     if (headSwitchVisible)
     {
+        chr->onscreenviews |= 1 << playerGetCurrentNum();
         prop->flags |= PROPFLAG_ONSCREEN;
         chr->chrflags |= CHRFLAG_HAS_BEEN_ON_SCREEN;
 
