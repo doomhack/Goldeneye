@@ -154,7 +154,8 @@ static inline s32 stanTriPoint(const StandTile *tile, s32 corner)
 
 static inline s32 stanNextPoint(const StandTile *tile, s32 i)
 {
-    return (i + 1) % tile->numPoints;
+    /* Not (i + 1) % numPoints: a divide costs 37 cycles */
+    return i + 1 < tile->numPoints ? i + 1 : 0;
 }
 
 /* stan.c: the tiles */

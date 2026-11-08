@@ -1283,42 +1283,32 @@ void modelCalcJointMtxFromQuat(const ModelRenderData *renderdata, const Model *m
 }
 
 
+/**
+ * The width-bit value (at most 16) that starts bitOffset bits into a big-endian
+ * bitstream, shifted up to fill 16 bits. Reads only the 1 to 3 bytes it spans.
+ */
 u32 animReadAngleBits(const u8 *bitstream, u8 width, u32 bitOffset)
 {
-    u32 value = 0;
-    u32 mask;
-    u8 numbitsthisbyte;
-    u8 remainingbits;
+    const u8 *p = bitstream + (bitOffset >> 3);
+    u32 end = (bitOffset & 7) + width;
+    u32 value = p[0];
+    u32 bits = 8;
 
-    remainingbits = width;
-    value *= bitOffset / 8;
-
-
-    remainingbits = width;
-    bitstream += bitOffset / 8;
-    bitOffset %= 8;
-    numbitsthisbyte = 8 - bitOffset;
-
-    while (remainingbits >= numbitsthisbyte)
+    if (end > 8)
     {
-        remainingbits -= numbitsthisbyte;
-        mask = (1 << numbitsthisbyte) - 1;
-        value |= ((u16)((*bitstream) & mask)) << remainingbits;
-        value &= 0xffff;
-        bitstream++;
-        numbitsthisbyte = 8;
+        value = (value << 8) | p[1];
+        bits = 16;
+
+        if (end > 16)
+        {
+            value = (value << 8) | p[2];
+            bits = 24;
+        }
     }
 
-    if (remainingbits > 0)
-    {
-        mask = (1 << remainingbits) - 1;
-        value |= ((*bitstream) >> (numbitsthisbyte - remainingbits)) & mask;
-        value &= 0xffff;
-    }
+    value = (value >> (bits - end)) & ((1u << width) - 1);
 
-    value <<= 16 - width;
-
-    return value & 0xffff;
+    return (value << (16 - width)) & 0xffff;
 }
 
 

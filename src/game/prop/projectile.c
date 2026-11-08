@@ -426,7 +426,7 @@ static bool projectileTestPolygon(PropRecord *prop, const coord3d *rayStart, con
 
     for (s32 i = 0; i < numedges; i++)
     {
-        s32 next = (i + 1) % numedges;
+        s32 next = i + 1 < numedges ? i + 1 : 0;
 
         if (geoSegmentsIntersect(rayStart->x, rayStart->z, rayEnd->x, rayEnd->z, polygon[i].x, polygon[i].y, polygon[next].x, polygon[next].y))
         {
@@ -445,7 +445,7 @@ static bool projectileTestPolygon(PropRecord *prop, const coord3d *rayStart, con
     // Original bug: a hit on edge 0 is missed
     if (bestedge > 0)
     {
-        s32 next = (bestedge + 1) % numedges;
+        s32 next = bestedge + 1 < numedges ? bestedge + 1 : 0;
         coord3d edgeStart = {{polygon[bestedge].x, 0.0f, polygon[bestedge].y}};
         coord3d edgeEnd = {{polygon[next].x, 0.0f, polygon[next].y}};
         coord3d intersection;

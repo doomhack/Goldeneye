@@ -305,7 +305,7 @@ bool polygonContainsPoint(const coord3d *point, const coord2d *polygon, s32 edge
     for (s32 i = 0; i < edges; i++)
     {
         const coord2d *a = &polygon[i];
-        const coord2d *b = &polygon[(i + 1) % edges];
+        const coord2d *b = &polygon[i + 1 < edges ? i + 1 : 0];
         f32 cross = ((b->f[1] - a->f[1]) * (point->f[0] - a->f[0])) - ((b->f[0] - a->f[0]) * (point->f[2] - a->f[1]));
 
         if (cross == 0.0f)
@@ -340,7 +340,7 @@ static bool polygonExcludesPolygon(const coord2d *poly1, s32 edges1, const coord
 
     for (s32 i = 0; i < edges1; i++)
     {
-        s32 next = (i + 1) % edges1;
+        s32 next = i + 1 < edges1 ? i + 1 : 0;
         f64 nx = poly1[next].y - (f64)poly1[i].y;
         f64 nz = poly1[i].x - (f64)poly1[next].x;
 
@@ -362,7 +362,7 @@ static bool polygonExcludesPolygon(const coord2d *poly1, s32 edges1, const coord
 
         // The edge's line, and poly1's first point off it
         f64 line = poly1[i].x * nx + poly1[i].y * nz;
-        s32 j = (next + 1) % edges1;
+        s32 j = next + 1 < edges1 ? next + 1 : 0;
 
         while (j != i)
         {
@@ -373,7 +373,7 @@ static bool polygonExcludesPolygon(const coord2d *poly1, s32 edges1, const coord
                 break;
             }
 
-            j = (j + 1) % edges1;
+            j = j + 1 < edges1 ? j + 1 : 0;
         }
 
         s32 k;
@@ -499,7 +499,7 @@ bool polygonTouchesCircle(const coord3d *point, f32 radius, const coord2d *polyg
     for (s32 i = 0; i < edges; i++)
     {
         const coord2d *a = &polygon[i];
-        const coord2d *b = &polygon[(i + 1) % edges];
+        const coord2d *b = &polygon[i + 1 < edges ? i + 1 : 0];
         f32 linedist = geoSignedLineDist(a->f[0], a->f[1], b->f[0], b->f[1], px, pz);
 
         if (linedist < 0.0f)
