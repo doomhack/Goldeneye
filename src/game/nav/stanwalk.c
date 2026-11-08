@@ -326,7 +326,7 @@ bool stanTestLineUnobstructed(StandTile **tilePtr, f32 x, f32 z, f32 destX, f32 
 
             for (i = 0; i < numEdges; i++)
             {
-                s32 next = (i + 1) % numEdges;
+                s32 next = i + 1 < numEdges ? i + 1 : 0;
                 coord2d edgeA;
                 coord2d edgeB;
                 f32 frac;
@@ -454,7 +454,7 @@ const PropRecord *stanLineFindDoor(StandTile *tile, f32 x, f32 z, f32 destX, f32
 
         for (i = 0; i < numEdges; i++)
         {
-            s32 next = (i + 1) % numEdges;
+            s32 next = i + 1 < numEdges ? i + 1 : 0;
 
             if (geoSegmentsIntersect(x, z, destX, destZ, polygon[i].f[0], polygon[i].f[1], polygon[next].f[0], polygon[next].f[1]))
             {
@@ -686,7 +686,7 @@ StanCollisionResult stanTestVolume(StandTile **tile, f32 x, f32 z, f32 radius, s
         for (i = 0; i < numEdges; i++)
         {
             const coord2d *a = &polygon[i];
-            const coord2d *b = &polygon[(i + 1) % numEdges];
+            const coord2d *b = &polygon[i + 1 < numEdges ? i + 1 : 0];
             f32 dist = geoSignedLineDist(a->f[0], a->f[1], b->f[0], b->f[1], x, z);
 
             if (dist < 0.0f)

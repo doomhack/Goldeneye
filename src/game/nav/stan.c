@@ -459,7 +459,13 @@ s32 stanResolvePadTile(const struct PadRecord *pad, const char *tilename, StandT
     return 0;
 }
 
-/** The height of the tile's floor at (x, z), in world units */
+/**
+ * The height of the tile's floor at (x, z), in world units.
+ *
+ * The plane's normal comes from f32 cross products of s16 differences, which are always
+ * whole numbers below 2^34, and normal . a is below 2^51, so f64 holds all of it exactly:
+ * the same result the s64 maths once gave, without the 64-bit integer library calls.
+ */
 f32 stanGetFloorY(const StandTile *tile, f32 x, f32 z)
 {
     const StandTilePoint *a = &tile->points[tile->tri0];
@@ -467,8 +473,8 @@ f32 stanGetFloorY(const StandTile *tile, f32 x, f32 z)
     const StandTilePoint *c = &tile->points[tile->tri2];
     f32 ab[3];
     f32 ac[3];
-    s64 normal[3];
-    s64 planeDist;
+    f32 normal[3];
+    f64 planeDist;
 
     x *= g_StanScale;
     z *= g_StanScale;
@@ -486,14 +492,14 @@ f32 stanGetFloorY(const StandTile *tile, f32 x, f32 z)
     normal[1] = ab[2] * ac[0] - ab[0] * ac[2];
     normal[2] = ab[0] * ac[1] - ab[1] * ac[0];
 
-    planeDist = normal[0] * a->x + normal[1] * a->y + normal[2] * a->z;
-
-    if (normal[1] == 0)
+    if (normal[1] == 0.0f)
     {
         return a->y * g_StanInvScale;
     }
 
-    return (f32) (((f64) planeDist - (f64) x * (f64) normal[0] - (f64) z * (f64) normal[2]) / (f64) normal[1]) * g_StanInvScale;
+    planeDist = (f64) normal[0] * a->x + (f64) normal[1] * a->y + (f64) normal[2] * a->z;
+
+    return (f32) ((planeDist - (f64) x * normal[0] - (f64) z * normal[2]) / normal[1]) * g_StanInvScale;
 }
 
 /** The colour a character standing on the tile is lit by: r, g, b from 0 to 255 */
