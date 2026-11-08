@@ -413,9 +413,41 @@ static bool polygonExcludesPolygon(const coord2d *poly1, s32 edges1, const coord
  * Whether two convex polygons touch or overlap: a corner of one is inside the other, or
  * no edge of either separates them.
  */
+/* The box around a polygon's corners */
+static void polygonGetBox(const coord2d *poly, s32 edges, coord2d *min, coord2d *max)
+{
+    *min = poly[0];
+    *max = poly[0];
+
+    for (s32 i = 1; i < edges; i++)
+    {
+        if (poly[i].f[0] < min->f[0]) min->f[0] = poly[i].f[0];
+        if (poly[i].f[0] > max->f[0]) max->f[0] = poly[i].f[0];
+        if (poly[i].f[1] < min->f[1]) min->f[1] = poly[i].f[1];
+        if (poly[i].f[1] > max->f[1]) max->f[1] = poly[i].f[1];
+    }
+}
+
 bool polygonsOverlap(const coord2d *poly1, s32 edges1, const coord2d *poly2, s32 edges2)
 {
     coord3d point;
+
+    // Quick reject: polygons whose boxes are apart can't touch. Only for polygons with
+    // some width and depth: a polygon flattened to a line "contains" every point on
+    // that line (polygonContainsPoint skips edges a point lies on), boxes or not.
+    if (edges1 > 0 && edges2 > 0)
+    {
+        coord2d min1, max1, min2, max2;
+
+        polygonGetBox(poly1, edges1, &min1, &max1);
+        polygonGetBox(poly2, edges2, &min2, &max2);
+
+        if (min1.f[0] < max1.f[0] && min1.f[1] < max1.f[1] && min2.f[0] < max2.f[0] && min2.f[1] < max2.f[1]
+            && (max1.f[0] < min2.f[0] || max2.f[0] < min1.f[0] || max1.f[1] < min2.f[1] || max2.f[1] < min1.f[1]))
+        {
+            return FALSE;
+        }
+    }
 
     for (s32 i = 0; i < edges1; i++)
     {
