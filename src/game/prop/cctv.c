@@ -234,7 +234,7 @@ static void cctvSweep(CCTVRecord *cctv)
  * Watch for players, setting off the alarm after seeing one for long enough, and sweep
  * the head. Runs once a frame.
  */
-void cctvTick(const PropRecord *prop)
+NOINLINE void cctvTick(const PropRecord *prop)
 {
     CCTVRecord *cctv = (CCTVRecord *)prop->obj;
     // Co-op: the camera watches every player it may, and an alarm needs it to see any of

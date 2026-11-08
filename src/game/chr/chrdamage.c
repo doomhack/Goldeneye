@@ -965,7 +965,7 @@ static void chrAlertOthersOfInjury(ChrRecord *self, s32 flag)
 }
 
 
-void chrTickDie(ChrRecord *self)
+NOINLINE void chrTickDie(ChrRecord *self)
 {
     Model *model = self->model;
 

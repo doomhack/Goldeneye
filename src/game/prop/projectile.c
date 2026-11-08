@@ -2014,7 +2014,7 @@ static void projectileTickLanded(PropRecord *prop, Projectile *projectile, coord
  * One tick of an object with a projectile (from objTick, once per frame). Sets *moved if
  * it moved. Returns TICKOP_CHANGEDLIST if it stuck to another prop.
  */
-TICKOP projectileTick(PropRecord *prop, bool *moved)
+NOINLINE TICKOP projectileTick(PropRecord *prop, bool *moved)
 {
     ObjectRecord *obj = prop->obj;
     Projectile *projectile = obj->projectile;

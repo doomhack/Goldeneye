@@ -1637,7 +1637,7 @@ void gunThrowKnife(s32 hand)
 }
 
 
-void gunThrowObject(s32 hand)
+NOINLINE void gunThrowObject(s32 hand)
 {
 /*
     else {
@@ -1891,7 +1891,7 @@ void gunSpawnGLGrenade(s32 handnum)
 /**
  * This function is responsible for attaching a rocket to the end of the Rocket Launcher and updating its matrices.
  */
-void gunUpdateAttachedRocket(s32 handIndex)
+NOINLINE void gunUpdateAttachedRocket(s32 handIndex)
 {
     const struct hand *entry;
     ObjectRecord *attachedRocket;

@@ -508,7 +508,7 @@ static void explosionMakeSmoke(PropRecord *expprop, const struct Explosion *exp,
  * Ticks an explosion: adds fireballs and deals damage while it lasts, ages it, and leaves
  * smoke and the scorch mark. Frees it once its last fireballs have played.
  */
-s32 explosionTick(PropRecord *expprop)
+NOINLINE s32 explosionTick(PropRecord *expprop)
 {
     struct Explosion *exp = expprop->explosion;
     const s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];
@@ -746,7 +746,7 @@ static Gfx *explosionRenderPart(const struct ExplosionPart *part, Gfx *gdl, cons
  * Draws an explosion (in the translucent pass): its fireballs, grouped by animation
  * frame, last frame first. Fireballs that have finished their animation are freed.
  */
-Gfx *explosionRender(const PropRecord *prop, Gfx *gdl, s32 withalpha)
+NOINLINE Gfx *explosionRender(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     struct Explosion *exp = prop->explosion;
     const s_explosiontype *type = &g_ExplosionTypes[exp->explosion_type];

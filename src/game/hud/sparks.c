@@ -274,7 +274,7 @@ void sparkRender(s_bullet_spark *thing, Gfx **gdlptr, s32 zbufferMode)
 }
 
 
-void sparksRender(Gfx **gdlptr, s32 zbufferMode)
+NOINLINE void sparksRender(Gfx **gdlptr, s32 zbufferMode)
 {
 
     s_bullet_spark *thing = &g_Sparks[0];

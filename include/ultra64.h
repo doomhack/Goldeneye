@@ -23,6 +23,13 @@ static_assert(__builtin_types_compatible_p(s32, int), "include <ultra64.h> befor
  * which only works for variables placed in .sdata/.sbss. */
 #define NO_SDATA __attribute__((section(".data")))
 
+/* For a handler that a hot dispatcher calls for one rare type of thing (an object type, a
+ * guard action, a model node type). With LTO, GCC inlines any function that has a single
+ * caller, which piled every handler into its dispatcher: objTick reached 16 KB, the whole
+ * I-cache, though only ~3 KB of it runs in a frame. Kept out of line, the dispatcher's hot
+ * loop stays small and its stack frame only has to fit its own locals. */
+#define NOINLINE __attribute__((noinline))
+
 typedef s32 ssize_t;
 
 /* Boot variables at fixed addresses (ge007.ld), so they are not small data either */

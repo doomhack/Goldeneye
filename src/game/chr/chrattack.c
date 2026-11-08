@@ -2332,7 +2332,7 @@ static void chrTickAttackCommon(ChrRecord *self)
 }
 
 
-void chrTickAttack(ChrRecord *self)
+NOINLINE void chrTickAttack(ChrRecord *self)
 {
     Model *self_model;
     f32 frame;
@@ -2465,7 +2465,7 @@ static s32 chrGetRollAnimIndex(const struct weapon_firing_animation_table *anim)
  * (g_ChrFireAnims[8] to [19], with both guns from [12]), blending over the frames
  * it takes to turn back to face the target.
  */
-void chrTickAttackRoll(ChrRecord *self)
+NOINLINE void chrTickAttackRoll(ChrRecord *self)
 {
     // Blend frames for g_ChrFireAnims[8] to [19]
     static const f32 turnframes_for_anim[12] = {24.0f, 24.0f, 32.0f, 44.0f, 24.0f, 34.0f, 32.0f, 44.0f, 24.0f, 34.0f, 32.0f, 44.0f};
@@ -2579,7 +2579,7 @@ void chrTickAttackRoll(ChrRecord *self)
 }
 
 
-void chrTickAttackWalk(ChrRecord *self)
+NOINLINE void chrTickAttackWalk(ChrRecord *self)
 {
     Model *self_model;
     const PropRecord *player_prop;

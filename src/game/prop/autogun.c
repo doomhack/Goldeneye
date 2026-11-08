@@ -249,7 +249,7 @@ static void autogunSpinBarrels(AutogunRecord *autogun, bool firing)
  * Look for the target and turn towards it, deciding whether to fire (is_active). Runs
  * once a frame.
  */
-void autogunTick(const PropRecord *prop)
+NOINLINE void autogunTick(const PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
     AutogunRecord *autogun = (AutogunRecord *)obj;
@@ -658,7 +658,7 @@ static void autogunPlayFireSound(const PropRecord *prop, AutogunRecord *autogun)
  * Fire if the gun is active: one shot a frame, alternating barrels, and show the muzzle
  * flashes. Runs once a frame, after the model's matrices are worked out.
  */
-void autogunTickFire(const PropRecord *prop)
+NOINLINE void autogunTickFire(const PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
     AutogunRecord *autogun = (AutogunRecord *)obj;

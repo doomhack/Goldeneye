@@ -1027,7 +1027,7 @@ bool chrTryJumpOut(ChrRecord *self)
  * Runs 200 to 400 units to one side (at right angles to the player), or the other side
  * if that's blocked. Not within 3 seconds of the last walk.
  */
-bool chrTryRunSideways(ChrRecord *self)
+NOINLINE bool chrTryRunSideways(ChrRecord *self)
 {
     const PropRecord *myprop;
     f32 dist;
@@ -1112,7 +1112,7 @@ bool chrTryAttackRun(ChrRecord *self)
 }
 
 
-bool chrTryAttackRoll(ChrRecord *self)
+NOINLINE bool chrTryAttackRoll(ChrRecord *self)
 {
     const PropRecord *myprop;
     const PropRecord *bondprop;
@@ -1158,7 +1158,7 @@ bool chrTryAttackRoll(ChrRecord *self)
 }
 
 
-bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b)
+NOINLINE bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b)
 {
     if ((chrIsNotDeadOrShot(self)) &&
         ((chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT)) || (chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))))
@@ -1171,7 +1171,7 @@ bool chrTryAttackStand(ChrRecord *self, s32 attack_type, s32 b)
 }
 
 
-bool chrTryAttackKneel(ChrRecord *self, s32 targettype, s32 targetid)
+NOINLINE bool chrTryAttackKneel(ChrRecord *self, s32 targettype, s32 targetid)
 {
     if ((chrIsNotDeadOrShot(self)) &&
         ((chrGetEquippedWeaponPropWithCheck(self, GUNRIGHT)) || (chrGetEquippedWeaponPropWithCheck(self, GUNLEFT))))
@@ -1238,7 +1238,7 @@ bool chrTryStartPatrol(ChrRecord *self, PathRecord *path)
  * Standing: finishes getting up from a kneel, turns to face a target (walking on the
  * spot), and after a while standing facing a wall turns away from it.
  */
-static void chrTickStand(ChrRecord *self)
+static NOINLINE void chrTickStand(ChrRecord *self)
 {
     s32 i;
     PropRecord *left;
@@ -1436,7 +1436,7 @@ static void chrTickKneel(ChrRecord *actor)
 }
 
 
-static void chrTickAnim(ChrRecord *self)
+static NOINLINE void chrTickAnim(ChrRecord *self)
 {
     if (self->act_anim.holdLastFrame == 0)
     {
@@ -1469,7 +1469,7 @@ static void chrTickAnim(ChrRecord *self)
 }
 
 
-static void chrTickSurrender(ChrRecord *self)
+static NOINLINE void chrTickSurrender(ChrRecord *self)
 {
     Model *model;
 
@@ -1572,7 +1572,7 @@ static void chrTickSurprised(ChrRecord *self)
 }
 
 
-static void chrTickThrowGrenade(ChrRecord *self)
+static NOINLINE void chrTickThrowGrenade(ChrRecord *self)
 {
     const Model *self_model;
     f32 frame;
@@ -1616,7 +1616,7 @@ static void chrTickThrowGrenade(ChrRecord *self)
 }
 
 
-static void chrTickBondIntro(ChrRecord *self)
+static NOINLINE void chrTickBondIntro(ChrRecord *self)
 {
     Model *self_model;
     f32 frame;

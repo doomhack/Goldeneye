@@ -123,7 +123,7 @@ CasingRecord* casingCreate(ModelFileHeader* header, const Mtxf* mtx)
 /**
  * Ejects a spent cartridge casing from the gun in the given hand.
  */
-void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
+NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 {
     CasingRecord *casing;
     Mtxf mtx;

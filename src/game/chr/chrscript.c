@@ -244,7 +244,7 @@ f32 chrGetDistanceToChr(const ChrRecord *self, s32 chrnum)
     return 0.0f;
 }
 
-f32 chrGetDistanceFromBondToPad(const ChrRecord *self, s32 padnum)
+NOINLINE f32 chrGetDistanceFromBondToPad(const ChrRecord *self, s32 padnum)
 {
     const PropRecord *playerprop = currentPlayerGetProp();
 
@@ -254,7 +254,7 @@ f32 chrGetDistanceFromBondToPad(const ChrRecord *self, s32 padnum)
 /**
  * Whether the current player can see the chr and is aiming at it.
  */
-bool chrIsTargetedByPlayer(const ChrRecord *self)
+NOINLINE bool chrIsTargetedByPlayer(const ChrRecord *self)
 {
     coord3d raystart;
     coord3d raydir;
@@ -424,7 +424,7 @@ void chrSetChrPresetOf(const ChrRecord *self, s32 chrnum, s32 presetchrnum)
  * Sets the chr's preset to a living chr within distance (in a box), in the same room or
  * one next to it. Players' bodies don't count.
  */
-bool chrSetChrPresetToNearbyChr(ChrRecord *self, f32 distance)
+NOINLINE bool chrSetChrPresetToNearbyChr(ChrRecord *self, f32 distance)
 {
     s32 numchrs = chrsGetNumSlots();
     const PropRecord *prop = self->prop;
@@ -791,7 +791,7 @@ bool chrTryStopAnim(ChrRecord *self)
     return TRUE;
 }
 
-bool chrTryKneel(ChrRecord *self)
+NOINLINE bool chrTryKneel(ChrRecord *self)
 {
     if (!chrIsNotDeadOrShot(self))
     {
@@ -803,7 +803,7 @@ bool chrTryKneel(ChrRecord *self)
     return TRUE;
 }
 
-bool chrTryStartAnim(ChrRecord *self, s32 animnum, s32 startframe, s32 endframe, u8 flags, s32 mergetime)
+NOINLINE bool chrTryStartAnim(ChrRecord *self, s32 animnum, s32 startframe, s32 endframe, u8 flags, s32 mergetime)
 {
     if (!chrIsNotDeadOrShot(self))
     {
@@ -815,7 +815,7 @@ bool chrTryStartAnim(ChrRecord *self, s32 animnum, s32 startframe, s32 endframe,
     return TRUE;
 }
 
-bool chrTrySurprisedOneHand(ChrRecord *self)
+NOINLINE bool chrTrySurprisedOneHand(ChrRecord *self)
 {
     if (!chrIsNotDeadOrShot(self))
     {
@@ -827,7 +827,7 @@ bool chrTrySurprisedOneHand(ChrRecord *self)
     return TRUE;
 }
 
-bool chrTrySurprisedSurrender(ChrRecord *self)
+NOINLINE bool chrTrySurprisedSurrender(ChrRecord *self)
 {
     if (!chrIsNotDeadOrShot(self))
     {
@@ -839,7 +839,7 @@ bool chrTrySurprisedSurrender(ChrRecord *self)
     return TRUE;
 }
 
-bool chrTrySurprisedLookAround(ChrRecord *self)
+NOINLINE bool chrTrySurprisedLookAround(ChrRecord *self)
 {
     if (!chrIsNotDeadOrShot(self))
     {
@@ -854,7 +854,7 @@ bool chrTrySurprisedLookAround(ChrRecord *self)
 /**
  * Throws down its gun and puts its hands up.
  */
-bool chrTrySurrender(ChrRecord *self)
+NOINLINE bool chrTrySurrender(ChrRecord *self)
 {
     if (!chrIsNotDeadOrShot(self))
     {
@@ -904,7 +904,7 @@ bool chrGoToChr(ChrRecord *self, s32 chrnum, SPEED speed)
 /**
  * Runs to set off the alarm at a pad, if there's an alarm there that isn't broken.
  */
-bool chrTryStartAlarm(ChrRecord *self, s32 padnum)
+NOINLINE bool chrTryStartAlarm(ChrRecord *self, s32 padnum)
 {
     padnum = chrResolvePadId(self, padnum);
 
@@ -985,7 +985,7 @@ bool chrTryThrowGrenade(ChrRecord *self)
 /**
  * Makes an item, attaches it to the chr and marks it to be dropped.
  */
-bool chrDropItem(ChrRecord *self, s32 modelnum, u8 weaponnum)
+NOINLINE bool chrDropItem(ChrRecord *self, s32 modelnum, u8 weaponnum)
 {
     WeaponObjRecord *weapon = weaponCreateFromModel(modelnum, weaponnum);
 

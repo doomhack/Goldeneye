@@ -314,7 +314,7 @@ Gfx *countdownTimerRender(Gfx *gdl)
     return textEndDraw(gdl);
 }
 
-void alarmGasTimerTick(void)
+NOINLINE void alarmGasTimerTick(void)
 {
     alarmTick();
     gasTick();

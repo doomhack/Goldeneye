@@ -1581,7 +1581,7 @@ f32 animReadJointYRotation(s32 jointIndex, s32 useMtxB, const ModelSkeleton *ske
 }
 
 
-void modelCalcYJointMtx(const ModelRenderData *renderData, const Model *model, const ModelNode *node)
+NOINLINE void modelCalcYJointMtx(const ModelRenderData *renderData, const Model *model, const ModelNode *node)
 {    
     const ModelSkeleton *skeleton;
     const ModelRoData_GroupRecord *rodata;
@@ -4035,7 +4035,7 @@ void modelRenderNodeDl(ModelRenderData *renderdata, const Model *model, const Mo
  * writes them to a newly allocated vertices table and queues the node's
  * displaylist to the renderdata's DL.
  */
-void modelRenderNodeRotTex(ModelRenderData *renderdata, const ModelNode *node)
+NOINLINE void modelRenderNodeRotTex(ModelRenderData *renderdata, const ModelNode *node)
 {
     if (renderdata->skipDraw == 0 && (renderdata->flags & 2))
     {
@@ -4115,7 +4115,7 @@ void modelSelectTexture(ModelRenderData *renderdata, struct sImageTableEntry *tc
 
 
 
-void modelRenderNodeTube(ModelRenderData* renderdata, const Model* model, const ModelNode* node)
+NOINLINE void modelRenderNodeTube(ModelRenderData* renderdata, const Model* model, const ModelNode* node)
 {
     s32 rw_index_sel;
     s32 rw_index_sel2;
@@ -4367,7 +4367,7 @@ void modelRenderNodeTube(ModelRenderData* renderdata, const Model* model, const 
 
 
 // PD: modelRenderNodeChrGunfire
-void modelRenderNodeGunfire(ModelRenderData *renderdata, const Model *model, const ModelNode *node)
+NOINLINE void modelRenderNodeGunfire(ModelRenderData *renderdata, const Model *model, const ModelNode *node)
 {
     f32 negUpX;
     ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
@@ -4525,7 +4525,7 @@ void modelSetShadowAlpha(s32 alpha)
 }
 
 
-void modelRenderNodeShadow(ModelRenderData *renderdata, const Model *model, const ModelNode *node)
+NOINLINE void modelRenderNodeShadow(ModelRenderData *renderdata, const Model *model, const ModelNode *node)
 {
     sImageTableEntry *image;
     RenderPosView *mtx;
