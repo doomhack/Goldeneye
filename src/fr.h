@@ -2,7 +2,7 @@
 #define _VIDEO_H_
 #include <ultra64.h>
 
-#define NUM_VIDEO_FRAME_BUFFERS    2
+#define NUM_VIDEO_FRAME_BUFFERS    3 // triple buffered: the RDP draws while the VI waits to show a frame
 #define NUM_VIDEO_SETTINGS         NUM_VIDEO_FRAME_BUFFERS
 
 #define WIDESCREEN_ASPECT ((f32)(16.0f/9.0f))

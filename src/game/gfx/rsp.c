@@ -185,6 +185,7 @@ void rspGfxTaskStart(Gfx *firstGdl, const Gfx *gdl, OSMesg replyMsg)
 
     osWritebackDCacheAll();
     osSendMesg(sched_cmdQ, (OSMesg)sctask, OS_MESG_BLOCK);
+    schedKickTasks();
 
     s_NextTask ^= 1;
     g_RspNextTask = &s_Tasks[s_NextTask];

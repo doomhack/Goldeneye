@@ -57,23 +57,6 @@
 // #define	OS_CLOCK_RATE		62500000LL
 // #define OS_CPU_COUNTER       (OS_CLOCK_RATE * 3 / 4)
 
-#ifdef REFRESH_PAL
-
-    #define CYCLES_PER_FRAME    ((u32) OS_CPU_COUNTER / 50U) // 937,500
-    #define INTERVAL_INTER_MATH    (CYCLES_PER_FRAME / 2U) // 468,750
-
-    // this is: g_FrameMinFrames * 931050 - 465525
-    #define MAIN_LOOP_TICK_INTERVAL g_FrameMinFrames * (CYCLES_PER_FRAME - 6450U) - (INTERVAL_INTER_MATH - 3225U)
-
-#else
-
-    #define CYCLES_PER_FRAME    ((u32) OS_CPU_COUNTER / 60U) // 781,250
-    #define INTERVAL_INTER_MATH    (CYCLES_PER_FRAME / 2U) // 390,625
-
-    // note: 3225U * 5/6 = 2687.5
-    #define MAIN_LOOP_TICK_INTERVAL (INTERVAL_INTER_MATH - 2688U) // 387,937
-
-#endif
 
 /**
  * Copied from n64devkit\ultra\usr\src\pr\demos_old\simple\gfx.h
@@ -378,7 +361,6 @@ void bossMainloop(void)
     s32 localSelectedNumPlayers;
     u32 pendingGfx = 0;
     u32 cpuFrameStart = 0;
-    u32 mainTickElapsed;
     s32 rspReplyMsg;
     u32 roomHeapSize;
 
@@ -458,90 +440,6 @@ void bossMainloop(void)
 
             switch (localGfxFrameMsg->gen.type)
             {
-                case (OS_SC_RETRACE_MSG):
-                {
-
-                    mainTickElapsed = (osGetCount() - g_FrameStartCount);
-                    if (mainTickElapsed < MAIN_LOOP_TICK_INTERVAL)
-                    {
-                        // nothing to do.
-                    }
-                    else
-                    {
-                        if (g_MainStageNum < 0 && pendingGfx < 2U)
-                        {
-                            g_DbgFrameCounter++;
-
-                            if (get_is_ramrom_flag())
-                            {
-                                iterate_ramrom_entries_handle_camera_out();
-                            }
-                            else
-                            {
-                                frameWaitForNext();
-                            }
-
-                            cpuFrameStart = osGetCount();
-                            joyConsumeSamplesWrapper();
-                            permit_stderr(0);
-
-                            gdl = firstGdl = dynGetMasterDisplayList();
-
-                            lvTick();
-                            coopUpdateSoloView();
-                            playersShuffleOrder();
-
-                            if (g_StageNum != LEVELID_TITLE)
-                            {
-                                for (i = 0; i < getViewCount(); i++)
-                                {
-                                    playerSetCurrent(playerGetShuffled(i));
-
-                                    localPlayer = g_CurrentPlayer;
-                                    viSetViewSize(localPlayer->viewx, localPlayer->viewy);
-
-                                    localPlayer = g_CurrentPlayer;
-                                    viSetViewPosition(localPlayer->viewleft, localPlayer->viewtop);
-
-                                    lvPlayerTick();
-                                    tankUpdateDriver();
-                                }
-                            }
-
-                            gdl = lvRender(gdl);
-                            testhooksEndFrame();
-
-                            // Lets Visualise the Coverage Value used for Scilohete Anti-Ailising (edges)
-                            // (done on the VI), also produces a cool looking linemode - providing AA is working.
-                            if (g_CheatLineMode)
-                            {
-                                gDPPipeSync(gdl++); // 0xe7000000, 0x00000000
-                                gDPSetCycleType(gdl++, G_CYC_1CYCLE); // 0xba001402, 0x00000000
-                                gDPSetBlendColor(gdl++, 0xff, 0xff, 0xff, 0xff); // 0xf9000000, 0xffffffff
-                                gDPSetPrimDepth(gdl++, 0xffff, 0xffff); // 0xee000000, 0xffffffff
-                                gDPSetDepthSource(gdl++, G_ZS_PRIM); // 0xb9000201, 0x00000004
-                                gDPSetRenderMode(gdl++, G_RM_VISCVG, G_RM_VISCVG2); // 0xb900031d, 0x0fa54040
-                                gDPFillRectangle(gdl++, 0, 0, VI_SX(viGetX()) - 1, viGetY() - 1);
-                            }
-
-                            gDPFullSync(gdl++); // 0xe9000000, 0x00000000
-                            gSPEndDisplayList(gdl++); // 0xb8000000, 0x00000000
-
-                            dynSwapBuffers();
-                            viUpdateMode();
-
-                            rspReplyMsg = (s32)(&localGfxDoneMsg);
-                            rspGfxTaskStart(firstGdl, gdl, (s32*)rspReplyMsg);
-
-                            pendingGfx++;
-                            toggleFlag ^= 1;
-
-                            g_PerfCpuSum += osGetCount() - cpuFrameStart;
-                        }
-                    }
-                }
-                break;
-
                 case (OS_SC_DONE_MSG):
                     pendingGfx--;
                     break;
@@ -549,6 +447,88 @@ void bossMainloop(void)
                 case OS_SC_PRE_NMI_MSG: // message when the console's power is being cut off
                     pendingGfx = 4U;    // this stops any further graphics processing
                     break;
+
+                default:
+                    break;
+            }
+
+            /*
+             * Start the next frame once a retrace has passed since the last one
+             * started and one of the two display list buffers is free. With
+             * three framebuffers that can be straight after a graphics task
+             * finishes, part way through a video frame, rather than at the next
+             * retrace. A frame that took longer than a video frame to make goes
+             * straight on to the next one, as the retrace has already passed.
+             */
+            if (g_MainStageNum < 0 && pendingGfx < 2U && frameRetracesSinceStart() >= 1)
+            {
+                g_DbgFrameCounter++;
+
+                if (get_is_ramrom_flag())
+                {
+                    iterate_ramrom_entries_handle_camera_out();
+                }
+                else
+                {
+                    frameWaitForNext();
+                }
+
+                cpuFrameStart = osGetCount();
+                joyConsumeSamplesWrapper();
+                permit_stderr(0);
+
+                gdl = firstGdl = dynGetMasterDisplayList();
+
+                lvTick();
+                coopUpdateSoloView();
+                playersShuffleOrder();
+
+                if (g_StageNum != LEVELID_TITLE)
+                {
+                    for (i = 0; i < getViewCount(); i++)
+                    {
+                        playerSetCurrent(playerGetShuffled(i));
+
+                        localPlayer = g_CurrentPlayer;
+                        viSetViewSize(localPlayer->viewx, localPlayer->viewy);
+
+                        localPlayer = g_CurrentPlayer;
+                        viSetViewPosition(localPlayer->viewleft, localPlayer->viewtop);
+
+                        lvPlayerTick();
+                        tankUpdateDriver();
+                    }
+                }
+
+                gdl = lvRender(gdl);
+                testhooksEndFrame();
+
+                // Lets Visualise the Coverage Value used for Scilohete Anti-Ailising (edges)
+                // (done on the VI), also produces a cool looking linemode - providing AA is working.
+                if (g_CheatLineMode)
+                {
+                    gDPPipeSync(gdl++); // 0xe7000000, 0x00000000
+                    gDPSetCycleType(gdl++, G_CYC_1CYCLE); // 0xba001402, 0x00000000
+                    gDPSetBlendColor(gdl++, 0xff, 0xff, 0xff, 0xff); // 0xf9000000, 0xffffffff
+                    gDPSetPrimDepth(gdl++, 0xffff, 0xffff); // 0xee000000, 0xffffffff
+                    gDPSetDepthSource(gdl++, G_ZS_PRIM); // 0xb9000201, 0x00000004
+                    gDPSetRenderMode(gdl++, G_RM_VISCVG, G_RM_VISCVG2); // 0xb900031d, 0x0fa54040
+                    gDPFillRectangle(gdl++, 0, 0, VI_SX(viGetX()) - 1, viGetY() - 1);
+                }
+
+                gDPFullSync(gdl++); // 0xe9000000, 0x00000000
+                gSPEndDisplayList(gdl++); // 0xb8000000, 0x00000000
+
+                dynSwapBuffers();
+                viUpdateMode();
+
+                rspReplyMsg = (s32)(&localGfxDoneMsg);
+                rspGfxTaskStart(firstGdl, gdl, (s32*)rspReplyMsg);
+
+                pendingGfx++;
+                toggleFlag ^= 1;
+
+                g_PerfCpuSum += osGetCount() - cpuFrameStart;
             }
         }
 

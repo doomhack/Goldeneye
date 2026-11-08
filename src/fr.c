@@ -43,11 +43,13 @@
 struct VideoSettings_s g_ViDataArray[NUM_VIDEO_SETTINGS] =
 {
     {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1},
+    {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1},
     {0, 0, 0, 0, 320, 272, 60.0f, 1.17647063732f, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, 320, 272, 0, 0, TRUE, NULL, 1}
 };
 #else
 struct VideoSettings_s g_ViDataArray[NUM_VIDEO_SETTINGS] =
 {
+    {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1},
     {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1},
     {MD_BLACK, 0, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FOV_Y_F, ASPECT_RATIO, 30.0f, 10000.0f, SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0, TRUE, NULL, 1}};
 #endif
@@ -173,15 +175,18 @@ void viInitVideoSettings(void)
 void viInitBuffers(void)
 {
     s32 i;
-    u8* p1 = cfb_16[0];
-    u8* p2 = cfb_16[1];
+    s32 b;
 
     zbufDeallocate();
 
-    for (i = 0; i < (s32) sizeof(cfb_16[0]); i++)
+    for (b = 0; b < NUM_VIDEO_FRAME_BUFFERS; b++)
     {
-        p1[i] = 0;
-        p2[i] = 0;
+        u8 *p = cfb_16[b];
+
+        for (i = 0; i < (s32) sizeof(cfb_16[0]); i++)
+        {
+            p[i] = 0;
+        }
     }
 }
 
@@ -550,7 +555,7 @@ void viUpdateMode(void)
         g_ViChangeVideoModes[modeIndex] = 0;
     }
 
-    modeIndex = (modeIndex + 1) % 2;
+    modeIndex = (modeIndex + 1) % NUM_VIDEO_FRAME_BUFFERS;
     g_ViNextModeSlot = modeIndex;
 
     if (g_viColorOutputMode != 0)
@@ -564,8 +569,8 @@ void viUpdateMode(void)
 
     settings = g_ViBackData;
 
-    g_ViFrontIndex = (g_ViFrontIndex + 1) % 2;
-    g_ViBackIndex = (g_ViBackIndex + 1) % 2;
+    g_ViFrontIndex = (g_ViFrontIndex + 1) % NUM_VIDEO_SETTINGS;
+    g_ViBackIndex = (g_ViBackIndex + 1) % NUM_VIDEO_SETTINGS;
 
     g_ViFrontData = g_ViDataArray + g_ViFrontIndex;
     g_ViBackData = g_ViDataArray + g_ViBackIndex;
