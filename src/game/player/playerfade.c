@@ -55,7 +55,7 @@ Gfx *currentPlayerDrawFade(Gfx *gdl)
  * Co-op: the fade through black while the screen switches between split
  * views and one full-screen view (g_CoopViewFade), over the whole frame.
  */
-Gfx *coopDrawViewFade(Gfx *gdl)
+NOINLINE Gfx *coopDrawViewFade(Gfx *gdl)
 {
     if (g_CoopViewFade <= 0.0f)
     {

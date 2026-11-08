@@ -1345,7 +1345,7 @@ s32 chrIsArrivingLaterallyAtPos(const coord3d *prevpos, const coord3d *curpos, c
 }
 
 
-void chrTickRunPos(ChrRecord *self)
+NOINLINE void chrTickRunPos(ChrRecord *self)
 {
     const PropRecord *self_prop;
     Model *self_model;
@@ -2120,7 +2120,7 @@ static bool chrCanWalkLineClear(ChrRecord *self, const coord3d *dest, const Stan
 }
 
 
-void chrTickGoPos(ChrRecord *self)
+NOINLINE void chrTickGoPos(ChrRecord *self)
 {
     const waypoint *wp;
     const coord3d *wp_pos;
@@ -2244,7 +2244,7 @@ void chrTickGoPos(ChrRecord *self)
 }
 
 
-void chrTickPatrol(ChrRecord *self)
+NOINLINE void chrTickPatrol(ChrRecord *self)
 {
     const PropRecord *self_prop;
     s32 restarted;

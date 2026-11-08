@@ -474,7 +474,7 @@ void playerSelectCuff(const Model *model, const ModelFileHeader *header, s32 swi
 }
 
 
-s32 playerTick(PropRecord *prop)
+NOINLINE s32 playerTick(PropRecord *prop)
 {
     s32 index;
     ChrRecord *chr;
@@ -950,7 +950,7 @@ clear_and_return:
 }
 
 
-Gfx *playerRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha)
+NOINLINE Gfx *playerRenderProp(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     ChrRecord *chr = prop->chr;
 

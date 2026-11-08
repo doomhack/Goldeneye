@@ -686,7 +686,7 @@ static void objRespawn(PropRecord *prop)
  * fades in over them (objRenderProp), but waits while a player is near enough to see it
  * appear.
  */
-static void objTickRespawn(PropRecord *prop)
+static NOINLINE void objTickRespawn(PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
     bool fading = prop->timetoregen < CHROBJ_TIMETOREGEN;

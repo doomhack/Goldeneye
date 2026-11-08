@@ -206,7 +206,7 @@ static void smokePartStart(const struct Smoke *smoke, struct SmokePart *part, co
  * Ticks smoke: moves its clouds and makes new ones while it lasts, and updates its rooms.
  * Frees it once it's done and its clouds have gone.
  */
-s32 smokeTick(PropRecord *prop)
+NOINLINE s32 smokeTick(PropRecord *prop)
 {
     struct Smoke *smoke = prop->smoke;
     const s_smoketype *type = &s_SmokeTypes[smoke->smoke_type];
@@ -485,7 +485,7 @@ static Gfx *smokeRenderPart(const struct Smoke *smoke, const struct SmokePart *p
 /**
  * Draws smoke (in the translucent pass): each of its clouds.
  */
-Gfx *smokeRender(const PropRecord *prop, Gfx *gdl, s32 withalpha)
+NOINLINE Gfx *smokeRender(const PropRecord *prop, Gfx *gdl, s32 withalpha)
 {
     struct Smoke *smoke = prop->smoke;
     s32 room = prop->rooms[0];

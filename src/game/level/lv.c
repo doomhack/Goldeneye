@@ -411,7 +411,7 @@ static s32 s_FpsCountersMode;
  * the average milliseconds per frame the CPU spent building it, and the
  * graphics task took on the RSP and until the RDP finished drawing.
  */
-static Gfx *lvRenderFpsCounter(Gfx *DL)
+static NOINLINE Gfx *lvRenderFpsCounter(Gfx *DL)
 {
     char text[200];
     s32 x;

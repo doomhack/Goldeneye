@@ -459,7 +459,7 @@ static void vehicleDrive(PropRecord *prop, VehichleRecord *vehicle, const Model 
 
 
 /* Run the vehicle's AI script, play its engine sound, and drive. Runs once a frame. */
-void vehicleTick(PropRecord *prop)
+NOINLINE void vehicleTick(PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
     VehichleRecord *vehicle = (VehichleRecord *)obj;
@@ -660,7 +660,7 @@ static void aircraftTickAnim(PropRecord *prop, AircraftRecord *aircraft)
 
 /* Run the aircraft's AI script, move it along its animation, speed up its rotors and
    play its engine sound. Runs once a frame. */
-void aircraftTick(PropRecord *prop)
+NOINLINE void aircraftTick(PropRecord *prop)
 {
     ObjectRecord *obj = prop->obj;
     AircraftRecord *aircraft = (AircraftRecord *)obj;

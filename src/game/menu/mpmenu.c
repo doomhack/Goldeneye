@@ -1049,7 +1049,7 @@ s32 mpMenuShowScore(void)
  * @param gdl display list to append to
  * @return the advanced display list pointer
  */
-Gfx *mpMenuRender(Gfx *gdl)
+NOINLINE Gfx *mpMenuRender(Gfx *gdl)
 {
     s32 curplayernum;
     s32 player_count;
