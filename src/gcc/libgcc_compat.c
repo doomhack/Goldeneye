@@ -47,9 +47,42 @@ const void *gcc_memset(void *dst, int c, unsigned int n)
 {
     u8 *p = dst;
 
-    while (n--)
+    // Byte stores up to a word boundary, then whole words (GCC clears structs of a few
+    // dozen bytes with this hundreds of times a frame, so byte at a time was ~1% of CPU)
+    while (n != 0 && ((u32)p & 3) != 0)
     {
         *p++ = c;
+        n--;
+    }
+
+    if (n >= 4)
+    {
+        u32 word = (u8)c * 0x01010101u;
+        u32 *w = (u32 *)p;
+
+        while (n >= 16)
+        {
+            w[0] = word;
+            w[1] = word;
+            w[2] = word;
+            w[3] = word;
+            w += 4;
+            n -= 16;
+        }
+
+        while (n >= 4)
+        {
+            *w++ = word;
+            n -= 4;
+        }
+
+        p = (u8 *)w;
+    }
+
+    while (n != 0)
+    {
+        *p++ = c;
+        n--;
     }
 
     return dst;

@@ -231,6 +231,10 @@ s32 g_BgNumberOfRoomsDrawn = 0;
 s32 g_BgRoomsDrawnCount = 0;
 #endif
 
+/* Where each room sits in g_BgRoomsDrawn this view (0xff: not added), so looking a room up
+   doesn't scan the list. Props look up their rooms' boxes hundreds of times a frame. */
+static u8 s_BgRoomDrawnSlot[MAXROOMCOUNT];
+
 Lights1 GlobalLight = gdSPDefLights1(
     150,150,150,        /* ambient color grey */ //D:80044840
     255,255,255,
@@ -313,6 +317,29 @@ void bgMarkSpecialPortals(void) {
 }
 
 
+/* The room's entry in g_BgRoomsDrawn, or -1. Same result as scanning the first
+   g_BgNumberOfRoomsDrawn entries: a room is only ever added once, except into the clamped
+   last slot of a full list, which the scan doesn't reach either. */
+static inline s32 bgFindDrawnRoom(s32 room)
+{
+    s32 i;
+
+    if ((u32)room >= MAXROOMCOUNT)
+    {
+        return -1;
+    }
+
+    i = s_BgRoomDrawnSlot[room];
+
+    if (i < g_BgNumberOfRoomsDrawn && g_BgRoomsDrawn[i].roomid == room)
+    {
+        return i;
+    }
+
+    return -1;
+}
+
+
 s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
 {
     int i;
@@ -324,23 +351,21 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
         return 0;
     }
 
-    // Need g_BgNumberOfRoomsDrawn in a3
-    for (i = 0; i < g_BgNumberOfRoomsDrawn; i++)
+    i = bgFindDrawnRoom(curroom);
+    if (i >= 0)
     {
-        if (curroom == g_BgRoomsDrawn[i].roomid) {
-            if (g_BgRoomsDrawn[i].depth < unk1) {
-                g_BgRoomsDrawn[i].depth = unk1;
-            }
-            bgRectOutersect(screensize,&g_BgRoomsDrawn[i].bbox);
-            temp = g_BgRoomsDrawn[i].next;
-            g_BgRoomsDrawn[i].bbox.min.x = screensize->min.x;
-            g_BgRoomsDrawn[i].bbox.min.y = screensize->min.y;
-            g_BgRoomsDrawn[i].bbox.max.x = screensize->max.x;
-            g_BgRoomsDrawn[i].bbox.max.y = screensize->max.y;
-            g_BgRoomsDrawn[i].next = temp | next;
-
-            return temp;
+        if (g_BgRoomsDrawn[i].depth < unk1) {
+            g_BgRoomsDrawn[i].depth = unk1;
         }
+        bgRectOutersect(screensize,&g_BgRoomsDrawn[i].bbox);
+        temp = g_BgRoomsDrawn[i].next;
+        g_BgRoomsDrawn[i].bbox.min.x = screensize->min.x;
+        g_BgRoomsDrawn[i].bbox.min.y = screensize->min.y;
+        g_BgRoomsDrawn[i].bbox.max.x = screensize->max.x;
+        g_BgRoomsDrawn[i].bbox.max.y = screensize->max.y;
+        g_BgRoomsDrawn[i].next = temp | next;
+
+        return temp;
     }
 
 #if defined(VERSION_EU)
@@ -355,6 +380,7 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
     g_BgRoomsDrawn[i].bbox.max.x = screensize->max.x;
     g_BgRoomsDrawn[i].bbox.max.y = screensize->max.y;
     g_BgRoomsDrawn[i].next = next;
+    s_BgRoomDrawnSlot[curroom] = i;
     g_BgRoomsDrawnCount++;
     if (g_BgRoomsDrawnCount < BG_ROOMS_DRAWN_LEN) {
         g_BgNumberOfRoomsDrawn = g_BgRoomsDrawnCount;
@@ -376,6 +402,7 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
     g_BgRoomsDrawn[i].bbox.max.x = screensize->max.x;
     g_BgRoomsDrawn[i].bbox.max.y = screensize->max.y;
     g_BgRoomsDrawn[i].next = next;
+    s_BgRoomDrawnSlot[curroom] = i;
 #if defined(BACKPORT_R1)
     if (i + 1 < BG_ROOMS_DRAWN_LEN) {
         g_BgNumberOfRoomsDrawn = i + 1;
@@ -391,7 +418,7 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
 
 
 /**
- * Searches g_BgRoomsDrawn for matching id.
+ * Looks up the room's entry in g_BgRoomsDrawn.
  * If found, sets result to 2d bbox and returns 1.
  * Otherwise result is set to empty 2d bbox and returns 0.
  *
@@ -400,18 +427,16 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
 */
 s32 bgGet2dBboxByRoomId(s32 room_id, bbox2d *result)
 {
-    s32 i;
-    for (i=0; i<g_BgNumberOfRoomsDrawn; i++)
-    {
-        if (room_id == g_BgRoomsDrawn[i].roomid)
-        {
-            result->f[0][0] = g_BgRoomsDrawn[i].bbox.f[0][0];
-            result->f[0][1] = g_BgRoomsDrawn[i].bbox.f[0][1];
-            result->f[1][0] = g_BgRoomsDrawn[i].bbox.f[1][0];
-            result->f[1][1] = g_BgRoomsDrawn[i].bbox.f[1][1];
+    s32 i = bgFindDrawnRoom(room_id);
 
-            return 1;
-        }
+    if (i >= 0)
+    {
+        result->f[0][0] = g_BgRoomsDrawn[i].bbox.f[0][0];
+        result->f[0][1] = g_BgRoomsDrawn[i].bbox.f[0][1];
+        result->f[1][0] = g_BgRoomsDrawn[i].bbox.f[1][0];
+        result->f[1][1] = g_BgRoomsDrawn[i].bbox.f[1][1];
+
+        return 1;
     }
 
     // It's pointless to set those because when this function returns false, result is unused
@@ -3880,6 +3905,7 @@ void bgDetermineVisibleRooms(void)
         g_BgRoomState[i].room_rendered = 0;
         g_BgRoomState[i].portal_visit_count = 0;
         g_BgRoomState[i].room_loaded_mask = 0;
+        s_BgRoomDrawnSlot[i] = 0xff;
     }
 
     g_BgRoomLoadSlot = (s32) (g_BgRoomLoadSlot + 1) % 10;
