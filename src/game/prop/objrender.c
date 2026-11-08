@@ -582,14 +582,25 @@ static bool posIsBeforeFogEnd(const coord3d *pos, f32 size)
 }
 
 
-/* Whether any of the rooms the prop is in is visible this frame */
+/*
+ * Whether any of the rooms the prop is in is visible this frame. Reads the rooms
+ * straight from the prop, as propGetRoomIds would list them, without copying them.
+ */
 static bool propIsInVisibleRoom(const PropRecord *prop)
 {
-    s32 rooms[8];
+    const StandTile *stan = prop->stan;
 
-    propGetRoomIds(prop, rooms);
+    if (stan == NULL)
+    {
+        return FALSE;
+    }
 
-    for (const s32 *room = rooms; *room >= 0; room++)
+    if (prop->type == PROP_TYPE_VIEWER && prop->obj == NULL)
+    {
+        return bgRoomIsVisible(stan->room);
+    }
+
+    for (const u8 *room = prop->rooms; *room != 0xff; room++)
     {
         if (bgRoomIsVisible(*room))
         {

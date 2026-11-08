@@ -107,9 +107,13 @@ SECTIONS
 
 
 
-   /* Game code sits in RAM right after the data. init() loads it from ROM in one DMA. */
-   BEGIN_SEG(game, ALIGN(_inflateSegmentRomEnd, 16), ALIGN(_csegmentSegmentEnd, 16))
+   /* Game code sits in RAM right after the data. init() loads it from ROM in one DMA.
+      It starts on a 16 KB boundary (the I-cache size) and begins with the hot functions
+      from ld/game.hot.ld.inc, so where they land in the cache no longer moves whenever
+      data or unrelated code changes size. */
+   BEGIN_SEG(game, ALIGN(_inflateSegmentRomEnd, 16), ALIGN(_csegmentSegmentEnd, 0x4000))
    {
+#include "ld/game.hot.ld.inc"
 #include "ld/game.text.ld.inc"
    }
    END_SEG(game)
