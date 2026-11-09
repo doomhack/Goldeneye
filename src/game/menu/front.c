@@ -128,23 +128,11 @@ u8 g_CheatAvailable[CHEAT_MAX];
 
 u8 g_CheatActivated[CHEAT_MAX];
 
-#ifdef VERSION_EU
-
-s32 g_MpCharCursor[MAX_PLAYER_COUNT];
-
-s32 g_MpCharPrevCursor[MAX_PLAYER_COUNT];
-
-s32 g_MpFavWeapon[MAX_PLAYER_COUNT][GUNHANDS];
-
-#else
-
 s32 g_MpFavWeapon[MAX_PLAYER_COUNT][GUNHANDS];
 
 s32 g_MpCharCursor[MAX_PLAYER_COUNT];
 
 s32 g_MpCharPrevCursor[MAX_PLAYER_COUNT];
-
-#endif
 
 
 s32 g_MpCharScroll[MAX_PLAYER_COUNT];

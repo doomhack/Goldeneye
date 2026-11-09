@@ -123,7 +123,5 @@
       build/OUTCODE/src/game/gfx/rsp.o (.data);
       build/OUTCODE/src/game/level/game.o (.data);
       build/OUTCODE/src/game/gfx/zbuf.o (.data);
-#ifndef VERSION_EU
-#endif
       /* With LTO, the code GCC compiles at link time (see the Makefile) */
       *ltrans*.o (.data .data.*);

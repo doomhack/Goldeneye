@@ -525,16 +525,7 @@ void watchTick(void)
     {
         holdingWatchItem = gunGetWeapon(GUNRIGHT) == ITEM_TRIGGER || gunGetWeapon(GUNRIGHT) == ITEM_WATCHLASER;
 
-#if defined (VERSION_US)
-        delay = WATCH_VAR_LOWER;
-
-        if (holdingWatchItem)
-        {
-            delay = WATCH_VAR_UPPER;
-        }
-#else
         delay = (holdingWatchItem) ? WATCH_VAR_UPPER : WATCH_VAR_LOWER;
-#endif
 
         g_CurrentPlayer->timer_1C4 += g_ClockTimer;
         g_CurrentPlayer->watch_pause_time += 1;

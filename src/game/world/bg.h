@@ -169,7 +169,6 @@ typedef struct bg_queued_portal_entry {
     s16 depth;         // 0x02
     bbox2d box;        // 0x04
     #else
-    s32 value;         // 0x00
     s32 roomnum;       // 0x04
     s32 portalnum;     // 0x08
     s32 depth;         // 0x0c

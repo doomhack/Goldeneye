@@ -137,18 +137,10 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
     Mtxf rotmtx;
 #endif
     f32 rand;
-#ifndef VERSION_EU
-    s32 limit;
-#endif
     f32 frac = 0.0f;
-#if VERSION_EU
     s32 randlimit;
-#endif
     f32 oldvely;
     f32 newvely;
-#ifndef VERSION_EU
-    s32 randlimit;
-#endif
     const struct hand *hand;
     u32 randval;
  
@@ -218,19 +210,10 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
  
-#if VERSION_EU
-        randlimit = ((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10;
-        randlimit = randlimit + 0x158679;
+        randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
         randval = randomGetNext();
         oldvely = casing->vel.y;
         frac = ((f32) ((u32) (randval % randlimit))) / g_PistolCasingRandomDivisor;
-#else
-        randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
-        limit = randlimit;
-        randval = randomGetNext();
-        oldvely = casing->vel.y;
-        frac = ((f32) ((u32) (randval % limit))) / g_PistolCasingRandomDivisor;
-#endif
         newvely = oldvely - (frac * g_PistolCasingGravity);
  
         casing->vel.y = newvely;
@@ -271,18 +254,10 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
 #else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
 #endif
-        randval = ((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10;
-#if VERSION_EU
-        randval = randval + 0x158679;
-        randlimit = randomGetNext();
-        oldvely = (&casing->vel)->y;
-        frac = ((f32) ((u32) (randlimit % randval))) / g_RifleCasingRandomDivisor;
-#else
-        randlimit = randval + 0x158679;
+        randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
         randval = randomGetNext();
-        oldvely = (&casing->vel)->y;
+        oldvely = casing->vel.y;
         frac = ((f32) ((u32) (randval % randlimit))) / g_RifleCasingRandomDivisor;
-#endif
         newvely = (casing->vel.y = oldvely - (frac * g_RifleCasingGravity));
  
         casing->pos.y += (frac * (oldvely + newvely)) * 0.5f;

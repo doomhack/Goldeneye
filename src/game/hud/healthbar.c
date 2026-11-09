@@ -22,7 +22,6 @@
 
 #define GAUGE_BAR_VERTEX_PAIR_STRIDE (2 * sizeof(struct WatchVertex))
 
-#if defined(VERSION_US)
 /*
   Render Health Bars
   Populates a radial array of HUD elements (HealthSegments) with position and color data
@@ -113,95 +112,6 @@ void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 isArmo
         }
     }
 }
-#endif
-
-#if !defined(VERSION_US)
-void hudMakeDamageSegments(struct damage_display_val *HealthSegments, s32 isArmour, f32 HealthValue)
-{
-	s32 segment;
-	f32 over5;
-	s32 pairIndex;
-	s32 i;
-	s16 coord;
-	s32 angleOffset;
-	f32 angleDeg;
-	f32 cosScaled;
-	f32 sign;
-	f32 angleRadians;
-	HealthValue *= 8.0f;
-	angleOffset = 0;
-
-	for (i = 0; i < 23; i++)
-	{
-		angleDeg = (f32) ((s32) (142.5 - ((f64) angleOffset)));
-		angleRadians = ((angleDeg * M_PI_F) * ((f32) 2)) / 360.0f;
-		for (pairIndex = 0; pairIndex < 2; pairIndex++)
-		{
-	        sign = (f32) isArmour;
-			coord = (s16) ((s32) (((((sinf(angleRadians) * 4.0f) * 130.0f) * ((f32) (6 - pairIndex))) / 5.0f) * sign));
-			cosScaled = cosf(angleRadians) * 4.0f;
-			HealthSegments->pos.x = coord + 1;
-			HealthSegments->pos.y = 0;
-			HealthSegments->normal.x = 0;
-			HealthSegments->normal.y = 0;
-			over5 = HealthValue - 5.0f;
-			HealthSegments->normal.z = 0;
-			HealthSegments->colour.r = 0xFF;
-			HealthSegments->colour.g = 0xFF;
-			coord = ((cosScaled * 130.0f) * ((f32) (6 - pairIndex))) / 5;
-			HealthSegments->colour.b = 0xFF;
-			HealthSegments->pos.z = (s16) (-((s32) coord));
-			if (isArmour > 0)
-			{
-				HealthSegments->colour.r = (s8) ((s32) (96.0f - (cosf(angleRadians) * 96.0f)));
-				HealthSegments->colour.g = (s8) ((s32) (127.0f - (cosf(angleRadians) * 127.0f)));
-				HealthSegments->colour.b = 0xFF;
-			}
-			else if (isArmour < 0)
-			{
-				HealthSegments->colour.g = (s8) ((s32) (127.0f - (cosf(angleRadians) * 127.0f)));
-				HealthSegments->colour.b = (s8) ((s32) (32.0f - (cosf(angleRadians) * 32.0f)));
-			}
-			if (i < 10)
-			{
-				if (((((s32) HealthValue) * 2) - 1) >= i)
-				{
-					HealthSegments->colour.a = 0xFF;
-				}
-				else if ((i < ((s32) (2.0f * HealthValue))) && (((((s32) HealthValue) * 2) - 1) < i))
-				{
-					HealthSegments->colour.a = (s8) (((s32) ((HealthValue - ((f32) ((s32) HealthValue))) * 207.0f)) + 0x30);
-				}
-				else
-				{
-					HealthSegments->colour.a = 0x30;
-				}
-			}
-			else if (i >= 10)
-			{
-				if (((f32) i) <= (9.0f + ((HealthValue - 5.0f) * 4.0f)))
-				{
-					HealthSegments->colour.a = 0xFF;
-				}
-				else
-				{
-					segment = i;
-					if (((((s32) ((over5 * 4.0f) + 0.5f)) + 9) >= segment) && (((((s32) (HealthValue - 5.0f)) * 2) + 8) < segment))
-					{
-						HealthSegments->colour.a = (s8) (((s32) ((HealthValue - ((f32) ((s32) HealthValue))) * 207.0f)) + 0x30);
-					}
-					else
-					{
-						HealthSegments->colour.a = 0x30;
-					}
-				}
-			}
-			HealthSegments += 1;
-		}
-		angleOffset += 5;
-	}
-}
-#endif
 
 
 /**

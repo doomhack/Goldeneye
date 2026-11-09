@@ -2109,16 +2109,10 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
             struct fontchar *pFontChars2;
             char string_builder_allocation[2000];
 
-#if defined(VERSION_EU)
-            struct font *pFontFile;
-            s32 base_y;
-            char formattedString[32];
-#endif
-
 #define LINEHEIGHT() 12
 
 #if defined(VERSION_EU)
-#define WATCH_INV_BASE_Y() base_y
+#define WATCH_INV_BASE_Y() 0xAA
 #else
 #define WATCH_INV_BASE_Y() 0x8C
 #endif
@@ -2126,16 +2120,9 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
             textheight = 0;
             textwidth = 0;
 
-#if defined(VERSION_EU)
-            pFontFile2 = g_FontBankGothic;
-            pFontChars2 = g_FontBankGothicChars;
-            base_y = 0xAA;
-            string_builder_allocation[0] = 0;
-#else
             string_builder_allocation[0] = 0;
             pFontFile2 = g_FontBankGothic;
             pFontChars2 = g_FontBankGothicChars;
-#endif
 
             for (i = 0; i < invCountItems(); i++)
             {
@@ -2168,10 +2155,8 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
             gdl = textRenderRect(gdl, 0x4B, boxY, textwidth + 0x52, (LINEHEIGHT() + boxY) - 2, 0x800050);
 
             {
-#if !defined(VERSION_EU)
                 char formattedString[32];
                 struct font *pFontFile;
-#endif
                 struct fontchar *pFontChars;
                 s32 x2;
                 s32 y2;
@@ -3528,11 +3513,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
         const struct font *font = g_FontBankGothic;
         struct fontchar *chars = g_FontBankGothicChars;
 
-#if defined(VERSION_EU)
-            char wrappedText[3000];
-#else
-            char wrappedText[3000] = "\n";
-#endif
+        char wrappedText[3000];
 
         char pageTitle[0x20];
         const char *completeText;
@@ -3550,9 +3531,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
         failedText = langGet(0xac37);
         titleText = briefingGetText(BRIEFING_TITLE);
 
-#if defined(VERSION_EU)
         strcpy(wrappedText, "\n");
-#endif
 
         gdl = textSetupDraw(gdl);
         textMeasure(&textHeight, &textWidth, titleText, chars, font, 0);
@@ -3595,11 +3574,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
 
             case BRIEF_INDEX_OBJECTIVES:
             {
-#if defined(VERSION_EU)
-                char objectiveBuffer[200];
-#else
                 char objectiveBuffer[200] = "";
-#endif
                 u32 colour = 0;
                 s32 i;
                 s32 j;

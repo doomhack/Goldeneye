@@ -1239,13 +1239,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             f32 calc_z;
             f32 calc_speedforwards;
 
-#if defined(VERSION_EU)
-            // Divide by zero check.
-            if (g_GlobalTimerDelta == 0)
-            {
-            }
-#endif
-
             calc_x = (g_CurrentPlayer->bond.collision_position.f[0] - g_CurrentPlayer->bondprevpos.f[0]) / g_GlobalTimerDelta;
             calc_z = (g_CurrentPlayer->bond.collision_position.f[2] - g_CurrentPlayer->bondprevpos.f[2]) / g_GlobalTimerDelta;
             calc_speedforwards = sqrtf((calc_x * calc_x) + (calc_z * calc_z));
@@ -1354,11 +1347,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         maxspeed = speedforwards;
 
-#if defined(VERSION_EU)
-        if (maxspeed < speedsideways && 1)
-#else
         if (maxspeed < speedsideways)
-#endif
         {
             maxspeed = speedsideways;
         }
@@ -1957,9 +1946,6 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
         (!gameIsMulti() && optionsGetSightOnScreen())
             || (gameIsMulti() && g_playerPerm->sight)
     );
-
-#if defined(VERSION_EU)
-#endif
 
     if ((g_CameraMode == CAMERAMODE_NONE) || ((g_CameraMode == CAMERAMODE_FP) && (g_Mission.playerHasControl != 0)) || (g_CameraMode == CAMERAMODE_FADE_TO_TITLE))
     {

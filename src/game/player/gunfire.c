@@ -965,7 +965,6 @@ void gunReload(enum GUNHAND hand)
 
 void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 {
-#if defined(VERSION_US)
     s32 ammoType;
     struct hand *other;
     s32 playSound;
@@ -973,46 +972,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 recoilTicks;
     s32 settleTicks;
     f32 recoilUp;
-    f32 recoilBack;
-    f32 recoilFrac;
-    f32 returnFrac;
-    s32 lowerTime;
-    f32 lowerAngle;
-    s32 raiseTime;
-    f32 raiseAngle;
-    Mtxf dipMtx;
-    f32 reloadLowerAngle;
-    Mtxf swapDipMtx;
-    f32 tempf;
-    struct hand *handptr;
-    Mtxf raiseDipMtx;
-    f32 reloadRaiseAngle;
-    f32 watchLowerAngle;
-    enum ITEM_IDS otherWeapon;
-    f32 watchRaiseAngle;
-    f32 slashTime;
-    enum ITEM_IDS weapon;
-    struct PropRecord *prop;
-    const Weapon1PTransformKeyframe *punchKeyframes;
-    f32 recoilAngle;
-    const Weapon1PTransformKeyframe *slashKeyframes;
-    f32 punchTime;
-    const struct hand *otherhand;
-    f32 tiltAngle = 0.0f;
-    f32 lowerTicks = 16.0f;
-    f32 raiseTicks = 23.0f;
-#endif
 #if defined(VERSION_EU)
-    s32 ammoType;
-    struct hand *other;
-    s32 playSound;
-    const struct WeaponStats *weapon_stats;
-    s32 recoilTicks;
-    s32 settleTicks;
-    f32 recoilUp;
     s32 stat_2;
     s32 stat_3;
     s32 stat_4;
+#endif
     f32 recoilBack;
     f32 recoilFrac;
     f32 returnFrac;
@@ -1039,8 +1003,12 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 punchTime;
     const struct hand *otherhand;
     f32 tiltAngle = 0.0f;
+#if defined(VERSION_EU)
     f32 lowerTicks = 13.0f;
     f32 raiseTicks = 19.0f;
+#else
+    f32 lowerTicks = 16.0f;
+    f32 raiseTicks = 23.0f;
 #endif
 
     handptr = &g_CurrentPlayer->hands[hand];

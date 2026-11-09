@@ -1079,12 +1079,6 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             if ((g_CurrentPlayer->actual_armor == 1.0f) || (g_CurrentPlayer->bondarmour < 1.0f))
             {
                 HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_13_SUPER2XARMOUR_LF)));
-#if defined(BUGFIX_R1)
-                if(TRUE)
-                {
-                    // removed
-                }
-#endif
                 g_CurrentPlayer->bondarmour = 1.0f;
                 g_CurrentPlayer->actual_armor = 2.0f;
             }
@@ -1156,12 +1150,6 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             if ((g_CurrentPlayer->actual_health == 1.0f) || (g_CurrentPlayer->bondhealth < 1.0f))
             {
                 HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_1B_SUPER10XHEALTH_LF)));
-#if defined(BUGFIX_R1)
-                if(TRUE)
-                {
-                    // removed
-                }
-#endif
                 g_CurrentPlayer->bondhealth = 1.0f;
                 g_CurrentPlayer->actual_health = 10.0f;
                 return;

@@ -8,11 +8,6 @@ OSMesg vi_c_debug_MSG[0x8];
 OSMesgQueue vi_c_debug_MQ;
 
 
-#ifndef VERSION_EU
-Gfx viDLEnd[] = {
-	gsSPEndDisplayList()
-};
-#endif
 
 
 void viDebugRemoved(void) {

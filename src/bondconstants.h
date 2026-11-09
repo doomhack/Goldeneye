@@ -4415,17 +4415,9 @@ typedef enum PROJECTILES
     (                                                                                                                                        \
         DEFER(COMMA)() switchnames_##NAME                                                                                                    \
     )                                                                                                                                        \
-    IF(NOT(DEFINED(VERSION_EU)))                                                                                                             \
-    (                                                                                                                                        \
-        DEFER(COMMA)() FALSE /* isLoaded Always FALSE */                                                                                     \
-    )                                                                                                                                        \
     };
 
-#if defined(VERSION_EU)
 #define MODELFILEHEADER(NAME, ROOTNODE, SKELETON, SWITCHES, NUMSWITCHES, NUMMATRICES, BOUNDINGRADIUS, NUMRECORDS, NUMTEXTURES) struct ModelFileHeader NAME ## _header = {ROOTNODE, SKELETON, SWITCHES, NUMSWITCHES, NUMMATRICES, BOUNDINGRADIUS, NUMRECORDS, NUMTEXTURES, 0};
-#else
-#define MODELFILEHEADER(NAME, ROOTNODE, SKELETON, SWITCHES, NUMSWITCHES, NUMMATRICES, BOUNDINGRADIUS, NUMRECORDS, NUMTEXTURES) struct ModelFileHeader NAME ## _header = {ROOTNODE, SKELETON, SWITCHES, NUMSWITCHES, NUMMATRICES, BOUNDINGRADIUS, NUMRECORDS, NUMTEXTURES, 0, 0};
-#endif
 
 #define CHRFILERECORD(NAME, SCALE, OFFSET, HASHEAD, ISMALE) \
     {&NAME##_header, STR(C##NAME##Z), SCALE, OFFSET, HASHEAD, ISMALE},
