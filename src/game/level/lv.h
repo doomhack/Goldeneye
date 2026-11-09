@@ -33,9 +33,7 @@ extern char ramrom_data_target[0x380];
 extern s32 record_slot_num;
 extern u8 * address_demo_loaded;
 
-#if defined(BUGFIX_R1)
 extern f32 g_GlobalTimerDeltaRaw;
-#endif
 
 void lvInit(void);
 Gfx * lvRender(Gfx *);

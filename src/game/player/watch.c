@@ -292,19 +292,11 @@ void watchUpdateZoom(void)
     {
         if ((g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5) || (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0xc))
         {
-#if defined(BUGFIX_R1)
             g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (f32) g_FrameDelta60;
-#else
-            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (f32) g_FrameDelta;
-#endif
         }
         else
         {
-#if defined(BUGFIX_R1)
             g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (g_FrameDelta60 * watch_transition_time);
-#else
-            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (g_FrameDelta * watch_transition_time);
-#endif
         }
 
         if (g_CurrentPlayer->zoomintimemax < g_CurrentPlayer->zoomintime)

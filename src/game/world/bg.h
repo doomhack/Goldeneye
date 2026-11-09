@@ -104,24 +104,10 @@ typedef struct s_room_info {
 
 typedef struct s_bound_info
 {
-    #if defined(VERSION_EU)
-    //eu is 0x18 total len
-    u8 roomid;
-    u8 pad1;
-    s16 depth; // portal depth the room was reached at; rooms draw in depth order
-    u8 next;
-    u8 pad2[3];
-    bbox2d bbox;
-
-    #else
-    //us is 0x1C total len
     s32 roomid;
     s32 depth;
     bbox2d bbox;
     s32 next;
-    #endif
-
-
 } s_bound_info;
 
 typedef struct bg_portal_entry
@@ -163,17 +149,10 @@ typedef struct PortalCache {
 
 typedef struct bg_queued_portal_entry {
 
-    #if defined(VERSION_EU)
-    u8 roomnum;        // 0x00
-    u8 portalnum;      // 0x01
-    s16 depth;         // 0x02
-    bbox2d box;        // 0x04
-    #else
     s32 roomnum;       // 0x04
     s32 portalnum;     // 0x08
     s32 depth;         // 0x0c
     bbox2d box;        // 0x10
-    #endif
 } bg_queued_portal_entry;
 
 extern bg_portal_data_entry *g_BgPortals;

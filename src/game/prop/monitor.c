@@ -20,11 +20,6 @@
 #include "game/model/model.h"
 #include "random.h"
 
-#if defined(VERSION_EU)
-#define MONITOR_TIMER_DELTA g_GlobalTimerDeltaRaw
-#else
-#define MONITOR_TIMER_DELTA g_GlobalTimerDelta
-#endif
 
 /* Images numbered below this are in the monitor image bank; anything else is a pointer */
 #define MONITOR_NUM_IMAGES 100
@@ -217,7 +212,7 @@ static void runScript(MonitorRecord *mon)
                 mon->pc += 2;
                 break;
             case MONCMD_ROTATE:
-                mon->rotation += MONITOR_TIMER_DELTA * (s32)cmd[1] * M_TAU_F / M_U16_MAX_VALUE_F;
+                mon->rotation += g_GlobalTimerDeltaRaw * (s32)cmd[1] * M_TAU_F / M_U16_MAX_VALUE_F;
 
                 if (mon->rotation >= M_TAU_F)
                 {
@@ -239,7 +234,7 @@ static void tickTween(MonitorTween *tween)
 {
     if (tween->rate > 0.0f)
     {
-        tween->frac += tween->rate * MONITOR_TIMER_DELTA;
+        tween->frac += tween->rate * g_GlobalTimerDeltaRaw;
 
         if (tween->frac < 1.0f)
         {
@@ -263,7 +258,7 @@ static void tickColour(MonitorRecord *mon)
 {
     if (mon->colourRate > 0.0f)
     {
-        mon->colourFrac += mon->colourRate * MONITOR_TIMER_DELTA;
+        mon->colourFrac += mon->colourRate * g_GlobalTimerDeltaRaw;
 
         if (mon->colourFrac < 1.0f)
         {

@@ -5,6 +5,7 @@
  */
 
 #include <ultra64.h>
+#include <bondconstants.h>
 #include "game/level/frametiming.h"
 #include "sched.h"
 
@@ -17,13 +18,11 @@ s32 g_FrameCounter = 0;
  */
 s32 g_FrameDelta = 1;
 
-#if defined(BUGFIX_R1)
 // EU address D_8004111C
 f32 g_FrameDeltaF = 1.0f;
 
 // EU address D_80041120
 f32 g_FrameDelta60 = 1.0f;
-#endif
 
 s32 g_FrameHalfCounterPrev = -1;
 s32 g_FrameHalfCounter = 0; // half of g_FrameCounter
@@ -81,14 +80,8 @@ void frameAdvance(s32 deltaFrames)
     g_FrameCounter = (s32) (g_FrameCounter + deltaFrames);
     g_FrameDelta = deltaFrames;
 
-    #ifdef BUGFIX_R1
     g_FrameDeltaF = (f32) deltaFrames;
-    #ifdef REFRESH_PAL
-    g_FrameDelta60 = (g_FrameDeltaF * 60.0f) / 50.0f;
-    #else
-    g_FrameDelta60 = (f32) g_FrameDeltaF;
-    #endif
-    #endif
+    g_FrameDelta60 = (g_FrameDeltaF * 60.0f) / TICKS_PER_SECOND;
 
     g_FrameHalfCounterPrev = (s32) g_FrameHalfCounter;
     g_FrameHalfCounter = (s32) (g_FrameCounter / 2);

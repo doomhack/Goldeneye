@@ -1,5 +1,5 @@
 /**
- * 4x4 float matrices (Mtxf), 3x3 ones (Mtx3f), and conversion to the N64's fixed-point Mtx.
+ * 4x4 float matrices (Mtxf) and conversion to the N64's fixed-point Mtx.
  *
  * Matrices are stored the way the N64 and libultra expect: m[row][column], with points as
  * row vectors on the left (p' = p * M). Rows 0-2 are the transformed x, y and z axes and
@@ -578,59 +578,6 @@ void mtx4InvertAffine(const Mtxf *matrix, Mtxf *result)
     result->m[1][3] = 0.0f;
     result->m[2][3] = 0.0f;
     result->m[3][3] = 1.0f;
-}
-
-/*
- * 3x3 matrices, for things that only rotate. (PAL builds keep spent cartridge cases' spin
- * this way.)
- */
-
-/** result = lhs * rhs, like mtx4Mult. result must not be lhs or rhs. */
-void mtx3Mult(const Mtx3f *lhs, const Mtx3f *rhs, Mtx3f *result)
-{
-    for (s32 col = 0; col < 3; col++)
-    {
-        for (s32 row = 0; row < 3; row++)
-        {
-            result->m[row][col] = lhs->m[0][col] * rhs->m[row][0] + lhs->m[1][col] * rhs->m[row][1] + lhs->m[2][col] * rhs->m[row][2];
-        }
-    }
-}
-
-/** rhs = lhs * rhs. */
-void mtx3MultInPlace(const Mtx3f *lhs, Mtx3f *rhs)
-{
-    Mtx3f result;
-
-    mtx3Mult(lhs, rhs, &result);
-    *rhs = result;
-}
-
-void mtx3ToMtx4(const Mtx3f *src, Mtxf *dst)
-{
-    for (s32 row = 0; row < 3; row++)
-    {
-        for (s32 col = 0; col < 3; col++)
-        {
-            dst->m[row][col] = src->m[row][col];
-        }
-
-        dst->m[row][3] = 0.0f;
-        dst->m[3][row] = 0.0f;
-    }
-
-    dst->m[3][3] = 1.0f;
-}
-
-void mtx4ToMtx3(const Mtxf *src, Mtx3f *dst)
-{
-    for (s32 row = 0; row < 3; row++)
-    {
-        for (s32 col = 0; col < 3; col++)
-        {
-            dst->m[row][col] = src->m[row][col];
-        }
-    }
 }
 
 /*

@@ -891,11 +891,7 @@ s32 chrSetSubroty(ChrRecord *self, s32 state, f32 endframe, f32 speed, f32 angle
         frame = modelGetAnimFrame(model);
         roty = modelGetRootRotY(model);
 
-#if defined(BUGFIX_R1)
         step = 0.06283186f * speed * g_GlobalTimerDeltaRaw * model->playspeed;
-#else
-        step = 0.06283186f * speed * g_GlobalTimerDelta * model->playspeed;
-#endif
 
         if (self->actiontype == ACT_ATTACK)
         {

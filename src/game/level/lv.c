@@ -82,17 +82,11 @@ s32 g_ControlsLockedFlag = 0;
 s32 g_ClockTimer = 0;
 
 
-#if defined (BUGFIX_R1)
 // addresses updated, per build\ge007.j.map
 f32 g_GlobalTimerDeltaRaw = 0;
 s32 g_GlobalTimer = 0;
 s32 g_LvTickCount = 0;
 f32 g_GlobalTimerDelta = 0;
-#else
-f32 g_GlobalTimerDelta = 0;
-s32 g_GlobalTimer = 0;
-s32 g_LvTickCount = 0;
-#endif
 /*
 * Selected difficulty mode.
 * 0x80048384
@@ -191,19 +185,12 @@ void lvStageLoad(s32 stage)
     g_ControlsLockedFlag = 0;
     g_ClockTimer = 1;
 
-#ifdef VERSION_US
-    g_GlobalTimerDelta = 1.0f;
-#endif
-#if defined(VERSION_EU)
     g_GlobalTimerDeltaRaw = 1.0f;
-#endif
 
     g_LvTickCount = 0;
     g_GlobalTimer = 0;
 
-#if defined(VERSION_EU)
-    g_GlobalTimerDelta = 1.20000004768f;
-#endif
+    g_GlobalTimerDelta = TICK_SCALE_60;
 
     g_LvIdle = 0;
     g_LvIdleTime = 0;
@@ -890,16 +877,8 @@ void lvTick(void)
         g_LvTickCount += 1;
     }
 
-#ifdef VERSION_US
-    g_GlobalTimerDelta = (f32) g_ClockTimer;
-#else
     g_GlobalTimerDeltaRaw = (f32) g_ClockTimer;
-#ifdef VERSION_EU
-    g_GlobalTimerDelta = g_GlobalTimerDeltaRaw * 1.2f;
-#else
-    g_GlobalTimerDelta = g_GlobalTimerDeltaRaw;
-#endif
-#endif
+    g_GlobalTimerDelta = g_GlobalTimerDeltaRaw * TICK_SCALE_60;
     g_GlobalTimer += g_ClockTimer;
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && (g_MissionTime == 0) && (g_ClockTimer > 0))
     {

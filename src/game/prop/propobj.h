@@ -27,11 +27,7 @@ extern struct LinkRecord *g_LevelLoadPropSwitch;
 extern LockDoorRecord *g_LevelLoadPropLockDoor;
 extern SafeObjectRecord *g_LevelLoadPropSafeItem;
 
-#if defined(VERSION_EU)
-extern ExplosionDetailsRecordEuList object_explosion_details;
-#else
 extern ExplosionDetailsRecord object_explosion_details[];
-#endif
 
 
 PropRecord *objInit(ObjectRecord *obj, ModelFileHeader *header, PropRecord *prop, Model *model);

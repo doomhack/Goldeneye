@@ -8,11 +8,7 @@ extern f32 g_PlayerWorldScale;
 extern coord3d g_ForceBondMoveOffset;
 extern s32 g_CoopForceMovePlayer;
 extern s32 mission_timer;
-#if defined(VERSION_EU)
 extern f32 watch_time_0;
-#else
-extern s32 watch_time_0;
-#endif
 void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons);
 s32 lvGetMissionTime60(void);
 f32 playerGetFloorY(const struct StandTile *tile, f32 x, f32 z);

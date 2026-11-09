@@ -121,11 +121,7 @@ bool objIsMortal(ObjectRecord *obj)
 
 static s16 objGetExplosionType(const ObjectRecord *obj)
 {
-#if defined(VERSION_EU)
-    return ((s8 *) object_explosion_details.typeids)[obj->obj];
-#else
     return object_explosion_details[obj->obj].TypeID;
-#endif
 }
 
 /**
@@ -268,22 +264,13 @@ void objDeform(ObjectRecord *obj, s32 stage)
     Vertex **vtxslot = (Vertex **) &model->datas[rodata->RwDataIndex];
 
 #if defined(VERSION_EU)
-    if (obj->obj < PROP_WINDOW)
-    {
-        if (randomGetNext() & 1)
-        {
-            deformseed = (u16) object_explosion_details.seeds[obj->obj][stage];
-        }
-        else
-        {
-            deformseed = (u16) object_explosion_details.seeds[obj->obj][stage + 3];
-        }
-    }
-    else
+    // PAL only keeps deform seeds for props before the window glass
+    if (obj->obj >= PROP_WINDOW)
     {
         deformseed = 0;
     }
-#else
+    else
+#endif
     // Original bug: stage 4 reads past the seeds, into the next type's explosion type
     if (randomGetNext() & 1)
     {
@@ -293,7 +280,6 @@ void objDeform(ObjectRecord *obj, s32 stage)
     {
         deformseed = (u16) object_explosion_details[obj->obj].Seed[stage + 3];
     }
-#endif
 
     if (deformseed == 0)
     {

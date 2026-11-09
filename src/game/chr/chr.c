@@ -391,21 +391,13 @@ s32 chrRootMoveCallback(const Model *model, coord3d *src, coord3d *dst, f32 *gro
         // Knockback of a death from a hit (chrReactToHit), slowing to a stop
         if ((chr->actiontype == ACT_DIE) && (chr->act_die.timeextra > 0.0f))
         {
-#ifdef BUGFIX_R1
             tmp = ((model->playspeed * g_GlobalTimerDeltaRaw) * (chr->act_die.timeextra - chr->act_die.elapseextra)) / chr->act_die.timeextra;
-#else
-            tmp = ((model->playspeed * g_GlobalTimerDelta) * (chr->act_die.timeextra - chr->act_die.elapseextra)) / chr->act_die.timeextra;
-#endif
 
             dst->x += chr->act_die.extraspeed.x * tmp;
             dst->y += chr->act_die.extraspeed.y * tmp;
             dst->z += chr->act_die.extraspeed.z * tmp;
 
-#ifdef BUGFIX_R1
             chr->act_die.elapseextra += g_GlobalTimerDeltaRaw * model->playspeed;
-#else
-            chr->act_die.elapseextra += g_GlobalTimerDelta * model->playspeed;
-#endif
 
             if (chr->act_die.timeextra < chr->act_die.elapseextra)
             {
@@ -773,11 +765,7 @@ static void chrUpdateAimProperties(ChrRecord *self)
 
     if (self->aimendcount >= 2)
     {
-#if defined(BUGFIX_R1)
         mult = g_GlobalTimerDeltaRaw / (f32)self->aimendcount;
-#else
-        mult = g_GlobalTimerDelta / (f32)self->aimendcount;
-#endif
 
         if (mult > 1.0f)
         {

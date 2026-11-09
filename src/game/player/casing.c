@@ -87,9 +87,6 @@ CasingRecord* casingCreate(ModelFileHeader* header, const Mtxf* mtx)
         entry->pos.x = mtx->m[3][0];
         entry->pos.y = mtx->m[3][1];
         entry->pos.z = mtx->m[3][2];
-#if VERSION_EU
-        mtx4ToMtx3(mtx, &entry->rot_mtx);
-#else
         entry->rot_mtx.m[0][0] = mtx->m[0][0];
         entry->rot_mtx.m[0][1] = mtx->m[0][1];
         entry->rot_mtx.m[0][2] = mtx->m[0][2];
@@ -109,7 +106,6 @@ CasingRecord* casingCreate(ModelFileHeader* header, const Mtxf* mtx)
         entry->rot_mtx.m[3][1] = 0.0f;
         entry->rot_mtx.m[3][2] = 0.0f;
         entry->rot_mtx.m[3][3] = 1.0f;
-#endif
         return entry;
     }
 
@@ -133,9 +129,6 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
     coord3d switchpos;
     ModelNode *switch0;
     coord3d rot;
-#if VERSION_EU
-    Mtxf rotmtx;
-#endif
     f32 rand;
     f32 frac = 0.0f;
     s32 randlimit;
@@ -203,12 +196,7 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
         rot.z = (((rand + rand) * g_PistolCasingRotationScaleZ) * newvely) - g_PistolCasingRotationOffsetZ;
  
-#if VERSION_EU
-        mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
-#else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
-#endif
  
         randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
         randval = randomGetNext();
@@ -248,12 +236,7 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
         rot.z = (((rand + rand) * g_RifleCasingRotationScaleZ) * 0.0625f) - g_RifleCasingRotationOffsetZ;
  
-#if VERSION_EU
-        mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
-#else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
-#endif
         randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
         randval = randomGetNext();
         oldvely = casing->vel.y;
@@ -313,11 +296,7 @@ void casingTick(CasingRecord* casing)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-#if defined(VERSION_US)
         mtx4MultAffineInPlace(&casing->rot_velocity_mtx, &casing->rot_mtx);
-#else
-        mtx3MultInPlace(&casing->rot_velocity_mtx, &casing->rot_mtx);
-#endif
     }
 }
 
@@ -369,11 +348,7 @@ void casingRender(const CasingRecord *casing, Gfx **gdl)
 
     model.render_pos = model_matrices;
 
-#if defined(VERSION_EU)
-    mtx3ToMtx4(&casing->rot_mtx, &casing_model_mtx);
-#else
     mtx4Copy(&casing->rot_mtx, &casing_model_mtx);
-#endif
 
     model_scale_or_min_translation = g_CasingModelScale;
     mtx4ScaleRows012(model_scale_or_min_translation, &casing_model_mtx);

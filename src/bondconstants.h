@@ -4234,6 +4234,9 @@ typedef enum PROJECTILES
     #define FRAMES_PER_SECOND 30
 #endif
 
+/* One tick in 60 Hz ticks: 1.2 on PAL, 1 on NTSC. */
+#define TICK_SCALE_60 (60.0f / TICKS_PER_SECOND)
+
 #pragma endregion
 
 #define S32_MAX  2147483647

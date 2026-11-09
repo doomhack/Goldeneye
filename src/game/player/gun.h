@@ -241,13 +241,8 @@ typedef struct CasingRecord {
     f32 floor_y_pos;
     coord3d pos;
     coord3d vel;
-#if VERSION_EU
-    Mtx3f rot_mtx;
-    Mtx3f rot_velocity_mtx;
-#else
     Mtxf rot_mtx;
     Mtxf rot_velocity_mtx;
-#endif
     ModelFileHeader *header;
 } CasingRecord;
 

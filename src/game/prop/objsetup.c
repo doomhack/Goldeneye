@@ -825,11 +825,7 @@ void setupWeapon(WeaponObjRecord *weapon)
 
                 weapon->weaponnum = weaponset[slot].itemID;
                 weapon->obj = weaponset[slot].propID;
-#if defined(VERSION_EU)
-                weapon->extrascale = weaponset[slot].size16;
-#else
                 weapon->extrascale = weaponset[slot].size * 256.0f;
-#endif
                 load = weaponset[slot].allowpickup;
                 break;
 

@@ -350,11 +350,7 @@ static void mpCustomWeaponSetSlot(s32 slot, s32 choice)
     entry->ammotype = ammotype;
     entry->ammoamount = weapon->ammoamount;
     entry->allowpickup = weapon->allowpickup;
-#if defined(VERSION_EU)
-    entry->size16 = weapon->size16 * 16;
-#else
     entry->size = weapon->size16 / 16.0f;
-#endif
 }
 
 static void mpCustomWeaponBuild(void)

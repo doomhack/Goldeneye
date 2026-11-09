@@ -67,11 +67,7 @@ s32 g_CoopForceMovePlayer = 0;
 
 s32 mission_timer;
 
-#if defined(VERSION_EU)
 f32 watch_time_0;
-#else
-s32 watch_time_0;
-#endif
 
 
 
@@ -1961,12 +1957,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
         playerMoveFrozen(buttons, (u16) g_CurrentPlayer->buttons_pressed);
     }
 
-#if defined(BUGFIX_R1)
     watch_time_0 += g_FrameDelta60;
-#else
-    // VERSION_US
-    watch_time_0 += g_FrameDelta;
-#endif
 
     if (g_Mission.exitOnPress != 0)
     {

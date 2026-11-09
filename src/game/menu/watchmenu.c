@@ -41,11 +41,6 @@
 
 #define WATCH_VOL_ADJUST_STEP 1024
 
-#if defined(VERSION_US)
-#define WATCH_ROTATION_FRAMES g_FrameDelta
-#else
-#define WATCH_ROTATION_FRAMES g_FrameDelta60
-#endif
 
 #if defined(VERSION_EU)
 #define WATCH_PERSPECTIVE_FOVY    52.5f
@@ -1412,11 +1407,7 @@ void watchMenuTick(void)
         g_WatchObjectiveRed = 0xFFU;
         g_WatchObjectiveRedTimer = 0xF;
     }
-    #ifdef VERSION_US
-    g_WatchInvSpinAngle += ((g_WatchInvSpinSpeed * g_FrameDelta * M_TAU_F) / 360.0f);
-    #else
     g_WatchInvSpinAngle += ((g_WatchInvSpinSpeed * g_FrameDelta60 * M_TAU_F) / 360.0f);
-    #endif
 
     g_WatchInvSpinAngle = watchMenuWrapAngle(g_WatchInvSpinAngle);
 
@@ -2957,7 +2948,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
     watchMenuSpinController(0, &g_WatchControllerSpinCounter, &g_WatchControllerSpinSpeed, &g_WatchControllerSpinAngle);
     mtx4LoadIdentity(&identity);
 
-    g_WatchControllerSpinAngle += (g_WatchControllerSpinSpeed * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
+    g_WatchControllerSpinAngle += (g_WatchControllerSpinSpeed * g_FrameDelta60) * 0.5f;
     g_WatchControllerSpinAngle = watchMenuWrapAngle(g_WatchControllerSpinAngle);
 
     mtx4LoadZRotation(g_WatchControllerSpinAngle, &zrotmtx);
@@ -3016,7 +3007,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
         watchMenuSpinController(1, &g_WatchController2SpinCounter, &g_WatchController2SpinSpeed, &g_WatchController2SpinAngle);
         mtx4LoadIdentity(&identity);
 
-        g_WatchController2SpinAngle += (g_WatchController2SpinSpeed * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
+        g_WatchController2SpinAngle += (g_WatchController2SpinSpeed * g_FrameDelta60) * 0.5f;
         g_WatchController2SpinAngle = watchMenuWrapAngle(g_WatchController2SpinAngle);
 
         mtx4LoadZRotation(g_WatchController2SpinAngle, &zrotmtx);

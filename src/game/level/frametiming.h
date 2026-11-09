@@ -6,10 +6,8 @@ extern s32 g_FrameCounterPrev;
 extern s32 g_FrameCounter;
 extern s32 g_FrameDelta;
 
-#if defined (BUGFIX_R1)
 extern f32 g_FrameDeltaF;
 extern f32 g_FrameDelta60;
-#endif
 
 extern s32 g_FrameHalfCounterPrev;
 extern s32 g_FrameHalfCounter;

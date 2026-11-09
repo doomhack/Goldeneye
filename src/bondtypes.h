@@ -1231,12 +1231,6 @@ typedef union
             s16 TypeID;
             s16 Seed[6];
         } ExplosionDetailsRecord;
-
-        typedef struct ExplosionDetailsRecordEuList
-        {
-            u8                                typeids[344];
-            s16                               seeds[105][6];
-        } ExplosionDetailsRecordEuList;
 #pragma endregion Explosion Stuff
 
 #pragma region Hit Structures
