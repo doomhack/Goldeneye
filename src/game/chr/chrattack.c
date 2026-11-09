@@ -512,11 +512,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
 
     chr->actiontype = ACT_ATTACKWALK;
     chr->act_attackwalk.clock_timer30 = 0;
-#if defined(REFRESH_PAL)
-    chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(333.333343506f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
-#else
-    chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(400.0f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
-#endif
+    chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(TICKSF(400.0f) * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
     chr->act_attackwalk.facedTarget = 0;
     chr->act_attackwalk.animfloats = panim_float;
     chr->act_attackwalk.timer40 = 0;
@@ -1850,11 +1846,7 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                                 {
                                     grenade->projectile->bounciness = 0.3f;
                                     grenade->projectile->groundFriction = 0.13333333f;
-#ifdef REFRESH_PAL
-                                    grenade->projectile->refreshrate = 50;
-#else
-                                    grenade->projectile->refreshrate = 60;
-#endif
+                                    grenade->projectile->refreshrate = TICKS_PER_SECOND;
                                 }
                             }
                         }
@@ -2095,11 +2087,7 @@ static void chrTickAttackCommon(ChrRecord *self)
     // Half a second of firing without the shots counting as aimed at the target (see
     // chrFireHand): give up.
     if (
-#ifdef REFRESH_PAL
-        (self->act_attack.attack_time < (self->act_attack.lastFire60 - 25))
-#else
-        (self->act_attack.attack_time < (self->act_attack.lastFire60 - 30))
-#endif
+        (self->act_attack.attack_time < (self->act_attack.lastFire60 - TICKS(30)))
         && (self_model->anim2 == NULL))
     {
         if (((self->act_attack.animfloats->shoot_start_frame + 10.0f) < frame)
@@ -2260,19 +2248,11 @@ static void chrTickAttackCommon(ChrRecord *self)
 
                     if (self->actiontype == ACT_ATTACKROLL)
                     {
-#ifdef REFRESH_PAL
-                        df = ((self->act_attack.animfloats->shoot_end_frame - self->act_attack.animfloats->shoot_start_frame) * 50.0f) / 60.0f;
-#else
-                        df = self->act_attack.animfloats->shoot_end_frame - self->act_attack.animfloats->shoot_start_frame;
-#endif
+                        df = TICKSF(self->act_attack.animfloats->shoot_end_frame - self->act_attack.animfloats->shoot_start_frame);
 
                         if (df < 30.0f)
                         {
-#ifdef REFRESH_PAL
-                            if ((s32)self->act_attack.numWaitTicks >= (50 - ((s32)df * 2)))
-#else
-                            if ((s32)self->act_attack.numWaitTicks >= (60 - ((s32)df * 2)))
-#endif
+                            if ((s32)self->act_attack.numWaitTicks >= (TICKS_PER_SECOND - ((s32)df * 2)))
                             {
                                 modelSetAnimSpeed(self_model, 0.5f, 0.0f);
                             }

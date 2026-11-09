@@ -4,16 +4,10 @@
 // Movement, aiming and timing constants for the player. PAL runs at 50 Hz, so
 // some are scaled for it.
 
+#define BONDVIEW_AUTOAIM_TIME TICKS(0x1e)
+
 #ifdef VERSION_EU
-
-    #define BONDVIEW_AUTOAIM_TIME 0x19 /* 25 */
-
     #define EU_CAMERA_8003642C_ASPECT 1.19047617912f
-
-#else
-
-    #define BONDVIEW_AUTOAIM_TIME 0x1e /* 30 */
-
 #endif
 
 #if defined(VERSION_EU)

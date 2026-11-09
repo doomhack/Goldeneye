@@ -918,46 +918,28 @@ void gunReload(enum GUNHAND hand)
     }
 }
 
-#if defined(VERSION_US)
-    #define WEAPON_1P_ANIM_TIME(x) ((f32)(x))
-    #define WHEN_1_CASE_GRENADELAUNCH_FLD890 6
-    #define WHEN_1_CASE_GRENADE_FLD890 0xf0
-    #define WHEN_D_FLD890 0x14
-    #define WHEN_5_SP188_INIT 0x10
-    #define WHEN_5_SP188_MULTI 0xc
-    #define WHEN_5_FLD8B0_SP 0x11
-    #define WHEN_5_FLD8B0_MULTI 0xd
-    #define WHEN_8_SP178_INIT 0x17
-    #define WHEN_8_SP178_MULTI 0xc
-    #define WHEN_A_FLD890 0x10
-    #define WHEN_A_FLD8B0 0x11
-    #define WHEN_C_FLD890 0x17
-    #define WHEN_E_FLD890 0x10
-    #define WHEN_10_FLD890 0x17
-    #define WHEN_11_FLD890_1 0x10
-    #define WHEN_11_FLD890_2 0x18
-    #define WHEN_1E_FLD890 0x1e
-#endif
 #if defined(VERSION_EU)
     #define WEAPON_1P_ANIM_TIME(x) ((f32)(x)) * 60.0f / 50.0f
-    #define WHEN_1_CASE_GRENADELAUNCH_FLD890 5
-    #define WHEN_1_CASE_GRENADE_FLD890 0xc8
-    #define WHEN_D_FLD890 0x10
-    #define WHEN_5_SP188_INIT 0xd
-    #define WHEN_5_SP188_MULTI 0xa
-    #define WHEN_5_FLD8B0_SP 0xe
-    #define WHEN_5_FLD8B0_MULTI 0xa
-    #define WHEN_8_SP178_INIT 0x13
-    #define WHEN_8_SP178_MULTI 0xa
-    #define WHEN_A_FLD890 0xd
-    #define WHEN_A_FLD8B0 0xe
-    #define WHEN_C_FLD890 0x13
-    #define WHEN_E_FLD890 0xd
-    #define WHEN_10_FLD890 0x13
-    #define WHEN_11_FLD890_1 0xd
-    #define WHEN_11_FLD890_2 0x14
-    #define WHEN_1E_FLD890 0x19
+#else
+    #define WEAPON_1P_ANIM_TIME(x) ((f32)(x))
 #endif
+#define WHEN_1_CASE_GRENADELAUNCH_FLD890 TICKS_DOWN(6)
+#define WHEN_1_CASE_GRENADE_FLD890 TICKS_DOWN(0xf0)
+#define WHEN_D_FLD890 TICKS_DOWN(0x14)
+#define WHEN_5_SP188_INIT TICKS_DOWN(0x10)
+#define WHEN_5_SP188_MULTI TICKS_DOWN(0xc)
+#define WHEN_5_FLD8B0_SP TICKS_DOWN(0x11)
+#define WHEN_5_FLD8B0_MULTI TICKS_DOWN(0xd)
+#define WHEN_8_SP178_INIT TICKS_DOWN(0x17)
+#define WHEN_8_SP178_MULTI TICKS_DOWN(0xc)
+#define WHEN_A_FLD890 TICKS_DOWN(0x10)
+#define WHEN_A_FLD8B0 TICKS_DOWN(0x11)
+#define WHEN_C_FLD890 TICKS_DOWN(0x17)
+#define WHEN_E_FLD890 TICKS_DOWN(0x10)
+#define WHEN_10_FLD890 TICKS_DOWN(0x17)
+#define WHEN_11_FLD890_1 TICKS_DOWN(0x10)
+#define WHEN_11_FLD890_2 TICKS_DOWN(0x18)
+#define WHEN_1E_FLD890 TICKS_DOWN(0x1e)
 
 
 void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
@@ -969,11 +951,9 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 recoilTicks;
     s32 settleTicks;
     f32 recoilUp;
-#if defined(VERSION_EU)
-    s32 stat_2;
-    s32 stat_3;
-    s32 stat_4;
-#endif
+    s32 fireTicks;
+    s32 returnTicks;
+    s32 singleRateTicks;
     f32 recoilBack;
     f32 recoilFrac;
     f32 returnFrac;
@@ -1000,13 +980,8 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 punchTime;
     const struct hand *otherhand;
     f32 tiltAngle = 0.0f;
-#if defined(VERSION_EU)
-    f32 lowerTicks = 13.0f;
-    f32 raiseTicks = 19.0f;
-#else
-    f32 lowerTicks = 16.0f;
-    f32 raiseTicks = 23.0f;
-#endif
+    f32 lowerTicks = TICKS_DOWN(16);
+    f32 raiseTicks = TICKS_DOWN(23);
 
     handptr = &g_CurrentPlayer->hands[hand];
     weapon = gunGetShownWeapon(hand);
@@ -1500,17 +1475,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             weapon_stats = weaponGetStats(weapon);
 
-#if defined(VERSION_US)
-            recoilTicks = weapon_stats->b44[0];
-            settleTicks = weapon_stats->b44[1];
-#endif
-#if defined(VERSION_EU)
-            recoilTicks = ((s32)weapon_stats->b44[0] * 50) / 60;
-            settleTicks = ((s32)weapon_stats->b44[1] * 50) / 60;
-            stat_2 = ((s32)weapon_stats->b44[2] * 50) / 60;
-            stat_3 = ((s32)weapon_stats->b44[3] * 50) / 60;
-            stat_4 = weapon_stats->SingleFiringRate * 50 / 60;
-#endif
+            recoilTicks = TICKS_DOWN((s32)weapon_stats->b44[0]);
+            settleTicks = TICKS_DOWN((s32)weapon_stats->b44[1]);
+            fireTicks = TICKS_DOWN((s32)weapon_stats->b44[2]);
+            returnTicks = TICKS_DOWN((s32)weapon_stats->b44[3]);
+            singleRateTicks = TICKS_DOWN(weapon_stats->SingleFiringRate);
 
             if ((
                     (handptr->triggerReleased != 0)
@@ -1520,12 +1489,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 (
                     ((weapon_stats->SingleFiringRate >= 0))
                     && (handptr->triggerReleased == 0)
-#if defined(VERSION_US)
-                    && (handptr->stateTime >= (recoilTicks + settleTicks + weapon_stats->SingleFiringRate))
-#endif
-#if  defined(VERSION_EU)
-                    && (handptr->stateTime >= (recoilTicks + settleTicks + stat_4))
-#endif
+                    && (handptr->stateTime >= (recoilTicks + settleTicks + singleRateTicks))
                 )
                )
             {
@@ -1537,36 +1501,18 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 (handptr->triggerReleased != 0)
                 && (handptr->weapon_hold_time != 0)
 
-#if defined(VERSION_US)
-                && (handptr->stateTime >= weapon_stats->b44[2])
-#endif
-#if  defined(VERSION_EU)
-                && (handptr->stateTime >= stat_2)
-#endif
+                && (handptr->stateTime >= fireTicks)
 
                 && (weapon_stats->b44[3] >= 0)
 
-#if defined(VERSION_US)
-                // HACK: registers are swapped
-                // addu a1, v1, a0
-                && (handptr->stateTime + weapon_stats->b44[3] < recoilTicks + settleTicks)
-                && (handptr->stateTime + weapon_stats->b44[3] >= (s32)weapon_stats->b44[2])
-#endif
-#if  defined(VERSION_EU)
-                && (handptr->stateTime + stat_3 < recoilTicks + settleTicks)
-                && (handptr->stateTime + stat_3 >= (s32)stat_2)
-#endif
+                && (handptr->stateTime + returnTicks < recoilTicks + settleTicks)
+                && (handptr->stateTime + returnTicks >= fireTicks)
             )
             {
                 handptr->weapon_action_state = GUN_ANIM_STATE_RECOIL2;
                 handptr->stateTime = 0;
                 handptr->stateFrames = 0;
-#if defined(VERSION_US)
-                handptr->recoilReturnTime = weapon_stats->b44[3];
-#endif
-#if  defined(VERSION_EU)
-                handptr->recoilReturnTime = stat_3;
-#endif
+                handptr->recoilReturnTime = returnTicks;
             }
             else if (handptr->stateTime < recoilTicks + settleTicks)
             {

@@ -314,11 +314,7 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 cameraZ, s32 brightness) {
     guLookAt(&g_TitleMtxRareLogo1[g_TitleMtxIndex], cameraPosition1[0], cameraPosition1[1], cameraPosition1[2], (cameraPosition1[0] + cameraPosition2[0]), (cameraPosition1[1] + cameraPosition2[1]), (cameraPosition1[2] + cameraPosition2[2]), cameraPosition3[0], cameraPosition3[1], cameraPosition3[2]);
     gSPMatrix(gdl++,  osVirtualToPhysical(&g_TitleMtxRareLogo1[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
     guRotate(&g_TitleMtxRareLogo2[g_TitleMtxIndex], g_TitleRareLogoAngle, 0.0f, 1.0f, 0.0f);
-#if defined(REFRESH_PAL)
-    g_TitleRareLogoAngle += 2.4f;
-#else
-    g_TitleRareLogoAngle += 2.0f;
-#endif
+    g_TitleRareLogoAngle += PER_TICK(2.0f);
     gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxRareLogo2[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
     gSPSetLights1(gdl++, gunbarrelLights);
     // The logo is environment mapped and relied on Fast3D's default LookAt, which F3DEX3

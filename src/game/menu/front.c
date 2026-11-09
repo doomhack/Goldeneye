@@ -69,14 +69,12 @@
  * and the camera velocity is tuned per refresh rate so its decay per second is the
  * same on PAL (0.95 ^ (60/50) = 0.9403). 
  */
+#define CAST_INTRO_LEN          TICKS(60 * 3)
+#define CAST_INTRO_FADE         TICKS(60 / 2)
 #ifdef REFRESH_PAL
-#define CAST_INTRO_LEN          (50 * 3)
-#define CAST_INTRO_FADE         (50 / 2)
 #define CAST_DAMP               0.940299988f
 #define CAST_DAMP_COMP          0.0597000122f
 #else
-#define CAST_INTRO_LEN          (60 * 3)
-#define CAST_INTRO_FADE         (60 / 2)
 #define CAST_DAMP               0.94999999f
 #define CAST_DAMP_COMP          0.050000012f
 #endif
@@ -1208,11 +1206,7 @@ void frontLegalLeave(void)
 
 void frontLegalTick(void)
 {
-#ifdef REFRESH_PAL
-#define MENU_LEGALSCREEN_MENU_TIMER_MAX (50*4+1)
-#else
-#define MENU_LEGALSCREEN_MENU_TIMER_MAX (60*4+1)
-#endif
+#define MENU_LEGALSCREEN_MENU_TIMER_MAX (TICKS(60*4)+1)
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -1611,13 +1605,8 @@ void frontLogoLeave(void) {
 
 void frontLogoTick(void)
 {
-#ifdef REFRESH_PAL
-#define GOLDENEYELOGO_TIMER_1 50*3
-#define GOLDENEYELOGO_TIMER_2 (50/2)*3
-#else
-#define GOLDENEYELOGO_TIMER_1 60*3
-#define GOLDENEYELOGO_TIMER_2 (60/2)*3
-#endif
+#define GOLDENEYELOGO_TIMER_1 TICKS(60*3)
+#define GOLDENEYELOGO_TIMER_2 TICKS((60/2)*3)
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -2083,11 +2072,7 @@ void frontFileSelectTick(void)
     }
 
     // Change to the legal screen if 30 seconds of no input have elapsed
-#if defined(VERSION_EU)
-    if (g_FrontTimer >= 1501) // PAL (50fps): 30 seconds + 1 frame
-#else
-    if (g_FrontTimer >= 1801) // NTSC (60fps): 30 seconds + 1 frame
-#endif
+    if (g_FrontTimer >= TICKS(1800) + 1) // 30 seconds + 1 frame
     {
         frontSetMenu(MENU_LEGAL_SCREEN, TRUE);
     }
@@ -8423,11 +8408,7 @@ void frontCastEnter(void)
     modelSetRootPosition(g_CastModel, &subOffset);
     modelSetRootRotY(g_CastModel, 0.0f);
 
-#if defined VERSION_EU
-    modelSetAnimPlaySpeed(g_CastModel, 0.6f, 0);
-#else
-    modelSetAnimPlaySpeed(g_CastModel, 0.5f, 0);
-#endif
+    modelSetAnimPlaySpeed(g_CastModel, PER_TICK(0.5f), 0);
     modelSetAnimation(g_CastModel, animation_table_ptrs1[g_CastAnims[g_CastAnim].animID], flip, g_CastAnims[g_CastAnim].startframeoffset, g_CastAnims[g_CastAnim].playback_speed, 0.0f);
 
     g_FrontTimer = 0;

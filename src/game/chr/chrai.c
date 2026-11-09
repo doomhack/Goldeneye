@@ -155,11 +155,7 @@ static void aiSoundStop(s32 slot)
  */
 static s32 aiSoundFadeTicks(u16 time60)
 {
-#ifdef VERSION_EU
-    return (time60 * 50) / 60;
-#else
-    return time60;
-#endif
+    return TICKS_DOWN(time60);
 }
 
 /**

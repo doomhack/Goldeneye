@@ -933,11 +933,7 @@ void lvTick(void)
             oldtime = g_MissionTime;
             newtime = g_ClockTimer + g_MissionTime;
 
-#ifdef VERSION_EU
-            if ((g_MissionTime < (g_MpTime - 0xBB8)) && (newtime >= (g_MpTime - 0xBB8)))
-#else
-            if ((g_MissionTime < (g_MpTime - 0xE10)) && (newtime >= (g_MpTime - 0xE10)))
-#endif
+            if ((g_MissionTime < (g_MpTime - TICKS(0xE10))) && (newtime >= (g_MpTime - TICKS(0xE10))))
             {
                 for (i = 0; i < getPlayerCount(); i++)
                 {
@@ -947,11 +943,7 @@ void lvTick(void)
             }
 
             // sound alarm when game is about to end (10 seconds before end)
-#ifdef VERSION_EU
-            if ((newtime >= (g_MpTime - 0x1F4)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
-#else
-            if ((newtime >= (g_MpTime - 0x258)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
-#endif
+            if ((newtime >= (g_MpTime - TICKS(0x258))) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
             {
                 sndPlaySfx(g_musicSfxBufferPtr, ALARM1_SFX, &g_MpSoundStateRelated);
             }
@@ -1079,17 +1071,9 @@ void lvTick(void)
     }
 
     g_MissionTime = g_MissionTime + g_ClockTimer;
-#ifdef VERSION_EU
-    g_MissionTimeSec = (f32) (g_MissionTime) / 50.0f;
-#else
-    g_MissionTimeSec = (f32) (g_MissionTime) / 60.0f;
-#endif
+    g_MissionTimeSec = (f32) (g_MissionTime) / (f32)TICKS_PER_SECOND;
     g_SystemPowerTime = g_SystemPowerTime + g_ClockTimer;
-#ifdef VERSION_EU
-    g_SystemPowerTimeSec = (f32) (g_SystemPowerTime) / 50.0f;
-#else
-    g_SystemPowerTimeSec = (f32) (g_SystemPowerTime) / 60.0f;
-#endif
+    g_SystemPowerTimeSec = (f32) (g_SystemPowerTime) / (f32)TICKS_PER_SECOND;
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON))
     {
@@ -1100,11 +1084,7 @@ void lvTick(void)
     {
         g_LvTimeSinceInput = g_LvTimeSinceInput + g_ClockTimer;
 
-#ifdef VERSION_EU
-        if (g_LvTimeSinceInput >= 0x5DC)
-#else
-        if (g_LvTimeSinceInput >= 0x708)
-#endif
+        if (g_LvTimeSinceInput >= TICKS(0x708))
         {
             g_LvIdle = 1;
         }
@@ -1117,17 +1097,9 @@ void lvTick(void)
     else
     {
         g_StageTime = g_StageTime + g_ClockTimer;
-#ifdef VERSION_EU
-        g_StageTimeSec = (f32) (g_StageTime) / 50.0f;
-#else
-        g_StageTimeSec = (f32) (g_StageTime) / 60.0f;
-#endif
+        g_StageTimeSec = (f32) (g_StageTime) / (f32)TICKS_PER_SECOND;
         g_PowerOnTime = g_PowerOnTime + g_ClockTimer;
-#ifdef VERSION_EU
-        g_PowerOnTimeSec = (f32) (g_PowerOnTime) / 50.0f;
-#else
-        g_PowerOnTimeSec = (f32) (g_PowerOnTime) / 60.0f;
-#endif
+        g_PowerOnTimeSec = (f32) (g_PowerOnTime) / (f32)TICKS_PER_SECOND;
     }
 
     viSetUseZBuf(1);

@@ -4239,16 +4239,30 @@ typedef enum PROJECTILES
 
 /*
  * Timing is tuned at 60 Hz. These convert a 60 Hz value to this build's tick
- * rate, so one number serves both NTSC and PAL:
- *   TICKS(n)    n 60 Hz ticks as whole ticks (rounded to nearest)
- *   TICKSF(n)   n 60 Hz ticks as a float
- *   PER_TICK(x) a step of x per 60 Hz tick, as a step per tick
- *   DAMP(d)     a factor applied every 60 Hz tick, as a factor per tick
+ * rate, so one number serves both NTSC and PAL. On NTSC they are the value
+ * itself.
+ *   TICKS(n)      n 60 Hz ticks as whole ticks, rounded to nearest
+ *   TICKS_DOWN(n) n 60 Hz ticks as whole ticks, rounded down
+ *   TICKSF(n)     n 60 Hz ticks as a float
+ *   TICKS_TO_60(n) n ticks of this build in 60 Hz ticks, rounded down
+ *   PER_TICK(x)   a step of x per 60 Hz tick, as a step per tick
+ *   DAMP(d)       a factor applied every 60 Hz tick, as a factor per tick
  */
-#define TICKS(n60)    (((n60) * TICKS_PER_SECOND + 30) / 60)
-#define TICKSF(n60)   ((n60) * (f32)TICKS_PER_SECOND / 60.0f)
-#define PER_TICK(x60) ((x60) * TICK_SCALE_60)
-#define DAMP(d60)     __builtin_powf((d60), TICK_SCALE_60)
+#if TICKS_PER_SECOND == 60
+#define TICKS(n60)       (n60)
+#define TICKS_DOWN(n60)  (n60)
+#define TICKSF(n60)      (n60)
+#define TICKS_TO_60(n)   (n)
+#define PER_TICK(x60)    (x60)
+#define DAMP(d60)        (d60)
+#else
+#define TICKS(n60)       (((n60) * TICKS_PER_SECOND + 30) / 60)
+#define TICKS_DOWN(n60)  (((n60) * TICKS_PER_SECOND) / 60)
+#define TICKSF(n60)      (((n60) * (f32)TICKS_PER_SECOND) / 60.0f)
+#define TICKS_TO_60(n)   (((n) * 60) / TICKS_PER_SECOND)
+#define PER_TICK(x60)    ((x60) * TICK_SCALE_60)
+#define DAMP(d60)        __builtin_powf((d60), TICK_SCALE_60)
+#endif
 
 #pragma endregion
 

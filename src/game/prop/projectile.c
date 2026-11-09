@@ -1260,11 +1260,7 @@ void projectileUpdateKnifeSound(ObjectRecord *obj)
         s32 sfxindex = randomGetNext() % 3;
 
         // Two sounds take turns, each cut off after a few ticks
-#if defined(VERSION_US)
-        if ((s32) projectile->lastSfxTimer < g_GlobalTimer - 6)
-#else
-        if ((s32) projectile->lastSfxTimer < g_GlobalTimer - 5)
-#endif
+        if ((s32) projectile->lastSfxTimer < g_GlobalTimer - TICKS(6))
         {
             projectileStopSound(projectile->sounds[slot]);
         }

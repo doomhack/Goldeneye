@@ -766,19 +766,11 @@ void gunRequestHandWeaponChange(enum GUNHAND hand, s32 nextWeapon, s32 cycleDire
     {
         g_CurrentPlayer->hands[hand].switchTime = g_CurrentPlayer->hands[hand].stateTime;
 
-#ifdef VERSION_EU
         if (getPlayerCount() == 1) {
-            g_CurrentPlayer->hands[hand].switchTime += 0xE;
+            g_CurrentPlayer->hands[hand].switchTime += TICKS_DOWN(0x11);
         } else {
-            g_CurrentPlayer->hands[hand].switchTime += 0xA;
+            g_CurrentPlayer->hands[hand].switchTime += TICKS_DOWN(0xD);
         }
-#else
-        if (getPlayerCount() == 1) {
-            g_CurrentPlayer->hands[hand].switchTime += 0x11;
-        } else {
-            g_CurrentPlayer->hands[hand].switchTime += 0xD;
-        }
-#endif
     }
 
     if (gunGetNextWeapon(hand, 0) != nextWeapon)

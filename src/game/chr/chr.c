@@ -557,11 +557,7 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     modelSetRootPosition(model, pos);
     modelSetRootRotY(model, angle);
 
-#if defined(VERSION_EU)
-    modelSetAnimPlaySpeed(model, g_ChrAnimRate * 1.2f, 0.0f);
-#else
-    modelSetAnimPlaySpeed(model, g_ChrAnimRate, 0.0f);
-#endif
+    modelSetAnimPlaySpeed(model, PER_TICK(g_ChrAnimRate), 0.0f);
 
     chr->chrnum = (s16)g_NextChrNum;
     g_NextChrNum++;
@@ -739,11 +735,7 @@ void chrsSetAnimRate(f32 rate)
     {
         if (g_ChrSlots[i].model != NULL)
         {
-#if defined(REFRESH_PAL)
-            modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate * 1.2f, 600.0f);
-#else
-            modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate, 600.0f);
-#endif
+            modelSetAnimPlaySpeed(g_ChrSlots[i].model, PER_TICK(g_ChrAnimRate), 600.0f);
         }
     }
 }
@@ -1159,11 +1151,7 @@ s32 chrTick(PropRecord *prop)
         {
             g_CurModelChr->flinchcnt += g_ClockTimer;
 
-#ifdef VERSION_EU
-            if (g_CurModelChr->flinchcnt >= 24)
-#else
-            if (g_CurModelChr->flinchcnt >= 30)
-#endif
+            if (g_CurModelChr->flinchcnt >= TICKS_DOWN(10) + TICKS_DOWN(20)) // flinch rise + fall (chrrender.c)
             {
                 g_CurModelChr->flinchcnt = -1;
             }

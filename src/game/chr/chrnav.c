@@ -113,20 +113,12 @@ void chrRunToPos(ChrRecord *self, coord3d *pos)
 
     if (rifle)
     {
-#ifdef VERSION_EU
-        self->act_runpos.eta60 = (s32) (((sq / (g_ChrSpeedRun * 0.5f)) * 50.0f) / 60.0f);
-#else
-        self->act_runpos.eta60 = (s32) (sq / (g_ChrSpeedRun * 0.5f));
-#endif
+        self->act_runpos.eta60 = (s32) TICKSF(sq / (g_ChrSpeedRun * 0.5f));
         modelSetAnimation(self->model, ANIM(running), flip, 0, 0.5f, 16.0f);
     }
     else
     {
-#ifdef VERSION_EU
-        self->act_runpos.eta60 = (s32) (((sq / (g_ChrSpeedRunOneHanded * 0.5f)) * 50.0f) / 60.0f);
-#else
-        self->act_runpos.eta60 = (s32) (sq / (g_ChrSpeedRunOneHanded * 0.5f));
-#endif
+        self->act_runpos.eta60 = (s32) TICKSF(sq / (g_ChrSpeedRunOneHanded * 0.5f));
         modelSetAnimation(self->model, ANIM(running_one_handed_weapon), flip, 0, 0.5f, 16.0f);
     }
 }
@@ -401,11 +393,7 @@ static void chrGoPosConsiderRestart(ChrRecord *self)
 
         if (ttl == 0)
         {
-#ifndef REFRESH_PAL
-            newttl = (chrGoPosCalculateBaseTtl(self) * 2) + 300;
-#else
-            newttl = ((chrGoPosCalculateBaseTtl(self) * 100) + 15000) / 60;
-#endif
+            newttl = TICKS_DOWN((chrGoPosCalculateBaseTtl(self) * 2) + 300);
 
             if (newttl >= 0x10000)
             {

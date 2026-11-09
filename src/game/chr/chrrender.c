@@ -59,13 +59,8 @@ static f32 chrGetFlinchAmount(const ChrRecord *chr)
 {
     f32 count;
     f32 amount;
-#if defined(VERSION_US)
-    f32 rise = 10.0f;
-    f32 fall = 20.0f;
-#else
-    f32 rise = 8.0f;
-    f32 fall = 16.0f;
-#endif
+    f32 rise = TICKS_DOWN(10);
+    f32 fall = TICKS_DOWN(20);
 
     count = chr->flinchcnt;
 

@@ -2038,11 +2038,7 @@ void playerSetWorldScale(f32 scale)
 
 
 s32 lvGetMissionTime60(void) {
-#ifdef VERSION_EU
-    return (mission_timer * 60) / 50;
-#else
-    return mission_timer;
-#endif
+    return TICKS_TO_60(mission_timer);
 }
 
 
