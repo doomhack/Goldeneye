@@ -649,181 +649,93 @@ struct AssetEntry g_FileTable[] = {
     {SETUPTRA, "UsetuptraZ", UsetuptraZ},
 
     {AMEE, "LameE", LameE},
-#ifdef VERSION_EU
     {AMEP, "LameP", LameP},
-#endif
     {ARCHE, "LarchE", LarchE},
-#ifdef VERSION_EU
     {ARCHP, "LarchP", LarchP},
-#endif
     {ARECE, "LarecE", LarecE},
-#ifdef VERSION_EU
     {ARECP, "LarecP", LarecP},
-#endif
     {ARKE, "LarkE", LarkE},
-#ifdef VERSION_EU
     {ARKP, "LarkP", LarkP},
-#endif
     {ASHE, "LashE", LashE},
-#ifdef VERSION_EU
     {ASHP, "LashP", LashP},
-#endif
     {AZTE, "LaztE", LaztE},
-#ifdef VERSION_EU
     {AZTP, "LaztP", LaztP},
-#endif
     {CATE, "LcatE", LcatE},
-#ifdef VERSION_EU
     {CATP, "LcatP", LcatP},
-#endif
     {CAVEE, "LcaveE", LcaveE},
-#ifdef VERSION_EU
     {CAVEP, "LcaveP", LcaveP},
-#endif
     {CRADE, "LcradE", LcradE},
-#ifdef VERSION_EU
     {CRADP, "LcradP", LcradP},
-#endif
     {CRYPE, "LcrypE", LcrypE},
-#ifdef VERSION_EU
     {CRYPP, "LcrypP", LcrypP},
-#endif
     {DAME, "LdamE", LdamE},
-#ifdef VERSION_EU
     {DAMP, "LdamP", LdamP},
-#endif
     {DEPOE, "LdepoE", LdepoE},
-#ifdef VERSION_EU
     {DEPOP, "LdepoP", LdepoP},
-#endif
     {DESTE, "LdestE", LdestE},
-#ifdef VERSION_EU
     {DESTP, "LdestP", LdestP},
-#endif
     {DISHE, "LdishE", LdishE},
-#ifdef VERSION_EU
     {DISHP, "LdishP", LdishP},
-#endif
     {EARE, "LearE", LearE},
-#ifdef VERSION_EU
     {EARP, "LearP", LearP},
-#endif
     {ELDE, "LeldE", LeldE},
-#ifdef VERSION_EU
     {ELDP, "LeldP", LeldP},
-#endif
     {GUNE, "LgunE", LgunE},
-#ifdef VERSION_EU
     {GUNP, "LgunP", LgunP},
-#endif
     {IMPE, "LimpE", LimpE},
-#ifdef VERSION_EU
     {IMPP, "LimpP", LimpP},
-#endif
     {JUNE, "LjunE", LjunE},
-#ifdef VERSION_EU
     {JUNP, "LjunP", LjunP},
-#endif
     {LEEE, "LleeE", LleeE},
-#ifdef VERSION_EU
     {LEEP, "LleeP", LleeP},
-#endif
     {LENE, "LlenE", LlenE},
-#ifdef VERSION_EU
     {LENP, "LlenP", LlenP},
-#endif
     {LIPE, "LlipE", LlipE},
-#ifdef VERSION_EU
     {LIPP, "LlipP", LlipP},
-#endif
     {LUEE, "LlueE", LlueE},
-#ifdef VERSION_EU
     {LUEP, "LlueP", LlueP},
-#endif
     {MISCE, "LmiscE", LmiscE},
-#ifdef VERSION_EU
     {MISCP, "LmiscP", LmiscP},
-#endif
     {MPMENUE, "LmpmenuE", LmpmenuE},
-#ifdef VERSION_EU
     {MPMENUP, "LmpmenuP", LmpmenuP},
-#endif
     {MPWEAPONSE, "LmpweaponsE", LmpweaponsE},
-#ifdef VERSION_EU
     {MPWEAPONSP, "LmpweaponsP", LmpweaponsP},
-#endif
     {OATE, "LoatE", LoatE},
-#ifdef VERSION_EU
     {OATP, "LoatP", LoatP},
-#endif
     {OPTIONSE, "LoptionsE", LoptionsE},
-#ifdef VERSION_EU
     {OPTIONSP, "LoptionsP", LoptionsP},
-#endif
     {PAME, "LpamE", LpamE},
-#ifdef VERSION_EU
     {PAMP, "LpamP", LpamP},
-#endif
     {PETEE, "LpeteE", LpeteE},
-#ifdef VERSION_EU
     {PETEP, "LpeteP", LpeteP},
-#endif
     {PROPOBJE, "LpropobjE", LpropobjE},
-#ifdef VERSION_EU
     {PROPOBJP, "LpropobjP", LpropobjP},
-#endif
     {REFE, "LrefE", LrefE},
-#ifdef VERSION_EU
     {REFP, "LrefP", LrefP},
-#endif
     {RITE, "LritE", LritE},
-#ifdef VERSION_EU
     {RITP, "LritP", LritP},
-#endif
     {RUNE, "LrunE", LrunE},
-#ifdef VERSION_EU
     {RUNP, "LrunP", LrunP},
-#endif
     {SEVE, "LsevE", LsevE},
-#ifdef VERSION_EU
     {SEVP, "LsevP", LsevP},
-#endif
     {SEVBE, "LsevbE", LsevbE},
-#ifdef VERSION_EU
     {SEVBP, "LsevbP", LsevbP},
-#endif
     {SEVXE, "LsevxE", LsevxE},
-#ifdef VERSION_EU
     {SEVXP, "LsevxP", LsevxP},
-#endif
     {SEVXBE, "LsevxbE", LsevxbE},
-#ifdef VERSION_EU
     {SEVXBP, "LsevxbP", LsevxbP},
-#endif
     {SHOE, "LshoE", LshoE},
-#ifdef VERSION_EU
     {SHOP, "LshoP", LshoP},
-#endif
     {SILOE, "LsiloE", LsiloE},
-#ifdef VERSION_EU
     {SILOP, "LsiloP", LsiloP},
-#endif
     {STATE, "LstatE", LstatE},
-#ifdef VERSION_EU
     {STATP, "LstatP", LstatP},
-#endif
     {TITLEE, "LtitleE", LtitleE},
-#ifdef VERSION_EU
     {TITLEP, "LtitleP", LtitleP},
-#endif
     {TRAE, "LtraE", LtraE},
-#ifdef VERSION_EU
     {TRAP, "LtraP", LtraP},
-#endif
     {WAXE, "LwaxE", LwaxE},
-#ifdef VERSION_EU
     {WAXP, "LwaxP", LwaxP},
-#endif
     
     {OBENDSEG, "ob/ob_end.seg", ob__ob_end_seg},
     {0},

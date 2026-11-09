@@ -1,18 +1,13 @@
 # text
 
-# Text banks we added strings to are built from source, never taken from the
-# extracted ROM copy (which lacks the new strings).
-TEXT_FROM_SOURCE := $(BUILD_DIR)/$(OBSEG_DIR)/text/LoptionsE.rz $(BUILD_DIR)/$(OBSEG_DIR)/text/LoptionsP.rz \
-                    $(BUILD_DIR)/$(OBSEG_DIR)/text/LmpweaponsE.rz $(BUILD_DIR)/$(OBSEG_DIR)/text/LmpweaponsP.rz
-$(TEXT_FROM_SOURCE): $(BUILD_DIR)/$(OBSEG_DIR)/text/%.rz: $(BUILD_DIR)/$(OBSEG_DIR)/text/%.bin
-	$(RZ_COMP) $< $@
+# Every text bank is built from source. The English banks (E) come from
+# $(OBSEG_DIR)/text/L*E.c; the PAL banks (P) are made from the same source by
+# tools/brittext.py, which applies British spelling and PAL's reworded lines.
+# So a new string only needs adding to the E source.
 
-# Pattern rules for building .rz files from .bin files
-$(BUILD_DIR)/$(OBSEG_DIR)/text/%.rz: $(OBSEG_DIR)/text/$(COUNTRYCODE)/%.bin
-	$(RZ_COMP) $< $@
-
-$(BUILD_DIR)/$(OBSEG_DIR)/text/%.rz: $(OBSEG_DIR)/text/%.bin
-	$(RZ_COMP) $< $@
+$(BUILD_DIR)/$(OBSEG_DIR)/text/%P.c: $(OBSEG_DIR)/text/%E.c tools/brittext.py
+	@mkdir -p $(dir $@)
+	python3 tools/brittext.py $< $@
 
 $(BUILD_DIR)/$(OBSEG_DIR)/text/%.rz: $(BUILD_DIR)/$(OBSEG_DIR)/text/%.bin
 	$(RZ_COMP) $< $@
@@ -23,10 +18,10 @@ $(BUILD_DIR)/$(OBSEG_DIR)/text/%.bin: $(BUILD_DIR)/$(OBSEG_DIR)/text/%.elf
 $(BUILD_DIR)/$(OBSEG_DIR)/text/%.elf: $(BUILD_DIR)/$(OBSEG_DIR)/text/%.o
 	$(LD) -T assets/obseg/text/LnameX.ld -o $@ $<
 
-$(BUILD_DIR)/$(OBSEG_DIR)/text/%.o: $(OBSEG_DIR)/text/$(COUNTRYCODE)/%.c
+$(BUILD_DIR)/$(OBSEG_DIR)/text/%.o: $(OBSEG_DIR)/text/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(BUILD_DIR)/$(OBSEG_DIR)/text/%.o: $(OBSEG_DIR)/text/%.c
+$(BUILD_DIR)/$(OBSEG_DIR)/text/%.o: $(BUILD_DIR)/$(OBSEG_DIR)/text/%.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 # List of language codes
@@ -35,14 +30,8 @@ TEXT_LANGS := E P
 # Compose all possible text file names
 TEXT_ALL_RZ_FILES := $(foreach lang,$(TEXT_LANGS),$(foreach name,$(TEXTNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/text/L$(name)$(lang).rz))
 
-# Region-specific file lists
-ifneq ($(VERSION), EU)
-TEXT_RZ_FILES := \
-	$(foreach lang,E,$(foreach name,$(TEXTNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/text/L$(name)$(lang).rz))
-else
-TEXT_RZ_FILES := \
-	$(foreach lang,E P,$(foreach name,$(TEXTNAMELIST),$(BUILD_DIR)/$(OBSEG_DIR)/text/L$(name)$(lang).rz))
-endif
+# Both builds carry the E and P banks; the game loads one set (language.c).
+TEXT_RZ_FILES := $(TEXT_ALL_RZ_FILES)
 
 # Default target
 all: $(TEXT_RZ_FILES)

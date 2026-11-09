@@ -687,181 +687,93 @@ obseg_file_Z setup, UsetuptraZ
 
 
 obseg_file_rz text, LameE
-.ifdef VERSION_EU
 obseg_file_rz text, LameP
-.endif
 obseg_file_rz text, LarchE
-.ifdef VERSION_EU
 obseg_file_rz text, LarchP
-.endif
 obseg_file_rz text, LarecE
-.ifdef VERSION_EU
 obseg_file_rz text, LarecP
-.endif
 obseg_file_rz text, LarkE
-.ifdef VERSION_EU
 obseg_file_rz text, LarkP
-.endif
 obseg_file_rz text, LashE
-.ifdef VERSION_EU
 obseg_file_rz text, LashP
-.endif
 obseg_file_rz text, LaztE
-.ifdef VERSION_EU
 obseg_file_rz text, LaztP
-.endif
 obseg_file_rz text, LcatE
-.ifdef VERSION_EU
 obseg_file_rz text, LcatP
-.endif
 obseg_file_rz text, LcaveE
-.ifdef VERSION_EU
 obseg_file_rz text, LcaveP
-.endif
 obseg_file_rz text, LcradE
-.ifdef VERSION_EU
 obseg_file_rz text, LcradP
-.endif
 obseg_file_rz text, LcrypE
-.ifdef VERSION_EU
 obseg_file_rz text, LcrypP
-.endif
 obseg_file_rz text, LdamE
-.ifdef VERSION_EU
 obseg_file_rz text, LdamP
-.endif
 obseg_file_rz text, LdepoE
-.ifdef VERSION_EU
 obseg_file_rz text, LdepoP
-.endif
 obseg_file_rz text, LdestE
-.ifdef VERSION_EU
 obseg_file_rz text, LdestP
-.endif
 obseg_file_rz text, LdishE
-.ifdef VERSION_EU
 obseg_file_rz text, LdishP
-.endif
 obseg_file_rz text, LearE
-.ifdef VERSION_EU
 obseg_file_rz text, LearP
-.endif
 obseg_file_rz text, LeldE
-.ifdef VERSION_EU
 obseg_file_rz text, LeldP
-.endif
 obseg_file_rz text, LgunE
-.ifdef VERSION_EU
 obseg_file_rz text, LgunP
-.endif
 obseg_file_rz text, LimpE
-.ifdef VERSION_EU
 obseg_file_rz text, LimpP
-.endif
 obseg_file_rz text, LjunE
-.ifdef VERSION_EU
 obseg_file_rz text, LjunP
-.endif
 obseg_file_rz text, LleeE
-.ifdef VERSION_EU
 obseg_file_rz text, LleeP
-.endif
 obseg_file_rz text, LlenE
-.ifdef VERSION_EU
 obseg_file_rz text, LlenP
-.endif
 obseg_file_rz text, LlipE
-.ifdef VERSION_EU
 obseg_file_rz text, LlipP
-.endif
 obseg_file_rz text, LlueE
-.ifdef VERSION_EU
 obseg_file_rz text, LlueP
-.endif
 obseg_file_rz text, LmiscE
-.ifdef VERSION_EU
 obseg_file_rz text, LmiscP
-.endif
 obseg_file_rz text, LmpmenuE
-.ifdef VERSION_EU
 obseg_file_rz text, LmpmenuP
-.endif
 obseg_file_rz text, LmpweaponsE
-.ifdef VERSION_EU
 obseg_file_rz text, LmpweaponsP
-.endif
 obseg_file_rz text, LoatE
-.ifdef VERSION_EU
 obseg_file_rz text, LoatP
-.endif
 obseg_file_rz text, LoptionsE
-.ifdef VERSION_EU
 obseg_file_rz text, LoptionsP
-.endif
 obseg_file_rz text, LpamE
-.ifdef VERSION_EU
 obseg_file_rz text, LpamP
-.endif
 obseg_file_rz text, LpeteE
-.ifdef VERSION_EU
 obseg_file_rz text, LpeteP
-.endif
 obseg_file_rz text, LpropobjE
-.ifdef VERSION_EU
 obseg_file_rz text, LpropobjP
-.endif
 obseg_file_rz text, LrefE
-.ifdef VERSION_EU
 obseg_file_rz text, LrefP
-.endif
 obseg_file_rz text, LritE
-.ifdef VERSION_EU
 obseg_file_rz text, LritP
-.endif
 obseg_file_rz text, LrunE
-.ifdef VERSION_EU
 obseg_file_rz text, LrunP
-.endif
 obseg_file_rz text, LsevE
-.ifdef VERSION_EU
 obseg_file_rz text, LsevP
-.endif
 obseg_file_rz text, LsevbE
-.ifdef VERSION_EU
 obseg_file_rz text, LsevbP
-.endif
 obseg_file_rz text, LsevxE
-.ifdef VERSION_EU
 obseg_file_rz text, LsevxP
-.endif
 obseg_file_rz text, LsevxbE
-.ifdef VERSION_EU
 obseg_file_rz text, LsevxbP
-.endif
 obseg_file_rz text, LshoE
-.ifdef VERSION_EU
 obseg_file_rz text, LshoP
-.endif
 obseg_file_rz text, LsiloE
-.ifdef VERSION_EU
 obseg_file_rz text, LsiloP
-.endif
 obseg_file_rz text, LstatE
-.ifdef VERSION_EU
 obseg_file_rz text, LstatP
-.endif
 obseg_file_rz text, LtitleE
-.ifdef VERSION_EU
 obseg_file_rz text, LtitleP
-.endif
 obseg_file_rz text, LtraE
-.ifdef VERSION_EU
 obseg_file_rz text, LtraP
-.endif
 obseg_file_rz text, LwaxE
-.ifdef VERSION_EU
 obseg_file_rz text, LwaxP
-.endif
 
 .global ob__ob_end_seg
 ob__ob_end_seg:

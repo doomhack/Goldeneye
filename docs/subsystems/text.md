@@ -15,7 +15,10 @@ offsets followed by the strings. `langGet(id)` finds the bank in `g_LangBanks` a
 the string, or NULL if that bank isn't loaded.
 
 `g_LangFileNames` gives the ROM file for each bank id: the `E` files in the US build and
-the `P` files in the PAL build. `langInit` loads the banks every level uses (guns, titles,
+the `P` files in the PAL build. Both sets are built from the same source,
+`assets/obseg/text/L*E.c`: `tools/brittext.py` makes each `P` bank from its `E` source
+with British spelling and PAL's reworded lines, so a new string is only added to the `E`
+source. `langInit` loads the banks every level uses (guns, titles,
 multiplayer menus, pickups, weapon sets, options, misc) once at boot. Each level has its own bank as well
 (`langGetBankForStage`): `setup.c` loads it with the level (`langLoadToAddr`) and
 `lvTick` frees it when the level ends (`langClearBank`). The briefing screens load a
