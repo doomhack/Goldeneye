@@ -170,15 +170,9 @@ Gfx *titleRenderFade(Gfx *gdl, u32 alpha)
 
 Gfx *titleRenderBondModel(Gfx *gdl, s32 count, const Mtxf *matrix)
 {
-#if defined(REFRESH_PAL)
-    #define BOND_EYE_ANIM_START 114
-    #define BOND_EYE_ANIM_SPEEDUP 176
-    #define BOND_EYE_FIRE_SHOT 191
-#else
-    #define BOND_EYE_ANIM_START 137
-    #define BOND_EYE_ANIM_SPEEDUP 212
-    #define BOND_EYE_FIRE_SHOT 230
-#endif
+    #define BOND_EYE_ANIM_START TICKS_DOWN(137)
+    #define BOND_EYE_ANIM_SPEEDUP TICKS_DOWN(212)
+    #define BOND_EYE_FIRE_SHOT TICKS_DOWN(230)
     ModelRenderData renderData;
     JointListEntry *entry;
     bool playedShot;
@@ -360,17 +354,10 @@ void titleLoadRareLogo(u8 *address) {
 
 Gfx *titleRenderRareIntro(Gfx *gdl)
 {
-#if defined(REFRESH_PAL)
-#define RAREWARE_LOGO_DEN 58
-#define RAREWARE_LOGO_SUB 33915
-#define RAREWARE_LOGO_EYE_COUNT1 216
-#define RAREWARE_LOGO_EYE_COUNT2 241
-#else
-#define RAREWARE_LOGO_DEN 70
-#define RAREWARE_LOGO_SUB 40800
-#define RAREWARE_LOGO_EYE_COUNT1 260
-#define RAREWARE_LOGO_EYE_COUNT2 290
-#endif
+#define RAREWARE_LOGO_DEN TICKS_DOWN(70)
+#define RAREWARE_LOGO_SUB (TICKS_DOWN(160) * 255)
+#define RAREWARE_LOGO_EYE_COUNT1 TICKS_DOWN(260)
+#define RAREWARE_LOGO_EYE_COUNT2 TICKS_DOWN(290)
 
     g_TitleMtxIndex = (1 - g_TitleMtxIndex);
     gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(g_TitleRareLogoData));
@@ -549,24 +536,19 @@ void titleFreeBondModels(void)
     }
 }
 
+#define XINC PER_TICK(6.0f)
+#define XDEC (2 * XINC)
+#define XDEC2 6
+#define INCVAL ((s32)PER_TICK(0x38E))
+#define INTRO_EYE_COUNTER_CASE_4 TICKS(108)
+#define INTRO_EYE_COUNTER_CASE_6 TICKS(0x1e)
+/* Hand-tuned on PAL, not a straight 50 Hz conversion */
 #ifndef REFRESH_PAL
-    #define XINC 6.0f
-    #define XDEC 12.0f
-    #define XDEC2 6
     #define XDEC3 5.8183274f
-    #define INCVAL 0x38E
-    #define INTRO_EYE_COUNTER_CASE_4 108
     #define INTRO_EYE_COUNTER_CASE_5_ADD 8
-    #define INTRO_EYE_COUNTER_CASE_6 0x1e
 #else
-    #define XINC 7.0f
-    #define XDEC 14.0f
-    #define XDEC2 6
     #define XDEC3 3.63643622398f
-    #define INCVAL 0x444
-    #define INTRO_EYE_COUNTER_CASE_4 90
     #define INTRO_EYE_COUNTER_CASE_5_ADD 9
-    #define INTRO_EYE_COUNTER_CASE_6 0x19
 #endif
 
 
@@ -581,11 +563,7 @@ Gfx *titleRenderGunbarrel (Gfx *gdl) {
             g_TitleBarrelAngle = 200;
             titleTransitionX = (g_TitleX - XDEC);
         } else {
-#if defined(VERSION_EU)
-            g_TitleBarrelAngle -= 7;
-#else
-            g_TitleBarrelAngle -= 6;
-#endif
+            g_TitleBarrelAngle -= (s32)PER_TICK(6);
         }
         if (g_TitleX > 1390.0f) {
             g_TitleStage++;
