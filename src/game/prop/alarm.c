@@ -279,11 +279,7 @@ Gfx *countdownTimerRender(Gfx *gdl)
     secs = (s32)mathFloor(time / 60.0f) - mins * 60;
     hundredths = (s32)mathFloor(time * 100.0f / 60.0f) - mins * 6000 - secs * 100;
 
-#if defined(VERSION_US)
-    y = viGetViewTop() + viGetViewHeight() - 18;
-#else
-    y = viGetViewTop() + viGetViewHeight() - 28;
-#endif
+    y = viGetViewTop() + viGetViewHeight() - (18 + HUD_BOTTOM_PAD);
 
     // Centred on the screen, which is the view in a full-width one. A half
     // width view centres it on the view instead, and lifts it above the

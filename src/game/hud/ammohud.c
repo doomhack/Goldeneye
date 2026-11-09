@@ -13,10 +13,6 @@
 #include "game/text/text.h"
 #include "game/hud/ammohud.h"
 
-#if VERSION_EU
-// Corrects the sight's shape for the PAL screen
-static const f32 g_GunSightAspectRatio = 25.0f / 21.0f;
-#endif
 
 
 /**
@@ -238,11 +234,7 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                     {
                         imageoffset_r += g_ImageBankOffset;
                         gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset_r, (camGetScreenLeft() + camGetScreenWidth()) - (f32)rightx, -1.0f,
-#if defined(VERSION_EU)
-                            (viGetViewTop() + viGetViewHeight()) - 30, 0,
-#else
-                            (viGetViewTop() + viGetViewHeight()) - 20, 0,
-#endif
+                            (viGetViewTop() + viGetViewHeight()) - (20 + HUD_BOTTOM_PAD), 0,
                             g_AmmoStats[ammotype].IconYOffset, 1);
                         textwidth_r = ((u8 *)imageoffset_r)[4];
                     }
@@ -267,21 +259,13 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                     if (!weaponHasFlag(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         gdl = gunDrawHudInteger(gdl, magammo, (((viGetViewLeft() + viGetViewWidth()) - rightx) - (textwidth_r / 2)) - 4, 0,
-#if defined(VERSION_EU)
-                            (viGetViewTop() + viGetViewHeight()) - 28, 2, 1);
-#else
-                            (viGetViewTop() + viGetViewHeight()) - 18, 2, 1);
-#endif
+                            (viGetViewTop() + viGetViewHeight()) - (18 + HUD_BOTTOM_PAD), 2, 1);
                     }
 
                     if (reserveammo > 0 || weaponHasFlag(weapon_right, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         gdl = gunDrawHudInteger(gdl, reserveammo, (((viGetViewLeft() + viGetViewWidth()) - rightx) + ((textwidth_r + 1) / 2)) + 3, 1,
-#if defined(VERSION_EU)
-                            (viGetViewTop() + viGetViewHeight()) - 28, 2, 1);
-#else
-                            (viGetViewTop() + viGetViewHeight()) - 18, 2, 1);
-#endif
+                            (viGetViewTop() + viGetViewHeight()) - (18 + HUD_BOTTOM_PAD), 2, 1);
                     }
 
                     gdl = textEndDraw(gdl);
@@ -304,11 +288,7 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                     {
                         imageoffset_l += g_ImageBankOffset;
                         gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset_l, camGetScreenLeft() + (f32)leftx, -1.0f,
-#if defined(VERSION_EU)
-                            (viGetViewTop() + viGetViewHeight()) - 30, 1,
-#else
-                            (viGetViewTop() + viGetViewHeight()) - 20, 1,
-#endif
+                            (viGetViewTop() + viGetViewHeight()) - (20 + HUD_BOTTOM_PAD), 1,
                             g_AmmoStats[ammotype].IconYOffset, 1);
                         textwidth_l = ((u8 *)imageoffset_l)[4];
                     }
@@ -333,21 +313,13 @@ Gfx *hudRenderAmmo(Gfx *gdl)
                     if (!weaponHasFlag(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         gdl = gunDrawHudInteger(gdl, magammo, ((viGetViewLeft() + leftx) + (textwidth_l / 2)) + 3, 1,
-#if defined(VERSION_EU)
-                            (viGetViewTop() + viGetViewHeight()) - 28, 2, 1);
-#else
-                            (viGetViewTop() + viGetViewHeight()) - 18, 2, 1);
-#endif
+                            (viGetViewTop() + viGetViewHeight()) - (18 + HUD_BOTTOM_PAD), 2, 1);
                     }
 
                     if (reserveammo > 0 || weaponHasFlag(weapon_left, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
                     {
                         gdl = gunDrawHudInteger(gdl, reserveammo, ((viGetViewLeft() + leftx) - ((textwidth_l + 1) / 2)) - 4, 0,
-#if defined(VERSION_EU)
-                            (viGetViewTop() + viGetViewHeight()) - 28, 2, 1);
-#else
-                            (viGetViewTop() + viGetViewHeight()) - 18, 2, 1);
-#endif
+                            (viGetViewTop() + viGetViewHeight()) - (18 + HUD_BOTTOM_PAD), 2, 1);
                     }
 
                     gdl = textEndDraw(gdl);
@@ -396,11 +368,7 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
                 imageoffset += g_ImageBankOffset;
 
                 // Draw the ammo icon
-#if defined(VERSION_EU)
-                gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset, 200.0f, 208.0f, (viGetViewTop() + viGetViewHeight()) - 30, 0, g_AmmoStats[ammotype].IconYOffset, 1);
-#else
-                gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset, 200.0f, 180.0f, (viGetViewTop() + viGetViewHeight()) - 20, 0, g_AmmoStats[ammotype].IconYOffset, 1);
-#endif
+                gdl = hudDrawImageDefault(gdl, (sImageTableEntry *)imageoffset, 200.0f, 180.0f + HUD_FIXED_Y_PAD, (viGetViewTop() + viGetViewHeight()) - (20 + HUD_BOTTOM_PAD), 0, g_AmmoStats[ammotype].IconYOffset, 1);
 
                 textwidth = ((u8 *)imageoffset)[4];
             }
@@ -426,21 +394,13 @@ Gfx *gunDrawWatchAmmoDisplay(Gfx *gdl)
             if (!weaponHasFlag(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
             {
                 // Draw the magazine ammo count.
-#if defined(VERSION_EU)
-                gdl = gunDrawHudInteger(gdl, magammo, 196 - (textwidth / 2), 0, 205, 2, 0);
-#else
-                gdl = gunDrawHudInteger(gdl, magammo, 196 - (textwidth / 2), 0, 177, 2, 0);
-#endif
+                gdl = gunDrawHudInteger(gdl, magammo, 196 - (textwidth / 2), 0, 177 + HUD_FIXED_Y_PAD, 2, 0);
             }
 
             if (reserveammo > 0 || weaponHasFlag(item, WEAPONSTATBITFLAG_NO_CLIP_RELOADS))
             {
                 // Draw the reserve ammo count.
-#if defined(VERSION_EU)
-                gdl = gunDrawHudInteger(gdl, reserveammo, 203 + ((textwidth + 1) / 2), 1, 205, 2, 0);
-#else
-                gdl = gunDrawHudInteger(gdl, reserveammo, 203 + ((textwidth + 1) / 2), 1, 177, 2, 0);
-#endif
+                gdl = gunDrawHudInteger(gdl, reserveammo, 203 + ((textwidth + 1) / 2), 1, 177 + HUD_FIXED_Y_PAD, 2, 0);
             }
 
             gdl = textEndDraw(gdl);
@@ -487,9 +447,7 @@ void gunDrawSight(Gfx **gdl) {
         if (optionsGetScreenRatio() == SCREEN_RATIO_16_9) {
             halfedxy[0] = halfedxy[0] * 0.75f;
         }
-#ifdef VERSION_EU
-        halfedxy[1] = halfedxy[1] * g_GunSightAspectRatio;
-#endif
+        halfedxy[1] = halfedxy[1] * HUD_SIGHT_ASPECT;
         texRectDrawImage(&dl, xypos, halfedxy, 0x20, 0x20, 0, 0, 1, 0xFF, 0xFF, 0xFF, 0x6E, (g_ImageCrosshair->level > 0), 0);
         *gdl = dl;
     }

@@ -36,15 +36,9 @@
 #define BOTTOM_FONT1(_index) s_BottomFonts1[_index]
 
 // How far above the bottom of the view the bottom message sits
-#if defined(VERSION_US)
-    #define BOTTOM_OFFSET_NO_AMMO 0x0C
-    #define BOTTOM_OFFSET_AMMO    0x28
-    #define BOTTOM_OFFSET_SPLIT   0x10
-#elif defined(VERSION_EU)
-    #define BOTTOM_OFFSET_NO_AMMO 0x16
-    #define BOTTOM_OFFSET_AMMO    0x32
-    #define BOTTOM_OFFSET_SPLIT   0x14
-#endif
+#define BOTTOM_OFFSET_NO_AMMO HUDMSG_BOTTOM_OFFSET_NO_AMMO
+#define BOTTOM_OFFSET_AMMO    HUDMSG_BOTTOM_OFFSET_AMMO
+#define BOTTOM_OFFSET_SPLIT   HUDMSG_BOTTOM_OFFSET_SPLIT
 
 // Bottom messages: a queue of 5 in solo (s_BottomFirst is the one showing, s_BottomCount
 // how many are queued); in multiplayer, one per player.
@@ -228,12 +222,10 @@ Gfx* hudmsgBottomRender(Gfx* gdl)
                 {
                     view_top = (viGetViewTop() + viGetViewHeight()) - BOTTOM_OFFSET_AMMO;
                 }
-#if !defined(VERSION_EU)
                 if (coopPlayerPerson(playerGetCurrentNum()) == 1)
                 {
-                    view_top -= 8;
+                    view_top -= HUDMSG_COOP_P1_LIFT;
                 }
-#endif
             }
             else
             {
@@ -438,11 +430,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     else
                     {
                         msg.x = viGetViewLeft() + 0x1e;
-#ifdef VERSION_EU
-                        msg.y = viGetViewTop() + 0x10;
-#else
-                        msg.y = viGetViewTop() + 0xd;
-#endif
+                        msg.y = viGetViewTop() + HUDMSG_TOP_OFFSET;
                     }
 
                     if (viewIsHalfWidth())
