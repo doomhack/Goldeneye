@@ -4222,16 +4222,43 @@ typedef enum PROJECTILES
 #define PROPRECORD_STAN_ROOM_LEN 8
 #define NUMBER_SHOTGUN_BULLETS   5
 
+/*
+ * The game clock runs at 60 ticks a second on both builds. PAL video runs at
+ * 50 Hz, so frameWaitForNext turns each 50 Hz retrace into 1.2 ticks (carrying
+ * the fraction to the next frame). VI_HZ is the video rate, for the few
+ * things that step once per retrace or once per drawn frame: audio, music
+ * fades and the title sequence.
+ */
+#define TICKS_PER_SECOND 60
+
 #ifdef VERSION_EU
-    #define NTSC 0
-    #define PAL 1
-    #define TICKS_PER_SECOND 50
-    #define FRAMES_PER_SECOND 25
+    #define VI_HZ 50
 #else
-    #define NTSC 1
-    #define PAL 0
-    #define TICKS_PER_SECOND 60
-    #define FRAMES_PER_SECOND 30
+    #define VI_HZ 60
+#endif
+
+/* One video frame in 60 Hz ticks: 1.2 on PAL, 1 on NTSC */
+#define VI_SCALE_60 (60.0f / VI_HZ)
+
+/*
+ * For code that steps once per drawn frame (the title sequence, the Nintendo
+ * logo) rather than by the game clock. A value tuned for 60 Hz video, scaled
+ * for this build's video rate; on NTSC they are the value itself.
+ *   VI_TICKS(n)      n 60 Hz frames as whole frames, rounded to nearest
+ *   VI_TICKS_DOWN(n) n 60 Hz frames as whole frames, rounded down
+ *   VI_PER_TICK(x)   a step of x per 60 Hz frame, as a step per frame
+ *   VI_DAMP(d)       a factor applied every 60 Hz frame, as a factor per frame
+ */
+#if VI_HZ == 60
+#define VI_TICKS(n60)      (n60)
+#define VI_TICKS_DOWN(n60) (n60)
+#define VI_PER_TICK(x60)   (x60)
+#define VI_DAMP(d60)       (d60)
+#else
+#define VI_TICKS(n60)      (((n60) * VI_HZ + 30) / 60)
+#define VI_TICKS_DOWN(n60) (((n60) * VI_HZ) / 60)
+#define VI_PER_TICK(x60)   ((x60) * VI_SCALE_60)
+#define VI_DAMP(d60)       __builtin_powf((d60), VI_SCALE_60)
 #endif
 
 /* One tick in 60 Hz ticks: 1.2 on PAL, 1 on NTSC. */

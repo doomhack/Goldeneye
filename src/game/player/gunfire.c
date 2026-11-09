@@ -2939,7 +2939,7 @@ void gunGetShotDir(coord3d* origin, coord3d* result, enum GUNHAND hand)
 
     randfactor = (RANDOMFRAC() - 0.5f) * RANDOMFRAC();
     crosspos.y =  g_CurrentPlayer->crosshair_angle.f[1] + randfactor * scaledspread * camGetScreenHeight()
-        / (PAL ? (f32)(SCREEN_HEIGHT_272) : (f32)(SCREEN_HEIGHT_240));
+        / (f32)SCREEN_HEIGHT;
 
     origin->x = 0.0f;
     origin->y = 0.0f;

@@ -170,9 +170,9 @@ Gfx *titleRenderFade(Gfx *gdl, u32 alpha)
 
 Gfx *titleRenderBondModel(Gfx *gdl, s32 count, const Mtxf *matrix)
 {
-    #define BOND_EYE_ANIM_START TICKS_DOWN(137)
-    #define BOND_EYE_ANIM_SPEEDUP TICKS_DOWN(212)
-    #define BOND_EYE_FIRE_SHOT TICKS_DOWN(230)
+    #define BOND_EYE_ANIM_START VI_TICKS_DOWN(137)
+    #define BOND_EYE_ANIM_SPEEDUP VI_TICKS_DOWN(212)
+    #define BOND_EYE_FIRE_SHOT VI_TICKS_DOWN(230)
     ModelRenderData renderData;
     JointListEntry *entry;
     bool playedShot;
@@ -279,7 +279,7 @@ Gfx *titleRenderBond(Gfx *gdl) {
     
     mtx4LoadLookAt(&matrix, gunbarrelPosition1[0], gunbarrelPosition1[1], gunbarrelPosition1[2], (gunbarrelPosition1[0] + gunbarrelPosition2[0]), (gunbarrelPosition1[1] + gunbarrelPosition2[1]), (gunbarrelPosition1[2] + gunbarrelPosition2[2]), gunbarrelPosition3[0], gunbarrelPosition3[1], gunbarrelPosition3[2]);
 
-#if TICKS_PER_SECOND != 60
+#if VI_HZ != 60
     return titleRenderBondModel(gdl, 1, &matrix);
 #else
     return titleRenderBondModel(gdl, 2, &matrix);
@@ -308,7 +308,7 @@ Gfx *titleRenderRareLogo(Gfx *gdl, s32 cameraZ, s32 brightness) {
     guLookAt(&g_TitleMtxRareLogo1[g_TitleMtxIndex], cameraPosition1[0], cameraPosition1[1], cameraPosition1[2], (cameraPosition1[0] + cameraPosition2[0]), (cameraPosition1[1] + cameraPosition2[1]), (cameraPosition1[2] + cameraPosition2[2]), cameraPosition3[0], cameraPosition3[1], cameraPosition3[2]);
     gSPMatrix(gdl++,  osVirtualToPhysical(&g_TitleMtxRareLogo1[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_MODELVIEW));
     guRotate(&g_TitleMtxRareLogo2[g_TitleMtxIndex], g_TitleRareLogoAngle, 0.0f, 1.0f, 0.0f);
-    g_TitleRareLogoAngle += PER_TICK(2.0f);
+    g_TitleRareLogoAngle += VI_PER_TICK(2.0f);
     gSPMatrix(gdl++, osVirtualToPhysical(&g_TitleMtxRareLogo2[g_TitleMtxIndex]), (G_MTX_NOPUSH | G_MTX_MUL | G_MTX_MODELVIEW));
     gSPSetLights1(gdl++, gunbarrelLights);
     // The logo is environment mapped and relied on Fast3D's default LookAt, which F3DEX3
@@ -354,10 +354,10 @@ void titleLoadRareLogo(u8 *address) {
 
 Gfx *titleRenderRareIntro(Gfx *gdl)
 {
-#define RAREWARE_LOGO_DEN TICKS_DOWN(70)
-#define RAREWARE_LOGO_SUB (TICKS_DOWN(160) * 255)
-#define RAREWARE_LOGO_EYE_COUNT1 TICKS_DOWN(260)
-#define RAREWARE_LOGO_EYE_COUNT2 TICKS_DOWN(290)
+#define RAREWARE_LOGO_DEN VI_TICKS_DOWN(70)
+#define RAREWARE_LOGO_SUB (VI_TICKS_DOWN(160) * 255)
+#define RAREWARE_LOGO_EYE_COUNT1 VI_TICKS_DOWN(260)
+#define RAREWARE_LOGO_EYE_COUNT2 VI_TICKS_DOWN(290)
 
     g_TitleMtxIndex = (1 - g_TitleMtxIndex);
     gSPSegment(gdl++, SPSEGMENT_GETITLE, osVirtualToPhysical(g_TitleRareLogoData));
@@ -493,7 +493,7 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     modelSetAnimTranslationScale(g_TitleBondModel, 1.0f);
     modelSetRootPosition(g_TitleBondModel, &rootpos);
     modelSetRootRotY(g_TitleBondModel, 0.0f);
-#define TITLE_BOND_ANIM_SPEED PER_TICK(0.5f)
+#define TITLE_BOND_ANIM_SPEED VI_PER_TICK(0.5f)
     modelSetAnimPlaySpeed(g_TitleBondModel, TITLE_BOND_ANIM_SPEED, 0.0f);
 #undef TITLE_BOND_ANIM_SPEED
     
@@ -536,14 +536,14 @@ void titleFreeBondModels(void)
     }
 }
 
-#define XINC PER_TICK(6.0f)
+#define XINC VI_PER_TICK(6.0f)
 #define XDEC (2 * XINC)
 #define XDEC2 6
-#define INCVAL ((s32)PER_TICK(0x38E))
-#define INTRO_EYE_COUNTER_CASE_4 TICKS(108)
-#define INTRO_EYE_COUNTER_CASE_6 TICKS(0x1e)
+#define INCVAL ((s32)VI_PER_TICK(0x38E))
+#define INTRO_EYE_COUNTER_CASE_4 VI_TICKS(108)
+#define INTRO_EYE_COUNTER_CASE_6 VI_TICKS(0x1e)
 /* Hand-tuned on PAL, not a straight 50 Hz conversion */
-#if TICKS_PER_SECOND == 60
+#if VI_HZ == 60
     #define XDEC3 5.8183274f
     #define INTRO_EYE_COUNTER_CASE_5_ADD 8
 #else
@@ -563,7 +563,7 @@ Gfx *titleRenderGunbarrel (Gfx *gdl) {
             g_TitleBarrelAngle = 200;
             titleTransitionX = (g_TitleX - XDEC);
         } else {
-            g_TitleBarrelAngle -= (s32)PER_TICK(6);
+            g_TitleBarrelAngle -= (s32)VI_PER_TICK(6);
         }
         if (g_TitleX > 1390.0f) {
             g_TitleStage++;

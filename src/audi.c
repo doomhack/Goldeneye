@@ -18,7 +18,7 @@
 // 0x5622 = 22050
 #define OUTPUT_RATE                    0x5622
 
-#define MAYBE_FRAME_RATE TICKS_PER_SECOND
+#define MAYBE_FRAME_RATE VI_HZ
 
 
 #define FRAMES_PER_FIELD_AS_POW2            1

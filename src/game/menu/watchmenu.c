@@ -1728,7 +1728,7 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
 
     cancelX = 0x88;
 
-    titleY = confirmY = cancelY = (PAL ? 0x4E : 0x4C);
+    titleY = confirmY = cancelY = WATCH_ABORT_ROW_Y;
 
     if (g_WatchMenuSelected != 0)
     {

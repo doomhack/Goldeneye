@@ -31,6 +31,7 @@
 #define WATCH_ITEM_TITLE1_Y 0xBC
 #define WATCH_ITEM_TITLE2_Y 0xC6
 #define WATCH_INV_BASE_Y()  0xAA
+#define WATCH_ABORT_ROW_Y   0x4E
 #else
 #define XOFFSET_1 64
 #define YOFFSET_1 80
@@ -58,6 +59,7 @@
 #define WATCH_ITEM_TITLE1_Y 0xA0
 #define WATCH_ITEM_TITLE2_Y 0xAA
 #define WATCH_INV_BASE_Y()  0x8C
+#define WATCH_ABORT_ROW_Y   0x4C
 #endif
 
 /**

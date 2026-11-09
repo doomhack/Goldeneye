@@ -1111,10 +1111,10 @@ void gunUpdateSway(f32 breathing, f32 maxspeed, f32 vertaSpeed, f32 thetaSpeed)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-        g_CurrentPlayer->gunAmpSum = (g_CurrentPlayer->gunAmpSum * (PAL ? 0.9403f : 0.95f)) + g_CurrentPlayer->gunposamplitude;
+        g_CurrentPlayer->gunAmpSum = (g_CurrentPlayer->gunAmpSum * 0.95f) + g_CurrentPlayer->gunposamplitude;
     }
 
-    g_CurrentPlayer->gunposamplitude = g_CurrentPlayer->gunAmpSum * (PAL ? 0.059700012f : 0.050000012f);
+    g_CurrentPlayer->gunposamplitude = g_CurrentPlayer->gunAmpSum * 0.050000012f;
 
     minbreathing = 0.016666668f * absVerta;
     if (breathing < minbreathing)
@@ -1124,10 +1124,10 @@ void gunUpdateSway(f32 breathing, f32 maxspeed, f32 vertaSpeed, f32 thetaSpeed)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-        g_CurrentPlayer->cycleSum = (g_CurrentPlayer->cycleSum * (PAL ? 0.9403f : 0.95f)) + breathing;
+        g_CurrentPlayer->cycleSum = (g_CurrentPlayer->cycleSum * 0.95f) + breathing;
     }
 
-    breathing = g_CurrentPlayer->cycleSum * (PAL ? 0.059700012f : 0.050000012f);
+    breathing = g_CurrentPlayer->cycleSum * 0.050000012f;
 
     breathStep = breathing * g_GlobalTimerDelta;
     dampt[0] = g_CurrentPlayer->hands[0].dampt + breathStep;

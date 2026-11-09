@@ -1421,7 +1421,7 @@ Gfx *frontNintendoRender(Gfx *DL)
     // doesn't have, so set the same one
     gSPLookAt(DL++, &g_Fast3dDefaultLookAt);
 
-    ambiantlight = 0xFF - (((s32)TICKS_TO_60(g_FrontTimer) * 0xFF) - 94350) / 100;
+    ambiantlight = 0xFF - ((g_FrontTimer * 0xFF) - 94350) / 100;
     if (ambiantlight >= 0x100)
     {
         ambiantlight = 0xff;
@@ -1438,7 +1438,7 @@ Gfx *frontNintendoRender(Gfx *DL)
     g_FrontNintendoLight.a.l.col[1] = ambiantlight;
     g_FrontNintendoLight.a.l.col[0] = ambiantlight;
 
-    g_NintendoLogoSpin += PER_TICK(0.017453292f);
+    g_NintendoLogoSpin += VI_PER_TICK(0.017453292f); // once per drawn frame
 
     {
         Mtxf tmpMtx;
@@ -1446,7 +1446,7 @@ Gfx *frontNintendoRender(Gfx *DL)
         mtx4LoadYRotation(g_NintendoLogoSpin, &tmpMtx);
         mtx4ScaleColumns012(g_NintendoLogoScale, &tmpMtx);
 
-        g_NintendoLogoScale *= DAMP(1.07977f);
+        g_NintendoLogoScale *= VI_DAMP(1.07977f);
         if (g_NintendoLogoScale > 1.1f)
         {
             g_NintendoLogoScale = 1.1f;
