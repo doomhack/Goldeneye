@@ -1,7 +1,7 @@
 #ifndef _BG_PETE_ALL_P_H_
 #define _BG_PETE_ALL_P_H_
 
-#include "../bg_all_p.h"
+#include "bg_all_p.h"
 
 extern u32 point_table_binary_1[];
 extern u32 point_table_binary_2[];
@@ -99,7 +99,6 @@ extern u32 sec_mapping_binary_17[];
 extern u32 sec_mapping_binary_18[];
 extern u32 sec_mapping_binary_19[];
 extern u32 sec_mapping_binary_55[];
-extern u32 sec_mapping_binary_56[];
 
 extern struct portal_4_point portal_0;
 extern struct portal_4_point portal_1;
