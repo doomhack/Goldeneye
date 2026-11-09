@@ -39,15 +39,9 @@
 #include "game/player/player.h"
 
 /* How fast vehicles turn, in radians per frame (and per frame per frame) */
-#if defined(VERSION_EU)
-#define VEHICLE_TURN_ACCEL     0.0001308997f
-#define VEHICLE_TURN_DECEL     0.0002617994f
-#define VEHICLE_TURN_MAX_SPEED 0.007853982f
-#else
-#define VEHICLE_TURN_ACCEL     0.000109083085f
-#define VEHICLE_TURN_DECEL     0.00021816617f
-#define VEHICLE_TURN_MAX_SPEED 0.006544985f    // 22.5 degrees a second
-#endif
+#define VEHICLE_TURN_ACCEL PER_TICK(0.000109083085f)
+#define VEHICLE_TURN_DECEL PER_TICK(0.00021816617f)
+#define VEHICLE_TURN_MAX_SPEED PER_TICK(0.006544985f) // 22.5 degrees a second
 
 /* The vehicle model's switches: the four wheels (front left and right, back left and
    right), the wheel size and the body's collision box */

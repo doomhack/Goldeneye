@@ -109,11 +109,7 @@ void chrStandChooseAnimation(const ChrRecord *self, f32 duration)
 }
 
 
-#ifdef REFRESH_PAL
-#define RATE 1.2f
-#else
-#define RATE 1.0f
-#endif
+#define RATE TICK_SCALE_60
 
 /**
  * At the end of a character's kneeling animation smoothly merge into their standing animation.

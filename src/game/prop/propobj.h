@@ -6,20 +6,9 @@
 #include <bondtypes.h>
 #include <snd.h>   
 
-#ifdef VERSION_EU
-
-#define CHROBJ_TIMETOREGEN   50
-#define CHROBJ_TIMETOREGEN_F 50.0f
-
-#define PLASTIQUE_EXPLOSION_DELAY_TICKS 100
-
-#else
-
-#define CHROBJ_TIMETOREGEN   60
-#define CHROBJ_TIMETOREGEN_F 60.0f
-#define PLASTIQUE_EXPLOSION_DELAY_TICKS 120
-
-#endif
+#define CHROBJ_TIMETOREGEN TICKS_PER_SECOND
+#define CHROBJ_TIMETOREGEN_F ((f32)TICKS_PER_SECOND)
+#define PLASTIQUE_EXPLOSION_DELAY_TICKS TICKS(120)
 
 extern f32 g_SoloAmmoMultiplier;
 

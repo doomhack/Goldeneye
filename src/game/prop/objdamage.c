@@ -38,11 +38,7 @@
 // An explosion of small bits, for an already destroyed object breaking further
 #define EXPLOSIONTYPE_BITS 0x10
 
-#if defined(VERSION_EU)
-#define RESPAWN_TICKS 1000
-#else
-#define RESPAWN_TICKS 1200 // 20 seconds
-#endif
+#define RESPAWN_TICKS TICKS(1200) // 20 seconds
 
 /**
  * How far gone an object is: 0 to 3 while healthy (in quarters of its health, rounded

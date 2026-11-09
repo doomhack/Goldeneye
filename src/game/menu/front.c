@@ -8475,11 +8475,7 @@ void frontCastTick(void)
 
     g_FrontTimer += g_ClockTimer;
 
-#if defined(REFRESH_PAL)
-#define INTERFACE_MENU18_TIMER 151
-#else
-#define INTERFACE_MENU18_TIMER 181
-#endif
+#define INTERFACE_MENU18_TIMER TICKS(181)
 
     if (g_FrontTimer >= INTERFACE_MENU18_TIMER)
     {

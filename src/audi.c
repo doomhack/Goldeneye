@@ -18,13 +18,7 @@
 // 0x5622 = 22050
 #define OUTPUT_RATE                    0x5622
 
-#ifdef REFRESH_PAL
-/* PAL */
-#define MAYBE_FRAME_RATE                   50
-#else
-/* NTSC */
-#define MAYBE_FRAME_RATE                   60
-#endif
+#define MAYBE_FRAME_RATE TICKS_PER_SECOND
 
 
 #define FRAMES_PER_FIELD_AS_POW2            1

@@ -66,11 +66,7 @@ static const struct HealthDisplayDuration g_HealthDisplayDurations[8] = {
  */
 static s32 s_HealthRequestTicks[4];
 
-#if defined(VERSION_EU)
-#define HEALTH_REQUEST_TICKS 100 // 2 s at 50 Hz
-#else
-#define HEALTH_REQUEST_TICKS 120 // 2 s at 60 Hz
-#endif
+#define HEALTH_REQUEST_TICKS TICKS(120) // 2 s at 60 Hz
 
 
 /**

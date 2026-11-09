@@ -510,11 +510,7 @@ void titleInitGunbarrel(u8 *gfxBuffer, s32 bufferSize)
     modelSetAnimTranslationScale(g_TitleBondModel, 1.0f);
     modelSetRootPosition(g_TitleBondModel, &rootpos);
     modelSetRootRotY(g_TitleBondModel, 0.0f);
-#if defined(VERSION_EU)
-    #define TITLE_BOND_ANIM_SPEED 0.6f
-#else
-    #define TITLE_BOND_ANIM_SPEED 0.5f
-#endif
+#define TITLE_BOND_ANIM_SPEED PER_TICK(0.5f)
     modelSetAnimPlaySpeed(g_TitleBondModel, TITLE_BOND_ANIM_SPEED, 0.0f);
 #undef TITLE_BOND_ANIM_SPEED
     

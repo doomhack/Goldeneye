@@ -4237,6 +4237,19 @@ typedef enum PROJECTILES
 /* One tick in 60 Hz ticks: 1.2 on PAL, 1 on NTSC. */
 #define TICK_SCALE_60 (60.0f / TICKS_PER_SECOND)
 
+/*
+ * Timing is tuned at 60 Hz. These convert a 60 Hz value to this build's tick
+ * rate, so one number serves both NTSC and PAL:
+ *   TICKS(n)    n 60 Hz ticks as whole ticks (rounded to nearest)
+ *   TICKSF(n)   n 60 Hz ticks as a float
+ *   PER_TICK(x) a step of x per 60 Hz tick, as a step per tick
+ *   DAMP(d)     a factor applied every 60 Hz tick, as a factor per tick
+ */
+#define TICKS(n60)    (((n60) * TICKS_PER_SECOND + 30) / 60)
+#define TICKSF(n60)   ((n60) * (f32)TICKS_PER_SECOND / 60.0f)
+#define PER_TICK(x60) ((x60) * TICK_SCALE_60)
+#define DAMP(d60)     __builtin_powf((d60), TICK_SCALE_60)
+
 #pragma endregion
 
 #define S32_MAX  2147483647

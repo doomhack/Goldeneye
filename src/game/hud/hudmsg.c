@@ -24,21 +24,12 @@
 #include "game/level/gamemode.h"
 #include "game/player/coop.h"
 
-#ifdef VERSION_EU
-    #define HUDMSG_BOTTOM_TIME_SKIP  0x1a
-    #define HUDMSG_BOTTOM_TIME_SHORT 0x19
-    #define HUDMSG_BOTTOM_TIME       0x64
-    #define HUDMSG_TOP_TIME_SKIP     0x33
-    #define HUDMSG_TOP_TIME_SHORT    0x32
-    #define HUDMSG_TOP_TIME          0xc8
-#else
-    #define HUDMSG_BOTTOM_TIME_SKIP  0x1f
-    #define HUDMSG_BOTTOM_TIME_SHORT 0x1e
-    #define HUDMSG_BOTTOM_TIME       0x78
-    #define HUDMSG_TOP_TIME_SKIP     0x3d
-    #define HUDMSG_TOP_TIME_SHORT    0x3c
-    #define HUDMSG_TOP_TIME          0xf0
-#endif
+#define HUDMSG_BOTTOM_TIME_SKIP TICKS(0x1f)
+#define HUDMSG_BOTTOM_TIME_SHORT TICKS(0x1e)
+#define HUDMSG_BOTTOM_TIME TICKS(0x78)
+#define HUDMSG_TOP_TIME_SKIP TICKS(0x3d)
+#define HUDMSG_TOP_TIME_SHORT TICKS(0x3c)
+#define HUDMSG_TOP_TIME TICKS(0xf0)
 
 // The font each bottom message is drawn in (one per message, as PAL did).
 #define BOTTOM_FONT2(_index) s_BottomFonts2[_index]
