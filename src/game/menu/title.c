@@ -279,7 +279,7 @@ Gfx *titleRenderBond(Gfx *gdl) {
     
     mtx4LoadLookAt(&matrix, gunbarrelPosition1[0], gunbarrelPosition1[1], gunbarrelPosition1[2], (gunbarrelPosition1[0] + gunbarrelPosition2[0]), (gunbarrelPosition1[1] + gunbarrelPosition2[1]), (gunbarrelPosition1[2] + gunbarrelPosition2[2]), gunbarrelPosition3[0], gunbarrelPosition3[1], gunbarrelPosition3[2]);
 
-#if defined REFRESH_PAL
+#if TICKS_PER_SECOND != 60
     return titleRenderBondModel(gdl, 1, &matrix);
 #else
     return titleRenderBondModel(gdl, 2, &matrix);
@@ -543,7 +543,7 @@ void titleFreeBondModels(void)
 #define INTRO_EYE_COUNTER_CASE_4 TICKS(108)
 #define INTRO_EYE_COUNTER_CASE_6 TICKS(0x1e)
 /* Hand-tuned on PAL, not a straight 50 Hz conversion */
-#ifndef REFRESH_PAL
+#if TICKS_PER_SECOND == 60
     #define XDEC3 5.8183274f
     #define INTRO_EYE_COUNTER_CASE_5_ADD 8
 #else

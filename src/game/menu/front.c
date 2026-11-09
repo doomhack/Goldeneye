@@ -379,13 +379,20 @@ const struct mission_folder_setup g_FrontMissions[] = {
 const f32 g_FrontFolderCamOffsetX = 0;
 const f32 g_FrontFolderCamOffsetY = 190.0;
 const f32 g_FrontFolderCamOffsetZ = -3300.0;
+/** Clears the menu screen to the fill colour (MENU_FILL_PASSES times) */
+static Gfx *frontFillScreen(Gfx *DL)
+{
+    for (s32 i = 0; i < MENU_FILL_PASSES; i++)
+    {
+        DL = viFillScreen(DL);
+    }
+
+    return DL;
+}
+
 const s32 g_FrontMissionCursorX[] = {73, 142, 212, 282, 352};
 
-#if defined(VERSION_EU)
-const s32 g_FrontMissionCursorY[] = {62, 130, 201, 270};
-#else
 const s32 g_FrontMissionCursorY[] = {62, 131, 201, 270};
-#endif
 
 const struct MP_game_length_settings g_MpGameLengths[] = {
     {getStringID(LTITLE, TITLE_STR_45_UNLIMITED), 0, 0, 0},                    /* unlimited */
@@ -2646,11 +2653,7 @@ Gfx* frontModeSelectRender(Gfx* DL)
     s32 text_color;
 
     DL = viSetFillColor(DL,0,0,0);
-    DL = viFillScreen(DL);
-    #ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -2911,11 +2914,7 @@ Gfx *frontCoopSetupRender(Gfx *DL)
     s32 row;
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-    #if defined(BUGFIX_R2)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -3516,11 +3515,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
     unlockedDifficulty = frontGetHighestDifficulty(g_FrontMissions[g_FrontMission].mission_num);
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-#ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
 
 
@@ -3805,11 +3800,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     s32 barwidth;
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-#if defined(VERSION_EU)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
 
     DL = textSetupDraw(DL);
@@ -4716,11 +4707,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
 
 
   DL = viSetFillColor(DL,0,0,0);
-  DL = viFillScreen(DL);
-  #if defined(BUGFIX_R2)
-  DL = viFillScreen(DL);
-  DL = viFillScreen(DL);
-  #endif
+  DL = frontFillScreen(DL);
   DL = frontSetupMenuBackground(DL);
   DL = textSetupDraw(DL);
   text = langGet(getStringID(LTITLE, TITLE_STR_76_MPOPTIONS));
@@ -5110,11 +5097,7 @@ Gfx *frontMpWeaponSelectRender(Gfx *DL)
     s32 set;
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-    #if defined(BUGFIX_R2)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -5270,11 +5253,7 @@ Gfx *frontMpCustomWeaponsRender(Gfx *DL)
     s32 row;
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-    #if defined(BUGFIX_R2)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -6623,11 +6602,7 @@ Gfx * frontMpScenarioRender(Gfx *DL)
 
 
     DL = viSetFillColor(DL,0,0,0);
-    DL = viFillScreen(DL);
-#ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -7157,11 +7132,7 @@ Gfx *frontBriefingRender(Gfx *DL)
     char buffer[3000];
 
     DL = viSetFillColor(DL,0,0,0);
-    DL = viFillScreen(DL);
-#ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
 
     DL = textSetupDraw(DL);
@@ -7379,11 +7350,7 @@ Gfx * frontDebriefRender(Gfx *DL)
 
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-    #if defined(BUGFIX_R2)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
     DL = frontDrawMissionTitle(DL, stagename);
@@ -8073,12 +8040,7 @@ Gfx * frontCheatRender(Gfx *DL)
     const char *text;
 
     DL = viSetFillColor(DL,0,0,0);
-    DL = viFillScreen(DL);
-#ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -8825,14 +8787,6 @@ void frontTick(void)
         }
     }
 
-#if defined(VERSION_EU)
-#define MENU_INIT_ASPECT_440 ASPECT_RATIO_EU_400_330
-#define MENU_INIT_ASPECT_320 ASPECT_RATIO_EU_320_272
-#else
-#define MENU_INIT_ASPECT_440 ASPECT_RATIO
-#define MENU_INIT_ASPECT_320 ASPECT_RATIO
-#endif
-
     if (g_FrontScreenSize != SCREEN_SIZE_320x240)
     {
         if (viGetFrameBuf2() == (cfb_16[1]))
@@ -8840,7 +8794,7 @@ void frontTick(void)
             viSetFrameBuf2(g_FrontFrameBuffer);
         }
 
-        viSetAspect(MENU_INIT_ASPECT_440);
+        viSetAspect(MENU_ASPECT_440);
         viSetXY(440, 330);
         viSetBuf(440, 330);
         playerSetScreenSize(440, 330);
@@ -8850,7 +8804,7 @@ void frontTick(void)
     }
     else
     {
-        viSetAspect(MENU_INIT_ASPECT_320);
+        viSetAspect(MENU_ASPECT_320);
         viSetXY(320, SCREEN_HEIGHT);
         viSetBuf(320, SCREEN_HEIGHT);
         playerSetScreenSize(320, SCREEN_HEIGHT);
@@ -8859,8 +8813,6 @@ void frontTick(void)
         viSetViewPosition(0, 0);
     }
 
-#undef MENU_INIT_ASPECT_440
-#undef MENU_INIT_ASPECT_320
 
     if (
         ((g_FrontNextMenu > MENU_INVALID) || (g_FrontEnterMenu > MENU_INVALID))
@@ -9122,11 +9074,7 @@ void frontInit(void)
 
     g_FrontModelBuffer = (u8 *)mempAlloc(0x78000, MEMPOOL_STAGE); // allocation in bytes so cast to u8 from gfx
 
-#if defined(VERSION_EU)
-    g_FrontFrameBuffer = mempAlloc(0x55040, MEMPOOL_STAGE);
-#else
-    g_FrontFrameBuffer = mempAlloc(0x4b040, MEMPOOL_STAGE);
-#endif
+    g_FrontFrameBuffer = mempAlloc(SCREEN_WIDTH * SCREEN_HEIGHT * 4 + 0x40, MEMPOOL_STAGE);
 
     g_FrontFrameBuffer = (u8 *)ALIGN64_V1((u32)g_FrontFrameBuffer);
 

@@ -2901,11 +2901,7 @@ void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle) {
 
 
 // Screen width over height, for spreading shots across the crosshair
-#if VERSION_EU
-static const f32 g_GunScreenAspectRatio = 20.0f / 17.0f;
-#else
-static const f32 g_GunScreenAspectRatio = 4.0f / 3.0f;
-#endif
+static const f32 g_GunScreenAspectRatio = ASPECT_RATIO;
 
 
 void gunGetAimRay(coord3d *zeropos, coord3d *vec)

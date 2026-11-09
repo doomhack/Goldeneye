@@ -123,6 +123,12 @@
 #define RADAR_RECT1_OFFSET                 0x13
 #define RADAR_RECT1_D                      0x355
 #define RADAR_VERT_SCALE                   1.2f
+/* Front-end menus */
+#define MENU_ASPECT_440                    ASPECT_RATIO_EU_400_330
+#define MENU_ASPECT_320                    ASPECT_RATIO_EU_320_272
+#define MENU_FILL_PASSES                   3
+#define SCREEN_PIXEL_ASPECT                1.19047617912f /* 3D view in the game frame buffer */
+#define MPMENU_YOFF                        8    /* MP pause/end menu rows sit lower */    /* PAL menus clear the screen three times */
 #else
 /* NTSC */
 #define	SCREEN_HEIGHT                      SCREEN_HEIGHT_240
@@ -152,6 +158,12 @@
 #define RADAR_RECT1_OFFSET                 0x10
 #define RADAR_RECT1_D                      0x400
 #define RADAR_VERT_SCALE                   1.0f
+/* Front-end menus */
+#define MENU_ASPECT_440                    ASPECT_RATIO
+#define MENU_ASPECT_320                    ASPECT_RATIO
+#define MENU_FILL_PASSES                   1
+#define SCREEN_PIXEL_ASPECT                1.0f
+#define MPMENU_YOFF                        0
 #endif
 
 

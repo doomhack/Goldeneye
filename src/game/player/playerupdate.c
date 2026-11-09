@@ -1831,9 +1831,7 @@ void playerMoveFrozen(u16 buttons, u16 oldbuttons)
  */
 void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 {
-#ifdef VERSION_EU
     f32 faspect;
-#endif
 
     playerSetFovY(FOV_Y_F);
 
@@ -1876,7 +1874,6 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
         viSetFrameBuf2((u8 *) resolution);
     }
 
-#ifdef VERSION_EU
     if (optionsGetScreenRatio() == SCREEN_RATIO_16_9)
     {
         faspect = ((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT;
@@ -1888,25 +1885,11 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 
     if (cameraBufferToggle == 0)
     {
-        faspect *= EU_CAMERA_8003642C_ASPECT;
+        faspect *= SCREEN_PIXEL_ASPECT;
     }
 
     playerSetAspect(faspect);
     viSetAspect(faspect);
-
-#else
-
-    if (optionsGetScreenRatio() == SCREEN_RATIO_16_9)
-    {
-        playerSetAspect(((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT);
-        viSetAspect(((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT);
-    }
-    else
-    {
-        playerSetAspect((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight());
-        viSetAspect((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight());
-    }
-#endif
 
     playerSetScreenSize( playerGetViewportWidth(), playerGetViewportHeight());
     playerSetViewportPos( playerGetViewportLeft(), playerGetViewportTop());

@@ -22,8 +22,7 @@
             "TRI4_Ext",
             "VERSION_US",
             "TARGET_N64",
-            "OUTCODE=u",
-            "BUGFIX_R0"
+            "OUTCODE=u"
             /* MIPS target defs below */,
             "_MIPS_FPSET=16",
             "_MIPS_ISA=2",
@@ -77,8 +76,7 @@
             "TRI4_Ext",
             "VERSION_US",
             "TARGET_N64",
-            "OUTCODE=u",
-            "BUGFIX_R0"
+            "OUTCODE=u"
             /* MIPS target defs below */,
             "_MIPS_FPSET=16",
             "_MIPS_ISA=2",

@@ -14,18 +14,21 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 
 ## US and PAL
 
-The same sources build the US (`make VERSION=US`) and the PAL (`make VERSION=EU`) ROM. Code
-that differs between them sits behind these flags, which the Makefile sets:
+The same sources build the US (`make VERSION=US`) and the PAL (`make VERSION=EU`) ROM. The
+Makefile sets `VERSION_US` or `VERSION_EU`, and that is the only region flag. Gameplay,
+text, setups and level data are the same in both; the builds differ only in the video
+mode and the tick rate:
 
-| Flag | Build | Meaning |
-| --- | --- | --- |
-| `VERSION_US`, `VERSION_EU` | one each | Which build this is |
-| `REFRESH_PAL` | PAL | 50 Hz timing |
-| `BUGFIX_R0` | US | Code and data only the US release has |
-| `BUGFIX_R1`, `BUGFIX_R2` | PAL | Fixes Rare made for the PAL release that the US build doesn't take |
-| `BACKPORT_R1` | US | PAL fixes taken into the US build, where the US code differs from PAL's |
+- `src/fr.h`: screen height, aspect ratios, HUD and menu offsets for the 272-line PAL
+  screen.
+- `src/bondconstants.h`: `TICKS_PER_SECOND` (60 or 50) and the timing macros (`TICKS`,
+  `TICKSF`, `PER_TICK`, `DAMP`, `EASE`...). Write times and rates in 60 Hz units and wrap
+  them; on US the macros are the plain value.
+- Text: both ROMs carry the US (`E`) and British (`P`) banks, built from the same
+  source; `language.c` picks one.
 
-A PAL fix that both builds take is plain code with no flag around it.
+A few PAL-only video paths (`fr.c`, `camview.c`) and hand-tuned title timings remain
+under `#if`.
 
 ## Assembly
 
