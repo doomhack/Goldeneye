@@ -428,7 +428,8 @@ const struct mp_stage_playercount g_MpStagePlayerCounts[] = {
     {getStringID(LTITLE, TITLE_STR_60_2V1), 3, 3}  //"Team: 2 vs 1"
 };
 
-struct mp_stage_setup g_MpStages[] = {
+/* Unused grid slots are left zeroed (min_player 0 = not available). */
+struct mp_stage_setup g_MpStages[MP_STAGE_GRID_SLOTS] = {
     /* unlocked by default */
     {getStringID(LTITLE, TITLE_STR_154_RANDOM), getStringID(LTITLE, TITLE_STR_155_RANDOM2), IMG_MP_RANDOM, LEVELID_NONE, -1, 1, 4},
     {getStringID(LTITLE, TITLE_STR_156_TEMPLE), getStringID(LTITLE, TITLE_STR_157_TEMPLE2), IMG_MP_TEMPLE, LEVELID_TEMPLE, -1, 1, 4},
@@ -442,11 +443,11 @@ struct mp_stage_setup g_MpStages[] = {
     {getStringID(LTITLE, TITLE_STR_166_SEVERNAYABUNKER), getStringID(LTITLE, TITLE_STR_167_BUNKER), IMG_MP_BUNKER2, LEVELID_BUNKER2, SP_LEVEL_BUNKER2, 1, 3},
     {getStringID(LTITLE, TITLE_STR_168_MILITARYARCHIVES), getStringID(LTITLE, TITLE_STR_169_ARCHIVES), IMG_MP_ARCHIVES, LEVELID_ARCHIVES, SP_LEVEL_ARCHIVES, 1, 3},
     {getStringID(LTITLE, TITLE_STR_170_WATERCAVERNS), getStringID(LTITLE, TITLE_STR_171_CAVERNS), IMG_MP_CAVERNS, LEVELID_CAVERNS, SP_LEVEL_CAVERNS, 1, 3},
-    {getStringID(LTITLE, TITLE_STR_172_EGYPTIANTEMPLEMP), getStringID(LTITLE, TITLE_STR_173_EGYPTIANMP), IMG_MP_EGYPT, LEVELID_EGYPT, SP_LEVEL_EGYPT, 1, 2}
+    {getStringID(LTITLE, TITLE_STR_172_EGYPTIANTEMPLEMP), getStringID(LTITLE, TITLE_STR_173_EGYPTIANMP), IMG_MP_EGYPT, LEVELID_EGYPT, SP_LEVEL_EGYPT, 1, 2},
+    {getStringID(LTITLE, TITLE_STR_178_STAT), getStringID(LTITLE, TITLE_STR_179_STAT2), IMG_MP_STATUE, LEVELID_STATUE, SP_LEVEL_STATUE, 1, 2},
+    {getStringID(LTITLE, TITLE_STR_180_CRAD), getStringID(LTITLE, TITLE_STR_181_CRADLE2), IMG_MP_CRADLE, LEVELID_CRADLE, SP_LEVEL_CRADLE, 1, 2},
   //{getStringID(LTITLE, TITLE_STR_174_CITADEL), getStringID(LTITLE, TITLE_STR_175_CITADEL2), IMG_MP_RANDOM, LEVELID_CITADEL, -1, 1, 4}, //Citadel (old format setup)
   //{getStringID(LTITLE, TITLE_STR_176_DEST), getStringID(LTITLE, TITLE_STR_177_DEST2), IMG_MP_FRIGATE, LEVELID_FRIGATE, SP_LEVEL_FRIGATE, 1, 4}, //dest (has xbla setup)
-  //{getStringID(LTITLE, TITLE_STR_178_STAT), getStringID(LTITLE, TITLE_STR_179_STAT2), IMG_MP_STATUE, LEVELID_STATUE, SP_LEVEL_STATUE, 1, 2}, //stat (works)
-  //{getStringID(LTITLE, TITLE_STR_180_CRAD), getStringID(LTITLE, TITLE_STR_181_CRADLE2), IMG_MP_CRADLE, LEVELID_CRADLE, SP_LEVEL_CRADLE, 1, 2}, //crad (works)
   //{getStringID(LTITLE, TITLE_STR_182_AZT), getStringID(LTITLE, TITLE_STR_183_AZT2), IMG_MP_AZTEC, LEVELID_AZTEC, SP_LEVEL_AZTEC, 1, 4}, //azt (needs setup)
   //{getStringID(LTITLE, TITLE_STR_123_RUN), getStringID(LTITLE, TITLE_STR_123_RUN), IMG_MP_RUNWAY, LEVELID_RUNWAY, SP_LEVEL_RUN, 1, 4}, //runway (xbla setup)
   //{getStringID(LTITLE, TITLE_STR_121_DAM), getStringID(LTITLE, TITLE_STR_121_DAM), IMG_MP_DAM, LEVELID_DAM, SP_LEVEL_DAM, 1, 4}, //dam (xbla setup)
@@ -6373,14 +6374,20 @@ void frontMpStageTick(void)
         }
         else
         {
+            /* Rows are 70 apart, the first one centred on y 64 (as on the solo mission select). */
             if ((s32)g_FrontCursorY >= 240)
             {
-                row = 2;
+                row = 3;
             }
             else if ((s32)g_FrontCursorY >= 170)
             {
-              row = 1;
-            } else
+                row = 2;
+            }
+            else if ((s32)g_FrontCursorY >= 100)
+            {
+                row = 1;
+            }
+            else
             {
                 row = 0;
             }
@@ -6402,7 +6409,7 @@ void frontMpStageTick(void)
                 column = 0;
             }
 
-            g_MpStageCursor = (row * 4) + column;
+            g_MpStageCursor = (row * MP_STAGE_GRID_COLUMNS) + column;
             while (frontIsMpStageAvailable(g_MpStageCursor) == 0)
             {
                 g_MpStageCursor = g_MpStageCursor - 1;
@@ -6473,9 +6480,11 @@ Gfx * frontMpStageRender(Gfx *DL)
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
-    for (i_1 = 0; i_1 != 3; i_1++)
+    /* MP_STAGE_GRID_ROWS film strips, 70 apart. The original three started at y 108;
+     * the grid now starts one strip higher so four fit, lining up with the solo mission select. */
+    for (i_1 = 0; i_1 != MP_STAGE_GRID_ROWS; i_1++)
     {
-        DL = textRenderRect(DL, 0x25, 0x6c + (i_1 * 0x46), 0x185, 0xa0 + (i_1 * 0x46), 0x101010FF);
+        DL = textRenderRect(DL, 0x25, 38 + (i_1 * 0x46), 0x185, 90 + (i_1 * 0x46), 0x101010FF);
     }
 
     DL = textEndDraw(DL);
@@ -6488,9 +6497,9 @@ Gfx * frontMpStageRender(Gfx *DL)
     bgSize.f[0] = 176.0f;
     bgSize.f[1] = 4.0f;
     bgPos.f[0] = bgSize.f[0] + 37.0f;
-    bgPos.f[1] = bgSize.f[1] + 100.0f;
+    bgPos.f[1] = bgSize.f[1] + 30.0f;
 
-    for (i_2 = 0; i_2 < 3; i_2++)
+    for (i_2 = 0; i_2 < MP_STAGE_GRID_ROWS; i_2++)
     {
         texRectDrawImage(&DL, &bgPos.f[0], &bgSize.f[0], 0x2F0, 0x12, 0, 0, 1, 0x6B, 0x67, 0x53, 0xFF, simage->level > 0, 0);
         bgPos.f[1] += 60.0f;
@@ -6501,17 +6510,17 @@ Gfx * frontMpStageRender(Gfx *DL)
 
     photoSize.f[0] = 34.0f;
     photoSize.f[1] = 22.0f;
-    photoPos.f[1] = photoSize.f[1] + 108.0f + 4.0f;
+    photoPos.f[1] = photoSize.f[1] + 38.0f + 4.0f;
 
     count = 0;
 
-    for (row = 0; row != 3; row++)
+    for (row = 0; row != MP_STAGE_GRID_ROWS; row++)
     {
         photoPos.f[0] = 86.0f;
 
-        for (i_3 = 0; i_3 < 4; i_3++)
+        for (i_3 = 0; i_3 < MP_STAGE_GRID_COLUMNS; i_3++)
         {
-            if (count < 12)
+            if (count < MP_STAGE_GRID_SLOTS && g_MpStages[count].min_player)
             {
                 simage = &g_ImagesMpStageSelect[g_MpStages[count].photo];
 
@@ -6553,15 +6562,15 @@ Gfx * frontMpStageRender(Gfx *DL)
         s32 labelRow;
         s32 labelY;
 
-        labelY = 0x97;
+        labelY = 0x97 - 0x46;
 
-        for (labelRow = 0; labelRow != 3; labelRow++)
+        for (labelRow = 0; labelRow != MP_STAGE_GRID_ROWS; labelRow++)
         {
             labelX = 0x56;
 
-            for (i_4 = 0; i_4 < 4; i_4++)
+            for (i_4 = 0; i_4 < MP_STAGE_GRID_COLUMNS; i_4++)
             {
-                if (count_2 < 12 && frontIsMpStageAvailable(count_2))
+                if (count_2 < MP_STAGE_GRID_SLOTS && frontIsMpStageAvailable(count_2))
                 {
                     colour = 0x96969600;
 

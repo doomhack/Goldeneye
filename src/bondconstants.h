@@ -1944,8 +1944,15 @@ typedef enum MP_STAGE_SELECTED
     MP_STAGE_ARCHIVES,
     MP_STAGE_CAVERNS,
     MP_STAGE_EGYPT,
+    MP_STAGE_STATUE,
+    MP_STAGE_CRADLE,
     MP_STAGE_SELECTED_MAX
 } MP_STAGE_SELECTED;
+
+/* The multiplayer stage select is a grid of 4 film strips with 4 photos each. */
+#define MP_STAGE_GRID_ROWS    4
+#define MP_STAGE_GRID_COLUMNS 4
+#define MP_STAGE_GRID_SLOTS   (MP_STAGE_GRID_ROWS * MP_STAGE_GRID_COLUMNS)
 
 typedef enum MPMENU
 {
