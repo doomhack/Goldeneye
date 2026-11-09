@@ -60,7 +60,8 @@ ifeq ($(VERSION), EU)
 endif
 
 # make UNLOCK_ALL=1: every mission and difficulty (007 too) is open in
-# every save folder, and every cheat in the Cheat Options menu, for testing
+# every save folder, every multiplayer stage, and every cheat in the Cheat
+# Options menu, for testing
 ifeq ($(UNLOCK_ALL), 1)
   LCDEFS += -DUNLOCK_ALL_LEVELS
 endif
