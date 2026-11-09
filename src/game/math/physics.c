@@ -25,9 +25,9 @@ void physRandomTumble(Mtxf *tumble)
 {
     coord3d angles;
 
-    angles.x = physRandomFrac() * PER_TICK(M_TAU_F) * 0.03125f - PER_TICK(0.09817477f);
-    angles.y = physRandomFrac() * PER_TICK(M_TAU_F) * 0.03125f - PER_TICK(0.09817477f);
-    angles.z = physRandomFrac() * PER_TICK(M_TAU_F) * 0.03125f - PER_TICK(0.09817477f);
+    angles.x = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
+    angles.y = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
+    angles.z = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
     mtx4LoadRotation(&angles, tumble);
 }
 

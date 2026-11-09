@@ -64,15 +64,15 @@
 #include "game/mission/mission.h"
 
 
-#define THROWN_ITEM_REFRESH_RATE TICKS(60)
-#define DUAL_WIELD_TRIGGER_SWAP_TICKS TICKS(20)
-#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS TICKS(30)
-#define WATCH_SOUND_DURATION_TICKS TICKS(300)
-#define GUN_SPRING_DAMP DAMP(0.95f)
-#define GUN_SPRING_SCALE EASE(0.050000012f)
+#define THROWN_ITEM_REFRESH_RATE 60
+#define DUAL_WIELD_TRIGGER_SWAP_TICKS 20
+#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS 30
+#define WATCH_SOUND_DURATION_TICKS 300
+#define GUN_SPRING_DAMP 0.95f
+#define GUN_SPRING_SCALE 0.050000012f
 
 /* Revolver cylinder: one chamber turns in 6 ticks at 60 Hz */
-#define CYLINDER_TURN_TICKS TICKS_DOWN(6)
+#define CYLINDER_TURN_TICKS 6
 
 
 s32 gunSample1PTransform(const Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
@@ -891,24 +891,24 @@ void gunReload(enum GUNHAND hand)
     }
 }
 
-#define WEAPON_1P_ANIM_TIME(x) PER_TICK((f32)(x))
-#define WHEN_1_CASE_GRENADELAUNCH_FLD890 TICKS_DOWN(6)
-#define WHEN_1_CASE_GRENADE_FLD890 TICKS_DOWN(0xf0)
-#define WHEN_D_FLD890 TICKS_DOWN(0x14)
-#define WHEN_5_SP188_INIT TICKS_DOWN(0x10)
-#define WHEN_5_SP188_MULTI TICKS_DOWN(0xc)
-#define WHEN_5_FLD8B0_SP TICKS_DOWN(0x11)
-#define WHEN_5_FLD8B0_MULTI TICKS_DOWN(0xd)
-#define WHEN_8_SP178_INIT TICKS_DOWN(0x17)
-#define WHEN_8_SP178_MULTI TICKS_DOWN(0xc)
-#define WHEN_A_FLD890 TICKS_DOWN(0x10)
-#define WHEN_A_FLD8B0 TICKS_DOWN(0x11)
-#define WHEN_C_FLD890 TICKS_DOWN(0x17)
-#define WHEN_E_FLD890 TICKS_DOWN(0x10)
-#define WHEN_10_FLD890 TICKS_DOWN(0x17)
-#define WHEN_11_FLD890_1 TICKS_DOWN(0x10)
-#define WHEN_11_FLD890_2 TICKS_DOWN(0x18)
-#define WHEN_1E_FLD890 TICKS_DOWN(0x1e)
+#define WEAPON_1P_ANIM_TIME(x) ((f32)(x))
+#define WHEN_1_CASE_GRENADELAUNCH_FLD890 6
+#define WHEN_1_CASE_GRENADE_FLD890 0xf0
+#define WHEN_D_FLD890 0x14
+#define WHEN_5_SP188_INIT 0x10
+#define WHEN_5_SP188_MULTI 0xc
+#define WHEN_5_FLD8B0_SP 0x11
+#define WHEN_5_FLD8B0_MULTI 0xd
+#define WHEN_8_SP178_INIT 0x17
+#define WHEN_8_SP178_MULTI 0xc
+#define WHEN_A_FLD890 0x10
+#define WHEN_A_FLD8B0 0x11
+#define WHEN_C_FLD890 0x17
+#define WHEN_E_FLD890 0x10
+#define WHEN_10_FLD890 0x17
+#define WHEN_11_FLD890_1 0x10
+#define WHEN_11_FLD890_2 0x18
+#define WHEN_1E_FLD890 0x1e
 
 
 void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
@@ -949,8 +949,8 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 punchTime;
     const struct hand *otherhand;
     f32 tiltAngle = 0.0f;
-    f32 lowerTicks = TICKS_DOWN(16);
-    f32 raiseTicks = TICKS_DOWN(23);
+    f32 lowerTicks = 16;
+    f32 raiseTicks = 23;
 
     handptr = &g_CurrentPlayer->hands[hand];
     weapon = gunGetShownWeapon(hand);
@@ -1444,11 +1444,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             weapon_stats = weaponGetStats(weapon);
 
-            recoilTicks = TICKS_DOWN((s32)weapon_stats->b44[0]);
-            settleTicks = TICKS_DOWN((s32)weapon_stats->b44[1]);
-            fireTicks = TICKS_DOWN((s32)weapon_stats->b44[2]);
-            returnTicks = TICKS_DOWN((s32)weapon_stats->b44[3]);
-            singleRateTicks = TICKS_DOWN(weapon_stats->SingleFiringRate);
+            recoilTicks = ((s32)weapon_stats->b44[0]);
+            settleTicks = ((s32)weapon_stats->b44[1]);
+            fireTicks = ((s32)weapon_stats->b44[2]);
+            returnTicks = ((s32)weapon_stats->b44[3]);
+            singleRateTicks = (weapon_stats->SingleFiringRate);
 
             if ((
                     (handptr->triggerReleased != 0)

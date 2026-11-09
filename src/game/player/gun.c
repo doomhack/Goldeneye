@@ -50,16 +50,16 @@
 ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
 
 
-#define THROWN_ITEM_REFRESH_RATE TICKS(60)
-#define THROWN_ITEM_TIMER_SOLO TICKS(300)
-#define THROWN_ITEM_TIMER_MULTI TICKS(180)
-#define THROWN_ITEM_TIMER_DEFAULT TICKS(240)
-#define GLGRENADE_TIMER TICKS(1200)
-#define DUAL_WIELD_TRIGGER_SWAP_TICKS TICKS(20)
-#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS TICKS(30)
-#define WATCH_SOUND_DURATION_TICKS TICKS(300)
-#define GUN_SPRING_DAMP DAMP(0.95f)
-#define GUN_SPRING_SCALE EASE(0.050000012f)
+#define THROWN_ITEM_REFRESH_RATE 60
+#define THROWN_ITEM_TIMER_SOLO 300
+#define THROWN_ITEM_TIMER_MULTI 180
+#define THROWN_ITEM_TIMER_DEFAULT 240
+#define GLGRENADE_TIMER 1200
+#define DUAL_WIELD_TRIGGER_SWAP_TICKS 20
+#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS 30
+#define WATCH_SOUND_DURATION_TICKS 300
+#define GUN_SPRING_DAMP 0.95f
+#define GUN_SPRING_SCALE 0.050000012f
 
 // Launched grenades: bounciness and ground friction
 static const f32 g_GLGrenadeLaunchUnk8C = 0.3f;
@@ -752,9 +752,9 @@ void gunRequestHandWeaponChange(enum GUNHAND hand, s32 nextWeapon, s32 cycleDire
         g_CurrentPlayer->hands[hand].switchTime = g_CurrentPlayer->hands[hand].stateTime;
 
         if (getPlayerCount() == 1) {
-            g_CurrentPlayer->hands[hand].switchTime += TICKS_DOWN(0x11);
+            g_CurrentPlayer->hands[hand].switchTime += 0x11;
         } else {
-            g_CurrentPlayer->hands[hand].switchTime += TICKS_DOWN(0xD);
+            g_CurrentPlayer->hands[hand].switchTime += 0xD;
         }
     }
 

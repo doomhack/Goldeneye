@@ -69,10 +69,10 @@
  * and the camera velocity is tuned per refresh rate so its decay per second is the
  * same on PAL (0.95 ^ (60/50) = 0.9403). 
  */
-#define CAST_INTRO_LEN          TICKS(60 * 3)
-#define CAST_INTRO_FADE         TICKS(60 / 2)
-#define CAST_DAMP DAMP(0.94999999f)
-#define CAST_DAMP_COMP EASE(0.050000012f)
+#define CAST_INTRO_LEN          (60 * 3)
+#define CAST_INTRO_FADE         (60 / 2)
+#define CAST_DAMP 0.94999999f
+#define CAST_DAMP_COMP 0.050000012f
 #define CAST_INTRO_FADEOUT      (CAST_INTRO_LEN - CAST_INTRO_FADE + 1)
 #define CAST_INTRO_LEN_F        ((f32)CAST_INTRO_LEN)
 #define CAST_INTRO_FADE_F       ((f32)CAST_INTRO_FADE)
@@ -1208,7 +1208,7 @@ void frontLegalLeave(void)
 
 void frontLegalTick(void)
 {
-#define MENU_LEGALSCREEN_MENU_TIMER_MAX (TICKS(60*4)+1)
+#define MENU_LEGALSCREEN_MENU_TIMER_MAX ((60*4)+1)
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -1375,7 +1375,7 @@ void frontNintendoLeave(void)
 
 void frontNintendoTick(void)
 {
-#define NINTENDO_TIMER_MAX TICKS_DOWN(501)
+#define NINTENDO_TIMER_MAX 501
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -1587,8 +1587,8 @@ void frontLogoLeave(void) {
 
 void frontLogoTick(void)
 {
-#define GOLDENEYELOGO_TIMER_1 TICKS(60*3)
-#define GOLDENEYELOGO_TIMER_2 TICKS((60/2)*3)
+#define GOLDENEYELOGO_TIMER_1 (60*3)
+#define GOLDENEYELOGO_TIMER_2 ((60/2)*3)
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -2054,7 +2054,7 @@ void frontFileSelectTick(void)
     }
 
     // Change to the legal screen if 30 seconds of no input have elapsed
-    if (g_FrontTimer >= TICKS(1800) + 1) // 30 seconds + 1 frame
+    if (g_FrontTimer >= 1800 + 1) // 30 seconds + 1 frame
     {
         frontSetMenu(MENU_LEGAL_SCREEN, TRUE);
     }
@@ -8345,7 +8345,7 @@ void frontCastEnter(void)
     modelSetRootPosition(g_CastModel, &subOffset);
     modelSetRootRotY(g_CastModel, 0.0f);
 
-    modelSetAnimPlaySpeed(g_CastModel, PER_TICK(0.5f), 0);
+    modelSetAnimPlaySpeed(g_CastModel, 0.5f, 0);
     modelSetAnimation(g_CastModel, animation_table_ptrs1[g_CastAnims[g_CastAnim].animID], flip, g_CastAnims[g_CastAnim].startframeoffset, g_CastAnims[g_CastAnim].playback_speed, 0.0f);
 
     g_FrontTimer = 0;
@@ -8393,7 +8393,7 @@ void frontCastTick(void)
 
     g_FrontTimer += g_ClockTimer;
 
-#define INTERFACE_MENU18_TIMER TICKS(181)
+#define INTERFACE_MENU18_TIMER 181
 
     if (g_FrontTimer >= INTERFACE_MENU18_TIMER)
     {

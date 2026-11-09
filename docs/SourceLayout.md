@@ -16,14 +16,17 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 
 The same sources build the US (`make VERSION=US`) and the PAL (`make VERSION=EU`) ROM. The
 Makefile sets `VERSION_US` or `VERSION_EU`, and that is the only region flag. Gameplay,
-text, setups and level data are the same in both; the builds differ only in the video
-mode and the tick rate:
+text, setups, level data and the attract demos are the same in both; the builds differ
+only in the video mode:
 
 - `src/fr.h`: screen height, aspect ratios, HUD and menu offsets for the 272-line PAL
   screen.
-- `src/bondconstants.h`: `TICKS_PER_SECOND` (60 or 50) and the timing macros (`TICKS`,
-  `TICKSF`, `PER_TICK`, `DAMP`, `EASE`...). Write times and rates in 60 Hz units and wrap
-  them; on US the macros are the plain value.
+- `src/bondconstants.h`: the game clock is 60 ticks a second on both (`TICKS_PER_SECOND`).
+  `VI_HZ` is the video rate (60 or 50); `frameWaitForNext` (`game/level/frametiming.c`)
+  turns 50 Hz retraces into 60 Hz ticks on PAL. Write game times and rates in plain 60 Hz
+  ticks. Only code that steps once per retrace or per drawn frame (audio, music fades, the
+  title sequence, the Nintendo logo) uses `VI_HZ` and the `VI_TICKS`/`VI_PER_TICK`/`VI_DAMP`
+  macros.
 - Text: both ROMs carry the US (`E`) and British (`P`) banks, built from the same
   source; `language.c` picks one.
 

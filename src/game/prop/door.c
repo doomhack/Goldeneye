@@ -888,7 +888,7 @@ static void doorsTickMovement(DoorRecord *door)
 void doorTick(const PropRecord *prop)
 {
     DoorRecord *door = prop->door;
-    s32 autoClose = TICKS_DOWN((s32)door->autoCloseFrames);
+    s32 autoClose = ((s32)door->autoCloseFrames);
 
     /* Closes itself once it has been open long enough, unless it was set to stay open */
     if ((s32)door->openedTime > 0

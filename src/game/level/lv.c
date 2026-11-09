@@ -191,7 +191,7 @@ void lvStageLoad(s32 stage)
     g_LvTickCount = 0;
     g_GlobalTimer = 0;
 
-    g_GlobalTimerDelta = TICK_SCALE_60;
+    g_GlobalTimerDelta = 1.0f;
 
     g_LvIdle = 0;
     g_LvIdleTime = 0;
@@ -879,7 +879,7 @@ void lvTick(void)
     }
 
     g_GlobalTimerDeltaRaw = (f32) g_ClockTimer;
-    g_GlobalTimerDelta = g_GlobalTimerDeltaRaw * TICK_SCALE_60;
+    g_GlobalTimerDelta = g_GlobalTimerDeltaRaw;
     g_GlobalTimer += g_ClockTimer;
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && (g_MissionTime == 0) && (g_ClockTimer > 0))
     {
@@ -933,7 +933,7 @@ void lvTick(void)
             oldtime = g_MissionTime;
             newtime = g_ClockTimer + g_MissionTime;
 
-            if ((g_MissionTime < (g_MpTime - TICKS(0xE10))) && (newtime >= (g_MpTime - TICKS(0xE10))))
+            if ((g_MissionTime < (g_MpTime - 0xE10)) && (newtime >= (g_MpTime - 0xE10)))
             {
                 for (i = 0; i < getPlayerCount(); i++)
                 {
@@ -943,7 +943,7 @@ void lvTick(void)
             }
 
             // sound alarm when game is about to end (10 seconds before end)
-            if ((newtime >= (g_MpTime - TICKS(0x258))) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
+            if ((newtime >= (g_MpTime - 0x258)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
             {
                 sndPlaySfx(g_musicSfxBufferPtr, ALARM1_SFX, &g_MpSoundStateRelated);
             }
@@ -1084,7 +1084,7 @@ void lvTick(void)
     {
         g_LvTimeSinceInput = g_LvTimeSinceInput + g_ClockTimer;
 
-        if (g_LvTimeSinceInput >= TICKS(0x708))
+        if (g_LvTimeSinceInput >= 0x708)
         {
             g_LvIdle = 1;
         }

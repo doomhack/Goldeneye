@@ -38,7 +38,7 @@
 // An explosion of small bits, for an already destroyed object breaking further
 #define EXPLOSIONTYPE_BITS 0x10
 
-#define RESPAWN_TICKS TICKS(1200) // 20 seconds
+#define RESPAWN_TICKS 1200 // 20 seconds
 
 /**
  * How far gone an object is: 0 to 3 while healthy (in quarters of its health, rounded
@@ -446,9 +446,9 @@ static void objFall(ObjectRecord *obj, s32 playernum)
 
     if (!(obj->flags2 & PROPFLAG2_FALLWITHOUTROTATION))
     {
-        rot.x = ((RANDOMFRAC() * PER_TICK(M_TAU_F)) / 320.0f) - PER_TICK(0.009817477f);
-        rot.y = ((RANDOMFRAC() * PER_TICK(M_TAU_F)) / 320.0f) - PER_TICK(0.009817477f);
-        rot.z = ((RANDOMFRAC() * PER_TICK(M_TAU_F)) / 320.0f) - PER_TICK(0.009817477f);
+        rot.x = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
+        rot.y = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
+        rot.z = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
     }
 
     mtx4LoadRotation(&rot, &projectile->mtx);

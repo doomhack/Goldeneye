@@ -39,9 +39,9 @@
    multiplayer weapon set */
 #define MP_WEAPON_SET_SLOT 0xF0
 
-#define AUTOGUN_SPEED_UNIT PER_TICK(M_TAU_F)
-#define DOOR_SPEED_UNIT    TICK_SCALE_60
-#define TANK_Y_SMOOTHING   EASE(0.17000002f)
+#define AUTOGUN_SPEED_UNIT M_TAU_F
+#define DOOR_SPEED_UNIT    1.0f
+#define TANK_Y_SMOOTHING   0.17000002f
 
 /* A beam is 0x2c bytes, rounded up to 16 */
 #define BEAM_ALLOC_SIZE 0x30

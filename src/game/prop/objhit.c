@@ -430,9 +430,9 @@ static void objBounce(const ObjectRecord *obj, const coord3d *shotDir)
     projectile->speed.y = (RANDOMFRAC() * 1.6666666f * 2.0f) + 3.3333333f;
     projectile->speed.z = (RANDOMFRAC() * 1.6666666f * 4.0f) - 3.3333333f;
 
-    rot.x = (RANDOMFRAC() * PER_TICK(M_TAU_F) * 0.015625f) - PER_TICK(0.049087387f);
-    rot.y = (RANDOMFRAC() * PER_TICK(M_TAU_F) * 0.015625f) - PER_TICK(0.049087387f);
-    rot.z = (RANDOMFRAC() * PER_TICK(M_TAU_F) * 0.015625f) - PER_TICK(0.049087387f);
+    rot.x = (RANDOMFRAC() * M_TAU_F * 0.015625f) - 0.049087387f;
+    rot.y = (RANDOMFRAC() * M_TAU_F * 0.015625f) - 0.049087387f;
+    rot.z = (RANDOMFRAC() * M_TAU_F * 0.015625f) - 0.049087387f;
 
     mtx4LoadRotation(&rot, &projectile->mtx);
 

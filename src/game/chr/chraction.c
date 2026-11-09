@@ -109,7 +109,7 @@ void chrStandChooseAnimation(const ChrRecord *self, f32 duration)
 }
 
 
-#define RATE TICK_SCALE_60
+#define RATE 1.0f
 
 /**
  * At the end of a character's kneeling animation smoothly merge into their standing animation.
@@ -201,7 +201,7 @@ static void chrStand(ChrRecord *self)
         self->act_stand.reaim = 0;
         self->act_stand.turning = 2;
         self->act_stand.checkfacingwall = 0;
-        self->act_stand.wallcount = (randomGetNext() % TICKS(120)) + TICKS(180);
+        self->act_stand.wallcount = (randomGetNext() % 120) + 180;
         self->sleep = 0;
 
         if (modelGetAnim(self->model) == ANIM(fire_kneel_forward_one_handed_weapon_slow))

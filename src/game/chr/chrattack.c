@@ -512,7 +512,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
 
     chr->actiontype = ACT_ATTACKWALK;
     chr->act_attackwalk.clock_timer30 = 0;
-    chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(TICKSF(400.0f) * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
+    chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(400.0f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
     chr->act_attackwalk.facedTarget = 0;
     chr->act_attackwalk.animfloats = panim_float;
     chr->act_attackwalk.timer40 = 0;
@@ -2087,7 +2087,7 @@ static void chrTickAttackCommon(ChrRecord *self)
     // Half a second of firing without the shots counting as aimed at the target (see
     // chrFireHand): give up.
     if (
-        (self->act_attack.attack_time < (self->act_attack.lastFire60 - TICKS(30)))
+        (self->act_attack.attack_time < (self->act_attack.lastFire60 - 30))
         && (self_model->anim2 == NULL))
     {
         if (((self->act_attack.animfloats->shoot_start_frame + 10.0f) < frame)
@@ -2248,7 +2248,7 @@ static void chrTickAttackCommon(ChrRecord *self)
 
                     if (self->actiontype == ACT_ATTACKROLL)
                     {
-                        df = TICKSF(self->act_attack.animfloats->shoot_end_frame - self->act_attack.animfloats->shoot_start_frame);
+                        df = (self->act_attack.animfloats->shoot_end_frame - self->act_attack.animfloats->shoot_start_frame);
 
                         if (df < 30.0f)
                         {

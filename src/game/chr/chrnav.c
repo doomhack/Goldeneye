@@ -113,12 +113,12 @@ void chrRunToPos(ChrRecord *self, coord3d *pos)
 
     if (rifle)
     {
-        self->act_runpos.eta60 = (s32) TICKSF(sq / (g_ChrSpeedRun * 0.5f));
+        self->act_runpos.eta60 = (s32) (sq / (g_ChrSpeedRun * 0.5f));
         modelSetAnimation(self->model, ANIM(running), flip, 0, 0.5f, 16.0f);
     }
     else
     {
-        self->act_runpos.eta60 = (s32) TICKSF(sq / (g_ChrSpeedRunOneHanded * 0.5f));
+        self->act_runpos.eta60 = (s32) (sq / (g_ChrSpeedRunOneHanded * 0.5f));
         modelSetAnimation(self->model, ANIM(running_one_handed_weapon), flip, 0, 0.5f, 16.0f);
     }
 }
@@ -393,7 +393,7 @@ static void chrGoPosConsiderRestart(ChrRecord *self)
 
         if (ttl == 0)
         {
-            newttl = TICKS_DOWN((chrGoPosCalculateBaseTtl(self) * 2) + 300);
+            newttl = ((chrGoPosCalculateBaseTtl(self) * 2) + 300);
 
             if (newttl >= 0x10000)
             {
@@ -1127,18 +1127,18 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 
 
 /* Turn speeds and accelerations, per 60 Hz tick */
-#define MAX_SPEED_A PER_TICK(0.2991993f)
-#define ACCEL_A PER_TICK(0.014959966f)
+#define MAX_SPEED_A 0.2991993f
+#define ACCEL_A 0.014959966f
 
-#define MAX_SPEED_B1 PER_TICK(0.019634955f)
-#define MAX_SPEED_B2 PER_TICK(0.09817477f)
-#define MAX_SPEED_B3 PER_TICK(0.19634955f)
-#define ACCEL_B PER_TICK(0.014959966f)
+#define MAX_SPEED_B1 0.019634955f
+#define MAX_SPEED_B2 0.09817477f
+#define MAX_SPEED_B3 0.19634955f
+#define ACCEL_B 0.014959966f
 
-#define MAX_SPEED_C1 PER_TICK(0.009817477f)
-#define MAX_SPEED_C2 PER_TICK(0.049087387f)
-#define MAX_SPEED_C3 PER_TICK(0.12566371f)
-#define ACCEL_C PER_TICK(0.009817477f)
+#define MAX_SPEED_C1 0.009817477f
+#define MAX_SPEED_C2 0.049087387f
+#define MAX_SPEED_C3 0.12566371f
+#define ACCEL_C 0.009817477f
 
 s32 chrApplySpeed(const ChrRecord *self, const coord3d *target, s32 speed, f32 *speedPtr)
 {

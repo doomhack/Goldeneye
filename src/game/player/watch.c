@@ -485,8 +485,8 @@ void pauseStopSounds(void)
  */
 void watchTick(void)
 {
-#define WATCH_VAR_LOWER TICKS(17)
-#define WATCH_VAR_UPPER TICKS(35)
+#define WATCH_VAR_LOWER 17
+#define WATCH_VAR_UPPER 35
 
     s32 delay;
     s32 holdingWatchItem;

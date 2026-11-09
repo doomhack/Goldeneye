@@ -48,8 +48,8 @@
 #include "game/math/line_tri_intersect.h"
 #include "game/level/gamemode.h"
 
-#define GROUND_SMOOTH_FACTOR EASE(0.100000024f) /* 0x3DCCCCD0 */
-#define FALLSPEED_DECAY DAMP(0.9f) /* 0x3F666666 */
+#define GROUND_SMOOTH_FACTOR 0.100000024f /* 0x3DCCCCD0 */
+#define FALLSPEED_DECAY 0.9f /* 0x3F666666 */
 
 static void chrUpdateAimProperties(ChrRecord *self);
 static void chrUpdateAnim(ChrRecord *chr, s32 tickamount);
@@ -552,7 +552,7 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     modelSetRootPosition(model, pos);
     modelSetRootRotY(model, angle);
 
-    modelSetAnimPlaySpeed(model, PER_TICK(g_ChrAnimRate), 0.0f);
+    modelSetAnimPlaySpeed(model, g_ChrAnimRate, 0.0f);
 
     chr->chrnum = (s16)g_NextChrNum;
     g_NextChrNum++;
@@ -730,7 +730,7 @@ void chrsSetAnimRate(f32 rate)
     {
         if (g_ChrSlots[i].model != NULL)
         {
-            modelSetAnimPlaySpeed(g_ChrSlots[i].model, PER_TICK(g_ChrAnimRate), 600.0f);
+            modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate, 600.0f);
         }
     }
 }
@@ -1146,7 +1146,7 @@ s32 chrTick(PropRecord *prop)
         {
             g_CurModelChr->flinchcnt += g_ClockTimer;
 
-            if (g_CurModelChr->flinchcnt >= TICKS_DOWN(10) + TICKS_DOWN(20)) // flinch rise + fall (chrrender.c)
+            if (g_CurModelChr->flinchcnt >= 10 + 20) // flinch rise + fall (chrrender.c)
             {
                 g_CurModelChr->flinchcnt = -1;
             }

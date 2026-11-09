@@ -394,7 +394,7 @@ void playerUpdatePosFromCollision(void)
     g_CurrentPlayer->prop->pos.f[1] = g_CurrentPlayer->bond.collision_position.f[1];
     g_CurrentPlayer->prop->pos.f[2] = g_CurrentPlayer->bond.collision_position.f[2];
 
-#define EYE_DAMP DAMP(0.9f)
+#define EYE_DAMP 0.9f
     for (i=0; i<g_ClockTimer; i++)
     {
         g_CurrentPlayer->dampEyeSum.f[0] = (EYE_DAMP * g_CurrentPlayer->dampEyeSum.f[0]) + g_CurrentPlayer->bond.pos.f[0];
@@ -402,7 +402,7 @@ void playerUpdatePosFromCollision(void)
         g_CurrentPlayer->dampEyeSum.f[2] = (EYE_DAMP * g_CurrentPlayer->dampEyeSum.f[2]) + g_CurrentPlayer->bond.pos.f[2];
     }
 
-#define EYE_DAMP_INV EASE(0.100000024f)
+#define EYE_DAMP_INV 0.100000024f
     g_CurrentPlayer->dampEye.x = g_CurrentPlayer->dampEyeSum.f[0] * EYE_DAMP_INV;
     g_CurrentPlayer->dampEye.y = g_CurrentPlayer->dampEyeSum.f[1] * EYE_DAMP_INV;
     g_CurrentPlayer->dampEye.z = g_CurrentPlayer->dampEyeSum.f[2] * EYE_DAMP_INV;
@@ -2007,7 +2007,7 @@ void playerSetWorldScale(f32 scale)
 
 
 s32 lvGetMissionTime60(void) {
-    return TICKS_TO_60(mission_timer);
+    return mission_timer;
 }
 
 

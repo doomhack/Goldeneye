@@ -39,17 +39,17 @@ extern Gfx globalDL_0x000 NO_SDATA;
 /* The smoke types (SMOKE_TYPE). Times are 60 Hz ticks, converted for this build. */
 static const s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
    // dur, appr, dis,size, bgrate,   r,  g,    b, fgrate, propclouds
-    {   1,   TICKS(60),  99,   0,   0.0f, 128, 128, 128,   0.3f,     TICKS(180)},
-    { TICKS(480),   TICKS(60),  TICKS(45),  60,  0.02f,  80,  80,  96,   0.3f,     TICKS(180)},
-    { TICKS(480),   TICKS(60),  TICKS(50),  20,  0.01f, 128, 128, 128,   0.3f,     TICKS(180)},
-    { TICKS(640),   TICKS(60), TICKS(120), 100,  0.01f, 192, 192, 192,   0.3f,     TICKS(180)},
-    { TICKS(640),   TICKS(60),  TICKS(60),  80,  0.02f,  64,  64,  64,   0.3f,     TICKS(180)},
-    { TICKS(770),   TICKS(60),  TICKS(50), 190,  0.15f,  64,  64,  64,   0.3f,     TICKS(180)},
-    { TICKS(900),   TICKS(60),  TICKS(70), 300,  0.01f,  64,  64,  64,   0.3f,     TICKS(180)},
-    {  TICKS(60),   TICKS(60),   TICKS(8),  15,  0.03f, 255, 255, 255,   0.3f,     TICKS(180)},
-    {  TICKS(20),    1,   TICKS(6),  30,  0.03f, 255, 255, 255,   2.0f,      TICKS(30)},
-    {  TICKS(25),    1,   TICKS(7),  16,  0.03f, 224, 224, 224,   3.0f,      TICKS(30)},
-    { TICKS(900),   TICKS(60),  TICKS(70), 900,  0.01f,  64,  64,  64,   0.3f,     TICKS(180)}
+    {   1,   60,  99,   0,   0.0f, 128, 128, 128,   0.3f,     180},
+    { 480,   60,  45,  60,  0.02f,  80,  80,  96,   0.3f,     180},
+    { 480,   60,  50,  20,  0.01f, 128, 128, 128,   0.3f,     180},
+    { 640,   60, 120, 100,  0.01f, 192, 192, 192,   0.3f,     180},
+    { 640,   60,  60,  80,  0.02f,  64,  64,  64,   0.3f,     180},
+    { 770,   60,  50, 190,  0.15f,  64,  64,  64,   0.3f,     180},
+    { 900,   60,  70, 300,  0.01f,  64,  64,  64,   0.3f,     180},
+    {  60,   60,   8,  15,  0.03f, 255, 255, 255,   0.3f,     180},
+    {  20,    1,   6,  30,  0.03f, 255, 255, 255,   2.0f,      30},
+    {  25,    1,   7,  16,  0.03f, 224, 224, 224,   3.0f,      30},
+    { 900,   60,  70, 900,  0.01f,  64,  64,  64,   0.3f,     180}
 };
 
 static struct Smoke *s_Smokes;

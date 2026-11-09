@@ -24,7 +24,7 @@
 #include "game/level/gamemode.h"
 
 /* How long a camera must see a player to set off the alarm */
-#define CCTV_ALARM_FRAMES TICKSF(300.0f)
+#define CCTV_ALARM_FRAMES 300.0f
 
 /* How fast the head speeds up and slows down: about 135 degrees per second per second */
 #define CCTV_YAW_ACCEL 0.00065449846f

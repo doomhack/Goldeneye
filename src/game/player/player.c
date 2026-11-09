@@ -43,8 +43,8 @@ s32 random_byte;
 PLAYER_ID array_PLAYER_IDs[4];
 
 /* Default values for playerInit */
-#define DEFAULT_DAMP_EYE_SUM_Z  (1.0f / EASE(0.100000024f))
-#define DEFAULT_HEADDAMP        DAMP(0.93f)
+#define DEFAULT_DAMP_EYE_SUM_Z  (1.0f / 0.100000024f)
+#define DEFAULT_HEADDAMP        0.93f
 #define DEFAULT_HEADLOOKSUM_VAL (1.0f / (1.0f - DEFAULT_HEADDAMP))
 #define DEFAULT_VIEWPORT_V_VAL  (SCREEN_HEIGHT * 2)
 #define DEFAULT_C_SCREENHEIGHT  (f32)SCREEN_HEIGHT
@@ -167,8 +167,8 @@ static const struct hand s_DefaultHand = {
     .sway_look_z = -1.0f,
     .sway_up_y = 1.0f,
     /* spring_look_z and spring_up_y = 1 / GUN_SPRING_SCALE, so the derived sway vector starts unit-length */
-    .spring_look_z = -1.0f / EASE(0.050000012f),
-    .spring_up_y = 1.0f / EASE(0.050000012f),
+    .spring_look_z = -1.0f / 0.050000012f,
+    .spring_up_y = 1.0f / 0.050000012f,
     .blendlook = { {{0,0,-1.0f}}, {{0,0,-1.0f}}, {{0,0,-1.0f}}, {{0,0,-1.0f}} },
     .blendup = { {{0,1.0f,0}}, {{0,1.0f,0}}, {{0,1.0f,0}}, {{0,1.0f,0}} },
     .blendscale1 = 1.0f,

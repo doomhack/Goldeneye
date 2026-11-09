@@ -71,7 +71,7 @@ void headBobUpdateIdleRoll()
 
 void headBobUpdatePos(const coord3d *vel)
 {
-#define CURRENTPLAYERUPDATEHEADPOS_SCALE DAMP(0.93f)
+#define CURRENTPLAYERUPDATEHEADPOS_SCALE 0.93f
     s32 i;
 
     if (g_CurrentPlayer->resetheadpos)
@@ -282,11 +282,11 @@ void headBobUpdate(f32 percent_speed, f32 speedsideways)
 
             if (g_CurrentPlayer->headwalkingtime60 > TICKS_PER_SECOND)
             {
-                headBobSetDamp(DAMP(0.93f));
+                headBobSetDamp(0.93f);
             }
             else
             {
-                headBobSetDamp(DAMP(0.99f));
+                headBobSetDamp(0.99f);
             }
         }
         else
@@ -313,7 +313,7 @@ void headBobUpdate(f32 percent_speed, f32 speedsideways)
         headpos.f[2] = 0.0f;
 
         g_CurrentPlayer->headwalkingtime60 = 0;
-        headBobSetDamp(DAMP(0.99f));
+        headBobSetDamp(0.99f);
         g_CurrentPlayer->standfrac += (0.008333334f + (0.025000002f * playerGetBreathing())) * g_GlobalTimerDelta;
 
         if (g_CurrentPlayer->standfrac >= 1.0f)
@@ -489,8 +489,8 @@ void headBobSumRootMotion(const void *anim, s32 startframe, s32 endframe, s32 *s
 }
 
 
-#define ANIMRATE PER_TICK(1.0f)
-#define DAMPVAL DAMP(0.93f)
+#define ANIMRATE 1.0f
+#define DAMPVAL 0.93f
 #define HEADSUM (1.0f / (1.0f - DAMPVAL))
 
 

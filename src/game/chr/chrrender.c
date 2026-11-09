@@ -59,8 +59,8 @@ static f32 chrGetFlinchAmount(const ChrRecord *chr)
 {
     f32 count;
     f32 amount;
-    f32 rise = TICKS_DOWN(10);
-    f32 fall = TICKS_DOWN(20);
+    f32 rise = 10;
+    f32 fall = 20;
 
     count = chr->flinchcnt;
 

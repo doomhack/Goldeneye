@@ -49,9 +49,9 @@
 
 /* Random spins given to dropped things, in radians per frame. The PAL version spins 6/5
    as fast per frame, to make up for running at 50 frames a second. */
-#define TUMBLE_TURN              PER_TICK(M_TAU_F)
-#define TUMBLE_SMALL_OFFSET      PER_TICK(0.024543693f)
-#define TUMBLE_LARGE_OFFSET      PER_TICK(0.09817477f)
+#define TUMBLE_TURN              M_TAU_F
+#define TUMBLE_SMALL_OFFSET      0.024543693f
+#define TUMBLE_LARGE_OFFSET      0.09817477f
 #define TUMBLE_SMALL_FRACTION    0.0078125f
 #define TUMBLE_LARGE_FRACTION    0.03125f
 

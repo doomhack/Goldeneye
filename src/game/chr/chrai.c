@@ -155,7 +155,7 @@ static void aiSoundStop(s32 slot)
  */
 static s32 aiSoundFadeTicks(u16 time60)
 {
-    return TICKS_DOWN(time60);
+    return time60;
 }
 
 /**

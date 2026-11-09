@@ -39,9 +39,9 @@
 #include "game/player/player.h"
 
 /* How fast vehicles turn, in radians per frame (and per frame per frame) */
-#define VEHICLE_TURN_ACCEL PER_TICK(0.000109083085f)
-#define VEHICLE_TURN_DECEL PER_TICK(0.00021816617f)
-#define VEHICLE_TURN_MAX_SPEED PER_TICK(0.006544985f) // 22.5 degrees a second
+#define VEHICLE_TURN_ACCEL 0.000109083085f
+#define VEHICLE_TURN_DECEL 0.00021816617f
+#define VEHICLE_TURN_MAX_SPEED 0.006544985f // 22.5 degrees a second
 
 /* The vehicle model's switches: the four wheels (front left and right, back left and
    right), the wheel size and the body's collision box */
@@ -603,7 +603,7 @@ static void aircraftTickAnim(PropRecord *prop, AircraftRecord *aircraft)
     PadRecord *pad;
 
     modelSetRootPosition(model, &aircraft->runtime_pos);
-    modelSetAnimPlaySpeed(aircraft->model, TICK_SCALE_60, 0.0f);
+    modelSetAnimPlaySpeed(aircraft->model, 1.0f, 0.0f);
     model = aircraft->model;
 
     if (model->anim == animation_table_ptrs2[1])

@@ -27,8 +27,8 @@
 #include "fr.h"
 #include "game/mission/mission.h"
 
-#define ALARM_DURATION_TICKS TICKS(1800)
-#define GAS_COUGH_INTERVAL_TICKS TICKS_DOWN(225)
+#define ALARM_DURATION_TICKS 1800
+#define GAS_COUGH_INTERVAL_TICKS 225
 
 /* Gas times, in frames (g_GlobalTimerDelta) */
 #define GAS_FULL_TIME 3600.0f
