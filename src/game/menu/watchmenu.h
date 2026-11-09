@@ -3,6 +3,7 @@
 #include <ultra64.h>
 #include <bondconstants.h>
 
+/* Watch layout for the 240-line (NTSC) and 272-line (PAL) screens */
 #ifdef VERSION_EU
 #define XOFFSET_1 65
 #define YOFFSET_1 90
@@ -19,6 +20,17 @@
 #define WATCHZOOM1 4.80000019073f
 #define WATCHZOOM2 6.09999990463f
 #define WATCHZOOM3 4.15000009537f
+#define WATCH_PERSPECTIVE_FOVY    52.5f
+#define WATCH_PERSPECTIVE_ASPECT  1.283847f
+#define WATCH_MODEL_ASPECT        1.4005603f
+#define OPTLABELS_ROW1_Y    0x5c
+#define OPTLABELS_ROW2_Y    0x7a
+#define OPTLABELS_ROW_PITCH 0x1e
+#define OPTLABELS_COL_RET   0x5a
+#define OPTLABELS_HINT_Y    0xe1
+#define WATCH_ITEM_TITLE1_Y 0xBC
+#define WATCH_ITEM_TITLE2_Y 0xC6
+#define WATCH_INV_BASE_Y()  0xAA
 #else
 #define XOFFSET_1 64
 #define YOFFSET_1 80
@@ -35,6 +47,17 @@
 #define WATCHZOOM1 4.6f
 #define WATCHZOOM2 5.9f
 #define WATCHZOOM3 3.95f
+#define WATCH_PERSPECTIVE_FOVY    50.5f
+#define WATCH_PERSPECTIVE_ASPECT  1.3333334f
+#define WATCH_MODEL_ASPECT        1.4545455f
+#define OPTLABELS_ROW1_Y    0x52
+#define OPTLABELS_ROW2_Y    0x6b
+#define OPTLABELS_ROW_PITCH 0x19
+#define OPTLABELS_COL_RET   0x4b
+#define OPTLABELS_HINT_Y    0xc3
+#define WATCH_ITEM_TITLE1_Y 0xA0
+#define WATCH_ITEM_TITLE2_Y 0xAA
+#define WATCH_INV_BASE_Y()  0x8C
 #endif
 
 /**

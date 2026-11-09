@@ -241,22 +241,14 @@ void watchZoomOnOpen(void)
 {
     f32 f;
 
-#if defined(VERSION_EU)
-    f = ((6.09999990463f - g_CurrentPlayer->zoominfovy) * 45.0f) / -53.9000015259f;
-#else
-    f = ((5.9f - g_CurrentPlayer->zoominfovy) * 45.0f) / -54.1f;
-#endif
+    f = ((WATCHZOOM2 - g_CurrentPlayer->zoominfovy) * 45.0f) / (WATCHZOOM2 - 60.0f);
 
     if (f < 0.0f)
     {
         f = -f;
     }
 
-#if defined(VERSION_EU)
-    watchStartZoom(6.09999990463f, f);
-#else
-    watchStartZoom(5.9f, f);
-#endif
+    watchStartZoom(WATCHZOOM2, f);
 
 }
 
@@ -265,11 +257,7 @@ void watchZoomOnExit(void)
 {
     f32 f;
 
-#if defined(VERSION_EU)
-    f = ((60.0f - g_CurrentPlayer->zoominfovy) * 45.0f) / -53.9000015259f;
-#else
-    f = ((60.0f - g_CurrentPlayer->zoominfovy) * 45.0f) / -54.1f;
-#endif
+    f = ((60.0f - g_CurrentPlayer->zoominfovy) * 45.0f) / (WATCHZOOM2 - 60.0f);
 
     if (f < 0.0f)
     {
@@ -1124,11 +1112,7 @@ Gfx *watchRender(Gfx *gdl)
     nodepos = (f32 *) objheader->Switches[3];
     rwdata = modelGetNodeRwData(&g_CurrentPlayer->watchModel, (ModelNode *) nodepos);
     perspmtx = dynAllocateMatrix();
-#if defined(VERSION_EU)
-    guPerspective(perspmtx, &perspNorm, g_CurrentPlayer->zoominfovy, 1.4005603f, 10.0f, 300.0f, 1.0f);
-#else
-    guPerspective(perspmtx, &perspNorm, g_CurrentPlayer->zoominfovy, 1.4545455f, 10.0f, 300.0f, 1.0f);
-#endif
+    guPerspective(perspmtx, &perspNorm, g_CurrentPlayer->zoominfovy, WATCH_MODEL_ASPECT, 10.0f, 300.0f, 1.0f);
  
     gSPMatrix(gdl++, OS_PHYSICAL_TO_K0((u32) perspmtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
     gSPPerspNormalize(gdl++, perspNorm);

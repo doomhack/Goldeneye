@@ -42,27 +42,7 @@
 #define WATCH_VOL_ADJUST_STEP 1024
 
 
-#if defined(VERSION_EU)
-#define WATCH_PERSPECTIVE_FOVY    52.5f
-#define WATCH_PERSPECTIVE_ASPECT  1.283847f
-#else
-#define WATCH_PERSPECTIVE_FOVY    50.5f
-#define WATCH_PERSPECTIVE_ASPECT  1.3333334f
-#endif
 
-#if defined(VERSION_EU)
-#define OPTLABELS_ROW1_Y    0x5c
-#define OPTLABELS_ROW2_Y    0x7a
-#define OPTLABELS_ROW_PITCH 0x1e
-#define OPTLABELS_COL_RET   0x5a
-#define OPTLABELS_HINT_Y    0xe1
-#else
-#define OPTLABELS_ROW1_Y    0x52
-#define OPTLABELS_ROW2_Y    0x6b
-#define OPTLABELS_ROW_PITCH 0x19
-#define OPTLABELS_COL_RET   0x4b
-#define OPTLABELS_HINT_Y    0xc3
-#endif
 
 // bss
 Mtx g_WatchBarsScaleMtx;
@@ -1937,11 +1917,7 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     text2 = invGetWatchTitle2ForIndex(index);
 
 
-#if defined(VERSION_US)
-    guPerspective(persp, &perspNorm, fov, 1.33333337f, 10.0f, 10000.0f, 1.0f);
-#else
-    guPerspective(persp, &perspNorm, fov, 1.2838470f, 10.0f, 10000.0f, 1.0f);
-#endif
+    guPerspective(persp, &perspNorm, fov, WATCH_PERSPECTIVE_ASPECT, 10.0f, 10000.0f, 1.0f);
 
     gSPMatrix(gdl++, osVirtualToPhysical(persp), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
 
@@ -1962,19 +1938,11 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     gdl = textSetupDraw(gunDrawWatchAmmoDisplay(gdl));
 
     x = 0x60;
-#if defined(VERSION_US)
-    y = 0xA0;
-#else
-    y = 0xBC;
-#endif
+    y = WATCH_ITEM_TITLE1_Y;
     textMeasure(&height, &width, text, fontChars, font, 0);
     gdl = textRender(gdl, &x, &y, text, fontChars, font, 0xFF00B0, width, height, 0, 0);
 
-#if defined(VERSION_US)
-    y = 0xAA;
-#else
-    y = 0xC6;
-#endif
+    y = WATCH_ITEM_TITLE2_Y;
     textMeasure(&height, &width, text2, fontChars, font, 0);
     gdl = textRender(gdl, &x, &y, text2, fontChars, font, 0xFF00B0, width, height, 0, 0);
 
@@ -2102,11 +2070,6 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
 
 #define LINEHEIGHT() 12
 
-#if defined(VERSION_EU)
-#define WATCH_INV_BASE_Y() 0xAA
-#else
-#define WATCH_INV_BASE_Y() 0x8C
-#endif
 
             textheight = 0;
             textwidth = 0;
