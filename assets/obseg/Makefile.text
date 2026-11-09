@@ -2,7 +2,8 @@
 
 # Text banks we added strings to are built from source, never taken from the
 # extracted ROM copy (which lacks the new strings).
-TEXT_FROM_SOURCE := $(BUILD_DIR)/$(OBSEG_DIR)/text/LoptionsE.rz $(BUILD_DIR)/$(OBSEG_DIR)/text/LoptionsP.rz
+TEXT_FROM_SOURCE := $(BUILD_DIR)/$(OBSEG_DIR)/text/LoptionsE.rz $(BUILD_DIR)/$(OBSEG_DIR)/text/LoptionsP.rz \
+                    $(BUILD_DIR)/$(OBSEG_DIR)/text/LmpweaponsE.rz $(BUILD_DIR)/$(OBSEG_DIR)/text/LmpweaponsP.rz
 $(TEXT_FROM_SOURCE): $(BUILD_DIR)/$(OBSEG_DIR)/text/%.rz: $(BUILD_DIR)/$(OBSEG_DIR)/text/%.bin
 	$(RZ_COMP) $< $@
 
