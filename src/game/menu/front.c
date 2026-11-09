@@ -4105,6 +4105,10 @@ s32 frontIsMpStageAvailable(s32 stage)
     {
         return FALSE;
     }
+#ifdef UNLOCK_ALL_LEVELS
+    /* With UNLOCK_ALL=1 every multiplayer stage is open, whatever the save says */
+    return TRUE;
+#else
     if (g_MpStages[stage].unlock_after == -1)
     {
         return TRUE;
@@ -4114,6 +4118,7 @@ s32 frontIsMpStageAvailable(s32 stage)
         return TRUE;
     }
     return FALSE;
+#endif
 }
 
 
