@@ -101,6 +101,7 @@ extern s_bound_info g_BgRoomsDrawn[];
 #define BG_PORTAL_QUEUE_LEN 500
 /* Rooms each view can draw per frame. PAL had 124 (120 used); all versions now use the NTSC size. */
 #define BG_ROOMS_DRAWN_LEN 204
+_Static_assert(MAXROOMCOUNT < BG_ROOMS_DRAWN_LEN, "each room is drawn at most once per view");
 
 // bss
 s32 g_BgData;
@@ -226,10 +227,6 @@ s32 g_BgCurrentRoom = 1;
 */
 s32 g_BgNumberOfRoomsDrawn = 0;
 
-#if defined(VERSION_EU)
-/* PAL: rooms added to g_BgRoomsDrawn this frame, which can pass its length */
-s32 g_BgRoomsDrawnCount = 0;
-#endif
 
 /* Where each room sits in g_BgRoomsDrawn this view (0xff: not added), so looking a room up
    doesn't scan the list. Props look up their rooms' boxes hundreds of times a frame. */
@@ -269,11 +266,7 @@ void bgDetermineVisibleRooms(void);
 s32 bgGetPortalScreenBox(s32 portalnum, bbox2d *screenbox);
 f32 bgGetPortalThickness(s32 portalnum);
 void bgGrowRoomBoundsToPortals(s32 roomID);
-#if defined(VERSION_EU)
 void bgTraversePortal(s32 roomnum, s32 portalnum, s32 depth, const bbox2d *parentbox);
-#else
-s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum, s32 depth, const bbox2d *parentbox);
-#endif
 void bgSetLevelScale(f32 scale);
 s32 bgProjectPortalPoints(s32 portalnum, f32 scale, coord3d *points);
 void bgOrderPortal(s32 portalnum);
@@ -368,7 +361,8 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
         return temp;
     }
 
-#if defined(VERSION_EU)
+    /* Each room is added at most once per view and MAXROOMCOUNT < BG_ROOMS_DRAWN_LEN, so the
+       clamp (PAL's) never triggers; it only guards the table. */
     i = g_BgNumberOfRoomsDrawn;
     if (i >= BG_ROOMS_DRAWN_LEN) {
         i = BG_ROOMS_DRAWN_LEN - 1;
@@ -381,39 +375,11 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
     g_BgRoomsDrawn[i].bbox.max.y = screensize->max.y;
     g_BgRoomsDrawn[i].next = next;
     s_BgRoomDrawnSlot[curroom] = i;
-    g_BgRoomsDrawnCount++;
-    if (g_BgRoomsDrawnCount < BG_ROOMS_DRAWN_LEN) {
-        g_BgNumberOfRoomsDrawn = g_BgRoomsDrawnCount;
-    }
-
-    return 0;
-#else
-    i = g_BgNumberOfRoomsDrawn;
-#if defined(BACKPORT_R1)
-    /* PAL clamps this list so it can't overrun the table; same idea at the US size. */
-    if (i >= BG_ROOMS_DRAWN_LEN) {
-        i = BG_ROOMS_DRAWN_LEN - 1;
-    }
-#endif
-    g_BgRoomsDrawn[i].roomid = curroom;
-    g_BgRoomsDrawn[i].depth = unk1;
-    g_BgRoomsDrawn[i].bbox.min.x = screensize->min.x;
-    g_BgRoomsDrawn[i].bbox.min.y = screensize->min.y;
-    g_BgRoomsDrawn[i].bbox.max.x = screensize->max.x;
-    g_BgRoomsDrawn[i].bbox.max.y = screensize->max.y;
-    g_BgRoomsDrawn[i].next = next;
-    s_BgRoomDrawnSlot[curroom] = i;
-#if defined(BACKPORT_R1)
     if (i + 1 < BG_ROOMS_DRAWN_LEN) {
         g_BgNumberOfRoomsDrawn = i + 1;
     }
-#else
-    g_BgNumberOfRoomsDrawn = i + 1;
-#endif
-
 
     return 0;
-#endif
 }
 
 
@@ -451,26 +417,10 @@ s32 bgGet2dBboxByRoomId(s32 room_id, bbox2d *result)
 
 Gfx *bgRenderVisibleRooms(Gfx *gdl)
 {
-#ifdef VERSION_EU
-    s16 i;
-#else
     s32 i;
-#endif
     s32 j;
-#ifdef VERSION_EU
-    s16 b_max;
-    s16 b_min;
-#else
-    s32 b_max;
-    s32 b_min;
-#endif
-#ifdef VERSION_EU
-    b_max = 0;
-    b_min = 32767;
-#else
-    b_min = 99999999;
-    b_max = 0;
-#endif
+    s32 b_max = 0;
+    s32 b_min = 99999999;
  
     for (j = 0; j < g_BgNumberOfRoomsDrawn; j++)
     {
@@ -3148,7 +3098,6 @@ u8 bgIncrementRoomPortalVisitCount(s32 roomnum)
 }
 
 
-#ifdef VERSION_EU
 void bgQueuePortalTraversal(s32 roomnum, s32 portalnum, s32 depth, const bbox2d *box)
 {
     bg_queued_portal_entry *entry;
@@ -3174,37 +3123,8 @@ void bgQueuePortalTraversal(s32 roomnum, s32 portalnum, s32 depth, const bbox2d 
         g_BgPortalQueueWriteIndex--;
     }
 }
-#else
-void bgQueuePortalTraversal(s32 value, s32 roomnum, s32 portalnum, s32 depth, const bbox2d *box)
-{
-    bg_queued_portal_entry *entry;
-    entry = &g_BgPortalQueue[g_BgPortalQueueWriteIndex];
-    if (depth >= 2)
-    {
-        if (bgIncrementRoomPortalVisitCount((g_BgPortals[portalnum].connectedRoom2 ^ g_BgPortals[portalnum].connectedRoom1) ^ roomnum) >= 9)
-        {
-            return;
-        }
-    }
-    entry->value = value;
-    entry->roomnum = roomnum;
-    entry->portalnum = portalnum;
-    entry->depth = depth;
-    entry->box = *box;
-    g_BgPortalQueueWriteIndex++;
-    if (g_BgPortalQueueWriteIndex == BG_PORTAL_QUEUE_LEN)
-    {
-        g_BgPortalQueueWriteIndex = 0;
-    }
-    if (g_BgPortalQueueWriteIndex == g_BgPortalQueueReadIndex)
-    {
-        g_BgPortalQueueWriteIndex--;
-    }
-}
-#endif
 
 
-#if defined(VERSION_EU)
 bool bgProcessNextQueuedPortal(void)
 {
     const bg_queued_portal_entry *entry;
@@ -3225,41 +3145,13 @@ bool bgProcessNextQueuedPortal(void)
 
     return 1;
 }
-#else
-bool bgProcessNextQueuedPortal(s32 *valueptr)
-{
-    const bg_queued_portal_entry *entry;
-    s32 value;
-
-    value = *valueptr;
-
-    if (g_BgPortalQueueReadIndex == g_BgPortalQueueWriteIndex) {
-        return 0;
-    }
-
-    entry = &g_BgPortalQueue[g_BgPortalQueueReadIndex];
-
-    value = bgTraversePortal(value, entry->roomnum, entry->portalnum, entry->depth, &entry->box);
-
-    g_BgPortalQueueReadIndex++;
-
-    if (g_BgPortalQueueReadIndex == BG_PORTAL_QUEUE_LEN) {
-        g_BgPortalQueueReadIndex = 0;
-    }
-
-    *valueptr = value;
-
-    return 1;
-}
-#endif
 
 
 /**
- * EU version drops the value parameter and is type void unlike US/JP which returns s32.
+ * The original US/JP builds also passed a never-used s32 "value" through here.
  * 
  * bgPortalDescend
  */
-#if defined(VERSION_EU)
 void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, const bbox2d *parentbox)
 {
     bbox2d screenbox;
@@ -3391,141 +3283,6 @@ void bgTraversePortal(s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, c
         }
     }
 }
-#else
-s32 bgTraversePortal(s32 value, s32 roomnum, s32 portalnum /*canonically p*/, s32 depth, const bbox2d *parentbox)
-{
-    bbox2d screenbox;
-    const coord3d *playerpos;
-    s32 otherroom;
-    struct PortalMetric metric;
-    f32 playermetric;
-    f32 portalmetric;
-    s32 i;
- 
-    g_BgPortalVisits++;
- 
-    if (depth >= 101)
-    {
-        return value;
-    }
- 
-    if (g_BgMaxPortalDepth < depth)
-    {
-        return value;
-    }
- 
-    if (depth >= 16)
-    {
-        return value;
-    }
- 
- 
- 
-    if (g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_DISABLED)
-    {
-        return value;
-    }
- 
-
- 
-    playerpos = playerGetPos();
-    bgGetPortalPlane(portalnum, &metric);
-    playermetric = ((metric.normal.z * playerpos->z) + ((metric.normal.x * playerpos->x) + (metric.normal.y * playerpos->y))) * g_BgLevelScale;
-    portalmetric = bgGetPortalThickness(portalnum);
- 
-    if (roomnum == g_BgPortals[portalnum].connectedRoom1)
-    {
-        otherroom = g_BgPortals[portalnum].connectedRoom2;
- 
-        if (metric.max <= (playermetric - portalmetric))
-        {
-            return value;
-        }
-    }
-    else
-    {
-        otherroom = g_BgPortals[portalnum].connectedRoom1;
- 
-        if ((playermetric + portalmetric) <= metric.min)
-        {
-            return value;
-        }
-    }
- 
-    if (((metric.min - portalmetric) < playermetric) && (playermetric < (metric.max + portalmetric)))
-    {
-        screenbox.f[0][0] = g_CurrentPlayer->screensize.f[0][0];
-        screenbox.f[0][1] = g_CurrentPlayer->screensize.f[0][1];
-        screenbox.f[1][0] = g_CurrentPlayer->screensize.f[1][0];
-        screenbox.f[1][1] = g_CurrentPlayer->screensize.f[1][1];
-    }
-    else
-    {
-        if (g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_SPECIAL)
-        {
-            if (!bgGetPortalScreenBox(portalnum, &screenbox))
-            {
-                return value;
-            }
- 
-            otherroom = (g_BgPortals[portalnum].connectedRoom1 ^ g_BgPortals[portalnum].connectedRoom2) ^ roomnum;
- 
-            if (!bgIsRoomOnScreen(otherroom, &screenbox))
-            {
-                return value;
-            }
- 
-            screenbox.f[0][0] = g_CurrentPlayer->screensize.f[0][0];
-            screenbox.f[0][1] = g_CurrentPlayer->screensize.f[0][1];
-            screenbox.f[1][0] = g_CurrentPlayer->screensize.f[1][0];
-            screenbox.f[1][1] = g_CurrentPlayer->screensize.f[1][1];
-        }
-        else
-        {
-            if (!bgGetPortalScreenBox(portalnum, &screenbox))
-            {
-                return value;
-            }
- 
-            bgRectIntersect(&screenbox, parentbox);
-            bgRectIntersect(&screenbox, &g_CurrentPlayer->screensize);
-        }
- 
-        if ((screenbox.max.x <= screenbox.min.x) || (screenbox.max.y <= screenbox.min.y))
-        {
-            return value;
-        }
-    }
- 
- 
-    if ((screenbox.min.x < screenbox.max.x) && (screenbox.min.y < screenbox.max.y))
-    {
-        if (bgAddVisibleRoom(otherroom, depth, &screenbox, g_BgPortals[portalnum].controlbytes1 & PORTALFLAG_SPECIAL))
-        {
-            return value;
-        }
-    }
-    else
-    {
-        return value;
-    }
- 
-    const u8 *portals;
-    s32 numportals = bgGetRoomPortals(otherroom, &portals);
-
-    for (s32 n = 0; n < numportals; n++)
-    {
-        i = portals[n];
-
-        if (i != portalnum)
-        {
-            bgQueuePortalTraversal(value, otherroom, i, depth + 1, &screenbox);
-        }
-    }
- 
-    return value;
-}
-#endif
 
 
 /**
@@ -3885,9 +3642,6 @@ const void *bgRunVisCommands(GlobalVisCommand *pc)
 void bgDetermineVisibleRooms(void) 
 {
     bbox2d screenbox;
-#if defined(VERSION_US)
-    s32 value;
-#endif
     s32 i;
 
     bgUpdateCurrentPlayerScreenMinMax();
@@ -3896,9 +3650,6 @@ void bgDetermineVisibleRooms(void)
 
     // The drawn room list and the per-room flags start empty
     g_BgNumberOfRoomsDrawn = 0;
-#ifdef VERSION_EU
-    g_BgRoomsDrawnCount = 0;
-#endif
 
     for (i = 0; i < MAXROOMCOUNT; i++) 
     {
@@ -3946,27 +3697,13 @@ void bgDetermineVisibleRooms(void)
         for (s32 n = 0; n < numportals; n++)
         {
             i = portals[n];
-#if defined(VERSION_US)
-            bgQueuePortalTraversal(0, g_BgCurrentRoom, i, 1, &screenbox);
-#else
             bgQueuePortalTraversal(g_BgCurrentRoom, i, 1, &screenbox);
-#endif
         }
 
-#if defined(VERSION_US)
-        value = 0;
-
-        while (bgProcessNextQueuedPortal(&value) != 0) 
+        while (bgProcessNextQueuedPortal() != 0)
         {
             // empty
         }
-
-#else
-        while (bgProcessNextQueuedPortal() != 0) 
-        {
-            // empty
-        }
-#endif
     }
 
 }

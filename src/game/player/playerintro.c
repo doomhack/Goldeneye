@@ -157,13 +157,8 @@ void playerApplyIntro(void)
 #define FLOAT_INIT 0
 
 
-#if defined(VERSION_EU)
-#define GROUND_DAMP_INV 0.20039999485f
-#define EYE_DAMP_INV 0.118799984455f
-#else
 #define GROUND_DAMP_INV 0.170000016689f
 #define EYE_DAMP_INV 0.100000023842f
-#endif
 
     // declarations
 

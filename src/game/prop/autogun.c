@@ -43,21 +43,12 @@
 #define AUTOGUN_FLAG2_WANDER PROPFLAG2_DOOR_ALTCOORDSYSTEM
 
 /* Turning speeds, in radians per frame (and per frame per frame) */
-#if defined(VERSION_EU)
-#define AUTOGUN_WANDER_YAW_MAX_SPEED   0.0008377581f
-#define AUTOGUN_WANDER_YAW_ACCEL       0.0000139626345f
-#define AUTOGUN_WANDER_PITCH_ACCEL     0.0000069813173f
-#define AUTOGUN_WANDER_PITCH_MAX_SPEED 0.00041887906f
-#define AUTOGUN_AIM_ACCEL              0.0010471976f
-#define AUTOGUN_TRACKING_FRAMES        100
-#else
-#define AUTOGUN_WANDER_YAW_MAX_SPEED   0.00069813174f   // 2.4 degrees a second
-#define AUTOGUN_WANDER_YAW_ACCEL       0.000011635529f
-#define AUTOGUN_WANDER_PITCH_ACCEL     0.0000058177643f
-#define AUTOGUN_WANDER_PITCH_MAX_SPEED 0.00034906587f   // 1.2 degrees a second
-#define AUTOGUN_AIM_ACCEL              0.0008726647f
-#define AUTOGUN_TRACKING_FRAMES        120              // 2 seconds
-#endif
+#define AUTOGUN_WANDER_YAW_MAX_SPEED 0.00069813174f // 2.4 degrees a second
+#define AUTOGUN_WANDER_YAW_ACCEL 0.000011635529f
+#define AUTOGUN_WANDER_PITCH_ACCEL 0.0000058177643f
+#define AUTOGUN_WANDER_PITCH_MAX_SPEED 0.00034906587f // 1.2 degrees a second
+#define AUTOGUN_AIM_ACCEL 0.0008726647f
+#define AUTOGUN_TRACKING_FRAMES 120 // 2 seconds
 
 /* The barrels spin up by about 34 degrees a second each frame, to at most 5.7 turns a
    second */

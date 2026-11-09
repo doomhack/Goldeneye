@@ -11,7 +11,7 @@ WeaponStats knife_stats = {
 	0.0, //Inaccuracy
 	0.0, //Zoom
 	SCALEVAL_KNIFE, //CrosshairSpeed
-	0.85000002, //AimLockSpeed
+	0.85000002f, //AimLockSpeed
 	1.0, //Sway
 	{0}, //RecoilSpeed
 	0.0, //RecoilBack

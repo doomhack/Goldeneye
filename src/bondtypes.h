@@ -1068,10 +1068,6 @@ typedef union
             s16                numRecords;           // 14 used in runtime for number of records
             s16                numtextures;          // 16 Number of textures in table
             ModelFileTextures *Textures;             // 18 offset to texture table
-#if defined(VERSION_EU)
-#else
-            s32                isLoaded;
-#endif
         } ModelFileHeader;
 
         typedef struct ItemModelFileRecord
@@ -1235,12 +1231,6 @@ typedef union
             s16 TypeID;
             s16 Seed[6];
         } ExplosionDetailsRecord;
-
-        typedef struct ExplosionDetailsRecordEuList
-        {
-            u8                                typeids[344];
-            s16                               seeds[105][6];
-        } ExplosionDetailsRecordEuList;
 #pragma endregion Explosion Stuff
 
 #pragma region Hit Structures

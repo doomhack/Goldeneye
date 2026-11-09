@@ -155,11 +155,7 @@ static void aiSoundStop(s32 slot)
  */
 static s32 aiSoundFadeTicks(u16 time60)
 {
-#ifdef VERSION_EU
-    return (time60 * 50) / 60;
-#else
     return time60;
-#endif
 }
 
 /**
@@ -3585,11 +3581,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTextPrintBottomRecord *ai   = (AiTextPrintBottomRecord *)(AiListp + Offset);
                     const char                    *text = langGet(ntohs(ai->txt));
                     s32 prevplayer = counterOpTextBegin();
-    #ifdef BUGFIX_R1
-                    hudmsgBottomShowText(text);
-    #else
                     hudmsgBottomShow(text);
-    #endif
                     playerSetCurrent(prevplayer);
                     Offset += sizeof(AiTextPrintBottomRecord);
                     break;

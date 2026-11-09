@@ -537,9 +537,6 @@ void bossMainloop(void)
         mempClosePool(MEMPOOL_STAGE);
         assetForgetSizes();
 
-#if defined(VERSION_EU)
-#endif
-
         g_StageNum = g_MainStageNum;
         g_MainStageNum = LEVELID_NONE;
     }

@@ -89,11 +89,7 @@ void statsAddKill(void)
     mission_time = lvGetMissionTime60();
     sprintf(buffer, "%s: %d\n", langGet(getStringID(LGUN, GUN_STR_DA_KILLCOUNT)), g_playerPerm->kill_count); // "kill count"
 
-#if defined(VERSION_US)
     hudmsgBottomShow(buffer);
-#elif defined(VERSION_EU)
-    hudmsgBottomShowText(buffer);
-#endif
 
     if (g_playerPerm->kill_count >= 2)
     {
@@ -169,11 +165,7 @@ void statsAddDeath(void)
         {
             sprintf(buffer, "%s %d %s\n", langGet(getStringID(LGUN, GUN_STR_DC_DIED)), g_CurrentPlayer->deathcount, langGet(getStringID(LGUN, GUN_STR_DD_TIMES))); //died times
         }
-#if defined(VERSION_EU)
-		hudmsgBottomShowText(buffer);
-#else
 		hudmsgBottomShow(buffer);
-#endif
     }
 }
 
@@ -194,11 +186,7 @@ void statsAddSuicide(void) {
 
         sprintf(buffer, "%s: %d\n", langGet(getStringID(LGUN, GUN_STR_DE_SUICIDECOUNT)), g_CurrentPlayer->num_suicides); // "suicide count"
 
-#if defined(VERSION_EU)
-		hudmsgBottomShowText(buffer);
-#else
 		hudmsgBottomShow(buffer);
-#endif
 
         if (g_playerPerm->kill_count >= 2) {
             time_diff = currentTime - g_CurrentPlayer->last_kill_time[0];

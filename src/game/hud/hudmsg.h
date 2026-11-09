@@ -6,15 +6,10 @@
 #define HUDMSG_TOP_LEN    0x97
 #define HUDMSG_BOTTOM_LEN 0x65
 
-#if defined(BUGFIX_R1)
-#define HUDMESSAGEBOTTOM hudmsgBottomShowText
-void hudmsgBottomShow(const char *string, struct fontchar *font, struct font *font1);
-void hudmsgBottomShowText(const char *string);
-#else
-#define HUDMESSAGEBOTTOM hudmsgBottomShow
+/* Queue a bottom message in the given font (the intro camera uses Zurich). */
+void hudmsgBottomShowFont(const char *string, struct fontchar *font, struct font *font1);
+/* Queue a bottom message in the usual font. */
 void hudmsgBottomShow(const char *string);
-void hudmsgSetFonts(struct fontchar *font2, struct font *font1);
-#endif
 
 void hudmsgResetIntroText(void);
 void hudmsgsSetOn(s32 flag);

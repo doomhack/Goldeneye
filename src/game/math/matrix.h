@@ -49,10 +49,6 @@ void mtx4TransposeRotation(const Mtxf *matrix, Mtxf *result);
 void mtx4InvertRigid(const Mtxf *matrix, Mtxf *result);
 void mtx4InvertAffine(const Mtxf *matrix, Mtxf *result);
 
-void mtx3Mult(const Mtx3f *lhs, const Mtx3f *rhs, Mtx3f *result);
-void mtx3MultInPlace(const Mtx3f *lhs, Mtx3f *rhs);
-void mtx3ToMtx4(const Mtx3f *src, Mtxf *dst);
-void mtx4ToMtx3(const Mtxf *src, Mtx3f *dst);
 
 void mtxSetWorldScale(f32 scale);
 void mtxPushUnitWorldScale(void);

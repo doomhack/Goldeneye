@@ -198,9 +198,6 @@ struct ModelFileHeader PchrkalashZeader = {
                                                                                         #ifdef DEBUG
                                                                                             ,chrobj_SwitchNames
                                                                                         #endif
-                                                                                                                            #if !defined(VERSION_EU)
-                                                                                                                                ,FALSE
-                                                                                                                            #endif
     };
 */
 #include <assets/obseg/prop/chrgrenadelaunch/ModelFileHeader.inc.c>

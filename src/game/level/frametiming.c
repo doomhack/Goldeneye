@@ -1,10 +1,15 @@
 /**
  * The frame timer. frameWaitForNext waits until at least g_FrameMinFrames video frames
- * have passed since the last game frame, using the CPU counter, then frameAdvance records
- * how many it was in g_FrameDelta (1 at full speed). lv.c turns that into g_ClockTimer.
+ * have passed since the last game frame, then frameAdvance records how many 60 Hz game
+ * ticks that was in g_FrameDelta. lv.c turns that into g_ClockTimer.
+ *
+ * On NTSC a retrace is one tick. On PAL a retrace is 1.2 ticks: the whole ticks go to
+ * this frame and the fraction carries to the next, so a 25 fps PAL game gets deltas of
+ * 2, 3, 2, 3, 2 (12 ticks every 10 retraces).
  */
 
 #include <ultra64.h>
+#include <bondconstants.h>
 #include "game/level/frametiming.h"
 #include "sched.h"
 
@@ -17,13 +22,11 @@ s32 g_FrameCounter = 0;
  */
 s32 g_FrameDelta = 1;
 
-#if defined(BUGFIX_R1)
 // EU address D_8004111C
 f32 g_FrameDeltaF = 1.0f;
 
 // EU address D_80041120
 f32 g_FrameDelta60 = 1.0f;
-#endif
 
 s32 g_FrameHalfCounterPrev = -1;
 s32 g_FrameHalfCounter = 0; // half of g_FrameCounter
@@ -40,6 +43,11 @@ s32 g_FrameMinFrames = 1; //usually 1
  * game time: the deltas add up to the retraces that really happened.
  */
 static u32 s_FrameStartRetrace;
+
+#if VI_HZ != TICKS_PER_SECOND
+/* The part of a tick carried to the next frame, in 1/VI_HZ ticks */
+static u32 s_TickRemainder;
+#endif
 
 static u32 frameGetRetraceCount(void)
 {
@@ -81,19 +89,32 @@ void frameAdvance(s32 deltaFrames)
     g_FrameCounter = (s32) (g_FrameCounter + deltaFrames);
     g_FrameDelta = deltaFrames;
 
-    #ifdef BUGFIX_R1
     g_FrameDeltaF = (f32) deltaFrames;
-    #ifdef REFRESH_PAL
-    g_FrameDelta60 = (g_FrameDeltaF * 60.0f) / 50.0f;
-    #else
-    g_FrameDelta60 = (f32) g_FrameDeltaF;
-    #endif
-    #endif
+    g_FrameDelta60 = g_FrameDeltaF;
 
     g_FrameHalfCounterPrev = (s32) g_FrameHalfCounter;
     g_FrameHalfCounter = (s32) (g_FrameCounter / 2);
     g_FrameCounterOdd = (s32) (g_FrameCounter & 1);
     g_FrameHalfDelta = (s32) (g_FrameHalfCounter - g_FrameHalfCounterPrev);
+}
+
+
+/**
+ * Converts retraces to whole 60 Hz ticks, carrying the fraction to the next call.
+ */
+static s32 frameRetracesToTicks(s32 retraces)
+{
+#if VI_HZ == TICKS_PER_SECOND
+    return retraces;
+#else
+    s32 ticks;
+
+    s_TickRemainder += (u32)retraces * TICKS_PER_SECOND;
+    ticks = s_TickRemainder / VI_HZ;
+    s_TickRemainder -= ticks * VI_HZ;
+
+    return ticks;
+#endif
 }
 
 
@@ -112,5 +133,5 @@ void frameWaitForNext(void)
     } while (retraces < g_FrameMinFrames);
 
     g_FrameMinFrames = 1;
-    frameAdvance(retraces);
+    frameAdvance(frameRetracesToTicks(retraces));
 }

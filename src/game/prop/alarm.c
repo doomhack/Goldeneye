@@ -27,13 +27,8 @@
 #include "fr.h"
 #include "game/mission/mission.h"
 
-#if defined(VERSION_EU)
-#define ALARM_DURATION_TICKS 1500
-#define GAS_COUGH_INTERVAL_TICKS 187
-#else
 #define ALARM_DURATION_TICKS 1800
 #define GAS_COUGH_INTERVAL_TICKS 225
-#endif
 
 /* Gas times, in frames (g_GlobalTimerDelta) */
 #define GAS_FULL_TIME 3600.0f
@@ -284,11 +279,7 @@ Gfx *countdownTimerRender(Gfx *gdl)
     secs = (s32)mathFloor(time / 60.0f) - mins * 60;
     hundredths = (s32)mathFloor(time * 100.0f / 60.0f) - mins * 6000 - secs * 100;
 
-#if defined(VERSION_US)
-    y = viGetViewTop() + viGetViewHeight() - 18;
-#else
-    y = viGetViewTop() + viGetViewHeight() - 28;
-#endif
+    y = viGetViewTop() + viGetViewHeight() - (18 + HUD_BOTTOM_PAD);
 
     // Centred on the screen, which is the view in a full-width one. A half
     // width view centres it on the view instead, and lifts it above the

@@ -39,15 +39,9 @@
    multiplayer weapon set */
 #define MP_WEAPON_SET_SLOT 0xF0
 
-#if defined(VERSION_EU)
-#define AUTOGUN_SPEED_UNIT 7.5398226f // tuned for 50 Hz: 2 pi * 1.2
-#define DOOR_SPEED_UNIT    1.2f
-#define TANK_Y_SMOOTHING   0.2004f
-#else
 #define AUTOGUN_SPEED_UNIT M_TAU_F
 #define DOOR_SPEED_UNIT    1.0f
 #define TANK_Y_SMOOTHING   0.17000002f
-#endif
 
 /* A beam is 0x2c bytes, rounded up to 16 */
 #define BEAM_ALLOC_SIZE 0x30
@@ -825,11 +819,7 @@ void setupWeapon(WeaponObjRecord *weapon)
 
                 weapon->weaponnum = weaponset[slot].itemID;
                 weapon->obj = weaponset[slot].propID;
-#if defined(VERSION_EU)
-                weapon->extrascale = weaponset[slot].size16;
-#else
                 weapon->extrascale = weaponset[slot].size * 256.0f;
-#endif
                 load = weaponset[slot].allowpickup;
                 break;
 

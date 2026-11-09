@@ -5,6 +5,7 @@
  * Times are in game ticks (60 per second), and gravity is 1/3.6 units per tick per tick.
  */
 #include <ultra64.h>
+#include <bondconstants.h>
 #include <math.h>
 #include "random.h"
 #include "game/math/matrix.h"
@@ -24,15 +25,9 @@ void physRandomTumble(Mtxf *tumble)
 {
     coord3d angles;
 
-#if defined(VERSION_US)
     angles.x = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
     angles.y = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
     angles.z = physRandomFrac() * M_TAU_F * 0.03125f - 0.09817477f;
-#else
-    angles.x = physRandomFrac() * 7.53982257f * 0.03125f - 0.11780973f;
-    angles.y = physRandomFrac() * 7.53982257f * 0.03125f - 0.11780973f;
-    angles.z = physRandomFrac() * 7.53982257f * 0.03125f - 0.11780973f;
-#endif
     mtx4LoadRotation(&angles, tumble);
 }
 

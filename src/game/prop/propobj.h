@@ -6,20 +6,9 @@
 #include <bondtypes.h>
 #include <snd.h>   
 
-#ifdef VERSION_EU
-
-#define CHROBJ_TIMETOREGEN   50
-#define CHROBJ_TIMETOREGEN_F 50.0f
-
-#define PLASTIQUE_EXPLOSION_DELAY_TICKS 100
-
-#else
-
-#define CHROBJ_TIMETOREGEN   60
-#define CHROBJ_TIMETOREGEN_F 60.0f
+#define CHROBJ_TIMETOREGEN TICKS_PER_SECOND
+#define CHROBJ_TIMETOREGEN_F ((f32)TICKS_PER_SECOND)
 #define PLASTIQUE_EXPLOSION_DELAY_TICKS 120
-
-#endif
 
 extern f32 g_SoloAmmoMultiplier;
 
@@ -27,11 +16,7 @@ extern struct LinkRecord *g_LevelLoadPropSwitch;
 extern LockDoorRecord *g_LevelLoadPropLockDoor;
 extern SafeObjectRecord *g_LevelLoadPropSafeItem;
 
-#if defined(VERSION_EU)
-extern ExplosionDetailsRecordEuList object_explosion_details;
-#else
 extern ExplosionDetailsRecord object_explosion_details[];
-#endif
 
 
 PropRecord *objInit(ObjectRecord *obj, ModelFileHeader *header, PropRecord *prop, Model *model);

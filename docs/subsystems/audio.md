@@ -64,7 +64,6 @@ Vehicles' engines (not aircraft) use a shorter range (`sfxVolumeAtRange`).
 * The slot timers were called "minutes" and "seconds" (`g_LevelMusicSlotLinger`,
   `g_LevelMusicSlotTotal`): both are in frames.
 * The original US code did nothing when a level started from `MUSICSTATE_SILENT` going
-  to silent again; PAL stops all three channels. The US build here takes the PAL path
-  (`BACKPORT_R1`).
+  to silent again; PAL stops all three channels. Both builds here take the PAL path.
 * Solo death music isn't part of the state machine: `hudRender` (`hud/hud.c`) stops the slots, sets
   the state to silent and plays the death track on channel 1 itself.

@@ -68,6 +68,7 @@
 #include "game/prop/alarm.h"
 #include "game/prop/autoaim.h"
 #include "game/level/gamemode.h"
+#include "assets/obseg/text/LmiscE.h"
 
 // bss
 u32 *g_FontDl;
@@ -82,17 +83,11 @@ s32 g_ControlsLockedFlag = 0;
 s32 g_ClockTimer = 0;
 
 
-#if defined (BUGFIX_R1)
 // addresses updated, per build\ge007.j.map
 f32 g_GlobalTimerDeltaRaw = 0;
 s32 g_GlobalTimer = 0;
 s32 g_LvTickCount = 0;
 f32 g_GlobalTimerDelta = 0;
-#else
-f32 g_GlobalTimerDelta = 0;
-s32 g_GlobalTimer = 0;
-s32 g_LvTickCount = 0;
-#endif
 /*
 * Selected difficulty mode.
 * 0x80048384
@@ -191,19 +186,12 @@ void lvStageLoad(s32 stage)
     g_ControlsLockedFlag = 0;
     g_ClockTimer = 1;
 
-#ifdef VERSION_US
-    g_GlobalTimerDelta = 1.0f;
-#endif
-#if defined(VERSION_EU)
     g_GlobalTimerDeltaRaw = 1.0f;
-#endif
 
     g_LvTickCount = 0;
     g_GlobalTimer = 0;
 
-#if defined(VERSION_EU)
-    g_GlobalTimerDelta = 1.20000004768f;
-#endif
+    g_GlobalTimerDelta = 1.0f;
 
     g_LvIdle = 0;
     g_LvIdleTime = 0;
@@ -890,16 +878,8 @@ void lvTick(void)
         g_LvTickCount += 1;
     }
 
-#ifdef VERSION_US
-    g_GlobalTimerDelta = (f32) g_ClockTimer;
-#else
     g_GlobalTimerDeltaRaw = (f32) g_ClockTimer;
-#ifdef VERSION_EU
-    g_GlobalTimerDelta = g_GlobalTimerDeltaRaw * 1.2f;
-#else
     g_GlobalTimerDelta = g_GlobalTimerDeltaRaw;
-#endif
-#endif
     g_GlobalTimer += g_ClockTimer;
     if ((g_CurrentStageToLoad != LEVELID_TITLE) && (g_MissionTime == 0) && (g_ClockTimer > 0))
     {
@@ -953,29 +933,17 @@ void lvTick(void)
             oldtime = g_MissionTime;
             newtime = g_ClockTimer + g_MissionTime;
 
-#ifdef VERSION_EU
-            if ((g_MissionTime < (g_MpTime - 0xBB8)) && (newtime >= (g_MpTime - 0xBB8)))
-#else
             if ((g_MissionTime < (g_MpTime - 0xE10)) && (newtime >= (g_MpTime - 0xE10)))
-#endif
             {
                 for (i = 0; i < getPlayerCount(); i++)
                 {
                     playerSetCurrent(i);
-#ifdef VERSION_US
-                    HUDMESSAGEBOTTOM("One minute left");
-#else
-                    HUDMESSAGEBOTTOM(langGet(0xB044));
-#endif
+                    hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_44_ONEMINUTELEFT)));
                 }
             }
 
             // sound alarm when game is about to end (10 seconds before end)
-#ifdef VERSION_EU
-            if ((newtime >= (g_MpTime - 0x1F4)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
-#else
             if ((newtime >= (g_MpTime - 0x258)) && (g_MpSoundStateRelated == 0) && (lvGetControlsLocked() == 0))
-#endif
             {
                 sndPlaySfx(g_musicSfxBufferPtr, ALARM1_SFX, &g_MpSoundStateRelated);
             }
@@ -1103,17 +1071,9 @@ void lvTick(void)
     }
 
     g_MissionTime = g_MissionTime + g_ClockTimer;
-#ifdef VERSION_EU
-    g_MissionTimeSec = (f32) (g_MissionTime) / 50.0f;
-#else
-    g_MissionTimeSec = (f32) (g_MissionTime) / 60.0f;
-#endif
+    g_MissionTimeSec = (f32) (g_MissionTime) / (f32)TICKS_PER_SECOND;
     g_SystemPowerTime = g_SystemPowerTime + g_ClockTimer;
-#ifdef VERSION_EU
-    g_SystemPowerTimeSec = (f32) (g_SystemPowerTime) / 50.0f;
-#else
-    g_SystemPowerTimeSec = (f32) (g_SystemPowerTime) / 60.0f;
-#endif
+    g_SystemPowerTimeSec = (f32) (g_SystemPowerTime) / (f32)TICKS_PER_SECOND;
 
     if (joyGetButtonsPressedThisFrame(PLAYER_1, ANY_BUTTON))
     {
@@ -1124,11 +1084,7 @@ void lvTick(void)
     {
         g_LvTimeSinceInput = g_LvTimeSinceInput + g_ClockTimer;
 
-#ifdef VERSION_EU
-        if (g_LvTimeSinceInput >= 0x5DC)
-#else
         if (g_LvTimeSinceInput >= 0x708)
-#endif
         {
             g_LvIdle = 1;
         }
@@ -1141,17 +1097,9 @@ void lvTick(void)
     else
     {
         g_StageTime = g_StageTime + g_ClockTimer;
-#ifdef VERSION_EU
-        g_StageTimeSec = (f32) (g_StageTime) / 50.0f;
-#else
-        g_StageTimeSec = (f32) (g_StageTime) / 60.0f;
-#endif
+        g_StageTimeSec = (f32) (g_StageTime) / (f32)TICKS_PER_SECOND;
         g_PowerOnTime = g_PowerOnTime + g_ClockTimer;
-#ifdef VERSION_EU
-        g_PowerOnTimeSec = (f32) (g_PowerOnTime) / 50.0f;
-#else
-        g_PowerOnTimeSec = (f32) (g_PowerOnTime) / 60.0f;
-#endif
+        g_PowerOnTimeSec = (f32) (g_PowerOnTime) / (f32)TICKS_PER_SECOND;
     }
 
     viSetUseZBuf(1);

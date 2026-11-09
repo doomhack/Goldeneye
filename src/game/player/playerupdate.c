@@ -67,11 +67,7 @@ s32 g_CoopForceMovePlayer = 0;
 
 s32 mission_timer;
 
-#if defined(VERSION_EU)
 f32 watch_time_0;
-#else
-s32 watch_time_0;
-#endif
 
 
 
@@ -398,11 +394,7 @@ void playerUpdatePosFromCollision(void)
     g_CurrentPlayer->prop->pos.f[1] = g_CurrentPlayer->bond.collision_position.f[1];
     g_CurrentPlayer->prop->pos.f[2] = g_CurrentPlayer->bond.collision_position.f[2];
 
-#if defined(VERSION_EU)
-#define EYE_DAMP 0.881200015545f
-#else
 #define EYE_DAMP 0.9f
-#endif
     for (i=0; i<g_ClockTimer; i++)
     {
         g_CurrentPlayer->dampEyeSum.f[0] = (EYE_DAMP * g_CurrentPlayer->dampEyeSum.f[0]) + g_CurrentPlayer->bond.pos.f[0];
@@ -410,11 +402,7 @@ void playerUpdatePosFromCollision(void)
         g_CurrentPlayer->dampEyeSum.f[2] = (EYE_DAMP * g_CurrentPlayer->dampEyeSum.f[2]) + g_CurrentPlayer->bond.pos.f[2];
     }
 
-#if defined(VERSION_EU)
-#define EYE_DAMP_INV 0.118799984455f
-#else
 #define EYE_DAMP_INV 0.100000024f
-#endif
     g_CurrentPlayer->dampEye.x = g_CurrentPlayer->dampEyeSum.f[0] * EYE_DAMP_INV;
     g_CurrentPlayer->dampEye.y = g_CurrentPlayer->dampEyeSum.f[1] * EYE_DAMP_INV;
     g_CurrentPlayer->dampEye.z = g_CurrentPlayer->dampEyeSum.f[2] * EYE_DAMP_INV;
@@ -1239,13 +1227,6 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
             f32 calc_z;
             f32 calc_speedforwards;
 
-#if defined(VERSION_EU)
-            // Divide by zero check.
-            if (g_GlobalTimerDelta == 0)
-            {
-            }
-#endif
-
             calc_x = (g_CurrentPlayer->bond.collision_position.f[0] - g_CurrentPlayer->bondprevpos.f[0]) / g_GlobalTimerDelta;
             calc_z = (g_CurrentPlayer->bond.collision_position.f[2] - g_CurrentPlayer->bondprevpos.f[2]) / g_GlobalTimerDelta;
             calc_speedforwards = sqrtf((calc_x * calc_x) + (calc_z * calc_z));
@@ -1290,13 +1271,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         if ((g_Tank.sfx[0] != NULL) && (sndGetPlayingState(g_Tank.sfx[0]) != 0))
         {
-            #if defined(VERSION_US)
-            g_Tank.engineVolume -= (g_ClockTimer * 1000);
-            #endif
-
-            #if defined(VERSION_EU)
             g_Tank.engineVolume -= (s32)(1000.0f * g_GlobalTimerDelta);
-            #endif
 
             if (g_Tank.engineVolume > 0)
             {
@@ -1354,11 +1329,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         maxspeed = speedforwards;
 
-#if defined(VERSION_EU)
-        if (maxspeed < speedsideways && 1)
-#else
         if (maxspeed < speedsideways)
-#endif
         {
             maxspeed = speedsideways;
         }
@@ -1860,9 +1831,7 @@ void playerMoveFrozen(u16 buttons, u16 oldbuttons)
  */
 void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 {
-#ifdef VERSION_EU
     f32 faspect;
-#endif
 
     playerSetFovY(FOV_Y_F);
 
@@ -1905,7 +1874,6 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
         viSetFrameBuf2((u8 *) resolution);
     }
 
-#ifdef VERSION_EU
     if (optionsGetScreenRatio() == SCREEN_RATIO_16_9)
     {
         faspect = ((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT;
@@ -1917,25 +1885,11 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
 
     if (cameraBufferToggle == 0)
     {
-        faspect *= EU_CAMERA_8003642C_ASPECT;
+        faspect *= SCREEN_PIXEL_ASPECT;
     }
 
     playerSetAspect(faspect);
     viSetAspect(faspect);
-
-#else
-
-    if (optionsGetScreenRatio() == SCREEN_RATIO_16_9)
-    {
-        playerSetAspect(((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT);
-        viSetAspect(((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight()) * 0.75f * WIDESCREEN_ASPECT);
-    }
-    else
-    {
-        playerSetAspect((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight());
-        viSetAspect((f32) playerGetViewportWidth() / (f32) playerGetViewportHeight());
-    }
-#endif
 
     playerSetScreenSize( playerGetViewportWidth(), playerGetViewportHeight());
     playerSetViewportPos( playerGetViewportLeft(), playerGetViewportTop());
@@ -1958,9 +1912,6 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
             || (gameIsMulti() && g_playerPerm->sight)
     );
 
-#if defined(VERSION_EU)
-#endif
-
     if ((g_CameraMode == CAMERAMODE_NONE) || ((g_CameraMode == CAMERAMODE_FP) && (g_Mission.playerHasControl != 0)) || (g_CameraMode == CAMERAMODE_FADE_TO_TITLE))
     {
         if (playerGetCurrentNum() == 0)
@@ -1975,12 +1926,7 @@ void playerUpdate(s8 stick_x, s8 stick_y, u16 buttons)
         playerMoveFrozen(buttons, (u16) g_CurrentPlayer->buttons_pressed);
     }
 
-#if defined(BUGFIX_R1)
     watch_time_0 += g_FrameDelta60;
-#else
-    // VERSION_US
-    watch_time_0 += g_FrameDelta;
-#endif
 
     if (g_Mission.exitOnPress != 0)
     {
@@ -2061,11 +2007,7 @@ void playerSetWorldScale(f32 scale)
 
 
 s32 lvGetMissionTime60(void) {
-#ifdef VERSION_EU
-    return (mission_timer * 60) / 50;
-#else
     return mission_timer;
-#endif
 }
 
 

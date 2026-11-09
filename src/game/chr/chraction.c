@@ -109,11 +109,7 @@ void chrStandChooseAnimation(const ChrRecord *self, f32 duration)
 }
 
 
-#ifdef REFRESH_PAL
-#define RATE 1.2f
-#else
 #define RATE 1.0f
-#endif
 
 /**
  * At the end of a character's kneeling animation smoothly merge into their standing animation.
@@ -138,11 +134,7 @@ void chrStandImmediate(ChrRecord *self, f32 mergetime)
 
     if (self->model->playspeed != RATE)
     {
-#if defined(BUGFIX_R1)
-        fsleep *= (RATE / self->model->playspeed);
-#else
-        fsleep = mergetime / self->model->playspeed;
-#endif
+        fsleep = (mergetime * RATE) / self->model->playspeed;
     }
 
     if (fsleep > 127.0f)
@@ -209,7 +201,6 @@ static void chrStand(ChrRecord *self)
         self->act_stand.reaim = 0;
         self->act_stand.turning = 2;
         self->act_stand.checkfacingwall = 0;
-        // bug/typo??: this is the only code like this not adjusted for VERSION_EU
         self->act_stand.wallcount = (randomGetNext() % 120) + 180;
         self->sleep = 0;
 
@@ -1537,7 +1528,7 @@ static void chrTickStartAlarm(ChrRecord *self)
 {
     const Model *model = self->model;
 
-    // bug/typo, should be 50.0f on VERSION_EU
+    // Animation frames, not ticks: the same on PAL
     if (modelGetAnimFrame(model) >= 60.0f)
     {
         alarmActivate();

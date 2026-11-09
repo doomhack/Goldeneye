@@ -888,11 +888,7 @@ static void doorsTickMovement(DoorRecord *door)
 void doorTick(const PropRecord *prop)
 {
     DoorRecord *door = prop->door;
-#if defined(VERSION_EU)
-    s32 autoClose = ((s32)door->autoCloseFrames * 50) / 60;
-#else
-    s32 autoClose = door->autoCloseFrames;
-#endif
+    s32 autoClose = ((s32)door->autoCloseFrames);
 
     /* Closes itself once it has been open long enough, unless it was set to stay open */
     if ((s32)door->openedTime > 0
@@ -1227,11 +1223,11 @@ TICKOP doorInteract(const PropRecord *prop)
 
             if (txt != NULL && txt->pickuptext != 0)
             {
-                HUDMESSAGEBOTTOM(langGet((s32)txt->pickuptext));
+                hudmsgBottomShow(langGet((s32)txt->pickuptext));
             }
             else
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LPROPOBJ, PROPOBJ_STR_40_THISDOORISLOCKED)));
+                hudmsgBottomShow(langGet(getStringID(LPROPOBJ, PROPOBJ_STR_40_THISDOORISLOCKED)));
             }
         }
 

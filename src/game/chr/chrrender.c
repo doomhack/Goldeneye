@@ -59,13 +59,8 @@ static f32 chrGetFlinchAmount(const ChrRecord *chr)
 {
     f32 count;
     f32 amount;
-#if defined(VERSION_US)
-    f32 rise = 10.0f;
-    f32 fall = 20.0f;
-#else
-    f32 rise = 8.0f;
-    f32 fall = 16.0f;
-#endif
+    f32 rise = 10;
+    f32 fall = 20;
 
     count = chr->flinchcnt;
 
@@ -109,7 +104,6 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
 
     scale = 1.0f;
 
-#ifdef BUGFIX_R1
     if (cheatIsActive(CHEAT_DK_MODE))
     {
         if (bodypart == CHR_RENDERPART_HEAD)
@@ -124,19 +118,6 @@ void chrHandleJointPositioned(enum CHR_RENDER_PART bodypart, Mtxf *matrix)
             }
         }
     }
-#else
-    if (cheatIsActive(CHEAT_DK_MODE))
-    {
-        if (bodypart == CHR_RENDERPART_HEAD)
-        {
-            scale = 4.0f;
-        }
-        else if ((bodypart == CHR_RENDERPART_LEFT_ARM) || (bodypart == CHR_RENDERPART_RIGHT_ARM))
-        {
-            scale = 2.5f;
-        }
-    }
-#endif
 
     if ((bodypart != CHR_RENDERPART_LEFT_ARM) && (bodypart != CHR_RENDERPART_RIGHT_ARM)
         && (bodypart != CHR_RENDERPART_TORSO) && (bodypart != CHR_RENDERPART_HEAD))

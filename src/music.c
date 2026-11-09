@@ -21,11 +21,7 @@
  * ROM; play/stop specific tracks; and to fade in/out.
  */
 
-#ifdef REFRESH_PAL
-#define FADE_FRAMERATE 50.0f
-#else
-#define FADE_FRAMERATE 60.0f
-#endif
+#define FADE_FRAMERATE ((f32)VI_HZ) /* fades step once per retrace */
 
 /**
  * Similar to NUM_MUSIC_TRACKS, but also counts "NONE" track

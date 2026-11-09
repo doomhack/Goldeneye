@@ -179,4 +179,4 @@ Added for this fork:
   or falling, `sumCrouch`/`crouchHeight` give the dip after landing, and
   `dampEyeSum`/`dampEye` ease the eye position. All use the same damped-sum pattern:
   `sum = sum * damp + value; smoothed = sum * (1 - damp)`.
-* `getMissiontimer` is now `lvGetMissionTime60`; on PAL it converts 50 Hz ticks to 60 Hz.
+* `getMissiontimer` is now `lvGetMissionTime60` (the game clock is 60 Hz on both builds).

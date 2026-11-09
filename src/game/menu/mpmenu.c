@@ -26,12 +26,6 @@
 #include "game/world/bg.h"
 #include "game/level/gamemode.h"
 
-#ifdef REFRESH_PAL
-#define MPMENU_YOFF 8   /* PAL: every text row sits 8 pixels lower */
-#else
-#define MPMENU_YOFF 0
-#endif
-
 // bss
 s32 g_MpStopPlay;
 
@@ -363,7 +357,7 @@ void mpMenuCalculateAwards(bool gameoverdelay)
 
     if (gameoverdelay != 0)
     {
-        g_MpGameOver = (PAL ? 250 : 300);
+        g_MpGameOver = 300;
     }
     else
     {
@@ -373,7 +367,7 @@ void mpMenuCalculateAwards(bool gameoverdelay)
     g_MpMenuAltGameOverMsg = 1;
 
     // Possible copy/paste error: these are the timer values for the chevron glow
-    g_MpMenuAltGameOverTimer =  (PAL ? 16 : 20);
+    g_MpMenuAltGameOverTimer =  20;
 
     g_MpMenuChevronGlow = 0;
     g_MpMenuChevronTimer = 0;
@@ -616,16 +610,16 @@ void mpMenuTick(void)
                 g_MpMenuAltGameOverTimer += g_FrameDelta;
 
                 // Toggle chevron glow
-                if (g_MpMenuChevronTimer >= (PAL ? 16 : 20))
+                if (g_MpMenuChevronTimer >= 20)
                 {
-                    g_MpMenuChevronTimer -= (PAL ? 16 : 20);
+                    g_MpMenuChevronTimer -= 20;
                     g_MpMenuChevronGlow = !g_MpMenuChevronGlow;
                 }
 
                 // Flip between "GAME OVER" and "START TO EXIT" text.
-                if (g_MpMenuAltGameOverTimer >= (PAL ? 100 : 120))
+                if (g_MpMenuAltGameOverTimer >= 120)
                 {
-                    g_MpMenuAltGameOverTimer -= (PAL ? 100: 120);
+                    g_MpMenuAltGameOverTimer -= 120;
                     g_MpMenuAltGameOverMsg = !g_MpMenuAltGameOverMsg;
                 }
             }
@@ -711,7 +705,7 @@ void mpMenuTick(void)
                     else
                     {
                         g_CurrentPlayer->mpmenuon = FALSE;
-                        g_CurrentPlayer->healthdisplaytime = (PAL ? 50 : 60);
+                        g_CurrentPlayer->healthdisplaytime = 60;
 
                         if (playerGetCurrentNum() == g_MpPausedBy)
                         {

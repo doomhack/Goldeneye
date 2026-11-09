@@ -36,23 +36,7 @@ extern Gfx globalDL_0x000 NO_SDATA;
 /* Clouds further than this, or with a corner out of vertex range, aren't drawn */
 #define SMOKE_MAX_DIST 30000.0f
 
-/* The smoke types (SMOKE_TYPE). EU runs at 50 Hz: shorter times. */
-#if defined(VERSION_EU)
-static const s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
-   // dur, appr, dis, size, bgrate,    r,  g,    b, fgrate, propclouds
-    {   1,   50,  99,    0,   0.0f, 128, 128, 128,   0.3f,     150 },
-    { 400,   50,  37,   60,  0.02f,  80,  80,  96,   0.3f,     150 },
-    { 400,   50,  42,   20,  0.01f, 128, 128, 128,   0.3f,     150 },
-    { 525,   50, 100,  100,  0.01f, 192, 192, 192,   0.3f,     150 },
-    { 525,   50,  50,   80,  0.02f,  64,  64,  64,   0.3f,     150 },
-    { 640,   50,  42,  190,  0.15f,  64,  64,  64,   0.3f,     150 },
-    { 750,   50,  58,  300,  0.01f,  64,  64,  64,   0.3f,     150 },
-    {  50,   50,   7,   15,  0.03f, 255, 255, 255,   0.3f,     150 },
-    {  17,    1,   5,   30,  0.03f, 255, 255, 255,   2.0f,      25 },
-    {  21,    1,   6,   16,  0.03f, 224, 224, 224,   3.0f,      25 },
-    { 750,   50,  58,  900,  0.01f,  64,  64,  64,   0.3f,     150 }
-};
-#else
+/* The smoke types (SMOKE_TYPE). Times are 60 Hz ticks, converted for this build. */
 static const s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
    // dur, appr, dis,size, bgrate,   r,  g,    b, fgrate, propclouds
     {   1,   60,  99,   0,   0.0f, 128, 128, 128,   0.3f,     180},
@@ -67,7 +51,6 @@ static const s_smoketype s_SmokeTypes[SMOKE_TYPE_COUNT] = {
     {  25,    1,   7,  16,  0.03f, 224, 224, 224,   3.0f,      30},
     { 900,   60,  70, 900,  0.01f,  64,  64,  64,   0.3f,     180}
 };
-#endif
 
 static struct Smoke *s_Smokes;
 static Mtx s_SmokeScaleMtx;

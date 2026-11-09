@@ -64,21 +64,16 @@
 #include "game/mission/mission.h"
 
 
-#ifdef REFRESH_PAL
-#define THROWN_ITEM_REFRESH_RATE 50
-#define DUAL_WIELD_TRIGGER_SWAP_TICKS 24
-#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS 36
-#define WATCH_SOUND_DURATION_TICKS 250
-#define GUN_SPRING_DAMP 0.9402999877929688f
-#define GUN_SPRING_SCALE 0.05970001220703125f
-#else
 #define THROWN_ITEM_REFRESH_RATE 60
 #define DUAL_WIELD_TRIGGER_SWAP_TICKS 20
 #define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS 30
 #define WATCH_SOUND_DURATION_TICKS 300
 #define GUN_SPRING_DAMP 0.95f
 #define GUN_SPRING_SCALE 0.050000012f
-#endif
+
+/* Revolver cylinder: one chamber turns in 6 ticks at 60 Hz */
+#define CYLINDER_TURN_TICKS 6
+
 
 s32 gunSample1PTransform(const Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
 extern const u16 watchlaser_fire_sounds[2];
@@ -430,11 +425,7 @@ void gunUpdateAndFire(GUNHAND handnum)
                 {
                     if (hand->weapon_action_state == 1)
                     {
-#if defined(VERSION_EU)
-                        rndf = (((hand->stateTime - (hand->weapon_ammo_in_magazine * 5)) + 0x19) * M_TAU_F) / 30.0f;
-#else
-                        rndf = (((hand->stateTime - (hand->weapon_ammo_in_magazine * 6)) + 0x1E) * M_TAU_F) / 36.0f;
-#endif
+                        rndf = (((hand->stateTime - (hand->weapon_ammo_in_magazine * CYLINDER_TURN_TICKS)) + (5 * CYLINDER_TURN_TICKS)) * M_TAU_F) / (f32)(6 * CYLINDER_TURN_TICKS);
                     }
                     else
                     {
@@ -443,17 +434,10 @@ void gunUpdateAndFire(GUNHAND handnum)
                 }
                 else if (hand->weapon_action_state == 1)
                 {
-#if defined(VERSION_EU)
-                if (hand->stateTime < 5)
+                if (hand->stateTime < CYLINDER_TURN_TICKS)
                 {
-                    rndf = (hand->stateTime * M_TAU_F) / 30.0f;
+                    rndf = (hand->stateTime * M_TAU_F) / (f32)(6 * CYLINDER_TURN_TICKS);
                 }
-#else
-                if (hand->stateTime < 6)
-                {
-                    rndf = (hand->stateTime * M_TAU_F) / 36.0f;
-                }
-#endif
             }
 
                 mtx4LoadZRotation(rndf, &tmpmtx);
@@ -469,25 +453,14 @@ void gunUpdateAndFire(GUNHAND handnum)
 
                 if (hand->weapon_action_state == 1)
                 {
-#if defined(VERSION_EU)
-                    if (hand->stateTime < 2)
+                    if (hand->stateTime < CYLINDER_TURN_TICKS / 2)
                     {
-                        rndf = (2.0f * ((-((f32) hand->stateTime)) * DegToRad(30.0f))) / 5.0f;
+                        rndf = (2.0f * ((-((f32) hand->stateTime)) * DegToRad(30.0f))) / (f32)CYLINDER_TURN_TICKS;
                     }
                     else
                     {
-                        rndf = (2.0f * ((-((f32) (5 - hand->stateTime))) * DegToRad(30.0f))) / 5.0f;
+                        rndf = (2.0f * ((-((f32) (CYLINDER_TURN_TICKS - hand->stateTime))) * DegToRad(30.0f))) / (f32)CYLINDER_TURN_TICKS;
                     }
-#else
-                    if (hand->stateTime < 3)
-                    {
-                        rndf = (2.0f * ((-((f32) hand->stateTime)) * DegToRad(30.0f))) / 6.0f;
-                    }
-                    else
-                    {
-                        rndf = (2.0f * ((-((f32) (6 - hand->stateTime))) * DegToRad(30.0f))) / 6.0f;
-                    }
-#endif
                     mtx4LoadXRotation(rndf, &tmpmtx);
                     mtx4SetTranslation((coord3d *) hammerdata, &tmpmtx);
                 }
@@ -692,9 +665,6 @@ void gunUpdateAndFire(GUNHAND handnum)
                 break;
             case ITEM_LASER:
             case ITEM_WATCHLASER:
-#if defined(VERSION_EU)
-                hand->numShots = hand->numShots + 1;
-#endif
                 gunCreateBeamForHand(handnum);
                 break;
 
@@ -921,51 +891,28 @@ void gunReload(enum GUNHAND hand)
     }
 }
 
-#if defined(VERSION_US)
-    #define WEAPON_1P_ANIM_TIME(x) ((f32)(x))
-    #define WHEN_1_CASE_GRENADELAUNCH_FLD890 6
-    #define WHEN_1_CASE_GRENADE_FLD890 0xf0
-    #define WHEN_D_FLD890 0x14
-    #define WHEN_5_SP188_INIT 0x10
-    #define WHEN_5_SP188_MULTI 0xc
-    #define WHEN_5_FLD8B0_SP 0x11
-    #define WHEN_5_FLD8B0_MULTI 0xd
-    #define WHEN_8_SP178_INIT 0x17
-    #define WHEN_8_SP178_MULTI 0xc
-    #define WHEN_A_FLD890 0x10
-    #define WHEN_A_FLD8B0 0x11
-    #define WHEN_C_FLD890 0x17
-    #define WHEN_E_FLD890 0x10
-    #define WHEN_10_FLD890 0x17
-    #define WHEN_11_FLD890_1 0x10
-    #define WHEN_11_FLD890_2 0x18
-    #define WHEN_1E_FLD890 0x1e
-#endif
-#if defined(VERSION_EU)
-    #define WEAPON_1P_ANIM_TIME(x) ((f32)(x)) * 60.0f / 50.0f
-    #define WHEN_1_CASE_GRENADELAUNCH_FLD890 5
-    #define WHEN_1_CASE_GRENADE_FLD890 0xc8
-    #define WHEN_D_FLD890 0x10
-    #define WHEN_5_SP188_INIT 0xd
-    #define WHEN_5_SP188_MULTI 0xa
-    #define WHEN_5_FLD8B0_SP 0xe
-    #define WHEN_5_FLD8B0_MULTI 0xa
-    #define WHEN_8_SP178_INIT 0x13
-    #define WHEN_8_SP178_MULTI 0xa
-    #define WHEN_A_FLD890 0xd
-    #define WHEN_A_FLD8B0 0xe
-    #define WHEN_C_FLD890 0x13
-    #define WHEN_E_FLD890 0xd
-    #define WHEN_10_FLD890 0x13
-    #define WHEN_11_FLD890_1 0xd
-    #define WHEN_11_FLD890_2 0x14
-    #define WHEN_1E_FLD890 0x19
-#endif
+#define WEAPON_1P_ANIM_TIME(x) ((f32)(x))
+#define WHEN_1_CASE_GRENADELAUNCH_FLD890 6
+#define WHEN_1_CASE_GRENADE_FLD890 0xf0
+#define WHEN_D_FLD890 0x14
+#define WHEN_5_SP188_INIT 0x10
+#define WHEN_5_SP188_MULTI 0xc
+#define WHEN_5_FLD8B0_SP 0x11
+#define WHEN_5_FLD8B0_MULTI 0xd
+#define WHEN_8_SP178_INIT 0x17
+#define WHEN_8_SP178_MULTI 0xc
+#define WHEN_A_FLD890 0x10
+#define WHEN_A_FLD8B0 0x11
+#define WHEN_C_FLD890 0x17
+#define WHEN_E_FLD890 0x10
+#define WHEN_10_FLD890 0x17
+#define WHEN_11_FLD890_1 0x10
+#define WHEN_11_FLD890_2 0x18
+#define WHEN_1E_FLD890 0x1e
 
 
 void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 {
-#if defined(VERSION_US)
     s32 ammoType;
     struct hand *other;
     s32 playSound;
@@ -973,46 +920,9 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     s32 recoilTicks;
     s32 settleTicks;
     f32 recoilUp;
-    f32 recoilBack;
-    f32 recoilFrac;
-    f32 returnFrac;
-    s32 lowerTime;
-    f32 lowerAngle;
-    s32 raiseTime;
-    f32 raiseAngle;
-    Mtxf dipMtx;
-    f32 reloadLowerAngle;
-    Mtxf swapDipMtx;
-    f32 tempf;
-    struct hand *handptr;
-    Mtxf raiseDipMtx;
-    f32 reloadRaiseAngle;
-    f32 watchLowerAngle;
-    enum ITEM_IDS otherWeapon;
-    f32 watchRaiseAngle;
-    f32 slashTime;
-    enum ITEM_IDS weapon;
-    struct PropRecord *prop;
-    const Weapon1PTransformKeyframe *punchKeyframes;
-    f32 recoilAngle;
-    const Weapon1PTransformKeyframe *slashKeyframes;
-    f32 punchTime;
-    const struct hand *otherhand;
-    f32 tiltAngle = 0.0f;
-    f32 lowerTicks = 16.0f;
-    f32 raiseTicks = 23.0f;
-#endif
-#if defined(VERSION_EU)
-    s32 ammoType;
-    struct hand *other;
-    s32 playSound;
-    const struct WeaponStats *weapon_stats;
-    s32 recoilTicks;
-    s32 settleTicks;
-    f32 recoilUp;
-    s32 stat_2;
-    s32 stat_3;
-    s32 stat_4;
+    s32 fireTicks;
+    s32 returnTicks;
+    s32 singleRateTicks;
     f32 recoilBack;
     f32 recoilFrac;
     f32 returnFrac;
@@ -1039,9 +949,8 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
     f32 punchTime;
     const struct hand *otherhand;
     f32 tiltAngle = 0.0f;
-    f32 lowerTicks = 13.0f;
-    f32 raiseTicks = 19.0f;
-#endif
+    f32 lowerTicks = 16;
+    f32 raiseTicks = 23;
 
     handptr = &g_CurrentPlayer->hands[hand];
     weapon = gunGetShownWeapon(hand);
@@ -1067,19 +976,10 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
     if (handptr->weapon_action_state == GUN_ANIM_STATE_IDLE)
     {
-#if defined(VERSION_EU)
-        if ((weapon == ITEM_LASER) && (handptr->triggerReleased != 0))
-        {
-            handptr->numShots = 0;
-        }
-#endif
         if (
             (handptr->weapon_hold_time != 0)
             && (weapon != ITEM_UNARMED)
             && (((weaponHasFlag(weapon, WEAPONSTATBITFLAG_CLICKY) != 0)) || (handptr->weapon_ammo_in_magazine > 0))
-#if defined(VERSION_EU)
-            && ((weapon != ITEM_LASER) || (handptr->numShots < 0xC8))
-#endif
         )
         {
             handptr->weapon_action_state = GUN_ANIM_STATE_TRIGGER_PRESS;
@@ -1544,17 +1444,11 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
         {
             weapon_stats = weaponGetStats(weapon);
 
-#if defined(VERSION_US)
-            recoilTicks = weapon_stats->b44[0];
-            settleTicks = weapon_stats->b44[1];
-#endif
-#if defined(VERSION_EU)
-            recoilTicks = ((s32)weapon_stats->b44[0] * 50) / 60;
-            settleTicks = ((s32)weapon_stats->b44[1] * 50) / 60;
-            stat_2 = ((s32)weapon_stats->b44[2] * 50) / 60;
-            stat_3 = ((s32)weapon_stats->b44[3] * 50) / 60;
-            stat_4 = weapon_stats->SingleFiringRate * 50 / 60;
-#endif
+            recoilTicks = ((s32)weapon_stats->b44[0]);
+            settleTicks = ((s32)weapon_stats->b44[1]);
+            fireTicks = ((s32)weapon_stats->b44[2]);
+            returnTicks = ((s32)weapon_stats->b44[3]);
+            singleRateTicks = (weapon_stats->SingleFiringRate);
 
             if ((
                     (handptr->triggerReleased != 0)
@@ -1564,12 +1458,7 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 (
                     ((weapon_stats->SingleFiringRate >= 0))
                     && (handptr->triggerReleased == 0)
-#if defined(VERSION_US)
-                    && (handptr->stateTime >= (recoilTicks + settleTicks + weapon_stats->SingleFiringRate))
-#endif
-#if  defined(VERSION_EU)
-                    && (handptr->stateTime >= (recoilTicks + settleTicks + stat_4))
-#endif
+                    && (handptr->stateTime >= (recoilTicks + settleTicks + singleRateTicks))
                 )
                )
             {
@@ -1581,36 +1470,18 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
                 (handptr->triggerReleased != 0)
                 && (handptr->weapon_hold_time != 0)
 
-#if defined(VERSION_US)
-                && (handptr->stateTime >= weapon_stats->b44[2])
-#endif
-#if  defined(VERSION_EU)
-                && (handptr->stateTime >= stat_2)
-#endif
+                && (handptr->stateTime >= fireTicks)
 
                 && (weapon_stats->b44[3] >= 0)
 
-#if defined(VERSION_US)
-                // HACK: registers are swapped
-                // addu a1, v1, a0
-                && (handptr->stateTime + weapon_stats->b44[3] < recoilTicks + settleTicks)
-                && (handptr->stateTime + weapon_stats->b44[3] >= (s32)weapon_stats->b44[2])
-#endif
-#if  defined(VERSION_EU)
-                && (handptr->stateTime + stat_3 < recoilTicks + settleTicks)
-                && (handptr->stateTime + stat_3 >= (s32)stat_2)
-#endif
+                && (handptr->stateTime + returnTicks < recoilTicks + settleTicks)
+                && (handptr->stateTime + returnTicks >= fireTicks)
             )
             {
                 handptr->weapon_action_state = GUN_ANIM_STATE_RECOIL2;
                 handptr->stateTime = 0;
                 handptr->stateFrames = 0;
-#if defined(VERSION_US)
-                handptr->recoilReturnTime = weapon_stats->b44[3];
-#endif
-#if  defined(VERSION_EU)
-                handptr->recoilReturnTime = stat_3;
-#endif
+                handptr->recoilReturnTime = returnTicks;
             }
             else if (handptr->stateTime < recoilTicks + settleTicks)
             {
@@ -2556,7 +2427,7 @@ void gunAnalyzeGEKey(void)
 {
     if (invHasGEKey())
     {
-   	    HUDMESSAGEBOTTOM(langGet(getStringID(LGUN, GUN_STR_D8_ANALYZINGTHEGOLDENEYEKEY_LF))); //Analyzing the GoldenEye key...
+   	    hudmsgBottomShow(langGet(getStringID(LGUN, GUN_STR_D8_ANALYZINGTHEGOLDENEYEKEY_LF))); //Analyzing the GoldenEye key...
     	g_CurrentPlayer->copiedgoldeneye = TRUE;
     	sndPlaySfx(g_musicSfxBufferPtr, KEY_ANALYSER_SFX, 0x0);
     	gunEquip(GUNRIGHT, ITEM_GOLDENEYEKEY);
@@ -2564,7 +2435,7 @@ void gunAnalyzeGEKey(void)
   	}
   	else
   	{
-	    HUDMESSAGEBOTTOM(langGet(getStringID(LGUN, GUN_STR_D9_YOUDONOTHAVETHEGOLDENEYEKEY_LF))); //You do not have the GoldenEye key.
+	    hudmsgBottomShow(langGet(getStringID(LGUN, GUN_STR_D9_YOUDONOTHAVETHEGOLDENEYEKEY_LF))); //You do not have the GoldenEye key.
 	    gunEquipPreviousWeapons();
   	}
   	return;
@@ -2997,11 +2868,7 @@ void gunUpdateCrosshairSwivel(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed)
 {
     f32 aim_lock_speed;
 
-#if defined(VERSION_US)
     aim_lock_speed = weaponGetStats(gunGetWeapon(GUNRIGHT))->AimLockSpeed;
-#elif defined(VERSION_EU)
-    aim_lock_speed = weaponGetStats(gunGetWeapon(GUNRIGHT))->CrosshairSpeed;
-#endif
 
     if (aim_lock_speed < max_aim_lock_speed)
     {
@@ -3020,13 +2887,8 @@ void gunUpdateCrosshairManual(f32 turn_x, f32 turn_y)
 
     item_stats = weaponGetStats(gunGetWeapon(GUNRIGHT));
 
-#if defined(VERSION_US)
     guncrossdamp = item_stats->CrosshairSpeed;
     gunaimdamp = item_stats->AimLockSpeed;
-#elif defined(VERSION_EU)
-    guncrossdamp = 0.7651f;
-    gunaimdamp = item_stats->CrosshairSpeed;
-#endif
 
     gunUpdateCrosshair(turn_x, turn_y, guncrossdamp, gunaimdamp);
 }
@@ -3039,11 +2901,7 @@ void gunGetCrosshairPos(f32* horizontal_angle, f32* vertical_angle) {
 
 
 // Screen width over height, for spreading shots across the crosshair
-#if VERSION_EU
-static const f32 g_GunScreenAspectRatio = 20.0f / 17.0f;
-#else
-static const f32 g_GunScreenAspectRatio = 4.0f / 3.0f;
-#endif
+static const f32 g_GunScreenAspectRatio = ASPECT_RATIO;
 
 
 void gunGetAimRay(coord3d *zeropos, coord3d *vec)
@@ -3081,7 +2939,7 @@ void gunGetShotDir(coord3d* origin, coord3d* result, enum GUNHAND hand)
 
     randfactor = (RANDOMFRAC() - 0.5f) * RANDOMFRAC();
     crosspos.y =  g_CurrentPlayer->crosshair_angle.f[1] + randfactor * scaledspread * camGetScreenHeight()
-        / (PAL ? (f32)(SCREEN_HEIGHT_272) : (f32)(SCREEN_HEIGHT_240));
+        / (f32)SCREEN_HEIGHT;
 
     origin->x = 0.0f;
     origin->y = 0.0f;

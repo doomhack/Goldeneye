@@ -12,109 +12,65 @@
 u32 *g_LangBanks[45]; // each bank starts with a table of string offsets
 
 
-#if defined(VERSION_US)
 
-// The text bank file for each language bank id.
-const char *g_LangFileNames[45] = {
-    NULL,            /* Null (unused) */
-    "LameE",         /* Library (multi) */
-    "LarchE",        /* Archives */
-    "LarkE",         /* Facility */
-    "LashE",         /* Stack (multi) */
-    "LaztE",         /* Aztec */
-    "LcatE",         /* Citadel (multi) */
-    "LcaveE",        /* Caverns */
-    "LarecE",        /* Control */
-    "LcradE",        /* Cradle */
-    "LcrypE",        /* Egypt */
-    "LdamE",         /* Dam */
-    "LdepoE",        /* Depot */
-    "LdestE",        /* Frigate */
-    "LdishE",        /* Temple (multi) */
-    "LearE",         /* Ear (unused) */
-    "LeldE",         /* Eld (unused) */
-    "LimpE",         /* Basement (multi) */
-    "LjunE",         /* Jungle */
-    "LleeE",         /* Lee (unused) */
-    "LlenE",         /* Cuba */
-    "LlipE",         /* Lip (unused) */
-    "LlueE",         /* Lue (unused) */
-    "LoatE",         /* Cave (multi) */
-    "LpamE",         /* Pam (unused) */
-    "LpeteE",        /* Streets */
-    "LrefE",         /* Complex (multi) */
-    "LritE",         /* Rit (unused) */
-    "LrunE",         /* Runway */
-    "LsevbE",        /* Bunker 2 */
-    "LsevE",         /* Bunker 1 */
-    "LsevxE",        /* Surface 1 */
-    "LsevxbE",       /* Surface 2 */
-    "LshoE",         /* Shooting Range (unused) */
-    "LsiloE",        /* Silo */
-    "LstatE",        /* Statue */
-    "LtraE",         /* Train */
-    "LwaxE",         /* Wax (unused) */
-    "LgunE",         /* Guns */
-    "LtitleE",       /* Stage and menu titles */
-    "LmpmenuE",      /* Multi menus */
-    "LpropobjE",     /* In-game pickups */
-    "LmpweaponsE",   /* Multi weapon select */
-    "LoptionsE",     /* Solo in-game menus */
-    "LmiscE"         /* Cheat options */
-};
-
-#endif
-
+// US loads the English banks (E), PAL the British-spelling ones (P). Both are
+// built from the same source; see tools/brittext.py.
 #if defined(VERSION_EU)
+#define LANG_SUFFIX "P"
+#else
+#define LANG_SUFFIX "E"
+#endif
+
+
 // The text bank file for each language bank id.
 const char *g_LangFileNames[45] = {
     NULL,            /* Null (unused) */
-    "LameP",         /* Library (multi) */
-    "LarchP",        /* Archives */
-    "LarkP",         /* Facility */
-    "LashP",         /* Stack (multi) */
-    "LaztP",         /* Aztec */
-    "LcatP",         /* Citadel (multi) */
-    "LcaveP",        /* Caverns */
-    "LarecP",        /* Control */
-    "LcradP",        /* Cradle */
-    "LcrypP",        /* Egypt */
-    "LdamP",         /* Dam */
-    "LdepoP",        /* Depot */
-    "LdestP",        /* Frigate */
-    "LdishP",        /* Temple (multi) */
-    "LearP",         /* Ear (unused) */
-    "LeldP",         /* Eld (unused) */
-    "LimpP",         /* Basement (multi) */
-    "LjunP",         /* Jungle */
-    "LleeP",         /* Lee (unused) */
-    "LlenP",         /* Cuba */
-    "LlipP",         /* Lip (unused) */
-    "LlueP",         /* Lue (unused) */
-    "LoatP",         /* Cave (multi) */
-    "LpamP",         /* Pam (unused) */
-    "LpeteP",        /* Streets */
-    "LrefP",         /* Complex (multi) */
-    "LritP",         /* Rit (unused) */
-    "LrunP",         /* Runway */
-    "LsevbP",        /* Bunker 2 */
-    "LsevP",         /* Bunker 1 */
-    "LsevxP",        /* Surface 1 */
-    "LsevxbP",       /* Surface 2 */
-    "LshoP",         /* Shooting Range (unused) */
-    "LsiloP",        /* Silo */
-    "LstatP",        /* Statue */
-    "LtraP",         /* Train */
-    "LwaxP",         /* Wax (unused) */
-    "LgunP",         /* Guns */
-    "LtitleP",       /* Stage and menu titles */
-    "LmpmenuP",      /* Multi menus */
-    "LpropobjP",     /* In-game pickups */
-    "LmpweaponsP",   /* Multi weapon select */
-    "LoptionsP",     /* Solo in-game menus */
-    "LmiscP"         /* Cheat options */
+    "Lame" LANG_SUFFIX,         /* Library (multi) */
+    "Larch" LANG_SUFFIX,        /* Archives */
+    "Lark" LANG_SUFFIX,         /* Facility */
+    "Lash" LANG_SUFFIX,         /* Stack (multi) */
+    "Lazt" LANG_SUFFIX,         /* Aztec */
+    "Lcat" LANG_SUFFIX,         /* Citadel (multi) */
+    "Lcave" LANG_SUFFIX,        /* Caverns */
+    "Larec" LANG_SUFFIX,        /* Control */
+    "Lcrad" LANG_SUFFIX,        /* Cradle */
+    "Lcryp" LANG_SUFFIX,        /* Egypt */
+    "Ldam" LANG_SUFFIX,         /* Dam */
+    "Ldepo" LANG_SUFFIX,        /* Depot */
+    "Ldest" LANG_SUFFIX,        /* Frigate */
+    "Ldish" LANG_SUFFIX,        /* Temple (multi) */
+    "Lear" LANG_SUFFIX,         /* Ear (unused) */
+    "Leld" LANG_SUFFIX,         /* Eld (unused) */
+    "Limp" LANG_SUFFIX,         /* Basement (multi) */
+    "Ljun" LANG_SUFFIX,         /* Jungle */
+    "Llee" LANG_SUFFIX,         /* Lee (unused) */
+    "Llen" LANG_SUFFIX,         /* Cuba */
+    "Llip" LANG_SUFFIX,         /* Lip (unused) */
+    "Llue" LANG_SUFFIX,         /* Lue (unused) */
+    "Loat" LANG_SUFFIX,         /* Cave (multi) */
+    "Lpam" LANG_SUFFIX,         /* Pam (unused) */
+    "Lpete" LANG_SUFFIX,        /* Streets */
+    "Lref" LANG_SUFFIX,         /* Complex (multi) */
+    "Lrit" LANG_SUFFIX,         /* Rit (unused) */
+    "Lrun" LANG_SUFFIX,         /* Runway */
+    "Lsevb" LANG_SUFFIX,        /* Bunker 2 */
+    "Lsev" LANG_SUFFIX,         /* Bunker 1 */
+    "Lsevx" LANG_SUFFIX,        /* Surface 1 */
+    "Lsevxb" LANG_SUFFIX,       /* Surface 2 */
+    "Lsho" LANG_SUFFIX,         /* Shooting Range (unused) */
+    "Lsilo" LANG_SUFFIX,        /* Silo */
+    "Lstat" LANG_SUFFIX,        /* Statue */
+    "Ltra" LANG_SUFFIX,         /* Train */
+    "Lwax" LANG_SUFFIX,         /* Wax (unused) */
+    "Lgun" LANG_SUFFIX,         /* Guns */
+    "Ltitle" LANG_SUFFIX,       /* Stage and menu titles */
+    "Lmpmenu" LANG_SUFFIX,      /* Multi menus */
+    "Lpropobj" LANG_SUFFIX,     /* In-game pickups */
+    "Lmpweapons" LANG_SUFFIX,   /* Multi weapon select */
+    "Loptions" LANG_SUFFIX,     /* Solo in-game menus */
+    "Lmisc" LANG_SUFFIX         /* Cheat options */
 };
-#endif
+
 
 // cannonically gettextloadnum
 TEXTBANK_LEVEL_INDEX langGetBankForStage(LEVELID level)

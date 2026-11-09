@@ -24,15 +24,9 @@
 #include "game/prop/glass.h"
 
 /* EU runs at 50 Hz, so shards move further each tick */
-#ifndef VERSION_EU
 #define SHARD_HORIZ_VEL_SCALE 1.5f
 #define SHARD_VERT_VEL_SCALE 3.0f
 #define SHARD_ROTVEL_SCALE 0.1f
-#else
-#define SHARD_HORIZ_VEL_SCALE 1.8f
-#define SHARD_VERT_VEL_SCALE 3.6f
-#define SHARD_ROTVEL_SCALE 0.12f
-#endif
 
 #define SHARD_GRAVITY 0.1f
 #define SHARD_LIFETIME 150

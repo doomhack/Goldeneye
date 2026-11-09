@@ -38,11 +38,7 @@
 // An explosion of small bits, for an already destroyed object breaking further
 #define EXPLOSIONTYPE_BITS 0x10
 
-#if defined(VERSION_EU)
-#define RESPAWN_TICKS 1000
-#else
 #define RESPAWN_TICKS 1200 // 20 seconds
-#endif
 
 /**
  * How far gone an object is: 0 to 3 while healthy (in quarters of its health, rounded
@@ -121,11 +117,7 @@ bool objIsMortal(ObjectRecord *obj)
 
 static s16 objGetExplosionType(const ObjectRecord *obj)
 {
-#if defined(VERSION_EU)
-    return ((s8 *) object_explosion_details.typeids)[obj->obj];
-#else
     return object_explosion_details[obj->obj].TypeID;
-#endif
 }
 
 /**
@@ -267,23 +259,6 @@ void objDeform(ObjectRecord *obj, s32 stage)
 
     Vertex **vtxslot = (Vertex **) &model->datas[rodata->RwDataIndex];
 
-#if defined(VERSION_EU)
-    if (obj->obj < PROP_WINDOW)
-    {
-        if (randomGetNext() & 1)
-        {
-            deformseed = (u16) object_explosion_details.seeds[obj->obj][stage];
-        }
-        else
-        {
-            deformseed = (u16) object_explosion_details.seeds[obj->obj][stage + 3];
-        }
-    }
-    else
-    {
-        deformseed = 0;
-    }
-#else
     // Original bug: stage 4 reads past the seeds, into the next type's explosion type
     if (randomGetNext() & 1)
     {
@@ -293,7 +268,6 @@ void objDeform(ObjectRecord *obj, s32 stage)
     {
         deformseed = (u16) object_explosion_details[obj->obj].Seed[stage + 3];
     }
-#endif
 
     if (deformseed == 0)
     {
@@ -472,15 +446,9 @@ static void objFall(ObjectRecord *obj, s32 playernum)
 
     if (!(obj->flags2 & PROPFLAG2_FALLWITHOUTROTATION))
     {
-#if defined(VERSION_EU)
-        rot.x = ((RANDOMFRAC() * 7.5398226f) / 320.0f) - 0.011780973f;
-        rot.y = ((RANDOMFRAC() * 7.5398226f) / 320.0f) - 0.011780973f;
-        rot.z = ((RANDOMFRAC() * 7.5398226f) / 320.0f) - 0.011780973f;
-#else
         rot.x = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
         rot.y = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
         rot.z = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
-#endif
     }
 
     mtx4LoadRotation(&rot, &projectile->mtx);

@@ -512,11 +512,7 @@ void chrInitActAttackWalk(ChrRecord *chr, s32 run)
 
     chr->actiontype = ACT_ATTACKWALK;
     chr->act_attackwalk.clock_timer30 = 0;
-#if defined(REFRESH_PAL)
-    chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(333.333343506f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
-#else
     chr->act_attackwalk.clock_timer34 = ((u32)randomGetNext() % (u32)(s32)(400.0f * g_AiReactionSpeed)) + CHRLV_SEEN_RECENT_CHECK;
-#endif
     chr->act_attackwalk.facedTarget = 0;
     chr->act_attackwalk.animfloats = panim_float;
     chr->act_attackwalk.timer40 = 0;
@@ -891,11 +887,7 @@ s32 chrSetSubroty(ChrRecord *self, s32 state, f32 endframe, f32 speed, f32 angle
         frame = modelGetAnimFrame(model);
         roty = modelGetRootRotY(model);
 
-#if defined(BUGFIX_R1)
         step = 0.06283186f * speed * g_GlobalTimerDeltaRaw * model->playspeed;
-#else
-        step = 0.06283186f * speed * g_GlobalTimerDelta * model->playspeed;
-#endif
 
         if (self->actiontype == ACT_ATTACK)
         {
@@ -1854,11 +1846,7 @@ static void chrFireHand(ChrRecord *self, s32 hand)
                                 {
                                     grenade->projectile->bounciness = 0.3f;
                                     grenade->projectile->groundFriction = 0.13333333f;
-#ifdef REFRESH_PAL
-                                    grenade->projectile->refreshrate = 50;
-#else
-                                    grenade->projectile->refreshrate = 60;
-#endif
+                                    grenade->projectile->refreshrate = TICKS_PER_SECOND;
                                 }
                             }
                         }
@@ -2099,11 +2087,7 @@ static void chrTickAttackCommon(ChrRecord *self)
     // Half a second of firing without the shots counting as aimed at the target (see
     // chrFireHand): give up.
     if (
-#ifdef REFRESH_PAL
-        (self->act_attack.attack_time < (self->act_attack.lastFire60 - 25))
-#else
         (self->act_attack.attack_time < (self->act_attack.lastFire60 - 30))
-#endif
         && (self_model->anim2 == NULL))
     {
         if (((self->act_attack.animfloats->shoot_start_frame + 10.0f) < frame)
@@ -2264,19 +2248,11 @@ static void chrTickAttackCommon(ChrRecord *self)
 
                     if (self->actiontype == ACT_ATTACKROLL)
                     {
-#ifdef REFRESH_PAL
-                        df = ((self->act_attack.animfloats->shoot_end_frame - self->act_attack.animfloats->shoot_start_frame) * 50.0f) / 60.0f;
-#else
-                        df = self->act_attack.animfloats->shoot_end_frame - self->act_attack.animfloats->shoot_start_frame;
-#endif
+                        df = (self->act_attack.animfloats->shoot_end_frame - self->act_attack.animfloats->shoot_start_frame);
 
                         if (df < 30.0f)
                         {
-#ifdef REFRESH_PAL
-                            if ((s32)self->act_attack.numWaitTicks >= (50 - ((s32)df * 2)))
-#else
-                            if ((s32)self->act_attack.numWaitTicks >= (60 - ((s32)df * 2)))
-#endif
+                            if ((s32)self->act_attack.numWaitTicks >= (TICKS_PER_SECOND - ((s32)df * 2)))
                             {
                                 modelSetAnimSpeed(self_model, 0.5f, 0.0f);
                             }
@@ -2371,10 +2347,7 @@ NOINLINE void chrTickAttack(ChrRecord *self)
         {
             if (modelGetAnimEndFrame(self_model) <= frame)
             {
-#if defined(VERSION_US)
-                // PAL doesn't set TARGET_AIM_ONLY
                 self->act_attack.attacktype |= TARGET_AIM_ONLY;
-#endif
                 self->act_attack.attacktype &= ~TARGET_DONTTURN;
 
                 if (self->act_attack.standing != 0)

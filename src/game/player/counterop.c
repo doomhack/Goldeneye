@@ -476,7 +476,7 @@ s32 counterOpSuicidePillTick(s32 triggerOn)
 
     if (selected && !s_CounterOpPillSelected)
     {
-        HUDMESSAGEBOTTOM("Suicide pill: fire to use\n");
+        hudmsgBottomShow("Suicide pill: fire to use\n");
 
         // Hold it for 3 seconds rather than the usual 1.6 (PAL) or 2
         // (NTSC), so it's still up once the gun is put away.

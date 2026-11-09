@@ -633,7 +633,6 @@ JointListEntry *jointListSortByDepth(JointListEntry *modelhit)
 }
 
 
-#if defined(VERSION_US)
 void jointListDraw(ModelRenderData *data, JointListEntry *entry)
 {
     ModelNode *root;
@@ -739,116 +738,8 @@ void jointListDraw(ModelRenderData *data, JointListEntry *entry)
         entry = entry->next;
     }
 }
-#endif
 
 
-#if defined(VERSION_EU)
-void jointListDraw(ModelRenderData *data, JointListEntry *entry)
-{
-    ModelNode *root;
-    ModelNode *node;
-    s32 descend;
-    Gfx *gdl;
-    s32 opcode;
-
-    while (entry != NULL)
-    {
-        root = entry->rootnode;
-        node = root;
-
-        if (data->skipDraw != 0)
-        {
-            if (entry->sortvalue < modelGetNodeRadius(entry->model, root))
-            {
-                node = NULL;
-            }
-        }
-        else
-        {
-            gdl = data->gdl++;
-            gSPSegment(gdl, SPSEGMENT_MODEL_MTX, osVirtualToPhysical(entry->model->render_pos));
-        }
-
-        if (node != NULL)
-        {
-            do
-            {
-                descend = 1;
-                opcode = node->Opcode & 0xff;
-
-                switch (opcode)
-                {
-                case MODELNODE_OPCODE_HEADER:
-                case MODELNODE_OPCODE_GROUP:
-                case MODELNODE_OPCODE_OP03:
-                case MODELNODE_OPCODE_OP11:
-                case MODELNODE_OPCODE_GUNFIRE:
-                case MODELNODE_OPCODE_SHADOW:
-                case MODELNODE_OPCODE_OP14:
-                case MODELNODE_OPCODE_INTERLINK:
-                case MODELNODE_OPCODE_OP16:
-                case MODELNODE_OPCODE_GROUPSIMPLE:
-                    if (node == root)
-                    {
-                        modelRenderNode(data, entry->model, node);
-                    }
-                    else
-                    {
-                        descend = 0;
-                    }
-                    break;
-
-                case MODELNODE_OPCODE_DL:
-                case MODELNODE_OPCODE_OP05:
-                case MODELNODE_OPCODE_OP06:
-                case MODELNODE_OPCODE_TUBE:
-                case MODELNODE_OPCODE_LOD:
-                case MODELNODE_OPCODE_BSP:
-                case MODELNODE_OPCODE_BBOX:
-                case MODELNODE_OPCODE_OP17:
-                case MODELNODE_OPCODE_SWITCH:
-                case MODELNODE_OPCODE_OP19:
-                case MODELNODE_OPCODE_OP20:
-                case MODELNODE_OPCODE_DLPRIMARY:
-                case MODELNODE_OPCODE_HEAD:
-                case MODELNODE_OPCODE_DLCOLLISION:
-                default:
-                    modelRenderNode(data, entry->model, node);
-                    break;
-                }
-
-                if (descend && node->Child != NULL)
-                {
-                    node = node->Child;
-                }
-                else if (node != NULL)
-                {
-                    do
-                    {
-                        if (node == root)
-                        {
-                            node = NULL;
-                            break;
-                        }
-
-                        if (node->Next != NULL)
-                        {
-                            node = node->Next;
-                            break;
-                        }
-
-                        node = node->Parent;
-                    }
-                    while (node != NULL);
-                }
-            }
-            while (node != NULL);
-        }
-
-        entry = entry->next;
-    }
-}
-#endif
 
 
 s32 jointListFindHitNext(JointListEntry **entryptr, const coord3d *raypos, const coord3d *raydir, Model **outModel, ModelNode **inoutNode)

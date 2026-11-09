@@ -48,13 +48,8 @@
 #include "game/world/bg.h"
 #include "random.h"
 
-#if defined(VERSION_EU)
-#define PROJECTILE_LIFETIME_TICKS 2000
-#define ROCKET_FUEL_TICKS 251
-#else
 #define PROJECTILE_LIFETIME_TICKS 2400 // 40 seconds
 #define ROCKET_FUEL_TICKS 301
-#endif
 
 // Once a rocket's speed squared passes this (about 167 units per tick), it stops speeding up
 #define ROCKET_TOP_SPEED_SQ 27777.773f
@@ -1265,11 +1260,7 @@ void projectileUpdateKnifeSound(ObjectRecord *obj)
         s32 sfxindex = randomGetNext() % 3;
 
         // Two sounds take turns, each cut off after a few ticks
-#if defined(VERSION_US)
         if ((s32) projectile->lastSfxTimer < g_GlobalTimer - 6)
-#else
-        if ((s32) projectile->lastSfxTimer < g_GlobalTimer - 5)
-#endif
         {
             projectileStopSound(projectile->sounds[slot]);
         }

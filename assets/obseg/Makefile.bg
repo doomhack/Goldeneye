@@ -16,14 +16,10 @@ $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.bin: $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.elf
 $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.elf: $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.o
 	$(LD) -T assets/obseg/bg/bg_all_p.ld -o $@ $<
 
-# Build .o from .c (country-specific and generic)
+# Build .o from .c
 # The room display lists are converted from the original microcode's commands to F3DEX3's
 # into a copy of the .c
-BG_F3DEX3_INCLUDES := -I$(OBSEG_DIR)/bg/$(COUNTRYCODE) -I$(OBSEG_DIR)/bg
-
-$(BUILD_DIR)/$(OBSEG_DIR)/bg/%.f3dex3.c: $(OBSEG_DIR)/bg/$(COUNTRYCODE)/%.c tools/f3dex3_bg.py
-	@mkdir -p $(@D)
-	python3 tools/f3dex3_bg.py $< $@
+BG_F3DEX3_INCLUDES := -I$(OBSEG_DIR)/bg
 
 $(BUILD_DIR)/$(OBSEG_DIR)/bg/%.f3dex3.c: $(OBSEG_DIR)/bg/%.c tools/f3dex3_bg.py
 	@mkdir -p $(@D)

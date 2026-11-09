@@ -51,12 +51,6 @@ typedef union Mtxf
     s32 unused;
 } Mtxf;
 
-/** A 3x3 float matrix (rotation and scale only), laid out like the top left of a Mtxf. */
-typedef struct Mtx3f
-{
-    f32 m[3][3];
-} Mtx3f;
-
 /** A quaternion, for rotations: w is the real part. */
 typedef union quatf
 {

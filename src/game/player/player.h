@@ -345,8 +345,6 @@ struct player
   f32 apparenthealth; // canonical name
   f32 apparentarmour; // canonical name
 
-#if defined (VERSION_EU)
-
     /*
     * When a non-negative integer:
     * - hide ammo and aim sight
@@ -364,10 +362,6 @@ struct player
      * - undo the above.
      **/
     f32 healthshowtime;
-#else
-  s32 damageshowtime; // canonical name
-  s32 healthshowtime; // canonical name
-#endif
 
   /**
   * The field names from this point up to bondbreathing are canonical names
@@ -857,22 +851,6 @@ struct struct_4 {
     float anonymous_3;
 };
 
-#ifdef BUGFIX_R0
-typedef struct DamageType
-{
-    u32 fadeStartFrame; // a second fade; only its end frame is used
-    u32 fadeFullFrame;
-    s32 fadeEndFrame;
-    f32 fadeMax;
-    s32 flashStartFrame;
-    u32 flashFullFrame;
-    s32 flashEndFrame;
-    f32 maxAlpha;
-    u32 red;
-    u32 green;
-    u32 blue;
-} DamageType;
-#else
 typedef struct DamageType
 {
     f32 fadeStartFrame;
@@ -887,7 +865,6 @@ typedef struct DamageType
     u32 green;
     u32 blue;
 } DamageType;
-#endif
 
 typedef struct HealthDisplayDuration 
 {

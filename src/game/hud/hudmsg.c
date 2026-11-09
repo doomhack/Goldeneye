@@ -24,55 +24,29 @@
 #include "game/level/gamemode.h"
 #include "game/player/coop.h"
 
-#ifdef VERSION_EU
-    #define HUDMSG_BOTTOM_TIME_SKIP  0x1a
-    #define HUDMSG_BOTTOM_TIME_SHORT 0x19
-    #define HUDMSG_BOTTOM_TIME       0x64
-    #define HUDMSG_TOP_TIME_SKIP     0x33
-    #define HUDMSG_TOP_TIME_SHORT    0x32
-    #define HUDMSG_TOP_TIME          0xc8
-#else
-    #define HUDMSG_BOTTOM_TIME_SKIP  0x1f
-    #define HUDMSG_BOTTOM_TIME_SHORT 0x1e
-    #define HUDMSG_BOTTOM_TIME       0x78
-    #define HUDMSG_TOP_TIME_SKIP     0x3d
-    #define HUDMSG_TOP_TIME_SHORT    0x3c
-    #define HUDMSG_TOP_TIME          0xf0
-#endif
+#define HUDMSG_BOTTOM_TIME_SKIP 0x1f
+#define HUDMSG_BOTTOM_TIME_SHORT 0x1e
+#define HUDMSG_BOTTOM_TIME 0x78
+#define HUDMSG_TOP_TIME_SKIP 0x3d
+#define HUDMSG_TOP_TIME_SHORT 0x3c
+#define HUDMSG_TOP_TIME 0xf0
 
-// The font each bottom message is drawn in. PAL keeps one per message.
-#if defined(VERSION_US)
-    #define BOTTOM_FONT2(_index) s_BottomFont2
-    #define BOTTOM_FONT1(_index) s_BottomFont1
-#elif defined(VERSION_EU)
-    #define BOTTOM_FONT2(_index) s_BottomFonts2[_index]
-    #define BOTTOM_FONT1(_index) s_BottomFonts1[_index]
-#endif
+// The font each bottom message is drawn in (one per message, as PAL did).
+#define BOTTOM_FONT2(_index) s_BottomFonts2[_index]
+#define BOTTOM_FONT1(_index) s_BottomFonts1[_index]
 
 // How far above the bottom of the view the bottom message sits
-#if defined(VERSION_US)
-    #define BOTTOM_OFFSET_NO_AMMO 0x0C
-    #define BOTTOM_OFFSET_AMMO    0x28
-    #define BOTTOM_OFFSET_SPLIT   0x10
-#elif defined(VERSION_EU)
-    #define BOTTOM_OFFSET_NO_AMMO 0x16
-    #define BOTTOM_OFFSET_AMMO    0x32
-    #define BOTTOM_OFFSET_SPLIT   0x14
-#endif
+#define BOTTOM_OFFSET_NO_AMMO HUDMSG_BOTTOM_OFFSET_NO_AMMO
+#define BOTTOM_OFFSET_AMMO    HUDMSG_BOTTOM_OFFSET_AMMO
+#define BOTTOM_OFFSET_SPLIT   HUDMSG_BOTTOM_OFFSET_SPLIT
 
 // Bottom messages: a queue of 5 in solo (s_BottomFirst is the one showing, s_BottomCount
 // how many are queued); in multiplayer, one per player.
 static char s_BottomText[5][HUDMSG_BOTTOM_LEN];
 static s32 s_BottomFirst = 0;
 static s32 s_BottomCount = 0;
-#if defined(BUGFIX_R1)
 static struct font *s_BottomFonts1[5];
 static struct fontchar *s_BottomFonts2[5];
-#endif
-#ifdef BUGFIX_R0
-static struct font *s_BottomFont1 = NULL;
-static struct fontchar *s_BottomFont2 = NULL;
-#endif
 
 // Top messages: the one showing and the next.
 static char s_TopText[2][HUDMSG_TOP_LEN];
@@ -90,10 +64,6 @@ void hudmsgResetIntroText(void)
     s_BottomCount = 0;
     s_BottomFirst = 0;
 
-#ifdef BUGFIX_R0
-    s_BottomFont1 = g_FontBankGothic;
-    s_BottomFont2 = g_FontBankGothicChars;
-#endif
 }
 
 
@@ -109,17 +79,9 @@ void hudmsgsSetOff(s32 flags)
 }
 
 
-#ifdef VERSION_US
-void hudmsgSetFonts(struct fontchar *font2, struct font *font1)
-{
-    s_BottomFont2 = font2;
-    s_BottomFont1 = font1;
-}
-#endif
 
 
-#ifdef BUGFIX_R1
-void hudmsgBottomShow(const char *string, struct fontchar *font, struct font *font1)
+void hudmsgBottomShowFont(const char *string, struct fontchar *font, struct font *font1)
 {
     s32 index;
 
@@ -148,39 +110,12 @@ void hudmsgBottomShow(const char *string, struct fontchar *font, struct font *fo
     }
 }
 
-#else
-void hudmsgBottomShow(const char *mess)
+
+
+void hudmsgBottomShow(const char *string)
 {
-    s32 index;
-
-    if (getPlayerCount() == 1)
-    {
-        if (s_BottomCount < 5)
-        {
-            index = (s_BottomFirst + s_BottomCount) % 5;
-            strncpy(s_BottomText[index], mess, HUDMSG_BOTTOM_LEN - 1);
-            s_BottomCount++;
-            s_BottomText[index][HUDMSG_BOTTOM_LEN - 1] = 0;
-        }
-    }
-    else
-    {
-        index = playerGetCurrentNum();
-        strncpy(s_BottomText[index], mess, HUDMSG_BOTTOM_LEN - 1);
-        s_BottomText[index][HUDMSG_BOTTOM_LEN - 1] = 0;
-        g_CurrentPlayer->bondmesscnt = HUDMSG_BOTTOM_TIME;
-    }
+    hudmsgBottomShowFont(string, g_FontBankGothicChars, g_FontBankGothic);
 }
-
-#endif
-
-
-#if defined(BUGFIX_R1)
-void hudmsgBottomShowText(const char *string)
-{
-    hudmsgBottomShow(string, g_FontBankGothicChars, g_FontBankGothic);
-}
-#endif
 
 
 void hudmsgTickIntroText(void)
@@ -287,12 +222,10 @@ Gfx* hudmsgBottomRender(Gfx* gdl)
                 {
                     view_top = (viGetViewTop() + viGetViewHeight()) - BOTTOM_OFFSET_AMMO;
                 }
-#if !defined(VERSION_EU)
                 if (coopPlayerPerson(playerGetCurrentNum()) == 1)
                 {
-                    view_top -= 8;
+                    view_top -= HUDMSG_COOP_P1_LIFT;
                 }
-#endif
             }
             else
             {
@@ -497,11 +430,7 @@ Gfx *hudmsgTopRender(Gfx *gdl)
                     else
                     {
                         msg.x = viGetViewLeft() + 0x1e;
-#ifdef VERSION_EU
-                        msg.y = viGetViewTop() + 0x10;
-#else
-                        msg.y = viGetViewTop() + 0xd;
-#endif
+                        msg.y = viGetViewTop() + HUDMSG_TOP_OFFSET;
                     }
 
                     if (viewIsHalfWidth())

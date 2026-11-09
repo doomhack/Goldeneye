@@ -241,22 +241,14 @@ void watchZoomOnOpen(void)
 {
     f32 f;
 
-#if defined(VERSION_EU)
-    f = ((6.09999990463f - g_CurrentPlayer->zoominfovy) * 45.0f) / -53.9000015259f;
-#else
-    f = ((5.9f - g_CurrentPlayer->zoominfovy) * 45.0f) / -54.1f;
-#endif
+    f = ((WATCHZOOM2 - g_CurrentPlayer->zoominfovy) * 45.0f) / (WATCHZOOM2 - 60.0f);
 
     if (f < 0.0f)
     {
         f = -f;
     }
 
-#if defined(VERSION_EU)
-    watchStartZoom(6.09999990463f, f);
-#else
-    watchStartZoom(5.9f, f);
-#endif
+    watchStartZoom(WATCHZOOM2, f);
 
 }
 
@@ -265,11 +257,7 @@ void watchZoomOnExit(void)
 {
     f32 f;
 
-#if defined(VERSION_EU)
-    f = ((60.0f - g_CurrentPlayer->zoominfovy) * 45.0f) / -53.9000015259f;
-#else
-    f = ((60.0f - g_CurrentPlayer->zoominfovy) * 45.0f) / -54.1f;
-#endif
+    f = ((60.0f - g_CurrentPlayer->zoominfovy) * 45.0f) / (WATCHZOOM2 - 60.0f);
 
     if (f < 0.0f)
     {
@@ -292,19 +280,11 @@ void watchUpdateZoom(void)
     {
         if ((g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x5) || (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0xc))
         {
-#if defined(BUGFIX_R1)
             g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (f32) g_FrameDelta60;
-#else
-            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (f32) g_FrameDelta;
-#endif
         }
         else
         {
-#if defined(BUGFIX_R1)
             g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (g_FrameDelta60 * watch_transition_time);
-#else
-            g_CurrentPlayer->zoomintime = g_CurrentPlayer->zoomintime + (g_FrameDelta * watch_transition_time);
-#endif
         }
 
         if (g_CurrentPlayer->zoomintimemax < g_CurrentPlayer->zoomintime)
@@ -505,13 +485,8 @@ void pauseStopSounds(void)
  */
 void watchTick(void)
 {
-#if defined(VERSION_EU)
-    #define WATCH_VAR_LOWER 14
-    #define WATCH_VAR_UPPER 29
-#else
-    #define WATCH_VAR_LOWER 17
-    #define WATCH_VAR_UPPER 35
-#endif
+#define WATCH_VAR_LOWER 17
+#define WATCH_VAR_UPPER 35
 
     s32 delay;
     s32 holdingWatchItem;
@@ -525,16 +500,7 @@ void watchTick(void)
     {
         holdingWatchItem = gunGetWeapon(GUNRIGHT) == ITEM_TRIGGER || gunGetWeapon(GUNRIGHT) == ITEM_WATCHLASER;
 
-#if defined (VERSION_US)
-        delay = WATCH_VAR_LOWER;
-
-        if (holdingWatchItem)
-        {
-            delay = WATCH_VAR_UPPER;
-        }
-#else
         delay = (holdingWatchItem) ? WATCH_VAR_UPPER : WATCH_VAR_LOWER;
-#endif
 
         g_CurrentPlayer->timer_1C4 += g_ClockTimer;
         g_CurrentPlayer->watch_pause_time += 1;
@@ -1146,11 +1112,7 @@ Gfx *watchRender(Gfx *gdl)
     nodepos = (f32 *) objheader->Switches[3];
     rwdata = modelGetNodeRwData(&g_CurrentPlayer->watchModel, (ModelNode *) nodepos);
     perspmtx = dynAllocateMatrix();
-#if defined(VERSION_EU)
-    guPerspective(perspmtx, &perspNorm, g_CurrentPlayer->zoominfovy, 1.4005603f, 10.0f, 300.0f, 1.0f);
-#else
-    guPerspective(perspmtx, &perspNorm, g_CurrentPlayer->zoominfovy, 1.4545455f, 10.0f, 300.0f, 1.0f);
-#endif
+    guPerspective(perspmtx, &perspNorm, g_CurrentPlayer->zoominfovy, WATCH_MODEL_ASPECT, 10.0f, 300.0f, 1.0f);
  
     gSPMatrix(gdl++, OS_PHYSICAL_TO_K0((u32) perspmtx), G_MTX_NOPUSH | G_MTX_LOAD | G_MTX_PROJECTION);
     gSPPerspNormalize(gdl++, perspNorm);

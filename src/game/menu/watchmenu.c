@@ -41,33 +41,8 @@
 
 #define WATCH_VOL_ADJUST_STEP 1024
 
-#if defined(VERSION_US)
-#define WATCH_ROTATION_FRAMES g_FrameDelta
-#else
-#define WATCH_ROTATION_FRAMES g_FrameDelta60
-#endif
 
-#if defined(VERSION_EU)
-#define WATCH_PERSPECTIVE_FOVY    52.5f
-#define WATCH_PERSPECTIVE_ASPECT  1.283847f
-#else
-#define WATCH_PERSPECTIVE_FOVY    50.5f
-#define WATCH_PERSPECTIVE_ASPECT  1.3333334f
-#endif
 
-#if defined(VERSION_EU)
-#define OPTLABELS_ROW1_Y    0x5c
-#define OPTLABELS_ROW2_Y    0x7a
-#define OPTLABELS_ROW_PITCH 0x1e
-#define OPTLABELS_COL_RET   0x5a
-#define OPTLABELS_HINT_Y    0xe1
-#else
-#define OPTLABELS_ROW1_Y    0x52
-#define OPTLABELS_ROW2_Y    0x6b
-#define OPTLABELS_ROW_PITCH 0x19
-#define OPTLABELS_COL_RET   0x4b
-#define OPTLABELS_HINT_Y    0xc3
-#endif
 
 // bss
 Mtx g_WatchBarsScaleMtx;
@@ -1412,11 +1387,7 @@ void watchMenuTick(void)
         g_WatchObjectiveRed = 0xFFU;
         g_WatchObjectiveRedTimer = 0xF;
     }
-    #ifdef VERSION_US
-    g_WatchInvSpinAngle += ((g_WatchInvSpinSpeed * g_FrameDelta * M_TAU_F) / 360.0f);
-    #else
     g_WatchInvSpinAngle += ((g_WatchInvSpinSpeed * g_FrameDelta60 * M_TAU_F) / 360.0f);
-    #endif
 
     g_WatchInvSpinAngle = watchMenuWrapAngle(g_WatchInvSpinAngle);
 
@@ -1757,7 +1728,7 @@ Gfx *watchMenuRenderAbort(Gfx *gdl)
 
     cancelX = 0x88;
 
-    titleY = confirmY = cancelY = (PAL ? 0x4E : 0x4C);
+    titleY = confirmY = cancelY = WATCH_ABORT_ROW_Y;
 
     if (g_WatchMenuSelected != 0)
     {
@@ -1946,11 +1917,7 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     text2 = invGetWatchTitle2ForIndex(index);
 
 
-#if defined(VERSION_US)
-    guPerspective(persp, &perspNorm, fov, 1.33333337f, 10.0f, 10000.0f, 1.0f);
-#else
-    guPerspective(persp, &perspNorm, fov, 1.2838470f, 10.0f, 10000.0f, 1.0f);
-#endif
+    guPerspective(persp, &perspNorm, fov, WATCH_PERSPECTIVE_ASPECT, 10.0f, 10000.0f, 1.0f);
 
     gSPMatrix(gdl++, osVirtualToPhysical(persp), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
 
@@ -1971,19 +1938,11 @@ Gfx* watchMenuRenderHeldItem(Gfx* gdl) {
     gdl = textSetupDraw(gunDrawWatchAmmoDisplay(gdl));
 
     x = 0x60;
-#if defined(VERSION_US)
-    y = 0xA0;
-#else
-    y = 0xBC;
-#endif
+    y = WATCH_ITEM_TITLE1_Y;
     textMeasure(&height, &width, text, fontChars, font, 0);
     gdl = textRender(gdl, &x, &y, text, fontChars, font, 0xFF00B0, width, height, 0, 0);
 
-#if defined(VERSION_US)
-    y = 0xAA;
-#else
-    y = 0xC6;
-#endif
+    y = WATCH_ITEM_TITLE2_Y;
     textMeasure(&height, &width, text2, fontChars, font, 0);
     gdl = textRender(gdl, &x, &y, text2, fontChars, font, 0xFF00B0, width, height, 0, 0);
 
@@ -2109,33 +2068,15 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
             struct fontchar *pFontChars2;
             char string_builder_allocation[2000];
 
-#if defined(VERSION_EU)
-            struct font *pFontFile;
-            s32 base_y;
-            char formattedString[32];
-#endif
-
 #define LINEHEIGHT() 12
 
-#if defined(VERSION_EU)
-#define WATCH_INV_BASE_Y() base_y
-#else
-#define WATCH_INV_BASE_Y() 0x8C
-#endif
 
             textheight = 0;
             textwidth = 0;
 
-#if defined(VERSION_EU)
-            pFontFile2 = g_FontBankGothic;
-            pFontChars2 = g_FontBankGothicChars;
-            base_y = 0xAA;
-            string_builder_allocation[0] = 0;
-#else
             string_builder_allocation[0] = 0;
             pFontFile2 = g_FontBankGothic;
             pFontChars2 = g_FontBankGothicChars;
-#endif
 
             for (i = 0; i < invCountItems(); i++)
             {
@@ -2168,10 +2109,8 @@ Gfx *watchMenuRenderInventory(Gfx *gdl, Mtx *mtx)
             gdl = textRenderRect(gdl, 0x4B, boxY, textwidth + 0x52, (LINEHEIGHT() + boxY) - 2, 0x800050);
 
             {
-#if !defined(VERSION_EU)
                 char formattedString[32];
                 struct font *pFontFile;
-#endif
                 struct fontchar *pFontChars;
                 s32 x2;
                 s32 y2;
@@ -2972,7 +2911,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
     watchMenuSpinController(0, &g_WatchControllerSpinCounter, &g_WatchControllerSpinSpeed, &g_WatchControllerSpinAngle);
     mtx4LoadIdentity(&identity);
 
-    g_WatchControllerSpinAngle += (g_WatchControllerSpinSpeed * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
+    g_WatchControllerSpinAngle += (g_WatchControllerSpinSpeed * g_FrameDelta60) * 0.5f;
     g_WatchControllerSpinAngle = watchMenuWrapAngle(g_WatchControllerSpinAngle);
 
     mtx4LoadZRotation(g_WatchControllerSpinAngle, &zrotmtx);
@@ -3031,7 +2970,7 @@ Gfx *watchMenuRenderController(Gfx *gdl)
         watchMenuSpinController(1, &g_WatchController2SpinCounter, &g_WatchController2SpinSpeed, &g_WatchController2SpinAngle);
         mtx4LoadIdentity(&identity);
 
-        g_WatchController2SpinAngle += (g_WatchController2SpinSpeed * ((f32) WATCH_ROTATION_FRAMES)) * 0.5f;
+        g_WatchController2SpinAngle += (g_WatchController2SpinSpeed * g_FrameDelta60) * 0.5f;
         g_WatchController2SpinAngle = watchMenuWrapAngle(g_WatchController2SpinAngle);
 
         mtx4LoadZRotation(g_WatchController2SpinAngle, &zrotmtx);
@@ -3496,14 +3435,10 @@ const char *textLastLine(const char *arg)
                 ret = arg;
             }
         }
-#if defined(VERSION_EU)
         else
         {
             arg++;
         }
-#else
-            arg++;
-#endif
     }
 
     return ret;
@@ -3528,11 +3463,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
         const struct font *font = g_FontBankGothic;
         struct fontchar *chars = g_FontBankGothicChars;
 
-#if defined(VERSION_EU)
-            char wrappedText[3000];
-#else
-            char wrappedText[3000] = "\n";
-#endif
+        char wrappedText[3000];
 
         char pageTitle[0x20];
         const char *completeText;
@@ -3550,9 +3481,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
         failedText = langGet(0xac37);
         titleText = briefingGetText(BRIEFING_TITLE);
 
-#if defined(VERSION_EU)
         strcpy(wrappedText, "\n");
-#endif
 
         gdl = textSetupDraw(gdl);
         textMeasure(&textHeight, &textWidth, titleText, chars, font, 0);
@@ -3595,11 +3524,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
 
             case BRIEF_INDEX_OBJECTIVES:
             {
-#if defined(VERSION_EU)
-                char objectiveBuffer[200];
-#else
                 char objectiveBuffer[200] = "";
-#endif
                 u32 colour = 0;
                 s32 i;
                 s32 j;

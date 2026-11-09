@@ -50,11 +50,7 @@
 #define RESPAWN_PLAYER_DIST 400.0f
 
 /* How long a used-up respawning object stays away */
-#ifdef VERSION_EU
-#define RESPAWN_TIME 1000
-#else
 #define RESPAWN_TIME 1200
-#endif
 
 /* The prop pool: every prop in the game is one of these */
 PropRecord g_Props[MAX_PROPS] __attribute__((aligned(16)));

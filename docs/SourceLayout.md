@@ -14,18 +14,24 @@ under "Misleading names" below and get renamed as each subsystem is cleaned up.
 
 ## US and PAL
 
-The same sources build the US (`make VERSION=US`) and the PAL (`make VERSION=EU`) ROM. Code
-that differs between them sits behind these flags, which the Makefile sets:
+The same sources build the US (`make VERSION=US`) and the PAL (`make VERSION=EU`) ROM. The
+Makefile sets `VERSION_US` or `VERSION_EU`, and that is the only region flag. Gameplay,
+text, setups, level data and the attract demos are the same in both; the builds differ
+only in the video mode:
 
-| Flag | Build | Meaning |
-| --- | --- | --- |
-| `VERSION_US`, `VERSION_EU` | one each | Which build this is |
-| `REFRESH_PAL` | PAL | 50 Hz timing |
-| `BUGFIX_R0` | US | Code and data only the US release has |
-| `BUGFIX_R1`, `BUGFIX_R2` | PAL | Fixes Rare made for the PAL release that the US build doesn't take |
-| `BACKPORT_R1` | US | PAL fixes taken into the US build, where the US code differs from PAL's |
+- `src/fr.h`: screen height, aspect ratios, HUD and menu offsets for the 272-line PAL
+  screen.
+- `src/bondconstants.h`: the game clock is 60 ticks a second on both (`TICKS_PER_SECOND`).
+  `VI_HZ` is the video rate (60 or 50); `frameWaitForNext` (`game/level/frametiming.c`)
+  turns 50 Hz retraces into 60 Hz ticks on PAL. Write game times and rates in plain 60 Hz
+  ticks. Only code that steps once per retrace or per drawn frame (audio, music fades, the
+  title sequence, the Nintendo logo) uses `VI_HZ` and the `VI_TICKS`/`VI_PER_TICK`/`VI_DAMP`
+  macros.
+- Text: both ROMs carry the US (`E`) and British (`P`) banks, built from the same
+  source; `language.c` picks one.
 
-A PAL fix that both builds take is plain code with no flag around it.
+A few PAL-only video paths (`fr.c`, `camview.c`) and hand-tuned title timings remain
+under `#if`.
 
 ## Assembly
 

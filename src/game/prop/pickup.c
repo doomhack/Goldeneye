@@ -346,7 +346,7 @@ static void pickupShowAmmoText(AMMOTYPE ammotype, s32 amount)
     char buffer[100] = "";
 
     pickupBuildAmmoText(buffer, ammotype, amount);
-    HUDMESSAGEBOTTOM(buffer);
+    hudmsgBottomShow(buffer);
 }
 
 
@@ -571,7 +571,7 @@ void pickupShowWeaponText(ITEM_IDS weapon)
     char buffer[100];
 
     pickupBuildWeaponText(buffer, weapon);
-    HUDMESSAGEBOTTOM(buffer);
+    hudmsgBottomShow(buffer);
 }
 
 
@@ -633,7 +633,7 @@ static TICKOP pickupWeapon(const PropRecord *prop, bool showtext)
 
             if (text)
             {
-                HUDMESSAGEBOTTOM(text);
+                hudmsgBottomShow(text);
             }
             else
             {
@@ -659,7 +659,7 @@ static TICKOP pickupWeapon(const PropRecord *prop, bool showtext)
             if (text)
             {
                 collected = true;
-                HUDMESSAGEBOTTOM(text);
+                hudmsgBottomShow(text);
             }
             else if (collected)
             {
@@ -721,7 +721,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showtext)
 
             if (showtext)
             {
-                HUDMESSAGEBOTTOM(objPickupText(obj, PROPOBJ_STR_3C_PICKEDUPAKEY));
+                hudmsgBottomShow(objPickupText(obj, PROPOBJ_STR_3C_PICKEDUPAKEY));
             }
 
             op = TICKOP_GIVETOPLAYER;
@@ -767,7 +767,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showtext)
 
             if (showtext)
             {
-                HUDMESSAGEBOTTOM(objPickupText(obj, viewIsHalfWidth() ? PROPOBJ_STR_3E_BODYARMOUR
+                hudmsgBottomShow(objPickupText(obj, viewIsHalfWidth() ? PROPOBJ_STR_3E_BODYARMOUR
                                                                       : PROPOBJ_STR_3D_PICKEDUPSOMEBODEYARMOUR));
             }
 
@@ -779,7 +779,7 @@ TICKOP propPickupByPlayer(PropRecord *prop, bool showtext)
 
             if (showtext)
             {
-                HUDMESSAGEBOTTOM(objPickupText(obj, PROPOBJ_STR_3F_PICKEDUPSOMETHING));
+                hudmsgBottomShow(objPickupText(obj, PROPOBJ_STR_3F_PICKEDUPSOMETHING));
             }
 
             op = TICKOP_GIVETOPLAYER;

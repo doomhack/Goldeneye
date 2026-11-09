@@ -131,7 +131,5 @@
       build/OUTCODE/src/game/gfx/rsp.o (.bss);
       build/OUTCODE/src/game/level/game.o (.bss);
       build/OUTCODE/src/game/gfx/zbuf.o (.bss);
-#ifndef VERSION_EU
-#endif
       /* With LTO, the code GCC compiles at link time (see the Makefile) */
       *ltrans*.o (.bss .bss.* COMMON);

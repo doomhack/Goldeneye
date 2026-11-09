@@ -1,7 +1,7 @@
 #ifndef _BG_JUN_ALL_P_H_
 #define _BG_JUN_ALL_P_H_
 
-#include "../bg_all_p.h"
+#include "bg_all_p.h"
 
 extern u32 point_table_binary_1[];
 extern u32 point_table_binary_2[];
@@ -129,7 +129,6 @@ extern u32 sec_mapping_binary_31[];
 extern u32 sec_mapping_binary_32[];
 extern u32 sec_mapping_binary_35[];
 extern u32 sec_mapping_binary_44[];
-extern u32 sec_mapping_binary_45[];
 
 extern struct portal_4_point portal_0;
 extern struct portal_4_point portal_1;

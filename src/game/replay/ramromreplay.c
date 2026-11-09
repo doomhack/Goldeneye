@@ -301,7 +301,6 @@ void iterate_ramrom_entries_handle_camera_out(void)
 
     frameAdvance(ramrom_blkbuf_2->speedframes);
 
-    // BUG? Does this need to be adjusted for PAL?
     endtime = g_DemoFile->totaltime_ms - 0x3C;
     if ((g_GlobalTimer >= endtime) && ((g_GlobalTimer - g_ClockTimer) < endtime))
     {

@@ -36,17 +36,14 @@ ConvertAIPRINT = sed -E -e ':loop s/PRINT\("(..*?)(.)"/PRINT\("\1",\x27\2\x27/g;
                 s/PRINT\((.*)\)/AI_PRINT,\1/g'
 
 # per VERSION flags
-# VERSION_US / VERSION_EU: which build this is.
-# REFRESH_PAL: 50 Hz timing (PAL only).
-# BUGFIX_R0: code and data only the US release has.
-# BUGFIX_R1, BUGFIX_R2: fixes Rare made for the PAL release that the US build doesn't take.
-# BACKPORT_R1: PAL fixes we took into the US build where the code differs from PAL's.
+# VERSION_US / VERSION_EU: which build this is. Region values live in fr.h
+# (screen) and bondconstants.h (timing); see docs/SourceLayout.md.
 ifeq ($(VERSION), US)
  COUNTRYCODE := u
  OUTCODE := $(COUNTRYCODE)
  LANG := US
- LCDEFS := -DVERSION_US -DBUGFIX_R0 -DBACKPORT_R1
- ASMDEFS := --defsym VERSION_US=1 --defsym BUGFIX_R0=1 --defsym BACKPORT_R1=1
+ LCDEFS := -DVERSION_US
+ ASMDEFS := --defsym VERSION_US=1
  LDFILEOPTS := -DVERSION_$(LANG) -DOUTCODE=$(OUTCODE)
 endif
 
@@ -54,8 +51,8 @@ ifeq ($(VERSION), EU)
  COUNTRYCODE := e
  OUTCODE := $(COUNTRYCODE)
  LANG := EU
- LCDEFS := -DVERSION_EU -DREFRESH_PAL -DBUGFIX_R1 -DBUGFIX_R2
- ASMDEFS := --defsym VERSION_EU=1 --defsym REFRESH_PAL=1 --defsym BUGFIX_R1=1 --defsym BUGFIX_R2=1
+ LCDEFS := -DVERSION_EU
+ ASMDEFS := --defsym VERSION_EU=1
  LDFILEOPTS := -DVERSION_$(LANG) -DOUTCODE=$(OUTCODE)
 endif
 

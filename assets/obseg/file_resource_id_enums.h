@@ -649,181 +649,93 @@ typedef enum FILEINDEXID
     SETUPTRA,
 
     AMEE,
-#ifdef VERSION_EU
     AMEP,
-#endif
     ARCHE,
-#ifdef VERSION_EU
     ARCHP,
-#endif
     ARECE,
-#ifdef VERSION_EU
     ARECP,
-#endif
     ARKE,
-#ifdef VERSION_EU
     ARKP,
-#endif
     ASHE,
-#ifdef VERSION_EU
     ASHP,
-#endif
     AZTE,
-#ifdef VERSION_EU
     AZTP,
-#endif
     CATE,
-#ifdef VERSION_EU
     CATP,
-#endif
     CAVEE,
-#ifdef VERSION_EU
     CAVEP,
-#endif
     CRADE,
-#ifdef VERSION_EU
     CRADP,
-#endif
     CRYPE,
-#ifdef VERSION_EU
     CRYPP,
-#endif
     DAME,
-#ifdef VERSION_EU
     DAMP,
-#endif
     DEPOE,
-#ifdef VERSION_EU
     DEPOP,
-#endif
     DESTE,
-#ifdef VERSION_EU
     DESTP,
-#endif
     DISHE,
-#ifdef VERSION_EU
     DISHP,
-#endif
     EARE,
-#ifdef VERSION_EU
     EARP,
-#endif
     ELDE,
-#ifdef VERSION_EU
     ELDP,
-#endif
     GUNE,
-#ifdef VERSION_EU
     GUNP,
-#endif
     IMPE,
-#ifdef VERSION_EU
     IMPP,
-#endif
     JUNE,
-#ifdef VERSION_EU
     JUNP,
-#endif
     LEEE,
-#ifdef VERSION_EU
     LEEP,
-#endif
     LENE,
-#ifdef VERSION_EU
     LENP,
-#endif
     LIPE,
-#ifdef VERSION_EU
     LIPP,
-#endif
     LUEE,
-#ifdef VERSION_EU
     LUEP,
-#endif
     MISCE,
-#ifdef VERSION_EU
     MISCP,
-#endif
     MPMENUE,
-#ifdef VERSION_EU
     MPMENUP,
-#endif
     MPWEAPONSE,
-#ifdef VERSION_EU
     MPWEAPONSP,
-#endif
     OATE,
-#ifdef VERSION_EU
     OATP,
-#endif
     OPTIONSE,
-#ifdef VERSION_EU
     OPTIONSP,
-#endif
     PAME,
-#ifdef VERSION_EU
     PAMP,
-#endif
     PETEE,
-#ifdef VERSION_EU
     PETEP,
-#endif
     PROPOBJE,
-#ifdef VERSION_EU
     PROPOBJP,
-#endif
     REFE,
-#ifdef VERSION_EU
     REFP,
-#endif
     RITE,
-#ifdef VERSION_EU
     RITP,
-#endif
     RUNE,
-#ifdef VERSION_EU
     RUNP,
-#endif
     SEVE,
-#ifdef VERSION_EU
     SEVP,
-#endif
     SEVBE,
-#ifdef VERSION_EU
     SEVBP,
-#endif
     SEVXE,
-#ifdef VERSION_EU
     SEVXP,
-#endif
     SEVXBE,
-#ifdef VERSION_EU
     SEVXBP,
-#endif
     SHOE,
-#ifdef VERSION_EU
     SHOP,
-#endif
     SILOE,
-#ifdef VERSION_EU
     SILOP,
-#endif
     STATE,
-#ifdef VERSION_EU
     STATP,
-#endif
     TITLEE,
-#ifdef VERSION_EU
     TITLEP,
-#endif
     TRAE,
-#ifdef VERSION_EU
     TRAP,
-#endif
     WAXE,
-#ifdef VERSION_EU
     WAXP,
-#endif
     OBENDSEG
 } FILEINDEXID;
 

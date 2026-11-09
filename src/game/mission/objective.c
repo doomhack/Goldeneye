@@ -471,22 +471,14 @@ void objectivesTickStatusMessages(void)
                     for (p = 0; p < getPlayerCount(); p++)
                     {
                         playerSetCurrent(p);
-#ifdef VERSION_US
                         hudmsgBottomShow(buffer);
-#else
-                        hudmsgBottomShowText(buffer);
-#endif
                     }
 
                     playerSetCurrent(prevplayer);
                 }
                 else
                 {
-#ifdef VERSION_US
                     hudmsgBottomShow(buffer);
-#else
-                    hudmsgBottomShowText(buffer);
-#endif
                 }
             }
         }

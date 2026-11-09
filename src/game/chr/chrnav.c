@@ -113,20 +113,12 @@ void chrRunToPos(ChrRecord *self, coord3d *pos)
 
     if (rifle)
     {
-#ifdef VERSION_EU
-        self->act_runpos.eta60 = (s32) (((sq / (g_ChrSpeedRun * 0.5f)) * 50.0f) / 60.0f);
-#else
         self->act_runpos.eta60 = (s32) (sq / (g_ChrSpeedRun * 0.5f));
-#endif
         modelSetAnimation(self->model, ANIM(running), flip, 0, 0.5f, 16.0f);
     }
     else
     {
-#ifdef VERSION_EU
-        self->act_runpos.eta60 = (s32) (((sq / (g_ChrSpeedRunOneHanded * 0.5f)) * 50.0f) / 60.0f);
-#else
         self->act_runpos.eta60 = (s32) (sq / (g_ChrSpeedRunOneHanded * 0.5f));
-#endif
         modelSetAnimation(self->model, ANIM(running_one_handed_weapon), flip, 0, 0.5f, 16.0f);
     }
 }
@@ -401,11 +393,7 @@ static void chrGoPosConsiderRestart(ChrRecord *self)
 
         if (ttl == 0)
         {
-#ifndef REFRESH_PAL
-            newttl = (chrGoPosCalculateBaseTtl(self) * 2) + 300;
-#else
-            newttl = ((chrGoPosCalculateBaseTtl(self) * 100) + 15000) / 60;
-#endif
+            newttl = ((chrGoPosCalculateBaseTtl(self) * 2) + 300);
 
             if (newttl >= 0x10000)
             {
@@ -1138,8 +1126,7 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 }
 
 
-#if !defined(REFRESH_PAL)
-/* NTSC */
+/* Turn speeds and accelerations, per 60 Hz tick */
 #define MAX_SPEED_A 0.2991993f
 #define ACCEL_A 0.014959966f
 
@@ -1152,23 +1139,6 @@ bool chrGoToPad(ChrRecord *self, s32 padid, SPEED speed)
 #define MAX_SPEED_C2 0.049087387f
 #define MAX_SPEED_C3 0.12566371f
 #define ACCEL_C 0.009817477f
-#endif
-
-#if defined(REFRESH_PAL)
-/* PAL */
-#define MAX_SPEED_A 0.359039157629013f
-#define ACCEL_A 0.0179519578814507f
-
-#define MAX_SPEED_B1 0.0235619451850653f
-#define MAX_SPEED_B2 0.117809727787972f
-#define MAX_SPEED_B3 0.235619455575943f
-#define ACCEL_B 0.0179519578814507f
-
-#define MAX_SPEED_C1 0.0117809725925326f
-#define MAX_SPEED_C2 0.0589048638939858f
-#define MAX_SPEED_C3 0.150796458125114f
-#define ACCEL_C 0.0117809725925326f
-#endif
 
 s32 chrApplySpeed(const ChrRecord *self, const coord3d *target, s32 speed, f32 *speedPtr)
 {

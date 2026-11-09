@@ -638,179 +638,91 @@ extern u8 UsetupstatueZ[];
 extern u8 UsetuptraZ[];
 
 	extern u8 LameE[];
-#ifdef VERSION_EU
 	extern u8 LameP[];
-#endif
 	extern u8 LarchE[];
-#ifdef VERSION_EU
 	extern u8 LarchP[];
-#endif
 	extern u8 LarecE[];
-#ifdef VERSION_EU
 	extern u8 LarecP[];
-#endif
 	extern u8 LarkE[];
-#ifdef VERSION_EU
 	extern u8 LarkP[];
-#endif
 	extern u8 LashE[];
-#ifdef VERSION_EU
 	extern u8 LashP[];
-#endif
 	extern u8 LaztE[];
-#ifdef VERSION_EU
 	extern u8 LaztP[];
-#endif
 	extern u8 LcatE[];
-#ifdef VERSION_EU
 	extern u8 LcatP[];
-#endif
 	extern u8 LcaveE[];
-#ifdef VERSION_EU
 	extern u8 LcaveP[];
-#endif
 	extern u8 LcradE[];
-#ifdef VERSION_EU
 	extern u8 LcradP[];
-#endif
 	extern u8 LcrypE[];
-#ifdef VERSION_EU
 	extern u8 LcrypP[];
-#endif
 	extern u8 LdamE[];
-#ifdef VERSION_EU
 	extern u8 LdamP[];
-#endif
 	extern u8 LdepoE[];
-#ifdef VERSION_EU
 	extern u8 LdepoP[];
-#endif
 	extern u8 LdestE[];
-#ifdef VERSION_EU
 	extern u8 LdestP[];
-#endif
 	extern u8 LdishE[];
-#ifdef VERSION_EU
 	extern u8 LdishP[];
-#endif
 	extern u8 LearE[];
-#ifdef VERSION_EU
 	extern u8 LearP[];
-#endif
 	extern u8 LeldE[];
-#ifdef VERSION_EU
 	extern u8 LeldP[];
-#endif
 	extern u8 LgunE[];
-#ifdef VERSION_EU
 	extern u8 LgunP[];
-#endif
 	extern u8 LimpE[];
-#ifdef VERSION_EU
 	extern u8 LimpP[];
-#endif
 	extern u8 LjunE[];
-#ifdef VERSION_EU
 	extern u8 LjunP[];
-#endif
 	extern u8 LleeE[];
-#ifdef VERSION_EU
 	extern u8 LleeP[];
-#endif
 	extern u8 LlenE[];
-#ifdef VERSION_EU
 	extern u8 LlenP[];
-#endif
 	extern u8 LlipE[];
-#ifdef VERSION_EU
 	extern u8 LlipP[];
-#endif
 	extern u8 LlueE[];
-#ifdef VERSION_EU
 	extern u8 LlueP[];
-#endif
 	extern u8 LmiscE[];
-#ifdef VERSION_EU
 	extern u8 LmiscP[];
-#endif
 	extern u8 LmpmenuE[];
-#ifdef VERSION_EU
 	extern u8 LmpmenuP[];
-#endif
 	extern u8 LmpweaponsE[];
-#ifdef VERSION_EU
 	extern u8 LmpweaponsP[];
-#endif
 	extern u8 LoatE[];
-#ifdef VERSION_EU
 	extern u8 LoatP[];
-#endif
 	extern u8 LoptionsE[];
-#ifdef VERSION_EU
 	extern u8 LoptionsP[];
-#endif
 	extern u8 LpamE[];
-#ifdef VERSION_EU
 	extern u8 LpamP[];
-#endif
 	extern u8 LpeteE[];
-#ifdef VERSION_EU
 	extern u8 LpeteP[];
-#endif
 	extern u8 LpropobjE[];
-#ifdef VERSION_EU
 	extern u8 LpropobjP[];
-#endif
 	extern u8 LrefE[];
-#ifdef VERSION_EU
 	extern u8 LrefP[];
-#endif
 	extern u8 LritE[];
-#ifdef VERSION_EU
 	extern u8 LritP[];
-#endif
 	extern u8 LrunE[];
-#ifdef VERSION_EU
 	extern u8 LrunP[];
-#endif
 	extern u8 LsevE[];
-#ifdef VERSION_EU
 	extern u8 LsevP[];
-#endif
 	extern u8 LsevbE[];
-#ifdef VERSION_EU
 	extern u8 LsevbP[];
-#endif
 	extern u8 LsevxE[];
-#ifdef VERSION_EU
 	extern u8 LsevxP[];
-#endif
 	extern u8 LsevxbE[];
-#ifdef VERSION_EU
 	extern u8 LsevxbP[];
-#endif
 	extern u8 LshoE[];
-#ifdef VERSION_EU
 	extern u8 LshoP[];
-#endif
 	extern u8 LsiloE[];
-#ifdef VERSION_EU
 	extern u8 LsiloP[];
-#endif
 	extern u8 LstatE[];
-#ifdef VERSION_EU
 	extern u8 LstatP[];
-#endif
 	extern u8 LtitleE[];
-#ifdef VERSION_EU
 	extern u8 LtitleP[];
-#endif
 	extern u8 LtraE[];
-#ifdef VERSION_EU
 	extern u8 LtraP[];
-#endif
 	extern u8 LwaxE[];
-#ifdef VERSION_EU
 	extern u8 LwaxP[];
-#endif
 extern u8 ob__ob_end_seg[];

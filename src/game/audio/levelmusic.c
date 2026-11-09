@@ -15,11 +15,7 @@
 #include <PR/libaudio.h>
 #include "game/player/player.h"
 
-#ifdef VERSION_EU
-#define MP_MUSIC_FRAMERATE 50
-#else
-#define MP_MUSIC_FRAMERATE 60
-#endif
+#define MP_MUSIC_FRAMERATE TICKS_PER_SECOND
 
 // bss
 s32 g_LevelMusicStage;

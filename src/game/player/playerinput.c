@@ -371,11 +371,7 @@ void playerUpdateSpeedTheta(f32 value)
  * apart the watch opens START_DOUBLE_TAP_FRAMES after a first tap that no
  * second tap followed. Counted in VI frames per player.
  */
-#if defined(VERSION_EU)
-#define START_DOUBLE_TAP_FRAMES 13 // ~0.25 s at 50 Hz
-#else
 #define START_DOUBLE_TAP_FRAMES 15 // 0.25 s at 60 Hz
-#endif
 
 static s32 s_StartTapFrames[4];     // > 0: a first tap waits for a second
 static bool s_StartHealthHeld[4];   // Start still held after a double tap

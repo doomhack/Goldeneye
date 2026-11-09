@@ -110,6 +110,25 @@
 #define VIEWPORT_ULY_WIDESCREEN_OFFSET     VIEWPORT_ULY_WIDESCREEN_OFFSET_PAL
 #define Z_BUFFER_HEIGHT                    Z_BUFFER_HEIGHT_PAL
 #define ASPECT_RATIO                       ASPECT_RATIO_PAL
+/* HUD layout on the 272-line screen */
+#define HUD_BOTTOM_PAD                     10   /* ammo, timer: extra lift off the bottom edge */
+#define HUD_FIXED_Y_PAD                    28   /* HUD drawn at fixed screen y */
+#define HUD_SIGHT_ASPECT                   (25.0f / 21.0f) /* keeps the gun sight round */
+#define HUDMSG_BOTTOM_OFFSET_NO_AMMO       0x16
+#define HUDMSG_BOTTOM_OFFSET_AMMO          0x32
+#define HUDMSG_BOTTOM_OFFSET_SPLIT         0x14
+#define HUDMSG_COOP_P1_LIFT                0
+#define HUDMSG_TOP_OFFSET                  0x10
+#define RADAR_TOP_OFFSET                   0x1d
+#define RADAR_RECT1_OFFSET                 0x13
+#define RADAR_RECT1_D                      0x355
+#define RADAR_VERT_SCALE                   1.2f
+/* Front-end menus */
+#define MENU_ASPECT_440                    ASPECT_RATIO_EU_400_330
+#define MENU_ASPECT_320                    ASPECT_RATIO_EU_320_272
+#define MENU_FILL_PASSES                   3
+#define SCREEN_PIXEL_ASPECT                1.19047617912f /* 3D view in the game frame buffer */
+#define MPMENU_YOFF                        8    /* MP pause/end menu rows sit lower */    /* PAL menus clear the screen three times */
 #else
 /* NTSC */
 #define	SCREEN_HEIGHT                      SCREEN_HEIGHT_240
@@ -126,6 +145,25 @@
 #define VIEWPORT_ULY_WIDESCREEN_OFFSET     VIEWPORT_ULY_WIDESCREEN_OFFSET_NTSC
 #define Z_BUFFER_HEIGHT                    Z_BUFFER_HEIGHT_NTSC
 #define ASPECT_RATIO                       ASPECT_RATIO_SD
+/* HUD layout on the 240-line screen */
+#define HUD_BOTTOM_PAD                     0
+#define HUD_FIXED_Y_PAD                    0
+#define HUD_SIGHT_ASPECT                   1.0f
+#define HUDMSG_BOTTOM_OFFSET_NO_AMMO       0x0C
+#define HUDMSG_BOTTOM_OFFSET_AMMO          0x28
+#define HUDMSG_BOTTOM_OFFSET_SPLIT         0x10
+#define HUDMSG_COOP_P1_LIFT                8
+#define HUDMSG_TOP_OFFSET                  0xd
+#define RADAR_TOP_OFFSET                   0x1a
+#define RADAR_RECT1_OFFSET                 0x10
+#define RADAR_RECT1_D                      0x400
+#define RADAR_VERT_SCALE                   1.0f
+/* Front-end menus */
+#define MENU_ASPECT_440                    ASPECT_RATIO
+#define MENU_ASPECT_320                    ASPECT_RATIO
+#define MENU_FILL_PASSES                   1
+#define SCREEN_PIXEL_ASPECT                1.0f
+#define MPMENU_YOFF                        0
 #endif
 
 

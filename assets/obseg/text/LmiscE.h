@@ -67,6 +67,7 @@ enum LMISCE_STRINGS
     MISC_STR_40_TURBOMODE,           // "Turbo Mode",
     MISC_STR_41_FASTANIMATION,       // "Fast Animation",
     MISC_STR_42_SLOWANIMATION,       // "Slow Animation",
-    MISC_STR_43_NORADAR              // "No Radar [Multi]"
+    MISC_STR_43_NORADAR,             // "No Radar [Multi]"
+    MISC_STR_44_ONEMINUTELEFT        // "One minute left"
 
 };

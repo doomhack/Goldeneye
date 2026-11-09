@@ -42,28 +42,16 @@ s32 player_num;
 s32 random_byte;
 PLAYER_ID array_PLAYER_IDs[4];
 
-/* Define default values that are different between EU and the rest for playerInit */
-#ifdef VERSION_EU
-#define DEFAULT_DAMP_EYE_SUM_Z     8.417509f
-#define DEFAULT_HEADDAMP        0.9166f
-#define DEFAULT_HEADLOOKSUM_VAL 11.990406f
-#define DEFAULT_VIEWPORT_V_VAL  0x220
-#define DEFAULT_C_SCREENHEIGHT  (f32)SCREEN_HEIGHT
-#define DEFAULT_C_HALFHEIGHT    136.0f
-#define DEFAULT_SCREENYMAXF     (f32)SCREEN_HEIGHT
-#define DEFAULT_ASPECT          ASPECT_RATIO
-#elif defined(VERSION_US)
-#define DEFAULT_DAMP_EYE_SUM_Z     9.999998f
+/* Default values for playerInit */
+#define DEFAULT_DAMP_EYE_SUM_Z  (1.0f / 0.100000024f)
 #define DEFAULT_HEADDAMP        0.93f
-#define DEFAULT_HEADLOOKSUM_VAL 14.285716f
-#define DEFAULT_VIEWPORT_V_VAL  0x1E0
+#define DEFAULT_HEADLOOKSUM_VAL (1.0f / (1.0f - DEFAULT_HEADDAMP))
+#define DEFAULT_VIEWPORT_V_VAL  (SCREEN_HEIGHT * 2)
 #define DEFAULT_C_SCREENHEIGHT  (f32)SCREEN_HEIGHT
-#define DEFAULT_C_HALFHEIGHT    120.0f
+#define DEFAULT_C_HALFHEIGHT    (SCREEN_HEIGHT / 2.0f)
 #define DEFAULT_SCREENYMAXF     (f32)SCREEN_HEIGHT
 #define DEFAULT_ASPECT          ASPECT_RATIO
-#endif
 
-//newfile per EU
 
 void playersResetHandicaps(void)
 {
@@ -179,13 +167,8 @@ static const struct hand s_DefaultHand = {
     .sway_look_z = -1.0f,
     .sway_up_y = 1.0f,
     /* spring_look_z and spring_up_y = 1 / GUN_SPRING_SCALE, so the derived sway vector starts unit-length */
-#if defined(BUGFIX_R2)
-    .spring_look_z = -16.7504158f,
-    .spring_up_y = 16.7504158f,
-#else
-    .spring_look_z = -19.999996f,
-    .spring_up_y = 19.999996f,
-#endif
+    .spring_look_z = -1.0f / 0.050000012f,
+    .spring_up_y = 1.0f / 0.050000012f,
     .blendlook = { {{0,0,-1.0f}}, {{0,0,-1.0f}}, {{0,0,-1.0f}}, {{0,0,-1.0f}} },
     .blendup = { {{0,1.0f,0}}, {{0,1.0f,0}}, {{0,1.0f,0}}, {{0,1.0f,0}} },
     .blendscale1 = 1.0f,

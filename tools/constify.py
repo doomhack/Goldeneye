@@ -40,8 +40,8 @@ CLANG_FLAGS = ['--target=mips-unknown-elf', '-nostdinc', '-isystem', '/usr/lib/l
                '-I.', '-Iinclude', '-Isrc', '-Ilib/ultralib/include', '-Ilib/ultralib/include/PR',
                '-DF3DEX_GBI_2', '-Wno-everything']
 # Region defines as the Makefile sets them.
-VFLAGS = {'US': ['-DVERSION_US', '-DBUGFIX_R0', '-DBACKPORT_R1'],
-          'EU': ['-DVERSION_EU', '-DBUGFIX_R1', '-DBUGFIX_R2', '-DREFRESH_PAL']}
+VFLAGS = {'US': ['-DVERSION_US'],
+          'EU': ['-DVERSION_EU']}
 STATE = os.path.join(ROOT, 'build', 'constify.json')
 
 

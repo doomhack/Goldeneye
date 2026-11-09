@@ -48,13 +48,8 @@
 #include "game/math/line_tri_intersect.h"
 #include "game/level/gamemode.h"
 
-#ifdef VERSION_EU
-#define GROUND_SMOOTH_FACTOR 0.118799984f /* 0x3DF34D68 (PAL-scaled 0.1) */
-#define FALLSPEED_DECAY      0.8812f      /* 0x3F619653 (PAL-scaled 0.9) */
-#else
 #define GROUND_SMOOTH_FACTOR 0.100000024f /* 0x3DCCCCD0 */
-#define FALLSPEED_DECAY      0.9f         /* 0x3F666666 */
-#endif
+#define FALLSPEED_DECAY 0.9f /* 0x3F666666 */
 
 static void chrUpdateAimProperties(ChrRecord *self);
 static void chrUpdateAnim(ChrRecord *chr, s32 tickamount);
@@ -391,21 +386,13 @@ s32 chrRootMoveCallback(const Model *model, coord3d *src, coord3d *dst, f32 *gro
         // Knockback of a death from a hit (chrReactToHit), slowing to a stop
         if ((chr->actiontype == ACT_DIE) && (chr->act_die.timeextra > 0.0f))
         {
-#ifdef BUGFIX_R1
             tmp = ((model->playspeed * g_GlobalTimerDeltaRaw) * (chr->act_die.timeextra - chr->act_die.elapseextra)) / chr->act_die.timeextra;
-#else
-            tmp = ((model->playspeed * g_GlobalTimerDelta) * (chr->act_die.timeextra - chr->act_die.elapseextra)) / chr->act_die.timeextra;
-#endif
 
             dst->x += chr->act_die.extraspeed.x * tmp;
             dst->y += chr->act_die.extraspeed.y * tmp;
             dst->z += chr->act_die.extraspeed.z * tmp;
 
-#ifdef BUGFIX_R1
             chr->act_die.elapseextra += g_GlobalTimerDeltaRaw * model->playspeed;
-#else
-            chr->act_die.elapseextra += g_GlobalTimerDelta * model->playspeed;
-#endif
 
             if (chr->act_die.timeextra < chr->act_die.elapseextra)
             {
@@ -565,11 +552,7 @@ PropRecord *chrInit(PropRecord *prop, Model *model, coord3d *pos, f32 angle, Sta
     modelSetRootPosition(model, pos);
     modelSetRootRotY(model, angle);
 
-#if defined(VERSION_EU)
-    modelSetAnimPlaySpeed(model, g_ChrAnimRate * 1.2f, 0.0f);
-#else
     modelSetAnimPlaySpeed(model, g_ChrAnimRate, 0.0f);
-#endif
 
     chr->chrnum = (s16)g_NextChrNum;
     g_NextChrNum++;
@@ -747,11 +730,7 @@ void chrsSetAnimRate(f32 rate)
     {
         if (g_ChrSlots[i].model != NULL)
         {
-#if defined(REFRESH_PAL)
-            modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate * 1.2f, 600.0f);
-#else
             modelSetAnimPlaySpeed(g_ChrSlots[i].model, g_ChrAnimRate, 600.0f);
-#endif
         }
     }
 }
@@ -773,11 +752,7 @@ static void chrUpdateAimProperties(ChrRecord *self)
 
     if (self->aimendcount >= 2)
     {
-#if defined(BUGFIX_R1)
         mult = g_GlobalTimerDeltaRaw / (f32)self->aimendcount;
-#else
-        mult = g_GlobalTimerDelta / (f32)self->aimendcount;
-#endif
 
         if (mult > 1.0f)
         {
@@ -1150,7 +1125,6 @@ s32 chrTick(PropRecord *prop)
         prop->flags |= PROPFLAG_ONSCREEN;
         chr->chrflags |= CHRFLAG_HAS_BEEN_ON_SCREEN;
 
-#ifdef BUGFIX_R1
         if (cheatIsActive(CHEAT_DK_MODE))
         {
             modelSetLodScale(0.3125f);
@@ -1161,12 +1135,6 @@ s32 chrTick(PropRecord *prop)
                 modelSetScale(chr->model, chr->model->scale / 0.8f);
             }
         }
-#else
-        if (cheatIsActive(CHEAT_DK_MODE))
-        {
-            modelSetLodScale(0.3125f);
-        }
-#endif
 
         g_ModelJointPositionedFunc = chrHandleJointPositioned;
         g_CurModelChr = chr;
@@ -1178,11 +1146,7 @@ s32 chrTick(PropRecord *prop)
         {
             g_CurModelChr->flinchcnt += g_ClockTimer;
 
-#ifdef VERSION_EU
-            if (g_CurModelChr->flinchcnt >= 24)
-#else
-            if (g_CurModelChr->flinchcnt >= 30)
-#endif
+            if (g_CurModelChr->flinchcnt >= 10 + 20) // flinch rise + fall (chrrender.c)
             {
                 g_CurModelChr->flinchcnt = -1;
             }

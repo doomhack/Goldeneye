@@ -50,31 +50,16 @@
 ALSoundState* g_ImpactSfxStates[NUM_IMPACT_SFX_STATES];
 
 
-#ifdef REFRESH_PAL
-    /* PAL */
-    #define THROWN_ITEM_REFRESH_RATE                   50
-    #define THROWN_ITEM_TIMER_SOLO                     250
-    #define THROWN_ITEM_TIMER_MULTI                    150
-    #define THROWN_ITEM_TIMER_DEFAULT                  200
-    #define GLGRENADE_TIMER                            1000
-    #define DUAL_WIELD_TRIGGER_SWAP_TICKS              24
-    #define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS       36
-    #define WATCH_SOUND_DURATION_TICKS                 250
-    #define GUN_SPRING_DAMP                            0.9402999877929688f
-    #define GUN_SPRING_SCALE                           0.05970001220703125f
-#else
-    /* NTSC */
-    #define THROWN_ITEM_REFRESH_RATE                   60
-    #define THROWN_ITEM_TIMER_SOLO                     300
-    #define THROWN_ITEM_TIMER_MULTI                    180
-    #define THROWN_ITEM_TIMER_DEFAULT                  240
-    #define GLGRENADE_TIMER                            1200
-    #define DUAL_WIELD_TRIGGER_SWAP_TICKS              20
-    #define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS       30
-    #define WATCH_SOUND_DURATION_TICKS                 300
-    #define GUN_SPRING_DAMP                            0.95f
-    #define GUN_SPRING_SCALE                           0.050000012f
-#endif
+#define THROWN_ITEM_REFRESH_RATE 60
+#define THROWN_ITEM_TIMER_SOLO 300
+#define THROWN_ITEM_TIMER_MULTI 180
+#define THROWN_ITEM_TIMER_DEFAULT 240
+#define GLGRENADE_TIMER 1200
+#define DUAL_WIELD_TRIGGER_SWAP_TICKS 20
+#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS 30
+#define WATCH_SOUND_DURATION_TICKS 300
+#define GUN_SPRING_DAMP 0.95f
+#define GUN_SPRING_SCALE 0.050000012f
 
 // Launched grenades: bounciness and ground friction
 static const f32 g_GLGrenadeLaunchUnk8C = 0.3f;
@@ -766,19 +751,11 @@ void gunRequestHandWeaponChange(enum GUNHAND hand, s32 nextWeapon, s32 cycleDire
     {
         g_CurrentPlayer->hands[hand].switchTime = g_CurrentPlayer->hands[hand].stateTime;
 
-#ifdef VERSION_EU
-        if (getPlayerCount() == 1) {
-            g_CurrentPlayer->hands[hand].switchTime += 0xE;
-        } else {
-            g_CurrentPlayer->hands[hand].switchTime += 0xA;
-        }
-#else
         if (getPlayerCount() == 1) {
             g_CurrentPlayer->hands[hand].switchTime += 0x11;
         } else {
             g_CurrentPlayer->hands[hand].switchTime += 0xD;
         }
-#endif
     }
 
     if (gunGetNextWeapon(hand, 0) != nextWeapon)
@@ -1134,10 +1111,10 @@ void gunUpdateSway(f32 breathing, f32 maxspeed, f32 vertaSpeed, f32 thetaSpeed)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-        g_CurrentPlayer->gunAmpSum = (g_CurrentPlayer->gunAmpSum * (PAL ? 0.9403f : 0.95f)) + g_CurrentPlayer->gunposamplitude;
+        g_CurrentPlayer->gunAmpSum = (g_CurrentPlayer->gunAmpSum * 0.95f) + g_CurrentPlayer->gunposamplitude;
     }
 
-    g_CurrentPlayer->gunposamplitude = g_CurrentPlayer->gunAmpSum * (PAL ? 0.059700012f : 0.050000012f);
+    g_CurrentPlayer->gunposamplitude = g_CurrentPlayer->gunAmpSum * 0.050000012f;
 
     minbreathing = 0.016666668f * absVerta;
     if (breathing < minbreathing)
@@ -1147,10 +1124,10 @@ void gunUpdateSway(f32 breathing, f32 maxspeed, f32 vertaSpeed, f32 thetaSpeed)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-        g_CurrentPlayer->cycleSum = (g_CurrentPlayer->cycleSum * (PAL ? 0.9403f : 0.95f)) + breathing;
+        g_CurrentPlayer->cycleSum = (g_CurrentPlayer->cycleSum * 0.95f) + breathing;
     }
 
-    breathing = g_CurrentPlayer->cycleSum * (PAL ? 0.059700012f : 0.050000012f);
+    breathing = g_CurrentPlayer->cycleSum * 0.050000012f;
 
     breathStep = breathing * g_GlobalTimerDelta;
     dampt[0] = g_CurrentPlayer->hands[0].dampt + breathStep;

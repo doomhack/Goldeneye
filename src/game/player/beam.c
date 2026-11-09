@@ -497,11 +497,7 @@ void beamTick(BeamRecord* beam)
     {
         if (g_ClockTimer < 3)
         {
-#ifdef VERSION_US
-            beam->dist += beam->speed * g_GlobalTimerDelta;
-#else
             beam->dist += beam->speed * g_GlobalTimerDeltaRaw;
-#endif
         }
         else
         {

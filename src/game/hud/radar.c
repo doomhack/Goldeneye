@@ -41,17 +41,6 @@ Gfx *radarRender(Gfx *DL)
     s32 loop_start_top;
     f32 range;
 
-#if defined(VERSION_EU)
-    #define RADAR_TOP_OFFSET 0x1d
-    #define RADAR_RECT1_OFFSET 0x13
-    #define RADAR_RECT1_D 0x355
-    #define RADAR_VERT_SCALE 1.2f
-#else
-    #define RADAR_TOP_OFFSET 0x1a
-    #define RADAR_RECT1_OFFSET 0x10
-    #define RADAR_RECT1_D 0x400
-    #define RADAR_VERT_SCALE 1.0f
-#endif
     
     current_scenario = frontGetMpScenario();
     cur_playernum = playerGetCurrentNum();

@@ -1640,9 +1640,7 @@ void fileRecordMissionEnd(void)
                 return;
             }
         }
-#ifdef VERSION_US
         g_NewCheatUnlocked = FALSE;
-#endif
     }
 }
 

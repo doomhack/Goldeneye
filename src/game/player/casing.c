@@ -35,11 +35,7 @@ static const f32 g_PistolCasingRotationScaleY = M_TAU_F;
 static const f32 g_PistolCasingRotationOffsetY = M_PI_F / 8.0f;
 static const f32 g_PistolCasingRotationScaleZ = M_TAU_F;
 static const f32 g_PistolCasingRotationOffsetZ = M_PI_F / 8.0f;
-#if VERSION_EU
-static const f32 g_PistolCasingRandomDivisor = 931050.0f;
-#else
 static const f32 g_PistolCasingRandomDivisor = 775875.0f;
-#endif
 static const f32 g_PistolCasingGravity = 0.2777778f;
 static const f32 g_RifleCasingHorizontalSpeed = 1.4166666f;
 static const f32 g_RifleCasingVerticalSpeed = 1.6666666f;
@@ -49,11 +45,7 @@ static const f32 g_RifleCasingRotationScaleY = M_TAU_F;
 static const f32 g_RifleCasingRotationOffsetY = M_PI_F / 8.0f;
 static const f32 g_RifleCasingRotationScaleZ = M_TAU_F;
 static const f32 g_RifleCasingRotationOffsetZ = M_PI_F / 8.0f;
-#if VERSION_EU
-static const f32 g_RifleCasingRandomDivisor = 931050.0f;
-#else
 static const f32 g_RifleCasingRandomDivisor = 775875.0f;
-#endif
 static const f32 g_RifleCasingGravity = 0.2777778f;
 static const f32 g_CasingGravity = 0.2777778f;
 static const f32 g_CasingModelScale = 0.10000001f;
@@ -87,9 +79,6 @@ CasingRecord* casingCreate(ModelFileHeader* header, const Mtxf* mtx)
         entry->pos.x = mtx->m[3][0];
         entry->pos.y = mtx->m[3][1];
         entry->pos.z = mtx->m[3][2];
-#if VERSION_EU
-        mtx4ToMtx3(mtx, &entry->rot_mtx);
-#else
         entry->rot_mtx.m[0][0] = mtx->m[0][0];
         entry->rot_mtx.m[0][1] = mtx->m[0][1];
         entry->rot_mtx.m[0][2] = mtx->m[0][2];
@@ -109,7 +98,6 @@ CasingRecord* casingCreate(ModelFileHeader* header, const Mtxf* mtx)
         entry->rot_mtx.m[3][1] = 0.0f;
         entry->rot_mtx.m[3][2] = 0.0f;
         entry->rot_mtx.m[3][3] = 1.0f;
-#endif
         return entry;
     }
 
@@ -133,22 +121,11 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
     coord3d switchpos;
     ModelNode *switch0;
     coord3d rot;
-#if VERSION_EU
-    Mtxf rotmtx;
-#endif
     f32 rand;
-#ifndef VERSION_EU
-    s32 limit;
-#endif
     f32 frac = 0.0f;
-#if VERSION_EU
     s32 randlimit;
-#endif
     f32 oldvely;
     f32 newvely;
-#ifndef VERSION_EU
-    s32 randlimit;
-#endif
     const struct hand *hand;
     u32 randval;
  
@@ -211,26 +188,12 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
         rot.z = (((rand + rand) * g_PistolCasingRotationScaleZ) * newvely) - g_PistolCasingRotationOffsetZ;
  
-#if VERSION_EU
-        mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
-#else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
-#endif
  
-#if VERSION_EU
-        randlimit = ((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10;
-        randlimit = randlimit + 0x158679;
+        randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
         randval = randomGetNext();
         oldvely = casing->vel.y;
         frac = ((f32) ((u32) (randval % randlimit))) / g_PistolCasingRandomDivisor;
-#else
-        randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
-        limit = randlimit;
-        randval = randomGetNext();
-        oldvely = casing->vel.y;
-        frac = ((f32) ((u32) (randval % limit))) / g_PistolCasingRandomDivisor;
-#endif
         newvely = oldvely - (frac * g_PistolCasingGravity);
  
         casing->vel.y = newvely;
@@ -265,24 +228,11 @@ NOINLINE void gunEjectCasings(GUNHAND handnum, f32 floor_y_pos)
         rand = ((f32) ((u32) randomGetNext())) * 2.3283064e-10f;
         rot.z = (((rand + rand) * g_RifleCasingRotationScaleZ) * 0.0625f) - g_RifleCasingRotationOffsetZ;
  
-#if VERSION_EU
-        mtx4LoadRotation(&rot, &rotmtx);
-        mtx4ToMtx3(&rotmtx, &casing->rot_velocity_mtx);
-#else
         mtx4LoadRotation(&rot, &casing->rot_velocity_mtx);
-#endif
-        randval = ((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10;
-#if VERSION_EU
-        randval = randval + 0x158679;
-        randlimit = randomGetNext();
-        oldvely = (&casing->vel)->y;
-        frac = ((f32) ((u32) (randlimit % randval))) / g_RifleCasingRandomDivisor;
-#else
-        randlimit = randval + 0x158679;
+        randlimit = (((s32) ((randomGetNext() >> 24) * 0x158679)) >> 10) + 0x158679;
         randval = randomGetNext();
-        oldvely = (&casing->vel)->y;
+        oldvely = casing->vel.y;
         frac = ((f32) ((u32) (randval % randlimit))) / g_RifleCasingRandomDivisor;
-#endif
         newvely = (casing->vel.y = oldvely - (frac * g_RifleCasingGravity));
  
         casing->pos.y += (frac * (oldvely + newvely)) * 0.5f;
@@ -338,11 +288,7 @@ void casingTick(CasingRecord* casing)
 
     for (i = 0; i < g_ClockTimer; i++)
     {
-#if defined(VERSION_US)
         mtx4MultAffineInPlace(&casing->rot_velocity_mtx, &casing->rot_mtx);
-#else
-        mtx3MultInPlace(&casing->rot_velocity_mtx, &casing->rot_mtx);
-#endif
     }
 }
 
@@ -394,11 +340,7 @@ void casingRender(const CasingRecord *casing, Gfx **gdl)
 
     model.render_pos = model_matrices;
 
-#if defined(VERSION_EU)
-    mtx3ToMtx4(&casing->rot_mtx, &casing_model_mtx);
-#else
     mtx4Copy(&casing->rot_mtx, &casing_model_mtx);
-#endif
 
     model_scale_or_min_translation = g_CasingModelScale;
     mtx4ScaleRows012(model_scale_or_min_translation, &casing_model_mtx);

@@ -69,17 +69,10 @@
  * and the camera velocity is tuned per refresh rate so its decay per second is the
  * same on PAL (0.95 ^ (60/50) = 0.9403). 
  */
-#ifdef REFRESH_PAL
-#define CAST_INTRO_LEN          (50 * 3)
-#define CAST_INTRO_FADE         (50 / 2)
-#define CAST_DAMP               0.940299988f
-#define CAST_DAMP_COMP          0.0597000122f
-#else
 #define CAST_INTRO_LEN          (60 * 3)
 #define CAST_INTRO_FADE         (60 / 2)
-#define CAST_DAMP               0.94999999f
-#define CAST_DAMP_COMP          0.050000012f
-#endif
+#define CAST_DAMP 0.94999999f
+#define CAST_DAMP_COMP 0.050000012f
 #define CAST_INTRO_FADEOUT      (CAST_INTRO_LEN - CAST_INTRO_FADE + 1)
 #define CAST_INTRO_LEN_F        ((f32)CAST_INTRO_LEN)
 #define CAST_INTRO_FADE_F       ((f32)CAST_INTRO_FADE)
@@ -128,23 +121,11 @@ u8 g_CheatAvailable[CHEAT_MAX];
 
 u8 g_CheatActivated[CHEAT_MAX];
 
-#ifdef VERSION_EU
-
-s32 g_MpCharCursor[MAX_PLAYER_COUNT];
-
-s32 g_MpCharPrevCursor[MAX_PLAYER_COUNT];
-
-s32 g_MpFavWeapon[MAX_PLAYER_COUNT][GUNHANDS];
-
-#else
-
 s32 g_MpFavWeapon[MAX_PLAYER_COUNT][GUNHANDS];
 
 s32 g_MpCharCursor[MAX_PLAYER_COUNT];
 
 s32 g_MpCharPrevCursor[MAX_PLAYER_COUNT];
-
-#endif
 
 
 s32 g_MpCharScroll[MAX_PLAYER_COUNT];
@@ -398,13 +379,20 @@ const struct mission_folder_setup g_FrontMissions[] = {
 const f32 g_FrontFolderCamOffsetX = 0;
 const f32 g_FrontFolderCamOffsetY = 190.0;
 const f32 g_FrontFolderCamOffsetZ = -3300.0;
+/** Clears the menu screen to the fill colour (MENU_FILL_PASSES times) */
+static Gfx *frontFillScreen(Gfx *DL)
+{
+    for (s32 i = 0; i < MENU_FILL_PASSES; i++)
+    {
+        DL = viFillScreen(DL);
+    }
+
+    return DL;
+}
+
 const s32 g_FrontMissionCursorX[] = {73, 142, 212, 282, 352};
 
-#if defined(VERSION_EU)
-const s32 g_FrontMissionCursorY[] = {62, 130, 201, 270};
-#else
 const s32 g_FrontMissionCursorY[] = {62, 131, 201, 270};
-#endif
 
 const struct MP_game_length_settings g_MpGameLengths[] = {
     {getStringID(LTITLE, TITLE_STR_45_UNLIMITED), 0, 0, 0},                    /* unlimited */
@@ -458,7 +446,6 @@ struct mp_stage_setup g_MpStages[MP_STAGE_GRID_SLOTS] = {
 
 s32 g_MpCharCount = 8;
 
-#ifdef BUGFIX_R0
 const struct MP_selectable_chars g_MpChars[] = {
     {getStringID(LTITLE, TITLE_STR_184_BOND), MALE,   IMG_MPC_BROSNAN, BODY_Brosnan_Tuxedo,                   HEAD_Male_Brosnan_Tuxedo, 1.0},
     {getStringID(LTITLE, TITLE_STR_191_NATALYA), FEMALE, IMG_MPC_NATALYA, BODY_Natalya_Skirt,            HEAD_Male_Brosnan_Tuxedo, 0.96609998},
@@ -525,74 +512,6 @@ const struct MP_selectable_chars g_MpChars[] = {
     {getStringID(LTITLE, TITLE_STR_225_MANDY), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Female_Mandy, 1.0446},
     {getStringID(LTITLE, TITLE_STR_226_VIVIEN), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Female_Vivien, 1.0446}
 };
-#else
-const struct MP_selectable_chars g_MpChars[] = {
-    {getStringID(LTITLE, TITLE_STR_184_BOND), MALE,   IMG_MPC_BROSNAN, BODY_Brosnan_Tuxedo,                   HEAD_Male_Brosnan_Tuxedo, 1.0},
-    {getStringID(LTITLE, TITLE_STR_191_NATALYA), FEMALE, IMG_MPC_NATALYA, BODY_Natalya_Skirt,            HEAD_Male_Brosnan_Tuxedo, 0.96609998},
-    {getStringID(LTITLE, TITLE_STR_188_TREVELYAN), MALE,   IMG_MPC_TREVELYAN, BODY_Trevelyan_Janus,          HEAD_Male_Brosnan_Tuxedo, 1.0},
-    {getStringID(LTITLE, TITLE_STR_190_XENIA), FEMALE, IMG_MPC_XENIA, BODY_Xenia,                    HEAD_Male_Brosnan_Tuxedo, 1.0},
-    {getStringID(LTITLE, TITLE_STR_187_OURUMOV), MALE,   IMG_MPC_OURUMOV, BODY_Ourumov,                  HEAD_Male_Brosnan_Tuxedo, 1.0778},
-    {getStringID(LTITLE, TITLE_STR_186_BORIS), MALE,   IMG_MPC_BORIS, BODY_Boris,                    HEAD_Male_Brosnan_Tuxedo, 0.9702},
-    {getStringID(LTITLE, TITLE_STR_189_VALENTIN), MALE,   IMG_MPC_VALENTIN, BODY_Valentin_,                HEAD_Male_Brosnan_Tuxedo, 0.93239999},
-    {getStringID(LTITLE, TITLE_STR_185_MISHKIN), MALE,   IMG_MPC_MISHKIN, BODY_Siberian_Guard_1_Mishkin, HEAD_Male_Mishkin, 1.0},
-    {getStringID(LTITLE, TITLE_STR_194_MAYDAY), FEMALE, IMG_MPC_MAYDAY, BODY_Mayday,                   HEAD_Male_Brosnan_Tuxedo, 1.0},
-    {getStringID(LTITLE, TITLE_STR_193_JAWS), MALE,   IMG_MPC_JAWS, BODY_Jaws,                     HEAD_Male_Brosnan_Tuxedo, 1.199},
-    {getStringID(LTITLE, TITLE_STR_195_ODDJOB), MALE,   IMG_MPC_ODDJOB, BODY_Oddjob,                   HEAD_Male_Brosnan_Tuxedo,0.78780001},
-    {getStringID(LTITLE, TITLE_STR_192_BARONSAMEDI), MALE,   IMG_MPC_BARON, BODY_Baron_Samedi,             HEAD_Male_Brosnan_Tuxedo, 1.0},
-    {getStringID(LTITLE, TITLE_STR_287_RUSSIANSOLDIER), MALE,   IMG_MPC_RANDOM, BODY_Russian_Soldier,          HEAD_Male_Mark, 1.0},
-    {getStringID(LTITLE, TITLE_STR_288_RUSSIANINFANTRY), MALE,   IMG_MPC_RANDOM, BODY_Russian_Infantry,         HEAD_Male_Karl, 1.0},
-    {getStringID(LTITLE, TITLE_STR_289_SCIENTIST), MALE,   IMG_MPC_RANDOM, BODY_Scientist_1_Male,         HEAD_Male_Dave_Dr_Doak, 1.0},
-    {getStringID(LTITLE, TITLE_STR_289_SCIENTIST), FEMALE, IMG_MPC_RANDOM, BODY_Scientist_2_Female,       HEAD_Female_Sally, 1.0},
-    {getStringID(LTITLE, TITLE_STR_290_RUSSIANCOMMANDANT), MALE,   IMG_MPC_RANDOM, BODY_Russian_Commandant,       HEAD_Male_Martin, 1.0},
-    {getStringID(LTITLE, TITLE_STR_291_JANUSMARINE), MALE,   IMG_MPC_RANDOM, BODY_Janus_Marine,             HEAD_Male_Steve_Ellis, 1.0},
-    {getStringID(LTITLE, TITLE_STR_292_NAVALOFFICER), MALE,   IMG_MPC_RANDOM, BODY_Naval_Officer,            HEAD_Male_Duncan, 1.0},
-    {getStringID(LTITLE, TITLE_STR_293_HELICOPTERPILOT), MALE,   IMG_MPC_RANDOM, BODY_Helicopter_Pilot,         HEAD_Male_Pete, 1.0},
-    {getStringID(LTITLE, TITLE_STR_294_STPETERSBURGARD), MALE,   IMG_MPC_RANDOM, BODY_St_Petersburg_Guard,      HEAD_Male_Ken, 1.0},
-    {getStringID(LTITLE, TITLE_STR_295_CIVILIAN), FEMALE, IMG_MPC_RANDOM, BODY_Civilian_1_Female,        HEAD_Female_Marion_Rosika, 1.0},
-    {getStringID(LTITLE, TITLE_STR_295_CIVILIAN), MALE,   IMG_MPC_RANDOM, BODY_Civilian_2,               HEAD_Male_Graeme, 1.0},
-    {getStringID(LTITLE, TITLE_STR_295_CIVILIAN), MALE,   IMG_MPC_RANDOM, BODY_Civilian_3,               HEAD_Male_Grant, 1.0},
-    {getStringID(LTITLE, TITLE_STR_295_CIVILIAN), MALE,   IMG_MPC_RANDOM, BODY_Civilian_4,               HEAD_Male_Dwayne, 1.0},
-    {getStringID(LTITLE, TITLE_STR_296_SIBERIANGUARD), MALE,   IMG_MPC_RANDOM, BODY_Siberian_Guard_1_Mishkin, HEAD_Male_Lee, 1.0},
-    {getStringID(LTITLE, TITLE_STR_297_ARCTICCOMMANDO), MALE,   IMG_MPC_RANDOM, BODY_Arctic_Commando,          HEAD_Male_Chris, 1.0},
-    {getStringID(LTITLE, TITLE_STR_296_SIBERIANGUARD), MALE,   IMG_MPC_RANDOM, BODY_Siberian_Guard_2,         HEAD_Male_Scott, 1.0},
-    {getStringID(LTITLE, TITLE_STR_298_SIBERIANSPECIALFORCES), MALE,   IMG_MPC_RANDOM, BODY_Siberian_Special_Forces,  HEAD_Male_Alan, 1.0},
-    {getStringID(LTITLE, TITLE_STR_299_JUNGLECOMMANDO), MALE,   IMG_MPC_RANDOM, BODY_Jungle_Commando,          HEAD_Male_Joel, 1.0},
-    {getStringID(LTITLE, TITLE_STR_300_JANUSSPECIALFORCES), MALE,   IMG_MPC_RANDOM, BODY_Janus_Special_Forces,     HEAD_Male_B, 1.0},
-    {getStringID(LTITLE, TITLE_STR_301_MOONRAKERELITE), MALE,   IMG_MPC_RANDOM, BODY_Moonraker_Elite_1_Male,   HEAD_Male_Neil, 1.0},
-    {getStringID(LTITLE, TITLE_STR_301_MOONRAKERELITE), FEMALE, IMG_MPC_RANDOM, BODY_Moonraker_Elite_2_Female, HEAD_Female_Vivien, 1.0},
-    {getStringID(LTITLE, TITLE_STR_196_ROSIKA), FEMALE, IMG_MPC_RANDOM, BODY_Rosika,                   HEAD_Female_Marion_Rosika, 0.88529998},
-    {getStringID(LTITLE, TITLE_STR_197_KARL), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Karl, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_198_MARTIN), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Martin, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_199_MARK), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Mark, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_200_DAVE), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Dave_Dr_Doak, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_201_DUNCAN), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Duncan, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_202_B), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_B, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_203_STEVEE), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Steve_Ellis, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_204_GRANT), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Grant, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_205_GRAEME), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Graeme, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_206_KEN), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Ken, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_207_ALAN), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Alan, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_208_PETE), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Pete, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_209_SHAUN), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Shaun, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_210_DWAYNE), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Dwayne, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_211_DES), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Des, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_212_CHRIS), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Chris, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_213_LEE), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Lee, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_214_NEIL), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Neil, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_215_JIM), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Jim, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_216_ROBIN), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Robin, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_217_STEVEH), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Steve_H, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_218_TERRORIST), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Terrorist, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_219_BIKER), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Biker, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_220_JOEL), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Joel, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_221_SCOTT), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Scott, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_222_JOE), MALE,   IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Male_Joe, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_223_SALLY), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Female_Sally, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_224_MARION), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Female_Marion_Rosika, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_225_MANDY), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Female_Mandy, 1.0446},
-    {getStringID(LTITLE, TITLE_STR_226_VIVIEN), FEMALE, IMG_MPC_RANDOM, BODY_Brosnan_Tuxedo,                   HEAD_Female_Vivien, 1.0446}
-};
-#endif
 
 
 const struct MP_handicap_menu g_MpHandicaps[] = {
@@ -1289,11 +1208,7 @@ void frontLegalLeave(void)
 
 void frontLegalTick(void)
 {
-#ifdef REFRESH_PAL
-#define MENU_LEGALSCREEN_MENU_TIMER_MAX (50*4+1)
-#else
-#define MENU_LEGALSCREEN_MENU_TIMER_MAX (60*4+1)
-#endif
+#define MENU_LEGALSCREEN_MENU_TIMER_MAX ((60*4)+1)
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -1460,13 +1375,7 @@ void frontNintendoLeave(void)
 
 void frontNintendoTick(void)
 {
-#ifdef REFRESH_PAL
-/*~= 8.32 * 50 + 1*/
-#define NINTENDO_TIMER_MAX 417
-#else
-/*~= 8.32 * 60 + 1*/
 #define NINTENDO_TIMER_MAX 501
-#endif
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -1512,13 +1421,7 @@ Gfx *frontNintendoRender(Gfx *DL)
     // doesn't have, so set the same one
     gSPLookAt(DL++, &g_Fast3dDefaultLookAt);
 
-#if defined(VERSION_EU)
-    // 0x100000000 ? 0xFFFECD34 = 0x132CC (78540 decimal)
-    ambiantlight = 0xFF - ((s32) ((g_FrontTimer * 0xFF) + 0xFFFECD34) / 83);
-#else
-    // 0x100000000 ? 0xFFFE8F72 = 0x1708E (94350 decimal)
-    ambiantlight = 0xFF - ((s32) ((g_FrontTimer * 0xFF) + 0xFFFE8F72) / 100);
-#endif
+    ambiantlight = 0xFF - ((g_FrontTimer * 0xFF) - 94350) / 100;
     if (ambiantlight >= 0x100)
     {
         ambiantlight = 0xff;
@@ -1535,11 +1438,7 @@ Gfx *frontNintendoRender(Gfx *DL)
     g_FrontNintendoLight.a.l.col[1] = ambiantlight;
     g_FrontNintendoLight.a.l.col[0] = ambiantlight;
 
-#if defined(VERSION_EU)
-    g_NintendoLogoSpin += 0.0209439527243f;
-#else
-    g_NintendoLogoSpin += 0.017453292f;
-#endif
+    g_NintendoLogoSpin += VI_PER_TICK(0.017453292f); // once per drawn frame
 
     {
         Mtxf tmpMtx;
@@ -1547,11 +1446,7 @@ Gfx *frontNintendoRender(Gfx *DL)
         mtx4LoadYRotation(g_NintendoLogoSpin, &tmpMtx);
         mtx4ScaleColumns012(g_NintendoLogoScale, &tmpMtx);
 
-#if defined(VERSION_EU)
-        g_NintendoLogoScale *= 1.09647190571f;
-#else
-        g_NintendoLogoScale *= 1.07977f;
-#endif
+        g_NintendoLogoScale *= VI_DAMP(1.07977f);
         if (g_NintendoLogoScale > 1.1f)
         {
             g_NintendoLogoScale = 1.1f;
@@ -1692,13 +1587,8 @@ void frontLogoLeave(void) {
 
 void frontLogoTick(void)
 {
-#ifdef REFRESH_PAL
-#define GOLDENEYELOGO_TIMER_1 50*3
-#define GOLDENEYELOGO_TIMER_2 (50/2)*3
-#else
-#define GOLDENEYELOGO_TIMER_1 60*3
-#define GOLDENEYELOGO_TIMER_2 (60/2)*3
-#endif
+#define GOLDENEYELOGO_TIMER_1 (60*3)
+#define GOLDENEYELOGO_TIMER_2 ((60/2)*3)
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -2164,11 +2054,7 @@ void frontFileSelectTick(void)
     }
 
     // Change to the legal screen if 30 seconds of no input have elapsed
-#if defined(VERSION_EU)
-    if (g_FrontTimer >= 1501) // PAL (50fps): 30 seconds + 1 frame
-#else
-    if (g_FrontTimer >= 1801) // NTSC (60fps): 30 seconds + 1 frame
-#endif
+    if (g_FrontTimer >= 1800 + 1) // 30 seconds + 1 frame
     {
         frontSetMenu(MENU_LEGAL_SCREEN, TRUE);
     }
@@ -2767,11 +2653,7 @@ Gfx* frontModeSelectRender(Gfx* DL)
     s32 text_color;
 
     DL = viSetFillColor(DL,0,0,0);
-    DL = viFillScreen(DL);
-    #ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -3032,11 +2914,7 @@ Gfx *frontCoopSetupRender(Gfx *DL)
     s32 row;
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-    #if defined(BUGFIX_R2)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -3637,11 +3515,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
     unlockedDifficulty = frontGetHighestDifficulty(g_FrontMissions[g_FrontMission].mission_num);
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-#ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
 
 
@@ -3926,11 +3800,7 @@ Gfx *frontOptions007Render(Gfx *DL)
     s32 barwidth;
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-#if defined(VERSION_EU)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
 
     DL = textSetupDraw(DL);
@@ -4837,11 +4707,7 @@ Gfx * frontMpOptionsRender(Gfx *DL)
 
 
   DL = viSetFillColor(DL,0,0,0);
-  DL = viFillScreen(DL);
-  #if defined(BUGFIX_R2)
-  DL = viFillScreen(DL);
-  DL = viFillScreen(DL);
-  #endif
+  DL = frontFillScreen(DL);
   DL = frontSetupMenuBackground(DL);
   DL = textSetupDraw(DL);
   text = langGet(getStringID(LTITLE, TITLE_STR_76_MPOPTIONS));
@@ -5231,11 +5097,7 @@ Gfx *frontMpWeaponSelectRender(Gfx *DL)
     s32 set;
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-    #if defined(BUGFIX_R2)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -5391,11 +5253,7 @@ Gfx *frontMpCustomWeaponsRender(Gfx *DL)
     s32 row;
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-    #if defined(BUGFIX_R2)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -6744,11 +6602,7 @@ Gfx * frontMpScenarioRender(Gfx *DL)
 
 
     DL = viSetFillColor(DL,0,0,0);
-    DL = viFillScreen(DL);
-#ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -7278,11 +7132,7 @@ Gfx *frontBriefingRender(Gfx *DL)
     char buffer[3000];
 
     DL = viSetFillColor(DL,0,0,0);
-    DL = viFillScreen(DL);
-#ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
 
     DL = textSetupDraw(DL);
@@ -7500,11 +7350,7 @@ Gfx * frontDebriefRender(Gfx *DL)
 
 
     DL = viSetFillColor(DL, 0, 0, 0);
-    DL = viFillScreen(DL);
-    #if defined(BUGFIX_R2)
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    #endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
     DL = frontDrawMissionTitle(DL, stagename);
@@ -8194,12 +8040,7 @@ Gfx * frontCheatRender(Gfx *DL)
     const char *text;
 
     DL = viSetFillColor(DL,0,0,0);
-    DL = viFillScreen(DL);
-#ifdef VERSION_EU
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-    DL = viFillScreen(DL);
-#endif
+    DL = frontFillScreen(DL);
     DL = frontSetupMenuBackground(DL);
     DL = textSetupDraw(DL);
 
@@ -8504,11 +8345,7 @@ void frontCastEnter(void)
     modelSetRootPosition(g_CastModel, &subOffset);
     modelSetRootRotY(g_CastModel, 0.0f);
 
-#if defined VERSION_EU
-    modelSetAnimPlaySpeed(g_CastModel, 0.6f, 0);
-#else
     modelSetAnimPlaySpeed(g_CastModel, 0.5f, 0);
-#endif
     modelSetAnimation(g_CastModel, animation_table_ptrs1[g_CastAnims[g_CastAnim].animID], flip, g_CastAnims[g_CastAnim].startframeoffset, g_CastAnims[g_CastAnim].playback_speed, 0.0f);
 
     g_FrontTimer = 0;
@@ -8556,11 +8393,7 @@ void frontCastTick(void)
 
     g_FrontTimer += g_ClockTimer;
 
-#if defined(REFRESH_PAL)
-#define INTERFACE_MENU18_TIMER 151
-#else
 #define INTERFACE_MENU18_TIMER 181
-#endif
 
     if (g_FrontTimer >= INTERFACE_MENU18_TIMER)
     {
@@ -8954,14 +8787,6 @@ void frontTick(void)
         }
     }
 
-#if defined(VERSION_EU)
-#define MENU_INIT_ASPECT_440 ASPECT_RATIO_EU_400_330
-#define MENU_INIT_ASPECT_320 ASPECT_RATIO_EU_320_272
-#else
-#define MENU_INIT_ASPECT_440 ASPECT_RATIO
-#define MENU_INIT_ASPECT_320 ASPECT_RATIO
-#endif
-
     if (g_FrontScreenSize != SCREEN_SIZE_320x240)
     {
         if (viGetFrameBuf2() == (cfb_16[1]))
@@ -8969,7 +8794,7 @@ void frontTick(void)
             viSetFrameBuf2(g_FrontFrameBuffer);
         }
 
-        viSetAspect(MENU_INIT_ASPECT_440);
+        viSetAspect(MENU_ASPECT_440);
         viSetXY(440, 330);
         viSetBuf(440, 330);
         playerSetScreenSize(440, 330);
@@ -8979,7 +8804,7 @@ void frontTick(void)
     }
     else
     {
-        viSetAspect(MENU_INIT_ASPECT_320);
+        viSetAspect(MENU_ASPECT_320);
         viSetXY(320, SCREEN_HEIGHT);
         viSetBuf(320, SCREEN_HEIGHT);
         playerSetScreenSize(320, SCREEN_HEIGHT);
@@ -8988,8 +8813,6 @@ void frontTick(void)
         viSetViewPosition(0, 0);
     }
 
-#undef MENU_INIT_ASPECT_440
-#undef MENU_INIT_ASPECT_320
 
     if (
         ((g_FrontNextMenu > MENU_INVALID) || (g_FrontEnterMenu > MENU_INVALID))
@@ -9251,11 +9074,7 @@ void frontInit(void)
 
     g_FrontModelBuffer = (u8 *)mempAlloc(0x78000, MEMPOOL_STAGE); // allocation in bytes so cast to u8 from gfx
 
-#if defined(VERSION_EU)
-    g_FrontFrameBuffer = mempAlloc(0x55040, MEMPOOL_STAGE);
-#else
-    g_FrontFrameBuffer = mempAlloc(0x4b040, MEMPOOL_STAGE);
-#endif
+    g_FrontFrameBuffer = mempAlloc(SCREEN_WIDTH * SCREEN_HEIGHT * 4 + 0x40, MEMPOOL_STAGE);
 
     g_FrontFrameBuffer = (u8 *)ALIGN64_V1((u32)g_FrontFrameBuffer);
 
