@@ -53,11 +53,7 @@ f32 g_SkyCloudOffset = 0;
 // Water animation controller.
 void waterTick(void)
 {
-#ifdef VERSION_EU
     f32 delta = g_GlobalTimerDelta;
-#else
-    f32 delta = g_ClockTimer;
-#endif
 
     g_WaterScrollS += delta * 0.25f;
 

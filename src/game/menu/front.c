@@ -71,13 +71,8 @@
  */
 #define CAST_INTRO_LEN          TICKS(60 * 3)
 #define CAST_INTRO_FADE         TICKS(60 / 2)
-#ifdef REFRESH_PAL
-#define CAST_DAMP               0.940299988f
-#define CAST_DAMP_COMP          0.0597000122f
-#else
-#define CAST_DAMP               0.94999999f
-#define CAST_DAMP_COMP          0.050000012f
-#endif
+#define CAST_DAMP DAMP(0.94999999f)
+#define CAST_DAMP_COMP EASE(0.050000012f)
 #define CAST_INTRO_FADEOUT      (CAST_INTRO_LEN - CAST_INTRO_FADE + 1)
 #define CAST_INTRO_LEN_F        ((f32)CAST_INTRO_LEN)
 #define CAST_INTRO_FADE_F       ((f32)CAST_INTRO_FADE)
@@ -1373,13 +1368,7 @@ void frontNintendoLeave(void)
 
 void frontNintendoTick(void)
 {
-#ifdef REFRESH_PAL
-/*~= 8.32 * 50 + 1*/
-#define NINTENDO_TIMER_MAX 417
-#else
-/*~= 8.32 * 60 + 1*/
-#define NINTENDO_TIMER_MAX 501
-#endif
+#define NINTENDO_TIMER_MAX TICKS_DOWN(501)
 
     viSetFovY(FOV_Y_F);
     viSetAspect(ASPECT_RATIO_SD);
@@ -1425,13 +1414,7 @@ Gfx *frontNintendoRender(Gfx *DL)
     // doesn't have, so set the same one
     gSPLookAt(DL++, &g_Fast3dDefaultLookAt);
 
-#if defined(VERSION_EU)
-    // 0x100000000 ? 0xFFFECD34 = 0x132CC (78540 decimal)
-    ambiantlight = 0xFF - ((s32) ((g_FrontTimer * 0xFF) + 0xFFFECD34) / 83);
-#else
-    // 0x100000000 ? 0xFFFE8F72 = 0x1708E (94350 decimal)
-    ambiantlight = 0xFF - ((s32) ((g_FrontTimer * 0xFF) + 0xFFFE8F72) / 100);
-#endif
+    ambiantlight = 0xFF - (((s32)TICKS_TO_60(g_FrontTimer) * 0xFF) - 94350) / 100;
     if (ambiantlight >= 0x100)
     {
         ambiantlight = 0xff;
@@ -1448,11 +1431,7 @@ Gfx *frontNintendoRender(Gfx *DL)
     g_FrontNintendoLight.a.l.col[1] = ambiantlight;
     g_FrontNintendoLight.a.l.col[0] = ambiantlight;
 
-#if defined(VERSION_EU)
-    g_NintendoLogoSpin += 0.0209439527243f;
-#else
-    g_NintendoLogoSpin += 0.017453292f;
-#endif
+    g_NintendoLogoSpin += PER_TICK(0.017453292f);
 
     {
         Mtxf tmpMtx;
@@ -1460,11 +1439,7 @@ Gfx *frontNintendoRender(Gfx *DL)
         mtx4LoadYRotation(g_NintendoLogoSpin, &tmpMtx);
         mtx4ScaleColumns012(g_NintendoLogoScale, &tmpMtx);
 
-#if defined(VERSION_EU)
-        g_NintendoLogoScale *= 1.09647190571f;
-#else
-        g_NintendoLogoScale *= 1.07977f;
-#endif
+        g_NintendoLogoScale *= DAMP(1.07977f);
         if (g_NintendoLogoScale > 1.1f)
         {
             g_NintendoLogoScale = 1.1f;

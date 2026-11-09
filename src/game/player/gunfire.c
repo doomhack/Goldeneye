@@ -64,21 +64,16 @@
 #include "game/mission/mission.h"
 
 
-#ifdef REFRESH_PAL
-#define THROWN_ITEM_REFRESH_RATE 50
-#define DUAL_WIELD_TRIGGER_SWAP_TICKS 24
-#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS 36
-#define WATCH_SOUND_DURATION_TICKS 250
-#define GUN_SPRING_DAMP 0.9402999877929688f
-#define GUN_SPRING_SCALE 0.05970001220703125f
-#else
-#define THROWN_ITEM_REFRESH_RATE 60
-#define DUAL_WIELD_TRIGGER_SWAP_TICKS 20
-#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS 30
-#define WATCH_SOUND_DURATION_TICKS 300
-#define GUN_SPRING_DAMP 0.95f
-#define GUN_SPRING_SCALE 0.050000012f
-#endif
+#define THROWN_ITEM_REFRESH_RATE TICKS(60)
+#define DUAL_WIELD_TRIGGER_SWAP_TICKS TICKS(20)
+#define DUAL_WIELD_SINGLE_TRIGGER_SWAP_TICKS TICKS(30)
+#define WATCH_SOUND_DURATION_TICKS TICKS(300)
+#define GUN_SPRING_DAMP DAMP(0.95f)
+#define GUN_SPRING_SCALE EASE(0.050000012f)
+
+/* Revolver cylinder: one chamber turns in 6 ticks at 60 Hz */
+#define CYLINDER_TURN_TICKS TICKS_DOWN(6)
+
 
 s32 gunSample1PTransform(const Weapon1PTransformKeyframe *keyframes, f32 time, Mtxf *matrix, GUNHAND hand);
 extern const u16 watchlaser_fire_sounds[2];
@@ -430,11 +425,7 @@ void gunUpdateAndFire(GUNHAND handnum)
                 {
                     if (hand->weapon_action_state == 1)
                     {
-#if defined(VERSION_EU)
-                        rndf = (((hand->stateTime - (hand->weapon_ammo_in_magazine * 5)) + 0x19) * M_TAU_F) / 30.0f;
-#else
-                        rndf = (((hand->stateTime - (hand->weapon_ammo_in_magazine * 6)) + 0x1E) * M_TAU_F) / 36.0f;
-#endif
+                        rndf = (((hand->stateTime - (hand->weapon_ammo_in_magazine * CYLINDER_TURN_TICKS)) + (5 * CYLINDER_TURN_TICKS)) * M_TAU_F) / (f32)(6 * CYLINDER_TURN_TICKS);
                     }
                     else
                     {
@@ -443,17 +434,10 @@ void gunUpdateAndFire(GUNHAND handnum)
                 }
                 else if (hand->weapon_action_state == 1)
                 {
-#if defined(VERSION_EU)
-                if (hand->stateTime < 5)
+                if (hand->stateTime < CYLINDER_TURN_TICKS)
                 {
-                    rndf = (hand->stateTime * M_TAU_F) / 30.0f;
+                    rndf = (hand->stateTime * M_TAU_F) / (f32)(6 * CYLINDER_TURN_TICKS);
                 }
-#else
-                if (hand->stateTime < 6)
-                {
-                    rndf = (hand->stateTime * M_TAU_F) / 36.0f;
-                }
-#endif
             }
 
                 mtx4LoadZRotation(rndf, &tmpmtx);
@@ -469,25 +453,14 @@ void gunUpdateAndFire(GUNHAND handnum)
 
                 if (hand->weapon_action_state == 1)
                 {
-#if defined(VERSION_EU)
-                    if (hand->stateTime < 2)
+                    if (hand->stateTime < CYLINDER_TURN_TICKS / 2)
                     {
-                        rndf = (2.0f * ((-((f32) hand->stateTime)) * DegToRad(30.0f))) / 5.0f;
+                        rndf = (2.0f * ((-((f32) hand->stateTime)) * DegToRad(30.0f))) / (f32)CYLINDER_TURN_TICKS;
                     }
                     else
                     {
-                        rndf = (2.0f * ((-((f32) (5 - hand->stateTime))) * DegToRad(30.0f))) / 5.0f;
+                        rndf = (2.0f * ((-((f32) (CYLINDER_TURN_TICKS - hand->stateTime))) * DegToRad(30.0f))) / (f32)CYLINDER_TURN_TICKS;
                     }
-#else
-                    if (hand->stateTime < 3)
-                    {
-                        rndf = (2.0f * ((-((f32) hand->stateTime)) * DegToRad(30.0f))) / 6.0f;
-                    }
-                    else
-                    {
-                        rndf = (2.0f * ((-((f32) (6 - hand->stateTime))) * DegToRad(30.0f))) / 6.0f;
-                    }
-#endif
                     mtx4LoadXRotation(rndf, &tmpmtx);
                     mtx4SetTranslation((coord3d *) hammerdata, &tmpmtx);
                 }
@@ -918,11 +891,7 @@ void gunReload(enum GUNHAND hand)
     }
 }
 
-#if defined(VERSION_EU)
-    #define WEAPON_1P_ANIM_TIME(x) ((f32)(x)) * 60.0f / 50.0f
-#else
-    #define WEAPON_1P_ANIM_TIME(x) ((f32)(x))
-#endif
+#define WEAPON_1P_ANIM_TIME(x) PER_TICK((f32)(x))
 #define WHEN_1_CASE_GRENADELAUNCH_FLD890 TICKS_DOWN(6)
 #define WHEN_1_CASE_GRENADE_FLD890 TICKS_DOWN(0xf0)
 #define WHEN_D_FLD890 TICKS_DOWN(0x14)
@@ -2899,11 +2868,7 @@ void gunUpdateCrosshairSwivel(f32 turn_x, f32 turn_y, f32 max_aim_lock_speed)
 {
     f32 aim_lock_speed;
 
-#if defined(VERSION_US)
     aim_lock_speed = weaponGetStats(gunGetWeapon(GUNRIGHT))->AimLockSpeed;
-#elif defined(VERSION_EU)
-    aim_lock_speed = weaponGetStats(gunGetWeapon(GUNRIGHT))->CrosshairSpeed;
-#endif
 
     if (aim_lock_speed < max_aim_lock_speed)
     {
@@ -2922,13 +2887,8 @@ void gunUpdateCrosshairManual(f32 turn_x, f32 turn_y)
 
     item_stats = weaponGetStats(gunGetWeapon(GUNRIGHT));
 
-#if defined(VERSION_US)
     guncrossdamp = item_stats->CrosshairSpeed;
     gunaimdamp = item_stats->AimLockSpeed;
-#elif defined(VERSION_EU)
-    guncrossdamp = 0.7651f;
-    gunaimdamp = item_stats->CrosshairSpeed;
-#endif
 
     gunUpdateCrosshair(turn_x, turn_y, guncrossdamp, gunaimdamp);
 }

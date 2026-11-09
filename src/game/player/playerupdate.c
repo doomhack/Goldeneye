@@ -394,11 +394,7 @@ void playerUpdatePosFromCollision(void)
     g_CurrentPlayer->prop->pos.f[1] = g_CurrentPlayer->bond.collision_position.f[1];
     g_CurrentPlayer->prop->pos.f[2] = g_CurrentPlayer->bond.collision_position.f[2];
 
-#if defined(VERSION_EU)
-#define EYE_DAMP 0.881200015545f
-#else
-#define EYE_DAMP 0.9f
-#endif
+#define EYE_DAMP DAMP(0.9f)
     for (i=0; i<g_ClockTimer; i++)
     {
         g_CurrentPlayer->dampEyeSum.f[0] = (EYE_DAMP * g_CurrentPlayer->dampEyeSum.f[0]) + g_CurrentPlayer->bond.pos.f[0];
@@ -406,11 +402,7 @@ void playerUpdatePosFromCollision(void)
         g_CurrentPlayer->dampEyeSum.f[2] = (EYE_DAMP * g_CurrentPlayer->dampEyeSum.f[2]) + g_CurrentPlayer->bond.pos.f[2];
     }
 
-#if defined(VERSION_EU)
-#define EYE_DAMP_INV 0.118799984455f
-#else
-#define EYE_DAMP_INV 0.100000024f
-#endif
+#define EYE_DAMP_INV EASE(0.100000024f)
     g_CurrentPlayer->dampEye.x = g_CurrentPlayer->dampEyeSum.f[0] * EYE_DAMP_INV;
     g_CurrentPlayer->dampEye.y = g_CurrentPlayer->dampEyeSum.f[1] * EYE_DAMP_INV;
     g_CurrentPlayer->dampEye.z = g_CurrentPlayer->dampEyeSum.f[2] * EYE_DAMP_INV;
@@ -1279,13 +1271,7 @@ void playerMove(s8 stick_x, s8 stick_y, u16 buttons, u16 oldbuttons)
 
         if ((g_Tank.sfx[0] != NULL) && (sndGetPlayingState(g_Tank.sfx[0]) != 0))
         {
-            #if defined(VERSION_US)
-            g_Tank.engineVolume -= (g_ClockTimer * 1000);
-            #endif
-
-            #if defined(VERSION_EU)
             g_Tank.engineVolume -= (s32)(1000.0f * g_GlobalTimerDelta);
-            #endif
 
             if (g_Tank.engineVolume > 0)
             {

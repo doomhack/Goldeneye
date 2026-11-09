@@ -223,11 +223,7 @@ void skySetStageNum(s32 stagenum) {
 
 void skyTick(void)
 {
-    #if defined(VERSION_EU)
     g_SkyCloudOffset += g_GlobalTimerDelta;
-    #else
-    g_SkyCloudOffset += g_ClockTimer;
-    #endif
     if ( g_SkyCloudOffset > 4096.0f)
     {
         g_SkyCloudOffset -= 4096.0f;

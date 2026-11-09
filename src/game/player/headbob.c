@@ -71,11 +71,7 @@ void headBobUpdateIdleRoll()
 
 void headBobUpdatePos(const coord3d *vel)
 {
-#if defined(VERSION_EU)
-#define CURRENTPLAYERUPDATEHEADPOS_SCALE 0.916599988937f
-#else
-#define CURRENTPLAYERUPDATEHEADPOS_SCALE 0.93f
-#endif
+#define CURRENTPLAYERUPDATEHEADPOS_SCALE DAMP(0.93f)
     s32 i;
 
     if (g_CurrentPlayer->resetheadpos)
@@ -284,25 +280,14 @@ void headBobUpdate(f32 percent_speed, f32 speedsideways)
 
             g_CurrentPlayer->headwalkingtime60 += g_ClockTimer;
 
-#if defined(VERSION_EU)
             if (g_CurrentPlayer->headwalkingtime60 > TICKS_PER_SECOND)
             {
-                headBobSetDamp(0.916599988937f);
+                headBobSetDamp(DAMP(0.93f));
             }
             else
             {
-                headBobSetDamp(0.987999975681f);
+                headBobSetDamp(DAMP(0.99f));
             }
-#else
-            if (g_CurrentPlayer->headwalkingtime60 > TICKS_PER_SECOND)
-            {
-                headBobSetDamp(0.93f);
-            }
-            else
-            {
-                headBobSetDamp(0.99f);
-            }
-#endif
         }
         else
         {
@@ -328,11 +313,7 @@ void headBobUpdate(f32 percent_speed, f32 speedsideways)
         headpos.f[2] = 0.0f;
 
         g_CurrentPlayer->headwalkingtime60 = 0;
-#if defined(VERSION_EU)
-        headBobSetDamp(0.987999975681f);
-#else
-        headBobSetDamp(0.99f);
-#endif
+        headBobSetDamp(DAMP(0.99f));
         g_CurrentPlayer->standfrac += (0.008333334f + (0.025000002f * playerGetBreathing())) * g_GlobalTimerDelta;
 
         if (g_CurrentPlayer->standfrac >= 1.0f)
@@ -508,15 +489,9 @@ void headBobSumRootMotion(const void *anim, s32 startframe, s32 endframe, s32 *s
 }
 
 
-#ifdef REFRESH_PAL
-#define ANIMRATE 1.2f
-#define DAMPVAL 0.9166f
-#define HEADSUM 11.990406f
-#else
-#define ANIMRATE 1.0f
-#define DAMPVAL 0.93f
-#define HEADSUM 14.285716f
-#endif
+#define ANIMRATE PER_TICK(1.0f)
+#define DAMPVAL DAMP(0.93f)
+#define HEADSUM (1.0f / (1.0f - DAMPVAL))
 
 
 void headBobInit(void)

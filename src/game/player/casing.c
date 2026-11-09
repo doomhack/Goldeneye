@@ -35,11 +35,7 @@ static const f32 g_PistolCasingRotationScaleY = M_TAU_F;
 static const f32 g_PistolCasingRotationOffsetY = M_PI_F / 8.0f;
 static const f32 g_PistolCasingRotationScaleZ = M_TAU_F;
 static const f32 g_PistolCasingRotationOffsetZ = M_PI_F / 8.0f;
-#if VERSION_EU
-static const f32 g_PistolCasingRandomDivisor = 931050.0f;
-#else
-static const f32 g_PistolCasingRandomDivisor = 775875.0f;
-#endif
+static const f32 g_PistolCasingRandomDivisor = PER_TICK(775875.0f);
 static const f32 g_PistolCasingGravity = 0.2777778f;
 static const f32 g_RifleCasingHorizontalSpeed = 1.4166666f;
 static const f32 g_RifleCasingVerticalSpeed = 1.6666666f;
@@ -49,11 +45,7 @@ static const f32 g_RifleCasingRotationScaleY = M_TAU_F;
 static const f32 g_RifleCasingRotationOffsetY = M_PI_F / 8.0f;
 static const f32 g_RifleCasingRotationScaleZ = M_TAU_F;
 static const f32 g_RifleCasingRotationOffsetZ = M_PI_F / 8.0f;
-#if VERSION_EU
-static const f32 g_RifleCasingRandomDivisor = 931050.0f;
-#else
-static const f32 g_RifleCasingRandomDivisor = 775875.0f;
-#endif
+static const f32 g_RifleCasingRandomDivisor = PER_TICK(775875.0f);
 static const f32 g_RifleCasingGravity = 0.2777778f;
 static const f32 g_CasingGravity = 0.2777778f;
 static const f32 g_CasingModelScale = 0.10000001f;

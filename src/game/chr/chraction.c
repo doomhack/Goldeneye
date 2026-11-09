@@ -201,8 +201,7 @@ static void chrStand(ChrRecord *self)
         self->act_stand.reaim = 0;
         self->act_stand.turning = 2;
         self->act_stand.checkfacingwall = 0;
-        // bug/typo??: this is the only code like this not adjusted for VERSION_EU
-        self->act_stand.wallcount = (randomGetNext() % 120) + 180;
+        self->act_stand.wallcount = (randomGetNext() % TICKS(120)) + TICKS(180);
         self->sleep = 0;
 
         if (modelGetAnim(self->model) == ANIM(fire_kneel_forward_one_handed_weapon_slow))
@@ -1529,7 +1528,7 @@ static void chrTickStartAlarm(ChrRecord *self)
 {
     const Model *model = self->model;
 
-    // bug/typo, should be 50.0f on VERSION_EU
+    // Animation frames, not ticks: the same on PAL
     if (modelGetAnimFrame(model) >= 60.0f)
     {
         alarmActivate();

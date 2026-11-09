@@ -603,9 +603,7 @@ static void aircraftTickAnim(PropRecord *prop, AircraftRecord *aircraft)
     PadRecord *pad;
 
     modelSetRootPosition(model, &aircraft->runtime_pos);
-#if defined(VERSION_EU)
-    modelSetAnimPlaySpeed(aircraft->model, 1.2f, 0.0f);
-#endif
+    modelSetAnimPlaySpeed(aircraft->model, TICK_SCALE_60, 0.0f);
     model = aircraft->model;
 
     if (model->anim == animation_table_ptrs2[1])

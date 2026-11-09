@@ -446,15 +446,9 @@ static void objFall(ObjectRecord *obj, s32 playernum)
 
     if (!(obj->flags2 & PROPFLAG2_FALLWITHOUTROTATION))
     {
-#if defined(VERSION_EU)
-        rot.x = ((RANDOMFRAC() * 7.5398226f) / 320.0f) - 0.011780973f;
-        rot.y = ((RANDOMFRAC() * 7.5398226f) / 320.0f) - 0.011780973f;
-        rot.z = ((RANDOMFRAC() * 7.5398226f) / 320.0f) - 0.011780973f;
-#else
-        rot.x = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
-        rot.y = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
-        rot.z = ((RANDOMFRAC() * M_TAU_F) / 320.0f) - 0.009817477f;
-#endif
+        rot.x = ((RANDOMFRAC() * PER_TICK(M_TAU_F)) / 320.0f) - PER_TICK(0.009817477f);
+        rot.y = ((RANDOMFRAC() * PER_TICK(M_TAU_F)) / 320.0f) - PER_TICK(0.009817477f);
+        rot.z = ((RANDOMFRAC() * PER_TICK(M_TAU_F)) / 320.0f) - PER_TICK(0.009817477f);
     }
 
     mtx4LoadRotation(&rot, &projectile->mtx);

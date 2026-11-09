@@ -48,13 +48,8 @@
 #include "game/math/line_tri_intersect.h"
 #include "game/level/gamemode.h"
 
-#ifdef VERSION_EU
-#define GROUND_SMOOTH_FACTOR 0.118799984f /* 0x3DF34D68 (PAL-scaled 0.1) */
-#define FALLSPEED_DECAY      0.8812f      /* 0x3F619653 (PAL-scaled 0.9) */
-#else
-#define GROUND_SMOOTH_FACTOR 0.100000024f /* 0x3DCCCCD0 */
-#define FALLSPEED_DECAY      0.9f         /* 0x3F666666 */
-#endif
+#define GROUND_SMOOTH_FACTOR EASE(0.100000024f) /* 0x3DCCCCD0 */
+#define FALLSPEED_DECAY DAMP(0.9f) /* 0x3F666666 */
 
 static void chrUpdateAimProperties(ChrRecord *self);
 static void chrUpdateAnim(ChrRecord *chr, s32 tickamount);

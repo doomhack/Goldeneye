@@ -180,33 +180,19 @@ void playerTickDamageAndHealth(void)
             }
         }
 
-#ifdef VERSION_US
         if (
             (g_DamageTypes[g_CurrentPlayer->damagetype].fadeEndFrame >= g_CurrentPlayer->damageshowtime)
             || (g_DamageTypes[g_CurrentPlayer->damagetype].flashEndFrame >= g_CurrentPlayer->damageshowtime))
         {
             if (!g_CurrentPlayer->bonddead)
             {
-#else
-        if (!g_CurrentPlayer->bonddead
-            && (
-                (g_DamageTypes[g_CurrentPlayer->damagetype].fadeEndFrame >= g_CurrentPlayer->damageshowtime)
-                || (g_DamageTypes[g_CurrentPlayer->damagetype].flashEndFrame >= g_CurrentPlayer->damageshowtime)))
-        {
-#endif
             if (g_CurrentPlayer->damageshowtime >= g_DamageTypes[g_CurrentPlayer->damagetype].flashStartFrame
                 && g_CurrentPlayer->damageshowtime <= g_DamageTypes[g_CurrentPlayer->damagetype].flashEndFrame)
             {
                 f32 frac;
-#ifdef VERSION_US
-                s32 flashdoneframes;
-                s32 totalframes;
-                s32 flashfullframe;
-#else
                 f32 flashdoneframes;
                 f32 totalframes;
                 f32 flashfullframe;
-#endif
 
                 flashdoneframes = g_CurrentPlayer->damageshowtime - g_DamageTypes[g_CurrentPlayer->damagetype].flashStartFrame;
                 flashfullframe = g_DamageTypes[g_CurrentPlayer->damagetype].flashFullFrame;
@@ -227,25 +213,15 @@ void playerTickDamageAndHealth(void)
                     g_DamageTypes[g_CurrentPlayer->damagetype].blue,
                     frac);
             }
-#ifdef VERSION_US
             }
-#endif
 
             if (g_CurrentPlayer->watch_animation_state == WATCH_ANIMATION_0x0)
             {
-#if defined(VERSION_US)
-                g_CurrentPlayer->damageshowtime += g_ClockTimer;
-#else
                 g_CurrentPlayer->damageshowtime += g_GlobalTimerDelta;
-#endif
             }
             else
             {
-#if defined(VERSION_US)
-                g_CurrentPlayer->damageshowtime += g_FrameDelta;
-#else
                 g_CurrentPlayer->damageshowtime += g_FrameDelta60;
-#endif
             }
         }
         else /* (damage showtime is over) */
@@ -290,22 +266,14 @@ void playerTickDamageAndHealth(void)
             {
                 g_CurrentPlayer->apparenthealth = g_CurrentPlayer->oldhealth;
                 g_CurrentPlayer->apparentarmour = g_CurrentPlayer->oldarmour;
-#if defined(VERSION_US)
-                g_CurrentPlayer->healthshowtime += g_ClockTimer;
-#else
                 g_CurrentPlayer->healthshowtime += g_GlobalTimerDelta;
-#endif
             }
             else if ((g_CurrentPlayer->healthshowtime >= g_HealthDisplayDurations[g_CurrentPlayer->healthdamagetype].validStartFrame)
                 && (g_HealthDisplayDurations[g_CurrentPlayer->healthdamagetype].hideHealthFrame >= g_CurrentPlayer->healthshowtime))
             {
                 g_CurrentPlayer->apparenthealth = g_CurrentPlayer->bondhealth;
                 g_CurrentPlayer->apparentarmour = g_CurrentPlayer->bondarmour;
-#if defined(VERSION_US)
-                g_CurrentPlayer->healthshowtime += g_ClockTimer;
-#else
                 g_CurrentPlayer->healthshowtime += g_GlobalTimerDelta;
-#endif
             }
             else
             {

@@ -76,11 +76,7 @@ void mpRespawnPlayer(void)
 
     g_CurrentPlayer->vv_theta = (f32) ((start_look_angle * 360.0f) / 6.2831855f);
     g_CurrentPlayer->stanHeight = stan_height;
-#if defined(VERSION_EU)
-    g_CurrentPlayer->sumGround = (f32) (stan_height / 0.2004f);
-#else
-    g_CurrentPlayer->sumGround = (f32) (stan_height / 0.17000002f);
-#endif
+    g_CurrentPlayer->sumGround = (f32) (stan_height / EASE(0.17000002f));
 
     playerResetCollision(&g_CurrentPlayer->bond, &start_pos, start_stan);
 
@@ -91,15 +87,9 @@ void mpRespawnPlayer(void)
     g_CurrentPlayer->prop->pos.y = g_CurrentPlayer->bondprevpos.y = start_pos.f[1];
     g_CurrentPlayer->prop->pos.z = g_CurrentPlayer->bondprevpos.z = start_pos.f[2];
     g_CurrentPlayer->prop->stan = start_stan;
-#if defined(VERSION_EU)
-    g_CurrentPlayer->dampEyeSum.x = (f32) (g_CurrentPlayer->bond.pos.x / 0.118799984f);
-    g_CurrentPlayer->dampEyeSum.y = (f32) (g_CurrentPlayer->bond.pos.y / 0.118799984f);
-    g_CurrentPlayer->dampEyeSum.z = (f32) (g_CurrentPlayer->bond.pos.z / 0.118799984f);
-#else
-    g_CurrentPlayer->dampEyeSum.x = (f32) (g_CurrentPlayer->bond.pos.x / 0.100000024f);
-    g_CurrentPlayer->dampEyeSum.y = (f32) (g_CurrentPlayer->bond.pos.y / 0.100000024f);
-    g_CurrentPlayer->dampEyeSum.z = (f32) (g_CurrentPlayer->bond.pos.z / 0.100000024f);
-#endif
+    g_CurrentPlayer->dampEyeSum.x = (f32) (g_CurrentPlayer->bond.pos.x / EASE(0.100000024f));
+    g_CurrentPlayer->dampEyeSum.y = (f32) (g_CurrentPlayer->bond.pos.y / EASE(0.100000024f));
+    g_CurrentPlayer->dampEyeSum.z = (f32) (g_CurrentPlayer->bond.pos.z / EASE(0.100000024f));
 
     invReset();
     for (i = 0; i < ARRAYCOUNT(g_CurrentPlayer->ammoheldarr); i++)
@@ -281,11 +271,7 @@ void coopPlaceCurrentPlayer(const coord3d *posp, StandTile *stan, f32 look_angle
     g_CurrentPlayer->manGround = stan_height;
     g_CurrentPlayer->vv_theta = (look_angle * 360.0f) / M_TAU_F;
     g_CurrentPlayer->stanHeight = stan_height;
-#if defined(VERSION_EU)
-    g_CurrentPlayer->sumGround = (f32) (stan_height / 0.2004f);
-#else
-    g_CurrentPlayer->sumGround = (f32) (stan_height / 0.17000002f);
-#endif
+    g_CurrentPlayer->sumGround = (f32) (stan_height / EASE(0.17000002f));
 
     playerResetCollision(&g_CurrentPlayer->bond, &pos, stan);
 
@@ -296,15 +282,9 @@ void coopPlaceCurrentPlayer(const coord3d *posp, StandTile *stan, f32 look_angle
     g_CurrentPlayer->prop->pos.y = g_CurrentPlayer->bondprevpos.y = pos.f[1];
     g_CurrentPlayer->prop->pos.z = g_CurrentPlayer->bondprevpos.z = pos.f[2];
     g_CurrentPlayer->prop->stan = stan;
-#if defined(VERSION_EU)
-    g_CurrentPlayer->dampEyeSum.x = (f32) (g_CurrentPlayer->bond.pos.x / 0.118799984f);
-    g_CurrentPlayer->dampEyeSum.y = (f32) (g_CurrentPlayer->bond.pos.y / 0.118799984f);
-    g_CurrentPlayer->dampEyeSum.z = (f32) (g_CurrentPlayer->bond.pos.z / 0.118799984f);
-#else
-    g_CurrentPlayer->dampEyeSum.x = (f32) (g_CurrentPlayer->bond.pos.x / 0.100000024f);
-    g_CurrentPlayer->dampEyeSum.y = (f32) (g_CurrentPlayer->bond.pos.y / 0.100000024f);
-    g_CurrentPlayer->dampEyeSum.z = (f32) (g_CurrentPlayer->bond.pos.z / 0.100000024f);
-#endif
+    g_CurrentPlayer->dampEyeSum.x = (f32) (g_CurrentPlayer->bond.pos.x / EASE(0.100000024f));
+    g_CurrentPlayer->dampEyeSum.y = (f32) (g_CurrentPlayer->bond.pos.y / EASE(0.100000024f));
+    g_CurrentPlayer->dampEyeSum.z = (f32) (g_CurrentPlayer->bond.pos.z / EASE(0.100000024f));
     playerUpdateCollisionBounds();
 }
 
