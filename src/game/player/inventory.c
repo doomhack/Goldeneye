@@ -270,7 +270,6 @@ s32 invItemAvailable(ITEM_IDS weaponid)
 
 s32 invItemAvailableForHand(ITEM_IDS right, ITEM_IDS left)
 {
-#ifdef BUGFIX_R0
     if (g_CurrentPlayer->equipallguns &&
         right < ITEM_BOMBCASE &&
         right == left &&
@@ -279,23 +278,6 @@ s32 invItemAvailableForHand(ITEM_IDS right, ITEM_IDS left)
     {
         return TRUE;
     }
-#else
-    if (left == ITEM_UNARMED)
-    {
-        return TRUE;
-    }
-    else
-    {
-        if (g_CurrentPlayer->equipallguns &&
-            right < ITEM_BOMBCASE &&
-            right == left &&
-            !gameIsMulti() &&
-            weaponHasFlag(right, WEAPONSTATBITFLAG_CAN_DUAL_WIELD))
-        {
-            return TRUE;
-        }
-    }
-#endif
 
     return invHasDualWeapon(right, left);
 }

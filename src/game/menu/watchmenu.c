@@ -3472,14 +3472,10 @@ const char *textLastLine(const char *arg)
                 ret = arg;
             }
         }
-#if defined(VERSION_EU)
         else
         {
             arg++;
         }
-#else
-            arg++;
-#endif
     }
 
     return ret;

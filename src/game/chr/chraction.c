@@ -138,11 +138,7 @@ void chrStandImmediate(ChrRecord *self, f32 mergetime)
 
     if (self->model->playspeed != RATE)
     {
-#if defined(BUGFIX_R1)
-        fsleep *= (RATE / self->model->playspeed);
-#else
-        fsleep = mergetime / self->model->playspeed;
-#endif
+        fsleep = (mergetime * RATE) / self->model->playspeed;
     }
 
     if (fsleep > 127.0f)

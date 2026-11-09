@@ -530,9 +530,7 @@ void headBobInit(void)
     animInit(&g_CurrentPlayer->model, &player_gait_object_header, g_CurrentPlayer->modelRwData);
     modelSetScale(&g_CurrentPlayer->model, IDO_POINT_ONE);
 
-#if defined (BUGFIX_R1)
     modelSetAnimPlaySpeed(&g_CurrentPlayer->model, ANIMRATE, 0.0f);
-#endif
 
     g_CurrentPlayer->headanim = 0;
 

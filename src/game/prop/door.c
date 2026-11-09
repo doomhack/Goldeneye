@@ -1227,11 +1227,11 @@ TICKOP doorInteract(const PropRecord *prop)
 
             if (txt != NULL && txt->pickuptext != 0)
             {
-                HUDMESSAGEBOTTOM(langGet((s32)txt->pickuptext));
+                hudmsgBottomShow(langGet((s32)txt->pickuptext));
             }
             else
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LPROPOBJ, PROPOBJ_STR_40_THISDOORISLOCKED)));
+                hudmsgBottomShow(langGet(getStringID(LPROPOBJ, PROPOBJ_STR_40_THISDOORISLOCKED)));
             }
         }
 

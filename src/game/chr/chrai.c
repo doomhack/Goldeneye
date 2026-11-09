@@ -3585,11 +3585,7 @@ void aiRunList(PropDefHeaderRecord *Entityp, PROP_TYPE EntityType)
                     AiTextPrintBottomRecord *ai   = (AiTextPrintBottomRecord *)(AiListp + Offset);
                     const char                    *text = langGet(ntohs(ai->txt));
                     s32 prevplayer = counterOpTextBegin();
-    #ifdef BUGFIX_R1
-                    hudmsgBottomShowText(text);
-    #else
                     hudmsgBottomShow(text);
-    #endif
                     playerSetCurrent(prevplayer);
                     Offset += sizeof(AiTextPrintBottomRecord);
                     break;

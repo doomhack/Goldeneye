@@ -1009,7 +1009,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_INVINCIBILITY:
             if (!playerGetInvincible())
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_0F_INVINCIBILITYON_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_0F_INVINCIBILITYON_LF)));
                 playerSetInvincible(TRUE);
                 return;
             }
@@ -1018,14 +1018,14 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_ALLGUNS:
             if (!invGetAllGunsFlag())
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_10_ALLGUNSON_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_10_ALLGUNSON_LF)));
                 invSetAllGunsFlag(TRUE);
                 return;
             }
             return;
 
         case CHEAT_MAXAMMO:
-            HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_11_MAXIMUMAMMO_LF)));
+            hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_11_MAXIMUMAMMO_LF)));
             ammoGiveMaxAll();
             return;
 
@@ -1069,7 +1069,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_2X_HEALTH:
             if ((g_CurrentPlayer->actual_health == 1.0f) || (g_CurrentPlayer->bondhealth < 1.0f))
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_12_SUPER2XHEALTH_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_12_SUPER2XHEALTH_LF)));
                 g_CurrentPlayer->bondhealth = 1.0f;
                 g_CurrentPlayer->actual_health = 2.0f;
             }
@@ -1078,7 +1078,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_2X_ARMOR:
             if ((g_CurrentPlayer->actual_armor == 1.0f) || (g_CurrentPlayer->bondarmour < 1.0f))
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_13_SUPER2XARMOUR_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_13_SUPER2XARMOUR_LF)));
                 g_CurrentPlayer->bondarmour = 1.0f;
                 g_CurrentPlayer->actual_armor = 2.0f;
             }
@@ -1087,21 +1087,21 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_INVISIBILITY:
             if (playerGetVisibleToGuards())
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_14_INVISIBILITYON_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_14_INVISIBILITYON_LF)));
                 playerSetVisibleToGuards(FALSE);
                 return;
             }
             return;
 
         case CHEAT_INFINITE_AMMO:
-            HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_16_INFINITEAMMOON_LF)));
+            hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_16_INFINITEAMMOON_LF)));
             /**
             * Note: the lvRender in lvl.c checks if infinite ammo is on then calls ammoGiveMaxAll
             */
             return;
 
         case CHEAT_DK_MODE:
-            HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_17_DKMODEON_LF)));
+            hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_17_DKMODEON_LF)));
             cheatSetDkMode(TRUE);
             return;
 
@@ -1122,7 +1122,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
 
                 if (vvv > 0)
                 {
-                    HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_18_EXTRAWEAPONS_LF)));
+                    hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_18_EXTRAWEAPONS_LF)));
                 }
                 return;
             }
@@ -1131,7 +1131,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_TINY_BOND:
             if (!gameIsMulti() && (g_playerPerm->player_perspective_height == 1.0f))
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_19_TINYBONDON_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_19_TINYBONDON_LF)));
                 g_playerPerm->player_perspective_height = 0.5f;
 
                 if (g_CurrentPlayer->bodyModel != NULL)
@@ -1143,13 +1143,13 @@ void cheatTurnOn(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_PAINTBALL:
-            HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_1A_PAINTBALMODEON_LF)));
+            hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_1A_PAINTBALMODEON_LF)));
             return;
 
         case CHEAT_10X_HEALTH:
             if ((g_CurrentPlayer->actual_health == 1.0f) || (g_CurrentPlayer->bondhealth < 1.0f))
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_1B_SUPER10XHEALTH_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_1B_SUPER10XHEALTH_LF)));
                 g_CurrentPlayer->bondhealth = 1.0f;
                 g_CurrentPlayer->actual_health = 10.0f;
                 return;
@@ -1207,14 +1207,14 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_TURBO_MODE:
             if (!g_CheatTurboMode)
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_1D_FASTMODEON_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_1D_FASTMODEON_LF)));
                 g_CheatTurboMode = TRUE;
                 return;
             }
             return;
         /* easter egg leftover, original usage of string mentioned in an interview
         case CHEAT_NO_RADAR_MP:
-            HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_1C_HAPPYNOWKARL_LF)));
+            hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_1C_HAPPYNOWKARL_LF)));
             return;
         //*/
         case CHEAT_DEBUG_POS:
@@ -1228,7 +1228,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_FAST_ANIMATION:
             if (chrsGetAnimRate() < 4.0f)
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_34_FASTMOTION_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_34_FASTMOTION_LF)));
                 chrsSetAnimRate(4.0f);
                 return;
             }
@@ -1237,7 +1237,7 @@ void cheatTurnOn(CHEAT_ID cheat_id)
         case CHEAT_SLOW_ANIMATION:
             if (chrsGetAnimRate() > 0.25f)
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_32_SLOWMOTION_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_32_SLOWMOTION_LF)));
                 chrsSetAnimRate(0.25);
                 return;
             }
@@ -1412,7 +1412,7 @@ void cheatTurnOff(CHEAT_ID cheat_id)
         case CHEAT_INVINCIBILITY:
             if (playerGetInvincible())
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_1E_INVINCIBILITYOFF_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_1E_INVINCIBILITYOFF_LF)));
                 playerSetInvincible(FALSE);
                 return;
             }
@@ -1421,7 +1421,7 @@ void cheatTurnOff(CHEAT_ID cheat_id)
         case CHEAT_ALLGUNS:
             if (invGetAllGunsFlag())
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_1F_ALLGUNSOFF_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_1F_ALLGUNSOFF_LF)));
                 invSetAllGunsFlag(FALSE);
                 return;
             }
@@ -1434,25 +1434,25 @@ void cheatTurnOff(CHEAT_ID cheat_id)
         case CHEAT_INVISIBILITY:
             if (!playerGetVisibleToGuards())
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_20_INVISIBILITYOFF_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_20_INVISIBILITYOFF_LF)));
                 playerSetVisibleToGuards(TRUE);
                 return;
             }
             return;
 
         case CHEAT_INFINITE_AMMO:
-            HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_22_INFINITEAMMOOFF_LF)));
+            hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_22_INFINITEAMMOOFF_LF)));
             return;
 
         case CHEAT_DK_MODE:
-            HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_23_DKMODEOFF_LF)));
+            hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_23_DKMODEOFF_LF)));
             cheatSetDkMode(FALSE);
             return;
 
         case CHEAT_TINY_BOND:
             if (!gameIsMulti() && (g_playerPerm->player_perspective_height != 1.0f))
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_24_TINYBONDOFF_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_24_TINYBONDOFF_LF)));
                 g_playerPerm->player_perspective_height = 1.0f;
                 if (g_CurrentPlayer->bodyModel)
                 {
@@ -1463,7 +1463,7 @@ void cheatTurnOff(CHEAT_ID cheat_id)
             return;
 
         case CHEAT_PAINTBALL:
-            HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_25_PAINTBALLMODEOFF_LF)));
+            hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_25_PAINTBALLMODEOFF_LF)));
             return;
 
         case CHEAT_BONDPHASE:
@@ -1473,7 +1473,7 @@ void cheatTurnOff(CHEAT_ID cheat_id)
         case CHEAT_TURBO_MODE:
             if (g_CheatTurboMode)
             {
-                HUDMESSAGEBOTTOM(langGet(getStringID(LMISC, MISC_STR_27_FASTMODEOFF_LF)));
+                hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_27_FASTMODEOFF_LF)));
                 g_CheatTurboMode = FALSE;
                 return;
             }

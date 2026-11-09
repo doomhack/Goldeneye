@@ -692,9 +692,6 @@ void gunUpdateAndFire(GUNHAND handnum)
                 break;
             case ITEM_LASER:
             case ITEM_WATCHLASER:
-#if defined(VERSION_EU)
-                hand->numShots = hand->numShots + 1;
-#endif
                 gunCreateBeamForHand(handnum);
                 break;
 
@@ -1035,19 +1032,10 @@ void gunTickHandState(enum GUNHAND hand, s32 triggerOn)
 
     if (handptr->weapon_action_state == GUN_ANIM_STATE_IDLE)
     {
-#if defined(VERSION_EU)
-        if ((weapon == ITEM_LASER) && (handptr->triggerReleased != 0))
-        {
-            handptr->numShots = 0;
-        }
-#endif
         if (
             (handptr->weapon_hold_time != 0)
             && (weapon != ITEM_UNARMED)
             && (((weaponHasFlag(weapon, WEAPONSTATBITFLAG_CLICKY) != 0)) || (handptr->weapon_ammo_in_magazine > 0))
-#if defined(VERSION_EU)
-            && ((weapon != ITEM_LASER) || (handptr->numShots < 0xC8))
-#endif
         )
         {
             handptr->weapon_action_state = GUN_ANIM_STATE_TRIGGER_PRESS;
@@ -2524,7 +2512,7 @@ void gunAnalyzeGEKey(void)
 {
     if (invHasGEKey())
     {
-   	    HUDMESSAGEBOTTOM(langGet(getStringID(LGUN, GUN_STR_D8_ANALYZINGTHEGOLDENEYEKEY_LF))); //Analyzing the GoldenEye key...
+   	    hudmsgBottomShow(langGet(getStringID(LGUN, GUN_STR_D8_ANALYZINGTHEGOLDENEYEKEY_LF))); //Analyzing the GoldenEye key...
     	g_CurrentPlayer->copiedgoldeneye = TRUE;
     	sndPlaySfx(g_musicSfxBufferPtr, KEY_ANALYSER_SFX, 0x0);
     	gunEquip(GUNRIGHT, ITEM_GOLDENEYEKEY);
@@ -2532,7 +2520,7 @@ void gunAnalyzeGEKey(void)
   	}
   	else
   	{
-	    HUDMESSAGEBOTTOM(langGet(getStringID(LGUN, GUN_STR_D9_YOUDONOTHAVETHEGOLDENEYEKEY_LF))); //You do not have the GoldenEye key.
+	    hudmsgBottomShow(langGet(getStringID(LGUN, GUN_STR_D9_YOUDONOTHAVETHEGOLDENEYEKEY_LF))); //You do not have the GoldenEye key.
 	    gunEquipPreviousWeapons();
   	}
   	return;

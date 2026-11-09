@@ -68,6 +68,7 @@
 #include "game/prop/alarm.h"
 #include "game/prop/autoaim.h"
 #include "game/level/gamemode.h"
+#include "assets/obseg/text/LmiscE.h"
 
 // bss
 u32 *g_FontDl;
@@ -941,11 +942,7 @@ void lvTick(void)
                 for (i = 0; i < getPlayerCount(); i++)
                 {
                     playerSetCurrent(i);
-#ifdef VERSION_US
-                    HUDMESSAGEBOTTOM("One minute left");
-#else
-                    HUDMESSAGEBOTTOM(langGet(0xB044));
-#endif
+                    hudmsgBottomShow(langGet(getStringID(LMISC, MISC_STR_44_ONEMINUTELEFT)));
                 }
             }
 

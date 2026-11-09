@@ -2367,10 +2367,7 @@ NOINLINE void chrTickAttack(ChrRecord *self)
         {
             if (modelGetAnimEndFrame(self_model) <= frame)
             {
-#if defined(VERSION_US)
-                // PAL doesn't set TARGET_AIM_ONLY
                 self->act_attack.attacktype |= TARGET_AIM_ONLY;
-#endif
                 self->act_attack.attacktype &= ~TARGET_DONTTURN;
 
                 if (self->act_attack.standing != 0)

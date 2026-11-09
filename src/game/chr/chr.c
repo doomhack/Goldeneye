@@ -1138,7 +1138,6 @@ s32 chrTick(PropRecord *prop)
         prop->flags |= PROPFLAG_ONSCREEN;
         chr->chrflags |= CHRFLAG_HAS_BEEN_ON_SCREEN;
 
-#ifdef BUGFIX_R1
         if (cheatIsActive(CHEAT_DK_MODE))
         {
             modelSetLodScale(0.3125f);
@@ -1149,12 +1148,6 @@ s32 chrTick(PropRecord *prop)
                 modelSetScale(chr->model, chr->model->scale / 0.8f);
             }
         }
-#else
-        if (cheatIsActive(CHEAT_DK_MODE))
-        {
-            modelSetLodScale(0.3125f);
-        }
-#endif
 
         g_ModelJointPositionedFunc = chrHandleJointPositioned;
         g_CurModelChr = chr;

@@ -889,23 +889,14 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, coord3d *pos, coord3d *
         {
             if ((camera_transition_timer < 120.0f) && ((camera_transition_timer + g_GlobalTimerDelta) >= 120.0f))
             {
-#if defined(VERSION_US)
-                hudmsgSetFonts(g_FontZurichChars, g_FontZurich);
-                hudmsgBottomShow(g_IntroCamera->lang1c.lang_ptr);
-#else
-                hudmsgBottomShow(g_IntroCamera->lang1c.lang_ptr, g_FontZurichChars, g_FontZurich);
-#endif
+                hudmsgBottomShowFont(g_IntroCamera->lang1c.lang_ptr, g_FontZurichChars, g_FontZurich);
             }
 
             if (g_IntroCamera->lang20.lang_ptr != NULL)
             {
                 if ((camera_transition_timer < 300.0f) && ((camera_transition_timer + g_GlobalTimerDelta) >= 300.0f))
                 {
-#if defined(VERSION_US)
-                    hudmsgBottomShow(g_IntroCamera->lang20.lang_ptr);
-#else
-                    hudmsgBottomShow(g_IntroCamera->lang20.lang_ptr, g_FontZurichChars, g_FontZurich);
-#endif
+                    hudmsgBottomShowFont(g_IntroCamera->lang20.lang_ptr, g_FontZurichChars, g_FontZurich);
                 }
 
                 if (camera_transition_timer > 480.0f)
@@ -970,11 +961,7 @@ void playerTickFrozenCamera(u16 buttons, u16 oldbuttons, coord3d *pos, coord3d *
 
                     g_MpSwirlAngleDegrees += g_MpSwirlRotateSpeed;
                 }
-#if defined(VERSION_EU)
                 if (g_MpSwirlAngleDegrees >= 179.5f)
-#else
-                else
-#endif
                 {
                     g_MpSwirlAngleDegrees = 180.0f;
                 }

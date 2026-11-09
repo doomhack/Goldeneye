@@ -263,14 +263,6 @@ void objDeform(ObjectRecord *obj, s32 stage)
 
     Vertex **vtxslot = (Vertex **) &model->datas[rodata->RwDataIndex];
 
-#if defined(VERSION_EU)
-    // PAL only keeps deform seeds for props before the window glass
-    if (obj->obj >= PROP_WINDOW)
-    {
-        deformseed = 0;
-    }
-    else
-#endif
     // Original bug: stage 4 reads past the seeds, into the next type's explosion type
     if (randomGetNext() & 1)
     {
