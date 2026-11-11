@@ -210,16 +210,40 @@ static f32 sinPolynomial(f32 x)
     return poly * xsq * x + x;
 }
 
-/** Rounds to the nearest integer, ties to even (the FPU's rounding mode). */
-static s32 roundToNearest(f32 value)
+/*
+ * Rounds to the nearest integer, ties to even (the FPU's rounding mode), returning it both as
+ * an integer and as a float. On the N64 the float comes straight from the FPU register
+ * (cvt.s.w), instead of round-tripping through a CPU register.
+ */
+static s32 roundToNearest(f32 value, f32 *asFloat)
 {
 #ifdef __mips__
     s32 result;
+    f32 rounded;
 
-    __asm__("round.w.s %1, %1\n\tmfc1 %0, %1" : "=r"(result), "+f"(value));
+    __asm__("round.w.s %1, %2\n\tmfc1 %0, %1\n\tcvt.s.w %1, %1" : "=r"(result), "=&f"(rounded) : "f"(value));
+    *asFloat = rounded;
     return result;
 #else
-    return __builtin_lrintf(value); // for the host tests
+    s32 result = __builtin_lrintf(value); // for the host tests
+
+    *asFloat = (f32) result;
+    return result;
+#endif
+}
+
+/*
+ * -value, flipping only the sign. GCC won't use neg.s itself (it traps on NaN on older
+ * MIPS FPUs), so it negates through a CPU register and the stack; the values here are
+ * never NaN.
+ */
+static f32 negate(f32 value)
+{
+#ifdef __mips__
+    __asm__("neg.s %0, %0" : "+f"(value));
+    return value;
+#else
+    return -value;
 #endif
 }
 
@@ -233,6 +257,7 @@ f32 sinf(f32 x)
     /* The exponent with the top mantissa bit below it: each step is half a power of two. */
     s32 magnitude = (bits.i >> 22) & 0x1FF;
     s32 halfTurns;
+    f32 halfTurnsFloat;
     f32 result;
 
     if (magnitude < 0xFF)
@@ -248,12 +273,12 @@ f32 sinf(f32 x)
     }
 
     /* Reduce to [-pi/2, pi/2]: sin(x - n pi) is sin(x), negated when n is odd. */
-    halfTurns = roundToNearest(x * ONE_OVER_PI);
-    x -= PI_HI * (f32) halfTurns;
-    x -= PI_LO * (f32) halfTurns;
+    halfTurns = roundToNearest(x * ONE_OVER_PI, &halfTurnsFloat);
+    x -= PI_HI * halfTurnsFloat;
+    x -= PI_LO * halfTurnsFloat;
     result = sinPolynomial(x);
 
-    return (halfTurns & 1) ? -result : result;
+    return (halfTurns & 1) ? negate(result) : result;
 }
 
 f32 cosf(f32 x)
