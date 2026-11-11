@@ -222,6 +222,19 @@ ALMicroTime sndPlayerVoiceHandler(void *node)
 
         sndp->nextDelta = alEvtqNextEvent(&sndp->evtq, &sndp->nextEvent);
 
+        // The API event posts itself again every frame, so the queue is never empty. But
+        // when the queue is full (64 events, e.g. many knife whooshes and a rocket at
+        // once) alEvtqPostEvent drops the event it was given, and if that was the API
+        // event the queue runs dry: alEvtqNextEvent then returns type -1 with a delta of
+        // 0 for ever, this loop never ends and the audio thread (above the game thread
+        // in priority) freezes the game. Start the API event again instead.
+        if (sndp->nextEvent.type == (s16)-1)
+        {
+            evt.common.type = (s16)AL_SNDP_API_EVT;
+            alEvtqPostEvent(&sndp->evtq, (ALEvent *)&evt, sndp->frameTime);
+            sndp->nextDelta = alEvtqNextEvent(&sndp->evtq, &sndp->nextEvent);
+        }
+
     } while (sndp->nextDelta == 0);
 
     sndp->curTime += sndp->nextDelta;
