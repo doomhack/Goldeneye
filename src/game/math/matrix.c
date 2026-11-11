@@ -50,26 +50,34 @@ void mtx4Copy(const Mtxf *src, Mtxf *dst)
     *dst = *src;
 }
 
-/** result = lhs * rhs: transforms by rhs, then by lhs. result must not be lhs or rhs. */
+/**
+ * result = lhs * rhs: transforms by rhs, then by lhs. result may be rhs but not lhs.
+ *
+ * Each row of the result needs only the same row of rhs, which is read into locals before
+ * that row is written. lhs is read as it is used (all 16 values don't fit in the FPU's
+ * registers), so it must not be result.
+ */
 void mtx4Mult(const Mtxf *lhs, const Mtxf *rhs, Mtxf *result)
 {
-    for (s32 col = 0; col < 4; col++)
+    for (s32 row = 0; row < 4; row++)
     {
-        for (s32 row = 0; row < 4; row++)
-        {
-            result->m[row][col] = lhs->m[0][col] * rhs->m[row][0] + lhs->m[1][col] * rhs->m[row][1]
-                                + lhs->m[2][col] * rhs->m[row][2] + lhs->m[3][col] * rhs->m[row][3];
-        }
+        const f32 r0 = rhs->m[row][0], r1 = rhs->m[row][1], r2 = rhs->m[row][2], r3 = rhs->m[row][3];
+        const f32 out0 = lhs->m[0][0] * r0 + lhs->m[1][0] * r1 + lhs->m[2][0] * r2 + lhs->m[3][0] * r3;
+        const f32 out1 = lhs->m[0][1] * r0 + lhs->m[1][1] * r1 + lhs->m[2][1] * r2 + lhs->m[3][1] * r3;
+        const f32 out2 = lhs->m[0][2] * r0 + lhs->m[1][2] * r1 + lhs->m[2][2] * r2 + lhs->m[3][2] * r3;
+        const f32 out3 = lhs->m[0][3] * r0 + lhs->m[1][3] * r1 + lhs->m[2][3] * r2 + lhs->m[3][3] * r3;
+
+        result->m[row][0] = out0;
+        result->m[row][1] = out1;
+        result->m[row][2] = out2;
+        result->m[row][3] = out3;
     }
 }
 
 /** rhs = lhs * rhs. */
 void mtx4MultInPlace(const Mtxf *lhs, Mtxf *rhs)
 {
-    Mtxf result;
-
-    mtx4Mult(lhs, rhs, &result);
-    *rhs = result;
+    mtx4Mult(lhs, rhs, rhs);
 }
 
 /**
@@ -113,38 +121,43 @@ void mtx4MultAffineInPlace(const Mtxf *lhs, Mtxf *rhs)
     mtx4MultAffine(lhs, rhs, rhs);
 }
 
-/** Applies only the rotation and scale part of a matrix to a vector. */
+/**
+ * Applies only the rotation and scale part of a matrix to a vector. result may be vector:
+ * the vector is read into locals first (which also saves reloading it after each store).
+ */
 void mtx4RotateVec(const Mtxf *matrix, const coord3d *vector, coord3d *result)
 {
-    for (s32 i = 0; i < 3; i++)
-    {
-        result->f[i] = matrix->m[0][i] * vector->f[0] + matrix->m[1][i] * vector->f[1] + matrix->m[2][i] * vector->f[2];
-    }
+    const f32 x = vector->x, y = vector->y, z = vector->z;
+    const f32 outX = matrix->m[0][0] * x + matrix->m[1][0] * y + matrix->m[2][0] * z;
+    const f32 outY = matrix->m[0][1] * x + matrix->m[1][1] * y + matrix->m[2][1] * z;
+    const f32 outZ = matrix->m[0][2] * x + matrix->m[1][2] * y + matrix->m[2][2] * z;
+
+    result->x = outX;
+    result->y = outY;
+    result->z = outZ;
 }
 
 void mtx4RotateVecInPlace(const Mtxf *matrix, coord3d *vector)
 {
-    coord3d result;
-
-    mtx4RotateVec(matrix, vector, &result);
-    *vector = result;
+    mtx4RotateVec(matrix, vector, vector);
 }
 
-/** Applies a matrix, translation included, to a point. */
+/** Applies a matrix, translation included, to a point. result may be point. */
 void mtx4TransformVec(const Mtxf *matrix, const coord3d *point, coord3d *result)
 {
-    mtx4RotateVec(matrix, point, result);
-    result->x += matrix->m[3][0];
-    result->y += matrix->m[3][1];
-    result->z += matrix->m[3][2];
+    const f32 x = point->x, y = point->y, z = point->z;
+    const f32 outX = matrix->m[0][0] * x + matrix->m[1][0] * y + matrix->m[2][0] * z + matrix->m[3][0];
+    const f32 outY = matrix->m[0][1] * x + matrix->m[1][1] * y + matrix->m[2][1] * z + matrix->m[3][1];
+    const f32 outZ = matrix->m[0][2] * x + matrix->m[1][2] * y + matrix->m[2][2] * z + matrix->m[3][2];
+
+    result->x = outX;
+    result->y = outY;
+    result->z = outZ;
 }
 
 void mtx4TransformVecInPlace(const Mtxf *matrix, coord3d *point)
 {
-    mtx4RotateVecInPlace(matrix, point);
-    point->x += matrix->m[3][0];
-    point->y += matrix->m[3][1];
-    point->z += matrix->m[3][2];
+    mtx4TransformVec(matrix, point, point);
 }
 
 /* Rotations by `angle` around one axis, anticlockwise looking down the axis at the origin */
@@ -612,18 +625,29 @@ void mtxPopWorldScale(void)
  * Converts a float matrix to the N64's fixed-point Mtx (like libultra's guMtxF2L), applying
  * the world scale to columns 0-2. A Mtx holds the integer halves of all 16 values in its
  * first 8 words, then the fraction halves. `dst` is Mtx storage, typed Mtxf because the game
- * keeps Mtx arrays typed as Mtxf. It must not be `src`.
+ * keeps Mtx arrays typed as Mtxf. `dst` may be `src`: all 16 values are converted before any
+ * is stored.
  */
 void mtxF2L(const Mtxf *src, Mtxf *dst)
 {
     const f32 *in = &src->m[0][0];
     u32 *out = (u32 *) dst;
+    const f32 scale = m_mtxFixedScale[0];
+    const f32 scaleW = m_mtxFixedScale[1];
+    s32 fixed[16];
 
-    // Two values per pass: an even column (0 or 2) and the odd one after it (1 or 3)
+#pragma GCC unroll 16
+    for (s32 i = 0; i < 16; i++)
+    {
+        fixed[i] = in[i] * ((i & 3) == 3 ? scaleW : scale);
+    }
+
+    // Each pair of words holds an even column (0 or 2) and the odd one after it (1 or 3)
+#pragma GCC unroll 8
     for (s32 i = 0; i < 8; i++)
     {
-        s32 even = in[i * 2] * m_mtxFixedScale[0];
-        s32 odd = in[i * 2 + 1] * m_mtxFixedScale[i & 1];
+        s32 even = fixed[i * 2];
+        s32 odd = fixed[i * 2 + 1];
 
         out[i] = (even & 0xFFFF0000) | ((u32) odd >> 16);
         out[i + 8] = ((u32) even << 16) | (odd & 0xFFFF);

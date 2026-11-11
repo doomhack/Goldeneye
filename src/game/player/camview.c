@@ -966,13 +966,9 @@ Gfx* camLoadWorldToViewMtx(Gfx* gdl)
 
 void mtxsF2L(RenderPosView * views, s32 count)
 {
-    Mtxf mtx;
-    s32 i;
-
-    for (i = 0; i < count; i++)
+    for (s32 i = 0; i < count; i++)
     {
-        mtx4Copy(&views[i].pos, &mtx);
-        mtxF2L(&mtx, &views[i].pos);
+        mtxF2L(&views[i].pos, &views[i].pos);
     }
 }
 
