@@ -222,8 +222,17 @@ static Projectile *objGetProjectile(const ObjectRecord *obj)
 }
 
 /**
- * Gives an object a projectile, if it can get one. An embedded object always gets a new
- * one (the old one is not freed).
+ * Gives an object a projectile, if it can get one. An object that already has one keeps
+ * it.
+ *
+ * Original bug: an embedded object always got a new projectile, and the old one was never
+ * freed. Such a projectile has no object (projectile->obj is NULL), so projectileAllocate
+ * can't take it back either. objApplyDamage calls this (via objSetDropType) on every hit,
+ * for the object and, once destroyed, for everything stuck in it, and an explosion hits
+ * every few ticks. So mines stuck on Bunker's hanging monitors (embedded in an embedded
+ * monitor) leaked several projectiles per explosion until all PROJECTILES_ARR_MAX were
+ * gone. After that nothing could get a projectile for the rest of the level: thrown and
+ * fired objects stayed where they appeared and nothing fell.
  */
 void objEnsureProjectile(const PropRecord *prop)
 {
@@ -231,7 +240,10 @@ void objEnsureProjectile(const PropRecord *prop)
 
     if (obj->runtime_bitflags & RUNTIMEBITFLAG_EMBEDDED)
     {
-        obj->embedment->projectile = projectileAllocate();
+        if (obj->embedment->projectile == NULL)
+        {
+            obj->embedment->projectile = projectileAllocate();
+        }
     }
     else if (!(obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE))
     {
