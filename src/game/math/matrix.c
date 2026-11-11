@@ -74,37 +74,43 @@ void mtx4MultInPlace(const Mtxf *lhs, Mtxf *rhs)
 
 /**
  * mtx4Mult for affine matrices (no perspective): column 3 of both is taken to be
- * (0, 0, 0, 1), and is set to that in the result. result must not be lhs or rhs.
+ * (0, 0, 0, 1), and is set to that in the result.
+ *
+ * result may be lhs or rhs: all of lhs is read before anything is written, and each row of
+ * the result needs only the same row of rhs, read just before that row is written. Loading
+ * everything into locals also lets GCC keep the values in registers; the old loop over
+ * result->m reloaded lhs and rhs after every store in case result overlapped them (24 loads
+ * instead of 76).
  */
 void mtx4MultAffine(const Mtxf *lhs, const Mtxf *rhs, Mtxf *result)
 {
-    for (s32 col = 0; col < 3; col++)
-    {
-        for (s32 row = 0; row < 4; row++)
-        {
-            result->m[row][col] = lhs->m[0][col] * rhs->m[row][0] + lhs->m[1][col] * rhs->m[row][1]
-                                + lhs->m[2][col] * rhs->m[row][2];
+    const f32 x0 = lhs->m[0][0], x1 = lhs->m[0][1], x2 = lhs->m[0][2];
+    const f32 y0 = lhs->m[1][0], y1 = lhs->m[1][1], y2 = lhs->m[1][2];
+    const f32 z0 = lhs->m[2][0], z1 = lhs->m[2][1], z2 = lhs->m[2][2];
+    const f32 t0 = lhs->m[3][0], t1 = lhs->m[3][1], t2 = lhs->m[3][2];
 
-            if (row == 3)
-            {
-                result->m[row][col] += lhs->m[3][col];
-            }
-        }
+    for (s32 row = 0; row < 3; row++)
+    {
+        const f32 r0 = rhs->m[row][0], r1 = rhs->m[row][1], r2 = rhs->m[row][2];
+
+        result->m[row][0] = x0 * r0 + y0 * r1 + z0 * r2;
+        result->m[row][1] = x1 * r0 + y1 * r1 + z1 * r2;
+        result->m[row][2] = x2 * r0 + y2 * r1 + z2 * r2;
+        result->m[row][3] = 0.0f;
     }
 
-    result->m[0][3] = 0.0f;
-    result->m[1][3] = 0.0f;
-    result->m[2][3] = 0.0f;
+    const f32 r0 = rhs->m[3][0], r1 = rhs->m[3][1], r2 = rhs->m[3][2];
+
+    result->m[3][0] = x0 * r0 + y0 * r1 + z0 * r2 + t0;
+    result->m[3][1] = x1 * r0 + y1 * r1 + z1 * r2 + t1;
+    result->m[3][2] = x2 * r0 + y2 * r1 + z2 * r2 + t2;
     result->m[3][3] = 1.0f;
 }
 
 /** rhs = lhs * rhs, for affine matrices. */
 void mtx4MultAffineInPlace(const Mtxf *lhs, Mtxf *rhs)
 {
-    Mtxf result;
-
-    mtx4MultAffine(lhs, rhs, &result);
-    *rhs = result;
+    mtx4MultAffine(lhs, rhs, rhs);
 }
 
 /** Applies only the rotation and scale part of a matrix to a vector. */
