@@ -465,71 +465,65 @@ f32 modelGetRootDepth(const Model *objinst)
 }
 
 
-union ModelRwData* modelGetNodeRwData(const Model *Objinst, const ModelNode *root)
+/**
+ * Slow path of modelGetRwDataByIndex: the node may sit in a part attached under a HEAD
+ * node (modelAttachPart), whose records live in that HEAD's RwDatas block rather than at
+ * the start of model->datas. Walk up to find the HEAD; with none, use model->datas.
+ */
+NOINLINE union ModelRwData *modelGetAttachedRwData(const Model *model, const ModelNode *node, s32 index)
 {
-    s32 index  = 0;
-    u32 *data = Objinst->datas;
+    const u32 *data = model->datas;
 
-    switch (root->Opcode & 0xff)
+    while ((node = node->Parent) != NULL)
     {
-        case MODELNODE_OPCODE_HEADER:
+        if ((node->Opcode & 0xFF) == MODELNODE_OPCODE_HEAD)
         {
-            index = root->Data->Header.RwDataIndex;
-            break;
-        }
-        case MODELNODE_OPCODE_DLCOLLISION:
-        {
-            index = root->Data->DisplayListCollisions.RwDataIndex;
-            break;
-        }
-        case MODELNODE_OPCODE_TUBE:
-        {
-            index = root->Data->Tube.RwDataIndex;
-            break;
-        }
-        case MODELNODE_OPCODE_LOD:
-        {
-            index = root->Data->LOD.RwDataIndex;
-            break;
-        }
-        case MODELNODE_OPCODE_SWITCH:
-        {
-            index = root->Data->Switch.RwDataIndex;
-            break;
-        }
-        case MODELNODE_OPCODE_BSP:
-        {
-            index = root->Data->BSP.RwDataIndex;
-            break;
-        }
-        case MODELNODE_OPCODE_OP11:
-        {
-            index = root->Data->Op11.RwDataIndex;
-            break;
-        }
-        case MODELNODE_OPCODE_GUNFIRE:
-        {
-            index = root->Data->Gunfire.RwDataIndex;
-            break;
-        }
-        case MODELNODE_OPCODE_HEAD:
-        {
-            index = root->Data->HeadPlaceholder.RwDataIndex;
-            break;
-        }
-    }
-
-    while (root->Parent)
-    {
-        root = root->Parent;
-        if ((root->Opcode & 0xFF) == MODELNODE_OPCODE_HEAD)
-        {
-            data = modelGetNodeRwData(Objinst, root)->HeadPlaceholder.RwDatas;
+            data = modelGetNodeRwData(model, node)->HeadPlaceholder.RwDatas;
             break;
         }
     }
 
     return (union ModelRwData *)&data[index];
+}
+
+
+/*
+ * Where each node type keeps its RwDataIndex in its rodata record, as a halfword index plus 1
+ * (0 = the type has no record). A small table instead of a switch: 25 bytes to read rather
+ * than a 100-byte jump table and an indirect jump.
+ */
+#define RWINDEX_SLOT(member) (__builtin_offsetof(union ModelRoData, member.RwDataIndex) / sizeof(u16) + 1)
+
+static const u8 s_RwIndexSlot[MODELNODE_OPCODE_MAX] = {
+    [MODELNODE_OPCODE_HEADER]      = RWINDEX_SLOT(Header),
+    [MODELNODE_OPCODE_DLCOLLISION] = RWINDEX_SLOT(DisplayListCollisions),
+    [MODELNODE_OPCODE_TUBE]        = RWINDEX_SLOT(Tube),
+    [MODELNODE_OPCODE_LOD]         = RWINDEX_SLOT(LOD),
+    [MODELNODE_OPCODE_SWITCH]      = RWINDEX_SLOT(Switch),
+    [MODELNODE_OPCODE_BSP]         = RWINDEX_SLOT(BSP),
+    [MODELNODE_OPCODE_OP11]        = RWINDEX_SLOT(Op11),
+    [MODELNODE_OPCODE_GUNFIRE]     = RWINDEX_SLOT(Gunfire),
+    [MODELNODE_OPCODE_HEAD]        = RWINDEX_SLOT(HeadPlaceholder),
+};
+
+_Static_assert(RWINDEX_SLOT(Header) <= 0xff && RWINDEX_SLOT(DisplayListCollisions) <= 0xff && RWINDEX_SLOT(Tube) <= 0xff &&
+               RWINDEX_SLOT(LOD) <= 0xff && RWINDEX_SLOT(Switch) <= 0xff && RWINDEX_SLOT(BSP) <= 0xff &&
+               RWINDEX_SLOT(Op11) <= 0xff && RWINDEX_SLOT(Gunfire) <= 0xff && RWINDEX_SLOT(HeadPlaceholder) <= 0xff,
+               "RwDataIndex slots must fit a byte");
+
+
+union ModelRwData* modelGetNodeRwData(const Model *Objinst, const ModelNode *root)
+{
+    u32 type = root->Opcode & 0xff;
+    u32 slot = type < MODELNODE_OPCODE_MAX ? s_RwIndexSlot[type] : 0;
+
+    if (slot == 0)
+    {
+        // No record of its own: the start of whichever block it belongs to.
+        return modelGetAttachedRwData(Objinst, root, 0);
+    }
+
+    return modelGetRwDataByIndex(Objinst, root, ((const u16 *)root->Data)[slot - 1]);
 }
 
 
@@ -1051,7 +1045,7 @@ void modelCalcRootMtx(const ModelRenderData* renderdata, const Model* model, con
     Mtxf tmp;
 
     rodata = node->Data;
-    rwdata = modelGetNodeRwData(model, node);
+    rwdata = modelGetRwDataByIndex(model, node, node->Data->Header.RwDataIndex);
 
     scale = model->scale;
     pos = &rwdata->Header.pos;
@@ -1637,7 +1631,7 @@ void modelCalcOffsetMtx(const ModelRenderData* renderdata, const Model *model, c
 void modelUpdateDistanceRelations(const Model* model, ModelNode* node)
 {
     const union ModelRoData *rodata = node->Data;
-    union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+    union ModelRwData *rwdata = modelGetRwDataByIndex(model, node, rodata->LOD.RwDataIndex);
     const Mtxf *mtx = modelFindNodeMtx(model, node, 0);
     f32 distance;
 
@@ -1672,7 +1666,7 @@ void modelUpdateDistanceRelations(const Model* model, ModelNode* node)
 void modelApplyDistanceRelations(const Model* model, ModelNode* node)
 {
     const ModelRoData_LODRecord *rodata = &node->Data->LOD;
-    const ModelRwData_LODRecord *rwdata = &modelGetNodeRwData(model, node)->LOD;
+    const ModelRwData_LODRecord *rwdata = modelGetNodeRwDataOf(model, node, LOD);
 
     if (rwdata->visible)
     {
@@ -1688,7 +1682,7 @@ void modelApplyDistanceRelations(const Model* model, ModelNode* node)
 void modelApplyToggleRelations(const Model* model, ModelNode* node)
 {
     const ModelRoData_SwitchRecord *rodata = &node->Data->Switch;
-    const ModelRwData_SwitchRecord *rwdata = &modelGetNodeRwData(model, node)->Switch;
+    const ModelRwData_SwitchRecord *rwdata = modelGetNodeRwDataOf(model, node, Switch);
 
     if (rwdata->visible)
     {
@@ -1703,7 +1697,7 @@ void modelApplyToggleRelations(const Model* model, ModelNode* node)
 
 void modelApplyHeadRelations(const Model* model, ModelNode* bodynode)
 {
-    const struct ModelRwData_HeadPlaceholderRecord *rwdata = &modelGetNodeRwData(model, bodynode)->HeadPlaceholder;
+    const struct ModelRwData_HeadPlaceholderRecord *rwdata = modelGetNodeRwDataOf(model, bodynode, HeadPlaceholder);
 
     if (rwdata->ModelFileHeader)
     {
@@ -1787,7 +1781,7 @@ void modelApplyReorderRelationsByArg(ModelNode *basenode, bool visible)
 
 void modelApplyReorderRelations(const Model* model, ModelNode* node)
 {
-    const union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+    const union ModelRwData *rwdata = modelGetRwDataByIndex(model, node, node->Data->BSP.RwDataIndex);
     modelApplyReorderRelationsByArg(node, rwdata->BSP.visible);
 }
 
@@ -1795,7 +1789,7 @@ void modelApplyReorderRelations(const Model* model, ModelNode* node)
 void modelUpdateReorderRelations(const Model *model, ModelNode *node)
 {
     const union ModelRoData *rodata = node->Data;
-    union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+    union ModelRwData *rwdata = modelGetRwDataByIndex(model, node, rodata->BSP.RwDataIndex);
     const Mtxf *mtx = modelFindNodeMtx(model, node, 0);
     coord3d normal;
     coord3d point;
@@ -1851,7 +1845,7 @@ void modelUpdateReorderRelations(const Model *model, ModelNode *node)
 void modelUpdateTubeIndex(const Model *model, const ModelNode *node)
 {
     const union ModelRoData *rodata = node->Data;
-    union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+    union ModelRwData *rwdata = modelGetRwDataByIndex(model, node, rodata->Tube.RwDataIndex);
     const Mtxf *mtx = modelFindNodeMtx(model, node, 0);
     f32 ratio;
     f32 coord_multiplied;
@@ -3951,7 +3945,7 @@ void modelRenderNodeDl(ModelRenderData *renderdata, const Model *model, const Mo
     {
         if (renderdata->flags & 1)
         {
-            union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+            union ModelRwData *rwdata = modelGetRwDataByIndex(model, node, rodata->DisplayListCollisions.RwDataIndex);
 
             if (rwdata->DisplayListCollisions.gdl)
             {
@@ -3993,7 +3987,7 @@ void modelRenderNodeDl(ModelRenderData *renderdata, const Model *model, const Mo
 
         if (renderdata->flags & 2)
         {
-            union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+            union ModelRwData *rwdata = modelGetRwDataByIndex(model, node, rodata->DisplayListCollisions.RwDataIndex);
 
             if (rwdata->DisplayListCollisions.gdl && rodata->DisplayListCollisions.ModelType == 4 && rodata->DisplayListCollisions.Secondary)
             {
@@ -4361,7 +4355,7 @@ NOINLINE void modelRenderNodeGunfire(ModelRenderData *renderdata, const Model *m
 {
     f32 negUpX;
     ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
-    const union ModelRwData *rwdata = modelGetNodeRwData(model, node);
+    const union ModelRwData *rwdata = modelGetRwDataByIndex(model, node, rodata->RwDataIndex);
     sImageTableEntry *tconfig;
     f32 yaw;
     f32 pitch;
@@ -5394,7 +5388,13 @@ void modelFilePromotePointers(const ModelFileHeader *header, s32 vma, const void
 }
 
 
-s32 modelCalculateRwDataIndexes(ModelNode *basenode)
+/**
+ * Give each node under basenode its rwdata record index, counting from 0, and return the
+ * number of words used. attached (MODEL_RWINDEX_ATTACHED or 0) marks a part being attached
+ * under a HEAD node. Once a model has been attached it stays marked, since a shared head
+ * model can still be attached to another body when it's indexed again.
+ */
+s32 modelCalculateRwDataIndexes(ModelNode *basenode, u32 attached)
 {
     u16 len = 0;
     ModelNode *node = basenode;
@@ -5409,7 +5409,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_HeaderRecord *rodata = &node->Data->Header;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_HeaderRecord) / 4;
                     break;
                 }
@@ -5417,7 +5417,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_TubeRecord *rodata = &node->Data->Tube;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_TubeRecord) / 4;
                     break;
                 }
@@ -5425,7 +5425,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_LODRecord *rodata = &node->Data->LOD;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_LODRecord) / 4;
                     node->Child = rodata->Affects;
                     break;
@@ -5434,7 +5434,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_SwitchRecord *rodata = &node->Data->Switch;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_SwitchRecord) / 4;
                     node->Child = rodata->Controls;
                     break;
@@ -5443,7 +5443,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_HeadPlaceholderRecord *rodata = &node->Data->HeadPlaceholder;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_HeadPlaceholderRecord) / 4;
                     node->Child = NULL;
                     break;
@@ -5452,7 +5452,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_BSPRecord *rodata = &node->Data->BSP;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_BSPRecord) / 4;
                     modelApplyReorderRelationsByArg(node, FALSE);
                     break;
@@ -5461,7 +5461,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_Op11Record *rodata = &node->Data->Op11;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_Op11Record) / 4;
                     break;
                 }
@@ -5469,7 +5469,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_GunfireRecord *rodata = &node->Data->Gunfire;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_GunfireRecord) / 4;
                     break;
                 }
@@ -5477,7 +5477,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
                 if (1)
                 {
                     ModelRoData_DisplayList_CollisionRecord *rodata = &node->Data->DisplayListCollisions;
-                    rodata->RwDataIndex = len;
+                    rodata->RwDataIndex = len | attached | (rodata->RwDataIndex & MODEL_RWINDEX_ATTACHED);
                     len += sizeof(struct ModelRwData_DisplayList_CollisionRecord) / 4;
                     break;
                 }
@@ -5516,7 +5516,7 @@ s32 modelCalculateRwDataIndexes(ModelNode *basenode)
 
 void modelCalculateRwDataLen(struct ModelFileHeader *objheader)
 {
-    objheader->numRecords = modelCalculateRwDataIndexes(objheader->RootNode);
+    objheader->numRecords = modelCalculateRwDataIndexes(objheader->RootNode, 0);
 }
 
 
@@ -5725,7 +5725,7 @@ void modelAttachPart(const Model *pmodel, ModelFileHeader *pmodeldef, ModelNode 
         node = node->Next;
     }
 
-    pmodeldef->numRecords += modelCalculateRwDataIndexes(pnode->Child);
+    pmodeldef->numRecords += modelCalculateRwDataIndexes(pnode->Child, MODEL_RWINDEX_ATTACHED);
 }
 
 

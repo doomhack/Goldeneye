@@ -394,7 +394,7 @@ void gunUpdateAndFire(GUNHAND handnum)
         if (node != NULL)
         {
 
-            flashvisptr = ((s32 *) (&hand->gunmodelRwData)) + node->Data->Switch.RwDataIndex;
+            flashvisptr = ((s32 *) (&hand->gunmodelRwData)) + MODEL_RWINDEX(node->Data->Switch.RwDataIndex);
         }
 
         if (mdlhdr->Switches[3] != NULL)

@@ -257,7 +257,7 @@ void objDeform(ObjectRecord *obj, s32 stage)
         return;
     }
 
-    Vertex **vtxslot = (Vertex **) &model->datas[rodata->RwDataIndex];
+    Vertex **vtxslot = (Vertex **) &model->datas[MODEL_RWINDEX(rodata->RwDataIndex)];
 
     // Original bug: stage 4 reads past the seeds, into the next type's explosion type
     if (randomGetNext() & 1)
