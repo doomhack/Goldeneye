@@ -161,7 +161,7 @@ static bool objIsDeformed(const ObjectRecord *obj)
     }
 
     union ModelRoData *rodata = node->Data;
-    union ModelRwData *rwdata = (union ModelRwData *)&obj->model->datas[rodata->DisplayListCollisions.RwDataIndex];
+    union ModelRwData *rwdata = (union ModelRwData *)&obj->model->datas[MODEL_RWINDEX(rodata->DisplayListCollisions.RwDataIndex)];
 
     return rodata->DisplayListCollisions.Vertices != rwdata->DisplayListCollisions.Vertices;
 }

@@ -61,6 +61,30 @@ Mtxf *modelFindNodeMtx(const struct Model *model, const struct ModelNode *node, 
 Mtxf *modelGetRootMtx(const Model *objinst);
 f32 modelGetRootDepth(const Model *objinst);
 union ModelRwData* modelGetNodeRwData(const Model *Objinst, const ModelNode *root);
+union ModelRwData *modelGetAttachedRwData(const Model *model, const ModelNode *node, s32 index);
+
+/*
+ * A node's RwDataIndex is a word index into its model's rwdata. The top bit marks nodes of a
+ * model that has been attached under a HEAD node (modelAttachPart): their index counts from
+ * that HEAD's RwDatas block instead, which needs a walk up the tree to find. Every other node
+ * can never have a HEAD above it, so its record is simply model->datas[index].
+ */
+#define MODEL_RWINDEX_ATTACHED 0x8000
+#define MODEL_RWINDEX(i)       ((i) & ~MODEL_RWINDEX_ATTACHED)
+
+static inline union ModelRwData *modelGetRwDataByIndex(const Model *model, const ModelNode *node, u32 index)
+{
+    if (__builtin_expect((index & MODEL_RWINDEX_ATTACHED) == 0, 1))
+    {
+        return (union ModelRwData *)&model->datas[index];
+    }
+
+    return modelGetAttachedRwData(model, node, MODEL_RWINDEX(index));
+}
+
+/* Record of a node whose type is known, e.g. modelGetNodeRwDataOf(model, node, Switch). */
+#define modelGetNodeRwDataOf(model, node, Type) \
+    (&modelGetRwDataByIndex((model), (node), (node)->Data->Type.RwDataIndex)->Type)
 void modelGetNodePosition(const Model *objinst, const ModelNode *part, coord3d *offset);
 void modelSetNodePosition(const Model *model, const ModelNode *node, const coord3d *pos);
 void modelGetRootPosition(const Model *objinst, coord3d *offset);
@@ -135,7 +159,7 @@ void modelRender(ModelRenderData *mrData, struct Model *);
 u8 *animGetFrame(const ModelAnimation *anim, s32 frame);
 void modelPromoteNodeOffsetsToPointers(ModelNode *node, u32 vma, u32 fileramaddr);
 void modelFilePromotePointers(const ModelFileHeader *header, s32 vma, const void *addr);
-s32 modelCalculateRwDataIndexes(ModelNode *basenode);
+s32 modelCalculateRwDataIndexes(ModelNode *basenode, u32 attached);
 void modelCalculateRwDataLen(struct ModelFileHeader *objheader);
 void modelInitRwData(const Model *model, ModelNode *startnode);
 void modelInit(struct Model *objinst, struct ModelFileHeader *header, u32 *data);

@@ -511,7 +511,7 @@ void objsFreeDeformedVertices(void)
             return;
         }
 
-        if (objNodeCanDeform(obj->model->obj, node) && (void *)rodata->Vertices != (void *)model->datas[rodata->RwDataIndex])
+        if (objNodeCanDeform(obj->model->obj, node) && (void *)rodata->Vertices != (void *)model->datas[MODEL_RWINDEX(rodata->RwDataIndex)])
         {
             objFreePermanently(obj, TRUE);
             return;
