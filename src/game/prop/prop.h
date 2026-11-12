@@ -12,6 +12,15 @@ extern s32 g_OnScreenPropCount;
 extern PropRecord **g_LastOnScreenProp;
 extern PropRecord *g_OnScreenPropList[];
 
+/**
+ * While propsTickPerPlayer runs: whether this is the frame's first view (the first
+ * player in the shuffled order). Things that happen once a frame, such as a guard's AI
+ * or an object's movement, run on that pass; later views only work out what they see.
+ * The same as playerGetShuffledIndex(playerGetCurrentNum()) == 0, without its loop for
+ * every prop.
+ */
+extern bool g_PropsTickFirstView;
+
 void        propsInit(void);
 void        propsSortOnscreen(void);
 void        propsInvalidateDrawRooms(void);

@@ -17,6 +17,7 @@
 #include <music.h>
 #include <snd.h>
 #include "game/prop/mine.h"
+#include "game/prop/prop.h"
 #include "game/chr/chr.h"
 #include "game/chr/chraction.h"
 #include "game/chr/chrai.h"
@@ -236,7 +237,7 @@ void objTickExplosive(PropRecord *prop)
     ObjectRecord *obj = prop->obj;
     WeaponObjRecord *weapon;
 
-    if (playerGetShuffledIndex(playerGetCurrentNum()) != 0)
+    if (!g_PropsTickFirstView)
     {
         return;
     }

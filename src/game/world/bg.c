@@ -146,6 +146,11 @@ const s32 bgViewRelated[] = { 1, 1, -1, -1 };
 */
 s_room_info g_BgRoomInfo[MAXROOMCOUNT] = {0};
 RoomState g_BgRoomState[MAXROOMCOUNT] = {0};
+
+/* Which rooms the current view draws, one bit per room. Every prop's on-screen test asks
+   (bgRoomIsVisible), on every view, so it is kept in 20 bytes rather than spread over
+   the room state. */
+static u32 s_BgRoomVisibleBits[(MAXROOMCOUNT + 31) / 32];
 //D:800442F4 canonically roomnumber
 s32 g_MaxNumRooms = MAXROOMCOUNT;
 
@@ -338,7 +343,7 @@ s32 bgAddVisibleRoom(int curroom,int unk1, bbox2d * screensize, s32 next)
     int i;
     int temp;
 
-    g_BgRoomState[curroom].room_rendered = '\x01';
+    s_BgRoomVisibleBits[curroom >> 5] |= 1u << (curroom & 31);
 
     if (g_BgRoomState[curroom].room_loaded_mask != '\0') {
         return 0;
@@ -1987,7 +1992,7 @@ s32 bgGetMaxNumRooms(void)
  */
 u8 bgRoomIsVisible(s32 roomID)
 {
-    return g_BgRoomState[roomID].room_rendered;
+    return (s_BgRoomVisibleBits[roomID >> 5] >> (roomID & 31)) & 1;
 }
 
 
@@ -3653,10 +3658,14 @@ void bgDetermineVisibleRooms(void)
 
     for (i = 0; i < MAXROOMCOUNT; i++) 
     {
-        g_BgRoomState[i].room_rendered = 0;
         g_BgRoomState[i].portal_visit_count = 0;
         g_BgRoomState[i].room_loaded_mask = 0;
         s_BgRoomDrawnSlot[i] = 0xff;
+    }
+
+    for (i = 0; i < (s32)(sizeof(s_BgRoomVisibleBits) / sizeof(s_BgRoomVisibleBits[0])); i++)
+    {
+        s_BgRoomVisibleBits[i] = 0;
     }
 
     g_BgRoomLoadSlot = (s32) (g_BgRoomLoadSlot + 1) % 10;

@@ -6,6 +6,7 @@
 #include "game/asset/asset.h"
 #include "game/chr/body.h"
 #include "game/chr/chraction.h"
+#include "game/prop/prop.h"
 #include "game/level/lv.h"
 #include "game/menu/front.h"
 #include "game/menu/watchmenu.h"
@@ -508,7 +509,7 @@ NOINLINE s32 playerTick(PropRecord *prop)
  
     if (chr != NULL)
     {
-        if (playerGetShuffledIndex(playerGetCurrentNum()) == 0)
+        if (g_PropsTickFirstView)
         {
             chr->hidden &= ~CHRHIDDEN_FREEZE;
         }
@@ -590,7 +591,7 @@ NOINLINE s32 playerTick(PropRecord *prop)
  
     ppointers = g_playerPointers;
  
-    if (playerGetShuffledIndex(playerGetCurrentNum()) == 0)
+    if (g_PropsTickFirstView)
     {
         g_PlayerTickCount = g_PlayerTickCount + 1;
     }

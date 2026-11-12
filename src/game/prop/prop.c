@@ -502,6 +502,11 @@ static PropRecord *propFinishTick(PropRecord *prop, PropRecord *prev, TICKOP op)
 
     PropRecord *next = prop->prev;
 
+    if (op == TICKOP_NONE)
+    {
+        return next;
+    }
+
     if (op == TICKOP_RETICK)
     {
         // Move it to the head of the list, to be ticked again at the end
@@ -776,6 +781,10 @@ void propsTickOnce(void)
 }
 
 
+/* Whether propsTickPerPlayer is ticking the frame's first view (see prop.h) */
+bool g_PropsTickFirstView = TRUE;
+
+
 /**
  * The tick run for each player's view: tick every active prop, then (on the frame's
  * first view only) the alarm, gas and countdown timer, proximity mines, AI sounds and
@@ -787,6 +796,8 @@ __attribute__((optimize("no-jump-tables")))
 void propsTickPerPlayer(void)
 {
     PropRecord *prop = propsGetActiveTail();
+
+    g_PropsTickFirstView = playerGetShuffledIndex(playerGetCurrentNum()) == 0;
 
     while (prop != NULL)
     {
@@ -817,7 +828,7 @@ void propsTickPerPlayer(void)
         prop = propFinishTick(prop, prev, op);
     }
 
-    if (playerGetShuffledIndex(playerGetCurrentNum()) == 0)
+    if (g_PropsTickFirstView)
     {
         alarmGasTimerTick();
         proxminesTickGuards();
@@ -858,7 +869,11 @@ void propsTickPickups(void)
         }
 
         prev = prop->prev;
-        propExecuteTickOperation(prop, op);
+
+        if (op != TICKOP_NONE)
+        {
+            propExecuteTickOperation(prop, op);
+        }
     }
 }
 
