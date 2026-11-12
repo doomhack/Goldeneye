@@ -21,6 +21,7 @@
 #include "game/world/bg.h"
 #include "game/menu/cheat.h"
 #include "game/chr/chr.h"
+#include "game/prop/prop.h"
 #include "game/chr/chrai.h"
 #include "game/chr/chraction.h"
 #include "game/model/chrobjdata.h"
@@ -894,6 +895,7 @@ s32 chrTick(PropRecord *prop)
     s32 headVisible;
     s32 tickamount;
     s32 coopRepeat;
+    bool firstSeen;
 
     renderdata = (ModelRenderData){.zbufferenabled = TRUE, .flags = 3};
     chr = prop->chr;
@@ -911,7 +913,7 @@ s32 chrTick(PropRecord *prop)
     // ahead of the helicopter it hangs from in Cradle's ending.
     coopRepeat = gameIsTwoPlayerMission()
         && ((prop->type == PROP_TYPE_CHR) || (prop->type == PROP_TYPE_VIEWER))
-        && (playerGetShuffledIndex(playerGetCurrentNum()) != 0);
+        && !g_PropsTickFirstView;
 
     if (coopRepeat)
     {
@@ -1002,7 +1004,7 @@ s32 chrTick(PropRecord *prop)
         {
             if (((chr->actiontype == ACT_PATROL) && (chr->act_patrol.waydata.mode == WAYMODE_MAGIC)) || ((chr->actiontype == ACT_GOPOS) && (chr->act_gopos.waydata.mode == WAYMODE_MAGIC)))
             {
-                headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
+                headSwitchVisible = posIsOnScreen(prop, &prop->pos, model, 1);
 
                 if (headSwitchVisible)
                 {
@@ -1019,7 +1021,7 @@ s32 chrTick(PropRecord *prop)
                 {
                     chrUpdateAnim(chr, tickamount);
                 }
-                headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
+                headSwitchVisible = posIsOnScreen(prop, &prop->pos, model, 1);
 
                 if (headSwitchVisible)
                 {
@@ -1036,7 +1038,7 @@ s32 chrTick(PropRecord *prop)
         }
         else if ((chr->actiontype == ACT_ANIM) && (chr->act_anim.alwaysAnimate == 0))
         {
-            headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
+            headSwitchVisible = posIsOnScreen(prop, &prop->pos, model, 1);
 
             if (headSwitchVisible && (chr->act_anim.noTranslate == 0))
             {
@@ -1055,7 +1057,7 @@ s32 chrTick(PropRecord *prop)
         }
         else if (chr->actiontype == ACT_STAND)
         {
-            headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
+            headSwitchVisible = posIsOnScreen(prop, &prop->pos, model, 1);
 
             if (headSwitchVisible || (chr->chrflags & CHRFLAG_INIT))
             {
@@ -1089,7 +1091,7 @@ s32 chrTick(PropRecord *prop)
                 }
             }
 
-            headSwitchVisible = posIsOnScreen(prop, &prop->pos, modelGetRadius(model), 1);
+            headSwitchVisible = posIsOnScreen(prop, &prop->pos, model, 1);
         }
     }
 
@@ -1119,6 +1121,11 @@ s32 chrTick(PropRecord *prop)
         chr->onscreenviews = 0;
     }
 
+    // Co-op: the first view this frame to see the chr. What moves on with time while it
+    // is seen (the flinch and the shade fading) moves once a frame, however many views
+    // see it, not once for each. In solo and multiplayer onscreenviews was just cleared.
+    firstSeen = chr->onscreenviews == 0;
+
     if (headSwitchVisible)
     {
         chr->onscreenviews |= 1 << playerGetCurrentNum();
@@ -1142,7 +1149,7 @@ s32 chrTick(PropRecord *prop)
         renderdata.basemtx = camGetWorldToScreenMtxf();
         renderdata.mtxlist = dynAllocate(model->obj->numMatrices * (sizeof(Mtxf)));
 
-        if (g_CurModelChr->flinchcnt >= 0)
+        if ((g_CurModelChr->flinchcnt >= 0) && firstSeen)
         {
             g_CurModelChr->flinchcnt += g_ClockTimer;
 
@@ -1157,7 +1164,10 @@ s32 chrTick(PropRecord *prop)
         g_ModelJointPositionedFunc = NULL;
         modelSetLodScale(1.0f);
 
-        objUpdateShading(&chr->shadecol, &chr->nextcol);
+        if (firstSeen)
+        {
+            objUpdateShading(&chr->shadecol, &chr->nextcol);
+        }
 
         prop->zDepth = modelGetRootDepth(model);
 
@@ -1266,10 +1276,15 @@ s32 chrTick(PropRecord *prop)
 
         prop->flags &= ~PROPFLAG_ONSCREEN;
 
-        chr->shadecol.r = chr->nextcol.r;
-        chr->shadecol.g = chr->nextcol.g;
-        chr->shadecol.b = chr->nextcol.b;
-        chr->shadecol.a = chr->nextcol.a;
+        // Unseen, the shade jumps to its target, unless an earlier view saw the chr
+        // this frame: that view's fade goes on.
+        if (firstSeen)
+        {
+            chr->shadecol.r = chr->nextcol.r;
+            chr->shadecol.g = chr->nextcol.g;
+            chr->shadecol.b = chr->nextcol.b;
+            chr->shadecol.a = chr->nextcol.a;
+        }
     }
 
     if (!(chr->chrflags & CHRFLAG_HIDDEN))

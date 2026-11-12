@@ -596,28 +596,25 @@ static bool posIsBeforeFogEnd(const coord3d *pos, f32 size)
 
 
 /*
- * Whether any of the rooms the prop is in is visible this frame. Reads the rooms
- * straight from the prop, as propGetRoomIds would list them, without copying them.
+ * Whether any of the rooms the prop is in is visible in the current view (and the prop
+ * stands on a tile). Reads the rooms straight from the prop, as propGetRoomIds would
+ * list them, without copying them. The tile is only looked at once a room is visible:
+ * it is on another cache line of the prop, and most props are in no visible room.
  */
 static bool propIsInVisibleRoom(const PropRecord *prop)
 {
-    const StandTile *stan = prop->stan;
-
-    if (stan == NULL)
-    {
-        return FALSE;
-    }
-
     if (prop->type == PROP_TYPE_VIEWER && prop->obj == NULL)
     {
-        return bgRoomIsVisible(stan->room);
+        const StandTile *stan = prop->stan;
+
+        return stan != NULL && bgRoomIsVisible(stan->room);
     }
 
     for (const u8 *room = prop->rooms; *room != 0xff; room++)
     {
         if (bgRoomIsVisible(*room))
         {
-            return TRUE;
+            return prop->stan != NULL;
         }
     }
 
@@ -626,11 +623,16 @@ static bool propIsInVisibleRoom(const PropRecord *prop)
 
 
 /**
- * Whether a sphere around pos is in view: the prop is in a visible room, the sphere is
- * not hidden by fog (nor, with checkFogEnd, beyond the furthest view distance), it is
- * within the screen area of the prop's rooms, and it is no more than MAX_DRAW_DIST away.
+ * Whether a sphere around pos, as big as the model's bounds, is in view: the prop is in
+ * a visible room, the sphere is not hidden by fog (nor, with checkFogEnd, beyond the
+ * furthest view distance), it is within the screen area of the prop's rooms, and it is
+ * no more than MAX_DRAW_DIST away.
+ *
+ * Most props are in no room the view sees, so that is tested first, before the model's
+ * size is read: the model and its file header are two more cache lines per prop, on
+ * every view's pass.
  */
-bool posIsOnScreen(const PropRecord *prop, const coord3d *pos, f32 radius, bool checkFogEnd)
+bool posIsOnScreen(const PropRecord *prop, const coord3d *pos, const Model *model, bool checkFogEnd)
 {
     bbox2d bbox;
     bool onscreen;
@@ -639,6 +641,8 @@ bool posIsOnScreen(const PropRecord *prop, const coord3d *pos, f32 radius, bool 
     {
         return FALSE;
     }
+
+    f32 radius = modelGetRadius(model);
 
     if (!fogPositionIsVisibleThroughFog(pos, radius) || (checkFogEnd && !posIsBeforeFogEnd(pos, radius)))
     {

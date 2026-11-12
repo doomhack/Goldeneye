@@ -142,7 +142,7 @@ static bool objIsVisible(const PropRecord *prop, bool applyfogcull)
         return FALSE;
     }
 
-    return posIsOnScreen(prop, &obj->runtime_pos, modelGetRadius(obj->model), applyfogcull);
+    return posIsOnScreen(prop, &obj->runtime_pos, obj->model, applyfogcull);
 }
 
 
@@ -230,7 +230,7 @@ static bool objIsSimOwner(const ObjectRecord *obj, s32 playercount)
         return TRUE;
     }
 
-    issimowner = playerGetShuffledIndex(playerGetCurrentNum()) == 0;
+    issimowner = g_PropsTickFirstView;
 
     if (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE)
     {

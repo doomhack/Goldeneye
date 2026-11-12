@@ -49,12 +49,9 @@ typedef struct BoundVec {
 
 /**
  * The per-room flags that the visibility and unload passes walk for every room each frame,
- * kept apart from s_room_info so a pass over all rooms touches 8 bytes per room.
+ * kept apart from s_room_info so a pass over all rooms touches 6 bytes per room.
  */
 typedef struct RoomState {
-    // is room being rendered? boolean
-    u8 room_rendered;
-
     /**
      * The room's age, counted in frames since it was last drawn.
      * 0 = unloaded
@@ -75,7 +72,7 @@ typedef struct RoomState {
     s16 mtxIndex;
 } RoomState;
 
-static_assert(sizeof(RoomState) == 8, "RoomState packs into 8 bytes");
+static_assert(sizeof(RoomState) == 6, "RoomState packs into 6 bytes");
 
 /**
  * A room's model data. What rendering and collision read comes first; the load sizes,
