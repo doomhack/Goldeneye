@@ -4,6 +4,7 @@
       build/OUTCODE/src/game/prop/objsetup.o (.rodata);
       build/OUTCODE/src/game/mission/objective.o (.rodata);
       build/OUTCODE/src/game/mission/mission.o (.rodata);
+      build/OUTCODE/src/game/mission/challenge.o (.rodata);
       build/OUTCODE/src/game/player/playerintro.o (.rodata);
       build/OUTCODE/src/game/menu/title.o (.rodata);
       build/OUTCODE/src/game/menu/front.o (.rodata);

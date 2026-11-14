@@ -3,6 +3,7 @@
 #include <PR/rcp.h>
 #include <bondconstants.h>
 #include <bondgame.h>
+#include "game/mission/challenge.h"
 #include "boss.h"
 #include "crash.h"
 #include "game/menu/cheat.h"
@@ -573,9 +574,19 @@ LEVELID bossGetStageNum() {
  *     return to title screen from stage
  */
 void bossReturnTitleStage(void) {
-    objectivesTickStatusMessages();
+    if (g_Challenge != NULL)
+    {
+        // Challenge mode: the challenge decides the result, and nothing is
+        // recorded in the save folder (no solo best times or unlocks)
+        challengeOnLevelEnd();
+    }
+    else
+    {
+        objectivesTickStatusMessages();
+    }
+
     objectivesDisableStatusDisplay();
-    if ((bossGetStageNum() != LEVELID_CUBA) && (objectivesAllComplete() != 0x0)) {
+    if ((bossGetStageNum() != LEVELID_CUBA) && !challengeWasPlayed() && (objectivesAllComplete() != 0x0)) {
         fileRecordMissionEnd();
     }
     bossRunTitleStage();

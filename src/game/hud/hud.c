@@ -4,6 +4,7 @@
  * hudRender also runs the death and co-op respawn sequence, since it is timed by what is
  * on screen. See docs/subsystems/player.md.
  */
+#include "game/mission/challenge.h"
 #include "game/hud/hud.h"
 #include "game/audio/levelmusic.h"
 #include "game/gfx/dyn.h"
@@ -468,6 +469,12 @@ Gfx *hudRender(Gfx *gdl)
     gunDrawSight(&gdl);
     gdl = hudRenderAmmo(gdl);
     gdl = countdownTimerRender(gdl);
+
+    if (g_Challenge != NULL)
+    {
+        gdl = challengeRender(gdl);
+    }
+
     gdl = radarRender(gdl);
     return currentPlayerDrawFade(gdl);
 }

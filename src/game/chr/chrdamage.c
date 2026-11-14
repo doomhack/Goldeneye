@@ -9,6 +9,7 @@
 #include <bondaicommands.h>
 #include <bondgame.h>
 #include <bondconstants.h>
+#include "game/mission/challenge.h"
 #include "game/audio/sfxvolume.h"
 #include "game/chr/chraction.h"
 #include <limits.h>
@@ -507,6 +508,11 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, const coord3d *vector, s32 weapon
         return FALSE;
     }
 
+    if (isPlayer && g_Challenge != NULL && myprop->type != PROP_TYPE_VIEWER)
+    {
+        challengeOnPlayerHitChr(self);
+    }
+
     // Handle hat shots.
     if (hitpart == HIT_HAT && self->handle_positiondata_hat)
     {
@@ -520,6 +526,11 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, const coord3d *vector, s32 weapon
         {
             objSetDropType(self->handle_positiondata_hat, 4);
             self->hidden |= CHRHIDDEN_DROP_HELD_ITEMS;
+
+            if (isPlayer && g_Challenge != NULL)
+            {
+                challengeOnHatKnockedOff();
+            }
         }
         else //steel helmate - ricochet
         {

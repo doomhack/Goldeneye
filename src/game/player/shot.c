@@ -4,6 +4,7 @@
  */
 #include <bondaicommands.h>
 #include <music.h>
+#include "game/mission/challenge.h"
 #include "assets/obseg/text/LgunE.h"
 #include "game/audio/sfxvolume.h"
 #include "game/chr/chraction.h"
@@ -1112,9 +1113,19 @@ void shotFireHand(s32 hand)
         {
             statsAddHit(item_id, SHOT_REGISTER_TOTAL);
 
+            if (g_Challenge != NULL)
+            {
+                challengeOnShotBegin();
+            }
+
             for (i=0; i<NUMBER_SHOTGUN_BULLETS; i++)
             {
                 shotFireBullet(hand);
+            }
+
+            if (g_Challenge != NULL)
+            {
+                challengeOnShotEnd();
             }
         }
         else if (item_id == ITEM_CAMERA)
@@ -1128,7 +1139,17 @@ void shotFireHand(s32 hand)
         else
         {
             statsAddHit(item_id, SHOT_REGISTER_TOTAL);
-            shotFireBullet(hand);
+
+            if (g_Challenge != NULL)
+            {
+                challengeOnShotBegin();
+                shotFireBullet(hand);
+                challengeOnShotEnd();
+            }
+            else
+            {
+                shotFireBullet(hand);
+            }
         }
     }
 }

@@ -7,6 +7,7 @@
  */
 #include <os_extension.h>
 #include <assets/oddtextures.h>
+#include "game/mission/challenge.h"
 #include "assets/image_externs.h"
 #include <ultra64.h>
 #include <bondgame.h>
@@ -7322,6 +7323,11 @@ s32 frontIsMissionSuccess(void)
         return 0;
     }
 
+    if (challengeWasPlayed())
+    {
+        return challengeWasPassed();
+    }
+
     for (i=0; i<10; i++)
     {
         if (g_FrontBriefing->objective[i].textid != 0
@@ -7411,7 +7417,19 @@ Gfx * frontDebriefRender(Gfx *DL)
         DL = frontPrintText(DL, &x, &y, winner, g_FontZurichChars, g_FontZurich, bondwins ? 0xFF : (0x78000000 | 0xFF), viGetX(), viGetY(), 0, 0);
     }
 
-    DL = frontDrawObjectives(DL, 0xBF, stagename, 1);
+    if (challengeWasPlayed())
+    {
+        // Challenge mode: the challenge in place of the objectives
+        sprintf(stagename, "Challenge: %s\n", challengeGetResultName());
+        x = 0x37;
+        y = 0xBF;
+        DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+    }
+    else
+    {
+        DL = frontDrawObjectives(DL, 0xBF, stagename, 1);
+    }
+
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
     DL = frontDrawCursor(DL);

@@ -27,6 +27,7 @@
 #include <boss.h>
 #include <music.h>
 #include <snd.h>
+#include "game/mission/challenge.h"
 #include "game/prop/prop.h"
 #include "game/prop/alarm.h"
 #include "game/prop/door.h"
@@ -831,6 +832,12 @@ void propsTickPerPlayer(void)
     if (g_PropsTickFirstView)
     {
         alarmGasTimerTick();
+
+        if (g_Challenge != NULL)
+        {
+            challengeTick();
+        }
+
         proxminesTickGuards();
         g_RemoteMineOwnerTriggerFlag = 0;
         aiSoundsTick();

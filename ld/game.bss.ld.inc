@@ -4,6 +4,7 @@
       build/OUTCODE/src/game/prop/objsetup.o (.bss);
       build/OUTCODE/src/game/mission/objective.o (.bss);
       build/OUTCODE/src/game/mission/mission.o (.bss);
+      build/OUTCODE/src/game/mission/challenge.o (.bss);
       build/OUTCODE/src/game/player/playerintro.o (.bss);
       build/OUTCODE/src/game/menu/title.o (.bss);
       build/OUTCODE/src/game/menu/front.o (.bss);

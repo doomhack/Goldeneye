@@ -6,6 +6,7 @@
  */
 #include <joy.h>
 #include <music.h>
+#include "game/mission/challenge.h"
 #include "game/hud/healthbar.h"
 #include "game/level/frametiming.h"
 #include "game/level/lv.h"
@@ -439,6 +440,11 @@ void playerTakeDamage(f32 damage_amount, f32 vectorx, f32 vectorz, s32 playerid,
             {
                 g_CurrentPlayer->oldhealth = g_CurrentPlayer->bondhealth;
                 g_CurrentPlayer->oldarmour = g_CurrentPlayer->bondarmour;
+
+                if (g_Challenge != NULL && damage_dealt > 0.0f)
+                {
+                    challengeOnPlayerDamaged();
+                }
 
                 if (gameIsMulti())
                 {

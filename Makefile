@@ -63,6 +63,13 @@ ifeq ($(UNLOCK_ALL), 1)
   LCDEFS += -DUNLOCK_ALL_LEVELS
 endif
 
+# make CHALLENGE=1: challenge mode prototype. Solo missions that have a
+# challenge (Facility for now) play it in place of the objectives; the
+# difficulty picks which one (src/game/mission/challenge.c)
+ifeq ($(CHALLENGE), 1)
+  LCDEFS += -DCHALLENGE_MODE
+endif
+
 # make FOGTUNE=1: player 1 holding L can scale the level's far plane and fog
 # (C-left/right) and the prop fade distances (C-up/down), with the values on screen
 ifeq ($(FOGTUNE), 1)
@@ -608,6 +615,12 @@ UNLOCK_STAMP := $(BUILD_DIR)/unlock_all
 UNLOCK_SETTING := $(if $(filter 1,$(UNLOCK_ALL)),on,off)
 $(shell mkdir -p $(BUILD_DIR); [ "`cat $(UNLOCK_STAMP) 2>/dev/null`" = "$(UNLOCK_SETTING)" ] || echo $(UNLOCK_SETTING) > $(UNLOCK_STAMP))
 $(BUILD_DIR)/src/game/save/file.o $(BUILD_DIR)/src/game/menu/front.o: $(UNLOCK_STAMP)
+
+# Same for CHALLENGE
+CHALLENGE_STAMP := $(BUILD_DIR)/challenge
+CHALLENGE_SETTING := $(if $(filter 1,$(CHALLENGE)),on,off)
+$(shell [ "`cat $(CHALLENGE_STAMP) 2>/dev/null`" = "$(CHALLENGE_SETTING)" ] || echo $(CHALLENGE_SETTING) > $(CHALLENGE_STAMP))
+$(BUILD_DIR)/src/game/mission/challenge.o: $(CHALLENGE_STAMP)
 
 # Same for FOGTUNE
 FOGTUNE_STAMP := $(BUILD_DIR)/fogtune

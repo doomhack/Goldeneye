@@ -24,6 +24,7 @@
 #include <rom.h>
 #include <random.h>
 #include <joy.h>
+#include "game/mission/challenge.h"
 #include "game/level/lv.h"
 #include "game/text/language.h"
 #include "game/menu/front.h"
@@ -338,6 +339,7 @@ void lvStageLoad(s32 stage)
         waypointsValidate();
         casingsLoadModels();
         counterOpResetForStage();
+        challengeStageLoad(g_CurrentStageToLoad);
 
         for (s0 = 0; s0 < getPlayerCount(); s0++)
         {
@@ -1226,6 +1228,7 @@ void lvStageUnload(void)
     alarmGasEndLevel();
     setupFreeProps();
     objectivesFinish();
+    challengeStageUnload();
     levelStopTankSfx();
     gunsStopSounds();
     levelMusicStop();
