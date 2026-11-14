@@ -10,7 +10,10 @@
  * few game events, shows its progress and time left at the top of the screen,
  * and ends the level when it is passed or failed.
  *
- * Prototype: built with make CHALLENGE=1, Facility only, no menus or saving.
+ * A challenge runs when the player picks Challenges on the mode select page
+ * (g_ChallengeMenu) and then a level and difficulty that have one.
+ *
+ * Prototype: Facility only, no saving.
  *
  * Every hook outside this file is guarded by g_Challenge, which is NULL unless
  * a challenge is running, so other modes pay one load and branch per event.
@@ -43,6 +46,14 @@ typedef enum ChallengeState
 } ChallengeState;
 
 extern const ChallengeDef *g_Challenge;
+
+// Challenges was picked on the mode select page (until the player goes back there)
+extern bool g_ChallengeMenu;
+
+// The challenge for a stage and difficulty, or NULL
+const ChallengeDef *challengeFind(LEVELID stage, DIFFICULTY difficulty);
+// The hardest difficulty with a challenge on the stage, or -1
+s32 challengeGetHighestDifficulty(LEVELID stage);
 
 void challengeStageLoad(LEVELID stage);
 void challengeStageUnload(void);

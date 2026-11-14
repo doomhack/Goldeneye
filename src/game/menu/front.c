@@ -2362,12 +2362,14 @@ Gfx *frontFileSelectRender(Gfx *DL)
  * options.
  */
 #define MODESEL_ROW_MISSION   0
-#define MODESEL_ROW_COOP      1
-#define MODESEL_ROW_COUNTEROP 2
-#define MODESEL_ROW_MULTI     3
-#define MODESEL_ROW_CHEATS    4
+#define MODESEL_ROW_CHALLENGE 1
+#define MODESEL_ROW_COOP      2
+#define MODESEL_ROW_COUNTEROP 3
+#define MODESEL_ROW_MULTI     4
+#define MODESEL_ROW_CHEATS    5
 
-static const s32 modesel_row_y[5] = {0xC4, 0xDE, 0xF8, 0x112, 0x12C};
+// 22 apart (the original 26 left no room for six rows under the photo)
+static const s32 modesel_row_y[6] = {0xC4, 0xDA, 0xF0, 0x106, 0x11C, 0x132};
 static s32 modesel_highlighted_row = -1;
 
 void frontModeSelectEnter(void)
@@ -2375,6 +2377,7 @@ void frontModeSelectEnter(void)
     // Co-op is picked again here (frontSetModeCursor has already used it
     // to put the cursor back on the co-op row).
     g_GameMode = GAMEMODE_SOLO;
+    g_ChallengeMenu = FALSE;
     g_FrontMode = FRONTMODE_INTRO;
     g_FrontTabNextSelected = FALSE;
     g_FrontTabPrevSelected = FALSE;
@@ -2462,6 +2465,11 @@ void frontModeSelectTick(void)
                 case MODESEL_ROW_MISSION:
                     g_FrontMode = FRONTMODE_MISSION;
                     g_GameMode = GAMEMODE_SOLO;
+                    break;
+                case MODESEL_ROW_CHALLENGE:
+                    g_FrontMode = FRONTMODE_MISSION;
+                    g_GameMode = GAMEMODE_SOLO;
+                    g_ChallengeMenu = TRUE;
                     break;
                 case MODESEL_ROW_COOP:
                     g_FrontMode = FRONTMODE_MISSION;
@@ -2610,6 +2618,10 @@ void frontSetModeCursor(int mode)
     {
         row = MODESEL_ROW_COOP;
     }
+    else if (g_ChallengeMenu)
+    {
+        row = MODESEL_ROW_CHALLENGE;
+    }
     else
     {
         row = MODESEL_ROW_MISSION;
@@ -2662,17 +2674,18 @@ Gfx* frontModeSelectRender(Gfx* DL)
 
     textstring = langGet((g_AppendCheatSinglePlayer != 0) ? getStringID(LTITLE, TITLE_STR_117_CHEATSELECTMISSION) : getStringID(LTITLE, TITLE_STR_29_SELECTMISSION));
     DL = frontDrawModeSelRow(DL, MODESEL_ROW_MISSION, "1.\n", textstring, 0xFF);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHALLENGE, "2.\n", "CHALLENGES\n", 0xFF);
 
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COOP, "2.\n", "2 PLAYER CO-OP\n", text_color);
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COUNTEROP, "3.\n", "2 PLAYER COUNTER-OP\n", text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COOP, "3.\n", "2 PLAYER CO-OP\n", text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_COUNTEROP, "4.\n", "2 PLAYER COUNTER-OP\n", text_color);
 
     textstring = langGet((g_AppendCheatMultiPlayer != 0) ? getStringID(LTITLE, TITLE_STR_276_CHEATMULTIPLAYER) : getStringID(LTITLE, TITLE_STR_30_MULTIPLAYER));
-    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "4.\n", textstring, text_color);
+    DL = frontDrawModeSelRow(DL, MODESEL_ROW_MULTI, "5.\n", textstring, text_color);
 
     if (g_CheatMenuAvailable != 0)
     {
         textstring = langGet(getStringID(LTITLE, TITLE_STR_31_CHEATOPTIONS));
-        DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHEATS, "5.\n", textstring, 0xFF);
+        DL = frontDrawModeSelRow(DL, MODESEL_ROW_CHEATS, "6.\n", textstring, 0xFF);
     }
 
     DL = frontAddPreviousTabText(DL);
@@ -3015,6 +3028,12 @@ s32 frontGetHighestDifficulty(s32 mission)
     s32 num;
     s32 difficulty;
     s32 unlocked;
+
+    // Challenges: the levels and difficulties that have one, all open for now
+    if (g_ChallengeMenu)
+    {
+        return challengeGetHighestDifficulty(g_FrontMissions[frontFindMissionEntry(mission)].stage_id);
+    }
 
     if (g_FrontMissions[frontFindMissionEntry(mission)].stage_id >= 0)
     {
@@ -3535,7 +3554,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
             DL,
             0x7E,
             (g_FrontDifficultyHighlight * 0x1E) + 0xB2,
-            0xF0,
+            g_ChallengeMenu ? 0x168 : 0xF0, // wide enough for the challenge name
             (g_FrontDifficultyHighlight * 0x1E) + 0xC3,
             0x32);
     }
@@ -3576,7 +3595,27 @@ Gfx *frontDifficultyRender(Gfx *DL)
             x = 0x96;
             y = (i * 0x1E) + 0xB4;
             DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+
+            if (g_ChallengeMenu)
+            {
+                const ChallengeDef *challenge = challengeFind(g_FrontMissions[g_FrontMission].stage_id, i);
+
+                if (challenge != NULL)
+                {
+                    sprintf(stagename, "%s\n", challenge->name);
+                    x = 0xF8;
+                    y = (i * 0x1E) + 0xB4;
+                    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+                }
+            }
         }
+    }
+
+    if (g_ChallengeMenu)
+    {
+        x = 0x37;
+        y = 0x12C;
+        DL = frontPrintText(DL, &x, &y, "CHALLENGES\n", g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
     }
 
     if (gameIsTwoPlayerMission())
@@ -3594,7 +3633,8 @@ Gfx *frontDifficultyRender(Gfx *DL)
     */
     for (i=0; i<3; i++)
     {
-        if ((i == 0 || unlockedDifficulty >= i)
+        // (the ticks are for the mission, not the challenge)
+        if (!g_ChallengeMenu && (i == 0 || unlockedDifficulty >= i)
             && (frontIsMissionCompleted(g_FrontMission, i) == 3))
         {
             image = &g_ImagesMainFolder[IMAGE_CHECK];

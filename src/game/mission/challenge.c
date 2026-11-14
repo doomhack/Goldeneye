@@ -32,7 +32,7 @@
 // How long the result stays on screen before the level ends
 #define RESULT_TICKS (2 * TICKS_PER_SEC)
 
-[[maybe_unused]] static const ChallengeDef s_Challenges[] = {
+static const ChallengeDef s_Challenges[] = {
     // Facility (Zak's list, 2026-11-14). Pads 0x87 and 0x135 are the rooms the
     // level's own script treats as the exit (Facility ai_47). Bound pad 93 is the
     // remotely locked security door (door 63) on the lower floor.
@@ -42,6 +42,7 @@
 };
 
 const ChallengeDef *g_Challenge = NULL;
+bool g_ChallengeMenu = FALSE;
 
 static ChallengeState s_State;
 static s32 s_StartTime;         // mission time (ticks) when the player got control, -1 before
@@ -56,28 +57,49 @@ static f32 s_DoorSide;          // which side of the goal door the player starte
 static const ChallengeDef *s_Played;
 static bool s_Passed;
 
-void challengeStageLoad(LEVELID stage)
+const ChallengeDef *challengeFind(LEVELID stage, DIFFICULTY difficulty)
 {
     s32 i;
 
+    for (i = 0; i < (s32)ARRAYCOUNT(s_Challenges); i++)
+    {
+        if (s_Challenges[i].stage == stage && s_Challenges[i].difficulty == difficulty)
+        {
+            return &s_Challenges[i];
+        }
+    }
+
+    return NULL;
+}
+
+s32 challengeGetHighestDifficulty(LEVELID stage)
+{
+    s32 highest = -1;
+    s32 i;
+
+    for (i = 0; i < (s32)ARRAYCOUNT(s_Challenges); i++)
+    {
+        if (s_Challenges[i].stage == stage && (s32)s_Challenges[i].difficulty > highest)
+        {
+            highest = s_Challenges[i].difficulty;
+        }
+    }
+
+    return highest;
+}
+
+void challengeStageLoad(LEVELID stage)
+{
     g_Challenge = NULL;
     s_Played = NULL;
     s_Passed = FALSE;
 
-#ifdef CHALLENGE_MODE
-    if (gameIsMulti() || g_GameMode != GAMEMODE_SOLO || getPlayerCount() != 1)
+    if (!g_ChallengeMenu || gameIsMulti() || g_GameMode != GAMEMODE_SOLO || getPlayerCount() != 1)
     {
         return;
     }
 
-    for (i = 0; i < (s32)ARRAYCOUNT(s_Challenges); i++)
-    {
-        if (s_Challenges[i].stage == stage && s_Challenges[i].difficulty == lvGetDifficulty())
-        {
-            g_Challenge = &s_Challenges[i];
-            break;
-        }
-    }
+    g_Challenge = challengeFind(stage, lvGetDifficulty());
 
     if (g_Challenge == NULL)
     {
@@ -96,10 +118,6 @@ void challengeStageLoad(LEVELID stage)
 
     // The challenge is the only objective: no "Objective A: Completed" messages
     objectivesDisableStatusDisplay();
-#else
-    (void)stage;
-    (void)i;
-#endif
 }
 
 void challengeStageUnload(void)
