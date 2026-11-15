@@ -42,6 +42,14 @@ s32 fileGamePakProbe(void)
 }
 
 /**
+ * The cartridge's EEPROM (EEPROM_TYPE_4K or EEPROM_TYPE_16K, 0 for none), found when
+ * the saves are first read. The ROM header asks for 16 Kbit, but an emulator or cart
+ * that ignores it gives 4 Kbit: the original save layout fits that, so only data
+ * past the first 512 bytes needs EEPROM_TYPE_16K.
+ */
+s32 g_SaveEepromType;
+
+/**
  * Resets the RamRom replay folder save
  */
 void fileResetRamRomSave(void)
@@ -474,7 +482,9 @@ void fileValidateSaves(void)
     s32 crc[2];
     s32 i;
 
-    if (fileGamePakProbe())
+    g_SaveEepromType = fileGamePakProbe();
+
+    if (g_SaveEepromType)
     {
         checksumOK = TRUE;
 

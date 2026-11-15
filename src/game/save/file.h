@@ -76,6 +76,9 @@ extern ChrRecord *g_CurModelChr;
 
 u8 fileGetBondForFolder(void);
 void fileValidateSaves(void);
+
+// EEPROM_TYPE_4K or EEPROM_TYPE_16K (0: none), set by fileValidateSaves
+extern s32 g_SaveEepromType;
 bool fileGetIsCheatUnlocked(const save_data *save, s32 cheat);
 STAGESTATUS fileIsStageUnlockedAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty);
 void fileUnlockStageInFolderAtDifficulty(s32 foldernum, LEVEL_SOLO_SEQUENCE levelid, DIFFICULTY difficulty, s32 newtime);
