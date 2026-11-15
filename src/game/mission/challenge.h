@@ -72,5 +72,6 @@ void challengeOnLevelEnd(void);
 bool challengeWasPlayed(void);
 bool challengeWasPassed(void);
 const char *challengeGetResultName(void);
+s32 challengeGetPassSeconds(void);
 
 #endif

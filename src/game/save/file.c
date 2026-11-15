@@ -49,6 +49,113 @@ s32 fileGamePakProbe(void)
  */
 s32 g_SaveEepromType;
 
+// The extra best times (file.h), kept by folder rather than by save slot, so they
+// don't follow the original slots' wear levelling. Kept in RAM on a 4 Kbit EEPROM.
+#define SAVE_EXT_BLOCK      EEPROM_MAXBLOCKS // the first block after the 4 Kbit save
+#define SAVE_EXT_BLOCKS     (sizeof(save_ext) / EEPROM_BLOCK_SIZE)
+static_assert(sizeof(save_ext) % EEPROM_BLOCK_SIZE == 0);
+static_assert(SAVE_EXT_BLOCK + MAX_FOLDER_COUNT * SAVE_EXT_BLOCKS <= EEP16K_MAXBLOCKS);
+
+static save_ext s_SaveExt[MAX_FOLDER_COUNT];
+
+static void fileWriteSaveExt(s32 folder)
+{
+    save_ext *ext = &s_SaveExt[folder];
+    s32 crc[2];
+
+    fileGenerateCRC((const u8 *)ext->times, (const u8 *)(ext + 1), crc);
+    ext->chksum1 = crc[0];
+    ext->chksum2 = crc[1];
+
+    if (g_SaveEepromType == EEPROM_TYPE_16K)
+    {
+        joyGamePakLongWrite(SAVE_EXT_BLOCK + folder * SAVE_EXT_BLOCKS, ext, sizeof(save_ext));
+    }
+}
+
+/**
+ * Reads the extra best times, clearing any folder's record whose checksum is bad
+ * (a new cartridge, or one whose EEPROM is only 4 Kbit).
+ */
+static void fileLoadSaveExt(void)
+{
+    save_ext blank = {};
+    s32 crc[2];
+    s32 i;
+
+    for (i = FOLDER1; i < MAX_FOLDER_COUNT; i++)
+    {
+        save_ext *ext = &s_SaveExt[i];
+
+        if (g_SaveEepromType == EEPROM_TYPE_16K)
+        {
+            joyGamePakLongRead(SAVE_EXT_BLOCK + i * SAVE_EXT_BLOCKS, ext, sizeof(save_ext));
+            fileGenerateCRC((const u8 *)ext->times, (const u8 *)(ext + 1), crc);
+
+            if (crc[0] == ext->chksum1 && crc[1] == ext->chksum2)
+            {
+                continue;
+            }
+        }
+
+        *ext = blank;
+        fileWriteSaveExt(i);
+    }
+}
+
+static bool fileExtIndexValid(s32 folder, LEVEL_SOLO_SEQUENCE level, DIFFICULTY difficulty)
+{
+    return folder >= FOLDER1 && folder < MAX_FOLDER_COUNT
+        && level >= SP_LEVEL_DAM && level < SP_LEVEL_MAX
+        && difficulty >= DIFFICULTY_AGENT && difficulty < SAVE_EXT_DIFFICULTIES;
+}
+
+s32 fileGetExtTime(SaveTimeKind kind, s32 folder, LEVEL_SOLO_SEQUENCE level, DIFFICULTY difficulty)
+{
+    if (!fileExtIndexValid(folder, level, difficulty))
+    {
+        return 0;
+    }
+
+    return s_SaveExt[folder].times[kind][level][difficulty];
+}
+
+/**
+ * Keeps secs as the best time if it beats the one stored.
+ */
+void fileRecordExtTime(SaveTimeKind kind, s32 folder, LEVEL_SOLO_SEQUENCE level, DIFFICULTY difficulty, s32 secs)
+{
+    u16 *time;
+
+    if (!fileExtIndexValid(folder, level, difficulty))
+    {
+        return;
+    }
+
+    secs = (secs < 1) ? 1 : ((secs > 0xFFFF) ? 0xFFFF : secs);
+    time = &s_SaveExt[folder].times[kind][level][difficulty];
+
+    if (*time == 0 || secs < *time)
+    {
+        *time = secs;
+        fileWriteSaveExt(folder);
+    }
+}
+
+static void fileCopySaveExt(s32 from, s32 to)
+{
+    s_SaveExt[to] = s_SaveExt[from];
+    fileWriteSaveExt(to);
+}
+
+static void fileClearSaveExt(s32 folder)
+{
+    save_ext blank = {};
+
+    s_SaveExt[folder] = blank;
+    fileWriteSaveExt(folder);
+}
+
 /**
  * Resets the RamRom replay folder save
  */
@@ -589,6 +696,8 @@ void fileValidateSaves(void)
                 g_SaveBond[i] = fileGetSelectedBond(save);
             }
         }
+
+        fileLoadSaveExt();
     }
 }
 
@@ -1045,6 +1154,8 @@ void fileDeleteSaveForFolder(s32 foldernum)
         save = fileGetSaveForFoldernum(foldernum);
         if (save)
         {
+            fileClearSaveExt(foldernum);
+
             fileGetHighestStageDifficultyCompletedForFolder(foldernum, &levelid, &difficulty);
             if ((levelid >= SP_LEVEL_DAM) && (difficulty >= DIFFICULTY_AGENT))
             {
@@ -1101,6 +1212,7 @@ void fileCopyFolderToFirstFree(s32 foldernum)
                         fileSetSaveFoldernum(&new_save, other);
                         fileSetSelectedBondTofolder(other);
                         fileOverwriteSaveSlotWithNewSave(dest, &new_save);
+                        fileCopySaveExt(foldernum, other);
                     }
                 }
             }
@@ -1637,6 +1749,23 @@ void fileRecordMissionEnd(void)
 {
     s16 var1;
 
+    // Co-op and counter-op keep their own best times. Completing a mission still
+    // opens the next one, but leaves the solo times and time cheats alone (a time
+    // of 'longer than any' only marks the mission done if it wasn't already).
+    if (gameIsTwoPlayerMission())
+    {
+        if ((-1 < g_FrontMission) && g_FrontDifficulty != DIFFICULTY_007 && g_AppendCheatSinglePlayer == FALSE)
+        {
+            LEVEL_SOLO_SEQUENCE level = g_FrontMissions[g_FrontMission].mission_num;
+
+            fileUnlockStageInFolderAtDifficulty(g_FrontFolder, level, g_FrontDifficulty, 99999999);
+            fileRecordExtTime(gameIsCounterOp() ? SAVETIME_COUNTEROP : SAVETIME_COOP, g_FrontFolder, level, g_FrontDifficulty, lvGetMissionTime60() / GAME_TICKRATE);
+        }
+
+        g_NewCheatUnlocked = FALSE;
+        return;
+    }
+
     if ((-1 < g_FrontMission) && g_FrontDifficulty != DIFFICULTY_007 && g_AppendCheatSinglePlayer == FALSE)
     {
         var1 = g_FrontTargetTimes[g_FrontMissions[g_FrontMission].mission_num][g_FrontDifficulty];
@@ -1651,6 +1780,17 @@ void fileRecordMissionEnd(void)
             }
         }
         g_NewCheatUnlocked = FALSE;
+    }
+}
+
+/**
+ * A challenge was passed in secs: its best time (and that it has been passed).
+ */
+void fileRecordChallengeEnd(s32 secs)
+{
+    if (-1 < g_FrontMission)
+    {
+        fileRecordExtTime(SAVETIME_CHALLENGE, g_FrontFolder, g_FrontMissions[g_FrontMission].mission_num, g_FrontDifficulty, secs);
     }
 }
 

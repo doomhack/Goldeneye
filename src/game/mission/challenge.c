@@ -56,6 +56,7 @@ static f32 s_DoorSide;          // which side of the goal door the player starte
 // What the debrief shows, kept after the stage unloads
 static const ChallengeDef *s_Played;
 static bool s_Passed;
+static s32 s_PassSecs;          // how long it took, rounded up
 
 const ChallengeDef *challengeFind(LEVELID stage, DIFFICULTY difficulty)
 {
@@ -107,6 +108,7 @@ void challengeStageLoad(LEVELID stage)
     }
 
     s_Played = g_Challenge;
+    s_PassSecs = 0;
     s_State = CHALLENGE_RUNNING;
     s_StartTime = -1;
     s_ResultTicks = RESULT_TICKS;
@@ -125,6 +127,13 @@ void challengeStageUnload(void)
     g_Challenge = NULL;
 }
 
+static s32 challengeTicksLeft(void)
+{
+    s32 used = (s_StartTime < 0) ? 0 : lvGetMissionTime60() - s_StartTime;
+
+    return g_Challenge->timelimit * TICKS_PER_SEC - used;
+}
+
 static void challengeResolve(bool passed)
 {
     if (s_State != CHALLENGE_RUNNING)
@@ -134,17 +143,11 @@ static void challengeResolve(bool passed)
 
     s_State = passed ? CHALLENGE_PASSED : CHALLENGE_FAILED;
     s_Passed = passed;
+    s_PassSecs = (g_Challenge->timelimit * TICKS_PER_SEC - challengeTicksLeft() + TICKS_PER_SEC - 1) / TICKS_PER_SEC;
     s_ResultTicks = RESULT_TICKS;
 
     // Nothing that happens while the result is shown can change it
     g_Mission.playerInvincible = TRUE;
-}
-
-static s32 challengeTicksLeft(void)
-{
-    s32 used = (s_StartTime < 0) ? 0 : lvGetMissionTime60() - s_StartTime;
-
-    return g_Challenge->timelimit * TICKS_PER_SEC - used;
 }
 
 static bool challengePlayerInGoalRoom(void)
@@ -395,6 +398,11 @@ bool challengeWasPlayed(void)
 bool challengeWasPassed(void)
 {
     return s_Played != NULL && s_Passed;
+}
+
+s32 challengeGetPassSeconds(void)
+{
+    return s_PassSecs;
 }
 
 const char *challengeGetResultName(void)

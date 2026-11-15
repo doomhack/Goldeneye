@@ -31,6 +31,32 @@ typedef struct smallSave
 
 extern save_data g_Saves[6];
 
+/**
+ * Best times that don't fit the original 4 Kbit save, one record per folder in the
+ * 16 Kbit EEPROM after the original 512 bytes. Times are whole seconds, 0 for none;
+ * a challenge with a time has been passed. Agent, Secret Agent and 00 Agent only.
+ */
+typedef enum SaveTimeKind
+{
+    SAVETIME_CHALLENGE,
+    SAVETIME_COOP,
+    SAVETIME_COUNTEROP,
+    SAVETIME_KIND_COUNT
+} SaveTimeKind;
+
+#define SAVE_EXT_DIFFICULTIES 3
+
+typedef struct save_ext
+{
+    s32 chksum1;
+    s32 chksum2;
+    u16 times[SAVETIME_KIND_COUNT][SP_LEVEL_MAX][SAVE_EXT_DIFFICULTIES];
+} save_ext;
+
+s32 fileGetExtTime(SaveTimeKind kind, s32 folder, LEVEL_SOLO_SEQUENCE level, DIFFICULTY difficulty);
+void fileRecordExtTime(SaveTimeKind kind, s32 folder, LEVEL_SOLO_SEQUENCE level, DIFFICULTY difficulty, s32 secs);
+void fileRecordChallengeEnd(s32 secs);
+
 extern s32 g_SaveBond[];
 
 f32 file007Reaction(void);
