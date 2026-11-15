@@ -12,6 +12,7 @@
  */
 
 #include <ultra64.h>
+#include "game/mission/challenge.h"
 #include <bondconstants.h>
 #include <bondtypes.h>
 #include <music.h>
@@ -291,7 +292,18 @@ void objTickExplosive(PropRecord *prop)
             {
                 propExplode(prop, EXPLOSION_DEF_MASSIVE);
                 obj->runtime_bitflags |= RUNTIMEBITFLAG_REMOVE;
-                playerSurroundWithExplosions(PLASTIQUE_EXPLOSION_DELAY_TICKS);
+
+                if (g_Challenge != NULL)
+                {
+                    // Challenge mode (Frigate): blowing up the bombs is the
+                    // goal, not the end of the mission
+                    challengeOnObjDestroyed(obj);
+                }
+                else
+                {
+                    playerSurroundWithExplosions(PLASTIQUE_EXPLOSION_DELAY_TICKS);
+                }
+
                 countdownTimerSetVisible(COUNTDOWN_HIDE_PLASTIQUE, FALSE);
             }
             break;

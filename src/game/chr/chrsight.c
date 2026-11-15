@@ -9,6 +9,7 @@
  * before its AI and action run (coopChrSelectTarget).
  */
 #include <ultra64.h>
+#include "game/mission/challenge.h"
 #include <bondaicommands.h>
 #include <bondconstants.h>
 #include <bondgame.h>
@@ -325,6 +326,11 @@ bool chrCheckTargetInSight(ChrRecord *self)
     if (sees)
     {
         chrSetTargetToPlayer(self);
+
+        if (g_Challenge != NULL)
+        {
+            challengeOnChrSawPlayer(self);
+        }
     }
 
     return sees;
