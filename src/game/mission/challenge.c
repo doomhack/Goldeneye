@@ -71,13 +71,13 @@ static const ChallengeDef s_Challenges[] = {
     // Dam
     { AT(DAM, AGENT, 60, "SHARPSHOOTER"), COUNT(FAR_KILLS, 3), .param = 100, ITEMS(ITEM_SNIPERRIFLE, ITEM_UNARMED) },
     { AT(DAM, SECRET, 60, "DESTRUCTION"), DESTROY(GLASS, 12), ITEMS(ITEM_REMOTEMINE, ITEM_UNARMED), .flags = CF_KEEP_GUN },
-    { AT(DAM, 00, 600, "GHOST"), REACH(0x14a, -1), TWO(ITEM_WPPKSIL), .flags = CF_EXIT | CF_FAIL_SEEN | CF_FAIL_ALARM },
+    { AT(DAM, 00, 600, "GHOST"), REACH(0x14a, -1), .goal = "Reach the bungee jump", TWO(ITEM_WPPKSIL), .flags = CF_EXIT | CF_FAIL_SEEN | CF_FAIL_ALARM },
 
     // Facility. Bound pad 93 is the remotely locked security door (door 63)
     // on the lower floor.
     { AT(FACILITY, AGENT, 90, "HAT TRICK"), COUNT(HATS, 3) },
-    { AT(FACILITY, SECRET, 120, "MARKSMAN"), REACH(0x87, 0x135), .flags = CF_EXIT | CF_FAIL_MISS },
-    { AT(FACILITY, 00, 60, "UNTOUCHABLE"), REACH_DOOR(10093), .flags = CF_FAIL_DAMAGE },
+    { AT(FACILITY, SECRET, 120, "MARKSMAN"), REACH(0x87, 0x135), .goal = "Reach the exit", .flags = CF_EXIT | CF_FAIL_MISS },
+    { AT(FACILITY, 00, 60, "UNTOUCHABLE"), REACH_DOOR(10093), .goal = "Get past the security door", .flags = CF_FAIL_DAMAGE },
 
     // Runway (guards respawn)
     { AT(RUNWAY, AGENT, 180, "VEHICLE"), COUNT(TANK_KILLS, 25) },
@@ -87,49 +87,49 @@ static const ChallengeDef s_Challenges[] = {
     // Surface 1
     { AT(SURFACE, AGENT, 60, "SHARPSHOOTER"), COUNT(FAR_KILLS, 3), .param = 100 },
     { AT(SURFACE, SECRET, 60, "DESTRUCTION"), DESTROY(GLASS, 16), ITEMS(ITEM_GRENADE, ITEM_UNARMED), .flags = CF_KEEP_GUN },
-    { AT(SURFACE, 00, 120, "UNTOUCHABLE"), REACH(0x2e, -1), .flags = CF_EXIT | CF_FAIL_DAMAGE },
+    { AT(SURFACE, 00, 120, "UNTOUCHABLE"), REACH(0x2e, -1), .goal = "Reach the bunker door", .flags = CF_EXIT | CF_FAIL_DAMAGE },
 
     // Bunker 1
-    { AT(BUNKER1, AGENT, 30, "DESTRUCTION"), DESTROY(MODELS, 0), .models = { PROP_MAINFRAME1, PROP_MAINFRAME2 } },
+    { AT(BUNKER1, AGENT, 30, "DESTRUCTION"), DESTROY(MODELS, 0), .goal = "Destroy the mainframes", .models = { PROP_MAINFRAME1, PROP_MAINFRAME2 } },
     { AT(BUNKER1, SECRET, 60, "HAT TRICK"), COUNT(HATS, 5) },
-    { AT(BUNKER1, 00, 150, "GHOST"), REACH(0x33, -1), .flags = CF_EXIT | CF_FAIL_SEEN | CF_FAIL_ALARM },
+    { AT(BUNKER1, 00, 150, "GHOST"), REACH(0x33, -1), .goal = "Escape the bunker", .flags = CF_EXIT | CF_FAIL_SEEN | CF_FAIL_ALARM },
 
     // Silo
     { AT(SILO, AGENT, 30, "CHAIN BLAST"), COUNT(CHAIN, 5), TWO(ITEM_ROCKETLAUNCH), .flags = CF_REPLACE },
     { AT(SILO, SECRET, 30, "RAMPAGE"), COUNT(KILLS, 25), TWO(ITEM_GRENADELAUNCH), .flags = CF_REPLACE },
-    { AT(SILO, 00, 300, "ARSENAL"), REACH(0xe8, -1), TWO(ITEM_GOLDENGUN), .flags = CF_EXIT | CF_REPLACE | CF_NO_PICKUPS },
+    { AT(SILO, 00, 300, "ARSENAL"), REACH(0xe8, -1), .goal = "Reach the exit lift", TWO(ITEM_GOLDENGUN), .flags = CF_EXIT | CF_REPLACE | CF_NO_PICKUPS },
 
     // Frigate
     { AT(FRIGATE, AGENT, 60, "RAMPAGE"), COUNT(KILLS, 30), TWO(ITEM_MP5KSIL) },
-    { AT(FRIGATE, SECRET, 45, "DESTRUCTION"), DESTROY(MODELS, 0), .models = { PROP_CHRPLASTIQUE } },
+    { AT(FRIGATE, SECRET, 45, "DESTRUCTION"), DESTROY(MODELS, 0), .goal = "Blow up both bombs", .models = { PROP_CHRPLASTIQUE } },
     { AT(FRIGATE, 00, 60, "CHAIN BLAST"), COUNT(CHAIN, 5) },
 
     // Surface 2
     { AT(SURFACE2, AGENT, 180, "DESTRUCTION"), DESTROY(CCTV, 0), TWO(ITEM_WPPK) },
-    { AT(SURFACE2, SECRET, 60, "DESTRUCTION"), DESTROY(MODELS, 0), .models = { PROP_MILCOPTER }, TWO(ITEM_SILVERWPPK), .flags = CF_MAKE_MORTAL },
+    { AT(SURFACE2, SECRET, 60, "DESTRUCTION"), DESTROY(MODELS, 0), .goal = "Destroy both helicopters", .models = { PROP_MILCOPTER }, TWO(ITEM_SILVERWPPK), .flags = CF_MAKE_MORTAL },
     { AT(SURFACE2, 00, 300, "DESTRUCTION"), DESTROY(GLASS, 0), TWO(ITEM_GOLDWPPK) },
 
     // Bunker 2
     { AT(BUNKER2, AGENT, 180, "DESTRUCTION"), DESTROY(MONITORS, 0) },
-    { AT(BUNKER2, SECRET, 60, "ARSENAL"), REACH(0x64, -1), TWO(ITEM_THROWKNIFE), .flags = CF_EXIT | CF_REPLACE | CF_NO_PICKUPS },
-    { AT(BUNKER2, 00, 180, "GHOST"), REACH(0x64, -1), TWO(ITEM_THROWKNIFE), .flags = CF_EXIT | CF_FAIL_SEEN | CF_FAIL_ALARM },
+    { AT(BUNKER2, SECRET, 60, "ARSENAL"), REACH(0x64, -1), .goal = "Escape the bunker", TWO(ITEM_THROWKNIFE), .flags = CF_EXIT | CF_REPLACE | CF_NO_PICKUPS },
+    { AT(BUNKER2, 00, 180, "GHOST"), REACH(0x64, -1), .goal = "Escape the bunker", TWO(ITEM_THROWKNIFE), .flags = CF_EXIT | CF_FAIL_SEEN | CF_FAIL_ALARM },
 
     // Statue. Pad 59 is the statue where Bond meets Trevelyan (Statue ai_36),
     // pad 8 is where Valentin stands.
     { AT(STATUE, AGENT, 120, "SURVIVE"), SURVIVE(59, 15), TWO(ITEM_AUTOSHOT), .flags = CF_START_PAD },
     PLACEHOLDER(STATUE, SECRET),
-    { AT(STATUE, 00, 60, "UNTOUCHABLE"), REACH(8, -1), .flags = CF_FAIL_DAMAGE },
+    { AT(STATUE, 00, 60, "UNTOUCHABLE"), REACH(8, -1), .goal = "Reach Valentin", .flags = CF_FAIL_DAMAGE },
 
     // Archives. It has no wooden crates, so these are the cardboard boxes (124
     // of them, too many for all).
-    { AT(ARCHIVES, AGENT, 180, "DESTRUCTION"), DESTROY(MODELS, 30), .models = { PROP_CARD_BOX1 }, ITEMS(ITEM_GRENADE, ITEM_UNARMED) },
+    { AT(ARCHIVES, AGENT, 180, "DESTRUCTION"), DESTROY(MODELS, 30), .goal = "Destroy %d cardboard boxes", .models = { PROP_CARD_BOX1 }, ITEMS(ITEM_GRENADE, ITEM_UNARMED) },
     { AT(ARCHIVES, SECRET, 60, "HAT TRICK"), COUNT(HATS, 5) },
-    { AT(ARCHIVES, 00, 120, "PACIFIST"), REACH(0xd0, -1), .flags = CF_EXIT | CF_FAIL_HARM },
+    { AT(ARCHIVES, 00, 120, "PACIFIST"), REACH(0xd0, -1), .goal = "Escape the archives", .flags = CF_EXIT | CF_FAIL_HARM },
 
     // Streets. Chr 31 is Valentin.
     { AT(STREETS, AGENT, 300, "VEHICLE"), DESTROY(VEHICLES, 0) },
-    { AT(STREETS, SECRET, 300, "PACIFIST"), REACH(0xf8, -1), .flags = CF_EXIT | CF_FAIL_HARM },
-    { AT(STREETS, 00, 120, "ASSASSIN"), COUNT(KILL_CHR, 1), .param = 31, .flags = CF_FAIL_ALARM },
+    { AT(STREETS, SECRET, 300, "PACIFIST"), REACH(0xf8, -1), .goal = "Reach the exit", .flags = CF_EXIT | CF_FAIL_HARM },
+    { AT(STREETS, 00, 120, "ASSASSIN"), COUNT(KILL_CHR, 1), .goal = "Kill Valentin", .param = 31, .flags = CF_FAIL_ALARM },
 
     // Depot (guards respawn)
     { AT(DEPOT, AGENT, 120, "RAMPAGE"), COUNT(KILLS, 25), TWO(ITEM_FNP90) },
@@ -142,8 +142,8 @@ static const ChallengeDef s_Challenges[] = {
     PLACEHOLDER(CAVERNS, AGENT), PLACEHOLDER(CAVERNS, SECRET), PLACEHOLDER(CAVERNS, 00),
 
     // Cradle. Chr 0 is Trevelyan.
-    { AT(CRADLE, AGENT, 300, "ARSENAL"), COUNT(KILL_CHR, 1), .param = 0, ITEMS(ITEM_REMOTEMINE, ITEM_UNARMED), .flags = CF_REPLACE | CF_NO_PICKUPS },
-    { AT(CRADLE, SECRET, 60, "PHOTOGRAPH"), COUNT(PHOTO, 1), .param = 0, ITEMS(ITEM_CAMERA, ITEM_UNARMED), .flags = CF_KEEP_GUN },
+    { AT(CRADLE, AGENT, 300, "ARSENAL"), COUNT(KILL_CHR, 1), .goal = "Kill Trevelyan", .param = 0, ITEMS(ITEM_REMOTEMINE, ITEM_UNARMED), .flags = CF_REPLACE | CF_NO_PICKUPS },
+    { AT(CRADLE, SECRET, 60, "PHOTOGRAPH"), COUNT(PHOTO, 1), .goal = "Photograph Trevelyan", .param = 0, ITEMS(ITEM_CAMERA, ITEM_UNARMED), .flags = CF_KEEP_GUN },
     PLACEHOLDER(CRADLE, 00),
 
     PLACEHOLDER(AZTEC, AGENT), PLACEHOLDER(AZTEC, SECRET), PLACEHOLDER(AZTEC, 00),
@@ -1017,6 +1017,142 @@ void challengeOnLevelEnd(void)
 {
     s_LevelEnding = TRUE;
     challengeResolve((g_Challenge->flags & CF_EXIT) && s_StartTime >= 0 && !g_CurrentPlayer->bonddead);
+}
+
+// What the objective line calls each kind of destroy target
+static const char *const s_TargetNouns[] = {
+    [CHALLENGE_TARGETS_GLASS] = "panes of glass",
+    [CHALLENGE_TARGETS_AUTOGUNS] = "drone guns",
+    [CHALLENGE_TARGETS_CCTV] = "security cameras",
+    [CHALLENGE_TARGETS_MONITORS] = "monitors",
+    [CHALLENGE_TARGETS_VEHICLES] = "vehicles",
+    [CHALLENGE_TARGETS_MODELS] = "targets",
+};
+
+/**
+ * The challenge as a mission objective, for the briefing, the watch and the
+ * debrief: the goal (the table's own, or one made from the count), how it
+ * must be done, and the time limit. Writes it to buffer, ending in a newline.
+ */
+char *challengeGetObjectiveText(const ChallengeDef *def, char *buffer)
+{
+    char *p = buffer;
+    u16 flags = def->flags;
+
+    if (def->goal != NULL)
+    {
+        p += sprintf(p, def->goal, def->target);
+    }
+    else
+    {
+        switch (def->count)
+        {
+            case CHALLENGE_REACH:
+                p += sprintf(p, "Reach the exit");
+                break;
+            case CHALLENGE_HATS:
+                p += sprintf(p, "Knock off %d hats", def->target);
+                break;
+            case CHALLENGE_KILLS:
+                p += sprintf(p, def->target == 1 ? "Kill %d enemy" : "Kill %d enemies", def->target);
+                break;
+            case CHALLENGE_FAR_KILLS:
+                p += sprintf(p, "Kill %d enemies from %d m or more away", def->target, def->param);
+                break;
+            case CHALLENGE_HEAD_KILLS:
+                p += sprintf(p, "Kill %d enemies with head shots", def->target);
+                flags &= ~CF_FAIL_BODYKILL; // already said
+                break;
+            case CHALLENGE_CHAIN:
+                p += sprintf(p, "Kill %d enemies in one chain of explosions", def->target);
+                break;
+            case CHALLENGE_TANK_KILLS:
+                p += sprintf(p, "Kill %d enemies with the tank", def->target);
+                break;
+            case CHALLENGE_DESTROY:
+                if (def->target == 0)
+                {
+                    p += sprintf(p, "Destroy all %s", s_TargetNouns[def->targets]);
+                }
+                else
+                {
+                    p += sprintf(p, "Destroy %d %s", def->target, s_TargetNouns[def->targets]);
+                }
+                break;
+            case CHALLENGE_KILL_CHR:
+                p += sprintf(p, "Kill the target");
+                break;
+            case CHALLENGE_PHOTO:
+                p += sprintf(p, "Photograph the target");
+                break;
+            case CHALLENGE_SURVIVE:
+                p += sprintf(p, "Hold your ground");
+                break;
+        }
+    }
+
+    if (flags & CF_FAIL_SEEN)
+    {
+        p += sprintf(p, " without being seen");
+    }
+    else if (flags & CF_FAIL_ALARM)
+    {
+        p += sprintf(p, " without setting off an alarm");
+    }
+
+    if (flags & CF_FAIL_DAMAGE)
+    {
+        p += sprintf(p, " without taking damage");
+    }
+
+    if (flags & CF_FAIL_HARM)
+    {
+        p += sprintf(p, " without hurting anyone");
+    }
+
+    if (flags & CF_FAIL_MISS)
+    {
+        p += sprintf(p, " without missing a shot");
+    }
+
+    if (flags & CF_FAIL_BODYKILL)
+    {
+        p += sprintf(p, " with head shots only");
+    }
+
+    if (flags & CF_NO_PICKUPS)
+    {
+        p += sprintf(p, " with only the weapons given");
+    }
+
+    if (def->count == CHALLENGE_SURVIVE)
+    {
+        p += sprintf(p, " for %d:%02d\n", def->timelimit / 60, def->timelimit % 60);
+    }
+    else
+    {
+        p += sprintf(p, " within %d:%02d\n", def->timelimit / 60, def->timelimit % 60);
+    }
+
+    return buffer;
+}
+
+/** The objective text of the challenge played last (also after the stage unloads). */
+char *challengeGetPlayedObjectiveText(char *buffer)
+{
+    buffer[0] = '\0';
+    return s_Played != NULL ? challengeGetObjectiveText(s_Played, buffer) : buffer;
+}
+
+/** How the challenge is going, as an objective status (OBJECTIVESTATUS_...). */
+s32 challengeGetObjectiveStatus(void)
+{
+    if (s_Played == NULL || (g_Challenge != NULL && s_State == CHALLENGE_RUNNING))
+    {
+        return OBJECTIVESTATUS_INCOMPLETE;
+    }
+
+    return s_Passed ? OBJECTIVESTATUS_COMPLETE : OBJECTIVESTATUS_FAILED;
 }
 
 bool challengeWasPlayed(void)

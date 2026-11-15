@@ -80,6 +80,7 @@ typedef struct ChallengeDef
     s16 models[2];              // TARGETS_MODELS: object models (0: none)
     s8 items[3];                // loadout: right and left hand, and one more item (ITEM_UNARMED: none)
     const char *name;           // shown at the top of the screen and on the debrief
+    const char *goal;           // the objective's goal (may use %d for target); NULL to make one
 } ChallengeDef;
 
 typedef enum ChallengeState
@@ -128,5 +129,10 @@ bool challengeWasPlayed(void);
 bool challengeWasPassed(void);
 const char *challengeGetResultName(void);
 s32 challengeGetPassSeconds(void);
+
+// The challenge as a mission objective (briefing, watch, debrief)
+char *challengeGetObjectiveText(const ChallengeDef *def, char *buffer);
+char *challengeGetPlayedObjectiveText(char *buffer);
+s32 challengeGetObjectiveStatus(void);
 
 #endif
