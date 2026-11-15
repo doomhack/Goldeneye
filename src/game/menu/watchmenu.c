@@ -1228,6 +1228,11 @@ void watchMenuBriefMoneypennyTick(void)
 
 void watchMenuBriefObjectivesTick(void)
 {
+    if (g_Challenge != NULL)
+    {
+        return; // challenge mode: the objective is the only briefing page
+    }
+
     if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || watchMenuStickPushedUp())
     {
         g_WatchMenuBriefPage = BRIEF_INDEX_MONEYPENNY;
