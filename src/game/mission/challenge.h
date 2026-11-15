@@ -32,7 +32,9 @@ typedef enum ChallengeCount
     CHALLENGE_CHAIN,        // kill enemies with explosions, each within a second of the last
     CHALLENGE_TANK_KILLS,   // kill enemies while driving the tank
     CHALLENGE_DESTROY,      // destroy objects (see ChallengeTargets)
-    CHALLENGE_KILL_CHR      // kill the chr numbered param
+    CHALLENGE_KILL_CHR,     // kill the chr numbered param
+    CHALLENGE_PHOTO,        // photograph the chr numbered param with the camera
+    CHALLENGE_SURVIVE       // stay alive (within param metres of the start) while guards keep coming
 } ChallengeCount;
 
 // Which objects CHALLENGE_DESTROY counts
@@ -58,7 +60,9 @@ enum
     CF_FAIL_BODYKILL = 0x0040, // fails on a kill that isn't a head shot
     CF_REPLACE       = 0x0080, // the loadout replaces the level's start weapons
     CF_KEEP_GUN      = 0x0100, // the loadout is added, but the player starts with the level's gun
-    CF_NO_PICKUPS    = 0x0200  // weapons other than the loadout can't be picked up
+    CF_NO_PICKUPS    = 0x0200, // weapons other than the loadout can't be picked up
+    CF_MAKE_MORTAL   = 0x0400, // DESTROY: invincible targets can be destroyed too
+    CF_START_PAD     = 0x0800  // the player starts at pads[0] instead of the level's start
 };
 
 typedef struct ChallengeDef
@@ -71,10 +75,10 @@ typedef struct ChallengeDef
     s16 timelimit;              // seconds
     s16 target;                 // how many to count (CHALLENGE_DESTROY: 0 for all there are)
     s16 param;                  // FAR_KILLS: metres; KILL_CHR: chr number
-    s16 pads[2];                // REACH: the room of either pad (-1: none)
+    s16 pads[2];                // REACH: the room of either pad (-1: none); CF_START_PAD: pads[0] is the start
     s16 doorpad;                // REACH: or getting past the door on this (bound) pad (-1: none)
     s16 models[2];              // TARGETS_MODELS: object models (0: none)
-    s8 items[2];                // loadout, right and left hand (ITEM_UNARMED: none)
+    s8 items[3];                // loadout: right and left hand, and one more item (ITEM_UNARMED: none)
     const char *name;           // shown at the top of the screen and on the debrief
 } ChallengeDef;
 
@@ -113,8 +117,11 @@ void challengeOnChrSawPlayer(const ChrRecord *chr);
 void challengeOnAlarm(void);
 void challengeOnObjDestroyed(const ObjectRecord *obj);
 bool challengeBlocksPickup(ITEM_IDS weapon);
+void challengeOnPhoto(void);
 // After the level's start weapons are given (once per stage load)
 void challengeApplyLoadout(void);
+// The pad the player starts at instead of the level's own start, or NULL
+const PadRecord *challengeGetStartPad(void);
 
 // For the debrief, which runs after the stage has unloaded
 bool challengeWasPlayed(void);

@@ -31,6 +31,13 @@
 #include "game/player/ammo.h"
 #include "game/player/playerlife.h"
 #include "game/player/tank.h"
+#include "game/chr/chr.h"
+#include "game/chr/chrai.h"
+#include "game/chr/chrscript.h"
+#include "game/chr/chrsight.h"
+#include "game/prop/carried.h"
+#include "game/math/trig.h"
+#include <random.h>
 #include "game/player/playerintro.h"
 #include "fr.h"
 #include "str.h"
@@ -48,7 +55,9 @@
 #define DESTROY(kind, n) COUNT(DESTROY, n), .targets = CHALLENGE_TARGETS_##kind
 #define REACH(pad1, pad2) .count = CHALLENGE_REACH, .pads = { (pad1), (pad2) }, .doorpad = -1
 #define REACH_DOOR(pad) .count = CHALLENGE_REACH, .pads = { -1, -1 }, .doorpad = (pad)
-#define ITEMS(right, left) .items = { (right), (left) }
+#define SURVIVE(startpad, metres) \
+    .count = CHALLENGE_SURVIVE, .pads = { (startpad), -1 }, .doorpad = -1, .param = (metres)
+#define ITEMS(right, left) .items = { (right), (left), ITEM_UNARMED }
 #define TWO(item) ITEMS(item, item)
 // Placeholder until the level gets real challenges: kill one enemy in a minute
 #define PLACEHOLDER(level, diff) { AT(level, diff, 60, "PLACEHOLDER"), COUNT(KILLS, 1) }
@@ -73,7 +82,7 @@ static const ChallengeDef s_Challenges[] = {
     // Runway (guards respawn)
     { AT(RUNWAY, AGENT, 180, "VEHICLE"), COUNT(TANK_KILLS, 25) },
     { AT(RUNWAY, SECRET, 60, "DESTRUCTION"), DESTROY(AUTOGUNS, 0) },
-    PLACEHOLDER(RUNWAY, 00), // Survive, needs the challenge spawner
+    { AT(RUNWAY, 00, 180, "SURVIVE"), SURVIVE(-1, 15), .items = { ITEM_UZI, ITEM_UZI, ITEM_PROXIMITYMINE } },
 
     // Surface 1
     { AT(SURFACE, AGENT, 60, "SHARPSHOOTER"), COUNT(FAR_KILLS, 3), .param = 100 },
@@ -97,7 +106,7 @@ static const ChallengeDef s_Challenges[] = {
 
     // Surface 2
     { AT(SURFACE2, AGENT, 180, "DESTRUCTION"), DESTROY(CCTV, 0), TWO(ITEM_WPPK) },
-    PLACEHOLDER(SURFACE2, SECRET), // both helicopters, needs the full-size Hind made mortal
+    { AT(SURFACE2, SECRET, 60, "DESTRUCTION"), DESTROY(MODELS, 0), .models = { PROP_MILCOPTER }, TWO(ITEM_SILVERWPPK), .flags = CF_MAKE_MORTAL },
     { AT(SURFACE2, 00, 300, "DESTRUCTION"), DESTROY(GLASS, 0), TWO(ITEM_GOLDWPPK) },
 
     // Bunker 2
@@ -105,8 +114,9 @@ static const ChallengeDef s_Challenges[] = {
     { AT(BUNKER2, SECRET, 60, "ARSENAL"), REACH(0x64, -1), TWO(ITEM_THROWKNIFE), .flags = CF_EXIT | CF_REPLACE | CF_NO_PICKUPS },
     { AT(BUNKER2, 00, 180, "GHOST"), REACH(0x64, -1), TWO(ITEM_THROWKNIFE), .flags = CF_EXIT | CF_FAIL_SEEN | CF_FAIL_ALARM },
 
-    // Statue. Pad 8 is where Valentin stands.
-    PLACEHOLDER(STATUE, AGENT), // Survive, needs the challenge spawner
+    // Statue. Pad 59 is the statue where Bond meets Trevelyan (Statue ai_36),
+    // pad 8 is where Valentin stands.
+    { AT(STATUE, AGENT, 120, "SURVIVE"), SURVIVE(59, 15), TWO(ITEM_AUTOSHOT), .flags = CF_START_PAD },
     PLACEHOLDER(STATUE, SECRET),
     { AT(STATUE, 00, 60, "UNTOUCHABLE"), REACH(8, -1), .flags = CF_FAIL_DAMAGE },
 
@@ -133,7 +143,7 @@ static const ChallengeDef s_Challenges[] = {
 
     // Cradle. Chr 0 is Trevelyan.
     { AT(CRADLE, AGENT, 300, "ARSENAL"), COUNT(KILL_CHR, 1), .param = 0, ITEMS(ITEM_REMOTEMINE, ITEM_UNARMED), .flags = CF_REPLACE | CF_NO_PICKUPS },
-    PLACEHOLDER(CRADLE, SECRET), // photograph Trevelyan
+    { AT(CRADLE, SECRET, 60, "PHOTOGRAPH"), COUNT(PHOTO, 1), .param = 0, ITEMS(ITEM_CAMERA, ITEM_UNARMED), .flags = CF_KEEP_GUN },
     PLACEHOLDER(CRADLE, 00),
 
     PLACEHOLDER(AZTEC, AGENT), PLACEHOLDER(AZTEC, SECRET), PLACEHOLDER(AZTEC, 00),
@@ -154,6 +164,15 @@ static s32 s_Count;              // progress towards the target
 static s32 s_Target;             // how many to count (set when the clock starts)
 static s32 s_Chain;              // explosion kills in the current chain
 static s32 s_ChainTime;          // g_GlobalTimer of the last one
+
+// Survive: the spawner
+static coord3d s_SurviveCentre;  // where the player was when the clock started
+static s32 s_SpawnTicks;         // until the next spawn
+static s32 s_Spawned;            // guards spawned so far
+static s32 s_PadCount;
+static s8 s_SpawnBody;           // what spawned guards look like and carry,
+static s16 s_SpawnGunModel;      // copied from one of the level's guards
+static s16 s_SpawnGun;
 static bool s_ShotActive;       // a player shot is being resolved
 static bool s_ShotHitEnemy;     // and it hit an enemy
 static f32 s_DoorSide;          // which side of the goal door the player started on (+1/-1)
@@ -222,6 +241,9 @@ void challengeStageLoad(LEVELID stage)
     s_Target = g_Challenge->target;
     s_Chain = 0;
     s_ChainTime = 0;
+    s_SpawnTicks = 0;
+    s_Spawned = 0;
+    s_SpawnGun = ITEM_UNARMED;
     s_ShotActive = FALSE;
     s_ShotHitEnemy = FALSE;
     s_DoorSide = 0.0f;
@@ -342,7 +364,7 @@ static bool challengePlayerPastDoor(void)
  */
 static bool challengeIsTarget(const ObjectRecord *obj)
 {
-    if (obj->flags & PROPFLAG_INVINCIBLE)
+    if ((obj->flags & PROPFLAG_INVINCIBLE) && !(g_Challenge->flags & CF_MAKE_MORTAL))
     {
         return FALSE;
     }
@@ -370,17 +392,178 @@ static bool challengeIsTarget(const ObjectRecord *obj)
 static s32 challengeCountTargets(void)
 {
     s32 count = 0;
-    const PropRecord *prop;
+    PropRecord *prop;
 
     for (prop = g_ActivePropsHead; prop != NULL; prop = prop->next)
     {
         if (prop->type == PROP_TYPE_OBJ && objIsHealthy(prop->obj) && challengeIsTarget(prop->obj))
         {
+            if (g_Challenge->flags & CF_MAKE_MORTAL)
+            {
+                // Surface 2's full-size Hind is invincible and set into the level
+                prop->obj->flags &= ~(PROPFLAG_INVINCIBLE | PROPFLAG_01000000);
+            }
+
             count++;
         }
     }
 
     return count;
+}
+
+static bool chrIsCivilian(const ChrRecord *chr)
+{
+    return (chr->chrflags & CHRFLAG_COUNT_DEATH_AS_CIVILIAN) != 0;
+}
+
+// Survive: at most this many spawned guards alive at once (frame rate)
+#define SURVIVE_MAX_ALIVE 8
+// a new one every this many ticks while there's room
+#define SURVIVE_SPAWN_TICKS (3 * TICKS_PER_SEC)
+// at a pad this far from the player (cm)
+#define SURVIVE_SPAWN_MIN 1500.0f
+#define SURVIVE_SPAWN_MAX 4500.0f
+// Spawned guards are numbered from here
+#define SURVIVE_CHRNUM 9000
+
+/**
+ * Survive: when the clock starts, note where the player is and pick a guard
+ * of the level's to copy (body and gun) for the guards that will spawn.
+ */
+static void challengeSurviveStart(void)
+{
+    const PropRecord *playerprop = currentPlayerGetProp();
+    const PadRecord *pad;
+    s32 i;
+
+    s_SurviveCentre = playerprop->pos;
+
+    s_PadCount = 0;
+
+    for (pad = g_CurrentSetup.pads; pad != NULL && pad->plink != NULL; pad++)
+    {
+        s_PadCount++;
+    }
+
+    for (i = 0; i < g_NumChrSlots; i++)
+    {
+        const ChrRecord *chr = &g_ChrSlots[i];
+        const PropRecord *gun;
+
+        if (chr->model == NULL || chr->prop == NULL || chrIsCivilian(chr))
+        {
+            continue;
+        }
+
+        gun = chrGetEquippedWeaponProp(chr, GUNRIGHT);
+
+        if (gun != NULL)
+        {
+            s_SpawnBody = chr->bodynum;
+            s_SpawnGunModel = gun->weapon->obj;
+            s_SpawnGun = gun->weapon->weaponnum;
+            return;
+        }
+    }
+}
+
+static s32 challengeSurviveAlive(void)
+{
+    s32 alive = 0;
+    s32 i;
+
+    for (i = 0; i < s_Spawned; i++)
+    {
+        const ChrRecord *chr = chrFindByLiteralId(SURVIVE_CHRNUM + i);
+
+        if (chr != NULL && chr->actiontype != ACT_DIE && chr->actiontype != ACT_DEAD)
+        {
+            alive++;
+        }
+    }
+
+    return alive;
+}
+
+/**
+ * Survive: tops up the guards every few seconds. A new guard appears out of
+ * sight at a pad 15 to 45 m away, armed like the level's guards and already
+ * after the player.
+ */
+static void challengeSurviveSpawn(void)
+{
+    const PropRecord *playerprop = currentPlayerGetProp();
+    s32 attempt;
+
+    s_SpawnTicks -= g_ClockTimer;
+
+    if (s_SpawnTicks > 0 || s_SpawnGun == ITEM_UNARMED || s_PadCount == 0)
+    {
+        return;
+    }
+
+    s_SpawnTicks = SURVIVE_SPAWN_TICKS;
+
+    if (challengeSurviveAlive() >= SURVIVE_MAX_ALIVE)
+    {
+        return;
+    }
+
+    for (attempt = 0; attempt < 8; attempt++)
+    {
+        const PadRecord *pad = &g_CurrentSetup.pads[randomGetNext() % (u32)s_PadCount];
+        f32 dx = pad->pos.x - playerprop->pos.x;
+        f32 dz = pad->pos.z - playerprop->pos.z;
+        f32 distsq = dx * dx + dz * dz;
+        const PropRecord *prop;
+        ChrRecord *chr;
+
+        if (pad->stan == NULL || distsq < SURVIVE_SPAWN_MIN * SURVIVE_SPAWN_MIN || distsq > SURVIVE_SPAWN_MAX * SURVIVE_SPAWN_MAX)
+        {
+            continue;
+        }
+
+        prop = chrSpawnAtCoord(s_SpawnBody, -1, &pad->pos, pad->stan, mathAtan2(-dx, -dz),
+            ailistFindById(GAILIST_STANDARD_GUARD), 0);
+
+        if (prop == NULL)
+        {
+            continue;
+        }
+
+        chr = prop->chr;
+        chr->chrnum = SURVIVE_CHRNUM + s_Spawned;
+        chrSlotSync(chr);
+        s_Spawned++;
+
+        chrGiveWeapon(chr, s_SpawnGunModel, s_SpawnGun, 0);
+
+        // Awake and already after the player
+        chrSetTargetToPlayer(chr);
+        chrAlertGuardToPlayerPosition(chr);
+        return;
+    }
+}
+
+/** Survive: whether the player has strayed too far from where they started. */
+static bool challengeSurviveOutOfArea(void)
+{
+    const PropRecord *playerprop = currentPlayerGetProp();
+    f32 dx = playerprop->pos.x - s_SurviveCentre.x;
+    f32 dz = playerprop->pos.z - s_SurviveCentre.z;
+    f32 range = g_Challenge->param * 100.0f;
+
+    return g_Challenge->param > 0 && dx * dx + dz * dz > range * range;
+}
+
+const PadRecord *challengeGetStartPad(void)
+{
+    if (g_Challenge == NULL || !(g_Challenge->flags & CF_START_PAD))
+    {
+        return NULL;
+    }
+
+    return &g_CurrentSetup.pads[g_Challenge->pads[0]];
 }
 
 /**
@@ -426,15 +609,32 @@ void challengeTick(void)
         {
             s_Target = challengeCountTargets();
         }
+
+        if (g_Challenge->count == CHALLENGE_SURVIVE)
+        {
+            challengeSurviveStart();
+        }
     }
 
     if (challengeTicksLeft() <= 0)
     {
-        challengeResolve(FALSE);
+        // Survive passes by lasting until the end
+        challengeResolve(g_Challenge->count == CHALLENGE_SURVIVE);
         return;
     }
 
-    if (g_Challenge->count == CHALLENGE_REACH)
+    if (g_Challenge->count == CHALLENGE_SURVIVE)
+    {
+        if (challengeSurviveOutOfArea())
+        {
+            challengeResolve(FALSE);
+        }
+        else
+        {
+            challengeSurviveSpawn();
+        }
+    }
+    else if (g_Challenge->count == CHALLENGE_REACH)
     {
         if (challengePlayerInGoalRoom() || challengePlayerPastDoor())
         {
@@ -476,7 +676,8 @@ Gfx *challengeRender(Gfx *gdl)
         ticks = challengeTicksLeft();
         secs = (ticks + TICKS_PER_SEC - 1) / TICKS_PER_SEC;
 
-        if (g_Challenge->count != CHALLENGE_REACH && g_Challenge->count != CHALLENGE_KILL_CHR)
+        if (g_Challenge->count != CHALLENGE_REACH && g_Challenge->count != CHALLENGE_KILL_CHR && g_Challenge->count != CHALLENGE_PHOTO
+            && g_Challenge->count != CHALLENGE_SURVIVE)
         {
             sprintf(text, "%s  %d OF %d  %d:%02d\n", g_Challenge->name, s_Count, s_Target, secs / 60, secs % 60);
         }
@@ -524,11 +725,6 @@ NOINLINE void challengeOnShotEnd(void)
     {
         challengeResolve(FALSE);
     }
-}
-
-static bool chrIsCivilian(const ChrRecord *chr)
-{
-    return (chr->chrflags & CHRFLAG_COUNT_DEATH_AS_CIVILIAN) != 0;
 }
 
 NOINLINE void challengeOnPlayerHitChr(const ChrRecord *chr)
@@ -687,6 +883,44 @@ NOINLINE void challengeOnObjDestroyed(const ObjectRecord *obj)
     }
 }
 
+// A photo only counts from this close (2000 = 20 m), so the target isn't a speck
+#define PHOTO_RANGE 2000.0f
+
+/**
+ * The player took a picture with the camera: it counts if the target chr is
+ * alive, in view and close enough.
+ */
+NOINLINE void challengeOnPhoto(void)
+{
+    const ChrRecord *chr;
+    const PropRecord *playerprop = currentPlayerGetProp();
+    f32 dx;
+    f32 dy;
+    f32 dz;
+
+    if (g_Challenge->count != CHALLENGE_PHOTO || !challengeIsLive())
+    {
+        return;
+    }
+
+    chr = chrFindByLiteralId(g_Challenge->param);
+
+    if (chr == NULL || chr->prop == NULL || chr->actiontype == ACT_DIE || chr->actiontype == ACT_DEAD
+        || !(chr->prop->flags & PROPFLAG_ONSCREEN) || chr->prop->zDepth < 0.0f)
+    {
+        return;
+    }
+
+    dx = chr->prop->pos.x - playerprop->pos.x;
+    dy = chr->prop->pos.y - playerprop->pos.y;
+    dz = chr->prop->pos.z - playerprop->pos.z;
+
+    if (dx * dx + dy * dy + dz * dz < PHOTO_RANGE * PHOTO_RANGE)
+    {
+        s_Count++;
+    }
+}
+
 /** With CF_NO_PICKUPS, only the loadout's weapons can be picked up. */
 NOINLINE bool challengeBlocksPickup(ITEM_IDS weapon)
 {
@@ -700,7 +934,7 @@ NOINLINE bool challengeBlocksPickup(ITEM_IDS weapon)
         return FALSE; // not a weapon: keys, mission items
     }
 
-    return weapon != g_Challenge->items[0] && weapon != g_Challenge->items[1];
+    return weapon != g_Challenge->items[0] && weapon != g_Challenge->items[1] && weapon != g_Challenge->items[2];
 }
 
 static void challengeGiveItem(ITEM_IDS item)
@@ -760,6 +994,11 @@ void challengeApplyLoadout(void)
         }
 
         invAddDualItem(right, left);
+    }
+
+    if (g_Challenge->items[2] != ITEM_UNARMED)
+    {
+        challengeGiveItem(g_Challenge->items[2]);
     }
 
     if (!(g_Challenge->flags & CF_KEEP_GUN))

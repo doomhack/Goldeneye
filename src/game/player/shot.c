@@ -1131,6 +1131,11 @@ void shotFireHand(s32 hand)
         else if (item_id == ITEM_CAMERA)
         {
             objectivesCheckPicture();
+
+            if (g_Challenge != NULL)
+            {
+                challengeOnPhoto();
+            }
         }
         else if (item_id == ITEM_WATCHMAGNETATTRACT)
         {
