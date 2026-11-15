@@ -3506,6 +3506,44 @@ Gfx * frontDrawMissionTitle(Gfx *DL, char *text)
 }
 
 
+/**
+ * The best time to show next to a difficulty on the difficulty page, for the mode
+ * being played (solo, co-op, counter-op or challenge), in seconds; 0 for none.
+ */
+static s32 frontGetBestTime(DIFFICULTY difficulty)
+{
+    LEVEL_SOLO_SEQUENCE level = g_FrontMissions[g_FrontMission].mission_num;
+    const save_data *save;
+    s32 secs;
+
+    if (g_ChallengeMenu)
+    {
+        return fileGetExtTime(SAVETIME_CHALLENGE, g_FrontFolder, level, difficulty);
+    }
+
+    if (gameIsCounterOp())
+    {
+        return fileGetExtTime(SAVETIME_COUNTEROP, g_FrontFolder, level, difficulty);
+    }
+
+    if (gameIsCoop())
+    {
+        return fileGetExtTime(SAVETIME_COOP, g_FrontFolder, level, difficulty);
+    }
+
+    save = fileGetSaveForFoldernum(g_FrontFolder);
+
+    if (save == NULL || difficulty >= DIFFICULTY_007)
+    {
+        return 0;
+    }
+
+    // 0x3FF marks a mission done without a time of its own (done on a harder
+    // difficulty or in co-op)
+    secs = fileGetSaveStageDifficultyTime(save, level, difficulty);
+    return (secs >= 0x3FF) ? 0 : secs;
+}
+
 void frontSetDifficultyCursor(int difficulty)
 {
     g_FrontCursorX = 106.0;
@@ -3554,7 +3592,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
             DL,
             0x7E,
             (g_FrontDifficultyHighlight * 0x1E) + 0xB2,
-            g_ChallengeMenu ? 0x168 : 0xF0, // wide enough for the challenge name
+            g_ChallengeMenu ? 0x184 : 0xF0, // wide enough for the challenge name and time
             (g_FrontDifficultyHighlight * 0x1E) + 0xC3,
             0x32);
     }
@@ -3604,6 +3642,19 @@ Gfx *frontDifficultyRender(Gfx *DL)
                 {
                     sprintf(stagename, "%s\n", challenge->name);
                     x = 0xF8;
+                    y = (i * 0x1E) + 0xB4;
+                    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+                }
+            }
+
+            // Best time, after the tick (or the challenge name)
+            {
+                s32 secs = frontGetBestTime(i);
+
+                if (secs > 0)
+                {
+                    sprintf(stagename, "%d:%02d\n", secs / 60, secs % 60);
+                    x = g_ChallengeMenu ? 0x15C : 0x12C;
                     y = (i * 0x1E) + 0xB4;
                     DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
                 }

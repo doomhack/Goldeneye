@@ -586,7 +586,9 @@ void bossReturnTitleStage(void) {
     }
 
     objectivesDisableStatusDisplay();
-    if ((bossGetStageNum() != LEVELID_CUBA) && !challengeWasPlayed() && (objectivesAllComplete() != 0x0)) {
+    if (challengeWasPassed()) {
+        fileRecordChallengeEnd(challengeGetPassSeconds());
+    } else if ((bossGetStageNum() != LEVELID_CUBA) && !challengeWasPlayed() && (objectivesAllComplete() != 0x0)) {
         fileRecordMissionEnd();
     }
     bossRunTitleStage();
