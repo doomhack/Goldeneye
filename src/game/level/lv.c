@@ -348,6 +348,12 @@ void lvStageLoad(s32 stage)
             playerInitHands();
             playerResetLife();
             playerApplyIntro();
+
+            if (g_Challenge != NULL)
+            {
+                challengeApplyLoadout();
+            }
+
             playerStartNewLife();
             headBobInit();
             cheatResetInput();

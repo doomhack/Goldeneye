@@ -11,6 +11,7 @@
  */
 
 #include <ultra64.h>
+#include "game/mission/challenge.h"
 #include <bondconstants.h>
 #include <bondtypes.h>
 #include <snd.h>
@@ -881,6 +882,11 @@ static bool playerWantsPickup(const PropRecord *prop)
             }
 
             if (weapon->weaponnum == ITEM_ROCKETROUND && (obj->runtime_bitflags & RUNTIMEBITFLAG_HASPROJECTILE))
+            {
+                return false;
+            }
+
+            if (g_Challenge != NULL && challengeBlocksPickup(weapon->weaponnum))
             {
                 return false;
             }

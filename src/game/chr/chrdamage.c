@@ -712,6 +712,19 @@ bool chrTakeShot(ChrRecord *self, s32 hitpart, const coord3d *vector, s32 weapon
             }
 
             self->chrflags |= CHRFLAG_WAS_DAMAGED;
+
+            if (isPlayer && g_Challenge != NULL && damageToCause > 0.0f)
+            {
+                bool lethal = self->damage < self->maxdamage && self->damage + damageToCause >= self->maxdamage;
+
+                challengeOnChrHarmed(self);
+
+                if (lethal)
+                {
+                    challengeOnChrKilled(self, hitpart, FALSE);
+                }
+            }
+
             self->damage += damageToCause;
 
             if (self->damage < 0.0f)
@@ -788,6 +801,17 @@ s32 chrExplosionDamage(ChrRecord *self, const coord3d *pos, f32 damage, s32 play
     self->numarghs += 1;
     self->damage += damage;
     self->chrflags |= CHRFLAG_WAS_DAMAGED;
+
+    if (g_Challenge != NULL && damage > 0.0f)
+    {
+        // Solo: the explosions that hurt chrs are the player's (or the tank's)
+        challengeOnChrHarmed(self);
+
+        if (self->damage > 0.0f)
+        {
+            challengeOnChrKilled(self, -1, TRUE);
+        }
+    }
 
     if (self->damage > 0.0f)
     {

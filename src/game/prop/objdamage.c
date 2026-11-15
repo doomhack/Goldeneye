@@ -14,6 +14,7 @@
  */
 
 #include <ultra64.h>
+#include "game/mission/challenge.h"
 #include <bondgame.h>
 #include "game/prop/objdamage.h"
 #include "game/prop/propobj.h"
@@ -830,6 +831,8 @@ void objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS itemnu
         obj->damageTaken += damage;
     }
 
+    bool washealthy = objGetDestroyedLevel(obj) == 0;
+
     if (obj->type == PROPDEF_GLASS || obj->type == PROPDEF_TINTED_GLASS)
     {
         if (obj->health <= obj->damageTaken)
@@ -841,6 +844,11 @@ void objApplyDamage(ObjectRecord *obj, f32 damage, coord3d *pos, ITEM_IDS itemnu
     {
         objSetDropType(obj->prop, DROPTYPE_DEFAULT);
         objExplode(obj, pos, playernum);
+    }
+
+    if (g_Challenge != NULL && washealthy && objGetDestroyedLevel(obj) != 0)
+    {
+        challengeOnObjDestroyed(obj);
     }
 
     if (obj->type == PROPDEF_AMMO && objGetDestroyedLevel(obj) == 1)

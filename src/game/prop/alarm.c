@@ -11,6 +11,7 @@
  */
 
 #include <ultra64.h>
+#include "game/mission/challenge.h"
 #include <bondconstants.h>
 #include <boss.h>
 #include <music.h>
@@ -72,6 +73,11 @@ void alarmGasTimerReset(void)
 /** Sets the alarm off. It keeps sounding for its full time from the first time. */
 void alarmActivate(void)
 {
+    if (g_Challenge != NULL)
+    {
+        challengeOnAlarm();
+    }
+
     if (s_AlarmTicks < 1)
     {
         s_AlarmTicks = 1;
