@@ -6,6 +6,7 @@
  * (options*), which are kept in the player struct. See docs/subsystems/menu.md.
  */
 #include <ultra64.h>
+#include "game/mission/challenge.h"
 #include <bondconstants.h>
 #include <boss.h>
 #include <fr.h>
@@ -1227,6 +1228,11 @@ void watchMenuBriefMoneypennyTick(void)
 
 void watchMenuBriefObjectivesTick(void)
 {
+    if (g_Challenge != NULL)
+    {
+        return; // challenge mode: the objective is the only briefing page
+    }
+
     if (joyGetButtonsPressedThisFrame(WATCH_PAD, U_CBUTTONS|U_JPAD) || watchMenuStickPushedUp())
     {
         g_WatchMenuBriefPage = BRIEF_INDEX_MONEYPENNY;
@@ -3539,14 +3545,24 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
                 textSetOverlapCorrection(5);
                 sprintf(pageTitle, langGet(0xac3c));
 
-                // Counter-op: the guard player has one objective of their own.
+                // Counter-op: the guard player has one objective of their own,
+                // and in challenge mode the challenge is the only objective.
                 s32 guardplayer = counterOpIsGuardPlayer(playerGetCurrentNum());
+                char challengeText[160];
 
-                for (i = 0; i < (guardplayer ? 1 : objectiveGetCount()); i++)
+                if (g_Challenge != NULL)
                 {
-                    if (guardplayer || (objectiveGetDifficulty(i) <= lvGetDifficulty()))
+                    char unwrapped[160];
+
+                    challengeGetObjectiveText(g_Challenge, unwrapped);
+                    textWrap(0xc8, unwrapped, challengeText, chars, font);
+                }
+
+                for (i = 0; i < ((guardplayer || g_Challenge != NULL) ? 1 : objectiveGetCount()); i++)
+                {
+                    if (guardplayer || g_Challenge != NULL || (objectiveGetDifficulty(i) <= lvGetDifficulty()))
                     {
-                        objectiveText = guardplayer ? "Kill Bond\n" : objectiveGetText(i);
+                        objectiveText = guardplayer ? "Kill Bond\n" : (g_Challenge != NULL) ? challengeText : objectiveGetText(i);
                         objectiveBuffer[0] = '\0';
 
                         for (j = 0; j < lineCount; j++)
@@ -3587,7 +3603,7 @@ Gfx *watchMenuRenderBriefing(Gfx *gdl, Mtx *mtx)
                             strcat(objectiveBuffer, g_ObjectiveLineEndGap2);
                         }
 
-                        switch (guardplayer ? OBJECTIVESTATUS_INCOMPLETE : objectiveCheckStatus(i))
+                        switch (guardplayer ? OBJECTIVESTATUS_INCOMPLETE : (g_Challenge != NULL) ? challengeGetObjectiveStatus() : objectiveCheckStatus(i))
                         {
                             case OBJECTIVESTATUS_INCOMPLETE:
                                 strcat(objectiveBuffer, incompleteText);

@@ -3592,7 +3592,7 @@ Gfx *frontDifficultyRender(Gfx *DL)
             DL,
             0x7E,
             (g_FrontDifficultyHighlight * 0x1E) + 0xB2,
-            g_ChallengeMenu ? 0x184 : 0xF0, // wide enough for the challenge name and time
+            0xF0,
             (g_FrontDifficultyHighlight * 0x1E) + 0xC3,
             0x32);
     }
@@ -3634,27 +3634,14 @@ Gfx *frontDifficultyRender(Gfx *DL)
             y = (i * 0x1E) + 0xB4;
             DL = frontPrintText(DL, &x, &y, text, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
 
-            if (g_ChallengeMenu)
-            {
-                const ChallengeDef *challenge = challengeFind(g_FrontMissions[g_FrontMission].stage_id, i);
-
-                if (challenge != NULL)
-                {
-                    sprintf(stagename, "%s\n", challenge->name);
-                    x = 0xF8;
-                    y = (i * 0x1E) + 0xB4;
-                    DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
-                }
-            }
-
-            // Best time, after the tick (or the challenge name)
+            // Best time, after the tick
             {
                 s32 secs = frontGetBestTime(i);
 
                 if (secs > 0)
                 {
                     sprintf(stagename, "%d:%02d\n", secs / 60, secs % 60);
-                    x = g_ChallengeMenu ? 0x15C : 0x12C;
+                    x = 0x12C;
                     y = (i * 0x1E) + 0xB4;
                     DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
                 }
@@ -7026,7 +7013,8 @@ void frontBriefingEnter(void)
 {
     g_FrontTabNextSelected = 0;
     g_FrontTabPrevSelected = 0;
-    g_FrontBriefingLastPage = 5;
+    // Challenge mode has no briefing text: the objective page is all there is
+    g_FrontBriefingLastPage = g_ChallengeMenu ? 1 : 5;
     frontSetBriefingPage(0);
     frontLoadFolders();
     frontLoadBriefing();
@@ -7132,6 +7120,67 @@ void frontBriefingTick(void)
 }
 
 
+/**
+ * Challenge mode: the challenge as the only objective, "a.", its text and, on the
+ * debrief, whether it was completed.
+ */
+static Gfx *frontDrawChallengeObjective(Gfx *DL, s32 y, char *buffer, const ChallengeDef *challenge, s32 showStatus)
+{
+    char text[160];
+    const char *status;
+    s32 colour;
+    s32 x;
+    s32 lineY;
+
+    if (challenge != NULL)
+    {
+        challengeGetObjectiveText(challenge, text);
+    }
+    else
+    {
+        challengeGetPlayedObjectiveText(text);
+    }
+
+    x = 0x37;
+    lineY = y;
+    DL = frontPrintText(DL, &x, &lineY, "a.\n", g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+
+    if (showStatus)
+    {
+        textSetWordWrap(2);
+        textWrap(0xDC, text, buffer, g_FontZurichChars, g_FontZurich);
+        textSetWordWrap(0);
+    }
+    else
+    {
+        textWrap(0x140, text, buffer, g_FontZurichChars, g_FontZurich);
+    }
+
+    x = 0x4B;
+    lineY = y;
+    DL = frontPrintText(DL, &x, &lineY, buffer, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
+
+    if (showStatus)
+    {
+        if (challengeWasPassed())
+        {
+            status = langGet(getStringID(LTITLE, TITLE_STR_91_COMPLETED));
+            colour = 0xFF;
+        }
+        else
+        {
+            status = langGet(getStringID(LTITLE, TITLE_STR_92_FAILED));
+            colour = 0x780000FF;
+        }
+
+        x = 0x136;
+        lineY = y;
+        DL = frontPrintText(DL, &x, &lineY, status, g_FontZurichChars, g_FontZurich, colour, viGetX(), viGetY(), 0, 0);
+    }
+
+    return DL;
+}
+
 Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
 {
     s32 i;
@@ -7149,6 +7198,17 @@ Gfx *frontDrawObjectives(Gfx *DL, s32 y, char *buffer, s32 showStatus)
     lines = 0;
     i = 0;
     v1 = 0;
+
+    // Challenge mode: the challenge in place of the level's objectives
+    if (showStatus ? challengeWasPlayed() : g_ChallengeMenu)
+    {
+        const ChallengeDef *challenge = showStatus ? NULL : challengeFind(g_FrontMissions[g_FrontMission].stage_id, g_FrontDifficulty);
+
+        if (showStatus || challenge != NULL)
+        {
+            return frontDrawChallengeObjective(DL, y, buffer, challenge, showStatus);
+        }
+    }
 
     for (i = 0; i < OBJECTIVES_MAX; i++)
     {
@@ -7293,7 +7353,7 @@ Gfx *frontBriefingRender(Gfx *DL)
     DL = frontAddStartTabText(DL);
     DL = frontAddPreviousTabText(DL);
 
-    if (g_FrontBriefingPage < BRIEFING_MONEYPENNY)
+    if (g_FrontBriefingPage < (g_FrontBriefingLastPage - 1))
     {
         DL = frontAddNextTabText(DL);
     }
@@ -7508,18 +7568,7 @@ Gfx * frontDebriefRender(Gfx *DL)
         DL = frontPrintText(DL, &x, &y, winner, g_FontZurichChars, g_FontZurich, bondwins ? 0xFF : (0x78000000 | 0xFF), viGetX(), viGetY(), 0, 0);
     }
 
-    if (challengeWasPlayed())
-    {
-        // Challenge mode: the challenge in place of the objectives
-        sprintf(stagename, "Challenge: %s\n", challengeGetResultName());
-        x = 0x37;
-        y = 0xBF;
-        DL = frontPrintText(DL, &x, &y, stagename, g_FontZurichChars, g_FontZurich, 0xFF, viGetX(), viGetY(), 0, 0);
-    }
-    else
-    {
-        DL = frontDrawObjectives(DL, 0xBF, stagename, 1);
-    }
+    DL = frontDrawObjectives(DL, 0xBF, stagename, 1);
 
     DL = frontAddNextTabText(DL);
     DL = frontAddPreviousTabText(DL);
