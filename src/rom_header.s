@@ -9,13 +9,17 @@
 .word  0x00000000 # unknown
 .word  0x00000000 # unknown
 .ascii "GOLDENEYE           " # ROM name: 20 bytes
-.word  0x00000000 # unknown
+# The rest is the advanced homebrew ROM header (cartridge ID "ED"), which tells
+# emulators and flash carts the save type instead of a database lookup on the
+# game ID. The save is a 16 Kbit EEPROM (the original's 4 Kbit one is full);
+# the game still runs on 4 Kbit (file.c g_SaveEepromType).
+.byte  0x01, 0x01, 0x01, 0x01 # controllers 1-4: controller with a Rumble Pak
 .word  0x0000004E # cartridge
-.ascii "GE"       # cartridge ID
+.ascii "ED"       # cartridge ID: advanced homebrew header
 .ifdef VERSION_US
 .ascii "E"        # country
 .endif
 .ifdef VERSION_EU
 .ascii "P"        # country
 .endif
-.byte  0x00       # version
+.byte  0x20       # save type 2 = 16 Kbit EEPROM (high nibble), version 0
