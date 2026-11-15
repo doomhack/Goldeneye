@@ -4,6 +4,7 @@
  * loading projectile models. See docs/subsystems/player.md.
  */
 #include <ultra64.h>
+#include "game/mission/challenge.h"
 #include <memp.h>
 #include <bondconstants.h>
 #include <boss.h>
@@ -472,6 +473,13 @@ void playerApplyIntro(void)
     g_CurrentPlayer->deltaPos.x = FLOAT_INIT;
     g_CurrentPlayer->deltaPos.y = -0.0001f;
     g_CurrentPlayer->deltaPos.z = FLOAT_INIT;
+
+    if (g_Challenge != NULL && challengeGetStartPad() != NULL)
+    {
+        // Challenge mode: some challenges start somewhere else
+        g_Startpad[0] = (PadRecord *)challengeGetStartPad();
+        startpadcount = 1;
+    }
 
     if (startpadcount > 0)
     {
