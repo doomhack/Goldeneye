@@ -47,8 +47,8 @@
 
 // World units per metre for the challenge distances (far kills, Survive's
 // area and spawn ring, photo range). Zak found 100 made "100 m" look far too
-// far on Dam, so a metre is 50 units.
-#define UNITS_PER_METRE 50.0f
+// far on Dam; 50 was too short, so a metre is 75 units.
+#define UNITS_PER_METRE 75.0f
 
 // How long the result stays on screen before the level ends
 #define RESULT_TICKS (2 * TICKS_PER_SEC)
