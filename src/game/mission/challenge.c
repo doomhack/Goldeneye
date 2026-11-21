@@ -45,6 +45,11 @@
 // The game clock runs at 60 ticks a second in every region
 #define TICKS_PER_SEC 60
 
+// World units per metre for the challenge distances (far kills, Survive's
+// area and spawn ring, photo range). Zak found 100 made "100 m" look far too
+// far on Dam; 50 was too short, so a metre is 75 units.
+#define UNITS_PER_METRE 75.0f
+
 // How long the result stays on screen before the level ends
 #define RESULT_TICKS (2 * TICKS_PER_SEC)
 
@@ -420,9 +425,9 @@ static bool chrIsCivilian(const ChrRecord *chr)
 #define SURVIVE_MAX_ALIVE 8
 // a new one every this many ticks while there's room
 #define SURVIVE_SPAWN_TICKS (3 * TICKS_PER_SEC)
-// at a pad this far from the player (cm)
-#define SURVIVE_SPAWN_MIN 1500.0f
-#define SURVIVE_SPAWN_MAX 4500.0f
+// at a pad this far from the player (15-45 m)
+#define SURVIVE_SPAWN_MIN (15.0f * UNITS_PER_METRE)
+#define SURVIVE_SPAWN_MAX (45.0f * UNITS_PER_METRE)
 // Spawned guards are numbered from here
 #define SURVIVE_CHRNUM 9000
 
@@ -551,7 +556,7 @@ static bool challengeSurviveOutOfArea(void)
     const PropRecord *playerprop = currentPlayerGetProp();
     f32 dx = playerprop->pos.x - s_SurviveCentre.x;
     f32 dz = playerprop->pos.z - s_SurviveCentre.z;
-    f32 range = g_Challenge->param * 100.0f;
+    f32 range = g_Challenge->param * UNITS_PER_METRE;
 
     return g_Challenge->param > 0 && dx * dx + dz * dz > range * range;
 }
@@ -818,7 +823,7 @@ NOINLINE void challengeOnChrKilled(const ChrRecord *chr, s32 hitpart, bool explo
             dx = chr->prop->pos.x - playerprop->pos.x;
             dy = chr->prop->pos.y - playerprop->pos.y;
             dz = chr->prop->pos.z - playerprop->pos.z;
-            range = g_Challenge->param * 100.0f;
+            range = g_Challenge->param * UNITS_PER_METRE;
 
             if (dx * dx + dy * dy + dz * dz >= range * range)
             {
@@ -883,8 +888,8 @@ NOINLINE void challengeOnObjDestroyed(const ObjectRecord *obj)
     }
 }
 
-// A photo only counts from this close (2000 = 20 m), so the target isn't a speck
-#define PHOTO_RANGE 2000.0f
+// A photo only counts from this close (20 m), so the target isn't a speck
+#define PHOTO_RANGE (20.0f * UNITS_PER_METRE)
 
 /**
  * The player took a picture with the camera: it counts if the target chr is
